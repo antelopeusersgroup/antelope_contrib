@@ -7,7 +7,7 @@ PM=$(ANTELOPE)$(SUBDIR)/man
 
 ldlibs=$(TRLIBS) 
 include $(ANTELOPEMAKE)
-#DIRS=
+DIRS=
 #SUBDIR=/local
 SUBDIR=
 
