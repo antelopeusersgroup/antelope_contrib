@@ -1,0 +1,89 @@
+Schema "statrans1.1"
+        Description ( "Name conversion schema " )
+        Detail {
+	    This schema allows translation from old to new station
+	    names. Statrans1.1 adds the defaultchan field to the 
+	    statrans1.0 schema.
+            }
+        ;
+ 
+Attribute oldsta
+        String ( 6 )
+        Format ( "%-6s" )
+        Null  ( "-"  )
+        Description ( "station" )
+        Detail {
+            This is the common code-name of a seismic observatory.
+            Generally only three or four characters are used.
+	    This old-style name often crams component or gain 
+	    information onto the end of the station code.
+        }
+        ;
+ 
+Attribute newsta
+        String ( 6 )
+        Format ( "%-6s" )
+        Null  ( "-"  )
+        Description ( "station" )
+        Detail {
+            This is the common code-name of a seismic observatory.
+            Generally only three or four characters are used. This 
+	    field is the same as the sta field in css3.0.
+        }
+        ;
+ 
+Attribute newchan
+        String ( 8 )
+        Format ( "%-8s" )
+        Null  ( "-"  )
+        Description ( "channel" )
+        Detail {
+            This is an eight-character code, which, taken together
+            with sta, jdate and time, uniquely identifies the source
+            of the seismic data, including the geographic location,
+            spatial orientation, sensor and subsequent data
+            processing. This field is the same as the chan field in
+	    css3.0. In some cases, it is not appropriate to assign a 
+	    single channel name, for example when the station name 
+	    does indeed indicate a multiple-component installation. 
+	    Sometimes these cases are mixed in with data that also use
+	    separate station names for different components. In these 
+	    cases, a blank channel names leaves resolution to 
+	    later processing or standardized decisions within software.
+	    Often, some information on channel name is available, for 
+	    example in the header of an AH file for waveform data.
+        }
+        ;
+
+Attribute defaultchan
+        String ( 8 )
+        Format ( "%-8s" )
+        Null  ( "-"  )
+        Description ( "default channel" )
+        Detail {
+		For multi-component instruments, the newchan field 
+		is sometimes left blank so ambiguity in the channel name 
+		can be handled correctly. In some cases, such as pick data, 
+		the ambiguity is resolved by an implicit understanding of 
+		what component is picked on a multi-component station, if 
+		nothing else is specified. The defaultchan field is used 
+		to make this assignment explicit for multi-component stations 
+		where newchan must be left null. 
+        }
+        ;
+ 
+Relation statrans
+        Fields (
+            oldsta newsta newchan defaultchan
+            )
+        Primary ( oldsta )
+        Description ( "Station-name translation information" )
+        Detail {
+		Station names have changed at several networks to conform to
+		the css3.0 standard. Older names sometimes had
+		component or gain information tacked onto the
+		station code as extra letters, with no official channel 
+		code. This table translates a station-only description into 
+		a station/channel-name pair.
+        }
+        ;
