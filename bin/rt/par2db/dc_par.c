@@ -27,7 +27,6 @@ struct Packet **Pkt;
     short numdas, sval, size;
     char *daspkt;
     char *s, lcmd[40], dcname[64], name[64];
-    struct Pval *par;
     double ptime, ytime, sec;
     ulong ysec;
     int year, day, hour, min;

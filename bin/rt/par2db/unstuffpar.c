@@ -28,13 +28,23 @@ int unstuffpar( char *packet,
   }
  
   switch (pkttype) {
+    case ASP:
+	  if( !DCSP ) return 2;
+	  retcode =  adc_par( packet, pkttime, srcname, Pkt );
+	  break ;
+
     case BSP:
 	  if( !DCSP ) return 2;
 	  retcode =  dc_par( packet, Pkt );
 	  break ;
 
+    case CAHS:
+    case CALS:
+	  retcode =  anza_par( packet, pkttime, srcname, Pkt );
+	  break ;
     case CBBHS:
     case CBBLS:
+    case CBB1S:
           if( GPS_COOR ) return gps_coord( packet, pkttime, srcname, Pkt );
 	  retcode =  bba_par( packet, pkttime, srcname, Pkt );
 	  break ;

@@ -22,8 +22,6 @@ struct Packet **Pkt;
     short sval;
     long ttag;
     char net[64], sta[64], key[64];
-    struct Pval *par;
-    
 
     hdr = ( struct BBAHdr *) packet;
     

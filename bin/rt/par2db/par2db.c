@@ -10,6 +10,7 @@ int DINTV = 1;
 int Log = 0;
 int DCFlag = 1;
 
+char *Pfile = "pkt.pf";
 
 int
 main (argc, argv)
@@ -23,12 +24,12 @@ char          **argv;
     double          after = 0.0;
     int             err=0, c;
     int             rdorb;
-    int             npkt = 15,
+    int             npkt = 10,
 		    nselect,
                     pktid;
     char	   *after_str=0 ;
     char           *orbname = 0;
-    char           *match = ".*/CBBHS";
+    char           *match =".*/CBBHS";
     char           *database;
     char           *packet=0;
     char            srcname[ORBSRCNAME_SIZE];
@@ -36,7 +37,7 @@ char          **argv;
     char           *s, lcmdfile[64];
     Dbptr           db;
     Save_params     params;
-    int             nbytes, bufsize = 0;
+    int             dump=0, nbytes, bufsize = 0;
     Arr            *Parms ;
     Arr            *sources ;
     Source	   *asource;
@@ -55,12 +56,16 @@ char          **argv;
     params.wfname = 0;
     params.gapmax = 600.0 ;
     
-    while ((c = getopt (argc, argv, "Ocgm:i:s:v")) != -1)
+    while ((c = getopt (argc, argv, "Ocgm:i:s:vd")) != -1)
 	switch (c) {
 
 	case 'c':
 	    DCSP = 1;
 	    DINTV = 5;
+	    break;
+
+	case 'd':
+	    dump = 1;
 	    break;
 
 	case 'g':
@@ -116,8 +121,6 @@ char          **argv;
        sprintf( lcmdfile, "%s.LCMD\0", database);
        if( ( fplcmd = fopen( lcmdfile, "a+")) == NULL )
           die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
-   
-       match = ".*/BSP";
     }
     
     if (match) {
@@ -162,8 +165,9 @@ char          **argv;
                    orbclose( rdorb );
 		   if( (rdorb = orbopen( orbname, "r")) < 0)
 		       die( 0, "Can't open ORB\n");
-		   if ((nselect = orbselect ( rdorb, match)) < 1 )
-		        die (1, "orbselect '%s' failed\n", match); 
+		   if( match )
+		       if ((nselect = orbselect ( rdorb, match)) < 1 )
+		           die (1, "orbselect '%s' failed\n", match); 
 		   if (orbseek (rdorb, ORBCURRENT ) < 0 ) 
 		       die(0,"orbseek to ORBCURRENT failed .\n") ; 
 		    
@@ -197,7 +201,11 @@ char          **argv;
 
 	    default:
 
-                switch ( unstuffpar (packet, pkttime, &Pkt, srcname )) {
+                if( dump)  {
+		    hexdump( stdout, packet, nbytes );
+		    fflush(stdout);
+		}    
+		switch ( unstuffpar (packet, pkttime, &Pkt, srcname )) {
 	            case 1:
 	               for (par = 0; par < Pkt->nchannels; par++) {
 	                  achan = (PktChannel *) gettbl (Pkt->chan, par);

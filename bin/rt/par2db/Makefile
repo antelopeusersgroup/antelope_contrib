@@ -8,6 +8,8 @@ include $(DSAPMAKE)
 DIRS=
 
 SRCS= \
+    adc_par.c \
+    anza_par.c \
     bba_par.c \
     dc_clock_stat.c \
     dc_par.c \

@@ -75,17 +75,48 @@ static int PAR_BYTE_BBA2[MAXNUMPAR_BBA2] = { 1,2,2,2,
 				  /*,
 				  1,1,1,1,1,2,1,1,1,1,2 };  */
 
-typedef struct Pval {
-  double time;
-  int val;
-  FILE *fp;
-  char name[128];
-} Pval;
-  
-Pval *DiagPar;
+struct dasid {
+   int up;
+   char name[8];
+};
+ 
 
 extern int Intv;
 int bparameter[MAXNUMPAR_BBA2];
 
+/* Parameters for ANZA DAS & DC   */
+
+static int aparameter[2];
+static int dcpar[256];
+
+#define ANZA_DAS     2
+#define DasNum       16  /* there can be up to 16 Dases maximun  */
+#define ANZA_DCDC    5
+#define ANZA_DCDAS   9
+
+
+static char *ANZA_DAS_NAME[ANZA_DAS] = {
+      "BUFDEL", "BATT"
+};
+
+static int ANZA_DAS_OFF[ANZA_DAS] = {
+      44, 50
+};
+
+static char *ANZA_DCDC_NAME[ANZA_DCDC] = {
+  "1PPS", "SEQERR", "STAT", "UNLOCK", "LLOCK" 
+};
+
+static char *ANZA_DCDAS_NAME[ANZA_DCDAS] = {
+  "CRC", "CHKSUM", "DASRES", "SEC", "MSEC", "RTXSND", "RTXRCV", "RTXSKP", "OVRFL"
+};
+
+static int ANZA_DCDC_OFF[ANZA_DCDC] = {
+       40, 42, 46, 48, 50
+};
+
+static int ANZA_DCDAS_OFF[ANZA_DCDAS] = {
+       54, 86, 118, 182, 214, 246, 278, 310, 416  
+};
 
 #endif
