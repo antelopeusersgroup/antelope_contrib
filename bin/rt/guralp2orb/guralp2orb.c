@@ -30,6 +30,13 @@
 #define BLOCK_SEQUENCE_MAX 65536
 #define GCF_MOTOROLA_BYTEORDER 1
 #define GCF_INTEL_BYTEORDER 2
+
+#ifdef WORDS_BIGENDIAN
+#define BIGENDIAN 1
+#else
+#define BIGENDIAN 0
+#endif
+
 #define SECONDS_PER_DAY (24*60*60)
 #define QUEUE_MAX_PACKETS 100
 #define QUEUE_MAX_RECOVER 100
@@ -257,8 +264,8 @@ gcfpeek( G2orbpkt *gpkt )
 	gpkt->samprate = (unsigned char) gpkt->packet[13];
 	gpkt->byteorder = (unsigned char) gpkt->packet[1060];
 
-	if( ( gpkt->byteorder == GCF_MOTOROLA_BYTEORDER && ! WORDS_BIGENDIAN ) || 
-	    ( gpkt->byteorder == GCF_INTEL_BYTEORDER && WORDS_BIGENDIAN ) ) {
+	if( ( gpkt->byteorder == GCF_MOTOROLA_BYTEORDER && ! BIGENDIAN ) || 
+	    ( gpkt->byteorder == GCF_INTEL_BYTEORDER && BIGENDIAN ) ) {
 		
 		swap2( &(gpkt->blockseq), &(gpkt->blockseq), 1 );
 		swap4( &sysid, &sysid, 1 );	
