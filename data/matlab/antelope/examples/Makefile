@@ -11,6 +11,7 @@ DATA= \
 	dbexample_cggrid_getmesh.m \
 	dbexample_cggrid_nx.m \
 	dbexample_cggrid_ny.m \
+	dbexample_cggrid_probe.m \
 	dbexample_cggrid_write.m \
 	dbexample_cggrid2db.m \
 	dbexample_clear.m \

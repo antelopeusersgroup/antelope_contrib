@@ -9,6 +9,7 @@ dbexample_cggrid_get
 dbexample_cggrid_getmesh
 dbexample_cggrid_nx
 dbexample_cggrid_ny
+dbexample_cggrid_probe
 dbexample_cggrid_write
 dbexample_cggrid2db
 dbexample_clear

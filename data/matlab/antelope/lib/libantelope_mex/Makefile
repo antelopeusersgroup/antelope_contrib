@@ -10,6 +10,8 @@ ldlibs=
 
 include $(ANTELOPE)/include/mex_antelope_makerules
 
+MEX=mex
+
 OBJS= 	  variables2mxArray.o \
 	  dbptr_struct.o \
 	  get_malloced_string.o \

@@ -1,4 +1,4 @@
-CGGRID_PROBE	Probe a CGGRID object for the data value at a givenpoint
+CGGRID_PROBE	Probe a CGGRID object for the data value at a given point
 
 VAL = CGGRID_PROBE ( CGG, X, Y )
 

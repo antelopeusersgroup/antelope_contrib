@@ -133,6 +133,7 @@
 %   cggrid_ny		- cggrid number of points in y dimension
 %   cggrid_get		- get an array of x,y,z coordinate triplets for cggrid
 %   cggrid_getmesh	- get cggrid values formatted for the mesh command
+%   cggrid_probe	- get the cggrid value at a given point
 %   cggrid_write	- write a cggrid to a file
 %   cggrid2db		- write a cggrid to a database
 %   cggrid_free		- cggrid elimination routine
