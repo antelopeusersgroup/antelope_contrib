@@ -1,0 +1,45 @@
+# $Id$
+# rtp2orb parameter file
+
+# Specify the ORB (host:port) to use.
+
+# Give the fully qualified host name, or dot decimal IP address of the ORB
+# server, followed by the port number.  If you are running this on the same
+# computer as the ORB server, then specify "localhost" as the host name.
+
+ORB      localhost 6770
+
+# Give the fully qualified host name, or dot decimal IP address of the RTPD
+# server, followed by the port number.  If you are running this on the same
+# computer as the RTP server, then specify "localhost" as the host name.
+
+RTPD   localhost 2543
+#RTPD   essw.us 2543
+#RTPD	gold1.seismo.unr.edu 2543
+
+# Give the path name of the "database" to use to map from digitizer p
+# packet headers into station, channel, network names, calib and calper.
+# In the default build of rtp2orb this is simply a flat file lookup table,
+# however you can substitute an Antelope database by changing db.c, if
+# desired.
+
+Database rtp2orb.map
+
+# Specify if you want to use the location code or not.  Note that the
+# flat file lookup table requires an entry for the loc code, regardless
+# of what is specified here.  
+
+UseLoc   No
+
+# The RTPD protocol allows you to request data from a single, specific,
+# DAS or from all DAS(es).  There is no provision for requesting data from
+# a subset of the available digitizers.  If you want data from a single DAS,
+# give its unit id here, otherwise enter 0 to select all digitizers.
+
+DASid    0
+
+# You may filter the DT packets based on stream.  List the stream id's you
+# want to see.  The stream codes here are the one-based values that are
+# used by people, not the zero-based values that are in the headers.
+
+StrMask  1 2 3 4 5 6 7 8

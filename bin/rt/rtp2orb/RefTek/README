@@ -1,0 +1,6 @@
+This directory contains the RefTek supplied library source required
+to build rtp2orb.  They require GNU make. To create the libraries,
+change to the src directory, edit the Makefile as appropriate so that
+GNU make is defined and type 'make'.  This will create a lib/solaris.sparc
+subdirectory off of this one (don't worry if this is not a Solaris sparc system,
+as the name has no significance outside of the RefTek build environment).

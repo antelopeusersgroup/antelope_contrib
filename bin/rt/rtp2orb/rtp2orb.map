@@ -1,0 +1,31 @@
+# $Id$
+#
+# Example table for use with rtp2orb.  This file defines the
+# mapping between the unit, stream, and channel entries which
+# are in the DT packet headers and the station, channel, net,
+# loc, calib and calper values required by the ORB packet.
+#
+# Note that stream number here is the one-based value that
+# is used by people, not the zero-based value that is actually
+# in the headers.
+
+#---------- DAS ------------|------------------------ ORB ------------------------
+# Unit Id    Stream    Chan    Station   Channel   Net   Loc   Seg Calib   Calper
+    9083        1        1      ESSW       BHZ      MN    00    G  1.234    2.345
+    9083        1        2      ESSW       BHN      MN    00    G  1.234    2.345
+    9083        1        3      ESSW       BHE      MN    00    G  1.234    2.345
+    0512        1        1      SHP        BHZ      NN    00    V  1.234    2.345
+    0512        1        2      SHP        BHN      NN    00    V  1.234    2.345
+    0512        1        3      SHP        BHE      NN    00    V  1.234    2.345
+    1083        0        1      STH        BHZ      NN    00    V  1.234    2.345
+    1083        0        2      STH        BHN      NN    00    V  1.234    2.345
+    1083        0        3      STH        BHE      NN    00    V  1.234    2.345
+    1083        0        4      STH        BHZ      NN    00    V  1.234    2.345
+    1083        0        5      STH        BHN      NN    00    V  1.234    2.345
+    1083        0        6      STH        BHE      NN    00    V  1.234    2.345
+    1083        1        1      STH        BHZ      NN    00    V  1.234    2.345
+    1083        1        2      STH        BHN      NN    00    V  1.234    2.345
+    1083        1        3      STH        BHE      NN    00    V  1.234    2.345
+    1083        1        4      STH        BHZ      NN    00    V  1.234    2.345
+    1083        1        5      STH        BHN      NN    00    V  1.234    2.345
+    1083        1        6      STH        BHE      NN    00    V  1.234    2.345

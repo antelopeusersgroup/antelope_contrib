@@ -1,0 +1,130 @@
+.\" $Id$
+.TH RTP2ORB L "March 10, 2003"
+.SH NAME
+rtp2orb \- Import data from a RefTek RTPD data server into an Antelope ORB
+.SH SYNOPSIS
+.B
+rtp2orb [ -v ] \fIconfiguration_file\fR
+.br
+.SH DESCRIPTION
+\fBRrtp2orb\fR collects data from a Refraction Technology, Inc.
+data server (RTPD) and writes them to an Antelope ORB as GENC packets
+raw and/or TRACE_BUF format packets.
+.SH OPTIONAL ARGUMENTS
+.TP 12
+.B -v
+Turn on packet logging.  If this option is given, then a terse header
+of each packet which is sent to the ORB is printed on stdout.
+.SH REQUIRED ARGUMENTS
+The program requires the path name of a configuration file
+which contains all the run time parameter specifications, as described in the
+next section.
+.SH PARAMETER FILE
+The basic format consists of an identifer followed by one or more arguments.
+Blank lines and everything following the '#" symbol are ignored.  Below is
+a list of all recognized identifiers and their arguments.
+.TP 8
+.B ORB      \fIOrbHost PortNumber\fR
+
+Give the fully qualified host name, or dot decimal IP address of the ORB
+server, followed by the port number.  If you are running this on the same
+computer as the ORB server, then specify "localhost" as the host name.
+
+.TP 8
+.B RTPD     \fIRTPDHost PortNumber\fR
+
+Give the fully qualified host name, or dot decimal IP address of the RTPD
+server, followed by the port number.  If you are running this on the same
+computer as the RTP server, then specify "localhost" as the host name.
+
+.TP 8
+.B Database \fIPathName\fR
+
+Give the path name of the "database" to use to map from digitizer
+packet headers into station, channel, network names, calib and calper.
+In the default build of rtp2orb this is simply a flat file lookup table,
+described in the next section, however one could fairly easily substitute
+an Antelope database by changing db.c, if desired.
+
+.TP 8
+.B DASid    \fIUnitId\fR
+
+The RTPD protocol allows you to request data from a single, specific,
+DAS or from all DAS(es).  There is no provision for requesting data from
+a subset of the available digitizers.  If you want data from a single DAS,
+give its unit id here, otherwise enter 0 to select all digitizers.
+
+.TP 8
+.B StrMask  \fIStreamList\fR
+
+You may filter the DT packets based on stream.  List the stream id's you
+want to see.  The stream codes here are the one-based values that are
+used by people, not the zero-based values that are in the headers.
+.PP
+Below is an example parameter file.
+.PP
+.RS
+.ft 3
+.nf
+ORB      igpprt.ucsd.edu 6770
+RTPD     essw.us 2543
+Database rtp2orb.map
+DASid    0
+StrMask  1 2 3 4 5 6 7 8
+.fi
+.ft
+.RE
+.SH LOOKUP TABLE
+As mentioned in the above section, the default build of rtp2orb supports
+mapping from digitzer packet header fields to station, channel, network, location
+and segment codes, and calib and calper, via a lookup table. In this table
+blank lines and everything following the '#" symbol are ignored.  The table
+consists of an aribtrary number of lines of exactly 10 tokens each.  The
+first 3 tokens are the unit id, stream number and channel number from the "DT"
+packet header.  The stream and channel numbers are the one-based values that
+are used by people when configuring the digitizer using RefTek supplied tools,
+not the zero-based value that is actually in the header.  The next four arguments
+are the character strings giving the station, channel, network, and location
+codes.  This is followed by two floating point numbers which give the values
+for calib and calper.
+and 
+.PP
+Below is an example lookup table.
+.PP
+.RS
+.ft 3
+.nf
+
+# $Id$
+#
+# Example table for use with rtp2orb.  This file defines the
+# mapping between the unit, stream, and channel entries which
+# are in the DT packet headers and the station, channel, net,
+# loc, calib and calper values required by the ORB packet.
+#
+# Note that stream number here is the one-based value that
+# is used by people, not the zero-based value that is actually
+# in the headers.
+
+#---------- DAS ------------|------------------------ ORB ------------------------
+# Unit Id    Stream    Chan    Station   Channel   Net   Loc   Seg Calib   Calper
+    9083        1        1      ESSW       BHZ      MN    00    G  1.234    2.345
+    9083        1        2      ESSW       BHN      MN    00    G  1.234    2.345
+    9083        1        3      ESSW       BHE      MN    00    G  1.234    2.345
+.fi
+.ft
+.RE
+.PP
+If the program encounters a packet which does not have a corresponding entry in
+the lookup table, then it generates the names as follows.  The station code is
+simply the unit id, the channel code is the given a name of the form "st:ch" where
+"st" is the stream number and "ch" is the channel number, the network code is
+given as "N?", the location code as "L?", and the segment type as "S?".  Undefined
+calib and calper values are 1.0 and -1.0, respectively.
+.SH NOTES
+The RefTek DT packets are incomplete, in that they do not explicitly specify the
+sample interval.  This program works around that by computing the sample interval
+by comparing sequential packets for each unit/stream/channel combination.  Since
+it takes two packets before the sample interval can be known, the first packet for
+each unit/stream/channel combination is discarded, and a message to that effect
+is printed on stdout.  This is normal and expected behavior.
