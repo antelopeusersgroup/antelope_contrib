@@ -380,10 +380,16 @@ void set_shot_variable(Dbptr db, Arr *tables, int evid, SegyHead *h)
 				evid);
 			return;
 		}
-		h->sourceLongOrX = (long) (deast*1000.0);
-		h->sourceLatOrY = (long)(dnorth*1000.0);
+		/*convert to m from km */
+		deast *= 1000.0;
+		dnorth *= 1000.0;
+		h->sourceLongOrX = (long) deast;
+		h->sourceLatOrY = (long) dnorth;
 		h->sourceSurfaceElevation = (long)elev;
 		h->sourceDepth = (long)edepth;
+		/* WARNING:  This assumes receiver coordinates have already been set */
+		h->sourceToRecDist = (long) hypot(dnorth - ((double)(h->recLatOrY)),
+						deast - ((double)(h->recLongOrX)) );
 	}
 }
 /* The trace library routines that existed at the time this code
