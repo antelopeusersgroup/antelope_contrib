@@ -4,7 +4,7 @@ require Exporter;
 @ISA = ('Exporter');
 
 @EXPORT = qw( parse_address message_to_database get_epoch realname filemail );
-@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost );
+@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode );
 
 use Datascope ;
 use Mail::Internet;
@@ -16,6 +16,8 @@ $Verbose = 0;
 $Dryrun = 0;
 $FormatProblems = "FormatProblems";
 $Nullhost = "localhost";
+$Dirmode = "0755";
+$Filemode = "0444";
 @PreserveHosts = ();
 @Me = ();
 %Subjects = ();
@@ -272,6 +274,23 @@ sub message_to_database {
 	}
 }
 
+sub chmod_dirs {
+	my( $dir ) = @_;
+
+	my( $base, $suffix );
+
+	system( "chmod $Dirmode $dir" );
+
+	($dir, $base, $suffix) = parsepath( $dir );
+
+	while( $dir ne "." ) {
+
+		system( "chmod $Dirmode $dir" );
+	
+		($dir, $base, $suffix) = parsepath( $dir );
+	}
+}
+
 sub filemail {
 	my( $in, $archive_dir, @db ) = @_;
 
@@ -365,10 +384,11 @@ sub filemail {
 	}
 
 	if( ! -e "$dir" ) {
-		$status = system( "mkdir -p $dir" );
+		$status = makedir( $dir );
 		if( $status ) {
 			elog_complain( "Problem with $name\n" );
 		}
+		chmod_dirs( $dir );
 	}
 
 	if( ( ! -e "$dir/$dfile" ) || -z "$dir/$dfile" ) {
@@ -388,7 +408,7 @@ sub filemail {
 	open( OUT, "|sed -e 's/^Mail-From: /From /' >>$dir/$dfile" );
 	$mailobj->print( \*OUT );
 	close( OUT );
-	chmod 0444, "$dir/$dfile";
+	system( "chmod $Filemode $dir/$dfile" );
 
 	my( $new_parts );
 	chomp( $new_parts = `wc $dir/$dfile` );

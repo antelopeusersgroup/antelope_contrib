@@ -20,6 +20,8 @@ $real = realname( $address );
 
 $filemail::Verbose = 0;
 $filemail::Dryrun = 0;
+$filemail::Dirmode = "0755";
+$filemail::Filemode = "0644";
 $filemail::FormatProblems = "FormatProblems";
 $filemail::Nullhost = "localhost";
 $filemail::Sent_archive_pattern = "%Y/SENT/%B";
@@ -94,6 +96,11 @@ only reports what it would do without doing it.
 The $filemail::FormatProblems variable specifies the name of a file
 to which problem emails are saved. 
 
+The $filemail::Dirmode and $filemail::Filemode variables specify the access 
+permissions on directories  and files created by filemail. These 
+should be specified as strings containing the octal representations 
+of file access permissions, e.g. "0644". For the meaning of the permission
+numbers see chmod(2).
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
