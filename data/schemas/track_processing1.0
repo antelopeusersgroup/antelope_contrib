@@ -1,0 +1,261 @@
+Schema track_processing1.0
+	Description ( "Schema to track analyst review of databases 1.0" )
+	Timedate lddate
+	;
+
+Attribute aeic_catalog
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "status of aeic catalog for a time-period of data" )
+	Detail {
+		This field specifies the status of aeic catalog
+		submission for a time-period of data. NULL indicates
+		the catalog has not yet been generated. "created"
+		indicates the catalog has been created but not yet
+		duplicated and mailed. "done" indicates that the catalog
+		has been created, duplicated, and sent.
+	}
+	;
+
+Attribute analyst
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "analyst who checked out an event" )
+	Detail {
+		This field specifies the username of an analyst who
+		assumed responsibility for a processing time-period
+	}
+	;
+
+Attribute checkin
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "epoch time" )
+	Detail {
+		This is the epoch time at which a database was checked
+		in after analysis is complete. If this value is null,
+		the database has not been checked in. If this is filled
+		in, the time period has been processed.
+	}
+	;
+
+Attribute checkout
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "epoch time" )
+	Detail {
+		This is the epoch time at which a database was checked
+		out for processing. If this value is null, the database
+		has not been checked out.
+	}
+	;
+
+Attribute cnss
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Description ( "whether a time period has been submitted to CNSS" )
+	Detail {
+		This field specifies whether a time period of analyzed
+		seismic data has been submitted to the Council of the
+		National Seismic System.
+	}
+	;
+
+Attribute dbsource
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "source of seismic data to be analyzed" )
+	Detail {
+		This field specifies the source from which seismic data
+		to be analyzed was obtained. Usually this is the full
+		pathname of the original database of automatic
+		locations from which the analyst's copy was extracted.
+		While these databases may disappear or move, their
+		pathnames often provide unique indication of the
+		processing system that created them.
+	}
+	;
+
+Attribute dfile
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "data file" )
+	Detail {
+		In wfdisc, this is the file name of a disk-based waveform
+		file.  In instrument, this points to an instrument
+		response file.  See dir.
+	}
+	;
+
+Attribute dir
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "directory" )
+	Detail {
+		This attribute is the directory-part of a path name. 
+		Relative path names or '.' (dot), the notation for the
+		current directory, may be used.
+	}
+	;
+
+Attribute endtime
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "9999999999.99900" )
+	Units ( "Epochal seconds" )
+	Description ( "last valid time for data" )
+	Detail {
+		In wfdisc, this attribute is the time of the last sample
+		in the waveform file.  Endtime is equivalent to
+		time+(nsamp-1)/samprate.  In sensor, this is the last time
+		the data in the record are valid.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "(epoch) time of last record modification" )
+	Detail {
+		This is the last time the record was modified.
+	}
+	;
+
+Attribute neic
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Description ( "whether a time period has been submitted to NEIC" )
+	Detail {
+		This field specifies whether a time period of analyzed
+		seismic data has been submitted to the National
+		Earthquake Information Center.
+	}
+	;
+
+Attribute qc
+	String (4)
+	Format ( "%-4s" )
+	Null ( "-" )
+	Description ( "whether a time period has been reviewed for quality-control" )
+	Detail {
+		This field specifies whether quality-control has been
+		completed for the analysis of a period of seismic
+		data.Values are NULL (qc not complete) or done (qc is
+		complete).
+	}
+	;
+
+Attribute qcanalyst
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "analyst who quality-controlled processing results" )
+	Detail {
+		This field specifies the username of an analyst who
+		performed quality-control on the analysis for a given
+		time period.
+	}
+	;
+
+Attribute report
+	String (5)
+	Format ( "%-5s" )
+	Null ( "-" )
+	Description ( "whether report is done" )
+	Detail {
+		This field takes the value NULL or the value "done" to
+		indicate whether or not a weekly or monthly report has
+		been completed for a given time period of analysis.
+	}
+	;
+
+Attribute status
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "status of handling for a time-period of data" )
+	Detail {
+		status is one of acquiring (for a time-period not yet
+		finished); active (for a time-period for which analysis
+		is still going on); analyzed (analysis is complete);
+		and done (qc is complete).
+	}
+	;
+
+Attribute time
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "epoch time" )
+	Detail {
+		Epochal time given as seconds and fractions of a second
+		since hour 0 January 1, 1970, and stored in a double
+		precision floating number.  Refers to the relation data
+		object with which it is found.  E.g., in arrival - arrival
+		time; in origin - origin time; in wfdisc, - start time of
+		data.  Where date of historical events is known, time is
+		set to the start time of that date; where the date of
+		contemporary arrival measurements is known but no time is
+		given, then the time attribute is set to the NA value. 
+		The double-precision floating point number allows 15
+		decimal digits.  At 1 millisecond accuracy this is a range
+		of 3 years.  Where time is unknown, or prior to Feb.  10,
+		1653, set to the NA value.
+	}
+	;
+
+Attribute week_number
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "week number of year" )
+	Detail {
+		This is the week number of the year. Weeks start at the
+		beginning of Monday, UTC, with week number one starting
+		on the first Monday of the new year. Days before that
+		are included in the last week of the previous year,
+		also known as year zero of the current year.
+	}
+	;
+
+Relation days
+	Fields (  time endtime analyst checkout checkin qcanalyst qc cnss neic dir dfile dbsource )
+	Primary (  time::endtime )
+	Detail {
+		This relation tracks analysis of individual
+		time-periods of data, usually day-volumes.  The analyst
+		who checks out the day-volume for processing is
+		recorded, along with the checkout and checkin times.
+		The quality-control stage is recorded when complete.
+		dir and dfile specify the database pathname into which
+		an analyst checks out a time-period for analysis. This
+		allows other programs to spy on progress when
+		necessary, presuming the database doesn't move during
+		analysis.
+	}
+	;
+
+Relation months
+	Fields (  time endtime status report aeic_catalog )
+	Primary (  time::endtime )
+	;
+
+Relation weeks
+	Fields (  time endtime week_number report )
+	Primary (  time::endtime )
+	;
+

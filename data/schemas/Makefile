@@ -10,6 +10,7 @@ DATA=	iceworm1.3 \
 	statrans1.1 \
 	models0.4 \
 	wfrecords1.0 \
+	track_processing1.0 \
 	gmt1.0
 
 include $(ANTELOPEMAKE)  	
