@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)rd_segfil.c	1.1 03/12/96  */
 /*===========================================================================
  *
  *
@@ -42,12 +42,12 @@ int parnum;
     if ((fd = fopen(name,"r")) == NULL) {
         printf("sgycss/rd_segfil(): %s - ", name);
         perror(name);
-        return FALSE;
+        return 0;
     }
 
     if( (bytes = fread(buffer, sizeof(short), BUF_SIZE, fd) ) <= 0)  {
       fprintf(stderr,"sgycss/rd_segfil(): read %d bytes instead of %d\n",bytes,BUF_SIZE);
-      return FALSE;
+      return 0;
     }
     
     fclose(fd);
@@ -89,21 +89,21 @@ int parnum;
     sprintf(names->sta,"%s\0",fdname);
     sprintf(names->chan,"%d\0",Channel);
 
-    year = dates.yr - 1900;
+    year = dates.yr;
 
 /* Make css3.0 wave form file name and wfdisc file name  */
     
     if(Byevent)
        pathfrname(name, fpath);
     else 
-       sprintf(fpath,"%2d%3d%2d%2d%2d.w\0",year,dates.day, dates.hour, dates.min,dates.sec);
+       sprintf(fpath,"%4d%3d%2d%2d%2d.w\0",year,dates.day, dates.hour, dates.min,dates.sec);
     
     for(i = 0; i < strlen(fpath); i++)
       if (fpath[i] == ' ')  fpath[i] = '0'; 
 
     if (strcmp(wfdir_nam,fpath) != 0 )  {
-        sprintf(names->dataf ,"%2d%3d%2d%2d%2d.w\0", year, dates.day, dates.hour, dates.min, dates.sec); 
-        sprintf(names->fwd, "%2d%3d%2d%2d%2d.wfdisc\0", year, dates.day, dates.hour, dates.min, dates.sec);
+        sprintf(names->dataf ,"%4d%3d%2d%2d%2d.w\0", year, dates.day, dates.hour, dates.min, dates.sec); 
+        sprintf(names->fwd, "%4d%3d%2d%2d%2d.wfdisc\0", year, dates.day, dates.hour, dates.min, dates.sec);
         
         for(i = 0; i < strlen(names->dataf); i++)
           if(names->dataf[i] == ' ') names->dataf[i] = '0';
@@ -117,14 +117,14 @@ int parnum;
         if ((Fp_wfd = fopen(names->fwd, "w")) == NULL) {
              fprintf(stderr,"segy2css: fopen ");
              perror(names->fwd);
-             return FALSE;
+             return 0;
         }
 
         if(Fp_out > 0) close(Fp_out);
         if( (Fp_out = open(names->dataf, O_CREAT | O_WRONLY, MODE)) <= 0 )  {
            fprintf(stderr,"segy2css/rd_segfile(): Can't open %s\n", names->dataf);
            perror(names->dataf);
-           return FALSE;
+           return 0;
         }     
        DOFFSET = 0;
     }
@@ -134,9 +134,7 @@ int parnum;
 
 /*  Write wave form and wfdisc files   */
 
-    if(!wrt_segwfd(buffer, &dates, names, name) ) return FALSE;
+    if(!wrt_segwfd(buffer, &dates, names, name) ) return 0;
 
-    return TRUE;
+    return 1;
 }
-
-/* $Id$ */

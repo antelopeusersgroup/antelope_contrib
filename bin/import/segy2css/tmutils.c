@@ -1,13 +1,12 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)tmutils.c	1.1 03/20/96  */
 /************************************************************************
  *
- *    Time utilities some were written by staff from DSAP at Colorado
+ *    Time utilities some were written by staff from JSPC at Colorado
  *    some are locally developed.
  *
  ***********************************************************************/
 #include <ctype.h>
 #include <time.h>
-#include "util.h"
 
 /* Macros */
  
@@ -54,7 +53,7 @@ struct tm *tm;
 
 }
 
- /* return todays date in as string YYDDDHHMMSS */
+ /* return todays date in as string YYYYDDDHHMMSS */
  
 char *sdate(out)
   char ** out;
@@ -68,8 +67,6 @@ char *sdate(out)
          memset(str, " ", 17);
          crnt = time(0);          /* get epoch time (in GMT) */
          gmt = gmtime(&crnt);
-         sprintf(str,"%02d%03d%02d%02d%02d\0", gmt->tm_year, gmt->tm_yday+1, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+         sprintf(str,"%4d%03d%02d%02d%02d\0", gmt->tm_year+1900, gmt->tm_yday+1, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
          strcpy(*out, str);
   }
-
-/* $Id$ */

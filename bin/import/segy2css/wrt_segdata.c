@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)wrt_segdata.c	1.1 03/12/96  */
 /*===========================================================================
  *
  *
@@ -23,19 +23,19 @@ struct name *names;             /* Names structure  */
 
     if( (buffer = (char *) malloc(Data_bytes) ) == NULL )  {
        perror("segy2css/wrt_segdata(): malloc");
-       return FALSE;
+       return 0;
     }
 
     if(Fp_out <= 0) 
        if( (Fp_out = open(names->dataf, O_CREAT | O_WRONLY, MODE)) <= 0 )  {
            fprintf(stderr,"segy2css/wrt_segdata(): Can't open %s\n", names->dataf);
            perror(names->dataf);
-           return FALSE;
+           return 0;
        }     
     if( (fd_in = open(oldname, O_RDONLY)) <= 0 )  {
          fprintf(stderr,"segy2css/wrt_segdata(): Can't open %s\n", oldname);
          perror(oldname);
-         return FALSE;
+         return 0;
     }     
 
 /* Skip header data  */
@@ -43,7 +43,7 @@ struct name *names;             /* Names structure  */
     if(lseek(fd_in, DATA_OFF, SEEK_SET) < 0)  {
        fprintf(stderr,"segy2css/wrt_segdata(): lseek error\n");
        free(oldname);
-       return FALSE;
+       return 0;
     }
 
 /*  Copy data in a properly place  */
@@ -57,7 +57,7 @@ struct name *names;             /* Names structure  */
         close(fd_in);
         close(Fp_out);
         free(buffer);
-        return FALSE;
+        return 0;
     }
     close(fd_in);
     bytes = write(Fp_out, buffer, Data_bytes);  
@@ -66,11 +66,9 @@ struct name *names;             /* Names structure  */
         fprintf(stderr,"instead of %d.  ", Data_bytes);
         perror("write:");
         free(buffer); close(Fp_out);
-        return FALSE;
+        return 0;
     }
    
     free(buffer); 
-    return TRUE;
+    return 1;
 }
-
-/* $Id$ */

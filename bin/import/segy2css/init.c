@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$    */
+/* @(#)init.c	1.1 03/12/96    */
 /************************************************************
  *
  * 
@@ -16,7 +16,6 @@
  *
  **********************************************************/
 #include "segcss.h"
-#include "util.h"
 #include "trim.h"
 
 
@@ -114,7 +113,5 @@ struct conver conver, *array;
       }
 
     }
-   return TRUE;
+   return 1;
 } 
-
-/* $Id$ */

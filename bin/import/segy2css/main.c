@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)main.c	1.2 03/20/96  */
 /*========================================================================
  *
  * 
@@ -21,24 +21,24 @@ char *argv[];
  FILE *fd;
  struct name names;      /* Structure with the data,wfdusc,station and channel names  */
  struct conver *param;   /* Structure with the station name conversion table  */
- char *sccs_id = "$Revision$ $Date$ ($Date$)";
+ char *sccs_id = "1.2 (03/20/96)";
  char *fname;           /* Name of the file with data in SEGY format  */
  char *parname;         /* Name of the file with station name conversion table  */
  char *str;
  int i,cont;
  int parnum, num;
 
-    cont = TRUE; Wfid = 0; parnum = -1; Fp_out = -1; 
+    cont = 1; Wfid = 0; parnum = -1; Fp_out = -1; 
     
 /* Allocate space  */
 
     if( (names.dataf = (char *) malloc(strlen(DATAF)) ) == NULL )  {
        perror("seg2css/main(): malloc");
-       return FALSE;
+       return 0;
     }
     if( (names.fwd = (char *) malloc(strlen(WD_FNAME))) == NULL )  {
        perror("seg2css/main(): malloc");
-       return FALSE;
+       return 0;
     }
     if( (fname = (char *) malloc(132) ) == NULL )  {
        perror("seg2css/main(): malloc");
@@ -61,7 +61,7 @@ char *argv[];
     }  
     for(num = 1; num < argc-1; num++)  {
        if (strncmp(argv[num], "-event", strlen("-event") ) == 0) 
-           Byevent = TRUE;
+           Byevent = 1;
         else if(strncmp(argv[num], "-f", strlen("-f")) == 0)  {
            strcpy(parname, argv[num]+strlen("-f"));
            if(strlen(parname) <= 0)   usage(argv[0]);
@@ -100,7 +100,7 @@ char *argv[];
                    fname[i] = '\0';
                    if(!rd_segfil(&names, fname, param, parnum))  
                       fprintf(stderr, "Can't convert %s to css\n", fname);
-                }  else cont = FALSE;
+                }  else cont = 0;
        }
       sprintf(str,"rm List\0");
       system(str);
@@ -118,5 +118,3 @@ char *name;
 
         exit(1);
 }
-
-/* $Id$ */

@@ -33,12 +33,12 @@ char *dname;                     /* Name of the file in SEGY format   */
 
     if( (lpntr = (long *) malloc(8) ) == NULL )  {
        perror("segy2css/wrt_segwfd(): malloc");
-       return FALSE;
+       return 0;
     }
 
 /* Write data file in css 3.0 format to the disk  */
  
-     if(!wrt_segdata(dname, names) ) return FALSE; 
+     if(!wrt_segdata(dname, names) ) return 0; 
    
 /*  Initialize wfdisc structure  */
 
@@ -88,10 +88,10 @@ char *dname;                     /* Name of the file in SEGY format   */
 
     WFDISC_TRM(&wfd);
     if( fprintf(Fp_wfd,   WFDISC_WCS,  WFDISC_WVL(&wfd)) <= 0)   {
-         return FALSE;
+         return 0;
     }  
 
-    return TRUE;
+    return 1;
 }
  
 

@@ -1,4 +1,5 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)trim.h	1.1 03/12/96  */
+
 /* general purpose macros to trim strings for C and pad them for fortran*/
 
 #ifndef TRIM
@@ -11,5 +12,3 @@
 #define BFIL(s,l) {int i;for(i=0;i<l;s[i++]=' ');}
 #endif
 
-
-/* $Id$ */

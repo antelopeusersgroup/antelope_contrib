@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)wfdiscio.h	1.1 03/12/96  */
 
 /* wfdisc structure and I/O definitions */
 
@@ -93,5 +93,3 @@ static struct wfdisc wfdisc_null = {
 
 /* don't append anything below next line */
 #endif CSS_WFDISC_H
-
-/* $Id$ */

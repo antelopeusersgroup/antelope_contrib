@@ -35,7 +35,7 @@ char *decode(num, dates, name, param, parnum)
    int get, j, i;
    long date;
 
-   get = FALSE;
+   get = 0;
 
    date = dates->yr * 1000 + dates->day;
  
@@ -56,13 +56,13 @@ char *decode(num, dates, name, param, parnum)
           if(num == tmp.sernum)  
              if( (crnt_time >= stime) && (crnt_time <= etime) ) {
                     strcpy(name, tmp.sname);
-                    get = TRUE;
+                    get = 1;
                     break;
              } 
                 
       }
 
-   }  else get = FALSE;
+   }  else get = 0;
 
 
 /* The are not station name for current serial instrument code. 

@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
-#include "util.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include "coords.h"
