@@ -95,12 +95,11 @@ int main(int argc, char **argv)
 		strcat(subset_string," && ");
 		strcat(subset_string,sift_exp);
 		elog_log(0,"Subsetting input db with expression %s\n",subset_string);
-		dbj = dbsubset(dbj,subset_string,0);
-		if(dbj.record == dbINVALID)
-                        die(1,"dbsubset of %s with expression %s failed\n",
-                                dbname, sift_exp);
 	}
-
+	dbj = dbsubset(dbj,subset_string,0);
+	if(dbj.record == dbINVALID)
+               die(1,"dbsubset of %s with expression %s failed\n",
+                             dbname, sift_exp);
 	dbquery(dbj,dbRECORD_COUNT,&nrows_total);
 	elog_log(0,"Working database has %d arrivals\n",nrows_total);
 

@@ -9,7 +9,7 @@ MAN3=mwtransform.3
 
 CLEAN= 		# Extra files which should be removed during a "make clean"
 
-cflags=		# -g or -O is the most common option here and in fflags
+cflags=-g		# -g or -O is the most common option here and in fflags
 fflags= 	# 
 ldflags= 	# flags to linker/loader
 ldlibs=		# libraries to link in.
@@ -20,8 +20,10 @@ DIRS=			# Omit this line to run make in subdirectories, or
 			# fill in to run make only in certain subdirectories
 
 
-OBJS=	convolution.o dbsubs.o decimate.o lapack_routines.o mwavelet.o \
-   mwaveletsubs.o polarization.o stations.o statistics_subs.o utilities.o
+OBJS=	apsubs.o convolution.o dbsubs.o decimate.o lapack_routines.o \
+   matrix_subs.o mwavelet.o \
+   mwaveletsubs.o print_band_info.o polarization.o stations.o statistics_subs.o \
+   utilities.o trace_subs.o
 $(LIB) : $(OBJS)
 	rm -f $@
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
