@@ -103,7 +103,7 @@ int change_arr( int dbrec, int wfrec )
  
               if(!seed )  {
                  sprintf( tmpname, "tmp.w\0" );
-                 outfp = zopen (tmpname, "w");
+                 outfp = fopen (tmpname, "w");
                  if (outfp == 0) die ( 1, "Unable to open '%s'\n", tmpname);
                  seed = 1;
               }
@@ -111,7 +111,7 @@ int change_arr( int dbrec, int wfrec )
                       die (1, "Unable to find input file '%s'\n", dfname);
               if( strncmp( old_fname, dfname, sizeof(dfname) ) ) {
                  if(infp != 0 )  fclose(infp);
-                 infp = zopen (dfname, "r");
+                 infp = zopen (dfname);
                  if (infp == 0) 
                       die ( 1, "Unable to open '%s'\n", dfname);
               } 
