@@ -9,7 +9,6 @@ ldlibs= -lmultiwavelet -lglputil -lgenloc  -ltrvltm -ldl \
 -xlic_lib=sunperf,fui,fai,fsu $(TRLIBS) $(F77LIBS) -lmultiwavelet
 
 include $(ANTELOPEMAKE)  
-DIRS=mwap_gui
 
 OBJS=	mwap_engine.o mwap_process.o MWcompute_array_particle_motion.o \
 	MWcompute_arrival_time.o
