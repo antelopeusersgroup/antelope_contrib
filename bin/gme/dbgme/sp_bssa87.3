@@ -1,0 +1,301 @@
+.TH SP_BSSA87 3 "$Date$"
+.SH NAME
+sp_bssa87 \- QuakeMap delegate for ground-motion estimation with 
+Sabetta/Pugliese regression
+.SH SYNOPSIS
+.nf
+#include "dbgme.h"
+
+int \fBsp_bssa87\fP(Dbptr \fIdb\fP, Pf *\fIpf\fP)
+.fi
+.SH DESCRIPTION
+The \fBsp_bssa87\fP function is a delegate to compute ground-motion estimates
+via the dbgme(1) program. The \fBsp_bssa87\fP function is not meant 
+to be called directly by other user programs. This function 
+provides ground-motion computations that approximate the method described
+in Wald et al. 1999, with the exception that the attenuation function 
+is from the 1987 Sabetta/Pugliese paper (referenced below) instead of
+Joyner/Boore (1981). The \fBsp_bssa87\fP delegate is therefore very
+similar to the trinetsm_es99(3) delegate.
+.LP
+The \fBsp_bssa87\fP function provides two modes of operation, 'pga' and 'pgv'. The
+former computes peak ground acceleration estimates; the
+latter computes peak ground velocity estimates. 
+.LP
+The following parameters are used in the dbgme.\fIpf\fP parameter file for this
+delegate.
+.LP
+.IP \fIoutput_file\fP
+This parameter specifies the filename of the output qgrid file, in the
+form of string to be fed to trwfname(3). The string is interpreted
+in the context of the qgrid table, thus qgrid-table field names may
+be interspersed in the value. For example, a common setting for this
+parameter may be "%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}" (without the
+quotes, of course).
+.LP
+.IP \fIqgridfmt\fP
+This parameter specifies the output storage format for the qgrid file,
+for example 'as' for ascii or 't4' for four-byte float. For supported
+formats, see cggrid(5).
+.LP
+.IP \fIauth\fP
+This parameter specifies the author of the qgrid, to be saved in the
+qgrid table's 'auth' field.
+.LP
+.IP \fIwdellon\fP
+This parameter specifies, in degrees longitude, how far west the western edge
+of the qgrid should be from the center (usually the center of the
+qgrid is at the hypocenter of the earthquake in question).  Normally
+this should be specified as a negative value, e.g. -1.
+.LP
+.IP \fIedellon\fP
+This parameter specifies, in degrees longitude, how far east the eastern edge
+of the qgrid should be from the center (usually the center of the
+qgrid is at the hypocenter of the earthquake in question).  Normally
+this should be specified as a positive value, e.g. 1.
+.LP
+.IP \fIsdellat\fP
+This parameter specifies, in degrees latitude, how far south the southern edge
+of the qgrid should be from the center (usually the center of the
+qgrid is at the hypocenter of the earthquake in question).  Normally
+this should be specified as a negative value, e.g. -1.
+.LP
+.IP \fIndellat\fP
+This parameter specifies, in degrees latitude, how far north the northern edge
+of the qgrid should be from the center (usually the center of the
+qgrid is at the hypocenter of the earthquake in question).  Normally
+this should be specified as a positive value, e.g. 1.
+.LP
+.IP \fIdlat\fP
+This parameter specifies, in degrees longitude, the east-west spacing of the
+points in the output qgrid.
+.LP
+.IP \fIdlon\fP
+This parameter specifies, in degrees latitude, the north-south spacing of the
+points in the output qgrid.
+.LP
+.IP \fIqgridtype\fP
+This parameter specifies what type of grid to calculate: e.g. 'pga' or 'pgv'.
+.LP
+.IP \fIoutput_units\fP
+This parameter specifies the output units for the qgrid. Reasonable choices
+for 'pga', 'pgv' are, respectively, 'gravity' and 'cm/sec'.
+.LP
+.IP \fIphantom_spacing_deg\fP
+This is the spacing of the grid of phantom stations to compute from the
+attenuation regression, to be used in generating the QuakeMap. A value
+of 0.3 provides similarity to the Wald et al. (1999) computation (see p. 540).
+.LP
+.IP \fIphantom_mindist_deg\fP
+Phantom stations closer than this distance (commonly 0.3 degrees) to a real
+measurement are discarded before computing the QuakeMap grid. See
+Wald et al. (1990) p. 540.
+.LP
+.IP \fIcentroid_mindist_deg\fP
+Phantom stations closer than this distance (commonly 0.1 degrees) to
+the earthquake hypocenter are discarded before computing the
+QuakeMap grid.
+.LP
+.IP \fIconst_coeff\fP
+This is the additive constant in the equation for log(PGA) or log(PGV).
+In Sabetta/Pugliese (1987), these are -1.562 and -0.710, respectively.
+.LP
+.IP \fImag_coeff\fP
+This is the coefficient of the magnitude term in the log(PGA) and log(PGV)
+equations. In Sabetta/Pugliese (1987), this is 0.306 or
+0.455, respectively.
+.LP
+.LP
+.IP \fIS_coeff\fP
+This is the coefficient of the S term in Sabetta/Pugliese (1987). For 
+PGA and PGV computation this is 0.169 and 0.133, respectively, in the 
+Sabetta/Pugliese paper.
+.LP
+.IP \fIS_hardrock_cutoff_mps\fP
+This defines a cutoff Vs30 value in meters/sec, above which a site is
+assumed to be rock for the S-factor in Sabetta/Pugliese (1987); see 
+the S_coeff parameter above.
+.LP
+.IP \fIr_offset\fP
+This is the offset value used in computing the distance r to the earthquake
+for the regression. If 'd' is the closest distance to the surface projection
+of the fault rupture in km, r=sqrt(d^2 + r_offset^2).
+.LP
+.IP \fItension\fP
+This parameter sets the spline tension for
+cggrid_splinefit_pointset(3), used when fitting the grid of phantom
+(i.e. predicted from the attenuation regression) and real measurements
+to a smooth surface for the output qgrid. A recommended value for this
+parameter is 0.4.
+.LP
+.IP \fIoverrelaxation\fP
+This parameter sets the overrelaxation parameter for
+cggrid_splinefit_pointset(3), used when fitting the grid of phantom
+(i.e. predicted from the attenuation regression) and real measurements
+to a smooth surface for the output qgrid. A recommended value for this
+parameter is 1.4.
+.LP
+.IP \fIconvergence\fP
+This parameter sets the convergence threshold for
+cggrid_splinefit_pointset(3), used when fitting the grid of phantom
+(i.e. predicted from the attenuation regression) and real measurements
+to a smooth surface for the output qgrid. A recommended value for this
+parameter is 0.001.
+.LP
+.IP \fImax_iterations\fP
+This parameter sets the maximum number of iterations for
+cggrid_splinefit_pointset(3), used when fitting the grid of phantom
+(i.e. predicted from the attenuation regression) and real measurements
+to a smooth surface for the output qgrid. An example value for this parameter
+is 1000.
+.LP
+.IP \fIsitecorr_file\fP
+This parameter gives the filename of a grid of Vs30 (30-meter shear-wave
+velocities in m/sec) for the area of interest. The grid should be stored
+in cggrid(5) format.
+.LP
+.IP \fIvs30_default_mps\fP
+This parameter gives the default Vs30 value in meters per second, should
+the sitecorr_file not be found or should it not completely cover the
+area of interest.
+.LP
+.IP \fIpga_sitecorr_cutoffs_g\fP
+This parameter gives a list of acceleration values, in gravity (g), at which
+the columns of the pga_sitecorr_table (see below) apply. For example,
+these are commonly set to 0, 0.15, 0.25, and 0.35 gravity.
+.LP
+.IP \fIpga_sitecorr_table\fP
+This table describes how to translate Vs30 values and measured/predicted
+acceleration or velocity values into site amplification factors, as
+tabulated in Borcherdt (1994) and described in Wald et al. (1999). The
+first value in each row gives the site velocity in meters per second,
+above which that row applies. the additional columns give the site
+amplification factors for the various acceleration levels listed in
+the pga_sitecorr_cutoffs_g parameter. For velocity site amplification
+factors, only the zero-acceleration column of this matrix is used.
+The example given below may help clarify the contents of this matrix.
+.LP
+.SH EXAMPLE
+The arrays below are examples of parts of the dbgme.pf parameter
+file, for the delegate functions in this module:
+.in 2c
+.ft CW
+.nf
+
+.ne 13
+
+delegate_pf_defaults &Arr{
+        output_file     %Y/%j/%{gridname}_%{recipe}.%{qgridfmt}
+        qgridfmt        t4
+        auth            dbgme
+        wdellon         -1
+        edellon         1
+        sdellat         -1
+        ndellat         1
+        dlat            0.02
+        dlon            0.02
+}
+
+.ne 93
+recipes &Arr{
+        sp87_pga &Arr{
+                select
+                filter .*
+                delegate sp_bssa87
+                delegate_pf &Arr{
+                        qgridtype               pga
+                        output_units            gravity
+                        phantom_spacing_deg     0.3
+                        phantom_mindist_deg     0.3
+                        centroid_mindist_deg    0.1
+                        const_coeff             -1.562
+                        mag_coeff               0.306
+                        S_coeff                 0.169
+                        S_hardrock_cutoff_mps   406
+                        r_offset                5.8
+                        tension                 0.4
+                        overrelaxation          1.4
+                        convergence             0.001
+                        max_iterations          1000
+                        sitecorr_file           pf/fakevs30.xyz
+                        vs30_default_mps        600
+                        pga_sitecorr_cutoffs_g  0 0.15 0.25 0.35
+                        pga_sitecorr_table &Tbl{     #short-period table
+                           163 1.65 1.43 1.15 0.93
+                           298 1.34 1.23 1.09 0.96
+                           301 1.33 1.23 1.09 0.96
+                           372 1.24 1.17 1.06 0.97
+                           464 1.15 1.10 1.04 0.98
+                           686 0.98 0.99 0.99 1.00
+                           724 1.00 1.00 1.00 1.00
+                        }
+                }
+        }
+        sp87_pgv &Arr{
+                select
+                filter .*
+                delegate sp_bssa87
+                delegate_pf &Arr{
+                        qgridtype               pgv
+                        output_units            cm/sec
+                        phantom_spacing_deg     0.3
+                        phantom_mindist_deg     0.3
+                        centroid_mindist_deg    0.1
+                        const_coeff             -0.710
+                        mag_coeff               0.455
+                        S_coeff                 0.133
+                        S_hardrock_cutoff_mps   406
+                        r_offset                3.6
+                        tension                 0.4
+                        overrelaxation          1.4
+                        convergence             0.001
+                        max_iterations          1000
+                        sitecorr_file           pf/fakevs30.xyz
+                        vs30_default_mps        600
+                        pga_sitecorr_cutoffs_g  0 0.15 0.25 0.35
+                        pga_sitecorr_table &Tbl{      #mid-period table
+                           163 2.55 2.37 2.14 1.91
+                           298 1.72 1.65 1.56 1.46
+                           301 1.71 1.64 1.55 1.45
+                           372 1.49 1.44 1.38 1.32
+                           464 1.29 1.26 1.23 1.19
+                           686 0.97 0.97 0.97 0.98
+                           724 1.00 1.00 1.00 1.00
+                        }
+                }
+        }
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+These routines return -1 for failure, registering error messages
+via the elog(3) routines. They return 0 for success.
+.SH LIBRARY
+
+.SH "SEE ALSO"
+.nf
+trinetsm_es99(3), dbgme_delegates(3), dbgme(1), 
+cgeom(3), cggrid(3), units_convert(3)
+.fi
+
+Sabetta, F. and A. Pugliese (1987). Attenuation of Peak Horizontal 
+Acceleration and Velocity from Italian Strong-motion Records, 
+\fIBull. Seis. Soc. Am.\fP \fB77\fP, pp 1491-1513.
+.LP
+Wald, D. J. and V. Quitoriano, T.H. Heaton, H. Kanamori, C.W. Scrivner,
+C. B. Worden (1999). TriNet "ShakeMaps": Rapid Generation of Peak
+Ground Motion and Intensity Maps for Earthquakes in Southern California,
+\fIEarthquake Spectra\fP \fB15\fP, pp. 537-555.
+.LP
+Borcherdt, R.D. (1994). Estimates of Site-dependent Response Spectra
+for Design (Methodology and Justification). \fIEarthquake Spectra\fP \fB10\fP,
+pp. 617-653.
+.LP
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

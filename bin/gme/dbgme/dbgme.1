@@ -1,0 +1,380 @@
+.TH DBGME 1 "$Date$"
+.SH NAME
+dbgme \- 2-D ground-motion estimation from a database of hypocenters and measurements
+.SH SYNOPSIS
+.nf
+\fBdbgme \fP[-v] [-f] [-d] [-p \fIpfname\fP] -r \fIrecipe\fP [-r \fIrecipe\fP...]
+                [-o \fIorid\fP] \fIdbname\fP
+.fi
+.SH DESCRIPTION
+.SS overview
+.LP
+\fBdbgme\fP provides generalized gridding of 2-D surface-motion measurements,
+synthetics, and combinations of the two. Measurements are grouped together
+by hypothesized association with a known earthquake. Specifically, \fBdbgme\fP
+takes a database of hypocenters and waveform measurements in
+rt1.0-compatible format, and from them creates a plottable grid file of
+some measure of the ground-motion in an area of interest. The computed
+grids are stored in external files, which are referenced by rows in the
+qgrid table.  The qgrid table is defined in the gme1.0 expansion
+schema.
+.SS delegates
+.LP
+\fBdbgme\fP is, in essence, a general grid-regularization engine. It can
+take any set of measurements made in connection with a specific origin,
+and feed them to a grid-regularization function, called a delegate.  Several
+delegates have been implemented directly into \fBdbgme\fP, and the user is
+allowed to add more as necessary. In the latter case, the delegate should be a
+C-function programmed into the Antelope user library (libuser),
+or a Matlab function in a Matlab .m file.  Detailed specification of how to
+write additional delegates is provided in the man page dbgme_delegates(3).
+The delegates are sought first in libuser, then internally. Thus, an
+installation may override the behavior of the internal delegates,
+though the wisdom of this is questionable from the standpoint of
+tracking what actually happened to create a given qgrid in the database
+[it's probably just better to implement a new delegate under a
+different name, rather than re-implement one under the same name].
+The special delegate called \fImatlab\fP delegates the
+computational tasks to a series of matlab commands provided by the
+user.
+.LP
+Most commonly in the delegate functions, where possible direct measurements of ground-motion
+are used. Where direct measurements are not available, they are usually
+approximated from a set of instructions in the \fIrecipe\fP. The ground-motion
+value may be one of several common quantities, such as Peak Ground
+Acceleration (PGA), Peak Ground Velocity (PGV), spectrally filtered
+accelerations, or instrumental modified-Mercalli intensity.
+.LP
+Each delegate receives two blocks of information: a database pointer
+and a parameter-file. The database pointer contains the hypocenter,
+arrival, and wfmgme or wfmeas waveform-measurement information appropriate for
+the computation of one qgrid. The parameter file contains all necessary
+parameters, including grid specifications, filenames, etc. The
+parameter file is a combination of items provided by \fBdbgme\fP directly and
+passed in from the delegate_pf entry in the \fIrecipe\fP (recipes are described
+below).
+.LP
+The delegate is responsible for saving the qgrid. This is 
+necessary because there may be a wide variety of applications that save
+multiple qgrids in one file, with or without associations with
+earthquakes etc.  However, the cggrid2db(3) function is provided to
+make saving the qgrid easy.
+.LP
+The main delegate provided with \fBdbgme\fP is called trinetsm_es99. This delegate is intended
+to implement the TriNet ShakeMap algorithm as documented in a 1999
+article in Earthquake Spectra by Wald et al. This allows \fBdbgme\fP to
+run in a \fIShakeMap emulation\fP mode. The trinetsm_es99 delegate, and its companion
+delegate trinetsm_es99_mmi, are documented in trinetsm_es99(3).
+.SS recipes
+.LP
+\fBdbgme\fP is based on recipes. Each qgrid that it computes is generated
+according to a \fIrecipe\fP, i.e. a list of parameters, which may have a number of
+arbitrary parameters as well as some standard ones. The most important part
+of a \fIrecipe\fP is the name of the delegate function which does its computation.
+Many different recipes can use the same delegate function. When running \fBdbgme\fP,
+at least one \fIrecipe\fP must be specified, although it is permissible to request
+more than one \fIrecipe\fP (i.e. more than one output qgrid) at once.
+.LP
+All \fBdbgme\fP recipes are specified in the main parameter file for \fBdbgme\fP, which by default
+is \fBdbgme\fP.pf. Each \fIrecipe\fP must have a unique name which identifies the
+processing steps for making that type of grid.
+.LP
+Each \fIrecipe\fP is specified by an entry in the 'recipes' array of the
+\fBdbgme\fP parameter file. Each \fIrecipe\fP must have a unique name. Each \fIrecipe\fP
+must also name a function that does the grid computation, entered
+in the 'delegate' field of the \fIrecipe\fP. Several recipes may share the
+same delegate. For example, the sp_bssa87 delegate function supports
+both the sp87_pga and sp87_pgv recipes, both of which derive from the
+same 1987 BSSA paper by Sabetta and Pugliese.
+.LP
+Each \fIrecipe\fP also has a delegate_pf entry, the contents of which are
+passed to the delegate function. The select and filter
+parameters in each \fIrecipe\fP are subset expressions for the input
+waveform-measurements (wfmeas or wfmgme rows).
+.LP
+The \fIrecipe\fP for the matlab delegate has an additional entry, a Literal
+called matlab_commands containing the Matlab code to perform the
+computation. This code may be entered directly in the parameter file
+or, for cases where that becomes unwieldy, the code can be
+reduced to a single-line function call which is available along
+the Matlab path. As a default, \fBdbgme\fP ensures that the
+directory $ANTELOPE/data/matlab/antelope/scripts is available
+to the Matlab engine during the run, suggesting a default location
+for such scripts.
+.LP
+A number of parameters, such as output_file, qgridfmt, auth, etc (see the
+example below) are used so commonly in recipes that they have been
+put in a separate array for default parameters, called delegate_pf_defaults.
+All the parameters in this array are added automatically to each
+\fIrecipe\fP in the parameter file, though they may be overridden in individual
+recipes. The recipe name and delegate function name (\fIrecipe_name\fP and 
+\fIdelegate\fP, respectively) are also replicated
+in the parameter file handed to each delegate.
+.LP
+The output_file parameter is a pattern that is passed to trwfname(3), which
+generates the filename of the qgrid external file. Note that all fields
+of the qgrid table are accessible in this filename pattern via
+the %{field} replacement syntax of trwfname(3). For more detail see
+the man page on that command. The qgridfmt parameter specifies the
+external storage format of the qgrid files. For currently supported
+formats see the man page cggrid(5).
+.LP
+.SH OPTIONS
+.IP -v
+Verbose
+.IP -f
+Force. This option forces rewrites of pre-existing database rows.
+By default, \fBdbgme\fP does not overwrite conflicting items.
+.IP "-r \fIrecipe\fP"
+This option names one of the recipes to apply from the
+parameter file. More than one \fIrecipe\fP may be specified, in which
+case all applicable recipes are run on each relevant dataset.
+.IP "-o \fIorid\fP"
+This option allows the user to generate a qgrid for a
+specific \fIorid\fP.
+.IP "-p pffile"
+Specify the parameter-file for \fBdbgme\fP. The default is
+\fBdbgme\fP.pf.
+.IP -d
+Run as a daemon
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+.ne 14
+
+origin_subset auth == "orbassoc mag"
+
+delegate_pf_defaults &Arr{
+        output_file     %Y/%j/%{gridname}_%{\fIrecipe\fP}.%{qgridfmt} 
+        qgridfmt        t4                                      
+        auth            \fBdbgme\fP
+        wdellon         -1
+        edellon         1
+        sdellat         -1
+        ndellat         1
+        dlat            0.02
+        dlon            0.02
+}
+
+.ne 133
+recipes &Arr{
+        trinetsm_pga &Arr{
+                select
+                filter .*
+                delegate trinetsm_es99
+                delegate_pf &Arr{
+                        qgridtype               pga
+                        output_units            gravity
+                        phantom_spacing_deg     0.3     
+                        phantom_mindist_deg     0.3     
+                        centroid_mindist_deg    0.1
+                        const_coeff             -1.02   
+                        mag_coeff               0.249   
+                        r_coeff                 0.00255 
+                        P_coeff                 0.26    
+                        P                       0       
+                        S_coeff                 0       
+                        S_hardrock_cutoff_mps   406
+                        r_offset                7.3     
+                        tension                 0.4
+                        overrelaxation          1.4
+                        convergence             0.001
+                        max_iterations          1000
+                        sitecorr_file           pf/fakevs30.xyz
+                        vs30_default_mps        600
+                        pga_sitecorr_cutoffs_g  0 0.15 0.25 0.35
+                        pga_sitecorr_table &Tbl{        
+                           163 1.65 1.43 1.15 0.93      
+                           298 1.34 1.23 1.09 0.96      
+                           301 1.33 1.23 1.09 0.96      
+                           372 1.24 1.17 1.06 0.97      
+                           464 1.15 1.10 1.04 0.98      
+                           686 0.98 0.99 0.99 1.00      
+                           724 1.00 1.00 1.00 1.00      
+                        }
+                }
+        }
+        trinetsm_pgv &Arr{
+                select
+                filter .*
+                delegate trinetsm_es99
+                delegate_pf &Arr{
+                        qgridtype               pgv
+                        output_units            cm/sec
+                        phantom_spacing_deg     0.3     
+                        phantom_mindist_deg     0.3     
+                        centroid_mindist_deg    0.1
+                        const_coeff             -0.67   
+                        mag_coeff               0.489   
+                        r_coeff                 0.00256 
+                        P_coeff                 0.22    
+                        P                       0       
+                        S_coeff                 0.17    
+                        S_hardrock_cutoff_mps   406
+                        r_offset                4.0     
+                        tension                 0.4
+                        overrelaxation          1.4
+                        convergence             0.001
+                        max_iterations          1000
+                        sitecorr_file           pf/fakevs30.xyz
+                        vs30_default_mps        600
+                        pga_sitecorr_cutoffs_g  0 0.15 0.25 0.35
+                        pga_sitecorr_table &Tbl{        
+                           163 2.55 2.37 2.14 1.91      
+                           298 1.72 1.65 1.56 1.46      
+                           301 1.71 1.64 1.55 1.45      
+                           372 1.49 1.44 1.38 1.32      
+                           464 1.29 1.26 1.23 1.19      
+                           686 0.97 0.97 0.97 0.98      
+                           724 1.00 1.00 1.00 1.00      
+                        }
+                }
+        }
+        trinetsm_mmi &Arr{
+                select
+                filter .*
+                delegate trinetsm_es99_mmi
+                delegate_pf &Arr{
+                        output_units    mmi
+                        qgridtype       mmi
+                        pga_recipe      trinetsm_pga
+                        pgv_recipe      trinetsm_pgv
+                        low_coeff       2.20            
+                        low_offset      1.00            
+                        low_cutoff_mmi  5.0             
+                        pga_coeff       3.66            
+                        pga_offset      -1.66           
+                        pgv_coeff       3.47            
+                        pgv_offset      2.35            
+                        pga_cutoff_mmi  7               
+                }
+        }
+	sp87_pga &Arr{
+		select 
+		filter .*
+		delegate sp_bssa87
+		delegate_pf &Arr{
+			qgridtype 		pga
+			output_units 		gravity
+			phantom_spacing_deg 	0.3	
+			phantom_mindist_deg 	0.3	
+			centroid_mindist_deg 	0.1
+			const_coeff 		-1.562  
+			mag_coeff   		0.306   
+			r_offset   		5.8     
+			S_coeff		  	0.169   
+			S_hardrock_cutoff_mps 	406
+			tension 		0.4
+			overrelaxation 		1.4
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	
+			   163 1.65 1.43 1.15 0.93 	
+			   298 1.34 1.23 1.09 0.96 	
+			   301 1.33 1.23 1.09 0.96 	
+			   372 1.24 1.17 1.06 0.97 	
+			   464 1.15 1.10 1.04 0.98 	
+			   686 0.98 0.99 0.99 1.00 	
+			   724 1.00 1.00 1.00 1.00 	
+			}
+		}
+	}
+	sp87_pgv &Arr{
+		select 
+		filter .*
+		delegate sp_bssa87
+		delegate_pf &Arr{
+			qgridtype 		pgv
+			output_units 		cm/sec
+			phantom_spacing_deg 	0.3	
+			phantom_mindist_deg 	0.3	
+			centroid_mindist_deg 	0.1	
+			const_coeff 		-0.710  
+			mag_coeff   		0.455   
+			r_offset   		3.6     
+			S_coeff		  	0.133   
+			S_hardrock_cutoff_mps 	406	
+			tension 		0.4	
+			overrelaxation 		1.4	
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	
+			   163 2.55 2.37 2.14 1.91 	
+			   298 1.72 1.65 1.56 1.46 	
+			   301 1.71 1.64 1.55 1.45 	
+			   372 1.49 1.44 1.38 1.32 	
+			   464 1.29 1.26 1.23 1.19 	
+			   686 0.97 0.97 0.97 0.98 	
+			   724 1.00 1.00 1.00 1.00 	
+			}
+		}
+	}
+}
+
+daemon_sleep_time_sec 15
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+dbgme -f -v -r trinet_pga -o 13813704 test/landers
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBdbgme\fP exits with value 0 upon success, or -1 on error.
+.SH "SEE ALSO"
+.nf
+dbgme_show(1), dbgme_delegates(3), shakemapxml2db(1),
+dbwfmeas(1), orbwfmeas(1), usermethod(3), trwfname(3),
+dbrecenteqs(1), trinetsm_es99(3), sp_bssa87(3)
+.fi
+.SH "BUGS AND CAVEATS"
+The gme1.0 qgrid table is structured to support unprojected grids. This
+is by intent. It is the responsibility of the end user to project
+the grid to any representative flat surface.
+.LP
+The \fBdbgme\fP delegation to Matlab is done via pipes to the
+command-line-callable matlab executable, rather than via the Matlab
+engOpen() series of routines.  This decouples \fBdbgme\fP compilation
+from any direct linking against the shared-libraries of Matlab, which
+themselves can vary in location from installation to installation.  The
+advantage of this is a site-independent compile. The expense is a loss
+of some control over error handling in the Matlab routines: little
+handling of failures is currently in place. If problems are encountered
+during the execution of a matlab delegate, the user is left at a Matlab
+command prompt to debug the difficulties.
+.LP
+The daemon mode is based on monitoring the size of the origin 
+table. When this table grows, \fBdbgme\fP checks to see if any grids
+need to be generated. Grids that already exist are not updated, and
+no care is taken at the moment to assure all data for a given
+hypocenter have arrived. After the first grid is generated, further
+updates need to be done manually.
+.LP
+It would also be possible to support shell delegates (i.e. command-line
+callable delegates) without much difficulty.
+.LP
+Computation of grids based on time-windows instead of hypocenters could be
+added, which would allow continuous computation of ground motion for a 
+region, independent of any hypocenters. Some hooks are already present 
+for this.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

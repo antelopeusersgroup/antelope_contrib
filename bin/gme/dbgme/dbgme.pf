@@ -1,0 +1,175 @@
+origin_subset auth == "orbassoc mag"
+
+delegate_pf_defaults &Arr{
+	output_file	%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}	# Required	
+	qgridfmt	t4					# Required
+	auth		dbgme
+	wdellon		-1
+	edellon  	1
+	sdellat 	-1
+	ndellat  	1 
+	dlat	 	0.02
+	dlon	 	0.02
+}
+
+recipes &Arr{
+	trinetsm_pga &Arr{
+		select 
+		filter .*
+		delegate trinetsm_es99
+		delegate_pf &Arr{
+			qgridtype 		pga
+			output_units 		gravity
+			phantom_spacing_deg 	0.3	# Wald 1999 p. 540
+			phantom_mindist_deg 	0.3	# Wald 1999 p. 540
+			centroid_mindist_deg 	0.1
+			const_coeff 		-1.02	# Joyner 1981 eqn(4)
+			mag_coeff 		0.249	# Joyner 1981 eqn(4)
+			r_coeff 		0.00255	# Joyner 1981 eqn(4)
+			P_coeff 		0.26	# Joyner 1981 eqn(4)
+			P			0	# Joyner 1981 p. 2022
+			S_coeff 		0	# Joyner 1981 eqn(4)
+			S_hardrock_cutoff_mps 	406
+			r_offset 		7.3	# Joyner 1981 eqn(4)
+			tension 		0.4
+			overrelaxation 		1.4
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	# Short-period table
+			   163 1.65 1.43 1.15 0.93 	# Borcherdt 1994 'E' 
+			   298 1.34 1.23 1.09 0.96 	# Borcherdt 1994 'DE' 
+			   301 1.33 1.23 1.09 0.96 	# Borcherdt 1994 'D' 
+			   372 1.24 1.17 1.06 0.97 	# Borcherdt 1994 'CD' 
+			   464 1.15 1.10 1.04 0.98 	# Borcherdt 1994 'C' 
+			   686 0.98 0.99 0.99 1.00 	# Borcherdt 1994 'BC' 
+			   724 1.00 1.00 1.00 1.00 	# Borcherdt 1994 'B' 
+			}
+		}
+	}
+	trinetsm_pgv &Arr{
+		select 
+		filter .*
+		delegate trinetsm_es99
+		delegate_pf &Arr{
+			qgridtype 		pgv
+			output_units 		cm/sec
+			phantom_spacing_deg 	0.3	# Wald 1999 p. 540 
+			phantom_mindist_deg 	0.3	# Wald 1999 p. 540
+			centroid_mindist_deg 	0.1	
+			const_coeff 		-0.67	# Joyner 1981 eqn(6)
+			mag_coeff 		0.489	# Joyner 1981 eqn(6)
+			r_coeff 		0.00256	# Joyner 1981 eqn(6)
+			P_coeff 		0.22	# Joyner 1981 eqn(6)
+			P			0	# Joyner 1981 p. 2022
+			S_coeff 		0.17	# Joyner 1981 eqn(6)
+			S_hardrock_cutoff_mps 	406	
+			r_offset 		4.0	# Joyner 1981 eqn(6)
+			tension 		0.4	
+			overrelaxation 		1.4	
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	# Mid-period table
+			   163 2.55 2.37 2.14 1.91 	# Borcherdt 1994 'E' 
+			   298 1.72 1.65 1.56 1.46 	# Borcherdt 1994 'DE' 
+			   301 1.71 1.64 1.55 1.45 	# Borcherdt 1994 'D' 
+			   372 1.49 1.44 1.38 1.32 	# Borcherdt 1994 'CD' 
+			   464 1.29 1.26 1.23 1.19 	# Borcherdt 1994 'C' 
+			   686 0.97 0.97 0.97 0.98 	# Borcherdt 1994 'BC' 
+			   724 1.00 1.00 1.00 1.00 	# Borcherdt 1994 'B' 
+			}
+		}
+	}
+	trinetsm_mmi &Arr{
+		select 
+		filter .*
+		delegate trinetsm_es99_mmi
+		delegate_pf &Arr{
+			output_units 	mmi
+			qgridtype 	mmi
+			pga_recipe  	trinetsm_pga
+			pgv_recipe  	trinetsm_pgv
+			low_coeff	2.20		# Wald 1999 eqn(3)
+			low_offset	1.00		# Wald 1999 eqn(3)
+			low_cutoff_mmi	5.0		# Wald 1999 p. 546
+			pga_coeff	3.66		# Wald 1999 eqn(1)
+			pga_offset	-1.66		# Wald 1999 eqn(1)
+			pgv_coeff	3.47		# Wald 1999 eqn(2)
+			pgv_offset	2.35		# Wald 1999 eqn(2)
+			pga_cutoff_mmi	7		# Wald 1999 p. 547
+		}
+	}
+	sp87_pga &Arr{
+		select 
+		filter .*
+		delegate sp_bssa87
+		delegate_pf &Arr{
+			qgridtype 		pga
+			output_units 		gravity
+			phantom_spacing_deg 	0.3	# Wald 1999 p. 540
+			phantom_mindist_deg 	0.3	# Wald 1999 p. 540
+			centroid_mindist_deg 	0.1
+			const_coeff 		-1.562  # Sabetta/Pugliese 1987
+			mag_coeff   		0.306   # Sabetta/Pugliese 1987
+			r_offset   		5.8     # Sabetta/Pugliese 1987
+			S_coeff		  	0.169   # Sabetta/Pugliese 1987
+			S_hardrock_cutoff_mps 	406
+			tension 		0.4
+			overrelaxation 		1.4
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	# Short-period table
+			   163 1.65 1.43 1.15 0.93 	# Borcherdt 1994 'E' 
+			   298 1.34 1.23 1.09 0.96 	# Borcherdt 1994 'DE' 
+			   301 1.33 1.23 1.09 0.96 	# Borcherdt 1994 'D' 
+			   372 1.24 1.17 1.06 0.97 	# Borcherdt 1994 'CD' 
+			   464 1.15 1.10 1.04 0.98 	# Borcherdt 1994 'C' 
+			   686 0.98 0.99 0.99 1.00 	# Borcherdt 1994 'BC' 
+			   724 1.00 1.00 1.00 1.00 	# Borcherdt 1994 'B' 
+			}
+		}
+	}
+	sp87_pgv &Arr{
+		select 
+		filter .*
+		delegate sp_bssa87
+		delegate_pf &Arr{
+			qgridtype 		pgv
+			output_units 		cm/sec
+			phantom_spacing_deg 	0.3	# Wald 1999 p. 540 
+			phantom_mindist_deg 	0.3	# Wald 1999 p. 540
+			centroid_mindist_deg 	0.1	
+			const_coeff 		-0.710  # Sabetta/Pugliese 1987
+			mag_coeff   		0.455   # Sabetta/Pugliese 1987
+			r_offset   		3.6     # Sabetta/Pugliese 1987
+			S_coeff		  	0.133   # Sabetta/Pugliese 1987
+			S_hardrock_cutoff_mps 	406	
+			tension 		0.4	
+			overrelaxation 		1.4	
+			convergence 		0.001 
+			max_iterations 		1000
+			sitecorr_file 		pf/fakevs30.xyz
+			vs30_default_mps 	600 
+			pga_sitecorr_cutoffs_g 	0 0.15 0.25 0.35 
+			pga_sitecorr_table &Tbl{   	# Mid-period table
+			   163 2.55 2.37 2.14 1.91 	# Borcherdt 1994 'E' 
+			   298 1.72 1.65 1.56 1.46 	# Borcherdt 1994 'DE' 
+			   301 1.71 1.64 1.55 1.45 	# Borcherdt 1994 'D' 
+			   372 1.49 1.44 1.38 1.32 	# Borcherdt 1994 'CD' 
+			   464 1.29 1.26 1.23 1.19 	# Borcherdt 1994 'C' 
+			   686 0.97 0.97 0.97 0.98 	# Borcherdt 1994 'BC' 
+			   724 1.00 1.00 1.00 1.00 	# Borcherdt 1994 'B' 
+			}
+		}
+	}
+}
+
+daemon_sleep_time_sec 15
