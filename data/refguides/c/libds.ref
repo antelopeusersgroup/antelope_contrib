@@ -158,7 +158,7 @@ int dbsave_view ( Dbptr db )
 
 int dbunjoin ( Dbptr db, char *name, int rewrite )
     using the base table records referenced in the input view db, write new 
-    tables (file) to an output database name.  fails if any output tables are
+    tables (files) to an output database name.  fails if any output tables are
     already present, unless rewrite is non-zero, in which case the old tables
     are replaced.
 

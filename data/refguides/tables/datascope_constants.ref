@@ -4,8 +4,9 @@
 <subsection Dbptr values>
 <body>
 A database pointer has four elements: database, table, field and record.
-Each of these take on positive integer values to refer to a specific 
-database, table, field or record, but may also take some special values.
+Each of these elements takes on a nonnegative integer value to refer to a
+specific database, table, field or record, but may also take one of the
+following special values:
 
 <commands>
 dbINVALID
