@@ -71,56 +71,61 @@ GCLgrid interface.  They are defined beginning a the top of the
 class heirarchy and working down.  
 .ce
 \fIGCLgrid\fR - Basic 2D GCLgrid object
+.in 2c
+.ft CW
 .nf
+
 class GCLgrid
 {
-	public:
-		char name[10];  // name assigned to this coordinate grid
-		double lat0, lon0, r0;  // geographical location of origin 
-		double azimuth_y;  // Azimuth of positive y axis 
-		double dx1_nom, dx2_nom;  // nominal grid spacing 
-		int n1,n2;  // grid size in each component direction
-		int i0, j0;  // origin location in grid 
-		double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
-		bool cartesian_defined, geographic_defined;
-		double **x1, **x2, **x3; //cartesian coordinates of nodes
-		double **lat, **lon, **r;  //geographical coordinates of nodes
+    public:
+        char name[10];  // name assigned to this coordinate grid
+        double lat0, lon0, r0;  // geographical location of origin 
+        double azimuth_y;  // Azimuth of positive y axis 
+        double dx1_nom, dx2_nom;  // nominal grid spacing 
+        int n1,n2;  // grid size in each component direction
+        int i0, j0;  // origin location in grid 
+        double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
+        bool cartesian_defined, geographic_defined;
+        double **x1, **x2, **x3; //cartesian coordinates of nodes
+        double **lat, **lon, **r;  //geographical coordinates of nodes
 
-		GCLgrid(){
-			n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
-		};
-		GCLgrid(int n1size, int n2size);
-		GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
-			double radius0, double az, double dx1n, double dx2n, 
-			int iorigin, int jorigin);
-		GCLgrid(Dbptr db, char *nm) throw(int);
-		GCLgrid(const GCLgrid&);  //standard copy constructor
-		GCLgrid& operator=(const GCLgrid& );
-		void dbsave(Dbptr, char *) throw(int);
-		int lookup(double lat, double lon);
-		void reset_index() {ix1=i0; ix2=j0;};
-		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
-		Geographic_point ctog(double, double, double);
-		Cartesian_point gtoc(double, double, double);
-		void GCLset_transformation_matrix();
-		double depth(int,int);
-		~GCLgrid();
-		//
-		//These derived classes need private access so are declared
-		//friends
-		//
-		friend class GCLgrid3d;
-		friend class GCLscalarfield;
-		friend class GCLvectorfield;
-		friend class GCLscalarfield3d;
-		friend class GCLvectorfield3d;
-	private:
-		int ix1, ix2;
-		double gtoc_rmatrix[3][3];
-		double translation_vector[3];
+        GCLgrid(){
+                n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+        };
+        GCLgrid(int n1size, int n2size);
+        GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
+                double radius0, double az, double dx1n, double dx2n, 
+                int iorigin, int jorigin);
+        GCLgrid(Dbptr db, char *nm) throw(int);
+        GCLgrid(const GCLgrid&);  //standard copy constructor
+        GCLgrid& operator=(const GCLgrid& );
+        void dbsave(Dbptr, char *) throw(int);
+        int lookup(double lat, double lon);
+        void reset_index() {ix1=i0; ix2=j0;};
+        void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
+        Geographic_point ctog(double, double, double);
+        Cartesian_point gtoc(double, double, double);
+        void GCLset_transformation_matrix();
+        double depth(int,int);
+        ~GCLgrid();
+        //
+        //These derived classes need private access so are declared
+        //friends
+        //
+        friend class GCLgrid3d;
+        friend class GCLscalarfield;
+        friend class GCLvectorfield;
+        friend class GCLscalarfield3d;
+        friend class GCLvectorfield3d;
+    private:
+        int ix1, ix2;
+        double gtoc_rmatrix[3][3];
+        double translation_vector[3];
 };
+
 .fi
-.LP
+.ft R
+.in
 The simple type parameters that define this data object are, I hope,
 reasonably well defined by the comments in the above code segment.  
 The key groups of defining parameters are these:
@@ -179,11 +184,17 @@ GCLgrid(int n1size, int n2size) is similar but it allocates
 memory for the 2d coordinate arrays.  (See Memory Management section
 below)
 The only complete constructor is this one:
+.in 2c
+.ft CW
 .nf
+
 GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
-	double radius0, double az, double dx1n, double dx2n, 
-	int iorigin, int jorigin);
+        double radius0, double az, double dx1n, double dx2n, 
+        int iorigin, int jorigin);
+
 .fi
+.ft R
+.in
 The parallel to the defining parameters should be clear.  
 This constructor builds what we might call a "standard GCLgrid".
 This function is called directly by the makegclgrid(1) program 
@@ -246,46 +257,51 @@ earth.  Note that internally in this library depth is defined
 relative to the standard reference ellipsoid (accesssible through
 the helper function \fIr0_ellipse\fR.)  
 .ce
-\fIGCLgrid3d\IR - 3D GCLgrid object
+\fIGCLgrid3d\fP - 3D GCLgrid object
 .nf
 .LP
 The 3d version of a GCLgrid is similar to the 2d version.  In fact,
 it acquires most of it's members by inheritance.  Here is the 
 full description:
+.in 2c
+.ft CW
 .nf
+
 class GCLgrid3d : public GCLgrid
 {
-	public:
-		double dx3_nom;
-		int n3;
-		int k0;
-		double ***x1, ***x2, ***x3;
-		double ***lat, ***lon, ***r;
+    public:
+        double dx3_nom;
+        int n3;
+        int k0;
+        double ***x1, ***x2, ***x3;
+        double ***lat, ***lon, ***r;
 
-		GCLgrid3d(){
-			n1=0;n2=0;n3=0;
-			x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
-		};
-		GCLgrid3d(int n1size, int n2size, int n3size);
-		GCLgrid3d(int n1size, int n2size, int n3size, 
-			char *n, double la0, double lo0,
-			double radius0, double az, 
-			double dx1n, double dx2n, double dx3n,
-			int iorigin, int jorigin);
-		GCLgrid3d(Dbptr db, char *nm) throw(int); 
-		GCLgrid3d(const GCLgrid3d&); 
-		GCLgrid3d& operator=(const GCLgrid3d& );
-		void dbsave(Dbptr, char *) throw(int);
-		int lookup(double x, double y, double z);
-		void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
-		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
-		double depth(int,int,int);
-		~GCLgrid3d();
-	private:
-		int ix1, ix2, ix3;
-};	  		
+        GCLgrid3d(){
+                n1=0;n2=0;n3=0;
+                x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+        };
+        GCLgrid3d(int n1size, int n2size, int n3size);
+        GCLgrid3d(int n1size, int n2size, int n3size, 
+                char *n, double la0, double lo0,
+                double radius0, double az, 
+                double dx1n, double dx2n, double dx3n,
+                int iorigin, int jorigin);
+        GCLgrid3d(Dbptr db, char *nm) throw(int); 
+        GCLgrid3d(const GCLgrid3d&); 
+        GCLgrid3d& operator=(const GCLgrid3d& );
+        void dbsave(Dbptr, char *) throw(int);
+        int lookup(double x, double y, double z);
+        void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
+        void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
+        double depth(int,int,int);
+        ~GCLgrid3d();
+    private:
+        int ix1, ix2, ix3;
+};
+
 .fi
-.LP
+.ft R
+.in
 All of these variables have parallel elements 
 for a GCLgrid except 2d things become 3d.  This
 requires adding:  nx3 = size of objects in the third dimension; 
@@ -306,70 +322,76 @@ The following detail a set of generic 2d and 3d fields specified
 on a GCLgrid.  The GCLgrid objects simply store geometry while
 these objects normally contain data that are associated with these
 points.  
+.in 2c
+.ft CW
 .nf
+
 class GCLscalarfield :  public GCLgrid
 {
-	public:
-		double **val;
+    public:
+        double **val;
 
-		GCLscalarfield();
-		GCLscalarfield(int, int);
-		GCLscalarfield(GCLgrid& );
-		GCLscalarfield& operator=(const GCLscalarfield&);
-		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-		void operator+=(const GCLscalarfield&);
-		void operator*=(double);
-		double interpolate(double,double,double);
-		~GCLscalarfield();
+        GCLscalarfield();
+        GCLscalarfield(int, int);
+        GCLscalarfield(GCLgrid& );
+        GCLscalarfield& operator=(const GCLscalarfield&);
+        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+        void operator+=(const GCLscalarfield&);
+        void operator*=(double);
+        double interpolate(double,double,double);
+        ~GCLscalarfield();
 };
 class GCLvectorfield : public GCLgrid
 {
-	public:
-		int nv;
-		double ***val;
+    public:
+        int nv;
+        double ***val;
 
-		GCLvectorfield();
-		GCLvectorfield(int,int,int);
-		GCLvectorfield(GCLgrid &,int);
-		GCLvectorfield& operator=(const GCLvectorfield&);
-		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-		void operator+=(const GCLvectorfield&);
-		void operator*=(double);
-		double *interpolate(double,double,double);
-		~GCLvectorfield();
+        GCLvectorfield();
+        GCLvectorfield(int,int,int);
+        GCLvectorfield(GCLgrid &,int);
+        GCLvectorfield& operator=(const GCLvectorfield&);
+        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+        void operator+=(const GCLvectorfield&);
+        void operator*=(double);
+        double *interpolate(double,double,double);
+        ~GCLvectorfield();
 };
 class GCLscalarfield3d : public GCLgrid3d 
 {
-	public:
-		double ***val;
+    public:
+        double ***val;
 
-		GCLscalarfield3d();
-		GCLscalarfield3d(int,int,int);
-		GCLscalarfield3d(GCLgrid3d &);
-		GCLscalarfield3d& operator=(const GCLscalarfield3d&);
-		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-		void operator+=(const GCLscalarfield3d&);
-		void operator*=(double);
-		double interpolate(double,double,double);
-		~GCLscalarfield3d();
+        GCLscalarfield3d();
+        GCLscalarfield3d(int,int,int);
+        GCLscalarfield3d(GCLgrid3d &);
+        GCLscalarfield3d& operator=(const GCLscalarfield3d&);
+        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+        void operator+=(const GCLscalarfield3d&);
+        void operator*=(double);
+        double interpolate(double,double,double);
+        ~GCLscalarfield3d();
 };
 class GCLvectorfield3d : public GCLgrid3d
 {
-	public:
-		int nv;
-		double ****val;
+    public:
+        int nv;
+        double ****val;
 
-		GCLvectorfield3d();
-		GCLvectorfield3d(int,int,int,int);
-		GCLvectorfield3d(GCLgrid3d &,int);
-		GCLvectorfield3d& operator=(const GCLvectorfield3d&);
-		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-		void operator+=(const GCLvectorfield3d&);
-		void operator*=(double);
-		double *interpolate(double,double,double);
-		~GCLvectorfield3d();
+        GCLvectorfield3d();
+        GCLvectorfield3d(int,int,int,int);
+        GCLvectorfield3d(GCLgrid3d &,int);
+        GCLvectorfield3d& operator=(const GCLvectorfield3d&);
+        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+        void operator+=(const GCLvectorfield3d&);
+        void operator*=(double);
+        double *interpolate(double,double,double);
+        ~GCLvectorfield3d();
 };
+
 .fi
+.ft R
+.in
 .LP
 Because of inheritance these objects can be viewed as extensions of
 the GCLgrid objects from which they are derived.  Most importantly
@@ -473,7 +495,7 @@ I/O error problems.  These functions read a GCLgrid or GCLgrid3d object stored
 on disk.  Any read problems will throw this code.
 .SH RETURN VALUES
 .LP
-The \fBlookup\fB functions are implemented in the C fashion of returning
+The \fBlookup\fP functions are implemented in the C fashion of returning
 an error code rather than the C++ approach of throwing exceptions.  
 This was intentional because Sun's documentation points out that
 throwing exceptions is "computationally expensive" compared to this 
