@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <list>
+#include <strings.h>
 #include "db.h"
 #include "seispp.h"
 
@@ -32,7 +35,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 	if(property=="S" || property=="P")
 	{
 
-		db=dblookup(db,0,"mod1d",0,0);
+		db=dblookup(db,0,(char *)"mod1d",0,0);
 		if(db.table==dbINVALID) 
 			throw(Velocity_Model_1d_dberror(name,
 				"dbopen failure for mod1d table"));
@@ -40,7 +43,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 		// (modname=~/name/ && (paramname=~/Pvelocity/)
 		string sstr = s1+name+s2+property+s3;
 		dbs1 = dbsubset(db,(char *)sstr.c_str(),0);
-		sortkeys=strtbl("depth",0);
+		sortkeys=strtbl((char *)"depth",0);
 		dbs2=dbsort(dbs1,sortkeys,0,0);
 		dbquery(dbs2,dbRECORD_COUNT,&nlayers);
 		if(nlayers<=0)
@@ -78,4 +81,90 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 		throw(Velocity_Model_1d_dberror(name,
 		 "Coding error:  property passed to database constructor must be either P or S"));
 	}
+}
+/* Read from a file constructor.  fname is the file name to be 
+read and form is a format name.  Currently supports two 
+names:  rbh - Herrmmann synthetics package format; and 
+plain - simple ascii depth, velocity pairs.  
+For plain the order is depth,P,S.  i.e. three columns of 
+ascii numbers, free form with blank separators, depth to
+layer top in column 1, P velocity column 2, and S velocity
+in column 2.  (no gradients in this format allowed). 
+property must be "P" or "S" */
+Velocity_Model_1d::Velocity_Model_1d(string fname,
+	string form, string property) throw(Velocity_Model_1d_ioerror)
+{
+	int i;
+
+	ifstream input;
+
+	try{
+		input.open(fname.c_str(), ios::in);
+	} catch (ios_base::failure& var)
+	{
+		string mess;
+		mess = var.what();
+		throw(Velocity_Model_1d_ioerror("Cannot open file "+fname,
+                        "Velocity_Model_1d constructor failed"));
+	}
+
+	if(form=="rbh" || form=="plain")
+	{
+		char line[255],*sptr;
+		list <double> zin,vin;
+		list <double>::iterator znow,vnow;
+
+		// throw away the first few lines for rbh format
+		if(form=="rbh")
+		{
+			for(i=0;i<12;++i) input.getline(sptr,255);
+		}
+		while(input.good())
+		{
+			double f1,f2,f3;
+			input >> f1;
+			input >> f2;
+			input >> f3;
+			if(property=="P")
+			{
+				zin.push_back(f1);
+				vin.push_back(f2);
+			}
+			else if(property == "S")
+			{
+				zin.push_back(f1);
+				vin.push_back(f3);
+			}
+			else
+			{
+				input.close();
+				throw(Velocity_Model_1d_ioerror("Illegal property parameter = "+property,
+					"Velocity_Model_1d constructor failed"));
+			}
+		}
+		nlayers = zin.size();
+		z=new double[nlayers];
+		v=new double[nlayers];
+                grad=new double[nlayers];
+		for(i=0;i<nlayers;++i)grad[i]=0.0;
+		for(i=0,znow=zin.begin(),vnow=vin.begin();
+			znow!=zin.end(),vnow!=vin.end();++znow,++vnow,++i)
+		{
+			z[i]=*znow;
+			v[i]=*vnow;
+		}
+		if(i!=nlayers)
+		{
+			nlayers = i-1;
+			throw(Velocity_Model_1d_ioerror("Format error:  need at least z,vp,vs lines in the input model description lines",
+				"Velocity_Model_1d object only partially constructed"));
+		}
+	}
+	else
+	{
+		input.close();
+		throw(Velocity_Model_1d_ioerror("Unrecognized format namea = "+form,
+				"Velocity_Model_1d constructor failed"));
+	}
+	input.close();
 }

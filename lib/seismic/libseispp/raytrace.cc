@@ -1,7 +1,6 @@
 #include <iostream>
 #include <list>
 #include "db.h"
-#include "vmodel.h"
 #include "ray1d.h"
 #include "dmatrix.h"
 #include "gclgrid.h"

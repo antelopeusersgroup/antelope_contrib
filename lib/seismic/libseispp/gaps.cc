@@ -1,7 +1,5 @@
 #include <math.h>
 #include "seispp.h"
-//Needed to compile on linux
-int nint(double);
 /* this group of functions implement gap processing for time series
  * objects and their descendents called Three_Component_Seismograms.
  * They use indexing through the STL standard container called a
@@ -15,6 +13,35 @@ int nint(double);
  * Written:  May 2003
  */
 
+//This is a standard function on Suns found in sunmath.  
+// I've added this implementation here to get this to compile on linux
+int nint(double x)
+{
+        double remainder;
+        if(x==0.0)
+                return(0);
+        int i0 = (int)x;
+        if(i0==0)
+                remainder = x;
+        else if(x>0.0)
+                remainder = x - ((double)i0);
+	else
+		remainder = x-((double)i0);
+        if(x>0)
+        {
+                if(remainder>0.5)
+                        return(i0+1);
+                else
+                        return(i0);
+        }
+        else
+        {
+		if(remainder<-0.5)
+                        return(i0-1);
+                else
+                        return(i0);
+        }
+}
 // Returns true if the requested sample number of a gap or outside the
 // range of the data
 bool Time_Series::is_gap(int n0)

@@ -278,6 +278,18 @@ public:
 		cerr<<message;
 	};
 };
+class Velocity_Model_1d_ioerror : public Velocity_Model_1d_error
+{
+public:
+	string ioerr;
+	Velocity_Model_1d_ioerror(string mess, string ioe){
+		message = mess; ioerr = ioe;};
+	virtual void log_error(){
+		cerr<<"Velocity i/o error" << endl
+			<< message << endl
+			<< ioerr << endl;
+	};
+};
 
 class Velocity_Model_1d
 {
@@ -291,6 +303,8 @@ public:
 		grad=new double[nlayers];};
 	Velocity_Model_1d(Dbptr db,string name, string property)
 		throw(Velocity_Model_1d_dberror);
+	Velocity_Model_1d(string fname, string form, string property)
+		throw(Velocity_Model_1d_ioerror);
 	~Velocity_Model_1d()
 	{if(z!=NULL)delete[]z; if(v!=NULL)delete[]v; if(grad!=NULL)delete[]grad;};
 	double getv(double zin);

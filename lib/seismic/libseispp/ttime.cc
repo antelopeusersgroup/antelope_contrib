@@ -122,15 +122,15 @@ double Hypocenter::ptime(double lat0, double lon0, double elev)
 		throw(seispp_error)
 {
 	string phs="P";
-	double time;
+	double ttime;
 
 	try{
-		time = this->phasetime(lat0,lon0,elev,phs);
+		ttime = this->phasetime(lat0,lon0,elev,phs);
 	} catch (seispp_error tte)
 	{
 		throw tte;
 	}
-	return(time);
+	return(ttime);
 }
 Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, string phase)
 		throw(seispp_error)
