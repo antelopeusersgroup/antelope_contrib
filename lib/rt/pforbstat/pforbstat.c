@@ -228,6 +228,52 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	return pf;
 }
 
+static void 
+id_clients( Pf *pf )
+{
+	Pf	*pfclients;
+	Pf	*pfclient;
+	char	client_summary[STRSZ];
+	char	*serveraddress;
+	char	*serverport;
+	Tbl	*client_keys;
+	int	ikey;
+	char	*client_key;
+	char	clientid_key[STRSZ];
+	char	*clientaddress;
+	char	*what;
+	char	clientid[33];
+
+	pfeval( pf, "server{address}", &serveraddress );
+	pfeval( pf, "server{port}", &serverport );
+
+	pfget( pf, "clients", (void **) &pfclients );
+
+	client_keys = pfkeys( pfclients );
+
+	for( ikey = 0; ikey < maxtbl( client_keys ); ikey++ ) {
+
+		client_key = gettbl( client_keys, ikey );
+
+		pfget( pfclients, client_key, (void **) &pfclient );
+
+		clientaddress = pfget_string( pfclient, "address" );
+		what = pfget_string( pfclient, "what" );
+
+		sprintf( client_summary, "hi Kent! : %s %s %s %s", 
+				serveraddress, serverport,
+				clientaddress, what );
+
+		sprintf( clientid_key, "clients{%s}{clientid}", client_key );
+
+		mdhex( clientid, client_summary, strlen( client_summary ) );
+
+		pfset( pf, clientid_key, clientid );
+	}
+
+	return;
+}
+
 static void
 extract_orb2orb_orbargs( char *what, char *cmdline_fromorb, char *cmdline_toorb )
 {
@@ -387,6 +433,7 @@ orbconnections2pf( Pf *pfanalyze )
 	Tbl	*client_keys;
 	int	ikey;
 	char	*client_key;
+	char	*clientid;
 	char	*what;
 	char	*perm;
 	char	*clientaddress;
@@ -499,6 +546,11 @@ orbconnections2pf( Pf *pfanalyze )
 			if( ( select = pfget_string( pfclient, "select") ) != NULL ) {
 
 				pfput_string( pfconnection, "select", select );
+			}
+			
+			if( ( clientid = pfget_string( pfclient, "clientid") ) != NULL ) {
+
+				pfput_string( pfconnection, "clientid", clientid );
 			}
 			
 			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
@@ -687,6 +739,8 @@ pforbstat( int orbfd, int flags )
 
 		pfcompile( s = pf2string( pfans ), &pf );
 		free( s );
+
+		id_clients( pf );
 	
 		pffree( pfans );
 	}
