@@ -170,6 +170,24 @@ public class Epoch extends Object {
         DecimalFormat fm = new DecimalFormat ( "00" );
         return (new String (year + "/" + fm.format(month) + "/" + fm.format(dayOfMonth) + " (" + jdate + ") " + fm.format(hour) + ":" + fm.format(minute) + ":" + fs.format(second)));
     }
+
+    /** Parse the given string containing a textual representation of a 
+	date/time and produce an Epoch object representing the same time.
+	Currently the only string parsed is "now" which results in an Epoch
+	object representing the current date and time. 
+	@param epoch The string to parse.
+	@author Tobin Fricke, University of California
+    */
+
+    public static Epoch fromString(String epoch) {
+	if (epoch.compareTo("now")==0) {
+	    // http://joda-time.sourceforge.net/ might be useful
+	    // java.util.Date is supposed to know about timezones and initialize to the UTC time
+	    return new Epoch((new java.util.Date()).getTime() / 1000.0);
+	} else {
+	    return null; // fail
+	}
+    }
              
     /**
      * This gets a string version of the Antelope epoch time with a specified
