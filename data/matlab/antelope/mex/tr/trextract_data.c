@@ -2,9 +2,8 @@
  * Antelope Toolbox for Matlab
  *
  * Kent Lindquist
- * Geophysical Institute
- * University of Alaska, Fairbanks
- * 1997
+ * Lindquist Consulting
+ * 1997-2004
  */
 
 #define USAGE "Error using ==> trextract_data\n\n\
