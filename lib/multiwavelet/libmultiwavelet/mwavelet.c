@@ -352,6 +352,37 @@ void free_MWtransform_arr(Arr *mwtarr,int nbands, int nwavelets)
 	/* The free here releases the MWtrace *** pointers */
 	freearr(mwtarr,free);
 }
+/* Simple companion to below used to avoid cluttering main code.
+A simple large negative number will suffice as an error code
+since a signal to noise ratio less than 0 makes no physical sense. */
+void set_snr_to_error(Signal_to_Noise *snr)
+{
+	snr->ratio_z = -99999.9;
+	snr->ratio_n = -99999.9;
+	snr->ratio_e = -99999.9;
+	snr->ratio_3c = -99999.9;
+	snr->min_ratio_z = -99999.9;
+	snr->min_ratio_n = -99999.9;
+	snr->min_ratio_e = -99999.9;
+	snr->min_ratio_3c = -99999.9;
+	snr->max_ratio_z = -99999.9;
+	snr->max_ratio_n = -99999.9;
+	snr->max_ratio_e = -99999.9;
+	snr->max_ratio_3c = -99999.9;
+}
+/* Tests snr structure for above error condition.  This is preferable
+to something like a test against a particular element of the structure
+embedded in the code because one might want to change the way an error
+was defined.  This way they should stay together. 
+Arguments:
+	snr - snr structure to test
+Returns a logical test.  1 if the snr is invalid and 0 if it is ok.
+*/
+int snr_is_invalid(Signal_to_Noise *snr)
+{
+	if((snr->ratio_z)<0.0) return(1);
+	return(0);
+}
 
 /* This is a small companion function to the one immediately 
 following.  It grabs items from pf to test if the computed
@@ -794,37 +825,6 @@ void free_sn_ratios_arr(Arr **snr_vector,int nwavelets)
 	{
 		freearr(snr_vector[i],free);
 	}
-}
-/* Simple companion to below used to avoid cluttering main code.
-A simple large negative number will suffice as an error code
-since a signal to noise ratio less than 0 makes no physical sense. */
-void set_snr_to_error(Signal_to_Noise *snr)
-{
-	snr->ratio_z = -99999.9;
-	snr->ratio_n = -99999.9;
-	snr->ratio_e = -99999.9;
-	snr->ratio_3c = -99999.9;
-	snr->min_ratio_z = -99999.9;
-	snr->min_ratio_n = -99999.9;
-	snr->min_ratio_e = -99999.9;
-	snr->min_ratio_3c = -99999.9;
-	snr->max_ratio_z = -99999.9;
-	snr->max_ratio_n = -99999.9;
-	snr->max_ratio_e = -99999.9;
-	snr->max_ratio_3c = -99999.9;
-}
-/* Tests snr structure for above error condition.  This is preferable
-to something like a test against a particular element of the structure
-embedded in the code because one might want to change the way an error
-was defined.  This way they should stay together. 
-Arguments:
-	snr - snr structure to test
-Returns a logical test.  1 if the snr is invalid and 0 if it is ok.
-*/
-int snr_is_invalid(Signal_to_Noise *snr)
-{
-	if((snr->ratio_z)<0.0) return(1);
-	return(0);
 }
 /* Another companion to signal to noise function below.  This one
 takes a complex input vector,z, of length n and computes |x_i| 
