@@ -12,6 +12,7 @@ static int le_Datascope;
 function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
+	PHP_FE(dbfind, NULL)		
 	PHP_FE(dbgetv, NULL)		
 	PHP_FE(dbaddv, NULL)		
 	PHP_FE(dbputv, NULL)		
@@ -213,6 +214,81 @@ PHP_FUNCTION(template)
 }
 /* }}} */
 
+/* {{{ proto array dbfind( array db, string expression, [, int first [, int reverse]] ) */
+PHP_FUNCTION(dbfind)
+{
+	zval	*db_array;
+	Dbptr	db;
+	zval	***args;
+	char	*expr;
+	int	expr_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	reverse = 0;
+	int	result = 0;
+
+	if( argc < 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc > 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 2 TSRMLS_CC, "as", 
+					&db_array,
+					&expr, &expr_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( argc > 2 ) { 
+
+		args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+		if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+			efree( args );
+			return;
+		}
+
+		if( Z_TYPE_PP( args[2] ) != IS_LONG ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			return;
+
+		} else {
+
+			db.record = Z_LVAL_PP( args[2] );
+		}
+
+		if( argc == 4 ) {
+
+			if( Z_TYPE_PP( args[3] ) != IS_LONG ) {
+
+				/* SCAFFOLD; need cleanup and error msg */
+				return;
+
+			} else {
+
+				reverse = Z_LVAL_PP( args[3] );
+			}
+		}
+
+		efree( args );
+	}
+
+	result = dbfind( db, expr, reverse, 0 );
+
+	RETURN_LONG( result );
+}
+/* }}} */
+
 /* {{{ proto string strtdelta( double epoch ) */
 PHP_FUNCTION(strtdelta)
 {
@@ -347,7 +423,9 @@ PHP_FUNCTION(dbquery)
 
 				add_next_index_string( return_value, gettbl( value.tbl, i ), 1 );
 			}
+
 		} else {
+
 			RETVAL_STRING( "SCAFFOLD: problem\n", 1 );
 		}
                 break;  
@@ -527,8 +605,10 @@ PHP_FUNCTION(dbprocess)
 	for( i = 1; i < argc; i++ ) {
 
 		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
 			/* SCAFFOLD; need cleanup and error msg */
 			return;
+
 		} else {
 
 			pushtbl( cmdlist, Z_STRVAL_PP( args[i] ) );
@@ -732,7 +812,7 @@ PHP_FUNCTION(dbputv)
 	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
 
 		efree( args );
-		fprintf( stderr, "SCAFFOLD: Error gettin params array\n" );
+		fprintf( stderr, "SCAFFOLD: Error getting params array\n" );
 		return;
 	}
 
@@ -744,7 +824,7 @@ PHP_FUNCTION(dbputv)
 		fieldval_index = fieldname_index + 1;
 
 		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldname\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldname\n" );
 			return;
 		}
 
@@ -756,13 +836,13 @@ PHP_FUNCTION(dbputv)
 
 		if( rc == dbINVALID ) {
 			
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldtype\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldtype\n" );
 			return;
 		}
 
 		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
 
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldvalue\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldvalue\n" );
 			return;
 		}
 
@@ -789,6 +869,7 @@ PHP_FUNCTION(dbputv)
 	}
 
 	if( retcode != 0 ) {
+
 		fprintf( stderr, "SCAFFOLD: Error somewhere\n" );
 		return;
 	}
@@ -843,7 +924,7 @@ PHP_FUNCTION(dbaddv)
 
 	if( rc == dbINVALID ) {
 		
-		fprintf( stderr, "SCAFFOLD: Error gettin null record\n" );
+		fprintf( stderr, "SCAFFOLD: Error getting null record\n" );
 		return;
 	}
 
@@ -854,7 +935,7 @@ PHP_FUNCTION(dbaddv)
 	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
 
 		efree( args );
-		fprintf( stderr, "SCAFFOLD: Error gettin params array\n" );
+		fprintf( stderr, "SCAFFOLD: Error getting params array\n" );
 		return;
 	}
 
@@ -866,7 +947,7 @@ PHP_FUNCTION(dbaddv)
 		fieldval_index = fieldname_index + 1;
 
 		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldname\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldname\n" );
 			return;
 		}
 
@@ -878,13 +959,13 @@ PHP_FUNCTION(dbaddv)
 
 		if( rc == dbINVALID ) {
 			
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldtype\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldtype\n" );
 			return;
 		}
 
 		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
 
-			fprintf( stderr, "SCAFFOLD: Error gettin fieldvalue\n" );
+			fprintf( stderr, "SCAFFOLD: Error getting fieldvalue\n" );
 			return;
 		}
 

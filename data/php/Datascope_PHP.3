@@ -94,7 +94,7 @@ $distance = dbex_eval ( $db,
 .fi
 .in
 .ft R
-.IP "\fBdbextfile( $db [,\fP base-table] )"
+.IP "\fBdbextfile\fP( $db [, base-table] )"
 return the filename for an external file for a particular record in
 a view, for a particular base-table if specified.
 .ft CW
@@ -102,6 +102,21 @@ a view, for a particular base-table if specified.
 .nf
 
 $filename = dbextfile( $db ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbfind\fP ( $db, $expression, [, $first [, $reverse]] )"
+Find the first record in the specified database that matches the 
+given expression. The search starts from the record indicated by the
+database pointer unless $first is specified, and proceeds 
+forwards unless $reverse is given as non-zero.
+.ft CW
+.in 2c
+.nf
+
+$record = dbfind( $db, "sta == \\"PFO\\"" ) ;
+$db[3] = $record;
 
 .fi
 .in
@@ -155,7 +170,7 @@ dbputv( $dbevent, 'evid', 1,
 .fi
 .in
 .ft R
-.IP "\fBdbadd( $db [,\fP record] )"
+.IP "\fBdbadd\fP ( $db [, record] )"
 Add a record from the scratch record, or from the specified string
 .ft CW
 .in 2c

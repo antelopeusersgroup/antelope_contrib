@@ -28,6 +28,7 @@ PHP_FUNCTION(dbnrecs);
 PHP_FUNCTION(dbprocess);
 PHP_FUNCTION(dbex_eval);
 PHP_FUNCTION(dbextfile);
+PHP_FUNCTION(dbfind);
 PHP_FUNCTION(dbquery);
 PHP_FUNCTION(dbsubset);
 PHP_FUNCTION(strtdelta);
