@@ -51,7 +51,7 @@ open_socket ( char *name, int default_port )
     memset ( (char *) &serv_addr, 0, sizeof(serv_addr) ) ; 
     parsename ( name, default_port, server, &port ) ;
     
-    name2ip(server, &serv_addr.sin_addr.s_addr, ipc ) ;
+    name2ip(server, (struct in_addr *)&serv_addr.sin_addr.s_addr, ipc ) ;
     serv_addr.sin_family = AF_INET ; 
     serv_addr.sin_port = htons ( port ) ; 
 

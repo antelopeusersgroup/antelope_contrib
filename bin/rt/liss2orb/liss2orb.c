@@ -52,14 +52,14 @@ getpkt (Bns *bns, char **seedp, int fixedsize, int *pktsize, int *seedsize)
 	retcode = bnsget(bns, *seedp, BYTES, fixedsize ) ;
 	*pktsize = fixedsize ;
     } else if ( (retcode = bnsget ( bns, *seedp, BYTES, 64 )) == 0 ) {
-	short type=0 ; 
+	unsigned short type=0 ; 
 	int log2_record_length = 0 ; 
 	memcpy(&type, *seedp+48, 2) ;
 	if ( type == 0x3e8 || type == 0xe803 ) { 
 	    int size ;
 	    log2_record_length = *((unsigned char *) *seedp+54) ;
 	    *pktsize = size = 1 << log2_record_length ;
-	    SIZE_BUFFER (char *, *seedp, *seedsize, size ) ; 
+	    RESIZE_BUFFER (char *, *seedp, *seedsize, size ) ;
 	    if ( *pktsize > 0 && *pktsize < 1<<14 ) {
 		retcode = bnsget(bns, *seedp+64, BYTES, size-64 ) ;
 	    } else { 
@@ -75,27 +75,6 @@ getpkt (Bns *bns, char **seedp, int fixedsize, int *pktsize, int *seedsize)
 	}
     }
     return retcode ;
-}
-
-static int
-matches ( char *srcname, char *match)
-{
-    int retcode ;
-    if ( match != 0 ) { 
-	static regex_t *pgm = 0 ;
-	if ( pgm == 0 ) { 
-	    allot ( regex_t *, pgm, 1 ) ;
-	    if ( regcomp(pgm, match, REG_EXTENDED ) != 0) {
-		die ( 1, "can't compile regular expression '%s'", match ) ; 
-	    }
-	}
-	if ( regexec ( pgm, srcname, 0, 0, 0) == 0 ) {
-	    retcode = 1 ; 
-	}
-    } else { 
-	retcode = 1 ; 
-    }
-    return retcode ; 
 }
 
 int
@@ -122,6 +101,8 @@ main (int argc, char **argv)
     int 	   cnt =0, npkts = 0 ;
     int		   remap = 0 ;
     Bns 	   *bns=0 ;
+    Hook	   *hook=0 ;
+    int		   start, nchars ;
 
     elog_init (argc, argv);
     elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
@@ -213,7 +194,7 @@ main (int argc, char **argv)
 	if (getpkt(bns, &seed, fixedsize, &pktsize, &seedsize) == 0) { 
 	    if ( liss2orbpkt ( seed, pktsize, database, remap,
 		    srcname, &time, &packet, &nbytes, &bufsize ) == 0 ) { 
-		if ( matches ( srcname, match) ) { 
+		if ( match == 0 || strcontains ( srcname, match, &hook, &start, &nchars) ) { 
 		    orbput ( orb, srcname, time, packet, nbytes ) ; 
 		    if ( verbose ) { 
 			char *s ;
