@@ -72,14 +72,13 @@ returned result is a new dmatrix of the same size as path, but defined in the
 Cartesian reference frame for othergrid instead of pathgrid.
 */
 
-dmatrix& remap_path(GCLgrid3d& pathgrid, dmatrix& path, GCLgrid3d& othergrid)
+dmatrix remap_path(GCLgrid3d& pathgrid, dmatrix& path, GCLgrid3d& othergrid)
 {
 	int i;
 	int m=path.columns();
 	if( (path.rows()!=3) || (m<=0) )
 		throw(GCLgrid_error("remap_path:  input path matrix dimensions are invalid"));
-	dmatrix *nptr=new dmatrix(3,m);
-	dmatrix& newpath=*nptr;
+	dmatrix newpath(3,m);
 	Geographic_point geo;
 	Cartesian_point p;
 	for(i=0;i<path.columns();++i)

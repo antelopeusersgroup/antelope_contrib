@@ -1384,7 +1384,7 @@ vector<double> val1d,vector<double> z1d);
 //
 // @returns a 3 X n matrix of points in the newpathgrid coordinate system.
 //@}
-dmatrix& remap_path(GCLgrid3d& parentgrid, dmatrix& path, GCLgrid3d& newpathgrid);
+dmatrix remap_path(GCLgrid3d& parentgrid, dmatrix& path, GCLgrid3d& newpathgrid);
 //@{
 // Saves a 3d scalarfield to a stream in Data Explorer's native forma (dx).
 //
