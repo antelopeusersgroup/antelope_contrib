@@ -18,7 +18,6 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
     int needed ;
     char *cp ;
     double samprate ;
-    static Bns *bns = 0 ;
     double calib, calper ; 
     char segtype[4] ;
     char sta[16], chan[16] ;
@@ -83,9 +82,6 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    memcpy (cp, segtype, 1);
 	    cp += 1 * 1;
 
-	    if ( bns == 0 ) {
-		bns = bnsnew(-1, 1024) ;
-	    }
 	    memcpy (cp, seed, size) ;
 	    cp += size ;
 	    *nbytes = cp-*packet ; 

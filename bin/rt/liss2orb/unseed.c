@@ -1,10 +1,3 @@
-/*  Copyright (c) 1997 Boulder Real Time Technologies, Inc.           */
-/*                                                                    */
-/*  This software module is wholly owned by Boulder Real Time         */
-/*  Technologies, Inc. Any use of this software module without        */
-/*  express written permission from Boulder Real Time Technologies,   */
-/*  Inc. is prohibited.                                               */
-
 
 #include "tr.h"
 #include "coords.h"
