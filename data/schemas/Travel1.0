@@ -7,6 +7,18 @@ Schema Travel1.0
 	Timedate lddate
 	;
 
+Attribute absdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "abstract deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the abstract deadline for the meeting. 
+	}
+	;
+
 Attribute business
 	String (2)
 	Format ( "%-2s" )
@@ -36,7 +48,7 @@ Attribute hopto
 	Description ( "next vertex in a multi-leg trip" )
 	Detail {
 		If after completing activities at a destination, the 
-		traveller goes on to another leg of the trip instead 
+		traveler goes on to another leg of the trip instead 
 		of returning home, the hopto field records the arrival
 		location for the next leg of the trip. If triptype 
 		is 'leg' and hopto is null, it is implied that this 
@@ -52,7 +64,7 @@ Attribute inst
 	Detail {
 		This field identifies the employing institution if the 
 		travel is business related (i.e. the employer of the 
-		traveller, as opposed to the company for which work is 
+		traveler, as opposed to the company for which work is 
 		being done)
 	}
 	;
@@ -89,7 +101,7 @@ Attribute international
 	Range ( "international =~ /y|n/" )
 	Description ( "whether the trip involved an international destination" )
 	Detail {
-		This field records whether the traveller left the country
+		This field records whether the traveler left the country
 	}
 	;
 
@@ -116,6 +128,18 @@ Attribute purpose
 		This field describes the purpose of the trip, e.g. 
 		"vacation" or name of meeting attended or name of 
 		company for which work was performed
+	}
+	;
+
+Attribute regdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "registration deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the registration deadline for the meeting. 
 	}
 	;
 
@@ -152,13 +176,25 @@ Attribute side
 	}
 	;
 
-Attribute traveller
+Attribute skip
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "skip =~ /y|n/" )
+	Description ( "whether to skip the trip" )
+	Detail {
+		This field is 'y' for cancelled trips, meetings that 
+		will not be attended etc.
+	}
+	;
+
+Attribute traveler
 	String (30)
 	Format ( "%-30s" )
 	Null ( "-" )
-	Description ( "name of traveller" )
+	Description ( "name of traveler" )
 	Detail {
-		This field identifies the traveller
+		This field identifies the traveler
 	}
 	;
 
@@ -187,8 +223,38 @@ Attribute tz
 	}
 	;
 
+Relation colleagues
+	Fields ( traveler destination leave return purpose lddate )
+	Primary ( traveler leave return )
+	Description ( "travel planned by colleagues" )
+	Detail { 
+		Frequently one is informed by colleagues that they will 
+		not be available during certain time ranges due to travel. 
+		Although most professionals have better things 
+		to do (hopefully!) than keep tabs on their colleagues, 
+		it is refreshing not to have to continually repeat the same
+		"Please tell me again when you are out of town" questions
+		when relevant. This table is a place to keep the answers. 
+	}
+	;
+
+Relation potential
+	Fields ( destination leave return purpose traveler absdeadline regdeadline skip lddate )
+	Primary ( destination leave return purpose )
+	Description ( "potential trips being considered" )
+	Detail {
+		This table describes potential trips being considered, 
+		whether for meetings, collaboration, vacations, etc. 
+		The absdeadline and regdeadline fields provide deadlines 
+		for abstracts and registration, if appropriate. N.B.: for upcoming
+		trips that will almost certainly be made and for which travel plans 
+		have already been confirmed, the trips table should be used instead 
+		of this table, with trips.pending set to 'y'.
+	}
+	;
+
 Relation trips
-	Fields ( destination leave return purpose side triptype hopto pending international business traveller inst tz lddate )
+	Fields ( destination leave return purpose side triptype hopto pending international business traveler inst tz lddate )
 	Primary ( destination leave::return )
 	Description ( "trips taken" )
 	Detail {
