@@ -11,6 +11,8 @@ use nagios_antelope_utils qw(&categorize_return_value
 	= \fBparse_ranges\fP($\fIwarning_input\fP, $\fIcritical_input\fP)
 ($error_code, $description) = \fBcategorize_return_value\fP($\fIreturn_value\fP,
 	$\fIwarn_at\fP, $\fIwarn_hi\fP, $\fIwarn_low\fP, $\fIcrit_at\fP, $\fIcrit_hi\fP, $\fIcrit_low\fP)
+print_version($VERSION, $AUTHOR);
+print_results($service_name, $result_code, $result_perf_val, $result_descr);
 .fi
 .SH DESCRIPTION
 \fBparse_ranges\fP reads in user input to \-w and \-c options and parses
@@ -36,6 +38,12 @@ sorts it into a valid Nagios plugin return code given the warning
 and critical ranges that were input. The arguments include the return
 value that needs to be sorted, along with the values that make up the
 output of the \fBparse_ranges\fP subroutine. 
+
+\fBprint_version\fP prints a version banner with version number and author
+to STDOUT.
+
+\fBprint_results\fP prints to STDOUT a Nagios-friendly string with the service
+name, a result code, a performance value, and a description of that value.
 
 %\fIERRORS\fP is an associative array to be used for generating return
 values. It is defined as follows:

@@ -36,17 +36,23 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(&categorize_return_value 
 		&parse_ranges
+		&print_version
+		&print_results
 		%ERRORS
 		$VERBOSE);
 
-our ($VERBOSE) = 0;
+
 use strict;
+
+### PROTOTYPES
 sub categorize_return_value($$$$$$$);
 sub check_range($$$$);
 sub parse_ranges($$);
+sub print_version($$);
+sub print_results($$$$);
 
 our (%ERRORS)=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
-
+our ($VERBOSE) = 0;
 
 ######
 # Parse and check warn and critical range arguments from command line
@@ -217,4 +223,53 @@ sub check_range($$$$)
 	# didnt catch any, so we must be outside the range
 	return 0;
     }
+}
+
+######
+# Prints the version string for a program. Includes author, version, and
+# program name.
+sub print_version($ $)
+{
+    my ($version, $author) = @_;
+    print "$0 version $version\nwritten by $author\n";
+}
+
+######
+# Print the results in a nagios friendly format given a result code 
+# and possibly some performance data.
+# Param: service_name - A short name for the service to display in Nagios
+# Param: result_code - A scalar from %ERRORS
+# Param: result_perf - A scalar performance value that was fetched
+# Param: result_descr - A short description (1-2 words) describing the
+#                       performance value (ie "descr = $result_perf")
+sub print_results($ $ $ $)
+{
+    my ($service_name, $result_code, $result_perf, $result_descr) = @_;
+    my ($prefix);
+
+    SWITCH :
+    {
+        if ($result_code == $ERRORS{'OK'})
+        {
+            $prefix = "$service_name OK:";
+            last SWITCH;
+        }
+        if ($result_code == $ERRORS{'WARNING'})
+        {
+            $prefix = "WARNING:";
+            last SWITCH;
+        }
+        if ($result_code == $ERRORS{'CRITICAL'})
+        {
+            $prefix = "CRITICAL:";
+            last SWITCH;
+        }
+        if ($result_code == $ERRORS{'UNKNOWN'})
+        {
+            $prefix = "UNKNOWN:";
+            last SWITCH;
+        }
+    }
+    print "$prefix $result_descr = $result_perf "
+        . "| \'$result_descr\' = $result_perf\n";
 }
