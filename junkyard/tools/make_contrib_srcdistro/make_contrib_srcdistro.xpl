@@ -3,12 +3,25 @@
 
 use Datascope;
 
+require "getopts.pl" ;
+
+if( ! &Getopts('r:') ) {
+	die( "Usage: $0 [-r README-file]\n" );
+}
+
 $cvsroot = pfget( "make_contrib_srcdistro", "cvsroot" );
 $package = pfget( "make_contrib_srcdistro", "package" );
 
 $day = strdate( str2epoch( "now" ) );
 
 $tarfile_name = epoch2str( str2epoch( "now" ), "Antelope_contrib_src_%b_%d_%Y.tar" );
+
+if( $opt_r ) {
+	$readme = `abspath $opt_r`;
+	chomp( $readme );
+} else {
+	$readme = "$ENV{ANTELOPE}/data/misc/README.contrib";
+}
 
 $pwd = `pwd`;
 chomp( $pwd );
@@ -23,8 +36,8 @@ system( $cmd );
 
 chdir( "/tmp" );
 
-printf STDERR "Copying readme file:\n";
-$cmd = "/bin/cp $ENV{ANTELOPE}/data/misc/README.contrib .";
+printf STDERR "Copying readme file from $readme:\n";
+$cmd = "/bin/cp $readme README.contrib";
 system( $cmd );
 
 printf STDERR "Building tar-file $tarfile_name:\n";

@@ -3,7 +3,7 @@
 make_contrib_srcdistro \- Package Antelope contributed-code for export
 .SH SYNOPSIS
 .nf
-make_contrib_srcdistro
+make_contrib_srcdistro [-r readme_file]
 .fi
 .SH DESCRIPTION
 make_contrib_srcdistro uses the cvs(1) export command to check-out a 
@@ -17,7 +17,10 @@ is tagged with the date of formation, such that it can be regenerated
 if necessary. make_contrib_srcdistro names the output tar file 
 according to this timestamp.
 .SH OPTIONS
+-r readme_file Takes the README file from the specified path instead of the 
+standard location 
 .SH FILES
+$(ANTELOPE)/data/misc/README.contrib  contains the readme file for the tar distribution
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .nf
