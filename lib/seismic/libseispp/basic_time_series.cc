@@ -36,4 +36,22 @@ void Basic_Time_Series::rtoa(double tshift)
 	gaps = shifted_gaps;
 }
 
+Basic_Time_Series::Basic_Time_Series()
+{
+	t0=0.0;
+	tref=absolute;
+	live=false;
+	dt=0.0;
+	ns=0;
+}
+Basic_Time_Series::Basic_Time_Series(const Basic_Time_Series& tsin)
+{
+	t0=tsin.t0;
+	tref=tsin.tref;
+	live=tsin.live;
+	dt=tsin.dt;
+	ns=tsin.ns;
+	gaps=tsin.gaps;
+}
+
 }  // end SEISPP namespace encapsulation

@@ -114,7 +114,7 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 		this_decimator!=declist.end();++this_decimator)
 	{
 		*result = this_decimator->apply(result->d,trim);
-		total_lag += rint(static_cast<double>(result->lag)*decout);
+		total_lag += static_cast<int>(rint(static_cast<double>(result->lag)*decout));
 		dtout *= this_decimator->decfac;
 		decout *= this_decimator->decfac;
 	}
@@ -267,15 +267,16 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 	else
 	{
 		// This assumes decfac is close to an integer
+		int idecfac=static_cast<int>(rint(decfac));
 		if(trim)
-			nsamp_out = (nsamp_in - ncoefs)/rint(decfac);
+			nsamp_out = (nsamp_in - ncoefs)/idecfac;
 		else
-			nsamp_out = nsamp_in/rint(decfac);
+			nsamp_out = nsamp_in/idecfac;
 		dout = new Decimated_vector(nsamp_out);
 		if(trim)
 		{
 			dout->lag = lag;
-			for(i=0,ii=lag;i<nsamp_out;++i,ii+=decfac)
+			for(i=0,ii=lag;i<nsamp_out;++i,ii+=idecfac)
 			{
 				double dotprd;
 				dotprd = ddot(ncoefs,&coefs[0],1,s+ii-lag,1);
@@ -285,7 +286,7 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 		else
 		{
 			dout->lag = 0;
-			for(i=0,ii=1-lag;i<nsamp_out;++i,ii+=decfac)
+			for(i=0,ii=1-lag;i<nsamp_out;++i,ii+=idecfac)
 			{
 				int ndot,id0;
 				double dotprd;

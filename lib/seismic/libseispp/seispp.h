@@ -144,6 +144,9 @@ public:
 
 enum Time_Reference_Type {absolute,relative};
 
+#ifndef sun
+int nint(double);
+#endif
 // base class
 // includes essential parameters for any time series including gap processing
 class Basic_Time_Series
@@ -153,6 +156,8 @@ public:
 	double dt,t0;
 	int ns;
 	Time_Reference_Type tref;
+	Basic_Time_Series::Basic_Time_Series();
+	Basic_Time_Series::Basic_Time_Series(const Basic_Time_Series&);
 	bool is_gap(int);  // query by sample number
 	bool is_gap(double);  // query by time
 	void add_gap(Time_Window tw){gaps.insert(tw);};

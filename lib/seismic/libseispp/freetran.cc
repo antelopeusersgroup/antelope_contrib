@@ -1,3 +1,4 @@
+#include <float.h>
 #include "seispp.h"
 using namespace SEISPP;
 namespace SEISPP {

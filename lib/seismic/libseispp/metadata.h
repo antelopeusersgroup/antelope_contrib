@@ -13,6 +13,7 @@ namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
+// Holds global default metadata
 //
 //This object is used for selective copy
 //

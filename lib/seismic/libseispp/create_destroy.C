@@ -11,29 +11,20 @@ namespace SEISPP
 {
 //
 // simple constructors for the Time_Series object are defined inline
-// in seispp.h.  First the copy constructors
+// in seispp.h.  
 //
-Time_Series::Time_Series() : Metadata()
+Time_Series::Time_Series() : Basic_Time_Series(), Metadata()
 {
-	live=false;
 	s.reserve(0);
-	dt=0.0;
-	t0=0.0;
-	ns=0;
-	tref=absolute;
 }
-Time_Series::Time_Series(int nsin) : Metadata()
+Time_Series::Time_Series(int nsin) : Basic_Time_Series(), Metadata()
 {
-	live=false;
 	s.reserve(nsin);
-	dt=0.0;
-	t0=0.0;
-	ns=0;
-	tref=absolute;
 }
 	
-Time_Series::Time_Series(const Time_Series& tsi) : Metadata(dynamic_cast<Metadata&>(tsi)),
-				Basic_Time_Series(dynamic_cast<Basic_Time_Series&>(tsi))
+Time_Series::Time_Series(const Time_Series& tsi) : 
+		Basic_Time_Series(dynamic_cast<const Basic_Time_Series&>(tsi)),
+		Metadata(dynamic_cast<const Metadata&>(tsi))
 {
 	if(live)
 	{
@@ -349,9 +340,9 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 }
 
 Three_Component_Seismogram::Three_Component_Seismogram
-			(const Three_Component_Seismogram& t3c)
-				:  Metadata(dynamic_cast<Metadata&>(t3c)),
-				   Basic_Time_Series(dynamic_cast<Basic_Time_Series&>(t3c)),
+			(const Three_Component_Seismogram& t3c):
+	 Basic_Time_Series(dynamic_cast<const Basic_Time_Series&>(t3c)),
+	 Metadata(dynamic_cast<const Metadata&>(t3c)),
 					u(t3c.u)
 {
 	int i,j;

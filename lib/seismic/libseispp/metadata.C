@@ -4,6 +4,7 @@
 #include <string>
 #include "metadata.h"
 using namespace std;
+static Pf *Metadata_defaults_pf;
 namespace SEISPP
 {
 
@@ -14,7 +15,6 @@ namespace SEISPP
 // executed.  Here we utilized this to initialized a global parameter 
 // space for the library used as a default template for metadata
 //
-static Pf *Metadata_defaults_pf;
 void _init()
 {
 	char *mddname=(char *)"metadata_defaults";
