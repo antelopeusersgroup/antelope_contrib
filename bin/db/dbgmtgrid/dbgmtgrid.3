@@ -1,0 +1,85 @@
+.TH DBGMTGRID 3 "$Date$"
+.SH NAME
+dbgmtgrid \- perl routines to construct gmt grid from database
+.SH SYNOPSIS
+.nf
+$rc = dbgmtgrid( @db, $rectangle, $outfile
+		      [, verbose => 1 ]
+		      [, spacing => dx[m|c][/dy[m|c]] )
+.fi
+.SH DESCRIPTION
+dbgmtgrid takes an input view containing records of a gmt1.0 database. 
+Applying the gmt commands grdcut(1), grdedit(1), and grdpaste(1), it cuts out 
+all the pieces it needs to cover the requested region and writes the 
+resulting grid to the specified output file. If an optional nonzero $verbose
+argument is specified, all commands are run in verbose mode. dbgmtgrid 
+tests the input rectangle against the database entries at several different
+phase-wrapping values, allowing request regions to be specified in the 
+most convenient way for the user and nevertheless produce the expected 
+output (provided, of course, that the region of interest is represented 
+in one form or another in the database). If the rectangle is specified 
+with an eastern longitude numerically less than the western longitude
+(e.g. 178/-177), the eastern longitude will be phase-unwrapped by 360
+degrees (producing a grid from 178 to 183 degrees in the previous example).
+
+If the spacing option is specified, the grid will be resampled to the 
+specified spacing. An 'm' or 'c' appended indicates minutes or seconds, 
+respectively.
+the specified value
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+@db = dbopen( "$griddbname", "r" );
+@db = dblookup( @db, "", "grids", "", "" );
+
+$rc = dbgmtgrid( @db, $rectangle, $outfile, verbose => 1 );
+
+if( $rc ) {
+        elog_flush( 1, 0 );
+        die( "dbgmtgrid failed\\n" );
+}
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+dbgmtgrid returns 0 upon success, -1 otherwise (logging errors 
+via the elog(3) facility).
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbgmtgrid(1), grdraster(1)
+.fi
+.SH "BUGS AND CAVEATS"
+dbgmtgrid assumes that the input database is 'reasonable'. Presumptions:
+
+The requested region is not wider than 360 degrees;
+
+No part of the requested region is represented more than once 
+in the input view;
+
+All files in the input view have identical dx; similarly all files 
+have identical dy;
+
+All files in the input view share the same registration type, i.e. 
+pixel registration or grid registration;
+
+The files in the input view are contiguous and rectangular in lat/lon,
+and with a regular grid of boundaries.
+
+These routines have only been tested with grids having pixel-registered nodes.
+
+dbgmtgrid currently does not support the [r] suffix for the rectangular 
+region, due to its dependence on the projection.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
