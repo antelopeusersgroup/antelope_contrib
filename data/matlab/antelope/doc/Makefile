@@ -18,7 +18,7 @@ include $(ANTELOPEMAKE)
 
 .SUFFIXES: .SUFFIXES .pdf .fm
 
-.fm.pdf: pdf_settings.fm fmbatch_wrapper
+.fm.pdf: pdf_settings.fm fmbatch_wrapper Antelope_Toolbox_for_Matlab.fm
 	make fmbatch_wrapper
 	$(RM) fmbatch_script
 	echo Open $< | cat > fmbatch_script
