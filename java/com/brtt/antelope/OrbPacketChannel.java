@@ -24,24 +24,10 @@ import java.text.*;
 public class OrbPacketChannel extends Object {
     
     /**
-     * Holds the SEED network code.
+     * Holds the souce name.
      */
-    public String net;
-    
-    /**
-     * Holds the SEED station code.
-     */
-    public String sta;
-    
-    /**
-     * Holds the SEED channel code.
-     */
-    public String chan;
-    
-    /**
-     * Holds the SEED location code.
-     */
-    public String loc;
+
+    public SourceName srcname;
     
     /**
      * Holds the calib value.
@@ -79,7 +65,8 @@ public class OrbPacketChannel extends Object {
     public int data[] = null;
     
     /**
-     * Holds the current size of data[]
+     * Holds the current size of data[].  (Is this necessary? Isn't the same information
+     * available as data.length? --tobin ) 
      */
     public int datasize = 0;
         
@@ -88,35 +75,35 @@ public class OrbPacketChannel extends Object {
     /**
      * Creates a new OrbPacketChannel object.
      **/
-    public OrbPacketChannel() {
+
+    public OrbPacketChannel(int data[], SourceName srcname, double calib, double calper, 
+			    String segtype, double time, double samprate) {
+	
+	this.data = data;              // FixMe: does this make a copy of the array?
+	this.datasize = data.length;
+	this.nsamp = data.length;
+	
+	this.srcname = srcname;        // again, should we clone()?
+	this.calib = calib;
+	this.calper = calper;
+	this.segtype = segtype;
+	this.time = time;
+	this.samprate = samprate;
     }
-          
+
     /** Public Methods */
     
     /**
      * This gets a string description of the Antelope packet channel.
      * @return A string suitable for display.
      */
-    public String getList () {
+    public String toString() {
         Epoch epoch = new Epoch (time);
-        String s;
-        int i;
+
+	String s = epoch.toString () + ":" + srcname.toString() + 
+	    " " + samprate + " " + nsamp;
         
-        if (loc.length() < 1) {
-            s =    epoch.toString () + ":"
-                        + net + "_" + sta + "_" + chan
-                        ;
-        } else {
-            s =    epoch.toString () + ":"
-                        + net + "_" + sta + "_" + chan + "_" + loc
-                        ;
-        }
-        
-        s += " " + samprate + " " + nsamp;
-        
-        int n = nsamp;
-        if (n > 10) n = 10;
-        for (i=0; i<n; i++) {
+        for (int i=0; i < (nsamp > 10 ? 10 : nsamp) ; i++ ) {
             s += " " + data[i];
         }
         
