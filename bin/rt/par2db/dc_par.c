@@ -58,11 +58,6 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
     (*Pkt)->pkttype = ntohl (hdr->prehdr.pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->prehdr.hdrtype);
 
-     if ( Log )  {
-        hexdump( stderr, packet+ hdr->prehdr.hdrsiz,hdr->prehdr.pktsiz );
-        fflush(stderr);
-     }
-
     off = UID_DC+hdr->prehdr.hdrsiz;
     memcpy( (char *) &sval, (char *) &packet[off], 2 );
     sprintf( (char *) &dcname[0], "%d\0", sval );
@@ -93,7 +88,7 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
       } else if( !strncmp( DCFILE_NAME[dc], "BATT", 4 ) )  {
 	     off = DCPAR_OFF[dc] + hdr->prehdr.hdrsiz;
              memcpy( (char *) &sval, (char *) &packet[off], 2 );
-             val = sval/100;
+             val = sval;
       }  else {
        
 	     off = DCPAR_OFF[dc] + hdr->prehdr.hdrsiz;

@@ -33,11 +33,6 @@ int anza_par( uchar_t *packet,
     (*Pkt)->pkttype = ntohl (hdr->pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->hdrtype);
 
-    if( Log)  {
-       hexdump( stderr, packet+hdr->hdrsiz, hdr->pktsiz  );
-       fflush( stderr);
-    }
-
 
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
 

@@ -38,12 +38,12 @@ sval = (ushort_t *) &packet[2];
 fprintf(stderr, "%c %c - %0x:%d (%0x %0x %0x %0x)\n", 
 packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
 */
-
+/*
     if( Log )  {
        hexdump( stderr, packet, 4 );
        fflush(stderr);
     }
-
+*/
 
     aclc_stat = packet[1];
     mclc_stat = packet[0];

@@ -94,6 +94,10 @@ new_dfile (Db_buffer *buf, PktChannel *new, double crnt_time )
            buf->steim->s100.samprate = buf->samprate;
 
     }
+/*
+fprintf( stderr,"filename %s new tmax %lf\n", buf->path,  buf->tmax );
+*/
+
     return 1;
 }
 

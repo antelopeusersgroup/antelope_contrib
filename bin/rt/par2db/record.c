@@ -46,10 +46,30 @@ int record ( PktChannel *new , Db_buffer *buf)
     } 
     npts = TIME2SAMP (buf->crnt_time, buf->samprate, new->time);
     if ( npts < 0 ) {
-        complain ( 0, "%s_%s_%s : dropping data at time=%lf\n"
+
+	wrt_last_rec ( buf ) ;
+        if( buf->tmax < new->time ) {
+          
+/*  
+fprintf( stderr, "newdfile:%lf max:%lf\n", new->time, buf->tmax);
+*/
+
+            new_dfile( buf, new, new->time );
+        } else {
+           
+/*
+fprintf( stderr, "newrecord crnt:%lf newtime:%lf\n", buf->crnt_time, new->time);
+*/
+           if ( !new_dbrecord (buf, new, new->time ) ) 
+               die (0, "Couldn't add new record to database.\n" ) ; 
+        }
+
+/*      complain ( 0, "%s_%s_%s : dropping data at time=%lf\n"
             "data starts before current time=%lf\n", 
             buf->net, buf->sta, buf->chan, new->time, buf->crnt_time );
         return -1 ; 
+
+*/
     }
  
     if ( !TRCONTIGUOUS(buf->stime, new->time, buf->samprate, buf->nsamp))  {
@@ -61,9 +81,20 @@ fflush(stderr);
 */
 
         wrt_last_rec ( buf ) ; 
-        if( buf->tmax < new->time ) new_dfile( buf, new, new->time );
-        else if ( !new_dbrecord (buf, new, new->time ) ) 
-           die (0, "Couldn't add new record to database.\n" ) ; 
+        if( buf->tmax < new->time )  {
+            new_dfile( buf, new, new->time );
+/*
+fprintf( stderr, "newdfile2:%lf max:%lf\n", new->time, buf->tmax);
+*/
+        } else  {
+           
+/*
+fprintf( stderr, "newrecord2 crnt:%lf newtime:%lf\n", buf->crnt_time, new->time);
+*/
+            if ( !new_dbrecord (buf, new, new->time ) ) 
+               die (0, "Couldn't add new record to database.\n" ) ; 
+        }
+
     }
     doff = 0;
     nsamp_now = 0;

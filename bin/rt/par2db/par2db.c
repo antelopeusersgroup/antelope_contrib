@@ -14,7 +14,9 @@ char *Pfile = "pkt.pf";
 
 extern Source *new_source();
 extern Db_buffer *new_buf();
+extern double get_last_dbtimes();
 
+ 
 int main (argc, argv)
 int             argc;
 char          **argv;
@@ -22,8 +24,9 @@ char          **argv;
 
     extern char    *optarg;
     extern int      optind;
-    double          pkttime;
-    double          after = 0.0;
+    double          loctime, pkttime;
+    double          until=9.999e99,
+                    after = 0.0;
     int             err=0, c;
     int             rdorb;
     int             npkt = 30,
@@ -36,7 +39,8 @@ char          **argv;
     char           *packet=0;
     char            srcname[ORBSRCNAME_SIZE];
     char   	   acomp[64];
-    char           *s, lcmdfile[64];
+    char           *s, *s1, lcmdfile[64];
+    struct PreHdr  *hdr;
     Dbptr           db;
     Save_params     par;
     int             dump=0, nbytes, bufsize = 0;
@@ -148,18 +152,29 @@ char          **argv;
 	}
 	if ((pktid = orbafter (rdorb, after-0.001)) < 0) 
 	    die (1, "orbafter to %s failed\n", strtime (after));
-	else
-	    printf ("starting pktid is #%d\n", pktid);
-
+	else  {
+	    printf ("starting collect data at %s\n", s=strtime(after) );
+	    free(s);
+        }
     } else {
-	after = get_last_dbtimes (db);
+	after = ( double) get_last_dbtimes (db);
 	if ((pktid = orbafter (rdorb, after)) < 0) {
 	    die (1, "orbafter to %s failed\n", strtime (after));
-	} else
-	    printf ("starting pktid is #%d\n", pktid);
+	} else  {
+	    printf ("starting collect data at %s\n", s=strtime(after) );
+	    free(s);
+        }
+    }
+
+    if ( argc - optind == 1 ) {
+         after_str = argv[optind++] ;
+         until = str2epoch ( after_str ) ;
+         if ( until < after )  until += after ;
     }
 
     err = 0;
+    loctime = now();
+
     while(1) {
 
 	if (orbreap (rdorb, &pktid, srcname, &pkttime, &packet, &nbytes, &bufsize)) {
@@ -178,7 +193,17 @@ char          **argv;
     	    }
 	} else  {
 	     err = 0;
-	
+
+             if( pkttime - loctime > 86400.0 )  {
+                 loctime = now();
+                 if( pkttime - loctime > 86400.0 ) {
+                   complain( 0, "%s: pkttime is too big - %s.\nWill drop %s packet\n",
+                      s= strtime(loctime), s1=strtime(pkttime), srcname);
+                   free(s); free(s1);
+                   continue;
+                 }
+             }
+               	
              if( strncmp( srcname, "/db", 3) == 0 ||
 	         strncmp( srcname, "/pf", 3) == 0 ||
 	         strncmp( srcname, "/dcdas", 6) == 0 )  
@@ -200,13 +225,14 @@ char          **argv;
      
 	         default:
      
-                     if( pkttime - asource->last  >= DINTV )  {
+                     if( fabs(pkttime - asource->last)  >= DINTV )  {
 	                   asource->last = pkttime;
 	                   setarr (sources, srcname, asource);
                      }  else continue;
      
                      if( dump)  {
-		         hexdump( stdout, packet, nbytes );
+		         hdr = ( struct PreHdr *) packet;
+			 hexdump( stdout, packet+hdr->hdrsiz, 62 );
 		         fflush(stdout);
 		     } 
 	             if( Log)  {
@@ -225,12 +251,18 @@ char          **argv;
 			          fprintf( stderr, "%s %lf\n", acomp, pkttime );
 			          fflush(stderr);
 			       }
-			       if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 )
-	                            record (achan, buffer) ;
-	                       else {
-	                            buffer = new_buf( achan, &par);
-	                            setarr( Parms, acomp, buffer );
-	                       }
+			       if( fabs(pkttime - until) < 1 ) 	 wrt_last_rec ( buffer ) ;
+			       else if (  until - pkttime  > 1 )  {
+				    if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 )
+	                                record (achan, buffer) ;
+	                           else {
+	                                buffer = new_buf( achan, &par);
+	                                setarr( Parms, acomp, buffer );
+	                           }
+			       } else  {
+	                           printf ("finish collect data at %s\n", s=strtime(pkttime) );
+				   exit(0); 
+			       }
 	                     }
 	                     break;
      

@@ -33,10 +33,6 @@ struct Packet **Pkt;
 
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
     
-    if( Log )  {
-       hexdump( stderr, packet+doff, hdr->prehdr.pktsiz);
-       fflush(stderr);
-    }
     for( i = 0, ch = 0; i < MAXNUMPAR_BBA2; i++, ch++ )  {
       achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
       if ( achan == 0 ) {
