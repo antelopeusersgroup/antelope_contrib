@@ -4,7 +4,6 @@ DATA= \
 	perl.ref \
 	scripting.ref \
 	tcldb.ref \
-	tclinterp.ref \
 	tclorb8.ref \
 	tkBrttPlot.ref
 

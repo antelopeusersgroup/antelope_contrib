@@ -2,10 +2,11 @@ DATADIR=refguides/tables
 DATA= \
 	environment.ref \
 	projections.ref \
-	table_datascope.ref \
-	table_expressions.ref \
-	table_time.ref \
-	table_schemas.ref \
-	time_expressions.ref 
+	datascope_constants.ref \
+	datascope_expressions.ref \
+	time_formats.ref \
+	schemas.ref \
+	tcl_extensions.ref \
+	time_format_codes.ref 
 
 include $(ANTELOPEMAKE)
