@@ -101,8 +101,12 @@ int *last_pktid, RTlocate_Options opt)
 
 	/* This loop is part (1) of the algorithm */
 	while (1) {
-		orbreap (orb, &pktid, srcname, &time, 
-					&packet, &nbytes, &bufsize);
+		if(orbreap (orb, &pktid, srcname, &time, 
+					&packet, &nbytes, &bufsize)) 
+		{
+			register_error(0,"orbreap error at packet id %d\nContinuing\n",pktid);
+			continue;
+		}
 		if (strncmp(srcname, "/db/", 4)) continue;
 		db = orbpkt2db (packet, nbytes, dbtmp);
 		dbquery (db, dbTABLE_NAME, &table_name);
@@ -254,7 +258,8 @@ Tbl *orbhypo_to_genloc(ORB_Hypocenter *hyp, Arr *arrphase, Arr *stations)
 		if(a->phase == NULL)
 		{
 			complain(1,"Don't know how to handle phase %s\nArrival at %s at time %lf skipped\n",
-				hyp->assocs[i].iphase,hyp->assocs[i].sta,time);
+				hyp->assocs[i].iphase,hyp->assocs[i].sta,
+				hyp->assocs[i].time);
 			free(a);
 			continue;
 		}

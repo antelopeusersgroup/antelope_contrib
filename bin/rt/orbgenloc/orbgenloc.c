@@ -704,7 +704,7 @@ have the arguments botched */
 
 
 	/* Now we open the orb server connections */
-	if( (orbin=orbopen(orbname,"r")) < 0)
+	if( (orbin=orbopen(orbname,"r&")) < 0)
 		die(0,"Cannot open ring buffer %s for reading\n",orbname);
 	
 	if(orbselect(orbin,"/db/event|/db/origin|/db/assoc|/db/arrival") < 0)
@@ -740,7 +740,7 @@ have the arguments botched */
 */
 	
 
-	if( (orbout=orbopen(orbname,"w")) < 0)
+	if( (orbout=orbopen(orbname,"w&")) < 0)
 		die(0,"Cannot open ring buffer %s for writing\n",orbname);
 
 	/* This loop is broken only by an error.  We call bury after each 
