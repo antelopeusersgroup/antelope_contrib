@@ -1,0 +1,19 @@
+subset_expr lon > -145 && lon < 0
+pgc_address mulder@pgc.nrcan.gc.ca
+sending_agency AEIC
+subject AEIC pickfiles for PGC
+model_codes &Arr{
+	augustine	AG
+	gulfak		GA
+	iasp91		91
+	northak		NA
+	pav_dut		PD
+	red_ili		RI
+	scak		SC
+}
+locator_codes &Arr{
+	dbgenloc	G
+	dblocsat	I
+}
+ignore_fm 1
+# arrival_reject_expr iphase != "amp"

@@ -1,0 +1,145 @@
+.TH DB2PGC 1 "$Date$"
+.SH NAME
+db2pgc \- submit arrival and hypocenter information to PGC in Loon format
+.SH SYNOPSIS
+.nf
+db2pgc [-s] [-c address] [-a address] dbname
+.fi
+.SH DESCRIPTION
+This program submits the arrival and hypocenter information in a database
+to the Pacific Geoscience Center (PGC). For the submission to
+take place to the address specified in the parameter file, the -s option
+must be used. With no options specified, db2pgc merely dumps its output
+to stdout for testing purposes.
+
+The subsetting expression for earthquake submission is specified in the
+parameter file.
+
+The output format of db2pgc is in Loon pickfiles, as implemented by Newt Inc.
+
+The parameter file specifies the subject line for the email messages, a
+translation table for Alaskan model names into PGC two-letter codes,
+and a translation table for one-letter codes for location programs. The
+boolean ignore_fm allows first-motions to be omitted from the PGC
+pickfiles. The arrival_reject_expr specifies a subset expression on the
+arrival table, useful to throw out unwanted phases.
+.SH OPTIONS
+-s      submit data to PGC. Without this, no submission is made to
+        PGC.
+
+-a      Instead of the mailing address specified in the parameter
+        file, db2pgc mails the report to the specified recipient.
+
+-c      Sends a copy of the email report to the specified recipient,
+        in addition to sending to the PGC (-s option) or another
+        address (-a option).
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+.ne 21
+
+nordic% pfecho db2pgc
+nordic%
+subset_expr lon > -145 && lon < 0
+pgc_address mulder@pgc.nrcan.gc.ca
+sending_agency AEIC
+subject AEIC pickfiles for PGC
+model_codes &Arr{
+        augustine       AG
+        gulfak          GA
+        iasp91          91
+        northak         NA
+        pav_dut         PD
+        red_ili         RI
+        scak            SC
+}
+locator_codes &Arr{
+        dbgenloc        G
+        dblocsat        I
+}
+ignore_fm 1
+arrival_reject_expr iphase != "amp"
+
+.fi
+.in
+.ft R
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.ne 6
+% db2pgc -s -c kent testdb/testdb
+PGC-format submission mailed to mulder@pgc.nrcan.gc.ca
+% 
+
+ OR
+
+% db2pgc testdb/testdb
+AEIC EARTHQUAKES
+C TF YearMoDy HrMn Secnd Latitude Longitude Depth  #St #Ph    -Magnitude-- Agncy
+C VM L Weight RMS- TErr  LatErr-- LonErr--- DErr-- MajHE MinHE VertE AzHor Agncy
+s L  20001018 1508 19.62  62.8152 -144.7593   2.14       7    ML     1.63  AEIC
+e SC G WT ON  0.76  0.73                      2.25  4.66  1.20  2.25  84.8 AEIC
+m  ML     1.63 (    )   8                                                  AEIC
+C E CENTRAL ALASKA                                                         AEIC
+C F CENTRAL ALASKA                                                         AEIC
+C Statn IC nHHMM SSSSS TCorr Q-Phase- IUW TTres LocW StDly Edistnc Azm Ain Agncy
+  PAX   SZ  1508 27.42  0.00  P       U 0  0.25 1.00  0.00    39.9 296     AEIC
+  SDG   SZ  1508 29.89  0.00  P       D 0  0.59 1.00  0.00    51.3 232     AEIC
+  TOA   SZ  1508 38.61  0.00  P       U 0  0.01 1.00  0.00   107.3 223     AEIC
+  KLU   SZ  1508 44.47  0.00  P       D 0 -0.99 1.00  0.00   158.9 203     AEIC
+  SCM   SZ  1508 47.87  0.00  P       U 0  0.74 1.00  0.00   171.8 232     AEIC
+  HDA   SZ  1508 51.55  0.00  P       D 0 -0.09 1.00  0.00   207.0 330     AEIC
+  KLU   SZ  1509 05.84  0.00  S       U 0  1.46 1.00  0.00   158.9 203     AEIC
+C Statn IC nHHMM SSSSS TCorr  -Phase-- Period -Amplitude-- T  -Magnitude-- Agncy
+A PAX   SZ  1508 37.05  0.00  Lg         0.18         0.06 A  ML     1.24x AEIC
+A SDG   SZ  1508 42.15  0.00  Lg         0.20         0.07 A  ML     1.37x AEIC
+A SCM   SZ  1509 14.89  0.00  Lg         0.62         0.05 A  ML     2.07x AEIC
+A HDA   SZ  1509 19.45  0.00  Lg         0.22         0.02 A  ML     1.85x AEIC
+% 
+
+.fi
+.in
+.ft R
+.SH DIAGNOSTICS
+db2pgc: no hypocenters for events in $dbname
+
+db2pgc: no hypocenters in $dbname
+
+db2pgc: no qualifying hypocenters in $dbname
+
+db2pgc: no arrival associations for hypocenters in $dbname
+
+db2pgc: no arrivals for hypocenters in $dbname
+
+.SH "SEE ALSO"
+.nf
+analysis_control(1)
+.fi
+.SH "BUGS AND CAVEATS"
+db2pgc only allows one phase of each type for a given station and
+a given earthquake. Conceivably, this filter belongs somewhere else.
+
+db2pgc will put an 'x' in to indicate that the magnitude is not used in
+the magnitude solution. This is not an accurate translation of the
+input database, however it is convenient for the receiving institution
+if they reprocess the event and do not want these magnitude readings
+used.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+
+and
+
+Taimi Mulder
+Pacific Geosciences Center
+
+October, 2000
+.fi
+.\" $Id$
