@@ -254,7 +254,7 @@ sub message_to_database {
 
 		my( $expr ) = "from == substr(\"$address\",0,$address_size)";
 
-		if( ( $dbcorr[3] = dbfind( @dbcorr, $expr, 0, 0 ) ) < 0 ) {
+		if( ( $dbcorr[3] = dbfind( @dbcorr, $expr ) ) < 0 ) {
 
 			dbaddv( @dbcorr, "from", $address,
 			 	"descrip", $real, 
@@ -299,7 +299,7 @@ sub filemail {
 	chomp( $subject = $mailobj->head->get( "Subject" ) );
 	$epoch = get_epoch( $mailobj );
 	$year = epoch2str( $epoch, "%Y" );
-	$sent_relpath = epoch2str( $epoch, $sent_archive_pattern );
+	$sent_relpath = epoch2str( $epoch, $Sent_archive_pattern );
 
 	$from = $mailobj->head->get( "From" );
 
