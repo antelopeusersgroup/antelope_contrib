@@ -3,7 +3,7 @@ BIN= eqcellphone_release
 PF=
 MAN1=eqcellphone_release.1
 
-ldlibs=	 $(TRLIBS) -lpkt -lorb $(SVR4LIBS)
+ldlibs=	 $(ORBLIBS)
 include $(ANTELOPEMAKE)  	
 			
 DIRS=			
