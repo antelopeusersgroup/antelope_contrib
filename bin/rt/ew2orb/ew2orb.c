@@ -173,13 +173,13 @@ describe_packet( Ew2orbPacket *e2opkt )
 		  e2opkt->modstr, 
 		  e2opkt->typestr );
 
-	if( ! strcmp( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) { 
+	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) { 
 
 		elog_notify( 0, "'%s':\tunpacked Heartbeat: \"%s\"\n",
 	  		e2opkt->itname, 
 	  		e2opkt->buf );
 
-	} else if( ! strcmp( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) { 
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) { 
 
 		if( e2opkt->th ) {
 
@@ -206,7 +206,7 @@ describe_packet( Ew2orbPacket *e2opkt )
 			  	e2opkt->itname  );
 		}
 
-	} else if( ! strcmp( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
 		if( e2opkt->th ) {
 
@@ -284,13 +284,14 @@ buf_intake( ImportThread *it )
 	RESIZE_BUFFER( char *, e2opkt->buf, 
 		       e2opkt->bufsize, it->nbytes - EWLOGO_SIZE );
 
+	memset( e2opkt->buf, 0, e2opkt->bufsize );
 	memcpy( e2opkt->buf, cp, it->nbytes - EWLOGO_SIZE );
 	e2opkt->nbytes = it->nbytes - EWLOGO_SIZE;
 
 	ewlogo_tostrings( e2opkt->inst, e2opkt->mod, e2opkt->type, 
 			  e2opkt->inststr, e2opkt->modstr, e2opkt->typestr );
 
-	if( ! strcmp( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) {
+	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) {
 
 		if( it->loglevel == VERYVERBOSE ) {
 
@@ -1261,8 +1262,10 @@ update_import_thread( char *name, Pf *pf )
 
 		ret = thr_create( NULL, 0, ew2orb_import, 
 				  (void *) name, 
-				  THR_DETACHED|THR_SUSPENDED,
+				  THR_DETACHED,
 				  &it->thread_id );
+
+		add_import_thread( name, it );
 
 		if( ret != 0 ) {
 
@@ -1270,17 +1273,9 @@ update_import_thread( char *name, Pf *pf )
 			    "'%s': Failed to create import thread: "
 			    "thr_create error %d\n", name, ret );
 			
-			mutex_unlock( &it->it_mutex );
-
-			free_ImportThread( &it );
+			delete_import_thread( it );
 
 			return;
-
-		} else {
-
-			add_import_thread( name, it );
-
-			thr_continue( it->thread_id );
 		}
 
 	} else if( pfcmp( oldpf, it->pf ) ) {
@@ -1420,11 +1415,12 @@ crack_packet( Ew2orbPacket *e2opkt )
 	int	nout = 0;
 	PktChannel *pktchan;
 	char	*dp;
+	char	*sp;
 	char	old_srcname[ORBSRCNAME_SIZE];
 	char	new_srcname[ORBSRCNAME_SIZE];
 	int	n;
 
-	if( ! strcmp( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) {
+	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) {
 
 		/* Acquiesce to Earthworm packing strategy of 
 		   memory-copying the entire trace-header structure. 
@@ -1456,7 +1452,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		mutex_lock( &e2opkt->it->it_mutex );
 		
-		if( strcmp( e2opkt->it->reject, "" ) ) {
+		if( ! STREQ( e2opkt->it->reject, "" ) ) {
 
 		    	n = strmatches( old_srcname, 
 					e2opkt->it->reject,
@@ -1483,7 +1479,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			}
 		}
 
-		if( strcmp( e2opkt->it->select, "" ) ) {
+		if( ! STREQ( e2opkt->it->select, "" ) ) {
 
 		    	n = strmatches( old_srcname, 
 					e2opkt->it->select,
@@ -1533,32 +1529,103 @@ crack_packet( Ew2orbPacket *e2opkt )
 		strcpy( pktchan->chan, e2opkt->pkt->parts.src_chan );
 		strcpy( pktchan->loc, e2opkt->pkt->parts.src_loc );
 
-		pktchan->nsamp = e2opkt->th->nsamp;
-		pktchan->samprate = e2opkt->th->samprate;
-		pktchan->time = e2opkt->th->starttime;
-		pktchan->calib = 0; /* SCAFFOLD */
-		pktchan->calper = -1; /* SCAFFOLD */
+		if( STREQ( e2opkt->th->datatype, "s4" ) ) {
 
-		allot( int *, pktchan->data, pktchan->nsamp * sizeof( int ) );
+			sp = (char *) &e2opkt->th->pinno;
+			mi2hi( &sp, &e2opkt->th->pinno, 1 );
 
-		if( ! strcmp( e2opkt->th->datatype, "s4" ) ) {
+			sp = (char *) &e2opkt->th->nsamp;
+			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th->nsamp * sizeof( int ) );
 
 			mi2hi( &dp, pktchan->data, pktchan->nsamp );
 
-		} else if( ! strcmp( e2opkt->th->datatype, "s2" ) ) {
+		} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			mi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th->nsamp * sizeof( int ) );
 
 			ms2hi( &dp, pktchan->data, pktchan->nsamp );
 
-		} else if( ! strcmp( e2opkt->th->datatype, "i4" ) ) {
+		} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+			
+			sp = (char *) &e2opkt->th->samprate;
+			vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			vd2hd( &sp, &e2opkt->th->endtime, 1 );
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vi2hi( &dp, pktchan->data, pktchan->nsamp );
 
-		} else if( ! strcmp( e2opkt->th->datatype, "i2" ) ) {
+		} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			vd2hd( &sp, &e2opkt->th->endtime, 1 );
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vs2hi( &dp, pktchan->data, pktchan->nsamp );
 		}
 		
 		pktchan->datasz = e2opkt->th->nsamp;
+
+		pktchan->nsamp = e2opkt->th->nsamp;
+		pktchan->samprate = e2opkt->th->samprate;
+		pktchan->time = e2opkt->th->starttime;
+
+		pktchan->calib = 0; /* SCAFFOLD */
+		pktchan->calper = -1; /* SCAFFOLD */
 
 		stuffPkt( e2opkt->pkt, 
 			  e2opkt->srcname, 
@@ -1567,7 +1634,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			  &e2opkt->orbpktnbytes, 
 			  &e2opkt->orbpktsz );
 
-	} else if( ! strcmp( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
 		allot( TRACE_HEADER *, e2opkt->th, 1 );
 
@@ -1626,7 +1693,7 @@ ew2orb_convert( void *arg )
 static void *
 ew2orb_pfwatch( void *arg )
 {
-	Pf	*pf;
+	Pf	*pf = 0;
 	int	rc;
 
 	thr_setprio( thr_self(), THR_PRIORITY_PFWATCH );

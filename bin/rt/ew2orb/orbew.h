@@ -55,6 +55,8 @@
 #define DEFAULT_BNS_TIMEOUT 60000
 #define EWLOGO_SIZE 9
 
+#define STREQ(a, b) (strcmp((a), (b)) == 0)
+
 typedef struct Earthworm_Info {
 	mutex_t	ew_mutex;
 	char	pfname[FILENAME_MAX];
