@@ -5,7 +5,7 @@ DATA=
 INCLUDE= pfxml.h
 PF=
 
-MAN3=
+MAN3= pf2xml.3	
 
 CLEAN=
 
