@@ -156,6 +156,7 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	char	thread[STRSZ];
 	char	name[STRSZ];
 	char	perm_string[2];
+	char	*ptr;
 	struct in_addr in;
 	double	latency_sec;
 
@@ -271,7 +272,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 		
 	if( STREQ( orbname, ":" ) ) {
 		
-		strcpy( orb_address, "" );
+		strcpy( orb_address, "127.0.0.1" );
 		strcpy( orbname_port, "" );
 
 	} else {
@@ -281,7 +282,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 
 		if( maxtbl( orbname_parts ) == 1 && orbname[0] == ':' ) {
 
-			strcpy( orb_address, "" );
+			strcpy( orb_address, "127.0.0.1" );
 			strcpy( orbname_port, poptbl( orbname_parts ) );
 
 		} else if( maxtbl( orbname_parts ) == 1 ) {
@@ -296,7 +297,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 
 		} else {
 
-			complain( 0, "pforbstat: unexpected error translating orb2orb argument <%s>\n",
+			elog_complain( 0, "pforbstat: unexpected error translating orb2orb argument <%s>\n",
 				  orbname );
 			strcpy( orb_address, "" );
 			strcpy( orbname_port, "" );
@@ -331,7 +332,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 
 		if( pfget_string( pfnames, orbname_port ) == 0 ) {
 
-			complain( 0, "pforbstat: couldn't translate orb port \":%s\"\n", orbname_port );
+			elog_complain( 0, "pforbstat: couldn't translate orb port \":%s\"\n", orbname_port );
 
 			*orb_port = 0;
 
@@ -344,64 +345,34 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 	return;
 }
 
-static void
-translate_nonroutable_address( char *serveraddress, char *result )
-{
-	FILE	*fp;
-	char	aline[STRSZ];
-	char	anaddress[STRSZ];
-	char	ipc[STRSZ];
-	struct in_addr addr;
-	Tbl	*parts;
-	int	rc;
-	static Hook *hook = 0;
+static int
+is_localhost( char *address ) {
+	
+	if( STREQ( address, "localhost" ) || 
+	    STREQ( address, "127.0.0.1" ) ) {
 
-	if( STREQN( serveraddress, "192.168", 7 ) ) {
-
-		ip2name( inet_addr( serveraddress ), anaddress );
-
-		if( strmatches( anaddress, "[.]", &hook ) ) {
-			
-			strcpy( result, serveraddress );
-
-		} else if( ( fp = fopen( "/etc/resolv.conf", "r" ) ) == NULL ) {
-
-			complain( 1, "Couldn't open resolv.conf\n" );
-
-		}  else {
-
-			while( getaline( fp, aline, STRSZ ) ) {
-
-				if( ! STREQN( aline, "domain", 6 ) ) {
-
-					continue;
-				}
-				parts = split( aline, ' ' );
-
-				sprintf( anaddress, "%s.%s", 
-					 anaddress, poptbl( parts ) );
-
-				freetbl( parts, 0 );
-			}
-
-			fclose( fp );
-		}
-
-		rc = name2ip( anaddress, &addr, ipc );
-
-		if( rc == 0 ) {
-			strcpy( result, ipc );
-		} else {
-			complain( 1, "name2ip failed for %s\n", anaddress );
-			strcpy( result, serveraddress );
-		}
+		return 1;
 
 	} else {
 
-		strcpy( result, serveraddress );
+		return 0;
 	}
+}
 
-	return;
+static int 
+is_nonroutable( char *address )
+{
+	if( STREQN( address, "192.168", 7 ) ||
+	    STREQN( address, "10.", 3 ) ||
+	    STREQN( address, "172.", 4 ) ||
+	    ( STREQN( address, "127.", 4 ) && ! STREQ( address, "127.0.0.1" ) ) ) {
+
+		return 1;
+
+	} else {
+		
+		return 0;
+	}
 }
 
 static Pf *
@@ -420,28 +391,34 @@ orbconnections2pf( Pf *pfanalyze )
 	char	*perm;
 	char	*clientaddress;
 	char	*serveraddress;
-	char	anaddress[STRSZ];
+	char	clientaddress_ipc[STRSZ];
+	char	serveraddress_ipc[STRSZ];
 	int	serverport;
-	int	aport;
 	double	atime;
 	regex_t	preg_findclient;
-	char	formal_name[STRSZ];
-	int	formal_count = 0;
+	char	closeorb[STRSZ];
 	char	o2omachine[STRSZ];
+	char	farorb[STRSZ];
+	int	closeport;
+	int	farport;
 	char	orbstat_machine_hostname[STRSZ];
 	char	orbstat_machine_ipc[STRSZ];
 	long	orbstat_machine_ip;
 	char	cmdline_fromorb[STRSZ];
 	char	cmdline_toorb[STRSZ];
 	char	cmdline_fromip[STRSZ];
+	char	cmdline_fromipc[STRSZ];
 	char	cmdline_toip[STRSZ];
+	char	cmdline_toipc[STRSZ];
+	char	formal_name[STRSZ];
+	int	formal_count = 0;
 	char	*reject;
 	char	*select;
 	int	cmdline_fromport;
 	int	cmdline_toport;
 	double	latency_sec;
 	struct in_addr addr;
-
+	
 	regcomp( &preg_findclient, "^orb2orb ", 0 );
 
 	pf = pfnew( PFFILE );
@@ -453,16 +430,45 @@ orbconnections2pf( Pf *pfanalyze )
 	       orbstat_machine_ipc, 
 	       &orbstat_machine_ip );
 
+	if( is_localhost( orbstat_machine_ipc ) ) {
+		
+		elog_complain( 0, "libpforbstat: orbstat machine is localhost; giving up on connection analysis\n" );
+		regfree( &preg_findclient );
+		return pf;
+
+	} else {
+
+		pfput_string( pf, "orbstat_machine", orbstat_machine_ipc );
+	}
+
 	pfget( pfanalyze, "server", (void **) &pfserver );
 	serveraddress = pfget_string( pfserver, "address" );
 	serverport = pfget_int( pfserver, "port" );
 
-	translate_nonroutable_address( orbstat_machine_ipc, anaddress );
-	pfput_string( pf, "orbstat_machine", anaddress );
+	if( is_nonroutable( serveraddress ) ) {
 
-	translate_nonroutable_address( serveraddress, anaddress );
-	pfput_string( pfserver, "address", anaddress );
-	serveraddress = pfget_string( pfserver, "address" );
+		elog_complain( 0, "libpforbstat: warning: monitored server %s is nonroutable\n", serveraddress );
+	}
+	
+	if( name2ip( serveraddress, &addr, serveraddress_ipc ) < 0 ) {
+		
+		elog_complain( 0, "libpforbstat: warning: name translation failed for %s\n", serveraddress );
+		strcpy( serveraddress_ipc, serveraddress );
+	}
+
+	if( is_localhost( serveraddress ) ) {
+
+		strcpy( closeorb, orbstat_machine_ipc );
+
+	} else {
+
+		strcpy( closeorb, serveraddress_ipc );
+	}
+
+	closeport = serverport;
+
+	/* SCAFFOLD: this causes memory problems. Leave untranslated for now:
+	pfput_string( pfserver, "address", closeorb ); Record the translated server address */
 
 	pfget( pfanalyze, "clients", (void **) &pfclients );
 
@@ -480,39 +486,10 @@ orbconnections2pf( Pf *pfanalyze )
 		if( ! regexec( &preg_findclient, what, 0, 0, 0 ) ) {
 
 			pfconnection = pfnew( PFARR );
+
+			/* Easy things: */
+
 			pfput_string( pfconnection, "what", what );
-
-			strcpy( o2omachine, "?" );
-
-			extract_orb2orb_orbargs( what, 
-						 cmdline_fromorb, 
-						 cmdline_toorb );
-
-			parse_orbname( cmdline_fromorb, 
-				       cmdline_fromip, 
-				       &cmdline_fromport );
-
-			parse_orbname( cmdline_toorb, 
-				       cmdline_toip, 
-				       &cmdline_toport );
-
-			pfput_string( pfconnection, 
-				      "cmdline_fromorb", cmdline_fromorb );
-
-			pfput_string( pfconnection, 
-				      "cmdline_toorb", cmdline_toorb );
-
-			pfput_string( pfconnection, 
-				      "cmdline_fromip", cmdline_fromip );
-
-			pfput_string( pfconnection, 
-				      "cmdline_toip", cmdline_toip );
-
-			pfput_int( pfconnection, 
-				   "cmdline_fromport", cmdline_fromport );
-
-			pfput_int( pfconnection, 
-				   "cmdline_toport", cmdline_toport );
 
 			if( ( reject = pfget_string( pfclient, "reject") ) != NULL ) {
 
@@ -538,110 +515,104 @@ orbconnections2pf( Pf *pfanalyze )
 					      "latency_sec", -9999999.99999 );
 			}
 
+			/* Preparatory raw-information acquisition: */
+
+			extract_orb2orb_orbargs( what, 
+						 cmdline_fromorb, 
+						 cmdline_toorb );
+
+			parse_orbname( cmdline_fromorb, 
+				       cmdline_fromip, 
+				       &cmdline_fromport );
+
+			if( name2ip( cmdline_fromip, &addr, cmdline_fromipc ) < 0 ) {
+		
+				elog_complain( 0, 
+					"libpforbstat: warning: name translation failed for %s\n", cmdline_fromipc );
+				strcpy( cmdline_fromipc, cmdline_fromip );
+			}
+
+			parse_orbname( cmdline_toorb, 
+				       cmdline_toip, 
+				       &cmdline_toport );
+
+			if( name2ip( cmdline_toip, &addr, cmdline_toipc ) < 0 ) {
+		
+				elog_complain( 0, 
+					"libpforbstat: warning: name translation failed for %s\n", cmdline_toipc );
+				strcpy( cmdline_toipc, cmdline_toip );
+			}
+
 			perm = pfget_string( pfclient, "perm" );
 
 			clientaddress = pfget_string( pfclient, "address" );
 
-			if( STREQ( perm, "r" ) ) {
-
-				pfput_string( pfconnection, 
-					      "fromaddress", serveraddress );
-
-				pfput_int( pfconnection, 
-					   "fromport", serverport );
-
-				if( STREQ( clientaddress, "127.0.0.1" ) &&
-				    ! STREQ( cmdline_fromip, "" ) ) {
-					
-					name2ip( cmdline_fromip, 
-						 &addr, anaddress );
-
-				} else if( STREQ( clientaddress, "127.0.0.1" ) 
-					   && STREQ( cmdline_fromip, "" ) ) {
-
-					/* SCAFFOLD not convinced this
-					   is correct: */
-					strcpy( anaddress, serveraddress );
-
-				} else if( STREQN( clientaddress, "192.168", 7 ) 
-					   && ! STREQ( cmdline_fromip, "" ) ) {
-
-					translate_nonroutable_address( 
-						clientaddress, anaddress );
-
-				} else if( STREQN( clientaddress, "192.168", 7 ) 
-					   && STREQ( cmdline_fromip, "" ) ) {
-
-					translate_nonroutable_address( 
-						clientaddress, anaddress );
-
-				} else {
-
-					strcpy( anaddress, clientaddress );
-				}
-
-				pfput_string( pfconnection, 
-					      "toaddress", anaddress );
-
-				pfput_int( pfconnection, 
-					      "toport", cmdline_toport );
-
-			} else { /* perm is "w" */
-
-				pfput_string( pfconnection, 
-					      "toaddress", serveraddress );
-
-				pfput_int( pfconnection, "toport", serverport );
-
-				if( STREQ( clientaddress, "127.0.0.1" ) &&
-				    ! STREQ( cmdline_fromip, "" ) ) {
-					
-					name2ip( cmdline_fromip, 
-						 &addr, anaddress );
-
-				} else if( STREQ( clientaddress, "127.0.0.1" ) 
-					   && STREQ( cmdline_fromip, "" ) ) {
-
-					/* SCAFFOLD not convinced this
-					   is correct: */
-					strcpy( anaddress, serveraddress );
-
-				} else if( STREQN( clientaddress, "192.168", 7 ) 
-					   && ! STREQ( cmdline_fromip, "" ) ) {
-
-					translate_nonroutable_address( 
-						clientaddress, anaddress );
-
-				} else if( STREQN( clientaddress, "192.168", 7 ) 
-					   && STREQ( cmdline_fromip, "" ) ) {
-
-					translate_nonroutable_address( 
-						clientaddress, anaddress );
-
-				} else {
-
-					strcpy( anaddress, clientaddress );
-				}
-
-				pfput_string( pfconnection, 
-					      "fromaddress", anaddress );
-
-				pfput_int( pfconnection, 
-					   "fromport", cmdline_fromport );
+			if( name2ip( clientaddress, &addr, clientaddress_ipc ) < 0 ) {
+		
+				elog_complain( 0, 
+					"libpforbstat: warning: name translation failed for %s\n", clientaddress );
+				strcpy( clientaddress_ipc, clientaddress );
 			}
 
-			if( STREQ( clientaddress, "127.0.0.1" ) ) {
+			/* Analysis */
 
-				strcpy( o2omachine, clientaddress );
+			if( is_nonroutable( clientaddress ) ) { 
+				
+				elog_complain( 0, "libpforbstat: warning: clientaddress %s is nonroutable\n", 
+						clientaddress );
+			} 
+			
+			if( is_localhost( clientaddress ) ) {
+			
+				strcpy( o2omachine, serveraddress_ipc );
 
-			}  else if( STREQ( clientaddress, serveraddress ) ) {
-
-				strcpy( o2omachine, serveraddress );
+			} else {
+				
+				strcpy( o2omachine, clientaddress_ipc );
 			}
 
 			pfput_string( pfconnection, "o2omachine", o2omachine );
 
-			sprintf( formal_name, "client%d", ++formal_count );
+			if( STREQ( perm, "w" ) ) {
+
+				strcpy( farorb, cmdline_fromipc );
+				farport = cmdline_fromport;
+
+			} else if( STREQ( perm, "r" ) ) {		
+
+				strcpy( farorb, cmdline_toipc );
+				farport = cmdline_toport;
+
+			} else {
+				elog_complain( 0, 
+						"libpforbstat: unexpected perm '%s' in client info; giving up on client\n", 
+						perm );
+				pffree( pfconnection );
+				continue;
+			}
+
+			if( STREQ( perm, "w" ) ) {
+			
+				pfput_string( pfconnection, "fromaddress", farorb );
+				pfput_int( pfconnection, "fromport", farport );
+
+				pfput_string( pfconnection, "toaddress", closeorb );
+				pfput_int( pfconnection, "toport", closeport );
+
+				pfput_string( pfconnection, "closeorb", "toaddress" );
+
+			} else {	/* perm == "r" */
+
+				pfput_string( pfconnection, "fromaddress", closeorb );
+				pfput_int( pfconnection, "fromport", closeport );
+
+				pfput_string( pfconnection, "toaddress", farorb );
+				pfput_int( pfconnection, "toport", farport );
+
+				pfput_string( pfconnection, "closeorb", "fromaddress" );
+			} 	
+
+			sprintf( formal_name, "client%03d", ++formal_count );
 			pfput( pfconnections, formal_name, pfconnection, PFPF );
 		}
 	}

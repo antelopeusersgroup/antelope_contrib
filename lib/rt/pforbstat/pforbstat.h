@@ -2,6 +2,7 @@
 #define PFORBSTAT
 #include "orb.h"
 #include "pf.h"
+#include "swapbytes.h"
 
 #ifdef	__cplusplus
 extern "C" {
