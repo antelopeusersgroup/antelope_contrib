@@ -4,7 +4,7 @@ dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
 dbrecenteqs_setup [-i index_map] [-g global_map] dbname
-dbrecenteqs dbname
+dbrecenteqs [-h] dbname
 .fi
 .SH DESCRIPTION
 dbrecenteqs_setup creates or adds to the mapstock table of the database 
@@ -18,8 +18,9 @@ stock maps and creating individual maps for each earthquake as they occur.
 dbrecenteqs creates the html code for a complete web-site of recently 
 detected earthquakes
 .SH OPTIONS
--g premade_grdimage_ps use precomputed file of postscript
-commands for contoured image
+-g global_map add specified global map to mapstock table
+-i index_map add specified index map to mapstock table
+-h don't regenerate focus maps; only recreate html 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE

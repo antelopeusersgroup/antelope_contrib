@@ -27,6 +27,7 @@ sub init_globals {
 		"description_of_local_html_home",
 		"region_phrases_database",
 		"page_refresh_seconds",
+		"other_region_links",
 		"nearest_places",
 		"credits",
 		"authtrans"
@@ -153,7 +154,8 @@ sub hypocenter_vitals {
 	
 	$auth = translate_author( $auth );
 
-	$depth = sprintf( "%.0d", $depth );
+	$depth_km = sprintf( "%.0d", $depth );
+	$depth_mi = sprintf( "%.0d", $depth_km / 1.609 );
 
 	my( $local_day ) = epoch2str( $time, 
 		"%A %B %o, %Y", $ENV{TZ} );
@@ -170,7 +172,7 @@ sub hypocenter_vitals {
 	$table .= "<TR><TD>Magnitude:</TD><TD>$mag_description</TD></TR>\n";
 	$table .= "<TR><TD>Latitude:</TD><TD>$lat</TD>\n";
 	$table .= "<TR><TD>Longitude:</TD><TD>$lon</TD>\n";
-	$table .= "<TR><TD>Depth:</TD><TD>$depth km</TD>\n";
+	$table .= "<TR><TD>Depth:</TD><TD>$depth_mi miles ($depth_km km)</TD>\n";
 	$table .= "<TR><TD>Author:</TD><TD>$auth</TD>\n";
 	$table .= "</TABLE>\n";
 
@@ -178,24 +180,53 @@ sub hypocenter_vitals {
 }
 
 sub location_header_line {
-	my( $lat, $lon ) = @_;
+	my( @db ) = splice( @_, 0, 4 );
+	my( $lat, $lon, $orid ) = @_;
 
-	if( ! defined( $State{region_phrases_database} ) ) {
+	my( $regname ) = quake_region( @db, $lat, $lon, $orid );
 
-		return "Earthquake: " . grname( $lat, $lon );
-	} 
+	if( $regname =~ /^(in|beneath|off|south of|west of|east of|north of) /i ) {
 
-	my( @regions ) = 
-		get_containing_regions( @{$State{region_phrases_database}},
-					$lat, $lon );
-	elog_flush( 1, 0 ); # Apparent bug in dbgroup. Prevent death
+		return "Earthquake $regname";
 
-	if( defined( $where = shift( @regions ) ) ) {
-		return "Earthquake $where";
 	} else {
-		return "Earthquake: " . grname( $lat, $lon );
+
+		return "Earthquake: " . $regname;
+	}
+}
+
+sub quake_region {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $lat, $lon, $orid ) = @_;
+	my( @regions, $regname );
+
+	@db = dblookup( @db, "", "quakeregions", "orid", $orid );
+	
+	if( $db[3] >= 0 ) {
+		
+		$regname = dbgetv( @db, "regname" );
+
+	} elsif( ! defined( $State{region_phrases_database} ) ) {
+
+		$regname = grname( $lat, $lon );
+		dbaddv( @db, "orid", $orid, "regname", $regname );
+
+	} else {
+
+		@regions = get_containing_regions( 
+				@{$State{region_phrases_database}},
+				$lat, $lon );
+
+		if( defined( $where = shift( @regions ) ) ) {
+			$regname = $where;	
+		} else {
+			$regname = grname( $lat, $lon );
+		}
+
+		dbaddv( @db, "orid", $orid, "regname", $regname );
 	}
 
+	return $regname;
 }
 
 sub nearest_locations {
@@ -260,8 +291,8 @@ sub create_focusmap_html {
 	$dbprefor[3] = 0;
 	my( @dbnonprefors ) = dbsubset( @db, "origin.orid != prefor" );
 
-	my( $lat, $lon, $mapname ) = 
-		dbgetv( @dbprefor, "lat", "lon", "mapname" );
+	my( $lat, $lon, $mapname, $orid ) = 
+		dbgetv( @dbprefor, "lat", "lon", "mapname", "origin.orid" );
 
 	open( H, ">$html_filename" );
 	print H "<HTML>\n";
@@ -281,7 +312,7 @@ sub create_focusmap_html {
 	print H "<A HREF=\"$State{html_base}\"><IMG ALIGN='top' " .
 		"SRC=\"$State{html_base}$State{wiggle}\" " .
 		"ALT=\"Link to $State{title}\"></A>";
-	print H location_header_line( $lat, $lon ) .
+	print H location_header_line( @dbprefor, $lat, $lon, $orid ) .
 		"</H1></CENTER>\n";
 	print H "<BR>";
 	print H "<CENTER><IMG SRC=\"$dfile\" align=center " .
@@ -301,7 +332,7 @@ sub create_focusmap_html {
 	print H "</CENTER>\n";
 	print H "<BR>";
 	print H "<CENTER>\n";
-	print H "<H2>Nearby locations:</H2>\n";
+	print H "<H2>This earthquake was:</H2>\n";
 	print H nearest_locations( $lat, $lon );
 	print H "</CENTER>\n";
 	print H "<BR>\n<CENTER>",
@@ -383,16 +414,32 @@ sub create_focusmap {
 			points=>$points );
 
 	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "" );
+	my( @dbscratch ) = dblookup( @dbwebmaps, "", "", "", "dbSCRATCH" );
+
+	dbputv( @dbscratch, "mapname", $Focus_mapspec{mapname} );
 
 	my( $url ) = $State{html_base} . 
 		concatpaths( $reldir, "$Focus_Mapspec{filebase}.html" );
 
-	$dbwebmaps[3] = dbaddv( @dbwebmaps, 
-	    	"mapname", $Focus_Mapspec{mapname},
-		"evid", $evid,
-    	    	"dir", concatpaths( $State{web_topdir}, $reldir ),
-    	    	"dfile", "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}",
-    	    	"url", $url );
+	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
+
+	if( defined( $rec = shift( @recs ) ) ) {
+		
+		$dbwebmaps[3] = $rec;
+
+		dbputv( @dbwebmaps, 
+    	    		"dir", concatpaths( $State{web_topdir}, $reldir ),
+    	    		"dfile", "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}",
+    	    		"url", $url );
+	} else {
+
+		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
+	    		"mapname", $Focus_Mapspec{mapname},
+			"evid", $evid,
+    	    		"dir", concatpaths( $State{web_topdir}, $reldir ),
+    	    		"dfile", "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}",
+    	    		"url", $url );
+	}
 
 	my( $webmap_image ) = dbextfile( @dbwebmaps );
 
@@ -437,36 +484,60 @@ sub hyperlinked_earthquake_table {
 
 	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
 
-	my( $table ) = "<CENTER><H2>" . 
-		       "Earthquakes Shown on This Page:" .
-		       "</H2></CENTER>\n";
+	my( $table ) = "<TABLE BORDER=6 RULES=rows CELLSPACING=6 BGCOLOR=beige>\n";
 
-	my( $table ) .= "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=beige>\n";
-
-	$table .= "<TR><TD BGCOLOR=white>Earthquakes Shown " .
-		  "on This Page:</TD></TR>\n";
+	$table .= "<TR><TD COLSPAN=3 BGCOLOR=white><CENTER>$nsymbols Earthquakes Shown " .
+		  "on This Page:</CENTER></TD></TR>\n";
+	
+	$table .= "<TR>\n";
+	$table .= "<TD><CENTER>Local Time</CENTER></TD>\n";
+	$table .= "<TD><CENTER>Magnitude</CENTER></TD>\n";
+	$table .= "<TD><CENTER>Region</CENTER></TD>\n";
+	$table .= "</TR>\n";
 	
 	for( $db[3]=0; $db[3]<$nsymbols; $db[3]++ ) { 
-		my( $lat, $lon, $depth, $time, $url ) = 
-			dbgetv( @db, "lat", "lon", "depth", "time", "url" );
+		my( $lat, $lon, $depth, $time, $orid, $url ) = 
+			dbgetv( @db, "lat", "lon", "depth", 
+				     "time", "origin.orid", "url" );
 		my( $mag_description ) = mag_description( @db );
 		my( $local_time ) = epoch2str( $time, 
 		"%I:%M %p %Z %A %B %o, %Y", $ENV{TZ} );
-		my( $region ) = location_header_line( $lat, $lon );
-		$region =~ s/Earthquake:* //;
+		my( $region ) = quake_region( @db, $lat, $lon, $orid );
 
-		$table .= "<TR><TD>";
-		$table .= "<A HREF=\"$url\">";
-		$table .= sprintf( "%-17s", "Magnitude $mag_description " );
-		$table .= sprintf( "%-43s", "$local_time" );
-		$table .= sprintf( "%-s", "$region" );
-		$table .= "</A></TD></TR>\n";
+		$table .= "<TR>";
+		$table .= "<TD><A HREF=\"$url\">";
+		$table .= $local_time;
+		$table .= "</A></TD>\n";
+		$table .= "<TD><A HREF=\"$url\">";
+		$table .= $mag_description;
+		$table .= "</A></TD>\n";
+		$table .= "<TD><A HREF=\"$url\">";
+		$table .= $region;
+		$table .= "</A></TD>\n";
+		$table .= "</TR>\n";
 	}
 
 	$table .= "</TABLE>\n";
 
 	return $table;
 
+}
+
+sub other_region_links {
+	my( $links, $key, $val );
+
+	$links  = "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=beige><TR>" .
+		  "<TD BGCOLOR=white>Other seismic regions:</TD></TR>\n";
+
+	foreach $key ( keys %{$State{other_region_links}} ) {
+
+		$val = $State{other_region_links}->{$key};
+		$links .= "<TR><TD><A HREF=\"$val\">$key</A></TD></TR>\n";
+	}
+
+	$links .= "</TABLE>\n";
+
+	return $links;
 }
 
 sub other_map_links {
@@ -633,6 +704,7 @@ sub create_stockmap_html {
 		hyperlinked_earthquake_table( @db, $mapname ),
 		"</CENTER>";
 
+	print H "<CENTER>" . "<HR>\n" . other_region_links() . "</CENTER>";
 	print H "<HR>\n" . credits();
 
 	print H "</BODY></HTML>\n";
@@ -685,9 +757,8 @@ sub create_stockmap_entry {
 		
 		$dbwebmaps[3] = $rec;
 
-		dbputv( @dbwebmaps, 
-	    		"mapname", $mapname,
-    	    		"url", $url );
+		dbputv( @dbwebmaps, "url", $url );
+
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
@@ -800,8 +871,8 @@ elog_init( $0, @ARGV );
 
 init_globals();
 
-if ( ! &Getopts('') || @ARGV != 1 ) {
-	die ( "Usage: $0 database\n" ); 
+if ( ! &Getopts('h') || @ARGV != 1 ) {
+	die ( "Usage: $0 [-h] database\n" ); 
 } else {
 	$dbname = $ARGV[0];
 }
@@ -835,21 +906,39 @@ for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
 	create_stockmap_entry( @dbstockmaps );
 }
 
-@dbneedmaps = dbprocess( @db, 
+if( $opt_h ) {
+
+	@dbwebmaps = dbprocess( @db, "dbopen webmaps",
+				     "dbsubset evid != NULL" );
+
+	$nmaps = dbquery( @dbwebmaps, "dbRECORD_COUNT" );
+	print "dbrecenteqs: updating html for $nmaps focus maps\n";
+
+	for( $dbwebmaps[3]=0; $dbwebmaps[3]<$nmaps; $dbwebmaps[3]++ ) {
+
+		( $evid ) = dbgetv( @dbwebmaps, "evid" );
+
+		create_focusmap_html( $evid, @db );
+	}
+
+} else {
+
+	@dbneedmaps = dbprocess( @db, 
 			 "dbopen origin", 
 			 "dbjoin event",
 			 "dbsubset orid == prefor",
 			 "dbnojoin webmaps evid#evid" ); 
 
-$nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
-print "dbrecenteqs: creating $nmaps focus maps\n";
+	$nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
+	print "dbrecenteqs: creating $nmaps focus maps\n";
 
-for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
+	for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
 
-	( $evid ) = dbgetv( @dbneedmaps, "evid" );
+		( $evid ) = dbgetv( @dbneedmaps, "evid" );
 
-	create_focusmap( $evid, @db );
-	create_focusmap_html( $evid, @db );
+		create_focusmap( $evid, @db );
+		create_focusmap_html( $evid, @db );
+	}
 }
 
 print "dbrecenteqs: updating $ngroups stock maps\n";
