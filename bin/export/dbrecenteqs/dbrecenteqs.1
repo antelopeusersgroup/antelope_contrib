@@ -16,8 +16,10 @@ up routinely upon each run. If keep_ndays is not specified or is set to
 0, no cleanup is performed.
 
 dbrecenteqs is designed to be run out of the crontab table of
-rtexec(1).  See the example below. It will die if it detects another
-copy of itself running.
+rtexec(1).  See the example below. If the -u option is used, dbrecenteqs 
+will die if it detects another copy of itself running. The -u 
+option is deprecated for dbrecenteqs running under the rtexec(1) of 
+Antelope 4.5 or higher. 
 
 If necessary, dbrecenteqs creates or adds to the mapstock table of the
 database in dbrecenteqs1.1 or related schema.  For the default
