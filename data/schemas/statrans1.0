@@ -1,0 +1,65 @@
+Schema "statrans1.0"
+        Description ( "Name conversion schema " )
+        Detail {
+	    This schema allows translation from old to new station
+	    names
+            }
+        ;
+ 
+Attribute oldsta
+        String ( 6 )
+        Format ( "%-6s" )
+        Null  ( "-"  )
+        Description ( "station" )
+        Detail {
+            This is the common code-name of a seismic observatory.
+            Generally only three or four characters are used.
+	    This old-style name often crams component or gain 
+	    information onto the end of the station code.
+        }
+        ;
+ 
+Attribute newsta
+        String ( 6 )
+        Format ( "%-6s" )
+        Null  ( "-"  )
+        Description ( "station" )
+        Detail {
+            This is the common code-name of a seismic observatory.
+            Generally only three or four characters are used. This 
+	    field is the same as the sta field in css3.0.
+        }
+        ;
+ 
+Attribute newchan
+        String ( 8 )
+        Format ( "%-8s" )
+        Null  ( "-"  )
+        Description ( "channel" )
+        Detail {
+            This is an eight-character code, which, taken together
+            with sta, jdate and time, uniquely identifies the source
+            of the seismic data, including the geographic location,
+            spatial orientation, sensor and subsequent data
+            processing. This field is the same as the chan field in
+	    css3.0
+        }
+        ;
+ 
+Relation statrans
+        Fields (
+            oldsta newsta newchan
+            )
+        Primary ( oldsta )
+        Description ( "Station-name translation information" )
+        Detail {
+		Station names have changed at several networks to conform to
+		the css3.0 standard. Older names sometimes had
+		component or gain information tacked onto the
+		station code as extra letters, with no official channel 
+		code. This table translates a station-only description into 
+		a station/channel-name pair.
+        }
+        ;
+ 
+ 
