@@ -1,0 +1,60 @@
+.\" %W% %G%
+.TH TAUP_CONVERT 1 "%G%"
+.SH NAME
+taup_convert - Uses taup library to produce travel time tables that can be used by genloc location programs
+.SH SYNOPSIS
+.nf
+taup_convert  phase [-d0 x -ddelta x -z0 x -dz x -ndelta n -nz n]
+.fi
+.SH DESCRIPTION
+.LP
+Simple utility program that utilizes the taup library (see tttaup(3))
+routines to produce parameter file tables used by genloc library
+routines for the "uniform table interpolation" travel time function
+(see genloc_intro(3)).  
+This table is written to stdout.
+The only required argument is "phase"
+which is the seismic phase the table is to be computed for.  
+This must be a phase the taup library knows about, which currently 
+excludes some exotic teleseismic arrivals.  It can
+also be a "generic" phase like P or S, which 
+means it will select the first arrival P and S at any distances.
+.LP
+Options are
+as follows:
+.IP -d0
+First distance value (in degrees) to start table at (default = 0.0).
+.IP -ddelta
+Distance increment (in degrees) between table entries (default = 1.0).
+.IP -z0
+First source depth value for table (default = 0.0).
+.IP -dz
+Source depth increment (in km) between table entries (default = 5.0).
+.IP -ndelta
+Number of table entries in distance (default=180).
+.IP -nz
+Number of table entries in depth (default=100).
+.SH DIAGNOSTICS
+.LP
+All errors are written to stderr.  The complete list is:
+.LP
+Unrecognized argument->xxx ---   Error in argument lists
+.LP
+Fatal:  cannot alloc memory  ---  Almost surely means -nz was given
+as an absurdly large value.
+.LP
+Fatal error trying to call taup library  --- The taup calculation function
+returned a nondescript error.  
+.LP
+taup_convert (Warning):  tt_taup_slowness found no arrivals at delta =xxxxxxx, depth = xxxxxxxx  ---  Usually means you asked for something 
+incorrect (like S waves in the core shadow). 
+.LP
+Any other message indicate a library routine.
+.SH "SEE ALSO"
+.nf
+tttaup(3), genloc_intro(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP  
+.SH AUTHOR
+Gary L. Pavlis
