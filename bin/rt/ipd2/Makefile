@@ -4,7 +4,7 @@
 BIN = ipd2
 MAN1= ipd2.1   
 ldflags=-L.
-ldlibs	= -lpkt2 -lorb $(TRLIBS)
+ldlibs	= -ldefunctpkt2 -lorb $(TRLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= ipd2.o\
