@@ -1,4 +1,5 @@
 #include <math.h>
+#include <string.h>
 #include "stock.h"
 #include "arrays.h"
 #include "db.h"
@@ -135,6 +136,8 @@ the arrival table.
 
 Author:  Gary L. Pavlis
 Written:  January 1997
+Fix:  Dec. 1998 -- added logic to check timedef and skip an arrival
+if the time field is turned off. 
 */ 
 
 
@@ -151,6 +154,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 	char staname[12];
 	double time, deltat;
 	char phase_name[10];
+	char timedef[2];
 	
 
 	t = newtbl(0);
@@ -166,7 +170,16 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 			"assoc.phase",phase_name,
 			"arrival.time",&time,
 			"arrival.deltim",&deltat,
+			"timedef",timedef,
 			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+
+		/* Added to skip arrivals with timedef set to turn off */
+		if(!strcmp(timedef,"n"))
+		{
+			free(a);
+			continue;
+		}
+
 		a->sta = (Station *) getarr(stations,staname);
 		/* This error would be fatal for the relocate program, but
 		this function might be used for other interfaces to this
