@@ -1,0 +1,66 @@
+1. "F640M" is, in fact, the "ad20m" file used as the first stage in Q730's.
+It is a decimate-by-20 filter, to give the first stage output at 1000Hz.
+The following commentary is attached:
+
+        These are the actual coefficients in decimal integer form
+    used in the DSP. To scale this to unity gain, divide all by 10^6.
+    The filter is listed in time-reversed order. You may want to plot these
+    to convince yourself of the representation.
+
+2. "F400M", is, in fact, the "ad32m" file used in the Q4120 first stage.
+It is a decimate-by-16 filter, to give the first stage output at 2000Hz.
+
+3. "Firfilters" contains all the current filters used in the MSHEAR 
+    distribution, except the two above, and the ones in the Q680 internal
+    DSP, which I believe you have already (and are published in a number
+    of places already)
+
+COMMENT:
+
+It is the responsibility of Quanterra to deliver, in mini-SEED format at 
+various sampling rates, uniformly-sampled data identified by a demonstrably 
+accurate time label. In addition, for informational purposes, any digital 
+filters used to filter and decimate the sampled data for the production of 
+"compact" data streams are disclosed as a list of the "coefficients" that are 
+applied in a transverse implementation in the data acquisition system.
+
+In all cases, we disclosed the digital filter coefficients, but prior to the 
+official release of MSHEAR, the subjective attempt to correct for filter delays 
+in the time label resulted in failing on the "demonstrably accurate" count.
+
+With MSHEAR the idea is to live up to the "accurate" criterion sufficiently 
+that, for timing purposes, the delays of the filters can be strictly ignored - 
+strictly, that is, at least for symmetric filters. For symmetric filters, a 
+delay, as you noted, of (N-1)/2 * sample rate is subtracted from the time label, 
+causing the filtration process to become exactly zero-phase with respect to the 
+time label, which is applied at the point of digitization.
+
+For asymmetric filters, the process is more complicated. A delay equal to the 
+group delay (d-phase/d-omega, of each asymmetric filter) is subtracted from the 
+time label. The group delay is read from the "delay=" parameter in the 
+"FIRFilters" file, given in "input samples". e.g.
+
+FS2D5M name of filter
+160 number of points in this filter
+1.0 digital gain of filter
+5 decimation factor delay=11.641
+
+The group delay is the derivative of the phase as close as possible to zero 
+frequency. It is necessarily derived from the filter coefficients alone.
+
+The resulting labeled time series produces, for example, when a step is applied 
+to the digitizer, a digitized waveform whose first break begins at the time of 
+application of the pulse. The labeled time series can be accurately used, 
+without consideration of acausal precursors, to pick first arrivals. If the 
+group delay of the filter were not accounted for, the principle benefit of 
+picking first arrivals unambiguously would not be available. In addition, the 
+particular decimation tree used would affect strongly the required time label 
+correction. By subtracting the group delay, to a fair accuracy, the 
+characteristics of the decimation tree are removed. The exact time label 
+adjustments are readable in the FIRFilters file.
+
+If you are interested in the detailed nature of the waveforms, and want to 
+convert symmetrically-filtered data to asymmetrically, or vice-versa, you need 
+know only the filter coefficients, and  the information above regarding the 
+adjustments to the time labels.
+
