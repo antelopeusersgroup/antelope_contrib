@@ -858,6 +858,3 @@ int read_pscl_SC(
     
 }
 
- 
-
-/* $Id$ */
