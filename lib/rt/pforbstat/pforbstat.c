@@ -418,6 +418,7 @@ orbconnections2pf( Pf *pfanalyze )
 	regex_t	preg_findclient;
 	char	formal_name[STRSZ];
 	int	formal_count = 0;
+	char	o2omachine[STRSZ];
 	char	orbstat_machine_hostname[STRSZ];
 	char	orbstat_machine_ipc[STRSZ];
 	long	orbstat_machine_ip;
@@ -425,6 +426,8 @@ orbconnections2pf( Pf *pfanalyze )
 	char	cmdline_toorb[STRSZ];
 	char	cmdline_fromip[STRSZ];
 	char	cmdline_toip[STRSZ];
+	char	*reject;
+	char	*select;
 	int	cmdline_fromport;
 	int	cmdline_toport;
 	double	latency_sec;
@@ -470,6 +473,8 @@ orbconnections2pf( Pf *pfanalyze )
 			pfconnection = pfnew( PFARR );
 			pfput_string( pfconnection, "what", what );
 
+			strcpy( o2omachine, "?" );
+
 			extract_orb2orb_orbargs( what, 
 						 cmdline_fromorb, 
 						 cmdline_toorb );
@@ -500,6 +505,16 @@ orbconnections2pf( Pf *pfanalyze )
 			pfput_int( pfconnection, 
 				   "cmdline_toport", cmdline_toport );
 
+			if( ( reject = pfget_string( pfclient, "reject") ) != NULL ) {
+
+				pfput_string( pfconnection, "reject", reject );
+			}
+			
+			if( ( select = pfget_string( pfclient, "select") ) != NULL ) {
+
+				pfput_string( pfconnection, "select", select );
+			}
+			
 			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
 
 				latency_sec =
@@ -605,6 +620,17 @@ orbconnections2pf( Pf *pfanalyze )
 				pfput_int( pfconnection, 
 					   "fromport", cmdline_fromport );
 			}
+
+			if( STREQ( clientaddress, "127.0.0.1" ) ) {
+
+				strcpy( o2omachine, clientaddress );
+
+			}  else if( STREQ( clientaddress, serveraddress ) ) {
+
+				strcpy( o2omachine, serveraddress );
+			}
+
+			pfput_string( pfconnection, "o2omachine", o2omachine );
 
 			sprintf( formal_name, "client%d", ++formal_count );
 			pfput( pfconnections, formal_name, pfconnection, PFPF );
