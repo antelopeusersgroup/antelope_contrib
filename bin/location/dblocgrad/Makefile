@@ -4,9 +4,7 @@ DATADIR=schemas
 DATA=css_vel
 
 
-cflags=		
-fflags= 	-e  -C
-ldflags= 	
+fflags= -w
 ldlibs=$(DBLIBS)
 
 include $(ANTELOPEMAKE)  	
@@ -15,7 +13,5 @@ DIRS=
 OBJS=dblocgrad.o locsubs_flv.o matsubs.o tracesubs_flv.o
 $(BIN) : $(OBJS)
 	$(FC) $(FFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
-
-
 
 # $Id$ 

@@ -1,5 +1,5 @@
-#include <sunmath.h>
 #include "multiwavelet.h"
+#include "perf.h"
 /* constructor and destructor for MWstack object */
 MWstack *create_MWstack(int nwavelets,int nchan,int nt)
 {

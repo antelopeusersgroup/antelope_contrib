@@ -2,11 +2,9 @@ BIN=mwap_engine
 PF=mwap.pf
 MAN1=mwap.1
 
-cflags= -DSP5 -g
-#cflags=-DSUNPERF6 -g
 ldflags=
 ldlibs= -lmultiwavelet -lglputil -lgenloc  -ltrvltm -ldl \
--xlic_lib=sunperf,fui,fai,fsu $(TRLIBS) $(F77LIBS) -lmultiwavelet
+	    -lperf $(TRLIBS) $(F77LIBS) -lmultiwavelet
 
 include $(ANTELOPEMAKE)  
 

@@ -1,4 +1,4 @@
-#include <sunmath.h>
+#include <values.h>
 #include "multiwavelet.h"
 #include "mwap.h"
 

@@ -13,7 +13,7 @@ current presumption is that this is an encapsulated set of C programs */
 #include "elog.h"
 #include "pf.h"
 #include "tt.h"
-#include <sunperf.h>
+#include "perf.h"
 
 /* This object defines a complex pair of multiwavelet functions.
 They are implemented as two vectors rather than a complex function

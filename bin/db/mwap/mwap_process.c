@@ -3,7 +3,6 @@ are a few internal functions defined first.  The main routine
 here is mwap_process */
 
 #include <stdio.h>
-#include <sunmath.h>
 #include "tr.h"
 #include "location.h"
 #include "multiwavelet.h"

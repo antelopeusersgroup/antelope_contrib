@@ -1,25 +1,16 @@
 LIB=libmultiwavelet.a		
-DLIB=$(LIB:.a=$(DSUFFIX)) # uncomment when creating a dynamic library
-DATADIR=schemas2 # directory under $(ANTELOPE)/data in which to put $(DATA) files
-DATA=MWavelet1.4	# data files to be placed in data/$(DATADIR)
-INCLUDE=multiwavelet.h 	# include files to be placed in include
-PF=mwap.pf		# parameter files to be placed in data/pf
-
+DLIB=$(LIB:.a=$(DSUFFIX)) 
+DATADIR=schemas2
+DATA= MWavelet1.4
+INCLUDE=multiwavelet.h 	
+PF=mwap.pf		
 MAN3=mwtransform.3		
 
-CLEAN= 		# Extra files which should be removed during a "make clean"
-
-#cflags= -g -DSUNPERF6
-cflags=-g
-fflags= 	# 
-ldflags= 	# flags to linker/loader
+CLEAN= 		
 ldlibs= -lgenloc $(PERFLIBS) 
 
-
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
-			# and before the DIRS definition below..
-DIRS=			# Omit this line to run make in subdirectories, or
-			# fill in to run make only in certain subdirectories
+include $(ANTELOPEMAKE)  	
+DIRS=			
 
 
 OBJS=	apsubs.o convolution.o dbsubs.o decimate.o lapack_routines.o \

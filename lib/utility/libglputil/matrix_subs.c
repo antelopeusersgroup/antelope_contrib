@@ -1,5 +1,5 @@
-#include <sunperf.h>
 #include "stock.h"
+#include "perf.h"
 /* Equation solver for pseudoinverse solutions using output of lapack
 double precision svd function.
 

@@ -1,6 +1,6 @@
 #include <math.h>
-#include "elog.h"
 #include "glputil.h"
+#include "elog.h"
 double gammln(double xx)
 {
         double x,y,tmp,ser;

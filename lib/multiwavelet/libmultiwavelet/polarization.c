@@ -1,6 +1,6 @@
 #include <math.h>
-#include <sunmath.h>
 #include "stock.h"
+#include "perf.h"
 #include "arrays.h"
 #include "coords.h"
 #include "elog.h"

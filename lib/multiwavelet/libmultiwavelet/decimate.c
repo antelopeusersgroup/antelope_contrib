@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sunperf.h>
+#include <perf.h>
 
 #include "stock.h"
 #include "response.h"

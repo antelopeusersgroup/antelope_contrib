@@ -6,7 +6,7 @@ Gary Pavlis:$
 
 #include <stdlib.h>
 #include <math.h>
-#include <sunmath.h>
+#include <perf.h>
 #include <ctype.h>
 #include "multiwavelet.h"
 #include "location.h"

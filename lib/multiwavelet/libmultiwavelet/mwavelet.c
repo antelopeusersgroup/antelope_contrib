@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <values.h>
-#include <sunperf.h>
 #include <math.h>
-#include <sunmath.h>
+#include <perf.h>
 #include "multiwavelet.h"
 #include "location.h"
 #include "tr.h"

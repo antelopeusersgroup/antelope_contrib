@@ -1,7 +1,7 @@
 #include <math.h>
 #include <float.h>
-#include <sunmath.h>
 #include "multiwavelet.h"
+#include "perf.h"
 /* This function is used to check a list of pf names to verify they
 are in the parameter space.  It is useful for any program that uses
 parameter files that cracks the pf space anywhere except up front.

@@ -1,11 +1,11 @@
 #include <math.h>
-#include <sunperf.h>
 #include <strings.h>
 #include "stock.h"
 #include "arrays.h"
 #include "elog.h"
 #include "location.h"
 #include "glputil.h"
+#include "perf.h"
 #include "pmel.h"
 #define SSWR_TEST_LEVEL 0.30
 /* This routine takes advantage of the sparse form of the S matrix 
