@@ -19,6 +19,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	int	rhs_index;
 	int	type = 1;
 	double 	type_fp = 1;
+	int	ns; 			/* SCAFFOLD */
+	int	ne; 			/* SCAFFOLD */
+	int	n; 			/* SCAFFOLD */
+	int	i; 			/* SCAFFOLD */
+	int	list_is_scaffold = 0;	/* SCAFFOLD */
 
 	if( nrhs < 1 || nrhs > 2 ) 
 	{
@@ -36,8 +41,19 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
 	}
 
+	/* Work around bug in dblist2subset 	   SCAFFOLD */
+	dbget_range( db, &ns, &ne );		/* SCAFFOLD */
+	n = ne - ns;				/* SCAFFOLD */
+	list_is_scaffold++;			/* SCAFFOLD */
+	list = newtbl( 0 );			/* SCAFFOLD */
+	for( i = 0; i < n; i++ ) {		/* SCAFFOLD */
+		pushtbl( list, (char *) i );	/* SCAFFOLD */
+	}					/* SCAFFOLD */
+
 	db = dblist2subset( db, list );
 	antelope_mex_clear_register( 1 );
+
+	if( list_is_scaffold ) { freetbl( list, 0 ); } /* SCAFFOLD */
 
 	if( db.table == dbINVALID )
 	{
