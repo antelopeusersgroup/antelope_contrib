@@ -2,7 +2,7 @@ BIN=trrotd
 MAN1=trrotd.1
 PF=trrotd.pf
 
-ldlibs= $(TRLIBS)  $(GPLLIBS) -lfft -lsunmath
+ldlibs= $(TRLIBS)  $(GPLLIBS) -lfft -lperf
 
 include $(ANTELOPEMAKE)
 DIRS=

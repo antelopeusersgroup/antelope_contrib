@@ -2,7 +2,7 @@ BIN=trstack
 MAN1=trstack.1
 PF=trstack.pf
 
-ldlibs=	$(TRLIBS) $(GPLLIBS) -lfft -lsunmath
+ldlibs=	$(TRLIBS) $(GPLLIBS) -lfft -lperf
 
 include $(ANTELOPEMAKE) 
 DIRS=

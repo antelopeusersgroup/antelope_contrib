@@ -182,7 +182,7 @@ int nplt;			/* # of records in tr or plist */
     ywinht = paght*(ymax - ymin)/((float)nrec);
 
     /* get global data bounds */
-    t1min = infinity();
+    t1min = an_infinity();
     t2max = 0.;
     y1ar = (float *)malloc((re-rs)*sizeof(float));
     ampar = (float *)malloc((re-rs)*sizeof(float));
