@@ -1,5 +1,6 @@
 # %W% %G% 
 # Makefile for b3s2
+PF=b3s2orb.pf
 BIN = b3s2orb
 MAN1=b3s2orb.1
 

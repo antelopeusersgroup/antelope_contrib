@@ -24,7 +24,7 @@ main(argc, argv)
 	double 		crnt_time;
 	char            *iport = DATA_PORT;
 	char            *cmdport = CMND_PORT;
-	char            *pfile = "pkt";
+	char            *pfile = "b3s2orb";
 	Display        *dpy;
 	char            c;
 	uchar_t		*buffer, packet_buffer[PLEN];
@@ -103,7 +103,8 @@ main(argc, argv)
 
 	if ( argc - optind != 0 )
              usage ();
-					          
+		
+	initpf(pfile);			          
                 
 	if( orb || silent_flag )  {
 	    orb = 1;
@@ -274,19 +275,17 @@ main(argc, argv)
                packet_buffer[flag++] = c;
                if (flag == 80) {
 /*
- * printf("%c%c %02x %02x%02x%02x
- * %02x%02x ", packet_buffer[0],
- * packet_buffer[1],
- * packet_buffer[5],
- * packet_buffer[6],
- * packet_buffer[7],
- * packet_buffer[8],
- * packet_buffer[12],
- * packet_buffer[13]); for
- * (i=14;i<20;i++) printf("%02x",
- * packet_buffer[i]); printf("\n",
- * sbuf);
- */
+  printf("%c%c %02x %02x%02x%02x%02x%02x ", packet_buffer[0],
+  packet_buffer[1],
+  packet_buffer[5],
+  packet_buffer[6],
+  packet_buffer[7],
+  packet_buffer[8],
+  packet_buffer[12],
+  packet_buffer[13]); 
+  for (i=14;i<20;i++) 
+     printf("%02x", packet_buffer[i]); printf("\n", packet_buffer);
+*/ 
 
                     if ((packet_buffer[0] == 'S') && (packet_buffer[5] == 0)) {
 		        if (capture_flag) {
