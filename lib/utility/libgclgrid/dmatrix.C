@@ -191,3 +191,13 @@ int *dmatrix::size()
 	sz[1]=ncc;
 	return(sz);
 }
+// simpler versions of same
+
+int dmatrix::rows()
+{
+	return(nrr);
+}
+int dmatrix::columns()
+{
+	return(ncc);
+}

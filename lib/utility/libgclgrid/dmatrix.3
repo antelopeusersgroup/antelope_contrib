@@ -25,6 +25,8 @@ public:
   double* get_address(int r, int c);
   void zero(); // initializes all elements to 0
   int *size(); // returns 2 element size array (nrrXncc)
+  int rows();  // returns just number of rows
+  int columns(); // returns just number of columns
 private:
    double *ary;
    int length;
@@ -51,14 +53,15 @@ Note, however, that indexing is in C form starting with 0.
 Thus the indexing for an array of size nr by nc is 0:nr-1 for
 rows and 0:nc-1 for columns.
 .LP
-Most usage should be obvious.  A likely exception is the get_address
-function.  The overloaded () operator is used to fetch a single
+Most usage should be obvious.  A likely exception are the get_address
+function and the overloaded & operator.  
+The overloaded () operator is used to fetch a single
 element of a matrix as in
 .nf
 double x;
 x=A(15,26);
 .fi
-The get_address function returns a pointer to the a requested
+The get_address function or the & operator return a pointer to the a requested
 row and column.  This is most useful in constructs using the 
 BLAS like the following example:
 .nf
@@ -73,11 +76,15 @@ BLAS like the following example:
         }
 .fi
 which is a code fragment for the dmatrix operator * in this library.
+The choice of using the function for or the operator is largely a matter 
+of taste.  get_address is more verbose while the & operator is more
+concise at the possible expense of clarity.  
 .LP
 The size() method returns a 2 element int array with the number of rows
 in element 0 and the number of columsn in element 1.  
 If size() is called the user is responsible for deleting the returned
-array.
+array.  Alternatively, just use the rows() or columns() 
+function to retrieve the size elements individually.
 .LP
 This is a bare-bones library with basic constructors and a few 
 basic operators.  The usage should be obvious, but a few routines
