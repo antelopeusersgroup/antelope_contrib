@@ -60,7 +60,7 @@ LONDD_BBA2, LONMM_BBA2, LONSS_BBA2, LONHH_BBA2, EW_BBA2, ALTD_BBA2
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_BBA2[MAXNUMPAR_BBA2] = {
- "BUFDEL",  "BATT:V", "DASRES",
+ "BUFDEL",  "BATT", "DASRES",
 "RADRES", "OVRFL",  "RXERR", "LLOCK" };
 
 /*
@@ -85,7 +85,6 @@ extern int Intv;
 
 /* Parameters for ANZA DAS & DC   */
 
-int *parbuf;
 
 #define ANZA_DAS     2
 #define DasNum       16  /* there can be up to 16 Dases maximun  */
@@ -106,7 +105,7 @@ static char *ANZA_DCDC_NAME[ANZA_DCDC] = {
 };
 
 static char *ANZA_DCDAS_NAME[ANZA_DCDAS] = {
-  "CRC", "CHKSUM", "DASRES", "SEC", "MSEC", "RTXSND", "RTXRCV", "RTXSKP", "OVRFL"
+  "CRC", "CHKSUM", "NOCMD", "SEC", "MSEC", "RTXREQ", "RTXRCV", "RTXSKP", "DASDN"
 };
 
 static int ANZA_DCDC_OFF[ANZA_DCDC] = {
@@ -114,7 +113,7 @@ static int ANZA_DCDC_OFF[ANZA_DCDC] = {
 };
 
 static int ANZA_DCDAS_OFF[ANZA_DCDAS] = {
-       54, 86, 118, 182, 214, 246, 278, 310, 416  
+       54, 86, 150, 182, 214, 246, 278, 310, 342  
 };
 
 #endif

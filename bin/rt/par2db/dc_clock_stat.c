@@ -1,6 +1,6 @@
 /******************************************************************R_
  *
- *  dc_clock_stat.c
+ *  pdc_clock_stat.c
  *
  ********************************************************************/
 #include "header.h"
@@ -17,7 +17,7 @@ static char *CLC_NAME[CLC_NPAR] =  {
 
 };
 
-int dc_clock_stat( packet, Pkt, nchan, net, sta, epoch )
+int pdc_clock_stat( packet, Pkt, nchan, net, sta, epoch )
 uchar_t *packet;
 struct Packet **Pkt;
 int nchan;
@@ -31,6 +31,7 @@ double epoch;
     struct PktChannel *achan;
     ushort_t *sval;
     uchar_t mclc_stat, aclc_stat;
+    int val;
 
 /*
 sval = (ushort_t *) &packet[2];
@@ -69,6 +70,7 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
       achan = (PktChannel *) gettbl((*Pkt)->chan, dc) ;
       if ( achan == 0 ) {
           allot ( PktChannel *, achan, 1 ) ;
+          achan->data = (void *) malloc( sizeof(int)  );
       }
       strcpy( achan->net, net);
       strcpy( achan->sta, sta );
@@ -81,25 +83,25 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
       if( strncmp( CLC_NAME[i], "MSTAT", 4 ) == 0 ) {
          switch( mclc_stat )  {
             case ' ' :
-               parbuf[dc] = 1;
+               val = 1;
                break;
             case '.' :
-               parbuf[dc] = 10;
+               val = 10;
                break;
             case '*' :
-               parbuf[dc] = 100;
+               val = 100;
                break;
             case '#' :
-               parbuf[dc] = 1000;
+               val = 1000;
                break;
             case '?' :
-               parbuf[dc] = -1;
+               val = -1;
                break;
             case '!' :
-               parbuf[dc] = 0;
+               val = 0;
                break;
             default:
-                parbuf[dc] = TRGAP_VALUE_S4;
+                val = TRGAP_VALUE_S4;
 		if( Log) 
                    complain( 0, "unknown MAIN clock status %0x-%c\n", mclc_stat, mclc_stat);
                break;       
@@ -108,63 +110,63 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
       } else if( strncmp( CLC_NAME[i], "ASTAT", 4 ) == 0 ) {
          switch( aclc_stat )  {
             case ' ' :
-               parbuf[dc] = 1;
+               val = 1;
                break;
             case '.' :
-               parbuf[dc] = 10;
+               val = 10;
                break;
             case '*' :
-               parbuf[dc] = 100;
+               val = 100;
                break;
             case '#' :
-               parbuf[dc] = 1000;
+               val = 1000;
                break;
             case '?' :
-               parbuf[dc] = 0;
+               val = -1;
                break;
             case '!' :
-               parbuf[dc] = TRGAP_VALUE_S4;
+               val = 0;
                break;
             default:
-               parbuf[dc] = TRGAP_VALUE_S4;
+                val = TRGAP_VALUE_S4;
                if(Log)
 	          complain( 0, "unknown AUX clock status %0x-%c\n", aclc_stat, aclc_stat);
                break;
          }  
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "ACFAIL", 6 ) == 0 ) {
-         parbuf[dc] = (packet[2]&0x80) ? 1:0;
+         val = (packet[2]&0x80) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "HAZARD", 6 ) == 0 ) {
-         parbuf[dc] = (packet[2]&0x40) ? 1:0;
+         val = (packet[2]&0x40) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "CLK", 3 ) == 0 ) {
-         parbuf[dc] = clcsel;
+         val = clcsel;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M1OC", 4 ) == 0 ) {
-         parbuf[dc] = (packet[2]&0x20) ? 1:0;
+         val = (packet[2]&0x20) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M2OC", 4 ) == 0 ) {
-         parbuf[dc] = (packet[2]&0x10) ? 1:0;
+         val = (packet[2]&0x10) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M3OC", 4 ) == 0 ) {
-         parbuf[dc] = (packet[2]&0x08) ? 1:0;
+         val = (packet[2]&0x08) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "MOC", 3 ) == 0 ) {
-              parbuf[dc] = (packet[2]&0x04) ? 1:0;
+              val = (packet[2]&0x04) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "AOC", 3 ) == 0 ) {
-              parbuf[dc] = (packet[2]&0x02) ? 1:0;
+              val = (packet[2]&0x02) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "MON", 3 ) == 0 ) {
-              parbuf[dc] = mon;
+              val = mon;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "AON", 3 ) == 0 ) {
-              parbuf[dc] = aon;            
+              val = aon;            
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }
 
-     achan->data = &parbuf[dc];           
+     memcpy(achan->data, (char *) &val, sizeof(int) );
    
       settbl((*Pkt)->chan, dc, achan ) ;
    }             

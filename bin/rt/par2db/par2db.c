@@ -55,7 +55,7 @@ char          **argv;
 
     par.segsiz = 86400.0;
     par.wfname = 0;
-    strcpy (par.datatype, "sd");
+    strcpy (par.datatype, "s4");
 
     while ((c = getopt (argc, argv, "d:gm:i:p:s:vx")) != -1)
 	switch (c) {
@@ -159,7 +159,6 @@ char          **argv;
 	    printf ("starting pktid is #%d\n", pktid);
     }
 
-    allot( int *, parbuf, 512 );    
     err = 0;
     while(1) {
 
@@ -177,70 +176,74 @@ char          **argv;
 		       die(0,"orbseek to ORBCURRENT failed .\n") ; 
 		    
     	    }
-	} else err = 0;
-	if (Log ) {
-	    fprintf (stderr, "%s %lf %d %d\n", srcname, pkttime, DINTV, DCINT);
-	}
-        if( strncmp( srcname, "/db", 3) == 0 ||
-	    strncmp( srcname, "/pf", 3) == 0 ||
-	    strncmp( srcname, "/dcdas", 6) == 0 )  
-	    continue;
+	} else  {
+	     err = 0;
+	
+             if( strncmp( srcname, "/db", 3) == 0 ||
+	         strncmp( srcname, "/pf", 3) == 0 ||
+	         strncmp( srcname, "/dcdas", 6) == 0 )  
+	         continue;
 
-	if ((asource = (Source *) getarr (sources, srcname)) == 0) {
-	    asource = new_source (npkt);
-	    setarr (sources, srcname, asource);
-	}
+	     if ((asource = (Source *) getarr (sources, srcname)) == 0) {
+	         asource = new_source (npkt);
+	         setarr (sources, srcname, asource);
+	     }
 
-        switch (orbsort (asource->apipe, &pktid, &pkttime, srcname, 
-                     &packet, &nbytes, &bufsize)) {
-
-	    case 0:
-		bufsize = 0;
-		break;
-	    case 2:
-	    case 3:
-		complain ( 0, "orbsort error at %lf for %s\n", 
-		    pkttime, srcname) ; 
-		break ;
-
-	    default:
-
-                if( pkttime - asource->last  >= DINTV )  {
-	              asource->last = pkttime;
-	              setarr (sources, srcname, asource);
-                }  else continue;
-
-                if( dump)  {
-		    hexdump( stdout, packet, nbytes );
-		    fflush(stdout);
-		} 
-	   
-		switch ( unstuffpar (packet, pkttime, &Pkt, srcname )) {
-	            case 1:
-	               for (apar = 0; apar < Pkt->nchannels; apar++) {
-	                  achan = (PktChannel *) gettbl (Pkt->chan, apar);
-	                  sprintf( &acomp[0], "%s_%s_%s\0", 
-			           achan->net, achan->sta, achan->chan);
-	                  if( Log)  {
-			     fprintf( stderr, "%s %lf\n", acomp, pkttime );
-			     fflush(stderr);
-			  }
-			  if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 )
-	                       record (achan, buffer) ;
-	                  else {
-	                       buffer = new_buf( achan, &par);
-	                       setarr( Parms, acomp, buffer );
-	                  }
-	                }
-	                break;
-
-	             default:
-	                break;
-                 }
-                 break;
-	 }
-    } 
-
+             switch (orbsort (asource->apipe, &pktid, &pkttime, srcname, 
+                          &packet, &nbytes, &bufsize)) {
+     
+	         case 0:
+		     bufsize = 0;
+		     break;
+	         case 2:
+	         case 3:
+		     complain ( 0, "orbsort error at %lf for %s\n", 
+		         pkttime, srcname) ; 
+		     break ;
+     
+	         default:
+     
+                     if( pkttime - asource->last  >= DINTV )  {
+	                   asource->last = pkttime;
+	                   setarr (sources, srcname, asource);
+                     }  else continue;
+     
+                     if( dump)  {
+		         hexdump( stdout, packet, nbytes );
+		         fflush(stdout);
+		     } 
+	             if( Log)  {
+	                  fprintf( stderr, "%s %lf\n", srcname, pkttime );
+		          fflush(stderr);
+	             }
+	        
+		     switch ( unstuffpar (packet, pkttime, &Pkt, srcname )) {
+	                 case 1:
+                            
+                            for (apar = 0; apar < Pkt->nchannels; apar++) {
+	                       achan = (PktChannel *) gettbl (Pkt->chan, apar);
+	                       sprintf( &acomp[0], "%s_%s_%s\0", 
+			                achan->net, achan->sta, achan->chan);
+	                       if( Log)  {
+			          fprintf( stderr, "%s %lf\n", acomp, pkttime );
+			          fflush(stderr);
+			       }
+			       if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 )
+	                            record (achan, buffer) ;
+	                       else {
+	                            buffer = new_buf( achan, &par);
+	                            setarr( Parms, acomp, buffer );
+	                       }
+	                     }
+	                     break;
+     
+	                  default:
+	                     break;
+                      }
+                      break;
+	      }
+         } 
+    }
 }
 
 

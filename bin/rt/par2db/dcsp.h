@@ -15,9 +15,9 @@
 #define TTAG_DC         (10)  /* Time Tag                        */
 #define DASNUM          (14)  /* Number of DASes                 */
 #define RESET_DC        (16)  /* DC RESET                        */
-#define RECNCT          (18)  /* count of reconnects to TCPsocket */
-#define TCPSEND         (20)  /* TCP send count                  */
-#define TCPDEL          (24)  /* TCP delay count                 */
+#define RECNCT_DC       (18)  /* count of reconnects to TCPsocket */
+#define TCPSEND_DC      (20)  /* TCP send count                  */
+#define TCPDEL_DC       (24)  /* TCP delay count                 */
 #define DCBATT          (26)  /* TDC battery                     */
 #define DCCLOCK         (28)  /* DC A/C fail count               */
 #define DCCMD_TIM       (32)  /* DC Last Command Time            */
@@ -30,15 +30,15 @@
 #define UID_DAS        (4)  /* Unit ID                       */
 #define BUFID_DAS      (6) /* Buffer ID                      */
 #define TTAG_DAS       (8)  /* Time Tag                      */
-#define BKLOG         (12)  /* DAS packet backlog            */
+#define BKLOG_DAS         (12)  /* DAS packet backlog            */
 #define BATT_DAS      (14)  /* DAS battery voltage           */
 #define TEMP_DAS      (16)  /* DAS Temperature               */
-#define DASRES        (18)  /* DAS reset                     */
-#define RADRES        (20)  /* DAS radio reset               */
+#define DASRES_DAS        (18)  /* DAS reset                     */
+#define RADRES_DAS        (20)  /* DAS radio reset               */
 #define OVRFL_DAS     (22)  /* buffer overflow count         */
 #define CMDERR_DAS    (24)  /* Command receive errorsd       */
 #define PKT_DAS       (26)  /* DASpacket recieved            */
-#define CHKSUM        (28)  /* DAS checksum  errors          */
+#define CHKSUM_DAS        (28)  /* DAS checksum  errors          */
 #define RTXREQ_DAS    (30)  /* DAS rtx request               */
 #define RTXREC_DAS    (32)  /* DAS rtx receive               */
 #define RTXSKP_DAS    (34)  /* DAS rtx skip                  */
@@ -60,7 +60,7 @@ static char *DCFILE_NAME[MAX_DCPAR] = {
 };
  
 static int DCPAR_OFF[MAX_DCPAR] = {
-RECNCT , TCPSEND, TCPDEL
+RECNCT_DC , TCPSEND_DC, TCPDEL_DC
 };
  
  

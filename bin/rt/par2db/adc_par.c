@@ -17,7 +17,7 @@ Tbl *DasId=0;
 #define DAS_SCS "%d %s[^\n] \n"
 
 int
-adc_par( char *packet,
+adc_par( uchar_t *packet,
           double pkttime,
           char *srcname,
 	  struct Packet **Pkt
@@ -28,10 +28,10 @@ adc_par( char *packet,
     struct PreHdr *hdr;
     struct PktChannel *achan;
     char *istr, net[64], dcname[8];
-    ulong_t *iptr;
+    long lval;
     int i, uid, off, ch, val;
     int dasnum, das;
-    ushort_t *sptr;
+    short sval;
     Pf *pf;
     struct dasid dasid;
 
@@ -48,15 +48,14 @@ adc_par( char *packet,
          die(0, "can't get DasId table from a %s parameter file.\n", Pfile);
     } 
 
-    memset( (char *) parbuf, 0, 512*sizeof(int) );
     hdr = ( struct PreHdr *) packet;
     
     (*Pkt)->pkttype = ntohl (hdr->pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->hdrtype);
 
     off = hdr->hdrsiz + 4;
-    sptr = ( ushort_t *) packet + off;
-    uid = *sptr;
+    memcpy( (char *) &sval, (char *) &packet[off], 2);
+    uid = sval;
     sprintf( dcname, "%d\0", uid);
 
     parse_srcname( srcname, &net[0], 0, 0, 0 );
@@ -66,6 +65,7 @@ adc_par( char *packet,
         achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
         if ( achan == 0 ) {
               allot ( PktChannel *, achan, 1 ) ;
+              achan->data = (void *) malloc( sizeof(int)  );
         }
         strcpy( achan->chan, ANZA_DCDC_NAME[i] ) ;
         strcpy( achan->net, net);
@@ -82,15 +82,14 @@ adc_par( char *packet,
         if( strncmp(ANZA_DCDC_NAME[i], "STAT", 4) == 0 ) { 
             val = packet[off];
         } else  if( strncmp(ANZA_DCDC_NAME[i], "LLOCK", 5) == 0 )  {
-            iptr = (ulong_t *) (packet + off);
-	    val = *iptr;                        
+            memcpy( (char *) &lval, (char *) &packet[off], 4 );
+	    val = lval;                        
 	} else { 
-            sptr = (ushort_t *) (packet + off);
-            val = *sptr;
+            memcpy( (char *) &sval, (char *) &packet[off], 2);
+            val = sval;
         }
-	parbuf[ch] = val; 
+	memcpy(achan->data, (char *) &val, sizeof(int) );
 
-	achan->data = &parbuf[ch];
         settbl((*Pkt)->chan, ch, achan ) ;
      }
 
@@ -102,6 +101,7 @@ adc_par( char *packet,
                        achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
                        if ( achan == 0 ) {
                             allot ( PktChannel *, achan, 1 ) ;
+                            achan->data = (void *) malloc( sizeof(int)  );
                        }
                        strcpy( achan->chan, ANZA_DCDAS_NAME[i] ) ;
                        strcpy( achan->net, net);
@@ -114,11 +114,10 @@ adc_par( char *packet,
                        achan->time = pkttime;   
                        
                        off = hdr->hdrsiz + ANZA_DCDAS_OFF[i]+das*2;
-                       sptr = (ushort_t *) (packet + off);
-		       val = *sptr;
-	               parbuf[ch] = val; 
+                       memcpy( (char *) &sval, (char *) &packet[off], 2);
+	               val = sval;
+                       memcpy(achan->data, (char *) &val, sizeof(int) );
 
-	               achan->data = &parbuf[ch];
                        settbl((*Pkt)->chan, ch, achan ) ;
                        ch++;
                    }

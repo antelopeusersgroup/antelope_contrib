@@ -10,8 +10,9 @@
 #include "header.h"
 
 extern int DINTV;
-int
-anza_par( char *packet,
+extern int Log;
+
+int anza_par( uchar_t *packet,
           double pkttime,
           char *srcname,
 	  struct Packet **Pkt
@@ -23,21 +24,29 @@ anza_par( char *packet,
     struct PktChannel *achan;
     char net[64], sta[8];
     int i, off, ch;
-    ushort_t *sptr, val;
+    short sval; 
+    int val;
+    long lval;
 
     hdr = ( struct PreHdr *) packet;
     
     (*Pkt)->pkttype = ntohl (hdr->pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->hdrtype);
 
+    if( Log)  {
+       hexdump( stderr, packet+hdr->hdrsiz, hdr->pktsiz  );
+       fflush( stderr);
+    }
+
+
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
-    memset( (char *) parbuf, 0, 512*sizeof(int));
 
     for( i = 0, ch = 0; i < ANZA_DAS; i++, ch++ )  {
 
         achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
         if ( achan == 0 ) {
               allot ( PktChannel *, achan, 1 ) ;
+              achan->data = (void *) malloc( sizeof(int)  );
         }
         strcpy( achan->chan, ANZA_DAS_NAME[i] ) ;
         strcpy( achan->net, net);
@@ -51,18 +60,17 @@ anza_par( char *packet,
 
         off = hdr->hdrsiz + ANZA_DAS_OFF[i];
         if( strncmp(ANZA_DAS_NAME[i], "BUFDEL", strlen("BUFDEL")) == 0 )  
-	    parbuf[ch] = packet[off];
+	    val = packet[off];
 	else  {
-	    sptr = (ushort_t *) ( packet + off );
-	    val = *sptr;
-	    parbuf[ch] = val ;
+	    memcpy( (char *) &sval, (char *) &packet[off], 2 );
+	    val = sval ;
 	   /*
 	    fprintf( stderr, "%lf %s_%s %d\n", achan->time, achan->sta, achan->chan, val ); 
 	    if( val < 1100  )   hexdump( stderr, packet + hdr->hdrsiz, 62 ); 
 	    fflush(stderr);
 	    */
 	}
-        achan->data = &parbuf[ch];           
+        memcpy(achan->data, (char *) &val, sizeof(int) );
 
         settbl((*Pkt)->chan, ch, achan ) ;
      } 

@@ -50,7 +50,7 @@ Db_buffer  *new_buf (PktChannel *src, Save_params *params)
 }
 
 int
-new_dfile (Db_buffer *buf, double crnt_time ) 
+new_dfile (Db_buffer *buf, PktChannel *new, double crnt_time ) 
 {
     int             n;
 
@@ -70,7 +70,7 @@ new_dfile (Db_buffer *buf, double crnt_time )
 	    "time", crnt_time,
 	    "endtime", crnt_time,
 	    "nsamp", 0,
-	    "samprate", buf->samprate,
+	    "samprate", new->samprate,
 	    "datatype",  buf->params->datatype,
 	    0) < 0) {
 	    register_error (0, "Couldn't write to table\n");
@@ -86,7 +86,7 @@ new_dfile (Db_buffer *buf, double crnt_time )
 	buf->stime = crnt_time ;
 	buf->crnt_time = crnt_time ;
 	if( buf->params->segsiz )
-	   buf->tmax = buf->stime * buf->params->segsiz ;
+	   buf->tmax = buf->stime + buf->params->segsiz ;
         else 
 	   buf->tmax = BIG_NUMBER ;
 
@@ -119,8 +119,8 @@ int new_dbrecord ( Db_buffer *buf, PktChannel *new, double stime )
          if (dbputv (buf->db, 0, 
 	     "sta", buf->sta, 
 	     "chan", buf->chan, 
-	     "time", new->time, 
-	     "endtime", new->time,   
+	     "time", stime,     
+	     "endtime", stime,       
 	     "nsamp", 0, 
 	     "foff", foff, 
 	     "dir", dir, 
@@ -133,8 +133,8 @@ int new_dbrecord ( Db_buffer *buf, PktChannel *new, double stime )
 	  }
           buf->nsamp = 0 ; 
           buf->samprate = new->samprate ;
-          buf->stime = new->time;
-          buf->crnt_time = new->time;
+          buf->stime = stime;       
+          buf->crnt_time = stime;       
 				          
           if ( buf->steim  ) 
               buf->steim->s100.samprate = buf->samprate;

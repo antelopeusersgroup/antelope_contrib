@@ -37,11 +37,11 @@ int record ( PktChannel *new , Db_buffer *buf)
     int           npts, ev_over = 0;
     int           doff, result ;
     int 	  nsamp_now, maxnsamp;
-    int 	  *data;
+    int 	  data[10];
     char          *s ;
 
     if (buf->db.record < 0) {
-	if ( !new_dfile (buf, new->time ) ) 
+	if ( !new_dfile (buf, new, new->time ) ) 
 	    die (0, "Couldn't add new record to database.\n" ) ; 
     } 
     npts = TIME2SAMP (buf->crnt_time, buf->samprate, new->time);
@@ -61,13 +61,14 @@ fflush(stderr);
 */
 
         wrt_last_rec ( buf ) ; 
-        if ( !new_dbrecord (buf, new, buf->stime ) ) 
+        if( buf->tmax < new->time ) new_dfile( buf, new, new->time );
+        else if ( !new_dbrecord (buf, new, new->time ) ) 
            die (0, "Couldn't add new record to database.\n" ) ; 
     }
     doff = 0;
     nsamp_now = 0;
     crnt_time = new->time;
-    data =  (int *) new->data;
+    memcpy( (char *) &data[0], (char *) new->data, new->nsamp*sizeof(int) );
 
     while( new->nsamp > nsamp_now )  {
     
@@ -76,15 +77,15 @@ fflush(stderr);
        if( nsamp_now >= maxnsamp ) ev_over = 1; 
        else ev_over = 0;
 /*
-fprintf( stderr, "%s_%s nsamp %d will write %d at %lf\n",  
-buf->sta, buf->chan, new->nsamp, nsamp_now, buf->crnt_time);
+fprintf( stderr, "%s_%s %d %lf\n",  
+buf->sta, buf->chan, data[0], buf->crnt_time);
 fflush(stderr);
- */   
+*/ 
        switch (buf->params->datacode) {
 
           case trSEED:
 	      buf->nsamp += nsamp_now ; 
-	      result = csteim (buf->steim, save_seed, data+doff, nsamp_now) ;
+	      result = csteim (buf->steim, save_seed, &data[doff], nsamp_now) ;
   
 	      if ( result < 0 ) 
 		    die (0, "steim compression failed\n" ) ;
@@ -98,7 +99,7 @@ fflush(stderr);
 	  break;
 
           case trINT:
-	      if ((npts = fwrite (data+doff, sizeof(int), 
+	      if ((npts = fwrite ( &data[doff], sizeof(int), 
 		    nsamp_now, buf->file)) != nsamp_now) {
 	            die (1, " write %d instead of %d samples to %s.\n",
 		      npts, nsamp_now, buf->path ) ; 
@@ -131,7 +132,7 @@ fflush(stderr);
 */ 
  
          if( buf->params->datacode == trSEED )   wrt_last_rec ( buf ) ; 
-         new_dfile( buf, crnt_time ); 
+         new_dfile( buf, new, crnt_time ); 
 
        }
        new->nsamp -= nsamp_now;
