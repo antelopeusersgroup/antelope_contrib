@@ -34,6 +34,7 @@ static void usage( )
 {
 
       fprintf (stderr, "usage: %s [-d] [-m srcmatch ] orbin mail_add \n" , Program_Name);
+      banner (Program_Name, "$Revision$ $Date$");
       exit (1);
 
 } 
@@ -127,10 +128,9 @@ char *argv[];
   char 		*inorbname = "localhost";
   char          alarm_str[512], *who_str, mail_str[512], *madd, *s ;
   char  	*match = ".*BSP";
-  char 		*version = "1.1 20/12/98\0";
   
   elog_init (argc, argv) ;
-  elog_notify (0, "%s version %s\n", argv[0], version) ;
+  elog_notify (0, "$Revision$ $Date$") ;
   Program_Name = argv[0];
   
   while( ( id = getopt( argc, argv, "dm:") ) != -1 )

@@ -1,6 +1,7 @@
 # Makefile for svd
 
 BIN = acalarm battalarm
+MAN1 = rtalarm.1
 ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
