@@ -3,7 +3,8 @@
 dbadd_unassoc \- Add unassociated events from a catalog to a real-time database
 .SH SYNOPSIS
 .nf
-dbadd_unassoc [-l seconds] [-n] [-s catalog_subset_expression] dbcat dbname
+dbadd_unassoc [-l seconds] [-n] [-p number|all] 
+	[-s catalog_subset_expression] dbcat dbname
 .fi
 .SH DESCRIPTION
 dbadd_unassoc is a companion to dbassoc_rt. Whereas dbassoc_rt looks in a catalog
@@ -23,6 +24,15 @@ system cross-comparison, and integration of multiple regional and national
 location systems. 
 
 
+	Since the dbloc2 analysis which may follow on this database requires 
+at least some pick information to recognize that there is a "next event" at a 
+certain time, there is a -p option that will add predicted 
+phases of +P from the listed hypocenter at the closest stations, or will add 
+measured phases that appear in the catalog database.  In addition to helping 
+an analyst get to the event with dbloc2, adding phases will 
+prevent separate evids for the same event if more than one external catalog 
+sees an event missed by the real-time system.
+
 	Pending further insight, one must specify a lag-time after which 
 dbadd_unassoc has given up on the real-time system and is willing to add the 
 listed event [based on origin time and lddate]. Unfortunately this switches
@@ -34,6 +44,11 @@ was 'missed' and to add it
 
 -n exit after the catalog database has been initially processed. Otherwise, 
 wait indefinitely for new hypocenters to appear in the catalog database. 
+
+-p number|all Add phases. If a number is specified, only the closest number of 
+phases are used. If "all" is specified, all available phases are used. If there
+are no phases in the catalog database, predicted P phases are used and are labeled
+with a preceding plus-sign. 
 
 -s catalog_subset_expression Only include catalog hypocenters that match this 
 expression
@@ -60,15 +75,6 @@ within dbassoc_rt, perhaps checking "missed" hypocenters agaist the detections
 in a real-time database instead of just the associated arrivals [Suggested 
 by Frank Vernon].
 
-	Since the dbloc2 analysis which may follow on this database requires 
-at least some pick information to recognize that there is a "next event" at a 
-certain time, there perhaps should be a -p option that will add a predicted 
-phase of +P from the listed hypocenter at the closest station. As an
-alternative to adding predicted phases, dbadd_unassoc should look for 
-real phases in the catalog database and add them instead. In addition to helping 
-an analyst get to the event with dbloc2, having phases present would hopefully 
-prevent separate evids for the same event if more than one external catalog 
-sees an event missed by the real-time system.
 .SH AUTHOR
 Kent Lindquist, Geophysical Institute, University of Alaska
 .\" $Id$

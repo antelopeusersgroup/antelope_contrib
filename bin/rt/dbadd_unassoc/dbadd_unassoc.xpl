@@ -4,13 +4,14 @@ require "getopts.pl";
 
 elog_init( $0, @ARGV );
 
-if( ! Getopts( 'l:pns:' ) || $#ARGV < 1 ) {
+if( ! Getopts( 'nl:p:s:' ) || $#ARGV < 1 ) {
 	die( "Usage: $0 [-l seconds] [-n] " .
 		"[-s catalog_subset_expression] dbcat dbname\n" );
 } else {
 	$lag_seconds = defined( $opt_l ) ? $opt_l : 0;
 	defined( $opt_n ) && $nowait++;
 	if( defined( $opt_s ) ) { $subset_expr = $opt_s; }
+	if( defined( $opt_p ) ) { $add_phases = $opt_p; }
 	$dbname = pop( @ARGV );
 	$dbcat = pop( @ARGV );
 }
@@ -22,6 +23,8 @@ if( $dbout[0] < 0 ) {
 @dbout = dblookup( @dbout, "", "origin", "", "" );
 @dbscratch = dblookup( @dbout, "", "origin", "", "dbSCRATCH" );
 @dbevent = dblookup( @dbout, "", "event", "", "" );
+@dbassoc = dblookup( @dbout, "", "assoc", "", "" );
+@dbarrival = dblookup( @dbout, "", "arrival", "", "" );
 
 @dbcat = dbopen( $dbcat, "r" );
 if( $dbcat[0] < 0 ) {
@@ -111,7 +114,91 @@ sub add_if_appropriate {
 		dbaddv( @dbevent, "evid", $evid,
 				  "prefor", $orid, 
 				  "auth", $auth );
+		
+		if( defined( $add_phases ) ) {
+			add_phases( @db, $orid );
+		}
 
 		return;
+	}
+}
+
+sub add_phases {
+	my( $orid ) = pop( @_ );
+	my( @dbcatrow ) = @_;
+
+	my( $cat_orid ) = dbgetv( @dbcatrow, "orid" );
+	my( @dbcatphases ) = dbprocess( @dbcatrow, 
+					"dbopen origin",
+					"dbsubset orid == $cat_orid",
+					"dbjoin assoc",
+					"dbsort delta",
+					"dbjoin arrival",
+					"dbseparate arrival" );
+
+	$nphases = dbquery( @dbcatphases, "dbRECORD_COUNT" );
+
+	if( $nphases > 0 ) {	# Add real phases
+
+		my( $nmax ) = $add_phases eq "all" ? $nphases :
+			( $nphases >= $add_phases ? $add_phases : $nphases );
+
+		for($dbcatphases[3]=0; $dbcatphases[3]<$nmax; $dbcatphases[3]++) {
+
+			my( $arid ) = dbnextid( @dbout, "arid" );
+
+			my( $record ) = dbget( @dbcatphases );
+
+			$dbarrival[3] = dbaddnull( @dbarrival );
+			foreach $field (dbquery(@dbcatphases,"dbTABLE_FIELDS")) {
+				( $val ) = dbgetv( @dbcatphases, "$field" );
+				dbputv( @dbarrival, "$field", $val );
+			}
+			dbputv( @dbarrival, "arid", $arid );
+
+			my( $sta, $phase ) = dbgetv( @dbcatphases, 	
+						     "sta", "iphase" );
+
+			dbaddv( @dbassoc, 
+				"arid", $arid,
+				"orid", $orid,
+				"sta", $sta,
+				"phase", $phase );
+		}
+
+	} else {		# Add predicted phases
+
+		my( @db ) = dbprocess( @dbout, 
+				"dbopen origin",
+				"dbsubset orid == $orid", 
+				"dbjoin site",
+				"dbsubset offdate == NULL",
+		"dbsort distance(origin.lat,origin.lon,site.lat,site.lon)" );
+
+		my( $nstas ) = dbquery( @db, "dbRECORD_COUNT" );
+		my( $nmax ) = $add_phases eq "all" ? $nstas :
+			( $nstas >= $add_phases ? $add_phases : $nstas );
+
+		for( $db[3]=0; $db[3]<$nmax; $db[3]++ ) {
+
+			my( $arid ) = dbnextid( @dbout, "arid" );
+
+			my( $sta ) = dbgetv( @db, "sta" );
+
+			my( $time ) = dbex_eval( @db, "parrival()" );
+
+			dbaddv( @dbarrival,
+				"arid", $arid,
+				"time", $time,
+				"sta", $sta,
+				"iphase", "+P",
+				"auth", "dbadd_unassoc" );
+
+			dbaddv( @dbassoc, 
+				"arid", $arid,
+				"orid", $orid,
+				"sta", $sta,
+				"phase", "+P" );
+		}
 	}
 }
