@@ -1,6 +1,6 @@
 DBSEPARATE extract a subset view of a base table from a joined view
 
-DBSEPARATE ( DBPTR, TABLE )
+DBPTR = DBSEPARATE ( DBPTR, TABLE )
 
 DBSEPARATE extracts the rows from the specified base TABLE that 
 participate in the view given in DBPTR. The resulting return-value
