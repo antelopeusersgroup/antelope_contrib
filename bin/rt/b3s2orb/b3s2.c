@@ -23,7 +23,7 @@ main(argc, argv)
 	double 		crnt_time;
 	char            *iport = DATA_PORT;
 	char            *cmdport = CMND_PORT;
-	char            *pfile = "b3s2";
+	char            *pfile = "pkt";
         char            *version = "1.1 (10/22/97)";
 	Display        *dpy;
 	char            c;
