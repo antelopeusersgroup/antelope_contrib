@@ -82,7 +82,40 @@ $dbbundle = split ( ' ', $dbbundle ) ;
 .fi
 .in
 .ft R
-.IP "\fBdb2xml\fP ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )"
+.IP "\fBtrloadchan\fP ( $db, t0, t1, sta, chan )"
+read channel waveform data
+.ft CW
+.in 2c 
+.nf
+
+$tr = trloadchan( $db, $t0, $t1, $sta, $chan );
+
+.fi
+.in
+.ft R
+.IP "\fBtrextract_data\fP ( $tr )"
+read channel waveform data
+.ft CW
+.in 2c 
+.nf
+
+$rawdatapoints = trextract_data( $tr );
+
+.fi
+.in
+.ft R
+.IP "\fBtrfree\fP ( $tr )"
+free a trace-object pointer
+.ft CW
+.in 2c 
+.nf
+
+trfree( $tr );
+
+.fi
+.in
+.ft R
+.IP "\fBdb2xml\fP ( $db [, flags [, rootnode [, rownode [, fields [, expressions]]]]] )"
 Return an eXtensible Markup Language (XML) representation of a datascope view via the db2xml(3) command. The flags argument may be empty or DBXML_PRIMARY, in
 which case only the primary keys are returned.
 .fi CW

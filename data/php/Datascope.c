@@ -11,6 +11,7 @@
 #include "ext/standard/info.h"
 #include "php_Datascope.h"
 #include "db.h"
+#include "tr.h"
 #include "stock.h"
 #include "coords.h"
 #include "response.h"
@@ -40,8 +41,11 @@ function_entry Datascope_functions[] = {
 	PHP_FE(db2xml, NULL)		
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
-	PHP_FE(strtdelta, NULL)		
 	PHP_FE(eval_response, NULL)		
+	PHP_FE(strtdelta, NULL)		
+	PHP_FE(trloadchan, NULL)		
+	PHP_FE(trfree, NULL)		
+	PHP_FE(trextract_data, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -279,7 +283,139 @@ PHP_FUNCTION(template)
 }
 /* }}} */
 
-/* {{{ proto array db2xml( array db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]]  ) */
+/* {{{ proto array trextract_data( array tr ) */
+PHP_FUNCTION(trextract_data)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+	int 	single_row = 0;
+	int	nrecs;
+	int	nsamp = 0;
+	float	*data = NULL;
+	int	i;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	dbquery( tr, dbRECORD_COUNT, &nrecs );
+
+	if( tr.record == dbALL ) {
+		if( nrecs == 1 ) {
+			single_row = 1;
+			tr.record = 0;
+		} else {
+			single_row = 0;
+		}
+	} else {
+		single_row = 1;
+	}
+
+	if( ! single_row ) {
+		/* SCAFFOLD needs cleanup and error msg */
+		return;
+	}
+
+	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
+
+	if( nsamp == 0 || data == NULL ) {
+	
+		/* SCAFFOLD needs cleanup and error msg */
+		return;
+	}
+
+	array_init( return_value );
+
+	for( i = 0; i < nsamp; i++ ) {
+		
+		add_index_double( return_value, i, (double) data[i] );
+	}
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void trfree( array tr ) */
+PHP_FUNCTION(trfree)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	trfree( tr );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto array trloadchan( array db, double t0, double t1, string sta, string chan ) */
+PHP_FUNCTION(trloadchan)
+{
+	zval	*db_array;
+	Dbptr	db;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+	double	t0;
+	double	t1;
+	char	*sta;
+	int	sta_len;
+	char	*chan;
+	int	chan_len;
+
+	if( argc != 5 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	/* SCAFFOLD should overload t0 and t1 to optionally be strings */
+	if( zend_parse_parameters( argc TSRMLS_CC, "addss", 
+					&db_array, &t0, &t1,
+					&sta, &sta_len, &chan, &chan_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	tr = trloadchan( db, t0, t1, sta, chan );
+
+	RETURN_DBPTR( tr );
+}
+/* }}} */
+
+
+/* {{{ proto string db2xml( array db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]]  ) */
 PHP_FUNCTION(db2xml)
 {
 	zval	*db_array;

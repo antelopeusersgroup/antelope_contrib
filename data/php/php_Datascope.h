@@ -33,6 +33,9 @@ PHP_FUNCTION(dbquery);
 PHP_FUNCTION(dbresponse);
 PHP_FUNCTION(dbsubset);
 PHP_FUNCTION(db2xml);
+PHP_FUNCTION(trloadchan);
+PHP_FUNCTION(trfree);
+PHP_FUNCTION(trextract_data);
 PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
 
