@@ -1,0 +1,60 @@
+.TH CGGRID_INFO 1 "$Date$"
+.SH NAME
+cggrid_info \- get information on a cggrid file
+.SH SYNOPSIS
+.nf
+\fBcggrid_info\fP [-s] [-n] [-f \fIformat\fP] \fIcggridfile\fP
+.fi
+.SH DESCRIPTION
+
+\fBcggrid_info\fP describes the contents of a grid file in cggrid format. 
+The output may either be in a report with human-readable labels, or 
+on a single line for scripting (with the -s option).
+
+.SH OPTIONS
+.IP "-f format"
+output print \fIformat\fP in the style of fprintf(3C). Currently the default
+is '%.8f'.
+.IP -n
+Do not print newline character
+.IP -s
+Echo all values on a single row without labels, in the order minx, maxx, miny, maxy, dx, dy, nx, ny, and units
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% cggrid_info -s 2005/081/orid_93834_shakemap_pga.as
+-149.01453300 -146.53120000 62.41653300 64.06653300 0.01666666 0.01666667 150 100 centigravity 
+
+
+% cggrid_info 2005/081/orid_93834_shakemap_pga.as
+
+Grid 2005/081/orid_93834_shakemap_pga.as:
+
+        Min X             : -149.01453300
+        Max X             : -146.53120000
+        Min Y             : 62.41653300
+        Max Y             : 64.06653300
+        X Grid Spacing    : 0.01666666
+        Y Grid Spacing    : 0.01666667
+        Number of X points: 150
+        Number of Y points: 100
+        Units             : centigravity
+
+% 
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH "SEE ALSO"
+.nf
+cggrid_probe(1), cggrid(3), cggrid(5), cggrid_convert(1) 
+.fi
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
