@@ -16,9 +16,9 @@ sub init_globals {
 
 	my( @params ) = (
 		"dbrecenteqs_title",
-		"dbrecenteqs_url",
-		"dbrecenteqs_dir",
+		"dbrecenteqs_subdir",
 		"institute_url",
+		"institute_webdir",
 		"institute_description",
 		"page_refresh_seconds",
 		"other_region_links",
@@ -53,8 +53,29 @@ sub init_globals {
 	$State{"institute_logo_filebase"} = `basename $State{"institute_logo"}`;
 	chomp( $State{"institute_logo_filebase"} );
 
-	if( $State{dbrecenteqs_url} !~ m@/$@ ) { $State{dbrecenteqs_url} .= "/"; }
-	if( $State{dbrecenteqs_dir} !~ m@/$@ ) { $State{dbrecenteqs_dir} .= "/"; }
+	if( ! -d $State{institute_webdir} ) {
+		die( "The directory $State{institute_webdir} does not exist.\n" .
+		     "Are you sure the parameter institute_webdir in\n" .
+	  	     "dbrecenteqs.pf is set correctly for your\n" .
+		     "installation? Bye.\n" );
+	}
+
+	$State{dbrecenteqs_dir} = 
+	   concatpaths( $State{institute_webdir}, $State{dbrecenteqs_subdir} );
+
+	if( $State{dbrecenteqs_dir} !~ m@/$@ ) { 
+		$State{dbrecenteqs_dir} .= "/"; 
+	}
+
+	$State{dbrecenteqs_url} = $State{institute_url};
+	if( $State{dbrecenteqs_url} !~ m@/$@ ) {
+		$State{dbrecenteqs_url} .= "/";
+	}
+	$State{dbrecenteqs_url} .= $State{dbrecenteqs_subdir};
+
+	if( $State{dbrecenteqs_url} !~ m@/$@ ) { 
+		$State{dbrecenteqs_url} .= "/"; 
+	}
 
 	if( ! -d $State{dbrecenteqs_dir} ) {
 		die( "The directory $State{dbrecenteqs_dir} does not exist. " .

@@ -1,11 +1,11 @@
 
-dbrecenteqs_dir /var/apache/htdocs/dbrecenteqs
-dbrecenteqs_url http://www.lindquistconsulting.com/dbrecenteqs/
-dbrecenteqs_title Recent Earthquakes 
-
 institute_url http://www.lindquistconsulting.com/
+institute_webdir /var/apache/htdocs
 institute_description Lindquist Consulting
 institute_logo your_logo.gif
+
+dbrecenteqs_subdir dbrecenteqs
+dbrecenteqs_title Recent Earthquakes 
 
 wiggle mini_logo.gif
 

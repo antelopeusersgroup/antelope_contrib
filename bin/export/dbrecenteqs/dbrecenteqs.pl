@@ -982,6 +982,12 @@ sub read_map_from_db {
 
 	$Mapspec{pixfile} = dbextfile( @db );
 
+	if( ! -e "$Mapspec{pixfile}" ) {
+		die( "\n\t************************************\n" . 
+		     "\tERRROR: $Mapspec{pixfile} has disappeared!\n" . 
+		     "\t************************************\n\nBye.\n\n" );
+	}
+
 	( $Mapspec{mapname},
 	  $Mapspec{mapclass},
 	  $Mapspec{latc},
