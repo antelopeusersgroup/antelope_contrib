@@ -365,6 +365,7 @@ TTTime *tt1dcvl_compute_atime(TTGeometry *x,double d_km,double azimuth,
 	} else { 
 	    t->deriv[0] = 0.0 ;
 	    t->deriv[1] = 0.0 ;
+	    t->deriv[2] = 0.0 ;
 	}
 
 	mod->ztop[0] = z0;
