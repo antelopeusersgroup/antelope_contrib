@@ -56,7 +56,8 @@ Written:  October 1997
 */
 
 int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
-			int depth_fixed,Hypocenter h,int orb)
+			int depth_fixed,Hypocenter h,
+			Location_options o, int orb)
 {
 	int ndef;
 	char dtype[2];
@@ -91,6 +92,7 @@ int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
 		"evid",evid,
 		"grn", grn,
 		"srn", srn,
+		"dtype",dtype,
 		"ndef",ndef,
 		"algorithm",algorithm,
 		"auth",auth,0))
@@ -564,7 +566,7 @@ void compute_location(Location_options o,
                 	hypo = (Hypocenter *)gettbl(converge_history,
 							niterations-1);
                		orid = save_origin(hyp.evid,master_db,
-					 dbtmp,o.fix[3],*hypo,orbout);
+					 dbtmp,o.fix[3],*hypo,o,orbout);
 
                 	save_origerr(orid,*hypo,dbtmp,orbout);
 			save_assoc(ta, tu, orid, vmodel, 
@@ -615,7 +617,7 @@ void exhume_state(int ecode)
 
 int main (int argc, char **argv)
 {
-	char *version="1.0 (February 1998)";
+	char *version="1.1 (April 1998)";
 	Dbptr master_db, dbtmp;
 	char dbname[512];  /* dbtmp name assigned by maketmpdb */
 	char *orbname;
