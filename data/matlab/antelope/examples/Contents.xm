@@ -8,6 +8,7 @@
 %   dbexample_writing - Writing information to a database
 %
 % Command Examples
+%   dbexample_arrtimes
 %   dbexample_clear
 %   dbexample_clear_register
 %   dbexample_db2struct

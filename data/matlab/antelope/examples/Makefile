@@ -1,6 +1,7 @@
 DATADIR= matlab/antelope/examples
 DATA= \
 	Contents.m \
+	dbexample_arrtimes.m \
 	dbexample_clear.m \
 	dbexample_clear_register.m \
 	dbexample_db2struct.m \

@@ -1,0 +1,10 @@
+ARRTIMES	Returns all calculated phases
+
+[TIMES, PHASENAMES] = ARRTIMES ( DELTA, DEPTH )
+
+ARRTIMES returns all seismic phase travel-times for the specified
+epicentral distance DELTA in degrees and hypocentral DEPTH in km. 
+Two vectors are returned, one with relative travel-times TIMES in seconds
+and one with the corresponding phase names. The travel-time tables
+are specified with the environment variable TAUP_PATH, defaulting to iasp91. 
+

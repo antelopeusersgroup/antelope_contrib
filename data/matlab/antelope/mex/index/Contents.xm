@@ -75,6 +75,9 @@
 %   strtdelta		- Convert an epoch time difference to an elapsed time 
 %   yearday		- Convert an epoch time to a yearday value
 %
+% Seismic Travel Times
+%   arrtimes		- Returns predicted seismic phase arrival times
+%
 % Error handling
 %   clear_register	- Clear the Datascope error register
 %
