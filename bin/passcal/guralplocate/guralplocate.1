@@ -1,0 +1,36 @@
+.\" %W% %G%
+.TH Q330GPSLOCATE 1 "%G%"
+.SH NAME
+guralplocate - estimates station location from guralp digitizer log file
+.SH SYNOPSIS
+.nf
+guralplocate log1 log2 ... 
+.fi
+.SH DESCRIPTION
+.LP
+The \fIguralplocate\fR program parses a series of log files
+from a Guralp data logger written to a series of output files
+by the SCREAM program or from a data dump from a SAM unit.  
+From these files it extracts
+lines in the log file containing latitude and longitude information.
+It reads all these numbers into memory and computes the following
+statistical estimates of the distribution of numbers:
+mean, median, lower quartile, upper quartile, lower bound, 
+upper bound, and the number of samples in the ensemble.  
+The statistics are sent to standard output with labels 
+defining the results for the latitude and longitude.
+.SH "BUGS AND CAVEATS"
+.LP
+The method used to find the GPS fix data is crude and depends upon
+a fixed format line written intot he log file.  If Guralp changes
+the format of the GPS fix lines in this log file it will not work.
+The algorithm is crude like old FORTRAN fixed format reads.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Department of Geological Sciences
+Indiana University
+Bloomington, IN 47405
+pavlis@indiana.edu
+.fi
+.\" $Id$
