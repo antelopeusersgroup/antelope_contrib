@@ -3,7 +3,10 @@
 #include "db.h"
 #include "location.h" 
 #include <float.h>
+/*
 #include <perf.h>
+*/
+#include <sunperf.h>
 /* This routines cautiously saves the emodel vector.  It is cautious
 because the emodel table is not part of the css3.0 schema.  If it
 cannot find info on the emodel table, it issues an error and returns.
