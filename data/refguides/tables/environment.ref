@@ -1,4 +1,5 @@
 <chapter Environment variables>
+<body>
 The following environment variables may be set to change
 the default Antelope behavior.  See antelopeenv(5) for 
 more information.

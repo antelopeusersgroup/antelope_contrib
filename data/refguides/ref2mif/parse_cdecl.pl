@@ -10,15 +10,18 @@ sub parse_cdeclaration {
     $line =~ s/\s+;\s*$// ; 
     $line =~ s/^extern\s+// ;
     $line =~ s/^static\s+// ;
-    my ( $type, $list, $result ) ;
-#                      void        ( *cmp    )         (            )
-#                   (         $1               )         (  $2   )
-    if ( $line =~ /^( [^,()]+ \s* \( [^()]+ \) ) \s*  \( ( [^)]* ) \) /x ) { 
+    my ( $type, $param, $list, $result ) ;
+#                      void          (    *cmp      )       (            )
+#                   (    $1   )        (  $2    )             (  $2   )
+    if ( $line =~ /^( [^,()]+ ) \s* \( \s*\*\s* ( [^( )]+ ) \s* \) \s*  \( ( [^)]* ) \) /x ) { 
 	$type = $1 ; 
-	$list = $2 ; 
+	$param = $2 ;
+	$list = $3 ; 
+
 	$Parameters{$type} = 1 ;
-	$result = &format_type ( "ParameterName", $type ) 
-		    . &string("(")
+	$result = &string($type . "(*") 
+	            . &format_type ( "ParameterName", $param ) 
+		    . &string(")(")
 		    . &format_argument_list ( $list ) 
 		    . &string(")") ;
 
