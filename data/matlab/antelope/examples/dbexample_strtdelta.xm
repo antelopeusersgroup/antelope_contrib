@@ -1,3 +1,5 @@
+display('Running dbexample_strtdelta')
+
 echo on
 
 strtdelta( 7200 )

@@ -1,3 +1,5 @@
+display('Running dbexample_pf2struct')
+
 echo on
 
 pf=dbpf( 'dbloc2' );

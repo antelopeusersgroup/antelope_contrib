@@ -1,3 +1,5 @@
+display('Running dbexample_trinsert_data')
+
 echo on
 
 tr=trnew;

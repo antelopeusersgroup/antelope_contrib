@@ -1,3 +1,5 @@
+display('Running dbexample_get_hypocenter_vitals')
+
 dbexample_get_demodb_path;
 
 echo on

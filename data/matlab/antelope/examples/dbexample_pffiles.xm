@@ -1,3 +1,5 @@
+display('Running dbexample_pffiles')
+
 echo on
 
 pffiles( 'rtexec' )

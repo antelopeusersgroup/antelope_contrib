@@ -1,3 +1,5 @@
+display('Running dbexample_dbget_remark')
+
 echo on
 
 output_dbname = ['/tmp/newdb_' getenv('USER')]

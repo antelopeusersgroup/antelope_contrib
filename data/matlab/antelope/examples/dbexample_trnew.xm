@@ -1,3 +1,5 @@
+display('Running dbexample_trnew')
+
 echo on
 
 % Construct a pointer to a new trace object:

@@ -1,3 +1,5 @@
+display('Running dbexample_cggrid_write')
+
 echo on
 
 [X,Y] = meshgrid(-2:0.2:2,-3:0.3:3);

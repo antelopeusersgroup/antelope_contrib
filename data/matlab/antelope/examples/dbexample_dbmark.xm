@@ -1,3 +1,5 @@
+display('Running dbexample_dbmark')
+
 echo on
 
 unix( ['/bin/rm -f ' output_dbname '*'] );

@@ -1,3 +1,5 @@
+display('Running dbexample_pfget_boolean')
+
 echo on
 
 pf=dbpf( 'dbloc2' )

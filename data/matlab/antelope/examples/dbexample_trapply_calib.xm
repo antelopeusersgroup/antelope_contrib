@@ -1,3 +1,5 @@
+display('Running dbexample_trapply_calib')
+
 echo on
 
 db = dbopen( demodb_path,'r' );

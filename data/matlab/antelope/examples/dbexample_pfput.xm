@@ -1,3 +1,5 @@
+display('Running dbexample_pfput')
+
 echo on
 
 pf = dbpf;

@@ -1,3 +1,5 @@
+display('Running dbexample_runall')
+
 dbexample_arrtimes
 dbexample_cggrid
 dbexample_cggrid_dx

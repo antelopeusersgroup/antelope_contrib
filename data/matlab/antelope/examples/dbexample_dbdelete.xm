@@ -1,3 +1,5 @@
+display('Running dbexample_dbdelete')
+
 echo on
 
 output_dbname = ['/tmp/newdb_' getenv('USER')]

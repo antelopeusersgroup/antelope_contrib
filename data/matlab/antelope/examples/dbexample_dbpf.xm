@@ -1,3 +1,5 @@
+display('Running dbexample_dbpf')
+
 echo on
 
 % Get a 'handle', i.e. the pf object, with which to ask questions

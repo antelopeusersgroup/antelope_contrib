@@ -1,3 +1,5 @@
+display('Running dbexample_dbnrecs')
+
 echo on
 
 db = dbopen( demodb_path,'r' );

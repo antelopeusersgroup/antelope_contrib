@@ -1,3 +1,5 @@
+display('Running dbexample_pfupdate')
+
 echo on
 
 % Create a parameter file and put one value in it

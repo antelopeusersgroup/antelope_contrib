@@ -1,3 +1,5 @@
+display('Running dbexample_dbsave_view')
+
 dbexample_get_demodb_path;
 
 echo on

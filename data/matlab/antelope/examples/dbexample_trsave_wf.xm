@@ -1,3 +1,5 @@
+display('Running dbexample_trsave_wf')
+
 echo on
 
 % Construct a new trace object:

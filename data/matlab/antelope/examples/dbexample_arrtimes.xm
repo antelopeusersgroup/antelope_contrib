@@ -1,3 +1,5 @@
+display('Running dbexample_arrtimes')
+
 echo on
 
 delta = 20;

@@ -1,3 +1,5 @@
+display('Running dbexample_trextract_data')
+
 dbexample_get_demodb_path;
 
 echo on

@@ -1,3 +1,5 @@
+display('Running dbexample_pfget_tbl')
+
 echo on
 
 pf = dbpf( 'rtexec' );

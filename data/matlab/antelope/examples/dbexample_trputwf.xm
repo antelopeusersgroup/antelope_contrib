@@ -1,3 +1,5 @@
+display('Running dbexample_trputwf')
+
 echo on
 
 % Open a new database for output:

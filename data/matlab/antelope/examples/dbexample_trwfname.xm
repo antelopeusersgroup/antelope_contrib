@@ -1,3 +1,5 @@
+display('Running dbexample_trwfname')
+
 echo on
 
 output_dbname = ['/tmp/newdb_' getenv('USER')]

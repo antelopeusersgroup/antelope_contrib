@@ -1,3 +1,5 @@
+display('Running dbexample_orbclose')
+
 echo on
 
 % This presumes that you have connect permission to an orb running 

@@ -1,3 +1,5 @@
+display('Running dbexample_pfresolve')
+
 echo on
 
 pf = dbpf( 'rtexec' );

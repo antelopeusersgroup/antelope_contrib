@@ -1,3 +1,5 @@
+display('Running dbexample_cggrid2db')
+
 echo on
 
 % Construct a contrived grid:
@@ -42,6 +44,9 @@ gridfile = dbfilename( db );
 cgg2 = cggrid( gridfile );
 [myx, myy, myz] = cggrid_getmesh(cgg2);
 surf(myx,myy,myz)
+
+% (Allow time for figure to come up when running in batch mode)
+pause(0.5);
 
 dbclose( db );
 

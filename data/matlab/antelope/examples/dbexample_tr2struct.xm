@@ -1,3 +1,5 @@
+display('Running dbexample_tr2struct')
+
 dbexample_get_demodb_path;
 
 echo on

@@ -1,3 +1,5 @@
+display('Running dbexample_tr_samp2time')
+
 echo on
 
 time =    7.061397152e+08;

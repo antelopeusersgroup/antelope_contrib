@@ -1,3 +1,5 @@
+function s = tr2struct( tr )
+
 % db2struct can't handle multi-table views:
 tr = dbseparate( tr, 'trace' );
 

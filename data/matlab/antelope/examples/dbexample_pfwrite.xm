@@ -1,3 +1,5 @@
+display('Running dbexample_pfwrite')
+
 echo on
 
 pf = dbpf( 'rtexec' );

@@ -1,3 +1,5 @@
+display('Running dbexample_eval_response')
+
 dbexample_get_demodb_path;
 
 echo on

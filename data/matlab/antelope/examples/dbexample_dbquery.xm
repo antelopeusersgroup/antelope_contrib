@@ -1,3 +1,7 @@
+display('Running dbexample_dbquery')
+
+dbexample_get_demodb_path;
+
 echo on
 
 db = dbopen( demodb_path,'r' );

@@ -1,3 +1,5 @@
+display('Running dbexample_clear')
+
 echo on
 
 % Example of pf/clear:

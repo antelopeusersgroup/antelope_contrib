@@ -1,3 +1,5 @@
+display('Running dbexample_epoch2str')
+
 echo on
 
 mytime = str2epoch( '9/30/02 11:15 AM' )

@@ -1,3 +1,5 @@
+display('Running dbexample_trdestroy')
+
 echo on
 
 db = dbopen( demodb_path,'r' );

@@ -1,3 +1,5 @@
+display('Running dbexample_str2epoch')
+
 echo on
 
 format long

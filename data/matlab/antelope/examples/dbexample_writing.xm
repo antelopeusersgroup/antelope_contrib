@@ -1,3 +1,5 @@
+display('Running dbexample_writing')
+
 echo on
 
 % Open up a new database for writing; choose the origin table:

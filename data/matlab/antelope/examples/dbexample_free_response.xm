@@ -1,3 +1,5 @@
+display('Running dbexample_free_response')
+
 echo on
 
 db = dbopen( demodb_path,'r' );

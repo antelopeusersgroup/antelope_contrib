@@ -1,3 +1,5 @@
+display('Running dbexample_pfname')
+
 echo on
 
 pf = dbpf( 'rtexec' );
