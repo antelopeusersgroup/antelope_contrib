@@ -16,14 +16,14 @@ CLEAN= *.backup.fm fmbatch_script fmbatch_wrapper
 # include $(ANTELOPE)/include/mex_antelope_makerules
 include $(ANTELOPEMAKE)
 
-.SUFFIXES: .SUFFIXES .pdf .fm
+#.SUFFIXES: .SUFFIXES .pdf .fm
 
-.fm.pdf: pdf_settings.fm fmbatch_wrapper Antelope_Toolbox_for_Matlab.fm
-	make fmbatch_wrapper
-	$(RM) fmbatch_script
-	echo Open $< | cat > fmbatch_script
-	echo Open pdf_settings.fm | cat >> fmbatch_script
-	echo Print $< pdf_settings.fm | cat >> fmbatch_script
-	echo Quit | cat >> fmbatch_script
-	./fmbatch_wrapper $< $@
-	$(RM) fmbatch_script
+#.fm.pdf: pdf_settings.fm fmbatch_wrapper Antelope_Toolbox_for_Matlab.fm
+#	make fmbatch_wrapper
+#	$(RM) fmbatch_script
+#	echo Open $< | cat > fmbatch_script
+#	echo Open pdf_settings.fm | cat >> fmbatch_script
+#	echo Print $< pdf_settings.fm | cat >> fmbatch_script
+#	echo Quit | cat >> fmbatch_script
+#	./fmbatch_wrapper $< $@
+#	$(RM) fmbatch_script
