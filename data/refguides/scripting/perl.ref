@@ -260,3 +260,169 @@ epoch ( yearday )
 
 yearday ( epoch )
     returns the yearday corresponding to an epoch time
+
+<subsection orbserver and packet routines>
+<body>
+% man perlorb
+<function>
+use orb; 
+use Datascope ; 
+<function>
+
+orbopen(name, perm)
+    open the specified orbserver name with permission perm  ("r", "w", "r&", or "w&"), returning the open file descriptor orb
+
+orbclose(orb)
+    close an orbserver connection
+
+orbselect(orb, re)
+    select packets with sourcenames which match the regular expression re.   
+
+orbreject(orb, re)
+    reject  packets  with sourcenames which match the regular expression re.
+
+orbseek(orb, which)
+    position the orb connection packet pointer according to which; which may be an explicit pktid, or "ORBCURRENT",
+    "ORBPREV", "ORBNEXT", "ORBNEXT_WAIT",  "ORBOLDEST",  or "ORBNEWEST".
+
+orbposition(orb, from)
+    position the orb connection packet pointer according to
+    from; from may be "newest", "oldest", or any (UTC) time string
+    recognized by str2epoch(3).
+
+orbtell(orb)
+    return the current orb connection position (pktid).
+
+orbafter(orb, time)
+    position the orb connection packet pointer to the first
+    packet  after  the  specified time.  Time must be a UTC
+    epoch time in seconds, not a string.
+
+orbping(orb)
+    test if the specified orb responds; returns  a  version number.
+
+orbwait(orb, re, mintime, timeout)
+    wait  for all reading clients of  orb  with  a  program
+    name  which  matches  the regular expression re to have
+    read packets younger  than  mintime.   If   timeout  is
+    non-zero,  then  orbwait returns  with  an  error  code
+    if  the timeout  expires before the  specified  program
+    catch up.
+
+orbget(orb, which)
+    get a single packet corresponding to which; this be  an
+    explicit  pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
+    "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". returns
+    ($pktid, $srcname, $time, $packet, $nbytes) =
+
+orbreap(orb)
+    get the next packet from the orb; this is the  fastest,
+    most efficient way of reading packets.  
+    returns ($pktid, $srcname, $time, $packet, $nbytes) 
+
+orbreap_timeout(orb, maxseconds)
+    get the next packet from the orb, but return  early  if
+    no  packets have appeared in maxseconds.  In this case,
+    the returned pktid will be undef.
+    returns ($pktid, $srcname, $time, $packet, $nbytes) 
+
+orbput(orb, srcname, time, packet, nbytes)
+    put the specified packet onto the orb.
+
+orbstat(orb)
+    Get the standard  status  values  from  the  orb;  this
+    returns  an object with the following methods:
+<example>
+address     closes      connections errors      
+host        maxdata     maxpkts     maxsrc      
+messages    nclients    nsources    opens       
+orb_start   pid         port        rejected.   
+started     version     when        who         
+</example>
+
+orbclients(orb)
+          returns a scalar when, followed by  a  list  of  client
+          objects,  one  object  per client.  Each object has the
+          following methods:  
+<example>
+address     and         bytes       errors      
+fd          host        lastpkt     lastrequest 
+mymessages  nreads      nreject     nrequests   
+nselect     nwrites     packets     perm.       
+pid         pktid       port        priority    
+read        reject      select      started     
+thread      what        who         written     
+</example>
+
+orbsources(orb)
+          returns a scalar when, followed by  a  list  of  source
+          objects,  one  object  per source.  Each object has the
+          following methods:  
+<example>
+active        and           nbytes        
+npkts         slatest       slatest_time 
+soldest       soldest_time  srcname       
+</example>
+
+showPkt(srcname, time, packet, nbytes, mode)
+    print out packet summary, depending on mode:
+<list>
+1	hex dump
+2	unstuff, print all data samples
+3	unstuff, print no data samples
+4	just show the header information
+</list>
+
+unstuffPkt(srcname, time, packet, nbytes)
+    unstuffPkt unstuffs  the  input packet,  returning  a  packet kind and a packet object.
+    the result code  indicates  what  kind  of  packet  was unpacked:
+<list>
+kind  kind of packet
+Pkt_wf  waveform packet
+Pkt_st  status packet
+Pkt_db  database row
+Pkt_pf  parameter file
+Pkt_cn  control messages
+Pkt_rw  arbitrary binary data, wrapped in orb packet
+Pkt_ch  arbitrary character string
+Pkt_tp  test packet
+</list>
+The packet object  has  the following methods which return various
+values from the c Packet structure: parts, time, Pack-
+etType, nchannels, channels(i), pf, string, db, dfile,
+and version.
+
+The parts method returns (net, sta, chan, loc, suffix, subcode)
+
+The PacketType method returns  the  packet  kind  (also
+returned  by unstuffPkt) and the corresponding descrip-
+tion.  
+
+The channels method takes an index (0..n-1) argument 
+and returns a channel object with  its  own  methods:   
+<example>
+calib    calper   chan     cuser1   cuser2.  
+data     duser1   duser2   iuser1   iuser2   
+iuser3   loc      net      nsamp    samprate 
+segtype  sta      time     
+</example>
+the data method returns all the waveform data in a list of integers.
+
+<subsection sysinfo routines>
+<body>
+% man perlsysinfo
+<function>
+use sysinfo ; 
+<function>
+%vminfo  = vminfo() ;
+     returns free memory, physical memory, reserved swap and total swap space
+
+%loadavg = loadavg() ;
+     returns 15, 5 and 1 minute load averages and the number of cpus and processes
+
+%psinfo  = psinfo($pid) ;
+     returns cpu percentage, memory percentage, resident set size, total size, start time, execname, 
+truncated command line, parent pid and total cpu time for $pid and its children.
+
+($idle, $user, $kernel, $iowait, $swap, $dummy)  = cpu_usage() ;
+     returns a list of cpu time percentages:  idle time,  user time, kernel time, iowait and swap times.
