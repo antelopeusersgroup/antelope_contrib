@@ -51,11 +51,11 @@ chdir( "/tmp/src" );
 printf STDERR "Building CVS export distribution in /tmp:\n";
 if( $opt_t ) {
 	$cmd = "cvs -d $cvsroot export -r $tag $package";
-	printf STDERR "Running: $cmd\n"
+	printf STDERR "Running: $cmd\n";
 	system( $cmd );
 } else {
 	$cmd = "cvs -d $cvsroot export -D $day $package";
-	printf STDERR "Running: $cmd\n"
+	printf STDERR "Running: $cmd\n";
 	system( $cmd );
 }
 
