@@ -52,12 +52,12 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 
 	if(model == NULL) 
 	{
-		register_error(1,"Unspecified model for phase %s\nData from this phase will be ignored\n",phase);
+		elog_complain(1,"Unspecified model for phase %s\nData from this phase will be ignored\n",phase);
 		return(1);
 	}
 	if(method == NULL) 
 	{
-		register_error(1,"Unspecified method for phase %s\nData from this phase will be ignored\n",phase);
+		elog_complain(1,"Unspecified method for phase %s\nData from this phase will be ignored\n",phase);
 		return(1);
 	}
 	setarr(TTmodel,phase,model);

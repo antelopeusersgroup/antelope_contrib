@@ -20,7 +20,7 @@ be an actual velocity model, or a set of travel time tables.  It doesn't
 matter provided it loads the information the exec procedure is going to
 need to execute.  
 b.  An exec procedure that takes generic arguments.  Any error conditions
-should be set with register_error and an error condition flagged by
+should be set with elog_notify and an error condition flagged by
 setting the time variable in the output structure to a negative number.
 (This is an indisputable error in travel times since this is noncausal)
 c.  A destroy procedure that frees up dynamic work areas set up in the 
@@ -129,7 +129,7 @@ int ttlvz_init(char *phase, Pf *pf)
 	t = pfget_tbl(pf,"velocity_model");
 	if(t == NULL) 
 	{
-		register_error(0,
+		elog_complain(0,
 		 "ttlvz_init:  no velocity model data found for phase %s\n",
 			phase);
 		return(1);
@@ -177,7 +177,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 	mod = (Vmodel *)getarr(ttlvz_models,phase);
 	if (mod == NULL)
 	{
-		register_error(1,"ttlvz_time_exec: Don't know how to compute travel times for phase %s\n",phase);
+		elog_complain(1,"ttlvz_time_exec: Don't know how to compute travel times for phase %s\n",phase);
 		o.time = TIME_INVALID;
 		return(o);
 	}
@@ -195,7 +195,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 		mod->ztop[0] = x.rz;
 	else
 	{
-		register_error(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
+		elog_notify(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
 			x.rz, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code */
@@ -213,7 +213,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 	ttlvz_(&d_km, &x.sz, &nz, v, z, work1, work2, &o.time, &p, &up); 
         if (o.time < 0.0)
         {
-                register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave travel time for phase %s\n",phase);
+                elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave travel time for phase %s\n",phase);
                 o.time = TIME_INVALID;
                 return(o);
         }
@@ -327,7 +327,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 	mod = (Vmodel *)getarr(ttlvz_models,phase);
 	if (mod == NULL)
 	{
-		register_error(1,"ttlvz_slow_exec: Don't know how to compute slowness vectors for phase %s\n",phase);
+		elog_complain(1,"ttlvz_slow_exec: Don't know how to compute slowness vectors for phase %s\n",phase);
 		o.ux = SLOWNESS_INVALID;
 		o.uy = SLOWNESS_INVALID;
 		return(o);
@@ -346,7 +346,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 		mod->ztop[0] = x.rz;
 	else
 	{
-		register_error(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
+		elog_notify(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
 			x.rz, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code */
@@ -363,7 +363,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 	ttlvz_(&d_km, &x.sz, &nz, v, z, work1, work2, &time, &p, &up);
         if (time < 0.0)
         {
-                register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s\n",phase);
+                elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s\n",phase);
                 o.ux = SLOWNESS_INVALID;
                 o.uy = SLOWNESS_INVALID;
                 return(o);
@@ -406,7 +406,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p1, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 		  o.ux = SLOWNESS_INVALID;
                 		  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -428,7 +428,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p4, &up);
         		if (time < 0.0)
         		{
-                	  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	  o.ux = SLOWNESS_INVALID;
                 	  o.uy = SLOWNESS_INVALID;
                 	  return(o);
@@ -441,7 +441,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p4, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -460,7 +460,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 				dudr = (p-p0)/dx;
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -477,7 +477,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -487,7 +487,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p1, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -497,7 +497,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p3, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -507,7 +507,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p4, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -548,7 +548,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
@@ -562,7 +562,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_complain(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
                 	   	  o.ux = SLOWNESS_INVALID;
                 	  	  o.uy = SLOWNESS_INVALID;
                 		  return(o);
