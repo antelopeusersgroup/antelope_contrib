@@ -1,0 +1,67 @@
+.TH DMX2ORB 1 "$Date$"
+.SH NAME
+dmx2orb \- Convert PC-SUDS .dmx file into orb packets
+.SH SYNOPSIS
+.nf
+\fBdmx2orb \fP\fIfilename\fP \fIorbname\fP
+.fi
+.SH DESCRIPTION
+\fBdmx2orb\fP converts a PC-SUDS file into orb-packets of reasonable
+size. A parameter file specifies channel-name mapping to orb
+source-names.
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+
+nordic% cat \fBdmx2orb\fP.pf
+channels &Arr{
+1       &Arr{
+                srcname Ignore
+                calib 0
+                calper -1
+                segtype P
+        }
+2       &Arr{
+                srcname FAI_BALL_BDF
+                calib 0
+                calper -1
+                segtype P
+        }
+3       &Arr{
+                srcname FAI_CIGO_BDF
+                calib 0
+                calper -1
+                segtype P
+        }
+4       &Arr{
+                srcname FAI_DEER_BDF
+                calib 0
+                calper -1
+                segtype P
+        }
+5       &Arr{
+                srcname FAI_APEX_BDF
+                calib 0
+                calper -1
+                segtype P
+        }
+}
+nordic%
+
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+retrieve_samba_infrasound(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This was developed for one very specific purpose, namely
+handling Fairbanks infrasound data, and will most likely not
+handle the full generality of PC-SUDS format. Nevertheless a number
+of things were 'done right' allowing the possibility of later
+expansion.
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$

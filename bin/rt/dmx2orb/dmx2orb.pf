@@ -1,0 +1,32 @@
+channels &Arr{
+1	&Arr{
+		srcname Ignore
+		calib 0
+		calper -1
+		segtype P
+	}
+2	&Arr{
+		srcname FAI_BALL_BDF
+		calib 0.0012
+		calper -1
+		segtype P
+	}
+3	&Arr{
+		srcname FAI_CIGO_BDF
+		calib 0.0012
+		calper -1
+		segtype P
+	}
+4	&Arr{
+		srcname FAI_DEER_BDF
+		calib 0.0012
+		calper -1
+		segtype P
+	}
+5	&Arr{
+		srcname FAI_APEX_BDF
+		calib 0.0012
+		calper -1
+		segtype P
+	}
+}
