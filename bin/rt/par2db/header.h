@@ -8,8 +8,7 @@
 #define header_h_included
 
 #include "pkt.h"
-#define MAXNUMPAR_BBA2  9
-#define MAXNUMPAR  21
+#define MAXNUMPAR_BBA2  7
 #define NDAS 16
  
 /* Common header block defenitions for bbarray network   */
@@ -51,8 +50,8 @@
 /*   BBARRAY parameters  */
  
 static int PAR_OFF_BBA2[MAXNUMPAR_BBA2] = {
-BUFDEL_BBA2, RTXNUM_BBA2, BATT_BBA2, DASRES_BBA2,
-RADRES_BBA2, OVRFL_BBA2, CMD_ERR, SYNC_BBA2, LLOCK_BBA2 };
+BUFDEL_BBA2, BATT_BBA2, DASRES_BBA2,
+RADRES_BBA2, OVRFL_BBA2, SYNC_BBA2, LLOCK_BBA2 };
 /*, 
 LLOCK_BBA2, LATDD_BBA2, LATMM_BBA2, LATSS_BBA2, LATHH_BBA2, NS_BBA2,
 LONDD_BBA2, LONMM_BBA2, LONSS_BBA2, LONHH_BBA2, EW_BBA2, ALTD_BBA2 
@@ -61,8 +60,8 @@ LONDD_BBA2, LONMM_BBA2, LONSS_BBA2, LONHH_BBA2, EW_BBA2, ALTD_BBA2
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_BBA2[MAXNUMPAR_BBA2] = {
- "BUFDEL", "RTXNUM", "BATT:V", "DASRES",
-"RADRES", "OVRFL", "CMD", "SYNC", "LLOCK" };
+ "BUFDEL",  "BATT:V", "DASRES",
+"RADRES", "OVRFL",  "RXERR", "LLOCK" };
 
 /*
 , 
@@ -71,8 +70,8 @@ static char *FILE_NAME_BBA2[MAXNUMPAR_BBA2] = {
  
 };
 */ 
-static int PAR_BYTE_BBA2[MAXNUMPAR_BBA2] = { 1,1,2,2,2,
-                                  2,2,2,1};
+static int PAR_BYTE_BBA2[MAXNUMPAR_BBA2] = { 1,2,2,2,
+                                  2,2,1};
 				  /*,
 				  1,1,1,1,1,2,1,1,1,1,2 };  */
 
