@@ -32,4 +32,25 @@ authors	&Tbl{
 	"LARGE EVENT NOTIFICATION" yk_large_event
 }
 }
+&Arr{
+handler		pgc_pickfile
+sender		pgc.nrcan.gc.ca
+subject		pgc pick files
+database	testdb
+chantrans &Arr{
+	EZ	EHZ
+	BZ	BHZ
+	BN	BHN
+	BE	BHE
+}
+velmodeltrans &Arr{
+	01	canada		# Generic Canada
+	03	grgastrt	# Georgia Straight
+	06	QChrlte		# Queen Charlotte Islands
+	07	offshore	# Canadian Offshore model
+}
+locatortrans &Arr{
+	H	LocEq
+}
+}
 }
