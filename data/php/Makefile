@@ -4,7 +4,8 @@ MYDLIB= Datascope.so
 DATADIR= php
 
 DATA= $(MYDLIB) \
-      webdbe.inc
+      webdbe.inc \
+      webdbe_style.css
 
 MAN1=
 MAN3= phpdb.3
