@@ -1330,10 +1330,10 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			fil_free (fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 			chantracebuf_free (obuf);
-			//gain = 2080.0 * 1.e-6 / ((0.3*2.0*M_PI) * (0.3*2.0*M_PI));
+			/* gain = 2080.0 * 1.e-6 / ((0.3*2.0*M_PI) * (0.3*2.0*M_PI)); */
 			gain = 1/(((sp->f2-sp->f1) * 2.0 * M_PI) * ((sp->f2 - sp->f1) * 2.0*M_PI));
 		} else if (!strcmp(rsptype, "D")) {
-			//gain = 2080.0 * 1.e-6;
+			/* gain = 2080.0 * 1.e-6; */
 			gain = 1.0;
 		} else {
 			if (verbose) elog_debug (0, "%s - cannot use rsptype '%s'\n", msg, rsptype);
