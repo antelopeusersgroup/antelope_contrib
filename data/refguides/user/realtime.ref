@@ -181,10 +181,10 @@ eworm2orb pf
     copy earthworm packets from memory ring buffer to orbserver
 
 guralp2orb [options] orbname
-    copy data from Guralp SCREAM server orb
+    copy data from Guralp SCREAM server to orb
 <options>
 -d calibration_database
--pf parameter_file
+-p parameter_file
 -l file_for_logpackets
 -v	verbose
 -V	extremely verbose
@@ -364,7 +364,7 @@ orb2orb [options] in out [start [period|end]]
 -u	unstuff packets as they are received
 -l	loop repeatedly over the input forb(5) file
 -m re1	read only packets which match re1 
--r re2	don't read packets matching re1
+-r re2	don't read packets matching re2
 -n n	stop after n packets
 -R r	when saving to a plain file, use forb(5) format r
 -s p	start after pktid #p
@@ -378,7 +378,7 @@ orbxfer [-d dir] [-vv] file ... orb
     transfer a set of local files to an orbserver orb; the -d option specifies an alternate directory dir in which the files are to be found
 
 orbxfer [-d dir] [-vv] orb
-    unpack files from orbserver orb to local directory, or optionally directory dir 
+    unpack files from orbserver orb to local directory, or optionally to directory dir 
 
 orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector

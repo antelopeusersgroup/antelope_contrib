@@ -164,6 +164,15 @@ dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group
 -s	allow expressions to modify database fields with operator ":=".
 </options>
 
+db2xml [options] aview [name expr [name expr ...]]
+    print a database view as XML
+<options>
+-v	verbose
+-p	primary keys only
+-d tag 	tag name for document root
+-r tag	tag name for each row
+</options>
+
 <subsection Verifying Databases>
 dbcheck [-v] db[.table]
     scans database (or specified table only) for lines with invalid length

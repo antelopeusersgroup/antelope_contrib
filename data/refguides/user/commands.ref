@@ -8,7 +8,7 @@ mkmk [ - ]
 manpage [ - ]
     show prototype Antelope man page (- suppresses comments)
 
-template [dbsimple.c|simple.c|perl|tcl]
+template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
     get a template from templates directory
 
 <subsection Miscellaneous>
