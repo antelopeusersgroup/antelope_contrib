@@ -51,6 +51,24 @@ Attribute clientport
 	}
 	;
 
+Attribute closeorb
+	String (12)
+	Format ( "%-12s" )
+	Null ( "-" )
+	Range ( "closeorb =~ /fromaddress|toaddress/" )
+	Description ( "The orb closest to the machine doing an orbstat" )
+	Detail {
+		When a pforbstat connections analysis is done, one orb 
+		(out of the two orbs communicating via an orb2orb instance)
+		is closer to the machine running the orbstat than the other. 	
+		The closeorb field records whether the 'fromaddress' orb in the 
+		connections table or the 'toaddress' orb in the connections table 
+		is the orb directly visible to the machine doing the orbstat.
+		This information is important in deducing whether both 
+		orb connections to an orb2orb instance are present and working.
+	}
+	;
+
 Attribute closes
 	Integer (10)
 	Format ( "%10d" )
