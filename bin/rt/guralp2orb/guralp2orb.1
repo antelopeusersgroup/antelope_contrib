@@ -19,10 +19,12 @@ allowing dynamic reconfiguration of the running program.
 
 The 'calib' field in the parameter file allows one to specify the calibration
 value for the data-stream (the same as the calibration.calib field in a 
-database in css3.0 or rt1.0 format). This is optional, or may be set to the 
-default value of zero (which implies that the calib value will be ignored). 
-The option of specifying a calib value in the parameter file allows stations 
-to be acquired regardless of whether they have entries in the site database. 
+database in css3.0 or rt1.0 format). The calib value is copied into each 
+waveform-data packet for the data stream. This parameter-file entry is optional,
+or may be set to the default value of zero (which implies that the calib value
+will be ignored). The option of specifying a calib value in the parameter file
+allows stations to be acquired regardless of whether they have entries in the 
+site database. 
 
 The 'pinno' field in the parameter file, also optional, allows specification 
 of an Earthworm pin-number to be included in each packet. This is necessary 
