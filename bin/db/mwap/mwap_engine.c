@@ -1,11 +1,34 @@
 #include <stdio.h>
 #include <strings.h>
 #include "multiwavelet.h"
+#include "mwap.h"
 void usage(char *prog)
 {
 	die(0,"usage: %s db [-phase phase -sift expression -pf pfname]\n",
 		prog);
 } 
+/* This is ugly, but necessary because I want to avoid a mixed tcl and
+perl script for the mwap gui.  This routine opens and input and output
+fifo whose names are taken from the mwap parameter file.  These are
+passed around in an ugly way with the external variables MWpin and MWpout.
+A nasty solution but preferable to changing argument lists as this method
+may go away some day.  
+*/
+void MWopen_pipes(Pf *pf)
+{
+	extern FILE *MWpin,*MWpout;
+	char *pname;
+	pname = pfget_string(pf,"mwap_inpipe");
+	if(pname==NULL)elog_die(0,"Parameter file is missing mwap_inpipe parameter\n");
+	MWpin = fopen(pname,"r+");
+	if(MWpin==NULL) elog_die(0,"Cannot open mwap input pipe %s\n",
+				pname);
+	pname = pfget_string(pf,"mwap_outpipe");
+	if(pname==NULL)elog_die(0,"Parameter file is missing mwap_outpipe parameter\n");
+	MWpout = fopen(pname,"r+");
+	if(MWpout==NULL) elog_die(0,"Cannot open mwap output pipe %s\n",
+				pname);
+}
 int main(int argc, char **argv)
 {
 	char *version="2.0 August 2000 \nAuthor:  Gary Pavlis";
@@ -63,6 +86,7 @@ int main(int argc, char **argv)
 
 	i = pfread(pfin,&pf);
         if(i != 0) die(1,"Pfread error\n");
+	MWopen_pipes(pf);
 
 	/* This utility causes the program to die if required parameters
 	are missing */

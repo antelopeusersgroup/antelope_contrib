@@ -1,0 +1,500 @@
+#!/bin/sh
+#\
+exec $ANTELOPE/bin/awish $0 "$@"
+
+package require Datascope
+package require Brttplot
+
+global pfout
+global stalist
+global nwavelets
+global number_bands
+global nsta
+global nt
+global stalist 
+global current_wavelet
+global xleft_stackwindow
+global xright_stackwindow
+global xleft_pmwindow
+global xright_pmwindow
+global stacktaper
+global pmtaper
+global keepsta
+#
+#  this variable is needed as a hack to get around a bug in Brttplot that
+#  does not clear the name of a viewport when a window is destroyed 
+#
+global pass 
+#
+# store associative array (keyed by station names) of vectors that describe seismograms
+#
+global vreal
+global vimag
+#
+# returns messages to mwap 
+#
+global control_pipe
+global pmoption 
+global stackopt
+global db
+global tmpdir
+
+set n [llength $argv]
+if {$n < 1} { 
+	puts "Usage:  runmwap db \[mwap_args\]"
+	exit
+}
+
+set db [lindex $argv 0]
+#
+#  This will fail if the usage line changes.  
+#
+exec xterm -geometry 80x24+0-0 -e mwap_engine $argv &
+# use this if you want to execute from the current window.
+# useful for debugging if mwap_engine crashes
+#exec mwap_engine $argv &
+
+set current_wavelet 0
+set pass 0
+set pmoption pmbeam
+set stackopt theoretical
+
+#
+# reads mwap output data files rname (real part) and iname (imaginary part) 
+#
+proc read_mwap_seismograms { iwavelet} {
+
+	global stalist
+	global nsta
+	global nt
+	global t0
+	global dt
+	global stalist
+	global vreal
+	global vimag
+	global pass
+	global tmpdir
+
+#	if { $pass > 0 } { 
+#		free_vector -tag vreal
+#		free_vector -tag vimag
+#	}
+
+	if { $iwavelet < 0 } {
+		set rname ${tmpdir}/sta_coherence
+		set iname ${tmpdir}/beam_coherence
+	} else {
+		set rname ${tmpdir}/wavelet${iwavelet}_r
+		set iname ${tmpdir}/wavelet${iwavelet}_i
+	}
+	set fh [open $rname r]
+	set stalist [gets $fh]
+	set line [gets $fh]
+	set nsta [lindex $line 0]
+	set nt [lindex $line 1]
+	set t0 [lindex $line 2]
+	set dt [lindex $line 3]
+	close $fh
+
+# assume dimensions of real and imaginary parts are the same 
+# Assume matrix is stored with stations in columns in wavelet groups of nt lines.  
+
+	set line ""
+	set loffset 3
+	for {set i 0} {$i<$nsta} {incr i 1} {
+	  set sta [lindex $stalist $i]
+	  set vreal($sta) [vector_read $rname -tag vreal -loff $loffset -ypos [expr $i+1]] 
+	  set vimag($sta) [vector_read $iname -tag vimag -loff $loffset -ypos [expr $i+1]]
+	}	
+}
+
+
+proc refresh_data_display { fpipe } {
+	global current_wavelet
+	global current_evid 
+	global number_bands
+
+	set line [gets $fpipe]
+	set teststr [lindex $line 0]
+#
+#  The default here should be changed to issue an error message
+#
+	if { $teststr=="NEWEVENT" } {
+		set current_evid [lindex $line 1]
+		set current_band [expr $number_bands-1]
+		wm title . "mwap:  evid=$current_evid, band=$current_band"
+	} elseif { $teststr=="NEWBAND" } {
+		set current_band [lindex $line 1]
+		wm title . "mwap:  evid=$current_evid, band=$current_band"
+	} elseif { $teststr == "STARTUP" } {
+		set current_evid [lindex $line 1]
+		set current_band [lindex $line 2]
+		wm title . "mwap:  evid=$current_evid, band=$current_band"
+	} elseif { $teststr == "NEWSTACK" } {
+		read_mwap_seismograms $current_wavelet 
+		destroy_display 
+		build_display 
+	} else {
+		redraw_seismograms $current_wavelet 
+	}
+}
+
+proc new_wavelet { iwavelet } {
+	global current_wavelet
+
+	read_mwap_seismograms $iwavelet 
+#	if { $iwavelet < 0 } {
+#		destroy_display
+#		build_display
+#	} else {
+#		redraw_seismograms $current_wavelet 
+#	}
+
+	destroy_display
+	build_display
+}
+proc destroy_display { } {
+global pass
+
+destroy .f
+set pass [expr $pass+1]
+}
+
+proc build_display { } {
+global stalist
+global nwavelets
+global number_bands
+global nt
+global stalist 
+global current_wavelet
+global xleft_stackwindow
+global xright_stackwindow
+global xleft_pmwindow
+global xright_pmwindow
+global stacktaper
+global pmtaper
+global pm_ts0
+global pm_te0
+global stack_ts0
+global stack_te0
+global keepsta
+global vreal
+global vimag
+global pass
+global pfout
+global sta
+global xscale
+global x0
+
+set nsta [llength $stalist]
+set frameheight 20
+set seisheight [expr $frameheight/$nsta]
+
+frame .f
+set i 0
+foreach sta $stalist {
+#
+# we initialize the associative array of stations to keep to all ones initially
+# buttons for each sta turn set these to 0
+#
+set keepsta($sta) 1
+#
+# we need the extents of the vectors we are to plot.  This sets this independently for
+# each viewport, which essentially does autoscaling on a trace by trace basis
+#
+set rextents [vector_maxmin $vreal($sta)]
+set iextents [vector_maxmin $vimag($sta)]
+if {[lindex $rextents 0]<[lindex $iextents 0]} {
+	set xleft [lindex $rextents 0]
+} else { 
+	set xleft [lindex $iextents 0]
+}
+if {[lindex $rextents 1]>[lindex $iextents 1]} {
+	set xright [lindex $rextents 1]
+} else { 
+	set xright [lindex $iextents 1]
+}
+#
+# current_wavelet is set to -1 for coherence plots.  Bypass vertical
+# scale estimation from extents for coherence at set the viewport y 
+# range as 0 to 1
+#
+if { $current_wavelet < 0 } {
+	set ybottom 0
+	set ytop 1
+} else {
+	if {[lindex $rextents 2]<[lindex $iextents 2]} {
+		set ybottom [lindex $rextents 2]
+	} else { 
+		set ybottom [lindex $iextents 2]
+	}
+	if {[lindex $rextents 3]>[lindex $iextents 3]} {
+		set ytop [lindex $rextents 3]
+	} else { 
+		set ytop [lindex $iextents 3]
+	}
+}
+
+canvas .f.c$sta -width ${frameheight}c -height ${seisheight}c
+.f.c$sta create viewport $sta$pass 0 0 -width 0 -height 0 \
+-xleft $xleft -xright $xright -ybottom $ybottom -ytop $ytop \
+-fill white -tag ports
+#
+#  we save the x scale factors for each window even though we assume
+#  later they are the same 
+#  done to make this more general with minimal overhead
+#
+set fpixels [winfo fpixels .f.c$sta 1.0c]
+set xscale($sta) [expr ${frameheight}.0*$fpixels/($xright - $xleft)]
+set x0($sta) $xleft
+
+.f.c$sta create axes $sta$pass 
+#
+# the y values here cover the range of likely screen sizes in pixels to assure the
+# window box is drawn completely across each canvas item
+#
+.f.c$sta create line $xleft_stackwindow 0 $xright_stackwindow 2000 -tag xleft_stackwindow
+.f.c$sta create rectangle  $xleft_stackwindow 0  $xright_stackwindow 2000 -fill grey -tag stackwindow
+.f.c$sta create line $xleft_pmwindow 0 $xright_pmwindow 2000 -tag xleft_pmwindow
+.f.c$sta create rectangle  $xleft_pmwindow 0  $xright_pmwindow 2000 -fill gold -tag pmwindow
+.f.c$sta create polyline $sta$pass -vector $vreal($sta) -linewidth 1 -outline red -tag seis
+.f.c$sta create polyline $sta$pass -vector $vimag($sta) -linewidth 1 -outline blue -tag seis
+checkbutton .f.b$sta -text $sta -variable keepsta($sta)
+grid configure .f.b$sta -column 0 -row $i -sticky w -in .f
+grid configure .f.c$sta -column 1 -row $i -sticky nsew -in .f
+bind .f.c$sta <Button-1> {
+set xleft_stackwindow %x
+set stack_ts0 [expr $x0($sta) + $xleft_stackwindow/$xscale($sta)]
+pfput $pfout stack_ts0 $stack_ts0
+foreach sta $stalist {
+.f.c$sta delete stackwindow
+.f.c$sta delete xleft_stackwindow
+.f.c$sta create line $xleft_stackwindow 0 $xleft_stackwindow 2000 -tag xleft_stackwindow
+.f.c$sta focus xleft_stackwindow
+}
+}
+bind .f.c$sta <ButtonRelease-1> {
+set xright_stackwindow %x
+set stack_te0 [expr $x0($sta) + $xright_stackwindow/$xscale($sta)]
+pfput $pfout stack_te0 $stack_te0
+#
+# The way this works the button had to have been pushed before being
+# released so the left endpoint had to have just been set.  So we
+# can compute the tapered positions now 
+#
+set taperlen [expr $stacktaper*0.01*($stack_te0 - $stack_ts0)/0.5]
+set stack_ts1 [expr $stack_ts0+$taperlen]
+set stack_te1 [expr $stack_te0-$taperlen]
+pfput $pfout stack_ts1 $stack_ts1
+pfput $pfout stack_te1 $stack_te1
+
+foreach sta $stalist {
+.f.c$sta create rectangle $xleft_stackwindow 0 $xright_stackwindow 2000 -tag stackwindow -fill grey
+.f.c$sta raise seis
+}
+}
+bind .f.c$sta <Button-3> {
+set xleft_pmwindow %x
+set pm_ts0 [expr $x0($sta) + $xleft_pmwindow/$xscale($sta)]
+pfput $pfout pm_ts0 $pm_ts0
+foreach sta $stalist {
+.f.c$sta delete pmwindow
+.f.c$sta delete xleft_pmwindow
+.f.c$sta create line $xleft_pmwindow 0 $xleft_pmwindow 2000 -tag xleft_pmwindow
+.f.c$sta focus xleft_pmwindow
+}
+}
+bind .f.c$sta <ButtonRelease-3> {
+set xright_pmwindow %x
+set pm_te0 [expr $x0($sta) + $xright_pmwindow/$xscale($sta)]
+pfput $pfout pm_te0 $pm_te0
+set taperlen [expr $pmtaper*0.01*($pm_te0 - $pm_ts0)/0.5]
+set pm_ts1 [expr $pm_ts0+$taperlen]
+set pm_te1 [expr $pm_te0-$taperlen]
+pfput $pfout pm_ts1 $pm_ts1
+pfput $pfout pm_te1 $pm_te1
+
+foreach sta $stalist {
+.f.c$sta create rectangle $xleft_pmwindow 0 $xright_pmwindow 2000 -tag pmwindow -fill gold
+.f.c$sta raise seis
+}
+}
+set i [expr $i+1]
+}
+pack .mbar .f .fbot -side top
+}
+
+proc redraw_seismograms { iwavelet } {
+	global stalist
+	global pass
+	global vreal
+	global vimag
+
+	read_mwap_seismograms $iwavelet 
+	foreach sta $stalist {
+		.f.c$sta delete seis
+		.f.c$sta create polyline $sta$pass -vector $vreal($sta) \
+				-linewidth 1 -outline red -tag seis
+		.f.c$sta create polyline $sta$pass -vector $vimag($sta) \
+				-linewidth 1 -outline blue -tag seis
+	}
+}
+proc update_pf { pf } {
+	global stalist
+	global keepsta
+	global stackopt
+	global pmoption
+
+	set kill_list ""
+	foreach sta $stalist {
+		if { $keepsta($sta) == 0 } { lappend kill_list $sta }
+	}
+	pfputlist $pf "stations_to_kill" $kill_list
+	pfput $pf array_particle_motion_to_use $pmoption
+	pfput $pf stack_alignment $stackopt
+}
+proc send_go_signal { } {
+	global control_pipe
+	global inpipe
+	global pfout
+	global pffile
+	
+#
+#  this updates pf parameters stored in global variables. 
+#  This is a bit of a hack done now to set kill list correctly,
+#  but made a procedure to allow similar changes later
+#
+	update_pf $pfout
+	pfput $pfout recompute 0
+	pfput $pfout reset_arrival_times 0
+	pfput $pfout discard_stack 0
+	pfwrite $pfout ${pffile}.pf
+	puts $control_pipe GO
+	flush $control_pipe
+}
+proc send_rerun_signal { } {
+	global control_pipe
+	global inpipe
+	global pfout
+	global pffile
+
+	pfput $pfout recompute 1
+	pfput $pfout reset_arrival_times 1
+	pfput $pfout discard_stack 1
+	pfwrite $pfout ${pffile}.pf
+	puts $control_pipe GO
+	flush $control_pipe
+}
+proc send_discard_signal { } {
+	global control_pipe
+	global inpipe
+	global pfout
+	global pffile
+
+	pfput $pfout recompute 0
+	pfput $pfout reset_arrival_times 0
+	pfput $pfout discard_stack 1
+	pfwrite $pfout ${pffile}.pf
+	puts $control_pipe GO
+	flush $control_pipe
+}
+proc startup_initialize { } {
+global pffile
+global pfout
+global control_pipe
+global pmoption 
+global stackopt
+
+	pfput $pfout array_particle_motion_to_use $pmoption
+	pfput $pfout stack_alignment $stackopt
+	pfwrite $pfout ${pffile}.pf
+
+	puts $control_pipe GO
+	flush $control_pipe
+	.bs configure -state disabled
+}
+
+
+#
+# initialization section
+#
+
+wm title . runmwap
+set pf "mwap"
+set pffile [pfget $pf mwapcontrol]
+set pfout mwapcpf
+set inpipe [pfget $pf mwap_inpipe]
+set outpipe [pfget $pf mwap_outpipe]
+#
+#  This is hard wired for now.  mwap uses an environment variable
+# MW_SCRATCH_DIR that can be used to change this location.  If not
+# set it defaults to /tmp
+
+set tmpdir /tmp
+if { ![ file exists $inpipe ] } { exec mkfifo -m 777 $inpipe}
+if { ![ file exists $outpipe ] } { exec mkfifo -m 777 $outpipe}
+
+#
+#  This creates an event loop that allows mwap to instruct the gui to refresh it's
+#  data view.  The procedure called actually reads an output file and replots the
+#  data on a signal from mwap sent to the pipe.
+#
+set fpipe [open $outpipe r+]
+fileevent $fpipe readable {refresh_data_display $fpipe}
+#
+#  this returns go signals to mwap
+#
+set control_pipe [open $inpipe r+]
+
+#
+#  This creates a menu on the top bar to select which wavelet is
+#  displayed 
+#
+set nwavelets [pfget mwap nwavelets]
+set number_bands [pfget mwap number_frequency_bands]
+set nsamples_wavelet [pfget mwap nsamples]
+set current_wavelet 0
+set xleft_stackwindow -2
+set xright_stackwindow 2
+set xleft_pmwindow -1
+set xright_pmwindow 1
+set current_evid 0
+
+
+
+frame .mbar -relief raised -bd 2
+pack .mbar -side top -fill x
+menubutton .mbar.display -text Display -menu .mbar.display.menu
+menubutton .mbar.stack -text Stack -menu .mbar.stack.menu
+menubutton .mbar.pmopt -text PMoptions -menu .mbar.pmopt.menu
+pack .mbar.display .mbar.stack .mbar.pmopt -side left
+menu .mbar.display.menu
+menu .mbar.stack.menu
+menu .mbar.pmopt.menu
+for {set i 0} {$i<$nwavelets} {incr i 1} {
+ .mbar.display.menu add radiobutton -label "Wavelet $i" -variable current_wavelet -value $i -command "new_wavelet $i"
+}
+.mbar.display.menu add radiobutton -label "Coherence" -variable current_wavelet -value "-1" -command "new_wavelet -1"
+.mbar.pmopt.menu add radiobutton -label "Use beam average pm" -variable pmoption -value pmbeam
+.mbar.pmopt.menu add radiobutton -label "Use station average pm" -variable pmoption -value pmavg
+.mbar.pmopt.menu add radiobutton -label "Use weighted station average" -variable pmoption -value pmwavg
+.mbar.stack.menu add radiobutton -label "Rotate to model" \
+	-variable stackopt -value theoretical 
+.mbar.stack.menu add radiobutton -label "Rotate to estimate" \
+	-variable stackopt -value pmestimate 
+.mbar.stack.menu add radiobutton -label "Use vertical" \
+	-variable stackopt -value vertical 
+
+frame .f -width 20c -height 20c
+frame .fbot -width 0 -height 0
+scale .ss -label "Stack taper %" -from 0 -to 100 -length 5c \
+  -orient horizontal -variable stacktaper
+scale .spm -label "PM taper %" -from 0 -to 100 -length 5c \
+  -orient horizontal -variable pmtaper
+button .bg -text "Accept" -command send_go_signal
+button .br -text "Rerun" -command send_rerun_signal
+button .bd -text "Discard" -command send_discard_signal
+button .bs -text "Start" -command startup_initialize
+pack .ss .spm .bg .br .bd .bs -in .fbot -side left
+pack .mbar .f .fbot -side top
+

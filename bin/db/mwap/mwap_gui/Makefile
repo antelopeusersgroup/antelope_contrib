@@ -1,0 +1,3 @@
+BIN=mwap
+
+include $(ANTELOPEMAKE)  
