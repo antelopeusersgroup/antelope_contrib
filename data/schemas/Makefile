@@ -6,7 +6,8 @@ DATA=	iceworm1.3 \
 	contacts1.0 \
 	dbrecenteqs1.0 \
 	statrans1.0 \
-	models0.4
+	models0.4 \
+	wfrecords1.0
 
 include $(ANTELOPEMAKE)  	
 DIRS=

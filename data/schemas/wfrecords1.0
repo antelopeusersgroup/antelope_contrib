@@ -1,0 +1,151 @@
+Schema wfrecords1.0
+	Description ( "Waveform-records storage " )
+	Detail {
+		The wfrecords schema is designed to track the storage locations
+		for waveform records, including paper helicorder records and
+		develocorder records. Currently, only the 
+		paper-helicorder-record tracking is implemented. Tapes and
+		develocorder record tables may be added later.
+	}
+	Timedate lddate
+	;
+
+Attribute boxlabel
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Text label on a box of helicorder records " )
+	Detail {
+		boxlabel represents, as accurately as possible, the 
+		label written on the box of helicorder records. In 
+		some cases, multiple overlapping and mutually-inconsistent
+		numbering systems were used on different occasions, in 
+		which case the boxlabel simply states what a person would 
+		read off the box.
+	}
+	;
+
+Attribute chan
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "channel" )
+	Detail {
+		This is an eight-character code, which, taken together
+		with sta, jdate and time, uniquely identifies the 
+		source of the seismic data, including the geographic 
+		location, spatial orientation, sensor and subsequent 
+		data processing.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "(epoch) time of last record modification" )
+	Detail {
+		This is the last time the record was modified.
+	}
+	;
+
+Attribute offdate
+	YearDay (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Units ( "days" )
+	Description ( "ondate" )
+	Detail {
+		This attribute is the Julian Date of the end of this 
+		helicorder record or contiguous set of records. Both ondate
+		and offdate are inclusive. In other words, for a record
+		representing a single helicorder record spanning a 
+		single day, ondate and offdate will be identical.
+	}
+	;
+
+Attribute ondate
+	YearDay (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Units ( "days" )
+	Description ( "ondate" )
+	Detail {
+		This attribute is the Julian Date of the beginning of this 
+		helicorder record or contiguous set of records.
+	}
+	;
+
+Attribute sta
+	String (6)
+	Format ( "%-6s" )
+	Null ( "-" )
+	Description ( "station" )
+	Detail {
+		This is the common code-name of a seismic observatory.
+		Generally only three or four characters are used.
+	}
+	;
+
+Attribute storageloc
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "Current storage location for the records " )
+	Detail {
+		storageloc describes the current physical storage 
+		location of a record or set of records. This may be an 
+		abbreviation, which is expanded or clarified in the table 
+		called storage
+	}
+	;
+
+Attribute storagename
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "Expanded name of storage location for waveform records " )
+	Detail {
+		storagename describes the current physical storage 
+		location of a record or set of records. This expands 
+		the storageloc field, which may be an abbreviation, into 
+		a more meaningful name.
+	}
+	;
+
+Attribute writingloc
+	String (16)
+	Format ( "%-16s" )
+	Null ( "-" )
+	Description ( "Source location where record was written" )
+	Detail {
+		This field specifies the source location of the helicorder
+		record, i.e. where the record was written.
+	}
+	;
+
+Relation helipaper
+	Fields ( sta chan ondate offdate writingloc boxlabel storageloc lddate )
+	Primary ( sta chan ondate offdate writingloc )
+	Description ( "storage locations for paper helicorder records" )
+	Detail {
+		Each row of this helipaper table describes the storage 
+		location of a single helicorder record or contiguous 
+		group of helicorder records. The presumption is that 
+		all the paper helicorder records are in boxes.
+	}
+	;
+
+Relation storage
+	Fields ( storageloc storagename )
+	Primary ( storageloc )
+	Description ( "storage location names " )
+	Detail {
+		The storage table expands storageloc abbreviations 
+		of waveform storage locations into full names which 
+		are likely to be unambiguous and understandable to 
+		people searching for records.
+	}
+	;
+
