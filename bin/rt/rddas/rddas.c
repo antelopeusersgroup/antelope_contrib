@@ -15,6 +15,7 @@ void usage ()
     fprintf (stderr, "Where: \n");
     fprintf (stderr, "	iport    - input port name.\n");
     fprintf (stderr, "	orbname  - orbserver name.\n");
+    banner (Program_Name, "$Revision$ $Date$");
     exit (1);
 }
 
@@ -63,12 +64,11 @@ char *argv[];
   char            *port_par = 0;
   char            *iport = 0;
   char            *pffile = "pscl";
-  char            *version = "1.1 (03/22/97)";
   char            *orbname = "localhost";
   struct Prts     Ports;
 
    elog_init (argc, argv) ;
-   elog_notify (0, "%s version %s\n", argv[0], version) ;
+   elog_notify (0, "$Revision$ $Date$") ;
    Program_Name = argv[0];
    
    null_port( &Ports );

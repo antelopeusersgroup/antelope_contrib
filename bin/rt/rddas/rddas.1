@@ -1,4 +1,4 @@
-.TH RDDAS 1 "7 August 1998" " "
+.TH RDDAS 1 # "$Date$"
 .SH NAME
 rddas \- read data from RefTek DAS to orb  
 .SH SYNOPSIS
@@ -70,5 +70,17 @@ rddas -l /dev/cua/0 localhost
 .fi
 .SH "SEE ALSO"
 orbstat(1)
+.SH "BUGS AND CAVEATS"
+Occationally when when attempting to read from a DAS using a 
+Magma card on a Sun, no data will be returned.  To fix this,
+stop the instance of rddas and reset the Magma card by doing the 
+following:
+
+$port will be 0,1,2,....
+
+/opt/MAGMA_Sp/bin/magmareset /dev/cua/$port
+
+/opt/MAGMA_Sp/bin/setport cua/$port 57600 cs8 -cstopb  parenb parodd
+
 .SH AUTHOR
 Marina Glushko
