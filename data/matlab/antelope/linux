@@ -1,6 +1,6 @@
 MEX=mex
 
-ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
+ldlibs= -lantelope_mex -lmex_orb -lcgeom $(ORBLIBS)
 
 MEXEXT=mexglx
 MEX_CEXTRA=-Dlinux
