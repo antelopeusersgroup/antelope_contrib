@@ -8,6 +8,7 @@
 # 1                   decim factor
 # 1.0                 normalization factor
 # 1.0                 gain
+# 300 V/m/s           sensitivity
 theoretical   1 anti-alias   paz    pz6seismo
 1.0
 2             Poles

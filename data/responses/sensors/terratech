@@ -1,5 +1,5 @@
 # @(#)terra_fba   1.1 10/9/99
-# TERRATEC-FBA-23    50.00000 hz seismometer
+# TERRATECH    50.00000 hz accelerometer
 #    0.600000 damping
 # Normalized  response relative to acceleration 
 # Response input units are MPS^2; output units are VOLTS
@@ -9,7 +9,7 @@
 # 0.0                 input sample interval
 # 1                   decim factor
 # 1.0                 normalization factor
-# 12.25 v/m/s^2       sensitivity
+# 0.1275 v/m/s^2      sensitivity (1.25v/g)
 # 1.0                 gain
 theoretical   1 anti-alias   paz    pzseismo
 110856.0
