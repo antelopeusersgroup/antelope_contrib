@@ -19,6 +19,8 @@ public:
         virtual void zero_gaps()=0; 
 	double time(int i);
         int sample_number(double t);
+	void ator(double tshift);
+	void rtoa(double tshift);
 };
 .fi
 .SH DESCRIPTION
@@ -98,15 +100,28 @@ subject and a general solution).
 Derived classes must be conscious of this problem in 
 building constructors and in producing output functions that
 preserve gap information.
+.SH MEMBER FUNCTIONS
 .LP
-Finally, this, the base class, includes two inline functions
+There are two inline functions
 called \fItime\fR and \fIsample_number\fR.
 The \fItime\fR function returns the time (independent variable)
 associated with sample number i and \fIsample_time\fR does the
 inverse (i.e. returns sample index associated with a given time.).
+.LP
+The functions \fIator\fR and \fIrtoa\fR convert between absolute
+and relative time scales using the constant time shift \fItshift\fR.  
+\fIator\fR converts from an absolute to relative time scale subtracting
+the constant tshift to define the new time scale.  \fIrtoa\fR does the
+opposite changing from a relative to absolute scale.  Since
+absolute times are conventionally always positive, tshift is added to 
+produce the revised time scale.  Both functions alter the \fItref\fR 
+variable.  Both also take the attitude that if tref is already 
+set to the requested conversion they do nothing.  e.g. if tref is
+set as "relative" a call to ator will return immediately and do nothing.
 .SH EXAMPLE
 .LP
-A Basic_Time_Series is pretty much a pure virtual base class.  Here
+A Basic_Time_Series is mostly a virtual base class, with a few core 
+member functions.  Here
 is an example of a bare bones implementation of a complex time
 series object:
 .nf

@@ -161,6 +161,8 @@ public:
 	double time(int i){return(t0+dt*((double)i));};
 	// inverse of time
 	int sample_number(double t){return(nint((t-t0)/dt));};
+	void ator(double tshift);
+	void rtoa(double tshift);
 protected:
 	set<Time_Window,Time_Window_Cmp> gaps;
 };

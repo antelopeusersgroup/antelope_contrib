@@ -13,7 +13,8 @@ MAN3=Basic_Time_Series.3 \
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=create_destroy.o \
+OBJS=basic_time_series.o \
+  create_destroy.o \
   converters.o \
   dbpp.o \
   freetran.o \
