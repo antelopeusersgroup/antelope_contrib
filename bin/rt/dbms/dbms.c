@@ -14,11 +14,21 @@
 
 char *Net = 0;
 
-main ( int argc, char **argv)
+regex_t orig_match;
+regex_t auth_match;
+regex_t net_match;
+Arr *AllEv;
+Arr *EvArr;
+Dbptr dball;
+int Crnt_record;
+int Log;
+int prev_orid;
+Filter flt;
 
+
+int
+main ( int argc, char **argv)
 {
-      extern char   *optarg;
-      extern int    optind;
       Dbptr 	db, dba, dbw, dbwa;
       Event	*event;
       EvRec     *evrec;

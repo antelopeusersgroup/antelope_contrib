@@ -23,16 +23,16 @@
 #define DELC	111.11
 #define SWVEL   4.0
 
-regex_t orig_match;
-regex_t auth_match;
-regex_t net_match;
+extern regex_t orig_match;
+extern regex_t auth_match;
+extern regex_t net_match;
 
-Arr *AllEv;
-Arr *EvArr;
-Dbptr dball;
-int Crnt_record;
-int Log;
-int prev_orid;
+extern Arr *AllEv;
+extern Arr *EvArr;
+extern Dbptr dball;
+extern int Crnt_record;
+extern int Log;
+extern int prev_orid;
 
 #define FL (0.025)
 #define FLO (7)
@@ -50,7 +50,7 @@ typedef struct flt {
 #define FLT_SCS "%f %d %f %d"
 #define TRBADS4(X) 	((X)>=2147470000||(X)<=-2147400000)
 
-Filter flt;
+extern Filter flt;
 
 typedef struct evrec {
    int record;
