@@ -1,0 +1,97 @@
+.\" $NAME: $ $Date$
+.TH ADD_STANAME 1 "$Date$"
+.SH NAME
+add_staname  \- fill in the staname field of a site table
+.SH SYNOPSIS
+.nf
+\fBadd_staname \fP[-v] [-f] [-p \fI pfname\fP] \fIdbname\fP 
+.fi
+.SH DESCRIPTION
+add_staname allows the addition of the descriptive staname field to a 
+site table (ie. sta=PFO, staname=Pinon Flat Observatory).  If a matching 
+sta is found in the parameter file, the associated text string from the 
+parameter file will be added to the site table (maximum of 50 characters).  
+If a staname value already exists, no change will be made unless the "-f" 
+option is used.
+
+.SH OPTIONS
+.IP -v
+Be verbose and describe what is going on.
+
+.IP -f
+Force replacement of pre-existing staname values.
+
+.IP "-p pfname"
+Use the specified pfname instead of the default add_staname.pf
+
+.SH FILES
+Must have an input database with a site table.
+
+.SH PARAMETER FILE
+The parameter file has a single &Arr called sta_name.  The sta_name
+array contains pairs of station codes and staname values.  You do not have
+to enclose the staname values is quotes.
+
+The following is an example parameter file.
+
+.nf
+
+
+sta_name &Arr{
+TRO	Toro Peak, Riverside Co., Calif.
+LVA 	Lost Valley Boy Scout Camp, San Diego Co., Calif.
+LVA2	Lost Valley Boy Scout Camp, San Diego Co., Calif.
+FRD	Ford Ranch, Terwillger, Calif.
+WMC	Walmic Ranch, Anza, Calif.
+BZN	Buzz Northern's Place, Terwilliger, Calif.
+PFO	Pinyon Flat Observatory, Riverside Co., Calif.
+KNW	Keenwild Fire Station, Mountain Center, Calif.
+RDM	Red Mountain, Riverside Co., Calif.
+SND	Jim Saunders Place, Anza, Calif.
+PFBH	Pinyon Flat Borehole (PFO), Riverside Co., Calif.
+CRY	Cary Ranch, Anza, Calif.
+SOL     MPL Laboratory, Mt. Soledad, La Jolla, Calif.
+SHUM    Shumway Ranch, Riverside Co., Calif.
+ASBS    Asbestos Mountain, Riverside Co., Calif.
+GLAC    Glacier Pass, Riverside Co., Calif.
+ELKS    Elks Lodge, Riverside Co., Calif.
+DHL     Durmid Hill, Riverside Co., Calif.
+}
+
+.fi
+
+.SH EXAMPLE
+.IP \(bu
+Using the default parameter file, force replacement of all staname
+values in the anza.site table.
+
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fB add_staname -f -v anza\fP
+
+.fi
+.in
+.ft R
+
+.SH DIAGNOSTICS
+As a default, pre-existing staname values are not overwritten.  Use the "-f"
+flag if you want to replace all staname values.
+
+Consider using dbset(1) if you only want to replace a single staname value.
+
+This script should be irrelevant if you use dbbuild(1) rather than the ucsdsp2db(1)
+method to create site (and related) tables.
+
+.SH "SEE ALSO"
+.nf
+dbset(1), ucsdsp2db(1), dbbuild(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Not thoroughly tested.  Consider making a backup before running.
+
+.SH AUTHOR
+Jennifer Eakins
+IGPP-SIO-UCSD
