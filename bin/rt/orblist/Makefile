@@ -1,6 +1,6 @@
 BIN = orblist
 MAN1=orblist.1
-ldlibs	=  -lpkt -lorb $(TRLIBS)
+ldlibs	=  -ldefunctpkt -lorb $(TRLIBS)
 include $(ANTELOPEMAKE)
 DIR=
 
