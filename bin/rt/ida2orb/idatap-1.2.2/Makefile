@@ -2,7 +2,7 @@ cflags = -Iinclude
 include $(ANTELOPEMAKE)
 DIRS= 
 
-all::libidatap.a
+install all::libidatap.a
 
 OBJS    = \
 	b1000.o \
@@ -21,7 +21,6 @@ OBJS    = \
 	jdate.o    \
 	lenprt.o \
 	lock.o \
-	log.o \
 	log.o \
 	mini.o \
 	misc.o \
@@ -56,7 +55,8 @@ OBJS    = \
 	wf28to30.o \
 	wf30to28.o \
 	wrdsize.o \
-	wwfdisc.o 
+	wwfdisc.o \
+	xferlog.o 
 
 libidatap.a : $(OBJS)
 	rm -f $@
