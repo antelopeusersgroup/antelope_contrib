@@ -1,0 +1,10 @@
+DBEXTFILE Compose a filename from the specified Datascope database record
+
+[FILENAME STATUS] = DBEXTFILE ( DBPTR, TABLENAME )
+
+Given a database  pointer  specifying  a  row  in  a table,
+and the base table name, DBEXTFILE gets the dir and dfile
+from the row, and composes the file name by concatenating
+the directory of the database table,  dir,  and  dfile.  It
+also checks to see if the file exists, which it indicates
+by the returned string STATUS.
