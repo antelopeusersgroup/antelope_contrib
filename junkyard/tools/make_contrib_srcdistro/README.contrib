@@ -34,7 +34,7 @@ ANTELOPE environment variable is correctly set.
 
 2) complete the following steps:
 	
-	cd $ANTELOPE/contrib/src
+	cd $ANTELOPE/src/contrib
 	make Include
 	make install
 

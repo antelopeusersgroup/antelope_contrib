@@ -27,11 +27,11 @@ $pwd = `pwd`;
 chomp( $pwd );
 
 chdir( "/tmp" );
-mkdir( "contrib", 0755 );
-chdir( "/tmp/contrib" );
+mkdir( "src", 0755 );
+chdir( "/tmp/src" );
 
 printf STDERR "Building CVS export distribution in /tmp:\n";
-$cmd = "cvs -d $cvsroot export -D $day -d src $package";
+$cmd = "cvs -d $cvsroot export -D $day $package";
 system( $cmd );
 
 chdir( "/tmp" );
@@ -41,7 +41,7 @@ $cmd = "/bin/cp $readme README.contrib";
 system( $cmd );
 
 printf STDERR "Building tar-file $tarfile_name:\n";
-$cmd = "tar cvf $pwd/$tarfile_name README.contrib contrib/src";
+$cmd = "tar cvf $pwd/$tarfile_name README.contrib src/contrib";
 system( $cmd );
 
 printf STDERR "Compressing tar-file $tarfile_name:\n";
@@ -54,6 +54,6 @@ system( $cmd );
 $cmd = "gzip $pwd/$tarfile_name";
 system( $cmd );
 
-system( "/bin/rm -rf /tmp/contrib" );
+system( "/bin/rm -rf /tmp/src" );
 
 chdir( "$pwd" );
