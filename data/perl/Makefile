@@ -2,8 +2,8 @@ DATADIR=perl
 DATA=	compass_from_azimuth.pl \
 	winding.pl 
 
-MAN3= 	compass_from_azimuth.3 \
-	winding.3
+MAN3P= 	compass_from_azimuth.3p \
+	winding.3p
 
 include $(ANTELOPEMAKE)  	
 DIRS=
