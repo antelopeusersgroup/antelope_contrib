@@ -58,8 +58,8 @@
 #define UDPLISTEN_RT_PRIORITY 10
 #define PACKET_QUEUE_SIZE 50000
 #define RECOVERY_QUEUE_SIZE 1000
-#define PRTHROTTLE_TRIGGER 100
-#define PRTHROTTLE_RELEASE 20
+#define PRTHROTTLE_TRIGGER 10000
+#define PRTHROTTLE_RELEASE 2000
 
 #ifdef WORDS_BIGENDIAN
 static int Words_bigendian = 1;
@@ -246,7 +246,7 @@ next_in_sequence( int current )
 static void
 retry_recovery( Recoverreq *rr )
 {
-	if( VeryVerbose ) {
+	if( Verbose ) {
 		fprintf( stderr, 
 		"guralp2orb: still missing %d to %d from %s; retry recovery\n",
 			rr->first, 
@@ -281,10 +281,14 @@ register_packet( G2orbpkt *gpkt )
 
 		if( ( gpkt->blockseq != next_in_sequence( *blockseq ) ) &&
 		    ( gpkt->blockseq != *blockseq ) ) {
-fprintf(stderr,"Recovery request for udp source ->%s<-\n",gpkt->udpsource);
+		    if(Verbose)fprintf(stderr,
+			"Recovery request for udp source ->%s<-\n",
+			gpkt->udpsource);
 		    if(getarr(Recovery_list,gpkt->udpsource)!=NULL)
 		    {
-fprintf(stderr,"Attempting recovery of data from %s\n",gpkt->udpsource);
+			if(VeryVerbose)fprintf(stderr,
+			  "Attempting recovery of data from %s\n",
+				gpkt->udpsource);
 
 			allot( Recoverreq *, rr, 1 );
 
@@ -294,7 +298,7 @@ fprintf(stderr,"Attempting recovery of data from %s\n",gpkt->udpsource);
 			rr->first = next_in_sequence( *blockseq );
 			rr->last = previous_in_sequence( gpkt->blockseq );
 
-			if( VeryVerbose ) {
+			if( Verbose ) {
 				fprintf( stderr, 
 				"guralp2orb: missed %d to %d from %s\n",
 					rr->first, 
@@ -309,7 +313,7 @@ fprintf(stderr,"Attempting recovery of data from %s\n",gpkt->udpsource);
 				mtfifo_push( Recover_mtf, (void *) rr );
 			} else {
 				if(number_to_recover>0)
-					elog_log(0,"Absurd recovery request for ip %s dropped\nRequested recovery of %d packets\n",
+					elog_notify(0,"Absurd recovery request for ip %s dropped\nRequested recovery of %d packets\n",
 						rr->udpsource,
 						number_to_recover);
 				free( rr );
@@ -317,7 +321,8 @@ fprintf(stderr,"Attempting recovery of data from %s\n",gpkt->udpsource);
 		    }
 		    else
 		    {
-			elog_log(0,"guralp2orb:  ignored recovery request for %s for packets %d to %d\n",
+			if(Verbose)
+			  fprintf(stderr,"guralp2orb:  ignored recovery request for %s for packets %d to %d\n",
 				gpkt->udpsource,next_in_sequence( *blockseq ),
 				previous_in_sequence( gpkt->blockseq ));
 		    }
@@ -357,7 +362,7 @@ report_queuemax( void )
 
 		maxpacketqueue = queue;
 
-		if( VeryVerbose ) {
+		if( Verbose ) {
 			fprintf( stderr,
 			    "MAXQUEUE up to %d\n", maxpacketqueue );
 
@@ -1076,9 +1081,9 @@ recovery_succeeded( char *udpsource )
 		setarr( Recovery_failures, udpsource, recovery_failures );
 	}
 	
-	if( *recovery_failures > 0 && VeryVerbose ) {
+	if( *recovery_failures > 0 && Verbose ) {
 		fprintf( stderr, 
-		"guralp2orb: TCP recovery for %s succeeded, resetting failure count\n" );
+		"guralp2orb: TCP recovery for %s succeeded, resetting failure count\n" ,udpsource);
 	}
 
 	*recovery_failures = 0;
@@ -1170,6 +1175,7 @@ recover_packetsequence( Recoverreq *rr )
 	int	next;
 	int	lastflag;
 
+/*fprintf(stderr,"DEBUG:  attempting recover on %s\n",rr->udpsource);*/
 	if( ! recovery_ok( rr->udpsource ) ) {
 		free( rr );
 		return;
@@ -1294,12 +1300,16 @@ recover_packetsequence( Recoverreq *rr )
 
 			report_queuemax();
 
+/*fprintf(stderr,"guralp2orb(DEBUG):  recovery ok, entering possible wait loop\n");*/
 			mutex_lock( &prthrottle_mutex );
+
 			while( mtfifo_getqueue( Packets_mtf ) > PRTHROTTLE_TRIGGER )
 				cond_wait( &prthrottle, &prthrottle_mutex );
 			mutex_unlock( &prthrottle_mutex );
+/*fprintf(stderr,"guralp2orb(DEBUG):  Ok, got past wait loop\n");*/
 
 			mtfifo_push( Packets_mtf, (void *) gpkt );
+/*fprintf(stderr,"guralp2org(DEBUG):  Successful recovery from %s\n",rr->udpip);*/
 
 			recovery_succeeded( rr->udpsource );
 		}
@@ -1375,10 +1385,6 @@ guralp2orb_packettrans( void *arg )
 					contents );
 					free( s );
 					fclose( fp );
-					sprintf( cmd, "dos2unix %s %s",
-						LogpktLogfile,
-						LogpktLogfile );
-					system( cmd );
 				} else {
 					complain( 1,
 					"Couldn't open %s for %s packet\n",
@@ -2393,6 +2399,7 @@ main( int argc, char **argv )
 	if(Recovery_list == NULL) 
 	{
 		elog_notify(0,"recovery_host_list is missing from the parameter file\nAssuming null list\n");
+		elog_clear();
 		Recovery_list = newarr(0);
 	}
 	Max_Packets_to_Recover = pfget_int(pf,"maximum_packets_to_recover");
