@@ -18,6 +18,10 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dblookup, NULL)		
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(dbopen, NULL)		
+	PHP_FE(dbfree, NULL)		
+	PHP_FE(dbclose, NULL)		
+	PHP_FE(dbdestroy, NULL)		
+	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
 	PHP_FE(dbquery, NULL)		
@@ -331,6 +335,37 @@ PHP_FUNCTION(dbquery)
 }
 /* }}} */
 
+/* {{{ proto array dbtruncate( array db, string expression ) */
+PHP_FUNCTION(dbtruncate)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	long	nrecords;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "al", 
+					&db_array, &nrecords )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbtruncate( db, nrecords );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
 /* {{{ proto array dbsubset( array db, string expression ) */
 PHP_FUNCTION(dbsubset)
 {
@@ -482,6 +517,90 @@ PHP_FUNCTION(dbprocess)
 	efree( args );
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbfree( array db ) */
+PHP_FUNCTION(dbfree)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbfree( db );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto array dbclose( array db ) */
+PHP_FUNCTION(dbclose)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbclose( db );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto array dbdestroy( array db ) */
+PHP_FUNCTION(dbdestroy)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbdestroy( db );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 

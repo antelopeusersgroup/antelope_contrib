@@ -221,6 +221,50 @@ $nrecords =  dbnrecs( $db );
 .fi
 .in
 .ft R
+.IP "\fBdbclose\fP ( $db )"
+Close a Datascope database
+.ft CW
+.in 2c
+.nf
+
+dbclose ( $db );
+
+.fi
+.in
+.ft R
+.IP "\fBdbfree\fP ( $db )"
+Free Datascope memory
+.ft CW
+.in 2c
+.nf
+
+dbfree ( $db );
+
+.fi
+.in
+.ft R
+.IP "\fBdbdestroy\fP ( $db )"
+Destroy all tables of a Datascope database
+.ft CW
+.in 2c
+.nf
+
+dbdestroy ( $db );
+
+.fi
+.in
+.ft R
+.IP "\fBdbtruncate\fP ( $db, $nrecords )"
+Truncate a database table to the specified number of records
+.ft CW
+.in 2c
+.nf
+
+dbtruncate ( $db, $nrecords ) ;
+
+.fi
+.in
+.ft R
 
 .SH EXAMPLE
 .ft CW
