@@ -256,7 +256,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 
     dbputv(dborigin, 0,
 	   "nass", new-old,
-	   "ndef", new-old,
+	   "ndef", hypo->number_data,
 	   0 ) ; 
    /* This routine saves the predicted arrival information for each data point 
     WARNING:  the str variable passed here is computed above as the base 
