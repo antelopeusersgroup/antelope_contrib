@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>OrbStatApplet test page</title>
+</head>
+
+<body>
+<h1>OrbStatApplet test page</h1>
+
+<p>This is a small demo to show that the <a href="com/brtt/antelope/">com.brtt.antelope</a> class library
+allows pure-java web applets to access an Orb.  This is a very simple wrapper
+that launches a JFrameOrbStat window from a web browser.</p>
+
+<applet code="com.brtt.antelope.OrbStatApplet" width="100" height="20">
+ <param name="orb" value="foo:123"/>
+</applet>
+
+<p>Because of Java security restrictions, you can only use this to connect
+to orb running on the originating server (eg, "bohemia.splorg.org").</p>
+
+</body>
+</html>
+
