@@ -1,0 +1,12 @@
+PARSEPATH	Parse a path into components
+
+[DIR, BASE [, SUFFIX]] = PARSEPATH ( PATH )
+
+PARSEPATH separates an input PATH into its components: a 
+leading directory component DIR, a basename BASE, and, 
+optionally, a SUFFIX. The directory defaults to "." when
+there is no directory part. The separation of the SUFFIX
+is not done if less than three output arguments are specified. 
+No checking of actual entities on any filesystem is done, 
+thus the resulting BASE may itself be a directory instead of 
+a file, and PATH does not have to be a real filesystem location. 

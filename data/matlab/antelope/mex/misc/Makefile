@@ -9,7 +9,8 @@ HTML= $(MEXSRCS:.c=.html)
 MEXSRCS= \
 	arrtimes.c \
 	clear_register.c \
-	pffiles.c 
+	pffiles.c \
+	parsepath.c
 
 CLEAN= 
 

@@ -54,6 +54,7 @@
 %   dbextfile		- Compose a filename from a database record and table name
 %   dbfilename		- Compose a filename from a database record
 %   dbnextid		- Get the next integer id for id field from a database
+%   parsepath		- Separate a filename into component parts
 %
 % Handling waveform data
 %   trload_css		- Load waveform data from CSS database into trace object

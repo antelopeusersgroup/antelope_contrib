@@ -68,6 +68,7 @@
 %   dbexample_orbseek
 %   dbexample_orbselect
 %   dbexample_orbtell
+%   dbexample_parsepath
 %   dbexample_pf2string
 %   dbexample_pf2struct
 %   dbexample_pffiles
