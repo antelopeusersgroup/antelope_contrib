@@ -1,1 +1,1 @@
-demodb_path = '/opt/antelope/dbdemo/demo'
+demodb_path = '/opt/antelope/data/db/dbdemo/demo'
