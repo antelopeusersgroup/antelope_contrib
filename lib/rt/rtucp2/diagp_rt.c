@@ -21,6 +21,8 @@ Arr *Staname=0;
 Arr *DPOrbs=0;
 Arr *DP=0;
 Arr *BatRec = 0;
+regex_t dasmatch;
+regex_t dcmatch;
 /*
 extern Arr *pfnames;
 */

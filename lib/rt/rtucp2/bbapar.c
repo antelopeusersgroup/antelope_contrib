@@ -196,7 +196,7 @@ int BBA_DcDas( ClientData clientData ,
     PktChannel *achan;
     char *staname;
     DPars *dp;
-    ulong *iptr;
+    ulong_t *iptr;
     ushort_t *sptr, sval;  
     uchar_t *daspkt; 
     int alert;

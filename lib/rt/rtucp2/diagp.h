@@ -74,7 +74,7 @@ typedef struct dpars{
 } DPars;
 
 
-regex_t dasmatch;
-regex_t dcmatch;
+extern regex_t dasmatch;
+extern regex_t dcmatch;
 
 #endif
