@@ -5,7 +5,8 @@ DATADIR= php
 
 DATA= $(MYDLIB) \
       webdbe.inc \
-      webdbe_style.css
+      webdbe_style.css \
+      webdbe_title.gif
 
 MAN3= Datascope_PHP.3
 
