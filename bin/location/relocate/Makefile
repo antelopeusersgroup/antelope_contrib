@@ -1,3 +1,4 @@
+MAN1=relocate.1
 BIN=relocate
 PF=relocate.pf
 cflags = 

@@ -1,5 +1,6 @@
 BIN=sgnloc
 PF=sgnloc.pf
+MAN1=sgnloc.1
 
 cflags = 
 ldflags = 
