@@ -168,8 +168,9 @@ maxdelta    180 #
 #       thus c0 and c1 are to be changed here,
 #       while c2,c3,c4,c5 are to be changed station-wise
 #
-# beware: c0 has to be converted if you have a formula where delta is im km
-# in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
+# beware:  c0 has to be converted if you have a formula where delta is
+# in km in this case subtract log10(deg2km(1))*c1 from the 'original'
+# coefficient
 #
 c0     -0.104
 c1      1.66
@@ -253,8 +254,8 @@ orbml orbampmag -state state/ml -v -target_orbmag orbml \\
             -auth_expr ml -next_target_orbmag orbms -p ml \\
             -make_magtables $ORB $ORB $DB
 orbms orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p \\
-            -make_magtables -target_orbmag orbms -auth_expr ms -p ms \\
-             $ORB $ORB $DB
+            -target_orbmag orbms -auth_expr ms -p ms \\
+            -make_magtables $ORB $ORB $DB
 
 .fi
 .in
