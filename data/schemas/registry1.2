@@ -126,15 +126,14 @@ Attribute dbprogram
 	}
 	;
 
-Attribute domainname
+Attribute fqhostname
 	String (60)
 	Format ( "%-60s" )
 	Null ( "-" )
-	Description ( "domain name" )
+	Description ( "fully-qualified name of host" )
 	Detail {
-		This is the domain name corresponding to an orbserver's 
-		IP address. Preferably this will be a fully qualified 
-		domain name. 
+		This is the fully qualified name corresponding to an orbserver's 
+		IP address. 
 	}
 	;
 
@@ -821,13 +820,13 @@ Relation grid
 	;
 
 Relation servernames
-	Fields ( serveraddress serverport serveralias domainname portname lddate )
+	Fields ( serveraddress serverport serveralias fqhostname portname lddate )
 	Primary ( serveraddress serverport )
 	Alternate ( serveralias )
 	Description ( "names for orbservers" )
 	Detail {
 		This table defines common names for orbservers, under
-		which they may be commonly known to users. The domainname 
+		which they may be commonly known to users. The fqhostname 
 		and portname fields translate the serveraddress and serverport 
 		independently, whereas serveralias is usually a colon-separated
 		concatenation of these two. 
