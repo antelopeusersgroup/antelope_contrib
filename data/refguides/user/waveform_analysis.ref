@@ -2,7 +2,6 @@
 
 <subsection Waveform manipulation>
 <commands>
-
 trexcerpt [options] dbin dbout [start {duration|end}]
     extract waveform segments from a database
 <options>
@@ -156,7 +155,6 @@ displayspec dbname
 
 <subsection Waveform display>
 <commands>
-
 dbplotcov database sta:chan tstart tend [-h[scale]]
     Make a plot and listing of waveform coverage from a database
 
@@ -219,7 +217,6 @@ dbheli [options] dbname sta chan  tstart  twinline  nlines  scale
 </options>
 
 <subsection Waveform Verification>
-
 dbversac database
     compare sac file headers with CSS database
 

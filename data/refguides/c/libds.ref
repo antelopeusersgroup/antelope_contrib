@@ -33,7 +33,6 @@ int dbclose ( Dbptr db )
     Close a database
 
 <subsection Adding and retrieving values>
-
 int dbadd ( Dbptr db, char *record )
     add a record to a table
 
@@ -67,7 +66,6 @@ int dbselect ( Dbptr db, Tbl *expressions, FILE *file )
     print selected values from a view
 
 <subsection Creating Views>
-
 Dbptr dbsubset ( Dbptr db, char *s, char *name )
     create a subset view
 
@@ -117,7 +115,6 @@ int dbfree ( Dbptr db )
     free space taken by a database view
 
 <subsection Manipulating and Saving Views>
-
 void dbget_range ( Dbptr db, int *s, int *e )
     extract range of record numbers from database pointer
 
@@ -128,7 +125,6 @@ private int dbupdate_index ( Dbindex *dbindex )
     Force your copy of database indices to be updated
 
 <subsection Removing and deleting rows>
-
 int dbmark ( Dbptr db )
     mark rows for deletion (set all fields to NULL)
 
@@ -145,7 +141,6 @@ int dbdestroy ( Dbptr db )
     completely eliminate every table in a database
 
 <subsection Evaluating Database Expressions>
-
 int dbex_compile ( Dbptr db, char *s, Expression **expression, int type )
     compile a database expression
 
@@ -159,7 +154,6 @@ int dbex_evalstr ( Dbptr db, char *s, int type, void *value )
     Compile and evaluate a database expression
 
 <subsection External files>
-
 int dbextfile ( Dbptr db, char *tablename, char *filename )
     compose a filename from a database record
 
@@ -167,7 +161,6 @@ int dbfilename ( Dbptr db, char *filename )
     compose a filename from a database record
 
 <subsection Managing Ancillary Information>
-
 int dbquery ( Dbptr db, int code, Dbvalue *value )
     get ancillary information about a database
 

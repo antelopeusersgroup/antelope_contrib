@@ -1,6 +1,16 @@
+
 sub title { 
     return &paragraph("Title", $_ ) if $_ !~ /^\s*$/ ; 
 }
+
+sub author { 
+    return &paragraph("Author", $_ ) if $_ !~ /^\s*$/ ; 
+}
+
+sub publisher { 
+    return &paragraph("Publisher", $_ ) if $_ !~ /^\s*$/ ; 
+}
+
 
 sub Examples { 
     return &paragraph("Examples", $_ ) if $_ !~ /^\s*$/ ; 

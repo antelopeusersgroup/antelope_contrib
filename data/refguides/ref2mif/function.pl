@@ -21,6 +21,15 @@ sub function {
 	$ignored = 0 ; 
 	s/^\s+// ;
 	$_ = &paragraph ( "description", "#\n" . &emphasize(\%Parameters, "ParameterName", $_) ) ;
+    } elsif ( /^([^=]+)\s*=\s*(.*)/ ) { # 
+	$ignored = 0 ; 
+	undef %Parameters ;  # parse_cdeclarations creates the array %Parameters as a side effect.
+	my $dest = $1 ; 
+	my $expr = $2 ; 
+	$_ = &paragraph ( "cdeclaration", 
+	    "#\n" . 
+	    &string("$dest = ") .
+	    parse_function($expr) ) ;
     } else {
 	$ignored = 0 ; 
 	undef %Parameters ;  # parse_cdeclarations creates the array %Parameters as a side effect.
@@ -53,9 +62,9 @@ sub parse_function_arguments {
     $result = "" ;
     while ( $in =~ /(\w+)/ ) { 
 	$in = $' ; 
-	$result .= &string($`) . &format_type("Parameter", $1) ; 
+	$result .= &string($`) . &format_type("ParameterName", $1) ; 
     }
-    $result .= &string($') if $' !~ /^\s*$/ ; 
+    $result .= &string($in) if $in !~ /^\s*$/ ; 
     return $result ;
 }
 

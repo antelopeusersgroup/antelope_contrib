@@ -4,6 +4,7 @@
 #  [private|deprecated] type *function ( type1 param1, type2 param2, type3 param3 ) ;
 #      perform operation with param1 with options param2 returning result in param3
 
+
 sub cdeclarations { 
     chomp ;
     s/\t/ /g ; 
@@ -38,16 +39,23 @@ sub emphasize {
     my @text = ( $text ) ;
     my %names = %$ref ; 
     my $name, $replacement, $piece, @pieces, $result ;
+    # @names = keys %names ; 
+    # $names = @names ;
+    # printf STDERR "emphasized names are the %d '@names'\n", $names ;
     foreach $name ( keys %names ) { 
 	@pieces = () ;
 	foreach $piece ( @text ) {
-	    if ( $piece =~ /\b\Q$name\E\b/ ) { 
+	    while ( $piece =~ /\b\Q$name\E\b/ ) { 
+		# print STDERR "emphasizing '$name' in '$text'\n" ; 
 		push(@pieces, $`) if defined $` ;
 		push(@pieces, $name) ; 
-		push(@pieces, $') if defined $' ; 
-	    } else { 
-		push(@pieces, $piece) ; 
-	    }
+		if (defined $') { 
+		    $piece = $' ;
+		} else { 
+		    $piece = undef ; 
+		}
+	    } 
+	    push(@pieces, $piece) if defined $piece ; 
 	}
 	@text = @pieces ; 
     }

@@ -1,7 +1,6 @@
 <chapter>
 Fortran Interface
 
-
 <subsection Database Operations>
 <options>
 include "db.i"
@@ -110,8 +109,8 @@ subroutine dist ( lat1, long1, lat2, long2, *delta, *azimuth )
 subroutine latlon ( lat1, long1, del, azimuth, *lat2, *long2 )
     compute lat and long given starting point and distance (all radians)
 
-<subsection Time Transformations>
 
+<subsection Time Transformations>
 subroutine doy2mday ( doy, year, month, day )
     convert day of year to month and day
 
@@ -145,9 +144,7 @@ subroutine strtime ( s, e )
 integer yearday ( e )
     convert epoch time to yearday
 
-
 <subsection Error Handling>
-
 <fdeclarations>
 subroutine clear_register ( printflag )
     clear the error register
@@ -162,7 +159,6 @@ subroutine register_error ( sysflag, msg )
     register an error message
 
 <subsection General Programming Utilities>
-
 <fdeclarations>
 subroutine datafile ( pathname, envname, filename )
     Find a program's datafile
@@ -181,8 +177,8 @@ subroutine shellsort ( a, n, size, compare, private )
 
 integer ssearch ( key, keysize, a, n, unique, compare, private, ns, ne )
     binary search of index
-<subsection Niceplot>
 
+<subsection Niceplot>
 <fdeclarations>
 subroutine axis ( xdim, ydim, xmarg, ymarg, xlow, ylow, xmax,  xmin, ymax,  ymin,  dxsmal, dxnumb, dysmal, dynumb, fmtx, fmty, labelx, labely, title, iclear )
     Draw a box with tic marks and labels
@@ -302,8 +298,8 @@ subroutine xmap ( real x )
 
 subroutine ymap ( real y )
     convert from plotting to raster units
-<subsection Ordered Lists>
 
+<subsection Ordered Lists>
 <fdeclarations>
 integer maxtbl ( itbl )
     return the number of elements in a list
@@ -321,7 +317,6 @@ subroutine strtbl ( itbl, s, ... )
     Create a new list from a list of strings
 
 <subsection Parameter Files>
-
 <fdeclarations>
 subroutine pfcompile ( string, pf, retcode )
     read a parameter file from a string
@@ -379,8 +374,8 @@ subroutine pfread ( name, pf, retcode )
 
 subroutine pfwrite ( pf, filename, retcode )
     write a parameter file object to the specified file
-<subsection Seismic Information>
 
+<subsection Seismic Information>
 <fdeclarations>
 integer arrtimes ( delta, depth, phases, times )
     returns all the calculated phases

@@ -26,3 +26,9 @@
 %Z	timezone code
 %z	timezone code
 
+Example:
+<Examples>
+% epoch +"%a %b %d %H:%M" now
+Thu Nov 30 23:09
+% epoch +"wf/%Y-%j" now
+wf/2000-335

@@ -1,6 +1,5 @@
 <chapter Expression Calculator>
 <subsection Aggregate Functions>
-
 <function>
 count()
     count records in a group or table
@@ -27,7 +26,6 @@ sum_table(expr)
     add an expression across a table
 
 <subsection Arithmetic Functions>
-
 abs(x)
     absolute value
 
@@ -74,7 +72,6 @@ tan(x)
     tan of x in degrees
 
 <subsection Time Conversion>
-
 <function>
 date2e(year, month, day, seconds)
     convert to epoch time
@@ -98,7 +95,6 @@ yearday(epoch)
     convert from epoch time to yearday (jdate)
 
 <subsection Flinn-Engdahl Seismic and Geographic Regions>
-
 gregion(lat,lon)
     geographic region name
 
@@ -145,7 +141,6 @@ stime(delta,depth)
 
 <subsection Spherical Geometry>
 <function>
-
 azimuth(lat1, lon1, lat2, lon2)
     azimuth from point 1 to point 2
 
@@ -159,7 +154,6 @@ longitude(lat, lon, distance, azimuth)
     longitude of the point a distance away from (lat,lon) in the direction azimuth
 
 <subsection External Files and Commands>
-
 <expression>
 ["wc" extfile()]
     execute a unix command, as in this example
@@ -191,7 +185,6 @@ A expr ? a : b
 
 
 <subsection Pattern Matching>
-
 <expression>
 A =~ /regular-expression/
     regular expression match
@@ -219,4 +212,3 @@ NULL	evaluates to the corresponding database field null value when paired with =
 
 ||	logical or
 &&	logical and
-

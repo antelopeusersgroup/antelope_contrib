@@ -7,25 +7,24 @@ dbhelp [db|schema]
     gui to explore schema for database db or specified schema 
 
 dbdoc db
-    generate troff formatted document describing a schema
+    generate troff formatted document describing schema for database db
 
 dbdesign 
-    create and edit Datascope schema files
+    create and/or edit Datascope schema files
 
 dbinfer file [file...]
     build a schema file from a set of ascii example files
 
 
 <subsection Creating and Editing Databases>
-
 dbe [-e] db[.table] [ db[.table] ...]
-    general purpose viewer/editor for database db
+    general purpose viewer/editor for databases
 
 dberesp db.table
     run by dbe to plot response curves from instrument table
 
 db_textedit db.table
-    run by dbe to edit external files 
+    run by dbe to edit external text files 
 
 
 dbset [-clv] db[.table] field from [to]
@@ -88,7 +87,6 @@ dbfixids db idname [ idstart ]
 
 <subsection Creating Database Views>
 <commands>
-
 dbsubset [-n name] [-v] aview expr
     create new view from input aview containing only records which satisfy expression expr
 

@@ -2,18 +2,16 @@
 <commands>
 
 <subsection Examples and Templates>
-
 mkmk [ - ]
-    prototype Antelope makefile (- suppresses comments)
+    show prototype Antelope makefile (- suppresses comments)
 
 manpage [ - ]
-    prototype Antelope man page (- suppresses comments)
+    show prototype Antelope man page (- suppresses comments)
 
 template [dbsimple.c|simple.c|perl|tcl]
     get a template from templates directory
 
 <subsection Miscellaneous>
-
 private check_antelope_installation 
     spot check for proper Antelope installation
 
@@ -33,7 +31,7 @@ private register_antelope
     gui for requesting Antelope license
 
 
-abspath apath [... ]
+abspath apath [...]
     construct absolute path corresponding to input apath
 
 relpath here there
@@ -43,12 +41,17 @@ deprecated uwd [-f configfile]
     print canonical working directory (for ancient automounters) 
 
 
-epoch [-e] [-i input_timezone] [-o output_timezone] [ +format ] [ time/date components ]
-    convert time formats. Optionally specify an input and/or output timezone (refer to time expressions table for acceptable input formats).  Optionally specify an output format (refer to epoch2str table for format codes).
-
+epoch [options] [ +format ] [ time/date components ]
+    convert time formats. 
+<options>
+-e	echo interactive input
+-i tz	specify an input timezone tz, eg US/Mountain
+-o tz	specify an output timezone tz, eg Japan
++format	specify the format of the output (refer to epoch escapes table)
+</options>
 
 pfdiff [-o newpf] pf1 [pf2]
-    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). also allows constructing new parameter file by interactively selecting parameters from pf1 and pf2.
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). -o interactively selects parameters from pf1 and pf2 to construct new parameter file newpf 
 
 pfecho [options] name [ param ...]
     print out parameters from parameter files
@@ -90,7 +93,7 @@ tksend [options] app_name [message]
 -p	wait for and print returned messages
 -verbose	be more verbose
 -validate	validate the application name and return the disposition and the version number
--version	{3|4|auto}
+-version {3|4|auto}	select older or newer tksend protocol; default is auto{matic}
 -wait	wait for a response
 </options>
 

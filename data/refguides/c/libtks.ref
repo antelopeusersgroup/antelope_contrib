@@ -7,9 +7,7 @@ tks.h
 provides a c interface to  the tcl/tk send IPC mechanism 
 
 <subsection Tksend IPC Utility>
-
 <cdeclarations>
-
 TkSend *Tks_Create ( Display *display, Window window, int version )
     Optionally connect to X-server and create communication window
 

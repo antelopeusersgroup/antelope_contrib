@@ -66,9 +66,9 @@ sub format_type {
 	$result .= &string($dimension) if ( $dimension ne "" ) ;
 
 	if ( $fontcode eq "FunctionName" ) { 
-	    $result .= &marker("Index", $name) ;
+	    $result .= &marker("Index", $name) if ! $No_index ;
 	} elsif ( $fontcode eq "ParameterName" ) {
-	    $Parameters{$param} = 1 ;
+	    $Parameters{$name} = 1 ;
 	}
 
 # structure element

@@ -8,7 +8,6 @@ conversions between epoch time and strings, 2-d and 3-d coordinate transformatio
 
 <subsection Flinn-Engdahl Regions>
 <cdeclarations>
-
 int grnumber ( double lat, double lon )
     returns the Flinn-Engdahl geographic region number which contains the specified lat, lon
 
@@ -24,7 +23,6 @@ int srname ( int srn, char *name )
 
 <subsection Earth Units conversion>
 <cdeclarations>
-
 double deg2km ( double degrees )
     convert from degrees to kilometers at the equator
 
@@ -33,9 +31,7 @@ double km2deg ( double km )
 
 
 <subsection Time conversion>
-
 <cdeclarations>
-
 int is_epoch_string ( char *s, double *e )
     returns true if string s can be interpreted as a time, returning epoch time e
 
@@ -113,8 +109,6 @@ private int time_string2epoch ( char *string, double *time )
 
 <subsection Spherical Geometry>
 <cdeclarations>
-
-
 double deg ( double r )
     converts input radians to degrees
 
@@ -132,7 +126,6 @@ void xyztortp ( float u[3], float *r, float *theta, float *phi )
     Convert cartesian coordinates into spherical coordinates
 
 <subsection Vectors and Rotation Matrices>
-
 void carsph ( float u[3], float *ra, float *dec )
     convert a unit 3-vector to ra and dec in radians
 

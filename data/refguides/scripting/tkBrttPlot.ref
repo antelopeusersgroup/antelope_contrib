@@ -1,5 +1,4 @@
 <subsection Data Objects>
-
 <commands>
 append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
     Appends a vector element after an existing element
@@ -46,7 +45,6 @@ vector_puty vector_handle ix ylist
     Replace dependent values in a vector object
 
 <subsection Plotting>
-
 (canvas) create axes viewport ?options?
     viewport (canvas) object to plot a set of coordinate axes
 <options>
@@ -152,7 +150,6 @@ vector_puty vector_handle ix ylist
 </options>
 
 <subsection Time Histories>
-
 thistory_add thistory_handle time value
     Add an element to a time-history object
 

@@ -1,9 +1,6 @@
-<chapter>
-Foreign waveform formats
+<chapter Foreign waveform formats>
 
 <subsection Exporting data from Datascope database>
-<commands>
-
 <commands>
 autodrm [options] [files]
     Antelope IDC/GSE2.1 AutoDRM Server
@@ -67,7 +64,6 @@ db2segy db outfile [-pf pf]
 
 <subsection Importing data into a Datascope database>
 <commands>
-
 ah2db ah1 [ah2 .. ] dbout
     create CSS database dbout from AH format waveform files ah1, ah2, ...
 
@@ -137,7 +133,6 @@ deprecated ucsdwf2db stapardir dbin dbout
     convert UCSD raw data wfdiscs and arrivals to a CSS3.0 database
 
 <subsection Miscellaneous utilities>
-
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 

@@ -1,6 +1,5 @@
 <subsection Tcl/Tk Command Interpreters>
 <commands>
-
 bplotwish 
     Tcl 8.0 / Tk 8.0 shell with all BRTT extensions
 

@@ -101,7 +101,6 @@ tcpmonitor [options] host
 </options>
 
 <subsection orbserver and utilities>
-
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
@@ -228,7 +227,6 @@ dbreplay [options] database|view [[[server] mintime] maxtime|period]
 <chapter Orb Reader/Writers>
 
 <subsection Datalogger commanding>
-
 qtcmd [options] cmdorb net_sta cmd [params]
     execute commands on a remote Quanterra digitizer
 <options>
@@ -260,7 +258,6 @@ mrc [options] orbname dc_name
 
 
 <subsection Real-time data processing: Orb reader/Writers>
-
 orb2orb [options] in out [start-time [period|end-time]]
     copy data from one orb to another
 <options>
@@ -362,7 +359,6 @@ dbassoc_rt [options] dbcat dbassoc
 
 
 <subsection Orb Real Time Display>
-
 qtmon dataorb data2orb cmdorbname [database]
     monitor Quanterra digitizers
 
@@ -394,7 +390,6 @@ orbdisp [options] orbserver [start-time [range]]
 </options>
 
 <subsection Saving Orb Data in Database>
-
 orb2db [options] orb db [start [end|period]]
     copy waveform data from orbserver orb into database db (starting at time start through end or for stated period)
 <options>
@@ -450,7 +445,6 @@ orblatency [options] orb database
 </options>
 
 <subsection Orb Alarms>
-
 acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
     Send mail when AC power fails for a data collector
 
@@ -458,7 +452,6 @@ battalarm [-d] [-m srcmatch ] orbin mail_add
     Send mail when battery power drops for a data collector
 
 <subsection Miscellaneous>
-
 resetnetblazer hostname line timeout
     reset a Telebit Netblazer terminal server
 
@@ -477,7 +470,6 @@ orb2pf [options] orb [out]
 
 
 <subsection Archiving Data>
-
 <commands>
 rtbackup [-v] [-p parameter_file] rt_db tape_drive
     real-time tape archive program
@@ -502,7 +494,6 @@ online_backup [options] [directories]
 </options>
 
 <subsection Orb Diagnostic tools>
-
 orbreap [options] orb [start-time [end-time|range]]
     multipurpose orb dumping program
 <options>

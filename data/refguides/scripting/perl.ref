@@ -10,77 +10,75 @@ dbfree ( @db )
     frees resources for a table or a database
 
 dblookup ( @db, database, table, field, record )
-    Returns a database pointer for the specified database, table, field, and record. 
+    returns a database pointer for the specified database, table, field, and record. 
 
 dbopen ( database, permissions )
-    Returns a database pointer to the database
+    returns a database pointer to the database
 
 dbopen_table ( database, permissions )
-    Returns a database pointer to the specified database table ("-" is stdin)
+    returns a database pointer to the specified database table ("-" is stdin)
 
 <subsection Manipulating fields and records>
-
 dbadd ( @db, [record] )
-    Add the new record to the table in @db.  If no record is specified, use the scratch record.  Returns the new record number.
+    add the new record to the table in @db.  If no record is specified, use the scratch record.  returns the new record number.
 
 dbadd_remark ( @db, remark )
-    Add a comment in the remark table for the specified table/record
+    add a comment in the remark table for the specified table/record
 
 dbaddnull ( @db )
-    Add a new null record to a table
+    add a new null record to a table
 
 dbaddv ( @db, field_name, value, [field_name, value, ...] )
-    Add a new record with the specified values to the database
+    add a new record with the specified values to the database
 
 dbcrunch ( @db )
-    Deletes all marked (null) records from the specified table
+    delete all marked (null) records from the specified table
 
 dbdelete ( @db )
-    physically deletes a record from the database
+    delete a record from the database
 
 dbdestroy ( @db )
-    Deletes all tables and the descriptor file for the specified database
+    delete all tables and the descriptor file for the specified database
 
 dbget ( @db [, 0] )
-    Returns [or copies to the scratch record] the specified table, record, or field from the database
+    returns [or copies to the scratch record] the specified table, record, or field from the database
 
 dbget_remark ( @db )
-    Get any comment from the remark table for the specified table/record
+    get any comment from the remark table for the specified table/record
 
 dbgetv ( @db, field_name [, field_name, ...] )
-    Returns the values of the specified fields for a particular record
+    returns the values of the specified fields for a particular record
 
 dbmark ( @db )
-    sets the specified record to all null values
+    set the specified record to all null values
 
 dbput ( @db [, string] )
-    If no string is specified, the value is taken from the scratch record
+    if no string is specified, the value is taken from the scratch record
 
 dbputv ( @db, field_name, value, [field_name, value, ...] )
-    Saves the specified values into the specified fields for a particular record
+    save the specified values into the specified fields for a particular record
 
 dbsave_view ( @db, table_name )
-    Saves the view into a file named after the database and tablename
+    save the view into a file named after the database and tablename
 
 dbtruncate ( @db, n )
-    Truncate a table to the specified number of records
+    truncate a table to the specified number of records
 
 <subsection Forming views>
-
 dbgroup ( @db, key, [key, ...] )
-    Group the input table according to the specified keys
+    group the input table according to the specified keys
 
 dbjoin ( @db1, @db2, [join-keys] )
     return a join of the two tables, using the join-keys if specified
 
 dbnojoin ( db1, db2, [join-keys] )
-    Return a view of all records in the first table which don't join to the second.
+    returns a view of all records in the first table which don't join to the second.
 
 dbprocess ( @db, cmd1, cmd2, cmd3 ... )
     returns a new view which is the result of applying the dbprocess commands cmd1, cmd2, etc to the input database pointer
 
 dbsort ( @db, [-u,] [-r,] [key, key..] )
-    Sort the input table according to the specified keys
+    sort the input table according to the specified keys
 
 dbsubset ( @db, expression )
     returns a new view which is the set of all row which satisfy the expression
@@ -89,41 +87,38 @@ dbtheta ( @db1, @db2, [expression] )
     returns combinations of rows from the two tables which satisfy the expression, or all combinations if no expression is specified
 
 dbunjoin ( @db, database_name )
-    Creates a new database, which contains all the records referenced in the input view
+    create a new database, which contains all the records referenced in the input view
 
 <subsection Getting information about the database>
-
 dbquery ( @db, code )
-    Query the database for information. Codes must be in quotes.
+    query the database for information. Codes must be in quotes.
 
 <subsection Error handling>
-
 elog_clear (  )
-    Clear the elog message log
+    clear the elog message log
 
 elog_complain ( msg )
-    Write an error message to the elog message facility for immediate output
+    write an error message to the elog message facility for immediate output
 
 elog_die ( msg )
-    Write a message to the elog message facility and die
+    write a message to the elog message facility and die
 
-elog_flush ( deliver first )
-    Get rid of messages after
+elog_flush ( deliver, first )
+    eliminate log messages after first, printing them if deliver is set
 
 elog_init ( $0, @ARGV )
     initialize the elog message routines
 
 elog_log ( msg )
-    Save a message on the elog message log
+    save a message on the elog message log
 
 elog_mark (  )
     return the count of messages  currently  held  in  the error log
 
 elog_notify ( msg )
-    Send a message other than an error message to the elog facility
+    send a message other than an error message to the elog facility
 
 <subsection Parameter files>
-
 pfget ( pfname, key )
     extracts the value for the key from the parameter file pfname
 
@@ -131,24 +126,23 @@ pfupdate ( pfname )
     checks and rereads a parameter file if one of the components along PFPATH has changed
 
 <subsection Special functions>
-
 ask ( string )
-    Pose a question string of the controlling tty, and return the response
+    pose a question string at the controlling tty, and return the response
 
 askyn ( string )
-    Pose a yes/no question string of the controlling tty, and return the response
+    pose a yes/no question string at the controlling tty, and return the response
 
 datafile ( env, file )
-    Finds the specified file by looking at first the environment variable, and then along the path
+    find the specified file by looking at first the environment variable, and then along the path
 
 datapath ( env, dir, file, suffix )
-    Finds the specified file by looking at first the environment variable, and then along the path
+    find the specified file by looking at first the environment variable, and then along the path
 
 dbcompile ( @db, string )
-    Add new attributes or relations to the schema directly from the perl script
+    add new attributes or relations to the schema directly from the perl script
 
 dbex_eval ( @db, expression )
-    Evaluate an expression for a particular record
+    evaluate an expression for a particular record
 
 dbextfile ( @db [, base-table] )
     return the filename for an external file for a particular record in a view
@@ -157,13 +151,13 @@ dbmatches ( @db1, @db2, hookname, [join-keys] )
     returns a list of the records in db2 which match the record specified by db1
 
 dbnextid ( @db, id_name )
-    Gets the next free id value for the specified database and id_name
+    gets the next free id value for the specified database and id_name
 
 grn ( lat, lon )
-    Return the geographic region number
+    return the geographic region number
 
 grname ( lat, lon )
-    Return the geopgraphic region name
+    return the geopgraphic region name
 
 limit ( resource, [limit2set] )
     return the current resource limit, or set a new resource limit
@@ -178,35 +172,34 @@ descriptors
 </options>
 
 srn ( lat, lon )
-    Return the seismic region number
+    return the seismic region number
 
 srname ( lat, lon )
-    Return the seismic region name
+    return the seismic region name
 
 <subsection Time conversion>
-
 epoch ( yearday )
-    Returns the epoch time corresponding to the integer yearday
+    returns the epoch time corresponding to the integer yearday
 
 epoch2str ( epoch, fmt [, timezone] )
     returns the epoch time formatted according to the fmt string and converted to timezone
 
 str2epoch ( string )
-    Returns the epoch time corresponding to the free-form input time/date
+    returns the epoch time corresponding to the free-form input time/date
 
 strdate ( epoch )
-    Returns a formatted string of the date
+    returns a formatted string of the date
 
 strtdelta ( epoch )
-    Returns a formatted string of the specified time interpreted as a time difference
+    returns a formatted string of the specified time interpreted as a time difference
 
 strtime ( epoch )
-    Returns a formatted string of the time and date
+    returns a formatted string of the time and date
 
 strydtime ( epoch )
-    Returns a formatted string of the time and date, including the day of year
+    returns a formatted string of the time and date, including the day of year
 
 yearday ( epoch )
-    Returns the yearday corresponding to an epoch time
+    returns the yearday corresponding to an epoch time
 
 

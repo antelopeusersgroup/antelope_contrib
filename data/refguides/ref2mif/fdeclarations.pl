@@ -4,6 +4,7 @@
 #  [private|deprecated] type *function ( type1 param1, type2 param2, type3 param3 ) ;
 #      perform operation with param1 with options param2 returning result in param3
 
+
 sub fdeclarations { 
     chomp ;
     s/\t/ /g ; 

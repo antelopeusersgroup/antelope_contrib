@@ -2,16 +2,15 @@
 <chapter>
 Matlab Interface
 <subsection Startup>
-<cdeclarations>
-
+<function>
 use_antelope (  )
     load Datascope/Antelope interface into Matlab
-<subsection Getting Help>
 
+<subsection Getting Help>
 antelope_webdoc (  )
     launch web-browser with html documentation
-<subsection Opening a database>
 
+<subsection Opening a database>
 dbclose ( DBPTR )
     Close a Datascope database
 
@@ -23,8 +22,8 @@ DBPTR = dblookup_table ( DBPTR, TABLE )
 
 DBPTR = dbopen ( FILENAME, OPENTYPE )
     Open a Datascope Database
-<subsection Manipulating fields and records>
 
+<subsection Manipulating fields and records>
 S = db2struct ( DBPTR [, FIELD [, FIELD, ... ]] )
     Convert a database view to a Matlab structure array
 
@@ -60,8 +59,8 @@ dbput ( DBPTR, VALUE )
 
 dbputv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
     Put the specified values into a Datascope database
-<subsection Forming views>
 
+<subsection Forming views>
 DBPTR = dbjoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer'] )
     Join the specified Datascope database tables
 
@@ -79,19 +78,19 @@ DBPTR = dbtheta ( DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer'] )
 
 dbunjoin ( DBPTR, OUTPUT )
     Unjoin the specified Datascope database view
-<subsection Getting information about the database>
 
+<subsection Getting information about the database>
 DBPTR = dbjoin_keys ( DBPTR1, DBPTR2 **or**DBPTR, TABLE1, TABLE2 )
     Show the inferred join keys between two database tables
 
 QUERY_RESULT = dbquery ( DBPTR, CODE )
     Query a Datascope database for various parameters
-<subsection Evaluating expressions>
 
+<subsection Evaluating expressions>
 RESULT = dbeval ( DBPTR, EXPRESSION [,TYPE] )
     Evaluate an expression on a Datascope database
-<subsection Handling waveform data>
 
+<subsection Handling waveform data>
 ENDTIME = tr_endtime ( TIME, SAMPRATE, NSAMP )
     Calculate endtime from time, sample rate, and number of samples
 
@@ -142,12 +141,12 @@ trsave_wf ( TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append'] )
 
 trsplice ( TRPTR, TOLERANCE )
     Splice together data segments
-<subsection Error handling>
 
+<subsection Error handling>
 clear_register ( [ 'print' ] )
     Clear the Datascope error register
-<subsection Instrument response routines>
 
+<subsection Instrument response routines>
 clear ( DBRESPONSE )
     Dbresponse elimination routine
 
@@ -159,8 +158,8 @@ RESPONSE = eval_response ( DBRESPONSE, OMEGA )
 
 R = free_response ( DBRESPONSE )
     Dbresponse elimination routine
-<subsection Parameter Files>
 
+<subsection Parameter Files>
 clear ( DBPF )
     Dbpf elimination routine
 
@@ -220,8 +219,8 @@ TYPESTRING = pftype ( DBPF )
 
 pfwrite ( DBPF, FILENAME )
     Save a parameter-file object to a file
-<subsection Real-time system connections>
 
+<subsection Real-time system connections>
 PKTID = orbafter ( ORBFD, TIME )
     set ORB connection to first packet after a specified time
 
@@ -251,8 +250,8 @@ NSOURCES = orbselect ( ORBFD, REGEX )
 
 PKTID = orbtell ( ORBFD )
     Ask for the current read-position on an Antelope ORB
-<subsection Special functions>
 
+<subsection Special functions>
 dbadd_remark ( DBPTR, REMARK )
     Add a remark to a datascope Database
 
@@ -267,8 +266,8 @@ REMARK = dbget_remark ( DBPTR )
 
 ID = dbnextid ( DBPTR, IDNAME )
     Get the next integer id for id field from a database
-<subsection Time conversion>
 
+<subsection Time conversion>
 TIMESTRING = epoch2str ( EPOCH, FORMAT )
     Convert epoch time to a string
 

@@ -8,7 +8,6 @@ implements routines for reading and writing waveforms from a database, and
 performing some standard operations on them.  
 
 <subsection Trace objects>
-
 <cdeclarations>
 Dbptr trnew ( char *tr_path, char *schema_name )
     create a new trace database

@@ -22,22 +22,19 @@ void *usermethod ( char *methodname )
 int verbose_exists ()
     check for existence of file named "verbose"
 
-<subsection Macros>
-<cdeclarations>
-
-allot(type *, name, n)
+private allot(type *, name, n)
     malloc space for n (type *) elements, putting the address in name 
     
-reallot(type *, name, n) 
+private reallot(type *, name, n) 
     realloc space for n (type *) elements, putting the address in name 
 
-ALLOTERROR
+private ALLOTERROR
     ALLOTERROR may be defined to be ALLOTDIE (the default), ALLOTCOMPLAIN, or ALLOTREGISTER_ERROR or your own macro with two arguments: the name and n.
 
-SIZE_BUFFER(type *, buffer, sizevar, needed) 
+private SIZE_BUFFER(type *, buffer, sizevar, needed) 
     ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, free the old buffer, and malloc a new buffer
 
-RESIZE_BUFFER(type *, buffer, sizevar, needed) 
+private RESIZE_BUFFER(type *, buffer, sizevar, needed) 
     ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, realloc the old buffer, copying the current contents
 
 private SQR(a)
@@ -57,7 +54,6 @@ private MIN(a,b)
 
 
 <subsection Compression>
-
 int gencompress ( unsigned char **out, int *nout, int *size, int *in, int nsamp, int length )
     generic run length data compression
 
@@ -65,18 +61,17 @@ int genuncompress ( int **out, int *nout, int *size, unsigned char *in, int nbyt
     generic run length data decompression
 
 <subsection Environment>
-
 int envfile ( char *filename )
-    Sets a list of environment variables based on $ANTELOPE/data/env
+    Sets a list of environment variables based on $ANTELOPE/data/env/filename
 
 int fixup_env ( char **envsetup, int nenv, int force )
     Sets a list of environment variables relative to the ANTELOPE directory
+    if force is 0, only unset environment variables are set
 
 char *getantelope (  )
     determine the Antelope root directory
 
 <subsection Data file references>
-
 char *datafile ( char *envname, char *filename )
     return absolute path of file under $ANTELOPE/data 
 
@@ -93,7 +88,6 @@ deprecated void setmapcf ( char *fn )
     set the name of the configuration file for mappath
 
 <subsection State Files>
-
 int bury (  )
     save a program's state file
 
@@ -104,7 +98,6 @@ int resurrect ( char *name, void *variable, int type )
     recover an old value from a state file
 
 <subsection Associative Arrays>
-
 Arr *newarr ( int (*cmp)() )
     Create a new associative array
 
@@ -248,7 +241,6 @@ int pbnsSync ( Bns *bns, char *sync, int nsync )
     synchronize an output stream to a character sequence
 
 <subsection Error handling>
-
 int elog_init ( int argc, char **argv )
     Initialize elog routines
 
@@ -361,7 +353,6 @@ int unmaparr ( Arr **maparr )
     unmap all mapped files
 
 <subsection Filename and Path manipulation>
-
 int abspath ( char *relp, char *absp )
     return an absolute pathname from a relative pathname
 
@@ -391,7 +382,6 @@ FILE *zopen ( char *filename, char *permissions )
     fopen a compressed or uncompressed file
 
 <subsection Strings>
-
 int blank ( char *s )
     return non-zero if string is entirely blank characters
 
@@ -429,7 +419,6 @@ void szcopy ( char *dest, char *source, int n )
     copy exacly n characters, then append null
 
 <subsection Sorting and Searching>
-
 void isort ( char *a, int n, int size, int (*compare)(), void *private )
     insertion sort implementation
 
@@ -443,7 +432,6 @@ int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*
     binary search of index
 
 <subsection User Interaction>
-
 char *ask ( char *format, ... )
     query user for a response
 
@@ -463,7 +451,6 @@ int fdwait ( int fd, int msec )
     wait up to msec milliseconds for pending input
 
 <subsection Hexadecimal dumps>
-
 void Hexdump ( FILE *file, int base, void *memory, int l )
     hex dump a memory buffer, with base added
 
@@ -496,7 +483,6 @@ void printable_string ( char *buf, int n, char *memory, int l )
 
 
 <subsection Byteswap routines>
-
 void swap2 ( unsigned char *from, unsigned char *to, int n )
     swap two bytes
 
@@ -576,9 +562,7 @@ private int rev8 ( char *from, char *to, int n )
     reverse order of 8 bytes
 
 <subsection Lists>
-
 <cdeclarations>
-
 Tbl *newtbl ( int size )
     Initialize a new list (simple interface)
 
@@ -672,7 +656,6 @@ int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
     Compare two lists
 
 <subsection Compression and Checksums>
-
 int ccanada ( int *data, int nsamp, char **compressedp, int *nbytes, int *compressedsz )
     data compression using the Canadian Compression Scheme
 
@@ -698,9 +681,7 @@ int uucsd ( int *data, char **bufp, int bufcnt, int nsamp )
     uncompress data from modified Reftek dataloggers
 
 <subsection Parameter Files>
-
 <cdeclarations>
-
 int pfread ( char *name, Pf **pf )
     read a parameter space
 
@@ -801,7 +782,6 @@ void pfput_tbl ( Pf *pf, char *name, Tbl *value )
     put a list value into a parameter space
 
 <subsection Sorted Lists>
-
 <cdeclarations>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) );
     create a new sorted list

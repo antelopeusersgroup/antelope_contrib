@@ -1,5 +1,4 @@
 
-
 sub structures { 
     chomp ;
     s/\t/ /g ; 

@@ -1,4 +1,14 @@
 
+sub no_index {
+    $No_index = 1 ; 
+    return undef ; 
+}
+
+sub index {
+    $No_index = 0 ; 
+    return undef ; 
+}
+
 sub commands { 
     chomp ;
     s/\t/ /g ; 
@@ -37,6 +47,7 @@ sub parse_command {
 	$name = $1 ; 
 	$in = $' ; 
 	$result = &fontstring ( "FunctionName", "$name "  ) ;
+	$result .= &marker("Index", $name) if ! $No_index ;
 	$result .= &parse_command_arguments($in) ; 
 
     } elsif ( $in =~ /^\s*\(\s*(\w+)\s*\)\s+(\w+)/ ) { 
@@ -45,6 +56,7 @@ sub parse_command {
 	$in = $' ; 
 	$result = &string ( "($instance) ") ;
 	$result .= &fontstring ( "FunctionName", "$name "  ) ;
+	$result .= &marker("Index", $name) if ! $No_index ;
 	$result .= &parse_command_arguments($in) ; 
     } else { 
 	xf_warn ( "parse_command doesn't understand '$in'" ) ; 

@@ -1,5 +1,12 @@
 <initialization ../refhdr.mif>
 <title Antelope C Programmer Reference Guide>
+<author Kent Lindquist>
+<publisher BRTT, Inc>
+<publisher 2045 Broadway, Suite 400>
+<publisher Boulder, CO  80302>
+<publisher www.brtt.com>
+
+<paragraph Body>
 
 <include libstock.ref>
 <include libcoords.ref>
@@ -17,6 +24,8 @@
 <include libpixaddress.ref>
 
 <include fortran.ref>
+
+<no_index>
 
 <include ../tables/time_expressions.ref>
 <include ../tables/table_time.ref>

@@ -34,7 +34,6 @@ int orbresurrect ( int orb, int *last_pktid, double *last_pkttime )
 
 
 <subsection Reading>
-
 int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **packet, int *nbytes, int *bufsize )
     get the packet which from orb, returning pktid, srcname, time, and nbytes of packet data
 
@@ -45,12 +44,10 @@ int orbreap_nd ( int orb, int *pktid, char *srcname, double *time, )
     read next packet from orb, returning pktid, srcname, time, and nbytes of packet data and returning ORB_INCOMPLETE if no packet is available
 
 <subsection Writing>
-
 int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
     write the nbytes of packet data onto orb with specified srcname and time
 
 <subsection Status Information>
-
 int orbtell ( int orb )
     return current pktid position for orb 
 

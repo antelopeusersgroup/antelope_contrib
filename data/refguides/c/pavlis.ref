@@ -3,7 +3,6 @@
 Contributed Code
 <subsection Genloc>
 <cdeclarations>
-
 Arr *dbload_array_table ( Dbptr db, int is, int ie )
     load array geometry info from database
 
