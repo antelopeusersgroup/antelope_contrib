@@ -161,12 +161,10 @@ subroutine register_error ( sysflag, msg )
 <subsection General Programming Utilities>
 <fdeclarations>
 subroutine datafile ( path, envname, filename )
-    return path corresponding to either environment variable envname
-    or file relative to $ANTELOPE/data
+    return path corresponding to either environment variable envname or file relative to $ANTELOPE/data
 
 subroutine datapath ( path, envname, dirname, filename, suffix )
-    return path corresponding to either environment variable envname or
-    dir/file.suffix relative to $ANTELOPE/data
+    return path corresponding to either environment variable envname or dir/file.suffix relative to $ANTELOPE/data
 
 subroutine isort ( a, n, size, compare, pvt )
     insertion sort routine
