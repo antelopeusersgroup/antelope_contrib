@@ -1,4 +1,6 @@
-Antelope contributed-code source distribution
+	*********************************************
+	Antelope contributed-code source distribution
+	*********************************************
 
 This tar file (or the contrib/ directory into which it unpacks)
 contains the source code for the Antelope contributed-code
@@ -17,7 +19,9 @@ feedback, questions, and bug reports for the Antelope contributed-code
 software should be directed not to BRTT, Inc. but to the individual
 source-code authors. 
 
+************************************************************************
 Installation and compilation of the contributed source-code distribution 
+************************************************************************
 
 0) Make sure you have a correctly installed copy of Antelope and that your 
 ANTELOPE environment variable is correctly set.
@@ -36,3 +40,13 @@ ANTELOPE environment variable is correctly set.
 
 If you have already made the source distribution previously, or if you have a 
 fairly recent copy of Antelope, the "make Include" step may be unnecessary. 
+
+				********
+				Web Site
+				********
+
+For further information on the Antelope Contributed-code 
+source-distribution and for current versions, please visit the Antelope
+User's Group web page at 
+
+	http://aesn.geology.indiana.edu/~aug/
