@@ -4,7 +4,7 @@ MAN1 = orbcp.1
 
 cflags =  -g
 ldflags = 
-ldlibs= -lpkt -lorb $(TRLIBS) -lcoords -lstock $(SVR4LIBS)
+ldlibs= $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
 DIRS=

@@ -4,7 +4,6 @@
 
 #include "db.h"
 #include "orb.h"
-#include "pkt.h"
 #include "coords.h"
 
 #ifndef SEEK_SET
