@@ -9,12 +9,12 @@ dl( 'Datascope.so' );
 <subsection Opening a database>
 <function>
 
-dbopen (database, permissions)
+ds_dbopen (database, permissions)
     returns a database pointer to the database
 
 dblookup ($db, database, table, field, row)
     returns a database pointer for the specified database, table, field, and row.
-dbclose ($db)
+ds_dbclose ($db)
     close a database
 
 dbfree ($db)
