@@ -1,0 +1,117 @@
+'\" te
+.TH WEBDBE 3 "$Date$"
+.SH NAME
+webdbe \- HTTP (web) interface to dbe
+.SH SYNOPSIS
+.nf
+not applicable \- requires multiple files to be initiated \- see below
+.fi
+.SH DESCRIPTION
+webdbe is designed to essentially replicate the Tcl/Tk interface to dbe,
+the standard database explorer tool that ships with Antelope, onto the 
+web. It allows users to replicate their database as a web interface, 
+complete with joins, subsets, sorts and other database functionality. 
+Some of the tools currently available include:
+.IP  \(bu
+open a database
+.IP  \(bu
+explore a database
+.IP  \(bu
+subset database records
+.IP  \(bu
+sort database records
+.IP  \(bu
+join database tables
+.SH OPTIONS
+.SH FILES
+The following files are currently required to execute webdbe:
+.IP  \(bu
+webdbe.php \- required, edit. This is where the path to the database 
+and the number of records to return per page are defined. It is also where
+you insert HTML code to determine how the interface will appear to the client.
+.IP  \(bu
+webdbe.inc \- required, do not edit. This has all the functions to open the
+database and return the views based on client input
+.IP  \(bu
+Datascope.so \- required, do not edit. This is the PHP library to Datascope.
+.IP  \(bu
+webdbe_functions.js \- required, do not edit. This javascript file contains
+several functions that control the client side webdbe interface.
+.IP  \(bu
+webdbe_style.css \- required, edit. This is the Cascading Style Sheet (CSS) file 
+that determines the appearance of all elements in the webdbe PHP interface. 
+Do not change the class names, but you can edit the background colors, font 
+familys etc to you own specifications.
+.IP  \(bu
+webdbe_bkgrd.gif \- optional, edit. This is the background image for the 
+interface and is specified in webdbe_style.css in the HTML body tag.
+.IP  \(bu
+webdbe_title.gif \- optional, edit. This is the title image for the interface.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+% more webdbe.php
+
+<?php
+$db = "/opt/antelope/data/db/demo/demo" ; // Database pointer
+$recs_per_page = "20" ; // Records per page returned
+
+if(!extension_loaded( 'Datascope' )) { // Dynamic load Datascope
+        dl( 'Datascope.so' ) ;
+}
+require_once( 'webdbe.inc' ) ; // Get the functionality
+$mydb = ds_dbopen( $db,'r' ) ; // Open the database
+?>
+
+<html>
+  <head>
+    <title>Webdbe - Web Database Explorer</title>
+    <style type="text/css" media="all">@import "webdbe_style.css";</style>
+    <link rel="alternate stylesheet" type="text/css" href="webdbe_style.css" media="screen" />
+    <script language="JavaScript" src="webdbe_functions.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id="header">
+      <img src="webdbe_title.gif" border="0" align="middle" alt="Webdbe logo" />
+      <h1>Webdbe</h1>
+    </div>
+    <div id="content">
+      <div id="webdbeMain">
+        <?php
+          echo webdbe( $mydb ) ;
+        ?>
+      </div>
+    </div>
+  </body>
+</html>
+.fi
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+dbe(1) 
+dbhelp(1) 
+dbintro(3)
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.IP  \(bu
+Currently only one subset at a time works.
+.IP  \(bu
+Subsets of a subset do not define a correct query.
+.IP  \(bu
+Sort function does not work any more.
+.IP  \(bu
+Join function does not work yet.
+.IP  \(bu
+Removed menubar at the top of each page as the functionality does not exist.
+.SH AUTHOR
+Robert Newman and Kent Lindquist
+.\" $Id$
