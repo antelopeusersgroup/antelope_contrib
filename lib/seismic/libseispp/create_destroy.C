@@ -417,9 +417,12 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 			  +	"  database bundle pointer irregularity\n"
 			  +     "All data must have exactly 3 channels per bundle"),
 			  dbh.db,complain));
-		// Use the simplified copy constructor 
-		// Have to assume the parent is not a bundle pointer
-		Datascope_Handle dbhv(bundle.parent,bundle.parent,false);
+		// Use the simplified copy constructor.  This handle
+		// to loop through data.  Sometimes is a bundle pointer
+		// other times it could be one row at a time.  
+		// The handle allows this to happen independent of that
+		// nontrivial detail.
+		Datascope_Handle dbhv(bundle.parent,bundle.parent);
 		// This weird cast is necessary because the
 		// the Time_Series constructor uses a generic handle
 		Database_Handle *rdbhv=dynamic_cast
@@ -576,7 +579,22 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		// Land here when data are not stored in wfdisc but
 		// stored as dmatrix object binary form
 		Metadata md(dbh,md_to_extract,am);
+		// In this situation we have to load the definition of the
+		// transformation matrix into the md object
+		// We must assume the data are externally defined in cardinal coordinates
+		md.put_metadata("U11",1.0);
+		md.put_metadata("U22",1.0);
+		md.put_metadata("U33",1.0);
+		md.put_metadata("U12",0.0);
+		md.put_metadata("U13",0.0);
+		md.put_metadata("U21",0.0);
+		md.put_metadata("U23",0.0);
+		md.put_metadata("U31",0.0);
+		md.put_metadata("U32",0.0);
 		*this=Three_Component_Seismogram(md,false);
+		// these need to be forced
+		components_are_cardinal=true;
+		components_are_orthogonal=true;
 		// Important consistency cross check.
 		string datatype=md.get_string("datatype");
 		if(datatype!="3c")
@@ -734,9 +752,9 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-		// We need a copy of this bundle pointer 
+		// We need a copy of this pointer 
 		Datascope_Handle dbhv(ensemble_bundle.parent,
-			ensemble_bundle.parent,true);
+			ensemble_bundle.parent);
 		// Necessary because the Three_Component_Seismogram
 		// constructor uses a generic handle
 		Database_Handle *rdbhv=dynamic_cast
@@ -769,10 +787,19 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 			// row in this view
 			if(i==0)
 			{
-				DBBundle sta_bundle=dbhv.get_range();
-				Datascope_Handle dbhvsta(sta_bundle.parent,
-						sta_bundle.parent,false);
-				dbhvsta.db.record=sta_bundle.start_record;
+				Datascope_Handle dbhvsta;
+				if(dbhv.is_bundle)
+				{
+					DBBundle sta_bundle=dbhv.get_range();
+					dbhvsta=Datascope_Handle(
+						sta_bundle.parent,
+						sta_bundle.parent);
+					dbhvsta.db.record=sta_bundle.start_record;
+				}
+				else
+				{
+					dbhvsta=dbhv;
+				}
 				Metadata ens_md(dynamic_cast<Database_Handle&>(dbhvsta),
 					ensemble_mdl,am);
 				copy_selected_metadata(ens_md,

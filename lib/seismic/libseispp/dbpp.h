@@ -42,12 +42,13 @@ public:
 class Datascope_Handle : public Database_Handle
 {
 public:
+	Datascope_Handle();
 	Datascope_Handle(string dbname,bool readonly);
 	Datascope_Handle(string dbname, string pfname, 
 			string tag,bool readonly);
 	Datascope_Handle(Dbptr db, Pf *pf, string tag);
 	Datascope_Handle(Datascope_Handle& dh);
-	Datascope_Handle(Dbptr dbi,Dbptr dbip,bool is_bund);
+	Datascope_Handle(Dbptr dbi,Dbptr dbip);
 	~Datascope_Handle();
 	double get_double(string);
 	int get_int(string);

@@ -27,7 +27,7 @@ double Velocity_Model_1d::getv(double zin)
 // database constructor. 
 // property must be P or S.  Errors are thrown for a range of
 // likely problems.
-Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
+Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
     throw(Velocity_Model_1d_dberror)
 {
 	Dbptr dbs1,dbs2;
@@ -40,7 +40,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 	if(property=="S" || property=="P")
 	{
 
-		db=dblookup(db,0,(char *)"mod1d",0,0);
+		Dbptr db=dblookup(dbi,0,(char *)"mod1d",0,0);
 		if(db.table==dbINVALID) 
 			throw(Velocity_Model_1d_dberror(name,
 				"dbopen failure for mod1d table"));
@@ -65,9 +65,9 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 		for(i=0,dbs2.record=0;dbs2.record<nlayers;++dbs2.record,++i)
 		{
 			double vin, zin, gradin;
-			if(dbgetv(dbs2,0,"paramval",vin, 
-				"depth",zin,
-				"grad",gradin,0) == dbINVALID)
+			if(dbgetv(dbs2,0,"paramval",&vin, 
+				"depth",&zin,
+				"grad",&gradin,0) == dbINVALID)
 			{
 				dbfree(dbs1);
 				dbfree(dbs2);

@@ -1898,7 +1898,7 @@ pwstack.ux0 ux0 pwstack real
 pwstack.uy0 uy0 pwstack real
 pwstack.pwfid pwfid pwstack int
 pwstack.sta sta pwstack string
-pwstack.elev elev pwstack string
+pwstack.elev elev pwstack real
 pwstack.lddate lddate pwstack real
 gclgdisk.gridname gridname gclgdisk string
 gclgdisk.dimensions dimensions gclgdisk int
@@ -1966,6 +1966,12 @@ orid orid origin int true
 wfid wfid wfdisc int true
 pwfid pwfid wfprocess int true
 timetype timetype wfprocess string
+ux ux pwstack real 
+uy uy pwstack real
+ux0 ux0 pwstack real 
+uy0 uy0 pwstack real
+ix1 ix1 pwstack int
+ix2 ix2 pwstack int
 }
 
 pf_revision_time 1094848708

@@ -35,7 +35,42 @@ bool dbgroup_used(Tbl *t)
 	}
 	return false;
 }
-		
+/* Tricky function to test if an Antelope Dbptr is a bundle 
+pointer.  It uses a trick to suppress an error describe by 
+Dan Quinlan to glp on Feb. 23, 2005.  
+
+Function returns true of the Dbptr is the result of dbgroup.
+Returns false otherwise.
+*/
+bool is_a_bundle_pointer(Dbptr db)
+{
+	int logmark;
+	Dbptr dbbundle;
+	bool ret;
+	logmark=elog_mark();
+	if(dbgetv(db,0,"bundle",&dbbundle,0)==dbINVALID)
+		ret=false;
+	else
+		ret=true;
+	elog_flush(0,logmark);
+	return(ret);
+}
+// Default constructor needs to initialize the pointer to 
+// mark it as invalid
+Datascope_Handle::Datascope_Handle()
+{
+	db.database=dbINVALID;
+	db.table=dbINVALID;
+	db.field=dbINVALID;
+	db.record=dbINVALID;
+	is_bundle=false;
+	close_on_destruction=false;
+	parent_table.database=dbINVALID;
+	parent_table.table=dbINVALID;
+	parent_table.field=dbINVALID;
+	parent_table.record=dbINVALID;
+}
+	
 /* dbprocess driven constructor for an Antelope_Database (handle) object.
 	dbname = name of database to be openned (always openned r+)
 	pf = pf (parameter file object) pointer containing dbprocess list
@@ -131,12 +166,20 @@ Datascope_Handle::Datascope_Handle(Datascope_Handle& dbi)
 	close_on_destruction=false; // copies should be this by default
 	parent_table=dbi.parent_table;
 }
-// An odd specialized copy constructor for Datascope db.  
-Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip,bool ib)
+/* An odd specialized copy constructor for Datascope db.  
+Handle is constructed using an existing db pointer, dbi, 
+and setting the "parent" for this handle using dbip.  
+A special problem is that the function has to do an independent
+test to see if dbi is a bundle pointer or not to set the is_bundle
+variable.  This is necessary as Datascope has no way to independently
+tell if a Dbptr is a bundle or just a plain table or view.  
+*/
+
+Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip)
 {
 	db = dbi;
 	parent_table = dbip;
-	is_bundle=ib;
+	is_bundle=is_a_bundle_pointer(dbi);
 	close_on_destruction=false; // copies should be this by default
 }
 	

@@ -14,7 +14,6 @@ namespace SEISPP {
  * Written:  May 2003
  */
 
-#ifndef sun
 //This is a standard function on Suns found in sunmath.  
 // I've added this implementation here to get this to compile on linux
 int nint(double x)
@@ -44,7 +43,6 @@ int nint(double x)
                         return(i0);
         }
 }
-#endif
 // Returns true if the requested sample number of a gap or outside the
 // range of the data
 bool Basic_Time_Series::is_gap(int n0)

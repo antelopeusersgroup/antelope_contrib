@@ -134,9 +134,7 @@ public:
 
 enum Time_Reference_Type {absolute,relative};
 
-#ifndef sun
 int nint(double);
-#endif
 // base class
 // includes essential parameters for any time series including gap processing
 class Basic_Time_Series
