@@ -1,0 +1,24 @@
+# PSIZE TOFF PTYPE  HDRTYP HDRSIZ NSTA NCH SRATE SMPSIZ   NET  
+Inputs &Tbl{
+   80     14  B3S2DP BBA      20   1   1   20    20   s4  b3s2 
+   80     14  B3S2SP IPH       0   1   1    -1     -1   -1  b3s2 
+}
+
+#DTYPE    SID NAME  UP?   COMP   SENS TRG? PICK? CALIB
+Site &Tbl{
+ B3S2DP  001   B3S2    Y      1    BHZ    Y Y 6.551734
+ B3S2DP  001   B3S2    Y      2    BHN    Y Y 6.551734
+ B3S2DP  001   B3S2    Y      3    BHE   Y Y 6.551734
+}
+#Ptype STA CH PreSec PostSec LPF LPFP HPF HPFP   STA  LTA THRESH NOS NDEC MAXFS
+Trig &Tbl{
+B3S2DP all all 20           30 0.8    5  5.0   5 0.075   30     5   8    3     5 
+}
+#Ptype STA CH PRESEC NSEC NCOEF NSEG NWIN DTCT ONSET ONSETN WLENL WLENR  LPF HPF IORD
+Onset &Tbl{
+B3S2DP   all all 20   40     7   40    4  2.2     7     20     4.0   4.0   0.8  3.0   6.0
+}
+#PMARK HTCPIP RTCPIP 
+Trans &Tbl{
+B3S2DP   132.239.4.2      131.215.66.9 
+}
