@@ -5,6 +5,7 @@ DATA= \
 	DPG_2AIR \
 	DPG_2WATER \
 	cmg3esp \
+	cmg3esp_nsn \
 	cmg3t \
 	cmg3t_100sec \
 	cmg40t \
