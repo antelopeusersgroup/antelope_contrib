@@ -16,15 +16,12 @@ Usage: FREE_RESPONSE ( DBRESPONSE )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Response *response;
-	mxArray	*address;
-	Tbl	*errors;
-	char	*error;
-	double 	*real_ptr, *imag_ptr; 
-	double	*omega_ptr;
-	int	M, N;
-	int	nelements;
-	int	rc;
-	int	i;
+
+	if( nlhs > 1 ) 
+	{
+		antelope_mexUsageMsgTxt ( USAGE );
+		return;
+	}
 
 	if( nrhs != 1 )
 	{
