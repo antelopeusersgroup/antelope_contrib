@@ -6,6 +6,10 @@
  *
  ***********************************************************************/
 #include "dbtc.h"
+
+Dbptr Dbtc ;
+int Log = 0 ;
+long Foff = 0 ;
  
 main(argc, argv)
 int argc;

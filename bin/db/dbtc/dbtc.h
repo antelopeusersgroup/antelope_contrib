@@ -21,8 +21,8 @@
  
 #define TRIM(s,l) {int i;for(i=l-1;i>0,s[i-1]==' ';i--);s[i]='\0';}
  
-int Log;
-long Foff;
+extern int Log;
+extern long Foff;
 
 typedef struct param {
   int datseg;
@@ -48,7 +48,7 @@ typedef struct data_set {
    float *data;
 } Dset;
 
-Dbptr Dbtc; 
+extern Dbptr Dbtc; 
   
 extern int mean( float *data, int num, double *mean );
 extern int deviation( float *data, int num, double mean, double *dev );

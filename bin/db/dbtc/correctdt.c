@@ -11,6 +11,9 @@
 #define TIM_OFF  20
 #define DATA_OFF 44
 
+int Log = 0 ;
+long Foff = 0 ;
+
 
 Dbptr	dbc, dba, dbw;
 regex_t srcmatch;
