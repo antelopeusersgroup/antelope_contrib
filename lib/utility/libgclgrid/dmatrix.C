@@ -49,7 +49,7 @@ double &dmatrix::operator()(int rowindex, int colindex)
 	throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
 // old, stored in column order
 //  return (ary[colindex+(ncc+1)*(rowindex)]);
-  return (ary[rowindex+(nrr+1)*(colindex)]);
+  return (ary[rowindex+(nrr)*(colindex)]);
 }
 //
 // subtle difference here.  This one returns a pointer to the 
@@ -65,7 +65,7 @@ double* dmatrix::get_address(int rowindex, int colindex)
   if (colindex<0) out_of_range=1;
   if (out_of_range)
         throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
-  ptr = ary + rowindex+(nrr+1)*(colindex);
+  ptr = ary + rowindex+(nrr)*(colindex);
   return(ptr);
 }
 
