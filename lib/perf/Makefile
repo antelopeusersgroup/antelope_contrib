@@ -324,6 +324,7 @@ I77 =   backspace.o close.o dfe.o dolio.o due.o endfile.o err.o fmt.o \
 	uio.o util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o
 
 OBJS= \
+    C_interface.o \
     $(ALLAUX) \
     $(ALLBLAS) \
     $(CB1AUX) \
