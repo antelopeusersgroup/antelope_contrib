@@ -307,13 +307,16 @@ void apply_geometric_static(Three_Component_Seismogram *s, double vel, double el
 void apply_geometric_static(Time_Series *ts);
 void apply_geometric_static(Three_Component_Seismogram *ts);
 //
-//These two functions could be constructors, but I viewed thema s too 
+//These two functions could be constructors, but I viewed them as too 
 //complicated to be an intrinsic part of the objects.
 //
 Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	 char *tag,list<Metadata_typedef>& mdlist) throw(seispp_error);
 Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	 char *tag,list<Metadata_typedef>& mdlist) throw(seispp_error);
+// Inverse of above
+void pfstream_save_3cseis(Three_Component_Seismogram *seis,string tag,
+	string dir, string dfile, Pfstream_handle *pfh) throw(seispp_error);
 // low level i/o routines
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);

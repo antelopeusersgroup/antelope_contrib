@@ -2,15 +2,15 @@
 #include "stock.h"
 #include "pf.h"
 #include "metadata.h"
-list<Metadata_typedef> *pfget_mdlist(Pf *pf,string tag)
+list<Metadata_typedef> pfget_mdlist(Pf *pf,string tag)
 {
-	list<Metadata_typedef> *mdlptr=new list<Metadata_typedef>;
+	list<Metadata_typedef> mdl;
 	Metadata_typedef mdt;	
 	string mdname, mdtype;
 	Tbl *t;
 
 	t = pfget_tbl(pf,(char *)tag.c_str());
-	if(t==NULL) return(mdlptr);  // an empty list means copy nothing
+	if(t==NULL) return(mdl);  // an empty list means copy nothing
 
 	for(int i=0;i<maxtbl(t);++i)
 	{
@@ -33,9 +33,9 @@ list<Metadata_typedef> *pfget_mdlist(Pf *pf,string tag)
 		else if(mdtype=="map" || mdtype=="MAP")
 			mdt.mdt = MDmap;
 
-		mdlptr->push_back(mdt);
+		mdl.push_back(mdt);
 	}
-	return(mdlptr);
+	return(mdl);
 }
 		
 

@@ -95,5 +95,6 @@ typedef struct Metadata_typedef {
 void copy_selected_metadata(Metadata& mdin, Metadata& mdout, 
 		list<Metadata_typedef>& mdlist)
 			throw(Metadata_error);
+list<Metadata_typedef> pfget_mdlist(Pf *pf,string tag);
 
 #endif

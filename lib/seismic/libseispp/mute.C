@@ -1,5 +1,10 @@
 #include "seispp.h"
 
+// This is a series of functions for applying a simple top mute
+// one or more traces.  Overloading is used to sort out type of
+// object this is to apply to.  
+//
+// First for a simple time series
 void apply_top_mute(Time_Series &ts,Top_Mute& mute)
 {
 	int i,i2;
@@ -21,7 +26,8 @@ void apply_top_mute(Time_Series &ts,Top_Mute& mute)
 		ts.s[i2]*=weight;
 	}
 }
-void apply_top_mute_ensemble(Time_Series_Ensemble& t, Top_Mute& mute)
+// For a group of times eries (ensemble)
+void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute)
 {
 	vector<Time_Series>::iterator i;
 	Time_Series& tseries = *i;
@@ -30,7 +36,10 @@ void apply_top_mute_ensemble(Time_Series_Ensemble& t, Top_Mute& mute)
 	// simple why bother  Note the reference makes tseries an anias for *i
 	for(i=t.tse.begin();i!=t.tse.end();++i) apply_top_mute(tseries,mute);
 }
-void apply_top_mute_3c_ensemble(Three_Component_Ensemble &t3ce, Top_Mute& mute)
+// 
+// For an ensemble of 3-component seismograms.
+//
+void apply_top_mute(Three_Component_Ensemble &t3ce, Top_Mute& mute)
 {
 	vector<Three_Component_Seismogram>::iterator i;
 	Three_Component_Seismogram& t3c=*i;

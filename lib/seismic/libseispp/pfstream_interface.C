@@ -178,13 +178,14 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	}
 	return(tceptr);
 }
-void pfstream_save_3cseis(Three_Component_Seismogram& seis,
+void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
 	string tag,
 	string dir,
 	string dfile,
 	Pfstream_handle *pfh) throw(seispp_error)
 {
 	Pf_ensemble *pfe;
+	Three_Component_Seismogram& seis=*sptr;
 
 	pfe = create_Pf_ensemble(3,0); //this function always returns or dies: no error trap
 	try {
