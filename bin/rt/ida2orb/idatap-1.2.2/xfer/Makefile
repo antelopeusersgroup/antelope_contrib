@@ -1,5 +1,4 @@
 # Makefile for xfer contribution to idatap library
-LIB  = ../libidatap.a
 cflags  = -I../include
 include $(ANTELOPEMAKE)
 DIRS=
@@ -21,7 +20,7 @@ SRCS    = \
          tosac.o \
          toseed.o
 OBJS=$(SRCS:.c=.o)
-$(LIB) : $(OBJS)
+../libidatap.a : $(OBJS)
 	$(AR) -qv $@ $(LORDER) $(OBJS) $(TSORT)
 	$(RANLIB) $@
 
