@@ -124,7 +124,6 @@ int main(int argc, char **argv)
 	{
 		elog_die(0,"dbsave failed for 2d grid\n");
 	};
-	delete &g;
 	if(create_3d) {
 	    GCLgrid3d g3d = GCLgrid3d(n1, n2, n3, gridname,
 			lat0, lon0, r0, azimuth_y,
