@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+
+#include "stock.h"
  
 #define DELIMITERS  "/"
 #define NTOKEN  (20)   /* Max number of the subdirectories. Hope it's enough */
