@@ -205,19 +205,3 @@ pack $MainWin.msg.quit $MainWin.msg.lbl $MainWin.msg.msg  $MainWin.msg.hst \
 pack $cmdscroll -side right -fill y
 pack $cmdhistory -fill both -expand 1 
 pack $MainWin.ucp $MainWin.msg -side top -expand 1 -fill both
-
-proc vipf { name } {
-   
-   global cmdhistory crnt_cmd
-
-   set tmpstr [exec epoch now]
-   set timestr [format "%s %s" [lindex $tmpstr 2] [lindex $tmpstr 3]]  
-
-   $cmdhistory insert $crnt_cmd "$timestr\t vi $name"
-   incr crnt_cmd 1
-   exec xterm -bg honeydew -fg maroon -geom 80x40 -e vi $name & 
-  
-   dpadm pfclean 0
- 
-   return 
-}

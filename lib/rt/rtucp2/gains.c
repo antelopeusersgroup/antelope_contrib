@@ -35,7 +35,7 @@ int DAS_gain( ClientData clientData ,
 {
     char cmdstr[256]; 
     char errmsg[512], msg[512];
-    char net[32], sta[32], chan[32], key[256];
+    char key[256];
     int nchan;
     struct DasPreHdr hdr;
     DPars *dp;
@@ -44,9 +44,9 @@ int DAS_gain( ClientData clientData ,
     ushort_t gain, chid, val;
     short tmpval;
     TclOrb *tclorb = (TclOrb *) clientData;
- 
+    Srcname parts ; 
 
-        parse_srcname( srcname, &net[0], &sta[0], &chan[0], 0 );
+	split_srcname(srcname, &parts) ;
      
         memcpy( &key[0], packet, 256);
         tmphdr = (uchar_t *) &key[0];
@@ -109,7 +109,7 @@ fflush(stdout);
 printf("id=%d gain=%d byte=%d\n", chid, gain, chbytes);
 fflush(stdout);
 */
-           sprintf (key, "%s_chan%d\0", sta, chid );
+           sprintf (key, "%s_chan%d\0", parts.src_sta, chid );
            dp = ( DPars *) getarr (tclorb->dpars, key);
            if ( dp != 0) {
 

@@ -21,56 +21,15 @@ Arr *Staname=0;
 Arr *DPOrbs=0;
 Arr *DP=0;
 Arr *BatRec = 0;
+/*
 extern Arr *pfnames;
-
+*/
 
 static int 
 dp_tclCmd _ANSI_ARGS_((ClientData clientData, Tcl_Interp *, int argc, char **argv));
 
 extern void ckfree();
 
-/*
- *--------------------------------------------------------------
- *
- * dprtCmd --
- *
- *	This procedure is invoked to process the "dpv" Tcl
- *	command.
- *
- * Results:
- *	A standard Tcl result.
- *
- *--------------------------------------------------------------
- */
-
-int dpadmCmd(clientData, interp, argc, argv)
-    ClientData clientData;	/* Main window associated with
-				 * interpreter. */
-    Tcl_Interp *interp;		/* Current interpreter. */
-    int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
-{
-
-    char *orb;
-
-    if (argc < 3) {
-	Tcl_AppendResult(interp, "wrong # args:  should be \"", argv[0], " cmd cmdpar ", (char *) NULL);
-	return TCL_ERROR;
-    }
-
-    if( strncmp( argv[1], "pfclean", strlen("pfclean") ) == 0 )  {
-       if( pfnames != 0 ) freearr( pfnames,0 );
-       pfnames = 0;
-    } else if( strncmp( argv[1], "dcalarm", strlen("dcalarm") ) == 0 )  {
-       orb = strdup( argv[2] );
-
-    } else {
-	Tcl_AppendResult(interp, "unknown command - ", argv[1], (char *) NULL);
-	return TCL_ERROR;
-
-    } 
-    return TCL_OK;
-}
 /*
  *--------------------------------------------------------------
  *
