@@ -1,7 +1,3 @@
-#!/bin/sh
-#\
-exec $ANTELOPE/bin/awish $0 "$@"
-
 package require Datascope
 package require Brttplot
 
