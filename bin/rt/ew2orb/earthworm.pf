@@ -1,0 +1,170 @@
+# The Earthworm Installation, Message, and Module ID numbers range from 
+# 0 to 255. Installation-IDs are managed centrally by the USGS. 
+# Message IDs 0-99 are meant to be global, in order to support 
+# data-exchange. Message IDs 100-255 are for use by local installations
+# for messages which do not leave the local system. In the 
+# arrays below, the 'global' keyword is optional, used to 
+# identify globally-defined values which are recommended not to be 
+# changed.
+
+Installations &Arr{
+	INST_WILDCARD    0      global # wildcard value - DO NOT CHANGE!!
+	INST_FAIRBANKS   1 	global
+	INST_UW          2 	global
+	INST_MENLO       3 	global
+	INST_CIT         4 	global
+	INST_UTAH        5 	global
+	INST_MEMPHIS     6 	global
+	INST_UNR         7 	global
+	INST_UCB         8 	global
+	INST_PTWC        9 	global
+	INST_IDA        10 	global
+	INST_NC         11 	global
+	INST_VT         12 	global
+	INST_USNSN      13 	global
+	INST_RICKS      14 	global
+	INST_HVO        15 	global
+	INST_ATWC       16 	global
+	INST_PGE        17 	global
+	INST_PNNL       18 	global
+	INST_PGC        19 	global
+	INST_AVO        20 	global
+	INST_BUTTE      21 	global
+	INST_LAMONT     22 	global
+	INST_SC_CHA     23 	global
+	INST_STLOUIS    24 	global
+	INST_NMT        25	global
+	INST_CVO 	26	global
+	INST_SC_COL     27	global
+	INST_PRSN       28	global
+	INST_TEMP1      29	global
+	INST_SOAPP      30	global
+	INST_UO         31	global
+	INST_USBR       32	global
+	INST_UTIG       33	global
+	INST_PSU        34	global
+	INST_INEL       35	global
+	INST_SISMALP    36	global
+	INST_MIT        37	global
+	INST_GSC        38	global
+	INST_IRISDMC    39	global
+	INST_BOZEMAN    40	global
+	INST_UTK        41	global
+	INST_CDWR       42	global
+	INST_WO         43	global
+	INST_NAZ        44	global
+	INST_MVO        45	global
+	INST_LASN       46	global
+	INST_NAU        47	global
+	INST_KO         48	global
+	INST_DIGITEXX   49	global
+	INST_DTA        50	global
+	INST_STACHELTIER 51	global
+	INST_CWB        52	global
+	INST_EDI        53	global
+	INST_MI         54	global
+	INST_URBAN-HZ   55 	global
+	INST_EREBUS     56 	global
+	INST_SGS        57 	global
+	INST_UNAVCO     58 	global
+	INST_USGSMAG    59 	global
+	INST_KACST	60	global #King Abdulaziz City for Science & Tech.
+	INST_OVMP       61	global #Ob. Vol. de la Montagne Pelee	
+	INST_QUITO      100	global
+	INST_INETER     101	global
+	INST_CENAPRED   102	global
+	INST_RABAUL     103	global
+	INST_COLIMA     104	global
+	INST_SNET       105	global
+	INST_RAINIERAFM 150	global
+	INST_UNKNOWN    255	global
+}
+
+Messages &Arr{
+
+	TYPE_WILDCARD        0   global # wildcard value - DO NOT CHANGE!!!   
+	TYPE_ADBUF           1   global # multiplexed waveforms from DOS adsend
+	TYPE_ERROR           2   global # error message
+	TYPE_HEARTBEAT       3   global # heartbeat message
+	TYPE_NANOBUF         5   global # single-channel waveforms, nanometrics
+	TYPE_PICK2K         10   global # P-wave arrival time with 4 digit year
+	TYPE_CODA2K         11   global # coda info (plus station code) 
+#	TYPE_PICK2          12   global # P-wave arrival time 
+#	TYPE_CODA2          13   global # coda info from picker & pick_ew
+	TYPE_HYP2000ARC     14   global # hyp2000 event archive msg 
+	TYPE_H71SUM2K       15   global # hypo71-format hypocenter summary msg 
+#	TYPE_HINVARC        17   global # hypoinverse event archive msg 
+#	TYPE_H71SUM         18   global # hypo71-format summary msg 
+	TYPE_TRACEBUF       20   global # single-channel waveforms 
+	TYPE_LPTRIG         21   global # single-channel long-period trigger 
+	TYPE_CUBIC          22   global # cubic-format summary msg 
+	TYPE_CARLSTATRIG    23   global # single-channel trigger 
+#	TYPE_TRIGLIST       24   global # trigger-list msg 
+	TYPE_TRIGLIST2K     25   global # trigger-list msg (with 4-digit year) 
+	TYPE_TRACE_COMP_UA  26   global # compressed waveforms from compress_UA
+	TYPE_STRONGMOTION   27   global # single-instr. peak A,V,D, Spectral A. 
+	TYPE_MAGNITUDE      28   global # event magnitude: summary plus station 
+	TYPE_STRONGMOTIONII 29   global # event strong motion parameters
+	TYPE_SPECTRA       100
+	TYPE_QUAKE2K       101
+	TYPE_LINK          102
+	TYPE_EVENT2K       103
+	TYPE_PAGE          104
+	TYPE_KILL          105
+	TYPE_DSTDRINK      106
+	TYPE_RESTART       107
+	TYPE_REQSTATUS     108
+	TYPE_STATUS        109
+	TYPE_EQDELETE      110
+}
+
+Modules &Arr{
+	MOD_WILDCARD        0   global # wildcard value - DO NOT CHANGE
+	MOD_ADSEND_A        1
+	MOD_ADSEND_B        2
+	MOD_ADSEND_C        3
+	MOD_PICKER_A        4
+	MOD_PICKER_B        5
+	MOD_PICK_EW         6
+	MOD_COAXTORING_A    7
+	MOD_COAXTORING_B    8
+	MOD_RINGTOCOAX      9
+	MOD_BINDER_EW      10
+	MOD_DISKMGR        11
+	MOD_STATMGR        14
+	MOD_REPORT         15
+	MOD_STARTSTOP      18
+	MOD_STATUS         19
+	MOD_NANOBOX        20
+	MOD_WAVESERVER     21
+	MOD_PAGERFEEDER    23
+	MOD_EQPROC         24
+	MOD_TANKPLAYER     25
+	MOD_EQALARM_EW     26
+	MOD_EQPRELIM       27
+	MOD_IMPORT_GENERIC 28
+	MOD_EXPORT_GENERIC 29
+	MOD_GETDST         31
+	MOD_LPTRIG_A       32
+	MOD_LPTRIG_B       33
+	MOD_TRG_ASSOC      34
+	MOD_AD_DEMUX_A     35
+	MOD_AD_DEMUX_B     36
+	MOD_VDL_EW         37
+	MOD_CUBIC_MSG      38
+	MOD_GAPLIST        39
+	MOD_GETTERW        40
+	MOD_WAVESERVERV    41
+	MOD_NANO2TRACE     42
+	MOD_GETDST2        43
+	MOD_EXPORT_SCN     44
+	MOD_ARC2TRIG       45
+	MOD_RCV_EW         48
+	MOD_HELI1	   49
+	MOD_ORB2EWORM	   50
+	MOD_EWORM2ORB	   51
+	MOD_EXPORT_GENERIC2 52
+	MOD_PGC_EXPORT_KENT 145
+	MOD_PGC_EXPORT_KENT_COMP 165
+	MOD_UNKNOWN	  255
+}

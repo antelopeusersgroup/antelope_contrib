@@ -1,0 +1,186 @@
+.TH ORB2EW 1 "$Date$"
+.SH NAME
+orb2ew \- Export waveform data from an orb to Earthworm
+.SH SYNOPSIS
+.nf
+\fBorb2ew \fP[-p \fIpfname\fP] \fIorb\fP
+.fi
+.SH DESCRIPTION
+The \fBorb2ew\fP module provides one or more Earthworm export_generic style
+server instances, to which import clients can connect to request data.
+
+The module
+is multithreaded, meaning that one instance can export data on several
+ports at once. The module is also dynamically reconfigurable,
+which means that changes to the parameter file are monitored and
+noticed automatically. There should be no need to stop and restart the program
+after  removing an old server or adding a new one.
+
+The \fIorb\fP name to which to write data is specified on the command line. After
+that, most of the \fBorb2ew\fP configuration is in the \fBorb2ew\fP parameter file,
+named \fBorb2ew\fP.pf by default. 
+
+A sample parameter file is included below. The parameter
+program_loglevel controls the overall level of logging output for the
+program. The options for this setting are "quiet", "verbose", and
+"veryverbose". The latter is meant for debugging purposes, and will
+generate a great deal of output (several lines for each incoming
+packet).
+
+The bulk of the parameter file is contained in the 'export_servers' array.
+This array in turn contains one array for each data-export server
+desired. Each one of these export servers must have a name, which is
+used to group the parameters for that connection in the export_servers
+array. This name may be chosen at user discretion (usually as a useful
+mnemonic for the particular data connection). The name will be used in
+a number of places throughout the program when labeling output messages.
+
+Before describing in detail the contents of each export_servers subarray,
+we should note the 'defaults' array in the parameter file. This array
+specifies the default parameters for Earthworm export connections.
+If one of the parameters does not show up in the subarray describing
+a particular connection, the value from the defaults array is used. Values in the
+specific subarrays for each connection will override the defaults. A
+description of the connection parameters follows:
+
+.IP server_ipaddress
+This gives the IP address of the Earthworm server from which to export data.
+The default is to leave this blank, in which case all network interfaces 
+on the machine are valid for connections. On a multi-homed host, users 
+may wish to restrict the outgoing IP addresses on which connections will 
+be accepted. This is accomplished by specifying the IP address (in 
+a.b.c.d dotted-decimal notation) of the desired network interface.
+
+.IP server_port
+This is the TCP port-number on which a server thread is is serving data.
+
+.IP send_heartbeat_sec
+The \fBorb2ew\fP import module exchanges heartbeats with the remote import
+module at regular intervals. This parameter specifies the interval, in seconds,
+at which these heartbeats are sent by \fBorb2ew\fP.
+
+.IP send_heartbeat_string
+The heartbeat sent out by \fBorb2ew\fP must be a string which matches the
+value being expected by the remote import module.
+
+.IP expect_heartbeat_sec
+This parameter describes, in seconds, how often to expect an incoming
+heartbeat from the remote import module. Usually this value is set to
+an amount of time notably longer than the actual import heartbeat interval,
+to avoid unnecessary warning messages. If \fBorb2ew\fP does not receive
+a heartbeat within this interval, it will issue a warning message and
+continue.
+
+.IP export_heartbeat_string
+This parameter is a regular expression (in the style of regex(5))
+which the incoming heartbeat string must match.
+
+.IP my_inst
+This is the Earthworm institution code for \fBorb2ew\fP to report itself
+as when it sends out heartbeats. This institution code is translated
+to an integer value by \fBorb2ew\fP, according to the contents of the
+earthworm.pf parameter file (For more details, see the man page earthworm(5)).
+
+.IP my_mod
+This is the Earthworm module id number for \fBorb2ew\fP to report itself
+as when it sends out heartbeats. This module code is translated
+to an integer value by \fBorb2ew\fP, according to the contents of the
+earthworm.pf parameter file (For more details, see the man page earthworm(5)).
+
+.IP loglevel
+This the level of logging information for the export thread in
+question to put out. The allowed values are "quiet", "verbose", and
+"veryverbose". If this option is not specified, it defaults to the
+value of program_loglevel. As with the other parameters, this can
+be changed dynamically, which can be useful to turn on veryverbose output
+for a connection on which the operator has a question, then turn
+off veryverbose output after resolution.
+
+.IP select
+Outgoing stations (orb source-names, i.e. net_sta_chan, before they're
+translated to any new names) which match this regular expression will
+be allowed to go out to the remote Earthworm module. The default, which
+is to leave this blank, allows all sources on the orb to go out.
+
+.IP reject
+Outgoing stations (orb source-names, i.e. net_sta_chan, before they're
+translated to any new names) which match this regular expression will
+be rejected and not allowed to go out over the export connection. The default,
+which is to leave this blank, allows all sources on the orb to go out.
+
+.IP srcname_morph
+This table contains search-and-replace patterns used to rename channels
+of seismic data. If left empty, the output source-names of stations
+will correspond to the names taken out of the earthworm packets. If desired,
+individual stations may also renamed with entries like
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+        /CN_PFB_HHE/CN_TEST_BHE/
+
+.fi
+.in
+.ft R
+These patterns are actually fed to the morphtbl(3) routine, which means
+that for the advanced user they may be regular expressions. For example,
+the entry below would map all incoming data in the XX network to the
+CN network:
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+        /XX_(.*)/CN_$1/
+
+.fi
+.in
+.ft R
+All matching patterns listed in the srcname_morph table will be applied.
+For further details please see the documentation on the morphtbl(3) routine.
+
+.SH OPTIONS
+.IP "-p pfname"
+Specify an alternate parameter-file name for the \fIorb\fP to earthworm module.
+The default parameter file is "\fBorb2ew\fP.pf".
+.SH FILES
+.IP orb2ew.pf
+.IP earthworm.pf
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH EXAMPLE
+.SH "SEE ALSO"
+.nf
+orbserver(1), ew2orb(1), earthworm(5)
+.fi
+.SH "BUGS AND CAVEATS"
+
+\fBorb2ew\fP and ew2orb replace the eworm2orb and orb2eworm programs, which
+are deprecated.
+
+The translations of earthworm logo fields (institute, module, and type)
+are set when first encountered and do not update even when the
+underlying earthworm.pf parameter file changes. If changes are made
+to these translations, the program must be restarted for them to be
+recognized. Also, despite being specified in the earthworm.pf parameter
+file, the INST_WILDCARD, MOD_WILDCARD, and TYPE_WILDCARD values are
+hard-wired to zero as per Earthworm definition. The exception is if
+one of the earthworm-logo numbers is not found and continually
+shows up as, e.g., MOD_165. In this case the earthworm.pf parameter
+file is checked upon each translation. Note that this can introduce
+a small run-time inefficiency; it's advantageous to have translations
+present in earthworm.pf for all modules, message types, and installations
+encountered.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
