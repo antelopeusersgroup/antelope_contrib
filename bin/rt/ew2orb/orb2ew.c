@@ -42,6 +42,8 @@ typedef struct ExportServerThread {
 	int	send_heartbeat_sec;	
 	double	last_heartbeat_sent;
 	double	last_heartbeat_received;
+	char	select[STRSZ];
+	char	reject[STRSZ];
 	char	my_inst_str[STRSZ];
 	char	my_mod_str[STRSZ];
 	int	my_inst;	
@@ -194,6 +196,9 @@ new_ExportServerThread( char *name )
 	allot( ExportServerThread *, es, 1 );
 
 	strcpy( es->name, name );
+	strcpy( es->select, "" );
+	strcpy( es->reject, "" );
+
 	es->update = 1;
 	es->new = 1;
 	es->stop = 0;
@@ -696,6 +701,30 @@ orb2ew_export( void *arg )
 		thr_exit( (void *) &status );
 	}
 
+	if( strcmp( et->es->select, "" ) ) {
+
+		rc = orbselect( et->orbfd, et->es->select );
+		
+		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
+
+			elog_notify( 0, 
+			  "'%s': %d sources selected after orbselect\n", 
+			  et->name, rc );
+		}
+	}
+
+	if( strcmp( et->es->reject, "" ) ) {
+
+		rc = orbreject( et->orbfd, et->es->reject );
+		
+		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
+
+			elog_notify( 0, 
+			  "'%s': %d sources selected after orbreject\n", 
+			  et->name, rc );
+		}
+	}
+
 	et->bnsin = bnsnew( et->so, BNS_BUFFER_SIZE ); 
 	et->bnsout = bnsnew( et->so, BNS_BUFFER_SIZE ); 
 
@@ -841,7 +870,7 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		rc = thr_create( NULL, 0, orb2ew_export, 
 				  (void *) et, 
-				  THR_DETACHED|THR_SUSPENDED,
+				  THR_DETACHED,
 				  &et->thread_id );
 
 		if( rc != 0 ) {
@@ -937,6 +966,14 @@ update_export_server_thread( char *name, Pf *pf )
 			      DEFAULT_EXPECT_HEARTBEAT_STRING );
 
 		pfput_string( es->pf, 
+			      "select", 
+			      DEFAULT_SELECT );
+
+		pfput_string( es->pf, 
+			      "reject", 
+			      DEFAULT_REJECT );
+
+		pfput_string( es->pf, 
 			      "loglevel", 
 			      Program_loglevel );
 
@@ -970,6 +1007,12 @@ update_export_server_thread( char *name, Pf *pf )
 	pfreplace( pf, es->pf, "defaults{expect_heartbeat_string}",
 			       "expect_heartbeat_string", "string" );
 
+	pfreplace( pf, es->pf, "defaults{select}",
+			       "select", "string" );
+
+	pfreplace( pf, es->pf, "defaults{reject}",
+			       "reject", "string" );
+
 	pfreplace( pf, es->pf, "defaults{loglevel}",
 			       "loglevel", "string" );
 
@@ -995,6 +1038,12 @@ update_export_server_thread( char *name, Pf *pf )
 	sprintf( key, "export_servers{%s}{expect_heartbeat_string}", name );
 	pfreplace( pf, es->pf, key, "expect_heartbeat_string", "string" );
 
+	sprintf( key, "export_servers{%s}{select}", name );
+	pfreplace( pf, es->pf, key, "select", "string" );
+
+	sprintf( key, "export_servers{%s}{reject}", name );
+	pfreplace( pf, es->pf, key, "reject", "string" );
+
 	sprintf( key, "export_servers{%s}{loglevel}", name );
 	pfreplace( pf, es->pf, key, "loglevel", "string" );
 
@@ -1006,9 +1055,11 @@ update_export_server_thread( char *name, Pf *pf )
 
 	if( es->new ) {
 
+		add_export_server_thread( name, es );
+
 		ret = thr_create( NULL, 0, orb2ew_export_server, 
 				  (void *) name, 
-				  THR_DETACHED|THR_SUSPENDED,
+				  THR_DETACHED,
 				  &es->thread_id );
 
 		if( ret != 0 ) {
@@ -1019,15 +1070,9 @@ update_export_server_thread( char *name, Pf *pf )
 			
 			mutex_unlock( &es->es_mutex );
 
-			free_ExportServerThread( &es );
+			delete_export_server_thread( es );
 
 			return;
-
-		} else {
-
-			add_export_server_thread( name, es );
-
-			thr_continue( es->thread_id );
 		}
 
 	} else if( pfcmp( oldpf, es->pf ) ) {

@@ -75,6 +75,16 @@ continue.
 This parameter is a regular expression (in the style of regex(5))
 which the incoming heartbeat string must match.
 
+.IP select
+This parameter is a string which is fed to the orbselect(3) call
+after each orb connection is established. If the parameter is left 
+blank, no orbselect(3) call is made. 
+
+.IP reject
+This parameter is a string which is fed to the orbreject(3) call
+after each orb connection is established. If the parameter is left 
+blank, no orbreject(3) call is made. 
+
 .IP my_inst
 This is the Earthworm institution code for \fBorb2ew\fP to report itself
 as when it sends out heartbeats. This institution code is translated
