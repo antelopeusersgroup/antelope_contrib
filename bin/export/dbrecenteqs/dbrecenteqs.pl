@@ -1808,6 +1808,13 @@ sub pixfile_convert {
 		       "-size $size_pixels\\x$size_pixels -colors $ncolors " .
 		       "$Mapspec{psfile} $Mapspec{pixfile}"; 
 
+	} elsif( $State{pixfile_conversion_method} eq "none" ) {
+
+		if( $opt_v ) {
+
+			elog_notify( "Skipping pixfile conversion at user request\n" );
+		}
+
 	} else {
 
 		 die( "pixfile_conversion_method " . 
@@ -1815,16 +1822,21 @@ sub pixfile_convert {
 		     "not supported." );
 	}
 
-	if( $opt_v ) {
-		elog_notify "$cmd\n";
-	}
-	system( $cmd );
+	if( $State{pixfile_conversion_method} ne "none" ) {
 
-	$Mapspec{clean_image} = Image::Magick->new();
-	$Mapspec{clean_image}->Read( $Mapspec{pixfile} );
+		if( $opt_v ) {
+			elog_notify "$cmd\n";
+		}
+		system( $cmd );
+
+		if( defined( $Image::Magick::VERSION ) ) {
+			$Mapspec{clean_image} = Image::Magick->new();
+			$Mapspec{clean_image}->Read( $Mapspec{pixfile} );
 	
-	%Mapspec = %{set_map_width( \%Mapspec )};
-	%Mapspec = %{set_map_scaling( \%Mapspec )};
+			%Mapspec = %{set_map_width( \%Mapspec )};
+			%Mapspec = %{set_map_scaling( \%Mapspec )};
+		}
+	}
 
 	return \%Mapspec;
 }
