@@ -116,13 +116,16 @@ sub setup_State {
 		"pstext",
 		"grdcut",
 		"grdgradient",
-		"grdimage"
+		"grdimage",
+		"gmtdefaults",
 		);
 
 	foreach $helper ( @helpers ) {
 		next if check_for_executable( $helper );
 		die( "Couldn't find executable named $helper\n" );
 	}
+
+	check_gmt_units();
 }
 
 sub check_dir_dfile {
@@ -481,6 +484,19 @@ sub more_ps {
 	} else {
 		elog_complain "Unknown position $position in &more_ps\n";
 		return "";
+	}
+}
+
+sub check_gmt_units {
+	my( $cmd ) = "gmtdefaults -L | grep MEASURE_UNIT"; 
+
+	my( $units ) = `$cmd`;
+	chomp( $units );
+	$units =~ s/.*MEASURE_UNIT\s+=\s+//;
+
+	if( $units ne "inch" ) {
+
+		elog_die "Please set your GMT MEASURE_UNIT to 'inch' (see gmtset(1) and gmtdefaults(1) man pages). Bye.\n";
 	}
 }
 
