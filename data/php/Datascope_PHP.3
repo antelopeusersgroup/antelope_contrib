@@ -43,6 +43,54 @@ $db = ds_dbopen ( $database, 'r+' ) ;
 .fi
 .in
 .ft R
+.IP "\fBds_dbopen_database\fP ( database, permissions )"
+Returns a database pointer to the specified database. Same as ds_dbopen
+except it also understands a full table pathname, in which case the 
+returned pointer will point to the opened table. 
+.ft CW
+.in 2c
+.nf
+
+$db = ds_dbopen_database ( $database, 'r+' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBds_dbopen_table\fP ( database, permissions )"
+Returns a database pointer to the specified database table. A name of "-" 
+reads from stdin. 
+.ft CW
+.in 2c
+.nf
+
+$db = ds_dbopen_table ( $database, 'r+' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBds_dbtmp\fP ( schema )"
+Returns a database pointer to a temporary database of the specified schema
+.ft CW
+.in 2c
+.nf
+
+$db = ds_dbtmp ( 'rt1.0' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBds_dbcreate\fP ( filename [, schema [, dbpath [, description [, detail ]]]] )"
+Create a database descriptor in the specified filename. 
+.ft CW
+.in 2c
+.nf
+
+$db = ds_dbcreate ( 'sample_database', 'rt1.0', 
+		    'opt/antelope/data/db/demo/{demo}' ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdblookup\fP ( $db, database, table, field, record )"
 Returns a database pointer for the specified database, table, field,
 and record. The names should be specified as strings, or left
@@ -83,12 +131,20 @@ $dbbundle = split ( ' ', $dbbundle ) ;
 .in
 .ft R
 .IP "\fBpfget\fP ( pfname, key )"
-Get the value for the named key in the parameter named pfname:
+Get the value for the named key in the parameter named pfname. pfget
+takes either single parameter names, or extended-syntax names in the 
+style of pfresolve(3). If the requested parameter is a parameter-file
+table or array, the result is returned as a PHP array or associative-array, 
+with nested structures where appropriate. If the key is left as the 
+empty string, the entire parameter file is returned as a nested 
+data structure. 
 
 .nf
 
 print pfget( "dbrecenteqs", "max_num_eqs" ) . "\\n";
 print pfget( "dbrecenteqs", "other_region_links{Hawaii}" ) . "\\n";
+
+print_r pfget( "dlmon", "" );
 
 .fi
 .in
@@ -375,6 +431,54 @@ Convert an elapsed time in seconds to a string representation
 .nf
 
 $elapsed = strtdelta ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbwrite_view\fP ( $db, $filename )"
+Save a database view to a file
+.ft CW
+.in 2c
+.nf
+
+	$db = ds_dbopen( "testdb", "r" );
+
+	$db = dblookup( $db, "", "origin", "", "" );
+
+	$db = dbprocess( $db, "dbsubset ml > 3" );
+
+	dbwrite_view( $db, "testdb.precious" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbread_view\fP ( $filename [, $viewname] )"
+Read a database view from the given filename, optionally specifying the name for the view
+.ft CW
+.in 2c
+.nf
+
+	$db = dbread_view( "testdb.precious" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbsave_view\fP ( $db )"
+Save a database view as part of the database
+.ft CW
+.in 2c
+.nf
+
+	$db = ds_dbopen( "testdb", "r" );
+
+	$db = dblookup( $db, "", "origin", "", "" );
+
+	$db = dbprocess( $db, "dbsubset ml > 3" );
+
+	dbsave_view( $db );
 
 .fi
 .in

@@ -39,6 +39,10 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dblookup, NULL)		
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(ds_dbopen, NULL)		
+	PHP_FE(ds_dbopen_database, NULL)		
+	PHP_FE(ds_dbopen_table, NULL)		
+	PHP_FE(ds_dbtmp, NULL)		
+	PHP_FE(ds_dbcreate, NULL)		
 	PHP_FE(dbfree, NULL)		
 	PHP_FE(ds_dbclose, NULL)		
 	PHP_FE(dbdestroy, NULL)		
@@ -48,6 +52,9 @@ function_entry Datascope_functions[] = {
 	PHP_FE(db2xml, NULL)		
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
+	PHP_FE(dbwrite_view, NULL)		
+	PHP_FE(dbread_view, NULL)		
+	PHP_FE(dbsave_view, NULL)		
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
 	PHP_FE(strtdelta, NULL)		
@@ -354,7 +361,7 @@ PHP_FUNCTION(template)
 }
 /* }}} */
 
-/* {{{ proto array pfget( string pfname, string pfkey ) */
+/* {{{ proto mixed pfget( string pfname, string pfkey ) */
 PHP_FUNCTION(pfget)
 {
 	int	argc = ZEND_NUM_ARGS();
@@ -538,6 +545,126 @@ PHP_FUNCTION(trloadchan)
 }
 /* }}} */
 
+
+/* {{{ proto int dbwrite_view( array db, string filename ) */
+PHP_FUNCTION(dbwrite_view)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*filename;
+	int	filename_len;
+	char	errmsg[STRSZ];
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+	FILE	*fpview;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &filename, &filename_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( ( fpview = fopen( filename, "w" ) ) == NULL ) {
+		
+		sprintf( errmsg, "Failed to open file '%s'", filename );
+		zend_error( E_ERROR, errmsg );
+	}
+
+	rc = dbwrite_view( db, fpview );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int dbsave_view( array db ) */
+PHP_FUNCTION(dbsave_view)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbsave_view( db );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto array dbread_view( string filename [, string viewname] ) */
+PHP_FUNCTION(dbread_view)
+{
+	Dbptr	db;
+	char	*filename;
+	int	filename_len;
+	char	*name = 0;
+	int	name_len;
+	char	errmsg[STRSZ];
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+	FILE	*fpview;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 1 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+						&filename, &filename_len )
+	    	== FAILURE) {
+
+			return;
+		}
+
+	} else if( argc == 2 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+						&filename, &filename_len,
+						&name, &name_len )
+	    	== FAILURE) {
+
+			return;
+		}
+	}
+
+	if( ( fpview = fopen( filename, "r" ) ) == NULL ) {
+		
+		sprintf( errmsg, "Failed to open file '%s'", filename );
+		zend_error( E_ERROR, errmsg );
+	}
+
+	rc = dbread_view( fpview, &db, name );
+
+	clear_register( 1 );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
 
 /* {{{ proto string db2xml( array db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]]  ) */
 PHP_FUNCTION(db2xml)
@@ -1830,6 +1957,164 @@ PHP_FUNCTION(ds_dbopen)
 	dbopen( dbname, perm, &db ); 
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array ds_dbopen_database( string dbname, string permissions ) */
+PHP_FUNCTION(ds_dbopen_database)
+{
+	Dbptr	db;
+	char	*dbname = NULL;
+	int	dbname_len;
+	char	*perm = NULL;
+	int	perm_len;
+	int	argc = ZEND_NUM_ARGS();
+	
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+					&dbname, &dbname_len, 
+					&perm, &perm_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	dbopen_database( dbname, perm, &db ); 
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array ds_dbopen_table( string dbname, string permissions ) */
+PHP_FUNCTION(ds_dbopen_table)
+{
+	Dbptr	db;
+	char	*dbname = NULL;
+	int	dbname_len;
+	char	*perm = NULL;
+	int	perm_len;
+	int	argc = ZEND_NUM_ARGS();
+	
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+					&dbname, &dbname_len, 
+					&perm, &perm_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	dbopen_table( dbname, perm, &db ); 
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array ds_dbtmp( string schema ) */
+PHP_FUNCTION(ds_dbtmp)
+{
+	Dbptr	db;
+	char	*schema = NULL;
+	int	schema_len;
+	int	argc = ZEND_NUM_ARGS();
+	
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+				   &schema, &schema_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	db = dbtmp( schema );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto int ds_dbcreate( string schema ) */
+PHP_FUNCTION(ds_dbcreate)
+{
+	Dbptr	db;
+	char	*filename = NULL;
+	int	filename_len;
+	char	*schema = NULL;
+	int	schema_len;
+	char	*dbpath = NULL;
+	int	dbpath_len;
+	char	*description = NULL;
+	int	description_len;
+	char	*detail = NULL;
+	int	detail_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+	
+	if( argc < 1 || argc > 5 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( argc == 1 &&
+		zend_parse_parameters( argc TSRMLS_CC, "s", 
+				   &filename, &filename_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 2 && 
+		zend_parse_parameters( argc TSRMLS_CC, "ss", 
+				   &filename, &filename_len,
+				   &schema, &schema_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 3 && 
+		zend_parse_parameters( argc TSRMLS_CC, "sss", 
+				   &filename, &filename_len,
+				   &schema, &schema_len,
+				   &dbpath, &dbpath_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 4 && 
+		zend_parse_parameters( argc TSRMLS_CC, "ssss", 
+				   &filename, &filename_len,
+				   &schema, &schema_len,
+				   &dbpath, &dbpath_len,
+				   &description, &description_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 5 && 
+		zend_parse_parameters( argc TSRMLS_CC, "sssss", 
+				   &filename, &filename_len,
+				   &schema, &schema_len,
+				   &dbpath, &dbpath_len,
+				   &description, &description_len,
+				   &detail, &detail_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = dbcreate( filename, schema, dbpath, description, detail );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 
