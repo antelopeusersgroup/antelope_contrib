@@ -4,7 +4,8 @@
 #include "coords.h" 
 #include "pf.h"
 #include <float.h>
-#include <perf.h>
+#include <sunmath.h>
+#include <sunperf.h>
 
 extern int GenlocVerbose ;
 #undef register_error
@@ -995,6 +996,8 @@ int ggnloc (Hypocenter initial_location,
 		for(i=0;i<m;++i)
 			for(j=0;j<np;++j) 
 				U[i][j] = A [i][j];
+		if(np>0)
+		{
 		i = svdcmp(U,m,np,s,V);
 		if(i < 0 ) 
 		{
@@ -1084,6 +1087,22 @@ int ggnloc (Hypocenter initial_location,
 			stack_mesg = strdup("Error:  critical data loss");
 			pushtbl(*reason_converged,stack_mesg);
 			return(-3);
+		}
+		}
+		else
+		{
+		/* This is a special block is for all coordinates fixed */
+			current_location.rms_raw
+			   =calculate_rms(r,natimes);
+			current_location.rms_weighted
+			   =calculate_weighted_rms(b,w,reswt,m);
+			current_location.degrees_of_freedom=m;
+			current_location.number_data=m;
+			/*I'm leaving interquartile blank here hoping
+			this won't cause problems downstream.*/
+			stack_mesg=strdup("All coordinates fixed");
+			pushtbl(*reason_converged, stack_mesg);
+			break;
 		}
 
 		/* We need to update the current location, and this includes 

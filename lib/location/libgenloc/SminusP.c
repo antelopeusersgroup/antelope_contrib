@@ -374,20 +374,12 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 				a1=(Arrival *)getarr(editlist,key);
 				free(key);
 				if(a1==NULL) 
-				{
-					elog_notify(0,"Station %s has a bad clock but cannot construct composite phase %s because %s phase is not defined\n",
-						sta,phasename,phase1);
 					continue;
-				}
 				key = make_staphase_key(sta,phase2);
 				a2=(Arrival *)getarr(editlist,key);
 				free(key);
 				if(a2==NULL)
-				{
-					elog_notify(0,"Station %s has a bad clock but cannot construct composite phase %s because %s phase is not defined\n",
-						sta,phasename,phase1);
 					continue;
-				}
 
 				allot(Arrival *,a,1);
 				/* Arbitrarily set arid
