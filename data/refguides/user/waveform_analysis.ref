@@ -122,6 +122,21 @@ dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
 -f format
 </options>
 
+alter_timestamps [-demnquv] [-p pf] db[.table]
+alter_timestamps [-unquv] [-f foreign] [-p pf] miniseed
+    change waveform and arrival timestamps for clock problems
+<options>
+-d	dump corrections table
+-e	expert mode: ignore checks on corrections table
+-f foreign	specify foreignkeys database
+-m	correct the miniseed along with the wfdisc table
+-n	just show what would happen
+-p pf	use an alternate parameter file pf
+-q	interactively examine time corrections by entering a station and time
+-u	undo previously applied corrections
+-v	be more verbose
+</options>
+
 <subsection Analysis>
 dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
     database array processing program

@@ -46,6 +46,9 @@ db2miniseed [-vV] [-r record_size] [-l {1|2}] [-n net] db [output]
 -n net	specify default network
 </options>
 
+log2miniseed [-a] [-c chan] [-l loc] -n net -s sta log [log2 ...]
+     read input files and create miniseed
+
 db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>

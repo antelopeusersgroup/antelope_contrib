@@ -74,6 +74,9 @@ rtsys [options] [directory]
 -n n	last n lines from log files (default = 10)
 </options>
 
+stanote [-t time] [-r range] [database] [sta [note]]
+    simple method for adding note about station, to appear in gap report in rtreport
+
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
@@ -323,6 +326,14 @@ pf2orb [-s sta] [-p subcode] pfile orb
 dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
     read rows from database and post them to orb
 
+dborigin2orb [options] db orb
+    copy new origins from db.origin into orb for automatic association of external catalogs with real time events
+-after time	specify start earlier than now()
+-nowait	quit after processing existing db.origin
+-number n	quit after processing n events
+-target_orb2dbt target	specify alternate target orb2dbt
+-v	more verbose output
+
 db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
 <options>
@@ -374,6 +385,16 @@ k2cmd [options] orb target datalogger cmd
 -delayhangup delayhangup
 </options>
 
+q330util {pollsn  targetip | register targetip,sn,lport | getconfig  targetip,sn,lport,config | control targetip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs}}
+    perform some utility functions for Q330
+<options>
+-port port	udp port
+-port_base port_base	base port for Q330
+-auth auth	Q330 authorization code
+-sequence seq	starting sequence number for commands
+-timeout timeout	timeout for udp response
+</options>
+
 qtcmd [options] cmdorb net_sta cmd [params]
     execute commands on remote Quanterra digitizer
 <options>
@@ -423,11 +444,14 @@ orb2orb [options] in out [start [period|end]]
 orbxchange pf
     run multiple orb2orb connections controlled by pf
 
-orbxfer [-vv] file ... orb
-    transfer local files to orbserver orb
+orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
+    write files into orb
 
-orbxfer [-d dir] [-vv] orb
-    unpack files from orb to local directory [optionally directory dir]
+orbxfer [-b pktsize] [-d dir] [-ovv] -w dir orb
+    watch directory dir and copy files into orb
+
+orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
+    receive incoming files, save into dir
 
 orb2genc [options] orbin orbout
     convert input waveforms into unmultiplexed GENC format
@@ -616,6 +640,15 @@ dlmon [options] orb [-cmd cmdorb]
 -select_log expr_log
 </options>
 
+dlmontxt [-m select_expr] [-r reject_expr] [-d dlselect_expr] [-M mail_list] orbname [orbname2 [...]]
+     generate simple, terse status summary for dataloggers
+<options>
+-m re1	read only packets which match re1 
+-r re2	don't read packets matching re2
+-d dl_re	match datalogger names
+-M email	list of email addresses, or @filename for reports
+</options>
+
 deprecated qtmon dataorb data2orb cmdorbname [database]
     monitor Quanterra digitizers
 
@@ -721,6 +754,9 @@ orb2db [options] orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
+orb2db_flush [-nv] [-m match] [-r reject] orb
+    cause orb2db to write out all waveform data for selected packets
+
 orb2dbt [options] orb dbout [orbout]
     read database packets from an orb and write to database
 <options>
@@ -750,7 +786,6 @@ par2db [options] orbname dbname [start [window]]
 -v	more verbose
 </options>
 
-
 orblatency [options] orb database
     accumulate latency statistics from network
 <options>
@@ -759,6 +794,21 @@ orblatency [options] orb database
 -r re	reject packets matching regular expression re
 -p period	specify period over which latencies are averaged
 -v	more verbose
+</options>
+
+orbmsd2days [options] orb
+    save miniseed (only) packets from orb into day volumes
+<options>
+-d db	create wfdisc table in db
+-S state	save orb position in state file
+-U   limited duplication suppression
+-I   inclusive time screening
+-m re1	select packets matching regular expression re1
+-r re2	reject packets matching regular expression re2
+-s st	save data only when block start time >= st
+-e et	save data only when block start time < et
+-w wf	alternate pattern for the output miniseed volumes
+-v	Be more verbose.
 </options>
 
 <subsection Orb Alarms>
@@ -786,13 +836,6 @@ orb2pf [options] orb [file]
 -number number
 -nowait
 </options>
-
-orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
-orbxfer [-b pktsize] [-d dir] [-ovv] -w dir orb
-    write files into orb
-
-orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
-    receive incoming files, save into dir
 
 mail_parser [options] [file [file...]]
     direct incoming email to customized perl handlers

@@ -24,6 +24,17 @@ check_license [-v] [license_filename]
 check_path [-v] [path]
     check path to ensure that 'other' users can traverse it
 
+cmpdirs [options] dir1 dir2
+<options>
+-c	compare files
+-C	ignore CVS directories
+-i re	ignore files/directories matching re
+-l	list format output
+-t	compare only text files
+-r	recursive
+-v	more verbose
+</options>
+
 private check_visual [-display display_name]
     check out default X-windows display visual
 
@@ -261,3 +272,293 @@ fixman [-BInd] pages
 cleartmp [-nv] directory idle
      cleartmp removes files from directory which have not been used in over idle
      days, and finishes by removing any empty directories.
+
+xdiff [-bBcCFiLoOsSvVX] [-a abs] [-d diff] [-D display] [-I re] [-r rel] [-t] [-w width] [-x exceptions] dir1 dir2
+-a abs	set absolute tolerance for numerical differences
+-b	ignore blanks
+-B	keep blank lines with exception file  
+-c	ignore case differences (spiff only)
+-C	treat as C files (spiff only)
+-d diff	specify the diff program to run
+-D display	specify  the display to run tkdiff on.
+-F	treat as Fortran files (spiff only)
+-i	case independent compare
+-I re	ignore files with names like regular expression e
+-L	skip files when both are symbolic links 
+-o	in comparing directories, ignore  missing files in the 2nd directory.
+-O	in comparing directories, ignore missing files in the 1st directory.
+-r rel	set relative tolerance for numerical differences
+-S	treat as Bourne shell scripts (spiff only)
+-s	suppress matching lines in the output
+-t	use tkdiff to show files where there are differences
+-v	be more verbose
+-V	show each command run, and show each substitution  when an exception file is provided.
+-w width specify screen width when using sdiff
+-x exceptions file containing perl regular expressions mapped to null before comparison
+-X	don't ignore CVS directories
+</options>
+
+private check_visual [-display display_name]
+    check out default X-windows display visual
+
+private register_antelope [-t]
+    gui for requesting Antelope license
+
+abspath apath [...]
+    construct absolute path corresponding to input apath
+
+relpath here there
+    construct relative pathname from here to there
+
+cleanpath [-l] apath
+    eliminates repeated slashes, unnecessary ./, and resolves symbolic links unless -l
+
+ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
+    filter list of files according to various options
+<options>
+Combinatorial options
+-b	binary files
+-c	in CVS
+-C	not in CVS
+-e	empty directories
+-l	symbolic links
+-L	is plain file and has multiple links
+-o	is on this file system
+-O	is on different file system from $cwd
+-p	plain file
+-t	text file
+-x	executable
+-z	zero size
+-v	invert result of all tests 
+Regular expression matching
+-m re	keep matching files
+-r re	reject matching  files
+Operations on filenames
+-D dirname	extract dirname
+-B basename	extract basename
+-S suffix	extract suffix
+-E command	perl command operating on filename
+Other options
+-X	execute each result
+-n	only show command, don't execute
+-u	print only unique paths
+</options>
+
+deprecated uwd [-f configfile]
+    print canonical working directory (for ancient automounters)
+
+
+datafile [-aeV] {name | dir name | env dir name}
+    show what files will be selected by datafile/datapath/datasearch(3) routines.
+
+epoch [options] [ +format ] [ time/date components ]
+    convert time formats.
+<options>
+-e	echo interactive input
+-i tz	specify an input timezone tz, eg US/Mountain
+-o tz	specify an output timezone tz, eg Japan
++format	specify format of output (refer to epoch escapes table)
+</options>
+
+elog [-cdln] [-f fault] [message]
+    exhibit behavior of elog error routines with message
+
+elog -e errno
+    print error message for numeric system error
+
+elog -s signal#
+    print signal description
+
+pfcompare [options] pf
+     find differences between local parameter file and remainder of pf files found along PFPATH
+<options>
+-s	show stock version (instead of local)
+-u	show unique items
+</options>
+
+pfdiff [-1t] [-o newpf] pf1 [pf2]
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is unspecified)
+    -o interactively selects parameters from pf1 and pf2 to construct new parameter 
+    file newpf. -t runs tkdiff, -1 limits depth of recursive comparison.
+
+pfecho [options] name [ param ...]
+    print out parameters from parameter files
+<options>
+-i	interactive mode
+-q	don't echo key
+-w	show all pf files read
+-W	show all filenames examined (may not exist)
+-x	expand all references inside pf
+</options>
+
+pfwhich pf 
+    show what files are read for pf
+
+ttcalc method model phase distance depth
+    print travel time and slowness calculation results for 
+    method, model, and phases for an event at distance and depth.
+
+gsregion [lat lon]
+    geographic and seismic region numbers and names for lat, lon
+
+dbsetrgn db
+    set seismic and geographic region codes in origin table for database db
+
+private tabulate_missed_stations translation_db dbname [dbname...]
+    find station names that do not appear in translation_db
+
+private capitalize_station dbname
+    capitalize station field in dbname
+
+private translate_stachan_names translation_db dbname
+    apply station name-translations listed in translation_db
+	
+children pid
+    returns children of process pid
+
+private getunique
+    return unique integer
+
+deprecated pathf [ -f configfile ] [ paths... ]
+    filter for translating pathnames
+
+private perl_unbuffer command
+    use pty/tty pair to get unbuffered output from command
+
+
+tksend [options] app_name [message]
+    send message to program using tk send protocol
+<options>
+-i	read stdin for more messages
+-p	wait for and print returned messages
+-verbose	be more verbose
+-validate	validate application name and return disposition and version number
+-version {3|4|auto}
+ 	select older or newer tksend protocol; default is auto{matic}
+-wait	wait for response
+</options>
+
+private unregister window_name
+    eliminate defunct tk send registries
+
+comsim connection
+    monitor, test and debug serial or ip communications
+
+reflect [-d dir] [-v] remote_host[:port] remote_file
+    keep local files up to date with remote copies
+
+reflectd [-p port] [-v] 
+    server companion to reflect
+
+warp [-nv] command
+    run command on opposite display (if machine has 2 displays)
+
+xunits [-amqv] [from [to]]
+    convert values from one unit to another, eg newtons to lbs
+
+build [pf] [pf_dependent_arguments]
+    framework for constructing simple gui interfaces based on
+    parameter files and perl scripts
+
+private refguide {creference|user|scripting}
+    prepare Framemaker mif version of reference guide
+
+txform [-v] dir filename
+    text transform program
+
+grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
+    look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
+<options>
+-i	case insensitive
+-v	show find command, and list files searched.
+-l	show only filenames with matching lines.
+-w	show all matches, not just word matches.
+restrict searches to certain files by using any combination of:
+-c	c source files
+-f	fortran source 
+-g glob	files matching glob
+-h	include files 
+-m	manual pages 
+-M	Makefile or makefile
+-p	perl source 
+-s	shell source 
+-t	tcl source 
+-y	(f)lex and yacc source
+-T	all text files
+</options>
+
+ldlibs [options] names
+    provide information about object libraries and link lines
+<options>
+Modifying Options
+-f	generate fortran ldlibs line (default is c).
+-i	initialize database, eg, completely rebuild it.
+-k	rebuild database, if it's out of date.
+-n	don't use macros to collapse dependency list.
+-v	be more verbose.
+-x	specify entry points on command line, rather than object files.
+Different Modes
+-r lib1 lib2	show refs from lib1 which are resolved in lib2.
+-R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
+-D lib	show refs defined in lib
+-N lib	show refs not defined in lib
+-l lib	show libraries loaded by lib
+-L lib	show libraries which load lib
+-u lib	show libraries which are needed by lib
+-U lib	show libraries which need lib
+-s lib1 lib2	show shared definitions between lib1 and lib2
+-S lib1 lib2	show shared undefined refs between lib1 and lib2
+-t lib1 lib2	show definitions unique in each library.
+-T lib1 lib2	show needs unique in each library
+-w routine	show what libraries define routine.
+-W routine	show what libraries require routine.
+</options>
+
+compile [options]
+    used by BRTT to compile with optional optimization on different architectures
+
+deposit [-rx] file dir
+    installs file in directory dir with appropriate permisssions; -r installs file with new name dest; -x makes installed file executable
+
+produce [-v] exec [exec2 ...]
+    use standard headers from template directory to create executable script exec from files with proper suffix
+
+installman [-nv] manpage dir
+    install manpage into directory dir, modifying .TH line appropriately
+	
+private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
+    X-windows plotting daemon
+
+fixman [-BInd] pages
+    check man page, correct some problems, and suggest other changes
+
+cleartmp [-nv] directory idle
+     cleartmp removes files from directory which have not been used in over idle
+     days, and finishes by removing any empty directories.
+
+xdiff [-bBcCFiLoOsSvVX] [-a abs] [-d diff] [-D display] [-I re] [-r rel] [-t] [-w width] [-x exceptions] dir1 dir2
+    compare files after eliminating expected discrepancies
+<options>
+-a abs	set absolute tolerance for numerical differences
+-b	ignore blanks
+-B	keep blank lines with exception file  
+-c	ignore case differences (spiff only)
+-C	treat as C files (spiff only)
+-d diff	specify the diff program to run
+-D display	specify  the display to run tkdiff on.
+-F	treat as Fortran files (spiff only)
+-i	case independent compare
+-I re	ignore files with names like regular expression e
+-L	skip files when both are symbolic links 
+-o	in comparing directories, ignore  missing files in the 2nd directory.
+-O	in comparing directories, ignore missing files in the 1st directory.
+-r rel	set relative tolerance for numerical differences
+-S	treat as Bourne shell scripts (spiff only)
+-s	suppress matching lines in the output
+-t	use tkdiff to show files where there are differences
+-v	be more verbose
+-V	show each command run, and show each substitution  when an exception file is provided.
+-w width specify screen width when using sdiff
+-x exceptions file containing perl regular expressions mapped to null before comparison
+-X	don't ignore CVS directories
+</options>

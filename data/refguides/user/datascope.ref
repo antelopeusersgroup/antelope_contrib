@@ -41,6 +41,9 @@ dbsnapshot [options] db [start_time [end_time|period]]
 -w M	minutes M of data before now
 <options>
 
+syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
+    create tar snapshot of system configuration 
+
 <subsection Creating and Editing Databases>
 dbe [-e] db[.table] [ db[.table] ...]
     general purpose viewer/editor for databases (see .dbe.pf to configure)
