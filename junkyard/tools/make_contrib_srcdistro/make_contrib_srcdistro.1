@@ -3,7 +3,7 @@
 make_contrib_srcdistro \- Package Antelope contributed-code for export
 .SH SYNOPSIS
 .nf
-make_contrib_srcdistro [-r readme_file] [-c ftpdir]
+make_contrib_srcdistro [-r readme_file] [-t tag] [-c ftpdir]
 .fi
 .SH DESCRIPTION
 make_contrib_srcdistro uses the cvs(1) export command to check-out a 
@@ -30,6 +30,12 @@ standard location. Normally this option should not be necessary.
 .IP "-c ftpdir"
 This option allows make_contrib_srcdistro to be run from a cron-job, maintaining 
 up-to-date copies of the source code in a directory specified by ftpdir. 
+
+.IP "-t tag"
+Ignore all date-specific checkouts and file-naming. Instead, build a tarball that 
+is checked out with the specified CVS tag (such as the tag used to mark the 
+repository at the time of each official Antelope software release). 
+
 .SH FILES
 $(ANTELOPE)/data/misc/README.contrib  contains the readme file for the tar distribution
 .SH ENVIRONMENT
@@ -59,6 +65,8 @@ cvs(1), epoch2str(3)
 .SH "BUGS AND CAVEATS"
 The timestamp is currently in UTC timezone, whereas CVS 
 is probably using local time, thus the timestamp is approximate.
+
+The -t option may not be compatible with all the other options.
 .SH AUTHOR
 Kent Lindquist
 .\" $Id$

@@ -5,8 +5,8 @@ use Datascope;
 
 require "getopts.pl" ;
 
-if( ! &Getopts('r:c:') ) {
-	die( "Usage: $0 [-r README-file] [-c ftpdir]\n" );
+if( ! &Getopts('r:c:t:') ) {
+	die( "Usage: $0 [-r README-file] [-t tag] [-c ftpdir]\n" );
 }
 
 $cvsroot = pfget( "make_contrib_srcdistro", "cvsroot" );
@@ -21,6 +21,11 @@ if( $opt_r ) {
 	$readme = abspath( $opt_r );
 } else {
 	$readme = "$ENV{ANTELOPE}/data/misc/README.contrib";
+}
+
+if( $opt_t ) {
+	$tag = $opt_t;
+	$tarfile_name = "Antelope_contrib_src_$t.tar";
 }
 
 if( $opt_c ) {
@@ -44,8 +49,13 @@ mkdir( "src", 0755 );
 chdir( "/tmp/src" );
 
 printf STDERR "Building CVS export distribution in /tmp:\n";
-$cmd = "cvs -d $cvsroot export -D $day $package";
-system( $cmd );
+if( $opt_t ) {
+	$cmd = "cvs -d $cvsroot export -r $tag $package";
+	system( $cmd );
+} else {
+	$cmd = "cvs -d $cvsroot export -D $day $package";
+	system( $cmd );
+}
 
 chdir( "/tmp" );
 
