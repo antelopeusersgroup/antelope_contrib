@@ -2,6 +2,7 @@
 # Makefile for extrd
 
 BIN = extrd
+MAN1 = extrd.1
 cflags  = -g
 ldlibs  = -lscv2 -ldbl2 $(TRLIBS)
  
