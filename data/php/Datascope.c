@@ -6,8 +6,10 @@
 #include "db.h"
 #include "stock.h"
 #include "coords.h"
+#include "response.h"
 
 static int le_Datascope;
+static int le_dbresponse;
 
 function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
@@ -28,7 +30,9 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
 	PHP_FE(dbquery, NULL)		
+	PHP_FE(dbresponse, NULL)		
 	PHP_FE(strtdelta, NULL)		
+	PHP_FE(eval_response, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -47,8 +51,20 @@ zend_module_entry Datascope_module_entry = {
 
 ZEND_GET_MODULE(Datascope)
 
+static void
+_php_free_dbresponse( zend_rsrc_list_entry *rsrc TSRMLS_DC ) {
+	Response *response = (Response *) rsrc->ptr;
+	
+	free_response( response );
+}
+
 PHP_MINIT_FUNCTION(Datascope)
 {
+
+	le_dbresponse = zend_register_list_destructors_ex( 
+					_php_free_dbresponse, NULL, 
+					"dbresponse", module_number );
+
 	return SUCCESS;
 }
 
@@ -211,6 +227,85 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto resource dbresponse( string filename ) */
+PHP_FUNCTION(dbresponse)
+{
+	char	*filename;
+	int	filename_len;
+	int	argc = ZEND_NUM_ARGS();
+	FILE	*fp;
+	Response *response;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 1 TSRMLS_CC, "s", 
+					&filename, &filename_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( fp = fopen( filename, "r" ) ) == NULL ) {
+
+		/* SCAFFOLD needs error message */
+
+		return;
+	}
+
+	if( read_response( fp , &response ) != 0 ) {
+
+		/* SCAFFOLD needs error message */
+
+		fclose( fp );
+
+		return;
+	}
+
+	fclose( fp );
+
+	ZEND_REGISTER_RESOURCE( return_value, response, le_dbresponse );
+}
+/* }}} */
+
+/* {{{ proto array eval_response( resource response, double omega ) */
+PHP_FUNCTION(eval_response)
+{
+	int	argc = ZEND_NUM_ARGS();
+	Response *response;
+	zval	*res;
+	double	omega;
+	double	real, imag;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 2 TSRMLS_CC, "rd", &res, &omega ) == FAILURE) {
+
+		return;
+	}
+
+	ZEND_FETCH_RESOURCE( response, Response *, &res, -1, 
+			     "dbresponse", le_dbresponse );
+
+	if( ! response ) {
+		RETURN_FALSE;
+	}
+
+	eval_response( omega, response, &real, &imag );
+
+	array_init( return_value );
+	add_index_double( return_value, 0, real );
+	add_index_double( return_value, 1, imag );
+
+	return;
 }
 /* }}} */
 

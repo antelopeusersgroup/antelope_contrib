@@ -30,7 +30,9 @@ PHP_FUNCTION(dbex_eval);
 PHP_FUNCTION(dbextfile);
 PHP_FUNCTION(dbfind);
 PHP_FUNCTION(dbquery);
+PHP_FUNCTION(dbresponse);
 PHP_FUNCTION(dbsubset);
+PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
 
 #ifdef ZTS

@@ -280,6 +280,37 @@ dbtruncate ( $db, $nrecords ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbresponse\fP ( $filename )"
+Returns a PHP resource for a response object, representing the 
+instrument response curve defined in $filename. This resource 
+may be subsequently queried with \fBeval_response\fP.
+.ft CW
+.in 2c
+.nf
+
+$response = dbresponse( $filename ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBeval_response\fP ( $response, $omega )"
+Evaluates a response object at the specified angular frequency, 
+returning the real and imaginary components of the response
+.ft CW
+.in 2c
+.nf
+
+$pi = 3.1415;
+$f_hz = 5; 
+
+$cx = eval_response( $response, 2 * $pi * $f_hz );
+
+$real = $cx[0];
+$imag = $cx[1];
+
+.fi
+.in
+.ft R
 .IP "\fBstrtdelta\fP ( $epoch )"
 Convert an elapsed time in seconds to a string representation
 .ft CW
