@@ -11,7 +11,7 @@
 #define SEEK_SET 0
 #endif
 
-static int putmsg (int orb, Dbptr db, char *prog, char *msg);
+static int myputmsg (int orb, Dbptr db, char *prog, char *msg);
 
 main (argc, argv)
 
@@ -186,20 +186,19 @@ char **argv;
 
 	n = 0;
 	lastpkt_age = 0;
-	if (messages) putmsg (orbout, db, "orbcp", "Start message logging");
+	if (messages) myputmsg (orbout, db, "orbcp", "Start message logging");
 	while (1) {
 		if (!first) {
-			ret = fdkey(orbin);
+			ret = myfdkey(orbin, 1000);
 			if (ret == 0) {	/* No pending input */
-				usleep (100000);
 				lastpkt_age += 1;
 				if (ircnt && lastpkt_age > rcnt_time && lastpkt_pktid >= 0) {
-					if (messages) putmsg (orbout, db, "orbcp", "age timeout");
+					if (messages) myputmsg (orbout, db, "orbcp", "age timeout");
 					goto RECONNECT;
 				}
 				continue;
 			} else if (ret < 0) {	/* error */
-				if (messages) putmsg (orbout, db, "orbcp", "fdkey() error");
+				if (messages) myputmsg (orbout, db, "orbcp", "fdkey() error");
 				goto RECONNECT;
 			}
 		}
@@ -217,7 +216,7 @@ char **argv;
 			ready = 0;
 			break;
 		default:		/* Some other error */
-			if (messages) putmsg (orbout, db, "orbcp", "orbreap_nd() error");
+			if (messages) myputmsg (orbout, db, "orbcp", "orbreap_nd() error");
 			ready = -1;
 			break;
 		}
@@ -227,7 +226,7 @@ char **argv;
 				int orbs;
 
 RECONNECT:			clear_register (0);
-				if (messages) putmsg (orbout, db, "orbcp", "reconnecting");
+				if (messages) myputmsg (orbout, db, "orbcp", "reconnecting");
 				sleep (10);
 				lastpkt_age += 10;
 				/* continue; */
@@ -237,17 +236,17 @@ RECONNECT:			clear_register (0);
 
 					sleep (10);
 					lastpkt_age += 10;
-					if (messages) putmsg (orbout, db, "orbcp", "orb open for stat");
+					if (messages) myputmsg (orbout, db, "orbcp", "orb open for stat");
 					orbs = orbopen (orbname, "r");
 					if (orbs < 0) {
 						clear_register (0);
-						if (messages) putmsg (orbout, db, "orbcp", "orb open for stat failed");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb open for stat failed");
 						continue;
 					}
 					if (srcexpr) {
-						if (messages) putmsg (orbout, db, "orbcp", "orb select for stat");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb select for stat");
 						if (orbselect (orbs, srcexpr) < 0) {
-							if (messages) putmsg (orbout, db, "orbcp", "orb select for stat failed");
+							if (messages) myputmsg (orbout, db, "orbcp", "orb select for stat failed");
 							orbclose (orbs);
 							clear_register (0);
 							continue;
@@ -261,9 +260,9 @@ RECONNECT:			clear_register (0);
 						sleep (10);
 						lastpkt_age += 10;
 						ostat = NULL;
-						if (messages) putmsg (orbout, db, "orbcp", "orb stat");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb stat");
 						if (orbstat ( orbs, &ostat ) < 0) {
-							if (messages) putmsg (orbout, db, "orbcp", "orb stat failed");
+							if (messages) myputmsg (orbout, db, "orbcp", "orb stat failed");
 							orbclose (orbs);
 							clear_register (0);
 							ok = 0;
@@ -280,7 +279,7 @@ RECONNECT:			clear_register (0);
 						free_orbstat (ostat);
 						if (slatest_time - lastpkt_time > (double)rcnt_time) {
 							ok = 1;
-							if (messages) putmsg (orbout, db, "orbcp", "orb stat OK");
+							if (messages) myputmsg (orbout, db, "orbcp", "orb stat OK");
 							break;
 						}
 					}
@@ -288,23 +287,23 @@ RECONNECT:			clear_register (0);
 				} 
 				orbclose (orbs); */
 
-				if (messages) putmsg (orbout, db, "orbcp", "orb close");
+				if (messages) myputmsg (orbout, db, "orbcp", "orb close");
 				orbclose (orbin);
 				while (1) {
 					sleep (10);
 					lastpkt_age += 10;
-					if (messages) putmsg (orbout, db, "orbcp", "orb open");
+					if (messages) myputmsg (orbout, db, "orbcp", "orb open");
 					orbin = orbopen (orbname, "r");
 					if (orbin < 0) {
-						if (messages) putmsg (orbout, db, "orbcp", "orb open failed");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb open failed");
 						clear_register (0);
 						continue;
 					}
 					if (srcexpr) {
 						sleep (20);
-						if (messages) putmsg (orbout, db, "orbcp", "orb select");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb select");
 						if (orbselect (orbin, srcexpr) < 0) {
-							if (messages) putmsg (orbout, db, "orbcp", "orb select failed");
+							if (messages) myputmsg (orbout, db, "orbcp", "orb select failed");
 							orbclose (orbin);
 							clear_register (0);
 							continue;
@@ -314,17 +313,17 @@ RECONNECT:			clear_register (0);
 				}
 				first = 1;
 				lastpkt_age = 0;
-				if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid");
+				if (messages) myputmsg (orbout, db, "orbcp", "orb seek to last_pktid");
 				complain ( 0, "seeking to pktid #%d\n", lastpkt_pktid ) ; 
 				if ((found = orbseek (orbin, lastpkt_pktid)) != lastpkt_pktid) {
 					complain ( 0, "result of orbseek was %d\n", found ) ; 
-					if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid failed");
+					if (messages) myputmsg (orbout, db, "orbcp", "orb seek to last_pktid failed");
 					clear_register (0);
 					orbseek (orbin, ORBNEWEST);
 				} else {
-					if (messages) putmsg (orbout, db, "orbcp", "orb seek to next_pktid");
+					if (messages) myputmsg (orbout, db, "orbcp", "orb seek to next_pktid");
 					if (orbseek (orbin, ORBNEXT) < 0) {
-						if (messages) putmsg (orbout, db, "orbcp", "orb seek to next_pktid failed");
+						if (messages) myputmsg (orbout, db, "orbcp", "orb seek to next_pktid failed");
 						clear_register (0);
 						orbseek (orbin, ORBNEWEST);
 					}
@@ -398,7 +397,7 @@ Dbptr *        db;
 }
 
 static int
-putmsg (int orb, Dbptr db, char *prog, char *msg)
+myputmsg (int orb, Dbptr db, char *prog, char *msg)
 
 {
 	char string[512];
@@ -413,3 +412,50 @@ putmsg (int orb, Dbptr db, char *prog, char *msg)
         orbflush (orb);
 
 }
+
+#include <stropts.h>
+#include <poll.h>
+
+#ifndef POLLRDNORM
+#define POLLRDNORM 0
+#endif
+ 
+#ifndef POLLRDBAND
+#define POLLRDBAND 0  
+#endif
+ 
+int
+myfdkey (fd, timeout)
+int fd ;
+int          timeout;
+{
+    struct      pollfd fds2poll[1] ;
+    unsigned long nfds = 1 ;
+    int retcode ;
+ 
+    fds2poll[0].fd = fd ;
+    fds2poll[0].events = POLLIN | POLLRDNORM | POLLPRI | POLLRDBAND | POLLERR ;
+ 
+    switch ( poll(fds2poll, nfds, timeout) ) {
+        case 1:
+            if ( fds2poll[0].revents & POLLIN
+             || fds2poll[0].revents & POLLRDNORM
+             || fds2poll[0].revents & POLLRDBAND
+             || fds2poll[0].revents & POLLPRI ) {
+                retcode = 1 ;
+             } else
+                retcode = -1 ;
+            break ;
+ 
+        case 0:
+            retcode = 0 ;
+            break ;
+ 
+        default:
+            retcode = -1 ;
+            break ;
+    }
+ 
+    return retcode;
+}
+ 
