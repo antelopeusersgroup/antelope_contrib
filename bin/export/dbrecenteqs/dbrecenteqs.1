@@ -1,45 +1,35 @@
-.TH dbrecenteqs 1 "$Date$"
+.TH DBRECENTEQS 1 "$Date$"
 .SH NAME
-dbrecenteqs \- maintain a web site showing recent earthquakes
+dbrecenteqs, dbrecenteqs_setup \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-dbrecenteqs_setup [-i index_map] [-g global_map] dbname
-dbrecenteqs [-h] dbname
+\fBdbrecenteqs_setup \fP[-i \fIindex_map\fP] [-g \fIglobal_map\fP] \fIdbname\fP
+\fBdbrecenteqs \fP[-h] \fIdbname\fP
 .fi
 .SH DESCRIPTION
-dbrecenteqs_setup creates or adds to the mapstock table of the database 
-in dbrecenteqs1.0 or related schema. If no options are specified, a new 
-stock index map is created based on the specifications in the parameter 
-file. Otherwise an index map or global map is added to the mapstock table, 
-reading from a parameter file in the style of dbevents(1). 
-
-dbrecenteqs watches a real-time database of hypocenters, customizing the 
-stock maps and creating individual maps for each earthquake as they occur. 
-dbrecenteqs creates the html code for a complete web-site of recently 
+\fBdbrecenteqs_setup\fP creates or adds to the mapstock table of the database
+in dbrecenteqs1.0 or related schema. If no options are specified, a new
+stock index map is created based on the specifications in the parameter
+file. Otherwise an index map or global map is added to the mapstock table,
+reading from a parameter file in the style of dbevents(1).
+.LP
+\fBdbrecenteqs\fP watches a real-time database of hypocenters, customizing the
+stock maps and creating individual maps for each earthquake as they occur.
+\fBdbrecenteqs\fP creates the html code for a complete web-site of recently
 detected earthquakes
 .SH OPTIONS
--g global_map add specified global map to mapstock table
--i index_map add specified index map to mapstock table
--h don't regenerate focus maps; only recreate html 
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
-dbrecenteqs_setup.pf
-dbrecenteqs.pf
-.SH EXAMPLE
-.ft CW
-.RS .2i
-.RE
-.ft R
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
+.IP -g
+\fIglobal_map\fP add specified global map to mapstock table
+.IP -i
+\fIindex_map\fP add specified index map to mapstock table
+.IP -h
+don't regenerate focus maps; only recreate html
 .SH "SEE ALSO"
 .nf
 dbevents(1)
 .fi
-.SH "BUGS AND CAVEATS"
 .SH AUTHOR
-Kent Lindquist, taking ideas from Danny Harvey, Bob Simpson, 
+.nf
+Kent Lindquist, taking ideas from Danny Harvey, Bob Simpson,
 Jennifer Eakins, Kevin Engle, and Evelyn Price
 .\" $Id$
