@@ -127,12 +127,15 @@ int pmel_hypo_solution_bad(Tbl *reasons)
 {
 	int i;
 	char *s;
+	char *test;
 
 	for(i=0;i<maxtbl(reasons);++i)
 	{
 		s = (char *)gettbl(reasons,i);
-		if(!strcmp(s,"Error")) return(1);
-		if(!strcmp(s,"Location hit iteration count limit"))return(1);
+		test = strstr(s,"Error");
+		if(test!=NULL) return(1);
+		test = strstr(s,"Location hit iteration");
+		if(test!=NULL) return(1);
 	}
 	return(0);
 }
@@ -413,6 +416,7 @@ Nevents Nevents_used\n");
 		/* we don't mark the solution "bad" like before hoping we can recover
 		in a later iteration */
 		h0[i].used = 0;
+		clear_register(1);
 	    }
             else
             {
@@ -421,6 +425,7 @@ Nevents Nevents_used\n");
                     elog_notify(0,"%d travel time errors locating event %d of current group for iteration %d\n",
                         locrcode,evid[i],sc_iterations);
                 }
+		clear_register(1);
                 hypo_iterations = maxtbl(history);
                 current_hypo = (Hypocenter *)gettbl(history,
                             hypo_iterations - 1);
