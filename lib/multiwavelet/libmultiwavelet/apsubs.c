@@ -389,9 +389,16 @@ Arguments:
 	pf - parameter file (used to get method and model parameters
 		passed to travel time calculator.
 
-Normal return is 0,  returns nonzero value if a travel time or
-slowness could not be computed.  In this case a diagnostic is issued
-and the static is set to 0.0
+Normal return is 0.  
++1 - travel time error computing plane wave static.  Sets pwstatic field to 0
+-1 - detected phase name change between reference and requested station.
+	pwstatic field is set to zero, but data should probably not be
+	used as this may indicate a travel time curve discontinuity 
+	(e.g. at the core shadow)
+Modified:  November 2000
+Found we needed to send a special return if the phase name changed
+between reference station and requested station.  Reason was that
+bad things happened at the core shadow.
 */
 static Hook *hook=0;  /*Used by ttcalc */
 int compute_plane_wave_static(MWstation *s, 
@@ -405,6 +412,7 @@ int compute_plane_wave_static(MWstation *s,
 	TTGeometry geometry;
 	TTTime *atime;
 	TTSlow *u0,*u;
+	char refphase[TTPHASE_SIZE];
 	MWSlowness_vector slow;
 	int mode=0,tresult,uresult;
 	Tbl *treturn=NULL,*ureturn=NULL;
@@ -449,6 +457,8 @@ int compute_plane_wave_static(MWstation *s,
 		elog_complain(0,"Error in computing time or slowness for reference station for method=%s, model=%s\nCannot compute statics\n",
 			method,model);
 		s->plane_wave_static = 0.0;
+		freetbl(treturn,free);
+		freetbl(ureturn,free);
 		return(1);
 	}
 	/* We can assume the phase code passed asks for only one 
@@ -458,6 +468,7 @@ int compute_plane_wave_static(MWstation *s,
 	t0 = atime->value;
 	slow.ux = u0->ux;
 	slow.uy = u0->uy;
+	strcpy(refphase,atime->phase);
 
 	tpw = t0 + compute_moveout(s,s0,&slow);
 
@@ -472,10 +483,24 @@ int compute_plane_wave_static(MWstation *s,
 		elog_complain(0,"Error computing travel time from model %s using method %d for station %s\nStatic set to zero\n",
 			model, method, s->sta);
 		s->plane_wave_static = 0.0;
+		freetbl(treturn,free);
+		freetbl(ureturn,free);
 		return(1);
 	}
-	atime = (TTTime *)gettbl(treturn,0);
-	s->plane_wave_static = (atime->value) - tpw;
+	if(strcmp(atime->phase,refphase))
+	{
+		elog_complain(0,"Warning:  error computing plane wave static for station %s\nReference station phase = %s while phase at this station = %s\nLikely travel time curve discontinuity.  Setting pwstatic to 0.0\n",
+			s->sta,atime->phase,refphase);
+		s->plane_wave_static = 0.0;
+		freetbl(treturn,free);
+		freetbl(ureturn,free);
+                return(-1);
+        }
+	else
+	{
+		atime = (TTTime *)gettbl(treturn,0);
+		s->plane_wave_static = (atime->value) - tpw;
+	}
 	freetbl(treturn,free);
 	freetbl(ureturn,free);
 	return(0);
@@ -664,7 +689,7 @@ double compute_time_reference(Arr *stations, Arr *arrivals,
 	return(pref_atime);
 }
 	
-#define MAXCON 10000.0  /*maximum condition number before sv truncation*/
+#define MAXCON 1000.0  /*maximum condition number before sv truncation*/
 #define USCALE 0.1  /* Slowness nondimensional scale factor in convergence
 			loop.  Value here is for 10 km/s -- */
 #define CONVERGE_TEST  0.00005  /* break robust loop when change in 
@@ -1015,8 +1040,18 @@ int estimate_slowness_vector(
 		amount of information placed in statics relative to
 		slowness.  Note we recycle bw here as a work space
 		to hold the projected b vector. */
-		if(null_project(Uraw,m,3,b,bw))
-			elog_complain(0,"Error in null_project:  slowness vector estimates may be biased\n");
+		if(ndata>3)
+			null_project(Uraw,m,3,b,bw);
+		else
+		{
+			double rmean;
+			dcopy(m,b,1,bw,1);
+			/* In this case it is necessary to remove the mean */
+			for(i=0,rmean=0.0;i<m;++i)rmean+=bw[i];
+			rmean /= ((double)ndata);
+			for(i=0;i<m;i++)
+				if((sptr+i) != NULL) bw[i] -= rmean;
+		}
 		for(i=0;i<m;i++) 
 		{
 			if((sptr+i) != NULL)
@@ -1032,11 +1067,13 @@ int estimate_slowness_vector(
 			be small.  
 		The dark side of this is it leaves a unit dependence
 		upon the slowness vector used.  See the define above
-		for the units used */
+		for the units used.  Note the ndata test assures this
+		loop is only executed once when ndata==3 */
 		dutest = hypot(x[0],x[1])/USCALE;
 		++iteration;
 	    } while ( (dutest > CONVERGE_TEST) 
-			&& (iteration<MAXIMUM_ITERATION) );
+			&& (iteration<MAXIMUM_ITERATION) 
+			&& (ndata>3) );
 	    if(iteration >= MAXIMUM_ITERATION)elog_complain(0,
 		"WARNING:  statics m-estimator inversion did not converge\n");
 	}

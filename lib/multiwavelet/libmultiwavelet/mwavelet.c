@@ -526,12 +526,14 @@ MWgather *build_MWgather(int band, int wavelet,
 		|| (((*x2)[band][wavelet].nz) == 0)
 		|| (((*x3)[band][wavelet].nz) == 0) ) continue;
 		/* test snr This test skips stations with low snr
+		and stations for which snr could not be computed
 		but do this only if the snr cutoff test is
 		enabled.*/
 		if(check_snr_this_band(band,pf))
 		{
 			snr = (Signal_to_Noise *)getarr(snrarr,sta);
 			if(snr_is_too_low(snr,band,pf)) continue;
+			if(snr_is_invalid(snr))continue;
 		}
 
 		gather->sta[ii] = (MWstation *)getarr(stations,sta);
@@ -811,6 +813,19 @@ void set_snr_to_error(Signal_to_Noise *snr)
 	snr->max_ratio_e = -99999.9;
 	snr->max_ratio_3c = -99999.9;
 }
+/* Tests snr structure for above error condition.  This is preferable
+to something like a test against a particular element of the structure
+embedded in the code because one might want to change the way an error
+was defined.  This way they should stay together. 
+Arguments:
+	snr - snr structure to test
+Returns a logical test.  1 if the snr is invalid and 0 if it is ok.
+*/
+int snr_is_invalid(Signal_to_Noise *snr)
+{
+	if((snr->ratio_z)<0.0) return(1);
+	return(0);
+}
 /* Another companion to signal to noise function below.  This one
 takes a complex input vector,z, of length n and computes |x_i| 
 and stores the result in a[i].  i.e. it returns a vector of 
@@ -934,6 +949,14 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 		{
 			allot(Signal_to_Noise *,snr,1);
 			strcpy(snr->sta,sta);
+			/* Immediately flag any entity with a null signal or noise trace defined
+			by mwtransform by setting the nz field to 0. */
+			if((ts[0][0][j][0].nz <= 0)||(tn[0][0][j][0].nz <= 0))
+			{
+				set_snr_to_error(snr);
+			}
+			else
+			{
 			/* perhaps superflous, but paranoia can be good*/
 			si = swin[j].si;
 			if( (si != ts[0][0][j][0].dt) 
@@ -1091,6 +1114,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 			snr->ratio_3c = stats.median;
 			snr->min_ratio_3c = stats.low;
 			snr->max_ratio_3c = stats.high;
+			}
 			setarr(snrarr_vector[j],sta,snr);
 		}
 	}
@@ -1476,7 +1500,10 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 	int nsta_used;
 	int data_end,window_length;
 	complex cweight={0.0,0.0};
-float Adebug[33][10];
+/*
+float Adebug[33][40];
+for(i=0;i<33;++i)for(j=0;j<40;++j)Adebug[i][j]=0.0;
+*/
 
 	for(i=0,nsta_used=0;i<(g->nsta);++i)
 	{
@@ -1518,9 +1545,11 @@ float Adebug[33][10];
 			weights[i] = 0.0;
 		}
 	}
+/*
 for(i=0;i<nsta_used;++i)
-for(j=0;j<10;++j)
+for(j=0;j<40;++j)
 Adebug[i][j] = A[i+j*(g->nsta)].r;
+*/
 	return(nsta_used);
 }
 /* This is a parallel routine to the above that builds a matrix from
