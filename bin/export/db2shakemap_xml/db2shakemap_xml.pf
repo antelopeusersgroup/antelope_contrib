@@ -1,7 +1,7 @@
 # earthquake_dtd 	/opt/ShakeMap/lib/xml/earthquake.dtd
 # wfdata_dtd 		/opt/ShakeMap/lib/xml/stationlist.dtd
 # dbname 		/files/users/rt/temp/$jday\_reno
-# output_dir 		/opt/ShakeMap/data/$event/input
+# output_dir 		/opt/ShakeMap/data/$event_id/input
 
 earthquake_dtd 		./earthquake.dtd
 earthquake_filename 	event.xml

@@ -130,7 +130,7 @@ sub write_amp {
 	return 0;
 }
 
-$Usage = "Usage: db2shakemap_xml [-j] -event event_id\n";
+$Usage = "Usage: db2shakemap_xml [-j] [-version version] -event event_id\n";
 $Pf = "db2shakemap_xml";
 
 while( $arg = shift( @ARGV ) ) {
@@ -140,6 +140,11 @@ while( $arg = shift( @ARGV ) ) {
 		if( $#ARGV < 0 ) { die( $Usage ); }
 		$event_id  = shift( @ARGV );
 
+	} elsif( $arg eq "-version" ) { 
+
+		if( $#ARGV < 0 ) { die( $Usage ); }
+		$version  = shift( @ARGV );
+
 	} elsif( $arg eq "-j" ) {
 
 		$opt_j++;
@@ -148,6 +153,11 @@ while( $arg = shift( @ARGV ) ) {
 
 		die( $Usage );
 	}
+}
+
+if( defined( $version ) && $version ne "2.4" ) {
+
+	die( "db2shakemap_xml: Only supported version is ShakeMap 2.4\n" );
 }
 
 if( ! defined( $event_id ) || $event_id eq "" ) {
@@ -393,3 +403,5 @@ $writer->end();
 $output->close;
 
 dbclose( @db );
+
+exit( 0 );
