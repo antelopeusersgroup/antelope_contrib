@@ -141,6 +141,9 @@ orbpktgetpf pkt
 str2orbpfpkt orb name string
     writes a parameter-file object defined by string as a parameter-file packet on orb
 
+str2orbpfpkt2 orb srcname string
+    writes a parameter-file object defined by string as a parameter-file packet on orb
+
 
 <subsection Quanterra special>
 orbpktgetqtping pkt
