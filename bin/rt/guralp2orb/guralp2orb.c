@@ -443,7 +443,7 @@ static char *
 add_segtype( char *sta, char *chan, double time, Dbptr *pdb )
 {
 	Dbptr	db, dbs, dbi;
-	char	*segtype;
+	char	*segtype = 0;
 	char	key[STRSZ];
 	char	expr[STRSZ];
 	int	nrecs = 0;
@@ -655,7 +655,7 @@ update_calibvals( double time )
 }
 
 static void
-get_calibinfo( Srcname *parts, double time, char *segtype, double *calib, double *calper )
+get_calibinfo( Srcname *parts, double time, char **segtype, double *calib, double *calper )
 {
 	char	key[STRSZ];
 	Calibvals *cv;
@@ -663,8 +663,11 @@ get_calibinfo( Srcname *parts, double time, char *segtype, double *calib, double
 	if( Calibinfo.usedbsegtype == 0 ) {
 
 		mutex_lock( &pfparams_mutex );
-		strncpy( segtype, Default_segtype, 2 );
-		segtype[1] = '\0';
+		if( *segtype == NULL ) {
+			allot( char *, *segtype, 3 );
+		}
+		strncpy( *segtype, Default_segtype, 2 );
+		(*segtype)[1] = '\0';
 		mutex_unlock( &pfparams_mutex );
 
 	} else {
@@ -678,11 +681,11 @@ get_calibinfo( Srcname *parts, double time, char *segtype, double *calib, double
 
 		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
 	
-		segtype = (char *) getarr( Calibinfo.segtypearr, key );
+		*segtype = (char *) getarr( Calibinfo.segtypearr, key );
 
-		if( segtype == (char *) NULL ) {
+		if( *segtype == (char *) NULL ) {
 
-			segtype = add_segtype( parts->src_sta, parts->src_chan, time, 0 );
+			*segtype = add_segtype( parts->src_sta, parts->src_chan, time, 0 );
 		}
 	}
 
@@ -720,7 +723,7 @@ insert_orbgcf_hdr( G2orbpkt *gpkt )
 {
 	Srcname parts;
 	short	version = ORBGCF_VERSION;
-	char	segtype[3];
+	char	*segtype = 0;
 	double	calib;
 	double 	calper;
 
@@ -739,8 +742,8 @@ insert_orbgcf_hdr( G2orbpkt *gpkt )
 		version = htons( version );
 		memcpy( gpkt->packet, &version, 2 );
 		
-		get_calibinfo( &parts, gpkt->time, segtype, &calib, &calper );
-
+		get_calibinfo( &parts, gpkt->time, &segtype, &calib, &calper );
+		
 		memcpy( &gpkt->packet[2], segtype, 1 );
 		gpkt->packet[3] = 0;
 
@@ -885,8 +888,8 @@ recover_packetsequence( Recoverreq *rr )
 	if( strncmp( response, SERVER_ID_STRING, 
 		sizeof( SERVER_ID_STRING ) - 1 ) ) {
 		complain( 1, 
-		  "%s not a GCF server; TCP packet recovery failed\n", 
-		  rr->udpsource );
+		  "%s not a GCF server; TCP packet recovery failed. Server response was %s\n", 
+		  rr->udpsource, response );
 		bnsclose( bns );
 		free( rr );
 		return;
