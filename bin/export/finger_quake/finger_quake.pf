@@ -1,0 +1,72 @@
+# Parameter file for ANZA's finger bulletin
+
+network		ANZA				# name of network
+
+place_name      /export/data/places/so_cal	# gnis1.0 or places 1.2 database of locations
+						# use -g option if gnis1.0  
+
+use_place_name  yes             		# use the place_name database for comments/locations
+
+dist_gregion    5.0             # use gregion name if event is more than dist_gregion degrees
+                                # from any place in place table (irrelevant if use_place_name is "no")
+
+mag_pref &Tbl{		# Preferred magnitude to report
+   ml
+   mb
+   ms
+}
+
+auth_pref &Arr{         # A table describing authors and letter codes
+                        # for associated and located origins
+                        # Perl regular expression matching can be used
+   v    vladik
+   Q    QED
+   W    QED_weekly
+   C    cit_
+   r    rt
+   j    eakins
+   f    vernon
+}
+
+preface &Literal{	
+
+   Welcome to the UCSD-SIO-IGPP Real-time Seismic Array Processing Group
+   Automated locations of the Anza Real-time Broadband Array (ANZA)
+
+This is a list of automated locations for earthquakes recorded by the ANZA
+network.  All seismic events processed/recorded by this network are included:
+this includes local, regional, and teleseismic earthquakes as well as other
+non-seismic events.  
+
+Entries with a "*" have not been reviewed by a human.  These origins are
+undergoing continuous review and thus can change, be removed, or deleted
+at any time.  Note that location and magnitudes for EVENTS IN THIS LIST 
+ARE SUBJECT TO CHANGE.  These are not final solutions.
+
+All times are UTC (Greenwich Mean Time).  Subtract 8 hours to determine
+Pacific Standard time, subtract 7 hours for Pacific Daylight time.  
+
+Depths are in km.  Magnitudes can be Mb, Ms, or Ml.  The region associated 
+with each teleseismic quake is the geographic region name as defined by 
+Flinn, Engdahl and Hill (BSSA, 64, pp 771-992, 1974).  Distances for most 
+earthquakes are given from the nearest populated place.
+ 
+Instead of the typical quality factors (A, B, C, or D), we use the "Q" to 
+report the author or the reported location. The codes used for this bulletin 
+are as follows:  
+          f,j,v,r = UCSD location 
+                Q = USGS QED bulletin
+                W = USGS PDE weekly bulletin
+		C = SCSN bulletin
+
+For more information contact: 
+	Jennifer Eakins
+	jeakins@ucsd.edu
+	(858) 534-2869	
+
+or visit http://epicenter.ucsd.edu/ANZA/anza/anza.html
+
+The bulletin can be accessed on-line at:
+http://epicenter.ucsd.edu/~quake/bulletin.html
+}
+

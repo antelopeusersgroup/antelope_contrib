@@ -1,0 +1,414 @@
+.TH FINGER_QUAKE 1 "$Date$" 
+.SH NAME 
+finger_quake \- create a "finger quake" bulletin 
+
+.SH SYNOPSIS
+.nf
+\fBfinger_quake \fR
+	[-v]
+	[-g]
+	[-o]
+	[-p \fIpf\fP]
+	[-d \fIdays\fP | -e \fIevents\fP] 
+	[-a \fIalternate_home_dir\fP] 
+	[-t \fImagnitude_threshhold\fP]
+	[-s \fIorigin_subset\fP]
+	[-l \fIplace_subset\fP]
+	[-i \fIupdate_interval\fP]
+	[-y \fI2\fP | \fI4\fP]
+	\fIdatabase\fP
+.fi
+.SH DESCRIPTION
+\fBfinger_quake\fR creates and/or overwrites the users "$HOME/.plan" with a 
+description of the bulletin to be reported and a listing of events.  It is intended to
+be run on an operating real-time network.  Remote users can run a finger command
+for "user@yourhost.xxx" to retrieve the real-time bulletin.  Note that the finger
+command can be a security risk and is often disabled by sys-admins: check to see
+that it is enabled for users outside of your local network.  Very often the "-l" 
+option must be used.  See \fBfinger\fR(1).
+
+A unique introduction to your bulletin can be written and applied through
+a parameter file (see PARAMETER FILE section below).  Separate accounts must be 
+used for each real-time network bulletin.  The standard user name is "quake".
+
+The script will run indefinitely, checking the input \fIdatabase\fR for modifications
+and updating the bulletin as needed.  The length of time between checks to the
+update table can be adjusted on the command line.
+ 
+The default output \fI~/.plan\fR will list events in the following format:
+
+.ft CW
+.nf
+ DATE    TIME-UTC  LAT.   LON.   DEPTH  MAG   Q      REGION  
+yy/mm/dd hh:mm:ss  deg.   deg.    km     
++++++++++++++++++ ++++++ +++++++ +++++ ++++++ + +++++++++++++++++++++++++++++++++
+00/24/08 04:57:36 34.01N 116.70W   5.0 1.2ml*      8.7 km SE of Bonnie Bell
+00/24/08 04:12:47 33.49N 116.46W  16.0 0.4ml*      9.4 km  N of Ribbonwood
+00/24/08 02:25:11 32.55N 139.41E  30.0 0.0  *                   SOUTH OF HONSHU, JAPAN
+00/24/08 02:13:41 34.44N 116.29W  11.4 2.0ml  v   21.2 km SW of Landers
+00/24/08 02:09:30 34.61N 116.26W   0.0 2.1ml  v    8.7 km  E of Stedman
+00/23/08 21:23:24 34.35N 116.18W   0.1 2.0ml  v   13.0 km  S of Sunfair Heights
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+There are currently 5 events recorded by ANZA for the past 1 days.
+Last update: 08/24/2000 (237) 06:52:10.000 PDT
+
+
+.fi
+.ft R
+The most recent events are at the top of the list.  Any unreviewed events are marked
+with a "*" after the magnitude type.  Local events can be given more specific locations 
+than teleseismic events if you have a "place" table (see places1.2 schema).
+If there is no place table, or at a distance greater than the dist_gregion value specified 
+in the parameter file, the gregion command is used to determine a general location name for the event.
+
+The \fBqedd\fR(1) program can be used to retrieve this bulletin.  
+
+The \fBfinger_quake\fR script should be run as a background process.  The
+output should be a stable product that the community can
+depend on.  Format, number of events, or time period covered should not
+require frequent changes.  Thus, you might want to make the \fBfinger_quake\fR 
+program part of your running \fBrtexec\fR if you have an operating 
+real-time system.  Alternatively, run \fBfinger_quake\fR from the command line.
+
+See http://epicenter.ucsd.edu/ANZA/faq/rtcatalogs.html for suggestions on how to use these two programs under a running \fBrtexec\fR(1).
+
+
+.SH OPTIONS
+.IP \fB-v\fR
+Verbose messages. (Optional)
+
+.IP \fB-V\fR
+Very verbose messages. (Optional)
+
+.IP \fB-o\fR
+Exit the program after a single execution.  This is useful for times when you
+receive a request for "finger quake" format data that has already scrolled
+off your on-line listing. (Optional) 
+
+.IP \fB-g\fR
+Use the gnis1.0 schema place table rather than the places1.2 schema.  The default 
+schema is places1.2.  Ideally you would convert the older format gnis1.0 place table
+to the newer places1.2 format using \fBdbconvert\fR(1) prior to starting \fBfinger_quake\fR.  (Optional)
+
+.IP \fB-p\fR \fIpf\fR
+Choose the specified parameter file \fIpf\fR instead of the default, finger_quake.pf.
+You will need to modify the default in order to personalize the information you are
+presenting for your network.  (Optional)
+
+.IP "\fB-d\fR \fIday\fR | \fB-e\fR \fIevents\fR"
+Specify either the number of days of events you want reported, or the total number of
+events you wish to be listed.  The program defaults to printing the most recent
+20 events. If there are fewer events in the event table than the number you request
+\fBfinger_quake\fR will report all of the events in the event table.  (Optional) 
+
+.IP "\fB-a\fR \fIalternate_home_dir\fR"
+Update an alternate user's $HOME/.plan file.  The user executing the program will
+need to have read/write permissions in this alternate home directory. This is useful
+if you wish to update the .plan file of user "quake", but you run the program as user "rt".
+(Optional)
+
+.IP "\fB-t\fR \fImagnitude_threshold\fR"
+Only report magnitudes greater than the given value.  The default is to report
+all events in the catalog that have positive magnitudes. If you want events with
+null magnitudes reported use "-t -999.0". (Optional)
+
+.IP "\fB-l\fR \fIplace_subset\fR"
+Only use placetypes matching this criteria.  This is intended to be a very simple 
+subset, such as "placetype=='ppl'".  Ideally, you would already have reduced your
+place(s) table to the smallest possible subset before starting this program.  See 
+EXAMPLE below. (Optional)
+
+.IP "\fB-s\fR \fIorigin_subset\fR"
+Report origins matching this subset criteria.  This is intended to be a very simple 
+subset, such as a distance criteria, or author specification.  It can also be used 
+to reject unreviewed origins.  See EXAMPLE below. (Optional)
+
+.IP "\fB-y\fR \fI2\fR | \fI4\fR"
+Use a 2 or 4 digit year in the report.  Currently \fBqedd\fR(1) only supports a 2 digit
+year.  If this option is not specified, the default output is a 2 digit year. (Optional)
+
+.IP "\fB-i\fR \fIupdate_interval\fR"
+Time in seconds to wait between checks for an updated catalog.  The default of
+300 seconds can be overridden with this option.  The bulletin will only be updated if
+the checked catalog has been updated.  Otherwise no updates are made to the .plan file: this
+includes no update to the "Last update" time reported in the bulletin. (Optional) 
+
+.IP \fIdatabase\fR
+Input database that is being updated in real-time.  Must have a css3.0 (or rt1.0) 
+format origin and event table.  Prefor's must be set. (required)
+
+.SH FILES
+An ASCII file ".plan" is created in the users home directory.  The file is overwritten
+if it already exists.  
+
+A css3.0 origin and event table are needed in order to produce a bulletin.
+
+A places1.2 place table with "ppl" locations is needed if the \fIuse_place_name\fR option is set
+to yes in the parameter file.  These tables are produced from files downloaded from the GNIS 
+website (http://mapping.usgs.gov) and converted with the \fBgnis2db(1)\fR script.
+
+.SH PARAMETER FILE
+
+The following is an example \fBfinger_quake\fR parameter file.
+
+.nf
+
+# Parameter file for ANZA's finger bulletin
+
+network		ANZA				# name of network
+
+place_name      /data/placees/so_cal	# gnis1.0 or places 1.2 database of locations
+						# use -g option if gnis1.0  
+
+use_place_name  yes             		# use the place_name database for comments/locations
+
+dist_gregion    5.0             # use gregion name if event is more than dist_gregion degrees
+                                # from any place in place table (irrelevant if use_place_name is "no")
+
+mag_pref &Tbl{		# Preferred magnitude to report
+   ml
+   mb
+   ms
+}
+
+auth_pref &Arr{         # A table describing authors and letter codes
+                        # for associated and located origins
+                        # Perl regular expression matching can be used
+   v    vladik
+   Q    QED
+   W    QED_weekly
+   C    cit_
+   r    rt
+   j    eakins
+   f    vernon
+}
+
+preface &Literal{	
+
+   Welcome to the UCSD-SIO-IGPP Real-time Seismic Array Processing Group
+   Automated locations of the Anza Real-time Broadband Array (ANZA)
+
+This is a list of automated locations for earthquakes recorded by the ANZA
+network.  All seismic events processed/recorded by this network are included:
+this includes local, regional, and teleseismic earthquakes as well as other
+non-seismic events.  
+
+Entries with a "*" have not been reviewed by a human.  These origins are
+undergoing continuous review and thus can change, be removed, or deleted
+at any time.  Note that location and magnitudes for EVENTS IN THIS LIST 
+ARE SUBJECT TO CHANGE.  These are not final solutions.
+
+All times are UTC (Greenwich Mean Time).  Subtract 8 hours to determine
+Pacific Standard time, subtract 7 hours for Pacific Daylight time.  
+
+Depths are in km.  Magnitudes can be Mb, Ms, or Ml.  The region associated 
+with each teleseismic quake is the geographic region name as defined by 
+Flinn, Engdahl and Hill (BSSA, 64, pp 771-992, 1974).  Distances for most 
+earthquakes are given from the nearest populated place.
+ 
+Instead of the typical quality factors (A, B, C, or D), we use the "Q" to 
+report the author or the reported location. The codes used for this bulletin 
+are as follows:  
+          f,j,v,r = UCSD location 
+                Q = USGS QED bulletin
+                W = USGS PDE weekly bulletin
+		C = SCSN bulletin
+
+For more information contact: 
+	Jennifer Eakins
+	jeakins@ucsd.edu
+	(858) 534-2869	
+
+or visit http://epicenter.ucsd.edu/ANZA/anza/anza.html
+
+The bulletin can be accessed on-line at:
+http://epicenter.ucsd.edu/~quake/bulletin.html
+}
+
+.fi
+.LP
+The first part of the parameter file requires default values to 
+be set.
+
+.IP "network"
+
+Text string used for descriptive output in the bulletin.
+
+.IP "place_name" 
+The descriptor file for the ".place" table.  The .place table
+is described in the places1.2 schema which is a contributed schema
+written by Kent Lindquist.  The complete table can contain latitude and longitude 
+coordinates for populated places, schools, mountain summits, 
+airports, cemeteries, etc.  The user can choose to subset the place table
+to select only populated places or places within a certain distance if the \fB-l\fR option
+is chosen.  In order to speed up the script, you might want to create a place table that is already 
+reduced to only ftypes/places of "ppl" and to subset the table to cover only your area of interest.  
+
+A ".places" table from the gnis1.0 schema can also be used, but you must
+use the \fB-g\fR option to indicate that the place_name is of this scehma.
+
+The \fBgnis2db\fR(1) script can be used to convert quote-comma delimited 
+files from the USGS Geographic Names Information System (GNIS).  
+See http://mapping.usgs.gov.
+
+.IP "use_place_name" 
+Whether or not you want the place_name database used for this finger bulletin.
+Value should be "yes" or "no".
+
+.IP "dist_gregion" 
+The distance beyond which you wish only to report the gsregion name.  This
+number is irrelevant if use_place_name is set to "no".   
+
+.IP "mag_pref"
+An ordered list of magnitudes to check for each reported origin.  The first 
+magnitude from the list will be reported if found in the origin table for each
+individual event: subsequent magnitudes will be ignored.  Currently css3.0
+only reports mb, ms, or ml magnitudes in the origin table.
+
+.IP "auth_pref" 
+An associative array that lists the possible database author names for
+origins determined by local analysts or the names of external catalog 
+authors.  You can include some basic Perl regex pattern matching. 
+
+.LP
+The second part of the parameter file contains an introductory
+text message that will be placed at the head of the bulletin.
+This should be modified to include your specific local contact
+information as well as any information about the authors
+and external catalogs that may be used.  No variable expansion
+is allowed and all embedded newlines, quotes and backslashes
+will appear as they are in the parameter file.  See \fBpf(5)\fR 
+for more information on the "Literal" value.
+
+Please make sure that you modify this message.  Although I do not
+mind answering questions about this program, I would rather not be
+the contact for the bulletin you are publishing.
+
+.SH ENVIRONMENT
+Standard Antelope environment is needed.  
+
+The environment variable DBLOCKS may need to be set to "yes".
+
+.SH EXAMPLE
+.LP
+
+The following example will run the \fBfinger_quake\fR program using the specific
+parameter file for the Anza network, finger_quake_anza.pf.  The most
+recent 50 events found in the origin table of db/anza will be reported. 
+.ft CW
+.RS .2i
+.nf
+epicenter{quake}% finger_quake -p finger_quake_anza -e 50 db/anza
+.fi
+.RE
+.ft R
+
+.LP
+The bulletin can be retrieved remotely with the command: 
+.ft CW
+.RS .2i
+.nf
+"finger -l quake@epicenter.ucsd.edu"
+.fi
+.RE
+.ft R
+.LP
+Note that some systems will require the "-l" flag for the 
+full bulletin to be displayed.  (See \fBfinger(1)\fR).
+
+
+This example assumes that you want the most recent 7 days from the
+KNET catalog for all events with magnitudes greater than 1.0 and
+events within 5.0 degrees of station AAK (42.6333N 74.9444W).
+.ft CW
+.RS .2i
+.nf
+epicenter{quake}% finger_quake -p finger_quake_knet -d 7 -t 1.0 -s "distance(lat,lon,42.6333,74.4944)<=5.0" db/knet
+.fi
+.RE
+.ft R
+.LP
+
+
+This example subsets the place table for places that are "schools" and
+reports all events over magnitude 5.0 for the past year.  The program will only run once.
+
+.ft CW
+.RS .2i
+.nf
+epicenter{quake}% finger_quake -p finger_quake_anza -d 365 -t 5.0 -o -s "distance(lat,lon,33.6,-116.5<='10.0')" -l "placetype=~/school/" db/anza
+.fi
+.RE
+.ft R
+.LP
+
+.SH "SEE ALSO"
+.nf
+antelopeenv(5)
+finger(1)
+gnis2db(1)
+reflect(1)
+reflectd(1)
+rtexec(1)
+qedd(1)
+
+See http://epicenter.ucsd.edu/ANZA/faq/rtcatalogs.html for information on setting 
+up an rtexec.pf file that will run multiple bulletin retrieval and
+webpage update scripts. 
+.fi
+.SH "BUGS AND CAVEATS"
+
+Not fully tested.  Use caution...
+
+You must have both an origin and event table with prefor set for 
+each event.
+
+I think I have it set up so that it won't die unpleasantly if you are
+asking for more events than exist in the database.  However, I am quite
+sure that there are many situations for which I have not tested. 
+
+This program can be very slow if you have a large database of placenames.
+
+The environment variable DBLOCKS may need to be set to "yes" if
+you are updating your \fIdatabase\fR by the \fBreflect\fR/\fBreflectd\fR 
+method.  \fBfinger_quake\fR will run without DBLOCKS set, but if the 
+\fIdatbase\fR is updated by \fBreflect\fR while you are in the middle of 
+getting origin information, you will see an error message similar to:
+
+
+.ft CW
+.RS .2i
+.nf
+No need for update.  Sleeping for 300.
+perl: can't write to directory /opt/antelope/dev/data/site
+perl: Bad record id 4034 in db pointer
+perl: Bad record id 4035 in db pointer
+perl: Bad record id 4032 in db pointer
+perl: Bad record id 4025 in db pointer
+perl: Bad record id 4024 in db pointer
+perl: Bad record id 4026 in db pointer
+perl: Bad record id 4033 in db pointer
+perl: Bad record id 4028 in db pointer
+perl: Bad record id 4029 in db pointer
+perl: Bad record id 4030 in db pointer
+perl: Bad record id 4031 in db pointer
+perl: Bad record id 4037 in db pointer
+perl: Bad record id 4043 in db pointer
+perl: Bad record id 4042 in db pointer
+perl: Bad record id 4044 in db pointer
+perl: Bad record id 4034 in db pointer
+perl: Can't resolve db pointer in dbgetv: 26 43 10 3921
+.fi
+.RE
+.ft R
+
+and \fBfinger_quake\fR will croak.
+
+.SH AUTHOR
+.nf
+Jennifer Eakins
+jeakins@ucsd.edu
+(858)534-2869
+.fi
+
