@@ -11,11 +11,16 @@
  ***********************************************************************/
 #ifndef ipd2_h_included
 #define ipd2_h_included
+
+#include "deviants_include.h" 
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/time.h>
+#ifndef linux
 #include <sys/ser_sync.h>
 #include <sys/conf.h>
+#endif
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -29,7 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <poll.h>
+#include H_POLL
 #include <stddef.h>
 #include <stropts.h>
 #include <netdb.h>

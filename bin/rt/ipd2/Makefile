@@ -4,7 +4,7 @@
 BIN = ipd2
 MAN1= ipd2.1   
 ldflags=-L.
-ldlibs	= -lsocket -lnsl -Bstatic -lpkt2 -lorb -Bdynamic $(TRLIBS)
+ldlibs	= -lpkt2 -lorb $(TRLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= ipd2.o\
