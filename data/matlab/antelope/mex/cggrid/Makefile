@@ -18,6 +18,7 @@ MEXSRCS= \
 	cggrid_getmesh.c \
 	cggrid_nx.c \
 	cggrid_ny.c \
+	cggrid_probe.c \
 	cggrid_write.c 
 
 CLEAN= 

@@ -1,0 +1,9 @@
+CGGRID_PROBE	Probe a CGGRID object for the data value at a givenpoint
+
+VAL = CGGRID_PROBE ( CGG, X, Y )
+
+CGGRID_PROBE returns the data-value VAL from within a cggrid object
+CGG, where X and Y are values of coordinates within the grid. If 
+X and Y do not fall exactly on a grid point, bilinear interpolation is 
+used to estimate the grid value at the test point. If X and Y are 
+for a point outside the grid, CGGRID_PROBE returns NaN.
