@@ -11,6 +11,7 @@ class RayPathSphere
 {
 public:
 	int npts;
+	double p;
 	double *r,*delta,*t;
 	RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
 	RayPathSphere(int n)
@@ -19,15 +20,19 @@ public:
 	RayPathSphere(Velocity_Model_1d& vm,
 		double p, double zmax, double tmax, double dt, 
 		const string mode);
+	RayPathSphere(const RayPathSphere& raytocopy);
 	~RayPathSphere(){if(r!=NULL)delete[]r;
 		if(delta!=NULL)delete[]delta;
 		if(t!=NULL)delete[]t;};
 	void operator = (const RayPathSphere&);
+	double depth(int ip);
 };
 
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
      double theta, int ix1, int ix2, int ix3) throw(GCLgrid_error);
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+dmatrix *GCLgrid_Ray_project_up(GCLgrid3d& grid, RayPathSphere& path,
+     double theta, int ix1, int ix2, int ix3) throw(GCLgrid_error);
+dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
      double theta, int ix1, int ix2) throw(GCLgrid_error);
 
 }

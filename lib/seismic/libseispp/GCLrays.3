@@ -1,107 +1,156 @@
-.TH GCLrays 3 "$Date$"
+'\" te
+.TH GCLRAYTRACE 3 "$Date$"
 .SH NAME
-GCLgrid_Ray_project - transfers a ray path to GCLgrid coordinates
+GCLraytrace - ray path functions for use with GCLgrid objects 
 .SH SYNOPSIS
 .nf
+#include "dmatrix.h"
+#include "gclgrid.h"
 #include "ray1d.h"
 using namespace SEISPP;
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
-                double theta, int ix1, int ix2,ix3)
-			throw(GLCgrid_error);
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
-                double theta, int ix1, int ix2)
-			throw(GLCgrid_error);
-class RayPathSphere
-.fi
-.SH DESCRIPTION
-.LP
-The Poppeliers and Pavlis (2003) plane wave migration method is based on an asymptotic 
-theory that back-projects data along rays.  Figure 3 of their
-paper shows the time to depth mapping operator for the process as a geometric figure
-that can be viewed as a GCLgrid (see GCLgrid(3)). This function provides a building
-block to construct such an object in the plane wave migration code.  It is also
-used in migration to construct ray paths from scattering points through a 3D 
-model.   
-.LP
-A GCLgrid defines points as parallel arrays of geographical and Cartesian coordinates.
-Part of the description is a transformation matrix to go from geographical coordinates
-(whole earth reference frame) to the GCLgrid Cartesian frame which is translated and
-rotated relative to the standard global reference frame.  The \fIGCLgrid_Ray_project\fR
-takes a ray path defined for a 1D reference model (defined by the RayPathSphere object
-described below) and projects that path to the point defined by the three 
-indices passed to the function (ix1,ix2, and ix3 are the index positions in the
-3D array of points that are used in the GCLgrid3d object). The function will
-throw a GCLgrid_error object the requested index is outside the range of 
-internal arrays that define the grid.  The path returned is the reference ray
-path starting at the point defined by the indices and running downward and 
-away at the azimuth defined by the theta argument.  For convenience the function
-is overloaded for the (common) special case where the ray should originate
-at the surface.  In that case the ix3 index is not required and is assumed.
-.LP
-The result that is returned is a path defined as a 3xN matrix of coordinates
-(defined with a dmatrix(3) object).
-The coordinates are defined relative to the Cartesian reference frame of the
-GCLgrid3d object passed to the function.  No checking is made that the path
-is contained inside the GCLgrid3d objects extent.  The order of points in
-the matrix is row 0=x1, row 1=x2, and row 2 = x3.  Column 0 is the 
-point defined by ix1,ix2, and ix3 and adjacent points define a curve 
-running downward and away at angle theta.  Note theta is an angle 
-relative to LOCAL north, and not any global reference frame.  This is
-used in plane wave migration to allow for the fact that incident wave
-azimuth can vary across a large aperture array.  
-.LP
-The building block used as input for this function is a RayPathSphere object 
-that is defined as follows:
-.nf
+
 class RayPathSphere
 {
 public:
-	int npts;
-	double *r,*delta,*t;
-	RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
-	RayPathSphere(int n)
-	{npts=n; r=new double[n], delta=new double[n], t=new double[n];};
-	// This fully parameterized version constructs a full path
-	RayPathSphere(Velocity_Model_1d& vm,
-		double p, double zmax, double tmax, double dt, 
-		const char mode[2]);
-	~RayPathSphere(){if(r!=NULL)delete[]r;
-		if(delta!=NULL)delete[]delta;
-		if(t!=NULL)delete[]t;};
-	void operator = (const RayPathSphere&);
+        int npts;
+	double p;
+        double *r,*delta,*t;
+        RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
+        RayPathSphere(int n)
+        {npts=n; r=new double[n], delta=new double[n], t=new double[n];};
+        // This fully parametrized version constructs a full path
+        RayPathSphere(Velocity_Model_1d& vm,
+                double p, double zmax, double tmax, double del,
+                const string mode);
+        RayPathSphere(const RayPathSphere&);
+        ~RayPathSphere(){if(r!=NULL)delete[]r;
+                if(delta!=NULL)delete[]delta;
+                if(t!=NULL)delete[]t;};
+        void operator = (const RayPathSphere&);
+	double depth(int ip);
 };
+dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
+     double theta, int ix1, int ix2, int ix3) throw(GCLgrid_error);
+dmatrix *GCLgrid_Ray_project_up(GCLgrid3d& grid, RayPathSphere& path,
+     double theta, int ix1, int ix2, int ix3) throw(GCLgrid_error);
+dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
+     double theta, int ix1, int ix2) throw(GCLgrid_error);
 .fi
+.SH DESCRIPTION
 .LP
-This is a comparatively simple data object using three vectors (r, delta, and t)
-to store information about a basic ray path in spherical coordinates.  That is,
-these are parallel arrays storing radius (in kms), distance (radians), and time 
-(in seconds) of points in a ray path.  This would normally be created with
-the fully parameterized  constructor that creates this object using
-a given Velocity_Model_1d object  (vm) and parameters describing a 1d model
-ray path:  p=ray parameter (s/km), zmax=maximum depth to trace ray, 
-and tmax=maximum time to trace to (using a given 1d model).
-The mode variable on this constructor determines how the points that define
-the ray are to be spaced.  If mode=='z' the points will be equally spaced
-in depth.  By default equal time spacing will be used.
+Body wave imaging with ray theory based propagators requires computing
+ray paths and path integrals along ray paths.  This set of objects and
+helper functions work with GCLgrid(3) objects to accomplish this along
+with the related function pathintegral(3).  
+The methods used here depend on a form of approximate ray tracing 
+where the rays are computed using a 1d earth model, but the concept is
+that path integrals would normally be computed through a 3d earth model
+defined by a GCLscalarfield3d object.  
+Hence, these functions are of primary use for teleseismic P wave imaging
+where this approximation is, as far as we know, relatively good most of 
+the time.
 .LP
-
-.SH RETURN VALUES
+The RayPathSphere object defines a reference ray path for a 1d reference
+model.  The path is defined by the three parallel vectors r, delta, and t
+of length npts.  r, delta, and t define radius, accumulated distance (in radians),
+and time (in seconds) for the path.  The time in the object is 
+computed from the 1D earth model from which the ray was generated.
+Note the path always starts at earth's surface and
+defines a curve directed downward into the earth.  
+Further note that radius values are based on a spherical earth with a 
+standard radius of 6378.17 km.  
+The depth function is supplied to provide a datum less sensitive to this
+fixed parameter.  
+The ray parameter used to generate the ray is stored in the object
+as the variable p.  Be warned it has units of radians/s since this is spherical
+earth geometry.  
+.SH CONSTRUCTORS
 .LP
-Both functions return pointers 
-to matrices defined as dmatrix(3) objects, which are a lightweight matrix class.
-Note that the new operator is used to create these so the caller must arrange
-to free them when finished.
+The main constructor that should be used is the fully parameterized 
+constructor containing the Velocity_Model_1d object with the name
+vmod.  A simple unparameterized constructor and one with a size parameter,
+n, are defined should not normally be used.
+.LP
+The fully parameterized constructor uses a 1D earth model defined by
+vmod.  It does not know about P and S waves, only velocities.  
+That is, it simply applies standard 1d ray trace equations to the earth model
+defined by vmod and traces a ray with ray parameter p.  An 
+IMPORTANT warning is that the input ray parameter to this constructor
+is in units of s/km while the ray parameter stored with the object
+is the conversion to s/radian.  This was intentional since s/radians
+make no sense to a human user, but are appropriate for the object
+definition seen mainly by the machine.  The ray path generated by
+this constructor starts at the surface and increments downward in 
+one of two formats defined by the mode variable.  When mode is "z"
+the ray is aimed to produce steps uniform in z at interval del
+until a depth of zmax is reached.
+When mode is "t" the ray is computed to produce (approximate) equal
+times steps of size del until the time of tmax is exceeded. 
+A ray tracer has to handle the singular case of a turning ray.  
+This is handled in a simple way by simply stopping the ray tracing
+when the next step would produce a horizontal ray (singular
+radical in the integration formula) and setting the number of
+points for the truncated path.  The constructor does NOT throw
+an exception in this case, but only issues a warning message to cerr.  
+I considered this sensible since this is not really an error and 
+that case should be handled in a different way.  Furthermore, 
+constructors normally discard data they are constructing if they
+throw an exception, which is not a desirable behaviour in this case.
+.SH HELPERS
+.LP
+The primary use of a RayPathSphere object is as input to the three
+helper functions:  \fIGCLgrid_Ray_project_down, GCLgrid_Ray_project_up\fR, and 
+\fIGCLgrid_Ray_project\fR.  
+\fIGCLgrid_Ray_project_down\fR and \fIGCLgrid_Ray_project_up\fR take a ray 
+defined by a RayPathSphere object, path, and essentially translate it
+to the point in space defined by the GCLgrid3d position on the earth
+associated with the grid index position (ix1,ix2,ix3).  An output raypath
+is created directed at the angle theta (local geographic azimuth at that
+latitude and longitude).  The "up" version creates a path from the point
+(ix1,ix2,ix3) to earth's surface and the "down" version creates a path from
+that point to the bottom end of the input ray definition.  
+In both cases when the path begins exactly at the grid point defined
+by (ix1,ix2,ix3)  be warned that the first path vector defined by 
+the jump from point 0 to point 1 may be very small and should not 
+be used for gradient calculations as it is subject to divide by
+zero errors.  
+.LP
+The \fIGCLgrid_Ray_project\fR function does the same thing as the 
+previously described functions but for a 2D
+reference grid.  There is no up and down version in this case because
+it is assumed there is only a down case.  That is, although a GCLgrid could
+define a buried surface, the assumption here is that the points are at or
+near earth's surface.  Because it uses only a 2D grid only the ix1 and
+ix2 index positions are needed.  
+.LP
+All of these functions return a pointer to a newly allocated dmatrix object.
+This matrix contains a 3XN matrix (You can get the number of points in the path 
+with the columns() member of the dmatrix(3) object.) that defines the 
+path in the Cartesian reference frame of the GCLgrid or GCLgrid3d object
+passed to the function.  (row 0=x1, row 1=x2, and row 2 = x3)  
+Note that because this matrix is created by these functions it needs to be
+deleted when you are finished with it to avoid a memory leak.
+.SH EXCEPTIONS
+.LP
+The GCLgrid_Ray_project functions will throw a GCLgrid_error object if 
+the requested indices are invalid or if the ray path and grid are 
+inconsistent.  If thrown these errors indicate a programming error
+that needs to be fixed.
+.LP
+The depth member function of the RayPathSphere object will throw
+a seispp_error if the requested depth index position is outside
+the range of the ray defined in the object.
 .SH LIBRARY
-.LP
--lgclgrid -ldmatrix
+-lgclgrid -lseispp
 .SH "SEE ALSO"
 .nf
-glcgrid(3), dmatrix(3)
+gclgrid(3), dmatrix(3), pathintegral(3), seispp_error(3)
 .fi
 .SH AUTHOR
 .nf
 Gary L. Pavlis
+Department of Geological Sciences
 Indiana University
 pavlis@indiana.edu
-.nf
+.fi
 .\" $Id$

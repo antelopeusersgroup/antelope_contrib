@@ -390,6 +390,7 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 	map<Interval,Resample_Operator,Interval_Cmp>::iterator this_ro;
 	// First we need to find the right resampling operator for this sample rate
 	double sr_in=1.0/(ts.dt);
+	Time_Series tsout;
 	si_range.low=sr_in;
 	si_range.high=sr_in;
 	this_ro = rd.decset.find(si_range);
@@ -402,7 +403,7 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 			+string(dt_str));
 	}
 	dv = this_ro->second.apply(ts.ns,&(ts.s[0]),ts.dt,dtout,trim);
-	Time_Series tsout=ts;
+	tsout=ts;
 	tsout.dt=dtout;
 	// necessary because tsout.s is a container
 	tsout.ns = dv.d.size();

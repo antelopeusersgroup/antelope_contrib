@@ -54,7 +54,6 @@ RayPathSphere::RayPathSphere(Velocity_Model_1d& vmod,
 	double ddelta,dz,dt;
 	double vel;
 	int npoints;
-	double p; 
 	int i;
 
 	p = u*R0; // this ray parameter will have units of s/radian
@@ -116,11 +115,25 @@ RayPathSphere::RayPathSphere(Velocity_Model_1d& vmod,
 		delta[i]=delta[i-1] + (*id);
 	}
 }
+// Standard copy constructor
+RayPathSphere::RayPathSphere(const  RayPathSphere& other)
+{
+	npts=other.npts;
+	p=other.p;
+	r=new double[npts];
+	delta=new double[npts];
+	t=new double[npts];
+	dcopy(npts,other.r,1,r,1);
+	dcopy(npts,other.delta,1,delta,1);
+	dcopy(npts,other.t,1,t,1);
+}
+
 /* basic assignment operator for this object*/
 void RayPathSphere::operator=(const RayPathSphere& other)
 {
 	if(&other==this) return;
 	npts=other.npts;
+	p=other.p;
 	if(r!=NULL) delete [] r;
 	if(delta!=NULL) delete [] delta;
 	if(t!=NULL) delete [] t;
@@ -131,26 +144,36 @@ void RayPathSphere::operator=(const RayPathSphere& other)
 	dcopy(npts,other.delta,1,delta,1);
 	dcopy(npts,other.t,1,t,1);
 }
-/*  This function takes an input of a ray path in spherical coordinates
- *  defined by a RayPathSphere object.  This is assumed to be spherical
- *  coordinate definitions of the path in a radius-distance (radians)
- *  reference frame.  This path is translated to the origin of the
- *  (input)GLCgrid object and projected along the positive x1 baseline
- *  of this GLCgrid.  Note this tacitly assumes the GCLgrid passed
- *  is a "standard" grid and not a more general GCLgrid object allowed
- *  by the definition of a GCLgrid.  
- *
- *  The output dmatrix contains cartesian vectors in the GCLgrid 
- *  reference frame for this path.  Note this means x2 coordinates
- *  are always machine zeros because the path is projected parallel
- *  to the x1 baseline.  
- *
- *  Note this function maybe should return a pointer to avoid
- *  copying this potentially fairly large object.
- *
- *  Author:  Gary L. Pavlis
+double RayPathSphere::depth(int ip)
+{
+	const double R0=6378.17;  
+	if( (ip>=npts) || (ip<0) )
+		throw seispp_error("RayPathSphere::depth index out of range");
+	else
+		return(R0-r[ip]);
+}
+/* This function takes an input ray path defined by a RayPathSphere
+object (path) and returns a 3xN_points matrix of points defining
+the projection of this point in GLCgrid3d cartesian coordinates.
+The path returned is always directed downward.  The first point 
+will be the coordinates of the point at ix1,ix2,ix3 in the 
+GCLgrid3d object (grid).  Successive points will be the projection
+of the ray (path) beginning at the depth defined by this point 
+and continuing to the end of path.  Note the first interval may 
+commonly be shortened in length unless the path happens to mesh
+exactly with the grid.  In short, that point is subject to numerical
+instability if on tries to divide by that interval.  
+
+The function returns a pointer to a newly allocated dmatrix
+to avoid the copying overhead of this potentially fairly large
+object.  
+
+The function throws an exception if ix1,ix2, or ix3 are outside
+the bounds of the grid.
+
+Author:  Gary L. Pavlis
 */
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
 		double theta, int ix1, int ix2, int ix3)
 					throw(GCLgrid_error)
 {
@@ -162,64 +185,68 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 	double lat0,lon0;
 	if(ix1>=grid.n1 || ix2>=grid.n2 || ix3>=grid.n3
 			|| ix1<0 || ix2<0 || ix3<0)
-		throw GCLgrid_error("GCLgrid_Ray_project was passed an illegal index\n");
+		throw GCLgrid_error("GCLgrid_Ray_project_down was passed an illegal index");
 
-
-	// Handle the Earth's surface case specially using the overloaded 
-	// version.  It is slightly faster because it doesn't have to handle
-	// the endpoint condition
-	if(ix3>=(grid.n3 - 1)) // Could be == but a safer test
-	{
-		try{
-		  pathptr = GCLgrid_Ray_project(grid, path,
-			 theta,  ix1, ix2);
-		} catch(GCLgrid_error err) { throw err;};
-
-	}
+	int np;
+	int i0;
+	double delta0;
+	int i,ii;
+	double depth = grid.depth(ix1,ix2,ix3);
+	if((path.r[0]-path.r[path.npts-1])<depth)
+		throw GCLgrid_error("GCLgrid_Ray_project_down:  Given ray path does not reach requested depth");
+	//Search for point just below depth of ix3 point
+	for(i0=0;i0<path.npts;++i0)
+		if((path.r[0]-path.r[i0])>depth) break;
+	np = path.npts - i0;  // right because we add one point
+	pathptr = new dmatrix(3,np);
+	// first point is just the grid point
+	pathout(0,0) = grid.x1[ix1][ix2][ix3];
+	pathout(1,0) = grid.x2[ix1][ix2][ix3];
+	pathout(2,0) = grid.x3[ix1][ix2][ix3];
+	// Get the distance correction to subtract for this point
+	if(i0==0)
+		delta0=0.0;
 	else
 	{
-		double depth;
-		int np;
-		int i0;
-		double delta0;
-		int i,ii;
-		depth = grid.depth(ix1,ix2,ix3);
-		//Search for point just below depth of ix3 point
-		for(i0=0;i0<path.npts;++i0)
-			if((path.r[0]-path.r[i0])>depth) break;
-		np = path.npts - i0;  // right because we add one point
-		pathptr = new dmatrix(3,np);
-		// first point is just the grid poin
-		pathout(0,0) = grid.x1[ix1][ix2][ix3];
-		pathout(1,0) = grid.x2[ix1][ix2][ix3];
-		pathout(2,0) = grid.x3[ix1][ix2][ix3];
-		// Get the distance correction to subtract for this point
-		if(i0==0)
-			delta0=0.0;
-		else
-		{
-			delta0 = path.delta[i0-1] 
-				+ (depth-path.r[i0])
-				*(path.delta[i0]-path.delta[i0-1])
-				   /(path.r[i0]-path.r[i0-1]);  
-		}
-		lat0=grid.lat(ix1,ix2,ix3);
-		lon0=grid.lon(ix1,ix2,ix3);
-		for(i=i0,ii=1;i<path.npts;++i)
-		{
+		delta0 = path.delta[i0-1] 
+			+ (depth-path.r[i0])
+			*(path.delta[i0]-path.delta[i0-1])
+			   /(path.r[i0]-path.r[i0-1]);  
+	}
+	lat0=grid.lat(ix1,ix2,ix3);
+	lon0=grid.lon(ix1,ix2,ix3);
+	for(i=i0,ii=1;i<path.npts;++i,++ii)
+	{
+		if(ii==1)
 			latlon(lat0,lon0,path.delta[i]-delta0,theta,&lat,&lon);
-			radius = r0_ellipse(lat) - (path.r[0]-path.r[i]);
-			this_point = grid.gtoc(lat,lon,radius);
-			pathout(0,ii)=this_point.x1;
-			pathout(1,ii)=this_point.x2;
-			pathout(2,ii)=this_point.x3;
-		}
+		else
+			 latlon(lat0,lon0,path.delta[i],theta,&lat,&lon);
+		radius = r0_ellipse(lat) - (path.r[0]-path.r[i]);
+		this_point = grid.gtoc(lat,lon,radius);
+		pathout(0,ii)=this_point.x1;
+		pathout(1,ii)=this_point.x2;
+		pathout(2,ii)=this_point.x3;
 	}
 	return(pathptr);
 }
-/* overloaded version that assumes ix3=n3-1 */
+/* Similar to above but for a GCLgrid (2d) object.  Path then
+starts at the radius of the surface this defines.  This is assumed
+to be some surface that approximate earth's surface.  The ray is
+projected from the point defined by ix1,ix2 downward at and angle
+of theta.  The returned dmatrix is the same length as the input 
+path, but the returned path has the coordinates of the projection
+of this ray from the point defined by ix1,ix2 downward with 
+the local vertical and at angle theta.  i.e. it is projected
+correctly for a sphere, but into the GCLgrid cartesian reference
+frame.  Note this algorithm is most useful in combination with a
+3d grid that is an extension of the 2d (i.e. box-like with this as
+it's top). 
 
-dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+This has not "up" or "down" qualifier as there is only one 
+choice for a solid earth person.
+*/
+
+dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
 		double theta, int ix1, int ix2)
 					throw(GCLgrid_error)
 {
@@ -229,13 +256,12 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 	double radius;  // Radius corrected for ellipticity
 	double lat,lon;
 	double lat0,lon0;
-	int ix3=grid.n3-1;
 	if(ix1>=grid.n1 || ix2>=grid.n2 || ix1<0 || ix2<0)
 		throw GCLgrid_error("GCLgrid_Ray_project was passed an illegal index\n");
 
 	pathptr = new dmatrix(3,path.npts);
-	lat0=grid.lat(ix1,ix2,ix3);
-	lon0=grid.lon(ix1,ix2,ix3);
+	lat0=grid.lat(ix1,ix2);
+	lon0=grid.lon(ix1,ix2);
 	for(int i=0;i<path.npts;++i)
 	{
 		latlon(lat0,lon0,path.delta[i],theta,&lat,&lon);
@@ -244,6 +270,68 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 		pathout(0,i)=this_point.x1;
 		pathout(1,i)=this_point.x2;
 		pathout(2,i)=this_point.x3;
+	}
+	return(pathptr);
+}
+/* like the "down" version above, except the path that is return is 
+directed from the point at ix1,ix2,ix3 upward to the surface.  
+*/
+dmatrix *GCLgrid_Ray_project_up(GCLgrid3d& grid, RayPathSphere& path,
+		double theta, int ix1, int ix2, int ix3)
+					throw(GCLgrid_error)
+{
+	dmatrix *pathptr;
+	dmatrix& pathout=*pathptr;
+	Cartesian_point this_point;
+	double radius;  // Radius corrected for ellipticity
+	double lat,lon;
+	double lat0,lon0;
+	// Note subtle difference from down version here.  test for ix3>=grid.n3-1 instead
+	// of ix3>=grid.n3.  grid.n3-1 is assumed to be at or near earth's surface, so 
+	// requesting up from there makes no sense.
+	if(ix1>=grid.n1 || ix2>=grid.n2 || ix3>=(grid.n3-1)
+			|| ix1<0 || ix2<0 || ix3<0)
+		throw GCLgrid_error("GCLgrid_Ray_project_up was passed an illegal index\n");
+
+	int np;
+	int i0;
+	double delta0;
+	int i,ii;
+	double depth = grid.depth(ix1,ix2,ix3);
+	// could recover this kind of error by extrapolation, but it 
+	// is better to consider it an error and throw an exception in this case
+	if( (path.r[0]-path.r[path.npts-1])<depth )
+		throw GCLgrid_error("GCLgrid_Ray_project_up:  Given ray does not reach to depth of requested grid point");
+	//Search for point just above depth of ix3 point
+	// Note:  down algorithm is point below not above
+	for(i0=path.npts-1;i0>0;--i0)
+		if((path.r[0]-path.r[i0])<depth) break;
+	np = path.npts - i0;  // right because we add one point
+	pathptr = new dmatrix(3,np);
+	// first point is just the grid point
+	pathout(0,0) = grid.x1[ix1][ix2][ix3];
+	pathout(1,0) = grid.x2[ix1][ix2][ix3];
+	pathout(2,0) = grid.x3[ix1][ix2][ix3];
+	// Get the distance correction to subtract for this point
+	// Conditional in down version not needed because other
+	// tests above negate the purpose of the conditional there.
+	delta0 = path.delta[i0-1] 
+		+ (depth-path.r[i0])
+		*(path.delta[i0]-path.delta[i0-1])
+		   /(path.r[i0]-path.r[i0-1]);  
+	lat0=grid.lat(ix1,ix2,ix3);
+	lon0=grid.lon(ix1,ix2,ix3);
+	for(i=i0,ii=1;i>=0;--i,++ii)
+	{
+		if(ii==1)
+			latlon(lat0,lon0,path.delta[i]-delta0,theta,&lat,&lon);
+		else
+			 latlon(lat0,lon0,path.delta[i],theta,&lat,&lon);
+		radius = r0_ellipse(lat) - (path.r[0]-path.r[i]);
+		this_point = grid.gtoc(lat,lon,radius);
+		pathout(0,ii)=this_point.x1;
+		pathout(1,ii)=this_point.x2;
+		pathout(2,ii)=this_point.x3;
 	}
 	return(pathptr);
 }
