@@ -180,6 +180,30 @@ Attribute lon
 	}
 	;
 
+Attribute pretime
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "timestamp of first image in trigger sequence" )
+	Detail {
+		The pretime field records the Unix epoch timestamp at which 
+		a triggered sequence of images starts
+	}
+	;
+
+Attribute posttime
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "timestamp of last image in trigger sequence" )
+	Detail {
+		The posttime field records the Unix epoch timestamp at which 
+		a triggered sequence of images ends
+	}
+	;
+
 Attribute stereo
 	String (2)
 	Format ( "%-2s" )
@@ -306,6 +330,16 @@ Relation thumbnails
 	Fields ( imagename time imagesize format dir dfile lddate )
 	Primary ( imagename time imagesize )
 	Description ( "thumbnails for externally stored images" )
+	Detail {
+		This table allows the storage of pre-computed thumbnails 
+		of a set of images.
+	}
+	;
+
+Relation triggers
+	Fields ( imagename pretime time posttime description lddate )
+	Primary ( imagename time )
+	Description ( "triggered sequences in image streams" )
 	Detail {
 		This table allows the storage of pre-computed thumbnails 
 		of a set of images.
