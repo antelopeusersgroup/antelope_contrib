@@ -115,6 +115,10 @@ main (int argc, char **argv)
     char	  *seed ;
     int 	   fd = -1 ;
     int 	   failures = 0 ;
+    char 	   srcname[ORBSRCNAME_SIZE] ;
+    double 	   time ; 
+    char 	  *packet ; 
+    int 	   nbytes = 0, bufsize = 0 ;
 
     elog_init (argc, argv);
     elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
@@ -200,10 +204,6 @@ main (int argc, char **argv)
 #else
 	if (bnsget(bns, seed, BYTES, pktsize) == 0) { 
 #endif
-	    char srcname[ORBSRCNAME_SIZE] ;
-	    double time ; 
-	    char *packet ; 
-	    int nbytes = 0, bufsize = 0 ;
 	    if ( liss2orbpkt ( seed, pktsize, database, 
 		    srcname, &time, &packet, &nbytes, &bufsize ) == 0 ) { 
 		if ( matches ( srcname, match) ) { 
