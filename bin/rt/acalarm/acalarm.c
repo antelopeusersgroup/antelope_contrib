@@ -12,13 +12,21 @@
 #include "coords.h"
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
+#include "Pkt.h"
 
 #define DCCLOCK 28
 
 Arr *MailSent;
 Tbl *MailAdd;
 regex_t dcmatch;
+
+/* Client Packet headers . Do NOT move around structure fields! */
+struct PreHdr {
+    short           hdrsiz;	       /* header size */
+    short           pktsiz;	       /* raw packet size */
+    ushort_t        hdrtype;	       /* header type  */
+    ushort_t        pkttype;	       /* packet type tag  */
+};
 
 static void usage( )
 {
@@ -40,21 +48,17 @@ char * new_name( char *name )  {
 }
  
 
-main(argc, argv)
-int argc;
-char *argv[];
-
+int
+main(int argc, char **argv)
 {
-  extern int    optind;
-  extern char   *optarg;
   double 	after, save_time, 
   		pkttime;
   int 		err_in = 0,
   		id, rorb;
-  int		nselect, nbytes, bsize=0;
+  int		nbytes, bsize=0;
   int 		dump=0; 
-  int           diff, val, nadd, i;
-  char          net[12], sta[12];
+  int           val, nadd, i;
+  char          net[16], sta[16];
 
   struct PreHdr *hdr;
   short		*sval, hdrsize;
@@ -64,7 +68,8 @@ char *argv[];
   char 		*inorbname = "localhost";
   char          alarm_str[512], *who_str, mail_str[512], *madd, *s ;
   char  	*match = ".*BSP";
-  
+  Srcname        parts ;
+
   elog_init (argc, argv) ;
   elog_notify (0, "$Revision$ $Date$") ;
   Program_Name = argv[0];
@@ -113,7 +118,7 @@ char *argv[];
      die( 0, "Can't open ORB\n");
      
   if ( match ) {
-     if ((nselect = orbselect ( rorb, match)) < 1 )
+     if ((orbselect ( rorb, match)) < 1 )
         die (1, "orbselect '%s' failed\n", match);
   }
 
@@ -132,7 +137,7 @@ char *argv[];
 /* Loop through RB; runnin triggering algorithm  */
 
   save_time = 0.0;
-  while(1)  {   
+  for(;;) { 
     if( !orbreap( rorb, &id, srcid, &pkttime, &packet, &nbytes, &bsize)  ) {
          if ( regexec( &dcmatch, srcid, (size_t) 0, NULL, 0 ) ) continue;
 
@@ -142,7 +147,10 @@ char *argv[];
               hexdump( stderr, packet+hdrsize, nbytes-hdrsize );
          }
 
-         parse_srcname( srcid, &net[0], &sta[0], 0, 0 );
+	 split_srcname ( srcid, &parts ) ;
+	 strcpy(net, parts.src_net ) ; 
+	 strcpy(sta, parts.src_sta ) ; 
+
          hdr = ( struct PreHdr *) packet;
        
          dcstat = (uchar_t *) ( packet + hdr->hdrsiz + DCCLOCK );
@@ -187,5 +195,6 @@ char *argv[];
 
   } 
 
+  return 0 ;
 }
 
