@@ -22,6 +22,8 @@ proc init_globals {} {
 
 	foreach nickname [array names Nicknames] {
 
+		if { [regexp pf_revision_time $nickname] } { continue }
+
 		set tasklines [pfgetlist @dbcentral#$nickname#tasks]
 
 		foreach taskline $tasklines {
