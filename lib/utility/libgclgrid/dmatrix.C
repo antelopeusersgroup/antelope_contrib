@@ -7,7 +7,7 @@ dmatrix::dmatrix(int nr, int nc)
 {
   nrr=nr;
   ncc=nc;
-  length=(nrr+1)*(ncc+1);
+  length=nr*nc;
   if(length<1)
       {
       length=1;
@@ -33,9 +33,9 @@ delete ary;
 double &dmatrix::operator()(int rowindex, int colindex)
 {
   int out_of_range=0;
-  if (rowindex>nrr) out_of_range=1;
+  if (rowindex>=nrr) out_of_range=1;
   if (rowindex<0) out_of_range=1;
-  if (colindex>ncc) out_of_range=1;
+  if (colindex>=ncc) out_of_range=1;
   if (colindex<0) out_of_range=1;
   if (out_of_range)
 	throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
@@ -51,9 +51,9 @@ double* dmatrix::get_address(int rowindex, int colindex)
 {
   double *ptr;
   int out_of_range=0;
-  if (rowindex>nrr) out_of_range=1;
+  if (rowindex>=nrr) out_of_range=1;
   if (rowindex<0) out_of_range=1;
-  if (colindex>ncc) out_of_range=1;
+  if (colindex>=ncc) out_of_range=1;
   if (colindex<0) out_of_range=1;
   if (out_of_range)
         throw dmatrix_index_error(nrr,ncc,rowindex,colindex);
@@ -117,9 +117,9 @@ dmatrix operator*(const dmatrix& x1,const dmatrix& b)
 	if(x1.ncc!=b.nrr)
 		throw dmatrix_size_error(x1.nrr, x1.ncc, b.nrr, b.length);
 	dmatrix prod(x1.nrr,b.ncc);
-	for(i=0;i<=x1.nrr;i++)for(j=0;j<=b.ncc;j++)
+	for(i=0;i<x1.nrr;i++)for(j=0;j<b.ncc;j++)
 		{prod(i,j)=0.0;
-		for(k=0;k<=x1.ncc;k++)
+		for(k=0;k<x1.ncc;k++)
 		   {
 		   xval=x1.ary[k+(x1.ncc+1)*i];
 		   bval=b.ary[j+(b.ncc+1)*k];
@@ -150,8 +150,8 @@ dmatrix tr(const dmatrix& x1)
 {
 int i,j;
 dmatrix temp(x1.ncc,x1.nrr);
-for(i=0; i<=x1.nrr; i++)
-   for(j=0; j<=x1.ncc;j++)
+for(i=0; i<x1.nrr; i++)
+   for(j=0; j<x1.ncc;j++)
 temp.ary[i+(temp.ncc+1)*j]=
    x1.ary[j+(x1.ncc+1)*i];
 return temp;

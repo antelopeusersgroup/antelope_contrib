@@ -121,6 +121,10 @@ not exceptionally efficient on many operations because it tends to
 create temporary matrices and do more copying than would be 
 necessary in all cases.  Point is if efficiency is a prime 
 consideration, consider alternatives.
+.LP
+The insistence on C indexing conventions will be a confusion
+to FORTRAN programmers.  You must remember that the index
+of a matrix is 0:nr-1 in rows and 0:nc-1 in columns.
 .SH AUTHOR
 .nf
 Robert Pavlis
