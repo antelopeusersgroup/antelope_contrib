@@ -27,7 +27,7 @@ open_IN_ports( RunArg *par )
        }  else if( S_ISCHR(buf.st_mode) )  {
 	  
 	   if( !strncmp( par->iport , "/dev/rsd", strlen("/dev/rsd") ) )  
-#ifndef __i386
+#ifdef sparc
                return open_disk( par );
 #else
 	       return 0;
@@ -45,8 +45,12 @@ open_IN_ports( RunArg *par )
 }
 
 /* Input Port is Raw Disk.  */
-#ifndef __i386
 
+#ifdef sparc
+
+#include <sys/dkio.h>
+#include <sys/dklabel.h>
+#include <sys/vtoc.h>
 
 int open_disk( RunArg *par )
 
