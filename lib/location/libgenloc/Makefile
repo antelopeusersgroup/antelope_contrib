@@ -1,6 +1,7 @@
 LIB=		libgenloc.a
 INCLUDE = location.h
-DLIB=$(LIB:.a=$(DSUFFIX))
+DLIB=libgenloc.so.$(VERSION)
+
 MAN3 = genloc.3 \
        genloc_intro.3 \
        ggnloc.3 \
@@ -17,7 +18,7 @@ DATA=genloc1.0
 #
 cflags=	-DSUNPERF
 ldflags= 	
-ldlibs=$DBLIBS -ltt -lm
+ldlibs=-ltt $(DBLIBS) 
 
 include $(ANTELOPEMAKE)  	
 		
@@ -47,6 +48,6 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -L$(ANTELOPE)/lib $(DBLIBS) -ldl -lcoords -lstock -lposix4 -lm -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(DLDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # $Id$ 
