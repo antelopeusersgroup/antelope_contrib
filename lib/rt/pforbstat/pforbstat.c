@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <inttypes.h>
+#include <regex.h>
 #include "stock.h"
 #include "coords.h"
 #include "orb.h"
@@ -220,6 +221,85 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	return pf;
 }
 
+static Pf *
+orbconnections2pf( Pf *pfanalyze )
+{
+	Pf	*pf;
+	Pf	*pfserver;
+	Pf	*pfconnections;
+	Pf	*pfclients;
+	Pf	*pfclient;
+	Pf	*pfconnection;
+	Tbl	*client_keys;
+	int	ikey;
+	char	*client_key;
+	char	*what;
+	char	*perm;
+	char	*clientaddress;
+	char	*serveraddress;
+	int	serverport;
+	double	atime;
+	regex_t	preg;
+	char	formal_name[STRSZ];
+	int	formal_count = 0;
+
+	regcomp( &preg, "^orb2orb ", 0 );
+
+	pf = pfnew( PFFILE );
+
+	atime = pfget_time( pfanalyze, "client_when" );
+
+	pfput_time( pf, "connections_when", atime );
+
+	pfget( pfanalyze, "server", (void **) &pfserver );
+	serveraddress = pfget_string( pfserver, "address" );
+	serverport = pfget_int( pfserver, "port" );
+
+	pfget( pfanalyze, "clients", (void **) &pfclients );
+
+	client_keys = pfkeys( pfclients );
+
+	pfconnections = pfnew( PFTBL );
+
+	for( ikey = 0; ikey < maxtbl( client_keys ); ikey++ ) {
+
+		client_key = gettbl( client_keys, ikey );
+		pfget( pfclients, client_key, (void **) &pfclient );
+
+		what = pfget_string( pfclient, "what" );
+		perm = pfget_string( pfclient, "perm" );
+		clientaddress = pfget_string( pfclient, "address" );
+
+		if( ! regexec( &preg, what, 0, 0, 0 ) ) {
+
+			pfconnection = pfnew( PFARR );
+			pfput_string( pfconnection, "what", what );
+
+			if( ! strcmp( perm, "r" ) ) {
+
+				pfput_string( pfconnection, "toaddress", clientaddress );
+				pfput_string( pfconnection, "fromaddress", serveraddress );
+				pfput_int( pfconnection, "fromport", serverport );
+
+			} else {
+
+				pfput_string( pfconnection, "fromaddress", clientaddress );
+				pfput_string( pfconnection, "toaddress", serveraddress );
+				pfput_int( pfconnection, "toport", serverport );
+			}
+
+			sprintf( formal_name, "client%d", ++formal_count );
+			pfput( pfconnections, formal_name, pfconnection, PFPF );
+		}
+	}
+
+	pfput( pf, "connections", pfconnections, PFPF );
+
+	regfree( &preg );
+
+	return pf;
+}
+
 Pf *
 pforbstat( int orbfd, int flags )
 {
@@ -235,7 +315,13 @@ pforbstat( int orbfd, int flags )
 	char	*s;
 
 	if( orbfd <= 0 ) {
+
 		return (Pf *) NULL;
+	}
+
+	if( flags & PFORBSTAT_CONNECTIONS ) {
+
+		flags |= PFORBSTAT_CLIENTS;
 	}
 
 	orbping( orbfd, &orbversion );
@@ -265,6 +351,16 @@ pforbstat( int orbfd, int flags )
 
 		orbclients( orbfd, &atime, &clients, &nclients );
 		pfans = orbclients2pf( atime, clients, nclients ); 
+
+		pfcompile( s = pf2string( pfans ), &pf );
+		free( s );
+	
+		pffree( pfans );
+	}
+
+	if( flags & PFORBSTAT_CONNECTIONS ) {
+
+		pfans = orbconnections2pf( pf );
 
 		pfcompile( s = pf2string( pfans ), &pf );
 		free( s );
