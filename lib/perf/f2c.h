@@ -7,6 +7,8 @@
 #ifndef F2C_INCLUDE
 #define F2C_INCLUDE
 
+#include <string.h>
+
 typedef int integer;
 typedef unsigned int uinteger;
 typedef char *address;

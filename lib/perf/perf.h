@@ -3,6 +3,10 @@
 
 #include "f2c.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 extern complex cdotc (int n, complex *cx, int incx,  complex  *cy, int incy);
 extern void dscal ( int n, double da, double *dx, int incx );
 extern void csscal ( int n, float sa, complex *cx, int incx );
@@ -1671,5 +1675,9 @@ extern int zunmrz_ ( char *side, char *trans, integer *m, integer *n, integer *k
 extern int zunmtr_ ( char *side, char *uplo, char *trans, integer *m, integer *n, doublecomplex *a, integer *lda, doublecomplex *tau, doublecomplex *c__, integer *ldc, doublecomplex *work, integer *lwork, integer *info );
 extern int zupgtr_ ( char *uplo, integer *n, doublecomplex *ap, doublecomplex *tau, doublecomplex *q, integer *ldq, doublecomplex * work, integer *info );
 extern int zupmtr_ ( char *side, char *uplo, char *trans, integer *m, integer *n, doublecomplex *ap, doublecomplex *tau, doublecomplex *c__, integer *ldc, doublecomplex *work, integer *info );
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif 
