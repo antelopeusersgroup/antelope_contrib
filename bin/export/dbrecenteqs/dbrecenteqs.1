@@ -3,40 +3,288 @@
 dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-dbrecenteqs [-h] [-i indexmap_pffile] [-g globalmap_pffile] dbname
+dbrecenteqs [-p pffile] [-h] [-i indexmap_pffile] 
+	    [-g globalmap_pffile] dbname
 .fi
 .SH DESCRIPTION
 
-dbrecenteqs_setup creates or adds to the mapstock table of the database 
-in dbrecenteqs1.0 or related schema. If no options are specified, a new 
-stock index map is created based on the specifications in the parameter 
-file. Otherwise an index map or global map is added to the mapstock table, 
-reading from a parameter file in the style of dbevents(1). 
-
 dbrecenteqs watches a real-time database of hypocenters, customizing
-the stock maps and creating individual maps for each earthquake as they
-occur.  dbrecenteqs creates the html code for a complete web-site of
-recently detected earthquakes. If the keep_ndays parameter-file option
-is specified, the database is cleaned up routinely upon each run. If
-keep_ndays is not specified or is set to 0, no cleanup is performed.
+pregenerated stock maps for an entire region and creating individual
+maps for each earthquake as it occurs. dbrecenteqs creates the html
+code for a complete web-site of recently detected earthquakes. If the
+keep_ndays parameter-file option is specified, the database is cleaned
+up routinely upon each run. If keep_ndays is not specified or is set to
+0, no cleanup is performed.
 
-dbrecenteqs is designed to be run out of the crontab table of rtexec(1). 
-See the example below. It will die if it detects another copy of itself 
-running.
+dbrecenteqs is designed to be run out of the crontab table of
+rtexec(1).  See the example below. It will die if it detects another
+copy of itself running.
 
-If necessary, dbrecenteqs creates or adds to the mapstock table of
-the database in dbrecenteqs1.0 or related schema.  For the default
+If necessary, dbrecenteqs creates or adds to the mapstock table of the
+database in dbrecenteqs1.1 or related schema.  For the default
 behavior, a new stock index map is created based on the specifications
 in the parameter file. An index map or global map may be added to the
 mapstock table, with the -i or -g options (respectively), which read
-from a parameter file in the style of dbevents(1). dbrecenteqs will 
-exit after exercising these functions, since they are meant exclusively
-as setup utilities.
+from a parameter file in the style of dbevents(1).
 
+dbrecenteqs creates HTML output in two stages. First it creates XML
+files of the relevant information from the database, together with 
+pathnames and statistics on any image files it has generated; then 
+it applies an XSLT stylesheet to the XML in order to create HTML. 
+.nf
+[N.B. 
+	HTML = HyperText markup Language
+	XML = eXtensible Markup Language
+	XSLT = eXstensible Stylesheet Language for Transformations
+]
+.fi
+
+Currently there are two classes of web pages made by dbrecenteqs. 
+The first is the "index map" web page, containing an overview of a region. 
+The second is the "focus map" web page, containing information 
+for an individual earthquake. There is one focus map per earthquake 
+(evid), although that map may contain information about multiple 
+hypocentral solutions (origins). 
+
+Multiple instances of dbrecenteqs may be run simultaneously, 
+provided they are in separate subdirectories and only one instance 
+is running on a given database.
+
+dbrecenteqs requires PerlMagick from www.imagemagick.org, and XML::Writer,
+XML::LibXML, and XML::LibXSLT from www.cpan.org. The latter 
+will probably require libxml2 and libxslt from www.xmlsoft.org.
 .SH OPTIONS
-.IP "-g globalmap_pffile Add specified global map to mapstock table"
-.IP "-i indexmap_pffile Add specified index map to mapstock table"
-.IP "-h don't regenerate focus maps; only recreate html"
+.nf
+-p pffile Specify name of parameter file (default is dbrecenteqs.pf)
+
+-g globalmap_pffile Add specified global map to mapstock table
+
+-i indexmap_pffile Add specified index map to mapstock table
+
+-h don't regenerate focus maps; only recreate html
+.fi
+.SH PARAMETER FILE
+
+The following is a sample parameter file. Some of the parameters 
+should be fairly self-explanatory.
+
+All external files referenced in the parameter file are expected 
+to be either absolute path-names, or are expected to be found 
+in $ANTELOPE/data/dbrecenteqs/.  All but three of the 
+external files referenced here are provided in the default installation, however
+the user may want to modify these values and databases. The 
+three that are not provided are the local_topography.grd file 
+with topography information for GMT, the optional local_topography.grad
+file containing gradient shading for this file (both grdfile 
+and gradfile must be have identically registered pixel meshes), 
+and the database of historical hypocenters (used for pastel-shading
+of background seismicity on the maps). The grid files should be 
+large enough to cover the region of interest. 
+
+Three methods are supported for converting postscript files 
+to pixelized images. Those are "alchemy", using the commercial 
+software Image Alchemy PS from HandMade Software Inc; "pnm" using 
+the freely available Portable Any-Map utilities; and "imagick", 
+using the freely available ImageMagick utilities. 
+
+A database of phrases describing earthquake regions may be 
+specified by the region_phrases_database parameter. Each region is 
+listed as an ordered set of points of the containing polygon. 
+If an earthquake is not found in one of the regions or if the 
+database is missing, Flinn-Engdahl regions are used.
+
+Given a database of nearby cities (parameter cities_dbname)
+in places1.2 schema, dbrecenteqs will compute the distance to the 
+nearest places. In general it will stop beyond a distance 
+of nearest_places{max_dist_km}, however it will always include 
+cities that match the regular expression given by 
+nearest_places{always_include}.
+
+If the keep_ndays parameter is missing or 0, no cleanup of the 
+target database is performed. Otherwise, hypocenters older
+than the specified time are removed. 
+
+There are a couple stock arrays in the parameter file that 
+will probably not need to be changed, at least not often. These 
+are the credits and the other_regions links. An effort should be 
+made to incorporate the credits in the final web pages, due to 
+the valuable contributions of the listed parties. 
+
+The XSLT stylesheets to use for creating HTML are specified 
+by their filenames in the parameters index_map_stylesheet
+and focus_map_stylesheet. 
+
+Four types of maps are configured, using four separate 
+hashes in the parameter file. These hashes are called index_map,
+global_map, detail_map, and focus_map. For clarity, the 
+special entry "include" in each of these hashes may be specified 
+once to include a hash of a different name. The included hash 
+is intended to be a set of defaults. Any parameters in the included 
+hash will be overridden by values that show up in the main hash 
+for a given map type. 
+
+The main configuration step for dbrecenteqs will probably be to 
+specify the center position of the index_map via latc and lonc. 
+Also one may want to choose a reasonable geographic extent for this 
+map via left_dellon, right_dellon, up_dellat, and down_dellat. For the 
+focus_map, the center lat and lon and the base filename are 
+determined automatically at run time. However, the geographic extent 
+variables may be set here (although 2 degrees in each direction seems to work 
+well). The cities_dbname may be specified in each of these to 
+determine which cities will be plotted on the maps. Multiple 
+databases with different levels of detail may be desirable. 
+Another parameter to change will be the contour_mode, specifying 
+how any topography shading is done. "none" means no shaded topography. 
+contour_mode of "grdimage" will run grdimage on the specified grdfile, 
+shaded by the gradients in gradfile. If "grdcut" is specified, an 
+appropriate grid is cut out of grdfile and the gradients are re-computed
+on the fly. There are two other modes that remain primarily for 
+debugging purposes. A contour mode of "premade" interpolates 
+postscript code contained in a file given by premade_contour_ps. A contour
+mode of "grdbuild" will combine topography data with bathymetry 
+data from an identically registered grid given in by the bathymetry_file
+parameter, provided the grdfile itself has appropriate NaN's in the 
+underwater areas.  Again, these two modes are more for debugging.
+The parameter longitude_branchcut_high should be either 180 or 360, 
+depending on whether the phase of the specified grid files has 
+been unwrapped.
+The parameters pixels_per_inch and size_inches determine the 
+size of the final pixellized map. The parameter reserve_colors is 
+critical to allow symbols to be drawn on the map image.
+All line files in the linefiles array are plotted on the maps, using the 
+GMT pen specifications as in the example below. The detail_density
+parameter is passed to GMT.
+
+The authtrans array gives a set of regular expressions, against which 
+the origin.auth field of each hypocenter is matched. If a match occurs, 
+the author is translated to the specified text string and 
+given the associated URL. Further decisions on what to do with that 
+are up to the stylesheet author. Although the example parameter file 
+only shows one entry per institution, this mechanism can be used to 
+point each hypocentral solution at the home page of the responsible analyst.
+Note that when traversing this array, the first matching regular expression 
+is used. Thus, careful regular-expression writing may be necessary 
+if one obtains unexpected results. In general, simple, intuitive entries should suffice.
+.nf
+dbrecenteqs_dir /var/apache/htdocs/dbrecenteqs
+dbrecenteqs_url http://www.lindquistconsulting.com/dbrecenteqs/
+dbrecenteqs_title Recent Earthquakes 
+
+institute_url http://www.lindquistconsulting.com/
+institute_description Lindquist Consulting
+institute_logo your_logo.gif
+
+wiggle mini_logo.gif
+
+region_phrases_database example_region_phrases
+
+nearest_places &Arr{
+	cities_dbname world_cities
+	max_dist_km 200	
+	always_include Washington D.C.|San Diego
+}
+
+page_refresh_seconds 300
+pixfile_conversion_method imagick  # pnm, imagick, or alchemy
+keep_ndays 0
+
+index_map_stylesheet index_default.xsl
+focus_map_stylesheet specific_default.xsl
+
+index_map &Arr{
+	include 	map_config
+	file_basename 	local_indexmap
+	latc 		65
+	lonc 		-155
+	left_dellon 	-8 
+	right_dellon 	8
+	down_dellat 	-8
+	up_dellat 	8 
+	detail_density 	l
+	cities_dbname 	world_cities
+	background_magmin 6
+}
+
+focus_map &Arr{
+	include 	map_config
+	left_dellon 	-2
+	right_dellon 	2
+	down_dellat 	-2
+	up_dellat 	2
+}
+
+global_map &Arr{
+	include 	map_config
+}
+
+detail_map &Arr{
+	include 	map_config
+}
+
+map_config &Arr{
+	format 		gif
+	proj 		edp
+	contour_mode 	grdimage  # none, grdcut, or grdimage
+	premade_contour_ps premade_grdimage
+	grdfile 	local_topography.grd
+	gradfile 	local_topography.grad
+	longitude_branchcut_high 360
+	hypocenter_dbname historic_hypocenters_dbname
+	map_color_palette_file dbrecenteqs.cpt
+	depth_color_palette_file depthmag2.cpt
+	linefiles &Tbl{
+		# faults combined_faults.gmtlin 4/255/0/0
+		# roads roads.xy 4/255/255/255
+	}
+	cities_dbname 	world_cities
+	background_magsize_pixels 3
+	background_magmin 3
+	quakeshape 	square
+	prefor_quakecolor yellow
+	nonprefor_quakecolor white
+	pixels_per_inch 100
+	size_inches 	5
+	city_symbols_inches 0.08
+	cityname_shift_deg 0.2
+	reserve_colors 	8
+	detail_density 	f  # f,h,i,l,c
+}
+
+authtrans &Arr{
+	UCSD &Arr{
+		text UCSD Personnel
+		url	http://eqinfo.ucsd.edu/personnel/
+	}
+	UAF &Arr{
+		text AEIC staff
+		url http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+	}
+	orbassoc &Arr{
+		text Antelope Automatic System
+		url http://www.brtt.com
+	}
+}
+
+other_region_links &Arr{
+"Western Canada"	http://www.pgc.nrcan.gc.ca/seismo/recent/wc.50evt.html
+"U.S. Pacific Northwest" 	http://www.geophys.washington.edu/recenteqs/
+California 		http://quake.wr.usgs.gov/recenteqs/latest.htm
+Nevada			http://www.seismo.unr.edu/jrted/
+Hawaii			http://tux.wr.usgs.gov/results/seismic/recenteqs/
+"US Intermountain West"	http://www.seis.utah.edu/req2webdir/recenteqs/
+"Central/Southeastern U.S."	http://folkworm.ceri.memphis.edu/recenteqs/
+"Northeastern U.S."	http://neic.usgs.gov/neis/current/us_ne.html
+}
+
+credits &Arr{
+"USGS GTOPO30 topography database" http://edcdaac.usgs.gov/gtopo30/gtopo30.html
+"Sandwell/Smith Marine Bathymetry" http://topex.ucsd.edu/marine_topo/mar_topo.html
+"NOAA/NGDC Arctic Bathymetry" http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html
+"Wessel and Smith's Generic Mapping Tools" http://gmt.soest.hawaii.edu/
+}
+
+.fi
+
 .SH EXAMPLE
 The rtexec.pf file for a running Antelope system might contain a 
 line like this, which runs dbrecenteqs on a near-real-time 
@@ -48,21 +296,50 @@ dbrecenteqs UTC 0,5,10,15,20,25,30,35,40,45,50,55 * * * * dbrecenteqs /iwrun/bak
 .fi
 
 .SH DIAGNOSTICS
-"Couldn't find alchemy. Use alternate image-conversion method or fix path."
-This message indicates that the preferred image-conversion method, via the 
-ImageAlchemyPS software package from HandMade Software Inc., is not installed
-or not available on the path. A different conversion method, such as "pnm" or 
-"imagick", should be specified in the parameter file's 
-pixfile_conversion_method field.
+"Couldn't find alchemy. Use alternate image-conversion method or fix
+path." This message indicates that the preferred image-conversion
+method, via the ImageAlchemyPS software package from HandMade Software
+Inc., is not installed or not available on the path. A different
+conversion method, such as "pnm" or "imagick", should be specified in
+the parameter file's pixfile_conversion_method field.
+
+dbrecenteqs will fail and die if its top-level directory does not 
+exist. This is an intentional safety feature to help keep from 
+building huge web directories where they don't belong. 
+
+dbrecenteqs will fail and die if expected to regenerate a map for 
+which a pixel-file already exists. [The exception is for focus 
+maps, which are always updated dynamically]. Large index maps often 
+take significant time to compute, thus if they are to be overwritten 
+it should be intentional. The other option, providing the .pf file 
+for the image still exists, would be to re-add the map to the mapstock 
+table of the target database using the -i or -g option to dbrecenteqs.
 .SH "BUGS AND CAVEATS"
-dbrecenteqs will die if it finds anything running that has "dbrecenteqs" 
-in it's command-line. This is probably too loose.
+Some architecture is in place for the detail maps (maps showing 
+zoom-ins of particular subregions of the index maps), however this 
+feature is not yet supported. 
+
+Infrastructure has also been created to plot clickable stations on 
+the maps, together with plots of waveforms etc., however that 
+has not yet been implemented. 
+
+The maps written have dbevents-style parameter files, although those 
+omit the palette, priority, and bounding box values. These could 
+be fairly easily added. 
+
+The code to allow exactly one instance per database may be 
+broken.
+
+A "grdtile" contour_mode would probably be useful to aid in the creation 
+of large maps on machines with small memories. Also a "grdstitch" mode
+would be nice to combine information from multiple topography grids dynamically. 
 .SH "SEE ALSO"
 .nf
-dbevents(1), rtexec(1)
+dbevents(1), rtexec(1), GMT(l), Image::Magick(1), XML::Writer(1),
+XML::LibXML(1), XML::LibXSLT(1)
 .fi
 .SH AUTHOR
 .nf
 Kent Lindquist, taking ideas from Danny Harvey, Bob Simpson,
-Jennifer Eakins, Kevin Engle, and Evelyn Price
+Jennifer Eakins, Kevin Engle, and Evelyn Price.
 .\" $Id$

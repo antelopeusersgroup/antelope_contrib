@@ -1,160 +1,116 @@
 
-# Where you want recenteqs to run:
-html_base http://www.lindquistconsulting.com/dbrecenteqs/
-web_topdir /var/apache/htdocs/dbrecenteqs
+dbrecenteqs_dir /var/apache/htdocs/dbrecenteqs
+dbrecenteqs_url http://www.lindquistconsulting.com/dbrecenteqs/
+dbrecenteqs_title Recent Earthquakes 
 
-# Things you need to have available in web_topdir:
+institute_url http://www.lindquistconsulting.com/
+institute_description Lindquist Consulting
+institute_logo your_logo.gif
+
 wiggle mini_logo.gif
-local_logo phAEIC_fastload.gif
 
-# Things to customize for your installation:
-title Recent Earthquakes in Alaska
-caption_default Recent Alaskan Earthquakes
-local_html_home http://www.lindquistconsulting.com/
-description_of_local_html_home Lindquist Consulting
-region_phrases_database alaska_region_phrases
-keep_ndays 0
+region_phrases_database example_region_phrases
+
 nearest_places &Arr{
-	cities_dbname wellknown_alaskan_cities
+	cities_dbname world_cities
 	max_dist_km 200	
-	always_include Fairbanks|Anchorage|Valdez|Juneau
-}
-
-authtrans &Arr{
-	UAF:trilby &Arr{
-		text Trilby Cox
-		url	http://www.aeic.alaska.edu/Input/trilby/trilby.html
-	}
-	UAF:lalitha &Arr{
-		text Lalitha Rao
-		url	http://www.aeic.alaska.edu/Input/lalitha/lalitha.html
-	}
-	UAF:kent &Arr{
-		text Kent Lindquist
-		url	http://www.aeic.alaska.edu/Input/kent/kent.html
-	}
-	UAF:brent &Arr{
-		text Brent Foshee
-		url	http://www.aeic.alaska.edu/Input/brent/brent.html
-	}
-	UAF:martin &Arr{
-		text Martin LaFevers
-		url	http://www.aeic.alaska.edu/Input/martin/martin.html
-	}
-	UAF:jackie &Arr{
-		text Jackie Caplan-Auerbach
-		url	http://www.aeic.alaska.edu/Input/jackie/jackie.html
-	}
-	UAF:jjalaska &Arr{
-		text John Sanchez
-		url	http://www.aeic.alaska.edu/Input/sanchez/index.html
-	}
-	binder &Arr{
-		text Earthworm automatic
-		url	http://www.aeic.alaska.edu/Input/kent/Iceworm.html
-	}
+	always_include Washington D.C.|San Diego
 }
 
 page_refresh_seconds 300
+pixfile_conversion_method imagick  # pnm, imagick, or alchemy
+keep_ndays 0
+
+index_map_stylesheet index_default.xsl
+focus_map_stylesheet specific_default.xsl
+
+index_map &Arr{
+	include 	map_config
+	file_basename 	local_indexmap
+	latc 		65
+	lonc 		-155
+	left_dellon 	-8 
+	right_dellon 	8
+	down_dellat 	-8
+	up_dellat 	8 
+	detail_density 	l
+	cities_dbname 	world_cities
+	background_magmin 6
+}
 
 focus_map &Arr{
-	# program fills in latc, lonc, filebase
-	format gif
-	proj edp
-	left_dellon -2
-	right_dellon 2
-	down_dellat -2
-	up_dellat 2
-	size_inches 5
-	city_symbols_inches 0.08
-	cityname_shift_deg 0.2
-	reserve_colors 8
-	detail_density f  # f,h,i,l,c
+	include 	map_config
+	left_dellon 	-2
+	right_dellon 	2
+	down_dellat 	-2
+	up_dellat 	2
 }
 
-credits &Literal{
-<PRE>
-<A HREF="http://edcdaac.usgs.gov/gtopo30/gtopo30.html">USGS GTOPO30 topography database</A>
-<A HREF="http://topex.ucsd.edu/marine_topo/mar_topo.html">Sandwell/Smith Marine Bathymetry</A>
-<A HREF="http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html">NOAA/NGDC Arctic Bathymetry</A>
-<A HREF="http://imina.soest.hawaii.edu/gmt/">Wessel and Smith's Generic Mapping Tools</A>
-</PRE>
+global_map &Arr{
+	include 	map_config
 }
 
-other_region_links &Arr{
-	"Western Canada"	http://www.pgc.nrcan.gc.ca/seismo/recent/wc.50evt.html
-	"U.S. Pacific Northwest" 	http://www.geophys.washington.edu/recenteqs/
-	California 		http://quake.wr.usgs.gov/recenteqs/latest.htm
-	Nevada			http://www.seismo.unr.edu/jrted/
-	Hawaii			http://tux.wr.usgs.gov/results/seismic/recenteqs/
-	"US Intermountain West"	http://www.seis.utah.edu/req2webdir/recenteqs/
-	"Central/Southeastern U.S."	http://folkworm.ceri.memphis.edu/recenteqs/
-	"Northeastern U.S."	http://neic.usgs.gov/neis/current/us_ne.html
+detail_map &Arr{
+	include 	map_config
 }
 
-# Some setup specifications:
-
-pixfile_conversion_method imagick  # pnm, imagick, or alchemy
-
-index_map_config &Arr{
-	contour_mode grdcut  # none, premade, grdcut or grdimage
-	premade_contour_ps /home/kent/work/recenteqs/mkmap/premade_grdimage
-	#grdfile /home/kent/misc/webquakes_sample/alaska_final.grd
-	#gradfile /home/kent/misc/webquakes_sample/alaska_final.grad
-	grdfile /space/GTOPO30/Grd/North_Hemi_unwrapped.grd
+map_config &Arr{
+	format 		gif
+	proj 		edp
+	contour_mode 	grdimage  # none, premade, grdcut, grdbuild or grdimage
+	grdfile 	local_topography.grd
+	gradfile 	local_topography.grad
 	longitude_branchcut_high 360
-	hypocenter_dbname /space/aeic/Total
-	map_color_palette_file alaska.cpt
+	hypocenter_dbname historic_hypocenters_dbname
+	map_color_palette_file dbrecenteqs.cpt
 	depth_color_palette_file depthmag2.cpt
 	linefiles &Tbl{
-		faults combined_faults.gmtlin 4/255/0/0
-		roads roads.xy 4/255/255/255
-		pipeline pipeline.xy 6/50/50/50
+		# faults combined_faults.gmtlin 4/255/0/0
+		# roads roads.xy 4/255/255/255
 	}
-	cities_dbname main_alaskan_cities
+	cities_dbname 	world_cities
 	background_magsize_pixels 3
-	background_magmin 6
-	quakeshape square
+	background_magmin 3
+	quakeshape 	square
 	prefor_quakecolor yellow
 	nonprefor_quakecolor white
 	pixels_per_inch 100
-	size_inches 5
+	size_inches 	5
 	city_symbols_inches 0.08
 	cityname_shift_deg 0.2
-	reserve_colors 8
-	detail_density l  # f,h,i,l,c
+	reserve_colors 	8
+	detail_density 	f  # f,h,i,l,c
 }
 
-global_map_config &Arr{
-	include index_map_config
+authtrans &Arr{
+	UCSD &Arr{
+		text UCSD Personnel
+		url	http://eqinfo.ucsd.edu/personnel/
+	}
+	UAF &Arr{
+		text AEIC staff
+		url http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+	}
+	orbassoc &Arr{
+		text Antelope Automatic System
+		url http://www.brtt.com
+	}
 }
 
-focus_map_config &Arr{
-	include index_map_config
-	contour_mode grdcut
-	background_magmin 3
-	cities_dbname wellknown_alaskan_cities
-	detail_density f
+other_region_links &Arr{
+"Western Canada"	http://www.pgc.nrcan.gc.ca/seismo/recent/wc.50evt.html
+"U.S. Pacific Northwest" 	http://www.geophys.washington.edu/recenteqs/
+California 		http://quake.wr.usgs.gov/recenteqs/latest.htm
+Nevada			http://www.seismo.unr.edu/jrted/
+Hawaii			http://tux.wr.usgs.gov/results/seismic/recenteqs/
+"US Intermountain West"	http://www.seis.utah.edu/req2webdir/recenteqs/
+"Central/Southeastern U.S."	http://folkworm.ceri.memphis.edu/recenteqs/
+"Northeastern U.S."	http://neic.usgs.gov/neis/current/us_ne.html
 }
 
-detail_map_config &Arr{
-	include index_map_config
-	contour_mode none
-	background_magmin 3
-	cities_dbname wellknown_alaskan_cities
-	detail_density f
-	format gif
-	proj edp
-}
-
-index_map &Arr{
-	filebase local_indexmap
-	format gif
-	proj edp
-	latc 65
-	lonc -155
-	left_dellon -17 
-	right_dellon 17
-	down_dellat -17
-	up_dellat 17 
+credits &Arr{
+"USGS GTOPO30 topography database" http://edcdaac.usgs.gov/gtopo30/gtopo30.html
+"Sandwell/Smith Marine Bathymetry" http://topex.ucsd.edu/marine_topo/mar_topo.html
+"NOAA/NGDC Arctic Bathymetry" http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html
+"Wessel and Smith's Generic Mapping Tools" http://gmt.soest.hawaii.edu/
 }

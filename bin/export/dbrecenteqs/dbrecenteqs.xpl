@@ -4,6 +4,10 @@ require "winding.pl";
 require "compass_from_azimuth.pl";
 use Datascope;
 use Image::Magick;
+use XML::LibXML;
+use XML::LibXSLT;
+use XML::Writer;
+use IO;
  
 
 sub init_globals {
@@ -11,27 +15,31 @@ sub init_globals {
 	setup_State();
 
 	my( @params ) = (
-		"title",
-		"caption_default",
-		"html_base",
-		"web_topdir",
-		"local_html_home",
-		"description_of_local_html_home",
+		"dbrecenteqs_title",
+		"dbrecenteqs_url",
+		"dbrecenteqs_dir",
+		"institute_url",
+		"institute_description",
 		"page_refresh_seconds",
 		"other_region_links",
 		"nearest_places",
 		"credits",
 		"authtrans",
-		"keep_ndays"
+		"keep_ndays",
+		"index_map_stylesheet",
+		"focus_map_stylesheet"
 		);
 
 	my( @path_params ) = (
 		"wiggle",
-		"local_logo",
-		"region_phrases_database"
+		"institute_logo",
+		"region_phrases_database",
+		"index_map_stylesheet",
+		"focus_map_stylesheet"
 		);
 	
 	foreach $param ( @params, @path_params ) {
+
 		$State{$param} = pfget( $State{pf}, $param );
 	}
 
@@ -42,24 +50,23 @@ sub init_globals {
 
 	$State{"wiggle_filebase"} = `basename $State{"wiggle"}`;
 	chomp( $State{"wiggle_filebase"} );
-	$State{"local_logo_filebase"} = `basename $State{"local_logo"}`;
-	chomp( $State{"local_logo_filebase"} );
+	$State{"institute_logo_filebase"} = `basename $State{"institute_logo"}`;
+	chomp( $State{"institute_logo_filebase"} );
 
-	if( $State{html_base} !~ m@/$@ ) { $State{html_base} .= "/"; }
-	if( $State{web_topdir} !~ m@/$@ ) { $State{web_topdir} .= "/"; }
+	if( $State{dbrecenteqs_url} !~ m@/$@ ) { $State{dbrecenteqs_url} .= "/"; }
+	if( $State{dbrecenteqs_dir} !~ m@/$@ ) { $State{dbrecenteqs_dir} .= "/"; }
 
-	if( ! -d $State{web_topdir} ) {
-		die( "The directory $State{web_topdir} does not exist. " .
+	if( ! -d $State{dbrecenteqs_dir} ) {
+		die( "The directory $State{dbrecenteqs_dir} does not exist. " .
 		     "Please create it before proceeding. Bye.\n" );
 	}
 
 	$State{quakesubdir} = "quakes";
-	mkdir( "$State{web_topdir}/$State{quakesubdir}", 0755 );
+	mkdir( "$State{dbrecenteqs_dir}/$State{quakesubdir}", 0755 );
 
-	%Focus_Mapspec = %{pfget( "dbrecenteqs", "focus_map" )};
-	%Focus_Mapspec = ( %Focus_Mapspec, %{$State{focus_map_config}} );
+	%Focus_Mapspec = %{pfget_Mapspec( $State{pf}, "focus_map" )};
 
-	$clientside_mapname = "alaska";
+	$clientside_mapname = "clientsidemap";
 
 	my( @db ) = dbopen( $State{region_phrases_database}, "r" );
 	if( $db[0] < 0 ) {
@@ -79,7 +86,7 @@ sub init_globals {
 sub die_if_already_running {
 
 	my( @procs ) = split( /\n/,
-		`pgrep -lf 'dbrecenteqs' | grep -v pgrep | egrep -v '^ *$$ '` );
+		`pgrep -lf '/.*perl.*dbrecenteqs.*' | grep -v grep | egrep -v '^ *$$ '` );
 
 	if( $#procs >= 0 ) {
 		die( "dbrecenteqs: already running as \n" .
@@ -210,52 +217,63 @@ sub mag_description {
 sub translate_author {
 	my( $auth ) = @_;
 
-	if( ! defined( $State{authtrans}->{$auth} ) ) {
+	foreach $key ( keys( %{$State{authtrans}} ) ) {
 
-		return $auth;
+		if( $auth =~ m/$key/ ) {
 
-	} else {
-		
-		return "<A HREF=\"" . 
-			$State{authtrans}->{$auth}->{"url"} .
-			"\">" . 
-			$State{authtrans}->{$auth}->{"text"} .
-			"</A>";
+			return ( $State{authtrans}->{$key}->{"text"},
+				 $State{authtrans}->{$key}->{"url"} );
+		}
 	}
+
+	return ( $auth, "" );
 }
 
 sub hypocenter_vitals {
-	my( $bgcolor ) = pop( @_ );
+	my( $writer ) = shift( @_ );
+	my( $type ) = pop( @_ );
 	my( @db ) = @_;
 
-	my( $lat, $lon, $depth, $time, $auth ) = 	
-		dbgetv( @db, "lat", "lon", "depth", "time", "origin.auth" );
+	my( $lat, $lon, $depth, $time, $orid, $auth ) = 	
+		dbgetv( @db, "lat", "lon", "depth", "time", 
+			     "origin.orid", "origin.auth" );
 	
-	$auth = translate_author( $auth );
+	my( $name ) = "orid$orid";
+
+	my( $authtrans, $auth_href ) = translate_author( $auth );
 
 	$depth_km = sprintf( "%.0d", $depth );
 	$depth_mi = sprintf( "%.0d", $depth_km / 1.609 );
 
 	my( $local_day ) = epoch2str( $time, 
 		"%A %B %o, %Y", $ENV{TZ} );
+
 	my( $local_hour ) = epoch2str( $time, 
 		"%I:%M %p %Z", $ENV{TZ} );
+
 	my( $utc_time ) = epoch2str( $time, "%m/%d/%Y %H:%M:%S.%s %Z" );
 
 	my( $mag_description ) = mag_description( @db );
 
-	my( $table ) = "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=\"$bgcolor\">\n";
-	$table .= "<TR><TD>Local Date:</TD><TD>$local_day</TD></TR>\n";
-	$table .= "<TR><TD>Local Time:</TD><TD>$local_hour</TD></TR>\n";
-	$table .= "<TR><TD>Universal Time:</TD><TD>$utc_time</TD></TR>\n";
-	$table .= "<TR><TD>Magnitude:</TD><TD>$mag_description</TD></TR>\n";
-	$table .= "<TR><TD>Latitude:</TD><TD>$lat</TD>\n";
-	$table .= "<TR><TD>Longitude:</TD><TD>$lon</TD>\n";
-	$table .= "<TR><TD>Depth:</TD><TD>$depth_mi miles ($depth_km km)</TD>\n";
-	$table .= "<TR><TD>Author:</TD><TD>$auth</TD>\n";
-	$table .= "</TABLE>\n";
+	my( $depth_string ) = "$depth_mi miles ($depth_km km)";
 
-	return $table;
+	my( $shape, $coords ) = imagemap_symbol( @db );
+
+	$writer->startTag( "origin", "type" => "$type", "name" => "$name" );
+	$writer->dataElement( "orid", "$orid" );
+	$writer->dataElement( "localdate_string", "$local_day" );
+	$writer->dataElement( "localtime_string", "$local_hour" );
+	$writer->dataElement( "utc_string", "$utc_time" );
+	$writer->dataElement( "mag_string", "$mag_description" );
+	$writer->dataElement( "lat", "$lat" );
+	$writer->dataElement( "lon", "$lon" );
+	$writer->dataElement( "depth_string", "$depth_string" );
+	$writer->dataElement( "auth_href", "$auth_href" );
+	$writer->dataElement( "auth", "$authtrans" );
+	$writer->dataElement( "shape", "$shape" );
+	$writer->dataElement( "coords", "$coords" );
+
+	$writer->endTag( "origin" );
 }
 
 sub location_header_line {
@@ -309,7 +327,7 @@ sub quake_region {
 }
 
 sub nearest_locations {
-	my( $lat, $lon ) = @_;
+	my( $writer, $lat, $lon ) = @_;
 
 	my( @db ) = dbopen( $State{"nearest_places"}->{"cities_dbname"}, "r" );
 	@db = dblookup( @db, "", "places", "", "" );
@@ -323,13 +341,15 @@ sub nearest_locations {
 
 	@db = dbsort( @db, "distance(lat,lon,$lat,$lon)" );
 
-	my( $table ) .= "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=#99CCFF>\n";
+	$writer->startTag( "nearest" );
 
 	my( $nplaces ) = dbquery( @db, "dbRECORD_COUNT" );
 
 	for( $db[3] = 0; $db[3] < $nplaces; $db[3]++ ) {
+
 		my( $azimuth ) = 
 			dbex_eval( @db, "azimuth(lat,lon,$lat,$lon)" );
+
 		my( $compass ) = compass_from_azimuth( $azimuth );
 
 		my( $dist_km ) = 
@@ -337,17 +357,18 @@ sub nearest_locations {
 		my( $dist_mi ) = $dist_km / 1.6;
 		$dist_km = sprintf( "%.0f", $dist_km );
 		$dist_mi = sprintf( "%.0f", $dist_mi );
+
 		my( $place ) = dbgetv( @db, "place" );
 
-		$table .= "<TR><TD>$dist_mi miles ($dist_km km) " .
-			  "$compass of $place</TD></TR>\n";
+		$relative_location = "$dist_mi miles ($dist_km km) " .
+			  	     "$compass of $place";
+
+		$writer->dataElement( "nearby_place", "$relative_location" );
 	}
 
-	$table .= "</TABLE>";
+	$writer->endTag( "nearest" );
 
 	dbclose( @db );
-
-	return $table;
 }
 
 sub create_focusmap_html {
@@ -359,9 +380,14 @@ sub create_focusmap_html {
 	$db[3] = 0;
 
 	my( $url, $dfile ) = dbgetv( @db, "url", "dfile" );
-	my( $html_relpath ) = substr( $url, length( $State{html_base} ) );
+	my( $html_relpath ) = substr( $url, length( $State{dbrecenteqs_url} ) );
 	my( $html_filename ) = 
-		concatpaths( $State{web_topdir}, $html_relpath );
+		concatpaths( $State{dbrecenteqs_dir}, $html_relpath );
+	my( $xml_filename ) = "$html_filename";
+	$xml_filename =~ s/\..*//g;
+	$xml_filename .= ".xml";
+
+	chomp( my( $dir_relpath ) = `dirname $html_relpath` );
 
 	@db = dbprocess( @db, "dbjoin event",
 			      "dbjoin origin evid#evid",
@@ -374,47 +400,56 @@ sub create_focusmap_html {
 	my( $lat, $lon, $mapname, $orid ) = 
 		dbgetv( @dbprefor, "lat", "lon", "mapname", "origin.orid" );
 
-	open( H, ">$html_filename" );
-	print H "<HTML>\n";
-	print H "<HEAD>\n";
-	print H "<META HTTP-EQUIV=\"refresh\" " .
-		"CONTENT=\"$State{page_refresh_seconds}\">\n";
-	print H "</HEAD>\n";
-	print H "<BODY BGCOLOR='white'>\n";
-	print H "<MAP NAME=\"vitals\">\n" .
-		imagemap_symbol( @dbprefor, "#prefor" ) . "\n";
-	for( $dbnonprefors[3]=0; $dbnonprefors[3]<$nothers; $dbnonprefors[3]++ ){
-		$nporid = dbgetv( @dbnonprefors, "origin.orid" );
-		print H imagemap_symbol( @dbnonprefors, "#orid$nporid" ) . "\n";
-	}
-	print H	"</MAP>\n";
-	print H "<CENTER>";
-	print H hyperlinked_logo();
-	print H "</CENTER>\n";
-	print H "<BR>";
-	print H "<CENTER><H1>";
-	print H "<A HREF=\"$State{html_base}\"><IMG ALIGN='top' " .
-		"SRC=\"$State{html_base}$State{wiggle_filebase}\" " .
-		"ALT=\"Link to $State{title}\"></A>";
-	print H location_header_line( @dbprefor, $lat, $lon, $orid ) .
-		"</H1></CENTER>\n";
-	print H "<BR>";
-	print H "<CENTER><IMG SRC=\"$dfile\" align=center " .
-			"USEMAP=\"#vitals\"></CENTER>\n";
-	print H "<BR>";
-	print H "<CENTER>\n";
-	print H "<A NAME=\"prefor\">";
-	print H "<H2>Preferred Hypocentral Solution:</H2>\n";
-	print H hypocenter_vitals( @dbprefor, "beige" );
-	if( $nothers > 0 ) {
-		print H "<H2>Previous Solutions and other agencies:</H2>\n";
-	}
+	my( $region_string ) = location_header_line( @dbprefor, $lat, $lon, $orid );
+	my( $output ) = new IO::File( ">$xml_filename" );
+
+	my( $writer ) = new XML::Writer( OUTPUT => $output, 
+					 DATA_MODE => 'true', 
+					 DATA_INDENT => 2 );
+
+	$writer->xmlDecl();
+
+	chomp( my( $stylesheet_basename ) = `basename $State{focus_map_stylesheet}` );
+	$writer->pi( 'xml-stylesheet', 'href="$stylesheet_basename" type="text/xsl"' );
+
+	$writer->startTag( "specific_quake", "name" => "evid$evid" );
+
+	$writer->dataElement( "page_title", 
+			      "$region_string" );
+	$writer->dataElement( "dbrecenteqs_base", 
+			      "$State{dbrecenteqs_url}" );
+	$writer->dataElement( "page_base", "$url" );
+	$writer->dataElement( "page_refresh_seconds", 
+			      "$State{page_refresh_seconds}" );
+	$writer->dataElement( "wiggle_href", 
+			      "$State{dbrecenteqs_url}" . "$State{wiggle_filebase}" );
+	$writer->dataElement( "institute_url", 
+			      "$State{institute_url}" );
+	$writer->dataElement( "institute_logo_url",
+		      	      "$State{dbrecenteqs_url}" .
+			      "$State{institute_logo_filebase}" );
+	$writer->dataElement( "institute_description", 
+			      "$State{institute_description}" );
+
+	$writer->dataElement( "region_string", $region_string );
+
+	$writer->dataElement( "subdir", "$dir_relpath" );
+
+	$writer->startTag( "pixmap", "mapclass" => "focus" );
+	$writer->dataElement( "file", "$dfile" );
+	$writer->dataElement( "clientside_mapname", "vitals" );
+	$writer->endTag( "pixmap" );
+
+	$writer->startTag( "origins" );
+
+	hypocenter_vitals( $writer, @dbprefor, "prefor" );
+
 	for( $dbnonprefors[3]=0; $dbnonprefors[3]<$nothers;$dbnonprefors[3]++ ){
-		$orid = dbgetv( @dbnonprefors, "origin.orid" );
-		print H "<A NAME=\"orid$orid\">";
-		print H hypocenter_vitals( @dbnonprefors, "white" );
+
+		hypocenter_vitals( $writer, @dbnonprefors, "nonprefor" );
 	}
-	print H "</CENTER>\n";
+
+	$writer->endTag( "origins" );
 
 	$State{"nearest_places"}->{"cities_dbname"} =
 	   datafile_abspath( $State{"nearest_places"}->{"cities_dbname"} );
@@ -438,20 +473,21 @@ sub create_focusmap_html {
 			"\t************************************\n\n";
 
 	} else {
-		print H "<BR>";
-		print H "<CENTER>\n";
-		print H "<H2>This earthquake was:</H2>\n";
-		print H nearest_locations( $lat, $lon );
-		print H "</CENTER>\n";
+
+		nearest_locations( $writer, $lat, $lon );
 	}
 
-	print H "<BR>\n<CENTER>",
-		other_map_links( @db, $mapname ),
-		"</CENTER>\n";
-	print H "<HR>\n" . credits();
-	print H "</BODY>\n";
-	print H "</HTML>\n";
-	close( H );
+	other_map_links( $writer, @db, $mapname ),
+
+	credits( $writer );
+
+	$writer->endTag( "specific_quake" );
+
+	print $output "\n";
+
+	$output->close();
+
+	xml_to_html( $xml_filename, $State{focus_map_stylesheet}, $html_filename );
 }
 
 sub create_focusmap {
@@ -462,6 +498,9 @@ sub create_focusmap {
 			      "dbjoin origin", 
 			      "dbsubset evid == $evid" );
 
+	# Use questionable strategy to plot prefor last.
+	@db = dbsort( @db, "-r", "abs(orid - prefor)" );
+
 	my( $nhypos ) = dbquery( @db, "dbRECORD_COUNT" );
 
 	@dbprefor = dbsubset( @db, "orid == prefor" );
@@ -470,8 +509,8 @@ sub create_focusmap {
 	my( $preftime, $preflat, $preflon, $prefor ) =
 	  dbgetv( @dbprefor, "time", "lat", "lon", "orid" );
 
-	$Focus_Mapspec{filebase} = "evid$evid";
-	$Focus_Mapspec{mapname} = $Focus_Mapspec{filebase};
+	$Focus_Mapspec{file_basename} = "evid$evid";
+	$Focus_Mapspec{mapname} = $Focus_Mapspec{file_basename};
 	$Focus_Mapspec{lonc} = unwrapped_lon( \%Focus_Mapspec, $preflon );
 	$Focus_Mapspec{latc} = $preflat;
 
@@ -479,13 +518,13 @@ sub create_focusmap {
 	my( $reldir ) = concatpaths( $State{quakesubdir}, 
 	 	   epoch2str( $preftime, "%Y%j" ) .
 			      "_$Focus_Mapspec{mapname}" );
-	mkdir( concatpaths( $State{web_topdir}, $reldir ), 0755 );
+	mkdir( concatpaths( $State{dbrecenteqs_dir}, $reldir ), 0755 );
 
 	$Focus_Mapspec{"psfile"} = concatpaths( $State{"workdir"},
-			"$Focus_Mapspec{filebase}.ps" );
-	$Focus_Mapspec{"pixfile"} = concatpaths( $State{web_topdir}, $reldir );
+			"$Focus_Mapspec{file_basename}.ps" );
+	$Focus_Mapspec{"pixfile"} = concatpaths( $State{dbrecenteqs_dir}, $reldir );
 	$Focus_Mapspec{"pixfile"} = concatpaths( $Focus_Mapspec{"pixfile"},
-			 "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}" );
+			 "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}" );
 	
 	%Focus_Mapspec = %{set_projection( \%Focus_Mapspec )};
 	%Focus_Mapspec = %{set_rectangles( \%Focus_Mapspec )};
@@ -497,8 +536,8 @@ sub create_focusmap {
 
 	dbputv( @dbscratch, "mapname", $Focus_mapspec{mapname} );
 
-	my( $url ) = $State{html_base} . 
-		concatpaths( $reldir, "$Focus_Mapspec{filebase}.html" );
+	my( $url ) = $State{dbrecenteqs_url} . 
+		concatpaths( $reldir, "$Focus_Mapspec{file_basename}.html" );
 
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
@@ -507,16 +546,16 @@ sub create_focusmap {
 		$dbwebmaps[3] = $rec;
 
 		dbputv( @dbwebmaps, 
-    	    		"dir", concatpaths( $State{web_topdir}, $reldir ),
-    	    		"dfile", "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}",
+    	    		"dir", concatpaths( $State{dbrecenteqs_dir}, $reldir ),
+    	    		"dfile", "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}",
     	    		"url", $url );
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
 	    		"mapname", $Focus_Mapspec{mapname},
 			"evid", $evid,
-    	    		"dir", concatpaths( $State{web_topdir}, $reldir ),
-    	    		"dfile", "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}",
+    	    		"dir", concatpaths( $State{dbrecenteqs_dir}, $reldir ),
+    	    		"dfile", "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}",
     	    		"url", $url );
 	}
 
@@ -581,15 +620,8 @@ sub create_focusmap {
 	undef( $Focus_Mapspec{clean_image} );
 }
 
-sub hyperlinked_logo {
-
-	return "<A HREF=\"$State{local_html_home}\">" .
-		"<IMG SRC=\"$State{html_base}$State{local_logo_filebase}\" " .
-		"align=center " .
-		"ALT=\"Link to $State{description_of_local_html_home}\"></A>";
-}
-
-sub hyperlinked_earthquake_table {
+sub stockmap_earthquake_xml {
+	my( $writer ) = shift( @_ );
 	my( $mapname ) = pop( @_ );
 	my( @db ) = @_;
 
@@ -605,63 +637,61 @@ sub hyperlinked_earthquake_table {
 
 	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
 
-	my( $table ) = "<TABLE BORDER=6 RULES=rows CELLSPACING=6 BGCOLOR=beige>\n";
+	$writer->startTag( "quakelist" );
 
-	$table .= "<TR><TD COLSPAN=3 BGCOLOR=white><CENTER>$nsymbols Earthquakes Shown " .
-		  "on This Page:</CENTER></TD></TR>\n";
-	
-	$table .= "<TR>\n";
-	$table .= "<TD><CENTER>Local Time</CENTER></TD>\n";
-	$table .= "<TD><CENTER>Magnitude</CENTER></TD>\n";
-	$table .= "<TD><CENTER>Region</CENTER></TD>\n";
-	$table .= "</TR>\n";
-	
 	for( $db[3]=0; $db[3]<$nsymbols; $db[3]++ ) { 
+
 		my( $lat, $lon, $depth, $time, $orid, $url ) = 
 			dbgetv( @db, "lat", "lon", "depth", 
 				     "time", "origin.orid", "url" );
+
 		my( $mag_description ) = mag_description( @db );
+
 		my( $local_time ) = epoch2str( $time, 
 		"%I:%M %p %Z %A %B %o, %Y", $ENV{TZ} );
+
 		my( $region ) = quake_region( @db, $lat, $lon, $orid );
 
-		$table .= "<TR>";
-		$table .= "<TD><A HREF=\"$url\">";
-		$table .= $local_time;
-		$table .= "</A></TD>\n";
-		$table .= "<TD><A HREF=\"$url\">";
-		$table .= $mag_description;
-		$table .= "</A></TD>\n";
-		$table .= "<TD><A HREF=\"$url\">";
-		$table .= $region;
-		$table .= "</A></TD>\n";
-		$table .= "</TR>\n";
+		my( $shape, $coords ) = imagemap_symbol( @db );
+
+		$writer->startTag( "quake" );
+
+		$writer->dataElement( "href", "$url" );
+		$writer->dataElement( "localtime_string", "$local_time" );
+		$writer->dataElement( "mag_string", "$mag_description" );
+		$writer->dataElement( "region_string", "$region" );
+		$writer->dataElement( "shape", "$shape" );
+		$writer->dataElement( "coords", "$coords" );
+
+		$writer->endTag( "quake" );
 	}
 
-	$table .= "</TABLE>\n";
-
-	return $table;
-
+	$writer->endTag( "quakelist" );
 }
 
 sub other_region_links {
-	my( $links, $key, $val );
+	my( $writer ) = pop( @_ );
+	my( $key, $val );
 
-	$links  = "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=beige><TR>" .
-		  "<TD BGCOLOR=white>Other seismic regions:</TD></TR>\n";
+	$writer->startTag( "other_regions" );
 
 	foreach $key ( keys %{$State{other_region_links}} ) {
 
 		$val = $State{other_region_links}->{$key};
-		$links .= "<TR><TD><A HREF=\"$val\">$key</A></TD></TR>\n";
+
+		$writer->startTag( "region" );
+
+		$writer->dataElement( "href", "$val" );
+		$writer->dataElement( "text", "$key" );
+
+		$writer->endTag( "region" );
 	}
 
-	$links .= "</TABLE>\n";
-
-	return $links;
+	$writer->endTag( "other_regions" );
 }
 
 sub other_map_links {
+	my( $writer ) = shift( @_ );
 	my( $mapname ) = pop( @_ );
 	my( @db ) = @_;
 
@@ -675,9 +705,7 @@ sub other_map_links {
 
 	if( $nmaps <= 0 ) { return ""; }
 
-	my( $links ) = 
-		"<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=beige><TR>" .
-		"<TD BGCOLOR=white>Other Maps:</TD>\n";
+	$writer->startTag( "other_maps" );
 
 	for( $db[3] = 0; $db[3] < $nmaps; $db[3]++ ) {
 
@@ -688,28 +716,24 @@ sub other_map_links {
 		if( $mapclass eq "global" ) {
 			$maplink = "Global View";
 		} elsif( $mapclass eq "index" ) {
-			$maplink = $State{title};
+			$maplink = $State{dbrecenteqs_title};
 		} else {
 			$maplink = $mapname;
 		}
 
-		$links .= "<TD><A HREF=\"$url\">$maplink</A></TD>\n";
+		$writer->startTag( "othermap" );
+		$writer->dataElement( "href", $url );
+		$writer->dataElement( "text", $maplink );
+		$writer->endTag( "othermap" );
 	}
-	$links .= "</TR></TABLE>\n";
-
-	return $links;
+	
+	$writer->endTag( "other_maps" );
 }
 
 sub imagemap_symbol {
 	my( @db ) = splice( @_, 0, 4 );
-	my( $url, $mapelement );
+	my( $shape, $coords );
 	my( $primitive, $xul, $yul, $xlr, $ylr );
-
-	if( $#_ >= 0 ) {
-		$url = pop( @_ );
-	} else {
-		( $url ) = dbgetv( @db, "url" );
-	}
 
 	my( $x, $y, $symsize, $symshape ) = 
 	   dbgetv( @db, "x", "y", "symsize", "symshape" );
@@ -721,46 +745,14 @@ sub imagemap_symbol {
 		$xlr = $x + $symsize;
 		$ylr = $y + $symsize;
 
-		$mapelement = "<AREA SHAPE=$primitive " .
-			"COORDS=\"$xul,$yul,$xlr,$ylr\" " .
-			"HREF=\"$url\">";
+		$shape = "$primitive";
+		$coords = "$xul,$yul,$xlr,$ylr";
 
 	} else {
 		die( "symbol shape $symshape not understood\n" );
 	}
 
-	return $mapelement;
-}
-
-sub clientside_imagemap_quakes {
-	my( $mapname ) = pop( @_ );
-	my( @db ) = @_;
-
-	my( $map ) = "<MAP NAME=\"$clientside_mapname\">\n";
-
-	# Go backwards in time: apparently (at least in Netscape)
-	# The first clientside imagemap encountered is the one 
-	# used. Have the most recent quake on top
-	@db = dbprocess( @db, 
-		       "dbopen mapassoc",
-		       "dbsubset mapname == \"$mapname\"",
-		       "dbjoin origin",
-		       "dbjoin event",
-		       "dbsort -r time",
-		       "dbjoin webmaps evid", 
-		       "dbsubset origin.orid == prefor" );
-
-	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
-
-	for( $db[3]=0; $db[3]<$nsymbols; $db[3]++ ) {
-
-		$map .= imagemap_symbol( @db );
-		$map .= "\n";
-	}
-
-	$map .= "</MAP>\n";
-
-	return $map;
+	return ( $shape, $coords );
 }
 
 sub create_stockmap_html {
@@ -779,67 +771,96 @@ sub create_stockmap_html {
 
 	$db[3] = 0;
 	my( $url ) = dbgetv( @db, "url" );
-	my( $html_relpath ) = substr( $url, length( $State{html_base} ) );
+	my( $html_relpath ) = substr( $url, length( $State{dbrecenteqs_url} ) );
 	my( $html_filename ) = 
-		concatpaths( $State{web_topdir}, $html_relpath );
+		concatpaths( $State{dbrecenteqs_dir}, $html_relpath );
 	my( $html_temp_filename ) = $html_filename;
 	$html_temp_filename =~ s@/([^/]*)$@/-$1@;
+	my( $xml_filename ) = $html_filename;
+	$xml_filename =~ s/\..*//;
+	$xml_filename .= ".xml";
 
 	my( $image_relpath ) = dbextfile( @db );
 	$image_relpath = substr( $image_relpath, 	
-				 length( $State{web_topdir} ) );
+				 length( $State{dbrecenteqs_dir} ) );
 	
-	open( H, ">$html_temp_filename" );
-	print H "<HTML><HEAD>\n";
-	print H "<BASE HREF=\"$State{html_base}\">\n";
-	print H "<META HTTP-EQUIV=\"refresh\" " .
-		"CONTENT=\"$State{page_refresh_seconds}\">\n";
-	print H "<TITLE>$State{title}</TITLE>\n";
-	print H "</HEAD>\n";
-	print H "<BODY BGCOLOR='white'>\n";
+	my( $output ) = new IO::File( ">$xml_filename" );
 
-	print H clientside_imagemap_quakes( @db, $mapname );
+	my( $writer ) = new XML::Writer( OUTPUT => $output, 
+					 DATA_MODE => 'true', 
+					 DATA_INDENT => 2 );
 
-	print H "<CENTER>";
-	print H hyperlinked_logo();
-	print H "</CENTER>\n";
-	print H "<H1 ALIGN='center'>";
-	if( $mapclass eq "index" ) {
-		print H "<IMG align=top src=\"$State{wiggle_filebase}\">" .
-			"$State{title}</H1>\n";
-	} else {
-		print H "<A HREF=\"$State{html_base}\">";
-		print H "<IMG align=top SRC=\"$State{wiggle_filebase}\" " .
-			"ALT=\"Link to $State{title}\">" .
-			"$State{title}</H1>\n";
-		print H "</A>\n";
-	}
+	chomp( my( $stylesheet_basename ) = `basename $State{index_map_stylesheet}` );
+	$writer->xmlDecl();
+	$writer->pi( 'xml-stylesheet', 'href="$stylesheet_basename" type="text/xsl"' );
 
-	print H "<CENTER>";
-	print H "<IMG SRC=\"$image_relpath\" USEMAP=\"#$clientside_mapname\" align=center></A>";
-	print H "</CENTER>\n";
+	$writer->startTag( "dbrecenteqs_main" );
 
-	print H "<BR>\n", 	
-		"<CENTER>", other_map_links( @db, $mapname ),
-		"</CENTER>";
+	$writer->dataElement( "page_title", 
+			      "$State{dbrecenteqs_title}" );
+	$writer->dataElement( "page_base", 
+			      "$State{dbrecenteqs_url}" );
+	$writer->dataElement( "dbrecenteqs_base", 
+			      "$State{dbrecenteqs_url}" );
+	$writer->dataElement( "page_refresh_seconds", 
+			      "$State{page_refresh_seconds}" );
+	$writer->dataElement( "wiggle_href", 
+			      "$State{dbrecenteqs_url}" .
+				"$State{wiggle_filebase}" );
+	$writer->dataElement( "institute_url", 
+			      "$State{institute_url}" );
+	$writer->dataElement( "institute_logo_url",
+		      	      "$State{dbrecenteqs_url}" .
+			      "$State{institute_logo_filebase}" );
+	$writer->dataElement( "institute_description", 
+			      "$State{institute_description}" );
 
-	print H "<CENTER>",
-		hyperlinked_earthquake_table( @db, $mapname ),
-		"</CENTER>";
 
-	print H "<CENTER>" . "<HR>\n" . other_region_links() . "</CENTER>";
-	print H "<HR>\n" . credits();
+	$writer->startTag( "pixmap", "mapclass" => "$mapclass" );
+	$writer->dataElement( "file", "$image_relpath" );
+	$writer->dataElement( "clientside_mapname", "$clientside_mapname" );
+	$writer->endTag( "pixmap" );
 
-	print H "</BODY></HTML>\n";
+	other_map_links( $writer, @db, $mapname ),
 
-	close( H );
+	stockmap_earthquake_xml( $writer, @db, $mapname ),
+
+	other_region_links( $writer );
+
+	credits( $writer );
+
+	$writer->endTag( "dbrecenteqs_main" );
+
+	print $output "\n";
+	
+	$output->close();
+
+	xml_to_html( $xml_filename, 
+		     $State{index_map_stylesheet},
+		     $html_temp_filename );
 
 	system( "/bin/mv $html_temp_filename $html_filename" );
 }
 
 sub credits {
+	my( $writer ) = pop( @_ );
+	my( $key, $val );
 
-	return "<H2>Credits:</H2>$State{credits}\n";
+	$writer->startTag( "credits" );
+
+	foreach $key ( keys %{$State{credits}} ) {
+
+		$val = $State{credits}->{$key};
+
+		$writer->startTag( "credit" );
+
+		$writer->dataElement( "href", "$val" );
+		$writer->dataElement( "text", "$key" );
+
+		$writer->endTag( "credit" );
+	}
+
+	$writer->endTag( "credits" );
 }
 
 sub eliminate_from_mapassoc {
@@ -874,7 +895,7 @@ sub create_stockmap_entry {
 	dbputv( @dbscratch, "mapname", $mapname );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{html_base} . "$mapclass.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$mapclass.html";
 
 	if( defined( $rec = shift( @recs ) ) ) {
 		
@@ -910,49 +931,52 @@ sub update_stockmap {
 	eliminate_from_mapassoc( @db, $mapname );
 	@dbmapassoc = dblookup( @db, "", "mapassoc", "", "" );
 
-	for( $db[3]=$dbbundle[3]; $db[3]<$dbbundle[2]; $db[3]++ ) {
+	if( grep( /orid/, dbquery( @dbbundle, "dbTABLE_FIELDS" ) ) ) {
 
-		my( $orid, $proj, $lat, $lon, $latc, $lonc, $xc, $yc, 
-    			$xscale_pixperdeg, $yscale_pixperdeg ) = 
-    			dbgetv( @db, "orid", "proj", "lat", "lon", 
-		 		"latc", "lonc",
-		 		"xc", "yc", 
-		 		"xpixperdeg", "ypixperdeg" );
+		for( $db[3]=$dbbundle[3]; $db[3]<$dbbundle[2]; $db[3]++ ) {
 
-		( $x, $y ) = latlon_to_xy( $proj, $lat, $lon, 
-					   $latc, $lonc, $xc, $yc, 
-					   $xscale_pixperdeg, $yscale_pixperdeg );
+			my( $orid, $proj, $lat, $lon, $latc, $lonc, $xc, $yc, 
+    				$xscale_pixperdeg, $yscale_pixperdeg ) = 
+    				dbgetv( @db, "orid", "proj", "lat", "lon", 
+		 			"latc", "lonc",
+		 			"xc", "yc", 
+		 			"xpixperdeg", "ypixperdeg" );
 
-		( $symsize, $symshape, $symcolor ) = 
-  		set_hypocenter_symbol( \%Mapspec, @db, 1 );
+			( $x, $y ) = latlon_to_xy( $proj, $lat, $lon, 
+					   	$latc, $lonc, $xc, $yc, 
+					   	$xscale_pixperdeg, $yscale_pixperdeg );
 
-		my( $primitive, $points, $xul, $yul, $xlr, $ylr );
+			( $symsize, $symshape, $symcolor ) = 
+  			set_hypocenter_symbol( \%Mapspec, @db, 1 );
 
-		if( $symshape eq "square" ) {
-			$primitive = "rectangle";
-			$xul = $x - $symsize;
-			$yul = $y - $symsize;
-			$xlr = $x + $symsize;
-			$ylr = $y + $symsize;
-			$points = "$xul,$yul $xlr,$ylr";
-		} else {
-			die( "symbol shape $symshape not understood\n" );
+			my( $primitive, $points, $xul, $yul, $xlr, $ylr );
+
+			if( $symshape eq "square" ) {
+				$primitive = "rectangle";
+				$xul = $x - $symsize;
+				$yul = $y - $symsize;
+				$xlr = $x + $symsize;
+				$ylr = $y + $symsize;
+				$points = "$xul,$yul $xlr,$ylr";
+			} else {
+				die( "symbol shape $symshape not understood\n" );
+			}
+
+			$modified_image->Draw(
+					fill=>$symcolor,
+					primitive=>$primitive,
+					stroke=>'blue',
+					points=>$points );
+
+			dbaddv( @dbmapassoc,
+				"orid", $orid,
+				"mapname", $mapname, 
+				"x", $x, 
+				"y", $y,
+				"symsize", $symsize,
+				"symshape", $symshape,
+				"symcolor", $symcolor );
 		}
-
-		$modified_image->Draw(
-				fill=>$symcolor,
-				primitive=>$primitive,
-				stroke=>'blue',
-				points=>$points );
-
-		dbaddv( @dbmapassoc,
-			"orid", $orid,
-			"mapname", $mapname, 
-			"x", $x, 
-			"y", $y,
-			"symsize", $symsize,
-			"symshape", $symshape,
-			"symcolor", $symcolor );
 	}
 
 	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "dbALL" );
@@ -960,7 +984,7 @@ sub update_stockmap {
 	dbputv( @dbscratch, "mapname", $Mapspec{mapname} );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{html_base} . "$Mapspec{mapclass}.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapclass}.html";
 
 	if( defined( $rec = shift( @recs ) ) ) {
 		
@@ -968,14 +992,14 @@ sub update_stockmap {
 
 		dbputv( @dbwebmaps, 
 	    		"mapname", $Mapspec{mapname},
-    	    		"dir", $State{web_topdir},
+    	    		"dir", $State{dbrecenteqs_dir},
     	    		"dfile", "$Mapspec{mapclass}.$Mapspec{format}",
     	    		"url", $url );
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
 	    		"mapname", $Mapspec{mapname},
-    	    		"dir", $State{web_topdir},
+    	    		"dir", $State{dbrecenteqs_dir},
     	    		"dfile", "$Mapspec{mapclass}.$Mapspec{format}",
     	    		"url", $url );
 	}
@@ -1019,13 +1043,13 @@ if( ! expansion_schema_present( @db ) ) {
 
 if( $opt_i ) {
 	
-	%Index_Mapspec = %{read_map_from_file( "index_map_config", $opt_i )};
+	%Index_Mapspec = %{read_map_from_file( "index_map", $opt_i )};
 	add_to_mapstock( \%Index_Mapspec, @db );
 	exit( 0 );
 	
 } elsif( $opt_g ) {
 	
-	%Global_Mapspec = %{read_map_from_file( "global_map_config", $opt_g )};
+	%Global_Mapspec = %{read_map_from_file( "global_map", $opt_g )};
 	add_to_mapstock( \%Global_Mapspec, @db );
 	exit( 0 );
 } 
@@ -1040,11 +1064,11 @@ if( dbquery( @db, "dbRECORD_COUNT" ) <= 0 ) {
 	add_to_mapstock( \%Index_Mapspec, @db );
 }
 
-if( ! -e "$State{web_topdir}/$State{wiggle_filebase}" ) {
-	system( "/bin/cp $State{wiggle} $State{web_topdir}" );
+if( ! -e "$State{dbrecenteqs_dir}/$State{wiggle_filebase}" ) {
+	system( "/bin/cp $State{wiggle} $State{dbrecenteqs_dir}" );
 }
-if( ! -e "$State{web_topdir}/$State{local_logo_filebase}" ) {
-	system( "/bin/cp $State{local_logo} $State{web_topdir}" );
+if( ! -e "$State{dbrecenteqs_dir}/$State{institute_logo_filebase}" ) {
+	system( "/bin/cp $State{institute_logo} $State{dbrecenteqs_dir}" );
 }
 
 cleanup_database( $dbname );
@@ -1059,6 +1083,17 @@ cleanup_database( $dbname );
 			  "dbgroup mapname" );
 
 $ngroups = dbquery( @dbstockmaps, "dbRECORD_COUNT" );
+
+if( $ngroups <= 0 ) {
+
+	# Allow creation of initialized sites for new databases
+
+	@dbstockmaps = dbprocess( @db, 
+				  "dbopen mapstock", 
+				  "dbgroup mapname" );
+
+	$ngroups = dbquery( @dbstockmaps, "dbRECORD_COUNT" );
+}
 
 # Necessary to create webmaps table entries for other_map_links to work
 for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
