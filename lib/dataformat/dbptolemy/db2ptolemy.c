@@ -51,13 +51,13 @@ add_dataelement( void **vstack, char *tagname, char *value )
 	copy = strdup( value );
 	strtrim( copy );
 
-	safe_strsub( copy, "\"", "\\\"", copy ); /* escape double quotes */
+//	safe_strsub( copy, "\"", "\\\"", copy ); /* escape double quotes */
 
         pushstr( vstack, " ");
         pushstr( vstack, tagname );
-	pushstr( vstack, " = \"" );
+	pushstr( vstack, " = " );
 	pushstr( vstack, copy );
-	pushstr( vstack, "\"");
+	pushstr( vstack, "");
 
 	free( copy );
 }
