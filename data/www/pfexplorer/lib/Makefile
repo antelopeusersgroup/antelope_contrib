@@ -1,4 +1,4 @@
-DATADIR= php/library/
+DATADIR= php/library
 
 DATA= pfexplore.inc
 

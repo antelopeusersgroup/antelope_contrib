@@ -1,4 +1,4 @@
-DATADIR = www/lib
+DATADIR = php/library
 
 DATA = webdbe.inc \
        webdbe_menubar.inc \
