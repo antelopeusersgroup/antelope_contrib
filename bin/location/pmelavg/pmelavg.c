@@ -1,9 +1,9 @@
-#include <sunperf.h>
 #include "stock.h"
 #include "coords.h"
 #include "db.h"
 #include "pf.h"
 #include "elog.h"
+#include "perf.h"
 #include "glputil.h"
 
 void usage()
@@ -11,7 +11,8 @@ void usage()
 	elog_die(0,"Usage:  pmelavg db [-pf pffile]\n");
 }
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	Dbptr db, dbv, dbgrp, dbev,dbevs, dbo,dbos;
 	char *pfname=NULL;
