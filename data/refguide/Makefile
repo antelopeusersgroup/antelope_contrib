@@ -36,5 +36,4 @@ DATA=\
 	tr.pf \
 	waveforms.pf 
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)

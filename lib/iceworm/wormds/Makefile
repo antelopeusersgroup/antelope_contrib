@@ -11,7 +11,6 @@ INCLUDE=iceworm_extensions.h \
 
 cflags=	-mt -D_SPARC -D_SOLARIS
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 		
 DIRS=

@@ -14,7 +14,6 @@ INCLUDE=chron3.h \
 
 cflags=	-D_SPARC -D_SOLARIS -D_LOGITMT
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 		
 OBJS= 	chron3.o \

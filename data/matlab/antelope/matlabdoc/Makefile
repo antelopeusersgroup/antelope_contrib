@@ -9,5 +9,4 @@ fflags=
 ldflags=
 ldlibs=
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
