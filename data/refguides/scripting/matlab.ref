@@ -353,3 +353,7 @@ YEARDAY = yearday ( EPOCH )
 TIMESTRING = zepoch2str ( EPOCH, FORMAT, TZ )
     convert epoch time to a string, specifying time-zone
 
+<subsection Misc>
+PID = getpid ( )
+    get the process-id of the calling process
+
