@@ -1,0 +1,207 @@
+.TH ORBSTAT2PF 3 "$Date$"
+.SH NAME
+pforbstat \- routines to return parameter files with orb status
+.SH SYNOPSIS
+.nf
+#include "pforbstat.h"
+
+Pf *orbstat2pf( Orbstat *orbstat, int orbversion );
+Pf *orbsources2pf( double atime, Orbsrc *sources, int nsources );
+Pf *orbclients2pf( double atime, Orbclient *clients, int nclients );
+
+Pf *pforbstat( int orbfd, int flags );
+
+.fi
+.SH DESCRIPTION
+The routines orbstat2pf, orbsources2pf, and orbclients2pf translate the
+structures returned by orbstat(3), orbsources(3), and orbclients(3),
+respectively, into corresponding parameter-files. If the orbversion
+argument to orbstat2pf is nonzero, the numeric orbserver version is also
+included in the server Array of the output parameter file. The orbversion
+parameter may be obtained from orbping(3).
+
+The parameter file returned by orbstat2pf contains a single array, called "server". 
+The orbsources2pf call returns a parameter file with source_when, the time 
+of the status snapshot, and an array of sources. That array of sources, in turn, 
+contains an array for each source, labelled by source-name. The orbclients2pf 
+call also returns a parameter file with two entries, one called "client_when"
+giving the epoch time of the snapshot and one called clients. The latter is 
+an array containing one array of values per client, labelled by the thread-id 
+of the client. 
+
+The pforbstat routine calls all necessary routines to build a parameter 
+file containing orb status. orbfd is the file descriptor returned by the orbopen(3) 
+call. The flags argument can be one or more of PFORBSTAT_SERVER, 
+PFORBSTAT_SOURCES, or PFORBSTAT_CLIENTS, thus determining the contents included
+in the returned parameter file. These flags can be combined via the bitwise-or 
+operator "|".
+
+The user must call pffree to free the parameter file objects returned by these routines. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+localhost% cat > try.c
+#include <stdlib.h>
+#include "stock.h"
+#include "pf.h"
+#include "orb.h"
+#include "pforbstat.h"
+
+int main(  ) {
+	Pf	*pf;
+	int	orbfd;
+	int	flags = 0;
+
+	orbfd = orbopen( ":", "r&" );
+	
+	flags = PFORBSTAT_SERVER | PFORBSTAT_SOURCES | PFORBSTAT_CLIENTS;
+
+	pf = pforbstat( orbfd, flags );
+	
+	pfout( stdout, pf );
+}
+localhost% try
+&Arr{
+    client_when	1026776757.426
+    clients	&Arr{
+        46082	&Arr{
+            address	127.0.0.1
+            bytes	0
+            errors	0
+            fd	7
+            host	?
+            lastpkt	1026776757.426
+            lastrequest	5
+            latency_sec	0
+            mymessages	0
+            nreads	7
+            nreject	0
+            nrequests	7
+            nselect	0
+            nwrites	6
+            packets	0
+            perm	r
+            pid	3447
+            pktid	160
+            port	31616
+            priority	0
+            read	217
+            reject	
+            select	
+            started	1026776757.424
+            thread	46082
+            what	/home/kent/temp/try
+            who	kent
+            written	876
+        }
+    }
+    server	&Arr{
+        address	127.0.0.1
+        closes	44
+        connections	False
+        errors	0
+        host	lcmobile:/home/rt/run
+        maxdata	10485736
+        maxpkts	26224
+        maxsrc	1000
+        messages	False
+        nclients	1
+        nsources	3
+        opens	45
+        orb_start	1023887703.258
+        orbversion	6
+        pid	1213
+        port	6510
+        rejected	0
+        started	1026760411.421
+        version	PreRelease 4.4 Linux 2.4.4-4GB 2002-06-05
+        when	1026776757.425
+        who	rt
+    }
+    source_when	1026776757.425
+    sources	&Arr{
+        /pf/orbstat	&Arr{
+            active	True
+            kbaud	0.262119
+            latency_sec	2315.07
+            nbytes	73704
+            npkts	139
+            slatest	158
+            slatest_time	1026774442.357
+            soldest	5
+            soldest_time	1026772245.600
+        }
+        my_exp/pf/yukonstat	&Arr{
+            active	True
+            kbaud	0.0572543
+            latency_sec	3297.12
+            nbytes	5535
+            npkts	15
+            slatest	25
+            slatest_time	1026773460.303
+            soldest	11
+            soldest_time	1026772705.038
+        }
+        yukon/pf/orbstat	&Arr{
+            active	True
+            kbaud	0.626449
+            latency_sec	1597.26
+            nbytes	2785
+            npkts	2
+            slatest	160
+            slatest_time	1026775160.167
+            soldest	159
+            soldest_time	1026775125.435
+        }
+    }
+}
+localhost%
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+These routines return the specified parameter files on success. If an error 
+occurs, they return a pointer to NULL. The user is responsible for freeing the 
+parameter files returned by these routines. 
+.SH LIBRARY
+-lpforbstat $(ORBLIBS)
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pforbstat(1), orbserver(1), orbstat(3), orbsources(3), orbclients(3), pffree(3)
+.fi
+.SH "BUGS AND CAVEATS"
+There are a number of slight variations one could imagine for the
+parameter-file representation of the orbstat structures. The direct
+structure-translation routines are made available to the user in case a
+different arrangement is preferred (these routines will make it easier to
+build other output parameter files). In particular, the thread-id for each
+client, while it seems to be the only guaranteed 'name' that could be used
+as a key, may be of limited value. Thus, the clients could also have been
+represented by a table of anonymous arrays. The current implementation
+was chosen for consistency with the parameter-file of sources.
+
+The simple-average kbaud and latency calculations, not in the original Orbsrc 
+structures, have been added to the parameter-file representation due to their
+usefulness. Application programs may always override them with fancier 
+calculations. The latency value is labelled latency_sec to avoid 
+ambiguity.
+
+The kbaud calculations are left out of the client summaries because of 
+the averaging necessary over multiple calls. This is left to the 
+application-level implementation. The latency_sec field is omitted from
+the client summary if aclient->lastpkt is less than or equal to zero, 
+i.e. if there have been no packets exchanged with the client.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
