@@ -7,7 +7,11 @@ MAN3 = genloc.3 \
 
 CLEAN= 		
 
-cflags=	
+#
+#  Comment out the following line if you are using Sun's Performance
+#  library.  Most universities receive this bundled with compilers.
+#
+cflags=	-DSUNPERF
 ldflags= 	
 ldlibs=	
 
