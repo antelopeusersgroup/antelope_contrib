@@ -16,7 +16,7 @@ char *argv[];
   char  *key;
 
    elog_init (argc, argv) ;
-   elog_notify (0, "%s version 2.0 3/5/1999\n", argv[0] );
+   elog_notify (0, "$Revision$ $Date$" );
    Program_Name = argv[0];
    
   /* Set command line parameters default values  */

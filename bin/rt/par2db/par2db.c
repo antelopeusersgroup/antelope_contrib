@@ -55,7 +55,7 @@ char          **argv;
     
     Program_Name = argv[0];
     elog_init (argc, argv);
-    elog_notify ( 0, "%s Version Version 1.6 10/28/96\n", Program_Name ) ; 
+    elog_notify ( 0, "$Revision$ $Date$" ) ; 
 
     par.segsiz = 86400.0;
     par.wfname = 0;
