@@ -5,6 +5,7 @@ DATADIR=
 DATA=
 MAN3=tt1dcvl.3
 
+cflags=-g
 ldlibs = $(DBLIBS) 
 
 include $(ANTELOPEMAKE)
