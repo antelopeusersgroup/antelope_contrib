@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include "pkt.h"
 #include "liss2orb.h"
 
@@ -90,6 +92,7 @@ int StuffLiss(
      char 	*data;
      LissPkt  *seed_hdr;
      LissHdr    hdr;
+     int 	i ;
 
     data = *packet;
 
@@ -110,20 +113,32 @@ int StuffLiss(
     
     memcpy( sta, seed_hdr->Station_ID,5 );
     sta[5] = '\0';
+    for (i=0 ; i<5 ; i++ ) {
+	sta[i] = toupper(sta[i]) ; 
+    }
     TRIM(sta, 6);
                                         
     memcpy( chan, seed_hdr->Channel_ID,3 );
     chan[3] = '\0';
+    for (i=0 ; i<3 ; i++ ) {
+	chan[i] = toupper(chan[i]) ; 
+	seed_hdr->Channel_ID[i] = toupper(seed_hdr->Channel_ID[i]) ;
+    }
     TRIM( chan, 4);
     
     memcpy( loc, seed_hdr->Location_ID,2 );
     loc[2] = '\0';
+    for (i=0 ; i<2 ; i++ ) {
+	loc[i] = toupper(loc[i]) ; 
+    }
     TRIM( loc, 3);
 
+#if 0
     if( !strncmp( loc, "00", 2 ) )  {
 	newchan = (char *) lcase( &chan[0] );
 	strcpy((char *) &chan[0], newchan );
     }
+#endif
     sprintf( srcname, "%s_%s_%s\0", net, sta, chan );
     if(NewCh != 0 )  {
         newchan = (char *) getarr(NewCh, srcname);
