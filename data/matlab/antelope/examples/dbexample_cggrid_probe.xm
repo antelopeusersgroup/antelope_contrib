@@ -1,13 +1,8 @@
 display('Running dbexample_cggrid_probe')
 
-% Start with a quick test to see if cggrid support is enabled:
-try
-	cggrid('/dev/null')
-catch
-	if( strcmp( lasterr, 'No cggrid support in your version of Antelope' ) )
-		display('no cggrid support')
-		return
-	end
+if( ~ cggrid_supported )
+        display('There is no cggrid support in your copy of Antelope')
+        return
 end
 
 echo on

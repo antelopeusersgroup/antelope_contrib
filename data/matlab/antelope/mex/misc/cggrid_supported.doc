@@ -1,0 +1,6 @@
+CGGRID_SUPPORTED	Test whether cggrid support is present
+
+SUPPORTED = CGGRID_SUPPORTED ( )
+
+CGGRID_SUPPORTED returns 0 if there is no cggrid support in this 
+version of Antelope; 1 if cggrid support is present.

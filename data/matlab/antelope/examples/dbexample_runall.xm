@@ -126,3 +126,5 @@ dbexample_trwfname
 dbexample_writing
 dbexample_yearday
 dbexample_zepoch2str
+
+display('Finished running dbexample_runall.')

@@ -8,6 +8,7 @@ HTML= $(MEXSRCS:.c=.html)
 
 MEXSRCS= \
 	arrtimes.c \
+	cggrid_supported.c \
 	clear_register.c \
 	getpid.c \
 	pffiles.c \
@@ -18,6 +19,6 @@ CLEAN=
 cflags=
 fflags=
 ldflags=
-ldlibs=
+ldlibs= 
 
 include $(ANTELOPE)/include/mex_antelope_makerules
