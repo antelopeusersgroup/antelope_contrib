@@ -1582,8 +1582,6 @@ guralp2orb_pfwatch( void *arg )
 				 "guralp2orb: parameter-file changed; rereading\n" );
 			} 
 
-			/* SCAFFOLD: need lock */
-
 			mutex_lock( &pfparams_mutex );
 
 			free( Default_net );
