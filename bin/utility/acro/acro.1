@@ -1,0 +1,116 @@
+.TH ACRO 1 "$Date$"
+.SH NAME
+acro \- interact with acronym database
+.SH SYNOPSIS
+.nf
+acro [-d] [-f] [-n] [-g] [-e] [-c] [-o] [acronym | expression]
+.fi
+.SH DESCRIPTION
+The acro program interacts with a database of acronyms and their 
+expansions. If the acronym specified on the command line is found in the database, 
+it is returned (including multiple interpretations if present). Any 
+context or comment fields are appended in parentheses. 
+If the acronym is not found, the user is prompted for an interpretation. If 
+none is given, the program quits. Otherwise the listed interpretation is 
+added to the database. In addition to being prompted for an interpretation
+(i.e. an expansion of the acronym), the user is prompted for the context 
+of the acronym as well as a comment. These may be left blank by hitting
+the Enter key, defaulting the values to NULL. 
+
+The -g option may be used for grep-style searches. If the expression is 
+enclosed in forward slashes, the argument is treated as a regular expression 
+to be applied to the table. If there are no forward slashes, the argument 
+is wrapped as /.*expression.*/ and then used as a regular expression to 
+search the table. If the expression is wrapped in forward slashes, the 
+expression must be matched exactly.
+
+.SH OPTIONS
+.IP -d 
+Launch dbe(1) with edit permissions (if possible) on the acronyms database
+
+.IP -f
+force addition of acronym (useful to give an alternate interpretation)
+
+.IP -g
+interpret the argument as a regular-expression for matching acronyms. 
+If the argument is delimited by '/' characters, an exact match to the 
+specified expression is required. Otherwise, the search lists all arguments
+for which the acronym contains the string given in the argument. 
+
+.IP -e 
+Same as -g except the regular expression is applied to the expansion 
+field rather than the acronym field. 
+
+.IP -c
+Same as -g except the regular expression is applied to the context
+field rather than the acronym field. 
+
+.IP -o
+Same as -g except the regular expression is applied to the comment
+field rather than the acronym field. 
+
+.IP -n
+return the number of acronyms in the database
+.SH FILES
+The database pointed to by the parameter file (see below) must be 
+in Acronyms1.2 format.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+The parameter contains one entry, the dbname. Note in the example below
+that an environment reference is used to make the example generic.
+.nf
+yukon% cat acronyms.pf
+home    &env(HOME)
+dbname &home/notes/acro
+yukon%
+.fi
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% acro CSS
+
+        CSS     Cascading Style Sheets
+        CSS     Center for Seismic Studies
+        CSS     Central Security Service (Military component of NSA)
+        CSS     Content Scrambling System
+
+% acro -g NSF
+
+        NSF     National Science Foundation
+        NSFNET  National Science Foundation Network
+
+% acro -e Cascading
+
+       CSS     Cascading Style Sheets
+
+% 
+
+% 
+% acro SMIL
+: SMIL not found. Add: Synchronized Multimedia Integration Language
+: Context for SMIL:
+: Comment for SMIL:
+
+        SMIL    Synchronized Multimedia Integration Language
+
+% 
+
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbexpressions(5)
+.fi
+.SH "BUGS AND CAVEATS"
+All searches are case sensitive, and no upper-to-lower case translation is done
+(or vice versa). 
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
+
