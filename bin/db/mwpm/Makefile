@@ -1,22 +1,11 @@
-BIN=mwpm		# commands to be placed in bin
-INCLUDE=	# include files to be placed in include
-PF=mwpm.pf		# parameter files to be placed in data/pf
+BIN=mwpm
+PF=mwpm.pf
 
-MAN1=		# man pages for commands
-#MAN3=		# man pages for library routines
-#MAN5=		# man pages for file formats
+cflags= -g
+ldlibs=-lmultiwavelet -lgenloc -ltt -lxtra $(TRLIBS) $(GPLLIBS) -xlic_lib=sunperf -ldl 
 
-CLEAN= 		# Extra files which should be removed during a "make clean"
-
-cflags= -g		# -g or -O is the most common option here and in fflags
-fflags= 	# 
-ldflags= 	# flags to linker/loader
-ldlibs=		 -lmultiwavelet -xlic_lib=sunperf $(DBLIBS) $(TRLIBS) -lxtra $(GPLLIBS) -lgenloc -ltt -lstock -ldl -lm 
-
-include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
-			# and before the DIRS definition below..
-DIRS=			# Omit this line to run make in subdirectories, or
-			# fill in to run make only in certain subdirectories
+include $(ANTELOPEMAKE) 
+DIRS=
 
 OBJS=	mwpm.o mwpm_process.o 
 $(BIN) : $(OBJS)
