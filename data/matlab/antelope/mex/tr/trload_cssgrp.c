@@ -26,6 +26,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	int	*intp;
 	char	*s;
 	char	errmsg[STRSZ];
+	Tbl	*sortkeys;
 	int	rc;
 
 	if( nrhs < 3 || nrhs > 5 )
@@ -107,8 +108,14 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		tr.database = dbINVALID;
 	}
 
+	sortkeys = strtbl( "sta", "chan", "time", 0 );
+	db = dbsort( db, sortkeys, 0, 0 );
+	freetbl( sortkeys, 0 );
+
 	rc = trload_cssgrp( db, time_str, endtime_str, &tr, table, 0 );
 	antelope_mex_clear_register( 1 );
+
+	dbfree( db );
 
 	if( table ) mxFree( table );
 	mxFree( time_str );
