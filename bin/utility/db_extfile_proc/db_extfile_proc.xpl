@@ -3,6 +3,25 @@ use Tk;
 require Tk::Dialog;
 require "getopts.pl";
 
+sub max_specific_filenum {
+	my( @commands ) = @_;
+	my( @specific );
+
+	my( $max ) = 0;
+
+	grep( push( @words, split( /\s+/, $_ ) ), @commands  );
+	grep( /EXTFILE_(\d+)/ && push( @specific, $1 ), @words );
+
+	foreach $n ( @specific ) {
+		
+		if( $n > $max ) {
+			$max = $n;
+		}
+	}
+	
+	return $max;
+}
+
 sub proceed { 
 	
 	# Assume the table is there (safe if launched from dbe)
@@ -50,6 +69,27 @@ sub proceed {
 	}
 
 	grep( s/EXTFILES/$filelist/g, @commands );
+
+	$max_specific_filenum = max_specific_filenum( @commands );
+
+	if( $#files+1 < $max_specific_filenum ) {
+		$morefiles = $top->Dialog(
+		   -title 	=> "db_extfile_proc",
+		   -text	=> "Need at least $max_specific_filenum files for mode '$mode'",
+		   -bitmap	=> 'error',
+		   -default_button => "OK",
+		   -buttons 	=> ["OK"],
+		);
+
+		$morefiles->Show;
+
+		$top->afterIdle( \&exit );
+		return;
+	}
+
+	for( $ispec = 1; $ispec <= $max_specific_filenum; $ispec++ ) {
+		grep( s/EXTFILE_$ispec/$files[$ispec-1]/g, @commands );
+	}
 
 	if( grep( /EXTFILE/, @commands ) ) {
 		$loop_over_files = 1;
