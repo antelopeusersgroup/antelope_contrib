@@ -1,0 +1,115 @@
+#
+#  This is a set of extensions to css3.0.  The entries here do not
+#  stand alone as these tables mainly reference attributes defined
+#  in css3.0.  These extensions would normally be used with the 
+#  database descriptor as:  css3.0:takeoff
+#
+#  These extensions serve two purposes.  First, they tabulate
+#  information need to produce and save first-motion focal mechanisms.
+#  It save the actual focal mechamism result in a modified form of 
+#  an older table used in css2.8.  Secondly, the tables defined here
+#  predicted values for measurements in the arrival table that 
+#  are based on some earth model and a particular travel time calculator.
+#  This should allow future software to not be burdened with matching
+#  theoretical travel times to data.  That is, these tables can be used
+#  to simply show the predicted value without having to recompute it
+#  and worry about whether the results will be consistent.
+#
+Attribute mechid
+        Integer ( 8 )
+        Format ( "%8d" ) 
+        Null  ( "-1"  ) 
+        Range ( "mechid > 0" ) 
+        Description ( "mechanism id" ) 
+        Detail {
+            Each focal mechanism needs to assigned a unique mechanism
+            id.  A seperate key from orid is necessary because it is
+            possible for different methods to be used to produce different
+            solutions from the same first motion data.  Note this
+            key is for traditional focal mechanism solutions only.  
+            The moment table is used for moment tensor solutions and
+            each moment tensor solution will have a unique orid. 
+        }
+        ;
+Attribute radamp
+        Real ( 10 )
+        Format ( "%10.7lf" )
+        Units ( "nondimensional" )
+        Null  ( "-1.0"  )
+        Range ( "1.0 >= amp >= 0.0" )
+        Description ( "Radiation pattern predicted amplitude" )
+        Detail {
+                A source has a body wave radiation pattern whose predicted
+                magnitude is to be stored in this field.  Because it is 
+                a radiation pattern effect it should be scaled from 0 to 1.
+                This is useful for conventional focal mechanism, but less
+                useful for moment tensor solutions.            
+        }
+        ;
+ 
+Attribute dip
+        Real ( 5 )
+        Format ( "%5.1lf" )
+        Description ("Dip of a vector")
+        Detail {
+            Used for strike and dip of a line segment.
+        }
+        ;
+
+Relation predarr
+        Fields (
+            arid orid time slow seaz ema esaz dip lddate )
+        Primary ( arid  orid  )
+        Foreign  ( arid orid )
+        Description ( "Earth model predictions of data associated with arrivals" )
+        Detail {
+                This table has information that connects arrival rows
+                to predicted values of related observable based on a
+                particular earth model.  It is keyed similar to assoc, but
+                the attributes in this relation are all predicted values
+                based on some earth model.  This relations can be thought
+                of as a supplement to assoc that directly stores predicted
+                values of observables rather than residuals.  Note that
+                esaz and dip are azimuth and dip of the predicted emergence
+                angle of a given arrival in the focal sphere.  esaz is not
+                necessarily the same as that stored in assoc which is 
+                conventionally the great circle path angle.  Similarly
+                seaz and ema are computed from a model, not from simple
+                spherical geometry.
+        }
+        ;
+
+Relation fplane
+        Fields (
+            orid mechid str1 dip1 rake1 str2 dip2 rake2 taxazm taxplg
+            paxazm paxplg algorithm auth lddate
+        )
+        Primary ( mechid)
+        Foreign  ( orid )
+        Description ( "Focal mechanism definition" )
+        Detail {
+                This table stored double couple focal mechanism plane
+                data.  It is a minor variant of a table of the same
+                name used in css2.8.  
+        }
+        ;
+
+Relation predmech
+        Fields (
+            arid orid mechid fm radamp lddate
+        )
+        Primary ( arid orid mechid )
+        Foreign  ( arid orid mechid )
+        Description ( "Predicted focal mechanism properties" )
+        Detail {
+                This table is used to show predicted first motions
+                based on a particular focal mechanism.  It is 
+                assumed the earth model used is the same as that 
+                used to produce orid so the the angles defined
+                in predarr can be used to show inconsistencies
+                between actual and predicted first motions.
+        }
+        ;
+
+
+
