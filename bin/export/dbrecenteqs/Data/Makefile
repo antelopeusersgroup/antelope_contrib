@@ -1,4 +1,4 @@
-DATADIR= dbrecenteqs
+DATADIR= www/dbrecenteqs
 DATA= legend.gif \
       legend_pga.gif \
       legend_mmi.gif \

@@ -16,7 +16,7 @@ background_graphic
 region_phrases_database example_region_phrases
 
 nearest_places &Arr{
-	cities_dbname &datafilename(dbrecenteqs/world_cities)
+	cities_dbname &datafilename(www/dbrecenteqs/world_cities)
 	max_dist_km 200	
 	always_include Washington D.C.|San Diego
 }
@@ -62,8 +62,8 @@ global_map &Arr{
 
 focus_map_pga &Arr{
 	include 	map_config
-	stylesheet	&datafilename(xslt/specific_default.xsl)
-	vrml_stylesheet	&datafilename(xslt/specific_default_vrml.xsl)
+	stylesheet	&datafilename(www/xslt/dbrecenteqs_specific_default.xsl)
+	vrml_stylesheet	&datafilename(www/xslt/dbrecenteqs_specific_default_vrml.xsl)
 	mapname		evidtest
 	description	PGV Map
 	mapclass	focus
@@ -78,8 +78,8 @@ focus_map_pga &Arr{
 
 focus_map_main &Arr{
 	include 	map_config
-	stylesheet	&datafilename(xslt/specific_default.xsl)
-	vrml_stylesheet	&datafilename(xslt/specific_default_vrml.xsl)
+	stylesheet	&datafilename(www/xslt/dbrecenteqs_specific_default.xsl)
+	vrml_stylesheet	&datafilename(www/xslt/dbrecenteqs_specific_default_vrml.xsl)
 	mapname		evid
 	description	Event Map
 	mapclass	focus
@@ -104,13 +104,13 @@ map_config &Arr{
 	mapclass	index
 	contour_mode 	grddb  # none or grddb
 	grddb		/space/world30_grids/world30
-	stylesheet	&datafilename(xslt/index_default.xsl)
-	vrml_stylesheet	&datafilename(xslt/index_default_vrml.xsl)
+	stylesheet	&datafilename(www/xslt/dbrecenteqs_index_default.xsl)
+	vrml_stylesheet	&datafilename(www/xslt/dbrecenteqs_index_default_vrml.xsl)
 	longitude_branchcut_high 360
 	hypocenter_dbname historic_hypocenters_dbname
 	map_color_palette_file &datafilename(gmt/dbrecenteqs.cpt)
 	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
-	legend 		&datafilename(dbrecenteqs/legend.gif)
+	legend 		&datafilename(www/dbrecenteqs/legend.gif)
 	legend_description Magnitude and Age Legend for Earthquakes
 	landmask_regions &Arr{
 		Salton_Sea   		-R-116.8/-115/32/34
@@ -121,7 +121,7 @@ map_config &Arr{
 		# faults combined_faults.gmtlin 4/255/0/0
 		# roads roads.xy 4/255/255/255
 	}
-	cities_dbname 	&datafilename(dbrecenteqs/world_cities)
+	cities_dbname 	&datafilename(www/dbrecenteqs/world_cities)
 	background_magsize_pixels 3
 	background_magmin 3
 	quakeshape 	square
@@ -146,7 +146,7 @@ map_config &Arr{
 		9	11
 	}
 	plot_stations 1
-	stations_stylesheet &datafilename(xslt/station_default_stylesheet.xsl)
+	stations_stylesheet &datafilename(www/xslt/station_default_stylesheet.xsl)
 	station_color black
 	station_size  4
 	pixels_per_inch 100

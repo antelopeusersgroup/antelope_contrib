@@ -1,7 +1,7 @@
-DATADIR= xslt
-DATA= index_default.xsl \
-      specific_default.xsl \
-      index_default_vrml.xsl \
-      specific_default_vrml.xsl 
+DATADIR= www/xslt
+DATA= dbrecenteqs_index_default.xsl \
+      dbrecenteqs_specific_default.xsl \
+      dbrecenteqs_index_default_vrml.xsl \
+      dbrecenteqs_specific_default_vrml.xsl 
 
 include $(ANTELOPEMAKE)
