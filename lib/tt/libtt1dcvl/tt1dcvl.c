@@ -46,21 +46,16 @@ not set.
 */
 static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "$ANTELOPE/data/tables/genloc/db/vmodel"
+#define DEFAULT_DB "vmodel"
 void _init()
 {
-	char *dbname;
+	char *dbpath;
 	
-	dbname = getenv (ENVNAME);
-	if(dbname == NULL) 
-	{
-		elog_notify(0,"Model Database env variable definition %s not set\nUsing default database of %s\n",
-			ENVNAME,DEFAULT_DB);
-		dbname = strdup(DEFAULT_DB);
-	}
-	if(dbopen(dbname,"r",&modeldb) == dbINVALID)
-		elog_complain(0,"WARNING: could not open velocity model database %s during libtt1dcvl initialization\nAll calls to this calculator will fail\n",
-			dbname);
+	dbpath = datapath (ENVNAME,"tables/genloc/db",DEFAULT_DB,0);
+
+	if(dbopen(dbpath,"r",&modeldb) == dbINVALID)
+		die(0,"Could not open velocity model database %s during libtt1dcvl initialization\nExiting because all calls to this calculator will fail\n",
+			dbpath);
 
 }
 
