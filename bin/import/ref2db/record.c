@@ -11,11 +11,6 @@ void wrt_last_rec ( Ch_data *buf )
     char *s ;
     if ( buf->params->datacode  == trSEED )  {
    
-/* 
-            if ((buf->file = fopen (buf->path, "a+")) == 0) {
-                die (1, "Can't open %s.\n", buf->path);
-            }
-*/
 	    result = csteim (buf->steim, save_seed, 0, 0) ;
 	    if ( result < 0 ) 
 		die ( 1, "steim compression failed to write final bytes\n" ) ;
@@ -28,10 +23,6 @@ void wrt_last_rec ( Ch_data *buf )
 		freesteim ( buf->steim ) ; 
 		buf->steim = stinit ( buf ) ; 
 	    }
- /*           if ( fclose ( buf->file ) != 0 ) {
-	        die ( 1, "Couldn't close output file '%s'\n", buf->path ) ; 
-            }
-  */
      }
 
 }
@@ -49,7 +40,7 @@ record (Ch_data *buf, PktChannel *new )
     char          *s ;
 
     if (buf->db.record < 0) {
-	if ( !new_dfile (buf, new->time ) ) 
+	if ( !new_dfile (buf, new, new->time ) ) 
 	    die (0, "Couldn't add new record to database.\n" ) ; 
     } 
     npts = TIME2SAMP (buf->crnt_time, buf->samprate, new->time);
@@ -62,14 +53,14 @@ record (Ch_data *buf, PktChannel *new )
  
     if( buf->ev_over ) {   
 
-/*
+
 fprintf( stderr, "%s_%s RefTek even over.  Stime = %lf Etime = %lf\n",  
 buf->sta, buf->chan, buf->stime, buf->crnt_time );
 fflush(stderr);
-*/
+
 
        if( buf->params->datacode == trSEED ) wrt_last_rec ( buf ) ; 
-       new_dfile( buf, new->time );
+       new_dfile( buf, new, new->time );
  
     }
 
@@ -77,11 +68,11 @@ fflush(stderr);
     if ( !TRCONTIGUOUS(buf->stime, new->time, buf->samprate, buf->nsamp))  {
        flush = 1;
 
-/*
+
 fprintf( stderr, "gap in %s_%s.  prev_record over at %lf new starts at %lf\n",  
 buf->sta, buf->chan, buf->crnt_time, new->time );
 fflush(stderr);
-*/
+
 
     }
 
@@ -95,8 +86,9 @@ fflush(stderr);
 
     if( flush ) {
         wrt_last_rec ( buf ) ; 
-        if ( !new_dbrecord (buf, new, buf->stime ) ) 
-           die (0, "Couldn't add new record to database.\n" ) ; 
+        if( buf->tmax < new->time ) new_dfile( buf, new, new->time );
+        else if ( !new_dbrecord (buf, new, new->time ) ) 
+            die (0, "Couldn't add new record to database.\n" ) ; 
     }
     doff = 0;
     nsamp_now = 0;
@@ -109,15 +101,15 @@ fflush(stderr);
        nsamp_now =  new->nsamp >= maxnsamp ? maxnsamp:new->nsamp;
        if( nsamp_now >= maxnsamp ) ev_over = 1; 
        else ev_over = 0;
-/*
+
 fprintf( stderr, "%s_%s nsamp %d will write %d at %lf\n",  
 buf->sta, buf->chan, new->nsamp, nsamp_now, buf->crnt_time);
+fprintf( stderr, "%lf - %lf %d %d \n",  buf->tmax, crnt_time, new->nsamp, maxnsamp );
 fflush(stderr);
- */   
+ 
        switch (buf->params->datacode) {
 
           case trSEED:
-	      buf->nsamp += nsamp_now ; 
 	      result = csteim (buf->steim, save_seed, data+doff, nsamp_now) ;
   
 	      if ( result < 0 ) 
@@ -127,6 +119,7 @@ fflush(stderr);
 			buf->net, buf->sta, buf->chan, s=strtime(crnt_time) ) ;
 	          free(s) ; 
 	      }
+	      buf->nsamp += nsamp_now ; 
 	      buf->crnt_time = ENDTIME(buf->stime, buf->samprate, buf->nsamp);
 
 	  break;
@@ -165,7 +158,7 @@ fflush(stderr);
 */ 
  
          if( buf->params->datacode == trSEED )   wrt_last_rec ( buf ) ; 
-         new_dfile( buf, crnt_time ); 
+         new_dfile( buf, new, crnt_time ); 
 
        }
        new->nsamp -= nsamp_now;

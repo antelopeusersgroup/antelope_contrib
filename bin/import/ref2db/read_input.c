@@ -8,7 +8,7 @@ int read_input( SpecPar *par, RunArg *arg )
 {
 
     double epoch;
-    int in_err, ifdata, psize = 0 ; 
+    int retcode = 0, in_err=0, ifdata, psize = 0 ; 
     int nbytes = 0;
     int done = 0;
     char das[8], *dasname;
@@ -44,36 +44,37 @@ int read_input( SpecPar *par, RunArg *arg )
                 done = 1;
                 break;                
 	     default:
-                if( ( in_err = valid_pkt( &buffer, &srcname[0], &epoch,
-                               &psize, nbytes, in_err, par->byevent )) > 0 )  {
-                   if(in_err >= 30)  {
-		       die(0, "too much bad blocks\n");
-                   } else continue;
-                }  else {
-                    if( Dases != 0 )  {
-                         sprintf( das, "%d\0", Par.staid );  
-                         if( (dasname = getarr( Dases, das) ) == 0 ) break ;
-                         else  {
-                           fprintf(stderr, "Got das %s \n", dasname );
-                           fflush(stderr);
-                         }
-                    }
-                    if( epoch > arg->etime ) { 
-                        complain(0, "All data for specified time window (%lf-%lf) was extracted.\n",
-                           arg->stime, arg->etime );
-                        if( close( arg->ifp ) != 0 )  {
-                           die( 0, "can't close %s.\n", arg->iport );
-    	                }
-                        done = 1;
-                        break; 
-                    }
-                    if( epoch >= arg->stime )  {
-		        if( arg->nodata ) break;
-                        if( !wrt2db ( epoch, srcname, buffer, par ) )
-		             die (0, "pkt2db fails\n");
-		        in_err = 0;
-                    }
-
+                switch( ( retcode = valid_pkt( &buffer, &srcname[0], &epoch,
+                               &psize, nbytes, par->byevent )) )  {
+                   case -1:
+                
+                       in_err++;
+                       if(in_err >= 30)  {
+		           die(0, "too much bad blocks\n");
+                       } 
+                       break;
+                   case 1:
+                
+                       in_err = 0;
+                       if( epoch > arg->etime ) { 
+                           complain(0, "All data for specified time window (%lf-%lf) was extracted.\n",
+                              arg->stime, arg->etime );
+                           if( close( arg->ifp ) != 0 )  {
+                              die( 0, "can't close %s.\n", arg->iport );
+    	                   }
+                           done = 1;
+                           break; 
+                       }
+                       if( epoch >= arg->stime )  {
+		           if( arg->nodata ) break;
+                           if( !wrt2db ( epoch, srcname, buffer, par ) )
+		                die (0, "pkt2db fails\n");
+		           in_err = 0;
+                       }
+                       break;
+                   case 0:
+                       in_err = 0;
+                       break;
 		}
 		break;
 	}

@@ -17,7 +17,6 @@ int valid_pkt( unsigned char **data,
 	double *epoch,
 	int *psize,
 	int length,
-	int err,
         int byevent )
 {  
 
@@ -29,6 +28,7 @@ int valid_pkt( unsigned char **data,
    char *parse;
    int  i, nelem;
    char key[64];
+   char das[8], *dasname;
  
    val = ( ushort_t *)  (*data);
    code = *val;
@@ -59,12 +59,21 @@ int valid_pkt( unsigned char **data,
         case 1:
           return (int) raw->pkttype;
    }
+
+   if( Log ) {
+       fprintf( stderr, "dasid %d time %lf\n", Par.staid, Par.time );
+       fflush( stderr );
+   }
+   if( Dases != 0 )  {
+        sprintf( das, "%d\0", Par.staid );
+        if( (dasname = getarr( Dases, das) ) == 0 ) return 0 ;
+   }
  
    if( raw->pkttype == PSCLDT )  {
       update_site( ); 
-      if( !check_dt( *data, byevent ) ) return 1;
+      if( !check_dt( *data, byevent ) ) return -1;
    } else if( raw->pkttype == PSCLEH || raw->pkttype == PSCLET )  {
-      if( !record_eh_et( *data, raw->pkttype )) return 1;
+      if( !record_eh_et( *data, raw->pkttype )) return -1;
    }
 
    *epoch = Par.time;
@@ -72,13 +81,9 @@ int valid_pkt( unsigned char **data,
     if( length > 0 ) Par.packet.size = length; 
     if( !(*psize = hdr2packet( (char **) data, Par.hdrtype,  srcname )) )  {
 	complain( 0, "valid_pkt(): Not a valid packet. Wrong Header?\n");
-	err = 1;
-    } else err = 0;
+	return -1;
+    } else return 1;
 
-    if( Log )
-       complain( 0, "SRCNAME: %s-%lf \n", srcname, *epoch );
-
-    return err; 
  
 }
 
@@ -130,7 +135,8 @@ int record_eh_et( uchar_t *packet , int pkttype )
 
             stream->ev_num = bcd2hex( &packet[16], 4 );
             fprintf(timerr, "Event #%d starts at %lf\n", stream->ev_num, stream->stime);
-          
+            fflush( timerr);
+ 
             if( stream->ev_num > 1 )  {
 
                  stream->samprate = atoi(pkt.samprate);
@@ -141,9 +147,11 @@ printf(" %lf %lf (%lf)\n", stream->etime, stream->stime, stime );
 fflush(stdout);
 */
  
-                 if( fabs(stream->stime - stime)*stream->samprate > 0.5  )
-                    fprintf(timerr, "Event gap: event %d over at %lf and event %d starts at %lf\n.", 
-                    stream->ev_num-1, stime, stream->ev_num , stream->stime );
+                 if( fabs(stream->stime - stime)*stream->samprate > 0.5  )  {
+                    fprintf(timerr, "Event gap: previous event over at %lf and current event starts at %lf\n.", 
+                    stime, stream->stime );
+                    fflush( timerr);
+                 }
 
             }
             stream->etime=0.0;
@@ -163,11 +171,11 @@ fflush(stdout);
           }
 
           fprintf(timerr, "Event #%d is over at %lf\n\n", stream->ev_num, stream->etime);
+          fflush( timerr);
 
           stream->stime = 0.0;
        break;
     }
-    fflush( timerr);
     setarr( StrmDas, key, (char *) stream );
 
     return 1;
@@ -179,16 +187,16 @@ int check_dt( uchar_t *packet, int byevent )
       Stream *stream;
       ChArr *comp;
       int event, streamid, tshift;
-      char key[16];
+      char key[16], str_key[16];
 
    event = bcd2hex( &packet[16], 4 );
    streamid = bcd2hex( &packet[18], 2 ); 
    streamid++;
      
-   sprintf( key, "%d_%d\0", Par.staid, streamid );
+   sprintf( str_key, "%d_%d\0", Par.staid, streamid );
          
-   if( ( stream = (Stream *) getarr( StrmDas, key ) ) == 0 )  {
-         complain( 0, "Can't get %s stream info\n",key);
+   if( ( stream = (Stream *) getarr( StrmDas, str_key ) ) == 0 )  {
+         complain( 0, "Can't get %s stream info\n",str_key);
          return 0;
    }
 
@@ -240,6 +248,7 @@ fflush(stdout);
 
          fflush( timerr);
          Par.time=new_time;
+          
     }
 
     if( !TRSAMERATE( comp->srate, Par.packet.srate ) )  {
@@ -248,7 +257,9 @@ fflush(stdout);
     }
     comp->nsamp += Par.packet.nsamp;
     setarr (Chan, key, (char *) comp);
-
+    stream->etime = ENDTIME( Par.time, Par.packet.nsamp, Par.packet.srate);
+    setarr(StrmDas, str_key, stream);
+ 
    return 1;
 } 
 

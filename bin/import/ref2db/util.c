@@ -44,12 +44,12 @@ Ch_data *new_chan (PktChannel *src, SpecPar *params)
 }
 
 
-int new_dfile (Ch_data *buf, double crnt_time ) 
+int new_dfile (Ch_data *buf, PktChannel *new, double crnt_time ) 
 {
     int  num;
 
 /*
-fprintf(stdout, "new_dbrecord: %s_%s %lf\n", buf->sta, buf->chan, crnt_time );
+fprintf(stdout, "new_dbrecord: %s_%s %lf\n", buf->sta, buf->chan, new->time );
 fflush(stdout); 
 */
 
@@ -69,7 +69,7 @@ fflush(stdout);
 	    "time", crnt_time,   
 	    "endtime", crnt_time,   
 	    "nsamp", 0,
-	    "samprate", buf->samprate,        
+	    "samprate", new->samprate,        
 	    "datatype", buf->params->datatype,
 	    0) < 0) {
 	    register_error (0, "Couldn't write to table\n");
@@ -96,7 +96,7 @@ fflush(stdout);
 
     return 1;
 }
-int new_dbrecord (Ch_data *buf, PktChannel *new, double stime ) 
+int new_dbrecord (Ch_data *buf, PktChannel *new, double crnt_time ) 
 {
     int  num;
     int foff;
@@ -127,8 +127,8 @@ fflush(stdout);
 	if (dbputv (buf->db, 0,
 	    "sta", buf->sta,
 	    "chan", buf->chan,
-	    "time", new->time,
-	    "endtime", new->time,   
+	    "time", crnt_time,
+	    "endtime", crnt_time,   
 	    "nsamp", 0,
 	    "foff", foff,
 	    "dir", dir,
@@ -141,8 +141,8 @@ fflush(stdout);
 	} 
 	buf->nsamp = 0 ; 
 	buf->samprate = new->samprate ;
-	buf->stime = new->time;
-	buf->crnt_time = new->time;
+	buf->stime = crnt_time;
+	buf->crnt_time = crnt_time;
 	
         if ( buf->steim  ) 
 	    buf->steim->s100.samprate = buf->samprate;

@@ -138,6 +138,7 @@ extern int record PL_(( Ch_data *buf, PktChannel *new ));
 extern Steim *stinit PL_(( Ch_data *buf ));
 extern Ch_data * new_chan PL_(( PktChannel *src, SpecPar *par ));
 extern int new_dbrecord PL_(( Ch_data *buf, PktChannel *new, double t ));
+extern int new_dfile PL_(( Ch_data *buf, PktChannel *new, double t ));
 extern int save_seed PL_(( Steim *conf, int n0, int n1 ));
 
 #undef PL
