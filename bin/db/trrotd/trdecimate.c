@@ -99,7 +99,7 @@ int  idecim;			/* Decimation factor (safest if pwr of 2) */
 
 
 
-	    cfree ( (char *)result);
+	    free ( (char *)result);
 	    break;
 
 	  default:
