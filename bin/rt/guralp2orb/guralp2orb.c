@@ -937,8 +937,12 @@ healthy_packet( G2orbpkt *gpkt )
 		return 0;
 	}
 
+#ifdef __APPLE__
+	tdelta = gpkt->time - now() ;
+#else
 	clock_gettime( CLOCK_REALTIME, &tp );
 	tdelta = gpkt->time - tp.tv_sec+tp.tv_nsec/1e9;
+#endif
 
 	if( Reject_future_packets &&
 	    ( tdelta > Reject_future_packets_sec ) ) {
