@@ -84,22 +84,16 @@ sub choose_options {
             exit;
         }
 
-        if( !fork )
-        {
-            print "Starting orb $orbname at an interval of $interval\n";
-            &startorb( $orbname, $interval );
-        }
+        print "Starting orb $orbname at an interval of $interval\n";
+        &startorb( $orbname, $interval );
     }
     elsif ( $command eq "restart" ) {
         if ( $numargs ne 2 ) {
             &usage;
         }
         &stoporb ($orbname);
-        if( !fork )
-        {
-            print "Restarting orb $orbname at an interval of $interval\n";
-            &startorb( $orbname, $interval );
-        }
+        print "Restarting orb $orbname at an interval of $interval\n";
+        &startorb( $orbname, $interval );
     }
     elsif ( $command eq "stop" ) {
         if ( $numargs ne 1 ) {
