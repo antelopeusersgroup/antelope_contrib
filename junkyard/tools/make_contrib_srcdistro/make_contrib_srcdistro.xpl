@@ -25,7 +25,7 @@ if( $opt_r ) {
 
 if( $opt_t ) {
 	$tag = $opt_t;
-	$tarfile_name = "Antelope_contrib_src_$t.tar";
+	$tarfile_name = "Antelope_contrib_src_$tag.tar";
 }
 
 if( $opt_c ) {
@@ -51,9 +51,11 @@ chdir( "/tmp/src" );
 printf STDERR "Building CVS export distribution in /tmp:\n";
 if( $opt_t ) {
 	$cmd = "cvs -d $cvsroot export -r $tag $package";
+	printf STDERR "Running: $cmd\n"
 	system( $cmd );
 } else {
 	$cmd = "cvs -d $cvsroot export -D $day $package";
+	printf STDERR "Running: $cmd\n"
 	system( $cmd );
 }
 
