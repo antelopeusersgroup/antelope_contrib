@@ -2,7 +2,7 @@ BIN=pmelavg
 PF=pmelavg.pf
 
 MAN1=	pmelavg.1
-ldlibs= -lgenloc -lglputil $(DBLIBS) $(F77LIBS) \
+ldlibs= -lgenloc -lglputil $(DBLIBS)  \
 -ltrvltm -ldl -lm -lperf
 include $(ANTELOPEMAKE)  	# This line must appear following the definitions above, 
 

@@ -10,6 +10,10 @@ void usage()
 {
 	elog_die(0,"Usage:  pmelavg db [-pf pffile]\n");
 }
+void get_error(int err)
+{
+	elog_die(0,"Error reading record %d of working view\n",err);
+}
 
 int
 main(int argc, char **argv)
@@ -26,6 +30,8 @@ main(int argc, char **argv)
 	Tbl *gtbl,*epat,*opat;
 	Tbl *matchlist=NULL;
 	Hook *hooke,*hooko;  
+	int use_r_weight;  
+	int use_ssr_weight;
 
 	if(argc<2) usage();
 
@@ -42,10 +48,16 @@ main(int argc, char **argv)
 	if(pfname==NULL) pfname=strdup("pmelavg");
 
 	if(pfread(pfname, &pf)) elog_die(0,"pfread failed\n");
+	use_r_weight=pfget_boolean(pf,"use_inv_r_weighting");
+	use_ssr_weight=pfget_boolean(pf,"use_ssr_weighting");
+	if(!(use_r_weight || use_ssr_weight))
+		elog_die(0,"Must specify 1/r and/or ssr weighting.\nFix pf file\n");
 
 	if(dbopen(argv[1],"r+",&db)) 
 		elog_die(0,"dbopen of %s failed\n",argv[1]);
 	dbv = dbform_working_view(db,pf,"pmelavg_dbview");
+	if(dbv.record==dbINVALID)
+		elog_die(0,"dbprocess failed:  check pf parameter pmelavg_dbview\n");
 	dbev = dblookup(db,0,"event",0,0);
 	dbo=dblookup(db,0,"origin",0,0);
 	dbevs = dblookup(db,0,"event",0,0);
@@ -75,47 +87,48 @@ main(int argc, char **argv)
 		for(dbv.record=is,sumwt=0.0;dbv.record<ie;++dbv.record)
 		{
 			double sdobs;
-/*
-			if(dbgetv(dbv,0,"hclat",hc,
+			wt=1.0;
+			if(use_r_weight)
+			{
+			    if(dbgetv(dbv,0,"hclat",hc,
 				"hclon",hc+1,
 				"hcdepth",hc+2,
 				"lat",h,
 				"lon",h+1,
 				"depth",h+2,
 				"origin.time",h+3,
-				"prefor",&prefor,0) == dbINVALID)
-*/
-			if(dbgetv(dbv,0,
+				"prefor",&prefor,0) == dbINVALID) 
+					get_error(dbv.record);
+				/* this accumulates a weighted sum with weights
+				set as 1/r where r is distance between hypo and
+				they hypocentroid it is associated with.  r has
+				a floor to prevent 1/0 problems. */
+	
+				dist(rad(hc[0]),rad(hc[1]),rad(h[0]),rad(h[1]),
+					&dr,&az);
+				d=deg2km(deg(dr));
+				r=hypot(d,h[2]-hc[2]);
+				if(r<rmin)
+					wt = 1.0/rmin;
+				else
+					wt = 1.0/r;
+			}
+			if(use_ssr_weight)
+			{
+			    if(dbgetv(dbv,0,
                                 "lat",h,
                                 "lon",h+1,
                                 "depth",h+2,
 				"origin.time",h+3,
 				"sdobs",&sdobs,
                                 "prefor",&prefor,0) == dbINVALID)
+					get_error(dbv.record);
 
-			{
-				elog_die(0,"Error reading record %d of working view\n", 
-					dbv.record);
+			    if(sdobs<=0.0) 
+				wt *= 1.0;
+			    else
+				wt *= 1.0/sdobs;
 			}
-			/* this accumulates a weighted sum with weights
-			set as 1/r where r is distance between hypo and
-			they hypocentroid it is associated with.  r has
-			a floor to prevent 1/0 problems. */
-
-			/*
-			dist(rad(hc[0]),rad(hc[1]),rad(h[0]),rad(h[1]),
-				&dr,&az);
-			d=deg2km(deg(dr));
-			r=hypot(d,h[2]-hc[2]);
-			if(r<rmin)
-				wt = 1.0/rmin;
-			else
-				wt = 1.0/r;
-*/
-			if(sdobs<=0.0) 
-				wt = 1.0;
-			else
-				wt = 1.0/sdobs;
 			sumwt += wt;
 			daxpy(4,wt,h,1,havg,1);
 		}
