@@ -1,0 +1,4 @@
+FLinear are your proposed composite filters which are all linear
+FLbelow100 are composite filters which are linear below 100 sps
+FLbelow40 are composite filters which are linear below 40 sps
+FLbelow20 are composite filters which are linear below 20 sps
