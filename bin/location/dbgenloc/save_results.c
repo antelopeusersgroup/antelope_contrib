@@ -20,6 +20,8 @@ save_results (Dbptr dbin, Dbptr dbout,
     double delta, esaz, seaz, slores, duphi, azres, azimuth ;
     Arrival *a ; 
     Slowness_vector *u ;
+    Dbptr dborigin, dbassoc ;
+    int old, new ;
 
     *oridp = orid = dbnextid(dbin, "orid" ) ;
     if ( orid < 1 ) {
@@ -27,10 +29,10 @@ save_results (Dbptr dbin, Dbptr dbout,
 	return -1 ;
     }
 
-    dbout = dblookup ( dbout, 0, "origin", 0, 0 ) ; 
-    dbquery ( dbout, dbRECORD_COUNT, &i ) ; 
+    dborigin = dblookup ( dbout, 0, "origin", 0, 0 ) ; 
+    dbquery ( dborigin, dbRECORD_COUNT, &i ) ; 
 
-    dbout.record = dbaddnull ( dbout ) ; 
+    dborigin.record = dbaddnull ( dborigin ) ; 
     grn = grnumber(hypo->lat, hypo->lon) ;
     srn = srnumber ( grn ) ; 
     str = strstr(vmodel,"/");
@@ -42,8 +44,8 @@ save_results (Dbptr dbin, Dbptr dbout,
     else
 	++str;
     sprintf(algorithm,"dbgenloc:%6.6s",str);
-    if (dbout.record < 0
-       ||  dbputv(dbout, 0,
+    if (dborigin.record < 0
+       ||  dbputv(dborigin, 0,
 	   "orid", orid, 
 	    "lat", hypo->lat,
 	    "lon", hypo->lon,
@@ -55,8 +57,6 @@ save_results (Dbptr dbin, Dbptr dbout,
 	   "srn", srn,
 	   "algorithm", algorithm,
 	   "auth", pfget_string ( pf, "author" ),
-	   "nass", maxtbl(ta) + maxtbl(tu),
-	   "ndef", maxtbl(ta) + maxtbl(tu),
 	   0)  ) {
 	complain(0, "Couldn't add origin record to database.\n");
 	retcode = -1;
@@ -82,6 +82,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 	complain(0,"Problems saving emodel vector\n");
 	
 
+    dbassoc = dblookup ( dbout, 0, "assoc", 0, 0 ) ; 
+    dbquery (dbassoc, dbRECORD_COUNT, &old ) ;
     n = maxtbl(ta) ;
     for ( i=0 ; i<n ; i++ ) {
 	a = (Arrival *) gettbl(ta, i) ;
@@ -133,6 +135,12 @@ save_results (Dbptr dbin, Dbptr dbout,
 			dbout.record ) ; 
 	}
     }
+    dbquery (dbassoc, dbRECORD_COUNT, &new ) ;
+
+    dbputv(dborigin, 0,
+	   "nass", new-old,
+	   "ndef", new-old,
+	   0 ) ; 
 
     return retcode ;
 }
