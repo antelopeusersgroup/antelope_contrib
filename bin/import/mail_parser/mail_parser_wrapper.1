@@ -16,7 +16,7 @@ be as simple as opening a .forward file in the home-directory of the
 account, containing the path to the mail_parser(1) command: for example
 
 .nf
-nordic% cat /home/aeicauto/.forward
+% cat /home/aeicauto/.forward
 kent@giseis.alaska.edu, "|/home/aeicauto/mail_parser_wrapper || exit 75"
 .fi
 
@@ -26,9 +26,39 @@ are necessary, for example to environment variables. Usually it is
 necessary to remove group and world write permission from the
 mail_parser_wrapper executable and from the .forward file. 
 
-In practice, setting up automatic mail handling may require other
-cooperation from your system administrator depending on which
-sendmail(1) security features are activated.
+The mail_parser_wrapper may also be launched via procmail(1), approximately
+as follows. First, forward recipients mail to procmail:
+
+.nf
+% cat ~/.forward 
+"|IFS=' ' && exec /usr/local/bin/procmail -f- || exit 75 #user"
+.fi
+
+Second, run the mail_parser_wrapper from within a procmail rule:
+
+.nf
+% cat /home/rt/.procmailrc
+:0:
+* ^X-Spam-Flag: Spam YES
+Imapmail/Spam
+
+:0w
+|/home/rt/mail_parser_wrapper
+.fi
+
+Of course, one might want to put procmail filter rules into this 
+to send only certain emails to the mail_parser. This should 
+probably be considered a pre-filtering operation since the mail_parser(1)
+itself does some subsetting of mails based on subject and sender. Note that 
+to deliver a carbon copy of the email to the user, in addition to 
+sending the mail off to mail_parser, one should use the procmail 'c' flag:
+
+.nf
+:0cw
+|/home/rt/mail_parser_wrapper
+.fi
+
+
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -46,7 +76,10 @@ sendmail(1) security features are activated.
 mail_parser(1), autodrm(1), autodrm_wrapper(1)
 .fi
 .SH "BUGS AND CAVEATS"
+In practice, setting up automatic mail handling may require other
+cooperation from your system administrator depending on which
+sendmail(1) security features are activated.
 .SH AUTHOR
-Kent Lindquist. This script is modelled on the Antelope autodrm_wrapper 
+Kent Lindquist. This script is modeled on the Antelope autodrm_wrapper 
 script.
 .\" $Id$

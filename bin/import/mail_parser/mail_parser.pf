@@ -52,4 +52,12 @@ locatortrans &Arr{
 	H	LocEq
 }
 }
+&Arr{
+handler		mp_filemail
+sender		.*
+subject		.*
+database	mp_maildb
+archive_dir	mp_mail_archive
+schema		Mail1.2
+}
 }
