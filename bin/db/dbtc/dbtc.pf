@@ -1,0 +1,7 @@
+#
+#
+data_segment_window 1200
+correlation_window  10
+allowed_time_err_offset 10
+#
+
