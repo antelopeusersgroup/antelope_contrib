@@ -53,7 +53,7 @@ sub database_prep {
 }
 
 $Pf = "orbpf2db.pf";
-$match = ".*/pf.*";
+$match = ".*/pf/orbstat";
 $write_mode = "overwrite";
 
 if ( ! &Getopts('s:w:f:p:m:v') || @ARGV != 2 ) { 
@@ -167,9 +167,10 @@ for(;;) {
 			push( @matchfields, $field );
 		}
 
+		$crunch = 0; # Keep the hooks unique across crunches
 
 		@records = dbmatches( @dbscratch, @dbtable, 
-				      "hook_clean_$table", @matchfields  );
+		  		"hook$crunch\_clean_$table", @matchfields  );
 
 		foreach $record ( @records ) {
 			
@@ -179,6 +180,7 @@ for(;;) {
 		}
 
 		dbcrunch( @dbtable );
+		$crunch++;
 	}
 
 	%tables = %{$trans{$key}{"tables"}};
@@ -245,7 +247,7 @@ for(;;) {
 
 				} elsif( $write_mode eq "overwrite" ) {
 	
-					@records = dbmatches( @dbscratch, @dbtable, "hook_$table" );	
+					@records = dbmatches( @dbscratch, @dbtable, "hook$crunch\_$table" );	
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
 					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
@@ -287,7 +289,7 @@ for(;;) {
 			
 			} elsif( $write_mode eq "overwrite" ) {
 
-				@records = dbmatches( @dbscratch, @dbtable, "hook_$table" );
+				@records = dbmatches( @dbscratch, @dbtable, "hook$crunch\_$table" );
 
 				if( ! defined( @records ) ) {
 	
