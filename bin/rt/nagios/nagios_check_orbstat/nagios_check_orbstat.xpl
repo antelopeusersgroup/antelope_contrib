@@ -34,10 +34,13 @@
 # 
 # Based on some code in the check_mailq program from Nagios Plugins v1.3.1
 
+use strict;
 use Socket;
 use Getopt::Long;
+use File::Basename;
 use vars qw($opt_version $opt_help $opt_verbose $opt_warn $opt_crit $opt_orb
-	    $opt_source $opt_type $opt_index $opt_param $option_e 
+	    $opt_source $opt_client $opt_type $opt_index $opt_param 
+	    $opt_exists 
 	    $warn_at $warn_low $warn_high $crit_at $crit_low $crit_high
 	    $VERBOSE $PROGNAME $STATE);
 
@@ -57,32 +60,33 @@ use Socket;
 # Prototypes
 sub check_args();
 sub print_help();
-sub print_usage();
+sub print_usage($);
 sub get_latest_orbstat_packet($);
 sub check_recent_packet_exists($$$$$);
 sub check_recent_pforbstat_packet_value($$$$$$$$);
+sub check_client_exists($);
 sub convert_pforbstat_to_numbers($);
 
 # Constants
-$VERSION = '$Revision$';
-$AUTHOR = "Steve Foley, UCSD ROADNet Project, sfoley\@ucsd.edu";
-$PROGNAME = $0;
-$SERVER_TYPE = "server";
-$CLIENT_TYPE = "clients";
-$SOURCE_TYPE = "sources";
-$TYPE_REGEX = "$SERVER_TYPE|$CLIENT_TYPE|$SOURCE_TYPE";
-$NAGIOS_SERVICE_NAME = "ORBSTAT";
+our $VERSION = '$Revision$';
+our $AUTHOR = "Steve Foley, UCSD ROADNet Project, sfoley\@ucsd.edu";
+our $PROGNAME = $0;
+our $SERVER_TYPE = "server";
+our $CLIENT_TYPE = "clients";
+our $SOURCE_TYPE = "sources";
+our $TYPE_REGEX = "$SERVER_TYPE|$CLIENT_TYPE|$SOURCE_TYPE";
+our $NAGIOS_SERVICE_NAME = "ORBSTAT";
 
 # Defaults
-$VERBOSE = 0;
-$ORB = ":"; # orb and port, ie. "orbstat -s $ORB"
+our $VERBOSE = 0;
+our $ORB = ":"; # orb and port, ie. "orbstat -s $ORB"
 
 ######
 #
 MAIN:
 {
 
-    my ($result_code, $result_perf);
+    my ($result_code, $result_perf, $status);
     Getopt::Long::Configure("bundling");
     $status = check_args();
     if ($status)
@@ -90,57 +94,84 @@ MAIN:
 	print "ERROR: processing arugments\n";
 	exit $ERRORS{'UNKNOWN'};
     }
-    
-    my ($pktid, $source_name, $packet_time, $raw_packet, $num_bytes)
-	= get_latest_orbstat_packet($opt_source);
-    
-    # check if you have a packet first
-    if (!defined $pktid)
+
+    if (defined $opt_source)
     {
-	print_results($NAGIOS_SERVICE_NAME, $ERRORS{'CRITICAL'}, 0,
-		      "No orbstat packet found, age");
-	exit $ERRORS{'CRITICAL'};
-    }
-    elsif (defined $opt_type) 
-    {
-	($result_code, $result_perf)
-	    = check_recent_pforbstat_packet_value($pktid, $source_name,
-						  $packet_time,
-						  $raw_packet, $num_bytes,
-						  $opt_type, $opt_index,
-						  $opt_param);
-	if ($opt_type eq $SERVER_TYPE)
+	my ($pktid, $source_name, $packet_time, $raw_packet, $num_bytes)
+	    = get_latest_orbstat_packet($opt_source);
+	
+	# check if you have a packet first
+	if (!defined $pktid)
 	{
-	    print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
-			  "$opt_type:$opt_param");
+	    print_results($NAGIOS_SERVICE_NAME, $ERRORS{'CRITICAL'}, 0,
+			  "No orbstat packet found, age");
+	    exit $ERRORS{'CRITICAL'};
+	}
+	elsif (defined $opt_type) 
+	{
+	    ($result_code, $result_perf)
+		= check_recent_pforbstat_packet_value($pktid, $source_name,
+						      $packet_time,
+						      $raw_packet, $num_bytes,
+						      $opt_type, $opt_index,
+						      $opt_param);
+	    if ($opt_type eq $SERVER_TYPE)
+	    {
+		print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
+			      "$opt_type:$opt_param");
+	    }
+	    else
+	    {
+		print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
+			      "$opt_type:$opt_index:$opt_param");
+	    }
+	    exit $result_code;
+	}
+	elsif (defined $opt_exists)
+	{
+	    ($result_code, $result_perf) 
+		= check_recent_packet_exists($pktid, $source_name, 
+					     $packet_time, 
+					     $raw_packet, $num_bytes);
+	    # pretty print if it isnt an error
+	    if ($result_code != $ERRORS{'UNKNOWN'})
+	    {
+		print_results($NAGIOS_SERVICE_NAME, $result_code, 
+			      strtdelta($result_perf), 
+			      "last packet age");
+	    }
+	    else
+	    {
+		print_results($NAGIOS_SERVICE_NAME, $result_code, 
+			      $result_perf, "last packet age");	    
+	    }
+	    exit $result_code;
 	}
 	else
 	{
-	    print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
-			  "$opt_type:$opt_index:$opt_param");
+	    exit $ERRORS{'UNKNOWN'};
 	}
-	exit $result_code;
     }
-    elsif (defined $opt_exists)
+    elsif (defined $opt_client)
     {
-	($result_code, $result_perf) 
-	    = check_recent_packet_exists($pktid, $source_name, $packet_time, 
-					 $raw_packet, $num_bytes);
+	($result_code, $result_perf) = check_client_exists($opt_client);
 	# pretty print if it isnt an error
 	if ($result_code != $ERRORS{'UNKNOWN'})
 	{
-	    print_results($NAGIOS_SERVICE_NAME, $result_code, strtdelta($result_perf), 
-			  "last packet age");
+	    print_results($NAGIOS_SERVICE_NAME, $result_code, 
+			  strtdelta($result_perf), 
+			  "latency");
 	}
 	else
 	{
-	    print_results($NAGIOS_SERVICES_NAME, $result_code, $result_perf, 
-			  "last packet age");	    
+	    print_results($NAGIOS_SERVICE_NAME, $result_code, 
+			  $result_perf, "latency");	    
 	}
 	exit $result_code;
     }
     else
     {
+	print "ERROR: No client or source defined\n";
 	exit $ERRORS{'UNKNOWN'};
     }
 }
@@ -158,6 +189,7 @@ sub check_args()
 	       "c=s"   => \$opt_crit,     "crit=s"   => \$opt_crit,
 	       "o=s"   => \$opt_orb,      "orb=s"    => \$opt_orb,
 	       "s=s"   => \$opt_source,   "source=s" => \$opt_source,
+	       "u=s"   => \$opt_client,   "client=s" => \$opt_client,
 	       "e"     => \$opt_exists,   "exists"   => \$opt_exists,
 	       "t=s"   => \$opt_type,     "type=s"   => \$opt_type,
 	       "i=s"   => \$opt_index,    "index=s"  => \$opt_index,
@@ -189,40 +221,45 @@ sub check_args()
     }
     
     # Gotta have warn, crit, and source options
-    if (!defined $opt_source)
+    if ((!defined $opt_source) && (!defined $opt_client))
     {
-	print_usage();
+	print_usage("No source or client specified!");
 	exit $ERRORS{'UNKNOWN'};
     }
 
-    # Gotta have either "exists" or "type/index/param" info
-    if (defined $opt_type)
+    # When looking for a source, we must have 
+    # either "exists" or "type/index/param" info
+    if (defined $opt_source)
     {
-	# Yeah, its a clunky set of IFs, but it reads clearer than one biggie
-	if ($opt_type !~ /$TYPE_REGEX/)
+	if (defined $opt_type)
 	{
-	    print_usage();
-	    exit $ERRORS{'UNKNOWN'};	
-	}	
-
-	# server doesnt need an index...there is only one server!
-	if (($opt_type ne $SERVER_TYPE) && (!defined $opt_index))
-	{
-	    print_usage();
-	    exit $ERRORS{'UNKNOWN'};	
-	}	
-
-	# 
-	if (!defined $opt_param)
-	{
-	    print_usage();
-	    exit $ERRORS{'UNKNOWN'};		    
+	    # Yeah, its a clunky set of IFs, but it reads clearer than a biggie
+	    if ($opt_type !~ /$TYPE_REGEX/)
+	    {
+		print_usage("Invalid type specified! " .
+			    "Must match regex: $TYPE_REGEX");
+		exit $ERRORS{'UNKNOWN'};	
+	    }	
+	    
+	    # server doesnt need an index...there is only one server!
+	    if (($opt_type ne $SERVER_TYPE) && (!defined $opt_index))
+	    {
+		print_usage("Missing index!");
+		exit $ERRORS{'UNKNOWN'};	
+	    }	
+	    
+	    # 
+	    if (!defined $opt_param)
+	    {
+		print_usage("Missing Parameter");
+		exit $ERRORS{'UNKNOWN'};		    
+	    }
 	}
-    }
-    elsif (!defined $opt_exists) # no type, so must exist or an error
-    {
-	print_usage();
-	exit $ERRORS{'UNKNOWN'};	
+	elsif (!defined $opt_exists) # no type, so must exist or an error
+	{
+	    print_usage("No type or exist flag specified!");
+	    exit $ERRORS{'UNKNOWN'};	
+	}
     }
 
     if ($opt_source)
@@ -234,17 +271,18 @@ sub check_args()
     if (((!defined $opt_warn) && (defined $opt_crit))
 	|| ((defined $opt_warn) && (!defined $opt_crit)))
     {
-	print_usage();
+	print_usage("Warn and Crit must be defined or not defined as a pair.");
 	exit $ERRORS{'UNKNOWN'};
     }
 
     # sanity check critical and warn flags
     if ((defined $opt_warn) && (defined $opt_crit))
     {
-	($warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low) =
+	($warn_at, $warn_high, $warn_low, $crit_at, $crit_high, $crit_low) =
 	    parse_ranges($opt_warn, $opt_crit);
-	if ((!defined $warn_at) || (!defined $warn_hi) || (!defined $warn_low)
-	    || (!defined $crit_at) || (!defined $crit_hi) 
+	if ((!defined $warn_at) || (!defined $warn_high) 
+	    || (!defined $warn_low)
+	    || (!defined $crit_at) || (!defined $crit_high) 
 	    || (!defined $crit_low))
 	{
 	    print "Error in threshold ranges!\n";
@@ -254,10 +292,19 @@ sub check_args()
 }
 
 ######
-#
-sub print_usage()
+# Print the usage for the command
+# Param: Explanation for the problem, can be ""
+sub print_usage($)
 {
-    print "Usage: $0 -s <src> (-e | (-t <type> (-i <index>) -p <param>)) "
+    my ($explanation) = shift;
+
+    if (defined $explanation)
+    {
+	print "$explanation\n";
+    }
+
+    print "Usage: $0 (-u <client> | "
+	. "(-s <src> (-e | (-t <type> (-i <index>) -p <param>)))) "
 	. "[-w <warn> -c <crit>] [-o <orb>] [-v verbose]\n";
 }
 
@@ -266,11 +313,12 @@ sub print_usage()
 sub print_help()
 {
     print_version($VERSION, $AUTHOR);
-    print_usage();
+    print_usage("");
     print "\n";
     print " Check on ORB status values for the source at the specified ORB\n";
     print " Check is performed from the Nagios server, not remotely\n";
     print "\n";
+    print "-u  (--client)  = The client identifier to look for\n";
     print "-s  (--source)  = The source description to fetch\n";
     print "-e  (--exists)  = Just check that the source exists and is\n";
     print "                  fresher than -w and -c (in minutes)\n";
@@ -355,7 +403,8 @@ sub check_recent_packet_exists($ $ $ $ $)
     $time_difference = $current_time - $packet_time;
 
     # return result
-    return categorize_return_value($time_difference, $warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low);
+    return categorize_return_value($time_difference, $warn_at, $warn_high, 
+				   $warn_low, $crit_at, $crit_high, $crit_low);
 }
 
 ######
@@ -432,12 +481,63 @@ sub check_recent_pforbstat_packet_value($ $ $ $ $ $ $ $)
 
     if ((defined $opt_warn) && (defined $opt_crit))
     {
-	return categorize_return_value($packet_value, $warn_at, $warn_hi, $warn_low, $crit_at, $crit_hi, $crit_low);
+	return categorize_return_value($packet_value, $warn_at, $warn_high, 
+				       $warn_low, $crit_at, $crit_high, 
+				       $crit_low);
     }
     else
     {
 	return ($ERRORS{'OK'}, $packet_value);
     }
+}
+
+######
+# Checks to see that a client program is running and what its latency is
+# Param: The client program name
+# Return: ($result_code, $result_perf)
+#  result_code - result code to return to Nagios (from %ERRORS)
+#  result_perf - Performance value (latency in this case) for Nagios.
+sub check_client_exists($)
+{
+    my ($client_name) = shift;
+    my ($orb, $client, $what_base, $packet_value);
+    my ($when, @clients);
+
+    $orb = orbopen("$ORB", "r&");
+
+    if ($orb < 0)
+    {
+	return ($ERRORS{'UNKNOWN'},"0");
+    }
+
+    ($when, @clients) = orbclients($orb);
+    foreach $client (@clients)
+    {
+	($what_base) = split /\s/, $client->what;
+	$what_base = basename($what_base);
+
+	# pick out the matches and return data
+	if ($opt_client eq $what_base)
+	{
+	    # Fix this to a latency!
+	    $packet_value = now() - $client->lastpkt;
+	    last;
+	}
+    }
+
+    orbclose($orb);
+
+    if ((defined $opt_warn) && (defined $opt_crit))
+    {
+	return categorize_return_value($packet_value, $warn_at, $warn_high, 
+				       $warn_low, $crit_at, $crit_high,
+				       $crit_low);
+    }
+    else
+    {
+	return ($ERRORS{'OK'}, $packet_value);
+    }
+
 }
 
 ######
