@@ -3,7 +3,7 @@
 guralp2orb \- Import Guralp data over UDP port into Antelope ORB
 .SH SYNOPSIS
 .nf
-guralp2orb [-v] [-pf parameter_file] orbname port
+guralp2orb [-v] [-pf parameter_file] [-r reject_sec] orbname port
 .fi
 .SH DESCRIPTION
 guralp2orb receives seismic data from Guralp digitizers in GCF format
@@ -33,11 +33,16 @@ Antelope system. This parameter may be set to zero or ignored if it is not
 needed.
 
 guralp2orb ignores status packets (state-of-health packets) from the digitizer.
+
+guralp2orb will reject packets which are too far into the future, judged 
+by the system clock, if the -r option is used.
 .SH OPTIONS
 -v verbose. List system ID and stream ID of each incoming packet, along with
 the ORB source identifier to which it is converted.
 
 -pf parameter_file. Allows optional specification of the parameter file. 
+
+-r reject_sec. Reject packets which are more than the specified number of seconds into the future.
 .SH FILES
 The parameter file is guralp2orb.pf, unless otherwise specified with the 
 -pf option.

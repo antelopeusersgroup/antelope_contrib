@@ -9,6 +9,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "stock.h"
 #include "orb.h"
 #include "pf.h"
@@ -34,6 +35,7 @@ packet_convert( char *packet,
 		int *nbytes,
 		int *bufsize,
 		double *time,
+		double *endtime,
 		char *srcid )
 {
 	PktChannel pktchan;
@@ -133,6 +135,8 @@ packet_convert( char *packet,
 	pktchan.datatype = trINT;
 	pktchan.data = (void *) pkt.data; 
 
+	*endtime = ENDTIME( *time, pktchan.samprate, pktchan.nsamp );
+
 	mystuff_iw_tracebuf( 0, pinno, &pktchan, orbpacket, nbytes, bufsize );
 
 	return retcode;
@@ -150,12 +154,18 @@ char **argv;
 	char	packet[PACKET_SIZE];
 	char    srcid[STRSZ];
 	double	timestamp;
+	int	reject_future_packets = 0;
+	double	reject_future_packets_sec = 0;
+	double	tdelta;
+	double	endtime;
+	struct timespec tp;
 	char	*orbpacket = 0;
 	int	bufsize = 0;
 	int	nbytes;
 	int	optind;
 	int	rc;
 	char	*c;
+	char	*s;
 	int	i;
 
 	strcpy( pffile, "guralp2orb" );
@@ -171,6 +181,18 @@ char **argv;
 
         	if (strcmp(argv[optind], "-pf") == 0) {
 			strcpy( pffile, argv[++optind] );
+        	}
+
+        	if (strcmp(argv[optind], "-r") == 0) {
+
+			reject_future_packets = 1;
+			reject_future_packets_sec = atof( argv[++optind] );
+
+			fprintf( stderr, "%s%s%s\n",
+			  "guralp2orb: rejecting all packets that are ",
+			  ( s = strtdelta( reject_future_packets_sec ) ),
+			  " or more into the future" );
+			free( s );
         	}
 	}
 
@@ -207,9 +229,24 @@ char **argv;
 				     &nbytes, 
 				     &bufsize,
 				     &timestamp,
+				     &endtime,
 				     srcid );
 		if( rc ) {
 			continue;
+		}
+
+		clock_gettime( CLOCK_REALTIME, &tp );
+		tdelta = endtime - tp.tv_sec+tp.tv_nsec/1e9;
+
+		if( reject_future_packets &&
+		    tdelta > reject_future_packets_sec ) {
+			complain( 1, 
+	"guralp2orb: rejecting packet from %s, which ends %s into future\n",
+			 srcid, ( s = strtdelta( tdelta ) ) );
+			 free( s );
+			clear_register( 1 );
+
+			 continue;
 		}
 
 		rc = orbput( orbfd, srcid,
