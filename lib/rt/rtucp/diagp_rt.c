@@ -20,6 +20,8 @@ Arr *DPOrbs=0;
 Arr *DP=0;
 Arr *BatRec = 0;
 extern Arr *pfnames;
+regex_t dasmatch;
+regex_t dcmatch;
 
 
 static int 

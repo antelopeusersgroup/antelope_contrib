@@ -132,7 +132,7 @@ static char *BBA_DCDC_NAME[BBA_DCDC] = {
 	"RECNCT", "TCPSND", "TCPDEL", "BATT" };
 
 
-regex_t dasmatch;
-regex_t dcmatch;
+extern regex_t dasmatch;
+extern regex_t dcmatch;
 
 #endif
