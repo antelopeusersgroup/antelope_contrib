@@ -1048,3 +1048,46 @@ GCLvectorfield3d::~GCLvectorfield3d()
 {
 	if(val!=NULL) free_4dgrid_contiguous(val,n1,n2,n3);
 }
+void GCLgrid::compute_extents()
+{
+	int i,j;
+	x1low=x1[0][0];
+	x1high=x1[0][0];
+	x2low=x2[0][0];
+	x2high=x2[0][0];
+	x3low=x3[0][0];
+	x3high=x3[0][0];
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+		{
+			x1low = MIN(x1[i][j],x1low);
+			x1high = MAX(x1[i][j],x1high);
+			x2low = MIN(x2[i][j],x2low);
+			x2high = MAX(x2[i][j],x2high);
+			x3low = MIN(x3[i][j],x3low);
+			x3high = MAX(x3[i][j],x3high);
+		}
+}
+void GCLgrid3d::compute_extents()
+{
+	int i,j,k;
+	x1low=x1[0][0][0];
+	x1high=x1[0][0][0];
+	x2low=x2[0][0][0];
+	x2high=x2[0][0][0];
+	x3low=x3[0][0][0];
+	x3high=x3[0][0][0];
+
+	for(i=1;i<n1;++i)
+	    for(j=1;j<n2;++j)
+		for(k=1;k<n3;++k)
+		{
+			x1low = MIN(x1[i][j][k],x1low);
+			x1high = MAX(x1[i][j][k],x1high);
+			x2low = MIN(x2[i][j][k],x2low);
+			x2high = MAX(x2[i][j][k],x2high);
+			x3low = MIN(x3[i][j][k],x3low);
+			x3high = MAX(x3[i][j][k],x3high);
+		}
+
+}

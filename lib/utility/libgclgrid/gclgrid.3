@@ -105,7 +105,9 @@ class GCLgrid
         void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
         Geographic_point ctog(double, double, double);
         Cartesian_point gtoc(double, double, double);
-        void GCLset_transformation_matrix();
+        void set_transformation_matrix();
+	dmatrix fetch_transformation_matrix();
+	double *fetch_translation_vector();
         double depth(int,int);
         ~GCLgrid();
         //
@@ -243,15 +245,15 @@ falling into a hole.  That is, it is not hard to create a distorted grid
 that will cause convergence problems at it's edges.  Resetting the index
 to the origin should avoid most such problems.  
 .LP
-\fIgtoc, ctog, GCLset_transformation_matrix,\fR and \fIdepth\fR are 
+\fIgtoc, ctog, set_transformation_matrix,\fR and \fIdepth\fR are 
 utilities to deal with the two coordinate systems.  gtoc converts
 a point from the geographic to cartesian coordinate frame and 
 ctog does the inverse.  If anything but the fully parameterized, 
 standard GCLgrid constructor is used to create a GCLgrid you will
-need to call GCLset_transformation_matrix or you will generate lots
+need to call set_transformation_matrix or you will generate lots
 of garbage.  The transformation is totally defined by specifying
 the origin position which means you must set the origin parameters 
-(lat0, lon0, and r0) before calling GCLset_transformation_matrix.  
+(lat0, lon0, and r0) before calling set_transformation_matrix.  
 The \fIdepth\fR function returns the depth of a point within the
 earth.  Note that internally in this library depth is defined 
 relative to the standard reference ellipsoid (accesssible through

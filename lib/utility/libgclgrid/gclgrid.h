@@ -70,6 +70,7 @@ class GCLgrid
 		void set_transformation_matrix();
 		dmatrix fetch_transformation_matrix();
 		double *fetch_translation_vector();
+		void compute_extents();
 		double depth(int,int);
 		~GCLgrid();
 		//
@@ -115,6 +116,7 @@ class GCLgrid3d : public GCLgrid
 		int lookup(double, double, double);
 		void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
 		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
+		void compute_extents();
 		double depth(int,int,int);
 		~GCLgrid3d();
 	private:
