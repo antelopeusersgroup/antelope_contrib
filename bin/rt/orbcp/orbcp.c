@@ -48,6 +48,7 @@ char **argv;
 	int first=1;
 	int pktstart=-1;
 	int rcnt_time=600;
+	int found ;
 
 	elog_init ( argc, argv ) ; 
 
@@ -314,7 +315,9 @@ RECONNECT:			clear_register (0);
 				first = 1;
 				lastpkt_age = 0;
 				if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid");
-				if (orbseek (orbin, lastpkt_pktid) != lastpkt_pktid) {
+				complain ( 0, "seeking to pktid #%d\n", lastpkt_pktid ) ; 
+				if ((found = orbseek (orbin, lastpkt_pktid)) != lastpkt_pktid) {
+					complain ( 0, "result of orbseek was %d\n", found ) ; 
 					if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid failed");
 					clear_register (0);
 					orbseek (orbin, ORBNEWEST);
