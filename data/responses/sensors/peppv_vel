@@ -1,0 +1,27 @@
+#
+#  Manufacturer: Guralp Systems
+#  Model       : Pepp
+#  Serial      : generic 
+#  Description : Pepp instruments
+#  Poles come first followed by zeroes
+#  All poles and zeroes in radians/sec
+#  Transfer function from ground velocity
+#  Constant normalize response = -351.1861
+#
+#  Velocity output:
+#	Vertical 1183 V/m/s
+#
+#  digitizer gain  1.0146 * 10^-9 m/s/count
+#
+measured   1 complete     paz    UCSD/BRTT
+-493.839
+4
+-.1486		.1486		0.0     0.0
+-.1486		-.1486		0.0     0.0
+-414.6902	0.0		0.0     0.0
+-999.0265	-999.0265	0.0     0.0
+3
+0.0	0.0     0.0     0.0
+0.0	0.0     0.0     0.0
+1187.5	0.0     0.0     0.0
+
