@@ -13,15 +13,16 @@ orbampmag \- real-time magnitude computation
           \fIorbwf\fP \fIorbdb\fP \fIdbname\fP
 .fi
 .SH DESCRIPTION
-\fBorbampmag\fP is a program that continuously looks for parameter file
-packets (/pf/\fItorbmag\fP) on an ORB and computes magnitude whenever a packet
-is read. The input parameter file packets are produced by orbassoc(1).
+\fBorbampmag\fP computes a magnitude whenever it sees a
+/pf/\fIorbmag\fP packet from the orb \fIorbwf\fP.
+These input packets are produced by orbassoc(1).
 The magnitude is written back to the ORB as a modified
 \fI/db/origin\fP packet. Optionally, \fI/db/netmag\fP and
 \fI/db/stamag\fP packets may also be written.
 It is intended to compute mb,ML,Ms.
-Each different magnitude has to be computed in a different instance of \fBorbampmag\fP,
-what requires different parameter files for each magnitude.
+Each different magnitude is computed in a different instance 
+of \fBorbampmag\fP,
+with a different parameter files for each type of magnitude.
 .SH OPTIONS
 .IP "-v"
 verbose flag
