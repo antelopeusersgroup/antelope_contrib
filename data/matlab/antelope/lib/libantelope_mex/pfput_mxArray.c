@@ -15,7 +15,6 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 	Pf	*sub_pf;
 	double	number;
 	char	*string;
-	double  isinteger;
 	mxArray *in[2], *out[1];
 	char	warning[STRSZ];
 	char	*fieldname;
@@ -64,11 +63,9 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 		mexCallMATLAB( 1, out, 1, in, "floor" );
 		in[1] = out[0];  /* floor( Input scalar ) */
 		mexCallMATLAB( 1, out, 2, in, "eq" );
-		get_scalar( out[0], &isinteger );
-		mxDestroyArray( out[0] );
 		mxDestroyArray( in[1] );
 	
-		if( (int) isinteger ) 
+		if( mxIsLogicalScalarTrue( out[0] ) ) 
 		{
 			pfput_int( pf, name, (int) number );
 		} 
@@ -77,6 +74,8 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 			pfput_double( pf, name, number );
 		}
 		antelope_mex_clear_register( 1 );
+
+		mxDestroyArray( out[0] );
 	}
 	else if( mxIsChar( array ) )
 	{
