@@ -778,9 +778,19 @@ sub plot_qgrid {
 	$interval =~ s/^(\d).*(e.\d\d)$/$1$2/;
 	$interval = sprintf( "%f", $interval );
 
+	my( $units_name );
+	if( $Mapspec{qgrid_units} =~ /(.*)gravity$/ ) {
+
+		$units_name = $1 . "g";
+
+	} else {
+
+		$units_name = $Mapspec{qgrid_units};
+	}
+
 	$cmd = "grdcontour -V $gmt_qgrid " .
 	       "$Mapspec{Rectangle} $Mapspec{Projection} " .
-	       "-C$interval -N$Mapspec{qgrid_units} " .
+	       "-C$interval -N$units_name " .
 	       "-W8/255/255/0 -Af12/255/255/0 " .
 	       "-Q8 -L$interval/9999 " .
 	       $more . 
