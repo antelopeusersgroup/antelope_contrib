@@ -103,10 +103,10 @@ subroutine trgetwf ( db, 0, data, NMAX, t0_req, t1_req, t0, t1, npts, fill, fill
 
 <subsection Spatial Transformations>
 <fdeclarations>
-subroutine dist ( lat1, long1, lat2, long2, *delta, *azimuth )
+subroutine dist ( lat1, long1, lat2, long2, delta, azimuth )
     compute angular distance and azimuth between two points (all in radians)
 
-subroutine latlon ( lat1, long1, del, azimuth, *lat2, *long2 )
+subroutine latlon ( lat1, long1, del, azimuth, lat2, long2 )
     compute lat and long given starting point and distance (all radians)
 
 
