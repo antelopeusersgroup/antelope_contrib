@@ -68,5 +68,5 @@ double 	hpfreq, lpfreq;
 	for(i=0;i<nsamp;i++)data[i]=result[i]*(2.0/length);    /* rescale */
 
 
-	cfree(result);
+	free(result);
 }
