@@ -1,0 +1,384 @@
+#
+#  This is a set of extensions to css3.0.  The entries here do not
+#  stand alone as these tables mainly reference attributes defined
+#  in css3.0.  These extensions would normally be used with the 
+#  database descriptor as:  css3.0:PMEL1.0
+#
+#  These extensions serve three purposes.  First, the tables define
+#  predicted values for measurements in the arrival table that 
+#  are based on some earth model and a particular travel time calculator.
+#  This should allow future software to not be burdened with matching
+#  theoretical travel times to data.  That is, these tables can be used
+#  to simply show the predicted value without having to recompute it
+#  and worry about whether the results will be consistent.  
+#  Secondly, they define extension tables used in the genloc implementation
+#  of pmel.  Note this final element was added after the first two 
+#  because genloc already looked for some of these tables and I (glp)
+#  viewed it better to extend this schema patch rather than add the
+#  mess of a long string of extensions in the database descriptor. 
+#  Finally, it adds tables for dbpmel that relate to multiple event
+#  locations and area grids. 
+#
+#  WARNING:  these extension can collide with other extension
+#  schemas.  In particular, the reftek relations are stolen from
+#  iceworm1.3  
+#
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Attribute dlat
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlat >= -90.0 && dlat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "estimated latitude (double precision)" )
+        Detail {
+                This attribute is the geographic latitude.  Locations
+                north of the equator have positive latitudes.  It is
+		comparable to css3.0's lat, but has sufficient precision
+		for doubles.  css3.0 defines only single precision.
+        }
+        ;
+
+Attribute dlon
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlon >= -180.0 && dlon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "estimated longitude (double precision)" )
+        Detail {
+                This attribute is the geographic longitude in degrees.
+                Longitudes are measured positive east of the Greenwich
+                meridian.  It is comparable to css3.0's lat, but has 
+		sufficient precision for doubles.  css3.0 defines only 
+		single precision.
+
+        }
+        ;
+
+Attribute glat0
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlat0 >= -90.0 && dlat0 <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "grid target latitude (double precision)" )
+        Detail {
+                This attribute is the geographic latitude of a target
+		grid point in geographical coordinates.  
+        }
+        ;
+
+Attribute glon0
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlon0 >= -180.0 && dlon0 <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "grid target longitude (double precision)" )
+        Detail {
+                This attribute is the geographic longitude of a target
+		grid point in geographical coordinates.  
+
+        }
+        ;
+
+Attribute gz0
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "gz0 >= 0.0 && gz0 < 1000.0" )
+        Units ( "Kilometers" )
+        Description ( "grid target depth" )
+        Detail {
+                This is the depth of a target grid point used in defining
+                event associations to a point in space.
+        }
+        ;
+
+Attribute velocity
+        Real (9)
+        Format ( "%9.6lf" )
+        Null ( "-999.0000" )
+        Range ( "velocity > 0.0" )
+        Units ( "Kilometers/sec" )
+        Description ( "Seismic wave velocity" )
+        Detail {
+                Generic seismic wave velocity attribute.  Wave type
+		should be inferred from association with a phase attribute.
+        }
+        ;
+Attribute dip
+        Real ( 5 )
+        Format ( "%5.1lf" )
+        Description ("Dip of a vector")
+        Detail {
+            Used for strike and dip of a line segment.
+        }
+        ;
+
+Attribute emodelx
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Description ( "Location error bound in x (EW) due to model errors" )
+	Null ( "-1.0" )
+	Detail {
+		Provides a bound estimate on the effect of velocity model
+		errors complimentary to conventional covariance estimate.
+		This component is for the EW direction in km.
+		}
+	;
+
+Attribute emodely
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Description ( "Location error bound in y (NS) due to model errors" )
+	Detail {
+		Provides a bound estimate on the effect of velocity model
+		errors complimentary to conventional covariance estimate.
+		This component is for the NS direction in km.
+		}
+	Null ( "-1.0" )
+	;
+
+Attribute emodelz
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Description ( "Location error bound in depth due to model errors" )
+	Detail {
+		Provides a bound estimate on the effect of velocity model
+		errors complimentary to conventional covariance estimate.
+		This component is for the vertical direction in km.
+		}
+	Null ( "-1.0" )
+	;
+
+Attribute emodelt
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Description ( "Location error bound in origin timedue to model errors" )
+	Detail {
+		Provides a bound estimate on the effect of velocity model
+		errors complimentary to conventional covariance estimate.
+		This component is for the origin time in seconds.
+		}
+	Null ( "-1.0" )
+	;
+
+#
+#  Reftek attributes 
+#
+Attribute reftekchanid
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer channel" )
+        Detail {
+                Channel number of Reftek digitizer
+        }
+        ;
+
+Attribute reftekid
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer id" )
+        Detail {
+                Identification number of Reftek digitizer
+        }
+        ;
+
+Attribute reftekstream
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer stream" )
+        Detail {
+                Stream number of Reftek digitizer
+        }
+        ;
+#
+# Used for timing table 
+#
+Attribute clkerr
+	Real ( 10 )
+	Format ( "%10.6lg" )
+	Description ( "Upper bound on clock error" )
+	Null ( "-1.0" )
+	Units ( "Seconds" )
+	Detail {
+		Used to provide a measure of the accuracy of a timing
+		system.  During a related time period the clock accuracy
+		should be presumed to be no worse than this number.
+	}
+	;
+
+Attribute seedtqual
+	Integer (4)
+	Format ( "%4d" )
+	Null ("-1")
+	Description ( "SEED Timing Quality" )
+	Detail {
+		SEED has a timing quality field specified as a percent
+		figure with small percentages indicating a bad clock.
+		This attribute stores this form of timing tabulation.
+	}
+	;
+
+#
+#  Used in error appraisal 
+#
+Relation predarr
+        Fields (
+            arid orid time slow seaz ema esaz dip lddate )
+        Primary ( arid  orid  )
+        Foreign  ( arid orid )
+        Description ( "Earth model predictions of data associated with arrivals" )
+        Detail {
+                This table has information that connects arrival rows
+                to predicted values of related observable based on a
+                particular earth model.  It is keyed similar to assoc, but
+                the attributes in this relation are all predicted values
+                based on some earth model.  This relations can be thought
+                of as a supplement to assoc that directly stores predicted
+                values of observables rather than residuals.  Note that
+                esaz and dip are azimuth and dip of the predicted emergence
+                angle of a given arrival in the focal sphere.  esaz is not
+                necessarily the same as that stored in assoc which is 
+                conventionally the great circle path angle.  Similarly
+                seaz and ema are computed from a model, not from simple
+                spherical geometry.
+        }
+        ;
+
+Relation stavel
+	Fields (
+		sta phase vmodel velocity lddate
+	)
+	Primary ( sta phase vmodel )
+	Foreign ( sta phase vmodel )
+	Description ( "Surface velocity of different phases" )
+	Detail {
+		This table is used to define the surface velocity that
+		is to be used for a given velocity model and phase 
+		type.  This table allows different surface velocities
+		to be defined for each station and phase combination.
+		This is needed in computing the emergence angle 
+		in the predarr table, but probably has other uses
+		in things like time statics.
+	}
+	;
+
+Relation emodel
+	Fields ( 
+	    orid emodelx emodely emodelz emodelt lddate
+	    )
+        Primary ( orid )
+	Foreign ( orid )
+
+	Description ( "Velocity model error bound estimates table" )
+	Detail {
+		This relation holds velocity model error bound
+		estimates computed by genloc using theory from
+		Pavlis (1986).
+	    }
+	;
+
+#
+# Used by dbpmel
+#
+Relation cluster
+	Fields (
+		gridname gridid evid lddate
+	)
+	Primary ( gridname gridid evid )
+	Description ( "defines a cluster of seismic events" )
+	Detail {
+		This table is use to associate a group of seismic events to a 
+		particular point in space.  This mapping can be many evids to
+		many gridid points.
+	}
+	;
+
+Relation hypocentroid
+	Fields (
+		gridname gridid dlat dlon depth glat0 glon0 gz0 lddate
+	)
+	Primary ( gridname gridid )
+	Description ( "hypocentroid of a group of seismic events" )
+	Detail {
+		The center of mass of a group of seismic events is a 
+		useful concept called a hypocentroid.  This table 
+		stores the hypocentroid corresponding to a cluster of
+		events tied to a particular grid point.
+	}
+	;
+
+#
+#  These are copied from iceworm1.3  but I added time fields
+#
+Relation reftekchan
+        Fields ( reftekid reftekchanid reftekstream 
+		time endtime chan samprate lddate )
+        Primary ( reftekid reftekchanid reftekstream time::endtime )
+        Foreign ( chan )
+        Description ( "Assigns reftek channel numbers to channel codes" )
+        Detail {
+                This table associates each Reftek channel number and stream
+                with the appropriate channel code.
+        }
+        ;
+
+Relation reftekdas
+        Fields ( reftekid sta time endtime net )
+        Primary ( reftekid time::endtime lddate )
+        Alternate ( sta )
+        Defines reftekid
+        Description ( "translation table from Reftek digitizer ID to station cod
+e" )
+        Detail {
+                This table associates each Reftek digitizer ID number
+                with the assigned station code, as well as the network
+                code if appropriate.
+        }
+        ;
+
+Relation timing
+	Fields ( sta time endtime clkerr seedtqual lddate)
+	Primary ( sta time::endtime )
+	Description ( "Timing accuracy table" )
+	Detail {
+		This table defines figures on the absolute accuracy of
+		a clock during a given time period.  Unlisted time 
+		intervals for a given station should be interpreted as 
+		having high accuracy clocks to avoid excessive database
+		patching.
+	}
+	;

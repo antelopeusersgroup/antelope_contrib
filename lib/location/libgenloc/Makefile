@@ -7,7 +7,9 @@ MAN3 = genloc.3 \
        eqerror.3 \
 	genloc_ttinterface.3
 
-CLEAN= 		
+DATADIR=schemas2
+DATA=genloc1.0
+
 
 #
 #  Comment out the following line if you are using Sun's Performance
