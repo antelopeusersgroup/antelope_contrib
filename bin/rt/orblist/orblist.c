@@ -17,7 +17,7 @@ char *pfile = 0;
 
 static void usage( )
 {
-      char *sccs_id = " %I% (%G%) ";
+      char *sccs_id = "$Revision$ $Date$" ;
 
       fprintf (stderr, "usage: %s [-d] [-h] [-m srcmatch ] [-n tim_diff] [-s] orbin [start [twindow]]\n  " , Program_Name);
       fprintf(stderr,"orb  	=> ring buffer host name.\n");
@@ -70,7 +70,7 @@ char *argv[];
   char 		*inorbname = "localhost";
   char          *timstr, *wstr ;
   char  	*s1, *s2, *match = 0;
-  char 		*version = " %I% (%G%) ";
+  char 		*version = "$Revision$ $Date$" ;
 
   elog_init (argc, argv) ;
   elog_notify (0, "%s version %s\n", argv[0], version) ;
