@@ -1,0 +1,8 @@
+ORBAFTER set Antelope ORB connection to first packet after a specified time
+
+PKTID = ORBAFTER ( ORBFD, TIME )
+
+ORBAFTER takes the file-descriptor ORBFD for an open orb
+connection and sets the read position to the first packet
+after the time-tag TIME. TIME is specified in epoch seconds.
+ORBAFTER returns the packet id PKTID of the selected packet.

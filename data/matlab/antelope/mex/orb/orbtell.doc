@@ -1,0 +1,7 @@
+ORBTELL	Ask for the current read-position on an Antelope ORB
+
+PKTID = ORBTELL ( ORBFD )
+
+ORBTELL takes the file-descriptor ORBFD for an open orb
+connection and returns the packet id PKTID for the 
+current position of the read pointer.

@@ -1,0 +1,15 @@
+ORBREAP Get successive packets from an Antelope ORB connection
+
+[RESULT, TIME, SRCNAME, PKTID, TYPE] = ORBREAP ( ORBFD [, 'nodelay'] )
+
+ORBREAP gets successive packets (one at a time) from the Antelope ORB
+connection specified by ORBFD. For a full description of the 
+input and output arguments see the documentation on ORBGET. The difference
+between ORBREAP and ORBGET is that ORBREAP is at the mercy of any 
+previous ORBSEEK or ORBAFTER command for its starting point 
+in the packet reading. ORBREAP is intended to be called in a 
+tight loop, as opposed to the hunt-and-peck packet retrieval of ORBGET. 
+The default behaviour of ORBREAP is to block until it receives the next
+packet. If this is not desired, use the 'nodelay' option. In the 'nodelay'
+case ORBREAP will return immediately (but without setting any of its
+return values) if no packet is available.

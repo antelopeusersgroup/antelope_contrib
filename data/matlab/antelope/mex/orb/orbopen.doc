@@ -1,0 +1,11 @@
+ORBOPEN	Open a connection to an Antelope object-ring-buffer
+
+ORBFD = ORBOPEN ( ORBNAME, OPENTYPE )
+
+ORBOPEN connects to the orbserver specified by ORBNAME,
+which is usually an ip address, or ipaddress:port. OPENTYPE
+is one of 'r', 'w', 'r&', 'w&', where the ampersand
+suffixes cause the library to attempt automatic
+reconnection if the socket connection is severed.
+ORBFD is a file-descriptor returned by the command. This is used
+in other commands to communicate with the orb.

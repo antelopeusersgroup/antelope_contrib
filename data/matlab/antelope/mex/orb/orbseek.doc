@@ -1,0 +1,11 @@
+ORBSEEK	Set an Antelope ORB Read connection to the specified position
+
+PKTID = ORBSEEK ( ORBFD, CODE **or** PKTID )
+
+ORBSEEK takes the file-descriptor ORBFD, and sets the 
+read position for the connection to the specified packet-id 
+number PKTID. ORBSEEK also accepts several string codes 
+for the read position: 'ORBCURRENT', 'ORBPREV' and  'ORBNEXT' (previous
+and next packet id's), 'ORBPREVT' and 'ORBNEXTT' (previous 
+and next packet times), 'ORBNEXT_WAIT' (next packet after current
+packet, blocking if no packet is available), 'ORBOLDEST', 'ORBNEWEST'.

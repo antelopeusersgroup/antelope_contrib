@@ -1,0 +1,11 @@
+ORBREJECT Reject sources on an Antelope ORB read connection
+
+NSOURCES = ORBREJECT ( ORBFD, REGEX )
+
+ORBREJECT restricts packets returned on an ORB read 
+connection to those whose source-name does not match
+the specified regular expression REGEX. ORBREJECT 
+returns the number of matching sources. If both ORBREJECT 
+and ORBSELECT are used on the same orb connection, 
+only packets which both match the ORBSELECT expression and 
+don't match the ORBREJECT expression will be returned.

@@ -1,0 +1,9 @@
+ORBSELECT Select sources on an Antelope ORB read connection
+
+NSOURCES = ORBSELECT ( ORBFD, REGEX )
+
+ORBSELECT restricts packets returned on an ORB read 
+connection to those whose source-name completely matches
+the specified regular expression REGEX. ORBSELECT 
+returns the number of matching sources. A null string 
+for REGEX selects all sources.

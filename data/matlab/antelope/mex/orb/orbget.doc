@@ -1,0 +1,20 @@
+ORBGET Get packets from an Antelope ORB connection
+
+[RESULT, TIME, SRCNAME, PKTID, TYPE] = ORBGET ( ORBFD [, CODE **or** PKTID] )
+
+ORBGET gets a packet from the Antelope ORB connection specified by 
+ORBFD. The connection must be opened (i.e. ORBFD must be obtained) first 
+with the ORBOPEN command. The packet retrieved is from the current read
+position of the ORB connection (see ORBSEEK and ORBAFTER). An optional packet-id
+may be specified as PKTID, in which case ORBGET will return that packet. 
+Alternatively, the same CODEs as used in ORBSEEK (such as 'ORBNEXT' etc.)
+may be used to specify the read position. The returned RESULT will be a
+database pointer for database-row packets; a trace-object database 
+pointer for waveform packets; a DBPF parameter-file object for 
+parameter-file packets; and a raw byte array for other types of packets. 
+the TYPE field will be, respectively, 'database', 'waveform','parameterfile',
+or 'unknown'. The TIME field specifies the timestamp of the packet in 
+epoch seconds. The SRCNAME field gives the source-name string labelling 
+the packet. Finally, PKTID gives the packet-id of the returned packet.
+For looping continuously to retrieve packets, consider using ORBREAP.
+

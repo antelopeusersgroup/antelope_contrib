@@ -1,0 +1,8 @@
+ORBPING	Ask for the version number of an Antelope ORB server
+
+VERSION = ORBPING ( ORBFD )
+
+ORBPING takes the file-descriptor ORBFD for an open orb
+connection and uses it to request the version number of the
+connected orbserver. This is primarily useful in verifying 
+that a connection is intact.

@@ -1,0 +1,8 @@
+ORBCLOSE Close a connection to an Antelope object-ring-buffer
+
+ORBCLOSE ( ORBFD )
+
+ORBCLOSE closes a connection, specified by the orb file
+descriptor ORBFD, to an Antelope object-ring-buffer.
+
+
