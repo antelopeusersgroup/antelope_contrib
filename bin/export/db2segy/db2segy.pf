@@ -1,0 +1,97 @@
+sample_rate 250
+trace_length 5.0
+rotate yes
+# This set of parameters are only hit when rotate is turned on.
+phi 80.0
+theta 0.0
+# end rotate parameters 
+
+#
+#  This is the pattern to use normal channel codes.  
+#  They are commented out for this example.
+#
+#channels &Tbl{
+#100 EHZ
+#101 EHZ
+#102 EHZ
+#103 EHZ
+#104 EHZ
+#105 EHZ
+#106 EHZ
+#107 EHZ
+#108 EHZ
+#109 EHZ
+#110 EHZ
+#100 EHN
+#101 EHN
+#102 EHN
+#103 EHN
+#104 EHN
+#105 EHN
+#106 EHN
+#107 EHN
+#108 EHN
+#109 EHN
+#110 EHN
+#100 EHE
+#101 EHE
+#102 EHE
+#103 EHE
+#104 EHE
+#105 EHE
+#106 EHE
+#107 EHE
+#108 EHE
+#109 EHE
+#110 EHE
+#}
+#
+#  This form outputs rotated channels
+#
+channels &Tbl{
+100 Z
+101 Z
+102 Z
+103 Z
+104 Z
+105 Z
+106 Z
+107 Z
+108 Z
+109 Z
+110 Z
+100 N
+101 R
+102 R
+103 R
+104 R
+105 R
+106 R
+107 R
+108 R
+109 R
+110 R
+100 T
+101 T
+102 T
+103 T
+104 T
+105 T
+106 T
+107 T
+108 T
+109 T
+110 T
+}
+#
+#  This list of tables must at least include wfdisc or the trload_css will fail.
+#  It should also normally have site listed second and have dnorth, deast filled
+#  in.
+#
+join_tables &Tbl{
+wfdisc
+site
+sitechan
+origin
+#shot
+}

@@ -1,0 +1,320 @@
+.TH DB2SEGY 1 "February 24, 1999"
+.SH NAME
+db2segy - conversion from css3.0 traces to segy disk image
+.SH SYNOPSIS
+.nf
+\fBdb2segy db outfile \fR [ -pf pffile ]
+.SH DESCRIPTION
+.LP
+\fBdb2segy\fR is a fairly flexible program for producing a 
+segy tape image file from data stored in a css3.0 database.  
+The output is known to be readable by ProMAX distributed through
+release 98 of Landmark Graphics, but it should work correctly 
+with any processing system with a SEGY reader that accepts 
+IEEE float data (not part of the original SEGY standard).  
+This program was built with a strong prejudice that the only 
+rational use of this converter would be to collect a group of
+traces from a database and output a suite of traces that look
+like shot gathers.   The start times of each of the
+pseudoevents assembled this way are passed to the program 
+through standard input and a set of fixed length traces are
+produced with a constant number of channels per gather as 
+required by the segy standard.  
+.LP
+This program has several bells and whistles controlled by the
+input parameter file.  The optional parts of this are described
+below, but one key design feature needs to be recognized here.
+The parameter file is used to specify a list of station/channel 
+pairs that define the output channel order of the segy tape
+image.  Because multichannel shot data always have fixed
+numbers of channels per shot file, this is forced into the 
+output by this list.  That is, each station/channel listed
+is written in the position defined by the parameter file 
+(see below) with the first entry in the list being channel 1
+and the last entry in the list defining the number of channels
+per gather.  When the program actually runs station/channel 
+pairs not found in the specified time period are silently 
+flagged as "dead" in the SEGY headers for that channel number
+and the corresponding trace is filled with zeros.    
+.LP
+\fBdb2segy\fR allows one to optionally rotate data to 
+any specified orthonormal coordinate system.  This makes sense, of
+course, only with three component data and rational channel codes
+(e.g. EHZ, EHN, and EHE) AND when the sitechan table is complete
+and correct.  The program will almost certainly die with a diagnostic
+if you attempt to rotate data that does not include a complete 
+set of three components.  Because it uses rotate_to_standard in
+the trace library it will also have problems if the input
+database has multiple channel codes for that station.  If you have
+multiple channel code data, you should subset the data first before
+running this program.  The output channel order for rotated data
+is defined in the same way as described above from an output list
+of station/channel pairs in the parameter file.  This allows 
+an important flexibility as three component data can be output in
+station bundles of three adjacent traces or as three separate 
+groupings in the output shot gather file (e.g. vertical first, followed
+by radial, followed by the transverse components).  Some important
+details related to the rotation feature are described below that are controlled
+by the input parameter file specifications.  Note, by the way,
+that segy was not written with three-component data in mind as no
+orientation information is stored in the trace headers.  The orientation
+mechanism used by processing systems is usually implicit and requires
+traces to be in a particular order on input. Hopefully this mechanism
+will cover all the bases. 
+.LP
+\fBdb2segy\fR treats data gaps in a way that needs to be recognized.
+It makes an assumption that gaps should be treated as clipped data.
+This means data in intervals flagged by the trace library routine trload_css 
+as a gap will take on one of two values:  the upper or lower data limit
+defined for the original data type (see trgaps(3)).  The "upper" value is
+set if the last sample before the gap was positive, adn the "lower" value
+is used if the last sample was negative.  This algorithm may give 
+erroneous full scale transients for true data gaps not caused by 
+clipping.  An exception to this rule is a "gap" flagged at the front
+or end of a trace.  Because this would commonly happen with variable
+start times on different traces gaps in the front or end of a trace
+will be zeroed instead set full scale.  
+..SH OPTIONS
+.IP -pf
+Alternate parameter file to use in place of db2segy.pf.
+.SH FILES
+.LP
+\fBdb2segy\fR expects to see a series of start times, one
+per line, passed through standard input.  These times are 
+passed directly to str2epoch(3) so anything str2epoch can
+crack should produce the desired results.
+.LP
+Standard output lists the output station/channel order and
+echoes trace channel and index number as conversion progresses.
+.LP
+The output file passed as argument two will silently overwrite
+and existing file if one by the same name already exists.  This
+file is a segy tape image.  The 3200 byte EBCDIC reel header is written
+as a block of pure nulls.  The binary reel header is filled in 
+an written immediately after the EBCDIC section as required by 
+the standard.  The trace data follow.  
+.SH PARAMETER FILE
+.LP
+The main controlling input for this program enters through a parameter
+file.  It contains four type of parameters:  (1) basic scalar parameters
+required by the program; (2) parameters related to three-component rotation; 
+(3) output channel order definition; 
+and (4) database
+table parameters.  The following divides the parameters this way.
+.ce
+\fIBasic Scalar Parameters\fR
+.LP
+\fBsample_rate\fR defines the fixed sample rate in sample per second.  
+All data must have the same sample rate (a SEGY limitation).  
+Any traces that do not match the sample rate defined by this 
+parameter will be skipped with an error message logged.  
+.LP
+\fBtrace_length\fR  length of ALL output traces in seconds. 
+.ce
+\fIRotation Parameters\fR
+.LP
+\fBrotate\fR is a logical that turns the rotation feature on and 
+off.  If rotate is set false other rotation related commands will
+be ignored.  Note also that attempting to output rotated channels
+(see below) will, of course, either produce garbage or cause the 
+program to die.  
+.LP
+\fBphi\fR and \fBtheta\fR are spherical coordinate angles that 
+define how the standard E,N,Z coordinate system will be rotated
+on output (see trrotate(3) for a more extensive description.  These
+parameters are passed directly to the trrotate.)
+.ce
+\fIChannel order definition\fR
+.LP
+Channel order definitions are controlled by a &Tbl tagged with 
+the keyword "channels".  The lines below the &Tbl{ tag 
+should consist of a series of valid station channel pairs 
+(blank separated -- see example below) for the data being converted.   
+The data will be written in the same order as this list (top will
+be channel 1).  
+.LP
+Rotated data are handled by special unalterable channel codes.  
+Specifically use Z, R, and T as channel codes to output vertical,
+radial, and transverse components respectively as defined by 
+your transformation.  The definitions of these direction is,
+however, intimately related to the transformations defined in
+trrotate(3).  First, the program calls rotate_to_standard to
+produce output traces tagged with channel codes X1, X2, and
+X3.  The "standard" used is that X1 is +east, X2 is +north,
+and X3 is +up.  This transformation is essential since data 
+often have polarity differences from the standard and/or 
+simple field setup errors.   The program next calls trrotate
+using the angles phi and theta (see above).  The best way
+to think of the results is how the X1,X2, and X3 coordinate
+system would be changed if rotated by spherical coordinate 
+angles phi and theta.  At the end of that transformation 
+R is the transformed X1, T is the transformed X2, and
+Z is the transformed X3.
+.LP
+Note you can actually request the data transformed to 
+"standard" coordinates by setting rotate to true and asking
+for channels X1, X2, and X3 instead of the original channel
+codes.    
+.ce
+\fIDatabase Table Parameters\fR
+.LP
+\fBjoin_tables\fR is a &Tbl object that contains a list
+of database tables and the order they are to be joined 
+when the program opens the input database.    
+Two tables are absolutely required in this list -- the program 
+will die if they do not appear in the list.  They are: 
+wfdisc and site.  In addition, although sitechan is not
+totally required, the program will produce garbage if 
+three-component rotation is attempted and sitechan is not
+listed in this table.  Finally, note that the receiver coordinates placed
+in the SEGY header come the dnorth, deast fields of site.    
+.LP
+Most users are unlikely to need to 
+alter the default parameter file for this list. There is one special
+add on table that is commented out in the example below.  This table
+called "shot" is an extension to css3.0.  If the "shot" line appears
+here, db2segy looks for a database table called shot.  If it cannot
+find it defined in the schema it will be ignored.  If it is defined
+the shot table will be used to set the source coordinate information.  
+Provided the table joins correctly, the only information that the
+program attempts to extract from the shot table are the dnorth,
+deast, elev, and edepth fields.  Other tables to set other 
+parameters could be defined by a similar mechanism in datascope, but
+in this version only the "shot" table extension will work.  
+.SH EXAMPLE
+.RS .2i
+.nf
+sample_rate 250
+trace_length 5.0
+rotate yes
+# This set of parameters are only hit when rotate is turned on.
+phi 80.0
+theta 0.0
+# end rotate parameters 
+
+#
+#  This form outputs rotated channels
+#
+channels &Tbl{
+100 Z
+101 Z
+102 Z
+103 Z
+104 Z
+105 Z
+106 Z
+107 Z
+108 Z
+109 Z
+110 Z
+100 N
+101 R
+102 R
+103 R
+104 R
+105 R
+106 R
+107 R
+108 R
+109 R
+110 R
+100 T
+101 T
+102 T
+103 T
+104 T
+105 T
+106 T
+107 T
+108 T
+109 T
+110 T
+}
+#
+#  This is the pattern to use normal channel codes.  
+#  They are commented out for this example.
+#
+#channels &Tbl{
+#100 EHZ
+#101 EHZ
+#102 EHZ
+#103 EHZ
+#104 EHZ
+#105 EHZ
+#106 EHZ
+#107 EHZ
+#108 EHZ
+#109 EHZ
+#110 EHZ
+#100 EHN
+#101 EHN
+#102 EHN
+#103 EHN
+#104 EHN
+#105 EHN
+#106 EHN
+#107 EHN
+#108 EHN
+#109 EHN
+#110 EHN
+#100 EHE
+#101 EHE
+#102 EHE
+#103 EHE
+#104 EHE
+#105 EHE
+#106 EHE
+#107 EHE
+#108 EHE
+#109 EHE
+#110 EHE
+#}
+#
+#  This list of tables must at least include wfdisc or the trload_css will fail.
+#  It should also normally have site listed second and have dnorth, deast filled
+#  in.
+#
+join_tables &Tbl{
+wfdisc
+site
+sitechan
+origin
+#shot
+}
+.RE
+.fi
+.SH DIAGNOSTICS
+.LP
+Numerous diagnostics are written using the elog facility that should
+help in sorting out problems.  The list is too long to rationally 
+repeat here.
+.SH "SEE ALSO"
+.nf
+trintro(3), trrotate(3), trload_css(3), pf(3), str2epoch(3),
+ and the SEGY standard book. 
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1)
+\fRdb2segy\fR currently does not support multiple sample rates.  It probably
+should have a resampling option.
+.IP (2)  
+The program does not handle coordinates in a perfectly general way.  
+It probably really should automatically reference all points to a 
+standard origin and use a standard geographical transformation to 
+compute local coordinates relative to a fixed origin.  It currently 
+just blindly uses dnorth and deast from site and (optionally)
+the extension table shot.  
+.IP (3)
+One could probably do a nifty generalization of the extended table
+mechanism I used for the "shot" table that would allow a more 
+general approach.  That is, one could define a mapping of 
+header variables from a definition of a table name and the 
+name of the attribute.  This could be done by specifying a 
+a table name, table attribute name, a byte offset for the 
+corresponding header entry, and a data type for the header value.
+I didn't judge this worth the effort, but present is as a challenge
+to other users.  
+.SH AUTHOR
+.LP
+Gary L. Pavlis
+.\" $Id$
