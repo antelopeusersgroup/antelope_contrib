@@ -188,9 +188,11 @@ class GCLvectorfield3d : public GCLgrid3d
 		double *interpolate(double,double,double);
 		~GCLvectorfield3d();
 };
+/*
 //
 //C++ helpers
 //
+*/
 double r0_ellipse(double);
 dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3, 
 	int comp, bool reverse) throw(GCLgrid_error);
@@ -204,10 +206,11 @@ extern "C" {
 #endif
 
 	
-
+/*
 //
 // plain C helper function prototypes 
 //
+*/
 double ****create_4dgrid_contiguous(int, int, int, int);
 double ***create_3dgrid_contiguous(int, int, int);
 double **create_2dgrid_contiguous(int, int);
