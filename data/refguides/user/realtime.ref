@@ -325,26 +325,36 @@ orb2orb [options] in out [start-time [period|end-time]]
 -w re	ensure reading programs matching regular expression re are no more than max_behind seconds behind orb2orb
 </options>
 
-orbdetect [options] orbname pfname
+orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
 <options>
--out orbout	output orb
--v	verbose
+-v
 -select expr
 -tstart start_time
 -twin minutes
+-pf pfname
+-out orbout
 </options>
 
-orbtrigger [-tstart time] [-v] [-out orbout] [-pf pfname] orbname
+orbtrigger [options] orbname
     real-time network trigger algorithm
+<options>
+-v
+-tstart start_time
+-target_orbassoc torbassoc
+-pf pfname
+-out orbout
+</options>
 
-orbassoc [options] orbin orbout pfname dbnextid
+orbassoc [options] orbin orbout dbnextid
     spatial grid search based real-time associator/locator
 <options>
--select expr
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
+-target_orbassoc torbassoc
+-target_orbmag torbmag
+-pf pfname
 </options>
 
 ttgrid pfname db refsta time outfile
@@ -353,13 +363,17 @@ ttgrid pfname db refsta time outfile
 orbmag [options] orbwf orbdb dbname
     real-time magnitude computation
 <options>
--select_wf expr
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
 -state statefile
 -p parameter_file
 -auth_expr auth_expr
+-target_orbmag torbmag
+-make_magtables
+-use_mean
+-use_if_not_associated
+-use_if_not_defining
 </options>
 
 orbpftrigger [options] orb [cmdstring]

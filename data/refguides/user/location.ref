@@ -69,8 +69,16 @@ taup2locsat [options] model
 tp2ls phases header [table]
     make a locsat style travel time table file from a tau-p travel time table
 
-dbml [-p pfname] db orid
+dbml [options] db [orid]
     database Richter magnitude computation
+<options>
+-v
+-p pfname
+-use_if_not_associated
+-use_if_not_defining
+-make_magtables
+-use_mean
+</options>
 
 dbproject_covariance [-v] [-c conf] dbname
     update the origerr table with new smajax, sminax,
