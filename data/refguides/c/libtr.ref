@@ -37,6 +37,12 @@ int trload_cssgrp ( Dbptr db, char *reqt0, char *reqt1, Dbptr *trp, char *table,
     load waveform data between reqt0 and reqt1 from pre-sorted database view or 
     bundle db into trace table trp
 
+Dbptr trloadchan ( Dbptr db, double t0, double t1, char *sta, char *chan )
+     read waveform data for specified sta and chan from db for time range t0 to t1
+
+int trloadwf ( Dbptr db, double t0, double t1, Dbptr tr)
+     read waveform data for specified database record from t0 to t1 into tr
+
 deprecated int trputwf ( Dbptr db, float *data )
     save waveform data
 

@@ -409,6 +409,9 @@ char *strlocaldate ( double e )
 char *strlocaltime ( double e )
     return string representing local timezone time
 
+char *strlocalydtime ( double e )
+    return string representing local timezone time with yearday
+
 char *strtdelta ( double e )
     return a string representation of elapsed time
 
@@ -545,6 +548,9 @@ int is_dir(char *path)
 
 int is_nfs(char *path)
     return 1 if path is on nfs mounted filesystem, 0 otherwise
+
+int is_changed(char *path)
+     returns 1 on first call and when mod time changes, or zero if file does not exist
 
 Tbl * dirfiles(char *dir, int flag)
     return list of files in dir; if flag==1, only files, if flag==2, only dirs
@@ -1251,18 +1257,20 @@ int sgverify ( char *signer, char *data, int nbytes, char *signature );
     
 <subsection Reading files with mmap>
 <cdeclarations>
-int gopen(char *filename)
+int gxopen(char *filename)
     return fd for filename using mmap
 
-int gclose(int fd)
+int gxclose(int fd)
     closes fd (unmaps file)
     
-int gline(int fd, char *aline, int maxchars)
+int gxline(int fd, char *aline, int maxchars)
     return line from file
 
-int gseek(int fd, int p)
+int gxseek(int fd, int p)
     seeks to position p in file
 
-int gtell(int fd)
+int gxtell(int fd)
     return current position in file
 
+int gxpipe(char *cmd, char **env, int *cmdin)
+    execute cmd with environment env, cmdin is fd for stdin of cmd  
