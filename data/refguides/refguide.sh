@@ -1,4 +1,3 @@
-#!/bin/sh 
 
 if [ $# -ne 1 ] ; then 
     echo "Usage: refguide name"
