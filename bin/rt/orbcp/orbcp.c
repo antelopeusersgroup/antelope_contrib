@@ -214,10 +214,6 @@ char **argv;
 			break;
 		case ORB_INCOMPLETE : 	/* Incomplete packet */
 			ready = 0;
-			lastpkt_age = 0;
-			lastpkt_pktid = pktid;
-			lastpkt_time = time;
-			lastpkt_ltime = now ();
 			break;
 		default:		/* Some other error */
 			if (messages) putmsg (orbout, db, "orbcp", "orbreap_nd() error");
