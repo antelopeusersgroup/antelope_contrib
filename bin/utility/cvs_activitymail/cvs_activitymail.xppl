@@ -1,0 +1,1060 @@
+
+################# PROMINENT NOTICE ######################################
+#
+# This is a modified version of activitymail-1.04 by David Wheeler,
+# david@wheeler.net. The modifications were undertaken 5/2003 by Kent
+# Lindquist (kent@lindquistconsulting.com), who places said modifications
+# in the public domain. The modifications consist of adding a '-S' option
+# to commit mode, allowing the administrator to insert in the subject
+# line an indication of the files or directories modified. In order to
+# avoid conflict this executable has been renamed cvs_activitymail.
+#
+################# PROMINENT NOTICE ######################################
+
+use strict;
+use Getopt::Std;
+use File::Basename qw(basename dirname);
+use vars qw($VERSION);
+
+$VERSION = '1.04';
+$|++;
+
+##############################################################################
+# Set up catdir and tmpdir. Hopefully we can just use File::Spec::Functions
+# and not worry about it.
+##############################################################################
+
+BEGIN {
+    # Use File::Spec if we can. Otherwise assume simple Unix semantics.
+    eval "require File::Spec::Functions";
+    if ($@) {
+        *catdir = sub { join '/', @_ };
+        *tmpdir = sub { '/tmp' };
+    } else {
+        # These have to be eval'd in order to avoid the silly "used only once"
+        # warnings.
+        eval "*catdir = *File::Spec::Functions::catdir";
+        eval "*tmpdir = *File::Spec::Functions::tmpdir";
+    }
+
+    # Get the command-line arugments.
+    use vars qw($opt_f $opt_r $opt_l $opt_m $opt_t $opt_n $opt_i $opt_p $opt_c
+                $opt_s $opt_h $opt_d $opt_a $opt_D $opt_o $opt_e $opt_u $opt_g
+		$opt_S
+               );
+    getopts('f:lr:m:t:nipcs:SdhaDo:e:u:g');
+}
+
+##############################################################################
+# Set up the variables and constants we'll need later.
+##############################################################################
+
+# Set constants.
+use constant DEBUG => $opt_D ? 1 : 0;
+use constant SMLOCS => qw(/usr/lib/sendmail /usr/sbin/sendmail
+                          /usr/ucblib/sendmail);
+
+# When we do forking to get diff files, we want to ignore the children.
+$SIG{CHLD} = 'IGNORE';
+
+# These will be used by tmp_file_name().
+my $tmpdir = tmpdir();
+my $pgrp = $opt_g ? $ENV{USER} : getpgrp;
+
+# Determin location of CVS binary.
+$opt_e ||= 'cvs';
+
+# These hashes will be used in several of the functions below.
+my %map = ( mod => 'Modified Files',
+            add => 'Added Files',
+            rem => 'Removed Files',
+            rev => 'Revision Data');
+
+##############################################################################
+# The main part of the program.
+##############################################################################
+
+# Check for required command-line arguments.
+usage() if $opt_h || (!$opt_l && !($opt_f && $opt_t));
+
+# Run the directory logging mode, if specified.
+log_dir($ARGV[0]) if $opt_l;
+
+# Set the diffs option to its default.
+$opt_o ||= '-u --minimal';
+
+# Get the current working directory, the name of the repository module, and a
+# list of the files being revised in the current directory.
+my ($mod, $dir, $revs) = parse_file_list($opt_f);
+
+# Unless we're in commit mode, just send the current message.
+syncmail($mod, $revs) unless $opt_c;
+
+# So if we got here, parse the contents of STDIN.
+my ($msg, $files) = parse_stdin($dir);
+
+# If it's the last directory, send the message. Otherwise, save the data to
+# disk for later in the commit.
+is_last_dir($dir) ? notify($mod, $msg, $revs, $files)
+  : save_data($revs, $files);
+
+# That's it!
+
+##############################################################################
+# FUNCTIONS                                                                  #
+##############################################################################
+
+##############################################################################
+# This function logs the currently-processed directory. Used when -l is passed
+# -- that is, in the commitinfo file.
+##############################################################################
+
+sub log_dir {
+    # Grab the directory name.
+    (my $dir = $_[0]) =~ s|^$ENV{CVSROOT}/?||;
+    DEBUG && dbpnt("Directory: '$dir'\n");
+    my $file = tmp_file_name('lastdir');
+    DEBUG && dbpnt("Writing to '$file'\n");
+    local *FILE;
+    open FILE, ">$file" or mydie("Cannot open '$file' for writing: $!\n");
+    print FILE $dir;
+    close FILE;
+    exit;
+}
+
+##############################################################################
+# These functions simply build a temporary filename. Pass in a string to make
+# the filename unique. tmp_file_name() includes the full bath to the temp
+# file, while tmp_base_name returns just the basename of the file.
+##############################################################################
+
+sub tmp_file_name { catdir($tmpdir, "#cvs\.$_[0]\.$pgrp") }
+sub tmp_base_name { "#cvs\.$_[0]\.$pgrp" }
+
+##############################################################################
+# This function takes $opt_f as an argument, and returns the directory on
+# which the current action is being processed, and an anonymous array of the
+# file specs in in that directory that are affected by this action.
+##############################################################################
+
+sub parse_file_list {
+    # Get the directory, list of file specs, and the module name.
+    my ($dir, @revs) = split ' ', shift;
+    my ($mod) = split '/', $dir;
+    DEBUG && dbpnt("Directory: '$dir'; Module: $mod\n");
+
+    if ($revs[0] eq '-') {
+        # This is a special status message, not really a version update or
+        # anything. Just add more items here if you want to simply send the
+        # notification and exit.
+        my @chk = ([$opt_n, 'New', 'directory', 'New Directory'],
+                   [$opt_i, 'Imported', 'sources', 'Imported Sources']);
+
+        # So test for the simple checks.
+        foreach my $c (@chk) {
+            if ($revs[1] eq $c->[1] && $revs[2] eq $c->[2]) {
+                # If we have a match, either exit or send the notice.
+                DEBUG && dbpnt("Action: $c->[3]");
+                exit if $c->[0];
+                mail(mk_subject($c->[3], $mod), slurp_file());
+            }
+        }
+    }
+
+    return ($mod, $dir, \@revs);
+}
+
+##############################################################################
+# This function sends notices in roughly the same style as syncmail. It's used
+# when -c is not specified.
+##############################################################################
+
+sub syncmail {
+    my ($mod, $revs) = @_;
+    # Get the subject and the message body.
+    my $subject = mk_subject($opt_f, $mod);
+    (my $body = slurp_file()) =~ s/\s+/\n/s;
+    if ($opt_d) {
+        # We want diffs. So we have to fork.
+        unless (fork) {
+            # In the child. Wait for CVS to let go!
+            sleep 2;
+            # Now get the diffs and send the message.
+            $body .= attach($subject) if $opt_a;
+            $body .= "\n" . get_diffs($revs);
+            mail($subject, $body);
+        }
+        # Exit the parent process.
+        exit;
+    } else {
+        # No diffs. Just send the mail. Delete temp files, just in case.
+        mail($subject, $body);
+    }
+}
+
+##############################################################################
+# This function decides how to summarize the list of modified files 
+# to give a hint in the subject line of what has been changed
+##############################################################################
+sub modified_area {
+    my( $files ) = @_;
+    my( $parent ) = "";
+    my( $lastkey ) = "";
+    my( %myhash ) = ();
+
+    my( @filelist ) = ( @{$files->{mod}}, @{$files->{add}}, @{$files->{rem}} );
+
+    if( ! defined( @filelist ) || scalar( @filelist ) <= 0 ) {
+	return "";
+    } elsif( scalar( @filelist ) == 1 ) {
+	return basename( $filelist[0] );
+    } else {
+	do {
+	    $parent = $lastkey;
+	    $lastkey = (keys(%myhash))[0];
+	    %myhash = ();
+	    grep( s@^[^/]*/@@, @filelist );
+	    map { $myhash{(split '/')[0]}++ } @filelist;
+	} while( scalar( keys( %myhash ) ) <= 1 );
+
+	return "$parent/$lastkey/";
+    }
+}
+
+##############################################################################
+# This function builds an email subject. Pass in the message being logged, and
+# it'll return a subject with the message truncated to the first words that
+# will fit in 72 characters or less. This length includes the optional message
+# that can be passed in via the -m argument as well as the module name if the
+# -p argument has been specified.
+#
+# Modified 5/2003 by K. Lindquist to support -S option
+##############################################################################
+
+sub mk_subject {
+    my ($msg, $mod, $files) = @_;
+    # Strip out all carriage returns.
+    $msg =~ s/\n/ /g;
+    # Truncate to first period after a minimum of 10 characters.
+    my $i = index $msg, '. ';
+    $msg = substr($msg, 0, $i + 1) if $i > 0;
+    # Prepend the filename or top directory 
+    if( defined( $files ) && $opt_S && $opt_c ) {
+	my( $modarea ) = modified_area( $files );
+	$msg = "$modarea: $msg";
+    }
+    # Prepend the module name.
+    $msg = "$mod: $msg" if $opt_p;
+    # Prepend the optional message.
+    $msg = "$opt_m $msg" if $opt_m;
+    # Truncate to the last word under 72 characters.
+    $msg =~ s/^(.{0,72}\s+).*$/$1/m if length $msg > 72;
+    return $msg;
+}
+
+##############################################################################
+# This function simply returns the entire contents of a file passed in as the
+# first argument. If there is no first argument, it'll read in STDIN.
+##############################################################################
+
+sub slurp_file {
+    local $/;
+    if ($_[0]) {
+        # Get the contents of the file.
+        local *FILE;
+        open FILE, "<$_[0]"
+          or mydie("Cannot open file $_[0] for reading: $!\n");
+        my $cont = <FILE>;
+        close FILE;
+        return $cont;
+    } else {
+        # Return the contents of STDIN.
+        return <STDIN>;
+    }
+}
+
+##############################################################################
+# This function actually sends the notification message. Pass in the message
+# subject and body.
+##############################################################################
+
+sub mail {
+    my ($subject, $body) = @_;
+    print "Sending mail to $opt_t...";
+
+    $opt_s ||= find_sendmail() or mydie("Cannot find sendmail. Use -s.\n");
+    open(SENDMAIL, "|$opt_s -oi -t")
+      or mydie("Cannot fork for sendmail: $!\n");
+    print SENDMAIL "MIME-Version: 1.0\n";
+    print SENDMAIL "From: $opt_u\n" if $opt_u;
+    print SENDMAIL "To: $opt_t\nSubject: $subject\n";
+    print SENDMAIL "Reply-To: $opt_r\n" if $opt_r;
+    print SENDMAIL qq{Content-Type: multipart/mixed; boundary="$opt_a"\n\n}
+      . "--$opt_a\nContent-Type: text/plain\n" if $opt_a;
+    print SENDMAIL "X-Mailer: activitymail $VERSION, " .
+                   "http://search.cpan.org/dist/activitymail/\n";
+    print SENDMAIL "\n$body";
+    print SENDMAIL "--$opt_a--\n" if $opt_a;
+    close SENDMAIL;
+    print "Done\n";
+    # Delete any temp files.
+    exit;
+}
+
+##############################################################################
+# This function finds the sendmail executable and returns it.
+##############################################################################
+
+sub find_sendmail { for (($opt_s ? $opt_s : ()), SMLOCS) { return $_ if -x } }
+
+##############################################################################
+# This function gets the diffs for all the files passed to it via an array ref
+# of the file spec and returns them.
+##############################################################################
+
+sub get_diffs {
+    my $revs = shift;
+    # Initialize the diff string.
+    my $diffs = '';
+    # Change into the first directory.
+    foreach (@$revs) {
+        # Get the file name and version numbers from the file spec.
+        my ($file, $old, $new) = split ',';
+        # Okay, now process this sucker.
+        if ($old eq 'NONE') {
+            # It's a new file. Note it.
+            $diffs .= "--- NEW FILE: $file ---\n";
+            if (-e $file) {
+                # If the file exists, simply grab its contents.
+                $diffs .= slurp_file($file);
+            } else {
+                # Otherwise, read the file from a non-changing update.
+                $diffs .= `$opt_e -fn update -r $new -p $file`;
+            }
+        } elsif ($new eq 'NONE') {
+            # The file has been deleted. Simply note that fact.
+            $diffs .= "--- $file DELETED ---\n";
+        } else {
+            # We actually have to get a diff!
+            $diffs .= `$opt_e -f diff -kk $opt_o -r $old -r $new '$file'`;
+        }
+    }
+    return $diffs;
+}
+
+##############################################################################
+# This function parses the contents of STDIN. It grabs the message and
+# assembles lists of the files that were affected.
+##############################################################################
+
+sub parse_stdin {
+    my $dir = shift;
+    my ($msg, $flag, $files) = ('', '', { mod => [], add => [], rem => [] } );
+    while (<STDIN>) {
+        if (/^Modified Files/) {
+            $flag = 'mod';
+            DEBUG && dbpnt("Grabbing $map{$flag}\n");
+            next;
+        } elsif (/^Added Files/) {
+            $flag = 'add';
+            DEBUG && dbpnt("Grabbing $map{$flag}\n");
+            next;
+        } elsif (/^Removed Files/) {
+            $flag = 'rem';
+            DEBUG && dbpnt("Grabbing $map{$flag}\n");
+            next;
+        } elsif (/^Log Message/) {
+            $flag = 'log';
+            DEBUG && dbpnt("Grabbing log message\n");
+            next;
+        }
+        next unless $flag;
+
+        if ($flag eq 'log') {
+            # Grab it for the log.
+            $msg .= $_;
+        } else {
+            # Add it to the relevant list.
+            ## Need to add code to check for "Tag:" here...
+            chomp;
+            push @{ $files->{$flag} },
+              ( map { catdir($ENV{CVSROOT}, $dir, $_) } split) if $_;
+        }
+    }
+    # Make sure there're no carriage returns or spaces at the end of $msg.
+    $msg =~ s/\s+$//s;
+    return ($msg, $files);
+}
+
+##############################################################################
+# This function compares the currently-processed directory to the directory
+# logged during the commitinfo phase (by the -l option) and returns true if
+# they're the same.
+##############################################################################
+
+sub is_last_dir {
+    my $dir = shift;
+    my $file = tmp_file_name('lastdir');
+    local *FILE;
+    open FILE, "<$file" or mydie("Cannot open '$file' for reading: $!\n");
+    my $logged = <FILE>;
+    close FILE;
+    DEBUG && ($dir eq $logged ? dbpnt("'$dir' is the last directory\n")
+              : dbpnt("'$dir' is NOT the last directory\n"));
+    return unless $dir eq $logged;
+    # If we got here, there's a match. Delete the file.
+    unlink($file);
+    return 1;
+}
+
+##############################################################################
+# This function grabs all the data from the log files and actually sends the
+# accumulated notification message.
+##############################################################################
+
+sub notify {
+    my ($mod, $msg, $revs, $files) = @_;
+    print "Collecting file lists...";
+    if ($opt_d) {
+        # We want diffs. That means we have to fork so that CVS will let go
+        # of the files.
+        unless (fork) {
+            # It's the child process. Grab the files.
+            $files = get_files($files);
+            # Grab the diffs for the latest files.
+            $files->{rev} .= get_diffs($revs);
+            my $subject = mk_subject($msg, $mod, $files);
+            mail($subject, build_msg($msg, $files, $subject));
+            exit;
+        }
+    } else {
+        # No need for diffs. Just send it as is.
+        $files = get_files($files);
+        mail(mk_subject($msg, $mod, $files), build_msg($msg, $files));
+        exit;
+    }
+    # Exit the parent process.
+    exit;
+}
+
+##############################################################################
+# This function retreives the lists of all the files affected by this action
+# and saves them into a hashref, which it returns. Pass in a hashref with the
+# current list of files to have the lists from the log files prepended to that
+# list. It also will fetch the diffs stored by previous instances of
+# activitymail so that they can all be concatenated together for the entire
+# commit.
+##############################################################################
+
+sub get_files {
+    my $files = shift;
+    my $fetched = {};
+    foreach my $flag (qw(mod add rem)) {
+        my $file = tmp_file_name($flag);
+        if (-T $file) {
+            # The file exists, so grab its contents.
+            DEBUG && dbpnt("Grabbing $map{$flag} from '$file'\n");
+            local *FILE;
+            open FILE, "<$file"
+              or mydie("Cannot open '$file' for writing: $!\n");
+            while (<FILE>) {
+                chomp;
+                push @{ $fetched->{$flag} }, $_;
+            }
+            close FILE;
+        }
+        # Delete the file.
+        unlink($file);
+        # Add the files that we had already.
+        push @{ $fetched->{$flag} }, @{ $files->{$flag} };
+    }
+
+    # Return the files unless we need diffs.
+    unless ($opt_d) {
+        print "Done.\n";
+        return $fetched;
+    }
+
+    # Okay, now get the diffs. Get the name of the lock files and wait until
+    # they're all gone.
+    print "Collecting diffs...";
+    my $locks = tmp_base_name('lock');
+
+    DEBUG && dbpnt("Waiting for all '$locks' files...\n");
+
+    # We avoid glob() here because some systems may not have it! That is, with
+    # older versions of Perl and where csh isn't installed. Such is the case
+    # on SourceForge, for example.
+    opendir(TMP, $tmpdir) or mydie("Cannot open '$tmpdir': $!\n");
+    foreach (grep { /$locks/ } readdir(TMP)) {
+        my $f = catdir($tmpdir, $_);
+        sleep 1 while -e $f;
+    }
+
+    # Okay, the locks are gone. Go ahead and get the diffs.
+    rewinddir(TMP);
+    my $revs = tmp_base_name('rev');
+    foreach my $file (grep { /$revs/ } readdir(TMP)) {
+        $file = catdir($tmpdir, $file);
+        DEBUG && dbpnt("Grabbing $map{rev} from '$file'\n");
+        local *FILE;
+        open FILE, "<$file" or mydie("Cannot open '$file' for writing: $!\n");
+        local $/;
+        $fetched->{rev} .= <FILE>;
+        close FILE;
+        unlink($file);
+    }
+    closedir(TMP);
+    print "Done\n";
+    return $fetched;
+}
+
+##############################################################################
+# This function takes an existing message, a files href, and the message
+# suject as arguments, and returns a fully formatted message that includes the
+# list of files. The subject is used for attachments (see attach() below).
+##############################################################################
+
+sub build_msg {
+    my ($msg, $files, $subject) = @_;
+    DEBUG && dbpnt("Building message body.\n");
+    $msg = "Log Message:\n-----------\n$msg\n";
+
+    # Create the lines that will go underneath the above in the message.
+    my %dash = ( map { $_ => '-' x length($map{$_}) } keys %map );
+
+    foreach (qw(mod add rem)) {
+        # Skip it if there's nothing to report.
+        next unless @{ $files->{$_} };
+
+        # Identify the action.
+        $msg .= "\n$map{$_}:\n$dash{$_}\n";
+
+        # Grab the first directory name.
+        my $lastdir = dirname($files->{$_}[0]);
+        $msg .= "    $lastdir:\n";
+
+        foreach my $f (@{ $files->{$_} }) {
+            my $curdir = dirname($f);
+            if ($curdir ne $lastdir) {
+                # Different directory. Record that.
+                $lastdir = $curdir;
+                $msg .= "    $lastdir:\n";
+            }
+            # Record the name of the file altered.
+            $msg .= "        " . basename($f) . "\n";
+        }
+    }
+
+    # Okay, now add the diffs.
+    if ($opt_d) {
+        # Make it either an attachment or inline, depending on -a.
+        $msg .= $opt_a ? attach($subject) : "\n$map{rev}\n$dash{rev}\n";
+        # Attach those diffs!
+        $msg .= $files->{rev};
+    }
+    return $msg;
+}
+
+##############################################################################
+# This function saves the file and diff data to log files so that the data can
+# be fetched later. Pass in the files revised in this directory and a list of
+# all the files.
+##############################################################################
+
+sub save_data {
+    my ($revs, $files) = @_;
+    foreach (qw(mod add rem)) {
+        # Just skip it if there are no files to record.
+        next unless @{ $files->{$_} };
+        my $file = tmp_file_name($_);
+        DEBUG && dbpnt("Saving $map{$_} to '$file'\n");
+        local *FILE;
+        open FILE, ">>$file"
+          or mydie("Cannot open '$file' for writing: $!\n");
+        local $" = "\n";
+        print FILE "@{ $files->{$_} }\n";
+        close FILE;
+    }
+
+    # Exit unles we have diffs to save.
+    exit unless $opt_d && $revs;
+
+    # Okay, now get the diffs and save them.
+    if (my $pid = fork) {
+        # In the parent. Write a lock file.
+        my $lock = tmp_file_name('lock') . "\.$pid";
+        open LOCK, ">$lock" or mydie("Cannot open '$lock' for writing: $!\n");
+        close LOCK;
+        exit;
+    } else {
+        # In the child. Wait for CVS to let go!
+        sleep 2;
+        # Now save the diffs to disk. Each process gets its own file.
+        my $file = tmp_file_name('rev') . "\.$$";
+        DEBUG && dbpnt("Saving $map{rev} to '$file'\n");
+        local *FILE;
+        open FILE, ">$file" or mydie("Cannot open '$file' for writing: $!\n");
+        print FILE get_diffs($revs);
+        close FILE;
+
+        # Okay, now delete the lock file created by the parent and exit.
+        DEBUG && dbpnt("Deleting lock file" .
+                       tmp_file_name('lock') . "\.$$" . "\n");
+        unlink(tmp_file_name('lock') . "\.$$");
+        exit;
+    }
+}
+
+##############################################################################
+# This function generates the text necessary to attach the diffs file. It
+# takes the subject as the first argument and uses it to create a hash that
+# uniquely identifies the attachment.
+##############################################################################
+
+sub attach {
+    # Create the attachment boundary string. MD5 would be better, but we can't
+    # count on its presence, and it's not really crucial, anyway.
+    my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z')[rand 64, rand 64];
+    $opt_a = crypt($_[0], $salt);
+
+    # Get the date (UTC).
+    my @gm = gmtime;
+    $gm[5] += 1900;
+    $gm[4] += 1;
+
+    # Get the username.
+    my $user = getlogin || getpwuid($<) || "unknown";
+
+    # Return the attachment headers.
+    local $" = '';
+    return qq{--$opt_a
+Content-Disposition: attachment; filename=$user-@gm[5,4,3,2,1,0]-diff.txt
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+
+};
+}
+
+##############################################################################
+# This function takes an error message for its argument, prints it, and exits.
+# The reason it's a separate function is that it prepends a string to the
+# error message so that it'll stand out during commits, and so that the
+# program won't actually die.
+##############################################################################
+
+sub mydie { print "######## cvs_activitymail error: $_[0]"; exit }
+
+##############################################################################
+# This function prints debug messages. The reason it's a separate function is
+# that it prepends a string to the message so that it'll stand out during
+# commits.
+##############################################################################
+
+sub dbpnt { print "\n" if $_[1]; print "@@@@@@@@ cvs_activitymail debug: $_[0]" }
+
+##############################################################################
+# This function prints a usage message.
+##############################################################################
+
+sub usage {
+    my $exe = basename($0);
+    print qq{
+Usage: $exe -l
+
+       $exe -f %{sVv} -t admins\@example.com [options]
+
+Supported options:
+
+  -l             Directory logging mode. Required unless -c.
+  -c             Commit mode. Required unless -l.
+  -f %{sVv}      The file spec argument from CVS. Required unless -l
+  -t <email>     The notification destination email address. Required unless -l.
+  -e <cvs>       Location of CVS executable. Defaults to "cvs" (i.e., in path).
+  -d             Include the diffs for all the files processed.
+  -o <opts>      Otions to pass to diff command.
+  -a             Attach the diffs to the message.
+  -r <email>     Reply-to address.
+  -n             Ignore New directory commits.
+  -i             Ignore imports.
+  -m <message>   Optional message to put at the beginning of the email subject.
+  -p             Add the name of the CVS module to the message subject.
+  -S		 Optional attempt to give the lowest common directory for a commit
+  -s <sendmail>  Location of sendmail.
+  -u <email>     User email address from which email should be sent.
+  -g             Use \$USER environment variable to group collection of commits.
+  -h             Print this usage statement.
+  -D             Debug mode.
+
+};
+    exit;
+}
+
+__END__
+
+
+=head1 NAME
+
+cvs_activitymail - CVS activity notification.
+
+=head1 SYNOPSIS
+
+  # In commitinfo:
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+  # In loginfo:
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -dacf %{sVv} -t admins@example.com
+
+=head1 DESCRIPTION
+
+
+################# PROMINENT NOTICE #############
+
+This is a modified version of activitymail-1.04 by David Wheeler,
+david@wheeler.net. The modifications were undertaken 5/2003 by Kent
+Lindquist (kent@lindquistconsulting.com), who places said modifications
+in the public domain. The modifications consist of adding a '-S' option
+to commit mode, allowing the administrator to insert in the subject
+line an indication of the files or directories modified. In order to
+avoid conflict this executable has been renamed cvs_activitymail.
+
+################# PROMINENT NOTICE #############
+
+This program may be used for sending email messages for CVS repository
+activity. There are a number of different modes supported. It can send
+messages for every change to the repository (like C<syncmail>), or it can be
+used to send a single message for each commit. In the latter case, a list of
+all the files affected by the commit will be assembled and listed in the
+single message. This is similar to how C<commit_prep> and C<log_accum> work,
+but is more efficient.
+
+An additional option allows for diffs to be calculated for the recent changes,
+and either appended to the message (like syncmail) or added as an attachment
+(neater). See the -d and -a options below.
+
+=head1 PREREQUISITES
+
+This script requires L<Getopt::Std|Getopt::Std> and
+L<File::Basename|File::Basename>. See L<"Known Issues"> for more information.
+
+=head1 COREQUISITES
+
+This script works best with L<File::Spec|File::Spec> installed. See L<"Known
+Issues"> for more information.
+
+=head1 USAGE
+
+To use this program, you need to check out your CVSROOT respository from CVS
+and edit some files. Here are the steps to follow:
+
+=over 4
+
+=item 1.
+
+Copy cvs_activitymail into your CVSROOT checkout.
+
+=item 2.
+
+Add cvs_activitymail to the CVSROOT repository.
+
+=item 3.
+
+Add cvs_activitymail to the checkoutlist file.
+
+=item 4.
+
+If you plan to use commit mode (see L<"Commit Mode"> below), add a call (or
+calls) to cvs_activitymail with the -l argument to the F<commitinfo> file. Read
+the CVS docs to determine the format for this file, and to decide which
+repositories for which you want it run. Here's an example:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+=item 5.
+
+Add a call (or calls) to cvs_activitymail to the F<loginfo> file. Note that the -f
+and -t arguments are required here. Use the -c argument if you're running
+commit mode (i.e., you've added a call with -l to the F<commitinfo> file --
+see L<"Commit Mode"> below). Here's an example:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -cf %{sVv} -t admins@example.com
+
+=item 6.
+
+Commit your changes to CVSROOT.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item -l
+
+Directory logging mode. Use this mode in the F<commitinfo> file to log the
+current directory. Best if used with -c in the F<loginfo> file -- otherwise
+it's just a waste.
+
+=item -c
+
+Commit mode. This will aggregate all the actions on a single commit and send a
+single message. Must have specified -l in the F<commitinfo> file.
+
+=item -f %{sVv}
+
+The file spec argument from CVS. It must be called as C<-f %{sVv}>. Required
+unless -l.
+
+=item -t <email>
+
+The email address or addresses to send notifications to. Required unless -l.
+
+=item -e
+
+Location of the CVS executable, e.g., F</usr/bin/cvs>. Defaults to F<cvs>, thus
+assuming that the cvs executable is in the path.
+
+=item -d
+
+Include the diffs for all the files processed. These will be appended to the
+notification message unless the -a option has been specified.
+
+=item -o <diff options>
+
+Options to pass to the C<cvs diff> command. Useful for changing the behavior
+of the diff command. Be sure to include these options inside quotation marks
+so that they will be distinguished from the options parsed by cvs_activitymail
+itself. See L<diff> for a list of available options. Defaults to
+C<-u --minimal> if not specified.
+
+=item -a
+
+Attach diffs to the notification message. The diffs for all the files
+processed will be calculated, and then they will be added to the message as an
+attachment.
+
+=item -r <email>
+
+An optional reply-to address. This address will be added to a Reply-To header
+in the notification email.
+
+=item -n
+
+Ignore "New directory" commits. By default, cvs_activitymail sends mail when a
+directory has been added. Pass this optional argument to ignore those actions.
+
+=item -i
+
+Ignore imports. By default, cvs_activitymail sends mail when a files have been
+imported. Pass this optional argument to ignore those actions.
+
+=item -m <message>
+
+An optional message to put at the beginning of the email subject.
+
+=item -p
+
+Optional argument to add the name of the CVS module to the message subject.
+
+=item -S
+
+Optional attempt give the file name or lowest common directory for a commit
+
+=item -s <sendmail>
+
+Location of sendmail. If not specified, cvs_activitymail will search for sendmail
+in the following locations: C</usr/lib/sendmail>. C</usr/sbin/sendmail>,
+C</usr/ucblib/sendmail>. If cvs_activitymail cannot find sendmail, it'll throw an
+exception.
+
+=item -u <user email>
+
+Email address to use in the From header of the commit email message. Typical
+usage is to use the CVS C<$USER> variable to specify an address, e.g., C<-u
+${USER}@example.com>. Default is to provide no From header and to let Sendmail
+do it.
+
+=item -g
+
+Group collection of CVS transactions in a single commit by the C<$USER>
+environment variable. This is most useful for when connecting to CVS via
+C<:pserver:>, since the usual method of collecting transactions -- by relying
+on the value returned by C<pgrp>, won't work. Use in both the F<commitinfo>
+and L<loginfo> files, or else it won't work at all!
+
+=item -h
+
+Print usage statement. It's a simplified version of this section of the docs,
+intended to remind the user of all the options. Be sure to read the detailed
+descriptions here, first.
+
+=item -D
+
+Enables debug mode. This will trigger lots of output. All cvs_activitymail debug
+messages will start with the string "@@@@@@@@ cvs_activitymail debug:" so that
+they can be spotted easily.
+
+=back
+
+=head1 MODES
+
+=head2 Standard Mode
+
+In this mode, a notification message will be sent for every directory affected
+by a single commit to the repository. This could be a lot of messages if
+you've made a lot of changes, and is thus highly redundant.
+
+To use it, all you need to is add a call to cvs_activitymail to your F<loginfo>
+file with (at minimum) the -f and -t arguments:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -f %{sVv} -t admins@example.com
+
+To mimic the behavior of syncmail, add the -d argument to append diffs:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -df %{sVv} -t admins@example.com
+
+=head2 Commit Mode
+
+This mode takes a just a little more work to put in place, but manages your
+email resources much more efficiently. In this mode, cvs_activitymail tracks all
+the files changed throughout a single commit and sends a single email when all
+the changes have been made. This is especially useful in circumstances where
+many files have been changed at once. In standard mode, many messages will be
+sent, but in commit mode, only one will be sent.
+
+An additional advantge of commit mode is that cvs_activitymail will construct a
+custom subject for the notification messages. In standard mode, the subject is
+simply the contents of the -f argument. In commit mode, however, cvs_activitymail
+will use either the first sentence of the log message, or the maximum number
+of words that take up less than 72 characters (includinng the -m and/or -p
+arguments, if specified). This offers an easy way to see what was done during
+the commit based on the context of the beginning of the actual log message.
+CVS users thus might want to consider making the first sentence of their
+messages (up to the first period) be a breif summary, and the rest of the
+message can be a more detailed description of the changes.
+
+To use commit mode, you B<must> place a call to cvs_activitymail with the -l
+argument in your F<commitinfo> file for every repository package you want to
+manage in commit mode. Usually, that's everything, so you can just use the
+line (as long as you have no other lines -- see L<cvs> for more information):
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+Then, you'll need to add a second call to cvs_activitymail to your F<loginfo> file
+for the same repository packages as in the F<commitinfo> file's call to
+cvs_activitymail. A convenient line for this purpose (even if you have other log
+filters in place) is the ALL line:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cf %{sVv} -t admins@example.com
+
+The DEFAULT line will work equally well. Perhaps you want to have mail sent to
+different addresses for different repository pacakges. see L<cvs> for more
+information on the F<loginfo> file syntax.
+
+If you'd like to see diffs for the changes for any particular commit, add the
+-d argument. All of the changes to the repository will be recoreded in diff
+format and appended to the end of the message:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdf %{sVv} -t admins@example.com
+
+Better still, have the diffs added to the message as attachments by adding the
+-a option.
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdaf %{sVv} -t admins@example.com
+
+Finally, If you commit to CVS via C<:pserver:>, you should use the -g option
+to get cvs_activitymail to properly group all of the CVS activity for a commit. By
+default, cvs_activitymail uses the value returned by C<pgrp> to determine what's
+part of a single commit action and what's another action. However, in
+C<:pserver:> mode, C<pgrp> always returns the same value. The solution is to
+use the C<$USER> environment variable to group the CVS activity. The
+assumption is that a single user will not be doing two separate commits at the
+same time, so this should work fine. Note that if you use the -g option, you
+B<must> use it in both the F<commitinfo> file:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -lg
+
+And the F<loginfo> file:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdagf %{sVv} -t admins@example.com
+
+=head1 KNOWN ISSUES
+
+This program depends on the presence of several modules that are distributed
+standard with Perl. They are L<Getopt::Std|Getopt::Std>,
+L<File::Basename|File::Basename>, and L<File::Spec|File::Spec>. If either
+Getopt::Std or File::Basename isn't present, cvs_activitymail won't run. If
+File::Spec isn't installed (not uncommon, since it's a fairly recent addition
+to Perl -- SourceForge, for example, doesn't have it as of this writing),
+cvs_activitymail will assume very simple Unix semantics for creating file names,
+and will assume that C</tmp> is the temp directory.
+
+The principal issue I'd like to eventually get worked out has to do with
+forking. This script forks a new process whenever it is called with the -d
+argument. This is because, in order to get CVS to diff two different versions,
+the script has to exit so that the lock on the files is released. So what
+cvs_activitymail does is fork a child process, exit the parent, and then let the
+child diff the files and send the mail. This sounds screwy, but it works.
+(It's how synmail does it, too.)
+
+But sometimes CVS commits hang. It can take a while for a commit to go
+through, and sometimes it's best to cancel the commit and try again later. I
+believe that this is because once the parent exits, there's nothing to reap
+the child processes once they've exited. Yes, the OS will clean them up, but
+I've seen "defunct" cvs_activitymail processes hanging around in the process
+table, so it could take a while. I suspect that what's happening is that,
+becuase these processes aren't promptly reaped, CVS retains the locks on the
+files. So if you make several commits to the same file(s) in rapid succession,
+you can get the hangs.
+
+I'm not entirely clear that this is the problem, however, and most of the
+time, there doesn't seem to be a problem at all. I have been using
+cvs_activitymail with the -d option for the Bricolage project for many months, and
+there appear to be no serious problems. Nevertheless, I certainly would
+appreciate it if someone who understood Perl's forking and/or CVS locking
+better than I do could help me to irradicate this issue. For anyone else who's
+uncomfortable with the possibility of this issue arrising, don't use the -d
+option.
+
+=head1 BUGS
+
+Report all bugs via the CPAN Request Tracker at
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=activitymail>.
+
+=head1 AUTHOR
+
+David Wheeler <david@wheeler.net>
+
+=head1 SEE ALSO
+
+L<syncmail|syncmail>, L<commit_prep|commit_prep>, L<log_accum|log_accum>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2002, David Wheeler. All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl.
+
+=begin comment
+
+=pod SCRIPT CATEGORIES
+
+VersionControl/CVS
+
+UNIX/System_administration
+
+=pod OSNAMES
+
+any
+
+=pod README
+
+This program may be used for sending email messages for CVS repository
+activity. Messages can be sent for every repository change, or for every
+commit. In the latter case, a list of all the files affected may be assembled
+and listed or attached to the single message.
+
+=end comment
+
+=cut

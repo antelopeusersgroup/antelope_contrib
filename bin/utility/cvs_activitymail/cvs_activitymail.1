@@ -1,0 +1,336 @@
+.TH CVS_ACTIVITYMAIL 1 "$Date$"
+.SH NAME
+cvs_activitymail \- CVS activity notification.
+.SH SYNOPSIS
+.nf
+# In commitinfo:
+DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+# In loginfo:
+DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -dacf %{sVv} -t admins@example.com
+.fi
+.SH DESCRIPTION
+
+################# PROMINENT NOTICE #########################
+
+This is a modified version of activitymail-1.04 by David Wheeler,
+david@wheeler.net. The modifications were undertaken 5/2003 by Kent
+Lindquist (kent@lindquistconsulting.com), who places said modifications
+in the public domain. The modifications consist of adding a '-S' option
+to commit mode, allowing the administrator to insert in the subject
+line an indication of the files or directories modified. In order to
+avoid conflict this executable has been renamed cvs_activitymail.
+
+################# PROMINENT NOTICE #########################
+
+This program may be used for sending email messages for CVS repository
+activity. There are a number of different modes supported. It can send
+messages for every change to the repository (like "syncmail"), or it can be
+used to send a single message for each commit. In the latter case, a list of
+all the files affected by the commit will be assembled and listed in the
+single message. This is similar to how "commit_prep" and "log_accum" work,
+but is more efficient.
+
+An additional option allows for diffs to be calculated for the recent changes,
+and either appended to the message (like syncmail) or added as an attachment
+(neater). See the -d and -a options below.
+
+.SH PREREQUISITES
+
+This script requires Getopt::Std and
+File::Basename. See "Known Issues" for more information.
+
+.SH COREQUISITES
+
+This script works best with File::Spec installed. See "Known
+Issues" for more information.
+
+.SH USAGE
+
+To use this program, you need to check out your CVSROOT respository from CVS
+and edit some files. Here are the steps to follow:
+
+1) Copy cvs_activitymail into your CVSROOT checkout.
+
+2) Add cvs_activitymail to the CVSROOT repository.
+
+3) Add cvs_activitymail to the checkoutlist file.
+
+4) If you plan to use commit mode (see "Commit Mode" below), add a call (or
+calls) to cvs_activitymail with the -l argument to the \fBcommitinfo\fP file. Read
+the CVS docs to determine the format for this file, and to decide which
+repositories for which you want it run. Here's an example:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+5) Add a call (or calls) to cvs_activitymail to the \fBloginfo\fP file. Note that the -f
+and -t arguments are required here. Use the -c argument if you're running
+commit mode (i.e., you've added a call with -l to the \fBcommitinfo\fP file --
+see "Commit Mode" below). Here's an example:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -cpSf %{sVv} -m CVS: -t "admins@example.com, admins@otherexample.com"
+
+6) Commit your changes to CVSROOT.
+
+.SH OPTIONS
+.IP -l
+
+Directory logging mode. Use this mode in the \fBcommitinfo\fP file to log the
+current directory. Best if used with -c in the \fBloginfo\fP file -- otherwise
+it's just a waste.
+
+.IP -c
+
+Commit mode. This will aggregate all the actions on a single commit and send a
+single message. Must have specified -l in the \fBcommitinfo\fP file.
+
+.IP "-f %{sVv}"
+
+The file spec argument from CVS. It must be called as "-f %{sVv}". Required
+unless -l.
+
+.IP "-t <email>"
+
+The email address or addresses to send notifications to. Required unless -l.
+
+.IP -e
+
+Location of the CVS executable, e.g., \fB/usr/bin/cvs\fP. Defaults to \fBcvs\fP, thus
+assuming that the cvs executable is in the path.
+
+.IP -d
+
+Include the diffs for all the files processed. These will be appended to the
+notification message unless the -a option has been specified.
+
+.IP "-o <diff options>"
+
+Options to pass to the C<cvs diff> command. Useful for changing the behavior
+of the diff command. Be sure to include these options inside quotation marks
+so that they will be distinguished from the options parsed by cvs_activitymail
+itself. See diff for a list of available options. Defaults to
+C<-u --minimal> if not specified.
+
+.IP -a
+
+Attach diffs to the notification message. The diffs for all the files
+processed will be calculated, and then they will be added to the message as an
+attachment.
+
+.IP "-r <email>"
+
+An optional reply-to address. This address will be added to a Reply-To header
+in the notification email.
+
+.IP -n
+
+Ignore "New directory" commits. By default, cvs_activitymail sends mail when a
+directory has been added. Pass this optional argument to ignore those actions.
+
+.IP -i
+
+Ignore imports. By default, cvs_activitymail sends mail when a files have been
+imported. Pass this optional argument to ignore those actions.
+
+.IP "-m <message>"
+
+An optional message to put at the beginning of the email subject.
+
+.IP -p
+
+Optional argument to add the name of the CVS module to the message subject.
+
+.IP -S
+
+Optional attempt give the file name or lowest common directory for a commit
+
+.IP "-s <sendmail>"
+
+Location of sendmail. If not specified, cvs_activitymail will search for sendmail
+in the following locations: "/usr/lib/sendmail". "/usr/sbin/sendmail",
+"/usr/ucblib/sendmail". If cvs_activitymail cannot find sendmail, it'll throw an
+exception.
+
+.IP "-u <user email>"
+
+Email address to use in the From header of the commit email message. Typical
+usage is to use the CVS "$USER" variable to specify an address, e.g., "-u ${USER}@example.com".
+Default is to provide no From header and to let Sendmail
+do it.
+
+.IP -g
+
+Group collection of CVS transactions in a single commit by the "$USER"
+environment variable. This is most useful for when connecting to CVS via
+":pserver:", since the usual method of collecting transactions -- by relying
+on the value returned by "pgrp", won't work. Use in both the \fBcommitinfo\fP
+and loginfo files, or else it won't work at all!
+
+.IP -h
+
+Print usage statement. It's a simplified version of this section of the docs,
+intended to remind the user of all the options. Be sure to read the detailed
+descriptions here, first.
+
+.IP -D
+
+Enables debug mode. This will trigger lots of output. All cvs_activitymail debug
+messages will start with the string "@@@@@@@@ cvs_activitymail debug:" so that
+they can be spotted easily.
+
+.SH MODES
+
+Standard Mode
+
+In this mode, a notification message will be sent for every directory affected
+by a single commit to the repository. This could be a lot of messages if
+you've made a lot of changes, and is thus highly redundant.
+
+To use it, all you need to is add a call to cvs_activitymail to your \fBloginfo\fP
+file with (at minimum) the -f and -t arguments:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -f %{sVv} -t admins@example.com
+
+To mimic the behavior of syncmail, add the -d argument to append diffs:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -df %{sVv} -t admins@example.com
+
+Commit Mode
+
+This mode takes a just a little more work to put in place, but manages your
+email resources much more efficiently. In this mode, cvs_activitymail tracks all
+the files changed throughout a single commit and sends a single email when all
+the changes have been made. This is especially useful in circumstances where
+many files have been changed at once. In standard mode, many messages will be
+sent, but in commit mode, only one will be sent.
+
+An additional advantge of commit mode is that cvs_activitymail will construct a
+custom subject for the notification messages. In standard mode, the subject is
+simply the contents of the -f argument. In commit mode, however, cvs_activitymail
+will use either the first sentence of the log message, or the maximum number
+of words that take up less than 72 characters (includinng the -m and/or -p
+arguments, if specified). This offers an easy way to see what was done during
+the commit based on the context of the beginning of the actual log message.
+CVS users thus might want to consider making the first sentence of their
+messages (up to the first period) be a breif summary, and the rest of the
+message can be a more detailed description of the changes.
+
+To use commit mode, you \fBmust\fP place a call to cvs_activitymail with the -l
+argument in your \fBcommitinfo\fP file for every repository package you want to
+manage in commit mode. Usually, that's everything, so you can just use the
+line (as long as you have no other lines -- see cvs for more information):
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -l
+
+Then, you'll need to add a second call to cvs_activitymail to your \fBloginfo\fP file
+for the same repository packages as in the \fBcommitinfo\fP file's call to
+cvs_activitymail. A convenient line for this purpose (even if you have other log
+filters in place) is the ALL line:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cf %{sVv} -t admins@example.com
+
+The DEFAULT line will work equally well. Perhaps you want to have mail sent to
+different addresses for different repository pacakges. see cvs for more
+information on the \fBloginfo\fP file syntax.
+
+If you'd like to see diffs for the changes for any particular commit, add the
+-d argument. All of the changes to the repository will be recoreded in diff
+format and appended to the end of the message:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdf %{sVv} -t admins@example.com
+
+Better still, have the diffs added to the message as attachments by adding the
+-a option.
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdaf %{sVv} -t admins@example.com
+
+Finally, If you commit to CVS via ":pserver:", you should use the -g option
+to get cvs_activitymail to properly group all of the CVS activity for a commit. By
+default, cvs_activitymail uses the value returned by "pgrp" to determine what's
+part of a single commit action and what's another action. However, in
+":pserver:" mode, "pgrp" always returns the same value. The solution is to
+use the "$USER" environment variable to group the CVS activity. The
+assumption is that a single user will not be doing two separate commits at the
+same time, so this should work fine. Note that if you use the -g option, you
+\fBmust\fP use it in both the \fBcommitinfo\fP file:
+
+  DEFAULT $CVSROOT/CVSROOT/cvs_activitymail -lg
+
+And the \fBloginfo\fP file:
+
+  ALL $CVSROOT/CVSROOT/cvs_activitymail -cdagf %{sVv} -t admins@example.com
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+MT-Safe ?
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+syncmail|syncmail, commit_prep|commit_prep, log_accum|log_accum.
+.fi
+.SH KNOWN ISSUES
+
+This program depends on the presence of several modules that are distributed
+standard with Perl. They are Getopt::Std,
+File::Basename, and File::Spec. If either
+Getopt::Std or File::Basename isn't present, cvs_activitymail won't run. If
+File::Spec isn't installed (not uncommon, since it's a fairly recent addition
+to Perl -- SourceForge, for example, doesn't have it as of this writing),
+cvs_activitymail will assume very simple Unix semantics for creating file names,
+and will assume that "/tmp" is the temp directory.
+
+The principal issue I'd like to eventually get worked out has to do with
+forking. This script forks a new process whenever it is called with the -d
+argument. This is because, in order to get CVS to diff two different versions,
+the script has to exit so that the lock on the files is released. So what
+cvs_activitymail does is fork a child process, exit the parent, and then let the
+child diff the files and send the mail. This sounds screwy, but it works.
+(It's how synmail does it, too.)
+
+But sometimes CVS commits hang. It can take a while for a commit to go
+through, and sometimes it's best to cancel the commit and try again later. I
+believe that this is because once the parent exits, there's nothing to reap
+the child processes once they've exited. Yes, the OS will clean them up, but
+I've seen "defunct" cvs_activitymail processes hanging around in the process
+table, so it could take a while. I suspect that what's happening is that,
+becuase these processes aren't promptly reaped, CVS retains the locks on the
+files. So if you make several commits to the same file(s) in rapid succession,
+you can get the hangs.
+
+I'm not entirely clear that this is the problem, however, and most of the
+time, there doesn't seem to be a problem at all. I have been using
+cvs_activitymail with the -d option for the Bricolage project for many months, and
+there appear to be no serious problems. Nevertheless, I certainly would
+appreciate it if someone who understood Perl's forking and/or CVS locking
+better than I do could help me to irradicate this issue. For anyone else who's
+uncomfortable with the possibility of this issue arrising, don't use the -d
+option.
+
+.SH BUGS
+
+Report all bugs via the CPAN Request Tracker at
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=activitymail.
+
+.SH AUTHOR
+David Wheeler <david@wheeler.net>. -S option added by Kent Lindquist 
+<kent@lindquistconsulting.com>
+.\" $Id$
+
+
+.SH "COPYRIGHT AND LICENSE"
+
+Copyright (c) 2002, David Wheeler. All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl.
