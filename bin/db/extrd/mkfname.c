@@ -1,7 +1,6 @@
 /************************************************************************
  *
  *    extrd/exist.c
- * Make output directory with the name YYDDDHHMMSS                
  * 
  ************************************************************************/
 #include "extrd.h"
@@ -23,12 +22,12 @@ char *out_dir;
    
 /* Make directory name for new data subset from data start time   */
    
-   dtsplit(time, &yr, &day, &hour, &min, &sec, &msec); yr -= 1900;
+   dtsplit(time, &yr, &day, &hour, &min, &sec, &msec); 
    if(out_dir != NULL)
-     sprintf( *outdb,"%s/%2.2d%3.3d%2.2d%2.2d%2.2d\0", 
+     sprintf( *outdb,"%s/%4.4d%3.3d%2.2d%2.2d%2.2d\0", 
               out_dir, yr, day, hour, min, sec);
    else
-     sprintf( *outdb,"%2.2d%3.3d%2.2d%2.2d%2.2d\0", 
+     sprintf( *outdb,"%4.4d%3.3d%2.2d%2.2d%2.2d\0", 
               yr, day, hour, min, sec);
   
 /* Make new wfdisc name from data start time  */

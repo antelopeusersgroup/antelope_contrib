@@ -12,6 +12,7 @@
 int get_data( double stime, double etime )
 {
     SegData segment, new;
+    TrDataGap *datagap;
     double ts, te, et ;
     double crnt_time;
     float *buf=0;
@@ -62,6 +63,7 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
        if( stime >= new.endtime ) continue;
        if( etime <= new.time ) continue;
        new.dcode = trdatacode ( new.datatype);
+       datagap = trdatagap(new.datatype) ;
        done = skip = 0;
        if( segment.time <= 0.0 ) segment.time = new.time;
        if(strcmp(new.sta, segment.sta)!= 0 || 
@@ -162,8 +164,11 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 		 allot (char *, mydata.c, bytes);
 	   }  else 
 		 reallot (char *, mydata.c, bytes);
-           for (i = 0; i < save_npts; i++)
+	   for (i = 0; i < save_npts; i++)  {
 	       mydata.i[i] = buf[i+skip];
+               if( mydata.i[i] <= datagap->lower || mydata.i[i] >= datagap->upper )
+	          mydata.i[i] = datagap->fill;
+	   }
 								   
            if(!wrt_data( &segment, crnt_time, save_npts, mydata.i ))   {
                complain(0, "can't save data for %s_%s at %lf.\n",
