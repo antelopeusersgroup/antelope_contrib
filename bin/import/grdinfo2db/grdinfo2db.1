@@ -1,0 +1,42 @@
+.TH GRDINFO2DB 1 "$Date$"
+.SH NAME
+grdinfo2db \- add gmt grid file information to database
+.SH SYNOPSIS
+.nf
+grdinfo2db [-n name] [-t type] gridfile dbname 
+.fi
+.SH DESCRIPTION
+grdinfo2db adds an entry in the specified database for a 
+GMT(l) grid-file. The name and type of the grid file may 
+be specified on the command line. The database is saved 
+in gmt1.0 format.
+.SH OPTIONS
+-n name Specify a shorthand name for the file
+
+-t type Specify the contents of the grid, e.g. topography
+or gradient 
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+grdinfo(l)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist 
+Lindquist Consulting
+.fi
+.\" $Id$
