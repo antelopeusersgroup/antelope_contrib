@@ -55,5 +55,6 @@ print O "\tUniversity of Alaska, Fairbanks\n";
 print O "\t1997-2000\n";
 print O "</PRE>\n\n";
 print O "<HR><H2><I><A HREF=\"antelope.html\">Antelope Toolbox Index</A></I></H2>\n";
+print O "<HR><H2><I><A HREF=\"$ENV{ANTELOPE}/man/manpages.html\">Antelope Unix Man Pages</A></I></H2>\n";
 print O "</BODY>\n";
 print O "</HTML>\n";
