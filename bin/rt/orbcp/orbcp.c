@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+#include "db.h"
 #include "orb.h"
 #include "pkt.h"
 #include "coords.h"
@@ -9,6 +10,8 @@
 #ifndef SEEK_SET
 #define SEEK_SET 0
 #endif
+
+static int putmsg (int orb, Dbptr db, char *prog, char *msg);
 
 main (argc, argv)
 
@@ -22,6 +25,8 @@ char **argv;
 	int orbin=-1, orbout=-1;
 	int pktid;
 	int nbytes, bufsize = 0;
+	int messages=0;
+	Dbptr db;
 	double time;
 	char *packet=NULL;
 	char *packet2=NULL;
@@ -82,6 +87,14 @@ char **argv;
 			ircnt = 1;
 		} else if (!strcmp(*argv, "-orcnt")) {
 			orcnt = 1;
+		} else if (!strcmp(*argv, "-messages")) {
+			messages = 1;
+			if (setupdb ("orbcp", &db) < 0) {
+				clear_register (1);
+				fprintf (stderr, "orbcp: setupdb() error.\n");
+				exit (1);
+			}
+			db = dblookup (db, 0, "remark", 0, 0);
 		} else if (!strcmp(*argv, "-pktstart")) {
 			argc--; argv++;
 			if (argc < 1) {
@@ -173,11 +186,20 @@ char **argv;
 	n = 0;
 	lastpkt_age = 0;
 	while (1) {
-		if (!first && fdkey(orbin) == 0) {	/* No pending input */
-			sleep (1);
-			lastpkt_age += 1;
-			if (ircnt && lastpkt_age > rcnt_time && lastpkt_pktid >= 0) goto RECONNECT;
-			continue;
+		if (!first) {
+			ret = fdkey(orbin);
+			if (ret == 0) {	/* No pending input */
+				sleep (1);
+				lastpkt_age += 1;
+				if (ircnt && lastpkt_age > rcnt_time && lastpkt_pktid >= 0) {
+					if (messages) putmsg (orbout, db, "orbcp", "age timeout");
+					goto RECONNECT;
+				}
+				continue;
+			} else if (ret < 0) {	/* error */
+				if (messages) putmsg (orbout, db, "orbcp", "fdkey() error");
+				goto RECONNECT;
+			}
 		}
 		ret = orbreap_nd (orbin, &pktid, src, &time, &packet, &nbytes, &bufsize);
 		first = 0;
@@ -197,6 +219,7 @@ char **argv;
 			lastpkt_ltime = now ();
 			break;
 		default:		/* Some other error */
+			if (messages) putmsg (orbout, db, "orbcp", "orbreap_nd() error");
 			ready = -1;
 			break;
 		}
@@ -206,6 +229,7 @@ char **argv;
 				int orbs;
 
 RECONNECT:			clear_register (0);
+				if (messages) putmsg (orbout, db, "orbcp", "reconnecting");
 				sleep (10);
 				lastpkt_age += 10;
 				/* continue; */
@@ -215,13 +239,17 @@ RECONNECT:			clear_register (0);
 
 					sleep (10);
 					lastpkt_age += 10;
+					if (messages) putmsg (orbout, db, "orbcp", "orb open for stat");
 					orbs = orbopen (orbname, "r");
 					if (orbs < 0) {
 						clear_register (0);
+						if (messages) putmsg (orbout, db, "orbcp", "orb open for stat failed");
 						continue;
 					}
 					if (srcexpr) {
+						if (messages) putmsg (orbout, db, "orbcp", "orb select for stat");
 						if (orbselect (orbs, srcexpr) < 0) {
+							if (messages) putmsg (orbout, db, "orbcp", "orb select for stat failed");
 							orbclose (orbs);
 							clear_register (0);
 							continue;
@@ -235,7 +263,9 @@ RECONNECT:			clear_register (0);
 						sleep (10);
 						lastpkt_age += 10;
 						ostat = NULL;
+						if (messages) putmsg (orbout, db, "orbcp", "orb stat");
 						if (orbstat ( orbs, &ostat ) < 0) {
+							if (messages) putmsg (orbout, db, "orbcp", "orb stat failed");
 							orbclose (orbs);
 							clear_register (0);
 							ok = 0;
@@ -252,6 +282,7 @@ RECONNECT:			clear_register (0);
 						free_orbstat (ostat);
 						if (slatest_time - lastpkt_time > (double)rcnt_time) {
 							ok = 1;
+							if (messages) putmsg (orbout, db, "orbcp", "orb stat OK");
 							break;
 						}
 					}
@@ -259,18 +290,23 @@ RECONNECT:			clear_register (0);
 				}
 				orbclose (orbs);
 
+				if (messages) putmsg (orbout, db, "orbcp", "orb close");
 				orbclose (orbin);
 				while (1) {
 					sleep (10);
 					lastpkt_age += 10;
+					if (messages) putmsg (orbout, db, "orbcp", "orb open");
 					orbin = orbopen (orbname, "r");
 					if (orbin < 0) {
+						if (messages) putmsg (orbout, db, "orbcp", "orb open failed");
 						clear_register (0);
 						continue;
 					}
 					if (srcexpr) {
 						sleep (20);
+						if (messages) putmsg (orbout, db, "orbcp", "orb select");
 						if (orbselect (orbin, srcexpr) < 0) {
+							if (messages) putmsg (orbout, db, "orbcp", "orb select failed");
 							orbclose (orbin);
 							clear_register (0);
 							continue;
@@ -280,11 +316,15 @@ RECONNECT:			clear_register (0);
 				}
 				first = 1;
 				lastpkt_age = 0;
+				if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid");
 				if (orbseek (orbin, lastpkt_pktid) != lastpkt_pktid) {
+					if (messages) putmsg (orbout, db, "orbcp", "orb seek to last_pktid failed");
 					clear_register (0);
 					orbseek (orbin, ORBNEWEST);
 				} else {
+					if (messages) putmsg (orbout, db, "orbcp", "orb seek to next_pktid");
 					if (orbseek (orbin, ORBNEXT) < 0) {
+						if (messages) putmsg (orbout, db, "orbcp", "orb seek to next_pktid failed");
 						clear_register (0);
 						orbseek (orbin, ORBNEWEST);
 					}
@@ -321,4 +361,54 @@ usage()
 	fprintf (stderr, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
 	fprintf (stderr, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
 	fprintf (stderr, "             [-rcnt_time minutes] [-npackets npackets]\n");
+	fprintf (stderr, "             [-messages]\n");
+}
+
+int
+setupdb (prog, db)
+
+char *   prog;
+Dbptr *        db;
+
+{
+	FILE *f;
+	char string[512];
+
+	sprintf (string, "/tmp/%s%d", prog, getpid());
+	f = fopen(string, "w");
+	if (f == NULL) {
+               	register_error (1, "setupdb: fopen('%s') error.\n", string);
+               	return (-1);
+	}
+	if (fputs ("rt1.0\n", f) == EOF) {
+               	register_error (1, "setupdb: fputs('%s') error.\n", string);
+               	return (-1);
+	}
+	if (fputs ("\n", f) == EOF) {
+               	register_error (1, "setupdb: fputs('%s') error.\n", string);
+               	return (-1);
+	}
+	fclose (f);
+	if (dbopen (string, "r+", db) == dbINVALID) {
+               	register_error (0, "setupdb: dbopen('%s') error.\n", string);
+               	return (-1);
+       	}
+       	unlink (string);
+	return (0);
+}
+
+static int
+putmsg (int orb, Dbptr db, char *prog, char *msg)
+
+{
+	char string[512];
+	char name[512];
+
+	db = dblookup (db, 0, "remark", 0, "dbSCRATCH");
+	gethostname (name, 512);
+	sprintf (string, "%s(%s:%d): %s %s", prog, name, getpid(), strtime(now()), msg);
+	dbputv (db, 0, "remark", string, 0);
+	db2orbpkt (db, orb);
+        orbflush (orb);
+
 }
