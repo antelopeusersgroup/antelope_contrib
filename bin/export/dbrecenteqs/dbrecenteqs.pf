@@ -109,7 +109,7 @@ map_config &Arr{
 	longitude_branchcut_high 360
 	hypocenter_dbname historic_hypocenters_dbname
 	map_color_palette_file &datafilename(gmt/dbrecenteqs.cpt)
-	map_landmask_palette_file &datafilename(dbrecenteqs_landonly.cpt)
+	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
 	legend 		&datafilename(dbrecenteqs/legend.gif)
 	legend_description Magnitude and Age Legend for Earthquakes
 	landmask_regions &Arr{
