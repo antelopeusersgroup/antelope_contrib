@@ -93,6 +93,8 @@ public class DatabaseSchema {
     private static void parseIncludeStatement(DatabaseSchema schema, 
 					     DatabaseSchemaLexer lexer) 
 	throws SyntaxException {
+	String include = expectIdentifier(lexer);
+	/* FIXME: parse the included schema, and merge it into this one. */
     }
 
 
@@ -113,6 +115,7 @@ public class DatabaseSchema {
     private static String expectString(DatabaseSchemaLexer lexer) throws SyntaxException, IOException { 
 	DatabaseSchemaToken token = lexer.getToken();
 	if (token.type == lexer.STRING_LITERAL) {
+//	    System.out.println("Token value is of class " + token.value.getClass().getName());
 	    return (String)(token.value);
 	} else {
 	    throw new SyntaxException("Expected a string literal, but found "+
@@ -143,16 +146,14 @@ public class DatabaseSchema {
 
 	while (true) {
 	    token = lexer.getToken();
-	    
-	    if (token.type == lexer.CHARACTER_LITERAL && (String)(token.value) == ";") {
+	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
 		break;
 	    } else if (token.type == lexer.DESCRIPTION) {
 		expectChar(lexer,"(");
 		schema.description = expectString(lexer);
-		System.out.println("Got schema name " + schema.description);
 		expectChar(lexer,")");
 	    } else if (token.type == lexer.DETAIL) {
-		schema.description = expectString(lexer);
+		schema.detail = expectString(lexer);
 	    } else if (token.type == lexer.TIMEDATE) {
 		schema.timedate = expectIdentifier(lexer);
 	    } else {

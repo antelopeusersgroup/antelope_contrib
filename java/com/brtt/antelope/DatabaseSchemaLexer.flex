@@ -154,7 +154,6 @@ Detail		{ return symbol(DETAIL); }
 		  string.setLength(0); /* string */ }
 
 \"		{ yybegin(STRING); 
-		  System.out.println("Beginning a string!");
 		  string.setLength(0); /* string */ }
 
 [A-Za-z0-9_\$\%\:\.]*   { return symbol(IDENTIFIER_LITERAL, yytext());  /* string/identifier */ }
@@ -163,13 +162,13 @@ Detail		{ return symbol(DETAIL); }
 }
 
 <STRING> {
-\"		    { yybegin(YYINITIAL);  return symbol(STRING_LITERAL, yytext());}
+\"		    { yybegin(YYINITIAL);  return symbol(STRING_LITERAL, string.toString());}
 {StringChar}+       { string.append(yytext()); }
 "\\\""              { string.append( '\"' ); }
 "\\\\"              { string.append( '\\' ); }
 }
 
 <CURLYSTRING> {
-\}		{ yybegin(YYINITIAL); }
+\}		{ yybegin(YYINITIAL); return symbol(STRING_LITERAL, string.toString()); }
 [^}]+		{ string.append(yytext()); }
 }

@@ -67,8 +67,37 @@ public class DatabaseAttribute {
     /** Parse a textual description of a DatabaseAttribute.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseAttribute parse(Reader input) {
-      return null;
+    public static DatabaseAttribute parse(DatabaseSchemaLexer lexer) {
+	DatabaseSchemaToken token = lexer.getToken();
+	
+	if (token.type == lexer.REAL   || token.type == lexer.INTEGER ||
+	    token.type == lexer.STRING || token.type == lexer.TIME ||
+	    token.type == lexer.DATE   || token.type == lexer.YEARDAY) {
+	    // ... FIXME
+	} else {
+	    // ... FIXME
+	}
+
+	expectChar("(");
+//	expectNumber();
+	expectChar(")");
+
+	while (true) {
+
+	    token = lexer.getToken();
+
+	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
+		break;
+	    } else if (token.type == lexer.FORMAT) {
+	    } else if (token.type == lexer.UNITS) {
+	    } else if (token.type == lexer.RANGE) {
+	    } else if (token.type == lexer.NULL) {
+	    } else if (token.type == lexer.DESCRIPTION) {
+	    } else if (token.type == lexer.DETAIL) {
+	    } else {
+		// fail
+	    }
+	}
     }
 
     /** Produce a textual description of this DatabaseAttribute.  This will most

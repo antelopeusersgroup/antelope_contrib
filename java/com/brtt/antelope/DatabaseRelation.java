@@ -68,15 +68,65 @@ public class DatabaseRelation {
     /** Parse a textual description of a DatabaseRelation.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseRelation parse(Reader input) {
-      return null;
+    public static DatabaseRelation parse(DatabaseSchemaLexer lexer) {
+	DatabaseRelation relation = new DatabaseRelation();
+
+	relation.name = expectIdentifier();
+
+	while (true) {
+	    token = lexer.getToken();
+	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
+		break;
+	    } else if (token.type == lexer.FIELDS) {
+		expectChar("(");
+		while (true) {
+		    token = lexer.getToken();
+		    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(")")==0) {
+			break;
+		    } else if (token.type == lexer.IDENTIFIER_LITERAL) {
+		    } else {
+			// error
+		    }
+		}
+	    } else if (token.type == lexer.PRIMARY) {
+	    } else if (token.type == lexer.ALTERNATE) {
+	    } else if (token.type == lexer.FOREIGN) {
+	    } else if (token.type == lexer.DEFINES) {
+		expectIdentifier();
+	    } else if (token.type == lexer.SEPARATOR) {
+		expectChar("(");
+		expectString();
+		expectChar(")");
+	    } else if (token.type == lexer.DESCRIPTION) {
+		expectChar(lexer,"(");
+		schema.description = expectString(lexer);
+		expectChar(lexer,")");
+	    } else if (token.type == lexer.DETAIL) {
+		schema.detail = expectString(lexer);
+	    } else {
+		throw SyntaxException("");
+	    }
+	     
+	}  
+	
     }
 
     /** Produce a textual description of this DatabaseRelation.  This will most
      *  likely only be called by DatabaseSchema.unparse(). */
 
     public String unparse() {
-      return null;
+	String result = "";
+	result += "Relation " + name + "\n";
+	result += "   Fields (" + ") \n";
+	result += "   Primary (" + ") \n";
+	result += "   Alternate (" + ") \n";
+	result += "   Foreign (" + ") \n";
+	result += "   Defines " + "\n";
+	result += "   Separator (" + ")\n";
+	result += "   Description ( \"" + description + "\" )\n";
+	result += "   Detail {" + detail + "}\n";
+        result += "   ;";
+	return result;
     }
 
     /** Verify whether this DatabaseRelation is self-consistent with respect to
