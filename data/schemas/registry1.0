@@ -313,6 +313,17 @@ Attribute nwrites
 	}
 	;
 
+Attribute o2omachine
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of machine on which orb2orb is running" )
+	Detail {
+		This is the IP address on which the orb2orb or similar 
+		executable is running
+	}
+	;
+
 Attribute opens
 	Integer (10)
 	Format ( "%10d" )
@@ -546,6 +557,17 @@ Attribute started
 	}
 	;
 
+Attribute statmachine
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of machine from which pforbstat was run" )
+	Detail {
+		This is the IP address from which the pforbstat snapshot 
+		was taken
+	}
+	;
+
 Attribute thread
 	Integer (10)
 	Format ( "%10d" )
@@ -642,7 +664,7 @@ Relation clients
 	;
 
 Relation connections
-	Fields ( fromaddress fromport toaddress toport latency_sec when lddate )
+	Fields ( fromaddress fromport o2omachine toaddress toport latency_sec reject select statmachine when lddate )
 	Primary ( fromaddress fromport toaddress toport )
 	Description ( "data-flow connections between orbs" )
 	Detail {
