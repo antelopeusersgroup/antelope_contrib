@@ -31,6 +31,7 @@ OBJS=	  bisquare.o \
     input_routines.o \
     locate.o \
     matrix.o \
+    save_predarr.o \
     svdcmp.o \
     table_interpolate_functions.o \
     thomson.o \

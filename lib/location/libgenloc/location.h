@@ -325,6 +325,7 @@ Robust_statistics form_equations(int, Hypocenter, Tbl *, Tbl *, Location_options
 void predicted_errors(Hypocenter, Tbl *, Tbl *, Location_options,
 	float **, float *);
 int save_emodel(int , float *, Dbptr );
+int save_predarr(Dbptr, Tbl *, Tbl *, Hypocenter, int, char *);
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
 Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);
