@@ -238,7 +238,7 @@ sub addgrid {
 	my( @dbtemp ) = splice( @_, 0, 4 );
 	my( $wc, $ec, $sc, $nc ) = splice( @_, 0, 4 );
 	my( %Options ) = @_;
-	my( $V, $cmd );
+	my( $V, @cmd );
 
 	if( $Options{verbose} ) {
 		$V = "-V";
@@ -260,19 +260,19 @@ sub addgrid {
 		my( $reg ) = dbgetv( @dbsource, "registration" );
 		my( $F ) = $reg eq "pixel" ? "-F" : "";
 
-		$cmd = "grdsample $F -I$Options{spacing}";
+		@cmd = ( "grdsample", "$F", "-I$Options{spacing}" );
 
 	} else {
 
-		$cmd = "grdcut";
+		@cmd = ( "grdcut" );
 	}
 
-	$cmd .= " $V -G$result $source -R$wc/$ec/$sc/$nc";
+	push( @cmd, "$V", "-G$result", "$source", "-R$wc/$ec/$sc/$nc" );
 
 	if( $Options{verbose} ) {
-		print STDERR "Executing: $cmd\n";
+		print STDERR "Executing: " . join( " ", @cmd ) . "\n";
 	}
-	system( "$cmd" );
+	system( @cmd );
 
 	if( $shift != 0 ) {
 
