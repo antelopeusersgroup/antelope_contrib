@@ -5,6 +5,7 @@ DATA=	iceworm1.3 \
 	notify1.2 \
 	contacts1.0 \
 	dbrecenteqs1.1 \
+	dbrecenteqs1.2 \
 	statrans1.0 \
 	statrans1.1 \
 	models0.4 \
