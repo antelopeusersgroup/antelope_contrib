@@ -76,20 +76,25 @@ struct clockerr {
 		double low;
 		double high;
 		double error;
-		double seedqual;
+		int seedqual;
 };
-struct clockerr clkerr_ranges[8] = {	0.0, 4000.0, 0.0018, 100.0,
-	4000.0, 7200.0, 0.0036, 80.0,
-	7200.0, 14400.0, 0.0072, 60.0,
-	14400.0, 28800.0, 0.0144, 40.0,
-	28800.0, 86400.0, 0.0432, 20.0,
-	86400.0, 604800.0, 0.3024, 10.0,
-	604800.0, 2592000.0, 1.296,5.0,
-	2592000.0, 7776000.0, 3.888,5.0};
+struct clockerr clkerr_ranges[8] = {	0.0, 4000.0, 0.0018, 100,
+	4000.0, 7200.0, 0.0036, 80,
+	7200.0, 14400.0, 0.0072, 60,
+	14400.0, 28800.0, 0.0144, 40,
+	28800.0, 86400.0, 0.0432, 20,
+	86400.0, 604800.0, 0.3024, 10,
+	604800.0, 2592000.0, 1.296,5,
+	2592000.0, 7776000.0, 3.888,5};
 
 #define NCLKFIELDS 8
 double error_nolock=20.0; /* value used for over largest time above
 				Assumes about 1 year maximum PASSCAL exp*/
+/* This fudge factor seems necessary to stop dbaddv errors from
+overlapping time windows.  This quantity is always subtracted from
+endtime values computed internally here so that endtime of one time
+segment does not overlap start time of the next segment.  */
+#define ENDTIME_DT 0.1
 
 /*------------functions used by main ----------------*/
 
@@ -114,31 +119,33 @@ char *lookup_refteksta(Dbptr db, int das, double time)
 	static Hook *hook=0;
 	int nmatches;
 	char sta[10],*retsta;
-	char ssident[15];
+	/* reftek serial numbers are < 9999 */
+	char ssident[5];
 
 	db = dblookup(db,0,"stage",0,0);
-	sprintf(ssident,"%d",das);
+	sprintf(ssident,"%.4d",das);
 	dbm = dblookup(db,0,"stage",0,0);
 	dbm.record = dbSCRATCH;
 	dbputv(dbm,0,"ssident",ssident,"time",time,0);
-	kmatch=strtbl("serial","time:endtime",0);
+	kmatch=strtbl("ssident","time::endtime",0);
 	dbmatches(dbm,db,&kmatch,&kmatch,&hook,&matches);
 	nmatches = maxtbl(matches);
-	if(nmatches>1) 
-		elog_complain(0,"lookup_refsta:  database inconsistency in stage table.\n  %d rows of stage match serial=%d at time %s\n",
-			nmatches,das,strtime(time));
-	else if(nmatches<=0) 
+	if(nmatches<=0) 
 	{
-		*retsta = NULL;
+		retsta = NULL;
+		elog_notify(0,"station lookup for serial number %d in stage table failed\n",
+			das);
 	}
 	else
 	{
+		if(nmatches>3) elog_notify(0,"Warning:  multiple matches in stage table for time %s\nFound %d entries instead of 3 expected for das %d\nUsed first entry found\n",
+			strtime(time),nmatches,das);
 		db.record = (int)gettbl(matches,0);
 		dbgetv(db,0,"sta",sta,0);
 		retsta = strdup(sta);			
 	}
-	freetbl(matches,free);
-	freetbl(kmatch,free);
+	freetbl(matches,0);
+	freetbl(kmatch,0);
 	return(retsta);
 }
 /* Finds the epoch time of the end date of station.  Returns a negative
@@ -174,9 +181,9 @@ double get_station_closing_time(Dbptr db, char *sta)
 		time = -1.0;
 	else
 		time = epoch(offdate);
-	freetbl(matches,free);
-	freetbl(kmatch,free);
-	freetbl(sortkeys,free);
+	freetbl(matches,0);
+	freetbl(kmatch,0);
+	freetbl(sortkeys,0);
 	return(time);
 }
 /* This function could probably have been avoided with a different logic
@@ -207,6 +214,11 @@ void closeout_das(int das, double dbtime, double lastlock, double etime,
 	if(rampout)
 	{
 		sta = lookup_refteksta(db,das,lastlock);
+		if(sta==NULL)
+		{
+			elog_complain(0,"rampout failed:  sta lookup failed\n");
+			return;
+		}
 		station_close_time = get_station_closing_time(db,sta);
 		/* A negative return means no enddate was set.  This allows
 		a full rampout */
@@ -222,33 +234,23 @@ void closeout_das(int das, double dbtime, double lastlock, double etime,
 			tend = lastlock + clkerr_ranges[i].high;
 		else
 			tend = station_close_time;
-		if(dbaddv(db,0,"sta",sta,
+		dbaddv(db,0,"sta",sta,
 			"time",dbtime,
-			"endtime",tend,
-			"clkerr",clkerr_ranges[i].high,
+			"endtime",tend-ENDTIME_DT,
+			"clkerr",clkerr_ranges[i].error,
 			"seedtqual",clkerr_ranges[i].seedqual,
-					0)<0);
-		{
-			elog_complain(0,"dbaddv error on timing table for station %s for time interval:\n%s to %s\n",
-				sta,strtime(dbtime),strtime(tend));
-		}
+					0);
 		dbtime=tend;
 		if(tend>station_close_time) break;
 	}
 	if(i>=NCLKFIELDS)
 	{
-		if(dbaddv(db,0,"sta",sta,
+		dbaddv(db,0,"sta",sta,
 			"time",dbtime,
-			"endtime",station_close_time,
+			"endtime",station_close_time-ENDTIME_DT,
 			"clkerr",error_nolock,
-			"seedtqual",0.0,
-				0)<0);
-		{
-			elog_complain(0,"dbaddv error on timing table for station %s for time interval:\n%s to %s\n",
-				sta,
-				strtime(dbtime),
-				strtime(station_close_time));
-		}
+			"seedtqual",0,
+				0);
 	}
 	free(sta);
 	return;
@@ -321,6 +323,10 @@ void main(int argc, char **argv)
 				time instead of the current time to avoid
 				closeout errors at the end of experiment*/
 				sta = lookup_refteksta(db,das_sn,lastlock);
+				if(sta==NULL)
+					elog_die(0,"No entry for serial number %d is in the stage table\nRepair database and try again\n",
+						das_sn);
+
 				for(i=0;i<NCLKFIELDS;++i)
 				{
 					if((time-lastlock)
@@ -329,19 +335,12 @@ void main(int argc, char **argv)
 						     + clkerr_ranges[i].high;
 					else
 						tend = time;
-					if(dbaddv(dbt,0,"sta",sta,
+					dbaddv(dbt,0,"sta",sta,
 						"time",lastdbentry,
-						"endtime",tend,
-						"clkerr",clkerr_ranges[i].high,
+						"endtime",tend-ENDTIME_DT,
+						"clkerr",clkerr_ranges[i].error,
 						"seedtqual",
-						  clkerr_ranges[i].seedqual,
-							0)<0);
-					{
-						elog_complain(0,"dbaddv error on timing table for station %s for time interval:\n%s to %s\n",
-							sta,
-							strtime(lastdbentry),
-							strtime(tend));
-					}
+						clkerr_ranges[i].seedqual,0);
 					lastdbentry=tend;
 					if((time-lastlock)
 						<=clkerr_ranges[i].high)
@@ -352,18 +351,11 @@ void main(int argc, char **argv)
 				}
 				if(i>=NCLKFIELDS)
 				{
-					if(dbaddv(dbt,0,"sta",sta,
+					dbaddv(dbt,0,"sta",sta,
 						"time",lastdbentry,
-						"endtime",time,
+						"endtime",time-ENDTIME_DT,
 						"clkerr",error_nolock,
-						"seedtqual",0.0,
-							0)<0);
-					{
-						elog_complain(0,"dbaddv error on timing table for station %s for time interval:\n%s to %s\n",
-							sta,
-							strtime(lastdbentry),
-							strtime(time));
-					}
+						"seedtqual",0,0);
 					lastdbentry = time;
 					lastlock=time;
 				}
