@@ -10,11 +10,11 @@ using namespace std;
 extern int GCLverbose=0;
 void usage(char *prog)
 {
-	elog_die(0,"Usage:  %s db [-pf pffile]\n",prog);
+	elog_die(0,"Usage:  %s db [-v -pf pffile]\n",prog);
 }
 int main(int argc, char **argv)
 {
-	char *version="2.0 (January 2003)";
+	char *version="2.1 (Feb. 2005)";
 	char *pfin=NULL;
 	Pf *pf;
 	Dbptr db;
@@ -51,13 +51,13 @@ int main(int argc, char **argv)
 
         for(i=2;i<argc;++i)
         {
-              if(!strcmp(argv[i],"-pf"))
+                if(!strcmp(argv[i],"-pf"))
                 {
                         ++i;
-                        if(i>=argc) usage(argv[0]);
+                        if(i>argc) usage(argv[0]);
                         pfin = argv[i];
                 }
-		if(!strcmp(argv[i],"-v"))
+		else if(!strcmp(argv[i],"-v"))
 			GCLverbose=1;
                 else
                         usage(argv[0]);
