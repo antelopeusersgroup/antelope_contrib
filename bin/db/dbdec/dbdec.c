@@ -1289,11 +1289,14 @@ char ***dec_stages;
 }
 
 usage()
-
 {
-	fprintf (stderr, "usage: dbdec [-sift sift_expr] [-c calper] [-wfdir wfdir]\n");
-	fprintf (stderr, "             [-f format] dbin dbout chan_maps dec_stage1\n");
-	fprintf (stderr, "             [dec_stage2 ...]\n");
+        cbanner("$Revision$", 
+		"dbdec [-sift sift_expr] [-c calper] [-wfdir wfdir]\n"
+		"             [-f format] dbin dbout chan_maps dec_stage1\n"
+		"             [dec_stage2 ...]\n",
+		"Gary Pavlis", 
+		"Indiana University", 
+		"pavlis@geology.indiana.edu" ) ; 
 }
 
 /* $Id$ */
