@@ -1,0 +1,109 @@
+.\" %%W%% %%G%%
+.TH DBTIMERF 1 "1/19/2001"
+.SH NAME
+dbtimerf \- calculates receiver functions via time-domain deconvolution (css3.0)
+.SH SYNOPSIS
+.nf
+\fBdbtimerf \fIdbin dbout tshift tout apm eps subset_z subset_r [kres]\fR
+
+.fi
+.SH DESCRIPTION
+\fBDbtimerf\fR is a database-communicative version of a time-domain deconvolution
+routine for calculating receiver functions.  The input consists of a database 
+\fIdbin\fR
+with pre-processed Z and R seismograms, along with a few inversion parameters.  The
+inversion is set up so that single or multiple pairs of Z-R seismograms may be 
+combined to solve for the best-fitting transfer function between them (the receiver
+function).   
+.LP
+Some pre-processing program must be run first, e.g. \fBtrrotd\fR, to rotate components,
+remove level offsets/drifts, resample, or whatever else.  
+The Z and R components are selected by passing a SQL-like logic string to dbsubset,
+for example 'chan=="BHZ"' 
+to select the Z components.  It is up to the user to make
+sure that these strings result in matched, ordered lists of Z and R components (the
+program will quit if it looks like there is a problem).  
+.LP
+Because array storage is done without much thought, the total number of points for all
+data read in is limited to
+2048
+samples.  Output is limited to 512 samples; more will take inordinately long as the inversion
+speed varies as NOUT**3.  
+.LP
+The original deconvolution routines were designed for the source-side 
+Empirical Green's function problem [Abers et al., 1995, Geophys. J. Int.] based on
+the approach of Sipkin and Lerner-Lam [1992, BSSA].  Sheehan et al. [1995, J Geophys.
+Res.] document the approach for the receiver function problem.  Basically, if R and Z are
+vectors representing the radial and transverse-component records, and F is the receiver
+function, the goal is to solve
+.IP	
+	R \= AF
+.LP
+for F, where A is a matrix convolutional operator based on Z.  This is solved by
+.IP	
+	F \= [At(Cd\-1)A + (Cm\-1)]\-1 At(Cd\-1)R
+.LP
+where Cd is an a priori data covariance matrix, Cm is an a priori covariance matrix, and 
+the operators \-1 and t represent inversion and transposition, respectively. 
+The a priori data matrix Cd is 
+assumed to be diagonal with entries (eps*RMS(R))^2; i.e. the RMS of the R-component is removed.
+.SH COMMAND LINE ARGUMENTS
+.IP \fIdbin\fR
+Input database.  Must contain wfdisc table, with Z and R seismograms.
+.IP \fIdbout\fR
+Output database.  Program will write receiver function, error estimate, and optionally
+several resolution measures (see below).
+.IP \fItshift\fR 
+Shift of output relative to zero lag.  Positive shifts allow the receiver function to be
+seen for negative lags; perhaps nonphysical but useful.
+
+.IP \fItout\fR
+Time length for output (should be <Ndata).   Generally the resulting # points should be <512.
+
+
+.IP \fIapm\fR
+Scaling factor for a prior uncertainty in Green's function; acts to keep inversion stable.
+The A priori covariance matrix is assumed diagonal, with terms ap1*ap1/NOUT. 
+Probably should be of order 1 (see references above for scaling discussions)
+
+.IP \fIeps\fR 
+Scaling factor for a priori data(+ theory) uncertainty.  Typically of order 1.
+
+.IP \fIsubset_z\fR
+Logic string sent to dbselect that select out the desired Z component records.
+.IP \fIsubset_r\fR
+Logic string sent to dbselect that select out the desired R component records.
+
+.IP \fI[kres]\fR
+An optional flag for dumping resolution measures; = 1 to output resolution + spread. These
+include 3 wfdisc entries, for (1) diagonals of resolution matrix, (2) a sinx/x-type 
+resolution spread measure, and (3) another Backus-Gilbert-type resolution spread measure.
+Also, an ASCII file is written with the full resolution matrix, called timedec.resmat in 
+whatever directory is current.
+
+.SH EXAMPLE
+dbtimerf tempdb junkoutdb 5. 50. 1. 1. 'chan=="BHZ"' 'chan=="BHR"' 0
+.LP
+	Will get data from tempdb, output to junkoutdb, output results
+so that zero-lag is shifted 5 s, output a 50 s. window, sets apm=eps=1.
+Input data are all BHZ and BHR channels in tempdb for Z and R components.
+The final 0 means no resolution estimates will be output.
+.SH LIBRARY
+ -ltr -ldb -lcoords -ltttaup -lresponse -lstock -lm 
+.SH "SEE ALSO"
+.nf
+dbexpressions, trrotd, dbrfcn
+.fi
+.SH "BUGS AND CAVEATS"
+There is no good way yet for ensuring that R and Z seismograms match. Problems
+can be expected if the start times are different, the sensors/gains are different, the
+stations are different, and so on.  Ideally this program should have an event-based or
+arrival-based data selection routine, and should do all of the rotation, etc. internally.
+.LP
+THE CODE CAN BE VERY SLOW!! With more than ~400 output points on current systems (Sparc5/20)
+the runs exceed my patience limit of 1-2 minutes.  Because an N^3 problem is being solved
+rather than the Nlog(N) problem of frequency-domain deconvolutions, this limit is hard to
+change.
+
+.SH AUTHOR
+Geoff Abers, Boston University; Anne Sheehan made some modifications to an earlier version.

@@ -1,0 +1,4 @@
+#!/bin/sh -f
+#trrotd geytel tempdb 62 ORGH trrotd
+rm -r wfrfcn junkdb.*
+dbtimerf tempdb junkdb 10. 50. 1. 1. 'chan=="BHZ"' 'chan=="BHR"' 0
