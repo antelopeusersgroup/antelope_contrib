@@ -106,6 +106,7 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 
 	ifstream input;
 
+	/*
 	try{
 		input.open(fname.c_str(), ios::in);
 	} catch (ios::failure& var)
@@ -115,7 +116,11 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 		throw(Velocity_Model_1d_ioerror("Cannot open file "+fname,
                         "Velocity_Model_1d constructor failed"));
 	}
-
+	*/
+	input.open(fname.c_str(), ios::in);
+	if(input.fail())
+		throw(Velocity_Model_1d_ioerror("Cannot open file "+fname,
+			"Velocity_Model_1d constructor failed"));	
 	if(form=="rbh" || form=="plain")
 	{
 		char line[255];

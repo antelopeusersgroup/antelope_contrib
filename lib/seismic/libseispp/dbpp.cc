@@ -103,14 +103,19 @@ Datascope_Handle::Datascope_Handle(string dbname,
 	Tbl *process_list;
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
 	if(process_list==NULL)
+	{
+		freetbl(process_list,0);
 		throw seispp_error("Tag name = "+tag+" not in parameter file");
+	}
 	try {
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
+		freetbl(process_list,0);
 		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
 	}
 	db = dbprocess(db,process_list,0);
+	freetbl(process_list,0);
 	if(db.record == dbINVALID)
 		throw seispp_dberror("dbprocess failed",db,complain);
 	pffree(pf);

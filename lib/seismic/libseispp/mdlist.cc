@@ -38,6 +38,7 @@ Metadata_list pfget_mdlist(Pf *pf,string tag)
 
 		mdl.push_back(mdt);
 	}
+	freetbl(t,0);
 	return(mdl);
 }
 } // Termination of namespace SEISPP definitions
