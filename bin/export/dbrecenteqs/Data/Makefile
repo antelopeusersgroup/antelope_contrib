@@ -9,6 +9,7 @@ DATA= index_default.xsl \
       world_cities.places \
       example_region_phrases \
       example_region_phrases.regions \
+      igpp_logo.gif \
       your_logo.gif 
 
 include $(ANTELOPEMAKE)
