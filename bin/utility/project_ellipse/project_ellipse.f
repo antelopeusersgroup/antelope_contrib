@@ -48,7 +48,7 @@ c 124  format(3f7.3)
       sdepth = axz
 
       write(*, 126) smajax, sminax, sdepth, strike
- 126  format(f9.4 x f9.4 x f9.4 x f8.3)
+ 126  format(f9.4, 1x, f9.4, 1x, f9.4, 1x, f8.3)
 
       stop
       end
