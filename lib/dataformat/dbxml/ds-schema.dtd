@@ -1,0 +1,39 @@
+<!-- XML schema to represent the representation of Datascope schemas      !-->
+<!-- 2004-07-23 Tobin Fricke (tobin@splorg.org), University of California !-->
+
+<!ELEMENT schema (schema, include, attribute, relation, detail?)>
+
+<!ATTLIST schema name CDATA #REQUIRED
+                 description CDATA #IMPLIED
+		 timedate CDATA #IMPLIED>
+
+<!-- a schema can include another schema either by referencing it with an
+     'include' element (paralleling the datascope schema definition
+     language), or by actually including another 'schema' element. !-->
+
+<!ATTLIST include name CDATA #REQUIRED>
+
+<!ELEMENT attribute (detail?)>
+
+<!ATTLIST attribute name CDATA #REQUIRED
+                    type (Real|Integer|String|Time|Date|YearDay) #REQUIRED
+	            size CDATA #REQUIRED
+	            format CDATA #IMPLIED
+	            null CDATA #IMPLIED
+	            range CDATA #IMPLIED
+	            units CDATA #IMPLIED
+                    description CDATA #IMPLIED>
+
+<!ELEMENT relation (detail?)>
+
+<!ATTLIST relation name CDATA #REQUIRED
+                   fields CDATA #REQUIRED
+		   primary CDATA #IMPLIED
+		   alternate CDATA #IMPLIED
+		   foreign CDATA #IMPLIED
+		   defines CDATA #IMPLIED
+		   fieldseparator CDATA #IMPLIED
+		   recordseparator CDATA #IMPLIED
+		   description CDATA #IMPLIED>
+
+<!ELEMENT detail (#CDATA)>
