@@ -195,7 +195,7 @@ sub latlon_to_edpxy {
 	return( $x, $y );
 }
 
-sub set_rectangle {
+sub set_rectangles {
 	my( %Mapspec ) = %{shift( @_ )};
 
 	( $Mapspec{"lon_ll"}, $Mapspec{"lat_ll"} ) = edp_lonlat( 
@@ -226,24 +226,43 @@ sub set_rectangle {
 					$Mapspec{"right_dellon"},
 					$Mapspec{"down_dellat"} );
 
+	my( $center_high_lon, $center_high_lat ) = edp_lonlat(
+					\%Mapspec,
+					$Mapspec{"lonc"},
+					$Mapspec{"latc"},
+					0,
+					$Mapspec{"up_dellat"} );
+
+	my( $center_low_lon, $center_low_lat ) = edp_lonlat(
+					\%Mapspec,
+					$Mapspec{"lonc"},
+					$Mapspec{"latc"},
+					0,
+					$Mapspec{"down_dellat"} );
+
+	my( $leftmost_lon ) = min( $Mapspec{"lon_ll"}, $Mapspec{"lon_ul"} );
+
+	my( $lowest_lat ) = min( $Mapspec{"lat_ll"}, $Mapspec{"lat_lr"} );
+	my( $lowest_lat ) = min( $center_low_lat, $lowest_lat );
+
+	my( $rightmost_lon ) = max( $Mapspec{"lon_ur"}, $Mapspec{"lon_lr"} );
+
+	my( $highest_lat ) = max( $Mapspec{"lat_ur"}, $Mapspec{"lat_ul"} );
+	my( $highest_lat ) = max( $center_high_lat, $highest_lat );
+
 	$Mapspec{"Rectangle"} = sprintf( "-R%.4f/%.4f/%.4f/%.4fr", 
 					$Mapspec{"lon_ll"},
 					$Mapspec{"lat_ll"},
 					$Mapspec{"lon_ur"},
 					$Mapspec{"lat_ur"} );
 
-	my( $incl_lon_ll ) = min( $Mapspec{"lon_ll"}, $Mapspec{"lon_ul"} );
-	my( $incl_lat_ll ) = min( $Mapspec{"lat_ll"}, $Mapspec{"lat_lr"} );
-	my( $incl_lon_ur ) = max( $Mapspec{"lon_ur"}, $Mapspec{"lon_lr"} );
-	my( $incl_lat_ur ) = max( $Mapspec{"lat_ur"}, $Mapspec{"lat_ul"} );
-
 	# The small additions and subtractions are for 
 	# sign-independent rounding (i.e., this is not hard-coded cheating...):
-	$Mapspec{"InclusiveRectangle"} = sprintf( "-R%d/%d/%d/%dr", 
-					int( $incl_lon_ll - 1 ),
-					int( $incl_lat_ll - 1 ),
-					int( $incl_lon_ur + 1.5 ),
-					int( $incl_lat_ur + 1.5 ) );
+	$Mapspec{"InclusiveRectangle"} = sprintf( "-R%d/%d/%d/%d", 
+					int( $leftmost_lon - 1 ),
+					int( $rightmost_lon + 1.5 ),
+					int( $lowest_lat - 1 ),
+					int( $highest_lat + 1.5 ) );
 
 	return \%Mapspec;
 }
@@ -1025,7 +1044,7 @@ sub setup_Index_Mapspec {
 				"$Mapspec{filebase}.$Mapspec{format}" );
 
 	%Mapspec = %{set_projection( \%Mapspec )};
-	%Mapspec = %{set_rectangle( \%Mapspec )};
+	%Mapspec = %{set_rectangles( \%Mapspec )};
 
 	return \%Mapspec;
 }

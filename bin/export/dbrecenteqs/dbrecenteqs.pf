@@ -97,13 +97,13 @@ other_region_links &Arr{
 pixfile_conversion_method imagick  # pnm, imagick, or alchemy
 
 index_map_config &Arr{
-	contour_mode none  # none, premade, grdcut or grdimage
+	contour_mode grdcut  # none, premade, grdcut or grdimage
 	premade_contour_ps /home/kent/work/recenteqs/mkmap/premade_grdimage
 	#grdfile /home/kent/misc/webquakes_sample/alaska_final.grd
 	#gradfile /home/kent/misc/webquakes_sample/alaska_final.grad
-	grdfile /space/GTOPO30/Grd/North_Hemi.grd
-	longitude_branchcut_high 180
-	hypocenter_dbname /Seis/catalogs/aeic/Total/Total
+	grdfile /space/GTOPO30/Grd/North_Hemi_unwrapped.grd
+	longitude_branchcut_high 360
+	hypocenter_dbname /space/aeic/Total
 	map_color_palette_file alaska.cpt
 	depth_color_palette_file depthmag2.cpt
 	linefiles &Tbl{

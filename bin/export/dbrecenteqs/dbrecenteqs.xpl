@@ -488,7 +488,7 @@ sub create_focusmap {
 			 "$Focus_Mapspec{filebase}.$Focus_Mapspec{format}" );
 	
 	%Focus_Mapspec = %{set_projection( \%Focus_Mapspec )};
-	%Focus_Mapspec = %{set_rectangle( \%Focus_Mapspec )};
+	%Focus_Mapspec = %{set_rectangles( \%Focus_Mapspec )};
 
 	%Focus_Mapspec = %{create_map( \%Focus_Mapspec )};
 
