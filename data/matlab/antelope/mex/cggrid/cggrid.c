@@ -15,6 +15,9 @@ Usage: CGG = CGGRID ( FILE )\n       CGG = CGGRID ( X, Y, Z )\n"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	char	*filename;
 	FILE	*fp;
 	CGGrid	*cgg;
@@ -85,4 +88,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	} 
 
 	ATM_cggrid_register( cgg );
+#endif
 }

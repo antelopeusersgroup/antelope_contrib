@@ -1,5 +1,15 @@
 display('Running dbexample_cggrid2db')
 
+% Start with a quick test to see if cggrid support is enabled:
+try
+	cggrid('/dev/null')
+catch
+	if( strcmp( lasterr, 'No cggrid support in your version of Antelope' ) )
+		display('no cggrid support')
+		return
+	end
+end
+
 echo on
 
 % Construct a contrived grid:

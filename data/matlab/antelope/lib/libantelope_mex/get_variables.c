@@ -169,6 +169,7 @@ get_response( const mxArray *in, Response **response )
 	return 1;
 }
 
+#ifdef HAVE_CGEOM
 int
 get_cggrid( const mxArray *in, CGGrid **cgg )
 {
@@ -182,4 +183,4 @@ get_cggrid( const mxArray *in, CGGrid **cgg )
 
 	return 1;
 }
-
+#endif

@@ -14,6 +14,9 @@ Usage: NY = CGGRID_NY ( CGGRID )\n"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	CGGrid	*cgg;
 
 	if( nlhs > 1 ) 
@@ -39,4 +42,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	{
 		mexErrMsgTxt( "Failed to create return value");
 	} 
+#endif
 }

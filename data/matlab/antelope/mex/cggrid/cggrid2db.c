@@ -13,6 +13,9 @@ Usage: CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, 
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	CGGrid	*cgg;
 	char	*recipe_name;
 	char	*grid_name;
@@ -100,4 +103,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mex_clear_register( 1 );
 		mexErrMsgTxt( "Failed to save cggrid to database");
 	}
+#endif
 }

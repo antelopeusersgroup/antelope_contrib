@@ -15,6 +15,9 @@ Usage: CGGRID_WRITE ( CGG, FORMAT, FILE )\n"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	char	*filename;
 	char	*format;
 	FILE	*fp;
@@ -73,4 +76,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		mxFree( format );
 		mxFree( filename );
 	}
+#endif
 }

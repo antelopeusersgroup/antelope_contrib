@@ -14,6 +14,9 @@ Usage: [TRIPLETS, NX, NY] = CGGRID_GET ( CGGRID )\n"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	FILE	*fp;
 	CGGrid	*cgg;
 
@@ -49,4 +52,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	{
 		plhs[2] = CreateDouble( (double) cgg->ny );
 	}
+#endif
 }

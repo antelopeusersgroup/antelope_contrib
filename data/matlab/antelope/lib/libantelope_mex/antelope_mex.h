@@ -16,7 +16,9 @@
 #include "coords.h"
 #include "elog.h"
 #include "response.h"
+#ifdef HAVE_CGEOM
 #include "cgeom.h"
+#endif
 #include "pf.h"
 
 #if __STDC__
@@ -46,6 +48,7 @@ extern Pf *mxArray2Pf PL_(( mxArray * ));
 extern mxArray *Pf2mxArray PL_(( Pf *, char * ));
 extern Response *mxArray2Response PL_(( mxArray * ));
 extern mxArray *Response2mxArray PL_(( Response * ));
+#ifdef HAVE_CGEOM
 extern int ATM_CGGrid_register PL_(( CGGrid * ));
 extern int ATM_CGGrid_unregister PL_(( CGGrid * ));
 extern int ATM_CGGrid_is_registered PL_(( CGGrid * ));
@@ -54,6 +57,7 @@ extern CGGrid *plaid_mxArrays2CGGrid PL_(( mxArray *, mxArray *, mxArray * ));
 extern mxArray *CGGrid2mxArray PL_(( CGGrid * ));
 extern mxArray *CGGrid2linear_mxArray PL_(( CGGrid * ));
 extern int CGGrid2plaid_mxArrays PL_(( CGGrid *, mxArray **, mxArray **, mxArray ** ));
+#endif
 extern char *matlabPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt_string PL_(( char * ));

@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include "antelope_mex.h"
 
+#ifdef HAVE_CGEOM
+
 static int cggrid_struct_nrows = 1;
 static int cggrid_struct_ncols = 1;
 static int cggrid_struct_nfields = 1;
@@ -485,3 +487,4 @@ CGGrid *plaid_mxArrays2CGGrid( mxArray *x, mxArray *y, mxArray *z )
 
 	return cgg;
 }
+#endif

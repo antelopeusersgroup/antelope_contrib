@@ -14,6 +14,9 @@ Usage: [X, Y, Z] = CGGRID_GETMESH ( CGGRID )\n"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
+#ifndef HAVE_CGEOM
+	mexErrMsgTxt( "No cggrid support in your version of Antelope" );
+#else
 	FILE	*fp;
 	CGGrid	*cgg;
 	int	rc;
@@ -41,4 +44,5 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	{
 		mexErrMsgTxt( "Failed to create return values");
 	} 
+#endif
 }

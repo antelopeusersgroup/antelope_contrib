@@ -1,6 +1,14 @@
 MEX=mex
 
-ldlibs= -lantelope_mex -lmex_orb -lcgeom $(ORBLIBS)
+CGEOM_CFLAGS:sh= if [ -r $ANTELOPE/include/cgeom.h ] ; \
+		 then echo -DHAVE_CGEOM; \
+		 fi
+
+CGEOM_LIBS:sh= if [ -r $ANTELOPE/include/cgeom.h ] ; \
+	       then echo -lcgeom ; \
+	       fi
+
+ldlibs= -lantelope_mex -lmex_orb $(CGEOM_LIBS) $(ORBLIBS)
 
 MEXEXT=mexglx
 MEX_CEXTRA=-Dlinux
@@ -12,7 +20,7 @@ include $(ANTELOPEMAKE)
 DCFLAGS= 
 
 # Suppress -i, which mex compiler doesn't understand 
-CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA)
+CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA) $(CGEOM_CFLAGS)
 
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
 MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
