@@ -33,8 +33,6 @@ int main(int argc, char **argv)
 	int create_3d=0;
 	/* pole to baseline */
 	double pole_lat, pole_lon;
-	/* name assigned to grid */
-	char *gridname;
 	double deltax, deltay,delta;  
 	double z0,z;
 	double x[3],x0[3];
@@ -76,8 +74,8 @@ int main(int argc, char **argv)
 	if(db.record == dbINVALID) die(0,"lookup fails for gclgdisk table\nSchema is probably defined incorrectly\n");
 
 	/* Fetch the main grid parameters from the parameter file */
-	gridname = pfget_string(pf,"gridname");
-	if(strlen(gridname)<=0) 
+	string gridname(pfget_string(pf,"gridname"));
+	if(gridname.empty())
 		die(0,"Null gridname parameter in input parameter file\nYou must assign a name to this grid\n");
 	lat0 = pfget_double(pf,"origin_latitude");
 	lon0 = pfget_double(pf,"origin_longitude");
@@ -115,7 +113,7 @@ int main(int argc, char **argv)
 	//codes are exact parallels due to interface design
 	//
 	GCLgrid g = GCLgrid(n1, n2, gridname,
-			lat0, lon0, r0, azimuth_y,
+			lat0, lon0, r0, azimuth_y, 
 			dx1, dx2, i0, j0);
 	try {
 		g.dbsave(db,dir);
@@ -126,7 +124,7 @@ int main(int argc, char **argv)
 	};
 	if(create_3d) {
 	    GCLgrid3d g3d = GCLgrid3d(n1, n2, n3, gridname,
-			lat0, lon0, r0, azimuth_y,
+			lat0, lon0,r0, azimuth_y, 
 			dx1, dx2, dx3, i0, j0);
 	    try {
 		g3d.dbsave(db,dir);
