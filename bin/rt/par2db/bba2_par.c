@@ -8,6 +8,7 @@ int BNpar = MAXNUMPAR_BBA2;
 Arr *BParam = NULL;
 extern int DINTV;
 extern FILE *F1;
+extern int Log;
 
 int bba2_par( packet, pkttime, srcname,  Pkt )
 char *packet;
@@ -76,14 +77,14 @@ struct Packet **Pkt;
          achan->time = pkttime; 
          if( !strncmp( FILE_NAME_BBA2[ch], "BUFDEL", 6 ) ||
              !strncmp( FILE_NAME_BBA2[ch], "RTXNUM", 6 ) ||
-             !strncmp( FILE_NAME_BBA2[ch], "SRATE", 5 ) )  {
+             !strncmp( FILE_NAME_BBA2[ch], "LLOCK", 5 ) )  {
              off = PAR_OFF_BBA2[ch]+hdr->prehdr.hdrsiz;
              val = packet[off];
              bparameter[ch] = val; 
-        } else if( !strncmp( FILE_NAME_BBA2[ch], "GAIN", 4 ) )  {
-             off = PAR_OFF_BBA2[ch]+hdr->prehdr.hdrsiz;
-             val = atoi( &packet[off] );
-             bparameter[ch] = val; 
+             if( Log )  {
+                fprintf( stderr, "%d  ", val );
+                fflush(stderr);
+             }
          }  else if( !strncmp( FILE_NAME_BBA2[ch], "TTAG", 4 ) ||
               !strncmp( FILE_NAME_BBA2[ch], "XMTTAG", 6 ) )  {
               off = PAR_OFF_BBA2[ch] + hdr->prehdr.hdrsiz;
