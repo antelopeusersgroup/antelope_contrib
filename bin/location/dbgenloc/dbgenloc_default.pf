@@ -12,7 +12,7 @@ damp_adjust_factor	5.0
 singular_value_cutoff	0.0001
 step_length_scale_factor	0.5
 min_step_length_scale	0.01
-arrival_residual_weight_method	none
+arrival_residual_weight_method	huber
 slowness_residual_weight_method	none
 time_distance_weighting	0
 slowness_distance_weighting	0
