@@ -1,0 +1,57 @@
+.TH REMARK_GUI 1 "7/30/2002" "Antelope Contrib" "User Commands"
+.SH NAME
+remark_gui \- edit remarks in databases
+.SH SYNOPSIS
+.nf
+\fBremark_gui\fP \fB[table|view]\fP
+.fi
+.SH DESCRIPTION
+\fBremark_gui\fP GUI to display|edit comments from database-tables
+.br
+The Program displays existing comments with heading %,
+or %x where x ist the record number in the current view.
+.br
+The following tables in css3.0 have a remark field:
+.br
+.nf
+arrival,assoc, centryd, event, moment, netmag, 
+network, origerr, origin, stamag, stassoc, 
+wfdisc, wfedit, wftape, wftar
+.fi
+.SH OPTIONS
+\fBremark_gui\fP should be run from dbe
+.SH EXAMPLE
+.nf
+Something like the following in the parameter-file for dbe (usually .dbe.pf) activates the program:
+edit	&Arr{
+		arrival Comment remark_gui -
+        assoc   Comment remark_gui -
+        centryd Comment remark_gui -
+        event   Comment remark_gui -
+        moment  Comment remark_gui -
+        netmag  Comment remark_gui -
+        network Comment remark_gui -
+        origerr Comment remark_gui -
+        origin  Comment remark_gui -
+        stamag  Comment remark_gui -
+        stassoc Comment remark_gui -
+        wfdisc  Comment remark_gui -
+        wfedit  Comment remark_gui -
+        wftape  Comment remark_gui -
+        wftar   Comment remark_gui -
+}	
+
+Of course this has to be changed for each schema used, at least for css3.0 and rt1.0 in a "standard" environment.
+.fi
+.SH Bugs AND CAVEATS
+This program cannot remove or modify remarks
+
+When started from joined tables, only remarks from 1st table having filed remark are displayed/modified.
+.SH "SEE ALSO"
+.nf
+dbremark(1), dbe(1), dbmap(1), dberesp(1) 
+.fi
+.SH AUTHOR
+Nikolaus Horn / ZAMG
+.br
+Nikolaus.Horn@zamg.ac.at

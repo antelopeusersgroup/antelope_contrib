@@ -1,0 +1,100 @@
+package require Datascope;
+
+package require Tclx;
+;#package require BLT
+;#lappend auto_path $env(ANTELOPE)/data/tcl/library;#tkerror, works only halfhearted
+
+proc positionWindow { w } {
+    wm geometry $w +300+300
+}
+
+proc usage {} {
+	puts stderr "";
+	puts stderr "Usage: remark_gui database";
+	puts stderr "or better run from dbe. See remark_gui(1)";
+}
+proc save_remark { textwidget } {
+	global db
+
+	set remark [$textwidget get 1.0 end]
+	set lines [split $remark \n]
+	foreach ll $lines {
+		if { ! [string match %* $ll] } {
+			append myremark $ll
+		}
+	}
+	if [info exists myremark] {
+		set nrec [dbquery $db dbRECORD_COUNT]
+		for {set n 0} {$n < $nrec} {incr n} {
+			set db [lreplace $db 3 3 $n]
+			if [ catch { dbadd_remark $db $myremark } result] {
+				tk_messageBox -message "problem adding remark: most probable table is write protected" -icon error -type ok
+				destroy .	
+				exit
+			}
+		}
+	}
+	destroy .
+}
+
+ 
+	eval destroy [winfo child .]
+	wm title . "Edit Remark"
+	wm iconname . "dbe:remark"
+	positionWindow .
+	frame .buttons
+	pack .buttons -side bottom -fill x -pady 2m
+	button .buttons.dismiss -background white -foreground red -text Dismiss -command "destroy ."
+	button .buttons.code -background white -foreground green -text "Save" -command "save_remark .text"
+	pack .buttons.dismiss .buttons.code -side left -expand 1
+
+	text .text -relief sunken -bd 2 -yscrollcommand ".scroll set" -setgrid 1 \
+		-height 30
+	scrollbar .scroll -command ".text yview"
+	pack .scroll -side right -fill y
+	pack .text -expand yes -fill both
+	.text tag add alltext 1.0 end
+	.text configure -background \#ffffe0
+
+	if { $argc != 1 } {
+		usage
+		exit	
+	}
+
+	set dbname [lindex $argv end]
+
+	set db [dbopen_database $dbname "r+"]
+	set is_view [dbquery $db dbTABLE_IS_VIEW]
+#if { $is_view } {
+#		set tables [dbquery $db dbVIEW_TABLES]
+#	}
+	
+#set is_writable [dbquery $db dbTABLE_IS_WRITABLE]
+#doesn't work...
+	set nrecs [dbquery $db dbRECORD_COUNT]
+	if { $nrecs < 1 } {
+		exit
+	}
+	set head "% "
+	if {$nrecs > 1} {
+	set head {%$n }
+	}
+	for {set n 0} {$n < $nrecs} {incr n} { 
+		set db [lreplace $db 3 3 $n]
+		set remark [dbget_remark $db]
+		set remark [string trimright $remark]
+		set lines [split $remark \n]
+		foreach ll $lines {
+				append myremark [subst $head]
+				append myremark $ll
+				append myremark \n
+		}
+	}
+	if {[info exists myremark] } {
+		.text insert end $myremark	
+	}
+
+
+
+
+
