@@ -20,7 +20,7 @@ The following commands and command arguments are supported by \fBdccmd\fP:
 
 .IP "IP new_dc_IP"
 change a DC IP address to a \fInew_dc_IP\fR address.
-For example, to set DC IP address 132.239.4.196:
+For example, to set DC IP address to 132.239.4.196:
 .nf
 
         dccmd IP 132.239.4.196 132.239.4.194
@@ -41,7 +41,7 @@ turn MAIN or AUX Clock ON. Argument \fIclock\fR must be only "main" or
 For example, turn ON AUX Clock:
 .nf
 
-        dccmd CF aux 132.239.4.194
+        dccmd CO aux 132.239.4.194
 
 .fi
 .IP "RF radio_num"
@@ -57,7 +57,7 @@ turn \fIradio_num\fR Master Radio ON.
 For example, turn ON Master Radios 3 ON:
 .nf
 
-        dccmd RF 3 132.239.4.194
+        dccmd RO 3 132.239.4.194
 
 .fi
 .IP "RC dasnum|staname"
@@ -75,7 +75,7 @@ by a das number or by a station name where that das is located.
 For example, reset dases with "6*" ids and das on TRO station.
 .nf
 
-        dccmd RC "6.*|TRO" 132.239.4.194
+        dccmd RS "6.*|TRO" 132.239.4.194
 
 .fi
 .IP "TO dasid|staname"  
@@ -93,7 +93,7 @@ by a das number or by a station name where that das is located.
 For example, turn OFF transmission of dases with 812 and 933 ids.
 .nf
 
-        dccmd TO "812|933" 132.239.4.194
+        dccmd TF "812|933" 132.239.4.194
 
 .fi
 .IP "XX dc_ip_address"
