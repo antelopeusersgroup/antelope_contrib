@@ -50,6 +50,7 @@ print O "<A HREF=\"http://www.lindquistconsulting.com\">";
 print O "Kent Lindquist</A>\n";
 print O "\t";
 print O "<A HREF=\"http://www.lindquistconsulting.com/\">";
+print O "Lindquist Consulting</A>\n";
 print O "\t1997-2002\n";
 print O "</PRE>\n\n";
 print O "<HR><H2><I><A HREF=\"antelope.html\">Antelope Toolbox Index</A></I></H2>\n";
