@@ -1,14 +1,13 @@
-# F72B Quanterra FIR filter parameter file 
-# multi-stop-band used for decimation only. 
+# F72B Quanterra FIR linear phase filter parameter file 
 # 4 decimation factor 
 # type			2 
 # npoles		0 
 # input sample interval	1.0e-03 
-# decimal factor	4 
+# decimation factor	4 
 # normalization factor	1.0 
 # gain factor		1.0 
 theoretical  1  anti_alias   fir    coef_conv 
-1000 4 
+1000 4 35.5
 72 
  1.50487343E-04	0.0 
  3.05924146E-04	0.0 

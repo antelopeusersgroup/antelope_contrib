@@ -1,14 +1,13 @@
-# LP Quanterra FIR filter parameter file 
-# single-stop-band low-pass. 
+# LP Quanterra FIR linear phase filter parameter file 
 # 5 decimation factor 
 # type			2 
 # npoles		0 
 # input sample interval	1.0e-03 
-# decimal factor	5 
+# decimation factor	5 
 # normalization factor	1.0 
 # gain factor		4.0 
 theoretical  1  anti_alias   fir    coef_conv 
-1000 5 
+1000 5 99.5
 200 
  3.23645679E-07	0.0 
  6.27603639E-07	0.0 

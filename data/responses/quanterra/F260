@@ -1,13 +1,13 @@
-# F260 Quanterra FIR filter parameter file 
-# 10 decimation factor  
+# F260 Quanterra FIR linear phase filter parameter file 
+# 10 decimation factor 
 # type			2 
 # npoles		0 
 # input sample interval	1.0e-03 
-# decimal factor	10 
+# decimation factor	10 
 # normalization factor	1.0 
 # gain factor		1.0 
 theoretical  1  anti_alias   fir    coef_conv 
-1000 10 
+1000 10 129.5
 260 
 -2.21394471E-05	0.0 
 -3.84535825E-05	0.0 
