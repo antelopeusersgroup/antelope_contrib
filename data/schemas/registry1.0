@@ -665,7 +665,7 @@ Relation clients
 
 Relation connections
 	Fields ( fromaddress fromport o2omachine toaddress toport latency_sec reject select statmachine when lddate )
-	Primary ( fromaddress fromport toaddress toport )
+	Primary ( fromaddress fromport toaddress toport o2omachine statmachine )
 	Description ( "data-flow connections between orbs" )
 	Detail {
 		This table describes data-flow connections between orbs, 
