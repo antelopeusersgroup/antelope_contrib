@@ -316,3 +316,7 @@ STRYDTIME = strydtime ( EPOCH )
 
 YEARDAY = yearday ( EPOCH )
     convert an epoch time to a yearday value
+
+TIMESTRING = zepoch2str ( EPOCH, FORMAT, TZ )
+    convert epoch time to a string, specifying time-zone
+
