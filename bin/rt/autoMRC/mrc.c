@@ -18,6 +18,20 @@
 int Log = 0;
 Tbl *DC;
 
+Tbl *MailAdd;
+Arr *MailSent;
+
+Arr *Dasid;
+Arr *PChan;
+
+int MaxOff;
+int Ls;
+char *logname;
+FILE *fplog;
+
+struct sockaddr_in myadd_in;           
+struct sockaddr_in peer_in;
+
 main(argc, argv)
 int argc;
 char *argv[];

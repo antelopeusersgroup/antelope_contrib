@@ -27,7 +27,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <stropts.h>
 #include <netdb.h>
 #include "db.h"
 #include "coords.h"
@@ -51,11 +50,11 @@ typedef struct Orbpipe {
     Orbpipe_packet rpkt ;
 } Orbpipe ;
 
-Tbl *MailAdd;
-Arr *MailSent;
+extern Tbl *MailAdd;
+extern Arr *MailSent;
 
-Arr *Dasid;
-Arr *PChan;
+extern Arr *Dasid;
+extern Arr *PChan;
 
 typedef struct Ch {
     double time;
@@ -89,13 +88,13 @@ typedef struct Das {
 } Das;
 
 
-int MaxOff;
-int Ls;
-char *logname;
-FILE *fplog;
+extern int MaxOff;
+extern int Ls;
+extern char *logname;
+extern FILE *fplog;
 
-struct sockaddr_in myadd_in;           
-struct sockaddr_in peer_in;
+extern struct sockaddr_in myadd_in;           
+extern struct sockaddr_in peer_in;
 
 #ifdef __STDC__
 #define PL_(x) x
