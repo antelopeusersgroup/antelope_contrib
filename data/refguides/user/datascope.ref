@@ -6,6 +6,9 @@
 dbhelp [db|s]
     gui to explore schema for database db or schema s
 
+dbdescribe {db|schema} [table]
+    describe the format of a database or schema
+
 dbdoc db
     generate troff formatted document describing schema for database db
 
