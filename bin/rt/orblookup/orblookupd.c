@@ -4,8 +4,12 @@
 #include <locale.h>
 #include <ctype.h>
 #include <pwd.h>
-#include <values.h>
+#include <float.h>
 #include <errno.h>
+#ifndef MAXINT
+#include <limits.h>
+#define MAXINT INT_MAX
+#endif
 #include "coords.h"
 #include "orb.h"
 #include "Pkt.h"
