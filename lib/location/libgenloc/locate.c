@@ -1206,7 +1206,7 @@ int lat_lon_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	if((s=pfget_string(pf,"center_latitude"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"center_latitude");
-		return(-1);;
+		return(-1);
 	}
 	center_latitude = pfget_double(pf,"center_latitude");
 	if((s=pfget_string(pf,"center_longitude"))==NULL)
@@ -1218,43 +1218,43 @@ int lat_lon_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	if((s=pfget_string(pf,"center_depth"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"center_depth");
-		return(-1);;
+		return(-1);
 	}
 	center_depth = pfget_double(pf,"center_depth");
 	if((s=pfget_string(pf,"latitude_range"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"latitude_range");
-		return(-1);;
+		return(-1);
 	}
 	latitude_range = pfget_double(pf,"latitude_range");
 	if((s=pfget_string(pf,"longitude_range"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"longitude_range");
-		return(-1);;
+		return(-1);
 	}
 	longitude_range = pfget_double(pf,"longitude_range");
 	if((s=pfget_string(pf,"depth_range"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"depth_range");
-		return(-1);;
+		return(-1);
 	}
 	depth_range = pfget_double(pf,"depth_range");
 	if((s=pfget_string(pf,"nlat"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"nlat");
-		return(-1);;
+		return(-1);
 	}
 	nlat = pfget_int(pf,"nlat");
 	if((s=pfget_string(pf,"nlon"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"nlon");
-		return(-1);;
+		return(-1);
 	}
 	nlon = pfget_int(pf,"nlon");
 	if((s=pfget_string(pf,"ndepths"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"ndepths");
-		return(-1);;
+		return(-1);
 	}
 	ndepths = pfget_int(pf,"ndepths");
 	lat0 = center_latitude - latitude_range/2.0;
@@ -1293,7 +1293,7 @@ int lat_lon_grid_setup (Pf *pf, Point **pts, int *gridsize)
 				{
 					free(p);
 					register_error(1,"lat_lon_grid_setup[n]. cannot form grid over poles\n");
-					return(-1);;
+					return(-1);
 				}
 				p[n].z = (double)k*dz + z0;
 				++n;
@@ -1320,67 +1320,67 @@ int radial_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	if((s=pfget_string(pf,"center_latitude"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"center_latitude");
-		return(-1);;
+		return(-1);
 	}
 	center_latitude = pfget_double(pf,"center_latitude");
 	if((s=pfget_string(pf,"center_longitude"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"center_longitude");
-		return(-1);;
+		return(-1);
 	}
 	center_longitude = pfget_double(pf,"center_longitude");
 	if((s=pfget_string(pf,"center_depth"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"center_depth");
-		return(-1);;
+		return(-1);
 	}
 	center_depth = pfget_double(pf,"center_depth");
 	if((s=pfget_string(pf,"minimum_distance"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"minimum_distance");
-		return(-1);;
+		return(-1);
 	}
 	rmin = pfget_double(pf,"minimum_distance");
 	if((s=pfget_string(pf,"maximum_distance"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"maximum_distance");
-		return(-1);;
+		return(-1);
 	}
 	rmax = pfget_double(pf,"maximum_distance");
 	if((s=pfget_string(pf,"minimum_azimuth"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"minimum_azimuth");
-		return(-1);;
+		return(-1);
 	}
 	phimin = pfget_double(pf,"minimum_azimuth");
 	if((s=pfget_string(pf,"maximum_azimuth"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"maximum_azimuth");
-		return(-1);;
+		return(-1);
 	}
 	phimax = pfget_double(pf,"maximum_azimuth");
 	if((s=pfget_string(pf,"depth_range"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"depth_range");
-		return(-1);;
+		return(-1);
 	}
 	depth_range = pfget_double(pf,"depth_range");
 	if((s=pfget_string(pf,"number_points_r"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"number_points_r");
-		return(-1);;
+		return(-1);
 	}
 	nr = pfget_int(pf,"number_points_r");
 	if((s=pfget_string(pf,"number_points_azimuth"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"number_points_azimuth");
-		return(-1);;
+		return(-1);
 	}
 	nphi = pfget_int(pf,"number_points_azimuth");
 	if((s=pfget_string(pf,"ndepths"))==NULL)
 	{
 		register_error(1,"%s%s\n",err,"ndepths");
-		return(-1);;
+		return(-1);
 	}
 	ndepths = pfget_int(pf,"ndepths");
 	/* error checks that yield a null return -- no recovery*/
@@ -1388,13 +1388,13 @@ int radial_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	{
 		register_error(1,"radial_grid_setup:  illegal specification of radii %lg to %lg\n",
 			rmin, rmax);
-		return(-1);;
+		return(-1);
 	}
 	if( ((phimax-phimin) > 360.0) || (phimin > phimax) )
 	{
 		register_error(1,"radial_grid_setup:  illegal specification of azimuthal angles %lg to %lg\n",
 			phimin, phimax);
-		return(-1);;
+		return(-1);
 	}
 	if(nphi <= 0) 
 		dphi = 0.0;

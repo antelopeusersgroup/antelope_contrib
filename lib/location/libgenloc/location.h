@@ -305,6 +305,9 @@ typedef struct Gridloc_options {
 	double multiplier;  /* grid is shrunk by this factor each cycle */
 	double ncycles;  /* number of cycles for grid scale reduction */
 }Gridloc_options;
+/* required for error ellipse definitions */
+#define CHI_SQUARE 1
+#define F_DIST 2
 /* It is bad form to nest includes like this, but necessary to 
 define function prototypes */
 #include "db.h"
@@ -323,9 +326,11 @@ int ggnloc (Hypocenter, Tbl *, Tbl *, Location_options, Tbl **, Tbl **, Tbl **);
 Robust_statistics form_equations(int, Hypocenter, Tbl *, Tbl *, Location_options, 
 	float **, float *, float *, float *, float *, int *);
 void predicted_errors(Hypocenter, Tbl *, Tbl *, Location_options,
-	float **, float *);
+	double **, float *);
 int save_emodel(int , float *, Dbptr );
 int save_predarr(Dbptr, Tbl *, Tbl *, Hypocenter, int, char *);
+int project_covariance(double **,int, double *, double, int,
+		double *, double *, double *, double *, double *);
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
 Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);

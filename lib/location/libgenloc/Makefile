@@ -4,6 +4,7 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 MAN3 = genloc.3 \
        genloc_intro.3 \
        ggnloc.3 \
+       eqerror.3 \
 	genloc_ttinterface.3
 
 CLEAN= 		

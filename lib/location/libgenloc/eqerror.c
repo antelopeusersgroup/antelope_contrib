@@ -1,4 +1,5 @@
 #include "stock.h"
+#include "coords.h"
 #include "db.h"
 #include "location.h" 
 #include <float.h>
@@ -124,8 +125,11 @@ parameter values are flagged. This makes for some messy indexing.
 
 Author:  Gary L Pavlis
 Written:  June 26, 1998
+November 2000
+Changed to mixed precision arithmetic with output C matrix now being
+double.  Original was float.  This was done by using dsdot.
 */
-void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *fix)
+void compute_covariance(float **Agi, int m, int n, int ntotal, double **C, int *fix)
 {
 	float *c;
 	int i,j,ii,jj;
@@ -146,10 +150,10 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *f
 				else
 				{
 #ifdef SUNPERF
-					C[i][j] = sdot(m,Agi[jj],1,
+					C[i][j] = dsdot(m,Agi[jj],1,
 							Agi[ii],1);
 #else
-					C[i][j] = sdot_(&m,Agi[jj],&one,
+					C[i][j] = dsdot_(&m,Agi[jj],&one,
 							 Agi[ii],&one);
 #endif
 					++jj;
@@ -224,7 +228,7 @@ Written:  June 25, 1998
 void predicted_errors(Hypocenter h, 
 	Tbl *attbl, Tbl *utbl,
 	Location_options o,
-	float **C, float *emodel)
+	double **C, float *emodel)
 {
         Arrival *atimes;
 	Slowness_vector *slow;
@@ -334,4 +338,129 @@ void predicted_errors(Hypocenter h,
         free(r);
         free(w);
         free(reswt);
+}
+/* Implements error ellipses from input covariance matrix assuming 
+particular error model defined by "model".  
+(inputs)
+C - 4x4 covariance matrix in order x,y,z,t.  If depth is fixed it is assumd
+	all the z terms have been zeroed.  Use of an eigenvector routine 
+	assures it will still be stable and algorithms used should still
+	all be stable.  
+model - error model (CHI_SQUARE or F_DIST defined in location.h) 
+conf - confidence level (this function will complain if not 0.683 or 0.9
+	and round to closest)  Must be 0<conf<1.0  This value is altered
+	to one of these values if necessary.
+rms - residual norm used to scale error ellipse in F distribution model 
+	(ignored with chisquare model)
+dgf - number of degrees of freedom (enters only in F_DIST case, ignored
+	for chi-square error model)
+(outputs)
+smajax, sminax, strike - horizontal error ellipse as defined in css3.0
+sdepth, stime - depth and time error attributes in css3.0
+
+Normal return is 0.  Returns -1 if computation totally fails.  Calling
+function should trap this condition results are all set 0 in that 
+situation.*/
+int project_covariance(double **C, int model, double *conf, double rms, int dgf,
+		double *smajax, double *sminax, double *strike,
+		double *sdepth, double *stime)
+{
+	int i,j;
+	double cwork[16];  /* covariance subset work space in FORTRAN order*/
+	/* These are chisqure critical values.  First index is critical
+	level and second in degress of freedom.  e.g. 
+	chisq_crit[1][2] is 90% level for 2 dgf*/
+	double chisq_crit[2][3]={1.001284,2.297707,3.529159,
+				2.705543, 4.60517, 6.251389};
+	double evals[4];
+	double vwork[16];
+	int info,ecount=0;
+	int iconf;
+
+	if((*conf<0.0) || (*conf>1.0))
+	{
+		elog_complain(0,"project_confidence passed illegal confidence level.  Default to 68.3 percent\n");
+		iconf = 0;
+	}
+	if(fabs(*conf-0.683)<0.001)
+		iconf = 0;
+	else if(fabs(*conf-0.9)<0.001)
+		iconf = 1;
+	else
+	{
+		elog_complain(0,"Confidence level %lf not implemented--default to 68%\n",conf);
+		iconf = 0;
+	}
+	/* first compute the horizontal error ellipse, unscaled.
+	This uses the packed storage mode of lapack */
+	cwork[0] = C[0][0];
+	cwork[1] = C[1][0];
+	cwork[2] = C[1][1];
+	/* this is CLAPACK/sunperf routine to compute eigenvalues and
+	eigenvectors for a positive definite matrix */
+	dspev('v','l',2,cwork,evals,vwork,2,&info);
+	if(info<0)
+	{
+		elog_complain(0,"dspev illegal value\n");
+		return(-1);
+	}
+	else if(info>0) 
+	{
+		elog_notify(0,"dspev convergence failure.  Error ellipse esults may be unreliable\n");
+		++ecount;
+	}
+	/* dspev returns eigenvalues in ascending order of size */
+	switch(model)
+	{
+	case(F_DIST):
+		elog_complain(0,"F distribution not yet implemented--default to chi-square\n");
+	case(CHI_SQUARE):
+	default:
+		*smajax = chisq_crit[iconf][1]*sqrt(evals[1]);  /*2 dgf */
+		*sminax = chisq_crit[iconf][1]*sqrt(evals[0]);
+		*strike= 90.0 - deg(atan2(vwork[3],vwork[2]));
+	}
+	/* Now we have to do the full covariance to properly compute
+	the depth and time uncertainties*/
+	cwork[0] = C[0][0];
+	cwork[1] = C[1][0];
+	cwork[2] = C[2][0];
+	cwork[3] = C[3][0];
+	cwork[4] = C[1][1];
+	cwork[5] = C[2][1];
+	cwork[6] = C[3][1];
+	cwork[7] = C[2][2];
+	cwork[8] = C[3][2];
+	cwork[9] = C[3][3];
+	dspev('v','l',4,cwork,evals,vwork,4,&info);	
+	if(info<0)
+	{
+		elog_complain(0,"dspev illegal value\n");
+		return(-1);
+	}
+	else if(info>0) 
+	{
+		elog_notify(0,"dspev convergence failure.  Error ellipse esults may be unreliable\n");
+		++ecount;
+	}
+
+	/* We scale each eigenvector by the eigenvalue and find
+	the largest z and t components to compute errors in z and t*/
+	for(i=0;i<4;++i)dscal(4,sqrt(evals[i]),vwork+4*i,1);
+	i = idamax(4,vwork+2,4);
+	/* Note sunperf implementation of blas returns an index based
+	from 0 ala C while the FORTRAN version uses 1.  Dangerous
+	inconsistency to watch out for. */
+	*sdepth = vwork[2+i*4];
+	i = idamax(4,vwork+3,4);
+	*stime = vwork[3+i*4];
+	switch(model)
+	{
+	case(F_DIST):
+	case(CHI_SQUARE):
+	default:
+		*sdepth *= chisq_crit[iconf][0];
+		*stime *= chisq_crit[iconf][0];
+	}
+	return(ecount);
 }

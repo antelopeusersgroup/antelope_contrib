@@ -1,0 +1,119 @@
+.TH EQERROR 3 "%G%"
+.SH NAME
+eqerror - collection of functions for computing earthquake location errors
+.SH SYNOPSIS
+.nf
+#include "location.h"
+void predicted_errors(Hypocenter h, Tbl *attbl, Tbl *utbl, 
+	Location_options o, double **C, float *emodel)
+int project_covariance(double **C, int model, double *conf, double rms,
+	int dgf, double *smajax, double *sminax, double *strike,
+	double *sdepth, double *stime)
+
+.fi
+.SH DESCRIPTION
+.LP
+This pair of routines are used to compute location error estimates in
+the genloc location package.  The \fIpredicted_errors\fR function 
+computes the fundamental components used to estimate a location error
+estimate and \fIproject_covariance\fR is a more specialized function
+used to convert the raw covariance returned by \fIpredicted_errors\fR
+to error ellipse parameters needed for saving in a css3.0 database.  
+.LP
+\fIpredicted_errors\fR arguments:
+.IP h
+Hypocenter structure (defined in location.h) defining current hypocenter
+location for which errors are to be appraised.
+.IP attbl
+List contain pointers to Arrival structures used as input to genloc
+location module (see ggnloc(3)).
+.IP utbl
+Same as attbl but this list contains pointers to array Slowness_vector 
+structure used to store phased array measurements used in a give location.
+.IP o
+This is a complicated structure defined in location.h that defines all
+the parameters that control the behaviour of the location module 
+ggnloc(3).  The presumption is that this function is called immediately
+after ggnloc with the same set of options.
+.IP C
+Output covariance matrix of estimated hypocenter. The order of parameters 
+within the matrix is x (east-west), y (north-south), z (vertical), and 
+time.  (e.g. C[1][2] = C_yz )  This matrix is scaled according to the 
+set of combined weights that are used in the matrix formed by the 
+equations of condition for the final hypocenter solution.  In genloc
+this is the product of three terms:  (1) base weighting by 1/sigma where
+sigma is the input measurement uncertainty, (2) residual weighting (if
+turned on), and (3) distance weighting (if turned on).  As such this
+covariance can be turned into a measurement error based estimate 
+directly with a chi-squared formula (see below).  
+.IP emodel
+This is a 4 vector of velocity model error bounds computed as described
+in a paper by Pavlis (1986) (BSSA, 76, pp. 1699-1717).   The output
+vector is again in the order x,y,z,t.  These can be viewed as an upper
+bound on velocity model errors in the given coordinate direction.  
+For example, the longitude of hypocenter h could have an error of
+up to + or - emodel[0] kilometers.  
+.LP
+\fIproject_covariance\fR arguments:
+.IP C
+Covariance matrix as described above.
+.IP model 
+Error model to use to computer confidence ellipse.  Allowed values
+are CHI_SQUARE and F_DIST (defined in location.h).  The CHI_SQUARE
+was used, for example, in hypoellipse.  It assumes the covariance
+is a perfect estimate of uncertainty and scales and projects this
+ellipse assuming the original error estimates used to weight the
+measurements are exact.  It is best thought of as a measure of
+the precision of the location in relation to measurement errors.
+F_DIST uses an F-distribution to scale the error ellipse using
+the rms variable (see below) according to the classic paper
+by Flinn (1965).  The concept is rms scaling is supposed to 
+measure location accuracy including model errors.  In practice,
+however, it is now know this is not reliable error model.  It is
+used as an option largely as a way to get results that can be compared to
+older programs.  
+.IP conf
+Confidence level to use in computing error ellipses.  Currently only
+0.683 or 0.90 will be accepted without generating an error diagnostic
+(1 sigma and 2 sigma error ellipses).  Note that if any other value is
+passed for conf it will be ALTERED internally to be the nearest value 
+to 0.683 or 0.90.  This was done be assure that if conf is written to 
+a database the actual confidence used will be correctly stored in origerr.
+.IP rms
+This is the square root of the sum squared WEIGHTED residuals computed
+by ggnloc.  As noted above the covariance used here is computed from
+the weighted equations.  Thus any scaling by rms MUST use this measure
+and NOT raw rms.  In the linear algebra world this would be called
+the ellipsoidal norm of the residual vector.  
+.IP dgf
+Degrees of freedom in rms measure.
+.LP
+\fIsmajax, sminax\fR, and \fIstrike\fR are outputs that
+define the major axis, minor
+axis, and strike angle (azimuth in degrees from north)
+of the major axis for the epicentral error ellipse.
+.LP
+\fIsdepth\fR and \fIstime\fR are depth and origin time error estimates
+as defined in css3.0's origerr table.  Note that project_covariance uses
+an algorithm that uses the largest projection of each of the four
+axes of the 4-d error ellipsoid onto the respective component axis.
+.SH RETURN VALUES
+.LP
+\fIproject_covariance\fR normally returns 0.  It returns -1 if
+the eigenvalue decomposition routine used gets garbage input and
+a positive number if the eigenvalue decomposition had convergence
+errors.  
+.SH "SEE ALSO"
+.nf
+genloc_intro(3), ggnloc(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Error ellipses are most sensible for appraising measurement errors
+and it is the author's prejudice that the F_DIST generated error
+ellipses are misleading.  emodel error bounds have problems also 
+in that they depend upon a scale factor (defined in phase definitions
+for genloc) to mean anything.  This scale factor, in practice, can
+be difficult to define accurately. 
+.SH AUTHOR
+Gary L. Pavlis
