@@ -125,7 +125,6 @@ main(int argc, char **argv)
 	Pf *pf;
 
 	char *gridname;
-	GCL3Dgrid *grd;
 	int gridid;
 	/* search control parameters */
 	double rmin, rmax, dr,dz;
@@ -176,7 +175,7 @@ main(int argc, char **argv)
 	gridname = pfget_string(pf,"GCLgrid_name");
 	if(gridname == NULL) 
 		elog_die(0,"Missing required parameter GCLgrid_name\n");
-	grd = GCL3Dgrid_load_db(db,gridname);
+	GCLgrid3d *grd=new GCLgrid3d(db,gridname);
 	if(!(grd->geographic_defined))
 		elog_die(0,"Must have geographic components of GCLgrid object with name %s defined for %s to run\n",gridname,Program_Name);
 
@@ -202,14 +201,13 @@ main(int argc, char **argv)
 		{
 		    ++gridid;
 		    search_radius_km = rmin;
-		    gridz = r_to_depth(grd->r[i][j][k],grd->lat[i][j][k]);
+		    gridz = grd->depth(i,j,k);
 		    zmin = gridz - dz;
 		    zmax = gridz + dz;
 		    while(search_radius_km<=rmax)
 		    {
 			search_radius = km2deg(search_radius_km);
-			gridz = r_to_depth(grd->r[i][j][k],
-					grd->lat[i][j][k]);
+			gridz = grd->depth(i,j,k);
 			/*note gclgrid stores lat/lon in radians
 			while db routines assume degrees */
 			/* somewhat arbitrary ceiling */

@@ -8,4 +8,4 @@ include $(ANTELOPEMAKE)
 
 OBJS=cluster.o
 $(BIN) : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
