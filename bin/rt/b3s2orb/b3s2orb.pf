@@ -1,0 +1,12 @@
+# PSIZE TOFF PTYPE  HDRTYP HDRSIZ NSTA NCH SRATE SMPSIZ   NET  
+Inputs &Tbl{
+   80     14  B3S2DP BBA      20   1   1   20    20   s4  b3s2 
+   80     14  B3S2SP IPH       0   1   1    -1     -1   -1  b3s2 
+}
+
+#DTYPE    SID NAME  UP?   COMP   SENS TRG? PICK? CALIB
+Site &Tbl{
+ B3S2DP  001   B3S2    Y      1    BHZ    Y Y 6.551734
+ B3S2DP  001   B3S2    Y      2    BHN    Y Y 6.551734
+ B3S2DP  001   B3S2    Y      3    BHE   Y Y 6.551734
+}
