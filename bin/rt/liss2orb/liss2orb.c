@@ -192,6 +192,7 @@ main (int argc, char **argv)
 	finit_db (db);
     }
 
+    allot(char *, seed, pktsize, 4096) ; 
     for(;;) { 
 	while ( fd < 0 ) { 
 	    fd = open_socket ( liss_server, defaultport ) ; 
