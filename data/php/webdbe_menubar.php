@@ -53,7 +53,7 @@
   <li id="menu5">
     <div><a href="#">Graphics</a></div>
     <ul>
-      <li><a href="javascript:void(0)" onClick="document.forms.webdbe.graphics.value='map';document.forms.webdbe.submit()">Map</a></li>
+      <li><a href="#" onClick="document.webdbe.graphics.value='map';document.webdbe.submit()">Map</a></li>
       <li><a href="#">ShowThumbnail</a></li>
       <li><a href="#">ShowImage</a></li>
       <li><a href="#">MakeTimeLapse</a></li>
