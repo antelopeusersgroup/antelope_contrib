@@ -1,0 +1,53 @@
+.TH GNIS2DB 1 "$Date$"
+.SH NAME
+gnis2db \- convert GNIS feature-name files to database
+.SH SYNOPSIS
+.nf
+gnis2db gnis_file database [State]
+.fi
+.SH DESCRIPTION
+gnis2db takes a file of geographic names in GNIS (Geographic 
+Name Information System) format, and converts it to a database 
+in the places1.2 or related schema. 
+
+Two common formats are supported. If no State is specified on the 
+command line, the input lines will be parsed as though the first 
+element is the state in which the feature occurs. If a State (e.g. 
+"CA" or "AK") is specified on the command line, this is used in all 
+rows added to the database, and the input lines are parsed assuming 
+that they do not contain the state as the first field. [N.B. if state 
+is not the first field of the input lines, but no single state is 
+appropriate for the entire file, the state may be specified on the 
+command line as the null value "-"].
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+http://mapping.usgs.gov/
+.fi
+.SH "BUGS AND CAVEATS"
+There are a number of different GNIS file formats. Only two 
+are supported. 
+
+GNIS files are known to have occasional entries with the same 
+lat and lon and feature name (the primary keys of the places1.2
+places table), however with different feature type or elevation. 
+However, for good reason those two have not been made primary keys. 
+Therefore either the GNIS files need to be cleaned up a bit before 
+use, or gnis2db had to be made less picky about rows with duplicate
+primary keys (i.e. dbputv strategy instead of dbaddv). This latter 
+strategy was chosen, though can be easily changed. 
+.SH AUTHOR
+Jennifer Eakins. Tweaked for new schema and installed by 
+Kent Lindquist.
+.\" $Id$
