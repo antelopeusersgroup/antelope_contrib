@@ -6,7 +6,7 @@
 #include "coords.h"
 #include "db.h"
 #include "stock.h"
-#include "dbxml.h"
+#include "dbptolemy.h"
 
 static void
 usage ()
@@ -91,8 +91,7 @@ main (int argc, char **argv)
 		dbquery( db, dbPRIMARY_KEY, (Dbvalue *) &fields );
 	}
 
-	db2xml( db, rootname, rowname, fields, expressions, 
-		(void **) &xmlstring, 0 );
+	db2ptolemy( db, fields, expressions, (void **) &xmlstring, 0 );
 
 	if( xmlstring != NULL ) {
 

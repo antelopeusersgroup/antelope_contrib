@@ -1,15 +1,15 @@
 
-BIN= db2xml
+BIN= db2ptolemy
 PF=
 
-MAN1= db2xml.1
+MAN1= db2ptolemy.1
 
 CLEAN=
 
 cflags=
 fflags=
 ldflags=
-ldlibs= -ldbxml $(DBLIBS)
+ldlibs= -ldbptolemy $(DBLIBS)
 
 include $(ANTELOPEMAKE)
 DBG= -g
