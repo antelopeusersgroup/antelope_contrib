@@ -25,6 +25,11 @@ char *pffile = "pkt";
 int Psize = 4096;
 int Dump = 0;
 extern int PktLog;
+  
+int Log;
+int Ls;
+struct sockaddr_in myadd_in;           
+struct sockaddr_in peer_in;
 
 void usage ()
 {

@@ -32,7 +32,6 @@
 #include <fcntl.h>
 #include H_POLL
 #include <stddef.h>
-#include <stropts.h>
 #include <netdb.h>
 #include "pkt2.h"
 
@@ -65,10 +64,10 @@ struct Prts  {
 };
 
   
-int Log;
-int Ls;
-struct sockaddr_in myadd_in;           
-struct sockaddr_in peer_in;
+extern int Log;
+extern int Ls;
+extern struct sockaddr_in myadd_in;           
+extern struct sockaddr_in peer_in;
 
  
 #ifdef __STDC__
