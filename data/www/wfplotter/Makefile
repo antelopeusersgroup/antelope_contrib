@@ -11,6 +11,5 @@ include $(ANTELOPEMAKE)
 .SUFFIXES: .SUFFIXES .wphp .php
 
 .wphp.php : $(ANTELOPE)/data/templates/wphp
-        $(RM) $@
-        cat $(ANTELOPE)/data/templates/wphp $*.wphp > $@
-
+	$(RM) $@
+	cat $(ANTELOPE)/data/templates/wphp $*.wphp > $@
