@@ -9,7 +9,7 @@ fflags=
 ldflags=
 ldlibs= -lpforbstat $(ORBLIBS)
 
-include $(LINDCNSMAKE)
+include $(ANTELOPEMAKE)
 
 DIRS=
 DBG= -g
