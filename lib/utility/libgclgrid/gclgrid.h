@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include "stock.h"
+#include "stock.h" 
 #include "db.h"
 #include "perf.h"
 #include "coords.h"
+#undef min
+#undef max
 #include "dmatrix.h"
 
 #ifdef	__cplusplus

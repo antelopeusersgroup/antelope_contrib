@@ -9,19 +9,9 @@ MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 
 #  seispp dependency needed for pathintegral.o and ustrans.o
 #
-#ldlibs= $(DBLIBS) -lperf -lseispp 
 ldlibs= $(PERFLIBS) $(DBLIBS) -lm
 
 include $(ANTELOPEMAKE)  	
-#
-#  essential for Solaris.  Will break under linux
-#  -Kpic is essential for Solaris to make templated funtions (in this 
-#  case the stdlib vector object) work.  Links against this library
-#  in solaris fail without this.
-#
-DLD=CC -G -Kpic
-
-CXXAR=CC -xar
 
 OBJS=converters.o create_destroy.o dbsubs.o ellipsoid.o error_handlers.o \
     fme_weights.o interpolate.o lookup.o operators.o  \
@@ -35,4 +25,6 @@ $(LIB) : $(OBJS)
 $(DLIB) : $(OBJS)
 	$(RM) $@
 	$(CXXDLD) $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+
+
 
