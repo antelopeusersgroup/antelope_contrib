@@ -9,7 +9,7 @@ c     read file of ellipticity corrections
 c										    
         character*10 antenv
         character*80 antval
-        character*100 fname;
+        character*100 fname
         call getenv(antenv,antval)
 	antenv="ANTELOPE"
         fname = antval//"teles/elpcor"
