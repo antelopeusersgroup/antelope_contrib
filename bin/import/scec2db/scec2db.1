@@ -1,0 +1,271 @@
+.TH SCEC2DB 1 "$Date$"
+.SH NAME
+scec2db  \- retrieval and conversion of SCEC bulletin 
+.SH SYNOPSIS
+.nf
+\fBscec2db \fP
+	[-v]
+	[-d|-w|-m]
+	[-f \fIfile\fP]
+	[-s \fIstart_time\fP]
+	[-e \fIend_time\fP]
+	-c \fIcatread|scecdc|hypo71|hypo2000\fP}
+	\fIdb_to_update\fP
+
+.fi
+.SH DESCRIPTION
+When processing real-time data it is helpful to have external catalogs
+against which you can associate your locations (using \fBdbassoc_rt\fR(1)).  One
+source of this external catalog for southern California is SCEC, the 
+Southern California Earthquake Center which runs the TriNet network.  They
+produce a reviewed bulletin which is available via a web search.  This 
+script attempts to automate the retrieval of their bulletin and the update
+of your local catalog.  It can also be used to convert a preexisting file
+from one of the supported formats to a css3.0 origin table.
+
+.SS Formats
+SCEC distributes their catalog in seven different formats: catread, scec_dc
+CNSS, Simpson Map, Hypoinverse2000, Hypo71, and Hypoinverse phase.  Currently, 
+\fBscec2db\fP only supports the hypo71, hypo2000, catread and scec_dc formats.  
+
+.IP catread
+
+A basic bulletin output.  Note that the magnitude field size is limited
+and there is no explanation of event type (etype will be blank in origin
+table).  Magnitude is assumed to be ml. 
+
+Example of catread format listing:
+
+.ft CW
+.nf
+2001 02 21  09 00 58.33  36  4.24-117 50.40 A 1.5      4.78  0     0.15  9630697
+2001 02 21  11 01 05.94  33 27.87-116 27.40 A 1.1     13.63  0     0.10  9630701
+2001 02 21  11 49 12.22  34 50.85-116 24.45 A 1.6      3.93  0     0.09  9630713
+.fi
+.ft R
+
+.IP scecdc
+
+More information than catread.  Magnitudes may be of different type, etype
+is specified.  Information about number of data files is ignored.
+
+.ft CW
+.nf
+2001/02/21 09:00:58.3 le 1.5 l   36.071 -117.840   4.8 A  9630697   0 117  0  0
+2001/02/21 11:01:05.9 le 1.1 l   33.465 -116.457  13.6 A  9630701   0  87  0  0
+2001/02/21 11:49:12.2 le 1.6 l   34.847 -116.408   3.9 A  9630713   0  76  0  0
+.fi
+.ft R
+
+.IP CNSS
+
+NOT SUPPORTED YET.                                                  
+
+
+.IP "Simpson Map format" 
+
+NOT SUPPORTED.                                                                  
+
+
+.IP Hypoinverse2000
+
+More information than you really need in unpleasantly long lines.
+
+Example of hypo2000 format listing:
+
+.ft CW
+.nf
+20010221090058.6336  3.48117 49.43 5.38    17160  60.12                                4 0.59  0.37  7                  H    40 l1.57 12.0l1.57 12.0   9630697L1.57 12.0          
+20010221110106.8333 29.01116 30.2112.95    10284  90.20                                3 1.65  1.79  0                  H    36 c1.45  5.0c1.45  5.0   9630701 1.45  5.0          
+20010221114912.3234 51.51116 24.46 4.25     6151  70.11     
+
+.IP Hypo71
+
+Hypo71 is more readable than, but is a subset of, the Hypoinverse format.
+Multiple magnitude types are supported, etype is specified, many comments
+could be translated.  This is the format I tend to use for retrieval.
+
+Example of hypo71 format listing:
+
+.ft CW
+.nf
+20010221 0900058.63 36  3.48 117 49.43   5.38 l 1.57 17 160  6.0 0.12  0.6  0.4LAH    9630697 
+20010221 1101006.83 33 29.01 116 30.21  12.95 c 1.45 10 284  9.0 0.20  1.6  1.8LBH    9630701 
+20010221 1149012.32 34 51.51 116 24.46   4.25 l 1.94  6 151  7.0 0.11  8.2 11.1LDH    9630713 
+.fi
+.ft R
+
+
+.IP "Hypoinverse phase format"
+
+With this format you could create arrival/assoc tables.  NOT SUPPORTED YET.
+
+
+.SH OPTIONS
+
+.IP -v 
+Make some noise about what's going on. 
+
+.IP -V 
+Divulge more than is necessary about what's going on. 
+
+.IP -d
+Retrieve one day from bulletin.  
+Without \fB-s\fP or \fB-e\fP specified, time window is assumed to
+be 24 hours prior to "now".  When \fB-s\fP is specified with \fB-d\fP,
+24 hours of data will be extracted after chosen \fIstart_time\fP. 
+Supplying an  \fIend_time\fP in conjunction with \fB-d\fP works similarly.
+
+.IP -w
+Retrieve one week from bulletin.  
+Without \fB-s\fP or \fB-e\fP specified, time window is assumed to
+be 7 days prior to "now".  When \fB-s\fP is specified with \fB-w\fP,
+7 days of data will be extracted after chosen \fIstart_time\fP.  
+Supplying an \fIend_time\fP in conjunction with \fB-w\fP works similarly.
+
+.IP -m
+Retrieve one month (31 days) from bulletin.  
+Without \fB-s\fP or \fB-e\fP specified, time window is assumed to
+be 31 days prior to "now".  When \fB-s\fP is specified with \fB-m\fP,
+31 days of data will be extracted after chosen \fIstart_time\fP.  
+Supplying \fIend_time\fP in conjunction with \fB-m\fP works similarly.
+
+.IP "-s \fIstart_time\fR"
+Retrieve events from bulletin with times greater than this value.  Format must 
+comply with conventions for \fBepoch\fR(3).   You must specify \fB-m\fP, \fB-w\fP, 
+\fB-d\fP or \fB-s\fP \fIstart_time\fP.  If \fB-s\fP \fIstart_time\fP is chosen
+without \fB-m\fP, \fB-w\fP, or \fB-d\fP and no \fB-e\fP \fIend_time\fP is 
+selected, the current time will be chosen as the last possible event time to retrieve.  
+
+.IP "-e \fIend_time\fR"
+Retrieve events from bulletin with times less than this value.  Format must 
+comply with conventions for \fBepoch\fR(3).  
+
+.IP "-f \fIfilename\fR"
+File containing SCEC format bulletin.  Use this when you have a preexisting
+file to convert and do not want to use the web interface to retrieve a new
+catalog.   
+
+.IP "-c \fIformat\fR"
+Required.  Specify the format of the input file name (if using \fB-f\fP) or
+choose one of the supported formats. 
+
+.IP "db_to_update"
+Required.  Name of database you will create or update.  Preexisting origin
+tables that have origins for the requested time period will be updated with
+new lat/lon/time/ml values if there have been changes.  Any new origins will
+be added.
+
+.SH FILES
+A temporary file called tmp_\fIformat\fP is created.
+
+.SH ENVIRONMENT
+
+Must have the standard Antelope environment variables.
+
+.SH PARAMETER FILE
+No parameter file needed. 
+
+.SH EXAMPLE
+
+.IP \(bu
+Get a catalog of events for the last week.
+.ft CW
+.in 2c
+.nf
+.ne4
+
+myhost%\fB scec2db -w -c hypo71 catalogs/cit
+
+.fi
+.in
+.ft R
+
+.IP \(bu
+Retrieve bulletin for a month of events starting on October 11, 1999 
+.ft CW
+.in 2c
+.nf
+.ne4
+
+myhost%\fB scec2db -m -c hypo71 -s "10/11/1999" catalogs/post_HM
+
+.fi
+.in
+.ft R
+
+.IP \(bu
+The intent of this script was to have it run on a daily basis and update
+a local catalog with any origins that were added or changed in the remote catalog.
+This is easy to do when you have a running real-time system.  Edit the
+cron listing in the rtexec.pf file (See \fBrtexec\fR(1)).  As I do not want to 
+overwhelm SCEC's site with requests, I check for updates for the last week 
+once each day and for the last month once each week (on the 5th day == Friday).  
+
+From rtexec.pf file:
+
+.ft CW
+.in 2c
+.nf
+crontab &Arr{
+scec2db    UTC 00 03 * * * scec2db -w -c catread catalogs/cit
+scec2db    UTC 00 06 * * 5 scec2db -m -c catread catalogs/cit
+}
+.fi
+.in
+.ft R
+
+
+.ft CW
+.in .2i
+.nf
+
+.ft R
+.SH "SEE ALSO"
+.nf
+rtexec(1)
+dbassoc_rt(1)
+epoch(3)
+http://epicenter.ucsd.edu/ANZA/faq/rtcatalogs.html
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+When no \fB-m\fP, \fB-w\fP, or \fB-d\fP are chosen, \fB-s\fP must be used.  
+If no \fB-e\fP \fIend_time\fP is selected, the current date is used as the
+last event time.  If this time period is greater than 60 days, the program 
+will fail.
+
+.LP
+The \fB-m\fP, \fB-w\fP, and \fB-d\fP options can be overridden by the use
+of \fB-s\fP and \fB-e\fP.
+
+
+.LP
+If your request is too large for the scec website to handle (or if too many
+people are requesting data when you are), you will receive a message
+like this:
+
+.ft CW
+.RS .2i
+.nf
+perl: str2epoch: can't interpret '/'
+        ** repeated 2 times
+perl: str2epoch: can't interpret '<'
+perl: str2epoch: no timezone 'PRE'
+perl: str2epoch: can't interpret ':'
+        ** repeated 2 times
+.fi
+.RE
+.ft R
+
+This means that the file transfer was not completed. Thus you have an
+incomplete file to translate to css3.0.  Try making your search cover 
+a shorter time range or try your search at a later time when there is
+less network traffic.
+.SH AUTHOR
+.nf
+Jennifer Eakins
+jeakins@ucsd.edu
+Univ. of Calif. San Diego
+5/17/2001
+
