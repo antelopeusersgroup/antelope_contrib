@@ -341,10 +341,16 @@ void Metadata::put_metadata(string name, bool val)
 void Metadata::remove(string name)
 {
 	Pf *pftmp;
-	//pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
-	// necessary because pfdel returns a pf copy of entry deleted on 
-	// success
-	if(pftmp!=NULL) pffree(pftmp);
+	pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
+	// The following is necessary because pfdel 
+	// returns a pf copy of entry deleted on 
+	// success and a 0 if the name is not in the pf. 
+	if(pftmp!=NULL)
+	{
+		pffree(pf);
+		pf=pfdup(pftmp);
+		pffree(pftmp);
+	}
 }
 Metadata::Metadata(char *mdin) 
 	throw(Metadata_parse_error)
