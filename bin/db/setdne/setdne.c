@@ -72,7 +72,7 @@ main(int argc, char **argv)
 			dnorth=0.0;
 			deast = 0.0;
 		}
-		dbputv(db,0,"dnorth",dnorth,"deast",deast,0);
+		dbputv(db,0,"dnorth",dnorth,"deast",deast,"refsta",refsta,0);
 	}
 	return(0);
 }
