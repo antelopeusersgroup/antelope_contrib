@@ -1,4 +1,4 @@
-Schema Techcomp0.3
+Schema Techcomp1.0
 	Description ( "Schema for Technology Components" )
 	Detail {
 		This schema tracks the technology components installed 
