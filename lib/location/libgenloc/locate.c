@@ -1012,7 +1012,7 @@ int ggnloc (Hypocenter initial_location,
 			if((wtmp[i]>0.0) && (reswttmp[i]>0.0)) ++(current_location.number_data);
 			sum_reswt += (double)reswttmp[i];
 		}
-		current_location.degrees_of_freedom = nint(sum_reswt) - npar;
+		current_location.degrees_of_freedom = rint(sum_reswt) - npar;
 
 		relative_rms_change = fabs(new_wrms - previous_wrms)
 					/previous_wrms;

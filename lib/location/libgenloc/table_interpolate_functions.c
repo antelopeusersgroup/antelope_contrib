@@ -770,8 +770,8 @@ Slowness_Function_Output uniform_slowness_table_interpolate(Ray_Endpoints x, cha
 		in a fixed order and return the nearest valid point. 
 		This is fine for dudr since this quantity is usually
 		rather small anyway. */
-		ix = nint((deg(delta)-utable->x0)/utable->dx);
-		iz = nint((x.sz-utable->z0)/utable->dz);
+		ix = rint((deg(delta)-utable->x0)/utable->dx);
+		iz = rint((x.sz-utable->z0)/utable->dz);
 		if(ix==ix_low)
 		{
 			if(slopes_valid(utable->branch[ix_low][iz]))
@@ -836,8 +836,8 @@ Slowness_Function_Output uniform_slowness_table_interpolate(Ray_Endpoints x, cha
 	on the same travel time branch we just set dudz to zero.  This may not always 
 	be appropriate, but the philosphy is why throw out the baby with the bathwater 
 	especially if the bathwater isn't that dirty.  */
-	ix = nint((deg(delta)-utable->x0)/utable->dx);
-	iz = nint((x.sz-utable->z0)/utable->dz);
+	ix = rint((deg(delta)-utable->x0)/utable->dx);
+	iz = rint((x.sz-utable->z0)/utable->dz);
 	if(iz == 0)
 	{
 		/* We can only compute a forward difference in this case */
