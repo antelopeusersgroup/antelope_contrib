@@ -515,7 +515,8 @@ trdisp(tr,"Input trace data");
 		object, and it must be freed after each event is 
 		processed. */
 		sn_ratios=compute_signal_to_noise(mwsig_arr,mwnoise_arr,
-					stations,nbands,nwavelets);
+					stations,arrivals,swin,nwin,
+					nbands,nwavelets);
 
 		/* Now we get to the heart of this program.  This is
 		the outer loop over frequency.  Note the loop goes
@@ -579,7 +580,7 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			occur here easily by changing this function */
 			lag = compute_optimal_lag(gathers,nwavelets,timeref,
 					moveout,polarization,swin+i,
-					coherence_type);
+					coherence_type,i,pf);
 			if(lag < 0)
 			{
 				elog_complain(0,"Data loss computing semblance\nSkipping evid %d\n",
