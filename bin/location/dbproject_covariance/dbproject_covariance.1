@@ -3,39 +3,35 @@
 dbproject_covariance\- compute confidence-ellipse from covariance matrix
 .SH SYNOPSIS
 .nf
-dbproject_covariance \[-v\] \[-c conf\] dbname
+\fBdbproject_covariance \fP[-v] [-c \fIconf\fP] \fIdbname\fP
 .fi
 .SH DESCRIPTION
-dbproject_covariance reads the covariance matrix out of the origerr 
-table of a CSS3.0 or related database. A confidence ellipse is then 
+\fBdbproject_covariance\fP reads the covariance matrix out of the origerr
+table of a CSS3.0 or related database. A confidence ellipse is then
 calculated (smajax, sminax, and strike, as well as sdepth and stime)
-based on a Chi-squared model and the specified confidence level. If 
-no confidence level is specified, dbproject_covariance uses 0.683, 
-i.e. 1 sigma. If any of smajax, sminax, strike, sdepth, and stime are 
+based on a Chi-squared model and the specified confidence level. If
+no confidence level is specified, \fBdbproject_covariance\fP uses 0.683,
+i.e. 1 sigma. If any of smajax, sminax, strike, sdepth, and stime are
 non-null, the origerr row is skipped. If any of the covariance-matrix
-elements are null, the origerr row is skipped. dbproject_covariance 
-also uses ndef and dtype out of the origin table to determine the number 
+elements are null, the origerr row is skipped. \fBdbproject_covariance\fP
+also uses ndef and dtype out of the origin table to determine the number
 of degrees of freedom of the solution.
 
-When the projected confidence region has been computed, the origerr 
-table is updated with the new smajax, sminax, sdepth, stime, strike, and 
-conf values. 
+When the projected confidence region has been computed, the origerr
+table is updated with the new smajax, sminax, sdepth, stime, strike, and
+\fIconf\fP values.
 .SH OPTIONS
-.IP "-c \fIconf\fR"
+.IP "-c \fIconf\fP"
 Confidence level, from 0 to 1
 
 .IP "-v"
 Verbose
-.SH FILES
-.SH ENVIRONMENT
-.SH PARAMETER FILE
-nordic% 
-.fi
 .SH EXAMPLE
 .ft CW
-.RS .2i
+.in 2c
 .nf
-nordic% dbproject_covariance -v testdb
+
+%\fB dbproject_covariance -v testdb\fP
 orid 1  ndef 41 dtype f conf 0.683      chi2 40.54
         smajax  0.95 sminax  0.55       strike 149.5
         sdepth  3.61    stime  0.30
@@ -51,29 +47,27 @@ orid 4  ndef 60 dtype f conf 0.683      chi2 60.49
 orid 5  ndef 41 dtype f conf 0.683      chi2 40.54
         smajax  1.59 sminax  0.60       strike 121.6
         sdepth  2.87    stime  0.20
-nordic%
+%\fB \fP
+
 .fi
-.RE
+.in
 .ft R
-.SH RETURN VALUES
-.SH LIBRARY
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 dbgenloc(1)
 .fi
 .SH "BUGS AND CAVEATS"
-The number of degrees of freedom is based on ndef and dtype. If array 
-data are included (azimuth and slowness information in addition to 
-arrival-time), there are more than one degree of freedom added per incoming 
-phase, so using the number of defining phases is not exact. To 
-do this properly, the timedef, azdef, and slodef fields would have to be 
+The number of degrees of freedom is based on ndef and dtype. If array
+data are included (azimuth and slowness information in addition to
+arrival-time), there are more than one degree of freedom added per incoming
+phase, so using the number of defining phases is not exact. To
+do this properly, the timedef, azdef, and slodef fields would have to be
 examined in the assoc table. This has not been done in the current program.
 
-There is another way to calculate the confidence level, namely with 
-an F-distribution statistical model rather than the chi-squared. In 
-principle this would be possible however it would probably require 
-a recomputation of residuals from the assoc table. 
+There is another way to calculate the confidence level, namely with
+an F-distribution statistical model rather than the chi-squared. In
+principle this would be possible however it would probably require
+a recomputation of residuals from the assoc table.
 
 .SH AUTHOR
 Kent Lindquist
