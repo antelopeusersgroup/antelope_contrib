@@ -1,6 +1,14 @@
 #include "stock.h"
 #include "perf.h"
 
+complex 
+cdotc (int n, complex *cx, int incx,  complex  *cy, int incy)
+{
+    complex result ; 
+    cdotc_ ( &result, &n, cx, &incx, cy, &incy );
+    return result ; 
+}
+
 void 
 dscal(int n, double da, double *dx, int incx) 
 {

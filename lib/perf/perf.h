@@ -3,6 +3,7 @@
 
 #include "f2c.h"
 
+extern complex cdotc (int n, complex *cx, int incx,  complex  *cy, int incy);
 extern void dscal ( int n, double da, double *dx, int incx );
 extern void csscal ( int n, float sa, complex *cx, int incx );
 extern void cscal ( int n, complex *ca, complex *cx, int incx );
