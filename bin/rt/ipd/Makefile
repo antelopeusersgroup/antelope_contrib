@@ -1,11 +1,10 @@
-# %W% %G% 
-# Makefile for svd
-
 BIN = ipd
 MAN1=ipd.1   
 ldflags=-L.
 ldlibs	= -lsocket -lnsl -Bstatic -lpkt -lorb -Bdynamic $(TRLIBS)
 
+BIN=
+MAN=
 include $(ANTELOPEMAKE)
 OBJSM	= ipd.o\
 	  newpf.o\
