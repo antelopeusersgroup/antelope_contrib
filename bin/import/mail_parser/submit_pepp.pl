@@ -38,20 +38,22 @@ sub submit_pepp_handler {
 			( $lat, $ns, $lon, $ew, $depth ) =
 			( $1, $2, $3, $4, $5 );
 		}
-		if( /Origin Date:\s+(.*\S)\s+Origin Time:\s+(.*)\s+UTC/ ) {
-			( $date, $time ) = ( $1, $2 );
+		if( /Origin Date and Time:\s+(.*)\s*$/ ) {
+			$date_time_str = $1;
+		}
+		if( /EventID:\s+(\S+)/ ) {
+			$eventid = $1;
 		}
 	} @body;
 
 	$lat = $ns =~ /N/i ? $lat : -1 * $lat;
 	$lon = $ew =~ /E/i ? $lon : -1 * $lon;
 
-	$time =~ s/ /0/g;
-	$origintime = str2epoch( "$date $time" );
+	$origintime = str2epoch( "$date_time_str" );
 
 	if( $verbose ) {
 		print STDERR "submit_pepp:\n" .
-			"\tProcessing $lat, $lon, $depth, $date $time\n" .
+			"\tProcessing $lat, $lon, $depth, $date_time_str\n" .
 		 	"\tFrom ", $message->get("From"), "\n";
 
 	}
@@ -139,6 +141,8 @@ sub submit_pepp_handler {
 	my( $ftp_user ) = %{$pfarray}->{ftp_user};
 	my( $ftp_password ) = %{$pfarray}->{ftp_password};
 	my( $ftp_timeout ) = %{$pfarray}->{ftp_timeout};
+	my( $ftp_subdir ) = $eventid;
+	substr( $ftp_subdir, -6, 0 ) = "_";
 
 	$ftp = Expect->spawn( "/usr/bin/ftp", "$ftp_repository" );
 	if( ! defined( $ftp ) ) {
@@ -188,6 +192,10 @@ sub submit_pepp_handler {
 	}
 
 	$ftp->send_slow( 0, "cd $ftp_dir\r" );
+
+	($pos, $err, $match, $before, $after) = 
+		$ftp->expect( $ftp_timeout, "ftp>" );
+	$ftp->send_slow( 0, "cd $ftp_subdir\r" );
 
 	($pos, $err, $match, $before, $after) = 
 		$ftp->expect( $ftp_timeout, "ftp>" );
