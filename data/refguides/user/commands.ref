@@ -72,7 +72,15 @@ gsregion [lat lon]
 dbsetrgn db
     set seismic and geographic region codes in origin table for database db
 
+capitalize_station dbname
+    Capitalize the sta field in all database tables
 
+tabulate_missed_stations translation_db dbname [dbname...]
+    Find station names that do not appear in the translation_db
+
+translate_stachan_names translation_db dbname
+    Apply the station name-translations listed in translation_db
+	
 private children pid
     returns children of process pid
 
