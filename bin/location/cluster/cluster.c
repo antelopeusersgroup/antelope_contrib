@@ -187,7 +187,7 @@ main(int argc, char **argv)
 	if(nrecs<=0)
 		elog_die(0,"Working view is empty\nCheck event->origin join\n");
 	else
-		if(Verbose)elog_log(0,"Working view has %d events\n",nrecs);
+		if(Verbose)fprintf(stdout,"Working view has %d events\n",nrecs);
 	dbc = dblookup(db,0,"cluster",0,0);
 	dbh = dblookup(db,0,"hypocentroid",0,0);
 
@@ -195,7 +195,7 @@ main(int argc, char **argv)
 	allevents = load_full_catalog(dbv);
 
 	/*3d looping */
-	if(Verbose)elog_log(0,"Grid point hit counts (lat, long, count)\n");
+	if(Verbose)fprintf(stdout,"Grid point hit counts (lat, long, count)\n");
 	for(i=0,gridid=0;i<(grd->n1);++i)
 	    for(j=0;j<(grd->n2);++j)
 		for(k=0;k<(grd->n3);++k)
@@ -232,7 +232,7 @@ main(int argc, char **argv)
 			hypocen_lon = 0.0;
 			hypocen_z = 0.0;
 			if(Verbose)
-			    elog_log(0,"%lf %lf %d\n",deg(grd->lat[i][j][k]),
+			    fprintf(stdout,"%lf %lf %d\n",deg(grd->lat[i][j][k]),
 			                   deg(grd->lon[i][j][k]),nrecs);
 			for(ie=0;ie<nrecs;++ie)
 			{
