@@ -281,8 +281,7 @@ class Hypocenter
 public:
 	double lat,lon,z;
 	double time;
-	Hypocenter(){method=strdup("tttaup"); model=strdup("iasp91");};  // default
-	~Hypocenter(){free(method); free(model);};
+	Hypocenter(){method=string("tttaup"); model=string("iasp91");};  // default
 	double distance(double lat0, double lon0);
 	double esaz(double lat0, double lon0);
 	double seaz(double lat0, double lon0);
@@ -296,8 +295,8 @@ public:
 			string phase) throw(seispp_error);
 	void tt_setup(string meth, string mod); // change default method:model
 private:
-	char *method;
-	char *model;
+	string method;
+	string model;
 };
 
 class Velocity_Model_1d_error

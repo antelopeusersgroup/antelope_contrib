@@ -33,10 +33,8 @@ double Hypocenter::seaz(double lat0, double lon0)
 
 void Hypocenter::tt_setup(string meth, string mod)
 {
-	free(method);
-	free(model);
-	method=strdup(meth.c_str());
-	mod=strdup(meth.c_str());
+	method=meth;
+	model=mod;
 }
 // companion to below made a function to allow use in both tt and slowness calculations
 string tterror_code_translation(int ierr)
@@ -96,8 +94,9 @@ double Hypocenter::phasetime(double lat0, double lon0, double elev, string phase
 	p.source.name[0]='\0';
 	p.receiver.name[0]='\0';
 	// the 0 in the mode arg means compute only the time
-	ierr = ttcalc(method,model,
-			(char *)phase.c_str(),0,&p,&tt,&h);
+	ierr = ttcalc(const_cast<char *>(method.c_str()),
+			const_cast<char *>(model.c_str()),
+			const_cast<char *>(phase.c_str()),0,&p,&tt,&h);
 	if(ierr) 
 	{
 		string mess;
@@ -156,7 +155,9 @@ Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, st
 	p.source.name[0]='\0';
 	p.receiver.name[0]='\0';
 	// the 0 in the mode arg means compute only the time
-	ierr = ucalc(method,model,(char *)phase.c_str(),0,&p,&tt,&h);
+	ierr = ucalc(const_cast<char *>(method.c_str()),
+		const_cast<char *>(model.c_str()),
+		const_cast<char *>(phase.c_str()),0,&p,&tt,&h);
 	if(ierr) 
 	{
 		string mess;

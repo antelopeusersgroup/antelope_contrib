@@ -1,6 +1,6 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-INCLUDE=dbpp.h metadata.h seispp.h ray1d.h vmodel.h
+INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h vmodel.h
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \
@@ -18,6 +18,7 @@ OBJS=create_destroy.o \
   dbpp.o \
   freetran.o \
   gaps.o \
+  interpolate.o \
   mdlist.o \
   metadata.o \
   mute.o \
