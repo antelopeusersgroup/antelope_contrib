@@ -463,8 +463,8 @@ Attribute serveraddress
 	;
 
 Attribute serveralias
-	String (30)
-	Format ( "%-30s" )
+	String (60)
+	Format ( "%-60s" )
 	Null ( "-" )
 	Description ( "nickname for an orbserver" )
 	Detail {
