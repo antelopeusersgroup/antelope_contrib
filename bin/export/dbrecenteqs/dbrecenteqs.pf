@@ -16,7 +16,7 @@ background_graphic
 region_phrases_database example_region_phrases
 
 nearest_places &Arr{
-	cities_dbname world_cities
+	cities_dbname &datafilename(dbrecenteqs/world_cities)
 	max_dist_km 200	
 	always_include Washington D.C.|San Diego
 }
@@ -121,7 +121,7 @@ map_config &Arr{
 		# faults combined_faults.gmtlin 4/255/0/0
 		# roads roads.xy 4/255/255/255
 	}
-	cities_dbname 	world_cities
+	cities_dbname 	&datafilename(dbrecenteqs/world_cities)
 	background_magsize_pixels 3
 	background_magmin 3
 	quakeshape 	square
