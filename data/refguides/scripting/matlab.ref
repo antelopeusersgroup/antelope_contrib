@@ -353,6 +353,9 @@ PKTID = orbtell ( ORBFD )
     ask for the current read-position on an Antelope ORB
 
 <subsection Seismic Travel Times>
+[SLOWNESS, PHASENAMES] = arr_slowness ( DELTA, DEPTH )
+    Returns predicted seismic phase slownesses in sec/km
+
 [TIMES, PHASENAMES] = arrtimes ( DELTA, DEPTH )
     Returns predicted seismic phase arrival times
 
