@@ -201,6 +201,12 @@ private int trwfclose ( Wfdisc *wfdisc )
 
 
 <subsection Filters>
+int trfilter (Dbptr tr, char *filter_string)
+    apply time-domain filters to trace data
+
+int trfilter_segs (int nsegs, int *nsamps, double *dt, float **data, char *filter_string)
+    apply time-domain filters to trace data
+
 int trrotate ( Dbptr tr, double phi, double theta, char **newchan )
     rotate three component data
 
