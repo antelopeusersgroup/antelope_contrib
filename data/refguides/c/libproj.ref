@@ -1,8 +1,8 @@
 <library>
 Map Projections
 proj
-
-
+none
+STOCKLIBS
 proj.h
 Various map projections
 <cdeclarations>

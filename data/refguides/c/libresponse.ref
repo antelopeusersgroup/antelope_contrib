@@ -1,8 +1,8 @@
 <library>
 Instrument Response
 response
-$(STOCKLIBS)
 none
+STOCKLIBS
 response.h
 routines for reading, writing and evaluating CSS 3.0 response files
 

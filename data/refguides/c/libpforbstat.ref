@@ -1,7 +1,7 @@
 <library>
 Orb Status Parameter Files
 pforbstat
--lpkt -lorb -lxtra -lpforbstat $(TRLIBS)
+none
 ORBLIBS
 pforbstat.h
 routines to return parameter-files with orb status

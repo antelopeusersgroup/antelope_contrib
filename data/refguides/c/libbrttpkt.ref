@@ -1,7 +1,7 @@
 <library>
-Special Packet Processing
+Packet Processing
 brttpkt
-brttutil
+-lgrx -lol $(THREAD) -ltkrtd -lbrttfilter -lbrttutil -ltkbrttplot $(ORBLIBS) $(TKLIBS)
 none
 brttpkt.h
 utilities for processing ORB waveform packets 

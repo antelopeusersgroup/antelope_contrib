@@ -2,7 +2,7 @@
 Cubic Earth Coordinates
 pixaddress
 
-none
+STOCKLIBS
 pixaddress.h
 coordinate system for sphere based on projection to a cube; 
 arbitrary resolution, very nearly equal size pixels and easy
