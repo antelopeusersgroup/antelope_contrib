@@ -24,6 +24,7 @@ arguments:
 		extracted from traces of gather, but it is
 		so deep in indirection it gets ridiculous)
 	fc - center frequency (in Hz) of this wavelet bank.	
+	fwin - bandwidth (in Hz) of this wavelet
 	C - 3x3 covariance matrix estimate for this slowness vector
 		(ux,uy, t order assumed )
 	db - output database
@@ -40,6 +41,7 @@ int MWdb_save_slowness_vector(char *phase,
 	int evid,
 	int bankid,
 	double fc,
+	double fwin,
 	double *C,
 	int nsta,
 	int ncomp,
@@ -60,6 +62,7 @@ int MWdb_save_slowness_vector(char *phase,
 		"bankid",bankid,
 		"phase", phase,
 		"fc",fc,
+		"fwin",fwin,
 		"time",time,
 		"twin",twin,
 		"slo",slo,

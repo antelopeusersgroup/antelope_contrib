@@ -589,3 +589,46 @@ void M_estimator_n_vector(double *v,
 	free(delta_mean);
 	free(residuals);
 }
+/* Delete one jackknife error estimator.  Uses simple formula 
+of equation (4) of the following reference:
+
+Efron and Gong, 1983, American Statistician, 37, p. 36.
+
+Arguments:
+	n - length of vector x to compute jackknife error
+	x - vector of random variables to compute knife error
+		estimate from.
+
+
+Author:  Gary Pavlis
+*/
+
+double d1_jack_err(int n, double *x)
+{
+	double *pval;
+	double xbardot;
+	double jkerror;
+	double mean;
+	int i,j;
+	double resid;
+
+	allot(double *,pval,n);
+	/* compute the delete 1 estimates of the mean */
+	for(i=0,mean=0.0;i<n;++i)
+	{
+		for(j=0,pval[i]=0.0;j<n;++j)if(i!=j) pval[i]+=x[i];
+		pval[i]/=((double)(n-1));
+		mean += pval[i];
+	}
+	/* This is the average delete 1 mean */
+	mean /= ((double)n);
+
+	for(i=0,jkerror=0.0;i<n;++i)
+	{
+		resid = pval[i] - mean;
+		jkerror += resid*resid;
+	}
+	jkerror *= ((double)(n-1))/((double)n);
+	free(pval);
+	return(sqrt(jkerror));
+}

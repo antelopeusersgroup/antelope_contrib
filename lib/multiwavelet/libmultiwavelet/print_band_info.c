@@ -52,16 +52,23 @@ void print_window_data(int *dec,
 			noise[i].tend,
 			dec[i]);
 	}
-	fprintf(stdout,"Analysis time windows in seconds:\nsignal start\tsignal end\tsignal tpad\tnoise start\tnoise end\tsignal tpad\tsample interval\n");
+	fprintf(stdout,"Signal analysis time windows in seconds:\nstart\tend\ttpad\tsample interval\n");
 	for(i=0;i<n;++i)
 	{
 		sstart = (sig[i].tstart)*(sig[i].si);
 		send = (sig[i].tend)*(sig[i].si);
-		nstart = (noise[i].tstart)*(noise[i].si);
-		nend = (noise[i].tend)*(noise[i].si);
-		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\n",
 			i,
 			sstart,send,sig[i].tpad,
+			sig[i].si);
+	}
+	fprintf(stdout,"Noise analysis time windows in seconds:\nstart\tend\ttpad\tsample interval\n");
+	for(i=0;i<n;++i)
+	{
+		nstart = (noise[i].tstart)*(noise[i].si);
+		nend = (noise[i].tend)*(noise[i].si);
+		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\n",
+			i,
 			nstart,nend,noise[i].tpad,
 			sig[i].si);
 	}

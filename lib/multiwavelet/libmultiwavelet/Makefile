@@ -1,11 +1,11 @@
 LIB=libmultiwavelet.a		
 DLIB=$(LIB:.a=$(DSUFFIX)) # uncomment when creating a dynamic library
-DATADIR=	# directory under $(ANTELOPE)/data in which to put $(DATA) files
-DATA=		# data files to be placed in data/$(DATADIR)
+DATADIR=schemas2
+DATA=MWavelet1.2
 INCLUDE=multiwavelet.h 	# include files to be placed in include
 PF=		# parameter files to be placed in data/pf
 
-MAN3=mwtransform.3		
+MAN3=mwtransform.3 mwstatistics.3
 
 CLEAN= 		# Extra files which should be removed during a "make clean"
 

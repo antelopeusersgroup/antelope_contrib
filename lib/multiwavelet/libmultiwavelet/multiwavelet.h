@@ -281,6 +281,7 @@ MW_scalar_statistics MW_calc_statistics_float(float *,int );
 MW_scalar_statistics MW_calc_statistics_double(double *,int );
 float M_estimator_float(float *,int,int, double);
 complex M_estimator_complex(complex *,int );
+double d1_jack_err(int, double *);
 Dbptr mwap_readdata(Dbptr , Arr *, Time_Window , Time_Window );
 int free_noncardinal_traces(Dbptr );
 void check_required_pf(Pf *);
@@ -299,7 +300,7 @@ void trplot_by_sta(Dbptr,char *);
 void trplot_one_mwtrace(MWtrace *,char *);
 
 int MWdb_save_slowness_vector(char *, MWSlowness_vector *, double,
-	Time_Window *,char *, int, int, double, double *,
+	Time_Window *,char *, int, int, double, double, double *,
 	int, int, Dbptr);
 int MWdb_save_avgamp(char *, int, int, char *, double, double,
 	Time_Window *, double, double, int, Dbptr);

@@ -1,0 +1,134 @@
+.TH MWSTATISTICS 3 "$Date: 2000/8/10"
+.SH NAME
+MW_calc_statistics_float, MW_calc_statistics_double, M_estimator_float, M_estimator_complex, M_estimator_n_vector, d1_jack_err - multiwavelet robusts statistics routines
+
+.SH SYNOPSIS
+.nf
+#include "multiwavelet.h"
+MW_scalar_statistics MW_calc_statistics_float(float *x,int n);
+MW_scalar_statistics MW_calc_statistics_double(double *x,int n);
+float M_estimator_float(float *x,int n,int mode, double minscale);
+complex M_estimator_complex(complex *z,int n);
+void M_estimator_n_vector(double *v,int n, int nv, 
+      int mode, double minscale, double *mean, double *weight);
+double d1_jack_err(int n, double *x);
+.fi
+.SH DESCRIPTION
+.LP
+This is a collection of useful statistical functions used in the 
+multiwavelet code that might have utility elsewhere.  
+The focus is robust statistics using M-estimators.
+
+\fIMW_calc_statistics_float\fR and \fIMW_calc_statistics_double\fR are
+parallel routines for vectors of length n declared as float and
+double types respectively.  Both return a summary data structure 
+defined in multiwavelet.h as follows:
+.nf
+typedef struct MW_scalar_statistics_ {
+        double mean;
+        double median;
+        double q1_4,q3_4;
+        double low,high;
+} MW_scalar_statistics;
+.fi
+where q1_4 and q3_4 are the lower and upper quartiles respectively,
+low and high are the extremes of the distribution, while mean and median
+have the standard statistical meaning.  
+.LP
+\fIM_estimator_float\fR, \fIM_estimator_complex\fR, and
+\fIM_estimator_complex\fR are higher order functions that implement
+M-estimators on progressively more complicated types.  
+\fIM_estimator_float\fR computes an M-estimator of center for
+a vector x of n floats.   
+\fIM_estimator_complex\fR is similar for a vector z of n complex
+numbers (the complex type is as defined in sunperf.h).  
+\fIM_estimator_complex\fR is the comparable routine for a collection
+of n vectors of length nv. The storage these vectors is ugly to 
+allow interaction with sunperf or other FORTRAN oriented libraries.
+That is, the vectors that define v are assumed stored in an implicit
+FORTRAN order as what is really a matrix V with n rows and nv column.
+Since we used FORTRAN order that means the first n elements of v are
+the 1 components of vector v, the next n the 2 components, etc.  
+\fId1_jack_err\fR is quite different.  It computes and
+returns a delete-1 jackknife estimate of the standard deviation of a
+set of n floats stored in the vector x.
+.LP
+The \fImode\fR and \fIminscale\fR parameters in the M-estimator 
+routine are required for stability of any M-estimator scheme.  
+That is, M-estimators are prone to an instability in which the 
+solution undergoes a downward spiral with the weights getting 
+progressively smaller until they all go to zero.  A minscale
+factor is required to keep this from happening.  When the 
+scale factor computed from the residual in the M-estimator
+shrinks below minscale, it is reset to the minscale value
+preventing a downward spiral.  The mode parameter can take
+on one of two values defined in multiwavelet.h:  IQ_SCALE_RELATIVE or IQ_SCALE_ABSOLUTE.  The M-estimator functions here all use the
+interquartile distance as a robust measure of the scatter of 
+a distribution.  Scaling interacts with the minscale parameter,
+however, as the minscale parameter commonly has physical units 
+while the M-estimator rescales in an attempt to form a 
+measure that is scale invariant.  The mode parameter allows 
+the scaling of minscale to be absolute (IQ_SCALE_ABSOLUTE)
+meaning the number passed is in the physical units of the 
+original vector.  Alternatively, IQ_SCALE_RELATIVE implies
+a more complicated algorithm.  That is, we use the median of
+the original set of numbers as a measure of the physical scale
+and compute the minimum scale as the median times the minscale
+parameter.  This is clearly a bad idea for a zero mean process,
+but is most useful for something like the complex M-estimator
+where it is used verbatim with a frozen scale factor (this
+should and may be generalized in the future).  The complex
+and n-vector estimators use the Euclidean distance to define
+a scalar to which a standard loss function (Huber formula)
+is applied.  
+.LP
+The different M-estimator routines actually work quite differently.
+The scalar version is a standard M-estimator of center, but uses
+a dual weighting scheme recommended in papers by Chave and Thomson.
+That is, we first iterate with the Huber formula until convergence
+then continue the iteration with Thomson's redescending formula.  
+The later is skipped if the degrees of freedom are less than
+a fixed number (currently 10) because the Thomson formula has
+bad properties with low degrees of freedom.  The complex function
+actually just calls the scalar function on the real and imaginary 
+parts with relative scaling and a fixed minimum relative scale.  
+The n-vector version is more complicated and uses a Euclidean 
+norm residual to define a scalar attached to each input vector.
+I assume this scalar has a Rayleigh distribution to scale the
+interquartiles of the distribution appropriately.  After 
+that the same dual averaging Huber-Thomson formula estimator
+is constructed, but we computed a weighted vector average with
+each vector weighting scaled by the penalty function.
+.LP
+Note that the MW_calc_statistics function alter the input 
+vector returning the same numbers sorted in ascending order.
+The M-estimator routines leave the input unaltered.
+.SH RETURN VALUES
+.LP
+The MW_calc_statistics routines return a large decimal number defined
+in math.h as MAXDOUBLE and MAXFLOAT when they fail.  This currently 
+only happens if the number of data points is less than 2 when 
+any statistics are impossible.
+.LP
+The M-estimator always return an answer, but will sometimes leave
+warning errors in the error log using the elog functions.  
+.SH LIBRARY
+-lstock -lelog
+.SH DIAGNOSTICS
+There are several that should be self explanatory.  The most common
+is a convergence error in an m-estimator routine.  This usually 
+indicates a data problem that should be checked.  
+.SH "BUGS AND CAVEATS"
+.LP
+The scalar_statistics function are pretty plain and bombproof.
+However, qsort seems to have a nasty tendency to seg fault if
+you unintentionally pass these function a collection of NaNs.  
+This is obviously a problem when it happens anyway, but it is
+still bad behaviour to cause a seg fault.
+.LP
+The m-estimators come with an important caveat.  M-estimators
+are know to yield results that are strongly dependent on the
+initial guess.  The minscale parameters are also important
+and can you can get into real problems if you set them incorrectly.
+.SH AUTHOR
+Gary L. Pavlis
