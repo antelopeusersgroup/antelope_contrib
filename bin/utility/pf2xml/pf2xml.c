@@ -59,5 +59,7 @@ main( int argc, char **argv )
 		printf( "%s", xml );
 	}
 
+	free( xml );
+
 	return 0;
 }
