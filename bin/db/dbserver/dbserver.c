@@ -10,27 +10,25 @@
 
 static int debug = 1;
 
-int main(int argc, char **argv) {
+static int verbose = 0 ;
 
-    extern char *optarg;
-    extern int optind;
-    int c, errflg = 0 ;
+/* Perform one or more queries to the given dbname from the given
+   file descriptor (which can be stdin, a socket, a pipe, etc).
+*/
+
+void dbserve(char *database, FILE *fd) {
+
     Dbptr db;
-    char *database, *fmt ;
-    int verbose = 0 ;
+    
+    char *fmt ;
     Pf *pf = 0 ;
     Tbl *recipe, *keys, *values ;
 
-    Program_Name = argv[0];
 
-    if ( argc != 2 )
-	die ( 0, "Usage: %s database\n", Program_Name ) ;
-
-    database = argv[1];
     if ( dbopen(database, "r", &db ) != 0)
 	die (0, "Couldn't open database %s\n", database ) ;
-
-    if (pfin(stdin, &pf) != 0)
+    
+    if (pfin(fd, &pf) != 0)
 	die(0, "Can't read parameter file\n");
 
     if (debug) printf("reading the recipe.\n");
@@ -68,6 +66,24 @@ int main(int argc, char **argv) {
 	dbselect (db, values, stdout ) ;
 
     }
+}
+
+
+int main(int argc, char **argv) {
+
+    extern char *optarg;
+    extern int optind;
+    int c, errflg = 0 ;
+    char *database;    
+
+    Program_Name = argv[0];
+
+    if ( argc != 2 )
+	die ( 0, "Usage: %s database\n", Program_Name ) ;
+
+    database = argv[1];
+
+    dbserve(database, stdin);
 
     return 0;
 }
