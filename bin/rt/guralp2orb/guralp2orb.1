@@ -1,10 +1,9 @@
-.\" $Name$ $Date$
-.TH GURALP2ORB 1
+.TH GURALP2ORB 1 $Date$
 .SH NAME
 guralp2orb \- Import Guralp data over UDP port into Antelope ORB
 .SH SYNOPSIS
 .nf
-guralp2orb \[-v\] \[-pf parameter_file\] orbname port
+guralp2orb [-v] [-pf parameter_file] orbname port
 .fi
 .SH DESCRIPTION
 guralp2orb receives seismic data from Guralp digitizers in GCF format
@@ -27,7 +26,6 @@ the ORB source identifier to which it is converted.
 .SH FILES
 The parameter file is guralp2orb.pf, unless otherwise specified with the 
 -pf option.
-.SH ENVIRONMENT
 .SH PARAMETER FILE
 .nf
 WO0694 &Arr{
@@ -82,7 +80,6 @@ MCK000 &Arr{
    }
 }
 .fi
-.SH EXAMPLE
 .SH DIAGNOSTICS
 .nf
 Ignoring station MCK stream_id 00BHME

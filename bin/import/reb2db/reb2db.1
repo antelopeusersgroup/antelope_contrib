@@ -4,7 +4,7 @@
 reb2db \- reformat Reviewed Event Bulletins to CSS3.0 database format
 .SH SYNOPSIS
 .nf
-reb2db filename \[filename ...\] dbname
+reb2db filename [filename ...] dbname
 .fi
 .SH DESCRIPTION
 reb2db converts Reviewed Event Bulletin files from the International
@@ -42,9 +42,6 @@ Warning: problem adding phase:
 	The new record matched the primary key of record #8, but field 'arid' is different.
  ...Forcing the addition of arid 9993866 from file 'gsebull_badphases' (orid 591036 evid 586467)
 
-.fi
-.SH "SEE ALSO"
-.nf
 .fi
 .SH "BUGS AND CAVEATS"
 If no DATA_TYPE line is found, reb2db assumes IMS1.0 format at the 
