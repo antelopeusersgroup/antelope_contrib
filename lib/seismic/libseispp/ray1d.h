@@ -12,18 +12,14 @@ class RayPathSphere
 public:
 	int npts;
 	double p;
-	double *r,*delta,*t;
-	RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
+	vector<double> r,delta,t;
 	RayPathSphere(int n)
-	{npts=n; r=new double[n], delta=new double[n], t=new double[n];};
+	{npts=n; r.resize(n); delta.resize(n); t.resize(n);};
 	// This fully parametrized version constructs a full path
 	RayPathSphere(Velocity_Model_1d& vm,
 		double p, double zmax, double tmax, double dt, 
 		const string mode);
 	RayPathSphere(const RayPathSphere& raytocopy);
-	~RayPathSphere(){if(r!=NULL)delete[]r;
-		if(delta!=NULL)delete[]delta;
-		if(t!=NULL)delete[]t;};
 	void operator = (const RayPathSphere&);
 	double depth(int ip);
 };

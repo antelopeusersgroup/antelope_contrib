@@ -82,7 +82,7 @@ RayPathSphere::RayPathSphere(Velocity_Model_1d& vmod,
 		else
 		{
 			dt=del;
-			dz=rnow*rnow*root_term*dt/(eta*eta);
+			dz=rnow*root_term*dt/(eta*eta);
 		}
 		// Note this is in radians
 		ddelta=p*dz/(rnow*root_term);
@@ -104,6 +104,9 @@ RayPathSphere::RayPathSphere(Velocity_Model_1d& vmod,
 	// temporary structure, but that's a judgment call on memory
 	// use versus clarity.
 	npts = npoints;
+	r.resize(npoints);
+	t.resize(npoints);
+	delta.resize(npoints);
 	r[0]=R0;
 	t[0]=0.0;
 	delta[0]=0.0;
@@ -120,12 +123,9 @@ RayPathSphere::RayPathSphere(const  RayPathSphere& other)
 {
 	npts=other.npts;
 	p=other.p;
-	r=new double[npts];
-	delta=new double[npts];
-	t=new double[npts];
-	dcopy(npts,other.r,1,r,1);
-	dcopy(npts,other.delta,1,delta,1);
-	dcopy(npts,other.t,1,t,1);
+	r=other.r;
+	t=other.t;
+	delta=other.delta;
 }
 
 /* basic assignment operator for this object*/
@@ -134,15 +134,9 @@ void RayPathSphere::operator=(const RayPathSphere& other)
 	if(&other==this) return;
 	npts=other.npts;
 	p=other.p;
-	if(r!=NULL) delete [] r;
-	if(delta!=NULL) delete [] delta;
-	if(t!=NULL) delete [] t;
-	r=new double[npts];
-	delta=new double[npts];
-	t=new double[npts];
-	dcopy(npts,other.r,1,r,1);
-	dcopy(npts,other.delta,1,delta,1);
-	dcopy(npts,other.t,1,t,1);
+	r=other.r;
+	t=other.t;
+	delta=other.delta;
 }
 double RayPathSphere::depth(int ip)
 {
@@ -250,8 +244,6 @@ dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
 		double theta, int ix1, int ix2)
 					throw(GCLgrid_error)
 {
-	dmatrix *pathptr;
-	dmatrix& pathout=*pathptr;
 	Cartesian_point this_point;
 	double radius;  // Radius corrected for ellipticity
 	double lat,lon;
@@ -259,7 +251,9 @@ dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
 	if(ix1>=grid.n1 || ix2>=grid.n2 || ix1<0 || ix2<0)
 		throw GCLgrid_error("GCLgrid_Ray_project was passed an illegal index\n");
 
+	dmatrix *pathptr;
 	pathptr = new dmatrix(3,path.npts);
+	dmatrix& pathout=*pathptr;
 	lat0=grid.lat(ix1,ix2);
 	lon0=grid.lon(ix1,ix2);
 	for(int i=0;i<path.npts;++i)
