@@ -1,0 +1,46 @@
+'\" te
+.TH MWAP_ENGINE 3 "$Date$"
+.SH NAME
+mwap_engine - implements multiwavelet array processing
+.SH SYNOPSIS
+.nf
+mwap_engine db [-phase phase -sift expression -pf pfname]
+.fi
+.SH DESCRIPTIONw
+.LP
+\fImwap_engine\fR is the actual program that does multiwavelet
+array processing as described in mwap(1).  The mwap command actually
+is a TCL/TK GUI that simplies interaction with mwap_engine.  
+mwap and mwap_engine interact through two named pipes defined in
+the input parameter file for mwap.  mwap_engine accesses this 
+same parameter file.  i.e. mwap_engine by default reads the
+mwap.pf parameter file.  This means basically that mwap and mwap_engine
+have overlapping parameter spaces.  You can specify an alternative
+parameter file for mwap_engine through the -pf argument.
+.SH OPTIONS
+.LP
+\fI-phase\fR is used to use arrivals other than the default P phase.
+.LP
+\fI-sift\fR is used to apply a selection criterion to the input view
+before processing begins.  The associated expression is passed verbatim
+to dbsubset to produce a new subset view.  Because mwap_engine sorts
+data by evid the most commmon use of this argument would be to start 
+processing at a particular evid (e.g. -sift "evid>=275"  will start 
+with evid 275). 
+.LP
+\fI-pf\fR allows using an alternative parameter file to the default
+mwap.pf.
+.SH PARAMETER FILE
+.LP
+See mwap(1).
+.SH "SEE ALSO"
+.nf
+mwap(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.\" $Id$

@@ -1,6 +1,6 @@
 BIN=mwap_engine	
 PF=mwap.pf
-MAN1=mwap.1
+MAN1=mwap.1 mwap_engine.1
 
 ldflags=
 ldlibs= -lmultiwavelet -lglputil -lgenloc  -ltrvltm -ldl \
