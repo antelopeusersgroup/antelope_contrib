@@ -76,11 +76,17 @@ dbputv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
     put the specified values into a Datascope database
 
 <subsection Forming views>
+dbfree( DBPTR )
+    Free resources used by a Datascope database view
+
 DBPTR = dbjoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer'] )
     join the specified Datascope database tables
 
 DBPTR = dbnojoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
     find records which do not join
+
+DBPTR = dbprocess ( DBPTR, STATEMENT_LIST )
+    construct a view as a series of standard operations
 
 DBPTR = dbsort ( DBPTR [,FIELD, FIELD,...] )
     sort the specified Datascope database table
@@ -266,9 +272,16 @@ NSOURCES = orbselect ( ORBFD, REGEX )
 PKTID = orbtell ( ORBFD )
     ask for the current read-position on an Antelope ORB
 
+<subsection Seismic Travel Times>
+[TIMES, PHASENAMES] = ARRTIMES ( DELTA, DEPTH )
+    Returns predicted seismic phase arrival times
+
 <subsection Special functions>
 dbadd_remark ( DBPTR, REMARK )
     add a remark to a datascope Database
+
+[FILENAME STATUS] = dbextfile( DBPTR, TABLENAME )
+    Compose a filename from the specified Datascope database record
 
 [FILENAME STATUS] = dbfilename ( DBPTR )
     compose a filename from a database record
