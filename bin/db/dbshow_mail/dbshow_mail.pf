@@ -1,0 +1,17 @@
+mail_viewer dtmail -f 
+nfiles_unquestioned_default 100
+home &env(HOME)
+default_maildb &home/data/db/mail
+age_cutoff now() - 15724800
+lookup_alias &Arr{
+mf	Franke, Mathias
+dh	Harvey, Danny
+tsh	Hansen, Todd
+rh	Hansen, Roger
+ogk	Kuraica, Ogie
+kl	Lindquist, Kent
+tm	Mulder, Taimi
+dq 	Quinlan, Dan
+it	Tibuleac, Ileana
+flv 	Vernon, Frank
+}

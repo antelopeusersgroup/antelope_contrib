@@ -1,0 +1,83 @@
+.TH DBSHOW_MAIL 1 "$Date$"
+.SH NAME
+dbshow_mail \- show mail messages in a database view
+.SH SYNOPSIS
+.nf
+dbshow_mail [-n] [-a] [-f from] [-w nmax] dbtable
+.fi
+.SH DESCRIPTION
+dbshow_mail by default is intended to be run from dbe(1). dbshow_mail copies the
+email messages referred to by the input view (Mail1.1 schema) to a
+temporary file, then runs a mail-viewer on that temporary file. The
+mail viewer is specified in the parameter file; the name of the
+temporary file with the selected messages will be appended to this
+parameter value and executed via a system call.
+
+With the -f option, dbshow_mail looks for the specified name in the 
+correspondents.realname field, joins to the 'in' table, subsets for 
+messages newer than age_cutoff unless -a is specified, and displays
+the resulting messages in the given mail viewer. Aliases may be set 
+in the lookup_alias parameter-file table for commonly used names.
+
+.SH OPTIONS
+.IP "-w nmax"
+Maximum number of email messages to show without asking for confirmation. Default is specified 
+in the parameter file as nfiles_unquestioned_default
+.IP "-f from"
+Show messages from the specified sender. Limit to messages
+more recent than the age_cutoff in the parameter file, unless -a is 
+specified
+.IP -a
+Show all mail messages from a specified sender (use with -f)
+.IP -n
+Show registered name aliases and exit
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+mail_viewer dtmail -f 
+nfiles_unquestioned_default 100
+lindcns &env(LINDCNS)
+default_maildb /usr/local/lindcns/4.5p/src/data/db/mail
+age_cutoff now() - 15724800
+lookup_alias &Arr{
+dq 	Quinlan, Dan
+flv 	Vernon, Frank
+dh	Harvey, Danny
+tsh	Hansen, Todd
+}
+.fi
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+Here's a sample entry for .dbe.pf:
+
+Mail1.1 &Arr{
+graphics &Arr{
+        in &Tbl{
+                "View Messages" dbshow_mail -
+        }
+        out &Tbl{
+                "View Messages" dbshow_mail -
+        }
+}
+}
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+filemail(1), dbe(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
