@@ -422,6 +422,9 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 		*smajax = chisq_crit[iconf][1]*sqrt(evals[1]);  /*2 dgf */
 		*sminax = chisq_crit[iconf][1]*sqrt(evals[0]);
 		*strike= 90.0 - deg(atan2(vwork[3],vwork[2]));
+		/* phase-wrap so the principal value of the arctangent 
+		   maps to the valid range of the CSS origerr.strike field */
+		if( *strike < 0 ) *strike += 360.;
 	}
 	/* Now we have to do the full covariance to properly compute
 	the depth and time uncertainties*/
