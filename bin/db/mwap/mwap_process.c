@@ -285,6 +285,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	this is something to repair later */
 	double up[3]={0.0,0.0,1.0};
 	int bankid;  /* mutliwavelet group id */
+	int band_exit = 0;
 
 	/* This is essential or copy_arrival_array can produce garbage */
 	arrival0=NULL;
@@ -423,7 +424,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		same origin data.  */
 		ierr = set_pwstatics(stations,refsta,phase,db_bundle,pf);
 		if(ierr)elog_complain(0,"%d errors computing %d plane wave statics for evid %d\n",
-			ierr,ie-is+1,evid);
+			ierr,ie-is,evid);
 
 		/* This routine loads an Arr of arrival times from 
 		the input db to be used to compute initial slowness
@@ -607,11 +608,28 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			
 			iterations = 0;
 			do {
-				compute_mw_arrival_times(gathers,
+				if(compute_mw_arrival_times(gathers,
 					nwavelets,timeref,moveout,lag,
 					polarization,swin+i,
 					&arrival_new,&static_result,
-					&avgamp, &amperr, &ampndgf);
+					&avgamp, &amperr, &ampndgf))
+				{
+					elog_complain(0,"compute_mw_arrival failed to compute statics\n");
+					/* I use a flag to avoid an
+					evil goto here */
+					band_exit = 1;
+					/* This is strange but necessary
+					to stop string of bogus errors from
+					copy_arrival_array function when
+					this loops back */
+					if(arrival_new!=NULL)
+						freearr(arrival_new,free);
+					arrival_new = NULL;
+
+					break;
+				}
+					
+					
 				/* Note this routine updates residual
 				static values to new values relative to
 				the new slowness vector estimate */
@@ -636,6 +654,11 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 				++iterations;
 			}while ( ( dtmax > ((*gathers)->x1[0]->dt))
 				&& (iterations < MAX_MAIN_LOOP) );
+			if(band_exit)
+			{
+				band_exit = 0;
+				continue;
+			}
 
 			/* This routine computes the covariance of
 			the estimated slowness vector */

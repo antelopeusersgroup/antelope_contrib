@@ -76,7 +76,7 @@ Added code for stations with bad timing.
 */
 Arr *create_station_objects(Pf *pf, int nbands)
 {
-	int i,j;
+	int i,j,k;
 	Arr *a;
 	Tbl *t;
 	MWstation *s;
@@ -106,8 +106,21 @@ Arr *create_station_objects(Pf *pf, int nbands)
 			word = strtok(NULL,white);
 			if(word == NULL)
 			{
-				elog_notify(0,"error in station_weights parameter input\nExpected list of %d weights, found only %d\n",
-					nbands, i);
+				elog_notify(0,"error in station_weights parameter inputfor station %s\nExpected list of %d weights, found only %d\n",
+					sta,nbands, j);
+				if(j==0)
+				{
+					elog_notify(0,"No weights defined in any band for station %s\nSetting all weights to 1.0\n",
+						sta);
+					for(k=0;k<nbands;++k)s->weights[k]=1.0;
+				}
+				else
+				{
+					elog_notify(0,"Setting weights for station %s above band %d to %lf\n",
+						sta,j-1,s->weights[j-1]);
+					for(k=j;k<nbands;++k)
+						s->weights[k]=s->weights[j-1];
+				}
 				break;
 			}
 			s->weights[j] = atof(word);

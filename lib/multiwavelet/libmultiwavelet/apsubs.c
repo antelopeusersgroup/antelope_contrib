@@ -665,7 +665,7 @@ double compute_time_reference(Arr *stations, Arr *arrivals,
 #define MAXCON 10000.0  /*maximum condition number before sv truncation*/
 #define USCALE 0.1  /* Slowness nondimensional scale factor in convergence
 			loop.  Value here is for 10 km/s -- */
-#define CONVERGE_TEST  0.0001  /* break robust loop when change in 
+#define CONVERGE_TEST  0.00005  /* break robust loop when change in 
 				slowness vector length / USCALE is less
 				than this constant.  */
 #define MAXIMUM_ITERATION 20
@@ -765,6 +765,13 @@ the MWstation object it can then extract the current weight to be
 presumably stored in an output database table.  
 
 Author:  G Pavlis
+
+History:
+Originally written late 1999
+Modified: August 2000
+Added logic for a null space projector after each iteration.  Found
+that previous version led to a biased slowness estimate that preserved
+relics of picking errors in previous passes.  
 */
 int estimate_slowness_vector(
 			MWSlowness_vector u0,
@@ -790,6 +797,10 @@ int estimate_slowness_vector(
 	double *U, vt[9];  /*I use an SVD for numerical stability.  These hold
 			orthogonal matrices in SVD estimate */
 	double sval[3];  /* Singular values go here */
+	double *Uraw;  /* We store the singular vectors of the unweighted
+			matrix A to use to compute a null space projectot
+			applied to the residual static vector after each
+			iteration. */
 
 	MWstation *sref;
 	MW_scalar_statistics stats;
@@ -820,6 +831,7 @@ int estimate_slowness_vector(
 	allot(double *,bw,m);
 	allot(double *,atime,m);
 	allot(double *,U,m*3);
+	allot(double *,Uraw,m*3);
 	allot(MWstation **,sptr,m);
 
 	/* It is necessary to always clear the residual static field
@@ -831,6 +843,7 @@ int estimate_slowness_vector(
 	slow->ux = u0.ux;
 	slow->uy = u0.uy;
 	slow->refsta = refsta;
+
 
 	/* Now we loop through the arrival list forming A, b, and keeping
 	arrival times (atime) for later use.  Notice that A is filled
@@ -875,6 +888,11 @@ int estimate_slowness_vector(
 	}
 	else
 	{
+	    /* We compute the left singular vectors for the 
+	    raw matrix and save these to compute the null projector
+	    below */
+	    dcopy(3*m,A,1,Uraw,1);
+	    dgesvd('o','a',m,3,Uraw,m,sval,NULL,m,vt,3,&info);
 
 	    /* We assume here that the reference station is defined
 	    and we trapped this potential error earlier */
@@ -980,7 +998,6 @@ int estimate_slowness_vector(
                                                 		*slow,refelev,phase);
 
 				b[i] -= sptr[i]->elevation_static;
-				sptr[i]->residual_static = b[i];
 				/* IMPORTANT:  This sets this term for
 				later in the program.  Signal processing
 				routines use only this weight */
@@ -990,24 +1007,19 @@ int estimate_slowness_vector(
 			else
 				b[i] = 0.0;
 		}
-		/* finally we need to deal with dc offset issue.  The approach
-		here is to tie everything to the pick at the reference 
-		station.  We do this by adjusting the current arrival time
-		so the computed time (including all the statics) at the 
-		reference station is 0.0.  This throws away the solution
-		computed with x[2].  This is perfectly ok, however, because
-		the dc term is completely indeterminate.  A details is that
-		we implicitly skip this step if the reference station 
-		has no pick.  It is implicit because in this situation
-		it is assumed that sref has not been set and was 
-		initialized to 0.0 before this function was called.
-		In that situation the picks will shift around a bit
-		in dc level, while they will be locked to a fixed
-		reference when the reference station has a pick.*/
-		dtref = sref->residual_static;
-		for(i=0;i<m;i++)
-			if((sptr+i)!=NULL)
-				sptr[i]->residual_static -= dtref;
+		/* Here we apply a projector that forces the set of 
+		residual statics we compute to be unbiased wrt to the 
+		slowness vector estimated.  This also minimizes the
+		amount of information placed in statics relative to
+		slowness.  Note we recycle bw here as a work space
+		to hold the projected b vector. */
+		if(null_project(Uraw,m,3,b,bw))
+			elog_complain(0,"Error in null_project:  slowness vector estimates may be biased\n");
+		for(i=0;i<m;i++) 
+		{
+			if((sptr+i) != NULL)
+				sptr[i]->residual_static = bw[i];
+		}
 		/* We compute a convergence test as a ratio of the 
 		correction to the slowness vector to fixed slowness
 		vector scale.  We use this norm for several reasons:
@@ -1034,6 +1046,7 @@ int estimate_slowness_vector(
 	free(reswt);
 	free(atime);
 	free(U);
+	free(Uraw);
 	free(sptr);
 	freetbl(t,0);
 

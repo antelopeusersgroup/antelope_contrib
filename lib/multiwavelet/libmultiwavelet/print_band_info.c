@@ -59,7 +59,7 @@ void print_window_data(int *dec,
 		send = (sig[i].tend)*(sig[i].si);
 		nstart = (noise[i].tstart)*(noise[i].si);
 		nend = (noise[i].tend)*(noise[i].si);
-		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
 			i,
 			sstart,send,sig[i].tpad,
 			nstart,nend,noise[i].tpad,

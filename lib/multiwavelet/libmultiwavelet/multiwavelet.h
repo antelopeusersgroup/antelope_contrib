@@ -270,7 +270,7 @@ int *compute_lag_in_samples(MWgather *,double *, double );
 double phase_to_time(double ,double , double );
 int compute_optimal_lag(MWgather **,int ,double ,
         double *,Spherical_Coordinate, Time_Window *,int, int);
-void compute_mw_arrival_times(MWgather **,int ,double ,double *, int , 
+int compute_mw_arrival_times(MWgather **,int ,double ,double *, int , 
 	Spherical_Coordinate, Time_Window *, Arr **, Arr **,
 	double *,double *,int *);
 void compute_mw_particle_motion(MWgather **,int ,double ,

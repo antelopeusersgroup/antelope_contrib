@@ -15,18 +15,18 @@ snr_cutoff_statistic
 coherence_measure
 }
 }
-graphics true
 get_wavelets_from_database false
 bankid 1
 array_name LODORE
 accumulate_statics true
-TTmodel iasp91
+#TTmodel iasp91
+TTmodel foo
 TTmethod tttaup tttaup utaup
 snr_component_to_test z
 snr_cutoff_statistic max
 snr_cutoff &Tbl{
-1.5 
-1.5
+4.0
+4.0
 -1.0
 }
 #
@@ -260,10 +260,13 @@ wavelets &Tbl{
 # number_frequency_bands MUST match the number of entries in 
 # the bands Tbl.   
 #
-number_frequency_bands 1
+number_frequency_bands 3
 bands &Tbl{
-/u/pavlis/response/RT72A_5_s 
+none
+/u/pavlis/response/RT72A_2_s 
+/u/pavlis/response/RT72A_2_s 
 }
+#/u/pavlis/response/RT72A_2_s 
 #
 # These define signal and noise time windows for each 
 # band.  If the list is short the last entry is duplicated
@@ -283,14 +286,16 @@ bands &Tbl{
 # versions for a fast debug with fake data
 
 signal_analysis_windows &Tbl{
--35 20 20 1 1
+-20 20 20 1 1
+-20 20 20 1 1
 }
 #
 # Noise windows in samples
 #  order is the same as for signal windows 
 #
 noise_analysis_windows &Tbl{
--100 -40 40 1 1
+-100 -20 20 1 1
+-100 -20 20 1 1
 }
 #
 #  This defines the list of stations to be used and the
@@ -299,39 +304,39 @@ noise_analysis_windows &Tbl{
 #  defined for the wavelet transform above.
 #
 station_weights &Tbl{
-BLUE  1.0 1.0 1.0
-CALA  1.0 1.0 1.0
-CALI  1.0 1.0 1.0
-CSD  1.0 1.0 1.0
-DOUG  1.0 1.0 1.0
-DRY  1.0 1.0 1.0
-FWGP  1.0 1.0 1.0
-GRAN  1.0 1.0 1.0
-HELL  1.0 1.0 1.0
-HIAW  1.0 1.0 1.0
-JNMT  1.0 1.0 1.0
-JWM  1.0 1.0 1.0
-KINN  1.0 1.0 1.0
-LANG  1.0 1.0 1.0
-LIME  1.0 1.0 1.0
-LOOK  1.0 1.0 1.0
-LSC  1.0 1.0 1.0
-MAYB  1.0 1.0 1.0
-NDH  1.0 1.0 1.0
-PINR  1.0 1.0 1.0
-PMR  1.0 1.0 1.0
-POW  1.0 1.0 1.0
-RRE  1.0 1.0 1.0
-RRW  1.0 1.0 1.0
-SMR  1.0 1.0 1.0
-SUTT  1.0 1.0 1.0
-SWB  1.0 1.0 1.0
-TANK  1.0 1.0 1.0
-TWIN  1.0 1.0 1.0
-VMCK  1.0 1.0 1.0
-VMSC  1.0 1.0 1.0
-YSCF  1.0 1.0 1.0
-ZENO  1.0 1.0 1.0
+BLUE  1.0 1.0 1.0 1.0 1.0
+CALA  1.0 1.0 1.0 1.0 1.0
+CALI  1.0 1.0 1.0 1.0 1.0
+CSD  1.0 1.0 1.0 1.0 1.0
+DOUG  1.0 1.0 1.0 1.0 1.0
+DRY  1.0 1.0 1.0 1.0 1.0
+FWGP  1.0 1.0 1.0 1.0 1.0
+GRAN  1.0 1.0 1.0 1.0 1.0
+HELL  1.0 1.0 1.0 1.0 1.0
+HIAW  1.0 1.0 1.0 1.0 1.0
+JNMT  1.0 1.0 1.0 1.0 1.0
+JWM  1.0 1.0 1.0 1.0 1.0
+KINN  1.0 1.0 1.0 1.0 1.0
+LANG  1.0 1.0 1.0 1.0 1.0
+LIME  1.0 1.0 1.0 1.0 1.0
+LOOK  1.0 1.0 1.0 1.0 1.0
+LSC  1.0 1.0 1.0 1.0 1.0
+MAYB  1.0 1.0 1.0 1.0 1.0
+NDH  1.0 1.0 1.0 1.0 1.0
+PINR  1.0 1.0 1.0 1.0 1.0
+PMR  1.0 1.0 1.0 1.0 1.0
+POW  1.0 1.0 1.0 1.0 1.0
+RRE  1.0 1.0 1.0 1.0 1.0
+RRW  1.0 1.0 1.0 1.0 1.0
+SMR  1.0 1.0 1.0 1.0 1.0
+SUTT  1.0 1.0 1.0 1.0 1.0
+SWB  1.0 1.0 1.0 1.0 1.0
+TANK  1.0 1.0 1.0 1.0 1.0
+TWIN  1.0 1.0 1.0 1.0 1.0
+VMCK  1.0 1.0 1.0 1.0 1.0
+VMSC  1.0 1.0 1.0 1.0 1.0
+YSCF  1.0 1.0 1.0 1.0 1.0
+ZENO  1.0 1.0 1.0 1.0 1.0
 }
 
 clock_is_bad &Tbl{
@@ -398,7 +403,7 @@ sample_interval 0.025	#This is the sample interval of all data processed.
 # is small fudge factor and can even be 0.0. I recommend a small
 # number to add a light padding that avoids inadvertent truncation
 # 
-maximum_slowness 0.05   
+maximum_slowness 0.2
 #
 #  These are the main control parameters that relate to the 
 #  details of the algorithm.

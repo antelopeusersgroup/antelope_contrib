@@ -12,26 +12,34 @@ multiwavelet transform.  This grouping is a little arbitrary, but
 useful in some contexts. */
 
 /* phase measurements always have the standard 2*PI ambiguity. 
-This little function attempts to resolve the phase difference
-between two complex numbers by comparing the difference with
-+ and - 2pi and taking the minimum.  This should work correctly
-across the 0 phase boundary in either direction to return a 
-correct phase difference (z1-z0) */
+This little function computes the phase difference using
+complex arithmetic.  This would be much easier if C had
+complex numbers as a native data type.
+This is much simpler than working with the phase directly 
+as we don't need to worry about wrapping this way at all.
+We still have cycle skip potential, but that is a different issue.
+*/
 double unwrap_delta_phase(complex z1, complex z0)
 {
-	double dph0,dphp,dphm;
-	double ph0,ph1;
+	double r1,r0;
+	double rpart,ipart;
+	complex nz1,nz0;  /* used to hold z1 and z0 normalized to unit length*/
+	double dphi;
 
-	ph0 = atan2((double)z0.i,(double)z0.r);
-	ph1 = atan2((double)z1.i,(double)z1.r);
-
-	dph0 = ph0 - ph1;
-	dphp = dph0 + (2.0*M_PI);
-	dphm = dph0 - (2.0*M_PI);
-
-	dph0 = MIN(fabs(dph0),fabs(dphp));
-	dph0 = MIN(fabs(dph0),fabs(dphm));
-	return(dph0);
+	r0 = hypot((double)z0.r,(double)z0.i);
+	r1 = hypot((double)z1.r,(double)z1.i);
+	nz0.r = z0.r/((float)r0);
+	nz0.i = z0.i/((float)r0);
+	nz1.r = z1.r/((float)r1);
+	nz1.i = z1.i/((float)r1);
+	/* This forms the product z1*z0(conjugate) that phase of
+	which is phi1-phi0 */
+	rpart = ((double)(nz0.r))*((double)(nz1.r))
+		+ ((double)(nz0.i))*((double)(nz1.i));
+	ipart = ((double)(nz0.r))*((double)(nz1.i))
+		- ((double)(nz0.i))*((double)(nz1.r));
+	dphi = atan2(ipart,rpart);
+	return(dphi);
 }
 
 
@@ -446,7 +454,7 @@ int check_snr_this_band(int band, Pf *pf)
 
 	t = pfget_tbl(pf,"snr_cutoff");
 	if(t == NULL) return(0);
-	if(maxtbl(t)<band) return(0);
+	if(maxtbl(t)<=band) return(0);
 	line = gettbl(t,band);
 	sscanf(line,"%lf",&snr_cutoff);
 	if(snr_cutoff<=0.0) return(0);
@@ -1162,9 +1170,11 @@ float compute_coherence_measure(MWgather *g,Time_Window w,int *lags, int type)
 	double denom;
 	int data_end;
 	complex cweight={0.0,0.0};
+/*
 float seisr[1000];
 float seisi[1000];
 int idbug, jdbug;
+*/
 
 	/*This is one of those interval versus points things again */
 	total_window_length = ((w.length)-1)*(w.increment);
@@ -1183,11 +1193,13 @@ int idbug, jdbug;
 						A+ii,g->nsta);
 			cweight.r = (float)(g->sta[i]->current_weight_base);
 			cscal(w.length,&cweight,A+ii,g->nsta);
+/*
 for(idbug=0,jdbug=0;jdbug<w.length;++jdbug,idbug+=(w.increment))
 {
 	seisr[idbug]=g->x3[i]->z[lags[i]+idbug].r;
 	seisi[idbug]=g->x3[i]->z[lags[i]+idbug].i;
 }
+*/
 
 			++ii;
 		}
@@ -1407,7 +1419,7 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 	int nsta_used;
 	int data_end,window_length;
 	complex cweight={0.0,0.0};
-float Adebug[33][20];
+float Adebug[33][10];
 
 	for(i=0,nsta_used=0;i<(g->nsta);++i)
 	{
@@ -1427,7 +1439,7 @@ float Adebug[33][20];
 		if(lags[i]<0) continue;
 		window_length = ((w->length)-1)*(w->increment)+1;
 		data_end = g->x3[i]->nz;
-		if(lags[i]+window_length<data_end)
+		if(lags[i]+window_length<=data_end)
 		{
 			ccopy(w->length,(g->x3[i]->z)+lags[i],(w->increment),
 						A+i,g->nsta);
@@ -1446,7 +1458,7 @@ float Adebug[33][20];
 		}
 	}
 for(i=0;i<nsta_used;++i)
-for(j=0;j<w->length;++j)
+for(j=0;j<10;++j)
 Adebug[i][j] = A[i+j*(g->nsta)].r;
 	return(nsta_used);
 }
@@ -1464,7 +1476,9 @@ int build_3c_matrix(MWgather *g,int *lags,Time_Window *w,
 	int i,ii,j;
 	int nsta_used;
 	int m;
+/*
 float Adebug[99][20];
+*/
 
 	int window_length, data_end;
 	complex cweight={0.0,0.0};
@@ -1479,7 +1493,7 @@ float Adebug[99][20];
 			&& ((g->x3[i]) != NULL))
 		{
 		    data_end = g->x3[i]->nz;
-		    if(lags[i]+window_length<data_end)
+		    if(lags[i]+window_length<=data_end)
 		    {
 			ccopy(w->length,(g->x1[i]->z)+lags[i],(w->increment),
 						A+ii,m);
@@ -1536,8 +1550,10 @@ float Adebug[99][20];
 			weights[ii+2]=0.0;
 		}
 	}
+/*
 for(i=0;i<m;++i) for(j=0;j<w->length;++j)
 		Adebug[i][j] = A[i+j*m].r;
+*/
 	return(nsta_used);
 }
 /* This small function converts a phase angle measured in radians to 
@@ -1642,12 +1658,32 @@ statics much like the time statics.  That is, we compute relative amplitudes
 only relative to the array median and do so wavelet by wavelet.  
 3.  Argument list changed.  Added a return of an absolute amplitude 
 estimate and corresponding errors.  
+July 2000
+Changed from a void function to int to allow an all is lost error return.
+This was found necessary to catch a case when all the data in the static
+matrix were null.  The calling function should discard the results when
+this happens.  
 */
 #define DT_MAX_ITERATION 20
+/* We terminate the loop when the final adjustment is this fraction
+of the sample rate for this band.  We use a number less than 1 because
+lag computation uses a nint and any integer adjustment of the lag 
+vector will change the result.  We want the iteration to not stop
+until the lag vector does not change.  This is simpler than testing
+the actual values of the lag vector.*/
+#define DT_FRACTION_TERMINATE 0.5
 /* This value yields a minimum scale factor for angles of approximately
 + to 1 20 degrees.   The value equals 0.5 radians */
 #define MIN_PHI_SCALE 0.50
-void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
+/* large phase angle jumps are dangerous because of the way this algorithm
+works.  computed phase angles larger than this value will be 
+truncated to this size.  Note because we try to unwrap the phase the 
+largest possible angle is 180 degrees.  Setting this too small can force
+no iterations for a wavelet short enough that phi of one sample is
+less than this limit.
+*/
+#define PHASE_ANGLE_LIMIT 2.3561945
+int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	double *moveout, int opt_lag, Spherical_Coordinate polarization,
 	Time_Window *win, Arr **arrival, Arr **results_array,
 	double *avgamp, double *amperr, int *ampndgf)
@@ -1682,6 +1718,7 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	if((*results_array)!=NULL) freearr(*results_array,free);
 	*arrival = newarr(0);
 	*results_array = newarr(0);
+
 	/* First we define a rotation matrix to ray coordinates and
 	then form new gathers rotated into ray coordinates */
 	ray_coordinate_trans(polarization,U);
@@ -1692,6 +1729,16 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 		trans_gath[i] = MWgather_transformation(g[i],U);
 	}
 	nsta = trans_gath[0]->nsta;
+	/* If the number of stations transformed is too small we
+	don't want to proceed.*/
+	if(nsta<3)
+	{
+		elog_complain(0,"compute_mw_arrival: number of stations in the input gather = %d\nAt least 3 stations are required to compute slowness and statics\n",
+			nsta);
+		for(i=0;i<nwavelets;++i) 
+			free_MWgather(trans_gath[i]);
+		return(-1);
+	}
 	allot(double *,current_moveout,nsta);
 	allot(complex *,A,nsta*(win->length));
 	allot(float *,weights,nsta);
@@ -1721,8 +1768,36 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 		nsta_used = build_static_matrix(trans_gath[i],lags,win,
 					weights,A);
 		if(nsta_used != nsta) 
+		{
 			elog_log(0,"compute_mw_arrival_times:  Computing statics for only %d of %d stations\n",
 				nsta_used,nsta);
+			if(nsta_used<3)
+			{
+				elog_complain(0,"Unrecoverable error in mw_arrival_compute:  only %d stations have nonzero entries in principle component matrix\n",
+					nsta_used);
+				free(current_moveout);
+				free(lags);
+				free(A);
+				free(svalues);
+				free(weights);
+				free(eigenvectors);
+				free(ampwork);
+				free(sv1);
+				free(centroid);
+				free(work);
+				free(work2);
+				free(r);  
+				free(phi);	
+				free(iqr);	
+				free(iqphi);
+				free(dt);
+				for(i=0;i<nwavelets;++i) 
+					free_MWgather(trans_gath[i]);
+
+				return(-1);
+			}
+		}
+			
 		/* Note that we use nsta instead of nsta_used for most of
 		this because the corresponding rows of A are zero.  We only
 		have to deal with deletions for statistical analysis and 
@@ -1825,14 +1900,17 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	    }
 	    for(i=0;i<nsta;++i) 
 	    {
+		if(fabs((double)phi[i])>PHASE_ANGLE_LIMIT)
+			phi[i] = (float)copysign(PHASE_ANGLE_LIMIT,
+						(double)phi[i]);
 		dt[i] = (float)phase_to_time((double)phi[i],
 					trans_gath[0]->x3[0]->dt,trans_gath[0]->x3[0]->basis->f0);
 	    }
-	    	/* Because the dc is indeterminate, it is useful to 
-		remove the median dt to keep things from jumping all over.
-		*/
-
-
+	/* Because the dt is indeterminate, it is useful to 
+	remove the median dt to keep things from jumping all over.
+	Somewhat repetitious with how this is handled in the 
+	slowness vector calculation, but better safe than sorry.
+	The cost is low*/
 	    scopy(nsta,dt,1,work2,1);
 	    nsta_test = remove_null_float(nsta,weights,1,work2,1);
 	    stats = MW_calc_statistics_float(work2,nsta_test);
@@ -1842,19 +1920,37 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 		if(weights[i]>0.0001) 
 		{
 			dt[i] -= (stats.median);
-			if(lags[i]>=0) current_moveout[i] -= dt[i];
+			if(lags[i]>=0) current_moveout[i] += dt[i];
+			
 		}
 	    /* We use the full dt here rather than work2 because we force
 		zero weight stations to have zero dt */
 	    dtmax = dt[isamax(nsta,dt,1)];
 	    ++iteration;
-	} while ((dtmax > (trans_gath[0]->x3[0]->dt)) && (iteration<DT_MAX_ITERATION));
+	} while ((fabs(dtmax) > (DT_FRACTION_TERMINATE*(trans_gath[0]->x3[0]->dt))) 
+			&& (iteration<DT_MAX_ITERATION));
 	if(iteration >= DT_MAX_ITERATION) elog_complain(0,
 	  "WARNING:  static shift computation did not converge\nLarge errors in time estimates are likely\n");
 	else
 		elog_notify(0,"Static calculation converged in %d iterations\n",
 			iteration);
 
+	/* We have to compute and remove the mean value from the amplitude
+	values.  We have irq values that measure uncertainty of amplitude
+	at each station, but r at this point has a large dc offset that
+	has to be removed.  We use the multiwavelet averages 
+	and assume a log normal distribution and the central limit theorem.
+	Maybe we should have used an m estimator here, but generally the
+	degrees of freedom should be high enough that the median will be
+	sufficient*/
+
+	scopy(nsta,r,1,work2,1);
+	nsta_test = remove_null_float(nsta,weights,1,work2,1);
+	stats = MW_calc_statistics_float(work2,nsta_test);
+	*avgamp = stats.median;
+	*amperr = ((stats.q3_4) - (stats.q1_4))*NORMAL_IQSCALE;
+	*ampndgf = nsta_test - 1;
+	
 	/*here we load up the associative arrays that contain the results*/
 	for(i=0;i<nsta;++i)
 	{
@@ -1869,7 +1965,8 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 			mws->dt_final = dt[i];
 			mws->t_raw = current_moveout[i] - moveout[i] 
 				+ trans_gath[0]->sta[i]->residual_static;
-			mws->log10amp = r[i];
+			/* r is already in log space */
+			mws->log10amp = r[i] - (*avgamp);
 			/* We kept interquartiles as a phase angle so
 			we need to convert it to a time */
 			sigma_t = phase_to_time((double)iqphi[i],
@@ -1881,28 +1978,6 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 			setarr(*results_array,trans_gath[0]->sta[i]->sta,mws);
 		}
 	}
-	/* finally we compute the array averaged amplitudes using 
-	all nsta*nwavelet estimates and assuming the results are log normal */
-	for(j=0,ii=0;j<nwavelets;++j)
-	{
-		for(i=0;i<nsta;++i)
-		{
-		    if((lags[i]>=0) && (weights[i]>0.0))
-		    {
-			ampwork[ii]=hypot((double)(eigenvectors[i+nsta*j].r),
-					(double)(eigenvectors[i+nsta*j].i));
-			ampwork[ii] /= weights[i];
-			ampwork[ii] *= sv1[j];
-			ampwork[ii] = log10(ampwork[ii]);
-			++ii;
-		    }
-		}
-	}
-	stats = MW_calc_statistics_double(ampwork,ii);
-	*avgamp = stats.median;
-	*amperr = ((stats.q3_4) - (stats.q1_4))*NORMAL_IQSCALE;
-	*ampndgf = ii - 1;	
-
 	/* release all these work spacees */
 
 	free(current_moveout);
@@ -1919,6 +1994,7 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	free(r);  free(phi);	free(iqr);	free(iqphi);
 	free(dt);
 	for(i=0;i<nwavelets;++i) free_MWgather(trans_gath[i]);
+	return(0);
 }
 /* small companion to below just sets structure to zeros.  The 
 important one is that rectilinearity is set negative.  This can

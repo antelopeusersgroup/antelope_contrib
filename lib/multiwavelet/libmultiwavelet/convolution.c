@@ -47,7 +47,7 @@ int sconv(float *in, int nin, float *filter, int nfilter,
 	/* First check for bad parameters and correct if possible */
 	if(nfilter > nin)
 	{
-		register_error(0,"sconv:  filter length (%d) longer than input time series (%d)\n",*filter,nin);
+		register_error(0,"sconv:  filter length (%d) longer than input time series (%d)\n",nfilter,nin);
 		return(-1);
 	}
 	if(ioff < 0)

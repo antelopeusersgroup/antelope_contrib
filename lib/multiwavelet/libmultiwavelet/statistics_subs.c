@@ -470,8 +470,8 @@ Written:  January 2000
 #define HUBER_LIMIT 2 /* Number of Huber weight iterations */
 #define THOMPSON_LIMIT 25 /* Limit on number of iterations using Thompson formula */
 #define MIN_DGF 10  /* I've seen the Thompson formula work badly with 
-		small degrees of freedom.  This forces the formula to 
-		never use less than this number in computing beta*/
+		small degrees of freedom.  When dgf are less than 
+		this the Thomson section is skipped */
 void M_estimator_n_vector(double *v, 
 	int n, 
 	int nv,
@@ -542,11 +542,19 @@ void M_estimator_n_vector(double *v,
 	/* Now we use Thomson's redescending formula which is the 
 	opposite of the huber formula being extremely aggressive 
 	on outliers and works only if the scale factor is not 
-	too out of line. */
+	too out of line.  It also works badly with low degrees
+	of freedom.  Consequently, we return immediately when
+	degrees of freedom are below a frozen threshold*/
 
-	iteration = 0;
 	ndgf = nv - n;
-	if(ndgf<MIN_DGF)ndgf = MIN_DGF;
+	if(ndgf<MIN_DGF)
+	{
+		free(col);
+		free(row);
+		free(delta_mean);
+		free(delta_mean);
+		return;
+	}
 	/* This is the value of beta recommended by chave and thomson, 1987,
 	based on the nvth quantile of the Rayleigh distribution.  I use
 	number of degrees of freedom here instead to perhaps more properly
@@ -555,6 +563,7 @@ void M_estimator_n_vector(double *v,
 	exponential-like with low degrees of freedom, which we need to 
 	avoid. */
 	beta = sqrt(2.0*log(2.0*((double)ndgf)));
+	iteration = 0;
 	do
 	{
 		compute_nvector_residuals(v,n,nv,residuals,mean);
