@@ -18,6 +18,7 @@ OBJS= 	  variables2mxArray.o \
 	  cellstr2stringtbl.o \
 	  pfarr2struct.o \
 	  pftbl2cellarr.o \
+	  mxArray2CGGrid.o \
 	  mxArray2Response.o \
 	  mxArray2Pf.o \
 	  matlabPfprompt.o \

@@ -20,6 +20,17 @@ Response *mxArray2Response( mxArray *array )
 	Response *response;
 	mxArray *address;
 
+        if( mxGetClassID( array ) != mxOBJECT_CLASS )
+        {
+		mexWarnMsgTxt( "Input must be a dbresponse object" );
+		return 0;
+        }
+	else if( ! mxIsClass( array, "dbresponse" ) ) 
+	{
+		mexWarnMsgTxt( "Input must be a dbresponse object" );
+		return 0;
+	}
+
 	address = mxGetField( array, 0, "address" );
 
 	if( address == (mxArray *) NULL ) 

@@ -106,29 +106,6 @@ get_pf( const mxArray *in, Pf **pf )
 }
 
 int
-get_response( const mxArray *in, Response **response )
-{
-        if( mxGetClassID( in ) != mxOBJECT_CLASS )
-        {
-		return 0;
-        }
-	else if( ! mxIsClass( in, "dbresponse" ) ) 
-	{
-		return 0;
-	}
-
-	*response = mxArray2Response( (mxArray *) in );
-
-	if( *response == NULL )
-	{
-		mexWarnMsgTxt ( "Null response-object\n" );
-		return 0;
-	}
-
-	return 1;
-}
-
-int
 get_scalar( const mxArray *in, double *scalar )
 {
 	if( ! mxIsNumeric( in ) ||
@@ -144,3 +121,32 @@ get_scalar( const mxArray *in, double *scalar )
 
 	return 1;
 }
+
+int
+get_response( const mxArray *in, Response **response )
+{
+	*response = mxArray2Response( (mxArray *) in );
+
+	if( *response == NULL )
+	{
+		mexWarnMsgTxt ( "Null dbresponse-object\n" );
+		return 0;
+	}
+
+	return 1;
+}
+
+int
+get_cggrid( const mxArray *in, CGGrid **cgg )
+{
+	*cgg = mxArray2CGGrid( (mxArray *) in );
+
+	if( *cgg == (CGGrid *) NULL ) 
+	{
+		mexWarnMsgTxt ( "Null cggrid-object\n" );
+		return 0;
+	}
+
+	return 1;
+}
+
