@@ -1,0 +1,10 @@
+DBLIST2SUBSET 
+
+DBPTR = DBLIST2SUBSET ( DBPTR [, LIST] )
+
+DBLIST2SUBSET takes a database view, specified with the database pointer DBPTR,
+and creates a subset from it based on a LIST of input row numbers. The LIST
+should be a Matlab matrix (usually a 1xn vector) of integers listing the row 
+numbers the user wants to include in the new subset view. If the LIST argument 
+is omitted, DBLIST2SUBSET assumes the input DBPTR is a grouped view (for example, 
+one created by the DBGROUP command), and converts the group to its own official subset.
