@@ -57,8 +57,10 @@ int dpadmCmd(clientData, interp, argc, argv)
     }
 
     if( strncmp( argv[1], "pfclean", strlen("pfclean") ) == 0 )  {
-       if( pfnames != 0 ) freearr( pfnames,0 );
-       pfnames = 0;
+       Tcl_SetResult ( interp, "pfclean not supported", TCL_STATIC ) ; 
+       return TCL_ERROR ; 
+       /* if( pfnames != 0 ) freearr( pfnames,0 );
+       pfnames = 0; */
     } else if( strncmp( argv[1], "dcalarm", strlen("dcalarm") ) == 0 )  {
        orb = strdup( argv[2] );
 
