@@ -1,0 +1,130 @@
+.\" %W% %G%
+.TH SGNLOC 1 "%G%"
+.SH NAME
+sgnloc - command line interface to single event location code
+.SH SYNOPSIS
+.nf
+sgnloc \fIinpf outpf\fR
+.fi
+.SH DESCRIPTION
+\fBsgnloc\fR is a crude command line interface to a general purpose
+seismic event location code based on the standard Gauss-Newton method, 
+commonly called Geiger's method in seismology.  
+\fIinpf\fR is the input parameter file and is required.  
+For this interface, it contains everything the program needs.  
+However, for any real practical use the user should take advantage
+of the searching hierarchy of the parameter file procedures and 
+place different pieces of many parameters required by sgnloc in
+different parts of the directory chain.  (see \fBgenloc_intro\fR 
+for detailed descriptions of all the required parameters)
+.LP
+The program writes it's results to an output file \fIoutpf\fR.  
+This output is itself a parameter file that can be parsed with
+the parameter file functions pfread, pfget_tbl, etc.  
+\fIoutpf\fR is keyed by three base parameter names, all of which 
+are of type "Tbl":
+.nf
+
+convergence_history
+convergence_criteria
+residuals
+.fi
+.LP
+\fBconvergence_history\fR contains a dump of the stack of hypocenters 
+that define the convergence history of the algorithm.  The first entry 
+in the list is the starting solution, and the last entry is the result
+when the program exited.
+Each line of the 
+table contains the following parameters in the order listed:
+.IP
+lat0, lon0, t0, z0, lat, lon, t, z, dx, dy, dz, dt, rms, wrms, iq, n, ndf
+.LP
+where
+.RS
+.nf
+lat0, lon0, t0, z0 - initial hypocenter
+lat, lon, t, z - new location
+dx, dy, dz, dt - adjustment vector in km (x=+East, y=+North, z=+down)
+rms - L2 norm of raw residual vectors
+wrms - L2 norm of weighted residual vectors (includes 1/error scaling)
+iq - interquartile distance of weighted residual vector
+n - number of data used in solution
+ndf - number of degrees of freedom in solution
+.fi
+.RE
+.LP
+\fBconvergence_criteria\fR contains a stack of simple phrases describing
+criteria used to break the iterative loop.
+.LP
+\fBresiduals\fR contains a table of detailed residuals from the final
+solution.  Each line in the table contains the following parameters in
+the order listed:
+.IP
+sta, phase, datatype, wr, r, w, reswt
+.LP
+where
+.RS
+.nf
+sta - observing station
+phase - observed seismic phase
+datatype - either "time", "ux", or "uy" 
+wr - weighted residual for this datum
+r - raw residual for this datum
+w - total weight for this datum
+reswt - residual weight
+.RE
+.SH PARAMETER FILE
+see genloc_intro for details
+.SH EXAMPLE
+.LP
+This is an example output parameter file:
+.nf
+convergence_criteria	&Tbl{
+    Correction vector is small.  L2 norm of final correction = 0.008480
+}
+convergence_history	&Tbl{
+    30 80 5 7.12789e+08 30 80 5 7.12789e+08 0 0 0 -1 -1 -1 0 0
+    30 80 5 7.12789e+08 37.1444 72.9395 5 7.12789e+08 -906.52 794.395 0 204.512 5.25504 512.508 10 7
+    37.1444 72.9395 5 7.12789e+08 38.3408 74.2232 5 7.12789e+08 179.064 133.033 0 26.5402 0.681964 54.3727 10 7
+    38.3408 74.2232 5 7.12789e+08 38.4843 74.4273 5 7.12789e+08 28.9335 15.9537 0 6.15092 0.158051 16.146 10 7
+    38.4843 74.4273 5 7.12789e+08 38.5034 74.5472 5 7.12789e+08 17.0388 2.12657 0 5.7965 0.148944 12.8433 10 7
+    38.5034 74.5472 5 7.12789e+08 38.5061 74.5996 5 7.12789e+08 7.44416 0.300409 0 5.71119 0.146752 12.7573 10 7
+    38.5061 74.5996 5 7.12789e+08 38.5066 74.6202 5 7.12789e+08 2.92644 0.0479096 0 5.70062 0.14648 13.1264 10 7
+    38.5066 74.6202 5 7.12789e+08 38.5066 74.628 5 7.12789e+08 1.11501 0.00671969 0 5.69933 0.146447 13.2519 10 7
+    38.5066 74.628 5 7.12789e+08 38.5066 74.631 5 7.12789e+08 0.421213 0.000860497 0 5.69916 0.146443 13.2986 10 7
+    38.5066 74.631 5 7.12789e+08 38.5066 74.6321 5 7.12789e+08 0.15874 7.05924e-05 0 5.69914 0.146442 13.3118 10 7
+    38.5066 74.6321 5 7.12789e+08 38.5066 74.6325 5 7.12789e+08 0.0597964 -1.69035e-05 0 5.69914 0.146442 13.3096 10 7
+    38.5066 74.6325 5 7.12789e+08 38.5066 74.6327 5 7.12789e+08 0.022507 -2.03867e-05 0 5.69914 0.146442 13.3087 10 7
+    38.5066 74.6327 5 7.12789e+08 38.5066 74.6328 5 7.12789e+08 0.00848018 9.90927e-06 0 5.69914 0.146442 13.3084 10 7
+}
+residuals	&Tbl{
+    CHM P time 3.45865 0.0968421 35.7143 1
+    KBK P time -2.38873 -0.0668845 35.7143 1
+    TKM P time 3.52908 0.0494071 71.4286 1
+    USP P time -11.07 -0.42066 26.3158 1
+    CHM S time -20.6925 -4.13849 5 1
+    KBK S time -14.2923 -2.85846 5 1
+    TKM S time -12.8075 -2.56151 5 1
+    USP S time 47.9423 9.58845 5 1
+    TKM P ux -0.631143 -0.00631143 100 1
+    TKM P uy 0.0941304 0.000941304 100 1
+}
+
+.SH DIAGNOSTICS
+Numerous possible error messages are possible.  The program  
+uses Dan Quinlan's error routines (complain, die, and register_error) 
+which write to stderr by default, but can be diverted to a log file if
+desired.   See the man pages on ggnloc and genloc for a list of
+most diagnostics
+.SH "SEE ALSO"
+.nf
+genloc(3), genloc_intro(3), ggnloc(3), pfread(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Although sgnloc is a simple interface, the program it drives is
+complex with a large number of options that can produce wildly
+different behavior.  See man genloc_intro for more details on 
+specific parameters.  
+.SH AUTHOR
+Gary L. Pavlis
