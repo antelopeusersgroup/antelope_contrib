@@ -15,6 +15,7 @@ MAN3=Basic_Time_Series.3 \
   resample.3 \
   seispp_error.3 
 #ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
+DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
@@ -45,10 +46,10 @@ OBJS=basic_time_series.o \
 
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS) 
+	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(CXXDLD) $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 

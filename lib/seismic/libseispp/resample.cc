@@ -106,24 +106,25 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 	double dtout_target, bool trim)
 {
 	list<Decimator>::iterator this_decimator;
-	Decimated_vector *result=new Decimated_vector(ns);
+	Decimated_vector *dvptr=new Decimated_vector(ns);
+	Decimated_vector& result=*dvptr;
 	int i;
 	const double DT_FRACTIONAL_ERROR=0.001;
 	double dtout=dtin;
 	double decout=1.0;
 	int total_lag=0;
 
-	for(i=0;i<ns;++i) result->d.push_back(s[i]);
-	result->lag=0;  
+	for(i=0;i<ns;++i) result.d.push_back(s[i]);
+	result.lag=0;  
 	// skip all this if dtin and dtout match within tolerance
 	if(fabs(dtout_target-dtin)/dtout_target < DT_FRACTIONAL_ERROR) 
-			return(*result);
+			return(result);
 
 	for(this_decimator=declist.begin();
 		this_decimator!=declist.end();++this_decimator)
 	{
-		*result = this_decimator->apply(result->d,trim);
-		total_lag += static_cast<int>(rint(static_cast<double>(result->lag)*decout));
+		result = this_decimator->apply(result.d,trim);
+		total_lag += static_cast<int>(rint(static_cast<double>(result.lag)*decout));
 		dtout *= this_decimator->decfac;
 		decout *= this_decimator->decfac;
 	}
@@ -131,10 +132,10 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 	{
 		double final_decfac= dtout_target/dtout;
 		Decimator dfinal("resample",final_decfac);
-		*result = dfinal.apply(result->d,trim);
+		result = dfinal.apply(result.d,trim);
 	}
-	result->lag = total_lag;
-	return(*result);
+	result.lag = total_lag;
+	return(result);
 }
 	
 
@@ -309,7 +310,7 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 				else if(ii+ncoefs>nsamp_in)
 				{
 					ndot = nsamp_in - ii;
-					dotprd=ddot(ndot,&coefs[i],1,s+ii,1);
+					dotprd=ddot(ndot,&coefs[0],1,s+ii,1);
 					dout->d.push_back(dotprd);
 				}
 				else

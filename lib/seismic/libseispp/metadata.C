@@ -1,4 +1,4 @@
-#include <strstream>
+#include <iostream>
 #include "stock.h"
 #include "pf.h"
 #include <string>

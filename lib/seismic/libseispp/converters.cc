@@ -20,7 +20,7 @@ Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component)
 	// we don't have to do that here.
 	if(ts->live)
 	    for(int i=0;i<tcs.ns;++i) 
-		ts->s[i]=tcs.u(component,i);
+		ts->s.push_back(tcs.u(component,i));
     	return(ts);
     }
     catch (...)
@@ -38,7 +38,7 @@ Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component,
 		mdclone,mdl);
 	Time_Series *ts=new Time_Series(mdclone,false);
 	for(int i=0;i<tcs.ns;++i) 
-		ts->s[i]=tcs.u(component,i);
+		ts->s.push_back(tcs.u(component,i));
 	return(ts);
     }
     catch (...)

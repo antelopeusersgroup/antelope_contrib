@@ -133,10 +133,9 @@ Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& tcei,
 	vector<Three_Component_Seismogram>::iterator indata;
 	for(indata=tcei.tcse.begin();indata!=tcei.tcse.end();++indata)
 	{
-		Three_Component_Seismogram tcs;
 		try {
-			tcs = Arrival_Time_Reference(*indata,
-				arrival_time_key,tw);
+			Three_Component_Seismogram tcs;
+			tcs=Arrival_Time_Reference(*indata,arrival_time_key,tw);
 			tceo->tcse.push_back(tcs);
 		} catch ( seispp_error serr)
 		{
