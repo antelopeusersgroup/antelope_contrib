@@ -1,10 +1,10 @@
 .TH IPD 1 "$Date$"
 .SH NAME
-IPD \- seismic data input daemon 
+ipd \- seismic data input daemon 
 .SH SYNOPSIS
 .nf
 
-IPD [-c check_rate]
+ipd [-c check_rate]
     [-i]
     [-p parameter-file]
     [-s pkt_size]
@@ -15,7 +15,7 @@ IPD [-c check_rate]
 
 .fi
 .SH DESCRIPTION
-An \fBIPD\fP reads raw data packets from an \fIinport\fR input port; 
+An \fBipd\fP reads raw data packets from an \fIinport\fR input port; 
 tries to recognize what type of a packet is a raw data packet; 
 pre-appends a specific header to each raw packet and stores it in
 an \fBorb\fP ring buffer.
