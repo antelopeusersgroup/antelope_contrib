@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <malloc.h>
-#include <values.h>
+#include <float.h>
 #include "multiwavelet.h"
+#define MAXDOUBLE DBL_MAX
 
 /* Usage:
 

@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <strings.h>
-#include <values.h>
 #include <math.h>
 #include <perf.h>
 #include "multiwavelet.h"
