@@ -16,6 +16,7 @@ export_servers &Arr{
 		server_port 16015
 		send_heartbeat_sec 100
 		send_heartbeat_string alive
+		reject .*(BHE|BHN).*
 	}
 }
 

@@ -552,6 +552,10 @@ reconfig_export_server_thread( ExportServerThread *es )
 		es->send_heartbeat_sec = 
 			pfget_int( es->pf, "send_heartbeat_sec" );
 
+		strcpy( es->select, pfget_string( es->pf, "select" ) );
+
+		strcpy( es->reject, pfget_string( es->pf, "reject" ) );
+
 		strcpy( es->my_inst_str,
 			pfget_string( es->pf, "my_inst" ) );
 
@@ -708,8 +712,8 @@ orb2ew_export( void *arg )
 		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
 
 			elog_notify( 0, 
-			  "'%s': %d sources selected after orbselect\n", 
-			  et->name, rc );
+			  "'%s': %d sources selected after orbselect for '%s'\n", 
+			  et->name, rc, et->es->select );
 		}
 	}
 
@@ -720,8 +724,8 @@ orb2ew_export( void *arg )
 		if( et->es->loglevel == VERBOSE || Flags.verbose ) {
 
 			elog_notify( 0, 
-			  "'%s': %d sources selected after orbreject\n", 
-			  et->name, rc );
+			  "'%s': %d sources selected after orbreject on '%s'\n", 
+			  et->name, rc, et->es->reject );
 		}
 	}
 

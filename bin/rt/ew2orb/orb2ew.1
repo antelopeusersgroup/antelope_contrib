@@ -140,6 +140,8 @@ defaults &Arr{
 	send_heartbeat_string 	alive
 	expect_heartbeat_sec	300
 	expect_heartbeat_string	.*alive.*
+	select
+	reject
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
 }
