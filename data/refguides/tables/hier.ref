@@ -4,22 +4,24 @@
 <List>
 perl	perl 5.6.1 release
 tcltk8.3	Tcl/Tk 8.3.3 release
-doc	miscellaneous Antelope documention
 data
   /rtdemo	demo realtime data
   /db	demo databases
 
 <subsection /opt/antelope/4.4>
 <List>
+antelope.html master guide to documentation
 Changes	list of changes for current release
 bin	executable programs
 data	program data
   /pf	parameter files
-  /examples	program development examples
   /perl		perl extensions
   /tcl		tcl extensions
   /pkt		packet library source code
   /schemas	schema descriptions
+demo	real time demos
+doc	miscellaneous Antelope documention
+example	Antelope source examples
 include	include files for program development
   /antelopemake	Antelope make rules
 lib	libraries
