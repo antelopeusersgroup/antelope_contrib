@@ -1,62 +1,74 @@
 .\" $Name$ $Date$
-.TH AUTO_MRC 1 "$Date$"
+.TH AUTOMRC 1 "$Date$"
+
 .SH NAME
-auto_mrc \- automatically send mass re-centerring (MRC) command to a UCSD
-REFTEK DAS     
+automrc \- automatically send mass re-centerring (MRC) command to a UCSD
+REFTEK DAS
+
 .SH SYNOPSIS
 .nf
 
-auto_mrc [-p parameter-file] orbname dc_name[,dc_name2[,dc_name3]] 
+\fBautomrc \fP[-p \fIparameter-file\fP] \fIorbname\fP
+                \fIdc_name\fP[,\fIdc_name2\fP[,\fIdc_name3\fP]]
 
 .fi
+
 .SH DESCRIPTION
-automrc reads data from ring buffer and calculates LTA on specified 
-packets. By default automrc is using 1sps data stream (*/CBB1S), but 
-default can be owerwritten by setting parameter 'srcname' in "automrc.pf" 
+\fBautomrc\fP reads data from ring buffer and calculates LTA on specified
+packets. By default \fBautomrc\fP is using 1sps data stream (*/CBB1S), but
+default can be owerwritten by setting parameter 'srcname' in "\fBautomrc\fP.pf"
 file. Regular expressions can be used (e.g..*/CBBLS).
 
-When calculated LTA high than a "max_lta" (is set in automrc.pf) the
-automrc tries to send an MRC command to the DAS through DC (dc
+When calculated LTA high than a "max_lta" (is set in \fBautomrc\fP.pf) the
+\fBautomrc\fP tries to send an MRC command to the DAS through DC (dc
 IP address is specified in a command line. There can be multiple
-DCs specified.) 
-The automrc will send "num_repeats" (is set in automrc.pf) MRC
+DCs specified.)
+The \fBautomrc\fP will send "num_repeats" (is set in \fBautomrc\fP.pf) MRC
 commands to a DAS with a time period "timeout_btw_cmds" (is set in
-automrc.pf). 
-If automrc needs to send MRC command "max_mrc" (is set in automrc.pf) 
-times to a DAS it will notify "receipient" (is set in automrc.pf) by 
-email that multiple MRC commands are failed. There are can be multiple 
+\fBautomrc\fP.pf).
+If \fBautomrc\fP needs to send MRC command "max_mrc" (is set in \fBautomrc\fP.pf)
+times to a DAS it will notify "receipient" (is set in \fBautomrc\fP.pf) by
+email that multiple MRC commands are failed. There are can be multiple
 receipient specified devided by comma.
 
 \fBauto_mrc\fP requires \fBtwo\fR parameter files:  the first
-contains all existing in RT system DAS IDs - \fIparameter-file\fR 
+contains all existing in RT system DAS IDs - \fIparameter-file\fP
 (\fIpkt.pf\fR is default), and the second named \fIautomrc.pf\fR
 contains the parameters for triggering resets.
-pkt.pf is a regular paramter file which is used by IPD. 
+pkt.pf is a regular paramter file which is used by IPD.
 
 .SH OPTIONS
+
 .IP "-p parameter-file"
-A parameter file \fIparameter-file\fR
+A parameter file \fIparameter-file\fP
 will be used to select all possible DAS IDs in a RT system.
-A \fBpkt.pf\fP parameter file is used by default.  
+A \fBpkt.pf\fP parameter file is used by default.
 
 .SH EXAMPLE
+
 .LP
 Send an MRC with  the following options :
 
+.ft CW
+.in 2c
 .nf
-	- read data from ORB on localhost ;
-	- send command via the DC port on IP address 132.239.4.194.
+.ne 3
 
+- read data from ORB on localhost ;
+- send command via the DC port on IP address 132.239.4.194.
+.ne 3
 
-	auto_mrc localhost 132.239.4.194 
+auto_mrc localhost 132.239.4.194
 
 .fi
+.in
+.ft R
 
 .SH PARAMETER FILE
-automrc parameter file elements are:
+\fBautomrc\fP parameter file elements are:
 
 .IP srcname
-Regular expression to select which data packets are processed. 
+Regular expression to select which data packets are processed.
 Default is .*/CBB1S
 
 .IP max_lta
@@ -86,19 +98,24 @@ Default is 4.
 list of email receipients to be notified if MRC commands do not work.
 Default is rt@localhost.
 
-
-.SH EXAMPLE PARAMETER FILE
+.SH PARAMETER FILE
+.ft CW
+.in 2c
 .nf
+.ne 9
 
- srcname                 .*/CBB1S       # data will be used in LTA calculation
- max_lta                 20000          # MAX allowed LTA value                
- lta_window              3600           # # of sec for LTA                       
- num_repeats             2              # # times to repeat command for one das   
- timeout_btw_cmds        30             # # of sec between command send to DAS 
- max_mrc                 4              # max # of failed MRC to send 'alarm' email 
- receipient              rt@localhost   # whom to send an email in a case of MRC failed
-		
+ srcname          .*/CBB1S     # data will be used in LTA calculation
+ max_lta          20000        # MAX allowed LTA value
+ lta_window       3600         # # of sec for LTA
+ num_repeats      2            # # times to repeat command for one das
+ timeout_btw_cmds 30           # # of sec between command send to DAS
+ max_mrc          4            # max # of failed MRC to send 'alarm' email
+ receipient       rt@localhost # whom to send an email in a case of MRC failed
+
 .fi
+.in
+.ft R
+
 .SH AUTHOR
 Marina Glushko
 .\" $Id$
