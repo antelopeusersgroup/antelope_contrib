@@ -1,0 +1,27 @@
+perlwf version 1.0
+===================
+
+This module provides the function trloadwf to perl.
+An example using this is given in the file make_trace_image
+It requires the modules GD and GD::Polyline,GD requires Math::Trig, and libgd. 
+Therefore I choose not to put it to contrib, but to leave it in the source-tree for reference.
+ 
+INSTALLATION
+
+To install this module type the following:
+
+   make
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  ANTELOPE
+
+COPYRIGHT AND LICENCE
+
+The basic framework to create a perl module are (C) Dan Quinlan (BRTT).
+
+Copyright (C) 2003 Nikolaus Horn, nikolaus.horn@zamg.ac.at
+

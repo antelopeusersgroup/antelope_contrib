@@ -1,0 +1,51 @@
+.TH PERLWF 3p 2003/06/06 "Antelope Contrib SW" "perl utility"
+.SH "NAME"
+perlwf \- Perl interface to waveform data
+.SH "DESCRIPTION"
+For the moment beeing, only the function trloadwf is implemented.
+It returns waveforms, and provides filtering and calibration of the data.
+.Sh "FUNCTIONS"
+The extension must be loaded with a \fIuse\fP statement:
+.ft CW
+.in 2c
+.nf
+
+\fBuse perlwf;\fP
+
+.fi
+.ft R
+.LP
+Following is a brief description of the function implemented.
+
+.IP "\fBtrloadwf\fP (db, sta, chan, time0, time1, filter, calibrate_flag)"
+Returns start- and endtime and the selected samples. Returned times are epoch times.
+
+The parameter \fIfilter\fP is handed to trfilter, see trfilter(3) for possible options. To disable filtering, specify "none". If \fIcalibrate_flag\fP is true (!= 0), trapply_calib is called, see trapply_calib(3) for details.
+.ft CW
+.in 2c
+.nf
+
+($t0,$t1,@trace)= 
+	trloadwf(@db, "ARSA", "HHZ", "1/1/2003", "1/1/2003 00:00:05",
+		   	"BW 0.5 5 10.0 5", 0);
+
+.fi
+.in
+.ft R
+
+.SH "BUGS AND CAVEATS"
+If the trace has gaps, no data is returned, not even from the 1st segment.  
+To use trapply_calib, other tables that wfdisc are required. Maybe the present solution requires too many of them...
+The error handling should be improved.
+.SH "SEE ALSO"
+.nf
+perldb(3p), perlpolygon(3p), trfilter(3)
+.fi
+.SH "AUTHOR"
+.nf
+The basic framework to create a perl module is from Dan Quinlan (BRTT).
+
+Nikolaus Horn (2003)
+
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+.fi

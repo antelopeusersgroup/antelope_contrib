@@ -1,0 +1,74 @@
+: # use perl
+eval 'exec $ANTELOPE/../perl/bin/perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+require "getopts.pl" ;
+ 
+if ( ! &Getopts('nv') || @ARGV != 9 ) { 
+    die ( "Usage: $0 [-nv] database sta chan time0 time1 filter filename width height\n" ) ; 
+}
+
+use Datascope ;
+#only needed if user defined stuff is below $ANTELOPE/local
+use lib "$ENV{ANTELOPE}/local/data/perl";
+use wfutil;
+use GD;
+use GD::Polyline;
+
+	$dbname = shift;
+	$sta= shift;
+	$chan=shift;
+	$time0=shift;
+	$time1=shift;
+	$filter=shift;
+	$filename=shift;
+	$width=shift;
+	$height=shift;
+	@db= dbopen($dbname,"r");
+# load waveforms 
+#might be interesting to see if we got back everything we requested
+	($t0,$t1,@pts)= trloadwf(@db, $sta, $chan, $time0, $time1, $filter,0);
+	$ts0=strtime($t0);
+	$ts1=strtime($t1);
+	$len=scalar(@pts);
+	print "we got $len samples: $ts0 to $ts1\n";
+
+#create a new (empty) image
+	$im= new GD::Image($width, $height);
+#allocate memory for colors
+	$white= $im->colorAllocate(255, 255, 255);
+	$blue= $im->colorAllocate(0, 0, 255);
+	$red= $im->colorAllocate(255, 0, 0);
+	$black= $im->colorAllocate(0, 0, 0);
+	#$im->transparent($white);
+	#$im->interlaced('true');
+#draw a bounding box
+	$im->rectangle(0,0,$width - 1,$height -1 ,$black);
+
+#create (empty) polyline 
+	$poly= new GD::Polyline;
+	$x=0;
+#add samples
+	foreach $pt (@pts) {
+		$poly->addPt($x,$pt);
+		$x++;
+		
+	}
+#map polyline on window size
+	$poly->map($poly->bounds,0,0,$width ,$height);
+#and plot it
+	$im->polydraw($poly,$black);
+
+	open(SOMEFILE,">$filename.jpg");
+	binmode SOMEFILE;
+	print SOMEFILE $im->jpeg;
+	close SOMEFILE;
+	
+	
+
+
+
+	
+
