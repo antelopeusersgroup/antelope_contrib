@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <limits>
 #include "elog.h"
 #include "gclgrid.h"
 /* modified Nov. 2003.  Original assumed cartesian frames for g and the current object were
 identical.  We have no reason to believe this should always be so.  Now all these operators
 are paranoid and use the geographhic points and convert them to the cartesian components.
+
+Modified Nov 2004:  added == and != operators 
 */
 void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 {
@@ -190,4 +193,43 @@ void GCLvectorfield::operator *= (double c1)
 		for(j=0;j<n2;++j)
 			for(l=0;l<nv;++l)
 				val[i][j][l]*=c1;
+}
+/* The == and != operators do NOT test every element of the object. Equality is defined
+as being defined on the same Cartesian system.  This is done by testing for equality of
+the transformation matrix and translation vectors.  These define the Cartesian reference
+frame completely.  We could test lat0, lon0, and r0 but that would be redundant since
+they are defined precisely by the translation vector.  Note since these quantities
+are defined in the base class, derived classes can use a dynamic_cast to use these
+operators so I don't bother to define them for fields or even the GCLgrid3d object. */
+bool GCLgrid::operator==(const GCLgrid& b)
+{
+	numeric_limits<double> test;
+	int i,j;
+	for(i=0;i<3;++i)
+	{
+		if(fabs(translation_vector[i]-b.translation_vector[i]) > test.epsilon())
+			return(false);
+		for(j=0;j<3;++j)
+		{
+			if(fabs(gtoc_rmatrix[i][j]-b.gtoc_rmatrix[i][j]) >  test.epsilon())
+				return(false);
+		}
+	}
+	return(true);
+}
+bool GCLgrid::operator!=(const GCLgrid& b)
+{
+	numeric_limits<double> test;
+	int i,j;
+	for(i=0;i<3;++i)
+	{
+		if(fabs(translation_vector[i]-b.translation_vector[i]) > test.epsilon())
+			return(true);
+		for(j=0;j<3;++j)
+		{
+			if(fabs(gtoc_rmatrix[i][j]-b.gtoc_rmatrix[i][j]) >  test.epsilon())
+				return(true);
+		}
+	}
+	return(false);
 }

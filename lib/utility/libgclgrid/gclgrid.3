@@ -98,12 +98,16 @@ class GCLgrid
                 GCLgrid(Dbptr db, char *nm);  // acquire from Antelope database
                 GCLgrid(const GCLgrid&);  //standard copy constructor
                 GCLgrid& operator=(const GCLgrid& );
+                bool operator==(const GCLgrid&);
+                bool operator!=(const GCLgrid&);
                 void dbsave(Dbptr, char *) throw(int);
                 int lookup(double, double);
                 void reset_index() {ix1=i0; ix2=j0;};
                 void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
                 Geographic_point ctog(double, double, double);
+                Geographic_point ctog(Cartesian_point);
                 Cartesian_point gtoc(double, double, double);
+                Cartesian_point gtoc(Geographic_point);
                 void set_transformation_matrix();
                 dmatrix fetch_transformation_matrix();
                 double *fetch_translation_vector();
@@ -248,6 +252,26 @@ The \fIdepth\fR function returns the depth of a point within the
 earth.  Note that internally in this library depth is defined 
 relative to the standard reference ellipsoid (accesssible through
 the helper function \fIr0_ellipse\fR.)  
+.LP
+The lat(), lon(), and r() functions are simplified converters to geographical
+coordinates.  They return the latitude, longitude, and radius of the cell they
+reference through the integer arguments.  
+.LP
+\fIOperators\fR.  
+The standard assignment operator (=) is defined for this and all the derived
+classes below.  
+.LP
+The comparison operators (== and !=) are NOT what you might guess they
+are.  They test ONLY for congruency of the grids.  Congruency means the
+two grids share the same translation and transformation matrix.  
+In practice that means the Cartesian reference frames are identical and 
+one can use grid values used in one grid directly with another.  If they
+are not congruent the conversion functions described above MUST be used
+or the results will be incorrect.
+Note also that the two comparison operators can be applied to derived classes 
+described below because all inherit these functions from this base class.
+It works because the transformation properties are defined in the base 
+class and the derived classes simply inherit them.
 .ce
 \fIGCLgrid3d\fP - 3D GCLgrid object
 .nf
@@ -298,6 +322,7 @@ requires adding:  nx3 = size of objects in the third dimension;
 dx3_nom = nominal grid size in x3 direction; and k0 = location of
 the origin in the 3rd dimension.
 The member functions require a third parameter when required.
+For example, the lat, lon, and r functions require 3 indices instead of just 2.
 .LP
 The \fIConstructors\fR and \fImember_functions\fR all have exact
 parallels to the 2d versions.  The most important difference to 
@@ -324,6 +349,7 @@ class GCLscalarfield :  public GCLgrid
         GCLscalarfield();
         GCLscalarfield(int, int);
         GCLscalarfield(GCLgrid& );
+	GCLscalarfield(Dbptr db, char *grdnm, char *fn);
         GCLscalarfield& operator=(const GCLscalarfield&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
         void operator+=(const GCLscalarfield&);
@@ -340,6 +366,7 @@ class GCLvectorfield : public GCLgrid
         GCLvectorfield();
         GCLvectorfield(int,int,int);
         GCLvectorfield(GCLgrid &,int);
+        GCLvectorfield(Dbptr db, char *grdnm, char *fn);
         GCLvectorfield& operator=(const GCLvectorfield&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
         void operator+=(const GCLvectorfield&);
@@ -354,6 +381,7 @@ class GCLscalarfield3d : public GCLgrid3d
 
         GCLscalarfield3d();
         GCLscalarfield3d(int,int,int);
+        GCLscalarfield3d(Dbptr db, char *grdnm, char *fn);
         GCLscalarfield3d(GCLgrid3d &);
         GCLscalarfield3d& operator=(const GCLscalarfield3d&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
@@ -371,6 +399,7 @@ class GCLvectorfield3d : public GCLgrid3d
         GCLvectorfield3d();
         GCLvectorfield3d(int,int,int,int);
         GCLvectorfield3d(GCLgrid3d &,int);
+        GCLvectorfield3d(Dbptr db, char *grdnm, char *fn);
         GCLvectorfield3d& operator=(const GCLvectorfield3d&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
         void operator+=(const GCLvectorfield3d&);
@@ -425,6 +454,10 @@ different times;  the first when you try to use the output of
 dbsave and the other when dbsave is called.  
 Do note this uses two tables;  one for the GCLgrid and the other to 
 index the field output.
+Note also that in all cases if the fieldname is NULL only the grid geometry
+component of the object is created and the val arrays are initialized to
+zeros.  This is useful to clone geometry but not the actual values from
+a base grid.
 .LP
 The \fIinterpolate\fR function is a workhorse for a field.  Note that it
 should only be called AFTER first calling the appropriate lookup function

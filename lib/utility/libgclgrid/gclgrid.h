@@ -48,6 +48,9 @@ class GCLgrid
 		int i0, j0;  // origin location in grid 
 		double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
 		double **x1, **x2, **x3; //cartesian coordinates of nodes
+		// These were protected in an earlier version
+		double gtoc_rmatrix[3][3];
+		double translation_vector[3];
 
 		GCLgrid(){
 			n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;
@@ -59,12 +62,16 @@ class GCLgrid
 		GCLgrid(Dbptr db, char *nm);  // acquire from Antelope database 
 		GCLgrid(const GCLgrid&);  //standard copy constructor
 		GCLgrid& operator=(const GCLgrid& );
+		bool operator==(const GCLgrid&);
+		bool operator!=(const GCLgrid&);
 		void dbsave(Dbptr, char *) throw(int);
 		int lookup(double, double);
 		void reset_index() {ix1=i0; ix2=j0;};
 		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
 		Geographic_point ctog(double, double, double);
+		Geographic_point ctog(Cartesian_point);
 		Cartesian_point gtoc(double, double, double);
+		Cartesian_point gtoc(Geographic_point);
 		void set_transformation_matrix();
 		dmatrix fetch_transformation_matrix();
 		double *fetch_translation_vector();
@@ -84,9 +91,6 @@ class GCLgrid
 		friend class GCLvectorfield;
 		friend class GCLscalarfield3d;
 		friend class GCLvectorfield3d;
-	protected:
-		double gtoc_rmatrix[3][3];
-		double translation_vector[3];
 	private:
 		int ix1, ix2;
 };
@@ -156,7 +160,7 @@ class GCLvectorfield : public GCLgrid
 		GCLvectorfield();
 		GCLvectorfield(int,int,int);
 		GCLvectorfield(GCLgrid &,int);
-		GCLvectorfield(Dbptr db, char *grdnm, char *fn); 
+		GCLvectorfield(Dbptr db, char *grdnm, char *fn,int nvsize); 
 		GCLvectorfield& operator=(const GCLvectorfield&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
 		void operator+=(GCLvectorfield&);
@@ -189,7 +193,7 @@ class GCLvectorfield3d : public GCLgrid3d
 		GCLvectorfield3d();
 		GCLvectorfield3d(int,int,int,int);
 		GCLvectorfield3d(GCLgrid3d &,int);
-		GCLvectorfield3d(Dbptr db, char *grdnm, char *fn); 
+		GCLvectorfield3d(Dbptr db, char *grdnm, char *fn,int nvsize); 
 		GCLvectorfield3d& operator=(const GCLvectorfield3d&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
 		void operator+=(GCLvectorfield3d&);
@@ -208,6 +212,11 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 vector<double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
                                 throw(GCLgrid_error);
 dmatrix ustrans(GCLgrid& g, double lat, double lon);
+void initialize_1Dscalar(GCLscalarfield3d& field, 
+	vector<double> val1d,vector<double> z1d,vector<double>grad);
+void initialize_1Dscalar(GCLscalarfield3d& field, 
+	vector<double> val1d,vector<double> z1d);
+dmatrix& remap_path(GCLgrid3d& parentgrid, dmatrix& path, GCLgrid3d& newpathgrid);
 #endif
 
 #ifdef	__cplusplus

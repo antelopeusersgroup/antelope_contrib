@@ -61,6 +61,10 @@ Cartesian_point GCLgrid::gtoc(double plat, double plon, double pr)
 	p.x3=ddot(3,gtoc_rmatrix[2],1,dxp,1);
 	return(p);
 }
+Cartesian_point GCLgrid::gtoc(Geographic_point p)
+{
+	return(this->gtoc(p.lat,p.lon,p.r));
+}
 Geographic_point GCLgrid::ctog(double x1p, double x2p, double x3p)
 {
 	Geographic_point p;
@@ -86,6 +90,10 @@ Geographic_point GCLgrid::ctog(double x1p, double x2p, double x3p)
 	dcarsph(x,&(p.lon),&(p.lat));
 	p.r = dnrm2(3,x,1);
 	return(p);
+}
+Geographic_point GCLgrid::ctog(Cartesian_point p)
+{
+	return(this->ctog(p.x1,p.x2,p.x3));
 }
 Geographic_point GCLgrid::geo_coordinates(int i, int j)
 {

@@ -317,10 +317,9 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 	free_2dgrid_contiguous(pr,n1);
 }
 //
-// This set of functions construct fields.  The algorithm
-// used is memory intensive because we end up creating\
-// two copies of the GCLgrid during creation.  We assume
-// the one is destroyed when it goes out of scope.
+// This set of functions construct fields. 
+// Each have the feature that if the fieldname is NULL the grid is constructed
+// but the field variable (val) is initialized to 0s.
 //
 GCLscalarfield::GCLscalarfield(Dbptr db,
 		char *gclgname,
@@ -340,37 +339,46 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 	        throw 1;
         }
-	sprintf(sstring,
-		"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
-		gclgname,fieldname);
-	dbgrd = dbsubset(db,sstring,0);
-	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
-	if(nrec <= 0)
+	if(fieldname==NULL)
 	{
-		elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-		                        gclgname,fieldname);
-                throw 1;
-        }
-	dbgrd.record = 0;
-	if(dbextfile(dbgrd,0,filename) <=0)
-	{
-		elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
-		throw 2;
+		val=create_2dgrid_contiguous(n1, n2);
+		for(int i=0;i<n1;++i)
+			for(int j=0;j<n2;++j)  val[i][j]=0.0;
 	}
-	fp = fopen(filename,"r");
-	if(fp == NULL)
-	{
-		elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-				filename,fieldname);
-		throw 2;
-	}
-	dbfree(dbgrd);
-	gridsize = n1*n2;
-	val=create_2dgrid_contiguous(n1, n2);
-	if(fread(val[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
-		throw 2;
+	else
+	{	
+		sprintf(sstring,
+			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
+			gclgname,fieldname);
+		dbgrd = dbsubset(db,sstring,0);
+		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
+		if(nrec <= 0)
+		{
+			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
+			                        gclgname,fieldname);
+	                throw 1;
+	        }
+		dbgrd.record = 0;
+		if(dbextfile(dbgrd,0,filename) <=0)
+		{
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			throw 2;
+		}
+		fp = fopen(filename,"r");
+		if(fp == NULL)
+		{
+			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
+					filename,fieldname);
+			throw 2;
+		}
+		dbfree(dbgrd);
+		gridsize = n1*n2;
+		val=create_2dgrid_contiguous(n1, n2);
+		if(fread(val[0],sizeof(double),gridsize,fp) != gridsize)
+		{
+			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			throw 2;
+		}
 	}
 }
 //
@@ -388,49 +396,59 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	int gridsize;
 	int nrec;
 
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	if(fieldname==NULL)
 	{
-		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
-	        throw 1;
-        }
-	sprintf(sstring,
-		"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
-		gclgname,fieldname);
-	dbgrd = dbsubset(db,sstring,0);
-	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
-	if(nrec <= 0)
-	{
-		elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-		                        gclgname,fieldname);
-                throw 1;
-        }
-	dbgrd.record = 0;
-	if(dbextfile(dbgrd,0,filename) <=0)
-	{
-		elog_notify(0,(char *)"Cannot open external file %s for gclfield %s\n",
-			filename,fieldname);
-		throw 2;
+		val=create_3dgrid_contiguous(n1, n2, n3);
+		for(int i=0;i<n1;++i)
+			for(int j=0;j<n2;++j)  
+				for(int k=0;k<n3;++k) val[i][j][k]=0.0;
 	}
-	fp = fopen(filename,"r");
-	if(fp == NULL)
+	else
 	{
-		elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
+		db = dblookup(db,0,(char *)"gclfield",0,0);
+		if(db.record == dbINVALID)
+		{
+			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
+		        throw 1;
+	        }
+		sprintf(sstring,
+			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
+			gclgname,fieldname);
+		dbgrd = dbsubset(db,sstring,0);
+		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
+		if(nrec <= 0)
+		{
+			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
+			                        gclgname,fieldname);
+	                throw 1;
+	        }
+		dbgrd.record = 0;
+		if(dbextfile(dbgrd,0,filename) <=0)
+		{
+			elog_notify(0,(char *)"Cannot open external file %s for gclfield %s\n",
 				filename,fieldname);
-		throw 2;
-	}
-	dbfree(dbgrd);
-	gridsize = n1*n2*n3;
-	val=create_3dgrid_contiguous(n1, n2, n3);
-	if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
-		throw 2;
+			throw 2;
+		}
+		fp = fopen(filename,"r");
+		if(fp == NULL)
+		{
+			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
+					filename,fieldname);
+			throw 2;
+		}
+		dbfree(dbgrd);
+		gridsize = n1*n2*n3;
+		val=create_3dgrid_contiguous(n1, n2, n3);
+		if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
+		{
+			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			throw 2;
+		}
 	}
 }
 GCLvectorfield::GCLvectorfield(Dbptr db,
 		char *gclgname,
-		char *fieldname)  : GCLgrid(db, gclgname)
+		char *fieldname, int nvsize)  : GCLgrid(db, gclgname)
 {
 	char sstring[80];
 	int foff;
@@ -439,49 +457,59 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	FILE *fp;
 	int gridsize;
 	int nrec;
-
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	nv = nvsize;
+	if(fieldname==NULL)
 	{
-		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
-	        throw 1;
-        }
-	sprintf(sstring,
-		"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
-		gclgname,fieldname);
-	dbgrd = dbsubset(db,sstring,0);
-	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
-	if(nrec <= 0)
-	{
-		elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-		                        gclgname,fieldname);
-                throw 1;
-        }
-	dbgrd.record = 0;
-	if(dbextfile(dbgrd,0,filename) <=0)
-	{
-		elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
-		throw 2;
+		val=create_3dgrid_contiguous(n1, n2, nv);
+		for(int i=0;i<n1;++i)
+			for(int j=0;j<n2;++j)  
+				for(int k=0;k<nv;++k) val[i][j][k]=0.0;
 	}
-	fp = fopen(filename,"r");
-	if(fp == NULL)
-	{
-		elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-				filename,fieldname);
-		throw 2;
-	}
-	dbfree(dbgrd);
-	gridsize = n1*n2*nv;
-	val=create_3dgrid_contiguous(n1, n2, nv);
-	if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
-		throw 2;
+	else
+	{	
+		db = dblookup(db,0,(char *)"gclfield",0,0);
+		if(db.record == dbINVALID)
+		{
+			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
+		        throw 1;
+	        }
+		sprintf(sstring,
+			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
+			gclgname,fieldname);
+		dbgrd = dbsubset(db,sstring,0);
+		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
+		if(nrec <= 0)
+		{
+			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
+			                        gclgname,fieldname);
+	                throw 1;
+	        }
+		dbgrd.record = 0;
+		if(dbextfile(dbgrd,0,filename) <=0)
+		{
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			throw 2;
+		}
+		fp = fopen(filename,"r");
+		if(fp == NULL)
+		{
+			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
+					filename,fieldname);
+			throw 2;
+		}
+		dbfree(dbgrd);
+		gridsize = n1*n2*nv;
+		val=create_3dgrid_contiguous(n1, n2, nv);
+		if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
+		{
+			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			throw 2;
+		}
 	}
 }
 GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		char *gclgname,
-		char *fieldname)  : GCLgrid3d(db, gclgname)
+		char *fieldname,int nvsize)  : GCLgrid3d(db, gclgname)
 {
 	char sstring[80];
 	int foff;
@@ -492,43 +520,55 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	int gridsize;
 	int nrec;
 
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	nv=nvsize;
+	if(fieldname==NULL)
 	{
-		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
-	        throw 1;
-        }
-	sprintf(sstring,
-		"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
-		gclgname,fieldname);
-	dbgrd = dbsubset(db,sstring,0);
-	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
-	if(nrec <= 0)
-	{
-		elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-		                        gclgname,fieldname);
-                throw 1;
-        }
-	dbgrd.record = 0;
-	if(dbextfile(dbgrd,0,filename) <=0)
-	{
-		elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
-		throw 2;
+		val=create_4dgrid_contiguous(n1, n2, n3, nv);
+		for(int i=0;i<n1;++i)
+			for(int j=0;j<n2;++j)  
+				for(int k=0;k<n3;++k) 
+					for(int l=0;l<nv;++l) val[i][j][k][l]=0.0;
 	}
-	fp = fopen(filename,"r");
-	if(fp == NULL)
+	else
 	{
-		elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-				filename,fieldname);
-		throw 2;
-	}
-	dbfree(dbgrd);
-	gridsize = n1*n2*n3*nv;
-	val=create_4dgrid_contiguous(n1, n2, n3,nv);
-	if(fread(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
-		throw 2;
+		db = dblookup(db,0,(char *)"gclfield",0,0);
+		if(db.record == dbINVALID)
+		{
+			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
+		        throw 1;
+	        }
+		sprintf(sstring,
+			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
+			gclgname,fieldname);
+		dbgrd = dbsubset(db,sstring,0);
+		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
+		if(nrec <= 0)
+		{
+			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
+			                        gclgname,fieldname);
+	                throw 1;
+	        }
+		dbgrd.record = 0;
+		if(dbextfile(dbgrd,0,filename) <=0)
+		{
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			throw 2;
+		}
+		fp = fopen(filename,"r");
+		if(fp == NULL)
+		{
+			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
+					filename,fieldname);
+			throw 2;
+		}
+		dbfree(dbgrd);
+		gridsize = n1*n2*n3*nv;
+		val=create_4dgrid_contiguous(n1, n2, n3,nv);
+		if(fread(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
+		{
+			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			throw 2;
+		}
 	}
 }
 

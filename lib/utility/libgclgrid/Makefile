@@ -13,9 +13,20 @@ ldlibs= $(PERFLIBS) $(DBLIBS) -lm
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=converters.o create_destroy.o dbsubs.o ellipsoid.o error_handlers.o \
-    fme_weights.o interpolate.o lookup.o operators.o  \
-    dmatrix.o extract_gridline.o pathintegral.o ustrans.o
+OBJS=converters.o \
+    create_destroy.o \
+    dbsubs.o \
+    ellipsoid.o \
+    error_handlers.o \
+    fme_weights.o \
+    initialize1d.o \
+    interpolate.o \
+    lookup.o \
+    operators.o  \
+    dmatrix.o \
+    extract_gridline.o \
+    pathintegral.o \
+    ustrans.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

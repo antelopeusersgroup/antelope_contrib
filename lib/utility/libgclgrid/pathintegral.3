@@ -7,6 +7,8 @@ pathintegral - integrate a 3D field variable along a predefined path
 #include "gclgrid.h"
 vector <double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
 				throw(GCLgrid_error);
+dmatrix& remap_path(GCLgrid3d& pathgrid, dmatrix& path, GCLgrid3d& othergrid)
+				throw(GCLgrid_error);
 .fi
 .SH DESCRIPTION
 .LP
@@ -42,11 +44,20 @@ is expected to handle this problem cleanly by testing
 size.path() against return_vector.size() (see dmatrix(3) and
 vector(3)).   
 .LP
-The function will throw an exception only in one condition.  If the
-path object does not have exactly 3 rows the function will throw a GCLgrid_error
+The function\fIremap_path\fR should be considered a helper function
+that will sometimes be necessary.  That is, there are cases 
+where a path might be defined 
+in one grid, but needs to be applied in a different one.  
+(For example, a ray path built in one grid that needs to be integrated
+to produce travel times in another grid that may not be congruent with
+the geometry of the former.)  Note congruency of grids can be tested
+with the == or != operators of the base class GCLgrid(3) object.
+.LP
+Both functions will throw an exception only in one condition.  If the
+path object does not have exactly 3 rows both functions will throw a GCLgrid_error
 exception announcing this.  This would always be a coding error and 
 most applications can probably choose to not arrange to catch this
-exception.  
+exception and simply let the program crash during initial debugging.  
 .SH RETURN VALUES
 .LP
 See above and vector(3) if you are unfamiliar with the standard template library.

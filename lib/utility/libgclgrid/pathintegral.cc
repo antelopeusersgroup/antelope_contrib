@@ -60,3 +60,35 @@ vector <double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
 	}
 	return(outvec);
 }
+/* A path defined by a 3xn dmatrix is defined by the Cartesian reference frame in the
+grid from which it is derived.  If one wants to use this path inside another grid, 
+which does not necessarily have the same Cartesian transformation, the path has
+to be converted to the new reference frame.  This function does this.
+
+pathgrid is the grid in which the curve defined by the dmatrix path was originally
+defined.  othergrid is the new grid into which the path is to be mapped.  The 
+returned result is a new dmatrix of the same size as path, but defined in the 
+Cartesian reference frame for othergrid instead of pathgrid.
+*/
+
+dmatrix& remap_path(GCLgrid3d& pathgrid, dmatrix& path, GCLgrid3d& othergrid)
+{
+	int i;
+	int m=path.columns();
+	if( (path.rows()!=3) || (m<=0) )
+		throw(GCLgrid_error("remap_path:  input path matrix dimensions are invalid"));
+	dmatrix *nptr=new dmatrix(3,m);
+	dmatrix& newpath=*nptr;
+	Geographic_point geo;
+	Cartesian_point p;
+	for(i=0;i<path.columns();++i)
+	{
+		geo=pathgrid.ctog(path(0,i),path(1,i),path(2,i));
+		p=othergrid.gtoc(geo);
+		newpath(0,i)=p.x1;
+		newpath(1,i)=p.x2;
+		newpath(2,i)=p.x3;
+	}
+	return(newpath);
+}
+		
