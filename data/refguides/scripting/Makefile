@@ -2,6 +2,7 @@ DATADIR=refguides/scripting
 DATA= \
         matlab.ref \
 	perl.ref \
+	php.ref \
 	scripting.ref \
 	tcl.ref \
 	tcldb.ref \

@@ -1,0 +1,60 @@
+<chapter PHP Interface>
+<info>
+dl( 'Datascope.so' ); 
+</info>
+<man>
+% man Datascope_PHP
+</man>
+
+<subsection Opening a database>
+<function>
+
+dbopen (database, permissions)
+    returns a database pointer to the database
+
+dblookup ($db, database, table, field, row)
+    returns a database pointer for the specified database, table, field, and row.
+
+<subsection Manipulating fields and records>
+
+dbaddv ($db, field_name, value, [field_name, value, ...])
+    add a new row with the specified values to the database
+
+dbaddnull ($db )
+    add a new null row to the database.
+
+dbadd ($db [, $record] )
+    add a new row to the database from the scratch record or 
+    from the specified string.
+
+dbputv ($db, field_name, value, [field_name, value, ...])
+    change the fields for an existing row to the specified values
+
+dbgetv ($db, field_name [, field_name, ...])
+    returns the values of the specified fields for a particular rows
+
+<subsection Forming views>
+
+dbprocess ($db, commands)
+    returns a new view which is the result of applying the dbprocess
+    commands to the input view; possible operations are: dbopen,
+    dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
+    dbsever, dbsort, dbsubset, dbtheta, dbungroup
+
+dbsubset ($db, expression)
+    returns a new view which is the set of all rows which satisfy the expression
+
+<subsection Miscellaneous Datascope Functions>
+dbquery ($db, code)
+    query the database for information, e.g. dbquery($db, "dbRECORD_COUNT"). see 
+    Datascope Constants for valid query codes.
+
+dbnrecs ($db)
+    query the database for number of records in a table or view (same as
+    dbquery for dbRECORD_COUNT)
+
+dbex_eval ($db, expression)
+    evaluate expression for a particular row
+
+dbextfile ($db [, base-table])
+    return the filename for an external file for a particular row in a view
