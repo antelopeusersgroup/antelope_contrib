@@ -451,7 +451,6 @@ option which is know to cause problems\nrecenter set off\n");
 		for(i=0;i<nevents;++i)
 		{
 			freetbl(ta[i],free);
-			free(h0+i);
 		}
 		free(ta);
 		free(h0);
