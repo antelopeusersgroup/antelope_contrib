@@ -329,10 +329,11 @@ unsigned short
 RYOChecksum( const unsigned char *a_pbyBuffer, unsigned int a_nByteCount )
 {
 	unsigned short nChecksum = 0;
+	unsigned int nByte;
 
 	const unsigned char *pB = a_pbyBuffer;
 
-	for( unsigned int nByte = 0; nByte < a_nByteCount; nByte++ ) {
+	for( nByte = 0; nByte < a_nByteCount; nByte++ ) {
 
 		nChecksum = (unsigned short) (nChecksum + *pB);
 
