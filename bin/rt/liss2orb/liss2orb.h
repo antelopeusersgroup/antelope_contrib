@@ -26,7 +26,6 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <stddef.h>
-#include <stropts.h>
 #include <netdb.h>
 #include <regex.h>
 
@@ -41,15 +40,15 @@ typedef struct newch {
     char newkey[32];
 } Newchan;
 
-Arr *NewCh;
+extern Arr *NewCh;
 
 #define NCH_SCS "%s %s[^\n] \n"
 #define NCH_RVL(SP)  (SP)->oldkey, (SP)->newkey
 #define NCH_TRIM(SP) TRIM((SP)->oldkey,31); TRIM((SP)->newkey, 11)
 
-int PSize;
-int Log;
-struct sockaddr_in peer_in;
+extern int PSize;
+extern int Log;
+extern struct sockaddr_in peer_in;
  
 extern void *read_server ( int ifp, int orb, int timeout, char *match );
 extern int open_socket ( char *name, int default_port );

@@ -6,6 +6,11 @@
 #include "coords.h"
 #include "liss2orb.h"
 
+Arr *NewCh;
+int PSize;
+int Log;
+struct sockaddr_in peer_in;
+
 static void 
 usage ()
 {
