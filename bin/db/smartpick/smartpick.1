@@ -70,6 +70,10 @@ subcontracting to the dbspgram(1) and trexcerpt(1) commands, respectively.
 In the case of the "spectrograms" button, only the first trace in dbpick's 
 display list is used. Note that if you did a "Zoom" instead of a "Select" 
 in dbpick, you won't get what you expected!! 
+
+The parameter file specifies a table of default_phases. For each entry in the
+list, a button will be created to "Set Default Phase" (invoking the "ph" command
+on the dbpick(1) command line).
 .SH OPTIONS
 .IP -nowait
 Bring up dbpick automatically upon startup
@@ -83,6 +87,18 @@ not specified, the default name "smartpick_dbpick" is used, or a unique
 name is generated if that file already exists.
 .IP "-comout named_pile"
 Argument is passed to dbpick as the -comout option.
+.SH PARAMETER FILE
+.nf
+default_phases &Tbl{
+P
+S
+Pn
+Pg
+Sn
+Sg
+Lg
+}
+.fi
 .SH EXAMPLE
 One may use smartpick in conjunction with dbloc2 by changing the dbpick 
 launch-line in dbloc2.pf. For example, instead of 

@@ -584,39 +584,11 @@ proc init_windows {} {
 		catch {send -async $DbpickWinName "sp off"}
 	}
 
-	button .opt.inc.phP -text "Set Default phase P" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph P"}
-	}
+	set default_phases [pfgetlist @smartpick#default_phases]
 
-	button .opt.inc.phS -text "Set Default phase S" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph S"}
-	}
-
-	button .opt.inc.phPn -text "Set Default phase Pn" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph Pn"}
-	}
-
-	button .opt.inc.phPg -text "Set Default phase Pg" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph Pg"}
-	}
-
-	button .opt.inc.phSn -text "Set Default phase Sn" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph Sn"}
-	}
-
-	button .opt.inc.phSg -text "Set Default phase Sg" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph Sg"}
-	}
-
-	button .opt.inc.phLg -text "Set Default phase Lg" -bg yellow -font $Font \
-	-command {
-		catch {send -async $DbpickWinName "ph Lg"}
+	foreach ph $default_phases {
+		button .opt.inc.ph_$ph -text "Set Default phase $ph" -bg yellow -font $Font \
+		-command "catch \{send -async \$DbpickWinName \"ph $ph\"\}"
 	}
 
 	MyLblEntry .opt.save.db -label "Save to db:" -textvariable Savedb 
@@ -740,13 +712,9 @@ proc init_windows {} {
 	pack .opt.inc.swon -fill x
 	pack .opt.inc.spbasic -fill x
 	pack .opt.inc.spoff -fill x
-	pack .opt.inc.phP -fill x
-	pack .opt.inc.phS -fill x
-	pack .opt.inc.phPn -fill x
-	pack .opt.inc.phPg -fill x
-	pack .opt.inc.phSn -fill x
-	pack .opt.inc.phSg -fill x
-	pack .opt.inc.phLg -fill x
+	foreach ph $default_phases {
+		pack .opt.inc.ph_$ph -fill x
+	}
 	pack .opt.save.db -fill x
 	pack .opt.save.format -side left
 	pack .opt.save.lformat -side left
