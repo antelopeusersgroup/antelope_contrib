@@ -186,9 +186,6 @@ extfile([ table ])
 >>	bit shift right
 <<	bit shift left
 
-|	bitwise or
-& 	bitwise and
-
 .	string concatenation
 
 :=	assignment
@@ -230,7 +227,4 @@ a != NULL
 &&	logical and
 
 |	bitwise or
-&	bitwise and
-
-<<	bit shift left
->>	bit shift left
+& 	bitwise and

@@ -1,48 +1,49 @@
 <chapter Parameter Files>
-<commands>
-PFPATH
-    * combine all parameter files found along PFPATH or
+<List>
+PFPATH	combine all parameter files found along PFPATH or
 	$ANTELOPE/data/pf:.
-
 
 &Tbl{	ordered list of values
 &Arr{	key/value pairs
-
 &ask(prompt)	ask for the value using prompt
-&Literal{	value is everything until matching closing bracket; many bracket pairs are allowed
-&Undef{}	eliminate a corresponding  previous value
-&exec(command)	value is the result from running command 
-&file(path)	value is contents of path
-&filename(path)	value is the path filename
-&datafile(path)	value is the contents of the data file $ANTELOPE/data/path
-&datafilename(path)	value is the filename $ANTELOPE/data/path
+&Literal{	everything until matching closing bracket: {[(<`'>)]}
+&Undef{}	eliminate previous value
+&exec(command)	result from command 
+&file(path)	contents of path
+&filename(path)	path filename
+&datafile(path)	contents of data file $ANTELOPE/data/path
+&datafilename(path)	filename $ANTELOPE/data/path
 &env(name)	value of environment variable name
-&ref(somepf, key)	look up key in some other parameter file pf
-&glob(glob-pattern)	return list of paths matching glob
+&ref(somepf, key)	look up key in parameter file pf
+&glob(glob-pattern)	list of paths matching glob
+&reference	another value in this parameter file
+&{reference}	another value in this parameter file
 &user-function(anything)	write your own function
-&reference	refer to another value in the parameter file
-&{reference}
-
 
 __DATA__	end of the parameter file
-__END__
-__EOF__
+__END__	end of the parameter file
+__EOF__	end of the parameter file
 
-
+<subsection Example>
+Try with "pfecho -i"
 <Examples>
 # comment
-"key with spaces"	value  #comment
+"key with spaces"	value  # comment
 list	&Tbl{
 1
 2
 }
 array	&Arr{
-one	1
-two	2
 three	3
+one	1
 }
 literal	&Literal{
 proc a {b} { # example 
     puts hi
 }
 }
+sta	AAK
+date	&exec(date +%Y-%j)
+pfnames	&glob(*.pf)
+name	&{sta}.&date
+antelope	&env(ANTELOPE)
