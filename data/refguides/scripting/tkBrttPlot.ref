@@ -120,6 +120,7 @@ vector_puty vector_handle ix ylist
 -visible visible
 -linewidth linewidth
 -label label
+-vector vectorhandle
 </options>
 
 (canvas) create ptext viewport textstring x y ?options?
