@@ -1,0 +1,226 @@
+/* -----------------------------------
+CASCADING STYLE SHEET FOR WEBDBE v.1.5
+by Rob Newman
+(858) 822 1333
+rlnewman@ucsd.edu 
+------------------------------------*/
+
+/* START: html tags */
+body {
+	background: #EFEFDE url(http://eqinfo.ucsd.edu/~rt/webdbe_bkgrd.gif) bottom left fixed repeat-x ;
+	font-family: Arial, Helvetica, sans-serif ;
+	font-size: 100% ;
+	font-weight: normal ;
+}
+p {
+	font-family: Arial, Helvetica, sans-serif ;
+	font-size: 1.0em ;
+}
+/* END: html tags */
+
+/* START: fundamentals */
+#webdbe {
+	width: 100% ;
+	background-color: #DEDAEE ;
+	border: 1px solid black ;
+}
+.webdbeHeader {
+        background: #ADAE86 ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: bold ;
+        padding: 3px ;
+	margin: 1px ;
+        white-space: nowrap ;
+}
+.webdbeFooter {
+        background: #ADAE86 ;
+	color: white ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbeFooter a:link, .webdbeFooter a:active {
+	color: blue ;
+	text-decoration: underline ;
+}
+.webdbeFooter a:hover {
+	color: #333 ;
+	text-decoration: underline ;
+}
+.webdbeFooter a:visited {
+	color: #999 ;
+	text-decoration: underline ;
+}
+.webdbeTable {
+        background: #DEDAEE ;
+	color: black ;
+        border: none ;
+        text-align: center ;
+        font-weight: normal ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbeMenu {
+        background: #FFF ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: left ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbePages {
+        background: #FFF ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: left ;
+        font-weight: normal ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbeField {
+        background: #ADAE86 ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: left ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbeFieldFirst {
+        background: #ADAE86 ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+.webdbeNoRecords {
+        background: #FFF ;
+	color: red ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: normal ;
+        padding: 3px ;
+        white-space: nowrap ;
+	text-decoration: none ;
+	font-weight: bolder ;
+	text-align: left ;
+}
+.webdbeRecord {
+        background: #FFF ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: normal ;
+        padding: 3px ;
+        white-space: nowrap ;
+	text-decoration: none ;
+}
+.webdbeRecord a:link {
+	color: black ;
+	text-decoration: none ;
+}
+.webdbeRecord a:hover {
+	color: black ;
+        background: #CCC ;
+	text-decoration: none ;
+}
+.webdbeRecordFirst {
+        background: #ADAE86 ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: center ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+	width: 20px ;
+}
+.webdbeQuery {
+        background: #FFF ;
+	color: black ;
+        border: 1px solid black ;
+        text-align: left ;
+        font-weight: bold ;
+        padding: 3px ;
+        white-space: nowrap ;
+}
+webdbeMenuItems {
+	background-color: #FFF ;
+	width: auto ;
+	float: left ;
+	text-align: left ;
+	padding: 0em 1em 0 1em ;
+}
+/* END: fundamentals */
+
+/* START: dynamic menus */
+#menus, #menus ul {
+	float: left;
+	width: 8em;
+	list-style: none;
+	line-height: 1;
+	background: #ADAE86;
+	font-weight: bold;
+	padding: 0;
+	border: none;
+	margin: 0 ;
+}
+#menus a {
+	display: block;
+	width: 8em;
+	w\idth: 4em;
+	color: black;
+	text-decoration: none;
+	padding: 0;
+}
+#menus li {
+	float: left;
+	padding: 0;
+	width: 10em;
+}
+#menus li ul {
+	position: absolute;
+	left: -999em;
+	height: auto;
+	width: 12.4em;
+	w\idth: 11.9em;
+	font-weight: bold;
+	border: 1px solid black;
+	margin: 0;
+	padding: 0.2em ;
+	background-color: #EFEFDE ;
+}
+
+#menus li li {
+	padding-right: 1em;
+	width: 11em;
+}
+
+#menus li ul a {
+	width: 11em;
+	w\idth: 7em;
+	font-weight: bold;
+	color: black ;
+}
+
+#menus li ul ul {
+	margin: -1em 0 0 12em;
+}
+
+#menus li:hover ul ul, #menus li:hover ul ul ul, #menus li.sfhover ul ul, #menus li.sfhover ul ul ul {
+	left: -999em;
+}
+
+#menus li:hover ul, #menus li li:hover ul, #menus li li li:hover ul, #menus li.sfhover ul, #menus li li.sfhover ul, #menus li li li.sfhover ul {
+	left: auto;
+}
+
+#menus li:hover, #menus li.sfhover {
+	background: #ADAE86;
+}
+/* END: dynamic menus */
