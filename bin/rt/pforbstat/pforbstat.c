@@ -108,7 +108,7 @@ main (int argc, char **argv)
 		seconds = atoi( argv[optind++] );
 	}
 
-	if( orboutname == NULL && strcmp( srcname, "" ) ) {
+	if( orboutname == NULL && strcmp( srcname, SRCNAME_DEFAULT ) ) {
 		complain( 1, "Useless specification of srcname (-n) without -o\n" );
 	}
 
