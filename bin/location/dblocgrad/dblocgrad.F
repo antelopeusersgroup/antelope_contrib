@@ -11,20 +11,22 @@ c  Things to do
 c  
 c  clean up code.
 c
-# include "db.i"
 
       implicit real*8 (a-h,o-z)
+# include "db.i"
 
 c     mdim must be 10+maximum # of stations
 
-      parameter   (mnod=25,mdim=200)
+      parameter   (mnod=25)
+      parameter   (mdim=200)
       parameter   (herra=1.0,herrb=5.0)
       parameter   (ndim=4,ldim=1,ma=2*mdim,nreal=40,nelp=51)
 
-      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
-
+      real *8 psg, psb, psz, psu
       common /psmod/psg(mnod,2),psb(mnod,2),psz(mnod,2),psu(mnod,2),nops       
-
+      real *8 g, b, z, u
+      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
+      real *8 ptab, xtab, ttab
       common /travtable/ptab(200),xtab(200),ttab(200),maxpindex
 
       dimension    stnloc(4,mdim),  levs(mdim)
@@ -355,11 +357,13 @@ c     not be necessary
 c  these assumptions were in the original ANZA models
 c  database schema will need to be modified to remove these assumptions
 c
-# include "db.i"
       implicit real*8 (a-h,o-z)
+# include "db.i"
       parameter (mnod=25)
-      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
+      real *8 psg, psb, psz, psu
       common /psmod/psg(mnod,2),psb(mnod,2),psz(mnod,2),psu(mnod,2),nops
+      real *8 g, b, z, u
+      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
  
       integer        db(4)
 
@@ -450,11 +454,12 @@ c     reflat  - reference latitude
 c     reflon  - reference longitude
 c     sta     - station codes
 c
-# include "db.i"
 
       implicit real *8 (a-h,o-z)
+# include "db.i"
       parameter (mnod=25)
       common /mod/       g(mnod), b(mnod), z(mnod), u(mnod), nodes
+      real *8 ptab, xtab, ttab
       common /travtable/ ptab(200), xtab(200), ttab(200), maxpindex
 
 c
@@ -696,9 +701,9 @@ c
 c  output
 c	orid		origin id
 c
-# include "db.i"
 
       implicit real*8 (a-h,o-z)
+# include "db.i"
 
       dimension  ev(6)
 
@@ -761,9 +766,9 @@ c****************************************************************************
 c
 c
 c
-# include "db.i"
 
       implicit real*8 (a-h,o-z)
+# include "db.i"
 
       integer    db(4)
       integer    orid
@@ -787,9 +792,9 @@ c****************************************************************************
 c
 c
 c
-# include "db.i"
 
       implicit real*8 (a-h,o-z)
+# include "db.i"
 
       integer      db(4)
       integer      orid,	arid
@@ -982,14 +987,16 @@ c****************************************************************************
 
 c     mdim must be 10+maximum # of stations
 
-      parameter   (mnod=25,mdim=200)
       parameter   (herra=1.0,herrb=5.0)
+      parameter   (mnod=25)
+      parameter   (mdim=200)
       parameter   (ndim=4,ldim=1,ma=2*mdim,nreal=40,nelp=51)
 
-      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
-
+      real *8 psg, psb, psz, psu
       common /psmod/psg(mnod,2),psb(mnod,2),psz(mnod,2),psu(mnod,2),nops       
-
+      real *8 g, b, z, u
+      common /mod/g(mnod),b(mnod),z(mnod),u(mnod),nodes
+      real *8 ptab, xtab, ttab
       common /travtable/ptab(200),xtab(200),ttab(200),maxpindex
 
       write(*,*) "nops  ",nops

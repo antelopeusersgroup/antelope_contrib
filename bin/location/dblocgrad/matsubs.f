@@ -410,7 +410,7 @@ c
       goto 30
 c
  70   format ('v-matrix of the singular value decomposition')
- 80   format ('sequence of candidate solutions', x)
+ 80   format ('sequence of candidate solutions', 1X)
  85   format (a20)
  90   format (5x,8(3x,a4,i4,3x)/1x)
  100  format (1x,i3,1x,4p8f12.0)

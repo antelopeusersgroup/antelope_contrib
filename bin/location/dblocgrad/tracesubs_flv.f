@@ -26,7 +26,7 @@ c      generate a new table
        if (xtab(1).gt.dist) then
  11       continue
           ptab(1)=ptab(1)/2.0d0
-          call time(ze,jeq,zs,jst,ptab(1),xtab(1),ttab(1),tau,ierr)
+          call dgtime(ze,jeq,zs,jst,ptab(1),xtab(1),ttab(1),tau,ierr)
           if (xtab(1).gt.dist) goto 11
        endif
 c      find closest points in table
@@ -110,7 +110,7 @@ c          close (15)
       if((bb-h)*(s-bb).lt.0.d0) bb=h
       goto 25
  20   bb=h
- 25   call time(ze,jeq,zs,jst,bb,xtry,ttry,tau,ierr)
+ 25   call dgtime(ze,jeq,zs,jst,bb,xtry,ttry,tau,ierr)
       if(ierr.lt.0) return
       fb=xtry-dist
       if(fg*fb.lt.0.d0) goto 30
@@ -122,8 +122,8 @@ c          close (15)
       goto 5
 c*** when unable to find arrival, linearly interpolates for time
  35   if(dmin1(dc,db).gt.xjump) then
-         call time(ze,jeq,zs,jst,bb,xb,tb,tau,ierr)
-         call time(ze,jeq,zs,jst,c,xc,tc,tau,ierr)
+         call dgtime(ze,jeq,zs,jst,bb,xb,tb,tau,ierr)
+         call dgtime(ze,jeq,zs,jst,c,xc,tc,tau,ierr)
          ans=(tc*fb-tb*fc)/(fb-fc)
          pout=bb
          return
@@ -384,21 +384,21 @@ c      direct ray part of table
        do 7 angle=ai,89.9,ai
          i=i+1
          ptab(i)=-dsin(angle*.0174532925)*pmax
-         call time(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
+         call dgtime(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
  7     continue
        i=i+1
        ptab(i)=-(pmax-1.d-17)
-       call time(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
+       call dgtime(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
        i=i+1
        ptab(i)=pmax-1.d-17
-       call time(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
+       call dgtime(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
 c      turning ray part of table
        angle=89.9
  10    continue
          angle=angle-ai
          i=i+1
          ptab(i)=dsin(angle*.0174532925)*pmax
-         call time(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
+         call dgtime(ze,jeq,zs,jst,ptab(i),xtab(i),ttab(i),tau,ierr)
        if (xtab(i).lt.6000.d0) goto 10
        if (i.gt.200) then
          print *,'too many values to fit in traveltime table'
@@ -407,7 +407,7 @@ c      turning ray part of table
       
        return
        end
-      subroutine time(ze,jeq,zs,jst,p,x,t,tau,ierr)
+      subroutine dgtime(ze,jeq,zs,jst,p,x,t,tau,ierr)
 c     calculate epicentral distance,time,tau using a plane layer model
 c     with constant gradients of velocity
 c     input parameters:
