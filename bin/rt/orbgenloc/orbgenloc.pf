@@ -142,8 +142,8 @@ ndepths						1
 #
 # These are RT parameters
 #
-RT_working_db					/p/pavlis3/orb/lodore/dbmaster/lodore
-RT_logfile_directory				/p/pavlis3/orb/lodore/logs
+RT_working_db					db/rt_db
+RT_logfile_directory				logs/orbgenloc_logs
 RT_failure_subdir				failures_ttlvz
 RT_minimum_distance				0.0
 RT_maximum_distance				10.0
