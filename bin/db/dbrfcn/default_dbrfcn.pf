@@ -1,0 +1,19 @@
+
+# Arguments: (defaults)
+#	tstart, tend   = time window relative to predicted P time (-10., 50.)
+#	gaussfreq = corner frequency for low-pass gaussian filter (0.5)
+#	hpfreq = corner frequency of 6-pole zero-lag filter (0.02)
+#	phaseshift = time, in s, to shift receiver functions (5.)
+#	waterlevel = fraction of peak spectral amplitude to use as water level (.01)
+#	decimate = decimation interval; multiple of original sample interval (0; none)
+#	graphics = 0 to turn off graphics, 1 to do them (1)
+
+tstart		-10.
+tend		50.
+gaussfreq	0.5
+hpfreq		0.02
+phaseshift	10.0
+waterlevel	0.01
+decimate	0
+graphics	1
+

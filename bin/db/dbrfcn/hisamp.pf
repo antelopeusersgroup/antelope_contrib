@@ -1,0 +1,11 @@
+# Required arguments:
+#	tstart, tend   = time window relative to predicted P time
+#	gaussfreq = corner frequency for low-pass gaussian filter
+#	hpfreq = corner frequency of 6-pole zero-lag filter
+tstart	-10.
+tend	60.
+gaussfreq	0.5
+hpfreq		0.02
+phaseshift	5.0
+waterlevel	0.01
+decimate	8
