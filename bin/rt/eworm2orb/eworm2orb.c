@@ -54,6 +54,7 @@ short	nLogo;
 #define MSG_SIZE 60000		/* define maximum size for an incoming msg */
 #define MAX_LOGMSG_SIZE 256	/* maximum size of a log message */
 #define NOMSG_SLEEPMSEC 3	/* milliseconds to sleep if we don't get a msg*/
+#define NOORB_SLEEPMSEC 8000	/* milliseconds to sleep if we don't get a msg*/
 
 int OrbFd;			/* File descriptor for orb connection */
 
@@ -112,11 +113,9 @@ main( int argc, char **argv )
 	logit_init( "eworm2orb", (short) MyModId, MAX_LOGMSG_SIZE, LogSwitch );
 	logit( "", "%s: Read command file <%s>\n", argv[0], argv[1] );
 
-	OrbFd = orbopen( Orbname, "w&" );
-	if( OrbFd == -1 )
-	{
+	while( ( OrbFd = orbopen( Orbname, "w&" ) ) == -1 ) {
 		logit( "et", "Failed to connect to orb on port %d\n", OrbFd );
-		exit( -1 );
+		sleep_ew( NOORB_SLEEPMSEC );
 	}
 
 	tport_attach( &Region, RingKey );
