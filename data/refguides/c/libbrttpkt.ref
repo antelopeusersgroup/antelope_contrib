@@ -20,7 +20,7 @@ int chantracebuf_free ( Chantracebuf *cp )
 Chantraceproc chantraceproc_new ( double latency )
     create a new channel trace process object
 
-int chantraceproc_addchan ( Chantraceproc *cp, char *netstachan, int (*callback)(), void *private, double tstart, double tend, double latency, int apply_calib )
+int chantraceproc_addchan ( Chantraceproc *cp, char *netstachan, int (*callback)(), void *pvt, double tstart, double tend, double latency, int apply_calib )
     specify a channel to be processed by a process object
 
 int chantraceproc_free ( Chantraceproc *cp )

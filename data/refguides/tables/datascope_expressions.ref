@@ -183,9 +183,8 @@ extfile([ table ])
 
 
 <expression>
-A expr ? a : b
-    conditional expression: evaluates to a when A is true, b when A is false.
-
+expr ? a : b
+    conditional expression: evaluates to a when expr is true, b when expr is false.
 
 <subsection Pattern Matching>
 <expression>
@@ -204,8 +203,10 @@ patsub(old, pattern, replacement)
 ==	equals
 !=	not equal to
 
-NULL	evaluates to the corresponding database field null value when paired with == or !=
-
+a == NULL
+    true if field a has the null value for that field
+a != NULL
+    true if field a does not have the null value for that field
 
 <	less than
 <=	less than or equal to

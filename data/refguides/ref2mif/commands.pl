@@ -28,6 +28,15 @@ sub gobble {
     return $para ;
 }
 
+sub gobble_blank_lines { 
+    while ( $_ = xf_input() ) { 
+	if ( ! /^\s*$/ ) { 
+	    xf_putbak($_) ; 
+	    last ; 
+	}
+    }
+}
+
 sub gobble_to_space { 
     my ($para) = @_ ; 
     chomp($para) ; 

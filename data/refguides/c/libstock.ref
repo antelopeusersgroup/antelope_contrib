@@ -22,7 +22,6 @@ void *usermethod ( char *method )
 int verbose_exists ()
     return 1 if file "verbose" exists, 0 otherwise
 
-
 <subsection Compression>
 int gencompress ( uchar **out, int *nout, int *szout, int *in, int n, int len )
     compress n input integers in, using run length len, returning result as
@@ -30,7 +29,6 @@ int gencompress ( uchar **out, int *nout, int *szout, int *in, int n, int len )
 
 int genuncompress ( int **out, int *nout, int *size, unsigned char *in, int n )
     uncompress the n bytes buffer in, returning result as *nout integers in *out.
-
 
 <subsection Environment>
 int envfile ( char *filename )
@@ -115,7 +113,6 @@ Tbl *greparr ( char *re, Arr *arr )
     match regular expression re to each key of array arr, returning a list of all keys which match
 
 <subsection Bit Vectors>
-<cdeclarations>
 
 Bitvector *bitnew ( )
     create a new bit vector
@@ -188,9 +185,7 @@ int findring(RingBuffer *rb, double value, double tdelta)
 int changedring ( RingBuffer *rb, double tdelta );
     return 1 if the value has changed over the period tdelta
 
-
 <subsection Buffered Network Stream I/O>
-<cdeclarations>
 
 Bns *bnsnew ( int fd, int sz )
     create a new network stream I/O buffer
@@ -320,7 +315,6 @@ int elog_set ( enum Elog_code code, int severity, void *value )
     set various parameters for elog interface
 
 <subsection General Programming Utilities>
-<cdeclarations>
 
 Hook *new_hook ( void (*hookfree)() )
     create a standard structure which contains a pointer to a free routine and
@@ -477,11 +471,11 @@ void str2lower ( char *s )
 void str2upper ( char *s )
     convert string s to all lower/upper case
 
-void strsub ( char *old, char *s, char *sub, char *new )
-    replace occurences of string s in old with sub, leaving result in new
+void strsub ( char *old, char *s, char *sub, char *r )
+    replace occurences of string s in old with sub, leaving result in r
 
-int patsub ( char *old, struct re_pattern_buffer *pattern_buffer, char *substitution, char *new )
-    string substitution
+int patsub ( char *old, regex_t *pat, char *sub, char *r )
+    replace occurence of regular expression pat in string old with sub, leaving result in r
 
 int strmatches ( char *s, char *pattern, Hook **hook );
     returns 1 if entire string s matches the regular expression pattern
@@ -510,16 +504,16 @@ char *popstr(void **sbuf, int sfree)
     retrieve the entire string from sbuf, freeing sbuf if sfree != 0
 
 <subsection Sorting and Searching>
-void isort ( char *a, int n, int size, int (*compare)(), void *private )
+void isort ( char *a, int n, int size, int (*compare)(), void *pvt )
     insertion sort implementation
 
-void quicksort ( char *a, int n, int size, int (*compare)(), void *private )
+void quicksort ( char *a, int n, int size, int (*compare)(), void *pvt )
     quick sort implementation
 
-void shellsort ( char *a, int n, int size, int (*compare)(), void *private )
+void shellsort ( char *a, int n, int size, int (*compare)(), void *pvt )
     shell sort implementation
 
-int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*compare)(), void *private, int *ns, int *ne )
+int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*compare)(), void *pvt, int *ns, int *ne )
     binary search of index
 
 <subsection User Interaction>
@@ -574,7 +568,6 @@ int printable ( char *memory, int l )
 
 void printable_string ( char *buf, int n, char *memory, int l )
     copies bytes from memory into ascii-printable form
-
 
 <subsection Byteswap routines>
 void swap2 ( unsigned char *from, unsigned char *to, int n )
@@ -672,7 +665,6 @@ private int rev8 ( char *from, char *to, int n )
     reverse order of 8 bytes
 
 <subsection Lists>
-<cdeclarations>
 Tbl *newtbl ( int size )
     initialize a new list (simple interface)
 
@@ -743,14 +735,14 @@ Tbl *tblgrep ( Tbl *tbl, char *string )
     match a string to list of regular expressions
 
 
-void sorttbl ( Tbl *tbl, int (*compare) (), void *private )
+void sorttbl ( Tbl *tbl, int (*compare) (), void *pvt )
     sort a list given an element comparison function compare
 
-int searchtbl ( char *key, Tbl *tbl, int (*compare) (), void *private, int *ns, int *ne )
+int searchtbl ( char *key, Tbl *tbl, int (*compare) (), void *pvt, int *ns, int *ne )
     search a sorted list using a binary search
 
 
-int applytbl ( Tbl *tbl, int (*function) (), void *private )
+int applytbl ( Tbl *tbl, int (*function) (), void *pvt )
     apply a function to all elements of a list
 
 
@@ -768,19 +760,18 @@ int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
     compare two lists
 
 
-int newmorphtbl ( Tbl *list, Morphtbl **morphmap )
-    create a new Morphtbl, which is a list of patterns and substitutions
+int newmorphtbl ( Tbl *list, Morphtbl **map )
+    create a new Morphtbl: a list of patterns and substitutions
 
-int morphtbl ( char *old, Morphtbl *morphmap, int flags, char *new )
-    apply the patterns and substitutions in morhmap to the old string, leaving
-    the result in new. flags is composed of MORPH_PARTIAL and MORPH_ALL.
+int morphtbl ( char *old, Morphtbl *map, int flags, char *r )
+    apply the patterns and substitutions in map to the old string, leaving
+    the result in r. flags is composed of MORPH_PARTIAL and MORPH_ALL.
     if MORPH_PARTIAL is set, the pattern need not match the entire land.
     if MORPH_ALL is set, all the patterns are applied; otherwise just the
     first matching pattern is used.
 
-void freemorphtbl ( Morphtbl *morphmap )
-    free up the morph table space.
-
+void freemorphtbl ( Morphtbl *map )
+    free up a Morphtbl
 
 <subsection Compression and Checksums>
 int ccanada ( int *data, int nsamp, char **compressedp, int *nbytes, int *compressedsz )
@@ -808,7 +799,6 @@ int uucsd ( int *data, char **bufp, int bufcnt, int nsamp )
     uncompress data from modified Reftek dataloggers
 
 <subsection Parameter Files>
-<cdeclarations>
 int pfread ( char *name, Pf **pf )
     read a parameter space
 
@@ -915,7 +905,6 @@ int pfcmp(Pf *pf1, Pf *pf2)
     returns 0 if pf1 and pf2 are identical, 1 otherwise
 
 <subsection Sorted Lists>
-<cdeclarations>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
     create a new sorted list
 
@@ -943,7 +932,7 @@ Tbl *tblstbl ( Stbl *stbl )
     returns the list of all elements in a sorted list
 
 
-int applystbl ( Stbl *stbl, int (*function) (), void *private )
+int applystbl ( Stbl *stbl, int (*function) (), void *pvt )
     apply a function to a sorted list
 
 
@@ -960,9 +949,7 @@ int idset ( Stbl *map, int key, int x )
 int idget ( Stbl *map, int key )
     returns the value of key in map, or -1 if it's not set
 
-
 <subsection Convenience Macros>
-<cdeclarations>
 allot(type *, name, n)
     malloc space for n (type *) elements, putting the address in name
 

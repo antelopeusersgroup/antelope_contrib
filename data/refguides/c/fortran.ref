@@ -168,16 +168,16 @@ subroutine datapath ( path, envname, dirname, filename, suffix )
     return path corresponding to either environment variable envname or
     dir/file.suffix relative to $ANTELOPE/data
 
-subroutine isort ( a, n, size, compare, private )
+subroutine isort ( a, n, size, compare, pvt )
     insertion sort routine
 
 integer newdata ( pathname, envname, dirname, filename, suffix )
     construct pathname for a new datafile
 
-subroutine shellsort ( a, n, size, compare, private )
+subroutine shellsort ( a, n, size, compare, pvt )
     shell sort implementation
 
-integer ssearch ( key, keysize, a, n, unique, compare, private, ns, ne )
+integer ssearch ( key, keysize, a, n, unique, compare, pvt, ns, ne )
     binary search of index
 
 <subsection Niceplot>

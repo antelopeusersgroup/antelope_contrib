@@ -207,7 +207,7 @@ int rotate_to_standard ( Dbptr tr, char **newchan )
     rotate three component data to standard orientation
 
 
-int trapply ( Dbptr tr, int (*filter) (), void *private )
+int trapply ( Dbptr tr, int (*filter) (), void *pvt )
     apply filter routine to each waveform segment
 
 int trapply_calib ( Dbptr tr )

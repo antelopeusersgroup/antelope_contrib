@@ -39,20 +39,3 @@ deprecated Dbptr orbpkt2db ( char *packet, int packet_size, Dbptr db )
 
 int trdisp ( Dbptr tr, char *title )
     display a trace object in a dbpick-like window
-
-<library>
-Packet processing
-brttpkt
--lbrttpkt $(ORBLIBS)
-
-brttpkt.h
-routines for piecing together waveform segments from an
-orb packet stream
-
-Chantraceproc *chantraceproc_new (double latency);
-
-int chantraceproc_free (Chantraceproc *cp);
-
-int chantraceproc_addchan (Chantraceproc *cp, char *netstachan, int (*callback)(), void *private, double tstart, double tend, double latency, int apply_calib);
-
-int chantraceproc_process (Chantraceproc *cp, int orb);
