@@ -61,11 +61,11 @@
     </ul>
   </li>
   <li id="menu6">
-    <div><a href="">Help</a></div>
+    <div><a href="#">Help</a></div>
     <ul>
-      <li><a href="#">About webdbe</a></li>
-      <li><a href="#">On Schema</a></li>
-      <li><a href="#">On <?php echo $mytable ; ?></a></li>
+      <li><a href="#" onClick="window.open('webdbe_subwin.php?help=about','About webdbe','statusbar=1,menubar=1,height=300,width=600')">About webdbe</a></li>
+      <li><a href="#" onClick="window.open('webdbe_subwin.php?help=schema','On Schema','statusbar=1,menubar=1,height=300,width=600')">On Schema</a></li>
+      <li><a href="#" onClick="window.open('webdbe_subwin.php?help=table&mytable=<?php echo $mytable ; ?>','On <?php echo $mytable ; ?>','statusbar=1,menubar=1,height=300,width=600')">On <?php echo $mytable ; ?></a></li>
     </ul>
   </li>
 </ul>

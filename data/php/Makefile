@@ -8,6 +8,7 @@ DATA= $(MYDLIB) \
       webdbe_title.gif \
       webdbe_bkgrd.gif \
       webdbe_pagenums.php \
+      webdbe_subwin.php \
       webdbe_pages.php \
       webdbe_menubar.php \
       webdbe_functions.js
