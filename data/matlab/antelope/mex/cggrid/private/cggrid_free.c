@@ -6,8 +6,8 @@
  * 2003
  */
 
-#define USAGE "Error using ==> clear\n\n\
-Usage: CLEAR ( CGGRID )\n"
+#define USAGE "Error using ==> cggrid_free\n\n\
+Usage: CGGRID_FREE ( CGGRID )\n"
 
 #include <stdio.h>
 #include "antelope_mex.h"
@@ -32,6 +32,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
+
+	ATM_cggrid_unregister( cgg );
 	
 	cggrid_free( &cgg );
 	antelope_mex_clear_register( 1 );

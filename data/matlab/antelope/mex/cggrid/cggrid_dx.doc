@@ -1,0 +1,7 @@
+CGGRID_DX	Get the x-coordinate spacing for a CGGRID object
+
+DX = CGGRID_DX ( CGG )
+
+CGGRID_DX returns the grid-spacing DX in the X-direction for a
+cggrid object CGG.
+

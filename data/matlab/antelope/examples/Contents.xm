@@ -10,6 +10,16 @@
 %
 % Command Examples
 %   dbexample_arrtimes
+%   dbexample_cggrid
+%   dbexample_cggrid_dx
+%   dbexample_cggrid_dy
+%   dbexample_cggrid_free
+%   dbexample_cggrid_get
+%   dbexample_cggrid_getmesh
+%   dbexample_cggrid_nx
+%   dbexample_cggrid_ny
+%   dbexample_cggrid_write
+%   dbexample_cggrid2db
 %   dbexample_clear
 %   dbexample_clear_register
 %   dbexample_db2struct
@@ -117,4 +127,4 @@
 %			    [Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
 %       Lindquist Consulting
-%       1997-2002
+%       1997-2003

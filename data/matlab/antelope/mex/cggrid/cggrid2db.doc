@@ -1,14 +1,14 @@
 CGGRID2DB	Save a Computational-Geometry grid to a Datascope database
 
-CGGRID2DB ( DBPTR, GRID, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS,
+CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS,
  ['overwrite'] )
 
-CGGRID2DB saves a grid to a Datascope database with the gme1.0
-extensions.  The RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, and UNITS
-arguments should be specified as strings. The OUTPUT_FILE argument may
-be a pattern in the style of TRWFNAME. CGGRID2DB assumes the input
-database view, specified with the DBPTR variable, contains an origin
-table from which it can get an origin time and orid from the first row.
-The FMT argument gives the format in which to save the specified grid,
-for example 'as' or 't4'. For allowed formats see the Unix man page
-cggrid(5).
+CGGRID2DB saves a computational-geometry grid CGG to a Datascope
+database with the gme1.0 extensions.  The RECIPE_NAME, GRID_NAME,
+OUTPUT_FILE, FMT, and UNITS arguments should be specified as strings.
+The OUTPUT_FILE argument may be a pattern in the style of TRWFNAME.
+CGGRID2DB assumes the input database view, specified with the DBPTR
+variable, contains an origin table from which it can get an origin time
+and orid from the first row.  The FMT argument gives the format in
+which to save the specified grid, for example 'as' or 't4'. For allowed
+formats see the Unix man page cggrid(5).

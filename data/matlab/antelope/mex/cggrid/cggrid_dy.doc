@@ -1,0 +1,7 @@
+CGGRID_DY	Get the y-coordinate spacing for a CGGRID object
+
+DY = CGGRID_DY ( CGG )
+
+CGGRID_DY returns the grid-spacing DY in the Y-direction for a
+cggrid object CGG.
+

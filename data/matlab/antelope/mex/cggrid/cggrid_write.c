@@ -10,6 +10,7 @@
 Usage: CGGRID_WRITE ( CGG, FORMAT, FILE )\n"
 
 #include <stdio.h>
+#include <errno.h>
 #include "antelope_mex.h"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
@@ -18,6 +19,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	char	*format;
 	FILE	*fp;
 	CGGrid	*cgg;
+	char	errormsg[STRSZ];
 
 	if( nlhs >= 1 ) 
 	{
@@ -48,10 +50,12 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( ( fp = fopen( filename, "w" ) ) == NULL ) 
 	{
-		perror( "cggrid_write" );
 		mxFree( format );
 		mxFree( filename );
-		mexErrMsgTxt( "Failed to open cggrid file for writing." );
+		sprintf( errormsg,
+			"Failed to open cggrid file for writing: %s.",
+			strerror( errno ) );
+		mexErrMsgTxt( errormsg );
 	}
 
 	if( cggrid_write( cgg, format, fp ) < 0 ) 

@@ -7,7 +7,7 @@
  */
 
 #define USAGE "Error using ==> cggrid2db\n\n\
-Usage: CGGRID2DB ( DBPTR, GRID, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, ['overwrite'] )\n"
+Usage: CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, ['overwrite'] )\n"
 
 #include "antelope_mex.h"
 
@@ -30,12 +30,12 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt( USAGE );
 		return;
 	}
-	else if( ! get_dbptr( prhs[0], &db ) )
+	else if( ! get_cggrid( prhs[0], &cgg ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_cggrid( prhs[1], &cgg ) )
+	else if( ! get_dbptr( prhs[1], &db ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
@@ -87,6 +87,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	rc = cggrid2db( db, cgg, recipe_name, grid_name,
 		        output_file, format, units, flags );
+	antelope_mex_clear_register( 1 );
 
 	mxFree( recipe_name );
 	mxFree( grid_name );

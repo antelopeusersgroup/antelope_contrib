@@ -121,6 +121,19 @@
 %   free_response	- Dbresponse elimination routine
 %   clear		- Dbresponse elimination routine
 %
+% Computational-geometry grids
+%   cggrid		- cggrid class constructor
+%   cggrid_dx		- cggrid lattice spacing in x dimension
+%   cggrid_dy		- cggrid lattice spacing in y dimension
+%   cggrid_nx		- cggrid number of points in x dimension
+%   cggrid_ny		- cggrid number of points in y dimension
+%   cggrid_get		- get an array of x,y,z coordinate triplets for cggrid
+%   cggrid_getmesh	- get cggrid values formatted for the mesh command
+%   cggrid_write	- write a cggrid to a file
+%   cggrid2db		- write a cggrid to a database
+%   cggrid_free		- cggrid elimination routine
+%   clear		- cggrid elimination routine
+%
 % Real-time system connections
 %   orbopen		- Open a connection to an Antelope object-ring-buffer
 %   orbclose		- Close a connection to an Antelope object-ring-buffer
@@ -140,5 +153,5 @@
 %	   [Antelope is a product of Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
 %       Lindquist Consulting
-%       1997-2002
+%       1997-2003
 %

@@ -1,5 +1,0 @@
-CGGRID/CLEAR cggrid elimination routine
-
-CLEAR ( CGGRID )
-
-CLEAR frees a CGGRID object. Same as FREE_CGGRID.

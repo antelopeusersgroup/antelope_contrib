@@ -1,0 +1,7 @@
+CGGRID_NY	Get the y-coordinate spacing for a CGGRID object
+
+NY = CGGRID_NY ( CGGR )
+
+CGGRID_NY returns the number of elements NY in the Y-direction for a
+cggrid object CGG.
+

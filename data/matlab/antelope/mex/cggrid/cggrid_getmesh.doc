@@ -1,8 +1,8 @@
 CGGRID_GETMESH	Get arrays of x,y, and z values from a CGGRID object
 
-[X, Y, Z] = CGGRID_GETMESH ( CGGRID )
+[X, Y, Z] = CGGRID_GETMESH ( CGG )
 
 CGGRID_GETMESH returns three two-dimensional arrays of
-coordinate (X, Y) and datapoint (Z) values fora computational-geometry
-grid object, similar in structure to the output of the MESHGRID
+coordinate (X, Y) and datapoint (Z) values for a computational-geometry
+grid object CGG, similar in structure to the output of the MESHGRID
 command and suitable for plotting with MESH, SURF, and related routines.

@@ -1,0 +1,7 @@
+CGGRID_NX	Get the x-coordinate spacing for a CGGRID object
+
+NX = CGGRID_NX ( CGG )
+
+CGGRID_NX returns the number of elements NX in the X-direction for a
+cggrid object CGG.
+

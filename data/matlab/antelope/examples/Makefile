@@ -3,6 +3,16 @@ DATA= \
 	Contents.m \
 	dbexample_runall.m \
 	dbexample_arrtimes.m \
+	dbexample_cggrid.m \
+	dbexample_cggrid_dx.m \
+	dbexample_cggrid_dy.m \
+	dbexample_cggrid_free.m \
+	dbexample_cggrid_get.m \
+	dbexample_cggrid_getmesh.m \
+	dbexample_cggrid_nx.m \
+	dbexample_cggrid_ny.m \
+	dbexample_cggrid_write.m \
+	dbexample_cggrid2db.m \
 	dbexample_clear.m \
 	dbexample_clear_register.m \
 	dbexample_db2struct.m \

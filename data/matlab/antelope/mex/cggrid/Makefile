@@ -1,19 +1,24 @@
 DATADIR=matlab/antelope/antelope/@cggrid
 
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
-      $(MEXSRCS:.c=.m) 
+      $(MEXSRCS:.c=.m) \
+      cggrid_free.m \
+      clear.m 
 
 HTMLDIR= matlab/antelope/html
-HTML= $(MEXSRCS:.c=.html)
+HTML= $(MEXSRCS:.c=.html) \
+      clear.html
 
 MEXSRCS= \
 	cggrid.c \
+	cggrid2db.c \
+	cggrid_dx.c \
+	cggrid_dy.c \
 	cggrid_get.c \
 	cggrid_getmesh.c \
-	cggrid2db.c \
-	cggrid_write.c \
-	cggrid_free.c \
-	clear.c 
+	cggrid_nx.c \
+	cggrid_ny.c \
+	cggrid_write.c 
 
 CLEAN= 
 

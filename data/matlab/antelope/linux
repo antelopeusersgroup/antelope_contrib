@@ -21,7 +21,8 @@ MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
 clean ::
 	@-$(RM) *.$(MEXEXT) *.m *.html
 
-.SUFFIXES: .SUFFIXES .$(MEXEXT) .doc .xm .m .xhtml .html
+.SUFFIXES: .SUFFIXES .$(MEXEXT) .xm .doc .m .xhtml .html
+
 .c.o:
 	$(MEX) $(CFLAGS) -c $*.c
 
@@ -30,11 +31,25 @@ clean ::
 
 .xm.m:
 	$(RM) $@
-	cat $< > $@
+	if [ -r $*.doc ] ; then \
+		matdoc2dotm $*.doc ; \
+		echo >> $@ ; \
+		cat $< >> $@ ; \
+	else \
+		cat $< > $@ ; \
+	fi
+
+# Since .m's are taken from .xm's in preference to .doc's, 
+# by explicit precedence in .SUFFIXES, we have to make the
+# .xm.html defer to .doc.html by direct subversion:
 
 .xm.html:
-	$(RM) $@
-	matdoc_htmlwrap $< $@
+	if [ ! -r $*.doc ] ; then \
+		$(RM) $@ ; \
+		matdoc_htmlwrap $< $@ ; \
+	else \
+		matdoc2html $*.doc ; \
+	fi
 
 .doc.m:
 	matdoc2dotm $*.doc 

@@ -1,4 +1,4 @@
-LIB= libantelope_mex.a
+DLIB= libantelope_mex$(DSUFFIX)
 INCLUDE= antelope_mex.h
 
 CLEAN=
@@ -33,10 +33,7 @@ OBJS= 	  variables2mxArray.o \
 	  dbcolumn2mxArray.o \
 	  mxArray2dbvalue.o \
 	  orbpkt2mxArray.o \
-	  dbprocess_error.o \
-	  SCAFFOLD_fix_tr_endtime.o
+	  dbprocess_error.o 
 
-$(LIB) : $(OBJS)
-	rm -f $@
-	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
-	$(RANLIB) $@
+$(DLIB) : $(OBJS)
+	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

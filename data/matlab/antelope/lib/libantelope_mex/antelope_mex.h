@@ -46,7 +46,11 @@ extern Pf *mxArray2Pf PL_(( mxArray * ));
 extern mxArray *Pf2mxArray PL_(( Pf *, char * ));
 extern Response *mxArray2Response PL_(( mxArray * ));
 extern mxArray *Response2mxArray PL_(( Response * ));
+extern int ATM_CGGrid_register PL_(( CGGrid * ));
+extern int ATM_CGGrid_unregister PL_(( CGGrid * ));
+extern int ATM_CGGrid_is_registered PL_(( CGGrid * ));
 extern CGGrid *mxArray2CGGrid PL_(( mxArray * ));
+extern CGGrid *plaid_mxArrays2CGGrid PL_(( mxArray *, mxArray *, mxArray * ));
 extern mxArray *CGGrid2mxArray PL_(( CGGrid * ));
 extern mxArray *CGGrid2linear_mxArray PL_(( CGGrid * ));
 extern int CGGrid2plaid_mxArrays PL_(( CGGrid *, mxArray **, mxArray **, mxArray ** ));
@@ -70,3 +74,5 @@ extern Dbvalue *mxArray2dbvalue PL_(( const mxArray *, int ));
 extern void SCAFFOLD_fix_tr_endtime PL_(( Dbptr ));
 extern mxArray *orbpkt2mxArray PL_(( char *, double, char *, int, char * ));
 extern Dbptr dbprocess_error PL_(( Dbptr, char * ));
+
+extern Arr *ATM_CGGrid_Registry;

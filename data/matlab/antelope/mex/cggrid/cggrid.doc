@@ -1,7 +1,10 @@
 CGGRID	Computational-geometry-grid class constructor
 
-CGG = CGGRID ( FILE )
+CGG = CGGRID ( FILE ) **or** CGGRID ( X, Y, Z )
 
 CGGRID creates an object representing a computational-geometry-grid. 
 This object may be generated from a pre-existing FILE by specifying 
-the pathname of the file as a string input. 
+the pathname of the file as a string input. A cggrid object may also be 
+generated from three two-dimensional matrices specifying the X, Y, and Z 
+values, respectively (in the style of the Matlab MESH command). X, Y, and 
+Z must be regular meshes or grid-creation will fail.

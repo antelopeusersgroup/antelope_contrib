@@ -124,8 +124,6 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else  /* Success */
 	{
-		SCAFFOLD_fix_tr_endtime( tr );
-
 		plhs[0] = CreateDbptrStructFromDbptr( tr );
 
 		if( plhs[0] == NULL )

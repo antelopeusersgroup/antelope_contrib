@@ -6,15 +6,15 @@
  * 2003
  */
 
-#define USAGE "Error using ==> cggrid_free\n\n\
-Usage: CGGRID_FREE ( CGGRID )\n"
+#define USAGE "Error using ==> cggrid_ny\n\n\
+Usage: NY = CGGRID_NY ( CGGRID )\n"
 
 #include <stdio.h>
 #include "antelope_mex.h"
 
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
-	CGGrid *cgg;
+	CGGrid	*cgg;
 
 	if( nlhs > 1 ) 
 	{
@@ -32,7 +32,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-	
-	cggrid_free( &cgg );
-	antelope_mex_clear_register( 1 );
+
+	plhs[0] = CreateDouble( (double) cgg->ny );
+
+	if( ! plhs[0] ) 
+	{
+		mexErrMsgTxt( "Failed to create return value");
+	} 
 }
