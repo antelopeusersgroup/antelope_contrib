@@ -1,0 +1,123 @@
+.\" %W% %G%
+.TH GGNLOC 3 "%G%"
+.SH NAME
+ggnloc - generic Gauss-Newton location procedure
+.SH SYNOPSIS
+.nf
+#include "stock.h"
+#include "arrays.h"
+#include "location.h"
+void ggnloc(Hypocenter *h0, Tbl *ta, Tbl *tu, 
+	Tbl **history, Tbl **reasons, Tbl **residuals);
+.fi
+.SH DESCRIPTION
+.LP
+\fBggnloc\fR is a general purpose location procedure for
+locating seismic events using an arbitrary mix of arrival times and
+array slowness vector measurements.  The algorithm is designed
+to work with any seismic phase for which one can supply a suitable
+method for calculating theoretical travel times and array slowness
+vectors.  \fBggnloc\fR implements the standard method of 
+seismic event location based on the well known Gauss-Newton method
+commonly called Geiger's method in seismology.  However, the 
+range of options that are available are rich and a huge 
+variation in behavior of the algorithm is possible depending 
+upon the inputs supplied to it.  
+.LP
+Inputs to the procedure are described in greater detail under 
+genloc_intro(3), but major features of the procedure are as
+follows:
+.LP
+\fIgeneralized inverse.\fR  Two fundamentally different algorithms
+can be involked;  a least squares solution based on the pseudoinverse 
+with possible singular value truncation (similar to HYPOELLIPSE) or
+an implementation of the Marquardt algorithm (similar to LOCSAT).  
+In addition, the procedure supports the use of so called recentering
+which treats the origin time independently from the spatial 
+coordinates of the hypocenter.  A minor variant of this procedure
+that has not been used before is that I use the median travel time
+residual (slowness vectors are not used in recentering) to adjust
+the origin time when recentering is turned on.  This is 
+sensible, although not standard practice, because the median is
+less sensitive to outliers.  In the same spirit, the scale factor
+for residual weighting functions (see below) is also determined
+using the interquartiles rather than rms because the interquartile
+distance is well know to be a more robust measure of error scale.
+.LP
+\fIweighting\fR.  A range of complex weighting schemes are 
+supported.  This include a number of options for residual 
+weighting schemes, a completely general distance weighting
+scheme that requires the user to enter a discrete representation
+of weight as a function of epicentral distance, and 
+a variable weight assigned to control the relative importance
+of arrival time and slowness vector measurements.  In addition,
+each datum is weighted by an input estimate of expected measurement
+error.  
+Because ggnloc assumes a mix of units (slowness and travel time 
+measurements) the uncertainty weight cannot be turned off.  
+Weighted rms residual is than always a nondimensional number 
+scaled to units of 
+nominal measurement error.  
+In contrast, the raw rms residual ignores slowness residuals so 
+it can be in the correct units of seconds.  
+.LP
+\fIearth model\fR.  A novel feature of \fBggnloc\fR is that
+it utilizes a highly flexible travel time interface that has
+virtually unlimited capabilities for supporting arbitrarily 
+complex earth models and any combinations of seismic
+phases.  For further details see genloc_intro(3). 
+.LP
+Function arguments:
+.ce
+INPUTS
+.LP
+Hypocenter *h0 = starting guess to use for location.  
+(The typedef for the Hypocenter and other objects referred to below
+are found in location.h)
+.LP
+Tbl *ta = Arrival time table returned by related function read_arrivals.
+.LP
+Tbl *tu = Slowness vector returned by function read_slowness_vectors
+.ce 
+OUTPUTS
+.LP
+Tbl **history = table of hypocenter objects containing the entire 
+convergence history of this event.  The first entry in the Tbl 
+is the initial location, and the last entry is the ending solution.
+.LP
+Tbl **reasons = table of strings containing human readable 
+description of why the iteration sequence terminated.  
+.LP
+Tbl **residuals = table of strings containing residual and weighting
+information about the final solution.  For a desciption of the 
+quantities in this table see sgnloc(1) which dumps this table 
+directly to an output parameter file.  
+.SH LIBRARY
+utilizes the Basic Linear Algebra Subroutines (BLAS), 
+a library of related functions that do not yet have a defined location, and
+JSPC libraries defined in jspcmake as DBLIBS
+.SH DIAGNOSTICS
+.LP
+This procedure uses Dan Quinlan's library error functions 
+(die, complain, and register_error) to post warning messages.
+It will only die from malloc failures.  Some of the following
+may be followed by additional diagnostic messages from lower
+level routines.
+What I hope are 
+self explanatory warning messages are as follows:
+.nf
+Station: %s, Phase: %s Travel time calculator failed
+
+Station: %s, Phase: %s Slowness vector calculator failed
+
+calculate_statistics:  Insufficient data to calculate meaningful statistics
+Received only %d data to process
+
+svdcmp:  QR algorithm failed to converge in 30 iterations.  Gave up
+.SH "SEE ALSO"
+.nf
+genloc_ttinterface(3), sgnloc(1), genloc(3), arr(3), tbl(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Gary L. Pavlis
