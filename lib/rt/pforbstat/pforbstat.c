@@ -658,6 +658,8 @@ pforbstat( int orbfd, int flags )
 	orbping( orbfd, &orbversion );
 
 	pf = pfnew( PFFILE );
+	
+	pfput_double( pf, "pforbstat_version", PFORBSTAT_VERSION );
 
 	if( flags & PFORBSTAT_SERVER ) {
 		

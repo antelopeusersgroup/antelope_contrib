@@ -13,6 +13,8 @@ extern "C" {
 #define PFORBSTAT_CLIENTS 4
 #define PFORBSTAT_CONNECTIONS 8
 
+#define PFORBSTAT_VERSION 2.0
+
 extern Pf *orbstat2pf( Orbstat *orbstat, int orbversion );
 extern Pf *orbsources2pf( double atime, Orbsrc *sources, int nsources );
 extern Pf *orbclients2pf( double atime, Orbclient *clients, int nclients );
