@@ -1,11 +1,12 @@
 .\" %W% %G%
 .TH GENLOC_INTRO 3 "%G%"
 .SH NAME
-genloc_intro - introduction to generic event location library
+genloc_intro - introduction to generic/generalized event location library
 .SH DESCRIPTION
 \fBgenloc\fR is a collection of routines that form the core of a
 new suite of event location tools presently under development.  
-I refer to these procedures as genloc as a shorthand for for generic location.  
+I refer to these procedures as genloc as a shorthand for for generic or,
+alternatively, generalized location.  
 This was done because the intent of the original design was to 
 produce a set of location modules that were flexible enough that
 this program could come close to simulating any other existing 
@@ -17,7 +18,12 @@ known as (1) nonlinear least squares, (2) Gauss-Newton method, or
 with this package, however, due to wide flexibility in the choice
 of various weighting schemes and the method of solving the 
 matrix of partial derivatives that are an integral part of this 
-methodology.  These are described in more detail below when I 
+methodology.  
+A limited function grid search routine is also available, but the
+current version is largely intended to provide a solid initial 
+location to be finalized by convergence of the standard algorithm.
+The main features that make this program 
+"general" are described in more detail below when I 
 describe the host of input parameters that control the behavior
 of the location procedure.   
 .LP
