@@ -1,7 +1,7 @@
-#!/bin/sh
-# This comment extends to the next line for tcl \
-exec ucpwish $0 $*
-#exec ups /opt/antelope/dev/bin/ucpwish -a "$0 $*"
+
+package require Tclx
+package require Datascope
+package require Ucp
  
 set tcl_precision  17
 set auto_path [linsert $auto_path 0 /opt/antelope/dev/data/tcl/ucp]
