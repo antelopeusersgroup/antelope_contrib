@@ -1,3 +1,3 @@
 include $(ANTELOPEMAKE)
 
-DIRS=lib doc examples mex
+DIRS= lib doc examples mex

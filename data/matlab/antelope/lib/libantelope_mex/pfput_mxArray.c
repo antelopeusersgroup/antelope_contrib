@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "antelope_mex.h"
 
-int pfput_mxArray( Pf *pf, char *name, mxArray *array )
+int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 {
 	Pf	*sub_pf;
 	double	number;

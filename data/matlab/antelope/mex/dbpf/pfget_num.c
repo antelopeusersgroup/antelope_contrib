@@ -42,7 +42,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
 	}
 
-	pfconfig( "ask", matlabPfprompt );
+	pfconfig( "ask", (void *) matlabPfprompt );
 
 	mystring = pfget_string( pf, name );	
 	antelope_mex_clear_register( 1 );

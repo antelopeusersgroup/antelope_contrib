@@ -40,7 +40,7 @@ pftbl2cellarr( Pf *pftbl, int recursive )
 
 	for( i = 0; i < M; i++ )
 	{
-		type = pfpeek( pftbl, (char *) i, &value );
+		type = pfpeek( pftbl, (char *) i, (Pf **) &value );
 
 		switch( type )
 		{

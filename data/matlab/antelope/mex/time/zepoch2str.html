@@ -1,0 +1,41 @@
+<HTML>
+
+<HEAD>
+	<TITLE>zepoch2str</TITLE>
+</HEAD>
+
+<BODY>
+<PRE>
+
+ <B>ZEPOCH2STR Convert epoch time (seconds since 1/1/1970 00:00) to a string 
+</B>
+
+	TIMESTRING = ZEPOCH2STR ( EPOCH, FORMAT, TZ )
+
+
+ZEPOCH2STR takes an epoch-time value, i.e. seconds since
+midnight on January 1, 1970, and converts it to a string in
+the format specified by FORMAT, and in the time-zone 
+specified by TZ. The FORMAT argument is a string with
+percent-escape sequences as specified in the antelope man
+page epoch2str(3). For example, the format string %D
+%H:%M:%S %Z returns time strings like 2/28/99 07:15:00
+UTC.  If a single epoch time is specified, a character
+array is returned. If a matrix of epoch times is specified,
+the return is a cell array of strings. The TZ argument is 
+specified according to the UNIX convention, e.g. US/Pacific,
+US/Alaska, etc., as with the C-callable zepoch2str(3).
+
+<I><A HREF="examples/dbexample_zepoch2str.html"><B>Example</B> of <B>zepoch2str</B> in use</A></I>
+
+
+	<A HREF="http://brtt.com/">Antelope</A> Toolbox for <A HREF="http://www.mathworks.com/">Matlab</A>
+	  <A HREF="http://brtt.com/">[Antelope is a product of Boulder Real-Time Technologies, Inc.]</A>
+	<A HREF="http://www.lindquistconsulting.com">Kent Lindquist</A>
+	<A HREF="http://www.lindquistconsulting.com/">	1997-2002
+</PRE>
+
+<HR><H2><I><A HREF="antelope.html">Antelope Toolbox Index</A></I></H2>
+<HR><H2><I><A HREF="/opt/antelope/4.4/man/manpages.html">Antelope Unix Man Pages</A></I></H2>
+</BODY>
+</HTML>

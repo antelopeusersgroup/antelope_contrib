@@ -62,7 +62,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
-	pfconfig( "ask", matlabPfprompt );
+	pfconfig( "ask", (void *) matlabPfprompt );
 
 	rc = pfresolve( pf, name, 0, &value );
 	if( rc == PFINVALID || rc < 0 )

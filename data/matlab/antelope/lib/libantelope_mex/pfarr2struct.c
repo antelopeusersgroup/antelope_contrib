@@ -83,7 +83,7 @@ pfarr2struct( Pf *pf, int recursive )
 			return (mxArray *) NULL;
 		}
 
-		type = pfpeek( pf, name, &value );
+		type = pfpeek( pf, name, (Pf **) &value );
 
 		switch( type )
 		{

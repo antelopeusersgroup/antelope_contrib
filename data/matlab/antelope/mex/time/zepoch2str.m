@@ -1,0 +1,24 @@
+% ZEPOCH2STR Convert epoch time (seconds since 1/1/1970 00:00) to a string 
+%
+%
+%	TIMESTRING = ZEPOCH2STR ( EPOCH, FORMAT, TZ )
+%
+%
+%	ZEPOCH2STR takes an epoch-time value, i.e. seconds since
+%	midnight on January 1, 1970, and converts it to a string in
+%	the format specified by FORMAT, and in the time-zone 
+%	specified by TZ. The FORMAT argument is a string with
+%	percent-escape sequences as specified in the antelope man
+%	page epoch2str(3). For example, the format string %D
+%	%H:%M:%S %Z returns time strings like 2/28/99 07:15:00
+%	UTC.  If a single epoch time is specified, a character
+%	array is returned. If a matrix of epoch times is specified,
+%	the return is a cell array of strings. The TZ argument is 
+%	specified according to the UNIX convention, e.g. US/Pacific,
+%	US/Alaska, etc., as with the C-callable zepoch2str(3).
+%
+%	Antelope Toolbox for Matlab
+%	   [Antelope is a product of Boulder Real-Time Technologies, Inc.]
+%	Kent Lindquist
+%	Lindquist Consulting
+%	1997-2002

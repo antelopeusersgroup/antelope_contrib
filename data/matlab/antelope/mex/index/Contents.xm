@@ -74,6 +74,7 @@
 %   strydtime		- Convert an epoch time to a string date and time
 %   strtdelta		- Convert an epoch time difference to an elapsed time 
 %   yearday		- Convert an epoch time to a yearday value
+%   zepoch2str		- Convert epoch time to a string in a given timezone
 %
 % Seismic Travel Times
 %   arrtimes		- Returns predicted seismic phase arrival times

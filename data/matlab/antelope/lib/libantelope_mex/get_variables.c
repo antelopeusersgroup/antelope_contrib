@@ -10,7 +10,7 @@
 #include "antelope_mex.h"
 
 int	
-get_dbptr( mxArray *in, Dbptr *db )
+get_dbptr( const mxArray *in, Dbptr *db )
 {
         if( ! AssertIsDbptrStruct( in ) )
         {
@@ -29,7 +29,7 @@ get_dbptr( mxArray *in, Dbptr *db )
 }
 
 int 
-get_string( mxArray *in, char **string )
+get_string( const mxArray *in, char **string )
 {
 	mxArray *cell;
 
@@ -62,12 +62,12 @@ get_string( mxArray *in, char **string )
 }
 
 int
-get_stringtbl( mxArray *in, Tbl **tbl )
+get_stringtbl( const mxArray *in, Tbl **tbl )
 {
 	mxArray *input_array[1];
 	mxArray *output_array[1];
 
-	input_array[0] = in;
+	input_array[0] = (mxArray *) in;
 	mexCallMATLAB( 1, output_array, 1, input_array, "iscellstr" );
 
 	if( ! mxGetScalar( output_array[0] ) )
@@ -76,13 +76,13 @@ get_stringtbl( mxArray *in, Tbl **tbl )
 		return 0;
 	}
 
-	*tbl = cellstr2stringtbl( in );
+	*tbl = cellstr2stringtbl( (mxArray *) in );
 
 	return 1;
 }
 
 int
-get_pf( mxArray *in, Pf **pf )
+get_pf( const mxArray *in, Pf **pf )
 {
         if( mxGetClassID( in ) != mxOBJECT_CLASS )
         {
@@ -93,7 +93,7 @@ get_pf( mxArray *in, Pf **pf )
 		return 0;
 	}
 
-	*pf = mxArray2Pf( in );
+	*pf = mxArray2Pf( (mxArray *) in );
 
 	if( *pf == NULL )
 	{
@@ -105,7 +105,7 @@ get_pf( mxArray *in, Pf **pf )
 }
 
 int
-get_response( mxArray *in, Response **response )
+get_response( const mxArray *in, Response **response )
 {
         if( mxGetClassID( in ) != mxOBJECT_CLASS )
         {
@@ -116,7 +116,7 @@ get_response( mxArray *in, Response **response )
 		return 0;
 	}
 
-	*response = mxArray2Response( in );
+	*response = mxArray2Response( (mxArray *) in );
 
 	if( *response == NULL )
 	{
@@ -128,7 +128,7 @@ get_response( mxArray *in, Response **response )
 }
 
 int
-get_scalar( mxArray *in, double *scalar )
+get_scalar( const mxArray *in, double *scalar )
 {
 	if( ! mxIsNumeric( in ) ||
 	    ! mxIsDouble( in ) ||

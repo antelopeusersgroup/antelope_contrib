@@ -11,7 +11,7 @@
 #include "antelope_mex.h"
 
 Dbvalue *
-mxArray2dbvalue( mxArray *in, int type )
+mxArray2dbvalue( const mxArray *in, int type )
 {
 	Dbvalue	*value;
 	char	warning[STRSZ];

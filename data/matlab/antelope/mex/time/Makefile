@@ -12,7 +12,8 @@ MEXSRCS= \
 	strtime.c \
 	strdate.c \
 	strydtime.c \
-	strtdelta.c 
+	strtdelta.c \
+	zepoch2str.c 
 
 CLEAN= 
 
@@ -22,5 +23,3 @@ ldflags=
 ldlibs=
 
 include $(ANTELOPE)/include/mex_antelope_makerules
-DBG += -argcheck
-

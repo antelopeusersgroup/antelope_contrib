@@ -97,7 +97,8 @@ DATA= \
 	dbexample_trsave_wf.m \
 	dbexample_trsplice.m \
 	dbexample_writing.m \
-	dbexample_yearday.m 
+	dbexample_yearday.m \
+	dbexample_zepoch2str.m 
 
 HTMLDIR= matlab/antelope/html/examples
 HTML= $(DATA:.m=.html)

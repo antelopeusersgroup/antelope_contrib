@@ -76,7 +76,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
 	}
 #else
-	pfconfig( "ask", matlabPfprompt );
+	pfconfig( "ask", (void *) matlabPfprompt );
 #endif
 
 	type = pfget( pf, name, &value );
