@@ -69,7 +69,7 @@ int dbputv ( Dbptr db, char *t, char *f1, v1, ... 0)
     terminate list with zero.
 
 int dbselect ( Dbptr db, Tbl *l, FILE *f)
-    foreach record in view db or specified range (db.record to db.field), 
+    for each record in view db or specified range (db.record to db.field), 
     print the value of the expressions in the list l to file f.
 
 <subsection Removing and deleting rows>
@@ -141,7 +141,7 @@ int dbwrite_view ( Dbptr db, FILE *f )
     write the database view db to the open file f.
 
 int dbsave_view ( Dbptr db )
-    save the database view db to a file named according view's name and the database name
+    save the database view db to a file named according to the view's name and the database name
 
 int dbunjoin ( Dbptr db, char *name, int rewrite )
     using the base table records referenced in the input view db, write new 
@@ -190,7 +190,7 @@ int dbex_evalstr ( Dbptr db, char *s, int type, void *v )
     record db, converting the result to the specified type, returning value v 
 
 int dbfind(Dbptr db, char *string, int flags, Hook **hook)
-    search for record matching string in view db, where string is a regular expression, Datascope expression, or a plain string.  if flag&1, search backward.
+    search for record matching string in view db, where string is a regular expression, Datascope expression, or a plain string.  if flags&1, search backward.
 
 <subsection External files>
 int dbextfile ( Dbptr db, char *table, char *p )

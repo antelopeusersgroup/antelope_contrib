@@ -66,7 +66,7 @@ deprecated void setmapcf ( char *fn )
 
 <subsection State Files>
 int bury ( )
-    save state file, as specified by calls to resurrect and resurrect
+    save state file, as specified by calls to exhume and resurrect
 
 int exhume ( char *nm, int *stop, int sec, void (*f)() )
     recover state file nm, and set up to save new copy.  sets up interrupt
@@ -823,7 +823,7 @@ Pf *pfnew ( int type )
 void pffree ( Pf *pf )
     free resources for parameter space pf
 
-int pfconfig ( "ask", char *(*)(char *)) askx )
+int pfconfig ( "ask", char *(*)(char *) askx )
     replace default &ask routine with user supplied version askx
 
 int pfget ( Pf *pf, char *name, void **result )

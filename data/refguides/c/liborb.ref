@@ -25,7 +25,7 @@ int orbreject ( int orb, char *re)
 int orbafter ( int orb, double t )
     set the read position for connection orb after the specified time t
 
-int orbbposition ( int orb, char *w );
+int orbposition ( int orb, char *w );
      set the read position for connection orb according to string w, 
      which may be an epoch time or "newest" or "oldest".
 

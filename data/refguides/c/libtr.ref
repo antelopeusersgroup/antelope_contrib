@@ -94,10 +94,10 @@ int trsignal ( Dbptr tr, char *params )
 
 
 void mksignal ( char *type, float *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
-    generate a signal of a specified type: type may be sin, cos, sqr, tri, saw, dlt, ran, stp, pkt or dif
+    generate a signal of a specified type: type may be sin, cos, sqr, tri, saw, dlt, ran, stp, pkt or dif. creates floating-point numbers. 
 
 void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
-    generate a signal of a specified type
+    generate a signal of a specified type. creates integers.
 
 <subsection SEED>
 private int ascii2int ( int *result, char *s, int n )
@@ -179,7 +179,7 @@ private void tr2gaps ( Trsample *data, int nsamp, char *datatype )
     replace t4 gap value with fill value for datatype
 
 void trfill_gap ( Trsample *data, int nsamp )
-    fills a data segment with th 'standard' "t4" gap value
+    fills a data segment with the 'standard' "t4" gap value
 
 private int trwfnew ( Wfdisc *wfdisc )
     create a new wfdisc record
@@ -237,11 +237,11 @@ int trsplit ( Dbptr tr, int (*fill) (), int (*findbad) () )
     break up waveform records, eliminating marked missing data
 
 int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
-    splice together any data segments which fit together, eliminating overlapping portions
+    splice together any data segments which fit together, eliminating overlapping portions. 
     don't splice sections with different calibs together if factor_calib is 0.
 
 int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
-    splice together any data segments which fit together, eliminating overlapping portions
+    splice together any data segments which fit together, eliminating overlapping portions. 
     splice sections with different calibs together, multiplying later values by the ratio of calibs.
 
 int trglue ( Dbptr tr, int ns, int ne, double tolerance, int (*fill)(), int (*resample)() )
