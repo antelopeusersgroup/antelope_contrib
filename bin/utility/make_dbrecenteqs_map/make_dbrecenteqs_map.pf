@@ -1,0 +1,46 @@
+mapspec	&Arr{
+	latc	65
+	lonc	-155
+	right_dellon 8
+	up_dellat	8
+	down_dellat	-8
+	left_dellon	-8
+	size_inches	5
+#
+# External files and databases
+#
+	grddb	/space/world30_grids/world30
+	cities_dbname	world_cities
+	hypocenter_dbname	historic_hypocenters_dbname
+	map_color_palette_file	&datafilename(gmt/dbrecenteqs.cpt)
+	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
+	depth_color_palette_file &datafilename(gmt/depthmag2.cpt)
+	linefiles	&Tbl{
+#		faults combined_faults.gmtlin 4/255/0/0
+#		roads roads.xy 4/255/255/255
+	}
+# 
+# occasionally changed configuration parameters
+#
+	detail_density	l
+	background_magmin	6
+	background_magsize_pixels	3
+	proj	edp
+	format	gif
+	city_symbols_inches	0.08
+	cityname_fontjustify	LM
+	cityname_fontno	1
+	cityname_fontsize	9
+	cityname_shift_deg	0.2
+	gridline_interval_deg	5
+	grdgradient_opt	-A60 -Nt1/2000/0
+	landmask_regions	&Arr{
+	    Caspian_Depression	-R43/58/35/50
+	    Salton_Sea	-R-116.8/-115/32/34
+	}
+	pixels_per_inch	100
+	reserve_colors	12
+	tilesize_deg	10
+}
+
+pixfile_conversion_method	imagick

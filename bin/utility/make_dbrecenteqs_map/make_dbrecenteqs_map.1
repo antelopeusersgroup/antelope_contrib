@@ -1,0 +1,110 @@
+.TH MAKE_DBRECENTEQS_MAP 1 "$Date$"
+.SH NAME
+make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
+.SH SYNOPSIS
+.nf
+make_dbrecenteqs_map [-v] [-p pffile] psfile
+.fi
+.SH DESCRIPTION
+The script make_dbrecenteqs_map creates a postscript map image, along with 
+its pixfile equivalent, for dbrecenteqs(1) or dbevents(1). The parameter 
+file specifies the map details, including the center latitude and longitude
+and the extent. make_dbrecenteqs_map expects a database of topography/bathymetry
+grid information for dbgmtgrid(3). Optional line files for roads and faults may 
+be specified in the parameter file. A database of cities may be specified 
+as well; if so they will be drawn onto the map. The GMT color palette 
+should be given in a file specified by the map_color_palette_file parameter. 
+If there are regions to be mapped with ground areas below sea level, 
+an alternate color palette for the low regions may be specified with the 
+map_landmask_palette_file, with the below-sea-level sections listed in 
+the landmask_regions table (each region is given as a string for the 
+GMT -R option).
+
+.SH OPTIONS
+.IP "-p pffile"
+Specify a parameter other than the default make_dbrecenteqs_map.pf
+.IP -v 
+verbose
+.SH FILES
+At the time of writing, grids files designed for use with dbgmtgrid(3) and 
+covering the whole planet (notwithstanding a small region around the Weddell
+Sea and Ross Ice Shelf) are available at 
+http://www.gina.alaska.edu/page.xml?group=data&page=griddata.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+mapspec	&Arr{
+	latc	65
+	lonc	-155
+	right_dellon 8
+	up_dellat	8
+	down_dellat	-8
+	left_dellon	-8
+	size_inches	5
+#
+# External files and databases
+#
+	grddb	/space/world30_grids/world30
+	cities_dbname	world_cities
+	hypocenter_dbname	historic_hypocenters_dbname
+	map_color_palette_file	&datafilename(gmt/dbrecenteqs.cpt)
+	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
+	depth_color_palette_file &datafilename(gmt/depthmag2.cpt)
+	linefiles	&Tbl{
+#		faults combined_faults.gmtlin 4/255/0/0
+#		roads roads.xy 4/255/255/255
+	}
+# 
+# occasionally changed configuration parameters
+#
+	detail_density	l
+	background_magmin	6
+	background_magsize_pixels	3
+	proj	edp
+	format	gif
+	city_symbols_inches	0.08
+	cityname_fontjustify	LM
+	cityname_fontno	1
+	cityname_fontsize	9
+	cityname_shift_deg	0.2
+	gridline_interval_deg	5
+	grdgradient_opt	-A60 -Nt1/2000/0
+	landmask_regions	&Arr{
+	    Caspian_Depression	-R43/58/35/50
+	    Salton_Sea	-R-116.8/-115/32/34
+	}
+	pixels_per_inch	100
+	reserve_colors	12
+	tilesize_deg	10
+}
+
+pixfile_conversion_method	imagick
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbrecenteqs(1), dbevents(1), dbgmtgrid(3), dbgmtgrid(1)
+.fi
+.SH "BUGS AND CAVEATS"
+make_dbrecenteqs_map does not set the bounding-box (latminbb, lonminbb, 
+latmaxbb, lonmaxbb) , symsiz, and priority fields of the parameter file
+for dbevents. These affect the run-time behavior of dbevents and thus are 
+left to the discretion of the system operator. 
+
+Currently, the only supported projection is the EquiDistant Projection (edp). 
+.SH AUTHOR
+.nf
+Kent Lindquist 
+Lindquist Consulting
+.fi
+.\" $Id$
