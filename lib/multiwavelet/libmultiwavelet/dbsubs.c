@@ -474,10 +474,13 @@ int MWdb_save_pm(
 			in radians and need to be converted to degrees with
 			the deg for external consumption. */
 			scoor = unit_vector_to_spherical(pm->major);
-			majaz = deg(scoor.phi);
+			/* Note azimuth in geographical coordinates is
+			not the same as the phi angle in spherical coordinates
+			used here.  It is 90 - phi */
+			majaz = 90.0 - deg(scoor.phi);
 			majema = deg(scoor.theta);
 			scoor = unit_vector_to_spherical(pm->minor);
-			minaz = deg(scoor.phi);
+			minaz = 90.0 - deg(scoor.phi);
 			minema = deg(scoor.theta);
 			if( dbaddv(db,0,
 				"sta",g->sta[i]->sta,
@@ -512,10 +515,10 @@ int MWdb_save_pm(
 	/* now we add a row for the array average.  This is flagged only
 	by the pmtype field.  */
 	scoor = unit_vector_to_spherical(pmavg->major);
-	majaz = deg(scoor.phi);
+	majaz = 90.0 - deg(scoor.phi);
 	majema = deg(scoor.theta);
 	scoor = unit_vector_to_spherical(pmavg->minor);
-	minaz = deg(scoor.phi);
+	minaz = 90.0 - deg(scoor.phi);
 	minema = deg(scoor.theta);
 	if( dbaddv(db,0,
 		"sta",array,
