@@ -5,8 +5,8 @@ smartpick \- Graphical driver for dbpick
 .SH SYNOPSIS
 .nf
 \fBsmartpick \fP[\-nowait] [\-appname \fIwindow_name\fP]
-                [\-winfile \fIfilename\fP]                 [\-comout
-                \fInamed_pipe\fP] \fIdbname\fP \fItrial_dbname\fP
+                [\-winfile \fIfilename\fP] [\-comout \fInamed_pipe\fP]
+		\fIdbname\fP \fI[trial_dbname]\fP
 .fi
 .SH DESCRIPTION
 \fBsmartpick\fP is a graphical-user-interface driver for dbpick. It allows
@@ -18,10 +18,51 @@ trial database name is specified, the trial database is used to look up
 association information for displaying picked traces. This is provided
 for compatibility with dbloc2. If the trial database is not specified, the
 default input database is used for looking up association information.
+Most of the arguments are designed to allow smartpick to be used in 
+conjunction with dbloc2 (see the example in the EXAMPLE section below).
 
 smartpick expects a very particular and strict interpretation of the
 network.nettype field, and the network and affiliation tables, in order
-to build the full set of network menus.
+to build the full set of network menus. In addition to the "Station" menu, 
+which allows one to focus on one particular station, there are five menus 
+at lower left labelled 
+.nf
+	Array
+	Processing Group
+	Circuits
+	Namespace Network
+	Volcano
+.fi
+These buttons provide the ability to select networks of stations from the 
+affiliation table and display all the stations in the chosen network. 
+Instead of presenting all the networks of the network table in one list, 
+these buttons divide the networks into the five listed categories, based
+on the value of the network.nettype field. The accepted values for 
+network.nettype are: 
+.nf
+	ar		(Array)
+	pr		(Processing Group)
+	cr		(Circuit)
+	lo or ww	(Namespace)
+	vo		(Volcano)
+.fi
+"Array" means a cluster of stations spaced closely enough together to 
+take advantage of coherence in the wavefield. "Circuit" indicates 
+a group of stations which all come in on the same telemetry channel (e.g. 
+one radio link for multiplexed analog stations) or acquisition mechanism. 
+"Volcano" indicates a cluster of stations all on a single
+volcano. "Processing Group" is intended as a grab-bag for all other types 
+of station groupings. Finally, there are actually two appropriate uses 
+of the term "network": one use means a simple association of stations 
+in some arbitrary category. The other use labels a 'namespace' in which a 
+given station-name is unique. In the application for which smartpick 
+was written, the network.nettype codes of "lo" and "ww" are used to 
+identify the networks which are used as namespace identifiers--e.g. the 
+SEED-code network names like "AK", "AZ", or "KN". Without this restriction,
+the ambiguity of "network" in the CSS3.0 database causes difficulties. 
+
+Note that both the station and network menus are tear-off menus, for 
+convenience (just click on the dotted line at the top of the list). 
 .SH OPTIONS
 .IP -nowait
 Bring up dbpick automatically upon startup
@@ -35,6 +76,20 @@ not specified, the default name "smartpick_dbpick" is used, or a unique
 name is generated if that file already exists.
 .IP -comout named_pile
 Argument is passed to dbpick as the -comout option.
+.SH EXAMPLE
+One may use smartpick in conjunction with dbloc2 by changing the dbpick 
+launch-line in dbloc2.pf. For example, instead of 
+.nf
+
+dbpick          /usr/openwin/bin/xterm -geometry 80x24+0-0 -e dbpick -nostarttalk -winfile $Define{Work_dir}/dbpick_window -geom 1000x700 -appname dbloc_dbpick -comout $Define{Work_dir}/dbpick_pipe $Input_database
+
+.fi
+One would use 
+.nf
+
+dbpick          /usr/openwin/bin/xterm -iconic -e smartpick -nostarttalk -winfile $Define{Work_dir\}/dbpick_window -appname dbloc_dbpick -comout $Define{Work_dir\}/dbpick_pipe $Input_database $Trial_database
+
+.fi
 .SH FILES
 .IP smartpick_dbpick
 default name of winfile created for dbpick, if one
@@ -42,7 +97,7 @@ is not specified on the command line. If one already exists, a unique name
 will be generated. This file is removed upon normal exit.
 .SH "SEE ALSO"
 .nf
-dbpick(1), dbe(1)
+dbpick(1), dbe(1), dbloc2(1)
 .fi
 .SH "BUGS AND CAVEATS"
 This program was originally written for a specific application, 
