@@ -25,7 +25,7 @@ Possible failure modes of the program may or may not include the following:
 
 This program splits mbox-style mail files into separate messages, then
 records them in a database and refiles by year, domain, and sender. The
-database is specified in the parameter file and uses Mail1.1 format.
+database is specified in the parameter file and uses Mail1.2 format.
 For the normal operation mode, filemail proceeds in two separate
 stages. In the first stage, input mail files are split into their
 component messages. In the second, split messages are reassembled into
@@ -45,10 +45,17 @@ lines will be filed by the shorthand version of the subject instead
 of by username.
 
 The archive directory for filed mail is specified in the parameter 
-file, along with the temporary directory ("splitdir") for 
-split messages. The latter directory and the individual messages 
+file, along with the temporary directories ("splitdir" and "fileddir") for 
+split messages and filed messages. The latter two directories are used 
+for safe recovery from problems, and for handling email in multiple 
+stages. After messages are split, they are put into the subdirectory 
+specified by splitdir. After messages are filed, they are moved from 
+splitdir to fileddir. 
+The splitdir and fileddir directories and the individual messages 
 are not removed by the filemail program. This sacrifices cleanup 
-convenience to the user for the benefit of safer mail handling. Sent 
+convenience to the user for the benefit of safer mail handling. The 
+splitdir and fileddir directories should be removed by hand after filemail
+has been run and its success has been verified. Sent 
 email messages are stored in an archive subdirectory specified by the 
 sent_archive_pattern, which is a string which should be interpretable
 by epoch2str(3).
@@ -87,7 +94,7 @@ unsafe mode. Writes over split mail files regardless of whether
 they already exist.
 
 .IP "-d new_database_name"
-The -d option adds the messages in the specified mail file(s) to a Mail1.1
+The -d option adds the messages in the specified mail file(s) to a Mail1.2
 database. Note that the filing operation automatically adds messages
 to the database specified in the parameter file, so the -d option is 
 normally not needed unless rebuilding that archive database.
@@ -101,6 +108,7 @@ Save a copy of any error messages in the specified file
 .nf
 mail_database /home/kent/data/db/maildb
 splitdir split
+fileddir filed
 archivedir /home/kent/mailarchive
 sent_archive_pattern %Y/SENT/%B
 Me &Tbl{
@@ -143,7 +151,7 @@ yukon% filemail -v Unsorted
 Then check to see that mail was properly archived. Then
 .nf
 
-yukon% rm split/* Unsorted
+yukon% rm split/* filed/* Unsorted
 yukon% touch Unsorted
 
 .fi
@@ -171,7 +179,7 @@ Additionally, one may wish to put an entry in .dbe.pf for
 the mail schema, e.g. 
 .nf
 
-Mail1.1	&Arr{
+Mail1.2	&Arr{
     correspondents	realname from descrip corrtype
     graphics	&Arr{
         in	&Tbl{

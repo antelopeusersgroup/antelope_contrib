@@ -1,5 +1,6 @@
 mail_database &exec(dbcentral -d mail)
 splitdir split
+fileddir filed
 home &env(HOME)
 archivedir &home/mailarchive
 sent_archive_pattern %Y/SENT/%B

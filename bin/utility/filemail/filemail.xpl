@@ -246,6 +246,9 @@ sub message_to_database {
  		printf( "Adding to database mail from $from at $epoch: $foff $lines $bytes $dir $dfile\n" );
 	}
 
+	@dbtemp = dblookup( @dbcorr, "", "correspondents", "from", "" );
+	$address_size = dbquery( @dbtemp, dbFIELD_SIZE );
+
 	if( $sent ) {
 		$dbout[3] = dbaddnull( @dbout );
 		dbputv( @dbout,  "to", $to, 
@@ -267,7 +270,7 @@ sub message_to_database {
 				"dir", $dir, 
 				"dfile", $dfile );
 
-		if( ( $dbcorr[3] = dbfind( @dbcorr, "from == \"$address\"" ) ) < 0 ) {
+		if( ( $dbcorr[3] = dbfind( @dbcorr, "from == substr(\"$address\",0,$address_size)" ) ) < 0 ) {
 			dbaddv( @dbcorr, "from", $address,
 			 	"descrip", $real, 
 				"realname", $real );
@@ -564,6 +567,8 @@ sub filemail {
 	$dir = abspath( $dir );
 
 	message_to_database( $file, $dir, $dfile, $foff, $lines, $bytes, $mailobj );
+
+	system( "/bin/mv $file $Fileddir" );
 }
 
 $do_split = 0;
@@ -655,6 +660,7 @@ if( $opt_S && $#ARGV < 0 ) {
 
 $Pf = "filemail";
 $Splitdir = pfget( $Pf, "splitdir" );
+$Fileddir = pfget( $Pf, "fileddir" );
 $Archivedir = pfget( $Pf, "archivedir" );
 
 $nullhost = pfget( $Pf, "Hosts{NULL}" );
@@ -670,13 +676,17 @@ if( ! $opt_n && ! $opt_d ) {
 	mkdir $Splitdir, 0755 || die( "Can't make directory $Splitdir\n" );
 }
 
+if( ! $opt_s && ! $opt_n && ! $opt_d ) {
+	mkdir $Fileddir, 0755 || die( "Can't make directory $Fileddir\n" );
+}
+
 if( $do_database ) {
 
 	$mail_dbname = $opt_d;
 
 	if( ! -e "$mail_dbname" ) {
 		open( D, ">$mail_dbname" );
-		print D "#\nschema Mail1.1\n";
+		print D "#\nschema Mail1.2\n";
 		close( D );
 	}
 
@@ -699,7 +709,7 @@ if( $do_database ) {
 	}
 	if( ! -e "$mail_dbname" ) {
 		open( D, ">$mail_dbname" );
-		print D "#\nschema Mail1.1\n";
+		print D "#\nschema Mail1.2\n";
 		close( D );
 	}
 
