@@ -161,6 +161,31 @@ sub check_for_executable {
 	return $ok;
 }
 
+sub remove_stale_webmaps {
+	my( @db ) = @_;
+	
+	@db = dbprocess( @db, "dbopen webmaps",
+			      "dbjoin event",
+			      "dbjoin origin event.evid#origin.evid",
+			      "dbsubset origin.lddate > webmaps.lddate || event.lddate > webmaps.lddate",
+			      "dbseparate webmaps" );
+
+	my( $stale_nrecs ) = dbquery( @db, "dbRECORD_COUNT" );
+
+	print STDERR "Removing $stale_nrecs stale webmap entries\n";
+
+	for( $db[3] = 0; $db[3] < $stale_nrecs; $db[3]++ ) {
+		my( $mapname ) = dbgetv( @db, "mapname" );
+		@dbwebmaps = dblookup( @db, "", "webmaps", "mapname", "$mapname" );
+		if( $dbwebmaps[3] >= 0 ) {
+			dbmark( @dbwebmaps );
+		}
+	}
+	dbcrunch( @dbwebmaps );
+
+	return;
+}
+
 sub xml_to_html {
 	my( $xml_file, $xsl_file, $html_file ) = @_;
 

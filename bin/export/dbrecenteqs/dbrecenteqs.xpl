@@ -1168,6 +1168,8 @@ if( $opt_e ) {
 
 } else {
 
+	remove_stale_webmaps( @db );
+
 	@dbneedmaps = dbprocess( @db, 
 			 "dbopen origin", 
 			 "dbjoin event",
