@@ -1,0 +1,125 @@
+Schema Techcomp0.3
+	Description ( "Schema for Technology Components" )
+	Detail {
+		This schema tracks the technology components installed 
+		on a machine or cluster of machines. It may be used 
+		for software or hardware, though it was designed mainly 
+		for software. Additional fields (e.g. for "soft" vs "hard", 
+		or for vendor etc) might be useful if it gets used often
+		for hardware.
+	}
+	Timedate lddate
+	;
+
+Attribute comp
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "Technology Component" )
+	Detail {
+		This is the name of the technology component installed.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "(epoch) time of last record modification" )
+	Detail {
+		This is the time the record was last modified.
+	}
+	;
+
+Attribute licensekey
+	String (150)
+	Format ( "%-150s" )
+	Null ( "-" )
+	Description ( "License Key" )
+	Detail {
+		For licensed software, this records the license key
+	}
+	;
+
+Attribute machine
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "machine name" )
+	Detail {
+		This is the name of the machine on the network.
+		Sometimes a dual-boot or other 'multi-OS' machine 
+		might have two separate names on the network, that 
+		are close but officially different (e.g. yukon and 
+		yukonpc). In this case it is often helpful to use 
+		the name of the 'main' machine in this field, letting 
+		the 'os' field distinguish amongst the different 
+		operating systems on the hardware platform.
+	}
+	;
+
+Attribute os
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Operating system" )
+	Detail {
+		This is the operating system in which the technology 
+		component is installed. Understandable abbreviations 
+		may be used, for example "linux", "w2k", or 
+		"sol2.8", provided they are used consistently.
+	}
+	;
+
+Attribute reason
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "Reason for installing the component" )
+	Detail {
+		This is the reason the technology component was installed. 
+		If it's for a particular project, this will often 
+		be listed as "project: project_name". If it was necessary
+		because some other component depended on it, that 
+		other component is listed. Null value often indicates 
+		that the technology component is generally useful 
+		as part of the infrastructure.
+	}
+	;
+
+Attribute source
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "Source of technology component" )
+	Detail {
+		This is a reference to the place where the software 
+		was obtained. Often this may be a URL for a freeware 
+		package download.
+	}
+	;
+
+Attribute version
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Version" )
+	Detail {
+		This is the version (usually some kind of revision 
+		number) of the technology component installed.
+	}
+	;
+
+Relation techcomp
+	Fields ( machine os comp version reason source licensekey lddate )
+	Primary ( machine os comp )
+	Description ( "Installed technology components" )
+	Detail {
+		This table itemizes the technology components installed on 
+		a machine or set of machines. It is useful for rebuilding
+		machines from the ground up if necessary, or when 
+		duplicating their functionality elsewhere.
+	}
+	;
+

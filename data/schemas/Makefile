@@ -16,7 +16,8 @@ DATA=	iceworm1.3 \
 	registry1.1 \
 	Images1.0 \
 	Mail1.1 \
-	issues1.0
+	issues1.0 \
+	Techcomp1.0
 
 include $(ANTELOPEMAKE)  	
 DIRS=
