@@ -5,8 +5,13 @@
 rtm [-icon iconname] [-title title]
     monitor real-time tasks and resource usage
 
-dbevents dbname
+dbevents [options] dbname [start [end]]
     display map of seismic events and waveforms
+<options>
+-max_age max_age
+-show_detections
+-title window_title
+</options>
 
 rtexec [options] [comment]
     real time system executive; runs all other real time processes
@@ -266,6 +271,9 @@ qtunbale [options] url [time [endtime|period]]
 -v	more verbose
 </options>
 
+qtbsetaddr ipaddr [timeout]
+    set Quanterra baler ip-address
+
 qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
@@ -521,11 +529,9 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 -auth author
 -delay delay
 -pf pf
--S statefile
 -select expr
 -start {pktid|time|OLDEST}
 -target_orb2dbt torb2dbt
--target_orbmag torbmag
 -trigger_start_only
 -v
 </options>
@@ -638,6 +644,8 @@ dlmon [options] orb [-cmd cmdorb]
 -start_log {OLDEST|pktid|time}
 -select_status expr_status
 -select_log expr_log
+-dump period imagefile
+-pf pffile
 </options>
 
 dlmontxt [options] orbname [orbname2 [...]]
