@@ -3,7 +3,7 @@
 <subsection Waveform manipulation>
 <commands>
 trexcerpt [options] dbin dbout [start {duration|end}]
-    extract waveform segments from a database
+    extract waveform segments from database
 <options>
 -A	autodrm style (ascii) waveform files
 -o datatype	specify output waveform datatype (default = sd)
@@ -15,10 +15,10 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -c expr	sta/chan/instrument subset
 -s expr	evid/orid/arid subset
 -j expr	origin/site subset
--p	in arrival mode, save waveforms only for the pick channel 
+-p	in arrival mode, save waveforms only for pick channel 
 -W db	specify database from which waveforms come
 -d	write complete database with site, sensor, sitechan, instrument
--e	include correct subset of event, origin, origerr, arrival, and assoc in the output database
+-e	include correct subset of event, origin, origerr, arrival, and assoc in output database
 -v	more verbose
 </options>
 
@@ -31,12 +31,12 @@ trmapnames [-av] db [net fsta fchan {loc|aux}]
 deprecated dbsteimc [options] dbin [dbout]
     compress waveform data using steim compression (see also trexcerpt)
 <options>
--v	Report compression statistics for each waveform
+-v	report compression statistics for each waveform
 -l {1|2}	Compression level (default = 2)
 -L loc_code
 -n net
--o	Overwrite the records in the wfdisc table
--r val	Replacement value for data gaps
+-o	overwrite records in wfdisc table
+-r val	replacement value for data gaps
 -p pf
 -w wfname
 -s outfile
@@ -71,10 +71,10 @@ event_archive [options] dbin dbout
 </options>
 
 trsample [options] database[.table] [time [end|period]]
-    print a few samples from waveforms in a database
+    print a few samples from waveforms in database
 <options>
--c	apply calib to the samples
--e	read data from each row in the table
+-c	apply calib to samples
+-e	read data from each row in table
 -o	write samples one to a line
 -[i|t|T]	show integer, epoch time, or readable time index for each sample
 -n npts	print npts samples
@@ -104,7 +104,7 @@ trsignal [options] database
 </options>
 
 deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
-    extract specified segment of the CSS data
+    extract specified segment of CSS data
 <options>
 -c chan
 -n network
@@ -142,7 +142,7 @@ dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
 </options>
 
 dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbout]
-    make waveform measurements from a database
+    make waveform measurements from database
 <options>
 -p pf
 -net net
@@ -160,7 +160,7 @@ displayspec dbname
 <subsection Waveform display>
 <commands>
 dbplotcov database sta:chan tstart tend [-h[scale]]
-    make a plot and listing of waveform coverage from a database
+    make plot and listing of waveform coverage from database
 
 dbrsec [options] db
     make record section plot of waveforms
@@ -192,7 +192,8 @@ dbspgram [options] dbname sta chan tstart twin
 </options>
 
 dbpick [options] dbname
-    waveform review, pick arrivals, and edit a CSS relational database (see .dbpickrc for filter specs)
+    pick arrivals and review waveforms from dbname
+    (see .dbpickrc for filter specs)
 <options>
 -sc sta:chan	specify station/channel "glob"; eg "*:*Z"
 -ts tstart	specify start time
@@ -209,7 +210,7 @@ dbpick [options] dbname
 </options>
 
 tkdbpick [options] {dbname|-}
-    waveform review, pick arrivals, and edit a CSS relational database
+    pick arrivals and review waveforms from dbname
 <options>
 -pf pf
 -sc sta:chan
@@ -250,7 +251,6 @@ tkdbpick [options] {dbname|-}
 
 trdisp [-r] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view
-
 
 dbheli [options] dbname sta chan tstart twinline nlines scale
     make helicorder type plot of waveform

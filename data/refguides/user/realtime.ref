@@ -3,13 +3,10 @@
 <subsection Administration and Control>
 <commands>
 rtm [-icon iconname] [-title title]
-    real time system monitor -- displays tasks and resource usage
+    monitor real-time tasks and resource usage
 
 dbevents dbname
-    display map of seismic events, display waveforms
-
-deprecated rtcron name 'execline'
-    run real time system cron jobs
+    display map of seismic events and waveforms
 
 rtexec [options] [comment]
     real time system executive; runs all other real time processes
@@ -18,9 +15,9 @@ rtexec [options] [comment]
 -d	debug mode
 -f	don't ask about killing previous rtexec
 -k	kill running rtexec
--n	show what processes would be run, but don't run them
+-n	show what processes would be run
 -s	save old logs in new subdirectory
--t	run 'tail -f logs/rtexec' after changing to a daemon
+-t	run `tail -f logs/rtexec` 
 -v	more verbose
 </options>
 
@@ -31,8 +28,8 @@ rtdemo
      setup to run an Antelope realtime demo
 
 rtincident [options] [output_file]
-    collect some system related information into a report; rtexec
-    may run this program and send the results to someone
+    collect some system related information into report; rtexec
+    runs this program and send results to incidents@brtt.com
 <options>
 -c corefile	specify corefile (on which dbx is run)
 -e command	specify command line
@@ -47,10 +44,10 @@ rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-Cdv] recipients
     send mail with attachments
 
 rtorbcmd [-d] [-p pf] target command
-    client program for sending commands to a remote orb
+    client program for sending commands to remote orb
 
 rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
-    server program for reading and executing commands on a remote orb
+    server program for reading and executing commands on remote orb
 
 rtreport [options] [directory]
     report some statistics on data collection
@@ -70,7 +67,7 @@ rtsys [options] [directory]
 <options>
 -d time	start of reporting period
 -m email,..	list of email recipients
--p	mail only when a problem is detected
+-p	mail only when problem is detected
 -n n	last n lines from log files (default = 10)
 </options>
 
@@ -78,13 +75,13 @@ ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
 rtrun command
-    run command using the rtexec environment (like an rtexec cron job)
+    run command using rtexec environment (like an rtexec cron job)
 
 cronrun command
-    run command immediately, reproducing the cron environment 
+    run command immediately, reproducing cron environment 
 
 rtsnapshot [options] 
-    collect some pertinent info from a real time system into tar file for a problem report
+    collect some pertinent info from real time system into tar file for problem report
 <options>
 -c	include core files
 -d #rows	max rows from database tables
@@ -102,12 +99,12 @@ rtoutage [options] db t0 t1
 -p	print percentage of data recovered for time period
 -S	show gaps as seconds only
 -s subset	show gaps only for station/channels which satisfy subset
--t	show only the totals, not each individual gap
+-t	show only totals, not each individual gap
 -z	select only channels ending in 'z' or 'Z'
 </options>
 
 truncate_log [options] log [log..]
-    eliminate old lines in a log file
+    eliminate old lines in log files
 <options>
 -c	also remove lines without time tags
 -d n	trim lines before n days ago
@@ -129,7 +126,7 @@ tcpmonitor [options] host
 -d db	save statistics in database db
 -f	send bursts only from server 
 -2	send bursts only to server 
--N #pkts	set #packets in a burst
+-N #pkts	set #packets in burst
 -m	run in monitor (server) mode
 -n #loops	# of bursts to send
 -P #ping	# of pings between bursts
@@ -146,10 +143,10 @@ tcpmonitor [options] host
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
--k	don't reset the ring buffer
--p port	use specified port
+-k	don't reset ring buffer
+-p port	use port instead of 6510
 -P prefix	alternate names for orb files
--r	reset the ring buffer
+-r	reset ring buffer
 -s size	ringsize, eg 150M
 -v[v]	verbose/doubly verbose
 </options>
@@ -238,7 +235,7 @@ rddas [options] port orb
 </options>
 
 q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
-    communicate between a Q330 Quanterra digitizer and orb
+    communicate between Q330 Quanterra digitizer and orb
 <options>
 -pf pf
 -calib_db dbname
@@ -246,9 +243,9 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 </options>
 
 qtunbale [options] url [time [endtime|period]]
-    unload data from a Quanterra baler
+    unload data from Quanterra baler
 <options>
--a	just show the time range available
+-a	just show time range available
 -c chan	only channel chan (??-???)
 -d db	make wfdisc with miniseed2db
 -f w	size of time window for requests
@@ -278,7 +275,7 @@ private cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
 
 k22orb [options] target orbdata [orbcmd]
-    transfer data from a Kinemetrics Altus digitizer to an orb
+    transfer data from Kinemetrics Altus digitizer to an orb
 <options>
 -pf pf	specify alternate parameter file
 -db db	specify database for calib information
@@ -315,15 +312,15 @@ slink2orb [options] SeedLink orb
 
 <subsection Other Orb Writers>
 pf2orb [-s sta] [-p subcode] pfile orb
-    put a parameter file onto an orb as a packet; optionally use -s and -p to specify parts of the packet srcname
+    put parameter file onto an orb as packet; use -s and -p to specify parts of packet srcname
 
 dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
-    read Datascope database rows from a database and post them to an orb
+    read rows from database and post them to orb
 
 db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
 <options>
--d	hex dump the output packets
+-d	hex dump output packets
 -D delay	make packets delay second late
 -f fast	send packets as quickly as possible
 -l	loop forever
@@ -340,17 +337,17 @@ dbreplay [options] view [[[orb] t0] t1|T]
 <options>
 -w client	specify read client to watch (to avoid overruns)
 -b behind	with -w, pause output if client is more than max seconds behind
--r rate	alternatively, specify a data rate as a ratio where real time = 1
+-r rate	specify data rate as ratio to real time 
 -n n	send only n packets
--p pktsuffix	specify the output packet type
--s expr	subset the input according to expression
--t timestep	specify the packet time size
+-p pktsuffix	specify output packet type
+-s expr	subset input according to expression
+-t timestep	specify packet time size
 -v	more verbose
 </options>
 
 <subsection Datalogger commanding>
 k2cmd [options] orb target datalogger cmd
-    execute command cmd on a remote Kinemetrics Altus digitizer
+    execute command cmd on remote Kinemetrics Altus digitizer
 <options>
 -timeout timeout
 -noblock
@@ -360,7 +357,7 @@ k2cmd [options] orb target datalogger cmd
 </options>
 
 qtcmd [options] cmdorb net_sta cmd [params]
-    execute commands on a remote Quanterra digitizer
+    execute commands on remote Quanterra digitizer
 <options>
 -target target
 -replytarget replytarget
@@ -369,7 +366,7 @@ qtcmd [options] cmdorb net_sta cmd [params]
 </options>
 
 automrc [options] orbname dc_name
-    automatically send mass recentering command to a RefTek DAS
+    automatically send mass recentering command to RefTek DAS
 <options>
 -m srcmatch
 -p pf
@@ -385,16 +382,16 @@ orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
 -c suffix	convert packets from input format to suffix format
--d	print a hex dump of each packet 
--f	when reading from a plain file, do not adjust the time tags, and output packets as quickly as possible
+-d	print hex dump of each packet 
+-f	when reading from file, do not adjust time tags, and output packets as quickly as possible
 -i nsecs	save state file every nsecs seconds
--N	print #samples of the data
+-N	print #samples of data
 -u	unstuff packets as they are received
--l	loop repeatedly over the input forb(5) file
+-l	loop repeatedly over input forb(5) file
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -n n	stop after n packets
--R r	when saving to a plain file, use forb(5) format r
+-R r	when saving to file, use forb(5) format r
 -s p	start after pktid #p
 -S filename	save state in filename
 -u n	ensure uniqueness in latest n packets, discarding duplicates
@@ -408,11 +405,11 @@ orb2orb [options] in out [start [period|end]]
 orbxchange pf
     run multiple orb2orb connections controlled by pf
 
-orbxfer [-d dir] [-vv] file ... orb
-    transfer a set of local files to an orbserver orb; the -d option specifies an alternate directory dir in which the files are to be found
+orbxfer [-vv] file ... orb
+    transfer local files to orbserver orb
 
 orbxfer [-d dir] [-vv] orb
-    unpack files from orbserver orb to local directory, or optionally to directory dir 
+    unpack files from orb to local directory [optionally directory dir]
 
 orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
@@ -454,10 +451,10 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 </options>
 
 ttgrid [-pf pf] [-time {timestr|all}] db
-    compute a travel time grid file for use by orbassoc and dbgrassoc
+    compute travel time grid file for use by orbassoc and dbgrassoc
 
 displayttgrid [-shownames] filename [gridname]
-    display travel-time grids on a map
+    display travel-time grids on map
 
 ttgrid_show [-v] ttgridfile
 
@@ -510,7 +507,7 @@ orbwfrms [options] dbname orbin [orbout]
 </options>
 
 orbpftrigger [options] orb [cmdstring]
-    parameter file trigger of a program execution
+    parameter file trigger of program execution
 <options>
 -select expr
 -start {pktid|time}
@@ -542,7 +539,7 @@ orbwfmeas [options] orbwf orbdb dbname
 </options>
 
 qedd [options] dbname
-    daemon to get realtime QED data from a finger site
+    daemon to get realtime QED data from finger site
 <options>
 -l
 -ipfinger ipfinger
@@ -588,7 +585,7 @@ orbmonrtd [options] orb
 -log	
 -filter filter	
 -source net_sta_chan
- 	select a display channel on command line
+ 	select display channel on command line
 -select re	select channels matching re
 -reject re	reject channels matching re
 </options>
@@ -620,14 +617,14 @@ ps2orb [options] orb
 <options>
 -a m	report on all processes every m'th iteration
 -i t	report every t seconds
--t n	report on the top n processes every iteration
+-t n	report on top n processes every iteration
 -r {mem|cpu}	sort by mem or cpu
--vv	print the reports on stderr
+-vv	print reports on stderr
 </options>
 
 tail2orb [options] orb [file ...]
     monitor multiple files, sending any added lines as packets
-    to the orbserver orb
+    to orbserver orb
 <options>
 -g n	check for new files matching glob patterns every n'th iteration 
 -i t 	check files every t seconds
@@ -638,8 +635,8 @@ tail2orb [options] orb [file ...]
 </options>
 
 orblog [-f file] [-s subcode] orb [log info]
-    write a single log packet to orb; the packet contents are
-    remainder of the command line, stdin, or the specified file
+    write single log packet to orb; packet contents are
+    remainder of command line, stdin, or -f file
 
 orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
     saves logs packets (from tail2orb) back into corresponding plain files 
@@ -666,14 +663,14 @@ orb2db [options] orb db [start [end|period]]
 -p pf	specify parameter file
 -S file	save state in file
 -s datatype	specify output waveform type (overriding pf)
--t timetags	create a file of time tags from input packets
+-t timetags	create file of time tags from input packets
 -v	more verbose
 -vv	show every packet read.
 -w wfname	specify pattern for waveform file names
 </options>
 
 orb2dbt [options] orb dbout [orbout]
-    read Datascope database packets from an orb and write to a database
+    read Datascope database packets from an orb and write to database
 <options>
 -select expr
 -reject expr
@@ -702,7 +699,7 @@ par2db [options] orbname dbname [start [window]]
 
 
 orblatency [options] orb database
-    accumulate latency statistics from a network
+    accumulate latency statistics from network
 <options>
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
@@ -712,17 +709,17 @@ orblatency [options] orb database
 
 <subsection Orb Alarms>
 acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
-    send mail when AC power fails for a data collector
+    send mail when AC power fails for data collector
 
 battalarm [-d] [-m srcmatch ] orbin mail_add
-    send mail when battery power drops for a data collector
+    send mail when battery power drops for data collector
 
 pktmon [-p pf] [-S state] orb
     read packets, watch for specific conditions and send alarms
 
 <subsection Miscellaneous>
 resetnetblazer hostname line timeout
-    reset a Telebit Netblazer terminal server
+    reset Telebit Netblazer terminal server
 
 orb2eworm parameter_file.d
     export waveform data from an Antelope orb to an Earthworm system
@@ -775,8 +772,8 @@ online_backup [options] [directories]
 -p pf	specify parameter fil
 -t t	backup files modified more recently than time t
 -v	more verbose
--V	show the generated perl procedure which selects files to be saved
--y n	backup files modified in the last n days
+-V	show generated perl procedure which selects files to be saved
+-y n	backup files modified in last n days
 </options>
 
 <subsection Orb Diagnostic tools>
@@ -810,10 +807,10 @@ private orbsend [options] orb
 -e	some packets with future times
 -f	packet is uninitialized
 -F 	special test mode packets
--g {sin|cos|sqr|tri|saw|dlt|ran|stp|pkt}	packets contain specified signal
+-g {sin|cos|sqr|tri|saw|dlt|ran|stp|pkt}	wf packets contain signal
 -i pktfile	read packet from forb(5) file
 -j jitter	add some jitter to packet times
--M	regularly send packet with a unique srcname
+-M	regularly send packet with unique srcname
 -N name	specify packet name
 -n n	number of time steps (default = 10)
 -r rate	specify data rate in kbytes/second
@@ -840,8 +837,8 @@ deprecated stream2orb orbname
 deprecated orblist [options] orb [start [twindow]]
     list an orb contents
 <options>
--d	Tells orblist to print a hexdump of orb packets
--h	Tells orblist to print a hexdump of raw packets
+-d	Tells orblist to print hexdump of orb packets
+-h	Tells orblist to print hexdump of raw packets
 -m srcmatch
 -n time_diff
 -s	do not sort packets
@@ -850,12 +847,12 @@ deprecated orblist [options] orb [start [twindow]]
 private orbd [-abips] name
     dump out an orb ring buffer for debugging
 <options>
--a	Assume the packets are straight ascii and print them
--b	Print the packets using a standard hex dump format
+-a	Assume packets are straight ascii and print them
+-b	Print packets using standard hex dump format
 -i	Enter interactive mode
--p	Show the packet index
--s	Show the source index
--v	Show the indexes verbosely
+-p	Show packet index
+-s	Show source index
+-v	Show indexes verbosely
 </options>
 
 deprecated orb2stream orbname
@@ -878,7 +875,7 @@ orbcapture [options] orb db file
 -b m	start capture m packets before trigger packet
 -a n	capture n packets after trigger packet
 -c condition	only new rows satisfying condition trigger capture
--R {a|x|f}	specify the output format ascii, hexadecimal, or header only
+-R {a|x|f}	specify output format ascii, hexadecimal, or header only
 </options>
 
 deprecated orbcp -orbin in_orbname -orbout out_orbname
@@ -896,11 +893,11 @@ deprecated old_orb2orb in out [start [period|end]]
     copy data from one old orbserver orb to another
 <options>
 -b bufsize
--d	print a hex dump of packets as they are received
--f	when reading from a plain file, do not adjust the time tags
+-d	print hex dump of packets as they are received
+-f	when reading from plain file, do not adjust time tags
 -u	unstuff packets as they are received
--N	print #samples of the data
--l	loop repeatedly over the input forb(5) file
+-N	print #samples of data
+-l	loop repeatedly over input forb(5) file
 -m match
 -r reject
 -n npkts	Stop after receiving npkts packets
@@ -914,7 +911,7 @@ deprecated old_orb2orb in out [start [period|end]]
 forbserver [options] filename
     file orbserver emulator
 <options>
--A	use the absolute time specified in the input file
+-A	use time from input file
 
 -a
 -b
@@ -925,11 +922,11 @@ forbserver [options] filename
 </options>
 
 pkttypes [-c]
-    print summary of the packet types for the installed packet library 
+    print summary of packet types for installed packet library 
 
 orbstash [-m match] [-o out] [-r reject] [-v] in [srcname]
      get and print stash packets from an orbserver in
 
 ipvalidate [-n list] [-p pf] [-v] [ip-addresses]
-     test whether a particular ip address will be accepted or rejected by valid_ip_address list in pf
+     test if particular ip address is accepted or rejected by valid_ip_address list in pf
   

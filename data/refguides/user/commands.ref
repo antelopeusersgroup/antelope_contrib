@@ -9,7 +9,7 @@ manpage [ - ]
     show prototype Antelope man page (- suppresses comments)
 
 template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
-    get a template from templates directory
+    get template from templates directory
 
 <subsection Miscellaneous>
 private check_antelope_installation
@@ -22,13 +22,13 @@ check_license [-v] [license_filename]
     verify license is valid
 
 check_path [-v] [path]
-    check a path to ensure that 'other' users can traverse it
+    check path to ensure that 'other' users can traverse it
 
 private check_visual [-display display_name]
-    check out the default X-windows display visual
+    check out default X-windows display visual
 
 private install_antelope
-    interactive installation of Antelope from a cd
+    interactive installation of Antelope from cd
 
 private register_antelope
     gui for requesting Antelope license
@@ -54,12 +54,12 @@ Combinatorial options
 -l	symbolic links
 -L	is plain file and has multiple links
 -o	is on this file system
--O	is on a different file system from $cwd
+-O	is on different file system from $cwd
 -p	plain file
 -t	text file
 -x	executable
 -z	zero size
--v	invert the result of all the specified tests from above
+-v	invert result of all tests 
 Regular expression matching
 -m re	keep matching files
 -r re	reject matching  files
@@ -70,7 +70,7 @@ Operations on filenames
 -E command	perl command operating on filename
 Other options
 -X	execute each result
--n	only show the command, don't execute
+-n	only show command, don't execute
 -u	print only unique paths
 </options>
 
@@ -79,7 +79,7 @@ deprecated uwd [-f configfile]
 
 
 datafile [-aeV] {name | dir name | env dir name}
-    show what files will be selected by the datafile/datapath/datasearch(3) routines.
+    show what files will be selected by datafile/datapath/datasearch(3) routines.
 
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
@@ -87,11 +87,11 @@ epoch [options] [ +format ] [ time/date components ]
 -e	echo interactive input
 -i tz	specify an input timezone tz, eg US/Mountain
 -o tz	specify an output timezone tz, eg Japan
-+format	specify the format of the output (refer to epoch escapes table)
++format	specify format of output (refer to epoch escapes table)
 </options>
 
 elog [-cdln] [-f fault] [message]
-    exhibit behavior of elog error routines with specified message
+    exhibit behavior of elog error routines with message
 
 pfcompare [options] pf
      find differences between local parameter file and remainder of pf files found along PFPATH
@@ -101,25 +101,25 @@ pfcompare [options] pf
 </options>
 
 pfdiff [-1t] [-o newpf] pf1 [pf2]
-    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified)
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is unspecified)
     -o interactively selects parameters from pf1 and pf2 to construct new parameter 
-    file newpf. -t runs tkdiff, -1 limits the depth of the recursive comparison.
+    file newpf. -t runs tkdiff, -1 limits depth of recursive comparison.
 
 pfecho [options] name [ param ...]
     print out parameters from parameter files
 <options>
 -i	interactive mode
--q	don't echo the key
+-q	don't echo key
 -w	show all pf files read
 -W	show all pf filenames examined (some may not exist)
--x	expand all references inside a parameter file
+-x	expand all references inside parameter file
 </options>
 
 pfwhich pf 
     show what files are read for pf
 
 ttcalc method model phase distance depth
-    print travel time and slowness calculation results for specified
+    print travel time and slowness calculation results for 
     method, model, and phases for an event at distance and depth.
 
 gsregion [lat lon]
@@ -129,13 +129,13 @@ dbsetrgn db
     set seismic and geographic region codes in origin table for database db
 
 tabulate_missed_stations translation_db dbname [dbname...]
-    find station names that do not appear in the translation_db
+    find station names that do not appear in translation_db
 
 private capitalize_station dbname
-    capitalize the station field in dbname
+    capitalize station field in dbname
 
 translate_stachan_names translation_db dbname
-    apply the station name-translations listed in translation_db
+    apply station name-translations listed in translation_db
 	
 private children pid
     returns children of process pid
@@ -150,21 +150,20 @@ deprecated pathf [ -f configfile ] [ paths... ]
     filter for translating pathnames
 
 private perl_unbuffer command
-    use pty/tty pair to get unbuffered output from a command
+    use pty/tty pair to get unbuffered output from command
 
 
 tksend [options] app_name [message]
-    send a message to program using tk send protocol
+    send message to program using tk send protocol
 <options>
 -i	read stdin for more messages
 -p	wait for and print returned messages
 -verbose	be more verbose
--validate	validate the application name and return the disposition and the version number
+-validate	validate application name and return disposition and version number
 -version {3|4|auto}
  	select older or newer tksend protocol; default is auto{matic}
--wait	wait for a response
+-wait	wait for response
 </options>
-
 
 private unregister window_name
     eliminate defunct tk send registries
@@ -188,20 +187,20 @@ build [pf] [pf_dependent_arguments]
     framework for constructing simple gui interfaces based on
     parameter files and perl scripts
 
-refguide {creference|user|scripting}
-    prepare a Framemaker mif version of a reference guide
+private refguide {creference|user|scripting}
+    prepare Framemaker mif version of reference guide
 
 txform [-v] dir filename
     text transform program
 
 grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
-    look through certain files below dir for a pattern; useful for finding occurrences of a call to a function, or for many other problems
+    look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
 <options>
 -i	case insensitive
--v	show the find command, and list the files searched.
--l	show only the filenames with matching lines.
+-v	show find command, and list files searched.
+-l	show only filenames with matching lines.
 -w	show all matches, not just word matches.
-restrict the searches to certain files by using any combination of the following:
+restrict searches to certain files by using any combination of:
 -c	c source files
 -f	fortran source 
 -g glob	files matching glob
@@ -220,26 +219,26 @@ ldlibs [options] names
 <options>
 Modifying Options
 -f	generate fortran ldlibs line (default is c).
--i	initialize the database, eg, completely rebuild it.
--k	rebuild the database, if it's out of date.
--n	don't use macros to collapse the dependency list.
+-i	initialize database, eg, completely rebuild it.
+-k	rebuild database, if it's out of date.
+-n	don't use macros to collapse dependency list.
 -v	be more verbose.
 -x	specify entry points on command line, rather than object files.
 Different Modes
--r lib1 lib2	show references from lib1 which are resolved in lib2.
--R a.o b.o ..	lib show undefined references from .o files which are resolved in lib
--D lib	show references defined in lib
--N lib	show references not defined in lib
+-r lib1 lib2	show refs from lib1 which are resolved in lib2.
+-R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
+-D lib	show refs defined in lib
+-N lib	show refs not defined in lib
 -l lib	show libraries loaded by lib
 -L lib	show libraries which load lib
 -u lib	show libraries which are needed by lib
 -U lib	show libraries which need lib
 -s lib1 lib2	show shared definitions between lib1 and lib2
--S lib1 lib2	show shared undefined references between lib1 and lib2
+-S lib1 lib2	show shared undefined refs between lib1 and lib2
 -t lib1 lib2	show definitions unique in each library.
 -T lib1 lib2	show needs unique in each library
--w	show what libraries define the named routine.
--W	show what libraries require the named routine.
+-w routine	show what libraries define routine.
+-W routine	show what libraries require routine.
 </options>
 
 compile [options]
@@ -252,13 +251,13 @@ produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix
 
 installman [-nv] manpage dir
-    install the text manpage into the directory dir, modifying .TH line appropriately
+    install manpage into directory dir, modifying .TH line appropriately
 	
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon
 
 fixman [-BInd] pages
-    check a man page, correct some problems, and suggest other changes
+    check man page, correct some problems, and suggest other changes
 
 cleartmp [-nv] directory idle
      cleartmp removes files from directory which have not been used in over idle

@@ -114,10 +114,11 @@ dbtheta db1 db2 [ expression ]
     theta join the specified tables db1 and db2
 
 
-dbselect [-b] [-F separator] [-t] filename db [field ...]
+dbselect [-b] [-h] [-F separator] [-t] filename db [field ...]
     write selected fields from the input view to the specified filename
 <options>
 -b	strip blanks from both ends of each field
+-h	add headers
 -t	convert times to readable times
 </options>
 

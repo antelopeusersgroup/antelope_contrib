@@ -2,7 +2,7 @@
 <commands>
 
 dbprelim_locs [-v] pf [t0 [t1]]
-    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from a database for time t0 to t1
+    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from database for time t0 to t1
 
 dbdetect [options] dbin dbout
     run multifrequency STA/LTA detector on dbin, writing detections into dbout.
@@ -34,7 +34,7 @@ dbtrigger [options] dbin
 </options>
 
 dbgrassoc [options] dbout ttgridf1 [ttgridf1 [...]]
-    spatial grid search based associator/locator: reads output from dbtrigger, generating new origin, assoc and arrival records in the output database db
+    spatial grid search based associator/locator: reads output from dbtrigger, generating new origin, assoc and arrival records in dbout
 <options>
 -i
 -assoc
@@ -64,10 +64,10 @@ dbgme [-vfd] [-p pf] -r recipe [-r recipe...] [-o orid] dbname
      2-D ground-motion estimation from hypocenters and waveform measurements
 
 dbmag db orid author net
-    compute mb magnitude for origin orid (or "all") in db, saving result in netmag and origin with specified author field
+    compute mb magnitude for origin orid (or "all") in db, saving result in netmag and origin with specified author 
 
 dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
-    make map of events from database db centered on sta, origin orid, or lat:lon with a radius of range degrees; -c starts interactive mode, ^C kills window
+    make map of events from database db centered on sta, origin orid, or lat:lon within radius of range degrees; -c starts interactive mode, ^C kills window
 
 dbrecenteqs [-p pf] [-v] [-h] [-u] [-e evid] [-c sourcedb] dbname
-    maintain a web-site of earthquake maps for a database
+    maintain web-site of earthquake maps for for database dbname

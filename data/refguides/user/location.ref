@@ -21,7 +21,7 @@ private dbloc_group input trial
     group arrivals by time for dbloc
 
 private dbloc_map database.table [orid]
-    draw a map showing location and associated arrivals
+    draw map showing location and associated arrivals
 
 private dbloc_setprefor db
     set preferred origin for an event
@@ -48,10 +48,10 @@ mktt [-p phases] model
     make tau-p and locsat travel time tables
 
 pltt phases depth d0 dd nd tmin tmax vred [table]
-    plot travel times from a tau-p travel time table
+    plot travel times from tau-p travel time table
 
 prtt phases ndp dp0 ddp ndel del0 ddel [table]
-    print travel times from a tau-p travel time table
+    print travel times from tau-p travel time table
 
 remodl model_name
     create tau-p travel time tables
@@ -70,7 +70,7 @@ taup2locsat [options] model
 </options>
 
 tp2ls phases header [table]
-    make a locsat style travel time table file from a tau-p travel time table
+    make locsat style travel time table file from tau-p travel time table
 
 dbml [options] db [orid]
     database Richter magnitude computation
@@ -84,12 +84,12 @@ dbml [options] db [orid]
 </options>
 
 dbproject_covariance [-v] [-c conf] dbname
-    update the origerr table with new smajax, sminax,
-    sdepth, stime, strike, and conf values, based on the covariance
-    matrix from the origerr table
+    update origerr table with new smajax, sminax,
+    sdepth, stime, strike, and conf values, based on covariance
+    matrix from origerr table
 
 relocate dbin dbout [-pf pf] [-useold] [-sift expression]
-    relocate all events in a database using genloc
+    relocate all events in database using genloc
 
 orbgenloc orb [-S statefile] [-pf pf]
     orb interface to genloc single event location code
