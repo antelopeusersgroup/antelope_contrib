@@ -1,0 +1,704 @@
+Schema registry1.1
+	Description ( "Dynamic registry of orbserver contents" )
+	Detail {
+		The registry schema provides a dynamic registry of 
+		the contents of an orbserver or collection of orbservers, 
+		as described by the orbstat routines.
+	}
+	Timedate lddate
+	;
+
+Attribute active
+	Integer (2)
+	Format ( "%2d" )
+	Null ( "-1" )
+	Description ( "whether a given orb source is active" )
+	Detail {
+		This field indicates whether an orb source is originating
+		data now
+	}
+	;
+
+Attribute bytes
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxdata > 0 " )
+	Description ( "packet bytes" )
+	Detail {
+		Number of bytes transferred to or from a given orb client
+	}
+	;
+
+Attribute clientaddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of client" )
+	Detail {
+		This is the IP address of an orbserver's client
+	}
+	;
+
+Attribute clientport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver port" )
+	Detail {
+		This is the port number on which an orbserver's client
+		is running, on the client machine
+	}
+	;
+
+Attribute closes
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "closes > 0" )
+	Description ( "number of connection closes on an orbserver " )
+	Detail {
+		This is the number of connections that have been
+		closed on an orbserver
+	}
+	;
+
+Attribute errors
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of errors " )
+	Detail {
+		This flag indicates the number of threads exiting 
+		with errors on an orbserver, or the number of errors for
+		a given client
+	}
+	;
+
+Attribute fd
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver fd" )
+	Detail {
+		This is the orbserver fd to which a client is connected
+	}
+	;
+
+Attribute fromaddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of an orbserver originating dataflow" )
+	Detail {
+		This is the IP address for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute fromport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "port number of orbserver originating dataflow " )
+	Detail {
+		This is the port number for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute host
+	String (128)
+	Format ( "%-128s" )
+	Null ( "-" )
+	Description ( "name of host machine" )
+	Detail {
+		This is the name and run directory of an orbserver 
+		host machine or the host-name for a client machine 
+		on which an orb client is running
+	}
+	;
+
+Attribute kbaud
+	Real (10)
+	Format ( "%10.3f" )
+	Null ( "-999.000" )
+	Description ( "This is the average data-flow for a source in kbaud" )
+	Detail {
+		This is the average data-flow rate for an orb source
+		in kilobaud
+	}
+	;
+
+Attribute lastpkt
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of last packet" )
+	Detail {
+		This is the time of the latest packet to or from a client
+	}
+	;
+
+Attribute lastrequest
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "last request from a client" )
+	Detail {
+		this is the last request to an orbserver from a client
+	}
+	;
+
+Attribute latency_sec
+	Real (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "This is the latency of an orb client" )
+	Detail {
+		This is the latency in seconds for an orb client
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of last update " )
+	Detail {
+		This is the time of a database update
+	}
+	;
+
+Attribute maxdata
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxdata > 0 " )
+	Description ( "max data bytes" )
+	;
+
+Attribute maxpkts
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxpkts > 0 " )
+	Description ( "max number of packets" )
+	;
+
+Attribute maxsrc
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxsrc > 0" )
+	Description ( "max number of sources" )
+	Detail {
+		This is the maximum number of sources allowed for an 
+		orbserver
+	}
+	;
+
+Attribute messages
+	Integer (2)
+	Format ( "%2d" )
+	Null ( "-1" )
+	Description ( "whether to print messages " )
+	Detail {
+		This is a global flag indicating whether the orbserver
+		will print all messages
+	}
+	;
+
+Attribute mymessages
+	Integer (2)
+	Format ( "%2d" )
+	Null ( "-1" )
+	Description ( "thread flag to print messages" )
+	Detail {
+		this is the flag to print messages for a client if nonzero
+	}
+	;
+
+Attribute nbytes
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxdata > 0 " )
+	Description ( "packet bytes" )
+	Detail {
+		Number of bytes transferred for a given orb source
+	}
+	;
+
+Attribute nclients
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "Number of clients" )
+	Detail {
+		This is the number of clients currently connected to 
+		an orbserver
+	}
+	;
+
+Attribute npkts
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxpkts > 0 " )
+	Description ( "number of packets" )
+	;
+
+Attribute nreads
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of reads" )
+	Detail {
+		This is the number of reads from a client
+	}
+	;
+
+Attribute nreject
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of characters in reject" )
+	Detail {
+		This is the number of characters in the reject expression
+	}
+	;
+
+Attribute nrequests
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of requests" )
+	Detail {
+		This is the number of requests from a client
+	}
+	;
+
+Attribute nselect
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of characters in select" )
+	Detail {
+		This is the number of characters in the select expression
+	}
+	;
+
+Attribute nsources
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "Number of sources" )
+	Detail {
+		This is the number of sources currently being input to 
+		an orbserver
+	}
+	;
+
+Attribute nwrites
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of writes" )
+	Detail {
+		This is the number of writes from a client
+	}
+	;
+
+Attribute o2omachine
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of machine on which orb2orb is running" )
+	Detail {
+		This is the IP address on which the orb2orb or similar 
+		executable is running
+	}
+	;
+
+Attribute opens
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "Number of connections opened" )
+	Detail {
+		This is the number of connections that have been opened 
+		on an orbserver
+	}
+	;
+
+Attribute orb_start
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "Time that orbserver buffer was initialized" )
+	Detail {
+		This is the time an orbserver buffer was initialized
+	}
+	;
+
+Attribute orbversion
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Description ( "orbserver version " )
+	Detail {
+		This is version number of the running orbserver
+	}
+	;
+
+Attribute packets
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "maxpkts > 0 " )
+	Description ( "number of packets" )
+	Detail {
+		number of packets transferred to or from a given orb client
+	}
+	;
+
+Attribute perm
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "perm =~ /r|w/" )
+	Description ( "permission" )
+	Detail {
+		This is the permission flag for an orb client
+	}
+	;
+
+Attribute pid
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver pid" )
+	Detail {
+		This is the process identification number of the 
+		running orbserver or orb client
+	}
+	;
+
+Attribute pktid
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "packet id" )
+	Detail {
+		This is the current packet id for an orbserver client
+	}
+	;
+
+Attribute printconn
+	Integer (2)
+	Format ( "%2d" )
+	Null ( "-1" )
+	Description ( "whether to print all connections" )
+	Detail {
+		This flag indicates whether the server will print all
+		connection opens and closes
+	}
+	;
+
+Attribute priority
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "priority of a client" )
+	Detail {
+		This is the priority of an orbserver client
+	}
+	;
+
+Attribute read
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of bytes read" )
+	Detail {
+		This is the number of bytes read by a client
+	}
+	;
+
+Attribute reject
+	String (96)
+	Format ( "%-96s" )
+	Null ( "-" )
+	Description ( "rejection expression" )
+	Detail {
+		This is the source-rejection regular expression for an 
+		orb client
+	}
+	;
+
+Attribute rejected
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of failed open attempts" )
+	Detail {
+		This is the number of attempts to open connections that 
+		have failed
+	}
+	;
+
+Attribute select
+	String (96)
+	Format ( "%-96s" )
+	Null ( "-" )
+	Description ( "selection expression" )
+	Detail {
+		This is the source-selection regular expression for an 
+		orb client
+	}
+	;
+
+Attribute serveraddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of server" )
+	Detail {
+		This is the IP address of an orbserver
+	}
+	;
+
+Attribute serveralias
+	String (60)
+	Format ( "%-60s" )
+	Null ( "-" )
+	Description ( "nickname for an orbserver" )
+	Detail {
+		This is the name used to refer to an orbserver in 
+		descriptive applications.
+	}
+	;
+
+Attribute serverport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver port" )
+	Detail {
+		This is the port number on which an orbserver is listening
+		for connections
+	}
+	;
+
+Attribute slatest
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "packet id of latest packet on orb" )
+	Detail {
+		This is the packet id of the latest packet on an orb
+	}
+	;
+
+Attribute slatest_time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-1.00000" )
+	Description ( "time of latest packet on orb" )
+	Detail {
+		This is the timestamp of the latest packet on an orb
+	}
+	;
+
+Attribute soldest
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "packet id of oldest packet on orb" )
+	Detail {
+		This is the packet id of the oldest packet on an orb
+	}
+	;
+
+Attribute soldest_time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-1.00000" )
+	Description ( "time of oldest packet on orb" )
+	Detail {
+		This is the timestamp of the oldest packet on an orb
+	}
+	;
+
+Attribute srcname
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "source-name of orb packet stream" )
+	Detail {
+		This is the source-name of a stream of packets on an 
+		orbserver
+	}
+	;
+
+Attribute started
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "Time that orbserver was started" )
+	Detail {
+		This is the time an orbserver was started
+	}
+	;
+
+Attribute statmachine
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of machine from which pforbstat was run" )
+	Detail {
+		This is the IP address from which the pforbstat snapshot 
+		was taken
+	}
+	;
+
+Attribute thread
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver thread" )
+	Detail {
+		This is the orbserver thread ID to which a given client is 
+		connected
+	}
+	;
+
+Attribute toaddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of an orbserver terminating dataflow" )
+	Detail {
+		This is the IP address for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute toport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "port number of orbserver terminating dataflow " )
+	Detail {
+		This is the port number for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute version
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Units ( "seconds" )
+	Description ( "version string of orbserver" )
+	Detail {
+		This is the descriptive version string for an orbserver
+	}
+	;
+
+Attribute what
+	String (128)
+	Format ( "%-128s" )
+	Null ( "-" )
+	Description ( "command line for orb client" )
+	Detail {
+		This is the command line for an orb client on the 
+		client machine
+	}
+	;
+
+Attribute when
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of status snapshot" )
+	Detail {
+		This is the time at which the current status snapshot was taken
+	}
+	;
+
+Attribute who
+	String (24)
+	Format ( "%-24s" )
+	Null ( "-" )
+	Description ( "who ran the orbserver " )
+	Detail {
+		This is the username under which an orbserver is running
+	}
+	;
+
+Attribute written
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "number of bytes written" )
+	Detail {
+		This is the number of bytes written by a client
+	}
+	;
+
+Relation clients
+	Fields ( serveraddress serverport thread host what perm clientaddress clientport fd who latency_sec reject select lastpkt lastrequest mymessages nreads nreject nselect nwrites nrequests errors packets read written bytes pid pktid priority started statmachine when lddate )
+	Primary ( serveraddress serverport what )
+	Description ( "running orbserver clients" )
+	Detail {
+		This table describes individual orbserver clients
+	}
+	;
+
+Relation connections
+	Fields ( fromaddress fromport o2omachine toaddress toport latency_sec reject select statmachine when lddate )
+	Primary ( fromaddress fromport toaddress toport o2omachine statmachine )
+	Description ( "data-flow connections between orbs" )
+	Detail {
+		This table describes data-flow connections between orbs, 
+		usually established with the orb2orb client.
+	}
+	;
+
+Relation servernames
+	Fields ( serveraddress serverport serveralias lddate )
+	Primary ( serveraddress serverport )
+	Description ( "names for orbservers" )
+	Detail {
+		This table defines common names for orbservers, under
+		which they may be commonly known to users
+	}
+	;
+
+Relation servers
+	Fields ( serveraddress serverport host started orb_start nclients nsources opens closes rejected errors printconn messages maxdata maxpkts maxsrc who pid version orbversion statmachine when lddate )
+	Primary ( serveraddress serverport )
+	Alternate ( host )
+	Description ( "running orbserver instances" )
+	Detail {
+		This table describes individual orbserver instances.
+	}
+	;
+
+Relation sources
+	Fields ( serveraddress serverport srcname active latency_sec kbaud soldest soldest_time slatest slatest_time nbytes npkts when lddate )
+	Primary ( serveraddress serverport srcname )
+	Description ( "data sources on an orbserver" )
+	Detail {
+		This table lists the data streams on an orbserver
+	}
+	;
+

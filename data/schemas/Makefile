@@ -13,6 +13,7 @@ DATA=	iceworm1.3 \
 	track_processing1.0 \
 	gmt1.0 \
 	registry1.0 \
+	registry1.1 \
 	Images1.0
 
 include $(ANTELOPEMAKE)  	
