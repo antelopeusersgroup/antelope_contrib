@@ -647,7 +647,7 @@ sub create_focusmap {
 		$modified_image->Draw(
 				fill=>$symcolor,
 				primitive=>$primitive,
-				stroke=>'blue',
+				stroke=>'black',
 				points=>$points );
 	
 		my( @dbmapassoc ) = dblookup( @db, "", "mapassoc", "", "" );
@@ -1016,7 +1016,7 @@ sub update_stockmap {
 			$modified_image->Draw(
 					fill=>$symcolor,
 					primitive=>$primitive,
-					stroke=>'blue',
+					stroke=>'black',
 					points=>$points );
 
 			dbaddv( @dbmapassoc,

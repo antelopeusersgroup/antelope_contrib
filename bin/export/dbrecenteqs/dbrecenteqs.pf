@@ -77,7 +77,7 @@ map_config &Arr{
 		red	  21600
 		orange	  43200
 		yellow	  86400
-		green	 259200
+		chartreuse	 259200
 		blue	 604800
 		grey	1209600
 	}
