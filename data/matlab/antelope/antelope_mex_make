@@ -3,7 +3,6 @@ MEXEXT=mexsol
 
 ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 
 # Allow install-target expansion for both BRTT generic and 

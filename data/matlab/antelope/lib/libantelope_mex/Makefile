@@ -1,4 +1,3 @@
-LIB= libantelope_mex.a
 INCLUDE= antelope_mex.h
 
 CLEAN=

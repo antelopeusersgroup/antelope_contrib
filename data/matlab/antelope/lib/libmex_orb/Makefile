@@ -1,4 +1,3 @@
-DLIB=libmex_orb$(DSUFFIX)
 INCLUDE=mex_orb.h
 
 CLEAN=

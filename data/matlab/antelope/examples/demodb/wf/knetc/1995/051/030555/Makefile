@@ -5,6 +5,5 @@ DATA= \
 
 CLEAN=
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 
