@@ -31,7 +31,8 @@ DATA= \
 	s6000 \
 	sh \
 	sts2 \
-	terratech
+	terratech \
+	trillium_40
                 
 include $(ANTELOPEMAKE)  	
 DIRS=
