@@ -1104,8 +1104,6 @@ sub plot_contours {
 			   $cliplat -= $nsincr ) { print C "$w $cliplat\n"; }
 		    close( C );
 
-		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
-
 		    $cmd = "psclip $V $psclipfile " .
 			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
 			   $more .
@@ -1193,8 +1191,6 @@ sub plot_contours {
 			  $cliplat>=$s; 
 			   $cliplat -= $nsincr ) { print C "$w $cliplat\n"; }
 		    close( C );
-
-		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
 
 		    $cmd = "psclip $V $psclipfile " .
 			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
