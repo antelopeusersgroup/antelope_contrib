@@ -1,0 +1,317 @@
+maxlines 1000	#maximum nuber of log lines to display
+#header_status_list &Tbl{
+#}
+
+#header_status_defs &Arr{
+#	ESS &Arr{
+#		orb	:cd1s
+#		select 	weather/ch
+#		width	1200
+#		title_color \#d0d0ff
+#		title_label wsta
+#		label	ESS weather info
+#		print_proc &Literal{
+#		}
+#	}
+#}
+command_list &Tbl{
+	update_status
+	functional_test
+	get_events
+	dir_a
+	dir_b
+}
+command_defs &Arr{
+	update_status &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta status
+		label	update status
+	}
+	functional_test &Arr{
+		exec_string k2cmd -delayhangup 0 -noblock $cmdorbname $targetname $sta ft
+		label	functional test
+	}
+	get_events &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta getevents
+		label	get events
+	}
+	dir_a &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta dirtree a:
+		label	dir a:
+	}
+	dir_b &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta dirtree b:
+		label	dir b:
+	}
+}	
+icon_title	K2
+
+netsta_descr &Literal{
+Network(array)-Station(site) status
+#red    - comm link down
+#orange - comm link up but no data
+#green  - comm link up with data
+}
+
+station_status_list &Tbl{
+	st
+	etm
+	k2bt
+	k2cl
+	k2er
+	k2ne
+	k2d0
+	k2d1
+}
+
+station_status_defs &Arr{
+	k2bt &Arr{
+		title	Battery
+		width	60
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				if {$value >= 132} {
+					set color \#a0ffa0
+				} elseif {$value >= 120} {
+					set color \#d0d0ff
+				} else {
+					set color \#ff8080
+				}
+				set txt [format "%.1f V" [expr $value / 10.0]]
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Digitizer voltage.
+}
+		thistory &Arr{
+			npmax 17280
+			decimation 10
+			ybot	0.0
+			ytop	15.0
+			twin	36000.0
+		}
+	}
+		k2ne &Arr{
+		title	Events
+		width	30
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				set color \#d0d0ff
+				set txt [format "%i" $value]
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Number of Events.
+}
+}
+		k2er &Arr{
+		title	Errors
+		width	30
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				set color \#d0d0ff
+				set txt [format "%i" $value]
+				if { $value > 0 } {
+					set color \#ff0000
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Recording Errors.
+}
+}
+
+	k2d0 &Arr{
+		title	Drive a:
+		width	60
+		print_proc &Literal{
+			set K2_SF_NOT_READY	0x0400
+			set K2_SF_KB		0x0800
+			set K2_SF_MB		0x1000
+			set K2_SF_GB		0x2000
+			set K2_SIZE_MASK	0x01ff
+			set color gray
+			if {$value == "n"} {
+				set txt nv 
+			} else {
+				set color \#d0d0ff
+				if { $value & $K2_SF_NOT_READY } { 
+					set txt ND 
+					set color gray
+				} else { 
+					set s [expr $value & $K2_SIZE_MASK]
+					if { $value & $K2_SF_KB } {
+						set txt [format "%i kb" $s]
+					} elseif { $value & $K2_SF_MB } {
+						set txt [format "%i MB" $s]
+						set s [expr $s * 1024]
+					} elseif { $value & $K2_SF_GB } {
+						set txt [format "%i GB" $s]
+						set s [expr $s * 1024 * 1024]
+					} else {
+						#should never happen...
+						set txt error
+					}
+					if { $s < 2000 } {
+						set color \#ff0000
+					} elseif { $s < 3500 } {
+						set color \#00f0f0
+					} else {
+						set color \#00ff00
+					}		
+					
+				}	
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Free space on drive a:.
+ND - most problably no drive - internal modem?
+}
+	}
+	k2d1 &Arr{
+		title	Drive b:
+		width	60
+		print_proc &Literal{
+			set K2_SF_NOT_READY	0x0400
+			set K2_SF_KB		0x0800
+			set K2_SF_MB		0x1000
+			set K2_SF_GB		0x2000
+			set K2_SIZE_MASK	0x01ff
+			set color gray
+			if {$value == "n"} {
+				set txt nv 
+			} else {
+				set color \#d0d0ff
+				if { $value & $K2_SF_NOT_READY } { 
+					set txt ND 
+					set color gray
+				} else { 
+					set s [expr $value & $K2_SIZE_MASK]
+					if { $value & $K2_SF_KB } {
+						set txt [format "%i kb" $s]
+					} elseif { $value & $K2_SF_MB } {
+						set txt [format "%i MB" $s]
+						set s [expr $s * 1024]
+					} elseif { $value & $K2_SF_GB } {
+						set txt [format "%i GB" $s]
+						set s [expr $s * 1024 * 1024]
+					} else {
+						#should never happen...
+						set txt error
+					}
+					if { $s < 2000 } {
+						set color \#ff0000
+					} elseif { $s < 3500 } {
+						set color \#00f0f0
+					} else {
+						set color \#00ff00
+					}		
+					
+				}	
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Free space on drive b:.
+ND - most problably no drive - internal modem?
+}
+	}
+	
+	k2cl &Arr{
+		title	clock
+		width	40
+		print_proc &Literal{
+			switch -- $value {
+			0 	{
+				set color gray
+				set txt RTC
+				}
+			1	{
+				set color \#ff0000
+				set txt KBD
+				}
+			2	{
+				set color \#0000ff
+				set txt SYN
+				}
+			3	{
+				set color \#00ff00
+				set txt GPS
+				}	
+			default	{
+				set color \#ff0000
+				set txt $value
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+K2 Clock Status.
+GPS - GPS clock
+SYN - Synchrinisation w. ext. Pulse
+KBD - Time was set manually
+RTC - System Time - clock was never set
+}
+}
+	st &Arr{
+		title	status_update
+		width	100
+		print_proc &Literal{
+			set color gray
+			set value [expr [clock seconds] - $value] 
+			if {$value == "n"} {set txt ns} else {
+				set color \#00fe00
+				
+				if {$value >= 86400.0} {
+					set color \#ff0000
+					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
+				} elseif {$value >= 3600.0} {
+					set color \#00e6fe
+					set txt [format "%dh" [expr int($value/3600.0 + 0.5)]]
+				} elseif {$value >= 60.0} {
+					set color \#a0f0a0
+					set txt [format "%dm" [expr int($value/60.0+0.5)]]
+				} else {
+					set txt [format "%ds" [expr int($value+0.5)]]
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+green   - last connection was within 60m.
+blue    - last connection was within 24h.
+red     - last connection was more than 24h before now.
+}
+	}	
+	etm &Arr{
+		title	event
+		width	100
+		print_proc &Literal{
+			set color gray
+			set value [expr [clock seconds] - $value] 
+			if {$value == "n"} {set txt ns} else {
+				set color \#d0d0ff
+				if {$value >= 86400.0} {
+					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
+				} elseif {$value >= 3600.0} {
+					set txt [format "%dh" [expr int($value/3600.0 + 0.5)]]
+				} elseif {$value >= 60.0} {
+					set txt [format "%dm" [expr int($value/60.0+0.5)]]
+				} else {
+					set txt [format "%ds" [expr int($value+0.5)]]
+				}				
+					
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Time since last event
+}
+	}		
+}

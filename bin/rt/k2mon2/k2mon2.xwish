@@ -1,0 +1,1494 @@
+
+# This comment extends to the next line for tcl \
+exec bplotwish $0 -name k2mon2`getunique` -- $*
+# exec ups /opt/antelope/dev/bin/bplotwish -a "$0 -name qtmon`getunique` -- $*"
+# exec wish8.0 $0 -name qtmon`getunique` -- $*
+
+#   Copyright (c) 1997 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. Any use of this software module without        
+#   express written permission from Boulder Real Time Technologies,   
+#   Inc. is prohibited.                                               
+
+package require Datascope;
+package require Orb;
+package require Pixmap;#pixmap create...
+package require Tclx; #for_array_keys ...
+package require Brttplot;# thistory 
+
+proc isthisme {} {
+	global thisisme
+
+	set thisisme 1
+}
+
+proc getappname {} {
+	global thisisme
+
+	set thisisme 0
+	set interps [winfo interps]
+	foreach interp $interps {
+		catch "send -async {$interp} isthisme"
+		if {$thisisme == 1} {
+			return $interp
+		}
+	}
+	return -1
+}
+
+proc usage {} {
+    puts stderr "Usage: k2mon2 \[-back days\] \[-nooldlogs \] \[-pf pffile\] targetname dataorb cmdorbname"
+}
+
+if {$argc >8 || $argc < 3} {
+	usage
+	exit
+}
+
+set tcl_precision 17
+set stat	Startup
+set myappname	[getappname]
+set textwidth	180
+set maxlines	500
+set list_font {fixed 10}
+set other_font {helvetica 10 bold}
+if {$myappname == "-1"} {
+	puts stderr "k2mon: Cannot get appname."
+	exit
+}
+
+set M_PI	3.14159265358979323846
+set SQRT2	1.414213562
+set waiting 0
+set lastupdate 0
+set isdim 0
+set Pf k2mon2
+set backlogtime 604800
+set nooldlogs 0
+
+for {set i 0} {$i<[expr $argc - 1]} {incr i} {
+        switch -- [lindex $argv $i] {
+                -back {
+                        set backlogtime [expr 86400 * [lindex $argv [expr $i + 1]]]
+                        incr i
+                }
+                -pf {
+                        set Pf [lindex $argv [expr $i + 1]]
+                        incr i
+                }
+				-nooldlogs {
+					set nooldlogs 1
+				}
+        }
+}
+
+
+set targetname		[lindex $argv [expr $argc -3]]
+set dataorbname 	[lindex $argv [expr $argc -2]]
+set data2orbname	$dataorbname
+set cmdorbname 		[lindex $argv end]
+
+#if {$argc == 4} {
+#	set dbname 		[lindex $argv 2]
+#}
+
+proc fill_string {string len} {
+	set out $string
+	loop i [string length $string] $len {
+		append out " "
+	}
+
+	return $out
+}
+
+set icon_pixmap [pixmap create $env(ANTELOPE)/data/icons/qtmon.gif]
+set icon_alarm_pixmap [pixmap create $env(ANTELOPE)/data/icons/qtmon_alarm.gif]
+
+tk_setPalette \#d9d9ee
+
+
+set maxlines [pfget $Pf maxlines]
+if { $maxlines =="" } {
+	set maxlines 500
+}
+
+pfgetarr status_defs @$Pf#station_status_defs
+set status_defs_names [pfgetlist @$Pf#station_status_list]
+#pfgetarr header_status_defs @$Pf#header_status_defs
+#set header_status_defs_names [pfgetlist @$Pf#header_status_list]
+
+pfgetarr command_defs @$Pf#command_defs
+set command_names [pfgetlist @$Pf#command_list]
+
+foreach command_name $command_names {
+	set command_label($command_name) [pfget $command_defs($command_name) label]
+	set command_exec_string($command_name) [pfget $command_defs($command_name) exec_string]
+}
+
+foreach status_defs_name $status_defs_names {
+	set status_defs_title($status_defs_name) [pfget $status_defs($status_defs_name) title]
+	set status_defs_width($status_defs_name) [pfget $status_defs($status_defs_name) width]
+	set status_defs_latch($status_defs_name) [pfget $status_defs($status_defs_name) latch]
+	set status_defs_print_proc($status_defs_name) [pfget $status_defs($status_defs_name) print_proc]
+	if {[catch "pfgetarr myarr [format "@%s\#station_status_defs\#%s\#thistory" $Pf $status_defs_name]" out] != 0} {
+	} else {
+		for_array_keys key myarr {
+			set status_defs_thistory($status_defs_name,$key) $myarr($key)
+		}
+	}
+	if {$status_defs_latch($status_defs_name) == "yes"} {
+		eval [format "proc print_proc_%s {value latch} {%s}" $status_defs_name $status_defs_print_proc($status_defs_name)]
+	} else {
+		eval [format "proc print_proc_%s {value} {%s}" $status_defs_name $status_defs_print_proc($status_defs_name)]
+	}
+}
+
+#foreach header_status_defs_name $header_status_defs_names {
+#	set header_status_orb($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) orb]
+#	set header_status_select($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) select]
+#	set header_status_title_color($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) title_color]
+#	set header_status_title_label($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) title_label]
+#	set header_status_width($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) width]
+#	set header_status_label($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) label]
+#	set header_status_print_proc($header_status_defs_name) [pfget $header_status_defs($header_status_defs_name) print_proc]
+#	eval [format "proc header_print_proc_%s {value} {%s}" $header_status_defs_name $header_status_print_proc($header_status_defs_name)]
+#	set header_status_text($header_status_defs_name) [fill_string "not available" 250]
+#}
+
+proc make_headers {} {
+	global header_status_defs_names
+	global header_status_title_label
+	global header_status_title_color
+	global header_status_label
+	global header_status_width
+	global header_status_text
+	global textwidth
+	global list_font
+	global statext
+
+	set row 0
+	foreach name $header_status_defs_names {
+		set statext($name) .sf$name
+		frame $statext($name)
+		button $statext($name).title -text "$name" -width 300 -relief flat -command "set_statext none"
+		text $statext($name).txt -width $textwidth -yscrollcommand "$statext($name).scrolly set" \
+				-xscrollcommand "$statext($name).scrollx set" -wrap none -font $list_font \
+				-background \#ffffe0 -foreground \#800000 -height 20
+		scrollbar $statext($name).scrolly -command "$statext($name).txt yview" -width 10
+		scrollbar $statext($name).scrollx -command "$statext($name).txt xview" -width 10 -orient horiz
+		grid configure $statext($name).title -column 1 -row 0 -sticky ew
+		grid configure $statext($name).scrolly -column 0 -row 1 -sticky ns
+		grid configure $statext($name).scrollx -column 1 -row 2 -sticky ew
+		grid configure $statext($name).txt -column 1 -row 1 -sticky nsew
+		grid rowconfigure $statext($name) 0 -weight 0
+		grid rowconfigure $statext($name) 1 -weight 1
+		grid rowconfigure $statext($name) 2 -weight 0
+		grid columnconfigure $statext($name) 0 -weight 0
+		grid columnconfigure $statext($name) 1 -weight 1
+
+		frame .h.f$name -background \#e0e0e0
+		grid .h.f$name -column 0 -row $row -sticky ew
+
+		message .h.f$name.tl -text $header_status_title_label($name) -padx 2 -pady 2 -relief flat -width 100 -background \#e0e0e0
+		grid .h.f$name.tl -column 0 -row 0 -sticky ew
+		grid columnconfigure .h.f$name 0 -weight 0
+		message .h.f$name.l -text $header_status_label($name) -padx 0 -pady 0 -justify left -relief flat -width $header_status_width($name) -background \#e0e0e0
+		grid .h.f$name.l -column 1 -row 0 -sticky w
+		grid columnconfigure .h.f$name 1 -weight 1
+
+		menubutton .h.f$name.m -text $name -relief flat -padx 1 -pady 1 -width 10 \
+				-menu .h.f$name.m.menu -background $header_status_title_color($name)
+		menu .h.f$name.m.menu -type normal
+		.h.f$name.m.menu add command -label "display log" -command "set_statext $name"
+		grid .h.f$name.m -column 0 -row 1 -sticky ew
+
+		#; message .h.f$name.m2 -padx 1 -pady 1 -relief sunken -width $header_status_width($name) -textvariable header_status_text($name)
+		label .h.f$name.m2 -padx 1 -pady 1 -relief sunken -textvariable header_status_text($name)
+		grid .h.f$name.m2 -column 1 -row 1 -sticky ew
+		grid rowconfigure .h.f$name 0 -weight 0
+		grid rowconfigure .h.f$name 1 -weight 0
+	}
+}
+
+proc startup_orbs {dataorbname data2orbname} {
+	global dataorb
+	global data2orb
+	global stat
+	global data_reap
+	global data2_reap
+	global targetname
+	global backlogtime
+	global nooldlogs
+
+	if {[info exists dataorb] == 0} {
+		while {[catch {orbopen "$dataorbname" r&} dataorb]} {
+			set stat [format "Unable to connect to %s: %s: retrying..." "$dataorbname" $dataorb]
+			update
+			unset dataorb
+			after 1000 {startup_orbs $dataorbname $data2orbname}
+			return
+		}
+		set stat [format "Connected to %s" "$dataorbname"]
+		update
+		set sourcename [format "\/pf\/%s_k22orb_stat"  $targetname]
+		orbselect $dataorb $sourcename
+		unset sourcename
+
+		#orbseek $dataorb ORBOLDEST
+		# I chose to declare a station beeing good when it talked to
+		# k22orb within the last 24 hrs -> so I only need the last day
+		# to see if it was ok or not...
+		
+		# I could find out about stations that did NOT connect
+		# within that time by looking at orbgetdatasources...
+		# but that's for the next version...
+				
+		set timenow [clock seconds]
+		set starttime [expr $timenow - $backlogtime]
+
+		orbafter $dataorb $starttime
+		set data_reap [orbreapstart $dataorb]
+	}
+
+	if {[info exists data2orb] == 0} {
+		while {[catch {orbopen "$data2orbname" r&} data2orb]} {
+			set stat [format "Unable to connect to %s: %s: retrying..." "$data2orbname" $data2orb]
+			update
+			unset data2orb
+			after 1000 {startup_orbs $dataorbname $data2orbname}
+			return
+		}
+		set stat [format "Connected to %s %s" "$dataorbname" "$data2orbname"]
+		update
+
+		orbselect $data2orb /log/$targetname.*
+
+		#orbseek $data2orb ORBNEWEST
+		#orbafter $data2orb [str2epoch "04/05/2001"]
+		if {$nooldlogs==0} {
+			orbafter $data2orb $starttime
+		} else {
+			orbseek $data2orb ORBNEWEST
+		}		
+		set data2_reap [orbreapstart $data2orb]
+	}
+}
+
+proc make_text {parent title} {
+	global textwidth
+	global list_font
+
+	if {$title != "none"} {
+		frame $parent 
+		message $parent.title -text "$title" -width 300
+		grid configure $parent.title -column 1 -row 0 -sticky ew
+		grid rowconfigure $parent 0 -weight 0
+		grid columnconfigure $parent 0 -weight 0
+		grid columnconfigure $parent 1 -weight 1
+		text $parent.txt -width $textwidth -yscrollcommand "$parent.scrolly set" \
+				-xscrollcommand "$parent.scrollx set" -wrap none -font $list_font -height 20
+		scrollbar $parent.scrolly -command "$parent.txt yview" -width 10
+		scrollbar $parent.scrollx -command "$parent.txt xview" -width 10 -orient horiz
+		grid configure $parent.scrolly -column 0 -row 1 -sticky ns
+		grid configure $parent.scrollx -column 1 -row 2 -sticky ew
+		grid configure $parent.txt -column 1 -row 1 -sticky nsew
+		grid rowconfigure $parent 1 -weight 1
+		grid rowconfigure $parent 2 -weight 0
+	} else {
+		frame $parent -height 0
+	}
+}
+
+option add *Menu.tearOff 0
+option add *Font $other_font
+
+frame .mbar -relief raised -bd 2 -background gray 
+menubutton .mbar.file -text File -underline 0 \
+	-menu .mbar.file.menu -background gray \
+	-activebackground darkgray
+pack .mbar.file -side left
+
+menu .mbar.file.menu
+.mbar.file.menu add command -label "Quit" -underline 0 \
+	-accelerator "Ctrl+c" -command {exit} \
+	-background #80ff80 -activebackground red
+
+focus .mbar
+
+#if {[llength $header_status_defs_names] > 0} {
+#	frame .h
+#}
+frame .p
+
+make_text .sf none
+make_text .f "ALL STATIONS"
+.f.txt configure -background \#ffffff
+
+set laststatextparent .sf
+
+frame .s -bd 2 -background \#ffe0e0 -relief flat
+label .s.slabel -text "Status:" -background \#ffe0e0 -relief flat
+label .s.smsg -textvariable stat -background \#ffe0e0 -relief flat
+pack .s.slabel .s.smsg -side left
+
+grid configure .mbar -column 0 -row 0 -sticky new
+#if {[llength $header_status_defs_names] > 0} {
+#	grid configure .h -column 0 -row 1 -sticky w
+#	grid configure .p -column 0 -row 2 -sticky new
+#	grid configure .sf -column 0 -row 3 -sticky nsew
+#	grid configure .f -column 0 -row 4 -sticky nsew
+#	grid configure .s -column 0 -row 5 -sticky sew
+#	grid rowconfigure . 0 -weight 0
+#	grid rowconfigure . 1 -weight 0
+#	grid rowconfigure . 2 -weight 0
+#	grid rowconfigure . 3 -weight 1
+#	grid rowconfigure . 4 -weight 1
+#	grid rowconfigure . 5 -weight 0
+#	set statextrow 3
+#	make_headers
+#} else {
+	grid configure .p -column 0 -row 1 -sticky new
+	grid configure .sf -column 0 -row 2 -sticky nsew
+	grid configure .f -column 0 -row 3 -sticky nsew
+	grid configure .s -column 0 -row 4 -sticky sew
+	grid rowconfigure . 0 -weight 0
+	grid rowconfigure . 1 -weight 0
+	grid rowconfigure . 2 -weight 1
+	grid rowconfigure . 3 -weight 1
+	grid rowconfigure . 4 -weight 0
+	set statextrow 2
+#}
+grid columnconfigure . 0 -weight 1
+
+toplevel .icon
+canvas .icon.c -width [pixmap $icon_pixmap width] -height [pixmap $icon_pixmap height]
+.icon.c create pixmap $icon_pixmap 1 1 -anchor nw -tags [list image]
+set icon_title [pfget $Pf icon_title]
+if {$icon_title != ""} {
+	.icon.c create text 23 3 -anchor n -text $icon_title -font {helvetica 8}
+}
+.icon.c create rectangle 4 29 21 42 -fill \#00ff00 -tags [list on]
+.icon.c create rectangle 25 29 42 42 -fill \#ff0000 -tags [list off]
+.icon.c create text 12 35 -tags [list on_text] -text ""
+.icon.c create text 34 35 -tags [list off_text] -text "" -fill \#ffff00
+.icon.c lower on image
+.icon.c lower off image
+pack .icon.c
+
+wm title . [format "k2mon2: %s %s %s" $targetname $dataorbname $cmdorbname]
+wm geometry . 900x500+0+0
+wm iconwindow . .icon
+wm iconname . k2mon2
+
+proc mystrtime {epoch} {
+	set str [strtime $epoch]
+	set yd [yearday $epoch]
+	set out [format "%s(%s) %s" [string range $yd 0 7] \
+			[string range $str 0 4] [string range $str 12 19]]
+	return "$out"
+}
+
+proc set_statext {sta} {
+	global laststatextparent
+	global statext
+	global statextrow
+
+	if {$sta == "none"} {
+		set parent .sf
+	} else {
+		set parent $statext($sta)
+	}
+	grid forget $laststatextparent
+	grid $parent -column 0 -row $statextrow -sticky nsew
+	# grid rowconfigure . 2 -weight 1
+	# grid columnconfigure . 0 -weight 1
+	set laststatextparent $parent
+	update
+}
+
+proc clock_format {time} {
+	return [clock format $time -format "%T" -gmt 1]
+}
+
+proc process_log {} {
+	global data2_reap
+	global maxlines
+	global stat
+	global statext
+	global lastupdate
+
+	if {[info exists data2_reap] == 0} {
+		after 500 {process_log}
+		return
+	}
+	set timenow [clock seconds]
+	if {$lastupdate > 0} {
+		set time [expr $timenow - $lastupdate]
+		set stat [format "Time: %s Gmt: Status latency = %s" [mystrtime $timenow] [clock_format $time]]
+	} else {
+		set stat [format "Time: %s Gmt: No status update" [mystrtime $timenow]]
+	}
+	while {1} {
+		set pkt [orbreap $data2_reap]
+		if {$pkt == "0"} {
+			after 500 {process_log}
+			update
+			return
+		}
+
+		if {[catch {orbpktgethdr $pkt} hdr]} {
+			set stat [format "orbpktgethdr error: %s" $hdr]
+			update
+			orbpktfree $pkt
+			continue
+		}
+		set time [mystrtime [lindex $hdr 1]]
+		#set station [string range [lindex $hdr 2] 5 end]
+		# things have changed...
+		set pktname [lindex $hdr 2]
+		set firstminus [string first _ $pktname]
+		incr firstminus	
+		set station [string range $pktname $firstminus end]
+		#puts "station $station $pktname"
+		if {[catch {orbpktgetlog $pkt} msg]} {
+			set stat [format "orbpktgetlog error: %s" $msg]
+			update
+			orbpktfree $pkt
+			continue
+		}
+		#set string [format "%s: %-7s: %s\n" $time $station "$msg"]
+		set string [format "%s\n" "$msg"]
+		.f.txt insert end $string
+		set n [lindex [split [.f.txt index end] .] 0]
+		if {$n > $maxlines} {
+			.f.txt delete 1.0 [expr $n-$maxlines+1].0 
+		}
+		.f.txt see end
+
+		if {[info exists statext] != 0} {
+			if {[info exists statext($station)] != 0} {
+				$statext($station).txt insert end $string
+				set n [lindex [split [$statext($station).txt index end] .] 0]
+				if {$n > $maxlines} {
+					$statext($station).txt delete 1.0 [expr $n-$maxlines+1].0 
+				}
+				$statext($station).txt see end
+			}
+		}
+
+		update
+	
+		orbpktfree $pkt
+	}
+}
+
+proc dimdisplay {} {
+	global isdim
+
+	if {$isdim == 1} return
+	set isdim 1
+	.s configure -background \#ff0000
+	.s.slabel configure -background \#ff0000
+	.s.smsg configure -background \#ff0000
+	set wins [winfo children .p]
+	foreach win $wins {
+		$win configure -background \#ffe0e0
+	}
+}
+
+proc normdisplay {} {
+	global isdim
+
+	if {$isdim == 0} return
+	set isdim 0
+	.s configure -background \#ffe0e0
+	.s.slabel configure -background \#ffe0e0
+	.s.smsg configure -background \#ffe0e0
+}
+
+proc update_status {stuff stufftime} {
+	global stations
+	global statext
+	global station_ccount
+	global station_rcount
+	global textwidth
+	global list_font
+	global icon_pixmap
+	global status_defs_names
+	global status_defs_title
+	global status_defs_width
+	global status_defs_latch
+	global status_defs_print_proc
+	global cmdorbname
+	global targetname
+	global dbname
+	global status_defs
+	global status_defs_thistory
+	global thistory
+	global thistory_stas
+	global latch
+	global latchnow
+	global Pf
+	global sta_status	;# as we get only one station, 
+	global sta_values 	;# we have to keep track of some things
+
+	global command_names
+	global command_label
+	global command_exec_string
+	
+
+	set wins [winfo children .p]
+	foreach win $wins {
+		if {[string compare ".p.l" [string range $win 0 3]] == 0} {
+			$win configure -background \#e0e0e0
+		}
+	}
+	set ngood 0
+	set nbad 0
+
+	# try to make is as similar to qtmon as possible...
+	# convert a string (list) to array
+	
+	set sta [lindex $stuff 1]
+	for { set i 0 } {$i < [llength $stuff] } {incr i 2} {
+		set a([lindex $stuff $i]) [lindex $stuff [expr $i + 1]]
+		set sta_values($sta,[lindex $stuff $i]) [lindex $stuff [expr $i + 1]]
+	}
+	
+	
+#	foreach sta $stuff { no loop as we get only one station 
+		#upvar $sta a
+		#puts $a
+		foreach name $status_defs_names {
+			if {[info exists a($name)] != 0} {
+				set val($name) $a($name)
+			} else {
+				set val($name) ""
+			}
+		}
+		
+		
+		#set qsta $a(qns)
+		set qsta $sta
+		#puts "qsta ist jetzt: $qsta"
+		#puts "Sta ist jetzt: $sta"
+		set on yes ;#$a(con)
+		#set conn $a(inp)
+		#set vco $a(vco)
+		#set vcoc 0
+		
+		set timenow [clock seconds]
+		
+		if { [expr $timenow - $val(st)] < 86400.0 } {
+			set  sta_status($sta) 1
+		} else {
+			set sta_status($sta) 0
+		}
+		
+		set new 1
+		if {[info exists stations] != 0} {
+			if {[info exists stations($sta)] != 0} {
+				set new 0
+			}
+		} else {
+			set station_rcount 0
+			set station_ccount 0
+		}
+		if {$new == 1} {
+			set stations($sta) $sta
+			set statext($sta) .sf$sta
+			frame $statext($sta)
+			button $statext($sta).title -text "$sta" -width 300 -relief flat -command "set_statext none"
+			text $statext($sta).txt -width $textwidth -yscrollcommand "$statext($sta).scrolly set" \
+					-xscrollcommand "$statext($sta).scrollx set" -wrap none -font $list_font \
+					-background \#ffffe0 -foreground \#800000 -height 20
+			scrollbar $statext($sta).scrolly -command "$statext($sta).txt yview" -width 10
+			scrollbar $statext($sta).scrollx -command "$statext($sta).txt xview" -width 10 -orient horiz
+			grid configure $statext($sta).title -column 1 -row 0 -sticky ew
+			grid configure $statext($sta).scrolly -column 0 -row 1 -sticky ns
+			grid configure $statext($sta).scrollx -column 1 -row 2 -sticky ew
+			grid configure $statext($sta).txt -column 1 -row 1 -sticky nsew
+			grid rowconfigure $statext($sta) 0 -weight 0
+			grid rowconfigure $statext($sta) 1 -weight 1
+			grid rowconfigure $statext($sta) 2 -weight 0
+			grid columnconfigure $statext($sta) 0 -weight 0
+			grid columnconfigure $statext($sta) 1 -weight 1
+			set c(0) $station_ccount
+			set i 0
+			set j 1
+			foreach name $status_defs_names {
+				set c($j) [expr $c($i)+1]
+				set i $j
+				incr j
+			}
+			if {$station_rcount == 0} {
+				menubutton .p.l$sta -text netsta -menu .p.l$sta.m -padx 2 -pady 2 -relief flat -width 10 -background \#e0e0e0
+				menu .p.l$sta.m -type normal
+				set desc [pfget $Pf netsta_descr]
+				.p.l$sta.m add separator
+				.p.l$sta.m add cascade -label Description -menu .p.l$sta.m.d
+				menu .p.l$sta.m.d -type normal -disabledforeground blue
+				detail .p.l$sta.m.d $desc
+				set i 1
+				foreach name $status_defs_names {
+					set menb [format ".p.l%d%s" $i $sta]
+					set men [format "%s.menu" $menb]
+					menubutton $menb -text $status_defs_title($name) \
+						-padx 1 -pady 1 -relief flat \
+						-menu $men -background \#e0e0e0
+					menu $men -type normal
+					if {[info exists status_defs_thistory($name,npmax)] != 0} {
+						set ment [format "%s.mt" $men]
+						$men add command -label "Time History" -command "make_thistory $name $status_defs_title($name)"
+					}
+					set desc [pfget $status_defs($name) description]
+					if {$desc != ""} {
+						set mend [format "%s.md" $men]
+						$men add separator
+						$men add cascade -label Description -menu $mend
+						menu $mend -type normal -disabledforeground blue
+						detail $mend $desc
+					}
+					incr i
+				}
+				grid .p.l$sta -column $c(0) -row 0 -sticky ew
+				grid columnconfigure .p $c(0) -weight 0
+				set i 1
+				foreach name $status_defs_names {
+					grid [format ".p.l%d%s" $i $sta] -column $c($i) -row 0 -sticky ew
+					grid columnconfigure .p $c($i) -weight 1
+					incr i
+				}
+				grid rowconfigure .p 0 -weight 0
+				set row 1
+			} else {set row $station_rcount}
+			menubutton .p.m$sta -text $sta -relief flat -padx 1 -pady 1 -width 10 \
+				-menu .p.m$sta.menu
+			menu .p.m$sta.menu -type normal
+			.p.m$sta.menu add command -label $qsta -command {} -foreground blue
+			#.p.m$sta.menu add command -label "$conn" -command {} -foreground blue
+			#.p.m$sta.menu add command -label "$vco $vcoc" -command {} -foreground blue
+			#.p.m$sta.menu add separator
+			.p.m$sta.menu add command -label "display log" -command "set_statext $sta"
+			.p.m$sta.menu add separator
+			foreach command_name $command_names {
+				set command_string [format "catch {exec %s}" $command_exec_string($command_name)]
+				set command_string [subst $command_string]
+				.p.m$sta.menu add command -label $command_label($command_name) -command $command_string
+			}
+			#.p.m$sta.menu add separator
+			#.p.m$sta.menu add command -label "update status" -command "catch {exec k2cmd -noblock $cmdorbname $targetname $sta status}"
+			#.p.m$sta.menu add command -label "funtional test" -command "catch {exec k2cmd -delayhangup 0 -noblock $cmdorbname $targetname $sta ft}"
+			#.p.m$sta.menu add command -label "get events" -command "catch {exec k2cmd -noblock $cmdorbname $targetname $sta getevents}"
+			#.p.m$sta.menu add command -label "dir a:" -command "catch {exec k2cmd -noblock $cmdorbname $targetname $sta dirtree a:}"
+			#.p.m$sta.menu add command -label "dir b:" -command "catch {exec k2cmd -noblock $cmdorbname $targetname $sta dirtree b:}"
+			.p.m$sta.menu add separator
+			#.p.m$sta.menu add command -label "dir b:" -command "catch {exec k2cmd -noblock $cmdorbname $targetname $sta dirtree b:}"
+			#if {[info exists dbname] != 0} {
+#	.p.m$sta.menu add command -label "config & control..." -command "exec calctrl $cmdorbname $dbname $sta &"
+			#}
+			grid .p.m$sta -column $c(0) -row $row -sticky ew
+			grid columnconfigure .p $c(0) -weight 0
+			set i 1
+			foreach name $status_defs_names {
+				set w [format ".p.%d%s" $i $sta] 
+				if {$status_defs_latch($name) == "yes"} {
+					button $w -padx 0 -pady 0 -relief sunken -width $status_defs_width($name) \
+						-command "clearlatch $w $sta $name"
+					set latch($sta,$name) 0
+					set latchnow($sta,$name) 0
+				} else {
+					message $w -padx 1 -pady 1 -relief sunken -width $status_defs_width($name)
+				}
+				grid $w -column $c($i) -row $row -sticky ew
+				grid columnconfigure .p $c($i) -weight 1
+				set lastc $c($i)
+				incr i
+			}
+			grid rowconfigure .p $row -weight 0
+			set station_ccount [expr $lastc+1]
+			if {$station_ccount > -1} {
+				set station_ccount 0
+				set station_rcount [expr $row+1]
+			}
+		}
+		switch $on {
+		yes {
+			.p.m$sta configure -background \#00ff00 \
+					-activebackground \#a0ffa0 \
+					-highlightbackground \#a0ffa0
+			incr ngood
+			}
+		su {
+			.p.m$sta configure -background \#ffa000 \
+					-activebackground \#ffb0a0 \
+					-highlightbackground \#ffb0a0
+			incr nbad
+			}
+		default {
+			.p.m$sta configure -background \#ff0000 \
+					-activebackground \#ffa0a0 \
+					-highlightbackground \#ffa0a0
+			incr nbad
+			}
+		}
+		#.p.m$sta.menu entryconfigure 2 -label "$vco $vcoc"
+		set i 1
+		foreach name $status_defs_names {
+			if {[info exists status_defs_thistory($name,npmax)] != 0} {
+				if {[info exists thistory($name,$sta)] == 0} {
+					set thistory($name,$sta) [thistory_create $status_defs_thistory($name,npmax)]
+					lappend thistory_stas($name) $sta
+				}
+				if {[string range $val($name) 0 0] != "n"} {
+					thistory_add $thistory($name,$sta) $stufftime $val($name)
+				}
+			}
+			if {$val($name) == ""} {
+				set txt ""
+				set color gray
+			} else {
+				if {$status_defs_latch($name) == "yes"} {
+					set lout [print_proc_$name $val($name) $latch($sta,$name)]
+					set latch($sta,$name) [lindex $lout 2]
+					set latchnow($sta,$name) [lindex $lout 3]
+				} else {
+					set lout [print_proc_$name $val($name)]
+				}
+				set txt [lindex $lout 0]
+				set color [lindex $lout 1]
+			}
+			switch $on {
+			yes {
+				}
+			su {
+				}
+			default {
+				set color \#ffc0c0
+				}
+			}
+			[format ".p.%d%s" $i $sta] configure -background "$color" -text $txt
+			incr i
+		}
+#	} no loop as we get only one station at a time...
+
+	
+	#sta_status($sta)
+	set slt [array names sta_status]
+	set ngood 0
+	set nbad 0
+	foreach sentry $slt {
+		if { $sta_status($sentry) == 1 } {
+			incr ngood
+		} else {
+			incr nbad
+		}
+	}
+	.icon.c itemconfigure pixmap -pixmap $icon_pixmap
+	
+	if {$ngood == 0} {
+		.icon.c lower on image
+		.icon.c itemconfigure on_text -text ""
+	} else {
+		.icon.c raise on image
+		.icon.c itemconfigure on_text -text $ngood
+	}
+	if {$nbad == 0} {
+		.icon.c lower off image
+		.icon.c itemconfigure off_text -text ""
+	} else {
+		.icon.c raise off image
+		.icon.c itemconfigure off_text -text $nbad
+	}
+}
+
+proc clearlatch {widget sta name} {
+	global latch
+	global latchnow
+
+	if {$latch($sta,$name) == 1 && $latchnow($sta,$name) == 0} {
+		if {[tk_messageBox -type yesno -parent $widget -message "Are you sure you want to clear the alarm?"] != "yes"} {
+			return
+		}
+	}
+	set latch($sta,$name) 0
+}
+
+proc make_thistory {name label} {
+	global th_instance
+	global thistory
+	global thistory_stas
+	global status_defs_thistory
+
+	set top .th$name
+
+	catch "destroy $top"
+
+	toplevel $top
+	wm title $top [format "k2mon time history: %s" $name]
+
+	frame $top.ctrl
+	grid $top.ctrl -row 0 -column 0 -sticky nw
+	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $top 0 -weight 0
+
+	if {[info exists th_instance] == 0} {set th_instance 0} else {incr th_instance}
+
+	if {[info exists status_defs_thistory($name,ybot)] == 0} {
+		set status_defs_thistory($name,ybot) 0.0
+	}
+	if {[info exists status_defs_thistory($name,ytop)] == 0} {
+		set status_defs_thistory($name,ytop) 0.0
+	}
+	if {[info exists status_defs_thistory($name,twin)] == 0} {
+		set status_defs_thistory($name,twin) 3600.0
+	}
+	if {[info exists status_defs_thistory($name,width)] == 0} {
+		set status_defs_thistory($name,width) 800
+	}
+	if {[info exists status_defs_thistory($name,height)] == 0} {
+		set status_defs_thistory($name,height) 100
+	}
+
+	button $top.ctrl.done -text Dismiss -command "destroy $top" -height 1 -pady 0
+	grid $top.ctrl.done -row 0 -column 0 -sticky w
+	label $top.ctrl.ltwin -text twin -height 1 -pady 0
+	grid $top.ctrl.ltwin -row 0 -column 1 -sticky w
+	entry $top.ctrl.etwin -textvariable status_defs_thistory($name,twin) 
+	# bind $top.ctrl.etwin <FocusOut> "redraw_thistory $top $name"
+	# bind $top.ctrl.etwin <Return> "redraw_thistory $top $name"
+	grid $top.ctrl.etwin -row 0 -column 2 -sticky w
+	label $top.ctrl.lymin -text ymin -height 1 -pady 0
+	grid $top.ctrl.lymin -row 0 -column 3 -sticky w
+	entry $top.ctrl.eymin -textvariable status_defs_thistory($name,ybot) 
+	# bind $top.ctrl.eymin <FocusOut> "redraw_thistory $top $name"
+	# bind $top.ctrl.eymin <Return> "redraw_thistory $top $name"
+	grid $top.ctrl.eymin -row 0 -column 4 -sticky w
+	label $top.ctrl.lymax -text ymax -height 1 -pady 0
+	grid $top.ctrl.lymax -row 0 -column 5 -sticky w
+	entry $top.ctrl.eymax -textvariable status_defs_thistory($name,ytop) 
+	# bind $top.ctrl.eymax <FocusOut> "redraw_thistory $top $name"
+	# bind $top.ctrl.eymax <Return> "redraw_thistory $top $name"
+	grid $top.ctrl.eymax -row 0 -column 6 -sticky w
+
+	set row 1
+	foreach sta $thistory_stas($name) {
+
+		set np [thistory_get $thistory($name,$sta) np]
+
+		if {$np < 1} continue
+
+		canvas $top.can$row -width $status_defs_thistory($name,width) \
+				-height $status_defs_thistory($name,height) -background white
+		grid $top.can$row -row $row -column 0 -sticky nsew -pad 0
+		grid rowconfigure $top $row -weight 1
+
+
+		set vpname [format "vp.%s.%s.%d" $name $sta $th_instance]
+		set vppname [format "vpp.%s.%s.%d" $name $sta $th_instance]
+
+		set lp [thistory_get $thistory($name,$sta) ty end]
+		set t [lindex $lp 0]
+
+		set xl [expr $t - $status_defs_thistory($name,twin)]
+
+		set ns [split $sta _]
+		set st [lindex $ns [expr [llength $ns]-1]]
+
+		$top.can$row create viewport $vpname 0 0 -xleft $xl -xright $t \
+			-ybottom $status_defs_thistory($name,ybot) -ytop $status_defs_thistory($name,ytop) \
+			-mbottom 0 -mtop 0 -mleft 60 -mright 0 -tag $vpname
+
+		$top.can$row create grid $vpname -visible_xsmall 0 -linewidth_small 0
+
+		$top.can$row create axes $vpname -xlabel "" -ylabel "" -tic_style "" \
+				-font_numbers {Helvetica 8} -linewidth_small -1 -axis_style ""
+
+		$top.can$row create ptext $vpname "$st $label" 10 top-10 -justification nw -font "helvetica 14 bold"
+
+		$top.can$row create polyline $vpname -thistory $thistory($name,$sta) -tag $vppname
+
+		incr row
+	}
+
+	after 5000 "redraw_thistory $top $name"
+}
+
+proc redraw_thistory {top name} {
+	global th_instance
+	global thistory
+	global thistory_stas
+	global status_defs_thistory
+
+	if {[winfo exists $top] == 0} return
+
+	set row 1
+	foreach sta $thistory_stas($name) {
+
+		set np [thistory_get $thistory($name,$sta) np]
+
+		if {$np < 1} continue
+
+		set vpname [format "vp.%s.%s.%d" $name $sta $th_instance]
+		set vppname [format "vpp.%s.%s.%d" $name $sta $th_instance]
+
+		set lp [thistory_get $thistory($name,$sta) ty end]
+		set t [lindex $lp 0]
+
+		set xl [expr $t - $status_defs_thistory($name,twin)]
+
+		set ns [split $sta _]
+		set st [lindex $ns [expr [llength $ns]-1]]
+
+		$top.can$row itemconfigure $vpname -xleft $xl -xright $t \
+			-ybottom $status_defs_thistory($name,ybot) -ytop $status_defs_thistory($name,ytop) 
+
+		$top.can$row itemconfigure $vppname -thistory $thistory($name,$sta)
+
+		incr row
+	}
+
+	after 5000 "redraw_thistory $top $name"
+}
+
+proc detail {menu text} {
+	if {[regexp "\n" $text]} {
+		set lines [split $text "\n"]
+		foreach line $lines {
+			$menu add command -label $line -state disabled
+		}
+	} else {
+		while { [clength $text] } {
+			loop i 25 50 {
+				if { "[cindex $detail $i]" == " " } { break }
+			}
+			set line [string trim [csubstr $text 0 $i]]
+			set text [csubstr $text $i [expr [clength $text]-$i]]
+			$menu add command -label $line -state disabled
+		}
+	}
+}
+proc orbpktgetk2status { pkt } {
+
+	# here I have a problem: danny was able to return an array	
+	# I gave up and return a list, which is not that elegant...
+	
+	set pf [orbpktgetpf $pkt]	;# pf-handle 
+	set info [orbpfget $pf]		;# {name type}
+	set info [lindex $info 0]	;# name - variable
+	set level1 [lindex $info 0]
+
+	set contents [orbpfget $pf#$level1]
+	#puts $contents
+	
+	set stuff [list net_sta $level1]
+	foreach entry $contents {
+		set name [lindex $entry 0]
+		set type [lindex $entry 1]
+		set subpf [orbpfget $pf#$level1 $name]
+		#puts "name $name Type $type $subpf"
+		set stuff [lappend stuff $name $subpf]
+	}
+	#puts "stuff ist jetzt: $stuff"
+	orbpffree $pf
+	return -code ok $stuff
+}
+proc process_status {} {
+	global data_reap
+	global lastupdate
+	global stat
+	global sta_values
+	global sta_status
+
+	if {[info exists data_reap] == 0} {
+		after 5000 {process_status}
+		return
+	}
+	set timenow [clock seconds]
+	if {$lastupdate > 0} {
+		set time [expr $timenow - $lastupdate]
+		set stat [format "Time: %s Gmt: Status latency = %s" [mystrtime $timenow] [clock_format $time]]
+		if {$time > 86400.0} dimdisplay else normdisplay ;# after what time shall we think it's over?
+	} else {
+		set stat [format "Time: %s Gmt: No status update" [mystrtime $timenow]]
+	}
+	while {1} {
+		while {[catch {orbreap $data_reap} pkt]} {
+			set stat [format "orbreap error: %s" $pkt]
+			after 5000 {process_status}
+			update
+			return
+		}
+		if {$pkt == "0"} {
+			if { [info exists sta_status] != 0 } {
+				set slt [array names sta_status]
+				foreach sn $slt {
+					set mystuff [list net_sta $sn]
+					foreach index [array names sta_values $sn*] {
+						set value $sta_values($index)
+						set name [lindex [split $index ","] 1]
+						set mystuff [lappend mystuff $name $value]
+					}
+					update_status $mystuff [clock seconds]
+				}
+			}
+			after 5000 {process_status}
+			update
+			return
+		}
+		while {[catch {orbpktgetk2status $pkt} stuff]} {
+			puts "error getting stuff"
+			puts "result was: $stuff"
+			set stat [format "orbpktgetk2status error: %s" $stuff]
+			after 5000 {process_status}
+			update
+			return
+		}
+		if {$stuff == ""} {
+			orbpktfree $pkt
+			after 5000 {process_status}
+			update
+			return
+		}
+		if {[catch {orbpktgethdr $pkt} hdr]} {
+			set stat [format "orbpktgethdr error: %s" $hdr]
+			orbpktfree $pkt
+			after 5000 {process_status}
+			update
+			return
+		}
+		set stufftime [lindex $hdr 1]
+		set timenow [clock seconds]
+		set lastupdate $timenow
+		set time [expr $timenow - $lastupdate]
+		set stat [format "Time: %s Gmt: Status latency = %s" [mystrtime $timenow] [clock_format $time]]
+		normdisplay
+		update_status $stuff $stufftime
+		update
+		orbpktfree $pkt
+	}
+}
+
+proc config {sta} {
+	global staconfig
+
+	make_staconfig $sta
+}
+
+proc get_config {sta} {
+	global waiting
+	global cmdorbname
+	global qtshell
+	global staconfig
+	global cstat_$sta
+
+	if {$waiting == 0} {
+		set qtshell($sta) [orbqtshellstart $cmdorbname $sta eetext]
+		set waiting 1
+		after 1000 "get_config $sta"
+		set cstat_$sta "Waiting for configuration..."
+		update
+		return
+	}
+	if {[catch {orbqtshell $qtshell($sta)} out]} {
+		set cstat_$sta $out
+		orbqtshellfree $qtshell($sta)
+		set waiting 0
+		update
+		return
+	}
+	if {$out == "0"} {
+		after 1000 "get_config $sta"
+		return
+	}
+	orbqtshellfree $qtshell($sta)
+	if {$out == "timeout"} {
+		set cstat_$sta [format "Configuration timeout"]
+		set waiting 0
+		update
+		return
+	}
+	process_config $sta "$out"
+	set staconfig($sta) "$out"
+	set cstat_$sta "Configuration found"
+	update
+	set waiting 0
+}
+
+proc process_config {sta config} {
+	global tlsta
+
+	set lines [split "$config" "\n"]
+	foreach line $lines {
+		set n [scan $line "%s %s" key value]
+		if {$n < 1} continue
+		switch $key {
+		c 	{ $tlsta($sta).config.comprv configure -text $value }
+		l 	{ 
+			switch $value {
+			1	{ $tlsta($sta).config.clockv configure -text 3D }
+			2	{ $tlsta($sta).config.clockv configure -text 2D }
+			}
+			}
+		bd	{
+			switch $value {
+			6	{ $tlsta($sta).config.baudv configure -text 38400 }
+			96	{ $tlsta($sta).config.baudv configure -text 9600 }
+			192	{ $tlsta($sta).config.baudv configure -text 19200 }
+			default	{ $tlsta($sta).config.baudv configure -text unknown }
+			}
+			}
+		g 	{ $tlsta($sta).config.gainv configure -text $value }
+		hg 	{ $tlsta($sta).config.hgainv configure -text $value }
+		m	{
+			if {$n == 1} {
+				$tlsta($sta).config.ftypev configure -text "zero phase"
+			} else {
+				switch $value {
+				M	{ $tlsta($sta).config.ftypev configure -text "minimum phase" }
+				default	{ $tlsta($sta).config.ftypev configure -text unknown }
+				}
+			}
+			}
+		rh 	{ $tlsta($sta).config.hsamprv configure -text $value }
+		rb 	{ $tlsta($sta).config.bsamprv configure -text $value }
+		wh 	{ $tlsta($sta).config.hchanv configure -text $value }
+		wb 	{ $tlsta($sta).config.bchanv configure -text $value }
+		wl 	{ $tlsta($sta).config.lchanv configure -text $value }
+		wu 	{ $tlsta($sta).config.uchanv configure -text $value }
+		}
+	}
+	update
+}
+
+proc make_staconfig {sta} {
+	global tlsta
+	global cstat_$sta
+	global staconfig
+
+	set tl .t$sta
+	set tlsta($sta) $tl
+	if {[winfo exists $tl]} return
+	toplevel $tl
+	frame $tl.buttons
+	button $tl.buttons.getc -text "Get Configuration" -command "get_config $sta"
+	# button $tl.buttons.mr -text "Mass Recenter"
+	button $tl.buttons.quit -text "Dismiss" -command "destroy $tl"
+	pack $tl.buttons.getc -side left
+	pack $tl.buttons.quit -side right
+s
+	frame $tl.config
+	set twidth 200
+	set fcolor \#0000c0
+	message $tl.config.title -text "CONFIGURATION:" -width $twidth
+	message $tl.config.comprl -text "Compression Level: " -anchor e -width $twidth -background \#ffffff 
+	message $tl.config.comprv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.clockl -text "Clock Lock Level: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.clockv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.baudl -text "Baud Rate: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.baudv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.gainl -text "Gain: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.gainv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.ftypel -text "Filter Type: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.ftypev -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.hgainl -text "Hgain: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.hgainv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.hsamprl -text "H Sample Rate: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.hsamprv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.bsamprl -text "B Sample Rate: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.bsamprv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.bchanl -text "B Streams: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.bchanv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.hchanl -text "H Streams: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.hchanv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.lchanl -text "L Streams: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.lchanv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	message $tl.config.uchanl -text "U Streams: " -anchor e -width $twidth -background \#ffffff
+	message $tl.config.uchanv -anchor w -width $twidth -foreground $fcolor -background \#e0e0ff
+	grid $tl.config.title -row 0 -column 0 -columnspan 4 -sticky ew 
+	grid $tl.config.comprl -row 1 -column 0 -sticky ew
+	grid $tl.config.comprv -row 1 -column 1 -sticky ew
+	grid $tl.config.clockl -row 2 -column 0 -sticky ew
+	grid $tl.config.clockv -row 2 -column 1 -sticky ew
+	grid $tl.config.baudl -row 3 -column 0 -sticky ew
+	grid $tl.config.baudv -row 3 -column 1 -sticky ew
+	grid $tl.config.gainl -row 4 -column 0 -sticky ew
+	grid $tl.config.gainv -row 4 -column 1 -sticky ew
+	grid $tl.config.hgainl -row 5 -column 0 -sticky ew
+	grid $tl.config.hgainv -row 5 -column 1 -sticky ew
+	grid $tl.config.ftypel -row 6 -column 0 -sticky ew
+	grid $tl.config.ftypev -row 6 -column 1 -sticky ew
+	grid $tl.config.hsamprl -row 1 -column 2 -sticky ew
+	grid $tl.config.hsamprv -row 1 -column 3 -sticky ew
+	grid $tl.config.bsamprl -row 2 -column 2 -sticky ew
+	grid $tl.config.bsamprv -row 2 -column 3 -sticky ew
+	grid $tl.config.hchanl -row 3 -column 2 -sticky ew
+	grid $tl.config.hchanv -row 3 -column 3 -sticky ew
+	grid $tl.config.bchanl -row 4 -column 2 -sticky ew
+	grid $tl.config.bchanv -row 4 -column 3 -sticky ew
+	grid $tl.config.lchanl -row 5 -column 2 -sticky ew
+	grid $tl.config.lchanv -row 5 -column 3 -sticky ew
+	grid $tl.config.uchanl -row 6 -column 2 -sticky ew
+	grid $tl.config.uchanv -row 6 -column 3 -sticky ew
+	grid columnconfigure $tl.config 0 -weight 0
+	grid columnconfigure $tl.config 1 -weight 1
+	grid columnconfigure $tl.config 2 -weight 0
+	grid columnconfigure $tl.config 3 -weight 1
+
+	frame $tl.s -bd 2 -background \#ffe0e0 -relief flat
+	label $tl.s.slabel -text "Status:" -background \#ffe0e0 -relief flat
+	set cstat_$sta Starting
+	label $tl.s.smsg -textvariable cstat_$sta -background \#ffe0e0 -relief flat
+	pack $tl.s.slabel $tl.s.smsg -side left
+
+
+	grid $tl.buttons -column 0 -row 0 -sticky new
+	grid $tl.config -column 0 -row 1 -sticky new
+	grid $tl.s -column 0 -row 2 -sticky new
+	grid rowconfigure $tl 0 -weight 0
+	grid rowconfigure $tl 1 -weight 0
+	grid rowconfigure $tl 2 -weight 0
+	grid columnconfigure $tl 0 -weight 1
+
+	wm title $tl [format "%s Configuration" $sta]
+
+	if {[info exists staconfig($sta)]} {
+		process_config $sta "$staconfig($sta)"
+		set cstat_$sta "Configuration found"
+	} else {
+		get_config $sta
+	}
+}
+
+proc process_headers {name} {
+	global header_status_orb
+	global header_status_reap
+	global header_status_select
+	global header_status_text
+	global statext
+	global stat
+	global maxlines
+
+	if {[info exists header_status_reap($name)] == 0} {
+		while {[catch {orbopen "$header_status_orb($name)" r&} dataorb]} {
+			set stat [format "Unable to connect to %s: %s: retrying..." "$header_status_orb($name)" $dataorb]
+			update
+			after 10000 "process_headers $name"
+			continue
+		}
+		set stat [format "Connected to %s" "$header_status_orb($name)"]
+		update
+
+		orbselect $dataorb $header_status_select($name)
+
+		# orbseek $dataorb ORBOLDEST
+
+		set header_status_reap($name) [orbreapstart $dataorb]
+	}
+
+	while {1} {
+		while {[catch {orbreap $header_status_reap($name)} pkt]} {
+			set stat [format "orbreap error: %s" $pkt]
+			after 1000 "process_headers $name"
+			update
+			return
+		}
+		if {$pkt == "0"} {
+			after 1000 "process_headers $name"
+			update
+			return
+		}
+		while {[catch {orbpktunstuffdata $pkt} stuff]} {
+			set stat [format "orbpktunstuffdata error: %s" $stuff]
+			after 1000 "process_headers $name"
+			update
+			return
+		}
+		catch "orbpktfree $pkt"
+		if {$stuff == ""} {
+			after 1000 "process_headers $name"
+			update
+			return
+		}
+		set stuff [string trim $stuff]
+		# append stuff ":   Temp = 29.4C,   BP = 766.3mm,   RH = 15.6%,   WS = 2.1m/s,   WD = 286deg"
+		set header_status_text($name) [fill_string $stuff 250]
+
+		if {[info exists statext] != 0} {
+			if {[info exists statext($name)] != 0} {
+				$statext($name).txt insert end [format "%s\n" $stuff]
+				set n [lindex [split [$statext($name).txt index end] .] 0]
+				if {$n > $maxlines} {
+					$statext($name).txt delete 1.0 [expr $n-$maxlines+1].0 
+				}
+				$statext($name).txt see end
+			}
+		}
+
+		update
+	}
+}
+
+proc watchbackground {bkg_instance} {
+	global bkg_ofile
+	global bkg_pid
+	global bkg_onexit
+	global bkg_onerror
+	global bkg_arg
+
+	set l [wait -nohang $bkg_pid($bkg_instance)]
+	if {[llength $l] == 3} {
+		set ex	[lindex $l 1]
+		set cd	[lindex $l 2]
+		set out [read_file -nonewline $bkg_ofile($bkg_instance)]
+		set onexit $bkg_onexit($bkg_instance)
+		set onerror $bkg_onerror($bkg_instance)
+		set arg $bkg_arg($bkg_instance)
+		catch "exec /bin/rm -f $bkg_ofile($bkg_instance)"
+		unset bkg_ofile($bkg_instance)
+		unset bkg_pid($bkg_instance)
+		unset bkg_onexit($bkg_instance)
+		unset bkg_onerror($bkg_instance)
+		unset bkg_arg($bkg_instance)
+		if {$ex == "EXIT" && $cd == 0} {
+			set cmd $onexit
+		} else {
+			set cmd $onerror
+		}
+		$cmd $arg $out
+		return
+	}
+
+	after 1000 "watchbackground $bkg_instance"
+}
+
+proc background {cmd onexit onerror arg} {
+	global bkg_instance
+	global bkg_ofile
+	global bkg_pid
+	global bkg_onexit
+	global bkg_onerror
+	global bkg_arg
+
+	if {[info exists bkg_instance] == 0} {set bkg_instance -1}
+	incr bkg_instance
+
+	set bkg_ofile($bkg_instance) [format "/tmp/bkg_%d_%d" [pid] $bkg_instance]
+
+	catch "$cmd >& $bkg_ofile($bkg_instance) &"  out
+
+	set bkg_pid($bkg_instance) $out
+
+	set bkg_onerror($bkg_instance) $onerror
+	set bkg_onexit($bkg_instance) $onexit
+	set bkg_arg($bkg_instance) $arg
+
+	watchbackground $bkg_instance
+
+	return $bkg_instance
+}
+
+proc reboot {cmdorb netsta} {
+
+	set top .rb$netsta
+
+	catch "destroy $top"
+
+	toplevel $top
+	wm title $top [format "rebooting %s" $netsta]
+
+	frame $top.f
+	grid $top.f -row 0 -column 0 -sticky ew
+	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $top 0 -weight 0
+
+	message $top.f.m -text "Rebooting " -width 150
+	grid $top.f.m -row 0 -column 0 -sticky w
+	message $top.f.mn -text $netsta -foreground blue -width 150
+	grid $top.f.mn -row 0 -column 1 -sticky w
+
+	frame $top.f2 -relief groove -bd 3
+	grid $top.f2 -row 1 -column 0 -sticky ew
+
+	message $top.f2.m -text "Are you sure you want to reboot $netsta?" -width 300
+	grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+	button $top.f2.by -text "Yes" -command "rebootnext $cmdorb $netsta"
+	grid $top.f2.by -row 1 -column 0 -sticky ew
+	button $top.f2.bn -text "No" -command "destroy $top"
+	grid $top.f2.bn -row 1 -column 1 -sticky ew
+}
+
+proc rebootnext {cmdorb netsta} {
+
+	set top .rb$netsta
+
+	destroy $top.f2
+
+	frame $top.f2 -relief groove -bd 3
+	grid $top.f2 -row 1 -column 0 -sticky ew
+
+	if {[catch [format "background {exec qtcmd $cmdorb $netsta reboot} rebootexit rebooterror $netsta"] out]} {
+		message $top.f2.m -text "Reboot error: $out" -width 300
+		grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+		button $top.f2.by -text "OK" -command "destroy $top"
+		grid $top.f2.by -row 1 -column 0 -sticky ew
+		return
+	}
+	
+	message $top.f2.m -text "Reboot command sent - waiting for acknowledgement" -width 300
+	grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+}
+
+proc rebootexit {netsta out} {
+
+	set top .rb$netsta
+
+	destroy $top.f2
+
+	frame $top.f2 -relief groove -bd 3
+	grid $top.f2 -row 1 -column 0 -sticky ew
+
+	if {$out != "reboot ack"} {
+		message $top.f2.m -text "Reboot error: $out" -width 300
+		grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+		button $top.f2.by -text "OK" -command "destroy $top"
+		grid $top.f2.by -row 1 -column 0 -sticky ew
+		return
+	}
+
+	message $top.f2.m -text "Acknowledgement received - reboot successful" -width 300
+	grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+	button $top.f2.by -text "OK" -command "destroy $top"
+	grid $top.f2.by -row 1 -column 0 -sticky ew
+}
+
+proc rebooterror {netsta out} {
+
+	set top .rb$netsta
+
+	destroy $top.f2
+
+	frame $top.f2 -relief groove -bd 3
+	grid $top.f2 -row 1 -column 0 -sticky ew
+
+	message $top.f2.m -text "Reboot error: $out" -width 300
+	grid $top.f2.m -row 0 -column 0 -columnspan 3 -sticky w
+	button $top.f2.by -text "OK" -command "destroy $top"
+	grid $top.f2.by -row 1 -column 0 -sticky ew
+}
+
+startup_orbs $dataorbname $data2orbname
+
+process_status
+process_log
+
+#process_status
+
+# if {[llength $header_status_defs_names] > 0}} {
+# 	process_headers
+# }
+
+#if {[llength $header_status_defs_names] > 0} {
+#	process_headers ESS
+#}

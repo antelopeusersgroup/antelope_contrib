@@ -1,0 +1,383 @@
+.TH K2MON 1 2002/01/23 "Antelope Contrib" "User Commands"
+.SH NAME
+k2mon2 \- monitor Kinemetrics digitizers
+.SH SYNOPSIS
+.nf
+k2mon2 [-back days] [-nooldlogs] [-pf pffile] targetname dataorb cmdorbname
+.fi
+.SH DESCRIPTION
+\fBk2mon2\fP provides an animated GUI for monitoring a set
+of Kinemetrics digitizers through k22orb(1). This is done
+by monitoring and displaying log and status messages produced by
+k22orb(1).
+It also allows sending commands to dataloggers 
+.SH OPTIONS
+.IP "-back days"
+How many days before now should we search log and status packets in the orb?
+.IP "-nooldlogs"
+If this option is given on the commandline, no old log messages are read.
+Old status messages are not affected by this option.
+This is mainly intended to spped up starting the program.
+.IP "-pf pffile"
+Name of parameter file to use. $PFPATH will be searched to find parameter file(s). 
+default is k22orb. See in pfecho(1) how this works.
+.IP targetname
+used by k22orb to uniquely identify the instance of k22orb attached. Needed here to enable 
+sending commands using k2cmd. This argument is required.
+.IP dataorb
+This is the name of the k22orb(1) output data orb.
+This is a required argument.
+.IP cmdorb
+This is the name of the k22orb(1) command orb.
+This is a required argument.
+.SH "PROGRAM PARAMETER FILE"
+following is an example \fBk2mon2\fP parameter file.
+.nf
+maxlines	500	
+command_list &Tbl{
+	update_status
+	functional_test
+	get_events
+	dir_a
+	dir_b
+}
+command_defs &Arr{
+	update_status &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta status
+		label	update status
+	}
+	functional_test &Arr{
+		exec_string k2cmd -delayhangup 0 -noblock $cmdorbname $targetname $sta ft
+		label	functional test
+	}
+	get_events &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta getevents
+		label	get events
+	}
+	dir_a &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta dirtree a:
+		label	dir a:
+	}
+	dir_b &Arr{
+		exec_string k2cmd -noblock $cmdorbname $targetname $sta dirtree b:
+		label	dir b:
+	}
+}	
+icon_title	K2
+
+netsta_descr &Literal{
+Network(array)-Station(site) status
+red    - comm link down
+orange - comm link up but no data
+green  - comm link up with data
+}
+
+station_status_list &Tbl{
+	st
+	etm
+	k2bt
+	k2cl
+	k2er
+	k2ne
+	k2d0
+	k2d1
+}
+
+station_status_defs &Arr{
+	k2bt &Arr{
+		title	Battery
+		width	60
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				if {$value >= 132} {
+					set color \#a0ffa0
+				} elseif {$value >= 120} {
+					set color \#d0d0ff
+				} else {
+					set color \#ff8080
+				}
+				set txt [format "%.1f V" [expr $value / 10.0]]
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Digitizer voltage.
+}
+		thistory &Arr{
+			npmax 17280
+			decimation 10
+			ybot	0.0
+			ytop	15.0
+			twin	36000.0
+		}
+	}
+		k2ne &Arr{
+		title	Events
+		width	30
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				set color \#d0d0ff
+				set txt [format "%i" $value]
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Number of Events.
+}
+}
+		k2er &Arr{
+		title	Errors
+		width	30
+		print_proc &Literal{
+			set color gray
+			if {$value == "n"} {set txt nv} else {
+				set color \#d0d0ff
+				set txt [format "%i" $value]
+				if { $value > 0 } {
+					set color \#ff0000
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Recording Errors.
+}
+}
+
+	k2d0 &Arr{
+		title	Drive a:
+		width	60
+		print_proc &Literal{
+			set K2_SF_NOT_READY	0x0400
+			set K2_SF_KB		0x0800
+			set K2_SF_MB		0x1000
+			set K2_SF_GB		0x2000
+			set K2_SIZE_MASK	0x01ff
+			set color gray
+			if {$value == "n"} {
+				set txt nv 
+			} else {
+				set color \#d0d0ff
+				if { $value & $K2_SF_NOT_READY } { 
+					set txt ND 
+					set color gray
+				} else { 
+					set s [expr $value & $K2_SIZE_MASK]
+					if { $value & $K2_SF_KB } {
+						set txt [format "%i kb" $s]
+					} elseif { $value & $K2_SF_MB } {
+						set txt [format "%i MB" $s]
+						set s [expr $s * 1024]
+					} elseif { $value & $K2_SF_GB } {
+						set txt [format "%i GB" $s]
+						set s [expr $s * 1024 * 1024]
+					} else {
+						#should never happen...
+						set txt error
+					}
+					if { $s < 2000 } {
+						set color \#ff0000
+					} elseif { $s < 3500 } {
+						set color \#00f0f0
+					} else {
+						set color \#00ff00
+					}		
+					
+				}	
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Free space on drive a:.
+ND - most problably no drive - internal modem?
+}
+	}
+	k2d1 &Arr{
+		title	Drive b:
+		width	60
+		print_proc &Literal{
+			set K2_SF_NOT_READY	0x0400
+			set K2_SF_KB		0x0800
+			set K2_SF_MB		0x1000
+			set K2_SF_GB		0x2000
+			set K2_SIZE_MASK	0x01ff
+			set color gray
+			if {$value == "n"} {
+				set txt nv 
+			} else {
+				set color \#d0d0ff
+				if { $value & $K2_SF_NOT_READY } { 
+					set txt ND 
+					set color gray
+				} else { 
+					set s [expr $value & $K2_SIZE_MASK]
+					if { $value & $K2_SF_KB } {
+						set txt [format "%i kb" $s]
+					} elseif { $value & $K2_SF_MB } {
+						set txt [format "%i MB" $s]
+						set s [expr $s * 1024]
+					} elseif { $value & $K2_SF_GB } {
+						set txt [format "%i GB" $s]
+						set s [expr $s * 1024 * 1024]
+					} else {
+						#should never happen...
+						set txt error
+					}
+					if { $s < 2000 } {
+						set color \#ff0000
+					} elseif { $s < 3500 } {
+						set color \#00f0f0
+					} else {
+						set color \#00ff00
+					}		
+					
+				}	
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Free space on drive b:.
+ND - most problably no drive - internal modem?
+}
+	}
+	
+	k2cl &Arr{
+		title	clock
+		width	40
+		print_proc &Literal{
+			switch -- $value {
+			0 	{
+				set color gray
+				set txt RTC
+				}
+			1	{
+				set color \#ff0000
+				set txt KBD
+				}
+			2	{
+				set color \#0000ff
+				set txt SYN
+				}
+			3	{
+				set color \#00ff00
+				set txt GPS
+				}	
+			default	{
+				set color \#ff0000
+				set txt $value
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+K2 Clock Status.
+GPS	- GPS clock
+SYN - Synchrinisation w. ext. Pulse
+KBD - Time was set manually
+RTC - System Time - clock was never set
+}
+}
+	st &Arr{
+		title	status_update
+		width	100
+		print_proc &Literal{
+			set color gray
+			set value [expr [clock seconds] - $value] 
+			if {$value == "n"} {set txt ns} else {
+				set color \#d0d0ff
+				
+				if {$value >= 86400.0} {
+					set color \#ff0000
+					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
+				} elseif {$value >= 3600.0} {
+					set txt [format "%dh" [expr int($value/3600.0 + 0.5)]]
+				} elseif {$value >= 60.0} {
+					set color \#a0f0a0
+					set txt [format "%dm" [expr int($value/60.0+0.5)]]
+				} else {
+					set txt [format "%ds" [expr int($value+0.5)]]
+				}
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+green   - last connection was within 60m.
+blue    - last connection was within 24h.
+red     - last connection was more than 24h before now.
+}
+	}	
+	etm &Arr{
+		title	event
+		width	100
+		print_proc &Literal{
+			set color gray
+			set value [expr [clock seconds] - $value] 
+			if {$value == "n"} {set txt ns} else {
+				set color \#d0d0ff
+				if {$value >= 86400.0} {
+					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
+				} elseif {$value >= 3600.0} {
+					set txt [format "%dh" [expr int($value/3600.0 + 0.5)]]
+				} elseif {$value >= 60.0} {
+					set txt [format "%dm" [expr int($value/60.0+0.5)]]
+				} else {
+					set txt [format "%ds" [expr int($value+0.5)]]
+				}				
+					
+			}
+			return [list $txt $color]
+		}
+		description &Literal{
+Time since last event
+}
+	}		
+}
+.fi
+.IP "maxlines"
+defines the maximum number of loglines to display per station. Older lines are discared when this number is reached.
+.IP command_list
+This is a list of commands that can be sent to each individual datalogger. The commands are added to the netsta menu.
+Note that the tokens \fB$sta\fP, \fB$targetname\fP, \fB$cmdorb\fP MUST be used instead of the actual options for a call to k2cmd(1).
+.IP command_defs
+List of actual command definitions. Each entry must mach an entry in command_list.
+Each command requires exec_string and label.
+See \fBk2cmd(1)\fP for a list of possible actions.
+.IP station_status_list
+List of status messages to be monitored. These are the names defined in the log packets.
+Currently, \fBk22orb\fP gives the folowing variable in \fI/pf/<targetname>_k22orb_stat\fP packets:
+.nf
+    bd 			transmission rate
+    ct  		time of last connection close
+    er  		transmission error rate 
+    et  		time of last getevents
+    etm			time of last event 
+    k2bt        battery voltage (x 10)
+    k2cl        clock status (0:RTC, 1:KBD, 2:SYN, 3:GPS)
+    k2d0        status of disk 1 (a:)
+    k2d1        status of disk 2 (b:)
+    k2er        error count on instrument
+    k2hd        instrument hardware status
+    k2ne        number of events as noted in instrument
+    k2tm        time on instrument
+    k2tr        trigger status
+    ne  		number of events transferred
+    st 			time of last status update
+.fi
+.IP station_status_defs
+This is an array that specifies display parameters for each status field.
+\fBk2mon2\fP uses this list to translate values in \fI/pf/<targetname>_k22orb_stat\fP packets to human readable format. Some of the translations are not obvious, see the documentation of Kinemetrics Altus (TM) instruments for details.
+
+.SH "SEE ALSO"
+.nf
+k22orb(1), k2cmd(1), k2mon(1), qtmon(1)
+.fi
+.SH AUTHOR
+Nikolaus Horn (nikolaus.horn@zamg.ac.at)
+.br
+ZAMG / Vienna
+
+.SH NOTE
+This Program is a modification of qtmon by Danny Harvey / BRTT
+and a good example on how to tailor "Antelope" to one's needs
