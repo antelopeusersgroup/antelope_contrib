@@ -1,0 +1,24 @@
+#once a schema_name is given here, all dbe-plugins for rt1.0 don't work with this extension
+Attribute available
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "available >= 0.0 && available <= 100.0" )
+	Units ( "%" )
+	Description ( "daily data availability" )
+	Detail {
+		data availability in percent for a given day/station/channel
+	}
+	;
+
+Relation availability
+	Fields ( sta chan jdate time available tgap auth commid lddate )
+	Primary ( sta chan jdate )
+	Foreign ( commid )
+	Description ( "data availabilities" )
+	Detail {
+		This table holds data availabilities (data return rates) for each day 
+		and each individual data channel.
+	}
+	;
+

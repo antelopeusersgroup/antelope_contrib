@@ -1,0 +1,62 @@
+.TH DATA_AVAILABILITY 1 "$Date$"
+.SH NAME
+data_availability \- display data availability rates
+.SH SYNOPSIS
+.nf
+\fBdata_availability \fP[-S] [-o] [-c] [-s \fIsubset\fP] \fIdatabase\fP
+                [\fIfrom\fP] [\fIto\fP]
+.fi
+.SH DESCRIPTION
+The program summarizes daily data availability rates collected by \fBupdate_data_availability\fP.
+.SH OPTIONS
+.IP "-S"
+show per-station values
+.IP "-c"
+show per-channel values
+.IP "-o"
+show overall value
+.IP "database"
+Name of \fIdatabase\fP with availability values (in the \fIwfdisc\fP table). This \fIdatabase\fP should be created by previous runs of \fIestimate_data_availability\fP.
+.IP "startdate"
+begin date. If not specified, time starts \fIfrom\fP the first day in the input \fIdatabase\fP.
+.IP "enddate"
+end date. If not specified, time ends at the last day in the \fIdatabase\fP.
+.SH EXAMPLE
+display data availability for channels HHx for some stations. Display statistics per station and summarized.
+.in 2c
+.ft CW
+.nf
+
+data_availability -So -s "sta=~/$ZA_BB/ && chan=~/HH./" mydb 10/08/2003 11/08/2003
+
+data availability
+ARSA           97.47%    31 days (10/08/2003 to 11/07/2003)
+DAVA          100.00%    31 days (10/08/2003 to 11/07/2003)
+JAVC          100.00%    31 days (10/08/2003 to 11/07/2003)
+KBA           100.00%    31 days (10/08/2003 to 11/07/2003)
+KRUC          100.00%    31 days (10/08/2003 to 11/07/2003)
+MOA           100.00%    31 days (10/08/2003 to 11/07/2003)
+MORC          100.00%    31 days (10/08/2003 to 11/07/2003)
+OBKA          100.00%    31 days (10/08/2003 to 11/07/2003)
+WTTA           94.78%    31 days (10/08/2003 to 11/07/2003)
+overall data availability:
+               99.14%    31 days (10/08/2003 to 11/07/2003)
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+The time-period given with the overall summary (\fIoption -o\fP) is sometimes misleading.
+The program displays the maximum timespan \fIfrom\fP the given \fIsubset\fP, while the availability rate is calculated \fIfrom\fP the records available in the input \fIdatabase\fP. Only the times where previous runs of \fIestimate_data_availability\fP added a record are taken into account.
+.SH "SEE ALSO"
+.nf
+antelope(1), rtoutage(1),
+update_data_availability(1)
+The availability1.0 extension schema (which extends rt1.0)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2003
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+
