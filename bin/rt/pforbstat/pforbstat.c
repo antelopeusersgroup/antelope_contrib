@@ -155,6 +155,8 @@ main (int argc, char **argv)
 
 		pf = pforbstat( orbin, flags );
 
+		clear_register( 1 );
+
 		if( orbout ) {
 
 			pkt->pf = pf;
