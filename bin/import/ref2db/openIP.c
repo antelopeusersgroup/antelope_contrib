@@ -7,9 +7,6 @@
  *
  *************************************************************************/
 #include "ref2db.h"
-#include <sys/dkio.h>
-#include <sys/dklabel.h>
-#include <sys/vtoc.h>
 #include <termio.h>
 
 int 

@@ -8,8 +8,6 @@
 #ifndef ref2db_h_included
 #define ref2db_h_included
 #include <sys/types.h>
-#include <sys/ser_sync.h>
-#include <sys/conf.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
