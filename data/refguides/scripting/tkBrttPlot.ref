@@ -212,10 +212,10 @@ thistory_maxmin thistory
 
 <subsection Utilities>
 latlon2edp latr lonr lat lon
-    convert latitude-longitude to equal distance projecition coordinates
+    convert latitude-longitude to equal distance projection coordinates
 
 edp2latlon latr lonr delx dely
-    convert equal distance projecition coordinates to latitude-longitude
+    convert equal distance projection coordinates to latitude-longitude
 
 hls2colorstring hue lightness saturation [gamma]
     convert color in hue-lightness-saturation[-gamma] to standard
