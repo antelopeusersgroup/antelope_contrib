@@ -1,0 +1,13 @@
+# @(#)DAS24	1.0 9/9/94
+# Reftek 24 bit DAS analog response
+# 1                   num of numorator
+# 0                   num of poles
+# decimal factor         1   
+# normalization factor   1.0
+# gain                   1.0
+theoretical   1 anti-alias   fir    coef_conv
+1000 1      
+1
+     1.0 0.0
+1       
+     1.0 0.0 
