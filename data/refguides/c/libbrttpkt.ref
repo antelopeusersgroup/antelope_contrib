@@ -2,7 +2,6 @@
 Special Packet Processing
 brttpkt
 brttutil
-$(ORBLIBS)
 none
 brttpkt.h
 utilities for processing ORB waveform packets 
@@ -67,9 +66,6 @@ int orbputthr_put (OrbputThr *orbth, char *srcname, double time, char *packet, i
     put a packet into the orbth ORB reap thread FIFO for eventual writing to the ORB
 
 <subsection Packet-Channel Calib Caching>
-OrbreapThr *orbreapthr_new (int orb, double timeout, int queuesize)
-    create a new ORB reap thread that will read from orb with a read timeout and queuesize slots in the FIFO
-
 PktChannelCalib * pktchannelcalib_new (char *dbname, int need_calib, int need_response, int need_site)
     create a new packet-channel calib object from dbname database with need_calib, need_response, need_site metadata needs
 
