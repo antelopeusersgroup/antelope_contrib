@@ -23,6 +23,11 @@ c  Original code came, I think, from Robert Crosson.  Modification
 c  by G Pavlis, August 1996
 c  Editorial note:  I should have burned this and started from scratch.
 c
+c  August 2002
+c  Another repair to deal with case described above.  Roundoff errors
+c  still occasionally caused problems.  Used an approximate fix described below.
+c  also added a special exit for delta=0,hpz=0 case.
+c
       integer n
       double precision delta, hpz
       double precision v(n),z(n)
@@ -46,6 +51,15 @@ c
       double precision test, rdsf
 
       parameter(maxit = 50, rdsf = 1.0e-5)
+c
+c return immediately for 0 0 request
+c
+      if( (delta.le.0.0) .and. (hpz.eq.0.0) )then
+	t=0.0
+	rayp=0.0
+	up=1
+	return
+      endif
       test = 0.001
       if(delta*rdsf .gt. test) test = delta*rdsf
 
@@ -119,9 +133,7 @@ c
       else 
 c -- calculate direct wave travel time                                  ttlvz.64  
         vmax=v(1)                                                         ttlvz.66  
-        pmax=1.0/v(1)
         do 175 j=2,lhpz                                                   ttlvz.67  
-		pmax=max(pmax,1.0/v(j))
 175     vmax=  max(vmax,v(j))                                             ttlvz.68  
 c -- This loop seeks a ray parameter for a direct ray with 
 c -- delta > given distance.  The earlier version would sometimes enter
@@ -130,10 +142,19 @@ c -- precision limitation.  We trap this now with a test for
 c -- the condition that p == pmax.  In this condition, an error is
 c -- returned that has to be handled by the caller.  Here this is
 c -- signaled by setting the returned time to -1.0.
+c--
+c-- Repaired August 2002.  This process sometimes failed when requesting an 
+c-- extremely large delta in some models.  This is a roundoff error problem
+c-- caused by the situation of p==pmax, which makes the sqrt term below go
+c-- to zero.  To return a reasonable approximation of a valid travel time
+c-- in that situation we assume the time in layer vmax dominates so we just
+c-- compute this as r/vmax and return as if it were perfectly normal.
+c-- consequences are not yet clear.  
+	pmax=1.0/vmax
         p = 0.5*pmax                                                      ttlvz.71  
 155     p = (p+pmax)/2.
 	if(p.ge.pmax)then
-		t = -1.0
+		t = sqrt(delta*delta+hyz*hyz)/vmax
 		return
 	endif
 
