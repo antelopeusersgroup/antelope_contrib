@@ -19,7 +19,10 @@ long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_e
 {
 	string fname;
 	long int foff;
-	fname = dir + "/" + dfile;
+	if(dir.length()>0)
+		fname = dir + "/" + dfile;
+	else
+		fname=dir;
 	try {
 		foff = vector_fwrite(x,n,fname);
 	} catch ( seispp_error& err) { throw err;};
@@ -58,7 +61,10 @@ long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_er
 {
 	string fname;
 	long int foff;
-	fname = dir + "/" + dfile;
+	if(dir.length()>0)
+		fname = dir + "/" + dfile;
+	else
+		fname=dir;
 	try {
 		foff = vector_fwrite(x,n,fname);
 	} catch ( seispp_error& err) { throw err;};
@@ -472,16 +478,25 @@ int dbsave(Three_Component_Seismogram& tcs,
 	try {
 		if(output_as_standard) tcs.rotate_to_standard();
 		auto_ptr<Time_Series>x1(Extract_Component(tcs,0));
-		x1->put_metadata("vang",90.0);
-		x1->put_metadata("hang",90.0);
+		if(output_as_standard)
+		{
+			x1->put_metadata("vang",90.0);
+			x1->put_metadata("hang",0.0);
+		}
 		x1->put_metadata("chan",chanmap[0]);
 		auto_ptr<Time_Series>x2(Extract_Component(tcs,1));
-		x2->put_metadata("vang",90.0);
-		x2->put_metadata("hang",90.0);
+		if(output_as_standard)
+		{
+			x2->put_metadata("vang",90.0);
+			x2->put_metadata("hang",90.0);
+		}
 		x2->put_metadata("chan",chanmap[1]);
 		auto_ptr<Time_Series>x3(Extract_Component(tcs,2));
-		x3->put_metadata("vang",90.0);
-		x3->put_metadata("hang",90.0);
+		if(output_as_standard)
+		{
+			x3->put_metadata("vang",0.0);
+			x3->put_metadata("hang",0.0);
+		}
 		x3->put_metadata("chan",chanmap[2]);
 		irec=dbsave(*x1,db,table,mdl,am);
 		irec=dbsave(*x2,db,table,mdl,am);

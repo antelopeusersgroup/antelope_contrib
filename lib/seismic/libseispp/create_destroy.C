@@ -621,6 +621,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 			+ string("reading  three-component data object from ")
 			+fname);
 		}
+		fclose(fp);
 	    }
 		
 	}

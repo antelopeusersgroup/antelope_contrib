@@ -1,3 +1,12 @@
+//@{
+// Seismic C++ Library (SEISPP).
+// This is a collection of C++ objects used for processing seismic data.  
+// Objects define some common seismological concepts including time series
+// data, three component seismograms, ensembles of seismograms, velocity
+// models, hypocenters, slowness vectors, and others.  
+// The library has a strong dependence on Antelope in implementation, but
+// the API design was intended to be more general.  
+//@}
 #ifndef _SEISPP_H_
 #define _SEISPP_H_
 #include <vector>
@@ -15,16 +24,14 @@
 #include "dbpp.h"
 #include "pfstream.h"
 #include "dmatrix.h"
-//@{
-// Seismic C++ Library (SEISPP).
-// This is a collection of C++ objects used for processing seismic data.  
-// Objects define some common seismological concepts including time series
-// data, three component seismograms, ensembles of seismograms, velocity
-// models, hypocenters, slowness vectors, and others.  
-// The library has a strong dependence on Antelope in implementation, but
-// the API design was intended to be more general.  
-//@}
 
+//@{
+// The SEISPP namespace encapsulates the library functions and 
+// classes that defined the SEISPP seismic processing library in C++.
+// Almost all applications using this library will need a 
+// "using namespace SEISPP" line to make the package visible to 
+// the compiler and linker.
+//@}
 namespace SEISPP 
 {
 //@{
@@ -1385,20 +1392,222 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& d
 // @param key is the metadata key used to find the arrival time to use as a reference.
 // @param tw is a Time_Window object that defines the window of data to extract around
 //    the desired arrival time.
+//@}
 Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& din,
 	string key, Time_Window tw);
 
 
-// low level i/o routines
+//@{
+// Bombproof low level write routine for a vector of doubles.  
+// Uses fwrite to write vector x to the file dir+"/"+dfile.
+//
+// @throws seispp_error object if there are problems saving data to requested file.
+// @param x vector of data to be saved.
+// @param n length of vector x
+// @param dir directory to place file.  If empty assumes current directory.
+// @param dfile file name 
+//@}
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error);
+//@{
+// Bombproof low level write routine for a vector of doubles.  
+// Uses fwrite to write vector x to the file fname
+//
+// @throws seispp_error object if there are problems saving data to requested file.
+// @param x vector of data to be saved.
+// @param n length of vector x
+// @param fname file name 
+//@}
 long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);
+//@{
+// Bombproof low level write routine for a vector of floats.  
+// Uses fwrite to write vector x to the file dir+"/"+dfile.
+//
+// @throws seispp_error object if there are problems saving data to requested file.
+// @param x vector of data to be saved.
+// @param n length of vector x
+// @param dir directory to place file.  If empty assumes current directory.
+// @param dfile file name 
+//@}
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error);
+//@{
+// Bombproof low level write routine for a vector of floats.  
+// Uses fwrite to write vector x to the file fname
+//
+// @throws seispp_error object if there are problems saving data to requested file.
+// @param x vector of data to be saved.
+// @param n length of vector x
+// @param fname file name 
+//@}
 long int vector_fwrite(float *x,int n, string fname) throw(seispp_error);
-// Antelope database output routine
+//@{
+// Save the data in a Time_Series object to a database.
+// This function works only with an Antelope (Datascope) database but the
+// design is aimed to be schema independent.  That is, most raw 
+// earthquake seismology data is indexed with a table defined in css3.0
+// called wfdisc.  This function will work with a css3.0 wfdisc, but it
+// will work with any other table as well provided you set up the
+// interface correctly.  This is done through the Metadata_list object
+// which tells the function what attributes are to be saved to the
+// output database along with the time series data.  
+//
+// A Time_Series object contains a Metadata object it acquires by 
+// inheritance.  The Metadata area is assumed to contain attributes
+// listed in the Metadata_list object passed to this function.  The
+// basic algorithm is that the list of metadata in mdl are processed in order.
+// They are translated to the database namespace using the Attribute_Map
+// object am and pushed to an output record using the Datascope dbputv
+// function one attribute at a time.  The data are saved to files
+// whose name and location are driven by two (frozen) standard names
+// extracted from the metadata area:  dir and dfile.  The filename
+// for output is created as dir+"/"+dfile or simply dfile if dir
+// is not defined (assumes current directory).  
+//
+// This function is dogmatic about four database output names.  
+// It always translates it's internal t0 to be a "time" database
+// attribute,  the ns variable is saved as "nsamp", the sample
+// interval (dt) is always converted to 1/dt and called "samprate",
+// and an endtime (computed as this->endtime()) is computed and
+// saved as the database attribute "endtime".   These are the css3.0
+// name conventions and I chose to leave them as frozen names.  
+// Note also that if the "live" boolean in the object is set false
+// this function silently returns immediately doing nothing.
+//
+// @throws seispp_error object if there are any problems saving the data or 
+//    writing attributes into the database.
+//
+// @returns -1 if live is false, record number of added row otherwise
+//
+// @param ts is the Time_Series object to be saved.
+// @param db is a Datascope database pointer.  It need only point at a valid
+//    open database.
+// @param table is the name of the table to index this time series data
+//   (e.g. "wfdisc").
+// @param md  is the list of metadata to be dumped to the database as described above.
+// @param am is a mapping operator that defines how internal names are to be mapped
+//    to database attribute names and tables.  
+//@}
 int dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_Map& am)
 		throw(seispp_error);
+//@{
+// Save the data in a Three_Component_Seismogram object to a database.
+// This function works only with an Antelope (Datascope) database but the
+// design is aimed to be schema independent.  That is, most raw 
+// earthquake seismology data is indexed with a table defined in css3.0
+// called wfdisc.  This function will work with a css3.0 wfdisc, but it
+// will work with any other table as well provided you set up the
+// interface correctly.  This is done through the Metadata_list object
+// which tells the function what attributes are to be saved to the
+// output database along with the time series data.  
+//
+// A Three_Component_Seismogram object contains a Metadata object it acquires by 
+// inheritance.  The Metadata area is assumed to contain attributes
+// listed in the Metadata_list object passed to this function.  The
+// basic algorithm is that the list of metadata in mdl are processed in order.
+// They are translated to the database namespace using the Attribute_Map
+// object am and pushed to an output record using the Datascope dbputv
+// function one attribute at a time.  The data are saved to files
+// whose name and location are driven by two (frozen) standard names
+// extracted from the metadata area:  dir and dfile.  The filename
+// for output is created as dir+"/"+dfile or simply dfile if dir
+// is not defined (assumes current directory).  
+//
+// This function is dogmatic about four database output names.  
+// It always translates it's internal t0 to be a "time" database
+// attribute,  the ns variable is saved as "nsamp", the sample
+// interval (dt) is always converted to 1/dt and called "samprate",
+// and an endtime (computed as this->endtime()) is computed and
+// saved as the database attribute "endtime".   These are the css3.0
+// name conventions and I chose to leave them as frozen names.  
+// Note also that if the "live" boolean in the object is set false
+// this function silently returns immediately doing nothing.
+//
+// This function differs in a significant way from an overloaded function
+// with the same name.  The other has a "chanmap" argument to tell the 
+// function how to split up the 3 components into channel codes.  This
+// function takes a very different approach and saves data by dumping
+// the internal 3xns matrix as the basic output data series. As a result
+// this function will write ONE AND ONLY ONE DATABASE ROW PER OBJECT.
+// This means somewhat by definition that the output table CANNOT be
+// wfdisc if this function is called.  Consequently, this routine will
+// throw an exception and do nothing if table=="wfdisc".
+//
+// @throws seispp_error object if there are any problems saving the data or 
+//    writing attributes into the database.
+//
+// @returns -1 if live is false, record number of added row otherwise
+//
+// @param ts is the Time_Series object to be saved.
+// @param db is a Datascope database pointer.  It need only point at a valid
+//    open database.
+// @param table is the name of the table to index this time series data
+//   (e.g. "wfdisc").
+// @param md  is the list of metadata to be dumped to the database as described above.
+// @param am is a mapping operator that defines how internal names are to be mapped
+//    to database attribute names and tables.  
+//@}
 int dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, 
 	Metadata_list& md, Attribute_Map& am);
+//@{
+// Save the data in a Three_Component_Seismogram object to a database.
+// This function works only with an Antelope (Datascope) database but the
+// design is aimed to be schema independent.  That is, most raw 
+// earthquake seismology data is indexed with a table defined in css3.0
+// called wfdisc.  This function will work with a css3.0 wfdisc, but it
+// will work with any other table as well provided you set up the
+// interface correctly.  This is done through the Metadata_list object
+// which tells the function what attributes are to be saved to the
+// output database along with the time series data.  
+//
+// A Three_Component_Seismogram object contains a Metadata object it acquires by 
+// inheritance.  The Metadata area is assumed to contain attributes
+// listed in the Metadata_list object passed to this function.  The
+// basic algorithm is that the list of metadata in mdl are processed in order.
+// They are translated to the database namespace using the Attribute_Map
+// object am and pushed to an output record using the Datascope dbputv
+// function one attribute at a time.  The data are saved to files
+// whose name and location are driven by two (frozen) standard names
+// extracted from the metadata area:  dir and dfile.  The filename
+// for output is created as dir+"/"+dfile or simply dfile if dir
+// is not defined (assumes current directory).  
+//
+// This function is dogmatic about four database output names.  
+// It always translates it's internal t0 to be a "time" database
+// attribute,  the ns variable is saved as "nsamp", the sample
+// interval (dt) is always converted to 1/dt and called "samprate",
+// and an endtime (computed as this->endtime()) is computed and
+// saved as the database attribute "endtime".   These are the css3.0
+// name conventions and I chose to leave them as frozen names.  
+// Note also that if the "live" boolean in the object is set false
+// this function silently returns immediately doing nothing.
+//
+// The chanmap and output_to_standard variables control how the 
+// data are saved externally.  If output_as_standard is set true
+// (highly recommended in general)  the data are restored (if necessary)
+// to standard 3c data geometry (ew,ns,z) before being written to 
+// output.  In that case vang and hang are set accordingly in 
+// case the output algorithm requires these to be stored.  
+// The components are then extraced from the 3c object one by 
+// one and written in three successive database rows with the
+// channel code ("chan" attribute in css3.0) derived from the
+// chanmap array (chanmap[0]=channel name for component 0,
+// chanmap[1]=component 1, and chanmap[2]=component 2).
+//
+// @throws seispp_error object if there are any problems saving the data or 
+//    writing attributes into the database.
+//
+// @returns -1 if live is false, record number of added row otherwise
+//
+// @param ts is the Time_Series object to be saved.
+// @param db is a Datascope database pointer.  It need only point at a valid
+//    open database.
+// @param table is the name of the table to index this time series data
+//   (e.g. "wfdisc").
+// @param md  is the list of metadata to be dumped to the database as described above.
+// @param am is a mapping operator that defines how internal names are to be mapped
+//    to database attribute names and tables.  
+// @param chanmap is a set of channel names to map each component to channel code (see above)
+// @param output_as_standard when true forces data to be converted to ew,ns, z system
+//@}
 int dbsave(Three_Component_Seismogram& ts,Dbptr db,
 	string table, Metadata_list& md, 
 	Attribute_Map& am, vector<string>chanmap,bool output_as_standard);

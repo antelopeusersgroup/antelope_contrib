@@ -53,7 +53,7 @@ $(LIB) : $(OBJS)
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
+	$(CXXDLD)  $(CXXDLDFLAGS) -g -o $(DLIB) $(OBJS) $(DLDLIBS) 
 # New special build for html documentation using ccdoc
 CCDOC=ccdoc.exe
 htdocs/seispp.db : htdocs seispp.h dbpp.h metadata.h ray1d.h resample.h
