@@ -246,12 +246,18 @@ Robust_statistics form_equations(int mode, Hypocenter current_location,
 	{
 		error_scale = (statistics.q3_4 - statistics.q1_4)
 				/ INTERQUARTILE_SDEV_FACTOR;
-	/* Reset the error scale if it exceeds the allowed range.  This
-	is essential with residual weighting to avoid instability */
+		/* Reset the error scale if it exceeds the allowed range.  This
+		is essential with residual weighting to avoid instability */
 		if(error_scale > options.max_error_scale) 
 			error_scale=options.max_error_scale;
 		if(error_scale < options.min_error_scale) 
 			error_scale=options.min_error_scale;
+		/*If the origin time is way off in early iterations we can
+		get into real trouble if we don't adjust the error scale upward.
+		That is, if there is a large dc offset, this small adjustment
+		will prevent downweighting all residuals too much */
+		if(fabs(statistics.median)>error_scale) 
+			error_scale += fabs(statistics.median);
 
 	}
 	/* The Thomson formula is the only one that needs a factor 

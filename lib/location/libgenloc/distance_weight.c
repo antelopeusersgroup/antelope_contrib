@@ -43,6 +43,7 @@ float distance_weight_time(Arrival a, Hypocenter x)
 
 	dist(rad(a.sta->lat), rad(a.sta->lon), 
 			rad(x.lat), rad(x.lon), &delta, &az);	
+	delta = deg(delta);
 	return( distance_weight(a.phase->arrival_time, (float)delta));
 }
 float distance_weight_ux(Slowness_vector s, Hypocenter x)
@@ -51,6 +52,7 @@ float distance_weight_ux(Slowness_vector s, Hypocenter x)
 
 	dist(rad(s.array->lat), rad(s.array->lon), 
 			rad(x.lat), rad(x.lon), &delta, &az);	
+	delta = deg(delta);
 	return(distance_weight(s.phase->ux, (float)delta));
 }
 float distance_weight_uy(Slowness_vector s, Hypocenter x)
@@ -59,6 +61,7 @@ float distance_weight_uy(Slowness_vector s, Hypocenter x)
 
 	dist(rad(s.array->lat), rad(s.array->lon), 
 			rad(x.lat), rad(x.lon), &delta, &az);	
+	delta = deg(delta);
 	return(distance_weight(s.phase->uy, (float)delta));
 }
 
