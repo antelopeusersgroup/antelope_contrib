@@ -5,7 +5,7 @@
  ********************************************************************/
 #include "mrc.h"
 
-#define MAX_SORT    5 
+#define MAX_SORT    1 
 
 int *new_dasid( int id )
 

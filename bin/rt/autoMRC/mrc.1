@@ -1,0 +1,72 @@
+.TH MRC
+.SH NAME
+mrc \- automatically send mass re-centerring (MRC) command to a DAS     
+.SH SYNOPSIS
+.nf
+
+mrc [ -m srcmatch] 
+    [-p parameter-file]
+    [-s sleep]
+    [-t tperiod ]
+    [-V verbatum ] 
+    [-v max_lta] 
+    orbname dc_name 
+
+.fi
+.SH DESCRIPTION
+\fBmrc\fP reads data from the orb buffer \fIorbname\fR; calculates LTA
+for each DAS ( all DAS component) in a system and if LTA exceeds 
+certain maximum value
+\fBmrc\fP sends a \fB'RCRC'\fP command to the problem DAS through
+\fIdc_out\fR. \fIdc_out\fR usually specifies the IP address of the DC via
+which an MRC can be send to a DAS.
+\fBmrc\fP requires a parameter file
+which contains all existing in RT system DAS IDs - \fIparameter-file\fR 
+(\fIpkt.pf\fR is default) .
+
+.SH OPTIONS
+.IP "-m srcmatch"
+Only packets which match the regular expression \fIsrcmatch\fR
+will be requested from the \fIorbname\fR. By default \fBmrc\fP reads 1s/s data.  
+.IP "-p parameter-file"
+A parameter file \fIparameter-file\fR
+will be used to select all possible DAS IDs in a RT system.
+A \fBpkt.pf\fP parameter file is used by default.  
+.IP "-s sleep"
+\fBmrc\fP sends an MRC to the problem DAS twice at 
+a certain time interval, which can be specified in a command line with 
+a \fIsleep\fR option in units of seconds. The default value is 30 seconds.
+.IP "-t tperiod "
+\fBmrc\fP calculates LTA for a certain time period, which can be set by 
+a \fItperiod\fR option in units of seconds. 
+Default value is 3600 seconds.
+.IP "-V verbatim"
+Save command buffer in a \fIverbatim\fR file before sending it to DAS.
+.IP "-v max_lta"
+\fBmrc\fP sends an MRC to the DAS only when calculated
+absolute value of an LTA is exceeds certain value. 
+This value can be specified in a command line
+with \fImax_lta\fR option in units of counts. The default value is 100000. 
+.SH FILES
+.SH ENVIRONMENT
+.SH EXAMPLE
+.LP
+Send an MRC with  the following options :
+
+.nf
+	- LTA max value can't exceed  50000 counts;
+	- LTA time period will be 4 hours;
+	- use CBB1S type of data to calculate LTA ;
+	- read data from ORB on localhost ;
+	- send command via the DC port on IP address 132.239.4.194.
+
+
+	mrc  -v 50000 -t 14400 -m ".*/CBBA1S" localhost 132.239.4.194 
+
+.fi
+
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko

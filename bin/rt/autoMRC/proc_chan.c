@@ -73,11 +73,11 @@ int offscale(
       
       if( ch->nsamp >= max_nsamp )  {
 	  if( labs(ch->lta / ch->nsamp) >= MaxOff )  {
+              complain( 0, " %s_%s LTA is to high - %ld \n ", 
+	                achan->sta, achan->chan, ch->lta );
 	      off_scale = 1;
 	      ch->lta = 0;
 	      ch->nsamp = 0;
-              complain( 0, " %s_%s LTA is to high - %ld \n ", 
-	                achan->sta, achan->chan, ch->lta );
 	  } else off_scale = 0;
 	
       }
