@@ -12,6 +12,30 @@ myfree(char *p)
 }
 namespace SEISPP
 {
+// Simple function needed by constructors below.  Returns true if
+// the string dbgroup is found in the command to be send to dbprocess.
+// Throws an int exception if the dbgroup clause is anywhere but 
+// the last line
+bool dbgroup_used(Tbl *t)
+{
+	string s;
+	int ierr;
+	int n=maxtbl(t);
+	for(int i=0;i<n;++i)
+	{
+		s = string(static_cast<char *>(gettbl(t,i)));
+		ierr=s.find("dbgroup");
+		if(ierr>=0)
+		{
+			if(i==(n-1))
+				return true;
+			else
+				throw 1;
+		}
+	}
+	return false;
+}
+		
 /* dbprocess driven constructor for an Antelope_Database (handle) object.
 	dbname = name of database to be openned (always openned r+)
 	pf = pf (parameter file object) pointer containing dbprocess list
@@ -45,6 +69,12 @@ Datascope_Handle::Datascope_Handle(string dbname,
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
 	if(process_list==NULL)
 		throw seispp_error("Tag name = "+tag+" not in parameter file");
+	try {
+		is_bundle = dbgroup_used(process_list);
+	} catch (...)
+	{
+		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
+	}
 	db = dbprocess(db,process_list,0);
 	if(db.record == dbINVALID)
 		throw seispp_dberror("dbprocess failed",db,complain);
@@ -59,6 +89,12 @@ Datascope_Handle::Datascope_Handle(Dbptr dbi, Pf *pf, string tag)
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
         if(process_list==NULL)
                 throw seispp_error("Tag name = "+tag+" not in parameter file");
+	try {
+		is_bundle = dbgroup_used(process_list);
+	} catch (...)
+	{
+		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
+	}
         db = dbprocess(dbi,process_list,0);
         if(db.record == dbINVALID)
                 throw seispp_dberror("dbprocess failed",db,complain);
@@ -78,14 +114,24 @@ Datascope_Handle::Datascope_Handle(string dbname,bool readonly)
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
 			throw seispp_dberror("Failure in dbopen",db,complain);
 	}
+	is_bundle = false;
 	close_on_destruction=false;
 }
 // copy constructor 
 Datascope_Handle::Datascope_Handle(Datascope_Handle& dbi)
 {
 	db = dbi.db;
+	is_bundle=dbi.is_bundle;
 	close_on_destruction=false; // copies should be this by default
 }
+// An odd specialized copy constructor for Datascope db.  
+Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip,bool ib)
+{
+	db = dbi;
+	is_bundle=ib;
+	close_on_destruction=false; // copies should be this by default
+}
+	
 Datascope_Handle::~Datascope_Handle()
 {
 	if(close_on_destruction)dbclose(db);
@@ -159,7 +205,7 @@ Datascope_Handle& Datascope_Handle::operator=(const Datascope_Handle& dbi)
 	if(this!=&dbi)
 	{
 		db=dbi.db;
-		// a copy should never be destroyed
+		is_bundle=dbi.is_bundle;
 		close_on_destruction=false;
 	}
 	return(*this);
@@ -301,6 +347,7 @@ void Datascope_Handle::group(list<string> groupkeys)
 	Tbl *t;
 	t = list_to_tbl(groupkeys);
 	db = dbgroup(db,t,0,0);
+	is_bundle=true;
 	freetbl(t,myfree);
 	if(db.table==dbINVALID)
 		throw seispp_dberror(string("dbgroup failed"),
@@ -321,6 +368,27 @@ void Datascope_Handle::lookup(string t)
 		throw seispp_dberror(string("lookup:  lookup failed for table"
 			+ t),db,complain);
 }
+DBBundle Datascope_Handle::get_range()
+{
+	DBBundle bundle;
+	int s,e;
+	if(is_bundle)
+	{
+		Dbptr dbbundle;
+		int ierr;
+		ierr = dbgetv(db,0,"bundle",&dbbundle,0);
+		dbget_range(dbbundle,&s,&e);
+		bundle.start_record = s;
+		bundle.end_record = e;
+		bundle.parent = dbbundle;
+	}
+	else
+		throw seispp_dberror(
+			string("get_range:  handle is not a bundle pointer"),
+			db,complain);
+	return(bundle);
+}
+
 
 // error object functions 
 seispp_dberror::seispp_dberror(const string mess, Dbptr dbi)

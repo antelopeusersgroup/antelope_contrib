@@ -84,12 +84,12 @@ Metadata::Metadata(const Metadata& md)
 // mdlist and am.  The list of attributes found in mdlist are extracted
 // from the database row using dbgetv.  am defines how the Antelope
 // attributes (e.g. wfdisc.time) are translated to an internal namespace.
-// That is, will attempt to read all attributes in Attribute_map list 
+// That is, will attempt to read all attributes in Attribute_Map list 
 // and put them in the Metadata object
 
 Metadata::Metadata(Database_Handle& dbh,
 	Metadata_list& mdlist, 
-		Attribute_map& am)
+		Attribute_Map& am)
 			throw(Metadata_error)
 {
 	Datascope_Handle& ddbh=dynamic_cast<Datascope_Handle&>(dbh);
@@ -125,7 +125,7 @@ Metadata::Metadata(Database_Handle& dbh,
 		if(ap==ape) throw (Metadata_error(
 				string("Metadata db constructor:  required attribure ")
 				+ internal_name
-				+string(" is not in Attribute_map.  Check initialization")));
+				+string(" is not in Attribute_Map.  Check initialization")));
 		// the weird ap->second is a STL oddity for the item
 		// two of a pair <key,type>
 		dbattributename=ap->second.db_table_name
@@ -352,11 +352,10 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 			Metadata_list& mdlist)
 	throw(Metadata_error)
 {
-	list<Metadata_typedef>::iterator i;
-	Metadata_typedef& mdti=*i;
+	list<Metadata_typedef>::iterator mdti;
 	int count;
 
-	for(i=mdlist.begin(),count=0;i!=mdlist.end();++i,++count)
+	for(mdti=mdlist.begin(),count=0;mdti!=mdlist.end();++mdti,++count)
 	{
 		MDtype mdtest;
 		double r;
@@ -366,33 +365,33 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 		Arr *a;
 		bool b;
 
-		mdtest = mdti.mdt;
+		mdtest = mdti->mdt;
 		try {
 			switch(mdtest)
 			{
 			case MDreal:
-				r=mdin.get_double(mdti.tag);
-				mdout.put_metadata(mdti.tag,r);
+				r=mdin.get_double(mdti->tag);
+				mdout.put_metadata(mdti->tag,r);
 				break;
 			case MDint:
-				iv=mdin.get_int(mdti.tag);
-				mdout.put_metadata(mdti.tag,iv);
+				iv=mdin.get_int(mdti->tag);
+				mdout.put_metadata(mdti->tag,iv);
 				break;
 			case MDstring:
-				s=mdin.get_string(mdti.tag);
-				mdout.put_metadata(mdti.tag,s);
+				s=mdin.get_string(mdti->tag);
+				mdout.put_metadata(mdti->tag,s);
 				break;
 			case MDlist:
-				t=mdin.get_list(mdti.tag);
-				mdout.put_metadata(mdti.tag,t);
+				t=mdin.get_list(mdti->tag);
+				mdout.put_metadata(mdti->tag,t);
 				break;
 			case MDmap:
-				a=mdin.get_map(mdti.tag);
-				mdout.put_metadata(mdti.tag,a);
+				a=mdin.get_map(mdti->tag);
+				mdout.put_metadata(mdti->tag,a);
 				break;
 			case MDboolean:
-				b=mdin.get_bool(mdti.tag);
-				mdout.put_metadata(mdti.tag,b);
+				b=mdin.get_bool(mdti->tag);
+				mdout.put_metadata(mdti->tag,b);
 				break;
 			case MDinvalid:
 			// silently skip values marked as invalid
@@ -404,7 +403,7 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 		} catch( Metadata_error merr)
 		{
 			cerr << "Error in copy_selected_metadata at item ";
-			cerr << count << "with tag" << mdti.tag <<"\n" ;
+			cerr << count << "with tag" << mdti->tag <<"\n" ;
 			cerr << "Copy truncated" << endl;
 			merr.log_error();
 			throw;
@@ -524,12 +523,12 @@ Attribute_Properties& Attribute_Properties::operator=(const Attribute_Properties
 	mdt = apin.mdt;
 	return(*this);
 }
-// An Attribute_map is a higher order object built up o
+// An Attribute_Map is a higher order object built up o
 // name definitions defined by a set of Attribute_Properties
 // objects.  
 //
 	
-Attribute_map::Attribute_map(Pf *pf,string name)
+Attribute_Map::Attribute_Map(Pf *pf,string name)
 {
 	Tbl *t;
 	// temporary typedef to keep an already awful syntax for a map
@@ -554,24 +553,24 @@ Attribute_map::Attribute_map(Pf *pf,string name)
 I don't expect this function to be called more than once in any given program.
 */
 
-Attribute_map::Attribute_map(string s)
+Attribute_Map::Attribute_Map(string s)
 {
 	string stbl;
 	Pf *pf;
 	int ierr;
-	Attribute_map *amtmp;
+	Attribute_Map *amtmp;
 
-	stbl = string("Attribute_map &Tbl{\n")
+	stbl = string("Attribute_Map &Tbl{\n")
 		+ s +string("\n}\n");
 	ierr=pfcompile(const_cast<char *>(stbl.c_str()),&pf);
 	if(ierr!=0)
-		throw Metadata_parse_error(ierr,"pfcompile failure building Attribute_map object");
-	amtmp = new Attribute_map(pf,"Attribute_map");
+		throw Metadata_parse_error(ierr,"pfcompile failure building Attribute_Map object");
+	amtmp = new Attribute_Map(pf,"Attribute_Map");
 	*this = *amtmp;
 	delete amtmp;
 	pffree(pf);
 }
-Attribute_map& Attribute_map::operator=(const Attribute_map& am)
+Attribute_Map& Attribute_Map::operator=(const Attribute_Map& am)
 {
 	if(this!=&am)
 	{
@@ -579,7 +578,7 @@ Attribute_map& Attribute_map::operator=(const Attribute_map& am)
 	}
 	return (*this);
 }
-Attribute_map::Attribute_map(const Attribute_map& am)
+Attribute_Map::Attribute_Map(const Attribute_Map& am)
 {
 	attributes = am.attributes;
 }

@@ -46,7 +46,7 @@ public:
         Time_Series();
         Time_Series(int nsin);
         Time_Series(Metadata& md,bool load_data);
-        Time_Series(Dbptr db, Metadata_list& mdl, Attribute_map& am);
+        Time_Series(Dbptr db, Metadata_list& mdl, Attribute_Map& am);
         Time_Series(const Time_Series&);
         Time_Series& operator=(const Time_Series&);
         void zero_gaps();
@@ -181,7 +181,7 @@ should be discarded as it should be viewed as trash. A
 Metadata_error indicates one of the required parameters for
 the constructor was not found in the Metadata space.
 .IP (5)
-\fITime_Series(Dbptr db,Metadata_list& mdl,Attribute_map& am);\fR  
+\fITime_Series(Dbptr db,Metadata_list& mdl,Attribute_Map& am);\fR  
 This is a generic database-driven constructor for segmented 
 data.  That is, it makes an implicit assumption the data being
 requested are defined in single, discrete segments indexed
@@ -216,6 +216,53 @@ log_error(), and discard such data or abort.
 .SH OPERATORS
 .LP
 Current the = operator is defined and should behave as expected.
+.SH NON-MEMBER FUNCTION
+.LP
+The SEISPP library has a number of functions that operate on 
+Time_Series objects.  Thes are documented elsewhere.  Here 
+I describe only generic functions that are not seismo-centric.
+.LP
+The following is the prototype for a Datascope database output
+function:
+.nf
+void dbsave(Time_Series& ts,Dbptr db,string table, 
+	Metadata_list& md, Attribute_Map& am)
+                throw(seispp_error);
+.fi
+.LP
+This function saves a Time_Series object to a Datascope database.
+The functions is fairly general, which complicates the
+interface.
+The function takes the contents of ts and writes results to 
+database db storing metadata in table (usually wfdisc but 
+not required).  The attributes to be stored in wfdisc are 
+extracted from the metadata(3) components of the ts object.  
+The list of names to be saved is stored in md and the
+Attribute_Map object, am, describes how these names are 
+mapped to external attribute names (see metadata(3) for 
+details on this process -- dbsave uses the metadata 
+function with similar arguments).  
+.LP
+The process of saving the data contents of the ts object has
+two parts.  First, the time series vector (the main data)
+is saved as an external file.  The file name is derived from
+the "dir" and "dfile" metadata fields of ts.  The output 
+routines that do this always operate in append mode.  That is,
+if dir/dfile already exist, the data from ts are appended onto
+that file and foff is set appropriately.  Be warned that 
+a variable foff must be defined in mdl or this information will
+be lost and the calling program could have mysterious behaviour.  
+The current implementation is somewhat rigid in it's viewpoint
+on output.  That is, it only writes data in host (32 bit)floating point
+format.  This was a choice driven by the viewpoint that the
+SEISPP library was an offline processing library and the 
+added complexity of the multiplicity of external formats 
+should be handled ONLY on input as a raw data problem.
+The viewpoint is that dbsave output is a scientific result or
+an intermediate calculation where format is not an issue.
+.LP
+Note the function will throw a seispp_error if there are any 
+problems in saving the object.  
 .SH EXAMPLE
 .LP
 This small test probram illustrates the use of the database constructor and the assignment
@@ -244,7 +291,7 @@ int main()
         try {
                	cout << "Building Attribute map"<<endl;
 		// define namespace mapping using pf
-                Attribute_map am(pf,amname);
+                Attribute_Map am(pf,amname);
 		// use pf to define list of attributes to be obtained
 		// from the database
                	Metadata_list mdl=pfget_mdlist(pf,"metadata_input");

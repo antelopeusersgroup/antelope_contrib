@@ -27,7 +27,7 @@ class seispp_error
 {
 public:
         string message;
-        seispp_error(){message="seispp library error\n";};
+        seispp_error(){message="seispp library error\\n";};
         seispp_error(const string mess){message=mess;};
         virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
 };

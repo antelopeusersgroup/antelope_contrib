@@ -13,10 +13,24 @@ MAN3=Basic_Time_Series.3 \
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=create_destroy.o dbpp.o gaps.o \
-mdlist.o metadata.o mute.o operators.o pfstream_interface.o \
-raytrace.o readwrite.o rotate_procedures.o rotation.o \
-spherical_coordinate.o statics.o ttime.o vmod1d.o
+OBJS=create_destroy.o \
+  converters.o \
+  dbpp.o \
+  freetran.o \
+  gaps.o \
+  mdlist.o \
+  metadata.o \
+  mute.o \
+  operators.o \
+  pfstream_interface.o \
+  raytrace.o \
+  readwrite.o \
+  rotate_procedures.o \
+  rotation.o \
+  spherical_coordinate.o \
+  statics.o \
+  ttime.o \
+  vmod1d.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

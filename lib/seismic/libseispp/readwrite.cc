@@ -1,3 +1,5 @@
+#include <memory>
+#include <vector>
 #include <stdio.h>
 #include <string>
 #include "stock.h"
@@ -5,6 +7,8 @@
 #include "seispp.h"
 namespace SEISPP
 {
+using namespace SEISPP;
+using namespace std;
 
 /* This is an overloaded version of a file of the same name below.  It provides an
 alternative interface using dir/dfile as opposed to the simple file name in the
@@ -174,7 +178,7 @@ Time_Series *Load_Time_Series_Using_Pf(Pf *pf)
 //	table = database table to write results to
 //	mdl = defines names to be extracted from metadata to
 //		write to database output
-//	am = Attribute_map object defining internal to external namespace
+//	am = Attribute_Map object defining internal to external namespace
 //		mapping
 //  The "table" argument drives the database puts.  That is the 
 //  basic algorithm is: 
@@ -192,7 +196,7 @@ void dbsave(Time_Series& ts,
 	Dbptr db,
 		string table, 
 			Metadata_list& mdl, 
-				Attribute_map& am)
+				Attribute_Map& am)
 		throw(seispp_error)
 {
 	Metadata_list::iterator mdli;
@@ -352,5 +356,76 @@ void dbsave(Time_Series& ts,
 		throw serr;
 	}
 }
+/*
+// Antelope database output routine.  Fragments three component
+// seismograms into scalar time series object and then uses the
+// scalar Time_Series version of dbsave.  
+// Arguments:
+//	ts = times series object to be saved
+//	db = Antelope database handle
+//	table = database table to write results to
+//	mdl = defines names to be extracted from metadata to
+//		write to database output
+//	am = Attribute_Map object defining internal to external namespace
+//		mapping
+
+// mdl and am define what data are pushed to the output database.
+// Two quantities are always pushed to Metadata space for each 
+// component before dbsave(Time_Series ...) is called:  hang an vang.
+// These are the component directions using naming scheme of css3.0
+
+Author:  G Pavlis
+Written:  summer 2004
+ 
+*/
+void dbsave(Three_Component_Seismogram& tcs, 
+	Dbptr db,
+		string table, 
+			Metadata_list& mdl, 
+				Attribute_Map& am,
+					vector<string>chanmap,
+						bool output_as_standard)
+{
+	try {
+		if(output_as_standard) tcs.rotate_to_standard();
+		auto_ptr<Time_Series>x1(Extract_Component(tcs,0));
+		x1->put_metadata("vang",90.0);
+		x1->put_metadata("hang",90.0);
+		x1->put_metadata("chan",chanmap[0]);
+		auto_ptr<Time_Series>x2(Extract_Component(tcs,1));
+		x2->put_metadata("vang",90.0);
+		x2->put_metadata("hang",90.0);
+		x2->put_metadata("chan",chanmap[1]);
+		auto_ptr<Time_Series>x3(Extract_Component(tcs,2));
+		x3->put_metadata("vang",90.0);
+		x3->put_metadata("hang",90.0);
+		x3->put_metadata("chan",chanmap[2]);
+		dbsave(*x1,db,table,mdl,am);
+		dbsave(*x2,db,table,mdl,am);
+		dbsave(*x3,db,table,mdl,am);
+		// delete not needed because of auto_ptr
+	// catch all exceptions and just rethrow them
+	} catch (...)
+	{ throw;}
+}
+// simplied overloaded version that has frozen output names of E,N,Z.
+void dbsave(Three_Component_Seismogram& tcs, 
+	Dbptr db,
+		string table, 
+			Metadata_list& mdl, 
+				Attribute_Map& am)
+{
+	vector<string> chanmap;
+	chanmap.reserve(3);
+	chanmap.push_back("E");
+	chanmap.push_back("N");
+	chanmap.push_back("Z");
+
+	try {
+		dbsave(tcs,db,table,mdl,am,chanmap,true);
+	} catch (...)
+	{throw;}
+}
+
 } // Termination of namespace SEISPP definitions
 

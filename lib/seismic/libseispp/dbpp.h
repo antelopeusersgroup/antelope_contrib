@@ -32,6 +32,13 @@ public:
 		list<string> keys1,list<string>keys2)=0;
 	virtual void group(list<string>group_keys)=0;
 };
+class DBBundle
+{
+public:
+	int start_record;
+	int end_record;
+	Dbptr parent;
+};
 class Datascope_Handle : public Database_Handle
 {
 public:
@@ -40,6 +47,7 @@ public:
 			string tag,bool readonly);
 	Datascope_Handle(Dbptr db, Pf *pf, string tag);
 	Datascope_Handle(Datascope_Handle& dh);
+	Datascope_Handle(Dbptr dbi,Dbptr dbip,bool is_bund);
 	~Datascope_Handle();
 	double get_double(string);
 	int get_int(string);
@@ -68,6 +76,7 @@ public:
 	void natural_join(string t2);
 	void subset(string sstr);
 	void group(list<string>group_keys);
+	DBBundle get_range();
 	Datascope_Handle& operator=(const Datascope_Handle&);
 	void operator ++();
 	void close();  
@@ -77,6 +86,8 @@ public:
 	Dbptr db;
 private:
 	bool close_on_destruction;
+	bool is_bundle;
+	Dbptr parent_table;
 };
 }  // end namespace seispp
 #endif

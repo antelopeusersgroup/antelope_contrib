@@ -13,7 +13,10 @@ Spherical_Coordinate unit_vector_to_spherical(double nu[3])
 
 	xsc.radius = 1.0;
 	xsc.theta = acos(nu[2]);
-	xsc.phi = atan2(nu[1],nu[0]);
+	if(hypot(nu[0],nu[1])<DBL_EPSILON)
+		xsc.phi=0.0;
+	else
+		xsc.phi = atan2(nu[1],nu[0]);
 	return(xsc);
 }
 /* Reciprocal of above.  A bit harder as it has to handle singular
@@ -33,7 +36,11 @@ double *spherical_to_unit_vector(Spherical_Coordinate& scor)
 	{
 		nu[0]=sin(scor.theta)*cos(scor.phi);
 		nu[1]=sin(scor.theta)*sin(scor.phi);
-		nu[3]=cos(scor.theta);
+		nu[2]=cos(scor.theta);
+		// force pure zeros for convenience
+		for(int i=0;i<3;++i)
+			if(fabs(nu[i])<DBL_EPSILON)
+				nu[i]=0.0;
 	}
 	return(nu);
 }

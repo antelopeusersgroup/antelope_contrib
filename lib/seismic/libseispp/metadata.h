@@ -27,7 +27,7 @@ typedef list<Metadata_typedef> Metadata_list;
 // Constructors of a Metadata from a database are driven by
 // the following pair of objects.  Attribute_Properties provides
 // the data to map from db namespace to an internal namespace.
-// Attribute_map provides maintains the actual map of Attribute_Properties
+// Attribute_Map provides maintains the actual map of Attribute_Properties
 // objects keyed by a string = Attribute_Properties::internal_name
 
 class Attribute_Properties
@@ -43,15 +43,15 @@ public:
 	Attribute_Properties& operator=(const Attribute_Properties&);
 };
 
-class Attribute_map
+class Attribute_Map
 {
 public:
 	map<string,Attribute_Properties> attributes;
 
-	Attribute_map(Pf *pf,string name);  
-	Attribute_map(string);
-	Attribute_map(const Attribute_map&);
-	Attribute_map& operator=(const Attribute_map&);
+	Attribute_Map(Pf *pf,string name);  
+	Attribute_Map(string);
+	Attribute_Map(const Attribute_Map&);
+	Attribute_Map& operator=(const Attribute_Map&);
 };
 
 
@@ -102,7 +102,7 @@ public:
 	Metadata(char *) throw(Metadata_parse_error);
 	Metadata(string) throw(Metadata_parse_error);
 	Metadata(Database_Handle&,
-		Metadata_list&,Attribute_map&) throw(Metadata_error);
+		Metadata_list&,Attribute_Map&) throw(Metadata_error);
 	Metadata(const Metadata&)
 		throw(Metadata_parse_error);
 	Metadata& operator=(const Metadata& );

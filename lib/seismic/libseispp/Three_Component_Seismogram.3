@@ -17,7 +17,7 @@ public:
         Three_Component_Seismogram(int nsamples);
         Three_Component_Seismogram(Metadata& md,bool load_data);
         Three_Component_Seismogram(Dbptr db, 
-		Metadata_list& mdl, Attribute_map& am);
+		Metadata_list& mdl, Attribute_Map& am);
         Three_Component_Seismogram(const Three_Component_Seismogram&);
         Three_Component_Seismogram& operator
                 = (const Three_Component_Seismogram&);
@@ -27,7 +27,7 @@ public:
         void rotate(Spherical_Coordinate scor);
         void rotate(double nu[3]);
         void apply_transformation_matrix(double a[3][3]);
-        void free_surface_transformation(Slowness_vector u, double vs, double vp);
+        void free_surface_transformation(Slowness_vector u, double vp0, double vs0);
 };
 .fi
 .SH DESCRIPTION
@@ -114,8 +114,12 @@ matrix defined by Kennett (1991, GJI,vol. 104, p. 153-163).
 The result is a ray coordinate transformation with 
 x1=transverse, x2=radial, and x3=longitudinal.  This 
 transformation is defined by the slowness (ray parameter)
-in s/km of a plane wave and the surface P (vp) and
-S (vs) velocities (both in units of km/s).  
+in s/km of a plane wave and the surface P (vp0) and
+S (vs0) velocities (both in units of km/s).  
+Be aware also that not only is this transformation not
+orthogonal it also changes the relative amplitudes of the
+P and S components.   That is, it does not preserve 
+original vector amplitudes.   
 .LP
 The \fIapply_transformation_matrix\fR functions more generic.
 It simply applies the 3x3 transformation matrix to the data.
@@ -252,7 +256,7 @@ Note that if this constructor throws any exception
 the contents of the object should be viewed as garbage.
 This is standard behaviour but worth emphasizing.
 .IP (5)
-\fIThree_Component_Seismogram(Dbptr db,Metadata_list& mdl,Attribute_map& am);\fR  
+\fIThree_Component_Seismogram(Dbptr db,Metadata_list& mdl,Attribute_Map& am);\fR  
 This is a generic database-driven constructor for segmented 
 data.  That is, it makes an implicit assumption the data being
 requested are defined in single, discrete segments indexed
@@ -303,6 +307,49 @@ as a data problem that we need to plan to work around.
 This constructor will throw a seispp_error if there are any 
 problems.  An error handler should catch this exception, call 
 log_error(), and discard such data or abort.
+.SH NON-MEMBER FUNCTIONS
+.LP
+There are two different \fIdbsave\fR functions that save a
+Three_Component_Seismogram object contents to a Datascope
+Database.  The prototypes are:
+.nf
+void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table,
+        Metadata_list& md, Attribute_Map& am);
+void dbsave(Three_Component_Seismogram& ts,Dbptr db,
+        string table, Metadata_list& md,
+        Attribute_Map& am, vector<string>chanmap,bool output_as_standard);
+.fi
+The best way to understand these functions is that the first is
+a simplified, overloaded version of the second (more general)
+function.  The basic algorithm is that the three-component 
+matrix is fragmented into three Time_Series objects and the 
+Time_Series version of dbsave is called on each of the 
+resulting three Time_Series objects.  The ts, db, table, md, and
+am arguments are exactly as described in the documentation
+for Time_Series(3).  The quick version is that the results 
+are written to the Datascope database db in table "table" 
+using the set of names in md with internal to external namespace
+mapping defined in am.  
+This function has two frozen properties.  First, the 
+output channels are ALWAYS called:  E, N, and Z.  Secondly, to
+be consistent with this naming convention rotate_to_standard is
+always called before output.
+.LP
+The second version of this functions adds more generality.  
+The primary distinction is the chanmap vector.  
+The chanmap variable is assumed to be a three-component, STL vector
+of strings that define the names that should be assigned to 
+the three components of the output Time_Series.  They 
+are assumed to be in data order so that chanmap[0], for example,
+corresponds to row 0 of the 3xns data matrix used for the
+Three_Component_Seismogram object. 
+When the boolean variable \fIoutput_as_standard\fR 
+is true the data are rotated to standard coordinate 
+(rotate_to_standard is called) before sending the result to
+output.  
+.LP
+Both of these functions throw seispp_error objects if there
+are problems on output.
 .SH LIBRARY
 -lseispp
 .SH "SEE ALSO"
@@ -315,6 +362,13 @@ The mix of an object-oriented matrix implementation and the fixed C array tmatri
 for the transformation matrix is a small potential confusion. I did this
 because a transformation matrix has a fixed dimension and so a fixed
 size C array works cleanly.
+.LP
+If you use the transformation matrix make sure you realize that this
+is the transformation used to transform the data from standard 
+coordinates to the current state.  When \fIcomponents_are_orthogonal\fR
+is true the inverse transform is the transpose of tmatrix.  Otherwise
+a matrix inversion is necessary, which is what \fIrotate_to_standard\fR
+does in that situation.
 .SH AUTHOR
 Gary L. Pavlis
 Indiana University

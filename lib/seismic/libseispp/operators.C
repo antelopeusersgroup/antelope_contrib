@@ -6,12 +6,15 @@ Time_Series& Time_Series::operator=(const Time_Series& tsi)
 {
 	if(this!=&tsi)
 	{
+		//Can't figure out how to do this with the 
+		// metadata abstraction.  Have to use the private pf 
+		pf=pfdup(tsi.pf);
 		live=tsi.live;
 		dt=tsi.dt;
 		t0=tsi.t0;
 		ns=tsi.ns;
 		tref=tsi.tref;
-		if(live)
+		if(tsi.live)
 		{
 			s=tsi.s;
 		}
@@ -24,6 +27,7 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 {
 	if(this!=&seisin)
 	{
+		pf = pfdup(seisin.pf);
 		live=seisin.live;
 		dt=seisin.dt;
 		t0=seisin.t0;

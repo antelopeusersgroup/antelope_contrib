@@ -71,6 +71,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 	string dtype;
 	float *inbuffer;
 
+	live = false;
 	try {
 		// Names space is frozen.  Not as general as it
 		// probably should be, but until proven necessary 
@@ -111,6 +112,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 			for(int i=0;i<ns;++i) 
 				s.push_back(static_cast<double>(inbuffer[i]));
 			delete [] inbuffer;
+			live = true;
 			fclose(fp);
 		}
 	}
@@ -134,7 +136,7 @@ common seismic trace format.
 
 Time_Series::Time_Series(Database_Handle& rdb,
 		Metadata_list& md_to_extract, 
-			Attribute_map& am) 
+			Attribute_Map& am) 
 	: Metadata(rdb,md_to_extract,am)
 {
 	float *inbuffer=NULL;
@@ -197,7 +199,7 @@ Time_Series::Time_Series(Database_Handle& rdb,
 // done inline in seispp.h, but it is complication enough I put
 // it here
 //
-Three_Component_Seismogram::Three_Component_Seismogram() : Metadata()
+Three_Component_Seismogram::Three_Component_Seismogram() : Metadata(),u(1,1)
 {
 	live = false;
 	dt=0.0;
@@ -213,7 +215,8 @@ Three_Component_Seismogram::Three_Component_Seismogram() : Metadata()
 			else
 				tmatrix[i][j]=0.0;
 }
-Three_Component_Seismogram::Three_Component_Seismogram(int nsamples) : Metadata()
+Three_Component_Seismogram::Three_Component_Seismogram(int nsamples) 
+	: Metadata(),u(3,nsamples)
 {
 	live = false;
 	dt=0.0;
@@ -228,10 +231,9 @@ Three_Component_Seismogram::Three_Component_Seismogram(int nsamples) : Metadata(
 				tmatrix[i][i]=1.0;
 			else
 				tmatrix[i][j]=0.0;
-	u=dmatrix(3,nsamples);
 }
 Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
-						bool load_data) : Metadata(md)
+				bool load_data) : Metadata(md),u()
 {
 	string stref;
 	string dfile, dir;
@@ -357,7 +359,8 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 
 Three_Component_Seismogram::Three_Component_Seismogram
 			(const Three_Component_Seismogram& t3c)
-				:  Metadata(dynamic_cast<Metadata&>(t3c))
+				:  Metadata(dynamic_cast<Metadata&>(t3c)),
+					u(t3c.u)
 {
 	int i,j;
 	// Same caveat about pf as above
@@ -369,7 +372,6 @@ Three_Component_Seismogram::Three_Component_Seismogram
         components_are_cardinal=t3c.components_are_cardinal;
 	for(i=0;i<3;++i)
 		for(j=0;j<3;++j) tmatrix[i][j]=t3c.tmatrix[i][j];
-	u=t3c.u;
 }
 /* Constructor to read a three-componet seismogram from an antelope
 database.  Arguments:
@@ -390,47 +392,44 @@ If there are any irregularies the front or end is marked as a gap.
 Three_Component_Seismogram::Three_Component_Seismogram(
 	Database_Handle& rdb,
 		Metadata_list& md_to_extract, 
-			Attribute_map& am) : Metadata()
+			Attribute_Map& am) : Metadata(),u()
 {
 	Time_Series component[3];
 	const string this_function_base_message
 		= "Three_Component_Seismogram event database constructor:";
 	int i,j,ierr;
 	Datascope_Handle& dbh=dynamic_cast<Datascope_Handle&>(rdb);
-	// copy of the handle used to point at a single row.  Assume that
-	// dbh is a group pointers.  This will hold a reference to one row.
-	Datascope_Handle dbhv(dbh);
-	Database_Handle *rdbhv
-			=dynamic_cast<Database_Handle *>(&dbhv);
+	live = false;
+	components_are_cardinal=false;
+	components_are_orthogonal=false;
 	try{
-		double ts[3],te[3],tsread[3],teread[3];
+		double tsread[3],teread[3];
 		double hang[3],vang[3];
 		double samprate[3];
 		int nread[3],nsamp[3];
-		int record_start,record_end;
 
-		// This sets the database and table (view) fields
-		// of dbv manually so we can use it below
-		dbhv.db.database = dbh.db.database;
-		dbhv.db.table = dbh.db.table;
-		dbhv.db.field = dbALL;
-		dbget_range(dbh.db,&record_start,&record_end);
-		if((record_end-record_start)!=2)
+		DBBundle bundle = dbh.get_range();
+		if((bundle.end_record-bundle.start_record)!=3)
 			throw(seispp_dberror(
 			  string(this_function_base_message
 			  +	"  database bundle pointer irregularity\n"
 			  +     "All data must have exactly 3 channels per event"),
 			  dbh.db,complain));
-		// We now read the three seismogram using the Time_Series constructor
-		// and extracting a few key attributes needed below.
-		for(dbhv.db.record=record_start,i=0;
-			dbhv.db.record<=record_end;
-			++dbhv.db.record,++i)
+		// Use the simplified copy constructor 
+		// Have to assume the parent is not a bundle pointer
+		Datascope_Handle dbhv(bundle.parent,bundle.parent,false);
+		// This weird cast is necessary because the
+		// the Time_Series constructor uses a generic handle
+		Database_Handle *rdbhv=dynamic_cast
+				<Database_Handle*>(&dbhv);
+		for(i=0,dbhv.db.record=bundle.start_record;
+			dbhv.db.record<bundle.end_record;
+				++i,++dbhv.db.record)
 		{
 		    try
 		    {
-			ts[i]=dbhv.get_double("wfdisc.time");
-			te[i]=dbhv.get_double("endtime");
+			tsread[i]=dbhv.get_double("time");
+			teread[i]=dbhv.get_double("endtime");
 			nsamp[i]=dbhv.get_int("nsamp");
 			samprate[i]=dbhv.get_double("samprate");
 			hang[i]=dbhv.get_double("hang");
@@ -494,8 +493,54 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		ns = nint((te_md-t0)/dt) + 1;
 		u=dmatrix(3,ns);
 		for(i=0;i<3;++i)
-			for(j=nint((ts[i]-t0)/dt);j<nread[i],j<ns;++j)
+			for(j=nint((tsread[i]-t0)/dt);j<nread[i],j<ns;++j)
 				u(i,j)=component[i].s[j];
+		/* Scan for gaps in any component.  This is a general 
+		algorithm that is thorough but not fast.  We call the 
+		is_gap function for each component and mark the whole
+		object with a gap if there is a gap on any component */
+		Time_Window tw;
+		bool in_a_gap;
+		double t;
+		tw.start=t0;  // probably an unnecessary initialization
+		for(j=this->sample_number(tsmax),in_a_gap=false;j<ns;++j)
+		{
+			t=this->time(j);
+			// Handling ragged endtimes is messy, but here it is
+			if((t>temin) && (j<ns-1)) break;
+			if(in_a_gap)
+			{
+				in_a_gap=false;
+				for(i=0;i<3;++i)
+				{
+					if(component[i].is_gap(t))
+					{
+						in_a_gap=true;
+						break;
+					}
+				}
+				if(!in_a_gap)
+				{
+					tw.end=t-dt;
+					this->add_gap(tw);
+				}
+			}
+			else
+			{
+				for(i=0;i<3;++i)
+				{
+					if(component[i].is_gap(t))
+					{
+						in_a_gap=true;
+						break;
+					}
+				}
+				if(in_a_gap)
+				{
+					tw.start=t;
+				}
+			}
+		}
 	
 		// Now we have to set the transformation matrix
 		// The transformation matrix is defined as the matrix
@@ -529,10 +574,6 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 	}
 }
 
-Three_Component_Seismogram::~Three_Component_Seismogram()
-{
-	delete &u;
-}
 //
 // Ensemble constructors.  Both just create blank trace or 3c trace objects
 // and push them into a vector container.

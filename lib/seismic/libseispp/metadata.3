@@ -14,7 +14,7 @@ public:
         Metadata(char *) throw(Metadata_parse_error);
         Metadata(string) throw(Metadata_parse_error);
         Metadata(Database_Handle&,
-		Metadata_list&,Attribute_map&) throw(Metadata_error);
+		Metadata_list&,Attribute_Map&) throw(Metadata_error);
         Metadata(const Metadata&)
                 throw(Metadata_parse_error);
         Metadata& operator=(const Metadata& );
@@ -113,7 +113,7 @@ The database constructor allows loading metadata from a database.
 It's calling sequence is
 .nf
 Metadata(Database_Handle& dbh,
-	Metadata_list& mdl,Attribute_map& am)
+	Metadata_list& mdl,Attribute_Map& am)
 .fi
 where dbh is a generic database handle.  In the current implementation
 this is a pure abstraction and the only available constructor
@@ -126,15 +126,15 @@ The attributes that are to be extracted from the database are
 driven by this object:
 .nf
 
-class Attribute_map
+class Attribute_Map
 {
 public:
         map<string,Attribute_Properties> attributes;
 
-        Attribute_map(Pf *pf,string name);  
-        Attribute_map(string);
-        Attribute_map(const Attribute_map&);
-        Attribute_map& operator=(const Attribute_map&);
+        Attribute_Map(Pf *pf,string name);  
+        Attribute_Map(string);
+        Attribute_Map(const Attribute_Map&);
+        Attribute_Map& operator=(const Attribute_Map&);
 };
 .fi
 noting that the STL map container holds the following objects:
@@ -163,7 +163,7 @@ correct information from a Metadata object.  This could be
 cumbersome baggage, but it is assumed this can be hidden from
 most users by defining this mapping in the global parameter
 file for the application.  The Pf constructor for 
-the Attribute_map object, which is the one that that
+the Attribute_Map object, which is the one that that
 would probably normally be used to build this, looks for 
 a Tbl pf list with the key defined by the string
 that is the second argument of the constructor.  This is expected
@@ -191,16 +191,16 @@ unix white space.  When the constructor reads this data there must
 be exactly four token per line or the constructor will throw a
 Metadata_error exception object (see below).  
 .LP
-The Attribute_map should normally be static and defines the fixed
+The Attribute_Map should normally be static and defines the fixed
 mapping of an internal namespace to a collection of metadata stored
-in an external database.  Hence, the Attribute_map has an intrinsic
+in an external database.  Hence, the Attribute_Map has an intrinsic
 database model for the data it is indexing.  That is, don't expect it
 to be capable of defining anything that cannot be stored in an
 antelope database.  If you need additional capabilities the interface
 allows it, but only simple types are currently supported in the 
 MDtype definition.  
 .LP
-The Attribute_map should normally be loaded from a parameter file
+The Attribute_Map should normally be loaded from a parameter file
 early on in a programs initialization phase.  It should define the
 entire namespace of parameters of interest.  The information actually
 passed in and out of a program is controlled by a Metadata_list 
@@ -214,7 +214,7 @@ Metadata_list pfget_mdlist(Pf *pf, string pftag);
 where pf is an Antelope Pf handle (see man pf(3)) and pftag is a 
 string that identifies a tag to an &Tbl entry in a parameter file.
 For example, to select only entries from the wfdisc table for the
-example Attribute_map defined above one could set pftag="Input_mdlist"
+example Attribute_Map defined above one could set pftag="Input_mdlist"
 and place the following the the parameter file used for initialization:
 .nf
 Input_mdlist &Tbl{
@@ -230,14 +230,14 @@ wfdfile		string
 .fi
 .LP
 Putting all this together,
-the Attribute_map and Metadata_list are used together in the 
-database constructor;  the Attribute_map defines the namespace
+the Attribute_Map and Metadata_list are used together in the 
+database constructor;  the Attribute_Map defines the namespace
 mapping from external (database centric naming) to a set of 
 internal names while the Metadata_list passed to that constructor
 defines what metadata to attempt to extract from the database.
 The db pointer, db, is expected to be one row of a database view.
 This can be a join of several tables as the table names are resolved
-through the Attribute_map.
+through the Attribute_Map.
 .LP
 Metadata are retrieved by the get_type 
 functions.  The get routines will throw an exception if the requested
@@ -286,10 +286,10 @@ The dark side of the generality is some loss of efficiency and
 bloated memory usage because in this implementation all metadata
 are stored as strings in an Antelope pf structure.  
 .IP (2)
-The Attribute_map object adds complexity to something that is already
+The Attribute_Map object adds complexity to something that is already
 a bit messy. Applications using these functions should strive to hide
 this element of the implementation from normal use.  In most cases this
-is expected to mean you will build a static Attribute_map pf description
+is expected to mean you will build a static Attribute_Map pf description
 for all programs using this library and a particular database 
 schema.  In the same way the mdlist can and should be prepared in
 standard pf file for a program, placed in the standard Antelope location

@@ -146,6 +146,7 @@ public:
         Dbptr db;
 private:
         bool close_on_destruction;
+	bool is_bundle;  // true when db is result of dbgroup
 };
 .fi
 .LP

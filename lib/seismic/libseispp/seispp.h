@@ -156,6 +156,8 @@ public:
 	virtual void zero_gaps()=0; // pure virtual function
 	// inline function to return time of sample i
 	double time(int i){return(t0+dt*((double)i));};
+	// inverse of time
+	int sample_number(double t){return(nint((t-t0)/dt));};
 protected:
 	set<Time_Window,Time_Window_Cmp> gaps;
 };
@@ -170,7 +172,7 @@ public:
 	// false the Metadata object portion is constructed and reserve is called
 	Time_Series(Metadata& md,bool load_data);
 	// Antelope database constructor 
-	Time_Series(Database_Handle& db, Metadata_list& mdl, Attribute_map& am);
+	Time_Series(Database_Handle& db, Metadata_list& mdl, Attribute_Map& am);
 	Time_Series(const Time_Series&);
 	Time_Series& operator=(const Time_Series&);
 	void zero_gaps();
@@ -207,11 +209,12 @@ public:
 	// The next two are similar to comparable functions for Time_Series
 	Three_Component_Seismogram(Metadata& md,bool load_data);
 	Three_Component_Seismogram(Database_Handle& db, 
-		Metadata_list& mdl, Attribute_map& am);
+		Metadata_list& mdl, Attribute_Map& am);
 	Three_Component_Seismogram(const Three_Component_Seismogram&);
 	Three_Component_Seismogram& operator 
 		= (const Three_Component_Seismogram&);
-	~Three_Component_Seismogram(); 
+	// Default destructor is acceptable
+	//~Three_Component_Seismogram(); 
 	void zero_gaps();
 	void rotate_to_standard() throw(seispp_error);
 	// This overloaded pair do the same thing for a vector
@@ -224,7 +227,7 @@ public:
 	// Note this is routine does NOT return to standard before
 	// applying the transformation so this is accumulative.
 	void apply_transformation_matrix(double a[3][3]);
-	void free_surface_transformation(Slowness_vector u, double vs, double vp);
+	void free_surface_transformation(Slowness_vector u, double vp0, double vs0);
 };
 // Note for ensembles the lengths of each trace (3ctrace) and
 // should be allowed to be variable.  The number of elements in
@@ -373,6 +376,11 @@ void set_gaps(Time_Series&,Trsample *,int, string)
 // Spherical coordinate routines
 Spherical_Coordinate unit_vector_to_spherical(double nu[3]);
 double *spherical_to_unit_vector(Spherical_Coordinate&);
+// converters between types of time series objects
+Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component,
+        Metadata_list& mdl);
+Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component);
+
 
 // low level i/o routines
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error);
@@ -380,10 +388,12 @@ long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string fname) throw(seispp_error);
 // Antelope database output routine
-void dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_map& am)
+void dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_Map& am)
 		throw(seispp_error);
-void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, Metadata_list& md, Attribute_map& am)
-		throw(seispp_error);
-
+void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, 
+	Metadata_list& md, Attribute_Map& am);
+void dbsave(Three_Component_Seismogram& ts,Dbptr db,
+	string table, Metadata_list& md, 
+	Attribute_Map& am, vector<string>chanmap,bool output_as_standard);
 }
 #endif

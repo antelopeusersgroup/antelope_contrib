@@ -13,11 +13,12 @@ public:
         double dt,t0;
         int ns;
         Time_Reference_Type tref;
-        bool is_gap(int);  // query by sample number
-        bool is_gap(double);  // query by time
+        bool is_gap(int); 
+        bool is_gap(double);  
         void add_gap(Time_Window tw){gaps.insert(tw);};
-        virtual void zero_gaps()=0; // pure virtual function
-        // inline function to return time of sample i
+        virtual void zero_gaps()=0; 
+	double time(int i);
+        int sample_number(double t);
 };
 .fi
 .SH DESCRIPTION
@@ -97,6 +98,12 @@ subject and a general solution).
 Derived classes must be conscious of this problem in 
 building constructors and in producing output functions that
 preserve gap information.
+.LP
+Finally, this, the base class, includes two inline functions
+called \fItime\fR and \fIsample_number\fR.
+The \fItime\fR function returns the time (independent variable)
+associated with sample number i and \fIsample_time\fR does the
+inverse (i.e. returns sample index associated with a given time.).
 .SH EXAMPLE
 .LP
 A Basic_Time_Series is pretty much a pure virtual base class.  Here

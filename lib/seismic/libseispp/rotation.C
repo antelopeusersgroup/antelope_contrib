@@ -23,7 +23,7 @@ void Three_Component_Seismogram::rotate_to_standard()
 		for(i=0;i<3;++i)
 		{
 			// x has a stride of 3 because we store in fortran order in x
-			dcopy(ns,u.get_address(i,0),3,work[i],1);
+			dcopy(ns,u.get_address(0,0),3,work[i],1);
 			dscal(ns,tmatrix[0][i],work[i],1);
 			daxpy(ns,tmatrix[1][i],u.get_address(1,0),3,work[i],1);
 			daxpy(ns,tmatrix[2][i],u.get_address(2,0),3,work[i],1);
@@ -80,7 +80,7 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//
 		for(i=0;i<3;++i)
 		{
-			dcopy(ns,u.get_address(i,0),3,work[i],1);
+			dcopy(ns,u.get_address(0,0),3,work[i],1);
 			dscal(ns,tmatrix[i][0],work[i],1);
 			daxpy(ns,tmatrix[i][1],u.get_address(1,0),3,work[i],1);
 			daxpy(ns,tmatrix[i][2],u.get_address(2,0),3,work[i],1);
@@ -149,11 +149,6 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
 	//Undo any previous transformations
 	//
 	this->rotate_to_standard();
-	// This maybe should generate an exception but assuming
-	// this implies return to standard coordinates it should
-	// be ok.  Note implicit transformation to cardinal directions
-	//
-	if(xsc.theta == 0.0)return;
        	if(xsc.theta == M_PI) 
 	{
 		//This will be left handed
@@ -183,6 +178,8 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
         c = cos(theta);
         d = sin(theta);
 
+/* Older, incorrect form depth for reference to check for
+// other similar errors in other programs
 	tmatrix[0][0] = a*c;
 	tmatrix[1][0] = b*c;
 	tmatrix[2][0] = d;
@@ -192,21 +189,27 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
 	tmatrix[0][2] = -a*d;
 	tmatrix[1][2] = -b*d;
 	tmatrix[2][2] = c;
+*/
+	tmatrix[0][0] = a*c;
+	tmatrix[1][0] = -b;
+	tmatrix[2][0] = a*d;
+	tmatrix[0][1] = b*c;
+	tmatrix[1][1] = a;
+	tmatrix[2][1] = b*d;
+	tmatrix[0][2] = -d;
+	tmatrix[1][2] = 0.0;
+	tmatrix[2][2] = c;
 
 	double *work[3];
 	for(i=0;i<3;++i)work[i] = new double[ns];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,u.get_address(i,0),3,work[i],1);
+		dcopy(ns,u.get_address(0,0),3,work[i],1);
 		dscal(ns,tmatrix[i][0],work[i],1);
 		daxpy(ns,tmatrix[i][1],u.get_address(1,0),3,work[i],1);
 		daxpy(ns,tmatrix[i][2],u.get_address(2,0),3,work[i],1);
 	}
 	for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
-	//
-	//If they weren't before they are now
-	//
-	components_are_orthogonal=true;
 	components_are_cardinal=false;
 	for(i=0;i<3;++i) delete [] work[i];
 }
@@ -219,11 +222,11 @@ void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
 {
 	int i;
 	double *work[3];
-	for(i=0;i<3;++i) work[i] = new double[3];
+	for(i=0;i<3;++i) work[i] = new double[ns];
 	double twork[3];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,u.get_address(i,0),3,work[i],1);
+		dcopy(ns,u.get_address(0,0),3,work[i],1);
 		dscal(ns,a[i][0],work[i],1);
 		daxpy(ns,a[i][1],u.get_address(1,0),3,work[i],1);
 		daxpy(ns,a[i][2],u.get_address(2,0),3,work[i],1);
@@ -241,5 +244,9 @@ void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
 		tmatrix[2][i]=ddot(3,a[2],1,twork,1);
 	}
 	 for(i=0;i<3;++i) delete [] work[i];
+	components_are_cardinal = false;
+	// Only cost of making this always false is a small 
+	// matrix inversion if returning to standard
+	components_are_orthogonal = false;
 }
 } // Termination of namespace SEISPP definitions
