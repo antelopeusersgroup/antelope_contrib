@@ -46,7 +46,8 @@ proc init_windows {} {
 		
 		menubutton $buttonname -text $nickname \
 			 -relief raised -menu $menuname \
-			 -direction right -bg beige
+			 -direction flush -bg beige \
+			 -activebackground orange
 		menu $menuname -tearoff 0
 
 		bind $buttonname <Button-3> "show_path {$nickname} $buttonname"
