@@ -49,6 +49,7 @@ char **argv;
 	int pktstart=-1;
 	int rcnt_time=600;
 	int found ;
+	int flush=0;
 
 	elog_init ( argc, argv ) ; 
 
@@ -88,6 +89,8 @@ char **argv;
 			ircnt = 1;
 		} else if (!strcmp(*argv, "-orcnt")) {
 			orcnt = 1;
+		} else if (!strcmp(*argv, "-flush")) {
+			flush = 1;
 		} else if (!strcmp(*argv, "-messages")) {
 			messages = 1;
 			if (setupdb ("orbcp", &db) < 0) {
@@ -341,12 +344,14 @@ RECONNECT:			clear_register (0);
 				clear_register (0);
 				sleep (10);
 			}
+			if (flush) orbflush (orbout);
 		} else {
 			if (orbput (orbout, src, time, p, nbytes) < 0) {
 				clear_register (1);
 				complain (0, "orbcp: orbput() error.\n");
 				break;
 			}
+			if (flush) orbflush (orbout);
 		}
 		n++;
 		if (npackets > 0 && n >= npackets) break;
@@ -360,7 +365,7 @@ usage()
 	complain (0, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
 	complain (0, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
 	complain (0, "             [-rcnt_time minutes] [-npackets npackets]\n");
-	complain (0, "             [-messages]\n");
+	complain (0, "             [-messages] [-flush]\n");
 }
 
 int
