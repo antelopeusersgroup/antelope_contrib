@@ -1,0 +1,93 @@
+.TH REVERSE_FIR 1 2003/06/18 "Antelope Contrib SW" "User Commands"
+.SH NAME
+reverse_fir \- reverse the Quanterra minimum phase filters from the
+original inverse time domain as found on Quanterra digitizers to the
+time domain as should be found in the stage directory of the Antelope dbmaster.
+.SH SYNOPSIS
+.nf
+reverse_fir [-v] [-n] [-p pffile] stage_dir
+.fi
+
+
+.SH DESCRIPTION
+As pointed out by Reinoud Sleeman from KNMI and confirmed by Quanterra
+(see below) on Quanterra digitizers the FIR filters are in inverse
+time domain, for efficiency reasons. To generate full SEED or autodrm
+replies the order of the stage filter coefficients in the Antelope
+dbmaster/response/stage/F*M files has to be reversed. This can be done
+with reverse_fir.
+
+Subject: Re: q730 stages
+   Date: Fri, 8 Nov 2002 08:42:51 +0000
+   From: sleeman@knmi.nl
+     To: Grisa.Mocnik@gov.si
+     CC: sleeman@knmi.nl
+
+Hi Grisa,
+
+Sorry for the delay in my reply.
+
+The filternames ending with 'M' are minimum phase, that is
+filters FS2D5M and F96CM. However, on the Quanterra the
+coefficients are stored in reverse order (confirmed by
+Quanterra), so the largest coefficients are at the end.
+In the SEED file these filters should appear as minimum-phase,
+as this is how they are used in the convolution and downsampling 
+process. So the coefficients can not be taken directly from the 
+Quanterra but should be reversed (largest coefficients in the
+beginning).
+
+The responses of CEY, CRES and LJU all have asymmetrical filters,
+as for example the FIR filter at stage 4 for CEY-BHZ. As you can see
+the energy of the filter is concentrated at the end. This filter
+(F96CM) seems to be copied directly from the Quanterra (see the
+/r0/FIRFilters file). So, in my opinion the order of the coeff's
+for the asymmetrical filters needs to be reversed in your database.
+
+What do you think ?
+
+Cheers, Reinoud
+.nf
+--------------------------------------------------------------
+.fi
+Zie ook/see also: http://www.knmi.nl/maildisclaimer.html 
+
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "-n"
+simulates execution, but does not create the inverted filter file
+.IP "-p pffile" 
+parameter file. The list of filters to be inverted.
+.IP "stage_dir"
+Stage directory of the dbmaster. This argument is required.
+
+.SH PARAMETER FILE
+
+The following is a sample parameter file. It consists of one
+table \fBfilters\fP. Only filter F96CM will be reversed.
+.nf
+filters &Tbl{
+#F400M
+F96CM
+#FS2D5M
+}
+.fi
+.SH "BUGS AND CAVEATS"
+The filters have to be specified in a parameter file. Use reverse_fir
+on a COPY of the filters and check before copying the reversed filters
+to the proper place!
+
+Works only with filters with no denominator coefficients.
+
+
+.SH "SEE ALSO"
+.nf
+response(5), db2sd(1), autodrm(1), dbresp2autodrm(1) 
+.fi
+.SH AUTHOR
+.nf
+Grisa Mocnik, 2003 
+
+EARS / Ljubljana, grisa.mocnik@gov.si
+	
