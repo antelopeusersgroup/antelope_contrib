@@ -1,4 +1,5 @@
 BIN=	dbdepest
+MAN1=dbdepest.1
 PF=dbdepest.pf
 
 fflags = -fast -w
