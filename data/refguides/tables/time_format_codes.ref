@@ -28,6 +28,7 @@ The two character combinations on the left in the list below are replaced by the
 %S	seconds (00-59)
 %s	milliseconds (000-999)
 %t	(tab)
+%u	tens of microseconds (00000-99999)
 %Y	year including century (eg, 1988)
 %y	year within century (00-99)
 %Z	timezone code
