@@ -20,6 +20,50 @@ static void usage (char *Program_Name)
 	die(0,"Usage:  %s orbserver [-S statefile -pf pffile]\n", 
 		Program_Name);
 }
+/* Initializes the scratch records for each table used in this program.  
+That is, origin, origerr, and assoc.  This only needs to be done
+once.  The procedure loads NULL files into each attribute of the
+scratch records for these tables.  This function is based
+on a tricky initialization condition using dbget.  Setting
+the db record to dbNULL and then calling dbget(db,0) loads the
+scratch record with the contents of the NULL record.  This works
+because the NULL record is initialized the first time it is
+accessed, and passing 0 to dbget is a shortcut that directly 
+copies the NULL record to the scratch record.  IMPORTANT:  note
+that because this program uses dbputv directly to the scratch
+record the assumption is that the SAME set of attributes are
+always written to the scratch record of each table.  This is
+correct for this program, but you are warned if you try to use
+functions from this program elsewhere.  
+
+Arguments:  db - db pointer of open database 
+
+returns 0 on success.  Any errors will always result in
+a return of dbINVALID.  The later should, of course, be
+trapped but should probably not normally be fatal.
+*/
+initialize_scratch_records(Dbptr db)
+{
+	int return_code;
+	int error_count=0;
+
+	db = dblookup(db,0,"origin",0,0);
+	db.record = dbNULL;
+	return_code = dbget(db,0);
+	if(return_code) ++error_count;
+	db = dblookup(db,0,"origerr",0,0);
+	db.record = dbNULL;
+	return_code = dbget(db,0);
+	if(return_code) ++error_count;
+	db = dblookup(db,0,"assoc",0,0);
+	db.record = dbNULL;
+	return_code = dbget(db,0);
+	if(return_code) ++error_count;
+	if(error_count)
+		return(dbINVALID);
+	else
+		return(0);
+}
 /* This function reads all parameters special to this program.  
 It provides a simple way to keep all this together. */
 
@@ -761,6 +805,12 @@ have the arguments botched */
 		complain (0, "maketmpdb() error.\n");
 		exit (1);
 	}
+	/* This little routine initilizes the null record for each table 
+	used here.  This was necessary because we assemble records in the
+	scratch record.  This sets proper nulls in fields that are not
+	referenced by this program. */
+	if(initialize_scratch_records(dbtmp) == dbINVALID)
+		complain(0,"Warning:  errors initializing null records in tables.  May generate invalid data in some fields\n");
 /*
 	unlink (dbname);
 */
