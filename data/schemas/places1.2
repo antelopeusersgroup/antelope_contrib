@@ -9,6 +9,31 @@ Schema "places1.2"
 	Timedate lddate
 	;
 
+Attribute bundle
+	Dbptr ( 32 )
+	Description ( "database pointer to bundled/grouped data" ) 
+	Format ( "%d %d %d %d" ) 
+	Detail {
+	    A bundle is a special database pointer which refers to
+	    either an entire table or view, or to a contiguous subset
+	    of some table or view.  In the former case, both the
+	    record number and the field number should be dbALL.  In
+	    the latter case, the record number and the field number
+	    specify a range of records in the table.  
+	}
+	;
+
+
+Attribute bundletype
+	Integer ( 20 )
+	Format ("%20d" ) 
+	Description ( "type of bundle" ) 
+	Detail { 
+	    The bundle type is an arbitrary integer which specifies
+	    the kind of the bundle.  
+	}
+	;
+
 Attribute county
 	String (45)
 	Format ( "%-45s" )
