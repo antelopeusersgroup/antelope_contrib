@@ -305,6 +305,9 @@ typedef struct Gridloc_options {
 	double multiplier;  /* grid is shrunk by this factor each cycle */
 	double ncycles;  /* number of cycles for grid scale reduction */
 }Gridloc_options;
+/* It is bad form to nest includes like this, but necessary to 
+define function prototypes */
+#include "db.h"
 /* function prototypes */
 
 float bisquare (float);
@@ -321,6 +324,7 @@ Robust_statistics form_equations(int, Hypocenter, Tbl *, Tbl *, Location_options
 	float **, float *, float *, float *, float *, int *);
 void predicted_errors(Hypocenter, Tbl *, Tbl *, Location_options,
 	float **, float *);
+int save_emodel(int , float *, Dbptr );
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
 Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);
@@ -363,13 +367,6 @@ char **cmatrix(int, int, int, int);
 void free_matrix(char **, int, int, int);
 int svdcmp(float **,int,int,float *,float **);
 
-/* These are the only functions that know about db stuff.  
-This is bad form to nest an include like this, but it
-is preferable to mucking up the rest of the source code files.
-For code that does not use the db routines, these lines could
-be deleted 
-*/
-#include "db.h"
 Arr *dbload_station_table(Dbptr, int, int, Pf*);
 Arr *dbload_array_table(Dbptr, int, int, Pf *);
 Tbl *dbload_arrival_table(Dbptr, int, int, Arr *, Arr *);

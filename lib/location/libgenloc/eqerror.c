@@ -1,8 +1,41 @@
 #include "stock.h"
+#include "db.h"
 #include "location.h" 
 #include <float.h>
-float sdot_(int *,float *,int *,float *,int *);
-void sscal_(int *m, float *, float *, int *);
+#include <sunperf.h>
+/* This routines cautiously saves the emodel vector.  It is cautious
+because the emodel table is not part of the css3.0 schema.  If it
+cannot find info on the emodel table, it issues an error and returns.
+Otherwise, it will save the emodel vector to this special table.
+Author:  Gary L. Pavlis
+Written: June 29, 1998 */
+int save_emodel(int orid, float *emodel, Dbptr db)
+{
+	Dbptr dbemod;  
+
+	dbemod = dblookup(db, 0,"emodel",0,0);
+	if(dbemod.table == dbINVALID)
+	{
+		register_error(0,"emodel table not defined for output database\nAdd genloc mods\n");
+		return(1);
+	}
+	else
+	{
+		if(dbaddv(dbemod,0,
+			"orid",orid,
+			"emodelx",emodel[0],
+			"emodely",emodel[1],
+			"emodelz",emodel[2],
+			"emodelt",emodel[3],
+				0) == dbINVALID)
+		{
+			register_error(0,"dbaddv error for emodel table\n");
+			return(-1);
+		}
+	}
+	return(0);
+}
+
 /* This routine computes the pure pseudoinverse from the svd returned
 by svdcmp (U*S*V^T) so Agi = V*S^-1*U^T.  The algorithm used is a
 little overly tricky using an internally allocated work vector to 
@@ -21,7 +54,6 @@ Author:  Gary L. Pavlis
 int pseudoinverse(float **U, float *s, float **V, int m, int n, float **Agi)
 {
 	int i,j, k;  /* counters*/
-	int one=1;
 	float *work;  /* work space */
 	float smax;
 	float sinv;
@@ -53,14 +85,14 @@ int pseudoinverse(float **U, float *s, float **V, int m, int n, float **Agi)
 		}
 		else
 			sinv = 0.0;
-		sscal_(&m,&sinv,Agi[j],&one);
+		sscal(m,sinv,Agi[j],1);
 	}
 	/* multiply by V using a column work vector*/
 	for(j=0;j<m;++j)
 	{
 		for(k=0;k<n;++k) work[k] = Agi[k][j];
 		for(i=0;i<n;++i)
-			Agi[i][j] = sdot_(&n,work,&one,V[i],&one);
+			Agi[i][j] = sdot(n,work,1,V[i],1);
 	}
 	free(work);
 	return(nsv_used);
@@ -86,7 +118,6 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *f
 	float *c;
 	int i,j,ii,jj;
 	int ret_code;
-	int one=1;
 
 	for(i=0,ii=0;i<ntotal;++i)
 	{
@@ -99,8 +130,8 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *f
 					C[i][j] = 0.0;
 				else
 				{
-					C[i][j] = sdot_(&m,Agi[jj],&one,
-							Agi[ii],&one);
+					C[i][j] = sdot(m,Agi[jj],1,
+							Agi[ii],1);
 					++jj;
 				}
 			++ii;

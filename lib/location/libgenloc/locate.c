@@ -5,12 +5,8 @@
 #include "pf.h"
 #include <float.h>
 #include <sunmath.h>
+#include <sunperf.h>
 
-/* These are BLAS functions used only in routines in this file, so
-we declare their prototypes only here. */
-float snrm2_(int *,float *,int *);
-void scopy_(int *,float *,int *,float *,int *);
-float sdot_(int *,float *,int *,float *,int *);
 
 int difference_is_zero(float x, float y)
 {
@@ -80,7 +76,6 @@ Robust_statistics form_equations(int mode, Hypocenter current_location,
 		is calculated by a messy combination of options.fix and
 		the origin time is handled */
 	Robust_statistics statistics; /* this holds the return values */
-	int one=1;  /* necessary for BLAS functions.*/
 	double error_scale;  /* error scaled used in residual weighting*/
 	double sum_weights;
 
@@ -337,17 +332,15 @@ function it is assumed that wd is the vector of weighted residuals.
 In calculate_rms, in contrast, d is used raw. */
 double calculate_rms(float *d,int n)
 {
-	int one=1;
 	double value;
-	value = (double) snrm2_(&n,d,&one);
+	value = (double) snrm2(n,d,1);
 	return(value/sqrt( (double)n) );
 }
 double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
 {
-	int one=1;
 	int i;
 	double value,sumw;
-	value = (double) snrm2_(&n,wd,&one);
+	value = (double) snrm2(n,wd,1);
 	for(i=0,sumw=0.0;i<n;++i) sumw += (double)(w[i]*rw[i]);
 	return(value/sqrt(sumw));
 }
@@ -563,7 +556,6 @@ void lminverse_solver(float **U, float *s, float **V, float *b,
 	int m, int n, float damp, float *x)
 {
 	int i,j;  /* counters*/
-	int one=1;  /* used for BLAS */
 	float *work;  /* work array alloced below */
 	float smax;  /* largest singular value */
 
@@ -584,10 +576,10 @@ void lminverse_solver(float **U, float *s, float **V, float *b,
 		for(i=0;i<m;++i) x[j] += U[i][j]*b[i];
 		x[j] *= s[j]/(s[j]*s[j] + damp*damp);
 	}
-	scopy_(&n,x,&one,work,&one);
+	scopy(n,x,1,work,1);
 	/* multiply by V */
 	for (j=0;j<n;++j)
-		x[j] = sdot_(&n,V[j],&one,work,&one);
+		x[j] = sdot(n,V[j],1,work,1);
 	free(work);
 }
 
@@ -623,7 +615,6 @@ int pseudoinverse_solver(float **U, float *s, float **V, float *b,
 	int i,j;  /* counters*/
 	int nsvused;  /* number of nonzero singular values used in solution*/
 	float sv_cutoff, smax;
-	int one=1;  /* used for BLAS */
 	float *work;  /* work space */
 
         if((work=(float *)calloc(n,sizeof(float))) == NULL)
@@ -649,10 +640,10 @@ int pseudoinverse_solver(float **U, float *s, float **V, float *b,
 		x[j] /= s[j];
 		++nsvused;
 	}
-	scopy_(&n,x,&one,work,&one);
+	scopy(n,x,1,work,1);
 	/* multiply by V */
 	for (j=0;j<n;++j)
-		x[j] = sdot_(&n,V[j],&one,work,&one);
+		x[j] = sdot(n,V[j],1,work,1);
 	free(work);
 	return(nsvused);
 }
@@ -755,8 +746,6 @@ int ggnloc (Hypocenter initial_location,
 	int npar;  /* actual number of adjustable parameters in solution.
 			npar is determined by counting zero entries in 
 			the "fix" input array of integers in options */
-	int one=1;  /* stupid parameter needed to make FORTRAN BLAS 
-			functions work */
 	int np;  /* A stupid temporary needed because of FORTRAN */
 	Hypocenter current_location,trial_location;
 	int iteration;  /* count of number of iterations */
@@ -920,8 +909,15 @@ int ggnloc (Hypocenter initial_location,
 		for(i=0;i<m;++i)
 			for(j=0;j<np;++j) 
 				U[i][j] = A [i][j];
-		svdcmp(U,m,np,s,V);
-
+		i = svdcmp(U,m,np,s,V);
+		if(i < 0 ) 
+		{
+			complain(0,"ggnloc irreconcilable problem with svd routine\nCannot generate solution\n");
+			return(-4);
+		}
+		else if( i > 0)
+			complain(0,"svd convergence error in iteration %d\nBlundering on\n",
+				iteration);
 		/* Now how we construct a solution depends on the algorithm*/
 
 		switch(options.generalized_inverse)
@@ -1031,7 +1027,7 @@ int ggnloc (Hypocenter initial_location,
 		We could use a velocity scale factor, but in practice
 		it should not matter.  Furthermore, recentering causes
 		other complications to lengthy to discuss in code comments. */
-		nrm2_dx = (double)snrm2_(&np,dx,&one);
+		nrm2_dx = (double)snrm2(np,dx,1);
 		if(nrm2_dx <= options.dx_convergence)
 		{
 			converge = 1;
