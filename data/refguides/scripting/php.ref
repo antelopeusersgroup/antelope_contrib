@@ -69,3 +69,10 @@ dbex_eval ($db, expression)
 
 dbextfile ($db [, base-table])
     return the filename for an external file for a particular row in a view
+
+<subsection Time conversion>
+
+strtdelta (dt)
+    convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
+
+
