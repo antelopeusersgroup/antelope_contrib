@@ -79,7 +79,18 @@ mail_parser(1), autodrm(1), autodrm_wrapper(1)
 In practice, setting up automatic mail handling may require other
 cooperation from your system administrator depending on which
 sendmail(1) security features are activated.
+
+Make sure that the permissions are set appropriately
+on .forward, .procmailrc, and mail_parser_wrapper to allow them to be 
+invoked by system mail utilities (oftentimes a .forward file is ignored
+if the permissions are not set to the satisfaction of the mail delivery
+agent). 
 .SH AUTHOR
-Kent Lindquist. This script is modeled on the Antelope autodrm_wrapper 
-script.
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+
+This script is modeled on the Antelope autodrm_wrapper 
+script by Dan Quinlan.
 .\" $Id$
