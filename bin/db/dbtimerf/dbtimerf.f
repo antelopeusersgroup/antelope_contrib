@@ -148,7 +148,7 @@ c--- read header G (Z)
      -		chan1(1:lnblnk(chan1)),srate1
 1000	format( "Z station ",a6," chan: ",a8," samprate ",f8.3)
 
-	ndata1=jmin1(ndata1, NBUFMAX)
+	ndata1=min(ndata1, NBUFMAX)
 	t1_req=t0_req + dble(ndata1-1)/srate1
 	
 c---read data G (Z)
@@ -156,7 +156,7 @@ c
 
 c	call trgetwf ( dbz, 0, buf1, ndatamax, t0_req, t1_req,
 c     *         t0, t1, npts, izero, izero2 )
-	call read_my_wf(dbz, t0_req, t1_req, tr, t0, t1,
+	call readmywf(dbz, t0_req, t1_req, tr, t0, t1,
      *		npts, buf1)
 
 	if ( npts .lt. 1 ) call die ( 0, "Couldnt read Zwaveform")
@@ -176,13 +176,13 @@ c--- read header H (R)
      -		chan2(1:lnblnk(chan2)),srate2
 1001	format( "R station ",a6," chan: ",a8," samprate ",f8.3)
 
-	ndata2=jmin1(ndata2, NBUFMAX)
+	ndata2=min(ndata2, NBUFMAX)
 	t1_req=t0_req + dble(ndata2-1)/srate2
 c---read data H (R)
 c
 c	call trgetwf ( dbr, 0, buf2, ndatamax, t0_req, t1_req,
 c     *         t0r, t1, npts, izero, izero2 )
-	call read_my_wf(dbr, t0_req, t1_req, tr, t0r, t1,
+	call readmywf(dbr, t0_req, t1_req, tr, t0r, t1,
      *		npts, buf2)
 	if ( npts .lt. 1 ) call die ( 0, "Couldnt read waveform")
 	write(0,1003) npts, t0r
@@ -383,7 +383,7 @@ c  info is not desired, this may not be necessary.  ALso, it will crash if singu
 c--- do gauss-jordan solution
 	  sumbuf = 0.
 	  do i=1,nout
-	    buf3(i) = sngl(gjdat(i,1))
+	    buf3(i) = gjdat(i,1)
 	    sumbuf = sumbuf + buf3(i)
 	  end do
 	print *,"Integrated STF = ",sumbuf
@@ -393,16 +393,16 @@ c     using Total or a posteriori error estimate = inv(AtA+inv(Cm))
 	  resmax = 0.
 	  varmax = 0.
 	  do i=1,nout
-	    varout(i) = sngl(sqrt(ata(i,i)))
+	    varout(i) = (sqrt(ata(i,i)))
 	    if (varout(i).gt.varmax) varmax = varout(i)
 	  end do
 	  if (kresmat.eq.1) then
 	    do i=1,nout
 	      ip1 = i+1
-	      resout(i) = sngl(gjdat(i,ip1))
+	      resout(i) = (gjdat(i,ip1))
 	      if (resout(i).gt.resmax) resmax=resout(i)
 	      do j=1,nout
-		resmat(j,i) = sngl(gjdat(j,ip1))
+		resmat(j,i) = (gjdat(j,ip1))
 	      end do
 	    end do
 	  end if
@@ -465,14 +465,14 @@ c  write header
 	dtime=dtime+dble(int(sec))/60.
 	write(dfile,'(f14.2,".",a3,".",a4)') dtime,sta2(1:3),chan2(1:4)
 	
-	call write_my_wf(dbo,  sta2, chan2, 
+	call writemywf(dbo,  sta2, chan2, 
      -		t0r, srate2, nout, calib,  
      -		instype, dir, dfile, buf3)
 
 c--- write standard error
 	chan2="terr\0"
 	write(dfile,'(f14.2,".",a3,".",a4)') dtime,sta2(1:3),chan2(1:4)
-	call write_my_wf(dbo,  sta2, chan2, 
+	call writemywf(dbo,  sta2, chan2, 
      -		t0r, srate2, nout, calib,  
      -		instype, dir, dfile, varout)
 
@@ -481,21 +481,21 @@ c--- write resolution diagonals
 	  print *,"res-matrix output to timedec.resmat"
 	  chan2="res\0"
 	write(dfile,'(f14.2,".",a3,".",a3)') dtime,sta2(1:3),chan2(1:3)
-	call write_my_wf(dbo,  sta2, chan2, 
+	call writemywf(dbo,  sta2, chan2, 
      -		t0r, srate2, nout, calib,  
      -		instype, dir, dfile, resout)
 
 c--- write resolution spread widths (sinc)
 	  chan2="sprd\0"
 	write(dfile,'(f14.2,".",a3,".",a3)') dtime,sta2(1:3),chan2(1:4)
-	call write_my_wf(dbo,  sta2, chan2, 
+	call writemywf(dbo,  sta2, chan2, 
      -		t0r, srate2, nout, calib,  
      -		instype, dir, dfile, sprout)
 
 c--- write Backus-Gilbert spread
 	  chan2="BGsp\0"
 	write(dfile,'(f14.2,".",a3,".",a3)') dtime,sta2(1:3),chan2(1:4)
-	call write_my_wf(dbo,  sta2, chan2, 
+	call writemywf(dbo,  sta2, chan2, 
      -		t0r, srate2, nout, calib,  
      -		instype, dir, dfile, sprbg)
 

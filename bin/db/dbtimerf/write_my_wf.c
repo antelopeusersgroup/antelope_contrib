@@ -9,7 +9,7 @@
 #include "db.h"
 
 int
-write_my_wf_(db, sta, chan, time, samprate, nsamp, calib, instype, dir, dfile, data)
+writemywf_(db, sta, chan, time, samprate, nsamp, calib, instype, dir, dfile, data)
 Dbptr	*db;
 char	*sta, *chan;
 double	*time, *samprate;

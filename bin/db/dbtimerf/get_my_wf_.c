@@ -16,7 +16,7 @@ GAA 3/97
 #include "db.h"
 
 int
-read_my_wf_(dbwf, t0_req, t1_req, tr, t0, t1, npts, data)
+readmywf_(dbwf, t0_req, t1_req, tr, t0, t1, npts, data)
 Dbptr	*dbwf, *tr;
 double	*t0_req, *t1_req, *t0, *t1;
 int 	*npts;
@@ -38,7 +38,7 @@ float	*data;
 
 	dbquery (*tr, dbRECORD_COUNT, &nwf);
 	if (nwf <1) {
-		fprintf(stderr,"get_my_wf:  No data\n");
+		fprintf(stderr,"getmywf:  No data\n");
 		return 0;
 	}
 
@@ -50,7 +50,7 @@ float	*data;
 		"nsamp", npts,
 		"samprate", &samprate,
 		"time", t0,
-		0)!=0) die(0,"get_my_wf: dbgetv problem\n");
+		0)!=0) die(0,"getmywf: dbgetv problem\n");
 
 	*t1 = *t0 + (*npts - 1)/samprate;
 	for (i=0; i<*npts; i++) data[i] = d1[i];

@@ -26,7 +26,7 @@ c --- outer loop of search for pivot elements
 	    if (ipiv(j).ne.1) then
 	      do 12 k=1,n
 		if (ipiv(k).eq.0) then
-		  if (abs(a(j,k).ge.big)) then
+		  if (abs(a(j,k)).ge.big) then
 		    big = abs(a(j,k))
 		    irow = j
 		    icol = k
@@ -138,7 +138,7 @@ c --- outer loop of search for pivot elements
 	    if (ipiv(j).ne.1) then
 	      do 12 k=1,n
 		if (ipiv(k).eq.0) then
-		  if (abs(a(j,k).ge.big)) then
+		  if (abs(a(j,k)).ge.big) then
 		    big = abs(a(j,k))
 		    irow = j
 		    icol = k
