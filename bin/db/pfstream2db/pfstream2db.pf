@@ -1,0 +1,79 @@
+table_name_maps &Tbl{
+pmel_arrivals origin
+pmel_arrivals assoc
+station_corrections gridstat
+station_corrections gridscor
+}
+newids_required &Arr{
+arrival arid
+origin orid
+}
+save_by_row &Arr{
+assoc &Tbl{
+arid	int	arid
+orid	int	orid
+sta	string	sta
+phase	string	phase
+belief	double  belief
+assoc.delta double delta
+assoc.seaz  double seaz
+assoc.esaz  double esaz
+assoc.timeres  double timeres
+assoc.timedef  string timedef
+assoc.azdef  string azdef
+assoc.slodef  string slodef
+assoc.azres	double azres
+assoc.slores	double slores
+assoc.emares	double emares
+assoc.wgt double wgt
+assoc.vmodel string vmodel
+}
+gridscor &Tbl{
+sta string sta
+gridid int gridid
+phase string phase
+gridname string gridname
+pmelrun string pmelrun
+tsc double tsc
+tscref double tscref
+tscbias double tscbias
+}
+}
+save_by_group &Arr{
+origin &Tbl{
+origin.lat      real    origin.lat
+origin.lon      real    origin.lon
+origin.depth    real    origin.z
+origin.time     time    origin.time
+orid    int     orid
+evid    int     evid
+origin.jdate	int	origin.jdate
+origin.nass	int	nass
+origin.ndef	int	ndef
+origin.ndp	int	ndp
+grn	int 	grn
+srn	int	srn
+etype	string 	etype
+review	string	review
+depdp	real	depdp
+dtype	string	dtype
+mb	real	mb
+mbid	int	mbid
+ms	real	ms
+msid	int	msid
+ml	real	ml
+mlid	int	mlid
+auth	string	auth
+algorithm string algorithm
+}
+}
+save_by_ensemble &Arr{
+gridstat &Tbl{
+gridname string gridname
+gridid int gridid
+pmelrun string pmelrun
+sswridgf double sswrodgf
+ndgf int ndgf
+sdobs double sdobs
+}
+}

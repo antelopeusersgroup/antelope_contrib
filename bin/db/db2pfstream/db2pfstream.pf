@@ -1,0 +1,87 @@
+sleep_time 30
+dbprocess_list	&Tbl{
+    dbopen event
+    dbjoin origin
+    dbjoin assoc
+    dbjoin arrival
+}
+ensemble_keys	&Tbl{
+    evid
+}
+ensemble_mode	true
+group_keys	&Tbl{
+}
+passthrough	&Tbl{
+    evname string evname
+    origin.jdate	int	origin.jdate
+    origin.nass	int	nass
+    origin.ndef	int	ndef
+    origin.ndp	int	ndp
+    grn	int 	grn
+    srn	int	srn
+    etype	string 	etype
+    review	string	review
+    depdp	real	depdp
+    dtype	string	dtype
+    mb	real	mb
+    mbid	int	mbid
+    ms	real	ms
+    msid	int	msid
+    ml	real	ml
+    mlid	int	mlid
+    auth	string	auth
+    origin.auth string origin.auth
+    commid	int	commid
+    origin.commid	int	origin.commid
+    arrival.commid	int	arrival.commid
+    algorithm string algorithm
+    belief	double  belief
+    assoc.delta double delta
+    assoc.seaz  double seaz
+    assoc.esaz  double esaz
+    assoc.timeres  double timeres
+    assoc.timedef  string timedef
+    assoc.azdef  string azdef
+    assoc.slodef  string slodef
+    assoc.azres	double azres
+    assoc.slores	double slores
+    assoc.emares	double emares
+    assoc.wgt double wgt
+    assoc.vmodel string vmodel
+    arrival.jdate int arrival.jdate
+    iphase	string	iphase
+    stassid int stassid
+    chanid int chanid
+    stype string stype
+    azimuth double azimuth
+    delaz double delaz
+    slow double slow
+    delslo double delslo
+    ema double ema
+    rect double rect
+    amp double amp
+    per double per
+    logat double logat
+    clip string clip
+    fm string fm
+    snr double snr
+    qual string qual
+    arrival.auth string arrival.auth
+}
+pf_revision_time	1038587117
+require	&Tbl{
+    evid	int	evid
+    orid	int	orid
+    prefor	int	prefor
+    origin.lat	real	origin.lat
+    origin.lon	real	origin.lon
+    origin.depth	real	origin.z
+    origin.time	time	origin.time
+    arid	int	arid
+    phase	string	phase
+    sta	string	sta
+    chan	string	chan
+    arrival.time	time	arrival.time
+    deltim	real	deltim
+}
+virtual_table_name	test_arrival_view

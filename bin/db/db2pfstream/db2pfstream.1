@@ -1,0 +1,259 @@
+.TH DB2PFSTREAM 1 "$Date$"
+.SH NAME
+db2pfstream - build database view and send metadata as a pfstream
+.SH SYNOPSIS
+.nf
+db2pfstream  db file [-n -V -v -pf pffile -sift expression]
+.fi
+.SH DESCRIPTION
+.LP
+db2pfstream is a generalized input function for a processing system
+based on a concept of a pfstream.  A pfstream is a way to 
+encapsulate
+pieces of metadata data that could be attached to an arbitrary 
+data object to define it.  This program is designed to build a 
+(potentially long) stream of these pf blocks and feed the results
+into an output file.  It is expected that file would normally be
+a fifo to allow the output of this program to feed directly into
+a secondary processing algorithm without actually taking up 
+space for the pf data.  This is intended as a simple data model
+for parallel processing algorithms that are data driven like
+most seismic applications.  
+.LP
+The \fBdb\fR and \fBfile\fR parameters are required.  
+db is assumed to be an antelope database and file is the output
+file name (can and would normally be a fifo created with 
+mkfifo).  The default assumes a parameter file exists 
+in PFPATH called db2pfstream.pf that controls most of what
+this program will do (see below).
+.SH OPTIONS
+.IP -n
+Run with no output.  Normal procedure should be to run this program
+with this flag set to verify all the database attributes that are
+required downstream are present in the database. 
+.IP -V
+Print usage line and exit immediately doing nothing. 
+.IP -v
+Be verbose in output.  This is most useful if the -n flag is set
+but it will create a lot of messages that may not matter.  The 
+primary difference is that when -v is set passthrough parameters
+(see parameter file description below) are checked for null values 
+and all nulls are listed. 
+.IP -pf
+Read from alternative parameter file pf instead of default.
+.IP -sift
+Apply a final subset condition \fIexpression\fR to the working
+database view before starting.  This is most useful if a processing
+stream is being driven by a scripting language to do something 
+like event based processing one event at a time or for manually
+spitting up flow between banks of processors.  
+Otherwise this can generally be done more easily by modification of
+the parameter file to set the input view.
+.SH FILES
+.LP
+Here is an example pfstream output file with 5 rows and 2 attributes
+(columns).  This example has no grouping defined.
+.nf
+example &Arr{
+    ensemble    &Arr{
+        00000   &Arr{
+            arid        2378
+            orid        316
+        }
+        00001   &Arr{
+            arid        2379
+            orid        316
+        }
+        00002   &Arr{
+            arid        2380
+            orid        316
+        }
+        00003   &Arr{
+            arid        2381
+            orid        316
+        }
+        00004   &Arr{
+            arid        2382
+            orid        316
+        }
+        00005   &Arr{
+            arid        2383
+            orid        316
+        }
+    }
+    ensemble_keys       &Tbl{
+        gridid
+    }
+}
+__EOF__
+__EOI__
+
+For more details see pfstream(5).
+
+.fi
+.SH PARAMETER FILE
+.LP
+The input parameter file can get fairly long.  This is an abbreviated
+example forming part of the commond arrival view used
+in catalog preparations.  Check the standard one for a larger example:
+.nf
+
+# Example parameter file
+sleep_time 30
+dbprocess_list	&Tbl{
+    dbopen event
+    dbjoin origin
+    dbjoin assoc
+    dbjoin arrival
+}
+ensemble_keys	&Tbl{
+    evid
+}
+ensemble_mode	true
+group_keys	&Tbl{
+}
+passthrough	&Tbl{
+    evname string evname
+    origin.jdate	int	origin.jdate
+    origin.nass	int	nass
+    origin.ndef	int	ndef
+    origin.ndp	int	ndp
+    grn	int 	grn
+    srn	int	srn
+    etype	string 	etype
+    review	string	review
+    depdp	real	depdp
+    dtype	string	dtype
+    mb	real	mb
+    mbid	int	mbid
+    ms	real	ms
+    msid	int	msid
+    ml	real	ml
+    mlid	int	mlid
+    auth	string	auth
+    origin.auth string origin.auth
+    commid	int	commid
+    origin.commid	int	origin.commid
+    arrival.commid	int	arrival.commid
+    algorithm string algorithm
+    belief	double  belief
+    assoc.delta double delta
+    assoc.seaz  double seaz
+    assoc.esaz  double esaz
+    assoc.timeres  double timeres
+    assoc.timedef  string timedef
+    assoc.azdef  string azdef
+    assoc.slodef  string slodef
+    assoc.azres	double azres
+    assoc.slores	double slores
+    assoc.emares	double emares
+    assoc.wgt double wgt
+    assoc.vmodel string vmodel
+    arrival.jdate int arrival.jdate
+    iphase	string	iphase
+    stassid int stassid
+    chanid int chanid
+    stype string stype
+    azimuth double azimuth
+    delaz double delaz
+    slow double slow
+    delslo double delslo
+    ema double ema
+    rect double rect
+    amp double amp
+    per double per
+    logat double logat
+    clip string clip
+    fm string fm
+    snr double snr
+    qual string qual
+    arrival.auth string arrival.auth
+}
+require	&Tbl{
+    evid	int	evid
+    orid	int	orid
+    prefor	int	prefor
+    origin.lat	real	origin.lat
+    origin.lon	real	origin.lon
+    origin.depth	real	origin.z
+    origin.time	time	origin.time
+    arid	int	arid
+    phase	string	phase
+    sta	string	sta
+    chan	string	chan
+    arrival.time	time	arrival.time
+    deltim	real	deltim
+}
+virtual_table_name	test_arrival_view
+
+
+
+
+.fi
+.LP
+\fIdbprocess_list\fR is a Tbl list that is passed directly to dbprocess
+to build the working view for this program.   This is a VERY important
+parameter in two ways.  First, it defines the set of joins that will
+be needed to build the complete suite of attributes to be passed into
+the ouput stream.  Second, it must define the sort order properly to 
+provide the right grouping when ensemble output is requested (see below).
+.LP
+The boolean, \fIensemble_mode\fR, controls the basic output mode.
+If this parameter is false, the program writes pf's in single 
+object (row) mode.  That is, a block of parameters is written to 
+the output stream for each row in the input database view.  
+If \fIensemble_mode\fR is set true, the the output will be 
+blocks of paremeters with repeating names surrounded by the 
+parameter file block 
+.nf
+ensemble &Arr{
+   ... 
+}  
+.fi
+(see example above)
+When \fIensemble_mode\fR is true this program searchs for 
+two lists called 
+\fIensemble_keys\fR and \fIgrouping_keys\fR. 
+The \fIensemble_keys\fR parameter defines the grouping 
+that defines one data object that is to be processed by
+a downstream algorithm.  That is, an ensemble is the basic
+unit of granularity of the algorithm that is to use these
+data.  (Note the ensemble is assumed to have only one 
+element/database row if ensemble_mode is false. )  That is,
+it defines the outer blocking of the pfstream. 
+The \fIgrouping_keys\fR is optional for an ensemble and 
+defines a secondary grouping of the ensemble.   
+A typical example of this might be an ensemble of 
+three-component seismograms with the gather defining
+the ensemble and the grouping defining the collections of
+three-components for each station.  
+.LP
+\fIvirtual_table_name\fR is the tag assigned to the outer block
+defining an ensemble.  That is, multiple ensembles with 
+different tags can be embedded in a single pfstream block.
+This allows a fairly general way to map from one name space
+to another or one database schema to another.  For the example
+described in the FILES section above this tag was set to example.
+.LP
+\fIsleep_time\fR sets the time the program will sleep before 
+closing it's output file.  This should be set to the maximum
+expected execution time for downstream processing of one 
+data object.  It can be set to zero if the output is an
+ordinary file.  
+.SH "SEE ALSO"
+.nf
+pfstream2db(1), pstream(3), pfstream(5)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The sleep_time parameter is unquestionably a kludge.  It is a less
+than elegant way to work around a problem with a fifo when downstream
+processes operate in feeding mode (i.e. open, read one block, close)
+from a fifo.  It is necessary because if db2pfstream closes and the
+other end does not have the fifo open for read the last block of
+data will be dropped.  This could probably be done better by using
+bidirectional communication capabilities of named pipes described
+in streamio(7).
+.SH AUTHOR
+Gary L. Pavlis, Indiana University (pavlis@indiana.edy)
+.\" $Id$
