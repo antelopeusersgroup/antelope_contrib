@@ -518,7 +518,8 @@ sub get_files {
 sub build_msg {
     my ($msg, $files, $subject) = @_;
     DEBUG && dbpnt("Building message body.\n");
-    $msg = "Log Message:\n-----------\n$msg\n";
+    # $msg = "Log Message:\n-----------\n$msg\n";
+    $msg = "\n$msg\n"; # Minimalist
 
     # Create the lines that will go underneath the above in the message.
     my %dash = ( map { $_ => '-' x length($map{$_}) } keys %map );
