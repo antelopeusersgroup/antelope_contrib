@@ -1,12 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
-/*
-#include <perf.h>
-*/
-#include <sunperf.h>
 
 #include "stock.h"
 #include "elog.h"
+
+#include "perf.h"
+
 /* This is a plug in interface module that replaces the svdcmp
 routine from numerical recipes and calls the sunperf singular
 value decomposition routine.  

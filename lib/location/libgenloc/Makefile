@@ -16,7 +16,7 @@ DATA=genloc1.0
 #  Comment out the following line if you are using Sun's Performance
 #  library.  Most universities receive this bundled with compilers.
 #
-cflags=	-g -DSUNPERF
+cflags=	
 ldflags= 	
 ldlibs= $(DBLIBS) 
 
@@ -49,6 +49,6 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
 
 # $Id$ 

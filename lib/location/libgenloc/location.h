@@ -1,3 +1,5 @@
+#define FLT_EPSILON     1.192092896E-07F
+
 /*  ----INCLUDE FILE FOR HYPOCENTER LOCATION PROGRAM ------
 WARNING:  ANTELOPE includes must precede this include file or typdefs
 like Arr and Tbl will not be defined:  stock.h, arrays.h */

@@ -3,9 +3,8 @@
 #include "location.h" 
 #include "coords.h" 
 #include "pf.h"
-#include <float.h>
-#include <sunmath.h>
-#include <sunperf.h>
+
+#include "perf.h"
 
 extern int GenlocVerbose ;
 #undef register_error
