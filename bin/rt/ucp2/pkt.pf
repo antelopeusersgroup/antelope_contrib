@@ -1,0 +1,80 @@
+
+Network_Name  anza
+
+#DTYPE    SID NAME    COMP   SENS       CALIB
+Site &Tbl{
+ BBA/HS  300   300       1    FBZ    1.266669
+ BBA/HS  300   300       2    FBN    1.266669
+ BBA/HS  300   300       3    FBE    1.266669
+ BBA/HS  300   300       4    HHZ    1.266669
+ BBA/HS  300   300       5    HHN    1.266669
+ BBA/HS  300   300       6    HHE    1.266669
+ BBA/BS  300   300       4    BHZ    1.266669
+ BBA/BS  300   300       5    BHN    1.266669
+ BBA/BS  300   300       6    BHE    1.266669
+ BBA/LS  300   300       4    LHZ    1.266669
+ BBA/LS  300   300       5    LHN    1.266669 
+ BBA/LS  300   300       6    LHE    1.266669
+#
+ BBA/BS  245   245       1    RAW    1.266669
+ BBA/BS  245   245       2    FLT    1.266669
+ BBA/LS  245   245       3    VEL    1.266669
+ BBA/LS  245   245       4    DIR    1.266669
+ BBA/LS  245   245       5    TMP    1.266669
+ BBA/LS  245   245       6    WET    1.266669
+#
+ BBA/HS  819   819       4    HHZ    1.266669
+ BBA/HS  819   819       5    HHN    1.266669
+ BBA/HS  819   819       6    HHE    1.266669
+ BBA/BS  819   819       4    BHZ    1.266669
+ BBA/BS  819   819       5    BHN    1.266669
+ BBA/BS  819   819       6    BHE    1.266669
+ BBA/LS  819   819       4    LHZ    1.266669
+ BBA/LS  819   819       5    LHN    1.266669 
+ BBA/LS  819   819       6    LHE    1.266669
+#
+ BBA/HS  7137  7137      1    HHZ    1.266669
+ BBA/HS  7137  7137      2    HHN    1.266669
+ BBA/HS  7137  7137      3    HHE    1.266669
+}
+
+Das_Stat &Tbl{
+  1    BATT
+  2    RESET
+  3    WHY
+  4    BUFF
+  5    RADRES
+  6    PLL
+  7    SKEW
+  8    TEMP
+  9    LAT
+  10   LONG
+  11   ALT
+}
+
+DC_Stat &Tbl{
+  1    BATT
+  2    ACFAIL
+  3    HAZARD
+  4    M1
+  5    M2
+  6    M3
+  7    CLOCK
+  8    MCLK
+  9    ACLK
+  10   BUFF
+  11   LINK
+  12   OPEN
+  13   ERROR
+  14   SEND
+  15   RESET
+  16   WHY
+  17   RSR
+}
+
+RTX_Stat &Tbl{
+  1 	RTXREQ
+  2	RTXRCV
+  3     RTXSKP
+}
+
