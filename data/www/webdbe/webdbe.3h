@@ -1,4 +1,3 @@
-'\" te
 .TH WEBDBE 3 "$Date$"
 .SH NAME
 webdbe \- HTTP (web) interface to dbe
