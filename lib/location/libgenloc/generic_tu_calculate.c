@@ -56,6 +56,8 @@ Slowness_Function_Output calculate_slowness_vector(Slowness_vector u, Hypocenter
 	Slowness_Function_Output du;
 	Ray_Endpoints x;
 	double *ux_sc, *uy_sc;
+
+        x.sta = u.array->name;
 	x.slat = h.lat;
 	x.slon = h.lon;
 	x.sz = h.z;  /* Don't get confused about z0 in hypo structure here.
