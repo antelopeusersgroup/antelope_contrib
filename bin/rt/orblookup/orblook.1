@@ -67,9 +67,9 @@ The orblookup program steps through the overview string literal and substitutes
 generated code at special comments encountered.  There are three specific       
 comment types used by orblookup, with the following format:  
 .LP
-1) <!-- ?variable_name -->
+.IP "<!-- ?var_name -->"
 .br
-which is replaced by the value of the given variable, where variable_name 
+which is replaced by the value of the given variable, where var_name 
 is a legal variable name listed below:
 .LP
 .nf
@@ -108,23 +108,17 @@ url                url for the current network
 orburl             url for the current orb
 orb                name of the current orb
 .fi
-.LP
-.na
-2) <!-- ?insert block_name iterate=num indent=num_spaces -->
+.IP "<!-- ?insert block_name iterate=num indent=nspaces -->"
 .br
-.ad
 which is replaced by a block of code contained in block_name and is 
-indented num_spaces, where block_name is a top-level component under
+indented nspaces, where block_name is a top-level component under
 html_template.  This performes num iterations of the block of code.
-.LP
-.na
-3) <!-- ?insert block_name iterate=variable_name indent=num_spaces -->
+.IP "<!-- ?insert block_name iterate=var_name indent=nspaces -->"
 .br
-.ad
-which is replaced by a block of code iterated over variable_name and
-indented num_spaces, where variable_name is a legal variable name listed
+which is replaced by a block of code iterated over var_name and
+indented nspaces, where var_name is a legal variable name listed
 below, and has an integer value.  This loops over the variable
-variable_name, and updates its value through each iteration.  The valid
+var_name, and updates its value through each iteration.  The valid
 variable names for this purpose are:
 .LP
 .IP
