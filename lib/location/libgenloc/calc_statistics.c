@@ -5,6 +5,9 @@
 #include "stock.h"
 #include "location.h"
 
+extern int GenlocVerbose ;
+#define register_error  if ( GenlocVerbose ) elog_notify
+
 /* Sort compare function for qsort function */
 int compare_float(const void *v1,const void *v2)
 {
