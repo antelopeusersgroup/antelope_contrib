@@ -921,7 +921,7 @@ get_orbnames()
     Pf * pf;
     Arr * orbnames;
 
-    pfread ( "./orblookup.pf", &pf );
+    pfread ( "orblookup.pf", &pf );
     pf->type = PFARR;
     orbnames = pf_collapse( getarr(  pf->value.arr, ORBLIST ) );
     /* recurse_free_pf( pf ); */
