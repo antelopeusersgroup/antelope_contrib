@@ -2,8 +2,9 @@
 .SH NAME
 db2segy - conversion from css3.0 traces to segy disk image
 .SH SYNOPSIS
-.nf
+
 \fBdb2segy db outfile \fR [ -pf pffile ]
+
 .SH DESCRIPTION
 .LP
 \fBdb2segy\fR is a fairly flexible program for producing a 
@@ -74,7 +75,7 @@ clipping.  An exception to this rule is a "gap" flagged at the front
 or end of a trace.  Because this would commonly happen with variable
 start times on different traces gaps in the front or end of a trace
 will be zeroed instead set full scale.  
-..SH OPTIONS
+.SH OPTIONS
 .IP -pf
 Alternate parameter file to use in place of db2segy.pf.
 .SH FILES
