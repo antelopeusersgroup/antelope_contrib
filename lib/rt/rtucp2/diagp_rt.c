@@ -92,8 +92,9 @@ int dprtCmd(clientData, interp, argc, argv)
 	Tcl_AppendResult(interp, "tclorb ", cmd, " already in use.", (char *) NULL);
 	return TCL_ERROR;
     }
-/*printf( "set tcl %s for %s\n", cmd, orbname );  */
-
+/*
+fprintf(stderr, "set tcl %s for %s\n", cmd, orbname );  
+*/
     tclorb = (TclOrb * ) ckalloc( sizeof(TclOrb) );
 
     tclorb->lcmd_time = 0.0;
@@ -337,8 +338,11 @@ dp_tclCmd(clientData, interp, argc, argv)
          argv++;
          strcpy( daspkt, str );
     	 if( strlen( daspkt ) <= 0 ) sprintf( daspkt, ".*\0");
-
-         if ( regcomp(&dasmatch, &daspkt[0], REG_EXTENDED|REG_NOSUB) != 0)   {
+/*
+fprintf(stderr, "select %s %s\n", daspkt, dcpkt);
+fflush(stderr);
+*/
+	if ( regcomp(&dasmatch, &daspkt[0], REG_EXTENDED|REG_NOSUB) != 0)   {
 	    Tcl_AppendResult(interp, "regcomp error for CALS\n", (char *) NULL); 
 	    return TCL_ERROR;
          }
@@ -666,7 +670,10 @@ int GetPar( )
          if ( !GainStop )  {
             if ( !orbreap ( gaintcl->orbid, &gaintcl->pktid, pkey, &ppkttime, 
                  &ppacket, &pnbytes, &pbufsize) )  {
-
+/*
+fprintf(stderr, "key = %s\n", pkey);
+fflush(stderr);
+*/
 	         while ( Tk_DoOneEvent (TK_DONT_WAIT) )  
 	              ;  
         
@@ -696,7 +703,10 @@ int GetPar( )
             dc = das = 1;
             if ( !orbreap ( dastcl->orbid, &dastcl->pktid, pkey, &ppkttime, 
                  &ppacket, &pnbytes, &pbufsize) )  {
-                 dc = regexec( &dcmatch, pkey, (size_t) 0, NULL, 0 ) ;  
+/*
+fprintf(stderr, "key = %s\n", pkey);
+fflush(stderr);
+*/	         dc = regexec( &dcmatch, pkey, (size_t) 0, NULL, 0 ) ;  
                  das = regexec( &dasmatch, pkey, (size_t) 0, NULL, 0 ) ;
 	         while ( Tk_DoOneEvent (TK_DONT_WAIT) )  
 	              ;  
@@ -722,7 +732,10 @@ int GetPar( )
                            case 0xdade:
                               if( !BBA_DcDas( dastcl, pkey, ppkttime, ppacket, pnbytes )) return 0;
                               break;
-	                   default:  break;
+	                   default:  
+			      printf(stderr, "unknown pkttype - %0x\n", pkttype);
+			      fflush(stderr);
+			      break;
                       }
                  }
              } 
@@ -733,7 +746,11 @@ int GetPar( )
              dc = das = 1;
              if ( !orbreap (dctcl->orbid, &dctcl->pktid, dkey, &dpkttime, 
                   &dpacket, &dnbytes, &dbufsize) )  {
-              dc = regexec( &dcmatch, dkey, (size_t) 0, NULL, 0 ) ;  
+/*
+fprintf(stderr, "key = %s\n", dkey);
+fflush(stderr);
+*/
+	          dc = regexec( &dcmatch, dkey, (size_t) 0, NULL, 0 ) ;  
                   das = regexec( &dasmatch, dkey, (size_t) 0, NULL, 0 ) ;
 	          while ( Tk_DoOneEvent (TK_DONT_WAIT) )  
 	               ;  
