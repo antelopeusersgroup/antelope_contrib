@@ -35,9 +35,6 @@ dbfree (@db)
 dblookup (@db, database, table, field, row)
     returns a database pointer for the specified database, table, field, and row.
 
-dbfind (@db, expression [, first [,reverse]])
-    find first row matching expression, starting with first; if reverse, search backwards 
-
 <subsection Manipulating fields and records>
 dbadd (@db [, record])
     add the new record to the table in @db. If record is not specified, add the scratch record. returns the new row number, or an error code < 0.
@@ -152,6 +149,9 @@ dbstrtype (@db, string)
     classifies string, returning "strREAL", "strINTEGER", "strNULL", "strSTRING", 
     "strTIME", "strFIELD", or "strUNKNOWN"
 
+dbfind (@db, string [, first [,reverse]])
+    find first row matching expression, starting with first; if reverse, search backwards 
+
 dbinvalid()
     return a database pointer of dbINVALID
 
@@ -178,7 +178,7 @@ elog_die (msg)
     send a message to the elog message facility and die
 
 elog_string (n)
-    return a string containing the error log contents from message n
+    return error log starting with message n
 
 elog_clear ()
     clear the elog message log
@@ -226,15 +226,15 @@ ask (string)
     pose a question string at the controlling tty, and return the response
 
 askyn (string)
-    pose a yes/no question string at the controlling tty, and return 
+    pose a yes/no question string at the controlling tty, return 
     0=false, 1=true
 
 askynaq (string)
-    pose a yes/no question string at the controlling tty, and return 
+    pose a yes/no question string at the controlling tty, return 
     0=false, 1=true, 2=all, 3=quit
 
-yesno (string) 
-    returns -1 true; 0 false; 1 if the string doesn't match a valid value
+yesno (s) 
+    returns -1 if $s =~ /yes|ok|y|true|1|on|t/, 0 if $s =~ /no|n|false|0|off|f/, 1 otherwise
 
 datafile (env, file)
     find the specified file by looking first at the environment variable, then along the path
@@ -248,8 +248,8 @@ makedir(d)
 abspath (a)
     returns the absolute path to the specified file a.
 
-relpath (f, t)
-    returns a relative path from f to t. f must be a directory.
+relpath (d, t)
+    returns a relative path from directory f to t 
 
 cleanpath (p [, nolinks])
     normalize the input path p, removing extra "..", "//", and
@@ -266,18 +266,6 @@ parsepath (a)
 close_descriptors()
     close all file descriptors after stderr; useful after fork
 
-grn (lat, lon)
-    return the geographic region number
-
-grname (lat, lon)
-    return the geopgraphic region name
-
-srn (lat, lon)
-    return the seismic region number
-
-srname (lat, lon)
-    return the seismic region name
-
 strsignal (code)
     return name for signal, given the integer code
 
@@ -291,6 +279,18 @@ limit (resource, [limit2set])
 cputime      filesize     datasize      
 stacksize    coredumpsize vmemoryuse    
 </example>
+
+grn (lat, lon)
+    return the geographic region number
+
+grname (lat, lon)
+    return the geopgraphic region name
+
+srn (lat, lon)
+    return the seismic region number
+
+srname (lat, lon)
+    return the seismic region name
 
 <subsection Simple Ring Buffers>
 
