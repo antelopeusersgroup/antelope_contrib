@@ -1,3 +1,27 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.2  2003/06/01 08:25:40  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.2  2000/08/15 00:50:41  dietz
+ *     Fixed NT bug in site_read() where the 'E' longitude designator was being
+ *     read as scientific notation instead of East-West.  Caused east longitudes
+ *     to show up as negative longitudes.
+ *
+ *     Revision 1.1  2000/02/14 18:51:48  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 /*
  * site.c : Station parameter routines.
  *
@@ -10,8 +34,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "kom.h"
-#include "site.h"
+#include <kom.h>
+#include <site.h>
 
 /* Initialization constants
  **************************/
@@ -32,7 +56,7 @@ void site_init(void)
         nSite = 0;
         Site = (SITE *)calloc(maxSite, sizeof(SITE));
         if(!Site) {
-                fprintf(stderr, "site_init:  Could not allocate site table; exitting!\n");
+                fprintf(stderr, "site_init:  Could not allocate site table; exiting!\n");
                 exit(0);
         }
         return;
@@ -69,6 +93,11 @@ int site_load(char *name)
  *                   code file                                            *
  **************************************************************************/
 
+/* Sample station line:
+R8075 MN  BHZ  41 10.1000N121 10.1000E   01.0     0.00  0.00  0.00  0.00 1  0.00
+0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 
+*/
+
 void site_read(char *name)
 {
         FILE  *stafile;
@@ -86,7 +115,7 @@ void site_read(char *name)
    *****************/
         if( (stafile = fopen( name, "r" )) == (FILE *) NULL ) {
                 fprintf(stderr,
-                       "site_read: Cannot open site file <%s>; exitting!\n", name);
+                       "site_read: Cannot open site file <%s>; exiting!\n", name);
                 exit(0);
         }
 
@@ -100,25 +129,46 @@ void site_read(char *name)
                    fprintf( stderr,
                         "site_read: Site table full; cannot load entire file <%s>\n", name );
                    fprintf( stderr,
-                        "site_read: Use <maxsite> command to increase table size; exitting!\n" );
+                        "site_read: Use <maxsite> command to increase table size; exiting!\n" );
                    exit(0);
                 }
 
         /* decode each line of the file */
+
                 strncpy( Site[nSite].name, &line[0],  5);
                 strncpy( Site[nSite].net,  &line[6],  2);
                 strncpy( Site[nSite].comp, &line[10], 3);
                 comp = line[9];
 
-                line[42] = '\n';
-                n = sscanf( &line[15], "%d %f%c%d %f%c%d",
-                            &dlat, &mlat, &ns, &dlon, &mlon, &ew, &elev );
-                if ( n < 7 ) {
-                        fprintf( stderr,
-                               "site_read: Error decoding line in station file\n%s\n",
-                                line );
-                        continue;
+                line[42] = '\0';
+                n = sscanf( &line[38], "%d", &elev );
+                if( n < 1 ) {
+                   fprintf( stderr,
+                          "site_read: Error reading elevation from line in station file\n%s\n",
+                           line );
+                   continue;
                 }
+
+                ew       = line[37];
+                line[37] = '\0';
+                n = sscanf( &line[26], "%d %f", &dlon, &mlon );
+                if( n < 2 ) {
+                   fprintf( stderr,
+                          "site_read: Error reading longitude from line in station file\n%s\n",
+                           line );
+                   continue;
+                }
+
+                ns       = line[25];
+                line[25] = '\0';
+                n = sscanf( &line[15], "%d %f", &dlat, &mlat );
+                if ( n < 2 ) {
+                   fprintf( stderr,
+                          "site_read: Error reading latitude from line in station file\n%s\n",
+                           line );
+                   continue;
+                }
+
         /*      printf( "%-5s %-2s %-3s %d %.4f%c%d %.4f%c%4d\n",
                          Site[nSite].name, Site[nSite].net, Site[nSite].comp,
                          dlat, mlat, ns,
@@ -186,7 +236,7 @@ int site_com( void )
                      fprintf( stderr, "site_com:  Error: site table already allocated.\n" );
                      fprintf( stderr,
                            "site_com:  Use <maxsite> before any <site> or <site_file> commands" );
-                     fprintf( stderr, "; exitting!\n" );
+                     fprintf( stderr, "; exiting!\n" );
                      exit( 0 );
                 }
                 maxSite = k_int();

@@ -1,3 +1,26 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:38  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.2  2003/02/04 17:57:38  davidk
+ *     Added a new function socketSetError_ew() that sets errno to set
+ *     the error for the most recent socket call..
+ *
+ *     Revision 1.1  2000/02/14 18:46:17  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 /* 
  *  socket_ew.c for Solaris
  *
@@ -8,7 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include "socket_ew.h"
+#include <socket_ew.h>
 
 
 ulong MS_PER_TICK;
@@ -90,6 +113,14 @@ int sendall(int socket, const char *msg, long msgLen, int flags)
 int socketGetError_ew()
 {
   return((int)errno);
+}
+
+/********************** socketSetError_ew *****************
+     Sets the error code for the most recent socket error.
+**********************************************************/
+void socketSetError_ew(int error)
+{
+  errno=error;
 }
 
 

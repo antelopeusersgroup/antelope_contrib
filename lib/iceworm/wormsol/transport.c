@@ -1,7 +1,35 @@
 
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.4  2003/06/01 08:25:38  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.4  2001/05/04 23:42:10  dietz
+ *     Changed flag arg of tport_putflag from short to int to handle
+ *     processids properly.
+ *
+ *     Revision 1.3  2000/06/02 17:16:22  dietz
+ *     Fixed tport_putmsg,tport_copyto to always release semaphore before returning
+ *
+ *     Revision 1.2  2000/03/25 01:33:28  dietz
+ *     added signal blocking to protect semaphore handling code
+ *
+ *     Revision 1.1  2000/02/14 18:46:17  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 
   /********************************************************************
-   *                                                       10/1998    *
+   *                                                        3/2000    *
    *                           transport.c                            *
    *                                                                  *
    *   Transport layer functions to access shared memory regions.     *
@@ -12,6 +40,7 @@
    ********************************************************************/
 
 #include <sys/types.h> 
+#include <signal.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/ipc.h>
@@ -21,7 +50,7 @@
 #include <string.h>
 #include <time.h>
 #include <thread.h>
-#include "transport.h"
+#include <transport.h>
 
 static short Put_Init=1;           /* initialization flag */
 static short Get_Init=1;           /* initialization flag */
@@ -31,6 +60,8 @@ static short Copyfrom_Init=1;      /* initialization flag */
    ****************************************************************/ 
 void  tport_syserr  ( char *, long );
 void  tport_buferror( short, char * );
+void  tport_blocksigs( void );
+void  tport_releasesigs( void );
 
 /* These statements and variables are required by the functions of 
    the input-buffering thread 
@@ -239,6 +270,7 @@ int tport_putmsg( SHM_INFO *region,    /* info structure for memory region    */
    char             *o;                /* pointer to oldest transport header  */
    int j;
    int res;
+   int retval = PUT_OK;                /* return value for this function      */
 
 /**** First time around, init the sequence counters, semaphore controls ****/
 
@@ -280,13 +312,17 @@ int tport_putmsg( SHM_INFO *region,    /* info structure for memory region    */
       return( PUT_TOOBIG ); 
    }
    
+/**** Block signals that Earthworm uses to kill processes and threads ****/
+
+   tport_blocksigs();
+
 /**** Change semaphore; let others know you're using tracking structure & memory  ****/
 
    sops.sem_op = SHM_INUSE;
    res = semop( region->sid, &sops, 1 );   
    if (res == -1)
       tport_syserr( "tport_putmsg semop ->inuse", region->key );
-             
+
 /**** Next, find incoming logo in list of combinations already seen ****/
 
    for( it=0 ; it < nlogo ; it++ )
@@ -303,8 +339,9 @@ int tport_putmsg( SHM_INFO *region,    /* info structure for memory region    */
    if ( nlogo == NTRACK_PUT )
    {
       fprintf( stdout, 
-              "ERROR: tport_putmsg; exceeded NTRACK_PUT, msg not sent\n"); 
-      return( PUT_NOTRACK );
+              "ERROR: tport_putmsg; exceeded NTRACK_PUT, msg not sent\n");
+      retval = PUT_NOTRACK;
+      goto release_semaphore; 
    }
    it = nlogo;
    trak[it].memkey =  region->key;
@@ -342,7 +379,8 @@ build_header:
           fprintf( stdout, 
                   "ERROR: tport_putmsg; keyold not at FIRST_BYTE, Region %ld\n",
                    region->key );
-          exit( 1 );
+          retval = TPORT_FATAL;
+          goto release_semaphore; 
       }
       for ( j=0 ; j < sizeof(TPORT_HEAD) ; j++ )
       {
@@ -386,12 +424,18 @@ build_header:
 
 /**** Finished with shared memory, let others know via semaphore ****/
 
+release_semaphore:
    sops.sem_op = SHM_FREE;
    res = semop( region->sid, &sops, 1 );  
    if (res == -1)
       tport_syserr( "tport_putmsg semop ->free", region->key ); 
 
-   return( PUT_OK ); 
+/**** Release signals that Earthworm uses to kill processes and threads ****/
+
+   tport_releasesigs();
+
+   if( retval == TPORT_FATAL ) exit( 1 );
+   return( retval ); 
 }
 
 
@@ -700,7 +744,7 @@ wrapup:
 /*********************************************************************/
 
 void tport_putflag( SHM_INFO *region,  /* shared memory info structure     */
-       		    short     flag )   /* tells attached processes to exit */
+       		    int       flag )   /* tells attached processes to exit */
 {
    SHM_HEAD  *shm;
 
@@ -1227,6 +1271,7 @@ int tport_copyto( SHM_INFO    *region,  /* info structure for memory region   */
    char             *o;                /* pointer to oldest transport header  */
    int j;
    int res;
+   int retval = PUT_OK;                /* return value for this function      */
 
 /**** Initialize semaphore controls ****/
 
@@ -1251,20 +1296,23 @@ int tport_copyto( SHM_INFO    *region,  /* info structure for memory region   */
       return( PUT_TOOBIG ); 
    }
    
-/**** Store everything you need in the transport header ****/
+/**** Block signals that Earthworm uses to kill processes and threads ****/
 
-   hd.start = FIRST_BYTE;
-   hd.size  = length;
-   hd.logo  = *putlogo;
-   hd.seq   = seq;
+   tport_blocksigs();
 
 /**** Change semaphore to let others know you're using memory ****/
 
    sops.sem_op = SHM_INUSE;
    res = semop( region->sid, &sops, 1 );   
    if (res == -1)
-      tport_syserr( "tport_copyto semop ->inuse", region->key );
-             
+      tport_syserr( "tport_copyto semop ->inuse", region->key );          
+
+/**** Store everything you need in the transport header ****/
+
+   hd.start = FIRST_BYTE;
+   hd.size  = length;
+   hd.logo  = *putlogo;
+   hd.seq   = seq;
 
 /**** First see if keyin will wrap; if so, reset both keyin and keyold ****/
 
@@ -1289,7 +1337,8 @@ int tport_copyto( SHM_INFO    *region,  /* info structure for memory region   */
           fprintf( stdout, 
                   "ERROR: tport_copyto; keyold not at FIRST_BYTE, Region %ld\n",
                    region->key );
-          exit( 1 );
+          retval = TPORT_FATAL;
+          goto release_semaphore; 
       }
       for ( j=0 ; j < sizeof(TPORT_HEAD) ; j++ )
       {
@@ -1333,12 +1382,18 @@ int tport_copyto( SHM_INFO    *region,  /* info structure for memory region   */
 
 /**** Finished with shared memory, let others know via semaphore ****/
 
+release_semaphore:
    sops.sem_op = SHM_FREE;
    res = semop( region->sid, &sops, 1 );  
    if (res == -1)
       tport_syserr( "tport_copyto semop ->free", region->key ); 
 
-   return( PUT_OK ); 
+/**** Release signals that Earthworm uses to kill processes and threads ****/
+
+   tport_releasesigs();
+
+   if( retval == TPORT_FATAL ) exit( 1 );
+   return( retval ); 
 }
 
 
@@ -1391,3 +1446,26 @@ void tport_syserr( char *msg,   /* message to print (which routine had an error)
    exit( 1 );
 }
 
+
+/********************* function tport_blocksigs **********************/
+/*          Block certain signals to protect important code          */
+/*********************************************************************/
+
+void tport_blocksigs( void )
+{
+   sighold( SIGTERM ); /* in startstop.c, causes a process to exit */
+   sighold( SIGUSR1 ); /* in threads_ew.c, causes a thread to exit */
+   return;
+}
+
+
+/********************* function tport_releasesigs ********************/
+/* Re-enable signals that were previously blocked in tport_blocksigs */
+/*********************************************************************/
+
+void tport_releasesigs( void )
+{
+   sigrelse( SIGTERM );
+   sigrelse( SIGUSR1 );
+   return;
+}

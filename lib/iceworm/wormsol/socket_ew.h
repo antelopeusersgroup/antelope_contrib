@@ -1,3 +1,38 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:38  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.4  2003/02/04 17:55:24  davidk
+ *     Defined a new constant CONNREFUSED_EW  indicating that a server refused a client connection.
+ *     It is defined as the appropriate CONNFREFUSED constant for each platform.
+ *     Added a new function socketSetError_ew() that allows that caller to specify the last socket error.
+ *     This is neccessary in a Solaris client when a connection is refused by server.
+ *
+ *     Revision 1.3  2002/09/10 19:21:43  dhanych
+ *     REmoved include of winsock2.h ; it caused all sorts of compile-time
+ *     problems
+ *
+ *     Revision 1.2  2000/03/05 21:54:17  lombard
+ *     Added definition of INADDR_NONE for Solaris
+ *     Added `include <errno.h>' for Solaris so EINPROGRESS would be defined
+ *     Placed `ifndef min' around min to prevent redefinition errors
+ *     Added missing prototype for recv_all().
+ *
+ *     Revision 1.1  2000/02/14 20:05:54  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 #ifndef SOCKET_EW_H
 #define SOCKET_EW_H
 
@@ -10,9 +45,9 @@
 
 #ifdef _WINNT
 #include <windows.h>
-#include <winsock2.h>
 # define WOULDBLOCK_EW WSAEWOULDBLOCK
 # define CONNECT_WOULDBLOCK_EW WSAEWOULDBLOCK
+# define CONNREFUSED_EW WSAECONNREFUSED
  typedef unsigned __int64 Time_ew;
 # define TIMEOUT_ADJUSTMENT_ew 10000  /* Convert from millisec. to 
                                          100 nanosec. */
@@ -24,6 +59,7 @@
 # include <sys/types.h>
 # include <sys/times.h>
 # include <sys/param.h>
+# include <errno.h>     /* Needed so EINPROGRESS is defined */
 # define SOCKET int
 # define ioctlsocket ioctl
 # define closesocket close 
@@ -32,11 +68,17 @@
 # define SOCKET_ERROR -1
 # define WOULDBLOCK_EW EWOULDBLOCK
 # define CONNECT_WOULDBLOCK_EW EINPROGRESS
+# define CONNREFUSED_EW ECONNREFUSED
  typedef unsigned int Time_ew;
 # define TIMEOUT_ADJUSTMENT_ew 1/1000  /* Convert from millisec. to sec. */
+#ifndef INADDR_NONE
+#define INADDR_NONE     0xffffffff      /* should be in <netinet/in.h> */
+#endif
 #endif /* _SOLARIS */
 
+#ifndef min
 #define min(a, b)  (((a) < (b)) ? (a) : (b)) 
+#endif
 
 #define MAXSENDSIZE_EW 8192/*4096*/
 
@@ -119,6 +161,29 @@ int recv_ew (SOCKET s,char FAR* buf,int len,int flags, int timeout);
      Caller can call socketGetError_ew() for details about any failures.
   */
 
+
+int recv_all (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec);
+  /* recv_all attempts to receive data on a connection oriented scoket.
+     timeout is the length of time in millisec. that the recv_ew() will wait
+     before returning(if no data is received), after making the initial recv()
+     call.  
+
+     if timeout_msec > 0, recv_all() returns when the sooner of two things
+     happens: 
+     1.  The timeout measured in millisec. from the time of the first
+     send() call, expires; 
+     2.  "len" bytes of data are received.
+     recv_all() returns the number of bytes of data received, or SOCKET_ERROR
+     on error.  The caller is responsible for noting any discrepencies in the
+     difference between the number of bytes requested to be sent, and the
+     number of reported bytes sent.  If there is a discrepency, then a timeout
+     occured.  Caller can call socketGetError_ew() for details about any
+     failures.
+     if timeout_msec == -1, recv_all() sets the socket to blocking and returns
+     when:
+     1. "len" bytes of data are received.
+     2. EOF is detected by recv returning 0 bytes.
+     */
 
 int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags, 
 			  struct sockaddr FAR* from, int FAR* fromlen,
@@ -203,6 +268,11 @@ int setSocket_ewDebug(int debug);
 int socketGetError_ew();
   /* socketGetError_ew() returns the error code for the most
      recent socket error.
+  */
+
+void socketSetError_ew(int error);
+  /* socketSetError_ew() sets the system error associated with
+     the last socket call.
   */
 
 Time_ew GetTime_ew();

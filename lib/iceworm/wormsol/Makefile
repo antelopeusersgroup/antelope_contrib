@@ -1,6 +1,8 @@
 LIB= libwormsol.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 
+MAN3= libwormsol.3
+
 INCLUDE=transport.h \
 	time_ew.h \
 	socket_ew.h \

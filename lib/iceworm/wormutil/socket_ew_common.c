@@ -1,3 +1,49 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.4  2003/06/01 08:25:40  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.5  2003/02/04 17:57:56  davidk
+ *     Added a call to socketSetError_ew() to set the socket error when
+ *     connect() fails during the select() loop in connect_ew().
+ *     Normally, ON A NON-BLOCKING SOCKET, connect() is called,
+ *     it returns a WOULDBLOCK/INPROGRESS condition, then we go
+ *     into a select() loop to check for socket-writability within a timeout
+ *     period.  There was an error in the code, that did not notice the
+ *     CORRECT error (atleast on Solaris) and so the code would return
+ *     a TIMEOUT error instead of the actual error.
+ *
+ *     The change only applies to the connect_ew function() when run
+ *     in non-blocking mode (clients connecting to a server - using a timeout value).
+ *     The change only applies when a socket-error occurs while the function is
+ *     waiting for the connect to happen.  The instance where you will most-likely
+ *     see a difference, is when you try connecting to a non-existent socket.
+ *     Previously the function would return TIMEOUT, now it will return
+ *     connection REFUSED.
+ *
+ *     Revision 1.4  2000/12/01 23:48:54  lombard
+ *     Fixed a few more logit format errors.
+ *
+ *     Revision 1.3  2000/07/10 21:14:51  lombard
+ *     Fixed bug in recvfrom_ew where improper arguments were used in recvfrom calls
+ *
+ *     Revision 1.2  2000/06/28 17:17:54  lombard
+ *     Fixed bug in format for logit calls after select errors, several places
+ *
+ *     Revision 1.1  2000/02/14 18:51:48  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 /****************** socket_ew_common *************************/
 
 /*
@@ -11,7 +57,7 @@
 /********************* #INCLUDES *****************************/
 /*************************************************************/
 #include <errno.h>
-#include "socket_ew.h"
+#include <socket_ew.h>
 
 /********************** GLOBAL *******************************/
 /********************* VARIABLES *****************************/
@@ -210,6 +256,7 @@ int connect_ew(SOCKET s, struct sockaddr FAR* name,
      }
      else if ( error )      /* Pending error on others systems */
      {
+       socketSetError_ew(error);
        retVal = -1;
      }
      else                   /* OK, got a connection! */
@@ -235,6 +282,7 @@ int connect_ew(SOCKET s, struct sockaddr FAR* name,
    }
    
 Done:
+
    if ( retVal == -1 )
    {
      closesocket_ew( s, SOCKET_CLOSE_SIMPLY_EW ); /*skip setsockopt()*/
@@ -385,7 +433,7 @@ SOCKET accept_ew(SOCKET s, struct sockaddr FAR* addr, int FAR* addrlen,
       }
       if (sel < 0 && EW_SOCKET_DEBUG)
       {
-        logit("et", "Error %s occured during select() in %s\n",
+        logit("et", "Error %d occured during select() in %s\n",
               socketGetError_ew(), MyFuncName);
         goto Abort;
       }
@@ -512,7 +560,7 @@ int recv_all (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec)
         }
         if (sel < 0)
         {
-          logit("et", "Error %s occured during select() in %s\n",
+          logit("et", "Error %d occured during select() in %s\n",
                 socketGetError_ew(), MyFuncName);
           retVal = BytesRcvd;
           goto Done;
@@ -645,7 +693,7 @@ int recv_ew (SOCKET s, char FAR* buf, int len, int flags, int timeout_msec)
     }
     if (sel < 0)
     {
-      logit("et", "Error %s occured during select() in %s\n",
+      logit("et", "Error %d occured during select() in %s\n",
             socketGetError_ew(), MyFuncName);
       return(SOCKET_ERROR);
     }
@@ -687,7 +735,7 @@ int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags,
   struct timeval SelectTimeout; 
   Time_ew timeout=adjustTimeoutLength(timeout_msec);
   long lOnOff;
-  int sel;
+  int sel, flen;
   
   if(EW_SOCKET_DEBUG)
     logit("et","Entering %s\n",MyFuncName);
@@ -705,7 +753,10 @@ int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags,
       /* Should we return this error, or continue? */
     }
   }
-  retVal = recvfrom(s,buf,len,flags,from,fromlen);
+  /* Use a local copy of fromlen (because recvfrom sets fromlen=0 if socket is
+     non-blocking and there's no data => fromlen=0 input to second recvfrom) */
+  flen = *fromlen;
+  retVal = recvfrom(s,buf,len,flags,from,&flen);
 
   /* If there is no timeout, then the call was made blocking,
      change it back so that we don't screw up any further operations */
@@ -739,12 +790,13 @@ int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags,
     }
     if (sel < 0)
     {
-      logit("et", "Error %s occured during select() in %s\n",
+      logit("et", "Error %d occured during select() in %s\n",
             socketGetError_ew(), MyFuncName);
       return(SOCKET_ERROR);
     }
     /* Try to read, even if select() timed out */
-    retVal = recvfrom(s,buf,len,flags,from,fromlen);
+    flen = *fromlen;
+    retVal = recvfrom(s,buf,len,flags,from,&flen);
   }
 
   if(retVal <0  && EW_SOCKET_DEBUG)
@@ -756,6 +808,7 @@ int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags,
   if(EW_SOCKET_DEBUG)
 		logit("et","Exiting %s\n",MyFuncName);
 
+  *fromlen = flen;
   return(retVal);
 }
 
@@ -843,7 +896,7 @@ int send_ew ( SOCKET s, const char FAR * buf, int len, int flags,
         }
         if (sel < 0)
         {
-          logit("et", "Error %s occured during select() in %s\n",
+          logit("et", "Error %d occured during select() in %s\n",
                 socketGetError_ew(), MyFuncName);
           retVal = BytesSent;
           goto Done;
@@ -973,7 +1026,7 @@ int sendto_ew (SOCKET s, const char FAR * buf, int len,
     }
     if (sel < 0)
     {
-      logit("et", "Error %s occured during select() in %s\n",
+      logit("et", "Error %d occured during select() in %s\n",
             socketGetError_ew(), MyFuncName);
       return SOCKET_ERROR;
     }

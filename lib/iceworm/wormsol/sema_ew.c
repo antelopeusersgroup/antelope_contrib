@@ -1,3 +1,28 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:38  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.2  2002/02/18 18:38:11  davidk
+ *     initialized the dummy pointer to NULL on all of the various CreateMutex type calls
+ *     that require a dummy pointer param.  The dummy pointer was previously uninitialized.
+ *     It doesn't seem to have any affect since all documentation says the dummy pointer
+ *     is ignored, but purify complained, so I fixed it.
+ *
+ *     Revision 1.1  2000/02/14 18:46:17  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 /*
  * sema_ew.c  Solaris version
  *
@@ -19,7 +44,7 @@ static mutex_t  mutex;      /* Mutual Exclusion semaphore lock        */
 void CreateSemaphore_ew( void )
 {
    static unsigned int count = 0;
-   void *dummy;
+   void *dummy = NULL;
    int   rc;
 
    rc = sema_init( &semaphore, count, USYNC_THREAD, dummy );
@@ -80,7 +105,7 @@ void DestroySemaphore( void )
 ********************************************************************/
 void CreateMutex_ew( void )
 {
-   void *dummy;
+   void *dummy = NULL;
    int   rc;
 
    rc = mutex_init( &mutex, USYNC_THREAD, dummy );
@@ -160,7 +185,7 @@ void CloseMutex( void )
 ********************************************************************/
 void CreateSpecificMutex( mutex_t* mp )
 {
-   void *dummy;
+   void *dummy = NULL;
    int   rc;
 
    rc = mutex_init( mp, USYNC_THREAD, dummy );

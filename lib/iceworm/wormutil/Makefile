@@ -1,6 +1,8 @@
 LIB= libwormutil.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 
+MAN3= libwormutil.3
+
 INCLUDE=chron3.h \
 	kom.h \
 	mem_circ_queue.h \
@@ -9,6 +11,9 @@ INCLUDE=chron3.h \
 	swap.h \
 	tlay.h \
 	earthworm.h \
+	earthworm_defs.h \
+	earthworm_simple_funcs.h \
+	earthworm_complex_funcs.h \
 	platform.h
 
 

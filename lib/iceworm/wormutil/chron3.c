@@ -1,7 +1,26 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.4  2003/06/01 08:25:39  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.1  2000/02/14 18:51:48  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 #include <stdio.h>
 #include <time.h>
 #include <sys/types.h>
-#include "chron3.h"
+#include <chron3.h>
 /*
    chron3.c : Time/date conversion routines.
 

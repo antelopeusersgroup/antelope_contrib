@@ -1,4 +1,53 @@
 
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:39  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.9  2001/04/06 21:03:30  davidk
+ *     moved the guts of earthworm.h into three separate files, which
+ *     are now #include'd in earthworm.h.
+ *
+ *     Revision 1.8  2001/04/05 18:31:04  cjbryan
+ *     added prototype for RecursiveCreateDir
+ *     also added MAX_DIR_LEN for max path lenghts
+ *
+ *     Revision 1.7  2001/03/21 23:12:31  cjbryan
+ *     *** empty log message ***
+ *
+ *     Revision 1.6  2000/09/28 22:10:08  dietz
+ *     *** empty log message ***
+ *
+ *     Revision 1.5  2000/08/09 16:47:55  lucky
+ *     Added prototype for html_logit (to quiet down lint)
+ *
+ *     Revision 1.4  2000/07/27 16:15:56  lucky
+ *     Added constants to set the max number of phases, and related max
+ *     sizes of events in the database, which are different than the
+ *     pre-existing limits on the events processed by hypoinverse
+ *
+ *     Revision 1.3  2000/07/24 20:49:17  lucky
+ *     Added MAX_MOD_STR, MAX_INST_STR, MAX_RING_STR, and MAX_TYPE_STR in
+ *     order to implement global limits to module, installation, ring,
+ *     and message type strings.
+ *
+ *     Revision 1.2  2000/07/20 17:45:32  lucky
+ *     Increased MAX_PHS_PER_EQ to accomodate large events, especially of Dewey type.
+ *
+ *     Revision 1.1  2000/02/14 20:05:54  lucky
+ *     Initial revision
+ *
+ *
+ */
+
+
           /***************************************************
            *                  earthworm.h                    *
            *                                                 *
@@ -10,107 +59,15 @@
 #ifndef EARTHWORM_H
 #define EARTHWORM_H
 
-/* System-dependent stuff goes here
-   ********************************/
-#include <platform.h>
+/* include simple definitions */
+#include "earthworm_defs.h"
 
-/* Define unique port numbers for interprocess communications
- ************************************************************/
-#define WAVE_SERVER_PORT  16022    /* for requesting/receiving trace data */
+/* include simple functions whose prototypes do
+   not require any convoluted STUFF from platform.h */
+#include "earthworm_simple_funcs.h"
 
-
-/* Define error words (2-bytes; >9999) global to earthworm modules
-   Values 0-9999 are available for private error definitions within modules
- **************************************************************************/
-#define ERR_LAPPED      10000    /* data loss; overwritten in transport ring */
-#define ERR_SEQGAP      10001    /* data loss; sequence gap in msgs received */
-#define ERR_OVERFLOW    10002    /* data transfer failed; allocated space at */
-                                 /* target address exceeded                  */
-#define ERR_UNTRACKED   10003    /* transport.h tracking limit exceeded      */
-
-
-/* Define global error codes 
- ****************************/
-#define     EW_SUCCESS         1
-#define     EW_FAILURE         0
-#define     TRUE               1
-#define     FALSE              0
-
-/* Define other global values
- ****************************/
-#define     TM_YEAR_CORR    1900 /** Y2K correction for tm_year field **/
-
-
-/* Set limits on certain things
- ******************************/
-#define MAX_PHS_PER_EQ    250    /* set the maximum #phases to include when  */
-                                 /* processing an earthquake                 */
-#define MAX_BYTES_PER_EQ  (450+225*(MAX_PHS_PER_EQ))
-                                 /* generous maximum size of a Hypoinverse   */
-                                 /* archive message based on Fred Klein's    */
-                                 /* "shadow.doc" file dated March 12, 1997   */
-#define MAX_TRIG_BYTES MAX_BYTES_PER_EQ
-#define AUTHOR_FIELD_SIZE 50    /* For the Phase II kludge. Alex 6/16/98 */
-#define MAX_EMAIL_MSG_SIZE   32000
-#define MAX_MSG_PREFIX_SIZE  256
-
-
-/* Prototypes for Earthworm utility functions
- ********************************************/
-int  copyfile( char *, char *, char *, char *, char *, char *, char * );
-                                            /* copyfile.c   system-dependent */
-
-int  chdir_ew( char * );                    /* dirops_ew.c  system-dependent */
-
-int  GetDiskAvail( unsigned * );            /* getavail.c   system-dependent */
-
-long GetKey  ( char * );                    /* getutil.c    sys-independent  */
-int  GetInst ( char *, unsigned char * );   /* getutil.c    sys-independent  */
-int  GetModId( char *, unsigned char * );   /* getutil.c    sys-independent  */
-int  GetType ( char *, unsigned char * );   /* getutil.c    sys-independent  */
-int  GetLocalInst( unsigned char * );       /* getutil.c    sys-independent  */
-void GetUtil_LoadTable( void );             /* getutil.c    sys-independent  */
-
-int  getsysname_ew( char *, int );          /* getsysname_ew.c sys-dependent */
-
-void logit_init( char *, short, int, int ); /* logit.c      sys-independent  */
-void logit( char *, char *, ... );          /* logit.c      sys-independent  */
-int  get_prog_name( char *, char * );       /* logit.c      sys-independent  */
-
-int  pipe_init ( char *, unsigned long );   /* pipe.c       system-dependent */
-int  pipe_put  ( char *, int );             /* pipe.c       system-dependent */
-int  pipe_get  ( char *, int, int * );      /* pipe.c       system-dependent */
-void pipe_close( void );                    /* pipe.c       system-dependent */
-
-void CreateSemaphore_ew( void );            /* sema_ew.c    system-dependent */
-void PostSemaphore   ( void );              /* sema_ew.c    system-dependent */
-void WaitSemPost     ( void );              /* sema_ew.c    system-dependent */
-void DestroySemaphore( void );              /* sema_ew.c    system-dependent */
-void CreateMutex_ew  ( void );              /* sema_ew.c    system-dependent */
-void RequestMutex( void );                  /* sema_ew.c    system-dependent */
-void ReleaseMutex_ew( void );               /* sema_ew.c    system-dependent */
-void CloseMutex( void );                    /* sema_ew.c    system-dependent */
-void CreateSpecificMutex( mutex_t * );
-void RequestSpecificMutex( mutex_t * );
-void ReleaseSpecificMutex( mutex_t * );
-
-                                            /* sendmail.c   system-dependent */
-int SendMail( char [][60], int, char *, char *, 
-                     char *, char *, char *, char * );   
-
-int SendPage( char * );                     /* sendpage.c   system-dependent */
-
-void sleep_ew( unsigned );                  /* sleep_ew.c   system-dependent */
-
-void SocketSysInit( void   );               /* socket_ew.c  system-dependent */
-void SocketClose  ( int    );               /* socket_ew.c  system-dependent */
-void SocketPerror ( char * );               /* socket_ew.c  system-dependent */
-int sendall( int, const char *, long, int );/* socket_ew.c  system-dependent */
-
-int  WaitThread( unsigned * );              /* threads_ew.c system-dependent */
-int  KillThread( unsigned int );            /* threads_ew.c system-dependent */
-int  KillSelfThread( void );                /* threads_ew.c system-dependent */
-int  StartThread( thr_ret (void *), unsigned, unsigned * );
-int  StartThreadWithArg( thr_ret (void *), void *, unsigned, unsigned * );
+/* include the really ugly stuff that won't event compile 
+   without platform.h or other include files */
+#include "earthworm_complex_funcs.h"
 
 #endif

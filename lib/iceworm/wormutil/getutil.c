@@ -1,3 +1,29 @@
+
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:39  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.3  2000/07/27 16:23:31  lucky
+ *     Implemented global limits, from earthworm.h, in the sizes of installation ids,
+ *     message types, ring names, and module names.
+ *
+ *     Revision 1.2  2000/07/08 19:49:11  lombard
+ *     fprintf statment had extra %s format
+ *
+ *     Revision 1.1  2000/02/14 18:51:48  lucky
+ *     Initial revision
+ *
+ *
+ */
+
 /*
  *  getutil.c  functions for looking up shared memory rings,
  *             installations, modules, and message types in
@@ -24,13 +50,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "earthworm.h"
-#include "kom.h"
+#include <earthworm.h>
+#include <kom.h>
 
 /* Table of shared memory ring names & their keys
  ************************************************/
 #define MAXRING 20
-#define RINGLEN 27
+#define RINGLEN MAX_RING_STR
 static struct {
   long   key;
   char   name[RINGLEN+1];
@@ -39,29 +65,31 @@ static int Max_Ring = 0;      /* # ring/keys currently in table */
 
 /* Table of module names and their module_ids
  ********************************************/
-#define NAMELEN  30
 #define MAXMODID 256
+#define MODLEN  MAX_MOD_STR
 static struct {
   unsigned char id;
-  char          name[NAMELEN+1];
+  char          name[MODLEN+1];
 } EW_Module[MAXMODID];
 static int Max_ModuleId = 0;  /* # modules currently in table */
 
 /* Table of message names and their type-values
  **********************************************/
 #define MAXMSGTYPE 256 
+#define MSGLEN 	   MAX_TYPE_STR 
 static struct {
   unsigned char type;
-  char          name[NAMELEN+1];
+  char          name[MSGLEN+1];
 } EW_Message[MAXMSGTYPE];
 static int Max_MessageType = 0;  /* # msg types currently in table */
 
 /* Table of Installation names and their instids
  ***********************************************/
 #define MAXINSTID 256
+#define INSTLEN   MAX_INST_STR 
 static struct {
   unsigned char id;
-  char          name[NAMELEN+1];
+  char          name[INSTLEN+1];
 } EW_Installation[MAXINSTID];
 static int Max_Installation = 0;  /* # installations currently in table */
 
@@ -473,11 +501,11 @@ void GetUtil_LoadTable( void )
 	           }     
 
                 /* check the length of the module name */
-                   if ( strlen(str) > NAMELEN )
+                   if ( strlen(str) > MODLEN )
                    {
                        fprintf( stderr,
                                "GetUtil_LoadTable: Module name <%s> too long in <%s>;"
-                               " max=%d chars; exiting!\n", str, FullTablePath, NAMELEN );
+                               " max=%d chars; exiting!\n", str, FullTablePath, MODLEN );
                        exit( -1 );
                    }
 
@@ -541,11 +569,11 @@ void GetUtil_LoadTable( void )
 	           }     
                    
                 /* check the length of the message */
-                   if ( strlen(str) > NAMELEN )
+                   if ( strlen(str) > MSGLEN )
                    {
                        fprintf( stderr,
                                "GetUtil_LoadTable: Message name <%s> too long in <%s>;"
-                               " max=%d chars; exiting!\n", str, FullTablePath, NAMELEN );
+                               " max=%d chars; exiting!\n", str, FullTablePath, MSGLEN );
                        exit( -1 );
                    }
 
@@ -607,11 +635,11 @@ void GetUtil_LoadTable( void )
 	           }     
                    
                 /* check the length of the installation name */
-                   if ( strlen(str) > NAMELEN )
+                   if ( strlen(str) > INSTLEN )
                    {
                        fprintf( stderr,
                                "GetUtil_LoadTable: Installation name <%s> too long in <%s>;"
-                               " max=%d chars; exiting!\n", str, FullTablePath, NAMELEN );
+                               " max=%d chars; exiting!\n", str, FullTablePath, INSTLEN );
                        exit( -1 );
                    }
 
@@ -685,7 +713,7 @@ void GetUtil_LoadTable( void )
        if ( !init[3] )  fprintf( stderr, "<Installation> " );
        fprintf( stderr, "line(s) in file(s) " );
        for( it=0; it<nTableFile; it++ ) fprintf( stderr, "<%s> ", TableFile[it] );
-       fprintf( stderr, "<%s>; exiting!\n" );
+       fprintf( stderr, "exiting!\n" );
        exit( -1 );
    }
 

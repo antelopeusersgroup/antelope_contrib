@@ -1,4 +1,33 @@
 
+/*
+ *   THIS FILE IS UNDER RCS - DO NOT MODIFY UNLESS YOU HAVE
+ *   CHECKED IT OUT USING THE COMMAND CHECKOUT.
+ *
+ *    $Id$
+ *
+ *    Revision history:
+ *     $Log$
+ *     Revision 1.3  2003/06/01 08:25:38  lindquis
+ *     Upgrade Iceworm libraries to Earthworm6.2. Add some rudimentary man
+ *     pages. Preparation for the rewritten ew2orb.
+ *
+ *     Revision 1.4  2001/05/04 23:39:11  dietz
+ *     changed SHM_HEAD.flag from short to int so it can hold processids.
+ *     changed prototype for tport_putflag accordingly.
+ *
+ *     Revision 1.3  2000/09/07 21:56:33  lucky
+ *     Changed NTRACK_PUT and NTRACK_GET to 200 and 500 respectively
+ *
+ *     Revision 1.2  2000/06/02 17:14:58  dietz
+ *     added TPORT_FATAL definition
+ *
+ *     Revision 1.1  2000/02/14 20:05:54  lucky
+ *     Initial revision
+ *
+ *
+ */
+
+
     /********************************************************************/
     /*                                                                  */
     /*                          transport.h                             */
@@ -23,7 +52,7 @@ typedef struct {                   /********** shared memory header *********/
         unsigned long    keymax;   /* # usable bytes (nbytes - SHM_HEAD)    */
         unsigned long    keyin;    /* index of next available byte          */
         unsigned long    keyold;   /* index of oldest complete message      */
-        short            flag;     /* flag watched by attached programs     */
+        int              flag;     /* flag watched by attached programs     */
 } SHM_HEAD;                        /*****************************************/
 
 
@@ -72,11 +101,14 @@ typedef struct {                     /***** sequence #, outpointer tracker ****/
 
 /* Definitions for tracking message logos (type,module,class) */
 #define WILD          0   /* wildcard for message descriptor       */
-#define NTRACK_PUT   20   /* max # message trackers for a "putter" */
-#define NTRACK_GET   50   /* max # message trackers for a "getter" */
+#define NTRACK_PUT  200   /* max # message trackers for a "putter" */
+#define NTRACK_GET  500   /* max # message trackers for a "getter" */
 #define FIRST_BYTE  111   /* byte-value to flag beginning of msg   */
                           /* Note: To work on both Solaris & OS2,  */
                           /*       FIRST_BYTE must be from 0-127   */
+
+/* Definition for internal use in transport functions */
+#define TPORT_FATAL -99   /* a fatal error has occurred, function should exit */
 
 /* Definitions of return values for tport_putmsg() and/or tport_copyto() */
 #define PUT_OK        1   /* put the message in memory, no problems           */
@@ -113,7 +145,7 @@ void  tport_detach( SHM_INFO * );
 int   tport_putmsg( SHM_INFO *, MSG_LOGO *, long, char * );
 int   tport_getmsg( SHM_INFO *, MSG_LOGO *, short, MSG_LOGO *,
                     long *, char *, long );
-void  tport_putflag( SHM_INFO *, short );
+void  tport_putflag( SHM_INFO *, int );  
 int   tport_getflag( SHM_INFO * );
 int   tport_buffer  ( SHM_INFO *, SHM_INFO *, MSG_LOGO *, short, unsigned,
                       unsigned char, unsigned char );

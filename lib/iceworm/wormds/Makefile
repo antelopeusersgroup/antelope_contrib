@@ -1,7 +1,7 @@
 LIB= libwormds.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 
-MAN3=wave_client.3
+MAN3=wave_client.3 libwormds.3
 
 INCLUDE=iceworm_extensions.h \
 	iw_wfheader.h \
