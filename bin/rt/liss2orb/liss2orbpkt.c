@@ -60,8 +60,14 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    HD2NF (cp, &samprate, 1);
 	    cp += 4 ;
 
-	    map_seed_netsta ( conf->sdh.net, conf->sdh.sta, sta ) ;
-	    map_seed_chanloc ( sta, conf->sdh.chan, conf->sdh.loc, chan ) ;
+	    if (map_seed_netsta ( conf->sdh.net, conf->sdh.sta, sta )  < 0) {
+		retcode = -1;
+		break;
+	    }
+	    if (map_seed_chanloc ( sta, conf->sdh.chan, conf->sdh.loc, chan )  < 0) {
+		retcode = -1;
+		break;
+	    }
 	    if ( remap ) {
 		strcpy ( parts.src_sta, sta ) ;
 		strcpy ( parts.src_chan, chan ) ;
