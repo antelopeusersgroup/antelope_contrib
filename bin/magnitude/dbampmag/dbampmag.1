@@ -4,9 +4,9 @@ dbampmag \- database magnitude computation
 .SH SYNOPSIS
 .nf
 
-dbampmag [-p pfname] [{-use_if_not_associated|-use_if_not_defining}]
-     [-make_magtables] [-use_mean] [-use_p2p] [-v] db [orid]
-
+\fBdbampmag \fP[-p \fIpfname\fP] [{-use_if_not_associated|-use_if_not_defining}]
+                [-make_magtables] [-use_mean] [-use_p2p] [-v] \fIdb\fP
+                [\fIorid\fP]
 .fi
 .SH DESCRIPTION
 \fBdbampmag\fP is a program that computes magnitudes for a
@@ -18,21 +18,21 @@ program computes magnitudes in a manner similar to
 .SH OPTIONS
 .IP "-p pfname"
 Name of program parameter file. This argument is optional.
-The actual parameter file name is pfname.pf. 
-The default value of pfname is dbampmag.
+The actual parameter file name is \fIpfname\fP.pf.
+The default value of \fIpfname\fP is \fBdbampmag\fP.
 .IP "{-use_if_not_associated|-use_if_not_defining}"
 If -use_if_not_associated is set, then all stations in the
-dbampmag parameter file are used regardless if they were
+\fBdbampmag\fP parameter file are used regardless if they were
 detected and associated with each origin.
 If -use_if_not_defining is set, then only stations in the
-dbampmag parameter file that are detected and associated with
+\fBdbampmag\fP parameter file that are detected and associated with
 each origin are used, including stations that are associated
 but are not "defining" in the location.
 If neither option is set, then, by default, only stations
-in the dbampmag parameter file that are detected, associated
+in the \fBdbampmag\fP parameter file that are detected, associated
 and are "defining" in the location for each origin are used.
 .IP "-make_magtables"
-If this is set, then the netmag and stamag table rows will be
+If this is set, then the netmag and stamag table rows are
 created. Otherwise, by default, no netmag or stamag rows are
 created.
 .IP "-use_mean"
@@ -47,75 +47,97 @@ By default, the absolute maximum is used.
 Verbose output flag.
 .IP "db"
 The input/output database name. If this is set to "-", then
-a view will be read from standard input and it is assumed that
-the view is a subsetted view of the origin table.
-This argument is required. 
+a view is read from standard input and it is assumed that
+the view is a subset view of the origin table.
+This argument is required.
 .IP "orid"
 The origin id that identifies the event to process.
 If this argument is not specified, then all origins in the
-table or view will be processed.
-.SH "PROGRAM PARAMETER FILE"
-The dbampmag parameter file must contain a table, named "mag",  
-that defines a list of all network_stations that will be used
-for processing magnitude values. An example dbampmag
+table or view are processed.
+.SH "PARAMETER FILE"
+The \fBdbampmag\fP parameter file must contain a table, named "mag",
+that defines a list of all network_stations to be used
+for processing magnitude values. An example \fBdbampmag\fP
 parameter file is as follows:
+.ft CW
+.in 2c
 .nf
 
-.fi
-#	Parameter file for orbampmag and dbampmag
-
+.ne 12
 # latency and maxwaittime are only needed for orbampmag
 # but to allow the usage of the same parameter file for both
-# realtime (orbampmag) computations and postprocessing (dbampmag)
+# realtime (orbampmag) computations and postprocessing (\fBdbampmag\fP)
 # they are included in the parameterfile
-# they are ignored when running dbampmag
 
-latency		30.0	# group latency
-maxwaittime	60.0	# A hard timeout value in seconds for reading waveform packets.
-			#  If no waveform packets for the selected channels are received
-			#  within this time period, then the waveform reading loop is
-			#  interrupted and any further processing for that event is
-			#  aborted.
+latency     30.0 # group latency
+maxwaittime 60.0 # A hard timeout value in seconds for reading
+                # waveform packets.  If no waveform packets
+                # for the selected channels are received
+                # within this time period, then the waveform
+                # reading loop is interrupted and any further
+                # processing for that event is aborted.
 
+.ne 7
 
-magtype		mb	# valid values are mb, ml and ms
-				# of course other parameters have to be set according to this choice
+magtype     mb  # valid values are mb, ml and ms of
+                # course other parameters have to be
+                # set according to this choice
 
-v_r			4.0	# velocity for surface waves used to determine surface wave arrival time
+v_r         4.0 # velocity for surface waves used to
+                # determine surface wave arrival time
 
-time0		P	# start of measuring time window
-				# P - pphasetime (see man pphasetime)
-				# S - sphasetime
-				# R - rayleigh wave - here we use deg2km(delta) / v_r
+.ne 11
+time0       P   # start of measuring time window
+                # P - pphasetime (see man pphasetime)
+                # S - sphasetime
+                # R - rayleigh wave - here we use deg2km(delta) / v_r
 
-time_window	0.5	# The waveform for processing the magnitude is determined by a time
-			# window starting from the arrival defined by the time0 parameter 
-			# to time_factor*(S_time-P-time) seconds after the first P-arrival.
+time_window 0.5 # The waveform for processing the
+                # magnitude is determined by a time window
+                # starting from the arrival defined by the
+                # time0 parameter to
+                # time_factor*(S_time-P-time) seconds
+                # after the first P-arrival.
 
-mindelta	0	# distance range in degrees
-maxdelta	180	# 
+.ne 17
+mindelta    0   # distance range in degrees
+maxdelta    180 #
 
 # a 'general' magnitude formula could be:
-# c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
-# delta is the distance in degrees
-# where c2,c3,c4,c5 are station-dependent
-# thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
+#
+#       c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
+#
+#       delta is the distance in degrees
+#       where c2,c3,c4,c5 are station-dependent
+#       thus c0 and c1 are to be changed here,
+#       while c2,c3,c4,c5 are to be changed station-wise
+#
 # beware: c0 has to be converted if you have a formula where delta is im km
 # in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
-c0	-0.104
-c1	1.66
+#
+c0     -0.104
+c1      1.66
+
+.ne 15
 filter BW 0.6 3 3 3
-mag &Tbl{		# stations parameters for computing magnitudes
-#sta		chan_expr	calib_from_db	decon_instr	apply_wa_filter	snr_thresh	latency		c2		c3		c4		c5
-ARSA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-DAVA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-OBKA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-JAVC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-KRUC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-MORC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-KBA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-MOA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+
+mag &Tbl{    # station parameters for computing magnitudes
+#           calib              apply
+#      chan  from deconvolve    wa      snr
+#sta   expr   \fIdb\fP  instrument  filter threshold latency c2  c3  c4  c5
+ARSA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+DAVA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+OBKA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+JAVC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+KRUC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+MORC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+KBA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+MOA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
 }
+
+.fi
+.in
+.ft R
 .LP
 The parameters are defined below.
 .IP c0 to c5 define whatever you might find appropriate
@@ -123,8 +145,8 @@ to compute your magnitudes.
 .IP filter
 Defines the filter applied to your data
 .IP sta
-The sta parameter identifies the station. 
-.IP chan_expr 
+The sta parameter identifies the station.
+.IP chan_expr
 This is a regular UNIX expression that is matched against the
 actual data chan codes. If a match occurs, then the data channel is used.
 .IP calib_from_db
@@ -134,8 +156,8 @@ from the database calibration table. Otherwise, \fIcalib\fP is obtained directly
 from the wfdisc row entries.
 .IP decon_instr
 If set to yes (or true or 1) then the instrument response
-will be deconcolved. Otherwise, the instrument response
-is not deconcolved.
+is deconvolved. Otherwise, the instrument response
+is not deconvolved.
 .IP apply_wa_filter
 If set to yes (or true or 1) then the Wood-Anderson filter
 is applied. Otherwise, the Wood-Anderson filter
@@ -154,8 +176,8 @@ is flat in the response band of the Wood-Anderson filter.
 In cases where the instrument is a narrow band short period
 at 1 Hertz, it is usually not necessary to apply either
 the deconvolution or the Wood-Anderson filter. In all cases
-the responses will be converted to displacement and the correct
-gains will be applied to produce equivalent Wood-Anderson
+the responses are converted to displacement and the correct
+gains are applied to produce equivalent Wood-Anderson
 drum recorder displacement.
 .SH "BUGS AND CAVEATS"
 Instrument response deconvolution is not supported at this time.
