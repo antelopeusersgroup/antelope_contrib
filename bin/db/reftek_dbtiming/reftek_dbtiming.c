@@ -132,18 +132,27 @@ char *lookup_refteksta(Dbptr db, int das, double time)
 	nmatches = maxtbl(matches);
 	if(nmatches<=0) 
 	{
-		retsta = NULL;
-		elog_notify(0,"station lookup for serial number %d in stage table failed\n",
-			das);
+		/* Deal with data entry inconsistency.  The above uses leading 0s to fill
+		the ssident field.  We try again with leading 0s removed.*/
+		sprintf(ssident,"%d",das);
+		dbputv(dbm,0,"ssident",ssident,"time",time,0);
+		dbmatches(dbm,db,&kmatch,&kmatch,&hook,&matches);
+		nmatches = maxtbl(matches);
+		if(nmatches<=0)
+		{
+			retsta = NULL;
+			elog_notify(0,"station lookup for serial number %d in stage table failed\n",
+				das);
+			freetbl(matches,0);
+			freetbl(kmatch,0);
+			return(retsta);
+		}
 	}
-	else
-	{
-		if(nmatches>3) elog_notify(0,"Warning:  multiple matches in stage table for time %s\nFound %d entries instead of 3 expected for das %d\nUsed first entry found\n",
+	if(nmatches>3) elog_notify(0,"Warning:  multiple matches in stage table for time %s\nFound %d entries instead of 3 expected for das %d\nUsed first entry found\n",
 			strtime(time),nmatches,das);
-		db.record = (int)gettbl(matches,0);
-		dbgetv(db,0,"sta",sta,0);
-		retsta = strdup(sta);			
-	}
+	db.record = (int)gettbl(matches,0);
+	dbgetv(db,0,"sta",sta,0);
+	retsta = strdup(sta);			
 	freetbl(matches,0);
 	freetbl(kmatch,0);
 	return(retsta);
@@ -211,9 +220,9 @@ void closeout_das(int das, double dbtime, double lastlock, double etime,
 	int i;
 	double tend;
 
+	sta = lookup_refteksta(db,das,lastlock);
 	if(rampout)
 	{
-		sta = lookup_refteksta(db,das,lastlock);
 		if(sta==NULL)
 		{
 			elog_complain(0,"rampout failed:  sta lookup failed\n");
@@ -273,6 +282,7 @@ void main(int argc, char **argv)
 	int rampout=0;
 	char *sta;
 	double time,tend;  
+	int linecount=0;
 
 	elog_init(argc,argv);
         elog_notify (0, "$Revision$ $Date$") ;
@@ -294,6 +304,7 @@ void main(int argc, char **argv)
 			argv[0]);
 	while(fgets(linein,256,stdin)!=NULL)
 	{
+		++linecount;
 		if(linein[0]=='#') continue;
 		/* Redundant, but better safe than sorry */
 		if(strstr(linein,"#!PCF") != NULL) continue;
@@ -308,8 +319,14 @@ void main(int argc, char **argv)
 		++npcf_records;
 		if(das_sn == last_das)
 		{
-			if( time < lastlock ) die(0,"PCF file for station %d is corrupted\nTime jumps backward from %s to %s\n",
-				das_sn,strtime(lastlock),strtime(time));
+			if( time < lastlock ) 
+			{
+				/* refteks do strange backward jumps by 1 s a lot so we ignore small backward jumps */
+				if((lastlock-time)>1.5)
+					die(0,"PCF file for station %d is corrupted\nTime jumps backward from %s to %s at line %d of pcf file\n",
+						das_sn,strtime(lastlock),strtime(time),linecount);
+				continue;
+			}
 			if( (time-lastlock)<=clkerr_ranges[0].high)
 			{
 			/* When clock is locking normally we will skip
@@ -372,6 +389,7 @@ void main(int argc, char **argv)
 		}
 	}
 	closeout_das(last_das,lastdbentry,lastlock,time,dbt,rampout);
+	fprintf(stdout,"Processed %d lines of input pcf file\n",npcf_records);
 	exit(0);
 }
 
