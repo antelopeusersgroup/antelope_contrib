@@ -1,0 +1,31 @@
+dot_color	red
+label_color red
+circle_color red
+overlay_dot_color magenta
+overlay_label_color magenta
+overlay_circle_color magenta
+tables &Arr{
+	site &Arr{
+		label	sta
+	}
+	origin &Arr{
+		label orid
+	}
+	known_source &Arr{
+		label	placename
+		circle	radius
+	}
+	place &Arr{
+		label	placename
+	}
+	idp	&Arr{
+		label	placename
+	}
+	places &Arr{
+		label	place
+	}
+	#only for schema Trace4.0
+	event &Arr{
+		label	evid
+	}
+}	

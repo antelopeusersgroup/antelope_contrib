@@ -1,0 +1,37 @@
+.TH CLEANUP_DBDIR 1 2003/05/09 "Antelope Contrib SW" "User Commands"
+.SH NAME
+cleanup_dbdir \- remove waveforms left over by previous runs of rtdbclean 
+.SH SYNOPSIS
+.nf
+cleanup_dbdir [-v] [-n] [-d days] dbname
+.fi
+.SH DESCRIPTION
+cleanup_dbdir removes old waveforms that are not referenced in the wfdisc table.It is a good idea to run the program periodically as a cron job if you have half-emptied directories with waveforms.
+.IP "-v" 
+verbose flag
+.IP "-n"
+simulates execution, but does not remove waveforms.
+.IP "-d days"
+leave n days of waveforms before end of database. Defaults to 7 days if not specified.
+.IP "dbname"
+Name of database. This argument is required
+
+.SH EXAMPLE
+The following entry in rtexec.pf removes all wafevorms (and empty directories) taht are not referenced in $DB.wfdisc, but leaves 2 days worth of data before the oldest entry in the table.
+.nf
+cleanup_dbdir UTC 0 0 * * * cleanup_dbdir -v -d 2 $DB
+.fi
+
+.SH "BUGS AND CAVEATS"
+The program uses dbquery(dbTABLE_DIRMANE) to find out where waveforms could be and removes starting there all \fBunreferenced\fP files and directories. Make sure that you have no other files there!
+You should try the program first with the -n flag (and check the output for suspicious entries) before installing it as a cronjob.
+.SH "SEE ALSO"
+.nf
+rtdbclean(1), dbconstants(5) for an explanation of dbTABLE_DIRNAME
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2001 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+	

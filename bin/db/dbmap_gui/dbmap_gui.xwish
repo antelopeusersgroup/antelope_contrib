@@ -1,0 +1,274 @@
+package require Dbe
+package require Datascope
+package require Vogle
+
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library]
+
+if { [info exists env(SCHEMA_DIR)] } {
+	set env(SCHEMA_DIR) $env(SCHEMA_DIR):$env(ANTELOPE)/data/schemas:$env(ANTELOPE)/local/data/schemas
+} else {
+	set env(SCHEMA_DIR) $env(ANTELOPE)/data/schemas:$env(ANTELOPE)/local/data/schemas
+}
+
+proc cleanstr { str } {
+	regsub -all "ö" $str "oe" newstr
+	regsub -all "Ö" $newstr "Oe" newstr
+	regsub -all "ü" $newstr "ue" newstr
+	regsub -all "Ü" $newstr "Ue" newstr
+	regsub -all "ä" $newstr "ae" newstr
+	regsub -all "Ä" $newstr "Ae" newstr
+	regsub -all "{" $newstr "" newstr
+	regsub -all "}" $newstr "" newstr
+	return $newstr
+}
+
+proc draw {latc lonc range} {
+
+    global db db2 use_db2 field field1 field2 field3 
+	global recno subset_recno 
+	global dot_color label_color circle_color overlay_dot_color overlay_label_color overlay_circle_color
+		
+	set north [expr $latc + $range * 2.0]
+	set south [expr $latc - $range * 2.0]
+	set east [expr $lonc + $range * 2.0]
+	set west [expr $lonc - $range * 2.0]
+	set subset [format "lat >= %f && lat <= %f && lon >= %f && lon <= %f" $south $north $west $east]	
+    set stasz [expr $range/180. * 300000.]
+    set textsz [expr 3*$stasz]
+    g_textsize $textsz [expr $textsz/.6]
+    g_polyfill 1
+	if { $use_db2 } {
+		set dbs [dbsubset $db2 $subset]
+		set n [dbquery $dbs dbRECORD_COUNT]
+		loop i 0 $n {
+			set coords [dbgetv $dbs 0 $i lat lon]
+			set lat [lindex $coords 0]
+			set lon [lindex $coords 1]
+			set trans [eval pj_fwd $coords]
+			set latp [lindex $trans 0]
+			set lonp [lindex $trans 1]
+			g_polyfill 1
+			g_color $overlay_dot_color
+			g_circle $lonp $latp $stasz
+
+			if { ![cequal field2 ""] } {
+				set val [dbgetv $dbs 0 $i $field2]
+				set val [cleanstr $val]
+				g_color $overlay_label_color
+				g_drawstr " $val"
+			}
+
+			if { ![cequal $field3 ""] } {
+				set radius [dbgetv $dbs 0 $i $field3]
+                set coords [list $lat [expr $lon + $radius/111.195]]
+                set trans [eval pj_fwd $coords]
+                set radius [expr abs([lindex $trans 1] - $lonp)]
+				g_polyfill 0
+				g_color $overlay_circle_color
+				g_circle $lonp $latp $radius
+			}
+		}	
+	}
+	if { $subset_recno } {
+		set coords [dbgetv $db 0 $recno lat lon]
+		set lat [lindex $coords 0]
+		set lon [lindex $coords 1]
+		set trans [eval pj_fwd $coords]
+		set latp [lindex $trans 0]
+		set lonp [lindex $trans 1]
+		g_polyfill 1
+		g_color $dot_color
+		g_circle $lonp $latp $stasz
+
+		if { ![cequal "$field" ""] } {
+			set val [dbgetv $db 0 $recno $field]
+			set val [cleanstr $val]	
+			set trans [eval pj_fwd $coords]
+			g_color $label_color
+			g_drawstr " $val"
+		}
+		if { ![cequal $field1 ""] } {
+			set radius [dbgetv $db 0 $recno $field1]
+			set coords [list $lat [expr $lon + $radius/111.195]]
+			set trans [eval pj_fwd $coords]
+			set radius [expr abs([lindex $trans 1] - $lonp)]
+			g_polyfill 0
+			g_color $circle_color
+			g_circle $lonp $latp $radius
+		}
+
+	} else {
+		set dbs [dbsubset $db $subset]
+		set n [dbquery $dbs dbRECORD_COUNT]
+		loop i 0 $n {
+			set coords [dbgetv $dbs 0 $i lat lon]
+			set lat [lindex $coords 0]
+			set lon [lindex $coords 1]
+				
+			set trans [eval pj_fwd $coords]
+			set latp [lindex $trans 0]
+			set lonp [lindex $trans 1]
+			g_polyfill 1
+			g_color $dot_color
+			g_circle $lonp $latp $stasz
+			
+			if { ![cequal $field ""] } {
+				set val [dbgetv $dbs 0 $i $field]
+				set val [cleanstr $val]
+				g_color $label_color
+				g_drawstr " $val"
+			}
+			if { ![cequal $field1 ""] } {
+			set radius [dbgetv $dbs 0 $i $field1]
+			set coords [list $lat [expr $lon + $radius/111.195]]
+			set trans [eval pj_fwd $coords]
+			set radius [expr abs([lindex $trans 1] - $lonp)]
+			g_polyfill 0
+			g_color $circle_color
+			g_circle $lonp $latp $radius
+		}
+
+		}
+	}
+}
+
+if { $argc < 1 || $argc > 6 } {
+    puts stderr "Usage: $argv0 \[-pf parameterfile\] \[-dboverlay database.table \] database \[record\]"
+    exit 1
+}
+
+set used 0
+set recno 0
+set subset_recno 0
+set use_db2 0 
+set db2_name ""
+set field2 ""
+set field3 ""
+set table2name ""
+set db2 ""
+set Pf dbmap_gui
+set dot_color red
+set label_color red
+set circle_color red
+set overlay_dot_color magenta
+set overlay_label_color magenta
+set overlay_circle_color magenta
+for {set i 0} {$i<[expr $argc - 2]} {incr i} {
+        switch -- [lindex $argv $i] {
+				-pf {
+					set Pf [lindex $argv [expr $i + 1]]
+					incr i
+					incr used 2	
+				}
+                -dboverlay {
+                        set use_db2 1
+						set db2_name [lindex $argv [expr $i + 1]]
+						incr i
+						incr used 2
+                }
+        }
+}
+
+set dot_color [pfget $Pf dot_color]
+set label_color [pfget $Pf label_color]
+set circle_color [pfget $Pf circle_color]
+set overlay_dot_color [pfget $Pf overlay_dot_color]
+set overlay_label_color [pfget $Pf overlay_label_color]
+set overlay_circle_color [pfget $Pf overlay_circle_color]
+pfgetarr tables @$Pf#tables
+set table_names [array names tables]
+foreach table $table_names {
+	set label($table) [pfget $tables($table) label]
+	set dummy [pfget $tables($table) circle]
+	if  { $dummy != "" } {
+		set circle($table)	$dummy
+	} else {
+		set circle($table) 0
+	}
+}
+set dbname [lindex $argv $used]
+set db [dbopen_database $dbname r]
+if { [lindex $db 1] < 0 } {
+    set db [dblookup $db 0 site 0 0]
+}
+
+if { $argc > [expr $used + 1] } {
+	set recno [lindex $argv [expr $used + 1]]
+	set subset_recno 1
+} 
+
+if { $use_db2 } {
+	set db2 [dbopen_database $db2_name r]
+	if { [lindex $db2 1] < 0 } {
+		puts stderr "you must specify table for dboverlay"
+		exit
+	}
+	set name2 [dbquery $db2 dbTABLE_NAME]
+	if { [info exists label($name2)] } {
+		set field2 $label($name2)
+	} else {
+		set field2 {}
+	}
+	if { [info exists circle($name2)] } {
+		if { $circle($name2) != 0 } {
+			set field3 $circle($name2)
+		} else {
+			set field3 ""
+		}
+	} else {
+		set field3 ""
+	}
+
+}
+
+if { $subset_recno } {
+	set latc [dbgetv $db 0 $recno "lat"]
+	set lonc [dbgetv $db 0 $recno "lon"]
+} else {
+	set latc [dbeval $db "sum(lat)/count()"]
+	set lonc [dbeval $db "sum(lon)/count()"]
+}
+
+set database [dbquery $db dbDATABASE_NAME]
+set db [dblookup $db 0 0 lat 0]
+set name [dbquery $db dbFIELD_BASE_TABLE]
+
+if { [info exists label($name)] } {
+	set field $label($name)
+} else {
+	set field {}
+}
+if { [info exists circle($name)] } {
+	if { $circle($name) != 0 } {
+		set field1 $circle($name)
+	} else {
+		set field1 ""
+	}
+} else {
+	set field1 ""
+}
+
+
+
+wm title . "$database $name"
+
+MapWidget .map \
+    -center "$latc $lonc " \
+    -range 10 \
+	-hires 1 \
+    -auto_hires 10 \
+    -coverage "fill coasts rivers political states counties" \
+    -projection robin \
+    -buttons "projection zoomout hires graticule print save" \
+    -indicator 1 \
+    -label 1 \
+    -quit 1 \
+    -command draw
+
+pack .map -side top -expand yes -fill both
+wm geometry . 600x500
+wm maxsize . 1000 1000 
+wm minsize . 100 100
+wm iconname . dbmap
+wm title . [format "check: %s" $database]
+

@@ -1,0 +1,38 @@
+.TH PFCP 1 2003/01/29 "Antelope Contrib SW" "User Commands"
+.SH NAME
+pfcp \- copy antelope parameterfiles 
+.SH SYNOPSIS
+.nf
+pfcp [-d] pfname dest
+.fi
+.SH DESCRIPTION
+This utility helps to save time when copying antelope-parameterfiles.
+This is especially useful when testing new versions or upgrades.
+.SH OPTIONS
+.IP "-d" 
+use default parameterfile (usually from $ANTELOPE/data/pf, depends on
+environment variable PFPATH	)
+.IP "pfname" 
+parameter file name. the trailing ".pf" can be ommitted.
+.IP "dest"
+destination for copied file. Can be either a directory of a filename. The trailing ".pf" is appended if not already given on the commandline.
+.SH ENVIRONMENT
+PFPATH
+.SH EXAMPLE
+niko> echo $PFPATH
+/opt/antelope/4.5/data/pf:/opt/antelope/4.5/local/data/pf:/home/horn/pf:.
+niko> pfcp orbmag old
+niko> pfcp -d orbmag new
+niko> pfdiff -o orbmag old.pf new.pf
+... 
+
+.SH "SEE ALSO"
+.nf
+pfecho(1), pfwhich(1), antelopeenv(5) 
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2003 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+	
