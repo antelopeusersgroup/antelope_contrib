@@ -1,4 +1,4 @@
-      subroutine toneout(dx,dz,lun) 
+      subroutine toneout(dx,dz,nxone,lun) 
 c-------------------------------------------------------------------- 
 c  writes first arrival table to parameter file used by genloc
 c  uniform travel time calculator function.  This is basically an
@@ -26,7 +26,7 @@ c---------------------------------------------------------------------
 	real z
 	real dvdz
 c--write out the grid description parameters 
-	write(lun,"('nx ',i10)") nxtab
+	write(lun,"('nx ',i10)") nxone
 	write(lun,"('nz ',i10)") nztab
 	write(lun,"('z0 0.0')")
 	write(lun,"('x0 0.0')")
@@ -37,13 +37,13 @@ c--Now write the table.  We are not going to try to calculate
 c--the dp/dr constants, but simpley set them all to zero here.
 c--This could be done by finite differences, but it will not
 c--matter a great deal except for very close to an array.
-c--The parameter file structure scanes depth by depth, nxtab 
+c--The parameter file structure scanes depth by depth, nxone 
 c--values per scan
 	write(lun,*)"uniform_grid_time_slowness_table &Tbl{"
 
 	do 150 i=1,nztab
 		write(lun,"('# Depth = ',f15.5)") dz*(i-1)
-		do 100 j=1,nxtab
+		do 100 j=1,nxone
 c--genloc uses a different set of branch names than those
 c--define here.  We simply translate them one for one on
 c--the fly

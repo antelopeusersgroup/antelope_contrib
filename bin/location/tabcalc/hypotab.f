@@ -167,7 +167,7 @@ c--give these points a special name.
    75          continue 
           endif 
   100 continue
-      call toneout(dx,dz,lunout)
+      call toneout(dx,dz,nxout,lunout)
       if(list.ne.'y') stop
       print 1050
  1050 format('0reduced travel time table')
