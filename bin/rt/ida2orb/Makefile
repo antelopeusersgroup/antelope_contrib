@@ -1,16 +1,6 @@
 BIN= ida2orb
-LIB=		
 
-DATADIR=	
-DATA=		
-INCLUDE=	
-
-MAN1=		
-MAN3=		
-MAN5=		
-
-CLEAN= 		
-
+MAN1=ida2orb.1		
 cflags=	-Iinclude
 fflags= 	
 ldflags= -L.
