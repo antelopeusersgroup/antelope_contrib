@@ -96,7 +96,14 @@ off veryverbose output after resolution.
 Incoming stations (orb source-names, i.e. net_sta_chan, before they're
 translated to any new names) which match this regular expression will
 be allowed to go on the orb. The default, which is to leave this blank,
-allows all incoming sources.
+allows all incoming sources. Many values are possible here given the 
+flexibility of regular expressions. As an example, one could use an 
+expression such as the following to select several stations from a given 
+network:
+.nf
+
+         select UW_(ERW|MBW|MCW|STW)_.*
+.fi
 
 .IP reject
 Incoming stations (orb source-names, i.e. net_sta_chan, before they're
