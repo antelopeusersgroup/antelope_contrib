@@ -1,0 +1,105 @@
+.TH GCLrays 3 "$Date$"
+.SH GCLgrid_Ray_project - transfers a ray path to GCLgrid coordinates
+.SH SYNOPSIS
+.nf
+#include "ray1d.h"
+dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+                double theta, int ix1, int ix2,ix3)
+			throw(GLCgrid_error);
+dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
+                double theta, int ix1, int ix2)
+			throw(GLCgrid_error);
+class RayPathSphere
+.fi
+.SH DESCRIPTION
+.LP
+The Poppeliers and Pavlis (2003) plane wave migration method is based on an asymptotic 
+theory that back-projects data along rays.  Figure 3 of their
+paper shows the time to depth mapping operator for the process as a geometric figure
+that can be viewed as a GCLgrid (see GCLgrid(3)). This function provides a building
+block to construct such an object in the plane wave migration code.  It is also
+used in migration to construct ray paths from scattering points through a 3D 
+model.   
+.LP
+A GCLgrid defines points as parallel arrays of geographical and Cartesian coordinates.
+Part of the description is a transformation matrix to go from geographical coordinates
+(whole earth reference frame) to the GCLgrid Cartesian frame which is translated and
+rotated relative to the standard global reference frame.  The \fIGCLgrid_Ray_project\fR
+takes a ray path defined for a 1D reference model (defined by the RayPathSphere object
+described below) and projects that path to the point defined by the three 
+indices passed to the function (ix1,ix2, and ix3 are the index positions in the
+3D array of points that are used in the GCLgrid3d object). The function will
+throw a GCLgrid_error object the requested index is outside the range of 
+internal arrays that define the grid.  The path returned is the reference ray
+path starting at the point defined by the indices and running downward and 
+away at the azimuth defined by the theta argument.  For convenience the function
+is overloaded for the (common) special case where the ray should originate
+at the surface.  In that case the ix3 index is not required and is assumed.
+.LP
+The result that is returned is a path defined as a 3xN matrix of coordinates
+(defined with a dmatrix(3) object).
+The coordinates are defined relative to the Cartesian reference frame of the
+GCLgrid3d object passed to the function.  No checking is made that the path
+is contained inside the GCLgrid3d objects extent.  The order of points in
+the matrix is row 0=x1, row 1=x2, and row 2 = x3.  Column 0 is the 
+point defined by ix1,ix2, and ix3 and adjacent points define a curve 
+running downward and away at angle theta.  Note theta is an angle 
+relative to LOCAL north, and not any global reference frame.  This is
+used in plane wave migration to allow for the fact that incident wave
+azimuth can vary across a large aperture array.  
+.LP
+The building block used as input for this function is a RayPathSphere object 
+that is defined as follows:
+.nf
+class RayPathSphere
+{
+public:
+	int npts;
+	double *r,*delta,*t;
+	RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
+	RayPathSphere(int n)
+	{npts=n; r=new double[n], delta=new double[n], t=new double[n];};
+	// This fully parametrized version constructs a full path
+	RayPathSphere(Velocity_Model_1d& vm,
+		double p, double zmax, double tmax, double dt, 
+		const char mode[2]);
+	~RayPathSphere(){if(r!=NULL)delete[]r;
+		if(delta!=NULL)delete[]delta;
+		if(t!=NULL)delete[]t;};
+	void operator = (const RayPathSphere&);
+};
+.fi
+.LP
+This is a comparatively simple data object using three vectors (r, delta, and t)
+to store information about a basic ray path in spherical coordinates.  That is,
+these are parallel arrays storing radius (in kms), distance (radians), and time 
+(in seconds) of points in a ray path.  This would normally be created with
+the fully parameterized  constructor that creates this object using
+a given Velocity_Model_1d object  (vm) and parameters describing a 1d model
+ray path:  p=ray parameter (s/km), zmax=maximum depth to trace ray, 
+and tmax=maximum time to trace to (using a given 1d model).
+The mode variable on this constructor determines how the points that define
+the ray are to be spaced.  If mode=='z' the points will be equally spaced
+in depth.  By default equal time spacing will be used.
+.LP
+
+.SH RETURN VALUES
+.LP
+Both functions return pointers 
+to matrices defined as dmatrix(3) objects, which are a lightweight matrix class.
+Note that the new operator is used to create these so the caller must arrange
+to free them when finished.
+.SH LIBRARY
+.LP
+-lgclgrid -ldmatrix
+.SH "SEE ALSO"
+.nf
+glcgrid(3), dmatrix(3)
+.fi
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.nf
+.\" $Id$

@@ -1,0 +1,155 @@
+'\" te
+.TH METADATA 3 "%G"
+.SH NAME
+Metadata - A C++ handler for variable metadata in an object
+.SH SYNOPSIS
+.nf
+class Metadata
+{
+public:
+        Metadata();
+	Metadata(const Metadata&)
+		throw(Metadata_parse_error);
+	Metadata& operator=(const Metadata& );
+        ~Metadata();
+
+        double get_double(string) throw(Metadata_get_error);
+        int get_int(string)throw(Metadata_get_error);
+        string get_string(string)throw(Metadata_get_error);
+        bool get_bool(string)throw(Metadata_get_error);
+	// The next two are antelope specific
+	Tbl *get_list(string)throw(Metadata_get_error);
+	Arr *get_map(string)throw(Metadata_get_error);
+	//These put new metadata in
+	//These use the same name but depend on overloading
+        void put_metadata(string,double);
+        void put_metadata(string,int);
+        void put_metadata(string,string); // C++ basic string 
+        void put_metadata(string,char *);  // for plain C strings
+        void put_metadata(string,bool);
+	void put_metadata(string,Arr *);  // antelope map
+	void put_metadata(string,Tbl *);  // antelope list
+	// This compiles a large string with pfcompile to load a full pf
+        void load_metadata(string) throw(Metadata_parse_error);
+	void load_metadata(char *) throw(Metadata_parse_error);
+	void print_all_metadata();
+	Pf *extract_all_metadata_to_pf();
+};
+.fi
+.SH DESCRIPTION
+.LP
+Metadata is a proverbial problem in data processing.  
+By metadata I mean a set of parameters that are associated with 
+a data object.  Some parameters are essential for describing
+an object while others are not always needed.  The later 
+are what I mean by metadata.  That is, one
+algorithm may require a set of metadata while another does not.
+Dealing with this causes major portability and consistency issues
+in data processing.  The traditional solution is using a fixed 
+name space through parameters stored as headers.  The more modern
+approach would be to input required parameters and use some 
+elegantly designed inheritance mechanism with an object-oriented
+programming language like C++.  That is, each algorithm would 
+inherit a base class and add other parameters to a data structure
+it wanted to use internally.  
+.LP
+The Metadata class in this library is a generalization of this idea.
+Rather than burden code with different sets of extracted metadata for
+each algorithm, the model here is to place the metadata in a private
+namespace.  This is a classic use of data hiding and abstraction of
+the interface to a concept:  here the pool of metadata tagged with 
+a name key.  The basic idea is that a data object to be used in 
+some data processing model will inherit Metadata as a base class.
+Truly required data from the Metadata space can (and should) be 
+extracted immediately into binary components of the inherited 
+class.  Other elements can be left in the Metadata space and 
+extracted only when needed by a particular algorithm within a 
+program.  This allows data objects to be specified with the 
+minimum number of base parameters while having some assurance
+that algorithms using other parameters have a hope of getting
+access to them without creating a specialized data structure 
+for each algorithm.  
+.LP
+The Metadata space is created by one of the constructors 
+described in detail below.  The \fIload_metadata\fR function 
+can be used to compile a block of parametric data into a 
+Metadata space.  The current implementation uses the pf(5)
+format of Antelope and calls pfcompile( see pf(3)) but 
+the idea is that alternative formats could be used to build
+a Metadata space provided the have a mechanism to tag each
+item with a unique name.  Since parameters of standard types
+can be placed into the Metadata space one at a time with the 
+overloaded \fIput_metadata_by_name\fR functions.  The name
+field in all puts is used to tag the parameter.  If the same
+name is used multiple times the last put will be the one used.
+(The follows the same model described in pf(3) on which the
+library is based.  If anyone ever tried to replace that 
+functionality with another approach this functionality should
+be maintained, however, as applications will depend on it.)
+.LP
+Metadata are retrieved by the get_type 
+functions.  The get routines will throw an exception if the requested
+parameter is not found in the Metadata space.  As a result
+all get functions should be surrounded by a try block with
+the following catch clause:
+.nf
+try
+{
+	series of metadata get requests
+}
+catch ( Metadata_error& me)
+{
+	me.log_error();
+	error handling code
+}
+.fi
+The catch block can handle this error appropriately as some
+metadata requests require different actions.  
+As in all proper error handlers the program can abort, set
+a default and try to continue, or something else.  
+.LP
+The default parameter problem is so pervasive, on the other hand,
+that the Metadata interface uses a more elaborate model for trying
+to handle this problem in a general way.  On program startup a 
+program using this library will search for an parameter file
+with the default name of "metadata_defaults.pf".  (This can be
+changed to a different parameter file by setting the environment
+variable METADATA_DEFAULTS to an alternative pf name -- noting 
+the usual rule about NOT including the ".pf" extension.)  
+These parameters are loaded as defaults for the Metadata space.  
+The default constructor loads this Metadata to build the defaults
+for parameters.  This provides a general way to set defaults 
+at run time, although it may cause serious confusion if the
+user does not recognize that this is going on.  
+.LP
+The \fIprinta_all_metadata\fR and \fIextract_all_metadata_to_pf\fR functions
+are ways to extract retrieve an entire metadata object's contents.  
+The first probably should be converted to the << operator.  The later
+retrieves a copy of the metadata as an Antelope pf. 
+
+.SH FILES
+.LP
+A defaults parameter file must be found in the PFPATH 
+or a program using this library will die immediately.  
+.SH ENVIRONMENT
+.LP
+METADATA_DEFAULTS can be used to redefine the name for the defaults
+parameter file.  If it is null the default of "metadata_defaults" is
+used.
+.SH LIBRARY
+$(STOCKLIBS)
+.SH "SEE ALSO"
+.nf
+pf(3), pf(5), pfecho(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The dark side of the generality is some loss of efficiency and 
+bloated memory usage because in this implementation all metadata
+are stored as strings in an Antelope pf structure.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.\" $Id$
