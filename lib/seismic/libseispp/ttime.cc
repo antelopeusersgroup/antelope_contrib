@@ -11,6 +11,60 @@ using namespace SEISPP;
 namespace SEISPP
 {
 
+// copy constructor and = operators commonly are implicitly needed
+Hypocenter::Hypocenter(const Hypocenter& h0)
+{
+	lat = h0.lat;
+	lon = h0.lon;
+	z = h0.z;
+	time = h0.time;
+	method = h0.method;
+	model = h0.model;
+}
+Hypocenter& Hypocenter::operator=(const Hypocenter& h0)
+{
+    if(this!=&h0)
+    {
+	lat = h0.lat;
+	lon = h0.lon;
+	z = h0.z;
+	time = h0.time;
+	method = h0.method;
+	model = h0.model;
+    }
+    return(*this);
+}
+// This constructor creates a Hypocenter object using parameters
+// read from a Metadata object.  It would be useful to have a 
+// mechanism to not have a frozen set of names used to fetch
+// the required parameters but I'm not sure how to do that
+// without making the interface clumsy. 
+//
+// Note that things like Time_Series objects can be used to create
+// a Hypocenter through this mechanism through the use of a dynamic_cast
+//
+Hypocenter::Hypocenter(Metadata& md)
+{
+	try {
+		lat=md.get_double("origin.lat");
+		lon=md.get_double("origin.lon");
+		z=md.get_double("origin.depth");
+		time=md.get_double("origin.time");
+	} catch (Metadata_error mderr) {throw mderr;};
+	// We run a separate try block here and recover from
+	// model and method not being defined -- a common thing
+	// we will probably need
+	//
+	method=string("tttaup");
+	model = string("iasp91");
+	try {
+		method=md.get_string("method");
+		model=md.get_string("model");
+	} catch (Metadata_error mderr){}
+}
+		
+
+
 double Hypocenter::distance(double lat0, double lon0)
 {
 	double epidist, az;

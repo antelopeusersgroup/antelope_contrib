@@ -286,6 +286,9 @@ public:
 	double lat,lon,z;
 	double time;
 	Hypocenter(){method=string("tttaup"); model=string("iasp91");};  // default
+	Hypocenter(Metadata& );
+	Hypocenter(const Hypocenter&);
+	Hypocenter& operator=(const Hypocenter&);
 	double distance(double lat0, double lon0);
 	double esaz(double lat0, double lon0);
 	double seaz(double lat0, double lon0);
