@@ -37,7 +37,8 @@ public:
         void put_metadata(string,bool);
         void put_metadata(string,Arr *);  // antelope map
         void put_metadata(string,Tbl *);  // antelope list
-        friend ostream& operator<<(ostream&,Metadata&);
+	void remove(string);  //  delete item with this tag
+	ostream& operator<<(ostream&,Metadata&);
         void print_all_metadata();
         Pf *extract_all_metadata_to_pf();
 
@@ -276,6 +277,13 @@ defines what metadata to attempt to extract from the database.
 The db pointer, db, is expected to be one row of a database view.
 This can be a join of several tables as the table names are resolved
 through the Attribute_Map.
+.LP
+More limited parameters can put placed in the Metadata object one
+at a time with the put_metadata functions.  (There is only one
+function name because C++ allows overloading.)  Single entries in
+the Metadata object can be deleted with the remove function.  
+In all cases the string in the function defines the key used to 
+access that parameter.
 .LP
 Metadata are retrieved by the get_type 
 functions.  The get routines will throw an exception if the requested

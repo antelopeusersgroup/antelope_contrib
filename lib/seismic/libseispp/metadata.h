@@ -125,6 +125,7 @@ public:
         void put_metadata(string,bool);
 	void put_metadata(string,Arr *);  // antelope map
 	void put_metadata(string,Tbl *);  // antelope list
+	void remove(string);
 	friend ostream& operator<<(ostream&,Metadata&);
 	void print_all_metadata();
 	Pf *extract_all_metadata_to_pf();

@@ -338,6 +338,14 @@ void Metadata::put_metadata(string name, bool val)
 	else
 		pfput_boolean(pf,(char *)name.c_str(),0);
 }
+void Metadata::remove(string name)
+{
+	Pf *pftmp;
+	pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
+	// necessary because pfdel returns a pf copy of entry deleted on 
+	// success
+	if(pftmp!=NULL) pffree(pftmp);
+}
 Metadata::Metadata(char *mdin) 
 	throw(Metadata_parse_error)
 {
