@@ -1,0 +1,82 @@
+.TH DBMS 1 "$Date$"
+.SH NAME
+dbms \- compute ms magnitudes 
+.SH SYNOPSIS
+.nf
+
+dbms [-a auth_match] 
+    [-f filter]
+    [-n net] 
+    [-o orid_match] 
+    [-t twin] 
+    [-v] 
+    dbin 
+
+.fi
+.SH DESCRIPTION
+\fBdbms\fP computes surface-wave magnitude \fIms\fR\fR based on the 
+following equation:
+.nf
+
+        ms = log(Amp) + 1.66*log(delta) + 2.0
+
+        where:
+
+        Amp   -  amplitude of the Rayleigh wave on the vertical 
+                 component in micrometers;
+        delta -  distance between source and receiver in degrees; 
+.fi
+
+.LP
+The calculated magnitude is stored in \fInetmag\fR, \fIorigin\fR and  
+\fIstamag\fR tables.
+.SH OPTIONS
+.IP "-a auth_match"
+Only origin records which \fIauth\fR matches the regular expression \fIauth_match\fR
+will be selected for magnitude computation. By default all records are selected.
+.IP "-f filter"
+Specifies filter which will be used to filter data before magnitude computation.
+Filter should be specified in a form "FL FLO FH FHO", where:
+.nf
+          FL  -  The lower cutoff frequency in hz.
+          FLO -  The order of the lower cutoff sideband.
+          FH  -  The upper cutoff frequency in hz.
+          FHO -  The order of the upper cutoff sideband.
+.fi
+By default,  "0.025 7 0.1 7" filter is used. 
+
+.IP "-o orid_math"
+Only origin records which \fIorid\fR matches the regular expression \fIorid_match\fR
+will be selected for magnitude computation. By deafult \fIms\fR will be computed for
+every \fIorid\fR. 
+.IP "-n net"
+Specifies network code. This network code will be used to fill a \fInetmag\fR table. 
+.IP "-t twin"
+Set a time window for a maximum \fIamplitude\fR search. By default, time window is
+20 minutes from a predicted first surface wave arrival.
+.IP "-v"
+Be more verbose.
+.SH EXAMPLE
+.LP
+Compute ms for 'india' databse for all origin records with 'auth'== "UCSD.*"; 
+network is "knet"; filter data with "0.1 5 1.0 5" filter before computation.
+
+.nf
+
+dbms -a "UCSD.*" -f "0.1 5 1.0 5" -n "knet" india
+
+.fi
+.LP
+Compute ms for knet database for 'orid' = 12* origins ; use default filter.
+.nf
+
+dbms -o "12.*" knet
+
+.fi
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko
+.\" $Id$
+
