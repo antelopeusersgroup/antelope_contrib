@@ -12,6 +12,12 @@ Usage: EPOCH = STR2EPOCH ( TIMESTRING )\n"
 
 #include "antelope_mex.h"
 
+/* hamstring DEBUG code
+static double now() {
+	return (double) time(0);
+}
+*/
+
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	mxArray	*mycell;
@@ -43,6 +49,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
+
+	fprintf( stderr, "DEBUG: now is %f\n", now() );
 
 	if( single_string ) 
 	{

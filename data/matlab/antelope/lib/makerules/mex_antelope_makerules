@@ -12,10 +12,11 @@ DCFLAGS=
 CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
 
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
-MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(PACKAGE_PATH)/lib \
-  -L$(XLIB) LDFLAGS='$$LDFLAGS -R$(ANTELOPE)/lib -R$(PACKAGE_PATH)/lib' $(DBG)
+MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
+  -L$(XLIB) LDFLAGS='$$LDFLAGS -R$(ANTELOPE)/lib -R$(DEST)/lib' $(DBG)
 
-CLEAN += *.$(MEXEXT) *.m *.html
+clean ::
+	@-$(RM) *.$(MEXEXT) *.m *.html
 
 .SUFFIXES: .SUFFIXES .$(MEXEXT) .doc .xm .m .xhtml .html
 .c.o:
@@ -42,18 +43,15 @@ CLEAN += *.$(MEXEXT) *.m *.html
 	$(RM) $@
 	cp $< $@
 
-
+HTML :: $(HTML) 	$(HTML:%=$(DEST)/data/$(HTMLDIR)/%)
+install :: HTML
 all:: $(HTML)
-install:: $(HTML:%=$(ANTELOPE)/data/$(HTMLDIR)/%)
-uninstall::
-	(cd $(ANTELOPE)/data/$(HTMLDIR) ; $(RM) $(HTML))
 
-$(ANTELOPE)/data/$(HTMLDIR)/% : %
-	if [ ! -h $< ] ; then \
-	    if [ ! -d $(ANTELOPE)/data/$(HTMLDIR) ] ; then \
-		mkdir -p $(ANTELOPE)/data/$(HTMLDIR) ; \
-	    fi ; \
-	    $(RM) $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
-	    cp -pf $< $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
-	    chmod a+r $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
+uninstall::
+	@echo uninstalling $(HTML)
+	@-if [ -d $(DEST)/data/$(HTMLDIR) ] ; then \
+	    (cd $(DEST)/data/$(HTMLDIR) ; $(RM) $(HTML)) \
 	fi
+
+$(DEST)/data/$(HTMLDIR)/% : %
+	$(INSTALL) $< $(DEST)/data/$(HTMLDIR)

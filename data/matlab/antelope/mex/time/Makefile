@@ -18,7 +18,7 @@ CLEAN=
 
 cflags=
 fflags=
-ldflags=
+ldflags= 
 ldlibs=
 
 include $(ANTELOPE)/include/mex_antelope_makerules

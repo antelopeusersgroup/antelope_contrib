@@ -7,6 +7,8 @@
  * 1997
  */
 
+#include <sys/types.h>
+#include <time.h>
 #include "mex.h"
 #include "db.h"
 #include "tr.h"
