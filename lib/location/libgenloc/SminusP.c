@@ -166,6 +166,7 @@ void pfget_badclocks(Pf *pf, Arr *a)
 	freetbl(keys,0);
 
 	t = pfget_tbl(pf,"bad_clocks");
+	if(t==NULL) return;
 	for(i=0;i<maxtbl(t);++i)
 	{
 		sta = gettbl(t,i);
