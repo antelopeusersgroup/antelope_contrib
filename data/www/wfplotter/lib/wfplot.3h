@@ -1,0 +1,89 @@
+.TH WFPLOT 3H "$Date$"
+.SH NAME
+wfplot \- library function to plot waveforms
+.SH SYNOPSIS
+.nf
+include_once( '/path/to/jpgraph/jpgraph.php' ) ;
+include_once( '/path/to/jpgraph/jpgraph_line.php' ) ;
+
+include( 'wfplot.inc' ) ;
+
+wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, $width, $height, $format ) ;
+.fi
+.SH DESCRIPTION
+Takes a series of arguments and creates an image from data retrieved from
+a waveform disc (wfdisc) using trloadchan and trextract_data. The image 
+is created using the GD library for PHP and the graphing library for 
+GD - JpGraph. The defined directory must be writable by the web user.
+All arguments are required - an error is output if any are missing.
+.SH OPTIONS
+$mydb    - Database pointer, required.
+$sta     - Station, required.
+$cha     - Channel, required.
+$t0      - Start time, required.
+$t1      - End time, required.
+$myimage - Output image name, required. Do not include file suffix (file format).
+           Directory must be writable by the web user (eg. www, apache).
+$width   - Width of the output image in pixels, required.
+$height  - Height of the output image in pixels, required.
+$format  - Format of the output image, required. Options are png, jpeg and gif.
+.SH FILES
+wfplot.inc
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+<?php
+   dl( 'Datascope.so' ) ;
+   require_once( "wfplot.inc" ) ;
+   # Get form parameters
+   $sta = $_GET['sta'] ;
+   $cha = $_GET['cha'] ;
+   $t0 = $_GET['t0'] ;
+   $t1 = $_GET['t1'] ;
+   # Open db and load waveform data
+   $mydb = ds_dbopen( $mydb, "r" ) ;
+   # Output image name
+   $myimage = "myimage" ;
+?>
+
+<html>
+<head>
+   <title>Waveform Processor</title>
+</head>
+<body>
+   <h1>wfplotter.php</h1>
+<?php
+   $wvform_image_name = wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, "800", "600", "png" ) ;
+   list( $height, $width, $type, $attr ) = getimagesize( $wvform_image_name ) ;
+   echo "<img src=\"$wvform_image_name\" $attr alt=\"Waveform image: Station: $sta, Channel: $cha, Start time: $t0, End time: $t1\" />" ;
+?>
+</body>
+</html>
+?>
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+Datascope_PHP(3), wfplotter(3h)
+.fi
+.SH "BUGS AND CAVEATS"
+Requires PHP, GD graphics library and JpGraph object-oriented library for GD.
+Since PHP 4.3 there is a bundled version of the GD lib. Versions of GD older than gd-1.6 
+support GIF format images, and do not support PNG, where versions greater 
+than gd-1.6 and less than gd-2.0.28 support PNG, not GIF. GIF support was re-enabled 
+in gd-2.0.28 and is avaliable in the bundled version of the GD lib since PHP 4.3.9 and 
+PHP 5.0.1. It is recommended to use the bundled GD lib. JpGraph is an external 
+object-oriented library for GD that allows the dynamic creation of graphs 
+(http://www.aditus.nu/jpgraph/).
+More information available at http://www.php.net/manual/en/ref.image.php
+.SH AUTHOR
+Rob Newman, UCSD
+.\" $Id$

@@ -1,0 +1,35 @@
+<?php
+dl( 'Datascope.so' ) ;
+
+# Load config
+require_once( "lib/wfplot.inc" ) ;
+
+# Get form parameters
+$sta = $_GET['sta'] ;
+$cha = $_GET['cha'] ;
+$t0 = $_GET['t0'] ;
+$t1 = $_GET['t1'] ;
+
+# Open db and load waveform data
+$mydb = "/path/to/database" ;
+$mydb = ds_dbopen( $mydb, "r" ) ;
+
+# Output image
+$img = "myimage" ;
+?>
+
+<html>
+<head>
+	<title>Waveform Plotter</title>
+</head>
+<body>
+<h1>wfplotter.php</h1>
+<h2>Station &amp; Channel: <? echo $sta . " : " . $cha ; ?></h2>
+<h2>Start: <? echo date( "Y\&\m\d\a\s\h\;m\&\m\d\a\s\h\;d H:i:s",$t0 ) . "($t0)" ; ?><br/>End: <? echo date( "Y\&\m\d\a\s\h\;m\&\m\d\a\s\h\;d H:i:s",$t1 ) . "($t1)" ; ?></h2>
+<?php
+	$wvform_image_name = wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, "800", "600", "png" ) ;
+	list( $height, $width, $type, $attr ) = getimagesize( $wvform_image_name ) ;
+	echo "<img src=\"$wvform_image_name\" $attr alt=\"Waveform image: Station: $sta, Channel: $cha, Start time: $t0, End time: $t1\" />" ;
+?>
+</body>
+</html>
