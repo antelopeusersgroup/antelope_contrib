@@ -1,0 +1,193 @@
+2003.309: version 1.0 (Yay!)
+	- Add a missing include for Solaris.
+
+2003.307: version 1.0pre1
+	- Change slp_getaddrinfo() to use the reentrant gethostbyname_r()
+	under glibc2 and Solaris.  getaddrinfo() is only supported under
+	Solaris 8 and later, and early glibc2 does strange things.
+	- In slplatform.h define SLP_GLIBC2, SLP_SOLARIS or SLP_WIN32
+	based on the architecture.
+	- Add a Makefile.wat (also for the example) for Open Watcom's
+	wmake utility.
+	- Documentation updates.
+	
+2003.280: version 0.9.6
+	- Add two new functions sl_log_rl() and sl_loginit_rl(); these are
+	versions of the logging facility that work directly on a SLlog
+	struct.  If no SLlog is given to sl_log_rl() it will use the
+	global logging parameters.  If no SLlog is given to
+	sl_loginit_rt() it will allocated space before initializing the
+	parameters.
+	- Update msr_parse() and msr_print() to take an SLlog
+	(instead of an SLCD) for logging parameters and use the new
+	sl_log_rl() internally.
+	- Change the verbosity level of two messages as suggested by
+	Andres.
+
+2003.276: version 0.9.5a
+	- Add two new functions sl_log_r() and sl_loginit_r(); these are
+	reentrant versions of the previous functions.  Intended for use
+	in threaded programs where the each thread can use it's own 
+	logging scheme.
+	- Updated most of the library logging to use sl_log_r with the
+	appropriate SLCD, this required a small bit of re-arrangement
+	including a change to the arguments for msr_parse() and 
+	msr_print() which now need a SLCD.
+	
+2003.274: version 0.9.4
+	- Create slp_getaddrinfo(), this will use gethostbyname() on
+	Win32 and getaddrinfo() on others.  getaddrinfo is only
+	supported in very recent Win32 platforms.
+	- A few other tweaks for compiling under Win32.
+
+2003.273: version 0.9.3
+	Making things thread safe/friendly:
+	- Make a new SLstat struct to hold all persistent (static) state
+	variables used in sl_collect[_nb]().  Added a pointer to one of
+	these in the SLCD.  Also updated sl_newslcd() and sl_freeslcd()
+	to support this.
+	- Use getaddrinfo() instead of gethostbyname() in sl_connect().
+	- Change update_stream() to extract FSDH information without
+	using msr_parse().  Both faster and thread safe.
+	- Change encoding_hash() to be reentrant and modify msr_print()
+	to use it.
+
+2003.272: version 0.9.2
+	- Fix bug in slp_usleep().
+	- Minor changes to strtoul() usage in sl_connect().
+	- Add -lrt to the Solaris LDLIBS to get nanosleep().
+
+2003.262: version 0.9.1
+	- New portability function slp_usleep() sleeps for given micro
+	seconds.  Uses SleepEx under Win32 and nanosleep() for others.
+	- Update sl_collect() and sl_collect_nb() to always return
+	SLPACKET, SLTERMINATE or SLNOPACKET.
+	- Reset some verbosity flags for uni-sta. negotiation, now
+	it's like multi-sta. negotiation.
+	- Update to example/slclient.c, standard flag usage.
+	
+2003.237: 
+	- Change Makefile to use GCC by default and use -O2 optimization.
+	- Fix some variable initializations.
+	- Minor cleanups, move MAX_LOG_MSG_LENGTH to libslink.h.
+
+2003.182: version 0.9
+	- Move sl_sequence and sl_packettype into main.c from slutils.c.
+	- Move doy2md() from main.c to sl_doy2md() in slutils.c and
+	"export" it (i.e. declare it in libslink.h).
+	- Add sl_doy2md() and strncpclean() to utils man page.
+	- Remove barely used constants from libslink.h.
+
+2003.181: version 0.8.4
+	- Use only a single error indicator for bad Steim compression
+	flags regardless of compression level.  If the caller needs
+	to know the level it is in the FSDH.
+	- Rename the MSrecord element from unpackflag to unpackerr to
+	avoid confusion with the argument to msr_parse().
+	- Update the documentation to describe the new unpackerr flag.
+	- Update a few non-standard func. declarations in slplatform.h
+	
+2003.177: version 0.8.2
+	- Rename the MSheader struct to MSrecord to reflect the fact
+	that the mini-system processes more than just the header.
+	- Add an element to the MSrecord struct, 'unpackflag' that
+	will be set by the unpacking routines to indicates errors.
+	- Rename all the MSrecord related functions, now they are
+	prefixed with 'msr_' for clarify/uniformity.
+	- Change RECSIZE declaration in libslink.h to SLRECSIZE.
+	- Remove unneeded main loop in sl_collect_nb(), it never loops.
+
+2003.174:
+	- Change char *'s to const char *'s in save/recover state
+	routines (patch from Andres).
+
+2003.169: version 0.8
+	- Minor updates to Makefile.win.
+	- Change requested Windows Sockets version to 2.2.
+
+2003.168: 
+	- Include a man page for sl_dtime().
+	- Many more small changes for portability to WIN32.
+	- Include an Nmake compatible Makefile.win for building on WIN32.
+	- Update the slclient.c example and include a Makefile.win to
+	build it on a WIN32 platform.
+
+2003.167:
+	- Change sl_readdata() and sl_writedata() to sl_recvdata() and
+	sl_senddata() respectively.  These new functions use the recv()
+	and send() system calls for network socket operation; they 
+	are much more portable than read/write.
+	- Create slplatform.c to hold portable functions, basically 
+	these are functions to provide a common interface to differing
+	system implementations.
+	- Rename slstdint.h to slplatform.h and use it for including
+	platform specific headers.
+	
+2003.163: version 0.7.2
+	- Include and use a slstdint.h header file to help deal with
+	portability of the standard integer types.  It's a bit sparse
+	right now.
+	- Add 'resume' flag to the SLCD to control the usage of sequence
+	numbers with DATA/FETCH commands.  Default is true.
+	- Change char *'s in logging routines to const char *'s.
+	- Change default use of lastpkttime to false in new_slcd().
+	
+2003.162: version 0.7.1
+	- Change host_latency(), to use the new helper functions.
+	- Add helper functions double_samprate() and depoch_starttime() to
+	msheader.c
+	- Change msrecord pointer (MSheader struct) to a const char pointer
+	- Change argument for print_MSheader() from 'header' to 'msheader'
+	for consistency with related functions.
+	- Change sl_log() calls in print_MSheader() to use a verbosity
+	level of 0 instead of 1.  If print_MSheader() is called the ouput
+	should be printed, period (the only exception is when the logging
+	verbosity is less than 0).
+	
+2003.157: version 0.7
+	- Changed the declaration of sl_collect().  Now a pointer to a
+	pointer for an SLpacket is passed, when a packet is received
+	this pointer is updated.  sl_collect() now returns an integer
+	giving more possibilities for return values.  When a packet is
+	received SLPACKET is returned (a positive integer), when an error
+	or termination is occurs 0 is returned.
+	- Added a non-blocking version of sl_collect() called, creatively,
+	sl_collect_nb().  This acts the same as sl_collect() but, instead
+	of blocking, will return SLNOPACKET (defined in libslink.h) when
+	no data is available.  This routine is considered experimental
+	and not documented.
+
+2003.156:
+	- Add 'terminate' flag to the SLCD and include a sl_terminate()
+	function to set it.  Modify sl_connect() to close the connection,
+	send remaining packets in buffer and finish with a NULL when
+	this flag is set.  Also modified the example client to use this
+	new shutdown technique.	
+	- Add 'lastpkttime' flag to the SLCD to indicate if the last
+	packet time should be appended to the FETCH/DATA command during
+	negotiation.  Default is 1 (true).
+	- Add 'numsamples' element to the MSheader data type to indicate
+	the actual number of data samples unpacked.  If no unpacking
+	is requested this is set to -1.
+	- Declare unpack_* routines in unpack.c as static to avoid
+	function name collision.
+	- Use the 'const' qualifier for char and SLCD types when no
+	modification is done.
+	- Standardize sl_freeslcd() function name.
+	
+2003.083: version 0.6
+	- Fix memory leaks in parse_streamlist().
+
+2003.073: version 0.5
+	- Renaming for consistency and many cleanups.
+
+Early 2003: version 0.1
+	- Re-fit utility functions from slinktool for library usage.
+	
+	- Add lots of other useful functions including config (stream
+	list) file reading, state file functions, Mini-SEED record parsing
+	and data sample unpacking/decompressing, etc.
+
+	- Write a short Users Guide and some man pages.
+
+	

@@ -1,0 +1,14 @@
+
+A SeedLink to Antelope ORB module
+
+In a proper Antelope build environment (environment variables ANTELOPE,
+and ANTELOPEMAKE set correctly, etc.) this should compile with a simple
+'make'.
+
+A 'make install' will install the binary (slink2orb), manpage, and default
+parameter file in the Antelope install tree (/opt/antelope/...), assuming
+you have permission.
+
+For details please consult the included man page (slink2orb.1)
+
+

@@ -1,0 +1,157 @@
+21 Jan 2004
+  - Add hook functions to re-direct sl_log() usage to elog_notify()
+      and elog_complain().
+  - version 3.2
+
+20 Jan 2004
+  - Include libslink 1.0 and recode to use it.
+  - Remove slinkutils.{c|h} as it is replaced by libslink.
+  - Remove the dumpfile option, there are other tools for this.
+	
+16 Jan 2003
+  - Remove the need for a C++ compiler on little-endian architectures by
+      removing the need for big-endian.h and byteorder_swap.h by
+      doing the small amount of byte swapping needed with ntohs() in
+      sl_blocktype().  Sure helps with portability.
+  - version 3.0
+	
+14 Jan 2003
+  - Rewrite the main loop code (heart transplant).
+  - Added keepalive capability, can specify interval on command line 
+      or in the parameter file.  This includes the logic to send INFO
+      requests and received them.  There is no capability to
+      actually parse the returned XML.
+  - Included an updated version of the SeedLink connection routines
+      (slinkutils.x).  This includes the ability to detect the
+      remote server version number and check it before using
+      features that only exist in more recent server versions,
+      i.e. multistation, keepalives, etc.
+
+29 Nov 2002
+  - Update mseed2orbpkt.c to give more room to 'segtype'.  Fixes a
+      bug when calling dbget_calib().  Thanks to Nikolaus Horn!
+  - version 2.2c
+	
+1 Nov 2002
+  - Added some clearer error messages to mseed2orbpkt.c when there
+      are problems mapping the channel name with the snetsta and
+      schanloc tables.
+  - Removed all references to keepalive/heartbeats, it will never
+      exist in the 2.x version level.
+  - version 2.2b
+
+9 May 2002
+  - Added some logic to fail during link configuration if either no
+      given selectors or no given stations (multi-station mode only)
+      were accepted.  This should avoid confusion for users that 
+      receive unexpected data because their specified selectors or
+      stations were not accepted by the server.  Note: selectors,
+      unlike stations, will only fail if they are malformed;
+      acceptance does not mean that data fitting that selector mask
+      is available.
+  - version 2.2a
+
+10 April 2002
+  - Re-worked the timing logic in the main loop for the network delay,
+      timeout and state file saving so it is easier to read/modify later.
+  - version 2.2, ready for production use.
+
+4 April 2002
+  - Add some code to select() for readability of the network socket while
+      in the main read loop.  Subsequently remove the call to usleep() in
+      the main read loop as select() now does the waiting for us.  The
+      'polltime' parameter in the pf has been replaced with
+      'selectwaittime', and should never need to be changed.
+    This *significantly* increases the data transport rate, which is most
+      obvious when "recovering" from an outage.  This also makes
+      slink2orb scale much better when collecting many data streams
+      using multi-station mode/protocol.  Yipee!
+  - Open DB as read/write (r+) so that things like snetsta and schanloc
+      tables can be updated.
+	
+11 Jan 2002
+  - Update the man page
+  - version 2.1, ready for production use.
+
+3 Jan 2002
+  - Fixed some nasty memory leaks
+  - Reduced size of incoming packet buffer (enough for 4 SeedLink packets)
+  - Move UNSEEDmod() routine into mseed2orbpkt.c source file and
+      some do minor code cleanups in there
+
+14 Dec 2001
+  - Update the man page
+  - version 2.0
+
+13 Dec 2001
+  - Fix bug in mseed2orbpkt.c, calib and calper were not correcly set!
+  - Some minor code cleanups, i.e. only try to open state file if a
+      state file was given on the command line, duh.
+
+12 Dec 2001 10:00
+  - Improved error messages so that a given slink2orb process can be
+      identified; fully appreciated when running multiple clients at the
+      same time
+  - Restructuring of code to "improve" clarity (slinkutils.c)
+  - If the SeedLink server address is given as ':port', i.e. omitting
+      the host, then 'localhost' is inserted
+	
+19 Oct 2001 13:00
+  - Add structures to define a connection and station description
+      struct SLconnection & SLstation
+  - Add a sl_configlink_multi() function to do multi-station config
+      (SeedLink Protocol version 3) based on the new structures
+  - Changed sl_configlink (uni-station config) to use the new structures
+  - Changed the main code in slink2orb.c to fill/use the new structs
+  - Removed the sequence gap detection snippet.  It's only useful if
+      no selectors are used, just not worth it at the moment; a gap
+      detector should work on stream time basis anyway.
+
+2  Aug 2001 15:32
+  - Add the '-o' flag to indicate a dumpfile to which all the Mini-SEED
+      records will be appended, in addition to sending to the ORB
+  - version 1.0-beta7
+
+6  June 2001 15:00
+  - sl_diconnect(): only shutdown() if connected (i.e. if slchecksock() > 1)
+
+25 May 2001 14:00
+  - Don't attempt to close socket on exit if it is not open.
+  - Added a recv(...MSG_PEEK) check to sl_checksock()
+  - Combine variables 'path' & 'newlink' into 'srvlink' for clarity.
+  - version 1.0BETA-5
+
+23 May 2001  9:00
+  - Don't destroy existing file descriptor flags when setting O_NONBLOCK
+  - Add sl_checksock() for checking the status of a socket connection
+  - Re-fit sl_log() for generalized logging/printing of messages and
+      use this for errors/messages in all of the SeedLink functions
+  - version 1.0BETA-4
+
+22 May 2001 15:00
+  - Fix loop control to properly reset the connection and drop any
+      unprocessed data when bad packets are detected
+  - Add more diagnostic error messages to the packet processing and
+      forwarding code
+  - Various small fixes
+  - version 1.0BETA-3
+
+21 May 2001 14:00
+  - Cleanups in sl_configlink() function, now uses it's own buffer
+      (readbuf[]) for read()ing server responses.
+  - More modularization of SeedLink functions
+  - version 1.0BETA-2
+
+18 May 2001  9:00
+  - Add a close() to sl_connect() for connections that only made it
+      "half way".  Should solve most of the multiple connect problems.
+
+17 May 2001 13:00
+  - rewrite the SeedLink client functions so they are more modular,
+      i.e. not using global variables, more needs to be done.
+  - Change names of SeedLink functions in (seedlink.c) for clarity
+  - version 1.0BETA-1
+  
+10 May 2001 14:00
+  - Put together the first Beta package, version 1.0BETA-0
+

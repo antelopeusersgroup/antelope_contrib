@@ -1,0 +1,51 @@
+#
+#  slink2orb.pf, parameters for the SeedLink to ORB module
+#
+
+# Equivalent command line parameters override those specified here
+# All parameters are optional
+
+nettimeout    600     # network timeout (seconds), 0 to disable
+netdelay      30      # network reconnect delay (seconds)
+keepalive     0       # interval to send keepalive requests (seconds)
+stateint      100     # interval to save the sequence number (packets)
+
+selectors   BH?.D     # Default selectors recognized by SeedLink server,
+                      # see below.  If no selectors are indicated then
+                      # all packets are sent.  These are the selectors
+                      # used in uni-station mode (i.e. if no 'stations'
+                      # array).  In multi-station mode, if no selectors
+		      # are provided for a station then these are used.
+
+# 'stations' array: stations to configure using multi-station mode (Protocol
+# ver. 3), in 'NET_STA' format with following selectors.  If no selectors
+# are indicated then the default selectors are used.
+# If this array is not present the communication will be configured in
+# uni-station mode (Protocol ver. <=2), using the default selectors.
+
+#stations &Arr{
+#	NET_STA		[selectors]
+#	GE_EIL		BHZ.D  HHZ.D
+#	IU_KONO		BH?
+#	MN_AQU
+#}
+
+#(notes regarding "selectors" from a SeedLink configuration file)
+#
+#   The "selectors" parameter tells to request packets that match given
+#   selectors. This helps to reduce network traffic. A packet is sent to
+#   client if it matches any positive selector (without leading "!") and
+#   doesn't match any negative selectors (with "!"). General format of
+#   selectors is LLSSS.T, where LL is location, SSS is channel, and T is
+#   type (one of DECOTL for data, event, calibration, blockette, timing,
+#   and log records). "LL", ".T", and "LLSSS." can be omitted, meaning
+#   "any". It is also possible to use "?" in place of L and S.
+#
+#   Some examples:
+#   BH?            - BHZ, BHN, BHE (all record types)
+#   00BH?.D        - BHZ, BHN, BHE with location code '00' (data records)
+#   BH? !E         - BHZ, BHN, BHE (excluding detection records)
+#   BH? E          - BHZ, BHN, BHE plus detection records of all channels
+#   !LCQ !LEP      - exclude LCQ and LEP channels
+#   !L !T          - exclude log and timing records
+
