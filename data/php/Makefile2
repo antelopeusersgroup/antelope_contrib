@@ -2,17 +2,9 @@ MYDLIB= Datascope.so
 
 DATADIR= php
 
-DATA= $(MYDLIB) \
-      webdbe.inc \
-      webdbe_style.css \
-      webdbe_title.gif \
-      webdbe_bkgrd.gif \
-      webdbe_subwin.php \
-      webdbe_menubar.php \
-      webdbe_functions.js
+DATA= $(MYDLIB)
 
-MAN3= Datascope_PHP.3 \
-      webdbe.3
+MAN3= Datascope_PHP.3 
 
 CLEAN= $(MYDLIB)
 
@@ -22,7 +14,6 @@ ldlibs= $(TRLIBS) -ldbxml
 
 include $(ANTELOPEMAKE)
 DBG=
-DIRS=
 
 OBJS= Datascope.o
 $(MYDLIB) : $(OBJS)
