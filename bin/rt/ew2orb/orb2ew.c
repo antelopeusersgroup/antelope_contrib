@@ -480,7 +480,7 @@ stop_all_export_server_threads()
 		stop_export_server_thread( gettbl( keys, i ) );
 	}
 
-	freetbl( keys, (void (*)(char *)) free );
+	freetbl( keys, (void (*)(void *)) free );
 
 	return;
 }
@@ -1524,7 +1524,7 @@ reconfigure_export_server_threads( Pf *pf )
 		}
 	}
 
-	freetbl( existing_keys, (void (*)(char *)) free );
+	freetbl( existing_keys, (void (*)(void *)) free );
 		
 	for( i = 0; i < maxtbl( new_keys ); i++ ) {
 

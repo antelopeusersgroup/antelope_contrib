@@ -1019,7 +1019,7 @@ stop_all_import_threads()
 		stop_import_thread( gettbl( keys, i ) );
 	}
 
-	freetbl( keys, (void (*)(char *)) free );
+	freetbl( keys, (void (*)(void *)) free );
 
 	return;
 }
@@ -1263,7 +1263,7 @@ reconfig_import_thread( ImportThread *it )
 
 		if( morphlist != (Tbl *) NULL ) {
 			
-			freetbl( morphlist, (void (*)(char *)) free );
+			freetbl( morphlist, (void (*)(void *)) free );
 		}
 
 		it->update = 0;
@@ -1934,7 +1934,7 @@ reconfigure_import_threads( Pf *pf )
 		}
 	}
 
-	freetbl( existing_keys, (void (*)(char *)) free );
+	freetbl( existing_keys, (void (*)(void *)) free );
 		
 	for( i = 0; i < maxtbl( new_keys ); i++ ) {
 
