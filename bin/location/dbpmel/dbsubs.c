@@ -175,6 +175,8 @@ int dbpmel_save_results(Dbptr db,
 		double smajax,sminax,strike,sdepth,stime;
 		int rc;
 
+		/* Save nothing for events marked no use */
+		if(h[i].used==0) continue;  
 		/* Start with event table to get prefor */
 		dbputv(dbes,0,"evid",evid[i],0);
 		dbe.record = dbALL;
