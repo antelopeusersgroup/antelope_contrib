@@ -103,7 +103,7 @@ orbsources2pf( double atime, Orbsrc *sources, int nsources )
 	double 	kbaud;
 	double	latency_sec;
 
-	pf = pfnew( PFARR );
+	pf = pfnew( PFFILE );
 
 	pfput_time( pf, "source_when", atime );
 
@@ -155,7 +155,7 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	struct in_addr in;
 	double	latency_sec;
 
-	pf = pfnew( PFARR );
+	pf = pfnew( PFFILE );
 
 	pfput_time( pf, "client_when", atime );
 
