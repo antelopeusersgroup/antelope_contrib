@@ -1511,7 +1511,8 @@ sub other_map_links {
 			"dbopen mapstock",
 			"dbjoin webmaps",
 			"dbsubset mapname != \"$mapname\"",
-			"dbsubset mapclass != \"detail\"" );
+			"dbsubset mapclass != \"detail\"",
+			"dbsort -u mapname" );
 
 	my( $nmaps ) = dbquery( @db, "dbRECORD_COUNT" );
 
