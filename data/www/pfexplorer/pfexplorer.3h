@@ -13,7 +13,7 @@ array. Therefore the directory must be readable by the user that
 your webserver runs as (typically nobody, www, apache). You MUST 
 define the path to the default Antelope parameter file directory 
 in your own checked out copy of the pfexplorer or use 
-dbwebproject(3) to install.
+the dbwebproject program to install.
 
 You can also explore your own parameter files that you have 
 built on your local file system for your own Antelope-based 
@@ -45,7 +45,8 @@ Datascope_PHP(3), pfexplore(3h)
 .fi
 .SH "BUGS AND CAVEATS"
 This is still under construction and some of the tools that
-support this are under development.
+support this are under development. In particular, the dbwebproject 
+install program mentioned above is not yet available. 
 
 For non-associative arrays PHP automatcially adds numeric keys
 which currently messes with the output. Not fatal.
