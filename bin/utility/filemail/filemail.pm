@@ -4,7 +4,7 @@ require Exporter;
 @ISA = ('Exporter');
 
 @EXPORT = qw( parse_address message_to_database get_epoch realname filemail );
-@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode );
+@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode $Relpath );
 
 use Datascope ;
 use Mail::Internet;
@@ -14,6 +14,7 @@ Mail::Header->mail_from( COERCE );
 
 $Verbose = 0;
 $Dryrun = 0;
+$Relpath = 0;
 $FormatProblems = "FormatProblems";
 $Nullhost = "localhost";
 $Dirmode = "0755";
@@ -163,6 +164,38 @@ sub realname {
 	return $real ;
 }
 
+sub reset_dir {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $dir ) = pop( @_ );
+
+	@db = dblookup( @db, "", "", "dir", "" );
+
+	my( $dir_size ) = dbquery( @db, dbFIELD_SIZE );
+
+	if( $Relpath == 0 && length( $dir ) > $dir_size ) {
+
+		elog_complain( "Dir '$dir' exceeds $dir_size-byte size of dir field." .
+				" Switching to relative-path mode\n" );
+
+		$Relpath++;
+	}
+
+	if( $Relpath ) {
+		
+		my( $table_path ) = dbquery( @db, dbTABLE_DIRNAME );
+
+		$dir = relpath( $table_path, $dir );
+	}
+
+	if( length( $dir ) > $dir_size ) {
+
+		elog_die( "Dir '$dir' exceeds $dir_size-byte size of dir field " .
+			  "Even with relative path. Can't continue, bye.\n" );
+	}
+
+	return $dir;
+}
+
 sub message_to_database {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $name, $dir, $dfile, $foff, $lines, $bytes, @message ) = @_;
@@ -234,6 +267,7 @@ sub message_to_database {
 	my( $address_size ) = dbquery( @dbtemp, dbFIELD_SIZE );
 
 	if( $sent ) {
+		$dir = reset_dir( @dbout, $dir );
 		$dbout[3] = dbaddnull( @dbout );
 		dbputv( @dbout,  "to", $to, 
 				"subject", $subject, 
@@ -244,6 +278,7 @@ sub message_to_database {
 				"dir", $dir, 
 				"dfile", $dfile );
 	} else {
+		$dir = reset_dir( @dbout, $dir );
 		$dbin[3] = dbaddnull( @dbin );
 		dbputv( @dbin,  "from", $address, 
 				"subject", $subject, 

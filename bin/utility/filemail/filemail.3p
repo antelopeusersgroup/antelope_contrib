@@ -20,6 +20,7 @@ $real = realname( $address );
 
 $filemail::Verbose = 0;
 $filemail::Dryrun = 0;
+$filemail::Relpath = 0;
 $filemail::Dirmode = "0755";
 $filemail::Filemode = "0644";
 $filemail::FormatProblems = "FormatProblems";
@@ -101,6 +102,14 @@ permissions on directories  and files created by filemail. These
 should be specified as strings containing the octal representations 
 of file access permissions, e.g. "0644". For the meaning of the permission
 numbers see chmod(2).
+
+The $filemail::Relpath variable specifies whether to attempt to make 
+database entries listing relative instead of absolute paths for the 
+archival mail files. The default is to use absolute paths. If an absolute 
+path appears to long for the dir field of the database, filemail will 
+forcibly enter relative-path mode. If the relative paths are still to 
+long to fit in the database, the message_to_database routine will 
+consider it a fatal error and exit with complaint. 
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
