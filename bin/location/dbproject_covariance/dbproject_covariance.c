@@ -204,4 +204,6 @@ char	*argv[];
 
 	}
 	dbclose( db );
+
+	exit( 0 );
 }
