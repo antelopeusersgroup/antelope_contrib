@@ -44,6 +44,7 @@ translations &Arr{
 				thread		clients{FOREACH}{thread}
 				clientaddress	clients{FOREACH}{address}
 				clientport	clients{FOREACH}{port}
+				clientid	clients{FOREACH}{clientid}
 				bytes		clients{FOREACH}{bytes}
 				errors		clients{FOREACH}{errors}
 				fd		clients{FOREACH}{fd}
@@ -98,10 +99,7 @@ translations &Arr{
 				closeorb	connections[FOREACH]{closeorb}
 				statmachine	orbstat_machine
 				o2omachine	connections[FOREACH]{o2omachine}
-				latency_sec	connections[FOREACH]{latency_sec}
-				reject		connections[FOREACH]{reject}
-				select		connections[FOREACH]{select}
-				what		connections[FOREACH]{what}
+				clientid	connections[FOREACH]{clientid}
 			}
 		}
 	}
