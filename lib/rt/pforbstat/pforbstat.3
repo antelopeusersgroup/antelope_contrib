@@ -20,23 +20,31 @@ argument to orbstat2pf is nonzero, the numeric orbserver version is also
 included in the server Array of the output parameter file. The orbversion
 parameter may be obtained from orbping(3).
 
-The parameter file returned by orbstat2pf contains a single array, called "server". 
-The orbsources2pf call returns a parameter file with source_when, the time 
-of the status snapshot, and an array of sources. That array of sources, in turn, 
-contains an array for each source, labelled by source-name. The orbclients2pf 
-call also returns a parameter file with two entries, one called "client_when"
-giving the epoch time of the snapshot and one called clients. The latter is 
-an array containing one array of values per client, labelled by the thread-id 
-of the client. 
+The parameter file returned by orbstat2pf contains a single array,
+called "server".  The orbsources2pf call returns a parameter file with
+source_when, the time of the status snapshot, and an array of sources.
+That array of sources, in turn, contains an array for each source,
+labelled by source-name. The orbclients2pf call also returns a
+parameter file with two entries, one called "client_when" giving the
+epoch time of the snapshot and one called clients. The latter is an
+array containing one array of values per client, labelled by the
+thread-id of the client.
 
-The pforbstat routine calls all necessary routines to build a parameter 
-file containing orb status. orbfd is the file descriptor returned by the orbopen(3) 
-call. The flags argument can be one or more of PFORBSTAT_SERVER, 
-PFORBSTAT_SOURCES, or PFORBSTAT_CLIENTS, thus determining the contents included
-in the returned parameter file. These flags can be combined via the bitwise-or 
-operator "|".
+The pforbstat routine calls all necessary routines to build a parameter
+file containing orb status. orbfd is the file descriptor returned by
+the orbopen(3) call. The flags argument can be one or more of
+PFORBSTAT_SERVER, PFORBSTAT_SOURCES, PFORBSTAT_CLIENTS, and
+PFORBSTAT_CONNECTIONS, thus determining the contents included in the
+returned parameter file. These flags can be combined via the bitwise-or
+operator "|". The PFORBSTAT_CONNECTIONS flag causes an attempt to
+analyze orb2orb connections that appear in the orbstat information.
+This flag requires the PFORBSTAT_CLIENTS flag, which is turned on by
+PFORBSTAT_CONNECTIONS even if not explicitly specified. The 
+PFORBSTAT_CONNECTIONS option also adds the orbstat_machine parameter, 
+specifying the machine on which the pforbstat command was run.
 
-The user must call pffree to free the parameter file objects returned by these routines. 
+The user must call pffree to free the parameter file objects returned
+by these routines.
 
 .SH OPTIONS
 .SH FILES
@@ -198,6 +206,13 @@ the averaging necessary over multiple calls. This is left to the
 application-level implementation. The latency_sec field is omitted from
 the client summary if aclient->lastpkt is less than or equal to zero, 
 i.e. if there have been no packets exchanged with the client.
+
+In the analysis (PFORBSTAT_CONNECTIONS) mode, orb port-names are always
+translated with the local copy of orbserver_names.pf, even if the port
+name was set (and therefore interpreted) on the remote machine. Also,
+if a string orbserver-port is not found in orbserver_names.pf, the
+interpreted port number is set to zero, which may have noticable
+effects on downstream programs.
 
 .SH AUTHOR
 .nf

@@ -152,6 +152,7 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	Pf 	*clientpf;
 	int	iclient;
 	char	thread[STRSZ];
+	char	name[STRSZ];
 	char	perm_string[2];
 	struct in_addr in;
 	double	latency_sec;
@@ -178,8 +179,11 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 		pfput_int( clientpf, "pktid", aclient->pktid );
 		pfput_int( clientpf, "port", aclient->port );
 
-		memcpy( &in, &aclient->address, sizeof( struct in_addr ) );
+		memcpy( &in.s_addr, &aclient->address, sizeof( struct in_addr ) );
 		pfput_string( clientpf, "address", inet_ntoa( in ) );
+
+		ip2name( in.s_addr, name );
+		pfput_string( clientpf, "name", name );
 
 		pfput_int( clientpf, "thread", aclient->thread );
 		pfput_int( clientpf, "fd", aclient->fd );
@@ -221,6 +225,114 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 	return pf;
 }
 
+static void
+extract_orb2orb_orbargs( char *what, char *orb_from_arg, char *orb_to_arg )
+{
+	char	*split_what;
+	Tbl	*orb2orb_args;
+
+	split_what = strdup( what );
+	orb2orb_args = split( split_what, ' ' );
+
+	shifttbl( orb2orb_args );
+	strcpy( orb_from_arg, shifttbl( orb2orb_args ) );
+
+	if( orb_from_arg[0] == '-' ) {
+
+		/* Old style orb2orb command-line; 
+		 * assume no start-time, period, 
+		 * or end-time are specified:
+		 */
+		strcpy( orb_to_arg, poptbl( orb2orb_args ) );
+		strcpy( orb_from_arg, poptbl( orb2orb_args ) );
+		
+	} else {
+
+		strcpy( orb_to_arg, shifttbl( orb2orb_args ) );
+	}
+
+	free( split_what );
+	freetbl( orb2orb_args, 0 );
+
+	return;
+}
+
+static void
+parse_orbname( char *orbname, char *orb_address, int *orb_port )
+{
+	char	*split_orbname;
+	Tbl	*orbname_parts;
+	char	orbname_port[STRSZ];
+	Hook	*hook = 0;
+	static Pf *pfnames = 0;
+		
+	if( ! strcmp( orbname, ":" ) ) {
+		
+		strcpy( orb_address, "" );
+		strcpy( orbname_port, "" );
+
+	} else {
+		
+		split_orbname = strdup( orbname );
+		orbname_parts = split( split_orbname, ':' );
+
+		if( maxtbl( orbname_parts ) == 1 && orbname[0] == ':' ) {
+
+			strcpy( orb_address, "" );
+			strcpy( orbname_port, poptbl( orbname_parts ) );
+
+		} else if( maxtbl( orbname_parts ) == 1 ) {
+
+			strcpy( orb_address, shifttbl( orbname_parts ) );
+			strcpy( orbname_port, "" );
+
+		} else if( maxtbl( orbname_parts ) == 2 ) {
+
+			strcpy( orb_address, shifttbl( orbname_parts ) );
+			strcpy( orbname_port, poptbl( orbname_parts ) );
+
+		} else {
+
+			complain( 0, "pforbstat: unexpected error translating orb2orb argument <%s>\n",
+				  orbname );
+			strcpy( orb_address, "" );
+			strcpy( orbname_port, "" );
+		}
+
+		free( split_orbname );
+		freetbl( orbname_parts, 0 );
+	}
+
+	if( ! strcmp( orbname_port, "" ) ) {
+		
+		*orb_port = ORB_TCP_PORT;
+
+	} else if( strmatches( orbname_port, "^[0-9]+$", &hook ) ) {
+		
+		*orb_port = atoi( orbname_port );
+
+	} else {
+
+		if( pfnames == 0 ) {
+
+			pfread( "orbserver_names", &pfnames );
+		}
+
+		if( pfget_string( pfnames, orbname_port ) == 0 ) {
+
+			complain( 0, "pforbstat: couldn't translate orb port \":%s\"\n", orbname_port );
+
+			*orb_port = 0;
+
+		} else {
+		
+			*orb_port = pfget_int( pfnames, orbname_port );
+		}
+	}
+
+	return;
+}
+
 static Pf *
 orbconnections2pf( Pf *pfanalyze )
 {
@@ -237,19 +349,34 @@ orbconnections2pf( Pf *pfanalyze )
 	char	*perm;
 	char	*clientaddress;
 	char	*serveraddress;
+	char	anaddress[STRSZ];
 	int	serverport;
+	int	aport;
 	double	atime;
-	regex_t	preg;
+	regex_t	preg_findclient;
 	char	formal_name[STRSZ];
 	int	formal_count = 0;
+	char	myhostname[STRSZ];
+	char	myipc[STRSZ];
+	long	myip;
+	char	orb_from_arg[STRSZ];
+	char	orb_to_arg[STRSZ];
+	char	orbarg_from_ip[STRSZ];
+	char	orbarg_to_ip[STRSZ];
+	int	orbarg_from_port;
+	int	orbarg_to_port;
+	double	latency_sec;
+	struct in_addr addr;
 
-	regcomp( &preg, "^orb2orb ", 0 );
+	regcomp( &preg_findclient, "^orb2orb ", 0 );
 
 	pf = pfnew( PFFILE );
 
 	atime = pfget_time( pfanalyze, "client_when" );
-
 	pfput_time( pf, "connections_when", atime );
+
+	my_ip( myhostname, myipc, &myip );
+	pfput_string( pf, "orbstat_machine", myipc );
 
 	pfget( pfanalyze, "server", (void **) &pfserver );
 	serveraddress = pfget_string( pfserver, "address" );
@@ -267,23 +394,70 @@ orbconnections2pf( Pf *pfanalyze )
 		pfget( pfclients, client_key, (void **) &pfclient );
 
 		what = pfget_string( pfclient, "what" );
-		perm = pfget_string( pfclient, "perm" );
-		clientaddress = pfget_string( pfclient, "address" );
 
-		if( ! regexec( &preg, what, 0, 0, 0 ) ) {
+		if( ! regexec( &preg_findclient, what, 0, 0, 0 ) ) {
 
 			pfconnection = pfnew( PFARR );
 			pfput_string( pfconnection, "what", what );
 
-			if( ! strcmp( perm, "r" ) ) {
+			extract_orb2orb_orbargs( what, orb_from_arg, orb_to_arg );
+			parse_orbname( orb_from_arg, orbarg_from_ip, &orbarg_from_port );
+			parse_orbname( orb_to_arg, orbarg_to_ip, &orbarg_to_port );
 
-				pfput_string( pfconnection, "toaddress", clientaddress );
-				pfput_string( pfconnection, "fromaddress", serveraddress );
-				pfput_int( pfconnection, "fromport", serverport );
+			pfput_string( pfconnection, "orb_from_arg", orb_from_arg );
+			pfput_string( pfconnection, "orb_to_arg", orb_to_arg );
+			pfput_string( pfconnection, "orbarg_from_ip", orbarg_from_ip );
+			pfput_string( pfconnection, "orbarg_to_ip", orbarg_to_ip );
+			pfput_int( pfconnection, "orbarg_from_port", orbarg_from_port );
+			pfput_int( pfconnection, "orbarg_to_port", orbarg_to_port );
+
+			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
+
+				latency_sec = pfget_double( pfclient, "latency_sec" );
+				pfput_double( pfconnection, "latency_sec", latency_sec );
 
 			} else {
 
-				pfput_string( pfconnection, "fromaddress", clientaddress );
+				pfput_double( pfconnection, "latency_sec", -9999999.99999 );
+			}
+
+			perm = pfget_string( pfclient, "perm" );
+
+			clientaddress = pfget_string( pfclient, "address" );
+
+			if( ! strcmp( perm, "r" ) ) {
+
+				pfput_string( pfconnection, "fromaddress", serveraddress );
+				pfput_int( pfconnection, "fromport", serverport );
+
+				if( ! strcmp( clientaddress, "127.0.0.1" ) ) {
+					
+					name2ip( orbarg_from_ip, &addr, anaddress );
+					printf( "DEBUG: <%s> is <%s>\n", orbarg_from_ip, anaddress );
+
+				} else {
+
+					strcpy( anaddress, clientaddress );
+				}
+
+				pfput_string( pfconnection, "toaddress", anaddress );
+				pfput_int( pfconnection, "toport", aport );
+
+			} else { /* perm is "w" */
+
+				if( ! strcmp( clientaddress, "127.0.0.1" ) ) {
+					
+					name2ip( orbarg_from_ip, &addr, anaddress );
+					printf( "DEBUG: <%s> is <%s>\n", orbarg_from_ip, anaddress );
+
+				} else {
+
+					strcpy( anaddress, clientaddress );
+				}
+
+				pfput_string( pfconnection, "fromaddress", anaddress );
+				pfput_int( pfconnection, "fromport", orbarg_from_port );
+
 				pfput_string( pfconnection, "toaddress", serveraddress );
 				pfput_int( pfconnection, "toport", serverport );
 			}
@@ -295,7 +469,7 @@ orbconnections2pf( Pf *pfanalyze )
 
 	pfput( pf, "connections", pfconnections, PFPF );
 
-	regfree( &preg );
+	regfree( &preg_findclient );
 
 	return pf;
 }
