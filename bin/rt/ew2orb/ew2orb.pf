@@ -35,11 +35,11 @@ import_from &Arr{
 			/^UW_/nUW_/
 		}
 	}
-#	PGC_compressed &Arr{
-#		server_ipaddress 139.142.67.7
-#		server_port 16015
-#		send_heartbeat_string KENTalive
-#	}
+	PGC_compressed &Arr{
+		server_ipaddress 139.142.67.7
+		server_port 16015
+		send_heartbeat_string KENTalive
+	}
 #	Kent &Arr{
 #		server_ipaddress 192.168.0.2
 #		send_heartbeat_sec 100

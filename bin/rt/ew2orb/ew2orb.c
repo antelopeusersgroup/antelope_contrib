@@ -1976,131 +1976,208 @@ crack_packet( Ew2orbPacket *e2opkt )
 	static char *temp_segtype = 0;
 	int	n;
 
+	if( ! STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) &&
+	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
+
+		complain( 0, 
+			"convert: Don't know how to crack type <%s>\n",
+			e2opkt->typestr );
+
+		return -1;
+	}
+
+	/* Acquiesce to Earthworm packing strategy of 
+	   memory-copying the entire trace-header structure. 
+	   This was an unwise protocol design since the 
+	   field order in a structure, officially, is at
+	   the whim of the compiler implementation. */
+
+	allot( TRACE_HEADER *, e2opkt->th, 1 );
+
+	memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
+
+	dp = e2opkt->buf + sizeof( TRACE_HEADER );
+
+	e2opkt->pkt = newPkt();
+	e2opkt->pkt->pkttype = suffix2pkttype("MGENC");
+
+	e2opkt->pkt->nchannels = 1;
+
+	pktchan = newPktChannel();
+
+	pushtbl( e2opkt->pkt->channels, pktchan );
+
+	strcpy( e2opkt->pkt->parts.src_net, e2opkt->th->net );
+	strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th->sta );
+	strcpy( e2opkt->pkt->parts.src_chan, e2opkt->th->chan );
+	strcpy( e2opkt->pkt->parts.src_loc, "" );
+
+	join_srcname( &e2opkt->pkt->parts, old_srcname );
+
+	mutex_lock( &e2opkt->it->it_mutex );
+		
+	if( ! STREQ( e2opkt->it->reject, "" ) ) {
+
+	    	n = strmatches( old_srcname, 
+				e2opkt->it->reject,
+				&e2opkt->it->reject_hook );
+
+		if( n < 0 ) { 
+
+			complain( 0, 
+			"Couldn't compile reject expression '%s'\n",
+			e2opkt->it->reject );
+
+		} else if( n > 0 ) {
+
+			if( e2opkt->it->loglevel == VERYVERBOSE ) {
+
+				elog_notify( 0, "'%s': Rejecting %s\n",
+					     e2opkt->itname,
+					     old_srcname );
+			}
+
+			mutex_unlock( &e2opkt->it->it_mutex );
+
+			return -1;
+		}
+	}
+
+	if( ! STREQ( e2opkt->it->select, "" ) ) {
+
+	    	n = strmatches( old_srcname, 
+				e2opkt->it->select,
+				&e2opkt->it->select_hook );
+
+		if( n < 0 ) { 
+
+			complain( 0, 
+			"Couldn't compile select expression '%s'\n",
+			e2opkt->it->select );
+
+		} else if( n == 0 ) {
+
+			if( e2opkt->it->loglevel == VERYVERBOSE ) {
+
+				elog_notify( 0, 
+				"'%s': %s doesn't match select expression\n",
+					     e2opkt->itname,
+					     old_srcname );
+			}
+
+			mutex_unlock( &e2opkt->it->it_mutex );
+
+			return -1;
+		}
+	}
+
+	n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap, 
+		      MORPH_ALL|MORPH_PARTIAL, new_srcname );
+
+	mutex_unlock( &e2opkt->it->it_mutex );
+
+	split_srcname( new_srcname, &e2opkt->pkt->parts );
+
+	if( e2opkt->it->loglevel == VERYVERBOSE && 
+	    ( n != 0 || strcmp( old_srcname, new_srcname ) ) ) {
+
+		elog_notify( 0, "'%s': mapped %s to %s (%d "
+				"transformation%s\n", 
+				e2opkt->itname, old_srcname, 
+				new_srcname, n,
+				n == 1 ? ")" : "s)" );
+	}
+
+	strcpy( pktchan->net, e2opkt->pkt->parts.src_net );
+	strcpy( pktchan->sta, e2opkt->pkt->parts.src_sta );
+	strcpy( pktchan->chan, e2opkt->pkt->parts.src_chan );
+	strcpy( pktchan->loc, e2opkt->pkt->parts.src_loc );
+
+	if( STREQ( e2opkt->th->datatype, "s4" ) ) {
+
+		sp = (char *) &e2opkt->th->pinno;
+		mi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+		sp = (char *) &e2opkt->th->nsamp;
+		mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+		sp = (char *) &e2opkt->th->samprate;
+		md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+		sp = (char *) &e2opkt->th->starttime;
+		md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+		sp = (char *) &e2opkt->th->endtime;
+		md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+	} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
+
+		sp = (char *) &e2opkt->th->pinno;
+		mi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+		sp = (char *) &e2opkt->th->nsamp;
+		mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+		sp = (char *) &e2opkt->th->samprate;
+		md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+		sp = (char *) &e2opkt->th->starttime;
+		md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+		sp = (char *) &e2opkt->th->endtime;
+		md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+	} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
+
+		sp = (char *) &e2opkt->th->pinno;
+		vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+		sp = (char *) &e2opkt->th->nsamp;
+		vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+			
+		sp = (char *) &e2opkt->th->samprate;
+		vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+		sp = (char *) &e2opkt->th->starttime;
+		vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+		sp = (char *) &e2opkt->th->endtime;
+		vd2hd( &sp, &e2opkt->th->endtime, 1 );
+
+	} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
+
+		sp = (char *) &e2opkt->th->pinno;
+		vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+		sp = (char *) &e2opkt->th->nsamp;
+		vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+		sp = (char *) &e2opkt->th->samprate;
+		vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+		sp = (char *) &e2opkt->th->starttime;
+		vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+		sp = (char *) &e2opkt->th->endtime;
+		vd2hd( &sp, &e2opkt->th->endtime, 1 );
+	}
+
+	pktchan->datasz = e2opkt->th->nsamp;
+
+	pktchan->nsamp = e2opkt->th->nsamp;
+	pktchan->samprate = e2opkt->th->samprate;
+	pktchan->time = e2opkt->th->starttime;
+
+	get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
+		       &temp_segtype, &pktchan->calib, &pktchan->calper,
+		       e2opkt->it->default_segtype, 
+		       e2opkt->it->loglevel );
+
+	strcpy( pktchan->segtype, temp_segtype );
+
 	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) {
 
-		/* Acquiesce to Earthworm packing strategy of 
-		   memory-copying the entire trace-header structure. 
-		   This was an unwise protocol design since the 
-		   field order in a structure, officially, is at
-		   the whim of the compiler implementation. */
-
-		allot( TRACE_HEADER *, e2opkt->th, 1 );
-
-		memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
-
-		dp = e2opkt->buf + sizeof( TRACE_HEADER );
-
-		e2opkt->pkt = newPkt();
-		e2opkt->pkt->pkttype = suffix2pkttype("MGENC");
-
-		e2opkt->pkt->nchannels = 1;
-
-		pktchan = newPktChannel();
-
-		pushtbl( e2opkt->pkt->channels, pktchan );
-
-		strcpy( e2opkt->pkt->parts.src_net, e2opkt->th->net );
-		strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th->sta );
-		strcpy( e2opkt->pkt->parts.src_chan, e2opkt->th->chan );
-		strcpy( e2opkt->pkt->parts.src_loc, "" );
-
-		join_srcname( &e2opkt->pkt->parts, old_srcname );
-
-		mutex_lock( &e2opkt->it->it_mutex );
-		
-		if( ! STREQ( e2opkt->it->reject, "" ) ) {
-
-		    	n = strmatches( old_srcname, 
-					e2opkt->it->reject,
-					&e2opkt->it->reject_hook );
-
-			if( n < 0 ) { 
-
-				complain( 0, 
-				"Couldn't compile reject expression '%s'\n",
-				e2opkt->it->reject );
-
-			} else if( n > 0 ) {
-
-				if( e2opkt->it->loglevel == VERYVERBOSE ) {
-
-					elog_notify( 0, "'%s': Rejecting %s\n",
-						     e2opkt->itname,
-						     old_srcname );
-				}
-
-				mutex_unlock( &e2opkt->it->it_mutex );
-
-				return -1;
-			}
-		}
-
-		if( ! STREQ( e2opkt->it->select, "" ) ) {
-
-		    	n = strmatches( old_srcname, 
-					e2opkt->it->select,
-					&e2opkt->it->select_hook );
-
-			if( n < 0 ) { 
-
-				complain( 0, 
-				"Couldn't compile select expression '%s'\n",
-				e2opkt->it->select );
-
-			} else if( n == 0 ) {
-
-				if( e2opkt->it->loglevel == VERYVERBOSE ) {
-
-					elog_notify( 0, 
-					"'%s': %s doesn't match select expression\n",
-						     e2opkt->itname,
-						     old_srcname );
-				}
-
-				mutex_unlock( &e2opkt->it->it_mutex );
-
-				return -1;
-			}
-		}
-
-		n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap, 
-			      MORPH_ALL|MORPH_PARTIAL, new_srcname );
-
-		mutex_unlock( &e2opkt->it->it_mutex );
-
-		split_srcname( new_srcname, &e2opkt->pkt->parts );
-
-		if( e2opkt->it->loglevel == VERYVERBOSE && 
-		    ( n != 0 || strcmp( old_srcname, new_srcname ) ) ) {
-
-			elog_notify( 0, "'%s': mapped %s to %s (%d "
-					"transformation%s\n", 
-					e2opkt->itname, old_srcname, 
-					new_srcname, n,
-					n == 1 ? ")" : "s)" );
-		}
-
-		strcpy( pktchan->net, e2opkt->pkt->parts.src_net );
-		strcpy( pktchan->sta, e2opkt->pkt->parts.src_sta );
-		strcpy( pktchan->chan, e2opkt->pkt->parts.src_chan );
-		strcpy( pktchan->loc, e2opkt->pkt->parts.src_loc );
-
 		if( STREQ( e2opkt->th->datatype, "s4" ) ) {
-
-			sp = (char *) &e2opkt->th->pinno;
-			mi2hi( &sp, &e2opkt->th->pinno, 1 );
-
-			sp = (char *) &e2opkt->th->nsamp;
-			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
-
-			sp = (char *) &e2opkt->th->samprate;
-			md2hd( &sp, &e2opkt->th->samprate, 1 );
-
-			sp = (char *) &e2opkt->th->starttime;
-			md2hd( &sp, &e2opkt->th->starttime, 1 );
-
-			sp = (char *) &e2opkt->th->endtime;
-			md2hd( &sp, &e2opkt->th->endtime, 1 );
 
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
@@ -2109,42 +2186,12 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
 
-			sp = (char *) &e2opkt->th->pinno;
-			mi2hi( &sp, &e2opkt->th->pinno, 1 );
-
-			sp = (char *) &e2opkt->th->nsamp;
-			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
-
-			sp = (char *) &e2opkt->th->samprate;
-			md2hd( &sp, &e2opkt->th->samprate, 1 );
-
-			sp = (char *) &e2opkt->th->starttime;
-			md2hd( &sp, &e2opkt->th->starttime, 1 );
-
-			sp = (char *) &e2opkt->th->endtime;
-			md2hd( &sp, &e2opkt->th->endtime, 1 );
-
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			ms2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
-
-			sp = (char *) &e2opkt->th->pinno;
-			vi2hi( &sp, &e2opkt->th->pinno, 1 );
-
-			sp = (char *) &e2opkt->th->nsamp;
-			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
-			
-			sp = (char *) &e2opkt->th->samprate;
-			vd2hd( &sp, &e2opkt->th->samprate, 1 );
-
-			sp = (char *) &e2opkt->th->starttime;
-			vd2hd( &sp, &e2opkt->th->starttime, 1 );
-
-			sp = (char *) &e2opkt->th->endtime;
-			vd2hd( &sp, &e2opkt->th->endtime, 1 );
 
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
@@ -2153,68 +2200,28 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
 
-			sp = (char *) &e2opkt->th->pinno;
-			vi2hi( &sp, &e2opkt->th->pinno, 1 );
-
-			sp = (char *) &e2opkt->th->nsamp;
-			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
-
-			sp = (char *) &e2opkt->th->samprate;
-			vd2hd( &sp, &e2opkt->th->samprate, 1 );
-
-			sp = (char *) &e2opkt->th->starttime;
-			vd2hd( &sp, &e2opkt->th->starttime, 1 );
-
-			sp = (char *) &e2opkt->th->endtime;
-			vd2hd( &sp, &e2opkt->th->endtime, 1 );
-
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vs2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 		}
 		
-		pktchan->datasz = e2opkt->th->nsamp;
-
-		pktchan->nsamp = e2opkt->th->nsamp;
-		pktchan->samprate = e2opkt->th->samprate;
-		pktchan->time = e2opkt->th->starttime;
-
-		get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
-			       &temp_segtype, &pktchan->calib, &pktchan->calper,
-			       e2opkt->it->default_segtype, 
-			       e2opkt->it->loglevel );
-
-		strcpy( pktchan->segtype, temp_segtype );
-
-		stuffPkt( e2opkt->pkt, 
-			  e2opkt->srcname, 
-			  &e2opkt->time,
-			  &e2opkt->orbpkt, 
-			  &e2opkt->orbpktnbytes, 
-			  &e2opkt->orbpktsz );
-
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
-		allot( TRACE_HEADER *, e2opkt->th, 1 );
+		pktchan->datasz *= sizeof(int);
 
-		memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
+		genuncompress( &pktchan->data, &pktchan->nsamp, &pktchan->datasz, 
+			       (unsigned char *) dp, e2opkt->nbytes - sizeof( TRACE_HEADER ) );
 
-		/* SCAFFOLD genuncompress( &out, &nout, &outsize, 
-			       e2opkt->buf, e2opkt->nbytes );
-		  free( out );
-		 */
-
-
-		retcode = -1;
-
-	} else {
-		complain( 0, 
-			"convert: Don't know how to crack type <%s>\n",
-			e2opkt->typestr );
-
-		retcode = -1;
+		pktchan->datasz /= sizeof(int);
 	}
+
+	stuffPkt( e2opkt->pkt, 
+		  e2opkt->srcname, 
+		  &e2opkt->time,
+		  &e2opkt->orbpkt, 
+		  &e2opkt->orbpktnbytes, 
+		  &e2opkt->orbpktsz );
 
 	return retcode;
 }
