@@ -4,12 +4,12 @@
 <commands>
 
 dbhelp [db|schema]
-    gui to explore schema for database db or specified schema 
+    gui to explore schema for database db or specified schema
 
 dbdoc db
     generate troff formatted document describing schema for database db
 
-dbdesign 
+dbdesign
     create and/or edit Datascope schema files
 
 dbinfer file [file...]
@@ -24,15 +24,15 @@ dberesp db.table
     run by dbe to plot response curves from instrument table
 
 db_textedit db.table
-    run by dbe to edit external text files 
+    run by dbe to edit external text files
 
 
 dbset [-clv] db[.table] field from [to]
-    change value of attribute field throughout a database, when initial value is from ('*' specifies all values).  -c asks before changing, -v shows each change
+    change value of attribute field throughout a database, when initial value is from ('*' specifies all values). -c asks before changing, -v shows each change
 
 
 dbconvert [-fv] [-s new_schema] db dbout[.table]
-    create dbout (or dbout.table) from database db, using rules specified in dbconvert parameter file 
+    create dbout (or dbout.table) from database db, using rules specified in dbconvert parameter file
 
 
 dbcp [options] dbin[.table] dbout
@@ -69,7 +69,7 @@ dbsplit [options] dbin dbout
 <options>
 -d	delete selected rows from dbin after copying to dbout
 -f 	overwrite any existing output tables in dbout
--k 	keep renamed backup of original tables 
+-k 	keep renamed backup of original tables
 -s subset	records which satisfy expr are copied to dbout
 -v 	verbose
 -vv	more verbose
@@ -94,15 +94,15 @@ dbsubset [-n name] [-v] aview expr
 dbsort [options] aview [key ...]
     create view with input aview sorted (according to specified key)
 <options>
--o	overwrite the original table  with  the  sorted  table
+-o	overwrite the original table with the sorted table
 -n name	save results into database.name
 -r	reverse the sense of the sort
--u	eliminate rows which are identical in  the  sort  keys
+-u	eliminate rows which are identical in the sort keys
 </options>
 
 
 dbjoin [options] aview [:key ...] table2 [[:key ...] table3 ...]
-    create view joining input aview with other tables, either by inferring join keys or by explicitly specifying join keys 
+    create view joining input aview with other tables, either by inferring join keys or by explicitly specifying join keys
 <options>
 -o	outer join
 -n name	save results into database.name
@@ -113,7 +113,7 @@ dbnojoin [-n name] [-v] aview [:key ...] table2
     create view of records from aview which do not join with table2.
 
 dbtheta [-c expr] [-n name] [-v] aview table2
-    create view joining rows from aview to rows from table2 only when expression  expr (evaluated on the joined record) is satisfied 
+    create view joining rows from aview to rows from table2 only when expression expr (evaluated on the joined record) is satisfied
 
 dbsever [-v] [-n name] aview table2
     create new view which removes table2 from input aview
@@ -125,10 +125,10 @@ dbunjoin [-f] -o dbout aview
 dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]]
     print selected fields and expressions from input aview
 <options>
--b   Strip blanks from each field in the output.
--F   separator
--p   Cause the primary key of the input table to be printed.
--s   Allow expressions to modify fields in base tables from aview using the assignment operator ":=".
+-b	strip blanks from each field in the output.
+-F	separator
+-p	cause the primary key of the input table to be printed.
+-s	allow expressions to modify fields in base tables from aview using the assignment operator ":=".
 </options>
 
 <subsection Verifying Databases>
@@ -175,6 +175,9 @@ dbdiff [options] db1[.table] db2[.table]
 deprecated db2perl db [ table1 table2 ...]
     create perl subroutines to read and write database tables
 
+dbids [-p port] [-P pf] [-v] database
+    idserver for Datascope databases
+
 dbnextid db idname
     get next available id for idname (in database db)
 
@@ -194,7 +197,7 @@ deprecated dbtidy db
 
 
 correctdt [-m srcmatch] [-t stime] [-v] db
-    Corrects times in wfdisc table
+    correct times in wfdisc table
 
 dbtc BLANK
     database time correction routine

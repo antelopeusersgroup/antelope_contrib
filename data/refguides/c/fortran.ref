@@ -9,7 +9,7 @@ char record(*)
 character table_name, field_name
 character s
 # expression is used as a holder for a pointer to a compiled expression
-integer expression 
+integer expression
 integer type
 # pattern1 and pattern2 are holders for pointers to Tbl lists
 integer pattern1, pattern2, nojoin
@@ -129,7 +129,7 @@ real*8 h2e ( year, day, hour, min, sec )
 integer mday2doy ( year, month, day )
     convert month and day to day of year
 
-double now (  )
+double now ( )
     return current epoch time
 
 real *8 str2epoch ( s )
@@ -160,17 +160,19 @@ subroutine register_error ( sysflag, msg )
 
 <subsection General Programming Utilities>
 <fdeclarations>
-subroutine datafile ( pathname, envname, filename )
-    Find a program's datafile
+subroutine datafile ( path, envname, filename )
+    return path corresponding to either environment variable envname
+    or file relative to $ANTELOPE/data
 
-subroutine datapath ( pathname, envname, dirname, filename, suffix )
-    Find a program's data file based on pathname components
+subroutine datapath ( path, envname, dirname, filename, suffix )
+    return path corresponding to either environment variable envname or
+    dir/file.suffix relative to $ANTELOPE/data
 
 subroutine isort ( a, n, size, compare, private )
     insertion sort routine
 
 integer newdata ( pathname, envname, dirname, filename, suffix )
-    Construct pathname for a new datafile
+    construct pathname for a new datafile
 
 subroutine shellsort ( a, n, size, compare, private )
     shell sort implementation
@@ -180,8 +182,8 @@ integer ssearch ( key, keysize, a, n, unique, compare, private, ns, ne )
 
 <subsection Niceplot>
 <fdeclarations>
-subroutine axis ( xdim, ydim, xmarg, ymarg, xlow, ylow, xmax,  xmin, ymax,  ymin,  dxsmal, dxnumb, dysmal, dynumb, fmtx, fmty, labelx, labely, title, iclear )
-    Draw a box with tic marks and labels
+subroutine axis ( xdim, ydim, xmarg, ymarg, xlow, ylow, xmax, xmin, ymax, ymin, dxsmal, dxnumb, dysmal, dynumb, fmtx, fmty, labelx, labely, title, iclear )
+    draw a box with tic marks and labels
 
 subroutine box ( xleft, xright, ybot, ytop, thick, ithick, iclip )
     draw a box
@@ -198,7 +200,7 @@ subroutine chrsiz ( height, ratio, slant )
 subroutine circle ( xc, yc, r, narc, iclose, iclip, thick, ithick )
     draw a circle
 
-subroutine clear (  )
+subroutine clear ( )
     clear the window
 
 subroutine clrrgn ( xmn, xmx, ymn, ymx )
@@ -210,7 +212,7 @@ subroutine cpyrgn ( xmn, xmx, ymn, ymx )
 subroutine cursor ( x, y, chr )
     reads in the cursor position upon keypress
 
-subroutine finitt (  )
+subroutine finitt ( )
     finish plotting
 
 subroutine fplot ( n, x, y )
@@ -245,7 +247,7 @@ subroutine ltype ( integer n )
 </options>
 
 <fdeclarations>
-subroutine ncontour ( nx, nxmax, ny, x, y, z,  ctype,  zmin,  zmax, dz )
+subroutine ncontour ( nx, nxmax, ny, x, y, z, ctype, zmin, zmax, dz )
     render a contour map
 
 subroutine nplot ( n, x, y, igraf, iclip, thick, ithick, asymb )
@@ -290,7 +292,7 @@ subroutine tics ( x1, y1, x2, y2, stic, ntic, dtic, tlen, thick, idir )
 subroutine trackcursor ( external callback(x, y) )
     executes callback routine when cursor is moved
 
-subroutine trackcursoroff (  )
+subroutine trackcursoroff ( )
     disables cursor tracking callback routine
 
 subroutine xmap ( real x )
@@ -314,7 +316,7 @@ subroutine strputtbl ( itbl, i, s )
     copy a string to the i'th element of a list
 
 subroutine strtbl ( itbl, s, ... )
-    Create a new list from a list of strings
+    create a new list from a list of strings
 
 <subsection Parameter Files>
 <fdeclarations>
@@ -381,10 +383,10 @@ integer arrtimes ( delta, depth, phases, times )
     returns all the calculated phases
 
 integer grname ( grn )
-    Return the name of a Flinn-Engdahl geographic region
+    return the name of a Flinn-Engdahl geographic region
 
 integer grnumber ( lat, lon )
-    Return the Flinn-Engdahl geographic region number
+    return the Flinn-Engdahl geographic region number
 
 real*8 phasetime ( phase, delta, depth )
     returns the time for a specified phase
@@ -393,10 +395,10 @@ real*8 ptime ( delta, depth )
     returns the first P arrival
 
 integer srname ( srn )
-    Return the name of a Flinn-Engdahl seismic region
+    return the name of a Flinn-Engdahl seismic region
 
 integer srnumber ( grn )
-    Return the Flinn-Engdahl seismic region number
+    return the Flinn-Engdahl seismic region number
 
 real*8 stime ( delta, depth )
     returns the first S arrival

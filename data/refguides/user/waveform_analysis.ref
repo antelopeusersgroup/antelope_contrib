@@ -5,7 +5,7 @@
 trexcerpt [options] dbin dbout [start {duration|end}]
     extract waveform segments from a database
 <options>
--A	autodrm style (ascii) waveform files 
+-A	autodrm style (ascii) waveform files
 -o datatype	specify output waveform datatype (default = sd)
 -a	append to existing waveform files if present
 -w pattern	specify naming convention for output waveforms
@@ -26,24 +26,23 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -v	more verbose
 </options>
 
-deprecated dbsteimc input-database [output-database]
+deprecated dbsteimc [options] input-database [output-database]
     compress waveform data using steim compression (see also trexcerpt)
 <options>
--v Report compression statistics for each  waveform
--l {1|2} Compression level (default = 2)
--L location-code
+-v	Report compression statistics for each waveform
+-l {1|2}	Compression level (default = 2)
+-L loc-code
 -n net
--o   Overwrite the records in the wfdisc table
--r val Replacement value for data gaps
+-o	Overwrite the records in the wfdisc table
+-r val	Replacement value for data gaps
 -p pfname
 -w wfname
 -s (single) output-file
 </options>
 
-deprecated dbwfexcerpt dbin[.table] dbout
-    excerpt waveform data by event or origin
+dbwfexcerpt [options] dbin[.table] dbout
+    excerpt waveform data by event or origin (deprecated)
 <options>
--v verbose
 -event
 -origin
 -input
@@ -53,40 +52,47 @@ deprecated dbwfexcerpt dbin[.table] dbout
 -pre t
 -sfactor f
 -tolerance value
+-v	verbose
 </options>
 
-event_archive [options] dbin archive_db
-    make event archive database
+event_archive [options] dbin dbout
+    copy event information (arrivals, origins, and waveforms) from continuous database dbin to archive dbout
 <options>
--v   verbose
--V   extremely verbose
--p   name of parameter file to use
--t   name of temporary database to use
--s   start time of events to process from dbin
--e   end time of events to process from dbin
+
+-l n	wait n days before copying an event
+-m addresses	send errors as email to addresses
+
+-s t1	process events after time t1
+-e t2	process events before time t2
+
+-p pf	use parameter file pf
+-t tdb	use temporary database tdb
+
+-v	be verbose
+-V	be extremely verbose
 </options>
 
 trsample [options] database[.table] [time]
     print a few samples from waveforms in a database
 <options>
--c   apply calib to the samples
--e   read data from each row in the table
--o   write samples one to a line
--[i|t|T]  show integer, epoch time, or readable time index for each sample
--n npts	#points
+-c	apply calib to the samples
+-e	read data from each row in the table
+-o	write samples one to a line
+-[i|t|T]	show integer, epoch time, or readable time index for each sample
+-n npts	print npts samples
 -s expr	subset input according to expr
 </options>
 
 trsignal [options] database
     create wfdisc records with test signal data
 <options>
--v   Be more verbose
+-v	Be more verbose
 -w pattern	specify naming convention for output waveforms
 -d datatype	specify output datatype (default = "as")
 -a amplitude
 -b timebase	generating function base time
 -c channel	specify chan code
--f f0		generating function frequency in hz
+-f f0	generating function frequency in hz
 -g calib	specify calib
 -k	keep output as floating point, not integers
 -n nsec	length of output waveform
@@ -109,9 +115,9 @@ deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
 </options>
 
 dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
-    Decimate waveform data
+    decimate waveform data
 <options>
--sift expr	
+-sift expr
 -c calper
 -wfdir wfdir
 -f format
@@ -156,7 +162,7 @@ displayspec dbname
 <subsection Waveform display>
 <commands>
 dbplotcov database sta:chan tstart tend [-h[scale]]
-    Make a plot and listing of waveform coverage from a database
+    make a plot and listing of waveform coverage from a database
 
 dbrsec [options] db
     make record section plot of waveforms
@@ -194,22 +200,22 @@ dbpick [options] dbname
 -sc sta:chan	specify station/channel "glob"; eg "*:*Z"
 -ts tstart	specify start time
 -te tend	specify end time
--tw twin	specify window time width 
+-tw twin	specify window time width
 -noexist
 -nostarttalk	suppress startup usage chatter
 -winfile wfile
 -appname name	specify tksend application name
--gaps {segment|zero|interp|none}	
+-gaps {segment|zero|interp|none}
 -comout comfile
 -geom WxH+X+Y
 </options>
 
 trdisp [-r] [-s subset] [-w hours] database[.table] [start [range]]
-    display waveform data and arrivals from database or view 
+    display waveform data and arrivals from database or view
 
 
-dbheli [options] dbname sta chan  tstart  twinline  nlines  scale
-    Make helicorder type plot of waveform
+dbheli [options] dbname sta chan tstart twinline nlines scale
+    make helicorder type plot of waveform
 <options>
 -f filter
 -o dborigin

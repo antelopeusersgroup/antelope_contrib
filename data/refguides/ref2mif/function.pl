@@ -16,13 +16,14 @@ sub function {
 	$ignored = 1 ;
     } elsif ( /^\s/ ) { # 
 	$ignored = 0 ; 
-	s/^\s+// ;
+	$_ = gobble($_) ;
 	$_ = &paragraph ( "description", "#\n" . &emphasize(\%Parameters, "ParameterName", $_) ) ;
     } elsif ( /^([^=]+)\s*=\s*(.*)/ ) { # 
 	$ignored = 0 ; 
 	undef %Parameters ;  # parse_cdeclarations creates the array %Parameters as a side effect.
 	my $dest = $1 ; 
 	my $expr = $2 ; 
+	$expr =~ s/\s+$// ; 
 	$_ = &paragraph ( "cdeclaration", 
 	    "#\n" . 
 	    &string("$dest = ") .
@@ -39,9 +40,10 @@ sub parse_function {
     my ($in ) = @_ ; 
     my $result, $name, $args ; 
 
-    if ( $in =~ /^\s*(\w+)\s*\((.*)\)/ ) { 
+    if ( $in =~ /^\s*(\w+)\s*\(\s*(.*)\)/ ) { 
 	$name = $1 ; 
 	$args = $2 ; 
+	$args =~ s/\s+$// ;
 	$result = &format_type ( "FunctionName", $name  ) ;
 	$result .= &string("(") 
 		    . &parse_function_arguments($args)

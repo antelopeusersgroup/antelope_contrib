@@ -7,174 +7,217 @@ db.h
 implements the basic interface to the Datascope relational database system
 
 <structures>
-typedef struct Dbptr { 
+typedef struct Dbptr {
 int database ;
-int table ; 
-int field ; 
-int record ; 
+int table ;
+int field ;
+int record ;
 } Dbptr ;
 
 <subsection Opening/Closing a database>
 <cdeclarations>
 
-int dbopen ( char *path, char *permissions, Dbptr *db )
-    open the specified database
+int dbopen ( char *path, char *p, Dbptr *db )
+    open the database path with permission p ("r" or "r+"), returning new database pointer db
 
-int dbopen_database ( char *path, char *permissions, Dbptr *db )
-    open the specified database or table pathname
+int dbopen_database ( char *path, char *p, Dbptr *db )
+    open the database or table path with permission p ("r" or "r+"), returning new database pointer db
 
-int dbopen_table ( char *path, char *permissions, Dbptr *db )
-    open the specified database, table pathname, or table
+int dbopen_table ( char *path, char *p, Dbptr *db )
+    open the table path with permission p ("r" or "r+"), returning new database pointer db
 
-Dbptr dblookup ( Dbptr db, char *database_name, char *table_name, char *field_name, char *record_name )
-    lookup database pointer from ascii names
+Dbptr dblookup ( Dbptr db, char *d, char *t, char *f, char *r)
+    return a database pointer for database d, table t, field f, and record r.
 
 int dbclose ( Dbptr db )
-    Close a database
+    close database db
 
 <subsection Adding and retrieving values>
-int dbadd ( Dbptr db, char *record )
-    add a record to a table
+int dbadd ( Dbptr db, char *r )
+    add record r to table db, returning new record number
 
-int dbadd_remark ( Dbptr db, char *remark )
-    add a remark to CSS tables
+int dbadd_remark ( Dbptr db, char *r )
+    add comment r to CSS table db
 
 int dbaddnull ( Dbptr db )
-    add a null record to a table
+    add a null record to table db
 
-int dbaddv ( Dbptr db, char *table_name, char *field_name, value1, ...)
-    write values to a new row in a database table
-
+int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... )
+    add a new record to table db/t, with values v1,...  for
+    corresponding fields f1, ...  ; terminate list with zero.  returns
+    record number of new record or a previously existing matching
+    record, or a negative result if no record can be added or the new
+    record would conflict with an existing record.
 
 int dbget ( Dbptr db, char *s )
-    get ascii tables, records, or fields from database
+    get a record (or field or whole table) from database into s
 
-int dbgetv ( Dbptr db, char *table_name, char *field_name, &value1, ...)
-    read values from fields in a database table
+int dbgetv ( Dbptr db, char *t, char *f1, &v1, ... )
+    read values from record db for fields f1, ..., returning corresponding
+    values in v1, ...; terminate list with 0.  returns -1 if
+    problem occurs, and then values are undefined.
 
 int dbget_remark ( Dbptr db, char **remark )
-    get a remark from CSS tables
+    get comment from record db of CSS tables, into freshly allocated memory remark
 
 
 int dbput ( Dbptr db, char *s )
-    put ascii tables, records, or fields into database
+    put a record (or field or whole table) from s into database/table/field/record db
 
-int dbputv ( Dbptr db, char *table_name, char *field_name, value1, ...)
-    write values to fields in a database table
+int dbputv ( Dbptr db, char *t, char *f1, v1, ...)
+    write values v1, ... to corresponding fields f1, ... in database record db.
+    terminate list with zero.
 
-int dbselect ( Dbptr db, Tbl *expressions, FILE *file )
-    print selected values from a view
+int dbselect ( Dbptr db, Tbl *l, FILE *f)
+    foreach record in view db or specified range (db.record to db.field), 
+    print the value of the expressions in the list l to file f.
 
-<subsection Creating Views>
-Dbptr dbsubset ( Dbptr db, char *s, char *name )
-    create a subset view
+<subsection Removing and deleting rows>
 
-Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **pattern1, Tbl **pattern2, int outer, Tbl **nojoin, char *name )
-    create a natural join of two database tables
+int dbdelete ( Dbptr db )
+    delete record db from the view
 
-Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1p, Tbl **keys2p, char *view_name )
-    return records of db1 which do not join with db2
+int dbmark ( Dbptr db )
+    mark record db by setting all fields to their NULL value
 
-int dbmatches ( Dbptr dbk, Dbptr dbt, Tbl **kpatternp, Tbl **tpatternp, Hook **hookp, Tbl **tblp )
-    find matching records in second table
+int dbcrunch ( Dbptr db )
+    remove marked (all null) records from table db
 
-Dbptr dbtheta ( Dbptr db1, Dbptr db2, char *ex_str, int outer, char *name )
-    Create a theta join of two database tables
+int dbtruncate ( Dbptr db, int n)
+    truncate table db to first n records
 
-Dbptr dbsever ( Dbptr db, char *tablename, char *name )
-    remove a table from a joined view
-
-Dbptr dbsort ( Dbptr db, Tbl *tbl, int flag, char *name )
-    create a sorted view
-
-Dbptr dbgroup ( Dbptr db, Tbl *groupfields, char *name, int type )
-    group a sorted table
-
-int dbprocess ( Dbptr db, Tbl *list, Dbptr (*unknown)() )
-    construct a view as a series of standard operations
-
-Dbptr dblist2subset ( Dbptr db, Tbl *list )
-    convert Tbl list of records to subset
-
-int dbread_view ( FILE *file, Dbptr *dbr, char *name )
-    read a database view from a file
-
-int dbwrite_view ( Dbptr db, FILE *file )
-    write a database view to a file
-
-int dbsave_view ( Dbptr db )
-    save a database view
-
-int dbunjoin ( Dbptr db, char *database_name, int rewrite )
-    create new tables from a joined table
-
-int dbuntangle ( Dbptr db, Arr **table_records )
-    return lists of constituent records of views
-
-int dbfree ( Dbptr db )
-    free space taken by a database view
+int dbdestroy ( Dbptr db )
+    remove every table and the descriptor file for database db.
 
 <subsection Manipulating and Saving Views>
+Dbptr dbsubset ( Dbptr db, char *s, char *name )
+    create a new view containing only records from db which satisfy the expression s
+
+Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, int outer, Tbl **nojoin, char *name )
+    create a new joined view from two input views db1 and db2
+    according to either the keys specified in keys1 and keys2, or join
+    keys inferred from the the primary and alternate keys of db1 and
+    db2.  in either case, the join keys used are returned.  also
+    returns a list nojoin of records from view db1 which did not join,
+    but setting outer causes every record in db1 to appear in the
+    output view, joined to a null record for db2 if necessary.
+
+Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, char *view_name )
+    similar to dbjoin, but returns a view of records from view db1 which do not 
+    match records in view db2.
+
+int dbmatches ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, Hook **hook, Tbl **t )
+    similar to dbjoin, but returns in t a list of record numbers for
+    db2 which match the single record db1.  hook caches some
+    information for a particular join, and should be set to zero
+    before the first call and freed with free_hook when done.
+
+Dbptr dbtheta ( Dbptr db1, Dbptr db2, char *s, int outer, char *name )
+    return a new joined view of views db1 and db2 where the expression s,
+    evaluated against a trial join of a row from each input view, is non-zero.
+
+Dbptr dbsever ( Dbptr db, char *t, char *name )
+    remove table t from the joined view db, returning a new view
+
+Dbptr dbsort ( Dbptr db, Tbl *t, int f, char *name )
+    sort the input view db according to the list t of fields or expression;
+    sort uniquely if f & dbSORT_UNIQUE is true; reverse the sort order if
+    f & dbSORT_REVERSE is true.
+
+Dbptr dbgroup ( Dbptr db, Tbl *fields, char *name, int type )
+    return a new view in which each row references groups of 1 or more 
+    contiguous records of the input view db; all of the list of fields
+    for each group are identical.
+
+int dbprocess ( Dbptr db, Tbl *operations, Dbptr (*unknown)() )
+    construct a new view according to the list of operations, where 
+    possible operations are: dbopen, dbjoin, dbgroup, dbleftjoin, dbnojoin, 
+    dbselect, dbseparate, dbsever, dbsort, dbsubset, dbtheta, dbungroup
+
+Dbptr dblist2subset ( Dbptr db, Tbl *t )
+    convert the list t of record numbers for view db to a corresponding subset view
+
+int dbread_view ( FILE *f, Dbptr *db, char *name )
+    read a database view from the open file f, returning in db the new
+    database pointer.  returns dbINVALID if unsuccessful.
+
+int dbwrite_view ( Dbptr db, FILE *f )
+    write the database view db to the open file f.
+
+int dbsave_view ( Dbptr db )
+    save the database view db to a file named according view's name and the database name
+
+int dbunjoin ( Dbptr db, char *name, int rewrite )
+    using the base table records referenced in the input view db, write new 
+    tables (file) to an output database name.  fails if any output tables are
+    already present, unless rewrite is non-zero, in which case the old tables
+    are replaced.
+
+int dbuntangle ( Dbptr db, Arr **a )
+    return an array a indexed by table name where the corresponding
+    value is a Tbl list of records for that table which were
+    involved in the input view db
+
+void dbfree_untangle ( Arr *table_records )
+    free the array of lists of records returned by dbuntangle
+
+int dbfree ( Dbptr db )
+    free space taken by a database view: specify db.table.  base tables
+    and views referenced by other views should not be freed.
+
 void dbget_range ( Dbptr db, int *s, int *e )
     extract range of record numbers from database pointer
 
 int dbcopy ( Dbptr dbin, Dbptr dbout, Arr *expressions )
-    copy records from one table to another
+    copy records field by field from table dbin to table dbout, translating
+    fields as indicated by the array expressions.
 
 private int dbupdate_index ( Dbindex *dbindex )
-    Force your copy of database indices to be updated
-
-<subsection Removing and deleting rows>
-int dbmark ( Dbptr db )
-    mark rows for deletion (set all fields to NULL)
-
-int dbdelete ( Dbptr db )
-    delete rows from database tables
-
-int dbcrunch ( Dbptr db )
-    remove null rows from database
-
-int dbtruncate ( Dbptr db, int nrecords )
-    truncate a database table to specified number of records
-
-int dbdestroy ( Dbptr db )
-    completely eliminate every table in a database
+    force your copy of database indices to be updated
 
 <subsection Evaluating Database Expressions>
-int dbex_compile ( Dbptr db, char *s, Expression **expression, int type )
-    compile a database expression
+int dbex_compile ( Dbptr db, char *s, Expression **e, int type )
+    compile the string s as a database expression, returning the compiled
+    representation e.  type may be specified as dbBOOLEAN, dbINTEGER, dbREAL, 
+    dbTIME, dbYEARDAY, or dbSTRING, forcing the expression result, or 0
+    leaving the result as dictated by the expression.
 
-int dbex_eval ( Dbptr db, Expression *expression, int setflag, Dbvalue *result )
-    Evaluate a database expression
+int dbex_eval ( Dbptr db, Expression *e, int flag, Dbvalue *v )
+    evaluate expression e for database record db.  If flag is non-zero,
+    allow the expression to change field values in the record.
 
-int dbex_free ( Expression *expression )
-    Free a database expression
+int dbex_free ( Expression *e)
+    free the database expression e
 
-int dbex_evalstr ( Dbptr db, char *s, int type, void *value )
-    Compile and evaluate a database expression
+int dbex_evalstr ( Dbptr db, char *s, int type, void *v )
+    compile string s as an expression and evaluate it for database
+    record db, converting the result to the specified type, returning value v 
 
 <subsection External files>
-int dbextfile ( Dbptr db, char *tablename, char *filename )
-    compose a filename from a database record
+int dbextfile ( Dbptr db, char *table, char *p )
+    compose a path p using dir and dfile from database record db; table may 
+    be specified in case the view db contains records from multiple tables with
+    dir and dfile.
 
 int dbfilename ( Dbptr db, char *filename )
     compose a filename from a database record
 
 <subsection Managing Ancillary Information>
 int dbquery ( Dbptr db, int code, Dbvalue *value )
-    get ancillary information about a database
+    returns a variety of information for database pointer db
 
-Tbl * dbtables ( Dbptr db, char *fieldname )
-    return a list of tables which use a field
+Tbl * dbtables ( Dbptr db, char *f)
+    return a list of tables which use the field f
 
 int dbcompile ( Dbptr db, char *s )
-    add attributes and/or relations to a schema
+    compile some fragment of a schema, to add new relations and perhaps attributes 
+    to a schema
 
 Dbptr dbinvalid ()
-    returns an invalid database pointer
+    returns a database pointer with all elements set to dbINVALID
 
 int dbnextid ( Dbptr db, char *name )
-    generate a unique id from the lastid table
+    generate a unique id for field name of database db
 
 int dbset ( Dbptr db, int code, Dbvalue value )
     set certain parameters in the database library

@@ -3,27 +3,29 @@ Perl Interface
 <subsection Opening a database>
 <function>
 
+dbopen ( database, permissions )
+    returns a database pointer to the database
+
+dbopen_database ( database, permissions )
+    returns a database pointer to the specified database and optionally table ("-" is stdin)
+
+dbopen_table ( database, permissions )
+    returns a database pointer to the specified database table ("-" is stdin)
+
+
 dbclose ( @db )
     closes the database, freeing all resources used by it
 
 dbfree ( @db )
     frees resources for a table or a database
 
+
 dblookup ( @db, database, table, field, record )
-    returns a database pointer for the specified database, table, field, and record. 
-
-dbopen ( database, permissions )
-    returns a database pointer to the database
-
-dbopen_table ( database, permissions )
-    returns a database pointer to the specified database table ("-" is stdin)
+    returns a database pointer for the specified database, table, field, and record.
 
 <subsection Manipulating fields and records>
 dbadd ( @db, [record] )
-    add the new record to the table in @db.  If no record is specified, use the scratch record.  returns the new record number.
-
-dbadd_remark ( @db, remark )
-    add a comment in the remark table for the specified table/record
+    add the new record to the table in @db. If no record is specified, use the scratch record. returns the new record number.
 
 dbaddnull ( @db )
     add a new null record to a table
@@ -31,26 +33,29 @@ dbaddnull ( @db )
 dbaddv ( @db, field_name, value, [field_name, value, ...] )
     add a new record with the specified values to the database
 
-dbcrunch ( @db )
-    delete all marked (null) records from the specified table
+
+dbmark ( @db )
+    set the specified record to all null values
 
 dbdelete ( @db )
     delete a record from the database
 
+dbcrunch ( @db )
+    delete all marked (null) records from the specified table
+
+dbtruncate ( @db, n )
+    truncate a table to the specified number of records
+
 dbdestroy ( @db )
     delete all tables and the descriptor file for the specified database
+
 
 dbget ( @db [, 0] )
     returns [or copies to the scratch record] the specified table, record, or field from the database
 
-dbget_remark ( @db )
-    get any comment from the remark table for the specified table/record
-
 dbgetv ( @db, field_name [, field_name, ...] )
     returns the values of the specified fields for a particular record
 
-dbmark ( @db )
-    set the specified record to all null values
 
 dbput ( @db [, string] )
     if no string is specified, the value is taken from the scratch record
@@ -58,11 +63,13 @@ dbput ( @db [, string] )
 dbputv ( @db, field_name, value, [field_name, value, ...] )
     save the specified values into the specified fields for a particular record
 
-dbsave_view ( @db, table_name )
-    save the view into a file named after the database and tablename
 
-dbtruncate ( @db, n )
-    truncate a table to the specified number of records
+dbadd_remark ( @db, remark )
+    add a comment in the remark table for the specified table/record
+
+dbget_remark ( @db )
+    get any comment from the remark table for the specified table/record
+
 
 <subsection Forming views>
 dbgroup ( @db, key, [key, ...] )
@@ -70,6 +77,9 @@ dbgroup ( @db, key, [key, ...] )
 
 dbjoin ( @db1, @db2, [join-keys] )
     return a join of the two tables, using the join-keys if specified
+
+dbmatches ( @db1, @db2, hookname, [join-keys] )
+    returns a list of the records in db2 which match the record specified by db1
 
 dbnojoin ( db1, db2, [join-keys] )
     returns a view of all records in the first table which don't join to the second.
@@ -89,13 +99,35 @@ dbtheta ( @db1, @db2, [expression] )
 dbunjoin ( @db, database_name )
     create a new database, which contains all the records referenced in the input view
 
-<subsection Getting information about the database>
+
+dbsave_view ( @db, table_name )
+    save the view into a file named after the database and tablename
+
+<subsection Miscellaneous Datascope Functions>
 dbquery ( @db, code )
     query the database for information. Codes must be in quotes.
 
+dbex_eval ( @db, expression )
+    evaluate an expression for a particular record
+
+dbcompile ( @db, string )
+    add new attributes or relations to the schema directly from the perl script
+
+dbextfile ( @db [, base-table] )
+    return the filename for an external file for a particular record in a view
+
+dbnextid ( @db, id_name )
+    gets the next free id value for the specified database and id_name
+
 <subsection Error handling>
-elog_clear (  )
-    clear the elog message log
+elog_init ( $0, @ARGV )
+    initialize the elog message routines
+
+elog_log ( msg )
+    save a message on the elog message log
+
+elog_notify ( msg )
+    send a message other than an error message to the elog facility
 
 elog_complain ( msg )
     write an error message to the elog message facility for immediate output
@@ -103,20 +135,16 @@ elog_complain ( msg )
 elog_die ( msg )
     write a message to the elog message facility and die
 
+
+elog_clear ( )
+    clear the elog message log
+
+
+elog_mark ( )
+    return the count of messages currently held in the error log
+
 elog_flush ( deliver, first )
     eliminate log messages after first, printing them if deliver is set
-
-elog_init ( $0, @ARGV )
-    initialize the elog message routines
-
-elog_log ( msg )
-    save a message on the elog message log
-
-elog_mark (  )
-    return the count of messages  currently  held  in  the error log
-
-elog_notify ( msg )
-    send a message other than an error message to the elog facility
 
 <subsection Parameter files>
 pfget ( pfname, key )
@@ -132,32 +160,26 @@ ask ( string )
 askyn ( string )
     pose a yes/no question string at the controlling tty, and return the response
 
+
 datafile ( env, file )
     find the specified file by looking at first the environment variable, and then along the path
 
 datapath ( env, dir, file, suffix )
     find the specified file by looking at first the environment variable, and then along the path
 
-dbcompile ( @db, string )
-    add new attributes or relations to the schema directly from the perl script
-
-dbex_eval ( @db, expression )
-    evaluate an expression for a particular record
-
-dbextfile ( @db [, base-table] )
-    return the filename for an external file for a particular record in a view
-
-dbmatches ( @db1, @db2, hookname, [join-keys] )
-    returns a list of the records in db2 which match the record specified by db1
-
-dbnextid ( @db, id_name )
-    gets the next free id value for the specified database and id_name
 
 grn ( lat, lon )
     return the geographic region number
 
 grname ( lat, lon )
     return the geopgraphic region name
+
+srn ( lat, lon )
+    return the seismic region number
+
+srname ( lat, lon )
+    return the seismic region name
+
 
 limit ( resource, [limit2set] )
     return the current resource limit, or set a new resource limit
@@ -171,15 +193,7 @@ vmemoryuse
 descriptors
 </options>
 
-srn ( lat, lon )
-    return the seismic region number
-
-srname ( lat, lon )
-    return the seismic region name
-
 <subsection Time conversion>
-epoch ( yearday )
-    returns the epoch time corresponding to the integer yearday
 
 epoch2str ( epoch, fmt [, timezone] )
     returns the epoch time formatted according to the fmt string and converted to timezone
@@ -187,11 +201,6 @@ epoch2str ( epoch, fmt [, timezone] )
 str2epoch ( string )
     returns the epoch time corresponding to the free-form input time/date
 
-strdate ( epoch )
-    returns a formatted string of the date
-
-strtdelta ( epoch )
-    returns a formatted string of the specified time interpreted as a time difference
 
 strtime ( epoch )
     returns a formatted string of the time and date
@@ -199,7 +208,15 @@ strtime ( epoch )
 strydtime ( epoch )
     returns a formatted string of the time and date, including the day of year
 
+strdate ( epoch )
+    returns a formatted string of the date
+
+strtdelta ( epoch )
+    returns a formatted string of the specified time interpreted as a time difference
+
+
+epoch ( yearday )
+    returns the epoch time corresponding to the integer yearday
+
 yearday ( epoch )
     returns the yearday corresponding to an epoch time
-
-

@@ -28,6 +28,11 @@ sub chapter {
     return &paragraph("Heading1", $_ ) if $_ !~ /^\s*$/ ; 
 }
 
+sub body {
+    $_ = gobble_to_space($_) ;
+    return &paragraph("Body", $_) if $_ !~ /^\s*$/ ;
+}
+
 sub options { 
     return &paragraph("Indented", "") if /^\s*$/ ;
     my ($option, $desc ) = split ( "\t", $_, 2) ; 
@@ -61,24 +66,13 @@ sub library {
     $include = xf_input() ; 
     chomp($include) ;
 
-    $_ = xf_input() ; 
-    $desc = "" ;
-    while ( $_ !~ /^\s*$/ ) { 
-	if ( $_ =~ /^</ ) { 
-	    xf_putbak ( $_ ) ; 
-	    $_ = "" ;
-	} else { 
-	    chomp ; 
-	    $desc .= " $_" ; 
-	    $_ = xf_input() ; 
-	}
-    }
+    $desc = gobble_to_space("") ;
 
     @data = ($chapter) ;
     push ( @data, &paragraph("Body", $desc) );
     push ( @data, &paragraph("Spacer", "" ) );
     push ( @data, &paragraph("Indented", "include \"$include\"" ) ); 
-    push ( @data, &paragraph("Spacer", "" ) );
+    # push ( @data, &paragraph("Spacer", "" ) );
     if ( $macro ne "none" ) { 
 	push ( @data, &paragraph("Indented", "ldlibs=\$($macro)" )) ;
     } else { 

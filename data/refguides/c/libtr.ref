@@ -4,8 +4,7 @@ tr
 $(DBLIBS)
 TRLIBS
 tr.h
-implements routines for reading and writing waveforms from a database, and
-performing some standard operations on them.  
+implements routines for reading and writing waveforms from a database, and performing some standard operations on them.
 
 <subsection Trace objects>
 <cdeclarations>
@@ -43,11 +42,14 @@ deprecated int trputwf ( Dbptr db, float *data )
     save waveform data
 
 int trsave_wf ( Dbptr tr, Dbptr db, char *datatype, char *wfname, int flags )
-    save waveform data from tr to database creating waveforms of specified datatype in data files constructed by trwfname(3) using the pattern wfname.  The trAPPEND and trOVERWRITE bits in flag cause waveform data to either append to existing files or overwrite existing files.
+    save waveform data from tr to database creating waveforms of specified datatype in data files constructed by trwfname(3) using the pattern wfname. The trAPPEND and trOVERWRITE bits in flag cause waveform data to either append to existing files or overwrite existing files.
+
+int trwfname ( Dbptr db, char *pattern, char **path )
+    generate waveform file name, according to specified pattern, creating any non-existent directories.
 
 <subsection Network, Aux and Loc code Remapping>
-<List>
-Autodrm and SEED introduce extra keys to uniquely identify station and channel.  These extra keys must be mapped into sta and chan to work with the CSS3.0 schema.  These routines implement that mapping.
+<body>
+Autodrm and SEED introduce extra keys to uniquely identify station and channel. These extra keys must be mapped into sta and chan to work with the CSS3.0 schema. These routines implement that mapping.
 
 <cdeclarations>
 
@@ -62,7 +64,7 @@ int map_autodrm_chanaux ( char *sta, char *fchan, char *aux, char *chan )
     map an autodrm channel fchan and aux code into a CSS3.0 chan code for station sta
 
 int autodrm_aux ( char *sta, char *chan, char *fchan, char *aux )
-    return autodrm channel code fchan and aux code corresponding to CSS3.0 sta/chan 
+    return autodrm channel code fchan and aux code corresponding to CSS3.0 sta/chan
 
 
 int map_seed_netsta ( char *snet, char *fsta, char *sta )
@@ -76,7 +78,7 @@ int map_seed_chanloc ( char *sta, char *fchan, char *loc, char *chan )
     map a SEED channel fchan and loc code into a CSS3.0 chan code for station sta
 
 int seed_loc ( char *sta, char *chan, char *fchan, char *loc )
-    return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan 
+    return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan
 
 <subsection Generating test data>
 
@@ -155,7 +157,6 @@ int psteim ( FILE *file, char *record, int record_size )
     print out Steim data block record on output file
 
 
-<subsection Input/Output>
 
 <cdeclarations>
 private int itr2ext ( int *in, int nsamp, Wftype *type, void **out, int *sZout, int *outbytes )
@@ -179,26 +180,22 @@ private void tr2gaps ( Trsample *data, int nsamp, char *datatype )
 void trfill_gap ( Trsample *data, int nsamp )
     fills a data segment with th 'standard' "t4" gap value
 
-<subsection Writing new waveforms>
+private int trwfnew ( Wfdisc *wfdisc )
+    create a new wfdisc record
 
-<cdeclarations>
-
-int trwfnew ( Wfdisc *wfdisc )
-    Create a new wfdisc record
-
-int trwfhdr ( Wfdisc *wfdisc, void *data, int nsamp )
+private int trwfhdr ( Wfdisc *wfdisc, void *data, int nsamp )
     create any necessary file header (eg, a SAC header)
 
-int trwfdata ( Wfdisc *wfdisc, Trsample *data, int nsamp )
+private int trwfdata ( Wfdisc *wfdisc, Trsample *data, int nsamp )
     place data into waveform file associated with wfdisc
 
-int trwf2disc ( Wfdisc *wfdisc, char *data, int nbytes, int nsamp )
+private int trwf2disc ( Wfdisc *wfdisc, char *data, int nbytes, int nsamp )
     attempts to write the specified data to disc
 
-int trwftail ( Wfdisc *wfdisc, void *data, int nsamp )
+private int trwftail ( Wfdisc *wfdisc, void *data, int nsamp )
     create any necessary file trailer (eg, an AutoDRM checksum)
 
-int trwfclose ( Wfdisc *wfdisc )
+private int trwfclose ( Wfdisc *wfdisc )
     close a wfdisc record
 
 
@@ -240,8 +237,13 @@ int trclip ( double time, double samprate, int nsamp, double from, double until,
 int trsplit ( Dbptr tr, int (*fill) (), int (*findbad) () )
     break up waveform records, eliminating marked missing data
 
+int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
+    splice together any data segments which fit together, eliminating overlapping portions
+    don't splice sections with different calibs together if factor_calib is 0.
+
 int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
     splice together any data segments which fit together, eliminating overlapping portions
+    splice sections with different calibs together, multiplying later values by the ratio of calibs.
 
 int trglue ( Dbptr tr, int ns, int ne, double tolerance, int (*fill)(), int (*resample)() )
     unconditionally splice together a specific set of traces from a trace table; gaps are filled with the missing data value
@@ -250,9 +252,6 @@ int trglue ( Dbptr tr, int ns, int ne, double tolerance, int (*fill)(), int (*re
 double traligned ( double atime, double std_time, double std_samprate )
     returns a time properly aligned with a specific time and sample rate
 
-
-int trwfname ( Dbptr db, char *pattern, char **path )
-    generate waveform file name, according to specified pattern, creating any non-existent directories.
 
 
 deprecated int trcontiguous ( Trseg *prv, Trseg *cur, double tolerance )
@@ -263,7 +262,7 @@ deprecated int trsamerate ( Trseg *prv, Trseg *cur, double tolerance )
     test for sample rate match of waveform segments
 
 deprecated int trsameticks ( Trseg *prv, Trseg *cur, double tolerance )
-    test for match of sampling 
+    test for match of sampling
 
 int wfchanid ( Dbptr *db )
     lookup chanid for a wfdisc record in the sensor or sitechan table
@@ -277,10 +276,10 @@ private char *trdatatype ( int datacode )
 
 
 Wftype *trwflist ( int i )
-    Return the i'th waveform type
+    return the i'th waveform type
 
 Wftype *trwftype ( char *datatype )
-    Get waveform type structure for specified type
+    get waveform type structure for specified type
 
 
 <subsection Convenience Macros>
@@ -299,4 +298,24 @@ double SAMPRATE ( time, nsamp, endtime )
 
 int TIME2SAMP ( time0, samprate, time1 )
     return a sample index given a time
+
+
+int TRCONTIGUOUS(time0,time1,samprate,nsamp)
+    test whether a segment of nsamp samples beginning at
+    time0 with sample rate samprate abut to time1, within
+    the tolerance specified in trdefaults.pf.
+
+int TRSAMERATE(samprate0,samprate1)
+    test whether certain values of sample rate are the same
+    to within the tolerance specified in trdefaults.pf.
+
+int TRSAMETICKS(time0,time1,samprate)
+    test whether two values of time are on the same
+    tick marks, within the tolerance specified in trdefaults.pf.
+
+int TRSAMETIME(time0,time1,samprate)
+    test whether two values of time are the same
+    to within the tolerance specified in trdefaults.pf.
+
+
 

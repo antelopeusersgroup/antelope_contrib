@@ -3,142 +3,178 @@ Tcl/Tk Interface
 
 <subsection Opening a database>
 <commands>
-db2pipe db file [record# ...]
-    send records from a database view out a unix pipe
+dbopen db {r|r+}
+    open database db read-only (r) or read-write(r+); returns a dbptr
+
+dbopen_database db[.table] {r|r+}
+    open database db, or optionally a specific table. The
+    first argument may also be "-", allowing a view to be read from stdin.
+    returns a dbptr
 
 dbclose dbptr
-    Close a database and free associated memory
+    close the database dbptr
 
 dbfree dbptr
-    Free memory resources and file descriptors for a database view/table
+    free memory resources and file descriptors for a database view/table
 
 dblookup dbptr database table field record
-    map from symbolic names to a database pointer
-
-dbopen path opentype
-    Open the specified database
-
-dbopen_database path opentype
-    Open the specified database. "-" means stdin; tables may be specified
-
-dbopen_table path opentype
-    Open the specified database table
+    return a database pointer for the specified dbptr, database, table, field, and record
+    record can be "dbALL", "dbNULL" or "dbSCRATCH", or a value corresponding to field; then
+    the first record number where field == value is returned
 
 dbtruncate dbptr n
-    Truncate the specified table to n records
+    truncate the specified table to the first n records
 
 <subsection Manipulating Fields and Records>
 dbadd dbptr record
-    Add the specified record
+    add the specified record to a table, return record number
 
 dbaddnull dbptr
-    Add a null record
+    add a null record to the table, return record number
 
 dbaddv dbptr table field value [field value ...]
-    Add a new record with the specified field values, returning record number
-
-dbcrunch dbptr
-    Crunch out (delete) null records in the specified table
-
-dbdelete dbptr
-    Delete the specified record
-
-dbget dbptr
-    Get a table, record, or field from a table
-
-dbgetv dbptr table record field [field ...]
-    Return a list containing the specified values of the specified fields
-
-dbgroup db type field [field ..]
-    Group the (sorted) input table by the specified fields
+    add new record with specified field values, return record number
 
 dbmark dbptr
-    Set the specified record to all nulls
+    set the specified record to all null values
+
+dbcrunch dbptr
+    delete marked (all null) records from the table
+
+dbdelete dbptr
+    delete a record
+
+
+dbget dbptr
+    get a table, record, or field from a table
+
+dbgetv dbptr table record field [field ...]
+    return a list with the specified values of the specified fields
+
 
 dbput dbptr value
-    Put the specified value into the specified location.
+    put the specified value into the specified location.
 
 dbputv dbptr table record field value [field value ...]
-    Save the specified values into the specified fields.
+    save the specified values into the specified fields.
 
 <subsection Forming Views>
-dbjoin db1 db2 [fields]
-    Join the specified tables
+dbgroup db type field [field ..]
+    group the (sorted) input table by the specified fields
+
+dbjoin db1 db2 [join-keys]
+    join the two tables (using the specified join keys)
 
 dbjoin_tables dbptr
-    Returns a list of tables for which some set of join keys can be inferred
+    returns a list of tables for which some set of join keys can be inferred
 
-dbnojoin db1 db2 [field ...]
-    Returns all the records in db1 which do not join with table db2
+dbnojoin db1 db2 [join-keys]
+    returns all the records in db1 which do not join with table db2
+
+dbmatches db1 db2 hook [join-keys ...]
+    returns a list of records in the table specified by db2 which match (join with) the record specified by db1
 
 dbprocess db [command ...]
     construct a view as series of standard operations
-
-dbsave_view [-f] db name
-    Save the specified view as a table in the same database with the specified name
-<options>
--f  Allow overwriting files of the same name
-</options>
 
 dbsever db table
     remove a table from a joined view
 
 dbsort [-r] [-u] db [fields ..]
-    Sort the specified table by the specified fields or the primary  key if no fields are specified
+    sort a table by fields, or the primary key if no fields are specified
 <options>
--r reverse the sense of the sort
--u eliminate all records in the output view with duplicate field values
+-r	reverse the sense of the sort
+-u	eliminate all records in the output view with duplicate field values
+</options>
+
+dbsubset db expression
+    returns a db pointer to the rows from the specified table which satisfy expression
+
+dbtheta dbptr1 dbptr2 [ expression ]
+    theta join the specified tables
+
+
+dbselect [-b] [-F separator] [-t] filename db [field ...]
+    write selected fields from the input view to the specified filename
+<options>
+-b	strip blanks from both ends of each field
+-t	convert times to readable times
 </options>
 
 
-dbsubset db expression
-    Returns a db pointer to the rows from the specified table which satisfy expression
+dbsave_view [-f] db name
+    save the specified view as a table in the same database with the specified name
+<options>
+-f	Allow overwriting files of the same name
+</options>
 
-dbtheta dbptr1 dbptr2 [ expression ]
-    Theta join the specified tables
+db2pipe db file [record# ...]
+    send records from a database view out a unix pipe
 
 dbunjoin dbptr output
-    Unjoin the specified table, writing new tables into a new database named output
+    unjoin the specified table, writing new tables into a new database named output
+
+<subsection Miscellaneous Datascope Functions>
+
+dbeval db expression [type]
+    evaluate the specified expression, converting to the specified type
+
+dbquery dbptr code
+    query the database for various parameters
+
+dbcompile dbptr string
+    add attributes and relations to a database by directly compiling schema file fragments
+
+dbfind db first backwards expression [n]
+    starting from first, locate the nth row satisfying the given expression
+
+
+dbadd_remark dbptr remark
+    add the specified remark to the specified record
+
+dbget_remark dbptr
+    get the remark associated with the specified record
+
+dbgetr dbptr convert_time record# #records [expression [format]]
+    return a list containing the specified field or expression for the specified range of records
+
+dbinvalid
+    return a db pointer with all elements dbINVALID
+
+dbnextid dbptr name
+    get the next (integer) id for the specified name
 
 <subsection Error Handling>
 <commands>
-clear_register flag
-    Clear the error register, optionally returning contents
-
-elog_clear 
-    Clear the elog message log
-
-elog_complain msg
-    Write an error message to the elog message facility for immediate output
-
-elog_die msg
-    Write a message to the elog message facility and die
-
-elog_flush deliver first
-    Get rid of messages after  #first  in  the error log, printing them if deliver is a boolean true
-
 elog_init args
-    Initialize the elog routines with the command name
+    initialize the elog routines with the command name and arguments
+
 
 elog_log msg
-    Save a message on the elog message log
-
-elog_mark 
-    returns the count of messages currently held in the error log
+    save a message on the elog message log
 
 elog_notify msg
-    Write a message other than an error message to the elog facility
+    write a message other than an error message to the elog facility
 
-<subsection Evaluating expressions>
-dbeval db expression [type]
-    Evaluate the specified expression, converting to the specified type
+elog_complain msg
+    write an error message to the elog message facility for immediate output
 
-<subsection Getting information about the Database>
-datafile envname filename
-    Returns complete pathname for a datafile
+elog_die msg
+    write a message to the elog message facility and die
 
-dbquery dbptr code
-    Query the database for various parameters
+
+elog_clear
+    clear the elog message log
+
+clear_register flag
+    clear the error register, optionally returning contents
+
+
+elog_mark
+    returns the count of messages currently held in the error log
+
+elog_flush deliver first
+    get rid of messages after #first in the error log, printing them if deliver is a boolean true
 
 <subsection Instrument response routines>
 eval_response resphandle freq_in_hz
@@ -161,100 +197,68 @@ read_response filename
 
 <subsection Parameter Files>
 pfget pf name
-    Get the value for the specified name from the specified parameter file
+    get the value for the specified name from the specified parameter file
 
 pfgetarr variable name
-    Return the array corresponding to the specified name (eg, %pf#name) in the variable
+    return the array corresponding to the specified name (eg, %pf#name) in the variable
 
 pfgetlist name
-    Return the list corresponding to the specified name (eg, @pf#name)
+    return the list corresponding to the specified name (eg, @pf#name)
 
 pfput pf name value
-    Save the specified value into the parameter space
+    save the specified value into the parameter space
 
 pfputarr pf name [array]
-    Save the specified array into the parameter space
+    save the specified array into the parameter space
 
 pfputlist pf name [list]
-    Save the specified list into the parameter space
+    save the specified list into the parameter space
 
 pfread pf
-    Force rereading the parameter file
+    force rereading the parameter file
 
 pfwrite pf filename
-    Write the specified parameter file
+    write the specified parameter file
 
 
 
 <subsection Seismic Utility Functions>
 carsph x y z
-    Convert from cartesian to spherical coordinates
+    convert from cartesian to spherical coordinates
 
 dbdist lat1 lon1 lat2 lon2
-    Return the angular distance between the specified locations. All units are degrees.
+    return the angular distance between the specified locations. All units are degrees.
 
 dblatlon lat lon delta azimuth
-    Return the latitude and longitude of the point at distance delta, direction azimuth from lat, lon
+    return the latitude and longitude of the point at distance delta, direction azimuth from lat, lon
 
 sphcar lat lon
-    Convert from spherical to cartesian coordinates
-
-<subsection Special Functions>
-dbadd_remark dbptr remark
-    Add the specified remark to the specified record
-
-dbcompile dbptr string
-    Add attributes and relations to a database by directly compiling schema file fragments
-
-dbfind db first backwards expression [n]
-    starting from first, locate the nth row satisfying the given expression
-
-dbget_remark dbptr
-    Get the remark associated with the specified record
-
-dbgetr dbptr convert_time record# #records [expression [format]]
-    Return a list containing the specified field or expression for the specified range of records
-
-dbinvalid 
-    Return a db pointer with all elements dbINVALID
-
-dbmatches db1 db2 hook [field ...]
-    Returns a list of records in the table specified by db2 which match (join with) the record specified by db1
-
-dbnextid dbptr name
-    Get the next (integer) id for the specified  name
-
-dbselect [-b] [-F separator] [-t] filename db [field ...]
-    Write selected fields from the input table to the specified filename
-<options>
--b strip blanks from both ends of each field
--t convert times to readable times
-</options>
+    convert from spherical to cartesian coordinates
 
 <subsection Time conversion>
 epoch yearday
-    Convert from yearday to epoch
+    convert from yearday to epoch
 
 epoch2str epoch fmt
-    Convert epoch time to a human readable format
+    convert epoch time to a human readable format
 
 str2epoch string
-    Convert human readable time to epoch time
+    convert human readable time to epoch time
 
 strdate epoch
-    Convert epoch time to a human readable date string
+    convert epoch time to a human readable date string
 
 strtdelta epoch
     convert a time-difference into a string
 
 strtime epoch
-    Convert epoch time to a human readable time string
+    convert epoch time to a human readable time string
 
 strydtime epoch
-    Returns a readable time which includes the day of the year inside parentheses
+    returns a readable time which includes the day of the year inside parentheses
 
 yearday epoch
-    Convert from yearday to epoch time
+    convert from yearday to epoch time
 
 <subsection Utility Functions>
 makedir dir
@@ -263,3 +267,5 @@ makedir dir
 writefile filename stringname
     write contents of a string variable to a file
 
+datafile envname filename
+    returns complete pathname for a datafile

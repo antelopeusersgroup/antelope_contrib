@@ -30,6 +30,8 @@ sub format_fortran_args {
     my $result = "" ;
     @names = split(',', $list ) ; 
     foreach $name ( @names ) {
+	$name =~ s/^\s+// ;
+	$name =~ s/\s+$// ;
 	if ( $result eq "" ) { 
 	    $result = &fontstring ($fontcode, $name) ; 
 	} else { 

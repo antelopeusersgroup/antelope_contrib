@@ -4,7 +4,7 @@ xtra
 orb $(TRLIBS)
 ORBLIBS
 xtra.h
-contains assorted routines which use multiple libraries, and are gathered 
+contains assorted routines which use multiple libraries, and are gathered
 in one library to avoid complex interdependencies between other libraries
 
 <cdeclarations>
@@ -20,7 +20,7 @@ deprecated void free_orbpipe ( Orbpipe *pipe, void (*free_packet)() )
     free resources for an orbpipe
 
 deprecated int orbsort ( Orbpipe *pipe, int *pktid, double *time, char *srcname, char **packet, int *nbytes, int *bufsize )
-    Retrieve the oldest packet in sorted order
+    retrieve the oldest packet in sorted order
 
 
 int netstachan ( int orb, Arr **netstachan, Arr **srcnames )
@@ -32,7 +32,7 @@ int orbacc ( int orb, char *accselect, double req_twin, double overlap, double l
 
 
 deprecated int db2orbpkt ( Dbptr db, int orb )
-    Places a database record on an orbserver
+    places a database record on an orbserver
 
 deprecated Dbptr orbpkt2db ( char *packet, int packet_size, Dbptr db )
     inserts orb packet into database scratch record

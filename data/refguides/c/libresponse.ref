@@ -8,27 +8,27 @@ routines for reading, writing and evaluating CSS 3.0 response files
 
 <cdeclarations>
 
-Response *new_response (  )
+Response *new_response ( )
     initialize a new response object
 
 int read_response ( FILE *file, Response **p_response )
-    read a response object from a file
+    read a response from a file
 
 int write_response ( FILE *file, Response **response )
-    write a response object to a file
+    write a response to a file
 
 int free_response ( Response *response )
-    free memory for a response object
+    free memory for a response 
 
 
 int init_response_group ( Response_group gp )
     initialize a new response-group object
 
 int add_response_group ( Response *rp, Response_group *gp )
-    add a response to an existing response group
+    add a new response stage gp to response rp
 
-int compare_response ( Response *response1, Response *response2 )
-    Compare two response objects
+int compare_response ( Response *r1, Response *r2 )
+    compare two responses r1 and r2, returning 0 if identical, 1 otherwise
 
-int eval_response ( double omega, Response *response, double *real, double *imag )
-    Evaluate a response object at the specified frequency
+int eval_response ( double omega, Response *rp, double *r, double *i)
+    evaluate a response rp at the frequency omega, returning real and imaginary components r and i.

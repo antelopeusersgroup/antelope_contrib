@@ -10,7 +10,7 @@ sub mifquote {
 
 sub string {
     my ($in) = @_ ; 
-    $in = "<String `" . &mifquote($in) . "'>\n" ;
+    $in = "<String `" . &mifquote($in) . "'>\n" if ($in ne "" );
     return $in ; 
 }
 

@@ -33,8 +33,8 @@ void pix2vec ( Pixaddress pixnum, double vec[3] )
     convert quadrilateralized cubic pixel address to unit vector
 
 
-void decode_quadrant ( code, int *detector_id, int *primbsch_region, int *radius_bin )
-    Extract detector id, primbsch region, and radius bin from a byte
+private void decode_quadrant ( code, int *detector_id, int *primbsch_region, int *radius_bin )
+    extract detector id, primbsch region, and radius bin from a byte
 
-unsigned char encode_quadrant ( int detector_id, int primbsch_region, int radius_bin )
-    Pack detector id, primbsch region, and radius bin into one byte
+private unsigned char encode_quadrant ( int detector_id, int primbsch_region, int radius_bin )
+    pack detector id, primbsch region, and radius bin into one byte

@@ -20,7 +20,7 @@ UV pj_inv ( UV val, PJ *proj )
 
 
 void pj_free ( PJ *proj )
-    free a cartographic projection 
+    free a cartographic projection
 
 <List>
 

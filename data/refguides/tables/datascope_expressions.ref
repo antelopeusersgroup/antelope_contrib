@@ -180,7 +180,7 @@ extfile([ table ])
 
 
 <expression>
-A expr ? a : b 
+A expr ? a : b
     conditional expression: evaluates to a when A is true, b when A is false.
 
 

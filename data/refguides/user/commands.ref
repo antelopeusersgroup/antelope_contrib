@@ -12,22 +12,22 @@ template [dbsimple.c|simple.c|perl|tcl]
     get a template from templates directory
 
 <subsection Miscellaneous>
-private check_antelope_installation 
+private check_antelope_installation
     spot check for proper Antelope installation
 
 check_license [license_filename]
     verify license.pf is valid
 
-private check_path [-v] [path]
+check_path [-v] [path]
     check a path to ensure that 'other' users can traverse it
 
 private check_visual [-display display_name]
     check out the default X-windows display visual
 
-private install_antelope 
+private install_antelope
     interactive installation of Antelope from a cd
 
-private register_antelope 
+private register_antelope
     gui for requesting Antelope license
 
 
@@ -37,12 +37,15 @@ abspath apath [...]
 relpath here there
     construct relative pathname from here to there
 
+cleanpath apath
+    eliminates repeated slashes, unnecessary ./
+
 deprecated uwd [-f configfile]
-    print canonical working directory (for ancient automounters) 
+    print canonical working directory (for ancient automounters)
 
 
 epoch [options] [ +format ] [ time/date components ]
-    convert time formats. 
+    convert time formats.
 <options>
 -e	echo interactive input
 -i tz	specify an input timezone tz, eg US/Mountain
@@ -51,7 +54,7 @@ epoch [options] [ +format ] [ time/date components ]
 </options>
 
 pfdiff [-o newpf] pf1 [pf2]
-    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). -o interactively selects parameters from pf1 and pf2 to construct new parameter file newpf 
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). -o interactively selects parameters from pf1 and pf2 to construct new parameter file newpf
 
 pfecho [options] name [ param ...]
     print out parameters from parameter files
@@ -71,12 +74,12 @@ dbsetrgn db
 
 
 private children pid
-    returns pids of children
+    returns children of process pid
 
-private getunique 
+private getunique
     return unique integer
 
-private idinfo 
+private idinfo
     gather id information for register_antelope
 
 deprecated pathf [ -f configfile ] [ paths... ]
@@ -101,6 +104,8 @@ tksend [options] app_name [message]
 private unregister window_name
     eliminate defunct tk send registries
 
+comsim connection
+    monitor, test and debug serial or ip communications
 
 reflect [-d dir] [-v] remote_host remote_file
     keep local files up to date with remote copies
@@ -108,6 +113,19 @@ reflect [-d dir] [-v] remote_host remote_file
 reflectd [-v]
     server companion to reflect
 
+build [pf-file] [pf-dependent arguments]
+    framework for constructing simple gui interfaces based on
+    parameter files and perl scripts
+
+refguide {creference|user|scripting}
+    prepare a Framemaker mif version of a reference guide
+
+txform [-v] dir filename
+    text transform program
+
+grepsrc [-cfhilMmpstvyw] [-d dir] pattern
+    look through certain files below dir for a pattern; useful for
+    finding occurrences of a call to a function
 
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon

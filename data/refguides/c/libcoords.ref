@@ -6,29 +6,6 @@ STOCKLIBS
 coords.h
 conversions between epoch time and strings, 2-d and 3-d coordinate transformations, and seismic region routines
 
-<subsection Flinn-Engdahl Regions>
-<cdeclarations>
-int grnumber ( double lat, double lon )
-    returns the Flinn-Engdahl geographic region number which contains the specified lat, lon
-
-int grname ( int grn, char *name )
-    returns a Flinn-Engdahl geographic region name for geographic region grn
-
-
-int srnumber ( int grn )
-    returns the Flinn-Engdahl seismic region number for geographic region grn
-
-int srname ( int srn, char *name )
-    returns the Flinn-Engdahl seismic region name for seismic region srn
-
-<subsection Earth Units conversion>
-<cdeclarations>
-double deg2km ( double degrees )
-    convert from degrees to kilometers at the equator
-
-double km2deg ( double km )
-    convert from kilometers to degrees at the equator
-
 
 <subsection Time conversion>
 <cdeclarations>
@@ -36,7 +13,7 @@ int is_epoch_string ( char *s, double *e )
     returns true if string s can be interpreted as a time, returning epoch time e
 
 int zstr2epoch ( char *s, double *e )
-    returns zero if no errors occur translating string s to an epoch time e 
+    returns zero if no errors occur translating string s to an epoch time e
 
 double str2epoch ( char *s )
     returns epoch time corresponding to string s, printing error messages
@@ -59,9 +36,6 @@ private int fmttime ( double e, char *result, int fmt, char *timezone )
 char *strdate ( double e )
     returns string representing date portion of epoch time
 
-char *strtdelta ( double e )
-    returns a string representation of elapsed time
-
 char *strtime ( double e )
     returns string representing epoch time
 
@@ -69,9 +43,19 @@ char *strydtime ( double e )
     returns standard string representing epoch time
 
 
-char *getTZ (  )
-    get value for TZ (time zone)
+char *strtdelta ( double e )
+    returns a string representation of elapsed time
 
+
+double epoch ( int yearday )
+    convert yearday to epoch time
+
+int yearday ( double e )
+    returns yearday corresponding to given epoch time
+
+
+char *getTZ ( )
+    get value for environment variable TZ (time zone)
 
 private void bcdtime ( char *tmstamp, struct date_time *ptim )
     parse BCD timestamp into date-time structure
@@ -87,13 +71,6 @@ private void e2h ( double epoch, int *iyear, int *iday, int *ihour, int *imin, d
     returns year, doy, h:m:s given epoch time
 
 
-double epoch ( int yearday )
-    Convert epoch time to yearday
-
-int yearday ( double e )
-    returns yearday corresponding to given epoch time
-
-
 private double h2e ( int iyear, int iday, int ihour, int imin, double sec )
     returns the epoch time given inputs
 
@@ -107,57 +84,84 @@ private int time_string2epoch ( char *string, double *time )
     earlier interface to str2epoch
 
 
+<subsection Earth Units conversion>
+<cdeclarations>
+double deg2km ( double degrees )
+    convert from degrees at the equator to kilometers
+
+double km2deg ( double km )
+    convert from kilometers to degrees at the equator
+
+
+<subsection Flinn-Engdahl Regions>
+<cdeclarations>
+int grnumber ( double lat, double lon )
+    returns the Flinn-Engdahl geographic region number which contains the specified lat, lon
+
+int grname ( int grn, char *name )
+    returns Flinn-Engdahl geographic region name for geographic region grn
+
+
+int srnumber ( int grn )
+    returns the Flinn-Engdahl seismic region number for geographic region grn
+
+int srname ( int srn, char *name )
+    returns the Flinn-Engdahl seismic region name for seismic region number srn
+
+
 <subsection Spherical Geometry>
 <cdeclarations>
 double deg ( double r )
-    converts input radians to degrees
+    convert input radians r to degrees
 
 double rad ( double d )
-    convert input degrees to radians
+    convert input degrees d to radians
 
 
-void dist ( double lat1, double long1, double lat2, double long2, double *delta, double *azimuth )
-    Compute angular distance between two points
+void dist ( double lat1, double lon1, double lat2, double lon2, double *delta, double *azimuth )
+    return angular distance delta and direction azimuth between two points (lat1,lon1) and (lat2,lon2)
+    (angles in radians)
 
-void latlon ( double lat1, double long1, double delta, double azimuth, double *lat2, double *long2 )
-    computes lat and lon from azimuth, angular distance, and starting point
+void latlon ( double lat1, double lon1, double delta, double azimuth, double *lat2, double *lon2 )
+    return new position (lat2,lon2) after moving delta radians in direction azimuth from (lat1,lon1) 
+    (angles in radians)
 
 void xyztortp ( float u[3], float *r, float *theta, float *phi )
-    Convert cartesian coordinates into spherical coordinates
+    convert cartesian coordinates u into spherical coordinates r, theta, phi
 
-<subsection Vectors and Rotation Matrices>
+
 void carsph ( float u[3], float *ra, float *dec )
-    convert a unit 3-vector to ra and dec in radians
+    convert a unit 3-vector u to ra and dec (radians)
 
 void sphcar ( float ra, float dec, float u[3] )
-    Convert ra and dec in radians to cartesian coords
+    convert ra and dec (in radians) to cartesian coords u
 
 
 void dsphcar ( double ra, double dec, float u[3] )
-    Convert ra and dec in radians to cartesian coords
+    convert ra and dec in radians to cartesian coords
 
 
 void deatom ( double a, double b, double c, double m[9] )
-    convert Euler angles to rotation matrix
+    convert Euler angles a, b, c to rotation matrix m
 
-void dmtoea ( double m[9], double *a_p, double *b_p, double *c_p )
-    Convert rotation matrix to Euler angles
+void dmtoea ( double m[9], double *a, double *b, double *c)
+    convert rotation matrix m to Euler angles a, b, c
 
 void rotmat ( double u[3], double A[9], double theta )
-    create a rotation matrix A about axis u by angle theta
+    create a rotation matrix A which rotates about axis u by angle theta
 
 void xrotate ( double u[3], v[3], w[3], theta )
-    rotates v by angle theta about axis u, returned in w
+    rotate v by angle theta about axis u, returned in w
 
 
 void r3add ( float u[3], float v[3], float w[3] )
     add two 3-vectors u and v
 
 void r3cros ( float u[3], float v[3], float w[3] )
-    computes cross product of two 3-vectors
+    return cross product w of two 3-vectors u and v
 
 double r3dot ( float u[3], float v[3] )
-    returns dot product of two 3-vectors
+    returns dot product of two 3-vectors u and v
 
 double r3mag ( float u[3] )
     returns the length of a 3-vector
@@ -166,24 +170,24 @@ void r3mov ( float u[3], float v[3] )
     move a vector u to a vector v
 
 void r3mxm ( float A[9], float B[9], float C[9] )
-    multiply two 3x3 matrices A and B
+    multiply two 3x3 matrices A and B, returning result C
 
 void r3mxv ( float A[9], float u[3], float v[3] )
-    multiply a 3x3 matrix A by a 3-vector u
+    multiply a 3x3 matrix A by a 3-vector u, returning result v
 
 void r3norm ( float u[3] )
-    replaces u with a unit vector
+    make u a unit vector
 
 void r3ortho ( float u[3], float v[3] )
     makes u and v orthonormal vectors
 
 void r3sub ( float u[3], float v[3], float w[3] )
-    subtracts v from u
+    subtracts v from u, returning result w
 
 void r3sxv ( float c, float v[3], float w[3] )
-    multiply a scalar c by a 3-vector v
+    multiply 3-vector v by scalar c, returning result w 
 
 void r3tran ( float A[9], float B[9] )
-    return the transpose of the 3x3 matrix A
+    transpose the 3x3 matrix A into B
 
 

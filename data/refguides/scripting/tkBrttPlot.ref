@@ -1,10 +1,10 @@
 <subsection Data Objects>
 <commands>
 append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
-    Appends a vector element after an existing element
+    appends a vector element after an existing element
 
 create_scg db tstart tend ?options?
-    Create a station-channel-gather data object for plotting with a viewport gpl object
+    create a station-channel-gather data object for plotting with a viewport gpl object
 <options>
 -net net_expr
 -sta sta_expr
@@ -15,19 +15,19 @@ create_scg db tstart tend ?options?
 </options>
 
 create_vector [ny] [-tag tag]
-    Create an empty generic data-vector object
+    create an empty generic data-vector object
 
 destroy_scg scg_handle
-    Destroy a station-channel-gather data object
+    destroy a station-channel-gather data object
 
 eval_vector vector_handle xvalue
-    Compute and return a Y (dependent) value from a vector object
+    compute and return a Y (dependent) value from a vector object
 
 free_vector {-tag tag | vector_handle}
-    Destroys previously created vector objects
+    destroys previously created vector objects
 
 read_vector filename ?options?
-    Create and read a vector object from an ASCII file
+    create and read a vector object from an ASCII file
 <options>
 -tag tag
 -loff line_off
@@ -36,13 +36,13 @@ read_vector filename ?options?
 </options>
 
 vector_get vector_handle {nx|ny|xy ix}
-    Get information relating to a vector handle
+    get information relating to a vector handle
 
 vector_maxmin vector_handle [iy]
-    Retrieve min and max X, min and max Y from a vector object
+    retrieve min and max X, min and max Y from a vector object
 
 vector_puty vector_handle ix ylist
-    Replace dependent values in a vector object
+    replace dependent values in a vector object
 
 <subsection Plotting>
 (canvas) create axes viewport ?options?
@@ -134,37 +134,37 @@ vector_puty vector_handle ix ylist
 -width width	Viewport width in pixels (0: rubber-band)
 -height height 	Viewport height in pixels (0: rubber-band)
 -mleft mleft	Width of left margin in pixels
--mright mright  Width of right margin in pixels
--mbottom mbottom Width of bottom margin in pixels
+-mright mright	Width of right margin in pixels
+-mbottom mbottom	Width of bottom margin in pixels
 -mtop mtop 	Width of top margin in pixels
 -xmode xmode 	plotting mode: lin, log, or time
 -ymode ymode	plotting mode: lin, log, or time
 -xleft xleft 	data-coordinate of left edge of viewport
 -xright xright	data-coordinate of right edge of viewport
 -x0 x0
--ybottom ybottom data-coordinate of bottom edge of viewport
+-ybottom ybottom	data-coordinate of bottom edge of viewport
 -ytop ytop	data-coordinate of top edge of viewport
 -y0 y0
--fill fill       Fill color for the viewport itself
--fill_frame fill_frame   Fill color for the frame around the viewport
+-fill fill	Fill color for the viewport itself
+-fill_frame fill_frame	Fill color for the frame around the viewport
 </options>
 
 <subsection Time Histories>
 thistory_add thistory_handle time value
-    Add an element to a time-history object
+    add an element to a time-history object
 
 thistory_create maxnp [-tag tag]
-    Create a time-history object
+    create a time-history object
 
 thistory_eval thistory_handle time
-    Compute and return a dependent value from a time-history object
+    compute and return a dependent value from a time-history object
 
 thistory_free {-tag tag | thistory_handle}
-    Free a time-history object
+    free a time-history object
 
 thistory_get thistory_handle {np|ty it}
-    Get information from a time-history object
+    get information from a time-history object
 
 thistory_maxmin thistory_handle
-    Get max and min values out of a time-history object
+    get max and min values out of a time-history object
 

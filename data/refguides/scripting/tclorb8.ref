@@ -1,18 +1,18 @@
 <subsection Real-time system connections>
 orbafter orb time
-    Set the orb read pointer to the first packet after specified time
+    set the orb read pointer to the first packet after specified time
 
 orbclients orb
-    Return a handle to status information for clients of the specified orb
+    return a handle to status information for clients of the specified orb
 
 orbclientsfree clients_handle
-    Frees the clients information referenced by the specified handle
+    frees the clients information referenced by the specified handle
 
 orbclose orb
-    Close an orb connection for the specified orb descriptor
+    close an orb connection for the specified orb descriptor
 
 orbgetclient clients_handle index ?options?
-    Returns client information for the specified client in the clients_handle
+    returns client information for the specified client in the clients_handle
 <options>
 started
 lastpkt
@@ -44,16 +44,16 @@ perm
 </options>
 
 orbgetdatasources orb
-    Returns a list of data source names from the specified orb
+    returns a list of data source names from the specified orb
 
 orbgetnclients clients_handle
-    Returns the number of individual clients referenced by the clients_handle
+    returns the number of individual clients referenced by the clients_handle
 
 orbgetnsources sources_handle
-    Returns the number of individual sources referenced by the sources_handle
+    returns the number of individual sources referenced by the sources_handle
 
 orbgetsource sources_handle index ?options?
-    Returns source information for the indexed source
+    returns source information for the indexed source
 <options>
 slatest_time
 soldest_time
@@ -65,86 +65,86 @@ active
 srcname
 </options>
 
-orbhelp 
-    Print synopsis lines for orb Tcl commands
+orbhelp
+    print synopsis lines for orb Tcl commands
 
 orbopen orbname permission
-    Open an orb connection
+    open an orb connection
 
 orbpffree pf_handle
-    Frees the parameter file object referenced by pf_handle
+    frees the parameter file object referenced by pf_handle
 
 orbpfget pf_handle name
     returns the value for parameter name from the referenced pf_handle
 
 orbping orb
-    Returns the version number of the specified orb
+    returns the version number of the specified orb
 
 orbpktchanfree packet_handle
-    Free the specified unstuffed packet-channel
+    free the specified unstuffed packet-channel
 
 orbpktchangetcd1 packetchan_handle
-    Returns CD1 status information for CD-1-format packet channels
+    returns CD1 status information for CD-1-format packet channels
 
 orbpktchangethdr packetchan_handle
-    Returns packet-channel header information
+    returns packet-channel header information
 
 orbpktfree packet_handle
-    Frees the orb packet referenced by the packet_handle
+    frees the orb packet referenced by the packet_handle
 
 orbpktgetdb packet_handle dbptr
-    Returns a database pointer pointing to the row in the referenced /db/.*orb packet
+    returns a database pointer pointing to the row in the referenced /db/.*orb packet
 
 orbpktgethdr packet_handle
-    Return a list of generic packet header information for the referenced packet
+    return a list of generic packet header information for the referenced packet
 
 orbpktgetlog packet_handle
-    Returns log messages from the referenced /log/.*orb packet
+    returns log messages from the referenced /log/.*orb packet
 
 orbpktgetpf packet_handle
     returns a pf_handle reference from the referenced /pf/.*orb packet
 
 orbpktgetqtping packet_handle
-    Returns a string with the response to a qt2orb ping command
+    returns a string with the response to a qt2orb ping command
 
 orbpktgetstatus packet_handle
-    Returns a string with qt2orb status information
+    returns a string with qt2orb status information
 
 orbpktunstuffdata packet_handle
-    Unstuff an orb packet referenced by packet_handle, returning a list of unstuffed packet channels
+    unstuff an orb packet referenced by packet_handle, returning a list of unstuffed packet channels
 
 orbqtpingsend orb
-    Sends a ping command to qt2orb via the specified command-orb
+    sends a ping command to qt2orb via the specified command-orb
 
 orbqtshell qtshell_handle
-    Handle qtshell through orb 
+    handle qtshell through orb
 
 orbqtshellfree qtshell_handle
-    Free a quanterra shell handle 
+    free a quanterra shell handle
 
 orbqtshellstart cmdorbname netsta cmd
-    Start a quanterra shell 
+    start a quanterra shell
 
 orbreap reap_handle
-    Read a new orb packet from a previously started reap thread, returning a packet handle
+    read a new orb packet from a previously started reap thread, returning a packet handle
 
 orbreapstart orb [block]
-    Start reaping (reading) packets from orb, returning a read handle.
+    start reaping (reading) packets from orb, returning a read handle.
 
 orbseek orb whence
     set the orb read pointer, returning the new read-position packet id.
 
 orbselect orb selectexpr
-    Select sources to read from an orb, returning the number of matches
+    select sources to read from an orb, returning the number of matches
 
 orbsources orb
-    Reads status information for sources of orb, returning a handle
+    reads status information for sources of orb, returning a handle
 
 orbsourcesfree sources_handle
-    Frees the sources information referenced by the specified handle
+    frees the sources information referenced by the specified handle
 
 orbstat orb ?options?
-    Returns requested status information for the specified orb
+    returns requested status information for the specified orb
 <options>
 orb_start
 started
@@ -169,7 +169,7 @@ version
 </options>
 
 orbtell orb
-    Returns the current read/write position pktid fo the specified orb
+    returns the current read/write position pktid fo the specified orb
 
 str2orbpfpkt orb name string
     writes a parameter-file object defined by string as a parameter-file packet on orb

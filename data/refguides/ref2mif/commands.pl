@@ -9,6 +9,45 @@ sub index {
     return undef ; 
 }
 
+sub gobble { 
+    my ($para) = @_ ; 
+    $para =~ s/^\s+// ; 
+    chomp($para) ; 
+    $para =~ s/\s+$// ; 
+    while ( $_ = xf_input() ) { 
+	if ( /^\s/ && ! /^\s+$/ && ! /^</ ) { 
+	    chomp ; 
+	    s/^\s+/ / ; 
+	    s/\s+$// ; 
+	    $para .= $_ ; 
+	} else { 
+	    xf_putbak($_) ; 
+	    last ; 
+	}
+    }
+    return $para ;
+}
+
+sub gobble_to_space { 
+    my ($para) = @_ ; 
+    chomp($para) ; 
+    $para =~ s/\s+$// ; 
+    my @para = () ;
+    push (@para, $para) ;
+    while ( $_ = xf_input() ) { 
+	if ( ! /^\s/ && ! /^$/ && ! /^</ ) { 
+	    chomp ; 
+	    s/\s+$// ; 
+	    push (@para, $_) ;
+	} else { 
+	    xf_putbak($_) ; 
+	    last ; 
+	}
+    }
+    $para = join(' ', @para) ;
+    return $para ;
+}
+
 sub commands { 
     chomp ;
     s/\t/ /g ; 
@@ -26,7 +65,7 @@ sub commands {
 	$ignored = 1 ;
     } elsif ( /^\s/ ) { # 
 	$ignored = 0 ; 
-	s/^\s+// ;
+	$_ = gobble($_) ; 
 	$_ = &paragraph ( "description", "#\n" . &emphasize(\%Parameters, "ParameterName", $_) ) ;
     } else {
 	$ignored = 0 ; 
@@ -40,7 +79,7 @@ sub parse_command {
     my ($in ) = @_ ; 
     my $result, $name, $instance ; 
 
-    if ( $in =~ /^\s*(\w+)\s+/ ) { 
+    if ( $in =~ /^\s*(\S+)(\s+|$)/ ) { 
 	$name = $1 ; 
 	$in = $' ; 
 	$result = &fontstring ( "FunctionName", "$name "  ) ;
@@ -75,7 +114,7 @@ sub parse_command_arguments {
 	    $result .= &string("$left $match") ;
 	} else { 
 	    $result .= &string("$left") . &fontstring("ParameterName", $match) ; 
-	    $Parameters{match} = 1 ;
+	    $Parameters{$match} = 1 ;
 	}
     }
     $result .= &string($in) if $in !~ /^\s*$/ ; 

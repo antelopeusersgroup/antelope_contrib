@@ -1,110 +1,125 @@
 
 <chapter>
 Matlab Interface
-<subsection Startup>
-<function>
-use_antelope (  )
-    load Datascope/Antelope interface into Matlab
-
 <subsection Getting Help>
-antelope_webdoc (  )
+<commands>
+doc antelope
     launch web-browser with html documentation
 
+helpwin antelope
+    launch Matlab help tool
+
+help antelope
+    standard Matlab help
+
+help antelope/examples
+    list of example scripts using Antelope toolbox
+
+doc COMMAND_NAME
+    web-browser help on specified command
+
+helpwin COMMAND_NAME
+    Matlab help-tool help on specified command
+
+help COMMAND_NAME
+    standard Matlab help for specified command
+
 <subsection Opening a database>
-dbclose ( DBPTR )
-    Close a Datascope database
+<function>
+DBPTR = dbopen ( FILENAME, OPENTYPE )
+    open a Datascope Database
 
 DBPTR = dblookup ( DBPTR, DATABASE, TABLE, FIELD, RECORD )
-    Aim a Datascope database pointer as specified
+    aim a Datascope database pointer as specified
 
 DBPTR = dblookup_table ( DBPTR, TABLE )
-    Aim a Datascope database pointer at a specified table
+    aim a Datascope database pointer at a specified table
 
-DBPTR = dbopen ( FILENAME, OPENTYPE )
-    Open a Datascope Database
+dbclose ( DBPTR )
+    close a Datascope database
 
 <subsection Manipulating fields and records>
 S = db2struct ( DBPTR [, FIELD [, FIELD, ... ]] )
-    Convert a database view to a Matlab structure array
+    convert a database view to a Matlab structure array
 
 RECORD_NUMBER = dbadd ( DBPTR, RECORD )
-    Add a record to a Datascope database
+    add a record to a Datascope database
 
 RECORD_NUMBER = dbaddnull ( DBPTR )
-    Add a null record to a Datascope database
+    add a null record to a Datascope database
 
 dbaddv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
-    Add values to a Datascope database
+    add values to a Datascope database
 
 dbcrunch ( DBPTR )
-    Crunch out null rows in a Datascope database table
+    crunch out null rows in a Datascope database table
 
 dbdelete ( DBPTR )
-    Delete the specified record in a Datascope databas
+    delete the specified record in a Datascope databas
 
 RECORD = dbget ( DBPTR, ['dbSCRATCH'] )
-    Get a table, record, or field from a database
+    get a table, record, or field from a database
 
 [VALUE, VALUE, ...] = dbgetv ( DBPTR, FIELD [,FIELD, ...] )
-    Get the specified values from a Datascope database
+    get the specified values from a Datascope database
 
-DBPTR = dbinvalid (  )
-    Create an invalid database pointer
+DBPTR = dbinvalid ( )
+    create an invalid database pointer
 
 dbmark ( DBPTR )
-    Set the specified Datascope database rows to null
+    set the specified Datascope database rows to null
 
 dbput ( DBPTR, VALUE )
-    Put the specified value into a Datascope database
+    put the specified value into a Datascope database
 
 dbputv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
-    Put the specified values into a Datascope database
+    put the specified values into a Datascope database
 
 <subsection Forming views>
 DBPTR = dbjoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer'] )
-    Join the specified Datascope database tables
+    join the specified Datascope database tables
 
 DBPTR = dbnojoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
-    Find records which do not join
+    find records which do not join
 
 DBPTR = dbsort ( DBPTR [,FIELD, FIELD,...] )
-    Sort the specified Datascope database table
+    sort the specified Datascope database table
 
 DBPTR = dbsubset ( DBPTR, EXPRESSION )
-    Subset a Datascope database table
+    subset a Datascope database table
 
 DBPTR = dbtheta ( DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer'] )
-    Theta-join two Datascope database tables
+    theta-join two Datascope database tables
 
 dbunjoin ( DBPTR, OUTPUT )
-    Unjoin the specified Datascope database view
+    unjoin the specified Datascope database view
 
 <subsection Getting information about the database>
 DBPTR = dbjoin_keys ( DBPTR1, DBPTR2 **or**DBPTR, TABLE1, TABLE2 )
-    Show the inferred join keys between two database tables
+    show the inferred join keys between two database tables
 
 QUERY_RESULT = dbquery ( DBPTR, CODE )
-    Query a Datascope database for various parameters
+    query a Datascope database for various parameters
 
 <subsection Evaluating expressions>
 RESULT = dbeval ( DBPTR, EXPRESSION [,TYPE] )
-    Evaluate an expression on a Datascope database
+    evaluate an expression on a Datascope database
 
 <subsection Handling waveform data>
 ENDTIME = tr_endtime ( TIME, SAMPRATE, NSAMP )
-    Calculate endtime from time, sample rate, and number of samples
+    calculate endtime from time, sample rate, and number of samples
 
 N = tr_nsamp ( TIME, SAMPRATE, ENDTIME )
-    Calculate number of samples from time, sample rate, and endtime
+    calculate number of samples from time, sample rate, and endtime
 
 TIME1 = tr_samp2time ( TIME0, SAMPRATE, N_INDEXED_BY_1 )
-    Calculate sample time from times and sample index
+    calculate sample time from times and sample index
 
 SAMPRATE = tr_samprate ( TIME, NSAMP, ENDTIME )
-    Calculate sample rate from time, endtime, and number of samples
+    calculate sample rate from time, endtime, and number of samples
 
 N_INDEXED_BY_1 = tr_time2samp ( TIME0, SAMPRATE, TIME1 )
-    Calculate sample index from times and sample rate
+    calculate sample index from times and sample rate
 
 trapply_calib ( TRPTR )
     multiply trace-object waveform data by calib value
@@ -113,178 +128,178 @@ trdestroy ( TRPTR )
     free memory and trace object for trace object
 
 DATA = trextract_data ( TRPTR )
-    Read a copy of data from a trace object into a matrix
+    read a copy of data from a trace object into a matrix
 
 trfree ( TRPTR )
     free memory for part of a trace object
 
 [DATA, NSAMP, T0, T1] = trgetwf ( DBPTR [, REQS, REQE] )
-    Read trace data from database into matrix
+    read trace data from database into matrix
 
 trinsert_data ( TRPTR, DATA )
-    Put data from a Matlab matrix into a trace-object
+    put data from a Matlab matrix into a trace-object
 
 TRPTR = trload_css ( DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE] )
-    Load waveform data from CSS database into trace object
+    load waveform data from CSS database into trace object
 
 TRPTR = trload_cssgrp ( DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE] )
-    Load waveform data from grouped CSS database into trace object
+    load waveform data from grouped CSS database into trace object
 
-TRPTR = trnew (  )
-    Create a new trace-object
+TRPTR = trnew ( )
+    create a new trace-object
 
 trputwf ( DBPTR, DATA )
-    Save waveform data into a file
+    save waveform data into a file
 
 trsave_wf ( TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append'] )
-    Save trace-object waveform data to a new database
+    save trace-object waveform data to a new database
 
 trsplice ( TRPTR, TOLERANCE )
-    Splice together data segments
+    splice together data segments
 
 <subsection Error handling>
 clear_register ( [ 'print' ] )
-    Clear the Datascope error register
+    clear the Datascope error register
 
 <subsection Instrument response routines>
-clear ( DBRESPONSE )
-    Dbresponse elimination routine
-
 R = dbresponse ( FILE )
-    Dbresponse class constructor
+    dbresponse class constructor
 
 RESPONSE = eval_response ( DBRESPONSE, OMEGA )
-    Dbresponse evaluation routine
+    dbresponse evaluation routine
+
+clear ( DBRESPONSE )
+    dbresponse elimination routine
 
 R = free_response ( DBRESPONSE )
-    Dbresponse elimination routine
+    dbresponse elimination routine
 
 <subsection Parameter Files>
-clear ( DBPF )
-    Dbpf elimination routine
-
 PF = dbpf ( (nothing) **or**PFNAME **or** PF, STRING )
-    Dbpf (Parameter File) class constructor
+    dbpf (Parameter File) class constructor
 
 STRING = pf2string ( DBPF )
-    Convert a parameter file object to a string
+    convert a parameter file object to a string
 
 STRUCT = pf2struct ( DBPF [, 'recursive' ] )
-    Convert a parameter file object to a Matlab struct
+    convert a parameter file object to a Matlab struct
 
 FILENAMES = pffiles ( PFNAME [, 'all' ] )
-    List file names for parameter-file
+    list file names for parameter-file
+
+clear ( DBPF )
+    dbpf elimination routine
 
 pffree ( DBPF )
-    Dbpf elimination routine
+    dbpf elimination routine
 
 RESULT = pfget ( DBPF, NAME [, 'recursive' ] )
-    Get a generic parameter from a parameter-file object
+    get a generic parameter from a parameter-file object
 
 PF = pfget_arr ( DBPF, NAME [, 'recursive' ] )
-    Get an associative array from a parameter-file object
+    get an associative array from a parameter-file object
 
 BOOLEAN = pfget_boolean ( DBPF, NAME )
-    Get a boolean value from a parameter-file object
+    get a boolean value from a parameter-file object
 
 NUM = pfget_num ( DBPF, NAME )
-    Get a numeric value from a parameter-file object
+    get a numeric value from a parameter-file object
 
 STRING = pfget_string ( DBPF, NAME )
-    Get a string from a parameter-file object
+    get a string from a parameter-file object
 
 LIST = pfget_tbl ( DBPF, NAME [, 'recursive' ] )
-    Get an ordered list from a parameter-file object
+    get an ordered list from a parameter-file object
 
 KEYS = pfkeys ( DBPF )
-    Find the parameter names in a parameter-file object
+    find the parameter names in a parameter-file object
 
 NAME = pfname ( DBPF )
-    Find the name of a top-level parameter-file object
+    find the name of a top-level parameter-file object
 
 pfput ( DBPF, NAME, VALUE )
-    Put a value into a parameter-file object
+    put a value into a parameter-file object
 
 pfput_boolean ( DBPF, NAME, VALUE )
-    Put a boolean value into a parameter-file object
+    put a boolean value into a parameter-file object
 
 RESULT = pfresolve ( DBPF, NAME [, 'recursive' ] )
-    Alternate interface to retrieve parameters
+    alternate interface to retrieve parameters
 
 TYPESTRING = pftype ( DBPF )
-    Find the type of a parameter-file object
+    find the type of a parameter-file object
 
 [PF, MODIFIED] = pfupdate ( DBPF )
-    Refresh a Dbpf object to reflect changes in the file
+    refresh a Dbpf object to reflect changes in the file
 
 pfwrite ( DBPF, FILENAME )
-    Save a parameter-file object to a file
+    save a parameter-file object to a file
 
 <subsection Real-time system connections>
 PKTID = orbafter ( ORBFD, TIME )
     set ORB connection to first packet after a specified time
 
 orbclose ( ORBFD )
-    Close a connection to an Antelope object-ring-buffer
+    close a connection to an Antelope object-ring-buffer
 
 [RESULT, TIME, SRCNAME, PKTID, TYPE] = orbget ( ORBFD [, CODE **or**PKTID] )
-    Get packets from an Antelope ORB connection
+    get packets from an Antelope ORB connection
 
 ORBFD = orbopen ( ORBNAME, OPENTYPE )
-    Open a connection to an Antelope object-ring-buffer
+    open a connection to an Antelope object-ring-buffer
 
 VERSION = orbping ( ORBFD )
-    Ask for the version number of an Antelope ORB server
+    ask for the version number of an Antelope ORB server
 
 [RESULT, TIME, SRCNAME, PKTID, TYPE] = orbreap ( ORBFD [, 'nodelay'] )
-    Get successive packets from an Antelope ORB connection
+    get successive packets from an Antelope ORB connection
 
 NSOURCES = orbreject ( ORBFD, REGEX )
-    Reject sources on an Antelope ORB read connection
+    reject sources on an Antelope ORB read connection
 
 PKTID = orbseek ( ORBFD, CODE **or**PKTID )
-    Set an ORB Read connection to the specified position
+    set an ORB Read connection to the specified position
 
 NSOURCES = orbselect ( ORBFD, REGEX )
-    Select sources on an Antelope ORB read connection
+    select sources on an Antelope ORB read connection
 
 PKTID = orbtell ( ORBFD )
-    Ask for the current read-position on an Antelope ORB
+    ask for the current read-position on an Antelope ORB
 
 <subsection Special functions>
 dbadd_remark ( DBPTR, REMARK )
-    Add a remark to a datascope Database
+    add a remark to a datascope Database
 
 [FILENAME STATUS] = dbfilename ( DBPTR )
-    Compose a filename from a database record
+    compose a filename from a database record
 
 IRECORD = dbfind ( DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards'] )
-    Locate a database row satisfying some condition
+    locate a database row satisfying some condition
 
 REMARK = dbget_remark ( DBPTR )
-    Get a remark from a Datascope Database
+    get a remark from a Datascope Database
 
 ID = dbnextid ( DBPTR, IDNAME )
-    Get the next integer id for id field from a database
+    get the next integer id for id field from a database
 
 <subsection Time conversion>
 TIMESTRING = epoch2str ( EPOCH, FORMAT )
-    Convert epoch time to a string
+    convert epoch time to a string
 
 EPOCH = str2epoch ( TIMESTRING )
-    Convert a string to epoch time
+    convert a string to epoch time
 
 STRDATE = strdate ( EPOCH )
-    Convert an epoch time to its corresponding date
+    convert an epoch time to its corresponding date
 
 STRTDELTA = strtdelta ( EPOCH )
-    Convert an epoch time difference to an elapsed time
+    convert an epoch time difference to an elapsed time
 
 STRTIME = strtime ( EPOCH )
-    Convert an epoch time to a string specification
+    convert an epoch time to a string specification
 
 STRYDTIME = strydtime ( EPOCH )
-    Convert an epoch time to a string date and time
+    convert an epoch time to a string date and time
 
 YEARDAY = yearday ( EPOCH )
-    Convert an epoch time to a yearday value
+    convert an epoch time to a yearday value

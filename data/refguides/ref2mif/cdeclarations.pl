@@ -30,7 +30,7 @@ sub cdeclarations {
 	$ignored = 1 ;
     } elsif ( /^\s/ ) { # 
 	$ignored = 0 ; 
-	s/^\s+// ;
+	$_ = gobble($_) ;
 	$_ = &paragraph ( "description", "#\n" . &emphasize(\%Parameters, "ParameterName", $_) ) ;
     } else {
 	$ignored = 0 ; 

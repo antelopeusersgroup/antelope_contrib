@@ -1,102 +1,147 @@
 
-<chapter>
-Database Constants
+<chapter Datascope Constants>
 
-<List>
+<subsection Dbptr values>
+<body>
+A database pointer has four elements: database, table, field and record.
+Each of these take on positive integer values to refer to a specific 
+database, table, field or record, but may also take some special values.
+
+<commands>
 dbINVALID
-dbCOUNT
-dbDATABASE_COUNT
-dbTABLE_COUNT
-dbFIELD_COUNT
-dbRECORD_COUNT
-dbDESCRIPTION
-dbSCHEMA_DESCRIPTION
-dbDATABASE_DESCRIPTION
-dbTABLE_DESCRIPTION
-dbFIELD_DESCRIPTION
-dbDETAIL
-dbSCHEMA_DETAIL
-dbDATABASE_DETAIL
-dbTABLE_DETAIL
-dbFIELD_DETAIL
-dbNAME
-dbSCHEMA_NAME
-dbDATABASE_NAME
-dbTABLE_NAME
-dbFIELD_NAME
-dbTABLE_PRESENT
-dbSIZE
-dbTABLE_SIZE
-dbFIELD_SIZE
-dbTYPE
-dbFORMAT
-dbFIELD_UNITS
-dbFIELD_TYPE
-dbTABLE_FILENAME
-dbDBPATH
-dbTABLE_DIRNAME
-dbPRIMARY_KEY
-dbALTERNATE_KEY
-dbFOREIGN_KEYS
-dbUNIQUE_ID_NAME
-dbSCHEMA_DEFAULT
-
-dbFIELD_RANGE
-dbVIEW_TABLE_COUNT
-dbRECORD_SIZE
-dbFIELD_FORMAT
-dbFIELD_INDEX
-dbTABLE_ADDRESS
-
-dbTABLE_FIELDS
-dbFIELD_TABLES
-dbVIEW_TABLES
-dbLINK_FIELDS
-dbSCHEMA_FIELDS
-dbTABLE_IS_WRITEABLE
-dbTABLE_IS_VIEW
-dbFIELD_BASE_TABLE
-dbTABLE_IS_TRANSIENT
-dbTIMEDATE_NAME
-dbDATABASE_FILENAME
-dbSCHEMA_TABLES
-dbDATABASE_IS_WRITEABLE
-dbLASTIDS
-
-
-dbDATABASE
-dbVIEW
-dbTABLE
-dbFIELD
-dbRECORD
-dbMERGE
-
+    error indication
 dbALL
-dbPRIMARY
-dbALTERNATE
+    all tables, all fields, or all records
 dbSCRATCH
+    scratch record for a table or view
 dbNULL
+    null record for a table or view
 
-dbBOOLEAN
-dbINTEGER
-dbREAL
-dbTIME
-dbYEARDAY
-dbSTRING
-dbLINK
-
-dbWAVEFORM
-dbRESPONSE
-
-dbBFLOAT
-dbBDOUBLE
-dbBSHORT
-dbBINT
-
-dbDBPTR
-
-dbUNIQUE
+<subsection routine flags>
 dbOUTER_JOIN
+    set to force join of every record in first table 
+
 
 dbSORT_UNIQUE
+    set to cause the result to contain only one record for each unique set of sort key values
 dbSORT_REVERSE
+    reverse the sense of the sort
+
+<subsection dbquery codes>
+<commands>
+dbSCHEMA_NAME
+    schema name
+dbSCHEMA_DESCRIPTION
+    short description for schema
+dbSCHEMA_DETAIL
+    long description for schema
+dbSCHEMA_DEFAULT
+    return the schema used for databases lacking a descriptor file.
+
+dbSCHEMA_TABLES
+    return a Tbl list of all the relations in the schema
+dbSCHEMA_FIELDS
+    return a Tbl list of all the attributes in the schema
+dbLINK_FIELDS
+    return a Tbl list of all id attributes in the schema
+dbTIMEDATE_NAME
+    name of attribute automatically filled with current time when record is changed
+
+dbDATABASE_DESCRIPTION
+    short description for database
+dbDATABASE_DETAIL
+    short description for database
+dbDATABASE_NAME
+    database name
+dbDATABASE_FILENAME
+    return the name of database descriptor file
+dbDATABASE_IS_WRITEABLE
+    return non-zero if database was opened with permission "r+"
+dbIDSERVER
+    return the name of the idserver, or 0 if not used
+dbDATABASE_COUNT
+    count of databases open
+dbDBPATH
+    return the path along which database tables may be found
+dbTABLE_COUNT
+    count of relations in database
+
+dbTABLE_NAME
+    relation name
+dbTABLE_DESCRIPTION
+    short description for relation
+dbTABLE_DETAIL
+    short description for relation
+dbTABLE_FILENAME
+    return complete path for file holding table
+dbTABLE_DIRNAME
+    return the directory path for the table
+dbTABLE_PRESENT
+    return non-zero if table has at least one record
+dbTABLE_SIZE
+    return total size in bytes of a table
+dbRECORD_COUNT
+    count of records in table
+dbRECORD_SIZE
+    return size in bytes of a record in the table
+dbTABLE_FIELDS
+    return a Tbl list of the fields in the table
+dbFIELD_COUNT
+    count of attributes in relation
+dbTABLE_IS_WRITEABLE
+    return non-zero if table is writeable
+dbTABLE_IS_TRANSIENT
+    return non-zero if table has no actual file
+
+
+dbPRIMARY_KEY
+    return the primary key for a table
+dbALTERNATE_KEY
+    return the alternate key for a table
+dbFOREIGN_KEYS
+    return any foreign keys in the table
+dbUNIQUE_ID_NAME
+    return name of id defined by the table, if any
+
+
+dbTABLE_IS_VIEW
+    returns non-zero if table is a view
+dbVIEW_TABLE_COUNT
+    return the number of relations participating in the view
+dbVIEW_TABLES
+    return a Tbl list of tables which are present in the view
+dbFIELD_BASE_TABLE
+    return the base table for the field
+
+
+dbFIELD_NAME
+    attribute name
+dbFIELD_DESCRIPTION
+    short description for attribute
+dbFIELD_DETAIL
+    short description for attribute
+dbFIELD_RANGE
+    return the expression which defines the valid range of values for a field
+dbFIELD_FORMAT
+    return printf format string used to save attibute value into database
+dbFIELD_SIZE
+    return size in bytes of an attribute
+dbFIELD_TYPE
+    return type of an attribute: 
+<List>
+	dbBOOLEAN
+	dbDBPTR
+	dbINTEGER
+	dbREAL
+	dbTIME
+	dbYEARDAY
+	dbSTRING
+</List>
+
+dbFIELD_UNITS
+    return units for an attribute (not used by Datascope)
+dbFIELD_INDEX
+    return the offset in bytes of a field into a record
+dbFIELD_TABLES
+    return a Tbl list of tables which contain the field
+

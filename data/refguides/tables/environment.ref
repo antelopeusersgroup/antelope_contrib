@@ -1,0 +1,65 @@
+<chapter Environment variables>
+The following environment variables may be set to change
+the default Antelope behavior.  See antelopeenv(5) for 
+more information.
+
+<function>
+ANTELOPE
+    usually set (by setup.csh) to indicate the Antelope base directory, for example "/opt/antelope/4.2u"
+
+ANTELOPEMAKE
+    usually set (by setup.csh) to a file containing standard make(1) rules for Antelope
+
+BNS_TIMEOUT
+    overrides the default timeout used by Antelope routines on 
+    orb socket connections (and other sockets handled by bns(3) routines).
+
+DATAPATH
+    overrides the default directory $ANTELOPE/data where
+    Antelope programs find a variety of data files.
+
+DBIDSERVER
+    can be used to specify a host which is running a central
+    Datascope database id server: dbids(1).
+
+DBLOCKS
+    if set, causes Datascope routines to lock locally mounted 
+    tables for record additions and nextid operations (and fail
+    for nfs mounted tables).
+
+    set to "nfs", locks local and nfs mounted tables for 
+    record additions and nextid operations.
+
+EUROPEAN_DATE
+  If set, interpret dates like xx/xx/xx  as day/month/year.  
+  various output formats are also changed equivalently.
+
+GRX_PSCOLOR
+  affects niceplot hardcopy output, eg from dbpick.
+
+  full - full color PostScript 
+
+  fore - color PostScript for contour images, but background is white
+
+  color -  color PostScript only for color contour images
+
+  not set -  grayscale or black&white  output
+
+GRX_FONTPATH
+  overrides the default location $ANTELOPE/data/fonts.bin for the binary font file
+  used by niceplot 
+
+PFPATH
+  overrides the default path to parameter
+  files "$(ANTELOPE)/data/pf:."
+
+SCHEMA_DEFAULT
+  overrides the default schema (css3.0) to use when no descriptor file is present.   
+
+SCHEMA_DIR
+  overrides the default location ($(ANTELOPE)/data/schemas) for Datascope schema files
+
+TAUP_PATH
+TAUP_TABLE
+  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the travel
+  time tables and the default travel time model iasp91

@@ -27,7 +27,7 @@ private dbloc_verify database orid [orid ...]
     check temporary database consistency for dbloc2
 
 dbgenloc dbin dbout
-    genloc program used by dbloc2 
+    genloc program used by dbloc2
 
 dblocsat2 dbin [dbout]
     locsat program used by dbloc2
@@ -35,10 +35,10 @@ dblocsat2 dbin [dbout]
 dblocgrad dbin [dbout]
     locate local earthquakes with 1D linear gradient model
 
-tabcalc 
+tabcalc
     travel time calculator for 1-D, continuous velocity models
 
-hypotab 
+hypotab
     companion program to tabcalc travel time calculator
 
 mktt [-p phases] model
@@ -53,13 +53,13 @@ prtt phases ndp dp0 ddp ndel del0 ddel [table]
 remodl model_name
     create tau-p travel time tables
 
-setbrn 
+setbrn
     create tau-p travel time tables
 
 taup2locsat [options] model
     create locsat style travel time tables from tau-p model table
 <options>
--i   ask before saving output files
+-i	ask before saving output files
 -h header
 -l dir
 -p phases
@@ -69,9 +69,16 @@ taup2locsat [options] model
 tp2ls phases header [table]
     make a locsat style travel time table file from a tau-p travel time table
 
+dbml [-p pfname] db orid
+    database Richter magnitude computation
 
-ptt2stt 
-    Make a P and S travel time table from ttcalc output
+dbproject_covariance [-v] [-c conf] dbname
+    update the origerr table with new smajax, sminax,
+    sdepth, stime, strike, and conf values, based on the covariance
+    matrix from the origerr table
+
+ptt2stt
+    make a P and S travel time table from ttcalc output
 
 relocate dbin dbout [-pf pffile] [-useold] [-sift expression]
     relocate all events in a database using genloc
@@ -79,11 +86,8 @@ relocate dbin dbout [-pf pffile] [-useold] [-sift expression]
 orbgenloc orb [-S statefile] [-pf pffile]
     orb interface to genloc single event location code
 
-dbml [-p pfname] db orid
-    database Richter magnitude computation
+sgnloc inpf outpf
+    command line interface to single event location code
 
 taup_convert phase [-d0 x -ddelta x -z0 x -dz x -ndelta n -nz n]
     uses taup library to produce travel time tables that can be used by genloc location programs
-
-sgnloc inpf outpf
-    command line interface to single event location code

@@ -1,4 +1,4 @@
-<chapter Foreign waveform formats>
+<chapter Foreign Data Formats>
 
 <subsection Exporting data from Datascope database>
 <commands>
@@ -11,7 +11,7 @@ autodrm [options] [files]
 -v	more verbose
 </options>
 
-private autodrm_wrapper 
+private autodrm_wrapper
     script which is run by sendmail to run autodrm
 
 dbresp2autodrm view
@@ -34,11 +34,15 @@ db2ah [options] dbin dbout
 -v	version
 </options>
 
+db2ew_wave_server [-vV] [-p pfname] dbname
+    attach to a CSS3.0 database and make the data
+    therein accessible via the Earthworm protocols.
+
 db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>
 -sc sta/chan	select sta/chan pairs with dbpick style pseudo-glob
--ts t0	starting at time t0 
+-ts t0	starting at time t0
 -te t1	ending at time t1
 -w wfdir	write waveform files into wfdir (default "sac")
 -gap { none | zero | interp }	handle gaps according to rule (default zero)
@@ -71,7 +75,7 @@ autodrm2db [-v] reply1 [reply2 ..] dbout
     read autoDRM replies reply1, reply2, ... and copy into a output database dbout
 
 edr2db edr dbout
-    create arrival, origin and assoc rows in database dbout from USGS EDR 
+    create arrival, origin and assoc rows in database dbout from USGS EDR
 
 isc2db [-c] [-p] [-s start] [-e end] isc_bulletin dbout
     read the ISC bulletin from NEIC CD into CSS database dbout
@@ -82,18 +86,21 @@ pde2origin pde dbout [-auth author]
 qed2origin qed dbout
     create origin records in database dbout from input QED file qed
 
+reb2db filename [filename ...] db
+    convert Reviewed Event Bulletins to CSS3.0 database db
+
 sac2db sac1 [sac2 ... ] dbout
     create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
 
 psd2db [options] sd dbout
     read PASSCAL SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
 <options>
--n             require that dbout database contain no records
--w             only create a wfdisc table
+-n	require that dbout database contain no records
+-w	only create a wfdisc table
 -t tolerance
 -respdir dir1	use directory dir1 for response files
 -stagedir dir2	also create stage table, using directory dir2 for stage table response files
--v             more verbose
+-v	more verbose
 </options>
 
 sd2db [options] sd dbout
@@ -119,12 +126,16 @@ segy2css [-event] [-ftbl] "fname"
 dbsteimu [options] input [new_database]
     create wfdisc file from miniseed
 <options>
--o	overwrite the records in the existing  input  database
+-o	overwrite the records in the existing input database
 -s	input is a miniseed volume.
--S	create wfdisc which references input miniseed volume, rather than copying out the waveform data 
+-S	create wfdisc which references input miniseed volume, rather than copying out the waveform data
 -v	more verbose.
 -w	wfname
 </options>
+
+fix_miniseed [-iv] [-d foreignkeys] [-p pf] miniseed ...
+    change the network, station, channel and/or location
+    codes in miniseed volumes
 
 deprecated ucsdsp2db stapardir responsedir netcode netname dbout [-s]
     convert UCSD stapar files to a CSS v3.0 database
@@ -132,7 +143,10 @@ deprecated ucsdsp2db stapardir responsedir netcode netname dbout [-s]
 deprecated ucsdwf2db stapardir dbin dbout
     convert UCSD raw data wfdiscs and arrivals to a CSS3.0 database
 
-<subsection Miscellaneous utilities>
+Xphase2db db [-phase name]
+    convert an input Xphase pick file to css3.0 arrivals
+
+<subsection Examining foreign files>
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 
@@ -140,5 +154,5 @@ sdd [-s] sd
     dump the blockettes (only a summary if -s) of a SEED volume sd
 
 dsteim [sd]
-    verbosely dump miniseed data frames 
+    verbosely dump miniseed data frames
 

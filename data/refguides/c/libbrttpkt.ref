@@ -4,7 +4,7 @@ brttpkt
 $(ORBLIBS)
 none
 brttpkt.h
-utility  for  buffering  individual channel  waveform  samples  into contiguous traces
+utility for buffering individual channel waveform samples into contiguous traces
 
 <subsection Channel Trace Buffers>
 Chantracebuf *chantracebuf_new ( double tstart, double tend, double latency, int apply_calib )
