@@ -56,8 +56,7 @@ Written:  October 1997
 */
 
 int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
-			int depth_fixed,Hypocenter h,
-			Location_options o, int orb)
+			Hypocenter h,Location_options o, int orb)
 {
 	int ndef;
 	char dtype[2];
@@ -69,7 +68,7 @@ int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
 	orid = dbnextid(master_db,"orid");
 	if(orid  < 0 )
 		die(1,"save_origin:  dbnextid failure asking for new orid\n");
-        if(depth_fixed)
+        if(o.fix[2])
         {
                 ndef = h.degrees_of_freedom + 3;
                 strcpy(dtype,"r");
@@ -363,7 +362,7 @@ char *format_hypo(Hypocenter *h)
         char *s;
         s = malloc(512);
         if(s == NULL) die(1,"malloc error for hypocenter output tabulation\n");
-        sprintf(s,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %d %d",
+        sprintf(s,"%lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %d %d",
                 h->lat0,h->lon0,h->z0,h->t0,
                 h->lat,h->lon,h->z,h->time,
                 h->dx,h->dy,h->dz,
@@ -566,7 +565,7 @@ void compute_location(Location_options o,
                 	hypo = (Hypocenter *)gettbl(converge_history,
 							niterations-1);
                		orid = save_origin(hyp.evid,master_db,
-					 dbtmp,o.fix[3],*hypo,o,orbout);
+					 dbtmp,*hypo,o,orbout);
 
                 	save_origerr(orid,*hypo,dbtmp,orbout);
 			save_assoc(ta, tu, orid, vmodel, 
