@@ -5,6 +5,7 @@
  ********************************************************************/
 #include "pkt.h"
 
+extern int DCSP;
 extern int GPS_COOR;
 
 int unstuffpar( char *packet,
@@ -27,6 +28,11 @@ int unstuffpar( char *packet,
   }
  
   switch (pkttype) {
+    case BSP:
+	  if( !DCSP ) return 2;
+	  retcode =  dc_par( packet, Pkt );
+	  break ;
+
     case CBBHS:
     case CBBLS:
           if( GPS_COOR ) return gps_coord( packet, pkttime, srcname, Pkt );

@@ -17,8 +17,8 @@ void init( char *pfile )
 {
    Pf  *Param;
    Tbl *Site;
-   struct PktPar packet;
    Ste site, *sta;
+   struct PktPar packet;
    char *istr, key[64];
    int pkttype;
    int i, nst;
@@ -28,8 +28,7 @@ void init( char *pfile )
 
    nst = 0;
 
-   initpf( pfile );
-   if(pfread( DASPF, &Param) != 0)
+   if(pfread( pfile, &Param) != 0)
        die(0, "Can't read parameter file\n");
  
 	/* Get Input & Network tables  */

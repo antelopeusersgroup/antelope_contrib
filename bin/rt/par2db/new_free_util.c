@@ -10,7 +10,6 @@ new_data_segment (int maxsamp)
     allot (Data_segment *, aseg, 1);
     aseg->t0 = 0.0;
     aseg->samprate = 0.0;
-    aseg->calib = 0.0;
     if ( maxsamp > 0 ) 
 	allot (Segsample *, aseg->data, maxsamp);
     else 
@@ -66,7 +65,6 @@ new_dbrecord (Db_buffer *buf)
 	    "chan", buf->chan,
 	    "time", buf->mem->t0,
 	    "nsamp", 0,
-	    "calib", buf->mem->calib,
 	    "samprate", buf->mem->samprate,
 	    "datatype", buf->params->datatype,
 	    0) < 0) {
@@ -81,7 +79,6 @@ new_dbrecord (Db_buffer *buf)
 	}
 	buf->disk->nsamp = 0 ; 
 	buf->disk->samprate = buf->mem->samprate ;
-	buf->disk->calib = buf->mem->calib ;
 	buf->disk->t0 = buf->mem->t0 ;
 	n = buf->disk->t0 / buf->params->segment_size ; 
 	buf->tmax = (n+1) * buf->params->segment_size ;

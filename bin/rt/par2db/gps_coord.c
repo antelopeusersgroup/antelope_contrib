@@ -7,6 +7,8 @@
 
 #define NCOORD 11
 
+extern int DINTV;
+
 static int GPS[NCOORD] = {LATDD_BBA2, LATMM_BBA2,LATSS_BBA2,LATHH_BBA2,
                     NS_BBA2,LONDD_BBA2,LONMM_BBA2,LONSS_BBA2,
 		    LONHH_BBA2,EW_BBA2,ALTD_BBA2 };
@@ -49,7 +51,7 @@ int gps_coord( uchar_t *packet,
          }
          strcpy( achan->chan, GPS_NAME[i] ) ;
          strcpy( achan->net, net);
-	 achan->samprate = 1.0;                                
+	 achan->samprate = 1.0/DINTV;                                
 	 achan->calib = 0;                     
 	 achan->datatype = trINT;
 	 achan->nsamp = 1;                   

@@ -7,7 +7,7 @@
 #include "tr.h"
 #include "orb.h"
 #include "pkt.h"
-#include "regex.h"
+#include "dsap_regex.h"
 
 typedef int Segsample ;
 
@@ -29,8 +29,7 @@ Arr *Pid;
 
 typedef struct Source {
     Orbpipe *apipe ;
-    double after, until ; 
-    int count, duplicate, outoforder, ignored, ignored_after ; 
+    double last ; 
 } Source ;
 
 typedef struct Save_params {
@@ -47,7 +46,6 @@ typedef struct Save_params {
 typedef struct Data_segment { 
     double t0 ;
     double samprate ; 
-    double calib ; 
     int nsamp, maxsamp, ngapmax ;
     Segsample *data ; 
 } Data_segment ;
@@ -84,20 +82,13 @@ extern void flushrecord PL_(( Db_buffer *buf ));
 extern int flush2db PL_(( Db_buffer *buf, int finish ));
 extern void free_data_segment PL_(( Data_segment * aseg ));
 extern void free_db_buffer PL_(( Db_buffer * abuf ));
-extern Db_buffer * get_match PL_(( PktChannel *achan, Save_params *params, struct re_pattern_buffer *acc_re ));
 extern Data_segment * new_data_segment PL_(( int maxsamp ));
 extern Db_buffer * new_db_buffer PL_(( PktChannel *src, Save_params *params ));
 extern int new_dbrecord PL_(( Db_buffer *buf ));
-extern Source * new_source PL_(( int maxpkts, double after, double until ));
+extern Source * new_source PL_(( int maxpkts ));
 extern double get_last_dbtimes PL_(( Dbptr db ));
-extern void findmin PL_(( char *key, void *vvalue, void *vignored ));
-extern int min_ignored_after PL_(( Arr *sources ));
-extern void show_stat PL_(( char *key, void *vvalue, void *vignored ));
-extern void show_statistics PL_(( Arr *sources ));
-extern void free_asource PL_(( Source *asource ));
 extern int main PL_(( int argc, char **argv ));
-extern int pkt2db PL_(( char *srcname, double pkttime, char *packet, int sortcode, struct re_pattern_buffer * acc_re, Save_params * params ));
-extern void report_gap PL_(( PktChannel *achan, Db_buffer *buf ));
+extern int pkt2db PL_(( char *srcname, double pkttime, char *packet, Save_params * params ));
 extern void init_data_segment PL_(( PktChannel *new, Db_buffer *buf ));
 extern int seg_append PL_(( PktChannel *new, Db_buffer *buf ));
 extern void usage PL_(( void ));

@@ -6,7 +6,7 @@
 #include "header.h"
 int BNpar = MAXNUMPAR_BBA2;
 Arr *BParam = NULL;
-
+extern int DINTV;
 extern FILE *F1;
 
 int bba2_par( packet, pkttime, srcname,  Pkt )
@@ -68,7 +68,7 @@ struct Packet **Pkt;
       if( want )  {
          strcpy( achan->chan, FILE_NAME_BBA2[ch] ) ;
          strcpy( achan->net, net);
-         achan->samprate = 1.0;                                
+         achan->samprate = 1.0/DINTV;                                
          achan->calib = 0;                     
          achan->datatype = trINT;
          achan->nsamp = 1;                   

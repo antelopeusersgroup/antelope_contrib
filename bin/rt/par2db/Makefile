@@ -9,8 +9,8 @@ DIRS=
 SRCS= \
     anza_par.c \
     bba2_par.c \
+    dc_par.c \
     flush2db.c \
-    get_match.c \
     gps_coord.c \
     init.c \
     par2db.c \

@@ -13,6 +13,7 @@
 #include "header.h"
 
 static char *comname="COMM";
+extern int DINTV;
 
 int par_ESP( packet, Pkt )
 char *packet;
@@ -67,7 +68,7 @@ struct Packet **Pkt;
          strcpy( achan->sta, Staid[sta] );
          strcpy( achan->chan, FILE_NAME[ch] ) ;
          strcpy( achan->net, hdr->net);
-         achan->samprate = 1.0;                                
+         achan->samprate = 1.0/DINTV;                                
          achan->calib = 0;                     
          achan->datatype = trINT;
          achan->nsamp = 1;                   

@@ -1,4 +1,3 @@
-/* @(#)anza_par.c	1.1 12/26/96  */
 /******************************************************************
  *
  *  anza_par.c
@@ -12,6 +11,7 @@
 
 int ANpar = MAXNUMPAR;
 Arr *AParam = NULL;
+extern int DINTV;
 
 int anza_par( packet, Pkt )
 char *packet;
@@ -53,7 +53,7 @@ struct Packet **Pkt;
           }  else strcpy( achan->sta , comname);
          strcpy( achan->chan, FILE_NAME[i] ) ;
          strcpy( achan->net, hdr->net);
-         achan->samprate = 0.2;                                
+         achan->samprate = 0.2/DINTV;                                
          achan->calib = 0;                     
          achan->datatype = trINT;
          achan->nsamp = 1;                   

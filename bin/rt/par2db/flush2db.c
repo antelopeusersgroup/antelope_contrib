@@ -30,8 +30,7 @@ flush2db (Db_buffer *buf, int finish)
 	    die (0, "Couldn't add new record to database.\n" ) ; 
     } else { 
 	char *s ;
-	if ((disk->calib != mem->calib)
-	 || !TRSAMERATE (disk->samprate, mem->samprate)
+	if (!TRSAMERATE (disk->samprate, mem->samprate)
 	 || !TRSAMETICKS (disk->t0, mem->t0, disk->samprate)
 	 || !TRCONTIGUOUS(disk->t0, mem->t0, disk->samprate, disk->nsamp)){
 	    if (!TRSAMERATE (disk->samprate, mem->samprate)) {
@@ -40,13 +39,13 @@ flush2db (Db_buffer *buf, int finish)
 			buf->net, buf->sta, buf->chan, s=strtime(mem->t0) ) ;
 		free(s) ;
 	    }
-
+/*
 	    if ( !TRSAMETICKS (disk->t0, mem->t0, disk->samprate) ) { 
 		complain ( 0, "tick registration changed for %s_%s_%s at %s\n", 
 			buf->net, buf->sta, buf->chan, s=strtime(mem->t0) ) ;
 		free(s) ;
 	    }
-
+*/
 	    flushrecord ( buf ) ; 
 	    if ( new_dbrecord (buf) ) 
 		die (0, "Couldn't add new record to database.\n" ) ; 
