@@ -113,6 +113,8 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	/* computer error estimates */
 	C = matrix(0,3,0,3);
 	emodel = (float *) calloc(4,sizeof(float));
+        if((*C==NULL) || (emodel == NULL))
+                die(0,"malloc failed for error arrays\n");
 	hypo = (Hypocenter *) gettbl (converge_history, 
 			maxtbl(converge_history)-1);
 	predicted_errors(*hypo, ta, tu, o, C, emodel);
@@ -124,13 +126,13 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	if ( strncmp(gettbl(reason_converged,0), "Location hit iteration count limit", 34) != 0) {
 		save_results (dbin, dbout, pf, ta, tu, &o, 
 			vmodel, hypo, residual, orid , C, emodel) ;
-		free_matrix((char **)C,0,3,0);
-		free(emodel);
 		retcode = 0 ;
 	} else { 
 		strcpy(static_error, gettbl ( reason_converged, 0) ); 
 		*error = static_error ;
 	}
+	free_matrix((char **)C,0,3,0);
+	free(emodel);
 	} else {
 	*error = "no reasons returned from location algorithm" ;
 	}

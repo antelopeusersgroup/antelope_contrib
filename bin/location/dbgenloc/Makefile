@@ -4,9 +4,9 @@ PF=dbgenloc.pf dbgenloc_default.pf
 #DATADIR=tables/genloc
 #DATA=iasp91.pf iasp91.P.pf iasp91.S.pf test_model.pf kyrghyz.pf kyrghyz.P.pf kyrghyz.S.pf 
 
-cflags = 
+cflags = -dalign
 ldflags = 
-ldlibs= -lgenloc -lblas $(DBLIBS) $(F77LIBS) -ltt -ldl
+ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) $(F77LIBS) -ltt -ldl
 include $(DSAPMAKE)
 DIRS=ttlvz taup uniform
 

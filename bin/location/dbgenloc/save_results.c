@@ -66,6 +66,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 	complain (1,"couldn't add origerr record to database\n" ) ;
 	retcode = -1 ;
     }
+    if(save_emodel(orid, emodel, dbout))
+	complain(0,"Problems saving emodel vector\n");
 	
 
     n = maxtbl(ta) ;
