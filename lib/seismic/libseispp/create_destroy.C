@@ -691,8 +691,18 @@ cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 			dbhv.db.record<ensemble_bundle.end_record;
 			++i,++dbhv.db.record)
 		{
-			data3c = new Three_Component_Seismogram(*rdbhv,
+			try {
+				data3c = new Three_Component_Seismogram(*rdbhv,
 					station_mdl,am);
+			} catch (seispp_dberror dberr)
+			{
+				cerr << "Problem with station "
+					<< i 
+					<< " in ensemble construction" << endl;
+				dberr.log_error();
+				cerr << "Data for this station skipped" << endl;
+				continue;
+			}
 			tcse.push_back(*data3c);
 			delete data3c;
 			// copy global metadata only for the first 
