@@ -1,3 +1,4 @@
+calibration_database dbmaster/cnsn
 program_loglevel verbose
 defaults &Arr{
 	send_heartbeat_sec 	120
@@ -7,6 +8,7 @@ defaults &Arr{
 	server_port		16010
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
+	default_segtype		V
 	select			
 	reject  		
 	srcname_morph &Tbl{
@@ -23,13 +25,16 @@ import_from &Arr{
 		}
 		loglevel veryverbose
 	}
-#	PGC_test &Arr{
-#		server_ipaddress 132.156.216.115
-#		server_port 60000
-#		send_heartbeat_sec 100
-#		send_heartbeat_string KENTWORMalive
-#		loglevel veryverbose
-#	}
+	PGC_UW &Arr{
+		server_ipaddress 139.142.67.7
+		server_port 60000
+		send_heartbeat_sec 100
+		send_heartbeat_string KENTWORMalive
+		loglevel veryverbose
+		srcname_morph &Tbl{
+			/^UW_/nUW_/
+		}
+	}
 #	PGC_compressed &Arr{
 #		server_ipaddress 139.142.67.7
 #		server_port 16015

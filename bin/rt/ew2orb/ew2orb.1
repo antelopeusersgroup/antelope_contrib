@@ -23,7 +23,18 @@ program_loglevel controls the overall level of logging output for the
 program. The options for this setting are "quiet", "verbose", and
 "veryverbose". The latter is meant for debugging purposes, and will
 generate a great deal of output (several lines for each incoming
-packet).
+packet). The parameter calibration_database gives the name of a database 
+with calibration information for the incoming stations. Since Earthworm 
+waveform packets do not contain calibration data and the Antelope waveform 
+packets do contain calibration data, a database is necessary to 
+hold the calibration information. If this database is not found, ew2orb 
+will complain, and fill in the Antelope packets with null calibration 
+information. This database is also used for the 'segtype' field in the 
+Antelope packets. segtype is taken from the rsptype field of the 
+instrument table. calib and calper are taken from the corresponding fields 
+of the calibration table. Note that in order to make use of the instrument 
+table, the sensor table must also be present and have valid entries 
+for the incoming stations.
 
 The bulk of the parameter file is contained in the 'import_from' array.
 This array in turn contains one array for each data-import connection
@@ -111,6 +122,11 @@ translated to any new names) which match this regular expression will
 be rejected and not allowed to go on the orb. The default, which is to
 leave this blank, allows all incoming sources.
 
+.IP default_segtype
+Incoming stations without segtype values available in the calibration 
+database will be assigned this value for segtype in the Antelope orb 
+packets.
+
 .IP srcname_morph
 This table contains search-and-replace patterns used to rename channels
 of seismic data. If left empty, the output source-names of stations
@@ -156,6 +172,7 @@ The default parameter file is "\fBew2orb\fP.pf".
 .nf
 
 .ne 12
+calibration_database dbmaster/cnsn
 program_loglevel verbose
 defaults &Arr{
         server_port             16010
@@ -165,6 +182,9 @@ defaults &Arr{
         expect_heartbeat_string .*alive.*
         my_inst                 INST_UNKNOWN
         my_mod                  MOD_UNKNOWN
+        default_segtype		V
+        select
+        reject
         srcname_morph &Tbl{
         }
 }
@@ -257,6 +277,12 @@ Because the select and reject subsetting is done on the receiving side,
 bandwidth is used according to the number of packets being sent by the 
 remote export module, regardless of whether the ew2orb select and 
 reject expressions allow them to be put on the orb.
+
+\fBew2orb\fP will dynamically adjust to changes in the calibration_database. 
+However, if the pathname of the database changes, \fBew2orb\fP must be restarted.
+Note also that if changes are made to calibration values using dbe(1), 
+sometimes one must quit the dbe application for the changes to be 
+noticed by \fBew2orb\fP.
 .SH AUTHOR
 .nf
 Kent Lindquist

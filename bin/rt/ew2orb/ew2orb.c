@@ -13,6 +13,9 @@
 
 #define SERVER_RESET_ALLOWANCE_SEC 1
 #define PACKET_QUEUE_SIZE 50000
+#define DEFAULT_SEGTYPE "-"
+#define DEFAULT_CALIB 0
+#define DEFAULT_CALPER -1
 
 #define DEFAULT_BANNER_PATH "/usr/bin/banner"
 
@@ -57,6 +60,7 @@ typedef struct ImportThread {
 	char	my_mod_str[STRSZ];
 	char	select[STRSZ];
 	char	reject[STRSZ];
+	char	default_segtype[2];
 	Hook	*select_hook;
 	Hook	*reject_hook;
 	int	my_inst;	
@@ -97,6 +101,30 @@ typedef struct Ew2orbPacket {
 	char	srcname[STRSZ];
 	enum Loglevel loglevel;
 } Ew2orbPacket;
+
+typedef struct tabletrack_ {
+	char	filename[FILENAME_MAX];
+	int	use;
+	struct stat *statbuf;
+	double	last_mtime;
+} Tabletrack;
+
+typedef struct calibvals_ {
+	double	calib;
+	double 	calper;
+	double 	validuntil;
+} Calibvals;
+
+static struct {
+	char 	dbname[FILENAME_MAX];
+	int	usedbcalib;
+	int	usedbsegtype;
+	Arr	*calibarr;	
+	Arr	*segtypearr;
+	Tabletrack *ctrk;	/* calibration table */
+	Tabletrack *strk;	/* sensor table */
+	Tabletrack *itrk;	/* instrument table */
+} Calibinfo;
 
 Arr	*Import_Threads;
 rwlock_t Import_Threads_rwlock;
@@ -239,6 +267,520 @@ describe_packet( Ew2orbPacket *e2opkt )
 	}
 
 	return;
+}
+
+void
+set_calibration_database( Pf *pf )
+{
+	char	*dbname;
+	static int first = 1;
+
+	if( ! first ) {
+
+		return;
+
+	} else {
+
+		first = 0;
+	}
+
+	if( ( dbname = pfget_string( pf, "calibration_database" ) ) == NULL ) {
+
+		strcpy( Calibinfo.dbname, "" );
+
+		complain( 0,
+		     "WARNING: no calibration_database specified "
+		     "in parameter file!!\n" );
+
+	} else {
+		
+		strcpy( Calibinfo.dbname, dbname );
+
+		if( translate_loglevel( Program_loglevel ) >= VERBOSE ) {
+
+			elog_notify( 0, 
+				"using database \"%s\" for calibration data\n", 
+				Calibinfo.dbname );
+		}
+	}
+
+	init_calibinfo();
+}
+
+static struct stat *
+table_check( char *table, Tabletrack **ttrk )
+{
+	Dbptr	db;
+	char	*filename;
+	int	nrecs;
+	int 	ret;
+
+	if( *ttrk == (Tabletrack *) NULL ) {
+
+		allot( Tabletrack *, *ttrk, 1 );
+		allot( struct stat *, (*ttrk)->statbuf, 1 );
+		(*ttrk)->use = 1;
+
+		ret = dbopen( Calibinfo.dbname, "r", &db );
+
+		if( ret < 0 || db.database < 0 ) {
+
+			complain( 1, "Failed to open %s\n",
+				 Calibinfo.dbname );
+			
+			(*ttrk)->use = 0;
+
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		}
+
+		db = dblookup( db, 0, table, 0, 0 );
+
+		if( db.table < 0 ) {
+
+			dbclose( db );
+
+			complain( 1, "Failed to lookup %s.%s\n", 
+		  	     	Calibinfo.dbname,
+		  	     	table );
+
+			(*ttrk)->use = 0;
+
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		} 
+
+		dbquery( db, dbTABLE_FILENAME, (Dbvalue *) &filename );
+		abspath( filename, (*ttrk)->filename );
+
+		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
+
+		if( ret < 0 && errno == ENOENT ) {
+
+			dbclose( db );
+
+			complain( 1, "%s does not exist\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+
+		} else if( ret < 0 ) {
+
+			dbclose( db );
+
+			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		} 
+
+		dbquery( db, dbRECORD_COUNT, &nrecs );
+		
+		if( nrecs <= 0 ) {
+			
+			dbclose( db );
+
+			complain( 1, "No records in %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+
+		} else {
+
+			dbclose( db );
+			
+			(*ttrk)->last_mtime = (double) (*ttrk)->statbuf->st_mtime;
+
+			return (*ttrk)->statbuf;
+		}
+
+	} else if( (*ttrk)->use == 0 ) {
+
+		return (struct stat *) NULL;
+
+	} else {
+
+		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
+
+		if( ret < 0 ) {
+			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+		} else {
+
+			return (*ttrk)->statbuf;
+		}
+	}
+}
+
+static int
+update_is_necessary( char *table, Tabletrack *ttrk )
+{
+	struct stat *statbuf;
+
+	statbuf = table_check( table, &ttrk );
+
+	if( (double) statbuf->st_mtime > ttrk->last_mtime ) {
+
+		ttrk->last_mtime = (double) statbuf->st_mtime;
+
+		return 1;
+
+	} else {
+
+		return 0;
+	}
+}
+
+static char * 
+add_segtype( char *sta, char *chan, double time, char *default_segtype, 
+	     enum Loglevel loglevel, Dbptr *pdb )
+{
+	Dbptr	db, dbs, dbi;
+	char	*segtype = 0;
+	char	key[STRSZ];
+	char	expr[STRSZ];
+	int	nrecs = 0;
+	int	ret;
+	
+	if( pdb == (Dbptr *) NULL ) {
+		dbopen( Calibinfo.dbname, "r", &db );
+	} else {
+		db = *pdb;
+	}
+
+	dbs = dblookup( db, 0, "sensor", 0, 0 );
+	dbi = dblookup( db, 0, "instrument", 0, 0 );
+	db = dbjoin( dbs, dbi, 0, 0, 0, 0, 0 );
+
+	sprintf( key, "%s:%s", sta, chan );
+	
+	if( ( segtype = getarr( Calibinfo.segtypearr, key ) ) == (char *) NULL ) {
+
+		allot( char *, segtype, 3 );
+		setarr( Calibinfo.segtypearr, key, segtype );
+	}
+
+	sprintf( expr,
+		 "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime == NULL || endtime >= %f)",
+		 sta, chan, time, time );
+	db = dbsubset( db, expr, 0 );
+
+	dbquery( db, dbRECORD_COUNT, &nrecs );
+
+	if( nrecs > 0 ) {
+		db.record = 0;
+		ret = dbgetv( db, 0, "rsptype", segtype, 0 );
+	}
+
+	if( ret < 0 || nrecs <= 0 ) {
+		complain( 1, "Failed to get segtype from database for %s\n", key );
+		strcpy( segtype, default_segtype );
+	}
+
+	if( ! strcmp( segtype, "-" ) ) {
+
+		strcpy( segtype, default_segtype );
+
+		if( loglevel == VERYVERBOSE ) {
+			fprintf( stderr, 
+			  "Database has null segtype for %s; using default\n",
+			  key );
+		}
+	}
+
+	if( loglevel == VERYVERBOSE ) {
+		fprintf( stderr, "Using segtype %s for %s\n",
+			 segtype, key );
+	}
+
+	if( pdb == (Dbptr *) NULL ) {
+		dbclose( db );
+	}
+
+	return segtype;
+}
+
+static void
+update_segtypevals( double time, char *default_segtype, enum Loglevel loglevel )
+{
+	Dbptr	db;
+	Srcname	parts;
+	Tbl	*keys;
+	char	*key;
+	char	*s;	
+	Tbl	*ssplit;
+	int 	i;
+
+	if( loglevel == VERYVERBOSE ) {
+		fprintf( stderr, "Database sensor/instrument table changed; rereading segtype\n" );
+	}
+
+	dbopen( Calibinfo.dbname, "r", &db );
+
+	keys = keysarr( Calibinfo.segtypearr );
+	if( keys == (Tbl *) NULL ) {
+		dbclose( db );
+		return;
+	}
+
+	for( i=0; i<maxtbl( keys ); i++ ) {
+
+		key = gettbl( keys, i );
+		
+		s = strdup( key );
+		ssplit = split( s, ':' );
+
+		add_segtype( gettbl( ssplit, 0 ), 
+			     gettbl( ssplit, 1 ),
+			     time, default_segtype, loglevel, &db );
+
+		free( s );
+		freetbl( ssplit, 0 );
+	}
+
+	dbclose( db );
+}
+
+static Calibvals * 
+add_current_calibvals( char *sta, char *chan, double time, 
+		       enum Loglevel loglevel, Dbptr *pdb )
+{
+	Dbptr	db;
+	Calibvals *cv;
+	char	key[STRSZ];
+	char	expr[STRSZ];
+	int	nrecs = 0;
+	int	ret;
+	
+	if( pdb == (Dbptr *) NULL ) {
+		dbopen( Calibinfo.dbname, "r", &db );
+	} else {
+		db = *pdb;
+	}
+
+	db = dblookup( db, 0, "calibration", 0, 0 );
+
+	sprintf( key, "%s:%s", sta, chan );
+	
+	if( ( cv = getarr( Calibinfo.calibarr, key ) ) == (Calibvals *) NULL ) {
+
+		allot( Calibvals *, cv, 1 );
+		setarr( Calibinfo.calibarr, key, cv );
+	}
+
+	sprintf( expr,
+		 "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime == NULL || endtime >= %f)",
+		 sta, chan, time, time );
+	db = dbsubset( db, expr, 0 );
+
+	dbquery( db, dbRECORD_COUNT, &nrecs );
+
+	if( nrecs > 0 ) {
+		db.record = 0;
+		ret = dbgetv( db, 0, "calib", &(cv->calib), 
+			       	     "calper", &(cv->calper),
+			             "endtime", &(cv->validuntil), 0 );
+	}
+
+	if( ret < 0 || nrecs <= 0 ) {
+		complain( 1, "Failed to get calib and calper from database for %s\n", key );
+		cv->calib = DEFAULT_CALIB;
+		cv->calper = DEFAULT_CALPER;
+		cv->validuntil = 9999999999.999;
+	}
+
+	if( loglevel == VERYVERBOSE ) {
+		fprintf( stderr, 
+			 "Using calib %f, calper %f for %s\n",
+			 cv->calib, cv->calper, key );
+	}
+
+	if( pdb == (Dbptr *) NULL ) {
+		dbclose( db );
+	}
+
+	return cv;
+}
+
+static void
+update_calibvals( double time, enum Loglevel loglevel )
+{
+	Dbptr	db;
+	Srcname	parts;
+	Tbl	*keys;
+	char	*key;
+	char	*s;	
+	Tbl	*ssplit;
+	int 	i;
+
+	if( loglevel == VERYVERBOSE ) {
+		fprintf( stderr, 
+		   "Database calibration table changed; rereading calib and calper\n" );
+	}
+
+	dbopen( Calibinfo.dbname, "r", &db );
+
+	keys = keysarr( Calibinfo.calibarr );
+	if( keys == (Tbl *) NULL ) {
+		dbclose( db );
+		return;
+	}
+
+	for( i=0; i<maxtbl( keys ); i++ ) {
+
+		key = gettbl( keys, i );
+		
+		s = strdup( key );
+		ssplit = split( s, ':' );
+
+		add_current_calibvals( gettbl( ssplit, 0 ), 
+				       gettbl( ssplit, 1 ),
+				       time, loglevel, &db );
+
+		free( s );
+		freetbl( ssplit, 0 );
+	}
+
+	dbclose( db );
+}
+
+static void
+get_calibinfo( Srcname *parts, double time, char **segtype, 
+	       double *calib, double *calper, 
+	       char *default_segtype, enum Loglevel loglevel )
+{
+	char	key[STRSZ];
+	Calibvals *cv;
+
+	if( Calibinfo.usedbsegtype == 0 ) {
+
+		if( *segtype == NULL ) {
+			allot( char *, *segtype, 3 );
+		}
+		strncpy( *segtype, default_segtype, 2 );
+		(*segtype)[1] = '\0';
+
+	} else {
+
+		if( update_is_necessary( "sensor", Calibinfo.strk ) ||
+		    update_is_necessary( "instrument", Calibinfo.itrk ) ) {
+
+			/* Use the current packet time to find valid rows: */
+			update_segtypevals( time, default_segtype, loglevel );
+		}	
+
+		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
+	
+		*segtype = (char *) getarr( Calibinfo.segtypearr, key );
+
+		if( *segtype == (char *) NULL ) {
+
+			*segtype = add_segtype( parts->src_sta, parts->src_chan,
+						time, default_segtype,
+						loglevel, 0 );
+		}
+	}
+
+	if( Calibinfo.usedbcalib == 0 ) {
+
+		*calib = DEFAULT_CALIB;
+		*calper = DEFAULT_CALPER;
+
+	} else {
+
+		if( update_is_necessary( "calibration", Calibinfo.ctrk ) ) {
+			
+			update_calibvals( time, loglevel );
+		}
+
+		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
+
+		cv = (Calibvals *) getarr( Calibinfo.calibarr, key );
+
+		if( cv == (Calibvals *) NULL || 
+		    ( cv->validuntil != 9999999999.999 && time > cv->validuntil ) ) {
+
+			cv = add_current_calibvals( parts->src_sta, 
+						    parts->src_chan, 
+						    time, loglevel, 0 );
+		}
+
+		*calib = cv->calib;
+		*calper = cv->calper;
+	}
+	
+	return;
+}
+
+static int	
+init_calibinfo( void )
+{
+	Dbptr 	db;
+	int	ret;
+	struct stat *statbuf;
+
+	Calibinfo.usedbcalib = 1;
+	Calibinfo.usedbsegtype = 1;
+	Calibinfo.ctrk = 0;
+	Calibinfo.strk = 0;
+	Calibinfo.itrk = 0;
+	Calibinfo.calibarr = newarr( 0 );
+	Calibinfo.segtypearr = newarr( 0 );
+
+	if( ! strcmp( Calibinfo.dbname, "" ) ) {
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+		return 0;
+	}
+
+	ret = dbopen( Calibinfo.dbname, "r", &db );
+
+	if( ret < 0 || db.database < 0 ) {
+
+		complain( 1, "%s %s; %s\n",
+		  "Failed to open database",
+		  Calibinfo.dbname,
+  		  "calib, calper, and segtype will be default values" );
+
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+
+		return -1;
+	}
+
+	dbclose( db );
+
+	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default values for calib and calper.\n" );
+
+		Calibinfo.usedbcalib = 0;
+	}
+
+	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
+	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default value for segtype.\n" );
+
+		Calibinfo.usedbsegtype = 0;
+	}
 }
 
 int
@@ -691,6 +1233,9 @@ reconfig_import_thread( ImportThread *it )
 
 		strcpy( it->select, pfget_string( it->pf, "select" ) );
 		strcpy( it->reject, pfget_string( it->pf, "reject" ) );
+
+		strcpy( it->default_segtype, 
+			pfget_string( it->pf, "default_segtype" ) );
 
 		if( it->select_hook ) {
 
@@ -1173,6 +1718,10 @@ update_import_thread( char *name, Pf *pf )
 			      DEFAULT_REJECT );
 
 		pfput_string( it->pf, 
+			      "default_segtype", 
+			      DEFAULT_SEGTYPE );
+
+		pfput_string( it->pf, 
 			      "loglevel", 
 			      Program_loglevel );
 
@@ -1212,6 +1761,9 @@ update_import_thread( char *name, Pf *pf )
 	pfreplace( pf, it->pf, "defaults{reject}",
 			       "reject", "string" );
 
+	pfreplace( pf, it->pf, "defaults{default_segtype}",
+			       "default_segtype", "string" );
+
 	pfreplace( pf, it->pf, "defaults{loglevel}",
 			       "loglevel", "string" );
 
@@ -1245,6 +1797,9 @@ update_import_thread( char *name, Pf *pf )
 
 	sprintf( key, "import_from{%s}{reject}", name );
 	pfreplace( pf, it->pf, key, "reject", "string" );
+
+	sprintf( key, "import_from{%s}{default_segtype}", name );
+	pfreplace( pf, it->pf, key, "default_segtype", "string" );
 
 	sprintf( key, "import_from{%s}{loglevel}", name );
 	pfreplace( pf, it->pf, key, "loglevel", "string" );
@@ -1418,6 +1973,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 	char	*sp;
 	char	old_srcname[ORBSRCNAME_SIZE];
 	char	new_srcname[ORBSRCNAME_SIZE];
+	static char *temp_segtype = 0;
 	int	n;
 
 	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) {
@@ -1624,8 +2180,12 @@ crack_packet( Ew2orbPacket *e2opkt )
 		pktchan->samprate = e2opkt->th->samprate;
 		pktchan->time = e2opkt->th->starttime;
 
-		pktchan->calib = 0; /* SCAFFOLD */
-		pktchan->calper = -1; /* SCAFFOLD */
+		get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
+			       &temp_segtype, &pktchan->calib, &pktchan->calper,
+			       e2opkt->it->default_segtype, 
+			       e2opkt->it->loglevel );
+
+		strcpy( pktchan->segtype, temp_segtype );
 
 		stuffPkt( e2opkt->pkt, 
 			  e2opkt->srcname, 
@@ -1726,6 +2286,8 @@ ew2orb_pfwatch( void *arg )
 		} else if( rc == 1 ) {
 
 			set_program_loglevel( pf );
+
+			set_calibration_database( pf );
 
 			if( Flags.verbose ) {
 				
