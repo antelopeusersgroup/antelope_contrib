@@ -243,6 +243,21 @@ Attribute time
 	}
 	;
 
+Attribute trigtype
+	String (20)
+	Format ( "%-20" )
+	Null ( "-" )
+	Description ( "short trigger-type indicator" )
+	Detail {
+		This field gives the type of trigger represented by this row. 
+		For example, 'motion' may be used for automatically detected
+		motion events, or 'analyst' for analyst-identified events of 
+		interest. This field may be used in a domain-specific way to j
+		distinguish several classes of triggers from a given camera or 
+		set of cameras.
+	}
+	;
+
 Attribute vang
 	Real (6)
 	Format ( "%6.1f" )
@@ -337,7 +352,7 @@ Relation thumbnails
 	;
 
 Relation triggers
-	Fields ( imagename pretime time posttime description lddate )
+	Fields ( imagename pretime time posttime trigtype description lddate )
 	Primary ( imagename time )
 	Description ( "triggered sequences in image streams" )
 	Detail {
