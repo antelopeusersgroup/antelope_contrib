@@ -36,6 +36,7 @@
 %   dbnojoin		- Find records which do not join between tables
 %   dbread_view		- Read a Datascope database view from a file
 %   dbsave_view		- Save a Datascope database view
+%   dbwrite_view	- Write a Datascope database view to a file
 %   dbseparate		- Extract a subset view of a table from a joined view
 %   dbsever		- Remove an unwanted table from a view
 %   dbprocess		- Construct a view as a series of standard operations

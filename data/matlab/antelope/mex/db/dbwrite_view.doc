@@ -1,0 +1,5 @@
+DBWRITE_VIEW	Write a Datascope database view to a file
+
+DBWRITE_VIEW ( DBPTR, FILENAME )
+
+DBWRITE_VIEW writes a database view into the specified filename.

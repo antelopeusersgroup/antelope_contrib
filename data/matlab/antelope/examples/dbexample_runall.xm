@@ -43,6 +43,7 @@ dbexample_dbsubset
 dbexample_dbtheta
 dbexample_dbungroup
 dbexample_dbunjoin
+dbexample_dbwrite_view
 dbexample_epoch2str
 dbexample_eval_response
 dbexample_free_response

@@ -47,6 +47,7 @@ DATA= \
 	dbexample_dbtheta.m \
 	dbexample_dbungroup.m \
 	dbexample_dbunjoin.m \
+	dbexample_dbwrite_view.m \
 	dbexample_epoch2str.m \
 	dbexample_eval_response.m \
 	dbexample_free_response.m \

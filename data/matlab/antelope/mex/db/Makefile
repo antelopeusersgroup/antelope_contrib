@@ -46,7 +46,8 @@ MEXSRCS= \
 	dbgroup.c \
 	dbungroup.c \
 	dbsave_view.c \
-	dbread_view.c
+	dbread_view.c \
+	dbwrite_view.c
 
 CLEAN= 
 
