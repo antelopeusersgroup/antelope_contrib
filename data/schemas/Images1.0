@@ -177,9 +177,12 @@ Attribute length_sec
 		The length_sec field records the approximate length in 
 		seconds of a time-lapse movie. Exact timing information 
 		should be taken from the time::endtime fields. Often this 
-		field will be used for the intended length of a movie, for example 
-		for 24-hour period time-lapses, which may in truth cover slightly 
-		less or more time.
+		field will be used for the intended length of a movie, 
+		for example for 24-hour period time-lapses, which may
+		in truth cover slightly less or more time. length_sec
+		refers to the amount of real (wall-clock) time represented 
+		by the time lapse segment, not to amount of time it takes 
+		to play the movie itself. 
 	}
 	;
 
