@@ -184,3 +184,22 @@ int WaveMsgMakeLocal( TRACE_HEADER* wvmsg )
    return 0;
 }
 
+void SwapFloat( float *data )
+{
+   char temp;
+
+   union {
+      float f;
+      char c[4];
+   } dat;
+
+   dat.f    = *data;
+   temp     = dat.c[0];
+   dat.c[0] = dat.c[3];
+   dat.c[3] = temp;
+   temp     = dat.c[1];
+   dat.c[1] = dat.c[2];
+   dat.c[2] = temp;
+   *data    = dat.f;
+}
+

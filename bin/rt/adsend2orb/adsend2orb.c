@@ -10,24 +10,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <thread.h>
+#include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <sys/socket.h>
-#include <sys/socketvar.h>
+#include <sys/priocntl.h>
+#include <sys/rtpriocntl.h>
 #include "db.h"
+#include "tr.h"
 #include "stock.h"
 #include "pkt.h"
 #include "orb.h"
 #include "pf.h"
 #include "packet.h"
 #include "data_buf.h"
+#include "trace_buf.h"
 
 #define DEMUX_THREAD_SLEEPTIME_NSEC 50000000	/* 50 milliseconds */
 #define IW_ORB_TRACE_HEADER_SIZE 16
 #define RUN_LENGTH_ENCODING_LENGTH 25
+
+#define INT(x)  ((x)<0.0?((x)-0.5):((x)+0.5))
+#define STREQ(a, b) (strcmp((a), (b)) == 0)
 
 typedef struct {                   /******** description of message *********/
         unsigned char    type;     /* message is of this type               */
@@ -62,18 +70,26 @@ static Tbl *udpmsg_fifo;
 static mutex_t message_mutex;
 static Pf *pf;
 static int ewADBUF_TYPE = -1;
+static int ewTRACEBUF_TYPE = -1;
 static int ewMOD = -1;
 static int ewINST = -1;
-static int swap_bytes;
-static int Compress;
+static int swap_adbuf_bytes = 0;
+static int Compress = 0;
+static int pinno_as_adchan = 0;
+static int rt_priority = -1;
+static int reject_future_packets = 0;
+static double reject_future_packets_sec = 0;
 
 extern void SwapTraceBuf( char * );
 
 void *read_udp_packets( void * );
+void set_rt_priority( void );
 MSG_INFO *accumulate_udpmsg( UDPMSG * );
-void ewmsg2orb( MSG_INFO *, int );
+void ew_adbuf2orb( MSG_INFO *, int );
+void ew_tracebuf2orb( MSG_INFO *, int );
 void update_station_info( void );
 int cmp_string( void *, void *, void * );
+void orbput_welltimed_packet( double, int, char *, double, char *, int );
 
 main( int argc, char **argv )
 {
@@ -84,32 +100,61 @@ main( int argc, char **argv )
 	MSG_INFO *ewmsg;
 	Tbl	*keys;
 	char	*key;
+	char	dir[FILENAME_MAX];
+	char	base[STRSZ];
+	char	errmsg[STRSZ];
+	char	*s;
 	int	ns, ne;
+	int	rc;
+	int	nmessages;
+	struct timespec ts;
 
 	thread_t tid;
 
+	dirbase( argv[0], dir, base );
+
 	if( argc != 3 ) {
-		die( 1, "Usage: %s orbname adsend_port\n", argv[0] );
+		die( 1, "Usage: %s orbname adsend_port\n", base );
 	} else {
 		orbname = argv[1];
 		adsend_port = (unsigned short) atoi( argv[2] );
 	}
 
-	if( pfread( argv[0], &pf ) != 0 ) {
+	if( pfread( base, &pf ) != 0 ) {
 
 		die( 1, "adsend2orb: missing or incorrect parameter file\n" );
 
 	} else {
 
-		swap_bytes = pfget_int( pf, "swap_bytes" );
-		Compress = pfget_int( pf, "compress" );
-
 		keys = pfkeys( pf );
 		allot( char *, key, STRSZ );
+
+		sprintf( key, "%s", "swap_adbuf_bytes" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) swap_adbuf_bytes = 
+			pfget_int( pf, "swap_adbuf_bytes" );
+
+		sprintf( key, "%s", "compress" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) Compress = 
+			pfget_int( pf, "compress" );
 
 		sprintf( key, "%s", "ewADBUF_TYPE" );
 		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
 		if( ns <= ne ) ewADBUF_TYPE = pfget_int( pf, "ewADBUF_TYPE" );
+
+		sprintf( key, "%s", "ewTRACEBUF_TYPE" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) ewTRACEBUF_TYPE =
+				pfget_int( pf, "ewTRACEBUF_TYPE" );
+
+		if( ewADBUF_TYPE == -1 && ewTRACEBUF_TYPE == -1 ) {
+			sprintf( errmsg, "%s",
+				"adsend2orb: ewADBUF_TYPE or ewTRACEBUF_TYPE" );
+			strcat( errmsg, 
+				"must be specified in parameter file\n" );
+			die( 1, errmsg );
+		}
 
 		sprintf( key, "%s", "ewMOD" );
 		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
@@ -118,6 +163,29 @@ main( int argc, char **argv )
 		sprintf( key, "%s", "ewINST" );
 		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
 		if( ns <= ne ) ewINST = pfget_int( pf, "ewINST" );
+
+		sprintf( key, "%s", "pinno_as_adchan" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) pinno_as_adchan =
+				pfget_boolean( pf, "pinno_as_adchan" );
+
+		sprintf( key, "%s", "rt_priority" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) rt_priority = pfget_int( pf, "rt_priority" );
+
+		sprintf( key, "%s", "reject_future_packets_sec" );
+		searchtbl( &key, keys, cmp_string, 0, &ns, &ne );
+		if( ns <= ne ) {
+			reject_future_packets_sec = 
+			pfget_double( pf, "reject_future_packets_sec" );
+			
+			reject_future_packets = 1;
+		
+			fprintf( stderr, "%s%s%s\n",
+			 "adsend2orb: rejecting all packets that are ",
+			 ( s = strtdelta( reject_future_packets_sec ) ),
+			 " or more into the future" );
+		}
 
 		free( key );
 	}
@@ -135,19 +203,17 @@ main( int argc, char **argv )
 	udpmsg_fifo = newtbl( 0 );
 
 	if( thr_create( (void *) 0, 0, read_udp_packets, (void *) &adsend_port,
-			THR_DETACHED|THR_NEW_LWP, &tid ) != 0 ) {
+			THR_BOUND, &tid ) != 0 ) {
 		
 		die( 1, "adsend2orb: Failed to create input thread\n" );
 	}
 
 	thr_yield();
 
-	for( ;; ) {
-		int	nmessages;
-		struct timespec ts;
+	ts.tv_sec = 0;
+	ts.tv_nsec = DEMUX_THREAD_SLEEPTIME_NSEC;
 
-		ts.tv_sec = 0;
-		ts.tv_nsec = DEMUX_THREAD_SLEEPTIME_NSEC;
+	for( ;; ) {
 
 		do {
 			mutex_lock( &message_mutex );
@@ -161,7 +227,23 @@ main( int argc, char **argv )
 
 				ewmsg = accumulate_udpmsg( udpmsg );
 
-				if( ewmsg != NULL ) ewmsg2orb( ewmsg, orbfd );
+				free( udpmsg );
+
+				if( ewmsg != NULL ) {
+
+				   if( ewmsg->logo.type == ewADBUF_TYPE ) {
+
+					ew_adbuf2orb( ewmsg, orbfd );
+
+				   } else if( ewmsg->logo.type == ewTRACEBUF_TYPE ) {
+
+					ew_tracebuf2orb( ewmsg, orbfd );
+				   } 
+
+				   free( ewmsg->buffer );
+				   free( ewmsg );
+
+				}
 			}
 
 		} while( nmessages > 0 );
@@ -170,13 +252,288 @@ main( int argc, char **argv )
 	}
 }
 
+void set_rt_priority()
+{
+	uid_t	starting_uid;
+	pcinfo_t pcinfo;
+	pcparms_t pcparams;
+	rtparms_t *rtparams;
+	int	rc;
+	char 	*s;
+
+	if( rt_priority < 0 )  return;
+
+	starting_uid = getuid();
+
+	rc = setuid( 0 );
+	if( rc ) {
+		complain( 1, 
+			"adsend2orb: failed to set user ID to root: %s",
+			strerror( errno ) );
+		return;
+	}
+	
+	strcpy( pcinfo.pc_clname, "RT" );
+	rc = priocntl( 0, 0, PC_GETCID, (caddr_t) &pcinfo );
+
+	pcparams.pc_cid = pcinfo.pc_cid;
+	rtparams = (rtparms_t *) &pcparams.pc_clparms;
+	rtparams->rt_pri = rt_priority;
+	rtparams->rt_tqnsecs = RT_TQDEF;
+
+	rc = priocntl( P_LWPID, P_MYID, PC_SETPARMS, (caddr_t) &pcparams );
+
+	if( rc ) {
+		complain( 1, 
+	"adsend2orb: Failed to set real-time priority %d for udp thread: %s\n",
+			rt_priority, strerror( errno ) );
+	} else {
+		fprintf( stderr,
+		 "Real-time priority of UDP thread set to %d\n",
+		 rt_priority );
+	}
+
+	setuid( starting_uid );
+}
+
 void
-ewmsg2orb( MSG_INFO *ewmsg, int orbfd )
+orbput_welltimed_packet( double endtime, int orb, char *srcname, 
+			 double time, char *packet, int nbytes )
+{
+	int	rc;
+	struct timespec tp;
+	double 	tdelta;
+	char	*s;
+
+	clock_gettime( CLOCK_REALTIME, &tp );
+
+	tdelta = endtime - tp.tv_sec+tp.tv_nsec/1e9;
+
+	if( reject_future_packets && tdelta > reject_future_packets_sec ) {
+
+		complain( 1, 
+		"adsend2orb: rejecting packet from %s, which ends %s into future\n",
+		srcname, ( s = strtdelta( tdelta ) ) );
+		free( s );
+
+	} else {
+
+		rc = orbput( orb, srcname, time, packet, nbytes );
+
+		if( rc ) complain( 1,
+			"adsend2orb: orbput failed for %s\n", srcname );
+	}
+}
+
+void
+ew_tracebuf2orb( MSG_INFO *ewmsg, int orbfd )
+{
+	struct PreHdr prehdr;
+	SINFO	*sinfo;
+	char	*ptr;
+	char    orbpacket[MAX_TRACEBUF_SIZ+100];
+	int	packetsize;
+	TracePacket *tp;
+	float	samprate;
+	float 	convert;
+	float 	calib; 
+	unsigned short pinno;
+	unsigned short nsamp;
+	unsigned short quality;
+	char	adchan_key[STRSZ];
+	char	net_sta_chan_key[STRSZ];
+	char	srcid[STRSZ];
+	char	*net;
+	char	*sta;
+	char	*chan;
+	union {
+		char *c;
+		int  *i;
+		short *s;
+		float *f;
+	} datap;
+	unsigned char *buf=NULL;
+	int     databuf_size;
+	char    datatype[4];
+	double	starttime;
+	double	commdelay;
+	double	endtime;
+	int     *data;
+	int	bsize = 0;
+	int	nout;
+	int	i;
+	int	rc;
+
+	update_station_info();
+
+	tp = (TracePacket *) ewmsg->buffer;
+
+	WaveMsgMakeLocal( (TRACE_HEADER *) tp );
+
+	prehdr.hdrtype = htons (IWH);
+	prehdr.pkttype = htons (IWTB);
+	prehdr.hdrsiz = htons( sizeof( struct PreHdr ) + 
+				IW_ORB_TRACE_HEADER_SIZE );
+
+	samprate = tp->trh.samprate;
+	nsamp = htons( (unsigned short) tp->trh.nsamp );
+	memcpy( &quality, &(tp->trh.quality[0]), 2 );
+	quality = htons( quality );
+
+	if( pinno_as_adchan ) {
+		sprintf( adchan_key, "%d", tp->trh.pinno );
+
+		if( ( sinfo = getarr( station_info, adchan_key ) ) == NULL ) {
+			return;
+		}
+
+		net = sinfo->net;
+		sta = sinfo->sta;
+		chan = sinfo->chan;
+
+		commdelay = sinfo->commdelay;
+
+		pinno = htons( (unsigned short) sinfo->pinno );
+
+		convert = (float) sinfo->calib;
+		calib = htonl( convert );
+
+	} else {
+		sprintf( net_sta_chan_key, "%s_%s_%s", 	
+				tp->trh.net, tp->trh.sta, tp->trh.chan );
+
+		if( ( sinfo = getarr( station_info, net_sta_chan_key ) ) == NULL ) {
+			net = tp->trh.net;
+			sta = tp->trh.sta;
+			chan = tp->trh.chan;
+
+			commdelay = 0.0;
+
+			pinno = htons( (unsigned short) tp->trh.pinno );
+
+			convert = 0.0;
+			calib = htonl( convert );
+
+		} else {
+			net = sinfo->net;
+			sta = sinfo->sta;
+			chan = sinfo->chan;
+
+			commdelay = sinfo->commdelay;
+
+			pinno = htons( (unsigned short) sinfo->pinno );
+
+			convert = (float) sinfo->calib;
+			calib = htonl( convert );
+		}
+	}
+
+	datap.c = tp->msg + sizeof( TRACE_HEADER );
+
+        if( Compress )
+        {
+                strcpy( datatype, "gc" );
+
+                data = (int *) malloc (tp->trh.nsamp*sizeof(int));
+                if (data == NULL) {
+                        register_error (0, "adsend2orb: malloc() error.\n");
+                        return;
+                }
+
+                if( STREQ( tp->trh.datatype, "s2" ) )
+                {
+                        data[0] = datap.s[0];
+                        for( i=1; i<tp->trh.nsamp; i++ )
+                        {
+                                data[i] = datap.s[i] - datap.s[i-1];
+                        }
+                }
+                else if( STREQ( tp->trh.datatype, "s4" ) )
+                {
+                        data[0] = datap.i[0];
+                        for( i=1; i<tp->trh.nsamp; i++ )
+                        {
+                                data[i] = datap.i[i] - datap.i[i-1];
+                        }
+                }
+                else if( STREQ( tp->trh.datatype, "t4" ) )
+                {
+                        data[0] = INT( datap.f[0] );
+                        for( i=1; i<tp->trh.nsamp; i++ )
+                        {
+                                data[i] = INT( datap.f[i] ) - INT( datap.f[i-1] );
+                        }
+                }
+                else
+                {
+                        register_error( 0, "adsend2orb: Datatype %s not understood\n",
+                                           tp->trh.datatype );
+                        return;
+                }
+
+                if( gencompress (&buf, &nout, &bsize, data, tp->trh.nsamp, 25) < 0)
+                {
+                        register_error (0, "adsend2orb: gencompress() error.\n");
+                        return;
+                }
+
+                free( data );
+
+                databuf_size = nout;
+        }
+        else
+        {
+                strcpy( datatype, tp->trh.datatype );
+
+                buf = (unsigned char *) datap.c;
+
+                databuf_size = tp->trh.nsamp * datasize( datatype );
+        }
+
+        packetsize = databuf_size + sizeof( struct PreHdr ) + IW_ORB_TRACE_HEADER_SIZE;
+        prehdr.pktsiz = htons( packetsize );
+
+	ptr = &orbpacket[0];
+
+        memcpy( ptr, &prehdr, sizeof( struct PreHdr ) );
+        ptr += sizeof( struct PreHdr );
+        memcpy( ptr, &samprate, sizeof(float) );
+        ptr += sizeof( float );
+        memcpy( ptr, &calib, sizeof(float) );
+        ptr += sizeof( float );
+        memcpy( ptr, &pinno, sizeof(unsigned short) );
+        ptr += sizeof( unsigned short );
+        memcpy( ptr, &nsamp, sizeof(unsigned short) );
+        ptr += sizeof( unsigned short );
+        memcpy( ptr, datatype, 2);
+        ptr += 2;
+        memcpy( ptr, &quality, sizeof(unsigned short) );
+        ptr += sizeof( unsigned short );
+
+        memcpy( ptr, buf, databuf_size );
+
+        if( Compress )
+        {
+                free( buf );
+        }
+		
+	sprintf( srcid, "%s_%s_%s", net, sta, chan );
+
+	starttime = tp->trh.starttime - commdelay; 
+	endtime = ENDTIME( starttime, tp->trh.samprate, tp->trh.nsamp );
+
+	orbput_welltimed_packet( endtime, orbfd, srcid, starttime,
+				 orbpacket, packetsize );
+}
+
+void
+ew_adbuf2orb( MSG_INFO *ewmsg, int orbfd )
 {
 	WF_HEADER *adbuf_head;
 	SINFO	*sinfo;
 	double	pkt_starttime;
 	double	starttime;
+	double	endtime;
 	int	nsamp_int;
 	float	samprate;
 	char	adchan_key[STRSZ];
@@ -208,7 +565,7 @@ ewmsg2orb( MSG_INFO *ewmsg, int orbfd )
 	prehdr.hdrsiz = htons( sizeof( struct PreHdr ) + 
 				IW_ORB_TRACE_HEADER_SIZE );
 
-	if( swap_bytes ) SwapTraceBuf( ewmsg->buffer );
+	if( swap_adbuf_bytes ) SwapTraceBuf( ewmsg->buffer );
 
 	adbuf_head = (WF_HEADER *) ewmsg->buffer;
 
@@ -282,6 +639,8 @@ ewmsg2orb( MSG_INFO *ewmsg, int orbfd )
 		nsamp = nsamp_int;
 		nsamp = htons( nsamp );
 
+		endtime = ENDTIME( starttime, samprate, nsamp_int );
+
 		packetsize = databuf_size +
 				sizeof( struct PreHdr ) +
 					IW_ORB_TRACE_HEADER_SIZE;
@@ -321,16 +680,12 @@ ewmsg2orb( MSG_INFO *ewmsg, int orbfd )
 				sinfo->sta,
 				sinfo->chan );
 
-		rc = orbput( orbfd, srcid, starttime, orbpacket, packetsize );
-
-		if( rc ) complain( 1, "adsend2orb: orbput failed for %s\n", srcid );
+		orbput_welltimed_packet( endtime, orbfd, srcid, starttime,
+					 orbpacket, packetsize );
 
 		free( orbpacket );
 		free( data );
 	}
-
-	free( ewmsg->buffer );
-	free( ewmsg );
 
 	return;
 }
@@ -349,7 +704,8 @@ accumulate_udpmsg( UDPMSG *udpmsg )
 	if( ewmessages == NULL ) ewmessages = newarr( 0 );
 	if( track == NULL ) track = newarr( 0 );
 
-	if( ( ewADBUF_TYPE != -1 ) && ( udpmsg->p.msgType != ewADBUF_TYPE ) )
+	if( ( udpmsg->p.msgType != ewTRACEBUF_TYPE ) &&
+	    ( udpmsg->p.msgType != ewADBUF_TYPE ) )
 						return (MSG_INFO *) NULL; 
 	if( ( ewMOD != -1 ) && ( udpmsg->p.modId != ewMOD ) )
 						return (MSG_INFO *) NULL; 
@@ -369,7 +725,6 @@ accumulate_udpmsg( UDPMSG *udpmsg )
 
 		/* Wait for the start of a new message */
 		if( udpmsg->p.fragNum != 0 ) {
-			free( udpmsg );
 			return (MSG_INFO *) NULL;
 		}
 
@@ -396,8 +751,6 @@ accumulate_udpmsg( UDPMSG *udpmsg )
 
 			if( ewmsg->buffer ) free( ewmsg->buffer );
 			free( ewmsg );
-
-			free( udpmsg );
 
 			return (MSG_INFO *) NULL;
 		}
@@ -428,7 +781,7 @@ accumulate_udpmsg( UDPMSG *udpmsg )
 			if( lost < 0 ) lost += 256; 	/* Rolled over */
 
 			complain( 1, 
-	"adsend2orb: lost %d messages for inst_mod_type %s, got # %d expecting # %d\n",
+	"adsend2orb: lost %d messages for inst_type_mod %s, got # %d expecting # %d\n",
 				lost, logo_key,
 				udpmsg->p.msgSeqNum, *expected_seqnum );
 
@@ -448,8 +801,6 @@ accumulate_udpmsg( UDPMSG *udpmsg )
 		ewmsg = (MSG_INFO *) NULL; /* Only return complete Earthworm messages */
 	}
 
-	free( udpmsg );
-
 	return ewmsg;
 }
 
@@ -463,6 +814,8 @@ read_udp_packets( void *portp )
 	struct sockaddr_in name;
 	int	dummy;
 	UDPMSG	*udpmsg;
+
+	set_rt_priority(); 
 
 	if( ( mysocket = socket( AF_INET, SOCK_DGRAM, 0 ) ) == -1 ) {
 
@@ -515,6 +868,7 @@ void
 update_station_info( void )
 {
 	SINFO 	*sinfo;
+	static int ignore_site_db = 0;
 	static double pins_mtime;
 	static double ewanalog_mtime;
 	static double calibration_mtime;
@@ -533,13 +887,41 @@ update_station_info( void )
 	int	refresh = 0;
 	int	adchan;
 	char	adchan_key[STRSZ];
+	char	net_sta_chan_key[STRSZ];
 	double	calib;
 	double	commdelay;
+	char 	errmsg[STRSZ];
+
+	if( ignore_site_db ) return;
 
 	if( ! pins_path ) {	/* Use as initializer */
 		
 		if( ( site_db = getenv( "SITE_DB" ) ) == NULL ) {
-			die( 1, "adsend2orb: environment variable SITE_DB not set.\n" );
+
+			if( pinno_as_adchan ) {
+				sprintf( errmsg, "%s",
+				"adsend2orb: pinno_as_adchan option " );
+				strcat( errmsg, 
+				"requires environment variable SITE_DB " );
+				strcat( errmsg, "to be set.\n" );
+
+				die( 1, errmsg );
+
+			} else {
+				sprintf( errmsg, "%s",
+				"adsend2orb: no SITE_DB environment variable:");
+				strcat( errmsg, 
+					" relying on packet contents\n" );
+				fprintf( stderr, "%s", errmsg );
+
+				/* Support null return from all station-info
+				   lookups */
+				station_info = newarr( 0 );
+
+				ignore_site_db = 1;
+			}
+
+			return;
 		}
 
 		dbopen( site_db, "r", &db );
@@ -655,8 +1037,11 @@ update_station_info( void )
 			sinfo->commdelay = 0.;
 
 			sprintf( adchan_key, "%d", adchan );
+			sprintf( net_sta_chan_key, "%s_%s_%s", 
+					sinfo->net, sinfo->sta, sinfo->chan );
 
 			setarr( station_info, adchan_key, (void *) sinfo );
+			setarr( station_info, net_sta_chan_key, (void *) sinfo );
 		}
 
 		if( calibration_path ) {

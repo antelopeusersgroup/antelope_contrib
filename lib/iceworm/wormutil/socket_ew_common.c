@@ -13,6 +13,10 @@ int SELECT_TIMEOUT_SECONDS=0;
 int SELECT_TIMEOUT_uSECONDS=200000;
 int EW_SOCKET_DEBUG=0;
 
+extern int SOCKET_SYS_INIT;  /* Global initialization flag.
+                                Declared in sys-dependent socket_ew.c,
+                                set in SocketSysInit(), 
+                                checked in socket_ew()  */                                
 
 /********************* SOCKET_ew *****************************/
 /*********** Internal Utility Function Prototypes ************/
@@ -27,11 +31,13 @@ Time_ew adjustTimeoutLength(int timeout_msec);
 
 SOCKET socket_ew (int af, int type, int protocol)
 {
-  /* socket_ew() allocates a socket
-     descriptor and associated resources.  It first calls socket(),
-     and then sets the socket descriptor to non-blocking mode.
+  /* socket_ew() allocates a socket descriptor and associated 
+     resources. It first makes sure that the Socket system has 
+     been initialized, then it calls socket(), and finally sets 
+     the socket descriptor to non-blocking mode.
      No network I/O occurs.
-     Caller can call socketGetError_ew() for details about any failures.
+     Caller can call socketGetError_ew() for details about any 
+     failures.
   */
 
   SOCKET newSocket;
@@ -39,8 +45,11 @@ SOCKET socket_ew (int af, int type, int protocol)
   int retVal;
   unsigned long lOnOff=1;
 
-  if(EW_SOCKET_DEBUG)
+  if (EW_SOCKET_DEBUG)
     logit("et","Entering %s\n",MyFuncName);
+
+  if (!SOCKET_SYS_INIT)
+    SocketSysInit();
 
   newSocket=socket(af,type,protocol);
   if (newSocket == INVALID_SOCKET  && EW_SOCKET_DEBUG)
@@ -65,134 +74,169 @@ SOCKET socket_ew (int af, int type, int protocol)
   return(newSocket);
 }
 
+/*************************************************************/
 
 int connect_ew(SOCKET s, struct sockaddr FAR* name, 
 	       int namelen, int timeout_msec)
 {
   /* connect_ew() attempts to create a socket connection during a
-     period specified by timeout.  If it succeeds it returns a
-     successful condition.  If it fails either due to a network
-     error, or a timeout, it closes the socket and returns an error.  
-     *Note:  The timeout clock starts after connect_ew() calls
-     connect(), not when connect_ew() starts.
-     A timeout value of -1 causes connect_ew() to revert to a blocking
-     connect call.
-     Caller can call socketGetError_ew() for details about any 
-     failures.
-  */
+   * period specified by timeout.  If it succeeds it returns a
+   * successful condition.  If it fails either due to a network
+   * error, or a timeout, it closes the socket and returns an error.  
+   * *Note:  The timeout clock starts after connect_ew() calls
+   * connect(), not when connect_ew() starts.
+   * A timeout value of -1 causes connect_ew() to revert to a blocking
+   * connect call.
+   * Caller can call socketGetError_ew() for details about any 
+   * failures.
+   */
 
-  int retVal, ioctlRetVal;
-  static char * MyFuncName = "connect_ew()";
-  Time_ew StartTime;
-  fd_set ConnectedSockets;
-  struct timeval SelectTimeout; 
-  Time_ew timeout=adjustTimeoutLength(timeout_msec);
-  long lOnOff;
+   static char * MyFuncName = "connect_ew()";
+
+   int     retVal, ioctlRetVal, connectRetVal, selectRetVal;
+   fd_set  ConnectedSockets;
+   long    lOnOff;
+   int     lastError;
+   struct  timeval SelectTimeout;
   
-  if(EW_SOCKET_DEBUG)
-    logit("et","Entering %s\n",MyFuncName);
+  if ( EW_SOCKET_DEBUG )
+    logit( "et" , "Entering %s, timeout_msec=%d\n", MyFuncName, timeout_msec );
 
-  /* If there is no timeout, make the socket blocking */
-  if(timeout_msec == -1)
-    {
+/* If there is no timeout, make the socket blocking
+   ************************************************/
+   if ( timeout_msec == -1 )
+   {
       lOnOff = 0;
-      retVal=ioctlsocket(s,FIONBIO,&lOnOff);
-      if (retVal==SOCKET_ERROR)
-	{
-	  if(EW_SOCKET_DEBUG)
-	    logit("et","Error: %d, occurred in %s during change to blocking\n",
-		  socketGetError_ew(),MyFuncName);
-	  goto Abort;
-	}
-    }
+      ioctlRetVal = ioctlsocket( s, FIONBIO, &lOnOff );
+      if ( ioctlRetVal == SOCKET_ERROR )
+      {
+         if ( EW_SOCKET_DEBUG )
+            logit( "et", "Error: %d, occurred in %s during change to blocking\n",
+                socketGetError_ew(), MyFuncName );
+         retVal = -1;
+         goto Done;
+      }
 
-  retVal=connect(s,name,namelen);
-  /* If there is no timeout, then the call was made blocking,
-     change it back so that we don't screw up any further operations
-  */
-  if(timeout_msec == -1)
-    {
+/* Try to get a connection (blocking)
+   **********************************/
+      if ( connect( s, name, namelen ) == 0 )     /* Got a connection */
+         retVal = 0;
+      else                                        /* Didn't get a connection */
+         retVal = -1;
+
+/* Change the socket back to non-blocking so
+   we don't screw up any further operations
+   *****************************************/
       lOnOff = 1;
       ioctlRetVal=ioctlsocket(s,FIONBIO,&lOnOff);
-      if (retVal==SOCKET_ERROR)
-	{
-	  if(EW_SOCKET_DEBUG)
-	    logit("et","Error: %d, occurred in %s during change to non-blocking\n",
-		  socketGetError_ew(),MyFuncName);
-	  goto Abort;
-	}
-    }
+      if ( ioctlRetVal == SOCKET_ERROR )
+      {
+         if ( EW_SOCKET_DEBUG )
+           logit( "et", "Error: %d, occurred in %s during change to non-blocking\n",
+                 socketGetError_ew(), MyFuncName );
+         retVal = -1;
+      }
+      goto Done;
+   }
 
-  if (retVal < 0)
-    {
-      if(socketGetError_ew() != CONNECT_WOULDBLOCK_EW)
-	{
-	  if(EW_SOCKET_DEBUG)
-	    logit("et","Connect() request failed in %s for socket %d, yielding error %d\n",
-		MyFuncName,s,socketGetError_ew());
-	  goto Abort;
-	}
-      else
-	/* WOULDBLOCK; can't happen if socket set for blocking (no timeout) */
-	{ 
-	  FD_ZERO(&ConnectedSockets);
-	  FD_SET(s,&ConnectedSockets);
-	  StartTime=GetTime_ew();
-	  while((!select(s+1,0,&ConnectedSockets,0,resetTimeout(&SelectTimeout)))
-		&& ((GetTime_ew()-timeout) < StartTime))
-	    {
-	      FD_ZERO(&ConnectedSockets);
-	      FD_SET(s,&ConnectedSockets);
-	      sleep_ew(0);  /* Relenquish remaining timeslice, and then try
-			       again */
-	    }
-	  FD_ZERO(&ConnectedSockets);
-	  FD_SET(s,&ConnectedSockets);
-	  if (retVal=select(s+1,0,&ConnectedSockets,0,resetTimeout(&SelectTimeout)))
-	    {
-	      if(retVal > 0)
-		{
-		  /* A proper connection is finally setup.  */
-		  retVal=0;
-		}
-	      else
-		{
-		  /* Select Failed, report the error */
-		  if(EW_SOCKET_DEBUG)
-		    logit("et","Connect() request failed during select() in %s for socket %d, yielding error %d\n",
-			MyFuncName,s,socketGetError_ew());
-		  goto Abort;
-		}
-	    }
-	  if((GetTime_ew()-timeout) >= StartTime)
-	    {
-	      if(EW_SOCKET_DEBUG)
-		logit("et","Timeout occurred during connect_ew\n");
-	      retVal=-1;
-	    }
-	}
-    }
+/* Initiate a non-blocking connection request
+   ******************************************/
+   connectRetVal = connect( s, name, namelen );
 
+   if ( connectRetVal == 0 )                         /* Got a connection */
+   {
+      retVal = 0;
+      goto Done;
+   }
 
-  if(EW_SOCKET_DEBUG)
-    logit("et","Exiting %s\n",MyFuncName);
+   lastError = socketGetError_ew();
 
-  return(retVal);
+   if ( lastError != CONNECT_WOULDBLOCK_EW )         /* Connect() error */
+   {
+      if ( EW_SOCKET_DEBUG )
+         logit( "et", "Connect request failed in connect_ew(): %s.\n",
+                 strerror(lastError) );
+      retVal = -1;
+      goto Done;
+   }
 
-Abort:
-  /* Clean up after errors */
-  closesocket_ew(s,SOCKET_CLOSE_IMMEDIATELY_EW);
-  if(EW_SOCKET_DEBUG)
-    logit("et","Exiting %s\n",MyFuncName);
-  if(retVal >=0)
-  {
-    logit("t","Somehow Connect_ew got to abort without a negative retVal\n");
-    retVal==-1;
-  }
-  
-  return(retVal);
+/* Hang around in select() until connect is successful
+                        or until timeout period expires
+   ****************************************************/
+   FD_ZERO( &ConnectedSockets );
+   FD_SET( s, &ConnectedSockets );
+
+   SelectTimeout.tv_sec  = timeout_msec/1000;
+   SelectTimeout.tv_usec = (timeout_msec%1000)*1000;
+
+   selectRetVal = select( s+1, 0, &ConnectedSockets, 0, &SelectTimeout );
+
+/* select() failed 
+   ***************/
+   if ( selectRetVal == -1 )                           
+   {
+      if ( EW_SOCKET_DEBUG )
+         logit( "et", "select() failed in connect_ew(). Error: %d\n",
+                socketGetError_ew() );
+      retVal = -1;
+   }
+
+/* select() succeeded; connection may have been completed
+   ******************************************************/
+   else if ( selectRetVal > 0  &&  FD_ISSET( s, &ConnectedSockets ) )  
+   {                                             
+   /* NOTE: For Solaris, we must do one more connection test.
+    *       Other possible tests besides getsockopt(SO_ERROR) could 
+    *       be a zero-length read() or a call to getpeername() 
+    */    
+      int error, len, rc;
+      error = 0;
+      len = sizeof(error);
+      rc  = getsockopt(s, SOL_SOCKET, SO_ERROR, (char *)&error, &len); 
+
+      if ( rc < 0 )          /* Pending error on some systems  */
+      {
+         error = socketGetError_ew(); 
+         retVal = -1;
+      }
+      else if ( error )      /* Pending error on others systems */
+      {
+         retVal = -1;
+      }
+      else                   /* OK, got a connection! */
+      {
+         if ( EW_SOCKET_DEBUG ) 
+            logit( "et", "Got a connection\n" );
+         retVal = 0;
+      }
+
+      if ( retVal == -1  &&  EW_SOCKET_DEBUG ) 
+         logit("et", "connect_ew() connection failed; "
+                     "getsockopt detected error: %s.\n", 
+                      strerror(error) ); 
+   }
+
+/* Only other possibility: select timed out! 
+   *****************************************/
+   else
+   {
+      if ( EW_SOCKET_DEBUG ) /* this line added by Alex 2/9/99 */
+      logit( "et", "connect timed out in connect_ew().\n" );
+      retVal = -1;
+   }
+
+Done:
+   if ( retVal == -1 )
+    /*closesocket_ew( s, SOCKET_CLOSE_IMMEDIATELY_EW );*/
+      closesocket_ew( s, SOCKET_CLOSE_SIMPLY_EW ); /*skip setsockopt()*/
+
+   if ( EW_SOCKET_DEBUG )
+      logit("et","Exiting %s\n",MyFuncName);
+
+   return(retVal);
 }
 
+/*************************************************************/
 
 int bind_ew (SOCKET s, struct sockaddr FAR* name, int namelen )
 {
@@ -217,6 +261,7 @@ int bind_ew (SOCKET s, struct sockaddr FAR* name, int namelen )
   return(retVal);
 }
 
+/*************************************************************/
 
 int listen_ew (SOCKET s, int backlog ) 
 {
@@ -242,6 +287,7 @@ int listen_ew (SOCKET s, int backlog )
   return(retVal);
 }
 
+/*************************************************************/
 
 SOCKET accept_ew(SOCKET s, struct sockaddr FAR* addr, int FAR* addrlen,
 		 int timeout_msec)
@@ -333,6 +379,8 @@ Abort:
   if (newSocket > 0) closesocket_ew(newSocket, 0);
   closesocket_ew(s, 0);
 }
+
+/*************************************************************/
 
 int recv_all (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec)
 {
@@ -460,6 +508,7 @@ int recv_all (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec)
   return(retVal);
 }
 
+/*************************************************************/
 
 int recv_ew (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec)
 {
@@ -545,6 +594,7 @@ int recv_ew (SOCKET s,char FAR* buf,int len,int flags, int timeout_msec)
   return(retVal);
 }
 
+/*************************************************************/
 
 int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags, 
 			  struct sockaddr FAR* from, int FAR* fromlen,
@@ -622,6 +672,7 @@ int recvfrom_ew (SOCKET s, char FAR* buf, int len, int flags,
   return(retVal);
 }
 
+/*************************************************************/
 
 int send_ew ( SOCKET s, const char FAR * buf, int len, int flags, 
 	      int timeout_msec)
@@ -741,6 +792,8 @@ Done:
   return(retVal);
 }
 
+/*************************************************************/
+
 int sendto_ew (SOCKET s, const char FAR * buf, int len, 
 	       int flags, const struct sockaddr FAR * to,
 	       int tolen, int timeout_msec)
@@ -826,6 +879,8 @@ int sendto_ew (SOCKET s, const char FAR * buf, int len,
   return(retVal);
 }
 
+/*************************************************************/
+
 struct timeval FAR * resetTimeout(struct timeval FAR * pSelectTimeout)
 {
 
@@ -848,6 +903,8 @@ struct timeval FAR * resetTimeout(struct timeval FAR * pSelectTimeout)
   return(pSelectTimeout);
 }
 
+/*************************************************************/
+
 int closesocket_ew(SOCKET s,int HowToClose)
 {
   /* closesocket_ew() closes the socket s.  HowToClose indicates
@@ -860,23 +917,44 @@ int closesocket_ew(SOCKET s,int HowToClose)
   /*
     #define SOCKET_CLOSE_IMMEDIATELY_EW 0
     #define SOCKET_CLOSE_GRACEFULLY_EW -1
+    #define SOCKET_CLOSE_SIMPLY_EW     -2
   */
 
   static char * MyFuncName = "closesocket_ew()";
-  struct linger Linger_Value={0,0};
+  struct linger Linger_Value;
   int retVal;
 
   if(EW_SOCKET_DEBUG)
     logit("et","Entering %s\n",MyFuncName);
 
+/* Note1: setsockopt(SO_LINGER) doesn't seem to work on x86 Solaris 2.5, 
+          at least when the socket isn't connected. WMK 981019   
+   Note2: Added the case SOCKET_CLOSE_SIMPLY_EW to skip the call to 
+          setsockopt. This case is used in connect_ew when the connection
+          has failed.  LDD 981022
+ *************************************************************************/
+  if ( HowToClose != SOCKET_CLOSE_SIMPLY_EW )
+  {
+     if ( HowToClose == SOCKET_CLOSE_IMMEDIATELY_EW )
+     {
+        Linger_Value.l_onoff=1;     /* Reset or hard close */
+        Linger_Value.l_linger=0;    /* Set timeout to 0 seconds */
+     }
+     else
+     {
+        Linger_Value.l_onoff=0;     /* Non-blocking graceful close (NBGC) */
+        Linger_Value.l_linger=0;
+     }
 
-  if (HowToClose == SOCKET_CLOSE_IMMEDIATELY_EW)
-    {
-      Linger_Value.l_onoff=1;  /* linger, but with timeout set to 0 */
-    }
+     if ( setsockopt(s,SOL_SOCKET,SO_LINGER,(char *) &Linger_Value,
+             sizeof(struct linger)) == -1 )
+     {
+        if(EW_SOCKET_DEBUG)
+           logit( "et", "closesocket_ew:setsockopt error: %s\n", 
+                   strerror(socketGetError_ew()) );
+     }
+  }
 
-  setsockopt(s,SOL_SOCKET,SO_LINGER,(char *) &Linger_Value,
-             sizeof(struct linger));
   retVal=closesocket(s);
 
   if(EW_SOCKET_DEBUG)
@@ -884,6 +962,8 @@ int closesocket_ew(SOCKET s,int HowToClose)
 
   return (retVal);
 }
+
+/*************************************************************/
 
 int select_ew (int nfds, fd_set FAR * readfds, fd_set FAR * writefds, 
 	       fd_set FAR * exceptfds, 
@@ -919,6 +999,8 @@ int select_ew (int nfds, fd_set FAR * readfds, fd_set FAR * writefds,
   return(retVal);
 }
 
+/*************************************************************/
+
 int setSocket_ewDebug(int debug)
 {
   /* setSocket_ewDebug() turns debugging on or off for 
@@ -927,6 +1009,8 @@ int setSocket_ewDebug(int debug)
   EW_SOCKET_DEBUG=debug;
   return(0);
 }
+
+/*************************************************************/
 
 int setSocket_ewSelectTimeout(unsigned int Timeout)
 {

@@ -15,6 +15,7 @@
 #include <process.h>               /* Required for getpid() */
 #include <sys\types.h>
 #define thr_ret void               /* Thread functions return this */
+#define getpid _getpid
 typedef int    pid_t;
 typedef HANDLE sema_t;
 typedef HANDLE mutex_t;

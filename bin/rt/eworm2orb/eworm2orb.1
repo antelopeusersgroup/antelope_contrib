@@ -10,7 +10,7 @@ eworm2orb parameter_file.d
 .SH DESCRIPTION
 eworm2orb takes earthworm waveform-data packets of TYPE_TRACEBUF and puts 
 them on an Antelope ORB. eworm2orb is designed to be one component
-of a running earthworm system. It was written with the v3.2 release of Earthworm 
+of a running earthworm system. It was written with the v4.0 release of Earthworm 
 from the USGS. 
 
 If a network name is specified in the parameter file, eworm2orb imports only
@@ -19,6 +19,10 @@ of the site database.
 
 If the "Compress" field in the parameter file is set to a nonzero value, eworm2orb
 applies the BRTT gencompress algorithm to the waveform data before putting them on
+
+If the "Timecorr" field in the parameter file is set to a nonzero value, eworm2orb 
+will correct the timestamps of the incoming data for communications delays
+according to the timecorr table of the iceworm1.3 site database.
 the ORB.
 .SH ENVIRONMENT
 The Earthworm run directory must be specified in EW_PARAMS. 
@@ -47,11 +51,12 @@ Orbname        nordic.giseis.alaska.edu
  
 Compress       1               # Whether to compress the data with BRTT gencompress algorithm
 Network        AK              # Network of stations to export (optional)
+Timecorr       1               # Whether to time-correct data
 nordic%
 .fi
 .SH "SEE ALSO"
 .nf
-orbserver(1), orb2eworm(1)
+orbserver(1), orb2eworm(1), adsend2orb(1)
 .fi
 .SH AUTHOR
 .nf

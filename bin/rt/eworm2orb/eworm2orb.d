@@ -11,9 +11,9 @@ HeartBeatInterval  15          # seconds between heartbeats
 # List the message logos to grab from transport ring
 #              Installation       Module          Message Types
 GetTracesFrom  INST_WILDCARD    MOD_WILDCARD    TYPE_TRACEBUF
-
 #  orb server IP[:port]
 Orbname        nordic.giseis.alaska.edu
 
-Compress       1               # Whether to compress the data with BRTT gencompress algorithm
-Network        AK              # Network of stations to export (optional)
+Compress       1               # Whether to compress the data with Harvey's first dif/generic compression
+Network        IU              # Network of stations to export (optional)
+Timecorr	0		# Whether to correct timestamps per SITE_DB

@@ -13,7 +13,7 @@ alex 2/8/98
 #ifdef _OS2
 #define INCL_DOSMEMMGR
 #define INCL_DOSSEMAPHORES
-#include <os2.h>
+#include "os2.h"
 #endif
 
 #include <stdio.h>

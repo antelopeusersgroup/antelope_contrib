@@ -5,8 +5,6 @@
 #ifndef CHRON3_H
 #define CHRON3_H
 
-#define CENTURY 1900
-
 #include <time.h>
 
 struct Greg {
@@ -20,18 +18,18 @@ struct Greg {
 
 /*  Function prototypes  */
 
-void date18( double, char * );
-void date15( double, char * );
+void date20( double, char * );
+void date17( double, char * );
 
-struct Greg *datime( double );
-struct Greg *gregor( long );
-struct Greg *grg( long );
+struct Greg *datime( double, struct Greg * );  /*changed to be MT-safe */
+struct Greg *gregor( long, struct Greg * );    /*changed to be MT-safe */
+struct Greg *grg( long, struct Greg * );       /*changed to be MT-safe */
 
 long julian( struct Greg * );
 long julmin( struct Greg * );
 
-double julsec15( char * );
-int    epochsec15( double *, char * );
+double julsec17( char * );
+int    epochsec17( double *, char * );
 time_t timegm( struct tm * );
 
 double tnow( void );

@@ -127,7 +127,8 @@ int pipe_get( char *msg,	/* address to copy msg to 	*/
       }
       m++;
    }
-   *type = atoi(typestr);
+   typestr[i] = '\0';
+  *type = atoi(typestr);
 
 /* Now read the message (terminated by null byte)
  ************************************************/

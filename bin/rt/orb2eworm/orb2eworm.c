@@ -23,7 +23,7 @@ FAIL--not coded for OS2
 #include <kom.h>
 #include <transport.h>
 #include <trace_buf.h>
-#include <site_iw_ext.h>
+#include <iceworm_extensions.h>
 #include "stock.h"
 #include "orb.h"
 #include "pkt.h"
@@ -100,7 +100,6 @@ main( int argc, char **argv )
 	struct PktChannel *pktchan = NULL;
 	int	ichan;
 	int     bufsize = 0;
-	char	*runPath;
 	char	*sitedb;
 	int	rc;	
 
@@ -110,33 +109,9 @@ main( int argc, char **argv )
 		exit( 0 );
 	}
 
-        runPath = getenv( "EW_PARAMS" );
- 
-        if ( runPath == NULL )
-        {
-                fprintf( stderr,
-                "orb2eworm: Environment variable EW_PARAMS not defined." );
-                fprintf( stderr, " Exiting.\n" );
-                return -1;
-        }
- 
-        if ( *runPath == '\0' )
-        {
-                fprintf( stderr, 
-			"orb2eworm: Environment variable EW_PARAMS " );
-                fprintf( stderr, "defined, but has no value. Exitting.\n" );
-                return -1;
-        }
- 
-        if ( chdir( runPath ) == -1 )
-        {
-                fprintf( stderr,
-                        "orb2eworm: Params directory not found: %s\n", runPath );
-                fprintf( stderr,
-                        "orb2eworm: Reset environment variable EW_PARAMS." );
-                fprintf( stderr, " Exiting.\n" );
-                return -1;
-        }
+	chdir_ewparams( "orb2eworm" );
+
+	elog_init( argc, argv );
 
 	orb2eworm_config( argv[1] );
 

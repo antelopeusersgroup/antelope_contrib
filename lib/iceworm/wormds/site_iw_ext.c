@@ -13,7 +13,7 @@
 #include "earthworm.h"
 #include "db.h"
 #include "stock.h"
-#include "site_iw_ext.h"
+#include "iceworm_extensions.h"
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 

@@ -23,6 +23,25 @@
    Modified by L. Dietz, January 30, 1995.
    Added routine epochsec15 to convert from time given in a
    15-character string and seconds since 1970-01-01 00:00:00.0 GMT.
+
+   Modified by L. Dietz, October, 1998.
+   Changed make the library Y2K-compliant. 
+   + Removed the CENTURY definition from chron3.h! 
+   + Removed all functions that dealt with 2-digit-year date strings 
+     and replaced them with 4-digit-year counterparts.
+        date15     -> date17
+        date18     -> date20
+        julsec15   -> julsec17
+        epochsec15 -> epochsec17
+        timegm     -> timegm (fixed to call epochsec17)
+
+   Modified by L. Dietz, November, 1998.
+   Changed to make function MT-safe.  
+   Eliminated the file-global "struct Greg G" workspace and had each function 
+   declare its own "struct Greg" variable, if needed.  Changed function
+   arguments for grg(), gregor(), and datime() to include a pointer to 
+   struct Greg for returning information to calling function.
+
 */
 
 /*********************C O P Y R I G H T   N O T I C E ***********************/
@@ -33,8 +52,6 @@
 /* notice is included in each resulting source module.                      */
 /****************************************************************************/
 
-
-struct Greg G;
 int mo[] = {   0,  31,  59,  90, 120, 151, 181, 212, 243, 273, 304, 334,
                0,  31,  60,  91, 121, 152, 182, 213, 244, 274, 305, 335};
 char *cmo[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -43,33 +60,32 @@ char *cmo[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 /*
  * Calculate julian minute from gregorian date and time.
  */
-long julmin( struct Greg *g )
+long julmin( struct Greg *pg )
 {
-        return(1440L * (julian(g) - 2305448L) + 60L * g->hour + g->minute);
+        return(1440L * (julian(pg) - 2305448L) + 60L * pg->hour + pg->minute);
 }
 
 /*
  * Calculate gregorian date and time from julian minutes.
  */
-struct Greg *grg( long min )
+struct Greg *grg( long min, struct Greg *pg )
 {
-        struct Greg *g;
         long j;
         long m;
 
         j = min/1440L;
         m = min-1440L*j;
         j += 2305448L;
-        g = gregor(j);
-        g->hour = m/60;
-        g->minute = m - 60 * g->hour;
-        return(g);
+        gregor(j,pg);
+        pg->hour = m/60;
+        pg->minute = m - 60 * pg->hour;
+        return(pg);
 }
 
 /*
  * julian : Calculate julian date from gregorian date.
  */
-long julian( struct Greg *g )
+long julian( struct Greg *pg )
 {
         long jul;
         int leap;
@@ -77,7 +93,7 @@ long julian( struct Greg *g )
         int n;
 
         jul = 0;
-        year = g->year;
+        year = pg->year;
         if(year < 1) goto x110;
         year--;
         jul = 365;
@@ -103,17 +119,17 @@ long julian( struct Greg *g )
 /* Handle days in current year */
 x110:
         leap = 0;
-        if(g->year % 4   == 0) leap = 12;
-        if(g->year % 100 == 0) leap = 0;
-        if(g->year % 400 == 0) leap = 12;
-        jul += mo[g->month + leap - 1] + g->day + 1721060L;
+        if(pg->year % 4   == 0) leap = 12;
+        if(pg->year % 100 == 0) leap = 0;
+        if(pg->year % 400 == 0) leap = 12;
+        jul += mo[pg->month + leap - 1] + pg->day + 1721060L;
         return(jul);
 }
 
 /*
  * gregor : Calculate gregorian date from julian date.
  */
-struct Greg *gregor( long min )
+struct Greg *gregor( long min, struct Greg *pg )
 {
         long test;
         long check;
@@ -121,68 +137,70 @@ struct Greg *gregor( long min )
         int left;
         int imo;
 
-        G.year = (min - 1721061L) / 365L;
-        G.month = 1;
-        G.day = 1;
-        test = julian(&G);
+        pg->year = (min - 1721061L) / 365L;
+        pg->month = 1;
+        pg->day = 1;
+        test = julian(pg);
         if(test <= min) goto x110;
 
 x20:
-        G.year--;
-        test = julian(&G);
+        pg->year--;
+        test = julian(pg);
         if(test > min) goto x20;
         goto x210;
 
 x105:
-        G.year++;
-        test = julian(&G);
+        pg->year++;
+        test = julian(pg);
 
 x110:
         check = test - min - 366L;
         if(check < 0) goto x210;
         if(check > 0) goto x105;
 
-        if(G.year % 400 == 0) goto x210;
-        if(G.year % 100 == 0) goto x105;
-        if(G.year %   4 == 0) goto x210;
+        if(pg->year % 400 == 0) goto x210;
+        if(pg->year % 100 == 0) goto x105;
+        if(pg->year %   4 == 0) goto x210;
         goto x105;
 
 x210:
         left = min - test;
         leap = 0;
-        if(G.year %   4 == 0) leap = 12;
-        if(G.year % 100 == 0) leap = 0;
-        if(G.year % 400 == 0) leap = 12;
+        if(pg->year %   4 == 0) leap = 12;
+        if(pg->year % 100 == 0) leap = 0;
+        if(pg->year % 400 == 0) leap = 12;
         for(imo=1; imo<12; imo++) {
                 if(mo[imo+leap] <= left)
                         continue;
-                G.month = imo;
-                G.day = left - mo[imo+leap-1] + 1;
-                return(&G);
+                pg->month = imo;
+                pg->day = left - mo[imo+leap-1] + 1;
+                return(pg);
         }
-        G.month = 12;
-        G.day = left - mo[11+leap] + 1;
-        return(&G);
+        pg->month = 12;
+        pg->day = left - mo[11+leap] + 1;
+        return(pg);
 }
 
 /*
- * date18 : Calcualate 18 char date in the form 88Jan23 1234 12.21
- *              from the julian seconds.  Remember to leave space for the
- *              string termination (NUL).
+ * date20 : Create 20 char date string in the form 1988Jan23 1234 12.21
+ *          from the julian seconds.  Remember to leave space for the
+ *          string termination (NULL).
+ *          Replaces non-Y2K-compliant date18() function
+ *          Added to chron3.c 10/28/98 by LDD.
  */
-void date18( double secs, char *c18)
+void date20( double secs, char *c20)
 {
-        struct Greg *g;
+        struct Greg g;
         long minute;
         double sex;
         int hrmn;
 
         minute = (long) (secs / 60.0);
         sex = secs - 60.0 * minute;
-        g = grg(minute);
-        hrmn = 100 * g->hour + g->minute;
-        sprintf(c18, "%2d%3s%2d %4d%6.2f",
-                g->year-CENTURY, cmo[g->month-1], g->day, hrmn, sex);
+        grg(minute, &g);
+        hrmn = 100 * g.hour + g.minute;
+        sprintf(c20, "%04d%3s%2d %4d%6.2f",
+                g.year, cmo[g.month-1], g.day, hrmn, sex);
 }
 
 /*
@@ -195,11 +213,11 @@ double tnow( void )
         time_t tsecs;
         double secs;
 
-        g.year = 1970;
-        g.month = 1;
-        g.day = 1;
-        g.hour = 0;
-        g.minute =0;
+        g.year   = 1970;
+        g.month  = 1;
+        g.day    = 1;
+        g.hour   = 0;
+        g.minute = 0;
 /* original code by Carl; ftime() not supported on Sparc C compiler 3.0.1 */
 /*      ftime(&q);                                              */
 /*      secs = 60.0 * julmin(&g) + q.time +  0.001 * q.millitm; */
@@ -211,49 +229,48 @@ double tnow( void )
 /*
  * Calculate gregorian date and time from julian seconds.
  */
-struct Greg *datime( double secs )
+struct Greg *datime( double secs, struct Greg *pg )
 {
-        struct Greg *g;
         long j, m, min;
 
         min = (long) (secs / 60.0);
         j = min/1440L;
         m = min-1440L*j;
         j += 2305448L;
-        g = gregor(j);
-        g->hour = m/60;
-        g->minute = m - 60 * g->hour;
-        g->second = secs - 60.0 * min;
-        return(g);
+        gregor(j,pg);
+        pg->hour = m/60;
+        pg->minute = m - 60 * pg->hour;
+        pg->second = (float) (secs - 60.0 * min);
+        return(pg);
 }
 
 /*
- * date15 : Calcualate 15 char date in the form 880123123412.21
- *              from the julian seconds.  Remember to leave space for the
- *              string termination (NUL).
- *              Added to chron3.c on 3/30/95 by LDD
+ * date17 : Build a 17 char date string in the form 19880123123412.21
+ *          from the julian seconds.  Remember to leave space for the
+ *          string termination (NULL).
+ *          Replaces the non-Y2K-compliant date15() function.
+ *          Added to chron3.c on 10/28/98 by LDD
  */
-void date15( double secs, char *c15 )
+void date17( double secs, char *c17 )
 {
-        struct Greg *g;
+        struct Greg g;
         long minute;
         double sex;
-        int year;
 
         minute = (long) (secs / 60.0);
         sex = secs - 60.0 * (double) minute;
-        g = grg(minute);
-        year = g->year - CENTURY;
-        sprintf(c15, "%02d%02d%02d%02d%02d%05.2f\0",
-                year, g->month, g->day, g->hour, g->minute, sex);
+        grg(minute,&g);
+        sprintf(c17, "%04d%02d%02d%02d%02d%05.2f\0",
+                g.year, g.month, g.day, g.hour, g.minute, sex);
 }
 
 /*
- * julsec15 : Calculate time in julian seconds from a character string
- *              of the form 880123123412.21
- *              Added to chron3.c on 3/30/95 by LDD
+ * julsec17 : Calculate time in julian seconds from a character string
+ *            of the form 19880123123412.21
+ *            Replaces the non-Y2K-compliant julsec15() function.
+ *            Added to chron3.c on 10/28/98 by LDD
  */
-double julsec15( char *c15 )
+double julsec17( char *c17 )
 {
         struct Greg  g;
         double       jsecs;
@@ -261,13 +278,13 @@ double julsec15( char *c15 )
         int          isec, hsec;
 
 /*** Make sure there are no blanks in the time part of the pick ***/
-        for(i=0; i<15; i++)
+        for(i=0; i<17; i++)
         {
-                if( c15[i] == ' ' )  c15[i] = '0';
+                if( c17[i] == ' ' )  c17[i] = '0';
         }
 
 /***  Read character string  ***/
-        narg = sscanf( c15, "%2d%2d%2d%2d%2d%2d.%2d",
+        narg = sscanf( c17, "%4d%2d%2d%2d%2d%2d.%2d",
                         &g.year, &g.month, &g.day,
                         &g.hour, &g.minute, &isec, &hsec);
 
@@ -275,7 +292,6 @@ double julsec15( char *c15 )
 
 
 /***  Calculate julian seconds ***/
-        g.year += CENTURY;
         jsecs   = 60.0 * (double) julmin(&g) +
                          (double) isec +
                          (double) hsec / 100.0;
@@ -284,18 +300,19 @@ double julsec15( char *c15 )
 }
 
 /*
- * epochsec15 :  Convert time in a character string form of
- *               yymmddhhmmss.ff (880231010155.23) to
+ * epochsec17 :  Convert time in a character string form of
+ *               ccyymmddhhmmss.ff (19880231010155.23) to
  *               seconds since 1970-01-01 00:00:00.0
- *               Added to chron3.c on 1/30/97 by LDD
+ *               Replaces the non-Y2K-compliant epochsec15() function.
+ *               Added to chron3.c on 10/28/98 by LDD
  */
-int epochsec15( double *sec, char *tstr )
+int epochsec17( double *sec, char *tstr )
 {
    double jsec;
    double sec1970 = 11676096000.00;  /* # seconds between Carl Johnson's     */
                                      /* time 0 and 1970-01-01 00:00:00.0 GMT */
 
-   jsec = julsec15( tstr );
+   jsec = julsec17( tstr );
    if( jsec==0.0 )
    {
       *sec=0.0;
@@ -310,21 +327,22 @@ int epochsec15( double *sec, char *tstr )
  * timegm :  Convert time as a struct tm to seconds since 1970-01-01 00:00:00.0
  *           This function is equivalent to timegm() in SunOS 4.x.
  *           Added to chron3.c on 2/27/98 by WMK
+ *           Modified to be Y2K compliant 10/28/98 by LDD
  */
 time_t timegm( struct tm *tm )
 {
-   char   tstr[16];
+   char   tstr[18];
    double dsec;
 
-   sprintf( tstr, "%02d%02d%02d%02d%02d%02d.00",
-            (tm->tm_year + 1900) % 100,
+   sprintf( tstr, "%04d%02d%02d%02d%02d%02d.00",
+            tm->tm_year + 1900,
             tm->tm_mon + 1,
             tm->tm_mday,
             tm->tm_hour,
             tm->tm_min,
             tm->tm_sec );
 
-   epochsec15( &dsec, tstr );
+   epochsec17( &dsec, tstr );
    return( (time_t)dsec );
 }
 

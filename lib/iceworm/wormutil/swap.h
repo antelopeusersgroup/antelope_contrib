@@ -1,7 +1,7 @@
 #ifndef SWAP_H
 #define SWAP_H
 
-#include "trace_buf.h"
+#include <trace_buf.h>
 /* include file for swap.c: handy routines for swapping earthwormy things */
 
 void SwapShort( short * );                  /* swap.c       sys-independent  */

@@ -1,5 +1,5 @@
 /*
- * kom.c : Simple positional command parcer.
+ * kom.c : Simple positional command parser.
  *
  *$ 91May07 CEJ Version 1.0
  *$ 93Oct03 CEJ Added k_put routine.
@@ -19,7 +19,7 @@
 #include <string.h>
 #include "kom.h"
 
-#define MAXCRD 256
+#define MAXCRD 512
 static struct k_buf {
         FILE *fid;
         int ncrd;               /* bytes in command             */

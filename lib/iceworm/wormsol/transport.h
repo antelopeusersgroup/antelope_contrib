@@ -14,7 +14,7 @@
 #ifndef TRANSPORT_H
 #define TRANSPORT_H
 
-#include "platform.h"
+#include <platform.h>
 
 /* Structure types used in transport.c */
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "wave_client.h"
-#include "util_ext.h"
+#include "iceworm_extensions.h"
  
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 

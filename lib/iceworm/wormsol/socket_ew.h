@@ -6,6 +6,7 @@
 /**************************************************************/
 #define SOCKET_CLOSE_IMMEDIATELY_EW 0
 #define SOCKET_CLOSE_GRACEFULLY_EW -1
+#define SOCKET_CLOSE_SIMPLY_EW     -2
 
 #ifdef _WINNT
 #include <windows.h>
@@ -39,7 +40,7 @@
 
 #define MAXSENDSIZE_EW 8192/*4096*/
 
-#include "earthworm.h"
+#include <earthworm.h>
 /**************************************************************/
 /* EXTERNS                                                    */
 /**************************************************************/

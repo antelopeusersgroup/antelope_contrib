@@ -17,14 +17,14 @@ FAIL--not coded for OS2
 #include <thread.h>
 #include <string.h>
 #include <time.h>
-#include "earthworm.h"
-#include "transport.h"
-#include "kom.h"
-#include "trace_buf.h"
+#include <earthworm.h>
+#include <transport.h>
+#include <kom.h>
+#include <trace_buf.h>
 #include "stock.h"
 #include "orb.h"
 #include "pkt.h"
-#include "site_iw_ext.h"
+#include "iceworm_extensions.h"
 
 float htonf (float arg);
 
@@ -68,6 +68,7 @@ static char	Orbname[STRSZ];		/* IP:Port of orbserver */
 static int	Compress;	/* Whether to first difference/ generic compress 
 				  data (with Harvey's routine) */
 static char	Network[20] = "-";	/* Name of network to export */
+static int	Timecorr;	/* Whether to correct time stamps per SITE_DB */
 
 /*
  * Things to look up in the earthworm.h tables with getutil.c functions 
@@ -94,7 +95,6 @@ main( int argc, char **argv )
 	MSG_LOGO reclogo;/* logo of retrieved message     */
 	int	res;
 	char 	*str;
-	char	*runPath;
 	char	sitedb[FILENAME_MAX];
 
 	if ( argc != 2 ) 
@@ -103,33 +103,7 @@ main( int argc, char **argv )
 		exit( 0 );
 	}
 
-        runPath = getenv( "EW_PARAMS" );
- 
-        if ( runPath == NULL )
-        {
-                fprintf( stderr,
-                "eworm2orb: Environment variable EW_PARAMS not defined." );
-                fprintf( stderr, " Exiting.\n" );
-                return -1;
-        }
- 
-        if ( *runPath == '\0' )
-        {
-                fprintf( stderr,
-			 "eworm2orb: Environment variable EW_PARAMS " );
-                fprintf( stderr, "defined, but has no value. Exiting.\n" );
-                return -1;
-        }
- 
-        if ( chdir( runPath ) == -1 )
-        {
-                fprintf( stderr,
-                        "eworm2orb: Params directory not found: %s\n", runPath );
-                fprintf( stderr,
-                        "eworm2orb: Reset environment variable EW_PARAMS." );
-                fprintf( stderr, " Exiting.\n" );
-                return -1;
-        }
+	chdir_ewparams( "eworm2orb" );
 
 	eworm2orb_config( argv[1] );
 
@@ -151,7 +125,7 @@ main( int argc, char **argv )
 
 	StartThread( Heartbeat, 0, &tidHeartbeat );
 
-	if( ! STREQ( Network, "-" ) ) {
+	if( ( ! STREQ( Network, "-" ) ) || Timecorr ) {
 
         	str = getenv( "SITE_DB" );
         	if ( str == NULL )
@@ -165,14 +139,18 @@ main( int argc, char **argv )
                 	strcpy( sitedb, str );
 	 
                 	read_site_db( sitedb );
-                       	lookup_network( sitedb, Network );
-                       	if( subset_for_network() <= 0 )
-                       	{
-                               	fprintf(stderr,
-                               	"eworm2orb: No stations in %s Network. Bye.\n",
-                               	Network );
-                               	exit( -1 );
-                       	}
+
+			if( ! STREQ( Network, "-" ) ) {
+
+                       		lookup_network( sitedb, Network );
+                       		if( subset_for_network() <= 0 )
+                       		{
+                               		fprintf(stderr,
+                               		"eworm2orb: No stations in %s Network. Bye.\n",
+                               		Network );
+                               		exit( -1 );
+                       		}
+			}
         	}
 
 	}
@@ -233,7 +211,7 @@ eworm2orb_config( char *configfile )
 	/*
 	 * Set to zero one init flag for each required command 
 	 */
-	ncommand = 7;
+	ncommand = 8;
 	for ( i = 0; i < ncommand; i++ )
 		init[i] = 0;
 	nLogo = 0;
@@ -381,6 +359,12 @@ eworm2orb_config( char *configfile )
 				Compress = k_int();
 				init[6] = 1;
 			}
+			 /* 7 */
+			else if ( k_its( "Timecorr" ) ) 
+			 {
+				Timecorr = k_int();
+				init[7] = 1;
+			}
 			 /* optional */ 
 			else if ( k_its( "Network" ) ) 
 			{
@@ -431,6 +415,7 @@ eworm2orb_config( char *configfile )
 		if ( !init[4] ) fprintf( stderr, "<GetTracesFrom> " );
 		if ( !init[5] ) fprintf( stderr, "<OrbPort> " );
 		if ( !init[6] ) fprintf( stderr, "<Compress> " );
+		if ( !init[7] ) fprintf( stderr, "<Timecorr> " );
 		fprintf( stderr, "command(s) in <%s>; exiting!\n", configfile );
 		exit( -1 );
 	}
@@ -660,14 +645,17 @@ eworm2orb_tracebuf( TracePacket *tp, long size )
 	int	packetsize;
 	float	convert;
 	char	datatype[4];
+	double	commdelay;
+	double	starttime;
 	int	*data;
 	int	i;
 	int	nout;
 
 	WaveMsgMakeLocal( (TRACE_HEADER *) tp );
 
-	if( ! STREQ( Network, "-" ) && 
-	    ( ( stachan = lookup_stachan( tp->trh.sta, tp->trh.chan  ) ) == NULL ) )
+	stachan = lookup_stachan( tp->trh.sta, tp->trh.chan  );
+
+	if( ! STREQ( Network, "-" ) && stachan == NULL ) 
 	{
 		return;
 	} 
@@ -775,11 +763,19 @@ eworm2orb_tracebuf( TracePacket *tp, long size )
 			free( buf );
 		}
 
+		if( Timecorr == 0 || stachan == NULL ) {
+			commdelay = 0;
+		} else {
+			commdelay = stachan->commdelay;
+		}
+		
+		starttime = tp->trh.starttime - commdelay;
+
 		sprintf( srcid, "%s_%s_%s", tp->trh.net,
 					  tp->trh.sta,
 					  tp->trh.chan );
 
-		rc = orbput( OrbFd, srcid, tp->trh.starttime, &orbpacket[0], packetsize );
+		rc = orbput( OrbFd, srcid, starttime, &orbpacket[0], packetsize );
 
 		if( rc != 0 ) logit( "et", 
 			"orbput failed for packet source %s\n", srcid );

@@ -1,25 +1,10 @@
 BIN= orb2eworm
 DATADIR=misc
 DATA=orb2eworm.d orb2eworm.desc
-INCLUDE=
- 
 MAN1=orb2eworm.1
-  
-CLEAN= $(BIN)
-
-ICEWORMLIBS= -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS)
    
-cflags= -mt 
-fflags=
+cflags= -D_SPARC -D_SOLARIS
 ldflags= -xildoff 
-ldlibs= -lpkt -lorb $(ICEWORMLIBS)
+ldlibs= -lpkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt
 
 include $(ANTELOPEMAKE)
-
-GLOBALFLAGS= -D_SPARC -D_SOLARIS
-CFLAGS += $(GLOBALFLAGS)
- 
-OBJS = orb2eworm.o 
-
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)

@@ -20,8 +20,11 @@ float brent(float ax, float bx, float cx, float (*f)(float), float tol, float *x
 
         for (iter=1;iter<=ITMAX;iter++)
         {
-           xm=0.5*(a+b);
-           tol2=2.0*(tol1=tol*fabs(x)+ZEPS);
+           xm=(float)0.5*(a+b);
+
+
+           tol2=(float)2.0*(tol1=(float)tol*(float)fabs(x)+(float)ZEPS);
+
            if (fabs(x-xm) <= (tol2-0.5*(b-a)))
            {
               *xmin=x;
@@ -32,25 +35,25 @@ float brent(float ax, float bx, float cx, float (*f)(float), float tol, float *x
               r=(x-w)*(fx-fv);
               q=(x-v)*(fx-fw);
               p=(x-v)*q-(x-w)*r;
-              q=2.0*(q-r);
+              q=(float)2.0*(q-r);
               if (q > 0.0) p = -p;
-              q=fabs(q);
+              q=(float)fabs(q);
               etemp=e;
               e=d;
               if (fabs(p) >= fabs(0.5*q*etemp) || p <= q*(a-x) || p >= q*(b-x))
-                 d=CGOLD*(e=(x >= xm ? a-x : b-x));
+                 d=(float)CGOLD*(e=(x >= xm ? a-x : b-x));
               else
               {
                  d=p/q;
                  u=x+d;
                  if (u-a < tol2 || b-u < tol2)
-                    d=SIGN(tol1,xm-x);
+                    d=(float)SIGN(tol1,xm-x);
               }
            }
            else
-              d=CGOLD*(e=(x >= xm ? a-x : b-x));
+              d=(float)CGOLD*(e=(x >= xm ? a-x : b-x));
 
-           u=(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
+           u=(float)(fabs(d) >= tol1 ? x+d : x+SIGN(tol1,d));
            fu=(*f)(u);
            if (fu <= fx)
            {

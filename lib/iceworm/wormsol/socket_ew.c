@@ -8,18 +8,24 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
-#include <socket_ew.h>
+#include "socket_ew.h"
 
 
 ulong MS_PER_TICK;
 struct tms mytimestruct;
 
+int SOCKET_SYS_INIT = 0;   /* Global initialization flag,
+                              set in SocketSysInit(), 
+                              checked in socket_ew()  */
+
+
 /********************** SocketSysInit *********************
-   Initialize a socket system (null function in Solaris)
+   Initialize a socket system (dummy function in Solaris)
 **********************************************************/
 
 void SocketSysInit( void )
 {
+   SOCKET_SYS_INIT++;
    return;
 }
 

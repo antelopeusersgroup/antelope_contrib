@@ -1,7 +1,7 @@
 
 
   /********************************************************************
-   *                                                        4/98      *
+   *                                                       10/1998    *
    *                           transport.c                            *
    *                                                                  *
    *   Transport layer functions to access shared memory regions.     *
@@ -35,14 +35,14 @@ void  tport_buferror( short, char * );
 /* These statements and variables are required by the functions of 
    the input-buffering thread 
    ***************************************************************/
-#include <earthworm.h>  
+#include "earthworm.h"
 volatile SHM_INFO *PubRegion;      /* transport public ring      */
 volatile SHM_INFO *BufRegion;      /* pointer to private ring    */
 volatile MSG_LOGO *Getlogo;        /* array of logos to copy     */
 volatile short     Nget;           /* number of logos in getlogo */
 volatile unsigned  MaxMsgSize;     /* size of message buffer     */
 volatile char     *Message;        /* message buffer             */
-unsigned char      MyModuleId;     /* module id of main thread   */
+static unsigned char MyModuleId;   /* module id of main thread   */
 unsigned char      MyInstid;       /* inst id of main thread     */
 unsigned char      TypeError;      /* type for error messages    */
 
@@ -737,6 +737,12 @@ void *tport_bufthr( void *dummy )
    int           res1, res2;
    int 		 gotmsg;
 
+/* Flush all existing messages from the public memory region
+   *********************************************************/
+   while( tport_copyfrom((SHM_INFO *) PubRegion, (MSG_LOGO *) Getlogo, 
+                          Nget, &logo, &msgsize, (char *) Message, 
+                          MaxMsgSize, &msgseq )  !=  GET_NONE  );
+
    while ( 1 )
    {
 /* If a terminate flag is found, go to sleep; 
@@ -745,7 +751,7 @@ void *tport_bufthr( void *dummy )
       if ( tport_getflag( (SHM_INFO *) PubRegion ) == TERMINATE )
       {
          tport_putflag( (SHM_INFO *) BufRegion, TERMINATE );
-         sleep_ew( 10000 );
+         sleep_ew( 100000 );
       /* thr_exit( NULL ); */ /*let the main thread exit!*/
       }
 

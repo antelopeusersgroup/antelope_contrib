@@ -3,7 +3,7 @@
 #include "earthworm.h"
 #include "ak_ahheader.h"
 #include "sac.h"
-#include "site_iw_ext.h"
+#include "iceworm_extensions.h"
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 

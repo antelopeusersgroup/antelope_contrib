@@ -11,11 +11,11 @@
 #include <sys/types.h>
 #include <sys/statvfs.h>
 
-int GetDiskAvail( char *disk, unsigned *DiskAvail )
+int GetDiskAvail( unsigned *DiskAvail )
 {
    struct statvfs buf;
 
-   if ( statvfs( disk, &buf ) == -1 )
+   if ( statvfs( ".", &buf ) == -1 )
       return( -1 );
 
 /* printf( "f_bsize:  %u\n", buf.f_bsize );       Block size

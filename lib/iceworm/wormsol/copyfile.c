@@ -60,7 +60,7 @@ int copyfile( char *fname,    /* name of file to copy                 */
 
 /* Start new process to copy file
  ********************************/
-   pid = fork();
+   pid = fork1();
    switch( pid ) 
    {
       case -1: /* fork failed */
@@ -112,7 +112,7 @@ int copyfile( char *fname,    /* name of file to copy                 */
 
 /* Start new process to rename the remote file
  *********************************************/
-   pid = fork();
+   pid = fork1();
    switch( pid ) 
    {
       case -1: /* fork failed */

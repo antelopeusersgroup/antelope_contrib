@@ -160,10 +160,10 @@ float t_fun(float r)
         t = 0.0;
         for(i=0; i<=iSrc; i++) {
                 if(i == iSrc) {
-                        td = fabs(zSrc - zTop[i]) / cos(p) / vLay[i];
+                        td = (float) (fabs(zSrc - zTop[i]) / cos(p) / vLay[i]);
                 } else {
                         q = asin(vLay[i]*sin(p)/vLay[iSrc]);
-                        td = (float)(zTop[i+1] - zTop[i]) / cos(q) / vLay[i];
+                        td = (float)((zTop[i+1] - zTop[i]) / cos(q) / vLay[i]);
                 }
                 t += td;
         }
@@ -185,14 +185,14 @@ float t_dis( float r )
         x = (float)0.0;
         for(i=0; i<=iSrc; i++) {
                 if(i == iSrc) {
-                        xd = (zSrc - zTop[i]) * tan(p);
+                        xd = (float) ((zSrc - zTop[i]) * tan(p));
                 } else {
                         q = asin(vLay[i]*sin(p)/vLay[iSrc]);
-                        xd = (float)(zTop[i+1] - zTop[i]) * tan(q);
+                        xd = (float)((zTop[i+1] - zTop[i]) * tan(q));
                 }
                 x += xd;
         }
-        return (x-xSrc)*(x-xSrc);
+        return (float) ((x-xSrc)*(x-xSrc));
 }
 
 /**************************************************************************
@@ -224,7 +224,7 @@ double t_lay( double  r,        /* Epicentral distance          */
         sgn = 1.0;
         if(z < 0.0) {
                 z = -z;
-                sgn = -1.0;
+                sgn = -sgn;
         }
 /* Calculate source layer                       */
         isrc = 0;
@@ -271,10 +271,10 @@ double t_lay( double  r,        /* Epicentral distance          */
         }
 
 /* Travel time of direct ray */
-        ax = (float)0.8 * xSrc;
-        bx = (float)1.5 * xSrc;
+        ax = (float)(0.8 * xSrc);
+        bx = (float)(1.5 * xSrc);
         mnbrak(&ax, &bx, &cx, &fa, &fb, &fc, t_dis);
-        brent(ax, bx, cx, t_dis, 0.001, &xmin);
+        brent(ax, bx, cx, t_dis, (float)0.001, &xmin);
         tdir = t_fun(xmin);
         if(tdir < tmin) {
                 iRef = 0;
@@ -313,10 +313,10 @@ double t_direct( double  r,
         xSrc = r;
 
 /* Calculate travel time, need to take care of Z > 0 by direct calcuation */
-        ax = (float)0.8 * xSrc;
-        bx = (float)1.5 * xSrc;
+        ax = (float)(0.8 * xSrc);
+        bx = (float)(1.5 * xSrc);
         mnbrak(&ax, &bx, &cx, &fa, &fb, &fc, t_dis);
-        brent(ax, bx, cx, t_dis, 0.001, &xmin);
+        brent(ax, bx, cx, t_dis, (float) 0.001, &xmin);
         toa = atan(xmin/z);
         if(toa < 0.0)
                 toa += 3.141592654;
@@ -353,10 +353,10 @@ double t_pmp( double  r,
         xSrc = r;
 
 /* Calcuate travel time of direct ray from image source         */
-        ax = (float)0.8 * xSrc;
-        bx = (float)1.5 * xSrc;
+        ax = (float)(0.8 * xSrc);
+        bx = (float)(1.5 * xSrc);
         mnbrak(&ax, &bx, &cx, &fa, &fb, &fc, t_dis);
-        brent(ax, bx, cx, t_dis, 0.001, &xmin);
+        brent(ax, bx, cx, t_dis, (float)0.001, &xmin);
         toa = atan(xmin/z);
         if(toa < 0.0)
                 toa += 3.141592654;

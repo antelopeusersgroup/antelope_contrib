@@ -23,7 +23,7 @@
 #include <netdb.h>
 #include <math.h>
 #include "earthworm.h"
-#include "util_ext.h"
+#include "iceworm_extensions.h"
 #include "trace_buf.h"
 #include "wave_client.h"
 

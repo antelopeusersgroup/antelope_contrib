@@ -13,12 +13,27 @@
  * November 1996: KGL Added net and quality fields to accommodate
  *  needs expressed by Alex Bittenbinder and the Earthworm team
  * February 1997: KGL Added pad field as used by Earthworm team
+ *
+ * Replaced hardcoded string lengths for S-C-N with 
+ * #defines so that they can be used elsewhere. LV 5/1999
+ *
+ *
  */
 
 #ifndef TRACE_BUF_H
 #define TRACE_BUF_H
 
 #define NETWORK_NULL_STRING "-"
+
+/* NOTE:
+ * The principal time fields in the TRACE_HEADER are: 
+ *    starttime, nsamp, and samprate.
+ * The endtime field is included as a redundant convenience.
+ */
+
+#define	TRACE_STA_LEN	7
+#define	TRACE_CHAN_LEN	9
+#define	TRACE_NET_LEN	9
 
 typedef struct {
         int     pinno;          /* Pin number */
@@ -27,9 +42,9 @@ typedef struct {
                                    (seconds since midnight 1/1/1970) */
         double  endtime;        /* Time of last sample in epoch seconds */
         double  samprate;       /* Sample rate */
-        char    sta[7];         /* Site name */
-        char    net[9];         /* Network name */
-        char    chan[9];        /* Component/channel code */
+        char    sta[TRACE_STA_LEN];         /* Site name */
+        char    net[TRACE_CHAN_LEN];         /* Network name */
+        char    chan[TRACE_NET_LEN];        /* Component/channel code */
         char    datatype[3];    /* Data format code */
         char    quality[2];     /* Data-quality field */
         char    pad[2];         /* padding */
