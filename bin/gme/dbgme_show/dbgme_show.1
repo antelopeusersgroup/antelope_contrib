@@ -1,0 +1,130 @@
+.TH DBGME_SHOW 1 "$Date$"
+.SH NAME
+dbgme_show \- Plot a gme file from a database
+.SH SYNOPSIS
+.nf
+\fBdbgme_show \fP[-p \fIpffile\fP] [-o \fIorid\fP] [-r \fIrecipe\fP] \fIdbname\fP
+                [\fIpsfile\fP]
+.fi
+.SH DESCRIPTION
+\fBdbgme_show\fP plots a ground-motion map from the specified database. If no
+\fIorid\fP is specified, the most-recently-modified grid in the qgrid table
+is chosen. \fBdbgme_show\fP launches several gmt(1) commands, which must be
+available on the user's path.
+.LP
+The default action is to convert the resulting postscript file to a gif
+file and plot the result in a window.  If no output file is specified
+[via the \fIpsfile\fP argument], a temporary file is created in /tmp. If a
+\fIpsfile\fP name is specified on the command line, the output file is
+saved. A Control-c in the \fBdbgme_show\fP window dismisses the application.
+.LP
+If \fBdbgme_show\fP knows the \fIorid\fP for a given grid, and if it has an
+entry in the meastypes array of its parameter file telling it what
+measurements go with that grid \fIrecipe\fP, \fBdbgme_show\fP plots station
+symbols on the map for all stations for which it has measurements, color
+shading the real measurements using the same colormap as the underlying grid.
+.LP
+\fBdbgme_show\fP may be launched from the Graphics pull-down menu of dbe(1)
+on a selected row, if the following is put in the dbe(1) parameter file .dbe.pf (one may also want to include the other rt1.0 entries from .dbe.pf):
+.ft CW
+.in 2c
+.nf
+
+.ne 7
+
+rt1.0:gme1.0 &Arr{
+    graphics &Arr{
+        qgrid Qgrid  \fBdbgme_show\fP -
+    }
+}
+
+.fi
+.in
+.ft R
+
+Further documentation on this may be found in the man page for dbe(1).
+
+.SH OPTIONS
+.IP "-p \fIpffile\fP"
+Specify parameter file name, overriding the default of
+dbgme_show.pf
+
+.IP "-o \fIorid\fP"
+Select grid for the specified origin.
+
+.IP "-r \fIrecipe\fP"
+Select grid for the specified \fIrecipe\fP.
+
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+
+.ne 16
+grid_database &datafilename(gmt/world30)
+gmt_projection -JM6i
+recipes &Arr{
+	trinetsm_pga &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peaka
+		mode	contour
+		nintervals 4
+	}
+	trinetsm_pgv &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peakv
+		mode	contour
+		nintervals 4
+	}
+	trinetsm_mmi &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		mode	contour
+		nintervals 4
+	}
+	sp87_pga &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peaka
+		mode	contour
+		nintervals 4
+	}
+	sp87_pgv &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peakv
+		mode	contour
+		nintervals 4
+	}
+}
+.fi
+.in
+.ft R
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% \fBdbgme -f -v -r trinetsm_pga -o 13813704 test/landers\fP
+% \fBdbgme_show -r trinetsm_pga -o 13813704 test/landers\fP
+%
+
+.fi
+.in
+.ft R
+.SH DIAGNOSTICS
+\fBdbgme_show\fP complains and dies if it does not find the required
+helper executables, such as the necessary GMT commands. \fBdbgme_show\fP
+detects a variety of problem conditions and reports if it cannot
+continue processing.
+.SH "SEE ALSO"
+.nf
+gmt(1), gs(1), cggrid_convert(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The grdview command has not been overly tolerant of other projections,
+at least in the way it's used in this script.
+.LP
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

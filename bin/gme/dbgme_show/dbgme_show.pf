@@ -1,0 +1,33 @@
+grid_database &datafilename(gmt/world30)
+gmt_projection -JM6i
+recipes &Arr{
+	trinetsm_pga &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peaka
+		mode	contour
+		nintervals 4
+	}
+	trinetsm_pgv &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peakv
+		mode	contour
+		nintervals 4
+	}
+	trinetsm_mmi &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		mode	contour
+		nintervals 4
+	}
+	sp87_pga &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peaka
+		mode	contour
+		nintervals 4
+	}
+	sp87_pgv &Arr{
+		colormap  &datafilename(gmt/dbgme_show_tan.cpt)
+		meastype  peakv
+		mode	contour
+		nintervals 4
+	}
+}
