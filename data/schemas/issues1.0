@@ -59,7 +59,7 @@ Attribute issuetype
 	Detail {
 		This field describes the general category of issue. Common 
 		categories might include comment, howto, problem, suggestion, 
-		support, etc.
+		support, project, admin, etc.
 	}
         ;
 
