@@ -5,7 +5,7 @@ DATA=
 INCLUDE= pforbstat.h
 PF=
 
-MAN3=
+MAN3= pforbstat.3
 
 CLEAN=
 
