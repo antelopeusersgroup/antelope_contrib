@@ -141,11 +141,10 @@ dbfixids db idname [ idstart ]
 <subsection Creating Database Views>
 <commands>
 dbsubset [-n name] [-v] aview expr
-    create new view from input aview containing only records which satisfy expression expr
-
+    keep only records from aview satisfying expression expr
 
 dbsort [options] aview [key ...]
-    create sorted view from input aview (sorted according to key)
+    sort input aview by keys
 <options>
 -o	overwrite original table with sorted table
 -n name	save results into database.name
@@ -155,7 +154,7 @@ dbsort [options] aview [key ...]
 
 
 dbjoin [options] aview [:key ...] table2 [[:key ...] table3 ...]
-    create view joining input aview with other tables, either by inferring join keys or by explicitly specifying join keys
+    join input aview with other tables, either by inferring join keys or by explicitly specifying join keys
 <options>
 -o	outer join
 -n name	save results into database.name
@@ -208,11 +207,11 @@ dbverify [options] db[.table]
 -t	turn off all tests
 -c	perform consistency checks
 -C c1,c2,..	run only specific consistency checks c1,c2,...
--i	check that all referenced foreign ids are present in defining table
--j	test for correct # of records in joins from parameter file
--k	verify uniqueness of primary and secondary keys
+-i	check that referenced foreign ids are present 
+-j	test 2-table joins from parameter file
+-k	verify primary and secondary key are unique
 -l	check that lastid table entries are valid
--p	perform external program tests from parameter file
+-p	external program tests from parameter file
 -r	check attribute ranges
 -u	complain about unreferenced ids
 -x	check for existence of external files
