@@ -28,4 +28,8 @@ plot(s(2).data)
 
 dbclose( db );
 
+% SCAFFOLD 'forget' to destroy tr, pending bug resolution 
+% SCAFFOLD in dbseparate/trdestroy interaction 
+% SCAFFOLD trdestroy( tr );
+
 echo off

@@ -8,6 +8,8 @@ db = dbopen( demodb_path,'r' );
 
 db=dblookup_table( db,'wfdisc' );
 
+% CRITICAL NOTE: This sort by sta, chan, and time MUST precede the 
+% trload_cssgrp command:
 db= dbsort( db, 'sta', 'chan', 'time' );
 
 format long
@@ -24,5 +26,7 @@ plot(data)
 pause(0.5);
 
 dbclose( db );
+
+trdestroy( tr );
 
 echo off

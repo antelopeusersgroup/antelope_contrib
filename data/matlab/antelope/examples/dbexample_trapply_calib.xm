@@ -16,4 +16,6 @@ trapply_calib( tr )
 
 dbclose( db );
 
+trdestroy( tr );
+
 echo off

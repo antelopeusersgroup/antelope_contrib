@@ -46,4 +46,6 @@ pause(0.5);
 
 dbclose( db );
 
+trdestroy( tr );
+
 echo off

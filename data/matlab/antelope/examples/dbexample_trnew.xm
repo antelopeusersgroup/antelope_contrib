@@ -10,4 +10,6 @@ dbquery( tr,'dbDATABASE_NAME' )
 
 dbquery( tr,'dbSCHEMA_NAME' )  
 
+trdestroy( tr );
+
 echo off

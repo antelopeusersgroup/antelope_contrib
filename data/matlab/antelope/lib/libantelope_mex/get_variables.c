@@ -83,6 +83,39 @@ get_stringtbl( const mxArray *in, Tbl **tbl )
 }
 
 int
+get_inttbl( const mxArray *in, Tbl **tbl )
+{
+	double	*data;
+	int	myint;
+	int	npts;
+	int	i;
+
+	if( ! mxIsNumeric( in ) ||
+	    ! mxIsDouble( in ) ||
+	    mxIsEmpty( in ) ||
+	    mxIsComplex( in ) )
+	{
+		*tbl = (Tbl *) NULL;
+		return 0;
+	}
+
+	npts = mxGetM( in ) * mxGetN( in );
+
+	data = mxGetPr( in );
+
+	*tbl = newtbl( 0 );
+
+	for( i = 0; i < npts; i++ ) 
+	{
+		myint = (int) data[i];
+
+		pushtbl( *tbl, (char *) myint );
+	}
+
+	return 1;
+}
+
+int
 get_pf( const mxArray *in, Pf **pf )
 {
         if( mxGetClassID( in ) != mxOBJECT_CLASS )

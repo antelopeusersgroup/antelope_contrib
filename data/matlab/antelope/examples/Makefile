@@ -35,6 +35,7 @@ DATA= \
 	dbexample_dbinvalid.m \
 	dbexample_dbjoin.m \
 	dbexample_dbjoin_keys.m \
+	dbexample_dblist2subset.m \
 	dbexample_dblookup.m \
 	dbexample_dblookup_table.m \
 	dbexample_dbmark.m \

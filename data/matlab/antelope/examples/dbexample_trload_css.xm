@@ -18,4 +18,6 @@ tr = trload_css( db,time,endtime )
 
 dbclose( db );
 
+trdestroy( tr );
+
 echo off

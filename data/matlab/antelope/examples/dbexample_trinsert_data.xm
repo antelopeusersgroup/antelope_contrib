@@ -30,4 +30,6 @@ dbputv( tr,'time',time,'samprate',samprate,'endtime',endtime,'sta',sta,'chan',ch
 
 trinsert_data( tr,data )
 
+trdestroy( tr );
+
 echo off

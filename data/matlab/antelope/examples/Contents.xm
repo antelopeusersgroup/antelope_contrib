@@ -42,6 +42,7 @@
 %   dbexample_dbinvalid
 %   dbexample_dbjoin
 %   dbexample_dbjoin_keys
+%   dbexample_dblist2subset
 %   dbexample_dblookup
 %   dbexample_dblookup_table
 %   dbexample_dbmark

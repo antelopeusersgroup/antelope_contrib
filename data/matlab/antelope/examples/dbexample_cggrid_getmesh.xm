@@ -8,7 +8,10 @@ cgg = cggrid( X, Y, Z )
 
 [myx, myy, myz] = cggrid_getmesh( cgg );
 
-surf( myx, myy, myz )
+mesh( myx, myy, myz )
+
+% (Allow time for figure to come up when running in batch mode)
+pause(0.5);
 
 clear( cgg );
 

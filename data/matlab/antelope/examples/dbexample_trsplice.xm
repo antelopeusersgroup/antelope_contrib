@@ -35,4 +35,6 @@ strtime( dbgetv( tr,'endtime' ) )
 
 dbclose( db );
 
+trdestroy( tr );
+
 echo off

@@ -31,6 +31,7 @@
 %   dbjoin		- Join the specified Datascope database tables
 %   dbsort		- Sort the specified Datascope database table
 %   dbsubset		- Subset a Datascope database table 
+%   dblist2subset	- Form a subset from a list of record numbers or a group
 %   dbtheta		- Theta-join two Datascope database tabl
 %   dbunjoin		- Unjoin the specified Datascope database view
 %   dbnojoin		- Find records which do not join between tables

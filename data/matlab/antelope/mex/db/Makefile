@@ -18,6 +18,7 @@ MEXSRCS= \
 	dbget.c \
 	dbput.c \
 	db2struct.c \
+	dblist2subset.c \
 	dblookup.c \
 	dblookup_table.c \
 	dbnextid.c \

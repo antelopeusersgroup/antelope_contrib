@@ -63,6 +63,7 @@ extern int pfpeek PL_(( Pf *, char *, Pf ** ));
 extern int get_dbptr PL_(( const mxArray *, Dbptr * ));
 extern int get_string PL_(( const mxArray *, char ** ));
 extern int get_stringtbl PL_(( const mxArray *, Tbl ** ));
+extern int get_inttbl PL_(( const mxArray *, Tbl ** ));
 extern int get_pf PL_(( const mxArray *, Pf ** ));
 extern int get_response PL_(( const mxArray *, Response ** ));
 extern int get_string PL_(( const mxArray *, char ** ));
