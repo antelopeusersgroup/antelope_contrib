@@ -81,7 +81,6 @@ $Mapspec{mapname} = (parsepath($Mapspec{psfile}))[1];
 $Mapspec{source} = "dynamic";
 $Mapspec{contour_mode} = "grddb";
 $Mapspec{mapclass} = "index";
-$Mapspec{longitude_branchcut_high} = 360;
 
 plot_basemap( \%Mapspec, "first" );
 plot_contours( \%Mapspec, "middle" );

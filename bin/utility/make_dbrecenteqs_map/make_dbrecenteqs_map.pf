@@ -27,6 +27,7 @@ mapspec	&Arr{
 	background_magsize_pixels	3
 	proj	edp
 	format	gif
+	longitude_branchcut_high 360
 	city_symbols_inches	0.08
 	cityname_fontjustify	LM
 	cityname_fontno	1
