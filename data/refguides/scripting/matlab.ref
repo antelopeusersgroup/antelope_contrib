@@ -246,7 +246,7 @@ NY = cggrid_ny( CGG )
 cggrid_write( CGG, FORMAT, FILE )
     write a cggrid object to a file
 
-cggrid2db( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, QGRIDTYPE [, 'overwrite'] )
+cggrid2db( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, QGRIDTYPE, AUTH [, 'overwrite'] )
     write a cggrid object to a database
 
 cggrid_free( CGG )
