@@ -1,4 +1,3 @@
-#include "pkt.h"
 /*
  * ida2orb
  *
@@ -27,7 +26,7 @@
 #include "xfer.h"
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
+#include "Pkt.h"
 
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
@@ -60,6 +59,13 @@ main( int argc, char **argv )
 	char	srcid[STRSZ];
 	int	upper = 0;
 	int	rc;
+	Packet *pkt ;
+
+	elog_init (argc, argv) ;
+	elog_notify ( 0, "%s : $Revision$ $Date$\n", argv[0] ) ;
+
+	pkt = newPkt() ;
+	pkt->pkttype = suffix2pkttype("CD1S");
 
 	while ((c = getopt(argc, argv, "ul")) != -1)
 	{
@@ -106,9 +112,16 @@ main( int argc, char **argv )
 	{
 	        status = Xfer_Read(xp, &xf_packet);             
 		if( status == XFER_OK )  {
+		    double pkttime ;
 		    xfer_packet_to_orb_pktchan( net, &xf_packet, &pktchan, upper );
-		    mystuff_iw_tracebuf( 0, 0, pktchan, &packet, &nbytes, &bufsize );
-		    sprintf( srcid, "%s_%s_%s", net, pktchan->sta, pktchan->chan );
+		    strcpy (pkt->parts.src_net, pktchan->net ) ;
+		    strcpy (pkt->parts.src_sta, pktchan->sta ) ;
+		    strcpy (pkt->parts.src_chan, pktchan->chan ) ;
+		    pkt->nchannels =1 ; 
+		    settbl(pkt->channels, 0, pktchan ) ;
+		    if ( stuffPkt(  pkt, srcid, &pkttime, &packet, &nbytes, &bufsize ) < 0 ) { 
+			die ( 0, "can't stuff packet" ) ;
+		    }
 		    if( Log )  {
 			fprintf( stderr, "%s %lf \n", srcid, pktchan->time );
 		        fflush( stderr);
@@ -143,7 +156,7 @@ xfer_packet_to_orb_pktchan( char *net,
 
 	if( (*pktchan) == (struct PktChannel *) NULL )
 	{
-		allot( PktChannel *, (*pktchan), 1 );
+		*pktchan = newPktChannel() ;
 		new_pktchannel++;
 	}
 
@@ -155,8 +168,8 @@ xfer_packet_to_orb_pktchan( char *net,
 	(*pktchan)->time = xf_packet->beg;
 	(*pktchan)->samprate = 1./xf_packet->sint;
 	(*pktchan)->calib = xf_packet->calib;
+	(*pktchan)->calper = xf_packet->calper;
 	(*pktchan)->nsamp = xf_packet->nsamp;
-	(*pktchan)->datatype = trINT;
 	strcpy( (*pktchan)->net, net );
 	strcpy( (*pktchan)->sta, xf_packet->sname );
 	strcpy( (*pktchan)->chan, xf_packet->cname );
@@ -177,14 +190,13 @@ xfer_packet_to_orb_pktchan( char *net,
 	{
 		allot ( int *, data_out, (*pktchan)->nsamp );
 		(*pktchan)->data = (void *) data_out;
-		(*pktchan)->nbytes = (*pktchan)->nsamp * sizeof( int );
 	}
-	else if( (*pktchan)->nbytes < (*pktchan)->nsamp * sizeof( int ) )
+	else if( (*pktchan)->datasz < (*pktchan)->nsamp )
 	{
 		data_out = (int *) (*pktchan)->data;
 		reallot( int *, data_out, (*pktchan)->nsamp );
 		(*pktchan)->data = (void *) data_out;
-		(*pktchan)->nbytes = (*pktchan)->nsamp * sizeof( int );
+		(*pktchan)->datasz = (*pktchan)->nsamp ;
 	}
 	else
 	{
