@@ -6,30 +6,28 @@ STOCKLIBS
 coords.h
 2-d and 3-d coordinate transformations, and seismic region routines
 
-
 <subsection Earth Units conversion>
 <cdeclarations>
 double deg2km ( double degrees )
-    convert from degrees at the equator to kilometers
+    convert from degrees at equator to kilometers
 
 double km2deg ( double km )
-    convert from kilometers to degrees at the equator
+    convert from kilometers to degrees at equator
 
 
 <subsection Flinn-Engdahl Regions>
 <cdeclarations>
 int grnumber ( double lat, double lon )
-    returns the Flinn-Engdahl geographic region number which contains the specified lat, lon
+    return Flinn-Engdahl geographic region number which contains lat, lon
 
 int grname ( int grn, char *name )
-    returns Flinn-Engdahl geographic region name for geographic region grn
-
+    return Flinn-Engdahl geographic region name for geographic region grn
 
 int srnumber ( int grn )
-    returns the Flinn-Engdahl seismic region number for geographic region grn
+    return Flinn-Engdahl seismic region number for geographic region grn
 
 int srname ( int srn, char *name )
-    returns the Flinn-Engdahl seismic region name for seismic region number srn
+    return Flinn-Engdahl seismic region name for seismic region number srn
 
 
 <subsection Spherical Geometry>
@@ -40,7 +38,6 @@ double deg ( double r )
 double rad ( double d )
     convert input degrees d to radians
 
-
 void dist ( double lat1, double lon1, double lat2, double lon2, double *delta, double *azimuth )
     return angular distance delta and direction azimuth between two points (lat1,lon1) and (lat2,lon2)
     (angles in radians)
@@ -49,20 +46,11 @@ void latlon ( double lat1, double lon1, double delta, double azimuth, double *la
     return new position (lat2,lon2) after moving delta radians in direction azimuth from (lat1,lon1) 
     (angles in radians)
 
-void xyztortp ( float u[3], float *r, float *theta, float *phi )
-    convert cartesian coordinates u into spherical coordinates r, theta, phi
-
-
-void carsph ( float u[3], float *ra, float *dec )
+void dcarsph ( double u[3], double *ra, double *dec )
     convert a unit 3-vector u to ra and dec (radians)
 
-void sphcar ( float ra, float dec, float u[3] )
+void dsphcar ( double ra, double dec, double u[3] )
     convert ra and dec (in radians) to cartesian coords u
-
-
-void dsphcar ( double ra, double dec, float u[3] )
-    convert ra and dec in radians to cartesian coords
-
 
 void deatom ( double a, double b, double c, double m[9] )
     convert Euler angles a, b, c to rotation matrix m
@@ -76,41 +64,40 @@ void rotmat ( double u[3], double A[9], double theta )
 void xrotate ( double u[3], v[3], w[3], theta )
     rotate v by angle theta about axis u, returned in w
 
-
-void r3add ( float u[3], float v[3], float w[3] )
+void dr3add ( double u[3], double v[3], double w[3] )
     add two 3-vectors u and v
 
-void r3cros ( float u[3], float v[3], float w[3] )
+void dr3cros ( double u[3], double v[3], double w[3] )
     return cross product w of two 3-vectors u and v
 
-double r3dot ( float u[3], float v[3] )
-    returns dot product of two 3-vectors u and v
+double dr3dot ( double u[3], double v[3] )
+    return dot product of two 3-vectors u and v
 
-double r3mag ( float u[3] )
-    returns the length of a 3-vector
+double dr3mag ( double u[3] )
+    return length of a 3-vector
 
-void r3mov ( float u[3], float v[3] )
+void dr3mov ( double u[3], double v[3] )
     move a vector u to a vector v
 
-void r3mxm ( float A[9], float B[9], float C[9] )
+void dr3mxm ( double A[9], double B[9], double C[9] )
     multiply two 3x3 matrices A and B, returning result C
 
-void r3mxv ( float A[9], float u[3], float v[3] )
+void dr3mxv ( double A[9], double u[3], double v[3] )
     multiply 3x3 matrix A by 3-vector u, returning vector v
 
-void r3norm ( float u[3] )
+void dr3norm ( double u[3] )
     make u a unit vector
 
-void r3ortho ( float u[3], float v[3] )
+void dr3ortho ( double u[3], double v[3] )
     makes u and v orthonormal vectors
 
-void r3sub ( float u[3], float v[3], float w[3] )
+void dr3sub ( double u[3], double v[3], double w[3] )
     subtracts v from u, returning result w
 
-void r3sxv ( float c, float v[3], float w[3] )
+void dr3sxv ( double c, double v[3], double w[3] )
     multiply 3-vector v by scalar c, returning result w 
 
-void r3tran ( float A[9], float B[9] )
-    transpose the 3x3 matrix A into B
+void dr3tran ( double A[9], double B[9] )
+    transpose 3x3 matrix A into B
 
 

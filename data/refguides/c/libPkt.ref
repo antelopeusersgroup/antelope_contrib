@@ -4,7 +4,8 @@ Pkt
 stock posix4 nsl socket m
 ORBLIBS
 Pkt.h
-Each orb packet is made up of nbytes data bytes, plus a srcname which indicates its source and its packet structure, plus a time.  
+Orb packet contain some data and associated srcname and time. 
+The srcname indicates at least the source and packet structure.
 
 <cdeclarations>
 int unstuffPkt ( char *srcname, double time, char *packet, int nbytes, Packet **pkt )

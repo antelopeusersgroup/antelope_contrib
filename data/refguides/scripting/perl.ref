@@ -10,77 +10,73 @@ use Datascope ;
 <function>
 
 dbopen (database, permissions)
-    returns a database pointer to the database
+    return database pointer to the database
 
 dbopen_database (database, permissions)
-    open database (or database.table or "-" for view from stdin), returning database pointer
+    open database (or database.table or "-" for view from stdin), return database pointer
 
 dbopen_table (database.table, permissions)
-    open database.table (or "-" for view from stdin), returning database pointer for a table
+    open database.table (or "-" for view from stdin), return database pointer 
 
 dbcreate(filename, schema, dbpath, desc, detail)
     create database descriptor file filename with specified schema, dbpath, desc and detail
 
 dbtmp(schema)
-    returns a database pointer to a temporary, transient database with specified schema
-
+    return database pointer to temporary database with specified schema
 
 dbclose (@db)
-    closes the database, freeing all resources used by it
+    close the database, freeing all resources 
 
 dbfree (@db)
-    frees resources for a table or a database
-
+    free resources for table or database
 
 dblookup (@db, database, table, field, row)
-    returns a database pointer for the specified database, table, field, and row.
+    return database pointer for the specified database, table, field, and row.
 
 <subsection Manipulating fields and records>
 dbadd (@db [, record])
-    add the new record to the table in @db. If record is not specified, add the scratch record. returns the new row number, or an error code < 0.
+    add the new record to the table in @db. If record is not specified, add the scratch record. return the new row number, or an error code < 0.
 
 dbaddnull (@db)
-    add a new null row to a table
+    add null row to table
 
 dbaddv (@db, field_name, value, [field_name, value, ...])
-    add a new row with the specified values to the database
+    add new row with the specified values to table
 
 
 dbmark (@db)
     set the specified rows to all null values
 
 dbdelete (@db)
-    delete a row from the database
+    delete row from the database
 
 dbcrunch (@db)
     delete all marked (null) rows from the specified table
 
 dbtruncate (@db, n)
-    truncate a table to the specified number of rows
+    truncate table to specified number of rows
 
 dbdestroy (@db)
     delete all tables and the descriptor file for the specified database, but not external files
 
 
 dbget (@db [, 0])
-    returns [or copies to the scratch rows] the specified field or rows 
+    return [or copy to the scratch row] the specified field or row 
 
 dbgetv (@db, field_name [, field_name, ...])
-    returns the values of the specified fields for a particular rows
-
+    return values of the specified fields for @db
 
 dbput (@db [, string])
-    copies from string (or from the scratch rows) to the specified field or rows
+    copy from scratch row [or from string] to specified field or row
 
 dbputv (@db, field_name, value [, field_name, value, ...])
-    save the specified values into the specified fields for a particular row
-
+    save values into the specified fields for row @db
 
 dbadd_remark (@db, remark)
-    add a comment in the remark table for the specified table/rows
+    add comment in remark table for row @db
 
 dbget_remark (@db)
-    get any comment from the remark table for the specified table/rows
+    get any comment from remark table for row @db
 
 
 <subsection Forming views>
@@ -88,45 +84,45 @@ dbgroup (@db, key [, key, ...])
     group the input table according to the specified keys
 
 dbjoin (@db1, @db2 [, join-keys])
-    return a join of the two tables, using the join-keys if specified
+    return join of the two tables, using the join-keys if specified
 
 dbmatches (@db1, @db2, hookname [, join-keys])
-    returns a list of the rows in db2 which match the rows specified by db1
+    return list of rows in db2 which match row @db1
 
 dbnojoin (db1, db2 [, join-keys])
-    returns a view of all rows in the first table which don't join to the second.
+    return view of all rows in view @db1 which don't join to @db2
 
 dbprocess (@db, commands)
-    returns a new view which is the result of applying the dbprocess
+    return new view which is the result of applying the dbprocess
     commands to the input view; possible operations are: dbopen,
     dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
     dbsever, dbsort, dbsubset, dbtheta, dbungroup
 
 dbseparate (@db, table)
-    returns a new view which consists of all the rows of the
+    return new view which consists of all the rows of the
     specified table which participate in the joined view @db
 
 dbsever (@db, table)
-    returns a new view which consists of all the unique rows left
-    after removing the specified table from a joined view @db
+    return new view which consists of all the unique rows left
+    after removing the specified table from joined view @db
 
 dbsort (@db [, -u][, -r][, key, key..])
     sort the input table according to the specified keys, uniquely if -u, 
     in reverse order if -r 
 
 dbsubset (@db, expression)
-    returns a new view which is the set of all rows which satisfy the expression
+    return new view which is the set of all rows which satisfy the expression
 
 dbtheta (@db1, @db2, [expression])
-    returns new join view with all combinations of rows from the two tables which 
+    return new join view with all combinations of rows from the two tables which 
     satisfy expression, or all combinations if no expression is specified
 
 dbunjoin (@db, database)
-    create a new database, containing all the records referenced in the input view @db
+    create new database, containing all the records referenced in the input view @db
 
 
 dbsave_view (@db, name)
-    save the view into a file named database.name
+    save the view into file named database.name
 
 <subsection Miscellaneous Datascope Functions>
 dbquery (@db, code)
@@ -134,13 +130,13 @@ dbquery (@db, code)
     Datascope Constants for valid query codes.
 
 dbex_eval (@db, expression)
-    evaluate expression for a particular row
+    evaluate expression for particular row
 
 dbcompile (@db, string)
     add new attributes or relations to the schema directly from the perl script
 
 dbextfile (@db [, base-table])
-    return the filename for an external file for a particular row in a view
+    return the filename for an external file for particular row in view
 
 dbnextid (@db, id_name)
     gets the next free id value for the specified database and id_name
@@ -153,29 +149,30 @@ dbfind (@db, string [, first [,reverse]])
     find first row matching expression, starting with first; if reverse, search backwards 
 
 dbinvalid()
-    return a database pointer of dbINVALID
+    return database pointer of dbINVALID
 
 <subsection Error handling>
 elog_init ($0, @ARGV)
     initialize the elog message routines
 
 elog_log (msg)
-    save a message on the elog message log
+    save message on the elog message log
 
 elog_debug (msg)
-    send a debug message to the elog facility
-
 elog_notify (msg)
-    send a notify message to the elog facility
-
 elog_alert (msg)
-    send an alert message to the elog facility
-
 elog_complain (msg)
-    send an error message to the elog message facility 
+    send debug, notify, alert, complain message to the elog facility
 
 elog_die (msg)
-    send a message to the elog message facility and die
+    send message to the elog message facility and die
+
+
+elog_callback(replacement)
+    replace standard elog processing with perl routine
+    replacement is called with two arguments: severity  code
+    and a string containing the elog log.  it must return an
+    integer; if return != 0, error log is cleared.
 
 elog_string (n)
     return error log starting with message n
@@ -192,29 +189,29 @@ elog_flush (deliver, first)
 
 <subsection Parameter files>
 pfget (pfname, key)
-    returns the value for the key from the parameter file pfname
+    return the value for the key from the parameter file pfname
 
 pfget_boolean (pfname, key)
-    returns 0 or 1 depending on the value of key in the parameter file pfname
+    return 0 or 1 depending on the value of key in the parameter file pfname
 
 pfupdate (pfname)
-    checks and rereads a parameter file if one of the components along PFPATH has changed
+    check and reread parameter file if file used along PFPATH changed
 
 pffiles (pfname [, all]) 
-    returns a list of filenames which make up the corresponding parameter file object.
-    If all is specified, returns all filenames inspected, including non-existent files.
+    return list of file which make up parameter file object.
+    If all is specified, return all possible filenames, including non-existent files.
 
 pf2string(pfname)
-    returns a string representation of the parameter file object pfname
+    return string representation of the parameter file object pfname
 
 pfcompile (string, pfname)
-  convert the specified string into a parameter file object name pfname.
+  convert the specified string into parameter file object name pfname.
  
 pfput (key, value, pfname)
     save the specified value into the pf object  with  name
     pfname under the specified key.  The value is converted
-    to a string if it's a scalar; when it's a reference  to
-    a  perl array or hash, the entire perl array or hash is
+    to string if it's scalar; when it's a reference to
+    a perl array or hash, the entire perl array or hash is
     stored in the pf object.
 
 pfwrite (filename, pfname)
@@ -223,21 +220,22 @@ pfwrite (filename, pfname)
 pfrequire(pfname, atime)
     require pf_revision_code from last file pfname is later than atime.
 
+pfdel (pfname, key)
+    delete named key from pf object pfname
 
 <subsection Special functions>
 ask (string)
-    pose a question string at the controlling tty, and return the response
+    pose question string at the controlling tty, and return the response
 
 askyn (string)
-    pose a yes/no question string at the controlling tty, return 
-    0=false, 1=true
+    like ask, but require yes/no answer; return 0=false, 1=true
 
 askynaq (string)
-    pose a yes/no question string at the controlling tty, return 
+    like ask, but require yes/no/all/quit answer; return 
     0=false, 1=true, 2=all, 3=quit
 
 yesno (s) 
-    returns -1 if $s =~ /yes|ok|y|true|1|on|t/, 0 if $s =~ /no|n|false|0|off|f/, 1 otherwise
+    return -1 if $s =~ /yes|ok|y|true|1|on|t/i, 0 if $s =~ /no|n|false|0|off|f/i, 1 otherwise
 
 datafile (env, file)
     find the specified file by looking first at the environment variable, then along the path
@@ -249,14 +247,14 @@ makedir(d)
     make the complete directory path d (like "mkdir -p") 
 
 abspath (a)
-    returns the absolute path to the specified file a.
+    return the absolute path to the specified file a.
 
 relpath (d, t)
-    returns a relative path from directory f to t 
+    return relative path from directory f to t 
 
 cleanpath (p [, nolinks])
     normalize the input path p, removing extra "..", "//", and
-    "./" strings. With a second argument,
+    "./" strings. With second argument,
     resolve any symbolic links along the path.
 
 concatpaths (a,b)
@@ -264,7 +262,7 @@ concatpaths (a,b)
     slash if necessary.
 
 parsepath (a)
-    returns directory, file basename, and suffix for path a.
+    return directory, file basename, and suffix for path a.
 
 close_descriptors()
     close all file descriptors after stderr; useful after fork
@@ -273,10 +271,10 @@ strsignal (code)
     return name for signal, given the integer code
 
 is_nfs (path)
-    returns true if path is on an nfs-mounted filesystem.
+    return true if path is on an nfs-mounted filesystem.
 
 limit (resource, [limit2set])
-    return the current resource limit, or set a new resource limit; possible
+    return the current resource limit, or set new resource limit; possible
     resources are:
 <example>
 cputime      filesize     datasize      
@@ -301,7 +299,7 @@ openring(filename, id, depth, flags) ;
     open or create new simple ring buffer in filename with 
     (up to) 64 byte id field, maximum depth entries. if flags & 1 is
     set, open read-only, no locking; otherwise ring buffer must be
-    on local filesystem. returns handle to ring buffer.
+    on local filesystem. return handle to ring buffer.
 
 newring(filename, id, depth, flags) ;
     create new simple ring buffer like openring, overwriting any old ring buffer
@@ -329,7 +327,7 @@ maxring(rb, tdelta)
     rb for the latest tdelta seconds in the ring
     
 countring(rb)
-    returns the number of time/value pairs in the ring
+    return the number of time/value pairs in the ring
 
 findring(rb, value, tdelta)
      findring searches the ring buffer rb over the specified time
@@ -338,33 +336,64 @@ findring(rb, value, tdelta)
 <subsection Time conversion>
 
 now()
-    returns current time to (usually) microseconds accuracy
+    return current time to (usually) microseconds accuracy
+
+is_epoch_string (string)
+    return epoch time unless string is invalid; then returns undef and error message.
 
 epoch2str (epoch, fmt [, timezone])
-    returns the epoch time formatted according to the fmt string and converted to timezone
+    return the epoch time formatted according to the fmt string and converted to timezone
 
 str2epoch (string)
-    returns the epoch time corresponding to the free-form input time/date
+    return the epoch time corresponding to the free-form input time/date
 
 
 strtime (epoch)
-    returns epoch time formatted like "4/23/2001  15:35:15.000"
+    return epoch time formatted like "4/23/2001  15:35:15.000"
 
 strydtime (epoch)
-    returns epoch time formattted like "4/23/2001 (113) 15:35:15.000"
+    return epoch time formattted like "4/23/2001 (113) 15:35:15.000"
 
 strdate (epoch)
-    convert epoch time to a date, eg "4/23/2001"
+    convert epoch time to date, eg "4/23/2001"
 
 strtdelta (dt)
-    convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
+    convert the time-difference dt (in seconds) to string, eg "30:35 minutes"
 
 
 epoch (yearday)
-    returns the epoch time corresponding to the integer yearday
+    return the epoch time corresponding to the integer yearday
 
 yearday (epoch)
-    returns the yearday corresponding to an epoch time
+    return the yearday corresponding to an epoch time
+
+
+<subsection State files>
+
+exhume(filename,reference,seconds)
+    specify filename of state file, reference to variable to be set when
+    interrupted, and number of seconds to wait for program to terminate
+
+resurrect(name, ref[, TIME_RELIC])
+    select names and references to perl variables to save in state file. 
+    (Optionally specify the type, may be useful for epoch times)
+
+bury()
+    Save the state file.
+
+<subsection Foreign keys>
+map between CSS3.0 station/channel naming  conventions  and  the
+different conventions of autodrm and SEED.
+
+$sta = map_autodrm_netsta($anet, $fsta)
+$chan = map_autodrm_chanaux($sta,$fchan,$aux)
+($anet, $fsta) = autodrm_net($sta)
+$chan = map_seed_chanloc($sta,$fchan,$loc)
+
+$sta = map_seed_netsta($anet, $fsta)
+($snet, $fsta) = seed_net($sta)
+($fchan, $loc) = seed_loc($sta,$chan)
+
 
 <chapter Perl Orb Access>
 <info>
@@ -402,22 +431,22 @@ orbtell(orb)
 
 orbafter(orb, time)
     position the orb connection packet pointer to the first
-    packet after the specified time. Time must be a UTC
-    epoch time in seconds, not a string.
+    packet after the specified time. Time must be UTC
+    epoch time in seconds, not string.
 
 orbping(orb)
-    test if the specified orb responds; returns a version number.
+    test if the specified orb responds; return version number.
 
 orbwait(orb, re, mintime, timeout)
-    wait for all reading clients of orb with a program
+    wait for all reading clients of orb with program
     name which matches the regular expression re to have
     read packets younger than mintime. If timeout is
-    non-zero, then orbwait returns with an error code
+    non-zero, then orbwait return with an error code
     if the timeout expires before the specified program
     catches up.
 
 ($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbget(orb, which)
-    get a single packet corresponding to which; this can be an
+    get single packet corresponding to which; this can be an
     explicit pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
     "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". 
 
@@ -435,7 +464,7 @@ orbput(orb, srcname, pkttime, pkt, nbytes)
 
 orbstat(orb)
     Get the standard status values from the orb; this
-    returns an object with the following methods:
+    return an object with the following methods:
 <example>
 address     closes      connections 
 errors      host        maxdata     
@@ -447,7 +476,7 @@ when        who
 </example>
 
 ($when, @clients) = orbclients(orb)
-    $when is a scalar; @clients is a list of client
+    $when is scalar; @clients is list of client
     objects, one object per client. Each object has the
     following methods:
 <example>
@@ -463,7 +492,7 @@ thread      what        who
 </example>
 
 orbsources(orb)
-    returns ($when, @sources). $when is a scalar; @sources is a list of source
+    return ($when, @sources). $when is scalar; @sources is list of source
     objects,  one  object  per source.  Each object has the
     following methods:
 <example>
@@ -482,7 +511,7 @@ showPkt(srcname, pkttime, pkt, nbytes, mode)
 </example>
 
 unstuffPkt(srcname, pkttime, pkt, nbytes)
-    unstuffPkt unstuffs the input packet, returning a packet kind and a packet object.
+    unstuffPkt unstuffs the input packet, returning packet kind and packet object.
     the result code indicates what kind of packet was unpacked:
 <example>
 kind    kind of packet
@@ -507,7 +536,7 @@ Pkt_tp  test packet
     returned by unstuffPkt) and the corresponding description.
 
     The channels method takes an index (0..n-1) argument 
-    and returns a channel object with its own methods:
+    and returns channel object with its own methods:
 <example>
 calib    calper   chan     cuser1   
 cuser2   data     duser1   duser2   
@@ -515,10 +544,10 @@ iuser1   iuser2   iuser3   loc
 net      nsamp    samprate segtype  
 sta      time     
 </example>
-    The data method returns all the waveform data in a list of integers.
+    The data method returns all the waveform data in list of integers.
 
 split_srcname(srcname)
-    returns net, sta, chan, loc, suffix, and subcode corresponding to srcname
+    return net, sta, chan, loc, suffix, and subcode corresponding to srcname
 
 <chapter Perl System Information >
 <info>
@@ -530,19 +559,19 @@ use sysinfo ;
 <function>
 
 my_ip()
-    returns ip address (eg, 207.174.76.135)
+    return ip address (eg, 207.174.76.135)
 
 my_os()
     return os name (eg, SunOS)
 
 my_hardware()
-    returns hardware string (eg, sun4u)
+    return hardware string (eg, sun4u)
 
 my_hostname()
-    returns hostname (eg, ament)
+    return hostname (eg, ament)
 
 ip(dot-notation)
-    returns integer corresponding to dot-notation
+    return integer corresponding to dot-notation
 
 ip2name(ip)
     looks up hostname for ip address
@@ -551,39 +580,39 @@ name2ip(hostname)
     looks up ip address for hostname
 
 nomem(address,n)
-    returns first bad address if no memory in range address to address + n 
+    return first bad address if no memory in range address to address + n 
 
 %sysmem = sysmem()
-     returns physical memory, total swap space, and swap used
+     return physical memory, total swap space, and swap used
 
 %loadavg = sysloadavg()
-     returns nproc, avg1m, avg5m, and avg15m: number of processes and 15, 5 and 1 minute load averages 
+     return nproc, avg1m, avg5m, and avg15m: number of processes and 15, 5 and 1 minute load averages 
 
 @mounted = sysmounted() 
-    returns list of mounted partitions; each element has mount point, filesystem type,
+    return list of mounted partitions; each element has mount point, filesystem type,
     and remote host and directory 
 
 pidcmdline(pid)
-    returns command line for specified pid
+    return command line for specified pid
 
 pidpwd(pid)
-    returns working directory for process pid
+    return working directory for process pid
 
 pidexecname(pid)
-    returns executable name for specified pid
+    return executable name for specified pid
 
 %info = pidinfo(pid)
-    returns usage in percent, parent pid, user id, size in kilobytes,
+    return usage in percent, parent pid, user id, size in kilobytes,
     resident set size in kilobytes, run state, epoch start time, total cpu time,
-    and total children cputime for a process pid
+    and total children cputime for process pid
 
    
 %statvfs = statvfs (path)
-    returns Mb_total, Mb_avail, inodes_avail, inodes_used on disk
-    containing path, % disk and inodes used, and a unique id
+    return Mb_total, Mb_avail, inodes_avail, inodes_used on disk
+    containing path, % disk and inodes used, and unique id
 
 ($ncpu, $idle, $user, $kernel, $iowait, $swap, @othercpus) = syscpu() ;
-    returns number of cpus, and idle, user, kernel, iowait and swap time 
+    return number of cpus, and idle, user, kernel, iowait and swap time 
     for each cpu.
 
 
