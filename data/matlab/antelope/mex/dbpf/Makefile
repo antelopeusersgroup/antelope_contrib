@@ -1,4 +1,4 @@
-
+DATADIR=matlab/antelope/antelope/@dbpf
 DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
       $(MEXSRCS:.c=.m)
 
