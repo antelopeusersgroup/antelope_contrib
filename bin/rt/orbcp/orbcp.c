@@ -417,7 +417,6 @@ myputmsg (int orb, Dbptr db, char *prog, char *msg)
 
 }
 
-#include <stropts.h>
 #include <poll.h>
 
 #ifndef POLLRDNORM
