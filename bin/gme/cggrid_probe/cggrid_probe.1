@@ -1,0 +1,47 @@
+.TH CGGRID_PROBE 1 "$Date$"
+.SH NAME
+cggrid_probe \- probe a cggrid file
+.SH SYNOPSIS
+.nf
+\fBcggrid_probe\fP [-n] [-f \fIformat\fP] \fIfilename\fP \fIx\fP \fIy\fP
+.fi
+.SH DESCRIPTION
+
+\fBcggrid_probe\fP reads a file in cggrid \fIformat\fP (i.e. as saved by the
+cggrid_write(3) routine), finds the value at the point specified by
+coordinates \fIx\fP and \fIy\fP via bilinear interpolation (using
+cg_biinterp(3)), and prints the value. The print \fIformat\fP may be specified
+with the -f command.
+
+.SH OPTIONS
+.IP "-f format"
+output print \fIformat\fP in the style of fprintf(3C). Currently the default
+is '%.3f'.
+.IP -n
+Do not print newline character
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+yukon% \fBcggrid_probe\fP orid_63_trinetsm_es99.t4 -116.9180 34.0509
+0.053
+yukon%
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBcggrid_probe\fP returns the double-precision value at the specified
+grid point, or NaN if no value was obtained or the location was outside
+the grid.
+.SH "SEE ALSO"
+.nf
+cggrid(3), cggrid_convert(1)
+.fi
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
