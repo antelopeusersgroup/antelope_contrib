@@ -1,0 +1,7 @@
+STRTIME	Convert an epoch time to a string specification
+
+STRTIME = STRTIME ( EPOCH )
+
+STRTIME converts an epoch time EPOCH to a string specifying
+the equivalent time. If EPOCH is a matrix of epoch times,
+the returned value is a cell array of strings.

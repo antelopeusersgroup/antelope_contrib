@@ -1,0 +1,8 @@
+YEARDAY	Convert an epoch time to a yearday value
+
+YEARDAY = YEARDAY ( EPOCH )
+
+YEARDAY converts the epoch-time EPOCH to an integer value
+of the form YYYYDOY, where YYYY is the year and DOY is the
+day-number of the year. If EPOCH is a matrix of epoch
+times, the return value will be a matrix of yeardays.

@@ -1,0 +1,8 @@
+STRYDTIME Convert an epoch time to a string date and time
+
+STRYDTIME = STRYDTIME ( EPOCH )
+
+STRYDTIME converts the epoch time EPOCH to a string
+specifying the year, day, and time. If EPOCH is a matrix of
+epoch times, the returned value is a cell array of
+strings.

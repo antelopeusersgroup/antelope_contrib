@@ -1,0 +1,7 @@
+STRDATE	Convert an epoch time to its corresponding date
+
+STRDATE = STRDATE ( EPOCH )
+
+STRDATE converts an epoch time to a string specifying the
+date.  If EPOCH is a matrix of epoch times, the returned
+value is a cell array of strings.

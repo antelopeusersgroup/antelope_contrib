@@ -1,0 +1,9 @@
+STR2EPOCH Convert a string to epoch time (seconds since 1/1/1970 00:00)
+
+EPOCH = STR2EPOCH ( TIMESTRING )
+
+STR2EPOCH takes a string in one of a variety of formats and
+converts the string to an epoch-time value, i.e. seconds
+since midnight on January 1, 1970. Timestring may be a cell
+array of strings, in which case the return value is a
+matrix of epoch times.

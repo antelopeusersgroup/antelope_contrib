@@ -1,0 +1,7 @@
+STRTDELTA Convert an epoch time difference to an elapsed time string
+
+STRTDELTA = STRTDELTA ( EPOCH )
+
+STRTDELTA converts an epoch time difference to a string
+specifying the elapsed time. If EPOCH is a matrix of epoch
+times, the returned value is a cell array of strings.
