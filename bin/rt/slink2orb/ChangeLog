@@ -1,3 +1,10 @@
+25 Feb 2004
+  - Split the '-d' option into two options '-dm' and '-dc' to 
+      specify databases for mapping and calib, etc. separately.
+  - Significant cleanup/update to the mseed2orbpkt.c code, not
+      it's much more simple.
+  - version 3.3
+	
 21 Jan 2004
   - Add hook functions to re-direct sl_log() usage to elog_notify()
       and elog_complain().

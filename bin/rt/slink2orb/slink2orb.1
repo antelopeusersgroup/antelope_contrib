@@ -1,11 +1,11 @@
-.TH SLINK2ORB 1 2004/01/20
+.TH SLINK2ORB 1 2004/02/25
 .SH NAME
-slink2orb 3.2 \- SeedLink to Antelope ORB module
+slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
 .nf
-slink2orb [-d database] [-nd delay] [-nt timeout]
-          [-k interval] [-pf parameter_file] [-S statefile]
-          [-r] [-v] SeedLink ORB
+slink2orb [-dc database] [-dm database] [-nd delay]
+          [-nt timeout] [-k interval] [-pf parameter_file]
+          [-S statefile] [-r] [-v] SeedLink ORB
 
 .fi
 .SH DESCRIPTION
@@ -25,10 +25,17 @@ versions.  Multi-station mode is supported by SeedLink 2.5 or
 later (SeisComP-1.1.6 or later).
 
 .SH OPTIONS
-.IP "-d \fIdatabase\fR"
+.IP "-dm \fIdatabase\fR"
+Use the specified database for mapping SEED names to CSS database
+names.  If the channel names do not exist in the specified database
+they will be inserted.  If this database is not specified the local
+foreignkeys database will be used.
+
+.IP "-dc \fIdatabase\fR"
 Copy calib, calper and segtype from the calibration table in the
-specified Datascope database.  Recommended since this information
-is not available in the data stream.
+specified database.  Recommended if the data will be processed
+directly from the ORB since this information is not available
+in the data stream.
 
 .IP "-nd \fIdelay\fR"
 The network reconnect delay (in seconds) for the connection to
@@ -61,10 +68,11 @@ possible.  Intermediate state saves can be enabled and controlled
 with the \fIsavestate\fR value in the parameter file (see below).
 
 .IP "-r"
-Use the local foreignkeys database to remap input net, sta, chan,
-and loc codes to local sta and chan codes.  This makes orbmonrtd 
-and other programs which don't recognize the loc code in the source 
-name work better.
+Use either the database specified with the -dm option or the local
+foreignkeys database to remap input net, sta, chan, and loc codes
+to local sta and chan codes.  This can be helpful when processing
+this data with programs that do not recognize the loc code in the
+source name.
 
 .IP "-v"
 Be more verbose.  This flag can be used multiple times ("-v -v" or 

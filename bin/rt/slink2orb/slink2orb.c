@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.020
+ * modified: 2004.056
  ***************************************************************************/
 
 #include <signal.h>
@@ -18,15 +18,16 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.2 (2004.021)";
-static char    remap       = 0;
+static char   *version     = "3.3 (2004.056)";
 static char    verbose     = 0;
+static char    remap       = 0;      /* remap sta and chan from SEED tables */
 
 static int     orb         = -1;     /* the ORB descriptor */
 static char   *statefile   = 0;	     /* state file */
 static char   *parafile    = 0;	     /* parameter file */
 static char   *orbaddr     = 0;      /* the host:port of the destination ORB */
-static char   *database    = 0;      /* the database for calibration info */
+static char   *mappingdb   = 0;      /* the database for SEED name mapping */
+static char   *calibdb     = 0;      /* the database for calibration info */
 static char   *selectors   = 0;      /* default SeedLink selectors */
 static int     stateint    = 100;    /* interval to save the state file (pkts) */
 
@@ -49,7 +50,7 @@ static void usage(void);
 int
 main(int argc, char **argv)
 {
-  Dbptr dbase;	           /* Database pointer */
+  Dbptr dbase;
   SLpacket *slpack;
   int seqnum;
   int ptype;
@@ -95,11 +96,11 @@ main(int argc, char **argv)
     }
 
   /* Database setup */
-  if (database)
+  if (mappingdb)
     {
-      if (dbopen(database, "r+", &dbase) == dbINVALID)
+      if (dbopen(mappingdb, "r+", &dbase) == dbINVALID)
 	{
-	  sl_log(1, 0, "dbopen(%s) failed\n", database);
+	  sl_log(1, 0, "dbopen(%s) failed\n", mappingdb);
 	  exit(1);
 	}
       finit_db(dbase);
@@ -170,7 +171,7 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 	  free(s);
 	}
       
-      mseedret = mseed2orbpkt(msrecord, packet_size, database, remap,
+      mseedret = mseed2orbpkt(msrecord, packet_size, calibdb, remap,
 			      &srcname[0], &time, &packet, &nbytes,
 			      &bufsize);
       
@@ -242,9 +243,13 @@ parameter_proc(int argcount, char **argvec)
 	  slconn->keepalive = atoi(argvec[++optind]);
 	  keepalive_argv = 1; /* parameter file will not override */
 	}
-      else if (strcmp(argvec[optind], "-d") == 0)
+      else if (strcmp(argvec[optind], "-dc") == 0)
 	{
-	  database = argvec[++optind];
+	  calibdb = argvec[++optind];
+	}
+      else if (strcmp(argvec[optind], "-dm") == 0)
+	{
+	  mappingdb = argvec[++optind];
 	}
       else if (strcmp(argvec[optind], "-r") == 0)
 	{
@@ -445,10 +450,15 @@ report_environ()
   else
     sl_log(0, 0, "'parafile' not defined\n");
   
-  if (database)
-    sl_log(0, 0, "database:\t%s\n", database);
+  if (mappingdb)
+    sl_log(0, 0, "mappingdb:\t%s\n", mappingdb);
   else
-    sl_log(0, 0, "'database' not defined\n");
+    sl_log(0, 0, "'mappingdb' not defined\n");
+
+  if (calibdb)
+    sl_log(0, 0, "calibdb:\t%s\n", calibdb);
+  else
+    sl_log(0, 0, "'calibdb' not defined\n");
   
   sl_log(0, 0, "verbose:\t%d\n", verbose);
   sl_log(0, 0, "remap:\t%d\n", remap);
@@ -554,7 +564,7 @@ static void
 usage(void)
 {
   printf("\n"
-	 "Usage: slink2orb [-d database] [-nd delay] [-nt timeout]\n"
+	 "Usage: slink2orb [-dc database] [-dm database] [-nd delay] [-nt timeout]\n"
 	 "                 [-k interval] [-pf parameterfile] [-S statefile]\n"
 	 "                 [-r] [-v] SeedLink ORB\n"
 	 "\n"
