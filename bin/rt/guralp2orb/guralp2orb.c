@@ -425,7 +425,7 @@ update_is_necessary( char *table, Tabletrack *ttrk )
 {
 	struct stat *statbuf;
 
-	statbuf = table_check( "calibration", &ttrk );
+	statbuf = table_check( table, &ttrk );
 
 	if( (double) statbuf->st_mtime > ttrk->last_mtime ) {
 
