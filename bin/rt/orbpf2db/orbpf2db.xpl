@@ -70,6 +70,8 @@ sub reopen_database {
 $Pf = "orbpf2db.pf";
 $match = ".*/pf/orbstat";
 $write_mode = "overwrite";
+$pktid = 0;
+$time = -9999999999.999;
 
 if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
 
@@ -133,11 +135,11 @@ if( $opt_s ) {
 
 	$stop = 0;
 	exhume( $opt_s, \$stop, 15 );
-	resurrect( "pktid", \$pktid );
+	orbresurrect( $orb, \$pktid, \$time  );
 	orbseek( $orb, "$pktid" );
 }
 
-for(;;) {
+for( ; $stop == 0 ; ) {
 
 	($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
 
