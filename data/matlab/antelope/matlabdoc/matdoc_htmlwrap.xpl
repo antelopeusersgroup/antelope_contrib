@@ -20,7 +20,7 @@ print O "<HTML>\n\n";
 print O "<HEAD>\n";
 print O "\t<TITLE>$docname</TITLE>\n";
 print O "</HEAD>\n\n";
-print O "<BODY bgcolor= \"lightblue\" >\n";
+print O "<BODY>\n";
 print O "<PRE>\n\n";
 
 print O <M>;
