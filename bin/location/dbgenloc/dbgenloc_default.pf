@@ -37,3 +37,5 @@ number_points_r	19
 minimum_azimuth	0.0
 maximum_azimuth	360.0
 number_points_azimuth	36
+confidence 0.683
+ellipse_type chi_square
