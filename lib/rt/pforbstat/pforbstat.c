@@ -134,10 +134,10 @@ orbsources2pf( double atime, Orbsrc *sources, int nsources )
 
 		pfput_double( sourcepf, "latency_sec", latency_sec );
 
-		setarr( pfsources->value.arr, asource->srcname, sourcepf );
+		pfput( pfsources, asource->srcname, sourcepf, PFPF );
 	}
 
-	setarr( pf->value.arr, "sources", pfsources );
+	pfput( pf, "sources", pfsources, PFPF );
 
 	return pf;
 }
@@ -212,10 +212,10 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 
 		sprintf( thread, "%d", aclient->thread );
 
-		setarr( pfclients->value.arr, thread, clientpf );
+		pfput( pfclients, thread, clientpf, PFPF );
 	}
 
-	setarr( pf->value.arr, "clients", pfclients );
+	pfput( pf, "clients", pfclients, PFPF );
 
 	return pf;
 }
@@ -247,7 +247,7 @@ pforbstat( int orbfd, int flags )
 		orbstat( orbfd, &orbstatus );
 		pfans = orbstat2pf( orbstatus, orbversion );
 
-		setarr( pf->value.arr, "server", pfans );
+		pfput( pf, "server", pfans, PFPF );
 	}
 
 	if( flags & PFORBSTAT_SOURCES ) { 
