@@ -1,0 +1,153 @@
+Schema "Mail1.2"
+	Description ( "Mail Database" ) 
+	Detail {
+		Track mail usage.
+	}
+	Timedate timestamp
+	;
+
+Attribute to
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "recipient" ) 
+	; 
+
+Attribute from
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "sender" ) 
+	; 
+
+Attribute corrtype
+	String ( 25 )
+	Format ( "%-25s" ) 
+	Null  ( "-"  ) 
+	Description ( "correspondent type" ) 
+	Detail {
+		The correspondent-type field indicates whether 
+		an email sender is a person, organization, retailer, 
+		daemon, or spammer. 
+	}
+	; 
+
+Attribute subject
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "subject" ) 
+	; 
+
+Attribute descrip
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "long description from From" ) 
+	; 
+
+Attribute dfile
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "data file" )
+	Detail {
+		In wfdisc, this is the file name of a disk-based waveform
+		file.  In instrument, this points to an instrument
+		response file.  See dir.
+	}
+	;
+
+Attribute dir
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "directory" )
+	Detail {
+		This attribute is the directory-part of a path name. 
+		Relative path names or '.' (dot), the notation for the
+		current directory, may be used.
+	}
+	;
+
+Attribute foff
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "0" )
+	Range ( "foff >= 0" )
+	Description ( "byte offset" )
+	Detail {
+		This is the byte offset of a waveform segment within a
+		data file.  It is used when data are multiplexed.  See dir
+		and dfile.
+	}
+	;
+
+Attribute realname
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "Real name of a correspondent" )
+	; 
+
+Attribute time
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
+Attribute timestamp
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "(epoch) time of last record modification" ) 
+	Detail {
+	    This is the last time the record was modified.  
+	}
+	; 
+
+Attribute bytes
+	Integer ( 6 )
+	Format ( "%6d" ) 
+	Null  ( "-1"  ) 
+	Description ( "bytes in message" ) 
+	; 
+
+Attribute lines
+	Integer ( 6 )
+	Format ( "%6d" ) 
+	Null  ( "-1"  ) 
+	Description ( "lines in message" ) 
+	; 
+
+Relation out 
+	Fields ( 
+	    to subject time lines bytes foff dir dfile timestamp
+	    )
+	Primary ( to subject time ) 
+	Description ( "outbound mail" ) 
+	;
+
+Relation in 
+	Fields ( 
+	    from subject time lines bytes foff dir dfile timestamp
+	    )
+	Primary ( from subject time ) 
+	Description ( "inbound mail" ) 
+	;
+
+Relation correspondents 
+	Fields ( 
+	    from descrip realname corrtype timestamp
+	    )
+	Primary ( from ) 
+	Description ( "Info about Correspondents" ) 
+	;
