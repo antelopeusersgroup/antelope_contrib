@@ -20,10 +20,6 @@ of degrees of freedom of the solution.
 When the projected confidence region has been computed, the origerr 
 table is updated with the new smajax, sminax, sdepth, stime, strike, and 
 conf values. 
-
-The chi-squared values must be contained in the parameter file chi2.pf, 
-as demonstrated below. One way to generate this table is with the 
-matlab function provided, make_chi2table.m. 
 .SH OPTIONS
 .IP "-c \fIconf\fR"
 Confidence level, from 0 to 1
@@ -33,58 +29,6 @@ Verbose
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
-dbproject_covariance looks for chi2.pf, which contains its lookup tables of 
-chi-squared values. 
-.nf
-
-nordic% cat chi2.pf
-chi2	&Tbl{
-    &Arr{
-        conf	0.683
-        values	&Tbl{
-            1.00128
-            2.29771
-            3.52916
-            4.72226
-             5.8907
-            7.04179
-            8.17988
-            9.30779
-            10.4275
-            11.5403
-        }
-    }
-    &Arr{
-        conf	0.9
-        values	&Tbl{
-            2.70554
-            4.60517
-            6.25139
-            7.77944
-            9.23636
-            10.6446
-             12.017
-            13.3616
-            14.6837
-            15.9872
-        }
-    }
-    &Arr{
-        conf	0.95
-        values	&Tbl{
-            3.84146
-            5.99146
-            7.81473
-            9.48773
-            11.0705
-            12.5916
-            14.0671
-            15.5073
-             16.919
-             18.307
-        }
-    }
-}
 nordic% 
 .fi
 .SH EXAMPLE
@@ -113,52 +57,7 @@ nordic%
 .ft R
 .SH RETURN VALUES
 .SH LIBRARY
-
-A matlab file which allows easy construction of the chi2 parameter 
-file is included here. This presumes the Antelope Toolbox 
-for Matlab is installed. The Matlab stats toolbox may also be 
-necessary.
-
-.nf
-%MAKE_CHI2TABLE
-%
-%	make_chi2table
-%	Matlab M-file to generate a table of chi-squared values 
-%	for a given confidence level, specified between 0 and 1 
-%	as the CONF argument. The MAX_DOF freedom specifies the 
-%	largest number of degrees of freedom to put in the table.
-%	The table always starts at 1 degree of freedom. FILENAME
-%	is the name of an Antelope parameter file into which 
-%	the results will be written, usually 'chi2.pf'. CONF 
-%	may be specified as a vector of multiple values, in which 
-%	case tables are calculated for all specified values.
-
-function make_chi2table( conf, max_dof, filename )
-
-if nargin ~= 3, error('Usage: make_chi2table( conf, max_dof, filename )'); end
-
-mypf=dbpf;
-
-chi2 = cell( length(conf), 1 );
-
-for i=1:length(conf),
-   chi2{i}.conf = conf(i);
-   chi2{i}.values=cellstr(num2str(chi2inv(conf(i),[1:max_dof])'));
-end
-
-pfput( mypf,'chi2',chi2 )
-pfwrite( mypf, filename )
-clear( mypf );
-
-return
-.fi
 .SH DIAGNOSTICS
-.nf
-Couldn't find conf 0.98 in chi2.pf
-
-Exceeded max degrees of freedom in chi2.pf conf %f table (need 247, have 200)
-
-.fi
 .SH "SEE ALSO"
 .nf
 dbgenloc(1)

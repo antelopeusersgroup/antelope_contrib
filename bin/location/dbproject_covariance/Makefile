@@ -9,7 +9,7 @@ CLEAN=
 cflags=
 fflags=
 ldflags= 
-ldlibs= -lloc $(DBLIBS)
+ldlibs= -lgenloc -xlic_lib=sunperf -ltt $(DBLIBS) -ldl -lm
 
 include $(ANTELOPEMAKE)
 
