@@ -5,7 +5,8 @@ dbgmtgrid \- perl routines to construct gmt grid from database
 .nf
 $rc = dbgmtgrid( @db, $rectangle, $outfile
 		      [, verbose => 1 ]
-		      [, spacing => dx[m|c][/dy[m|c]] )
+		      [, spacing => dx[m|c][/dy[m|c]]
+		      [, workdir => directory] )
 .fi
 .SH DESCRIPTION
 dbgmtgrid takes an input view containing records of a gmt1.0 database. 
@@ -25,6 +26,9 @@ degrees (producing a grid from 178 to 183 degrees in the previous example).
 If the spacing option is specified, the grid will be resampled to the 
 specified spacing. An 'm' or 'c' appended indicates minutes or seconds, 
 respectively.
+
+If the workdir option is specified, the named directory will be used 
+as a temporary working area. Otherwise /tmp is used. 
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT

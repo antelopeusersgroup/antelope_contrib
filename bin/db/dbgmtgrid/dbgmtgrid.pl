@@ -181,7 +181,7 @@ sub asplice {
 
 		if( $high1 == $low2 ) {
 
-			$dir = "/tmp";
+			$dir = $Workdir;
 			$name = uniq_tempfile();
 			$dfile = "$name.grd";
 			$result = concatpaths( $dir, $dfile );
@@ -246,7 +246,7 @@ sub addgrid {
 
 	my( $shift ) = $Options{shift} ? $Options{shift} : 0;
 
-	my( $dir ) = "/tmp";
+	my( $dir ) = $Workdir;
 	my( $name ) = uniq_tempfile();
 	my( $dfile ) = "$name.grd";
 	my( $result ) = concatpaths( $dir, $dfile );
@@ -327,6 +327,15 @@ sub dbgmtgrid {
 		$V = "";
 	}
 
+	if( defined( $Options{workdir} ) && $Options{workdir} ne "" ) {
+
+		$Workdir = abspath( $Options{workdir} );
+
+	} else {
+
+		$Workdir = "/tmp";
+	}
+
 	if( ! check_executable( "grdcut" ) ||
 	    ! check_executable( "grdedit" ) ||
 	    ! check_executable( "grdsample" ) ||
@@ -386,7 +395,7 @@ sub dbgmtgrid {
 	$east = dbgmtgrid_next_higher( $east, $dx );
 	$north = dbgmtgrid_next_higher( $north, $dy );
 
-	$tempdbname = "/tmp/dbgmtgrid_$<_$$";
+	$tempdbname = "$Workdir/dbgmtgrid_$<_$$";
 	dbcreate( $tempdbname, "gmt1.0" );
 	@dbtemp = dbopen( $tempdbname, "r+" );
 	@dbtemp = dblookup( @dbtemp, "", "grids", "", "" );
