@@ -45,7 +45,13 @@ $cmd = "tar cvf $pwd/$tarfile_name README.contrib contrib/src";
 system( $cmd );
 
 printf STDERR "Compressing tar-file $tarfile_name:\n";
+$cmd = "/bin/cp $pwd/$tarfile_name $pwd/$tarfile_name.orig";
+system( $cmd );
 $cmd = "compress $pwd/$tarfile_name";
+system( $cmd );
+$cmd = "/bin/mv $pwd/$tarfile_name.orig $pwd/$tarfile_name";
+system( $cmd );
+$cmd = "gzip $pwd/$tarfile_name";
 system( $cmd );
 
 system( "/bin/rm -rf /tmp/contrib" );
