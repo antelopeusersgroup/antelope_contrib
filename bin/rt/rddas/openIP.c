@@ -63,6 +63,7 @@ struct Prts *inport;
 	termios.c_iflag &= ~IXON;
 	termios.c_iflag &= ~IMAXBEL;
   	termios.c_oflag &= ~OPOST;
+  	termios.c_oflag &= ~CSIZE;
 	termios.c_lflag = IEXTEN;
 /*
         termios.c_lflag &= ~( ICANON | ISIG | ECHO );
@@ -112,6 +113,9 @@ struct Prts *inport;
 	if( (i = ioctl( inport->ifp, TCSETS, &termios)) < 0 )  {
 	   die( 1, "TCSETA error on %s port\n", inport->ip_name );
 	}
+        if( ioctl( inport->ifp, TCGETS, &termios) < 0 )
+	   die( 1, "TCGETS error on %s port\n", inport->ip_name );
+	
 	if( (i = ioctl( inport->ifp, TCFLSH, TCIOFLUSH)) < 0 ) {
 	   die( 1, "TCFLSH error on %s port\n", inport->ip_name );
 
@@ -123,7 +127,6 @@ struct Prts *inport;
 	   die( 1, "TCXONC/TCION error on %s port\n", inport->ip_name );
 	
 	}
-        i = ioctl( inport->ifp, TCGETS, &termios);
 
 		                             
     return IN_CHR;       
