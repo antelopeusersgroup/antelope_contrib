@@ -1,5 +1,6 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
+DIRS=htdocs
 INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h resample.h 
 # This is uses for Attribute_Map constructor and was built with 
 # an external program
@@ -53,4 +54,15 @@ $(LIB) : $(OBJS)
 $(DLIB) : $(OBJS)
 	$(RM) $@
 	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
-
+# New special build for html documentation using ccdoc
+CCDOC=ccdoc.exe
+htdocs/seispp.db : htdocs seispp.h dbpp.h metadata.h ray1d.h resample.h
+	$(CCDOC) -db htdocs/seispp.db -pkg seispp seispp.h
+	$(CCDOC) -db htdocs/seispp.db -pkg dbpp dbpp.h
+	$(CCDOC) -db htdocs/seispp.db -pkg metadata metadata.h
+	$(CCDOC) -db htdocs/seispp.db -pkg ray1d ray1d.h
+	$(CCDOC) -db htdocs/seispp.db -pkg resample resample.h
+	$(CCDOC) -db htdocs/seispp.db -index
+	$(CCDOC) -db htdocs/seispp.db -html htdocs/ \
+		-root seispp -rootfile htdocs/index.html
+#htdocs : ; @mkdir $@

@@ -171,8 +171,6 @@ dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
 		double theta, int ix1, int ix2, int ix3)
 					throw(GCLgrid_error)
 {
-	dmatrix *pathptr;
-	dmatrix& pathout=*pathptr;
 	Cartesian_point this_point;
 	double radius;  // Radius corrected for ellipticity
 	double lat,lon;
@@ -189,10 +187,17 @@ dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
 	if((path.r[0]-path.r[path.npts-1])<depth)
 		throw GCLgrid_error("GCLgrid_Ray_project_down:  Given ray path does not reach requested depth");
 	//Search for point just below depth of ix3 point
-	for(i0=0;i0<path.npts;++i0)
-		if((path.r[0]-path.r[i0])>depth) break;
-	np = path.npts - i0;  // right because we add one point
-	pathptr = new dmatrix(3,np);
+	if((depth<0.0) || (fabs(depth/path.r[0])<DBL_EPSILON) )
+		i0=1;
+	else
+	{
+		for(i0=0;i0<path.npts;++i0)
+			if((path.r[0]-path.r[i0])>depth) break;
+	}
+	np = path.npts - i0 +1;  // right because we add one point
+	dmatrix *pathptr = new dmatrix(3,np);
+	dmatrix& pathout=*pathptr;
+
 	// first point is just the grid point
 	pathout(0,0) = grid.x1[ix1][ix2][ix3];
 	pathout(1,0) = grid.x2[ix1][ix2][ix3];
@@ -274,8 +279,6 @@ dmatrix *GCLgrid_Ray_project_up(GCLgrid3d& grid, RayPathSphere& path,
 		double theta, int ix1, int ix2, int ix3)
 					throw(GCLgrid_error)
 {
-	dmatrix *pathptr;
-	dmatrix& pathout=*pathptr;
 	Cartesian_point this_point;
 	double radius;  // Radius corrected for ellipticity
 	double lat,lon;
@@ -301,7 +304,9 @@ dmatrix *GCLgrid_Ray_project_up(GCLgrid3d& grid, RayPathSphere& path,
 	for(i0=path.npts-1;i0>0;--i0)
 		if((path.r[0]-path.r[i0])<depth) break;
 	np = path.npts - i0;  // right because we add one point
-	pathptr = new dmatrix(3,np);
+	dmatrix *pathptr = new dmatrix(3,np);
+	dmatrix& pathout=*pathptr;
+
 	// first point is just the grid point
 	pathout(0,0) = grid.x1[ix1][ix2][ix3];
 	pathout(1,0) = grid.x2[ix1][ix2][ix3];

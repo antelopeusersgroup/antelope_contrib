@@ -57,6 +57,8 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(const Rectangular_Slowness_
 // Returns a slowness vector for a grid position i,j
 Slowness_vector Rectangular_Slowness_Grid::slow(int i, int j)
 {
+	if(i>=nux || j>=nuy || i<0 || j<0) 
+		throw seispp_error(string("Illegal index request from Rectangular_Slowness_Grid object"));
 	Slowness_vector u;
 	u.ux=uxlow+i*dux;
 	u.uy=uylow+j*duy;
