@@ -25,7 +25,8 @@ sub pfget_Mapspec {
 		"grddb",
 		"hypocenter_dbname",
 		"stylesheet",
-		"vrml_stylesheet"
+		"vrml_stylesheet",
+		"stations_stylesheet"
 		);
 	# N.B. ( Handle the linefiles hash in plot_linefiles() )
 
@@ -152,7 +153,17 @@ sub expansion_schema_present {
 		$lddate_used = 
 			grep( /lddate/, dbquery( @db, "dbTABLE_FIELDS" ) );
 		if( ! $lddate_used ) {
-			print STDERR "Please upgrade to dbrecenteqs1.1.\n";
+			print STDERR "Please upgrade to dbrecenteqs1.2.\n";
+			$present = 0;
+		}
+	}
+
+	if( $present ) {
+		@db = dblookup( @db, "", "mapassoc", "", "" );
+		$symtype_used = 
+			grep( /symtype/, dbquery( @db, "dbTABLE_FIELDS" ) );
+		if( ! $symtype_used ) {
+			print STDERR "Please upgrade to dbrecenteqs1.2.\n";
 			$present = 0;
 		}
 	}

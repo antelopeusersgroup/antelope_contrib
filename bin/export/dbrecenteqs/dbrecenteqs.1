@@ -23,7 +23,7 @@ option is deprecated for \fBdbrecenteqs\fP running under the rtexec(1) of
 Antelope 4.5 or higher.
 
 If necessary, \fBdbrecenteqs\fP creates or adds to the mapstock table of the
-database in dbrecenteqs1.1 or related schema.  For the default
+database in dbrecenteqs1.2 or related schema.  For the default
 behavior, a new stock index map is created based on the specifications
 in the parameter file. The index maps (maps showing overviews of all the
 earthquakes in the database) that should be shown are given in the
@@ -279,7 +279,7 @@ global_map &Arr{
 .ne 10
 focus_map &Arr{
         include         map_config
-        stylesheet      specific_default.xsl
+        stylesheet      &datafilename(xslt/specific_default.xsl)
         mapclass        focus
         gridline_interval_deg 1
         left_dellon     -2
@@ -302,12 +302,12 @@ map_config &Arr{
         mapclass        index
         contour_mode    grddb  # none or grddb
         grddb           /space/world30_grids/world30
-        stylesheet      index_default.xsl
+        stylesheet      &datafilename(xslt/index_default.xsl)
         longitude_branchcut_high 360
         hypocenter_dbname historic_hypocenters_dbname
-        map_color_palette_file dbrecenteqs.cpt
-        map_landmask_palette_file dbrecenteqs_landonly.cpt
-        depth_color_palette_file depthmag2.cpt
+        map_color_palette_file &datafilename(xslt/dbrecenteqs.cpt)
+        map_landmask_palette_file &datafilename(xslt/dbrecenteqs_landonly.cpt)
+        depth_color_palette_file &datafilename(xslt/depthmag2.cpt)
         linefiles &Tbl{
                 # faults combined_faults.gmtlin 4/255/0/0
                 # roads roads.xy 4/255/255/255
@@ -337,6 +337,10 @@ map_config &Arr{
                 8       11
                 9       12
 	}
+	plot_stations 1
+	stations_stylesheet &datafilename(xslt/station_default_stylesheet.xsl)
+	station_color black
+	station_size  4
         pixels_per_inch 100
         size_inches     5
         city_symbols_inches 0.08
@@ -468,6 +472,9 @@ would be nice to clean this up.
 The -c \fIsourcedb\fP mechanism is something of a workaround, useful for
 orbxfer -based installations, which do not have any type of synchronization
 mechanism between \fBdbrecenteqs\fP and the database updates.
+
+The -h option is aging and is not guaranteed to perform correctly in 
+all circumstances.
 
 .SH "SEE ALSO"
 .nf

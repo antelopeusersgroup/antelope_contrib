@@ -317,6 +317,148 @@ sub translate_author {
 	return ( $auth, "" );
 }
 
+sub station_vitals {
+	my( $writer ) = shift( @_ );
+	my( $event_url ) = pop( @_ );
+	my( @db ) = @_;
+
+	my( @mystations ) = ();
+
+	my( $orid ) = 	dbgetv( @db, "origin.orid" );
+
+	@db = dbprocess( @db, "dbopen mapassoc",
+			   "dbsubset orid == $orid",
+			   "dbsubset symtype == \"station\"",
+			   "dbjoin arrival arid",
+			   "dbjoin site sta" );
+
+	if( $State{use_qgrids} ) {
+
+		@dbtest = dblookup( @db, "", "wfmgme", "", "" );
+		$wfmgme_present = dbquery( @dbtest, dbTABLE_PRESENT );
+
+		@dbtest = dblookup( @db, "", "wfmeas", "", "" );
+		$wfmeas_present = dbquery( @dbtest, dbTABLE_PRESENT );
+
+		if( $wfmgme_present ) {
+
+			@db = dbprocess( @db, 
+			     "dbjoin -o wfmgme arrival.time#wfmgme.time" );
+
+		} elsif( $wfmeas_present ) {
+
+			# SCAFFOLD
+			# Need to handle the potential of multiple rows
+
+			fprintf STDERR 
+			       "Warning: dbrecenteqs does not yet support" .
+			       "wfmeas station-measurements\n";
+		}
+	}
+
+	my( $nrecs ) = dbquery( @db, dbRECORD_COUNT );
+	
+	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
+
+		my( $sta, $arrtime, $lat, $lon, $iphase ) =
+			dbgetv( @db, "sta", "arrival.time", 
+				     "lat", "lon", "iphase" );
+		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
+
+		my( $sta_url ) = $event_url;
+		$sta_url =~ s/.html$/_station_$sta.html/;
+
+		my( $utc_arrtime ) 
+			= epoch2str( $arrtime, "%m/%d/%Y %H:%M:%S.%s %Z" );
+
+		$writer->startTag( "station", "name" => "$sta" );
+		$writer->dataElement( "sta", "$sta" );
+		$writer->dataElement( "url", "$sta_url" );
+		$writer->dataElement( "arrtime", "$utc_arrtime" );
+		$writer->dataElement( "iphase", "$iphase" );
+		$writer->dataElement( "lat", "$lat" );
+		$writer->dataElement( "lon", "$lon" );
+		$writer->dataElement( "x", "$x" );
+		$writer->dataElement( "y", "$y" );
+		$writer->dataElement( "shape", "$shape" );
+		$writer->dataElement( "color", "$color" );
+		$writer->dataElement( "coords", "$coords" );
+
+		if( $State{use_qgrids} && $wfmgme_present ) {
+
+			my( $wfmgme_time, 
+			    $pva, $trpva, $snrpva, 
+			    $pvv, $trpvv, $snrpvv, 
+			    $wa, $trwa, $snrwa, $chanwa ) = dbgetv( 
+			    @db, "wfmgme.time", "pva", "trpva", "snrpva",
+				 "pvv", "trpvv", "snrpvv", "wa", "trwa", 
+				 "snrwa", "chanwa" );
+
+			if( $pva == -9.000000e+99 ) {
+				$pva = "";
+				$pva_units = "";
+				$snrpva = "";
+				$trpva = "";
+			} else {
+				$pva = sprintf( "%.3f", $pva );
+				$trpva = sprintf( "%.2f", $trpva );
+				$pva_units = "mg";
+			}
+
+			if( $pvv == -9.000000e+99 ) {
+				$pvv = "";
+				$pvv_units = "";
+				$snrpvv = "";
+				$trpvv = "";
+			} else {
+				$pvv = sprintf( "%.2f", $pvv );
+				$trpvv = sprintf( "%.2f", $trpvv );
+				$pvv_units = "nm/sec";
+			}
+
+			if( $wa == -9.000000e+99 ) {
+				$wa = "";
+				$wa_units = "";
+				$snrwa = "";
+				$trwa = "";
+				$chanwa = "";
+			} else {
+				$wa = sprintf( "%.2f", $wa );
+				$trwa = sprintf( "%.2f", $trwa );
+				$wa_units = "mm";
+			}
+
+			$writer->startTag( "measurement" );
+			$writer->dataElement( "type", "wfmgme" );
+			$writer->dataElement( "pva", $pva );
+			$writer->dataElement( "pva_units", $pva_units );
+			$writer->dataElement( "trpva", $trpva );
+			$writer->dataElement( "snrpva", $snrpva );
+			$writer->dataElement( "pvv", $pvv );
+			$writer->dataElement( "pvv_units", "nm/sec" );
+			$writer->dataElement( "trpvv", $trpvv );
+			$writer->dataElement( "snrpvv", $snrpvv );
+			$writer->dataElement( "wa", $wa );
+			$writer->dataElement( "wa_units", "mm" );
+			$writer->dataElement( "trwa", $trwa );
+			$writer->dataElement( "snrwa", $snrwa );
+			$writer->dataElement( "chanwa", $chanwa );
+
+			$writer->endTag( "measurement" );
+
+		}  elsif( $State{use_qgrids} && $wfmeas_present ) {
+
+			# SCAFFOLD: not yet supported
+		}
+
+		$writer->endTag( "station" );
+
+		push( @mystations, $sta );
+	}
+
+	return @mystations;
+}
+
 sub hypocenter_vitals {
 	my( $writer ) = shift( @_ );
 	my( $type ) = pop( @_ );
@@ -496,6 +638,7 @@ sub create_focusmap_html {
 	my( $html_relpath ) = substr( $url, length( $State{dbrecenteqs_url} ) );
 	my( $html_filename ) = 
 		concatpaths( $State{dbrecenteqs_dir}, $html_relpath );
+		
 	my( $xml_filename ) = "$html_filename";
 	$xml_filename =~ s/\..*//g;
 	$xml_filename .= ".xml";
@@ -510,7 +653,9 @@ sub create_focusmap_html {
 
 	@db = dbprocess( @db, "dbjoin event",
 			      "dbjoin origin evid#evid",
-			      "dbjoin -o mapassoc mapname origin.orid#mapassoc.orid" );
+			      "dbjoin -o mapassoc mapname origin.orid#mapassoc.orid",
+			      "dbsubset symtype == \"origin\"" );
+
 	my( @dbprefor ) = dbsubset( @db, "origin.orid==prefor" );
 	$dbprefor[3] = 0;
 	my( @dbnonprefors ) = dbsubset( @db, "origin.orid != prefor" );
@@ -603,6 +748,10 @@ sub create_focusmap_html {
 
 	$writer->endTag( "origins" );
 
+	$writer->startTag( "stations" );
+	@mystations = station_vitals( $writer, @dbprefor, $url );
+	$writer->endTag( "stations" );
+
 	$State{"nearest_places"}->{"cities_dbname"} =
 	   datafile_abspath( $State{"nearest_places"}->{"cities_dbname"} );
 	
@@ -639,10 +788,51 @@ sub create_focusmap_html {
 
 	$output->close();
 
-	xml_to_output( $xml_filename, $Focus_Mapspec{stylesheet}, $html_filename );
+	xml_to_output( $xml_filename, 
+		       $Focus_Mapspec{stylesheet}, 
+		       $html_filename );
 
 	if( -e "$Focus_Mapspec{vrml_stylesheet}" ) {
-		xml_to_output( $xml_filename, $Focus_Mapspec{vrml_stylesheet}, $vrml_filename );
+
+		xml_to_output( $xml_filename, 
+			       $Focus_Mapspec{vrml_stylesheet}, 
+			       $vrml_filename );
+	}
+
+	if( $Focus_Mapspec{plot_stations} &&
+	    -e "$Focus_Mapspec{stations_stylesheet}" ) {
+
+		foreach $sta ( @mystations ) {
+
+			my( $stations_filename ) = $html_filename;
+			$stations_filename =~ s/.html$/_station_$sta.html/;
+
+			$tmp_stylesheet = 
+			   concatpaths( $State{"workdir"}, 
+					"sta_stylesheet_$<\_$$\_$sta.xsl" );
+
+
+			open( S, ">$tmp_stylesheet" );
+			print S "<?xml version=\"1.0\"?>";
+			print S "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">\n";
+			print S "<xsl:output method=\"html\"/>";
+
+			print S "<xsl:include href=\"$Focus_Mapspec{stations_stylesheet}\"/>";
+
+			print S "<xsl:template match=\"/\">\n";
+			print S "<xsl:apply-templates select=\"specific_quake/stations/station[\@name='$sta']\"/>\n";
+			print S "</xsl:template>\n";
+
+			print S "</xsl:stylesheet>\n";
+
+			close S;
+
+			xml_to_output( $xml_filename, 
+				       $tmp_stylesheet,
+			       	       $stations_filename );
+			
+			#unlink( $tmp_stylesheet );
+		}
 	}
 }
 
@@ -767,10 +957,79 @@ sub create_focusmap {
 
 	for( $db[3]=0; $db[3] < $nhypos; $db[3]++ ) {
 
-		my( $lat, $lon, $orid ) =
-	  	  dbgetv( @db, "lat", "lon", "orid" );
+		my( $orid ) = dbgetv( @db, "orid" );
+
+		my( @dbmapassoc ) = dblookup( @db, "", "mapassoc", "", "" );
+
+		if( $Focus_Mapspec{plot_stations} ) {
+
+			@dbstas = dbprocess( @db, 
+				     	"dbopen origin", 
+				     	"dbsubset orid == $orid", 
+				     	"dbjoin assoc",
+				     	"dbjoin arrival", 
+				     	"dbjoin site" );
+
+			$nstas = dbquery( @dbstas, dbRECORD_COUNT );
+
+			for( $dbstas[3] = 0; $dbstas[3] < $nstas; $dbstas[3]++ ) {
+				my( $lat, $lon, $sta, $arid ) = 
+				  dbgetv( @dbstas, "site.lat", "site.lon",
+						   "sta", "arid" );
+
+				my( $symtype ) = "station";
+
+				( $x, $y ) = latlon_to_xy( 
+				   	$Focus_Mapspec{proj},
+				   	$lat,
+				   	$lon,
+				   	$Focus_Mapspec{latc},
+				   	$Focus_Mapspec{lonc},
+				   	$Focus_Mapspec{xc},
+				   	$Focus_Mapspec{yc},
+				   	$Focus_Mapspec{xscale_pixperdeg},
+				   	$Focus_Mapspec{yscale_pixperdeg},
+				   	);
+
+				my( $symsize ) = $Focus_Mapspec{station_size};
+				my( $symcolor ) = $Focus_Mapspec{station_color};
+				my( $symtype ) = "station";
+				my( $symshape ) = "triangle";
+				
+				my( $primitive ) = "polygon";
+
+				my( $xll ) = $x - $symsize;
+				my( $yll ) = $y + $symsize;
+				my( $xlr ) = $x + $symsize;
+				my( $ylr ) = $y + $symsize;
+				my( $xtop ) = $x;
+				my( $ytop ) = $y - $symsize;
+				my( $points ) = "$xll,$yll $xlr,$ylr $xtop,$ytop";
+
+				$modified_image->Draw(
+						fill=>$symcolor,
+						primitive=>$primitive,
+						stroke=>'black',
+						points=>$points );
+	
+				dbaddv( @dbmapassoc, 
+				     "mapname", $Focus_Mapspec{mapname},
+			     	     "orid", $orid,
+			     	     "arid", $arid,
+			     	     "sta", $sta,
+			     	     "x", $x,
+			     	     "y", $y, 
+			     	     "symsize", $symsize,
+			     	     "symshape", $symshape,
+			     	     "symcolor", $symcolor,
+				     "symtype", $symtype );
+			}
+		}
+
+		my( $symtype ) = "origin";
 
 		my( $colormode ) = ( $orid == $prefor ) ? "prefor" : "nonprefor"; 
+		my( $lat, $lon ) = dbgetv( @db, "lat", "lon" );
 
 		( $x, $y ) = latlon_to_xy( 
 				   $Focus_Mapspec{proj},
@@ -804,14 +1063,14 @@ sub create_focusmap {
 				stroke=>'black',
 				points=>$points );
 	
-		my( @dbmapassoc ) = dblookup( @db, "", "mapassoc", "", "" );
 		dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{mapname},
 			     	     "orid", $orid,
 			     	     "x", $x,
 			     	     "y", $y, 
 			     	     "symsize", $symsize,
 			     	     "symshape", $symshape,
-			     	     "symcolor", $symcolor );
+			     	     "symcolor", $symcolor,
+				     "symtype", $symtype );
 	}
 
 	$modified_image->Write(filename=>$webmap_image);
@@ -829,6 +1088,7 @@ sub stockmap_earthquake_xml {
 	@db = dbprocess( @db, 
 		       "dbopen mapassoc",
 		       "dbsubset mapname == \"$mapname\"",
+		       "dbsubset symtype == \"origin\"",
 		       "dbjoin origin",
 		       "dbjoin event",
 		       "dbsort -r time",
@@ -954,6 +1214,19 @@ sub imagemap_symbol {
 
 		$shape = "$primitive";
 		$coords = "$xul,$yul,$xlr,$ylr";
+
+	} elsif( $symshape eq "triangle" ) {
+		
+		$primitive = "poly";
+
+		$xll = $x - $symsize;
+		$yll = $y + $symsize;
+		$xlr = $x + $symsize;
+		$ylr = $y + $symsize;
+		$xtop = $x;
+		$ytop = $y - $symsize;
+		$shape = "$primitive";
+		$coords = "$xll,$yll,$xlr,$ylr,$xtop,$ytop";
 
 	} else {
 		die( "symbol shape $symshape not understood\n" );
@@ -1222,6 +1495,8 @@ sub update_stockmap {
 			( $symsize, $symshape, $symcolor ) = 
   			set_hypocenter_symbol( \%Mapspec, @db, "age" );
 
+			my( $symtype ) = "origin";
+
 			my( $primitive, $points, $xul, $yul, $xlr, $ylr );
 
 			if( $symshape eq "square" ) {
@@ -1248,7 +1523,8 @@ sub update_stockmap {
 				"y", $y,
 				"symsize", $symsize,
 				"symshape", $symshape,
-				"symcolor", $symcolor );
+				"symcolor", $symcolor, 
+				"symtype", $symtype );
 		}
 	}
 
@@ -1328,7 +1604,7 @@ if( $opt_c ) {
 
 if( ! expansion_schema_present( @db ) ) {
 
-	die( "Please add dbrecenteqs1.1 expansion schema to $dbname. Bye.\n" );
+	die( "Please add dbrecenteqs1.2 expansion schema to $dbname. Bye.\n" );
 }
 
 if( $State{use_qgrids} && ! gme_schema_present( @db ) ) {
@@ -1436,7 +1712,8 @@ if( $opt_e ) {
 				     "dbsubset evid != NULL",
 				     "dbjoin event",
 				     "dbjoin origin event.prefor#origin.orid",
-				     "dbjoin mapassoc mapname origin.orid#mapassoc.orid"
+				     "dbjoin mapassoc mapname origin.orid#mapassoc.orid",
+				     "dbsubset symtype == \"origin\"",
 				     );
 
 	$nmaps = dbquery( @dbwebmaps, "dbRECORD_COUNT" );
