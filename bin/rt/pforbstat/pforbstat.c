@@ -12,6 +12,8 @@
 
 #include "pforbstat.h"
 
+#define SRCNAME_DEFAULT "/pf/orbstat"
+
 static void
 usage ()
 {
@@ -43,7 +45,8 @@ main (int argc, char **argv)
 	int	packetsz = 0;
 	char	*packet = 0;
 	double	pkttime;
-	char	srcname[ORBSRCNAME_SIZE] = "/pf/orbstat";
+	char	srcname_in[ORBSRCNAME_SIZE] = SRCNAME_DEFAULT;
+	char	srcname[ORBSRCNAME_SIZE] = SRCNAME_DEFAULT;
 	int	rc;
 
     	elog_init (argc, argv);
@@ -57,7 +60,7 @@ main (int argc, char **argv)
 			break;
 
 		case 'n':
-			strcpy( srcname, optarg );
+			strcpy( srcname_in, optarg );
 			break;
 
 		case 'f':
@@ -105,13 +108,17 @@ main (int argc, char **argv)
 		seconds = atoi( argv[optind++] );
 	}
 
+	if( orboutname == NULL && strcmp( srcname, "" ) ) {
+		complain( 1, "Useless specification of srcname (-n) without -o\n" );
+	}
+
 	pkt = newPkt();
 
-	split_srcname( srcname, &pkt->parts );
+	split_srcname( srcname_in, &pkt->parts );
 
 	pkt->pkttype = suffix2pkttype( pkt->parts.src_suffix );
 
-	if( pkt->pkttype->content != Pkt_pf ) {
+	if( pkt->pkttype == NULL || pkt->pkttype->content != Pkt_pf ) {
 		die( 1, 
 		     "Source-name code \"%s\" is not of pf type\n",
 		     pkt->parts.src_suffix );
@@ -161,6 +168,18 @@ main (int argc, char **argv)
 				complain( 0, 
 					  "stuffPkt failed for %s\n",
 					  pkt->pkttype->name );
+			}
+
+			if( strcmp( srcname_in, SRCNAME_DEFAULT ) ) {
+
+				strcpy( srcname, srcname_in );
+
+			} else {
+				
+				sprintf( srcname, "%s:%d%s",
+					 pfget_string( pf, "server{address}" ),
+					 pfget_int( pf, "server{port}" ),
+					 SRCNAME_DEFAULT );
 			}
 
 			if( rc >= 0 &&

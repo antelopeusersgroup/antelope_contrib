@@ -4,7 +4,7 @@ pforbstat \- Create parameter files of orb status
 .SH SYNOPSIS
 .nf
 pforbstat [-c] [-s] [-m match] [-r reject] [-v]
-          [-f filename] [-n srcname] [-o orbout]
+          [-f filename] [-o orbout [-n srcname]]
           orbname [secs]
 .fi
 .SH DESCRIPTION
@@ -164,6 +164,9 @@ orbclients(3), pforbstat(3)
 .SH "BUGS AND CAVEATS"
 One could argue that this should be a set of options to orbstat(1), rather 
 than an independent program.
+
+This still needs a -d option to unpack packets and provide more detail
+when possible
 .SH AUTHOR
 .nf
 Kent Lindquist
