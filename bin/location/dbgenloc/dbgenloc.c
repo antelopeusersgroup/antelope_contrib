@@ -51,7 +51,11 @@ char          **argv;
 	    break;
 
 	case 'V':
-	    banner (Program_Name, "Version $Revision$ $Date$\n");
+	    cbanner("Version $Revision$ $Date$\n",
+			"dbgenloc input-db output-db",
+			"Gary Pavlis",
+			"Indiana University",
+			"pavlis@indiana.edu");
 	    exit (0);
 
 	default:
