@@ -9,6 +9,8 @@
 #include "pkt.h"
 #include "antelope_regex.h"
 
+#define TRGAP_VALUE_S4  2147483647
+
 typedef struct Source {
     Orbpipe *apipe ;
     double last ; 
