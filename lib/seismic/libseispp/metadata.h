@@ -79,7 +79,7 @@ public:
 	Metadata_get_error(const string mtd, const string n, const string mess)
 		{mdtype=mtd; name=n;  message=mess; };
 	virtual void log_error()
-	{ cerr<<"Error attempting to extract parameter" << name
+	{ cerr<<"Error attempting to extract parameter " << name
 		<< " of type " << mdtype << "\n" << message << endl;};
 };
 class Metadata_parse_error : public Metadata_error

@@ -237,65 +237,73 @@ void dbsave(Time_Series& ts,
 				+ string("expected to find ")
 				+ table);
 		}
-		switch(ami->second.mdt)
-		{
-		case MDint:
-			ival = ts.get_int(ami->second.internal_name);
-			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				ival,0);
-			break;
-		case MDreal:
-			dval = ts.get_double(ami->second.internal_name);
-			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				dval,0);
-			break;
-		case MDstring:
-			cval = ts.get_string(ami->second.internal_name);
-			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				cval.c_str(),0);
-			break;
-		case MDboolean:
-			// treat booleans as ints for external representation
-			// This isn't really necessary as Antelope
-			// doesn't support boolean attributes
-			if(ts.get_bool(ami->second.internal_name))
-				ival = 1;
-			else
-				ival = 0;
-			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				ival,0);
-			break;
+		try {
+			switch(ami->second.mdt)
+			{
+			case MDint:
+				ival = ts.get_int(ami->second.internal_name);
+				dbputv(db,0,ami->second.db_attribute_name.c_str(),
+					ival,0);
+				break;
+			case MDreal:
+				dval = ts.get_double(ami->second.internal_name);
+				dbputv(db,0,ami->second.db_attribute_name.c_str(),
+					dval,0);
+				break;
+			case MDstring:
+				cval = ts.get_string(ami->second.internal_name);
+				dbputv(db,0,ami->second.db_attribute_name.c_str(),
+					cval.c_str(),0);
+				break;
+			case MDboolean:
+				// treat booleans as ints for external representation
+				// This isn't really necessary as Antelope
+				// doesn't support boolean attributes
+				if(ts.get_bool(ami->second.internal_name))
+					ival = 1;
+				else
+					ival = 0;
+				dbputv(db,0,ami->second.db_attribute_name.c_str(),
+					ival,0);
+				break;
+				
+			case MDlist: 
+			case MDmap:
+				/* We don't throw an exception here but instead just
+				output a warning message always.  The reason for this
+				is that in a list of attributes to be output the 
+				user could make an error.  We don't want the output
+				to fail on a single bad definition, but do want
+				the user to be aware of the problem.  Same is 
+				true of each of the cases below.*/
+				cerr << "dbsave: database attribute "
+					<< ami->second.db_attribute_name
+					<< " is marked as a map or list\n"
+					<< "These types cannot be mapped to a db\n"
+					<< "Data for this attribute not saved"
+					<< endl;
+			case MDinvalid:
+				cerr << "dbsave: database attribute "
+					<< ami->second.db_attribute_name
+					<< " was marked as invalid\n"
+					<< "Data for this attribute not saved"
+					<< endl;
 			
-		case MDlist: 
-		case MDmap:
-			/* We don't throw an exception here but instead just
-			output a warning message always.  The reason for this
-			is that in a list of attributes to be output the 
-			user could make an error.  We don't want the output
-			to fail on a single bad definition, but do want
-			the user to be aware of the problem.  Same is 
-			true of each of the cases below.*/
-			cerr << "dbsave: database attribute "
-				<< ami->second.db_attribute_name
-				<< " is marked as a map or list\n"
-				<< "These types cannot be mapped to a db\n"
-				<< "Data for this attribute not saved"
-				<< endl;
-		case MDinvalid:
-			cerr << "dbsave: database attribute "
-				<< ami->second.db_attribute_name
-				<< " was marked as invalid\n"
-				<< "Data for this attribute not saved"
-				<< endl;
-		
-		default:
-			cerr << "dbsave: database attribute "
-				<< ami->second.db_attribute_name
-				<< " has unknown data type\n"
-				<< "Data for this attribute not saved"
-				<< endl;
+			default:
+				cerr << "dbsave: database attribute "
+					<< ami->second.db_attribute_name
+					<< " has unknown data type\n"
+					<< "Data for this attribute not saved"
+					<< endl;
+			}
+	
 		}
-
+		catch (Metadata_get_error mderr)
+		{
+			mderr.log_error();
+			throw seispp_error(
+			    string("dbsave for Time_Series object failure"));
+		}
 	}
 	// Even if they were written in the above loop the contents 
 	// of the object just override the metadata versions.  
@@ -304,6 +312,7 @@ void dbsave(Time_Series& ts,
 	etime = ts.time(ts.ns - 1);
 	dbputv(db,0,"time",ts.t0,
 		"endtime",etime,
+		"samprate",1.0/ts.dt,
 		"nsamp",ts.ns,0);
 	
 	// Specifying the output data type is problematic
@@ -332,6 +341,12 @@ void dbsave(Time_Series& ts,
 	char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
 	long int foff;  // actual foff reset in db record
 	dbgetv(db,0,"datatype",dtype,"dir",dir,"dfile",dfile,0);
+	// make sure the directory is present
+	if(makedir(dir))
+	{
+		throw seispp_error(string("makedir(dir) failed with dir=")
+				+ string(dir));
+	}
 	try {
 		if(dtype[1]=='8') 
 		{
