@@ -1,9 +1,9 @@
 echo on
 
-% This presumes that you have connect permission to a running 
-%  orb called 'nordic' (you probably don't...)
+% This presumes that you have connect permission to an orb running 
+%  locally on the default port
 
-fd = orbopen( 'nordic', 'r' );
+fd = orbopen( 'localhost', 'r' );
 
 % Choose all components of station DIV (Divide, Alaska)
 % Return the number of selected sources

@@ -14,7 +14,7 @@ sta='SINE';
 
 chan='BHZ';
 
-time=str2epoch( 'now' );
+time=str2epoch( '9/30/02 11:15 AM' );
 
 samprate=20;      
 

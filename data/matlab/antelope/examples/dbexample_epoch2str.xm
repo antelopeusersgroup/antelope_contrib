@@ -1,11 +1,11 @@
 echo on
 
-now = str2epoch( 'now' )
+mytime = str2epoch( '9/30/02 11:15 AM' )
 
-epoch2str( now, '%D %H:%M:%S %Z' )
+epoch2str( mytime, '%D %H:%M:%S %Z' )
 
-epoch2str( now, '%A, %B %d %Y' )
+epoch2str( mytime, '%A, %B %d %Y' )
 
-epoch2str( now, '%G %l %p' )
+epoch2str( mytime, '%G %l %p' )
 
 echo off

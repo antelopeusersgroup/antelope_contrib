@@ -12,7 +12,7 @@ db=dbjoin( dbarrival,dbwfdisc );
 
 output_dbname = ['/tmp/newdb_' getenv('USER')]
 
-unix( ['rm -f ' output_dbname '*'] );
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 dbunjoin( db,output_dbname );
 

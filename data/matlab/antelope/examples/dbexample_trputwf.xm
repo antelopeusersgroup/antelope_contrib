@@ -3,7 +3,7 @@ echo on
 % Open a new database for output:
 output_dbname = ['/tmp/newdb_' getenv('USER')]
 
-unix( ['rm -f ' output_dbname '*'] );
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 db = dbopen( output_dbname,'r+' );
 db = dblookup_table( db, 'wfdisc' );

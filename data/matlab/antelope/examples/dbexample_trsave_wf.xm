@@ -11,7 +11,7 @@ data = ( 0:nsamp-1 );
 data = data * 16 * 2 * pi / nsamp;
 data = amp * sin( data );
 samprate = 20;
-time = str2epoch( 'now' );
+time = str2epoch( '9/30/02 11:15 AM' );
 endtime = tr_endtime( time, samprate, nsamp );
 
 % Put the waveform into the trace object:
@@ -27,7 +27,7 @@ datatype = 'sd';
 
 output_dbname = ['/tmp/newdb_' getenv('USER')]
 
-unix( ['rm -f ' output_dbname '*'] );
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 db = dbopen( output_dbname,'r+' );
 db = dblookup_table( db, 'wfdisc' );

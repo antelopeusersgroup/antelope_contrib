@@ -3,7 +3,7 @@ echo on
 % Open up a new database for writing; choose the origin table:
 output_dbname = ['/tmp/newdb_' getenv('USER')]
 
-unix( ['rm -f ' output_dbname '*'] );
+unix( ['/bin/rm -f ' output_dbname '*'] );
 
 db=dbopen( output_dbname,'r+' );
 db=dblookup_table( db,'origin' );
@@ -35,7 +35,7 @@ dbclose( db );
 
 output_dbname_2 = ['/tmp/newdb_2_' getenv('USER')]
 
-unix( ['rm -f ' output_dbname_2 '*'] );
+unix( ['/bin/rm -f ' output_dbname_2 '*'] );
 
 db=dbopen( output_dbname_2,'r+' );
 db=dblookup_table( db,'origin' );

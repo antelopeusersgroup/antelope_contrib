@@ -1,7 +1,7 @@
 echo on
 
 % Create a parameter file and put one value in it
-unix( 'rm /tmp/myfile.pf' );
+unix( '/bin/rm /tmp/myfile.pf' );
 unix( 'echo myint 13 > /tmp/myfile.pf' );
 
 % Open the parameter file and extract the parameter:
@@ -20,7 +20,7 @@ pfget_num( pf, 'myint' )
 % Now the retrieved parameter reflects the changed file:
 pfget_num( pf, 'myint' )
 
-unix( 'rm /tmp/myfile.pf' );
+unix( '/bin/rm /tmp/myfile.pf' );
 pffree( pf );
 
 echo off

@@ -47,16 +47,17 @@ dbexample_free_response
 dbexample_get_demodb_path
 dbexample_get_hypocenter_vitals
 dbexample_joins
-dbexample_orbafter
-dbexample_orbclose
-dbexample_orbget
-dbexample_orbopen
-dbexample_orbping
-dbexample_orbreap
-dbexample_orbreject
-dbexample_orbseek
-dbexample_orbselect
-dbexample_orbtell
+% orb support is still experimental
+% dbexample_orbafter
+% dbexample_orbclose
+% dbexample_orbget
+% dbexample_orbopen
+% dbexample_orbping
+% dbexample_orbreap
+% dbexample_orbreject
+% dbexample_orbseek
+% dbexample_orbselect
+% dbexample_orbtell
 dbexample_pf2string
 dbexample_pf2struct
 dbexample_pffiles
