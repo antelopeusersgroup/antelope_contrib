@@ -1,9 +1,8 @@
 LIB = libttregions.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
-$REQUIRE_DATA = models0.4
-DATA=models0.4
-DATADIR = schemas2
+DATA=
+DATADIR = 
 
 ldlibs=$(DBLIBS)
 
