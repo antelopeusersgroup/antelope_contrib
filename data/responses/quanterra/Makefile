@@ -6,7 +6,7 @@ DATA=README_quanterra F64C F64CM  F72B F72BM F96C F96CM \
      FLbelow40-1 FLbelow40-10 FLbelow40-100 FLbelow40-20 FLbelow40-200 FLbelow40-40 FLbelow40-50 \
      FLinear-1 FLinear-10 FLinear-100 FLinear-20 FLinear-200 FLinear-40 FLinear-50 \
      Phase0-L100 Phase0-L40 Phase0-L1 \
-     n2Phase0-L100 n2Phase0-L40 n2Phase0-L1
+     n2Phase0-L200 n2Phase0-L100 n2Phase0-L50 n2Phase0-L40 n2Phase0-L20 n2Phase0-L10 n2Phase0-L1
 
                            
 include $(ANTELOPEMAKE)  	
