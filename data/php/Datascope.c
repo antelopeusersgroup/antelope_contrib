@@ -109,11 +109,11 @@ z_arrval_to_dbptr( zval *array, Dbptr *db )
 
 	if( Z_TYPE_P( array ) != IS_ARRAY ) {
 
-		return -1;
+		zend_error( E_ERROR, "dbptr argument is not an array\n" );
 
 	} else if( zend_hash_num_elements( Z_ARRVAL_P( array ) ) != 4 ) {
 
-		return -1;
+		zend_error( E_ERROR, "dbptr argument does not have four elements\n" );
 	}
 
 	target_hash = HASH_OF( array );
@@ -320,21 +320,19 @@ PHP_FUNCTION(pfget)
 
 	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
 
-		/* SCAFFOLD needs cleanup and error msg */
-		return;
+		zend_error( E_ERROR, "failure opening parameter file\n" );
 	}
 
 	rc = pfresolve( pf, key, 0, &pfvalue );
 
-	if( rc == PFINVALID  ) {
+	if( rc < 0  ) {
 
-		fprintf( stderr, "SCAFFOLD: parameter not found by pfget\n" );
-		return;
+		zend_error( E_ERROR, "parameter not found by pfget\n" );
 
 	} else if( rc != PFSTRING ) {
 		
-		fprintf( stderr, "SCAFFOLD: only strings/ints/reals supported by pfget right now\n" );
-		return;
+		zend_error( E_ERROR, "SCAFFOLD: only strings/ints/reals " 
+				     "supported by pfget right now\n" );
 		
 	} else {
 
@@ -386,16 +384,16 @@ PHP_FUNCTION(trextract_data)
 	}
 
 	if( ! single_row ) {
-		/* SCAFFOLD needs cleanup and error msg */
-		return;
+		zend_error( E_ERROR, "trextract_data requires that the "
+			"trace-object point at or contain only a single row\n");
 	}
 
 	dbgetv( tr, 0, "nsamp", &nsamp, "data", &data, 0 );
 
 	if( nsamp == 0 || data == NULL ) {
 	
-		/* SCAFFOLD needs cleanup and error msg */
-		return;
+		zend_error( E_ERROR, 
+			"trextract_data: no data in trace object\n" );
 	}
 
 	array_init( return_value );
@@ -520,10 +518,8 @@ PHP_FUNCTION(db2xml)
 
 		if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
 			efree( args );
-			return;
-
+			zend_error( E_ERROR, "the flags argument must be a string\n" );
 		} else {
 			
 			flags_string = Z_STRVAL_PP( args[1] );
@@ -538,8 +534,8 @@ PHP_FUNCTION(db2xml)
 
 			} else {
 
-				/* SCAFFOLD; need cleanup and error msg */
 				efree( args );
+				zend_error( E_ERROR, "flags must be empty or DBXML_PRIMARY\n" );
 			}
 		}
 	}
@@ -548,9 +544,8 @@ PHP_FUNCTION(db2xml)
 
 		if( Z_TYPE_PP( args[2] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "rootnode argument must be a string\n" );
 
 		} else {
 			
@@ -562,9 +557,8 @@ PHP_FUNCTION(db2xml)
 
 		if( Z_TYPE_PP( args[3] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "rownode argument must be a string\n" );
 
 		} else {
 			
@@ -576,9 +570,8 @@ PHP_FUNCTION(db2xml)
 	
 		if( z_arrval_to_strtbl( *args[4], &fields ) < 0 ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "The fields argument must not be a non-empty list\n" );
 		}
 	}
 
@@ -586,9 +579,8 @@ PHP_FUNCTION(db2xml)
 	
 		if( z_arrval_to_strtbl( *args[5], &expressions ) < 0 ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "The expressions argument must not be a non-empty list\n" );
 		}
 	}
 
@@ -602,13 +594,11 @@ PHP_FUNCTION(db2xml)
 
 	if( rc < 0 ) {
 
-		/* SCAFFOLD: need cleanup and error msg */
-		return;
+		zend_error( E_ERROR, "error calling db2xml\n" );
 
 	} else {
 
-		/* SCAFFOLD: memory leak? */
-		RETURN_STRING( xml, 1 );
+		RETURN_STRING( xml, 0 );
 	}
 }
 /* }}} */
@@ -636,18 +626,13 @@ PHP_FUNCTION(dbresponse)
 
 	if( ( fp = fopen( filename, "r" ) ) == NULL ) {
 
-		/* SCAFFOLD needs error message */
-
-		return;
+		zend_error( E_ERROR, "Failed to open specified response file\n" );
 	}
 
 	if( read_response( fp , &response ) != 0 ) {
 
-		/* SCAFFOLD needs error message */
-
 		fclose( fp );
-
-		return;
+		zend_error( E_ERROR, "failed to read specified response file\n" );
 	}
 
 	fclose( fp );
@@ -737,8 +722,7 @@ PHP_FUNCTION(dbfind)
 
 		if( Z_TYPE_PP( args[2] ) != IS_LONG ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
-			return;
+			zend_error( E_ERROR, "the argument specifying the starting record number must be an integer\n" );
 
 		} else {
 
@@ -749,8 +733,7 @@ PHP_FUNCTION(dbfind)
 
 			if( Z_TYPE_PP( args[3] ) != IS_LONG ) {
 
-				/* SCAFFOLD; need cleanup and error msg */
-				return;
+				zend_error( E_ERROR, "the 'reverse' argument must be an integer\n" );
 
 			} else {
 
@@ -798,6 +781,7 @@ PHP_FUNCTION(dbquery)
 	zval	*db_array;
 	Dbptr	db;
 	int	argc = ZEND_NUM_ARGS();
+	char	errmsg[STRSZ];
 	char	*dbstring_code;
 	int	dbstring_code_len;
 	int	dbcode;
@@ -850,6 +834,10 @@ PHP_FUNCTION(dbquery)
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_STRING( value.t, 1 );
+
+		} else {
+
+			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
 		break;
 
@@ -865,6 +853,10 @@ PHP_FUNCTION(dbquery)
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_LONG( value.i );
+
+		} else {
+
+			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
                 break;  
 
@@ -874,6 +866,10 @@ PHP_FUNCTION(dbquery)
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_BOOL( value.i );
+
+		} else {
+
+			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
                 break;  
 
@@ -881,6 +877,10 @@ PHP_FUNCTION(dbquery)
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_STRING( xlatnum( value.i, Dbxlat, NDbxlat ), 1 );
+
+		} else {
+
+			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
                 break;  
  
@@ -904,16 +904,13 @@ PHP_FUNCTION(dbquery)
 
 		} else {
 
-			RETVAL_STRING( "SCAFFOLD: problem\n", 1 );
+			zend_error( E_ERROR, "Error parsing response from dbquery\n" );
 		}
                 break;  
  
         default:
-		/* SCAFFOLD 
-		sprintf( errmsg, "dbquery: bad code '%s'", dbstring_code );
-		mxFree( dbstring_code );
-		mexErrMsgTxt( errmsg );
-		*/
+		sprintf( errmsg, "dbquery: bad code '%s'", dbcode );
+		zend_error( E_ERROR, errmsg );
 		break ;
 	}
 }
@@ -994,6 +991,7 @@ PHP_FUNCTION(dbex_eval)
 	char	*expr;
 	int	expr_len;
 	Dbvalue	value;
+	char	warning[STRSZ];
 
 	if( argc != 2 ) {
 
@@ -1035,12 +1033,10 @@ PHP_FUNCTION(dbex_eval)
 		RETVAL_DOUBLE( value.d );
 		break;
 	default:
-		/* SCAFFOLD 
 		sprintf( warning, 
 			"Can't interpret field of type %s",
 			xlatnum( type, Dbxlat, NDbxlat ) );
-		mexWarnMsgTxt( warning );
-		*/
+		zend_error( E_WARNING, warning );
 		break;
 	}
 }
@@ -1084,8 +1080,8 @@ PHP_FUNCTION(dbprocess)
 
 		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need cleanup and error msg */
-			return;
+			efree( args );
+			zend_error( E_ERROR, "Error reading command list\n" );
 
 		} else {
 
@@ -1276,13 +1272,11 @@ PHP_FUNCTION(dbputv)
 
 	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
 
-		fprintf( stderr, "SCAFFOLD: Error parsing dbptr\n" );
-		return;
+		zend_error( E_ERROR, "Error parsing dbptr\n" );
 
 	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
 
-		fprintf( stderr, "SCAFFOLD: Error interpreting dbptr\n" );
-		return;
+		zend_error( E_ERROR, "Error interpreting dbptr\n" );
 	}
 
 	args = (zval ***) emalloc( argc * sizeof(zval **) );
@@ -1290,8 +1284,7 @@ PHP_FUNCTION(dbputv)
 	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
 
 		efree( args );
-		fprintf( stderr, "SCAFFOLD: Error getting params array\n" );
-		return;
+		zend_error( E_ERROR, "Error getting params array\n" );
 	}
 
 	nfields = ( argc - 1 ) / 2;
@@ -1302,8 +1295,7 @@ PHP_FUNCTION(dbputv)
 		fieldval_index = fieldname_index + 1;
 
 		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
-			fprintf( stderr, "SCAFFOLD: Error getting fieldname\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldname\n" );
 		}
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
@@ -1314,14 +1306,12 @@ PHP_FUNCTION(dbputv)
 
 		if( rc == dbINVALID ) {
 			
-			fprintf( stderr, "SCAFFOLD: Error getting fieldtype\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldtype\n" );
 		}
 
 		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
 
-			fprintf( stderr, "SCAFFOLD: Error getting fieldvalue\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldvalue\n" );
 		}
 
 		switch( type ) {
@@ -1348,8 +1338,7 @@ PHP_FUNCTION(dbputv)
 
 	if( retcode != 0 ) {
 
-		fprintf( stderr, "SCAFFOLD: Error somewhere\n" );
-		return;
+		zend_error( E_ERROR, "Error in dbputv call\n" );
 	}
 
 	efree( args );
@@ -1387,13 +1376,11 @@ PHP_FUNCTION(dbaddv)
 
 	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
 
-		fprintf( stderr, "SCAFFOLD: Error parsing dbptr\n" );
-		return;
+		zend_error( E_ERROR, "Error parsing dbptr\n" );
 
 	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
 
-		fprintf( stderr, "SCAFFOLD: Error interpreting dbptr\n" );
-		return;
+		zend_error( E_ERROR, "Error interpreting dbptr\n" );
 	}
 
 	db.record = dbNULL;
@@ -1402,8 +1389,7 @@ PHP_FUNCTION(dbaddv)
 
 	if( rc == dbINVALID ) {
 		
-		fprintf( stderr, "SCAFFOLD: Error getting null record\n" );
-		return;
+		zend_error( E_ERROR, "Error getting null record\n" );
 	}
 
 	db.record = dbSCRATCH;
@@ -1413,8 +1399,7 @@ PHP_FUNCTION(dbaddv)
 	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
 
 		efree( args );
-		fprintf( stderr, "SCAFFOLD: Error getting params array\n" );
-		return;
+		zend_error( E_ERROR, "Error getting params array\n" );
 	}
 
 	nfields = ( argc - 1 ) / 2;
@@ -1425,8 +1410,7 @@ PHP_FUNCTION(dbaddv)
 		fieldval_index = fieldname_index + 1;
 
 		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
-			fprintf( stderr, "SCAFFOLD: Error getting fieldname\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldname\n" );
 		}
 
 		field_name = Z_STRVAL_PP( args[fieldname_index] );
@@ -1437,14 +1421,12 @@ PHP_FUNCTION(dbaddv)
 
 		if( rc == dbINVALID ) {
 			
-			fprintf( stderr, "SCAFFOLD: Error getting fieldtype\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldtype\n" );
 		}
 
 		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
 
-			fprintf( stderr, "SCAFFOLD: Error getting fieldvalue\n" );
-			return;
+			zend_error( E_ERROR, "Error getting fieldvalue\n" );
 		}
 
 		switch( type ) {
@@ -1470,16 +1452,14 @@ PHP_FUNCTION(dbaddv)
 	}
 
 	if( retcode != 0 ) {
-		fprintf( stderr, "SCAFFOLD: Error somewhere\n" );
-		return;
+		zend_error( E_ERROR, "Error in dbaddv call\n" );
 	}
 
 	retcode = dbaddchk( db, 0 );
 
 	if( retcode < 0 ) {
 		clear_register( 1 );
-		fprintf( stderr, "SCAFFOLD: Error with addchk\n" );
-		return;
+		zend_error( E_ERROR, "Error with addchk in dbaddv\n" );
 	}
 
 	efree( args );
@@ -1500,6 +1480,7 @@ PHP_FUNCTION(dbgetv)
 	int	argc = ZEND_NUM_ARGS();
 	int	single = 0;
 	int	i;
+	char	warning[STRSZ];
 
 	if( argc < 2 ) {
 
@@ -1539,8 +1520,10 @@ PHP_FUNCTION(dbgetv)
 	for( i = 1; i < argc; i++ ) {
 
 		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
-			/* SCAFFOLD; need cleanup and error msg */
-			return;
+			if( ! single ) {
+				efree( return_value );
+			}
+			zend_error( E_ERROR, "fieldnames must be strings\n" );
 		}
 
 		db = dblookup( db, 0, 0, Z_STRVAL_PP( args[i] ), 0 );
@@ -1549,8 +1532,10 @@ PHP_FUNCTION(dbgetv)
 
 		if( dbget( db, value.s ) < 0 )
 		{
-			/* SCAFFOLD; need cleanup and error msg */
-			return;
+			if( ! single ) {
+				efree( return_value );
+			}
+			zend_error( E_ERROR, "failed to retrieve value\n" );
 		}
 
 		switch( type )
@@ -1598,12 +1583,10 @@ PHP_FUNCTION(dbgetv)
 			}
 			break;
 		default:
-			/* SCAFFOLD 
 			sprintf( warning, 
 				"Can't interpret field of type %s",
 				xlatnum( type, Dbxlat, NDbxlat ) );
-			mexWarnMsgTxt( warning );
-			*/
+			zend_error( E_WARNING, warning );
 			break;
 		}
 	}
@@ -1647,9 +1630,8 @@ PHP_FUNCTION(dbadd)
 
 		} else if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "record must be a string\n" );
 
 		} else {
 
@@ -1700,9 +1682,8 @@ PHP_FUNCTION(dbextfile)
 
 		} else if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
 
-			/* SCAFFOLD; need error msg */
 			efree( args );
-			return;
+			zend_error( E_ERROR, "tablename must be a string\n" );
 
 		} else {
 
