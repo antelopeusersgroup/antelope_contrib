@@ -19,10 +19,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/uio.h>
+#include <errno.h>
+
+#ifdef sun
 #include <sys/priocntl.h>
 #include <sys/rtpriocntl.h>
 #include <sys/tspriocntl.h>
-#include <errno.h>
+#endif
 
 #include "stock.h"
 #include "orb.h"
@@ -1412,6 +1415,8 @@ guralp2orb_packettrans( void *arg )
 	return( NULL );
 }
 
+#ifdef sun
+
 void set_udplisten_priority()
 {
 	uid_t	starting_uid;
@@ -1481,6 +1486,8 @@ void set_udplisten_priority()
 	return;
 }
 
+#endif
+
 static void * 
 guralp2orb_udplisten( void *arg )
 {
@@ -1534,7 +1541,9 @@ guralp2orb_udplisten( void *arg )
 		return( NULL );
 	}
 
+	#ifdef sun
 	set_udplisten_priority();
+	#endif
 
 	if( Verbose ) {
 		fprintf( stderr, 
