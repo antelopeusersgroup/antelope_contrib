@@ -25,6 +25,9 @@ int update_segdata( SegData *segment , SegData *new )
         strcpy( segment->sta, new->sta);
         strcpy( segment->chan, new->chan);
         strcpy( segment->datatype, new->datatype);
+        if( segment->dcode != trSEED)
+           dbputv( dbout, 0, "datatype", "s4", 0);
+       
 /*
         new_db( segment, new ); 
 */
@@ -80,9 +83,9 @@ int new_db( SegData *segment )
              "calib", segment->calib,
              "calper", segment->calper,
              "samprate", segment->samprate,
+             "datatype", segment->datatype,
              "nsamp", segment->nsamp,
              "foff", segment->foff,
-             "datatype", segment->datatype,
              "sta", segment->sta, 
              "chan", segment->chan, 
              "dir", ".",
@@ -90,6 +93,9 @@ int new_db( SegData *segment )
              "jdate", yearday( segment->time),
              "lddate", epoch,
              0);
+    if( segment->dcode != trSEED)
+       dbputv( dbout, 0, "datatype", "s4", 0);
+       
     if( strncmp(segment->segtype, "A", 1 ) == 0  ||
         strncmp(segment->segtype, "D", 1 ) == 0  ||
         strncmp(segment->segtype, "V", 1 ) == 0  )  
