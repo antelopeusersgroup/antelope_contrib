@@ -184,8 +184,6 @@ main(int argc, char **argv)
 	if(gridname == NULL) 
 		elog_die(0,"Missing required parameter GCLgrid_name\n");
 	GCLgrid3d *grd=new GCLgrid3d(db,gridname);
-	if(!(grd->geographic_defined))
-		elog_die(0,"Must have geographic components of GCLgrid object with name %s defined for %s to run\n",gridname,Program_Name);
 
 	if(grd == NULL) elog_die(0,"Problems in GCL3Dgrid_load_db\n");
 	proctbl = strtbl("dbopen event","dbjoin origin","dbsubset orid==prefor",0);
@@ -223,7 +221,7 @@ main(int argc, char **argv)
 			if(zmax < zmin)elog_die(0,"Grid setup problem:  depth floor computed as %lf km, which is above all earth's surface\n",zmax);
 
 			keepers = find_close_events(allevents,
-					grd->lat[i][j][k],grd->lon[i][j][k],
+					grd->lat(i,j,k),grd->lon(i,j,k),
 					zmin,zmax,search_radius_km);
 
 			nrecs = maxtbl(keepers);
@@ -238,8 +236,8 @@ main(int argc, char **argv)
 			hypocen_lon = 0.0;
 			hypocen_z = 0.0;
 			if(Verbose)
-			    fprintf(stdout,"%lf %lf %d\n",deg(grd->lat[i][j][k]),
-			                   deg(grd->lon[i][j][k]),nrecs);
+			    fprintf(stdout,"%lf %lf %d\n",deg(grd->lat(i,j,k)),
+			                   deg(grd->lon(i,j,k)),nrecs);
 			for(ie=0;ie<nrecs;++ie)
 			{
 			/* We have to be careful about crossing
@@ -286,15 +284,15 @@ main(int argc, char **argv)
 		    }
 		    else
 		    {
-			hypocen_lat=deg(grd->lat[i][j][k]);
-			hypocen_lon=deg(grd->lon[i][j][k]);
+			hypocen_lat=deg(grd->lat(i,j,k));
+			hypocen_lon=deg(grd->lon(i,j,k));
 			hypocen_z=gridz;
 			nrecs=0;
 		    }
 		    if(dbaddv(dbh,0,"gridname",gridname,
 			"gridid",gridid,
-			"dlat",deg(grd->lat[i][j][k]),
-			"dlon",deg(grd->lon[i][j][k]),
+			"dlat",deg(grd->lat(i,j,k)),
+			"dlon",deg(grd->lon(i,j,k)),
 			"depth",gridz,
 			"hclat",hypocen_lat,
 			"hclon",hypocen_lon,
