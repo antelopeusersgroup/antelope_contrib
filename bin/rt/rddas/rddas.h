@@ -38,13 +38,11 @@
 #define  DASRATE	57600
 
 struct Prts  {
-    FILE *verbatim;
     int ifp;			/* input port file pointer  */
     int orb;			/* orb file pointer  */
     int brate;			/* baud rate on input port  */
     int reset;			/* do we want reset inport at the beginning */
     int uncompress;		/* do we want uncompress data before ORB  */
-    int timeout;		/* timeout on input port  */ 
     char ip_name[132];		/* input port name  */
     char orbname[132];		/* orbserver name  */
 };

@@ -11,7 +11,7 @@ extern int PsclLog;
 
 void usage ()
 {
-    fprintf (stderr, "Usage: %s [-V verbatim] [-l] [ -p pfile ] [-r] [-s baudrate] [-t timeout] [-u] [-v] iport orbname \n", Program_Name);
+    fprintf (stderr, "Usage: %s [-l] [ -p pfile ] [-R] [-r baudrate] [-u] [-v] iport orbname \n", Program_Name);
     fprintf (stderr, "Where: \n");
     fprintf (stderr, "	iport    - input port name.\n");
     fprintf (stderr, "	orbname  - orbserver name.\n");
@@ -20,13 +20,11 @@ void usage ()
 
 void null_port( struct Prts *iport )
 {
-   iport->verbatim = NULL;
    iport->ifp = -1;
    iport->orb = -1;
    iport->brate = DASRATE;
    iport->reset = 0;
    iport->uncompress = 0;
-   iport->timeout = INFTIM;
 
 }
 
@@ -41,7 +39,6 @@ char *argv[];
   char            *pffile = "pscl";
   char            *version = "1.1 (03/22/97)";
   char            *orbname = "localhost";
-  char            *verbatim_file; 
   struct Prts     Ports;
 
    elog_init (argc, argv) ;
@@ -52,35 +49,26 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "V:p:rs:t:luv")) != -1)
+  while ( ( i = getopt (argc, argv, "p:Rr:luv")) != -1)
         switch (i) {
-        case 'V':
-            verbatim_file = optarg; 
-            if ( ( Ports.verbatim = fopen ( verbatim_file, "a+" ) ) == NULL ) 
-              die ( 1, "Can't open '%s' for verbatim file\n", verbatim_file ) ; 
-            break ;
 
-        case 'v':
-            Log = 1;
-            break;
         case 'l':
 	    PsclLog = 1;
             break;
-        case 'r':
+        case 'p':
+            pffile = optarg;          
+            break;
+        case 'R':
             Ports.reset = 1;
             break;
-        case 'U':
         case 'u':
             Ports.uncompress = 1;
             break;
-        case 's':
+        case 'r':
             Ports.brate = atoi(optarg);           
             break;
-        case 't':
-            Ports.timeout = atoi(optarg);           
-            break;
-        case 'p':
-            pffile = optarg;          
+        case 'v':
+            Log = 1;
             break;
         default: 
             usage();
