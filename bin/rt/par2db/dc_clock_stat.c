@@ -17,7 +17,7 @@ static char *CLC_NAME[CLC_NPAR] =  {
 };
 
 int dc_clock_stat( packet, Pkt, nchan, net, sta, epoch )
-unsigned char *packet;
+uchar_t *packet;
 struct Packet **Pkt;
 int nchan;
 char *net;
@@ -43,6 +43,8 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
     }
 
 
+    aclc_stat = packet[1];
+    mclc_stat = packet[0];
     clcsel = packet[3]&0x20;
     
    if( clcsel )  {
@@ -50,14 +52,12 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
            complain( 0, "MAIN is selected, but it's OFF!\n");
            return 0;
        } 
-       mclc_stat = packet[0];
        
    }  else  {  
        if( (aon = packet[3]&0x40) == 0 )  {
            complain( 0, "AUX is selected, but it's OFF!\n");
            return 0;
        } 
-       aclc_stat = packet[1];
       
    }
     
@@ -132,7 +132,7 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
       }   else if( strncmp( CLC_NAME[i], "HAZARD", 6 ) == 0 ) {
          dcpar[dc] = packet[2]&0x40;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
-      }   else if( strncmp( CLC_NAME[i], "CLCSEL", 6 ) == 0 ) {
+      }   else if( strncmp( CLC_NAME[i], "CLK", 3 ) == 0 ) {
          dcpar[dc] = clcsel;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M1OC", 4 ) == 0 ) {
