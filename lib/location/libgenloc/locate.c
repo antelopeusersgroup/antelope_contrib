@@ -338,7 +338,7 @@ double calculate_rms(float *d,int n)
 	int one=1;
 	double value;
 	value = (double) snrm2_(&n,d,&one);
-	return(value/(double)n);
+	return(value/sqrt( (double)n) );
 }
 double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
 {
@@ -347,7 +347,7 @@ double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
 	double value,sumw;
 	value = (double) snrm2_(&n,wd,&one);
 	for(i=0,sumw=0.0;i<n;++i) sumw += (double)(w[i]*rw[i]);
-	return(value/sumw);
+	return(value/sqrt(sumw));
 }
 	
 
