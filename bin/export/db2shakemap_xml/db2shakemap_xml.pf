@@ -64,7 +64,7 @@ dbprocess_get_wfmeas &Tbl{
 #	dbjoin origin
 #	dbsubset orid == prefor
 #	dbjoin site
-#	dbtheta wfmeas sta == wfmeas.sta && wfmeas.time - parrival() + 10 < 1
+#	dbtheta wfmeas sta == wfmeas.sta && abs(wfmeas.time - parrival() + 10) < 1
 #	dbsubset val1 != 0.0
 # }
 
