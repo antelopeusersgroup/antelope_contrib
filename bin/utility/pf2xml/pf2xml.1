@@ -21,6 +21,9 @@ documentation please see the pf2xml(3) man page.
 Add newlines to make the output more readable
 .IP -s 
 Use strong conversion mode 
+.IP "-h file"
+Prepend contents of specified file (\fI-\fP for stdin) to the xml 
+output
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -28,6 +31,19 @@ Use strong conversion mode
 .ft CW
 .in 2c
 .nf
+
+yukon% echo '<?xml version="1.0" encoding="iso-8859-1"?>' | pf2xml -n -h - Xphase2db.pf
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<pffile name="Xphase2db.pf">
+<pfstring name="chan_token_number">4</pfstring>
+<pfstring name="pf_revision_time">956365925</pfstring>
+<pfstring name="seperators">_:.</pfstring>
+<pfstring name="station_token_number">3</pfstring>
+</pffile>
+yukon% 
+
 .fi
 .in
 .ft R
