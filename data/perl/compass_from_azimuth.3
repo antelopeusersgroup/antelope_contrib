@@ -1,0 +1,34 @@
+.TH WINDING 3 "$Date$"
+.SH NAME
+compass_from_azimuth.pl \- Perl routine to get compass heading from azimuth
+.SH SYNOPSIS
+.nf
+require "compass_from_azimuth.pl";
+
+compass_from_azimuth(  $azimuth );
+.fi
+.SH DESCRIPTION
+
+compass_from_azimuth takes an azimuth value in degrees and returns the closest 
+value on a 16-point compass (N, NNW, NW, WNW, etc.). 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+This could probably use an option to choose amongst 4, 8, and 16-point compass headings.
+.SH AUTHOR
+Kent Lindquist, Geophysical Institute, U. of Alaska. 
+.\" $Id$
