@@ -10,19 +10,22 @@ correctdt [-t stime] bdb
 
 .fi
 .SH DBTC
-Seismic networks can have a clock problem and as a result produce
-data with incorrect time. \fBdbtc\fP finds a time correction for 
-seismic data from such a network (\fIbad data\fR) by doing 
-cross correlation with data from a network that does not have a time
-problem (\fIgood data\fR). A  (\fIbad data\fR) must be specified in
-form of \fBbdb:bnet:bsta:bch\fP, where
+Seismic networks can have clock problems and as a result produce
+data with incorrect time. \fBdbtc\fP finds time corrections for 
+seismic data for network (\fIbad data\fR) by  
+cross correlating with data from a co-located station from another 
+network that does not have a timing
+problem (\fIgood data\fR). The (\fIbad data\fR) segment must be specified in
+the form of \fBbdb:bnet:bsta:bch\fP, where
 .nf
+
      bdb  => db name of data with a bad time
      bdb  => network name of data with a bad time
      bdb  => station name of data with a bad time
      bdb  => channel name of data with a bad time
+
 .fi
-and a (\fIgood data\fR) must be specified in form of \fBgdb:gnet:gsta:gch\fP,
+and the (\fIgood data\fR) must be specified in form of \fBgdb:gnet:gsta:gch\fP,
 where
 .nf
 
@@ -33,53 +36,58 @@ where
 .fi
 
 .LP
-\fBDBTC\fP makes a \fItcorrection\fR table with a \fIbdb.tcorrection\fR name and
+\fBdbtc\fP makes a \fItcorrection\fR table with name \fIbdb.tcorrection\fR and
 with a following fields:
 .nf
 
-   time  tcor gnet gsta gchan gsamprate bnet bsta bchan bsamprate lddate
+   time  tcor gnet gsta gchan gsamprate 
+              bnet bsta bchan bsamprate lddate
 .fi
 
-A \fItcor\fR is a time correction which should be added to a time of
-a \fIbad data\fR.
+\fItcor\fR is the correction factor which needs to be added to the 
+\fIbad data\fR at time \fItime\fR.
 .LP
-If \fIbad data\fR and \fIgood data\fR have a different sampling rate \fBdbtc\fP
-does a re-sampling of a \fIbad data\fR.
+If \fIbad data\fR and \fIgood data\fR have a different sampling rates \fBdbtc\fP
+does a re-sampling of \fIbad data\fR and then runs the cross-correlation.
 
 .SH OPTIONS
 .IP "-p parfile"
-Specified a name of a parameter file which will be used by \fBdbtc\fP.
+Specify name of a parameter file which will be used by \fBdbtc\fP.
 Deafult name is \fIdbtc.pf\fR.
 .IP "-t stime"
-Specify a time of \fBbad data\fP from which start to do a cross correlation.
+Specify time of \fBbad data\fP  waveform from which start to do a cross correlation.
 By default start at data start time.
 .IP "-v"
 Be more verbose.
 .SH PARAMETER FILE
 .LP
-\fBdbct\fP uses a parameter file, which has the following parameters:
+\fBdbtc\fP uses a parameter file, which has the following parameters:
 .IP "data_segment_window"
-a whole data series will be split on segments by \fIdata_segment_window\fR seconds
+data series will be split on segments by \fIdata_segment_window\fR seconds
 and \fItcor\fR will be calculated for each such segment.
 .IP "correlation_window"
-a data window in seconds which is used in cross correlation computations.
+data window in seconds which is used in cross correlation computations.
 .IP "allowed_time_err_offset"
-a maximum allowed time error in seconds.
+maximum allowed time error in seconds.
 
 .SH CORRECTDT
 \fBcorrectdt\fP reads \fItcorrection\fR table and fixes time in 
 \fIwfdisc, arrival\fR tables. If data is in mini-seed format it fixes time
-in SEED headers as well.
+in SEED headers as well.  The method of correction is for each value of time
+in the wfdisc and arrival, look up the tcorr value for the closest prior
+time in the tcorrection table, apply the tcorr value as a static correction.
+There is no provision at this time for linear interpolation for applying
+time corrections.
 
 .SH OPTIONS
 .IP "-m srcid"
-a \fItcorrection\fR record which \fInet_sta_chan\fR key matches  the   regular
+\fItcorrection\fR record which \fInet_sta_chan\fR key matches  the   regular
 expression \fIsrcid\fR will be used in a time correction procedure.   
 .IP "-t stime"
 Start fixing time in \fIbad data\fR set at \fIstime\fR. 
 .SH EXAMPLE 
 .LP
-Find a time correction for anza network. Bad data is \fIdata/anza:AZ:PFO:BHZ\fR
+Find time correction for anza network. Bad data is \fIdata/anza:AZ:PFO:BHZ\fR
 and good data is \fInrdc/ida:II:PFO:shz\fR
 .nf
 

@@ -1,6 +1,7 @@
 # Makefile for dbtc
  
 BIN     = dbtc correctdt
+MAN1    = dbtc.1 
 include $(ANTELOPEMAKE)
 ldlibs= -lmath $(TRLIBS) -lm
 DIRS=
