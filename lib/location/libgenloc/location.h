@@ -359,6 +359,7 @@ double pfget_double_wdef(Pf *, char *, double);
 int pfget_int_wdef(Pf *, char *, int);
 int lat_lon_grid_setup(Pf *, Point **, int *);
 int radial_grid_setup(Pf *, Point **, int *);
+void initialize_hypocenter(Hypocenter *);
 
 /* travel time function prototypes, start with the generic version */
 Travel_Time_Function_Output calculate_travel_time(Arrival, Hypocenter, int);
@@ -407,5 +408,6 @@ int db_badclock_definition(Dbptr, Pf *, Arr *);
 void pfget_badclocks(Pf *,Arr *);
 void Bad_Clock_free(Bad_Clock *);
 int minus_phases_arrival_edit(Tbl *,Arr *,Arr *);
+int clock_is_bad(Tbl *,double);
 
 /* $Id$ */
