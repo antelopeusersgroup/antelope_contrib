@@ -173,6 +173,7 @@ proc run_cmdline {} {
 
 	set List_Nicknames 0
 	set Resolve_dbname 0
+	set Time_specified 0
 
 	set stripped_argv {}
 
@@ -182,9 +183,14 @@ proc run_cmdline {} {
 			set List_Nicknames 1
 		} elseif { [cequal $myarg -t] } {
 			incr i
+			if { $i == $n } {
+				puts stderr "\ndbcentral: Must specify a time string with -t\n"
+				exit -1
+			}
 			set time [lindex $argv $i]
 			set Template_time [epoch2str [str2epoch $time] \
 					   $Template_time_format]
+			set Time_specified 1
 		} elseif { [cequal $myarg -d] } {
 			set Resolve_dbname 1
 		} else {
@@ -250,12 +256,17 @@ proc run_cmdline {} {
 
 	} elseif { $Resolve_dbname && $nickname == "" } {
 
-		puts stderr "Must specify a database nickname with -d\n"
+		puts stderr "\ndbcentral: Must specify a database nickname when using -d\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
 
 		puts stdout [get_dbpath $nickname]	
+
+	} elseif { [llength $stripped_argv] == 0 && $Time_specified } {
+
+		puts stderr "\ndbcentral: Must specify a database nickname when using -t\n"
+		exit -1
 
 	} elseif { [llength $stripped_argv] == 1 } {
 
@@ -270,8 +281,8 @@ proc run_cmdline {} {
 	} else {
 
 		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]}
+		exit -1
 	}
-
 }
 
 init_globals

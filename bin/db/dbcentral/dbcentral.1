@@ -99,11 +99,17 @@ option is useful in scripts and in other parameter files (via the &exec()
 mechanism; see pf(3)). This allows common database pathnames to be 
 centrally configured.
 .SH OPTIONS
--d Show absolute pathname of database
+.IP -d
+Show absolute pathname of database. A database nickname must 
+be uspecified when using the -d option.
 
--n Show available database nicknames or task nicknames 
+.IP -n
+Show available database nicknames or task nicknames.
 
--t Specify a time-string interpretable by the epoch(1) command (default is "now")
+.IP -t
+Specify a time-string interpretable by the epoch(1) command (default is "now"). 
+A database nickname must be specified when using the -t option.
+
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -119,6 +125,13 @@ antelope_demo &Arr{
 	}
 }
 
+pde     &Arr{
+    dbname_template     /space/pde/pde_%Y
+        tasks       &Tbl{
+                dbe             dbe DBNAME.origin
+        }
+}
+
 .fi
 .SH EXAMPLE
 .ft CW
@@ -126,25 +139,25 @@ antelope_demo &Arr{
 .nf
 To launch the GUI application:
 
-yukon% dbcentral
-yukon% 
+% dbcentral
+% 
 
 To launch dbe on the demo database, given the above parameter file:
 
-yukon% dbcentral antelope_demo
+% dbcentral antelope_demo
 
 To launch dbpick on the demo database, given the above parameter file:
 
-yukon% dbcentral antelope_demo dbpick
+% dbcentral antelope_demo dbpick
 
 To get the absolute pathname of the demo database:
 
-yukon% dbcentral -d antelope_demo
+% dbcentral -d antelope_demo
 /opt/antelope/data/db/demo/demo
 
 To get the currently-configured database nicknames:
 
-yukon% dbcentral -n
+% dbcentral -n
 
 dbcentral database nicknames:
 
@@ -154,7 +167,7 @@ dbcentral database nicknames:
 
 To get the currently configured task nicknames for the demo database:
 
-yukon% dbcentral -n antelope_demo
+% dbcentral -n antelope_demo
 
 dbcentral command nicknames for antelope_demo:
 
@@ -167,6 +180,14 @@ dbcentral command nicknames for antelope_demo:
 
         smartpick
 
+To get the pathname for PDE database containing data for Dec. 31, 1997:
+
+% dbcentral -t "12/31/97" -d pde
+
+/space/pde/pde_1997
+
+% 
+
 .fi
 .in
 .ft R
@@ -175,11 +196,11 @@ dbcentral command nicknames for antelope_demo:
 .SH ATTRIBUTES
 .SH DIAGNOSTICS
 .nf
-yukon% dbcentral fake_nickname
+% dbcentral fake_nickname
 
 dbcentral: No tasks defined for database 'fake_nickname'
 
-yukon% dbcentral antelope_demo fake_task
+% dbcentral antelope_demo fake_task
 
 dbcentral: No task 'fake_task' defined for database 'antelope_demo'
 
