@@ -87,7 +87,10 @@ public:
 	double uxlow, uylow;
 	double dux, duy;
 	int nux, nuy;
-	Rectangular_Slowness_Grid(Pf *);
+	Rectangular_Slowness_Grid();  // generic default is defined
+	Rectangular_Slowness_Grid(string nm, double uxl, double uxh,
+		double du1,double du2,int n1, int n2);
+	Rectangular_Slowness_Grid(Pf *pf,string tag);
 	double ux(int i) {return(uxlow+i*dux);};
 	double uy(int i) {return(uylow+i*duy);};
 };
@@ -257,6 +260,10 @@ public:
 	Three_Component_Ensemble(int nsta, int nsamp);
 	Three_Component_Ensemble(int nsta, int nsamp,
 				Metadata_list& mdl);
+	Three_Component_Ensemble(Database_Handle& db,
+		Metadata_list& station_mdl,
+		Metadata_list& ensemble_mdl,
+		 Attribute_Map& am);
 	friend void set_global_metadata_list(Three_Component_Ensemble&,
 			Metadata_list&);
 private:
@@ -269,9 +276,9 @@ class Top_Mute
 {
 public:
 	double t0e, t1;  // t0e is end of to 0 zone, t1 time when weight goes to 1
-	 Time_Reference_Type reftype;   // from seispp is enum as absolute or relative
+	Time_Reference_Type reftype;   // from seispp is enum as absolute or relative
 	Top_Mute(){t0e=1.0; t1=2.0; reftype=relative;};
-	Top_Mute(Pf *pf);
+	Top_Mute(Pf *pf,string tag);
 };
 
 // An assignment operator is not necessary for this object as it

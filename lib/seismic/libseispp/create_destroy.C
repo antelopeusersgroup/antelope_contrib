@@ -640,4 +640,77 @@ void set_global_metadata_list(Three_Component_Ensemble& tse, Metadata_list& mdl)
 {
 	tse.mdlist = mdl;
 }
+/* Database-driven constructor for an ensemble.  This implementation uses
+a Datascope database only through an immediate dynamic_cast to a 
+Datascope_Handle, but the idea is that a more generic interface 
+would change nothing in the calling sequence.
+
+station_mdl and ensemble_mdl determine which metadata are extracted 
+from the database for individual stations in the ensemble and 
+as the global metadata for the ensemble respectively.   The 
+station metadata is derived from the Three_Component_Seismogram 
+constructor, but the global metadata is arbitrarily extracted from
+the first row of the view forming the requested ensemble.  This 
+tacitly assumes then that all rows in view that forms this ensemble
+have the same attributes (i.e. these are common attributes obtained
+through some form of relational join.)  
+
+The routine will pass along any exceptions thrown by functions 
+called by the constructor.  It will also throw a seispp_dberror 
+in cases best seen by inspecting the code below.
+
+Author:  Gary L. Pavlis
+Written:  July 2004
+*/
+Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
+	Metadata_list& station_mdl,
+        	Metadata_list& ensemble_mdl,
+        		Attribute_Map& am)
+{
+	int i;
+	int nsta;
+	const string this_function_base_message("Three_Component_Ensemble database constructor");
+	Three_Component_Seismogram *data3c;
+	Datascope_Handle& dbh=dynamic_cast<Datascope_Handle&>(rdb);
+	try {
+		// Will throw an exception if this isn't a group pointer
+		DBBundle ensemble_bundle=dbh.get_range();
+		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
+//DEBUG
+cerr << "Ensemble has data for " << nsta << " stations"<<endl;
+		// We need a copy of this bundle pointer 
+		Datascope_Handle dbhv(ensemble_bundle.parent,
+			ensemble_bundle.parent,false);
+		// Necessary because the Three_Component_Seismogram
+		// constructor uses a generic handle
+		Database_Handle *rdbhv=dynamic_cast
+			<Database_Handle *>(&dbhv);
+		// Loop over stations
+		for(i=0,dbhv.db.record=ensemble_bundle.start_record;
+			dbhv.db.record<ensemble_bundle.end_record;
+			++i,++dbhv.db.record)
+		{
+			data3c = new Three_Component_Seismogram(*rdbhv,
+					station_mdl,am);
+			tcse.push_back(*data3c);
+			delete data3c;
+			// copy global metadata only for the first 
+			// row in this view
+			if(i==0)
+			{
+				DBBundle sta_bundle=dbhv.get_range();
+				Datascope_Handle dbhvsta(sta_bundle.parent,
+						sta_bundle.parent,false);
+				dbhvsta.db.record=sta_bundle.start_record;
+				Metadata ens_md(dynamic_cast<Database_Handle&>(dbhvsta),
+					ensemble_mdl,am);
+				copy_selected_metadata(ens_md,
+					dynamic_cast<Metadata&>(*this),
+					ensemble_mdl);
+			}
+		}
+
+	} catch (...) { throw;};
+}
+
 } // Termination of namespace SEISPP definitions

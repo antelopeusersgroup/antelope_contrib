@@ -28,6 +28,7 @@ OBJS=create_destroy.o \
   readwrite.o \
   rotate_procedures.o \
   rotation.o \
+  slowness.o \
   spherical_coordinate.o \
   statics.o \
   ttime.o \

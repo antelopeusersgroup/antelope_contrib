@@ -55,6 +55,29 @@ Metadata::Metadata(Pf *pfin)
 	pfcompile(pfs,&pf);
 	free(pfs);
 };
+// Variant that extracts a subset of a pf with the prefix
+// label:  tag &Arr{  
+Metadata::Metadata(Pf *pfin, string tag)
+{
+	void *result;
+	int pftype_return;
+	Pf *pfnested;
+
+	if(Metadata_defaults_pf==NULL)_init();
+	pf=pfdup(Metadata_defaults_pf);
+
+	pftype_return = pfget(pfin,(char *)tag.c_str(),&result);
+	if(pftype_return != PFARR)
+	{
+		throw  Metadata_error(string("Metadata pfsubset constructor: tag =")
+			+ tag + string(" &Arr{\nNot found in parameter file"));
+	}
+	// Just like above
+	pfnested = static_cast<Pf *>(result);
+	char *pfs=pf2string(pfnested);
+	pfcompile(pfs,&pf);
+	free(pfs);
+}
 
 Metadata::~Metadata()
 {

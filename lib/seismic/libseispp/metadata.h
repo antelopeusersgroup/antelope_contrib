@@ -99,6 +99,7 @@ class Metadata
 public:
         Metadata();
 	Metadata(Pf*);
+	Metadata(Pf *pfin, string tag);
 	Metadata(char *) throw(Metadata_parse_error);
 	Metadata(string) throw(Metadata_parse_error);
 	Metadata(Database_Handle&,

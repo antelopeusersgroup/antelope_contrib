@@ -5,8 +5,9 @@ namespace SEISPP
 // This is a series of functions for applying a simple top mute
 // one or more traces.  Overloading is used to sort out type of
 // object this is to apply to.  
+
 //
-// First for a simple time series
+//  for a simple time series
 void apply_top_mute(Time_Series &ts,Top_Mute& mute)
 {
 	int i,i2;
@@ -80,4 +81,21 @@ void apply_top_mute(Three_Component_Ensemble &t3ce, Top_Mute& mute)
 		apply_top_mute(t3c,mute);
 	}
 }
+// Probably should have started with this, but we need constructors
+// This uses a pf
+Top_Mute::Top_Mute(Pf *pf,string tag)
+{
+	Metadata md(pf,tag);
+	try {
+		string reft = md.get_string("Time_Reference_Type");
+		if(reft=="absolute")
+			reftype = absolute;
+		else
+			reftype = relative;
+		t0e = md.get_double("Zero_End_Time");
+		t1 = md.get_double("End_Time");
+	}
+	catch (...) {throw;};
+}
+	
 } // Termination of namespace SEISPP definitions

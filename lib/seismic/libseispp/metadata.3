@@ -11,6 +11,7 @@ class Metadata
 public:
         Metadata();
         Metadata(Pf*);
+	Metadata(Pf *pfi, string tag);
         Metadata(char *) throw(Metadata_parse_error);
         Metadata(string) throw(Metadata_parse_error);
         Metadata(Database_Handle&,
@@ -109,6 +110,43 @@ to append parameter file like input data loaded in the form
 a string (char * and string forms are supplied for convenience).  
 The Pf constructor, Metadata (Pf*), is similar but appends the
 contents of Pf in the Metadata object's namespace.  
+.LP
+There is a varient of the parameter file constructor with the
+calling sequence \fIMetadata(Pf *pfi, string tag)\fR.  
+This allows extraction of nested Pf items labelled with "tag"
+but containing other parameters within the tagged item. 
+The item tagged must be labelled as at &Arr{ parameter file
+entry or the contents cannot be parsed correctly.
+Here is an example of how this is used in the a program
+called pwstack to define parameters for two data objects
+called a "Rectangular_Slowness_Grid" and a "Top_Mute":
+.nf
+P_wave_slowness_grid &Arr{
+    uxlow = 0.5
+    uylow = 0.5
+    nux = 51
+    nuy = 51
+    dux = 0.2
+    duy = 0.2
+}
+Data_Top_Mute &Arr{
+    Time_Reference_Type relative
+    Zero_End_Time 1.0
+    End_Time 2.0
+}
+Stack_Top_Mute &Arr{
+    Time_Reference_Type relative
+    Zero_End_Time 2.0
+    End_Time 3.0
+}
+.fi
+.LP
+where in this case constructors for these unrelated data objects
+use a Metadata constructor to parse the parameter file for the
+tags named "P_wave_slowness_grid" for the Rectangular_Slowness_Grid
+object and two different Top_Mute objects tagged with "Data_Top_Mute"
+and "Stack_Top_Mute".
+.LP
 The database constructor allows loading metadata from a database.
 It's calling sequence is
 .nf
