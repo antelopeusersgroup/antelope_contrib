@@ -1,0 +1,34 @@
+Trying Attribute_map pf constructor
+Trying copy constructor and = operator
+Trying pfget_mdlist function with tag mdlist
+Trying to copy mdlist
+Original and copy of mdlist read
+sta,sta,2,2
+chan,chan,2,2
+time,time,0,0
+endtime,endtime,0,0
+nsamp,nsamp,1,1
+samprate,samprate,0,0
+file,file,2,2
+directory,directory,2,2
+Testing delete hypothesis on list object 
+sta,2
+chan,2
+time,0
+endtime,0
+nsamp,1
+samprate,0
+file,2
+directory,2
+Trying to build Metadata objects
+Trying default constructor
+atime	11.0
+time	10.0
+Trying string constructor with inline data
+MYPAR	2.5
+atime	11.0
+cpar	xyz
+i	27
+time	10.0
+x	4.5
+y	8.0

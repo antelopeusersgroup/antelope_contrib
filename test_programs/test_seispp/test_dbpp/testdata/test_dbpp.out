@@ -1,0 +1,34 @@
+Testing simple open and close
+Dbptr contents:
+database=0table=-501field=-501record=-501
+Testing full constructor with pf and one table
+testdb view created by one_table_open has 13506 rows
+Trying to join assoc->arrival
+Join table size = 13506
+Trying to join event and origin with evid
+Join table size = 641
+closing this database 
+Testing get and put functions
+Copy of site completed
+testing other relational db features
+Working view has 8279 rows and 77 columns
+Testing assignment operator to save base view
+right hand side
+Dbptr contents:
+database=4table=48field=-501record=-501
+left hand side result
+Dbptr contents:
+database=4table=48field=-501record=-501
+Trying sort 
+Sorted view has 8279 rows and 77 columns
+Testing copy constructor
+parent Dbptr 
+Dbptr contents:
+database=4table=49field=-501record=-501
+Result of copy constructor Dbptr 
+Dbptr contents:
+database=4table=49field=-501record=-501
+Testing group function
+Grouped view has 387 group bundles 
+Testing subset on original view
+Subset view has 679 rows and 77 columns

@@ -1,0 +1,10 @@
+one_table_open &Tbl{
+dbopen assoc
+}
+dbprocess_join_test &Tbl{
+dbopen event
+dbjoin origin
+dbsubset orid==prefor
+dbjoin assoc
+dbjoin arrival
+}

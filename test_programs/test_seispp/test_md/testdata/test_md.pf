@@ -1,0 +1,26 @@
+Attribute_Map &Tbl{
+sta sta  wfdisc string
+chan chan  wfdisc string
+time time wfdisc real
+endtime endtime wfdisc real
+nsamp nsamp wfdisc int
+samprate samprate wfdisc real
+directory dir wfdisc string
+file	dfile wfdisc string
+#atime time arrival real
+#bad bad
+}
+mdlist &Tbl{
+sta string
+chan string
+time real
+#atime real
+endtime real
+nsamp int
+samprate real
+file string
+directory string
+}
+dbprocess_list &Tbl{
+open wfdisc
+}

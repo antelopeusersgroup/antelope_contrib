@@ -1,0 +1,8 @@
+Run the test_md program in this directory using:
+../test_md > test_md.new
+
+Run 
+
+diff test_md.out and test_md.new 
+
+to verify consistency with original test program run.

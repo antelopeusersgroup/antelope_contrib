@@ -1,0 +1,5 @@
+To run this test type:
+../test_dbpp > test_dbpp.new
+
+then run a diff between test_dbpp.out and test_dbpp.new
+June 22, 2004 (GLP)
