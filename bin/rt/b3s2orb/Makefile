@@ -1,7 +1,7 @@
 # %W% %G% 
 # Makefile for b3s2
 BIN = b3s2orb
-#MAN1=b3s2.1
+MAN1=b3s2orb.1
 
 ldlibs	=  -lsocket -lnsl -lpkt -lorb -lxview -lolgx $(TRLIBS) 
 include $(DSAPMAKE)
