@@ -2,18 +2,16 @@ AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 MAN3P=perlpolygon.3p
 CLEAN=  .make.state  runmake Makefile.old Makefile.PL Makefile polygon.bs polygon.c pm_to_blib 
 
-PD=$(ANTELOPE)/local/data/perl
-PM=$(ANTELOPE)/local/man
+PD=$(ANTELOPE)/data/perl
+PM=$(ANTELOPE)/man
 
 ldlibs=-lpolygon -lm
-ldflags=-L$(ANTELOPE)/local/lib -R$(ANTELOPE)/local/lib
-cflags=-I$(ANTELOPE)/local/include
 include $(ANTELOPEMAKE)
 DIRS=
-#SUBDIR=/local
 
 SRCS= errlog2string.c polygon.pm polygon.xs 
 install:: runmake $(SRCS) Makefile 
+	touch polygon.pm # so time is new in $antelope/data/perl
 	./runmake install 
 
 all:: $(SRCS) Makefile runmake
