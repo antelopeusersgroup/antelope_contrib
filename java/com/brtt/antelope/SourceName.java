@@ -8,14 +8,28 @@
  * Factored out of "com.brtt.antelope.OrbClient.java"
  *
  */
+package com.brtt.antelope;
 
-class SourceName {
+/* Anatomy of a source name:
+ *
+ *  /FMT/MORE
+ *
+ *  /NET/FORMAT/MORE
+ *
+ *  NET[_STA[_CHAN[_LOC]]][/FMT]
+ *
+ */
+
+/**  A class for representing, parsing, and assembling standard sourcenames.  
+ *   The mechanics of this class aren't quite worked out yet.
+ */
+public class SourceName {
 
     /**
      * Holds the packet type. One of "waveform", for waveform
-     *      data, "database", for an ASCII database row, "parameter", for a 
-     *      free-form parameter packet, "string", for a character string packet,
-     *      "log", for a log packet, or "unknown".
+     * data, "database", for an ASCII database row, "parameter", for a 
+     * free-form parameter packet, "string", for a character string packet,
+     * "log", for a log packet, or "unknown".
      */
     public String type;
             
@@ -55,12 +69,51 @@ class SourceName {
     public String loc;
 
     /** 
+     * The whole (unparsed) sourcename
+     */
+
+    public String srcname;
+
+    public SourceName(String net, String sta, String chan, String loc) {
+	this.net = net;
+	this.sta = sta;
+	this.chan = chan;
+	this.loc = loc;
+	// FixMe: name, format, and type
+	srcname = this.toString();
+    }
+
+    public SourceName(String srcname) {
+	this.srcname = srcname;
+	parse(srcname);
+    }
+
+    /** 
      * Assemble a standard sourcename from the component fields
      * {@link #type}, {@link #format}, {@link #name}, {@link #net},
      * {@link #sta}, {@link #chan} and {@link #loc}.
+     */
 
+    public void assemble() {
+	String srcname = "";
+
+	srcname += net;
+	
+	if (sta != null) {
+	    srcname += "_" + sta;
+	    if (chan != null) {
+		srcname += "_" + chan;
+		if (loc != null) { 
+		    srcname += "_" + loc;
+		}
+	    }
+	}
+	if (format != null)
+	    srcname += "/" + format;
+    }
+    
     public String toString() {
-       // Not Implemented Yet	
+      return srcname;
     }
 
     /**
@@ -97,6 +150,8 @@ class SourceName {
              return;
          }
          
+	 /* Sourcenames that don't start with '/' are waveforms. */
+
          type = "waveform";
          int i = srcname.indexOf ("_");
          if (i < 0) {

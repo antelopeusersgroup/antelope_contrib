@@ -68,7 +68,7 @@ public class DatabaseRelation {
     /** Parse a textual description of a DatabaseRelation.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseRelation parse(InputStream input) {
+    public static DatabaseRelation parse(Reader input) {
       return null;
     }
 

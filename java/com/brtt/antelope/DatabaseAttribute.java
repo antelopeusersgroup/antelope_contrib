@@ -67,7 +67,7 @@ public class DatabaseAttribute {
     /** Parse a textual description of a DatabaseAttribute.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseAttribute parse(InputStream input) {
+    public static DatabaseAttribute parse(Reader input) {
       return null;
     }
 

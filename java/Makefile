@@ -1,5 +1,5 @@
 
-
+all: antelope.jar
 
 BIN = orbstatj
 
@@ -7,14 +7,22 @@ DATADIR = java
 DATA = antelope.jar
 MAN1 = orbstatj.1
 
+#
+JFLEX = /home/tobin/build/jflex-1.4/bin/jflex
+
 CLASSPATH=.
-include $(ANTELOPEMAKE)
+#include $(ANTELOPEMAKE)
 DIRS=
+
+JFLEXES = \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseSchemaLexer.flex
 
 JAVAS = \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseAttribute.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseRelation.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseSchema.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseSchemaLexer.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseSchemaToken.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/Epoch.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/JFrameOrbStat.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/Orb.java \
@@ -34,10 +42,17 @@ JAVAS = \
 #	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbParameterFilePacket.java \
 #	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbDatabasePacket.java \
 
+
+#FIXME
+com/brtt/antelope/DatabaseSchemaLexer.java: com/brtt/antelope/DatabaseSchemaLexer.flex
+	$(JFLEX) com/brtt/antelope/DatabaseSchemaLexer.flex -d com/brtt/antelope/
+
 CLASSES = \
 	com/brtt/antelope/DatabaseAttribute.class \
 	com/brtt/antelope/DatabaseRelation.class \
 	com/brtt/antelope/DatabaseSchema.class \
+	com/brtt/antelope/DatabaseSchemaLexer.class \
+	com/brtt/antelope/DatabaseSchemaToken.class \
 	com/brtt/antelope/Epoch.class \
 	com/brtt/antelope/Stock.class \
 	com/brtt/antelope/OrbClient.class \
@@ -72,7 +87,7 @@ CLEAN=antelope.jar
 clean:: remove_classes
 
 remove_classes:
-	@-(cd com/brtt/antelope ; $(RM) `ls | grep '.class$$' | grep -v CVS` )
+	@-(echo "removing classes...";cd com/brtt/antelope ; $(RM) `ls | grep '.class$$' | grep -v CVS` )
 
 install::   $(ANTELOPE)/man/javadoc
     	
