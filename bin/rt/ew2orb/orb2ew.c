@@ -28,6 +28,9 @@ typedef struct ExportServerThread {
 
 	mutex_t	es_mutex;
 	thread_t thread_id;
+	int	ready;
+	cond_t  ready_cond;
+	mutex_t ready_mutex;
 	Pf	*pf;
 	int	update;
 	int	new;
@@ -82,8 +85,12 @@ Arr	*Export_Server_Threads;
 rwlock_t Export_Server_Threads_rwlock;
 Arr	*Pins;
 rwlock_t Pins_rwlock;
-thread_key_t handler_key;
+
+thread_key_t shutdown_handler_key;
 thread_key_t sigusr1_buf_key;
+
+thread_key_t reconfig_handler_key;
+thread_key_t sigusr2_buf_key;
 
 static void
 usage() 
@@ -100,17 +107,17 @@ usage()
 static int 
 get_pinno( PktChannel *pktchan )
 {
-	char	srcname[STRSZ];
+	char	netstachan[STRSZ];
 	int	pinno;
 
-	sprintf( srcname, "%s_%s_%s", 
+	sprintf( netstachan, "%s_%s_%s", 
 			  pktchan->net, 
 			  pktchan->sta, 
 			  pktchan->chan );
 
 	rw_rdlock( &Pins_rwlock );
 
-	pinno = (int) getarr( Pins, srcname );
+	pinno = (int) getarr( Pins, netstachan );
 
 	rw_unlock( &Pins_rwlock );
 
@@ -220,7 +227,10 @@ new_ExportServerThread( char *name )
 
 	es->Export_Threads = newarr( 0 );
 
+	es->ready = 0;
 	mutex_init( &es->es_mutex, USYNC_THREAD, NULL );
+	mutex_init( &es->ready_mutex, USYNC_THREAD, NULL );
+	cond_init( &es->ready_cond, USYNC_THREAD, NULL );
 
 	return es;
 }
@@ -228,8 +238,9 @@ new_ExportServerThread( char *name )
 static void
 free_ExportServerThread( ExportServerThread **es )
 {
-
 	mutex_destroy( &(*es)->es_mutex );
+	mutex_destroy( &(*es)->ready_mutex );
+	cond_destroy( &(*es)->ready_cond );
 
 	if( (*es)->pf ) {
 
@@ -506,111 +517,6 @@ orb2ew_export_server_shutdown()
 	thr_exit( (void *) &status );
 }
 
-static void
-reconfig_export_server_thread( ExportServerThread *es )
-{
-	char	*loglevel;
-	char	*starttime_string;
-
-	mutex_lock( &es->es_mutex );
-
-	if( es->stop == 1 ) {
-
-		orb2ew_export_server_shutdown();
-	}
-
-	if( es->update == 1 ) {
-
-		if( es->loglevel >= VERBOSE ) {
-
-			if( es->new ) {
-					
-				elog_notify( 0, 
-			  	"'%s': Configuring thread with: ", 
-			  	es->name );
-
-			} else {
-
-				elog_notify( 0, 
-			  	"'%s': Reconfiguring thread with: ", 
-			  	es->name );
-
-			}
-
-			pfout( stderr, es->pf );
-		}
-			
-		close_export_server_connection( es ); 
-
-		strcpy( es->server_ipaddress,
-			pfget_string( es->pf, "server_ipaddress" ) );
-
-		es->server_port = 
-			(in_port_t) pfget_int( es->pf, "server_port" );
-
-		strcpy( es->expect_heartbeat_string,
-			pfget_string( es->pf, "expect_heartbeat_string" ) );
-
-		if( es->expect_heartbeat_hook ) {
-
-			free_hook( &es->expect_heartbeat_hook );
-		}
-
-		strcpy( es->send_heartbeat_string,
-			pfget_string( es->pf, "send_heartbeat_string" ) );
-
-		es->send_heartbeat_sec = 
-			pfget_int( es->pf, "send_heartbeat_sec" );
-
-		strcpy( es->select, pfget_string( es->pf, "select" ) );
-
-		strcpy( es->reject, pfget_string( es->pf, "reject" ) );
-
-		strcpy( es->my_inst_str,
-			pfget_string( es->pf, "my_inst" ) );
-
-		strcpy( es->my_mod_str,
-			pfget_string( es->pf, "my_mod" ) );
-
-		ewlogo_tologo( es->my_inst_str, 
-			       es->my_mod_str, 
-			       Default_TYPE_HEARTBEAT, 
-			       &es->my_inst,
-			       &es->my_mod,
-			       &es->my_type_heartbeat );
-
-		ewlogo_tologo( es->my_inst_str, 
-			       es->my_mod_str, 
-			       Default_TYPE_TRACEBUF, 
-			       &es->my_inst,
-			       &es->my_mod,
-			       &es->my_type_tracebuf );
-
-		starttime_string = pfget_string( es->pf, "starttime" );
-
-		if( starttime_string == NULL || 
-		    ( ! strcmp( starttime_string, "" ) ) ) {
-
-			es->starttime = NULL_STARTTIME;
-
-		} else {
-
-			es->starttime = str2epoch( starttime_string );
-			clear_register( 1 );
-		}
-
-		loglevel = pfget_string( es->pf, "loglevel" );
-
-		es->loglevel = translate_loglevel( loglevel );
-		
-		es->update = 0;
-		es->new = 0;
-	}
-
-	mutex_unlock( &es->es_mutex );
-
-	return;
-}
 
 int
 buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
@@ -702,9 +608,24 @@ process_sigusr1( int sig )
 {
 	void	(*handler)(int);
 
-	thr_getspecific( handler_key, (void **) &handler );
+	thr_getspecific( shutdown_handler_key, (void **) &handler );
 
 	if( sig != SIGUSR1 || handler == NULL ) {
+
+		abort();
+	}
+
+	(*handler)( sig );
+}
+
+static void
+process_sigusr2( int sig )
+{
+	void	(*handler)(int);
+
+	thr_getspecific( reconfig_handler_key, (void **) &handler );
+
+	if( sig != SIGUSR2 || handler == NULL ) {
 
 		abort();
 	}
@@ -720,7 +641,20 @@ set_sigusr1_handler( void (*handler)(int) )
 		return EINVAL;
 	}
 
-	thr_setspecific( handler_key, (void *) handler );
+	thr_setspecific( shutdown_handler_key, (void *) handler );
+
+	return 0;
+}
+
+static int
+set_sigusr2_handler( void (*handler)(int) )
+{
+	if( handler == SIG_DFL || handler == SIG_IGN ) {
+		
+		return EINVAL;
+	}
+
+	thr_setspecific( reconfig_handler_key, (void *) handler );
 
 	return 0;
 }
@@ -735,6 +669,16 @@ sigusr1_handler( int sig )
 	siglongjmp( *sigusr1_buf, 1 );
 }
 
+void
+sigusr2_handler( int sig )
+{
+	sigjmp_buf *sigusr2_buf;
+
+	thr_getspecific( sigusr2_buf_key, (void **) &sigusr2_buf );
+
+	siglongjmp( *sigusr2_buf, 1 );
+}
+
 static void *
 orb2ew_export( void *arg )
 {
@@ -743,6 +687,7 @@ orb2ew_export( void *arg )
 	int	rc;
 	int     pktid;
 	char    srcname[STRSZ];
+	char    netstachan[STRSZ];
 	double  mytime;
 	char    *rawpkt = NULL;
 	struct Packet *Pkt = NULL;
@@ -852,17 +797,22 @@ orb2ew_export( void *arg )
 		{
 			pktchan = gettbl( Pkt->channels, ichan );
 			
+			sprintf( netstachan, "%s_%s_%s", 
+					pktchan->net,
+					pktchan->sta,
+					pktchan->chan );
+
 			if( et->es->starttime != NULL_STARTTIME &&
 			    pktchan->time < et->es->starttime ) {
 
-				if( ( et->es->loglevel >= VERYVERBOSE ) || 
+				if( ( et->es->loglevel >= VERYVERBOSE ) ||
 					Flags.VeryVerbose ) {
 
 					elog_notify( 0, 
 					"'%s': Skipping packet-channel %s: "
 					"timestamp %s is before requested "
 					"start %s\n", 
-					et->name, srcname, 
+					et->name, netstachan, 
 					s = strtime( pktchan->time ),
 					t = strtime( et->es->starttime ) );
 					free( s );
@@ -886,9 +836,12 @@ orb2ew_export( void *arg )
 
 				elog_notify( 0, 
 					"'%s': Sending packet-channel %s "
-					"timed %s as pin %d\n", 
-					et->name, srcname, 
-					s = strtime( pktchan->time ), pinno );
+					"timed %s as pin %d from %s %s\n", 
+					et->name, netstachan, 
+					s = strtime( pktchan->time ), 
+					pinno, 
+					et->es->my_inst_str,
+					et->es->my_mod_str );
 				free( s );
 			}
 
@@ -925,8 +878,105 @@ refresh_export_server_thread( ExportServerThread *es )
 	socklen_t clientlen = sizeof( client );
 	int	on = 1;
 	ExportThread *et;
+	char	*loglevel;
+	char	*starttime_string;
+	
+	mutex_lock( &es->es_mutex );
 
-	reconfig_export_server_thread( es );
+	if( es->stop == 1 ) {
+
+		orb2ew_export_server_shutdown();
+	}
+
+	if( es->update == 1 ) {
+
+		close_export_server_connection( es ); 
+
+		loglevel = pfget_string( es->pf, "loglevel" );
+
+		es->loglevel = translate_loglevel( loglevel );
+		
+		if( es->loglevel >= VERBOSE ) {
+
+			if( es->new ) {
+					
+				elog_notify( 0, 
+			  	"'%s': Configuring thread with: ", 
+			  	es->name );
+
+			} else {
+
+				elog_notify( 0, 
+			  	"'%s': Reconfiguring thread with: ", 
+			  	es->name );
+
+			}
+
+			pfout( stderr, es->pf );
+		}
+			
+		strcpy( es->server_ipaddress,
+			pfget_string( es->pf, "server_ipaddress" ) );
+
+		es->server_port = 
+			(in_port_t) pfget_int( es->pf, "server_port" );
+
+		strcpy( es->expect_heartbeat_string,
+			pfget_string( es->pf, "expect_heartbeat_string" ) );
+
+		if( es->expect_heartbeat_hook ) {
+
+			free_hook( &es->expect_heartbeat_hook );
+		}
+
+		strcpy( es->send_heartbeat_string,
+			pfget_string( es->pf, "send_heartbeat_string" ) );
+
+		es->send_heartbeat_sec = 
+			pfget_int( es->pf, "send_heartbeat_sec" );
+
+		strcpy( es->select, pfget_string( es->pf, "select" ) );
+
+		strcpy( es->reject, pfget_string( es->pf, "reject" ) );
+
+		strcpy( es->my_inst_str,
+			pfget_string( es->pf, "my_inst" ) );
+
+		strcpy( es->my_mod_str,
+			pfget_string( es->pf, "my_mod" ) );
+
+		ewlogo_tologo( es->my_inst_str, 
+			       es->my_mod_str, 
+			       Default_TYPE_HEARTBEAT, 
+			       &es->my_inst,
+			       &es->my_mod,
+			       &es->my_type_heartbeat );
+
+		ewlogo_tologo( es->my_inst_str, 
+			       es->my_mod_str, 
+			       Default_TYPE_TRACEBUF, 
+			       &es->my_inst,
+			       &es->my_mod,
+			       &es->my_type_tracebuf );
+
+		starttime_string = pfget_string( es->pf, "starttime" );
+
+		if( starttime_string == NULL || 
+		    ( ! strcmp( starttime_string, "" ) ) ) {
+
+			es->starttime = NULL_STARTTIME;
+
+		} else {
+
+			es->starttime = str2epoch( starttime_string );
+			clear_register( 1 );
+		}
+
+		es->update = 0;
+		es->new = 0;
+	}
+
+	mutex_unlock( &es->es_mutex );
 
 	memset( &es->sin, 0, sizeof( struct sockaddr ) );
 	memset( &client, 0, sizeof( struct sockaddr ) );
@@ -1039,10 +1089,15 @@ orb2ew_export_server( void *arg )
 	char	*name = (char *) arg;
 	ExportServerThread *es;
 	sigjmp_buf sigusr1_buf;
+	sigjmp_buf sigusr2_buf;
 	int	status = 0;
 	int	rc;
 
 	set_sigusr1_handler( sigusr1_handler );
+	set_sigusr2_handler( sigusr2_handler );
+
+	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
+	thr_setspecific( sigusr2_buf_key, (void *) &sigusr2_buf );
 
 	thr_setprio( thr_self(), THR_PRIORITY_EXPORT_SERVER );
 
@@ -1064,17 +1119,19 @@ orb2ew_export_server( void *arg )
 		thr_exit( (void *) &status );
 	} 
 
-	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
-
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
 		orb2ew_export_server_shutdown();
 	}
 
-	for( ;; ) {
+	sigsetjmp( sigusr2_buf, 1 ); 
 
-		refresh_export_server_thread( es );
-	}
+	mutex_lock( &es->ready_mutex );
+	es->ready = 1;
+	cond_signal( &es->ready_cond );
+	mutex_unlock( &es->ready_mutex );
+
+	refresh_export_server_thread( es );
 }
 
 static void
@@ -1229,6 +1286,12 @@ update_export_server_thread( char *name, Pf *pf )
 			return;
 		}
 
+		mutex_lock( &es->ready_mutex );
+		while( es->ready == 0 ) {
+			cond_wait( &es->ready_cond, &es->ready_mutex );
+		}
+		mutex_unlock( &es->ready_mutex );
+
 	} else if( pfcmp( oldpf, es->pf ) ) {
 
 		es->update = 1;
@@ -1267,6 +1330,11 @@ update_export_server_thread( char *name, Pf *pf )
 	}
 
 	mutex_unlock( &es->es_mutex );
+
+	if( es->update ) {
+
+		thr_kill( es->thread_id, SIGUSR2 );
+	}
 
 	return;
 }
@@ -1471,7 +1539,8 @@ main( int argc, char **argv )
 	char	c;
 	int	rc;
 	thread_t pfwatch_tid;
-	struct sigaction sa;
+	struct sigaction sa1;
+	struct sigaction sa2;
 
 	elog_init( argc, argv );
 
@@ -1500,16 +1569,18 @@ main( int argc, char **argv )
 	}
 
 	thr_keycreate( &sigusr1_buf_key, NULL );
-	
-	thr_keycreate( &handler_key, NULL );
+	thr_keycreate( &shutdown_handler_key, NULL );
+	sa1.sa_flags = 0;
+	sigemptyset( &sa1.sa_mask );
+	sa1.sa_handler = process_sigusr1;
+	sigaction( SIGUSR1, &sa1, NULL );
 
-	sa.sa_handler = process_sigusr1;
-
-	sigemptyset( &sa.sa_mask );
-
-	sa.sa_flags = 0;
-
-	sigaction( SIGUSR1, &sa, NULL );
+	thr_keycreate( &sigusr2_buf_key, NULL );
+	thr_keycreate( &reconfig_handler_key, NULL );
+	sa2.sa_flags = 0;
+	sigemptyset( &sa2.sa_mask );
+	sa2.sa_handler = process_sigusr2;
+	sigaction( SIGUSR2, &sa2, NULL );
 
 	rc = thr_create( NULL, 0, orb2ew_pfwatch, 0, 0, &pfwatch_tid );
 
