@@ -22,11 +22,14 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
+#include <time.h>
 #include "util.h"
 #include "xfer.h"
 #include "stock.h"
+#include "coords.h"
 #include "orb.h"
 #include "Pkt.h"
+#include "tr.h"
 
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
@@ -58,8 +61,14 @@ main( int argc, char **argv )
 	int	nbytes = 0;
 	char	srcid[STRSZ];
 	int	upper = 0;
+	int	reject_future_packets = 0;
+	double	reject_future_packets_sec;
+	struct timespec tp;
+	double  tdelta;
+	double	endtime;
 	int	rc;
 	Packet *pkt ;
+	char	*s;
 
 	elog_init (argc, argv) ;
 	elog_notify ( 0, "%s : $Revision$ $Date$\n", argv[0] ) ;
@@ -67,7 +76,7 @@ main( int argc, char **argv )
 	pkt = newPkt() ;
 	pkt->pkttype = suffix2pkttype("CD1S");
 
-	while ((c = getopt(argc, argv, "ul")) != -1)
+	while ((c = getopt(argc, argv, "ulr:")) != -1)
 	{
 		switch (c)
 		{
@@ -77,16 +86,31 @@ main( int argc, char **argv )
         	case 'l':
             		Log = 1;
             		break;
+		case 'r':
+			reject_future_packets = 1;
+			reject_future_packets_sec = atof( optarg );
+			fprintf( stderr, 
+			"Rejecting packets more than %g seconds in the future\n", 
+				reject_future_packets_sec );
+			break;
 		default:
 			die( 1,
-			 "Usage: %s [-u] orbname idahost importstring\n",
+			 "Usage: %s [-r seconds] [-u] orbname idahost importstring\n",
 			 argv[0] );
             		break;
 		}
 	}
-	if( upper ) { optind = 2;} else {optind = 1;}
+	if( upper && reject_future_packets ) {
+		optind = 4;
+	} else if( reject_future_packets ) {
+		optind = 3;
+	} else if( upper ) {
+		optind = 2;
+	} else {
+		optind = 1;
+	}
 	if( argc - optind != 3 )
-	die( 1, "Usage: %s [-u] orbname idahost importstring\n", argv[0] );
+	die( 1, "Usage: %s [-r seconds] [-u] orbname idahost importstring\n", argv[0] );
 
 	strcpy( orbname, argv[optind] );
 	strcpy( idahost, argv[optind + 1] );
@@ -126,8 +150,27 @@ main( int argc, char **argv )
 			fprintf( stderr, "%s %lf \n", srcid, pktchan->time );
 		        fflush( stderr);
 		    }
-		    rc = orbput( orbfd, srcid, pktchan->time, packet, nbytes );
-		    orbflush( orbfd );
+
+		    clock_gettime( CLOCK_REALTIME, &tp );
+
+		    endtime = ENDTIME( pktchan->time, 
+				       pktchan->samprate, 
+				       pktchan->nsamp );
+		    tdelta = endtime - tp.tv_sec+tp.tv_nsec/1e9;
+
+		    if( reject_future_packets && tdelta > reject_future_packets_sec ) {
+			complain( 1,
+				"ida2orb: rejecting packet from %s, which ends %s into the future\n", 	
+				srcid, ( s = strtdelta( tdelta ) ) );
+			free( s );
+		    } else {
+		    	rc = orbput( orbfd, srcid, pktchan->time,
+				     packet, nbytes );
+		    	orbflush( orbfd );
+			if( rc ) complain( 1,
+				"ida2orb: orbput failed for %s\n",
+				srcid );
+		    }
 		    status = XFER_OK;  
 		 }  else complain( 0, "Xfer_Read return code is %d\n", status );
 	}

@@ -4,7 +4,7 @@
 ida2orb \- import data from an IDA hub to a Datascope ORB
 .SH SYNOPSIS
 .nf
-ida2orb [-u] orbname idahost importstring
+ida2orb [-r sec] [-u] orbname idahost importstring
 .fi
 .SH DESCRIPTION
 ida2orb takes data from an IDA hub and imports it into a Datascope 
@@ -18,6 +18,7 @@ importstring specifies the station(s) and channel(s) to import (see example
 below). 
 .SH OPTIONS
 -u convert station and channel names to uppercase
+-r seconds reject packets that are more than the specified number of seconds into the future, according to the system clock
 .SH EXAMPLE
 .nf
 ida2orb nordic kdak-gw.giseis.alaska.edu kdak:bhz,bhn,bhe
