@@ -2006,6 +2006,13 @@ if( $opt_c ) {
 	system( "cp $sourcedb.arrival $dbname.arrival" );
 }
 
+$rc = system( "dbcheck $dbname" );
+
+if( $rc != 0 ) {
+	
+	die( "Database '$dbname' is invalid; Quitting!\n" );
+}
+
 @db = dbopen( $dbname, "r+" );
 
 if( ! expansion_schema_present( @db ) ) {
