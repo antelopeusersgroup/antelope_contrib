@@ -250,7 +250,7 @@ void closeout_das(int das, double dbtime, double lastlock, double etime,
 			"seedtqual",clkerr_ranges[i].seedqual,
 					0);
 		dbtime=tend;
-		if(tend>station_close_time) break;
+		if(tend>=station_close_time) break;
 	}
 	if(i>=NCLKFIELDS)
 	{
@@ -381,8 +381,10 @@ void main(int argc, char **argv)
 		}
 		else
 		{
+			/* rampout is always 0 here to handle a 
+			das change correctly */
 			closeout_das(last_das,lastdbentry,lastlock,time,
-				dbt,rampout);
+				dbt,0);
 			lastdbentry = time;
 			lastlock = time;
 			last_das = das_sn;
