@@ -46,7 +46,7 @@ not set.
 */
 static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "/opt/antelope/data/tables/genloc/db/vmodel"
+#define DEFAULT_DB "$ANTELOPE/data/tables/genloc/db/vmodel"
 void _init()
 {
 	char *dbname;
@@ -54,7 +54,7 @@ void _init()
 	dbname = getenv (ENVNAME);
 	if(dbname == NULL) 
 	{
-		elog_complain(0,"Model Database env variable definition %s not set\nUsing default database of %s\n",
+		elog_notify(0,"Model Database env variable definition %s not set\nUsing default database of %s\n",
 			ENVNAME,DEFAULT_DB);
 		dbname = strdup(DEFAULT_DB);
 	}
@@ -117,7 +117,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 	db = dblookup(modeldb,0,"mod1d",0,0);
 	if(db.table == dbINVALID)
 	{
-		elog_notify(0,"dblookup for mod1d table failed\nRequired schema extensions are probably not defined\n");
+		elog_complain(0,"dblookup for mod1d table failed\nRequired schema extensions are probably not defined\n");
 		return(NULL);
 	}
 	sprintf(sstring,"(modname =~ /%s/) && (paramname =~ /%s/)",

@@ -1,0 +1,95 @@
+'\" te	
+.TH TT1DCVL  3 "$Date$"
+.SH NAME
+tt1dcvl - generic interface to
+flat earth constant velocity layered model travel time calculator
+.SH SYNOPSIS
+.nf
+int tt1dcvl (char *model,char *phase_code,int mode,TTGeometry *geometry,
+    Tbl **timesp,Hook **hookp);
+int u1dcvl (char *model,char *phase_code,int mode,TTGeometry *geometry,
+    Tbl **timesp,Hook **hookp);
+
+.fi
+.SH DESCRIPTION
+.LP
+This is a generic tt interface (see tt(3)) to a simple 1d velocity 
+model calculator called ttlvz.  The guts of the calculator are identical
+to the ttlvz program in genloc (see genloc_ttinterface(3)).  There
+is a very large difference, however, in the interface.  The ttlvz
+program implements a standard calculator for flat earth 1d models 
+with constant velocity layers.  It should not be used for computing
+travel times for other than crustal phases at distances over a 
+few hundred kilometers.  It can be used for phases like Pg, Lg, 
+Pn, etc. provided one sets the half space velocity to a generic 
+velocity for one of these guided phases.  
+.LP
+This library is loaded dynamically by the generic travel time
+interface when a ttcalc or ucalc (see ttcalc(3)) is
+called with the method field set as tt1dcvl.  
+Notice that the arguments of 
+the two functions listed above are identical to ttcalc and ucalc
+described in ttcalc(3).  
+Note, however, you should NOT call tt1dcvl or u1dcvl directly, but you
+should instead call ttcalc with the method set to tt1dcvl.  The
+ttcalc interface handles the translation.
+.LP
+The libtt1dcvl.so shared library uses a special feature of Solaris.
+The library contains and _init function that is involked when
+the library is loaded dynamically.  In the case of tt1dcvl this
+causes the package to open database tables that are used by 
+the program to set up the velocity model.  Model names are used
+as a key to the database.  When a new model name is requested a function
+is called that searches for that model name in the database.  If the
+requested model name is not found tt1dcvl and u1dcvl return a nonzero
+error code and leave a message on the error log.  The caller must,
+of course, trap this condition or the result will be garbage 
+or something worse like a seg fault.  The only table this
+library uses is one called mod1d.  
+
+.SH FILES
+.LP
+A valid set of datascope files containing a descriptor file and
+an associated mod1d table (defined by the descriptor) are necessary
+or these functions will only return errors.  
+.SH ENVIRONMENT
+.LP
+The default velocity model database is
+$ANTELOPE/data/tables/genloc/db/vmodel.  
+This can be changed to a different database by setting the 
+environment variable VELOCITY_MODEL_DATABASE.
+.SH RETURN VALUES
+.LP
+See ttcalc(3) for generic error return codes for the tt interface.
+.SH LIBRARY
+.nf
+-ltt 
+.fi
+.SH DIAGNOSTICS
+.LP
+If you get this message when the routine is first called:
+.nf
+WARNING: could not open velocity model database xxxxx during libtt1dcvl initialization
+
+.fi
+the calling program must take appropriate action as additional
+calls will produce nothing but errors.  
+.LP
+If the mod1d table lookup fails you get this message:
+.nf
+dblookup for mod1d table failed
+Required schema extensions are probably not defined
+.fi
+.SH "SEE ALSO"
+.nf
+ttcalc(3), genloc_ttinterface(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The ttlvz code is pretty bombproof, but always keep in mind it
+is based on a flat earth, 1d, constant velocity layer model.  
+I will happily compute something irrational like a P wave at
+150 degrees that has no relationship to reality.  
+.SH AUTHOR
+Gary L. Pavlis
+.\" $Id$
