@@ -79,6 +79,8 @@ void save_run_parameters(Dbptr db,Pf *pf)
 	strcat(filename,dfile);
 	if(pfwrite(filename,pf))
 		elog_die(0,"pfwrite error for file %s\n",filename);
+	free(dir);  free(dfile);
+	free(vm); free(vm3d);
 }
 /* Small function to extract the hypocentroid information from this 
 Pfensemble.  Assumption is that all members of the ensemble share
@@ -320,6 +322,8 @@ option which is know to cause problems\nrecenter set off\n");
 				argv[2]);
 			continue;
 		}
+		/* no longer needed as we copied it to create pfe*/
+		pffree(pfi);
 		/* Get the global parameters for this ensemble from
 		the first entry of the vector of pf's in pfe */
 		gridid = pfget_int(pfe->pf[0],"gridid");
@@ -428,7 +432,16 @@ option which is know to cause problems\nrecenter set off\n");
 			is used to flag a failure. */
 			if(strstr(swork,"ABORT")!=NULL) pmelfail=1;
 		}
+		freetbl(converge,free);
+		converge=NULL;
+		/* This list contains history of the hypocentroid.
+		Currently it is just dropped, but it could be printed
+		in a verbose mode.  This option probably should
+		be done eventually.*/
+		freetbl(pmelhistory,free);
+		pmelhistory=NULL;
 		/* This inserts revised attributes into the pfe */
+
 		update_ensemble(pfe,pf,h0,ta,o);
 		/* We have to recreate the header block for pfe */
 		pfehead=pfensemble_convert_group(pfe);
@@ -472,6 +485,7 @@ option which is know to cause problems\nrecenter set off\n");
 		sleep(10);
 	}
 	sleep(30);
+	destroy_SCMatrix(smatrix);
 /*
 	pthread_exit(NULL);
 */
