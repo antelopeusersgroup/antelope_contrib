@@ -178,17 +178,40 @@ adsend2orb orb port
 eworm2orb pf
     copy earthworm packets from memory ring buffer to orbserver
 
-guralp2orb [-v] [-V] [-pf parameter_file] [-d calibdb] [-l file_for_logpackets] [-r reject_sec] orbname
-    copy data from Guralp datalogger udp port to orbserver orb
+guralp2orb [options] orbname
+    copy data from Guralp SCREAM server orb
+<options>
+-d calibration_database
+-pf parameter_file
+-l file_for_logpackets
+-v	verbose
+-V	extremely verbose
+</options>
 
 ida2orb [-u] orb nrts selection
     copy selected data from IDA nrts to orbserver
 
-ipd [-v] [-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] port orb
+ipd [options] port orb
     copy data from UCSD data multiplexer at port to orbserver orb
+<options>
+-c check_rate
+-i
+-p pfile
+-s pkt_size
+-t timeout 
+-u 
+-v
+</options>
 
-liss2orb [-d database] [-m match] [-s pktsize] [-t timeout] [-v] liss orb
+liss2orb [options] liss orb
     copy data from LISS server liss to orbserver orb
+<options>
+-d database
+-m match
+-s pktsize
+-t timeout
+-v
+</options>
 
 rddas [options] port orb
     copy data from RefTek DAS port to orbserver orb
@@ -274,6 +297,22 @@ b3s2orb [options]
 -p pf	default = pkt.pf
 -s
 -v	more verbose
+</options>
+
+slink2orb [options] SeedLink orb
+    SeedLink to orb module
+<options>
+-d database
+-nd delay
+-nt timeout
+-k interval
+-pf parameter_file
+-S statefile
+-o dumpfile
+-r	remap net/sta/chan
+-v	verbose
+-vv	very verbose
+-vvv	extremely verbose
 </options>
 
 <subsection Other Orb Writers>
@@ -432,6 +471,16 @@ orbpftrigger [options] orb [cmdstring]
 -start {pktid|time}
 -number number
 -nowait
+</options>
+
+orbptrigger [options] orb command ...
+    orb packet trigger of program execution
+<options>
+-select packet
+-start {pktid|time}
+-number number
+-state file
+-background
 </options>
 
 orbwfmeas [options] orbwf orbdb dbname
