@@ -1,0 +1,46 @@
+.TH LISS2ORB 1 "1 August 1998" " "
+.SH NAME
+liss2orb \- read data in LISS format 
+.SH SYNOPSIS
+.nf
+
+liss2orb [-m srcmatch]
+    [-s liss_pkt_size]
+    [-t timeout]
+    [-v] 
+    inport orb
+
+.fi
+.SH DESCRIPTION
+An \fBliss2orb\fP reads seismic data in LISS format from an \fIinport\fR input port 
+and sends it in an \fBorb\fP ring buffer.
+.SH OPTIONS
+.IP "-m srcmatch"
+Only packets  which \fIsrcname\fR  matches the regular 
+expression \fIsrcmatch\fR will be sent to an ORB.
+.IP "-s liss_pkt_size"
+Specifies a LISS packet size. Default value is 512 bytes.  
+.IP "-t timeout "
+This option is valid only for a socket connection and specified number of
+seconds wait data on a connected socket before close socket and open a
+new connection. Default value is 30 seconds.
+.IP "-v"
+Be more verbose.
+.SH FILES
+.SH ENVIRONMENT
+.SH EXAMPLE
+.LP
+Read data from an kono.iu.liss.org remote site. Select data only for BHZ, BHN, BHE
+channels and store them in a  bbarray:9999 ORB. Set timeout value between 
+local host and a remote site to 5 minutes. 
+
+.nf
+
+liss2orb -t 300 -m ".*BH[ZNE]" kono.iu.liss.org bbarray:9999
+
+.fi
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko
