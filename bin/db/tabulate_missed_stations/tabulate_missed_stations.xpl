@@ -67,7 +67,7 @@ if( $number_missed > 0 ) {
 	print "\n\n\nTotal of $number_missed stachans missed:\n";
 
 	open( D, ">dbmissed" );
-	print D "statrans1.0\n\n";
+	print D "statrans1.1\n\n";
 	close( D );
 	
 	@dbmissed = dbopen( "dbmissed", "r+" );
