@@ -1,100 +1,142 @@
-.TH DBTC 1 "1 August 1998" " "
+'\" t
+.TH DBTC 1 "$Date$"
+
 .SH NAME
-DBTC \- database time correction routine
+dbtc, correctdt \- database time correction routine
+
 .SH SYNOPSIS
 .nf
 
-dbtc [-p parfile] [-t stime] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
+\fBdbtc \fP[-p \fIparfile\fP] [-t \fIstime\fP] [-v]
+                \fIgdb\fP:\fIgnet\fP:\fIgsta\fP:\fIgch\fP
+                \fIbdb\fP:\fIbnet\fP:\fIbsta\fP:\fIbch\fP
 
-correctdt [-t stime] bdb
+\fBcorrectdt \fP[-t \fIstime\fP] \fIbdb\fP
 
 .fi
-.SH DBTC
+
+.SH DESCRIPTION
 Seismic networks can have clock problems and as a result produce
-data with incorrect time. \fBdbtc\fP finds time corrections for 
-seismic data for network (\fIbad data\fR) by  
-cross correlating with data from a co-located station from another 
+data with incorrect time. \fBdbtc\fP finds time corrections for
+seismic data for network (\fIbad data\fP) by
+cross correlating with data from a co-located station from another
 network that does not have a timing
-problem (\fIgood data\fR). The (\fIbad data\fR) segment must be specified in
-the form of \fBbdb:bnet:bsta:bch\fP, where
-.nf
+problem (\fIgood data\fP), writing a \fItcorrection\fP table.
 
-     bdb  => db name of data with a bad time
-     bdb  => network name of data with a bad time
-     bdb  => station name of data with a bad time
-     bdb  => channel name of data with a bad time
+.LP
+\fBcorrectdt\fP reads this \fItcorrection\fP table and fixes times in
+the \fIwfdisc\fP and \fIarrival\fP tables.
+When the data is in mini-seed format, the times
+in the SEED headers are also corrected.
 
-.fi
-and the (\fIgood data\fR) must be specified in form of \fBgdb:gnet:gsta:gch\fP,
+.SS dbtc
+\fBdbtc\fP needs references to both data with bad timing, and
+the data with good timing.  The (\fIbad data\fP) segment must be specified in
+the form of \fIbdb\fP:\fIbnet\fP:\fIbsta\fP:\fIbch\fP, where
+
+.TS
+l l.
+\fIbdb\fP	database name of data with a bad time
+\fIbnet\fP	network name of data with a bad time
+\fIbsta\fP	station name of data with a bad time
+\fIbch\fP	channel name of data with a bad time
+.TE
+
+Similarly, the (\fIgood data\fP) must be specified in form of \fIgdb\fP:\fIgnet\fP:\fIgsta\fP:\fIgch\fP,
 where
-.nf
 
-     gdb  => db name of data with a good time
-     gdb  => network name of data with a good time
-     gdb  => station name of data with a good time
-     gdb  => channel name of data with a good time
-.fi
+.TS
+l l.
+\fIgdb\fP	db name of data with a good time
+\fIgnet\fP	network name of data with a good time
+\fIgsta\fP	station name of data with a good time
+\fIgch\fP	channel name of data with a good time
+.TE
 
 .LP
-\fBdbtc\fP makes a \fItcorrection\fR table with name \fIbdb.tcorrection\fR and
+\fBdbtc\fP makes a \fItcorrection\fP table with name \fIbdb.tcorrection\fP and
 with a following fields:
+.ft CW
+.in 2c
 .nf
+.ne 3
 
-   time  tcor gnet gsta gchan gsamprate 
-              bnet bsta bchan bsamprate lddate
+   time  tcor \fIgnet\fP \fIgsta\fP gchan gsamprate
+              \fIbnet\fP \fIbsta\fP bchan bsamprate lddate
+
 .fi
+.in
+.ft R
 
-\fItcor\fR is the correction factor which needs to be added to the 
-\fIbad data\fR at time \fItime\fR.
+\fItcor\fP is the correction factor which needs to be added to the
+\fIbad data\fP at time \fItime\fP.
+
 .LP
-If \fIbad data\fR and \fIgood data\fR have a different sampling rates \fBdbtc\fP
-does a re-sampling of \fIbad data\fR and then runs the cross-correlation.
+If \fIbad data\fP and \fIgood data\fP have a different sampling rates \fBdbtc\fP
+does a re-sampling of \fIbad data\fP and then runs the cross-correlation.
 
-.SH OPTIONS
-.IP "-p parfile"
-Specify name of a parameter file which will be used by \fBdbtc\fP.
-Deafult name is \fIdbtc.pf\fR.
-.IP "-t stime"
-Specify time of \fBbad data\fP  waveform from which start to do a cross correlation.
-By default start at data start time.
-.IP "-v"
-Be more verbose.
-.SH PARAMETER FILE
-.LP
-\fBdbtc\fP uses a parameter file, which has the following parameters:
-.IP "data_segment_window"
-data series will be split on segments by \fIdata_segment_window\fR seconds
-and \fItcor\fR will be calculated for each such segment.
-.IP "correlation_window"
-data window in seconds which is used in cross correlation computations.
-.IP "allowed_time_err_offset"
-maximum allowed time error in seconds.
-
-.SH CORRECTDT
-\fBcorrectdt\fP reads \fItcorrection\fR table and fixes time in 
-\fIwfdisc, arrival\fR tables. If data is in mini-seed format it fixes time
-in SEED headers as well.  The method of correction is for each value of time
-in the wfdisc and arrival, look up the tcorr value for the closest prior
-time in the tcorrection table, apply the tcorr value as a static correction.
+.SS correctdt
+For each value of time
+in the wfdisc and arrival, \fBcorrectdt\fP looks up the tcor value for the closest prior
+time in the tcorrection table and applies the tcor value as a static correction.
 There is no provision at this time for linear interpolation for applying
 time corrections.
 
 .SH OPTIONS
-.IP "-m srcid"
-\fItcorrection\fR record which \fInet_sta_chan\fR key matches  the   regular
-expression \fIsrcid\fR will be used in a time correction procedure.   
+
+.SS dbtc
+
+.IP "-p parfile"
+Specify an alternate parameter file for \fBdbtc\fP.
+
 .IP "-t stime"
-Start fixing time in \fIbad data\fR set at \fIstime\fR. 
-.SH EXAMPLE 
+Specify time of \fBbad data\fP  waveform from which start to do a cross correlation.
+By default start at data start time.
+
+.IP "-v"
+
+Be more verbose.
+
+.SS correctdt
+
+.IP "-m srcid"
+\fItcorrection\fP record which \fInet_sta_chan\fP key matches the regular
+expression \fIsrcid\fP is used in a time correction procedure.
+
+.IP "-t stime"
+Start fixing time in \fIbad data\fP set at \fIstime\fP.
+
+.SH PARAMETER FILE
+
 .LP
-Find time correction for anza network. Bad data is \fIdata/anza:AZ:PFO:BHZ\fR
-and good data is \fInrdc/ida:II:PFO:shz\fR
+\fBdbtc\fP uses a parameter file, which has the following parameters:
+
+.IP "data_segment_window"
+data series are split on segments by \fIdata_segment_window\fP seconds
+and \fItcor\fP is calculated for each such segment.
+
+.IP "correlation_window"
+data window in seconds which is used in cross correlation computations.
+
+.IP "allowed_time_err_offset"
+maximum allowed time error in seconds.
+
+.SH EXAMPLE
+
+.LP
+Find time correction for anza network. Bad data is \fIdata/anza:AZ:PFO:BHZ\fP
+and good data is \fInrdc/ida:II:PFO:shz\fP
+.ft CW
+.in 2c
 .nf
 
-dbtc nrdc/ida:II:PFO:shz data/anza:AZ:PFO:BHZ
+% \fBdbtc nrdc/ida:II:PFO:shz data/anza:AZ:PFO:BHZ\fP
 
-correctdt data/anza
+% \fBcorrectdt data/anza\fP
+
 .fi
-.SH "SEE ALSO"
+.in
+.ft R
+
 .SH AUTHOR
 Marina Glushko
