@@ -788,6 +788,7 @@ Returns:  Normal return is 0.  Nonzero returns mean problems where
 		insufficient data to continue with makeqn.
 	-3 - slight variant on -2.  Exit during adjustment steps in
 		the Marquardt algorithm.  
+	-4 - failure of svd routine.  results undefined
 
 Author:  Gary L. Pavlis, Indiana University
 Written:  February 1996
@@ -1004,8 +1005,11 @@ int ggnloc (Hypocenter initial_location,
 			return(-4);
 		}
 		else if( i > 0)
-			complain(0,"svd convergence error in iteration %d\nBlundering on\n",
+		{
+			complain(0,"svd convergence error in iteration %d\nCannot compute solution\n",
 				iteration);
+			return(-4);
+		}
 		/* Now how we construct a solution depends on the algorithm*/
 
 		switch(options.generalized_inverse)
