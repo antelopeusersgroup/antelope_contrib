@@ -80,6 +80,12 @@ autodrm2db [-v] reply1 [reply2 ..] dbout
 edr2db edr dbout
     create arrival, origin and assoc rows in database dbout from USGS EDR
 
+gnis2db gnis_file dbname [State]
+     convert GNIS feature-name files to database
+
+grdinfo2db [-n name] [-t type] gridfile dbname
+     add GMT grid-file information to database
+
 isc2db [-c] [-p] [-s start] [-e end] isc_bulletin dbout
     read the ISC bulletin from NEIC CD into CSS database dbout
 
@@ -102,8 +108,19 @@ pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname
 reb2db filename [filename ...] db
     convert Reviewed Event Bulletins of GSE2.0, IMS1.0, or IMS1.0:SHORT format to CSS3.0 database db
 
-sac2db sac1 [sac2 ... ] dbout
-    create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
+ref2db [options] input dbname [start-time [end-time]]
+    convert data in REFTEK format to css3.0
+<options>
+-d 	datatype
+-e	create files based on RefTek event start and end time
+-l	create logfile representing data in RefTek instrument format
+-m	dasmatch
+-n 	net
+-p 	pffile
+-s 	size
+-v	verbose
+-w	will not write to database
+</options>
 
 psd2db [options] sd dbout
     read PASSCAL SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
@@ -115,6 +132,22 @@ psd2db [options] sd dbout
 -stagedir dir2
  	also create stage table, using directory dir2 for stage table response files
 -v	more verbose
+</options>
+
+sac2db sac1 [sac2 ... ] dbout
+    create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
+
+scec2db [options] dbname
+    retrieval and conversion of SCEC bulletin
+<options>
+-v	verbose
+-d	retrieve one day
+-w	retrieve one week
+-m	retrieve one month
+-f 	file
+-s	start_time
+-e 	end_time
+-c	{catread|scecdc|hypo71|hypo2000}
 </options>
 
 sd2db [options] sd dbout

@@ -38,6 +38,9 @@ dbrecenteqs1.1
 genloc1.0
     extensions of css3.0 to support the genloc program.
 
+gmt1.0
+    schema to track GMT grid files
+
 iceworm1.3
     extensions to css3.0 schema for use with the Iceworm system.
 
