@@ -33,6 +33,7 @@ main(int argc, char **argv)
 	int use_r_weight;  
 	int use_ssr_weight;
 	int ierr;
+	hooke=NULL;  hooko=NULL;
 
 	if(argc<2) usage();
 
@@ -94,9 +95,9 @@ main(int argc, char **argv)
 			    if(dbgetv(dbv,0,"hclat",hc,
 				"hclon",hc+1,
 				"hcdepth",hc+2,
-				"lat",h,
-				"lon",h+1,
-				"depth",h+2,
+				"origin.lat",h,
+				"origin.lon",h+1,
+				"origin.depth",h+2,
 				"origin.time",h+3,
 				"prefor",&prefor,0) == dbINVALID) 
 					get_error(dbv.record);
@@ -117,9 +118,9 @@ main(int argc, char **argv)
 			if(use_ssr_weight)
 			{
 			    if(dbgetv(dbv,0,
-                                "lat",h,
-                                "lon",h+1,
-                                "depth",h+2,
+                                "origin.lat",h,
+                                "origin.lon",h+1,
+                                "origin.depth",h+2,
 				"origin.time",h+3,
 				"sdobs",&sdobs,
                                 "prefor",&prefor,0) == dbINVALID)

@@ -1,13 +1,13 @@
-use_inv_r_weighting true
-use_ssr_weighting true
-full_weight_distance 1.0
-# change dbpmel to pmelgrid for pmelgrid output
-pmelavg_dbview &Tbl{
-dbopen hypocentroid
-dbjoin cluster
-dbjoin event
-dbjoin origin
-dbsubset algorithm=~/dbpmel/
-dbjoin origerr
-dbsort evid
+full_weight_distance	1.0
+pf_revision_time	1054587669
+pmelavg_dbview	&Tbl{
+    dbopen hypocentroid
+    dbjoin cluster
+    dbjoin event
+    dbjoin origin
+    dbsort -u evid gridid
+    dbsubset algorithm=~/pmelgrid/
+    dbjoin origerr
 }
+use_inv_r_weighting	true
+use_ssr_weighting	true
