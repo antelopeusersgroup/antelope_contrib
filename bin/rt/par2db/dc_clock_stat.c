@@ -45,16 +45,18 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
 
     aclc_stat = packet[1];
     mclc_stat = packet[0];
-    clcsel = packet[3]&0x20;
+    clcsel = (packet[3]&0x20) ? 1:0;
+    mon = ( packet[3]&0x80) ? 1:0;     
+    aon = (packet[3]&0x40) ? 1:0 ;       
     
    if( clcsel )  {
-       if( ( mon = packet[3]&0x80) == 0  )  {
+       if(  mon == 0  )  {
            complain( 0, "MAIN is selected, but it's OFF!\n");
            return 0;
        } 
        
    }  else  {  
-       if( (aon = packet[3]&0x40) == 0 )  {
+       if( aon == 0 )  {
            complain( 0, "AUX is selected, but it's OFF!\n");
            return 0;
        } 
@@ -96,8 +98,10 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
                dcpar[dc] = 0;
                break;
             default:
-               complain( 0, "unknown MAIN clock status %0x-%c\n", mclc_stat, mclc_stat);
-               return 0;
+                dcpar[dc] = TRGAP_VALUE_S4;
+		if( Log) 
+                   complain( 0, "unknown MAIN clock status %0x-%c\n", mclc_stat, mclc_stat);
+               break;       
          }  
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       } else if( strncmp( CLC_NAME[i], "ASTAT", 4 ) == 0 ) {
@@ -122,33 +126,34 @@ packet[0], packet[1], *sval, packet[0], packet[1], packet[2], packet[3]);
                break;
             default:
                dcpar[dc] = TRGAP_VALUE_S4;
-               complain( 0, "unknown AUX clock status %0x-%c\n", aclc_stat, aclc_stat);
+               if(Log)
+	          complain( 0, "unknown AUX clock status %0x-%c\n", aclc_stat, aclc_stat);
                break;
          }  
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "ACFAIL", 6 ) == 0 ) {
-         dcpar[dc] = packet[2]&0x80;
+         dcpar[dc] = (packet[2]&0x80) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "HAZARD", 6 ) == 0 ) {
-         dcpar[dc] = packet[2]&0x40;
+         dcpar[dc] = (packet[2]&0x40) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "CLK", 3 ) == 0 ) {
          dcpar[dc] = clcsel;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M1OC", 4 ) == 0 ) {
-         dcpar[dc] = packet[2]&0x20;
+         dcpar[dc] = (packet[2]&0x20) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M2OC", 4 ) == 0 ) {
-         dcpar[dc] = packet[2]&0x10;
+         dcpar[dc] = (packet[2]&0x10) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "M3OC", 4 ) == 0 ) {
-         dcpar[dc] = packet[2]&0x08;
+         dcpar[dc] = (packet[2]&0x08) ? 1:0;
          sprintf( achan->chan, "%s\0",  CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "MOC", 3 ) == 0 ) {
-              dcpar[dc] = packet[2]&0x04;
+              dcpar[dc] = (packet[2]&0x04) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "AOC", 3 ) == 0 ) {
-              dcpar[dc] = packet[2]&0x02;
+              dcpar[dc] = (packet[2]&0x02) ? 1:0;
          sprintf( achan->chan, "%s\0", CLC_NAME[i] ) ;
       }   else if( strncmp( CLC_NAME[i], "MON", 3 ) == 0 ) {
               dcpar[dc] = mon;

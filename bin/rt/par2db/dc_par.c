@@ -128,7 +128,7 @@ struct Packet **Pkt;
         achan->time = hdr->epoch; 
 	off = PAR_OFF_DAS[ds] ;
         memcpy( (char *) &sval, &daspkt[off], 2 );
-        daspar[ds] = sval;
+        daspar[ds+i*MAXDAS] = sval;
         achan->data = &daspar[ds + i*MAXDAS];           
         settbl((*Pkt)->chan, ch, achan ) ;
      }

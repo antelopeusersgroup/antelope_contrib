@@ -49,7 +49,6 @@ struct Packet **Pkt;
       strcpy( achan->sta, sta);
       achan->time = pkttime; 
       if( !strncmp( FILE_NAME_BBA2[ch], "BUFDEL", 6 ) ||
-          !strncmp( FILE_NAME_BBA2[ch], "RTXNUM", 6 ) ||
           !strncmp( FILE_NAME_BBA2[ch], "LLOCK", 5 ) )  {
           off = PAR_OFF_BBA2[ch]+doff;
           val = packet[off];

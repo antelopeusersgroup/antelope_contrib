@@ -1,10 +1,9 @@
 #include "par2db.h"
 
 Source *
-new_source ( )
+new_source ( int npkt )
 {
     Source *source ;
-    int npkt = 15;	
 
     allot ( Source *, source, 1 ) ;
     source->apipe = new_orbpipe ( npkt );
