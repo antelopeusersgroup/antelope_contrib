@@ -4,6 +4,7 @@
 
 #include "orb.h"
 #include "pkt.h"
+#include "coords.h"
 
 #ifndef SEEK_SET
 #define SEEK_SET 0
@@ -37,6 +38,7 @@ char **argv;
 	int lastpkt_age;
 	int lastpkt_pktid=-1;
 	double lastpkt_time;
+	double lastpkt_ltime;
 	int ready;
 	int first=1;
 	int pktstart=-1;
@@ -185,12 +187,14 @@ char **argv;
 			lastpkt_age = 0;
 			lastpkt_pktid = pktid;
 			lastpkt_time = time;
+			lastpkt_ltime = now ();
 			break;
 		case ORB_INCOMPLETE : 	/* Incomplete packet */
 			ready = 0;
 			lastpkt_age = 0;
 			lastpkt_pktid = pktid;
 			lastpkt_time = time;
+			lastpkt_ltime = now ();
 			break;
 		default:		/* Some other error */
 			ready = -1;
@@ -199,10 +203,61 @@ char **argv;
 		if (ready == 0) continue;
 		if (ready < 0) {
 			if (ircnt) {
+				int orbs;
+
 RECONNECT:			clear_register (0);
 				sleep (10);
 				lastpkt_age += 10;
 				/* continue; */
+
+				while (1) {
+					int ok;
+
+					sleep (10);
+					lastpkt_age += 10;
+					orbs = orbopen (orbname, "r");
+					if (orbs < 0) {
+						clear_register (0);
+						continue;
+					}
+					if (srcexpr) {
+						if (orbselect (orbs, srcexpr) < 0) {
+							orbclose (orbs);
+							clear_register (0);
+							continue;
+						}
+					}
+					while (1) {
+						Orbstat *ostat;
+						int istat;
+						double slatest_time;
+
+						sleep (10);
+						lastpkt_age += 10;
+						ostat = NULL;
+						if (orbstat ( orbs, &ostat ) < 0) {
+							orbclose (orbs);
+							clear_register (0);
+							ok = 0;
+							break;
+						}
+						ok = 0;
+						slatest_time = 0.0;
+						for (istat=0; istat<maxtbl(ostat->srcs); istat++) {
+							OrbSrc *src;
+
+							src = (OrbSrc *) gettbl (ostat->srcs, istat);
+							if (src->slatest_time > slatest_time) slatest_time = src->slatest_time;
+						}
+						free_orbstat (ostat);
+						if (slatest_time - lastpkt_time > (double)rcnt_time) {
+							ok = 1;
+							break;
+						}
+					}
+					if (ok) break;
+				}
+				orbclose (orbs);
 
 				orbclose (orbin);
 				while (1) {
