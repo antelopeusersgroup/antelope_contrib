@@ -3,6 +3,7 @@
 #include "db.h"
 #include "stock.h"
 #include "coords.h"
+#include "bns.h"
 #include "dbxml.h"
 
 static void 
@@ -78,7 +79,8 @@ Tbl 	*expressions_in;
 void 	**xml;
 int 	flags;
 {
-	char	**xmlstring = (char **) xml;
+	Bns	*xml_bns = 0;
+	char	*xmlstring = 0;
 	char	*field; 
 	char	*fieldname; 
 	char	*vstack = 0;
@@ -234,7 +236,22 @@ int 	flags;
 	free( roottag );
 	free( rowtag );
 
-	*xmlstring = popstr( (void **) &vstack, 1 );
+	xmlstring = popstr( (void **) &vstack, 1 );
+
+	if( flags & DBXML_BNS ) {
+
+		xml_bns = bnsnew( -1, strlen( xmlstring ) + 2 );
+
+		buf2bns( xml_bns, xmlstring, strlen( xmlstring ) + 1 );
+
+		free( xmlstring );
+
+		*xml = (void *) xml_bns;
+
+	} else {
+		
+		*xml = (void *) xmlstring;
+	}
 
 	return retcode;
 }

@@ -2,6 +2,8 @@
 #ifndef XMLDB
 #define XMLDB
 
+#define DBXML_BNS 1
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

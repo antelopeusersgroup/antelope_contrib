@@ -27,12 +27,16 @@ from the database. If a table of \fIexpressions\fP is supplied, each expression 
 evaluated against each row and the result placed in the corresponding field
 name from the \fIfields\fP table.
 
-The \fIxml\fP result is currently returned as a string in the \fIxml\fP pointer.
-This string is freshly allocated on each call (previous contents of
-the pointer are ignored). Freeing this string is the responsibility of the
-user.
+By default (i.e. with \fIflags\fP set to 0) the \fIxml\fP result is
+returned as a string in the \fIxml\fP pointer.  This string
+is freshly allocated on each call. Previous contents of the pointer are
+ignored. Freeing the returned string is the responsibility of the user. If the
+\fIflags\fP argument is set to DBXML_BNS, the returned argument
+\fIxml\fP is the address of a pointer to a Buffered Network Stream
+object, which allows the XML result to be read out in pieces. For
+further detail see bns(3). Once again, freeing the returned Bns structure is 
+the responsibility of the user.
 
-The \fIflags\fP argument is reserved for future use. It should be set to 0.
 .SH EXAMPLE
 .ft CW
 .in 2c
@@ -124,11 +128,11 @@ This version has no support for attributes.
 The pretty-print indent width is fixed, and newlines are added by default.
 At some point it may be necessary to add these later.
 
-The \fIxml\fP pointer is a void pointer to support possible multiple
-return types in the future.  It may be desirable in the future to
-return something more complex than a pretty-printed string, such as a
-libxml2 DOM (Document Object Model) tree.  If necessary, the returned
-string can always be parsed into a representation of choice.
+The \fIxml\fP pointer is a void pointer to support multiple return
+types.  It may be desirable in the future to return something more
+complex than a pretty-printed string, such as a libxml2 DOM (Document
+Object Model) tree.  If necessary, the returned string can always be
+parsed into a representation of choice.
 
 .SH AUTHOR
 .nf
