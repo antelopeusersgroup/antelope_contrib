@@ -14,6 +14,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(dbopen, NULL)		
 	PHP_FE(dbprocess, NULL)		
+	PHP_FE(dbsubset, NULL)		
 	PHP_FE(dbquery, NULL)		
 	{NULL, NULL, NULL}	
 };
@@ -233,6 +234,40 @@ PHP_FUNCTION(dbquery)
 		*/
 		break ;
 	}
+}
+/* }}} */
+
+/* {{{ proto array dbsubset( array db, string expression ) */
+PHP_FUNCTION(dbsubset)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	char	*expr;
+	int	expr_len;
+	int	retcode;
+	int	i;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array,
+					&expr, &expr_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	db = dbsubset( db, expr, 0 );
+
+	RETURN_DBPTR( db );
 }
 /* }}} */
 

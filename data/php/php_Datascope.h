@@ -20,6 +20,7 @@ PHP_FUNCTION(dbnrecs);
 PHP_FUNCTION(dbprocess);
 PHP_FUNCTION(dbex_eval);
 PHP_FUNCTION(dbquery);
+PHP_FUNCTION(dbsubset);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)
