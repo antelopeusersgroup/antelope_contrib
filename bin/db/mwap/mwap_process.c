@@ -121,8 +121,7 @@ void copy_arrival_array(Arr *in,Arr **o)
 			copy = (double *)getarr(*o,key);
 			if(copy == NULL)
 			{
-				elog_complain(0,"copy_arrival_array:  cannot find entry for station %s in output array\nLikely loss of data in higher frequency bands\n",
-					key);
+				setarr(*o,key,value);
 			}
 			else
 			{
