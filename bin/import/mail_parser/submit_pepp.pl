@@ -1,4 +1,3 @@
-use Expect;
 use Net::FTP;
 
 sub cleanup_tempdir {
