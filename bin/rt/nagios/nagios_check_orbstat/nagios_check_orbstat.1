@@ -14,15 +14,16 @@ Nagios network monitoring system (www.nagios.org). The plugin can be
 installed with other plugins (usually in the Nagios libexec directory)
 and called through the Nagios configuration files. The plugin has
 three basic modes.  The "client" mode gets the latency value for the
-first orb client whose basename matches the supplied argument. The
-"exists" mode obtains the latest pforbstat packet and checks to see
-how recent it is, comparing to warning and critical ranges. The
-"value" mode (activated upon including type/index/param values) will
-treat the packet as a pforbstat packet and dig through the packet for
-a specific value. The value will then be compared to the warning and
-critical thresholds. Used in combination with APAN or another tool,
-this plugin could be used for performance measurements and/or
-graphing.
+first orb client whose basename matches the supplied argument. If no
+client or last packet exists, an "UNKNOWN" state will be
+returned. The "exists" mode obtains the latest pforbstat packet and
+checks to see how recent it is, comparing to warning and critical
+ranges. The "value" mode (activated upon including type/index/param
+values) will treat the packet as a pforbstat packet and dig through
+the packet for a specific value. The value will then be compared to
+the warning and critical thresholds. Used in combination with APAN or
+another tool, this plugin could be used for performance measurements
+and/or graphing.
 .SH OPTIONS
 .nf
 Like all Nagios plugins, more detailed and recent help, argument

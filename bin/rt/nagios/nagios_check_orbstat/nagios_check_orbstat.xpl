@@ -501,7 +501,7 @@ sub check_client_exists($)
 {
     my ($client_name) = shift;
     my ($orb, $client, $what_base, $packet_value);
-    my ($when, @clients);
+    my ($when, @clients, $found_client);
 
     $orb = orbopen("$ORB", "r&");
 
@@ -513,19 +513,29 @@ sub check_client_exists($)
     ($when, @clients) = orbclients($orb);
     foreach $client (@clients)
     {
-	($what_base) = split /\s/, $client->what;
-	$what_base = basename($what_base);
+        ($what_base) = split /\s/, $client->what;
+        $what_base = basename($what_base);
 
-	# pick out the matches and return data
-	if ($opt_client eq $what_base)
-	{
-	    # Fix this to a latency!
-	    $packet_value = now() - $client->lastpkt;
-	    last;
-	}
+    # pick out the matches and return data
+        if ($opt_client eq $what_base)
+        {
+            $found_client = 1;
+            if (($client->lastpkt) <= 0)
+            {
+                return($ERRORS{'UNKNOWN'},"No lastpkt");
+            }
+            # Fix this to a latency!
+            $packet_value = now() - $client->lastpkt;
+            last;
+        }
     }
 
     orbclose($orb);
+
+    if (!$found_client)
+    {
+        return($ERRORS{'UNKNOWN'},"No client");
+    }
 
     if ((defined $opt_warn) && (defined $opt_crit))
     {
