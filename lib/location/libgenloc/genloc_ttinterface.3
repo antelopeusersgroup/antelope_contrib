@@ -1,0 +1,420 @@
+.\" %W% %G%
+.TH genloc_ttinterface 3 "%G%"
+.SH NAME
+genloc_ttinterface - genloc (generic/generalized location) travel time and slowness calculator interface
+.SH SYNOPSIS
+.nf
+\fIMethod 1:\fR
+#include "tt.h"
+int ttcalc ( char *method, char *model, char*phase_code,
+	int mode, TTGeometry *geometry,
+              Tbl **timesp, Hook **hook );
+
+\fIMethod 2:\fR
+#include "location.h"
+Travel_Time_Function_Output (*ttcalc)(Ray_Endpoints, 
+				char *phase, int mode);
+Slowness_Function_Output (*ucalc) (Ray_Endpoints, 
+				char *phase, int mode);
+
+.fi
+.SH DESCRIPTION
+.LP
+A major design element of genloc was to make a clean separation
+between location algorithms and the method used to compute
+travel times.  This release of the genloc libraries support
+three travel time calculators:  (1)  a simple, constant 
+velocity layer calculator, (2) a general purpose, uniform
+grid table interpolation routine, and (3) a "generic" 
+interface (described in more detail below).  These 
+provide more flexibility than one might first realize
+(see CHEAP TRICKS section below), but
+it is recognized that there will unquestionably be a need 
+to utilize different travel time algorithms.  For example,
+adding a clean 3D ray tracer is an obvious need.  
+This man page describes two possible ways to hook a 
+travel time engine into the genloc family of location
+programs (sgnloc(1), dbgenloc(1), relocate(1), and orbgenloc(1)).
+.LP
+\fIMethod 1:  Generic ttcalc interface.\fR  The simplest
+(and preferred method) for hooking a routine into genloc is through
+the "general purpose travel time interface" described in
+tt(3).  The actual interface function call is repeated above,
+but is described in greater detail in tt(3).  
+The key thing you as a programmer would need to do to connect
+to genloc through this interface is to write an interface 
+routine that must be of the form:
+.nf
+	int \fImethod\fR ( char *model, char *phase_code,
+		int mode, TTGeometry *geometry, 
+		Tbl **timesp, Hook **hook );
+.fi
+where \fImethod\fR is a unique name attached to this algorithm.
+Where you go from there and what all these symbols mean
+can be found in the tt(3) man page.  The critical point is
+that \fImethod\fR must define a dynamically loaded library
+lib\fImethod\fR.so that the loader can find and read into memory when the 
+\fImethod\fR function is first called. 
+This provides a nice mechanism to encapsulate your code into 
+a single dynamic object, and is the key strength of this
+approach.  The down side is the complexity it adds.
+The best advice for getting started is
+to look at the one example which currently 
+exists in tttaup 
+(currently in /opt/dsap/src/lib/undoc/tttaup/tttaup.c)
+to help you understand the wonderful combinations of pointers
+to pointers here and to see how to construct a makefile
+for a dynamic library using the DSAPMAKE include file.
+.LP
+\fIMethod 2:  Direct hack to libgenloc.\fR  
+An alternative you can consider is a direct modification to
+libgenloc routines, but this is an ugly solution compared
+to Method 1.  I can think of only two conceivable reason to do this: 
+(1) to add another general interface into genloc (For example,
+we have discussed a network interface to a travel time server.); or
+(2) for efficiency reasons.
+That is, at the moment use of the general
+purpose interface involves an ugly overhead through 
+a chain of three successive interface routines.  
+It is not clear how expensive this is in wasted CPU 
+overhead, but it is fairly significant because some of 
+the objects passed around are fairly large. 
+In general, however, raw speed seems to matter
+only when doing grid searching.  
+The standard nonlinear least square method is
+a lightweight calculation for modern computers.
+.LP
+That said, it is necessary to first more clearly define
+the data structures given above.  You should cross check
+with location.h, but at this writing we have:
+.nf
+typedef struct Ray_Endpoints {
+        char *sta;  /* station name.  Inserted in anticipation of 3d, station 
+                oriented tables.  */
+        double slat, slon, rlat, rlon;  /* source receiver latitude longitude*/
+        double sz, rz;  /* source, receiver depth below datum */
+} Ray_Endpoints;
+/* Coordinates:  x is +east, y is +north, z is +down (not right handed) */
+typedef struct Travel_Time_Function_Output {
+        double time;
+        double dtdx, dtdy, dtdz;  
+} Travel_Time_Function_Output;
+typedef struct Slowness_Function_Output {
+        double ux, uy;
+        double duxdx, duxdy, duxdz;
+        double duydx, duydy, duydz;
+}Slowness_Function_Output;
+typedef struct Arrival {
+        int     arid ;
+        Station *sta; /* pointer back to row of Station structure */
+        Phase_handle *phase;  /* handle to phase definition object */
+        double time;  /* epoch time of this arrival */
+        double deltat;  /* Measurement uncertainty in this phase */
+        Residual res ;
+} Arrival;
+typedef struct Slowness_vector {
+        int     arid ;
+        Seismic_Array *array;  /* pointer to row of Seismic_Array table */
+        Phase_handle *phase;  /* handle to phase definition object */
+        double ux,uy;  /* Slowness vector components */
+        double deltaux,deltauy;  /* measurement uncertainty in slowness components*/
+        Residual xres, yres ;
+} Slowness_vector;
+typedef struct Phase_handle {
+        char *name;  /* phase name */
+        Distance_weight_function *arrival_time;  
+                /* Weight function assigned to arrival times for this phase */
+        Distance_weight_function *ux,*uy;  /* weight functions for slowness */
+        float deltat0, deltau0;  /* default uncertainties in measured arrival
+                                times and slownesses respectively */
+        Arr *time_station_corrections;  /* Associative array of station corrections 
+                                        keyed by station name */
+        Arr *ux_sc, *uy_sc;  /* slowness station corrections, another 
+                                associative array */
+        Travel_Time_Function_Output (*ttcalc)();   /* Function to calculate
+                travel times for this phase */
+        Slowness_Function_Output (*ucalc) ();  /* Function to calculate 
+                slowness vector for this phase */
+} Phase_handle;   
+.fi
+.LP
+Notice that the Arrival structure contains all the basic information 
+required to describe a given arrival time datum, while Slowness_vector
+contains all the basic information required to describe a given 
+measured slowness vector.  
+Both structures, however, contain pointers to other structures 
+that they reference.  The "Station" and "Seismic_Array" structures
+are not shown, but they contain the obvious information - i.e a 
+name key and coordinates.  For the travel time interface these
+are carried as excess baggage, and the coordinate information is
+transmitted through the Ray_Endpoints structure that contains the
+basic coordinate data for a source-receiver pair.  
+.LP
+The critical structure for a travel time interface 
+is the "Phase_handle".  A phase handle contains all the information
+that is defines a given seismic phase.  This includes it's name 
+(i.e. P, S, ScS, etc.), weighting functions (used in location but
+baggage for travel time calculation alone), nominal (default) uncertainty 
+estimates for measurements of that phase, station correction information,
+and a pointer to the travel time function that is to be used 
+for calculating travel times.  An existing function called 
+parse_phase_parameter_file (see genloc(3)) sets up all the 
+pieces of this structure.  The first thing you will need to
+do is modify this routine.  Search for the following line:
+.nf
+	string = pfget_string(pf,"travel_time_calculator");
+.fi
+Below this you will see how each of the existing travel time
+calculators are set up.  This generally involves three
+steps:  (1) adding a keyword for your "travel_time_calculator" 
+and an associated block of code for the case when that 
+keyword is found;  
+(2) that new block of code should generally
+arrange to call an "init" procedure that initializes that
+travel time calculator; and (3) defining the pointer to a
+function variable (*ttcalc)() and (*ucalc)() with a unique
+symbol.  That symbol must correspond to a name you give your
+corresponding "exec" function that is an interface into
+your travel time algorithm. 
+.LP
+The obvious implication of this is that you will need, in
+parallel, to write two interface routines.  The first
+is your "init" routine that initializes your travel time
+algorithm.  This always involves a minimum of defining
+an earth model, but usually requires a series of other 
+parameters special to the algorithm.  All the existing
+interfaces handle this through the existing parameter file
+input, and I suggest you do the same for consistency.
+The second thing you will need are two "exec" routines 
+that can be used to compute travel times (ttcalc) and
+slowness vectors (ucalc) for a specified source and
+receiver geometry.  These functions need to satisfy 
+the following guidelines:
+.IP (1)
+Two seperate interface routines are required.  One for
+computing theoretical travel times and one for 
+theoretical slowness vectors.  
+.IP (2)
+Each routine needs to recognize the "mode" switch.
+When mode == ALL (defined in location.h) the routines
+should return both the travel time (slowness vector) 
+and all the associated partial derivatives.  
+If mode is anything else, only the travel time 
+(slowness vector) needs to be returned.  Note it is
+is harmless to always return partial derivatives, but
+in most cases this requires significantly more 
+calculations.  The routine MUST, however, be capable
+of returned partial derivatives when requested, or it
+will be disfunctional.  
+.IP (3)
+Both routines must arrange to return a standard error
+code if they fail for some reason.  The travel time
+function should return TIME_INVALID and the slowness
+vector function should return SLOWNESS_INVALID 
+(both are defined location.h)
+if a value (or partial derivates) could not be computed
+for some reason (e.g. in a 3D ray tracer some points
+just never work).  
+.SH CHEAP TRICKS
+.LP
+This section describes some less than obvious ideas you 
+might consider before you feel compelled to try to crack
+the interfacing nut. 
+(You are probably highly open to this after reading the above.)
+.LP
+\fICheap trick 1:\fR
+This first trick is based on the fact
+that you can do almost anything with appropriate 
+station corrections.  For example, one way to implement a
+3D calculator is with pure station corrections.  
+Suppose we use a JHD type method or use 3D ray tracing to compute
+average residuals/anomalies relative to some simpler earth model
+(assumed some constant velocity model for now).  Switch the
+sign on these anomalies, and they become appropriate station
+corrections for source locations near your reference point.
+Suppose we use these to build a P phase desriptor something
+like the following:
+.nf
+
+phases &Arr{
+P  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+        5.8     0.0
+        8.0     40.0
+        }
+ 
+        time_distance_weight_function &Tbl{
+        0.0     1.0
+        1.0     1.0
+        5.0     0.1
+        92.0    0.0
+        360.0   0.0
+        }
+        ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        default_time_uncertainty 0.01
+        default_slowness_uncertainty 0.01
+        time_station_corrections &Tbl{
+TRO      -0.060
+CRY       0.031
+BZN       0.083
+KNW      -0.167
+WMC       0.076
+SND       0.098
+PFO      -0.122
+LVA       0.173
+RDM      -0.081
+FRD       0.039
+PLM       0.127
+CAH       0.077
+COY       0.086
+HOT       0.067
+JUL      -0.049
+KEE      -0.025
+POB      -0.075
+PSP      -0.153
+SMO      -0.067
+YAQ       0.154
+VG2      -0.094
+LAQ      -0.112
+OLY      -0.006
+       }
+        ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
+.fi
+.LP
+The idea is to store this parameter file with a special name
+(e.g. 3DP030504.pf to indicate position (3,5,4) in some
+3D grid of points.  It is a typical shell script application
+to build a huge number of these of a common form.  It is
+a somewhat less than simple task to build a front end to 
+interact with all the files that are produced, but it is 
+conceivable.
+.LP
+\fICheap trick 2:\fR
+Distance weighting is a useful way to assure regional phases
+like Pn and Lg are rationally defined.  They can be used
+in conjunction with relatively simple models to produce 
+reasonable results.  For example, here is a way to do Pn:
+.nf
+
+phases &Arr{
+Pn  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+        5.8     0.0
+        8.0     40.0
+        }
+ 
+        time_distance_weight_function &Tbl{
+        0.0     0.0
+        1.2     0.0
+        1.4	1.0
+        10.0    1.0
+        15.0	0.0
+        360.0   0.0
+        }
+        ux_distance_weight_function &Tbl{
+        0.0     0.0
+        1.2     0.0
+        1.4	1.0
+        10.0    1.0
+        15.0	0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     0.0
+        1.2     0.0
+        1.4	1.0
+        10.0    1.0
+        15.0	0.0
+        360.0   0.0
+        }
+        default_time_uncertainty 0.2
+        default_slowness_uncertainty 0.01
+        time_station_corrections &Tbl{
+        }
+        ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
+.fi
+.LP
+This effectively turns Pn on only from 1.4 to 10 degrees with 
+a grey region on each side.  The upper limit is clearly 
+arbitrary, but the lower limit assures paths inside the 
+Pn crossover distance aren't treated as Pn.
+.LP
+\fICheap trick 3:\fR
+Very simple travel time tables can also prove useful in some
+case like Lg.  In this case, the travel time table can be define
+by as few as four points.  
+Here is an example:
+.nf
+
+#Lg travel time table
+nx   2
+nz   2
+z0   0.0
+x0   0.0
+dx   20.0
+dz   50.0
+#Depth = 0.0
+0.0		0.285714	0.0	t
+636.114		0.285714	0.0	t
+#depth = 50.0
+0.0		0.285714	0.0	t
+636.114		0.285714	0.0	t
+#End table
+.fi
+.LP
+where 0.285714 = 1.0/3.5 s/km = nominal Lg velocity and
+636.114 is the distance (in km) corresponding to 20 degrees
+divided by 3.5 km/s.  
+To actually use this table, I would strongly recommend 
+using a distance weighting function comparable to the one
+shown above for the Pn example.
+.LP
+\fICheap trick 4:\fR
+Any 1D calculator can, in principle, be replaced by
+the uniform table interpolation interface.  All that is
+required to interface your algorithm into genloc, in this
+case, is to just use the algorithm to generate a suitable
+table.  Two examples of this already exist are: 
+(a) taup_convert(1) makes repeated calls to the tau-p 
+library to build a set of travel time tables for any
+phase the tau-p library knows about; and (b) tabcalc(1) and
+hypotab(1) are two ancient FORTRAN programs that compute
+tables for a 1D model specified by points connected by
+linear gradients.  The first could be easily modified 
+to work with any travel time calculator that can be 
+cast as a single function.  The second illustrates how
+to hack an older piece of code to conform to a different
+format. 
+.SH "SEE ALSO"
+.nf
+sgnloc(1), dbgenloc(1), relocate(1), orbgenloc(1),
+genloc_intro(3), genloc(3), ggnloc(3),
+taup_convert(1), tabcalc(1), hypotab(1)
+.fi
+.SH AUTHOR
+Gary L. Pavlis

@@ -2,7 +2,8 @@ LIB=		libgenloc.a
 INCLUDE = location.h
 MAN3 = genloc.3 \
        genloc_intro.3 \
-       ggnloc.3
+       ggnloc.3 \
+	genloc_ttinterface.3
 
 CLEAN= 		
 

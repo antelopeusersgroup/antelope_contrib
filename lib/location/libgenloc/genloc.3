@@ -34,7 +34,7 @@ database.
 \fBparse_options_pf\fR parses all the control options used by the locate
 function.  These are returned in a special Locations_options object
 defined especially for this problem in location.h.
-There is not corresponding db routine.
+There is no corresponding db routine for obvious reasons.
 .LP
 \fBload_station_table\fR and \fBload_array_table\fR are similar 
 functions that load station geometry information for the location process
@@ -78,7 +78,7 @@ arrays = dbload_array_table();
 phases =  parse_phase_parameter_file();
 .fi
 .LP
-Note this implies that the above three funtions must be called before
+Note this implies that the above three functions must be called before
 calling \fBread_arrivals\fR or \fBread_slowness_vectors\fR.  
 If no slowness or arrival time data are available, these routines
 will return a tbl object with no entries.
@@ -88,6 +88,23 @@ the db pointer defines a view defined by a join between at least
 the arrival and site tables.  The indices (is and ie) define the
 range of rows the routines should scan to build the associated 
 tables.  
+.LP
+Another important assumption made about the db routines is the 
+way they handle the uncertainty estimates:  deltim, deltaz, and
+delslo.  If these values are not null, they will always be used.
+If they are null, the structures returned by the input routines
+will have the associated data points set to a predefined default
+(see genloc_intro(3) description of phase description parameter
+files).  deltaz is always ignored.
+If delslo is set, it's value is used to define the uncertainty 
+of both components of the slowness vector.  
+This is done because genloc insists on treating all slowness
+vector data as components for reasons discussed in 
+genloc_intro(3).  The proper way this should be handled is
+for the slowness vector to be assigned a 2 by 2 covariance
+matrix, but the css3.0 schema has no place for this.  The
+choice made here is in step with my prejudice that azimuth
+uncertainties are largely meaningless numbers.  
 .LP
 \fBdestroy_network_geometry\fR and \fBdestroy_data_tables\fR 
 are the related free routines.  
@@ -216,7 +233,8 @@ will cause the program to blunder on and not abort.  The list
 is too long to effectively list here.  
 .SH "SEE ALSO"
 .nf
-sgnloc(1), ggnloc(3), pfread(3), pfin(3), pfcompile(3), arr(3), tbl(3)
+sgnloc(1), relocate(1), dbgenloc(1), orbgenloc(1),
+ggnloc(3), pfread(3), pfin(3), pfcompile(3), arr(3), tbl(3)
 .fi
 .SH "BUGS AND CAVEATS"
 The data input routines should have more parallel arguments.  

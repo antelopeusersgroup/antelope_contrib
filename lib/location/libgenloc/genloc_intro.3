@@ -4,12 +4,12 @@
 genloc_intro - introduction to generic/generalized event location library
 .SH DESCRIPTION
 \fBgenloc\fR is a collection of routines that form the core of a
-new suite of event location tools presently under development.  
+new suite of event location tools. 
 I refer to these procedures as genloc as a shorthand for for generic or,
 alternatively, generalized location.  
 This was done because the intent of the original design was to 
 produce a set of location modules that were flexible enough that
-this program could come close to simulating any other existing 
+programs using this library could come close to simulating any other existing 
 location code.  At present, however, this is largely limited 
 to the class of algorithms that are variants of what I 
 would call the "standard method".  This is a class of method variously
@@ -27,11 +27,13 @@ The main features that make this program
 describe the host of input parameters that control the behavior
 of the location procedure.   
 .LP
-This package has at least seven features that together make it different from 
+This package has at least eight features that together make it different from 
 any existing location code I'm aware of.
 .IP (1)
 It accepts arbitrary combinations of arrival time and array slowness vector
-measurements.
+measurements.  This also implicitly include particle motion information
+measured from three-component stations provided these measurements 
+are cast in terms of a slowness vector.
 .IP (2) 
 It can utilize any seismic phase for which the user can define a 
 predicted travel time and/or slowness vector. 
@@ -69,39 +71,42 @@ velocities when the azimuth becomes unstable.  In reality
 errors in slowness vectors are fundamentally related to the 
 array beam pattern, which has well defined properties in 
 terms of vector components.  
+.IP (8)
+The same library of routines has been implemented into a full 
+range of front ends:  (1) a simple command line interface, sgnloc(1);
+(2) an interactive interface through dbloc2(1) called dbgenloc(1);
+(3) a database version to do "relocations" called relocate(1);
+and (4) a real time interface, orbgenloc(1).
+It is hoped that this commonality can reduce inconsistencies between
+results produced automatically (i.e. orbgenloc) and final results 
+suitable for publication (e.g. relocate) in understandable ways
+that improve overall reliability of the results.
 .LP
 genloc(3) describes input functions that can be used to load the
 data objects that are used by the location process.  
-These functions all data from parameter files (see pf(3)).
-This can be all merged into a single parameter file (or 
-parameter file hierarchy) as is done with the simple command
-line front end to this package called sgnloc (see sgnloc(1)).
-That program reads a single parameter file object, and writes
-and output parameter file.
-.LP
-dbloc2(1) how includes genloc as a location option.  The program it
-runs is a special interface program written by Dan Quinlan called
-.LP
-relocate(1) is a datascope program designed for relocating a
-complete catalog using a different velocity model, travel time
-calculator, station corrections, or whatever.  It reads a css3.0
-database and produces a set of new output css3.0 tables with
-appropriate fields updated.
-.LP
-orbgenloc(1) is a real time implementation of genloc through the
-orb server routines.  
+genloc builds heavily on parameter files (see pf(3)), but
+all the input functions have a parallel database equivalent
+when that is rational.
 .LP
 The genloc routines all use a long list of options loaded into
 the different programs through a parameter file.  Some programs
-have special parameters peculiar to that program.  In the remainder
-of this man "page" parameters common to all the genloc routines are
-descripbed.  
-For these parameters it is most appropriate to divide the input parameter
-space into at least five subsets:  (1) control parameters, (2) network
+have special parameters peculiar to that program.  
+This man page describes all parameters common to all the 
+program based on this package.  Other parameters special to 
+a particular interface are described only in that program's
+man page.
+.LP
+For the global parameters it is most useful educationally
+to divide the input parameter
+space into five categories:  (1) control parameters, (2) network
 geometry parameters, (3) seismic phase description parameters, 
-(4) data tables, and (5) initial hypocenter guess parameters.  
+(4) data tables, and (5) initial hypocenter parameters.  
 Parameters in each of these categories are summarized in separate
-sections below.
+sections below.  In actual practice, they are normally all
+stored in a single parameter file.  (A notable exception is dbgenloc(1),
+which intentionally splits the phase description information 
+from everything else and uses a mix of parameter and database
+inputs.)
 .SH  CONTROL PARAMETERS
 .ce 
 \fIWeighting Parameters\fR
@@ -111,7 +116,7 @@ be applied to arrival time data.  Options are:
 .nf
 huber - implements Huber formula
 bisquare - use bisquare formula
-thomson - use thomson's redescending formula
+thomson - use Thomson's redescending formula
 none - turns off residual weighting
 .fi
 .LP
@@ -132,8 +137,8 @@ We take these numbers, calculate the interquartiles, and determine
 the scale by the magic number of 1.349 that is the appropriate
 constant for residuals with a normal distribution.  
 There is an intrinsic problem, however, with residual weighting
-that these two parameters are used to keep from becoming 
-disastrous.  The scale factor can become too large in the 
+which these scale parameters seek to solve.
+The scale factor can become too large in the 
 presence of multiple outliers, or more commonly become too low
 as the solution converges.  In the later case, if min_error_scale
 is set too low the solution can get caught in a downward spiral 
@@ -242,8 +247,8 @@ by the step_length_scale_factor repeatedly until the solution
 falls inside the bounds of depth_ceiling to depth_floor.
 That is, if we let s=step_length_scale_factor,
 the program first tries the step s\fBx\fR.  If the solution still
-violates the ceiling or floor, it tries s\fBx=\fR**2, 
-s\fBx=\fR**3, s\fBx=\fR**4, ...  
+violates the ceiling or floor, it tries s*s\fBx\fR, then s*s*s\fBx\fR,
+then s*s*s*s\fBx\fR, etc.
 Just as in Marquardt's method, for this to be stable the 
 range of this scaling must be limited.  Internally, the program
 never allows the scale factor to exceed 1.0 for obvious reasons.
@@ -263,7 +268,10 @@ It is equally important to understand what the algorithm does
 if the scale factor is reduced to min_step_length_scale.
 When this occurs, the algorithm fixes the depth at the ceiling
 or floor (whichever is involved) and determines the 
-horizontal adjustment from s\fBx=\fR.  
+horizontal adjustment from s\fBx\fR.  
+As a consequence of this, the user should recognize that 
+events at depths near the ceiling or floor may effectively 
+have a fixed depth.
 .LP
 If you understand this algorithm, it should be obvious that
 improper setting of these parameters can easily produce a
@@ -523,7 +531,7 @@ ttlvz is a simple, constant velocity, flat-earth, layered model
 travel time calculator.
 Note you can use this for any phase, but be aware that
 this function always calculates first arrivals.  Thus, it would
-produce stupid answers form something like PmP, for example, but
+produce wrong answers from something like PmP, for example, but
 it could be used to compute phases like Pn or Lg provided one
 properly defined the distance weights on these phases.
 "uniform table interpolation" selects
@@ -565,7 +573,7 @@ since this string is passed directly to pfread.
 .LP
 In this case the only required parameter are two parameters
 required by the generic interface:  TTmethod and TTmodel.
-See man tt in section 3 for a description.
+See tt(3) for a complete description.
 .SH DATA PARAMETERS
 .LP
 This is also most easily seen by an example:
@@ -615,6 +623,17 @@ the two numbers following the array name are the
 slowness (units can be specified in either degrees of km if
 the \fBslowness_units\fR parameter is used).  Only standard 
 azimuths measured in degrees are accepted.  
+.LP
+Only the sgnloc (command line) interface actually reads data
+through the parameter file like this.  
+The relocate interface does not use this set of parameters.  
+Instead it extracts this information from the arrival table of
+the css3.0 schema.  dbgenloc and orbgenloc do the same, but
+the relationship is a little more complex.  
+A key fact about the database interface it is worth noting
+here is the manner in which these routines handle the 
+uncertainty estimates.  This is discussed in some detail in
+genloc(3) and dbgenloc(1) where the context is a little clearer.
 .SH INITIAL HYPOCENTER PARAMETERS
 .LP
 \fBinitial_location_method\fR switch for method used.
@@ -638,7 +657,7 @@ range of azimuths.  The later can, for example, make sense
 with array data.
 .IP (4)
 \fInearest_station\fR  Use the location of the first arrival
-station as an intial guess.  Depth is set as in the manual
+station as an initial guess.  Depth is set as in the manual
 method using the initial_depth parameter.
 .IP (5)
 \fIS-Ptime\fR  Uses the S-P of the station with the earliest arriving
@@ -650,7 +669,7 @@ using the initial_depth parameter.
 The initial location methods interact with a series of parameters
 that cascade from the choice of the method.
 .ce
-\fImanual method parameters\fR
+\fIManual method parameters\fR
 .LP
 \fBinitial_latitude\fR, \fBinitial_longitude\fR,
 \fBinitial_origin_time\fR, and \fBinitial_depth\fR set the
@@ -663,7 +682,7 @@ be specified as an epoch time.
 \fBinitial_depth\fR sets depth used for trial location.  In the S-P method
 a single depth search is used along a circular arc computed from the
 S-P time of the nearest station.  The conversion from S-P to derive 
-this circule is computed from the parameter 
+this circle is computed from the parameter 
 \fBS-P_velocity\fR.  The program searches a circular region at this
 distance and the given depth computing rms residuals at 
 \fBnumber_angles\fR equally spaced points.  
@@ -695,12 +714,12 @@ when the number of degrees of freedom is low.
 \fIlatitude_range, longitude_range, depth_range, nlat, nlon, ndepths\fR.
 These parameters set the area used in a rectangular grid search.
 A grid of nlat by nlon by ndepths points is computed
-starting from the center_latitude, center_longtiude, and center_depth
+starting from the center_latitude, center_longitude, and center_depth
 point.  The program determines an initial location by and searching for
 a travel time residual in this grid.
 Latitudes and longitudes are, as always, in
 degrees and depths are in kilometers.  Thus, to search the whole
-world with on point per degree and 0 to 500 km depths at 50 km
+world with one point per degree and 0 to 500 km depths at 50 km
 intervals use:
 .nf
 center_latitude         0.0
@@ -763,12 +782,28 @@ maximum_hypocenter_adjustments                  50
 deltax_convergence_size                         0.01
 relative_rms_convergence_value                  0.0001
 .fi
+.LP
+The above constants are hard wired into the code, 
+and some were
+found to later be less than ideal.  
+A better starting point, in all cases, is to use sample
+parameter files found in $DSAP/data/pf.
 .SH FILES
 .LP
-The travel time tables are specified as ascii parameter files.
-These can be placed in a standard place using the path search
-features of the parameter file interface (see pf(3)).  
-The structure of this parameter file is as follows:
+The travel time tables are specified as ASCII parameter files.
+These files do not, however, follow the regular rules
+of parameter files because they are defined deep within the 
+hierarchy of another parameter file.  
+Instead, they follow a model similar to dblocsat where 
+the tables are assumed to be in a standard place.  In 
+particular, the given name is assumed to be a relative
+path from the location defined by the environment variable
+GENLOC_MODELS.  That is, the function involve calls
+pfload on a file $GENLOC_MODELS/tables/genloc/x where
+x is the value entered for the parameter 
+\fBtable_file\fR. 
+Note that this name should not have the appending ".pf" in 
+accordance with the usual rules for parameter files.
 .LP
 \fBnx\fR and \fBnz\fR define the number of points in
 the grid.  nx, is obviously the number of points in epicentral distance.
@@ -874,8 +909,6 @@ tabulated source depths.
 sgnloc(1), ggnloc(3), taup_pf_convert(1)
 .fi
 .SH "BUGS AND CAVEATS"
-genloc is under development, and bugs will be a fact of life until
-it has been heavily exercised on its full range of possible applications.
 Several things are presently lacking and/or incomplete the user is warned
 about:  (1) a
 cascaded grid search procedure is planned, but has not yet been

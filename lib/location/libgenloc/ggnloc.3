@@ -29,7 +29,7 @@ genloc_intro(3), but major features of the procedure are as
 follows:
 .LP
 \fIgeneralized inverse.\fR  Two fundamentally different algorithms
-can be involked;  a least squares solution based on the pseudoinverse 
+can be invoked;  a least squares solution based on the pseudoinverse 
 with possible singular value truncation (similar to HYPOELLIPSE) or
 an implementation of the Marquardt algorithm (similar to LOCSAT).  
 In addition, the procedure supports the use of so called recentering
@@ -89,13 +89,9 @@ Tbl **reasons = table of strings containing human readable
 description of why the iteration sequence terminated.  
 .LP
 Tbl **residuals = table of strings containing residual and weighting
-information about the final solution.  For a desciption of the 
+information about the final solution.  For a description of the 
 quantities in this table see sgnloc(1) which dumps this table 
 directly to an output parameter file.  
-.SH LIBRARY
-utilizes the Basic Linear Algebra Subroutines (BLAS), 
-a library of related functions that do not yet have a defined location, and
-JSPC libraries defined in jspcmake as DBLIBS
 .SH DIAGNOSTICS
 .LP
 This procedure uses Dan Quinlan's library error functions 
