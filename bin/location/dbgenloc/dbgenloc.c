@@ -5,7 +5,7 @@ usage ()
 {
     fprintf (stderr,
 	     "Usage: %s input-db output-db\n", Program_Name);
-    banner (Program_Name, "Version $Revision$ $Date$\n");
+    /* banner (Program_Name, "Version $Revision$ $Date$\n"); */
     exit (1);
 }
 
