@@ -14,16 +14,19 @@ support both flavors of AH */
 #define AK_AHHEADSIZE 1024         /* Size of an Alaskan AH file header */
 
 #define TYPEMIN	  1
-#define TYPEMAX	  6
+#define TYPEMAX	  8
 #define LOGSIZE	202
 #define LOGENT 	 10
 #define NEXTRAS  21
 #define NOCALPTS 30
 
-#define FLOAT    1
-#define DOUBLE   6
-#define SHORT    7	/* cds 09/18/89 */
-#define LONG     8	/* cds 09/18/89 */
+#define ak_ahFLOAT    1
+#define ak_ahCOMPLEX  2
+#define ak_ahVECTOR   3
+#define ak_ahTENSOR   4
+#define ak_ahDOUBLE   6
+#define ak_ahSHORT    7	/* cds 09/18/89 */
+#define ak_ahLONG     8	/* cds 09/18/89 */
 
 typedef   struct   {
    float   x;
@@ -58,8 +61,10 @@ struct   ak_station_info   {
    float     slat;        /* station latitude  */
    float     slon;        /*    "    longitude */
    float     elev;        /*    "    elevation */
-   float     DS;          /* gain              */
-   float     A0;          /* normalization     */
+   float     DS;          /* maximum gain at peak of calibration curve */
+   float     A0;          /* normalization, factor to make
+			     calibration curve at peak equal 1 for
+			     a specific frequency   */
    struct    calib  cal[NOCALPTS]; /* calibration info   */
    };
 /* stores the time when an event occurs */
@@ -91,7 +96,7 @@ struct   ak_record_info   {
    char    log[LOGSIZE];   /* log of data manipulations    */
    };
 
- typedef struct ak_ahhead{
+ typedef struct ak_ahhed {
    struct   ak_station_info   station;  /* station info */
    struct   ak_event_info   event;      /* event info   */
    struct   ak_record_info   record;    /* record info  */
