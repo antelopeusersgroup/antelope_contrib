@@ -29,10 +29,10 @@ main( int argc, char **argv )
 
 	elog_init( argc, argv );
 	
-	while( (c = getopt( argc, argv, "ansh:" )) != -1 ) {
+	while( (c = getopt( argc, argv, "fnsh:" )) != -1 ) {
 		switch( c ) {
-		case 'a':
-			flags |= PFXML_PFFILE_TO_PFARR;
+		case 'f':
+			flags |= PFXML_PRESERVE_PFFILE;
 			break;
 		case 'n':
 			flags |= PFXML_NEWLINES;

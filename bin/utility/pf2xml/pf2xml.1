@@ -3,7 +3,7 @@
 pf2xml \- Convert a parameter-file to an XML representation
 .SH SYNOPSIS
 .nf
-pf2xml [-n] [-s] pfname
+pf2xml [-f] [-n] [-s] pfname
 .fi
 .SH DESCRIPTION
 pf2xml converts an Antelope parameter-file to an XML representation.
@@ -17,8 +17,8 @@ with 'type' specified as pfarr, pftbl, pffile, or pfstring. For further
 documentation please see the pf2xml(3) man page.
 
 .SH OPTIONS
-.IP -a
-Recast pffile types as pfarr 
+.IP -f
+Preserve pffile types instead of casting them to pfarr 
 .IP -n
 Add newlines to make the output more readable
 .IP -s 
