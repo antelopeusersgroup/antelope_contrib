@@ -104,7 +104,8 @@ public class DatabaseRelation {
 		relation.defines = lexer.expectIdentifier();
 	    } else if (token.type == lexer.SEPARATOR) {
 		lexer.expectChar("(");
-		relation.separator = lexer.expectString();
+		relation.fieldSeparator = lexer.expectString();
+		// FIXME: get recordSeparator
 		lexer.expectChar(")");
 	    } else if (token.type == lexer.DESCRIPTION) {
 		lexer.expectChar("(");
@@ -137,7 +138,7 @@ public class DatabaseRelation {
 
     public void unparse(Writer w) throws IOException {
 
-	w.write("Relation " + name + "\n");
+	w.write("  Relation " + name + "\n");
 	if (fields != null) 
 	    w.write("   Fields (" + unparseList(fields) + ") \n");
 	if (primary != null)
@@ -148,13 +149,44 @@ public class DatabaseRelation {
 	    w.write("   Foreign (" + unparseList(foreign) + ") \n");
 	if (defines != null)
 	    w.write("   Defines " + defines + "\n");
-	if (separator != null) 
-	    w.write("   Separator ( \"" + separator + "\" )\n");
+	if (fieldSeparator != null || recordSeparator != null) 
+	    w.write("   Separator ( " +
+		    (fieldSeparator != null  ? 
+		     "\"" + fieldSeparator + "\" " : "") +
+		    (recordSeparator != null ? 
+		     "\"" + recordSeparator +"\" " : "") +
+		    ")\n");
 	if (description != null)
 	    w.write("   Description ( \"" + description + "\" )\n");
 	if (detail != null) 
 	    w.write("   Detail {" + detail + "}\n");
         w.write("   ;\n");
+    }
+
+    public void unparseAsXML(Writer w) throws IOException {
+
+	w.write("  <relation name=\"" + name + "\"");
+	if (fields != null) 
+	    w.write(" fields=\"" + unparseList(fields) + "\"");
+	if (primary != null)
+	    w.write(" primary=\"" + unparseList(primary) + "\" ");
+	if (alternate != null)
+	    w.write(" alternate=\"" + unparseList(alternate) + "\"");
+	if (foreign != null)
+	    w.write(" foreign=\"" + unparseList(foreign) + "\"");
+	if (defines != null)
+	    w.write(" defines=\"" + defines + "\"");
+	if (fieldSeparator != null)
+	    w.write(" fieldseparator=\"" + fieldSeparator + "\"");
+	if (recordSeparator != null) 
+	    w.write(" recordseparator=\"" + recordSeparator + "\"");
+	if (description != null)
+	    w.write(" description=\"" + description + "\"");
+	
+	if (detail != null) 
+	    w.write(">\n    <detail>" + detail + "</detail>\n  </relation>\n");
+	else
+	    w.write("/>\n");
     }
 
     /** Verify whether this DatabaseRelation is self-consistent with respect to

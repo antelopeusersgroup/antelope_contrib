@@ -161,6 +161,32 @@ public class DatabaseSchema {
 	
     }
 
+    public void unparseAsXML(Writer w) throws IOException {
+
+	w.write("<schema name=\"" + name + "\"");
+	if (description != null)
+	    w.write(" description=\"" + description + "\"");
+
+	if (timedate != null)
+	    w.write(" timedate=\"" + timedate + "\"");
+	w.write(">\n");
+
+	if (detail != null) {
+	    w.write("  <detail>" + detail + "</detail>\n");
+	}
+
+	for (Enumeration e = attributes.elements(); e.hasMoreElements(); ) {
+	    DatabaseAttribute attribute = (DatabaseAttribute)(e.nextElement());
+	    attribute.unparseAsXML(w);
+	}
+
+	for (Enumeration e = relations.elements(); e.hasMoreElements(); ) {
+	    DatabaseRelation relation = (DatabaseRelation)(e.nextElement());
+	    relation.unparseAsXML(w);
+	}
+
+    }
+
     /** as a facility for testing, this class can be run from the 
 	command line, taking a schema file as an argument.  The class will
 	attempt to parse the given schema, check its validity, and spit it
@@ -193,6 +219,11 @@ public class DatabaseSchema {
 		    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));
 		    
 		    schema.unparse(w);
+
+		    System.out.println("Dumping the schema in XML format:");
+		    
+		    schema.unparseAsXML(w);
+
 		    w.flush();
 		    
 		} catch (java.io.FileNotFoundException e) {

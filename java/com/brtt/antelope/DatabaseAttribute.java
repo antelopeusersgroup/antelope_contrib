@@ -151,6 +151,32 @@ public class DatabaseAttribute {
 	w.write("  ;");
     }
 
+    
+    /** Write this datascope attribute out as an XML element called 'attribute'.  The datascope schema's 
+     *  name, type, size format string, null value, range, units, and description are included as xml
+     *  attributes; only the detail field is given as a sub-element (which is convenient because the detail
+     *  field can be very long and should be unparsed CDATA. 
+     */
+
+    public void unparseAsXML(Writer w) throws IOException {
+	w.write("  <attribute name=\"" + name + "\" type=\"" + "\" size=\"" + size);
+	if (format != null)
+	    w.write(" format=\"" + format + "\"");
+	if (nullval != null)
+	    w.write(" null=\"" + nullval + "\"");
+	if (range != null)
+	    w.write(" range=\"" + range + "\"");
+	if (units != null)
+	    w.write(" units=\"" + units + "\"");
+	if (description != null)
+	    w.write(" description=\"" + description + "\"");
+	if (detail != null)
+	    w.write(">\n    <detail>" + detail + "</detail>\n  </attribute>");
+	else
+	    w.write("/>\n");
+    }
+
+
     /** Verify whether this DatabaseAttribute is self-consistent. Not Implemented yet.*/
     
     public boolean isWellFormed() {
