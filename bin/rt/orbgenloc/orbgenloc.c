@@ -688,7 +688,6 @@ void exhume_state(int ecode)
 
 int main (int argc, char **argv)
 {
-	char *version="1.1 (April 1998)";
 	Dbptr master_db, dbtmp;
 	char dbname[512];  /* dbtmp name assigned by maketmpdb */
 	char *orbname;
@@ -720,7 +719,7 @@ int main (int argc, char **argv)
 	hyp.assocs = NULL;
 
 	elog_init(argc, argv);
-	elog_notify(0,"%s version %s\n", argv[0],version);
+	elog_notify (0, "$Revision$ $Date$") ;
 	if(argc < 2) usage(argv[0]);
 	orbname = argv[1];
 
