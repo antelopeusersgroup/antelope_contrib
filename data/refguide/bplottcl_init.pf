@@ -1,0 +1,282 @@
+base_section Tcl/Tk
+Entries &Tbl{
+	&Arr{
+		command create_vector
+		args [ny] [-tag tag]
+		section Data Objects 
+		description Create an empty generic data-vector object 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command read_vector
+		args filename ?options?
+		options &Tbl{
+			-tag tag
+			-loff line_off
+			-xpos xpos
+			-ypos ypos1 [ypos2] [...]
+		}
+		section Data Objects 
+		description Create and read a vector object from an ASCII file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command free_vector
+		args {-tag tag | vector_handle}
+		section Data Objects 
+		description Destroys previously created vector objects
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command append_vector
+		args vector_handle index xvalue yvalue1 [yvalue2 [...]]
+		section Data Objects 
+		description Appends a vector element after an existing element
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command eval_vector
+		args vector_handle xvalue
+		section Data Objects 
+		description Compute and return a Y (dependent) value from a vector object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command vector_get
+		args vector_handle {nx|ny|xy ix}
+		section Data Objects 
+		description Get information relating to a vector handle
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command vector_puty
+		args vector_handle ix ylist
+		section Data Objects 
+		description Replace dependent values in a vector object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command vector_maxmin
+		args vector_handle [iy]
+		section Data Objects 
+		description Retrieve min and max X, min and max Y from a vector object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command create_scg
+		args db tstart tend ?options?
+		options &Tbl{
+			-net net_expr
+			-sta sta_expr
+			-chan chan_expr
+			-coord coord_flag
+			-ir ir_flag
+			-orient orient_flag
+		}
+		section Data Objects 
+		description Create a station-channel-gather data object for plotting with a viewport gpl object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command destroy_scg
+		args scg_handle
+		section Data Objects 
+		description Destroy a station-channel-gather data object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_create
+		args maxnp [-tag tag]
+		options &Tbl{
+		}
+		section Time Histories 
+		description Create a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_free
+		args {-tag tag | thistory_handle}
+		section Time Histories 
+		description Free a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_add
+		args thistory_handle time value
+		section Time Histories 
+		description Add an element to a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_eval
+		args thistory_handle time
+		section Time Histories 
+		description Compute and return a dependent value from a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_get
+		args thistory_handle {np|ty it}
+		section Time Histories 
+		description Get information from a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command thistory_maxmin
+		args thistory_handle
+		section Time Histories 
+		description Get max and min values out of a time-history object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create viewport
+		args name x y ?options?
+		options &Tbl{
+			-margin margin	Width in pixels of all margins
+			-anchor anchor	
+			-tags tags 
+			-width width	Viewport width in pixels (0: rubber-band)
+			-height height 	Viewport height in pixels (0: rubber-band)
+			-mleft mleft	Width of left margin in pixels
+			-mright mright  Width of right margin in pixels
+			-mbottom mbottom Width of bottom margin in pixels
+			-mtop mtop 	Width of top margin in pixels
+			-xmode xmode 	plotting mode: lin, log, or time
+			-ymode ymode	plotting mode: lin, log, or time
+			-xleft xleft 	data-coordinate of left edge of viewport
+			-xright xright	data-coordinate of right edge of viewport
+			-x0 x0
+			-ybottom ybottom data-coordinate of bottom edge of viewport
+			-ytop ytop	data-coordinate of top edge of viewport
+			-y0 y0
+			-fill fill       Fill color for the viewport itself
+			-fill_frame fill_frame   Fill color for the frame around the viewport
+		}
+		section Plotting 
+		description abstract canvas object with data-coordinate mapping
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create polyline
+		args viewport ?options?
+		options &Tbl{
+			-tags tags
+			-fill fill
+			-outline outline 
+			-visible visible
+			-linewidth linewidth
+			-label label
+		}
+		section Plotting 
+		description viewport (canvas) object to plot a vector in data coordinates
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create grid
+		args viewport ?options?
+		options &Tbl{
+			-tags tags
+			-fill color
+			-fill_small color
+			-visible visible
+			-visible_xsmall visible_xsmall
+			-visible_x visible_x
+			-visible_ysmall visible_ysmall
+			-visible_y visible_y
+			-linewidth linewidth
+			-linewidth_small linewidth_small 
+			-mindx mindx
+			-mindy mindy
+			-xincrement xincrement
+			-xincrement_small xincrement_small
+			-yincrement yincrement
+		}
+		section Plotting 
+		description viewport (canvas) object to create a mesh of lines
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create ptext
+		args viewport textstring x y ?options?
+		options &Tbl{
+			-tags tags
+			-fill color 
+			-font font 
+			-visible visible
+			-justification justification 
+			-angle angle
+		}
+		section Plotting 
+		description viewport (canvas) object to plot text in data coordinates
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create axes
+		args viewport ?options?
+		options &Tbl{
+			-tags tags
+			-fill_labels
+			-fill_numbers fill_numbers
+			-fill_axes fill_axes
+			-font_labels font_labels
+			-font_numbers font_numbers
+			-font_numbers_superscripts font_numbers_superscripts
+			-xvisible xvisible
+			-yvisible yvisible
+			-linewidth linewidth
+			-linewidth_small linewidth_small
+			-mindx mindx
+			-mindy mindy
+			-xincrement xincrement
+			-xincrement_small -xincrement_small
+			-xlabel xlabel
+			-ylabel ylabel
+			-xformat xformat
+			-yformat yformat
+			-axis_style axis_style
+			-tic_style tic_style
+		}
+		section Plotting 
+		description viewport (canvas) object to plot a set of coordinate axes
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command (canvas) create gpl
+		args viewport ?options?
+		options &Tbl{
+			-tags tags
+			-foreground color
+			-background color
+			-postscript_foreground color 
+			-postscript_background color
+			-linewidth linewidth
+			-postscript_linewidth postscript_linewidth
+			-again again
+		}
+		section Plotting 
+		description viewport (canvas) object to create a gather-plot
+		private 0
+		deprecated 0
+	}
+}

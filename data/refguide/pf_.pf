@@ -1,0 +1,212 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command pfread
+		args name, pf, retcode
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description read a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfcompile
+		args string, pf, retcode
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description read a parameter file from a string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfwrite
+		args pf, filename, retcode
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description write a parameter-file object to the specified file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pffree
+		args pf
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description free resources for a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget
+		args pf, name, result, retcode
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get a value from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_arr
+		args pf, name, iresult
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get an associative array from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_boolean
+		args pf, name, iresult
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get a boolean value from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_double
+		args pf, name, fresult
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get a double-precision value from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_int
+		args pf, name, iresult
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get an integer value from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_string
+		args pf, name, svalue
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get a string value from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_tbl
+		args pf, name, iresult
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description get an ordered list from a parameter file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfnew
+		args type, result
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description start a new parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput
+		args pf, name, value, type
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put a value into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_arr
+		args pf, name, value
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put an associative-array into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_boolean
+		args pf, name, value
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put a boolean value into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_double
+		args pf, name, fvalue
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put a double-precision value into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_int
+		args pf, name, value
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put an integer value into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_string
+		args pf, name, svalue
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put a string value into a parameter space
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_tbl
+		args pf, name, value
+		return subroutine
+		options &Tbl{
+		}
+		section Parameter Files
+		description put an ordered list into a parameter space
+		private 0
+		deprecated 0
+	}
+}

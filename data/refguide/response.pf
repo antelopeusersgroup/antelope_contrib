@@ -1,0 +1,91 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command read_response
+		args FILE *file, Response **p_response
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description read a response object from a file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command write_response
+		args FILE *file, Response **response
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description write a response object to a file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command eval_response
+		args double omega, Response *response, double *real, double *imag
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description Evaluate a response object at the specified frequency
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command free_response
+		args Response *response
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description free memory for a response object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command compare_response
+		args Response *response1, Response *response2
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description Compare two response objects
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command new_response
+		args NONE
+		return Response *
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description initialize a new response object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command init_response_group
+		args Response_group gp
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description initialize a new response-group object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command add_response_group
+		args Response *rp, Response_group *gp
+		return int
+		options &Tbl{
+		}
+		section Instrument resonse routines
+		description add a response to an existing response group
+		private 0
+		deprecated 0
+	}
+}

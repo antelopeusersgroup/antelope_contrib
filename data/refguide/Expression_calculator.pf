@@ -1,0 +1,773 @@
+base_section Expression Calculator
+Entries &Tbl{
+	&Arr{
+		command expr ? a : b
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description conditional expression
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command .
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description string concatenation
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command %
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description modulus
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command +
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description plus
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command -
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description minus
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command *
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description times
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command /
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description divided by
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command <
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description less than
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command <=
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description less than or equal to
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ==
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description equals
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command !=
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description not equal to
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command >=
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description greater than or equal to
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command &&
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description logical and
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ||
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Relational Operators
+		description logical or
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command :=
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description assignment
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command =~
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Pattern Matching
+		description regular expression match
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command !~
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Pattern Matching
+		description regular expression does not match
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ^
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description exponentiation
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command NULL
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Standard Operators
+		description null-value keyword
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command /re/
+		args DUAL
+		return EMPTY
+		options &Tbl{
+		}
+		section Pattern Matching
+		description regular expression syntax
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command abs
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description absolute value
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command min
+		args x,y
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description minimum of x,y
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command max
+		args x,y
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description maximum of x,y
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ceil
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description next integer >= x
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command floor
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description next integer <= x
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sign
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description 1 if x>0, -1 if x<0, 0 otherwise
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command int
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description floor(abs(x))*sign(x)
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sqrt
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description square root
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command log
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description natural logarithm
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command log10
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description base 10 logarithm
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command exp
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description e^x
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command cos
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description cosine of x in degrees
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sin
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description sine of x in degrees
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tan
+		args x
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description tan of x in degrees
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command atan
+		args x,y
+		return EMPTY
+		options &Tbl{
+		}
+		section Arithmetic Functions
+		description arctangent of angle from x-axis to point (x,y)
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ptime
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description elapsed time for first p-arrival from event at delta, depth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pphasetime
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description elapsed time for first p-arrival from event at delta, dept
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command stime
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description elapsed time for first s-arrival from event at delta, depth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sphasetime
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description elapsed time for first s-arrival from event at delta, depth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pphase_slowness
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description slowness of first p-arrival from event at delta, depth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sphase_slowness
+		args delta,depth
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description slowness of first s-arrival from event at delta, depth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command parrival
+		args NONE
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description time of first p-arrival
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sarrival
+		args NONE
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description time of first s-arrival
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command arrival
+		args phase
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description arrival of specified phase
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command phase_arrival
+		args velocity
+		return EMPTY
+		options &Tbl{
+		}
+		section Seismic Travel Times
+		description time of phase arrival, given velocity in degrees/second
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command grn
+		args lat,lon
+		return EMPTY
+		options &Tbl{
+		}
+		section Flinn-Engdahl Seismic and Geographic Regions
+		description geographic region number
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command srn
+		args lat,lon
+		return EMPTY
+		options &Tbl{
+		}
+		section Flinn-Engdahl Seismic and Geographic Regions
+		description seismic region number
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command gregion
+		args lat,lon
+		return EMPTY
+		options &Tbl{
+		}
+		section Flinn-Engdahl Seismic and Geographic Regions
+		description geographic region name
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sregion
+		args lat,lon
+		return EMPTY
+		options &Tbl{
+		}
+		section Flinn-Engdahl Seismic and Geographic Regions
+		description seismic region name
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command distance
+		args lat1, lon1, lat2, lon2
+		return EMPTY
+		options &Tbl{
+		}
+		section Spherical Geometry
+		description distance in degrees between two points
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command azimuth
+		args lat1, lon1, lat2, lon2
+		return EMPTY
+		options &Tbl{
+		}
+		section Spherical Geometry
+		description azimuth from point 1 to point 2
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command latitute
+		args lat, lon, distance, azimuth
+		return EMPTY
+		options &Tbl{
+		}
+		section Spherical Geometry
+		description latitude of the point a distance away from (lat,lon) in the direction azimuth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command longitude
+		args lat, lon, distance, azimuth
+		return EMPTY
+		options &Tbl{
+		}
+		section Spherical Geometry
+		description longitude of the point a distance away from (lat,lon) in the direction azimuth
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command now
+		args NONE
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description the current epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command epoch 
+		args jdate
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert from jdate to time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command yearday
+		args epoch
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert from epoch time to yearday (jdate)
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command date2e
+		args year, month, day, seconds
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert to epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strtime
+		args epoch
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert time to string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strdate
+		args epoch
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert time to date string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strtdelta
+		args epoch
+		return EMPTY
+		options &Tbl{
+		}
+		section Time Conversion
+		description convert time difference to string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command patsub 
+		args old, pattern, replacement
+		return EMPTY
+		options &Tbl{
+		}
+		section Pattern Matching
+		description replaces the first pattern matched in old with replacement
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command extfile
+		args [ table ]
+		return EMPTY
+		options &Tbl{
+		}
+		section External Files
+		description generate the complete path for an external file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command count
+		args NONE
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description count records in a group or table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command count_table
+		args NONE
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description count records in a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sum
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description add an expression across a group or a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sum_table
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description add an expression across a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command min
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description find the minimum of the expression in a group or a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command min_table
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description find the minimum of the expression in a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command max
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description find the maximum of the expression in a group or a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command max_table
+		args expr
+		return EMPTY
+		options &Tbl{
+		}
+		section Aggregate Functions
+		description find the maximum of the expression in a table
+		private 0
+		deprecated 0
+	}
+}

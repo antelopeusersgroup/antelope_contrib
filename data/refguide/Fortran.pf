@@ -1,0 +1,58 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command strtbl
+		args integer itbl, char *(*) s, ..., 0
+		return subroutine
+		options &Tbl{
+		}
+		section Ordered Lists
+		description Create a new list from a list of strings
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strgettbl
+		args integer itbl, integer i, char *(*) s
+		return subroutine
+		options &Tbl{
+		}
+		section Ordered Lists
+		description copy the i'th string from a list to a FORTRAN string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strputtbl
+		args integer itbl, integer i, char *(*) s
+		return subroutine
+		options &Tbl{
+		}
+		section Ordered Lists
+		description copy a string to the i'th element of a list
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strfreetbl
+		args integer itbl
+		return subroutine
+		options &Tbl{
+		}
+		section Ordered Lists
+		description free memory associated with a list
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command maxtbl
+		args integer itbl
+		return integer
+		options &Tbl{
+		}
+		section Ordered Lists
+		description return the number of elements in a list
+		private 0
+		deprecated 0
+	}
+}

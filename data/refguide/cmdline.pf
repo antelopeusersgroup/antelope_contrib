@@ -1,0 +1,2893 @@
+base_section Command Line
+Entries	&Tbl{
+    &Arr{
+        args	[ -f configfile ] [ paths... ]
+        command	abspath
+        description	construct absolute pathname from relative path
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+#    &Arr{
+#        args	[-d] [-m srcmatch ] orbin mail_add [stime]
+#        command	acalarm
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Real-time system and network administration
+#    }
+    &Arr{
+        args	orbname adsend_port
+        command	adsend2orb
+        description	Take Earthworm analog data from internet and put on orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	ah_file [ ah_file .. ] database
+        command	ah2db
+        description	create css database using ah format waveform files headers
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-v] db origin_db
+        command	assoc_rayleigh
+        description	associates rayleigh wave picks to origins
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	[-dnv] [-D dir] [-p pf] [files]
+        command	autodrm
+        description	Antelope IDC/GSE2.1 AutoDRM Server
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d debug: print output to stderr rather than sending mail
+		-D run in specified directory
+		-p use specified parameter file
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-vV] input-file [file ..] database
+        command	autodrm2db
+        description	convert autoDRM responses to a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+#    &Arr{
+#        args	BLANK
+#        command	autodrm_checkup
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Real-time system and network administration
+#    }
+    &Arr{
+        args	NONE
+        command	autodrm_wrapper
+        description	script which is run by sendmail to run autodrm
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[...options...]
+        command	b3s2orb
+        description	read B3S2 data to orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c cmdport
+		-i dataport
+		-o orbname
+		-p parameter-file
+		-s 
+		-v
+        }
+        section	Real-time data import
+    }
+#    &Arr{
+#        args	[-d] [-m srcmatch ] orbin mail_add
+#        command	battalarm
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Real-time system and network administration
+#    }
+    &Arr{
+        args	NONE
+        command	bplotwish
+        description	Tcl 8.0 / Tk 8.0 shell with all BRTT extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	NONE
+        command	check_antelope_installation
+        description	spot check for proper Antelope installation
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	[license_filename]
+        command	check_license
+        description	check out your license.pf file for a valid Antelope RTU license
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	[-v] [path]
+        command	check_path
+        description	check a path to ensure that 'other' users can traverse it
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	[-display display_name]
+        command	check_visual
+        description	check out the default X-windows display visual
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	pid
+        command	children
+        description	returns pids of children
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+#    &Arr{
+#        args	[-m srcmatch] [-t stime] [-v] dbname
+#        command	correctdt
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Database processing tools
+#    }
+    &Arr{
+        args	station orbout [-v]
+        command	cs2orb
+        description	transfer data from a comserv ring-buffer to an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data import
+    }
+    &Arr{
+        args	station orbout [-v]
+        command	cs2orb_1_0_1
+        description	transfer data from a comserv version 1.0.1 ring-buffer to an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data import
+    }
+    &Arr{
+        args	input_db output_db
+        command	db2ah
+        description	convert css waveform files into ah format
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-sc sta-chan 
+		-ts start-time
+		-te end-time
+		-w wfdir 
+		-gap { none | zero | interp }
+		-counts
+		-h help
+		-v version
+        }
+        section	Exporting data from a database
+    }
+    &Arr{
+        args	{database|view} [server]
+        command	db2orb
+        description	send database as packets to an orbserver
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c \#channels/packet
+		-d make a hexadecimal dump of the output packets.
+		-D delay
+		-f fast
+		-l loop forever 
+		-m \#timesteps
+		-n \#packets
+		-p packettype
+		-s subset
+		-t timestep
+		-v verbose
+        }
+        section	Real-time data import
+    }
+    &Arr{
+        args	database [ table table ...]
+        command	db2perl
+        description	create perl subroutines to read and write database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	input_db output_db
+        command	db2sac
+        description	convert css waveform files into sac format
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-sc sta-chan 
+		-ts start-time
+		-te end-time
+		-w wfdir 
+		-gap { none | zero | interp }
+		-counts
+		-h help
+		-v version
+        }
+        section	Exporting data from a database
+    }
+    &Arr{
+        args	[-V] database seed_volume
+        command	db2sd
+        description	create a SEED volume from a CSS3.0 database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Exporting data from a database
+    }
+    &Arr{
+        args	db outfile [ -pf pffile ]
+        command	db2segy
+        description	convert css3.0 traces to a segy disk image
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	table
+        command	db_textedit
+        description	run editor on external files for a view
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	input.table output.table expression [expression ...]
+        command	dbadd
+        description	add database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	-dbin dbin -recipe recipe1 [recipe2 [...]] 
+        command	dbap
+        description	database array processing program
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-script script_file
+		-dbout dbout
+		-v verbose
+		-ts tstart_time
+		-te end_time
+		-arid arid
+		-arid_t0 arid_t0
+		-arid_tw arid_tw
+		-chan chan
+		-filter filter
+		-samprate samprate
+		-azimuth azimuth
+		-slow slow 
+		-name1 value1 [-name2 value2] [...]
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	dbname
+        command	dbarrparams
+        description	make arrival parameter measurements (amp-per, azimuth, etc.) 
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-pol tlead_pol tlag_pol
+		-ap tmin_ap tmax_ap
+		-fm tmin_fm tmax_fm
+		-snr tlead_snr tlag_snr
+		-filter type lco hco lord hord tpad
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	dbin dbout dbcat timeres_P timeres_S
+        command	dbassoc
+        description	make arrival associations and predicted arrivals
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-rules rules
+		-pred
+		-arid arid1 ... | -orid orid1 ... | -evid evid1 ...
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-p delta_p] [-s delta_s] arrival_db origin_db
+        command	dbassoc_arrival
+        description	associate arrivals with an origin table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	dbcat dbassoc
+        command	dbassoc_rt
+        description	real-time association of events from an external catalog
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-after time
+		-number number
+		-safe
+		-nowait
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	database.table [ record\# | expression ]
+        command	dbcalc
+        description	interactive command line interface to Datascope expression calculator
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-e echo input to stdout
+		-r print reverse polish notation for the expression
+		-t show the type of each piece of the expression and result
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-v] database[.table]
+        command	dbcheck
+        description	scans database table files for corrupt records
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-s] [-t tolerance] dbname
+        command	dbcheckseed
+        description	consistency check for wfdisc referenced SEED data
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Passcal utilities
+    }
+    &Arr{
+        args	[ -v ] database
+        command	dbchkwf
+        description	file consistency check for wfdisc
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database.table1 record1 database.table2 record2
+        command	dbcmpwf
+        description	compare waveform files
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database1 database2 [ database3 ...] dest-database
+        command	dbconcat_event
+        description	combine multiple event databases into single new database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-fv] [-s new_schema] old_database new_database[.table]
+        command	dbconvert
+        description	convert database to new schema
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	source[.table] destination
+        command	dbcp
+        description	copy database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d descriptor file only
+		-i prompt for permission to overwrite existing tables
+		-f copy external files
+		-l attempt to create local symbolic links for external files
+		-o quietly overwrite existing external files
+		-s copy tables without keeping external file references correct
+		-v verbose
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-v] database [table ...]
+        command	dbcrunch
+        description	crunch out null records from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
+        command	dbdec
+        description	Decimate waveform data
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-sift sift_expr
+		-c calper  
+		-wfdir wfdir
+		-f format 
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	database.table [table ...]
+        command	dbdelete
+        description	mark or delete all records in a view
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c require individual confirmations for each record
+		-m mark records only (no final crunch) 
+		-s save a copy of the original file
+		-v verbose
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	NONE
+        command	dbdesign
+        description	create and edit Datascope schema files
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-v] [-arrivals] [-plot twin] dbin dbout pfname net tstart tend
+        command	dbdetect
+        description	multi-frequency STA/LTA detector
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args 	db1[.table] db2[.table]
+        command	dbdiff
+        description	find differences between two databases
+        private 0
+        deprecated 0
+        options	&Tbl{
+		{-a absolute_tolerance |-r relative_tolerance}
+		-e print times as epoch seconds
+		-i name  list of names to ignore
+		-l {exact|compare|ignore}  (for link fields)
+		-w width
+		-x {exact|compare|ignore|Program} (for external files)
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database
+        command	dbdoc
+        description	generate troff formatted document describing flat file database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-e] database[.table] [ database[.table] ...]
+        command	dbe
+        description	database editor/viewer
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database.table
+        command	dberesp
+        description	plot response curves from instrument table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	dbname
+        command	dbevents
+        description	Display seismic events and waveforms
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-q] dbname
+        command	dbfixchanids
+        description	Fix chanid attributes in wfdisc and arrival tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	database idname [ idstart ]
+        command	dbfixids
+        description	renumber id links in a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	dbname [origin_expr]
+        command	dbfixtimeres
+        description	fix time residuals in the assoc table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	input-db output-db
+        command	dbgenloc
+        description	dbloc2 interface to genloc library of event location code
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	dbout pfname
+        command	dbgrassoc
+        description	spatial grid search based associator/locator
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	dbname sta chan  tstart  twinline  nlines  scale
+        command	dbheli
+        description	Make helicorder type plot of waveform
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-f filter
+		-o dborigin
+		-ps psfile
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[database|schema]
+        command	dbhelp
+        description	explore a database schema
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	file [file...]
+        command	dbinfer
+        description	build a schema file from a set of ascii example files
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database.table [ :key ...] [database].table] [ :key ...] [database].table] ...
+        command	dbjoin
+        description	join several database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-o outer join
+		-n name  save results as a named view
+		-v verbose
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-r] database
+        command	dbloc2
+        description	interactive hypocenter location
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	arrival_db assoc_db origin_db [origin_db]
+        command	dbloc_assoc
+        description	associate arrivals with origins in other catalogs
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	database
+        command	dbloc_buttons
+        description	gui interface for dbloc2
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	[-k] database [ orid ...]
+        command	dbloc_delorids
+        description	dbloc2 subprogram for deleting origins from database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	input trial
+        command	dbloc_group
+        description	group arrivals by time for dbloc
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	database.table [orid]
+        command	dbloc_map
+        description	draw a map showing location and associated arrivals
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	database
+        command	dbloc_setprefor
+        description	set preferred origin for an event
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	database orid [orid ...]
+        command	dbloc_verify
+        description	check temporary database consistency for dbloc2
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+#    &Arr{
+#        args	BLANK
+#        command	dblocgrad
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Contributed code
+#    }
+    &Arr{
+        args	input-database [output-database]
+        command	dblocsat2
+        description	locate seismic events
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	dbname orid origin_auth net
+        command	dbmag
+        description	compute mb magnitudes
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	dbname {sta | orid | lat:lon} range [-c]  [auth1 sym1 hue1 lit1 sat1 ...]
+        command	dbmapevents
+        description	make a map of events from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-vV] dbin dbout
+        command	dbmerge
+        description	script to merge two databases together
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-p pfname] db orid
+        command	dbml
+        description	database Richter magnitude computation
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	database idname
+        command	dbnextid
+        description	get next available id for CSS table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	dbname
+        command	dbnoise
+        description	make power spectral density plots of noise
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-n name] [-v] database.table [:key ...] table
+        command	dbnojoin
+        description	find records which don't join with another table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	dbname
+        command	dbpick
+        description	waveform review, pick arrivals, and edit a CSS relational database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-sc sta:chan
+		-ts tstart
+		-te tend
+		-tw twin
+		-noexist
+		-nostarttalk 
+		-winfile winfile
+		-appname tksend_appname
+		-gaps {segment|zero|interp|none}
+		-comout comfile
+		-geom WxH+X+Y
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	database sta:chan tstart tend [-h[scale]]
+        command	dbplotcov
+        description	Make a plot and listing of waveform coverage from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-v] parameter_file [start_time [end_time]]
+        command	dbprelim_locs
+        description	provides preliminary locations for a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[ -p ] database table field value
+        command	dbremark
+        description	add/print remark from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database|view [[[server] mintime] maxtime|period]
+        command	dbreplay
+        description	replay a database to an orbserver w/o modifying time
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-b max-behind
+		-w orbclient
+		-n \#packets
+		-p pktsuffix
+		-r rate
+		-s subset
+		-t timestep
+		-v   Be more verbose
+        }
+        section	Near-real-time database tools
+    }
+#    &Arr{
+#        args	BLANK
+#        command	dbresp
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Contributed code
+#    }
+#    &Arr{
+#        args	BLANK
+#        command	dbresp1f
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Contributed code
+#    }
+    &Arr{
+        args	table
+        command	dbresp2autodrm
+        description	convert response information from database to autodrm format
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	db
+        command	dbrsec
+        description	make record section plot of waveforms
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-sc sta:chan
+		-orid orid:chan
+		-top top  
+		-bot bot 
+		-tstart tstart 
+		-twin twin 
+		-f filter  
+		-sift sift
+		-clip {on|off} 
+		-vred vred 
+		-gain gain
+		-amp amp
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	database.table [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]]
+        command	dbselect
+        description	print selected fields and expressions from database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-b   Strip blanks from each field in the output.
+		-F   separator
+		-p   Cause the primary key of the input table to be printed.
+		-s   Allow expressions to write to the database using the assignment operator ":=".
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-clv] database[.table] field from [to]
+        command	dbset
+        description	change field in database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database
+        command	dbsetrgn
+        description	set seismic and geographic region codes in origin table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-v] [-n name] database.table table
+        command	dbsever
+        description	remove a table from a joined view
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database.table [key ...]
+        command	dbsort
+        description	sort database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-o   Overwrite the original table  with  the  sorted  table
+		-n name
+		-r   Reverse the sense of the sort
+		-u   Eliminate rows which are identical in  the  sort  keys
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	dbname sta chan tstart twin 
+        command	dbspgram
+        description	compute time-varying spectragram
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-fmin fmin 
+		-fmax fmax
+		-units {D|V|A}
+		-thalf thalf
+		-noic
+		-ampdecades ampdecades
+		-ps psfile
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	input output
+        command	dbsplit
+        description	split out portions of a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d	delete selected rows from input db after copying to output db
+		-f 	force overwrite of output database
+		-k 	keep original tables (renamed)
+		-v 	verbose
+		-vv	doubly verbose
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	input-database [output-database]
+        command	dbsteimc
+        description	steim-compress waveform data
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-v Report compression statistics for each  waveform
+		-l {1|2} Compression level (default = 2)
+		-L location-code
+		-n net
+		-o   Overwrite the records in the wfdisc table
+		-r val Replacement value for data gaps
+		-p pfname
+		-w wfname
+		-s (single) output-file
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	input [new_database]
+        command	dbsteimu
+        description	uncompress steim-compressed waveforms in a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-o   Overwrite the records in the existing  input  database
+		-s   The input is a miniseed volume.
+		-S   The  input  is  a  miniseed  volume,  but  don't  write uncompressed waveforms
+		-t   tolerance
+		-v   Be more verbose.
+		-w   wfname
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	[-n name] [-v] database.table expression
+        command	dbsubset
+        description	subset database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	[-v] [-s subset_expr] [-l naptime] db table orb
+        command	dbt2orb
+        description	read Datascope database rows from a database and post them to an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+#    &Arr{
+#        args	BLANK
+#        command	dbtc
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Contributed code
+#    }
+    &Arr{
+        args	NONE
+        command	dbtcl
+        description	Tcl shell with db extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	[-c expression] [-n name] [-v] database.table
+        command	dbtheta
+        description	join database tables according to an expression
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database
+        command	dbtidy
+        description	sort css tables and ids into a preferred order
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-v] [-out dbout] dbin pfname
+        command	dbtrigger
+        description	database network trigger algorithm
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-f] -o output-database database.table
+        command	dbunjoin
+        description	unjoin database tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database[.table]
+        command	dbverify
+        description	perform some consistency checks on a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-t turn off all tests
+		-A table[,table..] uniqueness of alternate keys not required
+		-P table[,table..] uniqueness of primary keys not required
+		-c perform consistency checks
+		-C test1, test2  Run only specific named consistency_checks
+		-i check that all referenced foreign ids are present in defining table
+		-j test for correct \# of records in a join specified in parameter file
+		-k verify uniqueness of primary and secondary keys
+		-l check that lastid table entries are valid
+		-p perform external program tests specified in parameter file
+		-r check attribute ranges
+		-u complain about unreferenced ids
+		-x check for existence of external files
+		-v verbose
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	database
+        command	dbversac
+        description	compare sac file headers with CSS database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	[-s subset] [-dvw] database
+        command	dbversdwf
+        description	check SEED data files for consistency
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Datascope database tools
+    }
+    &Arr{
+        args	NONE
+        command	dbvwish
+        description	Tk shell with db and vogle extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	dbin[.table] dbout
+        command	dbwfexcerpt
+        description	excerpt waveform data by event or origin
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-v verbose
+		-event 
+		-origin 
+		-input
+		-sift expr
+		-begin expr
+		-end expr
+		-pre t
+		-sfactor f
+		-tolerance value
+        }
+        section	Database processing tools
+    }
+    &Arr{
+        args	{detection|arrival|time staexpr chanexpr tstart twin} dbname
+        command	dbwfmeas
+        description	make waveform measurements from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-p parameter_file
+		-net net
+		-v
+		-outrecno
+		-exitonerror
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	NONE
+        command	dbwish
+        description	Tk shell with db extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	NONE
+        command	dbwish8
+        description	Tcl/Tk 8.0 shell with db extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	[-p parameter-file] [-v] cmdname cmdarg dcname
+        command	dccmd
+        description	send commands to Reftek DAS/DC
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	dbname
+        command	displayspec
+        description	display power spectral density results
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[mini-seed]
+        command	dsteim
+        description	dump steim compressed (SEED) data frames
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	edr_file dbname
+        command	edr2db
+        description	Convert a USGS EDR file to a CSS database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-e] [-i input-timezone] [-o output-timezone] [ +format ] [ time/date components ]
+        command	epoch
+        description	convert time formats
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	dbin archive_db
+        command	event_archive
+        description	make event archive database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-v   verbose
+		-V   extremely verbose
+		-p   name of parameter file to use
+		-t   name of temporary database to use
+		-s   start time of events to process from dbin
+		-e   end time of events to process from dbin
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	parameter_file.d
+        command	eworm2orb
+        description	take Earthworm waveform-data packets and put them onto an Antelope orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	dbname|wfd_dir|"wfd_fnames" stime etime
+        command	extrd
+        description	extract specified segment of the CSS data
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c chan
+		-n network
+		-o outdir
+		-s sta
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	filename
+        command	forbserver
+        description	file orbserver emulator
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-A   use the absolute time  specified  in  the  input  file
+		-a
+		-b
+		-x specify the format of the output file
+		-l loop over the input file
+		-o overwrite an existing file
+		-v verbose
+		-f flash mode: disregard timing, pump data out as quickly as possible
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	-v dbmaster tape_drive
+        command	get_wftar
+        description	extracts wftar table from an ARTS archive tar tape
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	NONE
+        command	getunique
+        description	return unique integer
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	[ latitude longitude ]
+        command	gsregion
+        description	returns geographic and seismic region numbers and names
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	[-v] [-pf parameter_file] orbname port
+        command	guralp2orb
+        description	Import Guralp data over UDP port into Antelope ORB
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	NONE
+        command	hypotab
+        description	companion program to tabcalc travel-time calculator
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	[-u] orbname idahost importstring
+        command	ida2orb
+        description	import data from an IDA hub to a Datascope orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	NONE
+        command	idinfo
+        description	gather id information for register_antelope
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	NONE
+        command	install_antelope
+        description	interactive installation of Antelope from a cd
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+#    &Arr{
+#        args	[-v] [-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb
+#        command	ipd
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Contributed code
+#    }
+    &Arr{
+        args	[-c] [-p] [-s start] [-e end] isc_bulletin database
+        command	isc2db
+        description	read the ISC bulletin from NEIC CD into CSS database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-d database] [-m match] [-s pktsize] [-t timeout] [-v] liss-server orb
+        command	liss2orb
+        description	read data in LISS format
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	[ - ]
+        command	manpage
+        description	prototype Antelope man page
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+#    &Arr{
+#        args	db1 db2 dbout
+#        command	merge_ds_events
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Near-real-time database tools
+#    }
+    &Arr{
+        args	[-v] [-p parameter_file] input_database
+        command	mk_dataless_wfdisc
+        description	makes wfdisc file to prepare dataless seed file
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-v] [-V] [-a] [-m mail_to] [-t tape_drive] [-d directory] rt_db
+        command	mk_dmc_seed
+        description	builds IRIS DMC files on tape or disk
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	NONE
+        command	mk_libpkt
+        description	create libPkt.so
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[ - ]
+        command	mkmk
+        description	print prototype Antelope makefile
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	[-p phases] model
+        command	mktt
+        description	make tau-p and locsat travel-time tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	orbname dc_name
+        command	mrc
+        description	automatically send mass-re-centering command to a Reftek DAS
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-m srcmatch
+		-p parameter-file
+		-s sleep
+		-t tperiod
+		-V verbatim
+		-v max_lta
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	-window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
+        command	nxplotd
+        description	X-windows plotting daemon
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Graphics utilities
+    }
+    &Arr{
+        args	in out [start-time [period|end-time]]
+        command	old_orb2orb
+        description	copy data from one old orbserver orb to another
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-b bufsize
+		-d   print a hex dump of packets as they are received
+		-f   when reading from a plain file, do not adjust the time tags
+		-u   unstuff packets as they are received
+		-N   print  \#samples of the data
+		-l   loop repeatedly over the input forb(5) file
+		-m match
+		-r reject
+		-n npkts Stop after receiving npkts packets
+		-R representation
+		-s pktid
+		-S statefile
+		-v   Be more verbose
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-dnvV] [directories]
+        command	online_backup
+        description	backup certain files to an online directory
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d   Specify an alternate base directory
+		-m   send mail rather than writing to stdout
+		-n   don't actually run backup, but show what would happen
+		-p parameter-file
+		-t time/date
+		-v   be a bit verbose
+		-V   show the "wanted" procedure  generated
+		-y ndays Backup files modified more recently (younger than) ndays
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	orb db [start-time [window]]
+        command	orb2db
+        description	create continuous database from orb ring buffer
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c chanmatch
+		-m srcmatch
+		-r srcreject
+		-p pf-file
+		-S statefile
+		-s datatype
+		-t timetags
+		-v   verbose
+		-vv  show every packet read.
+		-w wfname
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-s sleep] database [pause | continue | status]
+        command	orb2db_msg
+        description	signal orb2db processes to pause for database cleanup
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orb dbout
+        command	orb2dbt
+        description	read Datascope database packets from an orb and write to a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select expr
+		-verbose
+		-start {pktid|time|OLDEST|NEWEST}
+		-number number
+		-nowait
+		-safe
+		-timeout seconds
+		-overwrite
+		-state statefile
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	parameter_file.d
+        command	orb2eworm
+        description	export waveform data from an Antelope orb to an Earthworm system
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	in out [start-time [period|end-time]]
+        command	orb2orb
+        description	copy data from one orb to another
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-b max_behind
+		-c pktsuffix
+		-d   print a hex dump of packets as they are received
+		-f   when reading from a plain file, do not adjust the time tags
+		-i burial-interval
+		-u   unstuff packets as they are received
+		-N   print \#samples of the data
+		-l   loop repeatedly over the input forb(5) file
+		-m match
+		-r reject
+		-n npkts
+		-R representation
+		-s pktid
+		-S statefile
+		-v   Be more verbose
+		-w program
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orb [out]
+        command	orb2pf
+        description	dump out the parameter file objects from an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select expr
+		-start {pktid|time}
+		-number number
+		-nowait
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orbname
+        command	orb2stream
+        description	dump out raw orb packets
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-src srcexpr
+		-npackets npackets
+		-tstart time
+		-twin minutes
+		-tstart_dat time_dat
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orbin orbout pfname dbnextid
+        command	orbassoc
+        description	spatial grid search based real-time associator/locator
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select expr
+		-start {pktid|time|OLDEST|NEWEST}
+		-number number
+		-nowait
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	orb database file
+        command	orbcapture
+        description	grab packet series from orbserver triggered by new database row
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-a after
+		-b before
+		-c condition
+		-R representation
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	-orbin in_orbname -orbout out_orbname
+        command	orbcp
+        description	orb copy program
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-src srcexpr
+		-ircnt
+		-orcnt
+		-pktstart pktid
+		-rcnt_time minutes
+		-npackets npackets
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-abips] name
+        command	orbd
+        description	dump out an orb ring buffer for debugging
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-a   Assume the packets are straight ascii and print them
+		-b   Print the packets using a standard hex dump format
+		-i   Enter interactive mode
+		-p   Show the packet index
+		-s   Show the source index
+		-v   Show the indexes verbosely
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orbname pfname
+        command	orbdetect
+        description	multi-frequency STA/LTA detector
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-out orbout
+		-v   verbose
+		-select expr
+		-tstart start_time
+		-twin minutes
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	orbserver [start-time [range]]
+        command	orbdisp
+        description	inspect waveform data on orb server
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c chan_match
+		-l max-latency
+		-m src_match
+		-n   show network on display
+		-p packet-period
+		-r reject
+		-w time_window
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orb [-S statefile] [-pf pffile]
+        command	orbgenloc
+        description	orb interface to genloc single-event location code
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	orb database
+        command	orblatency
+        description	accumulate latency statistics from a network
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-m srcmatch
+		-p period
+		-r reject
+		-v   Be more verbose
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	orb [start [twindow]]
+        command	orblist
+        description	list an orb contents
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d   Tells orblist to print a hexdump of orb packets
+		-h   Tells orblist to print a hexdump of raw packets
+		-m srcmatch
+		-n time_diff
+		-s   do not sort packets
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orbwf orbdb dbname
+        command	orbmag
+        description	real-time magnitude computation
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select_wf expr
+		-start {pktid|time|OLDEST|NEWEST}
+		-number number
+		-nowait
+		-state statefile
+		-p parameter_file
+		-auth_expr auth_expr
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	server
+        command	orbmonrtd
+        description	real-time waveform trace display
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-twin minutes
+		-width pixels
+		-height pixels
+		-pf pfile
+		-hmax hmax
+		-wmax wmax
+		-log 
+		-filter filter
+		-source net_sta_chan
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orb [cmdstring]
+        command	orbpftrigger
+        description	parameter file trigger of a program execution
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select expr
+		-start {pktid|time}
+		-number number
+		-nowait
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	orb [start-time [end-time|range]]
+        command	orbreap
+        description	multipurpose orb dumping program
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-a time
+		-c  Crack packets and print the header information
+		-C  Crack packets and print the header information and data
+		-d  Dump packets in hexadecimal format
+		-F   expect packets in "Fake" format
+		-m match
+		-M   select only packets with numeric source names
+		-n \#packets
+		-N   show delays.
+		-o output
+		-r reject
+		-R representation
+		-s pktid
+		-S bufsize
+		-v  Show orb server information about a packet
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	send test packets to orbserver
+        command	orbsend
+        description	send test packets to orbserver
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-a align-period
+		-b \#bytes/pkt
+		-d delay
+		-f  contents of the packets are whatever was in the allocated buffer
+		-F   Fill packets with a standard header and  random  bytes
+		-g signal
+		-i   Read an input packet to be used as the actual output packet
+		-j jitter
+		-M   send a unique  packet with an entirely numeric sourcename once every loop
+		-N name
+		-n nloop
+		-r rate
+		-R pktrate
+		-s \#srcs
+		-S srcname
+		-v   Be more verbose
+		-x   hex dump outgoing packets
+		-0   specify the starting srcid \# as different than 0
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-k] [-p port] [-r] [-v] name
+        command	orbserver
+        description	orb ring buffer server
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-k   Don't reset the ring buffer
+		-p port
+		-r   reset the ring buffer
+		-v[v]  verbose/doubly verbose
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-c] [-i] [-m regular-expression] [-n avg] [-s] [-v] server [secs]
+        command	orbstat
+        description	remote dump of orb ring buffer source status
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	orbname pfname [-tstart time] [-v] [-out orbout]
+        command	orbtrigger
+        description	real-time network trigger algorithm
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	orbwf orbdb dbname
+        command	orbwfmeas
+        description	make waveform measurements from an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-select_wf expr
+		-start {pktid|time|OLDEST|NEWEST}
+		-number number
+		-nowait
+		-state statefile
+		-p parameter_file
+		-net net
+		-dbsift_expr dbsift_expr
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	NONE
+        command	orbwish
+        description	Tcl7.4/Tk4.0 shell with orb and real-time trace-plotting widget extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	orbname dbname [start-time [window]]
+        command	par2db
+        description	create database with GPS site coordinates and DC/DAS status parameters from orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c   Extract DC status parameters
+		-g   Extract GPS site coordinates
+		-i time_interval
+		-m srcmatch
+		-v   Be more verbose
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	[ -f configfile ] [ paths... ]
+        command	pathf
+        description	Filter for translating pathnames
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	pde_file dbname [-auth author]
+        command	pde2origin
+        description	Convert a PDE file to an origin table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[ see perl documentation ]
+        command	perl
+        description	Practical Extraction and Report Language
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+    &Arr{
+        args	command
+        command	perl_unbuffer
+        description	use pty/tty pair to get unbuffered output from a command
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	pfile orb
+        command	pf2orb
+        description	put the contents of a parameter file into an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	[-o newpf] pf1 [pf2]
+        command	pfdiff
+        description	compare two parameter files
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Parameter files
+    }
+    &Arr{
+        args	[-iq] [-w|W] name [ param ...]
+        command	pfecho
+        description	print out parameters from parameter files
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-i  interactive mode
+		-q  don't echo the key
+		-w  print a list of existent, readable files which will be examined
+		-W  print all possible filenames
+        }
+        section	Parameter files
+    }
+    &Arr{
+        args	NONE
+        command	pingmeister
+        description	display network connectivity
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	phases depth d0 dd nd tmin tmax vred [table]
+        command	pltt
+        description	plot out travel times from a tau-p travel time table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	phases ndp dp0 ddp ndel del0 ddel [table]
+        command	prtt
+        description	print out travel times from a tau-p travel-time table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	seedfile dbout
+        command	psd2db
+        description	scan PASSCAL SEED volume and produce database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-v             Verbose output flag
+		-n             No overwritye flag
+		-w             Extract wfdisc table only flag
+		-t tolerance
+		-respdir respdir
+		-stagedir stagedir
+        }
+        section	Passcal utilities
+    }
+#    &Arr{
+#        args	NONE
+#        command	ptt2stt
+#        description	MISSING
+#        private 0
+#        deprecated 0
+#        options	&Tbl{
+#        }
+#        section	Seismic source location
+#    }
+    &Arr{
+        args	qed_file dbname
+        command	qed2origin
+        description	Convert a QED file to an origin table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	dbname
+        command	qedd
+        description	Daemon to get USGS QED data from finger site
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-ipfinger ipfinger
+		-sleep seconds
+		-timeout seconds
+		-author author
+        }
+        section	Real-time data import
+    }
+    &Arr{
+        args	-dataorb dataorbname -cmdorb cmdorbname  -calib_db calib_db [-dataorb2 dataorb2name] 
+        command	qt2orb
+        description	transfer data from a Quanterra digitizer to an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-pf pfname
+		-sta net_sta1 [net_sta2 [...]]
+		-msglevel {0|1}
+		-v   verbose output flag
+        }
+        section	Real-time data import
+    }
+    &Arr{
+        args	cmdorb net_sta cmd [params]
+        command	qtcmd
+        description	execute commands on a remote Quanterra digitizer
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-target target
+		-replytarget replytarget
+		-timeout timeout
+		-noreply
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	cmdorb net_sta
+        command	qtmassrecenter
+        description	issue a mass recenter command to a remote Quanterra digitizer
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-timeout sec
+		-nowait
+		-board board\#
+		-duration duration
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	dataorb data2orb cmdorbname [database]
+        command	qtmon
+        description	monitor Quanterra digitizers
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	inport orb
+        command	rddas
+        description	read data from RefTek DAS to orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-R  send RESET_DAS command to DAS before reading data
+		-l  create logfile representing data
+		-p parameter-file
+		-s B,P,D,S specify serial port baud rate, parity, \# data bits, \# stop bits 
+		-u   Uncompress seismic data before putting them on an orb
+		-v   verbose
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	input dbname [start-time [end_time]]
+        command	ref2db
+        description	convert data in Reftek format to CSS3.0
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d datatype
+		-e create data files and wfdisc records based on RefTek event start and end time 
+		-l create logfile representing data in Reftek instrument format
+		-m srcname
+		-p pfile
+		-s size
+		-n net
+		-v  print srcname and time of  every  packet read
+		-w  will not write data to database
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	[-d dir] [-v] remote-host remote-file
+        command	reflect
+        description	keep local files up to date with remote copies
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data export
+    }
+    &Arr{
+        args	[-v]
+        command	reflectd
+        description	server companion to reflect
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data export
+    }
+    &Arr{
+        args	NONE
+        command	register_antelope
+        description	gui for requesting Antelope license
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Administration tools
+    }
+    &Arr{
+        args	dbin dbout [-pf pffile] [-useold] [-sift expression]
+        command	relocate
+        description	locates all events in a CSS3.0 database with genloc
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	model_name
+        command	remodl
+        description	create tau-p travel time tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	hostname line timeout
+        command	resetnetblazer
+        description	reset a Telebit Netblazer terminal server
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-v] [-p parameter_file] rt_db tape_drive
+        command	rtbackup
+        description	real-time tape archive program
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-v] [-s subset] database [start-time [period|end-time]]
+        command	rtbulletin
+        description	create a bulletin from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	name 'exec-line'
+        command	rtcron
+        description	run real-time system cron jobs
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-n] [-v] [-p parameter_file] orb rt_db
+        command	rtdbclean
+        description	real-time database and disk cleaner
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Near-real-time database tools
+    }
+    &Arr{
+        args	[-cdfknstv] [-q minutes] [-R minutes] [comment]
+        command	rtexec
+        description	real-time data acquisition system executive
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c clear logs
+		-d debug mode 
+		-f don't ask about killing previous rtexec
+		-k kill running rtexec
+		-n show what processes would be run, but don't run them
+		-q minutes Run for specified number of minutes
+		-R minutes Run for specified number of minutes, shutdown, repeat
+		-s save old logs in new subdirectory
+		-t run 'tail -f logs/rtexec' after changing to a daemon
+		-v verbose
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-icon iconname] [-title title]
+        command	rtm
+        description	Real-time system monitor
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-s subject] [-a filename] recipient
+        command	rtmail
+        description	script to send mail with attachments
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-ApStz] [-P maxpts] [-s subset] database start stop
+        command	rtoutage
+        description	show data gaps for a database over a time period
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-A   Format output as an autodrm outage report
+		-P maxpts
+		-p   print percentage of data recovered for time period
+		-S   show gaps as seconds  only
+		-s subset
+		-t   Show only the totals, not each individual gap
+		-z   Select only channels ending in 'z'  or  'Z'
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[directory]
+        command	rtreport
+        description	report some useful statistics on network performance
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d start-time
+		-m email,..
+		-n days
+		-s subset
+		-v   Show more detail about retransmitted packets and data gaps
+		-z   Use only the z channels
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	command-line
+        command	rtrun
+        description	run a command with the rtexec environment
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[-c] [-d \#db-rows] [-f filename] [-l \#log-lines] [-v][-v]
+        command	rtsnapshot
+        description	collect some snapshot data from an Antelope real-time system
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	[directory]
+        command	rtsys
+        description	summarize log reports
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d time
+		-m email,..
+		-p   Send mail only when a problem is detected
+		-n nlines
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	sacfile [ sacfile ... ] database
+        command	sac2db
+        description	create CSS database from SAC headers
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[sac-file ...]
+        command	sachd
+        description	print SAC header
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	seed_vol css_dbase
+        command	sd2db
+        description	create a CSS database from a SEED volume
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-d  print out each blockette as it is read
+		-f n Skip to file n
+		-c n Read just n files from the tape
+		-i   Create wfdisc and extract wave form data without using other header information
+		-r response_dir
+		-s   sweep identical time-adjacent tuples into a single tuple
+		-S stachan
+		-t   Create the database tables without extracting the wave data files
+		-v   print summary of the blockettes read and processed
+		-w wfdir
+		-x tapeid
+		-z compress waveform files after they are complete
+		
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-f n] [ -s] [-d database] seed_volume
+        command	sdd
+        description	display the blockettes of a SEED volume
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	[-event] [-ftbl] "fname"
+        command	segy2css
+        description	convert data in PASSCAL SEGY format to CSS format
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	NONE
+        command	setbrn
+        description	create tau-p travel time tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	inpf outpf
+        command	sgnloc
+        description	command line interface to single event location code
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	orbname
+        command	stream2orb
+        description	play back raw orb packet stream back into an orb
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-repeat infile1 [infile2 [...]]
+		-v   Verbose flag.
+		-tgap tgap
+		-dattime
+		-events dbname
+		-sleep seconds
+        }
+        section	Real-time data management
+    }
+    &Arr{
+        args	strfile dbsite dborigin refsta method model
+        command	streamassoc
+        description	associate events with an orb stream file
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time data processing
+    }
+    &Arr{
+        args	NONE
+        command	tabcalc
+        description	travel-time calculator for 1-D, continuous velocity models
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	taup-model
+        command	taup2locsat
+        description	create locsat style travel-time tables from tau-p tables
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-i   ask before saving output files
+		-h header
+		-l dir
+		-p phases
+		-t tauprequest
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	phase [-d0 x -ddelta x -z0 x -dz x -ndelta n -nz n]
+        command	taup_convert
+        description	uses taup library to produce travel-time tables that can be used by genloc location programs
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
+    &Arr{
+        args	remote-host
+        command	tcpmonitor
+        description	monitor tcp connections for stability and throughput
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-B pktsz
+		-d database
+		-N \#pkts
+		-m   Sets monitor mode
+		-n \#loops
+		-P \#ping
+		-r lrsz
+		-R rrsz
+		-s lssz
+		-S rssz
+		-t timeout
+		-v   Be more verbose
+		-W sec/ping
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	template-name
+        command	template
+        description	cat a template from templates directory
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	app_name [message]
+        command	tksend
+        description	send a message using version 3 or 4 of the tcl/tk send mechanism
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-i        Read stdin for more messages
+		-p        Wait for and print returned messages
+		-verbose  Be more verbose
+		-validate validate the application name and return the disposition and the version number
+		-version {3|4|auto}
+		-wait     wait for a response
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	phases header [table]
+        command	tp2ls
+        description	make a locsat style travel-time table file from a tau-p travel time table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Seismic source location
+    }
+    &Arr{
+        args	[-inv] seed-volume [ seed-volume...]
+        command	trash_data
+        description	truncate a SEED volume following the station headers, creating a dataless SEED volume
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	[-r] [-s subset] [-w hours] database[.table] [start-time [range]]
+        command	trdisp
+        description	inspect waveform data and arrivals
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	input-db output-db [start-time {duration|end-time}]
+        command	trexcerpt
+        description	extract waveform segments from a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-A autodrm output
+		-a append to existing waveform files if present
+		-c sta/chan/instrument-subset
+		-d write complete database with site, sensor, sitechan, instrument
+		-e include correct subset of event, origin, origerr, arrival, and assoc in the output database
+		-g eliminate 'marked' data gaps
+		-j origin-site-subset
+		-m {time|convert|event|arrival|explicit}
+		-o output-waveform-format
+		-s evid/orid/arid-subset
+		-vV verbose
+		-w waveform-file-naming
+		-W waveform database
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	database[.table] [time]
+        command	trsample
+        description	print a few samples from waveforms in a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c   apply calib to the samples
+		-e   attempt to read data  from  every  row  in  the  wfdisc table
+		-o   write samples one to a line
+		-[i|t|T]  print integer, epoch time, or readable time index for each sample
+		-n npts
+		-s subset-expr
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	database
+        command	trsignal
+        description	create wfdisc records with test signal data
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-v   Be more verbose
+		-w   Specify a pattern to use for generating the waveform file names
+		-d   datatype -- the default is "as"
+		-a amplitude
+		-b timebase
+		-c chan
+		-d datatype
+		-f f0
+		-g calib
+		-k   retain full floating-point precision
+		-n nsec
+		-p phase
+		-r samprate
+		-s station
+		-t time
+		-T type
+		-A -D -V   segtype
+		-y yaw
+        }
+        section	Waveform-handling utilities
+    }
+    &Arr{
+        args	[-crv] [-d ndays] [-s kbytes] log [log..]
+        command	truncate_log
+        description	eliminate old lines in a log file
+        private 0
+        deprecated 0
+        options	&Tbl{
+		-c  also remove lines without time tags
+		-r  suppresses transfer of removed lines to new file  with dash suffix
+		-v   be more verbose
+		-d n Trim lines before n days ago
+		-s n Only trim files larger than n kbytes
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	pfname db refsta time outfile
+        command	ttgrid
+        description	compute a travel time grid file
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Real-time system and network administration
+    }
+    &Arr{
+        args	stapardir responsedir netcode netname dbout [-s]
+        command	ucsdsp2db
+        description	convert UCSD stapar files to a CSS v3.0 database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	stapardir dbin dbout
+        command	ucsdwf2db
+        description	convert UCSD raw data wfdiscs and arrivals to a CSS3.0 database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Importing data to a database
+    }
+    &Arr{
+        args	window_name
+        command	unregister
+        description	eliminate defunct tk send registries
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	[-f configfile]
+        command	uwd
+        description	print working directory in user pathname format
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Miscellaneous Utilities
+    }
+    &Arr{
+        args	NONE
+        command	wish8.0
+        description	Tk 8.0 with no extensions
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Command Interpreters
+    }
+}

@@ -1,0 +1,146 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command dist
+		args lat1, long1, lat2, long2, *delta, *azimuth 
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description compute angular distance and azimuth between two points (all in radians)
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command latlon
+		args lat1, long1, del, azimuth, *lat2, *long2
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description compute lat and long given starting point and distance (all radians)
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command epoch
+		args yearday
+		return real *8
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert yearday to epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command str2epoch
+		args s
+		return real *8
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert string to epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command yearday
+		args e
+		return integer
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert epoch time to yearday
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strtime
+		args s, e
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert epoch time to string time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strdate
+		args s, e
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert epoch time to string date
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command epoch2str
+		args s, e, f
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert epoch time to formatted string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command now
+		args NONE
+		return double
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description return current epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command doy2mday
+		args doy, year, month, day
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert day of year to month and day
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command mday2doy
+		args year, month, day
+		return integer
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert month and day to day of year
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command h2e
+		args year, day, hour, min, sec
+		return real*8
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description convert input parameters to epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command e2h
+		args epoch, iyear, iday, ihour, imin, sec
+		return subroutine
+		options &Tbl{
+		}
+		section Coordinate and Time Conversion
+		description split epoch time into output components
+		private 0
+		deprecated 0
+	}
+}

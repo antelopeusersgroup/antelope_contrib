@@ -1,0 +1,423 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command deg2km
+		args double degrees
+		return double
+		options &Tbl{
+		}
+		description convert from degrees to kilometers at the Earth's surface
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command km2deg
+		args double km
+		return double
+		options &Tbl{
+		}
+		description convert from kilometers to degrees at the Earth's surface
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command xyztortp
+		args float u[3], float *r, float *theta, float *phi
+		return void
+		options &Tbl{
+		}
+		description Convert cartesian coordinates into spherical coordinates
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pj_init
+		args int argc, char **argv
+		return PJ *
+		options &Tbl{
+		}
+		description select and initialize a cartographic projection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pj_fwd
+		args UV val, PJ *proj
+		return UV
+		options &Tbl{
+		}
+		description perform a forward cartographic projection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pj_inv
+		args UV val, PJ *proj
+		return UV
+		options &Tbl{
+		}
+		description perform an inverse cartographic projection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pj_free
+		args PJ *proj
+		return void
+		options &Tbl{
+		}
+		description free a cartographic-projectioin object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command rotmat
+		args double u[3], double A[9], double theta
+		return void
+		options &Tbl{
+		}
+		description create a rotation matrix A about axis u by angle theta
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command xrotate
+		args double u[3], v[3], w[3], theta
+		return void
+		options &Tbl{
+		}
+		description rotates v by angle theta about axis u, returned in w
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3sxv
+		args float c, float v[3], float w[3]
+		return void
+		options &Tbl{
+		}
+		description multiply a scalar c by a three-vector v
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3add
+		args float u[3], float v[3], float w[3]
+		return void
+		options &Tbl{
+		}
+		description add two three-vectors u and v
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3sub
+		args float u[3], float v[3], float w[3]
+		return void
+		options &Tbl{
+		}
+		description subtracts v from u
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3dot
+		args float u[3], float v[3]
+		return double
+		options &Tbl{
+		}
+		description returns dot product of two three-vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3cros
+		args float u[3], float v[3], float w[3]
+		return void
+		options &Tbl{
+		}
+		description computes cross-product of two three-vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3mag
+		args float u[3]
+		return double
+		options &Tbl{
+		}
+		description returns the length of a three-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3mov
+		args float u[3], float v[3]
+		return void
+		options &Tbl{
+		}
+		description move a vector u to a vector v
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3norm
+		args float u[3]
+		return void
+		options &Tbl{
+		}
+		description replaces u with a unit vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3ortho
+		args float u[3], float v[3]
+		return void
+		options &Tbl{
+		}
+		description makes u and v orthonormal vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command vec2pix
+		args double vec[3]
+		return Pixaddress
+		options &Tbl{
+		}
+		description convert vector to quadrilateralized-cubic-pixel address
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command vec2bin
+		args double vec[3], int res
+		return Pixaddress
+		options &Tbl{
+		}
+		description convert vector to bin address
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sph2pix
+		args double ra, double dec
+		return Pixaddress
+		options &Tbl{
+		}
+		description convert ra, dec to quadrilateralized-cubic-pixel address
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sph2bin
+		args double ra, double dec, int res
+		return Pixaddress
+		options &Tbl{
+		}
+		description convert ra, dec to bin address
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pix2vec
+		args Pixaddress pixnum, double vec[3]
+		return void
+		options &Tbl{
+		}
+		description convert quadrilateralized-cubic-pixel address to unit vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bin2vec
+		args Pixaddress binnum, double vec[3], int res
+		return void
+		options &Tbl{
+		}
+		description convert bin address to unit vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pix2sph
+		args Pixaddress pixnum, double *ra, double *dec
+		return void
+		options &Tbl{
+		}
+		description convert quadrilateralized-cubic-pixel address to ra, dec
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bin2sph
+		args Pixaddress binnum, int res, double *ra, double *dec
+		return void
+		options &Tbl{
+		}
+		description convert bin address to ra, dec
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command encode_quadrant
+		args int detector_id, int primbsch_region, int radius_bin
+		return unsigned char
+		options &Tbl{
+		}
+		description Pack detector id, primbsch region, and radius bin into one byte
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command decode_quadrant
+		args code, int *detector_id, int *primbsch_region, int *radius_bin
+		return void
+		options &Tbl{
+		}
+		description Extract detector id, primbsch region, and radius bin from a byte
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dist
+		args double lat1, double long1, double lat2, double long2, double *delta, double *azimuth
+		return void
+		options &Tbl{
+		}
+		description Compute angular distance between two points
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command latlon
+		args double lat1, double long1, double delta, double azimuth, double *lat2, double *long2
+		return void
+		options &Tbl{
+		}
+		description computes lat and lon from azimuth, angular distance, and starting point
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command deg
+		args double r
+		return double
+		options &Tbl{
+		}
+		description converts input radians to degrees
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command rad
+		args double d
+		return double
+		options &Tbl{
+		}
+		description convert input degrees to radians
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dlat
+		args double r
+		return double
+		options &Tbl{
+		}
+		description convert radians to degrees latitude
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dlng
+		args double r
+		return double
+		options &Tbl{
+		}
+		description converts radians to degrees longitude
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command deatom
+		args double a, double b, double c, double m[9]
+		return void
+		options &Tbl{
+		}
+		description convert Euler angles to rotation matrix
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dmtoea
+		args double m[9], double *a_p, double *b_p, double *c_p
+		return void
+		options &Tbl{
+		}
+		description Convert rotation matrix to Euler angles
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3mxm
+		args float A[9], float B[9], float C[9]
+		return void
+		options &Tbl{
+		}
+		description multiply two 3x3 matrices A and B
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3mxv
+		args float A[9], float u[3], float v[3]
+		return void
+		options &Tbl{
+		}
+		description multiply a 3x3 matrix A by a 3-vector u
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command r3tran
+		args float A[9], float B[9]
+		return void
+		options &Tbl{
+		}
+		description return the transpose of the 3x3 matrix A
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command carsph
+		args float u[3], float *ra, float *dec
+		return void
+		options &Tbl{
+		}
+		description convert a unit 3-vector to ra and dec in radians
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dsphcar
+		args double ra, double dec, float u[3]
+		return void
+		options &Tbl{
+		}
+		description Convert ra and dec in radians to cartesian coords
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sphcar
+		args float ra, float dec, float u[3]
+		return void
+		options &Tbl{
+		}
+		description Convert ra and dec in radians to cartesian coords
+		private 0
+		deprecated 0
+	}
+}

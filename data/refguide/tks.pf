@@ -1,0 +1,91 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command Tks_Create
+		args Display *display, Window window, int version
+		return TkSend *
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description Optionally connect to X-server and create communication window
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_ValidateName
+		args TkSend *tks, char *name, char *disposition, int *version
+		return int
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description Validate an application name
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_SetAppName
+		args TkSend *tks, char *name
+		return char *
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description Set an application name in the X registry
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_ClearAppName
+		args TkSend *tks, char *name
+		return int
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description clear an application name from the X registry
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_Send
+		args TkSend **tksptr, char *name, char *msg, char **response, int async
+		return int
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description Send a message via the tksend IPC mechanism
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_GetmsgEventProc
+		args TkSend *tks, XEvent *event, char **msg_ptr, int *replyrequest
+		return int
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description process an X-event that may contain a message
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_Reply
+		args TkSend *tks, char *reply
+		return int
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description return a reply to an application that has just sent a message
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command Tks_SetVerbose
+		args NONE
+		return void
+		options &Tbl{
+		}
+		section Tksend IPC Utility
+		description turn on tksend verbose mode
+		private 0
+		deprecated 0
+	}
+}

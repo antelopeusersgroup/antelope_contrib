@@ -1,0 +1,190 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command banner
+		args char *program, char *version
+		return void
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description print a header with program name, version, BRTT address
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command exhume
+		args char *filename, int *signal_stop, int sec, void (*mortician)()
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Recover information on program state
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command resurrect
+		args char *name, void *variable, int type
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description recover an old value from a program's state file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bury
+		args NONE
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description save a program's state file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbresurrect
+		args int orb, int *last_pktid, double *last_pkttime
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description attempts to position orbserver to previously saved position
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command datafile
+		args char *envname, char *filename
+		return char *
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Find a program's data-file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command datapath
+		args char *envname, char *dirname, char *filename, char *suffix
+		return char *
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Find a program's data-file based on pathname components
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command newdata
+		args char *returnpath, char *envname, char *dirname, char *filename, char *suffix
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Construct pathname for a new data-file 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command fixup_env
+		args char *envsetup[], int nenv, int force 
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Sets a list of environment variables relative to the ANTELOPE directory
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command envfile
+		args char *filename
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description Sets a list of environment variables based on $ANTELOPE/data/env
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command gencompress
+		args unsigned char **out, int *nout, int *size, int *in, int nsamp, int length
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description generic run-length data compression
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command genuncompress
+		args int **out, int *nout, int *size, unsigned char *in, int nbytes
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description generic run-length data decompression
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command getantelope
+		args NONE
+		return char *
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description determine the Antelope root directory
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command verbose_exists
+		args NONE
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description check for existence of file named "verbose"
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command usermethod
+		args char *methodname
+		return void *
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description dynamically lookup user subroutine from libuser
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command mappath
+		args char *spath, char *upath
+		return int
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description library routine for translating pathnames
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setmapcf
+		args char *fn
+		return void
+		options &Tbl{
+		}
+		section Antelope General Utilities
+		description set the name of the configuration file for mappath
+		private 0
+		deprecated 0
+	}
+}

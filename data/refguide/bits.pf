@@ -1,0 +1,124 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command newbit
+		args NONE
+		return Bitvector *
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Create a new bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command freebit
+		args Bitvector *b
+		return void
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Free a bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitset
+		args Bitvector *b, int index
+		return int
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Set a bit of a bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitclr
+		args Bitvector *b, int index
+		return int
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Clear a bit of a bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bittst
+		args Bitvector *b, int index
+		return int
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Test a bit of a bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitmax
+		args Bitvector *b
+		return int
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Return the size in bits of a bit-vector
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitcmp
+		args Bitvector *b1, Bitvector *b2
+		return int
+		options &Tbl{
+		}
+		section Bit Vectors
+		description compare two bit vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitand
+		args Bitvector *b1, Bitvector *b2
+		return Bitvector *
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Return the bitwise AND of two bit-vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitor
+		args Bitvector *b1, Bitvector *b2
+		return Bitvector *
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Return the bitwise OR of two bit-vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitxor
+		args Bitvector *b1, Bitvector *b2
+		return Bitvector *
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Return the bitwise Exclusive-OR of two bit-vectors
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bitnot
+		args Bitvector *b
+		return Bitvector *
+		options &Tbl{
+		}
+		section Bit Vectors
+		description Returns the bitwise NOT of a bit-vector
+		private 0
+		deprecated 0
+	}
+}

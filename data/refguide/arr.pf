@@ -1,0 +1,124 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command newarr
+		args int (*cmp)()
+		return Arr *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Create a new associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setarr
+		args Arr *arr, char *key, void *value
+		return void *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description set associative-array value
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command getarr
+		args Arr *arr, char *key
+		return void *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description get an associative-array value
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command delarr
+		args Arr *arr, char *key
+		return void *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Delete a value from an associative-array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command keysarr
+		args Arr *arr
+		return Tbl *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Get keys for an associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command valsarr
+		args Arr *arr
+		return Tbl *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Get values for an associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command freearr
+		args Arr *root, void (*free_value) ()
+		return int
+		options &Tbl{
+		}
+		section Associative Arrays
+		description free resources for an associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command applyarr
+		args Arr *arr, void (*function) (), void *private
+		return int
+		options &Tbl{
+		}
+		section Associative Arrays
+		description apply a function to an associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command cntarr
+		args Arr *arr
+		return int
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Count the nodes of an associative array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command arrgrep
+		args Arr *arr, char *string
+		return Tbl *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description Match a string to array of regular expressions
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command greparr
+		args char *re, Arr *arr
+		return Tbl *
+		options &Tbl{
+		}
+		section Associative Arrays
+		description search an array with a regular expression
+		private 0
+		deprecated 0
+	}
+}

@@ -1,0 +1,69 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command datafile
+		args pathname, envname, filename
+		return subroutine
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description Find a program's data-file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command datapath
+		args pathname, envname, dirname, filename, suffix
+		return subroutine
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description Find a program's data file based on pathname components
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command newdata
+		args pathname, envname, dirname, filename, suffix
+		return integer
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description Construct pathname for a new data-file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ssearch
+		args key, keysize, a, n, unique, compare, private, ns, ne
+		return integer
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description binary search of index
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command shellsort
+		args a, n, size, compare, private
+		return subroutine
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description shell sort implementation
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command isort
+		args a, n, size, compare, private
+		return subroutine
+		options &Tbl{
+		}
+		section General Programming Utilities
+		description insertion sort routine
+		private 0
+		deprecated 0
+	}
+}

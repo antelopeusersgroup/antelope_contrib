@@ -1,0 +1,311 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command dbadd
+		args db, record
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description add a record to a table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbdelete
+		args db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description delete rows from database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbmark
+		args db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description mark rows for deletion
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbcrunch
+		args db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description crunch out null rows in database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbtruncate
+		args db, nrows
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description truncate a database table to specified length
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbdestroy
+		args db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description remove all base tables for a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbex_compile
+		args db, s, expression, type
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description compile a database expression
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbex_eval
+		args db, expression, setflag, result
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description evaluate a database expression for a record
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbex_free
+		args expression
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description free memory for a database expression
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbextfile
+		args db, tablename, filename
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description compose filename from database record
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbget
+		args db, s
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description get ascii tables, records, or fields from a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbput
+		args db, s
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description put ascii tables, records, or fields into a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbgetv
+		args db, table_name, field_name, &value1, ..., 0
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description read values from fields in a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbputv
+		args db, table_name, field_name, value1, ..., 0
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description write values to fields in a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbaddv
+		args db, table_name, field_name, value1, ..., 0
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description write values to fields in a new database row
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbjoin
+		args dbresult, db1, db2, pattern1, pattern2, outer, nojoin, name
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description join two database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dblookup
+		args dbr, db, database, table, field, record
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description lookup database pointer indexes from ascii names
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbnextid
+		args db, name
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description generate unique id from the lastid table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbopen
+		args name, opentype, db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description open a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbopen_database
+		args name, opentype, db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description open a database or table pathname
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbopen_table
+		args name, opentype, db
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description open a database or table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbquery
+		args db, code, value
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description get ancillary information about a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbadd_remark
+		args db, remark
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description add a remark to CSS database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbget_remark
+		args db, remark
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description get a remark from CSS database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbsort
+		args result, db, tbl, flag, name
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description create a sorted view
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbsubset
+		args result, db, s, name
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description create a subset view
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbunjoin
+		args db, database_name, rewrite
+		return integer
+		options &Tbl{
+		}
+		section Database Operations
+		description create new tables from a joined table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trgetwf
+		args db, 0, data, NMAX, t0_req, t1_req, t0, t1, npts, fill, fill_value
+		return subroutine
+		options &Tbl{
+		}
+		section Database Operations
+		description read trace data from file into memory
+		private 0
+		deprecated 0
+	}
+}

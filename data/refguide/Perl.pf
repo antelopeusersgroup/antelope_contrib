@@ -1,0 +1,620 @@
+base_section Perl
+Entries	&Tbl{
+    &Arr{
+        args	database, permissions
+        command	dbopen
+        description	Returns a database pointer to the database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Opening a database
+    }
+    &Arr{
+        args	database, permissions
+        command	dbopen_table
+        description	Returns a database pointer to the specified database table ("-" is stdin)
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Opening a database
+    }
+    &Arr{
+        args	@db, database, table, field, record
+        command	dblookup
+        description	Returns a database pointer for the specified database, table, field, and record.  Use "" for unspecified values.
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Opening a database
+    }
+    &Arr{
+        args	@db [, 0]
+        command	dbget
+        description	Returns [or copies to the scratch record] the specified table, record, or field from the database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db [, string]
+        command	dbput
+        description	If no string is specified, the value is taken from the scratch record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, field_name, [field_name, ...]
+        command	dbgetv
+        description	Returns the values of the specified fields for a particular record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, field_name, value, [field_name, value, ...]
+        command	dbputv
+        description	Saves the specified values into the specified fields for a particular record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, table_name
+        command	dbsave_view
+        description	Saves the view into a file named after the database and tablename
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, database_name
+        command	dbunjoin
+        description	Creates a new database, which contains all the records referenced in the input view
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db, string
+        command	dbcompile
+        description	Add new attributes or relations to the schema directly from the perl script
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	@db, expression
+        command	dbex_eval
+        description	Evaluate an expression for a particular record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	@db[, base-table]
+        command	dbextfile
+        description	return the filename for an external file for a particular record in a view
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	@db, [record]
+        command	dbadd
+        description	Add the new record to the table in @db.  If no record is specified, use the scratch record.  Returns the new record number.
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db
+        command	dbaddnull
+        description	Add a new null record to a table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, remark
+        command	dbadd_remark
+        description	Add a comment in the remark table for the specified table/record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db
+        command	dbget_remark
+        description	Get any comment from the remark table for the specified table/record
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, field_name, value, [field_name, value, ...]
+        command	dbaddv
+        description	Add a new record with the specified values to the database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, code
+        command	dbquery
+        description	Query the database for information. Codes must be in quotes.
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Getting information about the database
+    }
+    &Arr{
+        args	db1, db2, [join-keys]
+        command	dbnojoin
+        description	Return a view of all records in the first table which don't join to the second.
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db1, @db2, [join-keys]
+        command	dbjoin
+        description	return a join of the two tables, using the join-keys if specified
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db1, @db2, hookname, [join-keys]
+        command	dbmatches
+        description	returns a list of the records in db2 which match the record specified by db1
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	@db1, @db2, [expression]
+        command	dbtheta
+        description	returns combinations of rows from the two tables which satisfy the expression, or all combinations if no expression is specified
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db, expression
+        command	dbsubset
+        description	returns a new view which is the set of all row which satisfy the expression
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db, cmd1, cmd2, cmd3 ...
+        command	dbprocess
+        description	returns a new view which is the result of applying the dbprocess commands cmd1, cmd2, etc to the input database pointer
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db
+        command	dbmark
+        description	sets the specified record to all null values
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db
+        command	dbclose
+        description	closes the database, freeing all resources used by it
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Opening a database
+    }
+    &Arr{
+        args	@db
+        command	dbfree
+        description	frees resources for a table or a database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Opening a database
+    }
+    &Arr{
+        args	@db
+        command	dbdelete
+        description	physically deletes a record from the database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, n
+        command	dbtruncate
+        description	Truncate a table to the specified number of records
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db
+        command	dbcrunch
+        description	Deletes all marked (null) records from the specified table
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db
+        command	dbdestroy
+        description	Deletes all tables and the descriptor file for the specified database
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Manipulating fields and records
+    }
+    &Arr{
+        args	@db, id_name
+        command	dbnextid
+        description	Gets the next free id value for the specified database and id_name
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	@db, [-u,] [-r,] [key, key..]
+        command	dbsort
+        description	Sort the input table according to the specified keys
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	@db, key, [key, ...]
+        command	dbgroup
+        description	Group the input table according to the specified keys
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Forming views
+    }
+    &Arr{
+        args	$0, @ARGV
+        command	elog_init
+        description	initialize the elog message routines
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	msg
+        command	elog_notify msg
+        description	Send a message other than an error message to the elog facility
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	msg
+        command	elog_log msg
+        description	Save a message on the elog message log
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	msg
+        command	elog_complain msg
+        description	Write an error message to the elog message facility for immediate output
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	msg
+        command	elog_die msg
+        description	Write a message to the elog message facility and die
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	NONE
+        command	elog_clear
+        description	Clear the elog message log
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	deliver first
+        command	elog_flush
+        description	Get rid of messages after
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	NONE
+        command	elog_mark
+        description	return the count of messages  currently  held  in  the error log
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Error handling
+    }
+    &Arr{
+        args	yearday
+        command	epoch
+        description	Returns the epoch time corresponding to the integer yearday
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch
+        command	yearday
+        description	Returns the yearday corresponding to an epoch time
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	string
+        command	str2epoch
+        description	Returns the epoch time corresponding to the free-form input time/date
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch, fmt [, timezone]
+        command	epoch2str
+        description	returns the epoch time formatted according to the fmt string and converted to timezone
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch
+        command	strtime
+        description	Returns a formatted string of the time and date
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch
+        command	strdate
+        description	Returns a formatted string of the date
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch
+        command	strydtime
+        description	Returns a formatted string of the time and date, including the day of year
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	epoch
+        command	strtdelta
+        description	Returns a formatted string of the specified time interpreted as a time difference
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Time conversion
+    }
+    &Arr{
+        args	env, dir, file, suffix
+        command	datapath
+        description	Finds the specified file by looking at first the environment variable, and then along the path
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	env, file
+        command	datafile
+        description	Finds the specified file by looking at first the environment variable, and then along the path
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	lat, lon
+        command	grn
+        description	Return the geographic region number
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	lat, lon
+        command	srn
+        description	Return the seismic region number
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	lat, lon
+        command	grname
+        description	Return the geopgraphic region name
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	lat, lon
+        command	srname
+        description	Return the seismic region name
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	string
+        command	askyn
+        description	Pose a yes/no question string of the controlling tty, and return the response
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	string
+        command	ask
+        description	Pose a question string of the controlling tty, and return the response
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Special functions
+    }
+    &Arr{
+        args	pfname, key
+        command	pfget
+        description	extracts the value for the key from the parameter file pfname
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Parameter files
+    }
+    &Arr{
+        args	pfname
+        command	pfupdate
+        description	checks and rereads a parameter file if one of the components along PFPATH has changed
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Parameter files
+    }
+    &Arr{
+        args	resource, [limit2set]
+        command	limit
+        description	return the current resource limit, or set a new resource limit
+        private 0
+        deprecated 0
+        options	&Tbl{
+            cputime
+            filesize
+            datasize
+            stacksize
+            coredumpsize
+            vmemoryuse
+            descriptors
+        }
+        section	Special functions
+    }
+}

@@ -1,0 +1,201 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command elog_init
+		args int argc, char **argv
+		return int
+		options &Tbl{
+		}
+		section Error handling
+		description Initialize error-loggion routines
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_log
+		args int flag, char *format, ... 
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description Add a message to the internally accumulating error log
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_notify
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description deliver a message and return
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_complain
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description deliver a message and return
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_die
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description deliver a message and exit with error code 1
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_fault
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description deliver a message and exit with error code 1
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_msg_print
+		args FILE *file, Elog_msg *elog_msg
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description Print an error-log message
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_print
+		args FILE *file, int first
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description print the error log
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_free_msg
+		args void *vmsg
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description free an error-log message
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_clear
+		args NONE
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description Clear the log of error messages
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_mark
+		args NONE
+		return int
+		options &Tbl{
+		}
+		section Error handling
+		description Get the current number of message in the error register
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_flush
+		args int deliver, int first
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description flush some of the error-log messages
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_query
+		args enum Elog_code code, int severity, void **value
+		return int
+		options &Tbl{
+		}
+		section Error handling
+		description retrieve various parameters about error-logging
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command elog_set
+		args enum Elog_code code, int severity, void *value
+		return int
+		options &Tbl{
+		}
+		section Error handling
+		description set various parameters for error-logging
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command register_error
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description old version of elog_log
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command complain
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description old version of elog_complain
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command die
+		args int flag, char *format, ...
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description old version of elog_die
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clear_register
+		args int deliver
+		return void
+		options &Tbl{
+		}
+		section Error handling
+		description clears the error register, printing the contents if asked
+		private 0
+		deprecated 0
+	}
+}

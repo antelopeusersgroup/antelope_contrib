@@ -1,0 +1,138 @@
+Headers &Arr{
+"Epoch command escapes" &Literal{
+	%%   same as %
+	%B   month
+	%b   abbreviated month
+	%D   date as %m/%d/%y
+	%d   day of month (01-31)
+	%a   abbreviated day of week
+	%A   day of week
+	%E   epoch time to milliseconds (xxxxxxxxxxx.xxx)
+	%e   day of month (1-31; single digits preceded by a blank)
+	%H   hour (00-23)
+	%I   hour (01-12)
+	%j   day number of year (001-366)
+	%k   hour (0-23; single digits are preceded by a blank)
+	%l   hour (1-12; single digits are preceded by a blank)
+	%M   minute (00-59)
+	%m   month number (01-12)
+	%n   (linefeed)
+	%p   AM or PM, whichever is appropriate
+	%S   seconds (00-59)
+	%s   milliseconds (000-999)
+	%t   (tab)
+	%Y   year, including century (for example, 1988)
+	%y   year within century (00-99)
+	%Z   timezone code
+	%z   timezone code
+}
+C &Literal{
+	#include "db.h"
+	typedef struct Dbptr
+	{
+		int	database,
+			table,
+			field,
+			record;
+	} Dbptr;
+}
+"Database codes" &Literal{
+	dbINVALID
+	dbCOUNT
+	dbDATABASE_COUNT
+	dbTABLE_COUNT
+	dbFIELD_COUNT
+	dbRECORD_COUNT
+	dbDESCRIPTION
+	dbSCHEMA_DESCRIPTION
+	dbDATABASE_DESCRIPTION
+	dbTABLE_DESCRIPTION
+	dbFIELD_DESCRIPTION
+	dbDETAIL
+	dbSCHEMA_DETAIL
+	dbDATABASE_DETAIL
+	dbTABLE_DETAIL
+	dbFIELD_DETAIL
+	dbNAME
+	dbSCHEMA_NAME
+	dbDATABASE_NAME
+	dbTABLE_NAME
+	dbFIELD_NAME
+	dbTABLE_PRESENT
+	dbSIZE
+	dbTABLE_SIZE
+	dbFIELD_SIZE
+	dbTYPE
+	dbFORMAT
+	dbFIELD_UNITS
+	dbFIELD_TYPE
+	dbTABLE_FILENAME
+	dbDBPATH
+	dbTABLE_DIRNAME
+	dbPRIMARY_KEY
+	dbALTERNATE_KEY
+	dbFOREIGN_KEYS
+	dbUNIQUE_ID_NAME
+	dbSCHEMA_DEFAULT
+	
+	dbFIELD_RANGE
+	dbVIEW_TABLE_COUNT
+	dbRECORD_SIZE
+	dbFIELD_FORMAT
+	dbFIELD_INDEX
+	dbTABLE_ADDRESS
+	
+	dbTABLE_FIELDS
+	dbFIELD_TABLES
+	dbVIEW_TABLES
+	dbLINK_FIELDS
+	dbSCHEMA_FIELDS
+	dbTABLE_IS_WRITEABLE
+	dbTABLE_IS_VIEW
+	dbFIELD_BASE_TABLE
+	dbTABLE_IS_TRANSIENT
+	dbTIMEDATE_NAME
+	dbDATABASE_FILENAME
+	dbSCHEMA_TABLES
+	dbDATABASE_IS_WRITEABLE
+	dbLASTIDS
+	
+	
+	dbDATABASE
+	dbVIEW
+	dbTABLE
+	dbFIELD
+	dbRECORD
+	dbMERGE
+	
+	dbALL
+	dbPRIMARY
+	dbALTERNATE
+	dbSCRATCH
+	dbNULL
+	
+	dbBOOLEAN
+	dbINTEGER
+	dbREAL
+	dbTIME
+	dbYEARDAY
+	dbSTRING
+	dbLINK
+	
+	dbWAVEFORM
+	dbRESPONSE
+	
+	dbBFLOAT
+	dbBDOUBLE
+	dbBSHORT
+	dbBINT
+	
+	dbDBPTR
+	
+	dbUNIQUE
+	dbOUTER_JOIN
+	
+	dbSORT_UNIQUE
+	dbSORT_REVERSE
+}
+}

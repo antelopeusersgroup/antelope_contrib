@@ -1,0 +1,824 @@
+base_section Matlab
+Entries &Tbl{
+	&Arr{
+		command dbopen
+		args FILENAME, OPENTYPE
+		return EMPTY
+		section Opening a database
+		description Open a Datascope Database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dblookup
+		args DBPTR, DATABASE, TABLE, FIELD, RECORD
+		return EMPTY
+		section Opening a database
+		description Aim a Datascope database pointer as specified 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dblookup_table
+		args DBPTR, TABLE
+		return EMPTY
+		section Opening a database
+		description Aim a Datascope database pointer at a specified table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbclose
+		args DBPTR
+		return EMPTY
+		section Opening a database
+		description Close a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbadd
+		args DBPTR, RECORD 
+		return EMPTY
+		section Manipulating fields and records 
+		description Add a record to a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbaddnull
+		args DBPTR
+		return EMPTY
+		section Manipulating fields and records 
+		description Add a null record to a Datascope database 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbaddv
+		args DBPTR, FIELD, VALUE [,FIELD, VALUE ... ]
+		return EMPTY
+		section Manipulating fields and records 
+		description Add values to a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbget
+		args DBPTR, ['dbSCRATCH']
+		return EMPTY
+		section Manipulating fields and records 
+		description Get a table, record, or field from a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbgetv
+		args DBPTR, FIELD [,FIELD, ...]
+		return EMPTY
+		section Manipulating fields and records 
+		description Get the specified values from a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbput
+		args DBPTR, VALUE
+		return EMPTY
+		section Manipulating fields and records 
+		description Put the specified value into a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbputv
+		args DBPTR, FIELD, VALUE [,FIELD, VALUE ... ]
+		return EMPTY
+		section Manipulating fields and records 
+		description Put the specified values into a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command db2struct
+		args DBPTR [, FIELD [, FIELD, ... ]]
+		return EMPTY
+		section Manipulating fields and records 
+		description Convert a database view to a Matlab structure array
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbmark
+		args DBPTR
+		return EMPTY
+		section Manipulating fields and records 
+		description Set the specified Datascope database rows to null
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbcrunch
+		args DBPTR
+		return EMPTY
+		section Manipulating fields and records 
+		description Crunch out null rows in a Datascope database table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbdelete
+		args DBPTR
+		return EMPTY
+		section Manipulating fields and records 
+		description Delete the specified record in a Datascope databas
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbinvalid
+		args NONE
+		return EMPTY
+		section Manipulating fields and records 
+		description Create an invalid database pointer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbquery
+		args DBPTR, CODE
+		return EMPTY
+		section Getting information about the database
+		description Query a Datascope database for various parameters
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbjoin_keys
+		args DBPTR1, DBPTR2 **or** DBPTR, TABLE1, TABLE2
+		return EMPTY
+		section Getting information about the database
+		description Show the inferred join keys between two database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbjoin
+		args DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer']
+		return EMPTY
+		section Forming views
+		description Join the specified Datascope database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbsort
+		args DBPTR [,FIELD, FIELD,...]
+		return EMPTY
+		section Forming views
+		description Sort the specified Datascope database table
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbsubset
+		args DBPTR, EXPRESSION
+		return EMPTY
+		section Forming views
+		description Subset a Datascope database table 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbtheta
+		args DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer']
+		return EMPTY
+		section Forming views
+		description Theta-join two Datascope database tables
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbunjoin
+		args DBPTR, OUTPUT
+		return EMPTY
+		section Forming views
+		description Unjoin the specified Datascope database view
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbnojoin
+		args DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]]
+		return EMPTY
+		section Forming views
+		description Find records which do not join
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbeval
+		args DBPTR, EXPRESSION [,TYPE]
+		return EMPTY
+		section Evaluating expressions
+		description Evaluate an expression on a Datascope database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbadd_remark
+		args DBPTR, REMARK
+		return EMPTY
+		section Special functions
+		description Add a remark to a datascope Database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbget_remark
+		args DBPTR
+		return EMPTY
+		section Special functions
+		description Get a remark from a Datascope Database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbfind
+		args DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards']
+		return EMPTY
+		section Special functions
+		description Locate a database row satisfying some condition 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbfilename
+		args DBPTR
+		return EMPTY
+		section Special functions
+		description Compose a filename from a database record
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbnextid
+		args DBPTR, IDNAME
+		return EMPTY
+		section Special functions
+		description Get the next integer id for id field from a database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trload_css
+		args DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE]
+		return EMPTY
+		section Handling waveform data
+		description Load waveform data from CSS database into trace object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trload_cssgrp
+		args DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE]
+		return EMPTY
+		section Handling waveform data
+		description Load waveform data from grouped CSS database into trace object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trextract_data
+		args TRPTR
+		return EMPTY
+		section Handling waveform data
+		description Read a copy of data from a trace object into a matrix
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trinsert_data
+		args TRPTR, DATA
+		return EMPTY
+		section Handling waveform data
+		description Put data from a Matlab matrix into a trace-object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trsplice
+		args TRPTR, TOLERANCE
+		return EMPTY
+		section Handling waveform data
+		description Splice together data segments
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trgetwf
+		args DBPTR [, REQS, REQE]
+		return EMPTY
+		section Handling waveform data
+		description Read trace data from database into matrix
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trputwf
+		args DBPTR, DATA
+		return EMPTY
+		section Handling waveform data
+		description Save waveform data into a file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trnew
+		args NONE
+		return EMPTY
+		section Handling waveform data
+		description Create a new trace-object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trsave_wf
+		args TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append']
+		return EMPTY
+		section Handling waveform data
+		description Save trace-object waveform data to a new database
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trfree
+		args TRPTR
+		return EMPTY
+		section Handling waveform data
+		description free memory for part of a trace object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trdestroy
+		args TRPTR
+		return EMPTY
+		section Handling waveform data
+		description free memory and trace object for trace object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trapply_calib
+		args TRPTR
+		return EMPTY
+		section Handling waveform data
+		description multiply trace-object waveform data by calib value
+		private 0
+		deprecated 0
+		
+	}
+	&Arr{
+		command tr_nsamp
+		args TIME, SAMPRATE, ENDTIME
+		return EMPTY
+		section Handling waveform data
+		description Calculate number of samples from time, sample rate, and endtime
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tr_samprate
+		args TIME, NSAMP, ENDTIME
+		return EMPTY
+		section Handling waveform data
+		description Calculate sample rate from time, endtime, and number of samples
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tr_endtime
+		args TIME, SAMPRATE, NSAMP
+		return EMPTY
+		section Handling waveform data
+		description Calculate endtime from time, sample rate, and number of samples
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tr_time2samp
+		args TIME0, SAMPRATE, TIME1
+		return EMPTY
+		section Handling waveform data
+		description Calculate sample index from times and sample rate
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tr_samp2time
+		args TIME0, SAMPRATE, N_INDEXED_BY_1
+		return EMPTY
+		section Handling waveform data
+		description Calculate sample time from times and sample index
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command str2epoch
+		args TIMESTRING
+		return EMPTY
+		section Time conversion
+		description Convert a string to epoch time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command epoch2str
+		args EPOCH, FORMAT
+		return EMPTY
+		section Time conversion
+		description Convert epoch time to a string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strdate
+		args EPOCH
+		return EMPTY
+		section Time conversion
+		description Convert an epoch time to its corresponding date
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strtime
+		args EPOCH
+		return EMPTY
+		section Time conversion
+		description Convert an epoch time to a string specification
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strydtime
+		args EPOCH
+		return EMPTY
+		section Time conversion
+		description Convert an epoch time to a string date and time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command strtdelta
+		args EPOCH
+		return EMPTY
+		section Time conversion
+		description Convert an epoch time difference to an elapsed time 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command yearday
+		args EPOCH
+		return EMPTY
+		section Time conversion
+		description Convert an epoch time to a yearday value
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clear_register
+		args [ 'print' ]
+		return EMPTY
+		section Error handling
+		description Clear the Datascope error register
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbpf
+		args <nothing> **or** PFNAME **or** PF, STRING
+		return EMPTY
+		section Parameter Files
+		description Dbpf (Parameter File) class constructor
+		private 0
+		deprecated 0
+		
+	}
+	&Arr{
+		command pfwrite
+		args DBPF, FILENAME
+		return EMPTY
+		section Parameter Files
+		description Save a parameter-file object to a file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_num
+		args DBPF, NAME
+		return EMPTY
+		section Parameter Files
+		description Get a numeric value from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_string
+		args DBPF, NAME
+		return EMPTY
+		section Parameter Files
+		description Get a string from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_boolean
+		args DBPF, NAME
+		return EMPTY
+		section Parameter Files
+		description Get a boolean value from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_tbl
+		args DBPF, NAME [, 'recursive' ]
+		return EMPTY
+		section Parameter Files
+		description Get an ordered list from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget_arr
+		args DBPF, NAME [, 'recursive' ]
+		return EMPTY
+		section Parameter Files
+		description Get an associative array from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfget
+		args DBPF, NAME [, 'recursive' ]
+		return EMPTY
+		section Parameter Files
+		description Get a generic parameter from a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput_boolean
+		args DBPF, NAME, VALUE
+		return EMPTY
+		section Parameter Files
+		description Put a boolean value into a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfput
+		args DBPF, NAME, VALUE
+		return EMPTY
+		section Parameter Files
+		description Put a value into a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfresolve
+		args DBPF, NAME [, 'recursive' ]
+		return EMPTY
+		section Parameter Files
+		description Alternate interface to retrieve parameters
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pf2string
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Convert a parameter file object to a string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pf2struct
+		args DBPF [, 'recursive' ]
+		return EMPTY
+		section Parameter Files
+		description Convert a parameter file object to a Matlab struct
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfkeys
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Find the parameter names in a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pftype
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Find the type of a parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pffiles
+		args PFNAME [, 'all' ]
+		return EMPTY
+		section Parameter Files
+		description List file names for parameter-file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfname
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Find the name of a top-level parameter-file object
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pfupdate
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Refresh a Dbpf object to reflect changes in the file
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pffree
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Dbpf elimination routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clear
+		args DBPF
+		return EMPTY
+		section Parameter Files
+		description Dbpf elimination routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command dbresponse
+		args FILE
+		return EMPTY
+		section Instrument response routines
+		description Dbresponse class constructor
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command eval_response
+		args DBRESPONSE, OMEGA
+		return EMPTY
+		section Instrument response routines
+		description Dbresponse evaluation routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command free_response
+		args DBRESPONSE
+		return EMPTY
+		section Instrument response routines
+		description Dbresponse elimination routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clear
+		args DBRESPONSE
+		return EMPTY
+		section Instrument response routines
+		description Dbresponse elimination routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbopen
+		args ORBNAME, OPENTYPE
+		return EMPTY
+		section Real-time system connections
+		description Open a connection to an Antelope object-ring-buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbclose
+		args ORBFD
+		return EMPTY
+		section Real-time system connections
+		description Close a connection to an Antelope object-ring-buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbping
+		args ORBFD
+		return EMPTY
+		section Real-time system connections
+		description Ask for the version number of an Antelope ORB server
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbget
+		args ORBFD [, CODE **or** PKTID]
+		return EMPTY
+		section Real-time system connections
+		description Get packets from an Antelope ORB connection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbreap
+		args ORBFD [, 'nodelay']
+		return EMPTY
+		section Real-time system connections
+		description Get successive packets from an Antelope ORB connection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbselect
+		args ORBFD, REGEX
+		return EMPTY
+		section Real-time system connections
+		description Select sources on an Antelope ORB read connection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbreject
+		args ORBFD, REGEX
+		return EMPTY
+		section Real-time system connections
+		description Reject sources on an Antelope ORB read connection
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbseek
+		args ORBFD, CODE **or** PKTID
+		return EMPTY
+		section Real-time system connections
+		description Set an ORB Read connection to the specified position
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbafter
+		args ORBFD, TIME
+		return EMPTY
+		section Real-time system connections
+		description set ORB connection to first packet after a specified time
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command orbtell
+		args ORBFD
+		return EMPTY
+		section Real-time system connections
+		description Ask for the current read-position on an Antelope ORB
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command antelope_webdoc
+		args NONE
+		return EMPTY
+		section Getting Help
+		description launch web-browser with html documentation 
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command use_antelope
+		args NONE
+		return EMPTY
+		section Startup
+		description load Datascope/Antelope interface into Matlab
+		private 0
+		deprecated 0
+	}
+}

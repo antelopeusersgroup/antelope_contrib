@@ -1,0 +1,234 @@
+base_section C
+Entries &Tbl{
+	&Arr{
+		command bnsnew
+		args int fd, int sz
+		return Bns *
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description Create a new network stream I/O buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsuse_sockio
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description initialize socket communications for a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsfree
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description free space associated with a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsclose
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description close file descriptor and free space for a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsput
+		args Bns *bns, void *data, int type, int n
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description put data to a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsget
+		args Bns *bns, void *data, int type, int n
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description get data from a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsflush
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description clear internal buffer of a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsmark
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description mark the current read point in the input buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsrelease
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description reset mark on the input buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsrestore
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description restore mark on input buffer to the old mark
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnstimeout
+		args Bns *bns, int milliseconds
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description set the bns timeout period
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnswait
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description wait until the bns timeout for data to appear
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnserr
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description return non-zero after an error occurs on a bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnseof
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description return non-zero when end-of-file occurs on input
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnserrno
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description returns error-number for bns
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnsclr
+		args Bns *bns
+		return void
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description Wipe clean the bns buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bnscnt
+		args Bns *bns
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description return count of characters in bns buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command bns2buf
+		args Bns *bns, char *buf, int maxbuf
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description copy bns buffered data elsewhere
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command buf2bns
+		args Bns *bns, char *buf, int nbytes
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description put data directly into a bns buffer
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command gbnsSync
+		args Bns *bns, char *sync, int nsync, int stric 
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description synchronize an input stream to a character sequence
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command pbnsSync
+		args Bns *bns, char *sync, int nsync
+		return int
+		options &Tbl{
+		}
+		section Buffered Network Stream I/O
+		description synchronize an output stream to a character sequence
+		private 0
+		deprecated 0
+	}
+}

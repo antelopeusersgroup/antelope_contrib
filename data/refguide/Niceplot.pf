@@ -1,0 +1,415 @@
+base_section Fortran
+Entries &Tbl{
+	&Arr{
+		command box
+		args xleft, xright, ybot, ytop, thick, ithick, iclip
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description draw a box
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command xmap
+		args real x
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description convert from plotting to raster units
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ymap
+		args real y
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description convert from plotting to raster units
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command text
+		args x, y, angle, iref, string, iclip
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description plot a text string
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command tics
+		args x1, y1, x2, y2, stic, ntic, dtic, tlen, thick, idir
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description plot tic marks
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command sclsiz
+		args real*4 scale
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description scale character sizes
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setbac
+		args hue, light, sat
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set background color
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setbg
+		args character*(*) color
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set background color
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setdim
+		args xdim, ydim, xlow, ylow
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set plotting area dimensions
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setfg
+		args character*(*) color
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set foreground color
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setfor
+		args hue, light, sat
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set foreground color
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setscl
+		args xmin, xmax, ymin, ymax
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set plotting area scaling
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command plot1
+		args n, x, y, roff, iclip
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description plot a curve
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command laxis
+		args xdim, ydim, xmarg, ymarg, xlow, ylow, xmax, xmin, ymax, ymin, dysmal, dynumb, fmty, labelx, labely, title, iclear
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description draw log-lin niceplot axes
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command llaxis
+		args xdim, ydim, xmarg, ymarg, xlow, ylow, xmax, xmin, ymax, ymin, labelx, labely, title, iclear
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description draw log-log niceplot axes
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ltype
+		args integer n
+		return subroutine
+		options &Tbl{
+			0 - solid
+			1 - dotted
+			2 - dot-dashed
+			3 - short-dashed
+			4 - long-dashed
+		}
+		section Niceplot
+		description set line type
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ncontour
+		args nx, nxmax, ny, x, y, z,  ctype,  zmin,  zmax, dz
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description render a contour map
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command nplot
+		args n, x, y, igraf, iclip, thick, ithick, asymb
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description plot a set of points
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command ntype
+		args xtype, ytype
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description define plot scales
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command getchr
+		args c, nstrks, npoint, ioff, ix, iy
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description compute the outline of a character
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command getsiz
+		args c, ihite, iwidth
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description compute the size of a character
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command fplot
+		args n, x, y
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description fast plotting routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command line
+		args x1, y1, x2, y2, thick, ithick, iclip
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description draw a line
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command setcursor
+		args type, param1, param2
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description set the appearance of the graphics cursor
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command cursor
+		args x, y, chr
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description reads in the cursor position upon keypress
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trackcursor
+		args external callback(x, y)
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description executes callback routine when cursor is moved
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command trackcursoroff
+		args NONE
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description disables cursor-tracking callback routine
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command initt
+		args itran, plotfile, display, program, ssize, xwin, ywin
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description initialize niceplot window
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command finitt
+		args NONE
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description finish niceplot plotting
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command circle
+		args xc, yc, r, narc, iclose, iclip, thick, ithick
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description draw a circle
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command cfont
+		args integer jfont
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description change niceplot font
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command chrdir
+		args real angle
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description change text-labelling direction
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command chrsiz
+		args height, ratio, slant
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description change size and slant of text labelling
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clear
+		args NONE
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description clear the niceplot window
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command clrrgn
+		args xmn, xmx, ymn, ymx
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description clear a region in the niceplot window
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command cpyrgn
+		args xmn, xmx, ymn, ymx
+		return subroutine
+		options &Tbl{
+		}
+		section Niceplot
+		description copy a region from the pixmap to the niceplot window
+		private 0
+		deprecated 0
+	}
+	&Arr{
+		command axis
+		args xdim, ydim, xmarg, ymarg, xlow, ylow, xmax,  xmin, ymax,  ymin,  dxsmal, dxnumb, dysmal, dynumb, fmtx, fmty, labelx, labely, title, iclear
+		return subroutine
+		options &Tbl{
+		}
+		section  Niceplot
+		description Draw a box with tic marks and labels
+		private 0
+		deprecated 0
+	}
+}
