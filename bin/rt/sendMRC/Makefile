@@ -4,9 +4,7 @@ BIN = sendMRC
 MAN1= sendMRC.1   
 PF  = sendMRC.pf
 
-#cflags  = -g
-#ldflags	= -Bstatic               
-ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
+ldlibs	= -lpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\
