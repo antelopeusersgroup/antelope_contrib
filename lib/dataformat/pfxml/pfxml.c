@@ -8,6 +8,38 @@
 #define OPTNEWLINE { if( flags & PFXML_NEWLINES ) { pushstr( (void **) &vstack, "\n" ); } }
 #define TBL_ELEM "pftbl_entry"
 
+static void 
+safe_strsub( char *source, char *pattern, char *replacement, char *dest )
+{
+	char 	*copy;
+
+	allot( char *, copy, strlen( source ) + STRSZ );
+
+	strsub( source, pattern, replacement, copy );
+	
+	strcpy( dest, copy );
+
+	free( copy );
+}
+
+static void
+add_dataelement( void **vstack, char *value )
+{
+        char    *copy;
+
+	allot( char *, copy, strlen( value ) + STRSZ );
+	strcpy( copy, value );
+        strtrim( copy );
+
+        safe_strsub( copy, "&", "&amp;", copy );
+        safe_strsub( copy, "<", "&lt;", copy );
+        safe_strsub( copy, ">", "&gt;", copy );
+
+        pushstr( vstack, copy );
+
+        free( copy );
+}
+
 static char *
 maketag( char *tagtype, char *name, int flags )
 {
@@ -58,7 +90,14 @@ endtag( char *tagtype, char *name, int flags )
 
 	if( flags & PFXML_STRONG ) {
 
-		pushstr( (void **) &vstack, name );	
+		if( strcmp( name, "" ) ) {
+
+			pushstr( (void **) &vstack, name );	
+
+		} else {
+
+			pushstr( (void **) &vstack, TBL_ELEM );
+		}
 
 	} else {
 
@@ -99,6 +138,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 		
 		tag = maketag( "pffile", name, flags );
 		pushstr( (void **) &vstack, tag ); 
+		free( tag );
 		OPTNEWLINE;
 
 		keys = pfkeys( pf );
@@ -113,22 +153,28 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 				tag = maketag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
-				pushstr( (void **) &vstack, value );
+				free( tag );
+				add_dataelement( (void **) &vstack, value );
 				tag = endtag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
+				free( tag );
 				OPTNEWLINE;
 
 			} else {
 
 				xml = pf2xml( (Pf *) value, key, 0, flags );
 				pushstr( (void **) &vstack, xml );
+				free( xml );
 				OPTNEWLINE;
 			}
 		}
 
 		tag = endtag( "pffile", name, flags );
 		pushstr( (void **) &vstack, tag ); 
+		free( tag );
 		OPTNEWLINE;
+
+		freetbl( keys, 0 );
 
 		break;
 
@@ -136,6 +182,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 		
 		tag = maketag( "pfarr", name, flags );
 		pushstr( (void **) &vstack, tag ); 
+		free( tag );
 		OPTNEWLINE;
 
 		keys = pfkeys( pf );
@@ -150,27 +197,34 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 				tag = maketag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
-				pushstr( (void **) &vstack, value );
+				free( tag );
+				add_dataelement( (void **) &vstack, value );
 				tag = endtag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
+				free( tag );
 				OPTNEWLINE;
 
 			} else {
 
 				xml = pf2xml( (Pf *) value, key, 0, flags );
 				pushstr( (void **) &vstack, xml );
+				free( xml );
 				OPTNEWLINE;
 			}
 		}
 
 		tag = endtag( "pfarr", name, flags );
 		pushstr( (void **) &vstack, tag);
+		free( tag );
+
+		freetbl( keys, 0 );
 
 		break;
 
 	case PFTBL:
 		tag = maketag( "pftbl", name, flags );
 		pushstr( (void **) &vstack, tag ); 
+		free( tag );
 		OPTNEWLINE;
 
 		for( irow = 0; irow < pfmaxtbl( pf ); irow++ ) {
@@ -181,15 +235,18 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 				tag = maketag( "pfstring", "", flags );
 				pushstr( (void **) &vstack, tag ); 
-				pushstr( (void **) &vstack, value );
+				free( tag );
+				add_dataelement( (void **) &vstack, value );
 				tag = endtag( "pfstring", "", flags );
 				pushstr( (void **) &vstack, tag ); 
+				free( tag );
 				OPTNEWLINE;
 
 			} else {
 
 				xml = pf2xml( (Pf *) value, "", 0, flags );
 				pushstr( (void **) &vstack, xml );
+				free( xml );
 				OPTNEWLINE;
 			}
 
@@ -197,6 +254,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 		tag = endtag( "pftbl", name, flags );
 		pushstr( (void **) &vstack, tag ); 
+		free( tag );
 
 		break;
 	default:

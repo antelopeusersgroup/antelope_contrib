@@ -45,8 +45,9 @@ strong mode:
 .in
 .ft R
 .SH RETURN VALUES
-pf2xml returns a character string with the XML value, or a NULL 
-string on error. 
+pf2xml returns a newly allocated character string with the XML
+value, or a NULL string on error. This string must be 
+freed by the calling program.
 .SH LIBRARY
 .SH ATTRIBUTES
 .SH DIAGNOSTICS
