@@ -355,7 +355,6 @@ int project_covariance(double **,int, double *, double, int,
 		double *, double *, double *, double *, double *);
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
-Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);
 void copy_hypocenter(Hypocenter *,Hypocenter *);
 double pfget_double_wdef(Pf *, char *, double);
 int pfget_int_wdef(Pf *, char *, int);

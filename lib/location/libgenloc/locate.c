@@ -1014,7 +1014,7 @@ int ggnloc (Hypocenter initial_location,
 		case (PSEUDO_RECENTERED):
 			nsv_used= pseudoinverse_solver(U,s,V,b,m,np,
 				options.sv_relative_cutoff,dx);
-			if(nsv_used != np)
+			if(nsv_used != np && GenlocVerbose)
 			{
 				elog_log(0,"ggnloc:  svdtrucation applied to invert equations of condition\n");
 				elog_log(0,"Using %d of %d singular values\n",

@@ -145,7 +145,7 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, double **C, int *
 			for(j=0;j<ntotal;++j) C[i][j] = 0.0;
 		else
 		{
-			for(j=0,jj=0;j<ntotal && jj<n;++j)
+			for(j=0,jj=0;j<ntotal;++j)
 				if(fix[j])
 					C[i][j] = 0.0;
 				else
