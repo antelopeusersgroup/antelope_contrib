@@ -7,7 +7,7 @@
  */
 
 #define USAGE "Error using ==> cggrid2db\n\n\
-Usage: CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, ['overwrite'] )\n"
+Usage: CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS, QGRIDTYPE, ['overwrite'] )\n"
 
 #include "antelope_mex.h"
 
@@ -22,13 +22,14 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	char	*output_file;
 	char	*format;
 	char	*units;
+	char	*qgridtype;
 	char	*overwrite;
 	char	errmsg[STRSZ];
 	Dbptr	db;
 	int	flags;
 	int	rc;
 
-	if( nrhs != 7 && nrhs != 8 )
+	if( nrhs != 8 && nrhs != 9 )
 	{
 		antelope_mexUsageMsgTxt( USAGE );
 		return;
@@ -68,10 +69,15 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-
-	if( nrhs == 8 ) 
+	else if( ! get_string( prhs[7], &qgridtype ) )
 	{
-		if( ! get_string( prhs[7], &overwrite ) ) 
+		antelope_mexUsageMsgTxt ( USAGE );
+		return;
+	}
+
+	if( nrhs == 9 ) 
+	{
+		if( ! get_string( prhs[8], &overwrite ) ) 
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
@@ -89,7 +95,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 
 	rc = cggrid2db( db, cgg, recipe_name, grid_name,
-		        output_file, format, units, flags );
+		        output_file, format, units, qgridtype, flags );
 	antelope_mex_clear_register( 1 );
 
 	mxFree( recipe_name );
@@ -97,6 +103,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	mxFree( output_file );
 	mxFree( format );
 	mxFree( units );
+	mxFree( qgridtype );
 
 	if( rc != 0 ) 
 	{
