@@ -1,5 +1,3 @@
 include $(ANTELOPEMAKE)
 
 # $Id$ 
-
-# $Id$ 
