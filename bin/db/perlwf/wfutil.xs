@@ -72,10 +72,6 @@ trloadwf(idatabase, itable, ifield, irecord,sta, chan, t0,t1,filter,calibrate)
    	# as trapply_calib always returns 0, no checking is done!
 		trapply_calib(tr);
    	}
-
-   
-	   
-	
 	tr=dblookup(tr,0,"trace",0,0);
 	dbquery(tr,dbRECORD_COUNT,&i);
 	if (i > 1) {
@@ -102,20 +98,14 @@ trloadwf(idatabase, itable, ifield, irecord,sta, chan, t0,t1,filter,calibrate)
 	for (i=0; i < nsamp; i++) {
 		PUSHs(sv_2mortal(newSVnv(data[i])));
 	}
-	free(data);
-		
-	
-
-	
-	
-		
-		
-	
-	
-	
-	
-	
-
+	dbfree(dbsitechan);
+	dbfree(dbsite);
+	dbfree(dbsensor);
+	dbfree(dbinstrument);
+	dbfree(dbaffiliation);
+	dbfree(dbnetwork);
+	dbfree(db);
+	trdestroy(&tr);
 	}	
 	
 
