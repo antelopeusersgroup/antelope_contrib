@@ -52,6 +52,17 @@ sub database_prep {
 	}
 }
 
+sub reopen_database {
+
+	my( $dbname ) = dbquery( @db, dbDATABASE_NAME );
+
+	dbclose( @db );
+
+	@db = dbopen( $dbname, "r+" );
+
+	return;
+}
+
 $Pf = "orbpf2db.pf";
 $match = ".*/pf/orbstat";
 $write_mode = "overwrite";
@@ -113,6 +124,7 @@ if( $opt_s ) {
 }
 
 for(;;) {
+
 	($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
 
 	if( $opt_s ) {
@@ -180,6 +192,9 @@ for(;;) {
 		}
 
 		dbcrunch( @dbtable );
+
+		reopen_database();
+
 		$crunch++;
 	}
 

@@ -89,7 +89,11 @@ translations &Arr{
 				fromport	connections[FOREACH]{fromport}
 				toaddress	connections[FOREACH]{toaddress}
 				toport		connections[FOREACH]{toport}
+				statmachine	orbstat_machine
+				o2omachine	connections[FOREACH]{o2omachine}
 				latency_sec	connections[FOREACH]{latency_sec}
+				reject		connections[FOREACH]{reject}
+				select		connections[FOREACH]{select}
 			}
 		}
 	}
