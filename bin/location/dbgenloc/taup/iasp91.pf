@@ -1,4 +1,4 @@
-velocity_model_name anza
+velocity_model_name iasp91
 phases &Arr{
 P  &Arr{
 travel_time_calculator general
