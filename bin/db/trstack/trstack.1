@@ -1,0 +1,49 @@
+.\" %%W%% %%G%%
+.TH TRSTACK 1 "4/24/96"
+.SH NAME
+trstack  \- stacks selected traces in a css3.0 database
+.SH SYNOPSIS
+.nf
+\fBtrstack \fIdbin dbout subset imode [-azmin=xx] [-azmax=xx] [-delmin=xx] [-delmax=xx] [pf-file]\fR
+.fi
+.SH DESCRIPTION
+A simple brute stacking program.  A subset of data in a css3.0 database, user
+entered, are stacked by aligning them up by their first sample.  The stack and
+the RMS variation about the stack are output to a new/same database.  Output
+channel name for stack has "_ss" appended to it, and channel name for RMS has
+an "_er" appended.
+
+.SH COMMAND LINE ARGUMENTS
+.IP \fBdb\fR
+Input database.  Must include wfdisc tables.
+.IP \fBdbout\fR  
+Output database.  A wfdisc table is created/added to. Data go into a relative
+directory wf/rfstack/yyyy/ddd.   
+.IP \fBsubset\fR
+Logic string sent to dbselect that selects the waveforms to be processed, for
+example 'chan=="rfcn"' or 'chan=="rfcn" && sta=="ORGH"'.
+.IP \fBimode\fR
+0 for regular, 1 to not generate graphics.
+.IP \fBazmin=xx\fR
+Only use back-azimuths greater than xx
+.IP \fBazmax=xx\fR
+Only use back-azimuths less than xx
+.IP \fBdelmin=xx\fR
+Only use distances greater than xx
+.IP \fBdelmax=xx\fR
+Only use distances less than xx
+.IP \fBpf-file\fR
+Reads in a parameter file with filter parameters:  hpfreq, lpfreq
+
+.SH EXAMPLE
+trstack dbtest junk 'chan == "rfcn"' 0
+.LP
+A new database table, junk.wfdisc, is made with a stack of the rfcn traces.
+
+.SH LIBRARY
+-ltr -lgpl2  -lol -lxcom -lgrx -ldb -lcoords -ltttaup -lresponse -lstock ../dbrfcn/FFT/fftlib.a -lX11 -lF77 -lM77 -lsunmath -lm 
+.SH "BUGS AND CAVEATS"
+Current stacking is pretty primitive, no mechanism exists for aligning by pick, absolute time, etc.
+.SH AUTHOR
+Geoff Abers, Boston University
+
