@@ -57,6 +57,8 @@ public:
   friend ostream& operator<<(ostream&, dmatrix&);
   friend istream& operator>>(istream&, dmatrix&);
   int *size();
+  int rows();
+  int columns();
   void zero();
 private:
    double *ary;
