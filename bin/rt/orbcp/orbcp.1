@@ -5,56 +5,68 @@ orbcp \- orb copy program
 .SH SYNOPSIS
 .nf
 
-orbcp {-orbin in_orbname | -filein in_filename} [-src srcexpr]
-      [-orbout out_orbname] [-fileout out_filename] [-reverse]
-      [-repeat] [-npackets npackets] [-sim_latency sim_latency]
+orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]
+      [-ircnt] [-orcnt] [-pktstart pktid]
+      [-rcnt_time minutes] [-npackets npackets]
 
 .fi
 .SH DESCRIPTION
 orbcp is a program for copying packets from one orb to another.
-It also can copy from/to a plain disk file. When copying to
-a plain disk file, the file is a raw image of the data stream
-and can be used later as simulated input. When copying from
-a plain disk file, the input time stamps can be offset to 
-simulate a near real time data stream.
 .SH OPTIONS
-.IP "-orbin in_orbname | -filein in_filename"
-Name of input orbserver or a plain input disk file. One
-and only one of these must be specified.
+.IP "-orbin in_orbname"
+Name of input orbserver. This argument is required.
+.IP "-orbout out_orbname"
+Name of output orbserver. This argument is required.
 .IP "-src srcexpr"
 A source expression string. This is used to sift the types of packets
 for copying. If this is not specified, then all packet types are
-copied. This is only used when copying from an input orbserver.
-.IP "-orbout out_orbname"
-Name of output orbserver.
-.IP "-fileout out_filename"
-Name of output plain disk file.
-.IP "-reverse"
-If this flag is specified, then the time values and pakcet sizes
-are byte reversed upon reading and/or writing to/from plain
-disk files. This has no effect on the orbserver connections.
-.IP "-repeat"
-If this flag is specified and the input is a plain disk file,
-then the input file is reread upon EOF indefinitely to provide
-a continuous data source. Every time the file is rewinded, the
-subsequent packet times are offset to preserve a monotonic
-time stream.
+copied.
+.IP "-ircnt"
+Input reconnect flag. If this is specified, then orbcp will
+attempt to reconnect to the input orbserver if there is a 
+read error, an end of file, or if there has been no activity
+on the read socket for some specified time (see -rcnt_time).
+When orbcp decides to reconnect to the input orbserver it
+first closes the exisiting socket, reopens a read connection
+to the orbserver, selects using the -src selection string (if
+specified), and attempts to position the read pointer to the
+next pktid that should be read. If the input reconnect flag
+is not specified, then any read errors will cause the program
+to terminate.
+.IP "-orcnt"
+Output reconnect flag. If this is specified, then orbcp will
+attempt to reconnect to the output orbserver if there is a 
+write error.
+When orbcp decides to reconnect to the output orbserver it
+suspends all reads until a new output connection is established.
+If the output reconnect flag
+is not specified, then any write errors will cause the program
+to terminate.
+.IP "-pktstart pktid"
+A packet id for initially positioning the read pointer. If this
+is not specified, then the read pointer will be initially
+positioned to the newest packet.
+.IP "-rcnt_time minutes"
+The maximum number of minutes for determining inactivity on the
+read socket. The default value is 10 minutes.
 .IP "-npackets npackets"
 A total packet count for copying. orbcp will exit when this
 count is reached. If not specified, then orbcp will execute
 indefinitely.
-.IP "-sim_latency sim_latency"
-A simulation time latency in seconds. If this is specified and
-the input is from a plain disk file, then orbcp will attempt
-to further offset the time values to be close to sim_latency
-seconds behind real time.
 .SH DIAGNOSTICS
+.IP "orbcp: Need argument for -in_orbname"
+.IP "orbcp: Need argument for -out_orbname"
 .IP "orbcp: Need argument for -src"
+.IP "orbcp: Need argument for -pktstart"
+.IP "orbcp: Need argument for -rcnt_time"
+.IP "orbcp: Need argument for -npackets"
 .IP "orbcp: Illegal argument '%s'"
+.IP "orbcp: No input -in_orbname specified"
+.IP "orbcp: No output -out_orbname specified"
 .IP "orbcp: orbopen() error for '%s'"
 .IP "orbcp: orbselect(%s, %s) error"
 .IP "orbcp: orbseek() error for '%s'"
-.IP "orbcp: orbreap() error for '%s'"
+.IP "orbcp: orbreap_nd() error for '%s'"
 .IP "orbcp: orbput() error for '%s'"
 .SH "SEE ALSO"
 .nf
