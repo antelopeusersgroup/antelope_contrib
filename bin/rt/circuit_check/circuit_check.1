@@ -1,0 +1,30 @@
+.TH CIRCUIT_CHECK 1 "$Date$"
+.SH NAME
+circuit_check \- launch orbmonrtd for a given subnetwork
+.SH SYNOPSIS
+.nf
+\fBcircuit_check \fP
+.fi
+.SH DESCRIPTION
+\fBcircuit_check\fP allows the user to launch orbmonrtd for data on the orb, using
+stations selected from one of the networks specified in the site database.
+The orb name and site database name are taken from the circuit_check.pf 
+parameter file. The site database must be in iceworm1.3 format.
+.SH PARAMETER FILE
+.nf
+nordic% cat circuit_check.pf
+orbname earlybird
+master_site_database /Seis/databases/stations/master_stations
+system_name op
+.fi
+.SH "SEE ALSO"
+.nf
+orbserver(1), orbmonrtd(1)
+.fi
+.SH AUTHOR
+.nf
+Original by Guy Tytgat. Reimplemented by Kent Lindquist
+U. of Alaska
+Geophysical Institute
+.fi
+.\" $Id$

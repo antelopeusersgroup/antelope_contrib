@@ -1,0 +1,5 @@
+orbname earlybird
+#master_site_database /Seis/databases/stations/master_stations
+#master_site_database /iwrun/op/params/Stations/worm
+master_site_database moo
+system_name op

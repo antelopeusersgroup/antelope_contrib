@@ -1,0 +1,122 @@
+# circuit_check
+#
+# Reimplementation of Guy Tytgat's original: dynamic and based off of database
+#
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska
+# 1/1999
+
+proc read_site_database {} {
+	global Circuits Arrays ProcessGroups Volcanoes Namespaces
+	global Sources
+	global Site_db
+
+	set db [dbopen $Site_db r]
+
+	if { [expr ! [regexp iceworm [dbquery $db dbSCHEMA_NAME]]] } {
+		puts stderr "$Site_db not in iceworm1.3 format; bye"
+		exit -1
+	} 
+	
+	set db [dblookup $db 0 network 0 0]
+	set nrecs [dbquery $db dbRECORD_COUNT]
+	
+	for { set record 0 } { $record < $nrecs } { incr record } {
+		set mylist [dbgetv $db network $record net nettype]
+		set net [lindex $mylist 0]
+		set nettype [lindex $mylist 1]
+
+		switch $nettype {
+		ar { lappend Arrays $net }
+		cr { lappend Circuits $net }
+		pr { lappend ProcessGroups $net }
+		vo { lappend Volcanoes $net }
+		lo -
+		ww { lappend Namespaces $net }
+		default { puts "Unknown nettype $nettype for Network $net. Ignoring $net" }
+		}
+	}
+
+	set db [dblookup $db 0 affiliation 0 0]
+	set dbpins [dblookup $db 0 pins 0 0]
+	set db [dbjoin $db $dbpins]
+	set nrecs [dbquery $db dbRECORD_COUNT]
+
+	for { set record 0 } { $record < $nrecs } { incr record } {
+		set mylist [dbgetv $db 0 $record net pins.net sta chan]
+		set subnet [lindex $mylist 0]
+		set net [lindex $mylist 1]
+		set sta [lindex $mylist 2]
+		set chan [lindex $mylist 3]
+		set source_name "$net\_$sta\_$chan"
+		lappend Sources($subnet) $source_name 
+	}
+}
+
+proc init_windows {} {
+
+	global Circuits Arrays Volcanoes ProcessGroups Namespaces
+	global System_name
+	
+	label .system -text "Waveform display for $System_name system" -bg beige
+	pack .system -side top -fill x
+
+	button .quit -text Quit -bg red -command "destroy ."
+	pack .quit -side bottom -fill x
+
+	canvas .c
+	pack .c -side left -fill both -expand yes
+
+	subnetmenu .c.cr Circuits $Circuits
+	pack .c.cr -side left -fill y
+	subnetmenu .c.ar Arrays $Arrays
+	pack .c.ar -side left -fill y
+	subnetmenu .c.vo Volcanoes $Volcanoes
+	pack .c.vo -side left -fill y
+	subnetmenu .c.pr "Processing Groups" $ProcessGroups
+	pack .c.pr -side left -fill y
+	subnetmenu .c.nm Namespaces $Namespaces
+	pack .c.nm -side left -fill y
+
+}
+
+proc subnetmenu { w name subnetworks } {
+
+	menubutton $w -text $name -relief raised -menu $w.m
+	menu $w.m -tearoff 1
+	foreach subnet [lsort $subnetworks] {
+		$w.m add command -label $subnet -command "launch_orbmon $subnet"
+	}
+
+}
+
+proc launch_orbmon { subnet } {
+	global Sources Orbname env
+
+	set pffile "/tmp/$subnet\_$env(USER)\_[pid]"
+	set tempfile "$pffile.pf"
+
+	set fd [open $tempfile w]
+	puts $fd "sources &Tbl{"
+	foreach source [lsort $Sources($subnet)] {
+		puts $fd "$source $Orbname"
+	}
+	puts $fd "}"
+	close $fd
+
+	exec orbmonrtd $Orbname -pf $pffile &
+}
+
+if { $argc > 0 } {
+	puts stderr "Usage: [exec basename $argv0]"
+	exit
+} else {
+	pfget circuit_check orbname Orbname 
+	pfget circuit_check master_site_database Site_db 
+	pfget circuit_check system_name System_name 
+}
+
+read_site_database
+
+init_windows
