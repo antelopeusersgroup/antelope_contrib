@@ -579,6 +579,26 @@ Attribute_Map::Attribute_Map(Pf *pf,string name)
 		(*this).attributes.insert(APMAP::value_type(ap->internal_name,*ap));
 	}
 }
+// Default constructor uses a frozen name and utilizes the above
+// constructor.
+
+Attribute_Map::Attribute_Map()
+{
+	const string DEFAULT_SCHEMA_NAME("css3.0");
+	const string pfname("seispp_attribute_maps");
+	Pf *pf;
+	if(pfread(const_cast<char *>(pfname.c_str()),&pf))
+		throw Metadata_error(
+			string("pfread failure for attribute map parameter file = ")
+				+ pfname);
+	try {
+		*this = Attribute_Map(pf,DEFAULT_SCHEMA_NAME);
+	} catch (...)  {throw;}
+	pffree(pf);
+}
+	
+
+
 	
 /* an  inefficient way to do this constructor, but should be acceptable since
 I don't expect this function to be called more than once in any given program.

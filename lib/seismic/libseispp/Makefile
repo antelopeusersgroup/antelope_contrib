@@ -1,6 +1,9 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h resample.h vmodel.h
+# This is uses for Attribute_Map constructor and was built with 
+# an external program
+PF=seispp_attribute_maps.pf
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \

@@ -111,7 +111,6 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 		this_decimator!=declist.end();++this_decimator)
 	{
 		*result = this_decimator->apply(result->d,trim);
-		<< " is " << result->d.size();
 		total_lag += rint(static_cast<double>(result->lag)*decout);
 		dtout *= this_decimator->decfac;
 		decout *= this_decimator->decfac;

@@ -48,6 +48,7 @@ class Attribute_Map
 public:
 	map<string,Attribute_Properties> attributes;
 
+	Attribute_Map();  
 	Attribute_Map(Pf *pf,string name);  
 	Attribute_Map(string);
 	Attribute_Map(const Attribute_Map&);

@@ -170,6 +170,7 @@ class Attribute_Map
 public:
         map<string,Attribute_Properties> attributes;
 
+	Attribute_Map();
         Attribute_Map(Pf *pf,string name);  
         Attribute_Map(string);
         Attribute_Map(const Attribute_Map&);
@@ -238,6 +239,15 @@ to be capable of defining anything that cannot be stored in an
 antelope database.  If you need additional capabilities the interface
 allows it, but only simple types are currently supported in the 
 MDtype definition.  
+.LP
+Most users will wish to use the default constructor for the Attribute_Map.
+The default constructor loads a file from the global pf data area
+for Antelope and assumes a mapping appropriate for the css3.0 schema.
+You should check the file (seispp_attribute_maps.pf) for the full
+definition of namespace mapping including aliases.  That is, the
+standard namespace uses Antelope-oriented naming for the internal
+names (e.g. wfdisc.time for the time field in wfdisc), but it also
+includes some useful aliases.  
 .LP
 The Attribute_Map should normally be loaded from a parameter file
 early on in a programs initialization phase.  It should define the
