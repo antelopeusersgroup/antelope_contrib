@@ -1,3 +1,10 @@
+#   Copyright (c) 2005 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# 
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
 
 require "dbgmtgrid.pl";
 require "getopts.pl";
