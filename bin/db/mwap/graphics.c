@@ -1,5 +1,5 @@
-#include "multiwavelet.h"
 #include "tr.h"
+#include "multiwavelet.h"
 /* This is a set of routines to manipulate trace tables to select the
 output of trdisp.  These are mostly for debugging mwap, but they 
 might prove useful later if I choose to do an interactive option.

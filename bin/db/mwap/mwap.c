@@ -126,18 +126,10 @@ int main(int argc, char **argv)
 	if(db.table == dbINVALID)
                 die(1,"wfdisc->sitechan join failed\n");
 	clrtbl(sortkeys,0);
-	pushtbl(sortkeys,"sta");
-	pushtbl(sortkeys,"chan");
-	pushtbl(sortkeys,"time");
-	db = dbsort(db,sortkeys,0,0);
+	sortkeys=strtbl("sta","chan","time",0);
+	db = dbsort(db,sortkeys,0,WFVIEW);
 	if(db.record == dbINVALID)
 		die(0,"dbsort of input db failed\n");
-
-	clrtbl(grp_tbl,0);
-	pushtbl(grp_tbl,"sta");
-	db = dbgroup(db,grp_tbl,STABDLNAME,STABUNDLE);
-	if(db.record == dbINVALID)
-		die(0,"dbgroup failure of wfdisc->sitechan by sta\n");
 
 	freetbl(sortkeys,0);
 	freetbl(grp_tbl,0);
@@ -148,4 +140,5 @@ int main(int argc, char **argv)
 	mwap_process(dbj,phase,pf);
 
 	dbclose(db);
+	return(0);
 }

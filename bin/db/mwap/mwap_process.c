@@ -2,6 +2,7 @@
 are a few internal functions defined first.  The main routine
 here is mwap_process */
 
+#include "tr.h"
 #include "multiwavelet.h"
 /* This small function returns an associative array of pointers to 
 doubles keyed by station names that are the arrival times read from
@@ -224,6 +225,8 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	Dbptr db;  /* generic db lookup parameter */
 	Dbptr dbgrp;  /* evid group db pointer */
 	Dbptr tr;  /* trace database */
+	Tbl *sortkeys,*sortkeys2;  /* used because different tr routines require
+				different sort orders */
 
 	int *pad;  /* vector of length nbands holding computed time padding
 			lengths for each band in samples */
@@ -388,6 +391,15 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
         dbquery(dbgrp,dbRECORD_COUNT,&nevents);
         fprintf(stdout,"Processing begins for %d events\n",nevents);
 
+	sortkeys = newtbl(0);
+	pushtbl(sortkeys,"sta");
+	pushtbl(sortkeys,"chan");
+	pushtbl(sortkeys,"time");
+	sortkeys2 = newtbl(0);
+	pushtbl(sortkeys2,"time");
+	pushtbl(sortkeys2,"sta");
+	pushtbl(sortkeys2,"chan");
+
 	for(dbgrp.record=0;dbgrp.record<nevents;++dbgrp.record)
 	{
 		Dbptr db_bundle;
@@ -475,7 +487,12 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		}
 		tr = dblookup(tr,0,"trace",0,0);
 		/* We first glue together any possible recording break
-		generated entries -- common with continuous data */
+		generated entries -- common with continuous data.
+		This also seems to require a resort because of the
+		way data was read in.   */
+/*
+		tr = dbsort(tr,sortkeys,0,0);
+*/
 		trsplice(tr,0.1,0,0);
 
 		/* We run trsplit to break up waveform segments at real gaps.
@@ -486,6 +503,9 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		trsplit(tr,0,0);
 
 		trapply_calib(tr);
+		/* Now we have reorder the traces or this will not work
+		correctly*/
+		tr = dbsort(tr,sortkeys2,0,0);
 		ierr = rotate_to_standard(tr,stdchans);
 		if(ierr<0)
 		{
@@ -719,7 +739,7 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 		free_sn_ratios_arr(sn_ratios,nbands);
 		free_MWtransform_arr(mwsig_arr,nbands,nwavelets);
 		free_MWtransform_arr(mwnoise_arr,nbands,nwavelets);
-		trdestroy(tr);
+		trdestroy(&tr);
 		freearr(arrival0,free);
 		freearr(arrivals,free);
 		freearr(arrival_new,free);
