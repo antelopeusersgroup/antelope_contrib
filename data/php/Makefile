@@ -6,6 +6,7 @@ DATA= $(MYDLIB) \
       webdbe.inc \
       webdbe_style.css \
       webdbe_title.gif \
+      webdbe_bkgrd.gif \
       webdbe_pagenums.php \
       webdbe_pages.php \
       webdbe_menubar.php \
