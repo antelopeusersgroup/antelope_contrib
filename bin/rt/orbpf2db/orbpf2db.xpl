@@ -83,6 +83,8 @@ if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) {
 	$dbname = $ARGV[1];
 }
 
+elog_init( $0, @ARGV );
+
 if( $opt_V ) {
 	
 	$opt_v++;
