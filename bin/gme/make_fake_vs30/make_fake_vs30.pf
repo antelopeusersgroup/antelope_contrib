@@ -1,0 +1,10 @@
+grid_database 		&datafilename(gmt/world30)
+grid_spacing 		30c
+projection 		-JM4
+gradient_options	-A60 -Nt
+vs30_min_mps		300
+vs30_range_mps		900
+vs30_colormap_interval_mps  100
+psbasemap_boundary	a1g0.5WESN
+colormap		jet
+ocean_color		200/200/255

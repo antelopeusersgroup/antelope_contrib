@@ -1,0 +1,149 @@
+.TH MAKE_FAKE_VS30 1 "$Date$"
+.SH NAME
+make_fake_vs30 \- generate a fake vs30 input file from topography data
+.SH SYNOPSIS
+.nf
+\fBmake_fake_vs30 \fP[-V] -Rw/e/s/n
+.fi
+.SH DESCRIPTION
+Two-dimensional ground-motion estimation often requires a grid of
+data values for site response over an entire area. Frequently this
+is implemented with a digitized map of 30-meter shear-wave velocities,
+or \fIVs30\fP. Unfortunately those values require extensive effort to obtain.
+To prevent delays in configuration of a real-time system,
+it is useful to create a dummy data-set for testing. One convenient
+way to do this is to assign nonsense Vs30 values based on the gradient of
+topography.
+.LP
+The \fBmake_fake_vs30\fP script takes a database of GMT grid files (as in
+the dbgmtgrid(1) program), then computes the normalized gradient of
+the topography. Zero gradient is assigned a low Vs30, high gradient is
+assigned a high Vs30 value, and values in between are obtained from
+linear interpolation between these two. The Vs30 values are output as a
+GMT grid file, as an ascii file in cggrid(5) format, and as a rudimentary 
+postscript plot.
+.LP
+The \fIgrid_database\fP parameter gives the name of the Antelope database
+of GMT grid files with topography information. This database
+should be in gmt1.0 format. The parameters \fIvs30_min_mps\fP and
+\fIvs30_range_mps\fP give the minimum Vs30 and the range of Vs30 in meters
+per second, respectively. The gradient of the topography is generated
+with grdgradient(1), given the \fIgradient_options\fP
+parameter.  The \fIvs30_colormap_interval_mps\fP and
+colormap parameters are given to the GMT makecpt(1) command
+to generate a colormap for the output map. The \fIpsbasemap_boundary\fP
+value is given to psbasemap(1) with the -B option, and the \fIprojection\fP
+parameter is used to generate the map.
+.SH OPTIONS
+.IP -Rw/e/s/n
+This option specifies the west, east, south, and north limits of the
+fake Vs30 file.
+.IP -V
+Verbose output
+.SH FILES
+.IP fakevs30.grd
+This is the output gmt file of fake Vs30 values.
+.LP
+.IP fakevs30.xyz
+This is the output cggrid file of fake Vs30 values.
+.LP
+.IP fake.ps
+This is a postscript map of the fake Vs30 values.
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+.ne 12
+
+grid_database           &datafilename(gmt/world30)
+grid_spacing            30c
+projection              -JM4
+gradient_options        -A60 -Nt
+vs30_min_mps            300
+vs30_range_mps          900
+vs30_colormap_interval_mps  100
+psbasemap_boundary      a1g0.5WESN
+colormap                jet
+ocean_color             200/200/255
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 28
+
+% \fBmake_fake_vs30 -V -R10/15/40/45\fP
+Executing dbgmtgrid -V -R10/15/40/45 /opt/antelope/4.5p/data/gmt/world30 fake.grd
+Executing: grdcut -V -G/tmp/dbgmtgrid_500_6212_1.grd /space/world30_grids/Grids/North_East.grd -R10/15/40/45
+grdcut: File spec:      W E S N dx dy nx ny:
+grdcut: Old:    0       90      0       90      0.00833333      0.00833333      10800   10800
+grdcut: New:    10      15      40      45      0.00833333      0.00833333      600     600
+Executing: cp /tmp/dbgmtgrid_500_6212_1.grd fake.grd
+Executing grdlandmask -Gfake_landmask.grd -R10/15/40/45 -I30c -F
+Executing grdmath fake.grd fake_landmask.grd MUL = fake_masked.grd
+Executing grdgradient fake_masked.grd -Gfake_masked.grad -A60 -Nt
+Executing grdmath fake_masked.grad ABS 300 MUL 300 ADD = fakevs30.grd
+Executing psbasemap -V -P -R10/15/40/45 -JM4 -Ba1g0.5WESN -K > fake.ps
+psbasemap: Constructing basemap
+Executing makecpt -Cjet -I -T300/600/100 > vscolors.cpt
+Executing grdimage fakevs30.grd -V -R10/15/40/45 -JM4 -O -K -Cvscolors.cpt >> fake.ps
+grdimage: Allocates memory and read data file
+grdimage: project grdfiles
+grdimage: New grid size (nx,ny) 600 by 600
+grdimage: Evaluate pixel colors
+grdimage: Creating PostScript image 24-bit [colorimage]
+Executing pscoast -V -R10/15/40/45 -JM4 -O -S200/200/255 >> fake.ps
+pscoast: Working on block #   145
+Executing grd2cggrid -V fakevs30.grd fakevs30.xyz
+grdinfo: Processing file fakevs30.grd
+grd2xyz: Working on file fakevs30.grd
+grd2xyz: 288000 values extracted
+%
+% ls
+fake.grd           fake_landmask.grd  fake_masked.grd    fakevs30.xyz
+fake.ps            fake_masked.grad   fakevs30.grd       vscolors.cpt
+%
+
+.fi
+.ft R
+.in
+.SH "RETURN VALUES"
+\fBmake_fake_vs30\fP returns 0 upon success.
+.SH "SEE ALSO"
+.nf
+dbgmtgrid(1), dbgme(1), trinetsm_es99(3), cggrid(5), grd2cggrid(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBmake_fake_vs30\fP requires a number of GMT programs which must 
+be available on its path. \fBmake_fake_vs30\fP will complain and 
+die if any of these are not found.
+.LP
+\fBmake_fake_vs30\fP leaves a number of intermediate files in the run
+directory which may be of interest to the user, or alternatively may need
+to be cleaned up by the user.
+.LP
+No basis in scientific reasoning or fact is expressed or implied
+by this program. The sole purpose of the script is to create a dataset
+for testing software setup. 
+.LP
+The map is intended solely for a quick check of the output. If fancier 
+maps are desired they should be made directly from the output data grids.
+.LP
+Note: This script was initially written in 2003, based on ideas suggested 
+by Dr. Danny Harvey. Subsequently, the topographic slope approach has
+been published by Wald, D.J., P.S. Earle, and V. Quitoriano
+(2004) "Topographic Slope as a Proxy for Seismic Site Amplification Correction", 
+Eos Trans. AGU 85(47), Fall Meet. Suppl., Abstract S42A-01. The Wald et al.
+abstract, q.v., contains discussion of calibrating a the topographic-slope
+technique against a geologically based site-condition map for California. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
