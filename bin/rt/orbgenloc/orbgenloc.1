@@ -1,0 +1,109 @@
+.\" %W% %G%
+.TH ORBGENLOC 1 "%G%"
+.SH NAME
+orbgenloc - orb interface to genloc single event location code
+.SH SYNOPSIS
+.nf
+orbgenloc orb [-pf inputpf]
+.fi
+.SH DESCRIPTION
+\fIorbgenloc\fR is a front end to a single event location code (see related list of man pages
+below) intended for real-time locations through the orb interface.  The first argument to the
+program is the name of the orb server it is to connect to.  It both reads and writes to this
+orbserver.  Input in this version is purely through a parameter file interface using orbpkt2pf,
+and output is a series of db records written with db2orbpkt.  
+.LP
+\fIinputp\fR is an optional input parameter to read initial startup parameters from.  The default
+is orbgenloc (Note: because of the way pfread works, this means the actual file name is
+orbgenloc.pf, and a chain of directories can be searched depending upon the setting of the
+environment variable PFREAD.   See pf(3)) This parameter file is read at startup to build an
+initial pf object used as a control structure.  This parameter file can be relatively complex due
+to the long list of options in genloc (see genloc_intro(3)).  
+.LP
+The code uses orbreap selecting only packets labeled as /pf/orbgenloc.  This means it will
+only see pf packets targeted to it.  Most options of genloc can be changed this way on the fly
+by sending new parameter definitions into the pf packet.  This allows the user, for example,
+to do things like change the residual weighting scheme, fix source depth, or other comparable
+control features.  Two important restrictions presently exist, however.  Network geomtry and
+phase definition parameters can only be set at startup.   It was felt the complexity this would
+add did not justify the need.  The time required to kill orbgenloc and restart it with a new
+parameter file definition is not a significant issue.
+.LP
+Unless one is changing the control state of orbgenloc, normally we would expect an input
+packet to contain only arrival time and slowness data produced from an associator program. 
+However, it should work properly if sent either control data alone or control data mixed with
+new data.  orbgenloc has no concept of data source, but just blindly looks at it's input for new
+instructions.   Whenever new data is found (signalled internally by finding enough data to
+locate an event in it's internal data structures) it tries to locate an event.  Data is passed to
+this program from an associator using the parameter file "arrivals" Tbl object defined in
+genloc_intro(3).  The user is cautioned, however, that the arid field in these input objects
+must be maintained externally.  The arid values read from the input fields are stripped and
+used blindly in the assoc tables produced as output.  orbgenloc assumes some other process is
+writing arrival records with matching arid fields that the associator has used to build
+orbgenloc's inputs.  
+.LP
+orbgenloc's output is a series of datascope db records saved with db2orbpkt.  This version
+writes what it can compute into four standard css3.0 db tables: origin, origerr, event, and
+assoc.  These records are then written onto a working databased used by orbgenloc (see
+below) and written back to the orb as /db/ packets where it is assumed they will be archived
+by orb2db.  
+.LP
+In addition to all the parameters defined in genloc_intro(3), the following are special control
+parameters for orbgenloc. 
+.LP
+\fIRT_working_directory, RT_working_db, RT_logfile_directory\fR.  These are startup
+parameters (they cannot be changed on the fly) defining working files used by the code as it
+is running.  The working datascope database is written in the working directory, while
+logfile_directory contains a dump of the pf objects for each event located.  The logfiles are
+simple files stored in this directory with a filename=orid (i.e. a number equal to the so called
+origin id).  The working database can be thought of as a backup database for origin
+information, but it's primary purpose as far as orbgenloc is concerned is to keep track of
+state.  If the working db does not exist, it will be created.  At the same time this is used as an
+implicit signal by orbgenloc to start at the beginning of the ring buffer and process all the
+data the ring buffer presently contains.  If the working db is found, orbgenloc searches for the
+latest time in it's working db and ignores data it finds in the ring buffer with arrival times
+earlier than this time.  Note is does this with some intelligence using another parameter
+defined below.
+.LP
+\fIvelocity_model_name\fR name to be used in model field for output db records.  No
+checking is made to see if this is consistent with anything else, so be warned.  This could
+cause problem a user should be aware if when using the generic tt interface where a model is
+given a specific name.  
+.LP
+\fImaximum_network_transit_time\fR is used to define the db startup condition noted above. 
+That is, the only times orbgenloc stores in it's working db are origin times.  To check a given
+set of arrivals in a give pf packet, it has to make a sensible guess about each packet of data. 
+To do this, it uses this parameter.  If any time is found in a group of arrivals in a given pf
+packet which satisfies t<t0+maximum_network_transit_time, the event is assumed to have
+already been processed.
+.LP
+\fIreset_orid, reset_evid, orid, evid\fR This group of parameters control another potential id
+problem.  orbgenloc assumes it has control of two css3.0 database ids: orid and evid.  These
+parameters allow an external agent to manually reset these ids to a new value (After that they
+would normally be incremented, although one could, in priciple, reset these ids for each event
+externally).  Both mix booleans (reset_orid and reset_evid) with a corresponding integer
+parameter to actually set that value.  When the boolean is true, the corresponding integer
+parameter MUST be present or orbgenloc will die.  Once the value is reset, the boolean value
+is changed back to false.  Because of the way the pf routines work, this means that later
+attempts to make reset_orid or reset_evid true without a corresponding entry for orid or evid,
+will not cause orbgenloc to die, but instead it cause he program to use the previously set
+value.  It is not clear which is worse, but the point is don't do it, or bad things result in either
+case.
+.LP
+\fIshutdown\fR Setting this boolean parameter true, will cause orbgenloc to exit gracefully. 
+This message can appear with a block of data, and the event will be located before shutdown
+occurs.
+.SH DIAGNOSTICS
+All the routines here use the error logging routines developed by Dan Quinlan (elog_notify,
+complain, register_error, etc.).  Many possible diagnostics can be found in this log that
+theoretically will help identify the problem.  Most errors will only generate a one or more
+diagnostics being written to the error log.  The program should die only if memory allocs fail
+or you hit a programming bug.  
+.SH "SEE ALSO"
+.nf
+relocate(1), sgnloc(1), dbloc2(1), genloc_intro(3), genloc(3), ggnloc(3), pfread(3), elog(3)
+.fi
+.SH "BUGS AND CAVEATS"
+This program is under development, so problems are likely.
+.SH AUTHOR
+Gary L. Pavlis
