@@ -1,0 +1,13 @@
+PFFILES	List file names for Antelope parameter-files
+
+FILENAMES = PFFILES ( PFNAME [, 'all' ] )
+
+PFFILES returns a cell-array of strings listing existent,
+readable parameter files accessed by the parameter file
+PFNAME. If the optional switch 'all' is specified, PFFILES
+explains the locations of all possible parameter files
+relevant to PFNAME, whether of not they exist or are
+writable. This routine is especially useful for diagnosing
+why parameter files are not being found, or which parameter
+files along the path are responsible for the parameter
+values loaded by the PF routines.

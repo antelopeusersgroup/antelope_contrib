@@ -1,0 +1,9 @@
+CLEAR_REGISTER	Clear the Datascope error register
+
+CLEAR_REGISTER ( [ 'print' ] )
+
+CLEAR_REGISTER will clear any errors that have have been
+registered in the preceding calls to Datascope
+subroutines.  If the 'print' option is specified, the error
+messages are echoed to the screen before being removed.
+Otherwise they are cleared silently.
