@@ -528,6 +528,7 @@ void main(int argc, char **argv)
 			if(pfget_boolean(pfe->pf[0],"data_valid"))
 				dbadd_row_pfe(db,pfe->pf[0],tam);
 		}
+		freetbl(table_list,0);
 		freearr(pfearr,free_Pf_ensemble);
 		pffree(pfis);
 	}
