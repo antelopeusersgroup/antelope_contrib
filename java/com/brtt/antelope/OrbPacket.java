@@ -121,7 +121,12 @@ public class OrbPacket extends Object {
         parseSrcname (); 
         
         if (type.compareTo("waveform") != 0) return;
-        
+
+        if (format.compareTo("MGENC") == 0) {
+	    unstuffMGENC ();
+	    return;
+	}
+
         if (format.compareTo("GENC") == 0) {
             unstuffGENC ();
             return;
@@ -131,6 +136,8 @@ public class OrbPacket extends Object {
             unstuffGEN ();
             return;
         }
+
+	
     }
     
     /**
@@ -257,7 +264,90 @@ public class OrbPacket extends Object {
         for (i=0; i<l; i++) if (ibuf[i] == 0) break;
         return (new String (ibuf, 0, i));
     }
+
+    private void str2buf (String s, DataOutputStream out, int len) throws IOException {
+	// What should we do if we don't have enough bytes to send?  Pad with nulls or spaces? 
+	// Throw an exception?  Model the behavior of buf2str?
+	
+	byte[] bytes = s.getBytes("US-ASCII");
+	for (int i=0; i<len; i++) 
+	    out.writeByte(i < bytes.length ? bytes[i] : 0);
+    }
     
+    private void unstuffMGENC() throws IOException {
+	
+        if (packet == null || pktsize < 1) return;
+        
+        ByteArrayInputStream inBuf = new ByteArrayInputStream (packet, 0, pktsize);
+        DataInputStream pktBuf = new DataInputStream (inBuf);
+	
+	int version = pktBuf.readUnsignedShort ();  
+        nchannels   = pktBuf.readUnsignedShort ();
+	
+        if (channel == null || channel.length < nchannels) {
+            channel = new OrbPacketChannel[nchannels];
+	    for (int i=0; i<nchannels; i++) {
+		if (channel[i] == null) {
+		    channel[i] = new OrbPacketChannel();
+		}
+	    }
+	}
+	
+	/* An MGENC packet with only one channels is pretty much the same
+	   as a GENC packet, but some of the fields are reordered. */
+	
+	for (int c=0; c<nchannels; c++) {
+	    if (nchannels == 1) {
+		channel[c].net = net;
+		channel[c].sta = sta;
+		channel[c].chan = chan;
+		channel[c].loc = loc;
+	    } else {
+		channel[c].net = buf2str(pktBuf, 10);
+		channel[c].sta = buf2str(pktBuf, 10);
+		channel[c].chan = buf2str(pktBuf, 10);
+		channel[c].loc = buf2str(pktBuf, 10);
+	    }
+	    
+	    channel[c].segtype = buf2str(pktBuf, 2); 
+	    if (nchannels == 1) {
+		channel[c].time = this.time;	  
+	    } else {
+		channel[c].time = pktBuf.readDouble();	  
+	    }
+	    
+	    channel[c].nsamp       = pktBuf.readUnsignedShort () ;
+	    channel[c].samprate    = pktBuf.readFloat () ;
+	    channel[c].calib       = pktBuf.readFloat () ;
+	    channel[c].calper      = pktBuf.readFloat () ;
+	    
+	    if (channel[c].data == null || channel[c].datasize < channel[c].nsamp) {
+		channel[c].datasize = channel[c].nsamp;
+		channel[c].data = new int[channel[c].datasize];
+	    }
+	    
+            int nout;
+            if (channel[c].nsamp < 5) {
+		for (int i=0; i<channel[c].nsamp; i++)
+		    channel[c].data[i] = pktBuf.readInt();
+		nout = channel[c].nsamp;
+            } else { 
+		int bytecount = pktBuf.readUnsignedShort();
+		nout = uncompressGENC (channel[c].data, pktBuf, bytecount) ;
+		for (int i=1; i<channel[c].nsamp; i++) 
+		    channel[c].data[i] += channel[c].data[i-1];
+            }
+	    
+	    if (nout != channel[c].nsamp) {
+		System.out.println ("nsamp = " + channel[c].nsamp + ", but nout = " + nout);
+	    }
+	}
+	
+        pktBuf.close() ;
+        inBuf.close() ;
+    }
+    
+
     private void unstuffGENC () throws IOException {
         double samprate, calib, calper;
         int nsamp;
@@ -355,16 +445,41 @@ public class OrbPacket extends Object {
 
     }
     
+    private void stuffGEN() throws IOException {
+	
+	ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
+        DataOutputStream pktBuf = new DataOutputStream (outBuf);
+	
+	pktBuf.writeFloat((float)channel[0].samprate);
+	pktBuf.writeFloat((float)channel[0].calib);
+	pktBuf.writeFloat((float)channel[0].calper);
+	pktBuf.writeShort(channel[0].nsamp); // FixMe: Is this unsigned?
+	str2buf(channel[0].segtype, pktBuf, 2);
+	
+	// FixMe: warn if too many channels
+	
+	for (int i=1; i<channel[0].nsamp; i++) 
+	    pktBuf.writeInt(channel[0].data[i]);
+	
+	packet = outBuf.toByteArray();
+        pktBuf.close();
+        outBuf.close();
+    }
+    
     private static int uncompressGENC (int out[], DataInputStream in) throws IOException {
+	return uncompressGENC(out, in, in.available());
+    }
+    
+    private static int uncompressGENC (int out[], DataInputStream in, int n) throws IOException {
+        int reserved = in.available() - n;  /* This is kind of a hack. */
         int gcnsamp   = in.readInt () ;
-        int n = in.available () ;
         if (GENC_DEBUG == 1) System.out.println ( "start " + gcnsamp + " " + n ) ;
         int gclen     = in.readUnsignedByte () ;
         if (GENC_DEBUG == 1) System.out.println ( gclen ) ;
         int len, k, iout=0, msbit, nout=0;
-        while (in.available () > 0) {
+        while (in.available() - reserved > 0) {
             len = in.readUnsignedByte () + 1 ;
-            n = in.available () ;
+            n = in.available () - reserved;
             if (GENC_DEBUG == 1) System.out.println ( "start blockette " + len + " " + n ) ;
             msbit = 7;
             for (k=0; k<gclen; k++) {
@@ -372,26 +487,26 @@ public class OrbPacket extends Object {
                 msbit = bitunpackGENC (out, iout, in, msbit, len);
                 out[iout] = (out[iout]<<(32-len))>>(32-len);
                 iout++;
-                n = in.available () ;
+                n = in.available () - reserved;
                 if (GENC_DEBUG == 1) System.out.println (iout + " " + n + " " + msbit);
                 if (iout >= nout + gcnsamp) break;
             }
             if (msbit != 7) in.skip (1) ;
-            n = in.available () ;
+            n = in.available () - reserved;
             if (GENC_DEBUG == 1) System.out.println ( "end blockette " + n ) ;
             if (iout >= nout + gcnsamp) {
                 nout += gcnsamp;
-                if (in.available () < 1) break;
+                if (in.available () - reserved < 1) break;
                 gcnsamp     = in.readInt () ;
-                n = in.available () ;
+                n = in.available () -reserved;
                 if (GENC_DEBUG == 1) System.out.println ( "start " + gcnsamp + " " + n ) ;
                 gclen       = in.readUnsignedByte () ;
                 if (GENC_DEBUG == 1) System.out.println ( gclen ) ;
             }
-        }
-        
+        }        
         return (nout);
     }
+    
     
     private static int bitunpackGENC (int out[], int iout, DataInputStream in, 
                                     int msbit, int length) throws IOException {
