@@ -55,6 +55,7 @@ typedef struct ChPipe {
 
 typedef struct ChRec {
     double time;
+    long pktlta;
     long lta;
     int nsamp;
     int dasid;

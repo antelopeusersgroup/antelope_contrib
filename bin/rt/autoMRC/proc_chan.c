@@ -56,14 +56,16 @@ int offscale(
 	  
       ch->nsamp += achan->nsamp;
       data =  (int *)achan->data;
-      for( i = 0; i < achan->nsamp; i++ )  
-          ch->lta += data[i];
-      
+      ch->pktlta = 0;
+      for( i = 0; i < achan->nsamp; i++ )
+          ch->pktlta += data[i];
+     
+      ch->lta += ch->pktlta; 
       chpipe = ch->chpipe;
 
       chpipe->crnt_chan.time = pkttime; 
       chpipe->crnt_chan.nsamp = achan->nsamp;
-      chpipe->crnt_chan.lta = ch->lta;
+      chpipe->crnt_chan.lta = ch->pktlta;
 
       npkts = maxtbl( chpipe->tbl );
       if ( npkts >= chpipe->maxtbl ) 
@@ -78,7 +80,7 @@ int offscale(
 
       }
       
-      if( ch->nsamp >= max_nsamp )  {
+      if( pkttime - ch->time >= tm_period )  {
 	  if( labs(ch->lta / ch->nsamp) >= MaxOff )  {
               complain( 0, " %s_%s LTA is to high - %ld \n ", 
 	                achan->sta, achan->chan, ch->lta );
@@ -86,6 +88,7 @@ int offscale(
 	      ch->lta = 0;
 	      ch->nsamp = 0;
 	  } else off_scale = 0;
+	  ch->time = pkttime;
 	
       }
   

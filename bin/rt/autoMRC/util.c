@@ -117,6 +117,7 @@ ChRec *new_ch (
      	      
      allot ( ChRec *, ch, 1 ) ;
      ch->time = ttime ;
+     ch->pktlta = 0;
      ch->lta = 0;
      ch->nsamp = 0;
      dasid = (int *)getarr(Dasid, sta );
