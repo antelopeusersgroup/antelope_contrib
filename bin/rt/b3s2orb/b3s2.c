@@ -8,6 +8,7 @@ void usage()
       fprintf (stderr, "  \tiport    - /dev/ttyb.\n");
       fprintf (stderr, "  \tcmdport  - /dev/ttya.\n");
       fprintf (stderr, "  \torbname  - localhost.\n");
+      banner (Program_Name, "$Revision$ $Date$");
       exit (1);
 
 }
@@ -24,7 +25,6 @@ main(argc, argv)
 	char            *iport = DATA_PORT;
 	char            *cmdport = CMND_PORT;
 	char            *pfile = "pkt";
-        char            *version = "1.1 (10/22/97)";
 	Display        *dpy;
 	char            c;
 	uchar_t		*buffer, packet_buffer[PLEN];
@@ -38,7 +38,7 @@ main(argc, argv)
 	time_t		new_time, chk_time, old_time;
 
 	elog_init (argc, argv) ;
-        elog_notify (0, "%s version %s\n", argv[0], version) ;
+        elog_notify (0, "$Revision$ $Date$") ;
         Program_Name = argv[0];
 
 
