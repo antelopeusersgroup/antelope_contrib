@@ -253,6 +253,8 @@ if( ! defined( $wfmeas_subset ) || $wfmeas_subset eq "" ) {
 	$wfmeas_subset = 1; # Default eval to true
 }
 
+$output_dir =~ s/\$event_id/$event_id/;
+
 $output_file = concatpaths( $output_dir, $earthquake_filename );
 
 $output = new IO::File( ">$output_file" );

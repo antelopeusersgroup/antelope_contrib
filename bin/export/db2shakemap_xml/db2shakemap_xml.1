@@ -49,7 +49,8 @@ The \fIearthquake_dtd\fP and \fIwfdata_dtd\fP parameters of the parameter-file s
 filenames in which to find the Document Type Definitions (DTDs) for earthquake and stationlist
 XML output, respectively. Likewise, the \fIoutput_dir\fP parameter specifies where to put
 the output results and the parameters \fIearthquake_filename\fP and \fIwfdata_filename\fP
-specify the files in which to write the XML results.
+specify the files in which to write the XML results. If the string "$event_id" appears 
+in the specification of \fIoutput_dir\fP, the actual event_id will be substituted.
 
 Four parameters control which data are used in forming the XML output.
 The \fIorigin_subset\fP parameter limits processing to those hypocenters
