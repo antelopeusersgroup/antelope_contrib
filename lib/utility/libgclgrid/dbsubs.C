@@ -61,7 +61,7 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	double ***plat,***plon,***pr;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
-	if(dbgrd.record == dbINVALID) 
+	if(dbgrd.table == dbINVALID) 
 	{
 		elog_notify(0,(char *)"%s gclgdisk table not defined in schema definition\n",base_message);
 		throw 1;
@@ -204,7 +204,7 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	double **plat, **plon, **pr;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
-	if(dbgrd.record == dbINVALID) 
+	if(dbgrd.table == dbINVALID) 
 	{
 		elog_notify(0,(char *)"%s gclgdisk table not defined in schema definition\n",base_message);
 		throw 1;
@@ -345,8 +345,8 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 	int gridsize;
 	int nrec;
 
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	dbgrd = dblookup(db,0,(char *)"gclfield",0,0);
+	if(dbgrd.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 	        throw 1;
@@ -362,7 +362,7 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
 			gclgname,fieldname);
-		dbgrd = dbsubset(db,sstring,0);
+		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
@@ -421,8 +421,8 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	}
 	else
 	{
-		db = dblookup(db,0,(char *)"gclfield",0,0);
-		if(db.record == dbINVALID)
+		dbgrd = dblookup(db,0,(char *)"gclfield",0,0);
+		if(dbgrd.table == dbINVALID)
 		{
 			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		        throw 1;
@@ -430,7 +430,7 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
 			gclgname,fieldname);
-		dbgrd = dbsubset(db,sstring,0);
+		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
@@ -488,8 +488,8 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	}
 	else
 	{	
-		db = dblookup(db,0,(char *)"gclfield",0,0);
-		if(db.record == dbINVALID)
+		dbgrd = dblookup(db,0,(char *)"gclfield",0,0);
+		if(dbgrd.table == dbINVALID)
 		{
 			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		        throw 1;
@@ -497,7 +497,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
 			gclgname,fieldname);
-		dbgrd = dbsubset(db,sstring,0);
+		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
@@ -557,8 +557,8 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	}
 	else
 	{
-		db = dblookup(db,0,(char *)"gclfield",0,0);
-		if(db.record == dbINVALID)
+		dbgrd = dblookup(db,0,(char *)"gclfield",0,0);
+		if(dbgrd.table == dbINVALID)
 		{
 			elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		        throw 1;
@@ -566,7 +566,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
 			gclgname,fieldname);
-		dbgrd = dbsubset(db,sstring,0);
+		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
@@ -614,7 +614,7 @@ Modified:  December 2002
 Converted to C++ with subsequent name change.  Little of the code
 changed.
 */
-void GCLgrid3d::dbsave(Dbptr db, string dirin) throw(int)
+void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 {
 	char dir[64];
 	strncpy(dir,dirin.c_str(),64);
@@ -626,9 +626,10 @@ void GCLgrid3d::dbsave(Dbptr db, string dirin) throw(int)
 	int gridsize;
 	int dimensions=3;
 	char *fwerr=(char *)"fwrite error on file %s";
+	Dbptr db;
 
-	db = dblookup(db,0,(char *)"gclgdisk",0,0);
-	if(db.record == dbINVALID)
+	db = dblookup(dbo,0,(char *)"gclgdisk",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclgdisk table.  Extension table probably not defined\n");
 		throw 1;
@@ -728,7 +729,7 @@ void GCLgrid3d::dbsave(Dbptr db, string dirin) throw(int)
 	}
 }
 /* Parallel routine for 2d*/
-void GCLgrid::dbsave(Dbptr db, string dirin) throw(int)
+void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 {
 	char dir[64];
 	strncpy(dir,dirin.c_str(),64);
@@ -741,8 +742,8 @@ void GCLgrid::dbsave(Dbptr db, string dirin) throw(int)
 	int dimensions=2;
 	char *fwerr=(char *)"fwrite error on file %s";
 
-	db = dblookup(db,0,(char *)"gclgdisk",0,0);
-	if(db.record == dbINVALID)
+	Dbptr db = dblookup(dbo,0,(char *)"gclgdisk",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclgdisk table.  Extension table probably not defined\n");
 		throw 1;
@@ -846,7 +847,7 @@ void GCLgrid::dbsave(Dbptr db, string dirin) throw(int)
 // will throw an error by dbaddv.  The output stage that writes data in
 // is more forgiving because the file name, dfile, is passed as a separate 
 // argument.  
-void GCLscalarfield::dbsave(Dbptr db, 
+void GCLscalarfield::dbsave(Dbptr dbo, 
 	string gclgdir,
 	string fielddir,
 	string fieldname,
@@ -867,15 +868,15 @@ void GCLscalarfield::dbsave(Dbptr db,
 		try {
 			GCLgrid *g;
 			g = dynamic_cast<GCLgrid *> (this);
-			g->dbsave(db,gclgdir);
+			g->dbsave(dbo,gclgdir);
 		}
 		catch(int dbserr)
 		{
 			throw(dbserr);
 		}
 	}
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		throw 1;
@@ -921,7 +922,7 @@ void GCLscalarfield::dbsave(Dbptr db,
 	}
 }
 
-void GCLscalarfield3d::dbsave(Dbptr db, 
+void GCLscalarfield3d::dbsave(Dbptr dbo, 
 	string gclgdir,
 	string fielddir,
 	string fieldname,
@@ -942,15 +943,15 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 		try {
 			GCLgrid3d *g;
 			g = dynamic_cast<GCLgrid3d *> (this);
-			g->dbsave(db,gclgdir);
+			g->dbsave(dbo,gclgdir);
 		}
 		catch(int dbserr)
 		{
 			throw(dbserr);
 		}
 	}
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,
 		 (char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
@@ -993,11 +994,11 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 		0)  < 0)
 	{
 		elog_notify(0,
-		  (char *)"dbaddv error for 2d grid into gclfield table\n");
+		  (char *)"dbaddv error for 3d grid into gclfield table\n");
 		throw 1;
 	}
 }
-void GCLvectorfield::dbsave(Dbptr db, 
+void GCLvectorfield::dbsave(Dbptr dbo, 
 	string gclgdir,
 	string fielddir,
 	string fieldname,
@@ -1017,15 +1018,15 @@ void GCLvectorfield::dbsave(Dbptr db,
 		try {
 			GCLgrid *g;
 			g = dynamic_cast<GCLgrid *> (this);
-			g->dbsave(db,gclgdir);
+			g->dbsave(dbo,gclgdir);
 		}
 		catch(int dbserr)
 		{
 			throw(dbserr);
 		}
 	}
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,
 		 (char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
@@ -1072,7 +1073,7 @@ void GCLvectorfield::dbsave(Dbptr db,
 	}
 }
 
-void GCLvectorfield3d::dbsave(Dbptr db, 
+void GCLvectorfield3d::dbsave(Dbptr dbo, 
 	string gclgdir,
 	string fielddir,
 	string fieldname,
@@ -1092,15 +1093,15 @@ void GCLvectorfield3d::dbsave(Dbptr db,
 		try {
 			GCLgrid3d *g;
 			g = dynamic_cast<GCLgrid3d *> (this);
-			g->dbsave(db,gclgdir);
+			g->dbsave(dbo,gclgdir);
 		}
 		catch(int dbserr)
 		{
 			throw(dbserr);
 		}
 	}
-	db = dblookup(db,0,(char *)"gclfield",0,0);
-	if(db.record == dbINVALID)
+	Dbptr db = dblookup(dbo,0,(char *)"gclfield",0,0);
+	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		throw 1;

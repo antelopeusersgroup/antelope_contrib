@@ -27,5 +27,5 @@ double flatvel(double v, double z)
 }
 double uflatvel(double v, double z)
 {
-	return(REARTH*log(z/v));
+	return(v*exp(-z/REARTH));
 }

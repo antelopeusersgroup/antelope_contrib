@@ -213,4 +213,17 @@ private:
    int length;
    int nrr, ncc;
 };
+//@{
+// Vector derived from a dmatrix.
+// A vector is matrix with only one column.  We can derive it
+// easily by using inheritance from dmatrix but forcing number of
+// columns to be one.  
+//@}
+class dvector : public dmatrix
+{
+public:
+	dvector():dmatrix(){};
+	dvector(int nrv) : dmatrix(nrv,1){};
+};
+	
 #endif
