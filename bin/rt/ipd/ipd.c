@@ -18,6 +18,7 @@
 
 extern void sig_hdlr();
 int NoSP = 0;
+char *pffile = 0;
 
 void usage ()
 {
@@ -40,7 +41,6 @@ char *argv[];
   int     	  i, timeout=30;
   int	  htype=0;
   char            *iport = NULL;
-  char            *pffile = NULL;
   char            *version = "1.1 (03/22/97)";
   char            *hdrtype = 0;
   char            *orbname = "localhost";

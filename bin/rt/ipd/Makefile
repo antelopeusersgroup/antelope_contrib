@@ -8,6 +8,7 @@ ldlibs	= -lsocket -lnsl -Bstatic -lpkt -lorb -Bdynamic $(TRLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= ipd.o\
+	  newpf.o\
 	  openIP.o\
 	  read_in_port.o\
 	  send2orb.o\
