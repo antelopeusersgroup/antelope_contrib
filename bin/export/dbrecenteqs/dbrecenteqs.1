@@ -248,13 +248,21 @@ map_config &Arr{
 	background_magsize_pixels 3
 	background_magmin 3
 	quakeshape 	square
-	prefor_quakecolor yellow
-	nonprefor_quakecolor white
+	prefor_quakecolor yellow 	# color used for prefor on focus maps
+	nonprefor_quakecolor white 	# color used for nonprefor on focus maps
+	quake_agecolors &Arr{		# colors used on index maps
+		red	  21600		# (max age in seconds for a quake of each color)
+		orange	  43200
+		yellow	  86400
+		chartreuse	 259200
+		blue	 604800
+		grey	1209600
+	}
 	pixels_per_inch 100
 	size_inches 	5
 	city_symbols_inches 0.08
 	cityname_shift_deg 0.2
-	reserve_colors 	8
+	reserve_colors 	12
 	detail_density 	f  # f,h,i,l,c
 }
 
