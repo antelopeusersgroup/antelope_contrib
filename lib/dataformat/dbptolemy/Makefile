@@ -1,9 +1,9 @@
 
-LIB= libdbxml.a
+LIB= libdbptolemy.a
 DLIB=$(LIB:.a=$(DSUFFIX))
-INCLUDE= dbxml.h
+INCLUDE= dbptolemy.h
 
-MAN3= db2xml.3
+MAN3= db2ptolemy.3
 
 CLEAN=
 
@@ -17,7 +17,7 @@ DBG= -g
 
 DIRS=
 
-OBJS= db2xml.o xml2db.o
+OBJS= db2ptolemy.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

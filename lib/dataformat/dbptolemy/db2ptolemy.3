@@ -1,142 +1,53 @@
 .TH DB2XML 3 "$Date$"
 .SH NAME
-db2xml \- convert a database view to XML
+db2ptolemy \- convert a database view to a Ptolemy II expression
 .SH SYNOPSIS
 .nf
-#include "dbxml.h"
+#include "dbptolemy.h"
 
-int \fBdb2xml\fP(Dbptr \fIdb\fP, char *\fIrootnode\fP, char *\fIrownode\fP,
-                 Tbl *\fIfields\fP, Tbl *\fIexpressions\fP, void **\fIxml\fP,
+int \fBdb2ptolemy\fP(Dbptr \fIdb\fP, 
+                 Tbl *\fIfields\fP, Tbl *\fIexpressions\fP, void **\fIptexp\fP,
                  int \fIflags\fP)
 .fi
 .SH DESCRIPTION
-\fBdb2xml\fP returns an XML (eXtensible Markup Language) representation of a
-database view, returning 0 for success and negative values on error.
-The view is entirely contained in a single XML element named after the
-view name (table name for a base table), unless an alternative name is
-specified with the \fIrootnode\fP argument (set \fIrootnode\fP to null for default
-behavior).
+\fBdb2ptolemy\fP returns a Ptolemy II expression which evaluates to an array
+of records, with one record for each row of the view,
+returning 0 for success and negative values on error.
 
-Each row of the view is entered as an element named \fIrow\fP unless an
-alternative is specified with the \fIrownode\fP argument. If both \fIfields\fP
-and \fIexpressions\fP are zero, all \fIfields\fP present in the database view
-are used. Each appears as its own element, named the same as the field.
-If \fIfields\fP is nonzero and \fIexpressions\fP is zero, the \fIfields\fP specified
-are used both as element names and as \fIexpressions\fP (usually simple \fIfields\fP)
-from the database. If a table of \fIexpressions\fP is supplied, each expression is
-evaluated against each row and the result placed in the corresponding field
-name from the \fIfields\fP table.
-
-By default (i.e. with \fIflags\fP set to 0) the \fIxml\fP result is
-returned as a string in the \fIxml\fP pointer.  This string
+By default (i.e. with \fIflags\fP set to 0) the result is
+returned as a string in the \fIptexp\fP pointer.  This string
 is freshly allocated on each call. Previous contents of the pointer are
 ignored. Freeing the returned string is the responsibility of the user. If the
 \fIflags\fP argument is set to DBXML_BNS, the returned argument
-\fIxml\fP is the address of a pointer to a Buffered Network Stream
-object, which allows the XML result to be read out in pieces. For
+\fIptexp\fP is the address of a pointer to a Buffered Network Stream
+object, which allows the result to be read out in pieces. For
 further detail see bns(3). Once again, freeing the returned Bns structure is 
 the responsibility of the user.
 
 .SH EXAMPLE
-.ft CW
-.in 2c
-.nf
 
-.ne 5
-yukon% cat try.c
-#include <stdlib.h>
-#include "db.h"
-#include "stock.h"
-#include "dbxml.h"
-
-.ne 6
-main() {
-        Dbptr   db;
-        char    *dbname = "/opt/antelope/data/db/demo/demo";
-        char    expr[STRSZ];
-        char    *xml;
-        int     orid;
-
-.ne 7
-        dbopen( dbname, "r", &db );
-
-        db = dblookup( db, 0, "origin", 0, 0 );
-        db.record = 0;
-        dbgetv( db, 0, "orid", &orid, 0 );
-        sprintf( expr, "orid == %d", orid );
-        db = dbsubset( db, expr, 0 );
-
-.ne 7
-        db2xml( db, 0, 0, 0, 0, (void **) &xml, 0 );
-
-        printf( "%s\\n", xml );
-
-        exit( 0 );
-}
-yukon%
-
-.ne 31
-yukon% try
-<View45>
-   <row>
-      <lat>40.0740</lat>
-      <lon>69.1640</lon>
-      <depth>155.1660</depth>
-      <time>704371900.66886</time>
-      <orid>1</orid>
-      <evid>-1</evid>
-      <jdate>1992118</jdate>
-      <nass>7</nass>
-      <ndef>7</ndef>
-      <ndp>-1</ndp>
-      <grn>715</grn>
-      <srn>48</srn>
-      <etype>-</etype>
-      <review></review>
-      <depdp>-999.0000</depdp>
-      <dtype>f</dtype>
-      <mb>2.62</mb>
-      <mbid>1</mbid>
-      <ms>-999.00</ms>
-      <msid>-1</msid>
-      <ml>-999.00</ml>
-      <mlid>-1</mlid>
-      <algorithm>locsat:kyrghyz</algorithm>
-      <auth>JSPC</auth>
-      <commid>-1</commid>
-      <lddate>790466871.00000</lddate>
-   </row>
-</View45>
-
-yukon%
-
-.fi
-.in
-.ft R
 .SH RETURN VALUES
-\fBdb2xml\fP returns 0 upon success, -1 upon error. Any errors encountered
+\fBdb2ptolemy\fP returns 0 upon success, -1 upon error. Any errors encountered
 are registered with the elog(3) facility.
 .SH LIBRARY
--ldbxml $(DBLIBS)
+-ldbptolemy $(DBLIBS)
 .SH "SEE ALSO"
 .nf
-db2xml(1), dbselect(3)
+db2xml(3), dbselect(3)
 .fi
 .SH "BUGS AND CAVEATS"
-This version has no support for attributes.
+The \fIptexp\fP pointer is a void pointer to support multiple return
+types. 
 
-The pretty-print indent width is fixed, and newlines are added by default.
-At some point it may be necessary to add these later.
-
-The \fIxml\fP pointer is a void pointer to support multiple return
-types.  It may be desirable in the future to return something more
-complex than a pretty-printed string, such as a libxml2 DOM (Document
-Object Model) tree.  If necessary, the returned string can always be
-parsed into a representation of choice.
+This program could be reimplemented with a combination of db2xml and an 
+XSLT stylesheet.  Or a more general program could be implemented which 
+would transform a database view into a textual representation given a recipe
+contained in a parameter file, using morph(3) (for instance) and sprintf to
+perform the transformation.
 
 .SH AUTHOR
 .nf
-Kent Lindquist
-Lindquist Consulting
+Tobin Fricke, University of California
+This program is a rather trivial modification of Kent Lindquist's db2xml
 .fi
 .\" $Id$

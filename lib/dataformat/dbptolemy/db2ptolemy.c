@@ -1,10 +1,33 @@
+/** db2ptolemy
+ *
+ *  This library produces a string representing a datascope table (or view)
+ *  in the Ptolemy II expression language.  The table is represented as a
+ *  list (array) of records, where each record has a field corresponding to
+ *  each field in the Datascope table (view).
+ *
+ *  Other ideas: Instead of writing many db2* programs, we might be able to
+ *  write a db2fmt program that reads a parameter file containing a description
+ *  of how a table is to be transformed to a textual representation.  The
+ *  morph(3) functions combined with a parameter file describing the xformation
+ *  could make this quite easy.
+ *
+ *  Alternatively this could be accomplished using db2xml and XSLT.
+ *
+ *  Based on db2xml by Kent Lindquist, Lindquist Consulting, Inc.
+ *  2004-08-02 Tobin Fricke <tobin@splorg.org> University of California
+ *
+ *  For information on Ptolemy II, see http://ptolemy.eecs.berkeley.edu/ .
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include "db.h"
 #include "stock.h"
 #include "coords.h"
 #include "bns.h"
-#include "dbxml.h"
+#include "dbptolemy.h"
+
+static char *Library_Name = "db2ptolemy";
 
 static void 
 safe_strsub( char *source, char *pattern, char *replacement, char *dest )
@@ -21,36 +44,6 @@ safe_strsub( char *source, char *pattern, char *replacement, char *dest )
 }
 
 static void
-add_starttag( void **vstack, char *tagname )
-{
-	char	*copy;
-
-	copy = strdup( tagname );
-	strtrim( copy );
-
-	pushstr( vstack, "<" );
-	pushstr( vstack, copy );
-	pushstr( vstack, ">" );
-
-	free( copy );
-}
-
-static void
-add_endtag( void **vstack, char *tagname )
-{
-	char	*copy;
-
-	copy = strdup( tagname );
-	strtrim( copy );
-
-	pushstr( vstack, "</" );
-	pushstr( vstack, copy );
-	pushstr( vstack, ">" );
-
-	free( copy );
-}
-
-static void
 add_dataelement( void **vstack, char *tagname, char *value )
 {
 	char	*copy;
@@ -58,25 +51,23 @@ add_dataelement( void **vstack, char *tagname, char *value )
 	copy = strdup( value );
 	strtrim( copy );
 
-	safe_strsub( copy, "&", "&amp;", copy );
-	safe_strsub( copy, "<", "&lt;", copy );
-	safe_strsub( copy, ">", "&gt;", copy );
+	safe_strsub( copy, "\"", "\\\"", copy ); /* escape double quotes */
 
-	add_starttag( vstack, tagname );
+        pushstr( vstack, " ");
+        pushstr( vstack, tagname );
+	pushstr( vstack, " = \"" );
 	pushstr( vstack, copy );
-	add_endtag( vstack, tagname );
+	pushstr( vstack, "\"");
 
 	free( copy );
 }
 
 int
-db2xml( db, rootnode, rownode, fields_in, expressions_in, xml, flags )
+db2ptolemy( db, fields_in, expressions_in, ptexp, flags )
 Dbptr 	db; 
-char 	*rootnode;
-char 	*rownode;
 Tbl 	*fields_in;
 Tbl 	*expressions_in;
-void 	**xml;
+void 	**ptexp;
 int 	flags;
 {
 	Bns	*xml_bns = 0;
@@ -89,11 +80,13 @@ int 	flags;
 	int	i;
 	int	n;
 	int	setflag = 0; 
-	char	*separator = "\n";
-	char	*indent = "   ";
-	char	*roottag = 0;
-	char	*rowtag = 0;
-	char	*default_rowtag = "row";
+	char	*field_separator = ",";
+ 	char	*row_separator = ", ";
+	char	*indent = "";
+        char    *table_start = "{";
+        char    *table_end = "}\n";
+	char	*row_start = "{";
+	char	*row_end = "}";
 	Expression **expr; 
 	Dbvalue	result;
 	char	temp[STRSZ]; 
@@ -101,30 +94,9 @@ int 	flags;
 	int	ns, ne; 
 
 	if( db.table < 0 ) {
-		complain( 0, "db2xml: not a view or a table\n" );
+		complain( 0, "%s: not a view or a table\n", Library_Name );
 		return -1;
 	}
-
-	if( rootnode != 0 && *rootnode != 0 ) {
-		
-		roottag = strdup( rootnode );
-
-	} else {
-		
-		dbquery( db, dbTABLE_NAME, &result );
-		roottag = strdup( result.t );
-	} 
-	add_starttag( (void **) &vstack, roottag );
-	pushstr( (void **) &vstack, separator );
-
-	if( rownode != 0 && *rownode != 0 ) {
-		
-		rowtag = strdup( rownode );
-
-	} else {
-		
-		rowtag = strdup( default_rowtag );
-	} 
 
 	if( fields_in == 0 && expressions_in == 0 ) {
 
@@ -139,8 +111,8 @@ int 	flags;
 	} else if( fields_in == 0 ) {
 
 		complain( 0, 
-		"db2xml: must specify field names with nonzero list "
-		"of expressions\n" );
+		"%s: must specify field names with nonzero list "
+		"of expressions\n", Library_Name );
 		return -1;
 
 	} else {
@@ -152,7 +124,8 @@ int 	flags;
 	if( maxtbl( fields ) != maxtbl( expressions ) ) {
 
 		complain( 0, 
-		"db2xml: number of fields must match number of expressions\n" );
+		"%s: number of fields must match number of expressions\n",
+                Library_Name );
 		return -1;
 	}
 
@@ -168,11 +141,11 @@ int 	flags;
 		}
 	}
 
+        pushstr( (void **) &vstack, table_start);
+
 	for (db.record = ns; db.record < ne; db.record++ ) {
 
-		pushstr( (void **) &vstack, indent );
-		add_starttag( (void **) &vstack, rowtag );
-		pushstr( (void **) &vstack, separator );
+                pushstr( (void **) &vstack, row_start );
 
 		for ( i=0; i<n; i++ ) {
 			fieldname = (char *) gettbl( fields, i);
@@ -213,16 +186,19 @@ int 	flags;
 
 			add_dataelement( (void **) &vstack, fieldname, temp );
 
-			if ( separator != 0 ) {
+			if ( field_separator != 0 && i < (n - 1) ) {
 
-				pushstr( (void **) &vstack, separator );
+				pushstr( (void **) &vstack, field_separator );
 			}
 		}
 
 		pushstr( (void **) &vstack, indent );
-		add_endtag( (void **) &vstack, rowtag );
-		pushstr( (void **) &vstack, separator );
+                pushstr( (void **) &vstack, row_end );
+                if (db.record < ( ne - 1))
+		  pushstr( (void **) &vstack, row_separator );
 	}
+        
+        pushstr( (void **) &vstack, table_end );
 
 	for ( i=0; i<n; i++ ) {
 		dbex_free ( expr[i] ); 
@@ -230,15 +206,9 @@ int 	flags;
 
 	free(expr);
 
-	add_endtag( (void **) &vstack, roottag );
-	pushstr( (void **) &vstack, separator );
-
-	free( roottag );
-	free( rowtag );
-
 	xmlstring = popstr( (void **) &vstack, 1 );
 
-	if( flags & DBXML_BNS ) {
+	if( flags & DBPTOLEMY_BNS ) {
 
 		xml_bns = bnsnew( -1, strlen( xmlstring ) + 2 );
 
@@ -246,11 +216,11 @@ int 	flags;
 
 		free( xmlstring );
 
-		*xml = (void *) xml_bns;
+		*ptexp = (void *) xml_bns;
 
 	} else {
 		
-		*xml = (void *) xmlstring;
+		*ptexp = (void *) xmlstring;
 	}
 
 	return retcode;

@@ -1,15 +1,14 @@
 
-#ifndef XMLDB
-#define XMLDB
+#ifndef PTOLEMYDB
+#define PTOLEMYDB
 
-#define DBXML_BNS 1
+#define DBPTOLEMY_BNS 1
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-extern int db2xml( Dbptr db, char *rootnode, char *rownode, Tbl *fields, Tbl *expressions, void **xml, int flags );
-extern int xml2db( Dbptr db, char *xml );
+extern int db2ptolemy( Dbptr db, Tbl *fields, Tbl *expressions, void **xml, int flags );
 
 #ifdef  __cplusplus
 }
