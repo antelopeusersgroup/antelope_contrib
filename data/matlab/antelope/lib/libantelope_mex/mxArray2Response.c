@@ -113,6 +113,8 @@ static mxArray *mxResponseGroupInit( int n_ptrs, ... )
 		fieldnames[nargs-1] = strdup( name );
 	}
 
+	va_end( ap );
+
 	result = mxCreateStructMatrix( 1, 1, nargs, (const char **) fieldnames );
 
 	for( i = 0; i < nargs; i++ ) 
