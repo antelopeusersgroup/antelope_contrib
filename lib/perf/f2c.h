@@ -156,6 +156,7 @@ struct Namelist {
 	};
 typedef struct Namelist Namelist;
 
+#ifndef __no_macros__
 #define abs(x) ((x) >= 0 ? (x) : -(x))
 #define dabs(x) (doublereal)abs(x)
 #define min(a,b) ((a) <= (b) ? (a) : (b))
@@ -165,6 +166,7 @@ typedef struct Namelist Namelist;
 #define bit_test(a,b)	((a) >> (b) & 1)
 #define bit_clear(a,b)	((a) & ~((uinteger)1 << (b)))
 #define bit_set(a,b)	((a) |  ((uinteger)1 << (b)))
+#endif
 
 /* procedure parameter types for -A and -C++ */
 
@@ -202,6 +204,7 @@ typedef doublereal E_f;	/* real function with -R not specified */
 
 /* undef any lower-case symbols that your C compiler predefines, e.g.: */
 
+#ifndef __no_macros__
 #ifndef Skip_f2c_Undefs
 #undef cray
 #undef gcos
@@ -221,5 +224,6 @@ typedef doublereal E_f;	/* real function with -R not specified */
 #undef u3b5
 #undef unix
 #undef vax
+#endif
 #endif
 #endif
