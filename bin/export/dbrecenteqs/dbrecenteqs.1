@@ -14,6 +14,10 @@ recently detected earthquakes. If the keep_ndays parameter-file option
 is specified, the database is cleaned up routinely upon each run. If
 keep_ndays is not specified or is set to 0, no cleanup is performed.
 
+dbrecenteqs is designed to be run out of the crontab table of rtexec(1). 
+See the example below. It will die if it detects another copy of itself 
+running.
+
 If necessary, dbrecenteqs creates or adds to the mapstock table of
 the database in dbrecenteqs1.0 or related schema.  For the default
 behavior, a new stock index map is created based on the specifications
@@ -27,6 +31,16 @@ as setup utilities.
 .IP "-g globalmap_pffile Add specified global map to mapstock table"
 .IP "-i indexmap_pffile Add specified index map to mapstock table"
 .IP "-h don't regenerate focus maps; only recreate html"
+.SH EXAMPLE
+The rtexec.pf file for a running Antelope system might contain a 
+line like this, which runs dbrecenteqs on a near-real-time 
+database once every five minutes:
+.nf
+crontab &Arr{
+dbrecenteqs UTC 0,5,10,15,20,25,30,35,40,45,50,55 * * * * dbrecenteqs /iwrun/bak/db/webquakes/quakes
+}
+.fi
+
 .SH DIAGNOSTICS
 "Couldn't find alchemy. Use alternate image-conversion method or fix path."
 This message indicates that the preferred image-conversion method, via the 
@@ -34,9 +48,12 @@ ImageAlchemyPS software package from HandMade Software Inc., is not installed
 or not available on the path. A different conversion method, such as "pnm" or 
 "imagick", should be specified in the parameter file's 
 pixfile_conversion_method field.
+.SH "BUGS AND CAVEATS"
+dbrecenteqs will die if it finds anything running that has "dbrecenteqs" 
+in it's command-line. This is probably too loose.
 .SH "SEE ALSO"
 .nf
-dbevents(1)
+dbevents(1), rtexec(1)
 .fi
 .SH AUTHOR
 .nf

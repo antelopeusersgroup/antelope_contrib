@@ -149,6 +149,7 @@ sub cleanup_database {
 
 sub set_hypocenter_symbol {
 	my( %Mapspec ) = %{shift( @_ )};
+	my( $isprefor ) = pop( @_ );
 	my( @db ) = @_;
 
 	my( $mag, $symsize, $symshape, $symcolor );
@@ -172,7 +173,12 @@ sub set_hypocenter_symbol {
 	}
 
 	$symshape = $Mapspec{quakeshape};
-	$symcolor = $Mapspec{quakecolor};
+
+	if( $isprefor ) {
+		$symcolor = $Mapspec{prefor_quakecolor};
+	} else {
+		$symcolor = $Mapspec{nonprefor_quakecolor};
+	}
 
 	return ( $symsize, $symshape, $symcolor );
 }
@@ -363,6 +369,7 @@ sub create_focusmap_html {
 	my( @dbprefor ) = dbsubset( @db, "origin.orid==prefor" );
 	$dbprefor[3] = 0;
 	my( @dbnonprefors ) = dbsubset( @db, "origin.orid != prefor" );
+	my( $nothers ) = dbquery( @dbnonprefors, "dbRECORD_COUNT" );
 
 	my( $lat, $lon, $mapname, $orid ) = 
 		dbgetv( @dbprefor, "lat", "lon", "mapname", "origin.orid" );
@@ -374,9 +381,13 @@ sub create_focusmap_html {
 		"CONTENT=\"$State{page_refresh_seconds}\">\n";
 	print H "</HEAD>\n";
 	print H "<BODY BGCOLOR='white'>\n";
-	print H "<MAP NAME=\"vitals\">" . 
-		imagemap_symbol( @dbprefor, "#prefor" ) .
-		"</MAP>\n";
+	print H "<MAP NAME=\"vitals\">\n" .
+		imagemap_symbol( @dbprefor, "#prefor" ) . "\n";
+	for( $dbnonprefors[3]=0; $dbnonprefors[3]<$nothers; $dbnonprefors[3]++ ){
+		$nporid = dbgetv( @dbnonprefors, "origin.orid" );
+		print H imagemap_symbol( @dbnonprefors, "#orid$nporid" ) . "\n";
+	}
+	print H	"</MAP>\n";
 	print H "<CENTER>";
 	print H hyperlinked_logo();
 	print H "</CENTER>\n";
@@ -395,15 +406,19 @@ sub create_focusmap_html {
 	print H "<A NAME=\"prefor\">";
 	print H "<H2>Preferred Hypocentral Solution:</H2>\n";
 	print H hypocenter_vitals( @dbprefor, "beige" );
-	my( $nothers ) = dbquery( @dbnonprefors, "dbRECORD_COUNT" );
 	if( $nothers > 0 ) {
 		print H "<H2>Previous Solutions and other agencies:</H2>\n";
 	}
 	for( $dbnonprefors[3]=0; $dbnonprefors[3]<$nothers;$dbnonprefors[3]++ ){
+		$orid = dbgetv( @dbnonprefors, "origin.orid" );
+		print H "<A NAME=\"orid$orid\">";
 		print H hypocenter_vitals( @dbnonprefors, "white" );
 	}
 	print H "</CENTER>\n";
 
+	$State{"nearest_places"}->{"cities_dbname"} =
+	   datafile_abspath( $State{"nearest_places"}->{"cities_dbname"} );
+	
 	if( ! defined( $State{"nearest_places"}->{"cities_dbname"} ) ||
 	      $State{"nearest_places"}->{"cities_dbname"} eq "" ) {
 
@@ -445,22 +460,24 @@ sub create_focusmap {
 
 	@db = dbprocess( @db, "dbopen event",
 			      "dbjoin origin", 
-			      "dbsubset evid == $evid",
-			      "dbsubset orid == prefor" );
+			      "dbsubset evid == $evid" );
 
-	$db[3] = 0; 
+	my( $nhypos ) = dbquery( @db, "dbRECORD_COUNT" );
 
-	my( $time, $lat, $lon, $orid ) =
-	  dbgetv( @db, "time", "lat", "lon", "orid" );
+	@dbprefor = dbsubset( @db, "orid == prefor" );
+	$dbprefor[3] = 0; 
+
+	my( $preftime, $preflat, $preflon, $prefor ) =
+	  dbgetv( @dbprefor, "time", "lat", "lon", "orid" );
 
 	$Focus_Mapspec{filebase} = "evid$evid";
 	$Focus_Mapspec{mapname} = $Focus_Mapspec{filebase};
-	$Focus_Mapspec{lonc} = unwrapped_lon( \%Focus_Mapspec, $lon );
-	$Focus_Mapspec{latc} = $lat;
+	$Focus_Mapspec{lonc} = unwrapped_lon( \%Focus_Mapspec, $preflon );
+	$Focus_Mapspec{latc} = $preflat;
 
 	# Try to keep the directory names short enough for dir field
 	my( $reldir ) = concatpaths( $State{quakesubdir}, 
-	 	   epoch2str( $time, "%Y%j" ) .
+	 	   epoch2str( $preftime, "%Y%j" ) .
 			      "_$Focus_Mapspec{mapname}" );
 	mkdir( concatpaths( $State{web_topdir}, $reldir ), 0755 );
 
@@ -474,39 +491,6 @@ sub create_focusmap {
 	%Focus_Mapspec = %{set_rectangle( \%Focus_Mapspec )};
 
 	%Focus_Mapspec = %{create_map( \%Focus_Mapspec )};
-
-	my( $modified_image ) = $Focus_Mapspec{clean_image}->Clone();
-
-	( $x, $y ) = latlon_to_xy( $Focus_Mapspec{proj},
-				   $lat,
-				   $lon,
-				   $Focus_Mapspec{latc},
-				   $Focus_Mapspec{lonc},
-				   $Focus_Mapspec{xc},
-				   $Focus_Mapspec{yc},
-				   $Focus_Mapspec{xscale_pixperdeg},
-				   $Focus_Mapspec{yscale_pixperdeg},
-				   );
-
-	( $symsize, $symshape, $symcolor ) = 
-	  		set_hypocenter_symbol( \%Focus_Mapspec, @db );
-
-	if( $symshape eq "square" ) {
-		$primitive = "rectangle";
-		$xul = $x - $symsize;
-		$yul = $y - $symsize;
-		$xlr = $x + $symsize;
-		$ylr = $y + $symsize;
-		$points = "$xul,$yul $xlr,$ylr";
-	} else {
-		die( "symbol shape $symshape not understood\n" );
-	}
-
-	$modified_image->Draw(
-			fill=>$symcolor,
-			primitive=>$primitive,
-			stroke=>'blue',
-			points=>$points );
 
 	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "" );
 	my( @dbscratch ) = dblookup( @dbwebmaps, "", "", "", "dbSCRATCH" );
@@ -538,21 +522,63 @@ sub create_focusmap {
 
 	my( $webmap_image ) = dbextfile( @dbwebmaps );
 
+	my( $modified_image ) = $Focus_Mapspec{clean_image}->Clone();
+
+	eliminate_from_mapassoc( @db, $Focus_Mapspec{mapname} );
+
+	for( $db[3]=0; $db[3] < $nhypos; $db[3]++ ) {
+
+		my( $lat, $lon, $orid ) =
+	  	  dbgetv( @db, "lat", "lon", "orid" );
+
+		$isprefor = ( $orid == $prefor ) ? 1 : 0;
+
+		( $x, $y ) = latlon_to_xy( 
+				   $Focus_Mapspec{proj},
+				   $lat,
+				   $lon,
+				   $Focus_Mapspec{latc},
+				   $Focus_Mapspec{lonc},
+				   $Focus_Mapspec{xc},
+				   $Focus_Mapspec{yc},
+				   $Focus_Mapspec{xscale_pixperdeg},
+				   $Focus_Mapspec{yscale_pixperdeg},
+				   );
+
+		( $symsize, $symshape, $symcolor ) = 
+	  		set_hypocenter_symbol( \%Focus_Mapspec, @db, $isprefor );
+
+		if( $symshape eq "square" ) {
+			$primitive = "rectangle";
+			$xul = $x - $symsize;
+			$yul = $y - $symsize;
+			$xlr = $x + $symsize;
+			$ylr = $y + $symsize;
+			$points = "$xul,$yul $xlr,$ylr";
+		} else {
+			die( "symbol shape $symshape not understood\n" );
+		}
+
+		$modified_image->Draw(
+				fill=>$symcolor,
+				primitive=>$primitive,
+				stroke=>'blue',
+				points=>$points );
+	
+		my( @dbmapassoc ) = dblookup( @db, "", "mapassoc", "", "" );
+		dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{mapname},
+			     	     "orid", $orid,
+			     	     "x", $x,
+			     	     "y", $y, 
+			     	     "symsize", $symsize,
+			     	     "symshape", $symshape,
+			     	     "symcolor", $symcolor );
+	}
+
 	$modified_image->Write(filename=>$webmap_image);
 
 	undef( $modified_image );
 	undef( $Focus_Mapspec{clean_image} );
-
-	eliminate_from_mapassoc( @db, $Focus_Mapspec{mapname} );
-
-	my( @dbmapassoc ) = dblookup( @db, "", "mapassoc", "", "" );
-	dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{mapname},
-			     "orid", $orid,
-			     "x", $x,
-			     "y", $y, 
-			     "symsize", $symsize,
-			     "symshape", $symshape,
-			     "symcolor", $symcolor );
 }
 
 sub hyperlinked_logo {
@@ -898,7 +924,7 @@ sub update_stockmap {
 					   $xscale_pixperdeg, $yscale_pixperdeg );
 
 		( $symsize, $symshape, $symcolor ) = 
-  		set_hypocenter_symbol( \%Mapspec, @db );
+  		set_hypocenter_symbol( \%Mapspec, @db, 1 );
 
 		my( $primitive, $points, $xul, $yul, $xlr, $ylr );
 
@@ -928,7 +954,6 @@ sub update_stockmap {
 			"symshape", $symshape,
 			"symcolor", $symcolor );
 	}
-
 
 	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "dbALL" );
 	my( @dbscratch ) = dblookup( @dbwebmaps, "", "", "", "dbSCRATCH" );
@@ -989,7 +1014,7 @@ die_if_already_running();
 
 if( ! expansion_schema_present( @db ) ) {
 
-	die( "Please add dbrecenteqs1.0 expansion schema to $dbname. Bye.\n" );
+	die( "Please add dbrecenteqs1.1 expansion schema to $dbname. Bye.\n" );
 }
 
 if( $opt_i ) {

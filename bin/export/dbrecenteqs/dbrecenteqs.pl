@@ -64,6 +64,8 @@ sub setup_State {
 sub expansion_schema_present {
 	my( @db ) = @_;
 
+	my( $present ) = 0;
+
 	my( @tables ) = dbquery( @db, "dbSCHEMA_TABLES" );
 
 	if( grep( /mapstock/, @tables ) &&
@@ -71,12 +73,24 @@ sub expansion_schema_present {
     	    grep( /quakeregions/, @tables ) &&
     	    grep( /webmaps/, @tables ) ) {
 	
-		return 1;
+		$present++;
 
 	} else {
 
-		return 0;
+		$present = 0;
 	}
+
+	if( $present ) {
+		@db = dblookup( @db, "", "webmaps", "", "" );
+		$lddate_used = 
+			grep( /lddate/, dbquery( @db, "dbTABLE_FIELDS" ) );
+		if( ! $lddate_used ) {
+			print STDERR "Please upgrade to dbrecenteqs1.1.\n";
+			$present = 0;
+		}
+	}
+
+	return $present;
 }
 
 sub check_for_executable {
@@ -614,6 +628,8 @@ sub plot_linefiles {
 sub plot_cities {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $position ) = shift( @_ );
+
+	$Mapspec{cities_dbname} = datafile_abspath( $Mapspec{cities_dbname} );
 
 	if( ! defined( $Mapspec{cities_dbname} ) || 
 	      $Mapspec{cities_dbname} eq "" ) {
