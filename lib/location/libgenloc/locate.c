@@ -1537,6 +1537,22 @@ elements not filled in, but all unused values are set to 0.0
 
 Author:  Gary L. Pavlis
 Written:  November 1996
+Modification:
+	November 2002
+Discovered a parasitic case that caused problems with the original
+method used to set the origin time.  Previously the grid search let
+the origin time float with the median of the residuals.  That worked
+fine until I added the code to automatically handle timing problems
+by automatically switchin to S-P for problem stations.  When more
+stations had a timing problem than not, this algorithm failed because
+the origin time got strongly distorted bouncing around in the grid
+causing erratic behaviour.  
+
+Changed to use the first arrival in the input list as a reference.
+The computed travel time for this station is subtracted from the 
+that time and used as an origin time estimate.  This actually
+may give better results anyway as the floating reference used
+before may have unintentionally introduced local minima.
 */
 
 Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
@@ -1558,6 +1574,7 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 	double rmsmin;
 	int imin;
 	double dt;  /* adjustment to base time for final solution */
+	double time_ref;  /* global time reference grabbed from first entry */
 
 	natimes = maxtbl(attbl);
 	nslow = maxtbl(utbl);
@@ -1608,6 +1625,7 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 	first order origin time within the ballpark.  */
 	a = (Arrival *)gettbl(attbl,0);
 	hypo.time = a->time;
+	time_ref = a->time;
 	/* This number should be huge enough to avoid this being the
 	minimum rms unless something is really bad.*/
 	rmsmin = 1.0e100;
@@ -1616,19 +1634,37 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 	for(i=0;i<ngrid;++i)
 	{
 		float **dummy;
+		Travel_Time_Function_Output tto;
+		int reset_ot;
+
 		hypo.lat = grid[i].lat;
 		hypo.lon = grid[i].lon;
 		hypo.z = grid[i].z;
+		hypo.time=time_ref;
+		/* Do this to reset the time reference */
+		tto=calculate_travel_time(*a,hypo,RESIDUALS_ONLY);
+		if(tto.time==TIME_INVALID)
+		{
+			reset_ot=1;
+			complain(1,"gridloc:  travel time calculator failed in computing reference time\nThis may cause convergence problems\n");
+		}
+		else
+		{
+			reset_ot=0;
+			hypo.time -= tto.time;
+		}
 		statistics = form_equations(RESIDUALS_ONLY,hypo,
 			attbl,utbl,
 			options, dummy, b, r, w, reswt,&nused);
-                for(j=0;j<natimes;++j) work[j] = r[j];
+	        for(j=0;j<natimes;++j) work[j] = r[j];
 		time_statistics = calc_statistics(work,nused);
-		/* reset the arrival time residuals */
-		for(j=0;j<natimes;++j) 
+		if(reset_ot)
 		{
-			r[j] -= time_statistics.median;
-			b[j] = r[j]*w[j]*reswt[j];
+			for(j=0;j<natimes;++j) 
+			{
+				r[j] -= time_statistics.median;
+				b[j] = r[j]*w[j]*reswt[j];
+			}
 		}
 		if(use_raw)
 		{
@@ -1640,9 +1676,13 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 			{
 				rmsmin = rms;
 				imin = i;
-				dt = time_statistics.median;
+				if(reset_ot)
+					dt = time_statistics.median;
+				else
+					dt = tto.time + time_statistics.median;
 				hypo.interquartile =
-					statistics.q3_4 - statistics.q1_4;
+					time_statistics.q3_4 
+					- time_statistics.q1_4;
 			}
 		}
 		else
@@ -1652,13 +1692,17 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 			{
 				rmsmin = wrms;
 				imin = i;
-				dt = time_statistics.median;
+				if(reset_ot)
+					dt = time_statistics.median;
+				else
+					dt = tto.time + time_statistics.median;
 				hypo.interquartile =
-					statistics.q3_4 - statistics.q1_4;
+					time_statistics.q3_4 
+					- time_statistics.q1_4;
 			}
 		}
 	}
-	hypo.time -= dt;
+	hypo.time = time_ref - dt;
 	hypo.lat = grid[imin].lat;
 	hypo.lon = grid[imin].lon;
 	hypo.z = grid[imin].z;
