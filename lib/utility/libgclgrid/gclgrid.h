@@ -22,7 +22,9 @@ typedef struct cart_ {
 	double x3;
 } Cartesian_point;
 
-extern int GCLverbose;  //verbosity level.  0 terse, 1 verbose, 2 very verbose
+// Disabled for now:
+// verbosity level.  0 terse, 1 verbose, 2 very verbose
+// extern int GCLverbose;  
 class GCLgrid_error
 {
 public:
