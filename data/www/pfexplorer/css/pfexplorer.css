@@ -1,0 +1,104 @@
+/* Edit the positions of the */
+/* positionable elements at your own peril! */
+/* DO NOT CHANGE DIV OR CLASS NAMES */
+/* - THEY ARE REFERENCED IN THE EXTERNAL JAVASCRIPT FILE */
+/* IF YOU DO EDIT THE NAMES, MAKE SURE YOU EDIT THE */
+/* CORRESPONDING VARIABLES IN THE JAVASCRIPT */
+
+body {
+	margin:10px 10px 0px 10px;
+	padding:0px;
+	font-family: "Trebuchet MS", Helvetica, sans-serif ;
+	font-size: 12px ;
+}
+#header {
+	height: 80px ;
+	padding: 3px ;
+}
+#header h1 {
+	font-size: 14px ;
+}
+#parent {
+	top: 80px ;
+	width: 100% ;
+	padding: 3px ;
+}
+.button {
+	position: absolute;
+	left: 10px ;
+	top: 80px ;
+	width: 20% ;
+	border: 2px solid black;
+	cursor: pointer ;
+	padding: 2px ;
+	background-color: #ff9;
+	display:inline;
+}
+.pfContentClass {
+	visibility: hidden ;
+	position: absolute ;
+	left: 22%;
+	top: 80px ;
+	width: 50% ;
+	float: left;
+	border: 2px solid black;
+	padding: 3px ;
+	background-color: #ff9;
+}
+.pfContentClass h3 {
+	border: 2px solid black;
+	color: #fff;
+	background-color: #900;
+	padding: 3px ;
+}
+.highlight {
+	font-size: 13px ;
+	font-weight: bold ;
+	border: 2px solid black ;
+	background-color: white ;
+	padding: 0.5em ;
+	margin: auto ;
+	color: blue ;
+	text-align: middle ;
+}
+ul {
+	margin-left: 0;
+	padding-left: 1em;
+}
+li {
+	font-weight: bold ;
+	list-style: none ;
+	margin: 0;
+	padding: 0;
+}
+.keyValTable {
+	border: 2px solid black ;
+	margin: auto ;
+	background-color: #FF9 ;
+}
+.keyValTable th {
+	background-color: #900 ;
+	color: white ;
+	text-align: center ;
+	padding: 0.5em ;
+}
+.keyValTable td.tblKey {
+	background-color: #FFF ;
+	color: blue ;
+	text-align: center ;
+	font-weight: bold ;
+	padding: 0.5em ;
+}
+.keyValTable td.tblVal {
+	background-color: #FFF ;
+	color: black ;
+	text-align: center ;
+	padding: 0.5em ;
+}
+.backButtonFormat {
+	border: 2px solid black ;
+	background-color: #FF9 ;
+	padding: 0.1em ;
+	font-weight: bolder ;
+	text-decoration: none ;
+}

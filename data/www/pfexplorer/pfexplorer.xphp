@@ -1,0 +1,149 @@
+
+<?php
+#
+# Copyright (c) 2005 The Regents of the University of California
+# All Rights Reserved
+#
+# Permission to use, copy, modify and distribute any part of this software for
+# educational, research and non-profit purposes, without fee, and without a
+# written agreement is hereby granted, provided that the above copyright
+# notice, this paragraph and the following three paragraphs appear in all
+# copies.
+#
+# Those desiring to incorporate this software into commercial products or use
+# for commercial purposes should contact the Technology Transfer Office,
+# University of California, San Diego, 9500 Gilman Drive, La Jolla, CA
+# 92093-0910, Ph: (858) 534-5815.
+#
+# IN NO EVENT SHALL THE UNIVESITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE, EVEN IF THE UNIVERSITY
+# OF CALIFORNIA HAS BEEN ADIVSED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# THE SOFTWARE PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF
+# CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+# ENHANCEMENTS, OR MODIFICATIONS.  THE UNIVERSITY OF CALIFORNIA MAKES NO
+# REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER IMPLIED OR
+# EXPRESS, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE
+# SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+#
+#   This code was created as part of the ANF project.
+#   See http://anf.ucsd.edu/
+#
+#   pfexplorer.php : Prototype parameter file explorer
+#   Written By     : Rob Newman 2005-03-02
+#   Manpages       : pfexplorer.3h, pfexplore.3h
+#
+
+dl( 'Datascope.so' ) ; # Dynamic load of Datascope library
+
+$ANT = "/opt/antelope/4.6p/data/pf/" ; # Path to antelope
+$self = $_SERVER['PHP_SELF'] ; # Shorthand reference to self
+
+require_once( 'pfexplore.inc' ) ; # Include the class
+
+?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Parameter File Explorer v.0.1 - PROTOTYPE</title>
+<script type="text/javascript" src="js/pfexplorer.js"></script>
+<style type="text/css" media="all" title="pfexplorer css">@import "css/pfexplorer.css";</style>
+<link rel="alternate stylesheet" type="text/css" href="css/pfexplorer.css" title="pfexplorer css" media="screen" />
+</head>
+<body>
+	<div id="header">
+		<h1>Parameter File Explorer<a href="#" title="This requires a W3C DOM 1.0 compliant browser and Javascript turned ON">*</a></h1>
+	</div>
+<?php
+if( isset( $_POST['pfnamedefault'] ) OR isset( $_POST['pfnamelocal'] ) ) {
+	if( isset( $_POST['pfnamedefault'] ) && isset( $_POST['pfnamelocal'] ) ) {
+		echo "<h1>ERROR</h1>\n" ;
+		echo "<p>You cannot view more than one parameter file at a time!</p>\n" ;
+		echo "<p><a href=\"$self\">Go back</a> to the parameter file explorer</p>\n" ;
+		exit ;
+	} elseif( isset( $_POST['pfnamedefault'] ) && empty( $_POST['pfnamelocal'] ) ) {
+		if( file_exists( $ANT . $_POST['pfnamedefault'] ) ) {
+			$pf = $ANT . $_POST['pfnamedefault'] ;
+		} else {
+			echo "<h1>Antelope parameter file <b>" . $_POST['pfnamedefault'] . "</b> does not exist!</h1>\n" ;
+			echo "<p><a href=\"$self\">Go back</a> to the parameter file explorer</p>\n" ;
+			exit ;
+		}
+	} elseif( isset( $_POST['pfnamelocal'] ) && empty( $_POST['pfnamedefault'] ) ) {
+		if( file_exists( $_POST['pfnamelocal'] ) ) {
+			$pf = $_POST['pfnamelocal'] ;
+		} else {
+			echo "<h1>Local parameter file <b>" . $_POST['pfnamelocal'] . "</b> does not exist!</h1>\n" ;
+			echo "<p><a href=\"$self\">Go back</a> to the parameter file explorer</p>\n" ;
+			exit ;
+		}
+	} else {
+		echo "<h1>ERROR! No parameter file defined!</h1>\n" ;
+		echo "<p><a href=\"$self\">Go back</a> to the parameter file explorer</p>\n" ;
+		exit;
+	}
+	echo pfexplore( $pf, "" ) ;
+} else { // Define the PF file to use
+	$pffiles = array() ;
+	if( $handle = opendir( $ANT ) ) {
+		while( false !== ( $file = readdir( $handle ) ) ) { 
+			if( $file != "." && $file != ".." && $file != ".dbpickrc" ) {
+				array_push( $pffiles, $file ) ;
+			} 
+		}
+		closedir($handle); 
+	}
+	natcasesort( $pffiles ) ;
+	?>
+	<div id="parent">
+		<div id="form" class="button">
+			<script language="javascript" type="text/javascript">
+			<!--
+			function pfshow( n ) {
+				if ( n == 1 ) {
+					document.getElementById('antelopepf').style.display = (document.getElementById('antelopepf').style.display=='block')?'none':'block';
+					document.getElementById('localpf').style.display = 'none';
+				}
+				if ( n == 2 ) {
+					document.getElementById('localpf').style.display = (document.getElementById('localpf').style.display=='block')?'none':'block';
+					document.getElementById('antelopepf').style.display = 'none';
+				}
+			}
+			//-->
+			</script>
+			<p><b>What parameter file would you like to explore?</b></p>
+			<form id="pfselector" name="pfselector">
+			<input type="radio" name="pftoexplore" onclick="pfshow(1)" />One of the default Antelope parameter files.<br/>
+			<input type="radio" name="pftoexplore" onclick="pfshow(2)">One of the parameter files on the webserver host filesystem.</p>
+			</form>
+			<div id="antelopepf" style="display:none">
+				<p><b>Choose from the default Antelope parameter file list:</b></p>
+				<form id="antelopepfexplorer" name="pfexplorer" action="<? echo $self ; ?>" method="post" onchange="document.forms['antelopepfexplorer'].submit()">
+					<select name="pfnamedefault">
+					<?php
+					foreach( $pffiles as $p ) {
+						echo "\t<option value=\"$p\">$p</option>\n"; 
+					}
+					?>
+					</select>
+					<input type="submit" value="Submit" />
+				</form>
+			</div>
+			<div id="localpf" style="display:none">
+				<form id="localpfexplorer" name="pfexplorer" action="<? echo $self ; ?>" method="post" onchange="document.forms['localpfexplorer'].submit()">
+					<p><b>Disk location of non-distributed parameter file:</b></p>
+					<input type="text" name="pfnamelocal" /><br/>
+					<input type="submit" value="Submit" />
+				</form>
+			</div>
+		</div>
+	</div>
+	<?php
+}
+?>
+</body>
+</html>

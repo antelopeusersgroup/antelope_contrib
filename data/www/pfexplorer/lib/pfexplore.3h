@@ -1,0 +1,50 @@
+.TH PFEXPLORE SECTION3H "$Date$"
+.SH NAME
+pfexplore \- library to parse a parameter file for the web
+.SH SYNOPSIS
+.nf
+include('pfexplore.inc');
+
+pfexplore( $pfname, $key ) ;
+.fi
+.SH DESCRIPTION
+Takes a parameter file arguement from pfget, see
+Datascope_PHP(3), and parses the parameter file.
+Returns and displays associative array structure.
+
+Requires a $key. If none needed, use "".
+Requires a DOM 1.0 compliant browser and Javascript turned on.
+.SH OPTIONS
+.SH FILES
+pfexplore.inc
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+$pfname = "rtexec.pf" ;
+$key = "Env" ;
+
+include('pfexplore.inc');
+
+pfexplore( $pfname, $key ) ;
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+None
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+Datascope_PHP(3), pfexplorer(3h)
+.fi
+.SH "BUGS AND CAVEATS"
+Currently requires a value for $key. Next version will allow
+optional arguement for $key.
+.SH AUTHOR
+Rob Newman
+UCSD
+.\" $Id$
