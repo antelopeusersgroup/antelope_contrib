@@ -1,6 +1,6 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h vmodel.h
+INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h resample.h vmodel.h
 MAN3=Basic_Time_Series.3 \
   Datascope_Handle.3 \
   GCLrays.3 \
@@ -8,6 +8,7 @@ MAN3=Basic_Time_Series.3 \
   Time_Series.3 \
   metadata.3 \
   metadata_error.3 \
+  resample.3 \
   seispp_error.3 
 #ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
 
@@ -27,6 +28,7 @@ OBJS=basic_time_series.o \
   pfstream_interface.o \
   raytrace.o \
   readwrite.o \
+  resample.o \
   rotate_procedures.o \
   rotation.o \
   slowness.o \

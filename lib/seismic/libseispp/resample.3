@@ -83,11 +83,11 @@ Pf *pf;
 //the oddities here are the standard C++ interface to C function
 pfread(const_cast<char *>(pffile.c_str()),&pf); 
 Resampling_Definitions rd(pf);
-...
+    ...
 Time_Series ts(db,mdl,am);  // see Time_Series(3)
 tsnew = Resample_Time_Series(ts,rd,0.1,true);  // resample to 10 sps
 dbsave(tsnew,db,"wfdisc",mdl,am);
-...
+    ...
 .fi
 .ft R
 .in
