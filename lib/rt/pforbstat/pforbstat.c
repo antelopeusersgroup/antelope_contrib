@@ -481,7 +481,7 @@ orbconnections2pf( Pf *pfanalyze )
 			parse_orbname( cmdline_toorb, 
 				       cmdline_toip, 
 				       &cmdline_toport );
-/* DEBUG:
+
 			pfput_string( pfconnection, 
 				      "cmdline_fromorb", cmdline_fromorb );
 
@@ -499,7 +499,7 @@ orbconnections2pf( Pf *pfanalyze )
 
 			pfput_int( pfconnection, 
 				   "cmdline_toport", cmdline_toport );
-*/
+
 			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
 
 				latency_sec =
