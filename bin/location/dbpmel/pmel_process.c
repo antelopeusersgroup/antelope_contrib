@@ -390,6 +390,7 @@ for cluster id %d\n",
 		}
 		for(k=0;k<nevents;++k) freetbl(ta[k],free);
 		free(ta);
+		free(h0);
 		freetbl(converge,0);
 		freetbl(pmelhistory,free);
 
