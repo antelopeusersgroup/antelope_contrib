@@ -254,8 +254,8 @@ nickel%\fB \fP
 dbcentral(1), orbwfmeas(1), dbwfmeas(1), db2xml(1)
 .fi
 .SH "BUGS AND CAVEATS"
-The ShakeMap retrieve program, out of which \fBdb2shakemap_xml\fP might be run,
-both refuses to take extra command-line arguments for its program and demands that
+The ShakeMap \fBretrieve\fP program, out of which \fBdb2shakemap_xml\fP might be run,
+does not take extra command-line arguments for its programs and also expects that
 the executable be found in /opt/ShakeMap/bin. Thus a wrapper script similar
 to the following may be useful:
 .ft CW
