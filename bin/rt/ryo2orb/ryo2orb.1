@@ -1,0 +1,212 @@
+.TH RTD2ORB 1 "$Date$"
+.SH NAME
+ryo2orb \- import RYO-format real-time GPS data from an RTD server to an orbserver
+.SH SYNOPSIS
+.nf
+\fBryo2orb \fP[-v] [-V] [-p \fIpfname\fP] \fIrtd_ipaddress\fP:\fIport\fP
+                \fIorbserver\fP
+.fi
+.SH DESCRIPTION
+\fBryo2orb\fP connects to an RTD server, collects real-time Global
+Positioning System (GPS) Position data in RYO format, and places these
+data on an Antelope \fIorbserver\fP in MGENC format. The \fIrtd_ipaddress\fP:\fIport\fP
+specifies the IP address and the \fIport\fP number of an RTD server to which
+to connect for RYO data. The \fIorbserver\fP parameter specifies the name of
+the output orb.
+
+The parameter file specifies two values used in converting GPS time to
+Unix Epoch (i.e. UTC) time (the time standard for waveform-data packets
+on the \fIorbserver\fP). The GPS_epoch parameter is a string interpretable by
+str2epoch(3), giving the beginning of "week 0" in the tally of GPS
+weeks. The GPS_leapseconds parameter gives the number of seconds to
+subtract from the GPS time to get UTC time.
+
+Since GPS Position data is given in ITRF coordinates as floating-point
+values, these values must be multiplied by a sufficiently large scale
+factor for storage and transport in the orb packets, which expect data
+in integer counts. The multiply_data_by parameter specifies this
+multiplier.  Incoming data are multiplied by the supplied value, and
+the calib field in the resulting orb packet is set to its inverse
+(calib = 1./multiply_data_by). The calper and segtype fields of the
+parameter file specify the corresponding \fIcalper\fP and \fIsegtype\fP values
+to put in the orb packets, the former being the signal period in
+seconds at which the calib factor is specified (this is a pro-forma
+entry for \fBryo2orb\fP).
+
+The parameter \fInet\fP in the parameter file specifies the network
+code to be used by \fBryo2orb\fP in building and naming orb packets. If
+multiplex_stations is true, all stations from a given channel are put
+into one multiplexed MGENC orb packet. If multiplex_stations is false,
+each station is put into its own orb packet. Channel names for the orb
+data are determined by the channel_names array. The keys in this array
+must be as shown in the sample parameter file below, and are hopefully
+self-explanatory to those familiar with RYO data. The values in the
+array will determine the channel-names determined for each data stream.
+The max_nsamples_per_channel parameter gives the number of contiguous
+sample-points (per channel) to put into each orb packet. If this is set
+to one, no concatenation of packets is done.
+
+\fBryo2orb\fP assigns sample-rate dynamically based on observation of the
+data-stream. The samprate_tolerance parameter specifies the limit
+beyond which two sample rates are considered different. Two sample
+rates s1 and s2 are considered different if ABS(1-s1/s2) >
+samprate_tolerance.
+
+.SH OPTIONS
+.IP -v
+Verbose
+
+.IP -V
+Very Verbose
+
+.IP "-p pfname"
+Specify a parameter-file name other than the default \fBryo2orb\fP.pf
+
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+.ne 7
+
+GPS_epoch 1/6/1980
+GPS_leapseconds 13
+
+multiply_data_by   100
+calper  1
+segtype d
+
+.ne 5
+samprate_tolerance 0.0001
+
+net     XX
+multiplex_stations 1
+max_nsamples_per_channel 10
+
+.ne 17
+channel_names &Arr{
+        ITRF_X          ITRFX
+        ITRF_Y          ITRFY
+        ITRF_Z          ITRFZ
+        ITRF_T          ITRFT
+        variance_scale  VARSC
+        variance_X      VARX
+        variance_Y      VARY
+        variance_Z      VARZ
+        variance_T      VART
+        covariance_YX   COYX
+        covariance_YZ   COYZ
+        covariance_ZX   COZX
+        covariance_TX   COTX
+        covariance_TY   COTY
+        covariance_TZ   COTZ
+}
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 7
+
+%\fB ryo2orb -v 192.168.0.57:7010 localhost\fP
+ryo2orb: Establishing orb connection to orb ':dq'...
+ryo2orb: Orb connection established
+ryo2orb: Importing from RTD server 192.168.0.57 on port 7010
+ryo2orb: 'rtd_import': Attempting to connect to remote export module at 192.168.0.57:7010
+ryo2orb: 'rtd_import': import thread Connected to remote export module
+
+.fi
+.ft R
+.in
+
+Alternatively ryo2orb can be run in very-verbose mode for diagnostic
+purposes:
+
+.in 2c
+.ft CW
+.nf
+
+.ne 43
+
+ryo2orb: Establishing orb connection to orb ':dq'...
+ryo2orb: Orb connection established
+ryo2orb: Importing from RTD server 192.168.0.57 on port 7010
+ryo2orb: 'rtd_import': Attempting to connect to remote export module at 192.168.0.57:7010
+ryo2orb: 'rtd_import': import thread Connected to remote export module
+ryo2orb: Receiving a 162-byte packet...
+ryo2orb: ...appending healthy RYO packet to queue
+Received RYO Packet of type 1 timestamped ' 3/21/2005   6:55:32.000':
+          site_id:   WHYT
+       site_index:   1
+       site_count:   15
+         GPS_week:   1315
+  GPS_millisecond:   111345000
+           ITRF X:   -2465333.122900
+           ITRF Y:   -4707048.690200
+           ITRF Z:   3516603.803800
+           ITRF T:   2.237992
+    position_byte:   18
+       flags_byte:   5
+  position_signal:   L1/L2
+  position_method:   Phase + code
+  xyz_cov_present:   1
+tropo_cov_present:   0
+ sat_info_present:   1
+   variance_scale:   0.068604
+       variance_X:   0.000000
+       variance_Y:   0.000000
+       variance_Z:   0.000000
+    covariance_YX:   0.000000
+    covariance_YZ:   0.000000
+    covariance_ZX:   0.000000
+  satellite_count:   7
+             pdop:   3.166034
+       satellites:
+       SV PRN   Elev     Az  flags  eph_avail L1_track L2_track
+            3     19    115      7         1         1         1
+            8     12   -104      7         1         1         1
+           13     55    -27      7         1         1         1
+           16     34     48      7         1         1         1
+           20     40   -177      7         1         1         1
+           23     71     44      7         1         1         1
+           27     34    -88      7         1         1         1
+
+.fi
+.ft R
+.in
+.SH LIBRARY
+0.SH "SEE ALSO"
+.nf
+orbserver(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBryo2orb\fP does not handle RYO Measurement Messages (Message ID 0x02),
+which contain raw GPS measurement data. The only messages currently
+supported are RYO Position Messages (Message ID 0x01).
+
+If any gap in the data is detected, all channels are flushed
+immediately to the orb and accumulation begins afresh, regardless of
+whether a full complement of incoming data have been acquired for the
+multiplexing.
+
+\fBryo2orb\fP sets the sample rate dynamically based on the data stream.
+Thus, if an orb packet is flushed, then a sample is obtained, then a
+sample is missed, this may be indicated by a temporary sample-rate
+change in the output data. Also, if the Max_nsamples_per_channel
+parameter is set to one, the first orb packet emitted will actually
+contain two samples instead of one,  so \fBryo2orb\fP can compute the sample
+rate.
+
+As a caveat for orb2db(1) users, the RYO data often exceeds the maximum-value
+allowed in the default \fIsd\fP format for orb2db, requiring a switch to
+"s4" or other similar datatype when archiving.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

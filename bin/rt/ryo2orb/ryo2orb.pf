@@ -1,0 +1,32 @@
+
+GPS_epoch 1/6/1980
+GPS_leapseconds 13
+
+multiply_data_by  100
+calper  1
+segtype d 
+
+samprate_tolerance 0.0001
+
+net 	XX
+multiplex_stations 1
+max_nsamples_per_channel 10
+
+channel_names &Arr{
+	ITRF_X		ITRFX
+	ITRF_Y		ITRFY
+	ITRF_Z		ITRFZ
+	ITRF_T		ITRFT
+	variance_scale  VARSC
+	variance_X	VARX
+	variance_Y	VARY
+	variance_Z	VARZ
+	variance_T	VART
+	covariance_YX	COYX
+	covariance_YZ	COYZ
+	covariance_ZX	COZX
+	covariance_TX	COTX
+	covariance_TY	COTY
+	covariance_TZ	COTZ
+}
+
