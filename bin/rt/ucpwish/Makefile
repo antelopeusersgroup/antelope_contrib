@@ -2,7 +2,7 @@ BIN = ucpwish
 
 cflags =  $(TCLINCLUDE)
 ldflags = -L$(TCLLIB)
-ldlibs = -lrtucp $(TKLIBS) -ltkx $(TCLLIBS) -ltclx -lpkt -lorb $(TRLIBS) 
+ldlibs = -lrtucp $(TKLIBS) -ltkx $(TCLLIBS) -ltclx -ldefunctpkt $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
 DIRS=
