@@ -26,7 +26,7 @@ FAIL--not coded for OS2
 #include <iceworm_extensions.h>
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
+#include "Pkt.h"
 
 
 /*
@@ -51,6 +51,8 @@ short	nLogo;
 
 #define MSG_SIZE 60000		/* define maximum size for an event msg   */
 #define MAX_LOGMSG_SIZE 256	/* Maximum size for a log message */
+
+#define UNSTUFFPKT_DATATYPE "s4" 
 
 /*
  * Things to read or derive from configuration file 
@@ -175,11 +177,17 @@ main( int argc, char **argv )
 			continue;
 		}
 
-		unstuffpkt( mytime, srcname, rawpkt, &Pkt );
+		rc = unstuffPkt( srcname, mytime, rawpkt, nbytes_orb, &Pkt );
+		if( rc == 0 )
+		{
+			logit( "et", "Unstuff failure in orb2eworm for %s\n", srcname );
+			clear_register( 1 );
+			continue;
+		}
 
 		for( ichan = 0; ichan < Pkt->nchannels; ichan++ )
 		{
-			pktchan = gettbl( Pkt->chan, ichan );
+			pktchan = gettbl( Pkt->channels, ichan );
 
 			if( pktchan_to_tracebuf( pktchan, &tp,
 						 mytime, &nbytes_tp  ) )
@@ -505,17 +513,7 @@ pktchan_to_tracebuf( PktChannel *pktchan,
 	int	dsize_bytes;
 	STACHAN *stachan;
 
-	if( pktchan->datatype != trINT )
-	{
-		logit( "t", 
-		   "orb2eworm: orb datatype %d not understood\n", 
-		   pktchan->datatype );
-		return -1;
-	}
-	else
-	{
-		strcpy( tp->trh.datatype, "s4" );
-	}
+	strcpy( tp->trh.datatype, UNSTUFFPKT_DATATYPE );
 
 	if( ( stachan = lookup_stachan( pktchan->sta, pktchan->chan ) ) == NULL )
 	{

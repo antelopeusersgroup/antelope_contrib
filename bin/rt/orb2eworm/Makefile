@@ -1,10 +1,10 @@
 BIN= orb2eworm
-DATADIR=misc
-DATA=orb2eworm.d orb2eworm.desc
+PF=orb2eworm.d orb2eworm.desc
 MAN1=orb2eworm.1
    
-cflags= -D_SPARC -D_SOLARIS
+cflags= -D_SPARC -D_SOLARIS -mt
 ldflags= -xildoff 
-ldlibs= -lpkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt
+ldlibs= -lPkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt
 
+PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
