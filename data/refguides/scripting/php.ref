@@ -78,4 +78,10 @@ dbfind ($db, expression, [, first [, reverse]])
 strtdelta (dt)
     convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
 
+<subsection Instrument response routines>
 
+dbresponse( $filename )
+    return a PHP resource representing the response curve in $filename
+
+eval_response( $response, $omega )
+    return a two-element array of the real and imaginary response at $omega
