@@ -18,6 +18,18 @@ Attribute absdeadline
 		lists the abstract deadline for the meeting. 
 	}
 	;
+Attribute approximate
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "approximate =~ /y|n/" )
+	Description ( "whether the trip dates are approximate" )
+	Detail {
+		This field records whether the trip dates are approximations. 
+		Often this may be used to show that the dates are the 
+		bounding dates within which the trip will take place.
+	}
+	;
 
 Attribute business
 	String (2)
@@ -251,7 +263,7 @@ Attribute tz
 	;
 
 Relation colleagues
-	Fields ( traveler destination leave return purpose lddate )
+	Fields ( traveler destination leave return approximate purpose lddate )
 	Primary ( traveler leave return )
 	Description ( "travel planned by colleagues" )
 	Detail { 
