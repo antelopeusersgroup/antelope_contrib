@@ -1,0 +1,79 @@
+.TH MSEED2SEEDPKT 1 2004/07/21
+.SH NAME
+mseed2seedpkt \- Create SEED type ORB packets from ORB packets that
+contain Mini-SEED records
+.SH SYNOPSIS
+.nf
+mseed2seedpkt [-v] [-d database] [-m match] [-r reject]
+              [-n number] [-s pktid|time] [-S statefile[:pkts]]
+              [-o offset] \fIin\fP \fIout\fP
+
+.fi
+.SH DESCRIPTION
+\fBmseed2seedpkt\fP connects to an input ORB, \fIin\fR, collects
+packets which should include Mini-SEED records, reformats them into
+SEED type ORB packets and sends them to an output ORB, \fIout\fP.
+
+The incoming packets should include a Mini-SEED record at \fIoffset\fP
+bytes into the raw ORB packet.  The Mini-SEED records must include a
+Blockette 1000 which correctly specifies the record length.
+
+.SH OPTIONS
+.IP "-v"
+Be more verbose.  This flag can be used multiple times ("-v -v" or 
+"-vv") for more verbosity.
+
+.IP "-d \fIdatabase\fR"
+Copy calib, calper and segtype from the calibration table in the
+specified database.  Recommended if the data will be processed
+directly from the ORB since this information is not available in the
+data stream.  Channel names that are processed will be inserted into
+this database, if not specified a local foreignkeys database will be
+used.
+
+.IP "-m \fImatch\fR"
+.IP "-r \fIreject\fR"
+Only select packets which match the regular expression \fImatch\fP and
+do not match the regular expression \fIreject\fP.
+
+.IP "-n \fInumber\fR"
+Only process \fInumber\fP packets, quiting afterwards.  Default is to
+processing an infinite number of packets.
+
+.IP "-s \fIpktid|time\fR"
+Specifiy the starting position in the input ORB as either a packet ID
+or a time.  If the argument is all digits it is assumed to be a packet
+ID otherwise a time string.
+
+.IP "-S \fIstatefile[:packets]\fR"
+If a \fIstatefile\fR is specified, the time and packet ID of the last
+packet processed will be saved to \fIstatefile\fP during program
+shutdown.  Upon startup this information is used to reposition the
+input ORB to the next packet.  A number of \fIpackets\fP can also be
+specified, the state information will be saved everytime this many
+packets has been received.  This helps minimize the amount of
+redundant packets processed in the case of catastrophic failure.
+
+.IP "-o \fIoffset\fP"
+This option specifies the offset in bytes in received ORB packets at
+which to find a Mini-SEED record.  The default is 8 bytes.
+
+.IP "\fIin\fR"
+A required argument.  Specifies the input ORB in [host]:port format.
+If 'host' is omitted 'localhost' is assumed.
+
+.IP "\fIout\fR"
+A required argument.  Specifies the output ORB in [host]:port format.
+If 'host' is omitted 'localhost' is assumed.
+
+.SH "NOTES"
+This program will not search the ORB packet for a Mini-SEED record,
+the user must know, a priori, the offset into the packet to find the
+record.  Of course, with a little experimentation it is easy to
+discover the offset for a given packet should be.
+
+.SH AUTHOR
+.nf
+Chad Trabant
+IRIS Data Management Center
+.fi

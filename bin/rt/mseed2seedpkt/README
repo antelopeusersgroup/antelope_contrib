@@ -1,0 +1,17 @@
+
+mseed2seedpkt:
+
+This is a Antelope ORB module that will read selected packets, look
+for a Mini-SEED record at a specified offset into the packets, and,
+if a record was found, re-package the record as a SEED type ORB packet.
+Optionally a database can be specified from which calibration information
+(calib, calper and segtype) is read that will be inserted into the SEED
+type packets.
+
+The SEED records in input packets must include a 1000 Blockette which
+correctly specifies it's length.
+
+The intention of this module is to convert ORB packets that include
+Mini-SEED records but are not standard packets into something that is
+usable by the rest of the system and downstream systems.
+
