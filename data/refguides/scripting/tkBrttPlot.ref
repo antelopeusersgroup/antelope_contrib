@@ -1,4 +1,5 @@
 <subsection Data Objects>
+package require Brttplot
 <commands>
 append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
     appends a vector element after an existing element

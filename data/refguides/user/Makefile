@@ -6,7 +6,6 @@ DATA= \
 	foreign.ref \
 	location.ref \
 	realtime.ref \
-	tclinterp.ref \
 	user.ref \
 	waveform_analysis.ref 
 

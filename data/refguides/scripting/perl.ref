@@ -1,5 +1,8 @@
 <chapter>
 Perl Interface
+
+use Datascope ; 
+
 <subsection Opening a database>
 <function>
 
@@ -22,6 +25,10 @@ dbfree ( @db )
 
 dblookup ( @db, database, table, field, record )
     returns a database pointer for the specified database, table, field, and record.
+
+dbfind ( @db, expression [, first [,reverse]])
+    find first record matching expression, starting with first. 
+    if reverse, search backwards 
 
 <subsection Manipulating fields and records>
 dbadd ( @db, [record] )
@@ -158,14 +165,39 @@ ask ( string )
     pose a question string at the controlling tty, and return the response
 
 askyn ( string )
-    pose a yes/no question string at the controlling tty, and return the response
+    pose a yes/no question string at the controlling tty, and return 
+    0=false, 1=true
 
+askynaq ( string )
+    pose a yes/no question string at the controlling tty, and return 
+    0=false, 1=true, 2=all, 3=quit
 
 datafile ( env, file )
     find the specified file by looking at first the environment variable, and then along the path
 
 datapath ( env, dir, file, suffix )
     find the specified file by looking at first the environment variable, and then along the path
+
+makedir(d)
+    make the complete directory path d (like "mkdir -p d") 
+
+abspath (a)
+    returns the absolute path to the specified file a.
+
+relpath (a, b)
+    returns a relative path from f to t. f must be a directory.
+
+cleanpath (a [, nolinks])
+    normalize the input path a, removing extra "..", "//", and
+    "./"  strings.   With a  second  argument,
+    resolve any symbolic links along the path.
+
+concatpaths (a,b)
+    concatenate the two paths a and b  properly,  adding  a
+    slash if necessary.
+
+parsepath (a)
+    returns directory, file basename, and suffix for path a.
 
 
 grn ( lat, lon )

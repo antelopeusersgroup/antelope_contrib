@@ -4,7 +4,16 @@ sub title {
 }
 
 sub author { 
-    return &paragraph("Author", $_ ) if $_ !~ /^\s*$/ ; 
+    my $result ;
+    if ($_ !~ /^\s*$/ ) { 
+	my @pieces = split( ',', $_ ) ; 
+	my $piece = shift(@pieces) ;
+	$result = &paragraph("Author", $piece )  ;
+	foreach $piece ( @pieces ) { 
+	    $result .= &paragraph("Location", $piece )  ;
+	}
+    }
+    return $result ; 
 }
 
 sub publisher { 

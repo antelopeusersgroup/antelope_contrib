@@ -1,6 +1,8 @@
 <chapter>
 Tcl/Tk Interface
 
+package require Datascope
+
 <subsection Opening a database>
 <commands>
 dbopen db {r|r+}

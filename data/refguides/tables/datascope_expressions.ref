@@ -91,6 +91,9 @@ strtdelta(epoch)
 strtime(epoch)
     convert time to string
 
+strydtime(epoch)
+    convert time to string with yearday
+
 yearday(epoch)
     convert from epoch time to yearday (jdate)
 

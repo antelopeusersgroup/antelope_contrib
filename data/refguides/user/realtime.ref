@@ -26,6 +26,9 @@ rtexec [options] [comment]
 -v	more verbose
 </options>
 
+rtinit
+    initialize directory for use by rtexec/rtm by creating appropriate directories and copying pf files.
+
 rtincident [options] [output_file]
     collect some system related information into a report; rtexec
     may run this program and send the results to someone
@@ -62,8 +65,17 @@ rtsys [options] [directory]
 -n n	last n lines from log files (default = 10)
 </options>
 
+pktmon [-p pf] [-S state] orb
+    read packets, watch for specific conditions and send alarms
+
+ecrontab [-r] [file]
+    gui interface for editing crontab files; -r option for rtexec style crontab
+
 rtrun command
     run command using the rtexec environment (like an rtexec cron job)
+
+cronrun command
+    run command immediately, reproducing the cron environment 
 
 rtsnapshot [-c] [-d #rows] [-f filename] [-l #loglines] [-v][-v]
     collect some data from a real time system (for a problem report)
@@ -375,6 +387,9 @@ orbmag [options] orbwf orbdb dbname
 -use_if_not_defining
 </options>
 
+ttgrid_show ttgridfile
+    dump the contents of a ttgrid file
+
 orbpftrigger [options] orb [cmdstring]
     parameter file trigger of a program execution
 <options>
@@ -459,13 +474,14 @@ cpu2orb [-i t] [-vv] orb
 df2orb [-i t] [-p pf] [-vv] orb
     save filesystem status information on orb at interval t seconds
 
-ps2orb [-a m] [-i t] [-t top] [-u user] orb
+ps2orb [options] orb
     save process information from ps(1) to orb at interval t seconds
 <options>
 -a m	report on all processes every m'th iteration
 -i t	report every t seconds
--t n	report on the top n processes
+-t n	report on the top n processes every iteration
 -r {mem|cpu}	sort by mem or cpu
+-vv	print the reports on stderr
 </options>
 
 tail2orb [options] orb [file ...]
@@ -587,8 +603,6 @@ mail_parser [options] [file [file...]]
 -p pffile
 </options>
 
-
-
 <subsection Archiving Data>
 <commands>
 rtbackup [-v] [-m who] [-p parameter_file] db drive
@@ -605,8 +619,6 @@ get_archive [options] dbmaster dbout tape_drive [start_time [end_time]]
 
 rtdbclean [-n] [-v] [-p parameter_file] orb rt_db
     real time database and disk cleaner
-
-
 
 get_wftar -v dbmaster tape_drive
     extracts wftar table from an ARTS archive tar tape
@@ -625,18 +637,16 @@ online_backup [options] [directories]
 </options>
 
 <subsection Orb Diagnostic tools>
-orbreap [options] orb [start [end|range]]
+private orbreap [options] orb [start [end|range]]
     multipurpose orb dumping program
 <options>
 -a time
 -c	print packet header information
 -C	print packet header information and data
 -d	dump packets in hexadecimal format
-
 -F	expect packets in "Fake" format
 -m re	select packets matching re
 -r re	reject packets matching re
-
 -M	select only packets with numeric source names
 -n n	reap n packets, then quit
 -N	show delays.
@@ -647,28 +657,23 @@ orbreap [options] orb [start [end|range]]
 -v	more verbose
 </options>
 
-orbsend [options] orb
+private orbsend [options] orb
     send test packets to orbserver
 <options>
 -b m	send m byte packets
 -a t	align packets on t second marks
 -d d	packets are delayed d seconds
--e
-
-	specify packet type
+-e	some packets with future times
 -f	packet is uninitialized
 -F 	special test mode packets
 -g {sin|cos|sqr|tri|saw|dlt|ran|stp|pkt}	packets contain specified signal
 -i pktfile	read packet from forb(5) file
-
 -j jitter	add some jitter to packet times
 -M	regularly send packet with a unique srcname
 -N name	specify packet name
 -n n	number of time steps (default = 10)
-
 -r rate	specify data rate in kbytes/second
 -R pktrate	specify packet rate (per srcname) in pkts/second
-
 -s s	send packets for s distinct srcnames for each time step
 -S srcname	specify source name for packet read from forb file
 -t start	first packet time = start

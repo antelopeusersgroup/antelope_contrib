@@ -193,11 +193,14 @@ int dbex_evalstr ( Dbptr db, char *s, int type, void *v )
     compile string s as an expression and evaluate it for database
     record db, converting the result to the specified type, returning value v 
 
+int dbfind(Dbptr db, char *string, int flags, Hook **hook)
+    search for record matching string in view db, where string is a regular expression, Datascope expression, or a plain string.  if flag&1, search backward.
+
 <subsection External files>
 int dbextfile ( Dbptr db, char *table, char *p )
     compose a path p using dir and dfile from database record db; table may 
     be specified in case the view db contains records from multiple tables with
-    dir and dfile.
+      dfile.
 
 int dbfilename ( Dbptr db, char *filename )
     compose a filename from a database record

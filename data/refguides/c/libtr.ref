@@ -32,11 +32,10 @@ void trgetwf_error ( Dbptr db, int code )
 
 
 int trload_css ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
-    load waveform data from CSS database into trace table
-
-int trload_cssgrp ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
     load waveform data between time_str and endtime_str from database view db into trace table trp
 
+int trload_cssgrp ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
+    load waveform data between time_str and endtime_str from pre-sorted database view or bundle db into trace table trp
 
 deprecated int trputwf ( Dbptr db, float *data )
     save waveform data

@@ -60,9 +60,26 @@ dbdelete [options] view [table ...]
 -v	verbose
 </options>
 
+dbaddv [options] database.table [name value name value ...]
+    add records to a table
+<options>
+-i	interactively
+-c	confirm each addition
+-v	verbose
+</options>
+
 dbcrunch [-v] db [table ...]
     crunch out marked (null) records from a database db, or specified tables
 
+dbdestroy [-ginkv] db[.tbl]
+    destroy a database or table by removing all associated files
+<options>
+-g	remove files which match a glob of db
+-i	confirm each file removal first
+-n	show what would happen (don't do it)
+-k	keep the external database files
+-v	verbosely
+</options>
 
 dbsplit [options] dbin dbout
     copy records from database dbin which satisfy some subset expression into database dbout, using the rules specified in dbsplit parameter file.
@@ -114,6 +131,9 @@ dbnojoin [-n name] [-v] aview [:key ...] table2
 
 dbtheta [-c expr] [-n name] [-v] aview table2
     create view joining rows from aview to rows from table2 only when expression expr (evaluated on the joined record) is satisfied
+
+dbseparate [-n viewname] [-v] aview table1
+    create a view which contains only the rows of base table table1 used in the input joined view
 
 dbsever [-v] [-n name] aview table2
     create new view which removes table2 from input aview

@@ -1,4 +1,6 @@
 <subsection Real-time system connections>
+package require Orb
+
 orbafter orb time
     set the orb read pointer to the first packet after specified time
 

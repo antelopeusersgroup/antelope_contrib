@@ -57,6 +57,9 @@ int newdata ( char *path, char *env, char *dir, char *file, char *sfx )
     return complete path for file (with suffix sfx) in directory dir under $ANTELOPE/data, 
     allowing environment variable env to override
 
+Tbl *datasearch(char *search, char *dir, char *file, int flags)
+    returns list of all paths matching dir/file along the path search. If (flags & 1), $name in paths is expanded; if (flags & 2), all possible paths are returned.
+
 deprecated int mappath ( char *spath, char *upath )
     translate pathnames (formerly used for remapping automount paths)
 
@@ -149,6 +152,42 @@ Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
 
 int bitcmp ( Bitvector *b1, Bitvector *b2 )
     compare two bit vectors
+
+<subsection Simple Ring Buffer>
+
+RingBuffer *openring(char *filename, char *id, int depth, int flags)
+    open (or create) a simple ring buffer in filename with size depth
+
+int newring(char *filename, char *id, int depth, int flags)
+    create (or reinitialize) a simple ring buffer in filename with size depth
+
+void closering(RingBuffer *rb)
+    close the ring buffer rb
+
+void pushring(RingBuffer *rb, double time, double value)
+    push a time/value pair onto the ring buffer rb
+
+int getring(RingBuffer *rb, int i, double *time, double *value)
+    get the i'th time/value pair from the ring buffer rb
+
+int countring(RingBuffer *rb)
+    return the number of pairs in the ring buffer
+
+double maxring(RingBuffer *rb, double tdelta, int *index)
+    return the maximum value within tdelta from the ring buffer rb
+
+double minring(RingBuffer *rb, double tdelta, int *index)
+    return the minimum value within tdelta from the ring buffer rb
+
+double avgring(RingBuffer *rb, double tdelta)
+    return the average value over tdelta from the ring buffer rb
+
+int findring(RingBuffer *rb, double value, double tdelta)
+    find the index of ring buffer entry which has the specified value within tdelta entries
+
+int changedring ( RingBuffer *rb, double tdelta );
+    return 1 if the value has changed over the period tdelta
+
 
 <subsection Buffered Network Stream I/O>
 <cdeclarations>
@@ -334,7 +373,8 @@ int check_random ( char *buffer, int nbytes )
 int set_random ( int nbytes )
     set the size of the check_random internal buffer
 
-
+double disordered()
+    pseudo random number
 
 <subsection Filename and Path manipulation>
 int abspath ( char *relp, char *absp )
@@ -360,6 +400,12 @@ InfoPath * infopath ( char *path )
 
 char *homedir(char *user)
     return the home directory of the specified user.
+
+int is_file(char *path)
+    returns 1 if path is plain file, 0 otherwise
+
+int is_nfs(char *path)
+    returns 1 if path is nfs mounted, 0 otherwise
 
 void parsepath ( char *path, char *dir, char *base, char *suffix )
     separate a path into a directory dir and a basename base with
@@ -456,6 +502,12 @@ private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad 
 
 void szcopy ( char *dest, char *source, int n )
     copy exacly n characters, then append null
+
+void pushstr(void **sbuf, char *s)
+    add the string s to the string buffer sbuf, creating sbuf if *sbuf == 0
+
+char *popstr(void **sbuf, int sfree)
+    retrieve the entire string from sbuf, freeing sbuf if sfree != 0
 
 <subsection Sorting and Searching>
 void isort ( char *a, int n, int size, int (*compare)(), void *private )
@@ -858,6 +910,10 @@ void pfput_string ( Pf *pf, char *name, char *value )
 void pfput_tbl ( Pf *pf, char *name, Tbl *value )
     put a list value into a parameter space
 
+
+int pfcmp(Pf *pf1, Pf *pf2)
+    returns 0 if pf1 and pf2 are identical, 1 otherwise
+
 <subsection Sorted Lists>
 <cdeclarations>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
@@ -937,4 +993,39 @@ private MAX(a,b)
 private MIN(a,b)
     expands to ((a>b)?(b):(a)) -- bad if a or b have side effects
 
+<subsection IEEE Arithmetic>
 
+int is_infinity ( double x )
+    returns 1 if x is infinity
+
+int is_nan ( double x )
+    returns 1 if x is nan
+
+int is_negative_infinity ( double x );
+    returns 1 if x is -infinity
+
+double an_infinity ( void );
+    returns an infinity
+
+double a_nan ( void ) ;
+    returns a (quiet) nan
+
+double a_quiet_nan ( void );
+    returns a quiet nan
+
+double a_signaling_nan ( void );
+    returns a signaling nan
+
+<subsection Local Machine/Architecture>
+
+int my_hardware(char *hdw)
+    returns processor name (sparc, i386, ..)
+
+int my_hostname(char *name)
+    returns hostname 
+
+int my_ip(char *hostname, char *ipc, long *ip)
+    returns ip address, as integer and in dot notation
+
+int my_os(char *name)
+    returns operating system (Solaris, Linux, ...)

@@ -6,7 +6,26 @@ tcl
 wish
     Tk shell 
 
-Extensions
+Extensions -- "package require 'extension'"
+
+Tclx
+Tkx
+    extended tcl/tk -- variety of extensions to unix functions
+
+BLT
+    primarily 2d graphics 
+
+Itcl
+    object oriented extensions
+
+Itk
+    object oriented widget extensions
+
+Iwidgets
+    extended widgets
+
+Brttplot
+    extensions for drawing graphs on a tk canvas.
 
 Datascope
     Datascope database extensions
@@ -14,23 +33,20 @@ Datascope
 Dbe
     Extensions for implementing dbe
 
-Rtm
-    Extensions for implementing rtm
-
 Orb
     extensions for reading and writing to an orbserver
-
-Ttgrid
-    extensions for the time travel grid file used by orbassoc and dbgrassoc
-
-Brttplot
-    extensions for drawing graphs on a tk canvas.
-
-Vogle
-    3-d graphics extension for "Very Ordinary Graphics Library"
 
 Pixmap
     extension for pixmaps (used in dbevents)
 
 Rtd
     extension for real time trace display
+
+Rtm
+    Extensions for implementing rtm
+
+Ttgrid
+    extensions for the time travel grid file used by orbassoc and dbgrassoc
+
+Vogle
+    3-d graphics extension for "Very Ordinary Graphics Library"

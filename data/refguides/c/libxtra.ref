@@ -26,8 +26,7 @@ deprecated int orbsort ( Orbpipe *pipe, int *pktid, double *time, char *srcname,
 int netstachan ( int orb, Arr **netstachan, Arr **srcnames )
     return net_station_channels and srcnames for an orb
 
-
-int orbacc ( int orb, char *accselect, double req_twin, double overlap, double latency, Dbptr *trp, Hook **hookp )
+deprecated int orbacc ( int orb, char *accselect, double req_twin, double overlap, double latency, Dbptr *trp, Hook **hookp )
     accumulate real time trace data from orb buffer
 
 
@@ -40,3 +39,20 @@ deprecated Dbptr orbpkt2db ( char *packet, int packet_size, Dbptr db )
 
 int trdisp ( Dbptr tr, char *title )
     display a trace object in a dbpick-like window
+
+<library>
+Packet processing
+brttpkt
+-lbrttpkt $(ORBLIBS)
+
+brttpkt.h
+routines for piecing together waveform segments from an
+orb packet stream
+
+Chantraceproc *chantraceproc_new (double latency);
+
+int chantraceproc_free (Chantraceproc *cp);
+
+int chantraceproc_addchan (Chantraceproc *cp, char *netstachan, int (*callback)(), void *private, double tstart, double tend, double latency, int apply_calib);
+
+int chantraceproc_process (Chantraceproc *cp, int orb);

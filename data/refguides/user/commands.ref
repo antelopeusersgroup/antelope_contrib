@@ -44,6 +44,9 @@ deprecated uwd [-f configfile]
     print canonical working directory (for ancient automounters)
 
 
+datafile [-aeV] {name | dir name | env dir name}
+    show what files will be selected by the datafile/datapath/datasearch(3) routines.
+
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
 <options>
@@ -51,6 +54,13 @@ epoch [options] [ +format ] [ time/date components ]
 -i tz	specify an input timezone tz, eg US/Mountain
 -o tz	specify an output timezone tz, eg Japan
 +format	specify the format of the output (refer to epoch escapes table)
+</options>
+
+pfcompare [options] pf
+     find differences between local parameter file and remainder of pf files found along PFPATH
+<options>
+-s	show stock version (instead of local)
+-u	show unique items
 </options>
 
 pfdiff [-o newpf] pf1 [pf2]
@@ -65,6 +75,12 @@ pfecho [options] name [ param ...]
 -W	show all pf filenames examined (some may not exist)
 </options>
 
+pfwhich pf 
+    show what files are read for pf
+
+ttcalc method model phase distance depth
+    print travel time and slowness calculation results for specified
+    method, model, and phases for an event at distance and depth.
 
 gsregion [lat lon]
     show geographic and seismic region numbers and names for lat, lon
@@ -121,6 +137,9 @@ reflect [-d dir] [-v] remote_host remote_file
 reflectd [-v]
     server companion to reflect
 
+warp command
+    run command on opposite display (when machine has 2 displays)
+
 build [pf] [pf_dependent_arguments]
     framework for constructing simple gui interfaces based on
     parameter files and perl scripts
@@ -131,9 +150,61 @@ refguide {creference|user|scripting}
 txform [-v] dir filename
     text transform program
 
-grepsrc [-cfhilMmpstvyw] [-d dir] pattern
-    look through certain files below dir for a pattern; useful for
-    finding occurrences of a call to a function
+grepsrc [options] [-cfhilMmpsTtvyw] [-d dir] [pattern [dir]]
+    look through certain files below dir for a pattern; useful for finding occurrences of a call to a function, or for many other problems
+<options>
+-i	case insensitive
+-v	show the find command, and list the files searched.
+-l	show only the filenames with matching lines.
+-w	show all matches, not just word matches.
+restrict the searches to certain files by using any combination of the following:
+-c	c source files
+-f	fortran source 
+-h	include files 
+-m	manual pages 
+-M	Makefile or makefile
+-p	perl source 
+-s	shell source 
+-t	tcl source 
+-y	(f)lex and yacc source
+-T	all text files
+</options>
 
+ldlibs [options] names
+    provide information about object libraries and link lines
+<options>
+Modifying Options
+-f	Generate fortran ldlibs line (default is c).
+-i	Initialize the database, eg, completely rebuild it.
+-k	Rebuild the database, if it's out of date.
+-n	Don't use macros to collapse the dependency list.
+-v	Be more verbose.
+-x	Specify entry points on command line, rather than object files.
+Different Modes
+-r lib1 lib2	show references from lib1 which are resolved in lib2.
+-R a.o b.o ..	lib show undefined references from .o files which are resolved in lib
+-D lib	show references defined in lib
+-N lib	show references not defined in lib
+-l lib	show libraries loaded by lib
+-L lib	show libraries which load lib
+-u lib	show libraries which are needed by lib
+-U lib	show libraries which need lib
+-s lib1 lib2	show shared definitions between lib1 and lib2
+-S lib1 lib2	show shared undefined references between lib1 and lib2
+-t lib1 lib2	show definitions unique in each library.
+-T lib1 lib2	show needs unique in each library
+-w	show what libraries define the named routine.
+-W	show what libraries require the named routine.
+</options>
+
+deposit [-r] file dest
+    installs file in directory dest with appropriate permisssions; with -r option, installs file as the file dest.
+
+produce [-v] exec [exec2 ...]
+    use standard headers from template directory to create executable script exec from files with proper suffix
+
+installman manpage dir
+    install the text manpage into the directory dir, modifying .TH line appropriately
+	
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon
