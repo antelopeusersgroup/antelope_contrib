@@ -2,7 +2,7 @@ xv &Tbl{
 	xv EXTFILE &
 }
 animate &Tbl{
-	/opt/sfw/bin/animate EXTFILES &
+	animate EXTFILES &
 }
 url &Tbl{
 	netscape -remote "openURL(EXTFILE, new-window)" &
