@@ -18,8 +18,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Tbl	*tbl;
 	char	**sortfields;
 	char	errmsg[STRSZ];
-	int	i, arg_index, nsortfields;
-	int	reverse = 0;
+	int	i, arg_index, nvarargs;
+	int	flags = 0;
 	int	rc;
 
 	if( nrhs < 1 )
@@ -33,8 +33,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
         }
 
-	nsortfields = nrhs - 1;
-	for( i = 0; i<nsortfields; i++) 
+	nvarargs = nrhs - 1;
+	for( i = 0; i<nvarargs; i++) 
 	{
 		arg_index = i + 1;
 		if( mxGetClassID( prhs[arg_index] ) != mxCHAR_CLASS )
@@ -44,15 +44,27 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
-	if( nsortfields > 0 )
+	if( nvarargs > 0 )
 	{
-		tbl = newtbl( nsortfields );
-		sortfields = (char **) mxCalloc( nsortfields, sizeof( char * ) );
-		for( i = 0; i < nsortfields; i++ )
+		tbl = newtbl( nvarargs );
+		sortfields = (char **) mxCalloc( nvarargs, sizeof( char * ) );
+		for( i = 0; i < nvarargs; i++ )
 		{
 			arg_index = i + 1;
 			get_malloced_string( prhs[arg_index], &sortfields[i] );
-			pushtbl( tbl, sortfields[i] );
+
+			if( STREQ( sortfields[i], "dbSORT_UNIQUE" ) ) {
+
+				flags |= dbSORT_UNIQUE;
+
+			} else if( STREQ( sortfields[i], "dbSORT_REVERSE" ) ) {
+
+				flags |= dbSORT_REVERSE;
+
+			} else {
+
+				pushtbl( tbl, sortfields[i] );
+			}
 		}
 	}
 	else
@@ -65,12 +77,12 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
-	db = dbsort ( db, tbl, reverse, 0) ;
+	db = dbsort ( db, tbl, flags, 0) ;
 	antelope_mex_clear_register( 1 );
 
-	if( nsortfields > 0 )
+	if( nvarargs > 0 )
 	{
-		for( i = 0; i < nsortfields; i++ )
+		for( i = 0; i < nvarargs; i++ )
 		{
 			mxFree( sortfields[i] );
 		}
