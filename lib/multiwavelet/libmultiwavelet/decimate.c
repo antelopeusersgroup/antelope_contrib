@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sunperf.h>
 
+#include "perf.h"
 #include "stock.h"
 #include "response.h"
 #include "elog.h"
 #include "multiwavelet.h"
+
 /* This routine parses the parameter object pf to produce the decimator
 definitions used by the general decimation routine found below.  
 It returns a vector of Tbl objects in t containing a sequence of

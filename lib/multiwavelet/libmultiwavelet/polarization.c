@@ -1,5 +1,4 @@
 #include <math.h>
-#include <sunmath.h>
 #include "stock.h"
 #include "arrays.h"
 #include "coords.h"

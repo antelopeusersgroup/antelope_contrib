@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <values.h>
-#include <sunperf.h>
 #include <math.h>
-#include <sunmath.h>
+
 #include "multiwavelet.h"
 #include "location.h"
+#include "perf.h"
 #include "tr.h"
 
 /* This collection of functions handle various tasks related to the 
