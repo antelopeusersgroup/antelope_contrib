@@ -9,6 +9,7 @@ static int le_Datascope;
 
 function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
+	PHP_FE(dbextfile, NULL)		
 	PHP_FE(dbgetv, NULL)		
 	PHP_FE(dblookup, NULL)		
 	PHP_FE(dbnrecs, NULL)		
@@ -540,6 +541,59 @@ PHP_FUNCTION(dbgetv)
 	}
 
 	efree( args );
+}
+/* }}} */
+
+/* {{{ proto mixed dbextfile( array db [, string tablename ] ) */
+PHP_FUNCTION(dbextfile)
+{
+	zval	*db_array_in;
+	Dbptr	db;
+	zval	***args = 0;
+	char	*tablename = 0;
+	char	filename[FILENAME_MAX];
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+	} 
+	
+	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( argc == 2 ) {
+
+		args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+		if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+			efree( args );
+			return;
+
+		} else if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
+
+			/* SCAFFOLD; need error msg */
+			efree( args );
+			return;
+
+		} else {
+
+			tablename = Z_STRVAL_PP( args[1] );
+		}
+	}
+
+	dbextfile( db, tablename, filename );
+
+	if( args ) { efree( args ); }
+
+	RETURN_STRING( filename, 1 )
 }
 /* }}} */
 
