@@ -26,6 +26,11 @@ dberesp db.table
 db_textedit db.table
     run by dbe to edit external text files
 
+db_xvimage db.table
+    run by dbe to show external image files
+
+db_showurl db.table
+    run by dbe to show external web pages
 
 dbset [-clv] db[.table] field from [to]
     change value of attribute field throughout a database, when initial value is from ('*' specifies all values). -c asks before changing, -v shows each change
