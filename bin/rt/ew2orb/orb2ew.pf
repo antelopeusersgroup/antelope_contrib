@@ -1,4 +1,4 @@
-program_loglevel verbose
+program_loglevel veryverbose
 defaults &Arr{
 	send_heartbeat_sec 	120
 	send_heartbeat_string 	alive
@@ -15,4 +15,14 @@ export_servers &Arr{
 		send_heartbeat_sec 100
 		send_heartbeat_string alive
 	}
+}
+
+pins &Arr{
+	CN_BBB_BHE	1
+	CN_BBB_BHN	2
+	CN_BBB_BHZ	3
+	CN_PGC_BHE	4
+	CN_PGC_BHN	5
+	CN_PGC_BHZ	6
+	CN_TXB_EHZ	7
 }
