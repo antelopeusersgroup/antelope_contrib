@@ -1597,7 +1597,7 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
                 	copy_length=((w->length)-1)*(w->increment)+1;
 		else
 		{
-			copy_length=window_length-(window_end-data_end);
+			copy_length=window_length-(window_end-data_end)-i0;
 			copy_length /= w->increment;
 		}
 		if(copy_length>0)
