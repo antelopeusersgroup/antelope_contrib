@@ -1,10 +1,16 @@
 #include <stdlib.h>
 #include <strings.h>
+
+#undef  __USE_SVID     /* for Linux !! to get MAXFLOAT */
+#define  __USE_XOPEN 1 /* for Linux !! */
 #include <math.h>
+#undef  __USE_XOPEN
+
 #include <perf.h>
 #include "multiwavelet.h"
 #include "location.h"
 #include "tr.h"
+
 
 /* This collection of functions handle various tasks related to the 
 multiwavelet transform.  This grouping is a little arbitrary, but 
