@@ -1214,13 +1214,19 @@ int lat_lon_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	dlat = latitude_range/( (double)nlat);
 	lon0 = center_longitude - longitude_range/2.0;
 	dlon = longitude_range/( (double)nlon);
-	z0 = center_depth - depth_range/2.0;
+	if(ndepths <= 1 )
+		z0 = center_depth;
+	else
+		z0 = center_depth - depth_range/2.0;
 	if(z0 < 0.0) 
 	{
 		register_error(0,"Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
 		z0 = 0.0;
 	}
-	dz = depth_range/( (double)ndepths);
+	if(ndepths <= 1)
+		dz = 0.0;
+	else
+		dz = depth_range/( (double)(ndepths-1));
 	*gridsize = nlat*nlon*ndepths;
 	/* the following simplifies indirection in the code, but assures we return a
 	proper pointer */
@@ -1359,13 +1365,19 @@ int radial_grid_setup (Pf *pf, Point **pts, int *gridsize)
 		dr = 0.0;
 	else
 		dr = (rmax-rmin)/((double)(nr-1));
-	z0 = center_depth - depth_range/2.0;
+	if(ndepths <= 1)
+		z0 = center_depth;
+	else
+		z0 = center_depth - depth_range/2.0;
 	if(z0 < 0.0) 
 	{
 		register_error(0,"Warning (lat_lon_grid_setup:  depth grid range reset to start at 0.0\n");
 		z0 = 0.0;
 	}
-	dz = depth_range/( (double)ndepths);
+	if(ndepths <= 1)
+		dz = 0.0;
+	else
+		dz = depth_range/( (double)(ndepths-1));
 	/* We need to convert the center point to radians */
 	center_latitude = rad(center_latitude);
 	center_longitude = rad(center_longitude);
