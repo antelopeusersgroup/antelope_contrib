@@ -20,3 +20,7 @@ CLEAN=
 
 include $(ANTELOPEMAKE)
 
+mail_parser_wrapper : mail_parser_wrapper.csh.id
+	produce $@
+	chmod +x $@
+
