@@ -16,6 +16,7 @@ include $(ANTELOPEMAKE)
 OBJS=converters.o \
     create_destroy.o \
     dbsubs.o \
+    dx_output.o \
     ellipsoid.o \
     error_handlers.o \
     fme_weights.o \

@@ -225,6 +225,7 @@ void initialize_1Dscalar(GCLscalarfield3d& field,
 void initialize_1Dscalar(GCLscalarfield3d& field, 
 	vector<double> val1d,vector<double> z1d);
 dmatrix& remap_path(GCLgrid3d& parentgrid, dmatrix& path, GCLgrid3d& newpathgrid);
+void dx_output(GCLscalarfield3d& g, ostream& out);
 #endif
 
 #ifdef	__cplusplus
