@@ -94,7 +94,6 @@ int main(int argc, char **argv)
                 0,0,0,0,0);
         if(db.table == dbINVALID)
                 die(1,"wfdisc->sitechan join failed\n");
-        clrtbl(sortkeys,0);
         sortkeys=strtbl("sta","chan","time",0);
         db = dbsort(db,sortkeys,0,WFVIEW);
         if(db.record == dbINVALID)

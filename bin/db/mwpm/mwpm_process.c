@@ -222,7 +222,7 @@ int ssmwpm(int band, int nwavelets, char *sta,
 		}
 	}
 	/* We assume this will always work once we get here */
-	nz_used = nint( (tend - tstart)/si ) + 1;
+	nz_used = nint( (tend - tstart)/si );
 
 	if(averaging == PC)
 	{
@@ -539,10 +539,15 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
 		a vector of Arr pointers of length nbands.  Further
 		note the following function creates this complicated
 		object, and it must be freed after each event is 
-		processed. */
+		processed. Also note the stations array is created
+		with null and then immediately cleared.  This is 	
+		a hack to allow us to use the same routine developed
+		for mwap.*/
+		setarr(stations,sta,NULL);
 		sn_ratios=compute_signal_to_noise(mwsig_arr,mwnoise_arr,
 					stations,arrivals,
 					swin,nwin,nbands,nwavelets);
+		delarr(stations,sta);
 
 		for(i=nbands-1;i>=0;--i)
 		{
@@ -588,10 +593,10 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
 				continue;
 			}
 			scoor = unit_vector_to_spherical(avgpm.major);
-			majaz = deg(scoor.phi);
+			majaz = 90.0- deg(scoor.phi);
 			majema = deg(scoor.theta);
 			scoor = unit_vector_to_spherical(avgpm.minor);
-			minaz = deg(scoor.phi);
+			minaz = 1.0 - deg(scoor.phi);
 			minema = deg(scoor.theta);
 			time = wts;
 			twin = ((double)(swin[i].tend - swin[i].tstart))
@@ -610,10 +615,10 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
                 		"minoraz",minaz,
                 		"minorema",minema,
                 		"rect",avgpm.rectilinearity,
-                		"errmajaz",avgerr.dphi_major,
-                		"errmajema",avgerr.dtheta_major,
-                		"errminaz",avgerr.dphi_minor,
-                		"errminema",avgerr.dtheta_minor,
+                		"errmajaz",deg(avgerr.dphi_major),
+                		"errmajema",deg(avgerr.dtheta_major),
+                		"errminaz",deg(avgerr.dphi_minor),
+                		"errminema",deg(avgerr.dtheta_minor),
                 		"errrect",avgerr.delta_rect,
                 		"majndgf",avgerr.ndgf_major,
                 		"minndgf",avgerr.ndgf_minor,
