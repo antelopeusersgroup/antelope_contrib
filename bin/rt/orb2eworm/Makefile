@@ -4,6 +4,6 @@ MAN1=orb2eworm.1
    
 cflags= -D_SPARC -D_SOLARIS -mt
 ldflags= -xildoff 
-ldlibs= -lPkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt
+ldlibs= -lwormsol -lwormutil -lwormds $(ORBLIBS) $(THREAD)
 
 include $(ANTELOPEMAKE)
