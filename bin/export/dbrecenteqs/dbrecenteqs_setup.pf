@@ -1,0 +1,63 @@
+pixfile_conversion_method alchemy  # pnm or alchemy
+stock_mapdir ./stock/stockmaps
+
+index_map_config &Arr{
+	contour_mode premade  # none, premade, or grdimage
+	premade_contour_ps /home/kent/work/recenteqs/mkmap/premade_grdimage
+	grdfile /home/kent/work/mkmap/DEMS/alaska_final.grd
+	gradfile /home/kent/work/mkmap/DEMS/alaska_final.grad
+	longitude_branchcut_high 360
+	hypocenter_dbname /Seis/catalogs/aeic/Total/Total
+	map_color_palette_file /home/kent/work/mkmap/DEMS/alaska.cpt
+	depth_color_palette_file /home/kent/work/recenteqs/mkmap/depthmag2.cpt
+	linefiles &Tbl{
+	faults /home/kent/work/recenteqs/mkmap/combined_faults.gmtlin 4/255/0/0
+	roads /home/kent/work/recenteqs/mkmap/roads.xy 4/255/255/255
+	pipeline /home/kent/work/recenteqs/mkmap/pipeline.xy 6/50/50/50
+	}
+	cities_dbname /Seis/databases/places/main_alaskan_cities
+	background_magsize_pixels 3
+	background_magmin 6
+	quakeshape square
+	quakecolor yellow
+	pixels_per_inch 100
+	size_inches 5
+	city_symbols_inches 0.08
+	cityname_shift_deg 0.2
+	reserve_colors 8
+	detail_density l  # f,h,i,l,c
+}
+
+global_map_config &Arr{
+	include index_map_config
+}
+
+focus_map_config &Arr{
+	include index_map_config
+	contour_mode grdcut
+	background_magmin 3
+	cities_dbname /Seis/databases/places/wellknown_alaskan_cities
+	detail_density f
+}
+
+detail_map_config &Arr{
+	include index_map_config
+	contour_mode none
+	background_magmin 3
+	cities_dbname /Seis/databases/places/wellknown_alaskan_cities
+	detail_density f
+	format gif
+	proj edp
+}
+
+index_map &Arr{
+	filebase try
+	format gif
+	proj edp
+	latc 65
+	lonc -155
+	left_dellon -17 
+	right_dellon 17
+	down_dellat -17
+	up_dellat 17 
+}

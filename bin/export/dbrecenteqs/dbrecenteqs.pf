@@ -1,0 +1,29 @@
+
+# Where you want recenteqs to run:
+html_base http://www.aeic.alaska.edu/Seis/recenteqs/
+web_topdir /usr/local/Mosaic/Seis/recenteqs/
+
+# Things you need to have available in web_topdir:
+wiggle mini_logo.gif
+local_logo phAEIC_fastload.gif
+
+# Things to customize for your installation:
+title Recent Earthquakes in Alaska
+caption_default Recent Alaskan Earthquakes
+local_html_home http://www.aeic.alaska.edu/
+description_of_local_html_home Alaska Earthquake Information Center
+
+focus_map &Arr{
+	# program fills in latc, lonc, filebase
+	format gif
+	proj edp
+	left_dellon -2
+	right_dellon 2
+	down_dellat -2
+	up_dellat 2
+	size_inches 5
+	city_symbols_inches 0.08
+	cityname_shift_deg 0.2
+	reserve_colors 8
+	detail_density f  # f,h,i,l,c
+}
