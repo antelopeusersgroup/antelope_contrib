@@ -368,8 +368,28 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 		char keysta[10], keyphase[10], keytype[5];
 		s = (char *)gettbl(residual,i);
 		sscanf(s,"%s %s %s",keysta,keyphase,keytype);
-		sprintf(key,"%s %s %s",keysta,keyphase,keytype);
-		setarr(residual_array,key,s);
+		/* handle S-P case by having the same residual mapped
+		to each half of - phase pair */
+		if(strchr(keyphase,'-'))
+		{
+			char *phase1,*phase2;
+			/* algorithm to split phase names cloned from dbgenloc */
+			phase1 = strdup(keyphase);
+			phase2= strchr(phase1,'-');
+			*phase2 = '\0';
+			++phase2;
+			sprintf(key,"%s %s %s",keysta,phase1,keytype);
+			setarr(residual_array,key,s);
+                        sprintf(key,"%s %s %s",keysta,phase2,keytype);
+                        setarr(residual_array,key,s);
+			free(phase1);
+		}
+		else
+		{
+			/* normal phases are one to one */
+			sprintf(key,"%s %s %s",keysta,keyphase,keytype);
+			setarr(residual_array,key,s);
+		}
 	}
 		
 
@@ -498,7 +518,6 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 	
 int main(int argc, char **argv)
 {
-	char *version="1.0 (1/23/96)";
 	char *dbin;  /* Input db name */
 	char *dbout;  /* output db name */
 	Dbptr db;  /* input db pointer */
@@ -536,8 +555,13 @@ int main(int argc, char **argv)
 	char *vmodel;
 
 	int ret_code;  /* ggnloc return code */
-	double **C; 
+	double **C;   /* covariance matrix*/
 	float emodel[4];  
+
+	/* entries for S-P feature */
+	int nbcs;
+	Arr *badclocks;
+
 	C=dmatrix(0,3,0,3);
 
 	if(argc < 3) usage();
@@ -569,7 +593,11 @@ int main(int argc, char **argv)
 
 	/* Initialize the error log and write a version notice */
 	elog_init (argc, argv) ;
-	elog_notify (0, "%s version %s\n", argv[0], version) ;
+	cbanner("Version $Revision$ $Date$\n",
+			"relocate inputdb outputdb [-pf pf -sift expression -useold]\n",
+			"Gary Pavlis",
+                        "Indiana University",
+                        "pavlis@indiana.edu");
 
 	/* Alway join assoc, arrival, and site.  We join site 
 	to make sure station table is properly dynamic to account for
@@ -665,6 +693,14 @@ Which picks will be used here is unpredictable\n\
 	o = parse_options_pf (pf);
  	arr_phase = parse_phase_parameter_file(pf);
 	vmodel = pfget_string(pf,"velocity_model_name");
+
+	/* set up minus phase for bad clock problems */
+	badclocks = newarr(0);
+	if(db_badclock_definition(db,pf,badclocks))
+		elog_complain(0,"Warning:  problems in database definitions of bad clock time periods\n");
+	pfget_badclocks(pf,badclocks);
+	nbcs = cntarr(badclocks);
+	if(nbcs>0) fprintf(stdout,"relocate:  bad clock feature enabled\n\n");
 	fprintf(stdout,"lat lon depth time rms wrms interquartile ndata ndgf iterations\n");
 
 	/* Main loop.  We utilize the group views and loop through by 
@@ -693,6 +729,12 @@ Which picks will be used here is unpredictable\n\
 				is,ie,station_table, arr_phase);
 		tu = dbload_slowness_table(dbv,
 				is,ie,array_table, arr_phase);
+		/* this actually sets up the minus phase feature for bad clocks*/
+		if(nbcs)
+		{
+			if(minus_phases_arrival_edit(ta,arr_phase,badclocks))
+				elog_complain(0,"Warning(relocate):  problems in minus_phase_arrival_edit function\n");
+		}
 		if(useold)
 			h0 = db_load_initial(dbv,is);
 		else
@@ -739,6 +781,7 @@ Which picks will be used here is unpredictable\n\
 		destroy_data_tables(tu, ta);
 		destroy_network_geometry_tables(station_table,array_table);
 	}
+	return(0);
 }
 
 /* $Id$ */

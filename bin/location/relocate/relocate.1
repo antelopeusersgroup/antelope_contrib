@@ -7,13 +7,32 @@ relocate - locates all events in a css3.0 database with genloc
 relocate dbin dbout [-pf pffile -useold -sift expression]
 .fi
 .SH DESCRIPTION
+.LP
 \fIrelocate\fR is a datascope db interface program to a css3.0 database designed for relocating
 a complete catalog of events using the genloc package of location routines.   The program
 will attempt to join all of the following css3.0 tables: \fBarrival, assoc, event, origin, origerr,
-site\fR.  The program will exit immediately if these tables cannot be joined.  Note an example
-this if if any of the tables are empty.  
+site\fR.  The program will exit immediately if these tables cannot be joined.  
 .LP
-ARGUMENTS.  
+The program uses the generic Gauss-Newton algorithm (ggnloc(3)) of the genloc family
+of location programs.  Normal procedures for relocation would be to set the -useold
+flag (see below) but this is currently the default.  The whole suite of initial location
+methods of genloc are available through the input parameter file if one choses to use
+that approach.  
+.LP
+\fIrelocate\fR utilizes the automated S-P feature of genloc.  That is, if the extension table
+called timing is present the program will enable an automated switch to differential times
+for time periods when a station has a timing accuracy below a prescribed threshold 
+(set by the \fIclock_error_cutoff\fR parameter which must be defined in the parameter file
+if the timing table is present).  
+Stations can also be marked as always having bad times through
+the \fIbad_clocks\fR parameter.
+.LP
+Note that the phase description parameters, which are dbgenloc hides from the normal 
+user, are required to be inline in the parameter file for this program.  To get a start
+simply insert the contents of one of the parameter files found in
+the directory $ANTELOPE/data/tables/genloc/TT where TT varies for you choice of
+travel time calculator. 
+.SH ARGUMENTS.  
 \fIdbin\fR is the input css3.0 database with the required tables noted above. \fIdbout\fR is an
 output database.   It should probably normally be empty when the program is started.  When
 the program completes the following tables should be found in the output database: assoc,
@@ -48,10 +67,25 @@ or you hit a programming bug.
 orbgenloc(1), sgnloc(1), dbloc2(1), genloc_intro(3), genloc(3), ggnloc(3), pfread(3), elog(3)
 .fi
 .SH "BUGS AND CAVEATS"
+.IP (1)
 This program should probably handle events from teleseismic associations more cleanly by
 keying off particular fields in the database that are commonly used to indicate this. I felt,
 however, that this was hardwiring too many specific feature in a code intended to be
 relatively general.  This can be done by later merging the complementary data with a perl or
 tcl script procedure.
+.IP (2) 
+Be warned that if a solution blows up in relocation (signalled by ggnloc marking
+the solution as bad) it will not be saved in the output database.  This means the output
+database event count may not match the input.  Check the log file for diagnostics about
+which events caused problems in this situation.
+.IP (3)
+The program should be improved to allow the input and output database to be the
+same and simply change the prefor.  This version will cause big problems if
+you try this.
+.IP (4)
+Stations using minus phases due to timing problems will not have entries saved
+in the predarr table.  A valid assoc table will be produced for these arrivals
+but the residual saved in the database will be set equal for each arrival 
+associated with the pair of phases (e.g. P and S in S-P).  
 .SH AUTHOR
 Gary L. Pavlis

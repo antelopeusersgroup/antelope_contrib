@@ -1,34 +1,38 @@
-velocity_model_name anza_test
+#
+#  These are phase description parameters.  Usually cloned from
+#  dbgenloc versions found in $ANTELOPE/data/tables/genloc
+#
+velocity_model_name iasp91
 phases &Arr{
 P  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-	5.8	0.0
-	8.0	40.0
-        }
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+#
+#  This weight function is necessary because P is a generic first arrival
+#  At the edge of the core shadow Pdiff = P which can cause large errors
+#  with short-period data where PKiKP is the normal detection
+#
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
+	90.0	1.0
+	95.0	0.1
+	130.0	0.3
+	180.0   0.3
 	}
 	ux_distance_weight_function &Tbl{
         0.0     1.0
-        10.0    1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
         uy_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
-	default_time_uncertainty 0.01
+	default_time_uncertainty 0.1
 	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
 	time_station_corrections &Tbl{
 	}
 	ux_station_corrections &Tbl{
@@ -38,34 +42,28 @@ P  &Arr{
 }
 # Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
 S  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-	3.36	0.0
-	4.5	40.0
-        }
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
+	92.0	1.0
+	100.0	0.0
+	180.0   0.0
 	}
 	ux_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
         uy_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
-	default_time_uncertainty 0.1
+	default_time_uncertainty 0.2
 	default_slowness_uncertainty 0.005
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
 	time_station_corrections &Tbl{
 	}
 	ux_station_corrections &Tbl{
@@ -74,10 +72,9 @@ S  &Arr{
         }
 }
 Pg  &Arr{
-
- travel_time_calculator uniform table interpolation
- table_file Pg
-
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
@@ -101,6 +98,8 @@ Pg  &Arr{
         }
 	default_time_uncertainty 0.01
 	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
 	time_station_corrections &Tbl{
 	}
 	ux_station_corrections &Tbl{
@@ -110,10 +109,9 @@ Pg  &Arr{
 }
 # Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
 Sg  &Arr{
-
-travel_time_calculator uniform table interpolation
-table_file Sg
-
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
@@ -137,6 +135,38 @@ table_file Sg
         }
 	default_time_uncertainty 0.1
 	default_slowness_uncertainty 0.005
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+S-P  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	90.0	1.0
+	95.0	0.0
+	180.0   0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
 	time_station_corrections &Tbl{
 	}
 	ux_station_corrections &Tbl{
@@ -183,7 +213,7 @@ initial_longitude				 58.1125
 initial_origin_time				712788670.0
 initial_depth					5.0
 
-#parameters used in S-P method
+#parameters used in S-P initial location method
 
 #parameters used in rectangle_gridsearch
 center_latitude					33.5
@@ -197,6 +227,7 @@ nlon						20
 ndepths						1
 
 #parameters used in radial gridsearch
+#  Not needed unless this is used as initial location method
 #center_latitude				22.0
 #center_longitude				44.0
 #center_depth					5.0
@@ -208,6 +239,15 @@ ndepths						1
 #number_points_r				48
 #number_points_azimuth			36
 #ndepths					1
+
+#
+#  used for S-P feature
+#
+clock_error_cutoff      0.1
+bad_clocks      &Tbl{
+    BZN
+}
+
 
 
 # $Id$ 
