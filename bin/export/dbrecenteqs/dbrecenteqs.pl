@@ -297,6 +297,7 @@ sub xml_to_output {
 
 sub normal_lon {
 	my( $unwrapped_lon ) = @_;
+
 	my( $normal_lon );
 
 	$normal_lon = $unwrapped_lon;
@@ -310,6 +311,7 @@ sub normal_lon {
 sub unwrapped_lon {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $normal_lon ) = shift( @_ );
+
 	my( $unwrapped_lon );
 
 	$unwrapped_lon = $normal_lon;
@@ -1287,6 +1289,9 @@ sub find_overlap {
 			$sregion = $3;
 			$nregion = $4;
 	}
+
+	$wregion = unwrapped_lon( \%Mapspec, $wregion );
+	$eregion = unwrapped_lon( \%Mapspec, $eregion );
 
 	if( $maskarea =~ m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
 			$wmask = $1;
