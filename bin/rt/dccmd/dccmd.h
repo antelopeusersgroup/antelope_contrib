@@ -29,41 +29,23 @@
 #include "coords.h"
 #include "stock.h"
 #include "arrays.h"
+#include "pkt.h"
 
-#define ONEDAY  86400		/* number of seconds in one day  */
-#define NUMDAS 48		/* max number of DASes in RT system  */
-#define NSLEEP  5
-#define LEN     8               /* command buffer length  */
-#define CMDDAS_PORT 5001         /* input port; data from DAS  */
+#define CMDDC_PORT 5001         /* input port; data from DAS  */
+#define IBUF_SIZE       64
 
-#define DSK_BLK_SIZE    1024	/* PASSCAL disk block size  */
-#define IBUF_SIZE       4096
+#define DCCMD	0x11
+#define CRCMD   0x22
+#define DASCMD  0x33
 
-#define OFF_PIDA        4
-#define OFF_PIDB        6       
-#define OFF_UIDA        2
-#define OFF_UIDB        4
-#define OFF_PLENA       26
-#define OFF_PLENB       2
-
-typedef struct Prts  {
-    FILE *verbatim;
-    int ifp;			/* input port file pointer  */
-    char ip_name[132];		/* input port name  */
-} Prts;
-
-typedef struct Das {
-    double time;
-    int unit;
-    int on;
-    char name[12];
-} DAS;
-
+char *pfile;
 Arr *Dases;
 Arr *Dasid;
-
+Tbl *CmdArg;
+Tbl *Dlist;
 int Log;
-int Ls;
+regex_t argument;
+
 struct sockaddr_in myadd_in;           
 struct sockaddr_in peer_in;
 
@@ -75,7 +57,7 @@ struct sockaddr_in peer_in;
  
 extern void usage PL_(( void ));
 extern int main PL_(( int argc, char *argv[] ));
-extern int open_dc PL_(( struct Prts *ports, int num ));
+extern int opendc PL_(( char *ports, int *pf ));
  
 #undef PL_
 

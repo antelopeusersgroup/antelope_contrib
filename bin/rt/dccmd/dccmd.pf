@@ -1,5 +1,0 @@
-start_time	6/5/97 1:00
-num_repeats     	2	# # times to repeat command for one das              
-timeout_btw_onedas	300	# # of sec between command send to one DAS 
-timeout_btw_dases	5	# # of min between command send to different DASes 
-timeout_btw_cmds	7	# # of days between command send to DC 
