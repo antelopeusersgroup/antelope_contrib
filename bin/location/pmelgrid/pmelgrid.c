@@ -245,7 +245,6 @@ option which is know to cause problems\nrecenter set off\n");
 			o.generalized_inverse = DAMPED_INVERSE;
 	}
 
-	runname = pfget_string(pf,"pmel_run_name");
 
 	/* This uses the same method of defining phase handles as dbgenloc*/
 	vmodel=pfget_string(pf,"travel_time_model");
@@ -308,6 +307,7 @@ option which is know to cause problems\nrecenter set off\n");
 	/* don't need the above for single processor case */
 	save_run_parameters(db,pf);
 #endif
+	runname = pfget_string(pf,"pmel_run_name");
 
 	while((pfi=pfstream_get_next_ensemble(pfshi))!=NULL)
 	{
