@@ -41,6 +41,7 @@
 %   dbadd_remark	- Add a remark to a datascope Database
 %   dbget_remark	- Get a remark from a Datascope Database
 %   dbfind		- Locate a database row satisfying some condition 
+%   dbextfile		- Compose a filename from a database record and table name
 %   dbfilename		- Compose a filename from a database record
 %   dbnextid		- Get the next integer id for id field from a database
 %

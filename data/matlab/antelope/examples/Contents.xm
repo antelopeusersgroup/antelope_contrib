@@ -19,6 +19,7 @@
 %   dbexample_dbcrunch
 %   dbexample_dbdelete
 %   dbexample_dbeval
+%   dbexample_dbextfile
 %   dbexample_dbfilename
 %   dbexample_dbfind
 %   dbexample_dbget

@@ -33,6 +33,7 @@ MEXSRCS= \
 	dbdelete.c \
 	dbinvalid.c \
 	dbfilename.c \
+	dbextfile.c \
 	dbeval.c \
 	dbfind.c \
 	dbadd_remark.c \

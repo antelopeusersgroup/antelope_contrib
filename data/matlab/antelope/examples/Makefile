@@ -13,6 +13,7 @@ DATA= \
 	dbexample_dbdelete.m \
 	dbexample_dbeval.m \
 	dbexample_dbfilename.m \
+	dbexample_dbextfile.m \
 	dbexample_dbfind.m \
 	dbexample_dbget.m \
 	dbexample_dbget_remark.m \
