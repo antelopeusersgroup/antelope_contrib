@@ -9,7 +9,7 @@ CLEAN=
 cflags=
 fflags=
 ldflags=
-ldlibs= -lxmldb $(DBLIBS)
+ldlibs= -ldbxml $(DBLIBS)
 
 include $(ANTELOPEMAKE)
 DBG= -g

@@ -6,7 +6,7 @@
 #include "coords.h"
 #include "db.h"
 #include "stock.h"
-#include "xmldb.h"
+#include "dbxml.h"
 
 static void
 usage ()
