@@ -2,7 +2,7 @@
 Miscellaneous
 xtra
 orb $(TRLIBS)
-PKTLIBS
+ORBLIBS
 xtra.h
 contains assorted routines which use multiple libraries, and are gathered 
 in one library to avoid complex interdependencies between other libraries

@@ -4,6 +4,15 @@
 #  [private|deprecated] type *function ( type1 param1, type2 param2, type3 param3 ) ;
 #      perform operation with param1 with options param2 returning result in param3
 
+sub drop_lines { 
+    my $lastFilename = $Filename ;
+    while ( $_ !~ /^\s*$/ && $lastFilename eq $Filename) { 
+	$_ = xf_input() ; 
+    }
+    xf_putbak ( $_ ) if $_ !~ /^\s*$/ ; 
+    undef $_ ;
+}
+
 
 sub cdeclarations { 
     chomp ;
@@ -17,10 +26,7 @@ sub cdeclarations {
 	    $ignored = 0 ; 
 	}
     } elsif ( /^\s*(private|deprecated)/ ) { 
-	# just drop these for now
-	while ( $_ !~ /^\s*$/ ) { 
-	    $_ = xf_input() ; 
-	}
+	&drop_lines() ; # just drop these for now
 	$ignored = 1 ;
     } elsif ( /^\s/ ) { # 
 	$ignored = 0 ; 

@@ -2,7 +2,7 @@
 Orb Packet Stuffing and Unstuffing
 Pkt
 stock posix4 nsl socket m
-$(PKTLIBS)
+ORBLIBS
 Pkt.h
 transforming between a c-struct and the network encoded form of an orb packet
 

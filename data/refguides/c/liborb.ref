@@ -1,8 +1,8 @@
 <library>
 orb connections
 orb
-orb $(TRLIBS)
-$(ORBLIBS)
+-lpkt -lorb -lxtra $(TRLIBS)
+ORBLIBS
 orb.h
 routines which implement the orb protocol
 

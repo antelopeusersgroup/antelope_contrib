@@ -17,10 +17,7 @@ sub fdeclarations {
 	    $ignored = 0 ; 
 	}
     } elsif ( /^\s*(private|deprecated)/ ) { 
-	# just drop these for now
-	while ( $_ !~ /^\s*$/ ) { 
-	    $_ = xf_input() ; 
-	}
+	&drop_lines() ; # just drop these for now
 	$ignored = 1 ;
     } elsif ( /^\s/ ) { # 
 	$ignored = 0 ; 
