@@ -281,6 +281,11 @@ lookup_stachan( char *sta, char *chan )
 	int     ns_stachan, ne_stachan;
 	void    *private;
 	int     n;
+	
+	if( Stachans == NULL ) 
+	{
+		return (STACHAN *) NULL;
+	}
 
 	stachan = (STACHAN *) malloc( sizeof( STACHAN ) );
 	strcpy( stachan->sta, sta );
