@@ -1,0 +1,58 @@
+.TH MAKE_SHAKEMAP_QTM 1 "$Date$"
+.SH NAME
+make_shakemap_qtm \- convert a cggrid file into a ShakeMap QTM file
+.SH SYNOPSIS
+.nf
+make_shakemap_qtm cggrid_file outfile lonmin lonmax lonincrement latmin latmax latincrement
+.fi
+.SH DESCRIPTION
+make_shakemap_qtm converts an Antelope cggrid file into a QTM file for the USGS ShakeMap
+program. The QTM file is a representation of estimated seismic shear-wave velocities (in meters/sec)
+at 30-meter depth ("Vs30") at all the physical locations covered by the grid. A common way 
+to create test input for ShakeMap is to generate a Vs30 grid in cggrid format with 
+the make_fake_vs30(1) command, then convert it to ShakeMap QTM format with make_shakemap_qtm.
+
+The outfile argument specified on the command line gives the basename of the resulting 
+QTM files. Both binary and text versions of the output QTM file will be generated, identified 
+by suffixes ".bin" and ".txt". The lonmin, lonmax, latmin, and latmax values specify minimum 
+and maximum values of longitude and latitude for the output file, respectively. The lonincrement
+and latincrement arguments specify the grid spacing of the output file in longitude and latitude
+degrees, respectively. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+The first of these commands, make_fake_vs30(1), makes a cggrid file called fakevs30.xyz
+based on topographic information and covering the region specified. The following make_shakemap_qtm
+command converts that to a ShakeMap QTM grid called vsgrid.bin: 
+.nf
+
+% make_fake_vs30 -R-111/-104/34/41
+% make_shakemap_qtm fakevs30.xyz vsgrid -110 -105 0.25 35 40 0.25
+.fi
+
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+make_fake_vs30(1), cggrid(5)
+.fi
+.SH "BUGS AND CAVEATS"
+Care should be taken that the specified grid intervals (lonincrement and latincrement) 
+fit an integral number of times into the specified grid maxima (lonmin and lonmax, latmin and latmax).
+
+Values in the output QTM grid that are not covered by the input cggrid will be filled in with a null value. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
