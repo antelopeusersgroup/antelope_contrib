@@ -20,7 +20,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Tbl	**pattern1_p = 0;
 	Tbl	**pattern2_p = 0;
 	char	errmsg[STRSZ];
-	char	*outer;
+	char	*firststring = 0;
+	char	*middlestring = 0;
+	char	*laststring = 0;
 	int	outer_join = 0;
 	int	rhs_index;
 
@@ -40,74 +42,163 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
         }
 
-	if( nrhs >= 3 && mxIsChar( prhs[nrhs-1] ) )
+	if( nrhs < 3 ) 
 	{
-		if( ! get_string( prhs[nrhs-1], &outer ) )
-		{
-			antelope_mexUsageMsgTxt ( USAGE );
-			return;
-		}
-		else if( ! STREQ( outer, "outer" ) )
-		{
-			mxFree( outer );
-			antelope_mexUsageMsgTxt ( USAGE );
-			return;
-		}
-		else
-		{
-			mxFree( outer );
-			outer_join = 1;
-		}
+		/* Fallthrough: no extra arguments */
 	}
-
-	if( ( nrhs == 3 && ! outer_join ) ||
-	    ( nrhs == 4 &&   outer_join ) )
+	else if( nrhs == 3 ) 
 	{
-		rhs_index = nrhs - outer_join - 1;
-
-		if( ! ( pattern1 = cellstr2stringtbl( prhs[rhs_index] ) ) )
+		if( get_string( prhs[2], &laststring ) )
 		{
-			antelope_mexUsageMsgTxt ( USAGE );
-			return;
+			if( STREQ( laststring, "outer" ) )
+			{
+				outer_join = 1;
+			}
+			else 
+			{
+				pattern1 = strtbl( laststring, 0 );
+
+				pattern2 = pattern1;
+				pattern1_p = &pattern1;
+				pattern2_p = &pattern2;
+			}
 		}
-		else
+		else if( get_stringtbl( prhs[2], &pattern1 ) )
 		{
 			pattern2 = pattern1;
 			pattern1_p = &pattern1;
 			pattern2_p = &pattern2;
 		}
+		else
+		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
+	} 
+	else if( nrhs == 4 ) 
+	{ 
+		if( get_string( prhs[3], &laststring ) )
+		{
+			if( STREQ( laststring, "outer" ) )
+			{
+				outer_join = 1;
+			}
+			else 
+			{
+				pattern2 = strtbl( laststring, 0 );
+
+				pattern2_p = &pattern2;
+			}
+
+			if( get_string( prhs[2], &firststring ) )
+			{
+				pattern1 = strtbl( firststring, 0 );
+
+				pattern1_p = &pattern1;
+			} 
+			else if( get_stringtbl( prhs[2], &pattern1 ) )
+			{
+				pattern1_p = &pattern1;
+			}
+			else
+			{
+				antelope_mexUsageMsgTxt ( USAGE );
+				return;
+			}
+
+			if( outer_join )
+			{
+				pattern2 = pattern1;
+				pattern2_p = &pattern2;
+			}
+		}
+		else if( get_stringtbl( prhs[3], &pattern2 ) )
+		{
+			pattern2_p = &pattern2;
+
+			if( get_string( prhs[2], &firststring ) )
+			{
+				pattern1 = strtbl( firststring, 0 );
+
+				pattern1_p = &pattern1;
+			} 
+			else if( get_stringtbl( prhs[2], &pattern1 ) )
+			{
+				pattern1_p = &pattern1;
+			}
+			else
+			{
+				antelope_mexUsageMsgTxt ( USAGE );
+				return;
+			}
+		}
+		else
+		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
 	}
-
-	if( ( nrhs == 4 && ! outer_join ) ||
-	    ( nrhs == 5 &&   outer_join ) )
+	else if( nrhs == 5 ) 
 	{
-		rhs_index = nrhs - outer_join - 2;
-
-		if( ! ( pattern1 = cellstr2stringtbl( prhs[rhs_index] ) ) )
+		if( ! get_string( prhs[4], &laststring ) )
 		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
+		else if( ! STREQ( laststring, "outer" ) )
+		{
+			mxFree( laststring );
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
 		}
 		else
 		{
-			pattern1_p = &pattern1;
+			outer_join = 1;
 		}
 
-		rhs_index = nrhs - outer_join - 1;
-
-		if( ! ( pattern2 = cellstr2stringtbl( prhs[rhs_index] ) ) )
+		if( get_string( prhs[3], &middlestring ) )
 		{
-			if( pattern1 ) freetbl( pattern1, 0 );
-			antelope_mexUsageMsgTxt ( USAGE );
-			return;
+			pattern2 = strtbl( middlestring, 0 );
+			pattern2_p = &pattern2;
 		}
-		else
+		else if( get_stringtbl( prhs[3], &pattern2 ) )
 		{
 			pattern2_p = &pattern2;
 		}
+		else
+		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
+
+		if( get_string( prhs[2], &firststring ) )
+		{
+			pattern1 = strtbl( firststring, 0 );
+			pattern1_p = &pattern1;
+		}
+		else if( get_stringtbl( prhs[2], &pattern1 ) )
+		{
+			pattern1_p = &pattern1;
+		}
+		else
+		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
 	}
+	else
+	{
+		/* Admittedly redundant */
+                antelope_mexUsageMsgTxt ( USAGE );
+		return;
+	}
+
 	db = dbjoin( db1, db2, pattern1_p, pattern2_p, outer_join, 0, 0 );
 	antelope_mex_clear_register( 1 );
+
+	if( firststring ) mxFree( firststring );
+	if( middlestring ) mxFree( middlestring );
+	if( laststring ) mxFree( laststring );
 
 	if( pattern2 && pattern2 != pattern1 )
 	{

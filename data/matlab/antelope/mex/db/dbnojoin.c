@@ -19,6 +19,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	Tbl	*pattern2 = 0;
 	Tbl	**pattern1_p = 0;
 	Tbl	**pattern2_p = 0;
+	char	*firststring = 0;
+	char	*laststring = 0;
 	char	errmsg[STRSZ];
 	int	rhs_index;
 
@@ -40,44 +42,63 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( nrhs == 3 )
 	{
-		if( ! ( pattern1 = cellstr2stringtbl( prhs[2] ) ) )
+		if( get_string( prhs[2], &firststring ) )
+		{
+			pattern1 = strtbl( firststring, 0 );
+			pattern1_p = &pattern1;
+		} 
+		else if( get_stringtbl( prhs[2], &pattern1 ) )
+		{
+			pattern1_p = &pattern1;
+		}
+		else
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
 		}
-		else
-		{
-			pattern2 = pattern1;
-			pattern1_p = &pattern1;
-			pattern2_p = &pattern2;
-		}
+
+		pattern2 = pattern1;
+		pattern2_p = &pattern2;
 	}
 
 	if( nrhs == 4 )
 	{
-		if( ! ( pattern1 = cellstr2stringtbl( prhs[2] ) ) )
+		if( get_string( prhs[2], &firststring ) )
 		{
-			antelope_mexUsageMsgTxt ( USAGE );
-			return;
-		}
-		else
+			pattern1 = strtbl( firststring, 0 );
+			pattern1_p = &pattern1;
+		} 
+		else if( get_stringtbl( prhs[2], &pattern1 ) )
 		{
 			pattern1_p = &pattern1;
 		}
-
-		if( ! ( pattern2 = cellstr2stringtbl( prhs[3] ) ) )
+		else
 		{
-			if( pattern1 ) freetbl( pattern1, 0 );
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
 		}
-		else
+
+		if( get_string( prhs[3], &laststring ) )
+		{
+			pattern2 = strtbl( laststring, 0 );
+			pattern2_p = &pattern2;
+		} 
+		else if( get_stringtbl( prhs[3], &pattern2 ) )
 		{
 			pattern2_p = &pattern2;
 		}
+		else
+		{
+			antelope_mexUsageMsgTxt ( USAGE );
+			return;
+		}
 	}
+
 	db = dbnojoin( db1, db2, pattern1_p, pattern2_p, 0 );
 	antelope_mex_clear_register( 1 );
+	
+	if( firststring ) mxFree( firststring );
+	if( laststring ) mxFree( laststring );
 
 	if( pattern2 && pattern2 != pattern1 )
 	{
