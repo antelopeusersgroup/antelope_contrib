@@ -27,10 +27,6 @@ Adapted for earthquake location code by Gary Pavlis, Indiana University.
 */
 
 
-/* the constant FLT_EPSILON is need that is defined in float.h in Solaris 5.5 
-Original code used a different constant that was changed here.  */
-#include <float.h>
-
 /* other standard include files */
 #include <stdlib.h>
 #include <math.h>
@@ -176,17 +172,6 @@ int svdcmp(float *a[], int m, int n, float w[], float *v[])
 				 * change it. Note this is different from
 				 * having the number be equal to 0.0!
 				 */
-/*
-				if ((float)fabs((double)rv1[l]) 
-					< FLT_EPSILON*anorm) {
-					flag = 0;
-					break;
-				}
-				if ((float)fabs((double)w[nm]) 
-					< FLT_EPSILON*anorm)
-					break;
-*/
-/* New test code */
 				test = anorm + ((float)fabs((double)rv1[l]));
 				if(anorm == test)
 				{
