@@ -8,6 +8,7 @@ defaults &Arr{
 	my_mod			MOD_UNKNOWN
 	select
 	reject
+	starttime
 }
 
 export_servers &Arr{

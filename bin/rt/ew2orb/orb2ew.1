@@ -85,6 +85,14 @@ This parameter is a string which is fed to the orbreject(3) call
 after each orb connection is established. If the parameter is left 
 blank, no orbreject(3) call is made. 
 
+.IP starttime
+This parameter specifies a beginning time for data which should be 
+sent. If the string is blank, no time filtering is done. If the string 
+is specified in a format understood by str2epoch(3), the orbafter(3) routine
+will be called to position the orbserver read pointer, and packets 
+before the specified time will be rejected. This parameter may also be used
+to rewind the server to start at an earlier position in the orb.
+
 .IP my_inst
 This is the Earthworm institution code for \fBorb2ew\fP to report itself
 as when it sends out heartbeats. This institution code is translated
@@ -144,6 +152,7 @@ defaults &Arr{
 	reject
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
+	starttime
 }
 
 export_servers &Arr{

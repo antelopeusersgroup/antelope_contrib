@@ -44,6 +44,7 @@ typedef struct ExportServerThread {
 	int	send_heartbeat_sec;	
 	double	last_heartbeat_sent;
 	double	last_heartbeat_received;
+	double	starttime;
 	char	select[STRSZ];
 	char	reject[STRSZ];
 	char	my_inst_str[STRSZ];
@@ -215,6 +216,7 @@ new_ExportServerThread( char *name )
 	es->last_heartbeat_sent = 0;
 	es->last_heartbeat_received = 0;
 	es->expect_heartbeat_hook = NULL;
+	es->starttime = NULL_STARTTIME;
 
 	es->Export_Threads = newarr( 0 );
 
@@ -445,7 +447,7 @@ stop_all_export_server_threads()
 		stop_export_server_thread( gettbl( keys, i ) );
 	}
 
-	freetbl( keys, free );
+	freetbl( keys, (void (*)(char *)) free );
 
 	return;
 }
@@ -508,6 +510,7 @@ static void
 reconfig_export_server_thread( ExportServerThread *es )
 {
 	char	*loglevel;
+	char	*starttime_string;
 
 	mutex_lock( &es->es_mutex );
 
@@ -582,6 +585,19 @@ reconfig_export_server_thread( ExportServerThread *es )
 			       &es->my_inst,
 			       &es->my_mod,
 			       &es->my_type_tracebuf );
+
+		starttime_string = pfget_string( es->pf, "starttime" );
+
+		if( starttime_string == NULL || 
+		    ( ! strcmp( starttime_string, "" ) ) ) {
+
+			es->starttime = NULL_STARTTIME;
+
+		} else {
+
+			es->starttime = str2epoch( starttime_string );
+			clear_register( 1 );
+		}
 
 		loglevel = pfget_string( es->pf, "loglevel" );
 
@@ -739,6 +755,8 @@ orb2ew_export( void *arg )
 	int	status = 0;
 	int	pinno = 0;
 	char	*ptr;
+	char	*s;
+	char	*t;
 
 	if( ( et->orbfd = orbopen( Orbname, "r&" ) ) < 0 ) {
 		
@@ -749,6 +767,11 @@ orb2ew_export( void *arg )
 		status = -1;
 
 		thr_exit( (void *) &status );
+	}
+
+	if( et->es->starttime != NULL_STARTTIME ) {
+
+		orbafter( et->orbfd, et->es->starttime );
 	}
 
 	if( strcmp( et->es->select, "" ) ) {
@@ -828,6 +851,26 @@ orb2ew_export( void *arg )
 		for( ichan = 0; ichan < Pkt->nchannels; ichan++ )
 		{
 			pktchan = gettbl( Pkt->channels, ichan );
+			
+			if( et->es->starttime != NULL_STARTTIME &&
+			    pktchan->time < et->es->starttime ) {
+
+				if( ( et->es->loglevel >= VERYVERBOSE ) || 
+					Flags.VeryVerbose ) {
+
+					elog_notify( 0, 
+					"'%s': Skipping packet-channel %s: "
+					"timestamp %s is before requested "
+					"start %s\n", 
+					et->name, srcname, 
+					s = strtime( pktchan->time ),
+					t = strtime( et->es->starttime ) );
+					free( s );
+					free( t );
+				}
+
+				continue;
+			}
 
 			if( pktchan_to_tracebuf( pktchan, &tp,
 						 mytime, &nbytes_tp  ) )
@@ -842,8 +885,11 @@ orb2ew_export( void *arg )
 				mi2hi( &ptr, &pinno, 1 );
 
 				elog_notify( 0, 
-					"'%s': Sending packet %s timed %s as pin %d\n", 
-					et->name, srcname, strtime( mytime ), pinno );
+					"'%s': Sending packet-channel %s "
+					"timed %s as pin %d\n", 
+					et->name, srcname, 
+					s = strtime( pktchan->time ), pinno );
+				free( s );
 			}
 
 			rc = buf_send( et, &tp, nbytes_tp );
@@ -1072,6 +1118,10 @@ update_export_server_thread( char *name, Pf *pf )
 			      DEFAULT_REJECT );
 
 		pfput_string( es->pf, 
+			      "starttime", 
+			      DEFAULT_STARTTIME );
+
+		pfput_string( es->pf, 
 			      "loglevel", 
 			      Program_loglevel );
 
@@ -1111,6 +1161,9 @@ update_export_server_thread( char *name, Pf *pf )
 	pfreplace( pf, es->pf, "defaults{reject}",
 			       "reject", "string" );
 
+	pfreplace( pf, es->pf, "defaults{starttime}",
+			       "starttime", "string" );
+
 	pfreplace( pf, es->pf, "defaults{loglevel}",
 			       "loglevel", "string" );
 
@@ -1141,6 +1194,9 @@ update_export_server_thread( char *name, Pf *pf )
 
 	sprintf( key, "export_servers{%s}{reject}", name );
 	pfreplace( pf, es->pf, key, "reject", "string" );
+
+	sprintf( key, "export_servers{%s}{starttime}", name );
+	pfreplace( pf, es->pf, key, "starttime", "string" );
 
 	sprintf( key, "export_servers{%s}{loglevel}", name );
 	pfreplace( pf, es->pf, key, "loglevel", "string" );
@@ -1328,7 +1384,7 @@ reconfigure_export_server_threads( Pf *pf )
 		}
 	}
 
-	freetbl( existing_keys, free );
+	freetbl( existing_keys, (void (*)(char *)) free );
 		
 	for( i = 0; i < maxtbl( new_keys ); i++ ) {
 
