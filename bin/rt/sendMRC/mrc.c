@@ -11,6 +11,13 @@ char *pfile = "pkt";
 extern void init();
 extern DAS *new_das();
 
+Arr *Dases;
+Arr *Dasid;
+int Log;
+int Ls;
+struct sockaddr_in myadd_in;           
+struct sockaddr_in peer_in;
+
 void usage ()
 {
     fprintf (stderr, "Usage: %s [ -v ] [-D dasid] [-R] [-V verbatim] [-d dasid] [-o mrcpar] [ -p pfile ] [-s staname] [-t timeout] iport \n", Program_Name);

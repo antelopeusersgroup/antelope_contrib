@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <stropts.h>
 #include <netdb.h>
 #include "db.h"
 #include "coords.h"
@@ -59,13 +58,13 @@ typedef struct Das {
     char name[12];
 } DAS;
 
-Arr *Dases;
-Arr *Dasid;
+extern Arr *Dases;
+extern Arr *Dasid;
 
-int Log;
-int Ls;
-struct sockaddr_in myadd_in;           
-struct sockaddr_in peer_in;
+extern int Log;
+extern int Ls;
+extern struct sockaddr_in myadd_in;           
+extern struct sockaddr_in peer_in;
 
 #ifdef __STDC__
 #define PL_(x) x
