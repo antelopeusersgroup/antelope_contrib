@@ -70,6 +70,9 @@ dbex_eval ($db, expression)
 dbextfile ($db [, base-table])
     return the filename for an external file for a particular row in a view
 
+dbfind ($db, expression, [, first [, reverse]])
+    find a record matching an expression
+
 <subsection Time conversion>
 
 strtdelta (dt)
