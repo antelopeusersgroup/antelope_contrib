@@ -9,7 +9,7 @@
 *	    glushko@ucsd.edu
 ***********************************************************************/
 #include <signal.h>
-#include "_pkt.h"
+#include "_pkt2.h"
  
 extern Arr *Packets;
 extern Arr *StaCh;
