@@ -13,10 +13,10 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/socketvar.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/socketvar.h>
 #include "db.h"
 #include "stock.h"
 #include "pkt.h"
