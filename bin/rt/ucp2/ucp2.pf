@@ -2,13 +2,13 @@
 OrbName localhost 			#orbserver name/IP
 #
 DcName &Tbl{
-192.168.33.3 			# a DC IP address
+192.168.33.243 			# a DC IP address
 }
 #
 SendAlarmTo  rt		# email address where alarm message will be sent
 #
 Dc &Tbl{
-3 			# a BBA DC name which will be used in DC parameter display 
+243 			# a BBA DC name which will be used in DC parameter display 
 }
 OrbSelect .*BBA/[HLB]S|.*BBA/DAS|.*BBA/DC|.*BBA/RTX # source names selection pattern for orbserver
 SelectDas     .*/BBA/DAS|.*BBA/RTX|.*BBA/[HLB]S	# BBA DAS srcnames name selection pattern
