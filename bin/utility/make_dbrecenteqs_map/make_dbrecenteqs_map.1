@@ -6,7 +6,8 @@ make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 make_dbrecenteqs_map [-v] [-p pffile] psfile
 .fi
 .SH DESCRIPTION
-The script make_dbrecenteqs_map creates a postscript map image, along with 
+The script make_dbrecenteqs_map creates a postscript map image, optionally 
+along with 
 its pixfile equivalent, for dbrecenteqs(1) or dbevents(1). The parameter 
 file specifies the map details, including the center latitude and longitude
 and the extent. make_dbrecenteqs_map expects a database of topography/bathymetry
@@ -19,6 +20,14 @@ an alternate color palette for the low regions may be specified with the
 map_landmask_palette_file, with the below-sea-level sections listed in 
 the landmask_regions table (each region is given as a string for the 
 GMT -R option).
+
+A pixellized version of the postscript file will be created if the 
+parameter pixfile_conversion_method is set to something other than "none". 
+The setting must be one of "alchemy", "pnm", or "imagick". The first requires
+the alchemy(1) program from HandMade software, Inc. The second requires the 
+freeware Unix executables gs(1), pnmcrop(1), ppmquant(1), and either ppmtogif(1)
+or pnmtojpeg(1) to be available on the command line. The third requires 
+the ImageMagick utility convert(1). 
 
 .SH OPTIONS
 .IP "-p pffile"
@@ -78,7 +87,7 @@ mapspec	&Arr{
 	tilesize_deg	10
 }
 
-pixfile_conversion_method	imagick
+pixfile_conversion_method	none
 .fi
 .SH EXAMPLE
 .in 2c

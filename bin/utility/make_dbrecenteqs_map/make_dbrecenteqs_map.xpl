@@ -12,7 +12,6 @@ require "dbgmtgrid.pl";
 require "winding.pl";
 require "compass_from_azimuth.pl";
 use Datascope;
-use Image::Magick;
 
 elog_init( $0, @ARGV );
 
