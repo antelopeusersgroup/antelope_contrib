@@ -198,6 +198,9 @@ Date:  March 1999+
 */
 #define MAX_MAIN_LOOP 10  /* maximum number of interations on statics 
 				polarization, etc in each band */
+#define LAG_ERROR -100000 /* Computed lags smaller than this returned
+			by compute_optimal_lag are treated as an error
+			condition.  Should probably be in an include file*/
 void mwap_process(Dbptr dbv,char *phase,  Pf *pf) 
 {
 	int nevents;  /* number of events=number of groups in dbgrp */
@@ -532,6 +535,9 @@ trdisp(tr,"Input trace data");
 			copy_arrival_array(arrivals,&arrival_new);
 			fc = (mw[i].f0)/(2.0*si*decfac[i]);
 
+			fprintf(stdout,"Processing begins on band %d with center frequency %lf\n",
+				i,fc);
+
 			/* This builds the basic working gathers for
 			each wavelet and builds a shortcut of pointers
 			to MWtraces that are related */
@@ -547,6 +553,8 @@ trdisp(tr,"Input trace data");
 /*
 trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 */
+			fprintf(stdout,"Working gather for this band has %d stations\n",
+				gathers[0]->nsta);
 			/* Testing band 0 should be sufficient.  The
 			signal-to-noise is averaged overall wavelets so
 			the same stations should be deleted in all
@@ -581,6 +589,15 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			lag = compute_optimal_lag(gathers,nwavelets,timeref,
 					moveout,polarization,swin+i,
 					coherence_type,i);
+			if(lag < LAG_ERROR)
+			{
+				elog_complain(0,"WARNING:  serious data window error in band %d\nNo data in requested time window\nNO results for this band\n",
+					i);
+				continue;
+			}
+			else
+				elog_log(0,"Optimal lag for this band is %d\n",
+					lag);
 
 			/* We repeat the analysis at a fixed lag until
 			the smallest time adjustment is less than one
@@ -658,7 +675,20 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 				swin+i,*gathers,moveout,pm_arr,pmerr_arr,
 				&avgpm,&avgerr,dbv)  )
 					dbsave_error("mwpm",evid,i);
-			
+			/* We have to release the memory held in these
+			associative arrays.  In the earlier loop the 
+			function that creates them always clears them
+			before continuing when they are not null.  
+			The explicit NULL set after the free is done
+			to make sure in looping back the particle
+			motion routine clears these correctly.  */
+			freearr(pm_arr,free);
+			pm_arr = NULL;
+			freearr(pmerr_arr,free);
+			pmerr_arr = NULL;
+			/* same for static arr */
+			freearr(static_result,free);
+			static_result = NULL;
 		}
 		/*release main work spaces with this series of complicated free routines.
 		Here is where you really wish C had garbage collection */
@@ -672,4 +702,8 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 		/* This may not be necessary, but better safe than sorry */
 		arrivals = NULL;   arrival0 = NULL;   arrival_new = NULL;
 	}
+	free(moveout);
+	free(swin);
+	free(nwin);
+	free(refsta);
 }

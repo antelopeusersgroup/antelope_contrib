@@ -229,6 +229,14 @@ int MWdb_save_statics(
  		snr = (Signal_to_Noise *)getarr(snrarr,sta);
 		if(snr != NULL)
 		{
+		/* negative snr values are used to flag null entries
+		that are still processed.  We don't want these store
+		here though so we skip them.*/
+		  if (((snr->ratio_z) > 0.0)
+			&& ((snr->ratio_n) > 0.0)
+			&& ((snr->ratio_e) > 0.0)
+			&& ((snr->ratio_3c) > 0.0)  )
+		  {
 		    if( dbaddv(dbsnr,0,
 			"sta",sta,
 			"fc",fc,
@@ -249,6 +257,7 @@ int MWdb_save_statics(
 
 			++errcount;
 		    }
+		  }
 		}
 		mws = (MWstatic *)getarr(statics,sta);
 

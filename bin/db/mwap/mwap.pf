@@ -260,11 +260,9 @@ wavelets &Tbl{
 # number_frequency_bands MUST match the number of entries in 
 # the bands Tbl.   
 #
-number_frequency_bands 3
+number_frequency_bands 1
 bands &Tbl{
-/u/pavlis/response/RT72A_2_f 
-/u/pavlis/response/RT72A_2_f 
-/u/pavlis/response/RT72A_4_f /u/pavlis/response/RT72A_2_f
+/u/pavlis/response/RT72A_5_s 
 }
 #
 # These define signal and noise time windows for each 
@@ -275,7 +273,7 @@ bands &Tbl{
 # IMPORTANT:  start is a point on the left side of a moving window
 #  while the mwtransform uses a zero-phase format which leaves effects
 #  + to - the length of the wavelet each side of a feature.  Thus, a
-#  typical setting of start is -3*wavelet_length/2
+#  typical setting of start is -wavelet_length  + a few samples
 #
 #signal_analysis_windows &Tbl{
 #-60 80 40 1 1
@@ -285,17 +283,13 @@ bands &Tbl{
 # versions for a fast debug with fake data
 
 signal_analysis_windows &Tbl{
--60 60 40 1 1
--60 60 40 1 1
--60 60 40 1 1
+-35 20 20 1 1
 }
 #
 # Noise windows in samples
 #  order is the same as for signal windows 
 #
 noise_analysis_windows &Tbl{
--100 -40 40 1 1
--100 -40 40 1 1
 -100 -40 40 1 1
 }
 #

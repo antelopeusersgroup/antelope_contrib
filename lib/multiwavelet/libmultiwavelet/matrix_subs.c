@@ -226,6 +226,8 @@ int compute_slowness_covariance(Arr *stations,Arr *statics,
 		for(j=0;j<3;++j)
 			c[i+3*j] = ddot(3,vt+i*3,1,work+j*3,1);	
 
+	free(A);
+	free(Cd1_2);
 	return(errcount);
 }
 	

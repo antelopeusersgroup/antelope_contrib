@@ -150,7 +150,7 @@ station in a particular band.  the ratio_? values are averages
 from multiwavelets in the band, and the min and max define the 
 range.  This can allow some flexibility in how s/n cutoffs are set */
 typedef struct Signal_to_Noise_ {
-	char *sta;
+	char sta[8];
 	double ratio_z,ratio_n,ratio_e,ratio_3c;
 	double min_ratio_z,max_ratio_z;
 	double min_ratio_n,max_ratio_n;
@@ -257,7 +257,7 @@ double unwrap_delta_phase(complex , complex );
 char *make_mw_key(char *, char *);
 Arr *tr_mwtransform(Dbptr , Arr *, Time_Window *, int *, Tbl **, int , MWbasis *, int );
 MWgather *MWgather_alloc(int );
-void free_MWgather_traces(MWgather *);
+void free_MWgather(MWgather *);
 int snr_is_too_low(Signal_to_Noise *,int, Pf *);
 MWgather *build_MWgather(int , int , Arr *, Arr *, Arr *, Pf *);
 MWtrace *MWtrace_dup(MWtrace *);

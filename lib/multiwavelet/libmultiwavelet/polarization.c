@@ -114,9 +114,12 @@ void pmvector_copy(int n, Particle_Motion_Ellipse *x, int incx,
 		y[iy] = x[ix];
 	}
 }
-#define PM_MINSCALE 0.2  /* This needs to be pretty large compared to 
+#define PM_MINSCALE_MAJOR 0.2  /* This needs to be pretty large compared to 
 				good data because if the errors get much
 				larger than this the results are trash anyway */
+#define PM_MINSCALE_MINOR 1.0 /* Minor axis can easily be totally random.  
+				Nearly always happens for pure linear pm.
+				This essentially turns off robust weighting */
 void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	Particle_Motion_Ellipse *pmavg, Particle_Motion_Error *pmerr)
 {
@@ -150,7 +153,8 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	not normalized.  We could use absolute scaling if we normalized
 	them above.  This is a modification that might actually give
 	better results.  */
-	M_estimator_n_vector(v,3,n,IQ_SCALE_RELATIVE,PM_MINSCALE,avg,weight);
+	M_estimator_n_vector(v,3,n,
+		IQ_SCALE_RELATIVE,PM_MINSCALE_MAJOR,avg,weight);
 	nrm_major = dnrm2(3,avg,1);
 	for(i=0;i<3;++i) pmavg->major[i] = avg[i]/nrm_major;
 
@@ -225,15 +229,13 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	}
 	/* Note the change from above to a 2-d space now.  The above 
 	transformations zero the x3 direction after the transformation */
-	M_estimator_n_vector(v,2,n,IQ_SCALE_RELATIVE,PM_MINSCALE,avg,weight);
+	M_estimator_n_vector(v,2,n,
+		IQ_SCALE_RELATIVE,PM_MINSCALE_MINOR,avg,weight);
 	avg[2] = 0.0;
 	nrm_minor = hypot(avg[0],avg[1]);
 	/* This is the inverse tranformation -- u is orthogonal */
 	for(j=0;j<3;++j)
 		work[j] = ddot(3,U+j*3,1,avg,1);
-
-	/* We want the result normalized to a unit vector length */
-	for(i=0;i<3;++i) pmavg->minor[i] = work[i]/nrm_minor;
 
 	/* This is similar to above, but, perhaps incorrectly, the
 	degrees of freedom are larger by one because we reduce the
@@ -246,6 +248,9 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 		dotprod /= nrm_minor;
 		workn[i] = acos(dotprod);
 	}
+	/* We want the final result normalized to a unit vector length */
+	for(i=0;i<3;++i) pmavg->minor[i] = work[i]/nrm_minor;
+
 	/* weighted mean formula again */
 	for(i=0,sumwt=0.0,sumsq=0.0;i<n;++i)
 	{

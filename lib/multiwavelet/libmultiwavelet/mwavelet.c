@@ -292,12 +292,15 @@ here and should never be cleared.  Similarly, this routine should be
 called only when you are sure the x1, x2, and x3 traces are copies of
 data that aren't required later.  
 */
-void free_MWgather_traces(MWgather *gather)
+void free_MWgather(MWgather *gather)
 {
 	int i;
 
 	for(i=0;i<gather->nsta;++i)
 	{
+		free(gather->x1[i]->z);
+		free(gather->x2[i]->z);
+		free(gather->x3[i]->z);
 		free(gather->x1[i]);
 		free(gather->x2[i]);
 		free(gather->x3[i]);
@@ -833,7 +836,6 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 	allot(float *,snr_wavelet,nwavelets);
 	allot(float *,sig3c,nwavelets);
 	allot(float *,noise3c,nwavelets);
-printf("Signal to noise ratio estimates:  station, z,n,e, 3c\n");
 	/* we loop through the list of station and channels to build
 	signal to noise structures.  Stations use the Arr while the
 	channel codes are locked down and come from the multiwavelet.h
@@ -870,7 +872,7 @@ printf("Signal to noise ratio estimates:  station, z,n,e, 3c\n");
 		for(j=0;j<nbands;++j)
 		{
 			allot(Signal_to_Noise *,snr,1);
-			snr->sta = strdup(sta);
+			strcpy(snr->sta,sta);
 			/* perhaps superflous, but paranoia can be good*/
 			si = swin[j].si;
 			if( (si != ts[0][0][j][0].dt) 
@@ -1029,7 +1031,6 @@ printf("Signal to noise ratio estimates:  station, z,n,e, 3c\n");
 			snr->min_ratio_3c = stats.low;
 			snr->max_ratio_3c = stats.high;
 			setarr(snrarr_vector[j],sta,snr);
-printf("%s %lf %lf %lf %lf\n",sta,snr->ratio_z,snr->ratio_n,snr->ratio_e,snr->ratio_3c);
 		}
 	}
 	
@@ -1143,6 +1144,10 @@ it computes s_max/(sum over min(m,n) s_i)  = fractional part of
 signal described by largest principle component.  This is very
 similar to coherence which is usually written in terms of 
 residual power.  
+
+Normal return is computed coherence measure at specified
+lag.  A negative number indicates no data fell in the 
+requested window and the value should not be used.
 */
 float compute_coherence_measure(MWgather *g,Time_Window w,int *lags, int type)
 {
@@ -1157,6 +1162,9 @@ float compute_coherence_measure(MWgather *g,Time_Window w,int *lags, int type)
 	double denom;
 	int data_end;
 	complex cweight={0.0,0.0};
+float seisr[1000];
+float seisi[1000];
+int idbug, jdbug;
 
 	/*This is one of those interval versus points things again */
 	total_window_length = ((w.length)-1)*(w.increment);
@@ -1175,24 +1183,22 @@ float compute_coherence_measure(MWgather *g,Time_Window w,int *lags, int type)
 						A+ii,g->nsta);
 			cweight.r = (float)(g->sta[i]->current_weight_base);
 			cscal(w.length,&cweight,A+ii,g->nsta);
-/*
 for(idbug=0,jdbug=0;jdbug<w.length;++jdbug,idbug+=(w.increment))
 {
 	seisr[idbug]=g->x3[i]->z[lags[i]+idbug].r;
 	seisi[idbug]=g->x3[i]->z[lags[i]+idbug].i;
 }
-*/
 
 			++ii;
 		}
 	}
 
-	nsta_used = ii - 1;
+	nsta_used = ii;
 	if(nsta_used < 2)
 	{
 		elog_complain(0,"Critical data loss in semblance calculation:  %d stations of %d available were included\nTry increased tpad values\n",
 			nsta_used,g->nsta);
-		measure = 0.0;
+		measure = -1.0;
 	}
 	else
 	{
@@ -1236,7 +1242,28 @@ The function always keys on the x3 component because the transformation
 matrix created here is the largest principal component direction 
 independent of the phase being analyzed.  
 
+Arguments:
+g - gather object used for computatoin
+nwavelets - number of wavelets in transform
+timeref - time reference (lag are computed from here based on
+	this time at the reference station)
+moveout - vector of time moveouts (s)
+polarization - defines direction to transform coordinates to 
+	Coordinates are rotated and only the x3 component is used
+	to compute coherence measure
+win - array of time window structures (value for win[band] is used )
+coherence_type - coherence or semblance switch (see multiwavelet.h)
+band - band index of mw transform
+
+Return:
+
+normal value is some "small" integer.  Error returns a large
+negative integer defined immediately below.  "large" is relative
+but for conceivable applications the number there should be more
+than adequate.
+
 */
+#define LAG_ERROR_RETURN -9999999
 int compute_optimal_lag(MWgather **g,int nwavelets,double timeref, 
 	double *moveout,Spherical_Coordinate polarization,
 	Time_Window *win,int coherence_type, int band)
@@ -1254,6 +1281,7 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	float peak_semb;
 	int lag_at_peak;
 	char *array_name;
+	int *window_error;
 
 
 	/* First we define a rotation matrix to ray coordinates and
@@ -1290,18 +1318,27 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	 computed for each wavelet as a function of time.*/
 	semb = matrix(0,lensemb,0,nwavelets-1);
 	allot(float *,avgsemb,lensemb);
+	allot(int *,window_error,lensemb);
 
 	for(i=0;i<lensemb;++i)
 	{
+		window_error[i] = 0;
 		for(j=0;j<nwavelets;++j)
 		{
+			/* This function returns a negative number 
+			for no data in the window.  We mark this problem
+			with this array of logical integers */
 			semb[i][j] = compute_coherence_measure(trans_gath[j],
 					*win,lags,coherence_type);
+			if(semb[i][j]< 0.0) window_error[i] = 1;
 		}
 		for(j=0;j<trans_gath[0]->nsta;++j) lags[j] += win->stepsize;
 	}
-	for(i=0,j=0,peak_semb=0.0,lag_at_peak=0;i<lensemb;++i,j+=win->stepsize)
+	for(i=0,j=0,peak_semb=0.0,lag_at_peak=LAG_ERROR_RETURN;
+				i<lensemb;++i,j+=win->stepsize)
 	{
+	    if(!window_error[i])
+	    {
 		stats = MW_calc_statistics_float(semb[i],nwavelets);
 		avgsemb[i] = stats.mean;
 		if(avgsemb[i]>peak_semb)
@@ -1309,18 +1346,21 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 			peak_semb = avgsemb[i];
 			lag_at_peak = j;
 		}
+	    }
 	}
+	free_matrix((char **)semb,0,lensemb,0);
+	free(avgsemb);
+	free(lags);
+	free(window_error);
+	for(i=0;i<nwavelets;++i) free_MWgather(trans_gath[i]);
+
 	/* This is not the clearest way to do this, but this is repairing
 	a bug in the original version of this code that failed to make
 	this correction.  Basically, the lag_at_peak is not referenced
 	correctly.  We have to take away the window start increment
 	added above to get the timing right */
-	lag_at_peak += win->tstart;
-
-	free_matrix((char **)semb,0,lensemb,0);
-	free(avgsemb);
-	free(lags);
-	for(i=0;i<nwavelets;++i) free_MWgather_traces(trans_gath[i]);
+	if(lag_at_peak > LAG_ERROR_RETURN)
+		lag_at_peak += win->tstart;
 
 	return(lag_at_peak);
 }
@@ -1367,6 +1407,7 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 	int nsta_used;
 	int data_end,window_length;
 	complex cweight={0.0,0.0};
+float Adebug[33][20];
 
 	for(i=0,nsta_used=0;i<(g->nsta);++i)
 	{
@@ -1404,6 +1445,9 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 			weights[i] = 0.0;
 		}
 	}
+for(i=0;i<nsta_used;++i)
+for(j=0;j<w->length;++j)
+Adebug[i][j] = A[i+j*(g->nsta)].r;
 	return(nsta_used);
 }
 /* This is a parallel routine to the above that builds a matrix from
@@ -1420,6 +1464,7 @@ int build_3c_matrix(MWgather *g,int *lags,Time_Window *w,
 	int i,ii,j;
 	int nsta_used;
 	int m;
+float Adebug[99][20];
 
 	int window_length, data_end;
 	complex cweight={0.0,0.0};
@@ -1491,6 +1536,8 @@ int build_3c_matrix(MWgather *g,int *lags,Time_Window *w,
 			weights[ii+2]=0.0;
 		}
 	}
+for(i=0;i<m;++i) for(j=0;j<w->length;++j)
+		Adebug[i][j] = A[i+j*m].r;
 	return(nsta_used);
 }
 /* This small function converts a phase angle measured in radians to 
@@ -1795,7 +1842,7 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 		if(weights[i]>0.0001) 
 		{
 			dt[i] -= (stats.median);
-			if(lags[i]>=0) current_moveout[i] += dt[i];
+			if(lags[i]>=0) current_moveout[i] -= dt[i];
 		}
 	    /* We use the full dt here rather than work2 because we force
 		zero weight stations to have zero dt */
@@ -1804,6 +1851,10 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	} while ((dtmax > (trans_gath[0]->x3[0]->dt)) && (iteration<DT_MAX_ITERATION));
 	if(iteration >= DT_MAX_ITERATION) elog_complain(0,
 	  "WARNING:  static shift computation did not converge\nLarge errors in time estimates are likely\n");
+	else
+		elog_notify(0,"Static calculation converged in %d iterations\n",
+			iteration);
+
 	/*here we load up the associative arrays that contain the results*/
 	for(i=0;i<nsta;++i)
 	{
@@ -1864,9 +1915,10 @@ void compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	free(sv1);
 	free(centroid);
 	free(work);
+	free(work2);
 	free(r);  free(phi);	free(iqr);	free(iqphi);
 	free(dt);
-	for(i=0;i<nwavelets;++i) free_MWgather_traces(trans_gath[i]);
+	for(i=0;i<nwavelets;++i) free_MWgather(trans_gath[i]);
 }
 /* small companion to below just sets structure to zeros.  The 
 important one is that rectilinearity is set negative.  This can
@@ -2022,9 +2074,12 @@ void compute_mw_particle_motion(MWgather **g,int nwavelets,double timeref,
 	}
 	pmvector_average(pmwork,ii,avgpm,avgerr);
 
-	for(j=0;j<nsta;++j) if(sta[i] != NULL) free(sta);
+	for(j=0;j<nsta;++j) if(sta[j] != NULL) free(sta[j]);
+	free(sta);
 	free(A);
 	free(svalues);
 	free(alllags);
 	free(ematrix);
+	free(pmwork);
+	free(weights);
 }
