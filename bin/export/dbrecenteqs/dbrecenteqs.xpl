@@ -26,6 +26,7 @@ sub init_globals {
 		"credits",
 		"authtrans",
 		"keep_ndays",
+		"max_num_eqs",
 		"index_map_stylesheet",
 		"focus_map_stylesheet"
 		);
@@ -984,7 +985,19 @@ sub update_stockmap {
 
 	if( grep( /orid/, dbquery( @dbbundle, "dbTABLE_FIELDS" ) ) ) {
 
-		for( $db[3]=$dbbundle[3]; $db[3]<$dbbundle[2]; $db[3]++ ) {
+		my( $startrec ) = $dbbundle[3];
+		my( $endrec ) = $dbbundle[2];
+
+		if( defined( $State{max_num_eqs} ) && 
+		    ( $State{max_num_eqs} > 0 ) &&
+		    ( ( $endrec - $startrec ) > $State{max_num_eqs} ) ) {
+
+		    print "dbrecenteqs: limiting $mapname to $State{max_num_eqs} earthquakes\n";
+
+		    $startrec = $endrec - $State{max_num_eqs};
+		}
+
+		for( $db[3] = $startrec; $db[3] < $endrec; $db[3]++ ) {
 
 			my( $orid, $proj, $lat, $lon, $latc, $lonc, $xc, $yc, 
     				$xscale_pixperdeg, $yscale_pixperdeg ) = 
@@ -1187,6 +1200,7 @@ if( $opt_e ) {
 				     "dbsubset evid != NULL" );
 
 	$nmaps = dbquery( @dbwebmaps, "dbRECORD_COUNT" );
+
 	print "dbrecenteqs: updating html for $nmaps focus maps\n";
 
 	for( $dbwebmaps[3]=0; $dbwebmaps[3]<$nmaps; $dbwebmaps[3]++ ) {
@@ -1204,12 +1218,29 @@ if( $opt_e ) {
 			 "dbopen origin", 
 			 "dbjoin event",
 			 "dbsubset orid == prefor",
-			 "dbnojoin webmaps evid#evid" ); 
+			 "dbnojoin webmaps evid#evid",
+			 "dbsort origin.time" ); 
 
 	$nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
-	print "dbrecenteqs: creating $nmaps focus maps\n";
 
-	for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
+	if( defined( $State{max_num_eqs} ) && ${max_num_eqs} > 0 ) {
+
+		$starteq = $nmaps > $State{max_num_eqs} ? $nmaps - $State{max_num_eqs} - 1 : 0;
+		$eqcount = $nmaps - $starteq;
+
+	} else {
+
+		$starteq = 0;
+		$eqcount = $nmaps;
+	}
+
+	# N.B. This is actually an upper limit on the number of focus maps 
+	# that need to be made (we're displaying $State{max_num_eqs}, some of which 
+	# may already have current focus maps in existence)
+
+	print "dbrecenteqs: creating $eqcount focus maps\n";
+
+	for( $dbneedmaps[3]=$starteq; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
 
 		( $evid ) = dbgetv( @dbneedmaps, "evid" );
 
