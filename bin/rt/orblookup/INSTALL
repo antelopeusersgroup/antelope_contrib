@@ -1,0 +1,9 @@
+1) Run 'config' to generate a pf file for orblookup.
+2) Run 'make'.
+3) If all went well, run 'make install'.
+4) Copy 'orblookup' to its final destination in your web tree.  For simplicity,
+    this can be your executable directory, e.g. /cgi-bin.
+5) Make sure this file is executable by the web server and is recognized as
+    a cgi script.  This may require changing its extension.
+6) Start orblook for whatever orbs you've configured it to use.
+
