@@ -748,7 +748,8 @@ c      write(*,*) grn, srn
      +               "auth",       author,
      +               0)
       
-      if (ierr .lt. 0) call complain( 0, 'Error writing to origin table')
+      if (ierr .lt. 0) 
+     +        call complain( 0, 'Error writing to origin table')
       return
       end
       
@@ -773,7 +774,8 @@ c
      +               "orid",  orid,
      +               0)
       
-      if (ierr .lt. 0) call complain( 0, 'Error writing to origerr table')
+      if (ierr .lt. 0) 
+     +        call complain( 0, 'Error writing to origerr table')
       return
       end
      
