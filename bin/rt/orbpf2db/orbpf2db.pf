@@ -1,0 +1,81 @@
+translations &Arr{
+	/pf/orbstat &Arr{
+		schema	registry1.0
+		tables &Arr{
+			server &Arr{
+				serveraddress 	server{address}
+				closes 		server{closes}
+				connections 	server{connections}
+				errors 		server{errors}
+				host 		server{host}
+				maxdata 	server{maxdata}
+				maxpkts 	server{maxpkts}
+				maxsrc 		server{maxsrc}
+				messages 	server{messages}
+				nclients 	server{nclients}
+				nsources 	server{nsources}
+				opens 		server{opens}
+				orb_start 	TIME:server{orb_start}
+				orbversion 	server{orbversion}
+				pid 		server{pid}
+				serverport	server{port}
+				rejected 	server{rejected}
+				started 	TIME:server{started}
+				version 	server{version}
+				when 		TIME:server{when}
+				who 		server{who}
+			}
+			clients &Arr{
+				FOREACH		clients
+				when		TIME:client_when
+				serveraddress	server{address}
+				serverport	server{port}
+				thread		clients{FOREACH}{thread}
+				clientaddress	clients{FOREACH}{address}
+				clientport	clients{FOREACH}{port}
+				bytes		clients{FOREACH}{bytes}
+				errors		clients{FOREACH}{errors}
+				fd		clients{FOREACH}{fd}
+				host		clients{FOREACH}{host}
+				lastpkt		TIME:clients{FOREACH}{lastpkt}
+				lastrequest	clients{FOREACH}{lastrequest}
+				latency_sec	clients{FOREACH}{latency_sec}
+				mymessages	clients{FOREACH}{mymessages}
+				nreads		clients{FOREACH}{nreads}
+				nreject		clients{FOREACH}{nreject}
+				nrequests	clients{FOREACH}{nrequests}
+				nselect		clients{FOREACH}{nselect}
+				nwrites		clients{FOREACH}{nwrites}
+				packets		clients{FOREACH}{packets}
+				perm		clients{FOREACH}{perm}
+				pid		clients{FOREACH}{pid}
+				pktid		clients{FOREACH}{pktid}
+				priority	clients{FOREACH}{priority}
+				read		clients{FOREACH}{read}
+				reject		clients{FOREACH}{reject}
+				select		clients{FOREACH}{select}
+				started		TIME:clients{FOREACH}{started}
+				what		clients{FOREACH}{what}
+				who		clients{FOREACH}{who}
+				written		clients{FOREACH}{written}
+			}
+			sources &Arr{
+				FOREACH 	sources
+				when		TIME:client_when
+				serveraddress	server{address}
+				serverport	server{port}
+				srcname		FOREACH
+				when		TIME:source_when
+				active		sources{FOREACH}{active}
+				kbaud		sources{FOREACH}{kbaud}
+				latency_sec	sources{FOREACH}{latency_sec}
+				nbytes		sources{FOREACH}{nbytes}
+				npkts		sources{FOREACH}{npkts}
+				slatest		sources{FOREACH}{slatest}
+				slatest_time	TIME:sources{FOREACH}{slatest_time}
+				soldest		sources{FOREACH}{soldest}
+				soldest_time	TIME:sources{FOREACH}{soldest_time}
+			}
+		}
+	}
+}
