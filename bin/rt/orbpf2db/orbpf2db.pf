@@ -5,7 +5,7 @@ translations &Arr{
 			servers &Arr{
 				serveraddress 	server{address}
 				closes 		server{closes}
-				connections 	server{connections}
+				printconn 	server{connections}
 				errors 		server{errors}
 				host 		server{host}
 				maxdata 	server{maxdata}
