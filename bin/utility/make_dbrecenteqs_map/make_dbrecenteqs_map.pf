@@ -1,10 +1,10 @@
 mapspec	&Arr{
 	latc	65
 	lonc	-155
-	right_dellon 8
-	up_dellat	8
-	down_dellat	-8
-	left_dellon	-8
+	right_dellon 3
+	up_dellat	3
+	down_dellat	-3
+	left_dellon	-3
 	size_inches	5
 #
 # External files and databases

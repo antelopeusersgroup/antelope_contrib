@@ -3,7 +3,7 @@
 make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
-make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] psfile
+make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-c lon:lat] psfile
 .fi
 .SH DESCRIPTION
 The script make_dbrecenteqs_map creates a postscript map image, optionally 
@@ -39,6 +39,9 @@ the "spacing" option of dbgmtgrid(3). It is probably advisable to specify
 a topo_resolution that is a whole multiple of the grid spacing in the 
 full-resolution grids in one's database.
 .SH OPTIONS
+.IP "-c lon:lat"
+Override the lonc and latc parameters (i.e. the center of the map)
+from the parameter file 
 .IP "-p pffile"
 Specify a parameter other than the default make_dbrecenteqs_map.pf
 .IP "-t workdir"
