@@ -42,7 +42,7 @@ Steim *init_steim( SegData *segment)
  
     steim->s100.type = 100;
     steim->s100.next_blockette_offset = 0;
-    steim->s100.samprate = 0.0 ;
+    steim->s100.samprate = segment->samprate ;
  
     return steim ;
 
