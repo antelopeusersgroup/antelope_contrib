@@ -13,6 +13,9 @@ include $(PLATFORMRULES)
 
 include $(ANTELOPEMAKE)
 
+# Suppress -KPIC, which mex compiler doesn't understand
+DCFLAGS= 
+
 # Suppress -i, which mex compiler doesn't understand 
 CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA)
 
