@@ -635,7 +635,7 @@ Attribute soldest_time
 	}
 	;
 
-Attribute sourceorb_address
+Attribute sourceaddress
 	String (30)
 	Format ( "%-30s" )
 	Null ( "-" )
@@ -646,7 +646,7 @@ Attribute sourceorb_address
 	}
 	;
 
-Attribute sourceorb_port
+Attribute sourceport
 	Integer (10)
 	Format ( "%10d" )
 	Null ( "-1" )
@@ -798,8 +798,8 @@ Relation connections
 	;
 
 Relation databases
-	Fields ( sourceorb_address sourceorb_port dbprogram dbmachine dbpath when clientid lddate )
-	Primary ( sourceorb_address sourceorb_port dbprogram dbmachine dbpath )
+	Fields ( sourceaddress sourceport dbprogram dbmachine dbpath when clientid lddate )
+	Primary ( sourceaddress sourceport dbprogram dbmachine dbpath )
 	Foreign ( clientid )
 	Description ( "Database utilities connected to orbservers" )
 	Detail {
