@@ -1,0 +1,218 @@
+velocity_model_name anza
+phases &Arr{
+P  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+TRO      -0.060
+CRY       0.031
+BZN       0.083
+KNW      -0.167
+WMC       0.076
+SND       0.098
+PFO      -0.122
+LVA       0.173
+RDM      -0.081
+FRD       0.039
+PLM       0.127
+CAH       0.077
+COY       0.086
+HOT       0.067
+JUL      -0.049
+KEE      -0.025
+POB      -0.075
+PSP      -0.153
+SMO      -0.067
+YAQ       0.154
+VG2      -0.094
+LAQ      -0.112
+OLY      -0.006
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+S  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+TRO       0.031
+CRY       0.153
+BZN       0.246
+KNW      -0.195
+WMC       0.294
+SND       0.488
+PFO      -0.123
+LVA       0.715
+RDM      -0.045
+FRD       0.186
+PLM       0.000
+CAH       0.000
+COY       0.000
+HOT       0.000
+JUL       0.000
+KEE       0.000
+POB       0.000
+PSP       0.000
+SMO       0.000
+YAQ       0.000
+VG2       0.000
+LAQ       0.000
+OLY       0.000
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
+arrival_residual_weight_method 			huber
+slowness_residual_weight_method 		false
+time_distance_weighting 			false
+slowness_distance_weighting 			false
+slowness_weight_scale_factor 			1.0
+min_error_scale 				20.0
+max_error_scale  				1000.0
+depth_ceiling 					0.0
+depth_floor 					19.0
+generalized_inverse 				marquardt
+min_relative_damp 				0.000005
+max_relative_damp 				1.0
+damp_adjust_factor 				5.0
+#generalized_inverse				pseudoinverse
+singular_value_cutoff				0.0001
+recenter 					false
+fix_latitude					false
+fix_longitude					false
+fix_depth 					true
+fix_origin_time					false
+step_length_scale_factor 			0.5
+min_step_length_scale 				0.01
+maximum_hypocenter_adjustments 			50
+deltax_convergence_size 			0.05
+relative_rms_convergence_value 			0.0001
+initial_location_method				manual
+#initial_location_method				nearest_station
+#initial_location_method				S-Ptime
+#initial_location_method				rectangle_gridsearch
+#initial_location_method				radial_gridsearch
+gridsearch_norm					weighted_rms
+
+# parameters for manual method (initial_depth used by others)
+initial_latitude				 37.9293
+initial_longitude				 58.1125 
+initial_origin_time				712788670.0
+initial_depth					10.0
+
+#parameters used in S-P method
+
+#parameters used in rectangle_gridsearch
+center_latitude					33.5
+center_longitude				-116.7
+center_depth					10.0
+latitude_range					1.0
+longitude_range					1.0
+depth_range					0.0
+nlat						20
+nlon						20
+ndepths						1
+
+#parameters used in radial gridsearch
+#center_latitude				22.0
+#center_longitude				44.0
+#center_depth					5.0
+#depth_range					0.0
+#minimum_distance				2.0
+#maximum_distance				50.0
+#minimum_azimuth				0.0
+#maximum_azimuth				360.0
+#number_points_r				48
+#number_points_azimuth			36
+#ndepths					1
+RT_working_db				/p/scratch/pavlis/orb/db/anza
+RT_logfile_directory			/p/scratch/pavlis/orb/anza/logs
+RT_failure_subdir			failures_taup
+RT_minimum_distance				0.75
+RT_maximum_distance				180.0
+RT_db_record_skip_limit				12
+
+#
+# orbgenloc needs network geometry tables 
+#
+seismic_stations                                &Tbl{
+ASBS      33.6208      -116.4664      1.4000
+BZN      33.4915      -116.6670      1.3010
+CRY      33.5654      -116.7373      1.1280
+ELKS      33.5813      -116.4496      1.1690
+FRD      33.4947      -116.6022      1.1640
+GLAC      33.6014      -116.4781      1.1690
+KNW      33.7141      -116.7119      1.5070
+LVA2      33.3516      -116.5615      1.4350
+PFO      33.6117      -116.4594      1.2590
+RDM      33.6300      -116.8478      1.3650
+SHUM      33.6327      -116.4445      1.1950
+SND      33.5519      -116.6129      1.3580
+SOL      32.8410      -117.2480      0.2450
+TRO      33.5234      -116.4257      2.6280
+WMC      33.5736      -116.6747      1.2710
+}
+seismic_arrays &Tbl{
+}
