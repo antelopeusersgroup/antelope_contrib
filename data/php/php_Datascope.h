@@ -30,6 +30,7 @@ PHP_FUNCTION(dbex_eval);
 PHP_FUNCTION(dbextfile);
 PHP_FUNCTION(dbquery);
 PHP_FUNCTION(dbsubset);
+PHP_FUNCTION(strtdelta);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)

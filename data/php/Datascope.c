@@ -4,6 +4,8 @@
 #include "ext/standard/info.h"
 #include "php_Datascope.h"
 #include "db.h"
+#include "stock.h"
+#include "coords.h"
 
 static int le_Datascope;
 
@@ -25,6 +27,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
 	PHP_FE(dbquery, NULL)		
+	PHP_FE(strtdelta, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -207,6 +210,31 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto string strtdelta( double epoch ) */
+PHP_FUNCTION(strtdelta)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strtdelta( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
 }
 /* }}} */
 
