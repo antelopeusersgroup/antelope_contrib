@@ -52,6 +52,9 @@ int pfresolve ( Pf *pf, char *name, int create, Pf **value_pf )
     get parameter name from parameter space pf allowing extended syntax
     like arr{name}[3]
 
+Pf *pfdel( Pf *pfr, char *name)
+     remove pf branch for name from pfr, returning the deleted branch
+
 int pfeval ( Pf *pf, char *name, char **value )
     get parameter name from parameter space pf allowing extended syntax
     like arr{name}[3], but returning only scalar values
@@ -407,6 +410,12 @@ char *strtime ( double e )
 char *strydtime ( double e )
     returns standard string representing epoch time
 
+char *strlocaldate ( double e )
+    returns string representing date portion of local timezone time
+
+char *strlocaltime ( double e )
+    returns string representing local timezone time
+
 
 char *strtdelta ( double e )
     returns a string representation of elapsed time
@@ -491,6 +500,9 @@ int elog_mark ()
 void elog_flush ( int deliver, int first )
     flush elog messages from first, printing them if deliver is non-zero
 
+void elog_truncate(int n)
+    truncate error log to n messages
+
 void elog_print ( FILE *file, int first )
     print the error log from first to the end
 
@@ -531,6 +543,16 @@ InfoPath * infopath ( char *path )
 char *homedir(char *user)
     return the home directory of the specified user.
 
+unsigned int filesize(char *path)
+     returns file size for plain file, 0 otherwise
+
+int is_present(char *path)
+     returns 1 if path exists, 0 otherwise
+
+int is_empty(char *path)
+     for plain file returns 1 if file has size zero
+     for directory, returns 1 if directory contains no files
+
 int is_file(char *path)
     returns 1 if path is plain file, 0 otherwise
 
@@ -554,6 +576,9 @@ private int gethdir ( char *user, char *home )
 
 int makedir ( char *dir )
     make complete directory path dir (like "mkdir -p")
+
+int make_pathdirs ( char *path )
+    make all directories to path (like "mkdir -p `dirname path`")
 
 int mapfile ( char *name, Arr **arr, char **addr )
     return memory address addr for file name, mmapping it when not already present in arr
@@ -621,8 +646,13 @@ void szcopy ( char *dst, char *src, int n )
 private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
     copy a string, truncating or padding as necessary
 
+char *strconcat(char *s, ..., 0)
+    return the result of concatenating all the input strings 
+
+int pushstrc(void **sbuf, int c )
+int pushstrn(void **sbuf, char *s, int n)
 void pushstr(void **sbuf, char *s)
-    add the string s to the string buffer sbuf, creating sbuf if *sbuf == 0
+    add the string s (or char c) to the string buffer sbuf, creating sbuf if *sbuf == 0
 
 char *popstr(void **sbuf, int sfree)
     retrieve the entire string from sbuf, freeing sbuf if sfree != 0
@@ -669,6 +699,20 @@ int fdkey ( int fd )
 int fdwait ( int fd, int msec )
     wait up to msec milliseconds for pending input
 
+int is_tty(int fd)
+     returns 1 if fd is open to a terminal, 0 otherwise.
+
+int tty_byline(int fd)
+int tty_immediate(int fd)
+    set line protocol buffering mode
+
+int tty_echo(int fd)
+int tty_noecho(int fd)
+    set line protocol echo mode
+
+int tty_reset(int fd)
+    reset terminal to initial state
+
 char *getaline ( FILE *file, char *aline, int n )
     reads a line from file, replacing any terminal linefeed
     with a null byte
@@ -679,6 +723,10 @@ private void Hexdump ( FILE *file, int base, void *mem, int n )
 
 void hexdump ( FILE *file, void *mem, int n )
     write a hex and ascii dump of n bytes of buffer mem 
+
+char *hexdump_string ( int base, void *mem, int n )
+    return string containing hex dump of buffer mem, 
+    labelling the address of mem as base.
 
 void read_hexdump ( FILE *file, char *mem, int n )
     read at most n bytes of a hex dump from file into mem
@@ -960,6 +1008,9 @@ int my_ip(char *hostname, char *ipc, long *ip)
 int my_os(char *name)
     returns operating system (Solaris, Linux, ...)
 
+int my_username(char *name)
+    returns the login id 
+
 int ip2name(long addr, char *name)
     return name corresponding to addr
 
@@ -1063,8 +1114,22 @@ void bnsuse_sockio ( Bns *bns )
 
 
 int bnsget ( Bns *bns, void *data, int t, int n )
-    get n elements of type t from bns, returning the result in data ; t 
-    may be BYTES, TWO_BYTES, FOUR_BYTES, or EIGHT_BYTES
+    get n elements of type t from bns, returning the result in data ;
+    t may be BYTES, TWO_BYTES, FOUR_BYTES, EIGHT_BYTES, INT_TWO_BYTES,
+    INT_FOUR_BYTES, INT_EIGHT_BYTES FLOAT_FOUR_BYTES, or
+    FLOAT_EIGHT_BYTES
+
+int bnsgetc(Bns *bns, void *data, int mx, int c)
+     search for first char c in input, returning up to mx chars including c
+
+int bnsin(Bns *bns)
+     returns count of chars gotten since previous bnsin call
+
+int bnsout(Bns *bns)
+     returns count of chars written since previous bnsout call
+
+char *bnsid(Bns *bns, char *id)
+     returns existing value, sets to new id if id != 0
 
 int bnsput ( Bns *bns, void *data, int t, int n )
     put n elements of type t from data, into buffer of bns 
@@ -1150,6 +1215,14 @@ void free_hook ( void **hookp )
 int runcmd ( char **argv, char **result )
     execute a command, returning a result and the exit code
 
+void xargs ( char *cmd, Tbl *list, char *tail, int verbose)
+    run cmd repeatedly on elements of list until list is exhausted.  tail 
+    is appended to each command; verbose causes each to be printed.
+
+double sz2dbl(char *size) 
+    takes input like 10k and returns 10000 -- knows G, M, and k
+
+
 deprecated Signal_info *signal_byname ( char *name )
     translate a signal name into description
 
@@ -1187,3 +1260,41 @@ int set_random ( int nbytes )
 
 double disordered()
     uniform [0,1] pseudo random number
+
+int legit_ip ( char *pfname, unsigned int ip, char **limit )
+int legit_ip_pf ( Pf *pf, unsigned int ip, char **limit )
+    compare input ip address to list of valid_ip_addresses in pf,
+    returning 1 if valid, and remainder of matching line in limit
+
+int units_convert(double x, char *x_units, char *want, double *y, char *y_units)
+    convert input value x x_units to units want, leaving result y y_units   
+
+Tbl *units_match(char *x_units)
+    returns a list of all units which match x_units (except x_units)
+
+
+<subsection Signatures>
+<cdeclarations>
+
+int sgsign ( char *signer, char *data, int nbytes, char *signature );
+    computes a signature for nbytes of data using method dictated by signer
+int sgverify ( char *signer, char *data, int nbytes, char *signature );
+    verifies the signature for nbytes of data using method dictated by signer
+    
+<subsection Reading files with mmap>
+<cdeclarations>
+int gopen(char *filename)
+    returns fd for filename using mmap
+
+int gclose(int fd)
+    closes fd (unmaps file)
+    
+int gline(int fd, char *aline, int maxchars)
+    returns line from file
+
+int gseek(int fd, int p)
+    seeks to position p in file
+
+int gtell(int fd)
+    returns current position in file
+

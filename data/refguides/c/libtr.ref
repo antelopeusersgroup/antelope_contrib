@@ -58,6 +58,12 @@ channel.  These extra keys must be mapped into sta and chan to work
 with the CSS3.0 schema.  These routines implement that mapping.
 
 <cdeclarations>
+int finit_db (Dbptr db)
+    set the database the routines below use to look up snetsta and schanloc
+
+int refinit_db (Dbptr db)
+    change the database the routines below use to look up snetsta and schanloc
+
 int map_autodrm_netsta ( char *anet, char *fsta, char *sta )
     map an autodrm net anet and station code fsta to a CSS3.0 sta code
 
@@ -141,6 +147,12 @@ int msdnxt ( Msd *msd );
 int msdrec ( Msd *msd, int rec );
     read header of input record #rec
 
+int dmsd(FILE *file, Msd *msd, int verbose)
+    print headers for a miniseed data block (in detail if verbose=1)
+
+void msdpackhdr(Msd *msd, unsigned char *record)
+    create a miniseed header in record using info from msd
+
 int umsd ( Msd *msd, int **data, int *npts );
     unpack the msd data record, returning the samples 
 
@@ -193,11 +205,14 @@ private int trwfclose ( Wfdisc *wfdisc )
 
 
 <subsection Filters>
-int trfilter (Dbptr tr, char *filter_string)
-    apply time-domain filters to trace data
+int trfilter(Dbptr tr, char *f)
+    apply time-domain filters f to trace data tr
 
-int trfilter_segs (int nsegs, int *nsamps, double *dt, float **data, char *filter_string)
-    apply time-domain filters to trace data
+int trfilter_segs(int n, int *nsamp, double *dt, float **data, char *f)
+    apply time-domain filters f to n waveform segments
+
+int trfilter_pkt(int nsamp, double dt, float *data, char *f, Hook **hook)
+    apply time-domain filters f to data, retaining state in hook
 
 int trrotate ( Dbptr tr, double phi, double theta, char **newchan )
     rotate three component data
@@ -274,6 +289,8 @@ private int trdatacode ( char *datatype )
 private char *trdatatype ( int datacode )
     get datatype from waveform type
 
+int trlookup_segtype(char *segtype, char **units, char **desc)
+    returns units and description for a segtype code
 
 Wftype *trwflist ( int i )
     return the i'th waveform type
