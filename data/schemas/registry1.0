@@ -63,17 +63,6 @@ Attribute closes
 	}
 	;
 
-Attribute printconn
-	Integer (2)
-	Format ( "%2d" )
-	Null ( "-1" )
-	Description ( "whether to print all connections" )
-	Detail {
-		This flag indicates whether the server will print all
-		connection opens and closes
-	}
-	;
-
 Attribute errors
 	Integer (10)
 	Format ( "%10d" )
@@ -133,7 +122,7 @@ Attribute host
 Attribute kbaud
 	Real (10)
 	Format ( "%10.3f" )
-	Null ( "-999" )
+	Null ( "-999.000" )
 	Description ( "This is the average data-flow for a source in kbaud" )
 	Detail {
 		This is the average data-flow rate for an orb source
@@ -399,6 +388,17 @@ Attribute pktid
 	}
 	;
 
+Attribute printconn
+	Integer (2)
+	Format ( "%2d" )
+	Null ( "-1" )
+	Description ( "whether to print all connections" )
+	Detail {
+		This flag indicates whether the server will print all
+		connection opens and closes
+	}
+	;
+
 Attribute priority
 	Integer (10)
 	Format ( "%10d" )
@@ -462,6 +462,17 @@ Attribute serveraddress
 	}
 	;
 
+Attribute serveralias
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "nickname for an orbserver" )
+	Detail {
+		This is the name used to refer to an orbserver in 
+		descriptive applications.
+	}
+	;
+
 Attribute serverport
 	Integer (10)
 	Format ( "%10d" )
@@ -486,7 +497,7 @@ Attribute slatest
 Attribute slatest_time
 	Time (17)
 	Format ( "%17.5f" )
-	Null ( "-1" )
+	Null ( "-1.00000" )
 	Description ( "time of latest packet on orb" )
 	Detail {
 		This is the timestamp of the latest packet on an orb
@@ -506,7 +517,7 @@ Attribute soldest
 Attribute soldest_time
 	Time (17)
 	Format ( "%17.5f" )
-	Null ( "-1" )
+	Null ( "-1.00000" )
 	Description ( "time of oldest packet on orb" )
 	Detail {
 		This is the timestamp of the oldest packet on an orb
@@ -636,7 +647,17 @@ Relation connections
 	Description ( "data-flow connections between orbs" )
 	Detail {
 		This table describes data-flow connections between orbs, 
-		usually established with the orb2orb client. 
+		usually established with the orb2orb client.
+	}
+	;
+
+Relation servernames
+	Fields ( serveraddress serverport serveralias lddate )
+	Primary ( serveraddress serverport )
+	Description ( "names for orbservers" )
+	Detail {
+		This table defines common names for orbservers, under
+		which they may be commonly known to users
 	}
 	;
 
