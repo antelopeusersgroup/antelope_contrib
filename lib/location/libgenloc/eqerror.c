@@ -4,8 +4,8 @@
 #include "db.h"
 #include "location.h" 
 
-#define SUNPERF 1
 #include "perf.h"
+#define SUNPERF 1
 
 /* This routines cautiously saves the emodel vector.  It is cautious
 because the emodel table is not part of the css3.0 schema.  If it

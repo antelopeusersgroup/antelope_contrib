@@ -274,6 +274,8 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 	for(i=0;i<natimes;++i)
 	{
 		atimes = (Arrival *) gettbl(atbl,i);
+		/* discard - phases as predarr makes no sense for them */
+		if(strstr(atimes->phase->name,"-")!=NULL) continue;
 		allarids[i] = atimes->arid;
 		tto = calculate_travel_time(*atimes,h,ALL);
 		if(tto.time == TIME_INVALID)

@@ -126,16 +126,17 @@ cross referenced and set here using getarr.  The same occurs for
 arrphase for the Phase handle that is keyed to the arrival phase
 filed (P, S, etc.)  
 
-This function was originally written for relocate where the
-db is a view formed from several tables.  In fact, however, it
-may work on a raw arrival table provided the range of rows it
-is give make sense since all the information it gathers comes from
-the arrival table.  
 
 Author:  Gary L. Pavlis
 Written:  January 1997
 Fix:  Dec. 1998 -- added logic to check timedef and skip an arrival
 if the time field is turned off. 
+Modified:  Sept 2003
+Now gets phase from assoc.phase.  Previously used arrival.iphase
+which is not the proper use of the database.
+Previous version said it could use a raw arrival table, but this is
+no longer true with this change.  I do not believe this will
+cause problems unless someone else has used this code.
 */ 
 
 
@@ -164,7 +165,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 		if((dbgetv( db, 0,
 			"arid",&(a->arid),
 			"sta",staname,
-			"arrival.iphase",phase_name,
+			"assoc.phase",phase_name,
 			"arrival.time",&time,
 			"arrival.deltim",&deltat,
 			"timedef",timedef,
