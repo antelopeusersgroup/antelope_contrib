@@ -15,7 +15,7 @@ Steim *stinit (Db_buffer *buf)
     
     steim = newsteim ();
     steim->level = 2;
-    steim->private = (void *) buf;
+    steim->pvt = (void *) buf;
         
     szcopy (steim->sdh.sta, buf->sta, STA_LEN);  
     szcopy (steim->sdh.chan, buf->chan, CHAN_LEN);
@@ -79,7 +79,7 @@ int save_seed ( Steim *conf,
     Db_buffer      *abuf;
 
 
-    abuf = (Db_buffer *) conf->private;
+    abuf = (Db_buffer *) conf->pvt;
     fill_header (conf, n0, n1, abuf);
    
     if( abuf->file == 0 ) 
