@@ -31,6 +31,7 @@ char          **argv;
     pfname = Program_Name = argv[0];
 
     elog_init (argc, argv);
+    elog_set ( ELOG_MAXMSG, -1, 0 )  ;
 
     while ((c = getopt (argc, argv, "hvV")) != -1) {
 	switch (c) {
@@ -75,6 +76,7 @@ char          **argv;
 	}
 
 	fflush (stdout);
+	elog_flush (1, 0) ; 
     }
 
     return 0;
