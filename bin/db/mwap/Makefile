@@ -4,7 +4,7 @@ MAN1=mwap.1
 
 #cflags= -DSP5		
 ldflags=
-ldlibs= -lmultiwavelet -lgenloc -lsunperf $(TRLIBS) $(F77LIBS)
+ldlibs= -lmultiwavelet -lgenloc $(PERFLIBS) $(TRLIBS) $(F77LIBS)
 
 include $(ANTELOPEMAKE)  
 DIRS=		

@@ -4,7 +4,7 @@ PF=relocate.pf
 cflags = 
 ldflags = 
 
-ldlibs=-lgenloc $(DBLIBS) -lsunperf $(F77LIBS)
+ldlibs=-lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
 
 #
 # Turn off the above, and use something like the following if the 

@@ -7,7 +7,7 @@ PF=dbgenloc.pf dbgenloc_default.pf
 cflags = -dalign
 ldflags = 
 
-ldlibs=-lgenloc $(DBLIBS) -lsunperf $(F77LIBS)
+ldlibs=-lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
 
 #
 # Turn off the above, and use something like the following if the 
