@@ -718,7 +718,7 @@ int ttregions (
 	return(result);
 }
 	
-int uregions (
+int ttregions_ucalc (
    char *model,
     char *phase_code,
     int mode,
@@ -752,7 +752,7 @@ int uregions (
 
 	if(mode & TT_APPLY_CORRECTIONS)
 	{
-		elog_notify(0,"uregions:  cannot apply slowness corrections for station %s and phase %s\nSlowness corrections not implemented for this calculator\n",
+		elog_notify(0,"ttregions_ucalc:  cannot apply slowness corrections for station %s and phase %s\nSlowness corrections not implemented for this calculator\n",
 			geometry->receiver.name, phase_code);
 	}
 	return(result);
