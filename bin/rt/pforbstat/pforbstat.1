@@ -3,7 +3,7 @@
 pforbstat \- Create parameter files of orb status
 .SH SYNOPSIS
 .nf
-pforbstat [-c] [-s] [-m match] [-r reject] [-v]
+pforbstat [-c] [-s] [-a] [-m match] [-r reject] [-v]
           [-f filename] [-o orbout [-n srcname]]
           orbname [secs]
 .fi
@@ -21,21 +21,34 @@ the specified filename.
 If a number of seconds is specified, the snapshot is repeated at the 
 requested interval. 
 .SH OPTIONS
--c Include information on orb clients
+.IP -c
+Include information on orb clients
 
--s Include information on orb sources
+.IP -s
+Include information on orb sources
 
--m match Match sources according to the specified regular expression
+.IP -a
+Analyze orbstat output for orb2orb connections. This option 
+automatically implies the -c option even if the latter is not 
+explicitly specified. 
 
--r reject Reject sources according to the specified regular expression
+.IP "-m match"
+Match sources according to the specified regular expression
 
--v Verbose
+.IP "-r reject"
+Reject sources according to the specified regular expression
 
--f filename Write the parameter-file objects to the specified file
+.IP -v
+Verbose output
 
--o orbout  Write the parameter-file objects to the specified orbserver
+.IP "-f filename"
+Write the parameter-file objects to the specified file
 
--n srcname Specify the source-name for output orb packets
+.IP "-o orbout"
+Write the parameter-file objects to the specified orbserver
+
+.IP "-n srcname"
+Specify the source-name for output orb packets
 
 .SH FILES
 .SH ENVIRONMENT

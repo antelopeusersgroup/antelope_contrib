@@ -17,7 +17,7 @@
 static void
 usage ()
 {
-    fprintf (stderr, "\nUsage: %s [-c] [-s] [-m match] [-r reject] [-v] [-f filename] [-n srcname] [-o orbout] orbname [secs]\n", Program_Name );
+    fprintf (stderr, "\nUsage: %s [-a] [-c] [-s] [-m match] [-r reject] [-v] [-f filename] [-n srcname] [-o orbout] orbname [secs]\n", Program_Name );
     exit (1);
 }
 
@@ -53,7 +53,7 @@ main (int argc, char **argv)
     	elog_notify (0, "%s $Revision$ $Date$\n",
 		 Program_Name);
 
-	while ((c = getopt (argc, argv, "o:n:f:scm:r:vV")) != -1) {
+	while ((c = getopt (argc, argv, "ao:n:f:scm:r:vV")) != -1) {
 		switch (c) {
 		case 'o':
 			orboutname = strdup( optarg );
@@ -73,6 +73,10 @@ main (int argc, char **argv)
 
 		case 'c':
 			flags |= PFORBSTAT_CLIENTS;
+			break;
+
+		case 'a':
+			flags |= PFORBSTAT_CONNECTIONS;
 			break;
 
 		case 'm':
@@ -124,30 +128,30 @@ main (int argc, char **argv)
 		     pkt->parts.src_suffix );
 	}
 
-	if ((orbin = orbopen (orbname, "r&")) < 0) {
-		die (0, "Can't open input '%s'\n", orbname);
-	}
-
 	if ( orboutname && ( orbout = orbopen (orboutname, "w&") ) < 0) {
 		die( 0, "Can't open output '%s'\n", orboutname );
 	} 
 
-	if( match ) {
-		nsources = orbselect( orbin, match );
-	}
-
-	if( reject ) {
-		nsources = orbreject( orbin, reject );
-	}
-
-	if( verbose && (match || reject) ) {
-
-		fprintf( stderr, 
-			 "pforbstat: %d sources selected\n", 
-			 nsources );
-	}
-
 	for( ;; ) {
+
+		if ((orbin = orbopen (orbname, "r&")) < 0) {
+			die (0, "Can't open input '%s'\n", orbname);
+		}
+
+		if( match ) {
+			nsources = orbselect( orbin, match );
+		}
+
+		if( reject ) {
+			nsources = orbreject( orbin, reject );
+		}
+
+		if( verbose && (match || reject) ) {
+	
+			fprintf( stderr, 
+			 	"pforbstat: %d sources selected\n", 
+			 	nsources );
+		}
 
 		pf = pforbstat( orbin, flags );
 
@@ -211,16 +215,15 @@ main (int argc, char **argv)
 
 		pffree( pf );
 
+		if (orbclose (orbin)) {
+			complain (1, "error closing read orb\n");
+		}
+
 		if( seconds ) {
 			sleep( seconds );
 		} else {
 			break;
 		}
-	}
-
-
-	if (orbclose (orbin)) {
-		complain (1, "error closing read orb\n");
 	}
 
 	if ( orbout && orbclose (orbout)) {
