@@ -1,0 +1,77 @@
+Schema Acronyms1.2
+	Description ( "Acronyms and their interpretations" )
+	Timedate lddate
+	;
+
+Attribute acronym
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Acronym" )
+	Detail {
+		The acronym field lists the code letters of an acronym. 
+		Where possible, this should be in capital letters.
+	}
+	;
+
+Attribute expansion
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "Acronym expansion" )
+	Detail {
+		The expansion field contains the full phrase into which 
+		an acronym expands. Where possible, capital letters are 
+		used in the phrase to correspond to the letters of the 
+		acronym.
+	}
+	;
+
+Attribute comment
+	String (80)
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( "Explanatory comment" )
+	Detail {
+		This field contains an optional explanatory comment
+		about the acronym.
+	}
+	;
+
+Attribute context
+	String (80)
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( "Acronym context" )
+	Detail {
+		The context field contains an optional indication of the 
+		context of an acronym. An example might be "NSF" if 
+		the acronym is a National Science Foundation subproject. 
+		The intent is to keep some subsettable consistency in
+		the context fields, where used, to help group acronyms
+		where possible. 
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "load date" )
+	Detail {
+		The lddate field indicates the time a record was last modified.
+	}
+	;
+
+Relation acronyms
+	Fields ( acronym expansion context comment lddate )
+	Primary ( expansion )
+	Description ( "table of acronyms " )
+	Detail {
+		This table lists acronyms and their expansions. Note that
+		the primary key is the expansion, since a given acronym may have 
+		multiple interpretations.
+	}
+	;
+
