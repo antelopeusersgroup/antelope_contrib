@@ -592,7 +592,7 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
 			if(snr->ratio_z<0.0) continue;
         		if( dbaddv(dbsnr,0,
                 		"sta",sta,
-				"arid",arid,
+				"evid",evid,
                 		"bankid",bankid,
                 		"fc",fc,
                 		"phase",phase,
@@ -639,6 +639,7 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
                 		"phase",phase,
                 		"time",time,
                 		"twin",twin,
+				"evid",evid,
                 		"pmtype","ss",
                 		"majoraz",majaz,
                 		"majorema",majema,
