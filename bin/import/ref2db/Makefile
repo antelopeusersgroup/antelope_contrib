@@ -4,7 +4,7 @@
 BIN = ref2db
 MAN1=ref2db.1   
 
-ldlibs	=-lconfirm -lpkt -lorb $(TRLIBS) -lnsl -lsocket
+ldlibs	=-lpkt -lorb $(TRLIBS) -lnsl -lsocket
 
 include $(ANTELOPEMAKE)
 OBJS 	= ref2db.o\

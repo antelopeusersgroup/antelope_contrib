@@ -1,0 +1,57 @@
+.\" $Name$ $Date$
+.TH REB2DB 1 "$Date$"
+.SH NAME
+reb2db \- reformat Reviewed Event Bulletins to CSS3.0 database format
+.SH SYNOPSIS
+.nf
+reb2db filename \[filename ...\] dbname
+.fi
+.SH DESCRIPTION
+reb2db converts Reviewed Event Bulletin files from the International
+Data Centre of the Center for Monitoring Research (www.cdidc.org)
+into css database format. Acceptable input formats include GSE2.0 and 
+IMS1.0. Raw mail files with REB information may be fed to reb2db.
+
+The algorithm field of the origin table abbreviates the analysis 
+type ("auto"=automatic, "man"=manual, "guess") and the location 
+method ("inversion", "patnrec"=pattern recognition, "grndtruth"=ground truth,
+"other").
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.nf
+Not in IMS1.0 or GSE2.0 format
+
+No DATA_TYPE line--assume IMS1.0 format
+(reb2db expects to find either 
+DATA_TYPE BULLETIN GSE2.0
+or
+DATA_TYPE BULLETIN IMS1.0
+in the file)
+.fi
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+If no DATA_TYPE line is found, reb2db assumes IMS1.0 format at the 
+first instance that it hits an EVENT line. reb2db is a state-machine
+that reads input lines successively from all supplied input files. If a 
+file after the first file does not have an explicitly specified DATA_TYPE, 
+the format (IMS1.0 or GSE2.0) will carry over from the previous file. 
+
+Handling of the "IMS1.0 SHORT" format is untested and therefore unknown. 
+
+The seaz field of the assoc table is not filled in since it does not appear
+in the IMS1.0 format and since there is no guarantee of the presence 
+of a site table. In principle seaz could be derived from the event location 
+plus delta and esaz fields, but this has not been done. 
+
+The specification of a pick as automatic shows up by appending the string 
+":auto" to the author name of the arrival. 
+.SH AUTHOR
+Kent Lindquist
