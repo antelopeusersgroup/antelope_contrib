@@ -1,9 +1,14 @@
 #
-# dbinbox
-# Kent Lindquist
-# Lindquist Consulting
-# 2004
+# dbinbox 
+#
+# Copyright (c) 2005 Lindquist Consulting, Inc.
+# All rights reserved. 
+#                                                                     
+# Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
 # 
+# This software may be used freely in any way as long as 
+# the copyright statement above is not removed. 
+#
 
 use Mail::Util qw( read_mbox );
 use Mail::Internet;
