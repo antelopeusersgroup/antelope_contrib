@@ -11,12 +11,14 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
-import com.sun.image.codec.jpeg.*;
+// import com.sun.image.codec.jpeg.*;
 import java.awt.image.*;
 
 /**
- * This class represents the experimental image packet type, which currently has
- * sourcename signature /EXP/IMG.  
+ * This class represents the experimental image packet type, which currently 
+ * has sourcename signature /EXP/IMG.  The image is decoded by Java into an 
+ * object of class java.awt.Image, but the original image data is kept around
+ * in the field imageData.
  * 
  * @author  Tobin Fricke, University of California
  */
@@ -37,8 +39,12 @@ public class OrbImagePacket extends OrbPacket {
 	
 	this.time = time;
 	this.pktid = pktid;
-	this.srcname = srcname.clone();
-	
+	this.srcname = srcname; //FIXME .clone();
+
+	/* We probably want to keep the original packet contents around.
+	 * Should we do this by inheriting from OrbRawPacket, or ... ? 
+ 	 */
+
         if (pkt == null || pktsize < 1) return;
 	
         ByteArrayInputStream inBuf = new ByteArrayInputStream(pkt, 0, pktsize);
@@ -46,16 +52,22 @@ public class OrbImagePacket extends OrbPacket {
 	
 	int version = pktBuf.readUnsignedShort ();  
 	this.description = buf2str(pktBuf, 64);
+
+        this.imageData = new byte[ pktsize - (2 + 64) ];
+	System.arraycopy(pkt, 2 + 64, this.imageData, 0, imageData.length);
 	
 	// some versions of the format have a format string next
 
-	// we'll assume it's JPEG for now
+        /* Java has an over-abundance of image-handling functions. There are
+           lots of classes for handling images and there appears to be a
+           substantial overlap in functionality. */
 
-	JPEGImageDecoder decoder = JPEGCodec.createJPEGDecoder(pktBuf);
-
-	BufferedImage image = decoder.decodeAsBufferedImage();
+        this.image = (new javax.swing.ImageIcon(imageData, description)).getImage();
 	
-	this.image = image;
+        /* Another way to do it would be as follows. */
+
+	// JPEGImageDecoder decoder = JPEGCodec.createJPEGDecoder(pktBuf);
+	// BufferedImage image = decoder.decodeAsBufferedImage();
 
     }
 
@@ -77,6 +89,20 @@ public class OrbImagePacket extends OrbPacket {
     
     public byte[] stuff() {
 	// not implemented
+      
+        /* Check to see whether a coded version of the image exists. */
+
+        if (imageData == null || imageData.length == 0) {
+           if (image == null) {
+             /* This is an error condition -- there is no image here! */
+           } {
+             /* Encode the image object into the imageData byte array. */
+           }
+        }
+
+        /* Here we do the serialization. */ 
+
+        return null;
     }
     
     /** Return the value encapsulated in this packet, a String. */
@@ -89,13 +115,22 @@ public class OrbImagePacket extends OrbPacket {
      * @return A string suitable for display.  */
 
     public String toString() {
-	return "[OrbImagePacket \"" + description + "\" " + image.getWidth() + "x" + image.getHeight() + "]";
+	
+	// return "[OrbImagePacket \"" + description + "\" " + image.getWidth() + "x" + image.getHeight() + "]";
+	return super.toString();
     }
 
     /** Public fields */
 
+    /** Textual description of this image. */
     public String description; 
-    public BufferedImage image;
+  
+    /** Decoded image object.  Use this to display the image. */
+    public java.awt.Image image;
+
+    /** Raw image data.  Use this if you want to package up the image and
+     *  send it somewhere else. */
+    public byte[] imageData;
 
     /** Private Class Methods */
 
@@ -105,7 +140,7 @@ public class OrbImagePacket extends OrbPacket {
 
     */
 
-
+/*
     static void createAndShowGUI() {
 	JFrame.setDefaultLookAndFeelDecorated(true);
 	
@@ -144,5 +179,20 @@ public class OrbImagePacket extends OrbPacket {
 	} catch (Exception e) {
 	    System.err.println("Exception caught: " + e.getMessage());
 	}
+    }
+*/
+
+    /* We should put these into some private data access class. */
+
+    private static String buf2str(DataInputStream in, int l) 
+	throws IOException {
+	int i;
+        if (l < 1) {
+            return (new String(""));
+        }
+        byte ibuf[] = new byte[l];
+        in.readFully (ibuf);
+        for (i=0; i<l; i++) if (ibuf[i] == 0) break;
+        return (new String (ibuf, 0, i));
     }
 }
