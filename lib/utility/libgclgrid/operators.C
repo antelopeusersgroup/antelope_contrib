@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <limits>
+#include <float.h>
 #include "elog.h"
 #include "gclgrid.h"
 /* modified Nov. 2003.  Original assumed cartesian frames for g and the current object were
@@ -10,8 +10,15 @@ Modified Nov 2004:  added == and != operators
 */
 
 
+// Needed below
 
-
+bool values_differ(double a, double b)
+{
+	if(fabs((a-b)/b)<DBL_EPSILON)
+		return false;
+	else
+		return true;
+}
 /* The == and != operators do NOT test every element of the object. Equality is defined
 as being defined on the same Cartesian system.  This is done by testing for equality of
 the transformation matrix and translation vectors.  These define the Cartesian reference
@@ -21,15 +28,14 @@ are defined in the base class, derived classes can use a dynamic_cast to use the
 operators so I don't bother to define them for fields or even the GCLgrid3d object. */
 bool BasicGCLgrid::operator==(const BasicGCLgrid& b)
 {
-	numeric_limits<double> test;
 	int i,j;
 	for(i=0;i<3;++i)
 	{
-		if(fabs(translation_vector[i]-b.translation_vector[i]) > test.epsilon())
+		if(values_differ(translation_vector[i],b.translation_vector[i]))
 			return(false);
 		for(j=0;j<3;++j)
 		{
-			if(fabs(gtoc_rmatrix[i][j]-b.gtoc_rmatrix[i][j]) >  test.epsilon())
+			if(values_differ(gtoc_rmatrix[i][j],b.gtoc_rmatrix[i][j]))
 				return(false);
 		}
 	}
@@ -37,15 +43,14 @@ bool BasicGCLgrid::operator==(const BasicGCLgrid& b)
 }
 bool BasicGCLgrid::operator!=(const BasicGCLgrid& b)
 {
-	numeric_limits<double> test;
 	int i,j;
 	for(i=0;i<3;++i)
 	{
-		if(fabs(translation_vector[i]-b.translation_vector[i]) > test.epsilon())
+		if(values_differ(translation_vector[i],b.translation_vector[i]))
 			return(true);
 		for(j=0;j<3;++j)
 		{
-			if(fabs(gtoc_rmatrix[i][j]-b.gtoc_rmatrix[i][j]) >  test.epsilon())
+			if(values_differ(gtoc_rmatrix[i][j],b.gtoc_rmatrix[i][j]))
 				return(true);
 		}
 	}
