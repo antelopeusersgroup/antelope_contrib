@@ -56,11 +56,11 @@ projection and calls is_inside_polygon to decide if the reference point
 is inside the polygon. Currently this only works if the reference point and 
 the polygon are entirely inside the same hemisphere. 
 
-dbview_to_polygon takes a view into a regions table, containing rows for 
+dbview_to_polygon() takes a view into a regions table, containing rows for 
 just one region, and turns it into an array ('polygon') appropriate for use with
 the lower level routines. 
 
-get_region_name takes a database pointer containing a regions table, and 
+get_region_polygon() takes a database pointer containing a regions table, and 
 returns the array holding the coordinates of its polygon vertices.
 .SH OPTIONS
 .SH FILES
