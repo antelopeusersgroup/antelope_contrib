@@ -213,6 +213,13 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 
 
 	ttlvz_(&d_km, &x.sz, &nz, v, z, work1, work2, &o.time, &p, &up); 
+        if (o.time < 0.0)
+        {
+                register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave travel time for phase %s\n",phase);
+                o.time = TIME_INVALID;
+                return(o);
+        }
+
 	if(mode == ALL)
 	{
 	/* For this routine I calculate time derivatives from the
@@ -352,6 +359,13 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 			phase);
 
 	ttlvz_(&d_km, &x.sz, &nz, v, z, work1, work2, &time, &p, &up);
+        if (time < 0.0)
+        {
+                register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s\n",phase);
+                o.ux = SLOWNESS_INVALID;
+                o.uy = SLOWNESS_INVALID;
+                return(o);
+        }
 
 	/* This would be executed only for close, shallow sources.  
 	It could probably be deleted, but we'll do it for completeness*/
@@ -388,6 +402,13 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 				dis = d_km+dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p1, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  o.ux = SLOWNESS_INVALID;
+                		  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dudr = (p1-p)/dx;
 			}
 			else if(d_km-2.0*dx < 0.0)
@@ -403,12 +424,26 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 			dis = d_km+2.0*dx;
 			ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p4, &up);
+        		if (time < 0.0)
+        		{
+                	  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	  o.ux = SLOWNESS_INVALID;
+                	  o.uy = SLOWNESS_INVALID;
+                	  return(o);
+        		}
 			while(!up && (dx>=MINIMUM_DX) )
 			{
 				dx *= DX_SCALING_FACTOR;
 				dis = d_km+2.0*dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p4, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 			}
 			if(dx<MINIMUM_DX)
 			{
@@ -421,6 +456,13 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p0, &up);
 				dudr = (p-p0)/dx;
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 			}
 			else
 			{
@@ -431,15 +473,43 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 				dis = d_km-2.0*dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p0, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dis = d_km-dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p1, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dis = d_km+dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p3, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dis = d_km+2.0*dx;
 				ttlvz_(&dis,&x.sz, &nz, v, z, 
 					work1, work2, &time, &p4, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dudr = (p0-8.0*p1+8.0*p3-p4)/(12.0*dx);
 			}
 			o.duxdx = -sin_a*sin_a0*dudr - p*cos_a*cos_a0/d_km;
@@ -464,6 +534,13 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 				ztmp = x.sz-DZ_STEP_SIZE;
 				ttlvz_(&d_km,&ztmp, &nz, v, z, 
 					work1, work2, &time, &p0, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
 				dudz = (p - p0)/DZ_STEP_SIZE;
 			}
 			o.duxdz = dudz*sin_a;

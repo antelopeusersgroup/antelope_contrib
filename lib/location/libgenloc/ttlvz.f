@@ -121,10 +121,21 @@ c -- calculate direct wave travel time                                  ttlvz.64
         vmax=v(1)                                                         ttlvz.66  
         do 175 j=2,lhpz                                                   ttlvz.67  
 175     vmax=amax1(vmax,v(j))                                             ttlvz.68  
-c -- test to find maximum value for p                                   ttlvz.69  
+c -- This loop seeks a ray parameter for a direct ray with 
+c -- delta > given distance.  The earlier version would sometimes enter
+c -- an infinite loop if the given delta was large due to a machine 
+c -- precision limitation.  We trap this now with a test for 
+c -- the condition that p == pmax.  In this condition, an error is
+c -- returned that has to be handled by the caller.  Here this is
+c -- signaled by setting the returned time to -1.0.
         pmax = 1./vmax                                                    ttlvz.70  
         p = 0.5*pmax                                                      ttlvz.71  
-155     p = (p+pmax)/2.                                                   ttlvz.72  
+155     p = (p+pmax)/2.
+	if(p.eq.pmax)then
+		t = -1.0
+		return
+	endif
+
         sdel = 0.                                                         ttlvz.73  
         do 160 j=1,lhpz                                                   ttlvz.74  
 160     sdel = v(j)*h(j)/sqrt(1.-(p*v(j))**2)+sdel                        ttlvz.75  
