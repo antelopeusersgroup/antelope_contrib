@@ -1,0 +1,103 @@
+.TH MWAP 1 "$Date$"
+.SH NAME
+mwap - multiwavelet array processor for three-component seismic arrays
+.SH SYNOPSIS
+mwap db [-phase phase -sift expression -pf pfname]
+.nf
+.fi
+.SH DESCRIPTION
+.LP
+The mwap program is a software tool that performs a novel form 
+of coherent waveform processing.  The current version is 
+exclusively designed for application to three-component seismic
+arrays.  It does plane wave processing so it is NOT applicable to 
+data from events inside an array.  It is designed for large
+aperture broadband array recordings of teleseisms but will
+work equally well on three-component small aperture, high frequency arrays.
+The program simultaneously estimates five sets of observables:
+(1) the slowness (phase velocity) vector of a best fit plane wave, 
+(2) static time shifts relative to this best fit plane wave, 
+(3) amplitude statics of amplitudes relative to the array
+stack at each station, (4) particle motion ellipse estimates for
+every station in the array, and (5) an array average particle motion
+estimate.   
+.LP
+The mwap builds on a unique concept of multiwavelets that are 
+closely akin to multitaper spectral estimates.  The essence of
+their use is that multiwavelets should be thought of as a set
+of narrowband filters with optimal resolution in the time and
+frequency domains.  That is, they have the narrowest possible
+bandwidth for a specified time duration or vice versa.  The
+major use of these special functions in this program is to 
+measure phase.  Most of the manipulations in the program, however,
+involve phase measurements made on transient signals by using
+complex pairs of wavelets that are similar in form to windowed
+sine and consine functions.   The "multi" modifier comes from
+the fact that multiple, orthogonal functions are used to produce
+independent estimates in the same band.  This permits robust
+averaging in an attempt to make estimates more stable and simultaneously
+provide objective error estimates of the resulting parameters.
+.LP
+Seismic data are read from an input css3.0 database.  The program
+looks at the event, origin, assoc, arrival, wfdisc, site, and 
+sitechan tables and the integrity of the database is assumed.  
+The actual reads use the current antelope trace library so whatever
+datatypes the trace library supports can be read by this program.
+The program will attempt to process the entire database using
+evid-based grouping.  Use a sift parameter if subsets of the
+data are desired.
+.LP
+It is important to recognize that this program is not intended
+as a raw processing module. It expects to be handed a set of 
+associated arrival picks are that are within a half-cycle of being
+correct at the lowest frequency present in the data.  It will
+almost certainly yield total garbage if the picks are not 
+reasonable.  Extensive use of robust estimators help some in
+stability, but the number of free parameters seem to render the results
+somewhat unpredictable in the presence of strong outliers.  
+.LP
+The major inputs parameters to this program are through a parameter file 
+that defaults to mwap.pf.  The list of parameter is long and 
+described in detail in a related html document (see below).
+The major output of the program is a series of extension tables
+to css3.0 called:  mwslow (slowness vector estimates),
+mwtstatics (time statics table), mwastatics (amplitude statics
+table), mwpm (particle motion estimate table), mwsrn (holds signal to 
+noise ratio estimates for different analysis bands), and mwavgamp 
+(array average amplitude estimates in each band).  
+.SH COMMAND LINE ARGUMENTS
+.IP db
+datascope database name to process.
+-IP -phase
+This parameter allows specification of an alternative phase to the default P.  
+The trailing character is a phase name is use to distinguish P and S 
+phases.  e.g. PS is assumed to be a S wavefield at the array.
+The distinction is important because S phases are rotated
+differently and S velocities are used to compute elevation statics
+instead of P velocities. 
+.IP -sift
+The given expression is applied to a basic arrival time view 
+(event, origin, assoc, arrival) to reduce the data to be processed.
+For example, to process only evid 245, use -sift "evid==245".
+.IP -pf
+Use pfname as the parameter file instead of the default mwap.pf
+.SH FILES
+.LP
+Requires schema extension MWavelet1.2 to be stored in an accessible 
+place and be defined in the database descriptor.
+.SH PARAMETER FILE
+See html documentation at http://aesn.geology.indiana.edu/aug/aug.html
+.SH "SEE ALSO"
+.nf
+mwapbavg(1), mwtransform(3), mwstatistics(3) and html documentation 
+which is much more complete.
+.fi
+.SH "BUGS AND CAVEATS"
+The fundamental tradeoff between the estimated slowness vector
+and a best fit plane through a surface of residuals makes the
+convergence of this algorithm less stable than one might wish.
+If problems are found in a given event, try checking the picks
+and reprocessing that event.  
+.SH AUTHOR
+Gary L. Pavlis, Indiana University
+.\" $Id$
