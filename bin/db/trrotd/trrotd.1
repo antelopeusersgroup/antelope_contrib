@@ -1,0 +1,110 @@
+.\" %%W%% %%G%%
+.TH TRROTD L "3/1/2003"
+.SH NAME
+trrotd  \- rotates, detrends, and decimates a 3-component record set
+.SH SYNOPSIS
+.nf
+\fBtrrotd \fIdb dbout {orid | arid:azim} sta [pf-file-prefix]\fR
+.fi
+.SH DESCRIPTION
+Takes a 3-component set of traces from a css3.0 database and preprocesses
+them, making a new database that has the components rotated, windowed about
+a P arrival, detrended, and optionally decimated.  This is useful preparation
+for a number of other procedures or handy in itself.  
+Rotation
+is specified for a single station and either by EVENT (\fIorid\fR) or by
+a combination of Arrival pick and azimuth (\fIarid:azim\fR).  Additional
+parameters are specified in a jspc-style parameter file (ending in .pf), 
+including the time window about P, a decimation interval, and a flag that
+chooses whether to plot or not.
+.LP
+Decimation is specified by the "decimate" parameter, as an integer fraction
+of the current sample rate.  Decimation is done by fourier-series truncation
+with a 6-pole two-way (zero phase) Butterworth filter applied at the
+new Nyquist frequency.  
+.LP
+Sign conventions for rotated components are same as for "ahrot".  
+.SH COMMAND LINE ARGUMENTS
+.IP \fBdb\fR
+Input database.  Must include wfdisc, and EITHER arrival OR origin+site tables.
+.IP \fBdbout\fR  
+Output database.  A wfdisc table is created/added to. Data go into a relative
+directory wf/rfcns/yyyy/ddd.   
+.IP \fBorid\fR
+Index pointing to description of event in the db.origin table.  If this option
+is selected, the azimuth and distance to \fIsta\fR is calculated and a window
+about the predicted P arrival is output.  
+.IP \fBarid:azim\fR
+Another way of selecting the window/rotation parameters:  uses the arrival 
+time \fIarid\fR instead of the predicted P time. Also uses the specified azimuth
+\fIazim\fR instead of a calculated one for rotation.
+
+.IP \fBsta\fR
+The station to be processed.
+.SH ENVIRONMENT
+TAUP_PATH is used to specify travel-time calculation for P.
+
+.SH PARAMETER FILE
+.IP \fBpf-file-prefix\fR
+The name of a parameter file (ending in  .pf) that contains other parameters.
+A default file is hardwired, in the src directory. Defaults exist for any missing
+parameters []. Parameters include:
+.IP \fItstart\fR
+Start time of output window desired, relative to arid or predicted P. [-10.]
+.IP \fItend\fR
+End time of output window desired, relative to arid or predicted P. [50.]
+.IP \fIdecimate\fR
+Decimation interval: an integer fraction of the current sample rate to use
+as the new sample rate.  A value of 0 or 1 results in no decimation. [0]
+.IP \fIgraphics\fR
+A flag; 1 for graphical output and interactive questionning, 0 otherwise. [1]
+
+.SH EXAMPLE
+trrotd geytel tempdb 62 ORGH trrotd
+.LP
+The parameter file
+trrotd.pf is used, and looks like:
+.LP
+.nf
+cat trrotd.pf
+
+tstart		-10.
+tend		50.
+decimate	4
+graphics	0
+.fi
+.LP
+This one decimates by factor of 4, and shows no graphics.
+
+.SH LIBRARY
+-ltr -lgpl2  -lol -lxcom -lgrx -ldb -lcoords -ltttaup -lresponse -lstock  /okmok/home/lib/fftlib.a -lX11 -lF77 -lM77 -lsunmath -lm
+.SH "SEE ALSO"
+.nf
+pf
+.fi
+.SH "BUGS AND CAVEATS"
+Results are uncertain if "decimate" is not a power of 2.
+.LP
+Currently assumes channel name ending in Z is vertical, 
+and N,E are some sort of horizontal (see rot.c).
+Uses \fIhang\fR to get horizontal rotations and \fIvang\fR for polarity, or assumes ZNE
+if these don't exist.  Could be more general.  All rec'ds multiplied by \fIcalib\fR 
+if it exists.
+.LP
+Results are uncertain if some number of channels other than 3 passes the
+station/orid or station/arid subsetting criteria.
+.LP
+Uses the fill option of \fItrsplice\fR, to add samples where small gaps exist (usually 1 sample).
+The samples are assumed to have the same value as the last good datum.  This may introduce small
+artifacts, but it seems better than alternatives.
+.LP
+Output will fail if a record already exists with the same sta-chan-time 
+in \fIdbout\fR.  As well, problems occur if the directory wf/rfcns already
+has files for the sta-chan-time combination being attempted, even if
+the db pointing to those files may be different.
+.LP
+Currently only windows about predicted P time.  Uses whatever default TT
+tables currently set (see $TAUP_PATH).
+.SH AUTHOR
+Geoff Abers, Boston University
+
