@@ -506,6 +506,9 @@ dbassoc_rt [options] dbcat dbassoc
 </options>
 
 <subsection Orb Real Time Display>
+dlmon dataorbname [cmdorbname]
+    monitor/control generic digitizers
+
 qtmon dataorb data2orb cmdorbname [database]
     monitor Quanterra digitizers
 
