@@ -1,4 +1,15 @@
 #include <stdio.h>
+
+#include <errno.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "db.h"
 #include "stock.h"
 #include "dbptolemy.h"
@@ -16,7 +27,7 @@ static int verbose = 0 ;
    file descriptor (which can be stdin, a socket, a pipe, etc).
 */
 
-void dbserve(char *database, FILE *fd) {
+void dbserve(char *database, FILE *stream) {
 
     Dbptr db;
     
@@ -24,11 +35,13 @@ void dbserve(char *database, FILE *fd) {
     Pf *pf = 0 ;
     Tbl *recipe, *keys, *values ;
 
+    fprintf(stream, "HELLO\n");
+    fflush(stream);
 
     if ( dbopen(database, "r", &db ) != 0)
 	die (0, "Couldn't open database %s\n", database ) ;
     
-    if (pfin(fd, &pf) != 0)
+    if (pfin(stream, &pf) != 0)
 	die(0, "Can't read parameter file\n");
 
     if (debug) printf("reading the recipe.\n");
@@ -53,19 +66,82 @@ void dbserve(char *database, FILE *fd) {
 
 	char *xml = 0;
 	db2xml( db, 0, 0, keys, values, (void **) &xml, 0 );
-	printf( "%s\n", xml );
+	fprintf(stream, "%s\n", xml );
 
     } else if ( strcmp(fmt, "ptolemy") == 0 ) {
 
 	char *pt_expression = 0;
 	db2ptolemy( db, keys, values, (void **) &pt_expression, 0 );
-	printf( "%s", pt_expression);	
+	fprintf(stream, "%s", pt_expression);	
 
     } else {
 
-	dbselect (db, values, stdout ) ;
+	dbselect (db, values, stream ) ;
 
     }
+}
+
+/** Listen for incoming TCP connections on the given port on all available
+    interfaces. */
+
+void daemonize(char *database, int port) {
+
+    int sock;
+    int connection;
+    struct sockaddr_in local_addr, remote_addr;
+    
+    sock = socket (PF_INET, SOCK_STREAM, 0);
+    local_addr.sin_addr.s_addr = INADDR_ANY;
+    local_addr.sin_family = PF_INET;
+    local_addr.sin_port = htons((short)port);
+    
+    remote_addr.sin_addr.s_addr = INADDR_ANY;
+    remote_addr.sin_family = PF_INET;
+    remote_addr.sin_port = INADDR_ANY;
+    
+    if (-1 == bind(sock, (struct sockaddr *)(&local_addr), 
+		   sizeof(struct sockaddr_in) )) 
+	die(1, "could not bind to socket.");
+    
+    if (-1 == listen(sock, SOMAXCONN)) 
+	die(1, "could not listen on socket.");
+    
+    while (1) {
+	int connection;
+	pid_t fork_result;
+	socklen_t addrlen;
+
+	addrlen = sizeof(struct sockaddr);
+	connection = accept(sock, (struct sockaddr *)&remote_addr, &addrlen);
+	
+	if (-1 == connection) 
+	    die(1, "accept() failed.");
+	
+	elog_log(0, "incoming connection from %s:%u\n",
+		 inet_ntoa(remote_addr.sin_addr),
+		 ntohs(remote_addr.sin_port));
+    
+	
+	switch ( fork() ) {
+	    case 0: {
+		FILE *stream;
+		stream = fdopen( connection, "rw" );
+		dbserve(database, stream);
+		exit(0);
+	    }
+	    case -1: 
+		die(1, "fork() failed. (%s)", strerror(errno));
+	    default:
+		/* success */
+		break;
+	}
+    }
+}
+
+
+static void usage() {
+    fprintf(stderr, "Usage: %s [-d port] dbname\n", Program_Name);
+    exit(1);
 }
 
 
@@ -75,15 +151,42 @@ int main(int argc, char **argv) {
     extern int optind;
     int c, errflg = 0 ;
     char *database;    
-
+    int port;
+    int opt_daemonize = 0;
+    
     Program_Name = argv[0];
 
-    if ( argc != 2 )
-	die ( 0, "Usage: %s database\n", Program_Name ) ;
+    elog_init( argc, argv ) ;
+    
+    while ((c = getopt (argc, argv, "d:v")) != -1) {
+	switch (c) {
+	    
+	    case 'v':
+		verbose++;
+		break;
+		
+	    case 'd':
+		opt_daemonize = 1;
+		port = atoi( optarg );
+		break;
+		
+	    default:
+		errflg++;
+		break ;
+	}
+    }
 
-    database = argv[1];
+    if ( errflg || argc - optind != 1 ) {
+	usage ();
+    }
 
-    dbserve(database, stdin);
+    database = argv[optind];
+
+    if (opt_daemonize) {
+	daemonize(database, port);
+    } else {
+	dbserve(database, stdin);
+    }
 
     return 0;
 }
