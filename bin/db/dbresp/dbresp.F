@@ -138,7 +138,7 @@ c
         stop
    40   continue
 	call DBLink2Dbptr ( idb, db ) 
-	dummy = dblookup ( db, '', 'instrument', '', '' ) 
+	dummy = dblookup ( db, db, '', 'instrument', '', '' ) 
 	db(4) = i 
         dummy = dbfilename (db, fname)
       else if (narg .eq. 3)  then
