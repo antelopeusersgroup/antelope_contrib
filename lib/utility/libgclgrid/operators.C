@@ -20,7 +20,7 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 	{
 		for(j=0;j<g.n2;++j)
 		{
-			for(k=0;k<g.n3;++j)
+			for(k=0;k<g.n3;++k)
 			{
 				Cartesian_point cx;
 				Geographic_point gp;
@@ -29,12 +29,13 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 				err=lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
+				case 1:
 				case -1:
-				case 2:
 					reset_index();
 					break;
 				case -2:
 					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+				case 2:
 				case 0:
 					valnew = interpolate(cx.x1,cx.x2,cx.x3);
 					val[i][j][k]+=valnew;
@@ -60,7 +61,7 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 	{
 		for(j=0;j<g.n2;++j)
 		{
-			for(k=0;k<g.n3;++j)
+			for(k=0;k<g.n3;++k)
 			{
 				Cartesian_point cx;
 				Geographic_point gp;
@@ -70,12 +71,13 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				err=lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
+				case 1:
 				case -1:
-				case 2:
 					reset_index();
 					break;
 				case -2:
 					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+				case 2:
 				case 0:
 
 					valnew = interpolate(cx.x1,cx.x2,cx.x3);
@@ -106,12 +108,13 @@ void GCLscalarfield::operator += (GCLscalarfield& g)
 			err=lookup(g.lat(i,j),g.lon(i,j));
 			switch(err)
 			{
+			case 1:
 			case -1:
-			case 2:
 				reset_index();
 				break;
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+			case 2:
 			case 0:
 				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
 				valnew = interpolate(cx.x1,cx.x2,cx.x3);
@@ -142,12 +145,13 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 			err=lookup(g.lat(i,j),g.lon(i,j));
 			switch(err)
 			{
+			case 1:
 			case -1:
-			case 2:
 				reset_index();
 				break;
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+			case 2:
 			case 0:
 				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
 				valnew = interpolate(cx.x1,cx.x2,cx.x3);
@@ -232,4 +236,118 @@ bool GCLgrid::operator!=(const GCLgrid& b)
 		}
 	}
 	return(false);
+}
+
+ostream& operator << (ostream& fout, GCLscalarfield& g)
+{
+	int i,j;
+
+	fout << g.n1 << " " << g.n2 << endl;
+	for(i=0;i<g.n1;++i)
+	{
+		for(j=0;j<g.n2;++j)
+		{
+			fout << g.x1[i][j]
+				<< " "
+				<< g.x2[i][j]
+				<< " "
+				<< g.x3[i][j]
+				<< " "
+				<< deg(g.lat(i,j))
+				<< " "
+				<< deg(g.lon(i,j))
+				<< " "
+				<< g.r(i,j)
+				<< " "
+				<< g.val[i][j]
+				<< endl;
+		}
+	}
+	return fout;
+}
+ostream& operator << (ostream& fout, GCLscalarfield3d& g)
+{
+	int i,j,k;
+
+	fout << g.n1 << " " << g.n2 << " " << g.n3 << endl;
+	for(i=0;i<g.n1;++i)
+	{
+		for(j=0;j<g.n2;++j)
+		{
+			for(k=0;k<g.n3;++k)
+			{
+				fout << g.x1[i][j][k]
+				<< " "
+					<< g.x2[i][j][k]
+				<< " "
+					<< g.x3[i][j][k]
+				<< " "
+					<< deg(g.lat(i,j,k))
+				<< " "
+					<< deg(g.lon(i,j,k))
+				<< " "
+					<< g.r(i,j,k)
+				<< " "
+					<< g.val[i][j][k]
+					<< endl;
+			}
+		}
+	}
+	return fout;
+}
+ostream& operator << (ostream& fout, GCLvectorfield& g)
+{
+	int i,j,k;
+
+	fout << g.n1 << " " << g.n2 << " " << g.nv << endl;
+	for(i=0;i<g.n1;++i)
+	{
+		for(j=0;j<g.n2;++j)
+		{
+			fout << g.x1[i][j]
+				<< " "
+				<< g.x2[i][j]
+				<< " "
+				<< g.x3[i][j]
+				<< " "
+				<< deg(g.lat(i,j))
+				<< " "
+				<< deg(g.lon(i,j))
+				<< " "
+				<< g.r(i,j); 
+			for(k=0;k<g.nv;++k)
+				fout<< " " << g.val[i][j][k];
+			fout << endl;
+		}
+	}
+	return fout;
+}
+ostream& operator << (ostream& fout, GCLvectorfield3d& g)
+{
+	int i,j,k,l;
+
+	fout << g.n1 << " " << g.n2 << " " << g.n3 << " " << g.nv << endl;
+	for(i=0;i<g.n1;++i)
+	{
+		for(j=0;j<g.n2;++j)
+		{
+			for(k=0;k<g.n3;++k)
+			{
+				fout << g.x1[i][j][k]
+					<< " "
+					<< g.x2[i][j][k]
+					<< " "
+					<< g.x3[i][j][k]
+					<< " "
+					<< deg(g.lat(i,j,k))
+					<< " "
+					<< deg(g.lon(i,j,k))
+					<< " "
+					<< g.r(i,j,k);
+				for(l=0;l<g.nv;++l) fout << " " << g.val[i][j][k][l];
+				fout << endl;
+			}
+		}
+	}
+	return fout;
 }

@@ -142,6 +142,7 @@ class GCLscalarfield :  public GCLgrid
 
 		GCLscalarfield();
 		GCLscalarfield(int, int);
+		GCLscalarfield(const GCLscalarfield&);
 		GCLscalarfield(GCLgrid& );
 		GCLscalarfield(Dbptr db, char *grdnm, char *fn);
 		GCLscalarfield& operator=(const GCLscalarfield&);
@@ -150,6 +151,7 @@ class GCLscalarfield :  public GCLgrid
 		void operator*=(double);
 		double interpolate(double,double,double);
 		~GCLscalarfield();
+		friend ostream& operator << (ostream&,GCLscalarfield&);
 };
 class GCLvectorfield : public GCLgrid
 {
@@ -159,6 +161,7 @@ class GCLvectorfield : public GCLgrid
 
 		GCLvectorfield();
 		GCLvectorfield(int,int,int);
+		GCLvectorfield(const GCLvectorfield&);
 		GCLvectorfield(GCLgrid &,int);
 		GCLvectorfield(Dbptr db, char *grdnm, char *fn,int nvsize); 
 		GCLvectorfield& operator=(const GCLvectorfield&);
@@ -166,6 +169,7 @@ class GCLvectorfield : public GCLgrid
 		void operator+=(GCLvectorfield&);
 		void operator*=(double);
 		double *interpolate(double,double,double);
+		friend ostream& operator << (ostream&,GCLvectorfield&);
 		~GCLvectorfield();
 };
 class GCLscalarfield3d : public GCLgrid3d 
@@ -176,6 +180,7 @@ class GCLscalarfield3d : public GCLgrid3d
 		GCLscalarfield3d();
 		GCLscalarfield3d(int,int,int);
 		GCLscalarfield3d(GCLgrid3d &);
+		GCLscalarfield3d(const GCLscalarfield3d&);
 		GCLscalarfield3d(Dbptr db, char *grdnm, char *fn);
 		GCLscalarfield3d& operator=(const GCLscalarfield3d&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
@@ -183,6 +188,7 @@ class GCLscalarfield3d : public GCLgrid3d
 		void operator*=(double);
 		double interpolate(double,double,double);
 		~GCLscalarfield3d();
+		friend ostream& operator << (ostream&,GCLscalarfield3d&);
 };
 class GCLvectorfield3d : public GCLgrid3d
 {
@@ -192,6 +198,7 @@ class GCLvectorfield3d : public GCLgrid3d
 
 		GCLvectorfield3d();
 		GCLvectorfield3d(int,int,int,int);
+		GCLvectorfield3d(const GCLvectorfield3d&);
 		GCLvectorfield3d(GCLgrid3d &,int);
 		GCLvectorfield3d(Dbptr db, char *grdnm, char *fn,int nvsize); 
 		GCLvectorfield3d& operator=(const GCLvectorfield3d&);
@@ -200,6 +207,7 @@ class GCLvectorfield3d : public GCLgrid3d
 		void operator*=(double);
 		double *interpolate(double,double,double);
 		~GCLvectorfield3d();
+		friend ostream& operator << (ostream&,GCLvectorfield3d&);
 };
 /*
 //

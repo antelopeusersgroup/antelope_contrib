@@ -356,6 +356,7 @@ class GCLscalarfield :  public GCLgrid
         void operator*=(double);
         double interpolate(double,double,double);
         ~GCLscalarfield();
+	friend ostream& operator<<(ostream&,GCLscalarfield&);
 };
 class GCLvectorfield : public GCLgrid
 {
@@ -373,6 +374,7 @@ class GCLvectorfield : public GCLgrid
         void operator*=(double);
         double *interpolate(double,double,double);
         ~GCLvectorfield();
+	friend ostream& operator<<(ostream&,GCLvectorfield&);
 };
 class GCLscalarfield3d : public GCLgrid3d 
 {
@@ -389,6 +391,7 @@ class GCLscalarfield3d : public GCLgrid3d
         void operator*=(double);
         double interpolate(double,double,double);
         ~GCLscalarfield3d();
+	friend ostream& operator<<(ostream&,GCLscalarfield3d&);
 };
 class GCLvectorfield3d : public GCLgrid3d
 {
@@ -406,6 +409,7 @@ class GCLvectorfield3d : public GCLgrid3d
         void operator*=(double);
         double *interpolate(double,double,double);
         ~GCLvectorfield3d();
+	friend ostream& operator<<(ostream&,GCLvectorfield3d&);
 };
 
 .fi
@@ -469,6 +473,26 @@ The += is much more complex as it maps every point in the field on
 the right hand side to the object on the left before summing.
 This is a building block for accumulated weighted sums of data on
 different grids.  
+.LP
+All the field operators have an ostream friend operator that can be used
+to dump the contents of a field to a simple ascii format.  All outputs have
+a first line containing 2, 3, or 4 numbers defining n1, n2, n3, and nv
+as appropriate. These are followed by a dump of data from the field in the
+following format:
+.nf
+x1 x2 x3 lat lon r val[0..nv]
+.fi
+Scans are in grid order from right to left.  That is, this basic set of 
+loops:
+.nf
+for(i=0;i<n1;++i)
+	for(j=0;j<n2;++j)
+		for(k=0;k<n3;++k)
+			for(l=0;l<nv;++l) cout << val[i][j][k][l]
+.fi
+shows the order of output.  
+Not all of these indices are relevant for each field type, but the order 
+is always a subset of the above.
 .SH MEMORY MANAGEMENT
 .LP
 Be aware that these functions can consume large quantities of memory

@@ -199,6 +199,13 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
+	ix1=g.ix1;
+	ix2=g.ix2;
 	x1=create_2dgrid_contiguous(n1,n2);
 	x2=create_2dgrid_contiguous(n1,n2);
 	x3=create_2dgrid_contiguous(n1,n2);
@@ -230,15 +237,23 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	n3=g.n3;
 	i0=g.i0;
 	j0=g.j0;
+	k0=g.k0;
 	x1low=g.x1low;
 	x1high=g.x1high;
 	x2low=g.x2low;
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
+	ix1=g.ix1; ix2=g.ix2; ix3=g.ix3;
 	x1=create_3dgrid_contiguous(n1,n2,n3);
 	x2=create_3dgrid_contiguous(n1,n2,n3);
 	x3=create_3dgrid_contiguous(n1,n2,n3);
+	// could use an memcpy here and it would be faster
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j]=g.x1[i][j];
@@ -276,6 +291,13 @@ GCLgrid& GCLgrid::operator=(const GCLgrid& g)
 		x2high=g.x2high;
 		x3low=g.x3low;
 		x3high=g.x3high;
+		for(i=0;i<3;++i)
+		{
+			translation_vector[i]=g.translation_vector[i];
+			for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+		}
+		ix1=g.ix1;
+		ix2=g.ix2;
 		x1=create_2dgrid_contiguous(n1,n2);
 		x2=create_2dgrid_contiguous(n1,n2);
 		x3=create_2dgrid_contiguous(n1,n2);
@@ -313,6 +335,7 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 		n3=g.n3;
 		i0=g.i0;
 		j0=g.j0;
+		k0=g.k0;
 		x1low=g.x1low;
 		x1high=g.x1high;
 		x2low=g.x2low;
@@ -322,6 +345,12 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 		x1=create_3dgrid_contiguous(n1,n2,n3);
 		x2=create_3dgrid_contiguous(n1,n2,n3);
 		x3=create_3dgrid_contiguous(n1,n2,n3);
+		for(i=0;i<3;++i)
+		{
+			translation_vector[i]=g.translation_vector[i];
+			for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+		}
+		ix1=g.ix1; ix2=g.ix2; ix3=g.ix3;
 		for(i=0;i<n1;++i)
 			for(j=0;j<n2;++j) 
 				for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
@@ -495,28 +524,7 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 	    }
 	/* We have to compute the extents parameters as the minimum 
 	and maximum in each cartesian direction */
-	x1low=x1[0][0];
-	x1high=x1[0][0];
-	x2low=x2[0][0];
-	x2high=x2[0][0];
-	x3low=x3[0][0];
-	x3high=x3[0][0];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j)
-		{
-			x1low = MIN(x1[i][j],x1low);
-			x1high = MAX(x1[i][j],x1high);
-			x2low = MIN(x2[i][j],x2low);
-			x2high = MAX(x2[i][j],x2high);
-			x3low = MIN(x3[i][j],x3low);
-			x3high = MAX(x3[i][j],x3high);
-		}
-	x1low = x1low;
-	x2low = x2low;
-	x3low = x3low;
-	x1high = x1high;
-	x2high = x2high;
-	x3high = x3high;
+	this->compute_extents();
 
 	delete baseline_lat;
 	delete baseline_lon;
@@ -660,25 +668,7 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 		}
 	/* We have to compute the extents parameters as the minimum 
 	and maximum in each cartesian direction */
-
-	x1low=x1[0][0][0];
-	x1high=x1[0][0][0];
-	x2low=x2[0][0][0];
-	x2high=x2[0][0][0];
-	x3low=x3[0][0][0];
-	x3high=x3[0][0][0];
-
-	for(i=1;i<n1;++i)
-	    for(j=1;j<n2;++j)
-		for(k=1;k<n3;++k)
-		{
-			x1low = MIN(x1[i][j][k],x1low);
-			x1high = MAX(x1[i][j][k],x1high);
-			x2low = MIN(x2[i][j][k],x2low);
-			x2high = MAX(x2[i][j][k],x2high);
-			x3low = MIN(x3[i][j][k],x3low);
-			x3high = MAX(x3[i][j][k],x3high);
-		}
+	this->compute_extents();
 
 	delete baseline_lat;
 	delete baseline_lon;
@@ -711,6 +701,15 @@ GCLvectorfield::GCLvectorfield(int n1size, int n2size, int n3size)
 	nv=n3size;
 	val=create_3dgrid_contiguous(n1size, n2size, n3size);
 }
+GCLscalarfield::GCLscalarfield(const GCLscalarfield& g) 
+	: GCLgrid(dynamic_cast<const GCLgrid&>(g))
+{
+	int i,j;
+	val = create_2dgrid_contiguous(g.n1, g.n2);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			val[i][j]=g.val[i][j];
+}
 GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
 {
 	int i,j;
@@ -731,10 +730,11 @@ GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
-	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
-	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
-	dcopy(3,g.translation_vector,1,translation_vector,1);
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
 	// We don't waste this effort unless these arrays contain something
         for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
@@ -743,6 +743,17 @@ GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
         for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
 	val=create_2dgrid_contiguous(g.n1, g.n2);
+}
+GCLvectorfield::GCLvectorfield(const GCLvectorfield& g) 
+	: GCLgrid(dynamic_cast<const GCLgrid&>(g))
+{
+	int i,j,k;
+	nv = g.nv;
+	val = create_3dgrid_contiguous(g.n1, g.n2, nv);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<nv;++k)
+				val[i][j][k]=g.val[i][j][k];
 }
 GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
 {
@@ -764,10 +775,11 @@ GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
-	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
-	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
-	dcopy(3,g.translation_vector,1,translation_vector,1);
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
         for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
         for(i=0;i<n1;++i)
@@ -775,7 +787,7 @@ GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
         for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
 	nv=n3;
-	val=create_3dgrid_contiguous(g.n1, g.n2,n3);
+	val=create_3dgrid_contiguous(g.n1, g.n2,nv);
 }
 //
 //3d versions
@@ -801,6 +813,16 @@ GCLvectorfield3d::GCLvectorfield3d(int n1size, int n2size, int n3size, int n4)
 	nv=n4;
 	val=create_4dgrid_contiguous(n1size, n2size, n3size, n4);
 }
+GCLscalarfield3d::GCLscalarfield3d(const GCLscalarfield3d& g) 
+	: GCLgrid3d(dynamic_cast<const GCLgrid3d&>(g))
+{
+	int i,j,k;
+	val = create_3dgrid_contiguous(n1,n2,n3);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+				val[i][j][k]=g.val[i][j][k];
+}
 GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) : GCLgrid3d(g.n1, g.n2, g.n3)
 {
 	int i,j,k;
@@ -823,10 +845,11 @@ GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) : GCLgrid3d(g.n1, g.n2, g.n3)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
-	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
-	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
-	dcopy(3,g.translation_vector,1,translation_vector,1);
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
@@ -837,6 +860,18 @@ GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) : GCLgrid3d(g.n1, g.n2, g.n3)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
 	val=create_3dgrid_contiguous(g.n1, g.n2, g.n3);
+}
+GCLvectorfield3d::GCLvectorfield3d(const GCLvectorfield3d& g) 
+	: GCLgrid3d(dynamic_cast<const GCLgrid3d&>(g))
+{
+	int i,j,k,l;
+	nv = g.nv;
+	val = create_4dgrid_contiguous(n1,n2,n3,nv);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+				for(l=0;l<nv;++l)
+					val[i][j][k][l]=g.val[i][j][k][l];
 }
 GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4) 
 	: GCLgrid3d(g.n1, g.n2, g.n3)
@@ -861,10 +896,11 @@ GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
-	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
-	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
-	dcopy(3,g.translation_vector,1,translation_vector,1);
+	for(i=0;i<3;++i)
+	{
+		translation_vector[i]=g.translation_vector[i];
+		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
+	}
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
@@ -917,6 +953,8 @@ GCLvectorfield3d::~GCLvectorfield3d()
 void GCLgrid::compute_extents()
 {
 	int i,j;
+	double extents_dx;  // this becomes max of grid sizes
+	extents_dx=MAX(dx1_nom,dx2_nom);
 	x1low=x1[0][0];
 	x1high=x1[0][0];
 	x2low=x2[0][0];
@@ -933,10 +971,19 @@ void GCLgrid::compute_extents()
 			x3low = MIN(x3[i][j],x3low);
 			x3high = MAX(x3[i][j],x3high);
 		}
+	x1low -= extents_dx;
+	x2low -= extents_dx;
+	x3low -= extents_dx;
+	x1high += extents_dx;
+	x2high += extents_dx;
+	x3high += extents_dx;
 }
 void GCLgrid3d::compute_extents()
 {
 	int i,j,k;
+	double extents_dx;  // this becomes max of grid sizes
+	extents_dx=MAX(dx1_nom,dx2_nom);
+	extents_dx=MAX(extents_dx,dx3_nom);
 	x1low=x1[0][0][0];
 	x1high=x1[0][0][0];
 	x2low=x2[0][0][0];
@@ -944,9 +991,9 @@ void GCLgrid3d::compute_extents()
 	x3low=x3[0][0][0];
 	x3high=x3[0][0][0];
 
-	for(i=1;i<n1;++i)
-	    for(j=1;j<n2;++j)
-		for(k=1;k<n3;++k)
+	for(i=0;i<n1;++i)
+	    for(j=0;j<n2;++j)
+		for(k=0;k<n3;++k)
 		{
 			x1low = MIN(x1[i][j][k],x1low);
 			x1high = MAX(x1[i][j][k],x1high);
@@ -955,5 +1002,11 @@ void GCLgrid3d::compute_extents()
 			x3low = MIN(x3[i][j][k],x3low);
 			x3high = MAX(x3[i][j][k],x3high);
 		}
+	x1low -= extents_dx;
+	x2low -= extents_dx;
+	x3low -= extents_dx;
+	x1high += extents_dx;
+	x2high += extents_dx;
+	x3high += extents_dx;
 
 }
