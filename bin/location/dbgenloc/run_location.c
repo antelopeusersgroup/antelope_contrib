@@ -122,6 +122,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	pfput_int(pf,"ndepths",1);
     }
     h0 = initial_locate (ta, tu, o, pf);
+/*
     if (strcmp(pfget_string(pf, "initial_location_method"), "manual") == 0 )  {
         double time ;
         if ( maxtbl(ta) > 0 ) {
@@ -135,6 +136,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
         }
 	h0.time = time ;
     }
+*/
 
     loc_ret =  ggnloc (h0, ta, tu, o, &converge_history, &reason_converged, &residual);
     if(loc_ret >= 0)
