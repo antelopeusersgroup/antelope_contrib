@@ -1,0 +1,9 @@
+<?php
+	$ANTELOPE = "/opt/antelope/$id";
+
+	putenv( "ANTELOPE=$ANTELOPE" );
+
+	set_include_path( get_include_path() .
+			  PATH_SEPARATOR . 
+			  "$ANTELOPE/data/www" );
+?>
