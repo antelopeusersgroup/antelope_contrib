@@ -911,7 +911,7 @@ recover_packetsequence( Recoverreq *rr )
 		
 		if( gpkt == (G2orbpkt *) NULL ) {
 
-			complain( 1, 
+			if(Verbose) complain( 1, 
 				"failed to get packet %d from %s via TCP, errno %d\n", 
 				requested, 
 				rr->udpsource, 
