@@ -226,20 +226,6 @@ rddas [options] port orb
 -v	verbose
 </options>
 
-ref2db [options] input dbname [start [end]]
-    copy RefTek format data files/tapes/disks to Antelope database (over time range start to end)
-<options>
--d datatype	specify waveform datatype
--e	specify RefTek event based waveform files
--l	create logfile containing instrument status information
--m das	copy only packets with serial number das
--p pf	specify parameter file to match das to station name
--s size	default segmentation of waveforms
--n net	specify miniseed network
--v	print srcname and time of every packet read
--w	do not save waveform data; used to extract log file or get gap info
-</options>
-
 q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     communicate between a Q330 Quanterra digitizer and orb
 <options>

@@ -121,15 +121,15 @@ reb2db filename [filename ...] db
 ref2db [options] input dbname [start-time [end-time]]
     convert data in REFTEK format to css3.0
 <options>
--d 	datatype
+-d datatype	specify waveform datatype
 -e	create files based on RefTek event start and end time
--l	create logfile representing data in RefTek instrument format
--m	dasmatch
--n 	net
--p 	pffile
--s 	size
--v	verbose
--w	will not write to database
+-l	create logfile containing instrument status information
+-m das	copy only packets with serial number das
+-p pf	specify parameter file to match das to station name
+-s size	default segmentation of waveforms
+-n net	specify miniseed network
+-v	print srcname and time of every packet read
+-w	do not save waveform data; used to extract log file or get gap info
 </options>
 
 psd2db [options] sd dbout
