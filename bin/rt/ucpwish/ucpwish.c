@@ -111,9 +111,7 @@ Tcl_AppInit(interp)
     }
     Tcl_StaticPackage (interp, "Tkx", Tkx_Init, Tkx_SafeInit);
 
-    if (dbtcl_init(interp) == TCL_ERROR) {
-        return TCL_ERROR;
-    }
+    Tcl_Eval ( interp, "package require Datascope" ) ;
 
     Tcl_CreateCommand(interp, "dpadm", dpadmCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dcrt", dcrtCmd, main, NULL) ; 

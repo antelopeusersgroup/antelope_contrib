@@ -1,9 +1,8 @@
 BIN = ucpwish
 
 cflags =  $(TCLINCLUDE)
-#ldflags = -L../rtucp -L$(TCLLIB)
 ldflags = -L$(TCLLIB)
-ldlibs = -lrtucp -ltcldb $(TKLIBS) $(TCLLIBS) -lpkt -lorb $(TRLIBS) $(SVR4LIBS)
+ldlibs = -lrtucp $(TKLIBS) $(TCLLIBS) -lpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 DIRS=
