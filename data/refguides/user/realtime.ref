@@ -47,7 +47,7 @@ rtorbcmd [-d] [-p pf] target command
     client program for sending commands to remote orb
 
 rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
-    server program for reading and executing commands on remote orb
+    server program for reading and executing commands at remote orb
 
 rtreport [options] [directory]
     report some statistics on data collection
@@ -103,12 +103,12 @@ rtoutage [options] db t0 t1
 -A	format output as an autodrm outage report
 -d gapdb	save gap info into database gapdb
 -n netcode	only process station from netcode
--P maxpts	maximum # waveform points to load at one time
--p	print percentage of data recovered for time period
+-P maxpts	maximum # waveform points to load at once
+-p	print percentage of data recovered 
 -S	show gaps as seconds only
--s subset	show gaps only for station/channels which satisfy subset
--t	show only totals, not each individual gap
--z	select only channels ending in 'z' or 'Z'
+-s subset	only show gaps for sta/chan subset
+-t	only show totals
+-z	select only vertical channels 
 </options>
 
 truncate_log [options] log [log..]
@@ -224,17 +224,16 @@ ipd2 [options] port orb
 liss2orb [options] liss orb
     copy data from LISS server liss to orbserver orb
 <options>
--d database
--m match
--s pktsize
--t timeout
+-d database	lookup calib, calper and segtype in db
+-m m	only forward packets matching m
+-s pktsize	specify block size explicitly
 -v
 </options>
 
 rddas [options] port orb
     copy data from RefTek DAS port to orbserver orb
 <options>
--R	send RESET_DAS command to DAS before reading data
+-R	send RESET_DAS command before reading 
 -l	create logfile representing data
 -p pf	specify parameter file
 -s B,P,D,S	specify serial port baud rate B, parity P, data bits D, stop bits S
@@ -264,7 +263,7 @@ qtunbale [options] url [time [endtime|period]]
 -S dir	subdirectory for miniseed day files
 -w wfname	specify pattern for miniseed files
 -r	suppress running miniseed2days
--v more verbose
+-v	more verbose
 </options>
 
 qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
@@ -316,7 +315,7 @@ slink2orb [options] SeedLink orb
 -S statefile
 -o dumpfile
 -r	remap net/sta/chan
--v[v[v]]	verboser
+-v[v[v]]	more verbose
 </options>
 
 <subsection Other Orb Writers>
@@ -328,11 +327,13 @@ dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
 
 dborigin2orb [options] db orb
     copy new origins from db.origin into orb for automatic association of external catalogs with real time events
+<options>
 -after time	specify start earlier than now()
 -nowait	quit after processing existing db.origin
 -number n	quit after processing n events
 -target_orb2dbt target	specify alternate target orb2dbt
 -v	more verbose output
+</options>
 
 db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
@@ -349,13 +350,13 @@ db2orb [options] {database|view} [orb]
 -v	verbose
 </options>
 
-dbreplay [options] view [[[orb] t0] t1|T]
+dbreplay [options] view [[[orb] t0] {t1|T}]
     replay database view to orb from t0 to t1 (or t0+T)
 <options>
 -w client	specify read client to watch (to avoid overruns)
--b behind	with -w, pause output if client is more than max seconds behind
+-b max	pause if client is more than max seconds behind
 -r rate	specify data rate as ratio to real time 
--n n	send only n packets
+-n n	quit after n packets
 -p pktsuffix	specify output packet type
 -s expr	subset input according to expression
 -t timestep	specify packet time size
@@ -364,7 +365,7 @@ dbreplay [options] view [[[orb] t0] t1|T]
 
 <subsection Datalogger commanding>
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
-    execute command cmd on generic remote dataloggers
+    execute command cmd on generic dataloggers
 <options>
 -waittime waittime
 -timeout timeout
@@ -420,9 +421,9 @@ automrc [options] orbname dc_name
 orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
--c suffix	convert packets from input format to suffix format
+-c suffix	convert packets to suffix format
 -d	print hex dump of each packet 
--f	when reading from file, do not adjust time tags, and output packets as quickly as possible
+-f	for file input, do not adjust time tags, and output packets as quickly as possible
 -i nsecs	save state file every nsecs seconds
 -N	print #samples of data
 -u	unstuff packets as they are received
@@ -433,12 +434,12 @@ orb2orb [options] in out [start [period|end]]
 -R r	when saving to file, use forb(5) format r
 -s p	start after pktid #p
 -S filename	save state in filename
--u n	ensure uniqueness in latest n packets, discarding duplicates
+-u n	discard duplicates in latest n packets
 -U	unstuff each packet and print
 -v	more verbose
 -x	require acknowledgment for each packet sent
--b max_behind
--w re	ensure reading programs which match re are no more than max_behind seconds behind 
+-b max
+-w re	pause for programs matching re which are more than max seconds behind 
 </options>
 
 orbxchange pf
@@ -454,7 +455,7 @@ orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
     receive incoming files, save into dir
 
 orb2genc [options] orbin orbout
-    convert input waveforms into unmultiplexed GENC format
+    convert input packets into unmultiplexed GENC format
 <options>
 -t translation_pf
 -start {pktid|time|OLDEST}
