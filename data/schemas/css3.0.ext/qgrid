@@ -1,0 +1,180 @@
+
+#   Copyright (c) 2004 Boulder Real Time Technologies, Inc.           
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# 
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
+Attribute dlat
+	Real (12)
+	Format ( "%12.6lf" )
+	Null ( "-999.000000" )
+	Range ( "dlat > 0" )
+	Description ( "grid spacing along meridians (degrees)" )
+	Detail {
+		The dlat field specifies the spacing of the 
+		dbgme grid along meridians, in radial degrees. 
+	}
+	;
+
+Attribute dlon
+	Real (12)
+	Format ( "%12.6lf" )
+	Null ( "-999.000000" )
+	Range ( "dlon > 0" )
+	Description ( "grid spacing across meridians (degrees)" )
+	Detail {
+		The dlon field specifies the spacing of the 
+		dbgme grid across meridians in radial degrees.
+	}
+	;
+
+
+Attribute gridname
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "Name of a particular configuration of grid" )
+	Detail {
+		The gridname field is intended to summarize the 
+		configuration of a particular grid. This is used to 
+		keep grids unique, which may have overlapping time 
+		periods but different geographical areas or intent.
+	}
+	;
+
+Attribute minlat
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Units ( "minlat >= -90.0 && minlat <= 90.0" )
+	Description ( "lowest latitude of dbgme grid" )
+	Detail {
+		This is the lowest latitude of a dbgme grid
+	}
+	;
+
+Attribute maxlat
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Units ( "maxlat >= -90.0 && maxlat <= 90.0" )
+	Description ( "highest latitude of dbgme grid" )
+	Detail {
+		This is the highest latitude of a dbgme grid
+	}
+	;
+
+Attribute minlon
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Units ( "minlon >= -180.0 && minlon <= 180.0" )
+	Description ( "westernmost longitude of dbgme grid" )
+	Detail {
+		This is the westernmost longitude of a dbgme grid
+	}
+	;
+
+Attribute maxlon
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Units ( "maxlon >= -180.0 && maxlon <= 180.0" )
+	Description ( "easternmost longitude of dbgme grid" )
+	Detail {
+		This is the easternmost longitude of a dbgme grid
+	}
+	;
+
+Attribute maxval
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "Maximum absolute value of a measurement grid" )
+	Null ( "-9999999.000" )
+	Detail {
+		This is the maximum absolute value of a measurement 
+		that is stored in a given ground-motion grid. The 
+		maxval has the same units as the stored grid, as 
+		specified in the 'units' field.
+	}
+	;
+
+Attribute nlat
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "nlat > 0" )
+	Units ( "-" )
+	Description ( "Number of grid points in latitude direction" )
+	Detail {
+		This attribute gives the number of grid points in the 
+		latitude direction for the dbgme grid.
+	}
+	;
+
+Attribute nlon
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "nlon > 0" )
+	Units ( "-" )
+	Description ( "Number of grid points in longitude direction" )
+	Detail {
+		This attribute gives the number of grid points in the 
+		longitude direction for the dbgme grid.
+	}
+	;
+
+Attribute qgridfmt
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "Format of qgrid" )
+	Detail {
+		The qgridfmt field specifies the format of the externally-
+		stored qgrid file. Currently the main format is 'raw'
+		indicating a file of network-byte-order, double-precision
+		floating point grid values
+	}
+	;
+
+Attribute qgridtype
+	String (20)
+	Format ( "%-20s" )
+	Description ( "qgrid type" )
+	Detail {
+		This field describes the type of ground-motion measurement 
+		contained in a qgrid, for example pga, pgv, mmi (for 
+		Peak Ground Acceleration, Peak Ground Velocity, and 
+		Modified Mercali Intensity, respectively). While this 
+		information may be implicit from the units and should 
+		be implicit from the recipe name, the explicit specification 
+		aids applications that may use several different ground-motion
+		measures for the same hypocenter or time window.
+	}
+	;
+
+
+Relation qgrid
+	Fields ( gridname recipe qgridtype time endtime minlat maxlat minlon maxlon dlat dlon nlat nlon qgridfmt units maxval dir dfile foff orid auth lddate )
+	Primary ( gridname recipe time::endtime )
+	Foreign ( orid ) 
+	Description ( "dbgme grid files" )
+	Detail {
+		The qgrid relation stores references to external grid 
+		files, which in turn contain information about ground 
+		motion for a given time period and area. These grids 
+		are intended to be georeferenced and plottable. They 
+		may or may not be associated with a particular earthquake. 
+		The chosen measure of ground motion is left arbitrary, 
+		indicated by the recipe name which corresponds to a 
+		dbgme recipe, although the units field is provided for 
+		recording the units of the grid Z-values, if applicable.
+		The current schema is limited to regularly 
+		spaced, rectangular grids. Unknown values may 
+		be represented by IEEE Quiet NaN.
+	}
+	;
