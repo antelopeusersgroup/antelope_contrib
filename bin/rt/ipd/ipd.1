@@ -1,0 +1,76 @@
+.TH IPD 1 "1 August 1998" " "
+.SH NAME
+IPD \- seismic data input daemon 
+.SH SYNOPSIS
+.nf
+
+IPD [-h hdrtype] 
+    [-p parameter-file]
+    [-s]
+    [-t timeout]
+    [-u] 
+    [-V verbatim] 
+    [-v] 
+    inport orb
+
+.fi
+.SH DESCRIPTION
+An \fBIPD\fP reads raw data packets from an \fIinport\fR input port; 
+tries to recognize what type of a packet is a raw data packet; 
+pre-appends a specific header to each raw packet and stores it in
+an \fBorb\fP ring buffer.
+.LP
+Seismic data can be transmitted from stations via VHF or 
+directly to a \fBReal-Time Data Acquisition System (RTDAS)\fP. 
+An \fBRTDAS\fP is a UNIX based system and can 
+be implemented on any computers running UNIX.
+.LP
+The current \fBRTDAS\fP system is designed to support any input ports \fIinport\fR
+to retrieve seismic data. The data can be retrieve from High Speed 
+Serial card, standard serial ports, over an Ethernet port, 
+a socket connection, etc. The limitation on type of input ports 
+is determined only by UNIX system. Any ports/devices which are 
+supported by UNIX system can be used as \fBRTDAS\fP data input port. 
+Several different ports can be used for simultaneous feeding different
+type of seismic data to the \fBRTDAS\fP \fIorb\fR ring buffer.
+.LP
+
+.SH OPTIONS
+.IP "-h hdrtype"
+Pre-append a \fIhdrtype\fR header to a raw data packet.
+A header type specified in a parameter file is used by default.
+.IP "-p parameter-file"
+A parameter file \fIparameter-file\fR will be used to get parameters of a raw 
+data packet, it's type, header type; to get station and channel names code
+for each component of a raw data packet. A \fBpkt.pf\fP parameter file is used by default.
+.IP "-s"
+Tells \fBipd\fP do not send \fIDC Status Packets\fR to orb.
+.IP "-t timeout "
+This option is valid only for a socket connection and specified number of
+seconds wait data on a connected socket before close socket and open a
+new connection. Default value is 30 seconds.
+.IP "-u "
+Uncompress seismic data before putting them on an \fIorb\fR ring buffer.
+.IP "-V verbatim"
+Save data packets  in a \fIverbatim\fR file before passing them to \fIorb\fR.
+.IP "-v"
+Be more verbose.
+.SH FILES
+.SH ENVIRONMENT
+.SH EXAMPLE
+.LP
+Read data from a DC port with 132.239.4.194 IP address and store them in a    
+ring buffer on bbarray host .
+
+.nf
+
+IPD 132.239.4.194 bbarray
+
+.fi
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+orbserver(1)
+orbstat(1)
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko
