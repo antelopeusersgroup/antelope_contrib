@@ -3,7 +3,7 @@
 dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-dbrecenteqs [-p pffile] [-h] [-e evid] [-c sourcedb] dbname
+dbrecenteqs [-p pffile] [-h] [-u] [-e evid] [-c sourcedb] dbname
 .fi
 .SH DESCRIPTION
 
@@ -70,6 +70,10 @@ from the specified source database to the target database. This
 is useful to make dbrecenteqs entirely responsible for the web 
 database, avoiding problems of views getting modified independently 
 while dbrecenteqs is using them. 
+
+-u die if another instance of dbrecenteqs is running. Thie behavior 
+is deprecated due to the increased discretion of the modern rtexec(1) 
+program. 
 .fi
 
 .SH PARAMETER FILE

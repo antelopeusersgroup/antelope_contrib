@@ -1123,9 +1123,9 @@ chomp( $Program );
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('e:p:hc:') || @ARGV != 1 ) {
+if ( ! &Getopts('e:p:huc:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-h] [-p pffile] " .
+	die ( "Usage: $Program [-h] [-u] [-p pffile] " .
 	      "[-e evid] [-c sourcedb] database\n" ); 
 
 } else {
@@ -1139,7 +1139,7 @@ if ( ! &Getopts('e:p:hc:') || @ARGV != 1 ) {
 
 init_globals();
 
-die_if_already_running();
+if( $opt_u ) { die_if_already_running(); }
 
 if( $opt_c ) {
 
