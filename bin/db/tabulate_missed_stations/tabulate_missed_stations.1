@@ -1,0 +1,45 @@
+.TH TABULATE_MISSED_STATIONS 1 "$Date$"
+.SH NAME
+tabulate_missed_stations \- look for stations not in translation database
+.SH SYNOPSIS
+.nf
+tabulate_missed_stations transdb dbname [dbname...]
+.fi
+.SH DESCRIPTION
+tabulate_missed_stations searches through one or more databases for station
+names which do not appear in the specified database of station-name translations. 
+Both the arrival and wfdisc tables are surveyed.
+
+A printout of missed stations includes the names of the stations missed in
+each database, plus a summary over all databases of the missed station names 
+with time of first occurrence and component names in the database. 
+
+The database of station-name translations maps old station names, where
+the channel and/or gain band are sometimes coded into the station-name itself, 
+into CSS3.0-style station and channel codes. For example, "CRPN" translates to 
+"CRP SHN". 
+
+tabulate_missed_stations creates a database called dbmissed in the current 
+working directory, listing the old station names of the missed stations. This 
+allows easy updates to the translation database once the new station and 
+channel names are filled in in the 'dbmissed' database. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+capitalize_station(1), translate_stachan_names(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
