@@ -1,5 +1,5 @@
 BIN = dccmd
-MAN=dccmd.1
+MAN1=dccmd.1
 #cflags  = -g
 #ldflags	= -Bstatic               
 ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
