@@ -21,7 +21,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(ds_dbopen, NULL)		
 	PHP_FE(dbfree, NULL)		
-	PHP_FE(dsdbclose, NULL)		
+	PHP_FE(ds_dbclose, NULL)		
 	PHP_FE(dbdestroy, NULL)		
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbprocess, NULL)		
@@ -576,8 +576,8 @@ PHP_FUNCTION(dbfree)
 }
 /* }}} */
 
-/* {{{ proto array dsdbclose( array db ) */
-PHP_FUNCTION(dsdbclose)
+/* {{{ proto array ds_dbclose( array db ) */
+PHP_FUNCTION(ds_dbclose)
 {
 	zval	*db_array;
 	Dbptr	db;

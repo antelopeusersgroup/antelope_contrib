@@ -14,7 +14,7 @@ PHP_MINIT_FUNCTION(Datascope);
 PHP_MSHUTDOWN_FUNCTION(Datascope);
 PHP_MINFO_FUNCTION(Datascope);
 PHP_FUNCTION(ds_dbopen);
-PHP_FUNCTION(dsdbclose);
+PHP_FUNCTION(ds_dbclose);
 PHP_FUNCTION(dbfree);
 PHP_FUNCTION(dbdestroy);
 PHP_FUNCTION(dbtruncate);
