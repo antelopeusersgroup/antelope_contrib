@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$ */
+/* %W% %G% */
 /*===========================================================================
  *
  *
@@ -57,7 +57,7 @@ char *dname;                     /* Name of the file in SEGY format   */
     dtime = dtoepoch( ldate ) +
             3600.0*dates->hour + 
             60.0*dates->min + 
-            dates->sec + (double)dates->msec/100.0;
+            dates->sec + (double)dates->msec/1000.0;
  
     strcpy(wfd.sta, names->sta );
     strcpy(wfd.chan, names->chan );
@@ -95,5 +95,3 @@ char *dname;                     /* Name of the file in SEGY format   */
 }
  
 
-
-/* $Id$ */

@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* %W% %G%  */
 /*======================================================================
  *
  *  segy2css/segcss.h
@@ -18,7 +18,7 @@
 #include "util.h"
 #include <fcntl.h>
 #include <stdio.h>
-
+#include "coords.h"
 
 #define MODE  (0664)
 #define  DATAF "YYDDDHHMMSS.w"
@@ -102,5 +102,3 @@ extern void usage();
 extern char *decode();
 
 #endif
-
-/* $Id$ */

@@ -1,4 +1,4 @@
-/* $Name $Revision$ $Date$  */
+/* @(#)decode.c	1.1 03/12/96  */
 /********************************************************************
  *
  *
@@ -44,7 +44,7 @@ char *decode(num, dates, name, param, parnum)
    crnt_time = dtoepoch( date ) +
                3600.0*dates->hour + 
                60.0*dates->min + 
-               (double) dates->sec + (double)dates->msec/100.0;
+               (double) dates->sec + (double)dates->msec/1000.0;
 
 /* Check first do we have instrumen number conversion in file ".segy2css"  */
 
@@ -72,5 +72,3 @@ char *decode(num, dates, name, param, parnum)
      sprintf(name,"%d\0",num);
    
 }
-
-/* $Id$ */
