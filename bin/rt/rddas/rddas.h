@@ -23,7 +23,6 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <stddef.h>
-#include <stropts.h>
 #include <netdb.h>
 #include "pkt.h"
 
@@ -54,7 +53,7 @@ typedef struct Compnt {
     char name[64];
 } Compnt;
 
-int Log;
+extern int Log;
  
 #ifdef __STDC__
 #define PL_(x) x

@@ -88,6 +88,8 @@ struct Prts *inport;
 		termios.c_cflag |= B57600;
 #if defined sun
 	        termios.c_cflag &= ~CIBAUDEXT;
+#elif defined __APPLE__
+
 #else
 	        termios.c_cflag &= ~CBAUDEX;
 #endif
