@@ -1132,7 +1132,7 @@ main (int argc, char **argv)
 							"nsta", nsta,
 							"magnitude", magnitude,
 							"uncertainty", unc,
-							"auth", "orbmag",
+							"auth", "orbampmag",
 							"magid", magid,
 							0);
 				if (ret < 0) {
@@ -1152,7 +1152,7 @@ main (int argc, char **argv)
 									"evid", evid,
 									"magtype", sp->magtype,
 									"magnitude", sp->mag,
-									"auth", "orbmag",
+									"auth", "orbampmag",
 									0);
 						if (ret < 0) {
 							complain (0, "dbputv(stamag) error.\n");

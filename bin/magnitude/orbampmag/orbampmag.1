@@ -281,12 +281,12 @@ have not yet arrived at the stations.
 
 orbmb orbampmag -state state/mb -v -use_p2p \\
             -auth_expr mb -next_target_orbmag orbml \\
-            -make_magtables -p mb $ORB $ORB $DB
+            -make_magtables -pf mb $ORB $ORB $DB
 orbml orbampmag -state state/ml -v -target_orbmag orbml \\
-            -auth_expr ml -next_target_orbmag orbms -p ml \\
+            -auth_expr ml -next_target_orbmag orbms -pf ml \\
             -make_magtables $ORB $ORB $DB
-orbms orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p \\
-            -target_orbmag orbms -auth_expr ms -p ms \\
+orbms orbampmag  -start OLDEST  -state state/ms -v -use_p2p \\
+            -target_orbmag orbms -auth_expr ms -pf ms \\
             -make_magtables $ORB $ORB $DB
 
 .fi
@@ -302,7 +302,7 @@ The auth_expr for orbmag looks a bit strange, but it does the job.
 orbmb orbampmag -state state/mb -v -use_p2p \\
             -auth_expr mb -next_target_orbmag orbms \\
             -make_magtables -pf mb $ORB $ORB $DB
-orbms orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p \\
+orbms orbampmag  -start OLDEST  -state state/ms -v -use_p2p \\
             -target_orbmag orbms -next_target_orbmag orbml \\
 			-auth_expr ms -pf ms \\
             -make_magtables $ORB $ORB $DB

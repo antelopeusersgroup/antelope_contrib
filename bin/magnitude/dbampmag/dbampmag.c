@@ -143,7 +143,7 @@ main (int argc, char **argv)
 	if (argc < 2) {
 		usage();
 	}
-	sprintf (auth, "dbml:%s", cuserid((char *) NULL));
+	sprintf (auth, "dbamp:%s", cuserid((char *) NULL));
 
 	proc_arr = newarr (0);
 	if (proc_arr == NULL) {
