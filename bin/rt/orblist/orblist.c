@@ -189,7 +189,7 @@ char *argv[];
 		        srcid,s1=strtime( dtbl->time), s2=strtime(pkttime), gap );
 		       free(s1); free(s2);
 		       if( (int) gap % diff )
-			   hexdump( stderr, packet, nbytes );
+			   hexdump( stderr, packet+hdrsize, nbytes-hdrsize );
 		   }
 		   dtbl->time = pkttime;
                    setarr ( DTArr, srcid, dtbl );
