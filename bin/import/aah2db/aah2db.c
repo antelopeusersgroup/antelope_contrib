@@ -17,7 +17,7 @@ static double aah_abstime_to_epoch( struct time );
 static void
 usage ()
 {
-	char *usage = "aah2db [-vVz] ahfile [ahfile...] dbname";
+	char *usage = "aah2db [-vV] ahfile [ahfile...] dbname";
 	char *author = "Kent Lindquist";
 	char *location = "Geophysical Institute, U. of Alaska";
 	char *email = "kent@giseis.alaska.edu";
@@ -53,7 +53,7 @@ main (int argc, char **argv)
 
     	elog_init ( argc, argv ) ; 
 
-	while ((c = getopt (argc, argv, "vVz")) != -1) {
+	while ((c = getopt (argc, argv, "vV")) != -1) {
 		switch (c) {
 	
 		case 'v':
