@@ -51,7 +51,11 @@ struct Prts *inport;
        }  else if( S_ISCHR(buf.st_mode) )  {
 	  
 	   if( !strncmp( inport->ip_name , "/dev/rsd", strlen("/dev/rsd") ) )  
+#ifndef __i386
                return open_disk( inport );
+#else 
+	       return 0;
+#endif
    
                else return open_chr( inport );
 
@@ -63,6 +67,7 @@ struct Prts *inport;
       }
 }
 
+#ifndef __i386
 /* Input Port is Raw Disk.  */
 
 int open_disk( inport )
@@ -164,6 +169,7 @@ struct Prts *inport;
   
    	return IN_DISK;
 }
+#endif
 
 
 /* Input Port is Character Special device.  */
