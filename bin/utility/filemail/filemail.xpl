@@ -18,10 +18,12 @@ sub parse_address {
 	} elsif ( $address =~ /(\S+)/ ) { 
 		$address = $1 ;
 	} else { 
-		print STDERR "Can't parse address '$address'\n" ;
+		# print STDERR "Can't parse address '$address'\n" ;
 		return( "", "", "" );
 	}
 
+	$address =~ s/ /_/g ;
+	$address =~ s/[()'"]//g ;
 	$address =~ s/,.*// ;
 	$address =~ s/\>$// ;
 
@@ -82,13 +84,42 @@ sub get_epoch {
 		$year = $6 ; 
 		$epoch = str2epoch ( "$month $day, $year $time" ) ; 
 
+	} elsif( $mailfrom =~ /^\s*(\S+)\s+([A-Z][a-z][a-z])\s+([A-Z][a-z][a-z])\s+(\d+)\s+(\d\d:\d\d)\s+[A-Z]{3,4}\s+(\d\d\d\d)/ ) { 
+
+		$from = $1;
+		$dow = $2 ; 
+		$month = $3 ; 
+		$day = $4 ;
+		$time = $5 ; 
+		$year = $6 ; 
+		$epoch = str2epoch ( "$month $day, $year $time" ) ; 
+
 	} elsif( $date =~ m/^(?:\w{3},\s+)?(.*\d+:\d+(:\d\d)?).*/ ) {
 
 		$date = $1;
 		$epoch = str2epoch( $date );
 
 	} else {
+
 		print STDERR "Bad time in get_epoch: $date, $mailfrom\n";
+
+		if( $opt_l ) {
+
+			print ERRORLOG "Bad time in get_epoch: $date, $mailfrom\n";
+		}
+
+		$epoch = 0;
+	}
+
+	if( $epoch < 0 ) {
+
+		print STDERR "Bad time in get_epoch: $date, $mailfrom\n";
+
+		if( $opt_l ) {
+
+			print ERRORLOG "Bad time in get_epoch: $date, $mailfrom\n";
+		}
+
 		$epoch = 0;
 	}
 	
@@ -147,7 +178,7 @@ sub bycopy {
 }
 
 sub message_to_database {
-	my( $dir, $dfile, $foff, $lines, $bytes, @message ) = @_;
+	my( $mfile, $dir, $dfile, $foff, $lines, $bytes, @message ) = @_;
 
 	if( ref( $message[0] ) eq "Mail::Internet" ) {
 		
@@ -161,9 +192,27 @@ sub message_to_database {
  	$mailobj->head->unfold();
  
  	$from = $mailobj->head->get( "From" );
+	
+	if( ! defined( $from ) || $from eq "" ) {
+		
+		$from = $mailobj->head->get( "Mail-From" );
+	}
+
 	$real = realname( $from );
  
  	( $user, $host, $address ) = parse_address( $from );
+
+	if( ! defined( $address ) || $address eq "" ) {
+		
+		if( $opt_l ) {
+
+			printf ERRORLOG "Blank address in $mfile. Not recording in database!\n";
+		}
+
+		printf STDERR "Blank address in $mfile. Not recording in database!\n";
+
+		return;
+	}
  
 	$to = $mailobj->head->get( "To" );
 	if( defined( $to ) && $to ne "" ) {
@@ -183,7 +232,14 @@ sub message_to_database {
  
  	if( $address eq "" || $epoch == 0  ) {
  		
- 		die( "Problem parsing message $from at $epoch, goodbye\n" ); 
+		if( $opt_l ) {
+
+ 			printf ERRORLOG "Problem parsing message $from at $epoch. Not recording in database!\n"; 
+		}
+
+ 		printf STDERR "Problem parsing message $from at $epoch. Not recording in database!\n"; 
+
+		return;
 	}
 
  	if( $opt_v ) {
@@ -250,7 +306,8 @@ sub redo_database {
 
 			if( @message ) {
 
-				message_to_database( $dir, $dfile, $startmsg_foff, $lines, $bytes, @message );
+				message_to_database( $mfile, $dir, $dfile, $startmsg_foff,
+						     $lines, $bytes, @message );
 			} 
 
 			@message = ();
@@ -270,7 +327,7 @@ sub redo_database {
 
 	if( @message ) {
 
-		message_to_database( $dir, $dfile, $startmsg_foff, $lines, $bytes, @message );
+		message_to_database( $mfile, $dir, $dfile, $startmsg_foff, $lines, $bytes, @message );
 	}
 
 	close( MFILE );
@@ -291,6 +348,11 @@ sub splitmail {
 		$mailobj->head->unfold();
 
 		$from = $mailobj->head->get( "From" );
+
+		if( ! defined( $from ) || $from eq "" ) {
+			
+			$from = $mailobj->head->get( "Mail-From" );
+		} 
 
 		( $user, $host, $address ) = parse_address( $from );
 
@@ -342,6 +404,48 @@ sub bytime {
 	return $atime <=> $btime;
 }
 
+sub sorted_bytime {
+
+	return sort bytime glob( "$Splitdir/*" );
+}
+
+sub sorted_bytime_unique {
+
+	my( $timestamp, $possible_match, %sorthash, @files );
+
+	foreach $file ( sorted_bytime() ) {
+		
+		$file =~ m@.*/([0-9.]+)-.*@;
+		$timestamp = $1;
+		$sorthash{$file} = $timestamp;
+	}
+
+	MESSAGE:
+	foreach $file ( sort bycopy keys( %sorthash ) ) {
+		
+		if( $file =~ /\+$/ ) {
+			$possible_match = $file;
+			while( $possible_match =~ s/\+$// ) {
+				if( -e "$possible_match" && 
+				    (0 == system( "diff $file $possible_match > /dev/null 2>&1" ) ) ) {
+					
+					if( $opt_v ) {
+						print "Skipping $file (matches $possible_match)\n";
+					}
+					if( $opt_l ) {
+						print ERRORLOG "Skipping $file (matches $possible_match)\n";
+					}
+					next MESSAGE;
+				}
+			}
+		}
+
+		push( @files, $file );
+	}
+
+	return @files;
+}
+
 sub filemail {
 	my( $file ) = @_;
 
@@ -357,13 +461,24 @@ sub filemail {
 	$sent_relpath = epoch2str( $epoch, $sent_archive_pattern );
 
 	$from = $mailobj->head->get( "From" );
+
+	if( ! defined( $from ) || $from eq "" ) {
+	
+		$from = $mailobj->head->get( "Mail-From" );
+	} 
+
 	( $user, $host, $address ) = parse_address( $from );
 
 	if( $address eq "" || $epoch == 0 ) {
-
+		
 		$dir = "$Archivedir";
 		$dfile = "FormatProblems";
 
+		printf STDERR "Blank address in $file! Filing in $dir/$dfile.\n";
+		if( $opt_l ) {
+			printf ERRORLOG "Blank address in $file! Filing in $dir/$dfile.\n";
+		}
+ 
 	} elsif( map { $subject =~ m/$_/ } keys( %Subjects ) ) {
 
 		$dir = "$Archivedir/$year/$host";
@@ -414,6 +529,9 @@ sub filemail {
 		$status = system( "mkdir -p $dir" );
 		if( $status ) {
 			fprintf( STDERR, "Problem with $file\n" );
+			if( $opt_l ) {
+				fprintf( ERRORLOG, "Problem with $file\n" );
+			}
 		}
 	}
 
@@ -445,7 +563,7 @@ sub filemail {
 
 	$dir = abspath( $dir );
 
-	message_to_database( $dir, $dfile, $foff, $lines, $bytes, $mailobj );
+	message_to_database( $file, $dir, $dfile, $foff, $lines, $bytes, $mailobj );
 }
 
 $do_split = 0;
@@ -455,9 +573,9 @@ $do_database = 0;
 
 elog_init( "filemail", @ARGV );
 
-if ( ! &Getopts('aunfvsS:d:') ) { 
+if ( ! &Getopts('aunfvsS:d:l:') ) { 
 
-    	die ( "Usage: $0 [-anufsv] [-S sortedfile] [-d new_database] [mail_file ...]\n" ) ; 
+    	die ( "Usage: $0 [-anufsv] [-S sortedfile] [-l error_logfile] [-d new_database] [mail_file ...]\n" ) ; 
 
 } 
 
@@ -473,6 +591,19 @@ unless( $opt_a ) {
 		die( "\n\nYou do not have permission to execute " .
 		     "the filemail program. Bye.\n\n" );
 	}
+}
+
+if( $opt_l ) {
+
+	if( $opt_v ) {
+
+		printf STDERR "Logging errors to $opt_l\n";
+	}
+
+	open( ERRORLOG, ">>$opt_l" );
+
+	print ERRORLOG "Beginning filemail run:\n";
+	print ERRORLOG "-----------------------\n";
 }
 
 if( ( $opt_f && $opt_s ) ||
@@ -578,7 +709,7 @@ if( $do_database ) {
 	@dbout = dblookup( @db, "", "out", "", "" );
 }
 
-@contents = sort bytime glob( "$Splitdir/*" );
+@contents = sorted_bytime();
 
 if( $do_split && scalar( @contents ) > 0 ) {
 	
@@ -600,7 +731,7 @@ if( $do_split ) {
 
 if( $do_file ) {
 
-	foreach $file ( sort bytime glob( "$Splitdir/*" ) ) {
+	foreach $file ( sorted_bytime_unique() ) {
 
 		filemail( $file );
 	}
@@ -609,30 +740,8 @@ if( $do_file ) {
 
 if( $do_sort ) {
 
-	foreach $file ( sort bytime glob( "$Splitdir/*" ) ) {
+	foreach $file ( sorted_bytime_unique() ) {
 		
-		$file =~ m@.*/([0-9.]+)-.*@;
-		$timestamp = $1;
-		$sorthash{$file} = $timestamp;
-	}
-
-	MESSAGE:
-	foreach $file ( sort bycopy keys( %sorthash ) ) {
-		
-		if( $file =~ /\+$/ ) {
-			$possible_match = $file;
-			while( $possible_match =~ s/\+$// ) {
-				if( -e "$possible_match" && 
-				    (0 == system( "diff $file $possible_match > /dev/null 2>&1" ) ) ) {
-					
-					if( $opt_v ) {
-						print "Skipping $file (matches $possible_match)\n";
-					}
-					next MESSAGE;
-				}
-			}
-		}
-
 		if( $opt_v ) {
 			print "Adding $file\n";
 		}
@@ -641,4 +750,9 @@ if( $do_sort ) {
 	}
 
 	chmod 0444, "$sortedfile";
+}
+
+if( $opt_l ) {
+
+	close( ERRORLOG );
 }

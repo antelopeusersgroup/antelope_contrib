@@ -3,7 +3,7 @@
 filemail \- split and sort mail messages
 .SH SYNOPSIS
 .nf
-filemail [-anfsvu] [-S output_file] 
+filemail [-anfsvu] [-S output_file] [-l error_logfile]
          [-d new_database_name] [mailfile ...]
 .fi
 .SH DESCRIPTION
@@ -91,6 +91,9 @@ The -d option adds the messages in the specified mail file(s) to a Mail1.1
 database. Note that the filing operation automatically adds messages
 to the database specified in the parameter file, so the -d option is 
 normally not needed unless rebuilding that archive database.
+
+.IP "-l error_logfile"
+Save a copy of any error messages in the specified file
 
 .SH FILES
 .SH ENVIRONMENT
@@ -277,6 +280,8 @@ to make month volumes, as in the above parameter file).
 
 The -u option is a legacy option and serves only to protect messages in the 
 split directory. This option is of questionable utility.
+
+Fatal errors are not always logged to the error logfile. 
 .SH AUTHOR
 .nf
 Kent Lindquist, heavily modifying an earlier version 
