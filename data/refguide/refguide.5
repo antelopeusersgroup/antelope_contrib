@@ -42,6 +42,12 @@ version of the reference guide. Entries with 'deprecated' are either
 marked as such or omitted from the reference guide depending on options set
 in the reference-guide-building scripts. 
 
+Several special values are allowed. the args value may be specified as NONE.
+The return value may also be specified as NONE. A return value of EMPTY 
+indicates an incomplete entry. A value for args of DUAL indicates a 
+command or function that takes both left- and right-side arguments, e.g. 
+an operator. 
+
 For each section, a header may optionally be specified for that section as a 
 literal embedded in an array called Headers. For example, the header 
 for the C section may be specified as 
