@@ -1,0 +1,189 @@
+package require Tclx
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+
+pfget manage_paymentdb administrator 
+
+proc init_windows {} {
+	global billamt billdate received_pmt_amount
+	global received_from received_pmt_time dbname
+
+	button .b -text "Get Report" -command get_owed
+	pack .b -side top -fill x
+
+	set billamt 0.00
+	LblEntry .billamt -label "Paid Vendor Bill amount:" -textvariable billamt
+	pack .billamt -side top -fill x
+
+	set billdate [strdate [str2epoch now]]
+	LblEntry .billdate -label "Bill date:" -textvariable billdate
+	pack .billdate -side top -fill x
+	
+	button .paybill -text "Pay Bill to Vendor" -command pay_bill
+	pack .paybill -side top -fill x
+
+	set db [dbopen $dbname r]
+	set dbpeople [dblookup $db 0 people 0 0]
+	set dbpeople [dbsubset $dbpeople "status != \"inactive\""]
+	set npeople [dbquery $dbpeople dbRECORD_COUNT]
+
+	menubutton .people -text People -relief raised -menu .people.m
+	menu .people.m
+	loop iname 0 $npeople {
+
+		set name [dbgetv $dbpeople 0 $iname name]
+		regsub -all {[{}]} $name "" name
+
+		.people.m add command -label "$name" -command \
+			"global received_from; set received_from \"$name\"" 
+	}
+	pack .people -side top -fill x
+
+	dbclose $db
+	
+	set received_from -
+	LblEntry .person_paying -label "Received Payment from:" -textvariable received_from
+	pack .person_paying -side top -fill x
+
+	set received_pmt_amount 0.00
+	LblEntry .received_pmt -label "Received Payment amount:" -textvariable received_pmt_amount
+	pack .received_pmt -side top -fill x
+
+	set received_pmt_time [strtime [str2epoch now]]
+	LblEntry .pmt_time -label "Received Payment time:" -textvariable received_pmt_time
+	pack .pmt_time -side top -fill x
+
+	button .record_payment -text "Record Payment Received" -command receive_payment
+	pack .record_payment -side top -fill x
+
+	button .quit -text "Quit" -bg red -command "destroy ."
+	pack .quit -side top -fill x
+
+
+}
+
+proc receive_payment {} {
+	global dbname received_pmt_amount received_pmt_time received_from
+
+	if { $received_pmt_amount == 0. } {
+		puts stderr "Please specify a non-zero payment amount"
+		return -1
+	}
+
+	if { $received_from == "-" } {
+		puts stderr "Please specify who made the payment"
+		return -1
+	}
+
+	puts stdout "Received $received_pmt_amount from $received_from at $received_pmt_time "
+
+	set db [dbopen $dbname r+]
+
+	set now [str2epoch now]
+	dbaddv $db payment name $received_from time $received_pmt_time \
+		amount $received_pmt_amount lddate $now
+
+	dbclose $db
+
+}
+
+proc pay_bill {} {
+	global billamt dbname billdate administrator
+
+	if { $billamt == 0. } {
+		puts stderr "Please specify a non-zero bill amount"
+		return -1
+	}
+
+	puts stdout "Administrator $administrator paid $billamt on $billdate"
+
+	set db [dbopen $dbname r+]
+
+	set dbpeople [dblookup $db 0 people 0 0]
+	set dbbill [dblookup $db 0 bill 0 0]
+	set dbbillsplit [dblookup $db 0 billsplit 0 0]
+
+	set dbpeople [dbsubset $dbpeople {status != "inactive"}]
+	set npeople [dbquery $dbpeople dbRECORD_COUNT]
+
+	set amount_per_person [format "%.2f" [expr $billamt / $npeople]]
+
+	puts stdout "There are $npeople active people in the database"
+	puts stdout "That makes $amount_per_person per person"
+
+	set now [str2epoch now]
+	dbaddv $dbbill bill billdate $billdate amount $billamt paid y lddate $now
+
+	loop iname 0 $npeople {
+		set name [dbgetv $dbpeople 0 $iname name]
+		regsub -all {[{}]} $name "" name
+		dbaddv $dbbillsplit billsplit name $name billdate $billdate \
+		       owed $amount_per_person lddate $now
+	}
+
+	dbclose $db
+}
+
+proc get_owed {} {
+	global administrator dbname
+
+	puts stdout ""
+
+	set db [dbopen $dbname r]
+	set dbpeople [dblookup $db 0 people 0 0]
+
+	set dbbillsplit [dblookup $db 0 billsplit 0 0]
+	set dbbillsplit [dbsort $dbbillsplit lddate]
+	
+	set dbpayment [dblookup $db 0 payment 0 0]
+	set dbpayment [dbsort $dbpayment lddate]
+	
+	set administrator_out 0
+	
+	set nrecs [dbquery $dbpeople dbRECORD_COUNT]
+	
+	loop iname 0 $nrecs {
+	
+		set name [dbgetv $dbpeople people $iname name]
+		regsub -all {[{}]} $name "" name
+	
+		set total_owed 0
+	
+		set dbt [dbsubset $dbbillsplit "name == \"$name\""]
+		set nbills [dbquery $dbt dbRECORD_COUNT]
+		loop ibill 0 $nbills {
+			set owed [dbgetv $dbt 0 $ibill owed]
+			set total_owed [expr $total_owed + $owed]	
+		}
+	
+		set dbt [dbsubset $dbpayment "name == \"$name\""]
+		set npmts [dbquery $dbt dbRECORD_COUNT]
+		loop ipmt 0 $npmts {
+			set amount [dbgetv $dbt 0 $ipmt amount]
+			set total_owed [expr $total_owed - $amount]	
+		}
+		
+		set administrator_out [expr $administrator_out + $total_owed]
+	
+		if { $total_owed > 0 } { 
+			set email [dbgetv $dbpeople people $iname email]
+			lappend email_list $email
+		}
+	
+		puts [format "%-30s\t\$%5.2f" $name $total_owed]
+	}
+	
+	puts stdout "\n$administrator is currently out \$$administrator_out\n\n"
+	puts [join $email_list ,]
+	
+	dbclose $db
+}
+
+if { $argc != 1 } {
+	puts stderr "Usage: manage_paymentdb dbname"
+	exit -1
+} else {
+	set dbname [lindex $argv 0]
+}
+
+init_windows
+

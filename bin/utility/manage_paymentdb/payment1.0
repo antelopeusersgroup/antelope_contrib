@@ -1,0 +1,169 @@
+Schema Payment1.0
+	Description ( "Schema for tracking payments in a bill-paying collective" )
+	Detail {
+		This schema tracks payment administration in a bill-paying collective, such as an office pool for a water cooler. It assumes one person is responsible for paying the vendor bills, and dividing responsibility for those bills up amongst the various people. All payments from party members to the administrator are logged. A balance table shows the net obligation of each member of the pool. The balance table summarizes information from the other tables, and thus should be updated through a software interface rather than direct editing.
+	}
+	Timedate lddate
+	;
+
+Attribute amount
+	Real (12)
+	Format ( "%12.2f" )
+	Null ( "-89999999999" )
+	Description ( "amount of payment or balance" )
+	Detail {
+		This field lists the amount of money in a person's balance, or the amount delivered in a payment.
+	}
+	;
+
+Attribute billdate
+	String (12)
+	Format ( "%-12s" )
+	Null ( "-" )
+	Description ( "vendor bill payment date" )
+	Detail {
+		The billdate field tracks the date of a payment to the main vendor. The assumption is there won't be more than one bill on a given day.
+	}
+	;
+
+Attribute email
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "email address of person in collective" )
+	Detail {
+		This field lists the email address of a person in the bill-paying collective.
+	}
+	;
+
+Attribute fix
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "fix =~ /[yn]/" )
+	Description ( "fix " )
+	Detail {
+		Sometimes a person is not liable for the normal share of the bill. This allows their portion to be fixed at a different level.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time that a record is added or updated" )
+	Detail {
+		This field lists the time a record is added or updated
+	}
+	;
+
+Attribute name
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "Name of person in collective" )
+	Detail {
+		This field lists the name of a person in the bill-paying collective.
+	}
+	;
+
+Attribute note
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "note on an entry" )
+	Detail {
+		This field allows a note about the apportionment of a bill, usually an explanation of why the amount was fixed.
+	}
+	;
+
+Attribute owed
+	Real (12)
+	Format ( "%12.2f" )
+	Null ( "-89999999999" )
+	Description ( "amount of money owed" )
+	Detail {
+		This field lists the amount of money owed by a person.
+	}
+	;
+
+Attribute paid
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "paid =~ /[yn]/" )
+	Description ( "whether a bill has been paid" )
+	Detail {
+		This field notes whether a vendor bill has been paid.
+	}
+	;
+
+Attribute status
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "status " )
+	Detail {
+		This field tracks whether a person is on active status in the bill-paying collective. Null indicates they should be charged. 'inactive' indicates they are out of town or otherwise temporarily off the list.
+	}
+	;
+
+Attribute time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time that a payment is made" )
+	Detail {
+		This field lists the time a payment is made
+	}
+	;
+
+Relation balance
+	Fields ( name amount lddate )
+	Primary ( name )
+	Description ( "Net financial status of each person in the collective" )
+	Detail {
+		This table tracks the relationship of each person's total payments and obligations towards the person managing the collective
+	}
+	;
+
+Relation bill
+	Fields ( billdate amount paid lddate )
+	Primary ( billdate )
+	Defines billdate
+	Description ( "Bills from vendor" )
+	Detail {
+		This table tracks the bills received from the vendor and paid by the person handling cash flow for the payment collective
+	}
+	;
+
+Relation billsplit
+	Fields ( name billdate fix owed note lddate )
+	Primary ( name billdate )
+	Description ( "Division of a given vendor bill " )
+	Detail {
+		This table tracks how each bill from the vendor is to be apportioned.
+	}
+	;
+
+Relation payment
+	Fields ( name time amount lddate )
+	Primary ( name time )
+	Description ( "log of payments received" )
+	Detail {
+		This table tracks payments made from people in the pool to the administrator of the collective
+	}
+	;
+
+Relation people
+	Fields ( name email status lddate )
+	Primary ( name )
+	Defines name
+	Description ( "peole in the collective" )
+	Detail {
+		This table tracks the people in the bill-paying collective
+	}
+	;
+
