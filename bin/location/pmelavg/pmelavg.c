@@ -32,6 +32,7 @@ main(int argc, char **argv)
 	Hook *hooke,*hooko;  
 	int use_r_weight;  
 	int use_ssr_weight;
+	int ierr;
 
 	if(argc<2) usage();
 
@@ -134,10 +135,13 @@ main(int argc, char **argv)
 		}
 		dscal(4,1.0/sumwt,havg,1);	
 		orid = dbnextid(db,"orid");
+		if(orid<0) elog_die(0,"dbnextid failed to get orid\nThe lastid tables is probably locked or read only\n");
 		/* get record number of origin table of current prefor 
 		so we can clone it */
 		dbputv(dbos,0,"orid",prefor,0);
-		if(dbmatches(dbos,dbo,&opat,&opat,&hooko,&matchlist))
+		ierr = dbmatches(dbos,dbo,&opat,&opat,&hooko,&matchlist);
+		if(ierr==dbINVALID) elog_die(0,"dbmatches threw an error exception\nRun dbverify on database\n");
+		if(ierr>0)
 		{
 			dbo.record = (int)gettbl(matchlist,0);
 			freetbl(matchlist,0);
