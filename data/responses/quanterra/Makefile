@@ -1,6 +1,11 @@
 DATADIR=responses
 DATA=README_quanterra F64C F64CM  F72B F72BM F96C F96CM \
-     F260 F260M FS2D5 FS2D5M  F400M F640M MP LP ULP VLP
+     F260 F260M FS2D5 FS2D5M  F400M F640M MP LP ULP VLP \
+     FLbelow100-1 FLbelow100-10 FLbelow100-100 FLbelow100-20 FLbelow100-200 FLbelow100-40 FLbelow100-50 \
+     FLbelow20-1 FLbelow20-10 FLbelow20-100 FLbelow20-20 FLbelow20-200 FLbelow20-40 FLbelow20-50 \
+     FLbelow40-1 FLbelow40-10 FLbelow40-100 FLbelow40-20 FLbelow40-200 FLbelow40-40 FLbelow40-50 \
+     FLinear-1 FLinear-10 FLinear-100 FLinear-20 FLinear-200 FLinear-40 FLinear-50
+
                            
 include $(ANTELOPEMAKE)  	
 DIRS=
