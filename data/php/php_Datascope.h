@@ -18,6 +18,7 @@ PHP_FUNCTION(dblookup);
 PHP_FUNCTION(dbgetv);
 PHP_FUNCTION(dbaddv);
 PHP_FUNCTION(dbaddnull);
+PHP_FUNCTION(dbadd);
 PHP_FUNCTION(dbputv);
 PHP_FUNCTION(dbnrecs);
 PHP_FUNCTION(dbprocess);

@@ -155,6 +155,17 @@ dbputv( $dbevent, 'evid', 1,
 .fi
 .in
 .ft R
+.IP "\fBdbadd( $db [,\fP record] )"
+Add a record from the scratch record, or from the specified string
+.ft CW
+.in 2c
+.nf
+
+$recno = dbadd( $db ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbsubset\fP ( $db, expression )"
 returns a new view which is the set of all row which satisfy the expression
 .ft CW

@@ -14,6 +14,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbaddv, NULL)		
 	PHP_FE(dbputv, NULL)		
 	PHP_FE(dbaddnull, NULL)		
+	PHP_FE(dbadd, NULL)		
 	PHP_FE(dblookup, NULL)		
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(dbopen, NULL)		
@@ -902,6 +903,59 @@ PHP_FUNCTION(dbgetv)
 	}
 
 	efree( args );
+}
+/* }}} */
+
+/* {{{ proto mixed dbadd( array db [, string record ] ) */
+PHP_FUNCTION(dbadd)
+{
+	zval	*db_array_in;
+	Dbptr	db;
+	zval	***args = 0;
+	char	*record = 0;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+	} 
+	
+	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( argc == 2 ) {
+
+		args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+		if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+			efree( args );
+			return;
+
+		} else if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
+
+			/* SCAFFOLD; need error msg */
+			efree( args );
+			return;
+
+		} else {
+
+			record = Z_STRVAL_PP( args[1] );
+		}
+	}
+
+	rc = dbadd( db, record );
+
+	if( args ) { efree( args ); }
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 
