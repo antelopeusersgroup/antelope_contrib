@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="text"/>
+<xsl:strip-space elements="quakelist"/>
 
 <xsl:variable name="newline">
 <xsl:text>
@@ -63,8 +64,9 @@ Group {
 	PointSet {
 	  coord 
 	  Coordinate {
-		point [ </xsl:text>
-		<xsl:apply-templates select="quakelist"/> 
+		point [ 
+		</xsl:text>
+		<xsl:apply-templates select="quakelist"/>
 		<xsl:text>              ]
 	  }
 	} ]
@@ -73,17 +75,19 @@ Group {
 </xsl:template>
 
 <xsl:template match="quakelist">
-  <xsl:apply-templates match="./quake"/>
+	<xsl:apply-templates match="./quake"/>
 </xsl:template>
 
 <xsl:template match="quake">
-  <xsl:text>                   </xsl:text>
-  <xsl:value-of select="./x"/>
-  <xsl:text> </xsl:text>
-  <xsl:value-of select="../../pixmap/height - ./y"/>
-  <xsl:text> </xsl:text>
-  <xsl:value-of select="-1 * ./depth_km"/>
-  <xsl:text>,</xsl:text>
+	<xsl:if test="./x &gt;= 0 and ./y &gt;= 0 and ./x &lt; ../../pixmap/width and ./y &lt; ../../pixmap/height">
+		<xsl:text>                   </xsl:text>
+		<xsl:value-of select="./x"/> 
+		<xsl:text> </xsl:text> 
+		<xsl:value-of select="../../pixmap/height - ./y"/>
+		<xsl:text> </xsl:text> 
+		<xsl:value-of select="-1 * ./depth_km"/> 
+		<xsl:value-of select="$newline"/> 
+	</xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>
