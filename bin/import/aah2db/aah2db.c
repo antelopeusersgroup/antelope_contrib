@@ -36,6 +36,8 @@ main (int argc, char **argv)
 	int	errflg = 0;
 	Dbptr	db;
 	char	*dbname;
+	char	dbdir[FILENAME_MAX];
+	char	dbdfile[FILENAME_MAX];
 	int	verbose = 0;
     	int	nargs;		   
 	char	dir[FILENAME_MAX];
@@ -77,6 +79,7 @@ main (int argc, char **argv)
 	}
 
 	dbname = argv[argc-1];
+	parsepath( dbname, dbdir, dbdfile, 0 );
 	
 	dbopen( dbname, "r+", &db );
 	db = dblookup( db, "", "wfdisc", "", "" );
@@ -85,6 +88,11 @@ main (int argc, char **argv)
 
 		ahfile = argv[optind];
 		parsepath( ahfile, dir, dfile, suffix );
+
+		if( strcmp( dir, dbdir ) ) {
+			abspath( dir, dir );
+		}
+
 		if( strcmp( suffix, "" ) &&
 		    strcmp( suffix, "Z" ) &&
 		    strcmp( suffix, "gz" ) ) {
