@@ -1,5 +1,6 @@
 BIN=orbgenloc
 MAN1=orbgenloc.1
+PF=orbgenloc.pf
 
 cflags= #-xpg
 ldlibs= -lgenloc -ltt -lblas -lcoords -lposix4 -lstock \
@@ -10,7 +11,7 @@ ldlibs= -lgenloc -ltt -lblas -lcoords -lposix4 -lstock \
 include $(DSAPMAKE)
 DIRS=
 
-SRCS= orbgenloc.c
+SRCS= orbgenloc.c maketmpdb.c  orb_arrivals_in.c 
 
 OBJS=$(SRCS:.c=.o)
 $(BIN) : $(OBJS)
@@ -18,4 +19,6 @@ $(BIN) : $(OBJS)
 
 
 
+lint: $(SRCS)
+	lint $(SRCS) -I/opt/dsap/solaris/include -I/usr/openwin/include  
 # $Id$ 

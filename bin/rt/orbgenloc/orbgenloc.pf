@@ -1,4 +1,4 @@
-velocity_model_name anza
+velocity_model_name simple
 phases &Arr{
 P  &Arr{
         travel_time_calculator  ttlvz
@@ -28,164 +28,9 @@ P  &Arr{
         92.0    0.0
         360.0   0.0
         }
-	default_time_uncertainty 0.01
+	default_time_uncertainty 0.1
 	default_slowness_uncertainty 0.01
 	time_station_corrections &Tbl{
-TRO      -0.060
-CRY       0.031
-BZN       0.083
-KNW      -0.167
-WMC       0.076
-SND       0.098
-PFO      -0.122
-LVA       0.173
-RDM      -0.081
-FRD       0.039
-PLM       0.127
-CAH       0.077
-COY       0.086
-HOT       0.067
-JUL      -0.049
-KEE      -0.025
-POB      -0.075
-PSP      -0.153
-SMO      -0.067
-YAQ       0.154
-VG2      -0.094
-LAQ      -0.112
-OLY      -0.006
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
-	}
-	ux_station_corrections &Tbl{
-        }
-        uy_station_corrections &Tbl{
-        }
-}
-P2  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-        5.8     0.0
-        8.0     40.0
-        }
-
-	time_distance_weight_function &Tbl{
-	0.0	1.0
-	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
-	}
-	ux_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0    1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-        uy_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-	default_time_uncertainty 0.01
-	default_slowness_uncertainty 0.01
-	time_station_corrections &Tbl{
-TRO      -0.060
-CRY       0.031
-BZN       0.083
-KNW      -0.167
-WMC       0.076
-SND       0.098
-PFO      -0.122
-LVA       0.173
-RDM      -0.081
-FRD       0.039
-PLM       0.127
-CAH       0.077
-COY       0.086
-HOT       0.067
-JUL      -0.049
-KEE      -0.025
-POB      -0.075
-PSP      -0.153
-SMO      -0.067
-YAQ       0.154
-VG2      -0.094
-LAQ      -0.112
-OLY      -0.006
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
-	}
-	ux_station_corrections &Tbl{
-        }
-        uy_station_corrections &Tbl{
-        }
-}
-P3  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-        5.8     0.0
-        8.0     40.0
-        }
-
-	time_distance_weight_function &Tbl{
-	0.0	1.0
-	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
-	}
-	ux_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0    1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-        uy_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-	default_time_uncertainty 0.01
-	default_slowness_uncertainty 0.01
-	time_station_corrections &Tbl{
-TRO      -0.060
-CRY       0.031
-BZN       0.083
-KNW      -0.167
-WMC       0.076
-SND       0.098
-PFO      -0.122
-LVA       0.173
-RDM      -0.081
-FRD       0.039
-PLM       0.127
-CAH       0.077
-COY       0.086
-HOT       0.067
-JUL      -0.049
-KEE      -0.025
-POB      -0.075
-PSP      -0.153
-SMO      -0.067
-YAQ       0.154
-VG2      -0.094
-LAQ      -0.112
-OLY      -0.006
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
 	}
 	ux_station_corrections &Tbl{
         }
@@ -221,164 +66,9 @@ S  &Arr{
         92.0    0.0
         360.0   0.0
         }
-	default_time_uncertainty 0.1
+	default_time_uncertainty 0.2
 	default_slowness_uncertainty 0.005
 	time_station_corrections &Tbl{
-TRO       0.031
-CRY       0.153
-BZN       0.246
-KNW      -0.195
-WMC       0.294
-SND       0.488
-PFO      -0.123
-LVA       0.715
-RDM      -0.045
-FRD       0.186
-PLM       0.000
-CAH       0.000
-COY       0.000
-HOT       0.000
-JUL       0.000
-KEE       0.000
-POB       0.000
-PSP       0.000
-SMO       0.000
-YAQ       0.000
-VG2       0.000
-LAQ       0.000
-OLY       0.000
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
-	}
-	ux_station_corrections &Tbl{
-        }
-        uy_station_corrections &Tbl{
-        }
-}
-Pg  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-        3.5   0.0
-        6.0     1.0
-        }
-
-	time_distance_weight_function &Tbl{
-	0.0	1.0
-	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
-	}
-	ux_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0    1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-        uy_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-	default_time_uncertainty 0.01
-	default_slowness_uncertainty 0.01
-	time_station_corrections &Tbl{
-TRO      -0.060
-CRY       0.031
-BZN       0.083
-KNW      -0.167
-WMC       0.076
-SND       0.098
-PFO      -0.122
-LVA       0.173
-RDM      -0.081
-FRD       0.039
-PLM       0.127
-CAH       0.077
-COY       0.086
-HOT       0.067
-JUL      -0.049
-KEE      -0.025
-POB      -0.075
-PSP      -0.153
-SMO      -0.067
-YAQ       0.154
-VG2      -0.094
-LAQ      -0.112
-OLY      -0.006
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
-	}
-	ux_station_corrections &Tbl{
-        }
-        uy_station_corrections &Tbl{
-        }
-}
-# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
-Sg  &Arr{
-        travel_time_calculator  ttlvz
-        velocity_model &Tbl{
-        3.5   0.0
-        6.0     1.0
-	}
-	time_distance_weight_function &Tbl{
-	0.0	1.0
-	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
-	}
-	ux_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-        uy_distance_weight_function &Tbl{
-        0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
-        }
-	default_time_uncertainty 0.1
-	default_slowness_uncertainty 0.005
-	time_station_corrections &Tbl{
-TRO       0.031
-CRY       0.153
-BZN       0.246
-KNW      -0.195
-WMC       0.294
-SND       0.488
-PFO      -0.123
-LVA       0.715
-RDM      -0.045
-FRD       0.186
-PLM       0.000
-CAH       0.000
-COY       0.000
-HOT       0.000
-JUL       0.000
-KEE       0.000
-POB       0.000
-PSP       0.000
-SMO       0.000
-YAQ       0.000
-VG2       0.000
-LAQ       0.000
-OLY       0.000
-BRP       0.000
-CLP       0.000
-LRP       0.000
-LVA2      0.000
 	}
 	ux_station_corrections &Tbl{
         }
@@ -388,7 +78,7 @@ LVA2      0.000
 }
 arrival_residual_weight_method 			huber
 slowness_residual_weight_method 		none
-time_distance_weighting 			true
+time_distance_weighting 			false
 slowness_distance_weighting 			false
 slowness_weight_scale_factor 			1.0
 min_error_scale 				20.0
@@ -409,12 +99,12 @@ fix_origin_time					false
 step_length_scale_factor 			0.5
 min_step_length_scale 				0.01
 maximum_hypocenter_adjustments 			50
-deltax_convergence_size 			0.05
-relative_rms_convergence_value 			0.0001
-#initial_location_method				manual
+deltax_convergence_size 			0.1
+relative_rms_convergence_value 			0.001
+initial_location_method				manual
 #initial_location_method				nearest_station
 #initial_location_method				S-Ptime
-initial_location_method				rectangle_gridsearch
+#initial_location_method				rectangle_gridsearch
 #initial_location_method				radial_gridsearch
 gridsearch_norm					weighted_rms
 
@@ -427,14 +117,14 @@ initial_depth					5.0
 #parameters used in S-P method
 
 #parameters used in rectangle_gridsearch
-center_latitude					33.5
-center_longitude				-116.7
-center_depth					15.0
-latitude_range					1.0
-longitude_range					1.0
+center_latitude					40.8634
+center_longitude				-108.4823
+center_depth					10.0
+latitude_range					5.0
+longitude_range					5.0
 depth_range					0.0
-nlat						20
-nlon						20
+nlat						50
+nlon						50
 ndepths						1
 
 #parameters used in radial gridsearch
@@ -451,42 +141,49 @@ ndepths						1
 #ndepths					1
 #
 # These are RT parameters
-RT_working_directory 				/u/pavlis/testorbgenloc
-RT_working_db					anza
-RT_logfile_directory				/u/pavlis/testorbgenloc/logfiles
-target_name						gridloc
-do_not_save_arrival				true
-do_not_save_event				true
-maximum_network_transit_time			20.0
-reset_orid					false
-reset_arid					false
-reset_evid					false
-orid						1
-evid						1
-arid						1
-shutdown					false
+#
+RT_working_db					/p/pavlis3/orb/lodore/dbmaster/lodore
+RT_logfile_directory				/p/pavlis3/orb/lodore/logs
+RT_minimum_distance				0.0
+RT_maximum_distance				10.0
+RT_db_record_skip_limit				33
 #
 # orbgenloc needs network geometry tables 
 #
 seismic_stations                                &Tbl{
-ASBS     33.6208 -116.4664    1.4000
-BZN      33.4915 -116.6670    1.3010
-CRY      33.5654 -116.7373    1.1280
-ELKS     33.5813 -116.4496    1.1690
-FRD      33.4947 -116.6022    1.1640
-GLAC     33.6014 -116.4781    1.1690
-KNW      33.7141 -116.7119    1.5070
-LVA2     33.3516 -116.5615    1.4350
-PFO      33.6117 -116.4594    1.2590
-RDM      33.6300 -116.8478    1.3650
-SHUM     33.6327 -116.4445    1.1950
-SND      33.5519 -116.6129    1.3580
-SOL      32.8410 -117.2480    0.2450
-TRO      33.5234 -116.4257    2.6280
-WMC      33.5736 -116.6747    1.2710
-SMTC     32.9449 -115.7999    0.1000
-YAQ      33.1666 -116.3539    0.4300
-LGNA     32.8927 -116.4225    1.9200
+BLUE     40.9923 -108.5420    2.0980
+CALA     40.1134 -108.5359    2.3450
+CALI     40.3653 -108.5670    2.0850
+CSD      40.4364 -108.2792    1.9310
+DOUG     40.5703 -108.6887    2.1530
+DRY      40.6995 -108.5367    2.0590
+FWGP     40.9642 -108.7681    2.0770
+GRAN     41.1084 -108.6420    2.1640
+HELL     41.0470 -108.5767    2.1530
+HIAW     41.0148 -108.7345    2.1050
+JNMT     40.4592 -108.0203    2.2310
+JWM      40.5717 -108.6039    2.0770
+KINN     41.1801 -108.5926    2.2920
+LANG     40.8731 -108.2906    2.2580
+LIME     40.8714 -108.7859    2.3710
+LOOK     40.8634 -108.4823    2.4150
+LSC      40.5328 -108.4414    1.8020
+MAYB     40.4828 -108.1928    1.8880
+NDH      40.3706 -108.1364    1.9570
+PINR     40.3634 -108.3684    2.0970
+PMR      41.0842 -108.8209    2.1640
+POW      40.9353 -108.4212    2.1690
+RRE      41.1687 -108.7323    2.3530
+RRW      41.1389 -108.8589    2.3200
+SMR      40.7217 -108.3028    1.9000
+SUTT     40.5787 -108.2859    1.8520
+SWB      40.6542 -108.3806    1.8150
+TANK     40.4053 -108.7370    2.4410
+TWIN     40.7556 -108.3845    1.8830
+VMCK     41.0789 -108.7098    2.1360
+VMSC     40.9284 -108.6484    2.0060
+YSCF     40.4289 -108.4301    1.9660
+ZENO     40.6028 -108.8245    2.3020
 }
 seismic_arrays &Tbl{
 }
