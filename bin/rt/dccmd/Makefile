@@ -1,7 +1,7 @@
 BIN = dccmd
 MAN1=dccmd.1
 
-ldlibs	= -lpkt -lorb $(TRLIBS) 
+ldlibs	= -ldefunctpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 OBJSM	= dccmd.o\

@@ -1,7 +1,7 @@
 DLIB = libtclucp$(DSUFFIX)
 
 cflags =  $(TCLINCLUDE)
-ldlibs = -lrtucp $(TKLIBS) $(TCLLIBS) -lpkt -lorb $(TRLIBS) 
+ldlibs = -lrtucp $(TKLIBS) $(TCLLIBS) -ldefunctpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 DIRS=

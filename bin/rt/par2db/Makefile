@@ -3,7 +3,7 @@ BIN=par2db
 MAN1=par2db.1
 #
 cflags=
-ldlibs=	-lpkt -lorb $(TRLIBS) $(SVR4LIBS) -ldl
+ldlibs=	-ldefunctpkt $(ORBLIBS) 
 
 include $(ANTELOPEMAKE)
 DIRS=

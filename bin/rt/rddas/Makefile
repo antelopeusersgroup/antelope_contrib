@@ -1,7 +1,7 @@
 BIN = rddas
 MAN1=rddas.1
 
-ldlibs	= -lpkt -lorb $(TRLIBS) 
+ldlibs	= -ldefunctpkt $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= rddas.o\

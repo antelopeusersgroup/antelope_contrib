@@ -4,7 +4,7 @@ BIN = sendMRC
 MAN1= sendMRC.1   
 PF  = sendMRC.pf
 
-ldlibs	= -lpkt -lorb $(TRLIBS) 
+ldlibs	= -ldefunctpkt $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\
