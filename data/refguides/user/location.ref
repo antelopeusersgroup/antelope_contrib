@@ -2,7 +2,7 @@
 Seismic source location
 <commands>
 
-dbloc2 [-r] database
+dbloc2 [-r] [-p pf] database
     interactive hypocenter location
 
 dbloc_snapshot [-f output-file] [-v] database

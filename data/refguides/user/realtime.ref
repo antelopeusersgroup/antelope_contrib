@@ -259,10 +259,10 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 -v	verbose
 </options>
 
-cs2orb comserv orb [-v]
+cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] [-select re] station orbout
     copy data from comserv to an orbserver orb
 
-cs2orb_1_0_1 comserv orbout [-v]
+private cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
 
 k22orb [options] target orbdata [orbcmd]
@@ -461,7 +461,7 @@ orbmag [options] orbwf orbdb dbname
 displayttgrid [-shownames] filename [gridname]
     display travel-time grids on a map
 
-ttgrid_show ttgridfile
+ttgrid_show [-v] ttgridfile
     dump the contents of a ttgrid file
 
 orbpftrigger [options] orb [cmdstring]
@@ -629,8 +629,7 @@ orb2dbt [options] orb dbout [orbout]
 -v
 </options>
 
-
-orb2db_msg [-s sleep] db [pause|continue|status]
+orb2db_msg [-q] [-s sleep] [-t timeout] db [pause|continue|status]
     signal orb2db and orb2dbt processes to pause for database db cleanup
 
 par2db [options] orbname dbname [start [window]]
@@ -857,8 +856,13 @@ deprecated old_orb2orb in out [start [period|end]]
 forbserver [options] filename
     file orbserver emulator
 <options>
--a	use the absolute time specified in the input file
+-A	use the absolute time specified in the input file
+
+-a
+-b
+-x	specify format in output forb(5) file
 -f	flash mode: disregard timing, pump out data as quickly as possible
+-l	loop over input file
 -v	more verbose
 </options>
 

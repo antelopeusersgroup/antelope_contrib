@@ -7,7 +7,7 @@ orb2cd1s [-pf pfname] [-select expr] [-reject expr] [-state statefile] [-start {
 cd1s2cd1 [-n net] [-m match] [-r reject] [-v] [-S state] orb1 orb2
     copy CD1S subframe packets from orb1 and put CD1 packets on orb2
 
-cd1tran [-a after] [-S state] [-m match] [-r reject] [-s name] [-v] orb alphahost
+cd1tran [-a after] [-S base] [-m match] [-r reject] [-s name] [-v] orb alphahost
     read CD1 packets from orb and send them to alphahost using the alpha protocol
 
 cd2orb [-c maxctime] [-i ip] [-P cmport[,cd1port]] [-p pf] [-S dir] [-vv] [orb]

@@ -12,7 +12,7 @@ dbdescribe {db|schema} [table]
 dbdoc db
     generate troff formatted document describing schema for database db
 
-dbfilenames db
+dbfilenames [-v] db
     list database tables and permissions
 
 dbdesign
@@ -103,7 +103,6 @@ dbsplit [options] dbin dbout
 -k 	keep renamed backup of original tables
 -s subset	records which satisfy expr are copied to dbout
 -v 	verbose
--vv	more verbose
 </options>
 
 

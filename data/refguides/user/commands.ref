@@ -18,8 +18,8 @@ private check_antelope_installation
 antelope_update [-ilntv] [-p proxy] [-r id] [url]
     update local antelope installation from BRTT patches 
 
-check_license [license_filename]
-    verify license.pf is valid
+check_license [-v] [license_filename]
+    verify license is valid
 
 check_path [-v] [path]
     check a path to ensure that 'other' users can traverse it
@@ -40,11 +40,39 @@ abspath apath [...]
 relpath here there
     construct relative pathname from here to there
 
-cleanpath apath
-    eliminates repeated slashes, unnecessary ./
+cleanpath [-l] apath
+    eliminates repeated slashes, unnecessary ./, and resolves symbolic links unless -l
 
 ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
+<options>
+Combinatorial options
+-b	binary files
+-c	in CVS
+-C	not in CVS
+-e	empty directories
+-l	symbolic links
+-L	is plain file and has multiple links
+-o	is on this file system
+-O	is on a different file system from $cwd
+-p	plain file
+-t	text file
+-x	executable
+-z	zero size
+-v	invert the result of all the specified tests from above
+Regular expression matching
+-m re	keep matching files
+-r re	reject matching  files
+Operations on filenames
+-D dirname	extract dirname
+-B basename	extract basename
+-S suffix	extract suffix
+-E command	perl command operating on filename
+Other options
+-X	execute each result
+-n	only show the command, don't execute
+-u	print only unique paths
+</options>
 
 deprecated uwd [-f configfile]
     print canonical working directory (for ancient automounters)
@@ -62,7 +90,7 @@ epoch [options] [ +format ] [ time/date components ]
 +format	specify the format of the output (refer to epoch escapes table)
 </options>
 
-elog [-cdln] [-f signal] [message]
+elog [-cdln] [-f fault] [message]
     exhibit behavior of elog error routines with specified message
 
 pfcompare [options] pf
@@ -147,8 +175,8 @@ reflect [-d dir] [-v] remote_host remote_file
 reflectd [-v]
     server companion to reflect
 
-warp command
-    run command on opposite display (when machine has 2 displays)
+warp [-nv] command
+    run command on opposite display (if machine has 2 displays)
 
 build [pf] [pf_dependent_arguments]
     framework for constructing simple gui interfaces based on
@@ -170,6 +198,7 @@ grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
 restrict the searches to certain files by using any combination of the following:
 -c	c source files
 -f	fortran source 
+-g glob	files matching glob
 -h	include files 
 -m	manual pages 
 -M	Makefile or makefile
@@ -215,7 +244,7 @@ deposit [-r] file dest
 produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix
 
-installman manpage dir
+installman [-nv] manpage dir
     install the text manpage into the directory dir, modifying .TH line appropriately
 	
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]

@@ -41,6 +41,7 @@ private db2ew_wave_server [-vV] [-p pfname] dbname
 db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>
+-i	intel order output
 -sc sta/chan	select sta/chan pairs with dbpick style pseudo-glob
 -ts t0	starting at time t0
 -te t1	ending at time t1
@@ -50,17 +51,17 @@ db2sac [options] dbin dbout
 </options>
 
 
-db2sd db sd
+db2sd [-cv] [-n net] [-l lbl] db sd
     create a SEED volume sd from database db (db must contain affiliation, network, sensor, site, stage, calibration and wfdisc tables)
 
 mk_dataless_wfdisc [-v] [-p pf] dbin
-    makes fake wfdisc file in order to create a dataless seed file
+    make fake wfdisc file in order to create a dataless seed file
 
 trash_data [-inv] sd 
     truncate SEED volume sd following the station headers, creating a dataless SEED volume
 
-mk_dmc_seed [-av] [-m addr] [-t tape_drive] [-d directory] db
-    builds IRIS DMC files on tape or disk
+mk_dmc_seed [-vV] [-l lddate_offset] [-r recent_days] [-m email] [-t tape] [-d dir] rt_db
+    build IRIS DMC files on tape or disk
 
 
 db2segy db outfile [-pf pf]
@@ -74,7 +75,7 @@ aah2db [-vV] ahfile [ahfile...] dbname
 ah2db ah1 [ah2 .. ] dbout
     create CSS database dbout from AH format waveform files ah1, ah2, ...
 
-autodrm2db [-v] reply1 [reply2 ..] dbout
+autodrm2db [-vV] reply1 [reply2 ..] dbout
     read autoDRM replies reply1, reply2, ... and copy into a output database dbout
 
 edr2db edr dbout
@@ -180,7 +181,22 @@ dbsteimu [options] input [new_database]
 -w	wfname
 </options>
 
-fix_miniseed [-iv] [-d foreignkeys] [-p pf] miniseed ...
+miniseed2db [-T tolerance] [-v] miniseed [msd2 ...] db
+    create wfdisc rows in db for miniseed volume(s)
+
+db2miniseed [-ivV] [-r record_size] [-l {1|2}] [-n net] db [output]
+    create miniseed from input database
+<options>
+-i	intel order 
+-r size	specify record size (default 4096)
+-l {1|2}	specify steim compression level (default 2)
+-n net	specify default network
+</options>
+
+msdd [-v] miniseed ...
+    dump miniseed volume
+
+fix_miniseed [-iv] [-d foreignkeys] [-{p|P} pf] miniseed ...
     change the network, station, channel and/or location
     codes in miniseed volumes
 

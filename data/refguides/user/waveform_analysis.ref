@@ -70,7 +70,7 @@ event_archive [options] dbin dbout
 -V	be extremely verbose
 </options>
 
-trsample [options] database[.table] [time]
+trsample [options] database[.table] [time [end|period]]
     print a few samples from waveforms in a database
 <options>
 -c	apply calib to the samples
@@ -273,7 +273,7 @@ dbcmpwf [-a] -i db1[.table] [db2[.table]]
 dbcmpwf [-t]   db1[.table] db2[.table] time {endtime|range}
     compare waveform files from two database records or tables.
 
-dbversdwf [-s subset] [-dvw] database
+dbversdwf [-s subset] [-dvwx] database
     check SEED format waveform files for consistency with wfdisc
 
 dbcheckseed [-s] [-t tolerance] dbname
