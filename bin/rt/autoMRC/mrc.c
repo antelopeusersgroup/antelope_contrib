@@ -38,19 +38,18 @@ char *argv[];
   char          *newname, *name;
   char 		*s, *mypf, *pfile ;
   char          *madd, *receipient, *match;
-  char          *version = "1.1 (03/22/97)";
   static Packet *unstuffed=0 ;
   char 		*reciepient=0;
   char 	        *dces = 0,
   		*orbname = 0 ;
 
    elog_init (argc, argv) ;
-   elog_notify (0, "%s version %s\n", argv[0], version) ;
+   elog_notify (0, "$Revision$ $Date$") ;
    Program_Name = argv[0];
   
    /* Set default parameters  */
 
-  mypf="mrc"; pfile = "pkt";
+  mypf="automrc"; pfile = "pkt";
   
   match = ".*/CBB1S";	/* use those packets for LTA calculation */
   MaxOff = 100000;	/* MAX allowed LTA value  */ 
@@ -64,11 +63,8 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "vp:")) != -1)
+  while ( ( i = getopt (argc, argv, "p:")) != -1)
         switch (i) {
-        case 'v':
-            Log = 1;
-	    break ;
 
         case 'p':
             pfile = optarg;
@@ -86,6 +82,7 @@ char *argv[];
   orbname = argv[optind++];
   
   dces = argv[optind++];
+
   
   if( (orb = orbopen( orbname, "r")) < 0)
       die( 0, "Can't open ORB\n");

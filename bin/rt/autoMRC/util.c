@@ -12,7 +12,7 @@
 void usage ()
 {
         fprintf (stderr,
-        "Usage: %s [-p pfile ] [-v]  orb dcname1[,dcname2,dcname3...] \n",
+        "Usage: %s [-p pfile ]  orb dcname1[,dcname2,dcname3...] \n",
         Program_Name);
         exit (1);
 }

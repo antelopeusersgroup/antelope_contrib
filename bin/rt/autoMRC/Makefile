@@ -1,8 +1,8 @@
 # Makefile for svd
 
-BIN = mrc
-MAN1=mrc.1
-PF=mrc.pf
+BIN = automrc
+MAN1=automrc.1
+PF=automrc.pf
 ldlibs	= $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
