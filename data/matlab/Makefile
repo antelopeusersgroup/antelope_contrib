@@ -7,7 +7,6 @@ all clean Include install installMAN pf relink tags uninstall :: FORCED
 		printf "+    %-40s  %s\n" $$i "`date`" ; \
 		if [ -f $$i/Makefile -o -f $$i/makefile ] ; then ( cd $$i && $(MAKE) $@ ; ) ; else if [ -d $$i ] ; then echo Error: no Makefile in `pwd`/$$i ; fi ; fi ; \
 	    done ; \
-	else echo "Error: no matlab" ; \
 	fi
 
 FORCED:
