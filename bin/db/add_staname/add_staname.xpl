@@ -18,7 +18,7 @@
 
 use lib "$ENV{ANTELOPE}/data/perl" ;
 
-use diagnostics;
+#use diagnostics;
 
 use Datascope;
 
