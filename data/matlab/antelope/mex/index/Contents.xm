@@ -33,6 +33,7 @@
 %   dbtheta		- Theta-join two Datascope database tabl
 %   dbunjoin		- Unjoin the specified Datascope database view
 %   dbnojoin		- Find records which do not join between tables
+%   dbfree		- Free resources used by a Datascope database view
 %
 % Evaluating expressions
 %   dbeval		- Evaluate an expression on a Datascope database

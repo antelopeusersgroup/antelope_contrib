@@ -22,6 +22,7 @@
 %   dbexample_dbextfile
 %   dbexample_dbfilename
 %   dbexample_dbfind
+%   dbexample_dbfree
 %   dbexample_dbget
 %   dbexample_dbget_remark
 %   dbexample_dbgetv

@@ -1,0 +1,7 @@
+DBFREE	Free resources used by a Datascope database view
+
+DBFREE ( DBPTR )
+
+DBFREE frees up the space allocated when a new view 
+is created. The input database pointer must identify a 
+single table, that is db.table and db.database should be valid.

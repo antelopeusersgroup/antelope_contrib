@@ -9,6 +9,7 @@ HTML= $(MEXSRCS:.c=.html)
 MEXSRCS= \
 	dbopen.c \
 	dbclose.c \
+	dbfree.c \
 	dbadd.c \
 	dbaddnull.c \
 	dbaddv.c \
