@@ -1,4 +1,5 @@
 full_weight_distance 1.0
+# change dbpmel to pmelgrid for pmelgrid output
 pmelavg_dbview &Tbl{
 dbopen event
 dbjoin origin
