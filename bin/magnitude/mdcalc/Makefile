@@ -1,5 +1,5 @@
 BIN =  mdcalc
-MAN1 = # mdcalc.1
+MAN1 = mdcalc.1
 
 ldlibs = $(F77LIBS) $(TRLIBS) 
 
