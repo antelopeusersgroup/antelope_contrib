@@ -23,4 +23,13 @@ sender		reb_source@somenet.net
 subject		reb-format file
 database	mydbname
 }
+&Arr{
+handler		cnsn_pick
+sender		cnsn_source@somenet.net
+subject		event
+database	testdb_%Y_%m
+authors	&Tbl{
+	"LARGE EVENT NOTIFICATION" yk_large_event
+}
+}
 }
