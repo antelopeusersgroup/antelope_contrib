@@ -86,6 +86,10 @@ liss2orbpkt ( char *seed, int size, char *database,
 	    complain ( 0, "failed to decode packet." ) ; 
 	    hexdump ( stderr, seed, size ) ;
 	    break; 
+
+	case -4: /* log data */
+	    break ;
+
     }
     return retcode ;
 }

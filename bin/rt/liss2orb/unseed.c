@@ -24,11 +24,16 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 
     if ( parse_seed_data_header(conf) ) {
 
-        register_error ( 0, 
-	    "Problems parsing SEED header or 1000 blockette.\n" ) ;
+	if ( conf->has_s1000 && conf->s1000.dataformat == 0 ) {
+	    elog_clear ();
+	    retcode = -4 ;
+	} else {
+	    register_error ( 0, 
+		"Problems parsing SEED header or 1000 blockette.\n" ) ;
+	    retcode = -2 ;
+	}
 	conf->record = 0 ; 
 	freesteim(conf) ;
-        retcode = -2 ;
 
     } else {
 
