@@ -179,8 +179,6 @@ Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, st
 	}	
 	uout.ux=u->ux;
 	uout.uy=u->uy;
-	freetbl(tt,0);
-	free_hook(&h);
 	return(uout);
 }
 Slowness_vector Hypocenter::pslow(double lat0, double lon0, double elev)
