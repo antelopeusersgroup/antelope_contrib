@@ -1,9 +1,21 @@
 DATADIR=responses
-DATA=README_KMI_appnote39.pdf altus_A_100 altus_A_200 altus_A_250 \
-altus_B_causal altus_B_noncausal        
+DATA= \
+    FIRA100 \
+    FIRA100DP \
+    FIRA100S3 \
+    FIRA200 \
+    FIRA200DP \
+    FIRA200S3 \
+    FIRA250 \
+    FIRA250DP \
+    FIRA250S3 \
+    FIRA50 \
+    FIRA50DP \
+    FIRBC \
+    FIRBCDP \
+    FIRBNC \
+    FIRBNCDP
                                
-
-                       
 include $(ANTELOPEMAKE)  	
 DIRS=
 
