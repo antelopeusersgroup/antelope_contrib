@@ -1214,35 +1214,44 @@ if( $opt_e ) {
 
 	remove_stale_webmaps( @db );
 
+	$min_time = 0;
+
+	if( defined( $State{max_num_eqs} ) && $State{max_num_eqs} > 0 ) {
+
+		@dbmaps = dbprocess( @db, 
+				"dbopen origin",
+				"dbjoin event",
+				"dbsubset orid == prefor",
+				"dbsort -r origin.time" );
+
+		$nmaps = dbquery( @dbmaps, "dbRECORD_COUNT" );
+
+		if( $nmaps > $State{max_num_eqs} ) {
+			
+			$dbmaps[3] = $State{max_num_eqs} - 1;
+
+			$min_time = dbgetv( @dbmaps, "", "origin.time", "", "" );
+		}
+	}
+
 	@dbneedmaps = dbprocess( @db, 
 			 "dbopen origin", 
 			 "dbjoin event",
 			 "dbsubset orid == prefor",
 			 "dbnojoin webmaps evid#evid",
-			 "dbsort origin.time" ); 
+			 "dbsort origin.time",
+			 "dbsubset origin.time >= $min_time" ); 
 
 	$nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
 
-	if( defined( $State{max_num_eqs} ) && ${max_num_eqs} > 0 ) {
+	print "dbrecenteqs: creating $nmaps focus maps\n";
 
-		$starteq = $nmaps > $State{max_num_eqs} ? $nmaps - $State{max_num_eqs} - 1 : 0;
-		$eqcount = $nmaps - $starteq;
-
-	} else {
-
-		$starteq = 0;
-		$eqcount = $nmaps;
-	}
-
-	# N.B. This is actually an upper limit on the number of focus maps 
-	# that need to be made (we're displaying $State{max_num_eqs}, some of which 
-	# may already have current focus maps in existence)
-
-	print "dbrecenteqs: creating $eqcount focus maps\n";
-
-	for( $dbneedmaps[3]=$starteq; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
+	for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
 
 		( $evid ) = dbgetv( @dbneedmaps, "evid" );
+
+		print sprintf "Creating focus map %d of %d:\n",
+			      $dbneedmaps[3]+1, $nmaps;
 
 		create_focusmap( $evid, @db );
 		create_focusmap_html( $evid, @db );

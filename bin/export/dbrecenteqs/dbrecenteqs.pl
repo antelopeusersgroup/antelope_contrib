@@ -975,7 +975,6 @@ sub create_map {
 
 	unlink( "$Mapspec{psfile}" );
 
-
 	if( ( "$Mapspec{mapclass}" ne "focus" ) &&
 	    ( -e "$Mapspec{pixfile}" || -e "$Mapspec{pixfile}.pf") ) {
 
@@ -998,6 +997,8 @@ sub create_map {
 
 	%Mapspec = %{pixfile_convert( \%Mapspec )};
 	write_pixfile_pffile( \%Mapspec );
+
+	unlink( "$Mapspec{psfile}" );
 
 	return \%Mapspec;
 }
