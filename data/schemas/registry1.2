@@ -228,6 +228,26 @@ Attribute kbaud
 	}
 	;
 
+Attribute owner
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "resource owner" )
+	Detail {
+		owner of an orbserver or other resource, e.g. SIO or UCSD
+	}
+	;
+
+Attribute place
+	String (70)
+	Format ( "%-70s" )
+	Null ( "-" )
+	Description ( "Feature name" )
+	Detail {
+		This is the common name of the listed feature.
+	}
+	;
+
 Attribute preserve
 	String (2)
 	Format ( "%-2s" )
@@ -264,6 +284,19 @@ Attribute lastrequest
 	}
 	;
 
+Attribute lat
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lat >= -90.0 && lat <= 90.0" )
+	Units ( "Degrees" )
+	Description ( "estimated latitude" )
+	Detail {
+		This attribute is the geographic latitude.  Locations
+		north of the equator have positive latitudes.
+	}
+	;
+
 Attribute latency_sec
 	Real (17)
 	Format ( "%17.5f" )
@@ -283,6 +316,20 @@ Attribute lddate
 	Description ( "time of last update " )
 	Detail {
 		This is the time of a database update
+	}
+	;
+
+Attribute lon
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lon >= -180.0 && lon <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "estimated longitude" )
+	Detail {
+		This attribute is the geographic longitude in degrees. 
+		Longitudes are measured positive east of the Greenwich
+		meridian.
 	}
 	;
 
@@ -577,6 +624,48 @@ Attribute rejected
 	}
 	;
 
+Attribute Scoll
+	String (256)
+	Format ( "%-256s" )
+	Null ( "-" )
+	Description ( "SRB Collection" )
+	Detail {
+		The Scoll field identifies the Collection to which a 
+		given file belongs in a Storage Resource Broker (SRB). 
+		The SRB Collection name is analogous to a directory
+		name on a Unix file system.
+	}
+	;
+
+Attribute Sobj
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "SRB Object" )
+	Detail {
+		The Sobj field identifies the object name under which a 
+		given file is registered in a Storage Resource Broker 
+		(SRB). The SRB Object name is analogous to a file
+		name on a Unix file system.
+	}
+	;
+
+Attribute Szone
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "SRB Zone" )
+	Detail {
+		The Szone field identifies the relevant Storage 
+		Resource Broker (SRB) system containing the referenced 
+		file. The exact hostname and port needed to connect to 
+		this SRB may be found from the Zone Authority. At the
+		time of writing that zone authority is at 
+		
+		http://www.npaci.edu/dice/srb/zoneAuthority.html
+	}
+	;
+
 Attribute select
 	String (96)
 	Format ( "%-96s" )
@@ -819,6 +908,15 @@ Relation databases
 	}
 	;	
 
+Relation databasesrb
+	Fields ( dbprogram dbmachine dir dfile Szone Scoll Sobj lddate )
+	Primary ( dbmachine dir dfile Szone Scoll Sobj )
+	Description ( "SRB-registered orbserver objects " )
+	Detail {
+		This table describes SRB objects registered for orbservers.
+	}
+	;
+
 Relation grid
 	Fields ( griddescrip lddate )
 	Primary ( griddescrip )
@@ -831,7 +929,7 @@ Relation grid
 	;
 
 Relation servernames
-	Fields ( serveraddress serverport serveralias fqhostname portname preserve lddate )
+	Fields ( serveraddress serverport serveralias fqhostname portname preserve lat lon place owner lddate )
 	Primary ( serveraddress serverport )
 	Alternate ( serveralias )
 	Description ( "names for orbservers" )
@@ -851,6 +949,15 @@ Relation servers
 	Description ( "running orbserver instances" )
 	Detail {
 		This table describes individual orbserver instances.
+	}
+	;
+
+Relation serversrb
+	Fields ( serveraddress serverport Szone Scoll Sobj lddate )
+	Primary ( Szone Scoll Sobj )
+	Description ( "SRB-registered orbserver objects " )
+	Detail {
+		This table describes SRB objects registered for orbservers.
 	}
 	;
 
