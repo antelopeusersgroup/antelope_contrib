@@ -15,7 +15,7 @@ Steim *stinit (Ch_data *buf)
     
     steim = newsteim ();
     steim->level = 2;
-    steim->private = (void *) buf;
+    steim->pvt = (void *) buf;
         
     szcopy (steim->sdh.sta, buf->sta, STA_LEN);  
     szcopy (steim->sdh.chan, buf->chan, CHAN_LEN);
@@ -79,7 +79,7 @@ int save_seed ( Steim *conf,
     Ch_data      *abuf;
 
 
-    abuf = (Ch_data *) conf->private;
+    abuf = (Ch_data *) conf->pvt;
     fill_header (conf, n0, n1, abuf);
     
     if (fwrite (conf->record, conf->record_size, 1, abuf->file) != 1) {

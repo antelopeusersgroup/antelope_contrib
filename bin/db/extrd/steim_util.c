@@ -14,7 +14,7 @@ Steim *init_steim( SegData *segment)
  
     steim = newsteim ();
     steim->level = 2;  
-    steim->private = (void *) segment;
+    steim->pvt = (void *) segment;
  
     szcopy (steim->sdh.sta, segment->sta, STA_LEN);
     szcopy (steim->sdh.chan, segment->chan, CHAN_LEN);
@@ -80,7 +80,7 @@ save_seed ( Steim *conf, int first, int last)
     int nbytes = 0;
     int extra=0;
     
-    segment = ( SegData *) conf->private;
+    segment = ( SegData *) conf->pvt;
 
     fill_header (conf, first, last, segment);
 
