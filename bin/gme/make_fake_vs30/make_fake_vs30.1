@@ -87,7 +87,7 @@ Executing: cp /tmp/dbgmtgrid_500_6212_1.grd fake.grd
 Executing grdlandmask -Gfake_landmask.grd -R10/15/40/45 -I30c -F
 Executing grdmath fake.grd fake_landmask.grd MUL = fake_masked.grd
 Executing grdgradient fake_masked.grd -Gfake_masked.grad -A60 -Nt
-Executing grdmath fake_masked.grad ABS 300 MUL 300 ADD = fakevs30.grd
+Executing grdmath fake_masked.grad ABS 900 MUL 300 ADD = fakevs30.grd
 Executing psbasemap -V -P -R10/15/40/45 -JM4 -Ba1g0.5WESN -K > fake.ps
 psbasemap: Constructing basemap
 Executing makecpt -Cjet -I -T300/600/100 > vscolors.cpt
