@@ -476,7 +476,7 @@ sub more_ps {
 	} elsif( $position eq "last" ) {
 		return ( "-O", ">>" );
 	} else {
-		complain( 1, "Unknown position $position in &more_ps\n" );
+		print STDERR "Unknown position $position in &more_ps\n";
 		return "";
 	}
 }
@@ -1736,8 +1736,8 @@ sub write_pixfile_pffile {
 
 	if( ! -e "$Mapspec{pixfile}" ) {
 
-		complain( 1, "Won't write $Mapspec{pixfile}.pf; " .
-			     "$Mapspec{pixfile} does not exist\n" );
+		print STDERR "Won't write $Mapspec{pixfile}.pf; " .
+			     "$Mapspec{pixfile} does not exist\n";
 		return;
 	}
 
