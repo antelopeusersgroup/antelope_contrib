@@ -1,4 +1,7 @@
 <chapter Tcl/Tk Extensions>
+<man>
+% man tcl_packages
+</man>
 <commands>
 atcl
     Tcl shell
@@ -8,6 +11,8 @@ awish
 
 <body>
     package require XXX
+
+
 <commands>
 Tclx
 Tkx
