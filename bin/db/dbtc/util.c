@@ -11,7 +11,7 @@
  
 void usage ()
 {
-    fprintf (stderr, "usage: %s [-p pfile] [-t stime] [-v] gdb:gsta:gch bdb:bsta:bch\n",Program_Name);
+    fprintf (stderr, "usage: %s [-p pfile] [-t stime] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch\n",Program_Name);
     exit (1);
 }
  
