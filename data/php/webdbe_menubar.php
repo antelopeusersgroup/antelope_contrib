@@ -54,10 +54,10 @@
     <div><a href="#">Graphics</a></div>
     <ul>
       <li><a href="#" onClick="document.webdbe.graphics.value='map';document.webdbe.submit()">Map</a></li>
-      <li><a href="#">ShowThumbnail</a></li>
-      <li><a href="#">ShowImage</a></li>
-      <li><a href="#">MakeTimeLapse</a></li>
-      <li><a href="#">PlotStation</a></li>
+      <li><a href="#" onClick="document.webdbe.graphics.value='thmb';document.webdbe.submit()">ShowThumbnail</a></li>
+      <li><a href="#" onClick="document.webdbe.graphics.value='img';document.webdbe.submit()">ShowImage</a></li>
+      <li><a href="#" onClick="document.webdbe.graphics.value='time';document.webdbe.submit()">MakeTimeLapse</a></li>
+      <li><a href="#" onClick="document.webdbe.graphics.value='plot';document.webdbe.submit()">PlotStation</a></li>
     </ul>
   </li>
   <li id="menu6">
