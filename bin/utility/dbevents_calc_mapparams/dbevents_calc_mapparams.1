@@ -1,0 +1,78 @@
+.TH MAXIN 1 "$Date$"
+.SH NAME
+dbevents_calc_mapparams \- computes xdelmin, xdelmax, ydelmin, ydelmax for use in dbevents.pf
+.SH SYNOPSIS
+.nf
+\fBdbevents_calc_mapparams\fP
+.fi
+.SH DESCRIPTION
+
+To be used in conjunction with dbevents.pf to find the parameters 
+xdelmin, xdelmax, ydelmin, ydelmax when the user has specified the 
+lowerleft and upperright corners of the map projection in gmt 
+(eg. -JE and -R with r option).  
+
+Note that these are the map projection parameters for Equal-Distance 
+projection (edp) maps only.  The script is interactive and prompts the 
+user for input.
+
+.SH PARAMETERS
+.nf
+The following values are interactively requested of the user:
+
+latc \- centre latitude
+
+lonc \- centre longitude
+
+lat_ll \- latitude lower left
+
+lon_ll \- longitude lower left
+
+lat_ur \- latitude upper right
+
+lon_ur \- longitude upper right
+.fi
+.LP
+
+.SH EXAMPLE
+.nf
+
+% dbevents_calc_mapparams
+Enter centre latitude: 58
+Enter centre longitude: -125
+Enter latitude lower left: 46.1
+Enter longitude lower left: -138
+Enter latitude upper right: 70
+Enter longitude upper right: -97
+
+xdelmin  -9.03041
+ydelmin  -11.0653
+xdelmax  9.33432
+ydelmax  14.0601
+
+---
+.fi
+
+
+Input values can also be specified in a file (with line returns between values) and redirected into the script:
+
+% dbevents_calc_mapparams < dbevents_calc_mapparams.in
+
+where file dbevents_calc_mapparams.in consists of:
+
+.nf
+latc
+lonc
+lat_ll
+lon_ll
+lat_ur
+lon_ur
+.fi
+
+.SH "SEE ALSO"
+.nf
+dbevents(1)
+.fi
+.SH AUTHOR
+Taimi Mulder
+.\" $Id$
