@@ -126,7 +126,7 @@ dbsave_view (@db, name)
 
 <subsection Miscellaneous Datascope Functions>
 dbquery (@db, code)
-    query the database for information, e.g. dbquery(@db, "dbRECORD_COUNT"). see 
+    query the database for information, e.g. dbquery(@db, dbRECORD_COUNT). see 
     Datascope Constants for valid query codes.
 
 dbex_eval (@db, expression)
@@ -312,7 +312,7 @@ grn (lat, lon)
     return the geographic region number
 
 grname (lat, lon)
-    return the geopgraphic region name
+    return the geographic region name
 
 srn (lat, lon)
     return the seismic region number
@@ -379,13 +379,22 @@ strtime (epoch)
     return epoch time formatted like "4/23/2001  15:35:15.000"
 
 strydtime (epoch)
-    return epoch time formattted like "4/23/2001 (113) 15:35:15.000"
+    return epoch time formatted like "4/23/2001 (113) 15:35:15.000"
 
 strdate (epoch)
     convert epoch time to date, eg "4/23/2001"
 
 strtdelta (dt)
     convert the time-difference dt (in seconds) to string, eg "30:35 minutes"
+
+strlocaltime (epoch)
+    return epoch time formatted like "4/23/2001  15:35:15.000" in local timezone
+
+strlocalydtime (epoch)
+    return epoch time formatted like "4/23/2001 (113) 15:35:15.000" in local timezone
+
+strlocaldate (epoch)
+    convert epoch time to date, eg "4/23/2001" in local timezone
 
 
 epoch (yearday)
@@ -635,6 +644,8 @@ pidexecname(pid)
     resident set size in kilobytes, run state, epoch start time, total cpu time,
     and total children cputime for process pid
 
+$exists = pid_exists($pid)
+    returns 1 if $pid exists
    
 %statvfs = statvfs (path)
     return Mb_total, Mb_avail, inodes_avail, inodes_used on disk
@@ -644,5 +655,7 @@ pidexecname(pid)
     return number of cpus, and idle, user, kernel, iowait and swap time 
     for each cpu.
 
+$cwd = getcwd()
+    return current working directory
 
  

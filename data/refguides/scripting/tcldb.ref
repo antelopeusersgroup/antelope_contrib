@@ -306,6 +306,9 @@ writefile filename var
 datafile envname file 
     returns path for file under $ANTELOPE/data
 
+is_nfs path
+    returns true if path is nfs mounted
+
 sig2str sig
     returns a string describing the signal #sig
 
