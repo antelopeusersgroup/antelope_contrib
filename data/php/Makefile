@@ -11,9 +11,7 @@ MAN3= Datascope_PHP.3
 
 CLEAN= $(MYDLIB)
 
-PHP= /usr/local/include/php
-
-cflags= -I$(PHP) -I$(PHP)/main -I$(PHP)/Zend -I$(PHP)/TSRM \
+cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC
 ldlibs= $(DBLIBS)
 
