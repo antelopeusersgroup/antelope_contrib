@@ -1270,7 +1270,7 @@ sub write_pixfile_pffile {
 
 	if( ! -e "$Mapspec{pixfile}" ) {
 
-		complain( 1, "Won't write $Mapspec{pixfile}.pf; "
+		complain( 1, "Won't write $Mapspec{pixfile}.pf; " .
 			     "$Mapspec{pixfile} does not exist\n" );
 		return;
 	}
