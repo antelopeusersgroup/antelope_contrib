@@ -2,7 +2,7 @@
 .SH NAME
 pick2db \- convert hypoellipse pickfile(s) to datascope css3.0 format
 .SH SYNOPSIS
-pick2db [-cv] [-r reference_db[:reference_db...]] pickfile \[pickfile...\] dbname
+pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile \[pickfile...\] dbname
 .SH DESCRIPTION
 .LP
 Pick2db converts a hypoellipse pickfile or series of pickfiles into a datascope
@@ -155,6 +155,10 @@ component); or by an "n" in the fourth character of the station name
 (north component). A "p" in the fourth character of the station name
 indicates a pressure-sensor, thus landing a "p" in the first position
 of the channel name (even though that seems like an awful place for it).
+.IP -p
+Pick2db will put one-letter component code from the Pcode field of the 
+phase row into the channel field of the arrival row. This allows later 
+cleanup with the station_name_translation database
 .IP -v
 Verbose option. Pick2db will report the name of each file it tries to process.
 .IP "-r \fIreference_db[:reference_db...]\fR" 

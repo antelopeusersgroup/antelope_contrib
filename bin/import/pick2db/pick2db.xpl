@@ -456,6 +456,7 @@ sub event {
 		 "prefor",$prefor,
 #		 "commid",commid,
 		 "auth",$auth);
+	elog_flush( 1, 0 );
 }
 
 sub origin {
@@ -494,6 +495,7 @@ sub origin {
 #         	"commid",commid,
          	"auth",$auth);
 	};
+	elog_flush( 1, 0 );
 
 	return $orid,$evid;
 
@@ -545,6 +547,7 @@ sub origerr {
          	"conf",$conf,
 #         	"commid",commid,
          	"sdobs",$sum_rms ? $sum_rms/100 : -1.0000);
+	elog_flush( 1, 0 );
 }
 
 sub P_phase {
@@ -573,6 +576,22 @@ sub P_phase {
 		$qual = "-";
 	}
 
+	if( $opt_c ) {
+		$chan = &fake_chan($phs_sta);
+	} elsif( $opt_p ) {
+		if($phs_Pcode =~ /.[eE]/) {
+			$chan = "E";
+		} elsif($phs_Pcode =~ /.[nN]/) {
+			$chan = "N";
+		} elsif($phs_Pcode =~ /.[zZ]/) {
+			$chan = "Z";
+		} else {
+			$chan = "-";
+		}
+	} else {
+		$chan = "-";
+	}
+
 	@db = dblookup(@db,"","arrival","","");
 	eval {
 	dbaddv(@db,
@@ -582,7 +601,7 @@ sub P_phase {
          	"jdate",$jdate,
 #         	"stassid",stassid,
 #         	"chanid",chanid,
-         	"chan",$opt_c ? &fake_chan($phs_sta) : "-",
+         	"chan",$chan,
          	"iphase","P",
 #         	"stype",stype,
          	"deltim",$phs_Pse ? $phs_Pse / 100 : -1.000,
@@ -602,6 +621,7 @@ sub P_phase {
 #         	"commid",commid,
          	"auth",$auth);
 	};
+	elog_flush( 1, 0 );
 	return unless(!$@);
 
 	@db = dblookup(@db,"","assoc","","");
@@ -624,6 +644,7 @@ sub P_phase {
 #         	"vmodel",vmodel,
 #         	"commid",commid,
          	"wgt",&assoc_wgt($phs_Weight));
+	elog_flush( 1, 0 );
 }
 
 
@@ -637,6 +658,21 @@ sub S_phase {
 
 	($epoch,$jdate) = &convert_time($phs_basetime,$phs_Ssec / 100);
 
+	if( $opt_c ) {
+		$chan = &fake_chan($phs_sta);
+	} elsif( $opt_p ) {
+		if($phs_Pcode =~ /.[eE]/) {
+			$chan = "E";
+		} elsif($phs_Pcode =~ /.[nN]/) {
+			$chan = "N";
+		} elsif($phs_Pcode =~ /.[zZ]/) {
+			$chan = "Z";
+		} else {
+			$chan = "-";
+		}
+	} else {
+		$chan = "-";
+	}
 	@db = dblookup(@db,"","arrival","","");
 	eval {
 	dbaddv(@db,
@@ -646,7 +682,7 @@ sub S_phase {
          	"jdate",$jdate,
 #         	"stassid",stassid,
 #         	"chanid",chanid,
-         	"chan",$opt_c ? &fake_chan($phs_sta) : "-",
+         	"chan",$chan,
          	"iphase","S",
 #         	"stype",stype,
          	"deltim",$phs_Sse ? $phs_Sse/100 : -1.000,
@@ -666,6 +702,7 @@ sub S_phase {
 #         	"commid",commid,
          	"auth",$auth);
 	};
+	elog_flush( 1, 0 );
 	return unless(!$@);
 
 	@db = dblookup(@db,"","assoc","","");
@@ -688,6 +725,7 @@ sub S_phase {
 #         	"vmodel",vmodel,
 #         	"commid",commid,
          	"wgt",&assoc_wgt($phs_Sweight));
+	elog_flush( 1, 0 );
 }
 
 sub amp_phase {
@@ -729,6 +767,7 @@ sub amp_phase {
 #         	"commid",commid,
          	"auth",$auth);
 	};
+	elog_flush( 1, 0 );
 	return unless(!$@);
 
 	@db = dblookup(@db,"","assoc","","");
@@ -751,6 +790,7 @@ sub amp_phase {
 #         	"commid",commid,
 #         	"wgt",wgt,
          	"timedef","n");
+	elog_flush( 1, 0 );
 
 	if($phs_xmg && ($origin_mlid != -1) && ($ml_auth eq $auth)) {
 
@@ -769,6 +809,7 @@ sub amp_phase {
 #      		   	"uncertainty",uncertainty,
 #	         	"commid",commid,
          		"auth",$auth);
+		elog_flush( 1, 0 );
 	}
 
 	if($phs_fmg && ($mdid != -1)) {
@@ -788,6 +829,7 @@ sub amp_phase {
 #      		   	"uncertainty",uncertainty,
 #	         	"commid",commid,
          		"auth",$auth);
+		elog_flush( 1, 0 );
 	}
 
 	return;
@@ -811,6 +853,7 @@ sub add_netmag_entry {
 #         	"uncertainty",uncertainty,
 #         	"commid",commid,
          	"auth",$auth);
+	elog_flush( 1, 0 );
 
 	return;
 
@@ -857,8 +900,8 @@ $Project_Ellipse = "project_ellipse";
 
 $Usage = "Usage: $0 [-cv] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname\n";
 
-$opt_v = $opt_c = $opt_r = 0; # Kill "variable used once" error
-if ( ! &Getopts('cvr:') || $#ARGV < 1 ) {
+$opt_v = $opt_c = $opt_r = $opt_p = 0; # Kill "variable used once" error
+if ( ! &Getopts('cpvr:') || $#ARGV < 1 ) {
 	die ( "$Usage" );
 } else {
 	$database = pop(@ARGV);
