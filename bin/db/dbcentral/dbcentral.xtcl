@@ -226,19 +226,19 @@ proc run_cmdline {} {
 
 	if { $List_Nicknames && $nickname != "" } {
 
-		puts stdout "\ndbcentral command nicknames for $nickname:\n\n"
+		puts stdout "\ndbcentral command nicknames for $nickname:\n"
 
 		foreach key $Tasks($nickname) {
-			puts stdout "\t$key\n"
+			puts stdout "\t$key"
 		}
 		puts stdout "\n"
 
 	} elseif { $List_Nicknames } {
 
-		puts stdout "\ndbcentral database nicknames:\n\n"
+		puts stdout "\ndbcentral database nicknames:\n"
 		
 		foreach key [array names Nicknames] {
-			puts stdout "\t$key\n"
+			puts stdout "\t$key"
 		}
 		puts stdout "\n"
 
@@ -270,13 +270,15 @@ proc run_cmdline {} {
 
 init_globals
 
-if { $argc == 0 } {
+if { $argc == 0 && ! [info exists tk_version] } {
+
+	exec $env(ANTELOPE)/bin/awish $argv0
+
+} elseif { $argc == 0 } {
 
 	init_windows
 
 } else {
-
-	wm withdraw .
 
 	run_cmdline
 

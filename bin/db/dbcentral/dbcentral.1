@@ -1,6 +1,6 @@
 .TH DBCENTRAL 1 "$Date$"
 .SH NAME
-dbcentral \- centralized GUI to launch commands on commonly used databases
+dbcentral \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
 dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
@@ -31,15 +31,17 @@ adding/removing/changing entries as necessary. Of course, individual users
 can add their own databases to personal extensions of the dbcentral.pf 
 parameter file.
 
-dbcentral reads this parameter file and creates a GUI with one pull-down
-menu per database. Each pull-down menu contains entries for the commands
-which may be run on that database. In addition, a time-of-interest field 
-is specified. This is used to interpret database-name templates which 
-depend on time. The time-of-interest field is initialized to be the launch
-time of the dbcentral program, determined from the system clock. However, 
-a different time may be typed in by the user. Hitting 'return' in the entry 
-box after changing the time will normalize the time-string to the standard 
-print format. Any time string accepted by str2epoch(3) may be entered.
+When dbcentral is launched with no command-line options, it reads this
+parameter file and creates a GUI with one pull-down menu per database.
+Each pull-down menu contains entries for the commands which may be run
+on that database. In addition, a time-of-interest field is specified at
+the top of the GUI window.  This time is used to interpret
+database-name templates which depend on time.  The time-of-interest
+field is initialized to be the launch time of the dbcentral program,
+determined from the system clock. However, a different time may be
+typed in by the user. Hitting 'return' in the entry box after changing
+the time will normalize the time-string to the standard print format.
+Any time string accepted by str2epoch(3) may be entered.
 
 The database name is intended to be a template for str2epoch(3), which
 allows dbcentral to handle entire structures of databases with similar,
@@ -92,7 +94,10 @@ case the specified task is launched. The -t option may be used to
 specify a time other than the current time to use in the database name 
 template. Finally, the -d option may be used to retrieve absolute 
 pathnames, and the -n option may be used to print a list of available database 
-nicknames, or available task nicknames for a given database nickname.
+nicknames, or available task nicknames for a given database nickname. The -d 
+option is useful in scripts and in other parameter files (via the &exec()
+mechanism; see pf(3)). This allows common database pathnames to be 
+centrally configured.
 .SH OPTIONS
 -d Show absolute pathname of database
 
