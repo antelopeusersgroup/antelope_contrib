@@ -46,7 +46,7 @@ public class OrbImagePacket extends OrbPacket {
  	 */
 
         if (pkt == null || pktsize < 1) return;
-	
+
         ByteArrayInputStream inBuf = new ByteArrayInputStream(pkt, 0, pktsize);
         DataInputStream pktBuf = new DataInputStream (inBuf);
 	
@@ -78,16 +78,22 @@ public class OrbImagePacket extends OrbPacket {
     /** Unpack the on-the-wire representation into an OrbImagePacket.  
      *  This is called automatically by the parent class's unstuff method.*/
  
+    public static OrbPacket unstuff(OrbRawPacket packet) throws IOException {
+	return unstuff(packet.time, packet.pktid, 
+		       packet.srcname, packet.packet, packet.pktsize);
+    }
+
     public static OrbPacket unstuff(double time, int pktid, SourceName srcname, 
 				       byte pkt[], int pktsize) 
 		throws IOException {
+
 	return new OrbImagePacket(time, pktid, srcname, pkt, pktsize);
     }
 
 	        
     /** Stuff this OrbImagePacket object into its binary representation. */
     
-    public byte[] stuff() {
+    public OrbRawPacket stuff() {
 	// not implemented
       
         /* Check to see whether a coded version of the image exists. */
@@ -154,8 +160,9 @@ public class OrbImagePacket extends OrbPacket {
 	    frame.setVisible(true);
     }
 
+*/
     public static void main (String args[]) {
-
+/*
 	
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
 		public void run() {
@@ -166,21 +173,25 @@ public class OrbImagePacket extends OrbPacket {
 	JFrame frame = new javax.swing.JFrame("OrbImageViewer");
 	frame.show();
 	
+*/
 	try {
 	    Orb orb = new Orb("bohemia.splorg.org:6580","r");
 	    OrbRawPacket pkt;
-	    orb.select("PF_GVS/MGENC");
+	    orb.select("SIO_Revelle_Axis1/EXP/IMG");
 	    orb.after(0);
-	    while ((pkt = orb.reap()) != null) {
-		OrbImagePacket imgPkt = OrbImagePacket.unstuff(pkt);
-//		imgPkt.image;
+	    while ((pkt = (OrbRawPacket)(orb.reap(false))) != null) {
+		System.out.println("Got a packet; unstuffing it...");
+		System.out.println("The packet I got is \""+pkt+"\".");
+		OrbPacket unstuffedpkt = OrbImagePacket.unstuff(pkt);
+		OrbImagePacket imgPkt = (OrbImagePacket)unstuffedpkt;
+		System.out.println("Got image packet with description \"" +
+				   imgPkt.description + "\".");
 	    }
 	    orb.close();
 	} catch (Exception e) {
 	    System.err.println("Exception caught: " + e.getMessage());
 	}
     }
-*/
 
     /* We should put these into some private data access class. */
 

@@ -90,7 +90,17 @@ public class OrbWaveformPacket extends OrbPacket {
 
 	return null; // fixme: throw an exception?
     }
-    
+
+    public OrbRawPacket stuff() {
+	try {
+	    byte pkt[] = stuffGEN();
+	    return new OrbRawPacket(time, pktid, srcname, pkt, pkt.length);
+	} catch (Exception e) {
+	    // FIXME
+	}
+	return null;
+    }
+
     /**
      * This gets a string description of the Antelope data packet.
      * @return A string suitable for display.

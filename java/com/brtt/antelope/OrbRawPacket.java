@@ -48,10 +48,11 @@ public class OrbRawPacket extends OrbPacket {
 	return new OrbRawPacket(time, pktid, srcname, pkt, pktsize);
     }
     
-    /** Stuff this OrbStringPacket object into its binary representation. */
+    /** Return a stuffed (OrbRawPacket) version of this packet.  Since
+     *  this is already an OrbRawPacket, we just return 'this'. */
     
-    public byte[] stuff() {
-	return packet;
+    public OrbRawPacket stuff() {
+	return this;
     }
     
     /** Return the value encapsulated in this packet, a String. */

@@ -27,7 +27,7 @@ import java.util.*;
  * @author  Danny Harvey, BRTT
  * @author  Tobin Fricke, University of California
  */
-public class OrbPacket extends Object {
+public abstract class OrbPacket extends Object {
     /**
      * Holds the packet epoch time. This is set by Orb.get or Orb.reap for 
      * packets coming from the Orb.  For outgoing packets, this value is 
@@ -64,7 +64,10 @@ public class OrbPacket extends Object {
     }
           
     /** Public Methods */
+
     
+    public abstract OrbRawPacket stuff();
+
     /**
      * This converts on Antelope data packet into a usable format.
      * @exception java.io.IOException

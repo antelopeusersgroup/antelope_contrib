@@ -42,12 +42,14 @@ public class OrbStringPacket extends OrbPacket {
     
     /** Stuff this OrbStringPacket object into its binary representation. */
     
-    public byte[] stuff() {
+    public OrbRawPacket stuff() {
+	byte pkt[];
 	try {
-	    return contents.getBytes("US-ASCII");
+	    pkt = contents.getBytes("US-ASCII");
 	} catch (UnsupportedEncodingException e) {
-	    return contents.getBytes();
+	    pkt = contents.getBytes();
 	}
+	return new OrbRawPacket(time, pktid, srcname, pkt, pkt.length);
     }
     
     /** Return the value encapsulated in this packet; in this case, a String. */
