@@ -89,6 +89,7 @@ int             ntapers;
 		    sum += sqr (dp[i]);
 		variance = sum / npts;
 
+		tr.field = tr.record+1 ;
 		mw.record = dbcopy (tr, mw, 0);
 		dbputv (mw, 0,
 			"time", t0,
