@@ -80,7 +80,16 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	*error = "No arrival data for a location" ; 
 	return -1 ;
     }
-
+    /* When depth is fixed,  we have to reset center_depth to 
+    the initial_depth field and set the number of depths for
+    grid searches to 1.  This is the correct approach as it allows
+    the dbloc2 script to set the initial_depth which makes sense. */
+    if(o.fix[2])
+    {
+	h0.z = pfget_double(pf,"initial_depth");
+	pfput_double(pf,"center_depth",h0.z);
+	pfput_int(pf,"ndepths",1);
+    }
     h0 = initial_locate (ta, tu, o, pf);
     if (strcmp(pfget_string(pf, "initial_location_method"), "manual") == 0 )  {
         double time ;
