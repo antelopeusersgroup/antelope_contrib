@@ -28,7 +28,6 @@
 #include "arrays.h"
 
 #define default_v_r 4.0
-#define	TIME_FACTOR	3.0
 
 int verbose=0;
 int quiet=0;
@@ -101,7 +100,7 @@ main (int argc, char **argv)
 	char expr[512];
 	struct station_params *sp;
 	Tbl *tbl, *proc_tbl;
-	double time_factor = TIME_FACTOR;
+	double time_window = 0.5;
 	double tstart, tend;
 	char chan_expr[128];
 	char net[32];
@@ -224,8 +223,8 @@ main (int argc, char **argv)
 		exit (1);
 	}
 	tbl = NULL;
-	if (parse_param (pf, "time_factor", P_DBL, 0, &time_factor) < 0) {
-		complain (0, "parse_param(time_factor) error.\n");
+	if (parse_param (pf, "time_window", P_DBL, 0, &time_window) < 0) {
+		complain (0, "parse_param(time_window) error.\n");
 		exit (1);
 	}
 	if (parse_param (pf, "magtype", P_STR, 0, &magtype) < 0) {
@@ -410,7 +409,7 @@ main (int argc, char **argv)
 				sp->use = 1;		
 				sp->delta = delta;
 				twin_noise = 60;
-				twin = time_factor*(sarrival - parrival);
+				twin = time_window*(sarrival - parrival);
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;
@@ -481,7 +480,7 @@ main (int argc, char **argv)
 				sp->use = 1;		
 				sp->delta = delta;
 				twin_noise = 60;
-				twin = time_factor*(sarrival - parrival);
+				twin = time_window*(sarrival - parrival);
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;
@@ -515,13 +514,6 @@ main (int argc, char **argv)
 			}
 			continue;
 		}
-
-		/* if (grdb_sc_loadcss (db, NULL, NULL, NULL, tstart,
-					tend, 0, 0, 0, &dbgr, &dbsc) < 0) {
-			complain (0, "grdb_sc_loadcss() error.\n");
-			exit (1);
-		}
-		dbquery (dbgr, dbRECORD_COUNT, &ngr); */
 
 		for (i=0; i<maxtbl(proc_tbl); i++) {
 			int j ;
@@ -646,7 +638,9 @@ main (int argc, char **argv)
 			if (make_magtables) {
 				
 				
-				ret = dbaddv (dbnm, 0,	"net", net,
+			   magid=dbnextid(dbnm,"magid");
+				ret = dbaddv (dbnm, 0,	"magid", magid, 
+							"net", net,
 							"orid", orid,
 							"evid", evid,
 							"magtype", sp->magtype,
@@ -657,7 +651,7 @@ main (int argc, char **argv)
 							0);
 				if (ret < 0) {
 					if (!quiet) {
-						complain (0, "dbaddv(netmag) error.\n");
+						complain (0, "dbaddv(netmag) error.\n(magid=%i net=%s orid=%i evid=%i",magid,net,orid,evid);
 					}
 				} else {
 					dbnm.record = ret;
@@ -753,9 +747,8 @@ mycallback (struct station_params *sp, int ichan)
 	double noise_mean, signal_raw, snr;
 	int iseg;
 	char filter_specification[120];
-
-
-
+	char *t1,*t2;
+	char *s1,*s2;
 
 	if (grdb_sc_getstachan (sp->dbgr, ichan, sta, chan, &nsegs, &time, &endtime) < 0) {
 		if (!quiet) {
