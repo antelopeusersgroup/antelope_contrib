@@ -214,14 +214,8 @@ void dbsave(Time_Series& ts,
 	// with Antelope programs.  Using 4 byte output allows this.
 	// We first have to decide the byte order of the machine
 	// we are running on.
-#ifdef sun
+#ifdef WORDS_BIGENDIAN
 	string sdtype("s4");
-#elif defined linux
-	string sdtype("i4");
-#elif defined __APPLE__
-	string sdtype("i4");
-#elif defined __arm__
-	string sdtype("i4");
 #else
 	string sdtype("i4");
 #endif
