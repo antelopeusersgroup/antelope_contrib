@@ -1,14 +1,9 @@
 BIN=dbrfcn
-#cflags=
-#NOTE:  Following is fft from AH
-
 MAN1=dbrfcn.1
-ldlibs= $(TRLIBS) $(GPLLIBS) -lsunmath
+
+ldlibs= -lfft $(TRLIBS) $(GPLLIBS) -lperf
 
 include $(ANTELOPEMAKE)
-
-#DBG= -g
-
 DIRS=
 
 OBJS=	dbrfcn.o \
@@ -21,7 +16,5 @@ OBJS=	dbrfcn.o \
 	mytr_detrend.o
 
 $(BIN) : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) ./FFT/fftlib.a
-
-#	mv $(BIN) $(HOME)/bin
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) 
 
