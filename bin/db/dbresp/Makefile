@@ -1,7 +1,7 @@
 
 
 BIN 	= dbresp
-ldlibs=         -ldbl2 -lgrx $(X11LIBS) $(DBLIBS) $(F77LIBS)
+ldlibs=         -ldbl2 -lgrx $(X11LIBS) $(TRLIBS) $(F77LIBS)
 
 include	$(DSAPMAKE)
 DIRS=
