@@ -21,7 +21,7 @@
 static void
 usage ()
 {
-    fprintf( stderr, "Usage: cggrid_probe [-n] [-f format] cggridfile { x y |xyfile}\n" );
+    fprintf( stderr, "Usage: cggrid_probe [-e] [-n] [-f format] cggridfile { x y |xyfile}\n" );
     exit(1) ;
 }
 
@@ -39,16 +39,21 @@ main( int argc, char **argv )
 	FILE	*fp_xy;
 	Tbl	*xy;
 	int	newline = 1;
+	int	echo_xy = 0;
 	double	x;
 	double	y;
 	double	val;
 
     	elog_init ( argc, argv ) ; 
 
-    	while ((c = getopt (argc, argv, "nf:")) != -1) {
+    	while ((c = getopt (argc, argv, "enf:")) != -1) {
 		switch (c) {
 		case 'n':
 			newline = 0;
+			break;
+
+		case 'e':
+			echo_xy = 1;
 			break;
 
 		case 'f':
@@ -99,15 +104,28 @@ main( int argc, char **argv )
 
 		val = cggrid_probe( cgg, x, y );
 
-		if( newline ) {
+		if( echo_xy ) {
 
-			sprintf( output_format, "%s\n", base_format );
+			sprintf( output_format, "%s %s %s", 
+				base_format, base_format, base_format );
+
+			fprintf( stdout, output_format, x, y, val );
 
 		} else {
+
 			sprintf( output_format, "%s", base_format );
+
+			fprintf( stdout, output_format, val );
 		}
 
-		fprintf( stdout, output_format, val );
+		if( newline ) {
+
+			fprintf( stdout, "\n" );
+
+		} else {
+
+			fprintf( stdout, " " );
+		}
 
 	} else {
 
@@ -151,16 +169,28 @@ main( int argc, char **argv )
 
 			val = cggrid_probe( cgg, x, y );
 
-			if( newline ) {
+			if( echo_xy ) {
 
-				sprintf( output_format, "%s\n", base_format );
+				sprintf( output_format, "%s %s %s", 
+					base_format, base_format, base_format );
+
+				fprintf( stdout, output_format, x, y, val );
 
 			} else {
 
-				sprintf( output_format, "%s ", base_format );
+				sprintf( output_format, "%s", base_format );
+
+				fprintf( stdout, output_format, val );
 			}
 
-			fprintf( stdout, output_format, val );
+			if( newline ) {
+
+				fprintf( stdout, "\n" );
+
+			} else {
+
+				fprintf( stdout, " " );
+			}
 		}
 	}
 

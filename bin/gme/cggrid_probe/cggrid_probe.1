@@ -3,7 +3,7 @@
 cggrid_probe \- probe a cggrid file
 .SH SYNOPSIS
 .nf
-\fBcggrid_probe\fP [-n] [-f \fIformat\fP] \fIcggridfile\fP { \fIx\fP \fIy\fP | \fIxyfile\fP }
+\fBcggrid_probe\fP [-e] [-n] [-f \fIformat\fP] \fIcggridfile\fP { \fIx\fP \fIy\fP | \fIxyfile\fP }
 .fi
 .SH DESCRIPTION
 
@@ -22,6 +22,8 @@ output print \fIformat\fP in the style of fprintf(3C). Currently the default
 is '%.3f'.
 .IP -n
 Do not print newline character
+.IP -e
+Echo input x/y value in front of the returned data value(s)
 .SH EXAMPLE
 .in 2c
 .ft CW
