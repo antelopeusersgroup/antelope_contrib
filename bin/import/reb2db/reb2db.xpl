@@ -382,6 +382,11 @@ sub write_stamag_row {
 
 sub write_phase {
 
+	# Simple trap for a common apparent bug in current PIDC web
+	# server for REB bulletins: almost-blank phase rows are
+	# sometimes returned that echo the magnitude field:
+	if( $ph_sta eq "" ) { return; } 
+
 	@Db = dblookup( @Db, "", "arrival", "", "" );
 
 	if( $format eq "IMS1.0" ) {
@@ -467,6 +472,7 @@ sub event {
 
 	if( $line =~ /^\s*Date\s+Time/ ) { return; }
 	if( $line =~ /^\s*rms\s+OT_Error/ ) { return; }
+	if( $line =~ /^\s*\(.*\)\s*$/ ) { return; } # comment
 	if( $format eq "GSE2.0" && $line !~ /\d/ ) { return; } # gregion name
 	
 	local( $key ) = $format . "-line" . ++$Event_line;
