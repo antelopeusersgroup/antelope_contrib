@@ -1,0 +1,90 @@
+.TH SENDMRC 1  "$Date$"
+.SH NAME
+sendMRC \- send mass re-centerring (MRC) command to DAS     
+.SH SYNOPSIS
+.nf
+
+sendMRC [-d dasid | -s staname] 
+    [-o mcrpar-file]
+    [-p parameter-file]
+    [-t timeout ]
+    [-R]
+    [-V verbatum ] 
+    [-v] 
+    output [start-time [window] ]
+
+.fi
+.SH DESCRIPTION
+\fBsendMRC\fP routinely sends an \fBMRC\fP command to DASes through
+\fIoutput\fR, which usually specifies the IP address of the DC.
+\fBsendMRC\fP may require two parameter files.
+One contains all existing in RT system DAS IDs - \fIparameter-file\fR 
+(\fIpkt.pf\fR is default) and the second one contains command parameters -
+\fImrcpar-file\fR ( \fImcr.pf\fR is default ).
+
+.SH OPTIONS
+.IP "-d dasid"
+Send an MRC  only to a das with a \fIdasid\fR number.
+By default send command to all DASes which exist in RT system.
+.IP "-o mrcpar-file"
+A parameter file \fImrcpar-file\fR
+will be used to select all constants for an MRC  command, such as
+number of times to repeat command, timeout between command send to one das, 
+timeout between command send to different dases, etc.
+A \fBmrc.pf\fP parameter file is used by default.  
+.IP "-p parameter-file"
+A parameter file \fIparameter-file\fR
+will be used to select all possible DAS IDs in a RT system.
+A \fBpkt.pf\fP parameter file is used by default.  
+.IP "-s staname"
+Send an MRC  only to a station with a \fIstaname\fR name.
+By default send command to all DASes which exist in RT system.
+.IP "-R "
+Send 'DC RESET' command to specified DC.
+.IP "-t timeout "
+This option is valid only for a socket connection and specifies the number of
+seconds to wait for data on a connected socket before closing the socket and 
+opening a new connection. Default value is 5 seconds.
+.IP "-V verbatim"
+Save command buffer in a \fIverbatim\fR file before sending it to DAS.
+.IP "-v"
+Be more verbose.
+.IP "start-time window"
+Specifies a time range of the \fIsendMRC\fR process to be active.
+.SH FILES
+.SH ENVIRONMENT
+.SH EXAMPLE
+.LP
+Send an MRC  command with options specified in \fItmrc.pf\fR 
+to all DASes in \fItoro.pf\fR starting on "6/6/97 1:00" GMT time via 
+the DC port on IP address 132.239.4.194.
+
+.nf
+sendMRC  -o tmrc -p toro 132.239.4.194 "6/6/97 1:00"    
+.fi
+
+.LP
+Send an immediate MRC recenter command to DAS with ID number - 446 via 
+the DC port on address 132.239.4.196, using standard command settings.
+
+.nf
+sendMRC  -d 446 132.239.4.194 now    
+.fi
+
+
+.SH PARAMETER FILE
+
+.nf
+   start_time  6/5/97 1:00   # when to start
+   num_repeats          2    # number times to send command for one das              
+   timeout_btw_onedas   300  # number of sec between commands to a single DAS 
+   timeout_btw_dases    5    # number of min between commands to subsequent DASes 
+   timeout_btw_cmds     7    # number of days between commands sent to DC 
+
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko
+.\" $Id$
+
