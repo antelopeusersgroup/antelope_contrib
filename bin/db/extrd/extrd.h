@@ -25,16 +25,17 @@
 #define MODE  (0664)
 #define MAX_NSAMP  450000
 
-regex_t sta_match;
-regex_t chan_match;
+extern regex_t sta_match;
+extern regex_t chan_match;
 
-FILE *Df;
-char *Data_file;
-char Outdir[132];
-char Dfile[132];
-long Foff;
+extern FILE *Df;
+extern char *Data_file;
+extern char Outdir[132];
+extern char Dfile[132];
+extern long Foff;
 
-Dbptr db, dbout;
+extern Dbptr db, dbout;
+
 typedef struct segment {
 	double time;
 	double etime;
@@ -68,6 +69,6 @@ typedef union {
      double         *d;
  }  Trdata;
 
-Trdata mydata;
+extern Trdata mydata;
 
 #endif

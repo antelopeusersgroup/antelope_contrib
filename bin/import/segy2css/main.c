@@ -12,6 +12,20 @@
 #include "segcss.h"
 #define LFILE	"List"
 
+int Wfid;    /* Waveform identifier. Look css 3.0 Database structure  */
+int Byevent; /* if Yes, then for all SEGY data files from one directory
+                make one wfdisc file, even data have different start time
+                In other case for each set of data with different
+                start time build different 'wfdisc' files  */
+FILE *Fp_wfd;
+int Fp_out;
+int Channel;       /* Channel number  */
+long Data_bytes;       /* Number of data samples   */
+long Sample;       /* Number of data samples   */
+long DOFFSET;       /* current offset for foff wfdisc field  */
+int Dformat;
+int Wfid;
+
 
 main(argc, argv)
 int argc;

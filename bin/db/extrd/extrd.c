@@ -12,6 +12,16 @@
 #include <signal.h>
 #include "extrd.h"
 
+regex_t sta_match;
+regex_t chan_match;
+FILE *Df;
+char *Data_file;
+char Outdir[132];
+char Dfile[132];
+long Foff;
+Dbptr db, dbout;
+Trdata mydata;
+
 extern void sig_hdlr();
 char *Network = 0;
 int Seq;
