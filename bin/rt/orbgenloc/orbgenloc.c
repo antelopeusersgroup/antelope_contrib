@@ -206,7 +206,7 @@ written yet.
 Author:  Gary L. Pavlis
 Written:  February 1997
 */
-void save_origerr(int orid, Hypocenter h, float **C, Dbptr db, int orb)
+void save_origerr(int orid, Hypocenter h, double **C, Dbptr db, int orb)
 {
 	double sdobs; 
 
@@ -566,7 +566,8 @@ void compute_location(Location_options o,
 	int orid;
 	Point origin;
 	double delta, seaz;
-	float **C, *emodel;
+	double **C;
+	float *emodel;
 
 	initialize_hypocenter(&h0);
 
@@ -625,7 +626,7 @@ void compute_location(Location_options o,
 			if(ret_code > 0)
 				elog_notify(0,"Warning:  %d travel time calculator failures in ggnloc\nSolution ok for evid %d\n",
                                 	ret_code,hyp.evid);
-			C = matrix(0,3,0,3);
+			C = dmatrix(0,3,0,3);
 			emodel = (float *) calloc(4,sizeof(float));
 			if((emodel == NULL) || (*C == NULL) )
 				die(0,"Malloc error for error arrays\n");
