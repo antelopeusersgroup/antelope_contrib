@@ -7,6 +7,10 @@
 #include <sunmath.h>
 #include <sunperf.h>
 
+extern int GenlocVerbose ;
+#undef register_error
+#define register_error  if ( GenlocVerbose ) elog_notify
+
 int difference_is_zero(float x, float y)
 {
 	double test;

@@ -21,6 +21,10 @@ dependencies correctly.
 ttable is the travel time table and utable the slowness table as should be
 obvious */
 
+int GenlocVerbose = 0 ;
+#undef register_error
+#define register_error  if ( GenlocVerbose ) elog_notify
+
 void free_uniform_table(XZ_table_uniform *ttable, XZ_table_uniform *utable)
 {
 	free_matrix((char **)(ttable->values),0,(ttable->nx)-1,0);
@@ -93,7 +97,8 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 	Tbl *t;  /* pfget_tbl return to hold strings of prototables stored
 		in the pf structure. */
 	int i,j,k;
-	char *test;
+
+	GenlocVerbose = verbose_exists() ; 
 
 	if(time_tables_uniform==NULL) time_tables_uniform = newarr(0);
 	if(slow_tables_uniform==NULL) slow_tables_uniform = newarr(0);
@@ -119,7 +124,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 	utable->dx = ttable->dx;
 	utable->dz = ttable->dz;
 	/* These parameters default to 0 */
-	if((test=pfget_string(pf,"x0"))==NULL)
+	if(pfget_string(pf,"x0")==NULL)
 	{
 		ttable->x0 = 0.0;
 		utable->x0 = 0.0;
@@ -129,7 +134,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 		ttable->x0 = pfget_double(pf,"x0");
 		utable->x0 = ttable->x0;
 	}
-	if((test=pfget_string(pf,"z0"))==NULL)
+	if(pfget_string(pf,"z0")==NULL)
 	{
 		ttable->z0 = 0.0;
 		utable->z0 = 0.0;
@@ -187,7 +192,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
  	t = pfget_tbl(pf,"uniform_grid_time_slowness_table");
 	if(t == NULL)
 	{
-		register_error(1,"Can't find travel time-slowness table for phase %s\n",
+		register_error (1,"Can't find travel time-slowness table for phase %s\n",
 			phase);
 		free_uniform_table(ttable, utable);
 		return(1);
@@ -196,7 +201,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 	if( maxtbl(t) != ( (ttable->nx)*(ttable->nz) ) )
 	{
 		register_error(1,"Table size mismatch for phase %s\nTable should have %d rows\nFound %d\n",
-			(ttable->nx)*(ttable->nz), maxtbl(t));
+			phase, (ttable->nx)*(ttable->nz), maxtbl(t));
 		free_uniform_table(ttable, utable);
 		return(1);
 	}
@@ -431,7 +436,7 @@ Travel_Time_Function_Output uniform_time_table_interpolate(Ray_Endpoints x, char
 	double azimuth; /* source to receiver azimuth angle (radians) */
 	Travel_Time_Function_Output o;
 	XZ_table_uniform *ttable, *utable;
-	double xl,zl,xh,zh,f_ll,f_hl,f_lh,f_hh;
+	double f_ll,f_hl,f_lh,f_hh;
 	int ix_low, iz_low, ix_high, iz_high;
 	double x_low, z_low, x_high, z_high;
 
@@ -540,6 +545,7 @@ Travel_Time_Function_Output uniform_time_table_interpolate(Ray_Endpoints x, char
 	{
 	case NOWAY:
 		u = SLOWNESS_INVALID;
+		break ;
 	case NO_PROBLEM:
 	case NO_PROBLEM_VALUE:
 		u = serendipity(x_low, z_low, x_high, z_high,
@@ -616,6 +622,7 @@ Slowness_Function_Output set_slowness_table_error(char *error)
 	o.duydx = 0.0;
 	o.duydy = 0.0;
 	o.duydz = 0.0;
+	return o ; 
 }
 /* test function for handling discontinuous slope values. */
 int slopes_valid(char c)
@@ -633,17 +640,12 @@ Slowness_Function_Output uniform_slowness_table_interpolate(Ray_Endpoints x, cha
 	double uaz;  /* slowness vector s2raz */
 	Slowness_Function_Output o;
 	XZ_table_uniform *utable;
-	double xl,zl,xh,zh,f_ll,f_hl,f_lh,f_hh;
+	double f_ll,f_hl,f_lh,f_hh;
 	int ix_low, iz_low, ix_high, iz_high;
 	int ix, iz;
 	double x_low, z_low, x_high, z_high;
 
 	double u;  /* Slowness in s/km interpolated from tables */
-	double vsource;  /* Source depth velocity interpolated from
-		velocity depth vector */
-	double vl, vh;  /* temporaries */
-	double theta;  /* emergence angle used for elevation correction
-			calculation */
 	int discontinuity;
 	/* temporaries used to calculate slowness derivatives */
 	double sin_a, sin_a0, cos_a, cos_a0, dudz, dudr, du1, du2;
