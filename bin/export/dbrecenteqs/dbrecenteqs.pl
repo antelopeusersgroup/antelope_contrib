@@ -181,7 +181,9 @@ sub remove_stale_webmaps {
 			dbmark( @dbwebmaps );
 		}
 	}
-	dbcrunch( @dbwebmaps );
+	if( $stale_nrecs > 0 ) {
+		dbcrunch( @dbwebmaps );
+	}
 
 	return;
 }
