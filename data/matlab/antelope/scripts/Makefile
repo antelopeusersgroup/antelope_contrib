@@ -1,5 +1,5 @@
 DATADIR= matlab/antelope/scripts
-DATA= 
+DATA= tr2struct.m
 
 CLEAN= 
 

@@ -94,6 +94,7 @@ DATA= \
 	dbexample_tr_samp2time.m \
 	dbexample_tr_samprate.m \
 	dbexample_tr_time2samp.m \
+	dbexample_tr2struct.m \
 	dbexample_trapply_calib.m \
 	dbexample_trdestroy.m \
 	dbexample_trextract_data.m \
