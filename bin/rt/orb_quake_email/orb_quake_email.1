@@ -1,0 +1,61 @@
+.\" $Name$ $Date$
+.TH ORB_QUAKE_EMAIL 1 "$Date$"
+.SH NAME
+orb_quake_email \- email reports of earthquakes from origin rows on orb
+.SH SYNOPSIS
+.nf
+orb_quake_email [-pf pffile] orbserver
+.fi
+.SH DESCRIPTION
+orb_quake_email watches an Antelope ORB-server for hypocenters, announced
+as database rows of the CSS3.0 origin table. Upon detection of new 
+hypocenters, orb_quake_email will mail a notification to the email addresses
+in the parameter file. Orb_quake_email requires a database of places (in places1.0 format)
+from which to calculate the distance of the detected earthquake. The pathname
+to this database is also in the parameter file. Orb_quake_email will echo
+a copy of each message to stdout.
+
+The array specifying email recipients may contain a subsetting expression 
+for the origin-table row, filtering out unwanted origins.
+
+orb_quake_email dynamically rereads its parameter file for each hypocenter
+being reported. 
+.SH OPTIONS
+-pf pffile specify an alternate name for the parameter file. The default is orb_quake_email.pf. 
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+placedb /home/kent/work/orb_quake_email/pipeline_places
+header &Literal{
+
+	This is an automatic earthquake solution from the 
+	Alaska Earthquake Information Center.
+
+	Location and magnitude estimates are subject to change
+	upon review by a human analyst.
+}
+footer &Literal{
+
+	For more information contact the
+	Alaska Earthquake Information Center
+	at 907-474-7320
+
+}
+recipients &Arr{
+	kent@giseis.alaska.edu ndef > 14 && ml > 2.7
+	roger@giseis.alaska.edu lat > 64 && lat < 65 && ml > 5.5
+}
+.fi
+.SH EXAMPLE
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orbserver(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Don't put quotes around the subsetting expression in the recipients arrays.
+.SH AUTHOR
+Kent Lindquist

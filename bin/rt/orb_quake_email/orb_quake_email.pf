@@ -1,0 +1,20 @@
+placedb /home/kent/work/orb_quake_email/pipeline_places
+
+header &Literal{
+	This is an automatic earthquake solution from the 
+	Alaska Earthquake Information Center.
+
+	Location and magnitude estimates are subject to change
+	upon review by a human analyst.
+}
+
+footer &Literal{
+
+	For more information contact the
+	Alaska Earthquake Information Center
+	at 907-474-7320
+
+}
+recipients &Arr{
+	kent@giseis.alaska.edu
+}
