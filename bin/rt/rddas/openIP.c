@@ -97,12 +97,11 @@ struct Prts *inport;
 		complain(  0,"baudrate set to 19200\n");
                 break;
 	}
-   	        termios.c_cflag |= PARODD|PARENB;
-/*	
+   	        
+
 	switch( inport->parity )  {
 	    case 'n':
                   
-   	        termios.c_cflag &= ~PARENB;
 		break;
 
 	    case 'e':
@@ -121,7 +120,7 @@ struct Prts *inport;
 		termios.c_cflag &= ~PARENB;
 		break;
         }
-*/
+
 	switch( inport->stop_bits )  {
 	
 	    case 1:
