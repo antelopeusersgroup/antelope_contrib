@@ -1,5 +1,15 @@
-DATADIR= matlab/antelope/html
-DATA= Antelope_Toolbox_for_Matlab.pdf
+DOCDIR= matlab
+DOC= \
+    Antelope_Toolbox_for_Matlab-1.gif \
+    Antelope_Toolbox_for_Matlab-2.gif \
+    Antelope_Toolbox_for_Matlab-3.gif \
+    Antelope_Toolbox_for_Matlab-4.gif \
+    Antelope_Toolbox_for_Matlab-5.gif \
+    Antelope_Toolbox_for_Matlab-6.gif \
+    Antelope_Toolbox_for_Matlab.css \
+    Antelope_Toolbox_for_Matlab.fm \
+    Antelope_Toolbox_for_Matlab.html \
+    Antelope_Toolbox_for_Matlab.pdf 
 
 CLEAN= *.backup.fm *.pdf fmbatch_script fmbatch_wrapper
 
