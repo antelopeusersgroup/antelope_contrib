@@ -49,7 +49,7 @@ char **argv;
 	int ircnt=0;
 	int orcnt=0;
 	int lastpkt_age;
-	int lastpkt_pktid;
+	int lastpkt_pktid=-1;
 	double lastpkt_time;
 	int ready;
 	int first=1;
@@ -229,6 +229,7 @@ char **argv;
 			if (!first && fdkey(orbin) == 0) {	/* No pending input */
 				sleep (1);
 				lastpkt_age += 1;
+				if (ircnt && lastpkt_age > 600 && lastpkt_pktid >= 0) goto RECONNECT;
 				continue;
 			}
 			ret = orbreap_nd (orbin, &pktid, src, &time, &packet, &nbytes, &bufsize);
@@ -253,7 +254,7 @@ char **argv;
 			if (ready == 0) continue;
 			if (ready < 0) {
 				if (ircnt) {
-					clear_register (0);
+RECONNECT:				clear_register (0);
 					sleep (10);
 					lastpkt_age += 10;
 					/* continue; */
@@ -282,7 +283,10 @@ char **argv;
 						clear_register (0);
 						orbseek (orbin, ORBNEWEST);
 					} else {
-						orbseek (orbin, ORBNEXT);
+						if (orbseek (orbin, ORBNEXT) < 0) {
+							clear_register (0);
+							orbseek (orbin, ORBNEWEST);
+						}
 					}
 					continue;
 				} else {
