@@ -1,6 +1,16 @@
 #include <float.h>
+
+#undef  __USE_SVID     /* for Linux !! to get MAXFLOAT */
+#define  __USE_XOPEN 1 /* for Linux !! */
+#include <math.h>
+#undef  __USE_XOPEN
+
 #include "multiwavelet.h"
 #include "mwap.h"
+
+#ifndef MAXFLOAT
+#define MAXFLOAT HUGE
+#endif
 
 #define DT_MAX_ITERATION 40
 /* We terminate the loop when the final adjustment is this multiple
