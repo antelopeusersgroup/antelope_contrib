@@ -2,6 +2,7 @@
 <include tclorb8.ref>
 <include tkBrttPlot.ref>
 <include tkGpl.ref>
+<include tkVogle.ref>
 <no_index don't index appendices>
 <include ../tables/tcl_extensions.ref>
 <index ok>
