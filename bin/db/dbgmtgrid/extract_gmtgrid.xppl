@@ -1,0 +1,520 @@
+
+# K. Lindquist
+# Lindquist Consulting
+# 5/2003
+
+require "getopts.pl";
+
+use POSIX qw(ceil floor);
+
+sub repetend {
+	my( $approx ) = @_;
+
+	$approx =~ s/333$/33333333333333333333/;
+	$approx =~ s/667$/66666666666666666666/;
+
+	return $approx;
+}
+
+sub gmtgrid_next_lower {
+	my( $in, $incr ) = @_;
+
+	$incr = repetend( $incr );
+
+	return floor( $in / $incr ) * $incr;
+}
+
+sub gmtgrid_next_higher {
+	my( $in, $incr ) = @_;
+
+	$incr = repetend( $incr );
+
+	return ceil( $in / $incr ) * $incr;
+}
+
+sub check_executable {
+	my( $helper ) = @_;
+
+	@paths = split( ":", $ENV{PATH} );
+
+	foreach $path ( @paths ) {
+
+		$helperpath = "$path/$helper";
+
+		if( -e "$helperpath" && -x "$helperpath" ) {
+
+			return 1;
+		}
+
+	}
+
+	print STDERR "gmtgrid: can't find $helper";
+
+	return 0;
+}
+
+sub uniq_tempfile {
+	
+	$DBGMTGRID_uniq_tempfile++;
+
+	return "gmtgrid_$<_$$\_$DBGMTGRID_uniq_tempfile";
+}
+
+sub eastwest_coverage {
+	my( %grid ) = %{shift( @_ )};
+	my( $west, $east ) = @_;
+	
+	my( $rowwest, $roweast ) = ( $grid{west}, $grid{east} );
+
+	if( $rowwest <= $west && $east <= $roweast ) {
+
+		return( $west, $east );
+
+	} elsif( $west <= $rowwest && $roweast <= $east ) {
+
+		return( $rowwest, $roweast );
+
+	} elsif( $rowwest <= $west && $west < $roweast ) {
+
+		return( $west, $roweast );
+
+	} elsif( $rowwest < $east && $east <= $roweast ) {
+
+		return( $rowwest, $east );
+
+	} else {
+
+		return ();
+	}
+}
+
+sub northsouth_coverage {
+	my( %grid ) = %{shift( @_ )};
+	my( $south, $north ) = @_;
+	
+	my( $rowsouth, $rownorth ) = ( $grid{south}, $grid{north} );
+
+	if( $rowsouth <= $south && $north <= $rownorth ) {
+
+		return( $south, $north );
+
+	} elsif( $south <= $rowsouth && $rownorth <= $north ) {
+
+		return( $rowsouth, $rownorth );
+
+	} elsif( $rowsouth <= $south && $south < $rownorth ) {
+
+		return( $south, $rownorth );
+
+	} elsif( $rowsouth < $north && $north <= $rownorth ) {
+
+		return( $rowsouth, $north );
+
+	} else {
+
+		return ();
+	}
+}
+
+sub tempgrid_rowremove {
+	my( $gridsref ) = shift( @_ );
+	my( $key ) = pop( @_ );
+
+	my( $myfile ) = $gridsref->{$key}{gridpath};
+	unlink( "$myfile" );
+
+	delete( $gridsref->{$key} );
+
+	return;
+}
+
+sub tempgrid_destroy {
+	my( $gridsref ) = shift( @_ );
+
+	my( @mykeys ) = keys( %grids );
+
+	foreach $key ( pop( @mykeys ) ) {
+
+		tempgrid_rowremove( $gridsref, $key );
+	}
+
+	return;
+}
+
+sub asplice {
+	my( $gridsref ) = shift( @_ );
+	my( $common1, $common2, $low, $high ) = @_;
+	my( %Options ) = @_;
+	my( $V, $dir, $dfile, $name );
+
+	if( $Options{verbose} ) {
+		$V = "-V";
+	} else {
+		$V = "";
+	}
+
+	@keys = keys( %{$gridsref} );
+
+	@keys = sort { 
+			$c1 = $gridsref->{$a}{$common1} <=> $gridsref->{$b}{$common1};
+			$c2 = $gridsref->{$a}{$common2} <=> $gridsref->{$b}{$common2};
+			$c3 = $gridsref->{$a}{$low} <=> $gridsref->{$b}{$low};
+
+			$c1 != 0 ? $c1 : ( $c2 != 0 ? $c2 : $c3 );
+		     } @keys;
+
+	undef( $bundlenumber );
+	undef( $previousc1 );
+	undef( $previousc2 );
+	undef( @bundles );
+	foreach $key ( @keys ) {
+		if( ! defined( $bundlenumber ) ) {
+
+			$bundlenumber = 0;
+			push( @{$bundles[$bundlenumber]}, "$key" );
+			$previousc1 = $gridsref->{$key}{$common1};
+			$previousc2 = $gridsref->{$key}{$common2};
+
+		} elsif( $gridsref->{$key}{$common1} == $previousc1 && 
+			 $gridsref->{$key}{$common2} == $previousc2 ) {
+
+			push( @{$bundles[$bundlenumber]}, "$key" );
+
+		} else {
+
+			$bundlenumber++;
+			push( @{$bundles[$bundlenumber]}, "$key" );
+			$previousc1 = $gridsref->{$key}{$common1};
+			$previousc2 = $gridsref->{$key}{$common2};
+		}
+	}
+
+	for( $ibundle = 0; $ibundle <= $bundlenumber; $ibundle++ ) {
+
+		next if( @{$bundles[$ibundle]} <= 1 );
+
+		my( $key1 ) = shift( @{$bundles[$ibundle]} );
+		my( $key2 ) = shift( @{$bundles[$ibundle]} );
+
+		my( $file1 ) = $gridsref->{$key1}{gridpath};
+		my( $c1, $c2, $low1, $high1 ) = (
+			$gridsref->{$key1}{$common1}, 
+			$gridsref->{$key1}{$common2}, 
+			$gridsref->{$key1}{$low}, 
+			$gridsref->{$key1}{$high} );
+
+		my( $file2 ) = $gridsref->{$key2}{gridpath};
+		my( $low2, $high2 ) = (
+			$gridsref->{$key2}{$low},
+			$gridsref->{$key2}{$high} );
+
+		if( $high1 == $low2 ) {
+
+			$dir = "/tmp";
+			$name = uniq_tempfile();
+			$dfile = "$name.grd";
+			$result = "$dir/$dfile";
+
+			$cmd = "grdpaste $V -G$result $file1 $file2";
+
+			if( $Options{verbose} ) {
+				print STDERR "Executing: $cmd\n";
+			}
+			system( $cmd );
+
+			$gridsref->{$name}{gridpath} = $result;
+			$gridsref->{$name}{$common1} = $c1;
+			$gridsref->{$name}{$common2} = $c2;
+			$gridsref->{$name}{$low} = $low1;
+			$gridsref->{$name}{$high} = $high2;
+
+			tempgrid_rowremove( $gridsref, $key1 );
+			tempgrid_rowremove( $gridsref, $key2 );
+
+			last;
+		} 
+	}
+}
+
+sub splicegrids {
+	my( $gridsref ) = shift( @_ );
+	my( %Options ) = @_;
+
+	while( scalar( keys( %{$gridsref} ) ) > 1 ) {
+
+		asplice( $gridsref, "west", "east", "south", "north", %Options );
+		asplice( $gridsref, "south", "north", "west", "east", %Options );
+	}
+
+	return 0;
+}
+
+sub addgrid {
+	my( %sourcegrid ) = %{shift( @_ )};
+	my( $tempgridsref ) = shift( @_ );
+	my( $wc, $ec, $sc, $nc ) = splice( @_, 0, 4 );
+	my( %Options ) = @_;
+	my( $V, $cmd );
+
+	if( $Options{verbose} ) {
+		$V = "-V";
+	} else {
+		$V = "";
+	}
+
+	my( $source ) = $sourcegrid{gridpath};
+
+	my( $shift ) = $Options{shift} ? $Options{shift} : 0;
+
+	my( $dir ) = "/tmp";
+	my( $name ) = uniq_tempfile();
+	my( $dfile ) = "$name.grd";
+	my( $result ) = "$dir/$dfile";
+
+	if( $Options{spacing} ) {
+
+		# HARD-WIRE
+		# my( $reg ) = dbgetv( @dbsource, "registration" );
+		$reg = "pixel"; # HARD-WIRE: Assume pixel registration
+
+		my( $F ) = $reg eq "pixel" ? "-F" : "";
+
+		$cmd = "grdsample $F -I$Options{spacing}";
+
+	} else {
+
+		$cmd = "grdcut";
+	}
+
+	$cmd .= " $V -G$result $source -R$wc/$ec/$sc/$nc";
+
+	if( $Options{verbose} ) {
+		print STDERR "Executing: $cmd\n";
+	}
+	system( "$cmd" );
+
+	if( $shift != 0 ) {
+
+		$wc -= $shift;
+		$ec -= $shift;
+
+		my( $cmd ) = "grdedit $V $result -R$wc/$ec/$sc/$nc";
+
+		if( $Options{verbose} ) {
+			print STDERR "Executing: $cmd\n";
+		}
+
+		system( "$cmd" );
+	}
+
+	$tempgridsref->{$name}->{gridpath} = $result;
+	$tempgridsref->{$name}->{west} = $wc;
+	$tempgridsref->{$name}->{east} = $ec;
+	$tempgridsref->{$name}->{south} = $sc;
+	$tempgridsref->{$name}->{north} = $nc;
+
+	return;
+}
+
+sub dms_convert {
+	my( $val ) = @_;
+
+	my( @parts ) = split( /:/, $val );
+
+	$val = $parts[0];
+
+	if( defined( $parts[1] ) ) {
+
+		$val += $parts[1] / 60.;
+	}
+
+	if( defined( $parts[2] ) ) {
+
+		$val += $parts[2] / 3600.;
+	}
+
+	return $val;
+}
+
+sub gmtgrid {
+	my( %grids ) = %{shift( @_ )};
+	my( $rectangle, $outfile ) = splice( @_, 0, 2 );
+	my( %Options ) = @_;
+
+	my( $dx, $dy, $V, $cmd, $source );
+
+	if( $Options{verbose} ) {
+		$V = "-V";
+	} else {
+		$V = "";
+	}
+
+	if( ! check_executable( "grdcut" ) ||
+	    ! check_executable( "grdedit" ) ||
+	    ! check_executable( "grdsample" ) ||
+	    ! check_executable( "grdpaste" ) ) {
+		return -1;
+	}
+
+	if( scalar( keys( %grids ) ) <= 0 ) {
+
+		print STDERR "gmtgrid: no grids in input directory\n";
+		return -1;
+
+	} else {
+
+		@mykeys = keys( %grids );
+		while( $key = pop( @mykeys ) ) {
+			if( ! defined( $dx ) ) {
+				$dx = $grids{$key}{dx};
+			} else {
+				if( $dx != $grids{$key}{dx} ) {
+					print STDERR "inconsistent dx values in input grids\n";
+					exit -1;
+				}
+			}
+			if( ! defined( $dy ) ) {
+				$dy = $grids{$key}{dy};
+			} else {
+				if( $dy != $grids{$key}{dy} ) {
+					print STDERR "inconsistent dy values in input grids\n";
+					exit -1;
+				}
+			}
+		}
+	}
+
+	$rectangle =~ s/^-R//;
+	my( $west, $east, $south, $north ) = split( "/", $rectangle );
+
+	$west = dms_convert( $west );
+	$east = dms_convert( $east );
+	$south = dms_convert( $south );
+	$north = dms_convert( $north );
+
+	if( $west > $east ) {
+		$east += 360;
+	}
+
+	# prevent pathological rounding errors (mismatch of request 
+	# bounds with grid-point spacing) during grid cut:
+
+	$west = gmtgrid_next_lower( $west, $dx );
+	$south = gmtgrid_next_lower( $south, $dy );
+	$east = gmtgrid_next_higher( $east, $dx );
+	$north = gmtgrid_next_higher( $north, $dy );
+
+	$tempdbname = "/tmp/gmtgrid_$<_$$";
+
+	@mykeys = keys( %grids );
+	foreach $grid ( @mykeys ) {
+		
+		$gridref = $grids{$grid};
+
+		($sc, $nc) = northsouth_coverage( $gridref, $south, $north );
+		next unless( defined( $sc ) && defined( $nc ) );
+
+		foreach $shift ( -720, -360, 0, 360, 720 ) {
+
+			my( $wshift ) = $west + $shift;
+			my( $eshift ) = $east + $shift;
+
+			($wc, $ec) = 
+			  eastwest_coverage( $gridref, $wshift, $eshift );
+
+			next unless( defined( $wc ) && defined( $ec ) );
+
+			$Options{shift} = $shift;
+
+			addgrid( $gridref, \%tempgrids,
+				 $wc, $ec, $sc, $nc,
+				 %Options );
+		}
+	}
+
+	splicegrids( \%tempgrids, %Options );
+
+	if( scalar( keys( %tempgrids ) ) != 1 ) {
+
+		print STDERR "gmtgrid: grid splice failed\n";
+
+	} else {
+
+		@mykeys = keys( %tempgrids );
+		$gridname = pop( @mykeys );
+		$cmd = "cp " .  $tempgrids{$gridname}{gridpath} . " $outfile";
+
+		if( $Options{verbose} ) {
+			print STDERR "Executing: $cmd\n";
+		}
+		system( $cmd );
+	}
+
+	tempgrid_destroy( \%tempgrids );
+
+	return 0;
+}
+
+1;
+$Usage = "Usage: extract_gmtgrid [-V] [-Idx[m|c][/dy[m|c]]] -Rwest/east/south/north griddir outfile\n";
+
+if ( ! &Getopts( "VR:I:" ) || @ARGV != 2 ) { 
+
+    print STDERR $Usage;
+    exit( 1 );
+
+} elsif( ! defined( $opt_R ) ) {
+
+    print STDERR $Usage;
+    exit( 1 );
+
+} else {
+
+	$griddir = shift( @ARGV );
+	$outfile = shift( @ARGV );
+
+	$rectangle = $opt_R;
+	
+	%Options = ();
+
+	if( $opt_V ) {
+
+		$Options{verbose} = $opt_V;
+	}
+
+	if( $opt_I ) {
+
+		$Options{spacing} = $opt_I;
+	}
+}
+
+check_executable( "grdinfo" );
+
+opendir( D, "$griddir" );
+@grids = grep { /\.grd$/ } readdir( D );
+closedir( D );
+
+foreach $grid ( @grids ) {
+
+	$line = `grdinfo -C $griddir/$grid`;
+	chomp( $line );
+
+	($grids{$grid}->{gridpath}, 
+	 $grids{$grid}->{west}, 
+	 $grids{$grid}->{east}, 
+	 $grids{$grid}->{south}, 
+	 $grids{$grid}->{north}, 
+	 $grids{$grid}->{zmin}, 
+	 $grids{$grid}->{zmax}, 
+	 $grids{$grid}->{dx}, 
+	 $grids{$grid}->{dy}, 
+	 $grids{$grid}->{nx}, 
+	 $grids{$grid}->{ny} ) = split( /\s+/, $line );
+}
+
+$rc = gmtgrid( \%grids, $rectangle, $outfile, %Options );
+
+if( $rc ) {
+	print STDERR "extract_gmtgrid failed\n";
+	exit( 1 );
+}

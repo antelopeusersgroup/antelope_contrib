@@ -1,0 +1,65 @@
+.TH EXTRACT_GMTGRID 1 "$Date$"
+.SH NAME
+extract_gmtgrid \- construct gmt grid file from directory of grid files
+.SH SYNOPSIS
+.nf
+extract_gmtgrid [-V] [-Idx[m|c][/dy[m|c]]] -Rwest/east/south/north griddir outfile
+.fi
+.SH DESCRIPTION
+The extract_gmtgrid command takes a directory of GMT (Generic Mapping
+Tools) grid files, ending in the suffix .grd, and constructs from them
+a grid covering the specified input region.
+
+This script is an alternative to dbgmtgrid(1), which is database
+driven. The dbgmtgrid(1) version is the preferred interface;
+extract_gmtgrid is for installations without database support.
+
+The specified coordinate values are in decimal degrees. The result is
+placed in the specified output file.  The input region is tested at
+several phase-wrapping intervals against the input database files, thus
+any reasonable combination of west/east values in the request and in
+the database should produce an output grid, if the physical area is
+represented (i.e. for a database that covers the whole globe, one can
+request -190 to -170, 0 to 20, 180 to 220, etc.  with impunity and the
+resulting output grid will be created to match).
+
+.SH OPTIONS
+-V verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+yukon% extract_gmtgrid -R178/183/-5/6 /cdrom/world30_grids/Grids try.grd
+yukon% grdinfo try.grd 
+try.grd: Title: 
+try.grd: Command: grdpaste -V -G/tmp/dbgmtgrid_1001_24023_7.grd /tmp/dbgmtgrid_1001_24023_5.grd /tmp/dbgmtgrid_1001_24023_6.grd
+try.grd: Remark: 
+try.grd: Pixel node registration used
+try.grd: grdfile format # 0
+try.grd: x_min: 178 x_max: 183 x_inc: 0.00833333 units: user_x_unit nx: 600
+try.grd: y_min: -5 y_max: 6 y_inc: 0.00833333 units: user_y_unit ny: 1320
+try.grd: z_min: -6497.05 z_max: -1327.08 units: user_z_unit
+try.grd: scale_factor: 1 add_offset: 0
+yukon% 
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbgmtgrid(1), dbgmtgrid(3)
+.fi
+.SH "BUGS AND CAVEATS"
+The [r] suffix for rectangular regions (specified with -R) is not supported.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

@@ -1,4 +1,4 @@
-BIN= dbgmtgrid
+BIN= dbgmtgrid extract_gmtgrid
 DATADIR= perl
 DATA= dbgmtgrid.pl
 
