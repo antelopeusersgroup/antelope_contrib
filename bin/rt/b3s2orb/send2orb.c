@@ -6,6 +6,8 @@
  ********************************************************************/
 #include "b3s2.h"
 
+extern struct Prm Par;
+
 int send2orb( int orb, uchar_t *data )
 {
      
