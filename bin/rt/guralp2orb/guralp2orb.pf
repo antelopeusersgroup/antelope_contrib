@@ -1,4 +1,5 @@
 nrecovery_threads 3
+max_recovery_failures 3
 default_net -
 default_segtype V
 udplisten &Tbl{

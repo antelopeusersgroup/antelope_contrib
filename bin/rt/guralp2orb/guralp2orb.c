@@ -134,6 +134,9 @@ Mtfifo *Recover_mtf;
 Arr *Lastpacket;
 mutex_t lp_mutex; /* Last packet */
 
+Arr *Recovery_failures;
+mutex_t rf_mutex; /* Recovery failures */
+
 static Pf *pf;
 static char Pffile[STRSZ];
 mutex_t pfparams_mutex;
@@ -148,6 +151,7 @@ static int VeryVerbose = 0;
 static int Reject_future_packets = 0;
 static double Reject_future_packets_sec = 0;
 static int nrecovery_threads = 1;
+static int max_recovery_failures = 0;
 
 static void
 usage()
@@ -826,6 +830,87 @@ recover_packet( Bns *bns, unsigned short requested )
 	return gpkt; 
 }
 
+static void
+recovery_failed( char *udpsource )
+{
+	int	*recovery_failures; 
+
+	if( max_recovery_failures <= 0 ) {
+		return;
+	}
+
+	mutex_lock( &rf_mutex );
+
+	recovery_failures = (int *) getarr( Recovery_failures, udpsource );
+	
+	*recovery_failures++;
+
+	if( *recovery_failures > max_recovery_failures ) {
+		fprintf( stderr,
+		 "guralp2orb: recovery for %s failed %d times; disabling.\n",
+		udpsource, *recovery_failures );
+	}
+
+	mutex_unlock( &rf_mutex );
+}
+
+static void 
+recovery_succeeded( char *udpsource ) 
+{
+	int	*recovery_failures;
+
+	if( max_recovery_failures <= 0 ) {
+		return;
+	}
+
+	mutex_lock( &rf_mutex );
+
+	recovery_failures = (int *) getarr( Recovery_failures, udpsource );
+	
+	if( *recovery_failures > 0 && VeryVerbose ) {
+		fprintf( stderr, 
+		"guralp2orb: TCP recovery for %s succeeded, resetting failure count\n" );
+	}
+
+	*recovery_failures = 0;
+
+	mutex_unlock( &rf_mutex );
+}
+
+static int
+recovery_ok( char *udpsource ) 
+{
+	int	*recovery_failures; 
+	int	retcode = 1;
+
+	if( max_recovery_failures <= 0 ) {
+		return 1;
+	}
+
+	mutex_lock( &rf_mutex );
+
+	recovery_failures = (int *) getarr( Recovery_failures, udpsource );
+
+	if( recovery_failures == NULL ) {
+
+		allot( int *, recovery_failures, 1 );
+		*recovery_failures = 0;
+		retcode = 1;
+
+	} else if( *recovery_failures > max_recovery_failures ) {
+
+		retcode = 0;
+
+	} else {
+
+		retcode = 1;
+	}
+
+	mutex_lock( &rf_mutex );
+
+	return retcode;
+}
+
 static void 
 recover_packetsequence( Recoverreq *rr )
 {
@@ -839,6 +924,11 @@ recover_packetsequence( Recoverreq *rr )
 	int	next;
 	int	lastflag;
 
+	if( ! recovery_ok( rr->udpsource ) ) {
+		free( rr );
+		return;
+	}
+
 	/* acquiesce to lost packets on socket failures */
 	/* N.B. This could be handled differently with some expire 
 	   mechanism that puts packets back on the recovery 
@@ -849,6 +939,7 @@ recover_packetsequence( Recoverreq *rr )
 		complain( 1, 
 		"Can't open tcp socket to %s for packet recovery\n", 
 		rr->udpsource );
+		recovery_failed( rr->udpsource );
 		free( rr );
 		return;
 	}
@@ -861,6 +952,7 @@ recover_packetsequence( Recoverreq *rr )
 		complain( 1,
 		"Couldn't bind packet recovery socket\n" );
 		close( so );
+		recovery_failed( rr->udpsource );
 		free( rr );
 		return;
 	}
@@ -873,6 +965,7 @@ recover_packetsequence( Recoverreq *rr )
 		"Couldn't connect packet recovery socket for %s\n", 
 		rr->udpsource );
 		close( so );
+		recovery_failed( rr->udpsource );
 		free( rr );
 		return;
 	}
@@ -892,6 +985,7 @@ recover_packetsequence( Recoverreq *rr )
 		  "%s not a GCF server; TCP packet recovery failed. Server response was %s\n", 
 		  rr->udpsource, response );
 		bnsclose( bns );
+		recovery_failed( rr->udpsource );
 		free( rr );
 		return;
 	}
@@ -919,6 +1013,7 @@ recover_packetsequence( Recoverreq *rr )
 				requested, 
 				rr->udpsource, 
 				bnserrno( bns ) );
+				recovery_failed( rr->udpsource );
 			}
 		} else {
 
@@ -929,6 +1024,8 @@ recover_packetsequence( Recoverreq *rr )
 			gcfpeek( gpkt );
 
 			mtfifo_push( Packets_mtf, (void *) gpkt );
+
+			recovery_succeeded( rr->udpsource );
 		}
 	} 
 
@@ -1561,6 +1658,7 @@ guralp2orb_pfwatch( void *arg )
 {
 	Tbl	*morphlist;
 	int	new_nrecovery_threads;
+	int	new_max_recovery_failures;
 	int	ret;
 	int	i;
 
@@ -1623,8 +1721,20 @@ guralp2orb_pfwatch( void *arg )
 			}
 
 			new_nrecovery_threads = pfget_int( pf, "nrecovery_threads" );
+			new_max_recovery_failures = pfget_int( pf, "max_recovery_failures" );
 			
 			mutex_unlock( &pfparams_mutex );
+
+			if( new_max_recovery_failures != max_recovery_failures ) {
+
+				max_recovery_failures = new_max_recovery_failures;
+
+				if( Verbose ) {
+					fprintf( stderr, 
+					"guralp2orb: max_recovery_failures changed to %d\n", 
+					max_recovery_failures );
+				}
+			}
 			
 			if( new_nrecovery_threads > nrecovery_threads ) {
 
@@ -1764,8 +1874,10 @@ main( int argc, char **argv )
 	}
 
 	Lastpacket = newarr( 0 );
-
 	mutex_init( &lp_mutex, USYNC_THREAD, NULL );
+
+	Recovery_failures = newarr( 0 );
+	mutex_init( &rf_mutex, USYNC_THREAD, NULL );
 
 	Packets_mtf = mtfifo_create( QUEUE_MAX_PACKETS, 1, 0 );
 	Recover_mtf = mtfifo_create( QUEUE_MAX_RECOVER, 1, 0 );

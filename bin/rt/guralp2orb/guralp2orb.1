@@ -49,7 +49,12 @@ user my specify multiple recovery threads with the nrecovery_threads
 parameter in the parameter file. The TCP recovery mechanism will detect
 hung connections and remain intact (though the block of packets being
 processed during the hang may be lost). The TCP recovery mechanism may
-be shut off by setting nrecovery_threads to 0.
+be shut off by setting nrecovery_threads to 0. The TCP recovery mechanism 
+may also be throttled to prevent too many retries. The max_recovery_failures
+parameter limits the number of times TCP recovery may fail for a given SCREAM 
+connection. If this limit is exceeded, a warning message is printed and 
+TCP recovery is disabled for that IP address. The max_recovery_failures 
+parameter may be set to zero, allowing an infinite number of retries.
 
 guralp2orb starts the construction of the packet sourcename from the
 sysid, streamid, and specified default network. [If the default_net
@@ -118,6 +123,9 @@ cat guralp2orb.pf
 
 # number of tcp recovery threads. 0 to disable TCP recovery: 
 nrecovery_threads 3 
+
+# Maximum allowed number of successive recovery-attempt failures:
+max_recovery_failures 3 
 
 default_net -       
 default_segtype V
