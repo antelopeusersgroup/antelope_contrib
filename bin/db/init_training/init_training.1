@@ -1,0 +1,120 @@
+.TH INIT_TRAINING 1 "$Date$"
+.SH NAME
+init_training \- initialize a database for analyst training
+.SH SYNOPSIS
+.nf
+\fBinit_training \fP[\fItemplate_name\fP]
+.fi
+.SH DESCRIPTION
+When conducting analyst-training workshops, it is common to create
+a database and various other files which the analyst trainees will need
+to practice workshop exercises. Often the trainees need to perform various
+copying and setup tasks in order to create their own personal training
+environment, usually by drawing from master copies of databases etc. This
+script is an attempt to automate that setup, simplifying the job of the
+workshop leader as well as allowing the trainees to focus on the main goals
+without being overwhelmed by a barrage of setup tasks. Furthermore, it 
+is not uncommon for trainees to create a regrettable situation in their 
+practice directory, requiring a repeat of the setup tasks. \fBinit_training\fP 
+makes it easier to erase mistakes and start over. 
+
+\fBinit_training\fP is driven by named templates, which are specified in the 
+parameter file init_training.pf. If there is only one template in the 
+parameter file, or if the name of a template is explicitly specified on the 
+command line, that template is used. Otherwise, if multiple templates 
+are defined in the parameter file, init_training looks for a parameter
+called \fIdefault_template\fP in the parameter file to decide which to use.
+
+Almost all setup performed by \fBinit_training\fP is done in the 
+user's home directory, in a subdirectory specified by \fIpractice_subdir\fP
+of init_training.pf. The actual practice directory is a subdirectory of this, 
+and is named after the template. \fBinit_training\fP will not overwrite 
+a pre-existing directory, and will complain and die if there is a conflict. 
+
+The main job of \fBinit_training\fP is to create a practice database. 
+This is done by copying tables from a stock database (usually of automatically
+processed results) specified by the parameters \fIautoproc_database\fP
+and \fIautoproc_tables\fP. \fBinit_training\fP expects to include the 
+waveforms and site information in this database by descriptor-file reference, 
+thus the parameters \fIsite_database\fP and \fIwaveform_database\fP 
+should specify paths to these entities. The dbpath parameter for the 
+descriptor file is generated automatically. Other elements of the 
+descriptor file may be added via the \fIdescriptor_elements\fP parameter
+of init_training.pf. Finally, \fBinit_training\fP will create a zero-length 
+lastid table for the practice database, to protect the lastid table 
+for the site and waveform databases. 
+
+\fBinit_training\fP will also copy into the training directory any files 
+specified by the \fIcopy_files\fP table. Finally, any rc files specified 
+in the \fIrcfiles\fP array will be copied into the user's home directory 
+(with a leading '.'). Pre-existing rc files of the same name will be moved 
+to an identical file with the suffix of ".before_training". 
+.SH PARAMETER FILE
+.nf
+practice_subdir 	practice
+default_template 	pgc
+
+templates &Arr{
+    pgc	&Arr{
+	practice_database	mydb
+	descriptor_elements &Arr{
+		schema	rt1.0
+	}
+
+	site_database		/chilako/rt/workshop/dbmaster/cnsn
+	waveform_database	/raid/wf/cnsn
+
+	autoproc_database 	/chilako/rt/workshop/autoproc_test/al4ta
+	autoproc_tables &Tbl{
+		arrival
+		assoc
+		event
+		origin
+	}
+
+	copy_files &Tbl{
+		/chilako/rt/workshop/autoproc_test/pf/dbloc2.pf
+        }
+
+	rcfiles &Arr{
+		dbpickrc	/opt/antelope/4.6/data/pf/.dbpickrc
+	}
+    }
+}
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% init_training 
+init_training: Created directory "/chilako/rt/practice"
+init_training: Creating practice directory "/chilako/rt/practice/pgc"
+init_training: Moving /chilako/rt/.dbpickrc to /chilako/rt/.dbpickrc.before_training
+init_training: Copying /opt/antelope/4.6/data/pf/.dbpickrc to /chilako/rt/.dbpickrc
+init_training: Completed setup of "/chilako/rt/practice/pgc"
+%
+
+% ls /chilako/rt/practice/pgc
+dbloc2.pf     mydb.arrival  mydb.event    mydb.origin
+mydb          mydb.assoc    mydb.lastid
+%
+
+% cat /chilako/rt/practice/pgc/mydb
+#
+schema  rt1.0
+dbpath  ./{mydb}:/chilako/rt/workshop/dbmaster/{cnsn}:/raid/wf/{cnsn}
+%
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+rtinit(1), rtdemo(1)
+.fi
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
