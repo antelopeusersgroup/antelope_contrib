@@ -3,15 +3,18 @@
 cggrid_probe \- probe a cggrid file
 .SH SYNOPSIS
 .nf
-\fBcggrid_probe\fP [-n] [-f \fIformat\fP] \fIfilename\fP \fIx\fP \fIy\fP
+\fBcggrid_probe\fP [-n] [-f \fIformat\fP] \fIcggridfile\fP { \fIx\fP \fIy\fP | \fIxyfile\fP }
 .fi
 .SH DESCRIPTION
 
-\fBcggrid_probe\fP reads a file in cggrid \fIformat\fP (i.e. as saved by the
+\fBcggrid_probe\fP reads a file in cggrid format (i.e. as saved by the
 cggrid_write(3) routine), finds the value at the point specified by
 coordinates \fIx\fP and \fIy\fP via bilinear interpolation (using
 cg_biinterp(3)), and prints the value. The print \fIformat\fP may be specified
-with the -f command.
+with the -f option. The \fIx\fP and \fIy\fP values on the command line 
+may be replaced by a single filename \fIxyfile\fP, in which case all 
+x-y pairs listed in the specified file will be converted. If \fIxyfile\fP
+is specified as -, x-y pairs will be read from stdin and converted. 
 
 .SH OPTIONS
 .IP "-f format"

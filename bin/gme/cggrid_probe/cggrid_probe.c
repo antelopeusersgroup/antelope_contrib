@@ -21,7 +21,7 @@
 static void
 usage ()
 {
-    fprintf( stderr, "Usage: cggrid_probe [-n] [-f format] filename x y\n" );
+    fprintf( stderr, "Usage: cggrid_probe [-n] [-f format] cggridfile { x y |xyfile}\n" );
     exit(1) ;
 }
 
@@ -30,11 +30,14 @@ main( int argc, char **argv )
 {
 	CGGrid	*cgg;
 	int	c;
-	char	*outfile = 0;
-	char	infile[FILENAME_MAX];
+	char	cggfile[FILENAME_MAX];
+	char	*xyfile = 0;
 	char	*base_format = DEFAULT_FORMAT;
 	char	output_format[STRSZ];
-	FILE	*fp_in;
+	char	aline[STRSZ];
+	FILE	*fp_cgg;
+	FILE	*fp_xy;
+	Tbl	*xy;
 	int	newline = 1;
 	double	x;
 	double	y;
@@ -58,44 +61,108 @@ main( int argc, char **argv )
 		}
     	}
 
-    	if( argc - optind != 3 ) {
+    	if( argc - optind < 2 ) {
 
 		usage();
 
+	} else if( argc - optind == 2 ) {
+
+		strcpy( cggfile, argv[optind++] );
+		xyfile = argv[optind++];
+
 	} else {
 
-		strcpy( infile, argv[optind++] );
+		strcpy( cggfile, argv[optind++] );
 		x = atof( argv[optind++] );
 		y = atof( argv[optind++] );
     	} 
 
-	if( ! is_present( infile ) ) {
+	if( ! is_present( cggfile ) ) {
 
-		elog_die( 1, "Can't find input file '%s', Bye.", infile );
+		elog_die( 1, "Can't find input file '%s', Bye.", cggfile );
 
-	} else if( ( fp_in = fopen( infile, "r" ) ) == NULL ) {
+	} else if( ( fp_cgg = fopen( cggfile, "r" ) ) == NULL ) {
 
-		elog_die( 1, "Can't open input file '%s', Bye.", infile );
+		elog_die( 1, "Can't open cggrid file '%s', Bye.", cggfile );
 	}
 
-	cgg = cggrid_read( fp_in );
+	cgg = cggrid_read( fp_cgg );
 
 	if( cgg == (CGGrid *) NULL ) {
 
-		elog_die( 1, "Failed to read input grid '%s', Bye.", infile );
+		elog_die( 1, "Failed to read input grid '%s', Bye.", cggfile );
 	}
 
-	val = cggrid_probe( cgg, x, y );
+	fclose( fp_cgg );
 
-	if( newline ) {
+	if( xyfile == 0 ) {
 
-		sprintf( output_format, "%s\n", base_format );
+		val = cggrid_probe( cgg, x, y );
+
+		if( newline ) {
+
+			sprintf( output_format, "%s\n", base_format );
+
+		} else {
+			sprintf( output_format, "%s", base_format );
+		}
+
+		fprintf( stdout, output_format, val );
 
 	} else {
-		sprintf( output_format, "%s", base_format );
-	}
 
-	fprintf( stdout, output_format, val );
+		if( ! strcmp( xyfile, "-" ) ) {
+			
+			fp_xy = stdin;
+
+		} else {
+			
+			if( ! is_present( xyfile ) ) {
+
+				elog_die( 1, 
+					"Can't find xy file '%s', Bye.",
+					xyfile );
+
+			} else if( ( fp_xy = fopen( xyfile, "r" ) ) == NULL ) {
+
+				elog_die( 1, 
+					"Can't open xy file '%s', Bye.", 
+					xyfile );
+			}
+		}
+
+		while( getaline( fp_xy, aline, STRSZ ) ) {
+			
+			strtr( aline, "\t\r\n", "   " );
+			xy = split( aline, ' ' );
+
+			if( maxtbl( xy ) != 2 ) {
+
+				elog_die( 0, 
+					"Failed to interpret line '%s'. Bye\n",
+					aline );
+			} else {
+				
+				x = atof( (char *) gettbl( xy, 0 ) );
+				y = atof( (char *) gettbl( xy, 1 ) );
+			}
+
+			freetbl( xy, 0 );
+
+			val = cggrid_probe( cgg, x, y );
+
+			if( newline ) {
+
+				sprintf( output_format, "%s\n", base_format );
+
+			} else {
+
+				sprintf( output_format, "%s ", base_format );
+			}
+
+			fprintf( stdout, output_format, val );
+		}
+	}
 
     	return 0;
 }
