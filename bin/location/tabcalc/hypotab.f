@@ -1,12 +1,5 @@
       program hypotab
 c-----------------------------------------------------------------------
-c 
-c                      release version 1.0
-c                      author   gary l. pavlis
-c                               geophysics program ak-50
-c                               university of washington
-c                               seattle, wa  98195  
-c 
 c       this program takes the travel time table from the output file 
 c  written by program tabcalc and replaces it by a  
 c  table of strictly first arrivals.  such a table is needed for
@@ -46,6 +39,11 @@ c  It does this by calling a different toneout function than the
 c  old code.  The main program is unchanged.  Note that the user will
 c  normally need to rename the txpxone file to something more 
 c  appropriate (i.e. P.pf, S.pf, etc. )
+c  June 1998
+c  Removed stupid option to control print on or off.  It always
+c  write stuff top output now.  Also changed dimensions to allow
+c  more finely spaced tables.  Older sizes were a relic of the 
+c  64 K days.
 c 
 c-----------------------------------------------------------------------
 	include 'table.common' 
@@ -74,17 +72,17 @@ c--string comparison routine
       logical strcmp  
       external strcmp 
       print '(1h1)' 
-      print '(120(1h+))'
+      print '(50(1h+))'
       print *,'                program hypotab' 
-      print *,'                released version 1.0'
       print *,'                first arrival table calculator'
-      print '(120(1h+))'
-      read '(a)',list 
-      if(list.eq.'y') then
-            print *,'table will be printed' 
-      else  
-            print *,'table will not be printed' 
-      endif 
+      print '(50(1h+))'
+c      read '(a)',list 
+c      if(list.eq.'y') then
+c            print *,'table will be printed' 
+c      else  
+c            print *,'table will not be printed' 
+c      endif 
+      list = 'y'
 c--open and read input files.  first get the velocity model 
       open(modlun,file=modfile,form='formatted',status='old', 
      $       access='sequential',iostat=iochec) 
@@ -138,13 +136,20 @@ c--check for error
      $  'number of point read =',i5,',',5x,i5,' points are required') 
           stop
       endif 
-      nx=50 
+	print *,"Number of depth points in table = ",nz
+	print *,"Enter number of distance points for first arrival table"
+	print *,"Maximum number allowed = ",nxtab
+	read (*,*) nxout
+	if (nxout .gt. nxtab) then
+		write(0,*) "Number too large, reset to ", nxtab
+		nxout = nxtab
+	endif
 c--loop on depths 
       do 100 iz=1,nztab 
           read(lunin) ntab
           read(lunin) (ptab(i),xtab(i),ttab(i),branch(i),i=1,ntab)
           call arriv1p(twork,pwork,brwork,maxwork,dx,nx)
-          istop=min0(nxtab,nx)
+          istop=min0(nxout,nx)
           do 50 i=1,istop 
                tone(iz,i)=twork(i)
                pone(iz,i)=pwork(i)
@@ -153,9 +158,9 @@ c--loop on depths
 c--if nx is not large enough fill the table with refractions
 c--with slowness of the last point in the known table.
 c--give these points a special name.
-          if(nx.lt.nxtab) then  
+          if(nx.lt.nxout) then  
                pref = pone(iz,nx) 
-               do 75 i=nx+1,nxtab 
+               do 75 i=nx+1,nxout 
                     tone(iz,i) = tone(iz,i-1) + dx*pref 
                     pone(iz,i)=pref 
                     brone(iz,i)=refr
@@ -185,7 +190,7 @@ c--give these points a special name.
            zfour  = dz*float(i+2) 
            nspace = nztab - i + 1 
            print 1070, zone,ztwo,zthree,zfour 
-           do 150 j=1,nxtab 
+           do 150 j=1,nxout
                  ncolum = min(4,nspace) 
                  print 1080, (tone(ii,j),pone(ii,j),brone(ii,j),
      $                         ii=i,i+ncolum-1) 
