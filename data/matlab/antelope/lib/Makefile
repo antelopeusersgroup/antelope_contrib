@@ -1,3 +1,3 @@
-include $(ANTELOPE)/include/mex_antelope_makerules
+include $(ANTELOPEMAKE)
 
 DIRS=makerules libantelope_mex libmex_orb
