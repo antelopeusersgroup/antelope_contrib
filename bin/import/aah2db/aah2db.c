@@ -12,7 +12,7 @@
 
 static void n2h_ak_ahhead( ak_ahhed * );
 static int aah_datatype_to_size( short );
-static double aah_abstime_to_epoch( struct time );
+static int aah_abstime_to_epoch( struct time, double * );
 
 static void
 usage ()
@@ -106,8 +106,13 @@ main (int argc, char **argv)
 
 		fp = zopen( ahfile, "r" );
 		if( fp == NULL ) {
-			die( 1, "Error opening %s", ahfile );
+			register_error( 1, 
+				"Error opening %s; skipping", ahfile );
+			clear_register( 1 );
+			optind++;
+			continue;
 		}
+
 		foff = ftell( fp );
 		fstat( fileno( fp ), &fpstat );
 
@@ -125,15 +130,21 @@ main (int argc, char **argv)
 			datasize = aah_datatype_to_size( ah.record.type );
 			if( datasize <= 0 ) {
 				register_error( 1, 
-				  "Unrecognized datatype %d; skipping %s\n",
-				  ah.record.type, ahfile );
+				  "Unrecognized datatype %d; skipping %s from offset %d to end of file\n",
+				  ah.record.type, ahfile, foff );
 				clear_register( 1 );
 				break;
 			}
 			nsamp = ah.record.ndata;
 			samprate = 1.0 / ah.record.delta;
 
-			time = aah_abstime_to_epoch( ah.record.abstime );
+			if( aah_abstime_to_epoch( ah.record.abstime, &time ) ) {
+				register_error( 1, 
+				  "time conversion error; skipping %s from offset %d to end of file\n",
+				  ahfile, foff );
+				clear_register( 1 );
+				break;
+			}
 
 			db.record = dbaddnull( db );
 
@@ -256,9 +267,8 @@ aah_datatype_to_size( short datatype )
     return datasize;
 }
 
-static double aah_abstime_to_epoch( struct time abstime )
+static int aah_abstime_to_epoch( struct time abstime, double *time )
 {
-	double	time;
 	char 	timestr[STRSZ];
 
 	sprintf( timestr, "%d/%d/%d %d:%d:%f", 
@@ -269,5 +279,5 @@ static double aah_abstime_to_epoch( struct time abstime )
 			abstime.mn,
 			abstime.sec );
 
-	return str2epoch( timestr );
+	return zstr2epoch( timestr, time );
 }
