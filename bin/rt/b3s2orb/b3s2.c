@@ -710,7 +710,7 @@ reconnect_bcu(item, event)
 	while (*p != 0) {
 		write(cmnd_port, p, 1);
 		p++;
-		pause(1);
+		mypause(1);
 	}
 }
 
@@ -732,7 +732,7 @@ swrite(fd, string)
  * Delay for n seconds
  * ==========================================================================
  */
-pause(delay)
+mypause(delay)
 	int             delay;
 {
 	long            ctime, ntime;
@@ -762,7 +762,7 @@ send_das_cmd(fd, cmd)
 
 	swrite(fd, cmd); printf("%s\n", cmd);
 	swrite(fd, "\r\n");
-	/* pause(1); */
+	/* mypause(1); */
 }
 
 /*
