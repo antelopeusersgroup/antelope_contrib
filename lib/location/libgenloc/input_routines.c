@@ -404,7 +404,6 @@ Written:  August 1996
 Arr *parse_phase_parameter_file(Pf *pfall)
 {
 	Phase_handle *p;
-	Arr *a;  /* This is used for parsing the parameter file data */
 	Arr *aout; /* This is the output Arr */
 	Pf *pf,*pf_phase;
 	Tbl *t,*tv;
@@ -415,7 +414,6 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 
 	pf = NULL;
 
-	a = newarr(0);
 	aout = newarr(0);
 	/* We first use pfget to get a new handle to a pf object that is 
 	keyed to the work "phases".  This lowers us one level in the pf

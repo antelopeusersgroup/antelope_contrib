@@ -74,7 +74,6 @@ Arguments:
 */
 void ttlvz_parse_vmodel(Tbl *t,double **v, double **z, int *n)
 {	
-	double vnow, znow, vlast, zlast;
 	int nlayers, i;
 
 	nlayers = maxtbl(t);
@@ -120,7 +119,6 @@ necessary.
 
 int ttlvz_init(char *phase, Pf *pf)
 {
-	int maxlayer; 
 	Tbl *t;
 
 	Vmodel *mod;

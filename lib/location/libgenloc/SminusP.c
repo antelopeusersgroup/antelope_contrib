@@ -345,13 +345,11 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 	for(i=0;i<maxtbl(kt);++i)
 	{
 		char *phasename;
-		Phase_handle *php,*phphase1,*phphase2;
-		char *phase1,*phase2,*phstest;
+		Phase_handle *php;
+		char *phase1,*phase2;
 		Arrival *a1,*a2;
 		char *work;
-		Arr *phsgrp;  /*Arrivals for each station are pushed on
-				to this arr */
-		char *laststa,*sta;
+		char *sta;
 		int nktbs;
 
 		phasename = gettbl(kt,i);

@@ -39,10 +39,6 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 {
 	char *model;
 	char *method;
-	TTGeometry geometry;
-	int mode=0;
-	int result;
-	Tbl *times=NULL;
 
 	/* This assumes the TTmethod, TTmodel, and TThooks pointers are
 	initialized to NULL.  Earlier code had it explicitly set above

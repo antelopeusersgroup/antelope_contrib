@@ -245,7 +245,6 @@ void predicted_errors(Hypocenter h,
 			effective degrees of freedom */
 	int m;  /* total number of data points = natimes+2*nslow */
 	Robust_statistics statistics;
-	int ret_code=0;
 	int mode;
 	int i,ii,j;
 
@@ -286,7 +285,6 @@ void predicted_errors(Hypocenter h,
 	if(nused != npar ) 
 	{
 		register_error(0,"predicted_errors function found system of equations was singular, Errors estimates are unreliable\n");
-		ret_code = 1;
 	}
 	compute_covariance(Agi,m,npar,4,C,o.fix);
 

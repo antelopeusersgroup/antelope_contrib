@@ -92,7 +92,6 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
 	int method;
 	Hypocenter h;
 	Point *p;
-	Point nearest;
 	int istat;
 	int use_raw;
 	int ifirst;
