@@ -567,7 +567,9 @@ Attribute serveraddress
 	Null ( "-" )
 	Description ( "IP address of server" )
 	Detail {
-		This is the IP address of an orbserver
+		This is the IP address of an orbserver. In the databases 
+		table, this is the orbserver which is providing the source
+		of the data for a database-writing utility such as orb2db.
 	}
 	;
 
@@ -590,7 +592,9 @@ Attribute serverport
 	Description ( "orbserver port" )
 	Detail {
 		This is the port number on which an orbserver is listening
-		for connections
+		for connections. In the databases table, this is the
+		port for the orbserver which is providing the source
+		of the data for a database-writing utility such as orb2db.
 	}
 	;
 
@@ -631,28 +635,6 @@ Attribute soldest_time
 	Description ( "time of oldest packet on orb" )
 	Detail {
 		This is the timestamp of the oldest packet on an orb
-	}
-	;
-
-Attribute sourceaddress
-	String (30)
-	Format ( "%-30s" )
-	Null ( "-" )
-	Description ( "IP address of orbserver used as a data source" )
-	Detail {
-		This is the IP address of an orbserver used as a data
-		source, for example in the databases table
-	}
-	;
-
-Attribute sourceport
-	Integer (10)
-	Format ( "%10d" )
-	Null ( "-1" )
-	Description ( "orbserver port" )
-	Detail {
-		This is the port number of an orbserver used as a data
-		source, for example in the databases table
 	}
 	;
 
@@ -797,14 +779,16 @@ Relation connections
 	;
 
 Relation databases
-	Fields ( sourceaddress sourceport dbprogram dbmachine dbpath when clientid lddate )
-	Primary ( sourceaddress sourceport dbprogram dbmachine dbpath )
+	Fields ( serveraddress serverport dbprogram dbmachine dbpath when clientid lddate )
+	Primary ( serveraddress serverport dbprogram dbmachine dbpath )
 	Foreign ( clientid )
 	Description ( "Database utilities connected to orbservers" )
 	Detail {
 		This table describes database-generation utilities, 
 		such as orb2db, which are connected to orbservers
-		being monitored. 
+		being monitored.  The serveraddress and serverport
+		indicate the source of the data being stored in the 
+		database.
 	}
 	;	
 
