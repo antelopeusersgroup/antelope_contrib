@@ -3,56 +3,87 @@
 guralp2orb \- Import Guralp data into an Antelope orb
 .SH SYNOPSIS
 .nf
-guralp2orb [-v] [-V] [-p parameter_file] [-l status_logfile] [-r reject_sec] orbname 
+guralp2orb [-v] [-V] [-p parameter_file] [-d calibdb]
+		[-l file_for_logpackets] [-r reject_sec] orbname 
 .fi
 .SH DESCRIPTION
-guralp2orb receives seismic data from Guralp digitizers, via the 
-SCREAM program from Guralp Inc., onto an Antelope orb. The data are 
-preserved in native GCF format. Waveform packets are placed on the 
-orb with the suffix GCF; status packets with the suffix GCFS. Status 
-packets will also be written to standard error in verbose mode, and 
-to the specified log file if the -l option is used. 
+guralp2orb receives seismic data packets from Guralp digitizers, via
+the SCREAM program from Guralp Inc., and puts them onto an Antelope
+orb. The data are preserved in native GCF format, all though several
+additional pieces of information (segtype, calib, and calper; see
+below) are added during encapsulation. Waveform packets are placed on
+the orb with the suffix GCF. Datalogger log packets are given the
+suffix GCFS. Log packets will also be written to standard error when
+guralp2orb is in verbose mode. Log packets will be written to a
+specified log file if one is specified with the -l option.
 
-guralp2orb will optionally reject packets which are too far into 
-the future, judged by the system clock. 
+guralp2orb will optionally reject packets which are too far into the
+future, judged by the system clock. This is specified by the -r option,
+which also needs to be told how many seconds constitutes "too far in
+the future."
 
-guralp2orb has two main modes. In the first, udplisten, guralp2orb 
-listens on one or more specified UDP ports. In this case it expects 
-that remote instances of SCREAM will initiate dataflow. In the 
-second mode, udpinitiate, guralp2orb sends requests to remote 
-instances of SCREAM, asking that they start sending data via UDP. 
-This presumes that the remote instance of SCREAM is configured to 
-listen to network requests on a certain port, known in advance and listed
-in the guralp2orb parameter file. The udpinitiate mode specifies the 
-port for UDP packet reception. It is not necessary to specify this port
-in the udplisten table of the parameter file; guralp2orb will coordinate 
-the listener threads on its own, launching whatever listeners are 
-necessary. 
+guralp2orb has two main modes. In the first, udplisten, guralp2orb
+listens on one or more specified UDP ports. In this case it expects
+that remote instances of SCREAM will initiate dataflow. In the second
+mode, udpinitiate, guralp2orb sends requests to remote instances of
+SCREAM, asking that they start sending data via UDP.  This presumes
+that the remote instance of SCREAM is configured to listen to network
+requests on a certain port, known in advance and listed in the
+guralp2orb parameter file. The udpinitiate mode specifies the port for
+UDP packet reception. It is not necessary to specify this port in the
+udplisten table of the parameter file; guralp2orb will coordinate the
+listener threads on its own, launching whatever listeners are
+necessary. Both the udplisten and udpinitiate modes may be used at the
+same time. Threads will be launched for all connections specified in
+both tables. The udplisten and udpinitiate tables in the parameter file
+do not both need to be specified. However, if no connections at all are
+listed, guralp2orb has nothing to do and exits.
 
-guralp2orb supports the TCP-based packet recovery mechanism to fill gaps 
-in the data caused by UDP packet loss. guralp2orb tracks the 
+guralp2orb supports the TCP-based packet recovery mechanism to fill
+gaps in the data caused by UDP packet loss. guralp2orb tracks the
 sequence numbers of packets from multiple instances of scream, noticing
-gaps and requesting that they be filled. Each TCP-recovery thread 
-can handle only one recovery at a time (recovering a contiguous range 
-of packet sequence numbers from a single instance of SCREAM), however 
-the user my specify multiple recovery threads with the nrecovery_threads 
+gaps and requesting that they be filled. Each TCP-recovery thread can
+handle only one recovery at a time (recovering a contiguous range of
+packet sequence numbers from a single instance of SCREAM), however the
+user my specify multiple recovery threads with the nrecovery_threads
 parameter in the parameter file. The TCP recovery mechanism will detect
 hung connections and remain intact (though the block of packets being
-processed during the hang may be lost). The TCP recovery mechanism
-may be shut off by setting nrecovery_threads to 0. 
+processed during the hang may be lost). The TCP recovery mechanism may
+be shut off by setting nrecovery_threads to 0.
 
-guralp2orb starts the construction of the packet sourcename from the 
-sysid, streamid, and specified default network. It then morphs this 
-sourcename according to the regular expressions in the srcname_morph
-table of the parameter file, as explained by morphtbl(3). These can 
-be simple, one-to-one mappings, like 
+guralp2orb starts the construction of the packet sourcename from the
+sysid, streamid, and specified default network. [If the default_net
+parameter is not present in the parameter file, guralp2orb uses "-"].
+Guralp2orb then morphs this sourcename according to the regular
+expressions in the srcname_morph table of the parameter file, as
+explained by morphtbl(3). These can be simple, one-to-one mappings,
+like
 .nf
 
-	/somenet_somesysid_somestreamid/net_sta_chan/
+	somenet_somesysid_somestreamid 	  net_sta_chan
 
 .fi
-or they can be more complex regular expressions.
+or they can be more complex regular expressions. In the latter case, 
+the first element specifies the regular-expression 
+to be used in mapping, and the second element specifies the replacement string. 
+Entries in the regular expression that are surrounded by parentheses may
+be inserted into the replacement string as $1, $2, etc. See morphtbl(3) and
+regex(5) for more information on string replacement and regular expressions.
 
+The segtype field inserted into the packets may be controlled through the parameter 
+file. By default, the segtype is NULL, i.e. "-". This default may be changed with the
+default_segtype parameter in the parameter file. A common setting is 
+.nf
+	default_segtype V
+.fi
+
+If a database is specified with the -d option, the calib, calper, and segtype 
+values for the packets are taken out of the database. 
+
+guralp2orb will watch its parameter file, rereading it and dynamically reconfiguring
+as necessary. This includes changes to the default_segtype, default_net, and 
+srcname_morph table. Also, if more recovery threads are specified, or if new 
+udplisten or udpinitiate connections are specified, they will be launched. 
 .SH OPTIONS
 -v verbose
 
@@ -60,7 +91,9 @@ or they can be more complex regular expressions.
 
 -p parameter_file Specify alternate parameter file (default is guralp2orb.pf)
 
--l status_logfile Write status packets to the specified log file
+-d calibdb Specify database for calib,calper,segtype information
+
+-l file_for_logpackets Write log packets to the specified log file
 
 -r reject_sec Reject packets which start more than the specified number
 of seconds into the future. Status packets are never rejected, since 
@@ -70,10 +103,12 @@ they might be useful in debugging the cause of the incorrect timestamps.
 .SH PARAMETER FILE
 .nf
 cat guralp2orb.pf
-# number of tcp recovery threads. 0 to disable TCP recovery
+
+# number of tcp recovery threads. 0 to disable TCP recovery: 
 nrecovery_threads 3 
-# default network assignment:
+
 default_net -       
+default_segtype V
 udplisten &Tbl{
         4567
         53764
@@ -81,22 +116,22 @@ udplisten &Tbl{
 }
 udpinitiate &Tbl{ # initiate connections to these SCREAM servers
 #       SCREAM_IP:NETWORK_PORT   UDP_LISTENING_PORT
-#       137.229.32.243:1567 10001
+       137.229.32.243:1567 10001
 }
 
 # Apply these regular expression substitutions to source-names constructed 
 # from default net, srcid, and streamid:
 srcname_morph &Tbl{
-        /-_SPSHE2_XXH6EY/PP_MCLA_BHZ/
-        /-_SKGA00/PP_SKGA/
-        /-_UNV000/AK_UNV/
-        /-_(NHSA|SBEA|PPSA|PHSA|GCSA)/PP_$1/
-        /-_(DIV|SPIA|MCK|BMR|THY|SAW|SWD|JIS|AUL|TNA|RC01|FIB)/AK_$1/
-        /(SWD|AUL|MCK|TNA|UNV|SPIA|RC01|FIB|SAW|GCSA|THY|JIS)_BH([ZNE])2/$1_BH$2/
-        /(SWD|AUL|MCK|TNA|UNV|SPIA)_BH([ZNE])3/$1_HH$2/
-        /(BMR|DIV)_BH([ZNE])4/$1_BH$2/
-        /(BMR|DIV)_BH([ZNE])5/$1_HH$2/
-        /(NHSA|SBEA|PPSA)_BHZ4/$1_BHZ/
+-_SPSHE2_XXH6EY                                                  PP_MCLA_BHZ
+-_SKGA00                                                         PP_SKGA
+-_UNV000                                                         AK_UNV
+-_(NHSA|SBEA|PPSA|PHSA|GCSA)                                     PP_$1
+-_(DIV|SPIA|MCK|BMR|THY|SAW|SWD|JIS|AUL|TNA|RC01|FIB)            AK_$1
+(SWD|AUL|MCK|TNA|UNV|SPIA|RC01|FIB|SAW|GCSA|THY|JIS)_BH([ZNE])2  $1_BH$2
+(SWD|AUL|MCK|TNA|UNV|SPIA)_BH([ZNE])3                            $1_HH$2
+(BMR|DIV)_BH([ZNE])4                                             $1_BH$2
+(BMR|DIV)_BH([ZNE])5                                             $1_HH$2
+(NHSA|SBEA|PPSA)_BHZ4                                            $1_BHZ
 }
 .fi
 
@@ -120,7 +155,7 @@ block of packets is lost: no further recovery attempts are made. In
 principle, more involved recovery attempts may be possible, though perhaps 
 of limited value.
 
-The log file of status packets grows indefinitely, unless cleaned out 
+The file of log packets grows indefinitely, unless cleaned out 
 by hand or other process. Since guralp2orb opens and closes the log 
 file on reception of each status packet, it is probably reasonably 
 safe to clean the file up while guralp2orb is running.
@@ -129,10 +164,35 @@ guralp2orb relies on the ability of the packet library to decompress
 GCF format. Thus, one must have a current version of packets.pf and 
 mk_libpkt.pf, with an up-to-date libPkt.so constructed from them. 
 
+guralp2orb will watch the calibration, sensor, and instrument tables of
+the optional calibration database, updating values as necessary.
+However, guralp2orb is sensitive to the treatment of these database
+files.  if one of those tables is not present at startup, it will never
+be used.  If guralp2orb fails to do a stat of one of the tables while
+running, it will quit using the file. Also, once the database is
+opened, guralp2orb grabs onto each filename and watches that file for
+changes. If another base-table of the same name supercedes the first
+due to a change in dbdescriptor, the change will not be honored without
+restarting guralp2orb.
+
+guralp2orb dynamically launches new connect threads and recovery threads
+when they are added to the parameter file. However, if the nrecovery_threads 
+parameter is reduced or if udplisten or udpconnections are removed from the
+parameter file, the corresponding threads are not killed. 
+
+In principle it would be possible for guralp2orb to save state information, which 
+would allow it to recover packets that were missed during short stops and restarts. 
+
+The next stage in the development of guralp2orb will be to allow it to communicate 
+directly to guralp dataloggers, without an intervening instance of scream. The 
+threading structure in principle supports this, however it will require extensive 
+work.  After that, the next thing to add would be direct command and control.
+
 .SH AUTHOR
 .nf
 Kent Lindquist
 Geophysical Institute
 University of Alaska
+(now at Lindquist Consulting, kent@lindquistconsulting.com)
 .fi
 .\" $Id$

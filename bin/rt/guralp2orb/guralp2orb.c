@@ -11,7 +11,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <thread.h>
+#include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -20,23 +22,20 @@
 
 #include "stock.h"
 #include "orb.h"
+#include "db.h"
 #include "coords.h"
 #include "pf.h"
 #include "Pkt.h"
 #include "brttutil.h"
 #include "bns.h"
 
-#define PACKET_SIZE 1063
+#define ORBGCF_VERSION 1
+#define RAWGCF_PACKET_SIZE 1063
+#define ORBGCF_HEADER_SIZE 12
+#define ORBGCF_PACKET_SIZE ( ORBGCF_HEADER_SIZE + RAWGCF_PACKET_SIZE )
 #define BLOCK_SEQUENCE_MAX 65536
 #define GCF_MOTOROLA_BYTEORDER 1
 #define GCF_INTEL_BYTEORDER 2
-
-#ifdef WORDS_BIGENDIAN
-#define BIGENDIAN 1
-#else
-#define BIGENDIAN 0
-#endif
-
 #define SECONDS_PER_DAY (24*60*60)
 #define QUEUE_MAX_PACKETS 100
 #define QUEUE_MAX_RECOVER 100
@@ -44,10 +43,21 @@
 #define REQUEST_OLDEST_SEQNO 254
 #define PACKET_REQUEST 255
 #define SERVER_ID_STRING "GCFSERV"
-#define REINITIATE_INTERVAL 60
+#define REINITIATE_INTERVAL_SEC 60
+#define PFWATCH_SLEEPTIME_SEC 1
+#define DEFAULT_NET "-"
+#define DEFAULT_SEGTYPE "-"
+#define DEFAULT_CALIB 0
+#define DEFAULT_CALPER -1
+
+#ifdef WORDS_BIGENDIAN
+static int Words_bigendian = 1;
+#else
+static int Words_bigendian = 0;
+#endif
 
 typedef struct g2orbpkt_ {
-	char	packet[PACKET_SIZE];
+	char	packet[ORBGCF_PACKET_SIZE];
 	int	len;
 	int	tcprecovered;
 	struct in_addr udpip;
@@ -63,10 +73,13 @@ typedef struct g2orbpkt_ {
 } G2orbpkt;
 
 typedef struct udpinitiater_ {
+	mutex_t	statuslock;
+	cond_t	up;
 	char	screamip[STRSZ];
-	int	screamport;
-	int	udpreceive_port;
+	in_port_t screamport;
+	in_port_t udpreceive_port;
 	thread_t initiater_thread;
+	int 	failed;
 } Udpinitiater;
 
 typedef struct udplistener_ {
@@ -78,6 +91,7 @@ typedef struct udplistener_ {
 	struct sockaddr_in local;
 	int	lenlocal;
 	thread_t listener_thread;
+	int	failed;
 } Udplistener;
 
 typedef struct recoverreq_ {
@@ -88,16 +102,46 @@ typedef struct recoverreq_ {
 	int	last;
 } Recoverreq;
 
+typedef struct tabletrack_ {
+	char	filename[FILENAME_MAX];
+	int	use;
+	struct stat *statbuf;
+	double	last_mtime;
+} Tabletrack;
+
+typedef struct calibvals_ {
+	double	calib;
+	double 	calper;
+	double 	validuntil;
+} Calibvals;
+
+static struct {
+	char 	dbname[FILENAME_MAX];
+	int	usedbcalib;
+	int	usedbsegtype;
+	Arr	*calibarr;	
+	Arr	*segtypearr;
+	Tabletrack *ctrk;	/* calibration table */
+	Tabletrack *strk;	/* sensor table */
+	Tabletrack *itrk;	/* instrument table */
+} Calibinfo;
+
 Arr *ul_arr; 
 Arr *ui_arr; 
 Mtfifo *Packets_mtf;
 Mtfifo *Recover_mtf;
-Arr *Lastpacket;
-mutex_t lp_mutex;
 
-static Morphtbl *srcname_morphmap;
-static char *Default_net;
-static char StatuspktLogfile[FILENAME_MAX];
+Arr *Lastpacket;
+mutex_t lp_mutex; /* Last packet */
+
+static Pf *pf;
+static char Pffile[STRSZ];
+mutex_t pfparams_mutex;
+
+static char *Default_net = 0;
+static char *Default_segtype = 0;
+static char LogpktLogfile[FILENAME_MAX];
+static Morphtbl *srcname_morphmap = 0;
 static int Orbfd = 0; 
 static int Verbose = 0;
 static int VeryVerbose = 0;
@@ -108,11 +152,11 @@ static int nrecovery_threads = 1;
 static void
 usage()
 {
-	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-l status_logfile] [-r sec] orbname\n" );
+	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-l file_for_logpackets] [-r sec] orbname\n" );
 	
 }
 
-static double
+static double 
 datecode2epoch( int datecode )
 {
 	double 	epoch;
@@ -163,14 +207,14 @@ previous_in_sequence( int current )
 	return ( current + BLOCK_SEQUENCE_MAX - 1 ) % BLOCK_SEQUENCE_MAX;
 }
 
-static int
+static int 
 next_in_sequence( int current )
 {
 
 	return ( current + 1 ) % BLOCK_SEQUENCE_MAX;
 }
 
-static void
+static void 
 register_packet( G2orbpkt *gpkt )
 {
 	int	*blockseq;
@@ -231,7 +275,10 @@ construct_srcname( char *srcname, char *sysid, char *streamid, int samprate )
 
 	memset( &parts, 0, sizeof( parts ) );
 
+	mutex_lock( &pfparams_mutex );
 	strcpy( parts.src_net, Default_net );
+	mutex_unlock( &pfparams_mutex );
+
 	strcpy( parts.src_sta, sysid );
 	strcpy( parts.src_chan, streamid );
 
@@ -243,11 +290,470 @@ construct_srcname( char *srcname, char *sysid, char *streamid, int samprate )
 
 	join_srcname( &parts, starting_srcname );
 
+	mutex_lock( &pfparams_mutex );
+
 	n = morphtbl( starting_srcname, srcname_morphmap, 
 		  MORPH_ALL|MORPH_PARTIAL, srcname );
+
+	mutex_unlock( &pfparams_mutex );
+}
+
+static struct stat *
+table_check( char *table, Tabletrack **ttrk )
+{
+	Dbptr	db;
+	char	*filename;
+	int	nrecs;
+	int 	ret;
+
+	if( *ttrk == (Tabletrack *) NULL ) {
+
+		allot( Tabletrack *, *ttrk, 1 );
+		allot( struct stat *, (*ttrk)->statbuf, 1 );
+		(*ttrk)->use = 1;
+
+		ret = dbopen( Calibinfo.dbname, "r", &db );
+
+		if( ret < 0 || db.database < 0 ) {
+
+			complain( 1, "Failed to open %s\n",
+				 Calibinfo.dbname );
+			
+			(*ttrk)->use = 0;
+
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		}
+
+		db = dblookup( db, 0, table, 0, 0 );
+
+		if( db.table < 0 ) {
+
+			dbclose( db );
+
+			complain( 1, "Failed to lookup %s.%s\n", 
+		  	     	Calibinfo.dbname,
+		  	     	table );
+
+			(*ttrk)->use = 0;
+
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		} 
+
+		dbquery( db, dbTABLE_FILENAME, (Dbvalue *) &filename );
+		abspath( filename, (*ttrk)->filename );
+
+		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
+
+		if( ret < 0 && errno == ENOENT ) {
+
+			dbclose( db );
+
+			complain( 1, "%s does not exist\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+
+		} else if( ret < 0 ) {
+
+			dbclose( db );
+
+			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+		} 
+
+		dbquery( db, dbRECORD_COUNT, &nrecs );
+		
+		if( nrecs <= 0 ) {
+			
+			dbclose( db );
+
+			complain( 1, "No records in %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+			return (*ttrk)->statbuf;
+
+		} else {
+
+			dbclose( db );
+			
+			(*ttrk)->last_mtime = (double) (*ttrk)->statbuf->st_mtime;
+
+			return (*ttrk)->statbuf;
+		}
+
+	} else if( (*ttrk)->use == 0 ) {
+
+		return (struct stat *) NULL;
+
+	} else {
+
+		ret = stat( (*ttrk)->filename, (*ttrk)->statbuf );
+
+		if( ret < 0 ) {
+			complain( 1, "Failed to stat %s\n", (*ttrk)->filename );
+
+			(*ttrk)->use = 0;
+			free( (*ttrk)->statbuf );
+			(*ttrk)->statbuf = 0;
+
+		} else {
+
+			return (*ttrk)->statbuf;
+		}
+	}
+}
+
+static int
+update_is_necessary( char *table, Tabletrack *ttrk )
+{
+	struct stat *statbuf;
+
+	statbuf = table_check( "calibration", &ttrk );
+
+	if( (double) statbuf->st_mtime > ttrk->last_mtime ) {
+
+		ttrk->last_mtime = (double) statbuf->st_mtime;
+
+		return 1;
+
+	} else {
+
+		return 0;
+	}
+}
+
+static char * 
+add_segtype( char *sta, char *chan, double time, Dbptr *pdb )
+{
+	Dbptr	db, dbs, dbi;
+	char	*segtype;
+	char	key[STRSZ];
+	char	expr[STRSZ];
+	int	nrecs = 0;
+	int	ret;
+	
+	if( pdb == (Dbptr *) NULL ) {
+		dbopen( Calibinfo.dbname, "r", &db );
+	} else {
+		db = *pdb;
+	}
+
+	dbs = dblookup( db, 0, "sensor", 0, 0 );
+	dbi = dblookup( db, 0, "instrument", 0, 0 );
+	db = dbjoin( dbs, dbi, 0, 0, 0, 0, 0 );
+
+	sprintf( key, "%s:%s", sta, chan );
+	
+	if( ( segtype = getarr( Calibinfo.segtypearr, key ) ) == (char *) NULL ) {
+
+		allot( char *, segtype, 3 );
+		setarr( Calibinfo.segtypearr, key, segtype );
+	}
+
+	sprintf( expr,
+		 "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime == NULL || endtime >= %f)",
+		 sta, chan, time, time );
+	db = dbsubset( db, expr, 0 );
+
+	dbquery( db, dbRECORD_COUNT, &nrecs );
+
+	if( nrecs > 0 ) {
+		db.record = 0;
+		ret = dbgetv( db, 0, "rsptype", segtype, 0 );
+	}
+
+	if( ret < 0 || nrecs <= 0 ) {
+		complain( 1, "Failed to get segtype from database for %s\n", key );
+		mutex_lock( &pfparams_mutex );
+		strcpy( segtype, Default_segtype );
+		mutex_unlock( &pfparams_mutex );
+	}
+
+	if( ! strcmp( segtype, "-" ) ) {
+
+		mutex_lock( &pfparams_mutex );
+		strcpy( segtype, Default_segtype );
+		mutex_unlock( &pfparams_mutex );
+
+		if( VeryVerbose ) {
+			fprintf( stderr, 
+			  "Database has null segtype for %s; using default\n",
+			  key );
+		}
+	}
+
+	if( VeryVerbose ) {
+		fprintf( stderr, "Using segtype %s for %s\n",
+			 segtype, key );
+	}
+
+	if( pdb == (Dbptr *) NULL ) {
+		dbclose( db );
+	}
+
+	return segtype;
 }
 
 static void
+update_segtypevals( double time )
+{
+	Dbptr	db;
+	Srcname	parts;
+	Tbl	*keys;
+	char	*key;
+	char	*s;	
+	Tbl	*ssplit;
+	int 	i;
+
+	if( VeryVerbose ) {
+		fprintf( stderr, "Database sensor/instrument table changed; rereading segtype\n" );
+	}
+
+	dbopen( Calibinfo.dbname, "r", &db );
+
+	keys = keysarr( Calibinfo.segtypearr );
+	if( keys == (Tbl *) NULL ) {
+		dbclose( db );
+		return;
+	}
+
+	for( i=0; i<maxtbl( keys ); i++ ) {
+
+		key = gettbl( keys, i );
+		
+		s = strdup( key );
+		ssplit = split( s, ':' );
+
+		add_segtype( gettbl( ssplit, 0 ), 
+			     gettbl( ssplit, 1 ),
+			     time, &db );
+
+		free( s );
+		freetbl( ssplit, 0 );
+	}
+
+	dbclose( db );
+}
+
+static Calibvals * 
+add_current_calibvals( char *sta, char *chan, double time, Dbptr *pdb )
+{
+	Dbptr	db;
+	Calibvals *cv;
+	char	key[STRSZ];
+	char	expr[STRSZ];
+	int	nrecs = 0;
+	int	ret;
+	
+	if( pdb == (Dbptr *) NULL ) {
+		dbopen( Calibinfo.dbname, "r", &db );
+	} else {
+		db = *pdb;
+	}
+
+	db = dblookup( db, 0, "calibration", 0, 0 );
+
+	sprintf( key, "%s:%s", sta, chan );
+	
+	if( ( cv = getarr( Calibinfo.calibarr, key ) ) == (Calibvals *) NULL ) {
+
+		allot( Calibvals *, cv, 1 );
+		setarr( Calibinfo.calibarr, key, cv );
+	}
+
+	sprintf( expr,
+		 "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime == NULL || endtime >= %f)",
+		 sta, chan, time, time );
+	db = dbsubset( db, expr, 0 );
+
+	dbquery( db, dbRECORD_COUNT, &nrecs );
+
+	if( nrecs > 0 ) {
+		db.record = 0;
+		ret = dbgetv( db, 0, "calib", &(cv->calib), 
+			       	     "calper", &(cv->calper),
+			             "endtime", &(cv->validuntil), 0 );
+	}
+
+	if( ret < 0 || nrecs <= 0 ) {
+		complain( 1, "Failed to get calib and calper from database for %s\n", key );
+		cv->calib = DEFAULT_CALIB;
+		cv->calper = DEFAULT_CALPER;
+		cv->validuntil = 9999999999.999;
+	}
+
+	if( VeryVerbose ) {
+		fprintf( stderr, 
+			 "Using calib %f, calper %f for %s\n",
+			 cv->calib, cv->calper, key );
+	}
+
+	if( pdb == (Dbptr *) NULL ) {
+		dbclose( db );
+	}
+
+	return cv;
+}
+
+static void
+update_calibvals( double time )
+{
+	Dbptr	db;
+	Srcname	parts;
+	Tbl	*keys;
+	char	*key;
+	char	*s;	
+	Tbl	*ssplit;
+	int 	i;
+
+	if( VeryVerbose ) {
+		fprintf( stderr, 
+		   "Database calibration table changed; rereading calib and calper\n" );
+	}
+
+	dbopen( Calibinfo.dbname, "r", &db );
+
+	keys = keysarr( Calibinfo.calibarr );
+	if( keys == (Tbl *) NULL ) {
+		dbclose( db );
+		return;
+	}
+
+	for( i=0; i<maxtbl( keys ); i++ ) {
+
+		key = gettbl( keys, i );
+		
+		s = strdup( key );
+		ssplit = split( s, ':' );
+
+		add_current_calibvals( gettbl( ssplit, 0 ), 
+				       gettbl( ssplit, 1 ),
+				       time, &db );
+
+		free( s );
+		freetbl( ssplit, 0 );
+	}
+
+	dbclose( db );
+}
+
+static void
+get_calibinfo( Srcname *parts, double time, char *segtype, double *calib, double *calper )
+{
+	char	key[STRSZ];
+	Calibvals *cv;
+
+	if( Calibinfo.usedbsegtype == 0 ) {
+
+		mutex_lock( &pfparams_mutex );
+		strncpy( segtype, Default_segtype, 2 );
+		segtype[1] = '\0';
+		mutex_unlock( &pfparams_mutex );
+
+	} else {
+
+		if( update_is_necessary( "sensor", Calibinfo.strk ) ||
+		    update_is_necessary( "instrument", Calibinfo.itrk ) ) {
+
+			/* Use the current packet time to find valid rows: */
+			update_segtypevals( time );
+		}	
+
+		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
+	
+		segtype = (char *) getarr( Calibinfo.segtypearr, key );
+
+		if( segtype == (char *) NULL ) {
+
+			segtype = add_segtype( parts->src_sta, parts->src_chan, time, 0 );
+		}
+	}
+
+	if( Calibinfo.usedbcalib == 0 ) {
+
+		*calib = DEFAULT_CALIB;
+		*calper = DEFAULT_CALPER;
+
+	} else {
+
+		if( update_is_necessary( "calibration", Calibinfo.ctrk ) ) {
+			
+			update_calibvals( time );
+		}
+
+		sprintf( key, "%s:%s", parts->src_sta, parts->src_chan );
+
+		cv = (Calibvals *) getarr( Calibinfo.calibarr, key );
+
+		if( cv == (Calibvals *) NULL || 
+		    ( cv->validuntil != 9999999999.999 && time > cv->validuntil ) ) {
+
+			cv = add_current_calibvals( parts->src_sta, parts->src_chan, time, 0 );
+		}
+
+		*calib = cv->calib;
+		*calper = cv->calper;
+	}
+	
+	return;
+}
+
+static void  
+insert_orbgcf_hdr( G2orbpkt *gpkt )
+{
+	Srcname parts;
+	short	version = ORBGCF_VERSION;
+	char	segtype[3];
+	double	calib;
+	double 	calper;
+
+	split_srcname( gpkt->srcname, &parts );
+
+	if( ! strcmp( parts.src_suffix, "GCFS" ) ) {
+
+		memmove( &gpkt->packet[2], gpkt->packet, gpkt->len );
+		version = htons( version );
+		memcpy( gpkt->packet, &version, 2 );
+		gpkt->len += 2;
+
+	} else {
+
+		memmove( &gpkt->packet[12], gpkt->packet, gpkt->len );
+		version = htons( version );
+		memcpy( gpkt->packet, &version, 2 );
+		
+		get_calibinfo( &parts, gpkt->time, segtype, &calib, &calper );
+
+		memcpy( &gpkt->packet[2], segtype, 1 );
+		gpkt->packet[3] = 0;
+
+		HD2NF( &gpkt->packet[4], &calib, 1 );
+		HD2NF( &gpkt->packet[8], &calper, 1 );
+
+		gpkt->len += 12;
+	}
+
+	return;
+}
+
+static void 
 gcfpeek( G2orbpkt *gpkt )
 {
 	unsigned int sysid;
@@ -264,8 +770,8 @@ gcfpeek( G2orbpkt *gpkt )
 	gpkt->samprate = (unsigned char) gpkt->packet[13];
 	gpkt->byteorder = (unsigned char) gpkt->packet[1060];
 
-	if( ( gpkt->byteorder == GCF_MOTOROLA_BYTEORDER && ! BIGENDIAN ) || 
-	    ( gpkt->byteorder == GCF_INTEL_BYTEORDER && BIGENDIAN ) ) {
+	if( ( gpkt->byteorder == GCF_MOTOROLA_BYTEORDER && ! Words_bigendian ) || 
+	    ( gpkt->byteorder == GCF_INTEL_BYTEORDER && Words_bigendian ) ) {
 		
 		swap2( &(gpkt->blockseq), &(gpkt->blockseq), 1 );
 		swap4( &sysid, &sysid, 1 );	
@@ -283,141 +789,163 @@ gcfpeek( G2orbpkt *gpkt )
 			   gpkt->samprate );
 }
 
-static void *
-guralp2orb_packetrecover( void *arg )
+static G2orbpkt * 
+recover_packet( Bns *bns, unsigned short requested )
+{
+	G2orbpkt *gpkt;
+	char 	msg;
+	int 	rc = 0;
+
+	msg = PACKET_REQUEST;
+	bnsput( bns, &msg, BYTES, 1 );
+	bnsput( bns, &requested, TWO_BYTES, 1 );
+	bnsflush( bns );
+
+	allot( G2orbpkt *, gpkt, 1 );
+	
+	/* again assume packets are available */
+
+	/* Fill these in for completeness */
+	gpkt->len = RAWGCF_PACKET_SIZE;
+	gpkt->tcprecovered = 1;
+
+	rc = bnsget( bns, 
+		     &(gpkt->packet), 
+		     BYTES, 
+		     gpkt->len );
+
+	if( rc < 0 ) {
+
+		free( gpkt );
+		gpkt = (G2orbpkt *) NULL;
+	}
+
+	return gpkt; 
+}
+
+static void 
+recover_packetsequence( Recoverreq *rr )
 {
 	G2orbpkt *gpkt;
 	struct sockaddr_in sin;
 	int 	so;
-	int	rc = 0;
-	Recoverreq *rr;
 	Bns 	*bns;
 	char 	msg;
-	char	response[PACKET_SIZE];
+	char	response[RAWGCF_PACKET_SIZE];
 	unsigned short requested;
 	int	next;
 	int	lastflag;
 
-	while( mtfifo_pop( Recover_mtf, (void **) &rr ) != 0 ) { 
-		
-		/* SCAFFOLD acquiesce to lost packets on socket failures */
-		/* N.B. This could be handled differently with some expire 
-		   mechanism that puts packets back on the recovery 
-		   queue */
+	/* acquiesce to lost packets on socket failures */
+	/* N.B. This could be handled differently with some expire 
+	   mechanism that puts packets back on the recovery 
+	   queue */
 
-		so = socket( PF_INET, SOCK_STREAM, 0 );
-		if( so < 0 ) {
+	so = socket( PF_INET, SOCK_STREAM, 0 );
+	if( so < 0 ) {
+		complain( 1, 
+		"Can't open tcp socket to %s for packet recovery\n", 
+		rr->udpsource );
+		free( rr );
+		return;
+	}
+
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons( 0 );  /* Any port */
+	sin.sin_addr.s_addr = htonl( INADDR_ANY );
+	
+	if( bind( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
+		complain( 1,
+		"Couldn't bind packet recovery socket\n" );
+		close( so );
+		free( rr );
+		return;
+	}
+		
+	sin.sin_port = htons( rr->udpport );
+	sin.sin_addr = rr->udpip;
+	
+	if( connect( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
+		complain( 1,
+		"Couldn't connect packet recovery socket\n" );
+		close( so );
+		free( rr );
+		return;
+	}
+
+	bns = bnsnew( so, 100 * RAWGCF_PACKET_SIZE );
+	bnsuse_sockio( bns );
+
+	msg = IDENTIFY_SERVER;
+	bnsput( bns, &msg, BYTES, 1 );
+	bnsflush( bns );
+
+	bnsget( bns, &response[0], BYTES, 16 );
+
+	if( strncmp( response, SERVER_ID_STRING, 
+		sizeof( SERVER_ID_STRING ) - 1 ) ) {
+		complain( 1, 
+		  "%s not a GCF server; TCP packet recovery failed\n", 
+		  rr->udpsource );
+		bnsclose( bns );
+		free( rr );
+		return;
+	}
+
+	/* assume the packets are available */
+
+	lastflag = 0;
+	next = rr->first;
+
+	while( ! lastflag ) {
+
+		requested = htons( next );
+
+		if( next == rr->last ) lastflag++;
+		next = next_in_sequence( next );
+
+		gpkt = recover_packet( bns, requested );
+		
+		if( gpkt == (G2orbpkt *) NULL ) {
+
 			complain( 1, 
-			"Can't open tcp socket to %s for packet recovery\n", 
-			rr->udpsource );
-			free( rr );
-			continue;
-		}
+				"failed to get packet %d from %s via TCP, errno %d\n", 
+				requested, 
+				rr->udpsource, 
+				bnserrno( bns ) );
+		} else {
 
-		sin.sin_family = AF_INET;
-		sin.sin_port = htons( 0 );  /* Any port */
-		sin.sin_addr.s_addr = htonl( INADDR_ANY );
-	
-		if( bind( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
-			complain( 1,
-			"Couldn't bind packet recovery socket\n" );
-			close( so );
-			free( rr );
-			continue;
-		}
-		
-		sin.sin_port = htons( rr->udpport );
-		sin.sin_addr = rr->udpip;
-	
-		if( connect( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
-			complain( 1,
-			"Couldn't connect packet recovery socket\n" );
-			close( so );
-			free( rr );
-			continue;
-		}
-
-		bns = bnsnew( so, 100 * PACKET_SIZE );
-		bnsuse_sockio( bns );
-
-		msg = IDENTIFY_SERVER;
-		bnsput( bns, &msg, BYTES, 1 );
-		bnsflush( bns );
-
-		/* Question whether this is always 16 bytes */
-		bnsget( bns, &response[0], BYTES, 16 );
-
-		if( strncmp( response, SERVER_ID_STRING, 
-			sizeof( SERVER_ID_STRING ) - 1 ) ) {
-			complain( 1, "%s not a GCF server; tcp packet recovery failed\n", rr->udpsource );
-			bnsclose( bns );
-			free( rr );
-			continue;
-		}
-
-		/* SCAFFOLD: assume the packets are available */
-
-		lastflag = 0;
-		next = rr->first;
-
-		while( ! lastflag ) {
-
-			requested = htons( next );
-
-			if( next == rr->last ) lastflag++;
-			next = next_in_sequence( next );
-
-			msg = PACKET_REQUEST;
-			bnsput( bns, &msg, BYTES, 1 );
-			bnsput( bns, &requested, TWO_BYTES, 1 );
-			bnsflush( bns );
-
-			allot( G2orbpkt *, gpkt, 1 );
-	
-			/* SCAFFOLD again assume packets are available */
-	
-			/* Fill these in for completeness */
-			gpkt->len = PACKET_SIZE;
-			gpkt->tcprecovered = 1;
 			gpkt->udpip = rr->udpip;
 			gpkt->udpport = rr->udpport;
 			strcpy( gpkt->udpsource, rr->udpsource );
-	
-			gpkt->len = PACKET_SIZE;
-
-			rc = bnsget( bns, 
-				     &(gpkt->packet), 
-				     BYTES, 
-				     gpkt->len );
-
-			if( rc < 0 ) {
-				complain( 1, 
-	"failed to get packet %d from %s via TCP, errno %d\n", 
-					requested, 
-					gpkt->udpsource, 
-					bnserrno( bns ) );
-				free( rr );
-				free( gpkt );
-				bnsclose( bns );
-				continue;
-			}
 
 			gcfpeek( gpkt );
 
 			mtfifo_push( Packets_mtf, (void *) gpkt );
+		}
+	} 
 
-		} 
+	free( rr );
+	bnsclose( bns );
+	close( so );
 
-		free( rr );
-		bnsclose( bns );
-		close( so );
+	return;
+}
 
+static void * 
+guralp2orb_packetrecover( void *arg )
+{
+	Recoverreq *rr;
+
+	while( mtfifo_pop( Recover_mtf, (void **) &rr ) != 0 ) { 
+
+		recover_packetsequence( rr );
 	}
 
 	return( NULL );
 }
 
-static void *
+static void * 
 guralp2orb_packettrans( void *arg )
 {
 	G2orbpkt *gpkt;
@@ -425,6 +953,7 @@ guralp2orb_packettrans( void *arg )
 	Packet	*pkt = 0;
 	int	rc = 0;
 	char	*s;
+	char 	*contents = "Null string";
 	struct timespec tp;
 	double 	tdelta;
 	FILE	*fp;
@@ -436,27 +965,43 @@ guralp2orb_packettrans( void *arg )
 
 		if( ! strcmp( parts.src_suffix, "GCFS" ) ) {
 
-			rc = unstuffPkt( gpkt->srcname, gpkt->time, gpkt->packet,
-				    gpkt->len, &pkt );
+			rc = unstuffPkt( gpkt->srcname, 
+					 gpkt->time, 
+					 gpkt->packet,
+				    	 gpkt->len,
+					 &pkt );
+			if( rc == -1 ) {
+				complain( 1, "Unrecognized packet type GCFS\n" );
+				continue;
+			} else if( rc <= 0 ) {
+				complain( 1, 
+					  "Error %d unstuffing GCFS packet\n",
+					  rc );
+				continue;
+			}
 
-			if( strcmp( StatuspktLogfile, "" ) ) {
-				fp = fopen( StatuspktLogfile, "a" );
+			if( pkt->string != NULL ) {
+				contents = pkt->string;
+			}
+
+			if( strcmp( LogpktLogfile, "" ) ) {
+				fp = fopen( LogpktLogfile, "a" );
 				if( fp ) {
 					fprintf( fp, 
 			"\nStatus packet from %s:%s at %s:\n\n%s\n\n",
 					parts.src_sta, parts.src_chan,
 					s = strtime( gpkt->time ),
-					pkt->string );
+					contents );
 					free( s );
 					fclose( fp );
 					sprintf( cmd, "dos2unix %s %s",
-						StatuspktLogfile,
-						StatuspktLogfile );
+						LogpktLogfile,
+						LogpktLogfile );
 					system( cmd );
 				} else {
 					complain( 1,
 					"Couldn't open %s for %s packet\n",
-						StatuspktLogfile,
+						LogpktLogfile,
 						gpkt->srcname );
 				}
 			}
@@ -465,7 +1010,7 @@ guralp2orb_packettrans( void *arg )
 				printf( "\nStatus packet from %s:%s at %s:\n\n%s\n\n",
 					parts.src_sta, parts.src_chan, 
 					s = strtime( gpkt->time ),
-					pkt->string );
+					contents );
 
 				free( s );
 			}
@@ -493,6 +1038,7 @@ guralp2orb_packettrans( void *arg )
 		clock_gettime( CLOCK_REALTIME, &tp );
 		tdelta = gpkt->time - tp.tv_sec+tp.tv_nsec/1e9;
 
+		/* Reject future data packets; keep log packets regardless */
 		if( Reject_future_packets &&
 		    tdelta > Reject_future_packets_sec && 
 		    strcmp( parts.src_suffix, "GCFS" ) ) {
@@ -511,6 +1057,8 @@ guralp2orb_packettrans( void *arg )
 			continue;
 		}
 
+		insert_orbgcf_hdr( gpkt );
+
 		rc = orbput( Orbfd, 
 			     gpkt->srcname, 
 			     gpkt->time,
@@ -525,7 +1073,7 @@ guralp2orb_packettrans( void *arg )
 	return( NULL );
 }
 
-static void *
+static void * 
 guralp2orb_udplisten( void *arg )
 {
 	Udplistener *ul = (Udplistener *) arg;
@@ -533,17 +1081,20 @@ guralp2orb_udplisten( void *arg )
 	struct sockaddr_in foreign;
 	int	lenforeign = sizeof( foreign );
 	G2orbpkt *gpkt;
-	int	rc = 0;
 
 	if( Verbose ) {
 		fprintf( stderr, 
-			"guralp2orb: listening on port %d\n", ul->port );
+			"guralp2orb: udplisten: opening connection on port %d\n",
+			 ul->port );
 	}
 
 	ul->so = socket( AF_INET, SOCK_DGRAM, 0 );
 	if( ul->so < 0 ) {
 		complain( 1, "Can't open socket for port %d\n", ul->port );
-		rc = -1;
+		ul->failed = 1;
+		mutex_lock( &(ul->statuslock) );
+		cond_signal( &(ul->up) );
+		mutex_unlock( &(ul->statuslock) );
 		return( NULL );
 	}
 
@@ -558,15 +1109,27 @@ guralp2orb_udplisten( void *arg )
 
 	if( bind( ul->so, (struct sockaddr *) &(ul->local), ul->lenlocal ) < 0 ) {
 		complain( 1, "Can't bind address to socket\n" );
-		rc = -1;
+		ul->failed = 1;
+		mutex_lock( &(ul->statuslock) );
+		cond_signal( &(ul->up) );
+		mutex_unlock( &(ul->statuslock) );
 		return( NULL );
 	}
 
 	if( getsockname( ul->so, (struct sockaddr *) &(ul->local),
 			 &ul->lenlocal ) < 0 ) {
 		complain( 1, "Error getting socket name\n" );
-		rc = -1;
+		ul->failed = 1;
+		mutex_lock( &(ul->statuslock) );
+		cond_signal( &(ul->up) );
+		mutex_unlock( &(ul->statuslock) );
 		return( NULL );
+	}
+
+	if( Verbose ) {
+		fprintf( stderr, 
+			"guralp2orb: udplisten: listening on port %d\n",
+			 ul->port );
 	}
 
 	mutex_lock( &(ul->statuslock) );
@@ -580,7 +1143,7 @@ guralp2orb_udplisten( void *arg )
 		gpkt->tcprecovered = 0;
 
 		mutex_lock( &(ul->socketlock) );
-		gpkt->len = recvfrom( ul->so, gpkt->packet, PACKET_SIZE, 0,
+		gpkt->len = recvfrom( ul->so, gpkt->packet, RAWGCF_PACKET_SIZE, 0,
 				(struct sockaddr *) &foreign, &lenforeign );
 		mutex_unlock( &(ul->socketlock) );
 
@@ -618,22 +1181,21 @@ guralp2orb_udplisten( void *arg )
 	return( NULL );
 }
 
-static Udplistener * 
-launch_udplisten( char *port )
+static Udplistener *  
+launch_udplisten_thread( in_port_t port )
 {
 	Udplistener *ul;
+	char	key[STRSZ];
 	int	ret;
 
-	if( ul_arr == (Arr *) NULL ) {
-		ul_arr = newarr( 0 );
-	}
+	sprintf( key, "%d", port );
 
-	if( ( ul = (Udplistener *) getarr( ul_arr, port ) ) != NULL ) {
+	if( ( ul = (Udplistener *) getarr( ul_arr, key ) ) != NULL ) {
 
 		if( Verbose ) {
 			fprintf( stderr,
-			"guralp2orb: already listening on port %s\n",
-			port );
+			"guralp2orb: udplisten:   ...already listening on port %s\n",
+			key );
 		}
 
 		return ul;
@@ -646,9 +1208,10 @@ launch_udplisten( char *port )
 
 	cond_init( &(ul->up), USYNC_THREAD, 0 );
 
-	ul->port = atoi( port );
+	ul->failed = 0;
+	ul->port = port;
 	
-	setarr( ul_arr, port, (void *) ul );
+	setarr( ul_arr, key, (void *) ul );
 
 	ret = thr_create( NULL, 0, guralp2orb_udplisten, 
 			  (void *) ul, THR_BOUND | THR_NEW_LWP,
@@ -658,32 +1221,62 @@ launch_udplisten( char *port )
 	cond_wait( &(ul->up), &(ul->statuslock) );
 	mutex_unlock( &(ul->statuslock) );
 
+	if( ul->failed ) {
+
+		delarr( ul_arr, key );
+
+		mutex_destroy( &(ul->statuslock) );
+		mutex_destroy( &(ul->socketlock) );
+		
+		cond_destroy( &(ul->up) );
+		
+		free( ul );
+		
+		ul = (Udplistener *) NULL;
+	}
+
 	return ul;
 }
 
-static void *
+static void * 
 guralp2orb_udpinitiate( void *arg )
 {
 	Udpinitiater *ui = (Udpinitiater *) arg;
 	Udplistener *ul;
-	char	port[STRSZ];
 	struct sockaddr_in remote;
 	int	lenremote = sizeof( remote );
 	int	first = 1;
 
-	sprintf( port, "%d", ui->udpreceive_port );
-	ul = launch_udplisten( port );
+	if( Verbose ) {
+		fprintf( stderr, 
+		"guralp2orb: udpinitiate: initiating connection with %s:%d into udp port %d\n", 
+			ui->screamip, ui->screamport, ui->udpreceive_port );
+		fprintf( stderr, 
+		"guralp2orb: udpinitiate: ...creating udplisten thread for port %d\n", 
+			ui->udpreceive_port );
+	}
+	
+	ul = launch_udplisten_thread( ui->udpreceive_port );
+
+	if( ul == (Udplistener *) NULL ) {
+
+		ui->failed = 1;
+
+		mutex_lock( &(ui->statuslock) );
+		cond_signal( &(ui->up) );
+		mutex_unlock( &(ui->statuslock) );
+
+		return NULL;
+	}
 
 	remote.sin_family = AF_INET;
 	remote.sin_port = htons( ui->screamport );
 	remote.sin_addr.s_addr = inet_addr( ui->screamip );
 
-	if( Verbose ) {
-		fprintf( stderr, 
-		"guralp2orb: initiating connection from %s:%d into port %d\n", 
-		ui->screamip, ui->screamport, ui->udpreceive_port );
-	}
-	
+	mutex_lock( &(ui->statuslock) );
+	cond_signal( &(ui->up) );
+	mutex_unlock( &(ui->statuslock) );
+
 	for( ;; ) {
 		if( first ) {
 			first = 0;
@@ -695,36 +1288,388 @@ guralp2orb_udpinitiate( void *arg )
 
 		sendto( ul->so, "GCFSEND:B", 9, 0,
 			(struct sockaddr *) &remote, lenremote );
-		sleep( REINITIATE_INTERVAL );
+		sleep( REINITIATE_INTERVAL_SEC );
 	}
 
 	return( NULL );
 
 }
 
+static Udpinitiater *
+launch_udpinitiate_thread( char *screamip, in_port_t screamport, in_port_t udpreceive_port )
+{
+	Udpinitiater *ui;
+	char	key[STRSZ];
+	int	ret;
+
+	sprintf( key, "%s:%d (udp %d)", screamip, screamport, udpreceive_port );
+
+	if( ( ui = (Udpinitiater *) getarr( ui_arr, key ) ) != NULL ) {
+
+		if( Verbose ) {
+			fprintf( stderr,
+			"guralp2orb: udpinitiate:   ...already connecting to %s\n",
+			key );
+		}
+
+		return ui;
+	}
+
+	allot( Udpinitiater *, ui, 1 );
+
+	mutex_init( &(ui->statuslock), USYNC_THREAD, NULL );
+
+	cond_init( &(ui->up), USYNC_THREAD, 0 );
+
+	ui->failed = 0;
+
+	strcpy( ui->screamip, screamip );
+	ui->screamport = screamport;
+	ui->udpreceive_port = udpreceive_port;
+
+	setarr( ui_arr, key, (void *) ui );
+
+	ret = thr_create( NULL, 0, guralp2orb_udpinitiate,
+		(void *) ui, THR_BOUND | THR_NEW_LWP,
+		&(ui->initiater_thread) );
+
+	mutex_lock( &(ui->statuslock) );
+	cond_wait( &(ui->up), &(ui->statuslock) );
+	mutex_unlock( &(ui->statuslock) );
+	
+	if( ui->failed ) {
+		
+		delarr( ui_arr, key );
+
+		mutex_destroy( &(ui->statuslock) );
+
+		cond_destroy( &(ui->up) );
+
+		free( ui );
+
+		ui = (Udpinitiater *) NULL;
+	}
+
+	return ui;
+}
+
+static int	
+init_calibinfo( void )
+{
+	Dbptr 	db;
+	int	ret;
+	struct stat *statbuf;
+
+	Calibinfo.usedbcalib = 1;
+	Calibinfo.usedbsegtype = 1;
+	Calibinfo.ctrk = 0;
+	Calibinfo.strk = 0;
+	Calibinfo.itrk = 0;
+	Calibinfo.calibarr = newarr( 0 );
+	Calibinfo.segtypearr = newarr( 0 );
+
+	if( ! strcmp( Calibinfo.dbname, "" ) ) {
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+		return 0;
+	}
+
+	ret = dbopen( Calibinfo.dbname, "r", &db );
+
+	if( ret < 0 || db.database < 0 ) {
+
+		complain( 1, "%s %s; %s\n",
+		  "Failed to open database",
+		  Calibinfo.dbname,
+  		  "calib, calper, and segtype will be default values" );
+
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+
+		return -1;
+	}
+
+	dbclose( db );
+
+	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default values for calib and calper.\n" );
+
+		Calibinfo.usedbcalib = 0;
+	}
+
+	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
+	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default value for segtype.\n" );
+
+		Calibinfo.usedbsegtype = 0;
+	}
+}
+
+static void *
+dup_element( void *element )
+{
+	return element;
+}
+
+static void
+launch_udplisten_threads( void )
+{
+	Tbl	*udplisten;
+	Tbl	*t;
+	in_port_t udpreceive_port;
+	char	*line;
+	int 	nvals;
+
+	t = pfget_tbl( pf, "udplisten" );
+
+	if( t == (Tbl *) NULL ) {
+
+		udplisten = (Tbl *) NULL; 
+
+	} else {
+
+		udplisten = duptbl( t, dup_element );
+	}
+
+	while( ( udplisten != (Tbl *) NULL ) && 
+	       ( line = poptbl( udplisten ) ) != NULL ) {
+
+		nvals = sscanf( line, "%hd\n", &udpreceive_port );
+
+		if( nvals != 1 ) {
+			complain( 1, 
+				"guralp2orb: line \"%s\" not understood in udplisten table of parameter file; skipping.\n", line );
+			continue;
+		}
+
+		launch_udplisten_thread( udpreceive_port );
+	}
+
+	if( udplisten != (Tbl *) NULL ) {
+
+		freetbl( udplisten, 0 );
+	}
+
+	return;
+}
+
+static void
+launch_udpinitiate_threads( void ) 
+{
+	Tbl	*udpinitiate;
+	Tbl	*t;
+	char	myline[STRSZ];
+	char	*line;
+	char	screamip[STRSZ];
+	in_port_t screamport;
+	in_port_t udpreceive_port;
+	int 	nvals;
+
+	t = pfget_tbl( pf, "udpinitiate" );
+
+	if( t == (Tbl *) NULL ) {
+
+		udpinitiate = (Tbl *) NULL; 
+
+	} else {
+
+		udpinitiate = duptbl( t, dup_element );
+	}
+
+	while( ( udpinitiate != (Tbl *) NULL ) &&
+	       ( line = poptbl( udpinitiate ) ) != NULL ) {
+
+		strsub( line, ":", " ", myline );
+
+		nvals = sscanf( myline, "%s %hd %hd\n", 
+					screamip, 
+					&screamport, 
+					&udpreceive_port );
+
+		if( nvals != 3 ) {
+			complain( 1, 
+				"guralp2orb: line \"%s\" not understood in udpinitiate table of parameter file; skipping.\n", line );
+			continue;
+		}
+
+		launch_udpinitiate_thread( screamip, screamport, udpreceive_port );
+	}
+
+	if( udpinitiate != (Tbl *) NULL ) {
+
+		freetbl( udpinitiate, 0 );
+	}
+	
+	return;
+}
+
+static Tbl *
+healthy_morphlist( Tbl *morphlist ) 
+{
+	Tbl	*new_morphlist;
+	Tbl	*indices;
+	int	i;
+	char	*cp;
+	char	*entry;
+
+	if( morphlist == (Tbl *) NULL ) {
+		return morphlist;
+	} 
+
+	new_morphlist = duptbl( morphlist, (void *(*)()) strdup );
+
+	indices = greptbl( "^[/\"\'].*", new_morphlist );
+	
+	if( maxtbl( indices ) <= 0 ) {
+
+		return new_morphlist;
+
+	} else {
+
+		for( i=maxtbl(indices)-1; i>=0; i-- ) {
+
+			entry = gettbl( new_morphlist, (int) gettbl( indices, i ) );
+
+			memmove( entry, entry + 1, strlen( entry ) );
+			cp = entry + strlen( entry );
+			while( cp > entry ) {
+				if( *(cp-1) != '\\' && 
+				    (*cp == '/' || *cp == '"' || *cp == '\'') ) {
+					*cp = ' ';
+				}
+				cp--;	
+			}
+
+			strtrim( entry );
+		}	
+
+		return new_morphlist;
+	}
+}
+
+static void *
+guralp2orb_pfwatch( void *arg )
+{
+	Tbl	*morphlist;
+	int	new_nrecovery_threads;
+	int	ret;
+	int	i;
+
+	/* parameter-file updates cannot be triggered by 
+	   incoming packets, in case the current connections
+	   are temporarily dead when a new connect thread is added 
+	   (it won't get noticed if the program is waiting for another 
+	   packet). Thus this must be a separate thread. */
+
+	for( ;; ) {
+		
+		ret = pfupdate( Pffile, &pf );
+
+		if( ret < 0 ) {
+
+			complain( 1, "pfupdate failed\n" );
+
+		} else if( ret == 0 ) {
+
+			; /* no reconfiguration necessary */
+
+		} else if( ret == 1 ) {
+
+			if( Verbose ) {
+				fprintf( stderr, 	
+				 "guralp2orb: parameter-file changed; rereading\n" );
+			} 
+
+			/* SCAFFOLD: need lock */
+
+			mutex_lock( &pfparams_mutex );
+
+			free( Default_net );
+
+			Default_net = pfget_string( pf, "default_net" );
+
+			if( Default_net == (char *) NULL ) {
+				Default_net = strdup( DEFAULT_NET );
+			} else {
+				Default_net = strdup( Default_net );
+			}
+
+			free( Default_segtype );
+
+			Default_segtype = pfget_string( pf, "default_segtype" );
+
+			if( Default_segtype == (char *) NULL ) {
+				Default_segtype = strdup( DEFAULT_SEGTYPE );
+			} else {
+				Default_segtype = strdup( Default_segtype );
+			}
+
+			freemorphtbl( srcname_morphmap );
+
+			morphlist = pfget_tbl( pf, "srcname_morph" );
+			morphlist = healthy_morphlist( morphlist );
+
+			newmorphtbl( morphlist, &srcname_morphmap ); 
+
+			if( morphlist != (Tbl *) NULL ) {
+				freetbl( morphlist, free );
+			}
+
+			new_nrecovery_threads = pfget_int( pf, "nrecovery_threads" );
+			
+			mutex_unlock( &pfparams_mutex );
+			
+			if( new_nrecovery_threads > nrecovery_threads ) {
+
+				if( Verbose ) {
+						fprintf( stderr, 
+					"guralp2orb: launching %d more TCP packet-recovery threads\n",
+						new_nrecovery_threads - nrecovery_threads );
+				}
+
+				for( i=nrecovery_threads; i < new_nrecovery_threads; i++ ) {
+					ret = thr_create( NULL, 0,
+				  			guralp2orb_packetrecover, 
+				  			0, 0, 0 );
+					if( ret != 0 ) {
+						complain( 1,
+		 				"Failed to create packet-recovery thread\n" );
+					}
+				}
+
+				nrecovery_threads = new_nrecovery_threads;
+			}
+
+			launch_udplisten_threads();
+
+			launch_udpinitiate_threads();
+
+		}
+
+		sleep( PFWATCH_SLEEPTIME_SEC );
+	}
+}
+
 int
 main( int argc, char **argv )
 {
-	Udpinitiater *ui;
-	char	pffile[STRSZ];
 	char	orbname[STRSZ];
 	char	c;
 	char 	*s;
-	Pf	*pf;
-	Tbl	*udplisten;
-	Tbl	*udpinitiate;
 	Tbl	*morphlist;
-	char	udpreceive_port[STRSZ];
-	char	*line;
-	char	myline[STRSZ];
+	char	disabled[STRSZ];
 	int	ret;
 	int	ithread;
-	char	*sp;
 
-	strcpy( pffile, "guralp2orb" );
-	memset( StatuspktLogfile, 0, FILENAME_MAX );
+	elog_init( argc, argv );
 
-	while ( ( c = getopt( argc, argv, "vVp:r:l:" ) ) != -1 ) {
+	strcpy( Pffile, "guralp2orb" );
+	memset( LogpktLogfile, 0, FILENAME_MAX );
+	memset( Calibinfo.dbname, 0, FILENAME_MAX );
+
+	while ( ( c = getopt( argc, argv, "vVp:d:r:l:" ) ) != -1 ) {
 		switch( c ) {
 		case 'v':
 			Verbose++;
@@ -734,14 +1679,17 @@ main( int argc, char **argv )
 			VeryVerbose++;
 			break;
 		case 'p':
-			strcpy( pffile, optarg );
+			strcpy( Pffile, optarg );
+			break;
+		case 'd':
+			strcpy( Calibinfo.dbname, optarg );
 			break;
 		case 'r':
 			Reject_future_packets++;
 			Reject_future_packets_sec = atof( optarg );
 			break;
 		case 'l':
-			strcpy( StatuspktLogfile, optarg );
+			strcpy( LogpktLogfile, optarg );
 			break;
 		default:
 			usage();
@@ -760,6 +1708,13 @@ main( int argc, char **argv )
 		free( s );
 	}
 
+	if( Verbose && strcmp( Calibinfo.dbname, "" ) ) {
+
+		fprintf( stderr, 
+			"guralp2orb: using database \"%s\" for calibration data\n", 
+			Calibinfo.dbname );
+	}
+
 	if( argc - optind != 1 ) {
 		usage();
 	} else {
@@ -770,14 +1725,38 @@ main( int argc, char **argv )
 		die( 1, "Failed to open orb %s\n", orbname ); 
 	}
 
-	if( pfread( pffile, &pf ) < 0 ) {
-		die( 1, "Couldn't read parameter file %s\n", pffile );
+	if( pfupdate( Pffile, &pf ) < 0 ) {
+		die( 1, "Couldn't read parameter file %s\n", Pffile );
 	}
+
+	mutex_init( &pfparams_mutex, USYNC_THREAD, NULL );
+
+	init_calibinfo();
 
 	Default_net = pfget_string( pf, "default_net" );
 
+	if( Default_net == (char *) NULL ) {
+		Default_net = strdup( DEFAULT_NET );
+	} else {
+		Default_net = strdup( Default_net );
+	}
+
+	Default_segtype = pfget_string( pf, "default_segtype" );
+
+	if( Default_segtype == (char *) NULL ) {
+		Default_segtype = strdup( DEFAULT_SEGTYPE );
+	} else {
+		Default_segtype = strdup( Default_segtype );
+	}
+
 	morphlist = pfget_tbl( pf, "srcname_morph" );
-	newmorphtbl( morphlist, &srcname_morphmap );
+	morphlist = healthy_morphlist( morphlist );
+
+	newmorphtbl( morphlist, &srcname_morphmap ); 
+
+	if( morphlist != (Tbl *) NULL ) {
+		freetbl( morphlist, free );
+	}
 
 	Lastpacket = newarr( 0 );
 
@@ -786,19 +1765,25 @@ main( int argc, char **argv )
 	Packets_mtf = mtfifo_create( QUEUE_MAX_PACKETS, 1, 0 );
 	Recover_mtf = mtfifo_create( QUEUE_MAX_RECOVER, 1, 0 );
 
-	ret = thr_create( NULL, 0, guralp2orb_packettrans, 
-			0, 0, 0 );
+	ignoreSIGPIPE();
+
+	ret = thr_create( NULL, 0, guralp2orb_packettrans, 0, 0, 0 );
 	if( ret != 0 ) {
 		die( 1,
-		 "guralp2orb: Failed to create packet-translation thread\n" );
+		 "Failed to create packet-translation thread\n" );
 	}
 
 	nrecovery_threads = pfget_int( pf, "nrecovery_threads" );
 
 	if( Verbose ) {
+		if( nrecovery_threads <= 0 ) {
+			strcpy( disabled, " (TCP-recovery disabled)" );	
+		} else {
+			strcpy( disabled, "" );
+		}
 		fprintf( stderr, 
-		"guralp2orb: launching %d TCP packet-recovery threads\n",
-			nrecovery_threads );
+		"guralp2orb: launching %d TCP packet-recovery threads%s\n",
+			nrecovery_threads, disabled );
 	}
 	
 	for( ithread = 0; ithread < nrecovery_threads; ithread++ ) {
@@ -812,36 +1797,22 @@ main( int argc, char **argv )
 		}
 	}
 
-	udplisten = pfget_tbl( pf, "udplisten" );
-
-	while( ( line = poptbl( udplisten ) ) != NULL ) {
-
-		strcpy( udpreceive_port, line );
-
-		launch_udplisten( udpreceive_port );
-
-	}
-
-	udpinitiate = pfget_tbl( pf, "udpinitiate" );
+	ul_arr = newarr( 0 );
 	ui_arr = newarr( 0 );
 
-	while( ( line = poptbl( udpinitiate ) ) != NULL ) {
+	launch_udplisten_threads();
 
-		allot( Udpinitiater *, ui, 1 );
+	launch_udpinitiate_threads();
 
-		strcpy( myline, line );
-		sp = myline;
-		while( *sp != ':' ) { sp++; }
-		sp[0] = ' ';
-
-		sscanf( myline, "%s %d %d\n", 
-			ui->screamip, 
-			&(ui->screamport), 
-			&(ui->udpreceive_port) );
-
-		ret = thr_create( NULL, 0, guralp2orb_udpinitiate,
-			(void *) ui, THR_BOUND | THR_NEW_LWP,
-			&(ui->initiater_thread) );
+	if( cntarr( ul_arr ) == 0 && cntarr( ui_arr ) == 0 ) {
+		die( 1, 
+		  "no udplisten or udpinitiate threads. Nothing to do, bye.\n" );
+	}
+	
+	ret = thr_create( NULL, 0, guralp2orb_pfwatch, 0, 0, 0 );
+	if( ret != 0 ) {
+		die( 1,
+		 "Failed to create parameter-file watch thread\n" );
 	}
 
 	while( thr_join( (thread_t) NULL, 
