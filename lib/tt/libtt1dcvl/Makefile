@@ -9,12 +9,12 @@ DATADIR=tables/genloc/db
 DATA=vmodel vmodel.mod1d vmodel.ttcalc
 MAN3=tt1dcvl.3
 
-ldlibs = -lgenloc $(DBLIBS) -ltt $(F77LIBS) -lsunperf
+ldlibs = $(DBLIBS) 
 
 include $(ANTELOPEMAKE)
 DIRS=
 
-OBJS=tt1dcvl.o
+OBJS=tt1dcvl.o ttlvz.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@
