@@ -21,8 +21,10 @@ sub pfget_Mapspec {
 		"depth_color_palette_file",
 		"map_color_palette_file",
 		"map_landmask_palette_file",
+		"drape_color_palette_file",
 		"cities_dbname",
 		"grddb",
+		"legend",
 		"hypocenter_dbname",
 		"stylesheet",
 		"vrml_stylesheet",
@@ -54,6 +56,27 @@ sub pfget_Mapspec {
 
 	$mapspec->{longitude_branchcut_low} =
 		$mapspec->{longitude_branchcut_high} - 360;
+
+	if( defined( $mapspec->{drape_color_palette_file} ) && 
+	    -e "$mapspec->{drape_color_palette_file}" ) {
+
+		open( C, "$mapspec->{drape_color_palette_file}" );
+		while( <C> ) {
+			next if /^\s*[#NFB]/;
+			next if /^\s*$/;
+			push( @{$mapspec->{drape_color_palette}}, $_ );
+		}
+		close( C );
+	}
+
+	if( defined( $mapspec->{legend} ) && $mapspec->{legend} ne "" ) {
+
+		chomp( $mapspec->{legend_filebase} = `basename $mapspec->{legend}` );
+
+	} else {
+
+		$mapspec->{legend} = "";
+	}
 
 	return $mapspec;
 }
@@ -735,7 +758,7 @@ sub plot_qgrid {
 		"$Mapspec{qgrid_minlat}/$Mapspec{qgrid_maxlat}";
 
 	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
-		     "xyz2grd -V -H1 " .
+		     "xyz2grd -V -H1 -N0 " .
 		     "-I$Mapspec{qgrid_dlon}/$Mapspec{qgrid_dlat} " .
 		     "-G$gmt_qgrid " .
 		     "$gmt_qgrid_rectangle";
@@ -767,6 +790,121 @@ sub plot_qgrid {
 	system( $cmd );
 
 	unlink( "$gmt_qgrid" );
+}
+
+sub plot_drape {
+	my( %Mapspec ) = %{shift( @_ )};
+	my( $position ) = shift( @_ );
+
+	if( $position ne "middle" ) {
+		printf STDERR "Warning: contours only implemented for " .
+		 "middle-position plotting\n";
+	}
+
+	my( $more, $redirect ) = more_ps( $position );
+
+	my( $cmd );
+
+	if( ! -e "$Mapspec{grddb}" ) {
+
+		print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: Not plotting draped data values;\n" .
+			"\tgrddb '$Mapspec{grddb}' not found\n" .
+			"\t************************************\n\n";
+
+		return;
+	}
+	my( @dbgrid ) = dbopen( "$Mapspec{grddb}", "r" );
+	if( $dbgrid[0] < 0 ) {
+
+	 	die( 
+	 	"\n\t************************************\n" . 
+	 	"\tERROR: Failed to open grddb $Mapspec{grddb}\n" .
+	 	"\t************************************\n\n" );
+
+	} 
+
+	@dbgrid = dblookup( @dbgrid, "", "grids", "", "" );
+	if( $dbgrid[1] < 0 ) {
+		die( 
+		"\n\t************************************\n" . 
+		"\tERROR: Failed to open grids table of grddb $Mapspec{grddb}\n" .
+		"\t************************************\n\n" );
+	} 
+
+	$dbgrid[3]=0;
+	( $dx, $dy ) = dbgetv( @dbgrid, "dx", "dy" );
+
+	$grdfile = "$State{workdir}/grd_$<_$$.grd";
+	$gradfile = "$State{workdir}/grad_$<_$$.grad";
+	$gmt_qgrid_file = "$State{workdir}/qgrid__$<_$$.grd";
+	$gmt_qgridresamp_file = "$State{workdir}/qgrid_resamp_$<_$$.grd";
+
+	my( $wlimit, $elimit, $slimit, $nlimit );
+	if( $Mapspec{InclusiveRectangle} =~ 
+		 m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
+		$wlimit = $1;
+		$elimit = $2;
+		$slimit = $3;
+		$nlimit = $4;
+	}
+
+	my( $tile ) = "-R$wlimit/$elimit/$slimit/$nlimit";
+
+	$wlimit_normal = normal_lon( $wlimit );
+	$elimit_normal = normal_lon( $elimit );
+	my( $tile_normal ) = "-R$wlimit_normal/$elimit_normal/$slimit/$nlimit";
+
+	print "Running dbgmtgrid for $tile, output=$grdfile\n";
+
+	my( $rc ) = dbgmtgrid( @dbgrid, $tile, $grdfile, verbose => 1 );
+	if( $rc < 0 ) {
+		print STDERR
+		"\n\t************************************\n" . 
+		"\tWARNING: dbgmtgrid() failed for '$tile'\n" .
+		"\t************************************\n\n";
+		return;
+	}
+	dbclose( @dbgrid );
+
+	$cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
+
+	print "$cmd\n";
+	system( $cmd );
+
+	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
+		     "xyz2grd -V -H1 -N0 " .
+		     "-I$Mapspec{qgrid_dlon}/$Mapspec{qgrid_dlat} " .
+		     "-G$gmt_qgrid_file " .
+		     "$tile_normal";
+
+	print "$cmd\n";
+	system( $cmd );
+
+	my( $cmd ) = "grdedit -V $gmt_qgrid_file $tile";
+
+	print "$cmd\n";
+	system( $cmd );
+
+	my( $cmd ) = "grdsample -V -F $gmt_qgrid_file " .
+		     "-G$gmt_qgridresamp_file " .
+		     "$tile -I$dx/$dy";
+
+	print "$cmd\n";
+	system( $cmd );
+
+	$cmd = "grdview -V -P -Qi50 -JZ0.5i " .
+	      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
+		"$grdfile " .
+		"-I$gradfile " .
+		"-G$gmt_qgridresamp_file " .
+		"-C$Mapspec{drape_color_palette_file} " .
+		$more .
+		"$redirect $Mapspec{psfile}";
+
+	print "$cmd\n";
+	system( $cmd );
 }
 
 sub plot_contours {
@@ -1114,6 +1252,22 @@ sub plot_coastlines {
 	system( $cmd );
 }
 
+sub plot_oceans {
+	my( %Mapspec ) = %{shift( @_ )};
+	my( $position ) = shift( @_ );
+
+	my( $more, $redirect ) = more_ps( $position );
+
+	my( $cmd ) = "pscoast -V -P -S0/0/200 " .
+		     "$Mapspec{Rectangle} $Mapspec{Projection} " .
+		     "-D$Mapspec{detail_density} " .
+		     $more .
+		     "$redirect $Mapspec{psfile}";
+			
+	print "$cmd\n";
+	system( $cmd );
+}
+
 sub datafile_abspath {
 	my( $file ) = shift( @_ );
 
@@ -1274,23 +1428,48 @@ sub create_map {
 		     "overwrite, Bye.\n" );
 	}
 
-	plot_basemap( \%Mapspec, "first" );
-	plot_contours( \%Mapspec, "middle" );
-	plot_coastlines( \%Mapspec, "middle" );
-	plot_lakes( \%Mapspec, "middle" );
-	plot_rivers( \%Mapspec, "middle" );
-	plot_national_boundaries( \%Mapspec, "middle" );
-	plot_state_boundaries( \%Mapspec, "middle" );
-	plot_hypocenters( \%Mapspec, "middle" );
-	plot_linefiles( \%Mapspec, "middle" );
-	plot_basemap( \%Mapspec, "middle" );
-	if( $State{use_qgrids} &&
-	    defined( $Mapspec{qgridfile} ) && 
-	    -e "$Mapspec{qgridfile}" ) {
+	my( $datadisplay_mode );
+
+	if( ! $State{use_qgrids} ||  
+	    ! defined( $Mapspec{qgrid_nintervals} ) || 
+	    $Mapspec{qgrid_nintervals} > 0 ) {
+
+		$datadisplay_mode = "contour";
+
+	} else {
 		
-		plot_qgrid( \%Mapspec, "middle" );
+		$datadisplay_mode = "shading";
 	}
-	plot_cities( \%Mapspec, "last" );
+
+	if( $datadisplay_mode eq "contour" ) {
+
+		plot_basemap( \%Mapspec, "first" );
+		plot_contours( \%Mapspec, "middle" );
+		plot_coastlines( \%Mapspec, "middle" );
+		plot_lakes( \%Mapspec, "middle" );
+		plot_rivers( \%Mapspec, "middle" );
+		plot_national_boundaries( \%Mapspec, "middle" );
+		plot_state_boundaries( \%Mapspec, "middle" );
+		plot_hypocenters( \%Mapspec, "middle" );
+		plot_linefiles( \%Mapspec, "middle" );
+		plot_basemap( \%Mapspec, "middle" );
+		if( $State{use_qgrids} &&
+	    	defined( $Mapspec{qgridfile} ) && 
+	    	-e "$Mapspec{qgridfile}" ) {
+			
+			plot_qgrid( \%Mapspec, "middle" );
+		}
+		plot_cities( \%Mapspec, "last" );
+
+	} else {
+
+		plot_basemap( \%Mapspec, "first" );
+		plot_drape( \%Mapspec, "middle" );
+		plot_oceans( \%Mapspec, "middle" );
+		plot_national_boundaries( \%Mapspec, "middle" );
+		plot_state_boundaries( \%Mapspec, "middle" );
+		plot_cities( \%Mapspec, "last" );
+	}
 
 	%Mapspec = %{pixfile_convert( \%Mapspec )};
 	write_pixfile_pffile( \%Mapspec );

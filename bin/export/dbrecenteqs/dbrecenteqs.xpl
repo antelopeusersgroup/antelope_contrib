@@ -1,3 +1,11 @@
+
+#
+# dbrecenteqs
+# 
+# Kent Lindquist 
+# Lindquist Consulting
+# 2003
+
 require "getopts.pl" ;
 require "dbrecenteqs.pl";
 require "dbgmtgrid.pl";
@@ -20,7 +28,6 @@ sub init_globals {
 		"institute_url",
 		"institute_webdir",
 		"institute_description",
-		"legend_description",
 		"page_refresh_seconds",
 		"other_region_links",
 		"nearest_places",
@@ -37,7 +44,6 @@ sub init_globals {
 	my( @path_params ) = (
 		"wiggle",
 		"background_graphic",
-		"legend",
 		"institute_logo",
 		"region_phrases_database",
 		);
@@ -62,8 +68,6 @@ sub init_globals {
 	chomp( $State{"wiggle_filebase"} );
 	$State{"institute_logo_filebase"} = `basename $State{"institute_logo"}`;
 	chomp( $State{"institute_logo_filebase"} );
-	$State{"legend_filebase"} = `basename $State{"legend"}`;
-	chomp( $State{"legend_filebase"} );
 	$State{"background_graphic_filebase"} = `basename $State{"background_graphic"}`;
 	chomp( $State{"background_graphic_filebase"} );
 
@@ -80,6 +84,9 @@ sub init_globals {
 		die( "Must have at least one entry in the " . 
 		     "focus_maps &Tbl of the parameter file. Bye.\n" );
 	}
+
+	$hashref = pfget_Mapspec( $State{pf}, "${$State{focus_maps}}[0]" );
+	$State{main_focusmap_mapname} = $hashref->{mapname};
 
 	if( ! -d $State{institute_webdir} ) {
 		die( "The directory $State{institute_webdir} does not exist.\n" .
@@ -112,9 +119,6 @@ sub init_globals {
 
 	$State{quakesubdir} = "quakes";
 	mkdir( "$State{dbrecenteqs_dir}/$State{quakesubdir}", 0755 );
-
-	%Focus_Mapspec = 
-		%{pfget_Mapspec( $State{pf}, ${$State{focus_maps}}[0] )};
 
 	$clientside_mapname = "clientsidemap";
 
@@ -246,6 +250,47 @@ sub mag2symsize {
 	return $symsize;
 }
 
+sub cpt_color {
+	my( %Mapspec ) = %{shift( @_ )};
+	my( $value ) = pop( @_ );
+	
+	my( $color ) = "black";
+
+	my( @cpt ) = @{$Mapspec{drape_color_palette}};
+
+	$first = 1;
+
+	while( $line = shift( @cpt ) ) {
+		
+		my( $z1, $r1, $g1, $b1, $z2, $r2, $g2, $b2 ) = split( " ", $line );
+
+		if( $first && $value < $z1 ) {
+			return $color;
+		}
+
+		if( $z1 <= $value && $value < $z2 ) {
+			
+			my( $r, $g, $b );
+
+			my( $factor ) = ( $value - $z1 ) / ( $z2 - $z1 );
+
+			$r = $r1 + $factor * ( $r2 - $r1 );
+			$g = $g1 + $factor * ( $g2 - $g1 );
+			$b = $b1 + $factor * ( $b2 - $b1 );
+
+			$color = sprintf( "#%2x%2x%2x", $r, $g, $b );
+
+			return $color;
+		}
+
+		$first = 0;
+	}
+
+	$color = sprintf( "#%2x%2x%2x", $r2, $g2, $b2 );
+
+	return $color;
+}
+
 sub set_hypocenter_symbol {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $colormode ) = pop( @_ );
@@ -328,6 +373,7 @@ sub translate_author {
 
 sub station_vitals {
 	my( $writer ) = shift( @_ );
+	my( $mapname ) = pop( @_ );
 	my( $event_url ) = pop( @_ );
 	my( @db ) = @_;
 
@@ -335,7 +381,9 @@ sub station_vitals {
 
 	my( $orid ) = 	dbgetv( @db, "origin.orid" );
 
-	@db = dbprocess( @db, "dbopen mapassoc",
+	@db = dbprocess( @db, 
+			   "dbopen mapassoc",
+			   "dbsubset mapname == \"$mapname\"",
 			   "dbsubset orid == $orid",
 			   "dbsubset symtype == \"station\"",
 			   "dbjoin origin",
@@ -368,12 +416,25 @@ sub station_vitals {
 			       "wfmeas station-measurements\n";
 		}
 
-		@dbqgrid = dbinvalid();
-		@dbqgrid = dblookup( @db, "", "qgrid", "orid", "$orid" );
-		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+		@dbqgrid = dblookup( @db, "", "qgrid", "", "" );
+		$dbqgrid[3] = dbfind( @dbqgrid, 
+		 "orid == $orid && qgridtype == \"pga\"",
+		 -1);
 
-			$qgrid_units = dbgetv( @dbqgrid, "units" );
-			$qgrid_extfile = dbextfile( @dbqgrid );
+		if( $dbqgrid[3] >= 0 ) {
+
+			$qgrid_pga_units = dbgetv( @dbqgrid, "units" );
+			$qgrid_pga_extfile = dbextfile( @dbqgrid );
+		}
+
+		$dbqgrid[3] = dbfind( @dbqgrid, 
+		 "orid == $orid && qgridtype == \"pgv\"",
+		 -1);
+
+		if( $dbqgrid[3] >= 0 ) {
+
+			$qgrid_pgv_units = dbgetv( @dbqgrid, "units" );
+			$qgrid_pgv_extfile = dbextfile( @dbqgrid );
 		}
 	}
 
@@ -402,7 +463,9 @@ sub station_vitals {
 		my( $utc_arrtime ) 
 			= epoch2str( $arrtime, "%m/%d/%Y %H:%M:%S.%s %Z" );
 
-		$writer->startTag( "station", "name" => "$sta" );
+		$writer->startTag( "station", 
+					"name" => "$sta",
+					"detected" => "yes" );
 		$writer->dataElement( "sta", "$sta" );
 		$writer->dataElement( "url", "$sta_url" );
 		$writer->dataElement( "arrtime", "$utc_arrtime" );
@@ -444,9 +507,10 @@ sub station_vitals {
 				$snrpvv = "";
 				$trpvv = "";
 			} else {
-				$pvv = sprintf( "%.2f", $pvv );
+				chomp( $pvv = `xunits -q -- '$pvv nm/sec' cm/sec` );
+				$pvv = sprintf( "%.6f", $pvv );
 				$trpvv = sprintf( "%.2f", $trpvv );
-				$pvv_units = "nm/sec";
+				$pvv_units = "cm/sec";
 			}
 
 			if( $wa == -9.000000e+99 ) {
@@ -468,7 +532,7 @@ sub station_vitals {
 			$writer->dataElement( "trpva", $trpva );
 			$writer->dataElement( "snrpva", $snrpva );
 			$writer->dataElement( "pvv", $pvv );
-			$writer->dataElement( "pvv_units", "nm/sec" );
+			$writer->dataElement( "pvv_units", $pvv_units );
 			$writer->dataElement( "trpvv", $trpvv );
 			$writer->dataElement( "snrpvv", $snrpvv );
 			$writer->dataElement( "wa", $wa );
@@ -477,17 +541,30 @@ sub station_vitals {
 			$writer->dataElement( "snrwa", $snrwa );
 			$writer->dataElement( "chanwa", $chanwa );
 
-			if( defined( $qgrid_extfile ) ) {
-				$qgrid_val = 
-				   `cggrid_probe -n -f '%.6f' $qgrid_extfile $lon $lat`;
+			if( defined( $qgrid_pga_extfile ) ) {
+				$qgrid_pga_val = 
+				   `cggrid_probe -n -f '%.6f' $qgrid_pga_extfile $lon $lat`;
 
-				if( $qgrid_val ne "NaN" && 
-				    $qgrid_units eq "g" ) {
-					$qgrid_val *= 1000;
-					$qgrid_val_units = "milli-g";
+				if( $qgrid_pga_val ne "NaN" && 
+				    $qgrid_pga_units eq "g" ) {
+					$qgrid_pga_val *= 1000;
+					$qgrid_pga_units = "milli-g";
 				}
-				$writer->dataElement( "qgrid_val", $qgrid_val );
-				$writer->dataElement( "qgrid_val_units", $qgrid_val_units );
+				$writer->dataElement( "qgrid_pga_val", $qgrid_pga_val );
+				$writer->dataElement( "qgrid_pga_val_units", $qgrid_pga_units );
+			}
+
+			if( defined( $qgrid_pgv_extfile ) ) {
+				$qgrid_pgv_val = 
+				   `cggrid_probe -n -f '%.6f' $qgrid_pgv_extfile $lon $lat`;
+
+				if( $qgrid_pgv_val ne "NaN" && 
+				    $qgrid_pgv_units eq "nm/sec" ) {
+					$qgrid_pgv_val /= 1000000;
+					$qgrid_pgv_units = "cm/sec";
+				}
+				$writer->dataElement( "qgrid_pgv_val", $qgrid_pgv_val );
+				$writer->dataElement( "qgrid_pgv_val_units", $qgrid_pgv_units );
 			}
 
 			$writer->endTag( "measurement" );
@@ -497,6 +574,55 @@ sub station_vitals {
 			# SCAFFOLD: not yet supported
 		}
 
+		$writer->endTag( "station" );
+
+		push( @mystations, $sta );
+	}
+
+	@db = dbprocess( @db, 
+			   "dbopen mapassoc",
+			   "dbsubset mapname == \"$mapname\"",
+			   "dbsubset orid == $orid",
+			   "dbsubset symtype == \"station\"",
+			   "dbjoin origin",
+			   "dbsubset arid == NULL",
+			   "dbjoin site sta",
+			   "dbsort distance(site.lat,site.lon,origin.lat,origin.lon)" );
+	$nrecs = dbquery( @db, dbRECORD_COUNT );
+
+	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
+
+		my( $dist_km ) = 
+			dbex_eval( @db, 
+			   "111.195*distance(origin.lat,origin.lon,site.lat,site.lon)" );
+		$dist_km = sprintf( "%.0f", $dist_km );
+
+		my( $seaz ) = 
+			dbex_eval( @db, 
+			   "azimuth(site.lat,site.lon,origin.lat,origin.lon)" );
+		$seaz = sprintf( "%.0f", $seaz );
+
+		my( $sta, $lat, $lon, ) =
+			dbgetv( @db, "sta", "site.lat", "site.lon" );
+		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
+
+		my( $sta_url ) = $event_url;
+		$sta_url =~ s/.html$/_station_$sta.html/;
+
+		$writer->startTag( "station", 
+					"name" => "$sta",
+					"detected" => "no" );
+		$writer->dataElement( "sta", "$sta" );
+		$writer->dataElement( "url", "$sta_url" );
+		$writer->dataElement( "lat", "$lat" );
+		$writer->dataElement( "lon", "$lon" );
+		$writer->dataElement( "x", "$x" );
+		$writer->dataElement( "y", "$y" );
+		$writer->dataElement( "shape", "$shape" );
+		$writer->dataElement( "color", "$color" );
+		$writer->dataElement( "coords", "$coords" );
+		$writer->dataElement( "dist_km", "$dist_km" );
+		$writer->dataElement( "seaz", "$seaz" );
 		$writer->endTag( "station" );
 
 		push( @mystations, $sta );
@@ -517,9 +643,13 @@ sub hypocenter_vitals {
 	my( $qgrid_units, $qgrid_maxval, $qgrid_extfile ) = undef;
 
 	if( $State{use_qgrids} ) {
-		@dbqgrid = dbinvalid();
-		@dbqgrid = dblookup( @db, "", "qgrid", "orid", "$orid" );
-		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+
+		@dbqgrid = dblookup( @db, "", "qgrid", "", "" );
+		$dbqgrid[3] = dbfind( @dbqgrid, 
+		 "orid == $orid && recipe == \"$Focus_Mapspec{qgrid_recipe}\"",
+		 -1);
+
+		if( $dbqgrid[3] >= 0 ) {
 
 			$qgrid_units = dbgetv( @dbqgrid, "units" );
 
@@ -679,7 +809,8 @@ sub create_focusmap_html {
 	my( @db ) = @_;
 
 	@db = dbprocess( @db, "dbopen webmaps",
-			      "dbsubset evid == $evid" );
+			      "dbsubset evid == $evid",
+			      "dbsubset mapname == \"$Focus_Mapspec{file_basename}\"" );
 	$db[3] = 0;
 
 	my( $url, $dfile ) = dbgetv( @db, "url", "dfile" );
@@ -748,8 +879,20 @@ sub create_focusmap_html {
 			      "$State{dbrecenteqs_url}" . "$State{wiggle_filebase}" );
 	$writer->dataElement( "background_graphic_href", 
 			      "$State{dbrecenteqs_url}" . "$State{background_graphic_filebase}" );
-	$writer->dataElement( "legend_url", 
-			      "$State{dbrecenteqs_url}" . "$State{legend_filebase}" );
+	if( $Focus_Mapspec{legend} ne "" ) {
+
+		$writer->dataElement( "legend_url", 
+			      		"$State{dbrecenteqs_url}" . 
+			      		"$Focus_Mapspec{legend_filebase}" );
+		$writer->dataElement( "legend_description", 
+			      		"$Focus_Mapspec{legend_description}" );
+
+	} else {
+
+		$writer->dataElement( "legend_url", "" );
+		$writer->dataElement( "legend_description", "" );
+	}
+
 	$writer->dataElement( "institute_url", 
 			      "$State{institute_url}" );
 	$writer->dataElement( "institute_logo_url",
@@ -757,8 +900,6 @@ sub create_focusmap_html {
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
-	$writer->dataElement( "legend_description", 
-			      "$State{legend_description}" );
 	$writer->dataElement( "last_updated", 
 		epoch2str( str2epoch( "now" ), "%A %B %d, %Y %l:%M %p %Z", "" ) ) ;
 
@@ -798,7 +939,8 @@ sub create_focusmap_html {
 	$writer->endTag( "origins" );
 
 	$writer->startTag( "stations" );
-	@mystations = station_vitals( $writer, @dbprefor, $url );
+	@mystations = station_vitals( $writer, @dbprefor, 
+				      $url, $Focus_Mapspec{file_basename} );
 	$writer->endTag( "stations" );
 
 	$State{"nearest_places"}->{"cities_dbname"} =
@@ -826,6 +968,8 @@ sub create_focusmap_html {
 
 		nearest_locations( $writer, $lat, $lon );
 	}
+
+	other_focusmap_links( $writer, @db, $evid, $url );
 
 	other_map_links( $writer, @db, $mapname ),
 
@@ -905,9 +1049,13 @@ sub create_focusmap {
 	  dbgetv( @dbprefor, "time", "lat", "lon", "orid" );
 
 	if( $State{use_qgrids} ) {
-		@dbqgrid = dbinvalid();
-		@dbqgrid = dblookup( @dbprefor, "", "qgrid", "orid", "$prefor" );
-		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+
+		@dbqgrid = dblookup( @db, "", "qgrid", "", "" );
+		$dbqgrid[3] = dbfind( @dbqgrid, 
+		 "orid == $prefor && recipe == \"$Focus_Mapspec{qgrid_recipe}\"",
+		 -1);
+
+		if( $dbqgrid[3] >= 0 ) {
 
 			$Focus_Mapspec{qgridfile} = dbextfile( @dbqgrid );
 
@@ -935,6 +1083,9 @@ sub create_focusmap {
 			$Focus_Mapspec{qgrid_nlat} = 
 				dbgetv( @dbqgrid, "nlat" );
 
+			$Focus_Mapspec{qgridtype} = 
+				dbgetv( @dbqgrid, "qgridtype" );
+
 			$Focus_Mapspec{qgrid_units} = 
 				dbgetv( @dbqgrid, "units" );
 
@@ -943,6 +1094,7 @@ sub create_focusmap {
 		}
 	}
 
+	$Focus_Mapspec{dirname} = "evid$evid";
 	$Focus_Mapspec{file_basename} = "$Focus_Mapspec{mapname}$evid";
 	$Focus_Mapspec{lonc} = unwrapped_lon( \%Focus_Mapspec, $preflon );
 	$Focus_Mapspec{latc} = $preflat;
@@ -950,7 +1102,7 @@ sub create_focusmap {
 	# Try to keep the directory names short enough for dir field
 	my( $reldir ) = concatpaths( $State{quakesubdir}, 
 	 	   epoch2str( $preftime, "%Y%j" ) .
-			      "_$Focus_Mapspec{file_basename}" );
+			      "_$Focus_Mapspec{dirname}" );
 	mkdir( concatpaths( $State{dbrecenteqs_dir}, $reldir ), 0755 );
 
 	$Focus_Mapspec{"psfile"} = concatpaths( $State{"workdir"},
@@ -1016,7 +1168,9 @@ sub create_focusmap {
 				     	"dbsubset orid == $orid", 
 				     	"dbjoin assoc",
 				     	"dbjoin arrival", 
+				     	"dbjoin -o wfmgme arrival.time#wfmgme.time", 
 				     	"dbjoin site" );
+
 
 			$nstas = dbquery( @dbstas, dbRECORD_COUNT );
 
@@ -1040,10 +1194,111 @@ sub create_focusmap {
 				   	);
 
 				my( $symsize ) = $Focus_Mapspec{station_size};
-				my( $symcolor ) = $Focus_Mapspec{station_color};
 				my( $symtype ) = "station";
 				my( $symshape ) = "triangle";
 				
+				my( $symcolor );
+
+				if( $State{use_qgrids} && 
+			    	$Focus_Mapspec{qgrid_nintervals} <= 0 &&
+				$Focus_Mapspec{qgridtype} =~ /pga|pgv/ ) {
+
+					( $pva, $pvv ) = 
+					    dbgetv( @dbstas, "pva", "pvv" );
+
+					if( $Focus_Mapspec{qgridtype} eq "pga" ) {
+						if( $pva == -9.000000e+99 ) {
+
+							$symcolor = "black";
+
+						} else {
+	chomp( $val = `xunits -q '$pva millig' $Focus_Mapspec{qgrid_units}` );
+							$symcolor = 
+					  		cpt_color( \%Focus_Mapspec, $val );
+						}
+
+					} else {
+
+						if( $pvv == -9.000000e+99 ) {
+
+							$symcolor = "black";
+
+						} else {
+
+	chomp( $val = `xunits -q '$pvv nm/sec' $Focus_Mapspec{qgrid_units}` );
+
+							$symcolor = 
+					  		cpt_color( \%Focus_Mapspec, $val );
+						}
+					}
+
+				} else {
+
+					$symcolor =
+						$Focus_Mapspec{station_color};
+				}
+
+				my( $primitive ) = "polygon";
+
+				my( $xll ) = $x - $symsize;
+				my( $yll ) = $y + $symsize;
+				my( $xlr ) = $x + $symsize;
+				my( $ylr ) = $y + $symsize;
+				my( $xtop ) = $x;
+				my( $ytop ) = $y - $symsize;
+				my( $points ) = "$xll,$yll $xlr,$ylr $xtop,$ytop";
+
+				$modified_image->Draw(
+						fill=>$symcolor,
+						primitive=>$primitive,
+						stroke=>'black',
+						points=>$points );
+	
+				dbaddv( @dbmapassoc, 
+				     "mapname", $Focus_Mapspec{file_basename},
+			     	     "orid", $orid,
+			     	     "arid", $arid,
+			     	     "sta", $sta,
+			     	     "x", $x,
+			     	     "y", $y, 
+			     	     "symsize", $symsize,
+			     	     "symshape", $symshape,
+			     	     "symcolor", $symcolor,
+				     "symtype", $symtype );
+			}
+
+			@dbstas = dbsever( @dbstas, "site" );
+			@dbsite = dblookup( @dbstas, "", "site", "", "" );
+			@dbstas = dbnojoin( @dbsite, @dbstas );
+			@dbstas = dbprocess( @dbstas, 
+					"dbtheta origin orid == $orid" );
+			$nstas = dbquery( @dbstas, dbRECORD_COUNT );
+
+			for( $dbstas[3] = 0; $dbstas[3] < $nstas; $dbstas[3]++ ) {
+				$arid = -1;
+				my( $lat, $lon, $sta ) = 
+				  dbgetv( @dbstas, "site.lat", "site.lon",
+						   "sta" );
+
+				my( $symtype ) = "station";
+
+				( $x, $y ) = latlon_to_xy( 
+				   	$Focus_Mapspec{proj},
+				   	$lat,
+				   	$lon,
+				   	$Focus_Mapspec{latc},
+				   	$Focus_Mapspec{lonc},
+				   	$Focus_Mapspec{xc},
+				   	$Focus_Mapspec{yc},
+				   	$Focus_Mapspec{xscale_pixperdeg},
+				   	$Focus_Mapspec{yscale_pixperdeg},
+				   	);
+
+				my( $symsize ) = $Focus_Mapspec{station_size};
+				my( $symtype ) = "station";
+				my( $symshape ) = "triangle";
+				my( $symcolor ) = "black";
+
 				my( $primitive ) = "polygon";
 
 				my( $xll ) = $x - $symsize;
@@ -1125,12 +1380,19 @@ sub create_focusmap {
 
 	undef( $modified_image );
 	undef( $Focus_Mapspec{clean_image} );
+
+	if( $Focus_Mapspec{legend} ne "" &&
+	    ! -e "$State{dbrecenteqs_dir}/$Focus_Mapspec{legend_filebase}" ) {
+		system( "/bin/cp $Focus_Mapspec{legend} $State{dbrecenteqs_dir}" );
+	}
 }
 
 sub stockmap_earthquake_xml {
 	my( $writer ) = shift( @_ );
 	my( $mapname ) = pop( @_ );
 	my( @db ) = @_;
+
+	my( $base ) = $State{main_focusmap_mapname};
 
 	# Go Backwards in time: most recent quake first
 	@db = dbprocess( @db, 
@@ -1141,6 +1403,7 @@ sub stockmap_earthquake_xml {
 		       "dbjoin event",
 		       "dbsort -r time",
 		       "dbjoin webmaps evid",
+		       "dbsubset webmaps.mapname =~ /^$base\[0-9]+\$/",
 		       "dbsubset origin.orid == prefor" );
 
 	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
@@ -1200,6 +1463,43 @@ sub other_region_links {
 	}
 
 	$writer->endTag( "other_regions" );
+}
+
+sub other_focusmap_links {
+	my( $writer ) = shift( @_ );
+	my( $urlmain ) = pop( @_ );
+	my( $evid ) = pop( @_ );
+	my( @db ) = @_;
+
+	my( $urlhead ) = $urlmain;
+	$urlhead =~ s@/[^/]*$@/@;
+
+	$writer->startTag( "focus_maps" );
+
+	foreach $map ( @{$State{focus_maps}} ) {
+	
+		$hashref = pfget_Mapspec( $State{pf}, "$map" );
+
+		my( $mapname ) = $hashref->{mapname};
+
+		my( $maplink );
+
+		if( defined( $hashref->{description} ) ) {
+			$maplink = $hashref->{description};
+		} else {
+			$maplink = $mapname;
+		}
+
+		if( $urlhead !~ m@/$@ ) { $urlhead .= "/"; }
+		my( $url ) = "$urlhead" . "$mapname$evid.html";
+
+		$writer->startTag( "focusmap" );
+		$writer->dataElement( "href", $url );
+		$writer->dataElement( "text", $maplink );
+		$writer->endTag( "focusmap" );
+	}
+
+	$writer->endTag( "focus_maps" );
 }
 
 sub other_map_links {
@@ -1355,18 +1655,28 @@ sub create_stockmap_html {
 	$writer->dataElement( "background_graphic_href", 
 			      "$State{dbrecenteqs_url}" .
 				"$State{background_graphic_filebase}" );
-	$writer->dataElement( "legend_url", 
-			      "$State{dbrecenteqs_url}" .
-				"$State{legend_filebase}" );
 	$writer->dataElement( "institute_url", 
-			      "$State{institute_url}" );
+		      		"$State{institute_url}" );
+
+	if( $State{maphashes}->{$mapname}->{legend} ne "" ) {
+
+		$writer->dataElement( "legend_url", 
+			      		"$State{dbrecenteqs_url}" .
+					"$State{maphashes}->{$mapname}->{legend_filebase}" );
+
+		$writer->dataElement( "legend_description", 
+			      		"$State{maphashes}->{$mapname}->{legend_description}" );
+	} else {
+
+		$writer->dataElement( "legend_url", "" );
+		$writer->dataElement( "legend_description", "" );
+	}
+
 	$writer->dataElement( "institute_logo_url",
 		      	      "$State{dbrecenteqs_url}" .
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
-	$writer->dataElement( "legend_description", 
-			      "$State{legend_description}" );
 	my( $abs_dbname ) = `abspath $dbname`;
 	chomp( $abs_dbname );
 	$writer->dataElement( "dbname", $abs_dbname );
@@ -1613,6 +1923,11 @@ sub update_stockmap {
 	undef $modified_image;
 
 	undef $Mapspec{clean_image};
+
+	if( $Mapspec{legend} ne "" &&
+	    ! -e "$State{dbrecenteqs_dir}/$Mapspec{legend_filebase}" ) {
+		system( "/bin/cp $Mapspec{legend} $State{dbrecenteqs_dir}" );
+	}
 }
 
 $Program = `basename $0`;
@@ -1699,9 +2014,6 @@ foreach $map ( @{$State{overview_maps}} ) {
 if( ! -e "$State{dbrecenteqs_dir}/$State{wiggle_filebase}" ) {
 	system( "/bin/cp $State{wiggle} $State{dbrecenteqs_dir}" );
 }
-if( ! -e "$State{dbrecenteqs_dir}/$State{legend_filebase}" ) {
-	system( "/bin/cp $State{legend} $State{dbrecenteqs_dir}" );
-}
 if( ! -e "$State{dbrecenteqs_dir}/$State{institute_logo_filebase}" ) {
 	system( "/bin/cp $State{institute_logo} $State{dbrecenteqs_dir}" );
 }
@@ -1751,8 +2063,15 @@ if( $opt_e ) {
 		die( "dbrecenteqs: Couldn't find evid $evid\n" );
 	}
 
-	create_focusmap( $evid, @db );
-	create_focusmap_html( $evid, @db );
+	foreach $map ( @{$State{focus_maps}} ) {
+	
+		$hashref = pfget_Mapspec( $State{pf}, "$map" );
+
+		%Focus_Mapspec = %{$hashref};
+
+		create_focusmap( $evid, @db );
+		create_focusmap_html( $evid, @db );
+	}
 
 } elsif( $opt_h ) {
 
@@ -1818,8 +2137,15 @@ if( $opt_e ) {
 		print sprintf "Creating focus map %d of %d:\n",
 			      $dbneedmaps[3]+1, $nmaps;
 
-		create_focusmap( $evid, @db );
-		create_focusmap_html( $evid, @db );
+		foreach $map ( @{$State{focus_maps}} ) {
+	
+			$hashref = pfget_Mapspec( $State{pf}, "$map" );
+
+			%Focus_Mapspec = %{$hashref};
+
+			create_focusmap( $evid, @db );
+			create_focusmap_html( $evid, @db );
+		}
 	}
 }
 

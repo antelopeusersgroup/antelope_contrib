@@ -13,9 +13,6 @@ wiggle mini_logo.gif
 #    background mytile.gif
 background_graphic
 
-legend legend.gif
-legend_description Magnitude and Age Legend for Earthquakes
-
 region_phrases_database example_region_phrases
 
 nearest_places &Arr{
@@ -39,7 +36,7 @@ overview_maps &Tbl{
 
 focus_maps &Tbl{
 	focus_map_main
-	focus_map_test
+	focus_map_pga
 }
 
 index_map &Arr{
@@ -63,12 +60,12 @@ global_map &Arr{
 	description	Global View
 }
 
-focus_map_test &Arr{
+focus_map_pga &Arr{
 	include 	map_config
 	stylesheet	&datafilename(xslt/specific_default.xsl)
 	vrml_stylesheet	&datafilename(specific_default_vrml.xsl)
-	map_color_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
 	mapname		evidtest
+	description	PGV Map
 	mapclass	focus
 	gridline_interval_deg 1
 	left_dellon 	-2
@@ -76,6 +73,7 @@ focus_map_test &Arr{
 	down_dellat 	-2
 	up_dellat 	2
 	qgrid_nintervals 4
+	qgrid_recipe	trinetsm_pga
 }
 
 focus_map_main &Arr{
@@ -83,6 +81,7 @@ focus_map_main &Arr{
 	stylesheet	&datafilename(xslt/specific_default.xsl)
 	vrml_stylesheet	&datafilename(specific_default_vrml.xsl)
 	mapname		evid
+	description	Event Map
 	mapclass	focus
 	gridline_interval_deg 1
 	left_dellon 	-2
@@ -90,6 +89,7 @@ focus_map_main &Arr{
 	down_dellat 	-2
 	up_dellat 	2
 	qgrid_nintervals 4
+	qgrid_recipe	trinetsm_pga
 }
 
 detail_map &Arr{
@@ -110,6 +110,8 @@ map_config &Arr{
 	hypocenter_dbname historic_hypocenters_dbname
 	map_color_palette_file &datafilename(gmt/dbrecenteqs.cpt)
 	map_landmask_palette_file &datafilename(dbrecenteqs_landonly.cpt)
+	legend 		&datafilename(dbrecenteqs/legend.gif)
+	legend_description Magnitude and Age Legend for Earthquakes
 	landmask_regions &Arr{
 		Salton_Sea   -R-116.8/-115/32/34
 	}
@@ -192,4 +194,5 @@ credits &Arr{
 "Sandwell/Smith Marine Bathymetry" http://topex.ucsd.edu/marine_topo/mar_topo.html
 "NOAA/NGDC Arctic Bathymetry" http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html
 "Wessel and Smith's Generic Mapping Tools" http://gmt.soest.hawaii.edu/
+"Lindquist Consulting" http://www.lindquistconsulting.com/
 }

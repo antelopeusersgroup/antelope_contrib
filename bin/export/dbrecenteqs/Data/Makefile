@@ -1,5 +1,7 @@
 DATADIR= dbrecenteqs
 DATA= legend.gif \
+      legend_pga.gif \
+      legend_mmi.gif \
       mini_logo.gif \
       world_cities \
       world_cities.places \
