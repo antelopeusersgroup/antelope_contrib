@@ -1,3 +1,8 @@
+2004.170: version 1.2a
+	- sl_recvresp: cast buffer to type (char *) so pointer arithmetic
+	will work under compilers that do not assume void* is char size
+	(e.g. Sun cc).
+
 2004.168: version 1.2
 	- sl_collect[_nb]: process data in receive buffer even if connection
 	is not in SL_DATA state, this means the buffer will be emptied even

@@ -9,7 +9,7 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2004.139
+ * Version: 2004.170
  ***************************************************************************/
 
 #include <stdio.h>
@@ -943,7 +943,7 @@ sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
   /* Recv a byte at a time and wait up to 30 seconds for a response */
   while ( bytesread < maxbytes )
     {
-      recvret = sl_recvdata (slconn, buffer + bytesread, 1, ident);
+      recvret = sl_recvdata (slconn, (char *)buffer + bytesread, 1, ident);
       
       if ( recvret > 0 )
 	{
@@ -959,8 +959,8 @@ sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
       
       /* Trap door if '\r\n' is recv'd */
       if ( bytesread >= 2 &&
-	   *(char *)(buffer+bytesread-2) == '\r' &&
-	   *(char *)(buffer+bytesread-1) == '\n' )
+	   *(char *)((char *)buffer + bytesread - 2) == '\r' &&
+	   *(char *)((char *)buffer + bytesread - 1) == '\n' )
 	{
 	  return bytesread;
 	}

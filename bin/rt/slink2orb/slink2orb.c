@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.169
+ * modified: 2004.170
  ***************************************************************************/
 
 #include <signal.h>
@@ -18,7 +18,7 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.4 (2004.169)";
+static char   *version     = "3.4 (2004.170)";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
 

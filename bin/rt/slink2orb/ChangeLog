@@ -1,3 +1,8 @@
+18 Jun 2004
+  - Update to libslink 1.2a with a fix for compiling using a compiler
+      that does not assume *void == *char for pointer arithmetic, i.e.
+      a Sun compiler.
+
 17 Jun 2004
   - Update to libslink 1.2 including more flexible support for
       implementations of the SeedLink protocol other than the

@@ -17,7 +17,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.168
+ * modified: 2004.170
  ***************************************************************************/
 
 
@@ -30,8 +30,8 @@ extern "C" {
 
 #include "slplatform.h"
 
-#define LIBSLINK_VERSION "1.2"
-#define LIBSLINK_RELEASE "2004.168"
+#define LIBSLINK_VERSION "1.2a"
+#define LIBSLINK_RELEASE "2004.170"
 
 #define SLRECSIZE           512      /* Mini-SEED record size */
 #define MAX_HEADER_SIZE     128      /* Max record header size */
