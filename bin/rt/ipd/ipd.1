@@ -4,12 +4,12 @@ IPD \- seismic data input daemon
 .SH SYNOPSIS
 .nf
 
-IPD [-h hdrtype] 
+IPD [-c check_rate]
+    [-h hdrtype] 
     [-p parameter-file]
     [-s]
     [-t timeout]
     [-u] 
-    [-V verbatim] 
     [-v] 
     inport orb
 
@@ -34,8 +34,16 @@ supported by UNIX system can be used as \fBRTDAS\fP data input port.
 Several different ports can be used for simultaneous feeding different
 type of seismic data to the \fBRTDAS\fP \fIorb\fR ring buffer.
 .LP
-
 .SH OPTIONS
+.IP "-c check_tim_intv"
+In a case when \fBipd\fP can't recognize input packet or can't find a specific 
+parameters for input packet, it tries to re-read a parameter file, since a 
+parameter file could be edited after \fBipd\fP was started. Packets can arrive
+with a high speed ( for example one packet per second) it's not a  good idea to try
+to re-read parameter file every time when ipd has a lack of information. There 
+should be a time interval between re-reading of a parameter file by \fBipd\fP.
+This option sets such time interval - \fI check_tim_intv\fR. The default value
+is 30 minutes. 
 .IP "-h hdrtype"
 Pre-append a \fIhdrtype\fR header to a raw data packet.
 A header type specified in a parameter file is used by default.
@@ -51,8 +59,6 @@ seconds wait data on a connected socket before close socket and open a
 new connection. Default value is 30 seconds.
 .IP "-u "
 Uncompress seismic data before putting them on an \fIorb\fR ring buffer.
-.IP "-V verbatim"
-Save data packets  in a \fIverbatim\fR file before passing them to \fIorb\fR.
 .IP "-v"
 Be more verbose.
 .SH EXAMPLE

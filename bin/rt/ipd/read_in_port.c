@@ -331,11 +331,6 @@ int timeout;
 	      if (len == 0) {
 	  	   die (0, "end of file on input socket\n");
 	      } else {
-		  if (ports->verbatim)
-		       if (fwrite (buffer, len, 1, ports->verbatim) != 1)  {
-   	                   orbclose( ports->orb );
-			   die (1, "failed to copy input to verbatim file\n");
-                       }
 		 for (i = 0; i < len; i++) {
 		    switch (state) {
 

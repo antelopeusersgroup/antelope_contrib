@@ -58,7 +58,6 @@
 #define OFF_PLENB	2
 
 struct Prts  {
-    FILE *verbatim;
     int ifp;			/* input port file pointer  */
     int orb;			/* orb file pointer  */
     char ip_name[132];		/* input port name  */
