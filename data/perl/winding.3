@@ -69,6 +69,17 @@ returns the array holding the coordinates of its polygon vertices.
 .SH EXAMPLE
 .ft CW
 .RS .2i
+.nf
+@dbregions = dbopen( $region_phrases_database, 'r' );
+@dbregions = dblookup( @dbregions, "", "regions", "", "" );
+
+@regions = get_containing_regions( @dbregions, $lat, $lon );
+
+if( ! defined( $where = shift( @regions ) ) ) {
+
+	$where = "(" . grname( $lat, $lon ) . ")";
+}
+.fi
 .RE
 .ft R
 .SH RETURN VALUES
@@ -76,6 +87,7 @@ returns the array holding the coordinates of its polygon vertices.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+perldb(1)
 .fi
 .SH "BUGS AND CAVEATS"
 A number of internal routines are probably not useful outside, and 
