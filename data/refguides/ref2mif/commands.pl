@@ -111,7 +111,7 @@ sub parse_command_arguments {
 	$match = $1 ;
 	$left = $` ;
 	if ( $match =~ /^-/ ) { 
-	    $result .= &string("$left $match") ;
+	    $result .= &string("${left}$match") ;
 	} else { 
 	    $result .= &string("$left") . &fontstring("ParameterName", $match) ; 
 	    $Parameters{$match} = 1 ;

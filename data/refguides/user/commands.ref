@@ -113,7 +113,7 @@ reflect [-d dir] [-v] remote_host remote_file
 reflectd [-v]
     server companion to reflect
 
-build [pf-file] [pf-dependent arguments]
+build [pf] [pf_dependent_arguments]
     framework for constructing simple gui interfaces based on
     parameter files and perl scripts
 

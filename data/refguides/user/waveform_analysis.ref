@@ -26,18 +26,18 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -v	more verbose
 </options>
 
-deprecated dbsteimc [options] input-database [output-database]
+deprecated dbsteimc [options] dbin [dbout]
     compress waveform data using steim compression (see also trexcerpt)
 <options>
 -v	Report compression statistics for each waveform
 -l {1|2}	Compression level (default = 2)
--L loc-code
+-L loc_code
 -n net
 -o	Overwrite the records in the wfdisc table
 -r val	Replacement value for data gaps
 -p pfname
 -w wfname
--s (single) output-file
+-s outfile
 </options>
 
 dbwfexcerpt [options] dbin[.table] dbout

@@ -16,7 +16,7 @@ dbwish8
     Tcl/Tk 8.0 shell with db extensions
 
 orbwish
-    Tcl7.4/Tk4.0 shell with orb and real-time trace-plotting widget extensions
+    Tcl7.4/Tk4.0 shell with orb and real time trace plotting widget extensions
 
 wish8.0
     Tcl/Tk 8.0 shell with no extensions

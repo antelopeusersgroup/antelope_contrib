@@ -22,7 +22,7 @@ int free_response ( Response *response )
 
 
 int init_response_group ( Response_group gp )
-    initialize a new response-group object
+    initialize a new Response_group object
 
 int add_response_group ( Response *rp, Response_group *gp )
     add a new response stage gp to response rp

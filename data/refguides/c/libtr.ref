@@ -269,7 +269,7 @@ int wfchanid ( Dbptr *db )
 
 
 private int trdatacode ( char *datatype )
-    get index of waveform type corresponding to two-character datatype
+    get index of waveform type corresponding to two character datatype
 
 private char *trdatatype ( int datacode )
     get datatype from waveform type

@@ -115,20 +115,20 @@ Tbl *greparr ( char *re, Arr *arr )
 <cdeclarations>
 
 Bitvector *bitnew ( )
-    create a new bit-vector
+    create a new bit vector
 
 void bitfree ( Bitvector *b )
-    free a bit-vector
+    free a bit vector
 
 
 int bitclr ( Bitvector *b, int index )
-    clear bit index of bit-vector b
+    clear bit index of bit vector b
 
 int bitset ( Bitvector *b, int index )
-    set bit index of bit-vector b
+    set bit index of bit vector b
 
 int bittst ( Bitvector *b, int index )
-    test bit index of bit-vector b
+    test bit index of bit vector b
 
 
 int bitmax ( Bitvector *b )
@@ -148,7 +148,7 @@ Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
     return the bitwise eXclusive-OR of b1 and b2
 
 int bitcmp ( Bitvector *b1, Bitvector *b2 )
-    compare two bit-vectors
+    compare two bit vectors
 
 <subsection Buffered Network Stream I/O>
 <cdeclarations>
@@ -820,7 +820,7 @@ int pfget_boolean ( Pf *pf, char *name )
     get a boolean value from a parameter space
 
 double pfget_double ( Pf *pf, char *name )
-    get a double-precision value from a parameter space
+    get a double precision value from a parameter space
 
 int pfget_int ( Pf *pf, char *name )
     get an integer value from a parameter space
@@ -838,7 +838,7 @@ void pfput ( Pf *pf, char *name, char *value, int type )
     put a value into a parameter space
 
 int pfset ( Pf *pf, char *name, char *value )
-    put a parameter into a parameter space using perl-style nested array indexing
+    put a parameter into a parameter space using perl style nested array indexing
 
 void pfput_arr ( Pf *pf, char *name, Arr *value )
     put an array value into a parameter space
@@ -847,7 +847,7 @@ void pfput_boolean ( Pf *pf, char *name, int val )
     put a boolean value into a parameter space
 
 void pfput_double ( Pf *pf, char *name, double val )
-    put a double-precision value into a parameter space
+    put a double precision value into a parameter space
 
 void pfput_int ( Pf *pf, char *name, int val )
     put an integer value into a parameter space
@@ -923,18 +923,18 @@ RESIZE_BUFFER(type *, buffer, sizevar, needed)
     ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, realloc the old buffer, copying the current contents
 
 private SQR(a)
-    expands to (a)*(a) -- bad if a has side-effects
+    expands to (a)*(a) -- bad if a has side effects
 
 private ABS(a)
-    expands to ((a>=0)?(a):-(a)) -- bad if a has side-effects
+    expands to ((a>=0)?(a):-(a)) -- bad if a has side effects
 
 private SIGN(a)
-    expands to (((a)>0)? 1.0 : ((a)<0) ? -1.0 : 0.0) -- bad if a has side-effects
+    expands to (((a)>0)? 1.0 : ((a)<0) ? -1.0 : 0.0) -- bad if a has side effects
 
 private MAX(a,b)
-    expands to ((a>b)?(a):(b)) -- bad if a or b have side-effects
+    expands to ((a>b)?(a):(b)) -- bad if a or b have side effects
 
 private MIN(a,b)
-    expands to ((a>b)?(b):(a)) -- bad if a or b have side-effects
+    expands to ((a>b)?(b):(a)) -- bad if a or b have side effects
 
 
