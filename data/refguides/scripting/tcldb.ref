@@ -1,63 +1,62 @@
-<chapter>
-Tcl/Tk Interface
-
+<chapter Tcl/Tk Interface>
+<commands>
 package require Datascope
 
 <subsection Opening a database>
 <commands>
 dbopen db {r|r+}
-    open database db read-only (r) or read-write(r+); returns a dbptr
+    open database db read-only (r) or read-write(r+); returns a db pointer
 
 dbopen_database db[.table] {r|r+}
     open database db, or optionally a specific table. The
     first argument may also be "-", allowing a view to be read from stdin.
-    returns a dbptr
+    returns a db pointer
 
-dbclose dbptr
-    close the database dbptr
+dbclose db
+    close the database db
 
-dbfree dbptr
+dbfree db
     free memory resources and file descriptors for a database view/table
 
-dblookup dbptr database table field record
-    return a database pointer for the specified dbptr, database, table, field, and record
+dblookup db database table field record
+    return a database pointer for the specified db, database, table, field, and record
     record can be "dbALL", "dbNULL" or "dbSCRATCH", or a value corresponding to field; then
     the first record number where field == value is returned
 
-dbtruncate dbptr n
+dbtruncate db n
     truncate the specified table to the first n records
 
 <subsection Manipulating Fields and Records>
-dbadd dbptr record
+dbadd db record
     add the specified record to a table, return record number
 
-dbaddnull dbptr
+dbaddnull db
     add a null record to the table, return record number
 
-dbaddv dbptr table field value [field value ...]
+dbaddv db table field value [field value ...]
     add new record with specified field values, return record number
 
-dbmark dbptr
+dbmark db
     set the specified record to all null values
 
-dbcrunch dbptr
+dbcrunch db
     delete marked (all null) records from the table
 
-dbdelete dbptr
+dbdelete db
     delete a record
 
 
-dbget dbptr
+dbget db
     get a table, record, or field from a table
 
-dbgetv dbptr table record field [field ...]
+dbgetv db table record field [field ...]
     return a list with the specified values of the specified fields
 
 
-dbput dbptr value
+dbput db value
     put the specified value into the specified location.
 
-dbputv dbptr table record field value [field value ...]
+dbputv db table record field value [field value ...]
     save the specified values into the specified fields.
 
 <subsection Forming Views>
@@ -70,11 +69,11 @@ dbungroup db
 dbjoin db1 db2 [join-keys]
     join the two tables (using the specified join keys)
 
-dbjoin_tables dbptr
-    returns a list of tables for which some set of join keys with dbptr can be inferred
+dbjoin_tables db
+    returns a list of tables for which some set of join keys with db can be inferred
 
-dbjoin_keys dbptr table
-    returns the inferred join keys between dbptr and table 
+dbjoin_keys db table
+    returns the inferred join keys between db and table 
 
 dbnojoin db1 db2 [join-keys]
     returns all the records in db1 which do not join with table db2
@@ -101,8 +100,8 @@ dbsort [-r] [-u] db [fields ..]
 dbsubset db expression
     returns a db pointer to the rows from the specified table which satisfy expression
 
-dbtheta dbptr1 dbptr2 [ expression ]
-    theta join the specified tables
+dbtheta db1 db2 [ expression ]
+    theta join the specified tables db1 and db2
 
 
 dbselect [-b] [-F separator] [-t] filename db [field ...]
@@ -122,7 +121,7 @@ dbsave_view [-f] db name
 db2pipe db file [record# ...]
     send records from a database view out a unix pipe
 
-dbunjoin dbptr output
+dbunjoin db output
     unjoin the specified table, writing new tables into a new database named output
 
 <subsection Miscellaneous Datascope Functions>
@@ -130,13 +129,12 @@ dbunjoin dbptr output
 dbeval db expression [type]
     evaluate the specified expression, converting to the specified type
 
-dbquery dbptr code
+dbquery db code
     query the database for various parameters
 
-dbcompile dbptr string
+dbcompile db string
     add attributes and relations to a database by directly compiling schema file fragments
 
-Tcl_dbstrtype
 
 dbstrtype db string
     returns type of string: strREAL,  strINTEGER, strNULL, strSTRING, strTIME, strEXPR, strFIELD or strUNKNOWN
@@ -144,19 +142,19 @@ dbstrtype db string
 dbsearch db first backwards string
     starting from first, locate the first record in db satisfying the given expression string, or containing the string
 
-dbadd_remark dbptr remark
+dbadd_remark db remark
     add the specified remark to the specified record
 
-dbget_remark dbptr
+dbget_remark db
     get the remark associated with the specified record
 
-dbgetr dbptr convert_time record# #records [expression [format]]
-    return a list containing the specified field or expression for the specified range of records
+dbgetr db tz i n [expr [fmt]]
+    return list of values for n records beginning at record #i for expr optionally formatted using fmt; tz=0 may be 1 to use epoch2str for times, or a timezone code (eg, US/Mountain or LOCAL)
 
 dbinvalid
     return a db pointer with all elements dbINVALID
 
-dbnextid dbptr name
+dbnextid db name
     get the next (integer) id for the specified name
 
 <subsection Error Handling>

@@ -85,9 +85,6 @@ dbproject_covariance [-v] [-c conf] dbname
     sdepth, stime, strike, and conf values, based on the covariance
     matrix from the origerr table
 
-ptt2stt
-    make a P and S travel time table from ttcalc output
-
 relocate dbin dbout [-pf pffile] [-useold] [-sift expression]
     relocate all events in a database using genloc
 

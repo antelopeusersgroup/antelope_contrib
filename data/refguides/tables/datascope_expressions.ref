@@ -150,7 +150,7 @@ azimuth(lat1, lon1, lat2, lon2)
 distance(lat1, lon1, lat2, lon2)
     distance in degrees between two points
 
-latitute(lat, lon, distance, azimuth)
+latitude(lat, lon, distance, azimuth)
     latitude of the point a distance away from (lat,lon) in the direction azimuth
 
 longitude(lat, lon, distance, azimuth)
@@ -199,7 +199,6 @@ patsub(old, pattern, replacement)
 
 <subsection Relational Operators>
 <List>
-
 ==	equals
 !=	not equal to
 

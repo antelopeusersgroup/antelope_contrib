@@ -1,4 +1,4 @@
-<subsection Tcl/Tk Command Interpreters>
+<chapter Tcl/Tk Extensions>
 <commands>
 tcl
     Tcl shell
@@ -6,7 +6,8 @@ tcl
 wish
     Tk shell 
 
-Extensions -- "package require 'extension'"
+<body>
+    package require XXX
 
 Tclx
 Tkx

@@ -21,9 +21,7 @@ int trtruncate ( Dbptr tr, int leave )
     truncate a tr database table
 
 <subsection Reading and Writing waveforms>
-
 <cdeclarations>
-
 int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *fill_private )
     read trace data from file into memory
 
@@ -51,7 +49,6 @@ int trwfname ( Dbptr db, char *pattern, char **path )
 Autodrm and SEED introduce extra keys to uniquely identify station and channel. These extra keys must be mapped into sta and chan to work with the CSS3.0 schema. These routines implement that mapping.
 
 <cdeclarations>
-
 int map_autodrm_netsta ( char *anet, char *fsta, char *sta )
     map an autodrm net anet and station code fsta to a CSS3.0 sta code
 
@@ -95,7 +92,6 @@ void imksignal ( char *type, int *data, double time, int nsamp, double samprate,
     generate a signal of a specified type
 
 <subsection SEED>
-
 private int ascii2int ( int *result, char *s, int n )
     SEED reading/writing aid
 
@@ -137,8 +133,6 @@ int seed2samprate ( int factor, int multiplier, double *samprate )
     convert the factor/multiplier from a SEED data block header into a low precision sample rate samprate
 
 <subsection Steim Compression>
-
-<cdeclarations>
 Steim *initsteim ( Wfdisc *wfdisc )
     allocate and initialize a structure used to buffer data and control compression/decompression
 
@@ -199,7 +193,6 @@ private int trwfclose ( Wfdisc *wfdisc )
 
 
 <subsection Filters>
-
 int trrotate ( Dbptr tr, double phi, double theta, char **newchan )
     rotate three component data
 
@@ -228,7 +221,6 @@ int trintegral ( Dbptr tr )
     integrate waveform segments
 
 <subsection Utilities>
-
 int trclip ( double time, double samprate, int nsamp, double from, double until, int *pt0, int *npts, double *t0, double *t1 )
     find sample range corresponding to time range
 
@@ -282,7 +274,6 @@ Wftype *trwftype ( char *datatype )
 
 
 <subsection Convenience Macros>
-
 double ENDTIME ( time, samprate, nsamp )
     return endtime based on input parameters
 

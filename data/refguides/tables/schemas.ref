@@ -52,10 +52,6 @@ Logs1.0
 models0.4
     prototype css3.0 expansion schema to store travel-time models. 
 
-MWavelet1.3
-    Extensions to css3.0 used for multiwavelet array processing 
-    with the mwap program.
-
 notify1.2
     Schema to hold contact information used in earthquake response 
     procedures. 

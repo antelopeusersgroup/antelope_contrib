@@ -30,7 +30,10 @@ sub section {
 }
 
 sub subsection { 
-    return &paragraph("Heading2", $_ ) if $_ !~ /^\s*$/ ; 
+    my $a = $_ ;
+    gobble_blank_lines() ;
+    $result = &paragraph("Heading2", $a ) if $a !~ /^\s*$/ ; 
+    return $result ;
 }
 
 sub chapter { 

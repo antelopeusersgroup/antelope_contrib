@@ -65,9 +65,6 @@ rtsys [options] [directory]
 -n n	last n lines from log files (default = 10)
 </options>
 
-pktmon [-p pf] [-S state] orb
-    read packets, watch for specific conditions and send alarms
-
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
@@ -112,17 +109,19 @@ tcpmonitor [options] host
 <options>
 -B sz	specify packet size
 -d db	save statistics in database db
+-f	send bursts only from server 
+-2	send bursts only to server 
 -N #pkts	set #packets in a burst
 -m	run in monitor (server) mode
 -n #loops	# of bursts to send
 -P #ping	# of pings between bursts
--r lrsz
--R rrsz
--s lssz
--S rssz
--t timeout
+-r lrsz	set size of client receive buffer.
+-R rrsz	set size of server receive buffer.
+-s lssz	set size of client send buffer.
+-S rssz	set size of server send buffer.
+-t timeout	set timeout (in  seconds) for  socket reads  
 -v	more verbose
--W sec/ping
+-W sec/ping	set number of seconds between "pings".  
 </options>
 
 <subsection orbserver and utilities>
@@ -130,7 +129,7 @@ orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
 -k	Don't reset the ring buffer
--p port
+-p port	use specified port
 -r	reset the ring buffer
 -v[v]	verbose/doubly verbose
 </options>
@@ -216,7 +215,7 @@ k22orb [options] target orbdata [orbcmd]
 -pf pf	specify alternate parameter file
 -db db	specify database for calib information
 -v	be more verbose
--state file	save state info in file
+-state filename	save state in filename
 -start time	only get events after time
 </options>
 
@@ -311,30 +310,29 @@ automrc [options] orbname dc_name
 orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
--c pktsuffix	convert packets on the fly from input format to pktsuffix format
--d	print a hex dump of packets as they are received
+-c suffix	convert packets from input format to suffix format
+-d	print a hex dump of each packet 
 -f	when reading from a plain file, do not adjust the time tags, and output packets as quickly as possible
 -i nsecs	save state file every nsecs seconds
-
 -N	print #samples of the data
 -u	unstuff packets as they are received
-
 -l	loop repeatedly over the input forb(5) file
--m re1
--r re2	read only packets which match re1 and don't match re2
-
--n npkts	stop after npkts packets
-
--R rep	when saving to a plain file, use forb(5) format rep
-
--s p	start after pktid p
+-m re1	read only packets which match re1 
+-r re2	don't read packets matching re1
+-n n	stop after n packets
+-R r	when saving to a plain file, use forb(5) format r
+-s p	start after pktid #p
 -S filename	save state in filename
-
 -v	more verbose
-
 -b max_behind
--w re	ensure reading programs matching regular expression re are no more than max_behind seconds behind orb2orb
+-w re	ensure reading programs which match re are no more than max_behind seconds behind 
 </options>
+
+orbxfer [-d dir] [-vv] file ... orb
+    transfer a set of local files to an orbserver orb; the -d option specifies an alternate directory dir in which the files are to be found
+
+orbxfer [-d dir] [-vv] orb
+    unpack files from orbserver orb to local directory, or optionally directory dir 
 
 orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
@@ -377,7 +375,7 @@ orbmag [options] orbwf orbdb dbname
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
--state statefile
+-state filename	save state in filename
 -p parameter_file
 -auth_expr auth_expr
 -target_orbmag torbmag
@@ -406,7 +404,7 @@ orbwfmeas [options] orbwf orbdb dbname
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
--state statefile
+-state filename	save state in filename
 -p parameter_file
 -net net
 -dbsift_expr dbsift_expr
@@ -430,12 +428,6 @@ dbassoc_rt [options] dbcat dbassoc
 -safe
 -nowait
 </options>
-
-orbxfer [-d dir] [-vv] file ... orb
-
-orbxfer [-d dir] [-vv] orb
-    transfer arbitrary files between orbs
-
 
 <subsection Orb Real Time Display>
 qtmon dataorb data2orb cmdorbname [database]
@@ -469,10 +461,10 @@ orbdisp [options] orbserver [start [range|end]]
 
 <subsection Real Time Status Monitoring>
 cpu2orb [-i t] [-vv] orb
-    save cpu and system utilization reports on orb at interval t seconds
+    put cpu and system utilization packets on orb every t seconds
 
 df2orb [-i t] [-p pf] [-vv] orb
-    save filesystem status information on orb at interval t seconds
+    put filesystem status information packets on orb every t seconds
 
 ps2orb [options] orb
     save process information from ps(1) to orb at interval t seconds
@@ -495,14 +487,6 @@ tail2orb [options] orb [file ...]
 -S state	specify alternate state file 
 -v 
 </options>
-
-orbxfer [-d dir] [-vv] file ... orb
-    transfer a set of local files to an orbserver orb; the -d option
-    specifies an alternate directory dir in which the files are to be found
-
-orbxfer [-d dir] [-vv] orb
-    unpack files from orbserver orb to local directory, or optionally
-    directory dir 
 
 orblog [-f file] [-s subcode] orb [log info]
     write a single log packet to orb; the packet contents are
@@ -535,20 +519,21 @@ orb2db [options] orb db [start [end|period]]
 orb2dbt [options] orb dbout
     read Datascope database packets from an orb and write to a database
 <options>
--select expr
+-select re1	read only packets matching re1
+-reject re2	don't read packets matching re2
 -verbose
--start {pktid|time|OLDEST|NEWEST}
--number number
+-start {pktid|time|OLDEST|NEWEST}	begin reading at specified pktid
+-number n	read a maximum of n packets
 -nowait
 -safe
 -timeout seconds
 -overwrite
--state statefile
+-state filename	save state in filename
 </options>
 
 
-orb2db_msg [-s sleep] database [pause | continue | status]
-    signal orb2db and orb2dbt processes to pause for database cleanup
+orb2db_msg [-s sleep] db [pause|continue|status]
+    signal orb2db and orb2dbt processes to pause for database db cleanup
 
 par2db [options] orbname dbname [start [window]]
     create database with GPS site coordinates and DC/DAS status parameters from orb
@@ -576,6 +561,9 @@ acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
 
 battalarm [-d] [-m srcmatch ] orbin mail_add
     send mail when battery power drops for a data collector
+
+pktmon [-p pf] [-S state] orb
+    read packets, watch for specific conditions and send alarms
 
 <subsection Miscellaneous>
 resetnetblazer hostname line timeout

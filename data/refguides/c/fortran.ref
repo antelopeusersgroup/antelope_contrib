@@ -2,17 +2,17 @@
 Fortran Interface
 
 <subsection Database Operations>
+<body>
+declarations for variables used below:
 <options>
 include "db.i"
 integer db(4)
 char record(*)
 character table_name, field_name
 character s
-# expression is used as a holder for a pointer to a compiled expression
-integer expression
+integer expression # expression is pointer to compiled expression
 integer type
-# pattern1 and pattern2 are holders for pointers to Tbl lists
-integer pattern1, pattern2, nojoin
+integer pattern1, pattern2, nojoin # pattern1 and pattern2 are pointers to Tbl lists
 integer outer
 character name(*)
 

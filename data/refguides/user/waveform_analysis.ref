@@ -9,20 +9,14 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -o datatype	specify output waveform datatype (default = sd)
 -a	append to existing waveform files if present
 -w pattern	specify naming convention for output waveforms
-
 -m {time|convert|event|arrival|explicit}	specify mode (default = time)
-
 -g	eliminate 'marked' data gaps
-
 -c expr	sta/chan/instrument subset
 -s expr	evid/orid/arid subset
 -j expr	origin/site subset
-
 -W db	specify database from which waveforms come
-
 -d	write complete database with site, sensor, sitechan, instrument
 -e	include correct subset of event, origin, origerr, arrival, and assoc in the output database
-
 -v	more verbose
 </options>
 
@@ -46,15 +40,16 @@ deprecated dbsteimc [options] dbin [dbout]
 dbwfexcerpt [options] dbin[.table] dbout
     excerpt waveform data by event or origin (deprecated)
 <options>
--event
--origin
--input
--sift expr
--begin expr
--end expr
--pre t
--sfactor f
--tolerance value
+-event [expr]
+-origin [expr]
+-input [expr]
+	choose operational mode for waveform selection: by event, by origin, or by input view; select subset of input view with Datascope expression expr
+-sift expr	select subset of waveforms with expression expr
+-begin expr	calculate start time for waveform using expr
+-end expr	calculate end time for waveform using expr
+-pre t	start time is t seconds before predicted p arrival
+-sfactor f	end time is f*(p-s) + predicted s arrival time
+-tolerance x	splice waveform segments together when sample time mismatch is less than x*sample period
 -v	verbose
 </options>
 
@@ -232,8 +227,10 @@ dbversac database
 dbchkwf [ -v ] database
     file consistency check for wfdisc
 
-dbcmpwf database.table1 record1 database.table2 record2
-dbcmpwf database database2
+dbcmpwf [-av]  db1[.table] record1 db2[.table] record2
+dbcmpwf [-asv] db1[.table] db2[.table]
+dbcmpwf [-a] -i db1[.table] [db2[.table]]
+dbcmpwf [-t]   db1[.table] db2[.table] time {endtime|range}
     compare waveform files from two database records or tables.
 
 dbversdwf [-s subset] [-dvw] database

@@ -263,10 +263,10 @@ int pbnsSync ( Bns *bns, char *sync, int nsync )
 int elog_init ( int argc, char **argv )
     initialize elog routines
 
-void clear_register ( int deliver )
+private void clear_register ( int deliver )
     clears the error register, printing the contents if asked
 
-void register_error ( int flag, char *format, ... )
+private void register_error ( int flag, char *format, ... )
 void elog_log ( int flag, char *format, ... )
     add a message to the internally accumulating error log
 
@@ -279,16 +279,19 @@ void elog_notify ( int flag, char *format, ... )
 void elog_alert ( int flag, char *format, ... )
     deliver a message and return
 
-void complain ( int flag, char *format, ... )
+private void complain ( int flag, char *format, ... )
 void elog_complain ( int flag, char *format, ... )
     deliver a message and return
 
-void die ( int flag, char *format, ... )
+private void die ( int flag, char *format, ... )
 void elog_die ( int flag, char *format, ... )
     deliver a message and exit with error code 1
 
 void elog_fault ( int flag, char *format, ... )
     report a hardware error and exit with error code 1
+
+char *elog_string ( int first )
+    returns freshly allocated string reproducing the entire error log 
 
 void elog_clear ()
     clear the log of error messages
@@ -805,8 +808,8 @@ int pfread ( char *name, Pf **pf )
 int pfin ( FILE *file, Pf **pf )
     read a parameter space from an open file
 
-int pfload ( char *envname, char *dirname, char *filename, Pf **pf )
-    load a single parameter file
+int pfload ( char *env, char *dir, char *file, Pf **pf )
+    load a single parameter file, as found by datapath(3)
 
 int pfupdate ( char *name, Pf **pf )
     update a parameter space
@@ -956,8 +959,8 @@ allot(type *, name, n)
 reallot(type *, name, n)
     realloc space for n (type *) elements, putting the address in name
 
-ALLOTERROR
-    ALLOTERROR may be defined to be ALLOTDIE (the default), ALLOTCOMPLAIN, or ALLOTREGISTER_ERROR or your own macro with two arguments: the name and n.
+
+    allot and reallot both use ALLOTERROR, which may be defined as ALLOTDIE (the default), ALLOTCOMPLAIN, or ALLOTREGISTER_ERROR, or your own macro 
 
 SIZE_BUFFER(type *, buffer, sizevar, needed)
     ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, free the old buffer, and malloc a new buffer

@@ -83,13 +83,10 @@ ttcalc method model phase distance depth
     method, model, and phases for an event at distance and depth.
 
 gsregion [lat lon]
-    show geographic and seismic region numbers and names for lat, lon
+    geographic and seismic region numbers and names for lat, lon
 
 dbsetrgn db
     set seismic and geographic region codes in origin table for database db
-
-capitalize_station dbname
-    Capitalize the sta field in all database tables
 
 tabulate_missed_stations translation_db dbname [dbname...]
     Find station names that do not appear in the translation_db
@@ -114,7 +111,7 @@ private perl_unbuffer command
 
 
 tksend [options] app_name [message]
-    send a message using version 3 or 4 of the tcl/tk send mechanism
+    send a message to program using tk send protocol
 <options>
 -i	read stdin for more messages
 -p	wait for and print returned messages

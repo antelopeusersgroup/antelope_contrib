@@ -45,6 +45,7 @@ sub parse_function {
 	$args = $2 ; 
 	$args =~ s/\s+$// ;
 	$result = &format_type ( "FunctionName", $name  ) ;
+	print STDERR "\n$name\n" ; 
 	$result .= &string("(") 
 		    . &parse_function_arguments($args)
 		    . &string(")") ; 
@@ -59,9 +60,11 @@ sub parse_function_arguments {
     my ($in) = @_ ; 
     my $result, $name ; 
     $result = "" ;
-    while ( $in =~ /(\w+)/ ) { 
+    while ( $in =~ /(@?\w+)/ ) { 
 	$in = $' ; 
-	$result .= &string($`) . &format_type("ParameterName", $1) ; 
+	$result .= &string($`) . &fontstring("ParameterName", $1) ; 
+	$Parameters{$1} = 1 ;
+	print STDERR "   p='$1'\n" ; 
     }
     $result .= &string($in) if $in !~ /^\s*$/ ; 
     return $result ;

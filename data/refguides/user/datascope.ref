@@ -41,9 +41,9 @@ dbcp [options] dbin[.table] dbout
 -d	make descriptor file for dbout which references dbin
 -i	prompt for permission to overwrite existing tables
 -f	copy external files (default changes references)
--l	attempt to create local symbolic links for external files
+-l	create local symbolic links for external files
 -o	quietly overwrite existing external files
--s	copy tables without keeping external file references correct
+-s	copy without correcting external file references 
 -v	verbose
 </options>
 

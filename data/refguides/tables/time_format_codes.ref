@@ -1,11 +1,9 @@
-<chapter epoch and epoch2str format specs>
-The two character combinations on the left in the list
-below are replaced by the value indicated on the
-right by the epoch(1) command and the epoch2str(3)
-function.
+<chapter epoch format specs>
+<body>
+The two character combinations on the left in the list below are replaced by the value indicated on the right by the epoch(1) command and the epoch2str(3) function.
 
 <List>
-%%	same as %
+%%	%
 %B	month
 %b	abbreviated month
 %D	date as %m/%d/%y

@@ -8,10 +8,10 @@ implements the basic interface to the Datascope relational database system
 
 <structures>
 typedef struct Dbptr {
-int database ;
-int table ;
-int field ;
-int record ;
+    int database ;
+    int table ;
+    int field ;
+    int record ;
 } Dbptr ;
 
 <subsection Opening/Closing a database>
@@ -73,7 +73,6 @@ int dbselect ( Dbptr db, Tbl *l, FILE *f)
     print the value of the expressions in the list l to file f.
 
 <subsection Removing and deleting rows>
-
 int dbdelete ( Dbptr db )
     delete record db from the view
 

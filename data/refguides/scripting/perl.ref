@@ -1,6 +1,5 @@
-<chapter>
-Perl Interface
-
+<chapter Perl Interface>
+<function>
 use Datascope ; 
 
 <subsection Opening a database>
@@ -9,11 +8,11 @@ use Datascope ;
 dbopen ( database, permissions )
     returns a database pointer to the database
 
-dbopen_database ( database, permissions )
-    returns a database pointer to the specified database and optionally table ("-" is stdin)
+dbopen_database ( db, permissions )
+    open database db (optionally db.table or "-" for stdin), returning database pointer
 
-dbopen_table ( database, permissions )
-    returns a database pointer to the specified database table ("-" is stdin)
+dbopen_table ( db.table, permissions )
+    open database db.table or "-" for stdin, returning database pointer for a table
 
 
 dbclose ( @db )
@@ -32,7 +31,7 @@ dbfind ( @db, expression [, first [,reverse]])
 
 <subsection Manipulating fields and records>
 dbadd ( @db, [record] )
-    add the new record to the table in @db. If no record is specified, use the scratch record. returns the new record number.
+    add the new record to the table in @db. If no record is specified, add the scratch record. returns the new record number.
 
 dbaddnull ( @db )
     add a new null record to a table

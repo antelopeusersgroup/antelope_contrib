@@ -6,7 +6,7 @@ none
 pixaddress.h
 coordinate system for sphere based on projection to a cube which has arbitrary resolution, very nearly equal size pixels and easy nearest-neighbor properties
 
-<subsection <cdeclarations>>
+<cdeclarations>
 Pixaddress sph2bin ( double ra, double dec, int res )
     convert ra, dec to bin address
 
