@@ -70,7 +70,7 @@ extern int get_trimmed_string PL_(( const mxArray *, char ** ));
 extern int get_stringtbl PL_(( const mxArray *, Tbl ** ));
 extern int get_inttbl PL_(( const mxArray *, Tbl ** ));
 extern int get_pf PL_(( const mxArray *, Pf ** ));
-extern int get_response PL_(( const mxArray *, Response ** ));
+extern int mtlb_get_response PL_(( const mxArray *, Response ** ));
 extern int get_string PL_(( const mxArray *, char ** ));
 extern int get_scalar PL_(( const mxArray *, double * ));
 extern void antelope_mex_clear_register PL_(( int ));

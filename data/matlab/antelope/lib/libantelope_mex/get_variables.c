@@ -170,7 +170,7 @@ get_scalar( const mxArray *in, double *scalar )
 }
 
 int
-get_response( const mxArray *in, Response **response )
+mtlb_get_response( const mxArray *in, Response **response )
 {
 	*response = mxArray2Response( (mxArray *) in );
 
