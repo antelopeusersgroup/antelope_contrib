@@ -76,7 +76,7 @@ static int PAR_OFF_DAS[MAXDAS] = {
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_DAS[MAXDAS] = {
-  "RTXREQ", "RTXREC" 
+  "CHKSUM", "RTXREQ", "RTXREC", "RTXSKP" 
 };
 
 static int PAR_BYTE_DAS[MAXDAS] = {2,2,2,2 };

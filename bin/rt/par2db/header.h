@@ -60,7 +60,8 @@ LONDD_BBA2, LONMM_BBA2, LONSS_BBA2, LONHH_BBA2, EW_BBA2, ALTD_BBA2
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_BBA2[MAXNUMPAR_BBA2] = {
- "BUFDEL",  "BATT", "DASRES", "LLOCK" };
+ "BUFDEL",  "BATT", "DASRES",
+"RADRES", "OVRFL",  "RXERR", "LLOCK" };
 
 /*
 , 
