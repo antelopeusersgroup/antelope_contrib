@@ -9,9 +9,6 @@
  *	    glushko@ucsd.edu
  *************************************************************************/
 #include "mrc.h"
-#include <sys/dkio.h>
-#include <sys/dklabel.h>
-#include <sys/vtoc.h>
 #include <termio.h>
 #include <stdio.h>
 #include <string.h>
