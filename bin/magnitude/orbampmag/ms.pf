@@ -1,0 +1,52 @@
+#	Parameter file for orbampmag and dbampmag
+
+# latency and maxwaittime are only needed for orbampmag
+# but to allow the usage of the same parameter file for both
+# realtime (orbampmag) computations and postprocessing (dbampmag)
+# they are included in the parameterfile
+# they are ignored when running dbampmag
+
+latency		30.0	# group latency
+maxwaittime	60.0	# A hard timeout value in seconds for reading waveform packets.
+			#  If no waveform packets for the selected channels are received
+			#  within this time period, then the waveform reading loop is
+			#  interrupted and any further processing for that event is
+			#  aborted.
+
+
+magtype		ms	# valid values are mb, ml and ms
+				# of course other parameters have to be set according to this choice
+
+v_r			4.0	# velocity for surface waves used to determine surface wave arrival time
+
+time0		R	# start of measuring time window
+				# P - pphasetime (see man pphasetime)
+				# S - sphasetime
+				# R - rayleigh wave - here we use deg2km(delta) / v_r
+
+time_window	1.5	# The waveform for processing the magnitude is determined by a time
+				# window starting from the arrival defined by the time0 parameter 
+				# to time_factor*(S_time-P-time) seconds after the first P-arrival.
+
+mindelta	5.5	# distance range in degrees
+maxdelta	180	# 
+
+# a 'general' magnitude formula could be:
+# c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
+# delta is the distance in degrees
+# where c2,c3,c4,c5 are station-dependent
+# thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
+# beware: c0 has to be converted if you have a formula where delta is im km
+# in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
+c0	0.52
+c1	1.66
+filter BW 0.01 5 0 0
+mag &Tbl{		# stations parameters for computing magnitudes
+#             calib   deconvolve apply     snr    
+#sta   chan   from_db instrument wa_filter thresh latency c2   c3     c4  c5
+ARSA   HHZ    yes     no         no        2.0    0.0     -1.0 0.0097 9.0 0.0
+DEMO   HHZ_00 yes     no         no        2.0    0.0     -1.0 0.0097 9.0 0.0 
+}
+
+
+pf_revision_time 1053388800
