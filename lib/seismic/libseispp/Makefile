@@ -2,7 +2,7 @@ LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 INCLUDE=metadata.h seispp.h ray1d.h vmodel.h
 MAN3=metadata.3 GCLrays.3
-ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
+#ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
 
 include $(ANTELOPEMAKE)  	
 
