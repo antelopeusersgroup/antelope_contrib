@@ -140,4 +140,34 @@ TTmethod tttaup
         uy_station_corrections &Tbl{
         }
 }
+S-P  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup tttaup utaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	90.0	1.0
+	95.0	0.0
+	180.0   0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
 }
