@@ -91,6 +91,7 @@ translations &Arr{
 				fromport	connections[FOREACH]{fromport}
 				toaddress	connections[FOREACH]{toaddress}
 				toport		connections[FOREACH]{toport}
+				closeorb	connections[FOREACH]{closeorb}
 				statmachine	orbstat_machine
 				o2omachine	connections[FOREACH]{o2omachine}
 				latency_sec	connections[FOREACH]{latency_sec}
