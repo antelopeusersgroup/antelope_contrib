@@ -96,6 +96,28 @@ Attribute fd
 	}
 	;
 
+Attribute fromaddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of an orbserver originating dataflow" )
+	Detail {
+		This is the IP address for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute fromport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "port number of orbserver originating dataflow " )
+	Detail {
+		This is the port number for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
 Attribute host
 	String (128)
 	Format ( "%-128s" )
@@ -524,6 +546,28 @@ Attribute thread
 	}
 	;
 
+Attribute toaddress
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of an orbserver terminating dataflow" )
+	Detail {
+		This is the IP address for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
+Attribute toport
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "port number of orbserver terminating dataflow " )
+	Detail {
+		This is the port number for an orbserver on one end of 
+		an orb data-transfer connection
+	}
+	;
+
 Attribute version
 	String (50)
 	Format ( "%-50s" )
@@ -587,12 +631,12 @@ Relation clients
 	;
 
 Relation connections
-	Fields ( serveraddress serverport clientaddress clientport latency_sec when lddate )
-	Primary ( serveraddress serverport clientaddress clientport )
+	Fields ( fromaddress fromport toaddress toport latency_sec when lddate )
+	Primary ( fromaddress fromport toaddress toport )
 	Description ( "data-flow connections between orbs" )
 	Detail {
 		This table describes data-flow connections between orbs, 
-		usually established with the orb2orb client.
+		usually established with the orb2orb client. 
 	}
 	;
 
