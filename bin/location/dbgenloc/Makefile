@@ -4,7 +4,7 @@ PF=dbgenloc.pf dbgenloc_default.pf
 #DATADIR=tables/genloc
 #DATA=iasp91.pf iasp91.P.pf iasp91.S.pf test_model.pf kyrghyz.pf kyrghyz.P.pf kyrghyz.S.pf 
 
-cflags = -dalign
+cflags = 
 ldflags = 
 
 ldlibs=-lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS) 
