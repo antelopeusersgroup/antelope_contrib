@@ -27,6 +27,7 @@
 %   dbexample_dbget
 %   dbexample_dbget_remark
 %   dbexample_dbgetv
+%   dbexample_dbgroup
 %   dbexample_dbinvalid
 %   dbexample_dbjoin
 %   dbexample_dbjoin_keys
@@ -35,6 +36,7 @@
 %   dbexample_dbmark
 %   dbexample_dbnextid
 %   dbexample_dbnojoin
+%   dbexample_dbnrecs
 %   dbexample_dbopen
 %   dbexample_dbpf
 %   dbexample_dbprocess
@@ -42,9 +44,12 @@
 %   dbexample_dbputv
 %   dbexample_dbquery
 %   dbexample_dbresponse
+%   dbexample_dbseparate
+%   dbexample_dbsever
 %   dbexample_dbsort
 %   dbexample_dbsubset
 %   dbexample_dbtheta
+%   dbexample_dbungroup
 %   dbexample_dbunjoin
 %   dbexample_epoch2str
 %   dbexample_eval_response
@@ -103,6 +108,5 @@
 %       Matlab interface to Antelope
 %			    [Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
-%       Geophysical Institute
-%       University of Alaska, Fairbanks
-%       1999
+%       Lindquist Consulting
+%       1997-2002

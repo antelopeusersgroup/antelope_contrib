@@ -1,6 +1,7 @@
 DATADIR= matlab/antelope/examples
 DATA= \
 	Contents.m \
+	dbexample_runall.m \
 	dbexample_arrtimes.m \
 	dbexample_clear.m \
 	dbexample_clear_register.m \
@@ -20,6 +21,7 @@ DATA= \
 	dbexample_dbget.m \
 	dbexample_dbget_remark.m \
 	dbexample_dbgetv.m \
+	dbexample_dbgroup.m \
 	dbexample_dbinvalid.m \
 	dbexample_dbjoin.m \
 	dbexample_dbjoin_keys.m \
@@ -28,6 +30,7 @@ DATA= \
 	dbexample_dbmark.m \
 	dbexample_dbnextid.m \
 	dbexample_dbnojoin.m \
+	dbexample_dbnrecs.m \
 	dbexample_dbopen.m \
 	dbexample_dbpf.m \
 	dbexample_dbprocess.m \
@@ -35,9 +38,12 @@ DATA= \
 	dbexample_dbputv.m \
 	dbexample_dbquery.m \
 	dbexample_dbresponse.m \
+	dbexample_dbseparate.m \
+	dbexample_dbsever.m \
 	dbexample_dbsort.m \
 	dbexample_dbsubset.m \
 	dbexample_dbtheta.m \
+	dbexample_dbungroup.m \
 	dbexample_dbunjoin.m \
 	dbexample_epoch2str.m \
 	dbexample_eval_response.m \
