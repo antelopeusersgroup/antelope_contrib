@@ -2,20 +2,22 @@
 
 # Change this value to the orblookup directory
 # Not needed if installed normally and antelope paths are in your path
-my $orblookupdir = ".";  
+
+$0 =~ /(.*)\/(.*)$/;
+my $orblookupdir = $1;  
+my $filename = $2;
 
 # The location where the file containing orblook's pid for this orb will be
 # for example, "/var/run/orblookup"
-my $pidfileloc = ".";
+my $pidfileloc = "/tmp/.orblookup";
 my $pidfile;
 
 # The location for the log for this orb
 # for example, "/var/log/orblookup" 
-my $logfileloc = ".";
+my $logfileloc = "/tmp/.orblookup";
 
 # End customizations
 
-my $filename = "orblook";
 
 sub usage {
     print "usage: $filename [start] [orbname] [interval]\n";
