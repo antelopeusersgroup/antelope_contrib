@@ -134,10 +134,10 @@ orbsources2pf( double atime, Orbsrc *sources, int nsources )
 
 		pfput_double( sourcepf, "latency_sec", latency_sec );
 
-		pfput( pfsources, asource->srcname, sourcepf->value.arr, PFARR );
+		setarr( pfsources->value.arr, asource->srcname, sourcepf );
 	}
 
-	pfput( pf, "sources", pfsources->value.arr, PFARR );
+	setarr( pf->value.arr, "sources", pfsources );
 
 	return pf;
 }
@@ -212,10 +212,10 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 
 		sprintf( thread, "%d", aclient->thread );
 
-		pfput( pfclients, thread, clientpf->value.arr, PFARR );
+		setarr( pfclients->value.arr, thread, clientpf );
 	}
 
-	pfput( pf, "clients", pfclients->value.arr, PFARR );
+	setarr( pf->value.arr, "clients", pfclients );
 
 	return pf;
 }
@@ -225,7 +225,6 @@ pforbstat( int orbfd, int flags )
 {
 	Pf	*pf = 0;
 	Pf	*pfans;
-	Pf	*pfpart;
 	Orbstat *orbstatus = 0;
 	Orbsrc	*sources = 0;
 	Orbclient *clients = 0;
@@ -233,6 +232,7 @@ pforbstat( int orbfd, int flags )
 	int	orbversion;
 	int	nsources = 0;
 	int	nclients = 0;
+	char	*s;
 
 	if( orbfd <= 0 ) {
 		return (Pf *) NULL;
@@ -247,7 +247,7 @@ pforbstat( int orbfd, int flags )
 		orbstat( orbfd, &orbstatus );
 		pfans = orbstat2pf( orbstatus, orbversion );
 
-		pfput( pf, "server", pfans->value.arr, PFARR );
+		setarr( pf->value.arr, "server", pfans );
 	}
 
 	if( flags & PFORBSTAT_SOURCES ) { 
@@ -255,23 +255,21 @@ pforbstat( int orbfd, int flags )
 		orbsources( orbfd, &atime, &sources, &nsources ); 
 		pfans = orbsources2pf( atime, sources, nsources );
 		
-		pfget( pfans, "source_when", (void **) &pfpart );
-		pfput( pf, "source_when", pfpart, PFSTRING );
-
-		pfget( pfans, "sources", (void **) &pfpart );
-		pfput( pf, "sources", pfpart->value.arr, PFARR );
+		pfcompile( s = pf2string( pfans ), &pf );
+		free( s );
+		
+		pffree( pfans );
 	}
 
 	if( flags & PFORBSTAT_CLIENTS ) {
 
 		orbclients( orbfd, &atime, &clients, &nclients );
 		pfans = orbclients2pf( atime, clients, nclients ); 
-	
-		pfget( pfans, "client_when", (void **) &pfpart );
-		pfput( pf, "client_when", pfpart, PFSTRING );
 
-		pfget( pfans, "clients", (void **) &pfpart );
-		pfput( pf, "clients", pfpart->value.arr, PFARR );
+		pfcompile( s = pf2string( pfans ), &pf );
+		free( s );
+	
+		pffree( pfans );
 	}
 
 	return pf;
