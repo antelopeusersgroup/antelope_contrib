@@ -1,0 +1,41 @@
+.\" %W% $Date$
+.TH IDA2ORB 1 "$Date$"
+.SH NAME
+ida2orb \- import data from an IDA hub to a Datascope ORB
+.SH SYNOPSIS
+.nf
+ida2orb [-u] orbname idahost importstring
+.fi
+.SH DESCRIPTION
+ida2orb takes data from an IDA hub and imports it into a Datascope 
+O-Ring Buffer (ORB). The IDA connection is established and tapped with
+David Chavez's idatap library. 
+.LP
+orbname is an internet address (or address:port) on which the orbserver
+is running. idahost is the internet address of the ida server software.
+
+importstring specifies the station(s) and channel(s) to import (see example
+below). 
+.SH OPTIONS
+-u convert station and channel names to uppercase
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+ida2orb nordic kdak-gw.giseis.alaska.edu kdak:bhz,bhn,bhe
+
+or
+
+ida2orb nordic idahub.ucsd.edu pfo:bhz,bhn,bhe+tau:bhz,bhn,bhe
+.fi
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orb(3), orbserver(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Kent Lindquist and David Chavez
