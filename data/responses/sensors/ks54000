@@ -8,6 +8,7 @@
 # 1                   decim factor
 # 6.9780E02           normalization factor
 # 1.0                 gain
+# 2400 V/m/s          sensitivity
 theoretical   1 anti-alias   paz    teledyne
 6.9780E02
 5             Poles

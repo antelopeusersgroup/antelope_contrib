@@ -9,6 +9,7 @@
 # 1                   decim factor
 # 394784.0            normalization factor
 # 1.0                 gain
+# 0.127 V/m/s         sensitivity for 2g setting
 theoretical   1 anti-alias   paz  Kinemetrics
 394784.0
 2         Poles

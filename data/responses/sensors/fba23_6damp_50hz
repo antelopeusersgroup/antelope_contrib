@@ -7,8 +7,9 @@
 # 2                   num of poles
 # 0.0                 input sample interval
 # 1                   decim factor
-# 98696.0            normalization factor
+# 98696.0             normalization factor
 # 1.0                 gain
+# 0.1270 V/m/s        sensitivity for 2g sensor
 theoretical   1 anti-alias   paz  Kinemetrics
 98696.0
 2         Poles
