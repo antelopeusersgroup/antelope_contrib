@@ -1,0 +1,172 @@
+.TH PFORBSTAT 1 "$Date$"
+.SH NAME
+pforbstat \- Create parameter files of orb status
+.SH SYNOPSIS
+.nf
+pforbstat [-c] [-s] [-m match] [-r reject] [-v]
+          [-f filename] [-n srcname] [-o orbout]
+          orbname [secs]
+.fi
+.SH DESCRIPTION
+pforbstat takes a snapshot, or repeated snapshots, of the status and
+contents of an orbserver specified by orbname. pforbstat creates parameter
+files to represent the output. By default (or with the verbose option),
+these parameter files are echoed to standard-out. If the -o option is
+used to specify an output orbserver name, the parameter-files are sent to the
+output orbserver under the source-name "/pf/orbstat". This default sourcename
+may be changed with the -n option (though the suffix must belong to the
+Pkt_pf type). The -f option may be used to direct the parameter file to
+the specified filename.
+
+If a number of seconds is specified, the snapshot is repeated at the 
+requested interval. 
+.SH OPTIONS
+-c Include information on orb clients
+
+-s Include information on orb sources
+
+-m match Match sources according to the specified regular expression
+
+-r reject Reject sources according to the specified regular expression
+
+-v Verbose
+
+-f filename Write the parameter-file objects to the specified file
+
+-o orbout  Write the parameter-file objects to the specified orbserver
+
+-n srcname Specify the source-name for output orb packets
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+localhost% pforbstat -v -s -c -n yukon/pf/orbstat -o : yukon
+pforbstat: pforbstat $Revision$ $Date$
+&Arr{
+    client_when	1026803871.055
+    clients	&Arr{
+        191	&Arr{
+            address	127.0.0.1
+            bytes	206401029
+            errors	0
+            fd	10
+            host	?
+            lastpkt	1026804073.000
+            lastrequest	25
+            latency_sec	-201.945
+            mymessages	0
+            nreads	5220
+            nreject	0
+            nrequests	2610
+            nselect	0
+            nwrites	1
+            packets	2609
+            perm	w
+            pid	9539
+            pktid	25994
+            port	55667
+            priority	0
+            read	206531648
+            reject	
+            select	
+            started	1026610153.206
+            thread	191
+            what	/opt/antelope/perl/bin/perl
+            who	rt
+            written	32
+        }
+        245	&Arr{
+            address	24.165.6.111
+            bytes	0
+            errors	0
+            fd	9
+            host	?
+            lastpkt	1026803871.055
+            lastrequest	5
+            latency_sec	0
+            mymessages	0
+            nreads	7
+            nreject	0
+            nrequests	7
+            nselect	0
+            nwrites	6
+            packets	0
+            perm	r
+            pid	3039
+            pktid	25994
+            port	32876
+            priority	0
+            read	217
+            reject	
+            select	
+            started	1026803870.217
+            thread	245
+            what	pforbstat -v -s -c -n yukon/pf/orbstat -o : yukon
+            who	kent
+            written	576
+        }
+    }
+    source_when	1026803870.919
+    sources	&Arr{
+        tsh_sidewalk_cam/EXP/IMG	&Arr{
+            active	True
+            kbaud	7.89503
+            latency_sec	-202.081
+            nbytes	10384549
+            npkts	134
+            slatest	25994
+            slatest_time	1026804073.000
+            soldest	25861
+            soldest_time	1026793797.000
+        }
+    }
+    server	&Arr{
+        address	209.193.47.96
+        closes	211
+        connections	False
+        errors	0
+        host	yukon:/export/home/rt
+        maxdata	10485736
+        maxpkts	26224
+        maxsrc	1000
+        messages	False
+        nclients	2
+        nsources	1
+        opens	213
+        orb_start	1015590612.584
+        orbversion	6
+        pid	10532
+        port	6510
+        rejected	1
+        started	1025573168.298
+        version	Release 4.4 SunOS 5.7 2002-01-22
+        when	1026803870.763
+        who	rt
+    }
+}
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orbserver(1), orbstat(1), orbstat(3), orbsources(3),
+orbclients(3), pforbstat(3)
+.fi
+.SH "BUGS AND CAVEATS"
+One could argue that this should be a set of options to orbstat(1), rather 
+than an independent program.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
