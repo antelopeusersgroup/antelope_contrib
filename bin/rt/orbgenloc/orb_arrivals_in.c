@@ -37,6 +37,7 @@ that does this.  This is not very efficient, but it does improve modularity.
 #include "arrays.h"
 #include "orb.h"
 #include "db.h"
+#include "xtra.h"
 #include "location.h"
 #include "orbgenloc.h"
 
