@@ -7,6 +7,8 @@ DATA= \
 	tcldb.ref \
 	tclorb8.ref \
 	tkBrttPlot.ref \
+	tkPixmap.ref \
+	tkGpl.ref \
 	tkVogle.ref 
 
 include $(ANTELOPEMAKE)
