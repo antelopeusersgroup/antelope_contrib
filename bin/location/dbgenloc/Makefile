@@ -19,7 +19,7 @@ ldlibs=-lgenloc $(DBLIBS) $(PERFLIBS) $(F77LIBS)
 #-L/opt/dsap/ext/CLAPACK/F2CLIBS  -llapack_alpha  -lblas_alpha -lI77f2c -lF77f2c \
 #$(DBLIBS) $(F77LIBS) -ltt -ldl
 include $(ANTELOPEMAKE)
-DIRS=ttlvz taup uniform
+DIRS=ttlvz taup uniform 1dcvl
 
 OBJS= dbgenloc.o run_location.o load_observations.o write_log.o save_results.o 
 CC=cc
