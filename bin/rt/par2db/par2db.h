@@ -89,7 +89,7 @@ extern int new_dbrecord PL_(( Db_buffer *buf ));
 extern Source * new_source PL_(( int maxpkts ));
 extern double get_last_dbtimes PL_(( Dbptr db ));
 extern int main PL_(( int argc, char **argv ));
-extern int pkt2db PL_(( char *srcname, double pkttime, char *packet, Save_params * params ));
+extern int pkt2db PL_(( Packet **pkt, char *srcname, double pkttime, char *packet, Save_params * params ));
 extern void init_data_segment PL_(( PktChannel *new, Db_buffer *buf ));
 extern int seg_append PL_(( PktChannel *new, Db_buffer *buf ));
 extern void usage PL_(( void ));
