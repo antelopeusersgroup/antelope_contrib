@@ -66,6 +66,21 @@ Multiple instances of \fBdbrecenteqs\fP may be run simultaneously,
 provided they are in separate subdirectories and only one instance
 is running on a given database.
 
+If the parameter use_qgrids is enabled and the database contains
+the gme1.0 expansion schema and a qgrid table, contours of 
+measured/predicted earth shaking are shown on the focus maps. 
+
+\fBdbrecenteqs\fP is able to optionally mask out trouble regions in GMT
+maps with a colortable different than the main colortable for the 
+image. Land areas that are officially below sea level can show up 
+erroneously blue when using a land/sea colormap. These may be 
+masked out with a different colormap, map_landmask_palette_file, that 
+is the same as map_color_palette_file for all but the underwater values. 
+Areas to mask out are specified in the landmask_regions array of the
+map_config blocks, with each area being listed in the form of a 
+GMT-style Rectangle specification (with the -R prefix, and not supporting
+the 'r' suffix). 
+
 \fBdbrecenteqs\fP requires PerlMagick from www.imagemagick.org, and XML::Writer,
 XML::LibXML, and XML::LibXSLT from www.cpan.org. The latter
 will probably require libxml2 and libxslt from www.xmlsoft.org.
@@ -209,6 +224,10 @@ dbrecenteqs_title Recent Earthquakes
 
 wiggle mini_logo.gif
 
+# Option to specify an image file to use as a background, e.g.
+#    background mytile.gif
+background_graphic
+
 legend legend.gif
 legend_description Magnitude and Age Legend for Earthquakes
 
@@ -228,6 +247,7 @@ keep_ndays 0
 max_num_eqs 300
 
 make_index_html yes
+use_qrids no
 
 .ne 17
 overview_maps &Tbl{
@@ -266,6 +286,7 @@ focus_map &Arr{
         right_dellon    2
         down_dellat     -2
         up_dellat       2
+	qgrid_nintervals 4
 }
 
 .ne 45
@@ -284,7 +305,8 @@ map_config &Arr{
         stylesheet      index_default.xsl
         longitude_branchcut_high 360
         hypocenter_dbname historic_hypocenters_dbname
-        map_color_palette_file \fBdbrecenteqs\fP.cpt
+        map_color_palette_file dbrecenteqs.cpt
+        map_landmask_palette_file dbrecenteqs_landonly.cpt
         depth_color_palette_file depthmag2.cpt
         linefiles &Tbl{
                 # faults combined_faults.gmtlin 4/255/0/0
@@ -319,6 +341,9 @@ map_config &Arr{
         size_inches     5
         city_symbols_inches 0.08
         cityname_shift_deg 0.2
+	cityname_fontno 1
+	cityname_fontsize 9
+	cityname_fontjustify LM
         reserve_colors  12
         detail_density  f  # f,h,i,l,c
         gridline_interval_deg 5
@@ -447,7 +472,8 @@ mechanism between \fBdbrecenteqs\fP and the database updates.
 .SH "SEE ALSO"
 .nf
 dbevents(1), rtexec(1), GMT(l), Image::Magick(1),
-XML::Writer(1), XML::LibXML(1), XML::LibXSLT(1)
+XML::Writer(1), XML::LibXML(1), XML::LibXSLT(1),
+dbgme(1), dbgme_show(1)
 .fi
 .SH AUTHOR
 .nf

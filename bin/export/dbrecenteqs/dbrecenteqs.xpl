@@ -326,12 +326,25 @@ sub hypocenter_vitals {
 		dbgetv( @db, "lat", "lon", "depth", "time", 
 			     "origin.orid", "origin.auth" );
 	
+	my( $qgrid_units, $qgrid_maxval ) = undef;
+
+	if( $State{use_qgrids} ) {
+		@dbqgrid = dbinvalid();
+		@dbqgrid = dblookup( @dbprefor, "", "qgrid", "orid", "$prefor" );
+		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+
+			$qgrid_units = dbgetv( @dbqgrid, "units" );
+
+			$qgrid_maxval = dbgetv( @dbqgrid, "maxval" );
+		}
+	}
+
 	my( $name ) = "orid$orid";
 
 	my( $authtrans, $auth_href ) = translate_author( $auth );
 
-	$depth_km = sprintf( "%.0d", $depth );
-	$depth_mi = sprintf( "%.0d", $depth_km / 1.609 );
+	$depth_km = sprintf( "%.0f", $depth );
+	$depth_mi = sprintf( "%.0f", $depth_km / 1.609 );
 
 	my( $local_day ) = epoch2str( $time, 
 		"%A %B %o, %Y", $ENV{TZ} );
@@ -356,6 +369,7 @@ sub hypocenter_vitals {
 	$writer->dataElement( "lat", "$lat" );
 	$writer->dataElement( "lon", "$lon" );
 	$writer->dataElement( "depth_string", "$depth_string" );
+	$writer->dataElement( "depth_km", "$depth_km" );
 	$writer->dataElement( "auth_href", "$auth_href" );
 	$writer->dataElement( "auth", "$authtrans" );
 	$writer->dataElement( "shape", "$shape" );
@@ -364,6 +378,12 @@ sub hypocenter_vitals {
 	$writer->dataElement( "y", "$y" );
 	$writer->dataElement( "depth_km", "$depth_km" );
 	$writer->dataElement( "color", "$color" );
+
+	if( defined( $qgrid_units ) && defined( $qgrid_maxval ) ) {
+
+		$writer->dataElement( "qgrid_units", $qgrid_units );
+		$writer->dataElement( "qgrid_maxval", $qgrid_maxval );
+	}
 
 	$writer->endTag( "origin" );
 }

@@ -20,6 +20,7 @@ sub pfget_Mapspec {
 	my( @path_params ) = (
 		"depth_color_palette_file",
 		"map_color_palette_file",
+		"map_landmask_palette_file",
 		"cities_dbname",
 		"grddb",
 		"hypocenter_dbname",
@@ -561,9 +562,12 @@ sub make_cities_tempfiles {
 			dbgetv( @db, "lat", "lon", "place" );
 		print C sprintf( "%.4f %.4f\n", 
 			unwrapped_lon( \%Mapspec, $lon ), $lat );
-		print N sprintf( "%.4f %.4f 9 0.0 1 1 %s\n",
+		print N sprintf( "%.4f %.4f %s 0.0 %s %s %s\n",
 			$lon+$Mapspec{cityname_shift_deg},
 			$lat,
+			$Mapspec{cityname_fontsize},
+			$Mapspec{cityname_fontno},
+			$Mapspec{cityname_fontjustify},
 			$place );
 	}
 
@@ -856,6 +860,8 @@ sub plot_contours {
 
 		    my( $tile ) = "-R$w/$e/$s/$n";
 
+		    print "Running dbgmtgrid for $tile, output=$grdfile\n";
+
 		    my( $rc ) = dbgmtgrid( @dbgrid, $tile,
 				           $grdfile, verbose => 1 );
 		    if( $rc < 0 ) {
@@ -886,6 +892,8 @@ sub plot_contours {
 			  $cliplat>=$s; 
 			   $cliplat -= $nsincr ) { print C "$w $cliplat\n"; }
 		    close( C );
+
+		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
 
 		    $cmd = "psclip -V $psclipfile " .
 			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
@@ -919,12 +927,163 @@ sub plot_contours {
 		  }
 		}
 
+		foreach $maskarea ( keys( %{$Mapspec{landmask_regions}} ) ) {
+
+		    my( $maskregion );
+
+		    ( $maskregion, $w, $e, $s, $n ) = find_overlap( 
+				$Mapspec{landmask_regions}{$maskarea},
+				$Mapspec{InclusiveRectangle} );
+
+		    next unless defined( $maskregion );
+
+		    print "Running dbgmtgrid for Land mask $maskregion, output=$grdfile\n";
+
+		    my( $rc ) = dbgmtgrid( @dbgrid, $maskregion,
+				           $grdfile, verbose => 1 );
+		    if( $rc < 0 ) {
+			print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: dbgmtgrid() failed for maskregion '$maskregion'\n" .
+			"\t************************************\n\n";
+			next;
+		    }
+
+		    $cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    open( C, ">$psclipfile" );
+		    my( $ewincr ) = ($e - $w) / 100;
+		    my( $nsincr ) = ($n - $s) / 100;
+		    for( $cliplon=$w; 
+			  $cliplon<=$e; 
+			   $cliplon += $ewincr ) { print C "$cliplon $s\n"; }
+		    for( $cliplat=$s+$nsincr; 
+			  $cliplat<$n; 
+			   $cliplat += $nsincr ) { print C "$e $cliplat\n"; }
+		    for( $cliplon=$e; 
+			  $cliplon>=$w; 
+			   $cliplon -= $ewincr ) { print C "$cliplon $n\n"; }
+		    for( $cliplat=$n-$nsincr; 
+			  $cliplat>=$s; 
+			   $cliplat -= $nsincr ) { print C "$w $cliplat\n"; }
+		    close( C );
+
+		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
+
+		    $cmd = "psclip -V $psclipfile " .
+			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
+			   $more .
+			   "$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    $cmd = "grdimage -V -P " .
+		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			"$grdfile " .
+			"-I$gradfile " .
+			"-C$Mapspec{map_landmask_palette_file} " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    $cmd = "psclip -V -C " .
+			   $more .
+			   "$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		}
+
 		dbclose( @dbgrid );
 
 	} else {
 
 		die( "contour_mode $Mapspec{contour_mode} not supported\n" );
 	}
+}
+
+sub find_overlap {
+	my( $maskarea, $wholeregion ) = @_;
+
+	my( $wregion, $eregion, $sregion, $nregion );
+	my( $wmask, $emask, $smask, $nmask );
+	my( $wneed, $eneed, $sneed, $nneed );
+
+	if( $wholeregion =~ m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
+			$wregion = $1;
+			$eregion = $2;
+			$sregion = $3;
+			$nregion = $4;
+	}
+
+	if( $maskarea =~ m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
+			$wmask = $1;
+			$emask = $2;
+			$smask = $3;
+			$nmask = $4;
+	}
+
+	$wmask = unwrapped_lon( \%Mapspec, $wmask );
+	$emask = unwrapped_lon( \%Mapspec, $emask );
+
+	if( $wmask <= $wregion && $eregion <= $emask ) {
+
+		$wneed = $wregion;
+		$eneed = $eregion;
+
+	} elsif( $wregion <= $wmask && $emask <= $eregion ) {
+
+		$wneed = $wmask;
+		$eneed = $emask;
+
+	} elsif( $wmask <= $wregion && $wregion < $emask ) {
+
+		$wneed = $wregion;
+		$eneed = $emask;
+
+	} elsif( $wmask < $eregion && $eregion <= $emask ) {
+
+		$wneed = $wmask;
+		$eneed = $eregion;
+
+	} else {
+
+		return undef;
+	}
+
+	if( $smask <= $sregion && $nregion <= $nmask ) {
+
+		$sneed = $sregion;
+		$nneed = $nregion;
+
+	} elsif( $sregion <= $smask && $nmask <= $nregion ) {
+
+		$sneed = $smask;
+		$nneed = $nmask;
+
+	} elsif( $smask <= $sregion && $sregion < $nmask ) {
+
+		$sneed = $sregion;
+		$nneed = $smask;
+
+	} elsif( $smask < $nregion && $nregion <= $nmask ) {
+
+		$sneed = $smask;
+		$nneed = $nregion;
+
+	} else {
+
+		return undef;
+	}
+
+	return ( "-R$wneed/$eneed/$sneed/$nneed", 
+		 $wneed, $eneed, $sneed, $nneed );
 }
 
 sub plot_coastlines {

@@ -4,6 +4,7 @@ DATA= index_default.xsl \
       index_default_vrml.xsl \
       specific_default_vrml.xsl \
       dbrecenteqs.cpt \
+      dbrecenteqs_landonly.cpt \
       depthmag2.cpt \
       legend.gif \
       mini_logo.gif \
