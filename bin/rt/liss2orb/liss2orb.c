@@ -43,36 +43,38 @@ the packet size.  See the message below:
 
 */
 
-#ifndef BAD_LISSPACKETS
 static int 
-getpkt(Bns *bns, char *seed, int *pktsize) 
+getpkt (Bns *bns, char **seedp, int fixedsize, int *pktsize, int *seedsize) 
 {
     int retcode ;
-    if ( (retcode = bnsget ( bns, seed, BYTES, 64 )) == 0 ) {
+    if ( fixedsize != 0 ) {
+	SIZE_BUFFER (char *, *seedp, *seedsize, fixedsize ) ; 
+	retcode = bnsget(bns, *seedp, BYTES, fixedsize ) ;
+    } else if ( (retcode = bnsget ( bns, *seedp, BYTES, 64 )) == 0 ) {
 	short type=0 ; 
 	int log2_record_length = 0 ; 
-	memcpy(&type, seed+48, 2) ;
+	memcpy(&type, *seedp+48, 2) ;
 	if ( type == 0x3e8 || type == 0xe803 ) { 
 	    int size ;
-	    log2_record_length = *((unsigned char *) seed+54) ;
+	    log2_record_length = *((unsigned char *) *seedp+54) ;
 	    *pktsize = size = 1 << log2_record_length ;
+	    SIZE_BUFFER (char *, *seedp, *seedsize, size ) ; 
 	    if ( *pktsize > 0 && *pktsize < 1<<14 ) {
-		retcode = bnsget(bns, seed+64, BYTES, size-64 ) ;
+		retcode = bnsget(bns, *seedp+64, BYTES, size-64 ) ;
 	    } else { 
 		complain ( 0, "read record length=%d => packet size=%d", 
 			log2_record_length, *pktsize ) ; 
-		hexdump ( stderr, seed, 64 ) ; 
+		hexdump ( stderr, *seedp, 64 ) ; 
 		retcode = -1; 
 	    }
 	} else { 
 	    complain ( 0, "no blockette 1000!" ) ; 
-	    hexdump ( stderr, seed, 64 ) ; 
+	    hexdump ( stderr, *seedp, 64 ) ; 
 	    retcode = -1 ; 
 	}
     }
     return retcode ;
 }
-#endif
 
 static int
 matches ( char *srcname, char *match)
@@ -105,17 +107,19 @@ main (int argc, char **argv)
     char           *orbname ;
     int		   verbose = 0 ;
     int 	   orb ;
-    int		   size = 1024, pktsize=0 ;
+    int		   fixedsize=0, pktsize=0 ;
     int		   defaultport = 4000 ;
     char	  *database = 0 ;
     char	  *seed ;
+    int		   seedsize = 0, bufsize = 0 ; 
     int 	   fd = -1 ;
     int 	   failures = 0 ;
     char 	   srcname[ORBSRCNAME_SIZE] ;
     double 	   time ; 
     char 	  *packet ; 
-    int 	   nbytes = 0, bufsize = 0 ;
+    int 	   nbytes = 0 ;
     int		   remap = 0 ;
+    Bns 	   *bns=0 ;
 
     elog_init (argc, argv);
     elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
@@ -135,7 +139,7 @@ main (int argc, char **argv)
 	    break ;
 
 	  case 's':
-	    pktsize = atoi(optarg) ; 
+	    fixedsize = atoi(optarg) ; 
 	    break ;
 
 	  case 't':
@@ -162,7 +166,6 @@ main (int argc, char **argv)
     liss_server = argv[optind++];
     orbname = argv[optind++];
 
-#ifdef BAD_LISSPACKETS
     if ( pktsize == 0 ) { 
 	char *lower_liss ;
 	lower_liss = strdup ( liss_server) ;
@@ -174,7 +177,6 @@ main (int argc, char **argv)
 	}
 	free(lower_liss) ;
     }
-#endif
 
     orb = orbopen(orbname, "w&" ) ; 
     if ( orb < 0 ) { 
@@ -190,10 +192,7 @@ main (int argc, char **argv)
 	finit_db (db);
     }
 
-    allot ( char *, seed, size ) ;
     for(;;) { 
-	Bns *bns ;
-	
 	while ( fd < 0 ) { 
 	    fd = open_socket ( liss_server, defaultport ) ; 
 	    if ( fd < 0 ) { 
@@ -208,7 +207,7 @@ main (int argc, char **argv)
 		    	liss_server, failures ) ;
 		    failures = 0  ;
 		}
-		bns = bnsnew(fd, size) ;
+		bns = bnsnew(fd, 8192) ;
 		bnsuse_sockio(bns) ;
 		bnstimeout ( bns, timeout*1000 ) ;
 		bnsclr(bns) ;
@@ -216,22 +215,18 @@ main (int argc, char **argv)
 	    }
 	}
 
-#ifndef BAD_LISSPACKETS
-	if (getpkt(bns, seed, &pktsize) == 0) { 
-#else
-	if (bnsget(bns, seed, BYTES, pktsize) == 0) { 
-#endif
+	if (getpkt(bns, &seed, fixedsize, &pktsize, &seedsize) == 0) { 
 	    if ( liss2orbpkt ( seed, pktsize, database, remap,
 		    srcname, &time, &packet, &nbytes, &bufsize ) == 0 ) { 
 		if ( matches ( srcname, match) ) { 
 		    orbput ( orb, srcname, time, packet, nbytes ) ; 
 		    if ( verbose ) { 
 			char *s ;
-			fprintf ( stderr, "%s %s %d\n", srcname, s=strydtime(time), nbytes ) ;
+			fprintf ( stderr, "%-20s %s %4d => %4d\n", srcname, s=strydtime(time), pktsize, nbytes ) ;
 			free(s) ;
 		    }
 		}
-	    } 
+	    }
 	} else { 
 	    complain ( 1, "Closing connection to liss server %s", liss_server ) ;
 	    bnsclose ( bns ) ;
