@@ -299,7 +299,7 @@ subroutine xmap ( real x )
 subroutine ymap ( real y )
     convert from plotting to raster units
 
-<subsection Ordered Lists>
+<subsection Lists>
 <fdeclarations>
 integer maxtbl ( itbl )
     return the number of elements in a list
