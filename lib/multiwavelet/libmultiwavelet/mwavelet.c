@@ -3,6 +3,7 @@
 #include <values.h>
 #include <sunperf.h>
 #include <math.h>
+#include <sunmath.h>
 #include "multiwavelet.h"
 #include "location.h"
 #include "tr.h"

@@ -11,59 +11,79 @@ Author:  Gary Pavlis
 */
 
 /* This is a companion function to the higher level read function
-mwap_loaddata below.  It reads data from one station defined
-by the dbbundle pointer that is assumed to be a "bundle" 
-pointer defining a range of database rows in a view formed
-by a join event->origin->assoc->arrival->wfdisc->sitechan.  
-(This is done in the main function in mwap).  It then does
-a less than general load of parameters from the db and puts
-them in the tr object database (tr).  It is less than
-general because only entries I know are needed for mwap are
-loaded.  I resorted to this because the trace library as
-of this date failed with trload_cssgrp, which should be 
-functionally similar, but more specialized.  
+mwap_loaddata below. It is a descendent of an earlier function that
+didn't work properly that worked on group pointers.  This one uses
+a completely different algorithm based on dbmatches.  The 
+basic algorithm is:
+1.  grab the dbpointer for the view wfdisc->sitechan
+2.  use dbmatches to find all waveforms whose time spans overlap the
+input interval s:e for the specified station sta.
+3.  Loop through the match list loading the parts of the data falling
+in s:e and copying required waveform parameters to the tr db (e.g.
+orientation information).  
 
-s and e are start and end epoch times (respectively) requested.
-glp:  Dec 1999 */
+The arguments are:
+	db - input database 
+	tr - output tr database (assumed already open and that this is
+		a valid db pointer to a trace db )
+	s:e - start:endtime span of requested data
+	sta - station to load data for (all channels are loaded).
 
-int mwap_load_stagrp(Dbptr dbbundle, Dbptr tr, double s, double e)
+Returns:
+	dbINVALID if the call to dbmatches fails.
+	0 - no data matches criteria 
+	positive number = number of traces loaded in tr
+
+Author:  Gary L. Pavlis
+Date:  original december 1999, This version completely rewritten 
+November 2000
+*/
+
+int mwap_load_sta(Dbptr db, Dbptr tr, double s, double e, char *sta)
 {
 	int nsamp;
 	double time, endtime,samprate,calib;
 	double hang,vang,edepth;
-	char sta[8],chan[10];
-
+	char chan[10];
+	static Hook *hook=NULL;
+	Tbl *matches;
+	Tbl *pattern;
+	Dbptr dbk, dbt;
+	int nmatch;
+	int i,ierr;
+        float *data;
+        int datasz;
+        double t0,t1;
 	char net[4]="MW";   /* This is a required key on trace table so 
 				we just set it to a value */
+	int ntrread;
 
-	int is,ie;
-	float *data;
-	int datasz;
-	double t0,t1;
-	int ierr;
-	int error_count=0;
+	/* This attaches the view formed from the join of wfdisc and sitechan*/
+	dbt = dblookup(db,0,WFVIEW,0,0);
+	if(dbt.record == dbINVALID) return(dbINVALID);
+	dbk = dblookup(db,0,"wfdisc",0,0);
+	dbk.record = dbSCRATCH;
+	dbputv(dbk,0,"sta",sta,"time",s,"endtime",e,0);
 
-	dbget_range(dbbundle,&is,&ie);
-
-	for(dbbundle.record=is;dbbundle.record<ie;++dbbundle.record)
+	pattern = strtbl("sta","time::endtime",0);
+	nmatch = dbmatches(dbk,dbt,&pattern,&pattern,&hook,&matches);
+	if( (nmatch == dbINVALID) || (nmatch == 0) )return(nmatch);
+	for(i=0,ntrread=0;i<maxtbl(matches);++i)
 	{
-		/* This is necessary to force trgetwf to malloc space
-		for each trace.  Without this it will recycle the 
-		previous buffer*/
-		data=NULL;
-		datasz=0;
-		ierr = trgetwf(dbbundle,0,&data,&datasz,s,e,&t0,&t1,&nsamp,0,0);
+		data = NULL;
+		datasz = 0;
+		dbt.record = (int)gettbl(matches,i);
+		ierr = trgetwf(dbt,0,&data,&datasz,s,e,&t0,&t1,&nsamp,0,0);
 		if(ierr)
 		{
-			elog_notify(0,"trgetwf read error\n");
-			++error_count;
+			trgetwf_error(dbt,ierr);
 			continue;
 		}
 		/* Note I intentionally ignore if s and e do not match 
 		t0 and t1.  This is because I assume this routine is 
 		called multiple times and trglue is used later to patch
 		multiple pieces together */
-		ierr = dbgetv(dbbundle,0,"sta",sta,
+		ierr = dbgetv(dbt,0,"sta",sta,
 				"wfdisc.chan",chan,
 				"samprate",&samprate,
 				"calib", &calib,
@@ -76,7 +96,6 @@ int mwap_load_stagrp(Dbptr dbbundle, Dbptr tr, double s, double e)
 		   elog_notify(0,
 		  "dbgetv error reading %s:%s at %s\nContinuing, but additional problems likely\n",
 			sta,chan,strtime(t0));
-		    ++error_count;
 		}
 
 		ierr = dbaddv(tr,"trace",
@@ -96,28 +115,31 @@ int mwap_load_stagrp(Dbptr dbbundle, Dbptr tr, double s, double e)
 		{
 			elog_notify(0,"Error appending to trace table for %s:%s at %s\nProbably data loss and associated memory leak\n",
 				sta,chan,strtime(t0));
-			++error_count;
 		}
-	}
-	return(error_count);
+		else
+		{
+			/* If the addv failed we assume nothing got saved
+			in the trace table */
+			++ntrread;
+		}
+	}	
+	freetbl(pattern,0);
+	freetbl(matches,0);
+	return(ntrread);
 }
 
 /*this is the basic routine that reads an event gather defined by
-the dbbundle input database pointer.  It creates a new trace database
-and fills it with traces it reads.  Reading is done by running a higher
-level grouping by station.  We then look up the arrival that corresponds
-to that station and read a time window relative to the arrival time.
-Because of this it is IMPORTANT to recognize this algorith ONLY works
-if we are sure there is an arrival recorded for each station.  In mwap
-this is assured because we do a series of dbjoins that guarantee this.
-If this routine is recycle, beware of this assumption.  When this 
-happens the routine simply calls elog_complain and skips the data for
-that station.
+the input arrival times.  It creates a new trace database
+and fills it with traces it reads.  Time intervals read are
+driven by the contents of the arrivals array and the time
+windows defined by swin and nwin.  Note the window is defined
+by looking at the range defined by the time span of both the
+signal and noise time windows.  
 
 Arguments:
-	dbbundle - dbbundle pointer defining the full gather of traces
-		for event to be processed.  (dbget_range is called 
-		near the top against this bundle pointer)
+	db - db pointer of input database (can be anything as long
+		as the db.database field is correct and is an open
+		database.)
 	arrivals - associative array of arrival times extracted 
 		previously from dbbundle and indexed by station name.
 	swin, nwin - Signal and noise window defined by times relative
@@ -169,36 +191,20 @@ Dbptr mwap_readdata(Dbptr db, Arr *arrivals,
 	{
 
 		double *atime,stime,etime;
-		Dbptr dbbundle;
-		int ierr;
+		int ntraces;
 
 		/* Because the view dbwf has been grouped by 
 		sta, we can get the bundle pointer by 
 		this simple lookup trick */
 		sta = gettbl(t,i);
-		dbwf = dblookup(db,0,STABDLNAME,"sta",sta);
-		if(dbwf.record == dbINVALID)
-		{
-			elog_complain(0,"No data wfdisc relations for tabulated arrival at station %s\n",sta);
-			continue;
-		}
-		dbgetv(dbwf,0,"bundle",&dbbundle,0);
-
 		atime = (double *)getarr(arrivals, sta);
-		if(atime == NULL) 
-		{
-			elog_complain(0,"Cannot find arrival time for station %s  but trace data exists for this station\nData will be skipped\n",
-				sta);
-			continue;
-		}
-
 		stime = (*atime)+wstart;
 		etime = (*atime)+wend;
-		ierr = mwap_load_stagrp(dbbundle,tr,stime,etime);
-		if(ierr)
+		ntraces = mwap_load_sta(db,tr,stime,etime,sta);
+		if(ntraces==dbINVALID)
 		{
-			elog_complain(0,"mwap_load_stagrp had %d errors reading data for station %s\n",
-				ierr,sta);
+			elog_complain(0,"Serious database problems trying to load data for station %s in time interval %lf:%lf\nAttempting to continue\n",
+				sta,stime,etime);
 			continue;
 		}
 	}

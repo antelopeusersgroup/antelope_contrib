@@ -183,9 +183,8 @@ typedef struct MWstatic_ {
 
 /* These are used in db manipulations to do grouping by evid and sta */
 #define EVIDBUNDLE 4
-#define STABUNDLE 3
 #define EVIDBDLNAME "evidbdl"
-#define STABDLNAME "stabdl"
+#define WFVIEW "wfview"
 /* These are channel codes assigned by rotate_to_standard for cardinal
 direction */
 #define EW "E"
@@ -258,6 +257,7 @@ char *make_mw_key(char *, char *);
 Arr *tr_mwtransform(Dbptr , Arr *, Time_Window *, int *, Tbl **, int , MWbasis *, int );
 MWgather *MWgather_alloc(int );
 void free_MWgather(MWgather *);
+void free_MWtransform_arr(Arr *,int, int);
 int snr_is_too_low(Signal_to_Noise *,int, Pf *);
 MWgather *build_MWgather(int , int , Arr *, Arr *, Arr *, Pf *);
 MWtrace *MWtrace_dup(MWtrace *);
@@ -281,6 +281,7 @@ MW_scalar_statistics MW_calc_statistics_float(float *,int );
 MW_scalar_statistics MW_calc_statistics_double(double *,int );
 float M_estimator_float(float *,int,int, double);
 complex M_estimator_complex(complex *,int );
+void M_estimator_n_vector(double *,int, int, int, double, double *, double *);
 double d1_jack_err(int, double *);
 Dbptr mwap_readdata(Dbptr , Arr *, Time_Window , Time_Window );
 int free_noncardinal_traces(Dbptr );
@@ -312,3 +313,11 @@ int MWdb_save_pm(char *, int, int, char *, double, double,
 MWbasis *load_multiwavelets_db(Pf *,int *, int *);
 double Window_stime(Time_Window);
 double Window_etime(Time_Window);
+int remove_null_complex(int, float *,int, complex *, int);
+int remove_null_float(int, float *,int, float *, int);
+void pmvector_copy(int,Particle_Motion_Ellipse *, int, 
+	Particle_Motion_Ellipse *, int);
+void pmvector_average(Particle_Motion_Ellipse *, int ,
+        Particle_Motion_Ellipse *, Particle_Motion_Error *);
+int compute_total_moveout(MWgather *, Arr *, char *,
+	MWSlowness_vector, double, char *, double *);
