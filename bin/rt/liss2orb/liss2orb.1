@@ -1,25 +1,28 @@
-.TH TITLE SECTION# "$Date$"
+.TH LISS2ORB 1 "$Date$"
 .SH NAME
-liss2orb \- read data in LISS format 
+liss2orb \- read data in LISS format
 .SH SYNOPSIS
 .nf
+.ne 4
 
-liss2orb [-d database] [-m match] [-r] [-s pktsize] [-t timeout] [-v] liss-server orb
+\fBliss2orb \fP[-d \fIdatabase\fP] [-m \fImatch\fP] [-r] [-s
+                \fIpktsize\fP] [-t \fItimeout\fP] [-v] \fIliss-server\fP
+                \fIorb\fP
 
 .fi
 .SH DESCRIPTION
-\fBliss2orb\fP reads seismic data in LISS format from a \fIliss-server\fR 
-and sends it to an \fBorb\fP ring buffer.
+\fBliss2orb\fP reads seismic data in LISS format from a \fIliss-server\fP
+and sends it to an \fIorb\fP ring buffer.
 .SH OPTIONS
 .IP "-d database"
 Copy calib, calper and segtype from the calibration table in the
-specified database.  (Since this information is not available from the
+specified \fIdatabase\fP.  (Since this information is not available from the
 datafeed, it has to be obtained from a static database; this database
 can be generated using psd2db and the corresponding dataless seed
 volume from the IRIS DMC).
 
 .IP "-m match"
-Only packets with srcname containing the regular expression \fImatch\fR
+Only packets with srcname containing the regular expression \fImatch\fP
 are forwarded to the orbserver.
 
 .IP -r
@@ -28,15 +31,15 @@ to local sta and chan codes.  This makes orbmonrtd and other programs which
 don't recognize the loc code in the source name work better.
 
 .IP "-s pktsize"
-liss2orb attempts to derive the individual packet size by inspecting
+\fBliss2orb\fP attempts to derive the individual packet size by inspecting
 the name of the liss server.  Currently, at least, all packets are
 512 bytes, except for packets from the GT network, where packets
-are all 256 bytes.  Consequently, liss2orb inspects the liss server name;
-if it contains the (case insensitive) string ".gt.", liss2orb expects
+are all 256 bytes.  Consequently, \fBliss2orb\fP inspects the liss server name;
+if it contains the (case insensitive) string ".gt.", \fBliss2orb\fP expects
 256 byte packets, and otherwise 512 byte packets.
 
 .IP "-t timeout"
-Specify a timeout on the read.  This should not be necessary.
+Specify a \fItimeout\fP on the read.  This should not be necessary.
 
 .IP "-v"
 Be more verbose, mentioning each packet copied.
@@ -48,18 +51,24 @@ BHZ, BHN, BHE channels and store them in a bbarray:9999 ORB.  Fill in
 calib, calper and segtype from the calibration table of the database
 asl.
 
+.ft CW
+.in .2i
 .nf
+
+.ne 2
 
 liss2orb -d asl -m "BH[ZNE]" kono.iu.liss.org bbarray:9999
 
 .fi
+.in
+.ft R
 .SH "BUGS AND CAVEATS"
-The individual packets are SEED data blocks containing 
-blockette 1000's.  The blockette 1000 should specify the 
+The individual packets are SEED data blocks containing
+blockette 1000's.  The blockette 1000 should specify the
 data block size, but currently ( 9/15/1999 ) some 1000
 blockettes contain the wrong size.  Hence the size is
 derived from either explicit command line argument or
-by inspecting the liss server name.  
+by inspecting the liss server name.
 
 .SH AUTHOR
 .nf

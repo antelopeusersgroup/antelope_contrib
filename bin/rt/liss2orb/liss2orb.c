@@ -204,7 +204,8 @@ main (int argc, char **argv)
 		failures++ ;
 	    } else { 
 		if ( failures ) { 
-		    complain ( 1, "connected to %s", liss_server ) ;
+		    elog_notify ( 0, "connected to %s after %d failures", 
+		    	liss_server, failures ) ;
 		    failures = 0  ;
 		}
 		bns = bnsnew(fd, size) ;
