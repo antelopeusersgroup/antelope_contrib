@@ -534,6 +534,8 @@ sub create_focusmap_html {
 			      "$State{institute_description}" );
 	$writer->dataElement( "legend_description", 
 			      "$State{legend_description}" );
+	$writer->dataElement( "last_updated", 
+		epoch2str( str2epoch( "now" ), "%A %B %d, %Y %l:%M %p %Z", "" ) ) ;
 
 	$writer->dataElement( "vrml_url", $vrml_url );
 	my( $abs_dbname ) = `abspath $dbname`;
@@ -975,6 +977,8 @@ sub create_stockmap_html {
 	chomp( $abs_dbname );
 	$writer->dataElement( "dbname", $abs_dbname );
 	$writer->dataElement( "vrml_url", $vrml_url );
+	$writer->dataElement( "last_updated", 
+		epoch2str( str2epoch( "now" ), "%A %B %d, %Y %l:%M %p %Z", "" ) ) ;
 
 	$writer->startTag( "pixmap", "mapclass" => "$mapclass" );
 	$writer->dataElement( "file", "$image_relpath" );
