@@ -19,17 +19,26 @@ import_from &Arr{
 		send_heartbeat_sec 100
 		send_heartbeat_string KENTalive
 		srcname_morph &Tbl{
+			/^CN_/nCN_/
 		}
+		loglevel veryverbose
 	}
-	PGC_compressed &Arr{
-		server_ipaddress 139.142.67.7
-		server_port 16015
-		send_heartbeat_string KENTalive
-	}
-	Kent &Arr{
-		server_ipaddress 192.168.0.2
-		send_heartbeat_sec 100
-		send_heartbeat_string alive
-		loglevel quiet
-	}
+#	PGC_test &Arr{
+#		server_ipaddress 132.156.216.115
+#		server_port 60000
+#		send_heartbeat_sec 100
+#		send_heartbeat_string KENTWORMalive
+#		loglevel veryverbose
+#	}
+#	PGC_compressed &Arr{
+#		server_ipaddress 139.142.67.7
+#		server_port 16015
+#		send_heartbeat_string KENTalive
+#	}
+#	Kent &Arr{
+#		server_ipaddress 192.168.0.2
+#		send_heartbeat_sec 100
+#		send_heartbeat_string alive
+#		loglevel quiet
+#	}
 }

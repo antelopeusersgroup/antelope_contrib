@@ -789,6 +789,15 @@ refresh_import_thread( ImportThread *it )
 		it->sin.sin_port = htons( it->server_port );
 		it->sin.sin_addr.s_addr = inet_addr( it->server_ipaddress );
 
+		if( ( it->loglevel >= VERBOSE ) || Flags.verbose ) {
+
+			elog_notify( 0, 
+				  "'%s': Attempting to connect "
+				  "to remote export module at %s:%d\n",
+				  it->name, it->server_ipaddress, 
+				  it->server_port );
+		}
+
 		if( connect( it->so, (struct sockaddr *) &it->sin, sizeof( it->sin ) ) ) {
 			if( it->connectfail < NCOMPLAIN_MAX ) {
 
@@ -1513,9 +1522,10 @@ crack_packet( Ew2orbPacket *e2opkt )
 		    ( n != 0 || strcmp( old_srcname, new_srcname ) ) ) {
 
 			elog_notify( 0, "'%s': mapped %s to %s (%d "
-					"transformations )\n", 
+					"transformation%s\n", 
 					e2opkt->itname, old_srcname, 
-					new_srcname, n );
+					new_srcname, n,
+					n == 1 ? ")" : "s)" );
 		}
 
 		strcpy( pktchan->net, e2opkt->pkt->parts.src_net );
@@ -1691,6 +1701,7 @@ main( int argc, char **argv )
 	char	c;
 	char	*orbname = 0;
 	int	rc;
+	thread_t pfwatch_tid;
 
 	elog_init( argc, argv );
 
@@ -1729,7 +1740,7 @@ main( int argc, char **argv )
 
 	E2oPackets_mtf = mtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
 
-	rc = thr_create( NULL, 0, ew2orb_pfwatch, 0, 0, 0 );
+	rc = thr_create( NULL, 0, ew2orb_pfwatch, 0, 0, &pfwatch_tid );
 
 	if( rc != 0 ) {
 
@@ -1745,9 +1756,7 @@ main( int argc, char **argv )
 			"thr_create error %d\n", rc );
 	}
 
-	while( thr_join( (thread_t) NULL, 
-			 (thread_t *) NULL, 
-			 (void **) NULL ) == 0 );
+	thr_join( pfwatch_tid, (thread_t *) NULL, (void **) NULL );
 
 	if( Flags.verbose ) {
 

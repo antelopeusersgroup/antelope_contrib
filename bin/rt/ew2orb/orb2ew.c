@@ -1047,6 +1047,7 @@ main( int argc, char **argv )
 	char	c;
 	char	*orbname = 0;
 	int	rc;
+	thread_t pfwatch_tid;
 
 	elog_init( argc, argv );
 
@@ -1079,7 +1080,7 @@ main( int argc, char **argv )
 		die( 0, "Failed to open orb '%s' for writing\n", orbname );
 	}
 
-	rc = thr_create( NULL, 0, orb2ew_pfwatch, 0, 0, 0 );
+	rc = thr_create( NULL, 0, orb2ew_pfwatch, 0, 0, &pfwatch_tid );
 
 	if( rc != 0 ) {
 
@@ -1087,9 +1088,7 @@ main( int argc, char **argv )
 			"thr_create error %d\n", rc );
 	}
 
-	while( thr_join( (thread_t) NULL, 
-			 (thread_t *) NULL, 
-			 (void **) NULL ) == 0 );
+	thr_join( pfwatch_tid, (thread_t *) NULL, (void **) NULL );
 
 	if( Flags.verbose ) {
 
