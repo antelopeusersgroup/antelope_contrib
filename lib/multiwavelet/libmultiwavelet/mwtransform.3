@@ -1,0 +1,259 @@
+.\" %W% %G%
+.TH MWTRANSFORM 3 "%G%"
+.SH NAME
+mwtransform - multiwavelet transform 
+.SH SYNOPSIS
+.nf
+#include "multiwavelet.h"
+MWbasis  *load_multiwavelets_pf(Pf *pf,int *nwavelets);
+MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
+		 MWbasis *basis, int nbasis, Tbl **decimators, int nbands);
+Tbl **define_decimation(Pf *pf, int *nbands);
+Tbl **build_decimation_objects(Tbl **filelists, int nbands, int *decfac);
+void free_MWtrace_matrix(MWtrace **t,int nrl, int nrh, int ncl,int nch);
+.fi
+.SH DESCRIPTION
+.LP
+This suite of functions implement the multiwavelet transform 
+as introduced by Lilly and Park (1995, Geophys. J. Int., 122, 1001-1021.)
+They utilize arrays of Tbls defined in stock.h and two special objects
+defined in multiwavelet.h.  These are:
+.nf
+typedef struct MWbasis {
+        double f0, fw;  /* nondimensional center frequency and bandwidth*/
+        int n;  /* number of points in function */
+        float *r, *i;  /* Real and imaginary parts of multiwavelet pair */
+} MWbasis;
+
+typedef struct MWtrace {
+        double dt0, dt;  /* initial (t0) and actual sample interval (s) */
+        int decimation_factor;  /* decimation factor for this trace */
+        MWbasis *basis;  /* pointer back to basis function used to generate 
+                                this object */
+        double f0, fw;  /* center frequency and bandwidth (in Hz) of 
+                                this object */
+        int nz;  /* Number of samples in this trace */
+        double starttime, endtime; /* epoch start and endtimes of trace.
+                        Defined by center of MWbasis function, not edges */
+        complex *z;  /* Complex trace itself (length nz)*/
+} MWtrace;
+.fi
+.LP
+The first (MWbasis) defines a single member of the set of multiwavelet basis
+functions to be used to compute the transform.  Note that f0, and fw
+are nondimensional center frequencies and bandwidths.  For a given 
+sample rate they are converted to a physical frequency by 
+multiplication with the Nyquist frequency for that sample rate.
+A set of MWbasis functions need to be loaded before computing
+the transform.  The load_multiwavelets routine provides a mechanism
+for doing this with parameter files.  It returns a pointer to an
+array of MWbasis objects and the number of these objects found (nwavelets).
+.LP
+MWtrace is the basic object computed in the multiwavelet transform.  
+Note that in the MWtrace object frequencies are in physical units 
+(normally Hz) and the trace is stored as an array of complex numbers
+that define the transformed trace.
+.LP
+This routine can compute a sequence of transforms limited only by 
+available memory.   The function MWtransform returns a matrix of
+pointers to an nbands by nwavelets array of MWtrace objects.  
+The columns of this matrix are defined by the basis functions 
+stored in the vector of MWbasis objects most conveniently read 
+by load_multiwavelets.  The rows are defined by staged decimations
+that are computed by a series of zero phase FIR filters defined
+and implemented through the two routines called define_decimation
+and build_decimation_objects.  
+.LP
+The decimation FIR filters must be defined with standard css response
+files (see man response(5)).  The two decimation setup routines
+for the transform build the decimation definitions that define
+the transform in different bands.  The clearest way to see this
+is with an example.  Here is an example of a portion of the 
+parameter file define_decimations would try to parse:
+.nf
+bands &Tbl{
+	none
+	/u/pavlis/response/RT72A_2_f
+	/u/pavlis/response/RT72A_2_f /u/pavlis/response/RT72A_5_f
+}
+.fi
+.LP
+This examples uses the standard Reftek FIR filters.  The
+first line, "none", is a special instruction to do no decimation
+for that stage (in this case the first band).  The second
+line specifies a factor of 2 decimation using the Reftek FIR
+filter defined by RT72A_2_f (The example shown uses a fully
+qualified path name for safety.  The usual rules of UNIX
+relative paths can also be used if desired since the program
+simple tries to open a file by that name.)  Finally, the 
+third band is a define by a two stage decimation: first by 
+a factor of 2 then by a factor of 5 for a total decimation
+factor of 10.  Note these accumulate downward so the total
+decimation implied in the three bands defined above is:
+1,2,20. 
+.LP
+The arbitrary decimator definitions leave you a lot of room to 
+hang yourself.  The major problem is that if the original 
+trace is not long enough and a long string of decimators are 
+applied you can easily end up with a window that is less than
+the length of the multiwavelet basis function.  MWtransform
+tries to handle this gracefully.  It signals this problem 
+by setting the variable nz in the MWtrace object to zero 
+when this happens.  Note that because of the nature of the
+transform when this occurs the entire band and all lower
+frequency bands cannot be computed.  Hence, all rows of
+the matrix returned by MWtransform are null once the first
+entry is found.  Entries in the MWtrace object other than
+nz will be junk.  
+.LP
+free_MWtrace_matrix has an obvious role in releasing the
+dynamic storage allocated by the MWtransform routine.
+.SH EXAMPLE
+.LP
+This is a test program that illustrates how all this 
+goes together.
+.nf
+/* This is a simple test program for the multiwavelet transform routine.
+It produces a simple impulse trace and then applies the mwtransform 
+routine to it.  The output should be properly aligned versions of
+the impulse response of the basis functions with successive
+decimation.*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sunmath.h>
+#include <sunperf.h>
+ 
+#include "stock.h"
+#include "db.h"
+#include "elog.h"
+#include "multiwavelet.h"
+
+main(int argc, char **argv)
+{
+	float trace[5000];
+	float work[5000];
+	double dt=0.1;
+	double t0=852300794.0;  /* an arbitrary real time in about 1993 */
+	Pf *pf;
+	MWbasis *mw;
+	MWtrace **mwtrace;
+	Tbl **decimators;
+	Tbl **dec_objects;
+	int *dec_fac;
+	int nbands,nwavelets;
+	Dbptr db;
+	char fname[80];
+	char dfile[80];
+	char *dir;
+	int i,j,k;
+	char sta[10];
+
+	elog_init(argc, argv);
+
+	if(pfread("wavelets",&pf)) die(0,"pfread error\n");
+
+
+	mw = load_multiwavelets_pf(pf,&nwavelets);
+
+	decimators = define_decimation(pf,&nbands);
+	printf("number of bands to process = %d\n",nbands);
+	dec_fac = calloc(nbands,sizeof(int));
+	dec_objects = build_decimation_objects(decimators,nbands,dec_fac);
+	for(i=0;i<nbands;i++)
+	{
+		int nstages;
+		FIR_decimation *fir;
+		
+		nstages = maxtbl(dec_objects[i]);
+		printf("band %d decimation defined by %d stages\n",i,nstages);
+		printf("total decimation from previous band = %d\n",dec_fac[i]);
+
+		for(j=0;j<nstages;j++)
+		{
+			fir = (FIR_decimation *)gettbl(dec_objects[i],j);
+			printf("decfac = %d, ncoefs=%d\nFilter cofficeints\n",
+				fir->decfac,fir->ncoefs);
+			for(k=0;k<fir->ncoefs;k++) printf("%f\n",fir->coefs[k]);
+		}
+		
+	}
+        if (dbopen("testmwdb", "r+", &db) == dbINVALID) {
+                clear_register(1);
+                fprintf(stderr, "dbmwspec: Unable to open database testmwdb\n");
+                exit(1);
+        }
+	dir = strdup("testmwwf");
+	
+	for(i=0;i<5000;++i)  trace[i] = 0.0;
+	trace[2500] = 1.0;
+
+	mwtrace = MWtransform(trace,dt,t0,5000,
+			mw,nwavelets,dec_objects,nbands);
+
+	db = dblookup(db,0,"wfdisc",0,0);
+
+	for(i=0;i<nbands;i++)
+	for(j=0;j<nwavelets;j++)
+	{
+		FILE *fp;
+		double calib = 1.0;
+		if(mwtrace[i][j].nz <= 0)
+		{
+			fprintf(stderr,"Transform was truncated at band %d\n",
+				i);
+			break;
+		}
+		sprintf(fname,"%s/band%d_wavelet%d_real.w",dir,i,j);
+		sprintf(dfile,"band%d_wavelet%d_real.w",i,j);
+		sprintf(sta,"%d_%d",i,j);
+		fp = fopen(fname,"w");
+		for(k=0;k<mwtrace[i][j].nz;k++) work[k]=mwtrace[i][j].z[k].r;
+		fwrite(work,sizeof(float),mwtrace[i][j].nz,fp);
+		if(dbaddv(db,0,
+			"sta",sta,
+			"chan","RE",
+			"time",mwtrace[i][j].starttime,
+			"endtime",mwtrace[i][j].endtime,
+			"nsamp",mwtrace[i][j].nz,
+			"samprate",1.0/(mwtrace[i][j].dt),
+			"datatype","t4",
+			"calib", calib,
+			"dir",dir,
+			"dfile",dfile,0) < 0)
+				die(0,"dbaddv error\n");
+		/* same for imaginery part */
+		sprintf(fname,"%s/band%d_wavelet%d_imag.w",dir,i,j);
+		sprintf(dfile,"band%d_wavelet%d_imag.w",i,j);
+		sprintf(sta,"%d_%d",i,j);
+		fp = fopen(fname,"w");
+		for(k=0;k<mwtrace[i][j].nz;k++) work[k]=mwtrace[i][j].z[k].i;
+		fwrite(work,sizeof(float),mwtrace[i][j].nz,fp);
+		if(dbaddv(db,0,
+			"sta",sta,
+			"chan","IM",
+			"time",mwtrace[i][j].starttime,
+			"endtime",mwtrace[i][j].endtime,
+			"nsamp",mwtrace[i][j].nz,
+			"samprate",1.0/(mwtrace[i][j].dt),
+			"datatype","t4",
+			"calib", calib,
+			"dir",dir,
+			"dfile",dfile,0) < 0)
+				die(0,"dbaddv error\n");
+	}
+	free_MWtrace_matrix(mwtrace,0,nbands-1,0,nwavelets-1);
+}
+.fi
+.SH LIBRARY
+ -xlic_lib=sunperf $(DBLIBS)  
+.SH DIAGNOSTICS
+.LP
+Numerous that hopefully are self explanatory.
+.SH "SEE ALSO"
+.nf
+tbl(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Gary L. Pavlis
