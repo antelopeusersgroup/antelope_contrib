@@ -15,7 +15,3 @@ OBJS = $(BIN).o
 
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS) 
-
-ll:guralp2orb.c
-	cc -i -v -D_REENTRANT -g    -I/opt/antelope/dev/include -I/usr/openwin/include -KPIC  -c  guralp2orb.c -o guralp2orb.ll -Zll
-
