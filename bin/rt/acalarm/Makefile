@@ -1,7 +1,7 @@
 # Makefile for svd
 
 BIN = acalarm battalarm
-MAN1 = rtalarm.1
+MAN1 = acalarm.1
 ldlibs	= $(ORBLIBS) 
 
 include $(ANTELOPEMAKE)

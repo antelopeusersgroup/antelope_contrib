@@ -1,0 +1,40 @@
+.TH RTALARM 1 "$Date$"
+.SH NAME
+acalarm, battalarm \- alarm messanger
+.SH SYNOPSIS
+.nf
+
+\fBacalarm \fP[-d ] [-m \fIsrcmatch\fP] \fIorb\fP
+                \fIreceipient1\fP[,\fIreceipient2\fP...]
+\fBbattalarm \fP[-d ] [-m \fIsrcmatch\fP] \fIorb\fP
+                \fIreceipient1\fP[,\fIreceipient2\fP...]
+.fi
+.SH DESCRIPTION
+\fBacalarm\fP and \fBbattalarm\fP read DC Status packets from
+\fIorb\fP and check the \fIAC\fP and \fIBATT\fP values of a DC.  If
+the \fIAC\fP has failed or the \fIBATT\fP value is less than 24 volts, an
+\fIalarm\fP email is sent to the \fIrecipients\fP specified on the
+command line.  Multiple recipients, separated by commas, may be specified.
+.SH OPTIONS
+.IP "-d"
+Print the hexadecimal dump of a DC Status Packet on stderr.
+.IP "-m srcname"
+Read only  packets for which the srcname matches the regular
+expression \fIsrcmatch\fP.
+.SH EXAMPLE
+.LP
+Read DC packets for \fIigpprt:9999\fP orb with YB_194/BSP srcname. Send
+an alarm email to "rt" and "admin@bbarray.ucsd.edu" users.
+.ft CW
+.in 2c
+.nf
+
+%\fB acalarm igpprt:9999 rt,admin@bbarray.ucsd.edu\fP
+
+.fi
+.in
+.ft R
+.SH AUTHOR
+Marina Glushko
+.\" $Id$
+
