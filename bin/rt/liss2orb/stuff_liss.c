@@ -84,7 +84,7 @@ int StuffLiss(
      int        rtf, rtm;
      int 	hsize, psize;
      char 	tim_str[64];
-     char 	sta[8],
+     char 	loc[4], sta[8],
           	chan[12],
 	  	net[12];
      char 	*data;
@@ -115,6 +115,15 @@ int StuffLiss(
     memcpy( chan, seed_hdr->Channel_ID,3 );
     chan[3] = '\0';
     TRIM( chan, 4);
+    
+    memcpy( loc, seed_hdr->Location_ID,2 );
+    loc[2] = '\0';
+    TRIM( loc, 3);
+
+    if( !strncmp( loc, "10", 2 ) &&
+        ( !strncmp( sta, "ANMO", 4 ) || !strncmp( sta, "GUMO", 4 ) ) )  {
+	chan[2] = 'U';
+    }
     
     sprintf( srcname, "%s_%s_%s\0", net, sta, chan );
 
