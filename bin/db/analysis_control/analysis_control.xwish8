@@ -1,0 +1,667 @@
+# Analysis_control program
+#
+# help analysts to manage databases of parametric earthquake information
+#
+# Kent Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# February, 2000
+
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+lappend auto_path $env(ANTELOPE)/data/tcl/pkg2
+source $env(ANTELOPE)/data/tcl/pkg2/dbtable.tcl
+
+package require Tclx
+package require dbtable
+
+set tcl_precision 17
+
+proc init_globals {} {
+	global State env
+
+	set State(user) $env(USER)
+
+	pfget analysis_control master_site_database State(site_db)
+
+	pfget analysis_control segmented_waveform_database State(segmented_waveform_database)
+
+	pfget analysis_control wf_pattern State(wf_pattern) 
+
+	set State(distance_pattern) ""; append State(distance_pattern) \
+	   "ml == NULL || " \
+	   "ml >= 4 || " \
+	   "(ml>=3.0 && distance(origin.lat,origin.lon,site.lat,site.lon)<=10) || " \
+	   "(ml>=2.5 && distance(origin.lat,origin.lon,site.lat,site.lon)<=9) || " \
+	   "(ml>=2.1 && distance(origin.lat,origin.lon,site.lat,site.lon)<=8) || " \
+	   "(ml>=1.6 && distance(origin.lat,origin.lon,site.lat,site.lon)<=7) || " \
+	   "(ml>=1.2 && distance(origin.lat,origin.lon,site.lat,site.lon)<=5) || " \
+	   "(ml>=0.5 && distance(origin.lat,origin.lon,site.lat,site.lon)<=3) || " \
+	   "(ml>=0.1 && distance(origin.lat,origin.lon,site.lat,site.lon)<=2) || " \
+	   "distance(origin.lat,origin.lon,site.lat,site.lon)<=1"
+	set State(pre_p_pad_sec) 20
+	set State(post_pad_sec) 30
+	set State(vel_cutoff_kmps) 2.8
+	set State(segment_start) "parrival()-$State(pre_p_pad_sec)"
+	append State(segment_end) "parrival()+max(2*(sarrival()-parrival())," \
+		"phase_arrival($State(vel_cutoff_kmps)/111.195)-parrival())" \
+		"+$State(post_pad_sec)"
+
+	# Set the author name for the automatic system:
+	set State(auto_auth) binder
+
+	set State(ignore_tables) [list wfdisc site sitechan instrument sensor \
+					calibration network affiliation]
+
+	pfget analysis_control analysis_control_database State(tracking_dbname) 
+
+	if { ! [file exists $State(tracking_dbname)] } {
+		set message "Tracking database $State(tracking_dbname) " 
+		append message " not present. Please contact administrator.\n"
+		wm withdraw .
+		mytkdialog [unique_window .] Error $message center OK
+		exit -1
+	}
+	set State(dbtrack) [dbopen $State(tracking_dbname) r+] 
+	foreach table [list days weeks months] {
+		set State(dbtrack) [dblookup $State(dbtrack) 0 $table 0 0]
+		if { ! [dbquery $State(dbtrack) dbRECORD_COUNT] } {
+			set message "$State(tracking_dbname).$table "
+			append message "is not present or empty. "
+			append message "Please contact administrator.\n"
+			wm withdraw .
+			mytkdialog [unique_window .] Error $message center OK
+			exit -1
+		}
+		if { ! [dbquery $State(dbtrack) dbTABLE_IS_WRITEABLE] } {
+			set message "$State(tracking_dbname).$table "
+			append message "is not writable by you. "
+			append message "Please contact administrator.\n"
+			wm withdraw .
+			mytkdialog [unique_window .] Error $message center OK
+			exit -1
+		}
+	}
+
+	set State(days_table_checksum) [lindex [exec /usr/bin/sum $State(tracking_dbname).days] 0]
+}
+
+proc refresh_dbinfo_if_necessary {} {
+	global State
+
+	if { [dbinfo_is_stale] } {
+		set newsum [lindex [exec /usr/bin/sum $State(tracking_dbname).days] 0]
+		set State(days_table_checksum) $newsum
+		redraw_checkout
+		redraw_checkin
+	}
+}
+
+proc dbinfo_is_stale {} {
+	global State
+
+	set newsum [lindex [exec /usr/bin/sum $State(tracking_dbname).days] 0]
+
+	if { $newsum != $State(days_table_checksum) } {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+proc checkout { iwidget widget x y db row } {
+	global State env
+
+	set message "Entrusting processing of day "
+	append message "[strdate [dbgetv $db 0 $row time]] "
+	append message "to user $State(user)"
+
+	set answer [mytkdialog [unique_window .] \
+		"Database checkout" $message center Accept Shirk]
+
+	switch $answer {
+	0	{
+			set check_analyst [dbgetv $db 0 $row analyst]
+			if { $check_analyst != "-" } {
+				set time [dbgetv $db 0 $row time]
+				set message "Synchronization overlap: [strdate $time]"
+				append message " was just checked out to $check_analyst."
+				append message " Please choose another day."
+				mytkdialog [unique_window .] \
+				Overlap \
+				$message \
+				center \
+				Ok
+				redraw_checkout
+				return
+			} else {
+				# Fallthrough
+			}
+		}
+	1	{
+			return
+		}
+	}
+
+	set time [dbgetv $db 0 $row time]
+	set processdir $env(HOME)/process/[epoch2str $time %Y_%m_%d]
+	exec mkdir -m 0755 -p $processdir
+	set process_dbname [epoch2str $time process_%Y_%m_%d]
+	append descriptor $processdir / $process_dbname
+
+	if { [info exists env(SCHEMA_DEFAULT)] } {
+		set schema $env(SCHEMA_DEFAULT)
+	} else {
+		set schema css3.0
+	}
+	regsub {[^/]*$} $State(site_db) {{&}} site_db
+
+	pfget analysis_control quakes_database quakes_db
+	set quakes_db [epoch2str $time $quakes_db]
+
+	pfget analysis_control archive_database archive_db
+	set archive_db [epoch2str $time $archive_db]
+	regsub {[^/]*$} $archive_db {{&}} archive_db
+
+	set tables [list arrival assoc event netmag origerr origin stamag wfmeas]
+
+	foreach table $tables {
+		puts stderr "copying $quakes_db.$table to $descriptor.$table"
+		catch "exec dbcp $quakes_db.$table $descriptor"
+	}
+
+	exec touch $descriptor.lastid
+
+	set fd [open $descriptor w]
+	puts $fd $schema
+	puts -nonewline $fd $site_db:$archive_db
+	close $fd
+
+	dbputv $db 0 $row analyst $State(user) \
+			  checkout [str2epoch now] \
+			  dir $processdir \
+			  dfile $process_dbname
+
+	refresh_dbinfo_if_necessary
+
+	set message "Day [strdate $time] checked out to $State(user)"
+	set answer [mytkdialog [unique_window .] Done $message center \
+		   Acknowledge_and_Quit Acknowledge]
+	switch $answer {
+	0	{
+			destroy .
+		}
+	1	{
+			return
+		}
+	}
+}
+
+proc checkin { iwidget widget x y db row } {
+	global State
+
+	set dir [dbgetv $db 0 $row dir]
+	set dfile [dbgetv $db 0 $row dfile]
+	set dbcheckedout_name [dbeval $db extfile()]
+	set starttime [dbgetv $db 0 $row time]
+	set message "Check in $dfile from $dir?"
+	set answer [mytkdialog [unique_window .] \
+		"Database check-in" $message center Ok Cancel]
+
+	switch $answer {
+	0	{
+			# Fallthrough
+		}
+	1	{
+			return
+		}
+	}
+
+	set checkin_approval_msg [approve_checkin $dbcheckedout_name]
+	if { $checkin_approval_msg != "" } {
+		mytkdialog [unique_window .] "Database check-in failed" \
+			$checkin_approval_msg left Ok
+		return
+	}
+
+	pfget analysis_control analyzed_events_database target_dbname_template 
+	set target_dbname [epoch2str $starttime $target_dbname_template]
+	set target_dbdir [exec dirname $target_dbname]
+	exec mkdir -p $target_dbdir
+	
+	puts stderr "Updating QDDS"
+	catch "exec /usr/local/bin/qdds_update_script.tcsh $dbcheckedout_name" qdds_update_result 
+	puts stderr $qdds_update_result
+
+	set dbco [dbopen $dbcheckedout_name r]
+	set tables [dbquery $dbco dbSCHEMA_TABLES]
+	foreach table $tables {
+		set dbco [dblookup $dbco 0 $table 0 0]
+		set nrecs [dbquery $dbco dbRECORD_COUNT]
+		if { $nrecs <= 0 || [lsearch $State(ignore_tables) $table] >= 0 } {
+		} else {
+			puts stderr "copying $dbcheckedout_name.$table to $target_dbname"
+			catch "exec dbcp $dbcheckedout_name.$table $target_dbname"
+		}
+	}
+	dbclose $dbco
+
+	catch "exec aeic_dbclean -v $target_dbname" cleaning_result 
+	puts stderr $cleaning_result
+
+	puts stderr "Launching data segmentation"
+	set dbout [epoch2str $starttime $State(segmented_waveform_database)]
+	exec /usr/bin/mkdir -p [exec dirname $dbout]
+	set tmpscript /tmp/ac_[pid]_$State(user)
+	set cmd ""; append cmd \
+		"trexcerpt -a -vv -w '$State(wf_pattern)' " \
+		"-j '$State(distance_pattern)' -m event " \
+		"$dbcheckedout_name $dbout " \
+		"'$State(segment_start)' '$State(segment_end)'"
+	set notesfile [exec dirname $dbcheckedout_name]/trexcerpt_notes
+	set scriptfd [open $tmpscript w]
+	puts $scriptfd $cmd
+	close $scriptfd
+	exec /bin/cp $tmpscript [exec dirname $dbcheckedout_name]/trexcerpt_script
+	set result [catch "exec nohup sh $tmpscript >& $notesfile &" trexcerpt_return]
+	exec /bin/rm $tmpscript
+	echo $trexcerpt_return 
+
+	puts stderr "Submitting $target_dbname to NEIC"
+	set result [catch "exec db2neic -s -c natasha $target_dbname" db2neic_return]
+	if { $result == 0 } {
+		set neic_submission y	
+	} else {
+		set neic_submission -
+	}
+	echo $db2neic_return
+
+	puts stderr "Submitting $target_dbname to PGC"
+	set result [catch "exec db2pgc -s -c natasha $target_dbname" db2pgc_return]
+	echo $db2pgc_return
+
+	dbputv $db 0 $row checkin [str2epoch now] \
+			  neic $neic_submission \
+			  dir - \
+			  dfile -
+			  
+	foreach f [glob $target_dbname*] { exec chmod a-w $f }
+
+	refresh_dbinfo_if_necessary
+
+	set message "Day [strdate $starttime] successfully checked in"
+	set answer [mytkdialog [unique_window .] Done $message center Acknowledge_and_Quit Acknowledge]
+	switch $answer {
+	0	{
+			destroy .
+		}
+	1	{
+			return
+		}
+	}
+}
+
+proc approve_checkin { dbname } {
+	global State
+	
+	set return_message ""
+
+	set db [dbopen $dbname r]
+	set dbevent [dblookup $db 0 event 0 0]
+	set dborigin [dblookup $db 0 origin 0 0]
+	set db [dbjoin $dbevent $dborigin]
+
+	set db [dbsubset $db "orid == prefor"]
+
+	set nrecs [dbquery $db dbRECORD_COUNT]
+
+	if { $nrecs <= 0 } {
+		return "Check-in Failed:\nNo events in $dbname"
+	}
+
+	for { set i 0 } { $i < $nrecs } { incr i } {
+		set auth [dbgetv $db 0 $i origin.auth]
+		set orid [dbgetv $db 0 $i orid]
+		
+		if { $auth == $State(auto_auth) } {
+			append return_message \
+		  "Check-in Failed: Preferred orid $orid still has author $State(auto_auth)\n"
+		}
+	}
+
+	return $return_message
+}
+
+proc divider {} {
+	set w [unique_window .]
+	canvas $w 
+	pack $w -side top -fill x -expand yes
+	$w create rectangle 0 0 [lindex [$w config -width] end] 5 -fill blue
+	$w config -height 5
+}
+
+proc redraw_checkout {} {
+	global State
+
+	if { [winfo exists .checkout.dbe] } { destroy .checkout.dbe }
+	if { [winfo exists .checkout.none] } { destroy .checkout.none }
+
+	set db $State(dbtrack)
+
+	set db [dblookup $db 0 days 0 0]
+	set db [dbsort -r $db time] 
+	set db [dbsubset $db "checkout == NULL"]
+	set num_avail_for_checkout [dbquery $db dbRECORD_COUNT]
+
+	# set colarr(Available_days) {["epoch" "+%a %b %e, %Y %Z" time]}
+	set colarr(Available_days) strdate(time)
+	
+	if { $num_avail_for_checkout > 0 } {
+		dbtable::create .checkout.dbe $db 0 10 [list Available_days] colarr \
+			-command checkout  -nopack
+		pack .checkout.dbe -fill x -expand yes
+		bind .checkout.dbe <Enter> refresh_dbinfo_if_necessary
+	} else {
+		label .checkout.none \
+			-text "No databases available for checkout." \
+			-bg beige
+		pack .checkout.none -fill x -expand yes
+	}
+
+}
+
+proc redraw_checkin {} {
+	global State
+
+	if { [winfo exists .checkin.dbe] } { destroy .checkin.dbe }
+	if { [winfo exists .checkin.none] } { destroy .checkin.none }
+
+	set db $State(dbtrack)
+
+	set db [dblookup $db 0 days 0 0]
+	set db [dbsort $db time] 
+	set db [dbsubset $db "analyst == \"$State(user)\" && checkin == NULL"]
+	set num_avail_for_checkin [dbquery $db dbRECORD_COUNT]
+
+	set colarr(Checked_out) strdate(time)
+
+	if { $num_avail_for_checkin > 0 } {
+		dbtable::create .checkin.dbe $db 0 10 [list Checked_out] colarr \
+			-command checkin  -nopack
+		pack .checkin.dbe -fill x -expand yes
+		bind .checkin.dbe <Enter> refresh_dbinfo_if_necessary
+	} else {
+		label .checkin.none \
+			-text "No databases checked out to you." \
+			-bg beige
+		pack .checkin.none -fill x -expand yes
+	}
+}
+
+proc init_windows {} {
+	global State
+
+	label .header -text "AEIC Analysis Database Control" -bg yellow -pady 10
+	pack .header -side top -fill x
+
+	divider
+
+	frame .checkout 
+	pack .checkout -fill x -expand yes
+	label .checkout.avail -text "Days available for checkout:" -bg yellow
+	pack .checkout.avail -side top -fill x -expand yes
+
+	redraw_checkout
+
+	divider
+
+	frame .checkin
+	pack .checkin -fill x -expand yes
+	label .checkin.out -text "Days checked out to you:" -bg yellow
+	pack .checkin.out -side top -fill x -expand yes
+
+	redraw_checkin
+
+	divider
+
+	button .quit -text Quit -bg red -command "destroy ."
+	pack .quit -side bottom -fill x
+
+	wm resizable . 0 0
+	wm minsize . 225 1
+}
+
+proc start_of_this_day { myepoch } {
+	return [str2epoch [strdate $myepoch]]	
+}
+
+proc start_of_next_day { myepoch } {
+	# rewind to beginning of this day:
+	set myepoch [start_of_this_day $myepoch]
+
+	# Go to next day, adding leap-second insurance:
+	set into_next_day [expr $myepoch + 86400 + 100]
+
+	return [start_of_this_day $into_next_day]
+}
+
+proc start_of_this_month { myepoch } {
+
+	set year [epoch2str $myepoch %Y]
+	set month_number [epoch2str $myepoch %m]
+	#Avoid interpretation in octal:
+	regsub ^0* $month_number {} month_number
+	
+	return [str2epoch [format "%d/1/%d" $month_number $year]]
+}
+
+proc start_of_next_month { myepoch } {
+
+	set year [epoch2str $myepoch %Y]
+	set month_number [epoch2str $myepoch %m]
+	#Avoid interpretation in octal:
+	regsub ^0* $month_number {} month_number
+
+	if { $month_number == 12 } {
+		incr year 
+		set month_number 1
+	} else {
+		incr month_number
+	}
+	
+	return [str2epoch [format "%d/1/%d" $month_number $year]]
+}
+
+proc start_of_week_number { epoch_for_year week_number } {
+
+	set year [epoch2str $epoch_for_year %Y]
+
+	set start_of_firstweek [str2epoch "1/1/$year"]
+	while { [epoch2str $start_of_firstweek %A] != "Monday" } {
+		set start_of_firstweek [start_of_next_day $start_of_firstweek]
+	}
+
+	set start_of_week [expr $start_of_firstweek + ( $week_number - 1 ) * 7 * 86400]
+
+	return $start_of_week
+}
+
+proc week_number_of_year { myepoch } {
+
+	set weekone_epoch [start_of_week_number $myepoch 1]
+	set weekone_jday [epoch2str $weekone_epoch %j]
+	regsub ^0* $weekone_jday {} weekone_jday
+
+	set this_jday [epoch2str $myepoch %j]
+	regsub ^0* $this_jday {} this_jday
+
+	return [expr floor( ( $this_jday - $weekone_jday ) / 7 ) + 1];
+}
+
+proc start_of_this_week { myepoch } {
+
+	set this_week_number [week_number_of_year $myepoch]
+
+	return [start_of_week_number $myepoch $this_week_number]
+}
+
+proc start_of_next_week { myepoch } {
+	
+	set this_week_number [week_number_of_year $myepoch]
+
+	set next_week_number [expr $this_week_number + 1]
+
+	return [start_of_week_number $myepoch $next_week_number]
+}
+
+proc currentify_tracking_database {} {
+	global State
+
+	set now [str2epoch now]
+
+	# Update days table
+	set State(dbtrack) [dblookup $State(dbtrack) 0 days 0 0]
+	set max_day_in_database [dbeval $State(dbtrack) max_table(time)]
+
+	set current_day_start [start_of_this_day $now]
+
+	set day_start [start_of_next_day $max_day_in_database]
+	# Don't include current day
+	while { $day_start < $current_day_start } {
+
+		set day_end [expr [start_of_next_day $day_start] - 0.001]
+
+		dbaddv $State(dbtrack) days \
+			time $day_start \
+			endtime $day_end 
+
+		set day_start [start_of_next_day $day_start]
+	}
+
+	# Update weeks table
+	set State(dbtrack) [dblookup $State(dbtrack) 0 weeks 0 0]
+	set max_week_in_database [dbeval $State(dbtrack) max_table(time)]
+
+	set current_week_start [start_of_this_week $now]
+
+	set week_start [start_of_next_week $max_week_in_database]
+	while { $week_start <= $current_week_start } {
+
+		set week_end [expr [start_of_next_week $week_start] - 0.001]
+		set week_number [week_number_of_year $week_start]
+
+		dbaddv $State(dbtrack) weeks \
+			time $week_start \
+			endtime $week_end \
+			week_number $week_number
+
+		set week_start [start_of_next_week $week_start]
+	}
+
+	# Update months table
+	set State(dbtrack) [dblookup $State(dbtrack) 0 months 0 0]
+	set max_month_in_database [dbeval $State(dbtrack) max_table(time)]
+
+	set current_month_start [start_of_this_month $now]
+	
+	set recno [dbfind $State(dbtrack) 0 0 {status == "acquiring"}]
+	if { $recno >= 0 } {
+		set time [dbgetv $State(dbtrack) months $recno time]
+		if { $time != $current_month_start } {
+			dbputv $State(dbtrack) months $recno status active 
+		}	
+	}
+
+	set month_start [start_of_next_month $max_month_in_database]
+	while { $month_start <= $current_month_start } {
+
+		set month_end [expr [start_of_next_month $month_start] - 0.001]
+
+		if { $month_start == $current_month_start } {
+			set status acquiring
+		} else {
+			set status active
+		}
+
+		dbaddv $State(dbtrack) months \
+			time $month_start \
+			endtime $month_end \
+			status $status
+
+		set month_start [start_of_next_month $month_start]
+	}
+}
+
+proc mytkdialog {w title msg justify args} {
+    global tkdialogOk
+    catch {destroy $w}
+    toplevel $w -class Dialog
+    wm title $w $title
+    wm iconname $w $title
+ 
+    # Create two frames in the main window. The top frame will hold the
+    # message and the bottom one will hold the buttons.  Arrange them
+    # one above the other, with any extra vertical space split between
+    # them.
+ 
+    frame $w.top -relief raised -border 1
+    frame $w.bot -relief raised -border 1
+    pack $w.bot $w.top -side bottom -fill both -expand yes
+ 
+    # Create the message widget and arrange for it to be centered in the
+    # top frame.
+    
+    message $w.top.msg -justify $justify \
+	    -text $msg \
+	    -aspect 500 \
+	    -bg beige \
+	    -fg red
+    catch "$w.top.msg config -font -Adobe-times-medium-r-normal--*-180*"
+    pack $w.top.msg -side top -expand yes -padx 3 -pady 3
+ 
+    # Create as many buttons as needed and arrange them from left to right
+    # in the bottom frame.  Embed the left button in an additional sunken
+    # frame to indicate that it is the default button, and arrange for that
+    # button to be invoked as the default action for clicks and returns in
+    # the dialog.
+ 
+    if {[llength $args] > 0} {
+        set arg [lindex $args 0]
+        frame $w.bot.0 -relief sunken -border 1
+        pack $w.bot.0 -side left -expand yes -padx 10 -pady 10
+        button $w.bot.0.button -text [lindex $arg 0] \
+                -command "set tkdialogOk($w) 0; destroy $w"
+        pack $w.bot.0.button -expand yes -padx 6 -pady 6
+        bind $w <Return> "set tkdialogOk($w) 0; destroy $w"
+        focus $w
+ 
+        set i 1
+        foreach arg [lrange $args 1 end] {
+            button $w.bot.$i -text [lindex $arg 0] \
+                    -command "set tkdialogOk($w) $i; destroy $w"
+            pack $w.bot.$i -side left -expand yes -padx 10
+            incr i
+        }
+    bind $w <Any-Enter> [list focus $w]
+    focus $w
+
+    catch "grab set $w"
+    tkwait window $w
+    grab release $w
+    return $tkdialogOk($w)
+    }
+    return 0 
+}
+
+# if { [exec uname -n] != "nordic" } {
+	# Sorry about this HACK. Next time recognize the design weakness from the 
+	# outset! This should go away when we can successfully do DBLOCKS across nfs
+# 	puts stderr "\n\tanalysis_control: startup failure.\n\t Did you launch analysis control\
+# from the root-window pulldown-menu??\n\t(Seis_apps->Analysis_control)\n"
+#	exit -1
+# }
+
+init_globals
+
+currentify_tracking_database 
+
+init_windows

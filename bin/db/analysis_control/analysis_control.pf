@@ -1,0 +1,8 @@
+master_site_database 		/Seis/databases/stations/master_stations
+# analysis_control_database 	/Seis/processing/tracking_database/aeic_analysis
+analysis_control_database 	./try
+analyzed_events_database 	/Seis/processing/analyzed/%Y_%m/analyzed_%Y_%m_%d
+archive_database 		/iwrun/op/db/archive/archive_%Y_%m_%d
+quakes_database			/iwrun/op/db/seg/Quakes_%Y_%m_%d
+segmented_waveform_database 	/Seis/seg/%Y/%Y_%m_%d
+wf_pattern 			/Seis/seg/wf/%Y/%m/%d/%{sta}.%{chan}.%Y:%j:%H:%M:%S

@@ -1,0 +1,43 @@
+.TH ANALYSIS_CONTROL 1 "$Date$"
+.SH NAME
+analysis_control \- database checkout/checkin utility for daily processing
+.SH SYNOPSIS
+.nf
+\fBanalysis_control \fP
+.fi
+.SH DESCRIPTION
+The \fBanalysis_control\fP utility is a graphical tool for managing processing
+of detected seismic events by several analysts. The utility allows an
+analyst to check out a database that no one else is working on, and check
+it back into the system when done. Several cleaning tasks are performed
+by aeic_dbclean, which is launched by this tool. Analyzed data are also
+submitted to NEIC via db2neic(1).
+
+The \fBanalysis_control\fP script will not allow a database to be checked in if
+there are no rows in it, nor if any of the preferred origins still have
+the automatic system (binder) listed as author.
+.SH PARAMETER FILE
+.nf
+master_site_database 		/Seis/databases/stations/master_stations
+analysis_control_database 	/Seis/processing/tracking_database/aeic_analysis
+analyzed_events_database 	/Seis/processing/analyzed/%Y_%m/analyzed_%Y_%m_%d
+archive_database 		/iwrun/op/db/archive/archive_%Y_%m_%d
+quakes_database			/iwrun/op/db/seg/Quakes_%Y_%m_%d
+segmented_waveform_database 	/Seis/seg/%Y/%Y_%m_%d
+wf_pattern 			/Seis/seg/wf/%Y/%m/%d/%{sta}.%{chan}.%Y:%j:%H:%M:%S
+.fi
+.SH "SEE ALSO"
+.nf
+db2neic(1), aeic_dbclean(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The aeic_rtsys parameter file entries, used in previous versions, have been moved to 
+analysis_control.pf under similar names. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+February, 2000
+.fi
+.\" $Id$
