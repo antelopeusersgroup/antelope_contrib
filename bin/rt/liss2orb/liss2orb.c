@@ -50,6 +50,7 @@ getpkt (Bns *bns, char **seedp, int fixedsize, int *pktsize, int *seedsize)
     if ( fixedsize != 0 ) {
 	SIZE_BUFFER (char *, *seedp, *seedsize, fixedsize ) ; 
 	retcode = bnsget(bns, *seedp, BYTES, fixedsize ) ;
+	*pktsize = fixedsize ;
     } else if ( (retcode = bnsget ( bns, *seedp, BYTES, 64 )) == 0 ) {
 	short type=0 ; 
 	int log2_record_length = 0 ; 
@@ -166,18 +167,6 @@ main (int argc, char **argv)
     liss_server = argv[optind++];
     orbname = argv[optind++];
 
-    if ( pktsize == 0 ) { 
-	char *lower_liss ;
-	lower_liss = strdup ( liss_server) ;
-	str2lower(lower_liss) ; 
-	if ( strstr(lower_liss, ".gt." ) != 0 ) { 
-	    pktsize = 256 ; 
-	} else { 
-	    pktsize = 512 ; 
-	}
-	free(lower_liss) ;
-    }
-
     orb = orbopen(orbname, "w&" ) ; 
     if ( orb < 0 ) { 
 	die (0, "Can't open output orb %s", orbname ) ; 
@@ -192,7 +181,7 @@ main (int argc, char **argv)
 	finit_db (db);
     }
 
-    allot(char *, seed, pktsize, 4096) ; 
+    allot(char *, seed, 4096) ; 
     for(;;) { 
 	while ( fd < 0 ) { 
 	    fd = open_socket ( liss_server, defaultport ) ; 
