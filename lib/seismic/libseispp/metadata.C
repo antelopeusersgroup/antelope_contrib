@@ -74,6 +74,10 @@ Metadata::Metadata(Pf *pfin, string tag)
 	}
 	// Just like above
 	pfnested = static_cast<Pf *>(result);
+	// This is a necessary workaround for a bug in the pf library in 
+	// Antelope 4.6.  It may be possible to remove it in the next release
+	// fix based on email from D. Quinlan, Jan 20, 2005.
+	pfnested->type=PFFILE;
 	char *pfs=pf2string(pfnested);
 	pfcompile(pfs,&pf);
 	free(pfs);
