@@ -1,0 +1,49 @@
+.TH MAKE_ARCHIVE_DBLINKS 1 "$Date$"
+.SH NAME
+make_archive_dblinks \- make day-volume links to archive database
+.SH SYNOPSIS
+.nf
+make_archive_dblinks [-v] dbname 
+.fi
+.SH DESCRIPTION
+make_archive_dblinks makes links from the descriptor file and wfdisc 
+table of a continuous-data database to a day-volume. The suffix for the 
+links is determined by a suffix_pattern applied via epoch2str(3) to 
+the current system-clock time. This allows all available data to be seen 
+as day-volumes even if the data are being archived in a several day 
+moving-window database and then being split later into separate day 
+volumes.
+
+This utility may be used in conjunction with the split_archive_database(1)
+utility.
+.SH OPTIONS
+-v	verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+nordic% make_archive_dblinks -v archive 
+Soft-linking archive to archive_2000_02_17 at
+	950772101.992 (048) 2000-02-17  07:21:41.992 GMT Thursday
+Soft-linking archive.wfdisc to archive_2000_02_17.wfdisc at
+	950772102.038 (048) 2000-02-17  07:21:42.038 GMT Thursday
+
+nordic%
+.fi
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orb2db(1), str2epoch(3), split_archive_database(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska, Fairbanks
+February, 2000
+.fi
+.\" $Id$

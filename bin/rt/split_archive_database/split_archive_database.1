@@ -1,0 +1,92 @@
+.\" $Name$ $Date$
+.TH SPLIT_ARCHIVE_DATABASE 1 "$Date$"
+.SH NAME
+split_archive_database \- split out old days from an rt1.0 archive waveform database
+.SH SYNOPSIS
+.nf
+split_archive_database \[-v\] dbname ndays
+.fi
+.SH DESCRIPTION
+split_archive_database takes a database in rt1.0 format, presumably one being
+written by orb2db. split_archive_database removes all information older than 
+ndays, putting these rows into day-segmented databases named with the 
+basename of the database appended by a string _YYMMDD. 
+
+This provides an alternative data-handling model to the standard rtdbclean(1).
+
+split_archive_database currently handles the tables gap, changed, ratechange,
+retransmit, and wfdisc. The wfdisc table is actually split into separate
+days. The other tables are simply truncated to zero length. 
+
+split_archive_database must have write permission in the directory containing
+the database, since it will write a temporary dbsplit.pf parameter file. 
+
+If an orb2db process appears to be creating the database, indicated by the 
+presence of dbname.MSGFILE, split_archive_database will send
+a pause message to it as specified by orb2db(1) and orb2db_msg(1), in order 
+to avoid conflicting with the archiving process.
+.SH OPTIONS
+-v	verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+nordic% split_archive_database -v -o nordic archive 2
+Pausing orb2db on orb nordic
+crunching gap
+table archive.changed not present
+crunching ratechange
+crunching retransmit
+crunching wfdisc
+Handling tables: gap ratechange retransmit wfdisc
+Min time in archive:   904005224.256 (237) 1998-08-25   0:33:44.256
+Max time in archive:   904592849.327 (243) 1998-08-31  19:47:29.327
+
+Splitting to archive_980829
+gap : selected 16270 records of 31903
+ratechange : selected 1941 records of 16690
+retransmit : selected 43268 records of 53223
+wfdisc : selected 3763 records of 24125
+
+Splitting to archive_980828
+gap : selected 3140 records of 15633
+ratechange : selected 2757 records of 14749
+retransmit : selected 9833 records of 9955
+wfdisc : selected 5070 records of 20362
+
+Splitting to archive_980827
+gap : selected 1533 records of 12493
+ratechange : selected 2761 records of 11992
+retransmit : selected 14 records of 122
+wfdisc : selected 3604 records of 15292
+
+Splitting to archive_980826
+gap : selected 1426 records of 10960
+ratechange : selected 2528 records of 9231
+retransmit : selected 22 records of 108
+wfdisc : selected 3467 records of 11688
+
+Splitting to archive_980825
+gap : selected 1785 records of 9534
+ratechange : selected 2610 records of 6703
+retransmit : selected 7 records of 86
+wfdisc : selected 3074 records of 8221
+
+Continuing orb2db on orb nordic
+nordic%
+.fi
+.RS .2i
+.RE
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orb2db(1), orb2db_msg(1), dbsplit(1), remove_old_archive_waveforms(1), rtdbclean(1)
+.fi
+.SH "BUGS AND CAVEATS"
+If split_archive_database pauses acquisition from an orb and then dies unexpectedly,
+the acquisition may remain permanently paused. 
+.SH AUTHOR
+Kent Lindquist
