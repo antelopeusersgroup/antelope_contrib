@@ -1,0 +1,180 @@
+package require Tclx
+
+proc dbdescribe {db} {
+	global mode
+
+	puts stdout "\nSchema: [dbquery $db dbSCHEMA_NAME]"
+	puts stdout "Description: [dbquery $db dbSCHEMA_DESCRIPTION]"
+	if { $mode == "schema" && [lindex $db 1] < 0 } {
+		puts stdout "Detail:\n\t[dbquery $db dbSCHEMA_DETAIL]"
+	}
+
+	if { $mode != "schema" } {
+		puts stdout "Database: [dbquery $db dbDATABASE_NAME]"
+	}
+
+	if { [lindex $db 1] < 0 } {
+		set ntables [dbquery $db dbTABLE_COUNT]
+		loop i 0 $ntables { 
+			set db [lreplace $db 1 1 $i]
+			if { $mode == "schema" || [dbquery $db dbTABLE_PRESENT] } {
+				dbtable $db
+			}
+		}
+	} else {
+		dbtable $db
+	}
+}
+
+proc dbtable {db} {
+	global mode
+
+	set title "\nTable: [dbquery $db dbTABLE_NAME]"
+	regsub -all . $title \# underline
+	puts stdout $title
+	puts stdout $underline
+
+	if { $mode == "schema" } {
+		set desc [dbquery $db dbTABLE_DESCRIPTION]
+		set detail [dbquery $db dbTABLE_DETAIL]
+		set primary [dbquery $db dbPRIMARY_KEY]
+		set alternate [dbquery $db dbALTERNATE_KEY]
+		set foreign [dbquery $db dbFOREIGN_KEYS]
+		set defines [dbquery $db dbUNIQUE_ID_NAME]
+
+		puts "Description: $desc"
+		puts "Detail:\n\t$detail"
+		puts "Primary key(s):\t\t$primary"
+		if { $alternate != "" } { puts "Alternate key(s):\t$alternate" }
+		if { $foreign != "" } { puts "Foreign key(s):\t\t$foreign" }
+		if { $defines != "" } { puts "Defines id:\t\t$defines" }
+	} else {
+		set writeable [dbquery $db dbTABLE_IS_WRITEABLE]
+		set file [dbquery $db dbTABLE_FILENAME]
+		set size [dbquery $db dbTABLE_SIZE]
+		set records [dbquery $db dbRECORD_COUNT]
+
+		puts "File: $file"
+		puts "Size (bytes): $size"
+		if { $writeable > 0 } {
+			puts "Permissions: may be modified"
+		} else {
+			puts "Permissions: read-only"
+		}
+		puts "Number of Records: $records"
+
+	}
+
+	puts stdout "\nColumns\tField Name"
+	puts stdout "=======\t=========="
+	set nfields [dbquery $db dbFIELD_COUNT]
+	loop i 0 $nfields {
+		set db [lreplace $db 2 2 $i]
+		set fieldname [dbquery $db dbFIELD_NAME]
+		set size [dbquery $db dbFIELD_SIZE]
+		set index [dbquery $db dbFIELD_INDEX]
+		puts stdout "[expr $index+1]-[expr $index+$size]\t$fieldname"
+	}
+
+	set fields [lsort [dbquery $db dbTABLE_FIELDS]]
+	foreach field $fields {
+		set db [dblookup $db 0 0 $field 0]
+		dbfield $db
+	}
+}
+
+proc dbfield {db} {
+	global mode
+
+	set db [dblookup $db 0 0 0 dbNULL]
+
+	set field_title "\nField: [dbquery $db dbTABLE_NAME].[dbquery $db dbFIELD_NAME]"
+	regsub -all . $field_title - underline
+	puts stdout $field_title
+	puts stdout $underline 
+
+	puts stdout "\tDescription: [dbquery $db dbFIELD_DESCRIPTION]"
+	set type [dbquery $db dbFIELD_TYPE]
+	regsub db $type "" type
+	puts stdout "\tField type: $type"
+	puts stdout "\t# of characters: [dbquery $db dbFIELD_SIZE]"
+	puts stdout "\tFirst character (zero offset): [dbquery $db dbFIELD_INDEX]"
+	puts stdout "\tprintf format: [dbquery $db dbFIELD_FORMAT]"
+	puts stdout "\tNull value: [dbget $db]"
+	set range [dbquery $db dbFIELD_RANGE]
+	if { "$range" != "" } { puts stdout "\tRange: $range" }
+	set units [dbquery $db dbFIELD_UNITS]
+	if { "$units" != "" } { puts stdout "\tUnits: $units" }
+	# puts stdout "\tUsed in tables: [dbquery $db dbFIELD_TABLES]"
+}
+
+proc mkdatabase {schema} { 
+	set name [file tail $schema]
+	regsub -all {\.} $name _ name
+	set name /tmp/#$name#[pid]
+	set file [open $name w+]
+	puts $file $schema
+	puts $file ""
+	close $file
+	return $name 
+}
+
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+
+if {[info exists env(SCHEMA_DIR)]} { 
+	set dirs $env(SCHEMA_DIR)
+	set dirs [split $dirs :]
+	set dir [lindex $dirs 0]
+} else { 
+	set dir  $env(ANTELOPE)/data/schemas 
+	set dirs $env(ANTELOPE)/data/schemas 
+}
+
+if { $argc != 1 && $argc != 2 } { 
+	puts stderr ""
+	puts stderr "Usage: dbdescribe \{schema|database\} \[table\]"
+	exit -1
+} else { 
+	set name [lindex $argv 0]
+	foreach dir $dirs {
+		if { [file exists $dir/$name] } {
+	    		set schema $name
+	    		set database [mkdatabase $schema]
+			set mode schema
+	    		break 
+		}
+	}
+	if { ! [info exists database] } { 
+	 if {[file exists $name] } {
+	    if { [file size $name] < 300 || \
+		 ! [catch {glob $name.*} errors] } {
+		set database $name 
+		set mode database
+	    } elseif { [file rootname $name] != $name && \
+		       ! [regexp {\.[0-9]} [file extension $name]] } {
+		# file has a non-integer extension; probably a table name
+		set database $name
+		set mode database
+	    } else { 
+		set schema [file join $env(PWD) $name]
+		set database [mkdatabase $schema]
+		set mode schema
+	    }
+	 } else { 
+	    puts stderr "" 
+	    puts stderr "*** no file or schema '$name' ***"
+	    puts stderr "" 
+	    puts stderr "Usage: dbdescribe \{schema|database\} \[table\]"
+	    exit 1 
+	 }
+	}
+}
+
+set db [dbopen_database $database r+]
+
+if { $argc == 2 } {
+	set table [lindex $argv 1]
+	set db [dblookup $db 0 $table 0 0]
+}
+
+dbdescribe $db

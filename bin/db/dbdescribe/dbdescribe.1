@@ -1,0 +1,353 @@
+.TH DBDESCRIBE 1 "$Date$"
+.SH NAME
+dbdescribe \- describe the format of a Datascope database
+.SH SYNOPSIS
+.nf
+dbdescribe {database|schema} [table]
+.fi
+.SH DESCRIPTION
+dbdescribe takes the name of a database or a schema, and returns a description 
+of the format of the database files. An optional table-name specified on the 
+command line will limit dbdescribe's explanation to the one specified table only. 
+
+If a schema is specified, all tables are described. Otherwise, only the tables
+that are physically present are described. 
+
+dbdescribe may be given the filename of a single database table, in which case 
+only that table is described.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+
+nordic% dbdescribe alarm.arrival
+
+Schema: css3.0
+Description: Center for Seismic Studies Schema Version 3.0 
+Database: alarm
+
+Table: arrival
+###############
+File: alarm.arrival
+Size (bytes): 4480
+Permissions: may be modified
+Number of Records: 20
+
+Columns	Field Name
+=======	==========
+1-6	sta
+8-24	time
+26-33	arid
+35-42	jdate
+44-51	stassid
+53-60	chanid
+62-69	chan
+71-78	iphase
+80-80	stype
+82-87	deltim
+89-95	azimuth
+97-103	delaz
+105-111	slow
+113-119	delslo
+121-127	ema
+129-135	rect
+137-146	amp
+148-154	per
+156-162	logat
+164-164	clip
+166-167	fm
+169-178	snr
+180-180	qual
+182-196	auth
+198-205	commid
+207-223	lddate
+
+Field: arrival.amp
+-------------------
+	Description: amplitude, instrument corrected, nm
+	Field type: REAL
+	# of characters: 10
+	First character (zero offset): 136
+	printf format: %10.1lf
+	Null value: -1.0
+	Range: amp > 0.0
+	Units: Nanometers
+
+Field: arrival.arid
+--------------------
+	Description: arrival id
+	Field type: INTEGER
+	# of characters: 8
+	First character (zero offset): 25
+	printf format: %8d
+	Null value: -1
+	Range: arid > 0
+
+Field: arrival.auth
+--------------------
+	Description: source/originator
+	Field type: STRING
+	# of characters: 15
+	First character (zero offset): 181
+	printf format: %-15s
+	Null value: -
+
+Field: arrival.azimuth
+-----------------------
+	Description: observed azimuth
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 88
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: azimuth >= 0.0 && azimuth < 360.0
+	Units: Degrees
+
+Field: arrival.chan
+--------------------
+	Description: channel
+	Field type: STRING
+	# of characters: 8
+	First character (zero offset): 61
+	printf format: %-8s
+	Null value: -
+
+Field: arrival.chanid
+----------------------
+	Description: channel operation id
+	Field type: INTEGER
+	# of characters: 8
+	First character (zero offset): 52
+	printf format: %8d
+	Null value: -1
+	Range: chanid > 0
+
+Field: arrival.clip
+--------------------
+	Description: clipped flag
+	Field type: STRING
+	# of characters: 1
+	First character (zero offset): 163
+	printf format: %-1s
+	Null value: -
+	Range: clip =~ /c|n/
+
+Field: arrival.commid
+----------------------
+	Description: comment id
+	Field type: INTEGER
+	# of characters: 8
+	First character (zero offset): 197
+	printf format: %8d
+	Null value: -1
+	Range: commid > 0
+
+Field: arrival.delaz
+---------------------
+	Description: delta azimuth
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 96
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: delaz > 0.0
+	Units: Degrees
+
+Field: arrival.delslo
+----------------------
+	Description: delta slowness
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 112
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: delslo > 0.0
+	Units: Seconds (of time)/degree
+
+Field: arrival.deltim
+----------------------
+	Description: delta time
+	Field type: REAL
+	# of characters: 6
+	First character (zero offset): 81
+	printf format: %6.3lf
+	Null value: -1.000
+	Range: deltim > 0.0
+	Units: Seconds
+
+Field: arrival.ema
+-------------------
+	Description: emergence angle
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 120
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: ema >= 0.0 && ema <= 90.0
+	Units: Degrees
+
+Field: arrival.fm
+------------------
+	Description: first motion
+	Field type: STRING
+	# of characters: 2
+	First character (zero offset): 165
+	printf format: %-2s
+	Null value: -
+	Range: fm =~ /[cd.][ur.]/
+
+Field: arrival.iphase
+----------------------
+	Description: reported phase
+	Field type: STRING
+	# of characters: 8
+	First character (zero offset): 70
+	printf format: %-8s
+	Null value: -
+
+Field: arrival.jdate
+---------------------
+	Description: julian date
+	Field type: YEARDAY
+	# of characters: 8
+	First character (zero offset): 34
+	printf format: %8d
+	Null value: -1
+	Range: jdate == yearday(time)
+
+Field: arrival.lddate
+----------------------
+	Description: (epoch) time of last record modification
+	Field type: TIME
+	# of characters: 17
+	First character (zero offset): 206
+	printf format: %17.5lf
+	Null value: -9999999999.99900
+	Units: Seconds
+
+Field: arrival.logat
+---------------------
+	Description: log(amp/per)
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 155
+	printf format: %7.2lf
+	Null value: -999.00
+	Units: Log (Nanometers/seconds)
+
+Field: arrival.per
+-------------------
+	Description: period
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 147
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: per > 0.0
+	Units: Seconds
+
+Field: arrival.qual
+--------------------
+	Description: signal onset quality
+	Field type: STRING
+	# of characters: 1
+	First character (zero offset): 179
+	printf format: %-1s
+	Null value: -
+	Range: qual =~ /i|e|w/
+
+Field: arrival.rect
+--------------------
+	Description: rectilinearity
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 128
+	printf format: %7.3lf
+	Null value: -1.000
+	Range: rect >= 0.0 && rect <= 1.0
+
+Field: arrival.slow
+--------------------
+	Description: observed slowness (s/deg)
+	Field type: REAL
+	# of characters: 7
+	First character (zero offset): 104
+	printf format: %7.2lf
+	Null value: -1.00
+	Range: slow >= 0.0
+	Units: Seconds/degree
+
+Field: arrival.snr
+-------------------
+	Description: signal to noise ratio
+	Field type: REAL
+	# of characters: 10
+	First character (zero offset): 168
+	printf format: %10.2lf
+	Null value: -1.00
+	Range: snr > 0.0
+
+Field: arrival.sta
+-------------------
+	Description: station
+	Field type: STRING
+	# of characters: 6
+	First character (zero offset): 0
+	printf format: %-6s
+	Null value: -
+
+Field: arrival.stassid
+-----------------------
+	Description: stassoc id
+	Field type: INTEGER
+	# of characters: 8
+	First character (zero offset): 43
+	printf format: %8d
+	Null value: -1
+	Range: stassid > 0
+
+Field: arrival.stype
+---------------------
+	Description: signal type
+	Field type: STRING
+	# of characters: 1
+	First character (zero offset): 79
+	printf format: %-1s
+	Null value: -
+	Range: stype =~ /l|r|t|m|g|c|s|n|1|2|3/
+
+Field: arrival.time
+--------------------
+	Description: epoch time
+	Field type: TIME
+	# of characters: 17
+	First character (zero offset): 7
+	printf format: %17.5lf
+	Null value: -9999999999.99900
+	Units: Seconds
+.fi
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbhelp(1),dbschema(5)
+.fi
+.SH "BUGS AND CAVEATS"
+dbdescribe puts out slightly different information depending on whether it 
+is running on a schema or a database. This is by design, however it is not 
+clear that the choices made will be most convenient in the long run. dbdescribe
+may need options to limit or expand the information provided.
+
+Field descriptions are repeated for each table in which they occur. 
+.SH AUTHOR
+Kent Lindquist, borrowing heavily from Dan Quinlan's dbhelp(1)
+.\" $Id$
