@@ -7,6 +7,7 @@
 #define PFXML_NEWLINES 2
 #define PFXML_EXPLICIT_NAMESSPACE 4
 #define PFXML_STANDALONE 8
+#define PFXML_STRONG 16
 
 #ifdef	__cplusplus
 extern "C" {

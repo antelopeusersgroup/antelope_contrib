@@ -6,19 +6,63 @@
 #include "pfxml.h"
 
 #define OPTNEWLINE { if( flags & PFXML_NEWLINES ) { pushstr( (void **) &vstack, "\n" ); } }
+#define TBL_ELEM "pftbl_entry"
 
 static char *
-maketag( char *tagtype, char *name )
+maketag( char *tagtype, char *name, int flags )
 {
 	char	*vstack = 0;
 
 	pushstr( (void **) &vstack, "<" );	
-	pushstr( (void **) &vstack, tagtype );	
 
-	if( name != (char *) NULL && *name != (char) NULL ) {
-		pushstr( (void **) &vstack, " name=\"" );
-		pushstr( (void **) &vstack, name );
-		pushstr( (void **) &vstack, "\"" );
+	if( flags & PFXML_STRONG ) {
+
+		if( strcmp( name, "" ) ) {
+
+			pushstr( (void **) &vstack, name );	
+
+		} else {
+
+			pushstr( (void **) &vstack, TBL_ELEM );
+		}
+
+		if( tagtype != (char *) NULL && *tagtype != (char) NULL ) {
+			pushstr( (void **) &vstack, " type=\"" );
+			pushstr( (void **) &vstack, tagtype );
+			pushstr( (void **) &vstack, "\"" );
+		}
+
+	} else {
+
+		pushstr( (void **) &vstack, tagtype );	
+
+		if( name != (char *) NULL && *name != (char) NULL ) {
+			pushstr( (void **) &vstack, " name=\"" );
+			pushstr( (void **) &vstack, name );
+			pushstr( (void **) &vstack, "\"" );
+		}
+	}
+
+	pushstr( (void **) &vstack, ">" );
+
+
+	return popstr( (void **) &vstack, 1 );
+}
+
+static char *
+endtag( char *tagtype, char *name, int flags )
+{
+	char	*vstack = 0;
+
+	pushstr( (void **) &vstack, "</" );	
+
+	if( flags & PFXML_STRONG ) {
+
+		pushstr( (void **) &vstack, name );	
+
+	} else {
+
+		pushstr( (void **) &vstack, tagtype );	
 	}
 
 	pushstr( (void **) &vstack, ">" );
@@ -53,7 +97,7 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 	switch( pf->type ) {
 	case PFFILE:
 		
-		tag = maketag( "pffile", name );
+		tag = maketag( "pffile", name, flags );
 		pushstr( (void **) &vstack, tag ); 
 		OPTNEWLINE;
 
@@ -67,10 +111,11 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 			if( type == PFSTRING ) {
 
-				tag = maketag( "pfstring", key );
+				tag = maketag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
 				pushstr( (void **) &vstack, value );
-				pushstr( (void **) &vstack, "</pfstring>" ); 
+				tag = endtag( "pfstring", key, flags );
+				pushstr( (void **) &vstack, tag ); 
 				OPTNEWLINE;
 
 			} else {
@@ -81,14 +126,15 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 			}
 		}
 
-		pushstr( (void **) &vstack, "</pffile>" ); 
+		tag = endtag( "pffile", name, flags );
+		pushstr( (void **) &vstack, tag ); 
 		OPTNEWLINE;
 
 		break;
 
 	case PFARR:
 		
-		tag = maketag( "pfarr", name );
+		tag = maketag( "pfarr", name, flags );
 		pushstr( (void **) &vstack, tag ); 
 		OPTNEWLINE;
 
@@ -102,10 +148,11 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 			if( type == PFSTRING ) {
 
-				tag = maketag( "pfstring", key );
+				tag = maketag( "pfstring", key, flags );
 				pushstr( (void **) &vstack, tag ); 
 				pushstr( (void **) &vstack, value );
-				pushstr( (void **) &vstack, "</pfstring>" ); 
+				tag = endtag( "pfstring", key, flags );
+				pushstr( (void **) &vstack, tag ); 
 				OPTNEWLINE;
 
 			} else {
@@ -116,13 +163,13 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 			}
 		}
 
-		pushstr( (void **) &vstack, "</pfarr>" ); 
-		OPTNEWLINE;
+		tag = endtag( "pfarr", name, flags );
+		pushstr( (void **) &vstack, tag);
 
 		break;
 
 	case PFTBL:
-		tag = maketag( "pftbl", name );
+		tag = maketag( "pftbl", name, flags );
 		pushstr( (void **) &vstack, tag ); 
 		OPTNEWLINE;
 
@@ -132,10 +179,11 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 			if( type == PFSTRING ) {
 
-				tag = maketag( "pfstring", "" );
+				tag = maketag( "pfstring", "", flags );
 				pushstr( (void **) &vstack, tag ); 
 				pushstr( (void **) &vstack, value );
-				pushstr( (void **) &vstack, "</pfstring>" ); 
+				tag = endtag( "pfstring", "", flags );
+				pushstr( (void **) &vstack, tag ); 
 				OPTNEWLINE;
 
 			} else {
@@ -147,8 +195,8 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 
 		}
 
-		pushstr( (void **) &vstack, "</pfarr>" ); 
-		OPTNEWLINE;
+		tag = endtag( "pftbl", name, flags );
+		pushstr( (void **) &vstack, tag ); 
 
 		break;
 	default:
