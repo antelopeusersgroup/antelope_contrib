@@ -64,7 +64,7 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 			npts = grid.n2 - ix2;
 		if(npts<0)throw(GCLgrid_error("extract_gridline:  requested offset inconsistent with grid dimensions\n"));
 		coords=dmatrix(3,npts);
-		for(i=ix1,ii=0;ii<npts;i+=di,++ii)
+		for(i=ix2,ii=0;ii<npts;i+=di,++ii)
 		{
 			coords(0,ii)=grid.x1[ix1][i][ix3];
 			coords(1,ii)=grid.x2[ix1][i][ix3];
@@ -78,7 +78,7 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 			npts = grid.n3 - ix3;
 		if(npts<0)throw(GCLgrid_error("extract_gridline:  requested offset inconsistent with grid dimensions\n"));
 		coords=dmatrix(3,npts);
-		for(i=ix1,ii=0;ii<npts;i+=di,++ii)
+		for(i=ix3,ii=0;ii<npts;i+=di,++ii)
 		{
 			coords(0,ii)=grid.x1[ix1][ix2][i];
 			coords(1,ii)=grid.x2[ix1][ix2][i];
