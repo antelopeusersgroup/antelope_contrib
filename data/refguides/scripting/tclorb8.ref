@@ -123,7 +123,7 @@ orbpktchangethdr packetchan_handle
     returns packet-channel header information
 
 orbpktunstuffdata pkt
-    unstuff an orb packet pkt, returning a list of packet channels
+    unstuff an orb packet pkt, returning a list of packet channels, or a database pointer, or a string, depending on the packet
 
 orbpktgetdb pkt db
     unstuff a database packet pkt, returning a database pointer to the (scratch) record 
