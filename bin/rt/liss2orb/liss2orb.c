@@ -91,7 +91,7 @@ main (int argc, char **argv)
     int		   defaultport = 4000 ;
     char	  *database = 0 ;
     char	  *seed ;
-    int		   seedsize = 0, bufsize = 0 ; 
+    int		   seedsize = 4096, bufsize = 0 ; 
     int 	   fd = -1 ;
     int 	   failures = 0 ;
     char 	   srcname[ORBSRCNAME_SIZE] ;
@@ -167,7 +167,7 @@ main (int argc, char **argv)
 	finit_db (db);
     }
 
-    allot(char *, seed, 4096) ; 
+    allot(char *, seed, seedsize) ; 
     for(;;) { 
 	while ( fd < 0 ) { 
 	    fd = open_socket ( liss_server, defaultport ) ; 
