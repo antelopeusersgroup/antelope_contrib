@@ -280,7 +280,7 @@ void predicted_errors(Hypocenter h,
 	nused = pseudoinverse(U,s,V,m,npar,Agi);
 	if(nused != npar ) 
 	{
-		complain(0,"predicted_errors function found system of equations was singular, Errors estimates are unreliable\n");
+		register_error(0,"predicted_errors function found system of equations was singular, Errors estimates are unreliable\n");
 		ret_code = 1;
 	}
 	compute_covariance(Agi,m,npar,4,C,o.fix);
