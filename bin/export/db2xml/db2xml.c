@@ -94,9 +94,11 @@ main (int argc, char **argv)
 	db2xml( db, rootname, rowname, fields, expressions, 
 		(void **) &xmlstring, 0 );
 
-	printf( "%s\n", xmlstring );
+	if( xmlstring != NULL ) {
 
-	free( xmlstring );
+		fwrite( xmlstring, sizeof(char), strlen( xmlstring ), stdout );
+		free( xmlstring );
+	}
 
 	return 0;
 }
