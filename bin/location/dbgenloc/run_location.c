@@ -1,29 +1,4 @@
 #include "dbgenloc.h"
-
-static Hypocenter 
-initial_hypocenter ( double lat, double lon, double depth, double time ) 
-{
-    Hypocenter h;
-    h.lat = lat ; 
-    h.lon = lon ; 
-    h.z = depth ; 
-    h.time = time ;
-
-    h.dz = 0.0;
-    h.dx = 0.0;
-    h.dy = 0.0;
-    h.dt = 0.0;
-    h.rms_raw = -1.0;
-    h.rms_weighted = -1.0;
-    h.interquartile = -1.0;
-    h.number_data = 0;
-    h.degrees_of_freedom = 0;
-    h.lat0 = h.lat;
-    h.lon0=h.lon;
-    h.z0 = h.z;
-    h.t0 = h.time;
-    return(h);
-}
 /*  process routine for dbgenloc.  Handles the set of operations of
 computing a location and associated error estimates.  
 
