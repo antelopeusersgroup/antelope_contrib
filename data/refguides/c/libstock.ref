@@ -421,9 +421,6 @@ int mapfile ( char *name, Arr **arr, char **addr )
 int unmapfile ( char *name, Arr **arr )
     unmap file name, removing it from arr
 
-int unmaparr ( Arr **arr )
-    unmap all mapped files present in arr
-
 int mkfile ( char *name, ulong nbytes, char *init, int initsize)
     make file name nbytes long initialized with the first initsize bytes of init, otherwise zero
 
