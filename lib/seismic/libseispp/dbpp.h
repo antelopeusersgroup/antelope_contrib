@@ -84,9 +84,9 @@ public:
 	// faster by using db function calls using this Dbptr
 	// also a general escape
 	Dbptr db;
+	bool is_bundle;
 private:
 	bool close_on_destruction;
-	bool is_bundle;
 	Dbptr parent_table;
 };
 }  // end namespace seispp

@@ -617,33 +617,34 @@ Attribute_Map::Attribute_Map()
 				+ pfname);
 	try {
 		*this = Attribute_Map(pf,DEFAULT_SCHEMA_NAME);
-	} catch (...)  {throw;}
-	pffree(pf);
+		pffree(pf);
+	} catch (...)  
+	{
+		pffree(pf);
+		throw;
+	}
 }
 	
 
-
+// Use alternative schema to css3.0 contained in the same 
+// global parameter file
 	
-/* an  inefficient way to do this constructor, but should be acceptable since
-I don't expect this function to be called more than once in any given program.
-*/
-
-Attribute_Map::Attribute_Map(string s)
+Attribute_Map::Attribute_Map(string schema)
 {
-	string stbl;
+	const string pfname("seispp_attribute_maps");
 	Pf *pf;
-	int ierr;
-	Attribute_Map *amtmp;
-
-	stbl = string("Attribute_Map &Tbl{\n")
-		+ s +string("\n}\n");
-	ierr=pfcompile(const_cast<char *>(stbl.c_str()),&pf);
-	if(ierr!=0)
-		throw Metadata_parse_error(ierr,"pfcompile failure building Attribute_Map object");
-	amtmp = new Attribute_Map(pf,"Attribute_Map");
-	*this = *amtmp;
-	delete amtmp;
-	pffree(pf);
+	if(pfread(const_cast<char *>(pfname.c_str()),&pf))
+		throw Metadata_error(
+			string("pfread failure for attribute map parameter file = ")
+				+ pfname);
+	try {
+		*this = Attribute_Map(pf,schema);
+		pffree(pf);
+	} catch (...)  
+	{
+		pffree(pf);
+		throw;
+	}
 }
 Attribute_Map& Attribute_Map::operator=(const Attribute_Map& am)
 {

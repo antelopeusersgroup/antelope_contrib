@@ -44,7 +44,7 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 		atime = tcsi.get_double(arrival_time_key);
 	// Intentionally use the base class since the contents are discarded
 	// get_double currently would throw a Metadata_get_error
-	} catch (Metadata_error mde)
+	} catch (Metadata_error& mde)
 	{
 		throw seispp_error(base_error_message
 				+ arrival_time_key
@@ -95,7 +95,7 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 				double stime=tcso->get_double("time");
 				stime -= atime;
 				tcso->put_metadata("time",stime);
-			} catch (Metadata_error mde)
+			} catch (Metadata_error& mde)
 			{
 				cerr << base_error_message << endl;
 				mde.log_error();
@@ -107,7 +107,7 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 				double etime=tcso->get_double("endtime");
 				etime -= atime;
 				tcso->put_metadata("endtime",etime);
-			} catch (Metadata_error mde)
+			} catch (Metadata_error& mde)
 			{
 				cerr << base_error_message << endl;
 				mde.log_error();
@@ -139,7 +139,7 @@ Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& tcei,
 			Three_Component_Seismogram tcs;
 			tcs=Arrival_Time_Reference(*indata,arrival_time_key,tw);
 			tceo->tcse.push_back(tcs);
-		} catch ( seispp_error serr)
+		} catch ( seispp_error& serr)
 		{
 			serr.log_error();
 		}

@@ -50,7 +50,7 @@ Hypocenter::Hypocenter(Metadata& md)
 		lon=md.get_double("origin.lon");
 		z=md.get_double("origin.depth");
 		time=md.get_double("origin.time");
-	} catch (Metadata_error mderr) {throw mderr;};
+	} catch (Metadata_error& mderr) {throw mderr;};
 	// We run a separate try block here and recover from
 	// model and method not being defined -- a common thing
 	// we will probably need
@@ -60,7 +60,7 @@ Hypocenter::Hypocenter(Metadata& md)
 	try {
 		method=md.get_string("TTmethod");
 		model=md.get_string("TTmodel");
-	} catch (Metadata_error mderr){}
+	} catch (Metadata_error& mderr){}
 }
 		
 
@@ -183,7 +183,7 @@ double Hypocenter::ptime(double lat0, double lon0, double elev)
 
 	try{
 		ttime = this->phasetime(lat0,lon0,elev,phs);
-	} catch (seispp_error tte)
+	} catch (seispp_error& tte)
 	{
 		throw tte;
 	}
@@ -243,7 +243,7 @@ Slowness_vector Hypocenter::pslow(double lat0, double lon0, double elev)
 
 	try{
 		u = this->phaseslow(lat0,lon0,elev,phs);
-	} catch (seispp_error tte)
+	} catch (seispp_error& tte)
 	{
 		throw tte;
 	}

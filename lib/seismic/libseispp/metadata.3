@@ -172,7 +172,7 @@ public:
 
 	Attribute_Map();
         Attribute_Map(Pf *pf,string name);  
-        Attribute_Map(string);
+        Attribute_Map(string schema);
         Attribute_Map(const Attribute_Map&);
         Attribute_Map& operator=(const Attribute_Map&);
 };
@@ -248,9 +248,12 @@ antelope database.  If you need additional capabilities the interface
 allows it, but only simple types are currently supported in the 
 MDtype definition.  
 .LP
-Most users will wish to use the default constructor for the Attribute_Map.
+Most users will wish to use the default constructor for the Attribute_Map
+or the one with a single string argument schema.
 The default constructor loads a file from the global pf data area
 for Antelope and assumes a mapping appropriate for the css3.0 schema.
+The parameterized version scan for the name set in schema instead of
+the default css3.0.
 You should check the file (seispp_attribute_maps.pf) for the full
 definition of namespace mapping including aliases.  That is, the
 standard namespace uses Antelope-oriented naming for the internal

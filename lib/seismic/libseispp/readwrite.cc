@@ -22,7 +22,7 @@ long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_e
 	fname = dir + "/" + dfile;
 	try {
 		foff = vector_fwrite(x,n,fname);
-	} catch ( seispp_error err) { throw err;};
+	} catch ( seispp_error& err) { throw err;};
 	
 	return(foff);
 }
@@ -61,7 +61,7 @@ long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_er
 	fname = dir + "/" + dfile;
 	try {
 		foff = vector_fwrite(x,n,fname);
-	} catch ( seispp_error err) { throw err;};
+	} catch ( seispp_error& err) { throw err;};
 	
 	return(foff);
 }
@@ -168,50 +168,42 @@ Time_Series *Load_Time_Series_Using_Pf(Pf *pf)
 	Time_Series *ts = new Time_Series(md,true);
 	return(ts);
 }
+/* This function is used by both the Time_Series and Three_Component
+versions of dbsave below.  It builds a database row from a metadata
+object, which is produced in both cases by  casting up to Metadata,
+and pushing attributes out driven by the list, mdl, and the 
+namespace map, am.  
 
-/*
-// Antelope database output routine.  Uses trputwf which is 
-// listed as depricated, but this seems preferable to being
-// forced in the trace library format with the newer trsave_wf.
-// Arguments:
-//	ts = times series object to be saved
-//	db = Antelope database handle
-//	table = database table to write results to
-//	mdl = defines names to be extracted from metadata to
-//		write to database output
-//	am = Attribute_Map object defining internal to external namespace
-//		mapping
-//  The "table" argument drives the database puts.  That is the 
-//  basic algorithm is: 
-	dbopen table
+Arguments:
+	md = Metadata object containing attributes to be written to 
+		database
+	db = Antelope Dbptr.  It MUST point at a valid single row that
+		is to contain the attributes to be copied there.  
+	table = name of table these attributes are being written to
+		(needed for consistency check).
+	mdl = defines names to be extracted from metadata to
+		write to database output
+	am = Attribute_Map object defining internal to external namespace
+		mapping
+
+The basic algorithm is:
 	for each element of mdl
 		if mdl-> am -> dbtable_name == table
 			save
 		else
 			skip
 	end foreach
-	call trputwf to save data
- 
 */
-void dbsave(Time_Series& ts, 
+void save_metadata_for_object(Metadata& md,
 	Dbptr db,
-		string table, 
+		string table,
 			Metadata_list& mdl, 
 				Attribute_Map& am)
 		throw(seispp_error)
 {
 	Metadata_list::iterator mdli;
 	map<string,Attribute_Properties>::iterator ami,amie=am.attributes.end();
-	int recnumber;
-	string field_name;
 	string cval;
-
-	if(!ts.live) return;  // return immediately if this is marked dead
-	
-	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
-	recnumber = dbaddnull(db);
-	if(recnumber==dbINVALID) throw seispp_error(string("dbsave:  dbaddnull failed on table "+table));
-	db.record=recnumber;
 
 	for(mdli=mdl.begin();mdli!=mdl.end();++mdli)
 	{
@@ -255,17 +247,20 @@ void dbsave(Time_Series& ts,
 					
 				}
 				else
-					ival = ts.get_int(ami->second.internal_name);
+					ival = md.get_int(ami->second.internal_name);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					ival,0);
+				// In this case we need to push this back to metadata
+				// so it can be used downstream
+				md.put_metadata(ami->second.db_attribute_name,ival);
 				break;
 			case MDreal:
-				dval = ts.get_double(ami->second.internal_name);
+				dval = md.get_double(ami->second.internal_name);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					dval,0);
 				break;
 			case MDstring:
-				cval = ts.get_string(ami->second.internal_name);
+				cval = md.get_string(ami->second.internal_name);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					cval.c_str(),0);
 				break;
@@ -273,7 +268,7 @@ void dbsave(Time_Series& ts,
 				// treat booleans as ints for external representation
 				// This isn't really necessary as Antelope
 				// doesn't support boolean attributes
-				if(ts.get_bool(ami->second.internal_name))
+				if(md.get_bool(ami->second.internal_name))
 					ival = 1;
 				else
 					ival = 0;
@@ -312,18 +307,65 @@ void dbsave(Time_Series& ts,
 			}
 	
 		}
-		catch (Metadata_get_error mderr)
+		catch (Metadata_get_error& mderr)
 		{
 			mderr.log_error();
 			throw seispp_error(
-			    string("dbsave for Time_Series object failure"));
+			    string("dbsave object failure from problem in metadata components"));
 		}
+	}
+}
+
+
+/*
+// Antelope database output routine.  Uses trputwf which is 
+// listed as depricated, but this seems preferable to being
+// forced in the trace library format with the newer trsave_wf.
+// Arguments:
+//	ts = times series object to be saved
+//	db = Antelope database handle
+//	table = database table to write results to
+//	mdl = defines names to be extracted from metadata to
+//		write to database output
+//	am = Attribute_Map object defining internal to external namespace
+//		mapping
+//  The "table" argument drives the database puts.  That is the 
+//  basic algorithm is: 
+	dbopen table
+	add a null record
+	save metadata to new row driven by mdl and am
+	call trputwf to save data
+ 
+*/
+int dbsave(Time_Series& ts, 
+	Dbptr db,
+		string table, 
+			Metadata_list& mdl, 
+				Attribute_Map& am)
+		throw(seispp_error)
+{
+	int recnumber;
+	string field_name;
+
+	if(!ts.live) return(-1);  // return immediately if this is marked dead
+	
+	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
+	recnumber = dbaddnull(db);
+	if(recnumber==dbINVALID) throw seispp_error(string("dbsave:  dbaddnull failed on table "+table));
+	db.record=recnumber;
+	try {
+		save_metadata_for_object(dynamic_cast<Metadata&>(ts),
+			db,table,mdl,am);
+	} catch (seispp_error& serr)
+	{
+		dbmark(db);
+		throw serr;
 	}
 	// Even if they were written in the above loop the contents 
 	// of the object just override the metadata versions.  
 	// This is safer than depending on the metadata
 	double etime;
-	etime = ts.time(ts.ns - 1);
+	etime = ts.endtime();
 	dbputv(db,0,"time",ts.t0,
 		"endtime",etime,
 		"samprate",1.0/ts.dt,
@@ -387,8 +429,9 @@ void dbsave(Time_Series& ts,
 		// Reasons is that if the file exists these functions
 		// always append and return foff.
 		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		return(recnumber);
 	}
-	catch (seispp_error serr)
+	catch (seispp_error& serr)
 	{
 		// delete this database row if we had an error
 		dbmark(db);
@@ -417,7 +460,7 @@ Author:  G Pavlis
 Written:  summer 2004
  
 */
-void dbsave(Three_Component_Seismogram& tcs, 
+int dbsave(Three_Component_Seismogram& tcs, 
 	Dbptr db,
 		string table, 
 			Metadata_list& mdl, 
@@ -425,6 +468,7 @@ void dbsave(Three_Component_Seismogram& tcs,
 					vector<string>chanmap,
 						bool output_as_standard)
 {
+	int irec;
 	try {
 		if(output_as_standard) tcs.rotate_to_standard();
 		auto_ptr<Time_Series>x1(Extract_Component(tcs,0));
@@ -439,31 +483,89 @@ void dbsave(Three_Component_Seismogram& tcs,
 		x3->put_metadata("vang",90.0);
 		x3->put_metadata("hang",90.0);
 		x3->put_metadata("chan",chanmap[2]);
-		dbsave(*x1,db,table,mdl,am);
-		dbsave(*x2,db,table,mdl,am);
-		dbsave(*x3,db,table,mdl,am);
+		irec=dbsave(*x1,db,table,mdl,am);
+		irec=dbsave(*x2,db,table,mdl,am);
+		irec=dbsave(*x3,db,table,mdl,am);
+		return(irec);
 		// delete not needed because of auto_ptr
 	// catch all exceptions and just rethrow them
 	} catch (...)
 	{ throw;}
 }
-// simplied overloaded version that has frozen output names of E,N,Z.
-void dbsave(Three_Component_Seismogram& tcs, 
+// Writes a 3C trace out in a fortran matrix, binary format.
+// Arguments are as in above function but there is not 
+// channel map function in this case.  Note the data are
+// always forced to standard coordinates so we don't need
+// to save the transformation matrix.  
+// Uses a trick to get at the contents of the dmatrix.
+// VERY IMPORTANT portability restriction if the dmatrix
+// implementation every changes.  Assumes the contents of
+// the dmatrix are in FORTRAN order with components of 
+// the seismogram in row order.  (i.e. data are multiplexed
+// in the vector sequence stored in output)  
+int dbsave(Three_Component_Seismogram& tcs, 
 	Dbptr db,
 		string table, 
 			Metadata_list& mdl, 
 				Attribute_Map& am)
 {
-	vector<string> chanmap;
-	chanmap.reserve(3);
-	chanmap.push_back("E");
-	chanmap.push_back("N");
-	chanmap.push_back("Z");
+	int recnumber;
+	string field_name;
 
+	if(!tcs.live) return(-1);  // return immediately if this is marked dead
+	if(table=="wfdisc")
+		throw seispp_error(string("dbsave:  Using wrong dbsave function ")
+			+string("for Three_Component_Seismogram object.\n")
+			+string("Cannot save to wfdisc with this function.\n"));
+	
+	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
+	recnumber = dbaddnull(db);
+	if(recnumber==dbINVALID) 
+		throw seispp_error(string("dbsave:  dbaddnull failed on table "+table));
+	db.record=recnumber;
 	try {
-		dbsave(tcs,db,table,mdl,am,chanmap,true);
-	} catch (...)
-	{throw;}
+		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
+			db,table,mdl,am);
+		// Even if they were written in the above loop the contents 
+		// of the object just override the metadata versions.  
+		// This is safer than depending on the metadata
+		double etime;
+		etime = tcs.endtime();
+		string sdtype("3c"); // speciall datatype signals dmatrix format
+		dbputv(db,0,"time",tcs.t0,
+			"endtime",etime,
+			"samprate",1.0/tcs.dt,
+			"nsamp",tcs.ns,
+			"datatype",sdtype.c_str(),0);
+		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
+		long int foff;  // actual foff reset in db record
+		// assume these were set in mdl.  probably should have a cross check
+		dbgetv(db,0,"dir",dir,"dfile",dfile,0);
+		// make sure the directory is present
+		if(makedir(dir))
+		{
+			dbmark(db);
+			throw seispp_error(string("makedir(dir) failed with dir=")
+					+ string(dir));
+		}
+		// Note we always write these as doubles.  I don't
+		// expect to save a datatype with this class of 
+		// object database writers.
+		foff=vector_fwrite(tcs.u.get_address(0,0),tcs.ns*3,
+			string(dir),string(dfile));
+		// Above returns and off that we need to set 
+		// in the database as the absolutely correct value
+		// Reasons is that if the file exists these functions
+		// always append and return foff.
+		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		return(recnumber);
+	}
+	catch (seispp_error& serr)
+	{
+		// delete this database row if we had an error
+		dbmark(db);
+		throw serr;
+	}
 }
 
 } // Termination of namespace SEISPP definitions

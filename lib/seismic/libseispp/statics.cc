@@ -19,14 +19,14 @@ void apply_geometric_static(Time_Series *ts)
 	const string help_message="EDIT metadata_defaults.pf\n";
 	try {
 		elev = ts->get_double("elevation");
-	} catch (Metadata_error mde)
+	} catch (Metadata_error& mde)
 	{
 		mde.log_error();
 		cerr << "elevation set to 0.0"<<endl<<help_message;
 	}
 	try {
 		vel = ts->get_double("surface_velocity");
-	} catch (Metadata_error mdev)
+	} catch (Metadata_error& mdev)
 	{
 		mdev.log_error();
 		cerr << "surface_velocity set to 3.5"<<endl<<help_message;;

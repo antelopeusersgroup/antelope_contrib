@@ -434,11 +434,11 @@ long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string fname) throw(seispp_error);
 // Antelope database output routine
-void dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_Map& am)
+int dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_Map& am)
 		throw(seispp_error);
-void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, 
+int dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, 
 	Metadata_list& md, Attribute_Map& am);
-void dbsave(Three_Component_Seismogram& ts,Dbptr db,
+int dbsave(Three_Component_Seismogram& ts,Dbptr db,
 	string table, Metadata_list& md, 
 	Attribute_Map& am, vector<string>chanmap,bool output_as_standard);
 }

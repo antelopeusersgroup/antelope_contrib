@@ -97,7 +97,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 			fclose(fp);
 		}
 	}
-	catch (Metadata_error mderr)
+	catch (Metadata_error& mderr)
 	{
 		throw mderr;
 
@@ -168,7 +168,7 @@ Time_Series::Time_Series(Database_Handle& rdb,
 		live = true;
 		free(inbuffer);
 	}
-	catch (Metadata_error mderr)
+	catch (Metadata_error& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
@@ -330,7 +330,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 			fclose(fp);
 		}
 	}
-	catch (Metadata_error mderr)
+	catch (Metadata_error& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
@@ -362,7 +362,7 @@ bool tmatrix_is_cardinal(Three_Component_Seismogram& seis)
 		||  (seis.tmatrix[2][2]!=1.0) )return(false);
 	return(true);
 }
-/* Constructor to read a three-componet seismogram from an antelope
+/* Constructor to read a three-component seismogram from an antelope
 database.  Arguments:
 	rdb - generic database handle (cast to Anteloep form)
 	md_to_extract - defines database attributes to be extracted and placed
@@ -376,6 +376,9 @@ It will throw an exception if the number per group is anything but 3.
 It does contain a feature to handle mixed start and end times.  The
 minimum start and maximum end times of the three components are used.
 If there are any irregularies the front or end is marked as a gap.
+
+Modified:  Jan 25, 2005
+Added support for 3c data type = dmatrix allowed in wfprocess table.
 */
 
 Three_Component_Seismogram::Three_Component_Seismogram(
@@ -392,6 +395,12 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 	components_are_cardinal=false;
 	components_are_orthogonal=false;
 	try{
+	    // a simple test for data stored in wfdisc is that
+	    // in that scenario dbh must be a group pointer i
+	    // datascope jargon.  In my object implementation this
+	    // is easily detected with this conditional
+	    if(dbh.is_bundle)
+	    {
 		double tsread[3],teread[3];
 		double hang[3],vang[3];
 		double samprate[3];
@@ -557,8 +566,43 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		//
 		// last thing we do is mark this live
 		live = true;
+	    }
+	    else
+	    {
+		// Land here when data are not stored in wfdisc but
+		// stored as dmatrix object binary form
+		Metadata md(dbh,md_to_extract,am);
+		*this=Three_Component_Seismogram(md,false);
+		// Important consistency cross check.
+		string datatype=md.get_string("datatype");
+		if(datatype!="3c")
+			throw seispp_error(
+				string("Three_Component_Seismogram constructor:")
+				+string(" cannot handle datatype="+datatype));
+		// frozen names but essential here.
+		// assumes we alias these variables 
+		string dfile=md.get_string("dfile");
+		string dir=md.get_string("dir");
+		string fname=dir+"/"+dfile;
+		int foff=md.get_int("foff");
+
+		FILE *fp=fopen(fname.c_str(),"r");
+		if(fp==NULL)
+			throw seispp_error("Open failed on file"+fname);
+		if(foff>0) fseek(fp,static_cast<long int>(foff),SEEK_SET);
+		int readsize=(this->ns)*3;
+		if(fread(static_cast<void *>(this->u.get_address(0,0)),
+			sizeof(double),readsize,fp) != readsize)
+		{
+			fclose(fp);
+			throw seispp_error(string("fread error ")
+			+ string("reading  three-component data object from ")
+			+fname);
+		}
+	    }
+		
 	}
-	catch (Metadata_error mderr)
+	catch (Metadata_error& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
@@ -686,8 +730,6 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
-//DEBUG
-cerr << "Ensemble has data for " << nsta << " members"<<endl;
 		// We need a copy of this bundle pointer 
 		Datascope_Handle dbhv(ensemble_bundle.parent,
 			ensemble_bundle.parent,true);
@@ -712,7 +754,7 @@ cerr << "Ensemble has data for " << nsta << " members"<<endl;
 				cerr << "Data for this member skipped" << endl;
 				continue;
 			}
-			catch (Metadata_error mderr)
+			catch (Metadata_error& mderr)
 			{
 				mderr.log_error();
 				throw seispp_error(string("Metadata problem"));

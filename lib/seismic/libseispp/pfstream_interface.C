@@ -67,7 +67,7 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	{
 		throw serr;
 	}
-	catch(Metadata_error mderr)
+	catch(Metadata_error& mderr)
 	{
 		mderr.log_error();
 		throw seispp_error("get_next_ensemble: Problems building Time_Series_Ensemble object");
@@ -163,7 +163,7 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 				=seis.x[0].md.get_bool("components_are_cardinal");
 		    	tceobj.tcse.push_back(seis);
 		    }
-		    catch (Metadata_error mde)
+		    catch (Metadata_error& mde)
 		    {
 			    mde.log_error();
 			    throw seispp_error("Error copying metadata\nEnsemble metadata may be incomplete\n");
@@ -180,7 +180,7 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	{
 		throw serr;
 	}
-	catch(Metadata_error mderr)
+	catch(Metadata_error& mderr)
 	{
 		mderr.log_error();
 		throw seispp_error("Problems building Time_Series_Ensemble object");

@@ -1871,24 +1871,24 @@ emodel.lddate lddate emodel real
 #
 # above are css3.0  This is added by pwmig1.1
 #
-wfprocess.pwfid pwfid wfprocess int
-wfprocess.time time wfprocess 
-wfprocess.endtime endtime wfprocess 
+wfprocess.pwfid pwfid wfprocess int true
+wfprocess.time time wfprocess real
+wfprocess.endtime endtime wfprocess real 
 wfprocess.timetype timetype wfprocess string
-wfprocess.dir dir wfprocess 
-wfprocess.dfile dfile wfprocess 
-wfprocess.foff foff wfprocess 
-wfprocess.datatype datatype wfprocess 
-wfprocess.samprate samprate wfprocess 
-wfprocess.nsamp nsamp wfprocess 
-wfprocess.algorithm algorithm wfprocess 
-wfprocess.lddate lddate wfprocess 
+wfprocess.dir dir wfprocess string
+wfprocess.dfile dfile wfprocess string
+wfprocess.foff foff wfprocess int
+wfprocess.datatype datatype wfprocess string
+wfprocess.samprate samprate wfprocess real
+wfprocess.nsamp nsamp wfprocess int
+wfprocess.algorithm algorithm wfprocess string 
+wfprocess.lddate lddate wfprocess real
 rawwflink.pwfid pwfid rawwflink int
-rawwflink.wfid wfid rawwflink 
-rawwflink.lddate lddate rawwflink 
+rawwflink.wfid wfid rawwflink int
+rawwflink.lddate lddate rawwflink real 
 evlink.pwfid pwfid evlink int
-evlink.evid evid evlink 
-evlink.lddate lddate evlink 
+evlink.evid evid evlink int
+evlink.lddate lddate evlink real 
 pwstack.gridname gridname pwstack string
 pwstack.ix1 ix1 pwstack int
 pwstack.ix2 ix2 pwstack int
@@ -1897,13 +1897,13 @@ pwstack.uy uy pwstack real
 pwstack.ux0 ux0 pwstack real
 pwstack.uy0 uy0 pwstack real
 pwstack.pwfid pwfid pwstack int
-pwstack.sta sta pwstack 
-pwstack.elev elev pwstack 
-pwstack.lddate lddate pwstack 
+pwstack.sta sta pwstack string
+pwstack.elev elev pwstack string
+pwstack.lddate lddate pwstack real
 gclgdisk.gridname gridname gclgdisk string
 gclgdisk.dimensions dimensions gclgdisk int
-gclgdisk.lat lat gclgdisk 
-gclgdisk.lon lon gclgdisk 
+gclgdisk.lat lat gclgdisk real
+gclgdisk.lon lon gclgdisk real
 gclgdisk.radius radius gclgdisk real
 gclgdisk.azimuth_y azimuth_y gclgdisk real
 gclgdisk.dx1nom dx1nom gclgdisk real
@@ -1923,18 +1923,22 @@ gclgdisk.zlow zlow gclgdisk real
 gclgdisk.zhigh zhigh gclgdisk real
 gclgdisk.cdefined cdefined gclgdisk string
 gclgdisk.geodefined geodefined gclgdisk string
-gclgdisk.datatype datatype gclgdisk 
-gclgdisk.dir dir gclgdisk 
-gclgdisk.dfile dfile gclgdisk 
-gclgdisk.foff foff gclgdisk 
-gclgdisk.lddate lddate gclgdisk 
+gclgdisk.datatype datatype gclgdisk string
+gclgdisk.dir dir gclgdisk string
+gclgdisk.dfile dfile gclgdisk string
+gclgdisk.foff foff gclgdisk int
+gclgdisk.lddate lddate gclgdisk real 
 # aliases go here
+# Note the changes from css3.0
 # id key fields all get obvious aliases
 atime time arrival real
 deltim deltim arrival real
 slow slow arrival real
 azimuth azimuth arrival real
 phase phase assoc string
+lat lat site real
+lon lon site real
+elev elev site real
 sta.lat lat site real
 sta.lon lon site real
 sta.elev elev site real
@@ -1945,21 +1949,23 @@ hang hang sitechan real
 vang vang sitechan real
 sta sta wfdisc string
 chan chan wfdisc string
-time time wfdisc real
-endtime endtime wfdisc real
+time time wfprocess real
+endtime endtime wfprocess real
 jdate jdate wfdisc  int
-nsamp nsamp wfdisc int
-samprate samprate wfdisc real
+nsamp nsamp wfprocess int
+samprate samprate wfprocess real
 calib calib wfdisc real
 calper calper wfdisc real
-datatype datatype wfdisc string
-dir dir wfdisc string
-dfile dfile wfdisc string
-foff foff wfdisc int
+datatype datatype wfprocess string
+dir dir wfprocess string
+dfile dfile wfprocess string
+foff foff wfprocess int
 arid arid arrival int true
 evid evid event int true
 orid orid origin int true
 wfid wfid wfdisc int true
+pwfid pwfid wfprocess int true
+timetype timetype wfprocess string
 }
 
 pf_revision_time 1094848708
