@@ -1,2 +1,3 @@
-cvsroot aesn.geology.indiana.edu:/opt/antelope/cvs
+# cvsroot aesn.geology.indiana.edu:/opt/antelope/cvs
+cvsroot /opt/antelope/cvs
 package contrib

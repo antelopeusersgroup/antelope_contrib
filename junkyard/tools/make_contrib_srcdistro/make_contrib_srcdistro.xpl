@@ -32,3 +32,5 @@ $cmd = "compress $pwd/$tarfile_name";
 system( $cmd );
 
 system( "/bin/rm -rf /tmp/contrib" );
+
+chdir( "$pwd" );
