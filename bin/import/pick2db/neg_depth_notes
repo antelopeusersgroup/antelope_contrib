@@ -1,0 +1,10 @@
+John Lahr explains that a solution with negative depth shows "-0" in 
+the standard depth field, indicating that the actual, negative-depth
+solution is given in a field that comes later on in the summary line.
+
+8/26/96
+Lahr explains that several months ago (March?) this changed. Now a 
+negative depth can also show up in the first depth field. John 
+guarantees that if the depth is negative it will always show up in
+the extra depth field as well, an assumption on which pick2db 
+relies at this point.

@@ -1,0 +1,250 @@
+.TH PICK2DB 1 "%G%"
+.SH NAME
+pick2db \- convert hypoellipse pickfile(s) to datascope css3.0 format
+.SH SYNOPSIS
+pick2db [-cv] [-r reference_db[:reference_db...]] pickfile \[pickfile...\] dbname
+.SH DESCRIPTION
+.LP
+Pick2db converts a hypoellipse pickfile or series of pickfiles into a datascope
+css3.0 database. The goal is to put as much information as possible
+from the pickfile into the database without perturbing the schema
+so much that current software won't work.
+
+Pick2db will add to an existing database without destroying the previous
+contents. If the specified database does not yet exist, pick2db will
+create it.
+
+A pickfile must have a non-blank origin-time, latitude, longitude, and
+depth specified on its summary line in order to be processed. If the 
+depth column lists a depth of "-0", pick2db looks in the second depth
+column for the actual event depth, as per Alaskan pickfile format. If the
+depth column lists any other negative depth, pick2db also looks in the
+second depth column for the actual event depth. Note that this is
+necessary, otherwise one could never tell a "-0" indicator of a negative
+depth in the second depth column from a "-0" actual depth (providing
+those are produced by anything).
+
+.SS Notes on information mapping
+
+.LP
+pick2db decides whether to use two-digit years or four-digit years 
+for the summary line based on the presence of a '/' in column 81 of 
+the summary line (two digit years) or in column 83 (four digit years)
+.LP	
+event.evname is set to the name of the pickfile.
+.LP
+A new evid and a new orid (with evid.prefor the same as the
+orid) are defined for each pickfile.
+.LP
+The host and processing date in C*(T) rows are ignored.
+.LP
+The "USER" in the C*(T) row fills all author fields in the database except
+for the authors of magnitudes not determined here.
+If there is no user listed in the pickfile, all author fields
+are set to the name of the translation program (i.e. "pick2db").
+.LP
+All other comments are ignored. Pick2db assumes that all rows starting 
+with C*([A-Z ]) are comments (single capital letter or a space inside the
+parentheses), and that all rows not matching that pattern are not comments.
+.LP
+origin.etype is whatever event-typecode was in the pickfile. This
+does not agree exactly with the css3.0 schema, though dbaddv
+in perl appears willing to add the values.
+.LP
+origin.ndef is set to the number of defining phases specified in
+the summary line of the pickfile. If this is zero, origin.ndef is
+set to the number of phases in the pickfile that have weights under
+4. Note that the ndef in the summary line includes the number of S-P
+measurements used in the solution in addition to the number of P and S 
+arrivals, according to the hypoellipse documentation.
+.LP
+origin.grn and origin.srn are left null at the moment, since there
+is at the moment no perl version of the grnumber and srnumber 
+routines. This could be remedied with command-line calls from
+perl, at the price of speed. The solution now is to use 
+dbsetrgn as a postprocessing step.
+.LP
+origin.ndp and origin.depdp, the number of depth phases used to 
+locate an event and the resulting depth, are left null in the
+output database since I don't see their equivalent in the hypoe
+summary line.
+.LP
+origin.dtype is "f" if fixed-location indicator is zero (nothing
+fixed) or 8 (time fixed). It is "g" if fixed-location indicator is 
+one (depth fixed at trial depth) or 9 (depth, lat, lon fixed at
+trial values).
+.LP
+The magnitude-mapping is as follows. If the magtype field of the
+summary line is X,C, or P, ml is set to the magnitude field of
+the summary line. Otherwise if the xmag field of the summary line
+is not blank, ml is set to that. Otherwise ml is set to null.
+If the magtype field of the summary line is B, mb is set to the 
+magnitude field. Otherwise mb is left null.  If the magtype field
+of the summary line is S, ms is set to the magnitude field.
+Otherwise ms is left null. 
+.LP
+origin.algorithm is left null since I didn't see anything
+in the summary line that would correspond to it. At the moment
+the assumption is pretty good that if pick2db manages 
+to decode the phase file then it must have been generated
+by hypoe, but as soon as we start converting things back and
+forth to pickfiles I'm afraid that assumption will break down. 
+For this reason I have decided not to hard-wire the program
+name "hypoe" into origin.algorithm. No information is apparently
+available in the pickfile on which velocity model was used.
+.LP
+The epicentral error ellipse is in origerr courtesy of the
+projax.f routine, of unknown authorship. I have put a shell-callable
+wrapper called project_ellipse on this routine, which is then
+called by pick2db.
+.LP
+The P first-motion is always put in the short-period half of 
+arrival.fm
+.LP
+assoc.wgt is the pickfile's weight code divided by 4 (not
+to exceed 1.0). Arguably that pickfile weight is more
+appropriately a measure of the arrival uncertainty, 
+and the pickfile's "weight-code" carries the information
+about the health of this arrival's association with this
+origin. Since this is a qualitative measure anyway I didn't
+bend over backwards coming up with a translation.
+.LP
+Phases are assumed to be defining (assoc.timedef) if the hypoe weight is
+less then 4; nondefining otherwise. 
+.LP
+Amplitudes are put in as rows in the arrival table. Since the
+amplitude measurements recorded in a pickfile are not associated
+directly with any phase, a new phase-label is being used, 
+arrival.iphase = "amp". The arrival time of the "amplitude" phase is
+approximated by the base-time (YrMoDyHrMn) in the phase line. Despite
+appearances, the exact time at which the measurement was made
+is not available even from the C*(A) comment line, since those
+numbers refer to the AH file containing the data.
+Note that the pickfile amplitude is peak-peak and the css amplitude
+is zero-peak. The "amp" phase is of course listed as non-defining.
+Technically, the amplitudes in the css database are supposed to be
+corrected for instrument response. I've put the pickfile amplitude 
+(divided by two) directly into arrival.amp.
+.LP
+The xmag field of the phase row is turned into a stamag for the 
+"amp" phase. xmags in phase rows are ignored if there is no
+ml for the origin, or if the ml for the origin 
+was not determined here. The fmag is similarly converted, with the
+name md in netmag.magtype. 
+.LP
+Netmag rows are defined for all magnitudes that appear on the summary
+line of the pickfile.
+.LP
+The arrival.ema is really supposed to be a measured value, so setting
+it to the incidence-angle of the phase row is technically incorrect
+since that is a number derived from a calculation based on some model.
+Nevertheless I have equated the two fields. 
+.LP
+Sales pitch for the descriptor file: note that quasi-static information
+such as site, sitechan, instrument, sensor, network, affiliation, calibration,
+and stage can be incorporated into the database by referring to it
+in the descriptor file. The -r option allows one to specify 
+databases for quasi-static information (plus other stuff, like wfdiscs);
+.SH OPTIONS
+.IP -c
+Pick2db will attempt to fake channel names, guessing from the station
+name. The default is "shz", which is modified by the presence
+of a "-" in the third or fourth character of the station name (implying
+low-gain); by an "e" in the fourth character of the station name (east
+component); or by an "n" in the fourth character of the station name 
+(north component). A "p" in the fourth character of the station name
+indicates a pressure-sensor, thus landing a "p" in the first position
+of the channel name (even though that seems like an awful place for it).
+.IP -v
+Verbose option. Pick2db will report the name of each file it tries to process.
+.IP "-r \fIreference_db[:reference_db...]\fR" 
+This specifies other databases (in addition to the one being created) to
+which the descriptor file should refer. Multiple reference databases
+may be specified as a colon-separated list with no spaces. Do
+not include any squiggly-brackets (the standard datascope 
+syntax for the dbpath), since pick2db expects to do it for you. 
+.SH QUESTIONS
+.LP
+does a fixed-location code of 7 indicate the location was 
+fixed by the location program or by a geophysicist? Right now
+this code will result in origin.dtype = dbNULL.
+.SH FILES
+.SH ENVIRONMENT
+pick2db expects $JSPC to be defined.
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+ugle% ls 95*
+950301042930p   950301071901p   950301081901p
+ugle% pick2db 95* mydb
+Insufficient summary info in pickfile 950301042930p--skipping
+.fi
+ugle% 
+.SH DIAGNOSTICS
+"Insufficient summary info in pickfile 950301042930p--skipping":
+The summary line (first line) of a pick file must contain non-null 
+origin time, latitude, longitude, and depth for the pickfile to be
+processed.
+
+"950301081936p: row 5 not understood: 13#$eZ.0 95%301%^&(#1 2398 ZZZ303 3227es 0 641605 061062 10    0                -9 10    -8  0  0  01110   GGG 0":
+If a row is not the first phase row, not a comment that starts with
+C*([A-Z]), and doesn't have a letter in its first four characters (i.e.
+supposedly the station name in a phase row), pick2db will skip the 
+row and continue. Note that secondary summary lines are not understood
+by pick2db, and hence will generate such an error message.
+
+gaia% pick2db 95*
+***: Can't open schema file '95102018 5580960N 230152W54471009837 53 42  5  28204 4  4911224  7237  P 152AX17/    1095E      1117.2.2 178 010098'.
+No such file or directory
+gaia% 
+	....you forgot to give it a database name, so it interpreted
+the last named pickfile as the descriptor file for the database.
+.SH "SEE ALSO"
+.nf
+
+dbintro(3), project_ellipse(1)
+
+Pickfile format is described in the documentation for hypoellipse.
+.fi
+.SH "BUGS AND CAVEATS"
+css3.0 schema null-values are hard-wired in. The current
+value of dbINVALID is also hard-wired in since these 
+constants aren't yet built into the perl interface to
+Datascope.
+
+The summary line MUST have a / in column 81 or 83 of the pickfile
+to identify itself as a summary line, otherwise pick2db will reject 
+it. Alternate summary lines, which are supposed to be flagged with
+\, are currently not supported. Such files might fool the program,
+leaving the second summary line to be interpreted as a gibberish 
+arrival.
+
+pick2db will not add references to an already-existing descriptor
+file.
+
+If the pickfile does not have a summary line, pick2db will not 
+process it. pick2db adds picks based on the origins with which 
+they are associated.
+
+If the program refuses to add an origin line or a phase line to 
+the database because there's another one in there whose primary
+keys match, the program is silent about the failure.
+There is a telltale sign, however. Arids
+are requested before dbaddv calls are made, so rows that don't
+add because they're identical to other rows will cause jumps in
+the sequence of arids/orids.
+
+pick2db assumes that comments begin with C*(X) or C*<X> where "X"
+is a character indicating the comment type.
+
+pick2db assumes that the station name (first four characters
+of the phase line) contains at least one upper or lowercase letter.
+If it doesn't find one, it complains and skips the row.
+
+pickfiles do not contain channel names, though many programs
+using the css database will expect them (hence the -c option).
+
+.SH AUTHOR
+Kent Lindquist. 
+The Datascope package was written by the Joint Seismic Program 
+Center, Boulder, Colorado.

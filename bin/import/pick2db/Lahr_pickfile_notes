@@ -1,0 +1,42 @@
+Notes 11/2/95 from my questions to John Lahr about pickfiles
+
+We don't in practice usually have pickfiles with no summary lines.
+There are occasionally some teleseisms with no locations--the one
+exception.
+
+There are sometimes phase rows that have just an S phase in them, no
+P phase. 
+
+The reliable way to test whether a row has a P phase is to see whether
+the P-sec field is blank. 
+
+The "A-mag" is an average of coda mag and local mag. Possibly fair
+to use it as a local mag??
+
+The maximum amp and period in the phase line are not specific to
+the P phase--they're for the station.
+
+The C*(A) rows are for Xpick to know where the amplitude was measured--
+where it's time uncertainty bars are, and where its min/max amplitude bars are.
+
+Not all phases are defining. Those with weight greater than or equal
+to 4 are non-defining.
+
+a weight of 0 indicates the best reading. a weight of 3 indicates the
+worst usable reading. 
+
+There's a distinction between the weight and the weight-code. The former
+is a characteristic of the arrival. The latter refers to its use in
+a solution. 
+
+The minimum amount of info necessary for hypoe to be able to use a 
+pickfile is:
+	station
+	weight-code (either come up with an algorithm based on standard
+		deviation, or just set it to 0)
+	pick time
+It needs at least three arrivals. The summary line doesn't have to be
+there, but if it is then that's used as a starting location. The row
+does not have to be 110 characters long if all the end fields are 
+blank. P and S phases for the same station don't necessarily have to
+be on the same line. 
