@@ -46,6 +46,12 @@ rtincident [options] [output_file]
 rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-Cdv] recipients
     send mail with attachments
 
+rtorbcmd [-d] [-p pf] target command
+    client program for sending commands to a remote orb
+
+rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
+    server program for reading and executing commands on a remote orb
+
 rtreport [options] [directory]
     report some statistics on data collection
 <options>
@@ -239,6 +245,22 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -v
 </options>
 
+qtunbale [options] url [time [endtime|period]]
+    unload data from a Quanterra baler
+<options>
+-a	just show the time range available
+-c chan	only channel chan (??-???)
+-d db	make wfdisc with miniseed2db
+-f w	size of time window for requests
+-i info	where to save info files from baler
+-o orb	pass directly to orb using miniseed2orb
+-q	wait quietly for baler to wake up
+-S dir	subdirectory for miniseed day files
+-w wfname	specify pattern for miniseed files
+-r	suppress running miniseed2days
+-v more verbose
+</options>
+
 qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
@@ -383,6 +405,9 @@ orb2orb [options] in out [start [period|end]]
 -w re	ensure reading programs which match re are no more than max_behind seconds behind 
 </options>
 
+orbxchange pf
+    run multiple orb2orb connections controlled by pf
+
 orbxfer [-d dir] [-vv] file ... orb
     transfer a set of local files to an orbserver orb; the -d option specifies an alternate directory dir in which the files are to be found
 
@@ -472,6 +497,17 @@ orbampmag  [options] orbwf orbdb dbname
 -v
 </options>
 
+orbwfrms [options] dbname orbin [orbout]
+    compute running rms estimates from waveform packets
+<options>
+-start {pktid|time|OLDEST} 
+-select sexpr
+-reject rexpr 
+-end endtime 
+-pf pf
+-S state
+-v
+</options>
 
 orbpftrigger [options] orb [cmdstring]
     parameter file trigger of a program execution
@@ -576,6 +612,9 @@ cpu2orb [-i t] [-vv] orb
 df2orb [-i t] [-p pf] [-vv] orb
     put filesystem status information packets on orb every t seconds
 
+heartbeat [-T period] [-v] orb
+     creates periodic condensed status packets with system info
+
 ps2orb [options] orb
     save process information from ps(1) to orb at interval t seconds
 <options>
@@ -605,6 +644,12 @@ orblog [-f file] [-s subcode] orb [log info]
 orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
     saves logs packets (from tail2orb) back into corresponding plain files 
     divided by epoch day boundaries.
+
+orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
+    read and print log packets from orb 
+
+orb2ntp [-d delay] [-m match] [-r reject] [-v] orb
+    use orb packet times as (very rough) ntp clock
 
 rtlogs orb
     display log messages from orbserver orb

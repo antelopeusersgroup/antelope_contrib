@@ -3,6 +3,10 @@
 <subsection Database Schemas>
 <commands>
 
+dbbuild [-v] [-p pf] db [template]
+dbbuild -b [-v] [-p pf] db input
+    build a new database with site, sitechan, sensor, instrument, stage and calibration tables
+
 dbhelp [db|s]
     gui to explore schema for database db or schema s
 

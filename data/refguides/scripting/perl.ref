@@ -192,7 +192,10 @@ elog_flush (deliver, first)
 
 <subsection Parameter files>
 pfget (pfname, key)
-    extracts the value for the key from the parameter file pfname
+    returns the value for the key from the parameter file pfname
+
+pfget_boolean (pfname, key)
+    returns 0 or 1 depending on the value of key in the parameter file pfname
 
 pfupdate (pfname)
     checks and rereads a parameter file if one of the components along PFPATH has changed

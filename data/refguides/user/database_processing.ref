@@ -60,6 +60,9 @@ dbassoc_arrival [-p delta_p] [-s delta_s] dbout dbin
 assoc_rayleigh [-v] dbout dbin
     associate rayleigh wave picks from dbout to origins from dbin, copying matching origins into dbout and creating assoc records
 
+dbgme [-vfd] [-p pf] -r recipe [-r recipe...] [-o orid] dbname
+     2-D ground-motion estimation from hypocenters and waveform measurements
+
 dbmag db orid author net
     compute mb magnitude for origin orid (or "all") in db, saving result in netmag and origin with specified author field
 

@@ -6,10 +6,13 @@ more information.
 
 <commands>
 ANTELOPE
-    usually set (by setup.csh) to indicate the Antelope base directory, for example "/opt/antelope/4.5"
+    identifies the Antelope base directory, eg, "/opt/antelope/4.6"
 
 ANTELOPEMAKE
-    usually set (by setup.csh) to a file containing standard make(1) rules for Antelope
+    specifies file with standard make(1) rules for Antelope
+
+BNS_RESEND
+    # of packets to resend when orbput fails and reconnects; default 1
 
 BNS_TIMEOUT
     overrides the default timeout used by Antelope routines on 
@@ -18,20 +21,6 @@ BNS_TIMEOUT
 DATAPATH
     overrides the default directory $ANTELOPE/data where
     Antelope programs find a variety of data files.
-
-DBIDSERVER
-    can be used to specify a host which is running a central
-    Datascope database id server: dbids(1).
-
-DBLOCKS
-    deprecated -- use the database descriptor file instead.
-
-    when set, causes Datascope routines to lock locally mounted 
-    tables for record additions and nextid operations (and fail
-    for nfs mounted tables).
-
-    set to "nfs", locks local and nfs mounted tables for 
-    record additions and nextid operations.
 
 EUROPEAN_DATE
   when set, interpret dates like xx/xx/xx  as day/month/year.  

@@ -183,6 +183,12 @@ extfile([ table ])
 /	arithmetic division
 %	arithmetic modulus
 
+>>	bit shift right
+<<	bit shift left
+
+|	bitwise or
+& 	bitwise and
+
 .	string concatenation
 
 :=	assignment
@@ -222,3 +228,9 @@ a != NULL
 
 ||	logical or
 &&	logical and
+
+|	bitwise or
+&	bitwise and
+
+<<	bit shift left
+>>	bit shift left

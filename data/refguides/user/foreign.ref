@@ -182,6 +182,23 @@ segy2css [-event] [-ftbl] "fname"
 miniseed2db [-T tolerance] [-v] miniseed [msd2 ...] db
     create wfdisc rows in db for miniseed volume(s)
 
+miniseed2orb [-v] file ... orb
+    put each data block from the input miniseed files into a packet on the orb
+
+miniseed2days [options] miniseed ...
+    separate input miniseed into separate channel day volumes
+<options>
+-S dir	alternate output directory
+-e end	ignore data after endtime
+-m match	only keep net_sta_chan_loc matching this re
+-s start	ignore data before start
+-R	remove input after processing
+-U	eliminate consecutive duplicate data blocks on input
+-u	eliminate all duplicate data blocks from input
+-v	more verbose
+-w wfname	alternate pattern for output file names
+</options>
+
 dbsteimu [options] input [new_database]
     create wfdisc file from miniseed
 <options>
@@ -195,6 +212,9 @@ dbsteimu [options] input [new_database]
 fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed ...
     change the network, station, channel and/or location
     codes in miniseed volumes
+
+patch_miniseed [-nvv] miniseed ...
+    look for and fix bad reverse integration constants, unless -n
 
 deprecated ucsdsp2db stapardir responsedir netcode netname dbout [-s]
     convert UCSD stapar files to a CSS v3.0 database

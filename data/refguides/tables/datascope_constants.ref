@@ -47,6 +47,8 @@ dbLINK_FIELDS
     return a Tbl list of all id attributes in the schema
 dbTIMEDATE_NAME
     name of attribute automatically filled with current time when record is changed
+dbLASTIDS
+    returns Arr array of lastid by table name, for tables with added records
 
 dbDATABASE_DESCRIPTION
     short description for database
@@ -67,6 +69,10 @@ dbDATABASE_COUNT
     count of databases open
 dbDBPATH
     return the path along which database tables may be found
+dbIDSERVER
+    return the name of idserver if defined
+dbLOCKS
+    returns setting of dbLOCKS
 dbTABLE_COUNT
     count of relations in database
 

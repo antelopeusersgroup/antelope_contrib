@@ -1,0 +1,48 @@
+<chapter Parameter Files>
+<commands>
+PFPATH
+    * combine all parameter files found along PFPATH or
+	$ANTELOPE/data/pf:.
+
+
+&Tbl{	ordered list of values
+&Arr{	key/value pairs
+
+&ask(prompt)	ask for the value using prompt
+&Literal{	value is everything until matching closing bracket; many bracket pairs are allowed
+&Undef{}	eliminate a corresponding  previous value
+&exec(command)	value is the result from running command 
+&file(path)	value is contents of path
+&filename(path)	value is the path filename
+&datafile(path)	value is the contents of the data file $ANTELOPE/data/path
+&datafilename(path)	value is the filename $ANTELOPE/data/path
+&env(name)	value of environment variable name
+&ref(somepf, key)	look up key in some other parameter file pf
+&glob(glob-pattern)	return list of paths matching glob
+&user-function(anything)	write your own function
+&reference	refer to another value in the parameter file
+&{reference}
+
+
+__DATA__	end of the parameter file
+__END__
+__EOF__
+
+
+<Examples>
+# comment
+"key with spaces"	value  #comment
+list	&Tbl{
+1
+2
+}
+array	&Arr{
+one	1
+two	2
+three	3
+}
+literal	&Literal{
+proc a {b} { # example 
+    puts hi
+}
+}

@@ -181,6 +181,9 @@ reflectd [-v]
 warp [-nv] command
     run command on opposite display (if machine has 2 displays)
 
+xunits [-amqv] [from [to]]
+    convert values from one unit to another, eg newtons to lbs
+
 build [pf] [pf_dependent_arguments]
     framework for constructing simple gui interfaces based on
     parameter files and perl scripts

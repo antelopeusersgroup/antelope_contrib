@@ -6,7 +6,7 @@ DATA= \
 	projections.ref \
 	datascope_constants.ref \
 	datascope_expressions.ref \
-	rt.ref \
+	pf.ref \
 	time_formats.ref \
 	schemas.ref \
 	tcl_extensions.ref \
