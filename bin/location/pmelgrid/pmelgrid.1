@@ -59,7 +59,7 @@ through \fIpfistream\fR and out through \fIpfostream\fR.
 \fIpfistream\fR and \fIpfostream\fR can be regular files, but 
 the expectation is that they would normally be a fifo created with
 the mkfifo(1) command.  The input stream should be connected to 
-the output of db2pfstream2db(1) and the output should normally be
+the output of db2pfstream(1) and the output should normally be
 connected to the input of pfstream2db(1).  
 With this mechanism a typical run would be
 something like this:
