@@ -41,6 +41,7 @@ mapspec	&Arr{
 	pixels_per_inch	100
 	reserve_colors	12
 	tilesize_deg	10
+	topo_resolution
 }
 
 pixfile_conversion_method	none

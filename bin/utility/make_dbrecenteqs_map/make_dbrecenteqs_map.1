@@ -3,7 +3,7 @@
 make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
-make_dbrecenteqs_map [-v] [-p pffile] psfile
+make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] psfile
 .fi
 .SH DESCRIPTION
 The script make_dbrecenteqs_map creates a postscript map image, optionally 
@@ -29,9 +29,20 @@ freeware Unix executables gs(1), pnmcrop(1), ppmquant(1), and either ppmtogif(1)
 or pnmtojpeg(1) to be available on the command line. The third requires 
 the ImageMagick utility convert(1). 
 
+The topo_resolution parameter controls the sampling of the topography and 
+bathymetry grids. If left blank, the full resolution of the grids in the 
+grid database is used. If desired, a coarser resolution may be specified 
+with topo_resolution (e.g. "5m" for 2-minute resolution), in which case
+the topography grids in the database will be resampled using the -I option 
+of the GMT grdsample(1) command. This resampling is actually done through 
+the "spacing" option of dbgmtgrid(3). It is probably advisable to specify 
+a topo_resolution that is a whole multiple of the grid spacing in the 
+full-resolution grids in one's database.
 .SH OPTIONS
 .IP "-p pffile"
 Specify a parameter other than the default make_dbrecenteqs_map.pf
+.IP "-t workdir"
+Specify an alternate working directory (the default is under /tmp)
 .IP -v 
 verbose
 .SH FILES
@@ -85,6 +96,7 @@ mapspec	&Arr{
 	pixels_per_inch	100
 	reserve_colors	12
 	tilesize_deg	10
+	topo_resolution
 }
 
 pixfile_conversion_method	none
@@ -116,6 +128,10 @@ dbevents(1) does not appear to support too many colors in the input map.
 It may be necessary to set the reserve_colors parameter to a fairly 
 high value (186 has worked in initial experiments) in order to limit 
 the number of colors in the pixfile map created.
+
+Although the -t option changes the directory of the intermediate files 
+made by make_dbrecenteqs_map, it does not change the location of temporary 
+grids created by dbgmtgrid(3), which it calls
 .SH AUTHOR
 .nf
 Kent Lindquist 

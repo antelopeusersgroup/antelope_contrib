@@ -14,10 +14,11 @@ require "compass_from_azimuth.pl";
 use Datascope;
 
 elog_init( $0, @ARGV );
+$Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('vp:') || @ARGV != 1 ) {
+if ( ! &Getopts('vt:p:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-v] [-p pffile] psfile\n" );
+	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] psfile\n" );
 
 } else {
 
@@ -42,6 +43,17 @@ if ( ! &Getopts('vp:') || @ARGV != 1 ) {
 }
 
 setup_State();
+
+if( $opt_t ) {
+
+	$State{workdir} = $opt_t;
+	mkdir( $State{workdir}, 0755 );
+
+	if( ! -e $State{workdir} || ! -d $State{workdir} ) {
+
+		die( "$State{workdir} doesn't exist or isn't a directory! Bye." );
+	}
+}
 
 $hashref = pfget( $State{pf}, "mapspec" );
 %Mapspec = %{$hashref};
