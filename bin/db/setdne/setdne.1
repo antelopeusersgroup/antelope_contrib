@@ -1,0 +1,57 @@
+.TH SETDNE 1 "$Date$"
+.SH NAME
+setdne - sets dnorth and deast fields in a css3.0 database site table
+.SH SYNOPSIS
+.nf
+setdne db refsta
+.fi
+.SH DESCRIPTION
+.LP
+In array processing the dnorth and deast fields of a css3.0 database
+are required to compute plane wave moveout corrections.  Modern
+broadband networks/arrays of stations often don't fill in these
+fields as when the aperture is large the use of dnorth and deast 
+is usually viewed as bad approximation of geometry.  However,
+array processing routines still require these fields because the
+full spherical geometry calculation is cumbersome and, in fact,
+requires an assumed origin before it can be done correctly.  
+Thus, some programs like dbap and mwap need this field to be
+set even if it is an approximation.  mwap actually computes
+plane wave statics that correct the moveout for wavefront curvature
+but still needs dnorth and deast to simplify the moveout computation.
+.LP
+This program uses a simple approximation in using the dist(3) function
+of datascope to compute a great circle path distance and bearing from
+the specified origin.  It then uses a simple trigonometric conversion
+to convert these to distance north and distance east in kilometers.
+.SH COMMAND LINE ARGUMENTS
+.IP db
+This is the input database.  Only the site table is accessed, but the 
+database must be accessible for updating.  Note it is common practice
+to disable write permission on this table in a master database, so it
+is a good idea to copy the master site table and give it write permission
+before running this program.  
+.IP refsta
+This should define a valid station code of the station that is to 
+be used as the reference station.  That is, the origin is set to the 
+coordinates of this master station.  The program will die with an
+error message if the named station does not exist in the site table.
+.SH FILES
+.LP
+Only the site table of the named database is accessed.
+.SH DIAGNOSTICS
+Should be self explanatory.
+.SH "SEE ALSO"
+.nf
+mwap(1), dist(3)
+.fi
+.SH "BUGS AND CAVEATS"
+The appoximation of dnorth and deast gets progressively worse with
+array aperture.  The authors experience is that the moveout computed
+for teleseismic P waves is accurate to better than 0.1 s for an
+array with an aperture of about 100 km.  This depends on epicentral
+distance as well as total aperture.  
+Strangely enough the algorithm used should work
+even if an array spans the pole.
+.SH AUTHOR
+Gary L. Pavlis
