@@ -48,6 +48,11 @@ char **argv;
 	char *ptr;
 	int ircnt=0;
 	int orcnt=0;
+	int lastpkt_age;
+	int lastpkt_pktid;
+	double lastpkt_time;
+	int ready;
+	int first=1;
 
 	elog_init ( argc, argv ) ; 
 
@@ -153,6 +158,7 @@ char **argv;
 			fprintf (stderr, "orbcp: orbopen() error for '%s'.\n", orbname);
 			exit (1);
 		}
+		first = 1;
 
 		if (srcexpr) {
 			if (orbselect (orbin, srcexpr) < 0) {
@@ -216,12 +222,39 @@ char **argv;
 	}
 
 	n = 0;
+	lastpkt_age = 0;
 	while (1) {
 		if (orbin >= 0) {
-			if (orbreap (orbin, &pktid, src, &time, &packet, &nbytes, &bufsize) < 0) {
+			if (!first && fdkey(orbin) == 0) {	/* No pending input */
+				sleep (1);
+				lastpkt_age += 1;
+				continue;
+			}
+			ret = orbreap_nd (orbin, &pktid, src, &time, &packet, &nbytes, &bufsize);
+			first = 0;
+			switch (ret) {
+			case 0:		/* Normal return */
+				ready = 1;
+				lastpkt_age = 0;
+				lastpkt_pktid = pktid;
+				lastpkt_time = time;
+				break;
+			case ORB_INCOMPLETE : 	/* Incomplete packet */
+				ready = 0;
+				lastpkt_age = 0;
+				lastpkt_pktid = pktid;
+				lastpkt_time = time;
+				break;
+			default:		/* Some other error */
+				ready = -1;
+				break;
+			}
+			if (ready == 0) continue;
+			if (ready < 0) {
 				if (ircnt) {
 					clear_register (0);
 					sleep (10);
+					lastpkt_age += 10;
 					continue;
 				} else {
 					clear_register (1);
