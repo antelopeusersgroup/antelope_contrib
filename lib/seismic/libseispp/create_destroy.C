@@ -146,9 +146,11 @@ Time_Series::Time_Series(Database_Handle& rdb,
 					&t0read,&teread,&nread,
 					0,0))
 				throw seispp_dberror("Time_Series database constructor:  trgetwf error",dbh.db);
-		// allow one sample deviation
-		if(abs(nread-ns)>1)
+		if(nread!=ns)
 		{
+		    if(abs(nread-ns)>1)
+		    {
+			// bitch if the mismatch is more than 1 
 			cerr << "Data read mismatch on row "
 				<< dbh.db.record 
 				<< " of input database" << endl
@@ -156,9 +158,11 @@ Time_Series::Time_Series(Database_Handle& rdb,
 				<< ns 
 				<< " data points but read "
 				<< nread << endl;
+		    	}
 			ns = nread;
 			t0 = t0read;
 			this->put_metadata("endtime",teread);
+			this->put_metadata("nsamp",ns);
 		}
 		s.reserve(ns);
 		for(int i=0;i<this->ns;++i) 
