@@ -86,6 +86,12 @@ DBPTR = dbnojoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
 DBPTR = dbprocess ( DBPTR, STATEMENT_LIST )
     construct a view as a series of standard operations
 
+DBPTR = dbgroup ( DBPTR, GROUPFIELDS, [TYPE] )
+    group a sorted table by the specified fields
+
+DBPTR = dbungroup ( DBPTR )
+    ungroup a grouped database view into its component records
+
 DBPTR = dbsort ( DBPTR [, FIELD, FIELD,...] )
     sort the specified Datascope database table
 
@@ -98,12 +104,21 @@ DBPTR = dbtheta ( DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer'] )
 dbunjoin ( DBPTR, OUTPUT )
     unjoin the specified Datascope database view
 
+dbsever ( DBPTR, TABLE )
+    remove a table from a joined view
+
+dbseparate ( DBPTR, TABLE )
+    extract a subset view of a base table from a joined view
+
 <subsection Getting information about the database>
 DBPTR = dbjoin_keys ( DBPTR1, DBPTR2 **or**DBPTR, TABLE1, TABLE2 )
     show the inferred join keys between two database tables
 
 QUERY_RESULT = dbquery ( DBPTR, CODE )
     query a Datascope database for various parameters
+
+NRECS = dbnrecs ( DBPTR )
+    get the number of records in a Datascope table or view
 
 <subsection Evaluating expressions>
 RESULT = dbeval ( DBPTR, EXPRESSION [, TYPE] )
