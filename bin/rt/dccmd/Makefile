@@ -1,8 +1,7 @@
 BIN = dccmd
 MAN1=dccmd.1
-#cflags  = -g
-#ldflags	= -Bstatic               
-ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
+
+ldlibs	= -lpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 OBJSM	= dccmd.o\
