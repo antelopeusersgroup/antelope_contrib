@@ -31,15 +31,34 @@ get_dbptr( mxArray *in, Dbptr *db )
 int 
 get_string( mxArray *in, char **string )
 {
+	mxArray *cell;
 
-        if( mxGetClassID( in ) != mxCHAR_CLASS )
+        if( mxGetClassID( in ) == mxCHAR_CLASS )
+	{
+		get_malloced_string( in, string );
+	
+		return 1;
+	} 
+	else if( mxGetClassID( in ) == mxCELL_CLASS &&
+		mxGetNumberOfElements( in ) == 1 )
+	{
+		cell = mxGetCell( in, 0 );
+
+		if( mxGetClassID( cell ) != mxCHAR_CLASS )
+		{
+			return 0;
+		}
+		else
+		{
+			get_malloced_string( cell, string );
+
+			return 1;
+		}
+	}
+	else
         {
 		return 0;
         }
-
-	get_malloced_string( in, string );
-	
-	return 1;
 }
 
 int
