@@ -25,8 +25,6 @@ int update_segdata( SegData *segment , SegData *new )
         strcpy( segment->sta, new->sta);
         strcpy( segment->chan, new->chan);
         strcpy( segment->datatype, new->datatype);
-        if( segment->dcode != trSEED)
-           dbputv( dbout, 0, "datatype", "s4", 0);
        
 /*
         new_db( segment, new ); 
