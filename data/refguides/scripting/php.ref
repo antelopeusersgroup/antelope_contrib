@@ -14,6 +14,17 @@ dbopen (database, permissions)
 
 dblookup ($db, database, table, field, row)
     returns a database pointer for the specified database, table, field, and row.
+dbclose ($db)
+    close a database
+
+dbfree ($db)
+    free memory for a database view
+
+dbdestroy ($db)
+    destroy all tables of a database
+
+dbtruncate ($db, $nrecords)
+    truncate a database table to the specified length
 
 <subsection Manipulating fields and records>
 
