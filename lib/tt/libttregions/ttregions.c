@@ -101,7 +101,9 @@ static void free_TTregions_volume(TTregions_volume *r)
 
 static void ttregions_free_hook(TTregions_hook *h)
 {
-	freetbl(h->regions,free_TTregions_volume);
+	if( h->regions != NULL ) {
+		freetbl(h->regions,free_TTregions_volume);
+	}
 }
 
 
@@ -610,7 +612,9 @@ int manage_hook_ttregions (
 	TTregions_volume *save;
 
 	if(*hookp != NULL) old = (*hookp)->p;
-	if((*hookp == NULL) || (strcmp(modelset,old->name)) )
+	if((*hookp == NULL) || 
+	   ((old->regions) == NULL) ||
+	   (strcmp(modelset,old->name)) )
 	{
 		if(*hookp != NULL) free_hook(hookp);
 		*hookp = new_hook ( ttregions_free_hook );
