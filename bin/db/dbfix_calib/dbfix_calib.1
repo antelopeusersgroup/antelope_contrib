@@ -1,0 +1,33 @@
+.TH DBFIX_CALIB 1 "$Date$"
+.SH NAME
+dbfix_calib \- Assign calib values from calibration table to wfdisc 
+.SH SYNOPSIS
+.nf
+dbfix_calib database
+.fi
+.SH DESCRIPTION
+dbfix_calib assigns NULL calib values in the wfdisc table to the values obtained 
+from a join with the calibration table. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+rtdbclean(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Several other tables may need this service as well: dmcwf, wftape, wftar. dbfix_calib
+sticks to the most common problem, the wfdisc table, rather than blindly modifying 
+all of these tables.
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
