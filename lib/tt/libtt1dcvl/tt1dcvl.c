@@ -358,7 +358,12 @@ TTTime *tt1dcvl_compute_atime(TTGeometry *x,double d_km,double azimuth,
 		if( (!up) || (p < 0.0) )
 			t->deriv[2] = -(t->deriv[2]);
 				
+	} else { 
+	    t->deriv[0] = 0.0 ;
+	    t->deriv[1] = 0.0 ;
+	    t->deriv[3] = 0.0 ; 
 	}
+
 	mod->ztop[0] = z0;
 	free(work1);
 	free(work2);
@@ -715,6 +720,13 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 			slow->uxderiv[2] = 0.0;
 			slow->uyderiv[2] = 0.0;  
 		}
+	} else { 
+	    slow->uxderiv[0] = 0.0 ; 
+	    slow->uxderiv[1] = 0.0 ;
+	    slow->uxderiv[2] = 0.0 ;
+	    slow->uyderiv[0] = 0.0 ; 
+	    slow->uyderiv[1] = 0.0 ;
+	    slow->uyderiv[2] = 0.0 ;
 	}
 	mod->ztop[0] = z0;
 	free(work1);
