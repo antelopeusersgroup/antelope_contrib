@@ -9,7 +9,6 @@ use XML::LibXML;
 use XML::LibXSLT;
 use XML::Writer;
 use IO;
- 
 
 sub init_globals {
 
@@ -30,11 +29,13 @@ sub init_globals {
 		"keep_ndays",
 		"max_num_eqs",
 		"overview_maps",
-		"make_index_html"
+		"make_index_html",
+		"use_qgrids"
 		);
 
 	my( @path_params ) = (
 		"wiggle",
+		"background_graphic",
 		"legend",
 		"institute_logo",
 		"region_phrases_database",
@@ -49,6 +50,12 @@ sub init_globals {
 
 		$State{$param} = datafile_abspath( $State{$param} );
 	}
+ 
+	if( $State{use_qgrids} =~ m/y|yes|1|true|t/i ) {
+		$State{use_qgrids} = 1;
+	} else {
+		$State{use_qgrids} = 0;
+	}
 
 	$State{"wiggle_filebase"} = `basename $State{"wiggle"}`;
 	chomp( $State{"wiggle_filebase"} );
@@ -56,6 +63,8 @@ sub init_globals {
 	chomp( $State{"institute_logo_filebase"} );
 	$State{"legend_filebase"} = `basename $State{"legend"}`;
 	chomp( $State{"legend_filebase"} );
+	$State{"background_graphic_filebase"} = `basename $State{"background_graphic"}`;
+	chomp( $State{"background_graphic_filebase"} );
 
 	if( ! defined( $State{overview_maps} ) || 
 	    $#{$State{overview_maps}} < 0 ) {
@@ -523,6 +532,8 @@ sub create_focusmap_html {
 			      "$State{page_refresh_seconds}" );
 	$writer->dataElement( "wiggle_href", 
 			      "$State{dbrecenteqs_url}" . "$State{wiggle_filebase}" );
+	$writer->dataElement( "background_graphic_href", 
+			      "$State{dbrecenteqs_url}" . "$State{background_graphic_filebase}" );
 	$writer->dataElement( "legend_url", 
 			      "$State{dbrecenteqs_url}" . "$State{legend_filebase}" );
 	$writer->dataElement( "institute_url", 
@@ -623,7 +634,7 @@ sub create_focusmap {
 			      "dbjoin origin", 
 			      "dbsubset evid == $evid" );
 
-	# Use questionable strategy to plot prefor last.
+	# plot prefor last:
 	@db = dbsort( @db, "-r", "abs(orid - prefor)" );
 
 	my( $nhypos ) = dbquery( @db, "dbRECORD_COUNT" );
@@ -633,6 +644,45 @@ sub create_focusmap {
 
 	my( $preftime, $preflat, $preflon, $prefor ) =
 	  dbgetv( @dbprefor, "time", "lat", "lon", "orid" );
+
+	if( $State{use_qgrids} ) {
+		@dbqgrid = dbinvalid();
+		@dbqgrid = dblookup( @dbprefor, "", "qgrid", "orid", "$prefor" );
+		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+
+			$Focus_Mapspec{qgridfile} = dbextfile( @dbqgrid );
+
+			$Focus_Mapspec{qgrid_dlat} = 
+				dbgetv( @dbqgrid, "dlat" );
+
+			$Focus_Mapspec{qgrid_dlon} = 
+				dbgetv( @dbqgrid, "dlon" );
+
+			$Focus_Mapspec{qgrid_minlat} = 
+				dbgetv( @dbqgrid, "minlat" );
+
+			$Focus_Mapspec{qgrid_maxlat} = 
+				dbgetv( @dbqgrid, "maxlat" );
+
+			$Focus_Mapspec{qgrid_minlon} = 
+				dbgetv( @dbqgrid, "minlon" );
+
+			$Focus_Mapspec{qgrid_maxlon} = 
+				dbgetv( @dbqgrid, "maxlon" );
+
+			$Focus_Mapspec{qgrid_nlat} = 
+				dbgetv( @dbqgrid, "nlat" );
+
+			$Focus_Mapspec{qgrid_nlat} = 
+				dbgetv( @dbqgrid, "nlat" );
+
+			$Focus_Mapspec{qgrid_units} = 
+				dbgetv( @dbqgrid, "units" );
+
+			$Focus_Mapspec{qgrid_maxval} = 
+				dbgetv( @dbqgrid, "maxval" );
+		}
+	}
 
 	$Focus_Mapspec{file_basename} = "evid$evid";
 	$Focus_Mapspec{mapname} = $Focus_Mapspec{file_basename};
@@ -961,6 +1011,9 @@ sub create_stockmap_html {
 	$writer->dataElement( "wiggle_href", 
 			      "$State{dbrecenteqs_url}" .
 				"$State{wiggle_filebase}" );
+	$writer->dataElement( "background_graphic_href", 
+			      "$State{dbrecenteqs_url}" .
+				"$State{background_graphic_filebase}" );
 	$writer->dataElement( "legend_url", 
 			      "$State{dbrecenteqs_url}" .
 				"$State{legend_filebase}" );
@@ -1258,6 +1311,13 @@ if( ! expansion_schema_present( @db ) ) {
 	die( "Please add dbrecenteqs1.1 expansion schema to $dbname. Bye.\n" );
 }
 
+if( $State{use_qgrids} && ! gme_schema_present( @db ) ) {
+
+	printf STDERR "Turning off use_qgrids option: gme1.0 expansion " .
+		  "schema is not present in $dbname. Bye.\n";
+	$State{use_qgrids} = 0;
+}
+
 @db = dblookup( @db, "", "mapstock", "", "" );
 
 foreach $map ( @{$State{overview_maps}} ) {
@@ -1300,6 +1360,10 @@ if( ! -e "$State{dbrecenteqs_dir}/$State{legend_filebase}" ) {
 }
 if( ! -e "$State{dbrecenteqs_dir}/$State{institute_logo_filebase}" ) {
 	system( "/bin/cp $State{institute_logo} $State{dbrecenteqs_dir}" );
+}
+if( ( ! -e "$State{dbrecenteqs_dir}/$State{background_graphic_filebase}" ) &&
+    ( -e "$State{background_graphic}" ) ) {
+	system( "/bin/cp $State{background_graphic} $State{dbrecenteqs_dir}" );
 }
 
 cleanup_database( $dbname );

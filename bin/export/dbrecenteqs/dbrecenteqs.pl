@@ -64,6 +64,14 @@ sub setup_State {
 		die( "Couldn't find $State{pf}.pf. Bye.\n" );
 	}
 
+	$pf_change_time = "1063497600";
+
+	if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
+
+		die( "The parameter file '$State{pf}.pf' is out of date. " .
+		     "Please upgrade to the latest version. Bye.\n" );
+
+	}
 	my( @params ) = (
 		"pixfile_conversion_method",
 		);
@@ -151,6 +159,25 @@ sub expansion_schema_present {
 	return $present;
 }
 
+sub gme_schema_present {
+	my( @db ) = @_;
+
+	my( $present ) = 0;
+
+	my( @tables ) = dbquery( @db, "dbSCHEMA_TABLES" );
+
+	if( grep( /qgrid/, @tables ) ) {
+	
+		$present++;
+
+	} else {
+
+		$present = 0;
+	}
+
+	return $present;
+}
+
 sub check_for_executable {
 	my( $program ) = @_;
 
@@ -169,11 +196,23 @@ sub check_for_executable {
 sub remove_stale_webmaps {
 	my( @db ) = @_;
 	
-	@db = dbprocess( @db, "dbopen webmaps",
+	if( $State{use_qgrids} ) {
+
+		@db = dbprocess( @db, "dbopen webmaps",
+			      "dbjoin event",
+			      "dbjoin origin event.evid#origin.evid",
+			      "dbjoin -o qgrid origin.orid#qgrid.orid",
+			      "dbsubset origin.lddate > webmaps.lddate || event.lddate > webmaps.lddate || qgrid.lddate > webmaps.lddate",
+			      "dbseparate webmaps" );
+
+	} else {
+
+		@db = dbprocess( @db, "dbopen webmaps",
 			      "dbjoin event",
 			      "dbjoin origin event.evid#origin.evid",
 			      "dbsubset origin.lddate > webmaps.lddate || event.lddate > webmaps.lddate",
 			      "dbseparate webmaps" );
+	}
 
 	my( $stale_nrecs ) = dbquery( @db, "dbRECORD_COUNT" );
 
@@ -653,6 +692,68 @@ sub next_round {
 	return $clean;
 }
 
+sub plot_qgrid {
+	my( %Mapspec ) = %{shift( @_ )};
+	my( $position ) = shift( @_ );
+
+	my( @helpers ) = ( "xyz2grd", 
+			   "cggrid_convert", 
+			   "grdsample", 
+			   "grdcontour" );
+
+	foreach $helper ( @helpers ) {
+		next if check_for_executable( $helper );
+		die( "Couldn't find $helper in path. Fix path or " .
+		     "don't enable the use_qgrids parameter.\n" );
+	}
+
+	if( $position ne "middle" ) {
+		printf STDERR "Warning: qgrid only implemented for " .
+		 "middle-position plotting\n";
+	}
+
+	my( $more, $redirect ) = more_ps( $position );
+
+	my( $gmt_qgrid )  = "$State{workdir}/qgrid_orig_$<_$$.grd";
+	my( $gmt_qgrid_rectangle )  = 
+		"-R$Mapspec{qgrid_minlon}/$Mapspec{qgrid_maxlon}/" .
+		"$Mapspec{qgrid_minlat}/$Mapspec{qgrid_maxlat}";
+
+	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
+		     "xyz2grd -V -H1 " .
+		     "-I$Mapspec{qgrid_dlon}/$Mapspec{qgrid_dlat} " .
+		     "-G$gmt_qgrid " .
+		     "$gmt_qgrid_rectangle";
+
+	print "$cmd\n";
+	system( $cmd );
+
+	if( ! defined( $Mapspec{qgrid_nintervals} ) ) {
+
+		die( "qgrid_nintervals undefined in map config block." .
+		     "Please add it, or turn off use_qgrids.\n" );
+	}
+
+	my( $interval );
+	$interval = $Mapspec{qgrid_maxval} / $Mapspec{qgrid_nintervals};
+	$interval = sprintf( "%e", $interval );
+	$interval =~ s/^(\d).*(e.\d\d)$/$1$2/;
+	$interval = sprintf( "%f", $interval );
+
+	$cmd = "grdcontour -V $gmt_qgrid " .
+	       "$Mapspec{Rectangle} $Mapspec{Projection} " .
+	       "-C$interval -N$Mapspec{qgrid_units} " .
+	       "-W8/255/255/0 -Af12/255/255/0 " .
+	       "-Q8 -L$interval/9999 " .
+	       $more . 
+	       "$redirect $Mapspec{psfile}";
+			
+	print "$cmd\n";
+	system( $cmd );
+
+	unlink( "$gmt_qgrid" );
+}
+
 sub plot_contours {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $position ) = shift( @_ );
@@ -910,7 +1011,7 @@ sub plot_linefiles {
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
-		print "# plotting $name:\n$cmd\n";
+		print "plotting $name:\n$cmd\n";
 		system( $cmd );
 	}
 }
@@ -1013,6 +1114,12 @@ sub create_map {
 	plot_hypocenters( \%Mapspec, "middle" );
 	plot_linefiles( \%Mapspec, "middle" );
 	plot_basemap( \%Mapspec, "middle" );
+	if( $State{use_qgrids} &&
+	    defined( $Mapspec{qgridfile} ) && 
+	    -e "$Mapspec{qgridfile}" ) {
+		
+		plot_qgrid( \%Mapspec, "middle" );
+	}
 	plot_cities( \%Mapspec, "last" );
 
 	%Mapspec = %{pixfile_convert( \%Mapspec )};

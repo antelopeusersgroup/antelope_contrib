@@ -25,6 +25,8 @@ pixfile_conversion_method imagick  # pnm, imagick, or alchemy
 keep_ndays 0
 max_num_eqs 300 
 
+use_qgrids yes
+
 make_index_html yes
 
 overview_maps &Tbl{
@@ -62,6 +64,7 @@ focus_map &Arr{
 	right_dellon 	2
 	down_dellat 	-2
 	up_dellat 	2
+	qgrid_nintervals 4
 }
 
 detail_map &Arr{
