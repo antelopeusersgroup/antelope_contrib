@@ -98,6 +98,9 @@ DBPTR = dbsort ( DBPTR [, FIELD, FIELD,...] )
 DBPTR = dbsubset ( DBPTR, EXPRESSION )
     subset a Datascope database table
 
+DBPTR = dblist2subset ( DBPTR [, LIST] )
+    create a new subset view given a list of record numbers
+
 DBPTR = dbtheta ( DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer'] )
     theta-join two Datascope database tables
 
