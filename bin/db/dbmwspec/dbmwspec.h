@@ -16,3 +16,4 @@ void powspc_(int *, float *, int *,float *,float *,
 	float *,float *,float *,float *,float *,int *,int *);
 int save_spectrum(Dbptr, Spectra_phase_specification *,
 		float *,float *,int, int, float, double, char *,int, int);
+int correct_for_response(float *,float *,int, Dbptr);

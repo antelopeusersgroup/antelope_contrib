@@ -10,51 +10,63 @@ trace is a trace object defined in tr.h
 Error returns:
 
 	0 - normal return, aok
-	1 - dbgetv lookup failed for trace
-	2 - no response info for current trace
-	3 - eval_response failed during lookup at calper
-	4 - eval_response failed during lookup loop 
+	-1 - open failure of instrument response file
+	-2 - read response failure
+	greater than zero is a count of eval_response errors 
 
 Author:  Gary Pavlis
 Written:  October 1994
 */
-int 
-correct_for_response(f, s, nf, trace)
-	float          *f, *s;
-	Dbptr           trace;
-	int             nf;
-{
-	Response       *rsp;
 
-	double          calib;
-	char            segtype;
-	double          calper;
-	double          scale;
+int correct_for_response(float *f, float *s, int nf, Dbptr trace)
+{
+	Response       *response;
+
+	char 		response_file_name[512];
+	int 		ierr;
+	FILE		*insfile;
+	double		resmag;
+	double 		fresp;
 	double          omega, real, imag;
 	int             i;
+	int 		error_count=0;
 
-	if (dbgetv(trace, 0, "calib", &calib, "response", &rsp, "calper", &calper,
-		   "segtype", &segtype, 0) == dbINVALID) {
-		return (1);
+	ierr = dbextfile(trace,"instrument",response_file_name);
+	if(ierr<=0) 
+	{
+		register_error(0,"Response file %s could not be openned\n",response_file_name);
+		return(1);
 	}
-	if (rsp == NULL)
-		return (2);
-
-	/* Handle the case settype=D specially */
-	if ((calper > 0.0) && (segtype == 'D')) {
-		omega = 2.0 * M_PI / ((double) calper);
-		if (eval_response(omega, rsp, &real, &imag))
-			return (3);
-
-		scale = ((double) calib) * sqrt(real * real + imag * imag);
-	} else {
-		scale = calib;
+	insfile = fopen(response_file_name,"r");
+	if(insfile == NULL)
+	{
+		register_error(0,"Response file %s fopen failure\n",response_file_name);
+		return(1);
 	}
+	if( read_response(insfile,&response))
+	{
+		register_error(0,"read_response from file %s failed\n",response_file_name);
+		fclose(insfile);
+		return(2);
+	}
+	fclose(insfile);
 	for (i = 0; i < nf; ++i) {
-		omega = 2.0 * M_PI * ((double) *f);
-		if (eval_response(omega, rsp, &real, &imag))
-			return (4);
-		s[i] *= scale * sqrt(real * real + imag * imag);
+		omega = 2.0 * M_PI * ((double) f[i]);
+		if(eval_response(omega,response,&real,&imag))
+		{
+			register_error(0,"Eval_response of file %s failed for omega=%f\n",
+				response_file_name,omega);
+			++error_count;
+			continue;
+		}
+		resmag=hypot(real,imag);
+		if(resmag>0) 
+			fresp=1.0/resmag;
+		else
+			fresp=1.0;
+		s[i]*=fresp;
 	}
-	return (0);
+	free_response(response);
+
+	return (error_count);
 }

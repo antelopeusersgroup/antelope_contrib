@@ -8,51 +8,15 @@
 #include "db.h"
 #include "elog.h"
 #include "arrays.h"
-#include "scv2.h"
+#include "tr.h"
 #include "pf.h"
 #include "dbmwspec.h"
 #define MINSAMP 16   /* traces shorter than this will be discarded */
 
-/* function prototypes */
-Trace *read_trace();
 
 /*  dbmwspec
 
-Usage:
-  dbmwspec dbin recipe_file [-s spec_dir -trim -po -jack -correct]
-
-where 
-	dbin - input db to process spectra for
-
-	recipe_file - control file used to specify which phase markers
-		are to be used and time intervals (in seconds) relative
-		to these phase markers to use for calculating spectral
-		estimates.  (format described below)
-	spec_dir - directory to write spectral files to.  A new table
-		for dbin is created through a modified schema description.
-		This tables is called the "spectra" table.  spec_dir
-		is the directory where the output spectra are written
-		to.  DEFAULT= "./spectra".  File names of spectra are
-		always constructed as dfile of wfdisc_X where 
-		X="arrival" name (e.g. P, S, PP, etc.) 
-	-jack - if this argument appears, jackknife error estimate of 
-		95% confidence limits will be estimated and saved as
-		output spectral files with pstype set appropriately.
-		The computational impact of calculating these errors is
-		not neglible, but is not normally overwhelming either.
-		(default is to not calculate jackknife error estimates)
-	-correct- if this argument appears, data are corrected for 
-		amplitude using response functions.  Otherwise only
-		calib is used.  By default this option is off and 
-		only the calib correction is applied.  Note if response
-		functions are not defined and this option is set, a 
-		error message will be generated for each spectrum, but
-		the program should blunder on without correcting any 
-		of the spectral estimates for the detailed response.
-
-New June 2001:
-
-Usage: dbmwspec dbin [-pf pffile -s spec_dir -trim -po -jack -correct]
+Usage: dbmwspec dbin [-V -pf pffile -s spec_dir  -jack -correct]
 
 This routine uses the multiwindow spectral estimation method (also 
 called multitaper method) using a fortran subroutine obtained from
@@ -67,49 +31,6 @@ algorithm is for each line in the recipe file we subset the
 joined wfdisc-arrival table for the key phase and then just loop 
 through the subsetted table.  
 
-This program uses a modified css3.0 schema.  The modified schema has
-an extra table "psdisc" that is used to store spectral files and associated
-parameters.
-
-I decided to have this program always take the view of "when in doubt,
-throw it out".  Consequently, it will not handle certain cases very 
-elegantly and just toss out the data.  Common real life problems it
-will not handle are:
-1.  if there are any data gliches in a time window for which spectra are
-to be calculated (defined normally as full scale values) that window is
-discarded and no spectrum will be calculated for that trace window.
-2.  this code more or less blatantly assumes the data are already segmented
-into event files.  This is not a stupid assumption since it keys purely
-on arrival times anyway.  Thus it makes sense that if you can pick an
-arrival time there should be some data within the window you specify.  
-If the window you specify the spectrum to be calculated around is not
-complete (i.e. the start or end time are outside a given waveform segment
-specified by one row in a wfdisc table) that waveform segment will be 
-skipped.  
-3.  It is not totally clear as I'm writing this (I haven't debugged this
-new code yet) how this algorithm will handle overlapping waveform 
-segments.  This does happen with triggered data streams because of
-preevent memory.  My assumption is that this can be handled by properly 
-trapping errors in dbputv when the spectra are saved.  That is, if spectra
-can be calculated from two or more overlapping waveform segments dbputv
-will, I believe, generate an error.  REQUIRES SOME TESTING  
-
-RECIPE FILE FORMAT
-
-Any line beginning with a # is treated as a comment (warning: #
-must be in column 1)
-
-Data lines in the recipe file have the following format:
-
-phase	start	end tbw
-
-where 
-	phase = any valid character specifying a standard "phase" in
-		the assoc time (arid)
-	start = time (in seconds) relative to the measured phase time to 
-		use as defined start of time window
-	end =	end time (in seconds) relative to phase time
-	tbw = 	time-bandwidth product to use for spectral estimatesauthor:  Gary Pavlis
 written:  July 1995
 
 Modified June 2001
@@ -131,6 +52,10 @@ off this table are completely broken because I removed the "sname"
 parameter that was an important key in that processing scheme.  
 I did that on purpose because it was a bad scheme.  
 This form is better to release to the world.
+Modified April 2004
+1. Replaced scv2 trace manipulation by tr routine.  This allows reading
+miniseed.
+2. Implemented -correct option.  Was only stubbed before.
 */
 
 
@@ -310,6 +235,17 @@ void fix_overlapping_segments(Dbptr db,Spectra_phase_specification *sps)
 	}
 	if(crunch_table) dbcrunch(db);
 }
+/* small function returns true of the data in the array s 
+have a gap defined by Wftype in w.
+*/
+int trace_has_gap(int n, float *s,Wftype *w)
+{
+	int i;
+
+	for(i=0;i<n;++i)
+		if((s[i]>=(w->upper)) || (s[i]<=(w->lower))) return(1);
+	return(0);
+}
 
 /* START OF MAIN */
 
@@ -334,6 +270,9 @@ int main(int argc, char **argv)
 	Tbl *sortkeys;
 	double pspec_conversion_factor;
 	Pf *pf;
+	float *seis;
+	Wftype *wtype;
+
 	elog_init(argc,argv);
 	elog_log(0,"%s\n",argv[0]);
 
@@ -341,6 +280,7 @@ int main(int argc, char **argv)
 	/* set defaults explicitly here */
 	jack = 0;
 	correct_response = 0;
+	seis=NULL;
 
 	if (argc < 2) {
 		usage();
@@ -356,8 +296,6 @@ int main(int argc, char **argv)
 			jack = 1;
 		else if (!strcmp(argv[i], "-correct"))
 		{
-			elog_notify(0,"-correct option not yet implemented\nDon't use it or fix this program\n");
-			usage();
 			correct_response = 1;	
 		}
 		else if(!strcmp(argv[i],"-pf"))
@@ -378,6 +316,8 @@ int main(int argc, char **argv)
 			exit(1);
 		}
 	}
+	/* initialized at top to detect gaps */
+	wtype = trwftype("t4");
 	if (spec_dir == NULL)
 		spec_dir = strdup("./spectra");
 	/* Create spec_dir and die if this can't be done */
@@ -397,7 +337,10 @@ int main(int argc, char **argv)
 	because we reuse it repeatedly in the loop below */
 	dbi = dbjoin( dblookup(dbi,0,"wfdisc",0,0),
 			dblookup(dbi,0,"arrival",0,0), 0, 0, 0, 0, 0);
-	dbi = dbjoin (dbi,dblookup(dbi,0,"affiliation",0,0), 0, 0, 0, 0, 0);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"sensor",0,0), 0, 0, 0, 0, 0);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"instrument",0,0),  0, 0, 0, 0, 0);
+	dbi = dbjoin( dbi,dblookup(dbi,0,"affiliation",0,0),  0, 0, 0, 0, 0);
+
 	/* Now we have to sort the db.  This is necessary to fix the 
 	case of overlapping waveform segments (see below).  I'm sorting
 	here under an assumption that normally this code woudl process 
@@ -416,11 +359,12 @@ int main(int argc, char **argv)
 */
 	
 	dbquery(dball,dbRECORD_COUNT, &narr);
+	if(narr<=0) die(0,"Working view has no data after dbjoins\n");
 	fprintf(stdout,"dbmwpec:  wfdisc->arrival join of %s has %d rows\n",
 				dbin,narr);
 
 	/* Now we loop through the recipe file specification and 
-	subset the db for each entry in the recipe phase specification */
+	subset the db for each entry in the parameter file phase specification */
 	for (i = 0; i < maxtbl(phases); ++i) {
 		Dbptr           db_this_phase;	/* db subset of picks of
 						 * current phase */
@@ -467,11 +411,11 @@ int main(int argc, char **argv)
 			int nfft,ntest,ierr; /* variables used by powspc*/
 			int div; /* used in calculating nfft*/
 			float *freq,*spec,*errspc;  /* arrays used by powspc*/
+			double tsread,teread;
+			int npts;
 
 			/* other variables */
 			int nsamples;
-			/*scv2 Trace returned by read function */
-			Trace *seis;
 
 			dbgetv(db_this_phase, 0,
 				"sta",sta,
@@ -490,6 +434,8 @@ int main(int argc, char **argv)
 			tstart = pick + this_phase->start;
 			tend = pick + this_phase->end;
 			nsamples = rint ( (tend - tstart)*samprate);
+			if(seis==NULL) 
+				allot(float *,seis,nsamples);
 			if( (tstart < time) || (tend > endtime) )
 			{
 				dbserr("Spectra window does all contained in waveform segment",
@@ -497,57 +443,35 @@ int main(int argc, char **argv)
 				elog_notify(0,"Data skipped\n");
 				continue;
 			}
-			seis = read_trace(db_this_phase,tstart,tend);
-			/* This discards data if the fill_gaps function
-			segmented this trace.  If one wanted to recover such
-			data like my old code did, one could instead hunt
-			for the largest segment.   Here we just discard the
-			data in this situation 
-			6/10/96:  found a bug that in some situations
-			read_trace returns a null pointer.  This would
-			cause the refernce to seis->next to cause a seg
-			fault.  Rather than try to fix danny's SCV routine
-			I kludged this by adding a second error branch to 
-			first test if the pointer is null*/
-			if( seis == NULL)
+			ierr=trgetwf(db_this_phase,0,&seis,&nsamples,tstart,tend,
+				&tsread,&teread,&npts,0,0);
+			if(ierr)
 			{
-				dbserr("Garbage trace encountered",
-					sta,chan,pick,0);
-				elog_notify(0,"Data skipped\n");
+				trgetwf_error(db_this_phase,ierr);
+				clear_register(1);
 				continue;
 			}
+			/* delete traces with gaps */
+			if(trace_has_gap(npts,seis,wtype))
+			{
+				elog_log(0,"%s %s %lf has data gap. Data skipped\n",
+					sta,chan,pick);
+				continue;
+			}
+			if(calib>0.0)
+				for(i=0;i<npts;++i) seis[i]*=calib;
 			else
-			{
-			    if( (seis->next) != NULL)
-			    {
-				dbserr("Data gap detected in spectral window",
-					sta,chan,pick, 0);
-				elog_notify(0,"Data skipped\n");
-				continue;
-			    }
-			}
+				elog_complain(0,"Null or negative calib (%lf) for %s %s %lf\nCalib not applied\n",
+					calib,sta,chan,pick);
 			/* Drop absurdly short traces */
-			if(nsamples<MINSAMP)
+			if(npts<MINSAMP)
 			{
 				dbserr("Absurdly short trace", sta,chan,pick,0);
 				elog_notify(0,"Length of in window = %d\nSkipped\n",
-					nsamples);
+					npts);
 				continue;
 			}
-			/* this test is necessary in case the waveform is 
-			glitched at the end which causes it to be truncated*/
-			if((nsamples - (seis->nsamps)) != 0 )
-			{
-				dbserr("Trace length mismatch",
-					sta,chan,pick, 0);
-				elog_notify(0,"Expected %d samples in window but read_trace returned %d\nData skipped\n",
-					nsamples, seis->nsamps);
-				continue;
-			}		
 				 
-			/* This function converts the trace data to floats.
-			Note this also scales the data by calib */
-			SCV_trace_tofloat(seis,0);
 
 			/* set up variables required by powspc*/
 			dt = (float) (1.0 / samprate);
@@ -561,21 +485,21 @@ int main(int argc, char **argv)
 			 */
 
 			nfft = 1;
-			div = nsamples;
+			div = npts;
 			do {
 				div /= 2;
 				nfft *= 2;
 			} while (div > 0);
-			/* powspc request min 2*nsamples */
+			/* powspc request min 2*npts */
 			nfft *= 2;
 			freq = (float *) calloc(nfft / 2 + 1, sizeof(float));
 			spec = (float *) calloc(nfft / 2 + 1, sizeof(float));
 			errspc = (float *) calloc(nfft / 2 + 1, sizeof(float));
-			if (nsamples > MAXSAMPLES) {
+			if (npts > MAXSAMPLES) {
 				dbserr("Window has too many samples:  trimmed to MAXSAMPLES",
 				       sta, chan, pick,  0);
 			}
-			powspc_(&nsamples, seis->data, &nfft, &dt,
+			powspc_(&npts, seis, &nfft, &dt,
 				&(this_phase->tbwp), freq,
 			   spec, errspc, &xi, &seavg, &jack, &ierr);
 
@@ -616,7 +540,7 @@ int main(int argc, char **argv)
 			of Mw.  This magic formula is from Frank Vernon's
 			original code after it called powspc_ */
 
-			pspec_conversion_factor = (double)nsamples*dt*dt/2.0;
+			pspec_conversion_factor = (double)npts*dt*dt/2.0;
 			for(j=0;j<(nfft/2 +1);++j) 
 			{
 				spec[j] *= pspec_conversion_factor;
@@ -627,54 +551,31 @@ int main(int argc, char **argv)
 			 * Here I need to add a routine to correct
 			 * for system response function
 			 */
-/* The response correction code may not work.  The stub is left in and commented out
-on purpose.
 
 			if (correct_response) {
 				if (ierr = correct_for_response(freq, spec,
-					  (nfft / 2 + 1), traces)) {
-					switch (ierr) {
-					case (1):
-						dbserr("correct_for_response error in dbgetv loop for trace object",
-						    sta, chan, pick,
-						        1);
-						break;
+					  (nfft / 2 + 1), db_this_phase)) {
+					if(ierr<0)
+					{
+						complain(0,"correct_response failed completely for %s %s %s\n",
+							sta,chan,pick);
 
-					case (2):
-						dbserr("correct_for_response error:  no response info available",
-						    sta, chan, pick,
-						        0);
-						break;
-
-					case (3):
-						dbserr("eval_response error during calper lookup",
-						    sta, chan, pick,
-						        1);
-						break;
-					case (4):
-						dbserr("eval_response error during lookup loop",
-						    sta, chan, pick,
-						        1);
-						break;
-					default:
-						elog_notify(0, "Fatal: unrecognized error return from correct_for_response");
-						exit(-1);
 					}
-					free(freq);
-					free(spec);
-					free(errspc);
-					continue;
+					else if(ierr> 0)
+					{
+						complain(0,"%d eval_response errors for %s %s %s\n",
+							sta,chan,pick);
+					}
 				}
 			}
  
------end bad section for correct_response */
 
 			/*
 			 * This routine writes spectral files and
 			 * updates the db
 			 */
 			switch (save_spectrum(db_this_phase, this_phase, spec, errspc, 
-			    nfft,nsamples, dt, pick, spec_dir, correct_response, jack)) {
+			    nfft,npts, dt, pick, spec_dir, correct_response, jack)) {
 			case (0):
 				break;
 			case (-1):
@@ -717,7 +618,6 @@ on purpose.
 			free(freq);
 			free(spec);
 			free(errspc);
-			SCV_free_trace(seis);
 		}
 		db_this_phase.field = dbALL;
 		db_this_phase.record = dbALL;

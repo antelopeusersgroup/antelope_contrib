@@ -44,7 +44,8 @@ present in one file for a wfdisc table.
 Prints the contrib banner at the top of the output log.  
 Program will go ahead an run even if
 if this flag is set.  Some antelope programs treat this like
-the --help in gnu.
+the --help in gnu.  It is not a verbose flag as might be
+implied.  
 .IP -pf
 Default reads a parameter file called dbmwspec.pf.  Use this 
 optional parameter to change this.  
@@ -56,8 +57,11 @@ Compute and save 95% confidence limits computed by jackknife
 error estimates.  
 .IP -correct
 Use response information to correct spectral estimates.
-(Warning:  this is not currently implemented and a diagnostic
-is issued if it is selected.)
+This only works if a valid join of wfdisc->sensor->instrument 
+is possible.  That is, although this should be obvious you
+should not use this option unless you have
+complete response information for your data for all time
+periods you wish to process.
 .SH PARAMETER FILE
 .LP
 \fIspectra_windows\fR.  This is an &Tbl parameter that defines
@@ -93,10 +97,8 @@ preevent noise spectra from 1.75 to 0.25 seconds before the P
 arrival time.  
 .SH DIAGNOSTICS
 There are many.  The program is fairly verbose about problems.
+Normal practice should be to keep a log file of a run of this program.
 .SH "BUGS AND CAVEATS"
-.IP (1)
-The -correct option does not currently work.  
-.IP (2)
 There probably really should be an optional -sift parameter to subset 
 the input arrival table.  For now this can be done by using a 
 subsetted arrival table in dbin -- a common datascope hack. 
