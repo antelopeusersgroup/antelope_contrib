@@ -5,6 +5,7 @@ DATA= \
 	libPkt.ref \
 	libbrttpkt.ref \
 	libbrttutil.ref \
+	libmappts.ref \
 	libcoords.ref \
 	libds.ref \
 	liborb.ref \
