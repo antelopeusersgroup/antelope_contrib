@@ -254,7 +254,8 @@ int pmel(int nevents,
     /* These are pmel control parameters parsed from pf */
     double esmin,esinit;
     double sswrodgf_min;
-    double sswr_test,ndgf_test;
+    double sswr_test;
+    int ndgf_test;
     int maxscit;
     int delete_bad;
     double F_critical_value;
@@ -602,6 +603,7 @@ Nevents Nevents_used\n");
 	/* We only adjust they station corections if this
 	flag is true.  This only happens when the list of
 	events kept stabilizes from one pass to the next */
+	if(sc_adjusted_last_pass==0) adjust_sc_ok=1;  /* force this or we may not converge */
 	if(adjust_sc_ok)
 	{
 	    if(nrows_S<=0)
@@ -697,8 +699,6 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 	    hypocen_history->degrees_of_freedom = total_ndgf;
 	    pushtbl(*pmelhistory,hypocen_history);
 	    copy_hypocenter(hypocen_history,hypocen);
-	    if(sc_iterations>maxscit) pushtbl(*sc_converge_reasons,
-			"Hit station correction iteration limit");
 	    ++sc_adjustments;
 	    sc_adjusted_last_pass = 1;
 	}
@@ -706,6 +706,8 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 	    sc_adjusted_last_pass = 0;
 
 	++sc_iterations;
+        if(sc_iterations>maxscit) pushtbl(*sc_converge_reasons,
+			"Hit station correction iteration limit");
     }
     while (maxtbl(*sc_converge_reasons)<=0);
 
