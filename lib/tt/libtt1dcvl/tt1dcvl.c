@@ -130,7 +130,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 	dbquery(dbs2,dbRECORD_COUNT,&nrecs);
 	if(nrecs <= 0)
 	{
-		elog_notify(0,"No match in database for model named %s for property %s\n",
+		elog_log(0,"No match in database for model named %s for property %s\n",
 			mod,property);
 		freetbl(sortkeys,free);
 		dbfree(dbs);
@@ -149,7 +149,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 		if(dbgetv(dbs2,0,"paramval",&(model->velocity[i]),
 			"depth",&(model->ztop[i]),0) == dbINVALID)
 		{
-			elog_notify(0,"dbgetv error loading record %d of model %s and property %s\nModel cannot be accessed -- expect additional errors\n",
+			elog_log(0,"dbgetv error loading record %d of model %s and property %s\nModel cannot be accessed -- expect additional errors\n",
 				i,mod,property);
 			free_Vmodel(model);
 			return(NULL);
@@ -317,7 +317,7 @@ TTTime *tt1dcvl_compute_atime(TTGeometry *x,double d_km,double azimuth,
 	ttlvz_(&d_km, &(x->source.z), &nz, v, z, work1, work2, &(t->value), &p, &up); 
         if (t->value < 0.0)
         {
-		elog_notify(0,"ttlvz could not compute travel time for phase %s\n",phase);
+		elog_log(0,"ttlvz could not compute travel time for phase %s\n",phase);
 		free(t);
 		free(work1);
 		free(work2);
@@ -476,7 +476,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 	ttlvz_(&d_km, &(x->source.z), &nz, v, z, work1, work2, &time, &p, &up);
         if (time < 0.0)
         {
-                elog_notify(1,"ttlvz could not compute slowness vector for phase %s\n",phase);
+                elog_log(1,"ttlvz could not compute slowness vector for phase %s\n",phase);
 		free(slow);
 		free(work1);
 		free(work2);
@@ -521,7 +521,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p1, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -560,7 +560,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p4, &up);
          			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -581,7 +581,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 				dudr = (p-p0)/dx;
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -602,7 +602,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -614,7 +614,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p1, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -627,7 +627,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p3, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -640,7 +640,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p4, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -684,7 +684,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);
@@ -700,7 +700,7 @@ TTSlow *tt1dcvl_compute_slowness(TTGeometry *x,double d_km,
 					work1, work2, &time, &p0, &up);
         			if (time < 0.0)
         			{
-                		  elog_notify(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                		  elog_log(1,"ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
        				  free(slow);
 				  free(work1);
 			 	  free(work2);

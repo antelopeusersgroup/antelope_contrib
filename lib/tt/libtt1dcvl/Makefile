@@ -1,17 +1,17 @@
 LIB = libtt1dcvl.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
-DATADIR=
-DATA=
 MAN3=tt1dcvl.3
 
-cflags=-g
 ldlibs = $(DBLIBS) 
 
 include $(ANTELOPEMAKE)
 DIRS=
 
 OBJS=tt1dcvl.o ttlvz.o
+
+ttlvz.o : ttlvz.c
+	$(CC) -c $(CFLAGS) ttlvz.c
 
 $(LIB) : $(OBJS)
 	$(RM) $@
