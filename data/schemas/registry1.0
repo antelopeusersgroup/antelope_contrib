@@ -586,7 +586,7 @@ Relation clients
 	}
 	;
 
-Relation server
+Relation servers
 	Fields ( serveraddress serverport host started orb_start nclients nsources opens closes rejected errors connections messages maxdata maxpkts maxsrc who pid version orbversion when lddate )
 	Primary ( serveraddress serverport )
 	Alternate ( host )

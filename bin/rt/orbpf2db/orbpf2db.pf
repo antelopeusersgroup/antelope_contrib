@@ -2,7 +2,7 @@ translations &Arr{
 	/pf/orbstat &Arr{
 		schema	registry1.0
 		tables &Arr{
-			server &Arr{
+			servers &Arr{
 				serveraddress 	server{address}
 				closes 		server{closes}
 				connections 	server{connections}
