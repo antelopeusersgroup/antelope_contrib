@@ -364,8 +364,8 @@ For code that does not use the db routines, these lines could
 be deleted 
 */
 #include "db.h"
-Arr *dbload_station_table(Dbptr, int, int);
-Arr *dbload_array_table(Dbptr, int, int);
+Arr *dbload_station_table(Dbptr, int, int, Pf*);
+Arr *dbload_array_table(Dbptr, int, int, Pf *);
 Tbl *dbload_arrival_table(Dbptr, int, int, Arr *, Arr *);
 Tbl *dbload_slowness_table(Dbptr, int, int, Arr *, Arr *);
 
