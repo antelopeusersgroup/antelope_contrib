@@ -287,6 +287,7 @@ Written:  August 1996
 
 #define DX_STEP_SIZE 5.0 /* starting distance step size in km */
 #define MINIMUM_DX 0.5 /* minimum step size in km */
+#define D_KM_CUTOFF 1.0 /* Used to avoid singularity of formula at 0 offset*/
 #define DX_SCALING_FACTOR 0.5  /* step size is multiplied by this 
 			factor when necessary to avoid edges until it works
 			or drops below MINIMUM_DX.  This constant must be
@@ -512,10 +513,23 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
         			}
 				dudr = (p0-8.0*p1+8.0*p3-p4)/(12.0*dx);
 			}
-			o.duxdx = -sin_a*sin_a0*dudr - p*cos_a*cos_a0/d_km;
-			o.duxdy = -sin_a*cos_a0*dudr + p*cos_a*sin_a0/d_km;
-			o.duydx = -cos_a*sin_a0*dudr + p*sin_a*cos_a0/d_km;
-			o.duydy = -cos_a*cos_a0*dudr - p*sin_a*sin_a0/d_km;
+			/* bug fix Feb 1998.  Else conditional is necessary
+			to avoid an indeterminate form that arises when 
+			offset is 0.0 */
+			if(d_km > D_KM_CUTOFF) 
+			{
+			  o.duxdx = -sin_a*sin_a0*dudr - p*cos_a*cos_a0/d_km;
+			  o.duxdy = -sin_a*cos_a0*dudr + p*cos_a*sin_a0/d_km;
+			  o.duydx = -cos_a*sin_a0*dudr + p*sin_a*cos_a0/d_km;
+			  o.duydy = -cos_a*cos_a0*dudr - p*sin_a*sin_a0/d_km;
+			}
+			else
+			{
+			  o.duxdx = -dudr;
+			  o.duxdy = 0.0;
+			  o.duydx = 0.0;
+			  o.duydy = -dudr;
+			}
 
 			/* We do the z derivatives more crudely because
 			they are of significant size only when a source is
