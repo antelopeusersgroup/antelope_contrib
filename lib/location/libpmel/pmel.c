@@ -335,7 +335,7 @@ int pmel(int nevents,
     for(i=0;i<nevents;++i) h0[i].used = 1;
 
     /* Top of processing loop for this group */
-    elog_log(0,"Iteration Raw_rms Escale  sswrodgf sswrodgf2 ndgf  ndgf2\
+    fprintf(stdout,"Iteration Raw_rms Escale  sswrodgf sswrodgf2 ndgf  ndgf2\
 Nevents Nevents_used\n");
     sc_iterations = 0;
     sc_adjusted_last_pass=0;
@@ -675,7 +675,7 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 		sswrodgf2=0.0;
 	    else
 		sswrodgf2=total_wssq2/((double)total_ndgf2);
-	    elog_log(0,"%d  %lf  %lf  %lf %lf %d %d %d %d\n",
+	    fprintf(stdout,"%d  %lf  %lf  %lf %lf %d %d %d %d\n",
 		sc_iterations,total_rms_raw,escale,
 			sswrodgf,sswrodgf2,
 			total_ndgf,total_ndgf2,nevents,nev_used);

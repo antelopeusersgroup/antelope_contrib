@@ -155,7 +155,7 @@ void main(int argc, char **argv)
 
 	/* Initialize the error log and write a version notice */
 	elog_init (argc, argv) ;
-	elog_log (0, "%s version %s\n", argv[0], version) ;
+	fprintf (stdout, "%s version %s\n", argv[0], version) ;
 
 	if(argc < 3) usage();
 	dbin = argv[1];
@@ -218,7 +218,7 @@ void main(int argc, char **argv)
 		"dbjoin arrival",0);
 	dbv = dbprocess(db,proctbl,0);
 	dbquery(dbv, dbRECORD_COUNT, &nrows);
-	elog_log(0,"Raw working database view has %d rows\n",nrows);
+	fprintf(stdout,"Raw working database view has %d rows\n",nrows);
 
 	/* Subset using sift_key if requested */
 	if(sift)
@@ -247,7 +247,7 @@ void main(int argc, char **argv)
 Which picks will be used here is unpredictable\n\
 %d total picks, %d unique\nContinuing\n", nrows_raw, nrows);
 
-	elog_log(0,"Final working view has %d rows\n",nrows);
+	fprintf(stdout,"Final working view has %d rows\n",nrows);
 
 	if(dbpmel_process(dbv,gridlist,pf))
 	{

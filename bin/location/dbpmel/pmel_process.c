@@ -342,17 +342,18 @@ option which is know to cause problems\nrecenter set off\n");
 			events_to_fix,&hypocentroid,smatrix,
 			arr_phase,&o,pf,&converge,&pmelhistory))
 		{
-			elog_log(0,
+			elog_notify(0,
 			  "No solution from pmel for cluster id = %d\n",
 				gridid);
 			continue;
 		}
-		elog_log(0,"Cluster id=%d pmel convergence reason\n",
+		fprintf(stdout,"Cluster id=%d pmel convergence reason\n",
 			gridid);
 		for(k=0,pmelfail=0;k<maxtbl(converge);++k)
 		{
 			char *swork;
 			swork = (char *)gettbl(converge,k);
+			fprintf(stdout,"%s\n",swork);
 
 			/* The string ABORT in the convergence list
 			is used to flag a failure. */
