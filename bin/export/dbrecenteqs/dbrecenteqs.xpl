@@ -10,22 +10,13 @@ sub init_globals {
 
 	setup_State();
 
-	my( $Pf ) = "dbrecenteqs";
-
-	if( system("pfecho $Pf > /dev/null 2>&1" ) ) {
-		die( "Couldn't find $Pf.pf\n" );
-	}
-
 	my( @params ) = (
 		"title",
 		"caption_default",
 		"html_base",
 		"web_topdir",
-		"wiggle",
-		"local_logo",
 		"local_html_home",
 		"description_of_local_html_home",
-		"region_phrases_database",
 		"page_refresh_seconds",
 		"other_region_links",
 		"nearest_places",
@@ -33,13 +24,34 @@ sub init_globals {
 		"authtrans",
 		"keep_ndays"
 		);
+
+	my( @path_params ) = (
+		"wiggle",
+		"local_logo",
+		"region_phrases_database"
+		);
 	
-	foreach $param ( @params ) {
-		$State{$param} = pfget( $Pf, $param );
+	foreach $param ( @params, @path_params ) {
+		$State{$param} = pfget( $State{pf}, $param );
 	}
+
+	foreach $param ( @path_params ) {
+
+		$State{$param} = datafile_abspath( $State{$param} );
+	}
+
+	$State{"wiggle_filebase"} = `basename $State{"wiggle"}`;
+	chomp( $State{"wiggle_filebase"} );
+	$State{"local_logo_filebase"} = `basename $State{"local_logo"}`;
+	chomp( $State{"local_logo_filebase"} );
 
 	if( $State{html_base} !~ m@/$@ ) { $State{html_base} .= "/"; }
 	if( $State{web_topdir} !~ m@/$@ ) { $State{web_topdir} .= "/"; }
+
+	if( ! -d $State{web_topdir} ) {
+		die( "The directory $State{web_topdir} does not exist. " .
+		     "Please create it before proceeding. Bye.\n" );
+	}
 
 	$State{quakesubdir} = "quakes";
 	mkdir( "$State{web_topdir}/$State{quakesubdir}", 0755 );
@@ -79,9 +91,10 @@ sub cleanup_database {
 	my( $dbname ) = @_;
 	my( $cmd, $cutoff, $table );
 
-	if( ! defined( $State{keep_ndays} ) ) {
+	if( ! defined( $State{keep_ndays} ) || $State{keep_ndays} == 0 ) {
 		print
-		  "dbrecenteqs: keep_ndays undefined. No cleanup initiated.\n";
+		  "dbrecenteqs: keep_ndays undefined or set to " .
+		  "zero (cleanup disabled). No cleanup initiated.\n";
 		return;
 	} else {
 		print
@@ -292,7 +305,7 @@ sub quake_region {
 sub nearest_locations {
 	my( $lat, $lon ) = @_;
 
-	my( @db ) = dbopen( $State{"nearest_places"}->{"database"}, "r" );
+	my( @db ) = dbopen( $State{"nearest_places"}->{"cities_dbname"}, "r" );
 	@db = dblookup( @db, "", "places", "", "" );
 
 	my( $expr ) = "distance(lat,lon,$lat,$lon)*111.195 <= " .
@@ -370,7 +383,7 @@ sub create_focusmap_html {
 	print H "<BR>";
 	print H "<CENTER><H1>";
 	print H "<A HREF=\"$State{html_base}\"><IMG ALIGN='top' " .
-		"SRC=\"$State{html_base}$State{wiggle}\" " .
+		"SRC=\"$State{html_base}$State{wiggle_filebase}\" " .
 		"ALT=\"Link to $State{title}\"></A>";
 	print H location_header_line( @dbprefor, $lat, $lon, $orid ) .
 		"</H1></CENTER>\n";
@@ -390,11 +403,33 @@ sub create_focusmap_html {
 		print H hypocenter_vitals( @dbnonprefors, "white" );
 	}
 	print H "</CENTER>\n";
-	print H "<BR>";
-	print H "<CENTER>\n";
-	print H "<H2>This earthquake was:</H2>\n";
-	print H nearest_locations( $lat, $lon );
-	print H "</CENTER>\n";
+
+	if( ! defined( $State{"nearest_places"}->{"cities_dbname"} ) ||
+	      $State{"nearest_places"}->{"cities_dbname"} eq "" ) {
+
+		print STDERR 
+			"\n\t************************************\n" . 
+			"\tWARNING: Skipping cities--" .
+			"no cities_dbname specified\n" .
+			"\t************************************\n\n";
+
+	} elsif( ! -e "$State{nearest_places}->{cities_dbname}" ) {
+
+		print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: Skipping cities--" .
+			"$State{nearest_places}->{cities_dbname}.places " .
+			" not found\n" .
+			"\t************************************\n\n";
+
+	} else {
+		print H "<BR>";
+		print H "<CENTER>\n";
+		print H "<H2>This earthquake was:</H2>\n";
+		print H nearest_locations( $lat, $lon );
+		print H "</CENTER>\n";
+	}
+
 	print H "<BR>\n<CENTER>",
 		other_map_links( @db, $mapname ),
 		"</CENTER>\n";
@@ -523,7 +558,7 @@ sub create_focusmap {
 sub hyperlinked_logo {
 
 	return "<A HREF=\"$State{local_html_home}\">" .
-		"<IMG SRC=\"$State{html_base}$State{local_logo}\" " .
+		"<IMG SRC=\"$State{html_base}$State{local_logo_filebase}\" " .
 		"align=center " .
 		"ALT=\"Link to $State{description_of_local_html_home}\"></A>";
 }
@@ -684,8 +719,10 @@ sub clientside_imagemap_quakes {
 		       "dbopen mapassoc",
 		       "dbsubset mapname == \"$mapname\"",
 		       "dbjoin origin",
+		       "dbjoin event",
 		       "dbsort -r time",
-		       "dbjoin webmaps evid" );
+		       "dbjoin webmaps evid", 
+		       "dbsubset origin.orid == prefor" );
 
 	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
 
@@ -742,11 +779,11 @@ sub create_stockmap_html {
 	print H "</CENTER>\n";
 	print H "<H1 ALIGN='center'>";
 	if( $mapclass eq "index" ) {
-		print H "<IMG align=top src=\"$State{wiggle}\">" .
+		print H "<IMG align=top src=\"$State{wiggle_filebase}\">" .
 			"$State{title}</H1>\n";
 	} else {
 		print H "<A HREF=\"$State{html_base}\">";
-		print H "<IMG align=top SRC=\"$State{wiggle}\" " .
+		print H "<IMG align=top SRC=\"$State{wiggle_filebase}\" " .
 			"ALT=\"Link to $State{title}\">" .
 			"$State{title}</H1>\n";
 		print H "</A>\n";
@@ -927,34 +964,71 @@ sub update_stockmap {
 	undef $Mapspec{clean_image};
 }
 
-elog_init( $0, @ARGV );
+$Program = `basename $0`;
+chomp( $Program );
+
+elog_init( $Program, @ARGV );
+
+if ( ! &Getopts('p:hi:g:') || @ARGV != 1 ) {
+	die ( "Usage: $Program [-h] [-p pffile] [-i indexmap_pffile] " .
+	      "[-g globalmap_pffile] database\n" ); 
+} else {
+	$dbname = $ARGV[0];
+	if( $opt_p ) {
+		$State{pf} = $opt_p;
+	} else {
+		$State{pf} = "dbrecenteqs";
+	}
+}
 
 init_globals();
 
-if ( ! &Getopts('h') || @ARGV != 1 ) {
-	die ( "Usage: $0 [-h] database\n" ); 
-} else {
-	$dbname = $ARGV[0];
-}
-
 die_if_already_running();
-cleanup_database( $dbname );
 
 @db = dbopen( $dbname, "r+" );
-@dbmapstock = dblookup( @db, "", "mapstock", "", "" );
 
-if( ! dbquery( @dbmapstock, "dbTABLE_PRESENT" ) ) { 
-	die( "Couldn't find $dbname.mapstock\n" );
+if( ! expansion_schema_present( @db ) ) {
+
+	die( "Please add dbrecenteqs1.0 expansion schema to $dbname. Bye.\n" );
 }
 
-@dbmapstock = dbsubset( @dbmapstock, "mapclass == \"index\"" );
-if( dbquery( @dbmapstock, "dbRECORD_COUNT" ) <= 0 ) {
-	die( "no index map(s) in $dbname.mapstock\n" );	
+if( $opt_i ) {
+	
+	%Index_Mapspec = %{read_map_from_file( "index_map_config", $opt_i )};
+	add_to_mapstock( \%Index_Mapspec, @db );
+	exit( 0 );
+	
+} elsif( $opt_g ) {
+	
+	%Global_Mapspec = %{read_map_from_file( "global_map_config", $opt_g )};
+	add_to_mapstock( \%Global_Mapspec, @db );
+	exit( 0 );
+} 
+
+@db = dblookup( @db, "", "mapstock", "", "" );
+@db = dbsubset( @db, "mapclass == \"index\"" );
+
+if( dbquery( @db, "dbRECORD_COUNT" ) <= 0 ) {
+
+	%Index_Mapspec = %{setup_Index_Mapspec()};
+	%Index_Mapspec = %{create_map( \%Index_Mapspec )};
+	add_to_mapstock( \%Index_Mapspec, @db );
 }
 
-# Should really plot only the prefor for each evid on the stock maps
+if( ! -e "$State{web_topdir}/$State{wiggle_filebase}" ) {
+	system( "/bin/cp $State{wiggle} $State{web_topdir}" );
+}
+if( ! -e "$State{web_topdir}/$State{local_logo_filebase}" ) {
+	system( "/bin/cp $State{local_logo} $State{web_topdir}" );
+}
+
+cleanup_database( $dbname );
+
 @dbstockmaps = dbprocess( @db, 
 			  "dbopen origin", 
+			  "dbjoin event", 
+			  "dbsubset orid == prefor", 
+			  "dbsever event",
 			  "dbtheta mapstock",
 			  "dbsort mapname time",
 			  "dbgroup mapname" );

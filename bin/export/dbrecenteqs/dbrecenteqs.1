@@ -1,43 +1,39 @@
 .TH DBRECENTEQS 1 "$Date$"
 .SH NAME
-dbrecenteqs, dbrecenteqs_setup \- maintain a web site showing recent earthquakes
+dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-\fBdbrecenteqs_setup \fP[-i \fIindex_map\fP] [-g \fIglobal_map\fP] \fIdbname\fP
-\fBdbrecenteqs \fP[-h] \fIdbname\fP
+dbrecenteqs [-h] [-i indexmap_pffile] [-g globalmap_pffile] dbname
 .fi
 .SH DESCRIPTION
-<<<<<<< dbrecenteqs.1
-dbrecenteqs_setup creates or adds to the mapstock table of the database 
-in dbrecenteqs1.0 or related schema. If no options are specified, a new 
-stock index map is created based on the specifications in the parameter 
-file. Otherwise an index map or global map is added to the mapstock table, 
-reading from a parameter file in the style of dbevents(1). 
 
-dbrecenteqs watches a real-time database of hypocenters, customizing the 
-stock maps and creating individual maps for each earthquake as they occur. 
-dbrecenteqs creates the html code for a complete web-site of recently 
-detected earthquakes. If the keep_ndays parameter-file option is specified, 
-the database is cleaned up routinely upon each run.
-=======
-\fBdbrecenteqs_setup\fP creates or adds to the mapstock table of the database
-in dbrecenteqs1.0 or related schema. If no options are specified, a new
-stock index map is created based on the specifications in the parameter
-file. Otherwise an index map or global map is added to the mapstock table,
-reading from a parameter file in the style of dbevents(1).
-.LP
-\fBdbrecenteqs\fP watches a real-time database of hypocenters, customizing the
-stock maps and creating individual maps for each earthquake as they occur.
-\fBdbrecenteqs\fP creates the html code for a complete web-site of recently
-detected earthquakes
->>>>>>> 1.3
+dbrecenteqs watches a real-time database of hypocenters, customizing
+the stock maps and creating individual maps for each earthquake as they
+occur.  dbrecenteqs creates the html code for a complete web-site of
+recently detected earthquakes. If the keep_ndays parameter-file option
+is specified, the database is cleaned up routinely upon each run. If
+keep_ndays is not specified or is set to 0, no cleanup is performed.
+
+If necessary, dbrecenteqs creates or adds to the mapstock table of
+the database in dbrecenteqs1.0 or related schema.  For the default
+behavior, a new stock index map is created based on the specifications
+in the parameter file. An index map or global map may be added to the
+mapstock table, with the -i or -g options (respectively), which read
+from a parameter file in the style of dbevents(1). dbrecenteqs will 
+exit after exercising these functions, since they are meant exclusively
+as setup utilities.
+
 .SH OPTIONS
-.IP -g
-\fIglobal_map\fP add specified global map to mapstock table
-.IP -i
-\fIindex_map\fP add specified index map to mapstock table
-.IP -h
-don't regenerate focus maps; only recreate html
+.IP "-g globalmap_pffile Add specified global map to mapstock table"
+.IP "-i indexmap_pffile Add specified index map to mapstock table"
+.IP "-h don't regenerate focus maps; only recreate html"
+.SH DIAGNOSTICS
+"Couldn't find alchemy. Use alternate image-conversion method or fix path."
+This message indicates that the preferred image-conversion method, via the 
+ImageAlchemyPS software package from HandMade Software Inc., is not installed
+or not available on the path. A different conversion method, such as "pnm" or 
+"imagick", should be specified in the parameter file's 
+pixfile_conversion_method field.
 .SH "SEE ALSO"
 .nf
 dbevents(1)

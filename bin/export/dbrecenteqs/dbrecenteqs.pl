@@ -22,25 +22,25 @@ sub read_map_config {
 }
 
 sub setup_State {
-	$Pf = "dbrecenteqs_setup";
 
-	if( system("pfecho $Pf > /dev/null 2>&1" ) ) {
-		die( "Couldn't find $Pf.pf\n" );
+	$State{pf} =~ s/\.pf$//;
+
+	if( system("pfecho $State{pf} > /dev/null 2>&1" ) ) {
+		die( "Couldn't find $State{pf}.pf. Bye.\n" );
 	}
 
 	my( @params ) = (
 		"pixfile_conversion_method",
-		"stock_mapdir"
 		);
 	
 	foreach $param ( @params ) {
-		$State{$param} = pfget( $Pf, $param );
+		$State{$param} = pfget( $State{pf}, $param );
 	}
 
-	$State{index_map_config} = read_map_config( $Pf, "index_map_config" );
-	$State{global_map_config} = read_map_config( $Pf, "global_map_config" );
-	$State{focus_map_config} = read_map_config( $Pf, "focus_map_config" );
-	$State{detail_map_config} = read_map_config( $Pf, "detail_map_config" );
+	$State{index_map_config} = read_map_config( $State{pf}, "index_map_config" );
+	$State{global_map_config} = read_map_config( $State{pf}, "global_map_config" );
+	$State{focus_map_config} = read_map_config( $State{pf}, "focus_map_config" );
+	$State{detail_map_config} = read_map_config( $State{pf}, "detail_map_config" );
 
 	$State{workdir} = "/tmp/dbrecenteqs_$<_$$";
 	mkdir( $State{workdir}, 0755 );
@@ -58,6 +58,24 @@ sub setup_State {
 	foreach $helper ( @helpers ) {
 		next if check_for_executable( $helper );
 		die( "Couldn't find executable named $helper\n" );
+	}
+}
+
+sub expansion_schema_present {
+	my( @db ) = @_;
+
+	my( @tables ) = dbquery( @db, "dbSCHEMA_TABLES" );
+
+	if( grep( /mapstock/, @tables ) &&
+    	    grep( /mapassoc/, @tables ) &&
+    	    grep( /quakeregions/, @tables ) &&
+    	    grep( /webmaps/, @tables ) ) {
+	
+		return 1;
+
+	} else {
+
+		return 0;
 	}
 }
 
@@ -162,6 +180,7 @@ sub latlon_to_edpxy {
 
 	return( $x, $y );
 }
+
 sub set_rectangle {
 	my( %Mapspec ) = %{shift( @_ )};
 
@@ -436,9 +455,12 @@ sub plot_hypocenters {
 	my ( $hypocenter_tempfile ) =
 		make_hypocenter_tempfile( \%Mapspec );
 
+	my ( $depth_colors ) = 
+		datafile_abspath( "$Mapspec{depth_color_palette_file}" );
+
 	my( $cmd ) = "cat $hypocenter_tempfile | psxy -V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
-			"-C$Mapspec{depth_color_palette_file} " .
+			"-C$depth_colors " .
 			"-Ss$Mapspec{background_magsize_pixels}p " .
 			$more .
 			"$redirect $Mapspec{psfile}";
@@ -490,11 +512,14 @@ sub plot_contours {
 			system( $cmd );
 		}
 
+		my( $map_colors ) = 
+			datafile_abspath( $Mapspec{map_color_palette_file} );
+
 		$cmd = "grdimage -V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"$grdfile " .
 			"-I$gradfile " .
-			"-C$Mapspec{map_color_palette_file} " .
+			"-C$map_colors " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 
@@ -516,6 +541,26 @@ sub plot_contours {
 	system( $cmd );
 }
 
+sub datafile_abspath {
+	my( $file ) = shift( @_ );
+
+	if( ! defined( $file ) ) {
+
+		return undef;
+
+	} elsif( $file eq "" ) {
+
+		return "";
+	}
+
+	if( $file !~ m@^\.?/@ ) {
+
+		$file = "$ENV{ANTELOPE}/data/dbrecenteqs/" . $file;
+	}
+
+	return $file;
+}
+
 sub plot_linefiles {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $position ) = shift( @_ );
@@ -532,6 +577,8 @@ sub plot_linefiles {
 	foreach $line ( @{$Mapspec{linefiles}} ) {
 
 		( $name, $file, $pen ) = split( /\s+/, $line );
+
+		$file = datafile_abspath( $file );
 
 		if( ! -e $file ) {
 
@@ -741,6 +788,8 @@ sub read_map_from_file {
 	my( $map_pathname ) = shift;
 	my( %Mapspec );
 
+	$map_pathname =~ s/\.pf$//;
+
 	if( ! -e "$map_pathname" ) {
 
 		die( "Can't find map file $map_pathname\n" );
@@ -805,8 +854,8 @@ sub pixfile_convert {
 		} 
 
 		if( ! check_for_executable( "alchemy" ) ) {
-			die( "Couldn't find alchemy. Use alternate " .
-				"image-conversion method or fix path\n" );
+			die( "Couldn't find alchemy in path. Use alternate " .
+				"image-conversion method or fix path.\n" );
 		}
 
 		$cmd = "alchemy -Zm4 -Zc1 -o $format " .
@@ -816,15 +865,24 @@ sub pixfile_convert {
 
 	} elsif( $State{pixfile_conversion_method} eq "pnm" ) {
 
+		my( $converter );
+		if( $Mapspec{format} eq "gif" ) {
+			$converter = "ppmtogif";
+		} elsif( $Mapspec{format} eq "jpg" ) {
+			$converter = "pnmtojpeg";
+		} else {
+			die( "format $Mapspec{format} not supported--bye!\n" );
+		} 
+
 		if( $Mapspec{format} eq "jpg" ) {
 			die( "jpg incompatible with pnm conversion\n" );
 		}
 
-		my( @helpers ) = ( "gs", "pnmcrop", "ppmquant", "ppmtogif" );
+		my( @helpers ) = ( "gs", "pnmcrop", "ppmquant", "$converter" );
 		foreach $helper ( @helpers ) {
 			next if check_for_executable( $helper );
 			die( "Couldn't find $helper in path. Fix path or " .
-				"don't use image conversion method \"pnm\"" );
+			     "don't use image conversion method \"pnm\".\n" );
 		}
 
 		my( $ncolors ) = 256 - $Mapspec{reserve_colors};
@@ -832,10 +890,24 @@ sub pixfile_convert {
 		$cmd = "cat $Mapspec{psfile} | gs -sOutputFile=- -q " .
 		       "-sDEVICE=ppm -r$Mapspec{pixels_per_inch} " .
 		       "-g$size_pixels\\x$size_pixels - | pnmcrop - " .
-		       "| ppmquant $ncolors | ppmtogif > $Mapspec{pixfile}";
+		       "| ppmquant $ncolors | $converter > $Mapspec{pixfile}";
+
+	} elsif( $State{pixfile_conversion_method} eq "imagick" ) {
+
+		if( ! check_for_executable( "convert" ) ) {
+			die( "Couldn't find 'convert' in path. Fix path or " .
+			   "don't use image conversion method \"imagick\".\n" );
+		}
+
+		my( $ncolors ) = 256 - $Mapspec{reserve_colors};
+
+		$cmd = "convert -crop 0x0 -density $Mapspec{pixels_per_inch} " .
+		       "-size $size_pixels\\x$size_pixels -colors $ncolors " .
+		       "$Mapspec{psfile} $Mapspec{pixfile}"; 
 
 	} else {
-		die( "pixfile_conversion_method " . 
+
+		 die( "pixfile_conversion_method " . 
 		     "$State{pixfile_conversion_method} " .
 		     "not supported." );
 	}
@@ -872,6 +944,67 @@ sub write_pixfile_pffile {
 	print P "}\n";
 
 	close( P );
+}
+
+sub add_to_mapstock {
+	my( %Mapspec ) = %{ shift( @_ )};
+	my( @db ) = @_;
+
+	my( $abspath ) = abspath( $Mapspec{pixfile} );
+	my( $dir ) = `dirname $abspath`;
+	my( $dfile ) = `basename $abspath`;
+	chomp( $dir );
+	chomp( $dfile );
+
+	@db = dblookup( @db, "", "mapstock", "", "" );
+
+	if( ! dbquery( @db, "dbTABLE_IS_WRITEABLE" ) ) {
+
+		die( "Table mapstock is not writeable\n" );
+	}
+
+	dbaddv( @db, "mapname", $Mapspec{mapname},
+	     "proj", $Mapspec{proj},
+	     "mapclass", $Mapspec{mapclass},
+	     "format", $Mapspec{format},
+	     "latc", $Mapspec{latc},
+	     "lonc", normal_lon( $Mapspec{lonc} ),
+	     "updellat", $Mapspec{up_dellat},
+	     "downdellat", $Mapspec{down_dellat},
+	     "leftdellon", $Mapspec{left_dellon},
+	     "rightdellon", $Mapspec{right_dellon},
+	     "width", $Mapspec{width},
+	     "height", $Mapspec{height},
+	     "xc", $Mapspec{xc},
+	     "yc", $Mapspec{yc},
+	     "xpixperdeg", $Mapspec{xscale_pixperdeg},
+	     "ypixperdeg", $Mapspec{yscale_pixperdeg},
+	     "dir", $dir,
+	     "dfile", $dfile
+	     );
+}
+
+sub setup_Index_Mapspec {
+	my( %Mapspec );
+
+	%Mapspec = %{pfget( $State{pf}, "index_map" );};
+
+	%Mapspec = ( %Mapspec, %{$State{index_map_config}} );
+
+	$Mapspec{"mapname"} = $Mapspec{"filebase"};
+
+	$Mapspec{"lonc"} = unwrapped_lon( \%Mapspec, $Mapspec{"lonc"} );
+	
+	$Mapspec{"psfile"} = concatpaths( $State{"workdir"},
+				"$Mapspec{filebase}.ps" );
+
+	$Mapspec{"pixfile"} = concatpaths( "$ENV{ANTELOPE}/data/dbrecenteqs",
+				"$Mapspec{filebase}.$Mapspec{format}" );
+
+	%Mapspec = %{set_projection( \%Mapspec )};
+	%Mapspec = %{set_rectangle( \%Mapspec )};
+
+	return \%Mapspec;
 }
 
 1;

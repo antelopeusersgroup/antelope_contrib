@@ -1,9 +1,9 @@
 
-BIN= dbrecenteqs_setup dbrecenteqs
+BIN= dbrecenteqs
 DATADIR= perl
 DATA= dbrecenteqs.pl
 INCLUDE=
-PF= dbrecenteqs.pf dbrecenteqs_setup.pf
+PF= dbrecenteqs.pf 
 
 MAN1= dbrecenteqs.1
 
@@ -16,4 +16,4 @@ ldlibs=
 
 include $(ANTELOPEMAKE)
 
-DIRS=
+DIRS= Data
