@@ -1,7 +1,7 @@
 DATADIR=tables/genloc/ttlvz
 DATA=iasp91.pf 
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 # $Id$ 

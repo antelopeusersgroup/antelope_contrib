@@ -6,7 +6,7 @@ MAN1 = extrd.1
 cflags  = -g
 ldlibs  = -lscv2 -ldbl2 $(TRLIBS)
  
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 
 
 OBJS	= extrd.o\

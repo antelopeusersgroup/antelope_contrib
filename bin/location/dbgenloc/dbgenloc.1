@@ -77,7 +77,7 @@ number of control options that exist are large (see genloc_intro(3)).
 The dbgenloc_default.pf file was created to simplify setting 
 these parameters for most people.  
 The recommended approach is to copy the version of dbgenloc_default.pf
-found in $DSAP/data/pf into your working directory and edit the 
+found in $ANTELOPE/data/pf into your working directory and edit the 
 following parameters to appropriate values for your data:
 .LP
 \fIinitial_location_method\fR and associated parameters 
@@ -150,7 +150,7 @@ a setting, and running diff on the two files.
 .LP
 Different travel time methods and models are specified by 
 phase handle parameter file descriptions that are expected to
-be stored in one or more directories below $DSAP/data/tables/genloc.
+be stored in one or more directories below $ANTELOPE/data/tables/genloc.
 The distribution should contain a minimum of three examples in a
 a directories below this called:  taup, ttlvz, and uniform.
 Each directory should hold an example phase description for each 
@@ -186,7 +186,7 @@ is that called \fItable_file\fR.
 This parameter defines the travel time table parameter file
 to be used for the associated phase.
 If a relative path name is used, it will be assumed
-to be rooted at $DSAP/data/tables/genloc.  
+to be rooted at $ANTELOPE/data/tables/genloc.  
 To store these tables elsewhere, use a full path name.
 The format of
 these tables is described in genloc_intro(3).  

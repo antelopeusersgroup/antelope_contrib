@@ -137,4 +137,19 @@ save_results (Dbptr dbin, Dbptr dbout,
     return retcode ;
 }
 
+int
+snprintf (char *string, int len, char *format, char *value)
+
+{
+	int i;
+	char *ptr;
+
+	i = strlen(format) + strlen(value);
+	ptr = strdup(i);
+	sprintf (ptr, format, value);
+	strncpy (string, ptr, len);
+	string[len] = '\0';
+	return (0);
+}
+
 /* $Id$ */

@@ -5,7 +5,7 @@ cflags =
 ldflags = 
 
 ldlibs= -lgenloc -ltt  -xlic_lib=sunperf -lcoords -lposix4 -lstock $(DBLIBS) $(F77LIBS) -ldl
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 OBJS= relocate.o

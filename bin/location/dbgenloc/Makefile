@@ -7,7 +7,7 @@ PF=dbgenloc.pf dbgenloc_default.pf
 cflags = -dalign
 ldflags = 
 ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) $(F77LIBS) -ltt -ldl
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=ttlvz taup uniform
 
 OBJS= dbgenloc.o run_location.o load_observations.o write_log.o save_results.o 

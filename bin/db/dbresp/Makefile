@@ -3,7 +3,7 @@
 BIN 	= dbresp
 ldlibs=         -ldbl2 -lgrx $(X11LIBS) $(TRLIBS) $(F77LIBS)
 
-include	$(DSAPMAKE)
+include	$(ANTELOPEMAKE)
 DIRS=
 
 

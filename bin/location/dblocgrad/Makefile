@@ -9,7 +9,7 @@ fflags= 	-e  -C
 ldflags= 	
 ldlibs=$(DBLIBS)
 
-include $(DSAPMAKE)  	
+include $(ANTELOPEMAKE)  	
 DIRS=			
 
 OBJS=dblocgrad.o locsubs_flv.o matsubs.o tracesubs_flv.o
