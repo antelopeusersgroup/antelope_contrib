@@ -470,7 +470,8 @@ Hypocenter adjust_hypocenter(Hypocenter current_location, float *dx,
 	new_hypo.dy = 0.0;
 	new_hypo.dz = 0.0;
 	new_hypo.dt = 0.0;
-	for(i=0,k=0;i<4;++i)
+	/* the i< 4 is not required, but safer */
+	for(i=0,k=0;(k<npar) && (i<4);++i)
 	{
 		if(!o.fix[i])
 		{
@@ -492,9 +493,6 @@ Hypocenter adjust_hypocenter(Hypocenter current_location, float *dx,
 			++k;
 		}
 	}
-	/* We have to handle the recentered case specially.  We combine
-	the dt from the generalized inverse solution with the dt determined
-	from the median raw residual. */
 
 	if((o.generalized_inverse == PSEUDO_RECENTERED)
 		|| (o.generalized_inverse == DAMPED_RECENTERED) )
