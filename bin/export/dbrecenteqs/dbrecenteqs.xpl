@@ -74,6 +74,27 @@ sub die_if_already_running {
 	}
 }
 
+sub die_if_cleanup_in_progress {
+	my( $dbname ) = @_;
+	my( $bytes );
+
+	if( ! -e "$dbname.MSGFILE" ) {
+		return;
+	}
+
+	open( M, "$dbname.MSGFILE" );
+	read( M, $bytes, 4 );
+	close( M );
+
+	( $flag ) = unpack( "i", $bytes );
+
+	if( $flag ) {
+		die( "dbrecenteqs: cleanup of $dbname in progress. Bye!\n" );
+	} else {
+		return;
+	}
+}
+
 sub set_hypocenter_symbol {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( @db ) = @_;
@@ -878,6 +899,7 @@ if ( ! &Getopts('h') || @ARGV != 1 ) {
 }
 
 die_if_already_running();
+die_if_cleanup_in_progress( $dbname );
 
 @db = dbopen( $dbname, "r+" );
 @dbmapstock = dblookup( @db, "", "mapstock", "", "" );
