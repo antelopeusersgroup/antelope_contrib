@@ -1,7 +1,7 @@
 LIB=libpmel.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 INCLUDE=pmel.h
-MAN3=
+MAN3=pmel.3
 cflags=-g
 ldflags=
 ldlibs=

@@ -1,0 +1,180 @@
+.TH PMEL 3 "$Date$"
+.SH NAME
+pmel - Progressive Multiple Event Location function
+.SH SYNOPSIS
+.nf
+#include "stock.h"
+#include "genloc.h"
+#include "pmel.h"
+int pmel(int nevents,
+    int *evid,
+        Tbl **ta,
+            Hypocenter *h0, 
+		Arr *fixarr,
+                    Hypocenter *hypocen,
+                        SCMatrix *s,
+			    Arr *phase_arr,
+				Location_options *o,
+                                	Pf *pf,
+					    Tbl **sc_converge_reasons,
+					        Tbl **pmelhistory)
+.fi
+.SH DESCRIPTION
+.LP
+This function implements the 
+Progressive Multiple Event Location (PMEL) algorithm
+(Pavlis and Booker, 1982, BSSA) using the genloc library as a foundation.
+This function blindly applies PMEL to the ensemble of events it is passed.
+The result is subject to the fundamental limitation of PMEL.  That is,
+PMEL assumes inadequate knowledge of velocity structure can be approximated
+by a set of path anomalies (constant station corrections) for this ensemble.
+The results will be some arbitrary average if the group is not localized
+in space.  
+.LP
+PMEL has two fundamentally different modes of operation.  In "cluster mode"
+all partial derivatives are computed using a single point in space
+at the ensemble hypocentroid.  Otherwise the exact partials are computed
+for each point.  The cluster mode is most appropriate when using the
+separated location method of Pavlis and Hokanson (1986).  The projectors
+used in that method can unambiguously separate the bias and relative
+error terms in cluster mode.  Otherwise if the ensemble has a finite
+aperture inconsistent results can result depending on the data.  
+When used in pmelgrid(1) this should be the normal operating mode,
+although the program does not force this.
+.SH ARGUMENTS
+.LP
+The argument list of this function is admittedly long and complex.  This
+is necessary because this function does a lot and has a lot of options. 
+To encapsulate it in a single function was a challenge even using 
+the significant degree of data abstraction through data structures 
+passed as arguments. 
+.LP
+\fInevents, evid, ta,\fR and \fIh0\fR are inseparably linked 
+and that provide the primary inputs to the function.
+\fInevents\fR is the number of events in the input ensemble.  It
+defines the assumed size of a set of parallel arrays for the related
+variables \fIevid, ta,\fR and \fIh0\fR.  \fIevid\fR is a vector
+of int variables that are the event id for each event in the ensemble.
+(This normally comes from a css3.0 database, but could be simply a 
+set of unique integers.  The numbers are needed for cross referencing
+and must be consistent with data passed through other arguments.)  
+\fIta\fR is a vector of Tbl pointers containing lists of Arrival objects.
+These lists are the same as those used by ggnloc(3) and are, in fact, 
+passed directly to ggnloc called within pmel.  That is, the ta[i] is a list
+of Arrival objects that define the data for the ith event.  Finally,
+\fIh0\fR is a vector of nevents Hypocenter objects that contain initial
+hypocenter location estimates.  On return they contain updated location
+information for the pmel solution.  The "used" variable in this structure
+should be checked by the caller.  If used is set true it means the 
+hypocenter estimate is valid and was used in the solution.  If used is
+set false (zero) that hypocenter estimate should be considered unreliable 
+and should normally be discarded.  
+.LP
+\fIfixarr\fI is an associative array containing information about what 
+events should have fixed coordinates.  The array is indexed by evid and
+contains character strings that are passed directly to ggnloc as the 
+"fix" input in the location_options structure.  
+.LP 
+\fIhypocen\fR is an on input that is referenced only in cluster mode.
+If cluster mode is on this location will be used to compute partials
+on the first iteration.  After that the updated hypocentroid is used.
+.LP
+The SCMatrix \fIs\fR is a work space normally created externally 
+by the create_SCMatrix function.  The SCMatrix object is defined as
+follows:
+.nf
+typedef struct scmatrix {
+        Arr *phase_index;  /* Contains integer index for phase */
+        Arr *sta_index;  /* Same for station names.  */
+        int nphases;
+        int nsta;
+        int nrow,ncol;  /* ncol=nsta*nphases, but we keep it anyway*/
+        double rmsraw,sswrodgf;
+        int ndgf;
+        double *scref;  /* Vector of length ncol of reference station
+                        corrections (used for bias correction projectors)*/
+        double *sc;  /* Holds a current estimate of path anomalies */
+        double *scbias,*scdata;  /* components of sc derived from sref
+                                        and data respectively */
+        double *S;
+} SCMatrix;
+.fi
+It encapsulates the indexing information for station/phase combinations
+and contains the input and output path anomalies.  It can be best thought
+of as an internal "work" object specialized for PMEL.  The best way to 
+see how it is created and managed is to examine the source code for
+dbpmel(1) or pmelgrid(1).
+.LP
+\fIphase_arr\fR is the associative array of phase_handle objects used
+in genloc.  The station correction components of the phase_handles are
+altered by pmel.  
+.LP
+The Location_options variable, \fIo\fR, is the control structure used
+by genloc.  Note it is altered by pmel to handle fixed coordinates.
+.LP
+The variable \fIpf\fR is used to pass a number of special control
+arguments to pmel.  This was done to avoid creating a new monster
+like the Location_options object for pmel.  The following parameters
+must exist in pf or pmel will abort with a pf error:
+.IP (1)
+The parameter \fIpmel_maximum_sc_iterations\fR defines the number of
+iterations pmel will take before giving up with a nonconvergence return.
+.IP (2)
+\fIpmel_autodelete_high_rms\fR turns off the autodelete feature described
+in dbpmel(1).  The critical level is controlled by the related
+variable \fIpmel_F_test_critical_value\fR.
+.IP (3)
+\fIpmel_minimum_error_scale, pmel_intial_error_scale\fR, and 
+\fIpmel_minimum_sswrodgf\fR are closely related.  All exist to 
+avoid a downward spiral caused by M-estimators and/or the 
+\fIpmel_autodelete_high_rms\fR feature.
+For more details see dbpmel(1).
+.IP (4)
+\fIpmel_cluster_mode\fR is a boolean that turns cluster mode on and off. 
+.IP (5)
+\fIpmel_svd_relative_cutoff\fR determines the smallest singular value 
+used to define the pseudoinverse solution used to estimate station 
+correction perturbations.  This is a relative cutoff meaning the cutoff
+is determined removing singular values smaller than this number times
+the largest singular value of the inverted path anomaly matrix.
+.IP (6)
+\fIpmel_sc_fraction_convergence_error\fR is used to define convergence
+by a small change in the station correction vector.  When the ratio of 
+the L2 norm of the perturbation vector to the L2 norm of the total
+path anomaly vector is smaller than this number the path anomaly adjust
+loop is terminated.
+.LP
+The two lists \fIsc_converge_reasons\fR and 
+\fIpmelhistory\fR 
+are pure outputs that can be use or discarded.  
+\fIsc_converge_reasons\fR contains a list of character strings that
+describe why pmel terminated it's primary iterative loop.  It would
+normally be simply pushed to output or ignored.  
+\fIpmelhistory\fR contains a sequence of pointers to Hypocenter objects 
+containing the hypocentroid at each iteration.  A verbose implementation
+may want to print this information.  
+Both lists are created and memory allocated for the members by pmel.
+As a result the caller should call freetbl(x,free) on the contents of
+both lists when finished to avoid a memory leak.
+.SH RETURN VALUES
+.LP
+Normal competion returns 0.  If the entire algorithm failed a nonzero
+number will be returned.  Nonfatal errors will normally be posted to 
+elog.  The caller does not need, however, to dump the elog register
+as no errors are queued.
+Not that truncation of the main iterative loop by count is not
+considered an error and will still cause a 0 return.
+.SH LIBRARY
+-lstock -lgenloc 
+.SH "SEE ALSO"
+.nf
+ggnloc(3), dbpmel(1), pmelgrid(1)
+.fi
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Department of Geological Sciences
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

@@ -453,5 +453,6 @@ int update_scarr(SCMatrix *s,Arr *pha)
 			}
 		}
 	}
+	freetbl(stakeys,0);
 	return(ierr);
 }

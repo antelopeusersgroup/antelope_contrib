@@ -277,9 +277,10 @@ int pmel(int nevents,
     double centroid_lat, centroid_lon, centroid_z;
     int adjust_sc_ok;   /*used in ftest set true when list of events kept is constant */
 
-    /* initialize the output lists */
-    if(*pmelhistory==NULL) *pmelhistory=newtbl(0);
-    if(*sc_converge_reasons==NULL) *sc_converge_reasons=newtbl(0);
+    /* initialize the output lists, WARNING:  memory leak here if
+    caller doesn't clear these before calling. */
+    *pmelhistory=newtbl(0);
+    *sc_converge_reasons=newtbl(0);
 
     nr = s->nrow;
     nc = s->ncol;
@@ -307,8 +308,6 @@ int pmel(int nevents,
     allot(float *,w,nc);
     allot(float *,reswt,nc);
     Amatrix = matrix(0,nc-1,0,3);
-
-    *sc_converge_reasons = newtbl(0);
 
     /* We now extract parameters from pf specific to pmel */
     esmin = pfget_double(pf,"pmel_minimum_error_scale");
@@ -575,7 +574,24 @@ Nevents Nevents_used\n");
 	{
 		elog_notify(0,"Insufficient data:  degrees of freedom not\
  positive\n");
-		pushtbl(*sc_converge_reasons,"ABORT on insufficient data");
+		pushtbl(*sc_converge_reasons,
+			strdup("ABORT on insufficient data"));
+	        free(A);
+	        free(U);
+	        free(Vt);
+	        free(svalue);
+	        free(wts);
+	        free(residuals);
+	        free(cindex);
+	        free(scrhs);
+	        free(bwork);
+	        free(sc_solved);
+	        free(b);
+	        free(r);
+	        free(w);
+	        free(reswt);
+	        free_matrix((char **)Amatrix,0,nc-1,0);
+	        freetbl(tu,free);
 		return(-1);
 	}
 	/* This test will incorrect terminate the loop if the station
@@ -586,7 +602,8 @@ Nevents Nevents_used\n");
 	if(sc_adjustments>0 && sc_adjusted_last_pass)
 	    if(ftest2(sswrodgf, total_ndgf, s->sswrodgf, s->ndgf,
 			SSWR_TEST_LEVEL)==0)
-		    pushtbl(*sc_converge_reasons,"No improvement in data fit");
+		    pushtbl(*sc_converge_reasons,
+			strdup("No improvement in data fit"));
 
 	escale = sqrt(sswrodgf);
 	if(escale<esmin) escale = esmin;
@@ -666,7 +683,7 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 
 	    if(ds_over_s<ds_over_s_converge)
 		pushtbl(*sc_converge_reasons,
-			"Small adjustment to station corrections");
+			strdup("Small adjustment to station corrections"));
 
 	    /* a second measure of rms*/
 	    if(data_space_null_project(s->S,nr,nused,nrows_S,scrhs,bwork))
@@ -680,10 +697,6 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 		sswrodgf2=0.0;
 	    else
 		sswrodgf2=total_wssq2/((double)total_ndgf2);
-	    fprintf(stdout,"%d  %lf  %lf  %lf %lf %d %d %d %d\n",
-		sc_iterations,total_rms_raw,escale,
-			sswrodgf,sswrodgf2,
-			total_ndgf,total_ndgf2,nevents,nev_used);
 
 	    /* compute the new hypocentroid 
 	    initialize the new hypocentroid this way */
@@ -704,17 +717,34 @@ ds_over_s=dnrm2_(&nc,sc_solved,&one)/dnrm2_(&nc,s->scdata,&one);
 	    hypocen_history->degrees_of_freedom = total_ndgf;
 	    pushtbl(*pmelhistory,hypocen_history);
 	    copy_hypocenter(hypocen_history,hypocen);
+	    fprintf(stdout,"%d  %lf  %lf  %lf %lf %d %d %d %d\n",
+		sc_iterations,total_rms_raw,escale,
+			sswrodgf,sswrodgf2,
+			total_ndgf,total_ndgf2,nevents,nev_used);
 	    ++sc_adjustments;
 	    sc_adjusted_last_pass = 1;
 	}
 	else
+	{
 	    sc_adjusted_last_pass = 0;
+	    fprintf(stdout,"%d  --No station correction change this pass--\n",
+		sc_iterations);
+	    /* This forces another iteration whenever irregularities 
+	    in hypocenter use changes */
+	    if(maxtbl(*sc_converge_reasons)>0)
+	    {
+		freetbl(*sc_converge_reasons,free);
+		*sc_converge_reasons = newtbl(0);
+	    }
+	}
 
 	++sc_iterations;
         if(sc_iterations>maxscit) pushtbl(*sc_converge_reasons,
-			"Hit station correction iteration limit");
+			strdup("Hit station correction iteration limit"));
     }
-    while (maxtbl(*sc_converge_reasons)<=0);
+    while (maxtbl(*sc_converge_reasons)<=0 );
+    fprintf(stdout,"Convergence in %d total iterations with %d adjustments\n",
+		sc_iterations,sc_adjustments);
 
     free(A);
     free(U);
