@@ -8,12 +8,12 @@
 %a	abbreviated day of week
 %A	day of week
 %E	epoch time to milliseconds (xxxxxxxxxxx.xxx)
-%e	day of month (1-31; single digits preceded by a blank)
+%e	day of month (1-31)
 %H	hour (00-23)
 %I	hour (01-12)
 %j	day number of year (001-366)
-%k	hour (0-23; single digits are preceded by a blank)
-%l	hour (1-12; single digits are preceded by a blank)
+%k	hour (0-23)
+%l	hour (1-12)
 %M	minute (00-59)
 %m	month number (01-12)
 %n	(linefeed)
@@ -21,7 +21,7 @@
 %S	seconds (00-59)
 %s	milliseconds (000-999)
 %t	(tab)
-%Y	year, including century (for example, 1988)
+%Y	year including century (eg, 1988)
 %y	year within century (00-99)
 %Z	timezone code
 %z	timezone code

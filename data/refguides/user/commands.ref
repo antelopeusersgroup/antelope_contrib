@@ -1,10 +1,10 @@
-<chapter MIscellaneous Utility>
+<chapter Miscellaneous Utility>
 <commands>
 
 <subsection Examples and Templates>
 
 mkmk [ - ]
-    print prototype Antelope makefile (- suppresses comments)
+    prototype Antelope makefile (- suppresses comments)
 
 manpage [ - ]
     prototype Antelope man page (- suppresses comments)
@@ -50,7 +50,7 @@ epoch [-e] [-i input_timezone] [-o output_timezone] [ +format ] [ time/date comp
 pfdiff [-o newpf] pf1 [pf2]
     compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). also allows constructing new parameter file by interactively selecting parameters from pf1 and pf2.
 
-pfecho [-iq] [-w|W] name [ param ...]
+pfecho [options] name [ param ...]
     print out parameters from parameter files
 <options>
 -i	interactive mode
@@ -63,8 +63,8 @@ pfecho [-iq] [-w|W] name [ param ...]
 gsregion [lat lon]
     show geographic and seismic region numbers and names for lat, lon
 
-dbsetrgn database
-    set seismic and geographic region codes in origin table
+dbsetrgn db
+    set seismic and geographic region codes in origin table for database db
 
 
 private children pid
@@ -77,18 +77,18 @@ private idinfo
     gather id information for register_antelope
 
 deprecated pathf [ -f configfile ] [ paths... ]
-    Filter for translating pathnames
+    filter for translating pathnames
 
 private perl_unbuffer command
     use pty/tty pair to get unbuffered output from a command
 
 
-tksend app_name [message]
+tksend [options] app_name [message]
     send a message using version 3 or 4 of the tcl/tk send mechanism
 <options>
--i	Read stdin for more messages
--p	Wait for and print returned messages
--verbose	Be more verbose
+-i	read stdin for more messages
+-p	wait for and print returned messages
+-verbose	be more verbose
 -validate	validate the application name and return the disposition and the version number
 -version	{3|4|auto}
 -wait	wait for a response

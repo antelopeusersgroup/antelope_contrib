@@ -5,12 +5,13 @@ Foreign waveform formats
 <commands>
 
 <commands>
-autodrm [-dnv] [-D dir] [-p pf] [files]
+autodrm [options] [files]
     Antelope IDC/GSE2.1 AutoDRM Server
 <options>
 -d	debug: print output to stderr rather than sending mail
--D	run in specified directory
--p	use specified parameter file
+-D dir	run in specified directory dir
+-p pf	use specified parameter file pf
+-v	more verbose
 </options>
 
 private autodrm_wrapper 
@@ -19,11 +20,11 @@ private autodrm_wrapper
 dbresp2autodrm view
     convert response information from view to autodrm format
 
-rtbulletin [-Av] [-s subset] view [start_time [period|end_time]]
-    create a bulletin from a view (-A causes standard autodrm output)
+rtbulletin [-Av] [-s subset] aview [t0 [t1|period]]
+    create a bulletin from input view aview (-A causes standard autodrm output)
 
 
-db2ah dbin dbout
+db2ah [options] dbin dbout
     convert css waveform files into ah format
 <options>
 -sc	sta_chan
@@ -36,7 +37,7 @@ db2ah dbin dbout
 -v	version
 </options>
 
-db2sac dbin dbout
+db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>
 -sc sta/chan	select sta/chan pairs with dbpick style pseudo-glob
@@ -48,85 +49,84 @@ db2sac dbin dbout
 </options>
 
 
-db2sd [-V] database seed_volume
-    create a SEED volume from a database containing affiliation, network, sensor, site, stage, calibration and wfdisc tables
+db2sd db sd
+    create a SEED volume sd from database db (db must contain affiliation, network, sensor, site, stage, calibration and wfdisc tables)
 
-mk_dataless_wfdisc [-v] [-p parameter_file] input_database
+mk_dataless_wfdisc [-v] [-p pf] dbin
     makes fake wfdisc file in order to create a dataless seed file
 
-trash_data [-inv] seed_volume [ seed_volume...]
-    truncate a SEED volume following the station headers, creating a dataless SEED volume
+trash_data [-inv] sd1 [sd2 ...]
+    truncate SEED volume sd following the station headers, creating a dataless SEED volume
 
-mk_dmc_seed [-v] [-V] [-a] [-m mail_to] [-t tape_drive] [-d directory] rt_db
+mk_dmc_seed [-av] [-m addr] [-t tape_drive] [-d directory] db
     builds IRIS DMC files on tape or disk
 
 
-db2segy db outfile [ -pf pffile ]
+db2segy db outfile [-pf pf]
     convert waveforms from input database db to a segy disk image
 
 <subsection Importing data into a Datascope database>
 <commands>
 
-ah2db ah_file [ ah_file .. ] database
-    create CSS database from ah format waveform files 
+ah2db ah1 [ah2 .. ] dbout
+    create CSS database dbout from AH format waveform files ah1, ah2, ...
 
-autodrm2db [-vV] reply1 [reply2 ..] database
-    convert autoDRM replies to a database
+autodrm2db [-v] reply1 [reply2 ..] dbout
+    read autoDRM replies reply1, reply2, ... and copy into a output database dbout
 
-edr2db edr_file dbname
-    Convert a USGS EDR file to a CSS database
+edr2db edr dbout
+    create arrival, origin and assoc rows in database dbout from USGS EDR 
 
-isc2db [-c] [-p] [-s start] [-e end] isc_bulletin database
-    read the ISC bulletin from NEIC CD into CSS database
+isc2db [-c] [-p] [-s start] [-e end] isc_bulletin dbout
+    read the ISC bulletin from NEIC CD into CSS database dbout
 
-pde2origin pde_file dbname [-auth author]
-    Convert a PDE file to an origin table
+pde2origin pde dbout [-auth author]
+    create origin records in database dbout from input PDE file pde
 
-qed2origin qed_file dbname
-    Convert a QED file to an origin table
+qed2origin qed dbout
+    create origin records in database dbout from input QED file qed
 
-sac2db sacfile [ sacfile ... ] database
-    create CSS database from SAC file headers
+sac2db sac1 [sac2 ... ] dbout
+    create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
 
-psd2db seedfile dbout
-    scan PASSCAL SEED volume and produce CSS 3.0 database
+psd2db [options] sd dbout
+    read PASSCAL SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
 <options>
--v             Verbose output flag
--n             No overwritye flag
--w             Extract wfdisc table only flag
+-n             require that dbout database contain no records
+-w             only create a wfdisc table
 -t tolerance
--respdir respdir
--stagedir stagedir
+-respdir dir1	use directory dir1 for response files
+-stagedir dir2	also create stage table, using directory dir2 for stage table response files
+-v             more verbose
 </options>
 
-sd2db seed_vol css_dbase
-    create a CSS database from a SEED volume
+sd2db [options] sd dbout
+    read SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
 <options>
 -d	print out each blockette as it is read
--f n	Skip to file n
--c n	Read just n files from the tape
--i	Create wfdisc and extract wave form data without using other header information
--r	response_dir
+-f n	skip to file n (of input tape)
+-c n	read just n files from the input tape
+-i	create wfdisc and extract wave form data without using other header information
+-r dir	save response files in directory dir
 -s	sweep identical time adjacent tuples into a single tuple
--S	stachan
--t	Create the database tables without extracting the wave data files
+-S stachan	extract waveforms only for station/channel pairs matching dbpick style pseudo-glob stachan
+-t	don't create wfdisc table
 -v	print summary of the blockettes read and processed
--w	wfdir
--x	tapeid
--z	compress waveform files after they are complete
+-w dir	save waveforms in directory dir
+-x id	write entries in seedindex table showing stations and time range contained on tape id
+-z	compress waveform files (using compress(1)) after they are complete
 </options>
 
 segy2css [-event] [-ftbl] "fname"
     convert data in PASSCAL SEGY format to CSS format
 
-dbsteimu input [new_database]
+dbsteimu [options] input [new_database]
     create wfdisc file from miniseed
 <options>
--o	Overwrite the records in the existing  input  database
--s	The input is a miniseed volume.
--S	The  input  is  a  miniseed  volume,  but  don't  write uncompressed waveforms
--t	tolerance
--v	Be more verbose.
+-o	overwrite the records in the existing  input  database
+-s	input is a miniseed volume.
+-S	create wfdisc which references input miniseed volume, rather than copying out the waveform data 
+-v	more verbose.
 -w	wfname
 </options>
 
@@ -138,12 +138,12 @@ deprecated ucsdwf2db stapardir dbin dbout
 
 <subsection Miscellaneous utilities>
 
-sachd [sac_file ...]
-    print SAC header
+sachd [sac1 ...]
+    print header information from SAC files sac1, ...
 
-sdd [-f n] [ -s] [-d database] seed_volume
-    display the blockettes of a SEED volume
+sdd [-s] sd
+    dump the blockettes (only a summary if -s) of a SEED volume sd
 
-dsteim [miniseed]
-    dump steim compressed (SEED) data frames
+dsteim [sd]
+    verbosely dump miniseed data frames 
 

@@ -2,13 +2,13 @@
 Database Processing
 <commands>
 
-dbprelim_locs [-v] parameter_file [start_time [end_time]]
-    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from a database
+dbprelim_locs [-v] pf [t0 [t1]]
+    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from a database from time t0 to t1
 
 dbdetect [-v] [-arrivals] [-plot twin] dbin dbout pf net tstart tend
     run multifrequency STA/LTA detector on channels specified in pf from database db, writing detections and optionally arrivals into dbout. 
 
-dbarrparams db
+dbarrparams [options] db
     make arrival parameter measurements amplitude, period, azimuth, signal to noise ration, rectilinearity and first motion
 <options>
 -pol	tlead_pol tlag_pol
@@ -27,7 +27,7 @@ dbgrassoc db pf
 ttgrid pfname db refsta time outfile
     compute a travel time grid file for use by orbassoc and dbgrassoc
 
-dbassoc dbin dbout dbcat timeres_P timeres_S
+dbassoc [options] dbin dbout dbcat timeres_P timeres_S
     associate origins from dbcat with arrivals in dbin, write origin, assoc and optionally predicted arrivals into dbout; timeres_P and timeres_S specify allowable travel time residuals
 <options>
 -rules r	any combination of P,S,PS,PS+,first,arids=all,best,all

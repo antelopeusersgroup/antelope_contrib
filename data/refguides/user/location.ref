@@ -56,7 +56,7 @@ remodl model_name
 setbrn 
     create tau-p travel time tables
 
-taup2locsat model
+taup2locsat [options] model
     create locsat style travel time tables from tau-p model table
 <options>
 -i   ask before saving output files

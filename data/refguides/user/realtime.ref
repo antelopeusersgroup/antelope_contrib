@@ -11,7 +11,7 @@ dbevents dbname
 deprecated rtcron name 'execline'
     run real time system cron jobs
 
-rtexec [-cdfknstv] [-q minutes] [-R minutes] [comment]
+rtexec [options] [comment]
     real time system executive; runs all other real time processes
 <options>
 -c	clear logs
@@ -29,7 +29,7 @@ rtexec [-cdfknstv] [-q minutes] [-R minutes] [comment]
 rtmail [-s subject] [-a filename] recipient
     script to send mail with attachments
 
-rtreport [directory]
+rtreport [options] [directory]
     report some statistics on data collection
 <options>
 -d start	start of reporting period
@@ -40,7 +40,7 @@ rtreport [directory]
 -z	only z channels
 </options>
 
-rtsys [directory]
+rtsys [options] [directory]
     summarize system operation and log reports
 <options>
 -d time	start of reporting period
@@ -55,8 +55,8 @@ rtrun command
 rtsnapshot [-c] [-d #rows] [-f filename] [-l #loglines] [-v][-v]
     collect some data from a real time system (for a problem report)
 
-rtoutage [-ApStz] [-P maxpts] [-s subset] database start stop
-    show data gaps for a database over a time period
+rtoutage [options] db t0 t1
+    show data gaps for database db from time t0 to t1
 <options>
 -A	Format output as an autodrm outage report
 -P maxpts	specify maximum # waveform points to load at one time
@@ -67,7 +67,7 @@ rtoutage [-ApStz] [-P maxpts] [-s subset] database start stop
 -z	Select only channels ending in 'z'  or  'Z'
 </options>
 
-truncate_log [-crv] [-d ndays] [-s kbytes] log [log..]
+truncate_log [options] log [log..]
     eliminate old lines in a log file
 <options>
 -c	also remove lines without time tags
@@ -82,7 +82,7 @@ truncate_log [-crv] [-d ndays] [-s kbytes] log [log..]
 pingmeister 
     display network connectivity
 
-tcpmonitor host
+tcpmonitor [options] host
     monitor tcp connections for stability and throughput
 <options>
 -B sz	specify packet size
@@ -96,19 +96,19 @@ tcpmonitor host
 -s lssz
 -S rssz
 -t timeout
--v   Be more verbose
+-v	more verbose
 -W sec/ping
 </options>
 
 <subsection orbserver and utilities>
 
-orbserver [-k] [-p port] [-r] [-v] name
-    orb ring buffer server
+orbserver [options] pf
+    orb ring buffer server, using parameter file pf
 <options>
--k   Don't reset the ring buffer
+-k	Don't reset the ring buffer
 -p port
--r   reset the ring buffer
--v[v]  verbose/doubly verbose
+-r	reset the ring buffer
+-v[v]	verbose/doubly verbose
 </options>
 
 orbstat [-cs] [-i] [-m expr] [-r expr] [-n avg] [-v] orb [secs]
@@ -137,7 +137,7 @@ ipd [-v] [-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] port or
 liss2orb [-d database] [-m match] [-s pktsize] [-t timeout] [-v] liss orb
     copy data from LISS server liss to orbserver orb
 
-rddas port orb
+rddas [options] port orb
     copy data from RefTek DAS port to orbserver orb
 <options>
 -R	send RESET_DAS command to DAS before reading data
@@ -148,7 +148,7 @@ rddas port orb
 -v	verbose
 </options>
 
-ref2db input dbname [start [end]]
+ref2db [options] input dbname [start [end]]
     copy Reftek format data files/tapes/disks to Antelope database (over time range start to end)
 <options>
 -d datatype	specify waveform datatype
@@ -162,7 +162,7 @@ ref2db input dbname [start [end]]
 -w	do not save waveform data; used to extract log file or get gap info
 </options>
 
-qt2orb -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
+qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
 -pf pf	specify parameter file
@@ -177,7 +177,7 @@ cs2orb comserv orb [-v]
 cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
 
-b3s2orb [...options...]
+b3s2orb [options]
     read B3S2 data to orb
 <options>
 -c p1	command port (default = "/dev/ttya")
@@ -195,7 +195,7 @@ pf2orb pfile orb
 dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
     read Datascope database rows from a database and post them to an orb
 
-db2orb {database|view} [server]
+db2orb [options] {database|view} [server]
     send database as packets to an orbserver
 <options>
 -c #channels/packet
@@ -211,7 +211,7 @@ db2orb {database|view} [server]
 -v verbose
 </options>
 
-dbreplay database|view [[[server] mintime] maxtime|period]
+dbreplay [options] database|view [[[server] mintime] maxtime|period]
     replay a database to an orbserver w/o modifying time
 <options>
 -w client	specify read client to watch (to avoid overruns)
@@ -221,7 +221,7 @@ dbreplay database|view [[[server] mintime] maxtime|period]
 -p pktsuffix	specify the output packet type
 -s expr	subset the input according to expression
 -t timestep	specify the packet time size
--v	Be more verbose
+-v	more verbose
 </options>
 
 
@@ -229,7 +229,7 @@ dbreplay database|view [[[server] mintime] maxtime|period]
 
 <subsection Datalogger commanding>
 
-qtcmd cmdorb net_sta cmd [params]
+qtcmd [options] cmdorb net_sta cmd [params]
     execute commands on a remote Quanterra digitizer
 <options>
 -target target
@@ -238,7 +238,7 @@ qtcmd cmdorb net_sta cmd [params]
 -noreply
 </options>
 
-qtmassrecenter cmdorb net_sta
+qtmassrecenter [options] cmdorb net_sta
     issue a mass recenter command to a remote Quanterra digitizer
 <options>
 -timeout sec
@@ -247,7 +247,7 @@ qtmassrecenter cmdorb net_sta
 -duration duration
 </options>
 
-mrc orbname dc_name
+mrc [options] orbname dc_name
     automatically send mass-re-centering command to a Reftek DAS
 <options>
 -m srcmatch
@@ -261,7 +261,7 @@ mrc orbname dc_name
 
 <subsection Real-time data processing: Orb reader/Writers>
 
-orb2orb in out [start-time [period|end-time]]
+orb2orb [options] in out [start-time [period|end-time]]
     copy data from one orb to another
 <options>
 -b max_behind
@@ -278,11 +278,11 @@ orb2orb in out [start-time [period|end-time]]
 -R representation
 -s pktid
 -S statefile
--v   Be more verbose
+-v   more verbose
 -w program
 </options>
 
-orbdetect orbname pfname
+orbdetect [options] orbname pfname
     multi-frequency STA/LTA detector
 <options>
 -out orbout
@@ -295,7 +295,7 @@ orbdetect orbname pfname
 orbtrigger orbname pfname [-tstart time] [-v] [-out orbout]
     real-time network trigger algorithm
 
-orbassoc orbin orbout pfname dbnextid
+orbassoc [options] orbin orbout pfname dbnextid
     spatial grid search based real-time associator/locator
 <options>
 -select expr
@@ -307,7 +307,7 @@ orbassoc orbin orbout pfname dbnextid
 ttgrid pfname db refsta time outfile
     compute a travel time grid file for use by orbassoc and dbgrassoc
 
-orbmag orbwf orbdb dbname
+orbmag [options] orbwf orbdb dbname
     real-time magnitude computation
 <options>
 -select_wf expr
@@ -319,7 +319,7 @@ orbmag orbwf orbdb dbname
 -auth_expr auth_expr
 </options>
 
-orbpftrigger orb [cmdstring]
+orbpftrigger [options] orb [cmdstring]
     parameter file trigger of a program execution
 <options>
 -select expr
@@ -328,7 +328,7 @@ orbpftrigger orb [cmdstring]
 -nowait
 </options>
 
-orbwfmeas orbwf orbdb dbname
+orbwfmeas [options] orbwf orbdb dbname
     make waveform measurements from an orb
 <options>
 -select_wf expr
@@ -341,7 +341,7 @@ orbwfmeas orbwf orbdb dbname
 -dbsift_expr dbsift_expr
 </options>
 
-qedd dbname
+qedd [options] dbname
     Daemon to get realtime QED data from a finger site
 <options>
 -l
@@ -351,7 +351,7 @@ qedd dbname
 -author author
 </options>
 
-dbassoc_rt dbcat dbassoc
+dbassoc_rt [options] dbcat dbassoc
     real-time association of events from an external catalog
 <options>
 -after time
@@ -366,7 +366,7 @@ dbassoc_rt dbcat dbassoc
 qtmon dataorb data2orb cmdorbname [database]
     monitor Quanterra digitizers
 
-orbmonrtd server
+orbmonrtd [options] server
     real-time waveform trace display
 <options>
 -twin minutes
@@ -380,7 +380,7 @@ orbmonrtd server
 -source net_sta_chan
 </options>
 
-orbdisp orbserver [start-time [range]]
+orbdisp [options] orbserver [start-time [range]]
     inspect waveform data on orb server
 <options>
 
@@ -395,7 +395,7 @@ orbdisp orbserver [start-time [range]]
 
 <subsection Saving Orb Data in Database>
 
-orb2db orb db [start [end|period]]
+orb2db [options] orb db [start [end|period]]
     copy waveform data from orbserver orb into database db (starting at time start through end or for stated period)
 <options>
 -c re	save channel matching regular expression re
@@ -411,7 +411,7 @@ orb2db orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
-orb2dbt orb dbout
+orb2dbt [options] orb dbout
     read Datascope database packets from an orb and write to a database
 <options>
 -select expr
@@ -429,7 +429,7 @@ orb2dbt orb dbout
 orb2db_msg [-s sleep] database [pause | continue | status]
     signal orb2db and orb2dbt processes to pause for database cleanup
 
-par2db orbname dbname [start-time [window]]
+par2db [options] orbname dbname [start-time [window]]
     create database with GPS site coordinates and DC/DAS status parameters from orb
 <options>
 -c	Extract DC status parameters
@@ -440,7 +440,7 @@ par2db orbname dbname [start-time [window]]
 </options>
 
 
-orblatency orb database
+orblatency [options] orb database
     accumulate latency statistics from a network
 <options>
 -m re	select packets matching regular expression re
@@ -465,7 +465,7 @@ resetnetblazer hostname line timeout
 orb2eworm parameter_file.d
     export waveform data from an Antelope orb to an Earthworm system
 
-orb2pf orb [out]
+orb2pf [options] orb [out]
     dump out the parameter file objects from an orb
 <options>
 -select expr
@@ -488,7 +488,7 @@ rtdbclean [-n] [-v] [-p parameter_file] orb rt_db
 get_wftar -v dbmaster tape_drive
     extracts wftar table from an ARTS archive tar tape
 
-online_backup [-dnvV] [directories]
+online_backup [options] [directories]
     backup certain files to an online directory
 <options>
 -d dir	Specify an alternate base directory
@@ -503,7 +503,7 @@ online_backup [-dnvV] [directories]
 
 <subsection Orb Diagnostic tools>
 
-orbreap orb [start-time [end-time|range]]
+orbreap [options] orb [start-time [end-time|range]]
     multipurpose orb dumping program
 <options>
 -a time
@@ -525,10 +525,9 @@ orbreap orb [start-time [end-time|range]]
 -v	more verbose
 </options>
 
-orbsend send test packets to orbserver
+orbsend [options] orb
     send test packets to orbserver
 <options>
-
 -b m	send m byte packets
 -a t	align packets on t second marks
 -d d	packets are delayed d seconds
@@ -602,7 +601,7 @@ deprecated streamassoc strfile dbsite dborigin refsta method model
     associate events with an orb stream file
 
 
-orbcapture orb database file
+orbcapture [options] orb db file
     save packets from orbserver orb to file when new row in database (satisfies condition)
 <options>
 -b m	start capture m packets before trigger packet
@@ -637,11 +636,11 @@ deprecated old_orb2orb in out [start-time [period|end-time]]
 -R representation
 -s pktid
 -S statefile
--v   Be more verbose
+-v   more verbose
 </options>
 
 
-forbserver filename
+forbserver [options] filename
     file orbserver emulator
 <options>
 -a	use the absolute time  specified  in  the  input  file

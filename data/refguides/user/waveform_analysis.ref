@@ -3,7 +3,7 @@
 <subsection Waveform manipulation>
 <commands>
 
-trexcerpt dbin dbout [start {duration|end}]
+trexcerpt [options] dbin dbout [start {duration|end}]
     extract waveform segments from a database
 <options>
 -A	autodrm style (ascii) waveform files 
@@ -56,7 +56,7 @@ deprecated dbwfexcerpt dbin[.table] dbout
 -tolerance value
 </options>
 
-event_archive dbin archive_db
+event_archive [options] dbin archive_db
     make event archive database
 <options>
 -v   verbose
@@ -67,7 +67,7 @@ event_archive dbin archive_db
 -e   end time of events to process from dbin
 </options>
 
-trsample database[.table] [time]
+trsample [options] database[.table] [time]
     print a few samples from waveforms in a database
 <options>
 -c   apply calib to the samples
@@ -78,7 +78,7 @@ trsample database[.table] [time]
 -s expr	subset input according to expr
 </options>
 
-trsignal database
+trsignal [options] database
     create wfdisc records with test signal data
 <options>
 -v   Be more verbose
@@ -109,7 +109,7 @@ deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
 -s sta
 </options>
 
-dbdec dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
+dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
     Decimate waveform data
 <options>
 -sift expr	
@@ -119,7 +119,7 @@ dbdec dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
 </options>
 
 <subsection Analysis>
-dbap -dbin dbin -recipe recipe1 [recipe2 [...]]
+dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
     database array processing program
 <options>
 -script script_file
@@ -138,7 +138,7 @@ dbap -dbin dbin -recipe recipe1 [recipe2 [...]]
 -name1 value1 [-name2 value2] [...]
 </options>
 
-dbwfmeas {detection|arrival|time staexpr chanexpr tstart twin} dbname
+dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} dbname
     make waveform measurements from a database
 <options>
 -p parameter_file
@@ -160,7 +160,7 @@ displayspec dbname
 dbplotcov database sta:chan tstart tend [-h[scale]]
     Make a plot and listing of waveform coverage from a database
 
-dbrsec db
+dbrsec [options] db
     make record section plot of waveforms
 <options>
 -sc sta:chan
@@ -177,7 +177,7 @@ dbrsec db
 -amp amp
 </options>
 
-dbspgram dbname sta chan tstart twin
+dbspgram [options] dbname sta chan tstart twin
     compute time varying spectragram
 <options>
 -fmin fmin
@@ -190,7 +190,7 @@ dbspgram dbname sta chan tstart twin
 </options>
 
 
-dbpick dbname
+dbpick [options] dbname
     waveform review, pick arrivals, and edit a CSS relational database
 <options>
 -sc sta:chan	specify station/channel "glob"; eg "*:*Z"
@@ -210,7 +210,7 @@ trdisp [-r] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view 
 
 
-dbheli dbname sta chan  tstart  twinline  nlines  scale
+dbheli [options] dbname sta chan  tstart  twinline  nlines  scale
     Make helicorder type plot of waveform
 <options>
 -f filter

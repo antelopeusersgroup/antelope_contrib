@@ -36,7 +36,7 @@ sub parse_command {
     if ( $in =~ /^\s*(\w+)\s+/ ) { 
 	$name = $1 ; 
 	$in = $' ; 
-	$result = &format_type ( "FunctionName", $name  ) ;
+	$result = &fontstring ( "FunctionName", "$name "  ) ;
 	$result .= &parse_command_arguments($in) ; 
 
     } elsif ( $in =~ /^\s*\(\s*(\w+)\s*\)\s+(\w+)/ ) { 
@@ -44,7 +44,7 @@ sub parse_command {
 	$name = $2 ;
 	$in = $' ; 
 	$result = &string ( "($instance) ") ;
-	$result .= &format_type ( "FunctionName", $name  ) ;
+	$result .= &fontstring ( "FunctionName", "$name "  ) ;
 	$result .= &parse_command_arguments($in) ; 
     } else { 
 	xf_warn ( "parse_command doesn't understand '$in'" ) ; 
@@ -63,9 +63,10 @@ sub parse_command_arguments {
 	$match = $1 ;
 	$left = $` ;
 	if ( $match =~ /^-/ ) { 
-	    $result .= &string(" $left $match") ;
+	    $result .= &string("$left $match") ;
 	} else { 
-	    $result .= &string(" $left") . &format_type("ParameterName", $match) ; 
+	    $result .= &string("$left") . &fontstring("ParameterName", $match) ; 
+	    $Parameters{match} = 1 ;
 	}
     }
     $result .= &string($in) if $in !~ /^\s*$/ ; 

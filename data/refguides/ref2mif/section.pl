@@ -2,6 +2,10 @@ sub title {
     return &paragraph("Title", $_ ) if $_ !~ /^\s*$/ ; 
 }
 
+sub Examples { 
+    return &paragraph("Examples", $_ ) if $_ !~ /^\s*$/ ; 
+}
+
 sub section { 
     return &paragraph("Heading1", $_ ) if $_ !~ /^\s*$/ ; 
 }
@@ -14,12 +18,22 @@ sub chapter {
     return &paragraph("Heading1", $_ ) if $_ !~ /^\s*$/ ; 
 }
 
-sub option { 
-    return &paragraph("Indented", $_ ) if $_ !~ /^\s*$/ ; 
+sub options { 
+    return &paragraph("Indented", "") if /^\s*$/ ;
+    my ($option, $desc ) = split ( "\t", $_, 2) ; 
+    if ( $option =~ /(-\w+)\s+(\S+)/ ) { 
+	$option = &string("$1 ") 
+		  . &fontstring ( "ParameterName", $2 ) ; 
+	$Parameters{$1} = 1 ; 
+    } else { 
+	$option = &string($option) ; 
+    }
+    $desc = &emphasize(\%Parameters, "ParameterName", "\t$desc") if $desc !~ /^\s*$/ ;
+    return &paragraph("Indented", "#\n" . $option . "\t" . $desc ) ;
 }
 
-sub options { 
-    return &paragraph("Indented", $_ ) if $_ !~ /^\s*$/ ; 
+sub option { 
+    return options($_) ;
 }
 
 sub library { 
