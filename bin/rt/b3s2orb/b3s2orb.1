@@ -1,0 +1,62 @@
+.TH b3s2orb
+.SH NAME
+b3s2orb \- read B3S2 data to orb     
+.SH SYNOPSIS
+.nf
+
+b3s2orb [-c cmdport]
+    [-i dataport]
+    [-o orbname]
+    [-p parameter-file]
+    [-s]
+    [-v] 
+
+.fi
+.SH DESCRIPTION
+An \fBb3s2orb\fP is a tool to communicate with \fIB3S2\fR - read data,
+send commands to a DAS.  At a start \fBb3s2orb\fP opens a \fIUser Interface
+Menu - UIM\fR through which user can turn-on/turn-off seismometer, set a
+calibration type and mode, start/stop a data capture. During a data capture
+\fIUIM\fR is used to view diagnostic parameters such as \fIDAS reset, upper/lower
+temperature, time errors\fR , etc. A \fBb3s2orb\fP opens two ports to \fIB3S2\fR -
+command port and data port. A command port is used to send commands to a DAS. 
+A data port is used to read data from DAS. A \fBb3s2orb\fP parses those packets,  
+pre-appends a specific header to each \fIB3S2\fR packet 
+and sends them to an orb. 
+
+.SH OPTIONS
+.IP "-c cmdport"
+Specifies a name of a command port. A port /dev/ttya is used by default.
+.IP "-i dataport"
+Specifies a name of a data port. A port /dev/ttyb is used by default.
+.IP "-o orbname"
+Specifies an orb name. A \fIlocalhost\fR is used by default.
+.IP "-p parameter-file"
+A parameter file \fIparameter-file\fR will be used to get parameters of a raw 
+data packet, it's type, header type; to get station and channel names code
+for each component of a raw data packet. A \fBpkt.pf\fP parameter file is used by default.
+.IP "-s"
+Tells \fBb3s2orb\fP do not open an \fIUIM\fR and start data capture in a 
+silent mode. By default, \fIUIM\fR is opened and data capture should be start
+by pressing \fI"CAPTURE DATA"\fR button. 
+.IP "-v"
+If this option specified \fBb3s2orb\fP will print to 
+stdout a \fIsrcname\fR and a time of each packets before sending them
+to an orb.
+.SH FILES
+.SH ENVIRONMENT
+.SH EXAMPLE
+.LP
+Start reading data from port /dev/ttyb ( default data port) in a 
+silent mode - do not open \fIUIM\fR ; print srcname and time of each packet;
+send packets to an orb on bbarray:
+.nf
+
+b3s2orb -s -o bbarray -v
+
+.fi
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Marina Glushko
