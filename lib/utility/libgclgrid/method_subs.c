@@ -1,9 +1,10 @@
 /* This group of modules are what might be called "methods" if I wanted
 to make a C++ monster out of this. */
 
-#include <sunperf.h>
 #include "db.h"
 #include "gclgrid.h"
+#include "perf.h"
+
 /* function prototype used only here (FORTRAN routine) */
 void fme_interpolate_(int *,double *,double *,double *,double *);
 /* This is an indexing routine for finding the location of a point in 3 space
