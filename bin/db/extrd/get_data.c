@@ -9,7 +9,9 @@
  *************************************************************************/
 #include "extrd.h"
 
-int get_data( double stime, double etime )
+extern char *Network;
+
+int get_data( double stime, double etime, int nrec )
 {
     SegData segment, new;
     TrDataGap *datagap;
@@ -17,29 +19,21 @@ int get_data( double stime, double etime )
     double crnt_time;
     float *buf=0;
     int skip, npts; 
-    int done, bytes, i;
+    int num, done, bytes, i;
     int save_npts, extra_npts;
-    int nrec;
     int saved = 0;
     char inrec[512];
     int First = 1;
 
     Foff = 0; 
-    dbquery (db, dbRECORD_COUNT, &nrec);
     
-    if (nrec < 1)   {
-        complain (0, "No records selected\n" ) ;
-        return 0;
-    } 
 
     crnt_time = stime; 
     segment.steim = 0;
     mydata.c = 0;
 
+    
     for( db.record = 0; db.record < nrec; db.record++)   {
-       if( dbget( db, inrec) == dbINVALID )
-           die( 0, "dbget faild for record #%d\n", db.record );
-
        if( (dbgetv( db, 0,
 	  "time", &(new.time),
           "endtime", &(new.endtime),
@@ -54,6 +48,11 @@ int get_data( double stime, double etime )
           "segtype", new.segtype,
            0 )) == dbINVALID )
            die( 0, "dbgetv faild for record #%d\n", db.record );
+        
+       if( !Network )  {
+           if( (dbgetv( db, 0, "net", new.net, 0 )) == dbINVALID )
+               die( 0, "dbgetv 'net' faild for record #%d\n", db.record );
+       }  else strcpy(new.net, Network);
 
 #ifdef DEBUG
 fprintf( stderr, "%s_%s: %lf %lf %d \n", 
@@ -66,7 +65,8 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
        datagap = trdatagap(new.datatype) ;
        done = skip = 0;
        if( segment.time <= 0.0 ) segment.time = new.time;
-       if(strcmp(new.sta, segment.sta)!= 0 || 
+       if(strcmp(new.net, segment.net)!= 0 || 
+          strcmp(new.sta, segment.sta) != 0 || 
           strcmp(new.chan, segment.chan) != 0) { 
            if( First ) segment.sbytes = 0;
            else if ( saved )  flush_db( &segment );
@@ -114,15 +114,15 @@ crnt_time, et, ts, te, stime, etime, npts );
 
 
            if( buf == 0 )  { 
-              complain( 0, "can't get data for %s_%s from %lf to %lf\n", 
-                        new.sta, new.chan, crnt_time, et ); 
+              complain( 0, "can't get data for %s_%s_%s from %lf to %lf\n", 
+                        new.net, new.sta, new.chan, crnt_time, et ); 
               continue;
            }
            if( te <= crnt_time ) continue;
            if( ( skip = TIME2SAMP( ts, new.samprate, crnt_time ) ) > 0 )  {
 
-                 complain( 0, "overlapped traces %s_%s: last time = %lf\tnew_t0=%lf new_te=%lf\n", 
-                           new.sta, new.chan, crnt_time, ts, te );
+                 complain( 0, "overlapped traces %s_%s_%s: last time = %lf\tnew_t0=%lf new_te=%lf\n", 
+                           new.net, new.sta, new.chan, crnt_time, ts, te );
                  complain( 0, "will skip %d points\n", skip);
 
            } else  skip = 0;
@@ -171,8 +171,8 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 	   }
 								   
            if(!wrt_data( &segment, crnt_time, save_npts, mydata.i ))   {
-               complain(0, "can't save data for %s_%s at %lf.\n",
-                  segment.sta, segment.chan, crnt_time);
+               complain(0, "can't save data for %s_%s_%s at %lf.\n",
+                  segment.net, segment.sta, segment.chan, crnt_time);
                fflush(Df);
                fclose(Df);
                if( mydata.c != 0 ) free( mydata.c);

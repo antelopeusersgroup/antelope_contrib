@@ -1,51 +1,69 @@
-.TH EXTRD 1 "23 September 1997" " "
+.TH EXTRD 1 "15 September 1998" " "
 .SH NAME
 extrd \- extract specified segment of the css data           
 .SH SYNOPSIS
-.PP
+.nf
+
 \fBextrd\fP 
+	[-c chan]
 	[-n network]
 	[-o outdir]
+	[-s sta]
 	\fIdbname|wfd_dir|"wfd_fnames" stime etime\fR
-.SH COMMAND LINE ARGUMENTS
-.PP
-\fIdbname\fR		The database name.
-.PP
-\fIwfd_dir\fR		The full name of the directory which contains wfdisc files.
-.PP
-\fI"wfd_fnames"\fR	The wfdisc file names. Can use wild characters.
-.PP
-\fIstime\fR	The start time to start data subset with.
-.PP
-\fIetime\fR 	The end time to finished data subset with. 	
-Program accepts time as a string in any date format (see DATASCOPE time utilities).
-.PP
-\fInetwork\fR
-A network code name. Should be used for data in mini-SEED format. 
-.PP
-\fIoutdir\fR
-The name of the output directory for merged data. Current directory by 
-default.
-.PP
+.fi
 .SH DESCRIPTION
 .PP
 Program reads seismic data in CSS 3.0 format, 
-the wfdisc files of which are specified by one of the 
-arguments (dbname |  wfd_dir | wfd_fnames).
 and extracts the specified subset of data. 
+The input data set can be specified by one of the 
+following:
+.PP 
+\fIdbname\fR - database name
+.PP 
+\fIwfd_dir\fR - full path name of a directory which contains a wfdisc files
+.PP 
+\fIwfd_fnames\fR - full names of a wfdisc. Wild characters can be used in wfdisc name.
+.LP
 Program will create a data file and a wfdisc file with name of the 
 form YYDDDHHMM.w and YYDDDHHMM.wfdisc respectively,
 which give the year, day, hour, and minute of the begining of the event.
-If \fIoutdir\fR is specified in the command line then the program 
-will create such 
-directory and all output data will be placed there otherwise 
+.SH COMMAND LINE ARGUMENTS
+.IP "-c chan"  
+Only  data   which  channel name   matches  the   regular
+expression  \fIchan\fR  will  be extracted.
+.IP "-n network"  
+A network code name. That name is used in a SEED header.
+If this parameter is not specified \fBextrd\fP will look for an \fBaffiliation\fP
+table and will use network code name specified in that table.
+.IP "-o outdir"
+If \fIoutdir\fR is specified in the command line then \fBextrd\fP 
+will create such directory and all output data will be placed there otherwise 
 the output data will be placed in a current directory.
-.SH EXAMPLE
-To extract a subset of data with a time window  1992053-14:00:00 to 1992063-14:00:00:00
+.IP "-s sta"  
+Only  data   which  station name   matches  the   regular
+expression  \fIsta\fR  will  be extracted.
+.IP "stime"   	
+The start time to start data subset with.
+Program accepts time as a string in any date format (see DATASCOPE time utilities).
+.IP "etime"   	
+The end time to finished data subset with. 	
+Program accepts time as a string in any date format (see DATASCOPE time utilities).
+.SH EXAMPLE 1
+.LP
+Extract a subset of data with a time window  1992053-14:00:00 to 1992063-14:00:00:00
 from the set of data wfdisc files of which are located in directory 
 /data/1991/wfdisc :
 .RS .5i
 \fBextrd /data/1991/wfdisc 1992053:14:00:00.0 1992063:14:00:00:00.0\fP
 .RE
+.SH EXAMPLE 2
+.LP
+Extract a subset of data with a descriptor file \fI/hf/archive/anza\fR with a  
+time window  880257482.0 to 880260000.0.  Extract vertical channels only. 
+Store output data in /hf/archive/Z directory:
+.RS .5i
+\fBextrd -c ".*Z" /hf/archive/anza 880257482.0 880260000.0 \fP
+.RE
+
 .SH AUTHOR
 M. Glushko

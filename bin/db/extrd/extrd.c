@@ -19,15 +19,9 @@ char in_dbase[132];
 
 static void usage()
 { 
-        fprintf(stderr,"\nusage:  %s [-n network] [-o outdir] dbname|wfd_dir|\"wfd_fls\" stime etime \n\n", Program_Name);
-        fprintf(stderr,"  Arguments:\n\n");
-        fprintf(stderr,"dbname    => DB name \n");
-        fprintf(stderr,"wfd_dir   => directory with wfdisc files\n");
-        fprintf(stderr,"wfd_fls   => Wfdisc files names. Quotes are required!\n");
-        fprintf(stderr,"stime     => start time of the data subset\n");
-        fprintf(stderr,"etime     => end time of the data subset\n");
-        fprintf(stderr,"network   => network name.\n");
-        fprintf(stderr,"outdir    => output directory. Current directory by default.\n");
+        fprintf(stderr,
+	"\nusage:  %s [-c chan] [-n net] [-o outdir] [-s sta] dbname|wfd_dir|\"wfd_fls\" stime etime \n\n", 
+	Program_Name);
         exit(1);
 }
 
@@ -39,29 +33,38 @@ char *argv[];
 
  extern int optind;
  extern char *optarg; 
- Dbptr dbsub,tmpdb, wfddb;
- Tbl  *sort_sta_ch_tm;
- FILE *fd;
- double stime, etime;
  struct stat buf;
- char *out_dbase;
- char odir[132], exten[132];
- char path[132], name[132];
- char wfd_name[256], *fname;
- char *str;
- char *out_dir = 0;
- char inname[256]; 
- char newdir[256], *tmpname;
- char rec[256];
- int nrec, oldsize, record_size, i, j;
- int wfdrec;
- int err_in=0, id;
- char subset_condition[80];
- 
+ Dbptr     tmpaf, dbaf, dbsub, tmpdb, wfddb;
+ Tbl       *sort_sta_ch_tm;
+ FILE      *fd;
+ double    stime, etime;
+ char      *out_dbase;
+ char      odir[132], exten[132];
+ char      path[132], name[132];
+ char      wfd_name[256], *fname;
+ char      *str;
+ char      afname[256], inname[256]; 
+ char      newdir[256], *tmpname;
+ char      rec[256];
+ int       nrec, oldsize, 
+           record_size, i, j;
+ int       wfdrec;
+ int       err_in, id;
+ int 	   affil = 0;
+ char      subset_condition[80];
+ char      *out_dir = 0;
+ char      *sta = ".*" ;
+ char      *chan = ".*" ;
 
-    while( ( id = getopt( argc, argv, "n:o:") ) != -1 )
+    err_in = 0; 
+
+    while( ( id = getopt( argc, argv, "c:n:o:s:") ) != -1 )
       switch( id )  {
 
+        case 'c':
+          chan = strdup( optarg );
+          break;
+        
         case 'n':
           Network = strdup( optarg );
           break;
@@ -73,6 +76,10 @@ char *argv[];
           strcpy(out_dir, optarg);
           break;
  
+        case 's':
+          sta = strdup( optarg );
+          break;
+        
         case '?':
           err_in++;
       }
@@ -114,8 +121,8 @@ char *argv[];
    signal(SIGSEGV, sig_hdlr );
 
    tmpname = mktemp(strdup("extrdXXXXXX") );
-   strcat( tmpname, ".wfdisc");
-   sprintf( in_dbase, "%s\0",  tmpname );  
+   sprintf( in_dbase, "%s.wfdisc\0",  tmpname );  
+   sprintf( afname, "%s.affiliation\0",  tmpname );  
    
    if(stat(inname, &buf) == 0) {
      if(S_ISDIR(buf.st_mode) != 0)  {
@@ -159,15 +166,25 @@ char *argv[];
          unlink( ".tmp" ); 
          die( 1,"Can't open file .tmp \n");
     } 
+
+    
     if (dbopen_database (in_dbase, "r+", &db) < 0)  {
          unlink( ".tmp" ); 
          die (0, "Can't open database %s\n", in_dbase);
     } 
+
     db = dblookup (db, 0, "wfdisc", 0, 0);
     if (db.table < 0)  {
          unlink( ".tmp" ); 
         die (0, "Can't open wfdisc table '%s'\n", in_dbase );
     }
+
+    dbaf = dblookup (db, 0, "affiliation", 0, 0);
+    if (dbaf.table < 0)  {
+         unlink( ".tmp" ); 
+        die (0, "Can't open wfdisc table '%s'\n", in_dbase );
+    }
+
 
     while((fname = fgets(fname, 132,fd)) != NULL)  {
       for(i = strlen(fname); i >= 0; i--) {
@@ -192,29 +209,20 @@ char *argv[];
       sprintf(subset_condition,"(endtime >= %lf && time <= %lf)",
                         stime, etime);
       dbsub = dbsubset(tmpdb,subset_condition,0);
-
- 
       dbquery (dbsub, dbRECORD_COUNT, &nrec);
-
-      if( nrec <= 0 )  continue;
-      
-/*             
-         if (dbopen( fname, "r+", &dbsub) < 0)  {
-            unlink( ".tmp" ); 
-            die (0, "Can't open database %s\n", fname );
-         }
- 
-         dbsub = dblookup (dbsub, 0, "wfdisc", 0, 0);
-         if (dbsub.table < 0)  {
-           unlink( ".tmp" ); 
-           die (0, "Can't open wfdisc table '%s'\n", fname );
-         }
- 
-        dbquery (dbsub, dbRECORD_COUNT, &nrec);
-         if( nrec <= 0 ) 
-            die( 0, " no record after dbsudset\n");
-      }
-*/
+      if( nrec <= 0 )  {
+	  complain(0, "No records in  %s after '%s' subset\n", 
+	                fname, subset_condition );
+	  continue;
+      } 
+      sprintf(subset_condition,"(chan =~ /%s/ && sta =~ /%s/)", chan, sta);
+      dbsub = dbsubset(dbsub,subset_condition,0);
+      dbquery (dbsub, dbRECORD_COUNT, &nrec);
+      if( nrec <= 0 )  {
+	  complain(0, "No records in  %s after '%s' subset\n", 
+	                fname, subset_condition );
+	  continue;
+      } 
       for( dbsub.record = 0; dbsub.record < nrec; dbsub.record++ )  {
   
           if ( dbgetv ( dbsub, 0, "wfdisc", &wfddb, 0 ) == dbINVALID )   {
@@ -225,24 +233,10 @@ char *argv[];
              complain( 1,"Can't get dbsub record #%d\n", wfddb.record );
              break;
           }
-          
-/*
-         if ( ( wfdrec = dbget ( dbsub, rec )) == dbINVALID )   {
-             complain( 1,"Can't get tmpdb record #%d\n", dbsub.record );
-             break;
-          }
 
-*/ 
           db.record = dbaddnull( db ); 
           dbput ( db, rec );
           
-/*
-          if( dbadd ( db, rec ) == dbINVALID) {
-                complain(0,"Cannot add row to working database\n");
-                break;
-          } 
-*/ 
-
           dbgetv( db, 0,
 	          "dir", odir, 0 );
 		  
@@ -261,11 +255,38 @@ char *argv[];
 	  }
 
        }
-       /*dbfree( dbsub );*/ 
 
+      if( !Network )  {
+
+          tmpaf = dblookup (tmpdb, 0, "affiliation", 0, 0);
+          if (tmpaf.table < 0)  {
+              unlink( ".tmp" ); 
+              die (0, "Can't open affiliation table '%s'. Use '-n' option.\n", tmpdb );
+          }
+          dbquery (tmpaf, dbRECORD_COUNT, &nrec);
+          if( nrec <= 0 )
+              die( 0, "No records in affiliation table. Use '-n' option.\n");
+      
+	  for( tmpaf.record = 0; tmpaf.record < nrec; tmpaf.record++ )  {
+  
+             if ( ( wfdrec = dbget ( tmpaf, rec )) == dbINVALID )   {
+                complain( 1,"Can't get affiliation record #%d\n", tmpaf.record );
+                break;
+             }
+
+             dbaf.record = dbaddnull( dbaf ); 
+             dbput ( dbaf, rec );
+          
+          }
+          db = dbjoin( dbaf, db, 0, 0, 0, 0, 0);
+          dbquery (db, dbRECORD_COUNT, &nrec);
+          if( nrec <= 0 )
+              die( 0, "No records in wfdisc&affiliation join.\n");
+	  affil = 1;
+      }
    }
    unlink( ".tmp" ); 
-  
+
    dbquery (db, dbRECORD_COUNT, &nrec);
    if( nrec <= 0 )
       die( 0, "No records in dbin.\n");
@@ -287,13 +308,15 @@ char *argv[];
  
 
    Seq = 1;
-   if(!get_data( stime, etime ))  {
+   if(!get_data( stime, etime, nrec ))  {
           complain(0, "error in get_data()\n");
           system(CLEAN); 
           exit(1);
    }
 
-
+   if( affil)
+     if( unlink( afname ) < 0 )
+        die( 1, "can't remove %s\n", afname);
    if( unlink( in_dbase ) < 0 )
      die( 1, "can't remove %s\n", in_dbase);
 

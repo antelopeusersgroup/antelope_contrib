@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <math.h>
 #include <time.h>
+#include <regex.h>
 #include "tr.h"
 #include "db.h"
 #include "scv2.h"
@@ -23,6 +24,9 @@
 #define CLEAN "rm -rf .all.wfdisc"
 #define MODE  (0664)
 #define MAX_NSAMP  450000
+
+regex_t sta_match;
+regex_t chan_match;
 
 FILE *Df;
 char *Data_file;
@@ -43,6 +47,7 @@ typedef struct segment {
 	int new;
         int nsamp;
 	int dcode;
+	char net[8];
 	char sta[8];
 	char chan[12];
 	char instype[8];

@@ -22,6 +22,7 @@ int update_segdata( SegData *segment , SegData *new )
         segment->nsamp = 0;               
         segment->foff = Foff;              
         segment->dcode = new->dcode;
+        strcpy( segment->net, new->net);
         strcpy( segment->sta, new->sta);
         strcpy( segment->chan, new->chan);
         strcpy( segment->datatype, new->datatype);
@@ -130,11 +131,11 @@ fprintf( stderr, "flush: %lf %lf %d\n", segment->time, segment->endtime, segment
      }
      if( segment->dcode == trSEED )  {
          if( (code = csteim ( segment->steim, save_seed, 0, 0) )  < 0 ) 
-              die ( 1, " steim compression error for %s_%s at last record\n", 
-                    segment->sta, segment->chan  ) ;
+              die ( 1, " steim compression error for %s_%s_%s at last record\n", 
+                    segment->net, segment->sta, segment->chan  ) ;
  	else if ( code > 0 ) 
-	      complain ( 1, " steim compression problems for %s_%s at last record\n", 
-	            segment->sta, segment->chan ) ;
+	      complain ( 1, " steim compression problems for %s_%s_%s at last record\n", 
+	            segment->net, segment->sta, segment->chan ) ;
      }  else  {
 	if( dbputv( dbout, 0,
              "time", segment->time,
