@@ -1,3 +1,4 @@
+PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 
 refguide:
