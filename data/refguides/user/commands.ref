@@ -111,8 +111,8 @@ pfecho [options] name [ param ...]
 -i	interactive mode
 -q	don't echo key
 -w	show all pf files read
--W	show all pf filenames examined (some may not exist)
--x	expand all references inside parameter file
+-W	show all filenames examined (may not exist)
+-x	expand all references inside pf
 </options>
 
 pfwhich pf 
@@ -128,23 +128,20 @@ gsregion [lat lon]
 dbsetrgn db
     set seismic and geographic region codes in origin table for database db
 
-tabulate_missed_stations translation_db dbname [dbname...]
+private tabulate_missed_stations translation_db dbname [dbname...]
     find station names that do not appear in translation_db
 
 private capitalize_station dbname
     capitalize station field in dbname
 
-translate_stachan_names translation_db dbname
+private translate_stachan_names translation_db dbname
     apply station name-translations listed in translation_db
 	
-private children pid
+children pid
     returns children of process pid
 
 private getunique
     return unique integer
-
-private idinfo
-    gather id information for register_antelope
 
 deprecated pathf [ -f configfile ] [ paths... ]
     filter for translating pathnames

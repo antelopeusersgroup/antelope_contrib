@@ -45,8 +45,8 @@ dbsnapshot [options] db [start_time [end_time|period]]
 dbe [-e] db[.table] [ db[.table] ...]
     general purpose viewer/editor for databases (see .dbe.pf to configure)
 
-dberesp db.table
-    run by dbe to plot response curves for instrument 
+dberesp [db.table | response ..]
+    plot response curves from database table or plain response file(s)
 
 db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
     run arbitrary commands on Datascope extfiles

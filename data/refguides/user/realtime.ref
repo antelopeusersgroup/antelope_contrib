@@ -22,7 +22,7 @@ rtexec [options] [comment]
 </options>
 
 rtinit
-    initialize directory for use by rtexec/rtm by creating appropriate directories and copying pf files
+    initialize directory for rtexec/rtm by creating directories and copying pf files
 
 rtdemo
      setup to run an Antelope realtime demo
@@ -489,8 +489,10 @@ orbampmag  [options] orbwf orbdb dbname
 -next_target_orbmag orb2
 -use_mean	use mean, not median statistics
 -use_p2p 	use peak to peak, not maximum value 
--use_if_not_associated	use all stations
--use_if_not_defining	use all picks
+-use_if_not_associated
+	use all stations
+-use_if_not_defining
+	use all picks
 -v
 </options>
 
@@ -670,7 +672,7 @@ orb2db [options] orb db [start [end|period]]
 </options>
 
 orb2dbt [options] orb dbout [orbout]
-    read Datascope database packets from an orb and write to database
+    read database packets from an orb and write to database
 <options>
 -select expr
 -reject expr
@@ -709,13 +711,13 @@ orblatency [options] orb database
 
 <subsection Orb Alarms>
 acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
-    send mail when AC power fails for data collector
+    send mail when AC power fails in DC packets
 
 battalarm [-d] [-m srcmatch ] orbin mail_add
-    send mail when battery power drops for data collector
+    send mail when battery power drops in DC packets
 
 pktmon [-p pf] [-S state] orb
-    read packets, watch for specific conditions and send alarms
+    read packets, send alarms for specified conditions 
 
 <subsection Miscellaneous>
 resetnetblazer hostname line timeout
@@ -746,11 +748,10 @@ mail_parser [options] [file [file...]]
 <subsection Archiving Data>
 <commands>
 rtbackup [-v] [-m who] [-p pf] db drive
-    copy data from db to archive tape on drive, using orb2db_msg
-    to stop and restart orb2db and orb2dbt
+    backup waveform and database data from db to (tape) drive
 
-get_archive [options] db dbout tape_drive [t0 [t1]]
-    restore waveforms (between t0 and t1) to dbout using db.wftar from rtbackup tape 
+get_archive [options] db dbout drive [t0 [t1]]
+    restore waveforms (between t0 and t1) to dbout using db.wftar from rtbackup tape on drive
 <options>
 -c re	select channels with regular expression
 -s re	select stations with regular expression
@@ -758,7 +759,7 @@ get_archive [options] db dbout tape_drive [t0 [t1]]
 </options>
 
 rtdbclean [-n] [-v] [-p pf] orb rt_db
-    real time database and disk cleaner
+    remove old waveform data and associated database records
 
 get_wftar -v dbmaster tape_drive
     extracts wftar table from an ARTS archive tar tape

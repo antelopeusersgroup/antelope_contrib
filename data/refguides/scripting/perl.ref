@@ -382,18 +382,20 @@ bury()
     Save the state file.
 
 <subsection Foreign keys>
+<body>
 map between CSS3.0 station/channel naming  conventions  and  the
 different conventions of autodrm and SEED.
-
+</body>
+<function>
 $sta = map_autodrm_netsta($anet, $fsta)
 $chan = map_autodrm_chanaux($sta,$fchan,$aux)
 ($anet, $fsta) = autodrm_net($sta)
-$chan = map_seed_chanloc($sta,$fchan,$loc)
+($fchan, $aux) = autodrm_aux(sta, chan)
 
 $sta = map_seed_netsta($anet, $fsta)
+$chan = map_seed_chanloc($sta,$fchan,$loc)
 ($snet, $fsta) = seed_net($sta)
 ($fchan, $loc) = seed_loc($sta,$chan)
-
 
 <chapter Perl Orb Access>
 <info>
