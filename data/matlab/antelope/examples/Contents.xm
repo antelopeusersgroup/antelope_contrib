@@ -1,0 +1,104 @@
+% Antelope Toolbox -- examples
+%
+% Composite Examples
+%   dbexample_get_demodb_path 	- Fill in demodb_path with name of database
+%   dbexample_get_hypocenter_vitals -Print lat, lon, depth, mb for earthquakes
+%   dbexample_sort_and_subset -	sort and subset a table; print a few lines
+%   dbexample_joins - show some simple table joins
+%   dbexample_writing - Writing information to a database
+%
+% Command Examples
+%   dbexample_clear
+%   dbexample_clear_register
+%   dbexample_db2struct
+%   dbexample_dbadd
+%   dbexample_dbadd_remark
+%   dbexample_dbaddnull
+%   dbexample_dbaddv
+%   dbexample_dbclose
+%   dbexample_dbcrunch
+%   dbexample_dbdelete
+%   dbexample_dbeval
+%   dbexample_dbfilename
+%   dbexample_dbfind
+%   dbexample_dbget
+%   dbexample_dbget_remark
+%   dbexample_dbgetv
+%   dbexample_dbinvalid
+%   dbexample_dbjoin
+%   dbexample_dbjoin_keys
+%   dbexample_dblookup
+%   dbexample_dblookup_table
+%   dbexample_dbmark
+%   dbexample_dbnextid
+%   dbexample_dbnojoin
+%   dbexample_dbopen
+%   dbexample_dbpf
+%   dbexample_dbput
+%   dbexample_dbputv
+%   dbexample_dbquery
+%   dbexample_dbresponse
+%   dbexample_dbsort
+%   dbexample_dbsubset
+%   dbexample_dbtheta
+%   dbexample_dbunjoin
+%   dbexample_epoch2str
+%   dbexample_eval_response
+%   dbexample_free_response
+%   dbexample_orbafter
+%   dbexample_orbclose
+%   dbexample_orbget
+%   dbexample_orbopen
+%   dbexample_orbping
+%   dbexample_orbreap
+%   dbexample_orbreject
+%   dbexample_orbseek
+%   dbexample_orbselect
+%   dbexample_orbtell
+%   dbexample_pf2string
+%   dbexample_pf2struct
+%   dbexample_pffiles
+%   dbexample_pffree
+%   dbexample_pfget
+%   dbexample_pfget_arr
+%   dbexample_pfget_boolean
+%   dbexample_pfget_num
+%   dbexample_pfget_string
+%   dbexample_pfget_tbl
+%   dbexample_pfkeys
+%   dbexample_pfname
+%   dbexample_pfput_boolean
+%   dbexample_pfput
+%   dbexample_pfresolve
+%   dbexample_pftype
+%   dbexample_pfupdate
+%   dbexample_pfwrite
+%   dbexample_str2epoch
+%   dbexample_strdate
+%   dbexample_strtdelta
+%   dbexample_strtime
+%   dbexample_strydtime
+%   dbexample_tr_endtime
+%   dbexample_tr_nsamp
+%   dbexample_tr_samp2time
+%   dbexample_tr_samprate
+%   dbexample_tr_time2samp
+%   dbexample_trapply_calib
+%   dbexample_trdestroy
+%   dbexample_trextract_data
+%   dbexample_trfree
+%   dbexample_trgetwf
+%   dbexample_trinsert_data
+%   dbexample_trload_css
+%   dbexample_trnew
+%   dbexample_trputwf
+%   dbexample_trsave_wf
+%   dbexample_trsplice
+%   dbexample_yearday
+%
+%       Matlab interface to Antelope
+%			    [Boulder Real Time Technologies, Inc.]
+%       Kent Lindquist
+%       Geophysical Institute
+%       University of Alaska, Fairbanks
+%       1999

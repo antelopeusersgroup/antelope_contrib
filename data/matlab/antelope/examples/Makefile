@@ -1,0 +1,102 @@
+DATADIR= matlab/antelope/examples
+DATA= \
+	Contents.m \
+	dbexample_clear.m \
+	dbexample_clear_register.m \
+	dbexample_db2struct.m \
+	dbexample_dbadd.m \
+	dbexample_dbadd_remark.m \
+	dbexample_dbaddnull.m \
+	dbexample_dbaddv.m \
+	dbexample_dbclose.m \
+	dbexample_dbcrunch.m \
+	dbexample_dbdelete.m \
+	dbexample_dbeval.m \
+	dbexample_dbfilename.m \
+	dbexample_dbfind.m \
+	dbexample_dbget.m \
+	dbexample_dbget_remark.m \
+	dbexample_dbgetv.m \
+	dbexample_dbinvalid.m \
+	dbexample_dbjoin.m \
+	dbexample_dbjoin_keys.m \
+	dbexample_dblookup.m \
+	dbexample_dblookup_table.m \
+	dbexample_dbmark.m \
+	dbexample_dbnextid.m \
+	dbexample_dbnojoin.m \
+	dbexample_dbopen.m \
+	dbexample_dbpf.m \
+	dbexample_dbput.m \
+	dbexample_dbputv.m \
+	dbexample_dbquery.m \
+	dbexample_dbresponse.m \
+	dbexample_dbsort.m \
+	dbexample_dbsubset.m \
+	dbexample_dbtheta.m \
+	dbexample_dbunjoin.m \
+	dbexample_epoch2str.m \
+	dbexample_eval_response.m \
+	dbexample_free_response.m \
+	dbexample_get_demodb_path.m \
+	dbexample_get_hypocenter_vitals.m \
+	dbexample_joins.m \
+	dbexample_orbafter.m \
+	dbexample_orbclose.m \
+	dbexample_orbget.m \
+	dbexample_orbopen.m \
+	dbexample_orbping.m \
+	dbexample_orbreap.m \
+	dbexample_orbreject.m \
+	dbexample_orbseek.m \
+	dbexample_orbselect.m \
+	dbexample_orbtell.m \
+	dbexample_pf2string.m \
+	dbexample_pf2struct.m \
+	dbexample_pffiles.m \
+	dbexample_pffree.m \
+	dbexample_pfget.m \
+	dbexample_pfget_arr.m \
+	dbexample_pfget_boolean.m \
+	dbexample_pfget_num.m \
+	dbexample_pfget_string.m \
+	dbexample_pfget_tbl.m \
+	dbexample_pfkeys.m \
+	dbexample_pfname.m \
+	dbexample_pfput.m \
+	dbexample_pfput_boolean.m \
+	dbexample_pfresolve.m \
+	dbexample_pftype.m \
+	dbexample_pfupdate.m \
+	dbexample_pfwrite.m \
+	dbexample_sort_and_subset.m \
+	dbexample_str2epoch.m \
+	dbexample_strdate.m \
+	dbexample_strtdelta.m \
+	dbexample_strtime.m \
+	dbexample_strydtime.m \
+	dbexample_tr_endtime.m \
+	dbexample_tr_nsamp.m \
+	dbexample_tr_samp2time.m \
+	dbexample_tr_samprate.m \
+	dbexample_tr_time2samp.m \
+	dbexample_trapply_calib.m \
+	dbexample_trdestroy.m \
+	dbexample_trextract_data.m \
+	dbexample_trfree.m \
+	dbexample_trgetwf.m \
+	dbexample_trinsert_data.m \
+	dbexample_trload_css.m \
+	dbexample_trload_cssgrp.m \
+	dbexample_trnew.m \
+	dbexample_trputwf.m \
+	dbexample_trsave_wf.m \
+	dbexample_trsplice.m \
+	dbexample_writing.m \
+	dbexample_yearday.m 
+
+HTMLDIR= matlab/antelope/html/examples
+HTML= $(DATA:.m=.html)
+
+include ../antelope_mex_make
+
