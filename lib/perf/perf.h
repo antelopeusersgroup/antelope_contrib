@@ -879,7 +879,9 @@ extern integer s_rsle ( cilist *a );
 extern logical lsame_ ( char *ca, char *cb );
 extern logical lsamen_ ( integer *n, char *ca, char *cb );
 extern int l_write ( ftnint *number, char *ptr, ftnlen len, ftnint type );
+/*
 extern int main ( int argc, char **argv );
+*/
 extern int f__putbuf ( int c );
 extern void x_putc ( int c );
 extern integer f_open ( olist *a );
