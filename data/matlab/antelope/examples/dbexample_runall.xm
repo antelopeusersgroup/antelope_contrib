@@ -91,6 +91,7 @@ dbexample_tr_nsamp
 dbexample_tr_samp2time
 dbexample_tr_samprate
 dbexample_tr_time2samp
+dbexample_tr2struct
 dbexample_trapply_calib
 dbexample_trdestroy
 dbexample_trextract_data

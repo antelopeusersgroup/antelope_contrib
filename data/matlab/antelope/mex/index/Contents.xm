@@ -75,6 +75,7 @@
 %   tr_time2samp	- Calculate sample index from times and sample rate
 %   tr_samp2time	- Calculate sample time from sample index, start time, and sample rate
 %   tr_wfname		- Generate external file names
+%   tr2struct		- Make exportable structure of waveform data
 %
 % Time conversion
 %   str2epoch		- Convert a string to epoch time
