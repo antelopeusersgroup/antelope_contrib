@@ -49,7 +49,7 @@ Tbl *pfextract_arrivals(Pf **pfall, int is, int ie,
                 a->sta = (Station *) getarr(stations,sta);
                 if(a->sta == NULL)
                 {
-                        register_error(0,"Warning (read_arrivals):  Can't find coordinates for station %s\n%s phase arrival for this station skipped\n",
+                        elog_complain(0,"Warning (read_arrivals):  Can't find coordinates for station %s\n%s phase arrival for this station skipped\n",
                                 sta, phase_name);
                         free(a);
                         continue;
@@ -58,7 +58,7 @@ Tbl *pfextract_arrivals(Pf **pfall, int is, int ie,
                 a->phase = (Phase_handle *) getarr(phases,phase_name);
                 if(a->phase == NULL)
                 {
-                        register_error(0,"Warning (read_arrivals):  No phase handle for phase name %s\nArrival for station %s skipped\n",
+                        elog_complain(0,"Warning (read_arrivals):  No phase handle for phase name %s\nArrival for station %s skipped\n",
                                 phase_name,sta);
                         free(a);
                         continue;
