@@ -2164,7 +2164,7 @@ int main ( int argc, char ** argv )
 
     /* generate the web page output from the orb named in orbname displaying
        the fields gathered above. */
-    read_orbinfo( "/export/home/quakeinfo1/jbowen/pf/orblookup.pf", 
+    read_orbinfo( "orblookup.pf", 
                   orbname, &cachefile );
     slist = read_cached_results( cachefile );    
     generate_doc( slist, field_list );
