@@ -19,10 +19,9 @@ proc init_globals {} {
 	set Template_time [epoch2str [str2epoch now] $Template_time_format]
 
 	pfgetarr Nicknames %dbcentral
+	unset Nicknames(pf_revision_time)
 
 	foreach nickname [array names Nicknames] {
-
-		if { [regexp pf_revision_time $nickname] } { continue }
 
 		set tasklines [pfgetlist @dbcentral#$nickname#tasks]
 
