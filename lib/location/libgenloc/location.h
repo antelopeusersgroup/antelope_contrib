@@ -183,7 +183,7 @@ typedef struct Hypocenter {
 	int number_data, degrees_of_freedom;  /* Actual number of data points
 		and effective degrees of freedom = int(sum residual weights)
 							- number parameters */
-
+	int used;   /*boolean used in multievent locations only */
 } Hypocenter;
 /* These structures are used for S-P times (or other minus
 phase types.  The time interval structure is used to define

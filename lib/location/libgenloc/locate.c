@@ -399,6 +399,7 @@ void copy_hypocenter(Hypocenter *from,Hypocenter *to)
 	to->interquartile = from->interquartile;
 	to->number_data = from->number_data;
 	to->degrees_of_freedom = from->degrees_of_freedom;
+	to->used = from->used;
 }
 
 void step_length_damp(Hypocenter h, float *dx,int n,int iz,

@@ -135,6 +135,7 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
         h.interquartile = -1.0;
         h.number_data = 0;
         h.degrees_of_freedom = 0;
+	h.used = 1;
 	if((method == RECTANGLE_GRIDSEARCH) || (method == RADIAL_GRIDSEARCH) )
 		s = pfget_string(pf,"gridsearch_norm");
 		if(s== NULL)
