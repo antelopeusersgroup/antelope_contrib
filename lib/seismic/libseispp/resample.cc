@@ -105,7 +105,10 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 	int total_lag=0;
 
 	for(i=0;i<ns;++i) result->d.push_back(s[i]);
-	result->lag=0;  // not really necessary, but clearly shows initialization
+	result->lag=0;  
+	// skip all this if dtin and dtout match within tolerance
+	if(fabs(dtout_target-dtin)/dtout_target < DT_FRACTIONAL_ERROR) 
+			return(*result);
 
 	for(this_decimator=declist.begin();
 		this_decimator!=declist.end();++this_decimator)

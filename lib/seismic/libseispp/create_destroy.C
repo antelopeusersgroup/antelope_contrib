@@ -32,19 +32,9 @@ Time_Series::Time_Series(int nsin) : Metadata()
 	tref=absolute;
 }
 	
-Time_Series::Time_Series(const Time_Series& tsi) : Metadata(dynamic_cast<Metadata&>(tsi))
+Time_Series::Time_Series(const Time_Series& tsi) : Metadata(dynamic_cast<Metadata&>(tsi)),
+				Basic_Time_Series(dynamic_cast<Basic_Time_Series&>(tsi))
 {
-	int i;
-	live=tsi.live;
-        dt=tsi.dt;
-        t0=tsi.t0;
-        ns=tsi.ns;
-        tref=tsi.tref;
-	//There may be a more elegant way to do this on
-	// the top line with a : but I can't figure how to do it 
-	// The disadvantage of this is it depends on an implementation
-	// detail (use of Antelope pf to store metadata contents) 
-	pf=pfdup(tsi.pf);
 	if(live)
 	{
 		s.reserve(ns);
@@ -361,14 +351,10 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 Three_Component_Seismogram::Three_Component_Seismogram
 			(const Three_Component_Seismogram& t3c)
 				:  Metadata(dynamic_cast<Metadata&>(t3c)),
+				   Basic_Time_Series(dynamic_cast<Basic_Time_Series&>(t3c)),
 					u(t3c.u)
 {
 	int i,j;
-	// Same caveat about pf as above
-        dt=t3c.dt;
-        t0=t3c.t0;
-        ns=t3c.ns;
-        tref=t3c.tref;
         components_are_orthogonal=t3c.components_are_orthogonal;
         components_are_cardinal=t3c.components_are_cardinal;
 	for(i=0;i<3;++i)
