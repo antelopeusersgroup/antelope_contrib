@@ -1,11 +1,9 @@
 #!/opt/antelope/perl/bin/perl
 
-# Change this value to the orblookup directory
-# Not needed if installed normally and antelope paths are in your path
+use File::Basename;
 
-$0 =~ /(.*)\/(.*)$/;
-my $orblookupdir = $1;  
-my $filename = $2;
+my $filename = basename($0);
+my $orblookupdir = dirname($0);  
 
 # The location where the file containing orblook's pid for this orb will be
 # for example, "/var/run/orblookup"
@@ -18,6 +16,7 @@ my $logfileloc = "/tmp/.orblookup";
 
 # End customizations
 
+my $orbname;
 
 sub usage {
     print "usage: $filename [start] [orbname] [interval]\n";
@@ -27,10 +26,9 @@ sub usage {
 }
 
 sub stoporb{
-    my ($orbname);
     ($orbname) = @_;
     if ( ! -e $pidfile ) {
-        print "orblook on $orbname not running.\n";
+        print "orblookup on $orbname not running.\n";
         exit -1;
     }
     open PF, "< $pidfile";
@@ -39,11 +37,11 @@ sub stoporb{
     unlink $pidfile;
     kill 2, $pid
         or die "Couldn't kill $pid: $!";
-    print "orblook on $orbname stopped.\n";
+    print "orblookup on $orbname stopped.\n";
 }
 
 sub startorb{
-    my $orbname = $_[0];
+    $orbname = $_[0];
     my $interval  = $_[1];
 
     open PF, "> $pidfile";
@@ -52,6 +50,27 @@ sub startorb{
     $interval = $interval * 60;
 
     &runorb( $orbname, $interval ); 
+}
+
+sub checkdir{
+   my ($dirname) = @_;
+
+   if ( ! ( -e $dirname ) )
+   {
+      mkdir $dirname;
+      if ( ! ( -e $dirname ) )
+      {
+          die "Could not create directory $dirname";
+      }
+   }
+   elsif ( ! -d $dirname )
+   {
+       die "orblookup cannot write to $dirname: not a directory";
+   }
+   elsif ( ! -w $dirname )
+   {
+       die "orblookup cannot write to $dirname: check permissions";
+   }
 }
 
 sub checkargs{
@@ -86,7 +105,7 @@ sub choose_options {
             exit;
         }
 
-        print "Starting orb $orbname at an interval of $interval\n";
+        print "Starting orblookup on $orbname at an interval of $interval\n";
         &startorb( $orbname, $interval );
     }
     elsif ( $command eq "restart" ) {
@@ -94,7 +113,7 @@ sub choose_options {
             &usage;
         }
         &stoporb ($orbname);
-        print "Restarting orb $orbname at an interval of $interval\n";
+        print "Restarting orblookup on $orbname at an interval of $interval\n";
         &startorb( $orbname, $interval );
     }
     elsif ( $command eq "stop" ) {
@@ -137,11 +156,17 @@ sub runorb {
 }
 
 sub interrupt_handler {
+    stoporb($orbname);
     unlink "$oldir/$orbname.pid";
     exit -1;
 }
 
+$SIG{'TERM'} = 'interrupt_handler';
 $SIG{'INT'} = 'interrupt_handler';
+$SIG{'HUP'} = 'interrupt_handler';
+#$SIG{'QUIT'} = 'interrupt_handler';
 
 &checkargs( @ARGV );
+&checkdir( $pidfileloc );
+&checkdir( $logfileloc );
 &choose_options( @ARGV );
