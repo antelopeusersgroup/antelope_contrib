@@ -30,6 +30,8 @@ RTlocate_Options parse_rt_options (Pf *pf)
 	if(o.work_db  == NULL) o.work_db = strdup("orbgenloc");
 	o.logdir=pfget_string(pf,"RT_logfile_directory");
 	if(o.logdir == NULL) o.logdir = strdup(".");
+	o.failure_sdir = pfget_string(pf,"RT_failure_subdir");
+	if(o.failure_sdir == NULL) o.failure_sdir = strdup("failure");
 	o.minimum_distance = pfget_double(pf,"RT_minimum_distance");
 	o.maximum_distance = pfget_double(pf,"RT_maximum_distance");
 
@@ -367,7 +369,16 @@ char *format_hypo(Hypocenter *h)
                 h->number_data,h->degrees_of_freedom);
         return(s);
 }
-int write_to_logfile(RTlocate_Options rtopts, int orid,
+/* This little routine dumps the parameter space of pf and the output
+tbls of ggnloc to a log file tagged by orid.  Note, however, that
+if ggnloc failed for some reason, it is assumed that orid will be set
+to a NEGATIVE number.  When this occurs, the results are written to 
+a "failures" directory defined in rtopts.  
+
+IMPORTANT:  multiple instances of orbgenloc should arrange to write
+in seperate failure directories or they can collide.  
+*/
+int write_to_logfile(RTlocate_Options rtopts, int orid, int evid,
 	Pf *pf, Tbl *converge_history, Tbl *reason_converged,Tbl *residual)
 {
 	char fname[256];
@@ -380,8 +391,18 @@ int write_to_logfile(RTlocate_Options rtopts, int orid,
 	int i;
 	Hypocenter *hypos;
 
-	/* Here we save the pf state */
-	sprintf(fname,"%s/orid%d.pf",rtopts.logdir,orid);
+	/* This can fail for very long directory entries, but it
+	isn't worth messing with in my mind.  Note switch for 
+	orid */
+	if(orid > 0)
+	{
+		sprintf(fname,"%s/orid%d.pf",rtopts.logdir,orid);
+	}
+	else
+	{
+		sprintf(fname,"%s/%s/evid%d.pf",rtopts.logdir,
+			rtopts.failure_sdir,evid);
+	}
 	pfwrite(fname,pf);
 
 	/* Here we encapsulate the convergence history information into
@@ -527,6 +548,7 @@ void compute_location(Location_options o,
 	{
 
 	/* Location with Generic Gauss_Newton code */
+		orid = -1;
 		ret_code = ggnloc(h0,ta,tu,o,
 				&converge_history,&reason_converged,&residual);
         	if(ret_code < 0)
@@ -556,9 +578,9 @@ void compute_location(Location_options o,
 			s=format_hypo(hypo);
 			elog_notify(0,"%s\n",s);
 			free(s);
-			write_to_logfile(rtopts, orid,
-			  pf, converge_history, reason_converged,residual);
 		}
+		write_to_logfile(rtopts, orid, hyp.evid,
+			  pf, converge_history, reason_converged,residual);
 
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 		if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);
@@ -692,7 +714,7 @@ have the arguments botched */
 	this happens.  exhume_state is a function because I expect
 	it could be used again  */
 
-	exhume_rcode = exhume ( statefile, &quit, RT_MAX_DIE_SECS, 0 );
+	exhume_rcode = exhume ( statefile, 0, 0, 0 );
 	exhume_state(exhume_rcode);  
         if ( orbresurrect ( orbin, &last_pktid, &last_pkttime ) == 0 )
 		complain ( 0, "resurrection successful: repositioned to pktid #%d\n", last_pktid ) ;
