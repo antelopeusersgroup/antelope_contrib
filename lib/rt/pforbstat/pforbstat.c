@@ -562,8 +562,6 @@ orbdatabases2pf( Pf *pfanalyze )
 			pfput_string( pfdatabase, "serveraddress", serveraddress );
 			pfput_string( pfdatabase, "serverport", serverport );
 			pfput_string( pfdatabase, "dbprogram", dbprogram );
-			pfput_string( pfdatabase, "dir", dir );
-			pfput_string( pfdatabase, "dfile", dfile );
 
 			if( is_localhost( clientaddress ) ) {
 
@@ -580,8 +578,10 @@ orbdatabases2pf( Pf *pfanalyze )
 				abspath = concatpaths( "", dbpath, 0 );
 				parsepath( abspath, dir, dfile, 0 );
 				free( abspath );
-
 			}
+
+			pfput_string( pfdatabase, "dir", dir );
+			pfput_string( pfdatabase, "dfile", dfile );
 
 			sprintf( formal_name, "client%03d", ++formal_count );
 			pfput( pfdatabases, formal_name, pfdatabase, PFPF );
