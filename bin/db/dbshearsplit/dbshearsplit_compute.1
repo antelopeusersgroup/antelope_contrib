@@ -1,0 +1,173 @@
+.TH DBSHEARSPLIT_COMPUTE 1 "$Date$"
+.SH NAME
+dbshearsplit_compute \- correct for shear-wave splitting
+.SH SYNOPSIS
+\fBdbshearsplit_compute\fP [\-v] [\-x] [\-f \fIfiltername\fP] [\-o \fIorid\fP]
+[\-s \fIstation\fP] [\-d \fIdatabasename\fP] [\-i \fIinversion mode\fP]
+.SH DESCRIPTION
+\fBdbshearsplit_compute\fP computes shear-wave splitting parameters for waveforms
+recorded at a given \fIstation\fP with an origin id \fIorid\fP by
+minimizing the smallest eigenvalue of the 2-d covariance matrix of horizontal
+particle motion. The two primary parameters of interest are the estimated
+delay time, measured in seconds, and the estimated fast polarization
+direction.  These values are placed in a table named \fIsplit\fP (described by 
+the schema \fIssplit1.0\fP, a supplement to css3.0) for later analysis and display.
+
+The database schema required for shear-wave splitting is called 
+\fIcss3.0:ssplit1.0\fP; the ssplit1.0 add-on must be present in your antelope 
+distribution's database schema directory, and should be added automatically 
+by the install process.
+
+The database which \fBdbshearsplit_compute\fP is run on must have wfdisc, 
+arrival, assoc, origin, and site tables present.  Running
+\fBdbshearsplit_compute\fP requires modification access to the database to
+create and modify entries in the split table.
+
+Error measurements represent two sigma standard deviation.
+
+Usage is as follows:
+
+1) Pick time window for splitting.
+
+This can be done with a program like dbpick.  Windows should be picked on either
+the north or east component of a seismogram; the start of the window should be
+indicated with an "A" phase pick and the end of the window should be indicated 
+with a "F" phase pick.
+
+2) Populate the split table with \fBdbshearsplit_compute\fP.
+
+\fBdbshearsplit_compute\fP prompts the user for origin id, station, database, 
+and filter, using the defaults provided in the parameter file dbshearsplit.pf
+where appropriate.
+
+3) View the results in matlab by running dbshearsplit_display.m.
+
+dbshearsplit_display requires two arguments (the splitid and the database name) 
+and takes an optional third argument to print the results to a postscript file. 
+Type \fIhelp dbshearsplit_display\fP in matlab for further details.
+
+.SH OPTIONS
+.IP "-v"
+.br
+Provides more verbose output, including verification of inputs used.
+.IP "-f \fIfiltername\fP"
+.br
+If you wish to apply a filter to the waveforms prior to processing, specify
+the filter to use per \fBtrfilter(3)\fP. This overrides the value 
+\fIfilter_string\fP from \fIdbshearsplit.pf\fP.  To explicitly set no filter
+for the data, set this option to "none".
+.IP "-d \fIdatabasename\fP"
+.br
+The database to use.  \fBdbshearsplit_compute\fP requires write access to the
+database to add rows to the split table. This overrides the value "dbname"
+contained in \fIdbshearsplit.pf\fP
+.IP "-i \fIinversion mode\fP"
+.br
+The type of inversion to perform. Use \fIt\fP to minimize the transverse
+component or \fIe\fP to minimize the smaller eigenvalue of the covariance
+matrix.
+.IP "-s \fIstation\fP"
+.br
+The station to examine.
+.IP "-o \fIorid\fP"
+.br
+The origin id to use.
+.IP "-x"
+.br
+Enable database format overwriting.  \fBdbshearsplit_compute\fP requires a
+database in css3.0:ssplit1.0 format (though this can be modified; see
+default_schema and split_schema in the parameter file section below).  If the
+database requested is not in this format, \fBdbshearsplit_compute\fP will fail
+with an error message.  This option will cause \fBdbshearsplit_compute\fP to
+overwrite the database descriptor file with something appropriate.
+
+.SH PARAMETER FILE
+Default parameters for both \fBdbshearsplit_compute\fP and
+\fBdbshearsplit_display\fP can be stored in dbshearsplit.pf.  This file can be
+stored in the default antelope pf directory for your distribution or locally
+from whatever directory from which you intend to run it.
+
+The current parameters at this time are:
+
+.IP "logfile"
+.br
+The location of the log output produced by both \fBdbshearsplit_compute\fP and
+dbshearsplit_display for debugging purposes and is overwritten on each run.
+This location will revert to /dev/null if not specified in the parameter file,
+meaning that output will not be logged.
+.IP "inversion_mode"
+.br
+The method used to compute shear-wave splitting parameters. Possible values
+are t to minimize the transverse component (only appropriate for SKS phases)
+or e to minimize the smaller eigenvalue of the covariance matrix of particle
+motion (appropriate for SKS or other S phases).  This defaults to e.
+.IP "filter_string"
+.br
+The default filter to apply to waveforms prior to rotation and translation. By
+default, \fBdbshearsplit_compute\fP will not filter waveforms and
+\fBdbshearsplit_display\fP will use whatever filter is present in the database
+for the specified id. For no filtering, this value should be set to a blank
+string or left absent. The format of filter_string is defined per
+\fBtrfilter(3)\fP.
+.IP "dbname"
+.br
+The default database to use.
+.IP "default_schema"
+.br
+The (optional) database format of the original database; typically
+\fIcss3.0\fP.
+.IP "split_schema"
+.br
+The (optional) database format extension to use with \fBdbshearsplit_compute\fP.
+Typically \fIssplit1.0\fP.
+
+.SH ENVIRONMENT
+PFPATH
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 11
+
+$ dbshearsplit_compute -f none -v -s AFIF -o 1
+ 
+Computing shear-wave splitting parameters
+-----------------------------------------
+          orid: 1
+       station: AFIF
+      database: smalldb
+        filter: 
+inversion mode: eigenvalue
+ 
+.ne 7
+       Estimated time lag:   1.50 (+/-  0.10) seconds
+Direction of polarization: 345.00 (+/-  3.00) degrees
+ 
+Computing group parameters ...
+ 
+Details saved in row with splitid 1.
+Group parameters saved in row with splitid 2.
+
+$
+
+.fi
+.ft R
+.in
+.SH DIAGNOSTICS
+.IP "Couldn't find parameter file: \fIname\fP"
+The file \fIname\fP.pf could not be found in PFPATH.
+.IP "Couldn't open database for reading: \fIname\fP"
+The path specified for the database is incorrect, or the database is not in
+valid css3.0 format.
+.IP "Couldn't open database for writing: \fIname\fP"
+The path specified for the database is incorrect, the database is not in valid
+css3.0 format, or the user does not have write permissions for the database.
+.SH "SEE ALSO"
+.nf
+trfilter(3)
+.fi
+.SH AUTHOR
+Jennifer Bowen
+IGPP, University of California, San Diego
+

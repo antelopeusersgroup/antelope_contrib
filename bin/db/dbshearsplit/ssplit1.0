@@ -1,0 +1,156 @@
+ Attribute azmin
+ 	Real (7)
+ 	Format ( "%7.2lf" )
+ 	Null ( "-1.00" )
+ 	Range ( "azmin >= 0.0 && azmin < 360.0" )
+ 	Units ( "Degrees" )
+ 	Description ( "fast polarization azimuth" )
+ 	Detail {
+ 		This is the azimuth of the fast direction of 
+ 		polarization.
+ 	}
+ 	;
+ 
+ Attribute azminerr
+ 	Real (7)
+ 	Format ( "%7.2lf" )
+ 	Null ( "-1.00" )
+ 	Range ( "azminerr >= 0.0 && azminerr < 360.0" )
+ 	Units ( "Degrees" )
+ 	Description ( "error in fast polarization azimuth" )
+ 	Detail {
+ 		This is the amount of error computed in the azimuth 
+ 		of the fast direction of polarization.
+ 	}
+ 	;
+ 
+ Attribute composite
+ 	Integer (1)
+ 	Format( "%1d" )
+ 	Null ( "-1" )
+ 	Range( "compose < 2 && composite > -2" )
+ 	Description ( "composite flag" )
+ 	Detail {
+ 		Within the split relation, the composite attribute indicates 
+ 		whether the row represents values computed for all events 
+ 		occuring at the station, or whether it indicates values
+ 		computed for a single event. Parameters computed for all events
+ 		are represented by a value of 1, while single event parameters
+ 		are represented by a value of 0.  A null value for this attribute
+ 		is intended be interpreted as a value of 0.
+ 	}
+ 	;
+
+ Attribute invmode
+ 	String (1)
+	Format ( "%1s" )
+ 	Null ( "-" )
+	Description ( "type of inversion performed" )
+ 	Detail {
+		Represents the type of inversion performed.
+		Can be either 't' to indicate a minimization of
+		the transverse component, or 'e' to show a 
+		minimization of the smaller eigenvalue of the
+		covariance matrix.
+	}
+ 	;
+ 
+ Attribute ndf
+ 	Integer (4)
+ 	Format ( "%4d" )
+ 	Null ( "-1" )
+ 	Range ( "ndf >= 0" )
+ 	Description ( "number of degrees of freedom" )
+ 	Detail {
+ 		This attribute is the number of degrees of freedom
+ 		computed.
+ 	}
+ 	;
+ 
+ Attribute polmin
+ 	Real (7)
+ 	Format ( "%7.2lf" )
+ 	Null ( "-1.00" )
+ 	Range ( "polmin >= 0.0 && polmin < 360.0" )
+ 	Units ( "Degrees" )
+ 	Description ( "direction of polarization" )
+ 	Detail {
+ 		This is the direction of polarization corresponding to the
+ 		minimum transverse component.
+ 	}
+ 	;
+
+ Attribute splitid
+ 	Integer(8)
+ 	Format ( "%8d" )
+ 	Null ( "-1" )
+ 	Range ( "splitid > 0" )
+ 	Description ( "shear-wave splitting id" )
+ 	Detail {
+ 		Each computation of shear-wave splitting parameters is
+ 		assigned a unique positive integer which identifies it in the 
+ 		data base.  
+ 	}
+ 	;
+ 
+ Attribute tlag
+ 	Real (17)
+ 	Format ( "%17.5lf" )
+ 	Null ( "-9999999999.99999" )
+ 	Units ( "Seconds" )
+ 	Description ( "time lag" )
+ 	Detail {
+ 		Estimated time lag corresponding to the azimuth of the
+ 		fast polarization direction.
+ 	}
+ 	;
+ 
+ Attribute tlagerr
+ 	Real (17)
+ 	Format ( "%17.5lf" )
+ 	Null ( "-9999999999.99999" )
+ 	Units ( "Seconds" )
+ 	Description ( "time lag error" )
+ 	Detail {
+ 		Error computed for tlag.
+ 	}
+ 	;
+ 
+ Attribute varmin
+ 	Real (15)
+ 	Format ( "%15.4lf" )
+ 	Null ( "-999999999.9999" )
+ 	Range ( "varmin >= 0.0" )
+ 	Units ( "Degrees/second" )
+ 	Description ( "minimum variance" )
+ 	Detail {
+ 		This attribute represents the minimum eigenvalue in a
+ 		2-d covariance matrix of horizontal partical motion.
+ 		Typically used when polarity is not known.
+ 	}
+ 	;
+ 
+ Attribute varmax
+ 	Real (15)
+ 	Format ( "%15.4lf" )
+ 	Null ( "-999999999.9999" )
+ 	Range ( "varmax >= 0.0" )
+ 	Units ( "Degrees/second" )
+ 	Description ( "maximum variance" )
+ 	Detail {
+ 		This attribute represents the maximum eigenvalue in a
+ 		2-d covariance matrix of horizontal partical motion.
+ 		Typically used when polarity is not known.
+ 	}
+ 	;
+ 
+ Relation split
+ 	Fields ( splitid orid sta azmin tlag polmin varmin varmax ndf azminerr tlagerr filter composite invmode )
+ 	Primary ( splitid )
+ 	Foreign ( orid sta )
+ 	Description ( "Parameters for shear-wave splitting" )
+ 	Detail {
+ 		This table contains the best set of shear-wave splitting
+ 		paramters computed for a given event.
+ 	}
+ 	;
