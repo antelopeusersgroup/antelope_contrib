@@ -63,7 +63,7 @@ char **argv;
 		if (!strcmp(*argv, "-orbin")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -orbin.\n");
+				complain (0, "orbcp: Need argument for -orbin.\n");
 				usage();
 				exit (1);
 			}
@@ -71,7 +71,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-orbout")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -orout.\n");
+				complain (0, "orbcp: Need argument for -orout.\n");
 				usage();
 				exit (1);
 			}
@@ -79,7 +79,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-src")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -src.\n");
+				complain (0, "orbcp: Need argument for -src.\n");
 				usage();
 				exit (1);
 			}
@@ -92,14 +92,14 @@ char **argv;
 			messages = 1;
 			if (setupdb ("orbcp", &db) < 0) {
 				clear_register (1);
-				fprintf (stderr, "orbcp: setupdb() error.\n");
+				complain (0, "orbcp: setupdb() error.\n");
 				exit (1);
 			}
 			db = dblookup (db, 0, "remark", 0, 0);
 		} else if (!strcmp(*argv, "-pktstart")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -pktstart.\n");
+				complain (0, "orbcp: Need argument for -pktstart.\n");
 				usage();
 				exit (1);
 			}
@@ -107,7 +107,7 @@ char **argv;
 		} else if (!strcmp(*argv, "-rcnt_time")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -rcnt_time.\n");
+				complain (0, "orbcp: Need argument for -rcnt_time.\n");
 				usage();
 				exit (1);
 			}
@@ -115,24 +115,24 @@ char **argv;
 		} else if (!strcmp(*argv, "-npackets")) {
 			argc--; argv++;
 			if (argc < 1) {
-				fprintf (stderr, "orbcp: Need argument for -npackets.\n");
+				complain (0, "orbcp: Need argument for -npackets.\n");
 				usage();
 				exit (1);
 			}
 			npackets = atoi(*argv);
 		} else {
-			fprintf (stderr, "orbcp: Illegal argument '%s'.\n", *argv);
+			complain (0, "orbcp: Illegal argument '%s'.\n", *argv);
 			usage();
 			exit (1);
 		}
 	}
 	if (orbname == NULL) {
-		fprintf (stderr, "orbcp: No input -in_orbname specified.\n");
+		complain (0, "orbcp: No input -in_orbname specified.\n");
 		usage();
 		exit (1);
 	}
 	if (orbnameo == NULL) {
-		fprintf (stderr, "orbcp: No output -out_orbname specified.\n");
+		complain (0, "orbcp: No output -out_orbname specified.\n");
 		usage();
 		exit (1);
 	}
@@ -145,7 +145,7 @@ char **argv;
 	}
 	if (orbin < 0) {
 		clear_register (1);
-		fprintf (stderr, "orbcp: orbopen() error for '%s'.\n", orbname);
+		complain (0, "orbcp: orbopen() error for '%s'.\n", orbname);
 		exit (1);
 	}
 	first = 1;
@@ -153,7 +153,7 @@ char **argv;
 	if (srcexpr) {
 		if (orbselect (orbin, srcexpr) < 0) {
 			clear_register (1);
-			fprintf (stderr, "orbcp: orbselect(%s, %s) erro.\n", orbname, srcexpr);
+			complain (0, "orbcp: orbselect(%s, %s) erro.\n", orbname, srcexpr);
 			exit (1);
 		}
 	}
@@ -165,7 +165,7 @@ char **argv;
 	}
 	if (orbout < 0) {
 		clear_register (1);
-		fprintf (stderr, "orbcp: orbopen() error for '%s'.\n", orbnameo);
+		complain (0, "orbcp: orbopen() error for '%s'.\n", orbnameo);
 		exit (1);
 	}
 
@@ -179,7 +179,7 @@ char **argv;
 	}
 	if (pktid < 0) {
 		clear_register (1);
-		fprintf (stderr, "orbcp: orbseek() error for '%s'.\n", orbname);
+		complain (0, "orbcp: orbseek() error for '%s'.\n", orbname);
 		printf ("orbcp: nothing in orb\n");
 		exit (1);
 	}
@@ -191,7 +191,7 @@ char **argv;
 		if (!first) {
 			ret = fdkey(orbin);
 			if (ret == 0) {	/* No pending input */
-				sleep (1);
+				usleep (100000);
 				lastpkt_age += 1;
 				if (ircnt && lastpkt_age > rcnt_time && lastpkt_pktid >= 0) {
 					if (messages) putmsg (orbout, db, "orbcp", "age timeout");
@@ -332,7 +332,7 @@ RECONNECT:			clear_register (0);
 				continue;
 			} else {
 				clear_register (1);
-				fprintf (stderr, "orbcp: orbreap_nd() error.\n");
+				complain (0, "orbcp: orbreap_nd() error.\n");
 				break;
 			}
 		}
@@ -345,7 +345,7 @@ RECONNECT:			clear_register (0);
 		} else {
 			if (orbput (orbout, src, time, p, nbytes) < 0) {
 				clear_register (1);
-				fprintf (stderr, "orbcp: orbput() error.\n");
+				complain (0, "orbcp: orbput() error.\n");
 				break;
 			}
 		}
@@ -358,10 +358,10 @@ RECONNECT:			clear_register (0);
 usage()
 
 {
-	fprintf (stderr, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
-	fprintf (stderr, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
-	fprintf (stderr, "             [-rcnt_time minutes] [-npackets npackets]\n");
-	fprintf (stderr, "             [-messages]\n");
+	complain (0, "usage: orbcp -orbin in_orbname -orbout out_orbname [-src srcexpr]\n");
+	complain (0, "             [-ircnt] [-orcnt] [-pktstart pktid]\n");
+	complain (0, "             [-rcnt_time minutes] [-npackets npackets]\n");
+	complain (0, "             [-messages]\n");
 }
 
 int
