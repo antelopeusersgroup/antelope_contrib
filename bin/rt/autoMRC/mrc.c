@@ -24,7 +24,7 @@ char *argv[];
 {
   extern char   *optarg;
   extern int    optind;
-  Pf	 	*pf, *lpf;
+  Pf	 	*lpf;
   Arr 		*Dases;
   Das		*das;
   double 	save_time, pkttime;
@@ -166,7 +166,7 @@ char *argv[];
 
 /* Loop through RB; aclculate LTA  */
 
-  while(1)  {   
+  for(;;)  {   
     if( !orbreap( orb, &id, srcid, &pkttime, &packet, &nbytes, &bsize)  ) {
          err_in = 0;
          save_time = pkttime;
@@ -185,9 +185,9 @@ char *argv[];
 		break;
 	      default:
 
-                switch ( unstuffpkt( pkttime, srcid, packet, &unstuffed ) )  {
+                switch ( unstuffPkt( srcid, pkttime, packet, nbytes, &unstuffed ) )  {
 		     
-                    case 1:
+                    case Pkt_wf :
                     
 		       if( (mrcnum = offscale(unstuffed, pkttime, srcid, tperiod, &dasid )) )  {
 		           if( mrcnum >= max_mrc && receipient != 0 ) 
@@ -196,9 +196,10 @@ char *argv[];
 		       }
 		       break;
 		       
-	            case 2:
+	            default: /* ignore other packets */
 		       break;
-	            default:
+
+	            case -1 :
 		       complain( 0, "unknown packet type %s\n", srcid );
 		       break;
 	         }
@@ -231,6 +232,7 @@ char *argv[];
 
   }
 
+    return 0 ;
 }
 
 

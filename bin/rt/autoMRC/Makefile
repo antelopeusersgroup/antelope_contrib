@@ -3,9 +3,7 @@
 BIN = mrc
 MAN1=mrc.1
 PF=mrc.pf
-#cflags  = -g
-#ldflags	= -Bstatic               
-ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
+ldlibs	= $(ORBLIBS)
 
 include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\

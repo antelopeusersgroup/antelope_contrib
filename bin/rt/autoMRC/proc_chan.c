@@ -38,7 +38,7 @@ int offscale(
 
       crnt_chan = 0;
 
-      achan = (PktChannel * ) gettbl ( packet->chan, nrec );
+      achan = (PktChannel * ) gettbl ( packet->channels, nrec );
       
       sprintf( key, "%s/%s_%s\0", achan->net, achan->sta, achan->chan );
       max_nsamp = achan->samprate * tm_period;

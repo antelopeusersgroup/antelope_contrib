@@ -38,6 +38,18 @@ int *new_dasid( int id )
 
     return num;
 }
+ 
+typedef struct Site {
+   double calib;           /* calibration coef  */
+   int sid;                /* DAS ID  */
+   int sensid;             /* Sensor ID  */
+   char pkttype[12];       /* Packet type - CBBHS, CBBLS, etc */
+   char name[8];           /* Site name */
+   char up[3];             /* Y/N site is up/down  */
+   char sens[12];          /* Sensor name  */
+   char trg[3];            /* Y/N trigger on this site  */
+   char pick[3];            /* Y/N trigger on this site  */
+} Site;
 
 void collect_dases( char *pfile )
 
@@ -66,6 +78,13 @@ void collect_dases( char *pfile )
   for( i = 0; i < nsite; i++ )  {
 
 	istr = (char *) gettbl(Site, i);
+
+#define STE_SCS " %s %d %s %s %d %s %s %s %lf[^\n] \n"
+ 
+#define STE_RVL(SP)  \
+(SP)->pkttype,&(SP)->sid,(SP)->name,(SP)->up,&(SP)->sensid,(SP)->sens, \
+(SP)->trg, (SP)->pick, &(SP)->calib
+
 	sscanf(istr, STE_SCS,  STE_RVL(&site));
 	if( !strcmp(site.up, "Y") )  {
 	   if( (num = ( int *) getarr( Dasid, site.name ) ) == NULL )  {

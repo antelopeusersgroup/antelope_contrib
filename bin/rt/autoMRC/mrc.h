@@ -32,7 +32,7 @@
 #include "db.h"
 #include "coords.h"
 #include "arrays.h"
-#include "pkt.h"
+#include "Pkt.h"
 
 #define MAX_OFF  100000  /* Max LTA value which good data should not exceed */
 
