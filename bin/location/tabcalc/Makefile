@@ -20,7 +20,9 @@ TOBJS= tabcalc.o \
 tabcalc : $(TOBJS)
 	$(FC) $(FFLAGS) -o $@ $(TOBJS) $(LDFLAGS) $(LDLIBS)
  
-
+POBJS= ptt2stt.o
+ptt2stt : $(POBJS)
+	$(FC) $(FFLAGS) -o $@ $(POBJS) $(LDFLAGS) $(LDLIBS)
 
 HOBJS= hypotab.o arriv1p.o toneout.o 
 hypotab : $(HOBJS)
