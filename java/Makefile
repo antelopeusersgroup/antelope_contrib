@@ -12,6 +12,9 @@ include $(ANTELOPEMAKE)
 DIRS=
 
 JAVAS = \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseAttribute.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseRelation.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/DatabaseSchema.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/Epoch.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/JFrameOrbStat.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/Orb.java \
@@ -32,6 +35,9 @@ JAVAS = \
 #	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbDatabasePacket.java \
 
 CLASSES = \
+	com/brtt/antelope/DatabaseAttribute.class \
+	com/brtt/antelope/DatabaseRelation.class \
+	com/brtt/antelope/DatabaseSchema.class \
 	com/brtt/antelope/Epoch.class \
 	com/brtt/antelope/Stock.class \
 	com/brtt/antelope/OrbClient.class \
