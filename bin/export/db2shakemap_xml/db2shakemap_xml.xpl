@@ -130,7 +130,7 @@ sub write_amp {
 	return 0;
 }
 
-$Usage = "Usage: db2shakemap_xml [-j] [-version version] -event event_id\n";
+$Usage = "Usage: db2shakemap_xml [-j] [-pf pffile] [-version version] -event event_id\n";
 $Pf = "db2shakemap_xml";
 
 while( $arg = shift( @ARGV ) ) {
@@ -144,6 +144,11 @@ while( $arg = shift( @ARGV ) ) {
 
 		if( $#ARGV < 0 ) { die( $Usage ); }
 		$version  = shift( @ARGV );
+
+	} elsif( $arg eq "-pf" ) { 
+
+		if( $#ARGV < 0 ) { die( $Usage ); }
+		$Pf  = shift( @ARGV );
 
 	} elsif( $arg eq "-j" ) {
 

@@ -3,7 +3,7 @@
 db2shakemap_xml \- create input for USGS ShakeMap from database
 .SH SYNOPSIS
 .nf
-\fBdb2shakemap_xml \fP[-j] [-version \fIversion\fP] -event \fIevent_id\fP
+\fBdb2shakemap_xml \fP[-j] [-pf \fIpffile\fP] [-version \fIversion\fP] -event \fIevent_id\fP
 .fi
 .SH DESCRIPTION
 Given a database of earthquake information and a specified event identifier,
@@ -75,6 +75,9 @@ yielding the names and locations of nearby places of interest. The \fIinsttype\f
 parameters allow the corresponding attributes of the XML station entries to be
 filled in (for more detail see the ShakeMap documentation).
 
+Finally, the meastype_xmltags specify how to translate wfmeas 'meastype' entries
+into corresponding XML tags for ShakeMap. For further information on the 
+wfmeas.meastype field, see the documentation for orbwfmeas(1).
 .SH OPTIONS
 .IP "-event event_id"
 This required argument specifies the event-id for the desired earthquake. Without
@@ -93,6 +96,9 @@ are spread across multiple day or month volumes.
 
 .IP "-version version" 
 Specify ShakeMap version for output XML. Currently only ShakeMap 2.4 is supported.
+
+.IP "-pf pffile"
+Specify an alternate parameter-file name. Default is db2shakemap_xml.pf.
 
 .SH PARAMETER FILE
 .ft CW
@@ -165,7 +171,7 @@ nickel%\fB \fP
 \fBdb2shakemap_xml\fP exits with status 0 upon success, nonzero upon error. 
 .SH "SEE ALSO"
 .nf
-dbcentral(1), db2xml(1)
+dbcentral(1), db2xml(1), orbwfmeas(1)
 .fi
 .SH AUTHOR
 .nf
