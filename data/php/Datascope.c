@@ -266,6 +266,69 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	return 0;
 }
 
+int
+pf2zval( Pf *pf, zval *result ) {
+	Pf	*pfvalue;
+	int	ivalue;
+	int	retcode = 0;
+	zval	*element;
+	Tbl	*keys;
+	char	*key;
+
+	switch( pf->type ) {
+	case PFSTRING:
+
+		ZVAL_STRING( result, pfexpand( pf ), 1 );
+		break;
+
+	case PFTBL:
+
+		array_init( result );
+
+		for( ivalue = 0; ivalue < maxtbl( pf->value.tbl ); ivalue++ ) {
+
+			pfvalue = (Pf *) gettbl( pf->value.tbl, ivalue );
+
+			MAKE_STD_ZVAL( element );
+
+			pf2zval( pfvalue, element );
+
+			add_index_zval( result, ivalue, element );
+		}
+
+		break;
+
+	case PFFILE:
+	case PFARR:
+
+		keys = keysarr( pf->value.arr );
+
+		array_init( result );
+
+		for( ivalue = 0; ivalue < maxtbl( keys ); ivalue++ ) {
+
+			key = gettbl( keys, ivalue );
+
+			pfvalue = (Pf *) getarr( pf->value.arr, key );
+
+			MAKE_STD_ZVAL( element );
+
+			pf2zval( pfvalue, element );
+
+			add_assoc_zval( result, key, element );
+		}
+
+		break;
+
+	case PFINVALID:
+	default:
+		retcode = 1;
+		break;
+	}
+
+	return retcode;
+}
+
 /* {{{ proto array template( array db, ... ) *
 PHP_FUNCTION(template)
 {
@@ -302,6 +365,7 @@ PHP_FUNCTION(pfget)
 	Pf	*pf;
 	Pf	*pfvalue;
 	char	*string_value;
+	char	errstring[STRSZ];
 	int	rc;
 
 	if( argc != 2 ) {
@@ -317,7 +381,6 @@ PHP_FUNCTION(pfget)
 		return;
 	}
 
-
 	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
 
 		zend_error( E_ERROR, "failure opening parameter file\n" );
@@ -327,19 +390,19 @@ PHP_FUNCTION(pfget)
 
 	if( rc < 0  ) {
 
-		zend_error( E_ERROR, "parameter not found by pfget\n" );
+		sprintf( errstring, 
+			"parameter '%s' not found in parameter-file '%s'\n",
+			key, pfname );
 
-	} else if( rc != PFSTRING ) {
-		
-		zend_error( E_ERROR, "SCAFFOLD: only strings/ints/reals " 
-				     "supported by pfget right now\n" );
-		
-	} else {
+		zend_error( E_ERROR, errstring );
+	} 
+	
+	if( pf2zval( pfvalue, return_value ) < 0 ) {
 
-		string_value = pfexpand( pfvalue );
+		zend_error( E_ERROR, "pfget: failed to convert value\n" );
+	} 
 
-		RETURN_STRING( string_value, 1 );
-	}
+	return;
 }
 /* }}} */
 
@@ -384,6 +447,7 @@ PHP_FUNCTION(trextract_data)
 	}
 
 	if( ! single_row ) {
+
 		zend_error( E_ERROR, "trextract_data requires that the "
 			"trace-object point at or contain only a single row\n");
 	}
