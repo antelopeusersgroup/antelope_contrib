@@ -130,7 +130,7 @@ sub write_amp {
 	return 0;
 }
 
-$Usage = "Usage: db2shakemap_xml -event event_id\n";
+$Usage = "Usage: db2shakemap_xml [-j] -event event_id\n";
 $Pf = "db2shakemap_xml";
 
 while( $arg = shift( @ARGV ) ) {

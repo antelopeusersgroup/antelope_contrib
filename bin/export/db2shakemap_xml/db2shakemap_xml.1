@@ -3,16 +3,61 @@
 db2shakemap_xml \- create input for USGS ShakeMap from database
 .SH SYNOPSIS
 .nf
-db2shakemap_xml -event event_id
+db2shakemap_xml [-j] -event event_id
 .fi
 .SH DESCRIPTION
 given a database of earthquake information and a specified event identifier, 
 db2shakemap_xml creates input files in XML (eXtensible Markup Language) for 
 the US Geological Survey's ShakeMap program.
+
+In order to command-line argument consistency with ShakeMap, most option specifications
+for db2shakemap_xml are in the parameter-file, which by default is named db2shakemap_xml.pf. 
+
+The database is a Datascope database in rt1.0 format (css3.0 compatible). 
+
 .SH OPTIONS
+.IP -j
+jdate mode. Attempts to interpret the event_id as a jdate_evid combination (e.g. 
+2002266_20, in which the first part is the julian date of earthquake occurrence
+and the second part is the actual database evid (If this parsing fails, it 
+assumes the event_id is equivalent to the evid). Regardless of whether the parsing succeeds, 
+the output XML files will have the event_id appear as jdate_evid. This option
+is useful in conjunction with the dbcentral command to manage earthquakes that 
+are spread across multiple day or month volumes. 
+
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
+dbname 		db/reno
+earthquake_dtd 	/opt/ShakeMap/lib/xml/earthquake.dtd
+wfdata_dtd 	/opt/ShakeMap/lib/xml/stationlist.dtd
+output_dir 	/opt/ShakeMap/data/$event/input
+earthquake_filename 	event.xml
+wfdata_filename db_dat.xml
+places_dbname 		/ymp13/ANTELOPE/RENO/places/new_nevada
+origin_subset		ml >= 3
+wfmeas_subset		filter =~ /.*/
+# wfmeas_thetajoin_recipe	arid == wfmeas.arid
+wfmeas_thetajoin_recipe		sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time == arrival.time - 10 
+insttype		UNR
+commtype		DIG
+
+containing_polygon &Tbl{
+ 	42,-120
+ 	42,-114
+ 	35,-114
+	39,-120
+}
+
+meastype_xmltags &Arr{
+	peaka 	acc
+	peakv 	vel
+	acc 	acc
+	vel 	vel
+	psa30 	psa30
+	psa10 	psa10
+	psa03 	psa03
+}
 .SH EXAMPLE
 .ft CW
 .in 2c
@@ -23,10 +68,10 @@ the US Geological Survey's ShakeMap program.
 .SH RETURN VALUES
 .SH LIBRARY
 .SH ATTRIBUTES
-MT-Safe ?
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+dbcentral(1), db2xml(1)
 .fi
 .SH "BUGS AND CAVEATS"
 .SH AUTHOR
