@@ -5,6 +5,7 @@ DATADIR = java
 DATA = antelope.jar
 MAN1 = orbstatj.1
 
+CLASSPATH=.
 include $(ANTELOPEMAKE)
 DIRS=
 
