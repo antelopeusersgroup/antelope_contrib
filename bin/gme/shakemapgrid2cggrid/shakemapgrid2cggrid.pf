@@ -1,0 +1,18 @@
+event_mode &Arr{
+	smgrid_dir      /opt/ShakeMap/data/$event_id/output
+	smgrid_name	grid.xyz
+	auth		shakemap
+	dbname		db/db
+	output_file	%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}
+}
+
+gridmode_cggrid_prefix sm
+
+shakemap_grids &Tbl{
+	pga	centigravity	shakemap_pga
+	pgv	cm/sec		shakemap_pgv
+	mmi	mmi		shakemap_mmi
+	ps03	centigravity	shakemap_ps03
+	ps10	centigravity	shakemap_ps10
+	ps30	centigravity	shakemap_ps30
+}

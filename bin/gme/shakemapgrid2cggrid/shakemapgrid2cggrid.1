@@ -1,0 +1,129 @@
+.TH SHAKEMAPGRID2CGGRID 1 "$Date$"
+.SH NAME
+shakemapgrid2cggrid \- convert a ShakeMap XYZ grid file to a cggrid
+.SH SYNOPSIS
+.nf
+\fBshakemapgrid2cggrid [-pf pfname] { \fIgridfile\fP | -event \fIevent_id\fP }
+.fi
+.SH DESCRIPTION
+The \fBshakemapgrid2cggrid\fP command converts an XYZ output grid file from 
+the USGS ShakeMap program into an ascii computational-geometry grid from the
+cgeom(3) library.
+
+\fBshakemapgrid2cggrid\fP has two modes, grid-mode and event-mode.
+In grid-mode, a grid-file name is explicitly specified on the command line and 
+converted. In event-mode, i.e. if the -event option is used, the given
+event_id value will be used to find the corresponding ShakeMap output grid, 
+and that grid will be converted and then saved to a database. This latter 
+case assumes that the event_id is identical to the evid in the database, and 
+that the ShakeMap being converted is for the preferred origin for that evid. 
+
+The shakemap_grids table in the parameter file specifies the columns of
+the ShakeMap grid that are to be converted to cggrid files. These must
+be in the same order as they appear in the ShakeMap grid file, with the
+one option that only as many columns will be converted as there are
+rows in the shakemap_grids table. Each row of the shakemap_grids table
+specifies first the type of the output cggrid, and second the units (as
+documented for the Antelope xunits(3) command) in which the input
+values are expressed. The third argument is the name of the recipe to
+use when saving the resulting grids in a database. The first field, the
+type of the output cggrid, is used as the \fIqgridtype\fP when saving
+grids to the database.
+
+The output cggrid files are saved in files named with the grid type
+given in the shakemap_grids table, prepended with the value of
+gridmode_cggrid_prefix and followed by a suffix indicating the cggrid
+format (for example \fI.as\fP or \fI.t4\fP).
+
+The event_mode array of the parameter specifies several values needed to 
+run shakemapgrid2cggrid from within ShakeMap, i.e. in event mode. These 
+are \fIsmgrid_dir\fP for the directory in which to find the ShakeMap 
+output grid (the string $event_id may appear in this value, to be replaced
+by the actual event-id at run-time). The \fIsmgrid_name\fP specifies the name
+of the ShakeMap xyz grid file in that directory.  The \fIdbname\fP field 
+specifies the name of the database in which hypocentral information may be 
+found for the event and in which qgrid rows will be saved. The \fIoutput_file\fP
+parameter gives a pattern to be fed to epoch2str(3) to determine the 
+pathname of the output qgrid file based on the origin time of the event. 
+Several additional escape strings may be supplied in this pattern: %{gridname},
+%{recipe}, %{qgridfmt}, %{qgridtype}, and %{auth}. Again, this will be 
+filled-in dynamically during grid creation. The grid name will be determined 
+based on the orid for the grid. The \fIauth\fP field of the event_mode 
+array will be used to label the author of the qgrid in the qgrid table of the 
+database. 
+
+.SH OPTIONS
+.IP "-pf pfname"
+Specify an alternate parameter-file name. The default is shakemapgrid2cggrid.pf
+
+.IP "-event event_id" 
+Specify the event-id for the ShakeMap grid file to convert
+
+.SH PARAMETER FILE
+.nf
+
+event_mode &Arr{
+	smgrid_dir      /opt/ShakeMap/data/$event_id/output
+	smgrid_name	grid.xyz
+	auth		shakemap
+	dbname		/home/shake/run/db/quakes
+	output_file	%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}
+}
+
+gridmode_cggrid_prefix sm
+
+shakemap_grids &Tbl{
+	pga	centigravity	shakemap_pga
+	pgv	cm/sec		shakemap_pgv
+	mmi	mmi		shakemap_mmi
+	ps03	centigravity	shakemap_ps03
+	ps10	centigravity	shakemap_ps10
+	ps30	centigravity	shakemap_ps30
+}
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+% \fBshakemapgrid2cggrid /opt/ShakeMap/data/92579/output/grid.xyz\fP
+% \fBls\fP
+smmmi.as
+smpga.as
+smpgv.as
+%
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBshakemapgrid2cggrid\fP returns 0 upon success.
+.SH "SEE ALSO"
+.nf
+grd2cggrid(1), cggrid_convert(1), cggrid(5), db2shakemap_xml(1)
+.fi
+.SH "BUGS AND CAVEATS"
+shakemapgrid2cggrid assumes, without checking, that the input grid is 
+regularly spaced (i.e. the grid-point spacing is taken from the separation
+between the first two latitudes and the first two longitudes in the input file). 
+In event mode, shakemapgrid2cggrid uses the specified event id as an evid
+in the database, finds the prefor for that event, and uses that prefor 
+for the orid when saving the converted grids to the qgrid table. This 
+may not be right in all cases.  The current behavior is designed to 
+coordinate with db2shakemap_xml. Also, there is a small possibility of timing 
+problems if the prefor is reset while ShakeMap is running. This is a nontrivial
+structural problem which needs to be addressed both in the current 
+script and in db2shakemap_xml(1).
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+
+Josh Stachnik
+University of Alaska, Fairbanks
+.fi
+.\" $Id$
