@@ -17,10 +17,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/time.h>
-#ifndef linux
-#include <sys/ser_sync.h>
-#include <sys/conf.h>
-#endif
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
