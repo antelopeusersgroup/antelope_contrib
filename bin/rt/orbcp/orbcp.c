@@ -46,6 +46,8 @@ char **argv;
 	double lasttime;
 	int hdrsiz, pktsiz, pkttype;
 	char *ptr;
+	int ircnt=0;
+	int orcnt=0;
 
 	elog_init ( argc, argv ) ; 
 
@@ -99,6 +101,10 @@ char **argv;
 				exit (1);
 			}
 			srcexpr = *argv;
+		} else if (!strcmp(*argv, "-ircnt")) {
+			ircnt = 1;
+		} else if (!strcmp(*argv, "-orcnt")) {
+			orcnt = 1;
 		} else if (!strcmp(*argv, "-reverse")) {
 			reverse = 1;
 		} else if (!strcmp(*argv, "-repeat")) {
@@ -137,7 +143,11 @@ char **argv;
 	}
 
 	if (orbname) {
-		orbin = orbopen (orbname, "r&");
+		if (ircnt) {
+			orbin = orbopen (orbname, "r&");
+		} else {
+			orbin = orbopen (orbname, "r");
+		}
 		if (orbin < 0) {
 			clear_register (1);
 			fprintf (stderr, "orbcp: orbopen() error for '%s'.\n", orbname);
@@ -170,7 +180,11 @@ char **argv;
 	}
 
 	if (orbnameo) {
-		orbout = orbopen (orbnameo, "w");
+		if (orcnt) {
+			orbout = orbopen (orbnameo, "w&");
+		} else {
+			orbout = orbopen (orbnameo, "w");
+		}
 		if (orbout < 0) {
 			clear_register (1);
 			fprintf (stderr, "orbcp: orbopen() error for '%s'.\n", orbnameo);
@@ -205,9 +219,15 @@ char **argv;
 	while (1) {
 		if (orbin >= 0) {
 			if (orbreap (orbin, &pktid, src, &time, &packet, &nbytes, &bufsize) < 0) {
-				clear_register (1);
-				fprintf (stderr, "orbcp: orbreap() error for '%s'.\n", orbname);
-				break;
+				if (ircnt) {
+					clear_register (0);
+					sleep (10);
+					continue;
+				} else {
+					clear_register (1);
+					fprintf (stderr, "orbcp: orbreap() error.\n");
+					break;
+				}
 			}
 			p = packet;
 		} else {
@@ -249,10 +269,17 @@ char **argv;
 			}
 		}
 		if (orbout >= 0) {
-			if (orbput (orbout, src, time, p, nbytes) < 0) {
-				clear_register (1);
-				fprintf (stderr, "orbcp: orbput() error for '%s'.\n", orbnameo);
-				break;
+			if (orcnt) {
+				while (orbput (orbout, src, time, p, nbytes) < 0) {
+					clear_register (0);
+					sleep (10);
+				}
+			} else {
+				if (orbput (orbout, src, time, p, nbytes) < 0) {
+					clear_register (1);
+					fprintf (stderr, "orbcp: orbput() error.\n");
+					break;
+				}
 			}
 		}
 		if (fout) {
@@ -274,6 +301,7 @@ usage()
 	fprintf (stderr, "usage: orbcp {-orbin in_orbname | -filein in_filename} [-src srcexpr]\n");
 	fprintf (stderr, "             [-orbout out_orbname] [-fileout out_filename] [-reverse]\n");
 	fprintf (stderr, "             [-repeat] [-npackets npackets] [-sim_latency sim_latency]\n");
+	fprintf (stderr, "             [-ircnt] [-orcnt]\n");
 }
 
 int
@@ -428,5 +456,3 @@ int n;
 		*(to++) = word[7];
 	}
 }
-
-/* $Id$ */
