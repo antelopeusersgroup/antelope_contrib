@@ -172,14 +172,14 @@ proc run_cmdline {} {
 
 	while { $i < $n } {
 		set myarg [lindex $argv $i]
-		if { [cequal $myarg -N] } {
+		if { [cequal $myarg -n] } {
 			set List_Nicknames 1
 		} elseif { [cequal $myarg -t] } {
 			incr i
 			set time [lindex $argv $i]
 			set Template_time [epoch2str [str2epoch $time] \
 					   $Template_time_format]
-		} elseif { [cequal $myarg -D] } {
+		} elseif { [cequal $myarg -d] } {
 			set Resolve_dbname 1
 		} else {
 			lappend stripped_argv $myarg
@@ -205,15 +205,21 @@ proc run_cmdline {} {
 		set task ""
 	}
 
-	if { ! [info exists Tasks($nickname)] ||
-	       [llength $Tasks($nickname)] <= 0 } {
+	if { $nickname != "" } {
+	  if { ! [info exists Tasks($nickname)] ||
+	     [llength $Tasks($nickname)] <= 0 } {
 
-		puts stderr "dbcentral: No tasks defined for database '$nickname'\n"
+		puts stderr \
+		  "\ndbcentral: No tasks defined for database '$nickname'\n"
 		exit -1
+	  }
 	}
 
-	if { $task != "" && ! [info exists Commands($nickname,$task)] } {
-		puts stderr "dbcentral: No task '$task' defined for database '$nickname'\n"
+	if { $task != "" &&
+	     ! [info exists Commands($nickname,$task)] } {
+
+		puts stderr \
+		  "\ndbcentral: No task '$task' defined for database '$nickname'\n"
 		exit -1
 
 	}
@@ -238,7 +244,7 @@ proc run_cmdline {} {
 
 	} elseif { $Resolve_dbname && $nickname == "" } {
 
-		puts stderr "Must specify a database nickname with -D\n"
+		puts stderr "Must specify a database nickname with -d\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
@@ -257,7 +263,7 @@ proc run_cmdline {} {
 
 	} else {
 
-		puts stderr {Usage: dbcentral [-N] [-t timestring] [-D] [database_nickname [task_nickname]]}
+		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]}
 	}
 
 }

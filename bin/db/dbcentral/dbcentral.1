@@ -3,7 +3,7 @@
 dbcentral \- centralized GUI to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-dbcentral [-N] [-t timestring] [-D] [database_nickname [task_nickname]]
+dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
 .fi
 .SH DESCRIPTION
 Many institutions have a variety of databases which are commonly used
@@ -90,13 +90,13 @@ command line, the first task listed for that database is launched. A task
 nickname may be specified in addition to the database nickname, in which
 case the specified task is launched. The -t option may be used to 
 specify a time other than the current time to use in the database name 
-template. Finally, the -D option may be used to retrieve absolute 
-pathnames, and the -N option may be used to print a list of available database 
+template. Finally, the -d option may be used to retrieve absolute 
+pathnames, and the -n option may be used to print a list of available database 
 nicknames, or available task nicknames for a given database nickname.
 .SH OPTIONS
--D Show absolute pathname of database
+-d Show absolute pathname of database
 
--N Show available database nicknames or task nicknames 
+-n Show available database nicknames or task nicknames 
 
 -t Specify a time-string interpretable by the epoch(1) command (default is "now")
 .SH FILES
@@ -134,12 +134,12 @@ yukon% dbcentral antelope_demo dbpick
 
 To get the absolute pathname of the demo database:
 
-yukon% dbcentral -D antelope_demo
+yukon% dbcentral -d antelope_demo
 /opt/antelope/data/db/demo/demo
 
 To get the currently-configured database nicknames:
 
-yukon% dbcentral -N
+yukon% dbcentral -n
 
 dbcentral database nicknames:
 
@@ -149,7 +149,7 @@ dbcentral database nicknames:
 
 To get the currently configured task nicknames for the demo database:
 
-yukon% dbcentral -N antelope_demo
+yukon% dbcentral -n antelope_demo
 
 dbcentral command nicknames for antelope_demo:
 
@@ -171,9 +171,11 @@ dbcentral command nicknames for antelope_demo:
 .SH DIAGNOSTICS
 .nf
 yukon% dbcentral fake_nickname
+
 dbcentral: No tasks defined for database 'fake_nickname'
 
 yukon% dbcentral antelope_demo fake_task
+
 dbcentral: No task 'fake_task' defined for database 'antelope_demo'
 
 .fi
