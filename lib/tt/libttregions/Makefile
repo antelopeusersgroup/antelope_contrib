@@ -1,13 +1,11 @@
-#INCLUDE=
 LIB = libttregions.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
-#$MAN3= 
 $REQUIRE_DATA = models0.4
 DATA=models0.4
 DATADIR = schemas2
 
-ldlibs=-lresponse -lcoords -ltt -lstock -lposix4 -ldl -lgenloc -ltt -lm -lds
+ldlibs=$(DBLIBS)
 
 include $(ANTELOPEMAKE)
 DIRS=
@@ -20,7 +18,7 @@ $(LIB) : $(OBJS)
 
         
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -L$(ANTELOPE)/lib -lcoords -lstock -lposix4 -lm -o $@ $(LORDER) $(OBJS) $(TSORT)
+	$(DLD) $(DLDFLAGS) -L$(ANTELOPE)/lib $(LDLIBS) -o $@ $(LORDER) $(OBJS) $(TSORT)
 
 
 # $Id$ 
