@@ -1,3 +1,5 @@
+#include <float.h>
+#include <limits.h>
 #include <iostream>
 #include <list>
 #include "db.h"

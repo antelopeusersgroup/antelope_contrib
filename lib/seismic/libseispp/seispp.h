@@ -5,6 +5,7 @@
 #ifdef sun
 #include <sunmath.h>
 #endif
+#include <limits.h>
 // antelope routines
 #include "db.h"
 #include "tr.h"
