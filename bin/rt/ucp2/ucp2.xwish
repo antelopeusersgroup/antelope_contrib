@@ -4,8 +4,8 @@ package require Datascope
 package require Ucp
  
 set tcl_precision  17
-set auto_path [linsert $auto_path 0 /opt/antelope/dev/data/tcl/ucp2]
-lappend auto_path /opt/antelope/dev/data/tcl/library
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/ucp2]
+lappend auto_path $env(ANTELOPE)/data/tcl/library
 auto_load tkerror
 
 global MainWin
