@@ -1,0 +1,146 @@
+'\" te
+.TH BASIC_TIME_SERIES 3 "%G"
+.SH NAME
+Basic_Time_Series - base class for various types of time series data
+.SH SYNOPSIS
+.nf
+#include "seispp.h"
+using namespace SEISPP;
+class Basic_Time_Series
+{
+public:
+        bool live;
+        double dt,t0;
+        int ns;
+        Time_Reference_Type tref;
+        bool is_gap(int);  // query by sample number
+        bool is_gap(double);  // query by time
+        void add_gap(Time_Window tw){gaps.insert(tw);};
+        virtual void zero_gaps()=0; // pure virtual function
+        // inline function to return time of sample i
+};
+.fi
+.SH DESCRIPTION
+.LP
+A number of types of data can be called a time series.  The common
+concept to all time series objects is that a time series is a special
+way to represent a function of one independent variable.  
+The "special" part is that the function being represented numerically 
+by a time series object 
+is being approximated by the values of the function defined
+on a regular, one-dimensional mesh of the
+independent variable. A regular
+mesh in one dimension is completely described by only two parameters:  
+(1) the value of the independent variable (time) at the first sample 
+of the actual data (the \fIt0\fR variable in the Basic_Time_Series 
+object definition), and (2) the sample interval (the \fIdt\fR variable
+in the Basic_Time_Series definition).  I use the t label on both of these
+parameters since the independent variable is commonly viewed as a time 
+variable.  The user should recognize, however, that the concept is 
+broader than data sampled by time alone and the most general definition
+is any physical quantity sampled at regular intervals.
+.LP
+The Basic_Time_Series is a base concept from which specific types of
+actual time series data can be viewed as a derived class.  The
+reason this is useful is that the data for a particular time series
+type can thought of as a generalized vector of sample values.
+Inheritance provides a natural way to encapsulate and isolate this
+base concept from variations for special data types.  Two derived classes from
+Basic_Time_Series can be found in the seispp library that illustrate
+this idea:  (1)  the Time_Series object (man 3) defines a scalar valued
+time series, and (2) the Three_Component_Seismogram (man 3) object 
+defines a special seismology time series for three-components of 
+ground motion.  Note that others similar data objects that
+could be derived from a Basic_Time_Series are complex valued time
+series (see example below) or an n-vector time series.  
+.LP
+This base class adds a few special parameters and functions that
+I viewed as a fundamental concept for all time series data that
+are either essential or useful depending on the context.
+The \fIlive\fR variable is used for simple logical tests to mark data 
+as valid or dead. As the name suggests a constructor should set this variable
+true if construction of valid data is successful.  Conversely an application
+can mark a serious data problem by setting this field false to mark the
+contents as all bad.
+
+The \fItref\fR variable is switch (enum) that can take on
+only one of two values:  "absolute" or "relative".  To be
+more precise, here is the definition:
+.nf
+.in 2c
+enum Time_Reference_Type {absolute,relative};
+.fi
+.LP
+This allows absolute time reference frames (commonly called epoch times
+in seismology) or relative time sampling in which the user should assume
+the application has it's own internal concept of a time reference.
+.LP
+The functions \fIis_gap, add_gap\fR, and \fIzero_gaps\fR
+are used to handle data gaps.  \fIis_gap\fR checks for gaps
+at a specified sample number (the int version) or by 
+time (the overloaded double version) returning true if
+the sample/time is a gap.  The \fIzero_gaps\fR function
+sets the data for all times marked as a gap to zero.
+It is a pure virtual function as the definition zero 
+depends upon the actual data in the vector of samples that
+define the actual time series to be represented.  
+Since Basic_Time_Series is a base class this concept is
+rational, but the basic idea may seem strange to a newcomer.
+.LP
+Note that the interface hides the details of the gap implementation.
+The user should assume that areas marked as gaps can be zeroed
+without loss of information and that the problem of marking
+output data as a gap is to be solved differently.  That is,
+defining gaps in an external representation of the data is
+a different problem (see trgaps(3) for a discourse on this
+subject and a general solution).  
+Derived classes must be conscious of this problem in 
+building constructors and in producing output functions that
+preserve gap information.
+.SH EXAMPLE
+.LP
+A Basic_Time_Series is pretty much a pure virtual base class.  Here
+is an example of a bare bones implementation of a complex time
+series object:
+.nf
+.in 2c
+class Complex_Time_Series : public Basic_Time_Series
+{
+public:
+	// complex data samples stored in an STL vector object
+	vector<complex> y; 
+	// a few basic constructors
+	Complex_Time_Series(){y.reserve(0);};
+	Complex_Time_Series(int nsamp){y.reserve(nsamp)};
+};
+.fi
+.LP
+Note that by inheritance the dt, t0, etc. of the Basic_Time_Series
+become members of the derived Complex_Time_Series object.
+.SH EXCEPTIONS
+.LP
+None of the member functions of a Basic_Time_Series will throw an 
+exception.  
+One can assume any useful derived class will potentially throw 
+a number of possible exceptions.
+.SH LIBRARY
+-lseispp
+.SH "SEE ALSO"
+.nf
+Time_Series(3), Three_Component_Seismogram(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The Basic_Time_Series object is not very useful by itself and exists
+primarily as a base class from which useful data objects can be 
+derived. 
+Those not familiar with inheritance in object oriented program 
+might consult books on the subject before questioning the 
+wisdom of this definition.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

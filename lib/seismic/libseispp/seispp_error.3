@@ -1,0 +1,101 @@
+'\" te
+.TH SEISPP_ERROR 3 "%G"
+.SH NAME
+seispp_error - error object for seispp library
+.SH SYNOPSIS
+.nf
+#include "seispp.h"
+using namespace SEISPP;
+class seispp_error;
+class seispp_dberror : public seispp_error;
+class SAC_data_error : public seispp_error;
+.fi
+.SH DESCRIPTION
+.LP
+The seispp library is an object-oriented seismic processing
+library written in C++.  One of the things C++ added to 
+plain C is exceptions as a mechanism for library routines
+to handle problems.  For Antelope users the seispp_error
+facility is comparable to the elog library in Antelope, but
+with an object oriented flavor.  
+.LP
+The present facility is pretty basic with the 
+base class seispp_error object being defined as follows:
+.nf
+.in 2c
+class seispp_error
+{
+public:
+        string message;
+        seispp_error(){message="seispp library error\n";};
+        seispp_error(const string mess){message=mess;};
+        virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
+};
+.fi
+.LP
+That is, a seispp_error is little more than a fancy way to return
+an error message through the string variable "message".  
+The simple function "log_error" is used to post that message to
+the unix standard error stream.  
+.LP
+The concept here is that more complicated error returns would
+be derived by inheritance from a seispp_error object.  The 
+\fISAC_data_error\fR object is an example.  It's actual
+definition is:
+.nf 
+.in 2c
+class SAC_data_error : public seispp_error
+{
+public:
+        SAC_data_error(const string mess){message=mess;};
+        virtual void log_error()
+        {
+                cerr<<"Error processing SAC format time series"<<endl;
+                cerr<<"Error message = "<<message;
+        }
+};
+.fi
+.LP
+Hence the only major difference between a SAC_data_error and 
+the base class seispp_error is that the SAC_data_error 
+log_error function adds an addition qualifier to the error
+message that is posted.  
+.LP
+The \fIseispp_dberror\fR is similar except it has
+the constructor defined as seispp_error(string,Database_Handle).  
+It prints a special message with log_error that can be used
+for debugging problems.
+.LP
+Users of this library can and should build their own derived
+classes from seispp_error.  If more information is needed to
+handle different errors differently, this can be done using
+inheritance from seispp_error as in the examples above.  
+e.g.  an integer error code
+is easily placed in a derived object like SAC_data_error 
+and a handler can be built around a switch-case on the
+error return code (a standard plain C method).  
+For the time being this library is written with the concept
+that when an exception is thrown an operation failed and
+there is no mixed case.  i.e. some errors can be treated
+differently than others.  If you need that facility 
+and are building on this library build a new error 
+class to support it.
+.SH LIBRARY
+-lseispp
+.SH "SEE ALSO"
+.nf
+Time_Series(3),metadata_error(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Expect this class of error objects to expand.  For now assume
+that seispp library functions will only throw a seispp_error 
+exception and you have to depend on the documentation of a function
+to know how to handle any exception.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

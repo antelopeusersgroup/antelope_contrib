@@ -13,7 +13,8 @@ public:
         Metadata(Pf*);
         Metadata(char *) throw(Metadata_parse_error);
         Metadata(string) throw(Metadata_parse_error);
-        Metadata(Dbptr,Metadata_list&,Attribute_map&) throw(Metadata_error);
+        Metadata(Database_Handle&,
+		Metadata_list&,Attribute_map&) throw(Metadata_error);
         Metadata(const Metadata&)
                 throw(Metadata_parse_error);
         Metadata& operator=(const Metadata& );
@@ -111,10 +112,18 @@ contents of Pf in the Metadata object's namespace.
 The database constructor allows loading metadata from a database.
 It's calling sequence is
 .nf
-Metadata(Dbptr db,Metadata_list& mdl,Attribute_map& am)
+Metadata(Database_Handle& dbh,
+	Metadata_list& mdl,Attribute_map& am)
 .fi
-where db must point at a single database row and am is an associated
-object with this definition:
+where dbh is a generic database handle.  In the current implementation
+this is a pure abstraction and the only available constructor
+assumes dbh is a Datascope database.  That is, the first thing
+that happens in this constructor is that dbh is downcast to
+a Datascope_Handle object (see dbpp.3) which contains a
+datascope Dbptr that is manipulated as usual.
+.LP
+The attributes that are to be extracted from the database are
+driven by this object:
 .nf
 
 class Attribute_map
@@ -145,8 +154,8 @@ public:
 .fi
 This STL map is used to provide a general way to map data from an 
 external namespace to an internal one.  For example, externally
-a database attribute might be referred to the Antelope
-word with a name like "arrival.time", but internally you 
+a database attribute might be referred to by the attribute
+with a name like "arrival.time", but internally you 
 might want to refer to this as "atime" for simplicity or 
 to mesh with some other naming convention.  Bear in mind that
 is is the internal name that will be needed to retrieve the

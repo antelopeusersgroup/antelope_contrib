@@ -1,14 +1,22 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-INCLUDE=metadata.h seispp.h ray1d.h vmodel.h
-MAN3=metadata.3 GCLrays.3
+INCLUDE=dbpp.h metadata.h seispp.h ray1d.h vmodel.h
+MAN3=Basic_Time_Series.3 \
+  Datascope_Handle.3 \
+  GCLrays.3 \
+  Three_Component_Seismogram.3 \
+  Time_Series.3 \
+  metadata.3 \
+  metadata_error.3 \
+  seispp_error.3 
 #ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=create_destroy.o gaps.o \
+OBJS=create_destroy.o dbpp.o gaps.o \
 mdlist.o metadata.o mute.o operators.o pfstream_interface.o \
-raytrace.o readwrite.o rotate_procedures.o rotation.o statics.o ttime.o vmod1d.o
+raytrace.o readwrite.o rotate_procedures.o rotation.o \
+spherical_coordinate.o statics.o ttime.o vmod1d.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

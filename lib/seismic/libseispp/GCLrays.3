@@ -61,7 +61,7 @@ public:
 	RayPathSphere(){r=NULL,delta=NULL,t=NULL;};
 	RayPathSphere(int n)
 	{npts=n; r=new double[n], delta=new double[n], t=new double[n];};
-	// This fully parametrized version constructs a full path
+	// This fully parameterized version constructs a full path
 	RayPathSphere(Velocity_Model_1d& vm,
 		double p, double zmax, double tmax, double dt, 
 		const char mode[2]);

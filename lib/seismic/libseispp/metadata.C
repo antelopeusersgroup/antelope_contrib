@@ -87,11 +87,21 @@ Metadata::Metadata(const Metadata& md)
 // That is, will attempt to read all attributes in Attribute_map list 
 // and put them in the Metadata object
 
-Metadata::Metadata(Dbptr db,Metadata_list& mdlist, Attribute_map& am)
-	throw(Metadata_error)
+Metadata::Metadata(Database_Handle& dbh,
+	Metadata_list& mdlist, 
+		Attribute_map& am)
+			throw(Metadata_error)
 {
+	Datascope_Handle& ddbh=dynamic_cast<Datascope_Handle&>(dbh);
 	Metadata_list::iterator i;
 	map<string,Attribute_Properties>::iterator ape=am.attributes.end();
+	// We'll just use the Dbptr and use raw Datascope routines.  This
+	// was done for two reasons.  The main one is I had a working form
+	// of this algorithm before I converted to the generic database handle
+	// concept.  If it isn't broken, don't fix it.  Second, it should
+	// be slightly faster as it removes the overhead of a second set
+	// of function calls if the object oriented handle is used
+	Dbptr db = ddbh.db;
 
 	if(Metadata_defaults_pf==NULL)_init();
         pf=pfdup(Metadata_defaults_pf);

@@ -203,8 +203,8 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 				*(path.delta[i0]-path.delta[i0-1])
 				   /(path.r[i0]-path.r[i0-1]);  
 		}
-		lat0=grid.lat[ix1][ix2][ix3];
-		lon0=grid.lon[ix1][ix2][ix3];
+		lat0=grid.lat(ix1,ix2,ix3);
+		lon0=grid.lon(ix1,ix2,ix3);
 		for(i=i0,ii=1;i<path.npts;++i)
 		{
 			latlon(lat0,lon0,path.delta[i]-delta0,theta,&lat,&lon);
@@ -234,8 +234,8 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 		throw GCLgrid_error("GCLgrid_Ray_project was passed an illegal index\n");
 
 	pathptr = new dmatrix(3,path.npts);
-	lat0=grid.lat[ix1][ix2][ix3];
-	lon0=grid.lon[ix1][ix2][ix3];
+	lat0=grid.lat(ix1,ix2,ix3);
+	lon0=grid.lon(ix1,ix2,ix3);
 	for(int i=0;i<path.npts;++i)
 	{
 		latlon(lat0,lon0,path.delta[i],theta,&lat,&lon);

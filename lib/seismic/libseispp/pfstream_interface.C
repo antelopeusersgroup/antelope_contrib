@@ -52,7 +52,7 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	try{
 	    for(i=0;i<pfe->nmembers;++i)
 	    {
-		Time_Series *ts=new Time_Series(pfe->pf[i]);
+		Time_Series *ts=Load_Time_Series_Using_Pf(pfe->pf[i]);
 		tseobj.tse.push_back(*ts);
 		delete ts;
 	    }
@@ -61,7 +61,7 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	    //
 	    t0=tseobj.tse.begin();
 	    Time_Series& t0r = *t0;
-	    copy_selected_metadata(t0r.md,tseobj.md,mdlist);
+	    copy_selected_metadata(dynamic_cast<Metadata&>(t0r),dynamic_cast<Metadata&>(tseobj),mdlist);
 	}
 	catch(seispp_error serr)
 	{
@@ -87,6 +87,13 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
  *  Author:  Gary Pavlis
  *  Written:  May 2003
  */
+
+////////////////////////////////////////////////////////////////////////
+/* Taken out of commission for the time being.  Higher level routine that will
+take some work to get right.  There are other design changes likely so I won't
+get it working right now.
+
+
 
 Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh, 
 		char *tag,
@@ -209,4 +216,7 @@ void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
 	// the fifo.
 	pfstream_put_ensemble(pfh,pf);
 }
+
+End of section needing work later. */
+////////////////////////////////////////////////////////////////////////
 } // Termination of namespace SEISPP definitions

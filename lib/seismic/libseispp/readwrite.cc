@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include "stock.h"
+#include "tr.h"
 #include "seispp.h"
 namespace SEISPP
 {
@@ -79,6 +80,90 @@ long int vector_fwrite(float *x,int n, string fname) throw(seispp_error)
 	return(foff);
 }
 
+// Small helper for function immediately below avoids 
+// repetitious and confusing test
+bool trdata_is_gap(Wftype *wft,Trsample value)
+{
+	if((value<=wft->lower) || (value>=wft->upper) )
+		return true;
+	else
+		return false;
+}
+/* Sets gap values in a Time_Series object using methods from
+BRTT's trace library.  That is, in seispp I use a totally different
+method to mark gaps compared to the trace library.  The trace
+library uses magic numbers while I use a set of Time_Window 
+objects.  This function scans an input vector of Trsample (float)
+values looking for gaps defined for the input datatype.  
+This is essentially a translation routine from external format
+methods for defining gaps and ones used here.
+Arguments:
+	ts - Time_Series object to define gaps for
+	data_raw - input array from BRTT trace library of data
+		samples to be scanned for gaps.
+	nsamp - length of data_raw
+	datatype - BRTT defined datatype (normally from wfdisc).
+
+Routine checks for consistency in nsamp and datatype and throws
+an exception if the they are not consistent.  
+
+*/
+
+void set_gaps(Time_Series& ts, 
+	Trsample *data_raw, 
+		int nsamp,
+			string datatype)
+				throw(seispp_error)
+{
+	bool in_gap_now;
+	double gap_start,gap_end;
+	// some sanity checks.  Throw an exception if 
+	// any of these occur
+	if(ts.s.size()!=nsamp || ts.ns!=nsamp)
+		throw seispp_error("set_gaps:  Time_Series data size does not match pattern from raw input");
+	string tsdtype=ts.get_string("datatype");
+	if(tsdtype!=datatype)
+		throw seispp_error("set_gaps:  Time_Series metadata definition of parent data type does not match pattern");
+	Wftype *wft=trwftype(const_cast<char *>(datatype.c_str()));
+	// This should not be necessary but better to initialize it
+	// anyway rather than depend on a random value being accidentally set
+	gap_start = ts.t0;
+	for(int i=0,in_gap_now=false;i<nsamp;++i)
+	{
+		if(in_gap_now)
+		{
+			if(trdata_is_gap(wft,data_raw[i]))
+				continue;
+			else
+			{
+				gap_end = ts.time(i-1);
+				Time_Window *tw=new Time_Window(gap_start,
+							gap_end);
+				ts.add_gap(*tw);
+				delete tw;
+				in_gap_now=false;
+			}
+		}
+		else
+		{
+			if(trdata_is_gap(wft,data_raw[i]))
+			{
+				in_gap_now=true;
+				gap_start=ts.time(i);
+			}
+		}
+	}
+	free((void *)wft);
+}
+
+
+Time_Series *Load_Time_Series_Using_Pf(Pf *pf)
+{
+	Metadata md(pf);
+	Time_Series *ts = new Time_Series(md,true);
+	return(ts);
+}
+
 /*
 // Antelope database output routine.  Uses trputwf which is 
 // listed as depricated, but this seems preferable to being
@@ -108,10 +193,15 @@ void dbsave(Time_Series& ts,
 		string table, 
 			Metadata_list& mdl, 
 				Attribute_map& am)
+		throw(seispp_error)
 {
 	Metadata_list::iterator mdli;
 	map<string,Attribute_Properties>::iterator ami,amie=am.attributes.end();
 	int recnumber;
+	string field_name;
+	string cval;
+
+	if(!ts.live) return;  // return immediately if this is marked dead
 	
 	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
 	recnumber = dbaddnull(db);
@@ -120,10 +210,8 @@ void dbsave(Time_Series& ts,
 
 	for(mdli=mdl.begin();mdli!=mdl.end();++mdli)
 	{
-		string field_name;
 		double dval;
 		int ival;
-		string cval;
 		ami = am.attributes.find((*mdli).tag);
 		if(ami==amie) 
 		{
@@ -147,30 +235,30 @@ void dbsave(Time_Series& ts,
 		switch(ami->second.mdt)
 		{
 		case MDint:
-			ival = ts.md.get_int(ami->second.internal_name);
+			ival = ts.get_int(ami->second.internal_name);
 			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				ival);
+				ival,0);
 			break;
 		case MDreal:
-			dval = ts.md.get_double(ami->second.internal_name);
+			dval = ts.get_double(ami->second.internal_name);
 			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				dval);
+				dval,0);
 			break;
 		case MDstring:
-			cval = ts.md.get_int(ami->second.internal_name);
+			cval = ts.get_string(ami->second.internal_name);
 			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				cval.c_str());
+				cval.c_str(),0);
 			break;
 		case MDboolean:
 			// treat booleans as ints for external representation
 			// This isn't really necessary as Antelope
 			// doesn't support boolean attributes
-			if(ts.md.get_bool(ami->second.internal_name))
+			if(ts.get_bool(ami->second.internal_name))
 				ival = 1;
 			else
 				ival = 0;
 			dbputv(db,0,ami->second.db_attribute_name.c_str(),
-				ival);
+				ival,0);
 			break;
 			
 		case MDlist: 
@@ -215,16 +303,17 @@ void dbsave(Time_Series& ts,
 	// We first have to decide the byte order of the machine
 	// we are running on.
 #ifdef WORDS_BIGENDIAN
-	string sdtype("s4");
+	string sdtype("t4");
 #else
-	string sdtype("i4");
+	string sdtype("u4");
 #endif
 	// Check the existing datatype field and if it is shown
-	// as a double type (t8 or u8) leave it alone and write
-	// double output.  Otherwise convert to floats
+	// as a float type (t8 or u8) leave it alone and force write
+	// as double output.  Otherwise (normal behaviour) convert to floats
 	// While we are at it we grab the actual dir dfile values 
 	// and use these for file name creation as a safe method 
 	// Will work when trucation, for example, would cause problems
+	
 	char dtype[4];
 	char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
 	long int foff;  // actual foff reset in db record

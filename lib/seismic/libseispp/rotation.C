@@ -2,8 +2,12 @@
 #include "perf.h"
 namespace SEISPP
 {
+// Note on usage in this group of functions.  The rotation algorithms used here
+// all key on the BLAS for speed.  That is, a transformation matrix could be done
+// by using the * operator between matrix objects.  
 
 void Three_Component_Seismogram::rotate_to_standard()
+	throw(seispp_error)
 {
 	double *work[3];
 	int i,j;
@@ -18,12 +22,13 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//
 		for(i=0;i<3;++i)
 		{
-			dcopy(ns,&x[0].s[0],1,work[i],1);
+			// x has a stride of 3 because we store in fortran order in x
+			dcopy(ns,u.get_address(i,0),3,work[i],1);
 			dscal(ns,tmatrix[0][i],work[i],1);
-			daxpy(ns,tmatrix[1][i],&x[1].s[0],1,work[i],1);
-			daxpy(ns,tmatrix[2][i],&x[2].s[0],1,work[i],1);
+			daxpy(ns,tmatrix[1][i],u.get_address(1,0),3,work[i],1);
+			daxpy(ns,tmatrix[2][i],u.get_address(2,0),3,work[i],1);
 		}
-		for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
+		for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
 	}
 	else
 	{
@@ -53,8 +58,11 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//Perf lib matrix inversion routine using LU factorizatoin
 		// Note this is changed from parent code.  Untested.
 		dgetrf_(&asize,&asize,a,&asize,ipivot,&info);
-		//Probably should throw an exception info != 0
+		if(info!=0) throw(seispp_error(
+			string("rotate_to_standard:  LU factorization of transformation matrix failed")));
 		dgetri_(&asize,a,&asize,ipivot,awork,&ldwork,&info);
+		if(info!=0) throw(seispp_error(
+			string("rotate_to_standard:  LU factorization inversion of transformation matrix failed")));
 		
 		tmatrix[0][0] = a[0];
 		tmatrix[1][0] = a[1];
@@ -72,12 +80,12 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//
 		for(i=0;i<3;++i)
 		{
-			dcopy(ns,&x[0].s[0],1,work[i],1);
+			dcopy(ns,u.get_address(i,0),3,work[i],1);
 			dscal(ns,tmatrix[i][0],work[i],1);
-			daxpy(ns,tmatrix[i][1],&x[1].s[0],1,work[i],1);
-			daxpy(ns,tmatrix[i][2],&x[2].s[0],1,work[i],1);
+			daxpy(ns,tmatrix[i][1],u.get_address(1,0),3,work[i],1);
+			daxpy(ns,tmatrix[i][2],u.get_address(2,0),3,work[i],1);
 		}
-		for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
+		for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
 		components_are_orthogonal = true;
 	}
 	//
@@ -189,31 +197,18 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
 	for(i=0;i<3;++i)work[i] = new double[ns];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,&x[0].s[0],1,work[i],1);
+		dcopy(ns,u.get_address(i,0),3,work[i],1);
 		dscal(ns,tmatrix[i][0],work[i],1);
-		daxpy(ns,tmatrix[i][1],&x[1].s[0],1,work[i],1);
-		daxpy(ns,tmatrix[i][2],&x[2].s[0],1,work[i],1);
+		daxpy(ns,tmatrix[i][1],u.get_address(1,0),3,work[i],1);
+		daxpy(ns,tmatrix[i][2],u.get_address(2,0),3,work[i],1);
 	}
-	for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
+	for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
 	//
 	//If they weren't before they are now
 	//
 	components_are_orthogonal=true;
 	components_are_cardinal=false;
 	for(i=0;i<3;++i) delete [] work[i];
-}
-/* This routine takes a 3-d unit vector, nu, and converts it
-to a Spherical_Coordinate structure which is returned.  The 
-input coordinates are assume to be standard, right handed
-cartesian coordinates in 1,2,3 order */
-Spherical_Coordinate unit_vector_to_spherical(double nu[3])
-{
-	Spherical_Coordinate xsc;
-
-	xsc.radius = 1.0;
-	xsc.theta = acos(nu[2]);
-	xsc.phi = atan2(nu[1],nu[0]);
-	return(xsc);
 }
 void Three_Component_Seismogram::rotate(double nu[3])
 {
@@ -228,12 +223,12 @@ void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
 	double twork[3];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,&x[0].s[0],1,work[i],1);
+		dcopy(ns,u.get_address(i,0),3,work[i],1);
 		dscal(ns,a[i][0],work[i],1);
-		daxpy(ns,a[i][1],&x[1].s[0],1,work[i],1);
-		daxpy(ns,a[i][2],&x[2].s[0],1,work[i],1);
+		daxpy(ns,a[i][1],u.get_address(1,0),3,work[i],1);
+		daxpy(ns,a[i][2],u.get_address(2,0),3,work[i],1);
 	}
-	for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
+	for(i=0;i<3;++i) dcopy(ns,work[i],1,u.get_address(i,0),3);
 	// update tmatrix -- note this is a matrix multiply
 	// so this accumulates transformations
 	for(i=0;i<3;++i)

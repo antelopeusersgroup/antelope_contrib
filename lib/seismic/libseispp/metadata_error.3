@@ -1,0 +1,67 @@
+'\" te
+.TH METADATA_ERROR 3 "%G"
+.SH NAME
+Metadata_error - Metadata object error facility
+.SH SYNOPSIS
+.nf
+#include "metadata.h"
+using namespace SEISPP;
+class Metadata_error
+class Metadata_get_error : public Metadata_error
+class Metadata_parse_error : public Metadata_error
+.fi
+.SH DESCRIPTION
+.LP
+The set of \fIMetadata_error\fR objects are companions to 
+the variable length header concept metadata (3) object.  
+Some of the metadata object functions will throw Metadata_error
+or the derived classes listed in the Synopsis.  Error 
+handlers can be written to trap these exceptions using
+real time type checking to sort out which actual type is
+thrown (see classic books by Stoustrup or other books on
+C++ for examples).  
+.LP
+A \fIMetadata_error\fR is a generic error object that contains
+little more than an error message that can be sent to stderr 
+using a function called \fIlog_error()\fR.  
+.LP
+The derived classes \fIMetadata_get_error\fR and 
+\fIMetadata_parse_error\fR are more specific.  
+A \fIMetadata_get_error\fR may be thrown by any of 
+the "get" metadata functions.  The most common reason
+is that the parameter with the requested name either
+did not exist in the metadata object or there was
+a type mismatch.  The assumption is that a handler
+need only know that the get process failed and it
+should give the user feedback on why it might have
+failed.  Hence, it contains only a extended message
+facility to dump the error message using the \fIlog_error()\fR
+function.  
+.LP
+The \fIMetadata_parse_error\fR function is implementation
+specific.  The metadata object as currently defined uses
+an Antelope Pf "object" to store the abstract concept 
+I've called "metadata.  A \fIMetadata_parse_error\fR
+is thrown by metadata constructors when a parameter file or
+string used to build the Pf fails on a pfcompile error.
+A \fIMetadata_parse_error\fR object thus contains the 
+log_error() function plus an integer variable called
+\fierror_code\fR that contains the error code from pfcompile.
+.SH LIBRARY
+.LP
+-lseispp
+.SH "SEE ALSO"
+.nf
+Time_Series(3),seispp_error(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+This is a fairly simple error object definition.  It might
+evolve as time goes on.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

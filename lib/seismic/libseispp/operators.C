@@ -11,11 +11,9 @@ Time_Series& Time_Series::operator=(const Time_Series& tsi)
 		t0=tsi.t0;
 		ns=tsi.ns;
 		tref=tsi.tref;
-		md=tsi.md;  //Metadata assignment operator must create destroy
 		if(live)
 		{
-			s.reserve(ns);
-			for(int i=0;i<tsi.ns;++i) s[i]=tsi.s[i];
+			s=tsi.s;
 		}
 	}
 	return(*this);
@@ -27,7 +25,6 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 	if(this!=&seisin)
 	{
 		live=seisin.live;
-		md=seisin.md;
 		dt=seisin.dt;
 		t0=seisin.t0;
 		ns=seisin.ns;
@@ -36,12 +33,12 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 		components_are_cardinal=seisin.components_are_cardinal;
 		for(int i=0;i<3;++i)
 		{
-			x[i]=seisin.x[i];
 			for(int j=0;j<3;++j)
 			{
 				tmatrix[i][j]=seisin.tmatrix[i][j];
 			}
 		}
+		u=seisin.u;
 	}
 	return(*this);
 }

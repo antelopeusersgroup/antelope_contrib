@@ -1,0 +1,276 @@
+'\" te
+.TH Datascope_Handle 3 "%G"
+.SH NAME
+Datascope_Handle - handle object to manipulate Datascope db
+.SH SYNOPSIS
+.nf
+#include "dbpp.h"
+using namespace SEISPP;
+class Datascope_Handle : public Database_Handle
+.fi
+.SH DESCRIPTION
+.LP
+The \fIDatascope_Handle\fR object is an instantiation of an 
+abstract object called \fIDatabase_Handle\fR that is intended
+as a generic interface to any relational database system.
+The \fIDatascope_Handle\fR is an implementation for the
+Dan Quinlan's Datascope dbms maintained commercially by BRTT
+and used mainly in seismology.    
+.LP
+A \fIDatabase_Handle\fR must be understood to mean four fundamental
+things the user must keep in mind:
+.IP (1)
+The object is a handle you should think of like a FILE * in 
+regular C.  This means you must be very careful in dealing
+with copies of the handle as it may not be what you think
+it is.  
+.IP (2)
+The handle attempts to encapsulate concepts of a relational
+database.  The interface should not be viewed as totally
+general, but encapsulating most of the common functionality
+of a Datascope database.  The Datascope_Handle allows any
+Datascope function calls by making the Dbptr public.
+.IP (3) 
+You should think of the handle as a unified interface into a database
+view.  The view can and should be thought of as a table.  The table
+has a current row position analogous to file offset in low level
+C read and write functions.  The index, however, is not defined by bytes
+but by row position in the table.  This could, perhaps, have been
+implemented as an iterator as in the STL, but for a Datascope_Handle
+it can be viewed as a hidden implicit variable OR just realize what 
+it is in this instantiation -- db.record.  
+.IP (4)
+The \fIDatascope_Handle\fR extends the abstract base class
+\fIDatabase_Handle\fR.  To maximize portability of code to
+use the generic interface to other databases, which 
+is only vaporware at this writing, avoid anything but the
+pure virtual functions defined under the definition
+of the \fIDatabase_Handle\fR object.
+.SH OBJECT DEFINITIONS
+.LP
+This is the exact definition of the abstract base class:
+.nf
+.in 2c
+class Database_Handle
+{
+public:
+        virtual double get_double(string)=0;
+        virtual int get_int(string)=0;
+        virtual string get_string(string)=0;
+        virtual string get_filename()=0;
+        virtual void put(string,double)=0;
+        virtual void put(string,float)=0;
+        virtual void put(string,int)=0;
+        virtual void put(string,string)=0;
+        virtual void put(string,char *)=0;
+        virtual void put(string,const char *)=0;
+        virtual int number_tuples()=0;
+        virtual int number_attributes()=0;
+        virtual void rewind()=0;  // set row pointer to top
+        virtual void operator ++()=0;
+        virtual void sort(list<string>keys)=0;
+        virtual void subset(string)=0;
+        virtual void join(string t1, string t2,
+                list<string> keys1,list<string>keys2)=0;
+        virtual void group(list<string>group_keys)=0;
+};
+.fi
+.LP
+Note this object has no data but only function members.  
+The series of \fIget\fR functions extract a concrete type
+from the table at the current row position tagged by the
+attribute name passed as the one argument for each 
+member function.  The \fIput\fR functions do the opposite.  
+At the current row position they place the contents of the
+second argument into the field (attribute) defined by the
+name given in the first argument.
+.LP
+\fInumber_attribute\fR and \fInumber_tuples\fR define the 
+number of columns and rows respectively in the virtual table 
+to which the handle relates.  The \fIrewind\fR function
+sets the row pointer to 0.  The ++ operator increments the
+row position pointer in the virtual table.
+.LP
+\fIsort\fR, \fIsubset\fR, \fIjoin\fR, and \fIgroup\fR 
+implement the standard database operations that have those
+names.  In these operators the list<string> STL containers
+should contain key attributes that are used to define
+the operation. i.e. sort keys for a sort, join keys for 
+joins, and group keys for grouping (group by clause in SQL).
+In the \fIjoin\fR function the two string arguments (t1 and t2)
+define the tables to be joined.  In the \fIsubset\fR function
+the string is the subset clause that could be implementation 
+dependent.
+.LP
+The Datascope_Handle defines all of the above virtual 
+functions plus a few others.  The full definition is:
+.nf
+.in 2c
+class Datascope_Handle : public Database_Handle
+{
+public:
+        Datascope_Handle(string dbname,bool readonly);
+        Datascope_Handle(string dbname, string pfname,
+                        string tag,bool readonly);
+        Datascope_Handle(Dbptr db, Pf *pf, string tag);
+        Datascope_Handle(Datascope_Handle& dh);
+        ~Datascope_Handle();
+        double get_double(string);
+        int get_int(string);
+        string get_string(string);
+        string get_filename();
+        void put(string, double);
+        void put(string, float);
+        void put(string,int);
+        void put(string,string);
+        void put(string,char *);
+        void put(string, const char *);
+        int append();
+        int current_record(){return(db.record);};
+        void set_record(int rec){db.record=rec;};
+        void lookup(string tablename);
+        void next_record(){++db.record;};
+        int number_tuples();
+        int number_attributes();
+        void rewind(){db.record=0;};
+        void sort(list<string>keys);
+        void join(string t1, string t2,
+                list<string> keys1,list<string>keys2);
+        void natural_join(string t1, string t2);
+        void natural_join(string t2);
+        void subset(string sstr);
+        void group(list<string>group_keys);
+        Datascope_Handle& operator=(const Datascope_Handle&);
+        void operator ++();
+        void close();
+        Dbptr db;
+private:
+        bool close_on_destruction;
+};
+.fi
+.LP
+The following function definitions are appended from the 
+\fIDatabase_Handle\fR definition:
+.LP
+The \fInatural_join\fR functions are added to use the
+Datascope feature of natural joins that do not require a key.
+This function is overloaded.  The \fInatural_join(string t1, string t2)\fR
+joins tables t1 and t2.  The form with only t2 joins t2 to the current
+view.  \fIjoin\fR implements the generic join operator defined in 
+the abstract base class.
+.LP
+This class adds two position operators.  \fIset_record\fR sets the
+record pointer to the specified integer value and \fIcurrent_record\fR
+returns the current row index position.  
+.LP
+The \fInext_record\fR is a function alternative to the ++ operator.
+.LP
+The \fIlookup\fR is a simplified form of dblookup.  It sets the
+view to be the single table with the name passed as the string argument.  
+.LP
+The \fIclose\fR function is potentially confusing.  It does not
+instantly close the database, but sets the private variable
+\fIclose_on_destruction\fR true.  Normally this variable is 
+false to prevent closing the database when a copy of the handle
+goes out of scope.  This implies this function should be called
+when the program is about to exit or immediately before the
+handle is, by design, going to go out of scope.  Most programs
+will not need to call this function at all and can simply
+let the database close when the program exits.  This function
+is really needed only in applications that will open and close
+one or more databases several times in one run.  
+.SH CONSTRUCTORS
+.LP
+There are currently three basic constructors that implement 
+a form of construction is resource acquisition.  That is, they 
+build the handle, but may do more and will throw an exception 
+if the resource cannot be acquired.
+.LP
+The \fIDatascope_Handle(string dbname,bool readonly)\fR constructor
+calls dbopen on the database with name dbname.  If readonly is
+true it is opened readonly.  Otherwise it is opened as r+. 
+Be aware this is a VERY simple constructor and the Dbptr will
+be just what dbopen sets it to.  Any manipulations without some
+additional calls to set the Dbptr to a specific table or view
+will cause your program to abort.  The most common application of
+this would be to call this constructor and immediately call the
+\fIlookup\fR function to work on a single table.
+.LP
+These two constructors are actually very similar:
+.nf
+.in 2c
+Datascope_Handle(Dbptr db, Pf *pf, string tag);
+Datascope_Handle(string dbname, string pfname,
+                   string tag,bool readonly);
+.fi
+.LP
+Both are useful for any program that is table driven by 
+a single database view.  The first one defines the
+basic algorithm:  dbprocess is called on 
+the Dbptr \fIdb\fR using the 
+Tbl& list of processing steps defined with the name
+\fItag\fR in the parameter file handle \fIpf\fR.  
+The second form is an all in one solution with
+the same basic algorithm:  open database \fIdbname\fR,
+open pffile \fIpfname\fR, extract the process list from
+the parameter file using the Tbl data tagged with \fItag\fR,
+and then release pf.  The \fIreadonly\fR argument is 
+as described above and is relatively self explanatory.      
+.LP
+The copy constructor, \fIDatascope_Handle(Datascope_Handle& dh)\fR,
+is also defined.  This is important to get a new handle to be manipulated
+to produce a different view while retaining the original, parent
+handle.  For example, to keep a copy of a view sorted in two different
+orders one would want to call the copy constructor on the handle before
+the sort.  Then the original would be unaltered but the copy would
+contain the sorted view.
+.SH DESTRUCTOR
+.LP
+The concept of the destructor for this object is unusual 
+and must be understood.
+Because it is often necessary to have several open tables or
+database views within the same program destroying the handle
+is problematic.  
+This is handled in a very simple way.  The close_on_destruction
+boolean variable is normally false.  This means that when a 
+handle goes out of scope normally (close_on_destructin is false)
+nothing happens.  The database is closed ONLY when 
+close_on_destruction is set true.   The only way to make that
+happen is by an explicit call to close().  
+Hence, as noted above, close should only be called when you
+mean it.  
+It is not usually necessary to call it at all, but let the
+system handle all the housekeeping on exit.
+.SH OPERATORS
+.LP
+The ++ operator is implemented and acts as describe in the generic
+handle description above.
+.LP
+The = operator is defined and simply copies the Dbptr.  
+.SH EXCEPTIONS
+.LP
+Most functions in this object can and will throw a seispp_dberror
+exception in the event of a problem. Use the seispp_dberror log_error
+function to dump the elog and internal message passed through the
+throw mechanism.  (Note this can be redundant and quite verbose.
+This assumes the model that exceptions are rare events.)  
+.SH EXAMPLE
+.SH LIBRARY
+-lseispp
+.SH "SEE ALSO"
+.nf
+seispp_error.3
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The base class will undoubtedly evolve if and when I ever try to 
+adapt this to a dbms other than Datascope.  For now the inheritance
+from an abstract base class is kind of baggage, but it is forward-looking
+baggage.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

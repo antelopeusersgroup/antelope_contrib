@@ -2,14 +2,95 @@
 #define _SEISPP_H_
 #include <vector>
 #include <set>
+#ifdef sun
+#include <sunmath.h>
+#endif
+// antelope routines
 #include "db.h"
-#include "metadata.h"
+#include "tr.h"
 #include "pf.h"
+// glp routines
+#include "metadata.h"
+#include "dbpp.h"
 #include "pfstream.h"
+#include "dmatrix.h"
 namespace SEISPP 
 {
 extern bool SEISPP_verbose;
+using namespace std;
+//
+// We use an abstract base class and derived classes to allow variations
+// in errors thrown.  This uses methods described in books by Stroustrup
+//
+class seispp_error
+{
+public:
+	string message;
+	seispp_error(){message="seispp library error\n";};
+	seispp_error(const string mess){message=mess;};
+	virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
+};
 
+// error class for datascope db interface
+// adds antelope elog dump and a severity option identical
+// to antelope elog
+enum error_severity {fault, fatal, complain, notify, log, unknown};
+class seispp_dberror : public seispp_error
+{
+public:
+        Dbptr db;
+	error_severity error_type;
+        seispp_dberror(const string mess,Dbptr dbi);
+	seispp_dberror(const string mess, 
+		Dbptr dbi, error_severity et);
+	void log_error();
+};
+
+class SAC_data_error : public seispp_error
+{
+public:
+	SAC_data_error(const string mess){message=mess;};
+	void log_error()
+	{
+		cerr<<"Error processing SAC format time series"<<endl;
+		cerr<<"Error message = "<<message;
+	}
+};
+
+// Warning the following names collide with location.h
+class Slowness_vector
+{
+public:
+	double ux,uy;   // base vector stored as components in s/km units
+	double mag(){return(hypot(ux,uy));};
+	double azimuth(){
+		double phi;
+		phi=M_PI_2-atan2(uy,ux);
+		if(phi>M_PI)
+			return(phi-2.0*M_PI);
+		else
+			return(phi);
+	};
+	double baz(){
+		double phi;
+		phi = M_PI_2-atan2(-uy,-ux);
+		if(phi>M_PI)
+			return(phi-2.0*M_PI);
+		else
+			return(phi);
+	};
+};
+class Rectangular_Slowness_Grid
+{
+public:
+	string name;
+	double uxlow, uylow;
+	double dux, duy;
+	int nux, nuy;
+	Rectangular_Slowness_Grid(Pf *);
+	double ux(int i) {return(uxlow+i*dux);};
+	double uy(int i) {return(uylow+i*duy);};
+};
 
 // This is used to define gaps and/or time variable weights
 // The later is not implemented, but we 
@@ -59,31 +140,40 @@ public:
 
 
 enum Time_Reference_Type {absolute,relative};
-class Time_Series
+
+// base class
+// includes essential parameters for any time series including gap processing
+class Basic_Time_Series
 {
 public:
 	bool live;
-	Metadata md;
 	double dt,t0;
 	int ns;
 	Time_Reference_Type tref;
-	vector<double>s;
-	// member functions
-	Time_Series();
-	Time_Series(int nsin);
-	Time_Series(Pf *pf);
-	Time_Series(Dbptr, Metadata_list&, Attribute_map&);
-	Time_Series(const Time_Series&);
-	Time_Series(const Time_Series *);
-	Time_Series& operator=(const Time_Series&);
-	// gap processing functions need to be an intrinsic part 
-	// of the object defintion with real data
 	bool is_gap(int);  // query by sample number
 	bool is_gap(double);  // query by time
 	void add_gap(Time_Window tw){gaps.insert(tw);};
-	void zero_gaps();
-private:
+	virtual void zero_gaps()=0; // pure virtual function
+	// inline function to return time of sample i
+	double time(int i){return(t0+dt*((double)i));};
+protected:
 	set<Time_Window,Time_Window_Cmp> gaps;
+};
+// scalar time series definition
+class Time_Series: public Basic_Time_Series , public Metadata
+{
+public:
+	vector<double>s;
+	Time_Series();
+	Time_Series(int nsin);
+	// This constructor only reads data when load_data is true.  When
+	// false the Metadata object portion is constructed and reserve is called
+	Time_Series(Metadata& md,bool load_data);
+	// Antelope database constructor 
+	Time_Series(Database_Handle& db, Metadata_list& mdl, Attribute_map& am);
+	Time_Series(const Time_Series&);
+	Time_Series& operator=(const Time_Series&);
+	void zero_gaps();
 };
 
 // 
@@ -96,77 +186,78 @@ typedef struct Spherical_Coordinate_{
         double theta;
         double phi;
 } Spherical_Coordinate;
-class Three_Component_Seismogram
+/* A Three_Component_Seismogram is viewed as a special collection of Time Series 
+type data that is essentially a special version of a vector time series. 
+It is "special" as the vector is 3D with real components.  One could produce a
+similar inherited type for an n vector time series object.  
+
+The structure of a vector time series allows the data to be stored in a matrix
+*/
+//typedef matrix<double,rectangle<>,dense<>,row_major>::type Vector_Data; 
+class Three_Component_Seismogram : public Basic_Time_Series , public Metadata
 {
 public:
-	bool live;
-	Metadata md;
-	double dt,t0;
-	int ns;  // we hae insist that dt,t0, and ns are same for all
-	Time_Reference_Type tref;
 	bool components_are_orthogonal;  
 	bool components_are_cardinal;  // true if x1=e, x2=n, x3=up
 	// This is the transformation matrix applied relative to standard
 	double tmatrix[3][3]; 
-	//Using a Time_Series object adds overhead and memory use 
-	//by duplicating metadata, but adds generality
-	Time_Series x[3];
+	dmatrix u;
 	Three_Component_Seismogram();
-	Three_Component_Seismogram(int nsamp);
+	Three_Component_Seismogram(int nsamples);
+	// The next two are similar to comparable functions for Time_Series
+	Three_Component_Seismogram(Metadata& md,bool load_data);
+	Three_Component_Seismogram(Database_Handle& db, 
+		Metadata_list& mdl, Attribute_map& am);
 	Three_Component_Seismogram(const Three_Component_Seismogram&);
 	Three_Component_Seismogram& operator 
 		= (const Three_Component_Seismogram&);
-	~Three_Component_Seismogram(){}; // intentionally null because default ok
-	void rotate_to_standard();
+	~Three_Component_Seismogram(); 
+	void zero_gaps();
+	void rotate_to_standard() throw(seispp_error);
 	// This overloaded pair do the same thing for a vector
 	// specified as a unit vector nu or as spherical coordinate angles
 	void rotate(Spherical_Coordinate);
 	void rotate(double nu[3]);
 	// This applies a general transform with a 3x3 matrix.  
 	// User should set components_are_orthogonal true if they
-	// are after this transformation as the default assumes no
+	// are so after this transformation.  The default assumes not
 	// Note this is routine does NOT return to standard before
 	// applying the transformation so this is accumulative.
 	void apply_transformation_matrix(double a[3][3]);
-	bool is_gap(int);  // query by sample number
-	bool is_gap(double);  // query by time
-	void zero_gaps();
+	void free_surface_transformation(Slowness_vector u, double vs, double vp);
 };
 // Note for ensembles the lengths of each trace (3ctrace) and
 // should be allowed to be variable.  The number of elements in
 // the ensemble can be obtained using the size() function for the STL
 // vector container.
-class Time_Series_Ensemble
+class Time_Series_Ensemble : public Metadata
 {
 public:  
-	Metadata md;
 	vector <Time_Series> tse;
 
 	Time_Series_Ensemble();
 	Time_Series_Ensemble(int ntsin, int nsampin);
+	Time_Series_Ensemble(int ntsin, int nsampin, Metadata_list& mdl);
 	Time_Series_Ensemble(Pf_ensemble *pfe);
-	// This function is bad form, but I see no alernative
-	// It's purpose is to initialize the namespace for the 
-	// global metadata list.  It should not be advertised
-	void add_to_ensemble_mdlist(char *s){pushtbl(mdlist,s);};
+	friend void set_global_metadata_list(Time_Series_Ensemble& te,Metadata_list&);
 private:
-	// mdlist contains a list of names to be pulled from input pf 
-	// and copied to global Metadata area for the ensemble
-	// Note no typing is needed as this is a string copy
-	Tbl *mdlist;
+	// This list contains metadata copied as global to the ensemble
+	Metadata_list mdlist;
 };
 
-class Three_Component_Ensemble
+class Three_Component_Ensemble : public Metadata
 {
 public:
-	Metadata md;
 	vector <Three_Component_Seismogram> tcse;
 
 	Three_Component_Ensemble();
 	Three_Component_Ensemble(int nsta, int nsamp);
-	void add_to_ensemble_mdlist(char *s){pushtbl(mdlist,s);};
+	Three_Component_Ensemble(int nsta, int nsamp,
+				Metadata_list& mdl);
+	friend void set_global_metadata_list(Three_Component_Ensemble&,
+			Metadata_list&);
 private:
-	Tbl *mdlist;
+	Metadata_list mdlist;
 };
 //
 //  Mute definitions
@@ -179,63 +270,7 @@ public:
 	Top_Mute(){t0e=1.0; t1=2.0; reftype=relative;};
 	Top_Mute(Pf *pf);
 };
-//
-// We use an abstract base class and derived classes to allow variations
-// in errors thrown.  This uses methods described in books by Stroustrup
-//
-class seispp_error
-{
-public:
-	string message;
-	seispp_error(){message="seispp library error\n";};
-	seispp_error(const string mess){message=mess;};
-	virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
-};
 
-class SAC_data_error : public seispp_error
-{
-public:
-	SAC_data_error(const string mess){message=mess;};
-	virtual void log_error()
-	{
-		cerr<<"Error processing SAC format time series"<<endl;
-		cerr<<"Error message = "<<message;
-	}
-};
-// Warning the following names collide with location.h
-class Slowness_vector
-{
-public:
-	double ux,uy;   // base vector stored as components in s/km units
-	double mag(){return(hypot(ux,uy));};
-	double azimuth(){
-		double phi;
-		phi=M_PI_2-atan2(uy,ux);
-		if(phi>M_PI)
-			return(phi-2.0*M_PI);
-		else
-			return(phi);
-	};
-	double baz(){
-		double phi;
-		phi = M_PI_2-atan2(-uy,-ux);
-		if(phi>M_PI)
-			return(phi-2.0*M_PI);
-		else
-			return(phi);
-	};
-};
-class Rectangular_Slowness_Grid
-{
-public:
-	string name;
-	double uxlow, uylow;
-	double dux, duy;
-	int nux, nuy;
-	Rectangular_Slowness_Grid(Pf *);
-	double ux(int i) {return(uxlow+i*dux);};
-	double uy(int i) {return(uylow+i*duy);};
-};
 // An assignment operator is not necessary for this object as it
 //stands since it is constructed of simple types.
 class Hypocenter
@@ -316,16 +351,15 @@ public:
 //Helpers
 //
 void apply_top_mute(Time_Series &ts,Top_Mute& mute);
+void apply_top_mute(Three_Component_Seismogram& ts,Top_Mute& mute);
 void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute);
 void apply_top_mute(Three_Component_Ensemble &t3c, Top_Mute& mute);
 void apply_geometric_static(Time_Series *ts, double vel, double elev);
-void apply_geometric_static(Three_Component_Seismogram *s, double vel, double elev);
 void apply_geometric_static(Time_Series *ts);
-void apply_geometric_static(Three_Component_Seismogram *ts);
-//
-//These two functions could be constructors, but I viewed them as too 
-//complicated to be an intrinsic part of the objects.
-//
+// The set of functions are essentially constructors but considering their
+// use and level of specialization I decided they were better made helpers.
+Time_Series* get_next_time_series(Pfstream_handle *pfh);
+Time_Series *Load_Time_Series_Using_Pf(Pf *pf);
 Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	 char *tag,Metadata_list& mdlist) throw(seispp_error);
 Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
@@ -333,13 +367,22 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 // Inverse of above
 void pfstream_save_3cseis(Three_Component_Seismogram *seis,string tag,
 	string dir, string dfile, Pfstream_handle *pfh) throw(seispp_error);
+// Used by input routines to set gaps in time series objects
+void set_gaps(Time_Series&,Trsample *,int, string)
+		throw(seispp_error);
+// Spherical coordinate routines
+Spherical_Coordinate unit_vector_to_spherical(double nu[3]);
+double *spherical_to_unit_vector(Spherical_Coordinate&);
+
 // low level i/o routines
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(float *x,int n, string fname) throw(seispp_error);
 // Antelope database output routine
-void dbsave(Time_Series& ts,string table, Metadata_list& md, Attribute_map& am)
+void dbsave(Time_Series& ts,Dbptr db,string table, Metadata_list& md, Attribute_map& am)
+		throw(seispp_error);
+void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table, Metadata_list& md, Attribute_map& am)
 		throw(seispp_error);
 
 }

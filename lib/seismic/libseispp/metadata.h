@@ -7,11 +7,12 @@
 #include "stock.h"
 #include "arrays.h"
 #include "pf.h"
-#include "db.h"
+#include "dbpp.h"
 
-using namespace std;
 namespace SEISPP 
 {
+using namespace std;
+using namespace SEISPP;
 //
 //This object is used for selective copy
 //
@@ -100,7 +101,8 @@ public:
 	Metadata(Pf*);
 	Metadata(char *) throw(Metadata_parse_error);
 	Metadata(string) throw(Metadata_parse_error);
-	Metadata(Dbptr,Metadata_list&,Attribute_map&) throw(Metadata_error);
+	Metadata(Database_Handle&,
+		Metadata_list&,Attribute_map&) throw(Metadata_error);
 	Metadata(const Metadata&)
 		throw(Metadata_parse_error);
 	Metadata& operator=(const Metadata& );
@@ -125,7 +127,7 @@ public:
 	friend ostream& operator<<(ostream&,Metadata&);
 	void print_all_metadata();
 	Pf *extract_all_metadata_to_pf();
-private:
+protected:
         Pf *pf;  // Antelope's pf handle
 };
 
