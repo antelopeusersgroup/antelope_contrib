@@ -415,14 +415,14 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		{
 		    try
 		    {
-			tsread[i]=dbhv.get_double("time");
-			teread[i]=dbhv.get_double("endtime");
-			nsamp[i]=dbhv.get_int("nsamp");
-			samprate[i]=dbhv.get_double("samprate");
-			hang[i]=dbhv.get_double("hang");
-			vang[i]=dbhv.get_double("vang");
 			component[i]=Time_Series(*rdbhv,
 				md_to_extract,am);
+			tsread[i]=component[i].get_double("time");
+			teread[i]=component[i].get_double("endtime");
+			nsamp[i]=component[i].get_int("nsamp");
+			samprate[i]=component[i].get_double("samprate");
+			hang[i]=component[i].get_double("hang");
+			vang[i]=component[i].get_double("vang");
 		    } catch (...) 
 		    {
 			throw;
