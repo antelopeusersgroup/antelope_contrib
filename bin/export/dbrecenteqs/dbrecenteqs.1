@@ -71,6 +71,7 @@ is useful to make dbrecenteqs entirely responsible for the web
 database, avoiding problems of views getting modified independently 
 while dbrecenteqs is using them. 
 .fi
+
 .SH PARAMETER FILE
 
 The following is a sample parameter file. Some of the parameters 
@@ -173,7 +174,10 @@ point each hypocentral solution at the home page of the responsible analyst.
 Note that when traversing this array, the first matching regular expression 
 is used. Thus, careful regular-expression writing may be necessary 
 if one obtains unexpected results. In general, simple, intuitive entries should suffice.
+
 .nf
+The dbrecenteqs.pf parameter file:
+
 institute_url http://www.lindquistconsulting.com/
 institute_webdir /var/apache/htdocs
 institute_description Lindquist Consulting
@@ -183,6 +187,9 @@ dbrecenteqs_subdir dbrecenteqs
 dbrecenteqs_title Recent Earthquakes 
 
 wiggle mini_logo.gif
+
+legend legend.gif
+legend_description Magnitude and Age Legend for Earthquakes
 
 region_phrases_database example_region_phrases
 

@@ -9,6 +9,9 @@ dbrecenteqs_title Recent Earthquakes
 
 wiggle mini_logo.gif
 
+legend legend.gif
+legend_description Magnitude and Age Legend for Earthquakes
+
 region_phrases_database example_region_phrases
 
 nearest_places &Arr{

@@ -20,6 +20,7 @@ sub init_globals {
 		"institute_url",
 		"institute_webdir",
 		"institute_description",
+		"legend_description",
 		"page_refresh_seconds",
 		"other_region_links",
 		"nearest_places",
@@ -33,6 +34,7 @@ sub init_globals {
 
 	my( @path_params ) = (
 		"wiggle",
+		"legend",
 		"institute_logo",
 		"region_phrases_database",
 		"index_map_stylesheet",
@@ -53,6 +55,8 @@ sub init_globals {
 	chomp( $State{"wiggle_filebase"} );
 	$State{"institute_logo_filebase"} = `basename $State{"institute_logo"}`;
 	chomp( $State{"institute_logo_filebase"} );
+	$State{"legend_filebase"} = `basename $State{"legend"}`;
+	chomp( $State{"legend_filebase"} );
 
 	if( ! -d $State{institute_webdir} ) {
 		die( "The directory $State{institute_webdir} does not exist.\n" .
@@ -465,6 +469,8 @@ sub create_focusmap_html {
 			      "$State{page_refresh_seconds}" );
 	$writer->dataElement( "wiggle_href", 
 			      "$State{dbrecenteqs_url}" . "$State{wiggle_filebase}" );
+	$writer->dataElement( "legend_url", 
+			      "$State{dbrecenteqs_url}" . "$State{legend_filebase}" );
 	$writer->dataElement( "institute_url", 
 			      "$State{institute_url}" );
 	$writer->dataElement( "institute_logo_url",
@@ -472,6 +478,8 @@ sub create_focusmap_html {
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
+	$writer->dataElement( "legend_description", 
+			      "$State{legend_description}" );
 
 	$writer->dataElement( "region_string", $region_string );
 
@@ -854,6 +862,9 @@ sub create_stockmap_html {
 	$writer->dataElement( "wiggle_href", 
 			      "$State{dbrecenteqs_url}" .
 				"$State{wiggle_filebase}" );
+	$writer->dataElement( "legend_url", 
+			      "$State{dbrecenteqs_url}" .
+				"$State{legend_filebase}" );
 	$writer->dataElement( "institute_url", 
 			      "$State{institute_url}" );
 	$writer->dataElement( "institute_logo_url",
@@ -861,7 +872,8 @@ sub create_stockmap_html {
 			      "$State{institute_logo_filebase}" );
 	$writer->dataElement( "institute_description", 
 			      "$State{institute_description}" );
-
+	$writer->dataElement( "legend_description", 
+			      "$State{legend_description}" );
 
 	$writer->startTag( "pixmap", "mapclass" => "$mapclass" );
 	$writer->dataElement( "file", "$image_relpath" );
@@ -1145,6 +1157,9 @@ if( dbquery( @db, "dbRECORD_COUNT" ) <= 0 ) {
 
 if( ! -e "$State{dbrecenteqs_dir}/$State{wiggle_filebase}" ) {
 	system( "/bin/cp $State{wiggle} $State{dbrecenteqs_dir}" );
+}
+if( ! -e "$State{dbrecenteqs_dir}/$State{legend_filebase}" ) {
+	system( "/bin/cp $State{legend} $State{dbrecenteqs_dir}" );
 }
 if( ! -e "$State{dbrecenteqs_dir}/$State{institute_logo_filebase}" ) {
 	system( "/bin/cp $State{institute_logo} $State{dbrecenteqs_dir}" );

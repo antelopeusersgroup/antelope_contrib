@@ -43,6 +43,10 @@
  </h1>
  <center><img src="{pixmap/file}" usemap="#{pixmap/clientside_mapname}" align="center"/>
  </center>
+ <br />
+ <br />
+ <center><img src="{legend_url}" align="center" alt="{legend_description}" />
+ </center>
  <xsl:apply-templates select="other_maps"/>
  <xsl:apply-templates select="quakelist" mode="quaketable"/>
  <hr/>
