@@ -15,6 +15,7 @@
 #include "stock.h"
 #include "coords.h"
 #include "elog.h"
+#include "complex.h"
 #include "response.h"
 #ifdef HAVE_CGEOM
 #include "cgeom.h"
@@ -34,6 +35,8 @@ extern unsigned int mxArrayToUint32 PL_(( mxArray *array_ptr ));
 extern mxArray *CreateDouble PL_(( double input_double ));
 extern mxArray *Int32ToMxArray PL_(( int input_int ));
 extern mxArray *Uint32ToMxArray PL_(( unsigned int input_uint ));
+extern mxArray *Complex_tToMxArray PL_(( Complex_t *cx, int n ));
+extern mxArray *DoubleArrToMxArray PL_(( double *vals, int n ));
 extern mxArray *CreateNullDbptrStruct PL_(( void ));
 extern mxArray *CreateDbptrStructFromDbptr PL_(( Dbptr db ));
 extern Dbptr CastDbptrStructToDbptr PL_(( const mxArray *DbptrStruct ));
@@ -48,6 +51,7 @@ extern Pf *mxArray2Pf PL_(( mxArray * ));
 extern mxArray *Pf2mxArray PL_(( Pf *, char * ));
 extern Response *mxArray2Response PL_(( mxArray * ));
 extern mxArray *Response2mxArray PL_(( Response * ));
+extern mxArray *Response2mxArray_parse PL_(( Response * ));
 #ifdef HAVE_CGEOM
 extern int ATM_CGGrid_register PL_(( CGGrid * ));
 extern int ATM_CGGrid_unregister PL_(( CGGrid * ));

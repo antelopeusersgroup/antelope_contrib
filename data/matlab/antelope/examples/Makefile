@@ -77,6 +77,7 @@ DATA= \
 	dbexample_orbseek.m \
 	dbexample_orbselect.m \
 	dbexample_orbtell.m \
+	dbexample_parse_response.m \
 	dbexample_parsepath.m \
 	dbexample_pf2string.m \
 	dbexample_pf2struct.m \

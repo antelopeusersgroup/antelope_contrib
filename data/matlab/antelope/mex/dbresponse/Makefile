@@ -10,6 +10,7 @@ MEXSRCS= \
 	clear.c \
 	dbresponse.c \
 	eval_response.c \
+	parse_response.c \
 	free_response.c 
 
 include $(ANTELOPE)/include/mex_antelope_makerules

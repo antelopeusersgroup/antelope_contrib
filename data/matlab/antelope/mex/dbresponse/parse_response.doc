@@ -1,0 +1,16 @@
+DBRESPONSE/PARSE_RESPONSE Dbresponse parsing routine
+
+RESPONSE = PARSE_RESPONSE ( DBRESPONSE )
+
+PARSE_RESPONSE takes a DBRESPONSE object and expands it into 
+a cell array containing all the parts of the response. This 
+routine is intended for specialized applications that need to
+build their own response structures from scratch, based on 
+existing components. Each cell of the returned cell array contains 
+a structure with one stage of the response. These stages 
+can be of different types (fap, paz, iir, fir, fap2), thus the 
+structure elements will be different depending on the type of stage. 
+All structures contain an element called 'type' which is a string 
+containing one of 'fap', 'fap2', 'paz', 'iir', or 'fir'. The field
+names for each of these individual structure types should be self-explanatory, 
+given knowledge of that filter type. 

@@ -180,3 +180,68 @@ CreateDouble( double input_double )
 
 	return array_ptr;
 }
+
+mxArray *
+Complex_tToMxArray( Complex_t *cx, int nentries )
+{
+	mxArray	*array_ptr;
+	double	*real;
+	double	*imag;
+	int	i;
+
+	array_ptr = mxCreateDoubleMatrix( nentries, 1, mxCOMPLEX );
+
+        if (array_ptr == NULL)
+	{
+		mxDestroyArray( array_ptr );
+                return (mxArray *) NULL;
+	}
+
+	if( nentries <= 0 ) {
+
+		mxDestroyArray( array_ptr );
+                return (mxArray *) NULL;
+	}
+
+	real = mxGetPr( array_ptr );
+	imag = mxGetPi( array_ptr );
+
+	for( i = 0; i < nentries; i++ ) {
+
+		real[i] = cx[i].real;
+		imag[i] = cx[i].imag;
+	}
+
+	return array_ptr;
+}
+
+mxArray *
+DoubleArrToMxArray( double *vals, int nentries )
+{
+	mxArray	*array_ptr;
+	double	*real;
+	int	i;
+
+	array_ptr = mxCreateDoubleMatrix( nentries, 1, mxREAL );
+
+        if (array_ptr == NULL)
+	{
+		mxDestroyArray( array_ptr );
+                return (mxArray *) NULL;
+	}
+
+	if( nentries <= 0 ) {
+
+		mxDestroyArray( array_ptr );
+                return (mxArray *) NULL;
+	}
+
+	real = mxGetPr( array_ptr );
+
+	for( i = 0; i < nentries; i++ ) {
+
+		real[i] = vals[i];
+	}
+
+	return array_ptr;
+}
