@@ -1,0 +1,95 @@
+'\" te	
+.TH MWAPBAVG 1 "$Date$"
+.SH NAME
+mwapbavg - combutes averages mwap results over multiple frequency bands
+.SH SYNOPSIS
+.nf
+mwapbavg db [-pf pffile -phase phase]
+.fi
+.SH DESCRIPTION
+.LP
+This program is intended to be run after the multiwavelet array processing
+program (mwap) to produce an combined, broadband estimate of the timing parameters
+that mwap estimates.  That is, mwap uses multiwavelets to produce narrow
+band estimates of the slowness vector, time residuals relative to the
+best fit plane wave, polarization measurements, and relative amplitudes. 
+The parameters most related to time (slowness vector and residuals) 
+are the ones handled by mwapbavg.  The reason a special program is required
+is that the slowness vector and residuals are inseparably linked.  
+Any slowness vector deviation from one band estimate to another produces
+a planar structure to the residual surface that has to be taken into
+account to produce an unbiased, broadband estimate.
+.LP
+The mwapbavg program uses the following algorithm to produce a band average:
+.IP (1)
+A weighted slowness vector average is computed by using an inverse 
+covariance weighting for each band.  That is, we compute 
+.EQ
+bold u sub avg = left [ sum from {i=1} to {N sub bands} 
+bold C sub i sup {-2} right ] sup {-1}
+sum from {i=1} to {N sub bands} bold C sub i sup {-1} bold u sub i 
+.EN
+.IP (2)
+All time residuals in each band are corrected for the difference in the 
+plane wave correction for the band estimate relative to the average 
+computed in step (1).
+.IP (3)
+The global average is computed as a weighted sum of residuals using
+weighting by the reciprocal of the estimated time errors in each band.  
+(i.e. the errstatic field in the mwtstatic extension table created
+by mwap.)
+.IP (4)
+The arrival table is updated using the the band average residuals and
+the related slowness vector and plane-wave correction statics.
+.LP
+One should be aware that the arrivals computed by this method are
+likely to differ from those an analyst would produce.  They are more
+like what one would produce by cross correlation, but it is more
+complicated because the window used is frequency dependent.  
+.LP
+Note this algorith adds new entries for the band averages to the
+extension tables mwslow and mwtstatic.  It also updates arriva
+as noted above.  
+.SH OPTIONS
+.LP
+\fB-pf\fR allows use of an alternative parameter file to mwapbavg.pf.
+.LP
+\fB-phase\fR allows specification of a phase name other than the default
+of P.
+.SH FILES
+.LP
+Accesses the following database tables:  arrival, assoc, event, origin, mwslow, mwtstatic.
+The arrival, mwslow, and mwtstatic tables are updated.
+.SH PARAMETER FILE
+.LP
+The parameter file used by mwapbavg should, in general, be a copy of the
+parameter file used by mwap.  This is the simplest way to guarantee 
+consistency in parameters required by mwapbavg with those used by 
+mwap.  Obviously, many of the parameters used by mwap are not used
+by mwapbavg, but this is the practical way to run this.
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+mwap(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The averaging algorithm used for the slowness vectors is exact provided
+the covariance is properly estimated by mwap.  In contrast the 
+averaging for residuals is an approximation that may tend to underestimate
+uncertainties.  It neglects covariance between the slowness estimates 
+and residuals.  Since we equalize all data to a common slowness vector
+before averaging this seems correct, but doesn't really correctly 
+account for the true error model which involves coupling between
+slowness vector errors and residuals.  I judged it preferable to give
+a simple numerical estimate than try to characterize the massive 
+covariance mess of the simultaneous problem.  
+.LP
+Note that this program does not use any robust methods under and
+assumption these were taken care of in mwap.  The results may 
+be highly suspect if features like signal-to-noise cutoffs were
+disabled in mwap.
+
+.SH AUTHOR
+Gary L. Pavlis
+.\" $Id$
