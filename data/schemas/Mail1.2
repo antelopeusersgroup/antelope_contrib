@@ -83,6 +83,44 @@ Attribute foff
 	}
 	;
 
+Attribute newest
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time of newest message of a given type" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
+Attribute nmessages
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "nmessages >= 0" )
+	Description ( "number of messages" )
+	Detail {
+		This is the number of messages of a given type, 
+		for example from a certain address
+	}
+	;
+
+Attribute oldest
+	Time ( 12 )
+	Format ( "%12.0lf" ) 
+	Units ( "Seconds" ) 
+	Null  ( "-9999999999"  ) 
+	Description ( "epoch time of oldest message of a given type" ) 
+	Detail {
+	    Epochal time given as seconds and fractions of a second
+	    since hour 0 January 1, 1970, and stored in a double
+	    precision floating number.  
+	}
+	; 
+
 Attribute realname
 	String ( 80 )
 	Format ( "%-80s" ) 
@@ -150,4 +188,12 @@ Relation correspondents
 	    )
 	Primary ( from ) 
 	Description ( "Info about Correspondents" ) 
+	;
+
+Relation summary
+	Fields (
+	    from nmessages oldest newest timestamp
+	    )
+	Primary ( from )
+	Description ( "Summary of message numbers and times" )
 	;
