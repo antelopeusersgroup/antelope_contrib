@@ -225,7 +225,7 @@ sub message_to_database {
 	}
 
  	if( $Verbose ) {
- 		elog_notify( "Adding to database mail from $from at $epoch: $foff $lines $bytes $dir $dfile\n" );
+ 		elog_notify( "Adding to database mail from $from at $epoch: foff $foff lines $lines bytes $bytes $dir $dfile\n" );
 	}
 
 	my( @dbtemp ) = dblookup( @dbcorr, "", "correspondents", "from", "" );

@@ -102,6 +102,39 @@ to which problem emails are saved.
 .in 2c
 .ft CW
 .nf
+% cat try_filemail
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use Datascope;
+use filemail;
+
+elog_init( $0, @ARGV );
+
+$filemail::Verbose++;
+
+$filename = "1089360126-brogers\\@yoyodyne.net";
+$archive_dir = "archive";
+$dbname = "testdb";
+$schema = "Mail1.2";
+
+dbcreate( $dbname, $schema );
+
+@db = dbopen( $dbname, "r+" );
+
+filemail( $filename, $archive_dir, @db );
+
+% 
+
+
+% ./try_filemail 
+Filing 1089360126-brogers@yoyodyne.net in archive/2004/yoyodyne.net/brogers
+try_filemail: Adding to database mail from Buck Rogers <brogers@yoyodyne.net>
+ at 1089360126: foff 0 lines 42 bytes 1971 /home/kent/tests/filemail_verify/archive/2004/yoyodyne.net brogers
+% 
 .fi
 .ft R
 .in
