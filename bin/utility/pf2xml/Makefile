@@ -11,7 +11,7 @@ fflags=
 ldflags=
 ldlibs= -lpfxml $(DBLIBS)
 
-include $(LINDCNSMAKE)
+include $(ANTELOPEMAKE)
 
 DBG= -g
 DIRS=
