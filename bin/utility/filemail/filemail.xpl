@@ -1,156 +1,19 @@
-use Datascope ;
+#
+# filemail
+# Kent Lindquist
+# Lindquist Consulting
+# 2003-2004
+# 
+# Based on an original by Dan Quinlan, BRTT Inc
+#
+
 use Mail::Util qw( read_mbox );
 use Mail::Internet;
 
+use Datascope ;
+use filemail;
+
 require "getopts.pl" ;
- 
-sub parse_address {
-
-	my ($address) = @_ ; 
-	my( $user, $host );
-
-	if ( $address =~ /<(\S+@\S+)>/ ) { 
-		$address = $1 ;
-	} elsif ( $address =~ /(\S+@\S+)/ ) { 
-		$address = $1 ;
-	} elsif ( $address =~ /<(\S+)>/ ) {
-		$address = $1 ;
-	} elsif ( $address =~ /(\S+)/ ) { 
-		$address = $1 ;
-	} else { 
-		# print STDERR "Can't parse address '$address'\n" ;
-		return( "", "", "" );
-	}
-
-	$address =~ s/ /_/g ;
-	$address =~ s/[()'"]//g ;
-	$address =~ s/,.*// ;
-	$address =~ s/\>$// ;
-
-	if( $address =~ m/@/ ) {
-
-    		($user, $host) = split ( '@', $address, 2 ) ;
-
-		if( map { $host =~ m/$_$/ } @PreserveHosts ) {
-
-			map { $host =~ s/.*$_$/$_/ } @PreserveHosts;
-
-		} else {
-			
-    			my @parts = split ( '\.', $host ) ;
-    			while ( @parts > 3 ) { 
-				shift @parts ; 
-    			}
-    			if ( @parts == 3
-				&& ( $parts[2] eq "edu" 
-	    			|| $parts[2] eq "com" 
-	    			|| $parts[2] eq "org"
-	    			|| $parts[2] eq "gov"
-	    			|| $parts[2] eq "net"
-				)) { 
-				shift @parts ; 
-    			}
-
-    			$host = join ('.', @parts ) ; 
-		}
-
-	} else {
-
-		$user = $address;
-		$host = $nullhost;
-		$address = "$user\@$host";
-	}
-
-	$user =~ tr/[A-Z]/[a-z]/;
-	$host =~ tr/[A-Z]/[a-z]/;
-	$address =~ tr/[A-Z]/[a-z]/;
-
-	return ( $user, $host, $address ) ;
-}
-
-sub get_epoch {
-	my( $mailobj ) = @_;
-	
-	my $date = $mailobj->head->get( "Date" );
-	my $mailfrom = $mailobj->head->get( "Mail-From" );
-
-	if( $mailfrom =~ /^\s*(\S+)\s+([A-Z][a-z][a-z])\s+([A-Z][a-z][a-z])\s+(\d+)\s+(\d\d:\d\d:\d\d)\s+(\d\d\d\d)/ ) { 
-
-		$from = $1;
-		$dow = $2 ; 
-		$month = $3 ; 
-		$day = $4 ;
-		$time = $5 ; 
-		$year = $6 ; 
-		$epoch = str2epoch ( "$month $day, $year $time" ) ; 
-
-	} elsif( $mailfrom =~ /^\s*(\S+)\s+([A-Z][a-z][a-z])\s+([A-Z][a-z][a-z])\s+(\d+)\s+(\d\d:\d\d)\s+[A-Z]{3,4}\s+(\d\d\d\d)/ ) { 
-
-		$from = $1;
-		$dow = $2 ; 
-		$month = $3 ; 
-		$day = $4 ;
-		$time = $5 ; 
-		$year = $6 ; 
-		$epoch = str2epoch ( "$month $day, $year $time" ) ; 
-
-	} elsif( $date =~ m/^(?:\w{3},\s+)?(.*\d+:\d+(:\d\d)?).*/ ) {
-
-		$date = $1;
-		$epoch = str2epoch( $date );
-
-	} else {
-
-		print STDERR "Bad time in get_epoch: $date, $mailfrom\n";
-
-		if( $opt_l ) {
-
-			print ERRORLOG "Bad time in get_epoch: $date, $mailfrom\n";
-		}
-
-		$epoch = 0;
-	}
-
-	if( $epoch < 0 ) {
-
-		print STDERR "Bad time in get_epoch: $date, $mailfrom\n";
-
-		if( $opt_l ) {
-
-			print ERRORLOG "Bad time in get_epoch: $date, $mailfrom\n";
-		}
-
-		$epoch = 0;
-	}
-	
-	return $epoch;
-}
-
-sub realname { 
-	my ( $address ) = @_ ; 
-
-	my( $real ) = "" ;
-
-	if ( $address =~ /\((.*)\)/ ) { 
-
-		$real = $1 ; 
-
-	} elsif ( $address =~ /\s*([^<>]*)\s*<.*>/ ) { 
-
-		$real = $1 ; 
-
-	} else { 
-		;
-	}
-
-	$real =~ s/"//g ;
-
-	if( $real eq "" ) {
-		$real = "-";
-	}
-
-	return $real ;
-}
 
 sub bycopy {
 
@@ -174,112 +37,6 @@ sub bycopy {
 
 		# Intentionally put the ones with more plusses first:
 		return length( $bplusses ) <=> length( $aplusses );
-	}
-}
-
-sub message_to_database {
-	my( $mfile, $dir, $dfile, $foff, $lines, $bytes, @message ) = @_;
-
-	if( ref( $message[0] ) eq "Mail::Internet" ) {
-		
-		$mailobj = $message[0];
-
-	} else {
-
-	 	$mailobj = new Mail::Internet( \@message );	
-	}
-
- 	$mailobj->head->unfold();
- 
- 	$from = $mailobj->head->get( "From" );
-	
-	if( ! defined( $from ) || $from eq "" ) {
-		
-		$from = $mailobj->head->get( "Mail-From" );
-	}
-
-	$real = realname( $from );
- 
- 	( $user, $host, $address ) = parse_address( $from );
-
-	if( ! defined( $address ) || $address eq "" ) {
-		
-		if( $opt_l ) {
-
-			printf ERRORLOG "Blank address in $mfile. Not recording in database!\n";
-		}
-
-		printf STDERR "Blank address in $mfile. Not recording in database!\n";
-
-		return;
-	}
- 
-	$to = $mailobj->head->get( "To" );
-	if( defined( $to ) && $to ne "" ) {
-		$to = ( parse_address( "$to" ) )[2];
-	}
-
-	if( map { $address =~ m/$_/ } ( @Me ) ) {
-
-		$sent++;
-	} else { 
-		$sent = 0;
-	} 
-
-	chomp( $subject = $mailobj->head->get( "Subject" ) );
-
- 	$epoch = get_epoch( $mailobj );
- 
- 	if( $address eq "" || $epoch == 0  ) {
- 		
-		if( $opt_l ) {
-
- 			printf ERRORLOG "Problem parsing message $from at $epoch. Not recording in database!\n"; 
-		}
-
- 		printf STDERR "Problem parsing message $from at $epoch. Not recording in database!\n"; 
-
-		return;
-	}
-
- 	if( $opt_v ) {
- 		printf( "Adding to database mail from $from at $epoch: $foff $lines $bytes $dir $dfile\n" );
-	}
-
-	@dbtemp = dblookup( @dbcorr, "", "correspondents", "from", "" );
-	$address_size = dbquery( @dbtemp, dbFIELD_SIZE );
-
-	if( $sent ) {
-		$dbout[3] = dbaddnull( @dbout );
-		dbputv( @dbout,  "to", $to, 
-				"subject", $subject, 
-				"time", $epoch, 
-				"lines", $lines,
-				"bytes", $bytes,
-				"foff", $foff,
-				"dir", $dir, 
-				"dfile", $dfile );
-	} else {
-		$dbin[3] = dbaddnull( @dbin );
-		dbputv( @dbin,  "from", $address, 
-				"subject", $subject, 
-				"time", $epoch, 
-				"lines", $lines,
-				"bytes", $bytes,
-				"foff", $foff,
-				"dir", $dir, 
-				"dfile", $dfile );
-
-		if( ( $dbcorr[3] = dbfind( @dbcorr, "from == substr(\"$address\",0,$address_size)" ) ) < 0 ) {
-			dbaddv( @dbcorr, "from", $address,
-			 	"descrip", $real, 
-				"realname", $real );
-		} else {
-			$oldreal = dbgetv( @dbcorr, "descrip" );
-			if( length( $real ) > length( $oldreal ) ) {
-				dbputv( @dbcorr, "descrip", $real );
-			}
-		}
 	}
 }
 
@@ -309,7 +66,7 @@ sub redo_database {
 
 			if( @message ) {
 
-				message_to_database( $mfile, $dir, $dfile, $startmsg_foff,
+				message_to_database( @db, $mfile, $dir, $dfile, $startmsg_foff,
 						     $lines, $bytes, @message );
 			} 
 
@@ -330,7 +87,7 @@ sub redo_database {
 
 	if( @message ) {
 
-		message_to_database( $mfile, $dir, $dfile, $startmsg_foff, $lines, $bytes, @message );
+		message_to_database( @db, $mfile, $dir, $dfile, $startmsg_foff, $lines, $bytes, @message );
 	}
 
 	close( MFILE );
@@ -433,10 +190,7 @@ sub sorted_bytime_unique {
 				    (0 == system( "diff $file $possible_match > /dev/null 2>&1" ) ) ) {
 					
 					if( $opt_v ) {
-						print "Skipping $file (matches $possible_match)\n";
-					}
-					if( $opt_l ) {
-						print ERRORLOG "Skipping $file (matches $possible_match)\n";
+						elog_notify( "Skipping $file (matches $possible_match)\n" );
 					}
 					next MESSAGE;
 				}
@@ -449,134 +203,11 @@ sub sorted_bytime_unique {
 	return @files;
 }
 
-sub filemail {
-	my( $file ) = @_;
-
-	my( $sent ) = 0;
-
-	open( IN, "$file" );
-	$mailobj = new Mail::Internet( \*IN );
-	close( IN );
-	
-	chomp( $subject = $mailobj->head->get( "Subject" ) );
-	$epoch = get_epoch( $mailobj );
-	$year = epoch2str( $epoch, "%Y" );
-	$sent_relpath = epoch2str( $epoch, $sent_archive_pattern );
-
-	$from = $mailobj->head->get( "From" );
-
-	if( ! defined( $from ) || $from eq "" ) {
-	
-		$from = $mailobj->head->get( "Mail-From" );
-	} 
-
-	( $user, $host, $address ) = parse_address( $from );
-
-	if( $address eq "" || $epoch == 0 ) {
-		
-		$dir = "$Archivedir";
-		$dfile = "FormatProblems";
-
-		printf STDERR "Blank address in $file! Filing in $dir/$dfile.\n";
-		if( $opt_l ) {
-			printf ERRORLOG "Blank address in $file! Filing in $dir/$dfile.\n";
-		}
- 
-	} elsif( map { $subject =~ m/$_/ } keys( %Subjects ) ) {
-
-		$dir = "$Archivedir/$year/$host";
-		foreach $exp ( keys( %Subjects ) ) { 
-			if( $subject =~ m/$exp/ ) {
-				$dfile = $Subjects{$exp};
-				last;
-			}
-		}
-
-	} elsif( map { $address =~ m/$_/ } ( @Me ) ) {
-
-		( $dir, $base, $suffix ) = 
-			parsepath( "$Archivedir/$sent_relpath" );
-		
-		if( ( ! defined( $suffix ) ) || $suffix eq "" ) {
-			$dfile = $base;
-		} else {
-			$dfile = "$base.$suffix";
-		} 
-
-	} else {
-
-		$dir = "$Archivedir/$year/$host";
-		$dfile = $user;
-	}
-
-	if( $opt_v ) { 
-
-		if( $opt_n ) {
-
-			printf( "Would file " );
-
-		} else {
-
-			printf( "Filing " );
-		}
-
-		printf( "$file in $dir/$dfile\n" );
-	}
-
-	if( $opt_n ) {
-
-		return;
-	}
-
-	if( ! -e "$dir" ) {
-		$status = system( "mkdir -p $dir" );
-		if( $status ) {
-			fprintf( STDERR, "Problem with $file\n" );
-			if( $opt_l ) {
-				fprintf( ERRORLOG, "Problem with $file\n" );
-			}
-		}
-	}
-
-	if( ( ! -e "$dir/$dfile" ) || -z "$dir/$dfile" ) {
-
-		$foff = 0;
-		$startline = 0;
-
-	} else {
-
-		chomp( $parts = `wc $dir/$dfile` );
-		$parts =~ s/^\s*//;
-		( $startline, $foff ) = ( split( /\s+/, $parts ) )[0,2];
-	}
-
-	chmod 0644, "$dir/$dfile";
-	# Put the old-style 'From' header back in
-	open( OUT, "|sed -e 's/^Mail-From: /From /' >>$dir/$dfile" );
-	$mailobj->print( \*OUT );
-	close( OUT );
-	chmod 0444, "$dir/$dfile";
-
-	chomp( $new_parts = `wc $dir/$dfile` );
-	$new_parts =~ s/^\s*//;
-	($new_startline, $new_foff ) = ( split( /\s+/, $new_parts ) )[0,2];
-
-	$bytes = $new_foff - $foff;
-	$lines = $new_startline - $startline;
-
-	$dir = abspath( $dir );
-
-	message_to_database( $file, $dir, $dfile, $foff, $lines, $bytes, $mailobj );
-
-	system( "/bin/mv $file $Fileddir" );
-}
 
 $do_split = 0;
 $do_file = 0;
 $do_sort = 0;
 $do_database = 0;
-
-elog_init( "filemail", @ARGV );
 
 if ( ! &Getopts('aunfvsS:d:l:') ) { 
 
@@ -600,15 +231,24 @@ unless( $opt_a ) {
 
 if( $opt_l ) {
 
-	if( $opt_v ) {
+	$ENV{ELOG_DELIVER} = "stderr " . abspath( $opt_l );
+}
 
-		printf STDERR "Logging errors to $opt_l\n";
+elog_init( "filemail", @ARGV );
+
+if( $opt_v ) {
+	
+	if( $opt_l ) {
+
+		elog_notify( "Logging errors to $opt_l\n" );
 	}
 
-	open( ERRORLOG, ">>$opt_l" );
+	$filemail::Verbose++;
+}
 
-	print ERRORLOG "Beginning filemail run:\n";
-	print ERRORLOG "-----------------------\n";
+if( $opt_n ) {
+
+	$filemail::Dryrun++;
 }
 
 if( ( $opt_f && $opt_s ) ||
@@ -663,14 +303,11 @@ $Splitdir = pfget( $Pf, "splitdir" );
 $Fileddir = pfget( $Pf, "fileddir" );
 $Archivedir = pfget( $Pf, "archivedir" );
 
-$nullhost = pfget( $Pf, "Hosts{NULL}" );
-@PreserveHosts = @{pfget( $Pf, "Hosts{Preserve}" )};
-@Me = @{pfget( $Pf, "Me" )};
-%Subjects = %{pfget( $Pf, "Subjects" )};
-$sent_archive_pattern = pfget( $Pf, "sent_archive_pattern" );
-
-#Keep the `From ' fields to use that date if the Date tag is bad:
-Mail::Header->mail_from( COERCE );
+$filemail::Nullhost = pfget( $Pf, "Hosts{NULL}" );
+@filemail::PreserveHosts = @{pfget( $Pf, "Hosts{Preserve}" )};
+@filemail::Me = @{pfget( $Pf, "Me" )};
+%filemail::Subjects = %{pfget( $Pf, "Subjects" )};
+$filemail::Sent_archive_pattern = pfget( $Pf, "sent_archive_pattern" );
 
 if( ! $opt_n && ! $opt_d ) {
 	mkdir $Splitdir, 0755 || die( "Can't make directory $Splitdir\n" );
@@ -691,9 +328,6 @@ if( $do_database ) {
 	}
 
 	@db = dbopen( $mail_dbname, "r+" );
-	@dbcorr = dblookup( @db, "", "correspondents", "", "" );
-	@dbin = dblookup( @db, "", "in", "", "" );
-	@dbout = dblookup( @db, "", "out", "", "" );
 
 	foreach $file ( @ARGV ) {
 
@@ -714,9 +348,6 @@ if( $do_database ) {
 	}
 
 	@db = dbopen( $mail_dbname, "r+" );
-	@dbcorr = dblookup( @db, "", "correspondents", "", "" );
-	@dbin = dblookup( @db, "", "in", "", "" );
-	@dbout = dblookup( @db, "", "out", "", "" );
 }
 
 @contents = sorted_bytime();
@@ -743,9 +374,10 @@ if( $do_file ) {
 
 	foreach $file ( sorted_bytime_unique() ) {
 
-		filemail( $file );
-	}
+		filemail( $file, $Archivedir, @db );
 
+		system( "/bin/mv $file $Fileddir" );
+	}
 }
 
 if( $do_sort ) {
@@ -760,9 +392,4 @@ if( $do_sort ) {
 	}
 
 	chmod 0444, "$sortedfile";
-}
-
-if( $opt_l ) {
-
-	close( ERRORLOG );
 }

@@ -1,0 +1,125 @@
+.TH FILEMAIL 3p "$Date$"
+.SH NAME
+parse_address, message_to_database, get_epoch, realname \- perl utilities to 
+help file mail messages to a Datascope database
+.SH SYNOPSIS
+.nf
+
+use filemail;
+
+filemail( $in, $archive_dir, @db );
+
+message_to_database( @db, $name, $dir, $dfile,
+			$foff, $lines, $bytes, @message );
+
+( $user, $host, $address ) = parse_address( $address );
+
+$epoch = get_epoch( $mailobj );
+
+$real = realname( $address );
+
+$filemail::Verbose = 0;
+$filemail::Dryrun = 0;
+$filemail::FormatProblems = "FormatProblems";
+$filemail::Nullhost = "localhost";
+$filemail::Sent_archive_pattern = "%Y/SENT/%B";
+@filemail::Me = ();
+@filemail::PreserveHosts = ();
+%filemail::Subjects = ();
+
+.fi
+.SH DESCRIPTION
+These routines assist in saving mail messages to a Datascope database 
+of mail, currently in Mail1.2 format. 
+
+The filemail routine takes an input message as $in. This may be either 
+the name of a file containing a single mail message, or a reference 
+to a Mail::Internet object. filemail copies the message to the 
+appropriate location under the $archive_dir directory, and records 
+the mail message in a Mail1.2 Datascope database to which the @db 
+database pointer should be open with write permission. Mail messages 
+by default are saved into subdirectories and files as YEAR/domain/sender.
+Database entries are made via the message_to_database function into 
+the \fIin\fP table of the mail database. If there are problems parsing
+the input mail, the message is saved to the $filemail::FormatProblems
+file under $archive_dir. If the input message was sent from an address 
+matching one of the addresses in the array @filemail::Me, the mail will 
+instead be saved under $archive_dir according to the value of 
+$filemail::Sent_archive_pattern (all of these module variables may be 
+overridden in user code). The domain name for the directory will often 
+be a shortened version of the full domain in the email address, unless 
+said domain appears in $filemail::PreserveHosts. Finally, if the 
+subject of the email matches any of the regular-expression patterns 
+given in the keys of %filemail::Subjects, the message will be saved 
+to a file named after the corresponding value, rather than after the 
+username of the sender. See filemail(1) for an example. 
+
+
+parse_address splits apart the username, domain name, and fully
+qualified email address of an email address from a line in the message
+header. If the email address is not fully qualified, the $host output
+defaults to $filemail::Nullhost. All characters are
+converted to lowercase. The host may be shortened to produce a
+convenient version of the domain name for archiving (for example,
+converting all .*.ucsd.edu hosts to simply ucsd.edu) unless the host
+appears in the @filemail::PreserveHosts array.
+
+The get_epoch function extracts timestamp information out of the mail
+headers and returns the unix epoch time for the timestamp on the email.
+The input $mailobj value should be a reference to a Mail::Internet(3)
+mail message object.
+
+The realname function extracts and returns the 'real name' of the
+correspondent from the mail headers.
+
+The message_to_database function takes a database
+pointer, a mail message which can be either a reference to a
+Mail::Internet object or a perl array representing the message itself,
+and records the message as saved in the database with the accompanying
+parameters. This routine does not actually save the message itself. The
+mail is recorded in the 'in' table of the database unless the sender
+appears in the @filemail::Me array in which case it is saved in the 'out' 
+table. The $name argument is only used in error messages, and may contain
+the source-name of an input file if the message comes from a file. The $dir, $dfile and $foff arguments
+specify where the email message was saved. The $lines and $bytes record
+the size of the message. These must be exact in order for future
+message lookups to succeed.
+
+If the $filemail::Verbose variable is nonzero, verbose messages are
+printed.
+
+If the $filemail::Dryrun variable is nonzero, the filemail routine 
+only reports what it would do without doing it.
+
+The $filemail::FormatProblems variable specifies the name of a file
+to which problem emails are saved. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+filemail(1), mp_filemail(3), Mail::Internet(3)
+.fi
+.SH "BUGS AND CAVEATS"
+the filemail.pm module sets the Mail::Header->mail_from() to COERCE, 
+in order to keep the 'From ' fields from the header and use the contained 
+date information if the Date: tag in the email is bad. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
