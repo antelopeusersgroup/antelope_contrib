@@ -8,9 +8,8 @@ pmelavg db [-pf pffile]
 .fi
 .SH DESCRIPTION
 .LP
-The implementations of pmel (dbpmel(1) found in Antelope 4.5 
-and pmelgrid, which has not yet been released) found in
-in this package focus on geographically defined gridding described
+The implementations of pmel (dbpmel(1) and pmelgrid(1))
+focus on geographically defined gridding described
 in cluster(1).  That is, they aim to satisfy the approximations of
 multiple event location methodologies, of which pmel is an example,
 by only utilizing groups of events located close together in space.
@@ -22,7 +21,11 @@ events associated with different grid points.  \fIpmelavg\fR
 averages these multiple estimates in a fairly simple way and defines
 it's estimate as the prefor for that evid.
 .LP
-The algorithm used is a minor variant on a simple average.  Each 
+The averaging algorithm is the local OR of two fairly simple algorithms.
+(i.e. you can use one or the other or both cascaded together)
+The first approach weights each location estimate by the reciprocal
+of the rms residual for that event (sdobs found in the origerr of
+CSS3.0).  The second uses a distance dependent weight.  Each
 event is compared to it's distance from the hypocentroid of the group 
 with which it is associated.  Below a cutoff distances set in the parameter
 file (see below) an event is given full weight.  If the distance of an event
@@ -31,6 +34,10 @@ weight is applied (correctly normalized to have a unit weight at the
 cutoff distance.).  To make the algorithm a simple mean simply make the
 cutoff distance a large number.  To make the average approximate a nearest
 neighbor estimate, make r smaller than the nominal grid spacing.  
+.LP
+If both averaging methods are selected, the result is a weighted sum
+formed by multiplying the weights of the two terms together.  If only one
+method is selected, the weights are as described above.  
 .SH OPTIONS
 .LP
 Use the -pf option to specify an alternative pf to the stock one 
@@ -41,11 +48,20 @@ defined by the program name (i.e. pmelavg.pf).
 The real parameter \fIfull_weight_distance\fR sets the cutoff parameter
 described above.  Units are assumed to be kilometers.
 .LP
+The two weighting methods are controlled by two boolean parameters 
+called use_inv_r_weighting and use_ssr_weighting.  
+.LP
 This program also uses dbprocess to form a working view.  The sequence
 passed to dbprocess is defined by the input Tbl \fIpmelavg_dbview\fR.
 This should not normally be altered.  It was made a parameter instead of
 being hard wired into the program to make it less susceptible to schema
 changes and changes in attribute naming conventions.  
+One exception is that the following line:
+.nf
+    dbsubset algorithm=~/pmelgrid/
+.fi
+is variable depending on the version of pmel used.  The above form is 
+correct for pmelgrid.  If you used dbpmel, change pmelgrid to dbpmel.
 
 .SH ATTRIBUTES
 NOT MT-Safe 
