@@ -59,34 +59,32 @@ void apply_top_mute(Three_Component_Seismogram &ts,Top_Mute& mute)
 void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute)
 {
 	vector<Time_Series>::iterator i;
-	Time_Series& tseries = *i;
 
 	// This might be doable with STL algorithms, but this is so
 	// simple why bother  Note the reference makes tseries an anias for *i
 	// for some strange reason the scope resolution operator 
 	// is necessary to avoid an overload ambiguity
 	for(i=t.tse.begin();i!=t.tse.end();++i) 
-		apply_top_mute(tseries,mute);
+		apply_top_mute(*i,mute);
 }
 // 
 // For an ensemble of 3-component seismograms.
 //
 void apply_top_mute(Three_Component_Ensemble &t3ce, Top_Mute& mute)
 {
-	vector<Three_Component_Seismogram>::iterator i;
-	Three_Component_Seismogram& t3c=*i;
+	vector<Three_Component_Seismogram>::iterator t3c;
 
-	for(i=t3ce.tcse.begin();i!=t3ce.tcse.end();++i)
+	for(t3c=t3ce.tcse.begin();t3c!=t3ce.tcse.end();++t3c)
 	{
-		apply_top_mute(t3c,mute);
+		apply_top_mute(*t3c,mute);
 	}
 }
 // Probably should have started with this, but we need constructors
 // This uses a pf
 Top_Mute::Top_Mute(Pf *pf,string tag)
 {
-	Metadata md(pf,tag);
 	try {
+		Metadata md(pf,tag);
 		string reft = md.get_string("Time_Reference_Type");
 		if(reft=="absolute")
 			reftype = absolute;

@@ -153,7 +153,8 @@ public:
 	void add_gap(Time_Window tw){gaps.insert(tw);};
 	virtual void zero_gaps()=0; // pure virtual function
 	// inline function to return time of sample i
-	double time(int i){return(t0+dt*((double)i));};
+	double time(int i){return(t0+dt*static_cast<double>(i));};
+	double endtime(){return(t0+dt*static_cast<double>(ns-1));};
 	// inverse of time
 	int sample_number(double t){return(nint((t-t0)/dt));};
 	void ator(double tshift);
@@ -242,6 +243,23 @@ public:
 	Time_Series_Ensemble(int ntsin, int nsampin);
 	Time_Series_Ensemble(int ntsin, int nsampin, Metadata_list& mdl);
 	Time_Series_Ensemble(Pf_ensemble *pfe);
+//@{
+// Standard copy constructor. 
+//@}
+	Time_Series_Ensemble(Time_Series_Ensemble& tseold);
+//@{
+// Partial copy constructor. 
+// Sometimes it is useful to copy only the Metadata from an ensemble 
+// and leave slots open for the container to hold the data objects for
+// the ensemble.  
+// @param md is the metadata object to copy to the metadata area for the ensemble.
+// @param nmembers is the number of slots to reserve in the new ensemble vector.
+//@}
+	Time_Series_Ensemble(Metadata& md,int nmembers);
+//@{
+// Standard assignment operator.
+//@}
+	Time_Series_Ensemble& operator=(const Time_Series_Ensemble& tseold);
 	friend void set_global_metadata_list(Time_Series_Ensemble& te,Metadata_list&);
 private:
 	// This list contains metadata copied as global to the ensemble
@@ -261,6 +279,23 @@ public:
 		Metadata_list& station_mdl,
 		Metadata_list& ensemble_mdl,
 		 Attribute_Map& am);
+//@{
+// Standard copy constructor.
+//@}
+	Three_Component_Ensemble(Three_Component_Ensemble& tseold);
+//@{
+// Partial copy constructor. 
+// Sometimes it is useful to copy only the Metadata from an ensemble 
+// and leave slots open for the container to hold the data objects for
+// the ensemble.  
+// @param md is the metadata object to copy to the metadata area for the ensemble.
+// @param nmembers is the number of slots to reserve in the new ensemble vector.
+//@}
+	Three_Component_Ensemble(Metadata& md,int nmembers);
+//@{
+// Standard assignment operator.
+//@}
+	Three_Component_Ensemble& operator=(const Three_Component_Ensemble& tseold);
 	friend void set_global_metadata_list(Three_Component_Ensemble&,
 			Metadata_list&);
 private:

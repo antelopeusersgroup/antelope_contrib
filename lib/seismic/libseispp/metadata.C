@@ -440,7 +440,7 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 		} catch( Metadata_error merr)
 		{
 			cerr << "Error in copy_selected_metadata at item ";
-			cerr << count << "with tag" << mdti->tag <<"\n" ;
+			cerr << count << " with tag " << mdti->tag <<"\n" ;
 			cerr << "Copy truncated" << endl;
 			merr.log_error();
 			throw;

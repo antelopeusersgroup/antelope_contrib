@@ -18,6 +18,7 @@ public:
         void add_gap(Time_Window tw){gaps.insert(tw);};
         virtual void zero_gaps()=0; 
 	double time(int i);
+	double endtime();
         int sample_number(double t);
 	void ator(double tshift);
 	void rtoa(double tshift);

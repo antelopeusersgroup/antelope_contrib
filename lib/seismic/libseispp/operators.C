@@ -1,6 +1,14 @@
 #include "seispp.h"
 namespace SEISPP
 {
+/* This file contains operators for several different object.  
+All are very similar.  
+
+A maintenance issue is that most functions contain a pfdup 
+call.  This is a hidden method to clone the Metadata connected
+to that object.  The problem is if the Metadata implementation
+changes this will break this code.
+*/
 
 Time_Series& Time_Series::operator=(const Time_Series& tsi)
 {
@@ -43,6 +51,32 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 			}
 		}
 		u=seisin.u;
+	}
+	return(*this);
+}
+// assignment operators for ensemble objects (could be templated)
+//
+Time_Series_Ensemble& Time_Series_Ensemble::operator=(const Time_Series_Ensemble& tseold)
+{
+	if(this!=&tseold)
+	{
+		pf = pfdup(tseold.pf);
+		int nmembers=tseold.tse.size();
+		tse.reserve(nmembers);
+		for(int i=0; i<nmembers; ++i)
+			tse.push_back(tseold.tse[i]);
+	}
+	return(*this);
+}
+Three_Component_Ensemble& Three_Component_Ensemble::operator=(const Three_Component_Ensemble& tseold)
+{
+	if(this!=&tseold)
+	{
+		pf = pfdup(tseold.pf);
+		int nmembers=tseold.tcse.size();
+		tcse.reserve(nmembers);
+		for(int i=0; i<nmembers; ++i)
+			tcse.push_back(tseold.tcse[i]);
 	}
 	return(*this);
 }

@@ -124,10 +124,12 @@ Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& tcei,
 	string arrival_time_key,
 		Time_Window tw)
 {
-	//Use the default constuctor because the output size may not match
-	// the input when errors occur
-	Three_Component_Ensemble *tceo=new Three_Component_Ensemble();
-	tceo->tcse.reserve(tcei.tcse.size());  // reserve this many slots for efficiency
+	int nmembers=tcei.tcse.size();
+	// use the special constructor to only clone the metadata and 
+	// set aside slots for the new ensemble.
+	Three_Component_Ensemble *tceo
+		=new Three_Component_Ensemble(dynamic_cast<Metadata&>(tcei),nmembers);
+	tceo->tcse.reserve(nmembers);  // reserve this many slots for efficiency
 	// We have to use a loop instead of for_each as I don't see how
 	// else to handle errors cleanly here.
 	vector<Three_Component_Seismogram>::iterator indata;

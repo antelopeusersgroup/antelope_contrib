@@ -351,6 +351,17 @@ Three_Component_Seismogram::Three_Component_Seismogram
 	for(i=0;i<3;++i)
 		for(j=0;j<3;++j) tmatrix[i][j]=t3c.tmatrix[i][j];
 }
+// small helpers to avoid cluttering up code below.
+bool tmatrix_is_cardinal(Three_Component_Seismogram& seis)
+{
+	if( (seis.tmatrix[0][0]!=1.0) || (seis.tmatrix[0][1]!=0.0) 
+		||  (seis.tmatrix[0][2]!=0.0) )return(false);
+	if( (seis.tmatrix[1][0]!=0.0) || (seis.tmatrix[1][1]!=1.0) 
+		||  (seis.tmatrix[1][2]!=0.0) )return(false);
+	if( (seis.tmatrix[2][0]!=0.0) || (seis.tmatrix[2][1]!=0.0) 
+		||  (seis.tmatrix[2][2]!=1.0) )return(false);
+	return(true);
+}
 /* Constructor to read a three-componet seismogram from an antelope
 database.  Arguments:
 	rdb - generic database handle (cast to Anteloep form)
@@ -391,7 +402,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 			throw(seispp_dberror(
 			  string(this_function_base_message
 			  +	"  database bundle pointer irregularity\n"
-			  +     "All data must have exactly 3 channels per event"),
+			  +     "All data must have exactly 3 channels per bundle"),
 			  dbh.db,complain));
 		// Use the simplified copy constructor 
 		// Have to assume the parent is not a bundle pointer
@@ -539,6 +550,11 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 			for(j=0;j<3;++j)tmatrix[i][j]=nu[j];
 			delete [] nu;
 		}
+		components_are_cardinal = tmatrix_is_cardinal(*this);
+		if(components_are_cardinal) components_are_orthogonal=true;
+		// Could test for orthogonal, but simpler to just
+		// let the transformation matrix get inverted.
+		//
 		// last thing we do is mark this live
 		live = true;
 	}
@@ -581,6 +597,22 @@ Time_Series_Ensemble::Time_Series_Ensemble(int nensemble,
 	}
 	mdlist=mdl;
 }
+Time_Series_Ensemble::Time_Series_Ensemble(Time_Series_Ensemble& tceold)
+	: Metadata(dynamic_cast <Metadata&>(tceold))
+{
+	int nmembers=tceold.tse.size();
+	tse.reserve(nmembers);
+	for(int i=0; i<nmembers; ++i)
+		tse.push_back(tceold.tse[i]);
+}
+// Partial copy constructor copies metadata only.  reserves nmembers slots
+// in ensemble container
+Time_Series_Ensemble::Time_Series_Ensemble(Metadata& md,int nmembers)
+	: Metadata(md)
+{
+	tse.reserve(nmembers);
+}
+	
 void set_global_metadata_list(Time_Series_Ensemble& tse, Metadata_list& mdl)
 {
 	tse.mdlist=mdl;
@@ -655,7 +687,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
 //DEBUG
-cerr << "Ensemble has data for " << nsta << " stations"<<endl;
+cerr << "Ensemble has data for " << nsta << " members"<<endl;
 		// We need a copy of this bundle pointer 
 		Datascope_Handle dbhv(ensemble_bundle.parent,
 			ensemble_bundle.parent,true);
@@ -663,7 +695,7 @@ cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 		// constructor uses a generic handle
 		Database_Handle *rdbhv=dynamic_cast
 			<Database_Handle *>(&dbhv);
-		// Loop over stations
+		// Loop over members
 		for(i=0,dbhv.db.record=ensemble_bundle.start_record;
 			dbhv.db.record<ensemble_bundle.end_record;
 			++i,++dbhv.db.record)
@@ -673,11 +705,11 @@ cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 					station_mdl,am);
 			} catch (seispp_dberror dberr)
 			{
-				cerr << "Problem with station "
+				cerr << "Problem with member "
 					<< i 
 					<< " in ensemble construction" << endl;
 				dberr.log_error();
-				cerr << "Data for this station skipped" << endl;
+				cerr << "Data for this member skipped" << endl;
 				continue;
 			}
 			catch (Metadata_error mderr)
@@ -704,6 +736,22 @@ cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 		}
 
 	} catch (...) { throw;};
+}
+//copy constructor 
+Three_Component_Ensemble::Three_Component_Ensemble(Three_Component_Ensemble& tceold)
+	: Metadata(dynamic_cast <Metadata&>(tceold))
+{
+	int nmembers=tceold.tcse.size();
+	tcse.reserve(nmembers);
+	for(int i=0; i<nmembers; ++i)
+		tcse.push_back(tceold.tcse[i]);
+}
+// Partial copy constructor copies metadata only.  reserves nmembers slots
+// in ensemble container
+Three_Component_Ensemble::Three_Component_Ensemble(Metadata& md,int nmembers)
+	: Metadata(md)
+{
+	tcse.reserve(nmembers);
 }
 
 } // Termination of namespace SEISPP definitions
