@@ -1,0 +1,125 @@
+require &Arr{
+int &Tbl{
+pmel_maximum_sc_iterations 1 100
+}
+double &Tbl{
+pmel_initial_error_scale
+pmel_minimum_error_scale 
+pmel_minimum_sswrodgf
+pmel_F_test_critical_value 0.9 1.0
+pmel_svd_relative_cutoff 0.0000000001 1.0
+pmel_sc_fraction_convergence_error 0.0000001 0.1
+}
+string &Tbl{
+3Dreference_model
+travel_time_model	
+pmel_run_name
+gridname
+pmelrun_archive_directory
+author
+}
+boolean &Tbl{
+use_all_stations
+use_dnorth_deast
+pmel_autodelete_high_rms
+pmel_cluster_mode
+}
+}
+author dbpmel:pavlis
+pmel_run_name testpmelgrid
+gridname knet
+pmelrun_archive_directory pmelruns
+
+dbpmel_dbview_definition &Tbl{
+dbsubset gridid<1000
+	dbjoin cluster
+	dbjoin event
+	dbjoin origin
+	dbsubset orid==prefor
+	dbjoin assoc
+	dbjoin arrival
+}
+use_all_stations true
+use_dnorth_deast false
+pmel_autodelete_high_rms true
+pmel_cluster_mode true
+pmel_initial_error_scale 10.0
+pmel_minimum_error_scale  1.0
+pmel_minimum_sswrodgf 1.0 
+pmel_F_test_critical_value 0.95
+pmel_svd_relative_cutoff  0.001
+pmel_sc_fraction_convergence_error 0.01
+pmel_stations &Arr{
+}
+#
+#  This contains a list of evids and coordinates to fix
+# x=ew, y=ns, z=up/down, t=origin time
+#
+pmel_calibration_events &Tbl{
+}
+#
+#  This produces an unbiased solution - bias projects to 0
+#
+3Dreference_model 1dcvl/kyrghyz
+travel_time_model	1dcvl/kyrghyz
+phases_to_use &Tbl{
+P
+S
+Lg
+}
+pmel_maximum_sc_iterations 10
+#
+# This is copied from dbgenloc.pf -- it probably has unnecessary
+parameters
+#
+arrival_residual_weight_method	huber
+bad_clocks	&Tbl{
+}
+center_depth	10.0
+center_latitude	42.1311
+center_longitude	73.6941
+clock_error_cutoff	0.1
+confidence	0.683
+damp_adjust_factor	5.0
+deltax_convergence_size	0.01
+depth_ceiling	0.0
+depth_floor	500.0
+depth_range	5.0
+ellipse_type	chi_square
+fix_depth	0
+fix_latitude	0
+fix_longitude	0
+fix_origin_time	0
+generalized_inverse	pseudoinverse
+gridsearch_norm	raw
+initial_depth	50
+initial_latitude	42.1311
+initial_location_method	manual
+initial_longitude	73.6941
+latitude_range	5.0
+longitude_range	5.0
+max_error_scale	1000.0
+max_relative_damp	1.0
+maximum_azimuth	360.0
+maximum_distance	2.0
+maximum_hypocenter_adjustments	40
+maximum_iterations	40
+min_error_scale	1.0
+min_relative_damp	0.000005
+min_step_length_scale	0.01
+minimum_azimuth	0.0
+minimum_distance	0.1
+ndepths	3
+nlat	20
+nlon	20
+number_points_azimuth	36
+number_points_r	19
+output_file	location_output
+recenter	0
+relative_rms_convergence_value	0.01
+singular_value_cutoff	0.0001
+slowness_distance_weighting	0
+slowness_residual_weight_method	none
+slowness_weight_scale_factor	1.0
+step_length_scale_factor	0.5
+time_distance_weighting	0

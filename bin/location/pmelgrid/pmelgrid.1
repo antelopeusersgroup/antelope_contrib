@@ -1,0 +1,122 @@
+.TH PMELGRID 1 "$Date$"
+.SH NAME
+pmelgrid - data driven processing module for PMEL catalog relocation
+.SH SYNOPSIS
+.nf
+pmelgrid db pfistream pfostream [-pf file -V]
+.fi
+.SH DESCRIPTION
+.LP
+The \fIpmelgrid\fR program is designed to relocate events in
+a catalog using the method called Progressive Multiple Event
+Location (PMEL).  It uses the same internal algorithm as
+a closely related program called dbpmel(1).  
+(The user is referred to the man page for dbpmel for more
+fundamentals of the algorithm.)  The control pf
+files are, in fact, identical.  The only differences is
+the way pmelgrid handles input data compared to dbpmel.
+The dbpmel program reads directly from a database while
+pmelgrid reads data from a pfstream(5).  
+.LP
+The reason pmelgrid was written as an alternative to dbpmel
+was that dbpmel has serious performance problems on large
+databases.  Databases with the order of 0.5 to 2 million arrivals
+are common.  With large databases dbpmel became completely io 
+bound with most of the wall time spent on database updates.  
+Because processing a large catalog with dbpmel took weeks of
+time the io system used to feed the computing modules internal
+to the program was completely changed.  The result is pmelgrid.
+.LP
+The io approach in pmelgrid is completely data driven and centered
+on a library called libpfstream.  A pfstream(5) is a way
+to encapsulate rows of a database into a stream format in a general
+way.  It is used in pmelgrid as a transport mechanism for data in
+and out of the main processing loop.  A user of this program will
+hopefully not need to care about the actual format until a problem
+develops.  This program is multithreaded.  A read and write thread
+are spawned whose only role is to handle data input and output
+data.  Both read and write threads use BRTT's pmtfifo to allow
+the processing loop to quickly move data in and off of the queues
+to reduce io wait times.  The pmtfifo queues are mutex protected 
+making this approach feasible.  
+.LP
+If \fIpmelgrid\fR is to be run in a multiprocessor environment 
+on a shared memory system (e.g. Sun Enterprise servers), it can
+and should be compiled with MPI.  When compiled with MPI the 
+execution time on a parallel system should approach a linear 
+speedup. (i.e. if N processors are available the 
+execution speed should be roughly N times faster or execution 
+time should be reduced by approximately 1/N.)  
+Note that the mechanism used by the current implementation 
+will NOT work with MPI on a distributed memory machine.  
+A distributed memory interface is under development and should
+be completed by summer 2003.  
+.LP
+The program requires three arguments.  
+\fIdb\fR is the parent database.  The only table it references is
+the site table and (when defined) the timing table.  Data flow in
+through \fIpfistream\fR and out through \fIpfostream\fR.  
+\fIpfistream\fR and \fIpfostream\fR can be regular files, but 
+the expectation is that they would normally be a fifo created with
+the mkfifo(1) command.  The input stream should be connected to 
+the output of db2pfstream2db(1) and the output should normally be
+connected to the input of pfstream2db(1).  
+With this mechanism a typical run would be
+something like this:
+.nf
+mkfifo pfi
+mkfifo pfo
+db2pfstream anza pfi &
+pfstream2db pfo new &
+pmelgrid anza pfi pfo
+.fi
+.LP
+where in this example pfi is the input stream to pmelgrid and 
+pfo is the output stream from pmelgrid.  
+.LP
+In initial testing it may be wise to use regular files instead of a fifo,
+but for large catalogs the pfstream files can get huge very fast.  
+Be aware that if a regular file is used for output you will need to 
+create an empty file with touch(1) before running pmelgrid or it
+will abort with a diagnostic.  
+.SH OPTIONS
+.IP -pf
+Use file instead of default parameter file named "pmelgrid.pf".  Note
+the usual antelope pf rule that "file" should not contain the ".pf" 
+extension.  
+.IP -V
+Prints a usage line and exits.  
+.SH FILES
+.LP
+Input and output are all through pfstream files described in pfstream(5).
+.SH PARAMETER FILE
+.LP
+See dbpmel(1).  All options are identical.
+.SH DIAGNOSTICS
+Error messages are logged with the elog facility.  
+.SH "SEE ALSO"
+.nf
+dbpmel(1), pfstream2db(1), db2pfstream(1), pfstream(5)
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1)
+The current version has not been extensively tested with MPI.  Use
+at your own risk unless you ask the author about status.
+.IP (2)
+The MPI interface may change drastically.  We are aiming to make
+the shared memory and distributed memory versions of the program
+identical at the source code level so the internal algorithm does
+not need to be altered for different systems.  
+.IP (3)
+The input and output fifo's could, perhaps, have been done through
+stdin and stdout but it was my judgement that this avoided a lot of
+potential problems with extraneous error messages accidentally getting
+entrained in the pfstream files.  This could cause nasty errors 
+that would be hard to track down or recreate.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
