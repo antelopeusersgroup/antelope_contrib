@@ -185,6 +185,7 @@ char **argv;
 
 	n = 0;
 	lastpkt_age = 0;
+	if (messages) putmsg (orbout, db, "orbcp", "Start message logging");
 	while (1) {
 		if (!first) {
 			ret = fdkey(orbin);
@@ -407,6 +408,7 @@ putmsg (int orb, Dbptr db, char *prog, char *msg)
 	db = dblookup (db, 0, "remark", 0, "dbSCRATCH");
 	gethostname (name, 512);
 	sprintf (string, "%s(%s:%d): %s %s", prog, name, getpid(), strtime(now()), msg);
+	complain (0, "%s\n", string);
 	dbputv (db, 0, "remark", string, 0);
 	db2orbpkt (db, orb);
         orbflush (orb);
