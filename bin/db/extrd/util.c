@@ -52,7 +52,7 @@ fprintf( stderr, "check %lf - %lf * %lf \n",
 new->time, segment->endtime, segment->samprate);
 #endif
 
-        nsamp = (int) fabs ( ( (new->time - segment->endtime) * segment->samprate));
+        nsamp = (int) (new->time - segment->endtime) * segment->samprate;
         if( segment->calib != new->calib ||
             segment->calper != new->calper ||       
             segment->samprate != new->samprate ||
