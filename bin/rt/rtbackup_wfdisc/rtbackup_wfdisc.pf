@@ -1,0 +1,16 @@
+
+real_time_wfdir 	/mad/wf
+real_time_wf_dbname 	/mad/wf/cnsn
+
+wf_subdir_pattern	%Y%m%d
+
+archive_wfdir 		/crooked/wf/%Y
+archive_wf_dbname 	/crooked/wf/cnsn%Y%m
+
+copy			/bin/cp -r
+cat			/bin/cat
+
+ignore_most_recent_ndays 5
+
+minimum_database_overlap_ndays	60
+warning_email		mulder@pgc.nrcan.gc.ca

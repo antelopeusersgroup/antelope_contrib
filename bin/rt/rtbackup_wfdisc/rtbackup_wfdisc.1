@@ -1,0 +1,177 @@
+.TH RTBACKUP_WFDISC 1 "$Date$"
+.SH NAME
+rtbackup_wfdisc \- prototype script to copy waveforms from real-time database to archive
+.SH SYNOPSIS
+.nf
+rtbackup_wfdisc [-n] [-v]
+.fi
+.SH DESCRIPTION
+The rtbackup_wfdisc script is designed to work in conjunction with rtdbclean(1). rtbackup_wfdisc(1)
+copies waveforms from a real-time acquisition database into an archive database (usually 
+on a larger disk partition or perhaps on a RAID device) before they get cleaned up by 
+rtdbclean(1).
+
+The rtbackup_wfdisc script performs the following set of steps: 1) 
+Find the oldest day of waveform data in an archive database or set of 
+archive databases; 2) Copy the next un-archived day of waveform data from the real-time database to the
+archive waveform directory; 3) Copy the wfdisc rows from the real-time 
+database to the archive database. 
+
+The script processes only one day at a time. This allows the operator to run 
+it by hand as many times as necessary to catch up, or to run it regularly at 
+appropriate intervals from within the rtexec(1) crontab table to automate 
+real-time archiving. The latter is intended as the standard mode of operation.
+
+The parameter ignore_most_recent_ndays protects the most recent window of waveform 
+data from being prematurely transferred to the archive, i.e. before any late-arriving
+automatic acquisitions are received. This parameter should be set according to 
+the maximum length of retransmit delays etc. that are expected in the orb data for your 
+real-time network. For example, if data can come in as much as two days late for 
+a variety of reasons, ignore_most_recent_ndays should be set to at least 3 or 4 days 
+to make sure days are transferred to the archive only when they are as complete
+as possible. 
+
+The real-time database from which waveforms are taken is specified by the parameter real_time_wf_dbname
+in the parameter file. The waveforms for this database are expected to be organized by day 
+in the directory specified by the real_time_wfdir parameter, with each day in a subdirectory
+labelled according to the parameter wf_subdir_pattern. This parameter is actually a string that 
+is passed to the epoch2str(3) command to create timestamped subdirectory names. For example, to create
+subdirectory names like 2004_07_31, one would use a wf_subdir_pattern of %Y_%m_%d. For more information 
+on these patterns, see the man page for epoch2str(3). 
+
+The archive directory for raw waveforms, and the database name for the archival wfdisc table, 
+are specified by the parameters archive_wfdir and archive_wf_dbname, respectively. As above, these 
+parameters may contain percent-escapes in the style of epoch2str(3) if the directories 
+need to have time-dependent names. A consequence of this is that rtbackup_wfdisc may create a set of 
+regularly-named archive wfdiscs, rather than just one. This is often desirable for large datasets.
+
+The parameters copy and cat give unix pathnames to the unix copy and cat commands. On most Unix 
+systems the default values should not have to be changed. Note that the standard Unix copy command 
+needs to be specified with the -r option explicitly written in the parameter file entry, so 
+directories are copied recursively. 
+
+After completing its run, rtbackup_wfdisc checks to see if the overlap between the archive database 
+and the real-time database is greater than or equal to the number of days specified in the 
+minimum_database_overlap_ndays parameter. If not, it sends a warning email to the address 
+specified by the warning_email parameter. If an rtdbclean operation appears to be enabled, 
+rtbackup_wfdisc examines the rtdbclean.pf parameter file and adjusts its overlap estimate to
+account for the scheduled cleanup.
+
+.SH OPTIONS
+.IP -v
+Verbose
+
+.IP -n
+Don't actually run any commands; just announce what actions are planned. In truth 
+this option does still allow a few read-only exploratory commands to be run (those that query
+existing databases for their contents). 
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+
+.nf
+
+real_time_wfdir 	/mad/wf
+real_time_wf_dbname 	/mad/wf/cnsn
+
+wf_subdir_pattern	%Y%m%d
+
+# Note that the archive_wfdir and archive_wf_dbname parameters
+# may contain percent-escapes from the epoch2str(3) command, 
+# which will be replaced by values determined from the day 
+# of waveform data being transferred:
+
+archive_wfdir 		/crooked/wf/%Y
+archive_wf_dbname 	/crooked/wf/cnsn%Y%m
+
+copy			/bin/cp -r
+cat			/bin/cat
+
+ignore_most_recent_ndays 5
+
+minimum_database_overlap_ndays	30
+warning_email		mulder@pgc.nrcan.gc.ca
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+This program is intended to be run from within the crontab table of 
+a real-time system, i.e. with an rtexec(1) crontab entry something like
+the following:
+.nf
+
+crontab &Arr{
+rtrtbackup_wfdisc UTC 30 8 * * * rtbackup_wfdisc -v
+}
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+rtdbclean(1), rtbackup(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+The main problem with this script is that it is not purely data-driven; it relies in 
+part on time-based synchronization, namely it has to run often and efficiently enough to win a 
+race with rtdbclean(1). Relying on time-based synchronization in an asynchronous data system is 
+almost always a major structural weakness. Granted, rtbackup_wfdisc does monitor the archive and 
+real-time databases to alert an operator when the data are at risk. However, a fully correct 
+solution would require more coordination of effort between rtdbclean and rtbackup_wfdisc, preferably 
+combining them into one script, such that all assurance of data integrity comes from decisions 
+based solely on properties of the data such as time span of archive, time-span of real-time 
+database, and available disk space, not timing issues such as cron-job scheduling or execution races. 
+At the very least, some form of data-based locking between rtbackup_wfdisc and rtdbclean would be 
+necessary to make this script's approach safer. That would probably require a modification of 
+rtdbclean(1). Because of the current weakness, this script is intended as a prototype piece of 
+scaffolding, not a long-term solution. 
+
+This script assumes that orb2db is always creating wfdisc.dir entries that are 
+relative directories, following the patten specified in the pf file as wf_subdir_pattern.
+If orb2db output changes, wf_subdir_pattern in rtbackup_wfdisc.pf must be modified accordingly. 
+
+rtbackup_wfdisc will complain and exit if it is unable to create and lock a file named .rtdbclean in the
+current run directory. This is to avoid working on a database which rtdbclean is modifying, and 
+also to prevent rtdbclean from modifying a database on which rtbackup_wfdisc is working. 
+
+rtbackup_wfdisc assumes there are already some pre-existing archives. If not, it will complain and die. 
+The script also assumes that the directory with archive waveform databases is clean, i.e. there is
+no clutter of hand-created database tables with names similar to the automated ones. (such 
+clutter might confuse the automated filename-globbing that looks for the most recent archive
+database to see how far it has progressed).
+
+rtbackup_wfdisc is designed only to handle waveforms that are divided up by whole days. Also, if the 
+subdirectory pattern itself has more than one directory level in it (i.e. if the subdirectory pattern 
+contains forward slashes), the results of the script are undetermined. If necessary, this would be 
+an easy weakness to fix. Similarly, the script may only support one level of new-directory creation for 
+archive_wfdir at the moment.
+
+rtbackup_wfdisc assumes that there are no missed days in the real-time database. If there are, a more 
+sophisticated strategy will be needed to decide the next day to archive. If rtbackup_wfdisc 
+fails because it cannot find rows in the real-time database, it will complain bitterly.
+Backups will not proceed until the gap is crossed by hand, thus 
+rtbackup_wfdisc is destined to eventually lose the race with rtdbclean(1). As a side-note, rtbackup_wfdisc
+needs a -j option to explicitly specify the jdate to back up (rather than deriving it from
+the contents of the archive), so this manual-assistance task can be performed easily by the system operator. 
+
+A more advanced version might use trexcerpt to clean up the database during the move. 
+
+rtbackup_wfdisc relies on a number of command-line Database utilities with results piped to 
+the perl script. This is fine for this quick prototype, however a more polished application 
+might handle the operation more robustly by opening the databases directly and performing 
+the necessary operations on them.
+
+The calculated overlap between real-time and archive databases is subject to a number of real-time 
+configuration issues and thus should be taken only as an estimate, not a precision measurement that allows 
+you to cut backup tolearances down to the wire. 
+.SH AUTHOR
+.nf
+Taimi Mulder (Geological Survey of Canada, Sidney, B.C.)
+Kent Lindquist (Lindquist Consulting, Inc.)
+.fi
+.\" $Id$
