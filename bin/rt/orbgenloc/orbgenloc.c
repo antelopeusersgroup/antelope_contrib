@@ -153,7 +153,7 @@ written yet.
 Author:  Gary L. Pavlis
 Written:  February 1997
 */
-void save_origerr(int orid, Hypocenter h, Dbptr db, int orb)
+void save_origerr(int orid, Hypocenter h, float **C, Dbptr db, int orb)
 {
 	double sdobs; 
 
@@ -167,6 +167,16 @@ void save_origerr(int orid, Hypocenter h, Dbptr db, int orb)
 	sdobs = h.rms_raw;
 	if(dbputv(db,0,
 		"orid",orid,
+                "sxx",C[0][0],
+                "syy",C[1][1],
+                "szz",C[2][2],
+                "stt",C[3][3],
+                "sxy",C[0][1],
+                "sxz",C[0][2],
+                "syz",C[1][2],
+                "stx",C[0][3],
+                "sty",C[1][3],
+                "stz",C[2][3],
 		"sdobs",sdobs,
 			0) == dbINVALID)
 	{
@@ -503,6 +513,7 @@ void compute_location(Location_options o,
 	int orid;
 	Point origin;
 	double delta, seaz;
+	float **C, *emodel;
 
 	initialize_hypocenter(&h0);
 
@@ -561,13 +572,18 @@ void compute_location(Location_options o,
 			if(ret_code > 0)
 				complain(0,"Warning:  %d travel time calculator failures in ggnloc\nSolution ok for evid %d\n",
                                 	ret_code,hyp.evid);
+			C = matrix(0,3,0,3);
+			emodel = (float *) calloc(4,sizeof(float));
+			if((emodel == NULL) || (*C == NULL) )
+				die(0,"Malloc error for error arrays\n");
 			niterations = maxtbl(converge_history);
                 	hypo = (Hypocenter *)gettbl(converge_history,
 							niterations-1);
+			predicted_errors(*hypo, ta, tu, o, C, emodel);
                		orid = save_origin(hyp.evid,master_db,
 					 dbtmp,*hypo,o,orbout);
 
-                	save_origerr(orid,*hypo,dbtmp,orbout);
+                	save_origerr(orid,*hypo,C,dbtmp,orbout);
 			save_assoc(ta, tu, orid, vmodel, 
 				*hypo, dbtmp,orbout);
 			elog_notify(0,"orid %d converged in %d iterations\n",
@@ -578,6 +594,8 @@ void compute_location(Location_options o,
 			elog_notify(0,"\n");
 			s=format_hypo(hypo);
 			elog_notify(0,"%s\n",s);
+			free(emodel);
+			free_matrix((char **)C,0,3,0);
 			free(s);
 		}
 		write_to_logfile(rtopts, orid, hyp.evid,
