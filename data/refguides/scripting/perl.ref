@@ -151,6 +151,33 @@ dbfind (@db, string [, first [,reverse]])
 dbinvalid()
     return database pointer of dbINVALID
 
+<subsection Waveforms>
+trsample(@db, $t0, $t1, $sta, $chan[, $apply_calib])
+    fetch waveform data from table @db for
+    $sta/$chan between $t0 and $t1. returns time/value pairs 
+    If $apply_calib is non-zero, calib is applied.
+
+trloadchan(@db, $t0, $t1, $sta, $chan)
+    load data for $sta/$chan between time $t0 and $t1.  
+    returns database pointer to trace table.
+
+trdata(@db[, $i0[, $npts]])
+    returns $npts data points starting at $i0 from trace table record @db
+
+trsplit(@tr)
+    eliminate marked gaps inside the trace table @tr by splitting
+    segments containing marked values
+
+trsplice(@tr)
+    glue together segments (if possible) in trace table
+    @tr, eliminating overlapping segments.
+
+trfilter(@tr, filter)
+    apply specified filter to the traces; see trfilter(3)
+
+trfree(@tr)
+    free trace table memory.
+
 <subsection Error handling>
 elog_init ($0, @ARGV)
     initialize the elog message routines
