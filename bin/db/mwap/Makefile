@@ -2,7 +2,7 @@ BIN=mwap		# commands to be placed in bin
 INCLUDE=	# include files to be placed in include
 PF=mwap.pf		# parameter files to be placed in data/pf
 
-MAN1=		# man pages for commands
+MAN1=mwap.1
 #MAN3=		# man pages for library routines
 #MAN5=		# man pages for file formats
 
