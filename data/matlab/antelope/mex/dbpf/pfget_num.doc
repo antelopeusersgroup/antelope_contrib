@@ -1,0 +1,6 @@
+PFGET_NUM Get a numeric value from a parameter-file object
+
+NUM = PFGET_NUM ( DBPF, NAME )
+
+PFGET_NUM takes an Antelope parameter-file object and
+extracts the named numeric value from it.

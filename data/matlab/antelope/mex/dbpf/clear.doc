@@ -1,0 +1,8 @@
+DBPF/CLEAR Dbpf elimination routine
+DBRESPONSE/CLEAR Dbresponse elimination routine
+
+CLEAR ( DBPF )
+CLEAR ( DBRESPONSE )
+
+CLEAR frees a DBPF or DBRESPONSE object, clearing it from
+memory.  Same as PFFREE or FREE_RESPONSE, respectively.

@@ -1,0 +1,10 @@
+PFPUT Put a value into a parameter-file object
+
+PFPUT ( DBPF, NAME, VALUE )
+
+PFPUT takes a  VALUE and puts it into the specified
+Antelope parameter-file object. The value is inserted based
+on its type. Strings and numbers are inserted as such.
+Structures are inserted as Arrays and Cell Arrays are
+insterted as tables.
+

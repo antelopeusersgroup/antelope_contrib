@@ -1,0 +1,10 @@
+PFGET_BOOLEAN Get a boolean value from a parameter-file object
+
+BOOLEAN = PFGET_BOOLEAN ( DBPF, NAME )
+
+PFGET_BOOLEAN takes an Antelope parameter-file object and
+extracts the named boolean value for it. If the value is
+true, PFGET_BOOLEAN returns -1. If the value is false, not
+recognized, or uninterpretable, PFGET_BOOLEAN returns 0.
+PFGET_BOOLEAN recognizes as true such entries as 'true',
+'yes', 'y', 'Y', and 1.

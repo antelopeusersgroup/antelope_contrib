@@ -1,0 +1,6 @@
+PF2STRING Convert a parameter file object to a string
+
+STRING = PF2STRING ( DBPF )
+
+PF2STRING takes an Antelope parameter-file object and
+converts it to a string.

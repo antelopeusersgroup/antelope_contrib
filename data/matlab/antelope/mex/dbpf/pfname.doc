@@ -1,0 +1,12 @@
+PFNAME Find the name of a parameter-file object
+
+NAME = PFNAME ( DBPF )
+
+PFTYPE takes an Antelope parameter-file object of type
+'PFFILE' (i.e. the type initially returned by the DBPF
+constructor upon opening a parameter file or parameter-file
+cascade) and returns the name which was passed to DBPF.
+This command does not work on subsidiary parameter-file
+types such as type 'PFARR', because there are situations in
+which one can create a 'PFARR' type parameter file object
+that does not have a name.

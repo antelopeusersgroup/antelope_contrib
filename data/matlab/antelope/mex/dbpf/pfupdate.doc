@@ -1,0 +1,13 @@
+PFUPDATE Dbpf (Parameter File) update utility
+
+[PF, MODIFIED] = PFUPDATE ( PF )
+
+PFUPDATE may be called repeatedly for a parameter file which
+is  sometimes  updated;  if  any  of the component parameter
+files (along PFPATH) have changed since the last update, the
+entire sequence is reread and PFUPDATE sets the value of 
+MODIFIED to 1. If nothing has changed in the parameter file, 
+MODIFIED is set to 0. The input argument to PFUPDATE is an 
+already-open parameter-file object. Only top-level parameter-file
+object (those corresponding to an entire, open parameter file, not 
+just a subsection such as a contained array) are allowed.

@@ -1,0 +1,8 @@
+PFTYPE Find the type of a parameter-file object
+
+TYPESTRING = PFTYPE ( DBPF )
+
+PFTYPE takes an Antelope parameter-file object and returns
+the type of the object, usually 'PFFILE' or 'PFARR' (other
+types such as 'PFSTRING' and 'PFTBL' are automatically
+internally converted to native Matlab datatypes).

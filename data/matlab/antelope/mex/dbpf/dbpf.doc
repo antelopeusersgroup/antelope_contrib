@@ -1,0 +1,18 @@
+DBPF Dbpf (Parameter File) class constructor
+
+PF = DBPF ( ) **or** DBPF ( PFNAME ) **or** DBPF ( PF, STRING )
+
+DBPF creates a parameter-file object PF by reading the
+parameter file specified by PFNAME. DBPF takes the basename
+of the PFNAME argument, appends '.pf', then searches for
+files along the environment-variable path PFPATH. If this
+is not set, the DBPF constructor searches in
+$ANTELOPE/data/pf, then in the current working directory.
+If no argument is specified, DBPF creates a new
+parameter-file object which can be filled in with values
+using the pfput series of commands.  If two arguments are
+specified, the first another parameter file object and the
+second a string value, the STRING is compiled into the
+parameter-file object PF and the new parameter-file object
+is returned (for the converse utility see the pf2string
+command).

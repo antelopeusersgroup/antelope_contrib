@@ -1,0 +1,6 @@
+PFWRITE	Save a parameter-file object to a file.
+
+PFWRITE ( DBPF, FILENAME )
+
+PFWRITE takes an Antelope parameter-file object DBPF and
+saves it to the file specified by FILENAME.

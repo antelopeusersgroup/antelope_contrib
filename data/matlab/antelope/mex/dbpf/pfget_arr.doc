@@ -1,0 +1,9 @@
+PFGET_ARR Get an associative array from a parameter-file object
+
+MYPF = PFGET_ARR ( DBPF, NAME [, 'recursive' ] )
+
+PFGET_ARR takes an Antelope parameter-file object and
+extracts the named Associative array from it into another
+DBPF object of type 'PFARR'. If the 'recursive' argument is
+specified, PFGET_ARR will try to recursively descend
+through any array objects it encounters.

@@ -1,0 +1,6 @@
+PFGET_STRING Get a string from a parameter-file object
+
+STRING = PFGET_STRING ( DBPF, NAME )
+
+PFGET_STRING takes an Antelope parameter-file object and
+extracts the named string from it.

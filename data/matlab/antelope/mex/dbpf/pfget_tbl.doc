@@ -1,0 +1,9 @@
+PFGET_TBL Get an ordered list from a parameter-file object
+
+LIST = PFGET_TBL ( DBPF, NAME [, 'recursive' ] )
+
+PFGET_TBL takes an Antelope parameter-file object and
+extracts the named Tbl (ordered list) from it into a Matlab
+cell array of strings. If the 'recursive' argument is
+given, PFGET_TBL will try to recursively descend through
+any array objects it encounters.

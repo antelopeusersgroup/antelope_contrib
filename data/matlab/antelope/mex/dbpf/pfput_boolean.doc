@@ -1,0 +1,8 @@
+PFPUT_BOOLEAN Put a boolean value into a parameter-file object
+
+PFPUT_BOOLEAN ( DBPF, NAME, VALUE )
+
+PFPUT_BOOLEAN takes a boolean VALUE and puts it into the
+specified Antelope parameter-file object.  PFPUT_BOOLEAN
+recognizes as true such entries as 'true', 'yes', 'y', 'Y',
+and 1.

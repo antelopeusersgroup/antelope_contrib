@@ -1,0 +1,16 @@
+PF2STRUCT Convert a parameter file object to a structure
+
+MYSTRUCT = PF2STRUCT ( DBPF [, 'recursive' ] )
+
+PF2STRUCT takes an Antelope parameter-file object and
+converts it to a Matlab structure. Each parameter name in
+the parameter file becomes a field name in the structure.
+The Antelope parameter-file library is more tolerant of
+crazy names for parameters (such as names that include '.'
+or '#') than the Matlab structure-field naming conventions.
+If such a nonstandard parameter name is encountered,
+PF2STRUCT will complain and fail.  In this case, the other
+interfaces to the parameter file library must be used, such
+as PFGET etc. If the 'recursive' argument is specified,
+PF2STRUCT will attempt to recursively descend through any
+array objects it encounters.

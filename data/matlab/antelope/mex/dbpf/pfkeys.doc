@@ -1,0 +1,7 @@
+PFKEYS	Find the parameter names in a parameter-file object
+
+KEYS = PFKEYS ( DBPF )
+
+PFKEYS takes an Antelope parameter-file object and returns
+a cell-array of strings, listing the parameter names in the
+parameter-file object.
