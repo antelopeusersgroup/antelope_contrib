@@ -39,7 +39,6 @@ int gps_coord( uchar_t *packet,
     hdr = ( struct BBAHdr *) packet;
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
 
-    if( *Pkt == 0 ) *Pkt = newpkt();
     (*Pkt)->pkttype = ntohl (hdr->prehdr.pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->prehdr.hdrtype);
 		 

@@ -32,7 +32,6 @@ struct Packet **Pkt;
 
     hdr = ( struct IPHdr *) packet;
     
-    if( *Pkt == 0 ) *Pkt = newpkt();
     (*Pkt)->pkttype = ntohl (hdr->prehdr.pkttype);
     (*Pkt)->hdrtype = ntohl (hdr->prehdr.hdrtype);
      

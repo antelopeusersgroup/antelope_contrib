@@ -34,6 +34,7 @@ new_db_buffer (PktChannel *src, Save_params *params)
     strncpy (buf->chan, src->chan, PKT_NAMESIZE);
 
     maxsamp = TIME2SAMP (0.0, src->samprate, params->memsize ) ; 
+    maxsamp = maxsamp>0?maxsamp:1;
     buf->mem = new_data_segment (maxsamp);
     buf->disk = new_data_segment (0);
 

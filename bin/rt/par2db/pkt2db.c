@@ -5,22 +5,24 @@
 Arr *Selected = 0;
 
 int
-pkt2db (char *srcname,
+pkt2db ( Packet **Pkt,
+        char *srcname,
 	double pkttime,
 	char *packet,
 	Save_params * params)
 {
     int i ; 
     PktChannel *achan ;
-    static Packet *unstuffed=0 ;
+    Packet *unstuffed ;
     Db_buffer *buffer ;
     char acomp[64];
 
     if( Selected == 0 )
       Selected = newarr( 0 );
 
-    switch ( unstuffpar (packet, pkttime, &unstuffed, srcname )) {
+    switch ( unstuffpar (packet, pkttime, Pkt, srcname )) {
 	case 1:
+	    unstuffed = *Pkt;
 	    for (i = 0; i < unstuffed->nchannels; i++) {
 		achan = (PktChannel *) gettbl (unstuffed->chan, i);
 		sprintf( &acomp[0], "%s_%s_%s\0", 

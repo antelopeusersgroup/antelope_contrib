@@ -1,6 +1,7 @@
 /* @(#)par2db.c	1.2 12/30/96  */
 
 #include "par2db.h"
+#include "header.h"
 
 FILE *F1;
 int DCSP = 0;
@@ -94,18 +95,21 @@ char          **argv;
     	           nsid,
 		   dinterval = 0,
 		   id;
+    static Packet *unstuffed=0 ;
+    
+    
     Program_Name = argv[0];
     elog_init (argc, argv);
     elog_notify ( 0, "%s Version Version 1.6 10/28/96\n", Program_Name ) ; 
 
+    DiagPar = 0;
     params.memsize = 60.0;
     params.segment_size = 86400.0;
     params.wfname = 0;
     strcpy (params.datatype, "s4");
     params.gapmax = 120.0 ;
-
-    maxpkts = 30;
-
+    maxpkts = 5;
+    
     while ((c = getopt (argc, argv, "cgm:i:u:Vvw:")) != -1)
 	switch (c) {
 
@@ -147,6 +151,8 @@ char          **argv;
 
     params.datacode = trINT;
     params.gap_value = TRGAP_VALUE_S4 ; 
+    unstuffed = newpkt();
+
 
     /*
     F1 = fopen( "pardump", "w" );
@@ -273,7 +279,7 @@ char          **argv;
 		if ( pkttime >= until) 
 			done = 1 ; 
 		else 
-		  if (pkt2db (srcname, pkttime, packet, &params))
+		  if (pkt2db ( &unstuffed, srcname, pkttime, packet, &params))
 		     die (0, "pkt2db fails\n");
 	    }
 	}
