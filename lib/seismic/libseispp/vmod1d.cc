@@ -56,23 +56,25 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 			throw(Velocity_Model_1d_dberror(name,
 			  "Error forming working view for P velocity"));
 		}
-		z=new double[nlayers];
-		v=new double[nlayers];
-                grad=new double[nlayers];
+		z.reserve(nlayeres);
+		v.reserve(nlayers);
+		grad.reserver(nlayers);
 		for(i=0,dbs2.record=0;dbs2.record<nlayers;++dbs2.record,++i)
 		{
-			if(dbgetv(dbs2,0,"paramval",&(v[i]),
-					"depth",&(z[i]),
-					"grad",&(grad[i]),0) == dbINVALID)
+			double vin, zin, gradin;
+			dbgetv(dbs2,0,"paramval",vin, 
+				"depth",zin,
+				"grad",gradin,0) == dbINVALID)
 			{
 				dbfree(dbs1);
 				dbfree(dbs2);
 				freetbl(sortkeys,0);
-				delete [] v;
-				delete [] z;
 				throw(Velocity_Model_1d_dberror(name,
 				  "dbgetv error reading P velocities"));
 			}
+			z.push_back(zin);
+			v.push_back(vin);
+			grad.push_back(gradin);
 		}
 		dbfree(dbs1);
 		dbfree(dbs2);
@@ -114,8 +116,7 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 	if(form=="rbh" || form=="plain")
 	{
 		char line[255];
-		list <double> zin,vin;
-		list <double>::iterator znow,vnow;
+		double znow;
 
 		// throw away the first few lines for rbh format
 		if(form=="rbh")
@@ -133,13 +134,13 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 				for(i=0;i<7;++i) input >> skipper;
 			if(property=="P")
 			{
-				zin.push_back(f1);
-				vin.push_back(f2);
+				z.push_back(f1);
+				v.push_back(f2);
 			}
 			else if(property == "S")
 			{
-				zin.push_back(f1);
-				vin.push_back(f3);
+				z.push_back(f1);
+				v.push_back(f3);
 			}
 			else
 			{
@@ -147,38 +148,14 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 				throw(Velocity_Model_1d_ioerror("Illegal property parameter = "+property,
 					"Velocity_Model_1d constructor failed"));
 			}
+			// all values are 0 for gradient here
+			grad.push_back(0.0);
 		}
 		input.close();
-		nlayers = zin.size();
-		z=new double[nlayers];
-		v=new double[nlayers];
-		// this function only handles constant velocity layers
-                grad=new double[nlayers];
-		for(i=0;i<nlayers;++i)grad[i]=0.0;
-		for(i=0,znow=zin.begin(),vnow=vin.begin();
-			znow!=zin.end(),vnow!=vin.end();++znow,++vnow,++i)
-		{
-			z[i]=*znow;
-			v[i]=*vnow;
-		}
-		if(i!=nlayers)
-		{
-			nlayers = i-1;
-			input.close();
-			throw(Velocity_Model_1d_ioerror("Format error:  need at least z,vp,vs lines in the input model description lines",
-				"Velocity_Model_1d object only partially constructed"));
-		}
+		nlayers = z.size();
 		// replace z values (currently intervals) with accumulated
 		// depth to top of each layer
-		double zbot,ztmp;
-		zbot = z[0];
-		z[0]=0.0;
-		for(i=1;i<nlayers;++i)
-		{
-			ztmp = z[i];
-			z[i]=zbot;
-			zbot += ztmp;
-		}
+		for(i=1,z[0]=0.0;i<nlayers;++i)  z[i]+=z[i-1];
 	}
 	else
 	{

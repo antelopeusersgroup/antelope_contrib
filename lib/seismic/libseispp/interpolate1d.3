@@ -116,6 +116,10 @@ probably return an int with an error code when this happens, but this
 has not been implemented.  Note that throwing an exception would be a 
 bad idea in this case as the result when an exception is thrown can
 be undefined.  
+.IP (4) 
+Last but not least this library could and probably should be made object oriented
+instead of procedural.  This was implemented by putting wrappers around an 
+existing core set of procedural routines.  It could have been designed differently.
 .SH AUTHOR
 .nf
 Gary L. Pavlis

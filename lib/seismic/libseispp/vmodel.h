@@ -13,16 +13,14 @@ class Velocity_Model_1d
 {
 public:
 	int nlayers;
-	double *z,*v,*grad;
-	Velocity_Model_1d(){z=NULL;v=NULL;grad=NULL;nlayers=0;};
+	vector<double> z,v,grad;
+	Velocity_Model_1d(){z.reserve(0);v.reserve(0);grad.reserve(0);nlayers=0;};
 	Velocity_Model_1d(int n){nlayers=n;
-		z=new double[nlayers]; 
-		v=new double[nlayers];
-		grad=new double[nlayers];};
+		z.reserve(nlayers);
+		v.reserve(nlayers);
+		grad.reserve(nlayers);};
 	Velocity_Model_1d(Dbptr *db,string name, string property);
 	Velocity_Model_1d(string fname, string form, string property);
-	~Velocity_Model_1d()
-	{if(z!=NULL)delete[]z; if(v!=NULL)delete[]v; if(grad!=NULL)delete[]grad;};
 	double getv(double zin);
 };
 class Velocity_Model_error
