@@ -3,7 +3,8 @@ MAN1=orbgenloc.1
 PF=orbgenloc.pf
 
 cflags= #-xpg
-ldlibs= -lgenloc -ltt -xlic_lib=sunperf $(ORBLIBS) $(F77LIBS) -ldl
+ldlibs= -lgenloc -lsunperf $(ORBLIBS) $(F77LIBS) 
+
 
 include $(ANTELOPEMAKE)
 DIRS=
