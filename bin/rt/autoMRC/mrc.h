@@ -36,6 +36,21 @@
 
 #define MAX_OFF  100000  /* Max LTA value which good data should not exceed */
 
+typedef struct Orbpipe_packet {
+	double time ;
+	int pktid ; 
+	char srcname[ORBSRCNAME_SIZE] ;
+	char *packet ; 
+	int nbytes, bufsize; 
+} Orbpipe_packet ;
+
+typedef struct Orbpipe {
+    Tbl	*tbl ; 
+    int maxpkts ;
+    double last ;
+    Orbpipe_packet rpkt ;
+} Orbpipe ;
+
 Tbl *MailAdd;
 Arr *MailSent;
 

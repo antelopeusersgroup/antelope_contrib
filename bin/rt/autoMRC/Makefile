@@ -8,6 +8,7 @@ ldlibs	= $(ORBLIBS)
 include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\
 	  open_dc.o\
+	  orbsort.o \
 	  proc_chan.o\
 	  send_alarm.o\
 	  sendmrc.o\
