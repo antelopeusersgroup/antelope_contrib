@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
 	include 'window.common'
       character bnorm,revs,shad 
       parameter(bnorm='d',revs='r',shad='s')
-      parameter(flaglvz=1.0e50) 
+      parameter(flaglvz=1.0e37) 
       parameter(dzcut=1.0e-4) 
       ip=1  
       z=0.  

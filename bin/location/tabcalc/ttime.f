@@ -21,7 +21,7 @@ c-----------------------------------------------------------------------
 	include 'window.common'
       character bnorm,revs,shad,up
       parameter(bnorm='d',revs='r',shad='s',up='u') 
-      parameter(flaglvz=1.0e50) 
+      parameter(flaglvz=1.0e38) 
 c--loop on rays.  find the accumulated travel time and distance to this 
 c--depth. 
           do 100 iup=ip+1,np

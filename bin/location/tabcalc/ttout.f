@@ -18,7 +18,7 @@ c--------------------------------------------------------------------
 	include 'lun.common' 
       real p(n),t(n),x(n) 
       character branch(n) 
-      parameter(flaglvz=1.0e50) 
+      parameter(flaglvz=1.0e38) 
       if(jprint.ne.0) then
           print 1000, z 
  1000     format('0travel times for source at depth=',f10.5)
