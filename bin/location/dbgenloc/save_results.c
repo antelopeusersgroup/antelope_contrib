@@ -41,7 +41,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	str = vmodel;
     else
 	++str;
-    snprintf(algorithm,15,"dbgenloc:%s",str);
+    sprintf(algorithm,"dbgenloc:%6.6s",str);
     if (dbout.record < 0
        ||  dbputv(dbout, 0,
 	   "orid", orid, 
@@ -135,21 +135,6 @@ save_results (Dbptr dbin, Dbptr dbout,
     }
 
     return retcode ;
-}
-
-int
-snprintf (char *string, int len, char *format, char *value)
-
-{
-	int i;
-	char *ptr;
-
-	i = strlen(format) + strlen(value);
-	ptr = strdup(i);
-	sprintf (ptr, format, value);
-	strncpy (string, ptr, len);
-	string[len] = '\0';
-	return (0);
 }
 
 /* $Id$ */

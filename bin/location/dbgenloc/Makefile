@@ -7,6 +7,15 @@ PF=dbgenloc.pf dbgenloc_default.pf
 cflags = -dalign
 ldflags = 
 ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) $(F77LIBS) -ltt -ldl
+#
+# Turn off the above, and use something like the following if the 
+# Sun Performance Library (sunperf) is not installed on your system.
+#  This example uses the C version of LAPACK that should appear in
+# the contrib area of new releases.
+#
+#ldlibs= -lgenloc   \
+#-L/opt/dsap/ext/CLAPACK/F2CLIBS  -llapack_alpha  -lblas_alpha -lI77f2c -lF77f2c \
+#$(DBLIBS) $(F77LIBS) -ltt -ldl
 include $(ANTELOPEMAKE)
 DIRS=ttlvz taup uniform
 
