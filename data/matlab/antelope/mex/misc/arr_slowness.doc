@@ -1,0 +1,10 @@
+ARR_SLOWNESS	Returns all calculated phase slownesses
+
+[SLOWNESS, PHASENAMES] = ARR_SLOWNESS ( DELTA, DEPTH )
+
+ARR_SLOWNESS returns all seismic phase travel-time slownesses for the specified
+epicentral distance DELTA in degrees and hypocentral DEPTH in km. 
+Two vectors are returned, one with SLOWNESS values in sec/km
+and one with the corresponding phase names. The travel-time tables
+are specified with the environment variable TAUP_PATH, defaulting to iasp91. 
+
