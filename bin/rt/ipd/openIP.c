@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 			       
-#define ADDR 0x84EF04C2
+extern int Psize;
 
 int 
 open_IN_ports( inport )
@@ -349,7 +349,6 @@ fflush(stdout);
        if(hp == NULL)
 
           peer_in.sin_addr.s_addr = htonl(addr); 
-        /*  peer_in.sin_addr.s_addr = htonl( ADDR ); */  
        else 
            peer_in.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
   
@@ -361,7 +360,7 @@ fflush(stdout);
    Size by Default is 8K which is not enough.   */
 
  
-      b_size = 4*1024;
+      b_size = Psize;  
 
       if( setsockopt( Ls, SOL_SOCKET, SO_SNDBUF, (char *)&b_size, sizeof(int)) != 0)  {
     	   die( 1, "Unable to set size of send buffer.\n");
@@ -376,9 +375,8 @@ fflush(stdout);
        if ( connect (Ls, (struct sockaddr *) & peer_in, addrlen) == -1) {
            if( !tried )  {
 	      tried = 1;
-	      complain( 1, "waiting for connection \n");
+	      complain( 1, "waiting for connection with %s \n", inport->ip_name );
               sleep(1);
-	      complain( 1, "can't connect %s\n", inport->ip_name );
 	   }
 	   close(Ls);
         } else done = 1;	

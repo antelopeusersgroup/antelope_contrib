@@ -296,7 +296,7 @@ int timeout;
     state = 0;
     pid = 0;
 
-    allot (unsigned char *, buffer, Psize);
+    allot (unsigned char *, buffer, 1024);
     allot (unsigned char *, newbuffer, Psize);
     allot (unsigned char *, packet, Psize);
 
