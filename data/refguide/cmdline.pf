@@ -10,16 +10,16 @@ Entries	&Tbl{
         }
         section	Miscellaneous Utilities
     }
-#    &Arr{
-#        args	[-d] [-m srcmatch ] orbin mail_add [stime]
-#        command	acalarm
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Real-time system and network administration
-#    }
+    &Arr{
+        args	[-d] [-m srcmatch ] orbin mail_add [stime]
+        command	acalarm
+        description	Send mail when AC power fails for a data collector
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	orbname adsend_port
         command	adsend2orb
@@ -109,16 +109,16 @@ Entries	&Tbl{
         }
         section	Real-time data import
     }
-#    &Arr{
-#        args	[-d] [-m srcmatch ] orbin mail_add
-#        command	battalarm
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Real-time system and network administration
-#    }
+    &Arr{
+        args	[-d] [-m srcmatch ] orbin mail_add
+        command	battalarm
+        description	Send mail when battery power drops for a data collector
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	NONE
         command	bplotwish
@@ -179,16 +179,16 @@ Entries	&Tbl{
         }
         section	Miscellaneous Utilities
     }
-#    &Arr{
-#        args	[-m srcmatch] [-t stime] [-v] dbname
-#        command	correctdt
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Database processing tools
-#    }
+    &Arr{
+        args	[-m srcmatch] [-t stime] [-v] dbname
+        command	correctdt
+        description	Corrects times in wfdisc table 
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	station orbout [-v]
         command	cs2orb
@@ -772,16 +772,16 @@ Entries	&Tbl{
         }
         section	Seismic source location
     }
-#    &Arr{
-#        args	BLANK
-#        command	dblocgrad
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Contributed code
-#    }
+    &Arr{
+        args	dbin [dbout]
+        command	dblocgrad
+        description	Locate local earthquakes via 1-d linear gradient model
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	input-database [output-database]
         command	dblocsat2
@@ -1128,16 +1128,16 @@ Entries	&Tbl{
         }
         section	Contributed code
     }
-#    &Arr{
-#        args	BLANK
-#        command	dbtc
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Contributed code
-#    }
+    &Arr{
+        args	BLANK
+        command	dbtc
+        description	database time-correction routine
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	NONE
         command	dbtcl
@@ -1485,16 +1485,16 @@ Entries	&Tbl{
         }
         section	Administration tools
     }
-#    &Arr{
-#        args	[-v] [-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb
-#        command	ipd
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Contributed code
-#    }
+    &Arr{
+        args	[-v] [-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb
+        command	ipd
+        description	RTDAS seismic data input daemon
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	[-c] [-p] [-s start] [-e end] isc_bulletin database
         command	isc2db
@@ -2197,16 +2197,16 @@ Entries	&Tbl{
         }
         section	Passcal utilities
     }
-#    &Arr{
-#        args	NONE
-#        command	ptt2stt
-#        description	MISSING
-#        private 0
-#        deprecated 0
-#        options	&Tbl{
-#        }
-#        section	Seismic source location
-#    }
+    &Arr{
+        args	NONE
+        command	ptt2stt
+        description	Make a P and S travel-time table from ttcalc output
+        private 0
+        deprecated 0
+        options	&Tbl{
+        }
+        section	Contributed code
+    }
     &Arr{
         args	qed_file dbname
         command	qed2origin
