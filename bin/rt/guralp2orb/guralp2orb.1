@@ -118,14 +118,27 @@ they might be useful in debugging the cause of the incorrect timestamps.
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
+Here is an example parameter file with comments describing each 
+parameter:
 .nf
-cat guralp2orb.pf
 
 # number of tcp recovery threads. 0 to disable TCP recovery: 
 nrecovery_threads 3 
 
 # Maximum allowed number of successive recovery-attempt failures:
 max_recovery_failures 3 
+        packet_queue_size=pfget_int(pf,"packet_queue_size");   
+        recovery_queue_size="recovery_queue_size");
+
+# This sets the packetqueue size pushed on a fifo by the read thread
+# It should be set to something like 50Xnumber of stations being received
+# to be save because guralp2orb does uses blocking i/o.
+#
+packet_queue_size 500
+# This sets the size of the comparable queue used by the recovery thread
+# It can commonly be much smaller than the packet queue unless the 
+# loss rate is very high.
+recovery_queue_size 100
 
 default_net -       
 default_segtype V

@@ -37,8 +37,6 @@
 #define GCF_MOTOROLA_BYTEORDER 1
 #define GCF_INTEL_BYTEORDER 2
 #define SECONDS_PER_DAY (24*60*60)
-#define QUEUE_MAX_PACKETS 100
-#define QUEUE_MAX_RECOVER 100
 #define IDENTIFY_SERVER 252
 #define REQUEST_OLDEST_SEQNO 254
 #define PACKET_REQUEST 255
@@ -1777,6 +1775,7 @@ main( int argc, char **argv )
 	char	disabled[STRSZ];
 	int	ret;
 	int	ithread;
+	int packet_queue_size, recovery_queue_size;
 
 	elog_init( argc, argv );
 
@@ -1843,6 +1842,8 @@ main( int argc, char **argv )
 	if( pfupdate( Pffile, &pf ) < 0 ) {
 		die( 1, "Couldn't read parameter file %s\n", Pffile );
 	}
+	packet_queue_size=pfget_int(pf,"packet_queue_size");
+	recovery_queue_size=pfget_int(pf,"recovery_queue_size");
 
 	mutex_init( &pfparams_mutex, USYNC_THREAD, NULL );
 
@@ -1879,8 +1880,8 @@ main( int argc, char **argv )
 	Recovery_failures = newarr( 0 );
 	mutex_init( &rf_mutex, USYNC_THREAD, NULL );
 
-	Packets_mtf = mtfifo_create( QUEUE_MAX_PACKETS, 1, 0 );
-	Recover_mtf = mtfifo_create( QUEUE_MAX_RECOVER, 1, 0 );
+	Packets_mtf = mtfifo_create( packet_queue_size, 1, 0 );
+	Recover_mtf = mtfifo_create( recovery_queue_size, 1, 0 );
 
 	ignoreSIGPIPE();
 

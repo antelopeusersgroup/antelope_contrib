@@ -2,6 +2,8 @@ nrecovery_threads 3
 max_recovery_failures 3
 default_net -
 default_segtype V
+packet_queue_size 500
+recovery_queue_size 100
 udplisten &Tbl{
 	53764
 }
