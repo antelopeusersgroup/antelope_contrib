@@ -22,6 +22,7 @@ function.
 %M	minute (00-59)
 %m	month number (01-12)
 %n	(linefeed)
+%o	ordinal day of month (1st,2nd,3rd...31st)
 %p	AM or PM, whichever is appropriate
 %S	seconds (00-59)
 %s	milliseconds (000-999)
