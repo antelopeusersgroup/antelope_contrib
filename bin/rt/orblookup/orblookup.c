@@ -551,7 +551,7 @@ int generate_entry_page ()
     len += sprintf ( &body[len], "    <TH>Active ORBs:</TH>\n" );
     len += sprintf ( &body[len], "  </TR>\n" );
     
-    sprintf ( pfpath, "/export/home/quakeinfo1/jbowen/pf/orblookup.pf" );
+    sprintf ( pfpath, "orblookup.pf" );
     infile = fopen( pfpath, "r" );
     if ( infile ) 
        pfin ( infile, &pf );
