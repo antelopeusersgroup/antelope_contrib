@@ -4,7 +4,7 @@ PF=b3s2orb.pf
 BIN = b3s2orb
 MAN1=b3s2orb.1
 
-ldlibs	=  -lsocket -lnsl -lpkt -lorb -lxview -lolgx -lX11 $(TRLIBS) 
+ldlibs	=  -lpkt -lorb $(TRLIBS) $(X11LIBS) -lxview -lolgx 
 include $(ANTELOPEMAKE)
 DIR=
 
