@@ -205,6 +205,10 @@ public class DatabaseSchema {
 		try {	
 
 		    if (argv[i].charAt(0) == '-') {
+                        if (schema == null) {
+                          System.err.println("Error: command specified before schema loaded.. remember, the schema file goes *before* the action.");
+                          continue;
+                        }
 			
 			if (argv[i].compareTo("-toXML") == 0) {
 			    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));	

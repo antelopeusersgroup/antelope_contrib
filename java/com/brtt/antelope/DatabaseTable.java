@@ -79,8 +79,8 @@ class DatabaseTable {
 	
     }
 
-    public DatabaseRecord getRow(int index) {
-	return (DatabaseRecord)(records.get(index));
+    public DatabaseRow getRow(int index) {
+	return (DatabaseRow)(records.get(index));
     }
 
 } 
