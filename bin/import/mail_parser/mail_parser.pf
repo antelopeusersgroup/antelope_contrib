@@ -17,4 +17,10 @@ ftp_user	anonymous
 ftp_password	johndoe@peppschool.net
 ftp_timeout 	60
 }
+&Arr{
+handler		reb_import
+sender		reb_source@somenet.net
+subject		reb-format file
+database	mydbname
+}
 }
