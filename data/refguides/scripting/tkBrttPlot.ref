@@ -62,16 +62,17 @@ vector_transform_edp vector_handle lonr latr
 
 <subsection Plotting>
 (canvas) create axes viewport ?options?
-    viewport (canvas) object to plot a set of coordinate axes
+    canvas item to plot a set of coordinate axes
 <options>
 -tags tags
--fill_labels
--fill_axes fill_axes
--font_labels font_labels
--font_numbers font_numbers
--font_numbers_superscripts font_numbers_superscripts
--xvisible xvisible
--yvisible yvisible
+-fill_labels labels_color
+-fill_numbers numbers_color
+-fill_axes axes_color
+-font_labels labels_font
+-font_numbers numbers_font
+-font_numbers_superscripts numbers_superscripts_font
+-xvisible {0|1}
+-yvisible {0|1}
 -linewidth linewidth
 -linewidth_small linewidth_small
 -mindx mindx
@@ -79,71 +80,95 @@ vector_transform_edp vector_handle lonr latr
 -xincrement xincrement
 -xincrement_small -xincrement_small
 -xlabel xlabel
--ylabel ylabel
 -xformat xformat
+-yincrement yincrement
+-yincrement_small -yincrement_small
+-ylabel xlabel
 -yformat yformat
 -axis_style axis_style
 -tic_style tic_style
 </options>
 
-(canvas) create gpl viewport ?options?
-    viewport (canvas) object to create a gather-plot
+(canvas) create edpmap viewport ?options?
+    canvas item to plot world maps using equal distance projection
 <options>
 -tags tags
--foreground color
--background color
--postscript_foreground color
--postscript_background color
--linewidth linewidth
--postscript_linewidth postscript_linewidth
--again again
+-fill_land land_color
+-fill_water water_color
+-coasts coastline_color:coastline_linewidth
+-political admin_index:boundary_color:boundary_linewidth,...
+-rivers river_color
+-visible {0|1}
+-resolution {auto|crude|low|intermediate|high|full}
+-latr ref_latitude
+-lonr ref_longitude
 </options>
 
 (canvas) create grid viewport ?options?
-    viewport (canvas) object to create a mesh of lines
+    canvas item to create a mesh of grid lines
 <options>
 -tags tags
--fill color
--fill_small color
--visible visible
--visible_xsmall visible_xsmall
--visible_x visible_x
--visible_ysmall visible_ysmall
--visible_y visible_y
--linewidth linewidth
--linewidth_small linewidth_small
+-fill major_grid_line_color
+-fill_small minor_grid_line_color
+-linewidth major_grid_linewidth
+-linewidth_small minor_grid_linewidth
+-visible {0|1}
+-visible_x {0|1}
+-visible_xsmall {0|1}
+-visible_y {0|1}
+-visible_ysmall {0|1}
 -mindx mindx
 -mindy mindy
--xincrement xincrement
--xincrement_small xincrement_small
--yincrement yincrement
+-xincrement major_grid_xline_increment
+-xincrement_small minor_grid_xline_increment
+-yincrement major_grid_yline_increment
+-yincrement_small minor_grid_yline_increment
 </options>
 
 (canvas) create polyline viewport ?options?
-    viewport (canvas) object to plot a vector in data coordinates
+    canvas item to plot a polyline(polygon) in data coordinates
 <options>
+-vector input_data_vector_handle
+-thistory input_data_thistory_handle
+-test
 -tags tags
--fill fill-color
--outline outline-color
--visible visible
--linewidth linewidth
+-fill polygon_fill_color
+-outline polyline_outline_color
+-linewidth polyline_outline_linewidth
 -label label
--vector vectorhandle
+-visible {0|1}
+</options>
+
+(canvas) create polypoint viewport ?options?
+    canvas item to plot a set of points or symbols in data coordinates
+<options>
+-vector input_data_vector_handle
+-tags tags
+-symbol {point|cross|x|triangle|square|circle|star}
+-fill symbol_fill_color
+-outline symbol_outline_color
+-linewidth symbol_outline_linewidth
+-textforeground label_color
+-font label_font
+-size symbol_size
+-visible {0|1}
+-showsymbols {0|1}
+-showtext {0|1}
 </options>
 
 (canvas) create ptext viewport textstring x y ?options?
-    viewport (canvas) object to plot text in data coordinates
+    canvas item to plot text in data coordinates
 <options>
 -tags tags
--fill color
--font font
--visible visible
+-fill text_color
+-font text_font
+-visible {0|1}
 -justification justification
 -angle angle
 </options>
 
 (canvas) create viewport name x y ?options?
-    abstract canvas object with data-coordinate mapping
+    abstract canvas item with data-coordinate mapping
 <options>
 -margin margin	Width in pixels of all margins
 -anchor anchor
