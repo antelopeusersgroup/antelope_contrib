@@ -3,7 +3,7 @@ BIN= dbrecenteqs_setup dbrecenteqs
 DATADIR= perl
 DATA= dbrecenteqs.pl
 INCLUDE=
-PF=
+PF= dbrecenteqs.pf dbrecenteqs_setup.pf
 
 MAN1= dbrecenteqs.1
 

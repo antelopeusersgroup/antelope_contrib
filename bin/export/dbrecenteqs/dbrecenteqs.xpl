@@ -30,7 +30,8 @@ sub init_globals {
 		"other_region_links",
 		"nearest_places",
 		"credits",
-		"authtrans"
+		"authtrans",
+		"keep_ndays"
 		);
 	
 	foreach $param ( @params ) {
@@ -74,25 +75,63 @@ sub die_if_already_running {
 	}
 }
 
-sub die_if_cleanup_in_progress {
+sub cleanup_database {
 	my( $dbname ) = @_;
-	my( $bytes );
+	my( $cmd, $cutoff, $table );
 
-	if( ! -e "$dbname.MSGFILE" ) {
+	if( ! defined( $State{keep_ndays} ) ) {
+		print
+		  "dbrecenteqs: keep_ndays undefined. No cleanup initiated.\n";
 		return;
-	}
-
-	open( M, "$dbname.MSGFILE" );
-	read( M, $bytes, 4 );
-	close( M );
-
-	( $flag ) = unpack( "i", $bytes );
-
-	if( $flag ) {
-		die( "dbrecenteqs: cleanup of $dbname in progress. Bye!\n" );
 	} else {
-		return;
+		print
+		  "dbrecenteqs: Trimming $dbname to $State{keep_ndays} most recent days.\n";
 	}
+
+	$cutoff = str2epoch( "now" ) - $State{keep_ndays} * 86400;
+
+	$cmd = "orb2db_msg $dbname pause";
+	system( $cmd );
+
+	foreach $table ("arrival", "detection", "origin" ) {
+
+		print "dbrecenteqs: Cleaning $table table\n";
+
+		next if( ! -e "$dbname.$table" );
+
+		$cmd = "dbsubset $dbname.$table \"time < $cutoff\" | " .
+			"dbdelete - $table";
+		system( $cmd );
+		if( $? ) { print STDERR "\t command error $?\n"; }
+	}
+
+	foreach $table ( "assoc", "event", "mapassoc" ) {
+
+		print "dbrecenteqs: Cleaning $table table\n";
+
+		next if( ! -e "$dbname.$table" );
+		next if( ! -e "$dbname.origin" );
+
+		$cmd = "dbnojoin $dbname.$table origin | dbdelete - $table";
+		system( $cmd );
+		if( $? ) { print STDERR "\t command error $?\n"; }
+	}
+
+	foreach $table ( "webmaps" ) {
+
+		print "dbrecenteqs: Cleaning $table table\n";
+
+		next if( ! -e "$dbname.$table" );
+		next if( ! -e "$dbname.event" );
+
+		$cmd = "dbnojoin $dbname.$table event | " .
+			"dbsubset - \"evid != NULL\" | " .
+			"dbdelete - $table";
+		system( $cmd );
+		if( $? ) { print STDERR "\t command error $?\n"; }
+	}
+	$cmd = "orb2db_msg $dbname continue";
+	system( $cmd );
 }
 
 sub set_hypocenter_symbol {
@@ -899,7 +938,7 @@ if ( ! &Getopts('h') || @ARGV != 1 ) {
 }
 
 die_if_already_running();
-die_if_cleanup_in_progress( $dbname );
+cleanup_database( $dbname );
 
 @db = dbopen( $dbname, "r+" );
 @dbmapstock = dblookup( @db, "", "mapstock", "", "" );

@@ -13,6 +13,7 @@ caption_default Recent Alaskan Earthquakes
 local_html_home http://www.aeic.alaska.edu/
 description_of_local_html_home Alaska Earthquake Information Center
 region_phrases_database /Seis/databases/regions/alaska_region_phrases
+keep_ndays 20
 nearest_places &Arr{
 	database /Seis/databases/places/wellknown_alaskan_cities
 	max_dist_km 200	
