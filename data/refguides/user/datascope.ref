@@ -195,12 +195,12 @@ dbremark [ -p ] database table field value
 deprecated dbtidy db
     sort various tables from CSS database db into a preferred order, and renumber some ids
 
+dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
+    create time correction table by comparing good source gdb:...
+    with bad source bdb:...
 
-correctdt [-m srcmatch] [-t stime] [-v] db
-    correct times in wfdisc table
-
-dbtc BLANK
-    database time correction routine
+correctdt [-m srcmatch] [-t stime] [-v] bdb
+    using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
 dbfixchanids [-q] db
     fix chanid attributes in wfdisc and arrival tables

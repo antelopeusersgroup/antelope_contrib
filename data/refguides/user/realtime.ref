@@ -198,14 +198,14 @@ cs2orb comserv orb [-v]
 cs2orb_1_0_1 comserv orbout [-v]
     copy data from comserv (version 1.0.1) to an orbserver orb
 
-k22orb [options] targetname dataorbname [cmdorbname]
-transfer data from a Kinemetrics Altus digitizer to an orb
+k22orb [options] target orbdata [orbcmd]
+    transfer data from a Kinemetrics Altus digitizer to an orb
 <options>
--pf pfname
--db calibdb
--v
--state statefile
--start starttime
+-pf pf	specify alternate parameter file
+-db db	specify database for calib information
+-v	be more verbose
+-state file	save state info in file
+-start time	only get events after time
 </options>
 
 k2cmd [options] orb target datalogger cmd
@@ -443,7 +443,6 @@ orbmonrtd [options] server
 orbdisp [options] orbserver [start [range|end]]
     inspect waveform data on orb server
 <options>
-
 -c re	save channel matching regular expression re
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
@@ -452,6 +451,53 @@ orbdisp [options] orbserver [start [range|end]]
 -p period	specify minimum packet period
 -w t	make time window t seconds
 </options>
+
+<subsection Real Time Status Monitoring>
+cpu2orb [-i t] [-vv] orb
+    save cpu and system utilization reports on orb at interval t seconds
+
+df2orb [-i t] [-p pf] [-vv] orb
+    save filesystem status information on orb at interval t seconds
+
+ps2orb [-a m] [-i t] [-t top] [-u user] orb
+    save process information from ps(1) to orb at interval t seconds
+<options>
+-a m	report on all processes every m'th iteration
+-i t	report every t seconds
+-t n	report on the top n processes
+-r {mem|cpu}	sort by mem or cpu
+</options>
+
+tail2orb [options] orb [file ...]
+    monitor multiple files, sending any added lines as packets
+    to the orbserver orb
+<options>
+-g n	check for new files matching glob patterns every n'th iteration 
+-i t 	check files every t seconds
+-m m	specify maximum number of files monitored  
+-p pf 	specify alternate parameter file
+-S state	specify alternate state file 
+-v 
+</options>
+
+orbxfer [-d dir] [-vv] file ... orb
+    transfer a set of local files to an orbserver orb; the -d option
+    specifies an alternate directory dir in which the files are to be found
+
+orbxfer [-d dir] [-vv] orb
+    unpack files from orbserver orb to local directory, or optionally
+    directory dir 
+
+orblog [-f file] [-s subcode] orb [log info]
+    write a single log packet to orb; the packet contents are
+    remainder of the command line, stdin, or the specified file.
+
+orb2logs [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start]
+    saves logs packets (from tail2orb) back into corresponding plain files 
+    divided by day boundaries.
+
+rtlogs orb
+    display log messages from orbserver orb
 
 <subsection Saving Orb Data in Database>
 orb2db [options] orb db [start [end|period]]

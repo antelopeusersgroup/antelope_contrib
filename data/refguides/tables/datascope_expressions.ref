@@ -95,13 +95,13 @@ yearday(epoch)
     convert from epoch time to yearday (jdate)
 
 <subsection Flinn-Engdahl Seismic and Geographic Regions>
-gregion(lat,lon)
+grname(lat,lon)
     geographic region name
 
 grn(lat,lon)
     geographic region number
 
-sregion(lat,lon)
+srname(lat,lon)
     seismic region name
 
 srn(lat,lon)

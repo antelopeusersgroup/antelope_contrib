@@ -1,6 +1,7 @@
 <initialization ../refhdr.mif>
 <title Antelope Scripting Reference Guide>
-<author Kent Lindquist>
+<author Kent Lindquist, Geophysical Institute, University of Alaska>
+<author Daniel Quinlan, BRTT, Inc.>
 <publisher BRTT, Inc>
 <publisher 2045 Broadway, Suite 400>
 <publisher Boulder, CO 80302>

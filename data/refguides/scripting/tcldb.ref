@@ -62,11 +62,17 @@ dbputv dbptr table record field value [field value ...]
 dbgroup db type field [field ..]
     group the (sorted) input table by the specified fields
 
+dbungroup db
+    returns a view containing all the records which the grouped view references.
+
 dbjoin db1 db2 [join-keys]
     join the two tables (using the specified join keys)
 
 dbjoin_tables dbptr
-    returns a list of tables for which some set of join keys can be inferred
+    returns a list of tables for which some set of join keys with dbptr can be inferred
+
+dbjoin_keys dbptr table
+    returns the inferred join keys between dbptr and table 
 
 dbnojoin db1 db2 [join-keys]
     returns all the records in db1 which do not join with table db2
@@ -78,7 +84,10 @@ dbprocess db [command ...]
     construct a view as series of standard operations
 
 dbsever db table
-    remove a table from a joined view
+    returns a new view which removes the specified table from the joined view db  
+
+dbseparate db table
+    returns a new view containing only the records from table which participate in the joined view db
 
 dbsort [-r] [-u] db [fields ..]
     sort a table by fields, or the primary key if no fields are specified
@@ -125,9 +134,13 @@ dbquery dbptr code
 dbcompile dbptr string
     add attributes and relations to a database by directly compiling schema file fragments
 
-dbfind db first backwards expression [n]
-    starting from first, locate the nth row satisfying the given expression
+Tcl_dbstrtype
 
+dbstrtype db string
+    returns type of string: strREAL,  strINTEGER, strNULL, strSTRING, strTIME, strEXPR, strFIELD or strUNKNOWN
+
+dbsearch db first backwards string
+    starting from first, locate the first record in db satisfying the given expression string, or containing the string
 
 dbadd_remark dbptr remark
     add the specified remark to the specified record
@@ -221,7 +234,6 @@ pfwrite pf filename
     write the specified parameter file
 
 
-
 <subsection Seismic Utility Functions>
 carsph x y z
     convert from cartesian to spherical coordinates
@@ -237,35 +249,35 @@ sphcar lat lon
 
 <subsection Time conversion>
 epoch yearday
-    convert from yearday to epoch
+    convert yearday (eg, 1999234) to epoch time
 
 epoch2str epoch fmt
-    convert epoch time to a human readable format
+    convert epoch time to a string according to specified fmt
 
 str2epoch string
-    convert human readable time to epoch time
+    convert time strings from many formats to epoch time
 
 strdate epoch
-    convert epoch time to a human readable date string
+    convert epoch time to a date, eg "4/23/2001"
 
 strtdelta epoch
-    convert a time-difference into a string
+    convert the time-difference epoch (in seconds) to a string, eg "30:35 minutes"
 
 strtime epoch
-    convert epoch time to a human readable time string
+    convert epoch time to a time string like "4/23/2001  15:35:15.000"
 
 strydtime epoch
-    returns a readable time which includes the day of the year inside parentheses
+    convert epoch time to a time string like "4/23/2001 (113) 15:35:15.000"
 
 yearday epoch
-    convert from yearday to epoch time
+    convert from epoch time to yearday
 
 <subsection Utility Functions>
 makedir dir
-    ensure that a directory exists
+    ensure that the entire directory hierarchy dir exists (like mkdir -p)
 
 writefile filename stringname
     write contents of a string variable to a file
 
-datafile envname filename
-    returns complete pathname for a datafile
+datafile envname file 
+    returns pathname for file in $ANTELOPE/data

@@ -55,7 +55,7 @@ dbDATABASE_NAME
     database name
 dbDATABASE_FILENAME
     return the name of database descriptor file
-dbDATABASE_IS_WRITEABLE
+dbDATABASE_IS_WRITABLE
     return non-zero if database was opened with permission "r+"
 dbIDSERVER
     return the name of the idserver, or 0 if not used
@@ -88,8 +88,10 @@ dbTABLE_FIELDS
     return a Tbl list of the fields in the table
 dbFIELD_COUNT
     count of attributes in relation
-dbTABLE_IS_WRITEABLE
+dbTABLE_IS_WRITABLE
     return non-zero if table is writeable
+dbTABLE_IS_ADDABLE
+    return non-zero if locks and permissions allow adding records
 dbTABLE_IS_TRANSIENT
     return non-zero if table has no actual file
 

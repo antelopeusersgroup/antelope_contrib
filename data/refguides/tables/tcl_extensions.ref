@@ -1,23 +1,36 @@
 <subsection Tcl/Tk Command Interpreters>
 <commands>
-bplotwish
-    Tcl 8.0 / Tk 8.0 shell with all BRTT extensions
+tcl
+    Tcl shell
 
-dbtcl
-    Tcl shell with db extensions
+wish
+    Tk shell 
 
-dbvwish
-    Tk shell with db and vogle extensions
+Extensions
 
-dbwish
-    Tk shell with db extensions
+Datascope
+    Datascope database extensions
 
-dbwish8
-    Tcl/Tk 8.0 shell with db extensions
+Dbe
+    Extensions for implementing dbe
 
-orbwish
-    Tcl7.4/Tk4.0 shell with orb and real-time trace-plotting widget extensions
+Rtm
+    Extensions for implementing rtm
 
-wish8.0
-    Tk 8.0 with no extensions
+Orb
+    extensions for reading and writing to an orbserver
 
+Ttgrid
+    extensions for the time travel grid file used by orbassoc and dbgrassoc
+
+Brttplot
+    extensions for drawing graphs on a tk canvas.
+
+Vogle
+    3-d graphics extension for "Very Ordinary Graphics Library"
+
+Pixmap
+    extension for pixmaps (used in dbevents)
+
+Rtd
+    extension for real time trace display
