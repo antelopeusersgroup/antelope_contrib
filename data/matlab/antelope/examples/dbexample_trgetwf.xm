@@ -17,6 +17,9 @@ plot( data );
 title( ['waveform data for ' sta ' ' chan] )
 xlabel( [strtime( t0 ) ' to ' strtime( t1 )] )
 
+% (Allow time for figure to come up when running in batch mode)
+pause(0.5);
+
 dbclose( db );
 
 echo off

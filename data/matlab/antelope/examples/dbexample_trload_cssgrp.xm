@@ -18,6 +18,9 @@ tr.record=0;
 data=trextract_data( tr );
 plot(data)
 
+% (Allow time for figure to come up when running in batch mode)
+pause(0.5);
+
 dbclose( db );
 
 echo off

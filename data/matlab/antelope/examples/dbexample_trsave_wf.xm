@@ -39,6 +39,9 @@ db.record = 0;	% Assume we added the first row of the database
  
 plot( newdata );
   
+% (Allow time for figure to come up when running in batch mode)
+pause(0.5);
+
 dbclose( db );
 
 echo off
