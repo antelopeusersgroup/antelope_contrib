@@ -2,13 +2,9 @@ BIN= guralp2orb
 MAN1=guralp2orb.1
 PF=guralp2orb.pf
 
-cflags = -mt
-ldflags =
-ldlibs=  -lthread -lbrttutil $(ORBLIBS) 
+ldlibs=  -lbrttutil $(ORBLIBS) $(THREAD)
 
 include $(ANTELOPEMAKE)  	
-DBG=-g
-
 DIRS=
 
 OBJS = $(BIN).o 
