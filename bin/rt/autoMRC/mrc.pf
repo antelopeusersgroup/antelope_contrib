@@ -1,0 +1,7 @@
+srcname			AZ_TRO/CAHS # which data should be used in LTA calculation
+max_lta			500   	# MAX allowed LTA value                    
+lta_window		10   	# # of sec between command send to one DAS 
+num_repeats     	2	# # times to repeat command for one das              
+timeout_btw_cmds	30	# # of days between command send to DC 
+max_mrc			4	# max # of failed MRC  to send 'alarm' email 
+receipient		glushko # whom to send an email in a case of MRC failed
