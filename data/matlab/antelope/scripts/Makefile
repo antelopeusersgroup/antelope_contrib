@@ -1,5 +1,5 @@
 DATADIR= matlab/antelope/scripts
-DATA= tr2struct.m
+DATA= tr2struct.m array_response.m
 
 HTMLDIR= matlab/antelope/html
 HTML= $(DATA:.m=.html)

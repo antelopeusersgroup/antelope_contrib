@@ -1,0 +1,38 @@
+ARRAY_RESPONSE Response of a sensor array
+
+z = ARRAY_RESPONSE(stations, points, range, frequency)
+z = ARRAY_RESPONSE(database_name, array_name, points, range, frequency)
+ 
+Calculates gains for a two-dimensional sensor array when excited by plane
+waves of a given FREQUENCY over a range of horizontal slowness values.  
+Gain is evaluated for POINTS slowness values ranging from -RANGE to +RANGE
+in both the horizontal and vertical directions, yielding a POINTS*POINTS
+matrix of gain values.  
+
+The parameter STATIONS is a matrix giving the positions of the array
+stations, one station per row. The first column is the east distance from
+the array reference station, the second column is the north distance from
+the array reference station.  Alternatively, in the second form of the 
+parameter list, the stations corresponding to the given ARRAY_NAME will be 
+looked up in the Datascope database DATABASE_NAME.
+
+Example: Display the response of an array consisting of stations at (1,0),
+(0,1), (1,1), over the range of slowness values from (-0.4 s/km, -0.4
+s/km) to (0.4 s/km, 0.4 s/km) for plane waves at 5 Hz, with 100 sample
+points on each axis:
+ 
+ stations = [1 0; 0 1; 1 1]  
+ response = array_response(stations, 100, 0.4, 5); 
+ contour(response);  % display the results
+
+Example: Compute the response of the Indian Mountain (IM) array, whose 
+station locations are contained in the database 'master_stations':
+
+  response = array_response('/databases/master_stations', 'IM', 100, 0.4, 5);
+
+AUTHORS: 
+
+ * Tobin Fricke <tobin@splorg.org> University of California, Berkeley
+ * Kent Lindquist <kent@lindquistconsulting.com> Lindquist Consulting, Inc.
+
+September 26, 1999
