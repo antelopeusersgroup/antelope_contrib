@@ -870,7 +870,8 @@ recover_packetsequence( Recoverreq *rr )
 	
 	if( connect( so, (struct sockaddr *) &sin, sizeof( sin ) ) ) {
 		complain( 1,
-		"Couldn't connect packet recovery socket\n" );
+		"Couldn't connect packet recovery socket for %s\n", 
+		rr->udpsource );
 		close( so );
 		free( rr );
 		return;
@@ -911,11 +912,14 @@ recover_packetsequence( Recoverreq *rr )
 		
 		if( gpkt == (G2orbpkt *) NULL ) {
 
-			if(Verbose) complain( 1, 
-				"failed to get packet %d from %s via TCP, errno %d\n", 
+			if( Verbose ) {
+				complain( 1, 
+				"failed to get packet %d from %s via "
+				"TCP, errno %d\n", 
 				requested, 
 				rr->udpsource, 
 				bnserrno( bns ) );
+			}
 		} else {
 
 			gpkt->udpip = rr->udpip;
