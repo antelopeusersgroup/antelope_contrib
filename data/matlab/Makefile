@@ -1,3 +1,2 @@
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
 
