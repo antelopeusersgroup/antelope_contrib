@@ -214,6 +214,9 @@ R = dbresponse ( FILE )
 RESPONSE = eval_response ( DBRESPONSE, OMEGA )
     dbresponse evaluation routine
 
+RESPONSE_PARTS = parse_response ( DBRESPONSE )
+    return internal contents of a response object
+
 clear ( DBRESPONSE )
     dbresponse elimination routine
 
