@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include "db.h"
 #include "stock.h"
+#include "dbptolemy.h"
+#include "dbxml.h"
 
 /* This code is taken directly from the dbprocess(3) manpage's
    'try.c' example program.
 */
+
+static int debug = 1;
 
 int main(int argc, char **argv) {
 
@@ -12,10 +16,10 @@ int main(int argc, char **argv) {
     extern int optind;
     int c, errflg = 0 ;
     Dbptr db;
-    char *database ;
+    char *database, *fmt ;
     int verbose = 0 ;
     Pf *pf = 0 ;
-    Tbl *input, *list ;
+    Tbl *recipe, *keys, *values ;
 
     Program_Name = argv[0];
 
@@ -29,14 +33,41 @@ int main(int argc, char **argv) {
     if (pfin(stdin, &pf) != 0)
 	die(0, "Can't read parameter file\n");
 
-    input = pfget_tbl (pf, "input" ) ;
-    db = dbprocess ( db, input, 0 ) ;
-    list = pfget_tbl ( pf, "fields" ) ;
-    dbselect (db, list, stdout ) ;
+    if (debug) printf("reading the recipe.\n");
+    recipe = pfget_tbl (pf, "recipe" ) ;
 
-    /* we'll want the option of returning either 'dbselect'-style output,
-       or db2xml output, or (now this is fancy), a Ptolemy expression that
-       will evaluate to an array of RecordTokens. */
+    if (recipe == PFINVALID) 
+	die(0, "Didn't find a 'recipe' entry in the parameter file." );
+
+    if (recipe != PFTBL) 
+        die(0, "The 'recipe' was not a &Tbl, as required." );
+
+    if (debug) printf("performing dbprocess.\n");
+    db = dbprocess ( db, recipe, 0 ) ;
+
+    if (debug) printf("getting 'keys' and 'values'.\n");
+    keys = pfget_tbl ( pf, "keys" ) ;
+    values = pfget_tbl ( pf, "values" ) ;
+
+    fmt = pfget_string ( pf, "format" ) ;
+
+    if ( strcmp(fmt, "xml") == 0 ) {
+
+	char *xml = 0;
+	db2xml( db, 0, 0, keys, values, (void **) &xml, 0 );
+	printf( "%s\n", xml );
+
+    } else if ( strcmp(fmt, "ptolemy") == 0 ) {
+
+	char *pt_expression = 0;
+	db2ptolemy( db, keys, values, (void **) &pt_expression, 0 );
+	printf( "%s", pt_expression);	
+
+    } else {
+
+	dbselect (db, values, stdout ) ;
+
+    }
 
     return 0;
 }

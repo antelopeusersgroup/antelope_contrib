@@ -8,7 +8,7 @@ BIN = dbserver
 
 include $(ANTELOPEMAKE)
 
-ldlibs=	-ldbl2 $(DBLIBS) $(ORBLIBS)
+ldlibs=	-ldbl2 -ldbptolemy -ldbxml $(DBLIBS) $(ORBLIBS)
 
 OBJS = dbserver.o
 
