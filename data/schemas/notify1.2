@@ -1,0 +1,160 @@
+Include places1.2
+
+Schema "notify1.2"
+	Description ( "AEIC Earthquake Response Notification version 1.1" )
+	Detail {
+		Original construction 8/27/95 J. Lahr and K. Lindquist
+		Modified by K. Lindquist 2/99
+		Converted to an expansion schema on places1.2 March 2001
+	}
+	Timedate lddate
+	;
+
+Attribute name 
+	String ( 20 )
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( " Name of interested seismologist " )
+	Detail { 
+		This is the name of someone to be notified if an event is 
+		large or interesting enough. 
+	}
+	;
+
+Attribute note 
+	String ( 50 )
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( " Note " )
+	Detail { 
+		This is a note regarding a particular call-down entry
+	}
+	;
+
+Attribute role 
+	String ( 30 )
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "Professional Association or Title of individual" )
+	Detail { 
+		This field is intended to give an impression of the role
+		the individual plays in the large-earthquake response 
+		process, either as a key decision maker (e.g. State
+		Seismologist), interested party (e.g. geophysics professor),
+		representative of a concerned organization (e.g. Bureau
+		of Land Management contact), etc.
+	}
+	;
+
+Attribute priority 
+	String ( 10 )
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( " Calldown priority" )
+	Detail { 
+		This is the calldown priority, intended to be a 
+		letter, then a number with no spaces. e.g. A1 is
+		top priority. A-class priority levels are before B-class
+		priority levels. All names in the same priority 
+		class will be treated in an implementation-dependent 
+		manner.
+	}
+	;
+
+Attribute home_ph
+	String ( 14 )
+	Format ( "%-14s" )
+	Null ( "-" )
+	Description ( "Home phone number of person to be notified" )
+	;
+
+Attribute work_ph
+        String ( 14 )
+        Format ( "%-14s" )
+        Null ( "-" )
+        Description ( "Work phone number of person to be notified" )
+	;
+
+Attribute email
+	String ( 30 )
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "Email address of person to be notified" )
+	;
+
+Attribute minmag 
+	Real ( 7 )
+	Format ( "%7.2lf" ) 
+	Null  ( "-999.0"  ) 
+	Description ( "Minimum magnitude for notification" )
+	Detail {
+		This person will be called only if the earthquake is 
+		at least this big.
+	}
+	;
+
+Attribute maxz 
+	Real ( 9 )
+	Format ( "%9.4lf" ) 
+	Units ( "Kilometers" ) 
+	Null  ( "-999.0"  ) 
+	Range ( "maxz >= 0.0 && maxz < 1000.0" ) 
+	Description ( "Maximum depth for notification" )
+	Detail {
+		This person will be called only if the earthquake is
+		shallower than this depth.
+	}
+	;
+
+Attribute damage 
+	String ( 1 )
+	Format ( "%-1s" ) 
+	Null  ( "n"  ) 
+	Description ( "notification upon damage" )
+	Detail {
+		True, or y, indicates that the party should be notified
+		if there was damage caused by the event.
+	}
+	;
+
+Attribute freq_calls
+	String ( 1 )
+	Format ( "%-1s" ) 
+	Null  ( "n" )
+	Description ( "notification upon frequent calls" )
+	Detail {
+		True, or y, indicates that the party should be notified 
+		if frequent calls are received about the event, often 
+		defined as one or more calls every 5 minutes.
+	}
+	;
+
+Relation contact
+	Fields (
+		name priority role work_ph home_ph email note lddate
+		)
+
+	Primary ( name )
+	Description ( "How to get ahold of the party" )
+	;
+
+Relation threshold
+	Fields (
+		name regname minmag maxz damage freq_calls lddate
+		)
+	Primary ( name regname minmag )
+	Description ( "Conditions under which to notify party" )
+	Detail {
+		This table specifies the conditions under which 
+		to notify a given party. A party of a given name may
+		have multiple entries, for one or more regions of interest.
+		A match on any row triggers notification of that party.
+		The minmag field is a primary key, in order to allow
+		multiple entries for a person for the same region: e.g.
+		Anchorage mag > 5 and depth < 50 km, plus any depth earthquake
+		in Anchorage of mag > 7. The damage and frequent-calls 
+		fields override the minimum magnitude and depth criteria, 
+		i.e. checking them off, in the example given, would mean
+		Anchorage mag > 7, OR damaging, OR with frequent calls. 
+	}
+	;

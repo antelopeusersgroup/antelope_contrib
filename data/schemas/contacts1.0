@@ -1,0 +1,51 @@
+Include places1.2
+
+Schema contacts1.0
+	Description ( "Contact names for collecting felt reports" )
+	Detail {
+		This schema lists phone-numbers and contact names
+		for investigation of felt reports from earthquakes.
+	}
+	Timedate lddate
+	;
+
+Attribute contact_name
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "contact name" )
+	Detail {
+		name of potential contact for felt information 
+		on earthquakes
+	}
+	;
+
+Attribute note
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "note on contact info" )
+	Detail {
+		Note on contact information for felt reports
+	}
+	;
+
+Attribute phone
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "phone number" )
+	Detail {
+		phone number of contact
+	}
+	;
+
+Relation phone
+	Fields ( place contact_name phone note lddate )
+	Primary ( place phone )
+	Description ( "phone contacts for felt-report investigation" )
+	Detail {
+		This table lists phone-numbers and contact names
+		for investigation of felt reports from earthquakes.
+	}
+	;

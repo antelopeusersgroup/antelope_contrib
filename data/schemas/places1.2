@@ -1,0 +1,161 @@
+Schema "places1.2"
+	Description ( "Places Schema Version 1.2" )
+	Detail {
+		This schema is intended to describe places on the earth, 
+		for example point-coordinate locations of cities, populated
+		places, summits, etc. Support for specifying polygonal
+		regions is included. 
+	}
+	Timedate lddate
+	;
+
+Attribute county
+	String (45)
+	Format ( "%-45s" )
+	Null ( "-" )
+	Description ( "County name" )
+	Detail {
+		This is the county name of the specified feature.
+	}
+	;
+
+Attribute elev
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "elev >= -10.0 && elev <= 10.0" )
+	Units ( "Kilometers" )
+	Description ( "elevation" )
+	Detail {
+		This attribute is the elevation of a seismic station
+		relative to mean sea level.
+	}
+	;
+
+Attribute lat
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "lat >= -90.0 && lat <= 90.0" )
+	Units ( "Degrees" )
+	Description ( "estimated latitude" )
+	Detail {
+		This attribute is the geographic latitude.  Locations
+		north of the equator have positive latitudes.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5lf" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "(epoch) time of last record modification" )
+	Detail {
+		This is the last time the record was modified.
+	}
+	;
+
+Attribute lon
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "lon >= -180.0 && lon <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "estimated longitude" )
+	Detail {
+		This attribute is the geographic longitude in degrees. 
+		Longitudes are measured positive east of the Greenwich
+		meridian.
+	}
+	;
+
+Attribute place
+	String (70)
+	Format ( "%-70s" )
+	Null ( "-" )
+	Description ( "Feature name" )
+	Detail {
+		This is the common name of the listed feature.
+	}
+	;
+
+Attribute placetype
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "place type" )
+	Detail {
+		This is the type of feature described.  Examples include:
+		summit, ppl ["populated place"], dam, canal, airport,
+		locale, park, school, valley, tunnel, church, stream,
+		lake, flat, mine, city, island, summit, etc.
+	}
+	;
+
+Attribute regname
+	String ( 80 )
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( " Name of the region of interest" )
+	;
+
+Attribute state
+	String (35)
+	Format ( "%-35s" )
+	Null ( "-" )
+	Description ( "State name" )
+	Detail {
+		This is state in which the specified feature appears.
+	}
+	;
+
+Attribute vertex
+	Integer ( 8 )
+	Format ( "%8d" ) 
+	Null  ( "0" )
+	Range( "vertex > 0" )
+	Description ( "Sequence number of vertex specifying region" )
+	Detail {
+		The vertices for a polygon are listed in order, clockwise
+		around a region. The vertex field specifies the sequence
+		number of each vertex for a given region, e.g. first,
+		second, third, etc.
+	}
+	;
+
+Relation places
+	Fields ( lat lon elev place placetype county state lddate )
+	Primary ( lat lon place )
+	Description ( "Geographic location of various features" )
+	Detail {
+		Geographic location of various features.  Includes 
+		locations for various landmarks (ie summits, populated
+		places-ppl, etc.).
+	}
+	;
+
+Relation regions
+	Fields (
+		regname vertex lat lon
+		)
+	Primary ( regname vertex )
+	Description ( "Vertices defining regions of interest" )
+	Detail {
+		This table specifies the vertex locations for the 
+		polygons enclosing each region. The vertex field
+		indicates the ordering of the vertices around the 
+		polygon. For implementations which need to 
+		distinguish unambiguously the difference between the 
+		inside and outside of a region, usually for regions
+		that include significant fractions of the globe or regions
+		that might be on the far side of the globe from a 
+		possibly included earthquake, the vertices should 
+		be listed in clockwise order looking down at the 
+		surface in map view. For situations in which there 
+		may be several types of overlapping regions, or 
+		overlapping regions which need to be ranked in 
+		priority, additional tables should be defined in 
+		an expansion schema.
+	}
+	;
