@@ -1,0 +1,37 @@
+.TH TKEDIT_ML 1 "$Date$"
+.SH NAME
+tkedit_ml \- edit ML station-magnitudes in a TK window
+.SH SYNOPSIS
+.nf
+tkedit_ml orid [sta_chan:ml [sta_chan:ml...]]
+.fi
+.SH DESCRIPTION
+tkedit_ml shows a list of magnitudes in a TK window, allowing the user to
+choose which to keep in the solution. The stamag arguments should be
+of the form sta_chan:ml sta_chan:ml etc. Upon exit, tkedit_ml writes
+a parameter file tkedit_ml.pf. The Tbl called 'omit' in this parameter file
+contains a list of stations to omit. If no sta-chans are listed, tkedit_ml
+writes a parameter file with an empty omit &Tbl for the specified orid.
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% tkedit_ml 16442 HUR_SHZ:5.03 NEA_SHZ:5.02 CUT_SHZ:3.7 ANCK_SHZ:6.7
+% cat tkedit_ml.pf
+omit &Tbl{
+CUT_SHZ
+ANCK_SHZ
+}
+% 
+
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+aeic_dbml(1)
+.fi
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$

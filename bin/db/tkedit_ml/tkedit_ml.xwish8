@@ -1,0 +1,150 @@
+# tkedit_ml
+#
+# Small graphic utility to choose which magnitudes to use
+
+package require Tclx
+
+proc compute_netmag {} {
+	global mags orid result netmag
+
+	set nused 0
+	set netmag 0
+
+	foreach elem [array names mags] {
+		set stamag [lindex [array get mags $elem] 1]
+		global use$elem
+		set used [set use$elem]
+
+		if { $used } {
+			set netmag [expr $netmag + $stamag]
+			incr nused
+		}
+	}
+
+	if { $nused == 0 } {
+		set netmag -999.
+	} else {
+		set netmag [expr $netmag / $nused]
+	}
+	
+	if { $netmag == -999 } {
+		set result [format "Orid %d: No netmag" $orid] 
+	} else {
+		set result [format "Orid %d: Netmag %4.2f ML" $orid $netmag]
+	}
+
+	return
+}
+
+proc endproc {} {
+	global netmag mags
+
+	set omit []
+
+	set fid [open tkedit_ml.pf w]
+
+	puts $fid "omit &Tbl{"
+
+	foreach elem [array names mags] {
+		global use$elem
+		set used [set use$elem]
+
+		if { ! $used } {
+			lappend omit "$elem "
+			puts $fid $elem
+		}
+	}
+
+	puts $fid "}"
+	destroy .
+}
+
+proc box_resize {} {
+	set bbox [.c bbox all]
+	set wid [winfo width .c.box]
+	.c configure -width $wid -scrollregion $bbox -yscrollincrement 0.1i
+}
+
+if { $argc < 1 } {
+	puts stderr {Usage: tkedit_ml orid [sta_chan:ml [sta_chan:ml...]]}
+	exit -1
+}
+
+proc init_windows {} {
+
+	scrollbar .s -command ".c yview" -relief sunken
+	canvas .c -background yellow -yscrollcommand ".s set"
+	label .l -textvariable result -justify left -bg orange
+	button .ok -text Commit -bg red -command endproc
+
+	grid .s -row 0 -column 0 -sticky ns
+	grid .c -row 0 -column 1 -sticky nsew
+	grid .l -columnspan 2 -sticky ew
+	grid .ok -columnspan 2 -sticky ew
+	grid columnconfigure . 1 -weight 1
+	grid rowconfigure . 0 -weight 1
+
+	frame .c.box
+	.c create window 0 0 -anchor nw -window .c.box 
+	bind .c.box <Configure> "box_resize"
+}
+
+init_windows 
+
+if { [llength $argv] == 1 } {
+	set mystring [lvarpop argv 0]
+	regsub { +$} $mystring "" mystring
+	regsub -all { +} $mystring " " mystring
+	set argv [split $mystring]
+}
+
+set orid [lvarpop argv 0]
+
+foreach elem $argv {
+
+	if { ! [regexp {.*_.*:[-0-9]} $elem] } {
+		puts stderr "tkedit_ml: argument '$elem' doesn't match sta_chan:ml"
+		exit -1
+	}
+
+	regsub -all {[_:]} $elem " " elem
+	scan $elem "%s %s %f" sta chan ml
+	set stachan $sta\_$chan
+	# 'use' prefix is necessary to enforce lower-case start to the variable name
+	set use$stachan 1
+
+	array set mags [list $stachan $ml]
+
+	set w .c.box
+
+	frame $w.use$stachan -background yellow
+	grid $w.use$stachan -sticky ew 
+	checkbutton $w.use$stachan.cb -background yellow \
+		-variable use$stachan -command compute_netmag
+	pack $w.use$stachan.cb -side left
+	label $w.use$stachan.l -bg yellow \
+		-text [format "%s %s stamag %4.2f ML" $sta $chan $ml]
+	pack $w.use$stachan.l -side left
+}
+
+compute_netmag
+
+after idle {
+	update idletasks
+
+	wm resizable . 0 1
+	set boxwidth [expr [lindex [.c bbox all] 2] + 20]
+	if { $boxwidth < 200 } { set boxwidth 200 }
+
+	set minheight 90
+
+	set controlheight 60
+	set boxheight [lindex [.c bbox all] 3]
+	set screenheight [winfo screenheight .]
+	set maxheight [min $screenheight [expr $boxheight + $controlheight]]
+	
+	wm minsize . 0 $minheight
+	wm maxsize . 0 $maxheight
+
+	wm geometry . $boxwidth\x$maxheight
+}
