@@ -1,79 +1,62 @@
-
-/* $Name $Revision$ $Date$  */
 /************************************************************************
  *
  *    extrd/exist.c
  * Make output directory with the name YYDDDHHMMSS                
  * 
  ************************************************************************/
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include "util.h"
-#include <errno.h>
-
-#define MODE (0664)
-
-/* Global variables  */
-
-int Fp_data;
-char *Data_file;
-char *Wfd_name;
+#include "extrd.h"
 
 
-int mkfname(time, out_dir)
+int mkfname( outdb, time, out_dir)
+char **outdb;
 double time;
 char *out_dir;
 {
 
+    char tmp[256];
     struct stat buf;
     int yr,day, hour, min, sec, msec;
 
     if( (Data_file = (char *) malloc(512) ) == NULL )  {
-          perror("extrd/mkfname(): malloc");
-          exit(1);         
+          die( 1, " malloc error\n");
     }
    
-    if( (Wfd_name = (char *) malloc(512) ) == NULL )  {
-          perror("extrd/mkfname(): malloc");
-          exit(1);         
-    }
-
 /* Make directory name for new data subset from data start time   */
    
    dtsplit(time, &yr, &day, &hour, &min, &sec, &msec); yr -= 1900;
    if(out_dir != NULL)
-     sprintf(Data_file,"%s/%2.2d%3.3d%2.2d%2.2d%2.2d\0", out_dir, yr, day, hour, min, sec);
+     sprintf( *outdb,"%s/%2.2d%3.3d%2.2d%2.2d%2.2d\0", 
+              out_dir, yr, day, hour, min, sec);
    else
-     sprintf(Data_file,"%2.2d%3.3d%2.2d%2.2d%2.2d\0", yr, day, hour, min, sec);
+     sprintf( *outdb,"%2.2d%3.3d%2.2d%2.2d%2.2d\0", 
+              yr, day, hour, min, sec);
   
 /* Make new wfdisc name from data start time  */
  
-   strcpy(Wfd_name, Data_file);
-   strcat(Wfd_name, ".wfdisc");
+   strcpy(Data_file, *outdb);
    strcat(Data_file, ".w");
+
+   pathfrname( Data_file, Outdir);
+   if( strlen( Outdir) <= 0 ) sprintf( &Outdir[0], ".\0");
+   namefrpath( Data_file, Dfile );
+
  
 /*  Make directory for data subset from start time  */
      
-       if(stat(Data_file, &buf) != 0)  {
-           if (!ENOENT)  {
-               fprintf(stderr,"extrd():");
-               perror(Data_file);
-               return 0;
-            }  
-       } else  {
-           fprintf(stderr, "File %s already exist\n", Data_file);
-           fprintf(stderr, "Can't overwrite existing file.\n");
-           return 0;
-      }
-      if ((Fp_data = open(Data_file, O_CREAT | O_WRONLY, MODE)) <= 0 )  {
-            fprintf(stderr,"extract_data():Can't open file %s\n", Data_file);
-            perror(Data_file);
+   if(stat(Data_file, &buf) != 0)  {
+        if (!ENOENT)  {
+            complain( 1,"stat error:");
             return 0;
-      }
+        }  
+    } else  {
+        complain( 0, "File %s already exist\n", Data_file);
+        complain( 0, "Can't overwrite existing file.\n");
+        return 0;
+   }
+   if (( Df = fopen(Data_file, "w")) == NULL )  {
+         complain( 1,"Can't open file %s\n", Data_file);
+         return 0;
+   }
 
    return 1;    
 }
-
-/* $Id$ */

@@ -1,28 +1,23 @@
-
-# $Name $Revision$ $Date$ 
+# @(#)Makefile	1.1 3/14/95 
 # Makefile for extrd
 
 BIN = extrd
-MAN1 = extrd.1
-ldlibs= $(DBLIBS)
+cflags  = -g
+ldlibs  = -lscv2 -ldbl2 $(TRLIBS)
+ 
+include $(DSAPMAKE)
 
-include $(DSAPMAKE) 
 
-OBJS	= main.o \
-	  find_path.o \
-	  create_dir.o \
-	  mkfname.o \
-	  extract_data.o \
-	  get_data.o \
-	  parse_name.o \
-	  print_wd.o \
-	  rd_wfdisc.o \
-	  time_util.o \
-	  wfdcmp.o \
-	  write_wfd.o
-
+OBJS	= extrd.o\
+	  create_dir.o\
+	  dtsplit.o\
+	  find_path.o\
+	  get_data.o\
+	  mkfname.o\
+	  parse_name.o\
+	  steim_util.o\
+	  sig_hdlr.o\
+	  util.o\
+	  wrt_data.o
 $(BIN):	$(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS) 
-
-
-# $Id$ 
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)

@@ -1,5 +1,3 @@
-
-/* $Name $Revision$ $Date$ */
 /*======================================================================
  *
  *  /lib/util/parse_name.c
@@ -18,6 +16,7 @@ char *exten;                 /* extention to be cut from name */
 {
 int i, j;
 char *tmp_name;       
+char *ext;
 
         name[0] = '\0';
         tmp_name = (char *) malloc(132);
@@ -34,12 +33,14 @@ char *tmp_name;
 /* Cut extention if such is specified */
 
         if(exten != NULL)  {
-           tmp_name = strstr(name, exten);
-           if(strcmp(tmp_name, exten) == 0)
-              name[strlen(name)-strlen(exten)] = '\0';
+           ext = strstr(name, exten);
+           if( ext != 0 )  {
+	      if(strcmp(ext, exten) == 0)
+                  name[strlen(name)-strlen(exten)] = '\0';
+	   }  
         }
 
-  free(tmp_name);       
+   free(tmp_name);       
 }
 
 void pathfrname(path, name)
@@ -86,5 +87,3 @@ int i, j;
         name[j] = '\0';
 }
 
-
-/* $Id$ */

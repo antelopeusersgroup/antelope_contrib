@@ -1,5 +1,4 @@
-
-/* $Name $Revision$ $Date$ */
+/* %W% %G% */
 /*======================================================================
  *
  *  lib_src/util/Find_path.c
@@ -49,9 +48,8 @@ int ntoken, link_size, size, i;
   for(i = 0; i < ntoken; i++)  {
     strcat(subpath, tmp[i]);
     if(lstat(subpath, &buf) != 0)  {
-         fprintf(stderr,"Find_path:can't stat. \n");
-         perror(subpath);
-         exit(1);
+         complain(1,"Find_path:can't stat. \n");
+         return -1;
     } else if(S_ISLNK(buf.st_mode) != 0)  {
        link_size = readlink(subpath, (void *)link_path, size);
        if(link_size < 0)  {
@@ -73,7 +71,7 @@ int ntoken, link_size, size, i;
       strcat(subpath,"/");
       strcpy(*real_path, subpath);
    } else {
-       fprintf(stderr, "%s is not a path to the data file\n", subpath);
+       complain( 0, "%s is not a path to the data file\n", subpath);
        free(subpath); free(link_path); free(orig_path);
        return 0;
    }
@@ -84,5 +82,3 @@ free(subpath); free(link_path); free(orig_path);
 return 1;
 }
 
-
-/* $Id$ */
