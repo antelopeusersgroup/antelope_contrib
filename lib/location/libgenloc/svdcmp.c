@@ -72,11 +72,12 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 		&info);
 	free(swork);
 #endif
-	if(info > 0)
-		elog_notify(0,"Convergence failure in svd routine\n");
-	else if(info < 0)
+	if(info!=0)
 	{
-		elog_notify(0,"Illegal value for argument %d passed to sgesvd\nNo solution possible\n",
+		if(info > 0)
+                	elog_notify(0,"Convergence failure in svd routine\n");
+		else
+			elog_notify(0,"Illegal value for argument %d passed to sgesvd\nNo solution possible\n",
 			-info);
 		free(afort);
 		free(vfort);
