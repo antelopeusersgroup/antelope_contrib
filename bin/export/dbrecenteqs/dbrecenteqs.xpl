@@ -1054,9 +1054,9 @@ chomp( $Program );
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('e:p:hi:g:') || @ARGV != 1 ) {
+if ( ! &Getopts('e:p:hi:g:c:') || @ARGV != 1 ) {
 	die ( "Usage: $Program [-h] [-p pffile] [-i indexmap_pffile] " .
-	      "[-g globalmap_pffile] [-e evid] database\n" ); 
+	      "[-g globalmap_pffile] [-e evid] [-c sourcedb] database\n" ); 
 } else {
 	$dbname = $ARGV[0];
 	if( $opt_p ) {
@@ -1069,6 +1069,16 @@ if ( ! &Getopts('e:p:hi:g:') || @ARGV != 1 ) {
 init_globals();
 
 die_if_already_running();
+
+if( $opt_c ) {
+
+	$sourcedb = $opt_c;
+
+	system( "cp $sourcedb.event $dbname.event" );
+	system( "cp $sourcedb.origin $dbname.origin" );
+	system( "cp $sourcedb.assoc $dbname.assoc" );
+	system( "cp $sourcedb.arrival $dbname.arrival" );
+}
 
 @db = dbopen( $dbname, "r+" );
 

@@ -4,7 +4,7 @@ dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
 dbrecenteqs [-p pffile] [-h] [-i indexmap_pffile] 
-	    [-g globalmap_pffile] [-e evid] dbname
+	    [-g globalmap_pffile] [-e evid] [-c sourcedb] dbname
 .fi
 .SH DESCRIPTION
 
@@ -64,6 +64,12 @@ will probably require libxml2 and libxslt from www.xmlsoft.org.
 -e evid Refresh the page for a single evid, and regenerate stock maps
 
 -h don't regenerate focus maps; only recreate html
+
+-c sourcedb Copy the arrival, assoc, origin, and event tables 
+from the specified source database to the target database. This 
+is useful to make dbrecenteqs entirely responsible for the web 
+database, avoiding problems of views getting modified independently 
+while dbrecenteqs is using them. 
 .fi
 .SH PARAMETER FILE
 
@@ -345,6 +351,11 @@ would be nice to combine information from multiple topography grids dynamically.
 
 cities_dbname appears both in nearest_places and in map_config. It 
 would be nice to clean this up.
+
+The -c sourcedb mechanism is something of a workaround, useful for 
+orbxfer -based installations, which do not have any type of synchronization
+mechanism between dbrecenteqs and the database updates.
+
 .SH "SEE ALSO"
 .nf
 dbevents(1), rtexec(1), GMT(l), Image::Magick(1), XML::Writer(1),
