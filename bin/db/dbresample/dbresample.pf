@@ -40,47 +40,31 @@ output_sample_rate 10
 trim_gap_edges true  #if true shorten data around gaps to avoid edge transients of FIR filters
 output_channel_code  M
 
-Attribute_Map &Tbl{
-sta sta  wfdisc string
-chan chan  wfdisc string
-starttime time wfdisc real
-endtime endtime wfdisc real
-nsamp nsamp wfdisc int
-samprate samprate wfdisc real
-directory dir wfdisc string
-jdate	jdate wfdisc int
-file	dfile wfdisc string
-calib	calib wfdisc real
-calper calper wfdisc real
-instype instype wfdisc string
-}
 input_metadata_list &Tbl{
 sta string
 chan string
-starttime real
+time real
 endtime real
 nsamp int
 samprate real
-file string
-directory string
+dfile string
+dir string
 jdate int
 calib real
 calper real
-instype string
 }
 output_metadata_list &Tbl{
 sta string
 chan string
-starttime real
+time real
 endtime real
 nsamp int
 samprate real
-file string
-directory string
+dfile string
+dir string
 jdate int
 calib real
 calper real
-instype string
 }
 dbprocess_commands &Tbl{
 dbopen wfdisc

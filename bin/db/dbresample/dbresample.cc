@@ -69,7 +69,8 @@ int main(int argc, char **argv)
 				<< chan_code[0] << " will be used"<<endl;
 		}
 		// This object defines mapping from external to internal namespace
-		Attribute_Map am(pf,string("Attribute_Map"));
+		// old form:  Attribute_Map am(pf,string("Attribute_Map"));
+		Attribute_Map am;
 		// This defines the list of internal names actually extracted from db
 		Metadata_list md_to_input=pfget_mdlist(pf,
 			"input_metadata_list");
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
 			traceout.put_metadata("chan",chan);
 			// a crude way to alter files to preserve original structure
 			// append the string ".resampled"
-			dfile_name = traceout.get_string("file");
+			dfile_name = traceout.get_string("dfile");
 			dfile_name = dfile_name + string(".resampled");
 			traceout.put_metadata("file",dfile_name);
 			dbsave(traceout,dbho.db,table,md_to_output,am);
