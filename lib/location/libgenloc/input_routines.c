@@ -286,7 +286,7 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 		f = (Distance_weight_function *)calloc(2,sizeof(Distance_weight_function));
 		f[0].delta = 0.0;
 		f[0].weight = 1.0;
-		f[1].delta = 360.0;
+		f[1].delta = 180.0;
 		f[1].weight = 1.0;
 		ii = 1;
 	}
@@ -327,17 +327,17 @@ Distance_weight_function *setup_weight_function(Tbl *t)
 		complain(0,"WARNING:  weight function definition totally botched\nSetting weights to 1.0 for all distances\n");
 		f[0].delta = 0.0;
 		f[0].weight = 1.0;
-		f[1].delta = 360.0;
+		f[1].delta = 180.0;
 		f[1].weight = 1.0;
 		ii = 1;
 	}
-	if(f[ii].delta < 360.0)
+	if(f[ii].delta < 180.0)
 	{
 		complain(0,"Warning:  weight function definition incorrect.\n\
-Last point in the definition should be set to distance of 360.0\n\
-Setting 360.0 with a weight of 0 and continuing\n");
+Last point in the definition should be set to distance of 180.0\n\
+Setting 180.0 with a weight of 0 and continuing\n");
 		++ii;
-		f[ii].delta = 360.0;
+		f[ii].delta = 180.0;
 		f[ii].weight = 0.0;
 	}
 	/* Now set the precomputed slopes*/
@@ -764,7 +764,7 @@ WITHOUT CALLING read_arrivals AND read_slowness_vectors.  The phase
 handle pointers willl point nowhere if you attempt this and chaos will
 surely result.
 */
-int free_phase_handle(void *value)
+void free_phase_handle(void *value)
 {
 	Phase_handle *p;
 	p = (Phase_handle *)value;
@@ -776,7 +776,6 @@ int free_phase_handle(void *value)
 	freearr(p->uy_sc,free);
 	free(p->name);
 	free(p);
-	return(0);
 }
 /* Simple function to free up data tables.  This is done mostly for 
 modularity as both tables are always freed together */

@@ -354,6 +354,7 @@ int project_covariance(double **,int, double *, double, int,
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
 Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);
+void copy_hypocenter(Hypocenter *,Hypocenter *);
 double pfget_double_wdef(Pf *, char *, double);
 int pfget_int_wdef(Pf *, char *, int);
 int lat_lon_grid_setup(Pf *, Point **, int *);
@@ -385,7 +386,7 @@ Arr *load_array_table(Pf *);
 Arr *parse_phase_parameter_file(Pf *);
 Tbl *read_arrivals(Pf *, Arr *, Arr *);
 Tbl *read_slowness_vectors(Pf *, Arr *, Arr *);
-int free_phase_handle(void *);
+void free_phase_handle(void *);
 
 /* linear algebra functions - numerical recipe variants */
 float **matrix(int, int, int, int);
@@ -402,7 +403,7 @@ Tbl *dbload_slowness_table(Dbptr, int, int, Arr *, Arr *);
 int dbtable_invalid(Dbptr,char *);
 
 /* S-P (or other "minus" phases) related functions*/
-int db_badclock_definitions(Dbptr, Pf *, Arr *);
+int db_badclock_definition(Dbptr, Pf *, Arr *);
 void pfget_badclocks(Pf *,Arr *);
 void Bad_Clock_free(Bad_Clock *);
 int minus_phases_arrival_edit(Tbl *,Arr *,Arr *);
