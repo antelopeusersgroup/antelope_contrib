@@ -22,6 +22,11 @@ through standard input and a set of fixed length traces are
 produced with a constant number of channels per gather as 
 required by the segy standard.  
 .LP
+An exception to this is that one can alternatively map all data
+to look like a stacked cdp section.  In this case, the source and 
+receiver coordinates are set equal and individual events end up being
+set to look like single-fold, zero offset reflection data. 
+.LP
 This program has several bells and whistles controlled by the
 input parameter file.  The optional parts of this are described
 below, but one key design feature needs to be recognized here.
@@ -111,6 +116,10 @@ Any traces that do not match the sample rate defined by this
 parameter will be skipped with an error message logged.  
 .LP
 \fBtrace_length\fR  length of ALL output traces in seconds. 
+.LP
+\fBmap_to_cdp\fR  Boolean variable.  When true the program sets header
+variables to make the data look like stacked cdp data instead of shot
+gathers (the default behaviour).  
 .ce
 \fIRotation Parameters\fR
 .LP

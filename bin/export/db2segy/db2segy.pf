@@ -1,5 +1,6 @@
 sample_rate 250
 trace_length 5.0
+map_to_cdp false
 rotate yes
 # This set of parameters are only hit when rotate is turned on.
 phi 80.0
