@@ -39,12 +39,15 @@ that recycled some of the original code written in February 1999.
 #include "location.h"
 #define min(a,b) ((a) <= (b) ? (a) : (b))
 
-int usage()
+static void
+usage()
 {
 	fprintf(stderr,"Usage:  db2segy dbin outfile [-pf pffile]\n");
 	exit(-1);
 }
-int initialize_header(SegyHead *header)
+
+void
+initialize_header(SegyHead *header)
 {
 	header->lineSeq = 1;
 	header->event_number = 1;
@@ -97,7 +100,7 @@ int initialize_header(SegyHead *header)
 	header->extrash[10] = 0;
 	header->samp_rate = 0;
 	header->data_form = 0;
-	header->trigyear;
+	header->trigyear = 0 ;
 	header->trigday=0;
 	header->trighour=0;
 	header->trigminute=0;
@@ -116,7 +119,7 @@ int initialize_header(SegyHead *header)
 	header->recLatOrY=0;
 	header->recUpholeTime=0;
 	header->recStaticCor=0;
-	header->lagTimeB;
+	header->lagTimeB = 0 ;
 	header->muteEnd=0;
 	header->sweepTaperAtEnd=0;
 	header->aliasSlope=0;
@@ -411,7 +414,7 @@ void repair_gaps(Dbptr trdb)
 	char datatype[4];
 	int ntraces;
 	int i,i0;
-	TrDataGap *g;
+	Wftype *g;
 
 	dbquery(trdb,dbRECORD_COUNT,&ntraces);
 	for(trdb.record=0;trdb.record<ntraces;++trdb.record)
@@ -424,7 +427,7 @@ void repair_gaps(Dbptr trdb)
 		{
 			die(0,"dbgetv error during gap processing\n");
 		}
-		g = trdatagap(datatype);
+		g = trwftype(datatype);
 		/* this function is supposed to set values to g->fill*/
 		tr2gaps(trdata,nsamp,datatype);
 		/* this will fill a gaps at the front or end of a trace with
@@ -504,12 +507,11 @@ main(int argc, char **argv)
 	int nsamp0;
 	double time0, endtime0, samprate0;
 	int nsamp;
-	double time,endtime,samprate;
+	double samprate;
 	int i,j;
 	char stime[30],etime[30];
 	char s[80];
 	double tlength;
-	int rotate_flag=0;  
 	double phi, theta;
 	char *newchan_standard[3]={"X1","X2","X3"};
 	char *trsubset="chan=~/X./";
@@ -648,7 +650,6 @@ main(int argc, char **argv)
 	*/
 	while((stest=fgets(s,80,stdin)) != NULL)
 	{
-		Trsample *trdata;
 		fprintf(stdout,"Processing event with start time %s = shot %d\n",
 			s,shotid);
 		for(i=0;i<nchan;++i)
@@ -662,8 +663,8 @@ main(int argc, char **argv)
 		}
 		time0 = str2epoch(s);
 		endtime0 = time0 + tlength;
-		sprintf(stime,"\"%20.4lf\"",time0);
-		sprintf(etime,"\"%20.4lf\"",endtime0);
+		sprintf(stime,"\"%20.4f\"",time0);
+		sprintf(etime,"\"%20.4f\"",endtime0);
 		trdb.database = -1;
 		if(trload_css(dbj,stime,etime,&trdb,0, 0))
 		{
@@ -715,7 +716,7 @@ main(int argc, char **argv)
 			}
 			if(samprate != samprate0)
 			{
-				elog_complain(0,"%s:%s sample rate %lf != base sample rate of %lf\nTrace skipped -- segy requires fixed sample rates\n",
+				elog_complain(0,"%s:%s sample rate %f != base sample rate of %f\nTrace skipped -- segy requires fixed sample rates\n",
 					sta,chan,samprate,samprate0);
 				continue;
 			}
@@ -736,7 +737,7 @@ main(int argc, char **argv)
 					ichan, nchan);
 			if(ichan >= 0)
 			{
-				fprintf(stdout,"%s:%s\t%-d\t%-d\t%-d\t%-d\n",
+				fprintf(stdout,"%s:%s\t%-d\t%-ld\t%-d\t%-d\n",
 					sta,chan,ichan+1,
                                         header[ichan].reelSeq,
 					shotid, evid);
@@ -793,5 +794,6 @@ main(int argc, char **argv)
 		trdestroy(&trdb);		
 		++shotid;
 	}
+	return 0 ;
 }
 
