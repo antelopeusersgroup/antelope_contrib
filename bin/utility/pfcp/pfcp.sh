@@ -39,7 +39,7 @@
 	else	
 		# ksh not always present on linux
 		#dest=${2%.pf}.pf
-		dest=`echo $2 | sed 's/\(.*\)\.pf/\1/`.pf
+		dest=`echo $2 | sed 's/\(.*\)\.pf/\1/'`.pf
 	fi
 
 	cp -i $pf $dest	
