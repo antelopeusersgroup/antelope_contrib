@@ -91,7 +91,7 @@ precision Unix/POSIX epoch (seconds since January 1, 1970).
 struct or NULL on error.
 
 \fBmsr_parse\fP returns the pointer to the MSrecord struct on
-success or NULL on error.
+success.  On error *ppmsr is set to NULL and NULL is returned.
 
 \fBmsr_print\fP returns non-zero on success and 0 on error.
 

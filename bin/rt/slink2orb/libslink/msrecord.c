@@ -14,7 +14,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.305
+ * modified: 2004.168
  ***************************************************************************/
 
 #include <stdio.h>
@@ -144,12 +144,12 @@ msr_free ( MSrecord ** msr )
  *
  * If the msr struct is NULL it will be allocated.
  * 
- * Returns a pointer to the MSrecord struct populated on success
- *  or NULL on error.
+ * Returns a pointer to the MSrecord struct populated on success.  On
+ * error *ppmsr is set to NULL and NULL is returned.
  ***************************************************************************/
 MSrecord *
 msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
-	   int blktflag, int unpackflag )
+	   int8_t blktflag, int8_t unpackflag )
 {
   int swapflag = 0;		        /* is swapping needed? */
   uint16_t begin_blockette;	        /* byte offset for next blockette */
@@ -158,6 +158,7 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
   if ( ppmsr == NULL )
     {
       sl_log_rl (log, 0, 1, "msr_parse(): pointer to MSrecord cannot be NULL\n");
+      *ppmsr = NULL;
       return NULL;
     }
   else
@@ -208,6 +209,8 @@ msr_parse (SLlog * log, const char * msrecord, MSrecord ** ppmsr,
     {
       sl_log_rl (log, 0, 1, "Record header/quality indicator unrecognized: %c\n",
 		 msr->fsdh.dhq_indicator);
+      msr_free(&msr);
+      *ppmsr = NULL;
       return NULL;
     }
 

@@ -1,7 +1,7 @@
 
                 libslink: the SeedLink client library
 
-                           1 November 2003
+                              4 May 2004
 
 Purpose:
 
@@ -133,10 +133,18 @@ management function described below, sl_collect():
 The following parameters are maintained by the library routines and should
 not be changed by the calling program:
 
-  server_version:  This is the version of the SeedLink server.  This
-		value is 0.0 when the version could not be detected.
-		This value is used to check if specific features should
-		be used with the currently connected server.
+  server_version: This is the version of the SeedLink server.  This
+		value is parsed from the server's response to the
+		HELLO command and will be set to 0.0 when the version
+		could not be detected.  Internal library routines use
+		this value to check if specific features should be
+		used with the currently connected server.  If the
+		version could not be detected the default action is to
+		allow all features.  The first line of response to the
+		HELLO command is expected to be in the format:
+		"seedlink v#.# <optional text>" where 'seedlink' is
+		case insensitive and '#.#' is the server/protocol
+		version.
 
   info:         This parameter indicates that an INFO packet should be
 		requested from the server during the next call to

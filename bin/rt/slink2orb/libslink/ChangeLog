@@ -1,3 +1,72 @@
+2004.168: version 1.2
+	- sl_collect[_nb]: process data in receive buffer even if connection
+	is not in SL_DATA state, this means the buffer will be emptied even
+	when the connection is not up.
+	- sl_collect[_nb]: reset keepalive_trig after successfully
+	connecting so a keepalive will not be sent directly after a
+	re-connection.
+	- sl_collect[_nb]: update timing variables every time unless data
+	is received, termination is triggered or other early exit
+	conditions appear; previously this was only done when more than a
+	1/4 second had elapsed.
+	- libslink.h: remove the previous_time element from the SLstat
+	type.
+	- sl_collect: handle a failure of select() more elegantly by
+	resetting the connection.
+	- sl_collect: change strerror() to slp_strerror() for any errors
+	with select() so the error will be correct under Win32.
+	- msr_parse: free allocated MSrecord and set *ppmsr to NULL on
+	errors in addition to returning NULL.
+	- Change some boolean values to type int8_t.
+	
+2004.166:
+	- Correctly reset sendpacket flag in sl_collect[_nb].  Previously
+	it might have been possible that data packets would be skipped if
+	heartbeats were received while receiving a high rate of data
+	packets.  This behaviour was never reported with this codebase;
+        nevertheless it might be possible to exercise this bug with
+	particularly written client code.
+	- Changed the sendpacket and terminator variables in
+	sl_collect[_nb] to type int8_t as they're only boolean values.
+	- Rename sendpacket to retpacket in sl_collect[_nb] for clarity.
+	- Rename source file slutils.c->genutils.c and main.c->slutils.c
+
+2004.142:
+        - Do not send terminating NULL characters in command strings sent
+        to the server.  The protocol stipulates that commands must be
+        terminated with a carriage return (\r) followed by an optional
+        new line (\n).  The library now strictly terminates commands 
+        with only a carriage return.  Thanks Ernesto Del Prete.
+        - Add sl_recvresp() to robustly receive responses from the server
+        that are terminated with '\r\n'.  This should improve usage when
+        the server responds slowly or with longer responses to commands.
+        - Use sl_recvresp() in say_hello() to get the two response lines
+        and report them both.
+        - Change argument 'code' to 'ident' in sl_*data() routines.
+	
+2004.131:
+	- Removed space from 'error sending' message in sl_senddata().
+	- Add define for LIBSLINK_RELEASE with the date of release,
+	e.g. "2004.131".
+
+2004.125: version 1.1
+	- Make parsing of server version more generic and robust with
+	a patch from Andres.  The server response to HELLO is expected
+	to be in the format 'seedlink v#.# <optional text>', if it's
+	not the server_version is set to 0.0 and the library will not
+	check the server version when using advanced protocol features.
+
+2004.118:
+	- Port and test under Mac OS X (Darwin) and add SLP_DARWIN define.
+	- sl_request_info(): Print INFO request type when request is
+	denied due to a pending request.
+	- Update Makefile usage of ar to include the -s flag, this
+	was needed under Darwin to build an index into the static
+	library and is a good idea anyway.
+	- Update Makefile to create symbolic links when shared/dynamic
+	libraries are built.
+	- Consolidate INSTALL and README files into just README.
+	
 2003.309: version 1.0 (Yay!)
 	- Add a missing include for Solaris.
 

@@ -9,7 +9,7 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2003.276
+ * Version: 2004.139
  ***************************************************************************/
 
 #include <stdio.h>
@@ -63,7 +63,8 @@ sl_configlink (SLCD * slconn)
  * sl_sayhello():
  * Send the HELLO command and attempt to parse the server version
  * number from the returned string.  The server version is set to 0.0
- * if it can not be parsed from the returned string.
+ * if it can not be parsed from the returned string, which indicates
+ * minimum protocol functionality.
  *
  * Returns -1 on errors, 0 on success.
  ***************************************************************************/
@@ -71,57 +72,65 @@ int
 sl_sayhello (SLCD * slconn)
 {
   int ret = 0;
-  int pass = 0;
-  int count = 0;
-  int bytesread = 0;
+  int servcnt = 0;
+  int sitecnt = 0;
   char sendstr[100];		/* A buffer for command strings */
-  char servstr[40];		/* The remote server ident */
-  char servid[10];		/* Server ID string, i.e. 'SeedLink' */
-  char readbuf[100];		/* A buffer for responses */
+  char servstr[100];		/* The remote server ident */
+  char sitestr[100];		/* The site/data center ident */
+  char servid[100];		/* Server ID string, i.e. 'SeedLink' */
 
   /* Send HELLO */
   sprintf (sendstr, "HELLO\r");
   sl_log_r (slconn, 0, 2, "[%s] sending: HELLO\n", slconn->sladdr);
-  bytesread = sl_senddata (slconn, (void *) sendstr,
-			   strlen (sendstr) + 1, slconn->sladdr,
-			   readbuf, sizeof (readbuf));
-  if (bytesread < 0)
+  sl_senddata (slconn, (void *) sendstr, strlen (sendstr), slconn->sladdr,
+	       NULL, 0);
+  
+  /* Recv the two lines of response */
+  if ( sl_recvresp (slconn, (void *) servstr, (size_t) sizeof (servstr), 
+		    sendstr, slconn->sladdr) < 0 )
     {
       return -1;
     }
-
-  /* Parse the server ID and version from the returned string */
-  ret = sscanf (readbuf, "%s v%f ", &servid[0], &slconn->server_version);
-
-  /* Check the response to HELLO */
-  if (ret == 2 && strncasecmp (servid, "SEEDLINK", 8) == 0)
+  
+  if ( sl_recvresp (slconn, (void *) sitestr, (size_t) sizeof (sitestr),
+		    sendstr, slconn->sladdr) < 0 )
     {
-      pass = 1;
+      return -1;
     }
-  else if (strncasecmp (readbuf, "SEEDLINK", 8) == 0)
+  
+  servcnt = strcspn (servstr, "\r");
+  if ( servcnt > 90 )
     {
-      pass = 1;
+      servcnt = 90;
+    }
+  servstr[servcnt] = '\0';
+
+  sitecnt = strcspn (sitestr, "\r");
+  if ( sitecnt > 90 )
+    {
+      sitecnt = 90;
+    }
+  sitestr[sitecnt] = '\0';
+  
+  sl_log_r (slconn, 0, 1, "[%s] connected to: %s\n", slconn->sladdr, servstr);
+  sl_log_r (slconn, 0, 1, "[%s] organization: %s\n", slconn->sladdr, sitestr);
+  
+  /* Parse the server ID and version from the returned string.
+   * The expected format is:
+   * "seedlink v#.# <optional text>"
+   * where 'seedlink' is case insensitive and '#.#' is the server/protocol version.
+   */
+  servstr[servcnt] = ' '; servstr[servcnt+1] = '\0';
+  ret = sscanf (servstr, "%s v%f ", &servid[0], &slconn->server_version);
+  
+  if ( ret != 2 || strncasecmp (servid, "SEEDLINK", 8) )
+    {
+      sl_log_r (slconn, 0, 1,
+                "[%s] unknown server version, assuming minimum functionality\n",
+                slconn->sladdr, servstr);
       slconn->server_version = 0.0;
     }
-
-  if (pass)
-    {
-      count = strcspn (readbuf, "\r");
-      if (count > 40)
-	{
-	  count = 40;
-	}
-      strncpy (servstr, readbuf, count);
-      servstr[count] = '\0';
-      sl_log_r (slconn, 0, 1, "[%s] connected to: %s\n", slconn->sladdr, servstr);
-    }
-  else
-    {
-      sl_log_r (slconn, 1, 0, "[%s] incorrect response to HELLO: %.*s\n",
-	      slconn->sladdr, bytesread, readbuf);
-      return -1;
-    }
-
+  
   return 0;
 }				/* End of sl_sayhello() */
 
@@ -180,7 +189,7 @@ sl_negotiate_uni (SLCD * slconn)
 	      sl_log_r (slconn, 0, 2, "[%s] sending: SELECT %.*s\n", slconn->sladdr,
 			sellen, selptr);
 	      bytesread = sl_senddata (slconn, (void *) sendstr,
-				       strlen (sendstr) + 1, slconn->sladdr,
+				       strlen (sendstr), slconn->sladdr,
 				       readbuf, sizeof (readbuf));
 	      if (bytesread < 0)
 		{		/* Error from sl_senddata() */
@@ -266,7 +275,7 @@ sl_negotiate_uni (SLCD * slconn)
       /* Append the last packet time if the feature is enabled and server is >= 2.93 */
       if (slconn->lastpkttime &&
 	  sl_checkversion (slconn, (float)2.93) >= 0 &&
-	  strlen(curstream->timestamp))
+	  strlen (curstream->timestamp))
 	{
 	  /* Increment sequence number by 1 */
 	  sprintf (sendstr, "%s %06X %.25s\r", cmd,
@@ -300,7 +309,7 @@ sl_negotiate_uni (SLCD * slconn)
       sl_log_r (slconn, 0, 1, "[%s] requesting next available data\n", slconn->sladdr);
     }
 
-  if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr) + 1,
+  if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		   slconn->sladdr, (void *) NULL, 0) < 0)
     {
       sl_log_r (slconn, 1, 0, "[%s] error sending DATA/FETCH/TIME request\n", slconn->sladdr);
@@ -353,7 +362,7 @@ sl_negotiate_multi (SLCD * slconn)
       sl_log_r (slconn, 0, 2, "[%s] sending: STATION %s %s\n",
 		slring, curstream->sta, curstream->net);
       bytesread = sl_senddata (slconn, (void *) sendstr,
-			       strlen (sendstr) + 1, slring, readbuf,
+			       strlen (sendstr), slring, readbuf,
 			       sizeof (readbuf));
       if (bytesread < 0)
 	{
@@ -410,7 +419,7 @@ sl_negotiate_multi (SLCD * slconn)
 			    selptr);
 		  bytesread =
 		    sl_senddata (slconn, (void *) sendstr,
-				 strlen (sendstr) + 1, slring, readbuf,
+				 strlen (sendstr), slring, readbuf,
 				 sizeof (readbuf));
 		  if (bytesread < 0)
 		    {		/* Error from sl_senddata() */
@@ -500,7 +509,7 @@ sl_negotiate_multi (SLCD * slconn)
 	  /* Append the last packet time if the feature is enabled and server is >= 2.93 */
 	  if (slconn->lastpkttime &&
 	      sl_checkversion (slconn, (float)2.93) >= 0 &&
-	      strlen(curstream->timestamp))
+	      strlen (curstream->timestamp))
 	    {
 	      /* Increment sequence number by 1 */
 	      sprintf (sendstr, "%s %06X %.25s\r", cmd,
@@ -536,7 +545,7 @@ sl_negotiate_multi (SLCD * slconn)
 
       /* Send the TIME/DATA/FETCH command and receive response */
       bytesread = sl_senddata (slconn, (void *) sendstr,
-			       strlen (sendstr) + 1, slring, readbuf,
+			       strlen (sendstr), slring, readbuf,
 			       sizeof (readbuf));
       if (bytesread < 0)
 	{
@@ -580,7 +589,7 @@ sl_negotiate_multi (SLCD * slconn)
   /* Issue END action command */
   sprintf (sendstr, "END\r");
   sl_log_r (slconn, 0, 2, "[%s] sending: END\n", slconn->sladdr);
-  if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr) + 1,
+  if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		   slconn->sladdr, (void *) NULL, 0) < 0)
     {
       sl_log_r (slconn, 1, 0, "[%s] error sending END command\n", slconn->sladdr);
@@ -611,7 +620,7 @@ sl_send_info (SLCD * slconn, const char * info_level, int verb_level)
       sl_log_r (slconn, 0, verb_level, "[%s] requesting INFO level %s\n",
 		slconn->sladdr, info_level);
 
-      if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr) + 1,
+      if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		       slconn->sladdr, (void *) NULL, 0) < 0)
 	{
 	  sl_log_r (slconn, 1, 0, "[%s] error sending INFO request\n", slconn->sladdr);
@@ -825,87 +834,73 @@ sl_checksock (int sock, int tosec, int tousec)
 
 /***************************************************************************
  * sl_senddata():
- * send() 'buflen' bytes from 'buffer' to 'sendlink'.
- * 'code' is a string to include in error messages for identification.
- * If 'resp' is not NULL then read up to 'resplen' bytes into 'resp'
- * after sending 'buffer'.  This is only designed for small pieces of data,
- * specifically the server responses to commands.
+ * send() 'buflen' bytes from 'buffer' to 'slconn->link'.  'ident' is
+ * a string to include in error messages for identification, usually
+ * the address of the remote server.  If 'resp' is not NULL then read
+ * up to 'resplen' bytes into 'resp' after sending 'buffer'.  This is
+ * only designed for small pieces of data, specifically the server
+ * responses to commands terminated by '\r\n'.
  *
  * Returns -1 on error, and size (in bytes) of the response
  * received (0 if 'resp' == NULL).
  ***************************************************************************/
 int
-sl_senddata (SLCD * slconn, void *buffer, int buflen,
-	     const char *code, void *resp, int resplen)
+sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
+	     const char *ident, void *resp, int resplen)
 {
-
-  int bytesread = 0;		/* bytes read in the read loop */
-  int ackcnt = 0;		/* counter for the read loop */
-  int ackpoll = 50000;		/* poll at 0.05 seconds for reading */
-
-  if (send (slconn->link, buffer, buflen, 0) < 0)
+  
+  int bytesread = 0;		/* bytes read into resp */
+  
+  if ( send (slconn->link, buffer, buflen, 0) < 0 )
     {
-      sl_log_r (slconn, 1, 0, "[%s] error sending '%.*s '\n", code,
+      sl_log_r (slconn, 1, 0, "[%s] error sending '%.*s '\n", ident,
 		strcspn ((char *) buffer, "\r\n"), (char *) buffer);
       return -1;
     }
-
-  /* If requested, wait up to 30 seconds for a response */
-  if (resp != NULL)
+  
+  /* If requested collect the response */
+  if ( resp != NULL )
     {
-      while ((bytesread = sl_recvdata (slconn, resp, resplen, code)) == 0)
-	{
-	  if (ackcnt > 600)
-	    {			/* 30 second wait, (ackpoll x 600) */
-	      sl_log_r (slconn, 1, 0,
-			"[%s] no response from SeedLink server for '%.*s'\n",
-			code, strcspn ((char *) buffer, "\r\n"),
-			(char *) buffer);
-	      return -1;
-	    }
-	  slp_usleep (ackpoll);
-	  ackcnt++;
-	}
+      bytesread = sl_recvresp (slconn, resp, resplen, buffer, ident);
     }
-
-  if (bytesread == -1)
-    {
-      sl_log_r (slconn, 1, 0, "[%s] bad response to '%.*s'\n",
-		code, strcspn ((char *) buffer, "\r\n"),
-		(char *) buffer);
-    }
-
+  
   return bytesread;
 }				/* End of sl_senddata() */
 
 
 /***************************************************************************
  * sl_recvdata():
- * recv() 'maxbytes' data from 'readlink' into a specified 'buffer'.
- * 'code' is a string to be included in error messages for identification.
+ * recv() 'maxbytes' data from 'slconn->link' into a specified
+ * 'buffer'.  'ident' is a string to be included in error messages for
+ * identification, usually the address of the remote server.
  *
  * Returns -1 on error/EOF, 0 for no available data and the number
  * of bytes read on success.
  ***************************************************************************/
 int
 sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
-	     const char *code)
+	     const char *ident)
 {
   int bytesread = 0;
-
-  bytesread = recv (slconn->link, buffer, maxbytes, 0);
-
-  if (bytesread == 0)		/* should indicate TCP FIN or EOF */
+  
+  if ( buffer == NULL )
     {
-      sl_log_r (slconn, 1, 1, "[%s] read():%d TCP FIN or EOF received\n", code,
-		bytesread);
       return -1;
     }
-  else if (bytesread < 0)
+  
+  bytesread = recv (slconn->link, buffer, maxbytes, 0);
+
+  if ( bytesread == 0 )		/* should indicate TCP FIN or EOF */
+    {
+      sl_log_r (slconn, 1, 1, "[%s] read():%d TCP FIN or EOF received\n",
+		ident, bytesread);
+      return -1;
+    }
+  else if ( bytesread < 0 )
     {
       if ( slp_noblockcheck() )
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] recv():%d %s\n", code, bytesread,
+	  sl_log_r (slconn, 1, 0, "[%s] recv():%d %s\n", ident, bytesread,
 		    slp_strerror ());
 	  return -1;
 	}
@@ -916,3 +911,76 @@ sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
 
   return bytesread;
 }				/* End of sl_recvdata() */
+
+
+/***************************************************************************
+ * sl_recvresp():
+ * To receive a response to a command recv() one byte at a time until
+ * '\r\n' or up to 'maxbytes' is read from 'slconn->link' into a
+ * specified 'buffer'.  The function will wait up to 30 seconds for a
+ * response to be recv'd.  'command' is a string to be included in
+ * error messages indicating which command the response is
+ * for. 'ident' is a string to be included in error messages for
+ * identification, usually the address of the remote server.
+ *
+ * Returns -1 on error/EOF and the number of bytes read on success.
+ ***************************************************************************/
+int
+sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
+	     const char *command, const char *ident)
+{
+  
+  int bytesread = 0;		/* total bytes read */
+  int recvret   = 0;            /* return from sl_recvdata */
+  int ackcnt    = 0;		/* counter for the read loop */
+  int ackpoll   = 50000;	/* poll at 0.05 seconds for reading */
+  
+  if ( buffer == NULL )
+    {
+      return -1;
+    }
+  
+  /* Recv a byte at a time and wait up to 30 seconds for a response */
+  while ( bytesread < maxbytes )
+    {
+      recvret = sl_recvdata (slconn, buffer + bytesread, 1, ident);
+      
+      if ( recvret > 0 )
+	{
+	  bytesread += recvret;
+	}
+      else if ( recvret < 0 )
+	{
+	  sl_log_r (slconn, 1, 0, "[%s] bad response to '%.*s'\n",
+		    ident, strcspn ((char *) buffer, "\r\n"),
+		    (char *) buffer);
+	  return -1;
+	}
+      
+      /* Trap door if '\r\n' is recv'd */
+      if ( bytesread >= 2 &&
+	   *(char *)(buffer+bytesread-2) == '\r' &&
+	   *(char *)(buffer+bytesread-1) == '\n' )
+	{
+	  return bytesread;
+	}
+      
+      /* Trap door if 30 seconds has elapsed, (ackpoll x 600) */
+      if ( ackcnt > 600 )
+        {
+	  sl_log_r (slconn, 1, 0, "[%s] timeout waiting for response to '%.*s'\n",
+		    ident, strcspn ((char *) buffer, "\r\n"),
+		    (char *) buffer);
+	  return -1;
+	}
+      
+      /* Delay if no data received */
+      if ( recvret == 0 )
+	{
+	  slp_usleep (ackpoll);
+	  ackcnt++;
+	}
+    }
+  
+  return bytesread;
+}				/* End of sl_recvresp() */

@@ -1,6 +1,6 @@
 #
 #
-# Wmake File For libslink - For Watcom's wmake
+# Wmake File for libslink example client - For Watcom's wmake
 # Use 'wmake -f Makefile.wat'
 
 .BEFORE

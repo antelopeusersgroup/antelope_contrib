@@ -17,7 +17,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.306
+ * modified: 2004.167
  ***************************************************************************/
 
 #include <fcntl.h>
@@ -228,8 +228,8 @@ slp_getaddrinfo (char * nodename, char * nodeport,
   *addrlen = sizeof(inet_addr);
 
 #else
-  /* Will not be reached in the current implementation but this is the
-     future of name resolution, leave it here until needed */
+  /* This will be used by all others, it is not properly supported
+     by some but this is the future of name resolution. */
 
   struct addrinfo *result;
   struct addrinfo hints;
@@ -257,7 +257,8 @@ slp_getaddrinfo (char * nodename, char * nodeport,
 /***************************************************************************
  * slp_strerror():
  *
- * Return a description of the last system error.
+ * Return a description of the last system error, in the case of Win32
+ * this will be the last Windows Sockets error.
  ***************************************************************************/
 const char *
 slp_strerror (void)

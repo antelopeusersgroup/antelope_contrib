@@ -57,7 +57,7 @@ A SeedLink packet is simply a SeedLink header followed by a Mini-SEED
 record; defined in libslink.h as a C struct (and type):
 
 .nf
-typedef struct seedlink_head_s
+typedef struct slpacket_s
 {
   char      slhead[SLHEADSIZE];   /* SeedLink header */
   char      msrecord[SLRECSIZE];  /* Mini-SEED record */
@@ -90,7 +90,7 @@ main () {
 	ptype  = sl_packettype (slpack);
 	seqnum = sl_sequence (slpack);
 
-        packet_handler ((char *) &slpack.fsdh, ptype, seqnum, SLRECSIZE);
+        packet_handler ((char *) &slpack->msrecord, ptype, seqnum, SLRECSIZE);
 
         /* Could send an INFO packet here with sl_request_info() */
         if ( some criteria )

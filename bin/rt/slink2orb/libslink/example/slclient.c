@@ -8,7 +8,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified 2003.306
+ * modified 2004.105
  ***************************************************************************/
 
 #include <stdio.h>
@@ -28,7 +28,7 @@
 #endif
 
 #define PACKAGE "slclient"
-#define VERSION "1.0"
+#define VERSION LIBSLINK_VERSION
 
 static short int verbose  = 0;
 static short int ppackets = 0;

@@ -17,7 +17,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.309
+ * modified: 2004.168
  ***************************************************************************/
 
 
@@ -30,7 +30,8 @@ extern "C" {
 
 #include "slplatform.h"
 
-#define LIBSLINK_VERSION "1.0"
+#define LIBSLINK_VERSION "1.2"
+#define LIBSLINK_RELEASE "2004.168"
 
 #define SLRECSIZE           512      /* Mini-SEED record size */
 #define MAX_HEADER_SIZE     128      /* Max record header size */
@@ -41,7 +42,7 @@ extern "C" {
 #define INFOSIGNATURE       "SLINFO" /* SeedLink INFO packet signature */
 #define MAX_LOG_MSG_LENGTH  200      /* Maximum length of log messages */
 
-/* Return values for the sl_collect() and sl_collect_nb() */
+/* Return values for sl_collect() and sl_collect_nb() */
 #define SLPACKET    1
 #define SLTERMINATE 0
 #define SLNOPACKET -1
@@ -142,8 +143,8 @@ struct fsdh_s
   uint16_t       begin_blockette;
 };
 
-/* SeedLink packet header, sequence number plus FSDH */
-typedef struct seedlink_head_s
+/* SeedLink packet, sequence number followed by miniSEED record */
+typedef struct slpacket_s
 {
   char    slhead[SLHEADSIZE];   /* SeedLink header */
   char    msrecord[SLRECSIZE];  /* Mini-SEED record */
@@ -163,19 +164,18 @@ typedef struct slstream_s
 /* Persistent connection state information */
 typedef struct stat_s
 {
-  char   databuf[BUFSIZE];      /* Data buffer for received packets */
-  int    recptr;                /* Receive pointer for databuf */
-  int    sendptr;               /* Send pointer for databuf */
-  int    expect_info;           /* Do we expect an INFO response? */
+  char    databuf[BUFSIZE];     /* Data buffer for received packets */
+  int     recptr;               /* Receive pointer for databuf */
+  int     sendptr;              /* Send pointer for databuf */
+  int8_t  expect_info;          /* Do we expect an INFO response? */
 
-  int    netto_trig;            /* Network timeout trigger */
-  int    netdly_trig;           /* Network re-connect delay trigger */
-  int    keepalive_trig;        /* Send keepalive trigger */
+  int8_t  netto_trig;           /* Network timeout trigger */
+  int8_t  netdly_trig;          /* Network re-connect delay trigger */
+  int8_t  keepalive_trig;       /* Send keepalive trigger */
 
-  double previous_time;
-  double netto_time;            /* Network timeout time stamp */
-  double netdly_time;           /* Network re-connect delay time stamp */
-  double keepalive_time;        /* Keepalive time stamp */
+  double  netto_time;           /* Network timeout time stamp */
+  double  netdly_time;          /* Network re-connect delay time stamp */
+  double  keepalive_time;       /* Keepalive time stamp */
 
   enum                          /* Connection state */
     {
@@ -209,15 +209,15 @@ typedef struct slcd_s
   char       *begin_time;	/* Beginning of time window */
   char       *end_time;		/* End of time window */
 
-  short int   resume;           /* Boolean flag to control resuming with seq. nums */
-  short int   multistation;     /* Boolean flag to indicate multistation mode */
-  short int   dialup;           /* Boolean flag to indicate dial-up mode */
-  short int   lastpkttime;      /* Boolean flag to control last packet time usage */
-  short int   terminate;        /* Boolean flag to control connection termination */
+  int8_t      resume;           /* Boolean flag to control resuming with seq. numbers */
+  int8_t      multistation;     /* Boolean flag to indicate multistation mode */
+  int8_t      dialup;           /* Boolean flag to indicate dial-up mode */
+  int8_t      lastpkttime;      /* Boolean flag to control last packet time usage */
+  int8_t      terminate;        /* Boolean flag to control connection termination */
 
-  int         keepalive;        /* Interval to send keepalive/heartbeat (s) */
-  int         netto;            /* Network timeout (s) */
-  int         netdly;           /* Network reconnect delay (s) */
+  int         keepalive;        /* Interval to send keepalive/heartbeat (secs) */
+  int         netto;            /* Network timeout (secs) */
+  int         netdly;           /* Network reconnect delay (secs) */
 
   float       server_version;   /* Version of the remote SeedLink server */
   const char *info;             /* INFO level to request */
@@ -227,7 +227,7 @@ typedef struct slcd_s
 } SLCD;
 
 
-/* main.c */
+/* slutils.c */
 extern int    sl_collect (SLCD * slconn, SLpacket ** slpack);
 extern int    sl_collect_nb (SLCD * slconn, SLpacket ** slpack);
 extern SLCD * sl_newslcd (void);
@@ -255,12 +255,14 @@ extern int    sl_send_info (SLCD * slconn, const char * info_level,
 extern int    sl_connect (SLCD * slconn);
 extern int    sl_disconnect (SLCD * slconn);
 extern int    sl_checksock (int sock, int tosec, int tousec);
-extern int    sl_senddata (SLCD * slconn, void *buffer, int buflen,
-			   const char *code, void *resp, int resplen);
+extern int    sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
+			   const char *ident, void *resp, int resplen);
 extern int    sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
-			   const char *code);
+			   const char *ident);
+extern int    sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
+                           const char *command, const char *ident);
 
-/* slutils.c */
+/* genutils.c */
 extern double sl_dtime (void);
 extern int    sl_doy2md (int year, int jday, int *month, int *mday);
 extern int    sl_checkversion (const SLCD * slconn, float version);
@@ -310,7 +312,7 @@ MSrecord;
 extern MSrecord * msr_new (void);
 extern void       msr_free (MSrecord ** msr);
 extern MSrecord * msr_parse (SLlog * log, const char * msrecord, MSrecord ** msr,
-			     int blktflag, int unpackflag);
+			     int8_t blktflag, int8_t unpackflag);
 extern int        msr_print (SLlog * log, MSrecord * msr, int details);
 extern int        msr_dsamprate (MSrecord * msr, double * samprate);
 extern double     msr_depochstime (MSrecord * msr);

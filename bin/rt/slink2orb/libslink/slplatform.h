@@ -18,7 +18,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.307
+ * modified: 2004.105
  ***************************************************************************/
 
 #ifndef SLPLATFORM_H
@@ -33,6 +33,7 @@ extern "C" {
    * Linux => glibc2 (SLP_GLIBC2)
    * Sun => Solaris (SLP_SOLARIS)
    * WIN32 => WIN32 and Windows Sockets 2 (SLP_WIN32)
+   * Apple => Mac OS X (SLP_DARWIN)
    */
 
 #if defined(__linux__) || defined(__linux)
@@ -81,7 +82,8 @@ extern "C" {
   typedef signed __int64 int64_t;
   typedef unsigned __int64 uint64_t;
 
-#else
+#elif defined(__APPLE__)
+  #define SLP_DARWIN 1
 
   #include <stdlib.h>
   #include <unistd.h>
@@ -94,6 +96,7 @@ extern "C" {
   #include <netdb.h>
   #include <sys/time.h>
 
+#else
   typedef signed char int8_t;
   typedef unsigned char uint8_t;
   typedef signed short int int16_t;
