@@ -1,58 +1,70 @@
-.TH orblist
+.TH ORBLIST 1 "$Date$"
+
 .SH NAME
 orblist \- list an orb contents
+
 .SH SYNOPSIS
 .nf
 
-orblist [-d] 
-    [-h]
-    [-m srcmatch]
-    [-n time_diff]
-    [-s] 
-    orb [start [twindow]]
+\fBorblist \fP[-d]     [-h]     [-m \fIsrcmatch\fP]     [-n
+                \fItime_diff\fP]     [-s]     \fIorb\fP [\fIstart\fP
+                [\fItwindow\fP]]
 
 .fi
+
 .SH DESCRIPTION
-An \fBorblist\fP reads packets from an \fIorb\fR ring buffer and
+An \fBorblist\fP reads packets from an \fIorb\fP ring buffer and
 print to stdout information about those packets. An \fBorblist\fP  prints
-srcname and time of a packet. It also checks packets time with 
+srcname and time of a packet. It also checks packets time with
 "expected" packet time - time which is calculated based on size of a packet
 and a sample rate.  If packet time is not equal to "expected" time
 an \fBorblist\fP print a mesage about this. This program is very
-usefull if user wants quickly to check data on a time gaps or to get 
-a hexdump of an orb packets . 
+usefull if user wants quickly to check data on a time gaps or to get
+a hexdump of a orb packets.
+
 .SH OPTIONS
+
 .IP "-d"
-Tells \fBorblist\fP to print a hexdump of an orb packets.
+Tells \fBorblist\fP to print a hexdump of orb packets.
+
 .IP "-h"
-Tells \fBorblist\fP to print a hexdump of a raw packets. A raw packet is an 
+Tells \fBorblist\fP to print a hexdump of a raw packets. A raw packet is an
 orb packet without orb header.
+
 .IP "-m srcmatch"
-Only  packets   which a srcname matches the regular expression \fI srcmatch\fR
+Only  packets   which a srcname matches the regular expression \fIsrcmatch\fP
 will be read from an orb.
+
 .IP "-n time_diff "
 Specify in seconds an expected time difference between packets.
+
 .IP "-s"
-Usually an \fBorblist\fP reads packets from an orb and puts them in a pipe 
+Usually an \fBorblist\fP reads packets from an orb and puts them in a pipe
 sorted by time.  This options tells \fBorblist\fP do not sort packets.
+
 .IP "start [twindow]"
 Specify a time range of packets which will be read from an orb.
-.SH FILES
-.SH ENVIRONMENT
+
 .SH EXAMPLE
+
 .LP
 Read packets with a srcname matching ".*1S" regular expression from bbarray orb;
 time difference between packets expected to be 60 seconds.
 
+.ft CW
+.in 2c
 .nf
+.ne 3
 
-orblist -m ".*1S" -n 60 bbarray
+% \fBorblist -m ".*1S" -n 60 bbarray\fP
 
 .fi
-.SH DIAGNOSTICS
+.in
+.ft R
+
 .SH "SEE ALSO"
 orbserver(1)
 orbstat(1)
-.SH "BUGS AND CAVEATS"
+
 .SH AUTHOR
 Marina Glushko
