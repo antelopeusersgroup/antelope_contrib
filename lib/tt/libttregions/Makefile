@@ -4,7 +4,8 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 
 #$MAN3= 
 $REQUIRE_DATA = models0.4
-$DATADIR = $(ANTELOPE)/data/schemas2
+DATA=models0.4
+DATADIR = schemas2
 
 ldlibs=-lresponse -lcoords -ltt -lstock -lposix4 -ldl -lgenloc -ltt -lm -lds
 
