@@ -91,11 +91,11 @@ station_status_defs &Arr{
 			set color gray
 			if {$value == "n"} {set txt nv} else {
 				if {$value >= 132} {
-					set color \#a0ffa0
+					set color \\#a0ffa0
 				} elseif {$value >= 120} {
-					set color \#d0d0ff
+					set color \\#d0d0ff
 				} else {
-					set color \#ff8080
+					set color \\#ff8080
 				}
 				set txt [format "%.1f V" [expr $value / 10.0]]
 			}
@@ -118,7 +118,7 @@ Digitizer voltage.
 		print_proc &Literal{
 			set color gray
 			if {$value == "n"} {set txt nv} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				set txt [format "%i" $value]
 			}
 			return [list $txt $color]
@@ -133,10 +133,10 @@ Number of Events.
 		print_proc &Literal{
 			set color gray
 			if {$value == "n"} {set txt nv} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				set txt [format "%i" $value]
 				if { $value > 0 } {
-					set color \#ff0000
+					set color \\#ff0000
 				}
 			}
 			return [list $txt $color]
@@ -159,7 +159,7 @@ Recording Errors.
 			if {$value == "n"} {
 				set txt nv 
 			} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				if { $value & $K2_SF_NOT_READY } { 
 					set txt ND 
 					set color gray
@@ -178,11 +178,11 @@ Recording Errors.
 						set txt error
 					}
 					if { $s < 2000 } {
-						set color \#ff0000
+						set color \\#ff0000
 					} elseif { $s < 3500 } {
-						set color \#00f0f0
+						set color \\#00f0f0
 					} else {
-						set color \#00ff00
+						set color \\#00ff00
 					}		
 					
 				}	
@@ -207,7 +207,7 @@ ND - most problably no drive - internal modem?
 			if {$value == "n"} {
 				set txt nv 
 			} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				if { $value & $K2_SF_NOT_READY } { 
 					set txt ND 
 					set color gray
@@ -226,11 +226,11 @@ ND - most problably no drive - internal modem?
 						set txt error
 					}
 					if { $s < 2000 } {
-						set color \#ff0000
+						set color \\#ff0000
 					} elseif { $s < 3500 } {
-						set color \#00f0f0
+						set color \\#00f0f0
 					} else {
-						set color \#00ff00
+						set color \\#00ff00
 					}		
 					
 				}	
@@ -253,19 +253,19 @@ ND - most problably no drive - internal modem?
 				set txt RTC
 				}
 			1	{
-				set color \#ff0000
+				set color \\#ff0000
 				set txt KBD
 				}
 			2	{
-				set color \#0000ff
+				set color \\#0000ff
 				set txt SYN
 				}
 			3	{
-				set color \#00ff00
+				set color \\#00ff00
 				set txt GPS
 				}	
 			default	{
-				set color \#ff0000
+				set color \\#ff0000
 				set txt $value
 				}
 			}
@@ -286,15 +286,15 @@ RTC - System Time - clock was never set
 			set color gray
 			set value [expr [clock seconds] - $value] 
 			if {$value == "n"} {set txt ns} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				
 				if {$value >= 86400.0} {
-					set color \#ff0000
+					set color \\#ff0000
 					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
 				} elseif {$value >= 3600.0} {
 					set txt [format "%dh" [expr int($value/3600.0 + 0.5)]]
 				} elseif {$value >= 60.0} {
-					set color \#a0f0a0
+					set color \\#a0f0a0
 					set txt [format "%dm" [expr int($value/60.0+0.5)]]
 				} else {
 					set txt [format "%ds" [expr int($value+0.5)]]
@@ -315,7 +315,7 @@ red     - last connection was more than 24h before now.
 			set color gray
 			set value [expr [clock seconds] - $value] 
 			if {$value == "n"} {set txt ns} else {
-				set color \#d0d0ff
+				set color \\#d0d0ff
 				if {$value >= 86400.0} {
 					set txt [format "%dd" [expr int($value/86400.0 + 0.5)]]
 				} elseif {$value >= 3600.0} {
