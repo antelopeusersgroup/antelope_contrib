@@ -377,5 +377,6 @@ Arr *dbload_station_table(Dbptr, int, int, Pf*);
 Arr *dbload_array_table(Dbptr, int, int, Pf *);
 Tbl *dbload_arrival_table(Dbptr, int, int, Arr *, Arr *);
 Tbl *dbload_slowness_table(Dbptr, int, int, Arr *, Arr *);
+int destroy_data_tables(Tbl *, Tbl *);
 
 /* $Id$ */
