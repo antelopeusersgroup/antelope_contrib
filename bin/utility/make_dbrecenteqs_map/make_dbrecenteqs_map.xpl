@@ -86,5 +86,8 @@ plot_linefiles( \%Mapspec, "middle" );
 plot_basemap( \%Mapspec, "middle" );
 plot_cities( \%Mapspec, "last" );
 
-%Mapspec = %{pixfile_convert( \%Mapspec )};
-write_pixfile_pffile( \%Mapspec );
+if( $State{pixfile_conversion_method} ne "none" ) {
+
+	%Mapspec = %{pixfile_convert( \%Mapspec )};
+	write_pixfile_pffile( \%Mapspec );
+}
