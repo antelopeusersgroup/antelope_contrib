@@ -16,9 +16,9 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('c:vt:p:') || @ARGV != 1 ) {
+if ( ! &Getopts('r:c:vt:p:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-c lon:lat] psfile\n" );
+	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-c lon:lat] [-r degrees] psfile\n" );
 
 } else {
 
@@ -61,6 +61,14 @@ $hashref = pfget( $State{pf}, "mapspec" );
 if( $opt_c ) {
 	
 	( $Mapspec{lonc}, $Mapspec{latc} ) = split( /:/, $opt_c );
+}
+
+if( $opt_r ) {
+
+	$Mapspec{right_dellon} = $opt_r;
+	$Mapspec{up_dellat} = $opt_r;
+	$Mapspec{down_dellat} = -1 * $opt_r;
+	$Mapspec{left_dellon}  = -1 * $opt_r;
 }
 
 %Mapspec = %{setup_index_Mapspec( \%Mapspec )};
