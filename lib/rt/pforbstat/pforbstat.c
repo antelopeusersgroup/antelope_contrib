@@ -240,7 +240,7 @@ pforbstat( int orbfd, int flags )
 
 	orbping( orbfd, &orbversion );
 
-	pf = pfnew( PFARR );
+	pf = pfnew( PFFILE );
 
 	if( flags & PFORBSTAT_SERVER ) {
 		
