@@ -1001,7 +1001,8 @@ int ggnloc (Hypocenter initial_location,
 		copying the statistical quantities from the test structure */
 		copy_hypocenter(&trial_location,&current_location);
 		new_wrms = calculate_weighted_rms(btmp,wtmp,reswttmp,m);
-		current_location.rms_raw = calculate_rms(btmp,m);
+		/* Note raw rms ONLY uses times to avoid mixing units */
+		current_location.rms_raw = calculate_rms(rtmp,natimes);
 		current_location.rms_weighted = new_wrms;
 		current_location.interquartile = test.q3_4 - test.q1_4;
 		/* Here we count the number of data points actually used which
