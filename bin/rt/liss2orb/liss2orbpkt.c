@@ -19,6 +19,7 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
     char *cp ;
     double samprate ;
     double calib, calper ; 
+    float fcalib, fcalper; 
     char segtype[4] ;
     char sta[16], chan[16] ;
     static int *data, datasz=0 ;
@@ -75,9 +76,11 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    join_srcname ( &parts, srcname) ; 
 
 	    dbget_calib ( sta, chan, *time, database, &calib, &calper, segtype );
-	    N2H4 (cp, &calib, 1);
+	    fcalib = calib ;
+	    N2H4 (cp, &fcalib, 1);
 	    cp += 4 * 1;
-	    N2H4 (cp, &calper, 1);
+	    fcalper = calper ;
+	    N2H4 (cp, &fcalper, 1);
 	    cp += 4 * 1;   
 	    memcpy (cp, segtype, 1);
 	    cp += 1 * 1;

@@ -119,13 +119,14 @@ main (int argc, char **argv)
     double 	   time ; 
     char 	  *packet ; 
     int 	   nbytes = 0 ;
+    int 	   cnt =0, npkts = 0 ;
     int		   remap = 0 ;
     Bns 	   *bns=0 ;
 
     elog_init (argc, argv);
     elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
 
-    while ((c = getopt (argc, argv, "d:m:rs:t:vV")) != -1) {
+    while ((c = getopt (argc, argv, "d:m:n:rs:t:vV")) != -1) {
 	switch (c) {
 	  case 'd':
 	    database = optarg ; 
@@ -134,6 +135,10 @@ main (int argc, char **argv)
 	  case 'm':
 	    match = optarg;
 	    break;
+
+	  case 'n':
+	    npkts = atoi(optarg) ; 
+	    break ;
 
 	  case 'r':
 	    remap = 1 ; 
@@ -214,6 +219,10 @@ main (int argc, char **argv)
 			char *s ;
 			fprintf ( stderr, "%-20s %s %4d => %4d\n", srcname, s=strydtime(time), pktsize, nbytes ) ;
 			free(s) ;
+		    }
+		    cnt++ ; 
+		    if ( npkts > 0 && cnt >= npkts ) { 
+			break ; 
 		    }
 		}
 	    }
