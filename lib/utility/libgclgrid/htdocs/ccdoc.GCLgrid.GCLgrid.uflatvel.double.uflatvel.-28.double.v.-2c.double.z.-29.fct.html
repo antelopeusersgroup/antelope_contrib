@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--NewPage-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="ccdoc_copyright" content="(C) Joe Linoff 1998-2001">
+<meta name="ccdoc_author" content="Joe Linoff">
+<meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
+<meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html">
+<meta name="ccdoc_creation_date" content="Fri Jan 21 08:54:55 2005">
+<meta name="keywords" content="ccdoc, source code, documentation">
+<title>ccdoc uflatvel gclgrid.h:1542:function</title>
+</head>
+
+<body>
+<a name=ccdoc_top></a>
+<table border=0 width="100%"><tr><td align=left>
+<a href="index.html">GCLgrid</a>
+ :: <a href="ccdoc.GCLgrid.GCLgrid.pkg.html">GCLgrid</a>
+</td><td align=right><a href="ccdoc.class_summary.html">classes</a></td></tr></table>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>function uflatvel</h2></td><td align=right valign=top><a href="#ccdoc_top">^</a>&nbsp;
+</td></tr></table>
+<blockquote>
+ Inverse flattening transformation of a velocity.
+<p>
+<p>
+ Some packages use the flattening transformation as an approximation
+ map spherical shells into a Cartesian reference frame.  This function
+ converts velocity in a flattened coordinate system back to the true
+ value at a depth that has to be determined from applying uflatz to z.  
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1542</dd>
+<dt><b>Author:</b></dt><dd>Steve Roecker translation to C by Pavlis
+</dd>
+<dt><b>Version:</b></dt><dd>unknown</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>v
+</i></td><td align=left valign=top>- flattened coordinate velocity
+</td></tr>
+<tr><td align=left valign=top><i>z
+</i></td><td align=left valign=top>- flattened coordinate depth
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>actual depth in the earth
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public extern "C" <font color=green><b>double</b></font> <b><b>uflatvel</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> v ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> z )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name=ccdoc_bottom></a>
+<hr>
+<center>
+<p>
+<font size="-1">
+Created Fri Jan 21 08:54:55 2005.
+<br>
+This documentation was generated automatically by
+<br>
+ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8.
+<br>
+Click <a href="mailto:joe@joelinoff.com,jdl@xilinx.com?subject=Bug report or feature request for ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">here</a> to submit a bug report or feature request for ccdoc.
+<br>
+Click <a href="#ccdoc_top">here</a> to return to the top of the page.
+</font>
+</center>
+</body>
+</html>
