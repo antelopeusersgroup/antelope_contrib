@@ -1,0 +1,20 @@
+# @(#)RT97_80	1.2 1/6/93
+# Reftek     80.0000 hz anti-alias filters
+# Normalized  response relative to velocity
+# 1                   type
+# 0                   num of zeroes
+# 6                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 0.1613E+17         normalization factor                   
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pz6pbut
+0.1613E+17
+6             Poles
+-.4855E+03    0.1301E+03    0.0000E+00    0.0000E+00
+-.4855E+03    -.1301E+03    0.0000E+00    0.0000E+00
+-.3554E+03    0.3554E+03    0.0000E+00    0.0000E+00
+-.3554E+03    -.3554E+03    0.0000E+00    0.0000E+00
+-.1301E+03    0.4855E+03    0.0000E+00    0.0000E+00
+-.1301E+03    -.4855E+03    0.0000E+00    0.0000E+00
+0             Zeros

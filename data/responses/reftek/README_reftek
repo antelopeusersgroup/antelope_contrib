@@ -1,0 +1,60 @@
+DETERMINATION OF FIR FILTER FOR PASSCAL INSTRUMENT
+
+The PASSCAL Instruments (72A-06 and 72A-08) uses a Digital Signal Processor
+(DSP) to filter and decimate the 1000 sample per second input data down to the 
+final output sample rates.  Each of the six input channels are passed through a
+series of filters to get to the desired sample rates.  There are three possible
+decimation factors ( 2, 4, 5 ) for the instrument.  All output
+sample rates must be obtained with one or more of the decimation factors.
+
+There are two Finite Impulse Response (FIR) filters for each decimation
+factor.  One of the filters has a fast (steep) fall-off and the other a slow
+fall-off.  The fast fall-off is a longer filter.  It is used if the output
+of this stage is used in one of the data streams.  It is designed to have a
+response flat to 80% of the Nyquist frequency after decimation and to be
+95 dB down at Nyquist.  The slow filter is used if this stage is followed by 
+another stage of decimation.  It has fewer coefficients and therefore will be
+faster to implement.  It is designed to be flat to 50% of the Nyquist after
+decimation and to be 95 dB down at new Nyquist.  All of the filters have
+an odd number of coefficients and are implemented as zero phase filters.
+
+The exact sequence of filters is determined individually for each channel 
+according to the various data streams.  The algorithm for determination of
+the filters for each channel works as follows:
+
+The various output sample rates for the channel are examined in starting with
+fastest sample rate going to the slowest. 
+
+For the fastest output rate:
+
+1) Start at 1000 samples per second.  Decimate by the largest factor.  If this
+is too slow then reduce the factor and try again until you get the right number.
+If it is too fast then use this as a new starting rate and proceed to #2.
+
+2) Decimate this new starting rate by the largest possible factor.  If this is 
+too slow then reduce the factor and try again.  If this does not get the answer 
+then go back to step #1 and reduce the decimation factor there.  If the step
+#2 answer is too fast then use this as the starting rate for step #3.
+
+3) This is same as above.
+
+Once the steps for the first stream are decided then the second stream is 
+looked at.  The same algorithm is used except that the initial starting
+point is the output rate for the first stream.  If this is not successful,
+then the starting point is moved to the output of the preceding decimation
+filter.  This is repeated until you go all of the way back to 1000 sps if
+necessary.
+
+This method minimizes the number of decimation stages for each channel, but it
+also makes it possible for two channels in the same data stream to have 
+different resulting filters.  Consider the case where data stream 1 has a
+sample rate of 100 sps and outputs channels 1,2,3 and data stream 2 has a 
+sample rate of 20 sps and outputs channels 1,2,3,4,5,6.  The FIR filter for
+the channels in data stream 1 would be decimate by 5 with slow response 
+followed by a decimate by 2 sharp response.  For data stream 2 channels 
+1,2,3 would be a decimate by 5 with slow response followed by a decimate by
+2 with steep response and another decimate by 2 with steep response, while 
+4,5,6 would have a decimate by 5 with slow response followed by a decimate
+by 4 with a steep response.  The two resulting filters would be different,
+but only slightly.
+

@@ -1,0 +1,19 @@
+# @(#)RT72A_06	1.2 1/6/93
+# Reftek     250.000 hz anti-alias filters
+# Normalized  response relative to velocity
+# 1                   type
+# 0                   num of zeroes
+# 5                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 0.9563E+16         normalization factor                   
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pz6pbut
+0.9563E+16
+5             Poles
+-.1571E+04    0.0000E+00    0.0000E+00    0.0000E+00
+-.1271E+04    0.9233E+03    0.0000E+00    0.0000E+00
+-.1271E+04    -.9233E+03    0.0000E+00    0.0000E+00
+-.4854E+03    0.1494E+04    0.0000E+00    0.0000E+00
+-.4854E+03    -.1494E+04    0.0000E+00    0.0000E+00
+0 
