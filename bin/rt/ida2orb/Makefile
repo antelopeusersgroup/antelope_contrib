@@ -9,7 +9,7 @@ ldlibs=	-Bstatic idatap-1.2.2/libidatap.a -lpkt -lorb -Bdynamic $(TRLIBS) $(SVR4
 
 include $(ANTELOPEMAKE)  	
 			
-DIRS=idatap-1.2.2/libs			
+DIRS=idatap-1.2.2
 			
 OBJS= $(BIN).o
 $(BIN) : $(OBJS) 
