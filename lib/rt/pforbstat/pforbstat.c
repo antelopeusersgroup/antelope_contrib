@@ -40,22 +40,6 @@ compute_latency( double when, Orbsrc *src )
 	return when - src->slatest_time;
 }
 
-static void
-pfput_time( Pf *pf, char *name, double time )
-{
-	char	*s;
-
-	/* default precision of pfput_double is too low: */
-	s = epoch2str( time, "%E" );
-
-	/* Necessary to avoid output as &Literal: */
-	strtrim( s ); 
-
-	pfput_string( pf, name, s );
-
-	free( s );
-}
-
 Pf *
 orbstat2pf( Orbstat *orbstat, int orbversion ) 
 {
@@ -88,7 +72,7 @@ orbstat2pf( Orbstat *orbstat, int orbversion )
 	pfput_int( pf, "opens", orbstat->opens );
 	pfput_int( pf, "port", orbstat->port );
 
-	in.s_addr = orbstat->address;
+	memcpy( &in, &orbstat->address, sizeof( struct in_addr ) );
 	pfput_string( pf, "address", inet_ntoa( in ) );
 
 	pfput_int( pf, "pid", orbstat->pid );
@@ -193,7 +177,7 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 		pfput_int( clientpf, "pktid", aclient->pktid );
 		pfput_int( clientpf, "port", aclient->port );
 
-		in.s_addr = aclient->address;
+		memcpy( &in, &aclient->address, sizeof( struct in_addr ) );
 		pfput_string( clientpf, "address", inet_ntoa( in ) );
 
 		pfput_int( clientpf, "thread", aclient->thread );
