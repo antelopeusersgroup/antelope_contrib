@@ -1,0 +1,60 @@
+.TH RELTIME 1 "$Date$"
+.SH NAME
+reltime \- print times relative to another time
+.SH SYNOPSIS
+.nf
+\fBreltime \fP[-f \fIfrom\fP] [-o \fIfmt\fP] [\fIsign\fP] [\fIcount\fP]
+                [\fIinterval\fP]
+.fi
+.SH DESCRIPTION
+This utility prints times relative to either the current time or a time specified on the commandline with the \fB-f\fP option. It is intended to be used in cronjobs or with programs that require absolute times like e.g. dlmon. 
+.SH OPTIONS
+.IP "-f time"
+input time. Accepts the same formats as epoch(1).
+.IP "-o fmt"
+output format. Default is the epoch time to milliseconds ("%E").
+.IP "sign"
+either + or -, defaults to "+" if omitted.
+.IP "count"
+specify number of \fIinterval\fP time steps.
+.IP "interval"
+most useful time intervals are recognized. Abbreviations are possible, lowercase m is recognized as minute, uppercase M as month.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 13
+
+niko> reltime 1
+1101506868.413
+niko> reltime -f 1/1/2000 -o "%Y-%m-%d" - 1.95 C
+1805-01-01
+niko> reltime  1 d
+1101593349.905
+niko> reltime -o "%D" - 1 y
+26/11/03
+niko> reltime -o "%D" w
+3/12/04
+niko> reltime f 1/1/2004 -o %D 12 month
+1/1/05
+niko> reltime f 1/1/2004 -o %D 365 days
+12/31/04
+
+niko> dlmon -model altus -start_status `reltime - 1 d` :12345 -cmd :12333
+dlmon starts, reloading the status since yesterday...
+
+.fi
+.ft R
+.in
+.SH "SEE ALSO"
+.nf
+epoch(1), dlmon(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2004
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+
