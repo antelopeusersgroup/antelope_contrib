@@ -1,7 +1,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-#include </miscapps/forte6.2/SUNWspro/WS6U2/include/cc/sunperf.h>
 #include "stock.h"
 #include "arrays.h"
 #include "coords.h"
@@ -11,6 +10,7 @@
 #include "location.h"
 #include "pmel.h"
 #include "dbpmel.h"
+#include "perf.h"
 
 
 /* This small routine loads the hypocentroid from the view pointer.
