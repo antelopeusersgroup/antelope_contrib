@@ -1,0 +1,20 @@
+# @(#)SSR1_50	1.1 3/15/93
+#     50.0000 hz Butterworth anti-alias filters
+# Normalized  response relative to velocity
+# 1                   type
+# 0                   num of zeroes
+#   6                 num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 0.9614E+15          normalization factor                  
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pzbut
+0.9614E+15
+  6             Poles
+-.8131E+02    0.3035E+03    0.0000E+00    0.0000E+00
+-.2221E+03    0.2221E+03    0.0000E+00    0.0000E+00
+-.3035E+03    0.8131E+02    0.0000E+00    0.0000E+00
+-.3035E+03    -.8131E+02    0.0000E+00    0.0000E+00
+-.2221E+03    -.2221E+03    0.0000E+00    0.0000E+00
+-.8131E+02    -.3035E+03    0.0000E+00    0.0000E+00
+  0             Zeros

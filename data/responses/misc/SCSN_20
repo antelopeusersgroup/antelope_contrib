@@ -1,0 +1,18 @@
+# %W% %G%
+#     20.0000 hz Butterworth anti-alias filters
+# Normalized  response relative to velocity
+# 1                   type
+# 0                   num of zeroes
+#   4                 num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 0.2494E+09          normalization factor                  
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pzbut
+0.2494E+09
+  4             Poles
+-.4809E+02    0.1161E+03    0.0000E+00    0.0000E+00
+-.1161E+03    0.4809E+02    0.0000E+00    0.0000E+00
+-.1161E+03    -.4809E+02    0.0000E+00    0.0000E+00
+-.4809E+02    -.1161E+03    0.0000E+00    0.0000E+00
+  0             Zeros
