@@ -1,3 +1,4 @@
+
 # reb2db for IMS1.0 and GSE2.0 format REB bulletins
 #
 # Kent Lindquist
@@ -404,33 +405,68 @@ sub write_phase {
 		$arrival_time = str2epoch( $ph_arrtime );
 	}
 
-	dbaddv( @Db,
-         	"sta", $ph_sta,
-         	"time", $arrival_time,
-	        "arid", $ph_arid,   
-	        "jdate", yearday( $arrival_time ),         
-	#        "stassid", stassid,     
-	#        "chanid", chanid,       
-	#        "chan", chan,   
-	        "iphase", $ph_code,       
-	#        "stype", stype,         
-	#        "deltim", deltim,       
-	        "azimuth", $ph_az ne "" ? $ph_az : -1,     
-	#        "delaz", delaz,         
-	        "slow", $ph_slow ne "" ? $ph_slow : -1,   
-	#        "delslo", delslo,       
-	#        "ema", ema,     
-	#        "rect", rect,   
-	        "amp", $ph_amp_nm ne "" ? $ph_amp_nm : -1,     
-	        "per", $ph_per ne "" ? $ph_per : -1,     
-	#        "logat", logat,         
-	#        "clip", clip,   
-	        "fm", phase_fm(),       
-	        "snr", $ph_snr ne "" ? $ph_snr : -1,     
-	        "qual", phase_qual(),
-	        "auth", $or_auth . ( $ph_type eq "a" ? ":auto" : "" )
-	#        "commid", commid,       
-         	);
+	eval {
+		dbaddv( @Db,
+         		"sta", $ph_sta,
+         		"time", $arrival_time,
+	        	"arid", $ph_arid,   
+	        	"jdate", yearday( $arrival_time ),         
+		#        "stassid", stassid,     
+		#        "chanid", chanid,       
+		#        "chan", chan,   
+	        	"iphase", $ph_code,       
+		#        "stype", stype,         
+		#        "deltim", deltim,       
+	        	"azimuth", $ph_az ne "" ? $ph_az : -1,     
+		#        "delaz", delaz,         
+	        	"slow", $ph_slow ne "" ? $ph_slow : -1,   
+		#        "delslo", delslo,       
+		#        "ema", ema,     
+		#        "rect", rect,   
+	        	"amp", $ph_amp_nm ne "" ? $ph_amp_nm : -1,     
+	        	"per", $ph_per ne "" ? $ph_per : -1,     
+		#        "logat", logat,         
+		#        "clip", clip,   
+	        	"fm", phase_fm(),       
+	        	"snr", $ph_snr ne "" ? $ph_snr : -1,     
+	        	"qual", phase_qual(),
+	        	"auth", $or_auth . ( $ph_type eq "a" ? ":auto" : "" )
+		#        "commid", commid,       
+         		);
+	};
+
+	if( $@ ) {
+		print STDERR "\nWarning: problem adding phase:\n $@";
+		print STDERR "...Forcing the addition of arid $ph_arid from file '$ARGV' (orid $orid evid $evid)\n\n";
+		$Db[3] = dbaddnull( @Db );
+		dbputv( @Db,
+         		"sta", $ph_sta,
+         		"time", $arrival_time,
+	        	"arid", $ph_arid,   
+	        	"jdate", yearday( $arrival_time ),         
+		#        "stassid", stassid,     
+		#        "chanid", chanid,       
+		#        "chan", chan,   
+	        	"iphase", $ph_code,       
+		#        "stype", stype,         
+		#        "deltim", deltim,       
+	        	"azimuth", $ph_az ne "" ? $ph_az : -1,     
+		#        "delaz", delaz,         
+	        	"slow", $ph_slow ne "" ? $ph_slow : -1,   
+		#        "delslo", delslo,       
+		#        "ema", ema,     
+		#        "rect", rect,   
+	        	"amp", $ph_amp_nm ne "" ? $ph_amp_nm : -1,     
+	        	"per", $ph_per ne "" ? $ph_per : -1,     
+		#        "logat", logat,         
+		#        "clip", clip,   
+	        	"fm", phase_fm(),       
+	        	"snr", $ph_snr ne "" ? $ph_snr : -1,     
+	        	"qual", phase_qual(),
+	        	"auth", $or_auth . ( $ph_type eq "a" ? ":auto" : "" )
+		#        "commid", commid,       
+         		);
+	}
 
 	@Db = dblookup( @Db, "", "assoc", "", "" );
 

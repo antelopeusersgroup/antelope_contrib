@@ -33,6 +33,12 @@ DATA_TYPE BULLETIN GSE2.0
 or
 DATA_TYPE BULLETIN IMS1.0
 in the file)
+
+Warning: problem adding phase:
+ ***: Couldn't add a new record to table slop.arrival
+	The new record matched the primary key of record #8, but field 'arid' is different.
+ ...Forcing the addition of arid 9993866 from file 'gsebull_badphases' (orid 591036 evid 586467)
+
 .fi
 .SH "SEE ALSO"
 .nf
@@ -53,5 +59,20 @@ plus delta and esaz fields, but this has not been done.
 
 The specification of a pick as automatic shows up by appending the string 
 ":auto" to the author name of the arrival. 
+
+There are several instances in REB catalogs where the same phase appears twice,
+either multiple times for the same earthquake or in a couple different 
+earthquakes (sometimes one of the two has incomplete association information 
+in it, or no magnitudes, or the arids will be different, or one will be 
+manual and one automatic). Clearly these are catalog problems. However, a 'first come, 
+first served' approach of saving the first one reb2db finds 
+and discarding the second one may not be appropriate: maybe the second 
+occurrence is the one that should be kept. Because of database-addition rules, 
+however, in general adding two phases with matching primary keys causes 
+an unacceptable error that leads to program death. The solution implemented 
+in reb2db is to issue a warning upon the repeated occurrence of a phase 
+arrival, then force its addition to the database. Thus the database produced 
+by reb2db is an accurate reflection of what is in the REB input file, including 
+the mistakes. 
 .SH AUTHOR
 Kent Lindquist
