@@ -11,7 +11,9 @@ mail_parser(1) utility. All incoming email messages matching
 the sender and subject expression are saved to the database named 
 in the parameter file, under the given schema (usually "Mail1.2" or 
 derivative). The archive_dir parameter is passed to filemail(3P) 
-as the top-level archive directory of saved messages. 
+as the top-level archive directory of saved messages. The dirmode and 
+filemode parameters govern the access permissions of the archive mail files 
+that are created.
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -26,6 +28,8 @@ Handlers &Tbl{
 		database	mp_maildb
 		archive_dir	mp_mail_archive
 		schema		Mail1.2
+		dirmode         0755
+		filemode        0444
 	}
 }
 %

@@ -6,6 +6,11 @@ sub mp_filemail_handler {
 	$database = %{$pfarray}->{database};
 	$archive_dir = %{$pfarray}->{archive_dir};
 	$schema = %{$pfarray}->{schema};
+	$dirmode = %{$pfarray}->{dirmode};
+	$filemode = %{$pfarray}->{filemode};
+
+	$filemail::Dirmode = $dirmode;
+	$filemail::Filemode = $filemode;
 
 	dbcreate( $database, $schema );
 
