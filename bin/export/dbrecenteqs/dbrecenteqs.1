@@ -3,8 +3,7 @@
 dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-dbrecenteqs [-p pffile] [-h] [-i indexmap_pffile] 
-	    [-g globalmap_pffile] [-e evid] [-c sourcedb] dbname
+dbrecenteqs [-p pffile] [-h] [-e evid] [-c sourcedb] dbname
 .fi
 .SH DESCRIPTION
 
@@ -23,9 +22,14 @@ copy of itself running.
 If necessary, dbrecenteqs creates or adds to the mapstock table of the
 database in dbrecenteqs1.1 or related schema.  For the default
 behavior, a new stock index map is created based on the specifications
-in the parameter file. An index map or global map may be added to the
-mapstock table, with the -i or -g options (respectively), which read
-from a parameter file in the style of dbevents(1).
+in the parameter file. The index maps (maps showing overviews of all the 
+earthquakes in the database) that should be shown are given in the 
+table overview_maps of the dbrecenteqs parameter file. Each entry is 
+the name of an array that must also be found in the parameter file.
+The 'source' parameter of this array can be 'dynamic', in which case 
+the map is generated according to the parameters given; or it can be 
+the name of a pregenerated gif image and its associated parameter file, in the
+style of dbevents. 
 
 dbrecenteqs creates HTML output in two stages. First it creates XML
 files of the relevant information from the database, together with 
@@ -56,10 +60,6 @@ will probably require libxml2 and libxslt from www.xmlsoft.org.
 .SH OPTIONS
 .nf
 -p pffile Specify name of parameter file (default is dbrecenteqs.pf)
-
--g globalmap_pffile Add specified global map to mapstock table
-
--i indexmap_pffile Add specified index map to mapstock table
 
 -e evid Refresh the page for a single evid, and regenerate stock maps
 
@@ -120,12 +120,11 @@ made to incorporate the credits in the final web pages, due to
 the valuable contributions of the listed parties. 
 
 The XSLT stylesheets to use for creating HTML are specified 
-by their filenames in the parameters index_map_stylesheet
-and focus_map_stylesheet. 
+by their filenames in the stylesheet parameter of each index-map 
+configuration block in the parameter file. 
 
-Four types of maps are configured, using four separate 
-hashes in the parameter file. These hashes are called index_map,
-global_map, detail_map, and focus_map. For clarity, the 
+Each map or type of map is specified in an associative array ("hash")
+in the parameter file. For clarity, the 
 special entry "include" in each of these hashes may be specified 
 once to include a hash of a different name. The included hash 
 is intended to be a set of defaults. Any parameters in the included 
@@ -144,16 +143,16 @@ determine which cities will be plotted on the maps. Multiple
 databases with different levels of detail may be desirable. 
 Another parameter to change will be the contour_mode, specifying 
 how any topography shading is done. "none" means no shaded topography. 
+A contour mode of "grddb" will generate topography shading from a database 
+of grid files, using the dbgmtgrid(3) command. This is the recommended
+approach. A
 contour_mode of "grdimage" will run grdimage on the specified grdfile, 
 shaded by the gradients in gradfile. If "grdcut" is specified, an 
 appropriate grid is cut out of grdfile and the gradients are re-computed
 on the fly. There are two other modes that remain primarily for 
 debugging purposes. A contour mode of "premade" interpolates 
-postscript code contained in a file given by premade_contour_ps. A contour
-mode of "grdbuild" will combine topography data with bathymetry 
-data from an identically registered grid given in by the bathymetry_file
-parameter, provided the grdfile itself has appropriate NaN's in the 
-underwater areas.  Again, these two modes are more for debugging.
+postscript code contained in a file given by premade_contour_ps. 
+Again, this 'premade' mode is more for debugging.
 The parameter longitude_branchcut_high should be either 180 or 360, 
 depending on whether the phase of the specified grid files has 
 been unwrapped.
@@ -176,8 +175,6 @@ is used. Thus, careful regular-expression writing may be necessary
 if one obtains unexpected results. In general, simple, intuitive entries should suffice.
 
 .nf
-The dbrecenteqs.pf parameter file:
-
 institute_url http://www.lindquistconsulting.com/
 institute_webdir /var/apache/htdocs
 institute_description Lindquist Consulting
@@ -202,15 +199,18 @@ nearest_places &Arr{
 page_refresh_seconds 300
 pixfile_conversion_method imagick  # pnm, imagick, or alchemy
 keep_ndays 0
-# Maximum number of earthquakes to display (0 to display all):
-max_num_eqs 300	
+max_num_eqs 300 
 
-index_map_stylesheet index_default.xsl
-focus_map_stylesheet specific_default.xsl
+make_index_html yes
+
+overview_maps &Tbl{
+	index_map
+}
 
 index_map &Arr{
 	include 	map_config
-	file_basename 	local_indexmap
+	mapname		local_indexmap
+	description	Recent Earthquakes
 	latc 		65
 	lonc 		-155
 	left_dellon 	-8 
@@ -218,33 +218,41 @@ index_map &Arr{
 	down_dellat 	-8
 	up_dellat 	8 
 	detail_density 	l
-	cities_dbname 	world_cities
 	background_magmin 6
+}
+
+global_map &Arr{
+	include 	map_config
+	mapname		global
+	source		anza_equidist.gif.pf
+	description	Global View
 }
 
 focus_map &Arr{
 	include 	map_config
+	stylesheet	specific_default.xsl
+	mapclass	focus
 	left_dellon 	-2
 	right_dellon 	2
 	down_dellat 	-2
 	up_dellat 	2
 }
 
-global_map &Arr{
-	include 	map_config
-}
-
 detail_map &Arr{
 	include 	map_config
+	mapclass	detail
 }
 
 map_config &Arr{
+	source		dynamic
 	format 		gif
 	proj 		edp
-	contour_mode 	grdimage  # none, grdcut, or grdimage
-	premade_contour_ps premade_grdimage
+	mapclass	index
+	contour_mode 	grddb  # none, premade, grdcut, grdimage, or grddb
 	grdfile 	local_topography.grd
 	gradfile 	local_topography.grad
+	grddb		/space/world30_grids/world30
+	stylesheet	index_default.xsl
 	longitude_branchcut_high 360
 	hypocenter_dbname historic_hypocenters_dbname
 	map_color_palette_file dbrecenteqs.cpt
@@ -257,10 +265,10 @@ map_config &Arr{
 	background_magsize_pixels 3
 	background_magmin 3
 	quakeshape 	square
-	prefor_quakecolor yellow 	# color used for prefor on focus maps
-	nonprefor_quakecolor white 	# color used for nonprefor on focus maps
-	quake_agecolors &Arr{		# colors used on index maps
-		red	  21600		# (max age in seconds for a quake of each color)
+	prefor_quakecolor yellow
+	nonprefor_quakecolor white
+	quake_agecolors &Arr{
+		red	  21600
 		orange	  43200
 		yellow	  86400
 		chartreuse	 259200
@@ -307,7 +315,6 @@ credits &Arr{
 "NOAA/NGDC Arctic Bathymetry" http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html
 "Wessel and Smith's Generic Mapping Tools" http://gmt.soest.hawaii.edu/
 }
-
 .fi
 
 .SH EXAMPLE
@@ -344,8 +351,8 @@ which a pixel-file already exists. [The exception is for focus
 maps, which are always updated dynamically]. Large index maps often 
 take significant time to compute, thus if they are to be overwritten 
 it should be intentional. The other option, providing the .pf file 
-for the image still exists, would be to re-add the map to the mapstock 
-table of the target database using the -i or -g option to dbrecenteqs.
+for the image still exists, would be to change the 'source' parameter 
+for the map to be the .pf file for the image.
 .SH "BUGS AND CAVEATS"
 Some architecture is in place for the detail maps (maps showing 
 zoom-ins of particular subregions of the index maps), however this 
@@ -363,8 +370,7 @@ The code to allow exactly one instance per database may be
 broken.
 
 A "grdtile" contour_mode would probably be useful to aid in the creation 
-of large maps on machines with small memories. Also a "grdstitch" mode
-would be nice to combine information from multiple topography grids dynamically. 
+of large maps on machines with small memories. 
 
 cities_dbname appears both in nearest_places and in map_config. It 
 would be nice to clean this up.

@@ -1,5 +1,6 @@
 require "getopts.pl" ;
 require "dbrecenteqs.pl";
+require "dbgmtgrid.pl";
 require "winding.pl";
 require "compass_from_azimuth.pl";
 use Datascope;
@@ -28,8 +29,8 @@ sub init_globals {
 		"authtrans",
 		"keep_ndays",
 		"max_num_eqs",
-		"index_map_stylesheet",
-		"focus_map_stylesheet"
+		"overview_maps",
+		"make_index_html"
 		);
 
 	my( @path_params ) = (
@@ -37,8 +38,6 @@ sub init_globals {
 		"legend",
 		"institute_logo",
 		"region_phrases_database",
-		"index_map_stylesheet",
-		"focus_map_stylesheet"
 		);
 	
 	foreach $param ( @params, @path_params ) {
@@ -57,6 +56,13 @@ sub init_globals {
 	chomp( $State{"institute_logo_filebase"} );
 	$State{"legend_filebase"} = `basename $State{"legend"}`;
 	chomp( $State{"legend_filebase"} );
+
+	if( ! defined( $State{overview_maps} ) || 
+	    $#{$State{overview_maps}} < 0 ) {
+
+		die( "Must have at least one entry in the " . 
+		     "overview_maps &Tbl of the parameter file. Bye.\n" );
+	}
 
 	if( ! -d $State{institute_webdir} ) {
 		die( "The directory $State{institute_webdir} does not exist.\n" .
@@ -131,7 +137,8 @@ sub cleanup_database {
 		return;
 	} else {
 		print
-		  "dbrecenteqs: Trimming $dbname to $State{keep_ndays} most recent days.\n";
+		  "dbrecenteqs: Trimming $dbname to $State{keep_ndays} " .
+		  "most recent days.\n";
 	}
 
 	$cutoff = str2epoch( "now" ) - $State{keep_ndays} * 86400;
@@ -455,7 +462,7 @@ sub create_focusmap_html {
 
 	$writer->xmlDecl();
 
-	chomp( my( $stylesheet_basename ) = `basename $State{focus_map_stylesheet}` );
+	chomp( my( $stylesheet_basename ) = `basename $Focus_Mapspec{stylesheet}` );
 	$writer->pi( 'xml-stylesheet', "href=\"$stylesheet_basename\" type=\"text/xsl\"" );
 
 	$writer->startTag( "specific_quake", "name" => "evid$evid" );
@@ -537,7 +544,7 @@ sub create_focusmap_html {
 
 	$output->close();
 
-	xml_to_html( $xml_filename, $State{focus_map_stylesheet}, $html_filename );
+	xml_to_html( $xml_filename, $Focus_Mapspec{stylesheet}, $html_filename );
 }
 
 sub create_focusmap {
@@ -768,11 +775,14 @@ sub other_map_links {
 			dbgetv( @db, "mapname", "mapclass", "url" );
 
 		my( $maplink );
-		if( $mapclass eq "global" ) {
-			$maplink = "Global View";
-		} elsif( $mapclass eq "index" ) {
-			$maplink = $State{dbrecenteqs_title};
+
+		if( defined( $State{maphashes}->{$mapname}->{description} ) &&
+		    $State{maphashes}->{$mapname}->{description} ne "" ) {
+
+			$maplink = $State{maphashes}->{$mapname}->{description};
+
 		} else {
+
 			$maplink = $mapname;
 		}
 
@@ -831,9 +841,13 @@ sub create_stockmap_html {
 		concatpaths( $State{dbrecenteqs_dir}, $html_relpath );
 	my( $html_temp_filename ) = $html_filename;
 	$html_temp_filename =~ s@/([^/]*)$@/-$1@;
+
 	my( $xml_filename ) = $html_filename;
 	$xml_filename =~ s/\..*//;
 	$xml_filename .= ".xml";
+
+	my( $main_index_filename ) = $html_filename;
+	$main_index_filename =~ s@/([^/]*)$@/index.html@;
 
 	my( $image_relpath ) = dbextfile( @db );
 	$image_relpath = substr( $image_relpath, 	
@@ -845,7 +859,8 @@ sub create_stockmap_html {
 					 DATA_MODE => 'true', 
 					 DATA_INDENT => 2 );
 
-	chomp( my( $stylesheet_basename ) = `basename $State{index_map_stylesheet}` );
+	my( $stylesheet ) = $State{maphashes}->{$mapname}->{stylesheet};
+	chomp( my( $stylesheet_basename ) = `basename $stylesheet` );
 	$writer->xmlDecl();
 	$writer->pi( 'xml-stylesheet', "href=\"$stylesheet_basename\" type=\"text/xsl\"" );
 
@@ -859,6 +874,8 @@ sub create_stockmap_html {
 			      "$State{dbrecenteqs_url}" );
 	$writer->dataElement( "page_refresh_seconds", 
 			      "$State{page_refresh_seconds}" );
+	$writer->dataElement( "map_description", 
+			      "$State{maphashes}->{$mapname}->{description}" );
 	$writer->dataElement( "wiggle_href", 
 			      "$State{dbrecenteqs_url}" .
 				"$State{wiggle_filebase}" );
@@ -895,10 +912,17 @@ sub create_stockmap_html {
 	$output->close();
 
 	xml_to_html( $xml_filename, 
-		     $State{index_map_stylesheet},
+		     $stylesheet,
 		     $html_temp_filename );
 
 	system( "/bin/mv $html_temp_filename $html_filename" );
+
+	if( ( $State{make_index_html} =~ m/y|yes|1|true|t/i ) &&
+	    ( $mapname eq $State{main_index_mapname} ) &&
+	    ( $html_filename !~ m@.*/index.html$@ ) ) {
+
+		system( "/usr/bin/cp $html_filename $main_index_filename" );
+	}
 }
 
 sub credits {
@@ -954,7 +978,7 @@ sub create_stockmap_entry {
 	dbputv( @dbscratch, "mapname", $mapname );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{dbrecenteqs_url} . "$mapclass.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$mapname.html";
 
 	my( $dir ) = "placeholder"; # Not very elegant
 	my( $dfile ) = $mapname;
@@ -1060,10 +1084,10 @@ sub update_stockmap {
 	dbputv( @dbscratch, "mapname", $Mapspec{mapname} );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapclass}.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapname}.html";
 
 	my( $dir ) = $State{dbrecenteqs_dir};
-	my( $dfile ) = "$Mapspec{mapclass}.$Mapspec{format}";
+	my( $dfile ) = "$Mapspec{mapname}.$Mapspec{format}";
 
 	check_dir_dfile( @dbwebmaps, $dir, $dfile );
 
@@ -1099,9 +1123,11 @@ chomp( $Program );
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('e:p:hi:g:c:') || @ARGV != 1 ) {
-	die ( "Usage: $Program [-h] [-p pffile] [-i indexmap_pffile] " .
-	      "[-g globalmap_pffile] [-e evid] [-c sourcedb] database\n" ); 
+if ( ! &Getopts('e:p:hc:') || @ARGV != 1 ) {
+
+	die ( "Usage: $Program [-h] [-p pffile] " .
+	      "[-e evid] [-c sourcedb] database\n" ); 
+
 } else {
 	$dbname = $ARGV[0];
 	if( $opt_p ) {
@@ -1132,27 +1158,38 @@ if( ! expansion_schema_present( @db ) ) {
 	die( "Please add dbrecenteqs1.1 expansion schema to $dbname. Bye.\n" );
 }
 
-if( $opt_i ) {
-	
-	%Index_Mapspec = %{read_map_from_file( "index_map", $opt_i )};
-	add_to_mapstock( \%Index_Mapspec, @db );
-	exit( 0 );
-	
-} elsif( $opt_g ) {
-	
-	%Global_Mapspec = %{read_map_from_file( "global_map", $opt_g )};
-	add_to_mapstock( \%Global_Mapspec, @db );
-	exit( 0 );
-} 
-
 @db = dblookup( @db, "", "mapstock", "", "" );
-@db = dbsubset( @db, "mapclass == \"index\"" );
 
-if( dbquery( @db, "dbRECORD_COUNT" ) <= 0 ) {
+foreach $map ( @{$State{overview_maps}} ) {
+	
+	$hashref = pfget_Mapspec( $State{pf}, "$map" );
 
-	%Index_Mapspec = %{setup_Index_Mapspec()};
-	%Index_Mapspec = %{create_map( \%Index_Mapspec )};
-	add_to_mapstock( \%Index_Mapspec, @db );
+	%Mapspec = %{$hashref};
+
+	$mapname = $Mapspec{mapname};
+
+	$State{maphashes}->{$mapname} = $hashref;
+
+	if( $map eq ${$State{overview_maps}}[0] ) {
+		
+		$State{main_index_mapname} = $mapname;
+	}
+
+	if( (dblookup( @db, "", "mapstock", "mapname", "$mapname" ))[3] >= 0 ) {
+		next;
+	}
+
+	if( $Mapspec{source} eq "dynamic" ) {
+
+		%Mapspec = %{setup_index_Mapspec( \%Mapspec )};
+		%Mapspec = %{create_map( \%Mapspec )};
+
+	} else {
+
+		%Mapspec = %{read_map_from_file( \%Mapspec )};
+	}
+
+	add_to_mapstock( \%Mapspec, @db );
 }
 
 if( ! -e "$State{dbrecenteqs_dir}/$State{wiggle_filebase}" ) {

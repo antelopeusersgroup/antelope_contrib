@@ -6,7 +6,7 @@ sub pfget_Mapspec {
 	my( $hash ) = pfget( $pf, $hashname );
 
 	if( ! defined( $hash ) ) {
-		die( "dbrecenteqs: $hashname not defined in $pf. Bye.\n" );
+		die( "dbrecenteqs: $hashname not defined in $pf.pf. Bye.\n" );
 	} 
 
 	if( defined( $hash->{include} ) ) {
@@ -23,11 +23,26 @@ sub pfget_Mapspec {
 		"cities_dbname",
 		"grdfile",
 		"gradfile",
-		"bathymetry_file",
+		"grddb",
 		"premade_contour_ps",
-		"hypocenter_dbname" 
+		"hypocenter_dbname",
+		"stylesheet"
 		);
 	# N.B. ( Handle the linefiles hash in plot_linefiles() )
+
+	if( ($hashname ne "focus_map") && (! defined( $mapspec->{mapname} )) ) {
+
+		die( "No 'mapname' parameter defined in $hashname array\n" );
+
+	} elsif( length( "$mapspec->{mapname}" ) > 20 ) {
+
+		die( "Please shorten mapname \"$mapspec->{mapname}\" to 20 " .
+		     "characters or less\n" );
+	}
+
+	if( ! defined( $mapspec->{source} ) ) {
+		die( "No 'source' parameter defined in $hashname array\n" );
+	}
 
 	foreach $param ( @path_params ) {
 
@@ -39,9 +54,6 @@ sub pfget_Mapspec {
 
 	$mapspec->{longitude_branchcut_low} =
 		$mapspec->{longitude_branchcut_high} - 360;
-
-	$mapspec->{mapclass} = $hashname;
-	$mapspec->{mapclass} =~ s/_map//;
 
 	return $mapspec;
 }
@@ -61,11 +73,6 @@ sub setup_State {
 	foreach $param ( @params ) {
 		$State{$param} = pfget( $State{pf}, $param );
 	}
-
-	$State{index_mapspec} = pfget_Mapspec( $State{pf}, "index_map" );
-	$State{global_mapspec} = pfget_Mapspec( $State{pf}, "global_map" );
-	$State{focus_mapspec} = pfget_Mapspec( $State{pf}, "focus_map" );
-	$State{detail_mapspec} = pfget_Mapspec( $State{pf}, "detail_map" );
 
 	$State{workdir} = "/tmp/dbrecenteqs_$<_$$";
 	mkdir( $State{workdir}, 0755 );
@@ -678,29 +685,6 @@ sub plot_contours {
 			"\t************************************\n\n";
 
 		$Mapspec{contour_mode} = "grdcut";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grdbuild" ) &&
-	    ( ! defined( $Mapspec{bathymetry_file} ) ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"grdcut\":\n" .
-			"\t$Mapspec{mapclass}_map{bathymetry_file} not defined\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "grdcut";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grdbuild" ) &&
-	    ( ! -e "$Mapspec{bathymetry_file}" ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"grdcut\":\n" .
-			"\t$Mapspec{bathymetry_file} not found\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "grdcut";
-
 	}
 
 	if( ( $Mapspec{contour_mode} eq "grdcut" ) &&
@@ -725,45 +709,87 @@ sub plot_contours {
 
 		$Mapspec{contour_mode} = "none";
 
+	} elsif( ( $Mapspec{contour_mode} eq "grddb" ) &&
+	    ( ! -e "$Mapspec{grddb}" ) ) {
+
+		print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: Setting contour_mode to \"none\":\n" .
+			"\tgrddb '$Mapspec{grddb}' not found\n" .
+			"\t************************************\n\n";
+
+		$Mapspec{contour_mode} = "none";
+
 	}
 
 	if( $Mapspec{contour_mode} eq "premade" ) {
 
 		$cmd = "cat $Mapspec{premade_contour_ps} $redirect $Mapspec{psfile}";
+		print "$cmd\n";
+		system( $cmd );
 		
-	} elsif( $Mapspec{contour_mode} =~ /grdcut|grdimage|grdbuild/ ) {
+	} elsif( $Mapspec{contour_mode} eq "none" ) {
 
-		my( $grdfile, $gradfile, $bathfile, $topofile );
+		# Fallthrough
+
+	} elsif( $Mapspec{contour_mode} =~ /grdcut|grdimage|grddb/ ) {
+
+		my( $grdfile, $gradfile );
 
 		if( $Mapspec{contour_mode} eq "grdimage" ) {
 
 			$grdfile = $Mapspec{grdfile};
 			$gradfile = $Mapspec{gradfile};
 
-		} elsif( $Mapspec{contour_mode} eq "grdbuild" ) {
+		} elsif( $Mapspec{contour_mode} eq "grddb" ) {
 
 			$grdfile = "$State{workdir}/grd_$<_$$.grd";
 			$gradfile = "$State{workdir}/grad_$<_$$.grad";
-			$topofile = "$State{workdir}/topo_$<_$$.grd";
-			$bathfile = "$State{workdir}/bath_$<_$$.grd";
 
-			$cmd = "grdcut $Mapspec{grdfile} -G$topofile " .
-				"-V $Mapspec{InclusiveRectangle}";
-			print "$cmd\n";
-			system( $cmd );
+			my( @dbgrid ) = dbopen( "$Mapspec{grddb}", "r" );
+			if( $dbgrid[0] < 0 ) {
 
-			$cmd = "grdcut $Mapspec{bathymetry_file} -G$bathfile " .
-				"-V $Mapspec{InclusiveRectangle}";
-			print "$cmd\n";
-			system( $cmd );
+			 print STDERR
+			 "\n\t************************************\n" . 
+			 "\tWARNING: Setting contour_mode to \"none\":\n" .
+			 "\tFailed to open grddb $Mapspec{grddb}\n" .
+			 "\t************************************\n\n";
+			 $Mapspec{contour_mode} = "none";
 
-			$cmd = "grdmath $topofile $bathfile AND = $grdfile";
-			print "$cmd\n";
-			system( $cmd );
+			} else {
 
-			$cmd = "grdgradient $grdfile -G$gradfile -V -A60 -Nt";
-			print "$cmd\n";
-			system( $cmd );
+			 @dbgrid = dblookup( @dbgrid, "", "grids", "", "" );
+			 if( $dbgrid[1] < 0 ) {
+			 print STDERR
+			 "\n\t************************************\n" . 
+			 "\tWARNING: Setting contour_mode to \"none\":\n" .
+			 "\tFailed to open grids table of grddb $Mapspec{grddb}\n" .
+			 "\t************************************\n\n";
+			 dbclose( @dbgrid );
+			 $Mapspec{contour_mode} = "none";
+			 } else {
+
+			  my( $rc ) = dbgmtgrid( @dbgrid, 
+					       $Mapspec{InclusiveRectangle},
+					       $grdfile, verbose => 1 );
+			  if( $rc < 0 ) {
+			  print STDERR
+			  "\n\t************************************\n" . 
+			  "\tWARNING: Setting contour_mode to \"none\":\n" .
+			  "\tdbgmtgrid() failed\n" .
+			  "\t************************************\n\n";
+			  dbclose( @dbgrid );
+			  $Mapspec{contour_mode} = "none";
+			  } else {
+
+			   dbclose( @dbgrid );
+
+			   $cmd = "grdgradient $grdfile -G$gradfile -V -A60 -Nt";
+			   print "$cmd\n";
+			   system( $cmd );
+			  }
+			 }
+			}
 			
 		} else { # grdcut
 
@@ -787,8 +813,14 @@ sub plot_contours {
 			"-C$Mapspec{map_color_palette_file} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
+		print "$cmd\n";
+		system( $cmd );
 
-	} elsif( $Mapspec{contour_mode} eq "none" ) {
+	} else {
+		die( "contour_mode $Mapspec{contour_mode} not supported\n" );
+	}
+	
+	if( $Mapspec{contour_mode} eq "none" ) {
 
 		$cmd = "pscoast -V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
@@ -796,14 +828,9 @@ sub plot_contours {
 			"-D$Mapspec{detail_density} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
-			
-
-	} else {
-		die( "contour_mode $Mapspec{contour_mode} not supported\n" );
+		print "$cmd\n";
+		system( $cmd );
 	}
-
-	print "$cmd\n";
-	system( $cmd );
 }
 
 sub plot_coastlines {
@@ -979,8 +1006,8 @@ sub create_map {
 	    ( -e "$Mapspec{pixfile}" || -e "$Mapspec{pixfile}.pf") ) {
 
 		die( "dbrecenteqs: The files\n\n\t$Mapspec{pixfile}\nand/or\n\t" .
-		     "$Mapspec{pixfile}.pf\n\nalready exist. Please remove " .
-		     "them (or re-enter with -i or -g )\nbefore proceding. Bye.\n" );
+		     "$Mapspec{pixfile}.pf\n\nalready exist. Will not " .
+		     "overwrite, Bye.\n" );
 	}
 
 	plot_basemap( \%Mapspec, "first" );
@@ -1031,10 +1058,9 @@ sub read_map_from_db {
 	my( @db ) = @_;
 	my( %Mapspec );
 
-	my( $mapclass ) = dbgetv( @db, "mapclass" );
-	my( $hashname ) = $mapclass . "_map";
+	my( $mapname ) = dbgetv( @db, "mapname" );
 
-	%Mapspec = %{pfget_Mapspec( $State{pf}, $hashname );};
+	%Mapspec = %{$State{maphashes}->{$mapname}};
 
 	$Mapspec{pixfile} = dbextfile( @db );
 
@@ -1086,30 +1112,46 @@ sub read_map_from_db {
 }
 
 sub read_map_from_file {
-	my( $config ) = shift;
-	my( $map_pathname ) = shift;
-	my( %Mapspec );
+	my( %Mapspec ) = %{ shift( @_ )};
+
+	my( $map_pathname ) = $Mapspec{source};
 
 	$map_pathname =~ s/\.pf$//;
 
-	if( ! -e "$map_pathname" ) {
+	print STDERR "Re-reading index map $Mapspec{mapname} from file...\n";
 
-		die( "Can't find map file $map_pathname\n" );
+	if( "$map_pathname" =~ m@^\.?/@ && -e "$map_pathname" ) {
 
-	} elsif( ! -e "$map_pathname.pf" ) {
+		; # All set
+
+	} elsif( -e "$ENV{ANTELOPE}/data/dbrecenteqs/" . "$map_pathname" ) {
+
+		$map_pathname = "$ENV{ANTELOPE}/data/dbrecenteqs/" . 
+				"$map_pathname";
+
+	} elsif( -e "$ENV{ANTELOPE}/data/maps/images/" . "$map_pathname" ) {
+
+		$map_pathname = "$ENV{ANTELOPE}/data/maps/images/" . 
+				"$map_pathname";
+
+	} else {
+
+		die( "Can't find map file \"$map_pathname\"\n" );
+	}
+
+
+	if( ! -e "$map_pathname.pf" ) {
 
 		die( "Can't find map parameter file $map_pathname.pf\n" );
 	}
-
-	%Mapspec = %{pfget_Mapspec( $State{pf}, $config );};
 
 	my( $mapbase ) = `basename $map_pathname`;
 	chomp( $mapbase );
 	$mapbase =~ s/\..*$//; # remove suffix extension
 
-	$Mapspec{mapname} = $mapbase;
+	$Mapspec{file_basename} = $mapbase;
 
-	my( $hashref ) = pfget( $map_pathname, $Mapspec{mapname} );
+	my( $hashref ) = pfget( $map_pathname, $Mapspec{file_basename} );
 
 	if( ! defined( $hashref ) ) {
 		die( "Didn't find map specifications for map " .
@@ -1290,12 +1332,12 @@ sub add_to_mapstock {
 	     );
 }
 
-sub setup_Index_Mapspec {
-	my( %Mapspec );
+sub setup_index_Mapspec {
+	my( %Mapspec ) = %{ shift( @_ )};
 
-	%Mapspec = %{pfget_Mapspec( $State{pf}, "index_map" );};
-
-	$Mapspec{"mapname"} = $Mapspec{"file_basename"};
+	print STDERR "Re-generating index map $Mapspec{mapname} dynamically...\n";
+	
+	$Mapspec{"file_basename"} = $Mapspec{"mapname"};
 
 	$Mapspec{"lonc"} = unwrapped_lon( \%Mapspec, $Mapspec{"lonc"} );
 	

@@ -28,18 +28,10 @@
  </A> 
  </center>
  <h1 align="center"> 
-   <xsl:choose>
-     <xsl:when test="pixmap[@mapclass='index']">
-       <img align="top" src="{wiggle_href}"/>
-       <xsl:value-of select="page_title"/>
-     </xsl:when>
-     <xsl:otherwise>
  	<A href="{page_base}">
         <img align="top" src="{wiggle_href}" alt="Link to {page_title}"/>
-        <xsl:value-of select="page_title"/>
+        <xsl:value-of select="map_description"/>
  	</A> 
-     </xsl:otherwise>
-   </xsl:choose>
  </h1>
  <center><img src="{pixmap/file}" usemap="#{pixmap/clientside_mapname}" align="center"/>
  </center>

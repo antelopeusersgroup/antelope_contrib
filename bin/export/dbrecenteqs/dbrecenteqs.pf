@@ -25,12 +25,16 @@ pixfile_conversion_method imagick  # pnm, imagick, or alchemy
 keep_ndays 0
 max_num_eqs 300 
 
-index_map_stylesheet index_default.xsl
-focus_map_stylesheet specific_default.xsl
+make_index_html yes
+
+overview_maps &Tbl{
+	index_map
+}
 
 index_map &Arr{
 	include 	map_config
-	file_basename 	local_indexmap
+	mapname		local_indexmap
+	description	Recent Earthquakes
 	latc 		65
 	lonc 		-155
 	left_dellon 	-8 
@@ -41,28 +45,38 @@ index_map &Arr{
 	background_magmin 6
 }
 
+global_map &Arr{
+	include 	map_config
+	mapname		global
+	source		anza_equidist.gif.pf
+	description	Global View
+}
+
 focus_map &Arr{
 	include 	map_config
+	stylesheet	specific_default.xsl
+	mapclass	focus
 	left_dellon 	-2
 	right_dellon 	2
 	down_dellat 	-2
 	up_dellat 	2
 }
 
-global_map &Arr{
-	include 	map_config
-}
-
 detail_map &Arr{
 	include 	map_config
+	mapclass	detail
 }
 
 map_config &Arr{
+	source		dynamic
 	format 		gif
 	proj 		edp
-	contour_mode 	grdimage  # none, premade, grdcut, grdbuild or grdimage
+	mapclass	index
+	contour_mode 	grddb  # none, premade, grdcut, grdimage, or grddb
 	grdfile 	local_topography.grd
 	gradfile 	local_topography.grad
+	grddb		/space/world30_grids/world30
+	stylesheet	index_default.xsl
 	longitude_branchcut_high 360
 	hypocenter_dbname historic_hypocenters_dbname
 	map_color_palette_file dbrecenteqs.cpt
