@@ -18,7 +18,16 @@ covers the whole globe, one can request -190 to -170, 0 to 20, 180 to 220, etc.
 with impunity and the resulting output grid will be created to match). 
 
 .SH OPTIONS
--V verbose
+.IP -V 
+verbose
+
+.IP "-I dx[m|c][/dy[m|c]]"
+If this option is specified, the grid will be resampled to the 
+specified spacing. An 'm' or 'c' appended indicates minutes or seconds, 
+respectively. Separate resampling intervals may be given for the x and y 
+dimensions, if desired, by separating the two values with a forward slash. 
+If only one value is given it is used in both dimensions. 
+
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
