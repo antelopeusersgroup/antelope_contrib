@@ -7,6 +7,30 @@
 # University of Alaska
 # 2001
 
+sub get_containing_regions {
+	my( @db ) = splice( @_, 0, 4 );
+	my( $lat, $lon ) = splice( @_, 0, 2 );
+	my( @regnames );
+	
+	@db = dbsort( @db, "regname" );
+	@db = dbgroup( @db, "regname" );
+
+	my( $nregions ) = dbquery( @db, "dbRECORD_COUNT" );
+
+	for( $db[3] = 0; $db[3] < $nregions; $db[3]++ ) {
+
+		my( $regname ) = dbgetv( @db, "regname" );
+		my( @polygon ) = get_region_polygon( @db, $regname );
+
+		if( is_geographically_inside( $lat, $lon, @polygon ) ) {
+
+			push( @regnames, $regname );
+		}
+	}
+
+	return @regnames;
+}
+
 sub is_inside_region {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $lat, $lon ) = splice( @_, 0, 2 );
@@ -29,6 +53,16 @@ sub is_inside_region {
 	return is_geographically_inside( $lat, $lon, @polygon );
 }
 
+sub get_region_polygon {
+	my( $region_name ) = pop( @_ );
+	my( @db ) = @_;
+
+	@db = dblookup( @db, "", "regions", "", "" );
+	@db = dbsubset( @db, "regname == \"$region_name\"" );
+
+	return dbview_to_polygon( @db );
+}
+
 sub dbview_to_polygon {
 	my( @db ) = @_;
 	my( $nrecs, @polygon );
@@ -37,6 +71,17 @@ sub dbview_to_polygon {
 	@db = dbsort( @db, "regname", "vertex" );
 
 	$nrecs = dbquery( @db, "dbRECORD_COUNT" );
+
+	if( $nrecs < 1 ) {
+		print STDERR 	
+			"dbview_to_polygon(): couldn't find region in view\n";
+		return ();
+
+	} elsif( $nrecs < 3 ) {
+		print STDERR 	
+			"dbview_to_polygon(): not enough vertices in view\n";
+		return ();
+	}
 
 	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
 		( $lat, $lon, $vertex ) = dbgetv( @db, "lat", "lon", "vertex" );

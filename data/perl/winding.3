@@ -5,7 +5,9 @@ winding.pl \- winding number routines for Perl
 .nf
 require "winding.pl";
 
+get_containing_regions( @db, $lat, $lon );
 is_inside_region(  @db, $lat, $lon [, $region_name] );
+get_region_polygon( @db, $region_name );
 dbview_to_polygon( @db );
 is_geographically_inside( $lat, $lon, @polygon );
 is_inside_polygon( $x, $y, @polygon );
@@ -28,6 +30,11 @@ accomplished and the input database view contains only one region.
 is_inside_region returns 0 if the specified point is outside the named region, 
 1 if the point is inside. test points on vertices and borders of the region 
 will be treated as if they were inside the region. 
+
+The get_containing_regions() function takes a database pointer to a regions 
+table and finds the regions that include the specified test point. This 
+function returns an array of the names of the regions, or an empty array
+if none are found that contain the point. 
 
 In ascending calling order and therefore ascending order of importance to the 
 end-user, the other routines are:
@@ -53,6 +60,8 @@ dbview_to_polygon takes a view into a regions table, containing rows for
 just one region, and turns it into an array ('polygon') appropriate for use with
 the lower level routines. 
 
+get_region_name takes a database pointer containing a regions table, and 
+returns the array holding the coordinates of its polygon vertices.
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
