@@ -1260,12 +1260,12 @@ update_import_thread( char *name, Pf *pf )
 
 	if( it->new ) {
 
+		add_import_thread( name, it );
+
 		ret = thr_create( NULL, 0, ew2orb_import, 
 				  (void *) name, 
 				  THR_DETACHED,
 				  &it->thread_id );
-
-		add_import_thread( name, it );
 
 		if( ret != 0 ) {
 
@@ -1549,7 +1549,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
-			mi2hi( &dp, pktchan->data, pktchan->nsamp );
+			mi2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
 
@@ -1571,7 +1571,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
-			ms2hi( &dp, pktchan->data, pktchan->nsamp );
+			ms2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
 
@@ -1593,7 +1593,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
-			vi2hi( &dp, pktchan->data, pktchan->nsamp );
+			vi2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 
 		} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
 
@@ -1615,7 +1615,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 			allot( int *, pktchan->data, 
 			       e2opkt->th->nsamp * sizeof( int ) );
 
-			vs2hi( &dp, pktchan->data, pktchan->nsamp );
+			vs2hi( &dp, pktchan->data, e2opkt->th->nsamp );
 		}
 		
 		pktchan->datasz = e2opkt->th->nsamp;
