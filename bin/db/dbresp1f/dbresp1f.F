@@ -1,6 +1,6 @@
 
 
-c  @(#)dbresp1f.f	1.1 3/25/93 
+c  @(#)dbresp1f.f	1.1 7/1/99 
 c
 c    Program to test FORTRAN interface
 c
@@ -147,7 +147,7 @@ c
         read (freqstr,*) freq1
       end if
 c
-      write (6, '(a,a)') 'Reading file ',fname
+c      write (6, '(a,a)') 'Reading file ',fname
 c
 c    Read filter file
 c
@@ -160,7 +160,7 @@ c
 c    Get the number of stages
 c
       call getrespnstages (iresp, nstages)
-      write (6, '(a,i2)') '# stages = ',nstages
+c      write (6, '(a,i2)') '# stages = ',nstages
 c
 c    Loop through stages
 c
@@ -169,7 +169,7 @@ c
 c         Get stage type
 c
 	call getresptype (iresp, i, type)
-	write (6, '(a,i2,a,a)') 'Stage # ',i,', type = ',type
+c	write (6, '(a,i2,a,a)') 'Stage # ',i,', type = ',type
 c
 c         PAZ stage
 c
@@ -179,9 +179,9 @@ c
 	  call getresppaz (iresp, i, xnorm,
      +                  npoles, pole, polerr,
      +                  nzeros, zero, zererr)
-	  write (6, '(a,e15.7)') 'Normalization = ',xnorm
-	  write (6, '(a,i3)') '# Poles = ',npoles
-	  write (6, '(a,i3)') '# Zeros = ',nzeros
+c	  write (6, '(a,e15.7)') 'Normalization = ',xnorm
+c	  write (6, '(a,i3)') '# Poles = ',npoles
+c	  write (6, '(a,i3)') '# Zeros = ',nzeros
 c
 c         FIR stage
 c
@@ -191,9 +191,9 @@ c
 	  call getrespfir (iresp, i, srate,
      +                  nnum, coefn, coeferrn,
      +                  nden, coefd, coeferrd)
-	  write (6, '(a,f15.5)') 'Input sample rate = ',srate
-	  write (6, '(a,i3)') '# Numerator coefficients = ',nnum
-	  write (6, '(a,i3)') '# Denominator coefficients = ',nden
+c	  write (6, '(a,f15.5)') 'Input sample rate = ',srate
+c	  write (6, '(a,i3)') '# Numerator coefficients = ',nnum
+c	  write (6, '(a,i3)') '# Denominator coefficients = ',nden
 	else if (type .eq. 'fap') then
 	  write (6, '(a)') 'dbresp: No fortran i/f for fap type.'
 	else
@@ -203,7 +203,7 @@ c
 c
 c    Evaluate response
 c
-      write (6, '(a)') 'Evaluating response:'
+c      write (6, '(a)') 'Evaluating response:'
       omega = freq1*2*3.141592654
       call evlresp (omega, iresp, xreal, ximag)
       amp = sqrt(xreal*xreal+ximag*ximag)
