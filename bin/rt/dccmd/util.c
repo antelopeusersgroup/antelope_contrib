@@ -79,7 +79,14 @@ int islegal( char *name, int cmdtype )
     switch( cmdtype)  {
 	case DCCMD:
 
-            while( (one = strtok( name, "|" )) != 0 )  {
+            if( (one = strtok( name, "|" )) != 0 )  {
+                  if( isip(one) )  {
+	             arg = newname( one );
+		     pushtbl( CmdArg, arg);
+	          } else die(0, "\nillegal IP was specified - %s.\n", one);
+	          num++;
+	    }
+            while( (one = strtok( NULL, "|" )) != 0 )  {
                   if( isip(one) )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
@@ -95,7 +102,14 @@ int islegal( char *name, int cmdtype )
 
 	case CRCMD:
 
-            while( (one = strtok( name, "|" )) != 0 )  {
+            if( (one = strtok( name, "|" )) != 0 )  {
+                  if( isdasid(one) >= 0 )  {
+	             arg = newname( one );
+		     pushtbl( CmdArg, arg);
+	          } else die(0, "\nillegal Radio/Clock number was specified - %s.\n", one);
+	          num++;
+	    }
+            while( (one = strtok( NULL, "|" )) != 0 )  {
                   if( isdasid(one) >= 0 )  {
 	             arg = newname( one );
 		     pushtbl( CmdArg, arg);
