@@ -42,7 +42,7 @@ seg_append (PktChannel *new, Db_buffer *buf )
 	    bufindex = TIME2SAMP (mem->t0, mem->samprate, new->time);
 	    bufmax = MIN(bufindex, mem->maxsamp ) ;
 	    for (i = mem->nsamp; i < bufmax ; i++)
-		mem->data[i] = buf->params->gap_value ;
+		mem->data[i] = 0;
 	    mem->nsamp = i ; 
 	}
      }
