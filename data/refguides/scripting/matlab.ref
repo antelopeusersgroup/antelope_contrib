@@ -208,6 +208,38 @@ clear ( DBRESPONSE )
 free_response ( DBRESPONSE )
     dbresponse elimination routine
 
+<subsection Computational-geometry grids>
+CGG = cggrid( FILE )
+CGG = cggrid( X, Y, Z )
+    cggrid (Computational-geometry grid) class constructor
+
+DX = cggrid_dx( CGG )
+    x-spacing for cggrid object
+
+DY = cggrid_dy( CGG )
+    y-spacing for cggrid object
+
+NX = cggrid_nx( CGG )
+    number of points in x-direction for cggrid object
+
+NY = cggrid_ny( CGG )
+    number of points in y-direction for cggrid object
+
+[TRIPLETS, NX, NY] = cggrid_get( CGG )
+    get ordered triplets representing cggrid object
+
+[X, Y, Z] = cggrid_getmesh( CGG )
+    get X,Y,Z coordinate meshes representing cggrid object
+
+cggrid_write( CGG, FORMAT, FILE )
+    write a cggrid object to a file
+
+cggrid2db( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS [, 'overwrite'] )
+    write a cggrid object to a database
+
+cggrid_free( CGG )
+    cggrid elimination routine
+
 <subsection Parameter Files>
 PF = dbpf ( )
 PF = dbpf ( PFNAME )
