@@ -17,7 +17,7 @@ account, containing the path to the mail_parser(1) command: for example
 
 .nf
 nordic% cat /home/aeicauto/.forward
-kent@giseis.alaska.edu, "|/home/aeicauto/mail_parser_wrapper"
+kent@giseis.alaska.edu, "|/home/aeicauto/mail_parser_wrapper || exit 75"
 .fi
 
 Note that this assumes a copy of mail_parser_wrapper has been placed in the
