@@ -110,7 +110,8 @@ calculation is all done with native binary quantities.  I
 expect at least an order of magnitude increase in speed.
 */
 
-void main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	char *dbin;  /* Input db name */
 	Dbptr db,dbv,dbc,dbh;
@@ -296,4 +297,5 @@ void main(int argc, char **argv)
 					i,j,k);
 		}
 	freetbl(allevents,free);
+    return 0 ; 
 }
