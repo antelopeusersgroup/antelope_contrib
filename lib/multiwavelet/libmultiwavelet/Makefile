@@ -1,6 +1,6 @@
 LIB=libmultiwavelet.a		
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-DATADIR=schemas2
+DATADIR=schemas
 DATA= MWavelet1.4
 INCLUDE=multiwavelet.h 	
 PF=mwap.pf		

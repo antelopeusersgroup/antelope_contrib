@@ -8,15 +8,12 @@ MAN3 = genloc.3 \
        eqerror.3 \
 	genloc_ttinterface.3
 
-DATADIR=schemas2
+DATADIR=schemas
 DATA=genloc1.0
 
-
-ldlibs= $(DBLIBS) 
-
 include $(ANTELOPEMAKE)  	
-		
 DIRS=	
+
 OBJS=	  bisquare.o \
     calc_statistics.o \
     dbinput_routines.o \
