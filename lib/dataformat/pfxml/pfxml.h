@@ -8,7 +8,7 @@
 #define PFXML_EXPLICIT_NAMESSPACE 4
 #define PFXML_STANDALONE 8
 #define PFXML_STRONG 16
-#define PFXML_PFFILE_TO_PFARR 32
+#define PFXML_PRESERVE_PFFILE 32
 
 #ifdef	__cplusplus
 extern "C" {

@@ -136,13 +136,13 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 	switch( pf->type ) {
 	case PFFILE:
 		
-		if( flags & PFXML_PFFILE_TO_PFARR ) {
+		if( flags & PFXML_PRESERVE_PFFILE ) {
 
-			tag = maketag( "pfarr", name, flags );
+			tag = maketag( "pffile", name, flags );
 
 		} else {
 
-			tag = maketag( "pffile", name, flags );
+			tag = maketag( "pfarr", name, flags );
 		}
 
 		pushstr( (void **) &vstack, tag ); 
@@ -177,13 +177,13 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 			}
 		}
 
-		if( flags & PFXML_PFFILE_TO_PFARR ) {
+		if( flags & PFXML_PRESERVE_PFFILE ) {
 
-			tag = endtag( "pfarr", name, flags );
+			tag = endtag( "pffile", name, flags );
 
 		} else {
 
-			tag = endtag( "pffile", name, flags );
+			tag = endtag( "pfarr", name, flags );
 		}
 
 		pushstr( (void **) &vstack, tag ); 

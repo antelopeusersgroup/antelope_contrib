@@ -27,9 +27,10 @@ If flags is set to PFXML_NEWLINES, newlines are added after tags
 and values. Otherwise the return value is one long string. Conversion 
 errors result in a null value being returned.
 
-If flags is set to PFXML_PFFILE_TO_PFARR, elements of type 'pffile' are 
-recast into elements of type 'pfarr'. This is useful if a parameter file 
-is to be included in another parameter-file as a sub-component.
+If flags is set to PFXML_PRESERVE_PFFILE, elements of type 'pffile' are 
+preserved as such. Without this flag (i.e. the default behavior), they are
+recast into elements of type 'pfarr'. This is remapping allows a parameter file 
+to be included in another parameter-file as a sub-component.
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
