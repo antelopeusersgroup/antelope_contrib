@@ -54,14 +54,41 @@ chomp( $grdinfo = `grdinfo $V -C $grd` );
 
 @grdinfo = split( /\s+/, $grdinfo );
 
-@vals = `grd2xyz $V $grd`;
-
-( $minlon, $maxlat ) = split( /\s+/, $vals[0] );
-( $maxlon, $minlat ) = split( /\s+/, $vals[$#vals] );
-
+open( X, "grd2xyz $V $grd|" );
 open( C, ">$cggrid" );
-print C "qgrd1.0 as $minlon $maxlon $minlat $maxlat ", join( " ", @grdinfo[7..10] ), " m/sec\n";
-print C @vals;
+
+print C "\n";
+
+$first = 1;
+
+while( $line = <X> ) {
+	
+	if( $first ) {
+
+		( $minlon, $maxlat ) = split( /\s+/, $line );
+
+		$first = 0;
+	}
+
+	print C $line;
+
+	$last = $line;
+}
+
 close( C );
+close( X );
+
+if( $first ) {
+	
+	unlink( $cggrid );
+	elog_die( "Empty result\n" );
+}
+
+( $maxlon, $minlat ) = split( /\s+/, $last );
+
+$header = "qgrd1.0 as $minlon $maxlon $minlat $maxlat " . 
+	   join( " ", @grdinfo[7..10] ) . " m\\/sec";
+
+system( "$^X -p -i -e '\$. == 1 && s/^/$header/' $cggrid" );
 
 exit( 0 );
