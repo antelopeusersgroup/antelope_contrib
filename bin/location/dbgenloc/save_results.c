@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "dbgenloc.h"
 
 int
@@ -13,7 +15,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 	float *emodel )
 {
     int             i, n, orid, grn, srn, retcode = 0;
-    char *algorithm ="dbgenloc";
+    char algorithm[15];
+    char *str;
     double delta, esaz, seaz, slores, duphi, azres, azimuth ;
     Arrival *a ; 
     Slowness_vector *u ;
@@ -30,6 +33,15 @@ save_results (Dbptr dbin, Dbptr dbout,
     dbout.record = dbaddnull ( dbout ) ; 
     grn = grnumber(hypo->lat, hypo->lon) ;
     srn = srnumber ( grn ) ; 
+    str = strstr(vmodel,"/");
+   /* because vmodels passed to genloc contain a directory
+   and model name string, we strip the directory name.  This
+  is necessary because the algorithm field is only 15 long */
+    if(str == NULL)
+	str = vmodel;
+    else
+	++str;
+    snprintf(algorithm,15,"dbgenloc:%s",str);
     if (dbout.record < 0
        ||  dbputv(dbout, 0,
 	   "orid", orid, 

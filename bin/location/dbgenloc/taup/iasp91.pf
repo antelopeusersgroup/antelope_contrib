@@ -3,7 +3,7 @@ phases &Arr{
 P  &Arr{
 travel_time_calculator general
 TTmodel iasp91
-TTmethod tttaup
+TTmethod tttaup tttaup utaup
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
