@@ -35,13 +35,13 @@ dspev(char jobz, char uplo, int n, double *dap,  double *w,
     free(work) ;
 }
 
-double 
+float 
 snrm2(int n, float *sx, int incx) 
 {
     return snrm2_ ( &n, sx, &incx );
 }
 
-double 
+float 
 sdot(int n, float *sx, int incx, float *sy, int incy)
 {
     return sdot_ ( &n, sx, &incx, sy, &incy );
