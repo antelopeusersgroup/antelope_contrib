@@ -22,7 +22,8 @@ DATA=	iceworm1.3 \
 	Techcomp1.0 \
 	Acronyms1.2 \
 	Specevents1.0 \
-	Travel1.0
+	Travel1.0 \
+	webbullets1.0
 
 include $(ANTELOPEMAKE)  	
 DIRS=

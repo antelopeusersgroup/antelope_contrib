@@ -1,0 +1,80 @@
+Schema webbullets1.0
+	Description ( "Web bullets schema" )
+	Detail {
+		The webbullets schema allows storage of short text items
+		intended for presentation on a web page, together 
+		with an optional url link. This initial version is 
+		entirely text-based. Future versions may allow an 
+		associated image.
+	}
+	Timedate lddate
+	;
+
+Attribute bullet
+	String (300)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "web bullet" )
+	Detail {
+		This field contains a short text item giving the contents
+		of the web bullet.
+	}
+	;
+
+Attribute bulletid
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "bulletid > 0" )
+	Description ( "bullet id" )
+	Detail {
+		This field gives an identification number for each bullet.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "record modification time " )
+	Detail {
+		The lddate field records the time of last record 
+		modification.
+	}
+	;
+
+Attribute time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "timestamp" )
+	Detail {
+		This field gives the timestamp associated with a bullet.
+	}
+	;
+
+Attribute url
+	String (200)
+	Format ( "%-200s" )
+	Null ( "-" )
+	Description ( "url associated with a web bullet" )
+	Detail {
+		If there is a url associated with a web bullet, this 
+		field lists the url.
+	}
+	;
+
+Relation bullets
+	Fields ( bulletid time bullet url lddate )
+	Primary ( bulletid )
+	Defines bulletid
+	Description ( "web bullets" )
+	Detail {
+		This table stores short text segments for presentation 
+		on the web. Contents may include news items, recent 
+		highlights or hints, etc.
+	}
+	;
+
