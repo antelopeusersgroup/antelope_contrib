@@ -1,0 +1,198 @@
+require &Arr{
+int &Tbl{
+nwavelets 1 20
+number_frequency_bands	1 50
+bankid 1 100000
+}
+double &Tbl{
+sample_interval 0.00001 100.0
+snr_cutoff
+}
+string &Tbl{
+TTmodel
+TTmethod
+snr_component_to_test
+snr_cutoff_statistic
+coherence_measure
+}
+}
+get_wavelets_from_database false
+bankid 1
+snr_component_to_test z
+snr_cutoff_statistic max
+snr_cutoff 0.00001
+#
+#  This file is a template for multiwavelet parameter file definitions 
+#
+
+nsamples	21
+nwavelets	5
+f0		0.375
+fw		0.25
+
+wavelets &Tbl{
+#
+#wavelet 0
+#
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+1.0000000      1.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+#
+#wavelet 1
+#
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+1.0000000      1.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+#
+#wavelet 2
+#
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+1.0000000      1.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+#
+#wavelet 3
+#
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+1.0000000      1.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+#
+#wavelet 4
+#
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+1.0000000      1.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+0.0000000      0.00000000
+}
+#
+# This defines decimation stages between adjacent bands.
+# number_frequency_bands MUST match the number of entries in 
+# the bands Tbl.   
+#
+number_frequency_bands 3
+bands &Tbl{
+/u/pavlis/response/RT72A_2_f 
+/u/pavlis/response/RT72A_2_f 
+/u/pavlis/response/RT72A_4_f /u/pavlis/response/RT72A_2_f
+}
+#
+# These define signal and noise time windows for each 
+# band.  If the list is short the last entry is duplicated
+# and a diagnostic is issue, but the program does not abort.
+# Order is:  start, end, interval -- all are in units of samples
+# for the given band.
+# IMPORTANT:  start is a point on the left side of a moving window
+#  while the mwtransform uses a zero-phase format which leaves effects
+#  + to - the length of the wavelet each side of a feature.  Thus, a
+#  typical setting of start is -3*wavelet_length/2
+#
+#signal_analysis_windows &Tbl{
+#-60 80 40 1 1
+#-60 80 40 1 1
+#-60 80 40 1 1
+#}
+# versions for a fast debug with fake data
+
+signal_analysis_windows &Tbl{
+0 100 40 1 1
+-200 200 40 1 1
+0 100 40 1 1
+}
+#
+# Noise windows in samples
+#  order is the same as for signal windows 
+#
+noise_analysis_windows &Tbl{
+-150 -80 40 1 1
+-150 -80 40 1 1
+-150 -80 40 1 1
+}
+sample_interval 0.025	#This is the sample interval of all data processed.  
