@@ -4,7 +4,7 @@ MAN1=tabcalc.1 hypotab.1
 CLEAN= tabcalc hypotab ptt2stt
 ldlibs=-lglp
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 
 TOBJS= tabcalc.o \
 	shootup.o \

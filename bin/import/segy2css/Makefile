@@ -5,7 +5,7 @@ BIN 	= segy2css
 MAN1 = segy2css.1
 ldlibs = $(DBLIBS)
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 OBJS = decode.o \

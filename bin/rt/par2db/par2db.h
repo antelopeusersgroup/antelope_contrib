@@ -7,7 +7,7 @@
 #include "tr.h"
 #include "orb.h"
 #include "pkt.h"
-#include "dsap_regex.h"
+#include "antelope_regex.h"
 
 typedef struct Source {
     Orbpipe *apipe ;

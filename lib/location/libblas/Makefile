@@ -9,7 +9,7 @@ CLEAN=
 
 cflags=		
 
-include $(DSAPMAKE)  	
+include $(ANTELOPEMAKE)  	
 
 SRCS=   caxpy.f \
 	ccopy.f \

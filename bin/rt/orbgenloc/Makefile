@@ -8,7 +8,7 @@ ldlibs= -lgenloc -ltt -xlic_lib=sunperf -lcoords -lposix4 -lstock \
    -lpkt -lstock $(TRLIBS) $(SVR4LIBS)
 #ldlibs=	-lgenloc -ltt -lblas -lcoords -lposix4 -lstock $(DBLIBS) $(F77LIBS) -lpkt -lorb -ldl -lnsl -lsocket -lcoords -lpkt -lstock 
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 SRCS= orbgenloc.c maketmpdb.c  orb_arrivals_in.c 
@@ -20,5 +20,5 @@ $(BIN) : $(OBJS)
 
 
 lint: $(SRCS)
-	lint $(SRCS) -I/opt/dsap/solaris/include -I/usr/openwin/include  
+	lint $(SRCS) -I/opt/antelope/solaris/include -I/usr/openwin/include  
 # $Id$ 

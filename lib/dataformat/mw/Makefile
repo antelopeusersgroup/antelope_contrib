@@ -1,7 +1,7 @@
 LIB	= libmw.a
 DLIB=$(LIB:.a=$(DSUFFIX))
 
-include $(DSAPMAKE)  	
+include $(ANTELOPEMAKE)  	
 DIRS=			
 
 CSOURCES = css2io.c \

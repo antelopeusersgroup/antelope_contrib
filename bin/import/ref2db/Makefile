@@ -6,7 +6,7 @@ MAN1=ref2db.1
 
 ldlibs	=-Bstatic -lconfirm -lpkt -lorb -ltr -lds -ltttaup -lresponse -lcoords -lstock -Bdynamic -lm $(SVR4LIBS)
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 OBJS 	= ref2db.o\
 	  openIP.o\
 	  parfile.o\

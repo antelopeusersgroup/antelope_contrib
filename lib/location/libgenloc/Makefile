@@ -11,7 +11,7 @@ cflags=
 ldflags= 	
 ldlibs=	
 
-include $(DSAPMAKE)  	
+include $(ANTELOPEMAKE)  	
 		
 DIRS=	
 

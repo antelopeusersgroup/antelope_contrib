@@ -4,7 +4,7 @@ BIN=par2db
 cflags=
 ldlibs=	-lpkt -lorb $(TRLIBS) $(SVR4LIBS) -ldl
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 SRCS= \

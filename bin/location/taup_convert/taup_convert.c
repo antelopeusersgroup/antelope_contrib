@@ -206,7 +206,7 @@ main(int argc, char **argv)
 					/* This odd code segment hunts for the
 					first P phase after Pdiff because this
 					phase is seldom observed as a first 
-					arrival.  Modified from DSAP 
+					arrival.  Modified from ANTELOPE 
 					pphase_slowness code.  */
 					else { 
 	    				   if ( strstr(phases[0], "Pdiff") != NULL 

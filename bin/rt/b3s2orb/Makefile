@@ -4,7 +4,7 @@ BIN = b3s2orb
 MAN1=b3s2orb.1
 
 ldlibs	=  -lsocket -lnsl -lpkt -lorb -lxview -lolgx $(TRLIBS) 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIR=
 
 OBJST	= b3s2.o\

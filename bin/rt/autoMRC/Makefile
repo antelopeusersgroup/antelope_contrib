@@ -6,7 +6,7 @@ MAN1=mrc.1
 #ldflags	= -Bstatic               
 ldlibs	= -lsocket -lnsl -lpkt -lorb $(TRLIBS) 
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\
 	  open_dc.o\
 	  proc_chan.o\

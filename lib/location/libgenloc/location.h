@@ -1,5 +1,5 @@
 /*  ----INCLUDE FILE FOR HYPOCENTER LOCATION PROGRAM ------
-WARNING:  DSAP includes must precede this include file or typdefs
+WARNING:  ANTELOPE includes must precede this include file or typdefs
 like Arr and Tbl will not be defined:  stock.h, arrays.h */
 
 /* This definition probably should have been used to simply some 

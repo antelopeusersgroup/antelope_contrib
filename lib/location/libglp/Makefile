@@ -5,7 +5,7 @@ CLEAN=
 ldflags=
 ldlibs=
 
-include $(DSAPMAKE)  	
+include $(ANTELOPEMAKE)  	
 DIRS=
 
 OBJS= acal.o afree.o calnder.o clock.o comppro.o cputlt.o dttime.o firstn.o \
