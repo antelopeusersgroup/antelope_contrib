@@ -1,0 +1,25 @@
+This is a test suite for pmelgrid, but it also implicitly tests
+db2pfstream and pfstream2db.  To run the test suite:
+
+1.  Unpack the input data tar file with
+tar xf testdata.tar
+
+2.  Unpack the tar file that contains what the test suite
+should produce.  That is 
+
+tar xf testout.tar
+
+This will yield a testout directory.  The testout directory 
+contents can be compared to what you get by running the 
+test in the directory called pmeltest.  i.e. after running
+pmelgrid the contents of pmeltest and testout can be compared
+file for file.
+
+3.  Run the test by typing:
+
+cd pmeltest
+runtest.csh
+
+4.  The test completes in about 1 minute on a SunBlade 100. pmelgrid
+produces some output to stdout that can be compared to the run by looking at 
+the file testout/runtest.log
