@@ -93,6 +93,12 @@ epoch [options] [ +format ] [ time/date components ]
 elog [-cdln] [-f fault] [message]
     exhibit behavior of elog error routines with message
 
+elog -e errno
+    print error message for numeric system error
+
+elog -s signal#
+    print signal description
+
 pfcompare [options] pf
      find differences between local parameter file and remainder of pf files found along PFPATH
 <options>
