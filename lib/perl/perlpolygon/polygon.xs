@@ -3,7 +3,15 @@
 #include "XSUB.h"
 
 #include "polygon.h"
-#include "errlog2string.c"
+
+static char *
+elogmsgs()
+{
+    char *log ;
+    log = elog_string(0) ;
+    elog_clear() ;
+    return log ;
+}
 
 MODULE = polygon		PACKAGE = polygon		
 
@@ -29,11 +37,11 @@ inWhichPolygons(idatabase, itable, ifield, irecord, lat, lon)
 	P.lon= lon;
 	dbr= inWhichPolygons(db, P);
  # for some reasons, the following does NOT work
- # if ( dbr.database < 0 ) {
- #		SV *sv;
- #		sv= errlog2string(1);
- #		croak("%s",SvPV_nolen(sv));
- #		}
+        if ( dbr.database < 0 ) {
+ 		SV *sv;
+ 		sv= errlog2string(1);
+ 		croak("inWhichPolygons: %s",elogmsgs());
+	}
 	EXTEND(sp,4);
 	PUSHs(sv_2mortal(newSViv(dbr.database)));	
 	PUSHs(sv_2mortal(newSViv(dbr.table)));	

@@ -5,7 +5,7 @@ CLEAN=  .make.state  runmake Makefile.old Makefile.PL Makefile polygon.bs polygo
 PD=$(ANTELOPE)/data/perl
 PM=$(ANTELOPE)/man
 
-ldlibs=-lpolygon -lm
+ldlibs=-lpolygon $(STOCKLIBS)
 include $(ANTELOPEMAKE)
 DIRS=
 
