@@ -1,0 +1,1022 @@
+# GUI driver for dbpick
+# Kent Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# 10/95
+
+package require Tclx
+package require Dbe
+
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+
+proc MyLblEntry {w args} { 
+    frame $w
+    label $w.l 
+    entry $w.e
+    pack $w.l -side left 
+    pack $w.e -side right -fill x -expand yes
+    while { ! [lempty $args] } {
+	set option [lvarpop args]
+	switch -- $option {
+	    -label	{ set value [lvarpop args] ; $w.l config -text $value }
+	    -textvariable	{ set value [lvarpop args] ; $w.e config -textvariable $value }
+	}
+    }
+    return $w
+}
+
+proc picksta { sta } {
+	global DbpickWinName
+	global station_distance_sort
+	global auto_waveforms_on
+	global dbname
+	global stalist
+	global starttrace span
+
+	if { ! $station_distance_sort } {
+		send -async $DbpickWinName "sc $sta"
+	} else {
+		set db [dbopen $dbname r]
+		set db [dblookup $db 0 site 0 0]
+		# Not sure about this subset
+		set db [dbsubset $db "offdate == NULL"]
+		set record [dbfind $db 0 0 "sta == \"$sta\""]
+		if { $record < 0 } {
+			echo Didnt find current coordinates for $sta
+			return
+		}
+		set lat [dbgetv $db 0 $record lat]
+		set lon [dbgetv $db 0 $record lon]
+		set db [dbsort $db "distance(lat,lon,$lat,$lon)"]
+		set nrecs [dbquery $db dbRECORD_COUNT]
+		set mystas {}
+		for {set record 0} {$record < $nrecs} {incr record} {
+			set teststa [dbgetv $db 0 $record sta]
+			if { [lsearch $stalist $teststa] != -1 } {
+				lappend mystas $teststa
+			}
+		}
+		send -async $DbpickWinName "sw off"
+		send -async $DbpickWinName "sc [join $mystas ,]:.*"
+		set starttrace 1
+		.vert.starttrace set $starttrace
+		catch {send -async $DbpickWinName "cw $starttrace $span"}
+		if { $auto_waveforms_on } { send -async $DbpickWinName "sw on" }
+	}
+}
+
+proc picknet { net } {
+	global DbpickWinName Nets auto_waveforms_on
+
+	# cw 1 1 gets around an apparent bug with stachan selection
+	# after cw (n!=1) m
+	send -async $DbpickWinName "sw off cw 1 1 sc $Nets($net)"
+	if { $auto_waveforms_on } { send -async $DbpickWinName "sw on" }
+}
+
+proc config_sta { w sect } {
+	global Sects
+	$w config -options $Sects($sect)
+}
+
+proc establish_menu {} {
+	global stalist Sects Nets Network_present dbname
+	global Arrays Circuits ProcessGroups Volcanoes NamespaceNets
+	global Db_min_time Db_max_time
+
+	set db [dbopen $dbname r]
+	set db [dblookup $db 0 wfdisc 0 0]
+	if { [dbquery $db dbTABLE_SIZE] <= 0 } {
+		puts stderr "smartpick: table wfdisc not present in $dbname. Bye."
+		exit -1
+	}
+
+	# Guard against blank rows
+	set dbrange [dbsubset $db "time != NULL && endtime != NULL"]
+	set Db_min_time [dbeval $dbrange "min(time)"]
+	# Prevent minor spillover into next day from making too-wide scrollbars
+	set Db_max_time [expr [dbeval $dbrange "max(endtime)"] - 1]
+	dbclose $db
+
+	foreach sta [exec dbselect $dbname.wfdisc sta | sort | uniq] {
+		lappend stalist $sta
+		lappend Sects([translit a-z A-Z [csubstr $sta 0 1]]) $sta
+	}
+
+	foreach sect [array names Sects] {
+		set Sects($sect) [lrmdups $Sects($sect)]
+	}
+
+	set stalist [lrmdups $stalist]
+
+	set db [dbopen $dbname r]
+	set db [dblookup $db 0 affiliation 0 0]
+	set affiliation_present [dbquery $db dbRECORD_COUNT]
+	set db [dblookup $db 0 network 0 0]
+	set Network_present [dbquery $db dbRECORD_COUNT]
+	dbclose $db
+
+	if { $Network_present > 0 } {
+		set Arrays [exec dbsubset $dbname.network "nettype == \"ar\"" | dbselect - net]
+		foreach elem $Arrays {
+			lappend Nets($elem) $elem
+		}
+
+		set Circuits [exec dbsubset $dbname.network "nettype == \"cr\"" | dbselect - net]
+		set ProcessGroups [exec dbsubset $dbname.network "nettype == \"pr\"" | dbselect - net]
+		set Volcanoes [exec dbsubset $dbname.network "nettype == \"vo\"" | dbselect - net]
+		set NamespaceNets [exec dbsubset $dbname.network "nettype == \"lo\" || nettype == \"ww\"" | dbselect - net]
+
+	}
+
+	if { $affiliation_present > 0 } {
+		set toggle 1
+        	foreach elem [exec dbselect $dbname.affiliation sta net] {
+			if {$toggle} {
+				set sta $elem
+			} else {
+				set net $elem
+				lappend Nets($net) $sta
+			}
+			set toggle [expr ! $toggle]
+        	}
+		foreach net [array names Nets] {
+			set Nets($net) [join [lrmdups $Nets($net)] ","]
+		}
+	}
+}
+
+proc reset_dbname {} {
+	global dbname trial_dbname lookups_dbname
+	.control.dbe configure -text "dbe $dbname"
+	if { $trial_dbname == "" } {
+		set lookups_dbname $dbname
+	} else {
+		set lookups_dbname $trial_dbname
+	}
+
+}
+
+proc exec_spgram {} {
+	global DbpickWinName 
+	catch {
+		send -async $DbpickWinName \
+			"exec dbspgram %db %sta %chan %ts %tw &"
+	}
+}
+
+proc get_dbpick_win_id {} {
+	global WinfileCommand
+
+	set id [exec cat [lindex $WinfileCommand 1]]
+	return [format "0x%x" $id]
+}
+
+proc raise_waveforms { } {
+
+	set win_id [get_dbpick_win_id]
+
+	qwm deiconify $win_id
+	qwm raise $win_id
+}
+
+proc kill_dbpick {} {
+	global DbpickWinName 
+	catch {send -async $DbpickWinName "quit"}
+}
+
+proc start_dbpick {} {
+	global DbpickWinName WinfileCommand DbpickCommandWindow dbname env
+	global ComoutCommand
+
+	set DbpickCommandWindowName "smartpick_dbpick_[pid]"
+
+  	exec sh -c "/usr/openwin/bin/xterm -title $DbpickCommandWindowName \
+-iconic -geometry 80x24+0-0 -e dbpick -nostarttalk $WinfileCommand \
+-geom 1000x700 -appname $DbpickWinName $ComoutCommand $dbname" &
+
+	# Let the window get created!: 
+	sleep 1	
+	set DbpickCommandWindow \
+		[exec xwininfo -int -name $DbpickCommandWindowName | grep xwininfo]
+	set DbpickCommandWindow [lindex $DbpickCommandWindow 3]
+}
+
+proc quit_smartpick {} {
+	global DbpickWinName
+	catch {send -async $DbpickWinName "quit"}
+	global WinfileCommand  
+	catch { exec /bin/rm -f [lindex $WinfileCommand 1] }
+	destroy .
+}
+
+proc change_options {} {
+	global auto_waveforms_on
+
+	toplevel .options
+
+	checkbutton .options.autoswon -variable auto_waveforms_on \
+		-text "Automatically turn on waveforms"
+	pack .options.autoswon -side top -fill x
+
+	button .options.d -text Dismiss -command "destroy .options"
+	pack .options.d -side bottom -fill x
+}
+
+proc fix_scroll_day { s } {
+    	global Timescroll
+	set s [max $s 0]
+	set s [min $s [expr $Timescroll(day_range)-1]]
+	set Timescroll(day) $s
+	set_scroll_day
+}
+
+proc fix_scroll_minute { s } {
+    	global Timescroll
+	set s [max $s 0]
+	set s [min $s $Timescroll(minute_range)]
+	set Timescroll(minute) $s
+	set_scroll_minute
+}
+
+proc set_scroll_day {} {
+	global Timescroll
+	$Timescroll(scroll_day) set $Timescroll(day_range) 1 $Timescroll(day) $Timescroll(day)
+	set_next_from_scrolls
+}
+
+proc set_scroll_minute {} {
+	global Timescroll
+	$Timescroll(scroll_minute) set $Timescroll(minute_range) 1 $Timescroll(minute) $Timescroll(minute)
+	set_next_from_scrolls
+}
+
+proc set_scrolls {args} {
+        global Timescroll
+        set epoch [str2epoch $Timescroll(next_start_time)]
+        fix_scroll_day [t2day $epoch]
+        fix_scroll_minute [t2minute $epoch]
+}
+
+proc set_next { x } {
+	global Timescroll
+	set s [strtime $x]
+	set Timescroll(next_start_time) $s
+}
+
+proc set_next_from_scrolls {} {
+	global Timescroll
+	set x [expr $Timescroll(first_day) + $Timescroll(day) * 3600 * 24 + $Timescroll(minute) * 60 ]
+	set_next $x
+}
+
+proc t2day {t} {
+	global Timescroll
+	set x [int ($t-$Timescroll(first_day))/(3600*24)]
+	return $x
+}
+
+proc t2minute {t} {
+	global Timescroll
+	set x [int ($t-$Timescroll(first_day)-$Timescroll(day)*3600*24)/60]
+	return $x
+}
+
+proc setup_next {min_time max_time} {
+    	global Timescroll
+	set Timescroll(first_day) [epoch [yearday $min_time]]
+	set Timescroll(first_date) [strdate $Timescroll(first_day)]
+	set Timescroll(last_day) [epoch [yearday $max_time]]
+	set Timescroll(last_date) [strdate $Timescroll(last_day)]
+	set Timescroll(day_range) [expr int(($Timescroll(last_day) - $Timescroll(first_day))/(24*3600) + 1)]
+	set Timescroll(next_start_time) $min_time
+	set_scrolls
+	set_next $min_time
+}
+
+proc set_dbpick_time {} {
+	global Timescroll auto_waveforms_on DbpickWinName
+	global Db_min_time Db_max_time
+	global tw
+
+	send -async $DbpickWinName "exec tksend smartpick \"set tw %tw\""
+	tkwait variable tw
+
+	set epoch [str2epoch $Timescroll(next_start_time)]
+
+	# Rationalize the entered time
+	set epoch [max $Db_min_time $epoch] 
+	set epoch [min $epoch [expr $Db_max_time - $tw]]
+	set s [strtime $epoch]
+	set Timescroll(next_start_time) $s
+	set_scrolls
+
+	send -async $DbpickWinName "sw off ts $epoch"
+	if { $auto_waveforms_on } { 
+		catch {
+			send -async $DbpickWinName "sw on"
+		}
+	}
+}
+
+proc save_waveforms {} {
+	global Savedb Save_format dbname DbpickWinName
+	global ts tw
+	global stachans
+
+	send -async $DbpickWinName "exec tksend smartpick \"set ts %ts\""
+	tkwait variable ts
+	send -async $DbpickWinName "exec tksend smartpick \"set tw %tw\""
+	tkwait variable tw
+	send -async $DbpickWinName "exec tksend smartpick \"set stachans \[list %stachans\]\""
+	tkwait variable stachans
+
+	set expr ""
+	foreach pair $stachans {
+		set sc [split $pair :]
+		set sta [lindex $sc 0]
+		set chan [lindex $sc 1]
+
+		if { $expr != "" } {
+			append expr " || "
+		}
+		append expr "(sta == \"$sta\" && chan == \"$chan\")"
+	}
+	exec tcsh -c "trexcerpt -c '$expr' -o $Save_format $dbname $Savedb $ts $tw"
+}
+
+proc init_windows {} {
+	global Font dbname reqsect reqsta Sects Nets starttrace span
+	global Network_present Arrays Circuits ProcessGroups 
+	global Volcanoes NamespaceNets 
+	global Db_min_time Db_max_time
+	global Timescroll Savedb Save_format
+
+	wm geometry . -20-40
+
+	frame .ts -relief raised -borderwidth 2
+	frame .ts.t
+	frame .ts.ds
+	frame .ts.ms
+	frame .ts.b
+	frame .control
+	frame .horiz
+	frame .vert
+	frame .vert.select
+	frame .opt
+	frame .opt.inc
+	frame .opt.save
+	frame .opt.cust
+	frame .opt.opt
+
+	set Timescroll(minute_range) [expr 24*60]
+	set Timescroll(next_start_time) ""
+	set Timescroll(first_day) 0
+	set Timescroll(first_date) ""
+	set Timescroll(last_day) 0
+	set Timescroll(last_date) ""
+	set Timescroll(day) 0
+	set Timescroll(minute) 0
+	set Timescroll(day_range) 1
+
+	button .ts.t.go -text "Go to " -command set_dbpick_time -bg beige
+
+	entry .ts.t.next_start_time -textvariable Timescroll(next_start_time) -relief sunken -width 26
+
+	scrollbar .ts.ds.sday -orient horizontal -command fix_scroll_day -width 10
+	label .ts.t.day0 -textvariable Timescroll(first_date)
+	label .ts.t.day1 -textvariable Timescroll(last_date)
+
+	set Timescroll(scroll_day) .ts.ds.sday
+
+	scrollbar .ts.ms.sminute -orient horizontal -command fix_scroll_minute -width 10 -bg red 
+
+	label .ts.b.min0 -text "0:00"
+	label .ts.b.min1 -text "24:00"
+
+	set Timescroll(scroll_minute) .ts.ms.sminute
+
+	pack .ts.t -side top -fill x
+	pack .ts.ds -side top -fill x
+	pack .ts.ms -side top -fill x
+	pack .ts.b -side top -fill x
+	pack .ts.t.day0 -side left
+	pack .ts.t.go -side left
+	pack .ts.t.next_start_time -side left
+	pack .ts.t.day1 -side right
+	pack .ts.ds.sday -fill x
+	pack .ts.ms.sminute -fill x
+	pack .ts.b.min0 -side left
+	pack .ts.b.min1 -side right
+	
+	setup_next $Db_min_time $Db_max_time
+
+	button .control.startdbpick -font $Font -text "Start dbpick" \
+		-bg green -command "start_dbpick"
+	
+	button .control.killdbpick -font $Font -text "Kill dbpick" \
+		-bg black -fg red3 -command "kill_dbpick"
+	
+	button .control.command -font $Font -text "Summon command prompt" \
+		-bg "light sea green" \
+		-command {
+			global DbpickCommandWindow
+			qwm deiconify $DbpickCommandWindow
+		}
+
+	button .control.waveforms -font $Font -text "Summon waveforms" \
+		-bg "light sea green" -command raise_waveforms
+	
+	
+	MyLblEntry .control.db -label "Database:" -textvariable dbname 
+
+	button .control.dbe -text "dbe $dbname" -font $Font \
+		-bg "mediumseagreen" -command {
+			exec sh -c "dbe $dbname" &
+		}
+	
+#	button .control.o -text "Options..." -font $Font \
+#		-bg "MediumSpringGreen" -command change_options
+
+	button .control.q -text "Quit" -font $Font -bg red \
+		-command quit_smartpick
+	
+	scale .vert.span -label "Number of traces" -font $Font -length 200 \
+		-orient horizontal -tickinterval 20 -from 0 -to 60 \
+		-command "set span"
+	
+	.vert.span set $span
+
+	scale .vert.starttrace -label "First displayed trace" -font $Font \
+		-length 300 -orient horizontal -tickinterval 50 -from 1 -to 256 \
+		-command "set starttrace"
+	
+	.vert.starttrace set $starttrace
+
+	button .vert.hop_down -text "hop down" -bg lightcoral -font $Font -command {
+		set starttrace [expr $starttrace + $span]
+		.vert.starttrace set $starttrace
+		catch {send -async $DbpickWinName "cw $starttrace $span"}
+	}
+	
+	button .vert.hop_up -font $Font -text "hop up" -bg lightcoral -command {
+		set starttrace [expr $starttrace - $span]
+		set starttrace [expr [expr $starttrace < 1] ? 1 : $starttrace]
+		.vert.starttrace set $starttrace
+		catch {send -async $DbpickWinName "cw $starttrace $span"}
+	}
+	
+	button .vert.redisplay -font $Font -text "Re-display" \
+		-bg orange -command {
+			global auto_waveforms_on
+        		catch {
+				send -async $DbpickWinName \
+					"sw off sc * cw $starttrace $span"
+			}
+			if { $auto_waveforms_on } { 
+				catch {
+					send -async $DbpickWinName "sw on"
+				}
+			}
+		}
+	
+	button .vert.rec -font $Font -text "Display by epicentral distance" -bg pink -command {
+		global auto_waveforms_on
+		catch {send -async $DbpickWinName "rec"}
+        	catch {
+			send -async $DbpickWinName \
+				"sw off sc * cw $starttrace $span"
+		}
+		if { $auto_waveforms_on } { 
+			catch {
+				send -async $DbpickWinName "sw on"
+			}
+		}
+	}
+	
+	button .vert.unpicked_dist -font $Font -text "Display unpicked by distance" -bg "tan1" -command {
+		select_nearest_unpicked_stations
+	}
+	
+	button .vert.picked -font $Font -text "Display associated picked traces" -bg "light salmon" -command {
+		select_picked_stations
+	}
+	
+	button .horiz.ne -text "Next event" -bg lightcyan -font $Font -command {
+		global auto_waveforms_on
+		global auto_display_picked
+
+		send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+		tkwait variable current_orid
+
+		catch {send -async $DbpickWinName "sw off sc *"}
+		if { $current_orid < 0 } {
+			catch {send -async $DbpickWinName "fe"}
+			catch {send -async $DbpickWinName "rec"}
+		} else {
+			catch {send -async $DbpickWinName "ne"}
+		}
+		set starttrace 1
+		.vert.starttrace set $starttrace
+		if { $auto_display_picked } {
+			select_picked_stations
+		} else {
+			catch {send -async $DbpickWinName "cw $starttrace $span"}
+			if { $auto_waveforms_on } {
+				catch {send -async $DbpickWinName "sw on"}
+			}
+		}
+	}
+	
+	button .horiz.pe -text "Previous event" -bg lightcyan -font $Font -command {
+		global auto_waveforms_on
+		global auto_display_picked
+
+		catch {send -async $DbpickWinName "sw off sc *"}
+		if { $current_orid < 0 } {
+			catch {send -async $DbpickWinName "fe"}
+			catch {send -async $DbpickWinName "rec"}
+		} else {
+			catch {send -async $DbpickWinName "pe"}
+		}
+		set starttrace 1
+		.vert.starttrace set $starttrace
+		if { $auto_display_picked } {
+			select_picked_stations
+		} else {
+			catch {send -async $DbpickWinName "cw $starttrace $span"}
+			if { $auto_waveforms_on } {
+				catch {send -async $DbpickWinName "sw on"}
+			}
+		}
+	}
+	
+	button .horiz.nw -text "Next waveform" -bg lightblue -font $Font -command {
+		catch {send -async $DbpickWinName "nw"}
+	}
+	
+	button .horiz.pw -text "Previous waveform" -bg lightblue -font $Font -command {
+		catch {send -async $DbpickWinName "pw"}
+	}
+	
+	button .horiz.paloff -text "Turn off P align" -bg mediumpurple1 \
+		-font $Font \
+		-command {
+		catch {send -async $DbpickWinName "pal off"}
+	}
+	
+	button .opt.inc.swoff -text "Turn off waveforms" -bg yellow -font $Font -command {
+		catch {send -async $DbpickWinName "sw off"}
+	}
+	
+	button .opt.inc.swon -text "Turn on waveforms" -bg yellow -font $Font -command {
+		catch {send -async $DbpickWinName "sw on"}
+	}
+	
+	button .opt.inc.spbasic -text "Show predicted arrivals" -bg yellow \
+		-font $Font \
+		-command {
+		catch {send -async $DbpickWinName "sp basic"}
+	}
+	
+	button .opt.inc.spoff -text "Hide predicted arrivals" -bg yellow -font $Font \
+	-command {
+		catch {send -async $DbpickWinName "sp off"}
+	}
+
+	button .opt.inc.phP -text "Set Default phase P" -bg yellow -font $Font \
+	-command {
+		catch {send -async $DbpickWinName "ph P"}
+	}
+
+	button .opt.inc.phS -text "Set Default phase S" -bg yellow -font $Font \
+	-command {
+		catch {send -async $DbpickWinName "ph S"}
+	}
+
+	MyLblEntry .opt.save.db -label "Save to db:" -textvariable Savedb 
+	menubutton .opt.save.format -text Format -relief raised -menu .opt.save.format.m
+	menu .opt.save.format.m -tearoff 0
+	label .opt.save.lformat -textvariable Save_format
+
+	foreach f [list as aa ah c2 c4 ca g2 i2 i3 i4 s2 s3 s4 sd t4 u4 sc] {
+		.opt.save.format.m add command -label $f -command "set Save_format $f"
+	}
+
+	button .opt.save.save -text "Save waveforms" -bg honeydew -font $Font -command save_waveforms
+
+	button .opt.cust.spgram -text "Spectrogram" -bg beige -font $Font \
+				-command exec_spgram
+	
+	menubutton .vert.select.sta -text Station -relief raised -menu .vert.select.sta.m
+	menu .vert.select.sta.m -tearoff 1
+	foreach sect [lsort [array names Sects]] {
+		.vert.select.sta.m add cascade -label $sect \
+			-menu .vert.select.sta.m.sect$sect
+		menu .vert.select.sta.m.sect$sect
+		foreach sta [lsort $Sects($sect)] {
+			.vert.select.sta.m.sect$sect add command -label $sta -command "picksta $sta"
+		}
+	}
+
+	if { $Network_present > 0 } {
+
+		menubutton .vert.select.arrays -text Array -relief raised -menu .vert.select.arrays.m
+		menu .vert.select.arrays.m
+		foreach array [lsort $Arrays] {
+			.vert.select.arrays.m add command -label $array -command "picknet $array"
+		}
+
+		menubutton .vert.select.process -text "Processing Group" -relief raised -menu .vert.select.process.m
+		menu .vert.select.process.m
+		foreach processgrp [lsort $ProcessGroups] {
+			.vert.select.process.m add command -label $processgrp -command "picknet $processgrp"
+		}
+
+		menubutton .vert.select.volcanoes -text Volcano -relief raised -menu .vert.select.volcanoes.m
+		menu .vert.select.volcanoes.m
+		foreach volcano [lsort $Volcanoes] {
+			.vert.select.volcanoes.m add command -label $volcano -command "picknet $volcano"
+		}
+
+		menubutton .vert.select.circuits -text Circuits -relief raised -menu .vert.select.circuits.m
+		menu .vert.select.circuits.m
+		foreach circuit [lsort $Circuits] {
+			.vert.select.circuits.m add command -label $circuit -command "picknet $circuit"
+		}
+
+		menubutton .vert.select.namespaces -text "Namespace Network" -relief raised -menu .vert.select.namespaces.m
+		menu .vert.select.namespaces.m
+		foreach namespace [lsort $NamespaceNets] {
+			.vert.select.namespaces.m add command -label $namespace -command "picknet $namespace"
+		}
+
+
+	} else {
+		menubutton .vert.select.net -text "Net" -relief raised -menu .vert.select.net.m
+		menu .vert.select.net.m
+		foreach net [lsort [array names Nets]] {
+			.vert.select.net.m add command -label $net -command "picknet $net"
+		}
+	}
+	
+	checkbutton .opt.opt.ssfocus -variable station_distance_sort \
+		-text "Show station with nearby stations"
+		
+	checkbutton .opt.opt.autodspkd -variable auto_display_picked \
+		-text "Automatically display picked traces"
+
+	checkbutton .opt.opt.autoswon -variable auto_waveforms_on \
+		-text "Automatically turn on waveforms"
+
+	pack .ts -side bottom -fill x
+	pack .vert -side left -fill y -padx 10
+	pack .opt -side right -fill x -fill y -pady 10
+	pack .opt.inc -side top -fill x 
+	pack .opt.save -side top -fill x
+	pack .opt.opt -side bottom -fill x 
+	pack .opt.cust -side bottom -fill x
+	pack .control -side top -fill x -pady 10
+	pack .horiz -side top -fill x -pady 10
+	
+	pack .control.startdbpick -fill x
+	pack .control.killdbpick -fill x
+	pack .control.command -fill x
+	pack .control.waveforms -fill x
+	pack .control.db -fill x
+	pack .control.dbe -fill x 
+	pack .horiz.ne -fill x
+	pack .horiz.pe -fill x
+	pack .horiz.nw -fill x
+	pack .horiz.pw -fill x
+	pack .horiz.paloff -fill x
+	pack .vert.hop_down -fill x
+	pack .vert.hop_up -fill x
+	pack .vert.span -fill x
+	pack .vert.starttrace -fill x
+	pack .vert.redisplay -fill x
+	pack .vert.rec -fill x
+	pack .vert.unpicked_dist -fill x
+	pack .vert.picked -fill x
+	pack .vert.select -fill x
+	pack .vert.select.sta -side left 
+	if { $Network_present > 0 } {
+		pack .vert.select.arrays -side left
+		pack .vert.select.process -side left 
+		pack .vert.select.circuits -side left 
+		pack .vert.select.namespaces -side left 
+		pack .vert.select.volcanoes -side left 
+	} else {
+		pack .vert.select.net -side left 
+	}
+#	pack .control.o -fill x
+	pack .control.q -fill x
+	pack .opt.inc.swoff -fill x
+	pack .opt.inc.swon -fill x
+	pack .opt.inc.spbasic -fill x
+	pack .opt.inc.spoff -fill x
+	pack .opt.inc.phP -fill x
+	pack .opt.inc.phS -fill x
+	pack .opt.save.db -fill x
+	pack .opt.save.format -side left
+	pack .opt.save.lformat -side left
+	pack .opt.save.save -side left -fill x -expand yes
+	pack .opt.opt.ssfocus -side top -fill x
+	pack .opt.opt.autodspkd -side top -fill x
+	pack .opt.opt.autoswon -side top -fill x
+	pack .opt.cust.spgram -side top -fill x
+	
+	wm resizable . 0 0
+}
+
+proc sort_picked { a b } {
+	global arrtimes
+
+	if { $arrtimes("$a") < $arrtimes("$b") } {
+		return -1
+	} elseif {$arrtimes("$a") > $arrtimes("$b") } {
+		return 1
+	} else {
+		return 0
+	}
+
+}
+ 
+proc select_nearest_unpicked_stations {} {
+	global current_orid DbpickWinName lookups_dbname trial_dbname
+	global auto_waveforms_on starttrace span stalist
+
+	send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+	tkwait variable current_orid
+
+	if { $current_orid < 0 } {
+		echo "Display unpicked traces: No orid has been selected\n"
+		return
+	}
+
+	set db [dbopen $lookups_dbname r]
+	set db [dblookup $db 0 origin 0 0]
+	set db [dbsubset $db "orid == $current_orid"]
+
+	set norigins [dbquery $db dbRECORD_COUNT]
+	if { $norigins != 1 } {
+		echo "Orid $current_orid not found in $lookups_dbname."
+		if { $trial_dbname == "" } {
+			echo "Try specifying trial database on command line for operation with dbloc2."
+		}
+		dbclose $db
+		return
+	}
+	set origin_lat [dbgetv $db 0 0 lat]
+	set origin_lon [dbgetv $db 0 0 lon]
+
+	set dbassoc [dblookup $db 0 assoc 0 0]
+	set db [dbjoin $db $dbassoc]
+	set dbsite [dblookup $db 0 site 0 0]
+	set db [dbnojoin $dbsite $db sta]
+	set db [dbsubset $db "offdate == NULL"]
+
+	set db [dbsort $db "distance(site.lat,site.lon,$origin_lat,$origin_lon)"]
+	set nrecs [dbquery $db dbRECORD_COUNT]
+
+	set mystas {}
+	for {set record 0} {$record < $nrecs} {incr record} {
+		set teststa [dbgetv $db 0 $record sta]
+		if { [lsearch $stalist $teststa] != -1 } {
+			lappend mystas $teststa
+		}
+	}
+
+	send -async $DbpickWinName "sw off"
+	send -async $DbpickWinName "sc [join $mystas ,]:.*"
+	set starttrace 1
+	.vert.starttrace set $starttrace
+	catch {send -async $DbpickWinName "cw $starttrace $span"}
+	if { $auto_waveforms_on } { send -async $DbpickWinName "sw on" }
+}
+
+proc select_picked_stations {} {
+	global current_orid DbpickWinName lookups_dbname trial_dbname
+	global auto_waveforms_on
+	global arrtimes
+
+	send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+	tkwait variable current_orid
+
+	if { $current_orid < 0 } {
+		echo "Display picked traces: No orid has been selected\n"
+		return
+	}
+
+	set db [dbopen $lookups_dbname r]
+	set db [dblookup $db 0 origin 0 0]
+	set db [dbsubset $db "orid == $current_orid"]
+
+	set norigins [dbquery $db dbRECORD_COUNT]
+	if { $norigins != 1 } {
+		echo "Orid $current_orid not found in $lookups_dbname."
+		if { $trial_dbname == "" } {
+			echo "Try specifying trial database on command line for operation with dbloc2."
+		}
+		dbclose $db
+		return
+	}
+	set dbassoc [dblookup $db 0 assoc 0 0]
+	set dbarrival [dblookup $db 0 arrival 0 0]
+	set db [dbjoin $db $dbassoc]
+	set db [dbjoin $db $dbarrival]
+	set npicked [dbquery $db dbRECORD_COUNT]
+
+	set picked ""
+	set picked_stalist {}
+	set latest_picktime 0
+	if { [array exists arrtimes] } {unset arrtimes}
+	for {set i 0} {$i<$npicked} {incr i} {
+		set sta [dbgetv $db "" $i sta] 
+		set chan [dbgetv $db "" $i chan] 
+		set arrtime [dbgetv $db "" $i arrival.time]
+		if { $latest_picktime < $arrtime } { set latest_picktime $arrtime }
+		lappend picked_stalist "$sta:$chan"
+		if { [info exists arrtimes("$sta:$chan")] } {
+			if { $arrtime < $arrtimes("$sta:$chan") } {
+				set arrtimes("$sta:$chan") $arrtime
+			}
+		} else {
+			set arrtimes("$sta:$chan") $arrtime
+		}
+	}
+	dbclose $db
+
+	set picked_stalist [lsort -command sort_picked $picked_stalist]
+
+	set picked [join $picked_stalist ,]
+
+	set npicked [llength $picked_stalist]
+
+	set first_picktime $arrtimes("[lindex $picked_stalist 0]")
+	set span [expr $latest_picktime - $first_picktime]
+	set pad [min [max [expr $span * .2] 5] 30]  
+
+	set ts [expr $arrtimes("[lindex $picked_stalist 0]") - 30]
+	set tw [expr  $latest_picktime - $ts + 30]
+
+	catch {send -async $DbpickWinName "sw off sc $picked"}
+	# Use cw to force cancellation of any vertical zoom in dbpick:
+	catch {send -async $DbpickWinName "cw 1 $npicked"}
+	catch {send -async $DbpickWinName "ts $ts tw $tw"}
+	if { $auto_waveforms_on } {
+		catch {send -async $DbpickWinName "sw on"}
+	}
+}
+
+proc global_changed { variable index op } {
+	global dbname
+
+	switch $variable {
+	dbname  { reset_dbname }
+	}
+}
+
+proc init_globals {} {
+	#Initialize default settings
+	global starttrace
+	set starttrace 1
+
+	global span
+	set span 30
+
+	global Font
+	set Font -*-lucidatypewriter-bold-r-normal-*-*-120-*-*-*-*-*-*
+
+	#The following is necessary for calculations with epoch times:
+	global tcl_precision
+	set tcl_precision 17
+
+	global current_orid
+	set current_orid -1
+
+	global auto_waveforms_on 
+	set auto_waveforms_on 1
+
+	global auto_display_picked
+	set auto_display_picked 0
+	global dbname
+	trace variable dbname w global_changed
+
+	global station_distance_sort 
+	set station_distance_sort 0
+
+	global Save_format
+	set Save_format sd
+
+	global Savedb 
+	set Savedb ./mydb
+
+	global trial_dbname  
+	global lookups_dbname 
+	if { $trial_dbname == "" } {
+		set lookups_dbname $dbname
+	} else {
+		set lookups_dbname $trial_dbname
+	}
+}
+
+proc unique_dbpick_winfile_name {} {
+	global env
+
+	if { ! [file exists "$env(HOME)/.smartpick_dbpick"] } {
+		return "$env(HOME)/.smartpick_dbpick"
+	} else {
+		set i 2
+		while { [file exists "$env(HOME)/.smartpick_dbpick$i"] } {
+			incr i
+		}
+		return "$env(HOME)/.smartpick_dbpick$i"
+	}
+}
+
+proc parse_command_line {} {
+	global argc argv dbname trial_dbname
+	global DbpickWinName WinfileCommand NoWait
+	global ComoutCommand
+
+	set index [lsearch  $argv -appname]
+	if {$index != -1} {
+		set DbpickWinName [lindex $argv [expr $index + 1]]
+		set argv [lreplace $argv $index [expr $index + 1]]
+		incr argc -2
+	} else {
+		set DbpickWinName dbpick
+	}
+
+	set index [lsearch  $argv -comout]
+	if {$index != -1} {
+		set compipe [lindex $argv [expr $index + 1]]
+		set ComoutCommand "-comout $compipe"
+		set argv [lreplace $argv $index [expr $index + 1]]
+		incr argc -2
+	} else {
+		set ComoutCommand ""
+	}
+
+	set index [lsearch  $argv -winfile]
+	if {$index != -1} {
+		set WinfileCommand \
+		   "-winfile [lindex $argv [expr $index + 1]]"
+		set argv [lreplace $argv $index [expr $index + 1]]
+		incr argc -2
+	} else {
+		set WinfileCommand "-winfile [unique_dbpick_winfile_name]"
+	}
+
+	set NoWait 0
+
+	set index [lsearch  $argv -nowait]
+	if {$index != -1} {
+		set NoWait 1
+		set argv [lreplace $argv $index $index] 
+		incr argc -1 
+	}
+
+	set index [lsearch  $argv -nostarttalk]
+	if { $index != -1} {
+		set NoWait 1
+		set argv [lreplace $argv $index $index] 
+		incr argc -1 
+	} 
+
+	if { $argc == 1 } {
+		set dbname [lindex $argv 0]
+		set trial_dbname ""
+	} elseif { $argc == 2 } {
+		set dbname [lindex $argv 0]
+		set trial_dbname [lindex $argv 1]
+	} else {
+		Usage
+		exit 1
+	}
+
+}
+
+proc Usage {} {
+	global argv0
+	set cmd [exec basename $argv0]
+	set opts "\[\{-nowait|-nostarttalk\}\] \[-appname window_name\]"
+	append opts "$opts \[-winfile filename\] \[-comout named_pipe\]"
+	echo Usage: $cmd $opts dbname \[trial_dbname\]
+}
+
+if {$argc < 1} {
+	Usage
+	exit 1
+}
+
+parse_command_line
+
+init_globals 
+
+establish_menu
+
+init_windows
+
+if {$NoWait} {start_dbpick}

@@ -1,0 +1,60 @@
+.\" %W% %G%
+.TH SMARTPICK 1 "$Date$"
+.SH NAME
+smartpick \- Graphical driver for dbpick
+.SH SYNOPSIS
+.nf
+\fBsmartpick \fP[\-nowait] [\-appname \fIwindow_name\fP]
+                [\-winfile \fIfilename\fP]                 [\-comout
+                \fInamed_pipe\fP] \fIdbname\fP \fItrial_dbname\fP
+.fi
+.SH DESCRIPTION
+\fBsmartpick\fP is a graphical-user-interface driver for dbpick. It allows
+button-driven control of the most common prompt-based navigation
+commands to dbpick, plus several other common commands. A button to
+launch dbe on the database being viewed is also included. Smartpick will
+complain and die if no wfdisc table is present in the database. If a
+trial database name is specified, the trial database is used to look up
+association information for displaying picked traces. This is provided
+for compatibility with dbloc2. If the trial database is not specified, the
+default input database is used for looking up association information.
+
+smartpick expects a very particular and strict interpretation of the
+network.nettype field, and the network and affiliation tables, in order
+to build the full set of network menus.
+.SH OPTIONS
+.IP -nowait
+Bring up dbpick automatically upon startup
+.IP -nostarttalk
+Synomym for -nowait, done for ease of use with dbloc2
+.IP -appname window_name
+Argument \fIwindow_name\fP is passed to dbpick as the -appname option
+.IP -winfile winfile
+Argument is passed to dbpick as the -winfile option. If this option is
+not specified, the default name "smartpick_dbpick" is used, or a unique
+name is generated if that file already exists.
+.IP -comout named_pile
+Argument is passed to dbpick as the -comout option.
+.SH FILES
+.IP smartpick_dbpick
+default name of winfile created for dbpick, if one
+is not specified on the command line. If one already exists, a unique name
+will be generated. This file is removed upon normal exit.
+.SH "SEE ALSO"
+.nf
+dbpick(1), dbe(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This program was originally written for a specific application, 
+and has been slowly generalized. Many parts of the internals should 
+be rewritten, to remove prototype strategies, clean up the code, and 
+replaces hacks with correct engineering. However, the program has been
+popular enough and requested widely enough that it is being submitted on
+an 'as-is' basis.  
+
+Lingering winfiles from previous runs (e.g. smartpick_dbpick) would
+confuse some dbpick options in previous editions. Generation of
+unique winfile names hopefully fixed this. If \fBsmartpick\fP exits normally (i.e.
+with the Quit button), it will clean up the winfile made by dbpick.
+.SH AUTHOR
+Kent Lindquist
