@@ -210,6 +210,12 @@ encountered.
 The channels_select and channels_reject tables of pktchannelpipe_new
 are not passed through (there is no support for these in orb2ew.pf), 
 since the orb2ew select and reject expressions already cover that function. 
+
+The queue codes from the pktchannelpipe callback are currently ignored. 
+
+One should note the wait-time tradeoff involved in sorting out-of-order
+data. The queue should not be made too large or data will be delayed 
+proportionately when packets arrive out of order or are missing.
 .SH AUTHOR
 .nf
 Kent Lindquist
