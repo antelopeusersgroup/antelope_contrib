@@ -9,7 +9,7 @@ MAN3= pforbstat.3
 
 CLEAN=
 
-cflags=
+cflags= 
 fflags=
 ldflags=
 ldlibs=

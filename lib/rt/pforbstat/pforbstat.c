@@ -15,6 +15,8 @@
 
 #define BITS_PER_BYTE 8
 #define BYTES_PER_K 1024
+#define STREQ(a, b) (strcmp((a), (b)) == 0)
+#define STREQN(a, b, n) (strncmp((a), (b), (n)) == 0)
 
 static double
 compute_kbaud( Orbsrc *src )
@@ -226,7 +228,7 @@ orbclients2pf( double atime, Orbclient *clients, int nclients )
 }
 
 static void
-extract_orb2orb_orbargs( char *what, char *orb_from_arg, char *orb_to_arg )
+extract_orb2orb_orbargs( char *what, char *cmdline_fromorb, char *cmdline_toorb )
 {
 	char	*split_what;
 	Tbl	*orb2orb_args;
@@ -235,20 +237,20 @@ extract_orb2orb_orbargs( char *what, char *orb_from_arg, char *orb_to_arg )
 	orb2orb_args = split( split_what, ' ' );
 
 	shifttbl( orb2orb_args );
-	strcpy( orb_from_arg, shifttbl( orb2orb_args ) );
+	strcpy( cmdline_fromorb, shifttbl( orb2orb_args ) );
 
-	if( orb_from_arg[0] == '-' ) {
+	if( cmdline_fromorb[0] == '-' ) {
 
 		/* Old style orb2orb command-line; 
 		 * assume no start-time, period, 
 		 * or end-time are specified:
 		 */
-		strcpy( orb_to_arg, poptbl( orb2orb_args ) );
-		strcpy( orb_from_arg, poptbl( orb2orb_args ) );
+		strcpy( cmdline_toorb, poptbl( orb2orb_args ) );
+		strcpy( cmdline_fromorb, poptbl( orb2orb_args ) );
 		
 	} else {
 
-		strcpy( orb_to_arg, shifttbl( orb2orb_args ) );
+		strcpy( cmdline_toorb, shifttbl( orb2orb_args ) );
 	}
 
 	free( split_what );
@@ -266,7 +268,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 	Hook	*hook = 0;
 	static Pf *pfnames = 0;
 		
-	if( ! strcmp( orbname, ":" ) ) {
+	if( STREQ( orbname, ":" ) ) {
 		
 		strcpy( orb_address, "" );
 		strcpy( orbname_port, "" );
@@ -303,7 +305,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 		freetbl( orbname_parts, 0 );
 	}
 
-	if( ! strcmp( orbname_port, "" ) ) {
+	if( STREQ( orbname_port, "" ) ) {
 		
 		*orb_port = ORB_TCP_PORT;
 
@@ -333,6 +335,66 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 	return;
 }
 
+static void
+translate_nonroutable_address( char *serveraddress, char *result )
+{
+	FILE	*fp;
+	char	aline[STRSZ];
+	char	anaddress[STRSZ];
+	char	ipc[STRSZ];
+	struct in_addr addr;
+	Tbl	*parts;
+	int	rc;
+	static Hook *hook = 0;
+
+	if( STREQN( serveraddress, "192.168", 7 ) ) {
+
+		ip2name( inet_addr( serveraddress ), anaddress );
+
+		if( strmatches( anaddress, "[.]", &hook ) ) {
+			
+			strcpy( result, serveraddress );
+
+		} else if( ( fp = fopen( "/etc/resolv.conf", "r" ) ) == NULL ) {
+
+			complain( 1, "Couldn't open resolv.conf\n" );
+
+		}  else {
+
+			while( getaline( fp, aline, STRSZ ) ) {
+
+				if( ! STREQN( aline, "domain", 6 ) ) {
+
+					continue;
+				}
+				parts = split( aline, ' ' );
+
+				sprintf( anaddress, "%s.%s", 
+					 anaddress, poptbl( parts ) );
+
+				freetbl( parts, 0 );
+			}
+
+			fclose( fp );
+		}
+
+		rc = name2ip( anaddress, &addr, ipc );
+
+		if( rc == 0 ) {
+			strcpy( result, ipc );
+		} else {
+			complain( 1, "name2ip failed for %s\n", anaddress );
+			strcpy( result, serveraddress );
+		}
+
+	} else {
+
+		strcpy( result, serveraddress );
+	}
+
+	return;
+}
+
 static Pf *
 orbconnections2pf( Pf *pfanalyze )
 {
@@ -356,15 +418,15 @@ orbconnections2pf( Pf *pfanalyze )
 	regex_t	preg_findclient;
 	char	formal_name[STRSZ];
 	int	formal_count = 0;
-	char	myhostname[STRSZ];
-	char	myipc[STRSZ];
-	long	myip;
-	char	orb_from_arg[STRSZ];
-	char	orb_to_arg[STRSZ];
-	char	orbarg_from_ip[STRSZ];
-	char	orbarg_to_ip[STRSZ];
-	int	orbarg_from_port;
-	int	orbarg_to_port;
+	char	orbstat_machine_hostname[STRSZ];
+	char	orbstat_machine_ipc[STRSZ];
+	long	orbstat_machine_ip;
+	char	cmdline_fromorb[STRSZ];
+	char	cmdline_toorb[STRSZ];
+	char	cmdline_fromip[STRSZ];
+	char	cmdline_toip[STRSZ];
+	int	cmdline_fromport;
+	int	cmdline_toport;
 	double	latency_sec;
 	struct in_addr addr;
 
@@ -375,12 +437,28 @@ orbconnections2pf( Pf *pfanalyze )
 	atime = pfget_time( pfanalyze, "client_when" );
 	pfput_time( pf, "connections_when", atime );
 
-	my_ip( myhostname, myipc, &myip );
-	pfput_string( pf, "orbstat_machine", myipc );
+	my_ip( orbstat_machine_hostname, 
+	       orbstat_machine_ipc, 
+	       &orbstat_machine_ip );
 
 	pfget( pfanalyze, "server", (void **) &pfserver );
 	serveraddress = pfget_string( pfserver, "address" );
 	serverport = pfget_int( pfserver, "port" );
+
+	if( ! STREQ( orbstat_machine_ipc, serveraddress ) ) {
+		complain( 0, 
+		  "Turning off pforbstat connections mode: must run on a "
+		  "machine local to the orb\n" );
+		pffree( pf );
+		return 0;
+	}
+
+	translate_nonroutable_address( orbstat_machine_ipc, anaddress );
+	pfput_string( pf, "orbstat_machine", anaddress );
+
+	translate_nonroutable_address( serveraddress, anaddress );
+	pfput_string( pfserver, "address", anaddress );
+	serveraddress = pfget_string( pfserver, "address" );
 
 	pfget( pfanalyze, "clients", (void **) &pfclients );
 
@@ -400,66 +478,140 @@ orbconnections2pf( Pf *pfanalyze )
 			pfconnection = pfnew( PFARR );
 			pfput_string( pfconnection, "what", what );
 
-			extract_orb2orb_orbargs( what, orb_from_arg, orb_to_arg );
-			parse_orbname( orb_from_arg, orbarg_from_ip, &orbarg_from_port );
-			parse_orbname( orb_to_arg, orbarg_to_ip, &orbarg_to_port );
+			extract_orb2orb_orbargs( what, 
+						 cmdline_fromorb, 
+						 cmdline_toorb );
 
-			pfput_string( pfconnection, "orb_from_arg", orb_from_arg );
-			pfput_string( pfconnection, "orb_to_arg", orb_to_arg );
-			pfput_string( pfconnection, "orbarg_from_ip", orbarg_from_ip );
-			pfput_string( pfconnection, "orbarg_to_ip", orbarg_to_ip );
-			pfput_int( pfconnection, "orbarg_from_port", orbarg_from_port );
-			pfput_int( pfconnection, "orbarg_to_port", orbarg_to_port );
+			parse_orbname( cmdline_fromorb, 
+				       cmdline_fromip, 
+				       &cmdline_fromport );
 
+			parse_orbname( cmdline_toorb, 
+				       cmdline_toip, 
+				       &cmdline_toport );
+/* DEBUG:
+			pfput_string( pfconnection, 
+				      "cmdline_fromorb", cmdline_fromorb );
+
+			pfput_string( pfconnection, 
+				      "cmdline_toorb", cmdline_toorb );
+
+			pfput_string( pfconnection, 
+				      "cmdline_fromip", cmdline_fromip );
+
+			pfput_string( pfconnection, 
+				      "cmdline_toip", cmdline_toip );
+
+			pfput_int( pfconnection, 
+				   "cmdline_fromport", cmdline_fromport );
+
+			pfput_int( pfconnection, 
+				   "cmdline_toport", cmdline_toport );
+*/
 			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
 
-				latency_sec = pfget_double( pfclient, "latency_sec" );
-				pfput_double( pfconnection, "latency_sec", latency_sec );
+				latency_sec =
+					pfget_double( pfclient, "latency_sec" );
+
+				pfput_double( pfconnection, 
+					      "latency_sec", latency_sec );
 
 			} else {
 
-				pfput_double( pfconnection, "latency_sec", -9999999.99999 );
+				pfput_double( pfconnection, 
+					      "latency_sec", -9999999.99999 );
 			}
 
 			perm = pfget_string( pfclient, "perm" );
 
 			clientaddress = pfget_string( pfclient, "address" );
 
-			if( ! strcmp( perm, "r" ) ) {
+			if( STREQ( perm, "r" ) ) {
 
-				pfput_string( pfconnection, "fromaddress", serveraddress );
-				pfput_int( pfconnection, "fromport", serverport );
+				pfput_string( pfconnection, 
+					      "fromaddress", serveraddress );
 
-				if( ! strcmp( clientaddress, "127.0.0.1" ) ) {
+				pfput_int( pfconnection, 
+					   "fromport", serverport );
+
+				if( STREQ( clientaddress, "127.0.0.1" ) &&
+				    ! STREQ( cmdline_fromip, "" ) ) {
 					
-					name2ip( orbarg_from_ip, &addr, anaddress );
-					printf( "DEBUG: <%s> is <%s>\n", orbarg_from_ip, anaddress );
+					name2ip( cmdline_fromip, 
+						 &addr, anaddress );
+
+				} else if( STREQ( clientaddress, "127.0.0.1" ) 
+					   && STREQ( cmdline_fromip, "" ) ) {
+
+					/* SCAFFOLD not convinced this
+					   is correct: */
+					strcpy( anaddress, serveraddress );
+
+				} else if( STREQN( clientaddress, "192.168", 7 ) 
+					   && ! STREQ( cmdline_fromip, "" ) ) {
+
+					translate_nonroutable_address( 
+						clientaddress, anaddress );
+
+				} else if( STREQN( clientaddress, "192.168", 7 ) 
+					   && STREQ( cmdline_fromip, "" ) ) {
+
+					translate_nonroutable_address( 
+						clientaddress, anaddress );
 
 				} else {
 
 					strcpy( anaddress, clientaddress );
 				}
 
-				pfput_string( pfconnection, "toaddress", anaddress );
-				pfput_int( pfconnection, "toport", aport );
+				pfput_string( pfconnection, 
+					      "toaddress", anaddress );
+
+				pfput_int( pfconnection, 
+					      "toport", cmdline_toport );
 
 			} else { /* perm is "w" */
 
-				if( ! strcmp( clientaddress, "127.0.0.1" ) ) {
+				pfput_string( pfconnection, 
+					      "toaddress", serveraddress );
+
+				pfput_int( pfconnection, "toport", serverport );
+
+				if( STREQ( clientaddress, "127.0.0.1" ) &&
+				    ! STREQ( cmdline_fromip, "" ) ) {
 					
-					name2ip( orbarg_from_ip, &addr, anaddress );
-					printf( "DEBUG: <%s> is <%s>\n", orbarg_from_ip, anaddress );
+					name2ip( cmdline_fromip, 
+						 &addr, anaddress );
+
+				} else if( STREQ( clientaddress, "127.0.0.1" ) 
+					   && STREQ( cmdline_fromip, "" ) ) {
+
+					/* SCAFFOLD not convinced this
+					   is correct: */
+					strcpy( anaddress, serveraddress );
+
+				} else if( STREQN( clientaddress, "192.168", 7 ) 
+					   && ! STREQ( cmdline_fromip, "" ) ) {
+
+					translate_nonroutable_address( 
+						clientaddress, anaddress );
+
+				} else if( STREQN( clientaddress, "192.168", 7 ) 
+					   && STREQ( cmdline_fromip, "" ) ) {
+
+					translate_nonroutable_address( 
+						clientaddress, anaddress );
 
 				} else {
 
 					strcpy( anaddress, clientaddress );
 				}
 
-				pfput_string( pfconnection, "fromaddress", anaddress );
-				pfput_int( pfconnection, "fromport", orbarg_from_port );
+				pfput_string( pfconnection, 
+					      "fromaddress", anaddress );
 
-				pfput_string( pfconnection, "toaddress", serveraddress );
-				pfput_int( pfconnection, "toport", serverport );
+				pfput_int( pfconnection, 
+					   "fromport", cmdline_fromport );
 			}
 
 			sprintf( formal_name, "client%d", ++formal_count );
