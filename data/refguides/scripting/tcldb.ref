@@ -209,24 +209,6 @@ elog_mark
 elog_flush deliver first
     get rid of messages after #first in the error log, printing them if deliver is a boolean true
 
-private eval_response resphandle freq_in_hz
-    evaluate a response object at a given frequency
-
-private free_response resphandle
-    free resources for a response object
-
-private get_response resphandle {nstages | stage_types | paz stageno}
-    get information about a response object
-
-private peterson {low|high} frequency rsptype
-    compute Peterson low/high noise model
-
-private put_response resphandle stageno param_list
-    put values into a response object
-
-private read_response filename
-    read a response object
-
 <subsection Parameter Files>
 pfget pf name
     get the value for the specified name from the specified parameter file
@@ -263,8 +245,26 @@ dbdist lat1 lon1 lat2 lon2
 dblatlon lat lon delta azimuth
     return the latitude and longitude of the point at delta degrees in the direction azimuth from lat, lon
 
+peterson {low|high} frequency rsptype
+    return Peterson noise model values
+
 sphcar lat lon
     convert from latitude, longitude to unit vector x, y, z
+
+read_response filename
+    reads a CSS3.0 instrument response file and returns a handle
+
+free_response resphandle
+    frees the resources associated with a CSS3.0 instrument response object
+
+eval_response resphandle freq_in_hz
+    returns the complex value of an instrument response object at a single frequency
+
+get_response resphandle {nstages | stage_types | paz stageno}
+    returns various parameters from an instrument response object
+
+put_response resphandle stageno param_list
+    puts a response stage into an instrument response object
 
 <subsection Time conversion>
 now
@@ -307,4 +307,7 @@ datafile envname file
 
 sig2str sig
     returns a string describing the signal #sig
+
+tkcolor {colorname|#rrggbb|rrggbb|hue:light:sat}
+    returns a legitimate tk color string 
 
