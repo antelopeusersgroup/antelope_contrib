@@ -19,7 +19,8 @@ DATA=	iceworm1.3 \
 	Mail1.2 \
 	issues1.0 \
 	Techcomp1.0 \
-	Acronyms1.2
+	Acronyms1.2 \
+	Specevents1.0
 
 include $(ANTELOPEMAKE)  	
 DIRS=

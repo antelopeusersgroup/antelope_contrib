@@ -1,0 +1,160 @@
+Schema Specevents1.0
+	Description ( "Schema for special events" )
+	Detail {
+		This schema describes special events such as Earthquakes, 
+		Storms, Landslides, and other Geophysical events of note 
+		that have or need to have stable web pages 
+		describing them.
+	}
+	Timedate lddate
+	;
+
+Attribute depth
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "depth >= 0.0 && depth < 1000.0" )
+	Units ( "Kilemeters" )
+	Description ( "estimated depth" )
+	Detail {
+		This attribute gives the depth of the event origin.
+	}
+	;
+
+Attribute dfile
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "data file" )
+	Detail {
+		This string gives the file part of a path name.
+	}
+	;
+
+Attribute dir
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "directory" )
+	Detail {
+		This string gives the directory part of a path name.
+	}
+	;
+
+Attribute evtype
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "Event type" )
+	Detail {
+		This attribute is the type of special event, e.g 
+		Earthquake, Hurricane, Tornado, Storm, Landslide, 
+		Lightning, etc. This string should be used in a 
+		standardized way to support automated applications
+	}
+	;
+
+Attribute lat
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lat >= -90.0 && lat <= 90.0" )
+	Units ( "Degrees" )
+	Description ( "estimated latitude" )
+	Detail {
+		This attribute is the geographic latitude.  Locations
+		north of the equator have positive latitudes.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "modification time of record" )
+	Detail {
+		This attribute lists the time of last modification of a record
+	}
+	;
+
+Attribute locname
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "location name" )
+	Detail {
+		This is the name of the geographic location of an event
+	}
+	;
+
+Attribute lon
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lon >= -180.0 && lon <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "estimated longitude" )
+	Detail {
+		This attribute is the geographic longitude in degrees.
+		Longitudes are measured positive east of the Greenwich
+		meridian.
+	}
+	;
+
+Attribute mag
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-999.0000" )
+	Description ( "estimated magnitude" )
+	Detail {
+		This attribute gives the magnitude of the event. 
+		The type is listed in the magtype field.
+	}
+	;
+
+Attribute magtype
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "magnitude type " )
+	Detail {
+		This attribute type of magnitude listed in the mag 
+		field, e.g ML, Ms, Mb, Mw etc.
+	}
+	;
+
+Attribute time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "epoch time" )
+	Detail {
+		This is the epoch time of the event
+	}
+	;
+
+Attribute url
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "URL for a page on the web" )
+	Detail {
+		This string gives the URL for a special-event page on the 
+		web.
+	}
+	;
+
+Relation specevent
+	Fields ( lat lon depth time evtype mag magtype locname dir dfile url lddate )
+	Primary ( lat lon time evtype )
+	Description ( "Web pages and vital statistics for special events" )
+	Detail {
+		This table describes special events such as Earthquakes, 
+		Storms, Landslides, and other Geophysical events of note 
+		that have or need to have stable web pages 
+		describing them.
+	}
+	;
+
