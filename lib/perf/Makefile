@@ -1,5 +1,5 @@
 LIB=libperf.a
-INCLUDE=perf.h
+INCLUDE=perf.h f2c.h
 
 include $(ANTELOPEMAKE)
 DIRS=
