@@ -10,7 +10,6 @@ Written:  Sept-Oct. 1996
 #include <math.h>
 #include <stdlib.h>
 #include <sunmath.h>
-#include <ieeefp.h>
 #include "stock.h"
 #include "coords.h"
 #include "arrays.h"
