@@ -4,7 +4,7 @@ INCLUDE=metadata.h seispp.h dmatrix.h ray1d.h vmodel.h
 MAN3=metadata.3 dmatrix.3 GCLrays.3
 
 cflags=-g
-ldlibs= -L/opt/SUNWspro/lib $(DBLIBS) -lperf
+ldlibs= -L/opt/SUNWspro/lib $(DBLIBS) -lpfstream -lbrttutil -ltrvltm  -lperf -lm 
 
 include $(ANTELOPEMAKE)  	
 #DLD=CC -G -Kpic
@@ -14,7 +14,7 @@ include $(ANTELOPEMAKE)
 
 OBJS=create_destroy.o dmatrix.o gaps.o \
 mdlist.o metadata.o mute.o operators.o pfstream_interface.o \
-raytrace.o rotate_procedures.o rotation.o statics.o ttime.o vmod1d.o
+raytrace.o readwrite.o rotate_procedures.o rotation.o statics.o ttime.o vmod1d.o
 $(LIB) : $(OBJS)
 	$(RM) $@
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)

@@ -1,12 +1,12 @@
 #ifndef _SEISPP_H_
 #define _SEISPP_H_
+extern bool SEISPP_verbose;
 #include <vector>
 #include <set>
 #include "db.h"
 #include "metadata.h"
 #include "pf.h"
 #include "pfstream.h"
-extern bool SEISPP_verbose;
 
 // This is used to define gaps and/or time variable weights
 // The later is not implemented, but we 

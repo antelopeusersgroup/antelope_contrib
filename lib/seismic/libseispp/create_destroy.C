@@ -165,6 +165,10 @@ Three_Component_Seismogram::Three_Component_Seismogram
 // Ensemble constructors.  Both just create blank trace or 3c trace objects
 // and push them into a vector container.
 //
+Time_Series_Ensemble::Time_Series_Ensemble()
+{
+	mdlist=newtbl(0);
+}
 Time_Series_Ensemble::Time_Series_Ensemble(int nensemble, int nsamples)
 {
 	for(int i=0; i<nensemble; ++i)
@@ -172,6 +176,11 @@ Time_Series_Ensemble::Time_Series_Ensemble(int nensemble, int nsamples)
 		Time_Series *ts = new Time_Series(nsamples);
 		tse.push_back(*ts);
 	}
+	mdlist=newtbl(0);
+}
+Three_Component_Ensemble::Three_Component_Ensemble()
+{
+	mdlist=newtbl(0);
 }
 Three_Component_Ensemble::Three_Component_Ensemble(int nstations, int nsamples)
 {
@@ -181,4 +190,5 @@ Three_Component_Ensemble::Three_Component_Ensemble(int nstations, int nsamples)
 			= new Three_Component_Seismogram(nsamples);
 		tcse.push_back(*tcs);
 	}
+	mdlist=newtbl(0);
 }

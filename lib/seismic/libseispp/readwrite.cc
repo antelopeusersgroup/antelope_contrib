@@ -12,8 +12,8 @@ long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_e
 	long int foff;
 	fname = dir + "/" + dfile;
 	try {
-		foff = vector_fwrite(x,fname);
-	} catch ( seispp_error err) throw err;
+		foff = vector_fwrite(x,n,fname);
+	} catch ( seispp_error err) { throw err;};
 	
 	return(foff);
 }
@@ -29,7 +29,6 @@ an assumption that the caller is saving foff to a database table like wfdisc.
 */
 long int vector_fwrite(double *x,int n, string fname) throw(seispp_error)
 {
-	string fname;
 	FILE *fp;
 	long int foff;
 
@@ -37,7 +36,7 @@ long int vector_fwrite(double *x,int n, string fname) throw(seispp_error)
 		throw seispp_error("Open failed on file "+fname);
 	fseek(fp,0L,2);
 	foff = ftell(fp);
-	if( (fwrite(x,sizeof(double),n,fp)!=n)
+	if( fwrite(x,sizeof(double),n,fp)!=n) 
 	{
 		fclose(fp);
 		throw seispp_error("fwrite error to file "+fname);
