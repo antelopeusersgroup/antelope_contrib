@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command dbadd
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description add a record to a table
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description add a null record to a table
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description add attributes and/or relations to a schema
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description copy records from one table to another
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Removing and deleting rows
 		description delete rows from database tables
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Removing and deleting rows
 		description mark rows for deletion (set all fields to NULL)
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Removing and deleting rows
 		description remove null rows from database
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Removing and deleting rows
 		description completely eliminate every table in a database
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Removing and deleting rows
 		description truncate a database table to specified number of records
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description compile a database expression
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description Evaluate a database expression 
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description Free a database expression
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description Compile and evaluate a database expression
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description compose a filename from a database record
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Deriving information
 		description compose a filename from a database record
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description free space taken by a database view
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Opening a database
 		description Close a database
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description get ascii tables, records, or fields from database
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description put ascii tables, records, or fields into database
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description lookup calib, calper, and segtype from a dynamic database
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description extract range of record numbers from database pointer
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description read values from fields in a database table
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description write values to fields in a database table
 		private 0
 		deprecated 0
@@ -259,7 +259,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description write values to a new row in a database table
 		private 0
 		deprecated 0
@@ -270,7 +270,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description group a sorted table
 		private 0
 		deprecated 0
@@ -281,7 +281,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description returns database indices matching join criteria
 		private 0
 		deprecated 0
@@ -292,7 +292,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description Retrieve a database index
 		private 0
 		deprecated 0
@@ -303,7 +303,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description Force your copy of database indices to be updated
 		private 0
 		deprecated 0
@@ -314,7 +314,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description Convert an index record number into a table record number
 		private 0
 		deprecated 0
@@ -325,7 +325,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description returns an invalid database pointer
 		private 0
 		deprecated 0
@@ -336,7 +336,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description create a natural join of two database tables
 		private 0
 		deprecated 0
@@ -347,7 +347,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description Create a theta-join of two database tables
 		private 0
 		deprecated 0
@@ -358,7 +358,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description convert Tbl list of records to subset
 		private 0
 		deprecated 0
@@ -369,7 +369,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Opening a database
 		description lookup indexes from ascii names
 		private 0
 		deprecated 0
@@ -380,7 +380,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description find matching records in second table
 		private 0
 		deprecated 0
@@ -391,7 +391,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description generate a unique id from the lastid table
 		private 0
 		deprecated 0
@@ -402,7 +402,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description return records of db1 which do not join with db2
 		private 0
 		deprecated 0
@@ -413,7 +413,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Opening a database
 		description open the specified database
 		private 0
 		deprecated 0
@@ -424,7 +424,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Opening a database
 		description open the specified database or table pathname
 		private 0
 		deprecated 0
@@ -435,7 +435,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Opening a database
 		description open the specified database, table pathname, or table
 		private 0
 		deprecated 0
@@ -446,7 +446,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description construct a view as a series of standard operations
 		private 0
 		deprecated 0
@@ -457,7 +457,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description get ancillary information about a database
 		private 0
 		deprecated 0
@@ -468,7 +468,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description add a remark to CSS tables
 		private 0
 		deprecated 0
@@ -479,7 +479,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description get a remark from CSS tables
 		private 0
 		deprecated 0
@@ -490,7 +490,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description write a database view to a file
 		private 0
 		deprecated 0
@@ -501,7 +501,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description read a database view from a file
 		private 0
 		deprecated 0
@@ -512,7 +512,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description save a database view
 		private 0
 		deprecated 0
@@ -523,7 +523,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Adding and retrieving values
 		description print selected values from a view
 		private 0
 		deprecated 0
@@ -534,7 +534,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description set certain parameters in the database library
 		private 0
 		deprecated 0
@@ -545,7 +545,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description remove a table from a joined view
 		private 0
 		deprecated 0
@@ -556,7 +556,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description create a sorted view
 		private 0
 		deprecated 0
@@ -567,7 +567,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Forming views
 		description create a subset view
 		private 0
 		deprecated 0
@@ -578,7 +578,7 @@ Entries &Tbl{
 		return Tbl *
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Managing Ancillary Information
 		description return a list of tables which use a field
 		private 0
 		deprecated 0
@@ -589,7 +589,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description create new tables from a joined table
 		private 0
 		deprecated 0
@@ -600,7 +600,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Database Operations
+		section Database Operations:Manipulating and Saving Views
 		description return lists of constituent records of views
 		private 0
 		deprecated 0

@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command suffix2pkttype
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return PacketType *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description find packet type in list
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return PacketType *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description find packet type in list
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description create orb srcname
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description tear apart orb srcname
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description separate orb packet into Packet structure
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description create orb packet from Packet structure
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description display an orb packet for debugging purposes
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return Packet *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description Create a new, empty, initialized Packet structure
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description reset all parameters in a Packet structure
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description free memory associated with a Packet structure
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return PktChannel *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description Create a new, empty, initialized PktChannel structure
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description reset all parameters in a PktChannel structure
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Packets
 		description free memory associated with a PktChannel structure
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -259,7 +259,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description SEED reading/writing aid
 		private 0
 		deprecated 0
@@ -270,7 +270,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Steim Compression
 		description Steim-compress seismic data
 		private 0
 		deprecated 0
@@ -281,7 +281,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Steim Compression
 		description Steim-uncompress seismic data
 		private 0
 		deprecated 0
@@ -292,7 +292,7 @@ Entries &Tbl{
 		return void *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Steim Compression
 		description Free a Steim data structure
 		private 0
 		deprecated 0
@@ -303,7 +303,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Reftek
 		description uncompress data from modified Reftek dataloggers
 		private 0
 		deprecated 0
@@ -314,7 +314,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Reftek
 		description compress data as in modified Reftek dataloggers
 		private 0
 		deprecated 0
@@ -325,7 +325,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Steim Compression
 		description print out Steim compressed data in detail
 		private 0
 		deprecated 0
@@ -358,7 +358,7 @@ Entries &Tbl{
 		return Steim *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Steim Compression
 		description allocate and initialize a Steim structure
 		private 0
 		deprecated 0
@@ -369,7 +369,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:SEED
 		description attempt to read a complete SEED record from miniseed volume
 		private 0
 		deprecated 0
@@ -380,7 +380,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Formatting
 		description compute gse checksum for AutoDRM
 		private 0
 		deprecated 0
@@ -391,7 +391,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Formatting
 		description data compression using the Canadian Compression Scheme
 		private 0
 		deprecated 0
@@ -402,7 +402,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Formatting
 		description data uncompression using the Canadian Compression Scheme
 		private 0
 		deprecated 0
@@ -413,7 +413,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Formatting
 		description compress GSE AutoDRM CM6 format
 		private 0
 		deprecated 0
@@ -424,7 +424,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Formatting
 		description uncompress GSE AutoDRM CM6 format
 		private 0
 		deprecated 0
@@ -435,7 +435,7 @@ Entries &Tbl{
 		return Chantracebuf *
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description create a new channel trace buffer object
 		private 0
 		deprecated 0
@@ -446,7 +446,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description free a channel trace buffer object
 		private 0
 		deprecated 0
@@ -457,7 +457,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description add new data packets to trace-buffer object
 		private 0
 		deprecated 0
@@ -468,7 +468,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description apply a filter to a trace-buffer object
 		private 0
 		deprecated 0
@@ -479,7 +479,7 @@ Entries &Tbl{
 		return Chantraceproc
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description create a new channel trace process object
 		private 0
 		deprecated 0
@@ -490,7 +490,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description free a channel trace process object
 		private 0
 		deprecated 0
@@ -501,7 +501,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description specify a channel to be processed by a process object
 		private 0
 		deprecated 0
@@ -512,7 +512,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Packet and Waveform Handling
+		section Packet and Waveform Handling:Channel Trace Buffers
 		description process data with a channel trace process object
 		private 0
 		deprecated 0

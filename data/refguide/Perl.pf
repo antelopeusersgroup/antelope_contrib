@@ -1,4 +1,4 @@
-base_section Perl
+base_section Perl Interface
 Entries	&Tbl{
     &Arr{
         args	database, permissions

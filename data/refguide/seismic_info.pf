@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command grnumber
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Flinn-Engdahl Regions
 		description Return the Flinn-Engdahl geographic-region number
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Flinn-Engdahl Regions
 		description Return the Flinn-Engdahl seismic-region number
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Flinn-Engdahl Regions
 		description Return the name of a Flinn-Engdahl geographic region
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Flinn-Engdahl Regions
 		description Return the name of a Flinn-Engdahl seismic region
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description map an autodrm net and station code to a CSS3.0 sta code
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description map a SEED channel and loc code into a CSS3.0 chan code
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description map an autodrm channel and aux code into a CSS3.0 chan code
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description map a SEED net and station code into a CSS3.0 sta code
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description return default autodrm network
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description return default seed network
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description return default aux code
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Station Naming
 		description return default loc code
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Return the first P arrival time
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Return the first S arrival time
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Return the first arrival time for the specified phase
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Return all calculated phases
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Generic interface for computing travel-times
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description Generic interface for computing slowness vectors
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description tt interface to tau-p travel time library
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description returns the slowness at the first P arrival
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description returns the slowness for the first S arrival
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description returns the slowness for a specified phase
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Seismic Information
+		section Seismic Information:Travel Times
 		description returns slowness for all the calculated phases
 		private 0
 		deprecated 0

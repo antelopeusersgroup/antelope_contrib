@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command newtbl

@@ -1,4 +1,4 @@
-base_section Command Line
+base_section Command Line Interface
 Entries	&Tbl{
     &Arr{
         args	[ -f configfile ] [ paths... ]

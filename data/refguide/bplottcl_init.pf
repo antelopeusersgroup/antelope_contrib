@@ -1,4 +1,4 @@
-base_section Tcl/Tk
+base_section Tcl/Tk Interface
 Entries &Tbl{
 	&Arr{
 		command create_vector

@@ -26,7 +26,7 @@ Headers &Arr{
 	%Z   timezone code
 	%z   timezone code
 }
-C &Literal{
+"C Interface" &Literal{
 	#include "db.h"
 	typedef struct Dbptr
 	{
@@ -36,7 +36,11 @@ C &Literal{
 			record;
 	} Dbptr;
 }
-"Database codes" &Literal{
+"Fortran Interface" &Literal{
+	#include "db.i"
+}
+
+"Database Constants" &Literal{
 	dbINVALID
 	dbCOUNT
 	dbDATABASE_COUNT

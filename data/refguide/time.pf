@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command epoch
@@ -183,7 +183,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		section Time conversion
-		description pars BCD timestamp into dat-time structure
+		description parse BCD timestamp into date-time structure
 		private 0
 		deprecated 0
 	}

@@ -1,4 +1,4 @@
-base_section Fortran
+base_section Fortran Interface
 Entries &Tbl{
 	&Arr{
 		command pfread

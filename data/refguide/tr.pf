@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command tr2ext
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description convert from floats to external representation
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description convert from ints to external representation
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description convert from trace table to gpl trace list
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description apply filter routine to each waveform segment
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description multiply waveform data in trace object by calib value
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description find sample range corresponding to time range
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Administrative Utilities
 		description get data code from two-character datatype
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Administrative Utilities
 		description get two-character datatype from datacode
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return Wftype *
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Administrative Utilities
 		description Get waveform-type structure for specified type
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return Wftype *
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Administrative Utilities
 		description Return the i'th struct in trdefaults.pf
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description subtract mean (DC) value from trace 
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description subtract mean (DC) value from trace segment
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description compute derivative of trace data
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Handling
 		description close a trace database and free resources
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description display a trace object
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Handling
 		description free up memory and clear trace-object tables
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description fills a data segment with th 'standard' "t4" gap value
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description replace marked gaps with t4 gap value
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description replace t4 gap value with fill value for datatype
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description read samples from a SEED volume
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description read trace data from file into memory
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description add error message to log for trgetwf errors
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description splice together a specific set of traces from a trace table
 		private 0
 		deprecated 0
@@ -259,7 +259,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description integrate waveform segments
 		private 0
 		deprecated 0
@@ -270,7 +270,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description load waveform data from CSS database into trace table
 		private 0
 		deprecated 0
@@ -281,7 +281,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description load waveform data from sorted CSS database into trace-table
 		private 0
 		deprecated 0
@@ -292,7 +292,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Handling
 		description create a new trace database
 		private 0
 		deprecated 0
@@ -303,7 +303,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description save waveform data
 		private 0
 		deprecated 0
@@ -314,7 +314,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description rotate three-component data to standard orientation
 		private 0
 		deprecated 0
@@ -325,7 +325,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description rotate three-component data
 		private 0
 		deprecated 0
@@ -336,7 +336,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description save trace-object waveform data to new database
 		private 0
 		deprecated 0
@@ -347,7 +347,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description generate test signal data in a trace table
 		private 0
 		deprecated 0
@@ -358,7 +358,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description generate test signal data in a trace table
 		private 0
 		deprecated 0
@@ -369,7 +369,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description splice together data segments
 		private 0
 		deprecated 0
@@ -380,7 +380,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Filters
 		description break up waveform records at marked bad data
 		private 0
 		deprecated 0
@@ -391,7 +391,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Handling
 		description truncate a tr database table
 		private 0
 		deprecated 0
@@ -402,7 +402,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description test for contiguousness of waveform segments
 		private 0
 		deprecated 0
@@ -413,7 +413,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description test for sample-rate match of waveform segments
 		private 0
 		deprecated 0
@@ -424,7 +424,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description test for sample-comb match of waveform segments
 		private 0
 		deprecated 0
@@ -435,8 +435,8 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Trace-object Routines
-		description returns a time plroperly aligned with a specific time and sample rate
+		section Trace-object Routines:Trace-object Utilities
+		description returns a time properly aligned with a specific time and sample rate
 		private 0
 		deprecated 0
 	}
@@ -446,7 +446,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description return a sample index given a time
 		private 0
 		deprecated 0
@@ -457,7 +457,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description return a sample time given a sample index
 		private 0
 		deprecated 0
@@ -468,7 +468,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description return samprate based on input parameters
 		private 0
 		deprecated 0
@@ -479,7 +479,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description return number of samples based on input parameters
 		private 0
 		deprecated 0
@@ -490,7 +490,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description return endtime based on input parameters
 		private 0
 		deprecated 0
@@ -501,7 +501,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Trace-object Utilities
 		description lookup chanid for a wfdisc record in the sensor or sitechan table
 		private 0
 		deprecated 0
@@ -512,7 +512,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description Create a new wfdisc record
 		private 0
 		deprecated 0
@@ -523,7 +523,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description Place specified data in wfdisc
 		private 0
 		deprecated 0
@@ -534,7 +534,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description attempts to write the specified data to disc
 		private 0
 		deprecated 0
@@ -545,7 +545,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description Create file header for waveform data
 		private 0
 		deprecated 0
@@ -556,7 +556,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Input/Output
 		description close a wfdisc record
 		private 0
 		deprecated 0
@@ -567,7 +567,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Trace-object Routines
+		section Trace-object Routines:Administrative Utilities
 		description generator of waveform file names
 		private 0
 		deprecated 0

@@ -1,9 +1,9 @@
-base_section Matlab
+base_section Matlab Interface
 Entries &Tbl{
 	&Arr{
 		command dbopen
 		args FILENAME, OPENTYPE
-		return EMPTY
+		return DBPTR
 		section Opening a database
 		description Open a Datascope Database
 		private 0
@@ -12,7 +12,7 @@ Entries &Tbl{
 	&Arr{
 		command dblookup
 		args DBPTR, DATABASE, TABLE, FIELD, RECORD
-		return EMPTY
+		return DBPTR
 		section Opening a database
 		description Aim a Datascope database pointer as specified 
 		private 0
@@ -21,7 +21,7 @@ Entries &Tbl{
 	&Arr{
 		command dblookup_table
 		args DBPTR, TABLE
-		return EMPTY
+		return DBPTR
 		section Opening a database
 		description Aim a Datascope database pointer at a specified table
 		private 0
@@ -30,7 +30,7 @@ Entries &Tbl{
 	&Arr{
 		command dbclose
 		args DBPTR
-		return EMPTY
+		return NONE
 		section Opening a database
 		description Close a Datascope database
 		private 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 	&Arr{
 		command dbadd
 		args DBPTR, RECORD 
-		return EMPTY
+		return RECORD_NUMBER
 		section Manipulating fields and records 
 		description Add a record to a Datascope database
 		private 0
@@ -48,7 +48,7 @@ Entries &Tbl{
 	&Arr{
 		command dbaddnull
 		args DBPTR
-		return EMPTY
+		return RECORD_NUMBER
 		section Manipulating fields and records 
 		description Add a null record to a Datascope database 
 		private 0
@@ -57,7 +57,7 @@ Entries &Tbl{
 	&Arr{
 		command dbaddv
 		args DBPTR, FIELD, VALUE [,FIELD, VALUE ... ]
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Add values to a Datascope database
 		private 0
@@ -66,7 +66,7 @@ Entries &Tbl{
 	&Arr{
 		command dbget
 		args DBPTR, ['dbSCRATCH']
-		return EMPTY
+		return RECORD
 		section Manipulating fields and records 
 		description Get a table, record, or field from a database
 		private 0
@@ -75,7 +75,7 @@ Entries &Tbl{
 	&Arr{
 		command dbgetv
 		args DBPTR, FIELD [,FIELD, ...]
-		return EMPTY
+		return [VALUE, VALUE, ...]
 		section Manipulating fields and records 
 		description Get the specified values from a Datascope database
 		private 0
@@ -84,7 +84,7 @@ Entries &Tbl{
 	&Arr{
 		command dbput
 		args DBPTR, VALUE
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Put the specified value into a Datascope database
 		private 0
@@ -93,7 +93,7 @@ Entries &Tbl{
 	&Arr{
 		command dbputv
 		args DBPTR, FIELD, VALUE [,FIELD, VALUE ... ]
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Put the specified values into a Datascope database
 		private 0
@@ -102,7 +102,7 @@ Entries &Tbl{
 	&Arr{
 		command db2struct
 		args DBPTR [, FIELD [, FIELD, ... ]]
-		return EMPTY
+		return S
 		section Manipulating fields and records 
 		description Convert a database view to a Matlab structure array
 		private 0
@@ -111,7 +111,7 @@ Entries &Tbl{
 	&Arr{
 		command dbmark
 		args DBPTR
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Set the specified Datascope database rows to null
 		private 0
@@ -120,7 +120,7 @@ Entries &Tbl{
 	&Arr{
 		command dbcrunch
 		args DBPTR
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Crunch out null rows in a Datascope database table
 		private 0
@@ -129,7 +129,7 @@ Entries &Tbl{
 	&Arr{
 		command dbdelete
 		args DBPTR
-		return EMPTY
+		return NONE
 		section Manipulating fields and records 
 		description Delete the specified record in a Datascope databas
 		private 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 	&Arr{
 		command dbinvalid
 		args NONE
-		return EMPTY
+		return DBPTR
 		section Manipulating fields and records 
 		description Create an invalid database pointer
 		private 0
@@ -147,7 +147,7 @@ Entries &Tbl{
 	&Arr{
 		command dbquery
 		args DBPTR, CODE
-		return EMPTY
+		return QUERY_RESULT
 		section Getting information about the database
 		description Query a Datascope database for various parameters
 		private 0
@@ -156,7 +156,7 @@ Entries &Tbl{
 	&Arr{
 		command dbjoin_keys
 		args DBPTR1, DBPTR2 **or** DBPTR, TABLE1, TABLE2
-		return EMPTY
+		return DBPTR
 		section Getting information about the database
 		description Show the inferred join keys between two database tables
 		private 0
@@ -165,7 +165,7 @@ Entries &Tbl{
 	&Arr{
 		command dbjoin
 		args DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer']
-		return EMPTY
+		return DBPTR
 		section Forming views
 		description Join the specified Datascope database tables
 		private 0
@@ -174,7 +174,7 @@ Entries &Tbl{
 	&Arr{
 		command dbsort
 		args DBPTR [,FIELD, FIELD,...]
-		return EMPTY
+		return DBPTR
 		section Forming views
 		description Sort the specified Datascope database table
 		private 0
@@ -183,7 +183,7 @@ Entries &Tbl{
 	&Arr{
 		command dbsubset
 		args DBPTR, EXPRESSION
-		return EMPTY
+		return DBPTR
 		section Forming views
 		description Subset a Datascope database table 
 		private 0
@@ -192,7 +192,7 @@ Entries &Tbl{
 	&Arr{
 		command dbtheta
 		args DBPTR1, DBPTR2 [, EXPRESSION] [, 'outer']
-		return EMPTY
+		return DBPTR
 		section Forming views
 		description Theta-join two Datascope database tables
 		private 0
@@ -201,7 +201,7 @@ Entries &Tbl{
 	&Arr{
 		command dbunjoin
 		args DBPTR, OUTPUT
-		return EMPTY
+		return NONE
 		section Forming views
 		description Unjoin the specified Datascope database view
 		private 0
@@ -210,7 +210,7 @@ Entries &Tbl{
 	&Arr{
 		command dbnojoin
 		args DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]]
-		return EMPTY
+		return DBPTR
 		section Forming views
 		description Find records which do not join
 		private 0
@@ -219,7 +219,7 @@ Entries &Tbl{
 	&Arr{
 		command dbeval
 		args DBPTR, EXPRESSION [,TYPE]
-		return EMPTY
+		return RESULT
 		section Evaluating expressions
 		description Evaluate an expression on a Datascope database
 		private 0
@@ -228,7 +228,7 @@ Entries &Tbl{
 	&Arr{
 		command dbadd_remark
 		args DBPTR, REMARK
-		return EMPTY
+		return NONE
 		section Special functions
 		description Add a remark to a datascope Database
 		private 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 	&Arr{
 		command dbget_remark
 		args DBPTR
-		return EMPTY
+		return REMARK
 		section Special functions
 		description Get a remark from a Datascope Database
 		private 0
@@ -246,7 +246,7 @@ Entries &Tbl{
 	&Arr{
 		command dbfind
 		args DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards']
-		return EMPTY
+		return IRECORD
 		section Special functions
 		description Locate a database row satisfying some condition 
 		private 0
@@ -255,7 +255,7 @@ Entries &Tbl{
 	&Arr{
 		command dbfilename
 		args DBPTR
-		return EMPTY
+		return [FILENAME STATUS]
 		section Special functions
 		description Compose a filename from a database record
 		private 0
@@ -264,7 +264,7 @@ Entries &Tbl{
 	&Arr{
 		command dbnextid
 		args DBPTR, IDNAME
-		return EMPTY
+		return ID
 		section Special functions
 		description Get the next integer id for id field from a database
 		private 0
@@ -273,7 +273,7 @@ Entries &Tbl{
 	&Arr{
 		command trload_css
 		args DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE]
-		return EMPTY
+		return TRPTR
 		section Handling waveform data
 		description Load waveform data from CSS database into trace object
 		private 0
@@ -282,7 +282,7 @@ Entries &Tbl{
 	&Arr{
 		command trload_cssgrp
 		args DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE]
-		return EMPTY
+		return TRPTR
 		section Handling waveform data
 		description Load waveform data from grouped CSS database into trace object
 		private 0
@@ -291,7 +291,7 @@ Entries &Tbl{
 	&Arr{
 		command trextract_data
 		args TRPTR
-		return EMPTY
+		return DATA
 		section Handling waveform data
 		description Read a copy of data from a trace object into a matrix
 		private 0
@@ -300,7 +300,7 @@ Entries &Tbl{
 	&Arr{
 		command trinsert_data
 		args TRPTR, DATA
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description Put data from a Matlab matrix into a trace-object
 		private 0
@@ -309,7 +309,7 @@ Entries &Tbl{
 	&Arr{
 		command trsplice
 		args TRPTR, TOLERANCE
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description Splice together data segments
 		private 0
@@ -318,7 +318,7 @@ Entries &Tbl{
 	&Arr{
 		command trgetwf
 		args DBPTR [, REQS, REQE]
-		return EMPTY
+		return [DATA, NSAMP, T0, T1]
 		section Handling waveform data
 		description Read trace data from database into matrix
 		private 0
@@ -327,7 +327,7 @@ Entries &Tbl{
 	&Arr{
 		command trputwf
 		args DBPTR, DATA
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description Save waveform data into a file
 		private 0
@@ -336,7 +336,7 @@ Entries &Tbl{
 	&Arr{
 		command trnew
 		args NONE
-		return EMPTY
+		return TRPTR
 		section Handling waveform data
 		description Create a new trace-object
 		private 0
@@ -345,7 +345,7 @@ Entries &Tbl{
 	&Arr{
 		command trsave_wf
 		args TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append']
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description Save trace-object waveform data to a new database
 		private 0
@@ -354,7 +354,7 @@ Entries &Tbl{
 	&Arr{
 		command trfree
 		args TRPTR
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description free memory for part of a trace object
 		private 0
@@ -363,7 +363,7 @@ Entries &Tbl{
 	&Arr{
 		command trdestroy
 		args TRPTR
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description free memory and trace object for trace object
 		private 0
@@ -372,7 +372,7 @@ Entries &Tbl{
 	&Arr{
 		command trapply_calib
 		args TRPTR
-		return EMPTY
+		return NONE
 		section Handling waveform data
 		description multiply trace-object waveform data by calib value
 		private 0
@@ -382,7 +382,7 @@ Entries &Tbl{
 	&Arr{
 		command tr_nsamp
 		args TIME, SAMPRATE, ENDTIME
-		return EMPTY
+		return N
 		section Handling waveform data
 		description Calculate number of samples from time, sample rate, and endtime
 		private 0
@@ -391,7 +391,7 @@ Entries &Tbl{
 	&Arr{
 		command tr_samprate
 		args TIME, NSAMP, ENDTIME
-		return EMPTY
+		return SAMPRATE
 		section Handling waveform data
 		description Calculate sample rate from time, endtime, and number of samples
 		private 0
@@ -400,7 +400,7 @@ Entries &Tbl{
 	&Arr{
 		command tr_endtime
 		args TIME, SAMPRATE, NSAMP
-		return EMPTY
+		return ENDTIME
 		section Handling waveform data
 		description Calculate endtime from time, sample rate, and number of samples
 		private 0
@@ -409,7 +409,7 @@ Entries &Tbl{
 	&Arr{
 		command tr_time2samp
 		args TIME0, SAMPRATE, TIME1
-		return EMPTY
+		return N_INDEXED_BY_1
 		section Handling waveform data
 		description Calculate sample index from times and sample rate
 		private 0
@@ -418,7 +418,7 @@ Entries &Tbl{
 	&Arr{
 		command tr_samp2time
 		args TIME0, SAMPRATE, N_INDEXED_BY_1
-		return EMPTY
+		return TIME1
 		section Handling waveform data
 		description Calculate sample time from times and sample index
 		private 0
@@ -427,7 +427,7 @@ Entries &Tbl{
 	&Arr{
 		command str2epoch
 		args TIMESTRING
-		return EMPTY
+		return EPOCH
 		section Time conversion
 		description Convert a string to epoch time
 		private 0
@@ -436,7 +436,7 @@ Entries &Tbl{
 	&Arr{
 		command epoch2str
 		args EPOCH, FORMAT
-		return EMPTY
+		return TIMESTRING
 		section Time conversion
 		description Convert epoch time to a string
 		private 0
@@ -445,7 +445,7 @@ Entries &Tbl{
 	&Arr{
 		command strdate
 		args EPOCH
-		return EMPTY
+		return STRDATE
 		section Time conversion
 		description Convert an epoch time to its corresponding date
 		private 0
@@ -454,7 +454,7 @@ Entries &Tbl{
 	&Arr{
 		command strtime
 		args EPOCH
-		return EMPTY
+		return STRTIME
 		section Time conversion
 		description Convert an epoch time to a string specification
 		private 0
@@ -463,7 +463,7 @@ Entries &Tbl{
 	&Arr{
 		command strydtime
 		args EPOCH
-		return EMPTY
+		return STRYDTIME
 		section Time conversion
 		description Convert an epoch time to a string date and time
 		private 0
@@ -472,7 +472,7 @@ Entries &Tbl{
 	&Arr{
 		command strtdelta
 		args EPOCH
-		return EMPTY
+		return STRTDELTA
 		section Time conversion
 		description Convert an epoch time difference to an elapsed time 
 		private 0
@@ -481,7 +481,7 @@ Entries &Tbl{
 	&Arr{
 		command yearday
 		args EPOCH
-		return EMPTY
+		return YEARDAY
 		section Time conversion
 		description Convert an epoch time to a yearday value
 		private 0
@@ -490,7 +490,7 @@ Entries &Tbl{
 	&Arr{
 		command clear_register
 		args [ 'print' ]
-		return EMPTY
+		return NONE
 		section Error handling
 		description Clear the Datascope error register
 		private 0
@@ -498,8 +498,8 @@ Entries &Tbl{
 	}
 	&Arr{
 		command dbpf
-		args <nothing> **or** PFNAME **or** PF, STRING
-		return EMPTY
+		args (nothing) **or** PFNAME **or** PF, STRING
+		return PF
 		section Parameter Files
 		description Dbpf (Parameter File) class constructor
 		private 0
@@ -509,7 +509,7 @@ Entries &Tbl{
 	&Arr{
 		command pfwrite
 		args DBPF, FILENAME
-		return EMPTY
+		return NONE
 		section Parameter Files
 		description Save a parameter-file object to a file
 		private 0
@@ -518,7 +518,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget_num
 		args DBPF, NAME
-		return EMPTY
+		return NUM
 		section Parameter Files
 		description Get a numeric value from a parameter-file object
 		private 0
@@ -527,7 +527,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget_string
 		args DBPF, NAME
-		return EMPTY
+		return STRING
 		section Parameter Files
 		description Get a string from a parameter-file object
 		private 0
@@ -536,7 +536,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget_boolean
 		args DBPF, NAME
-		return EMPTY
+		return BOOLEAN
 		section Parameter Files
 		description Get a boolean value from a parameter-file object
 		private 0
@@ -545,7 +545,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget_tbl
 		args DBPF, NAME [, 'recursive' ]
-		return EMPTY
+		return LIST
 		section Parameter Files
 		description Get an ordered list from a parameter-file object
 		private 0
@@ -554,7 +554,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget_arr
 		args DBPF, NAME [, 'recursive' ]
-		return EMPTY
+		return PF
 		section Parameter Files
 		description Get an associative array from a parameter-file object
 		private 0
@@ -563,7 +563,7 @@ Entries &Tbl{
 	&Arr{
 		command pfget
 		args DBPF, NAME [, 'recursive' ]
-		return EMPTY
+		return RESULT
 		section Parameter Files
 		description Get a generic parameter from a parameter-file object
 		private 0
@@ -572,7 +572,7 @@ Entries &Tbl{
 	&Arr{
 		command pfput_boolean
 		args DBPF, NAME, VALUE
-		return EMPTY
+		return NONE
 		section Parameter Files
 		description Put a boolean value into a parameter-file object
 		private 0
@@ -581,7 +581,7 @@ Entries &Tbl{
 	&Arr{
 		command pfput
 		args DBPF, NAME, VALUE
-		return EMPTY
+		return NONE
 		section Parameter Files
 		description Put a value into a parameter-file object
 		private 0
@@ -590,7 +590,7 @@ Entries &Tbl{
 	&Arr{
 		command pfresolve
 		args DBPF, NAME [, 'recursive' ]
-		return EMPTY
+		return RESULT
 		section Parameter Files
 		description Alternate interface to retrieve parameters
 		private 0
@@ -599,7 +599,7 @@ Entries &Tbl{
 	&Arr{
 		command pf2string
 		args DBPF
-		return EMPTY
+		return STRING
 		section Parameter Files
 		description Convert a parameter file object to a string
 		private 0
@@ -608,7 +608,7 @@ Entries &Tbl{
 	&Arr{
 		command pf2struct
 		args DBPF [, 'recursive' ]
-		return EMPTY
+		return STRUCT
 		section Parameter Files
 		description Convert a parameter file object to a Matlab struct
 		private 0
@@ -617,7 +617,7 @@ Entries &Tbl{
 	&Arr{
 		command pfkeys
 		args DBPF
-		return EMPTY
+		return KEYS
 		section Parameter Files
 		description Find the parameter names in a parameter-file object
 		private 0
@@ -626,7 +626,7 @@ Entries &Tbl{
 	&Arr{
 		command pftype
 		args DBPF
-		return EMPTY
+		return TYPESTRING
 		section Parameter Files
 		description Find the type of a parameter-file object
 		private 0
@@ -635,7 +635,7 @@ Entries &Tbl{
 	&Arr{
 		command pffiles
 		args PFNAME [, 'all' ]
-		return EMPTY
+		return FILENAMES
 		section Parameter Files
 		description List file names for parameter-file
 		private 0
@@ -644,7 +644,7 @@ Entries &Tbl{
 	&Arr{
 		command pfname
 		args DBPF
-		return EMPTY
+		return NAME
 		section Parameter Files
 		description Find the name of a top-level parameter-file object
 		private 0
@@ -653,7 +653,7 @@ Entries &Tbl{
 	&Arr{
 		command pfupdate
 		args DBPF
-		return EMPTY
+		return [PF, MODIFIED]
 		section Parameter Files
 		description Refresh a Dbpf object to reflect changes in the file
 		private 0
@@ -662,7 +662,7 @@ Entries &Tbl{
 	&Arr{
 		command pffree
 		args DBPF
-		return EMPTY
+		return NONE
 		section Parameter Files
 		description Dbpf elimination routine
 		private 0
@@ -671,7 +671,7 @@ Entries &Tbl{
 	&Arr{
 		command clear
 		args DBPF
-		return EMPTY
+		return NONE
 		section Parameter Files
 		description Dbpf elimination routine
 		private 0
@@ -680,7 +680,7 @@ Entries &Tbl{
 	&Arr{
 		command dbresponse
 		args FILE
-		return EMPTY
+		return R
 		section Instrument response routines
 		description Dbresponse class constructor
 		private 0
@@ -689,7 +689,7 @@ Entries &Tbl{
 	&Arr{
 		command eval_response
 		args DBRESPONSE, OMEGA
-		return EMPTY
+		return RESPONSE
 		section Instrument response routines
 		description Dbresponse evaluation routine
 		private 0
@@ -698,7 +698,7 @@ Entries &Tbl{
 	&Arr{
 		command free_response
 		args DBRESPONSE
-		return EMPTY
+		return R
 		section Instrument response routines
 		description Dbresponse elimination routine
 		private 0
@@ -707,7 +707,7 @@ Entries &Tbl{
 	&Arr{
 		command clear
 		args DBRESPONSE
-		return EMPTY
+		return NONE
 		section Instrument response routines
 		description Dbresponse elimination routine
 		private 0
@@ -716,7 +716,7 @@ Entries &Tbl{
 	&Arr{
 		command orbopen
 		args ORBNAME, OPENTYPE
-		return EMPTY
+		return ORBFD
 		section Real-time system connections
 		description Open a connection to an Antelope object-ring-buffer
 		private 0
@@ -725,7 +725,7 @@ Entries &Tbl{
 	&Arr{
 		command orbclose
 		args ORBFD
-		return EMPTY
+		return NONE
 		section Real-time system connections
 		description Close a connection to an Antelope object-ring-buffer
 		private 0
@@ -734,7 +734,7 @@ Entries &Tbl{
 	&Arr{
 		command orbping
 		args ORBFD
-		return EMPTY
+		return VERSION
 		section Real-time system connections
 		description Ask for the version number of an Antelope ORB server
 		private 0
@@ -743,7 +743,7 @@ Entries &Tbl{
 	&Arr{
 		command orbget
 		args ORBFD [, CODE **or** PKTID]
-		return EMPTY
+		return [RESULT, TIME, SRCNAME, PKTID, TYPE]
 		section Real-time system connections
 		description Get packets from an Antelope ORB connection
 		private 0
@@ -752,7 +752,7 @@ Entries &Tbl{
 	&Arr{
 		command orbreap
 		args ORBFD [, 'nodelay']
-		return EMPTY
+		return [RESULT, TIME, SRCNAME, PKTID, TYPE]
 		section Real-time system connections
 		description Get successive packets from an Antelope ORB connection
 		private 0
@@ -761,7 +761,7 @@ Entries &Tbl{
 	&Arr{
 		command orbselect
 		args ORBFD, REGEX
-		return EMPTY
+		return NSOURCES
 		section Real-time system connections
 		description Select sources on an Antelope ORB read connection
 		private 0
@@ -770,7 +770,7 @@ Entries &Tbl{
 	&Arr{
 		command orbreject
 		args ORBFD, REGEX
-		return EMPTY
+		return NSOURCES
 		section Real-time system connections
 		description Reject sources on an Antelope ORB read connection
 		private 0
@@ -779,7 +779,7 @@ Entries &Tbl{
 	&Arr{
 		command orbseek
 		args ORBFD, CODE **or** PKTID
-		return EMPTY
+		return PKTID
 		section Real-time system connections
 		description Set an ORB Read connection to the specified position
 		private 0
@@ -788,7 +788,7 @@ Entries &Tbl{
 	&Arr{
 		command orbafter
 		args ORBFD, TIME
-		return EMPTY
+		return PKTID
 		section Real-time system connections
 		description set ORB connection to first packet after a specified time
 		private 0
@@ -797,7 +797,7 @@ Entries &Tbl{
 	&Arr{
 		command orbtell
 		args ORBFD
-		return EMPTY
+		return PKTID
 		section Real-time system connections
 		description Ask for the current read-position on an Antelope ORB
 		private 0
@@ -806,7 +806,7 @@ Entries &Tbl{
 	&Arr{
 		command antelope_webdoc
 		args NONE
-		return EMPTY
+		return NONE
 		section Getting Help
 		description launch web-browser with html documentation 
 		private 0
@@ -815,7 +815,7 @@ Entries &Tbl{
 	&Arr{
 		command use_antelope
 		args NONE
-		return EMPTY
+		return NONE
 		section Startup
 		description load Datascope/Antelope interface into Matlab
 		private 0

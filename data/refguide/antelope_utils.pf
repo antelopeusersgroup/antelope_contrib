@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command banner
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:State Files
 		description Recover information on program state
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:State Files
 		description recover an old value from a program's state file
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:State Files
 		description save a program's state file
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:State Files
 		description attempts to position orbserver to previously saved position
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:File and Path Names
 		description Find a program's data-file
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:File and Path Names
 		description Find a program's data-file based on pathname components
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:File and Path Names
 		description Construct pathname for a new data-file 
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:Environment
 		description Sets a list of environment variables relative to the ANTELOPE directory
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:Environment
 		description Sets a list of environment variables based on $ANTELOPE/data/env
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:Compression
 		description generic run-length data compression
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:Compression
 		description generic run-length data decompression
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:Environment
 		description determine the Antelope root directory
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:File and Path Names
 		description library routine for translating pathnames
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Antelope General Utilities
+		section Antelope General Utilities:File and Path Names
 		description set the name of the configuration file for mappath
 		private 0
 		deprecated 0

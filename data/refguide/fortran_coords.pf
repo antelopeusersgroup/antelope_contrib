@@ -1,4 +1,4 @@
-base_section Fortran
+base_section Fortran Interface
 Entries &Tbl{
 	&Arr{
 		command dist
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Spatial Transformations
 		description compute angular distance and azimuth between two points (all in radians)
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Spatial Transformations
 		description compute lat and long given starting point and distance (all radians)
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return real *8
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert yearday to epoch time
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return real *8
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert string to epoch time
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return integer
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert epoch time to yearday
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert epoch time to string time
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert epoch time to string date
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert epoch time to formatted string
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description return current epoch time
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert day of year to month and day
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return integer
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert month and day to day of year
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return real*8
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description convert input parameters to epoch time
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return subroutine
 		options &Tbl{
 		}
-		section Coordinate and Time Conversion
+		section Coordinate and Time Conversion:Time Transformations
 		description split epoch time into output components
 		private 0
 		deprecated 0

@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command orbopen
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Connections
 		description Open an orb connection 
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Status Information
 		description return net_station_channels and srcnames for an orb
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Connections
 		description Close an orb connection
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Writing
 		description Put a packet onto an orb
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Reading
 		description Get a packet from an orb
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Reading
 		description Continuously get packets from an orb
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Reading
 		description Continuously get packets from an orb, non-blocking
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Read/Write Position
 		description set read position for an orb connection
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Read/Write Position
 		description report read position for an orb connection
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Read/Write Position
 		description set the read position to be after a specified time
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Connections
 		description select a subset of packet streams from an orb
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Connections
 		description reject a subset of packet streams from an orb
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Connections
 		description ping an orbserver, returning the version number
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Status Information
 		description set the level of logging for an orbserver
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Status Information
 		description get dynamic information about an orbserver
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Status Information
 		description get list of source-names on an orbserver
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Status Information
 		description get list of clients of an orbserver
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Reading
 		description accumulate real time trace data from orb buffer
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return Orbpipe *
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Pipes
 		description initiate a new pipe for sorted orb packets
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Pipes
 		description Retrieve the oldest packet in sorted order
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Orb Pipes
 		description free resources for an orbpipe
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Formatting
 		description Places a database record on an orbserver
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return Dbptr
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Formatting
 		description inserts orb packet into database scratch record
 		private 0
 		deprecated 0
@@ -259,7 +259,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Formatting
 		description Places a parameter file on an orbserver
 		private 0
 		deprecated 0
@@ -270,7 +270,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section Real-time system connections
+		section Real-time system connections:Formatting
 		description extracts parameter-file object from an orb packet
 		private 0
 		deprecated 0

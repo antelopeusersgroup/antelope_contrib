@@ -1,4 +1,4 @@
-base_section Tcl/Tk
+base_section Tcl/Tk Interface
 Entries &Tbl{
 	&Arr{
 		command orbafter
@@ -401,9 +401,9 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		section Real-time system connections
-		description Deprecated
+		description Start a quanterra shell
 		private 0
-		deprecated 0
+		deprecated 1
 	}
 	&Arr{
 		command orbqtshellfree
@@ -411,9 +411,9 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		section Real-time system connections
-		description Deprecated
+		description Free a quanterra shell handle
 		private 0
-		deprecated 0
+		deprecated 1
 	}
 	&Arr{
 		command orbqtshell
@@ -421,9 +421,9 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		section Real-time system connections
-		description Deprecated
+		description Handle qtshell through orb
 		private 0
-		deprecated 0
+		deprecated 1
 	}
 	&Arr{
 		command str2orbpfpkt

@@ -1,4 +1,4 @@
-base_section C
+base_section C Interface
 Entries &Tbl{
 	&Arr{
 		command dirbase
@@ -6,7 +6,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description separate a path into directory and basename components
 		private 0
 		deprecated 0
@@ -17,7 +17,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description return an absolute pathname from a relative pathname
 		private 0
 		deprecated 0
@@ -28,7 +28,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description align an address to a multiple of double
 		private 0
 		deprecated 0
@@ -39,7 +39,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description align an address to a multiple of int
 		private 0
 		deprecated 0
@@ -50,7 +50,7 @@ Entries &Tbl{
 		return char **
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description c-callable glob routine
 		private 0
 		deprecated 0
@@ -61,7 +61,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:User Interaction
 		description query user for a response
 		private 0
 		deprecated 0
@@ -72,7 +72,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:User Interaction
 		description query user for a response with no echo
 		private 0
 		deprecated 0
@@ -83,7 +83,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:User Interaction
 		description query user for a yes/no response
 		private 0
 		deprecated 0
@@ -94,7 +94,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description compress files in background
 		private 0
 		deprecated 0
@@ -105,7 +105,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from host double to net float
 		private 0
 		deprecated 0
@@ -116,7 +116,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from host float to net double
 		private 0
 		deprecated 0
@@ -127,7 +127,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from host int to net character
 		private 0
 		deprecated 0
@@ -138,7 +138,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from net character to host int
 		private 0
 		deprecated 0
@@ -149,7 +149,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from host int to net float
 		private 0
 		deprecated 0
@@ -160,7 +160,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from net float to host int
 		private 0
 		deprecated 0
@@ -171,7 +171,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from host int to net short
 		private 0
 		deprecated 0
@@ -182,7 +182,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert from net short to host int
 		private 0
 		deprecated 0
@@ -193,7 +193,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description substitute environment variables into string
 		private 0
 		deprecated 0
@@ -204,7 +204,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description tests file descriptor for pending input
 		private 0
 		deprecated 0
@@ -215,7 +215,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description wait up to msec milliseconds for pending input
 		private 0
 		deprecated 0
@@ -226,7 +226,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description fill a buffer with random values
 		private 0
 		deprecated 0
@@ -237,7 +237,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description return the previous count of integer values in the buffer
 		private 0
 		deprecated 0
@@ -248,7 +248,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description returns a count of bytes which differ from expected value
 		private 0
 		deprecated 0
@@ -259,7 +259,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description cast a fortran string to C format
 		private 0
 		deprecated 0
@@ -270,7 +270,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description cast a C string for Fortran
 		private 0
 		deprecated 0
@@ -281,7 +281,7 @@ Entries &Tbl{
 		return char *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description copy a fortran string into a newly allocated buffer
 		private 0
 		deprecated 0
@@ -292,7 +292,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description copy a string, truncating or padding as necessary
 		private 0
 		deprecated 0
@@ -303,7 +303,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description get home directory of user
 		private 0
 		deprecated 0
@@ -336,7 +336,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert host double to net double
 		private 0
 		deprecated 0
@@ -347,7 +347,7 @@ Entries &Tbl{
 		return double
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert net double to host double
 		private 0
 		deprecated 0
@@ -358,7 +358,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert pointer to host double to pointer to net double
 		private 0
 		deprecated 0
@@ -369,7 +369,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert pointer to net double to pointer to host double
 		private 0
 		deprecated 0
@@ -380,7 +380,7 @@ Entries &Tbl{
 		return float
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert host float to net float
 		private 0
 		deprecated 0
@@ -391,7 +391,7 @@ Entries &Tbl{
 		return float
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert net float to host float
 		private 0
 		deprecated 0
@@ -402,7 +402,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert pointer to host float to pointer to net float
 		private 0
 		deprecated 0
@@ -413,7 +413,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description convert pointer to net float to pointer to host float
 		private 0
 		deprecated 0
@@ -424,7 +424,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description reverse order of 4 bytes
 		private 0
 		deprecated 0
@@ -435,7 +435,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description reverse order of 8 bytes
 		private 0
 		deprecated 0
@@ -446,7 +446,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description Returns true if local machine uses network order
 		private 0
 		deprecated 0
@@ -457,7 +457,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Sorting and Searching
 		description insertion sort implementation
 		private 0
 		deprecated 0
@@ -468,7 +468,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description ensure that a directory exists
 		private 0
 		deprecated 0
@@ -479,7 +479,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description Write a hex and ascii dump of a memory buffer
 		private 0
 		deprecated 0
@@ -490,7 +490,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description hex dump a memory buffer, with base added
 		private 0
 		deprecated 0
@@ -501,7 +501,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description write ascii dump of a buffer, with escaped non-printing chars
 		private 0
 		deprecated 0
@@ -512,7 +512,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description tests bytes to see if they're printable
 		private 0
 		deprecated 0
@@ -523,7 +523,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description copies bytes from memory into ascii-printable form
 		private 0
 		deprecated 0
@@ -534,7 +534,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description returns the integer value of a hexadecimal character
 		private 0
 		deprecated 0
@@ -545,7 +545,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description read an ascii dump back into memory
 		private 0
 		deprecated 0
@@ -556,7 +556,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description read a hex dump back into memory
 		private 0
 		deprecated 0
@@ -567,7 +567,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description map a file into memory if necessary
 		private 0
 		deprecated 0
@@ -578,7 +578,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description unmap the specified filename from memory
 		private 0
 		deprecated 0
@@ -589,7 +589,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description unmap all mapped files
 		private 0
 		deprecated 0
@@ -600,7 +600,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Buffer testing, translation, and dumping
 		description test memory address for validity in process
 		private 0
 		deprecated 0
@@ -611,7 +611,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description string substitution
 		private 0
 		deprecated 0
@@ -622,7 +622,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Sorting and Searching
 		description quick sort implementation
 		private 0
 		deprecated 0
@@ -644,7 +644,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description clear file status flags
 		private 0
 		deprecated 0
@@ -655,7 +655,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description set file status flags
 		private 0
 		deprecated 0
@@ -666,7 +666,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Sorting and Searching
 		description shell sort implementation
 		private 0
 		deprecated 0
@@ -677,7 +677,7 @@ Entries &Tbl{
 		return FILE *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description fopen a compressed or uncompressed file
 		private 0
 		deprecated 0
@@ -688,7 +688,7 @@ Entries &Tbl{
 		return FILE *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description alternate interface to zopen
 		private 0
 		deprecated 0
@@ -699,7 +699,7 @@ Entries &Tbl{
 		return FILE *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Files and Directories
 		description returns a FILE open to the output of zcat
 		private 0
 		deprecated 0
@@ -732,7 +732,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:User Interaction
 		description check string for various ways of meaning yes or no
 		private 0
 		deprecated 0
@@ -765,7 +765,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Sorting and Searching
 		description binary search of index
 		private 0
 		deprecated 0
@@ -776,7 +776,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description return non-zero if string is entirely blank characters
 		private 0
 		deprecated 0
@@ -787,7 +787,7 @@ Entries &Tbl{
 		return int
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description returns non-zero if string is entirely whitespace
 		private 0
 		deprecated 0
@@ -798,7 +798,7 @@ Entries &Tbl{
 		return Tbl *
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description split a string into component pieces
 		private 0
 		deprecated 0
@@ -809,7 +809,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description copy a string with max n characters, padding if necessary
 		private 0
 		deprecated 0
@@ -820,7 +820,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description copy exacly n characters, then append null
 		private 0
 		deprecated 0
@@ -831,7 +831,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Strings
 		description copy a string, stripping leading and trailing blanks
 		private 0
 		deprecated 0
@@ -853,7 +853,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description swap two bytes
 		private 0
 		deprecated 0
@@ -864,7 +864,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description swap four bytes
 		private 0
 		deprecated 0
@@ -875,7 +875,7 @@ Entries &Tbl{
 		return void
 		options &Tbl{
 		}
-		section General Programming Utilities
+		section General Programming Utilities:Byte Swapping, Casting, and Alignment
 		description swap eight bytes
 		private 0
 		deprecated 0
