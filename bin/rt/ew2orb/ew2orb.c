@@ -269,44 +269,6 @@ describe_packet( Ew2orbPacket *e2opkt )
 	return;
 }
 
-void
-set_calibration_database( Pf *pf )
-{
-	char	*dbname;
-	static int first = 1;
-
-	if( ! first ) {
-
-		return;
-
-	} else {
-
-		first = 0;
-	}
-
-	if( ( dbname = pfget_string( pf, "calibration_database" ) ) == NULL ) {
-
-		strcpy( Calibinfo.dbname, "" );
-
-		complain( 0,
-		     "WARNING: no calibration_database specified "
-		     "in parameter file!!\n" );
-
-	} else {
-		
-		strcpy( Calibinfo.dbname, dbname );
-
-		if( translate_loglevel( Program_loglevel ) >= VERBOSE ) {
-
-			elog_notify( 0, 
-				"using database \"%s\" for calibration data\n", 
-				Calibinfo.dbname );
-		}
-	}
-
-	init_calibinfo();
-}
-
 static struct stat *
 table_check( char *table, Tabletrack **ttrk )
 {
@@ -427,6 +389,98 @@ table_check( char *table, Tabletrack **ttrk )
 			return (*ttrk)->statbuf;
 		}
 	}
+}
+
+static int	
+init_calibinfo( void )
+{
+	Dbptr 	db;
+	int	ret;
+	struct stat *statbuf;
+
+	Calibinfo.usedbcalib = 1;
+	Calibinfo.usedbsegtype = 1;
+	Calibinfo.ctrk = 0;
+	Calibinfo.strk = 0;
+	Calibinfo.itrk = 0;
+	Calibinfo.calibarr = newarr( 0 );
+	Calibinfo.segtypearr = newarr( 0 );
+
+	if( ! strcmp( Calibinfo.dbname, "" ) ) {
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+		return 0;
+	}
+
+	ret = dbopen( Calibinfo.dbname, "r", &db );
+
+	if( ret < 0 || db.database < 0 ) {
+
+		complain( 1, "%s %s; %s\n",
+		  "Failed to open database",
+		  Calibinfo.dbname,
+  		  "calib, calper, and segtype will be default values" );
+
+		Calibinfo.usedbcalib = 0;
+		Calibinfo.usedbsegtype = 0;
+
+		return -1;
+	}
+
+	dbclose( db );
+
+	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default values for calib and calper.\n" );
+
+		Calibinfo.usedbcalib = 0;
+	}
+
+	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
+	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
+
+		complain( 1, "Using default value for segtype.\n" );
+
+		Calibinfo.usedbsegtype = 0;
+	}
+}
+
+void
+set_calibration_database( Pf *pf )
+{
+	char	*dbname;
+	static int first = 1;
+
+	if( ! first ) {
+
+		return;
+
+	} else {
+
+		first = 0;
+	}
+
+	if( ( dbname = pfget_string( pf, "calibration_database" ) ) == NULL ) {
+
+		strcpy( Calibinfo.dbname, "" );
+
+		complain( 0,
+		     "WARNING: no calibration_database specified "
+		     "in parameter file!!\n" );
+
+	} else {
+		
+		strcpy( Calibinfo.dbname, dbname );
+
+		if( translate_loglevel( Program_loglevel ) >= VERBOSE ) {
+
+			elog_notify( 0, 
+				"using database \"%s\" for calibration data\n", 
+				Calibinfo.dbname );
+		}
+	}
+
+	init_calibinfo();
 }
 
 static int
@@ -727,60 +781,6 @@ get_calibinfo( Srcname *parts, double time, char **segtype,
 	}
 	
 	return;
-}
-
-static int	
-init_calibinfo( void )
-{
-	Dbptr 	db;
-	int	ret;
-	struct stat *statbuf;
-
-	Calibinfo.usedbcalib = 1;
-	Calibinfo.usedbsegtype = 1;
-	Calibinfo.ctrk = 0;
-	Calibinfo.strk = 0;
-	Calibinfo.itrk = 0;
-	Calibinfo.calibarr = newarr( 0 );
-	Calibinfo.segtypearr = newarr( 0 );
-
-	if( ! strcmp( Calibinfo.dbname, "" ) ) {
-		Calibinfo.usedbcalib = 0;
-		Calibinfo.usedbsegtype = 0;
-		return 0;
-	}
-
-	ret = dbopen( Calibinfo.dbname, "r", &db );
-
-	if( ret < 0 || db.database < 0 ) {
-
-		complain( 1, "%s %s; %s\n",
-		  "Failed to open database",
-		  Calibinfo.dbname,
-  		  "calib, calper, and segtype will be default values" );
-
-		Calibinfo.usedbcalib = 0;
-		Calibinfo.usedbsegtype = 0;
-
-		return -1;
-	}
-
-	dbclose( db );
-
-	if( table_check( "calibration", &Calibinfo.ctrk ) == (struct stat *) NULL ) {
-
-		complain( 1, "Using default values for calib and calper.\n" );
-
-		Calibinfo.usedbcalib = 0;
-	}
-
-	if( table_check( "sensor", &Calibinfo.strk ) == (struct stat *) NULL || 
-	    table_check( "instrument", &Calibinfo.itrk ) == (struct stat *) NULL ) {
-
-		complain( 1, "Using default value for segtype.\n" );
-
-		Calibinfo.usedbsegtype = 0;
-	}
 }
 
 int
