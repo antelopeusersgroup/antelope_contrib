@@ -1,0 +1,81 @@
+.TH WINDING 3 "$Date$"
+.SH NAME
+winding.pl \- winding number routines for Perl
+.SH SYNOPSIS
+.nf
+require "winding.pl";
+
+is_inside_region(  @db, $lat, $lon [, $region_name] );
+dbview_to_polygon( @db );
+is_geographically_inside( $lat, $lon, @polygon );
+is_inside_polygon( $x, $y, @polygon );
+winding_number( @polygon );
+signed_crossing_number( $x1, $y1, $x2, $y2 );
+.fi
+.SH DESCRIPTION
+These routines implement the winding-number algorithm of
+Godkin and Pulli, BSSA v.74 1845-1948, 1984. They allow one to take a 
+polygon specified by a set of ordered vertices traversed clockwise around 
+the polygon, and decide if a specified point is inside or outside the polygon. 
+
+The main routine is is_inside_region(). is_inside_region() takes a
+database pointer to a 'regions' table, with fields 
+"regname" for unique region names and "vertex" for the order of the defining 
+polygon's vertices. See for example the places1.2 schema. If a region_name 
+string is specified, is_inside_region looks it up in the table provided.
+Otherwise, is_inside_region assumes that the subsetting has already been 
+accomplished and the input database view contains only one region. 
+is_inside_region returns 0 if the specified point is outside the named region, 
+1 if the point is inside. test points on vertices and borders of the region 
+will be treated as if they were inside the region. 
+
+In ascending calling order and therefore ascending order of importance to the 
+end-user, the other routines are:
+
+signed_crossing_number() takes a line-segment and computes its signed 
+crossing number. For explanation please see the referenced article. 
+
+winding_number() takes a polygon, specified as a list of x,y pairs for the 
+vertices traversed clockwise and in order, and returns the winding-number of 
+the polygon. 
+
+is_inside_polygon() shifts the given polygon to a coordinate system with 
+the specified point as the origin, then computes the winding number of the 
+polygon to decide if the specified point is inside or outside. 
+
+is_geographically_inside() takes a set of lat,lon coordinates on the surface of 
+the earth, transforms to a cartesian coordinate system with a stereographic
+projection and calls is_inside_polygon to decide if the reference point 
+is inside the polygon. Currently this only works if the reference point and 
+the polygon are entirely inside the same hemisphere. 
+
+dbview_to_polygon takes a view into a regions table, containing rows for 
+just one region, and turns it into an array ('polygon') appropriate for use with
+the lower level routines. 
+
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+A number of internal routines are probably not useful outside, and 
+therefore are undocumented. There are a couple test routines which 
+demonstrate a number of simple operations with the internal routines. 
+
+The routine is_geographically_inside currently requires that the test 
+point and the polygon all lie entirely within the same hemisphere. 
+.SH AUTHOR
+Algorithm by Godkin and Pulli, BSSA v.74 1845-1948, 1984.
+Coding: Kent Lindquist, Geophysical Institute, U. of Alaska. 
+.\" $Id$
