@@ -266,7 +266,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	double time;
 	double t0;
 	double si;
-	double fc;
+	double fc,fwin;
 	int evid;
 	int lag;  /* optimal lab computed by coherence measure */
 	double dtmax;
@@ -535,6 +535,7 @@ trdisp(tr,"Input trace data");
 
 			copy_arrival_array(arrivals,&arrival_new);
 			fc = (mw[i].f0)/(2.0*si*decfac[i]);
+			fwin = (mw[i].fw)/(2.0*si*decfac[i]);
 
 			fprintf(stdout,"Processing begins on band %d with center frequency %lf\n",
 				i,fc);
@@ -683,7 +684,7 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			calculation uses number_used - 1 since the average
 			amplitude is extracted as a free parameter.*/
 			if(MWdb_save_slowness_vector(phase,&u,t0,
-				swin+i,array_name,evid,bankid,fc,
+				swin+i,array_name,evid,bankid,fc,fwin,
 				ucovariance,ampndgf+1,3,dbv))
 					dbsave_error("mwslow",evid,i);
 			if(MWdb_save_avgamp(array_name, evid, bankid, phase,

@@ -19,12 +19,13 @@ get_wavelets_from_database false
 bankid 1
 array_name LODORE
 accumulate_statics true
-#TTmodel iasp91
-TTmodel foo
+TTmodel iasp91
 TTmethod tttaup tttaup utaup
 snr_component_to_test z
 snr_cutoff_statistic max
 snr_cutoff &Tbl{
+4.0
+4.0
 4.0
 4.0
 -1.0
@@ -260,13 +261,14 @@ wavelets &Tbl{
 # number_frequency_bands MUST match the number of entries in 
 # the bands Tbl.   
 #
-number_frequency_bands 3
+number_frequency_bands 5
 bands &Tbl{
-none
+/u/pavlis/response/RT72A_5_s 
 /u/pavlis/response/RT72A_2_s 
 /u/pavlis/response/RT72A_2_s 
+/u/pavlis/response/RT72A_2_s
+/u/pavlis/response/RT72A_2_s
 }
-#/u/pavlis/response/RT72A_2_s 
 #
 # These define signal and noise time windows for each 
 # band.  If the list is short the last entry is duplicated
@@ -286,16 +288,22 @@ none
 # versions for a fast debug with fake data
 
 signal_analysis_windows &Tbl{
--20 20 20 1 1
--20 20 20 1 1
+-30 25 40 1 1
+-30 25 40 1 1
+-30 25 40 1 1
+-30 25 40 1 1
+-30 25 40 1 1
 }
 #
 # Noise windows in samples
 #  order is the same as for signal windows 
 #
 noise_analysis_windows &Tbl{
--100 -20 20 1 1
--100 -20 20 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
 }
 #
 #  This defines the list of stations to be used and the

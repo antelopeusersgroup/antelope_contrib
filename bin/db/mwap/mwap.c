@@ -8,7 +8,7 @@ void usage(char *prog)
 } 
 int main(int argc, char **argv)
 {
-	char *version="1.0 March 2000 \nAuthor:  Gary Pavlis";
+	char *version="2.0 August 2000 \nAuthor:  Gary Pavlis";
 	char *dbname;  /* input database name */
 	Dbptr db;  /* base db pointer */
 	Dbptr dbj, dbevid_group, dbsta_group;
