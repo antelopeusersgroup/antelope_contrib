@@ -1,19 +1,21 @@
 #include "par2db.h"
 #include "header.h"
 
-int DCSP = 0;
 int GPS_COOR = 0;
 FILE *fplcmd;
 
 int Verbose = 0;
 int DINTV = 1;
+int DCINT = 5;
 int Log = 0;
 int DCFlag = 1;
 
 char *Pfile = "pkt.pf";
 
-int
-main (argc, argv)
+extern Source *new_source();
+extern Db_buffer *new_buf();
+
+int main (argc, argv)
 int             argc;
 char          **argv;
 {
@@ -24,24 +26,24 @@ char          **argv;
     double          after = 0.0;
     int             err=0, c;
     int             rdorb;
-    int             npkt = 10,
+    int             npkt = 30,
 		    nselect,
                     pktid;
     char	   *after_str=0 ;
     char           *orbname = 0;
-    char           *match =".*/CBBHS";
+    char           *match = ".*[HS][SP]";          
     char           *database;
     char           *packet=0;
     char            srcname[ORBSRCNAME_SIZE];
     char   	   acomp[64];
     char           *s, lcmdfile[64];
     Dbptr           db;
-    Save_params     params;
+    Save_params     par;
     int             dump=0, nbytes, bufsize = 0;
     Arr            *Parms ;
     Arr            *sources ;
     Source	   *asource;
-    int 	   i, par;
+    int 	   i, apar;
     PktChannel 	   *achan ;
     Db_buffer 	   *buffer ;
     static Packet  *Pkt=0 ;
@@ -51,20 +53,18 @@ char          **argv;
     elog_init (argc, argv);
     elog_notify ( 0, "%s Version Version 1.6 10/28/96\n", Program_Name ) ; 
 
-    params.memsize = 180.0;
-    params.segment_size = 86400.0;
-    params.wfname = 0;
-    params.gapmax = 600.0 ;
-    
-    while ((c = getopt (argc, argv, "Ocgm:i:s:vd")) != -1)
+    par.segsiz = 86400.0;
+    par.wfname = 0;
+    strcpy (par.datatype, "sd");
+
+    while ((c = getopt (argc, argv, "d:gm:i:p:s:vx")) != -1)
 	switch (c) {
 
 	case 'c':
-	    DCSP = 1;
 	    DINTV = 5;
 	    break;
 
-	case 'd':
+	case 'x':
 	    dump = 1;
 	    break;
 
@@ -80,8 +80,18 @@ char          **argv;
 	    match = optarg;
 	    break;
 
+	case 'p':
+	    Pfile = strdup(optarg);
+	    break;
+
+	case 'd':
+	    strncpy (par.datatype, optarg, 3);
+	    break;
+
 	case 'i':
 	    DINTV = atoi(optarg);
+	    DCINT = ( DINTV/5 )*5;
+	    DINTV = DCINT;
 	    break;
 
 	case 's':
@@ -99,10 +109,6 @@ char          **argv;
     if (err || argc - optind < 2 || argc - optind > 4)
 	usage ();
 
-    if ( params.memsize < 1. )
-	die ( 0, "memory buffer size = %f seconds, but must be more than 1 second\n", 
-	    params.memsize ) ;
-
     orbname = argv[optind++];
     if ((rdorb = orbopen (orbname, "r")) < 0)
 	die (0, "Can't open ring buffer '%s'\n", orbname);
@@ -115,13 +121,12 @@ char          **argv;
 	if (db.table < 0)
 	    die (0, "Can't open output table '%s'\n", database);
     }
-    params.db = db ;
+    par.db = db ;
+    par.datacode = trdatacode (par.datatype);
 
-    if( DCSP )  { 
-       sprintf( lcmdfile, "%s.LCMD\0", database);
-       if( ( fplcmd = fopen( lcmdfile, "a+")) == NULL )
-          die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
-    }
+    sprintf( lcmdfile, "%s.LCMD\0", database);
+    if( ( fplcmd = fopen( lcmdfile, "a+")) == NULL )
+       die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
     
     if (match) {
 	if ((nselect = orbselect (rdorb, match)) < 0)
@@ -154,7 +159,7 @@ char          **argv;
 	    printf ("starting pktid is #%d\n", pktid);
     }
 
-    
+    allot( int *, parbuf, 512 );    
     err = 0;
     while(1) {
 
@@ -173,19 +178,18 @@ char          **argv;
 		    
     	    }
 	} else err = 0;
-	if (Verbose > 1) {
-	    printf ("%5d %s %s\n", pktid, srcname, s = strtime (pkttime));
-	    free (s);
+	if (Log ) {
+	    fprintf (stderr, "%s %lf %d %d\n", srcname, pkttime, DINTV, DCINT);
 	}
+        if( strncmp( srcname, "/db", 3) == 0 ||
+	    strncmp( srcname, "/pf", 3) == 0 ||
+	    strncmp( srcname, "/dcdas", 6) == 0 )  
+	    continue;
 
 	if ((asource = (Source *) getarr (sources, srcname)) == 0) {
 	    asource = new_source (npkt);
 	    setarr (sources, srcname, asource);
 	}
-
-        if( (pkttime - asource->last ) >= DINTV )
-	      asource->last = pkttime;
-        else continue;
 
         switch (orbsort (asource->apipe, &pktid, &pkttime, srcname, 
                      &packet, &nbytes, &bufsize)) {
@@ -201,20 +205,30 @@ char          **argv;
 
 	    default:
 
+                if( pkttime - asource->last  >= DINTV )  {
+	              asource->last = pkttime;
+	              setarr (sources, srcname, asource);
+                }  else continue;
+
                 if( dump)  {
 		    hexdump( stdout, packet, nbytes );
 		    fflush(stdout);
-		}    
+		} 
+	   
 		switch ( unstuffpar (packet, pkttime, &Pkt, srcname )) {
 	            case 1:
-	               for (par = 0; par < Pkt->nchannels; par++) {
-	                  achan = (PktChannel *) gettbl (Pkt->chan, par);
+	               for (apar = 0; apar < Pkt->nchannels; apar++) {
+	                  achan = (PktChannel *) gettbl (Pkt->chan, apar);
 	                  sprintf( &acomp[0], "%s_%s_%s\0", 
 			           achan->net, achan->sta, achan->chan);
-	                  if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 ) 
-	                       seg_append (achan, buffer) ;
+	                  if( Log)  {
+			     fprintf( stderr, "%s %lf\n", acomp, pkttime );
+			     fflush(stderr);
+			  }
+			  if( (buffer = (Db_buffer *) getarr( Parms, acomp )) != 0 )
+	                       record (achan, buffer) ;
 	                  else {
-	                       buffer = new_db_buffer( achan, &params);
+	                       buffer = new_buf( achan, &par);
 	                       setarr( Parms, acomp, buffer );
 	                  }
 	                }

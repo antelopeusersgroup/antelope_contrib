@@ -13,10 +13,10 @@ SRCS= \
     bba_par.c \
     dc_clock_stat.c \
     dc_par.c \
-    flush2db.c \
     gps_coord.c \
     par2db.c \
-    seg_append.c \
+    record.c \
+    save_seed.c \
     unstuffpar.c \
     util.c
 

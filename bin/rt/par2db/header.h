@@ -82,12 +82,10 @@ struct dasid {
  
 
 extern int Intv;
-int bparameter[MAXNUMPAR_BBA2];
 
 /* Parameters for ANZA DAS & DC   */
 
-static int aparameter[2];
-static int dcpar[256];
+int *parbuf;
 
 #define ANZA_DAS     2
 #define DasNum       16  /* there can be up to 16 Dases maximun  */

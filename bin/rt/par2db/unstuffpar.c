@@ -5,7 +5,6 @@
  ********************************************************************/
 #include "pkt.h"
 
-extern int DCSP;
 extern int GPS_COOR;
 
 int unstuffpar( char *packet,
@@ -29,12 +28,10 @@ int unstuffpar( char *packet,
  
   switch (pkttype) {
     case ASP:
-	  if( !DCSP ) return 2;
 	  retcode =  adc_par( packet, pkttime, srcname, Pkt );
 	  break ;
 
     case BSP:
-	  if( !DCSP ) return 2;
 	  retcode =  dc_par( packet, Pkt );
 	  break ;
 
@@ -49,7 +46,6 @@ int unstuffpar( char *packet,
 	  retcode =  bba_par( packet, pkttime, srcname, Pkt );
 	  break ;
     default:
-	complain( 0, "Can't get parameters for pkttype - %d\n", hdr->pkttype);
 	retcode = 0 ; 
 	break ;
   } 

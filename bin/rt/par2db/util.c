@@ -1,7 +1,9 @@
+#include <sys/stat.h>
 #include "par2db.h"
 
-Source *
-new_source ( int npkt )
+extern Steim *stinit();
+
+Source *new_source ( int npkt )
 {
     Source *source ;
 
@@ -11,27 +13,7 @@ new_source ( int npkt )
     return source ;
 }
 
-Data_segment   *
-new_data_segment (int maxsamp)
-{
-    Data_segment   *aseg;
-
-    allot (Data_segment *, aseg, 1);
-    aseg->t0 = 0.0;
-    aseg->samprate = 0.0;
-    if ( maxsamp > 0 ) 
-	allot (int *, aseg->data, maxsamp);
-    else 
-	aseg->data = 0 ;
-    aseg->nsamp = 0;
-    aseg->maxsamp = maxsamp;
-    return aseg;
-}
-
-static int      encoding_format[] = {0, 10, 11, 20};
-
-Db_buffer      *
-new_db_buffer (PktChannel *src, Save_params *params)
+Db_buffer  *new_buf (PktChannel *src, Save_params *params)
 {
     Db_buffer      *buf;
     int	maxsamp ;
@@ -41,59 +23,128 @@ new_db_buffer (PktChannel *src, Save_params *params)
     strncpy (buf->net, src->net, PKT_NAMESIZE);
     strncpy (buf->sta, src->sta, PKT_NAMESIZE);
     strncpy (buf->chan, src->chan, PKT_NAMESIZE);
-
-    maxsamp = TIME2SAMP (0.0, src->samprate, params->memsize ) ; 
-    buf->mem = new_data_segment (maxsamp);
-    buf->disk = new_data_segment (0);
+ 
+    buf->stime = src->time;
+    buf->crnt_time = src->time;
+    buf->samprate = src->samprate;
+    buf->nsamp = 0 ;
+    buf->data = 0;
 
     buf->params = params;
+    if( buf->params->segsiz )
+         buf->tmax = buf->stime + buf->params->segsiz ;
+    else
+        buf->tmax = BIG_NUMBER ;
 
     buf->db = params->db;
     buf->file = 0 ;
     buf->path = 0 ;
 
-    init_mem_segment ( src, buf) ;
-
-    buf->tmax = VERY_LARGE_DOUBLE ;
-
+    if ( params->datacode == trSEED ) {
+        buf->steim = stinit (buf);
+    } else {
+        buf->steim = 0 ;
+    }
+					
     return buf ;
 }
 
 int
-new_dbrecord (Db_buffer *buf) 
+new_dfile (Db_buffer *buf, double crnt_time ) 
 {
-    int             n, retcode = 0;
+    int             n;
 
+    fclose( buf->file );
+    buf->db.record = dbALL ;
+    if( buf->path != 0 )  {
+       free(buf->path) ;
+       buf->path = 0 ;
+    }
     if ((buf->db.record = dbaddnull (buf->db)) < 0) {
 	register_error (0, "Couldn't add new record to table\n");
-	retcode++;
+	return 0; 
     } else {
 	if (dbputv (buf->db, 0,
 	    "sta", buf->sta,
 	    "chan", buf->chan,
-	    "time", buf->mem->t0,
+	    "time", crnt_time,
+	    "endtime", crnt_time,
 	    "nsamp", 0,
-	    "samprate", buf->mem->samprate,
-	    "datatype", "s4",
+	    "samprate", buf->samprate,
+	    "datatype",  buf->params->datatype,
 	    0) < 0) {
 	    register_error (0, "Couldn't write to table\n");
-	    retcode++;
+	    return 0; 
 	} else if (trwfname (buf->db, buf->params->wfname, &(buf->path)) < 0) {
-	    retcode++;
-	} else 
-	
-	buf->file = 0;
-	buf->disk->nsamp = 0 ; 
-	buf->disk->samprate = buf->mem->samprate ;
-	buf->disk->t0 = buf->mem->t0 ;
-	n = buf->disk->t0 / buf->params->segment_size ; 
-	buf->tmax = (n+1) * buf->params->segment_size ;
+	    return 0;
+	} else if ( (buf->file = fopen (buf->path, "w+")) == 0) {
+            register_error (1, "Can't open %s data file.\n", buf->path);
+            return 0; 
+        }
+							    
+	buf->nsamp = 0 ; 
+	buf->stime = crnt_time ;
+	buf->crnt_time = crnt_time ;
+	if( buf->params->segsiz )
+	   buf->tmax = buf->stime * buf->params->segsiz ;
+        else 
+	   buf->tmax = BIG_NUMBER ;
+
+	if ( buf->steim  ) 
+           buf->steim->s100.samprate = buf->samprate;
+
     }
-    return retcode;
+    return 1;
 }
 
-double 
-get_last_dbtimes (Dbptr db)
+int new_dbrecord ( Db_buffer *buf, PktChannel *new, double stime ) 
+{
+    int  num;
+    int foff;
+    char dir[512], dfile[512];
+    struct stat sbuf;
+		     
+     dbgetv( buf->db, 0, "dir", dir, "dfile", dfile, 0) ;
+
+     if(stat(buf->path, &sbuf) == 0)  
+         foff = sbuf.st_size;                 
+     else  {
+         complain(1,"Can't stat %s\n",buf->path);
+         return 0;
+    }
+    if ((buf->db.record = dbaddnull (buf->db)) < 0) {
+         register_error (0, "Couldn't add new record.\n");
+         return 0; 
+    } else {
+         if (dbputv (buf->db, 0, 
+	     "sta", buf->sta, 
+	     "chan", buf->chan, 
+	     "time", new->time, 
+	     "endtime", new->time,   
+	     "nsamp", 0, 
+	     "foff", foff, 
+	     "dir", dir, 
+	     "dfile", dfile, 
+	     "samprate", new->samprate,        
+	     "datatype", buf->params->datatype, 0) < 0) {
+	    
+	      register_error (0, "Couldn't write to table\n");
+	      return 0; 
+	  }
+          buf->nsamp = 0 ; 
+          buf->samprate = new->samprate ;
+          buf->stime = new->time;
+          buf->crnt_time = new->time;
+				          
+          if ( buf->steim  ) 
+              buf->steim->s100.samprate = buf->samprate;
+     }
+     return 1;
+}
+
+
+
+double get_last_dbtimes (Dbptr db)
 {
     Tbl *keys ; 
     int nstachan ;
@@ -110,7 +161,7 @@ get_last_dbtimes (Dbptr db)
     dbs = dbsort ( db, keys, 0, 0 ) ; 
     dbg = dbgroup ( dbs, keys, 0, 1 ) ; 
 
-    min_after = VERY_LARGE_DOUBLE ;
+    min_after = BIG_NUMBER ;
     dbquery ( dbg, dbRECORD_COUNT, &nstachan ) ; 
     dbex_compile ( dbg, "max(endtime)", &expr, dbREAL ) ;
     for ( dbg.record = 0 ; dbg.record < nstachan ; dbg.record++ ) {
@@ -128,6 +179,6 @@ get_last_dbtimes (Dbptr db)
 
 void usage ()
 {
-    fprintf (stderr, "usage: %s [-O] [-c] [-g] [-m srcmatch] [-i interval] [-v] orb db [start-time [window]]\n", Program_Name);
+    fprintf (stderr, "usage: %s [-d datatype] [-g] [-m srcmatch] [-i interval] [-v] orb db [start-time [window]]\n", Program_Name);
     exit (1);
 }

@@ -8,7 +8,7 @@ extern int DINTV;
 extern int Log;
 
 int bba_par( packet, pkttime, srcname,  Pkt )
-char *packet;
+uchar_t *packet;
 double pkttime;
 char *srcname;
 struct Packet **Pkt;
@@ -19,8 +19,8 @@ struct Packet **Pkt;
     struct PktChannel *achan;
     struct BBAHdr *hdr;
     int off, val, ch;
-    short sval;
-    long ttag;
+    ushort_t sval;
+    ulong ttag;
     char net[64], sta[64], key[64];
 
     hdr = ( struct BBAHdr *) packet;
@@ -31,6 +31,7 @@ struct Packet **Pkt;
     (*Pkt)->hdrtype = ntohl (hdr->prehdr.hdrtype);
 
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
+    memset( (char *) parbuf, 0, 512*sizeof(int) );
 
     for( i = 0, ch = 0; i < MAXNUMPAR_BBA2; i++, ch++ )  {
       achan = (PktChannel *) gettbl((*Pkt)->chan, ch) ;
@@ -49,26 +50,26 @@ struct Packet **Pkt;
       if( !strncmp( FILE_NAME_BBA2[ch], "BUFDEL", 6 ) ||
           !strncmp( FILE_NAME_BBA2[ch], "LLOCK", 5 ) )  {
           off = PAR_OFF_BBA2[ch]+doff;
-          val = packet[off];
-          bparameter[ch] = val; 
+          sval = packet[off];
+          parbuf[ch] = sval; 
           if( Log )  {
-             fprintf( stderr, "%d  ", val );
+             fprintf( stderr, "%d  ", sval );
              fflush(stderr);
           }
       }  else if( !strncmp( FILE_NAME_BBA2[ch], "TTAG", 4 ) ||
            !strncmp( FILE_NAME_BBA2[ch], "XMTTAG", 6 ) )  {
            off = PAR_OFF_BBA2[ch] + doff;
            memcpy( (char *) &ttag, &packet[off], 4 );
-           bparameter[ch] = ttag;
+           parbuf[ch] = ttag;
       } else if( !strncmp( FILE_NAME_BBA2[ch], "COORD", 5) )
          ;
       else {
          off = PAR_OFF_BBA2[ch] + doff;
 
            memcpy( (char *) &sval, &packet[off], 2 );
-           bparameter[ch] = sval;
+           parbuf[ch] = sval;
       }
-      achan->data = &bparameter[ch];           
+      achan->data = &parbuf[ch];           
       settbl((*Pkt)->chan, ch, achan ) ;
               
       

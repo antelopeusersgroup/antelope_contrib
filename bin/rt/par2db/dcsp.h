@@ -4,7 +4,7 @@
 #include "pkt.h"
 
 #define MAX_DCPAR  3
-#define MAXDAS 4
+#define MAXDAS 3
  
 /* DC parametrs offset  */
  
@@ -70,19 +70,16 @@ static int DCPAR_BYTE[MAX_DCPAR] = {2,4,2,};
 /*   DAS Parameters  */
  
 static int PAR_OFF_DAS[MAXDAS] = {
- CHKSUM, RTXREQ_DAS, RTXREC_DAS, RTXSKP_DAS 
+ RTXREQ_DAS, RTXREC_DAS, RTXSKP_DAS 
 };
 
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_DAS[MAXDAS] = {
- "CHKSUM", "RTXREQ", "RTXREC", "RTXSKP" 
+  "RTXREQ", "RTXREC", "RTXSKP" 
 };
 
-static int PAR_BYTE_DAS[MAXDAS] = {2,2,2,2 };
-
-int dcpar[256];
-int daspar[MAXDAS*DASNUM];
+static int PAR_BYTE_DAS[MAXDAS] = {2,2,2 };
 
 typedef struct DcStat {
    double time;
