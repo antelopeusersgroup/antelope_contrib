@@ -1,13 +1,15 @@
-RULES=mex_antelope_makerules \
-      mex_antelope_makerules.linux \
-      mex_antelope_makerules.sol
+RULES=mex_antelope_makerules.linux \
+      mex_antelope_makerules.solaris
 
 include $(ANTELOPEMAKE)
 
-# Don't use the standard INCLUDE macro for the makerules
-# or the uninstall will uninstall them, hamstringing 
-# the rest of the uninstall for the Matlab tools. The 
-# cost is acquiescing to the makerules never getting 
-# uninstalled. 
+Include:: mex_antelope_makerules
 
-Include :: $(RULES:%=$(ANTELOPE)/include/%)	
+install:: mex_antelope_makerules
+
+mex_antelope_makerules :: $(RULES)
+	@case `uname -s` in \
+	    SunOS) cp mex_antelope_makerules.solaris $(ANTELOPE)/include/mex_antelope_makerules;; \
+	    Linux) cp mex_antelope_makerules.linux $(ANTELOPE)/include/mex_antelope_makerules;; \
+	   *) echo "Error: System type `uname -s` not recognized." ;; \
+	esac 

@@ -1,7 +1,7 @@
 MEX=mex
-MEXEXT=mexglx
-MEX_CEXTRA=-Dlinux
-RPATH=-Wl,-rpath,
+MEXEXT=mexsol
+MEX_CEXTRA=
+RPATH=-R
 
 ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
 
