@@ -13,6 +13,7 @@
 #include "ipd.h"
 
 extern int NoSP;
+extern int Psize; 
 static double          prev_time = 0.0;
 
 
@@ -267,7 +268,7 @@ int timeout;
                     checksum,
 		    chs_val,
                    *sp;
-    unsigned char   packet[IBUF_SIZE];
+    uchar_t        *packet;
     char            srcname[64];
     int             psize;
     int             code, state,
@@ -295,8 +296,9 @@ int timeout;
     state = 0;
     pid = 0;
 
-    allot (unsigned char *, buffer, IBUF_SIZE);
-    allot (unsigned char *, newbuffer, IBUF_SIZE);
+    allot (unsigned char *, buffer, Psize);
+    allot (unsigned char *, newbuffer, Psize);
+    allot (unsigned char *, packet, Psize);
 
     for (i = 0; i < NUMDAS; i++) {
 	unit_list[i] = 0;
@@ -519,7 +521,7 @@ int timeout;
 			    }
 			    state = 0;
 			}
-			if (bufcnt >= IBUF_SIZE) {
+			if (bufcnt >= Psize) {
 			    complain (0, "attempted to accumulate %d byte packet: too large for internal buffer\n", bufcnt);
 			    state = 0;
 			}
@@ -532,5 +534,4 @@ int timeout;
       }
     }
 
-    return 0;
 }

@@ -5,9 +5,9 @@ IPD \- seismic data input daemon
 .nf
 
 IPD [-c check_rate]
-    [-h hdrtype] 
+    [-i]
     [-p parameter-file]
-    [-s]
+    [-s pkt_size]
     [-t timeout]
     [-u] 
     [-v] 
@@ -44,15 +44,15 @@ to re-read parameter file every time when ipd has a lack of information. There
 should be a time interval between re-reading of a parameter file by \fBipd\fP.
 This option sets such time interval - \fI check_tim_intv\fR. The default value
 is 30 minutes. 
-.IP "-h hdrtype"
-Pre-append a \fIhdrtype\fR header to a raw data packet.
-A header type specified in a parameter file is used by default.
+.IP "-i"
+Tells \fBipd\fP do not send \fIDC Status Packets\fR to orb.
 .IP "-p parameter-file"
 A parameter file \fIparameter-file\fR will be used to get parameters of a raw 
 data packet, it's type, header type; to get station and channel names code
 for each component of a raw data packet. A \fBpkt.pf\fP parameter file is used by default.
-.IP "-s"
-Tells \fBipd\fP do not send \fIDC Status Packets\fR to orb.
+.IP "-s pkt-size"
+Specify a raw packets size. That parameter is used in memory allocation for handling
+raw packets. Default size is 4096 bytes.
 .IP "-t timeout "
 This option is valid only for a socket connection and specified number of
 seconds wait data on a connected socket before close socket and open a

@@ -20,11 +20,12 @@ extern void sig_hdlr();
 int chrate = 1800;
 int NoSP = 0;
 char *pffile = 0;
+int Psize = 4096;
 
 void usage ()
 {
     fprintf (stderr, 
-             "Usage: %s [-v][-c check_rate][-h hdrtype][-u][-t timeout][-p pfile][-s] iport orb\n", 
+             "Usage: %s [-v][-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb\n", 
              Program_Name);
     exit (1);
 }
@@ -37,7 +38,7 @@ char *argv[];
   extern int     optind;
   struct Prts    Ports;
   int     	 i, timeout=30;
-  int	         htype=0;
+  int	         pktsize, htype=0;
   char           *iport = 0;
   char           *version = "1.2 (10/22/98)";
   char           *hdrtype = 0;
@@ -50,20 +51,21 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "c:v:h:p:t:us")) != -1)
+  while ( ( i = getopt (argc, argv, "c:v:ih:p:t:us:")) != -1)
         switch (i) {
 
         case 'c':
             chrate = atoi(optarg);
             break;
-        case 'h':
-            hdrtype = argv[optind++];
+        case 'i':
+            NoSP = 1;
             break;
         case 'p':
             pffile = argv[optind++];
             break;
         case 's':
-            NoSP = 1;
+            pktsize = atoi(optarg);
+            Psize = pktsize>Psize?pktsize:Psize;
             break;
         case 'v':
             Log = 1;
