@@ -400,7 +400,7 @@ found\nFail to create new assoc records for orid %d\n",
                         azres, azdef, slores, slodef, emares, wgt, "-",
                         -1, str2epoch("now"));		
 #else
-			if(dbaddv(dba,0,
+			if(dbaddv(dbas,0,
 				"arid",a->arid,
 				"orid",orid,
 				"sta",a->sta->name,
@@ -421,6 +421,7 @@ found\nFail to create new assoc records for orid %d\n",
 					"Error adding to assoc table\
  for arid %d, orid %d, evid %d\n",
 					a->arid,orid,evid[i]);
+			dbadd(dba,0);
 
 #endif
 
