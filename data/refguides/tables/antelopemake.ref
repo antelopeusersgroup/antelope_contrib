@@ -1,45 +1,6 @@
 <chapter ANTELOPEMAKE>
-<subsection Predefined Macros>
-<List>
-STOCKLIBS	-lcoords -lstock + required libraries
-DBLIBS	-lds + required libraries
-TRLIBS	-ltr + required libraries
-ORBLIBS	-lPkt -lorb -lforb + required libraries
-F77LIBS	fortran libraries
-
-TCLLIB	directory containing tcl/tk libraries
-TCLINCLUDE	directory containing tcl/tk include files
-XLIB	directory containing X window libraries
-XINCLUDE	directory containing X window include files
-PERL	absolute path to perl
-VERSION	version number for dynamic libraries
-DBG	debugging flags for compiler (eg, -g)
-INSTALL	install program (deposit)
-
-DIRS	sub directories into which make descends
-
-DEST	installation directory, usually $(ANTELOPE)
-SUBDIR	install into $(ANTELOPE)/$(SUBDIR)
-
-<subsection User Macros>
-BIN	files to be installed into $(DEST)/bin 
-LIB	files to be installed into $(DEST)/lib 
-DLIB	files to be installed into $(DEST)/lib 
-INCLUDE	files to be installed into $(DEST)/include 
-PF	files to be installed into $(DEST)/data/pf 
-DATADIR
-DATA	files to be installed into $(DEST)/data/$(DATADIR)
-MAN1	files to be installed into $(DEST)/man/man1
-MAN3	files to be installed into $(DEST)/man/man3
-MAN5	files to be installed into $(DEST)/man/man5
-MAN8	files to be installed into $(DEST)/man/man8
-
-cflags	special flags to be used during c compilation
-fflags	special flags to be used during fortran compilation
-ldflags	special flags to be passed to the linker
-ldlibs	libraries to be linked with the executable
-
 <subsection Targets>
+<List>
 all	create everything in current directory
 Include	install include files only
 install	install everything
@@ -54,3 +15,35 @@ DATA	install data files
 INCLUDE	install include files
 MAN 	install man pages
 purify	create executables using purify
+
+<subsection User Macros>
+BIN	files to be installed into $(DEST)/bin 
+LIB	files to be installed into $(DEST)/lib 
+DLIB	files to be installed into $(DEST)/lib 
+INCLUDE	files to be installed into $(DEST)/include 
+PF	files to be installed into $(DEST)/data/pf 
+DATA	files to be installed into $(DEST)/data/$(DATADIR)
+DEMO	files to be installed into $(DEST)/data/$(DEMODIR)
+DOC	files to be installed into $(DEST)/data/$(DOCDIR)
+MAN1	files to be installed into $(DEST)/man/man1
+MAN3	files to be installed into $(DEST)/man/man3
+MAN3F	files to be installed into $(DEST)/man/man3f
+MAN3P	files to be installed into $(DEST)/man/man3p
+MAN3T	files to be installed into $(DEST)/man/man3t
+MAN5	files to be installed into $(DEST)/man/man5
+
+cflags	special flags to be used during c compilation
+fflags	special flags to be used during fortran compilation
+ldflags	special flags to be passed to the linker
+ldlibs	libraries to be linked with the executable
+
+DIRS	sub directories into which make descends
+DEST	installation directory, usually $(ANTELOPE)
+SUBDIR	install into $(ANTELOPE)/$(SUBDIR)
+
+<subsection Predefined Link Library Macros>
+STOCKLIBS	-lcoords -lstock + required libraries
+DBLIBS	-lds + required libraries
+TRLIBS	-ltr + required libraries
+ORBLIBS	-lPkt -lorb -lforb + required libraries
+F77LIBS	fortran libraries

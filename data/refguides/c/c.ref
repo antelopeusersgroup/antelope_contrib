@@ -11,9 +11,12 @@
 <include libxtra.ref>
 <include libbrttpkt.ref>
 <include libproj.ref>
+<no_index don't index appendices >
 <include ../tables/projections.ref>
+<index>
 <include libtks.ref>
 <include libpixaddress.ref>
+<include pavlis.ref>
 <no_index don't index appendices >
 <include fortran.ref>
 <include ../tables/datascope_constants.ref>

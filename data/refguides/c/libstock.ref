@@ -4,10 +4,10 @@ stock
 -lposix4 -lnsl -lsocket -lm
 STOCKLIBS
 stock.h
-implements variety of general purpose
-programming utilities
+implements variety of general purpose programming utilities
 
 <subsection Parameter Files>
+<cdeclarations>
 int pfread ( char *name, Pf **pf )
     read parameter space name into pf, returning 0 for success.
 
@@ -371,7 +371,6 @@ int changedring ( RingBuffer *rb, double tdelta );
     return 1 if the value has changed over the period tdelta
 
 <subsection Time conversion>
-<cdeclarations>
 int is_epoch_string ( char *s, double *e )
     returns true if string s can be interpreted as a time, returning epoch time e
 
@@ -703,43 +702,49 @@ void printable_string ( char *buf, int p, char *mem, int n )
     copies n bytes from mem to p-byte buf, replacing unprintable chars with hex
 
 <subsection Byteswap routines>
-#include "swapbytes.h"
 <body>
-Over 250 routines for byteswapping, encoded as follows
+Over 250 routines for byteswapping, with names chosen
+to indicate source and destination type and architecture,
+for example:
+
+#include "swapbytes.h"
 </body>
+<cdeclarations>
+int mf2hd ( void *vfrom, double *to, int n );
+int uhs2vb ( short *from, void *vto, int n );
+int vt2hi ( void *vfrom, int *to, int n );
+int hi2mt ( int *from, void *vto, int n );
+</cdeclarations>
+
+<body>
+A leading u means unsigned input and output.
+The next 2 chars indicate source architecture and type, 
+the 2 chars following '2' indicate destination architecture
+and type.
+</body>
+
 <example>
-Architecture code X
-    h   current host
-    a   Intel StrongARM.
-    m   Motorola/SPARC 
-    v   Vax/Intel
 
-Type codes T, S
-    code   type        bits
-    b      byte/char     8
-    s      short        16
-    t      3-byte       24
-    i      int          32
-    l      long long    64
-    f      float        32
-    d      double       64
+Architecture codes 
+  h   current host
+  a   Intel StrongARM.
+  m   Motorola/SPARC 
+  v   Vax/Intel
 
-leading u indicates unsigned input and output
+Type codes 
+  code   type        bits
+  b      byte/char     8
+  s      short        16
+  t      3-byte       24
+  i      int          32
+  l      long long    64
+  f      float        32
+  d      double       64
 
-Prototypes:
-     int hT2XS(Type *from, unsigned char **to, int n)
-     int XS2hT(unsigned char **from, Type *to, int n)
-     int uhT2XS(Type *from, unsigned char **to, int n)
-     int uXS2hT(unsigned char **from, Type *to, int n)
-
-Examples:
-    int hs2vb ( short *from, void *vto, int n );
-    int mf2hd ( void *vfrom, double *to, int n );
-    int vt2hi ( void *vfrom, int *to, int n );
-    int hi2mt ( int *from, void *vto, int n );
 </example>
 
-deprecate void swap2 ( unsigned char *from, unsigned char *to, int n )
+<cdeclarations>
+deprecated void swap2 ( unsigned char *from, unsigned char *to, int n )
     swap two bytes
 
 deprecated void swap4 ( unsigned char *from, unsigned char *to, int n )

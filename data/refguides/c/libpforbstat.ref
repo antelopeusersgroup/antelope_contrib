@@ -1,5 +1,5 @@
 <library>
-Orbserver Status as Parameter Files
+Orb Status Parameter Files
 pforbstat
 -lpkt -lorb -lxtra -lpforbstat $(TRLIBS)
 ORBLIBS

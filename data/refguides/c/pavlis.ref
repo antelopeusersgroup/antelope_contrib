@@ -1,6 +1,10 @@
+<library>
+Genloc Contributed Code
+genloc
+-lds -ltrvltm -lcoords -lstock -lperf
 
-<section>
-Contributed Code
+location.h
+functions for genloc programs
 <subsection Genloc>
 <cdeclarations>
 Arr *dbload_array_table ( Dbptr db, int is, int ie )
