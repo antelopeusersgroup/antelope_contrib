@@ -1182,7 +1182,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 
 	if (verbose) {
 		sprintf (msg, "Processing %s %s %s", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
-		elog_debug("Processing %s\n\t%s\n\t%s", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
+		elog_debug(0, "Processing %s\n\t%s\n\t%s", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
 	}
 	chan = strchr(netstachan, '_');
 	chan++;
