@@ -197,7 +197,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 		mod->ztop[0] = x.rz;
 	else
 	{
-		register_error(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
+		register_error(0,"Warning (ttlvz_time_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
 			x.rz, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code */
@@ -348,7 +348,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 		mod->ztop[0] = x.rz;
 	else
 	{
-		register_error(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %lf lies below first layer depth %lf\nElevation ignored\n",
+		register_error(0,"Warning (ttlvz_slowness_exec):  elevation correction error\nStation elevation %f lies below first layer depth %f\nElevation ignored\n",
 			x.rz, mod->ztop[1]);
 	}
 	/* This could be avoided, but it is a relic of the earlier code */

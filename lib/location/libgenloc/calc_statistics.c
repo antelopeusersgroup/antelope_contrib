@@ -6,6 +6,7 @@
 #include "location.h"
 
 extern int GenlocVerbose ;
+#undef register_error
 #define register_error  if ( GenlocVerbose ) elog_notify
 
 /* Sort compare function for qsort function */

@@ -4,6 +4,7 @@
 #include "db.h"
 #include "location.h" 
 
+#define SUNPERF 1
 #include "perf.h"
 
 /* This routines cautiously saves the emodel vector.  It is cautious
@@ -133,9 +134,7 @@ double.  Original was float.  This was done by using dsdot.
 */
 void compute_covariance(float **Agi, int m, int n, int ntotal, double **C, int *fix)
 {
-	float *c;
 	int i,j,ii,jj;
-	int ret_code;
 #ifndef SUNPERF
 	int one=1;
 #endif
@@ -146,7 +145,7 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, double **C, int *
 			for(j=0;j<ntotal;++j) C[i][j] = 0.0;
 		else
 		{
-			for(j=0,jj=0;j<ntotal,jj<n;++j)
+			for(j=0,jj=0;j<ntotal && jj<n;++j)
 				if(fix[j])
 					C[i][j] = 0.0;
 				else
@@ -317,8 +316,6 @@ void predicted_errors(Hypocenter h,
 	}
 	for(i=0,j=natimes;i<nslow;++i,j+=2)
         {
-                Slowness_Function_Output u_calc;
-
                 slow = (Slowness_vector *) gettbl(utbl,i);
 		b[j] = slow->phase->deltau_bound;
 		b[j+1]=b[j];
@@ -370,7 +367,7 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 		double *smajax, double *sminax, double *strike,
 		double *sdepth, double *stime)
 {
-	int i,j;
+	int i ;
 	double cwork[16];  /* covariance subset work space in FORTRAN order*/
 	/* These are chisquare critical values.  First index is critical
 	level and second is degrees of freedom.  e.g. 
@@ -393,7 +390,7 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 		iconf = 1;
 	else
 	{
-		elog_complain(0,"Confidence level %lf not implemented--default to 68%\n",conf);
+		elog_complain(0,"Confidence level %f not implemented--default to 68%%\n",*conf);
 		iconf = 0;
 	}
 	/* first compute the horizontal error ellipse, unscaled.

@@ -408,7 +408,6 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 	Arr *aout; /* This is the output Arr */
 	Pf *pf,*pf_phase;
 	Tbl *t,*tv;
-	char *tvalue;
 	char *key;
 	char *string;
 	int i;
@@ -554,7 +553,8 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 		{
 			if(ttcalc_interface_init(key,pf))
 			{
-				complain(1,"Cannot initialize generic travel time calculator for phase %s\nData from this phase will be skipped\n");
+				complain(1,"Cannot initialize generic travel time calculator for phase %s\n"
+					   "Data from this phase will be skipped\n", key);
 				free(p);
 				continue;
 			}
@@ -687,7 +687,7 @@ Tbl *read_slowness_vectors(Pf *pf, Arr *phases, Arr *seismic_array)
 		row = gettbl(tin,i);
 		u = (Slowness_vector *)malloc(sizeof(Slowness_vector));
 		if(u == NULL) die(1,"read_arrivals:  cannot alloc memory for Slowness vector structure\n");
-		sscanf(row,"%s %s %lf %lf %lf %lf",
+		sscanf(row,"%s %s %lf %lf %lf %lf %d",
 			phase_name,array_name,&u1,&u2,
 			&(u->deltaux),&(u->deltauy),&(u->arid));
 		u->array = (Seismic_Array *) getarr(seismic_array,array_name);

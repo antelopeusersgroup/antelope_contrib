@@ -12,12 +12,6 @@ DATADIR=schemas2
 DATA=genloc1.0
 
 
-#
-#  Comment out the following line if you are using Sun's Performance
-#  library.  Most universities receive this bundled with compilers.
-#
-cflags=	
-ldflags= 	
 ldlibs= $(DBLIBS) 
 
 include $(ANTELOPEMAKE)  	

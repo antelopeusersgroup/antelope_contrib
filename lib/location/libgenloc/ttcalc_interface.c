@@ -217,7 +217,7 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 	TTGeometry geometry;
 	Tbl *u=NULL;
 	char *model,*method;
-	int result,TTmode;
+	int result,TTmode = 0 ;
 
 	Slowness_Function_Output o;
 	TTSlow *ttu;

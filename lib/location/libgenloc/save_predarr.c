@@ -162,7 +162,8 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 					break;
 				}
 			}
-			register_error(0,"compute_ema:  no matching entry found in stavel table for station/phase/vmodel = %s/%s/%s\nReverting to default surface velocity of %lf\n",
+			register_error(0,"compute_ema:  no matching entry found in stavel table for station/phase/vmodel = %s/%s/%s\n"
+			"Reverting to default surface velocity of %f\n",
 				u->array->name,u->phase->name,vmodel,velocity);
 		}
 		freetbl(matches,0);

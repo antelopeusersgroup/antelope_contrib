@@ -4,6 +4,7 @@
 #include "coords.h" 
 #include "pf.h"
 
+#define SUNPERF 1
 #include "perf.h"
 
 extern int GenlocVerbose ;
@@ -79,7 +80,6 @@ Robust_statistics form_equations(int mode, Hypocenter current_location,
 		the origin time is handled */
 	Robust_statistics statistics; /* this holds the return values */
 	double error_scale;  /* error scaled used in residual weighting*/
-	double sum_weights;
 
 	natimes = maxtbl(attbl);
 	nslow = maxtbl(utbl);
@@ -887,7 +887,7 @@ int ggnloc (Hypocenter initial_location,
 	}
 	if(m < npar )
 	{
-		register_error(0,"Insufficient data to locate event at epoch time %lf\n",
+		register_error(0,"Insufficient data to locate event at epoch time %f\n",
 			initial_location.time);
 		stack_mesg = strdup("Error:  insufficient data");
 		pushtbl(*reason_converged,stack_mesg);
@@ -943,7 +943,7 @@ int ggnloc (Hypocenter initial_location,
 			options, A, b, r, w, reswt,&ndata_feq);
 		if(ndata_feq < npar)
 		{
-			register_error(0,"Data loss leading to insufficient data for event %lf\n",
+			register_error(0,"Data loss leading to insufficient data for event %f\n",
 				current_location.time);
 			stack_mesg = strdup("Error:  critical data loss");
 			pushtbl(*reason_converged,stack_mesg);
@@ -1081,7 +1081,7 @@ int ggnloc (Hypocenter initial_location,
 		}
 		if(ndata_feq < np)
 		{
-			register_error(0,"Data loss leading to insufficient data for event %lf\n",
+			register_error(0,"Data loss leading to insufficient data for event %f\n",
 				current_location.time);
 			stack_mesg = strdup("Error:  critical data loss");
 			pushtbl(*reason_converged,stack_mesg);
@@ -1156,7 +1156,7 @@ int ggnloc (Hypocenter initial_location,
 		if(relative_rms_change < options.relative_rms_convergence)
 		{
 			converge = 1;
-			sprintf(message,"Insignificant improvement in fit to these data.  Final relative rms change = %lf\n",relative_rms_change);
+			sprintf(message,"Insignificant improvement in fit to these data.  Final relative rms change = %f\n",relative_rms_change);
 			stack_mesg = strdup(message);
 			pushtbl(*reason_converged, stack_mesg);
 		}
@@ -1371,7 +1371,7 @@ int radial_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	int nr, nphi, ndepths;
 	double z0;
 	double dr, dphi, dz;
-	double distance, phi;
+	double distance;
 	Point *p;
 
 	int i,j,k,n;  /* counters */
@@ -1444,13 +1444,13 @@ int radial_grid_setup (Pf *pf, Point **pts, int *gridsize)
 	/* error checks that yield a null return -- no recovery*/
 	if(( rmax < rmin) || (rmax <= 0.0) || (rmin <= 0.0) )
 	{
-		register_error(1,"radial_grid_setup:  illegal specification of radii %lg to %lg\n",
+		register_error(1,"radial_grid_setup:  illegal specification of radii %g to %g\n",
 			rmin, rmax);
 		return(-1);
 	}
 	if( ((phimax-phimin) > 360.0) || (phimin > phimax) )
 	{
-		register_error(1,"radial_grid_setup:  illegal specification of azimuthal angles %lg to %lg\n",
+		register_error(1,"radial_grid_setup:  illegal specification of azimuthal angles %g to %g\n",
 			phimin, phimax);
 		return(-1);
 	}
@@ -1632,7 +1632,7 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 
 	for(i=0;i<ngrid;++i)
 	{
-		float **dummy;
+		float **dummy = 0;
 		Travel_Time_Function_Output tto;
 		int reset_ot;
 

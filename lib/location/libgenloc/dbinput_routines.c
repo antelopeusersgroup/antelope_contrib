@@ -26,7 +26,6 @@ Date:  January 1997
 Arr *dbload_station_table(Dbptr db,int row_start,int row_end,Pf *pf)
 {
 	Arr *a;
-	int i;
         Station *s;
 	char *prog="dbform_station_table";
 	/* Values set by dbgetv from row of view */
@@ -79,7 +78,6 @@ Written:  January 1997
 Arr *dbload_array_table(Dbptr db,int row_start,int row_end,Pf *pf)
 {
 	Arr *a;
-	int i;
         Seismic_Array *s;
 	char *prog="dbform_station_table";
 	/* Values set by dbgetv from row of view */
@@ -144,8 +142,6 @@ if the time field is turned off.
 Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 	Arr *stations, Arr *arrphase)
 {
-	char *laststa;
-	Station *s;
 	Arrival *a;
 	char *prog="dbform_arrival_table";
 	Tbl *t;
@@ -196,7 +192,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 		a->phase = (Phase_handle *) getarr(arrphase,phase_name);
 		if(a->phase == NULL)
 		{
-			complain(1,"%s:  Don't know how to handle phase %s\nArrival at %s at time %lf skipped\n",
+			complain(1,"%s:  Don't know how to handle phase %s\nArrival at %s at time %f skipped\n",
 				prog,phase_name,staname,time);
 			free(a);
 			continue;
@@ -231,8 +227,6 @@ Written:  January 1997
 Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	Arr *arrays, Arr *arrphase)
 {
-	char *laststa;
-	Seismic_Array *s;
 	Slowness_vector *u;
 	char *prog="dbform_slowness_table";
 	Tbl *t;

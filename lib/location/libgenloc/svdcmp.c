@@ -4,6 +4,7 @@
 #include "stock.h"
 #include "elog.h"
 
+#define SUNPERF 1
 #include "perf.h"
 
 /* This is a plug in interface module that replaces the svdcmp
@@ -33,7 +34,7 @@ Author:  Gary Pavlis
 int svdcmp (float **A, int m, int n, float *s, float **V)
 {
 	float *afort, *vfort;  /*Vector format work spaces */
-	int i,j;
+	int i;
 	int info=0;
 #ifndef SUNPERF
 	int one=1;
@@ -66,7 +67,7 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 			large by modern standards  */
 	swork = calloc(ldwork,sizeof(float));
 	if(n == NULL) die(0,"Cannot alloc work space for SVD routine\n");
-	sgesvd_('o','s',&m,&n,afort,&m,s,NULL,&m,vfort,&n,
+	sgesvd_("o","s",&m,&n,afort,&m,s,NULL,&m,vfort,&n,
 		swork, &ldwork,
 		&info);
 	free(swork);
