@@ -7,7 +7,7 @@ static void
 usage ()
 {
     fprintf (stderr,
-	     "Usage: %s input-db output-db\n", Program_Name);
+	     "Usage: %s [-p pf] input-db output-db\n", Program_Name);
     /* banner (Program_Name, "Version $Revision$ $Date$\n"); */
     fprintf (stderr, "\n       Courtesy of Gary Pavlis, Indiana University\n");
     exit (1);
@@ -19,8 +19,6 @@ int             argc;
 char          **argv;
 
 {
-    extern char    *optarg;
-    extern int      optind;
     int             c,
                     errflg = 0;
     char           *in,
@@ -32,26 +30,28 @@ char          **argv;
     char           *pfname, *error;
     int		   orid ;
 
-/*
-    pfname = Program_Name = argv[0];
-*/
     pfname=strdup("dbgenloc");
 
     elog_init (argc, argv);
     elog_set ( ELOG_MAXMSG, -1, 0 )  ;
 
-    while ((c = getopt (argc, argv, "hvV")) != -1) {
+    while ((c = getopt (argc, argv, "hp:vV")) != -1) {
 	switch (c) {
+
 	case 'h':
 	    usage ();
 	    break ;
+
+	case 'p':
+	    pfname = optarg ; 
+	    break ; 
 
 	case 'v':
 	    verbose = 1;
 	    break;
 
 	case 'V':
-	    cbanner("Version $Revision$ $Date$\n",
+	    cbanner("$Revision$ $Date$\n",
 			"dbgenloc input-db output-db",
 			"Gary Pavlis",
 			"Indiana University",

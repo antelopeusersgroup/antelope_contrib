@@ -4,7 +4,7 @@
 dbgenloc - dbloc2 interface to genloc library of event location code
 .SH SYNOPSIS
 .nf
-dbgenloc \fIinput-db output-db\fR
+dbgenloc [-p \fIpf\fP] \fIinput-db output-db\fR
 .fi
 .SH DESCRIPTION
 \fBdbgenloc\fR computes event location estimates from travel
@@ -133,6 +133,9 @@ Some may wish to change the default generalized inverse used in the
 nonlinear least squares solution depending on their prejudices.  
 The default parameters are known to work well for local and regional
 event locations.
+.SH OPTIONS
+.IP "-p pf"
+Specify an alternate parameter file; the default is dbgenloc.pf.
 .SH OPTIONS CONTROL PANEL
 .LP
 Options that might prove valuable to change in working with
