@@ -44,8 +44,8 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 	if(TTmethod == NULL) TTmethod = newarr(0);
 	if(TTmodel == NULL) TTmodel = newarr(0);
 
-	model = pfget_string(pf,"TTmodel");
-	method = pfget_string(pf,"TTmethod");
+	model = strdup(pfget_string(pf,"TTmodel"));
+	method = strdup(pfget_string(pf,"TTmethod"));
 
 	if(model == NULL) 
 	{
@@ -111,7 +111,7 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 	if((result < 0) || ( (result == 1) && (mode == ALL) ))
 	{
 		complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
-			x.sta,phase);
+			x.sta, result, phase);
 		o.time = TIME_INVALID;
 		o.dtdx = 0.0;
 		o.dtdy = 0.0;
