@@ -1,4 +1,5 @@
 use Expect;
+use Net::FTP;
 
 sub cleanup_tempdir {
 	
@@ -118,7 +119,10 @@ sub submit_pepp_handler {
 		return;
 	}
 
-	system( "$antelope/bin/trexcerpt -vv -c 'net == \"$net\"' " .
+	$trexcerpt_verbose = $verbose ? "-vv" : "";
+
+	system( "$antelope/bin/trexcerpt $trexcerpt_verbose " .
+		"-c 'net == \"$net\"' " .
 		"-o $wfformat " .
 		"-m event -w '$wffilename' " .
 		"tempdb dbout " .
@@ -140,81 +144,26 @@ sub submit_pepp_handler {
 	my( $ftp_dir ) = %{$pfarray}->{ftp_dir};
 	my( $ftp_user ) = %{$pfarray}->{ftp_user};
 	my( $ftp_password ) = %{$pfarray}->{ftp_password};
-	my( $ftp_timeout ) = %{$pfarray}->{ftp_timeout};
 	my( $ftp_subdir ) = $eventid;
 	substr( $ftp_subdir, -6, 0 ) = "_";
 
-	$ftp = Expect->spawn( "/usr/bin/ftp", "$ftp_repository" );
-	if( ! defined( $ftp ) ) {
-		print STDERR "Failed to spawn ftp process. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	}
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, '-re', 'Name\s+\(.*\):\s*' );
-	if( defined( $err ) ) {
-		print STDERR "Failed to open ftp connection. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	}
-	$ftp->send_slow( 0, "$ftp_user\r" );
-
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, ( "Password:", "Login failed" ) );
-	if( defined( $err ) ) {
-		print STDERR "Failed to open ftp connection. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	} elsif( $match =~ /failed/ ) {
-		print STDERR "\nUnknown ftp user $ftp_user. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	}
-
-	$ftp->send_slow( 0, "$ftp_password\r" );
-
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, ( "ftp>", "Login failed" ) );
-	if( defined( $err ) ) {
-		print STDERR "Failed to open ftp connection. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	} elsif( $match =~ /failed/ ) {
-		print STDERR "\nBad password for ftp user $ftp_user. Bye.\n";
-		dbclose( @db );
-		unless( $save_files ) { cleanup_tempdir(); }
-		return;
-	}
-
-	$ftp->send_slow( 0, "cd $ftp_dir\r" );
-
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, "ftp>" );
-	$ftp->send_slow( 0, "cd $ftp_subdir\r" );
-
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, "ftp>" );
-	$ftp->send_slow( 0, "binary\r" );
+	$ftp = Net::FTP->new( $ftp_repository );
+	if( $verbose ) { $ftp->debug( 1 ); }
+	$ftp->login( $ftp_user, $ftp_password );
+	$ftp->binary();
+	$ftp->cwd( $ftp_dir );
+	$ftp->cwd( $ftp_subdir );
 
 	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
 
 		( $dfile ) = dbgetv( @db, "dfile" );
-		
-		($pos, $err, $match, $before, $after) = 
-			$ftp->expect( $ftp_timeout, "ftp>" );
-		$ftp->send_slow( 0, "put $dfile\r" );
+	
+		$ftp->put( $dfile );
 	}
 
 	dbclose( @db );
 
-	($pos, $err, $match, $before, $after) = 
-		$ftp->expect( $ftp_timeout, "ftp>" );
-	$ftp->send_slow( 0, "quit\r" );
+	$ftp->quit();
 
 	if( $save_files ) {
 		print STDERR "Saving temp directory $tempdir\n";

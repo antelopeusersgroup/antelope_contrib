@@ -15,7 +15,6 @@ ftp_repository	lasker.princeton.edu
 ftp_dir		.
 ftp_user	anonymous
 ftp_password	johndoe@peppschool.net
-ftp_timeout 	60
 }
 &Arr{
 handler		reb_import
