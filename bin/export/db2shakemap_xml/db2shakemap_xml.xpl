@@ -260,6 +260,11 @@ if( ! defined( $wfmeas_subset ) || $wfmeas_subset eq "" ) {
 
 $output_dir =~ s/\$event_id/$event_id/;
 
+system( "mkdir -p $output_dir" );
+if( ! -d "$output_dir" ) {
+	die( "db2shakemap_xml: Failed to make $output_dir\n" );
+}
+
 $output_file = concatpaths( $output_dir, $earthquake_filename );
 
 $output = new IO::File( ">$output_file" );
