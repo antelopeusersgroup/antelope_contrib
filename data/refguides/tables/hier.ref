@@ -1,7 +1,18 @@
-<chapter Antelope release hierarchy>
+<chapter Directory Structure>
+<commands>
+<subsection /opt/antelope/>
 <List>
+perl	perl 5.6.1 release
+tcltk8.3	Tcl/Tk 8.3.3 release
+doc	miscellaneous Antelope documention
+data
+  /rtdemo	demo realtime data
+  /db	demo databases
+
+<subsection /opt/antelope/4.4>
+<List>
+Changes	list of changes for current release
 bin	executable programs
-lib	libraries
 data	program data
   /pf	parameter files
   /examples	program development examples
@@ -10,10 +21,26 @@ data	program data
   /pkt		packet library source code
   /schemas	schema descriptions
 include	include files for program development
+  /antelopemake	Antelope make rules
+lib	libraries
 man	man pages
   /html	html version of man pages
-setup.csh	sets up shell environment variables
-Changes	list of changes for current release
 patches	patches in tar format
 patched	descriptions of applied patches
+README	introductory information about Antelope
 Release	information about release
+setup.csh	sets up shell environment variables
+setup_cd.csh	sets up shell environment variables,
+	to run from cd
+
+<subsection Real Time Directory>
+<List>
+bin	special executables
+db	dynamic database tables and waveform data
+dbmaster	static database tables
+logs	program log files
+orb	ring buffer files
+pf	parameter files
+rtexec.pf	real time system configuration file 
+rtsys	process database used by rtexec
+state	files preserving state between program executions

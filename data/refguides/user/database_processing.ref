@@ -41,9 +41,12 @@ dbgrassoc [options] db
 dbassoc [options] dbin dbout dbcat timeres_P timeres_S
     associate origins from dbcat with arrivals in dbin, write origin, assoc and optionally predicted arrivals into dbout; timeres_P and timeres_S specify allowable travel time residuals
 <options>
--rules r	any combination of P,S,PS,PS+,first,arids=all,best,all
--pred
 -arid arid1 ... | -orid orid1 ... | -evid evid1 ...
+	select events by arid, orid or evid
+-ignoreiphase
+-pred	save predicted arrivals
+-prefor	set prefor
+-rules r	any combination of P,S,PS,PS+,first,arids=all,best,all
 </options>
 
 dbassoc_arrival [-p delta_p] [-s delta_s] dbout dbin

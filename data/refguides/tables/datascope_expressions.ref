@@ -97,7 +97,7 @@ strydtime(epoch)
 yearday(epoch)
     convert from epoch time to yearday (jdate)
 
-<subsection Flinn-Engdahl Seismic and Geographic Regions>
+<subsection Flinn-Engdahl Regions>
 grname(lat,lon)
     geographic region name
 

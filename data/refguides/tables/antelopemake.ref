@@ -1,10 +1,10 @@
 <chapter ANTELOPEMAKE>
 <subsection Predefined Macros>
 <List>
-STOCKLIBS	-lcoords -lstock + required 
-DBLIBS	-lds + required 
-TRLIBS	-ltr + required 
-ORBLIBS	-lPkt -lorb -lforb + required
+STOCKLIBS	-lcoords -lstock + required libraries
+DBLIBS	-lds + required libraries
+TRLIBS	-ltr + required libraries
+ORBLIBS	-lPkt -lorb -lforb + required libraries
 F77LIBS	fortran libraries
 
 TCLLIB	directory containing tcl/tk libraries

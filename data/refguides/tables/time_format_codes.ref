@@ -1,4 +1,5 @@
 <chapter Epoch Format Codes>
+<commands>
 <body>
 The two character combinations on the left in the list below are replaced by the value indicated on the right by the epoch(1) command and the epoch2str(3) function.
 

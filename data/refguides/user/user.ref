@@ -8,7 +8,6 @@
 <include commands.ref>
 <no_index>
 <include ../tables/hier.ref>
-<include ../tables/rt.ref>
 <include ../tables/datascope_expressions.ref>
 <include ../tables/environment.ref>
 <include ../tables/schemas.ref>

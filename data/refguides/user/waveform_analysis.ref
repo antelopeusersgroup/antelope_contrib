@@ -42,9 +42,7 @@ deprecated dbsteimc [options] dbin [dbout]
 dbwfexcerpt [options] dbin[.table] dbout
     excerpt waveform data by event or origin (deprecated)
 <options>
--event [expr]
--origin [expr]
--input [expr]
+-event [expr] | -origin [expr] | -input [expr]
 	choose operational mode for waveform selection: by event, by origin, or by input view; select subset of input view with Datascope expression expr
 -sift expr	select subset of waveforms with expression expr
 -begin expr	calculate start time for waveform using expr

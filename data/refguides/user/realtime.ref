@@ -326,7 +326,7 @@ automrc [options] orbname dc_name
 </options>
 
 
-<subsection Real Time data processing: Orb reader/Writers>
+<subsection Real Time processing: Orb reader/Writers>
 orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
