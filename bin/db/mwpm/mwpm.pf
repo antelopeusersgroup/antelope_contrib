@@ -16,6 +16,7 @@ coherence_measure
 }
 }
 get_wavelets_from_database false
+particle_motion_averaging_method taverage
 bankid 1
 snr_component_to_test z
 snr_cutoff_statistic max

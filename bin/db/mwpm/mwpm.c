@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <strings.h>
+#include <sunmath.h>
 #include "multiwavelet.h"
 void usage(char *prog)
 {
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
 
 	int nrows_total, nevents;  /* rows in join and # of groups */
 	Tbl *sortkeys;
+	Tbl *proc_tbl;  /* passed to dbprocess */
 
 	Pf *pf;
 
@@ -70,9 +72,15 @@ int main(int argc, char **argv)
 
 	if(dbopen(dbname,"r+",&db) == dbINVALID)
                 die(1,"Unable to open input database %s\n",dbname);
-	
-	/* We need a subset of arrival to a specified phase  */
-	db = dblookup(db,0,"arrival",0,0);
+
+	proc_tbl = strtbl("dbopen event",
+			"dbjoin origin",
+			"dbsubset orid==prefor",
+			"dbjoin assoc",
+			"dbjoin arrival",0);
+	db = dbprocess(db,proc_tbl,0);
+	if(db.record == dbINVALID) elog_die(0,
+		"dbprocess failure forming working arrival view\n");	
 	sprintf(subset_string,
 		"(iphase =~ /%s/)",phase);
 	if(sift_exp != NULL)

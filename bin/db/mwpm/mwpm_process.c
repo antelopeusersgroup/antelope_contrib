@@ -1,3 +1,4 @@
+#include <sunmath.h>
 #include "multiwavelet.h"
 #include "tr.h"
 
@@ -382,7 +383,7 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 	int narrivals;
 	char sta[10];
 	double arrival_time,dtstart,dtend,tstart,tend,twin;
-	int arid;
+	int evid;
         Spherical_Coordinate scoor;
         double majaz, majema, minaz, minema;
 	char *method, algorithm[16]="mwpm:";
@@ -465,12 +466,11 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 	for(db.record=0;db.record<narrivals;++db.record)
 	{
 		Dbptr db_bundle;
-		int evid; 
 		int is, ie; 
 		int ierr;
 
-		if(dbgetv(db,0,"sta", &sta,"time",&arrival_time,
-				"arid",&arid,0) == dbINVALID)
+		if(dbgetv(db,0,"sta", &sta,"arrival.time",&arrival_time,
+				"evid",&evid,0) == dbINVALID)
 		{
                         elog_complain(1,"dbgetv error reading row %d of subsetted arrival table\n",
                                 db.record);
