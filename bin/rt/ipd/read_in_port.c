@@ -340,12 +340,7 @@ int timeout;
 
 		    case 0:	       /* waiting for sync character */
 			SP = 0;
-			if (buffer[i] == 0xab)  {
-			    off_pid = OFF_PIDA;
-			    off_uid = OFF_UIDA;
-			    off_plen = OFF_PLENA;
-			    state = 1;
-			}  else if (buffer[i] == 0xbb)  {
+			if (buffer[i] == 0xab || buffer[i] == 0xbb)  {
 			    off_pid = OFF_PIDB;
 			    off_uid = OFF_UIDB;
 			    off_plen = OFF_PLENB;
@@ -490,7 +485,6 @@ int timeout;
 				    state = 0;
 				    break;
 				}
-
 				if( ( err = valid_pkt (&newbuffer, &srcname[0], &epoch, &psize, plength, err, hdrtype )) > 0 ) {
 				    complain (0, "read_socket(): Not valid packet \n");
 				    complain (0, "read_socket():Wrong HEADER?\n");

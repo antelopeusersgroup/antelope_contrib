@@ -27,6 +27,7 @@ void usage ()
     fprintf (stderr, 
              "Usage: %s [-v][-c check_rate] [-i] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb\n", 
              Program_Name);
+    banner (Program_Name, "$Revision$ $Date$");
     exit (1);
 }
 
@@ -40,12 +41,13 @@ char *argv[];
   int     	 i, timeout=30;
   int	         pktsize, htype=0;
   char           *iport = 0;
-  char           *version = "1.2 (10/22/98)";
+  char           *version = "1.3 (12/27/00)";
   char           *hdrtype = 0;
   char           *orbname = "localhost";
 
    elog_init (argc, argv) ;
    elog_notify (0, "%s version %s\n", argv[0], version) ;
+   elog_notify (0, "$Revision$ $Date$") ;
    Program_Name = argv[0];
    
 
