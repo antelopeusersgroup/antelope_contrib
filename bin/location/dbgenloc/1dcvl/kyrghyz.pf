@@ -1,0 +1,277 @@
+velocity_model_name kyrghyz
+phases &Arr{
+P  &Arr{
+travel_time_calculator general
+TTmodel kyrghyz
+TTmethod tt1dcvl tt1dcvl u1dcvl
+#
+#  This weight function is necessary because P is a generic first arrival
+#  At the edge of the core shadow Pdiff = P which can cause large errors
+#  with short-period data where PKiKP is the normal detection
+#
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	2.5	1.0
+	3.0	0.25
+	5.0	0.01
+	92.0	0.01
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+S  &Arr{
+travel_time_calculator general
+TTmodel kyrghyz
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	2.5	1.0
+	3.0	0.25
+	5.0	0.01
+	92.0	0.01
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.2
+	default_slowness_uncertainty 0.005
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Pg  &Arr{
+travel_time_calculator general
+TTmodel genericPg
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	0.0
+	0.5	1.0
+	10.0	1.0
+	15.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Sg  &Arr{
+travel_time_calculator general
+TTmodel genericLg
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.5
+	default_slowness_uncertainty 0.005
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Lg  &Arr{
+travel_time_calculator general
+TTmodel genericLg
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	0.0
+	1.0	1.0
+	15.0	1.0
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.5
+	default_slowness_uncertainty 0.005
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Pn  &Arr{
+travel_time_calculator general
+TTmodel kyrghyz
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	0.0
+	2.0	0.0
+	3.0	1.0
+	30.0	1.0
+	92.0	0.1
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.5
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+
+S-P  &Arr{
+travel_time_calculator general
+TTmodel kyrghyz
+TTmethod tt1dcvl tt1dcvl u1dcvl
+#
+#  This weight function is necessary because P is a generic first arrival
+#  At the edge of the core shadow Pdiff = P which can cause large errors
+#  with short-period data where PKiKP is the normal detection
+#
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	2.5	1.0
+	3.0	0.25
+	5.0	0.01
+	92.0	0.01
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.2
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Lg-P  &Arr{
+travel_time_calculator general
+TTmodel kyrghyz
+TTmethod tt1dcvl tt1dcvl u1dcvl
+	time_distance_weight_function &Tbl{
+	0.0	0.0
+	1.0	1.0
+	15.0	1.0
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        180.0	1.0
+        }
+	default_time_uncertainty 0.5
+	default_slowness_uncertainty 0.01
+        dt_bound_factor 0.01
+        du_bound_factor 0.035
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
