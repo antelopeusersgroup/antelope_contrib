@@ -81,7 +81,13 @@ int save_seed ( Steim *conf,
 
     abuf = (Db_buffer *) conf->private;
     fill_header (conf, n0, n1, abuf);
-    
+   
+    if( abuf->file == 0 ) 
+      if ((abuf->file = fopen (abuf->path, "a+")) == 0) {
+              complain (1, "Can't open %s.\n", abuf->path);
+              return -1;
+       }
+
     if (fwrite (conf->record, conf->record_size, 1, abuf->file) != 1) {
 	register_error (1, "Couldn't save seed data\n");
 	return -1;
@@ -89,7 +95,12 @@ int save_seed ( Steim *conf,
 
     if ( fflush(abuf->file) ) 
 	die ( 1, "Can't flush %s\n", abuf->path ) ;
-   
+  
+    if ( fclose ( abuf->file ) != 0 ) {
+	die ( 1, "Couldn't close output file '%s'\n", abuf->path ) ; 
+    }
+    abuf->file = 0;
+
     conf->sdh.seq++;
 
     if ( dbputv ( abuf->db, 0, 

@@ -78,9 +78,13 @@ new_dfile (Db_buffer *buf, PktChannel *new, double crnt_time )
 	} else if (trwfname (buf->db, buf->params->wfname, &(buf->path)) < 0) {
 	    return 0;
 	} else if ( (buf->file = fopen (buf->path, "w+")) == 0) {
-            register_error (1, "Can't open %s data file.\n", buf->path);
-            return 0; 
+            die (1, "Can't open %s data file.\n", buf->path);
         }
+        if ( fclose ( buf->file ) != 0 ) {
+             die ( 1, "Couldn't close output file '%s'\n", buf->path ) ; 
+        }
+        buf->file = 0;
+
 							    
 	buf->nsamp = 0 ; 
 	buf->stime = crnt_time ;

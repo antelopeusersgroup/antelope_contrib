@@ -28,13 +28,12 @@ int gps_coord( uchar_t *packet,
 	       struct Packet **Pkt )
 {
 
-    struct PktChannel *chan;
     struct PktChannel *achan;
     struct BBAHdr *hdr;
-    int  i;
+    int  val, i;
     int off;
     short sval;
-    char net[PKT_NAMESIZE], sta[PKT_NAMESIZE], key[64];
+    char net[64], sta[64];
     
     hdr = ( struct BBAHdr *) packet;
     parse_srcname( srcname, &net[0], &sta[0], 0, 0 );
@@ -47,6 +46,7 @@ int gps_coord( uchar_t *packet,
 	 achan = (PktChannel *) gettbl((*Pkt)->chan, i) ;
          if ( achan == 0 ) {
              allot ( PktChannel *, achan, 1 ) ;
+	     achan->data = (void *) malloc( sizeof(int)  );
          }
          strcpy( achan->chan, GPS_NAME[i] ) ;
          strcpy( achan->net, net);
@@ -63,8 +63,9 @@ int gps_coord( uchar_t *packet,
             memcpy( (char *) &sval, &packet[off], 2 );
          }  else
             sval = packet[off];
-         gpspar[i] = ( int ) sval;
-	 achan->data = &gpspar[i];           
+	 
+	 val = sval;
+	 memcpy(achan->data, (char *) &val, sizeof(int) );
 	 settbl((*Pkt)->chan, i, achan ) ;
 		           
    } 

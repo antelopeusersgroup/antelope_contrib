@@ -130,6 +130,12 @@ fflush(stderr);
 	  break;
 
           case trINT:
+
+	      if( buf->file == 0 )
+	         if ((buf->file = fopen (buf->path, "a+")) == 0) {
+	              die (1, "Can't open %s.\n", buf->path);
+	         }
+
 	      if ((npts = fwrite ( &data[doff], sizeof(int), 
 		    nsamp_now, buf->file)) != nsamp_now) {
 	            die (1, " write %d instead of %d samples to %s.\n",
@@ -138,7 +144,12 @@ fflush(stderr);
 	      if ( fflush(buf->file) != 0 ) 
 	          die ( 1, "Can't flush %s\n", buf->path ) ; ;
 
-	      buf->nsamp += nsamp_now ; 
+	      if ( fclose ( buf->file ) != 0 ) {
+	            die ( 1, "Couldn't close output file '%s'\n", buf->path ) ; 
+	      }
+	      buf->file = 0;
+				    
+              buf->nsamp += nsamp_now ;
 	      buf->crnt_time = ENDTIME(buf->stime, buf->samprate, buf->nsamp);
 	      if ( dbputv ( buf->db, 0, 
 	          "nsamp", buf->nsamp,
