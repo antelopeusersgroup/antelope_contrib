@@ -139,6 +139,7 @@ main(int argc, char **argv)
 	EVENTlocation *e;
 	Tbl *allevents,*keepers;
 	int Verbose=0;
+	ios::sync_with_stdio();
 
 	elog_init(argc,argv);
 	elog_notify (0, "$Revision$ $Date$") ;
