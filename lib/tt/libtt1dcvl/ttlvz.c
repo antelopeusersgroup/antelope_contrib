@@ -3,36 +3,38 @@
 	-lf2c -lm   (in that order)
 */
 
-#include "f2c.h"
+#define abs(x) ((x) >= 0 ? (x) : -(x))
+#define dabs(x) (double)abs(x)
+#define max(a,b) ((a) >= (b) ? (a) : (b))
 
 /* Subroutine */ int ttlvz_(delta, hpz, n, v, z__, h__, term, t, rayp, up)
-doublereal *delta, *hpz;
-integer *n;
-doublereal *v, *z__, *h__, *term, *t, *rayp;
-integer *up;
+double *delta, *hpz;
+int *n;
+double *v, *z__, *h__, *term, *t, *rayp;
+int *up;
 {
     /* System generated locals */
-    integer i__1, i__2;
-    doublereal d__1, d__2;
+    int i__1, i__2;
+    double d__1, d__2;
 
     /* Builtin functions */
     double sqrt(), atan2(), sin();
 
     /* Local variables */
-    static doublereal sdel;
-    static integer jlim;
-    static doublereal sder, pmax, temp;
-    static real vmax;
-    static integer lhpz;
-    static doublereal test;
-    static real dmdp0;
-    static doublereal term1;
-    static integer j;
-    static doublereal p;
-    static integer count, lowlr;
-    static doublereal t1;
-    static integer istrt;
-    static doublereal offset, sum;
+    static double sdel;
+    static int jlim;
+    static double sder, pmax, temp;
+    static float vmax;
+    static int lhpz;
+    static double test;
+    static float dmdp0;
+    static double term1;
+    static int j;
+    static double p;
+    static int count, lowlr;
+    static double t1;
+    static int istrt;
+    static double offset, sum;
 
 /*-- ttlvz calculates travel time of seismic wave from hypocenter       tt
 lvz.3*/
@@ -60,7 +62,7 @@ lvz.10*/
 /* The original ttlvz code was a fortran function.  Now it is a subroutine
 .*/
 /*  returns time in t and ray parameter in argument p.  I also added a */
-/* integer variable "up".  Up is 1 when the ray is a direct ray.  otherwis
+/* int variable "up".  Up is 1 when the ray is a direct ray.  otherwis
 e*/
 /*  it will be 0. */
 
@@ -137,7 +139,7 @@ L120:
     if (lhpz == *n) {
 	goto L360;
     }
-    h__[lhpz + 1] = z__[lhpz + 1] - (real) max(*hpz,z__[1]);
+    h__[lhpz + 1] = z__[lhpz + 1] - (float) max(*hpz,z__[1]);
 /*-- calculate smallest refracted wave time                             tt
 lvz.34*/
     istrt = lhpz + 1;
@@ -147,7 +149,7 @@ lvz.34*/
 /* L760: */
 /* Computing MAX */
 	d__1 = v[j];
-	vmax = (real) max(d__1,(doublereal) vmax);
+	vmax = (float) max(d__1,(double) vmax);
     }
     i__1 = *n;
     for (lowlr = istrt; lowlr <= i__1; ++lowlr) {
@@ -229,7 +231,7 @@ L360:
 /* L175: */
 /* Computing MAX */
 	    d__1 = vmax, d__2 = v[j];
-	    vmax = (real) max(d__1,d__2);
+	    vmax = (float) max(d__1,d__2);
 	}
 /* -- This loop seeks a ray parameter for a direct ray with */
 /* -- delta > given distance.  The earlier version would sometimes ent

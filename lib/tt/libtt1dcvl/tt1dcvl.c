@@ -53,9 +53,13 @@ void _init()
 	
 	dbpath = datapath (ENVNAME,"tables/genloc/db",DEFAULT_DB,0);
 
-	if(dbopen(dbpath,"r",&modeldb) == dbINVALID)
-		die(0,"Could not open velocity model database %s during libtt1dcvl initialization\nExiting because all calls to this calculator will fail\n",
+	if (dbpath == 0) { 
+	    die ( 0, "No tt1dcvl database found\n" ) ; 
+	}
+	if(dbopen(dbpath,"r",&modeldb) == dbINVALID) {
+	    die(0,"Could not open velocity model database %s during libtt1dcvl initialization\nExiting because all calls to this calculator will fail\n",
 			dbpath);
+	}
 
 }
 
@@ -361,7 +365,6 @@ TTTime *tt1dcvl_compute_atime(TTGeometry *x,double d_km,double azimuth,
 	} else { 
 	    t->deriv[0] = 0.0 ;
 	    t->deriv[1] = 0.0 ;
-	    t->deriv[3] = 0.0 ; 
 	}
 
 	mod->ztop[0] = z0;
@@ -762,11 +765,6 @@ int tt1dcvl (
 		&delta, &azimuth);
 	d_km = delta*RADIUS_EARTH;
 
-	/* This is how a Tbl is supposed to be initialized, I think,
-	according to the tt(3) specification */
-	if((*timesp) == NULL) *timesp = newtbl(0);
-	else if(maxtbl(*timesp)) clrtbl(*timesp,free);
-
 	/* I think it is necessary to strdup phase_code because strtok
 	modifies what it parses */
 	plist = strdup(phase_code);
@@ -840,11 +838,6 @@ int tt1dcvl_ucalc (
 		&delta,&uaz);
 	uaz += M_PI;
 	if(uaz >= 2.0*M_PI) uaz -= (2.0*M_PI);
-
-	/* This is how a Tbl is supposed to be initialized, I think,
-	according to the tt(3) specification */
-	if((*timesp) == NULL) *timesp = newtbl(0);
-	else if(maxtbl(*timesp)) clrtbl(*timesp,free);
 
 	/* I think it is necessary to strdup phase_code because strtok
 	modifies what it parses */
