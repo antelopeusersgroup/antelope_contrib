@@ -74,20 +74,15 @@ will happen whenever this routine calls the libtt1dcvl calculators.
 */
 static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
-#define DEFAULT_DB "/opt/antelope/data/tables/genloc/db/vmodel"
+#define DEFAULT_DB "vmodel"
 void _init()
 {
 	char *dbname;
 	
-	dbname = getenv (ENVNAME);
-	if(dbname == NULL) 
-	{
-		elog_complain(0,"libttregions:  Model Database env variable definition %s not set\nUsing default database of %s\n",
-			ENVNAME,DEFAULT_DB);
-		dbname = strdup(DEFAULT_DB);
-	}
+	dbname = datapath (ENVNAME,"tables/genloc/db",DEFAULT_DB,0);
+
 	if(dbopen(dbname,"r",&modeldb) == dbINVALID)
-		elog_complain(0,"WARNING: could not open velocity model database %s during libtt1dcvl initialization\nAll calls to this calculator will fail\n",
+		elog_complain(0,"WARNING: could not open velocity model database %s during libttregions initialization\nAll calls to this calculator will fail\n",
 			dbname);
 
 }
