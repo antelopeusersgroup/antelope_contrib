@@ -296,6 +296,15 @@ void dbsave(Time_Series& ts,
 		}
 
 	}
+	// Even if they were written in the above loop the contents 
+	// of the object just override the metadata versions.  
+	// This is safer than depending on the metadata
+	double etime;
+	etime = ts.time(ts.ns - 1);
+	dbputv(db,0,"time",ts.t0,
+		"endtime",etime,
+		"nsamp",ts.ns,0);
+	
 	// Specifying the output data type is problematic
 	// Here I take a dogmatic view that the default should be
 	// host floats for efficiency of retrieval into routines
