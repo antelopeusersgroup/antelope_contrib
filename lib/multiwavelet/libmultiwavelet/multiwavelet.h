@@ -232,6 +232,8 @@ int load_initial_statics(Pf *, Arr *);
 Arr *build_station_objects(Dbptr , Pf *, double );
 
 /* function prototypes for mwap */
+void print_band_info(MWbasis *,int *, Pf *);
+void print_window_data(int *,int,Time_Window *,Time_Window *,Pf *);
 double compute_moveout(MWstation *, MWstation *, MWSlowness_vector *);
 double array_aperture(Arr *);
 int *get_decimation_factors(Tbl **, Pf *);
