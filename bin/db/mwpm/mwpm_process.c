@@ -204,7 +204,7 @@ int ssmwpm(int band, int nwavelets, char *sta,
 
 	
 	snr = (Signal_to_Noise *)getarr(snrarr,sta);
-	if(snr_is_too_low(snr,pf)) return(1);
+	if(snr_is_too_low(snr,band,pf)) return(1);
 
 	istart = nint( (tstart - starttime)/si );
 	if(istart < 0)
