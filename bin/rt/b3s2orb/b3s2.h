@@ -6,6 +6,7 @@
 #include <time.h>
 #include <signal.h>
         
+#define OWTOOLKIT_WARNING_DISABLED 1
 #include <sys/param.h>
 #include <sys/types.h>
 #include <xview/xview.h>

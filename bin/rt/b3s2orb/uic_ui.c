@@ -4,6 +4,7 @@
  * DO NOT EDIT BY HAND.
  */
 
+#include "uic_ui.h"
 #include <stdio.h>
 #include <sys/param.h>
 #include <sys/types.h>
@@ -16,8 +17,6 @@
 #include <xview/text.h>
 #include <xview/tty.h>
 #include <xview/xv_xrect.h>
-#include "uic_ui.h"
-#include "b3s2.h"
 
 extern void		cmd_send();
 extern void		stat_int_send();
