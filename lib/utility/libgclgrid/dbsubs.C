@@ -18,6 +18,12 @@ form is more portable externally not requiring the internal
 transformations that produce the cartesian form.
 */
 
+/* Major change January 2005.
+ *
+ * Got rid of all char * variables in argument lists.  Left most
+ * char used internally as it avoids clashes with plain C of Antelope.
+ */
+
 // Constructor creating a GCLgrid object by reading data from
 // an Antelope database.  Uses an extension table used to index
 // GCLgrid objects.  This is the 3d version.  The 2d Version 
@@ -25,7 +31,7 @@ transformations that produce the cartesian form.
 //
 //Arguments:   
 //	db - database to access to look up this grid file under
-//	gridnmae - name of requested grid object  (key of the table)
+//	namein - name of requested grid object  (key of the table)
 //
 //Throws a nonzero integer exception when creation of the GCLgrid 
 //object fails.  Every thrown error here means the process failed
@@ -38,7 +44,7 @@ transformations that produce the cartesian form.
 // They stil throw a simple int, which is not very elegant, ut
 // since constructors are primitive I see no reason why this
 // shouldn't work.  It is as described in the man page.
-GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname) 
+GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 {
 	Dbptr dbgrd;
 	char sstring[80];
@@ -60,17 +66,18 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 		elog_notify(0,(char *)"%s gclgdisk table not defined in schema definition\n",base_message);
 		throw 1;
 	}
-	sprintf(sstring,(char *)"gridname =~ /%s/ && dimensions == 3",gridname);
+	sprintf(sstring,(char *)"gridname =~ /%s/ && dimensions == 3",
+				gridname.c_str());
 	dbgrd = dbsubset(dbgrd,sstring,0);
 	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 	if(nrec <= 0) 
 	{
 		elog_notify(0,(char *)"%s grid with name %s not found in database\n",
-			base_message,gridname);
+			base_message,gridname.c_str());
 		throw 1;
 	}
 	dbgrd.record = 0;
-	strcpy(name,gridname);
+	name=gridname;
 	/* We intentionally ignore the dimension field because the subset
 	should have assured we match the right record */
 	if(dbgetv(dbgrd,0,
@@ -180,7 +187,7 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 	free_3dgrid_contiguous(pr,n1,n2);
 }
 /* close companion to the above for 2d grid */
-GCLgrid::GCLgrid(Dbptr db,char *gridname) 
+GCLgrid::GCLgrid(Dbptr db,string gridname)
 {
 	Dbptr dbgrd;
 	char sstring[80];
@@ -202,17 +209,17 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 		elog_notify(0,(char *)"%s gclgdisk table not defined in schema definition\n",base_message);
 		throw 1;
 	}
-	sprintf(sstring,(char *)"gridname =~ /%s/ && dimensions == 2",gridname);
+	sprintf(sstring,(char *)"gridname =~ /%s/ && dimensions == 2",gridname.c_str());
 	dbgrd = dbsubset(dbgrd,sstring,0);
 	dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 	if(nrec <= 0) 
 	{
 		elog_notify(0,(char *)"%s grid with name %s not found in database\n",
-			base_message,gridname);
+			base_message,gridname.c_str());
 		throw 1;
 	}
 	dbgrd.record = 0;
-	strcpy(name,gridname);
+	name=gridname;
 	/* We intentionally ignore the dimension field because the subset
 	should have assured we match the right record */
 	if(dbgetv(dbgrd,0,
@@ -322,9 +329,14 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 // but the field variable (val) is initialized to 0s.
 //
 GCLscalarfield::GCLscalarfield(Dbptr db,
-		char *gclgname,
-		char *fieldname) : GCLgrid(db, gclgname) 
+		string gclgnamein,
+		string fieldnamein) : GCLgrid(db, gclgnamein)
 {
+	char gclgname[16];
+	strncpy(gclgname,gclgnamein.c_str(),16);
+	char fieldname[16];
+	strncpy(fieldname,fieldnamein.c_str(),16);
+
 	char sstring[80];
 	int foff;
 	char filename[512];
@@ -385,9 +397,13 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 // Similar constructor for a 3D scalar field
 //
 GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
-		char *gclgname,
-		char *fieldname) : GCLgrid3d(db, gclgname) 
+		string gclgnamein,
+		string fieldnamein) : GCLgrid3d(db, gclgnamein)
 {
+	char gclgname[16];
+	strncpy(gclgname,gclgnamein.c_str(),16);
+	char fieldname[16];
+	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char filename[512];
@@ -447,9 +463,14 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	}
 }
 GCLvectorfield::GCLvectorfield(Dbptr db,
-		char *gclgname,
-		char *fieldname, int nvsize)  : GCLgrid(db, gclgname)
+		string gclgnamein,
+		string fieldnamein,
+		int nvsize) : GCLgrid(db, gclgnamein)
 {
+	char gclgname[16];
+	strncpy(gclgname,gclgnamein.c_str(),16);
+	char fieldname[16];
+	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char filename[512];
@@ -508,9 +529,14 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	}
 }
 GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
-		char *gclgname,
-		char *fieldname,int nvsize)  : GCLgrid3d(db, gclgname)
+		string gclgnamein,
+		string fieldnamein,
+		int nvsize) : GCLgrid3d(db, gclgnamein)
 {
+	char gclgname[16];
+	strncpy(gclgname,gclgnamein.c_str(),16);
+	char fieldname[16];
+	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char dir[65],dfile[36];
@@ -588,8 +614,10 @@ Modified:  December 2002
 Converted to C++ with subsequent name change.  Little of the code
 changed.
 */
-void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
+void GCLgrid3d::dbsave(Dbptr db, string dirin) throw(int)
 {
+	char dir[64];
+	strncpy(dir,dirin.c_str(),64);
 	FILE *fp;
 	string filename;
 	int fssize;
@@ -608,7 +636,7 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 	/*Save the data first so that in the event of a failure we don't 		
 	have to patch the database afterwards.   The data are always 
 	saved in a file with the name of the grid*/
-	filename = ((string)dir)+"/"+((string)name);
+	filename = dirin+"/"+string(name);
 	fp = fopen(filename.c_str(),"a+");
 	if(fp==NULL)
 	{
@@ -668,7 +696,7 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 	/* Now we write a row in the database for this grid.  Note
 	some quantities have to be converted from radians to degrees.*/
 	if(dbaddv(db,0,
-		"gridname",name,
+		"gridname",name.c_str(),
 		"dimensions",dimensions,
 		"lat",deg(lat0),
 		"lon",deg(lon0),
@@ -691,7 +719,7 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 		"k0",k0,
 		"datatype","t8",
 		"dir",dir,
-		"dfile",name,
+		"dfile",name.c_str(),
 		"foff",foff,
 		0) < 0)
 	{
@@ -700,8 +728,10 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 	}
 }
 /* Parallel routine for 2d*/
-void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
+void GCLgrid::dbsave(Dbptr db, string dirin) throw(int)
 {
+	char dir[64];
+	strncpy(dir,dirin.c_str(),64);
 	FILE *fp;
 	string filename;
 	int fssize;
@@ -718,7 +748,7 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 		throw 1;
 	}
 	/*Save the data first so that in the event of a failure we don't 		have to patch the database afterwards. */
-	filename = ((string)dir)+"/"+((string)name);
+	filename = dirin+"/"+string(name);
 	fp = fopen(filename.c_str(),"a+");
 	if(fp==NULL)
 	{
@@ -775,7 +805,7 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 	if(!writeok) throw 2;
 	/* Now we write a row in the database for this grid*/
 	if(dbaddv(db,0,
-		"gridname",name,
+		"gridname",name.c_str(),
 		"dimensions",dimensions,
 		"lat",deg(lat0),
 		"lon",deg(lon0),
@@ -795,7 +825,7 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 		"j0",j0,
 		"datatype","t8",
 		"dir",dir,
-		"dfile",name,
+		"dfile",name.c_str(),
 		"foff",foff,
 		0) < 0)
 	{
@@ -817,10 +847,10 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 // is more forgiving because the file name, dfile, is passed as a separate 
 // argument.  
 void GCLscalarfield::dbsave(Dbptr db, 
-	char *gclgdir, 
-	char *fielddir, 
-	char *fieldname,
-	char *dfile) throw(int)
+	string gclgdir,
+	string fielddir,
+	string fieldname,
+	string dfile) throw(int)
 {
 	int gridsize;
 	string filename;
@@ -830,8 +860,9 @@ void GCLscalarfield::dbsave(Dbptr db,
 	int dimensions=2;
 	int nv=1;
 
-	//Save the parent GCLgrid when gclgdir is not NULL
-	if(gclgdir!=NULL)
+	//Save the parent GCLgrid when gclgdir is defined
+	//Skip if this string was not defined
+	if(!gclgdir.empty())
 	{
 		try {
 			GCLgrid *g;
@@ -850,7 +881,7 @@ void GCLscalarfield::dbsave(Dbptr db,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = ((string)fielddir)+"/"+((string)dfile);
+	filename = fielddir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),"a+");
 	if(fp==NULL)
@@ -875,13 +906,13 @@ void GCLscalarfield::dbsave(Dbptr db,
 	}
 	fclose(fp);
 	if(dbaddv(db,0,
-		(char *)"gridname",name,
+		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
 		(char *)"nv",nv,
-		(char *)"dir",fielddir,
-		(char *)"dfile",dfile,
+		(char *)"dir",fielddir.c_str(),
+		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
-		(char *)"fieldname",fieldname,
+		(char *)"fieldname",fieldname.c_str(),
 		0)  < 0)
 	{
 		elog_notify(0,
@@ -891,10 +922,10 @@ void GCLscalarfield::dbsave(Dbptr db,
 }
 
 void GCLscalarfield3d::dbsave(Dbptr db, 
-	char *gclgdir, 
-	char *fielddir, 
-	char *fieldname,
-	char *dfile) throw(int)
+	string gclgdir,
+	string fielddir,
+	string fieldname,
+	string dfile) throw(int)
 {
 	int gridsize;
 	string filename;
@@ -904,8 +935,9 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 	int dimensions=3;
 	int nv=1;
 
-	//Save the parent GCLgrid when gclgdir is not NULL
-	if(gclgdir!=NULL)
+	//Save the parent GCLgrid when gclgdir is defined
+	//Skip if this string was not defined
+	if(!gclgdir.empty())
 	{
 		try {
 			GCLgrid3d *g;
@@ -925,7 +957,7 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = ((string)fielddir)+"/"+((string)dfile);
+	filename = fielddir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),(char *)"a+");
 	if(fp==NULL)
@@ -951,13 +983,13 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 	}
 	fclose(fp);
 	if(dbaddv(db,0,
-		"gridname",name,
+		"gridname",name.c_str(),
 		"dimensions",dimensions,
 		"nv",nv,
-		"dir",fielddir,
-		"dfile",dfile,
+		"dir",fielddir.c_str(),
+		"dfile",dfile.c_str(),
 		"foff",foff,
-		"fieldname",fieldname,
+		"fieldname",fieldname.c_str(),
 		0)  < 0)
 	{
 		elog_notify(0,
@@ -966,10 +998,10 @@ void GCLscalarfield3d::dbsave(Dbptr db,
 	}
 }
 void GCLvectorfield::dbsave(Dbptr db, 
-	char *gclgdir, 
-	char *fielddir, 
-	char *fieldname,
-	char *dfile) throw(int)
+	string gclgdir,
+	string fielddir,
+	string fieldname,
+	string dfile) throw(int)
 {
 	int gridsize;
 	string filename;
@@ -978,8 +1010,9 @@ void GCLvectorfield::dbsave(Dbptr db,
 	int foff;
 	int dimensions=2;
 
-	//Save the parent GCLgrid when gclgdir is not NULL
-	if(gclgdir!=NULL)
+	//Save the parent GCLgrid when gclgdir is defined
+	//Skip if this string was not defined
+	if(!gclgdir.empty())
 	{
 		try {
 			GCLgrid *g;
@@ -999,7 +1032,7 @@ void GCLvectorfield::dbsave(Dbptr db,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = ((string)gclgdir)+"/"+((string)dfile);
+	filename = gclgdir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),"a+");
 	if(fp==NULL)
@@ -1025,13 +1058,13 @@ void GCLvectorfield::dbsave(Dbptr db,
 	}
 	fclose(fp);
 	if(dbaddv(db,0,
-		(char *)"gridname",name,
+		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
 		(char *)"nv",nv,
-		(char *)"dir",fielddir,
-		(char *)"dfile",dfile,
+		(char *)"dir",fielddir.c_str(),
+		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
-		(char *)"fieldname",fieldname,
+		(char *)"fieldname",fieldname.c_str(),
 		0)  < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 2d grid into gclfield table\n");
@@ -1040,10 +1073,10 @@ void GCLvectorfield::dbsave(Dbptr db,
 }
 
 void GCLvectorfield3d::dbsave(Dbptr db, 
-	char *gclgdir, 
-	char *fielddir, 
-	char *fieldname,
-	char *dfile) throw(int)
+	string gclgdir,
+	string fielddir,
+	string fieldname,
+	string dfile) throw(int)
 {
 	int gridsize;
 	string filename;
@@ -1052,8 +1085,9 @@ void GCLvectorfield3d::dbsave(Dbptr db,
 	int foff;
 	int dimensions=3;
 
-	//Save the parent GCLgrid when gclgdir is not NULL
-	if(gclgdir!=NULL)
+	//Save the parent GCLgrid when gclgdir is defined
+	//Skip if this string was not defined
+	if(!gclgdir.empty())
 	{
 		try {
 			GCLgrid3d *g;
@@ -1072,7 +1106,7 @@ void GCLvectorfield3d::dbsave(Dbptr db,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = ((string)gclgdir)+"/"+((string)dfile);
+	filename = gclgdir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),(char *)"a+");
 	if(fp==NULL)
@@ -1097,13 +1131,13 @@ void GCLvectorfield3d::dbsave(Dbptr db,
 	}
 	fclose(fp);
 	if(dbaddv(db,0,
-		(char *)"gridname",name,
+		(char *)"gridname",name.c_str(),
 		(char *)"dimensions",dimensions,
 		(char *)"nv",nv,
-		(char *)"dir",fielddir,
-		(char *)"dfile",dfile,
+		(char *)"dir",fielddir.c_str(),
+		(char *)"dfile",dfile.c_str(),
 		(char *)"foff",foff,
-		(char *)"fieldname",fieldname,
+		(char *)"fieldname",fieldname.c_str(),
 		0)  < 0)
 	{
 		elog_notify(0,(char *)"dbaddv error for 2d grid into gclfield table\n");

@@ -6,8 +6,9 @@ gclgrid - C++ Geographical Curvilinear Coordinate grid library
 .nf
 #include "gclgrid.h"
 // main objects
-class GCLgrid;
-class GCLgrid3d;
+class BasicGCLgrid;
+class GCLgrid : BasicGCLgrid;
+class GCLgrid3d : BasicGCLgrid;
 class GCLscalarfield:GCLgrid;
 class GCLvectorfield:GCLgrid;
 class GCLscalarfield3d:GCLgrid3d;
@@ -73,57 +74,98 @@ Here is the full definition of the data objects that define the
 GCLgrid interface.  They are defined beginning a the top of the
 class heirarchy and working down.  
 .ce
+\fIBasicGCLgrid\fR - Base Class 
+.in 2c
+.ft CW
+.nf
+class BasicGCLgrid
+{
+public:
+	string name;
+	double lat0;
+	double lon0;
+	double r0;
+	double azimuth_y;
+	double dx1_nom;
+	double dx2_nom;
+	int n1;
+	int n2;
+	int i0;
+	int j0;
+	double x1low;
+	double x1high;
+	double x2low;
+	double x2high;
+	double x3low;
+	double x3high;
+	BasicGCLgrid();
+	BasicGCLgrid(const BasicGCLgrid& old);
+	double gtoc_rmatrix[3][3];
+	double translation_vector[3];
+	void set_transformation_matrix();
+	dmatrix fetch_transformation_matrix();
+	double *fetch_translation_vector();
+	Geographic_point ctog(double x1p, double x2p, double x3p);
+	Geographic_point ctog(Cartesian_point p);
+	Cartesian_point gtoc(double plat, double plon, double pr);
+	Cartesian_point gtoc(Geographic_point p);
+	virtual void compute_extents()=0;
+	virtual void reset_index()=0;
+	virtual void get_index(int *ind)=0;
+};
+.fi
+.LP
+The base class was structured to contain data attributes
+common to all the higher order objects that acquire them
+by inheritance.  
+The base class has no use other than the fact that it reduced
+redundant code through the inheritance mechanisms.  
+The useful objects follow.  There it is more rational to 
+explain the data attributes that are a fixed component of the
+object.
+.ce
 \fIGCLgrid\fR - Basic 2D GCLgrid object
 .in 2c
 .ft CW
 .nf
-
-class GCLgrid
+class GCLgrid : public BasicGCLgrid
 {
-        public:
-                char name[10];  // name assigned to this coordinate grid
-                double lat0, lon0, r0;  // geographical location of origin
-                double azimuth_y;  // Azimuth of positive y axis
-                double dx1_nom, dx2_nom;  // nominal grid spacing
-                int n1,n2;  // grid size in each component direction
-                int i0, j0;  // origin location in grid
-                double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box
-                double **x1, **x2, **x3; //cartesian coordinates of nodes
-
-                GCLgrid();
-                GCLgrid(int n1size, int n2size);
-                GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
-                        double radius0, double az, double dx1n, double dx2n,
-                        int iorigin, int jorigin);
-                GCLgrid(Dbptr db, char *nm);  // acquire from Antelope database
-                GCLgrid(const GCLgrid&);  //standard copy constructor
-                GCLgrid& operator=(const GCLgrid& );
-                bool operator==(const GCLgrid&);
-                bool operator!=(const GCLgrid&);
-                void dbsave(Dbptr, char *) throw(int);
-                int lookup(double, double);
-                void reset_index() {ix1=i0; ix2=j0;};
-                void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
-                Geographic_point ctog(double, double, double);
-                Geographic_point ctog(Cartesian_point);
-                Cartesian_point gtoc(double, double, double);
-                Cartesian_point gtoc(Geographic_point);
-                void set_transformation_matrix();
-                dmatrix fetch_transformation_matrix();
-                double *fetch_translation_vector();
-                void compute_extents();
-		Geographic_point geo_coordinates(int,int);
-                double lat(int,int);
-                double lon(int,int);
-                double r(int,int);
-                double depth(int,int);
-                ~GCLgrid();
+public:
+	double **x1;
+	double **x2;
+	double **x3;
+	GCLgrid(){
+		n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;
+	};
+	GCLgrid(int n1size, int n2size);
+	GCLgrid(int n1size, int n2size, string n, double la0, double lo0,
+		double radius0, double az, double dx1n, double dx2n, 
+		int iorigin, int jorigin);
+	GCLgrid(Dbptr db, string nm);  
+	~GCLgrid();
+	GCLgrid& operator=(const GCLgrid& );
+	bool operator==(const GCLgrid&);
+	bool operator!=(const GCLgrid&);
+	void dbsave(Dbptr db, string nm) throw(int);
+	int lookup(double x1p, double x2p);
+	/** See {@link BasicGCLgrid::reset_index} */
+	void reset_index() {ix1=i0; ix2=j0;};
+	/** See {@link BasicGCLgrid::get_index} */
+	void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
+	Geographic_point geo_coordinates(int i1,int i2);
+	double lat(int i1, int i2);
+	double lon(int i1, int i2);
+	double r(int i1, int i2);
+	double depth(int i1, int i2);
+	void compute_extents();
+	friend class GCLscalarfield;
+	friend class GCLvectorfield;
+private:
+	int ix1, ix2;
 };
 .fi
 .ft R
 .in
-The simple type parameters that define this data object are, I hope,
-reasonably well defined by the comments in the above code segment.  
 The key groups of defining parameters are these:
 .IP (1)
 x1, x2, and x3 are parallel 2d arrays that give coordinates in a 
@@ -179,7 +221,7 @@ The only complete constructor is this one:
 .ft CW
 .nf
 
-GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
+GCLgrid(int n1size, int n2size, string n, double la0, double lo0,
         double radius0, double az, double dx1n, double dx2n, 
         int iorigin, int jorigin);
 
@@ -211,7 +253,7 @@ lines to the pole that defines x2 and the equator defined by
 the x1 axis passing through the origin.  The constant x2 trajectory
 lines are then latitude-like paths (i.e. they are not great circles).  
 .LP
-A final specialized constructors is defined by GCLgrid(Dbptr db, char *nm).
+A final specialized constructors is defined by GCLgrid(Dbptr db, string nm).
 This function attempts to read a GCLgrid from an Antelope database 
 with handle db by searching for a unique grid with the name defined by nm.
 .LP
@@ -282,37 +324,45 @@ full description:
 .in 2c
 .ft CW
 .nf
-
-class GCLgrid3d : public GCLgrid
+class GCLgrid3d : public BasicGCLgrid
 {
-        public:
-                double dx3_nom;
-                int n3;
-                int k0;
-                double ***x1, ***x2, ***x3;
-                GCLgrid3d();
-                GCLgrid3d(int n1size, int n2size, int n3size);
-                GCLgrid3d(int n1size, int n2size, int n3size,
-                        char *n, double la0, double lo0,
-                        double radius0, double az,
-                        double dx1n, double dx2n, double dx3n,
-                        int iorigin, int jorigin);
-                GCLgrid3d(Dbptr db, char *nm);
-                GCLgrid3d(const GCLgrid3d&);
-                GCLgrid3d& operator=(const GCLgrid3d& );
-                void dbsave(Dbptr, char *) throw(int);
-                int lookup(double, double, double);
-                void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
-                void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
-                void compute_extents();
-		Geographic_point geo_coordinates(int,int,int);
-                double lat(int,int,int);
-                double lon(int,int,int);
-                double r(int,int,int);
-                double depth(int,int,int);
-                ~GCLgrid3d();
-};
+public:
+	double dx3_nom;
+	int n3;
+	int k0;
+	double ***x1;
+	double ***x2;
+	double ***x3;
 
+	GCLgrid3d(){
+		n1=0;n2=0;n3=0;
+		x1=NULL;x2=NULL;x3=NULL;
+	};
+	GCLgrid3d(int n1size, int n2size, int n3size);
+	GCLgrid3d(int n1size, int n2size, int n3size, string n, 
+		double la0, double lo0, double az, double dx1n, double dx2n, double dx3n,
+		int iorigin, int jorigin);
+	GCLgrid3d(Dbptr db, string nm); 
+	/** Standard copy constructor. */
+	GCLgrid3d(const GCLgrid3d&); 
+	/** Standard assignment operator. */
+	GCLgrid3d& operator=(const GCLgrid3d& );
+	void dbsave(Dbptr db, string nm) throw(int);
+	int lookup(double, double, double);
+	/** See {@link BasicGCLgrid::reset_index} */
+	void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
+	/** See {@link BasicGCLgrid::get_index} */
+	void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
+	Geographic_point geo_coordinates(int i1,int i2,int i3);
+	double lat(int,int,int);
+	double lon(int,int,int);
+	double r(int,int,int);
+	double depth(int,int,int);
+	void compute_extents();
+	~GCLgrid3d();
+private:
+	int ix1, ix2, ix3;
+};	  		
 .fi
 .ft R
 .in
@@ -343,77 +393,97 @@ points.
 
 class GCLscalarfield :  public GCLgrid
 {
-    public:
-        double **val;
+public:
+	double **val;
 
-        GCLscalarfield();
-        GCLscalarfield(int, int);
-        GCLscalarfield(const GCLgrid& );
-        GCLscalarfield(const GCLscalarfield& );
-	GCLscalarfield(Dbptr db, char *grdnm, char *fn);
-        GCLscalarfield& operator=(const GCLscalarfield&);
-        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-        void operator+=(const GCLscalarfield&);
-        void operator*=(double);
-        double interpolate(double,double,double);
-        ~GCLscalarfield();
-	friend ostream& operator<<(ostream&,GCLscalarfield&);
+	/** Default constructor */
+	GCLscalarfield();
+	GCLscalarfield(int n1size, int n2size);
+	/** Standard copy constructor */
+	GCLscalarfield(const GCLscalarfield&);
+	GCLscalarfield(GCLgrid& );
+	GCLscalarfield(Dbptr db, string grdnm, string fn);
+	~GCLscalarfield();
+	/** Standard assignment operator */
+	GCLscalarfield& operator=(const GCLscalarfield&);
+	void dbsave(Dbptr db, string gclgdir, string fielddir, string fieldname,
+			string dfile) throw(int);
+	void operator+=(GCLscalarfield&);
+	void operator*=(double c);
+	double interpolate(double x1p, double x2p, double x3p);
+	friend ostream& operator << (ostream&,GCLscalarfield&);
 };
+
 class GCLvectorfield : public GCLgrid
 {
-    public:
-        int nv;
-        double ***val;
+public:
+	/** Number of components to vectors stored in this field */
+	int nv;
+	double ***val;
 
-        GCLvectorfield();
-        GCLvectorfield(int,int,int);
-        GCLvectorfield(const GCLgrid &,int);
-        GCLvectorfield(const GCLvectorfield& );
-        GCLvectorfield(Dbptr db, char *grdnm, char *fn);
-        GCLvectorfield& operator=(const GCLvectorfield&);
-        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-        void operator+=(const GCLvectorfield&);
-        void operator*=(double);
-        double *interpolate(double,double,double);
-        ~GCLvectorfield();
-	friend ostream& operator<<(ostream&,GCLvectorfield&);
+	/** Default constructor.  */
+	GCLvectorfield();
+	GCLvectorfield(int,int,int);
+	/** Standard copy constructor. */
+	GCLvectorfield(const GCLvectorfield&);
+	GCLvectorfield(GCLgrid &,int);
+	GCLvectorfield(Dbptr db, string grdnm, string fn,int nvsize); 
+	/** Standard assignment operator. */
+	GCLvectorfield& operator=(const GCLvectorfield&);
+	~GCLvectorfield();
+	void dbsave(Dbptr db, string gclgdir, string fielddir, string fiendname, string dfile)
+				throw(int);
+	void operator+=(GCLvectorfield&);
+	void operator*=(double);
+	double *interpolate(double x1p, double x2p, double x3p);
+	friend ostream& operator << (ostream&,GCLvectorfield&);
 };
 class GCLscalarfield3d : public GCLgrid3d 
 {
-    public:
-        double ***val;
+public:
+	double ***val;
 
-        GCLscalarfield3d();
-        GCLscalarfield3d(int,int,int);
-        GCLscalarfield3d(Dbptr db, char *grdnm, char *fn);
-        GCLscalarfield3d(const GCLgrid3d &);
-        GCLscalarfield3d(const GCLscalarfield3d& );
-        GCLscalarfield3d& operator=(const GCLscalarfield3d&);
-        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-        void operator+=(const GCLscalarfield3d&);
-        void operator*=(double);
-        double interpolate(double,double,double);
-        ~GCLscalarfield3d();
-	friend ostream& operator<<(ostream&,GCLscalarfield3d&);
+	/** Default constructor. */
+	GCLscalarfield3d();
+	GCLscalarfield3d(int n1size, int n2size, int n3size);
+	/** Standard copy constructor. */
+	GCLscalarfield3d(const GCLscalarfield3d&);
+	GCLscalarfield3d(GCLgrid3d &g);
+	GCLscalarfield3d(Dbptr db, string grdnm, string fn);
+	~GCLscalarfield3d();
+	/** Standard assignment operator. */
+	GCLscalarfield3d& operator=(const GCLscalarfield3d&);
+	void dbsave(Dbptr db, string gclgdir, 
+			string fielddir, string fieldname, 
+			string dfile) throw(int);
+	void operator+=(GCLscalarfield3d&);
+	void operator*=(double c);
+	double interpolate(double,double,double);
+	friend ostream& operator << (ostream&,GCLscalarfield3d&);
 };
 class GCLvectorfield3d : public GCLgrid3d
 {
-    public:
-        int nv;
-        double ****val;
+public:
+	/** Number of components to each vector of the field. */
+	int nv;
+	double ****val;
 
-        GCLvectorfield3d();
-        GCLvectorfield3d(int,int,int,int);
-        GCLvectorfield3d(const GCLgrid3d &,int);
-        GCLvectorfield3d(const GCLvectorfield3d& );
-        GCLvectorfield3d(Dbptr db, char *grdnm, char *fn);
-        GCLvectorfield3d& operator=(const GCLvectorfield3d&);
-        void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-        void operator+=(const GCLvectorfield3d&);
-        void operator*=(double);
-        double *interpolate(double,double,double);
-        ~GCLvectorfield3d();
-	friend ostream& operator<<(ostream&,GCLvectorfield3d&);
+	/** Default constructor. */
+	GCLvectorfield3d();
+	GCLvectorfield3d(int n1size, int n2size, int n3size, int nvsize);
+	/** Standard copy constructor. */
+	GCLvectorfield3d(const GCLvectorfield3d&);
+	GCLvectorfield3d(GCLgrid3d &,int nvsize);
+	GCLvectorfield3d(Dbptr db, string grdnm, string fn, int nvsize);
+	~GCLvectorfield3d();
+	/** Standard assignment operator. */
+	GCLvectorfield3d& operator=(const GCLvectorfield3d&);
+	void dbsave(Dbptr db, string gclgdir, string fielddir, 
+			string fieldname, string dfile) throw(int);
+	void operator+=(GCLvectorfield3d&);
+	void operator*=(double);
+	double *interpolate(double,double,double);
+	friend ostream& operator << (ostream&,GCLvectorfield3d&);
 };
 
 .fi
@@ -437,7 +507,7 @@ Each object also contains a constructor to build the object from
 an Antelope database description.  The constuctors are all of this
 form:
 .nf
-OBJname(Dbptr db, char *gclgname, char *fieldname);
+OBJname(Dbptr db,string gclgname,string fieldname);
 .fi
 where db is a standard Antelope databae pointer, gclgname is the
 name of the parent GCLgrid object to which the field is attached
@@ -446,12 +516,12 @@ values to be used.  As in the GCLgrid objects there the inverse
 to this operation is a dbsave operation, which for this group of
 objects has this form:
 .nf
-OBJname(Dbptr db, char *gdir, char *fdir, char *fieldname, char *dfile);
+OBJname(Dbptr db, string gdir,sting fdir, sting fieldname, string dfile);
 .fi
 where gdir and fdir are the locations to save the GLCgrid parent and
 field values respectively, fieldname is as above, and dfile is the 
 actual file name to store the field values.  Note that if gdir is
-NULL the parent GCLgrid is assumed already stored and not to be saved.
+empty the parent GCLgrid is assumed already stored and not to be saved.
 This allows, for example, several actual data objects to be stored 
 and associated with a common GCLgrid without having to store 
 multiple copies of the same GCLgrid.  Since GCLgrids can get large
@@ -462,7 +532,7 @@ different times;  the first when you try to use the output of
 dbsave and the other when dbsave is called.  
 Do note this uses two tables;  one for the GCLgrid and the other to 
 index the field output.
-Note also that in all cases if the fieldname is NULL only the grid geometry
+Note also that in all cases if the fieldname is empty only the grid geometry
 component of the object is created and the val arrays are initialized to
 zeros.  This is useful to clone geometry but not the actual values from
 a base grid.
@@ -586,12 +656,18 @@ as a coding error.
 $(DBLIBS) -lgclgrid
 .SH "SEE ALSO"
 .LP
-makegclgrid(1)
+makegclgrid(1) but the most useful and superior documentation
+for this code can be found under $ANTELOPE/docs/seispp/gclgrid
+as hypertext format documentation produced by ccdoc.
 .SH "BUGS AND CAVEATS"
-This library is the author's first serious attempt at a C++
-package.  Some things may be done in an odd way as a result and
-the results should be viewed with a healthy dose of skepticism.
-Some specifics are:
+This library has gone through a series of changes from 
+a set of code that was originally procedural to a full 
+object oriented form that utilizes inheritance extensively.
+This left some legacies that are less than ideal, but 
+have largely been worked through.  The history, however, is
+important for anyone to know.  
+.LP
+A few specific things about this worth pointing out are.
 .IP (1)
 The use of lat,lon,r coordinates in the external storage of
 a gclgrid and only using Cartesian coordinates for the 
@@ -637,6 +713,25 @@ It is not clear, however, that such an entity should be part of the
 object definition.  It would probably be smarter to have a mapping
 function that simply returns a definition of this mapping process
 as a procedure and not as part of the object definition.  
+.IP (6)
+Some books would be strongly critical of this design.  The 
+elegant solution preferred by OOP purists would be to have
+the BasicGCLgrid object be a purely abstract base that defined
+only virtual methods and contained no data.  I considered this
+but concluded it was the wrong model here.  It might be 
+appropriate if one wanted to build a framework for a general
+set of data objects that were all georeferenced.  I decided
+that was being excessively general and was not warranted.
+.IP (7)
+A similar issue is that some would view having all the 
+data arrays public and using C indices to reference 
+grid points as not elegant.  A style encouraged in 
+OOP books is "data hiding".  This model would make
+x1, x2, and x3 functions to access private data.  
+I thought this extra overhead would be silly for this case.
+I see no reason why anyone would want to change that
+interface other than some purist notion that I concluded
+was silly.
 .SH AUTHOR
 .nf
 Gary L. Pavlis and Chengliang Fan

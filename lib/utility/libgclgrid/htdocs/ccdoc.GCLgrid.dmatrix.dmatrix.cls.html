@@ -1,0 +1,409 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--NewPage-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="ccdoc_copyright" content="(C) Joe Linoff 1998-2001">
+<meta name="ccdoc_author" content="Joe Linoff">
+<meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
+<meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html">
+<meta name="ccdoc_creation_date" content="Sat Jan  8 10:32:19 2005">
+<meta name="keywords" content="ccdoc, source code, documentation">
+<title>ccdoc dmatrix dmatrix.h:105:class</title>
+</head>
+
+<body>
+<a name=ccdoc_top></a>
+<table border=0 width="100%"><tr><td align=left>
+<a href="index.html">GCLgrid</a>
+ :: <a href="ccdoc.GCLgrid.dmatrix.pkg.html">dmatrix</a>
+</td><td align=right><a href="ccdoc.class_summary.html">classes</a></td></tr></table>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>class dmatrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+</td></tr></table>
+<blockquote>
+ Lightweight, simple double precision matrix object.
+<p>
+ Provides basic matrix functionality. Note that elements of the
+ matrix are stored internally in FORTRAN order but using
+ C style indexing.  That is, all indices begin at 0, not 1 and 
+ run to size - 1.  Further, FORTRAN order means the elements are
+ actually ordered in columns as in FORTRAN in a continuous,
+ logical block of memory.  This allow one to use the BLAS functions
+ to access the elements of the matrix.  As usual be warned this
+ is useful for efficiency and speed, but completely circumvents the
+ bounds checking used by methods in the object.  
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:105</dd>
+<dt><b>Author:</b></dt><dd>Robert R and Gary L. Pavlis
+</dd>
+<dt><b>Version:</b></dt><dd>unknown</dd>
+</dl>
+<dt><b>Friends:</b></dt><dd><table cellspacing=4>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixoperator+</font></td>
+<td align=left valign=top>
+ Add two matrices.
+<p>
+ X=A+B.
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixoperator-</font></td>
+<td align=left valign=top>
+ Take the difference of two matrices.
+<p>
+ X=A-B.
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixoperator*</font></td>
+<td align=left valign=top>
+ Multiply two matrices.
+<p>
+ X=A*B.
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixoperator*</font></td>
+<td align=left valign=top>
+ Scale a matrix by a constant.
+<p>
+ X=c*A where c is a constant.
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixoperator/</font></td>
+<td align=left valign=top>
+ Divide each element of a matrix by a constant.
+<p>
+ X=A/c where c is a scalar. 
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>dmatrixtr</font></td>
+<td align=left valign=top>
+ Transpose a matrix.
+<p>
+ Given X, returns X^T.  
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>ostream&amp;operator&lt;&lt;</font></td>
+<td align=left valign=top>
+ Output stream operator for a matrix.
+</td>
+</tr>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>istream&amp;operator&gt;&gt;</font></td>
+<td align=left valign=top>
+ Input stream operator for a matrix.
+</td>
+</tr>
+</table>
+</dd>
+</blockquote>
+<a name="ccdoc_contents"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>Contents</h2></td><td align=right valign=top><a href="#ccdoc_top">^</a>&nbsp;
+</td></tr></table>
+<blockquote>
+<table cellspacing=4>
+<tr>
+<th valign=bottom align=left>Entity</th><th valign=bottom align=left>Type</th><th valign=bottom align=left>Scope</th><th valign=bottom align=left>Short Description</th></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#des--7edmatrix--7e-dmatrix--28--29">~dmatrix</a></td><td align=left valign=top>destructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Destructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#con-dmatrix-dmatrix--28--29">dmatrix</a></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Default constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#con-dmatrix-dmatrix--28-int-nr--2c-int-nc--29">dmatrix</a></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Basic constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#con-dmatrix-dmatrix--28-const-dmatrix--26-other--29">dmatrix</a></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Standard copy constructor
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-columns-int-columns--28--29">columns</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Return the number of columns in this matrix.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-get_address-double--2a-get_address--28-int-r--2c-int-c--29">get_address</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Return a pointer to an element (r,c) of matrix.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20-28-29-double--26-operator--28--29--28-int-rowindex--2c-int-colindex--29">operator ()</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Indexing operator for a matrix object.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29">operator +=</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Adds one matrix to another.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29">operator -=</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Subtracts one matrix from another.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">operator =</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Standard assignment operator
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-rows-int-rows--28--29">rows</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Return the number of rows in this matrix.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-size-int--2a-size--28--29">size</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the size of this matrix.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-zero-void-zero--28--29">zero</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Initialize a matrix to all zeros.
+</td></tr>
+</table>
+</blockquote>
+<a name="des--7edmatrix--7e-dmatrix--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>destructor ~dmatrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-dmatrix-dmatrix--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Destructor.
+<p>
+ Nothing special.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:125</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>dmatrix</b> ( )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-dmatrix-dmatrix--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor dmatrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#des--7edmatrix--7e-dmatrix--28--29">&lt;</a>&nbsp;<a href="#con-dmatrix-dmatrix--28-int-nr--2c-int-nc--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Default constructor.
+<p>
+ Produces a 1x1 matrix as a place holder.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:110</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>dmatrix</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-dmatrix-dmatrix--28-int-nr--2c-int-nc--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor dmatrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-dmatrix-dmatrix--28--29">&lt;</a>&nbsp;<a href="#con-dmatrix-dmatrix--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Basic constructor.
+<p>
+ Allocates space for nr x nc array.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:116</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>nr
+</i></td><td align=left valign=top>number of rows to allocate for this matrix.
+</td></tr>
+<tr><td align=left valign=top><i>nc
+</i></td><td align=left valign=top>number of columns to allocate for this matrix.
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>dmatrix</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> nr ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nc )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-dmatrix-dmatrix--28-const-dmatrix--26-other--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor dmatrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-dmatrix-dmatrix--28-int-nr--2c-int-nc--29">&lt;</a>&nbsp;<a href="#met-columns-int-columns--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Standard copy constructor
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:121</dd>
+<dt><b>Param:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>other
+</i></td><td align=left valign=top>matrix to be copied/
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>dmatrix</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-columns-int-columns--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method columns</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-dmatrix-dmatrix--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-get_address-double--2a-get_address--28-int-r--2c-int-c--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+  Return the number of columns in this matrix.
+<p>
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:206</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>int</b></font> <b><b>columns</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-get_address-double--2a-get_address--28-int-r--2c-int-c--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method get_address</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-columns-int-columns--28--29">&lt;</a>&nbsp;<a href="#mop-operator-20-28-29-double--26-operator--28--29--28-int-rowindex--2c-int-colindex--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Return a pointer to an element (r,c) of matrix.
+<p>
+ This is most
+ useful in constructs using the BLAS that require a pointer reference
+ to an element of a matrix.  
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:184</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>r
+</i></td><td align=left valign=top>is row index requested.
+</td></tr>
+<tr><td align=left valign=top><i>c
+</i></td><td align=left valign=top>is column index requested.
+</td></tr>
+</table></dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i><a href="ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html">dmatrix_index_error</a></i></td><td align=left valign=top>is thrown if request is out of range
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> * <b><b>get_address</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> r ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> c )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20-28-29-double--26-operator--28--29--28-int-rowindex--2c-int-colindex--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator ()</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-get_address-double--2a-get_address--28-int-r--2c-int-c--29">&lt;</a>&nbsp;<a href="#mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Indexing operator for a matrix object.
+<p>
+ Gets value of 
+ matrix at (rowindex,colindex).  
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:134</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>rowindex
+</i></td><td align=left valign=top>row to fetch
+</td></tr>
+<tr><td align=left valign=top><i>colindex
+</i></td><td align=left valign=top>column to fetch.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>Reference to matrix element at position (rowindex,colindex)
+</dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i><a href="ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html">dmatrix_index_error</a></i></td><td align=left valign=top>is thrown if request is out of range
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> &amp; <b><b>operator ()</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> rowindex ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> colindex )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator +=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20-28-29-double--26-operator--28--29--28-int-rowindex--2c-int-colindex--29">&lt;</a>&nbsp;<a href="#mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Adds one matrix to another.
+<p>
+ X->X+A where A is right hand side.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:143</dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i><a href="ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html">dmatrix_size_error</a></i></td><td align=left valign=top>is thrown if two matrices are not of the same size
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator -=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Subtracts one matrix from another.
+<p>
+ X->X-A where A is right hand side.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:148</dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i><a href="ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html">dmatrix_size_error</a></i></td><td align=left valign=top>is thrown if two matrices are not of the same size
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator -=</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator =</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-rows-int-rows--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Standard assignment operator
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:138</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-rows-int-rows--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method rows</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-size-int--2a-size--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Return the number of rows in this matrix.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:202</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>int</b></font> <b><b>rows</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-size-int--2a-size--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method size</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-rows-int-rows--28--29">&lt;</a>&nbsp;<a href="#met-zero-void-zero--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Get the size of this matrix.
+<p>
+ User must delete [] the result.
+ User should use rows() and columns() method in preference to this.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:198</dd>
+<dt><b>Returns:</b></dt><dd>Two element int vector with row=[0] and column=[1].  
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>int</b></font> * <b><b>size</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-zero-void-zero--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method zero</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-size-int--2a-size--28--29">&lt;</a>&nbsp;<a href="#met-zero-void-zero--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+  Initialize a matrix to all zeros.
+<dl>
+<dt><b>Source:</b></dt><dd>dmatrix.h:210</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>zero</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name=ccdoc_bottom></a>
+<hr>
+<center>
+<p>
+<font size="-1">
+Created Sat Jan  8 10:32:19 2005.
+<br>
+This documentation was generated automatically by
+<br>
+ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8.
+<br>
+Click <a href="mailto:joe@joelinoff.com,jdl@xilinx.com?subject=Bug report or feature request for ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">here</a> to submit a bug report or feature request for ccdoc.
+<br>
+Click <a href="#ccdoc_top">here</a> to return to the top of the page.
+</font>
+</center>
+</body>
+</html>

@@ -1,0 +1,827 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--NewPage-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="ccdoc_copyright" content="(C) Joe Linoff 1998-2001">
+<meta name="ccdoc_author" content="Joe Linoff">
+<meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
+<meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html">
+<meta name="ccdoc_creation_date" content="Sat Jan  8 10:32:19 2005">
+<meta name="keywords" content="ccdoc, source code, documentation">
+<title>ccdoc GCLvectorfield3d gclgrid.h:1131:class</title>
+</head>
+
+<body>
+<a name=ccdoc_top></a>
+<table border=0 width="100%"><tr><td align=left>
+<a href="index.html">GCLgrid</a>
+ :: <a href="ccdoc.GCLgrid.GCLgrid.pkg.html">GCLgrid</a>
+</td><td align=right><a href="ccdoc.class_summary.html">classes</a></td></tr></table>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>class GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+</td></tr></table>
+&nbsp;&nbsp;&nbsp;&nbsp;extends <a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a> as public
+<p>
+<blockquote>
+Three-dimensional vector field defined on a GCLgrid framework.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1131</dd>
+<dt><b>Author:</b></dt><dd>unascribed</dd>
+<dt><b>Version:</b></dt><dd>unknown</dd>
+</dl>
+<dt><b>Friend:</b></dt><dd><table cellspacing=4>
+<tr>
+<td align=left valign=top>
+<font color=green><b>function</b></font></td>
+<td align=left valign=top>
+<font color=red>ostream&amp;operator&lt;&lt;</font></td>
+<td align=left valign=top>
+  stream output operator for a 3d scalar field.
+<p>
+<p>
+  Format is:
+  <pre>
+line 1:  n1 n2 n3 nv
+line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order 
+		(index 3 most rapidly varying).
+</pre>
+</td>
+</tr>
+</table>
+</dd>
+</blockquote>
+<a name="ccdoc_contents"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>Contents</h2></td><td align=right valign=top><a href="#ccdoc_top">^</a>&nbsp;
+</td></tr></table>
+<blockquote>
+<table cellspacing=4>
+<tr>
+<th valign=bottom align=left>Entity</th><th valign=bottom align=left>Inherited From</th><th valign=bottom align=left>Type</th><th valign=bottom align=left>Scope</th><th valign=bottom align=left>Short Description</th></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#des--7eGCLvectorfield3d--7e-GCLvectorfield3d--28--29">~GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>destructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Destructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Default constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-int-n1size--2c-int-n2size--2c-int-n3size--2c-int-nvsize--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Simple constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Standard copy constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Partial copy constructor cloning grid but not setting field variable.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Antelope database driven constructor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-compute_extents-void-compute_extents--28--29">compute_extents</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>undocumented</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">ctog</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Convert Cartesian coordinates to geographical coordinates.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-ctog-Geographic_point-ctog--28-Cartesian_point-p--29">ctog</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Convert from Cartesian coordinates to geographical coordinates.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-dbsave-void-dbsave--28-Dbptr-db--2c-string-gclgdir--2c-string-fielddir--2c-string-fieldname--2c-string-dfile--29-throw--28-int--29">dbsave</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Save field to an Antelope (Datascope) database.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-depth-double-depth--28-int--2c-int--2c-int--29">depth</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the depth below the standard reference ellipsoid of a grid point.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-fetch_transformation_matrix-dmatrix-fetch_transformation_matrix--28--29">fetch_transformation_matrix</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Returns the transformation matrix for this grid as a 3x3 dmatrix object.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-fetch_translation_vector-double--2a-fetch_translation_vector--28--29">fetch_translation_vector</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Returns a newly allocated 3 vector of double containing a copy of the translation 
+ vector defining the GCLgrid transformation property.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-geo_coordinates-Geographic_point-geo_coordinates--28-int-i1--2c-int-i2--2c-int-i3--29">geo_coordinates</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Returns the geographical coordinates of a point in the grid specified by grid index positions.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-get_index-void-get_index--28-int--2a-ind--29">get_index</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>See 
+<a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#met-get_index-virtual-void-get_index--28-int--2a-ind--29--3d-0">BasicGCLgrid::get_index</a>  
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-gtoc-Cartesian_point-gtoc--28-double-plat--2c-double-plon--2c-double-pr--29">gtoc</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Convert from geographical to Cartesian coordinates in the GCLgrid 
+ coordinate system.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-gtoc-Cartesian_point-gtoc--28-Geographic_point-p--29">gtoc</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Convert from geographical to Cartesian coordinates in the GCLgrid 
+ coordinate system.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-interpolate-double--2a-interpolate--28-double--2c-double--2c-double--29">interpolate</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Interpolate a 3d scalar field.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-lat-double-lat--28-int--2c-int--2c-int--29">lat</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the latitude (in radians) of a grid point.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-lookup-int-lookup--28-double--2c-double--2c-double--29">lookup</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Save grid to an Antelope (Datascope) database.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#att-nv">nv</a></td><td align=left valign=top></td><td align=left valign=top>attribute&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Number of components to each vector of the field.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#mop-operator-20-2a-3d-void-operator--2a-3d--28-double--29">operator *=</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Multiply all field values by a constant scale factor.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#mop-operator-20+-3d-void-operator-+-3d--28-GCLvectorfield3d--26--29">operator +=</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Add one field to another.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#mop-operator-20-3d-GCLvectorfield3d--26-operator--3d--28-const-GCLvectorfield3d--26--29">operator =</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Standard assignment operator.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-r-double-r--28-int--2c-int--2c-int--29">r</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the longitude (in radians) of a grid point.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-reset_index-void-reset_index--28--29">reset_index</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>See 
+<a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#met-reset_index-virtual-void-reset_index--28--29--3d-0">BasicGCLgrid::reset_index</a>  
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-set_transformation_matrix-void-set_transformation_matrix--28--29">set_transformation_matrix</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Set or reset the transformation properties for the grid.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#att-val">val</a></td><td align=left valign=top></td><td align=left valign=top>attribute&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Scalar field variable stored in a four-dimensional C array.
+</td></tr>
+</table>
+</blockquote>
+<a name="des--7eGCLvectorfield3d--7e-GCLvectorfield3d--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>destructor ~GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Destructor.
+<p>
+<p>
+ Note the same precautions about application of the default constructor as noted 
+ in
+<a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#des--7eGCLgrid3d--7e-GCLgrid3d--28--29">GCLgrid3d::~GCLgrid3d</a><dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1196</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLvectorfield3d</b> ( )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#des--7eGCLvectorfield3d--7e-GCLvectorfield3d--28--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-int-n1size--2c-int-n2size--2c-int-n3size--2c-int-nvsize--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+Default constructor.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1144</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-int-n1size--2c-int-n2size--2c-int-n3size--2c-int-nvsize--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Simple constructor.
+<p>
+ Allocates space for x1, x2, x3, and val arrays and initializes
+ object data attributes to zero.  
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1154</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>n1size
+</i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
+</td></tr>
+<tr><td align=left valign=top><i>n2size
+</i></td><td align=left valign=top>number of grid points on generalized coordinate axis 2.
+</td></tr>
+<tr><td align=left valign=top><i>n3size
+</i></td><td align=left valign=top>number of grid points on generalized coordinate axis 3.
+</td></tr>
+<tr><td align=left valign=top><i>nvsize
+</i></td><td align=left valign=top>number of components of vectors in this field
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> n1size ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> n2size ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> n3size ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-int-n1size--2c-int-n2size--2c-int-n3size--2c-int-nvsize--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+Standard copy constructor.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1156</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Partial copy constructor cloning grid but not setting field variable.
+<p>
+<p>
+ A common situation is to have a grid that is already defined that
+ needs to be cloned and have field variables set through some other
+ mechanism.  For example, one might create a standard grid and then
+ plan to load it with values from a different grid or compute values
+ of a field variable at the grid points.  
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1169</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>g
+</i></td><td align=left valign=top>Grid to be cloned.
+</td></tr>
+<tr><td align=left valign=top><i>nvsize
+</i></td><td align=left valign=top>number of vector components for vector field val array.
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a> &amp; ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29">&lt;</a>&nbsp;<a href="#met-compute_extents-void-compute_extents--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+  Antelope database driven constructor.
+<p>
+ This is a specialized constructor that
+  loads a field tagged with two names:  grid name and the field name (see below).
+  The two components are stored separately in the external database using 
+  two different tables.  This constructor has a fair amount of memory overhead
+  as it loads a copy of the parent GCLgrid object before creating the field and
+  then loading field variable data from the database.
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1190</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>db
+</i></td><td align=left valign=top>Antelope database pointer.
+</td></tr>
+<tr><td align=left valign=top><i>grdnm
+</i></td><td align=left valign=top>name of grid to be loaded from the database.
+</td></tr>
+<tr><td align=left valign=top><i>fn
+</i></td><td align=left valign=top>name tag for the field to be loaded from the database.
+</td></tr>
+<tr><td align=left valign=top><i>nvsize
+</i></td><td align=left valign=top>expected number of components for vectors in field.
+</td></tr>
+</table></dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if there are any input problems.
+ A simple int exception is used because errors are posted 
+ to the Antelope elog mechanism. 
+ If this exception is caught, call elog_complain to flush the 
+ elog buffer.
+<p>
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> Dbptr db ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string grdnm ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fn ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-compute_extents-void-compute_extents--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method compute_extents</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+undocumented<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:671</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>compute_extents</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method ctog</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-compute_extents-void-compute_extents--28--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-Cartesian_point-p--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Convert Cartesian coordinates to geographical coordinates.
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:208</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>x1p
+</i></td><td align=left valign=top>- Cartesian x1 coordinate of point to convert
+</td></tr>
+<tr><td align=left valign=top><i>x2p
+</i></td><td align=left valign=top>- Cartesian x2 coordinate of point to convert
+</td></tr>
+<tr><td align=left valign=top><i>x3p
+</i></td><td align=left valign=top>- Cartesian x3 coordinate of point to convert
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>Geographic_point data structure (see
+<a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> )
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> <b><b>ctog</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> x1p ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> x2p ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> x3p )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-ctog-Geographic_point-ctog--28-Cartesian_point-p--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method ctog</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&lt;</a>&nbsp;<a href="#met-dbsave-void-dbsave--28-Dbptr-db--2c-string-gclgdir--2c-string-fielddir--2c-string-fieldname--2c-string-dfile--29-throw--28-int--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Convert from Cartesian coordinates to geographical coordinates.
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:214</dd>
+<dt><b>Param:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>p
+</i></td><td align=left valign=top>point to convert stored in a Cartesian_point data structure
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>Geographic_point data structure (see
+<a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> )
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> <b><b>ctog</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> p )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-dbsave-void-dbsave--28-Dbptr-db--2c-string-gclgdir--2c-string-fielddir--2c-string-fieldname--2c-string-dfile--29-throw--28-int--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method dbsave</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-ctog-Geographic_point-ctog--28-Cartesian_point-p--29">&lt;</a>&nbsp;<a href="#met-depth-double-depth--28-int--2c-int--2c-int--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Save field to an Antelope (Datascope) database.
+<p>
+<p>
+<p>
+ This routine writes the object attributes to a special table and 
+ writes the grid coordinate data to an output file.  Note the file
+ name used to store the grid is the same as the name parameter passed 
+ to this function.
+ The field variable data are written to a different file and 
+ stored indexed with a different database table.  
+ An odd feature of this routine is that if the directory name 
+ for the field passed to the function is empty (the string
+ equivalent of NULL) the grid is not saved.  This is a necessary
+ feature for saving multiple fields on the same parent grid
+ structure.  
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1231</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>db
+</i></td><td align=left valign=top>Antelope database pointer.
+</td></tr>
+<tr><td align=left valign=top><i>gclgdir
+</i></td><td align=left valign=top>directory to save gclgrid data.  If zero length,
+ 	    grid data is not saved.
+</td></tr>
+<tr><td align=left valign=top><i>fielddir
+</i></td><td align=left valign=top>directory where field (val) data will be saved.  Can be the same as
+          gclgdir, but should not be zero length.
+</td></tr>
+<tr><td align=left valign=top><i>fieldname
+</i></td><td align=left valign=top>name assigned to this field.
+</td></tr>
+<tr><td align=left valign=top><i>dfile
+</i></td><td align=left valign=top>name of file to be used to save field (val) data.  Note the grid data
+ 	    is always saved to a name based in the name attribure of the grid.
+</td></tr>
+</table></dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if save failed.  
+ A simple int exception is used because errors are posted 
+ to the Antelope elog mechanism. 
+ If this exception is caught, call elog_complain to flush the 
+ elog buffer.
+<p>
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>dbsave</b></b> (</td><td nowrap valign=top> Dbptr db ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string gclgdir ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fielddir ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fieldname ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string dfile ) <font color=green><b>throw</b></font> ( <font color=green><b>int</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-depth-double-depth--28-int--2c-int--2c-int--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method depth</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-dbsave-void-dbsave--28-Dbptr-db--2c-string-gclgdir--2c-string-fielddir--2c-string-fieldname--2c-string-dfile--29-throw--28-int--29">&lt;</a>&nbsp;<a href="#met-fetch_transformation_matrix-dmatrix-fetch_transformation_matrix--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Get the depth below the standard reference ellipsoid of a grid point.
+<p>
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:669</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>depth in kilometers of the requested grid point.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>depth</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-fetch_transformation_matrix-dmatrix-fetch_transformation_matrix--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method fetch_transformation_matrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-depth-double-depth--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#met-fetch_translation_vector-double--2a-fetch_translation_vector--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Returns the transformation matrix for this grid as a 3x3 dmatrix object.
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:194</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.dmatrix.pkg.html">dmatrix</a> <b><b>fetch_transformation_matrix</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-fetch_translation_vector-double--2a-fetch_translation_vector--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method fetch_translation_vector</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-fetch_transformation_matrix-dmatrix-fetch_transformation_matrix--28--29">&lt;</a>&nbsp;<a href="#met-geo_coordinates-Geographic_point-geo_coordinates--28-int-i1--2c-int-i2--2c-int-i3--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Returns a newly allocated 3 vector of double containing a copy of the translation 
+ vector defining the GCLgrid transformation property.
+<p>
+ The user must be sure to 
+ call delete [] after using this vector to avoid a memory leak.
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:200</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> * <b><b>fetch_translation_vector</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-geo_coordinates-Geographic_point-geo_coordinates--28-int-i1--2c-int-i2--2c-int-i3--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method geo_coordinates</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-fetch_translation_vector-double--2a-fetch_translation_vector--28--29">&lt;</a>&nbsp;<a href="#met-get_index-void-get_index--28-int--2a-ind--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Returns the geographical coordinates of a point in the grid specified by grid index positions.
+<p>
+<p>
+ If you need the actual coordinates of the points that define the grid 
+ converted to geographic coordinates use this function.  Use the 
+ ctog function to convert an arbitrary ordered triplet.  
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:634</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>grid point requested in an
+<a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> data structure.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> <b><b>geo_coordinates</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> i1 ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> i2 ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> i3 )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-get_index-void-get_index--28-int--2a-ind--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method get_index</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-geo_coordinates-Geographic_point-geo_coordinates--28-int-i1--2c-int-i2--2c-int-i3--29">&lt;</a>&nbsp;<a href="#met-gtoc-Cartesian_point-gtoc--28-double-plat--2c-double-plon--2c-double-pr--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+See 
+<a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#met-get_index-virtual-void-get_index--28-int--2a-ind--29--3d-0">BasicGCLgrid::get_index</a>  
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:621</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>get_index</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> * ind )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-gtoc-Cartesian_point-gtoc--28-double-plat--2c-double-plon--2c-double-pr--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method gtoc</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-get_index-void-get_index--28-int--2a-ind--29">&lt;</a>&nbsp;<a href="#met-gtoc-Cartesian_point-gtoc--28-Geographic_point-p--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Convert from geographical to Cartesian coordinates in the GCLgrid 
+ coordinate system.
+<p>
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:224</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>plat
+</i></td><td align=left valign=top>Latitude (radians) of point to convert.
+</td></tr>
+<tr><td align=left valign=top><i>plon
+</i></td><td align=left valign=top>Longitude (radians) of point to convert.
+</td></tr>
+<tr><td align=left valign=top><i>pr
+</i></td><td align=left valign=top>Earth radius (km) of point to convert.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>reca
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> plat ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> plon ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> pr )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-gtoc-Cartesian_point-gtoc--28-Geographic_point-p--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method gtoc</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-gtoc-Cartesian_point-gtoc--28-double-plat--2c-double-plon--2c-double-pr--29">&lt;</a>&nbsp;<a href="#met-interpolate-double--2a-interpolate--28-double--2c-double--2c-double--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Convert from geographical to Cartesian coordinates in the GCLgrid 
+ coordinate system.
+<p>
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:232</dd>
+<dt><b>Param:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>p
+</i></td><td align=left valign=top>point to convert stored in a @link Geographic_point @endlink data structure.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>le
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> p )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-interpolate-double--2a-interpolate--28-double--2c-double--2c-double--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method interpolate</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-gtoc-Cartesian_point-gtoc--28-Geographic_point-p--29">&lt;</a>&nbsp;<a href="#met-lat-double-lat--28-int--2c-int--2c-int--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Interpolate a 3d scalar field.
+<p>
+<p>
+ Usage and caveats are the same as described in 
+<a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html#met-interpolate-double--2a-interpolate--28-double-x1p--2c-double-x2p--2c-double-x3p--29">GCLvectorfield::interpolate</a><dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1263</dd>
+<dt><b>Returns:</b></dt><dd>pointer to vector of doubles allocated with new []. 
+  User must take caution to free this array to avoid memory leaks.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> * <b><b>interpolate</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-lat-double-lat--28-int--2c-int--2c-int--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lat</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-interpolate-double--2a-interpolate--28-double--2c-double--2c-double--29">&lt;</a>&nbsp;<a href="#met-lookup-int-lookup--28-double--2c-double--2c-double--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Get the latitude (in radians) of a grid point.
+<p>
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:643</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>latitude in radians of the requested grid point.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>lat</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-lookup-int-lookup--28-double--2c-double--2c-double--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lookup</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-lat-double-lat--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#att-nv">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Save grid to an Antelope (Datascope) database.
+<p>
+<p>
+ This routine writes the object attributes to a special table and 
+ writes the grid coordinate data an output file.  Note the file
+ name used to store the grid is the same as the name parameter passed 
+ to this function.
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:617</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>db
+</i></td><td align=left valign=top>Antelope database pointer.
+</td></tr>
+<tr><td align=left valign=top><i>nm
+</i></td><td align=left valign=top>name used to save the grid.
+void dbsave(Dbptr db, string nm) throw(int);
+ Find the index position of a point in a GCLgrid3d object.  
+ This is a low level function to find the location of a point
+ specified as the Cartesian, ordered triplet (x1p,x2p,x3p) in a grid.
+ It does not return the actual index positions, but only sets the
+ internal index.  The routine is very procedural returning an 
+ integer code (see below) indicating success or failure of the lookup.
+ This was intentional as this routine is called millions of times in 
+ some contexts so efficiency is critical.  The alternative would be 
+ to throw an exception when a lookup failed, but since this is viewed
+ as a common problem that could happen millions of times this was 
+ a potential efficiency problems (the books all say throwing exceptions
+ is an expensive operation).  
+</td></tr>
+<tr><td align=left valign=top><i>x1p
+</i></td><td align=left valign=top>- Cartesian x1 coordinate of point to find within the grid
+</td></tr>
+<tr><td align=left valign=top><i>x2p
+</i></td><td align=left valign=top>- Cartesian x2 coordinate of point to find within the grid
+</td></tr>
+<tr><td align=left valign=top><i>x3p
+</i></td><td align=left valign=top>- Cartesian x3 coordinate of point to find within the grid
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>2 when point is in gray area within on nominal grid spacing of the edge
+1 when the point is outside the bounding box.
+0 on success.\
+-1 if the lookup function did not converge.
+<p>
+</dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if save failed.  
+ A simple int exception is used because errors are posted 
+ to the Antelope elog mechanism. 
+ If this exception is caught, call elog_complain to flush the 
+ elog buffer.
+<p>
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>int</b></font> <b><b>lookup</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="att-nv"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>attribute nv</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-lookup-int-lookup--28-double--2c-double--2c-double--29">&lt;</a>&nbsp;<a href="#mop-operator-20-2a-3d-void-operator--2a-3d--28-double--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+Number of components to each vector of the field.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1134</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd>public <font color=green><b>int</b></font> <b>nv</b>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20-2a-3d-void-operator--2a-3d--28-double--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator *=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#att-nv">&lt;</a>&nbsp;<a href="#mop-operator-20+-3d-void-operator-+-3d--28-GCLvectorfield3d--26--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Multiply all field values by a constant scale factor.
+<p>
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1254</dd>
+<dt><b>Param:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>c
+</i></td><td align=left valign=top>constant by which the field is to be scaled.
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator *=</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20+-3d-void-operator-+-3d--28-GCLvectorfield3d--26--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator +=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20-2a-3d-void-operator--2a-3d--28-double--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-GCLvectorfield3d--26-operator--3d--28-const-GCLvectorfield3d--26--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Add one field to another.
+<p>
+<p>
+<p>
+ This acts like the += operator for simple types, but does so
+ for an entire field defined on a grid.  As for simple types the
+ field on the right hand side is accumulated to the field on
+ the left had side of the operator.  This works even if the
+ the two fields have different transformation properties and 
+ do not match in positions.  The most important limitation to 
+ understand, however, is basic sampling.  The field to contain
+ the accumulation needs to be as denser or more densely sampled
+ as the field on the right hand side to avoid aliasing effects.
+ This is exactly like time series sampling -- upsampling can just be
+ done by interpolation but downsampling requires an antialiasing
+ (smoother) filter.  
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1248</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="mop-operator-20-3d-GCLvectorfield3d--26-operator--3d--28-const-GCLvectorfield3d--26--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator =</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20+-3d-void-operator-+-3d--28-GCLvectorfield3d--26--29">&lt;</a>&nbsp;<a href="#met-r-double-r--28-int--2c-int--2c-int--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+Standard assignment operator.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1198</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLvectorfield3d</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-r-double-r--28-int--2c-int--2c-int--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method r</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20-3d-GCLvectorfield3d--26-operator--3d--28-const-GCLvectorfield3d--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-void-reset_index--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Get the longitude (in radians) of a grid point.
+<p>
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:660</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+double lon(int,int,int);
+ Get the radius from the center of the Earth of a grid point.
+<p>
+</td></tr>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>latitude in radians of the requested grid point.
+Earth radius in kilometers of the requested grid point.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>r</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-reset_index-void-reset_index--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method reset_index</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-r-double-r--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#met-set_transformation_matrix-void-set_transformation_matrix--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+See 
+<a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#met-reset_index-virtual-void-reset_index--28--29--3d-0">BasicGCLgrid::reset_index</a>  
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:619</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>reset_index</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="met-set_transformation_matrix-void-set_transformation_matrix--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method set_transformation_matrix</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-reset_index-void-reset_index--28--29">&lt;</a>&nbsp;<a href="#att-val">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Set or reset the transformation properties for the grid.
+<p>
+ The transformation properties 
+ are uniquely defined by the coordinate system origin and azimuth_y so if these are
+ all that are known this low level member function can be called to set the transformation
+ properties.  It is of minimal use to most users and should be used cautiously and only
+ if you thoroughly understand the way this all works.  
+<p>
+<dl>
+<dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">BasicGCLgrid</a></dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:190</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>set_transformation_matrix</b></b> (</td><td nowrap valign=top> )</td></tr></table>
+</dd></dl>
+</blockquote>
+<a name="att-val"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>attribute val</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-set_transformation_matrix-void-set_transformation_matrix--28--29">&lt;</a>&nbsp;<a href="#att-val">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Scalar field variable stored in a four-dimensional C array.
+<p>
+ Index of the field is parallel with coordinate arrays x1, x2, and x3
+ that define grid point positions in space.  The fourth index defines
+ the component of each vector of the field.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1141</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * * * <b>val</b>
+</dd></dl>
+</blockquote>
+<a name=ccdoc_bottom></a>
+<hr>
+<center>
+<p>
+<font size="-1">
+Created Sat Jan  8 10:32:19 2005.
+<br>
+This documentation was generated automatically by
+<br>
+ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8.
+<br>
+Click <a href="mailto:joe@joelinoff.com,jdl@xilinx.com?subject=Bug report or feature request for ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">here</a> to submit a bug report or feature request for ccdoc.
+<br>
+Click <a href="#ccdoc_top">here</a> to return to the top of the page.
+</font>
+</center>
+</body>
+</html>

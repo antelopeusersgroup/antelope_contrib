@@ -147,42 +147,22 @@ void free_4dgrid_contiguous(double ****x,int n1, int n2, int n3)
 //
 // C++ constructors 
 //
-GCLgrid::GCLgrid (int n1size, int n2size)
+BasicGCLgrid::BasicGCLgrid()
 {
-	name[0]='\0';
+	name=string("");
 	lat0=0.0; lon0=0.0; r0=0.0;
 	azimuth_y=0.0;  dx1_nom=0.0;  dx2_nom=0.0;
+	n1=0;  n2=0;
 	i0=0;  j0=0;
-	n1=n1size;
-	n2=n2size;
-	x1=create_2dgrid_contiguous(n1size,n2size);
-	x2=create_2dgrid_contiguous(n1size,n2size);
-	x3=create_2dgrid_contiguous(n1size,n2size);
+	x1low=0.0;  x1high=0.0;
+	x2low=0.0;  x2high=0.0;
+	x3low=0.0;  x3high=0.0;
 }
-
-GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size)
+// This could be defaulted as scalars are copied, I believe, but
+// best to be explicit.
+BasicGCLgrid::BasicGCLgrid(const BasicGCLgrid& g)
 {
-	name[0]='\0';
-	lat0=0.0; lon0=0.0; r0=0.0;
-	azimuth_y=0.0;  dx1_nom=0.0;  dx2_nom=0.0; dx3_nom=0.0;
-	i0=0;  j0=0;  k0=0;
-	n1=n1size;
-	n2=n2size;
-	n3=n3size;
-	x1=create_3dgrid_contiguous(n1size,n2size,n3size);
-	x2=create_3dgrid_contiguous(n1size,n2size,n3size);
-	x3=create_3dgrid_contiguous(n1size,n2size,n3size);
-}
-//  Copy constructor is far more complex and here it is
-GCLgrid::GCLgrid(const GCLgrid& g)
-{
-	int i,j;
-	//
-	//I think the books officially say copying the scalars defaulted
-	//I, however, have found depending on subtle standard features
-	//dangerous so  I'll do this explicitly.
-	//
-	strcpy(name, g.name);
+	name=g.name;
 	lat0=g.lat0;
 	lon0=g.lon0;
 	r0=g.r0;
@@ -199,11 +179,37 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	for(i=0;i<3;++i)
+	for(int i=0;i<3;++i)
 	{
+		for(int j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
 		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
 	}
+}
+
+GCLgrid::GCLgrid (int n1size, int n2size) : BasicGCLgrid()
+{
+	n1=n1size;
+	n2=n2size;
+	x1=create_2dgrid_contiguous(n1size,n2size);
+	x2=create_2dgrid_contiguous(n1size,n2size);
+	x3=create_2dgrid_contiguous(n1size,n2size);
+}
+
+GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size) : BasicGCLgrid()
+{
+	n1=n1size;
+	n2=n2size;
+	n3=n3size;
+	x1=create_3dgrid_contiguous(n1size,n2size,n3size);
+	x2=create_3dgrid_contiguous(n1size,n2size,n3size);
+	x3=create_3dgrid_contiguous(n1size,n2size,n3size);
+}
+// copy constructors here use inheritance of the BasicGCLgrid
+// to reduce redundant code.
+GCLgrid::GCLgrid(const GCLgrid& g) 
+	: BasicGCLgrid(dynamic_cast<const BasicGCLgrid&>(g))
+{
+	int i,j;
 	ix1=g.ix1;
 	ix2=g.ix2;
 	x1=create_2dgrid_contiguous(n1,n2);
@@ -222,33 +228,12 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 
 }
 GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
+	: BasicGCLgrid(dynamic_cast<const BasicGCLgrid&>(g))
 {
 	int i,j,k;
-	strcpy(name,g.name);
-	lat0=g.lat0;
-	lon0=g.lon0;
-	r0=g.r0;
-	azimuth_y=g.azimuth_y;
-	dx1_nom=g.dx1_nom;
-	dx2_nom=g.dx2_nom;
-	dx3_nom=g.dx3_nom;
-	n1=g.n1;
-	n2=g.n2;
 	n3=g.n3;
-	i0=g.i0;
-	j0=g.j0;
+	dx3_nom=g.dx3_nom;
 	k0=g.k0;
-	x1low=g.x1low;
-	x1high=g.x1high;
-	x2low=g.x2low;
-	x2high=g.x2high;
-	x3low=g.x3low;
-	x3high=g.x3high;
-	for(i=0;i<3;++i)
-	{
-		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-	}
 	ix1=g.ix1; ix2=g.ix2; ix3=g.ix3;
 	x1=create_3dgrid_contiguous(n1,n2,n3);
 	x2=create_3dgrid_contiguous(n1,n2,n3);
@@ -256,25 +241,29 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	// could use an memcpy here and it would be faster
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x1[i][j]=g.x1[i][j];
+			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x2[i][j]=g.x2[i][j];
+			for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x3[i][j]=g.x3[i][j];
+			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
 
 }
 //
 //  assignment operator is almost like the copy constructor but 
 //  we protect against self assignment.
+//  Maintenance issue here.  Unlike copy constructor all attributes
+//  have to be set explicitly here.  
+//  Don't know how to use inheritance in the same way used in copy
+//  constructor above.  Don't think there is one.
 //
 GCLgrid& GCLgrid::operator=(const GCLgrid& g)
 {
 	if(this != &g)  // avoid self assignment
 	{
 		int i,j;
-		strcpy(name,g.name);
+		name=g.name;
 		lat0=g.lat0;
 		lon0=g.lon0;
 		r0=g.r0;
@@ -322,7 +311,7 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 	if(this != &g)  // avoid self assignment
 	{
 		int i,j,k;
-		strcpy(name,g.name);
+		name=g.name;
 		lat0=g.lat0;
 		lon0=g.lon0;
 		r0=g.r0;
@@ -420,7 +409,7 @@ void build_baseline(double lat0, double lon0, double phi,
 // a GCLgrid on the fly using the description coming from pf
 //
 GCLgrid::GCLgrid(int n1in, int n2in, 
-	char *namein, 
+	string namein,
 	double lat0in, double lon0in, double r0in,
 	double azimuth_yin, double dx1_nomin, double dx2_nomin, 
 	int i0in, int j0in)
@@ -439,10 +428,13 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 	// temporary grids to hold lat-lon-r
 	double **plat, **plon, **pr;
 
-	strcpy(name,namein);
+	name=namein;
 	lat0=lat0in;
 	lon0=lon0in;
-	r0 = r0_ellipse(lat0);
+	if(r0in>0.0)
+		r0=r0in;
+	else
+		r0 = r0_ellipse(lat0);
 	azimuth_y=azimuth_yin;
 	rotation_angle=-azimuth_y;
 	dx1_nom=dx1_nomin;
@@ -537,7 +529,7 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 // a GCLgrid on the fly using the description coming from pf
 //
 GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
-	char *namein, 
+	string namein,
 	double lat0in, double lon0in, double r0in,
 	double azimuth_yin, double dx1_nomin, double dx2_nomin,double dx3_nomin, 
 	int i0in, int j0in)
@@ -554,10 +546,13 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 	double rotation_angle, azimuth_i;
 	double ***plat, ***plon, ***pr;
 
-	strcpy(name,namein);
+	name=namein;
 	lat0=lat0in;
 	lon0=lon0in;
-	r0 = r0_ellipse(lat0);
+	if(r0in>0.0)
+		r0=r0in;
+	else
+		r0 = r0_ellipse(lat0);
 	azimuth_y=azimuth_yin;
 	rotation_angle=-azimuth_y;
 	dx1_nom=dx1_nomin;
@@ -702,7 +697,7 @@ GCLvectorfield::GCLvectorfield(int n1size, int n2size, int n3size)
 	val=create_3dgrid_contiguous(n1size, n2size, n3size);
 }
 GCLscalarfield::GCLscalarfield(const GCLscalarfield& g) 
-	: GCLgrid(dynamic_cast<const GCLgrid&>(g))
+	 : GCLgrid(dynamic_cast<const GCLgrid&>(g))
 {
 	int i,j;
 	val = create_2dgrid_contiguous(g.n1, g.n2);
@@ -710,39 +705,15 @@ GCLscalarfield::GCLscalarfield(const GCLscalarfield& g)
 		for(j=0;j<n2;++j)
 			val[i][j]=g.val[i][j];
 }
-GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
+GCLscalarfield::GCLscalarfield(GCLgrid& g)
+	: GCLgrid(g)
 {
+	// Used to copy scalar attributes and grid data here.
+	// Use of call to grid constructor removes this need
 	int i,j;
-	strcpy(name, g.name);
-	lat0=g.lat0;
-	lon0=g.lon0;
-	r0=g.r0;
-	azimuth_y=g.azimuth_y;
-	dx1_nom=g.dx1_nom;
-	dx2_nom=g.dx2_nom;
-	n1=g.n1;
-	n2=g.n2;
-	i0=g.i0;
-	j0=g.j0;
-	x1low=g.x1low;
-	x1high=g.x1high;
-	x2low=g.x2low;
-	x2high=g.x2high;
-	x3low=g.x3low;
-	x3high=g.x3high;
-	for(i=0;i<3;++i)
-	{
-		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-	}
-	// We don't waste this effort unless these arrays contain something
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
 	val=create_2dgrid_contiguous(g.n1, g.n2);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)val[i][j]=0.0;
 }
 GCLvectorfield::GCLvectorfield(const GCLvectorfield& g) 
 	: GCLgrid(dynamic_cast<const GCLgrid&>(g))
@@ -755,39 +726,14 @@ GCLvectorfield::GCLvectorfield(const GCLvectorfield& g)
 			for(k=0;k<nv;++k)
 				val[i][j][k]=g.val[i][j][k];
 }
-GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
+GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g)
 {
-	int i,j;
-	strcpy(name, g.name);
-	lat0=g.lat0;
-	lon0=g.lon0;
-	r0=g.r0;
-	azimuth_y=g.azimuth_y;
-	dx1_nom=g.dx1_nom;
-	dx2_nom=g.dx2_nom;
-	n1=g.n1;
-	n2=g.n2;
-	i0=g.i0;
-	j0=g.j0;
-	x1low=g.x1low;
-	x1high=g.x1high;
-	x2low=g.x2low;
-	x2high=g.x2high;
-	x3low=g.x3low;
-	x3high=g.x3high;
-	for(i=0;i<3;++i)
-	{
-		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-	}
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
-        for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
+	int i,j,k;
 	nv=n3;
 	val=create_3dgrid_contiguous(g.n1, g.n2,nv);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<nv;++k)val[i][j][k]=0.0;
 }
 //
 //3d versions
@@ -823,43 +769,15 @@ GCLscalarfield3d::GCLscalarfield3d(const GCLscalarfield3d& g)
 			for(k=0;k<n3;++k)
 				val[i][j][k]=g.val[i][j][k];
 }
-GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) : GCLgrid3d(g.n1, g.n2, g.n3)
+GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) 
+	: GCLgrid3d(g)
 {
 	int i,j,k;
-	strcpy(name,g.name);
-	lat0=g.lat0;
-	lon0=g.lon0;
-	r0=g.r0;
-	azimuth_y=g.azimuth_y;
-	dx1_nom=g.dx1_nom;
-	dx2_nom=g.dx2_nom;
-	dx3_nom=g.dx3_nom;
-	n1=g.n1;
-	n2=g.n2;
-	n3=g.n3;
-	i0=g.i0;
-	j0=g.j0;
-	x1low=g.x1low;
-	x1high=g.x1high;
-	x2low=g.x2low;
-	x2high=g.x2high;
-	x3low=g.x3low;
-	x3high=g.x3high;
-	for(i=0;i<3;++i)
-	{
-		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-	}
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
 	val=create_3dgrid_contiguous(g.n1, g.n2, g.n3);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+				val[i][j][k]=0.0;
 }
 GCLvectorfield3d::GCLvectorfield3d(const GCLvectorfield3d& g) 
 	: GCLgrid3d(dynamic_cast<const GCLgrid3d&>(g))
@@ -874,44 +792,16 @@ GCLvectorfield3d::GCLvectorfield3d(const GCLvectorfield3d& g)
 					val[i][j][k][l]=g.val[i][j][k][l];
 }
 GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4) 
-	: GCLgrid3d(g.n1, g.n2, g.n3)
+	: GCLgrid3d(g)
 {
-	int i,j,k;
-	strcpy(name,g.name);
-	lat0=g.lat0;
-	lon0=g.lon0;
-	r0=g.r0;
-	azimuth_y=g.azimuth_y;
-	dx1_nom=g.dx1_nom;
-	dx2_nom=g.dx2_nom;
-	dx3_nom=g.dx3_nom;
-	n1=g.n1;
-	n2=g.n2;
-	n3=g.n3;
-	i0=g.i0;
-	j0=g.j0;
-	x1low=g.x1low;
-	x1high=g.x1high;
-	x2low=g.x2low;
-	x2high=g.x2high;
-	x3low=g.x3low;
-	x3high=g.x3high;
-	for(i=0;i<3;++i)
-	{
-		translation_vector[i]=g.translation_vector[i];
-		for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-	}
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
+	int i,j,k,l;
 	nv=n4;
 	val=create_4dgrid_contiguous(g.n1, g.n2, g.n3,n4);
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+				for(l=0;l<nv;++l)
+					val[i][j][k][l]=0.0;
 }
 
 

@@ -1,0 +1,13913 @@
+ccdoc v0.8 verbose
+$ 0
+S 1ad
+f 11 htdocs/gclgrid.db
+s
+5 @root
+0
+0
+pkg
+0 
+0
+0
+s
+7 GCLgrid
+1
+0
+pkg
+0 
+0
+0
+f 9 gclgrid.h
+s
+b _GCLGRID_H_
+2
+1
+m00
+0 
+3
+2
+6 define
+b _GCLGRID_H_
+s
+a $comment-1
+3
+1
+cop
+0 
+26
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 37
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 3
+47  This data structure is used to encapsulate data to describe a point on
+48  or inside the earth using a geographical (spherical geometry) reference
+8  system.
+a @long_desc
+1 2
+3f  Note that geographical angles are always assumed to be radians
+25  in any internal use of this package.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-2
+4
+1
+cop
+0 
+2b
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 42
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+22   Latitude of the point (radians).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-3
+5
+1
+cop
+0 
+2f
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 46
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1e  Longitude of point (radians).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-4
+6
+1
+cop
+0 
+33
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 50
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+32  Radius of point from Earth's center (kilometers).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 Geographic_point
+7
+1
+tyv
+0 
+34
+f
+7 typedef
+6 struct
+4 geo_
+1 {
+6 double
+3 lat
+1 ;
+6 double
+3 lon
+1 ;
+6 double
+1 r
+1 ;
+1 }
+10 Geographic_point
+s
+a $comment-5
+8
+1
+cop
+0 
+3b
+29
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 58
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  GCLgrid objects hold points internally in a Cartesian reference fram.
+a @long_desc
+1 3
+47  This data structure encapsulates such a coordinate.  It perhaps should
+42  be a class with a member to return a 3 vector alternative to the 
+10  verbose naming.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-6
+9
+1
+cop
+0 
+3f
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 62
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  The coordinate in the internal x1 direction.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-7
+a
+1
+cop
+0 
+43
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 66
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  The coordinate in the internal x2 direction.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a $comment-8
+b
+1
+cop
+0 
+47
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 70
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  The coordinate in the internal x3 direction.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f Cartesian_point
+c
+1
+tyv
+0 
+48
+f
+7 typedef
+6 struct
+5 cart_
+1 {
+6 double
+2 x1
+1 ;
+6 double
+2 x2
+1 ;
+6 double
+2 x3
+1 ;
+1 }
+f Cartesian_point
+s
+a $comment-9
+d
+1
+cop
+0 
+50
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 79
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+42  This is a base class that contains common attributes and virtual 
+47  declarations for higher level objects that are derived from this base.
+a @long_desc
+1 2
+1  
+47  Note that both 2d and 3d grid and field objects are derived from here.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+e Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+c BasicGCLgrid
+e
+1
+cls
+0 
+51
+2
+5 class
+c BasicGCLgrid
+s
+b $comment-10
+f
+e
+cop
+0 
+56
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 85
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d  Name assigned to this object
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 name
+10
+e
+att
+0 
+56
+2
+6 string
+4 name
+s
+b $comment-11
+11
+e
+cop
+0 
+5a
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 89
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+48  Latitude (radians) of origin of the grid's Cartesian coordinate system.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 lat0
+12
+e
+att
+0 
+5a
+2
+6 double
+4 lat0
+s
+b $comment-12
+13
+e
+cop
+0 
+5e
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 93
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+49  Longitude (radians) of origin of the grid's Cartesian coordinate system.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 lon0
+14
+e
+att
+0 
+5e
+2
+6 double
+4 lon0
+s
+b $comment-13
+15
+e
+cop
+0 
+62
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 97
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+59  Radial distance of origin of the grid's Cartesian coordinate system from Earth's center.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 r0
+16
+e
+att
+0 
+62
+2
+6 double
+2 r0
+s
+b $comment-14
+17
+e
+cop
+0 
+66
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 101
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+4e  Nominal azimuth (radians) of positive y axis of grid line at origin location.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 azimuth_y
+18
+e
+att
+0 
+66
+2
+6 double
+9 azimuth_y
+s
+b $comment-15
+19
+e
+cop
+0 
+6a
+27
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 105
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+43  Nominal spacing (km) of grid lines along the 1 position gridlines.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dx1_nom
+1a
+e
+att
+0 
+6a
+2
+6 double
+7 dx1_nom
+s
+b $comment-16
+1b
+e
+cop
+0 
+6f
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 110
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+43  Nominal spacing (km) of grid lines along the 2 position gridlines.
+a @long_desc
+1 2
+1  
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dx2_nom
+1c
+e
+att
+0 
+6f
+2
+6 double
+7 dx2_nom
+s
+b $comment-17
+1d
+e
+cop
+0 
+73
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 114
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+57  Number of grid points in generalized coordinate index 1 direction (first array index).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 n1
+1e
+e
+att
+0 
+73
+2
+3 int
+2 n1
+s
+b $comment-18
+1f
+e
+cop
+0 
+77
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 118
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+58  Number of grid points in generalized coordinate index 2 direction (second array index).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 n2
+20
+e
+att
+0 
+77
+2
+3 int
+2 n2
+s
+b $comment-19
+21
+e
+cop
+0 
+7b
+27
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 122
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c  Offset in first index to origin grid point.
+a @long_desc
+1 1
+2d  i.e. origin is at first coordinate index i0.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 i0
+22
+e
+att
+0 
+7b
+2
+3 int
+2 i0
+s
+b $comment-20
+23
+e
+cop
+0 
+7f
+27
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 126
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  Offset in second index to origin grid point.
+a @long_desc
+1 1
+39  i.e. origin is at second coordinate index j0. ([i0][j0])
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 j0
+24
+e
+att
+0 
+7f
+2
+3 int
+2 j0
+s
+b $comment-21
+25
+e
+cop
+0 
+84
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 131
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x1 coordinate of lower limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+52  This edge of the  bounding box is defined as the smallest x1 value minus dx1_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+5 x1low
+26
+e
+att
+0 
+84
+2
+6 double
+5 x1low
+s
+b $comment-22
+27
+e
+cop
+0 
+89
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 136
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x1 coordinate of upper limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+50  This edge of the  bounding box is defined as the largest x1 value plus dx1_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 x1high
+28
+e
+att
+0 
+89
+2
+6 double
+6 x1high
+s
+b $comment-23
+29
+e
+cop
+0 
+8e
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 141
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x2 coordinate of lower limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+52  This edge of the  bounding box is defined as the smallest x2 value minus dx2_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+5 x2low
+2a
+e
+att
+0 
+8e
+2
+6 double
+5 x2low
+s
+b $comment-24
+2b
+e
+cop
+0 
+93
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 146
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x2 coordinate of upper limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+50  This edge of the  bounding box is defined as the largest x2 value plus dx2_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 x2high
+2c
+e
+att
+0 
+93
+2
+6 double
+6 x2high
+s
+b $comment-25
+2d
+e
+cop
+0 
+98
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 151
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x3 coordinate of lower limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+52  This edge of the  bounding box is defined as the smallest x3 value minus dx3_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+5 x3low
+2e
+e
+att
+0 
+98
+2
+6 double
+5 x3low
+s
+b $comment-26
+2f
+e
+cop
+0 
+9d
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 156
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+41  Cartesian x3 coordinate of upper limit of bounding box for grid.
+a @long_desc
+1 2
+1  
+50  This edge of the  bounding box is defined as the largest x3 value plus dx3_nom.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 x3high
+30
+e
+att
+0 
+9d
+2
+6 double
+6 x3high
+s
+b $comment-27
+31
+e
+cop
+0 
+a3
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 162
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+15  Default Constructor.
+a @long_desc
+1 2
+1  
+3a  Implemented to initialize all base attributes explicitly.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+c BasicGCLgrid
+32
+e
+con
+0 
+a3
+3
+c BasicGCLgrid
+1 (
+1 )
+s
+c BasicGCLgrid
+33
+e
+con
+0 
+a5
+7
+c BasicGCLgrid
+1 (
+5 const
+c BasicGCLgrid
+1 &
+3 old
+1 )
+s
+b $comment-28
+34
+e
+cop
+0 
+ae
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 173
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 3
+53  This is a rotation matrix that defines the transformation from standard spherical 
+51  coordinates (the geographical reference frame) to the local Cartesian coordinate
+1a  system used in a GCLgrid.
+a @long_desc
+1 4
+33  Was private in an earlier incarnation, but this is
+55  is messy when we depend on inheritance so it is public.  Users should not manipulate
+5d  this directly, however, but if it is desired they should use the fetch_transformation_matrix
+12  member function. 
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+c gtoc_rmatrix
+35
+e
+att
+0 
+ae
+8
+6 double
+c gtoc_rmatrix
+1 [
+1 3
+1 ]
+1 [
+1 3
+1 ]
+s
+b $comment-29
+36
+e
+cop
+0 
+b5
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 180
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  This is a close companion to the gtoc_rmatrix.
+a @long_desc
+1 4
+20 The full transformation used to 
+52  define the Cartesian system in a GCLgrid is a translation from the earth's center
+57  to the grid coordinate system origin.  This is followed by a rotation by gtoc_rmatrix.
+40  The translation_vector attribute defines what the name implies.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 translation_vector
+37
+e
+att
+0 
+b5
+5
+6 double
+12 translation_vector
+1 [
+1 3
+1 ]
+s
+b $comment-30
+38
+e
+cop
+0 
+be
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 189
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+39  Set or reset the transformation properties for the grid.
+a @long_desc
+1 6
+1f  The transformation properties 
+53  are uniquely defined by the coordinate system origin and azimuth_y so if these are
+5a  all that are known this low level member function can be called to set the transformation
+57  properties.  It is of minimal use to most users and should be used cautiously and only
+37  if you thoroughly understand the way this all works.  
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+19 set_transformation_matrix
+39
+e
+met
+0 
+be
+4
+4 void
+19 set_transformation_matrix
+1 (
+1 )
+s
+b $comment-31
+3a
+e
+cop
+0 
+c2
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 193
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+49  Returns the transformation matrix for this grid as a 3x3 dmatrix object.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+1b fetch_transformation_matrix
+3b
+e
+met
+0 
+c2
+4
+7 dmatrix
+1b fetch_transformation_matrix
+1 (
+1 )
+s
+b $comment-32
+3c
+e
+cop
+0 
+c8
+29
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 199
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+53  Returns a newly allocated 3 vector of double containing a copy of the translation 
+35  vector defining the GCLgrid transformation property.
+a @long_desc
+1 2
+1a  The user must be sure to 
+3f  call delete [] after using this vector to avoid a memory leak.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+18 fetch_translation_vector
+3d
+e
+met
+0 
+c8
+5
+6 double
+1 *
+18 fetch_translation_vector
+1 (
+1 )
+s
+b $comment-33
+3e
+e
+cop
+0 
+d0
+37
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 207
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3b  Convert Cartesian coordinates to geographical coordinates.
+a @long_desc
+1 0
+7 @params
+1 3
+6 @param
+1 2
+3 x1p
+2d - Cartesian x1 coordinate of point to convert
+6 @param
+1 2
+3 x2p
+2d - Cartesian x2 coordinate of point to convert
+6 @param
+1 2
+3 x3p
+2d - Cartesian x3 coordinate of point to convert
+8 @returns
+1 5
+24 Geographic_point data structure (see
+5 @link
+10 Geographic_point
+10 Geographic_point
+2  )
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 ctog
+3f
+e
+met
+0 
+d0
+c
+10 Geographic_point
+4 ctog
+1 (
+6 double
+3 x1p
+1 ,
+6 double
+3 x2p
+1 ,
+6 double
+3 x3p
+1 )
+s
+b $comment-34
+40
+e
+cop
+0 
+d6
+2f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 213
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+40  Convert from Cartesian coordinates to geographical coordinates.
+a @long_desc
+1 0
+7 @params
+1 1
+6 @param
+1 2
+1 p
+3b point to convert stored in a Cartesian_point data structure
+8 @returns
+1 5
+24 Geographic_point data structure (see
+5 @link
+10 Geographic_point
+10 Geographic_point
+2  )
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 ctog
+41
+e
+met
+0 
+d6
+6
+10 Geographic_point
+4 ctog
+1 (
+f Cartesian_point
+1 p
+1 )
+s
+b $comment-35
+42
+e
+cop
+0 
+e0
+39
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 223
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+43  Convert from geographical to Cartesian coordinates in the GCLgrid 
+13  coordinate system.
+a @long_desc
+1 1
+1  
+7 @params
+1 3
+6 @param
+1 2
+4 plat
+27 Latitude (radians) of point to convert.
+6 @param
+1 2
+4 plon
+28 Longitude (radians) of point to convert.
+6 @param
+1 2
+2 pr
+26 Earth radius (km) of point to convert.
+8 @returns
+1 5
+23 Cartesian_point data structure (see
+5 @link
+f Cartesian_point
+9 @endlink)
+4 reca
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 gtoc
+43
+e
+met
+0 
+e0
+c
+f Cartesian_point
+4 gtoc
+1 (
+6 double
+4 plat
+1 ,
+6 double
+4 plon
+1 ,
+6 double
+2 pr
+1 )
+s
+b $comment-36
+44
+e
+cop
+0 
+e8
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 231
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+43  Convert from geographical to Cartesian coordinates in the GCLgrid 
+13  coordinate system.
+a @long_desc
+1 1
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 p
+4c point to convert stored in a @link Geographic_point @endlink data structure.
+8 @returns
+1 5
+23 Cartesian_point data structure (see
+5 @link
+f Cartesian_point
+9 @endlink)
+2 le
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 gtoc
+45
+e
+met
+0 
+e8
+6
+f Cartesian_point
+4 gtoc
+1 (
+10 Geographic_point
+1 p
+1 )
+s
+b $comment-37
+46
+e
+cop
+0 
+f0
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 239
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+54  This member function sets the x1min, x1max, x2min, x2max, x3min, and x3max bounding
+f  box attribute.
+a @long_desc
+1 4
+46  These define the "extents" of the name.  Should be needed only if one
+5a  builds a custom grid from user defined coordinates.  Said a different way if you build a 
+58  GCLgrid from lower level routines be sure to call this function to set the bounding box
+b  correctly.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f compute_extents
+47
+e
+met
+0 
+f0
+7
+7 virtual
+4 void
+f compute_extents
+1 (
+1 )
+1 =
+1 0
+s
+b $comment-38
+48
+e
+cop
+0 
+fb
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 250
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Reset lookup index to origin.
+a @long_desc
+1 7
+43 The lookup functions used in the GCLgrid library keeps an index of 
+3f the previous lookup results under an assumption the next point 
+41 requested will be nearby.  This can cause convergence problems in
+3e some grids, however, if that position is a poor place to start
+46 (e.g. sudden jump to a completely different location).  This function 
+47 should be called if a lookup fails to try to recover.  Internal methods
+2d like the += operator does this automatically.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b reset_index
+49
+e
+met
+0 
+fb
+7
+7 virtual
+4 void
+b reset_index
+1 (
+1 )
+1 =
+1 0
+s
+b $comment-39
+4a
+e
+cop
+0 
+103
+2e
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 258
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c Query for the current lookup index position.
+a @long_desc
+1 4
+1a  The lookup functions used
+49 in the GCLgrid library keep and index of the previous lookup result under
+48 an assumption that the next point requested will be nearby.  This method
+31 is used to ask what the current index position.  
+7 @params
+1 1
+6 @param
+1 2
+3 ind
+54 vector of ints of length sufficient to hold the index  (2 for 2d and 3 for 3d grids)
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 get_index
+4b
+e
+met
+0 
+103
+a
+7 virtual
+4 void
+9 get_index
+1 (
+3 int
+1 *
+3 ind
+1 )
+1 =
+1 0
+s
+d ~BasicGCLgrid
+4c
+e
+des
+0 
+0
+4
+1 ~
+c BasicGCLgrid
+1 (
+1 )
+s
+a operator =
+4d
+e
+mop
+0 
+0
+9
+c BasicGCLgrid
+1 &
+8 operator
+1 =
+1 (
+5 const
+c BasicGCLgrid
+1 &
+1 )
+s
+c BasicGCLgrid
+4e
+1
+clx
+0 
+104
+0
+s
+b $comment-40
+4f
+1
+cop
+0 
+114
+32
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 275
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3a  This is the working two-dimensional version of a GCLgrid.
+a @long_desc
+2 12
+24  A GCLgrid defines a two-dimensional
+59  surface in Earth coordinates.  This could be any surface, but the lookup method used in 
+53  this version will not work if the surface is multivalued or even strongly warped. 
+56  See the algorithm description in the paper by Fan and Pavlis (in review) for details.
+1  
+54  Positions of grid points are stored in three, two-dimensional arrays. Each of these
+55  arrays define cartesian coordinates for a grid point at a particular index position.
+52  The topology is that the location in the Cartesian coordinate system of the grid 
+4e  point defined by index positions i and j are (x1[i][j], x2[i][j], x3[i][j]). 
+44  The coordinates are thus matrices indexing each position in grid.  
+1  
+4c  Note the object inherits most data attributes from the BasicGCLgrid object.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+50
+1
+cls
+0 
+117
+5
+5 class
+7 GCLgrid
+1 :
+6 public
+c BasicGCLgrid
+s
+b $comment-41
+51
+50
+cop
+0 
+11d
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 284
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+30  n1 x n2 matrix of the x1 coordinate values for 
+f  grid elements.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x1
+52
+50
+att
+0 
+11d
+4
+6 double
+1 *
+1 *
+2 x1
+s
+b $comment-42
+53
+50
+cop
+0 
+122
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 289
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+30  n1 x n2 matrix of the x2 coordinate values for 
+f  grid elements.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x2
+54
+50
+att
+0 
+122
+4
+6 double
+1 *
+1 *
+2 x2
+s
+b $comment-43
+55
+50
+cop
+0 
+127
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 294
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+30  n1 x n2 matrix of the x3 coordinate values for 
+f  grid elements.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x3
+56
+50
+att
+0 
+127
+4
+6 double
+1 *
+1 *
+2 x3
+s
+b $comment-44
+57
+50
+cop
+0 
+12d
+29
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 300
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+15  Default constructor.
+a @long_desc
+1 3
+30  Note it sets the x1,x2, and x3 pointers to NULL
+4c  which is used as a test to avoid duplicate free calls on these potentially 
+e  large arrays.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+58
+50
+con
+0 
+12f
+3
+7 GCLgrid
+1 (
+1 )
+s
+b $comment-45
+59
+50
+cop
+0 
+137
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 310
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+3a  Allocates space for x1, x2, and x3 arrays and initializes
+21  other data attributes to zero.  
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 n1
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+2 n2
+37 number of grid points on generalized coordinate axis 2.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+5a
+50
+con
+0 
+137
+8
+7 GCLgrid
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 )
+s
+b $comment-46
+5b
+50
+cop
+0 
+14d
+5a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 332
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+5b   Constructor for what we call a "regular" GCLgrid in the Fan and Pavlis (in review) paper.
+a @long_desc
+1 7
+1  
+59   The object this constructs is a constant geoid elevation surface (Follows the reference
+5a   ellipsoid at elevation set by the origin radius, r0.) with approximately regular spacing
+57   between grid points (within the limits of what is possible on a spherical surface).  
+59   Note that the makegclgrid program is little more than a wrapper around this and the 3d 
+1e   version of this constructor.
+1  
+7 @params
+2 11
+6 @param
+1 2
+2 n1
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+2 n2
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+1 n
+19 name to assign this grid.
+6 @param
+1 2
+3 la0
+1b latitude to use for origin.
+6 @param
+1 2
+3 lo0
+1c longitude to use for origin.
+6 @param
+1 2
+7 radius0
+1f Earth radius to use for origin.
+6 @param
+1 2
+2 az
+69 azimuth of great circle path through the origin that defines the generalized coordinate 2 axis direction.
+6 @param
+1 2
+4 dx1n
+44 nominal spacing of grid points on the generalized coordinate 1 axis.
+6 @param
+1 2
+4 dx2n
+44 nominal spacing of grid points on the generalized coordinate 2 axis.
+6 @param
+1 2
+7 iorigin
+45 1 axis grid index of the origin in generalized coordinate grid frame.
+6 @param
+1 3
+7 jorigin
+45 2 axis grid index of the origin in generalized coordinate grid frame.
+1  
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+5c
+50
+con
+0 
+14f
+23
+7 GCLgrid
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 ,
+6 string
+1 n
+1 ,
+6 double
+3 la0
+1 ,
+6 double
+3 lo0
+1 ,
+6 double
+7 radius0
+1 ,
+6 double
+2 az
+1 ,
+6 double
+4 dx1n
+1 ,
+6 double
+4 dx2n
+1 ,
+3 int
+7 iorigin
+1 ,
+3 int
+7 jorigin
+1 )
+s
+b $comment-47
+5d
+50
+cop
+0 
+159
+33
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 344
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 5
+27  This is a specialized constructor that
+51   loads a grid tagged with the name nm from a database using a specialized table.
+4f   Users who do not wish to connect with Antelope should remove this constructor
+1d   from the object definition.
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+2 nm
+2c name of grid to be loaded from the database.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+5e
+50
+con
+0 
+159
+8
+7 GCLgrid
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+2 nm
+1 )
+s
+b $comment-48
+5f
+50
+cop
+0 
+15d
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 348
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1b  Standard copy constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 GCLgrid
+60
+50
+con
+0 
+15d
+6
+7 GCLgrid
+1 (
+5 const
+7 GCLgrid
+1 &
+1 )
+s
+b $comment-49
+61
+50
+cop
+0 
+165
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 356
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 5
+45  Nontrivial destructor has to destroy the coordinate arrays correctly
+4c  and handle case when they are never defined.  Handles this by checking for 
+4c  NULL pointers for these arrays.  If the pointers are NULL the free routines
+4a  are not called.  This is important to know if you try to create a GCLgrid
+25  object by the default constructor.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+8 ~GCLgrid
+62
+50
+des
+0 
+165
+4
+1 ~
+7 GCLgrid
+1 (
+1 )
+s
+b $comment-50
+63
+50
+cop
+0 
+169
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 360
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1e  Standard assignment operator.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+64
+50
+mop
+0 
+169
+9
+7 GCLgrid
+1 &
+8 operator
+1 =
+1 (
+5 const
+7 GCLgrid
+1 &
+1 )
+s
+b $comment-51
+65
+50
+cop
+0 
+171
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 368
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+26  Comparison of two grids for equality.
+a @long_desc
+1 5
+2f  Equality in this context is NOT the obvious.  
+5b  Equality means the transformation properties of the two grids being compared are the same.
+56  That is, the operator tests only the transformation matrix and translation vector for
+58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
+27  for higher level operations like +=.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator ==
+66
+50
+mop
+0 
+171
+8
+4 bool
+8 operator
+2 ==
+1 (
+5 const
+7 GCLgrid
+1 &
+1 )
+s
+b $comment-52
+67
+50
+cop
+0 
+17a
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 377
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+28  Comparison of two grids for inequality.
+a @long_desc
+1 6
+2f  Equality in this context is NOT the obvious.  
+5b  Equality means the transformation properties of the two grids being compared are the same.
+56  That is, the operator tests only the transformation matrix and translation vector for
+58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
+58  for higher level operations like +=.  Returns true if the transformation properties of 
+1b  two matrices do not match.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator !=
+68
+50
+mop
+0 
+17a
+8
+4 bool
+8 operator
+2 !=
+1 (
+5 const
+7 GCLgrid
+1 &
+1 )
+s
+b $comment-53
+69
+50
+cop
+0 
+18c
+3d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 395
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Save grid to an Antelope (Datascope) database.
+a @long_desc
+1 6
+1  
+42  This routine writes the object attributes to a special table and 
+3f  writes the grid coordinate data an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+2 nm
+1b name used to save the grid.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 dbsave
+6a
+50
+met
+0 
+18c
+d
+4 void
+6 dbsave
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+2 nm
+1 )
+5 throw
+1 (
+3 int
+1 )
+s
+b $comment-54
+6b
+50
+cop
+0 
+1a2
+3f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 417
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+31  Find the index position of a point in a GCLgrid.
+a @long_desc
+2 12
+1  
+3d  This is a low level function to find the location of a point
+3e  specified as the Cartesian, ordered pair (x1p,x2p) in a grid.
+41  It does not return the actual index positions, but only sets the
+3e  internal index.  The routine is very procedural returning an 
+46  integer code (see below) indicating success or failure of the lookup.
+45  This was intentional as this routine is called millions of times in 
+44  some contexts so efficiency is critical.  The alternative would be 
+45  to throw an exception when a lookup failed, but since this is viewed
+42  as a common problem that could happen millions of times this was 
+47  a potential efficiency problems (the books all say throwing exceptions
+1e  is an expensive operation).  
+7 @params
+1 2
+6 @param
+1 2
+3 x1p
+3a - Cartesian x1 coordinate of point to find within the grid
+6 @param
+1 2
+3 x2p
+3a - Cartesian x2 coordinate of point to find within the grid
+8 @returns
+1 5
+47 2 when point is in gray area within on nominal grid spacing of the edge
+2d 1 when the point is outside the bounding box.
+e 0 on success.\
+2b -1 if the lookup function did not converge.
+1  
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 lookup
+6c
+50
+met
+0 
+1a2
+9
+3 int
+6 lookup
+1 (
+6 double
+3 x1p
+1 ,
+6 double
+3 x2p
+1 )
+s
+b $comment-55
+6d
+50
+cop
+0 
+1a2
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 417
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 5
+4 See 
+5 @link
+19 BasicGCLgrid::reset_index
+19 BasicGCLgrid::reset_index
+2   
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b reset_index
+6e
+50
+met
+0 
+1a4
+4
+4 void
+b reset_index
+1 (
+1 )
+s
+b $comment-56
+6f
+50
+cop
+0 
+1a4
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 419
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 5
+4 See 
+5 @link
+17 BasicGCLgrid::get_index
+17 BasicGCLgrid::get_index
+2   
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 get_index
+70
+50
+met
+0 
+1a6
+7
+4 void
+9 get_index
+1 (
+3 int
+1 *
+3 ind
+1 )
+s
+b $comment-57
+71
+50
+cop
+0 
+1b2
+38
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 433
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+5f  Returns the geographical coordinates of a point in the grid specified by grid index positions.
+a @long_desc
+1 5
+1  
+47  If you need the actual coordinates of the points that define the grid 
+41  converted to geographic coordinates use this function.  Use the 
+39  ctog function to convert an arbitrary ordered triplet.  
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+8 @returns
+1 5
+1a grid point requested in an
+5 @link
+10 Geographic_point
+10 Geographic_point
+10  data structure.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f geo_coordinates
+72
+50
+met
+0 
+1b2
+9
+10 Geographic_point
+f geo_coordinates
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 )
+s
+b $comment-58
+73
+50
+cop
+0 
+1ba
+30
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 441
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Get the latitude (in radians) of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+8 @returns
+1 1
+30 latitude in radians of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 lat
+74
+50
+met
+0 
+1ba
+9
+6 double
+3 lat
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 )
+s
+b $comment-59
+75
+50
+cop
+0 
+1c2
+30
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 449
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Get the longitude (in radians) of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+8 @returns
+1 1
+31 longitude in radians of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 lon
+76
+50
+met
+0 
+1c2
+9
+6 double
+3 lon
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 )
+s
+b $comment-60
+77
+50
+cop
+0 
+1ca
+30
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 457
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3d  Get the radius from the center of the Earth of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+8 @returns
+1 1
+37 Earth radius in kilometers of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+1 r
+78
+50
+met
+0 
+1ca
+9
+6 double
+1 r
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 )
+s
+b $comment-61
+79
+50
+cop
+0 
+1d2
+30
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 465
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Get the depth below the standard reference ellipsoid of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+8 @returns
+1 1
+30 depth in kilometers of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+5 depth
+7a
+50
+met
+0 
+1d2
+9
+6 double
+5 depth
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 )
+s
+f compute_extents
+7b
+50
+met
+0 
+1d4
+4
+4 void
+f compute_extents
+1 (
+1 )
+s
+e GCLscalarfield
+7c
+50
+frc
+0 
+1d5
+3
+6 friend
+5 class
+e GCLscalarfield
+s
+e GCLvectorfield
+7d
+50
+frc
+0 
+1d6
+3
+6 friend
+5 class
+e GCLvectorfield
+a pri
+s
+3 ix1
+7e
+50
+att
+0 
+1d8
+2
+3 int
+3 ix1
+s
+3 ix2
+7f
+50
+att
+0 
+1d8
+2
+3 int
+3 ix2
+a pub
+s
+7 GCLgrid
+80
+1
+clx
+0 
+1d9
+0
+s
+b $comment-62
+81
+1
+cop
+0 
+1e2
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 481
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Three-dimensional version of a GCLgrid object.
+a @long_desc
+1 4
+1  
+1  
+49  Adds additional attributes required to deal with an added dimension and 
+33  uses a higher dimensional array to contain points.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+82
+1
+cls
+0 
+1e3
+5
+5 class
+9 GCLgrid3d
+1 :
+6 public
+c BasicGCLgrid
+s
+b $comment-63
+83
+82
+cop
+0 
+1e9
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 488
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+43  Nominal spacing (km) of grid lines along the 3 position gridlines.
+a @long_desc
+1 2
+1  
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dx3_nom
+84
+82
+att
+0 
+1e9
+2
+6 double
+7 dx3_nom
+s
+b $comment-64
+85
+82
+cop
+0 
+1ed
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 492
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+58  Number of grid points in generalized coordinate index 3 direction (second array index).
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 n3
+86
+82
+att
+0 
+1ed
+2
+3 int
+2 n3
+s
+b $comment-65
+87
+82
+cop
+0 
+1f1
+27
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 496
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c  Offset in third index to origin grid point.
+a @long_desc
+1 1
+3c  i.e. origin is at third coordinate index k0. ([i0][j0][k0])
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 k0
+88
+82
+att
+0 
+1f1
+2
+3 int
+2 k0
+s
+b $comment-66
+89
+82
+cop
+0 
+1f6
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 501
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+3e  n1 x n2 x n3 Three-dimensional array that holds the Cartesian
+32  x1 component of the positions of each grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x1
+8a
+82
+att
+0 
+1f6
+5
+6 double
+1 *
+1 *
+1 *
+2 x1
+s
+b $comment-67
+8b
+82
+cop
+0 
+1fb
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 506
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+3e  n1 x n2 x n3 Three-dimensional array that holds the Cartesian
+32  x2 component of the positions of each grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x2
+8c
+82
+att
+0 
+1fb
+5
+6 double
+1 *
+1 *
+1 *
+2 x2
+s
+b $comment-68
+8d
+82
+cop
+0 
+200
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 511
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+3e  n1 x n2 x n3 Three-dimensional array that holds the Cartesian
+32  x3 component of the positions of each grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 x3
+8e
+82
+att
+0 
+200
+5
+6 double
+1 *
+1 *
+1 *
+2 x3
+s
+b $comment-69
+8f
+82
+cop
+0 
+207
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 518
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+15  Default constructor.
+a @long_desc
+1 2
+3e  Note sets pointers to NULL to make destructor work correctly 
+2c  when a grid is created by this constructor.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+90
+82
+con
+0 
+20a
+3
+9 GCLgrid3d
+1 (
+1 )
+s
+b $comment-70
+91
+82
+cop
+0 
+213
+35
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 530
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+3a  Allocates space for x1, x2, and x3 arrays and initializes
+21  other data attributes to zero.  
+1  
+7 @params
+1 3
+6 @param
+1 2
+6 n1size
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+6 n2size
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+6 n3size
+37 number of grid points on generalized coordinate axis 3.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+92
+82
+con
+0 
+213
+b
+9 GCLgrid3d
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 ,
+3 int
+6 n3size
+1 )
+s
+b $comment-71
+93
+82
+cop
+0 
+230
+64
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 559
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+61   Constructor for what we call a "regular" GCLgrid in 3D in the Fan and Pavlis (in review) paper.
+a @long_desc
+2 13
+1  
+5f   The object this constructs is spherical shell, boxlike object built up of elemental spherical
+5a   shell cube-like grid components.  The top surface of the box is defined by the reference
+5a   ellipsoid.  The bottom is a constant depth below this.  Note that the grid this creates 
+59   is oriented with the third generalized coordinate index running from the bottom (deeper
+56   inside the Earth) upward as the grid index increases.  Note no index is allowed for 
+5c   index 3 for the origin.  This constuctor always puts the origin at the bottom of the grid.
+53   This isn't necessary, but something that is just frozen into this implementation.
+50   For the same reason r0 is ignored and just set internally by this constructor.
+1  
+59   Note that the makegclgrid program is little more than a wrapper around this and the 2d 
+1e   version of this constructor.
+1  
+7 @params
+2 12
+6 @param
+1 2
+2 n1
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+2 n2
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+2 n3
+37 number of grid points on generalized coordinate axis 3.
+6 @param
+1 2
+1 n
+19 name to assign this grid.
+6 @param
+1 2
+3 la0
+1b latitude to use for origin.
+6 @param
+1 2
+3 lo0
+1c longitude to use for origin.
+6 @param
+1 2
+2 az
+69 azimuth of great circle path through the origin that defines the generalized coordinate 2 axis direction.
+6 @param
+1 2
+4 dx1n
+44 nominal spacing of grid points on the generalized coordinate 1 axis.
+6 @param
+1 2
+4 dx2n
+44 nominal spacing of grid points on the generalized coordinate 2 axis.
+6 @param
+1 2
+4 dx3n
+44 nominal spacing of grid points on the generalized coordinate 3 axis.
+6 @param
+1 2
+7 iorigin
+45 1 axis grid index of the origin in generalized coordinate grid frame.
+6 @param
+1 3
+7 jorigin
+45 2 axis grid index of the origin in generalized coordinate grid frame.
+1  
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+94
+82
+con
+0 
+232
+26
+9 GCLgrid3d
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 ,
+3 int
+6 n3size
+1 ,
+6 string
+1 n
+1 ,
+6 double
+3 la0
+1 ,
+6 double
+3 lo0
+1 ,
+6 double
+2 az
+1 ,
+6 double
+4 dx1n
+1 ,
+6 double
+4 dx2n
+1 ,
+6 double
+4 dx3n
+1 ,
+3 int
+7 iorigin
+1 ,
+3 int
+7 jorigin
+1 )
+s
+b $comment-72
+95
+82
+cop
+0 
+23c
+33
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 571
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 5
+27  This is a specialized constructor that
+51   loads a grid tagged with the name nm from a database using a specialized table.
+4f   Users who do not wish to connect with Antelope should remove this constructor
+1d   from the object definition.
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+2 nm
+2c name of grid to be loaded from the database.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+96
+82
+con
+0 
+23c
+8
+9 GCLgrid3d
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+2 nm
+1 )
+s
+b $comment-73
+97
+82
+cop
+0 
+23c
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 571
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a Standard copy constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 GCLgrid3d
+98
+82
+con
+0 
+23e
+6
+9 GCLgrid3d
+1 (
+5 const
+9 GCLgrid3d
+1 &
+1 )
+s
+b $comment-74
+99
+82
+cop
+0 
+23e
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 573
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Standard assignment operator.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+9a
+82
+mop
+0 
+240
+9
+9 GCLgrid3d
+1 &
+8 operator
+1 =
+1 (
+5 const
+9 GCLgrid3d
+1 &
+1 )
+s
+b $comment-75
+9b
+82
+cop
+0 
+269
+5b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 616
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Save grid to an Antelope (Datascope) database.
+a @long_desc
+1 6
+1  
+42  This routine writes the object attributes to a special table and 
+3f  writes the grid coordinate data an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+1  
+7 @params
+1 5
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+2 15
+2 nm
+1b name used to save the grid.
+2c void dbsave(Dbptr db, string nm) throw(int);
+3c  Find the index position of a point in a GCLgrid3d object.  
+3d  This is a low level function to find the location of a point
+45  specified as the Cartesian, ordered triplet (x1p,x2p,x3p) in a grid.
+41  It does not return the actual index positions, but only sets the
+3e  internal index.  The routine is very procedural returning an 
+46  integer code (see below) indicating success or failure of the lookup.
+45  This was intentional as this routine is called millions of times in 
+44  some contexts so efficiency is critical.  The alternative would be 
+45  to throw an exception when a lookup failed, but since this is viewed
+42  as a common problem that could happen millions of times this was 
+47  a potential efficiency problems (the books all say throwing exceptions
+1e  is an expensive operation).  
+6 @param
+1 2
+3 x1p
+3a - Cartesian x1 coordinate of point to find within the grid
+6 @param
+1 2
+3 x2p
+3a - Cartesian x2 coordinate of point to find within the grid
+6 @param
+1 2
+3 x3p
+3a - Cartesian x3 coordinate of point to find within the grid
+8 @returns
+1 5
+47 2 when point is in gray area within on nominal grid spacing of the edge
+2d 1 when the point is outside the bounding box.
+e 0 on success.\
+2b -1 if the lookup function did not converge.
+1  
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 lookup
+9c
+82
+met
+0 
+269
+9
+3 int
+6 lookup
+1 (
+6 double
+1 ,
+6 double
+1 ,
+6 double
+1 )
+s
+b $comment-76
+9d
+82
+cop
+0 
+269
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 616
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 5
+4 See 
+5 @link
+19 BasicGCLgrid::reset_index
+19 BasicGCLgrid::reset_index
+2   
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b reset_index
+9e
+82
+met
+0 
+26b
+4
+4 void
+b reset_index
+1 (
+1 )
+s
+b $comment-77
+9f
+82
+cop
+0 
+26b
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 618
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 5
+4 See 
+5 @link
+17 BasicGCLgrid::get_index
+17 BasicGCLgrid::get_index
+2   
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 get_index
+a0
+82
+met
+0 
+26d
+7
+4 void
+9 get_index
+1 (
+3 int
+1 *
+3 ind
+1 )
+s
+b $comment-78
+a1
+82
+cop
+0 
+27a
+3c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 633
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+5f  Returns the geographical coordinates of a point in the grid specified by grid index positions.
+a @long_desc
+1 5
+1  
+47  If you need the actual coordinates of the points that define the grid 
+41  converted to geographic coordinates use this function.  Use the 
+39  ctog function to convert an arbitrary ordered triplet.  
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+6 @param
+1 2
+2 i3
+28 Value of grid index 3 for point desired.
+8 @returns
+1 5
+1a grid point requested in an
+5 @link
+10 Geographic_point
+10 Geographic_point
+10  data structure.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f geo_coordinates
+a2
+82
+met
+0 
+27a
+c
+10 Geographic_point
+f geo_coordinates
+1 (
+3 int
+2 i1
+1 ,
+3 int
+2 i2
+1 ,
+3 int
+2 i3
+1 )
+s
+b $comment-79
+a3
+82
+cop
+0 
+283
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 642
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Get the latitude (in radians) of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+6 @param
+1 2
+2 i3
+28 Value of grid index 3 for point desired.
+8 @returns
+1 1
+30 latitude in radians of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 lat
+a4
+82
+met
+0 
+283
+9
+6 double
+3 lat
+1 (
+3 int
+1 ,
+3 int
+1 ,
+3 int
+1 )
+s
+b $comment-80
+a5
+82
+cop
+0 
+294
+44
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 659
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Get the longitude (in radians) of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 6
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+6 @param
+1 5
+2 i3
+28 Value of grid index 3 for point desired.
+18 double lon(int,int,int);
+3d  Get the radius from the center of the Earth of a grid point.
+1  
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+6 @param
+1 2
+2 i3
+28 Value of grid index 3 for point desired.
+8 @returns
+1 2
+30 latitude in radians of the requested grid point.
+37 Earth radius in kilometers of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+1 r
+a6
+82
+met
+0 
+294
+9
+6 double
+1 r
+1 (
+3 int
+1 ,
+3 int
+1 ,
+3 int
+1 )
+s
+b $comment-81
+a7
+82
+cop
+0 
+29d
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 668
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Get the depth below the standard reference ellipsoid of a grid point.
+a @long_desc
+1 1
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 i1
+28 Value of grid index 1 for point desired.
+6 @param
+1 2
+2 i2
+28 Value of grid index 2 for point desired.
+6 @param
+1 2
+2 i3
+28 Value of grid index 3 for point desired.
+8 @returns
+1 1
+30 depth in kilometers of the requested grid point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+5 depth
+a8
+82
+met
+0 
+29d
+9
+6 double
+5 depth
+1 (
+3 int
+1 ,
+3 int
+1 ,
+3 int
+1 )
+s
+f compute_extents
+a9
+82
+met
+0 
+29f
+4
+4 void
+f compute_extents
+1 (
+1 )
+s
+b $comment-82
+aa
+82
+cop
+0 
+2a7
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 678
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 5
+45  Nontrivial destructor has to destroy the coordinate arrays correctly
+4c  and handle case when they are never defined.  Handles this by checking for 
+4c  NULL pointers for these arrays.  If the pointers are NULL the free routines
+4a  are not called.  This is important to know if you try to create a GCLgrid
+25  object by the default constructor.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a ~GCLgrid3d
+ab
+82
+des
+0 
+2a7
+4
+1 ~
+9 GCLgrid3d
+1 (
+1 )
+a pri
+s
+3 ix1
+ac
+82
+att
+0 
+2a9
+2
+3 int
+3 ix1
+s
+3 ix2
+ad
+82
+att
+0 
+2a9
+2
+3 int
+3 ix2
+s
+3 ix3
+ae
+82
+att
+0 
+2a9
+2
+3 int
+3 ix3
+a pub
+s
+9 GCLgrid3d
+af
+1
+clx
+0 
+2aa
+0
+s
+b $comment-83
+b0
+1
+cop
+0 
+2aa
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 681
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3c Two-dimensional scalar field defined on a GCLgrid framework.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+b1
+1
+cls
+0 
+2ad
+5
+5 class
+e GCLscalarfield
+1 :
+6 public
+7 GCLgrid
+s
+b $comment-84
+b2
+b1
+cop
+0 
+2b4
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 691
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3b  Scalar field variable stored in a two-dimensional C array.
+a @long_desc
+1 2
+45  Index of the field is parallel with coordinate arrays x1, x2, and x3
+2b  that define grid point positions in space.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 val
+b3
+b1
+att
+0 
+2b4
+4
+6 double
+1 *
+1 *
+3 val
+s
+b $comment-85
+b4
+b1
+cop
+0 
+2b5
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 692
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14 Default constructor 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+b5
+b1
+con
+0 
+2b7
+3
+e GCLscalarfield
+1 (
+1 )
+s
+b $comment-86
+b6
+b1
+cop
+0 
+2bf
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 702
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+32  Allocates space for all arrays but loads nothing.
+27  Do not assume anything is initialized.
+1  
+7 @params
+1 2
+6 @param
+1 2
+6 n1size
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+6 n2size
+37 number of grid points on generalized coordinate axis 2.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+b7
+b1
+con
+0 
+2bf
+8
+e GCLscalarfield
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 )
+s
+b $comment-87
+b8
+b1
+cop
+0 
+2bf
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 702
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a Standard copy constructor 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+b9
+b1
+con
+0 
+2c1
+6
+e GCLscalarfield
+1 (
+5 const
+e GCLscalarfield
+1 &
+1 )
+s
+b $comment-88
+ba
+b1
+cop
+0 
+2cd
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 716
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Partial copy constructor cloning grid but not setting field variable.
+a @long_desc
+1 7
+1  
+42  A common situation is to have a grid that is already defined that
+43  needs to be cloned and have field variables set through some other
+43  mechanism.  For example, one might create a standard grid and then
+44  plan to load it with values from a different grid or compute values
+2a  of a field variable at the grid points.  
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 g
+12 Grid to be cloned.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+bb
+b1
+con
+0 
+2cd
+5
+e GCLscalarfield
+1 (
+7 GCLgrid
+1 &
+1 )
+s
+b $comment-89
+bc
+b1
+cop
+0 
+2e1
+42
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 736
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 7
+27  This is a specialized constructor that
+51   loads a field tagged with two names:  grid name and the field name (see below).
+4a   The two components are stored separately in the external database using 
+4e   two different tables.  This constructor has a fair amount of memory overhead
+4f   as it loads a copy of the parent GCLgrid object before creating the field and
+35   then loading field variable data from the database.
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+5 grdnm
+2c name of grid to be loaded from the database.
+6 @param
+1 2
+2 fn
+36 name tag for the field to be loaded from the database.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+33  Exception is thrown if there are any i/o problems.
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLscalarfield
+bd
+b1
+con
+0 
+2e1
+b
+e GCLscalarfield
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+5 grdnm
+1 ,
+6 string
+2 fn
+1 )
+s
+b $comment-90
+be
+b1
+cop
+0 
+2e7
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 742
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 6
+1  
+51  Note the same precautions about application of the default constructor as noted 
+3  in
+5 @link
+11 GCLgrid::~GCLgrid
+11 GCLgrid::~GCLgrid
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f ~GCLscalarfield
+bf
+b1
+des
+0 
+2e7
+4
+1 ~
+e GCLscalarfield
+1 (
+1 )
+s
+b $comment-91
+c0
+b1
+cop
+0 
+2e7
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 742
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Standard assignment operator 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+c1
+b1
+mop
+0 
+2e9
+9
+e GCLscalarfield
+1 &
+8 operator
+1 =
+1 (
+5 const
+e GCLscalarfield
+1 &
+1 )
+s
+b $comment-92
+c2
+b1
+cop
+0 
+309
+54
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 776
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Save field to an Antelope (Datascope) database.
+a @long_desc
+2 14
+1  
+1  
+42  This routine writes the object attributes to a special table and 
+42  writes the grid coordinate data to an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+3d  The field variable data are written to a different file and 
+32  stored indexed with a different database table.  
+3e  An odd feature of this routine is that if the directory name 
+3a  for the field passed to the function is empty (the string
+40  equivalent of NULL) the grid is not saved.  This is a necessary
+3b  feature for saving multiple fields on the same parent grid
+d  structure.  
+1  
+7 @params
+1 5
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 3
+7 gclgdir
+30 directory to save gclgrid data.  If zero length,
+1d  	    grid data is not saved.
+6 @param
+1 3
+8 fielddir
+43 directory where field (val) data will be saved.  Can be the same as
+31           gclgdir, but should not be zero length.
+6 @param
+1 2
+9 fieldname
+1c name assigned to this field.
+6 @param
+1 3
+5 dfile
+45 name of file to be used to save field (val) data.  Note the grid data
+48  	    is always saved to a name based in the name attribure of the grid.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 dbsave
+c3
+b1
+met
+0 
+30a
+16
+4 void
+6 dbsave
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+7 gclgdir
+1 ,
+6 string
+8 fielddir
+1 ,
+6 string
+9 fieldname
+1 ,
+6 string
+5 dfile
+1 )
+5 throw
+1 (
+3 int
+1 )
+s
+b $comment-93
+c4
+b1
+cop
+0 
+31b
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 794
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Add one field to another.
+a @long_desc
+2 14
+1  
+1  
+3d  This acts like the += operator for simple types, but does so
+40  for an entire field defined on a grid.  As for simple types the
+3c  field on the right hand side is accumulated to the field on
+3b  the left had side of the operator.  This works even if the
+3d  the two fields have different transformation properties and 
+3e  do not match in positions.  The most important limitation to 
+3e  understand, however, is basic sampling.  The field to contain
+3f  the accumulation needs to be as denser or more densely sampled
+3f  as the field on the right hand side to avoid aliasing effects.
+44  This is exactly like time series sampling -- upsampling can just be
+40  done by interpolation but downsampling requires an antialiasing
+15  (smoother) filter.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator +=
+c5
+b1
+mop
+0 
+31b
+7
+4 void
+8 operator
+2 +=
+1 (
+e GCLscalarfield
+1 &
+1 )
+s
+b $comment-94
+c6
+b1
+cop
+0 
+321
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 800
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+36  Multiply all field values by a constant scale factor.
+a @long_desc
+1 1
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 c
+2c constant by which the field is to be scaled.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator *=
+c7
+b1
+mop
+0 
+321
+7
+4 void
+8 operator
+2 *=
+1 (
+6 double
+1 c
+1 )
+s
+b $comment-95
+c8
+b1
+cop
+0 
+335
+40
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 820
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2b  Linear interpolation function for a field.
+a @long_desc
+2 13
+1  
+1  
+3e  This is one of the core algorithms described in detail in the
+41  Fan and Pavlis (in review) paper.  It is intended as a low level
+48  routine accessible to the user if desired.  Most applications, however,
+44  will likely prefer to use a higher level application of this method
+45  through something like the += operator.  It is CRITICAL to recognize
+45  that this function must be called AFTER a previous call to lookup on
+44  the same point.  This routine blindly uses the index stored in the 
+46  object and will return total garbage if the lookup was not called or 
+46  returned an error condition that was not handled.  i.e. for efficieny
+44  this function simply assumes the interpolation requested will work.
+32  For this reason it will never throw an exception.
+7 @params
+1 3
+6 @param
+1 2
+3 x1p
+4b - Cartesian x1 coordinate of point to where the field is to be interpolated
+6 @param
+1 2
+3 x2p
+4b - Cartesian x2 coordinate of point to where the field is to be interpolated
+6 @param
+1 2
+3 x3p
+4b - Cartesian x3 coordinate of point to where the field is to be interpolated
+8 @returns
+1 1
+37 interpolated value of the field at the requested point.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b interpolate
+c9
+b1
+met
+0 
+335
+c
+6 double
+b interpolate
+1 (
+6 double
+3 x1p
+1 ,
+6 double
+3 x2p
+1 ,
+6 double
+3 x3p
+1 )
+s
+b $comment-96
+ca
+b1
+cop
+0 
+33f
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 830
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+25   stream output operator for a field.
+a @long_desc
+1 7
+1  
+c   Format is:
+7   <pre>
+e line 1:  n1 n2
+47 line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order 
+21 		(index 2 most rapidly varying).
+6 </pre>
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 ostream&operator<<
+cb
+b1
+frf
+0 
+33f
+c
+6 friend
+7 ostream
+1 &
+8 operator
+2 <<
+1 (
+7 ostream
+1 &
+1 ,
+e GCLscalarfield
+1 &
+1 )
+s
+e GCLscalarfield
+cc
+1
+clx
+0 
+340
+0
+s
+b $comment-97
+cd
+1
+cop
+0 
+341
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 832
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3c Two-dimensional vector field defined on a GCLgrid framework.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+ce
+1
+cls
+0 
+344
+5
+5 class
+e GCLvectorfield
+1 :
+6 public
+7 GCLgrid
+s
+b $comment-98
+cf
+ce
+cop
+0 
+345
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 836
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+35 Number of components to vectors stored in this field 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 nv
+d0
+ce
+att
+0 
+347
+2
+3 int
+2 nv
+s
+b $comment-99
+d1
+ce
+cop
+0 
+34e
+29
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 845
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3d  Vector field variable stored in a three-dimensional C array.
+a @long_desc
+1 3
+45  Index of the field is parallel with coordinate arrays x1, x2, and x3
+43  that define grid point positions in space.  The last index is the 
+14  vector component.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 val
+d2
+ce
+att
+0 
+34e
+5
+6 double
+1 *
+1 *
+1 *
+3 val
+s
+c $comment-100
+d3
+ce
+cop
+0 
+34f
+27
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 846
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14 Default constructor.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+d4
+ce
+con
+0 
+351
+3
+e GCLvectorfield
+1 (
+1 )
+s
+c $comment-101
+d5
+ce
+cop
+0 
+35a
+35
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 857
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+3a  Allocates space for x1, x2, and x3 arrays and initializes
+21  other data attributes to zero.  
+1  
+7 @params
+1 3
+6 @param
+1 2
+6 n1size
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+6 n2size
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+6 n3size
+37 number of grid points on generalized coordinate axis 3.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+d6
+ce
+con
+0 
+35a
+8
+e GCLvectorfield
+1 (
+3 int
+1 ,
+3 int
+1 ,
+3 int
+1 )
+s
+c $comment-102
+d7
+ce
+cop
+0 
+35a
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 857
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a Standard copy constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+d8
+ce
+con
+0 
+35c
+6
+e GCLvectorfield
+1 (
+5 const
+e GCLvectorfield
+1 &
+1 )
+s
+c $comment-103
+d9
+ce
+cop
+0 
+368
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 871
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Partial copy constructor cloning grid but not setting field variable.
+a @long_desc
+1 7
+1  
+42  A common situation is to have a grid that is already defined that
+43  needs to be cloned and have field variables set through some other
+43  mechanism.  For example, one might create a standard grid and then
+44  plan to load it with values from a different grid or compute values
+2a  of a field variable at the grid points.  
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 g
+12 Grid to be cloned.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+da
+ce
+con
+0 
+368
+7
+e GCLvectorfield
+1 (
+7 GCLgrid
+1 &
+1 ,
+3 int
+1 )
+s
+c $comment-104
+db
+ce
+cop
+0 
+37c
+45
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 891
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 7
+27  This is a specialized constructor that
+51   loads a field tagged with two names:  grid name and the field name (see below).
+4a   The two components are stored separately in the external database using 
+4e   two different tables.  This constructor has a fair amount of memory overhead
+4f   as it loads a copy of the parent GCLgrid object before creating the field and
+35   then loading field variable data from the database.
+1  
+7 @params
+1 4
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+5 grdnm
+2c name of grid to be loaded from the database.
+6 @param
+1 2
+2 fn
+36 name tag for the field to be loaded from the database.
+6 @param
+1 2
+6 nvsize
+33 expected number of components for vectors in field.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 6
+3 int
+35  Exception is thrown if there are any input problems.
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+e GCLvectorfield
+dc
+ce
+con
+0 
+37c
+e
+e GCLvectorfield
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+5 grdnm
+1 ,
+6 string
+2 fn
+1 ,
+3 int
+6 nvsize
+1 )
+s
+c $comment-105
+dd
+ce
+cop
+0 
+37c
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 891
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Standard assignment operator.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+de
+ce
+mop
+0 
+37e
+9
+e GCLvectorfield
+1 &
+8 operator
+1 =
+1 (
+5 const
+e GCLvectorfield
+1 &
+1 )
+s
+c $comment-106
+df
+ce
+cop
+0 
+384
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 899
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 6
+1  
+51  Note the same precautions about application of the default constructor as noted 
+3  in
+5 @link
+11 GCLgrid::~GCLgrid
+11 GCLgrid::~GCLgrid
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+f ~GCLvectorfield
+e0
+ce
+des
+0 
+384
+4
+1 ~
+e GCLvectorfield
+1 (
+1 )
+s
+c $comment-107
+e1
+ce
+cop
+0 
+3a4
+54
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 931
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Save field to an Antelope (Datascope) database.
+a @long_desc
+2 14
+1  
+1  
+42  This routine writes the object attributes to a special table and 
+42  writes the grid coordinate data to an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+3d  The field variable data are written to a different file and 
+32  stored indexed with a different database table.  
+3e  An odd feature of this routine is that if the directory name 
+3a  for the field passed to the function is empty (the string
+40  equivalent of NULL) the grid is not saved.  This is a necessary
+3b  feature for saving multiple fields on the same parent grid
+d  structure.  
+1  
+7 @params
+1 5
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 3
+7 gclgdir
+30 directory to save gclgrid data.  If zero length,
+1d  	    grid data is not saved.
+6 @param
+1 3
+8 fielddir
+43 directory where field (val) data will be saved.  Can be the same as
+31           gclgdir, but should not be zero length.
+6 @param
+1 2
+9 fieldname
+1c name assigned to this field.
+6 @param
+1 3
+5 dfile
+45 name of file to be used to save field (val) data.  Note the grid data
+48  	    is always saved to a name based in the name attribure of the grid.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 dbsave
+e2
+ce
+met
+0 
+3a5
+16
+4 void
+6 dbsave
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+7 gclgdir
+1 ,
+6 string
+8 fielddir
+1 ,
+6 string
+9 fiendname
+1 ,
+6 string
+5 dfile
+1 )
+5 throw
+1 (
+3 int
+1 )
+s
+c $comment-108
+e3
+ce
+cop
+0 
+3b6
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 949
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Add one field to another.
+a @long_desc
+2 14
+1  
+1  
+3d  This acts like the += operator for simple types, but does so
+40  for an entire field defined on a grid.  As for simple types the
+3c  field on the right hand side is accumulated to the field on
+3b  the left had side of the operator.  This works even if the
+3d  the two fields have different transformation properties and 
+3e  do not match in positions.  The most important limitation to 
+3e  understand, however, is basic sampling.  The field to contain
+3f  the accumulation needs to be as denser or more densely sampled
+3f  as the field on the right hand side to avoid aliasing effects.
+44  This is exactly like time series sampling -- upsampling can just be
+40  done by interpolation but downsampling requires an antialiasing
+15  (smoother) filter.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator +=
+e4
+ce
+mop
+0 
+3b6
+7
+4 void
+8 operator
+2 +=
+1 (
+e GCLvectorfield
+1 &
+1 )
+s
+c $comment-109
+e5
+ce
+cop
+0 
+3bc
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 955
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+36  Multiply all field values by a constant scale factor.
+a @long_desc
+1 1
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 c
+2c constant by which the field is to be scaled.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator *=
+e6
+ce
+mop
+0 
+3bc
+6
+4 void
+8 operator
+2 *=
+1 (
+6 double
+1 )
+s
+c $comment-110
+e7
+ce
+cop
+0 
+3d3
+43
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 978
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2b  Linear interpolation function for a field.
+a @long_desc
+2 13
+1  
+1  
+3e  This is one of the core algorithms described in detail in the
+41  Fan and Pavlis (in review) paper.  It is intended as a low level
+48  routine accessible to the user if desired.  Most applications, however,
+44  will likely prefer to use a higher level application of this method
+45  through something like the += operator.  It is CRITICAL to recognize
+45  that this function must be called AFTER a previous call to lookup on
+44  the same point.  This routine blindly uses the index stored in the 
+46  object and will return total garbage if the lookup was not called or 
+46  returned an error condition that was not handled.  i.e. for efficieny
+44  this function simply assumes the interpolation requested will work.
+32  For this reason it will never throw an exception.
+7 @params
+1 3
+6 @param
+1 2
+3 x1p
+4b - Cartesian x1 coordinate of point to where the field is to be interpolated
+6 @param
+1 2
+3 x2p
+4b - Cartesian x2 coordinate of point to where the field is to be interpolated
+6 @param
+1 2
+3 x3p
+4b - Cartesian x3 coordinate of point to where the field is to be interpolated
+8 @returns
+1 4
+42 pointer to (freshly allocated with new) interpolated value of the 
+49  vector field at the requested point.  The user should call delete [] to 
+45  release the memory allocated for this vector to avoid a memory leak.
+1  
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b interpolate
+e8
+ce
+met
+0 
+3d3
+d
+6 double
+1 *
+b interpolate
+1 (
+6 double
+3 x1p
+1 ,
+6 double
+3 x2p
+1 ,
+6 double
+3 x3p
+1 )
+s
+c $comment-111
+e9
+ce
+cop
+0 
+3dd
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 988
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c   stream output operator for a vector field.
+a @long_desc
+1 7
+1  
+c   Format is:
+7   <pre>
+11 line 1:  n1 n2 nv
+50 line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order 
+21 		(index 2 most rapidly varying).
+6 </pre>
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 ostream&operator<<
+ea
+ce
+frf
+0 
+3dd
+c
+6 friend
+7 ostream
+1 &
+8 operator
+2 <<
+1 (
+7 ostream
+1 &
+1 ,
+e GCLvectorfield
+1 &
+1 )
+s
+e GCLvectorfield
+eb
+1
+clx
+0 
+3de
+0
+s
+c $comment-112
+ec
+1
+cop
+0 
+3de
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 989
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3e Three-dimensional scalar field defined on a GCLgrid framework.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLscalarfield3d
+ed
+1
+cls
+0 
+3e1
+5
+5 class
+10 GCLscalarfield3d
+1 :
+6 public
+9 GCLgrid3d
+s
+c $comment-113
+ee
+ed
+cop
+0 
+3e8
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 999
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3d  Scalar field variable stored in a three-dimensional C array.
+a @long_desc
+1 2
+45  Index of the field is parallel with coordinate arrays x1, x2, and x3
+2b  that define grid point positions in space.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 val
+ef
+ed
+att
+0 
+3e8
+5
+6 double
+1 *
+1 *
+1 *
+3 val
+s
+c $comment-114
+f0
+ed
+cop
+0 
+3e9
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1000
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14 Default constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLscalarfield3d
+f1
+ed
+con
+0 
+3eb
+3
+10 GCLscalarfield3d
+1 (
+1 )
+s
+c $comment-115
+f2
+ed
+cop
+0 
+3f4
+35
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1011
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+3f  Allocates space for x1, x2, x3, and val arrays and initializes
+22  object data attributes to zero.  
+1  
+7 @params
+1 3
+6 @param
+1 2
+6 n1size
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+6 n2size
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+6 n3size
+37 number of grid points on generalized coordinate axis 3.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLscalarfield3d
+f3
+ed
+con
+0 
+3f4
+b
+10 GCLscalarfield3d
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 ,
+3 int
+6 n3size
+1 )
+s
+c $comment-116
+f4
+ed
+cop
+0 
+3f4
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1011
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a Standard copy constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLscalarfield3d
+f5
+ed
+con
+0 
+3f6
+6
+10 GCLscalarfield3d
+1 (
+5 const
+10 GCLscalarfield3d
+1 &
+1 )
+s
+c $comment-117
+f6
+ed
+cop
+0 
+402
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1025
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Partial copy constructor cloning grid but not setting field variable.
+a @long_desc
+1 7
+1  
+42  A common situation is to have a grid that is already defined that
+43  needs to be cloned and have field variables set through some other
+43  mechanism.  For example, one might create a standard grid and then
+44  plan to load it with values from a different grid or compute values
+2a  of a field variable at the grid points.  
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 g
+12 Grid to be cloned.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLscalarfield3d
+f7
+ed
+con
+0 
+402
+6
+10 GCLscalarfield3d
+1 (
+9 GCLgrid3d
+1 &
+1 g
+1 )
+s
+c $comment-118
+f8
+ed
+cop
+0 
+41b
+49
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1050
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 7
+27  This is a specialized constructor that
+51   loads a field tagged with two names:  grid name and the field name (see below).
+4a   The two components are stored separately in the external database using 
+4e   two different tables.  This constructor has a fair amount of memory overhead
+4f   as it loads a copy of the parent GCLgrid object before creating the field and
+35   then loading field variable data from the database.
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+5 grdnm
+2c name of grid to be loaded from the database.
+6 @param
+1 9
+2 fn
+36 name tag for the field to be loaded from the database.
+34 GCLscalarfield3d(Dbptr db, string grdnm, string fn);
+e  Destructor.  
+51  Note the same precautions about application of the default constructor as noted 
+3  in
+5 @link
+15 GCLgrid3d::~GCLgrid3d
+15 GCLgrid3d::~GCLgrid3d
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+35  Exception is thrown if there are any input problems.
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+11 ~GCLscalarfield3d
+f9
+ed
+des
+0 
+41b
+4
+1 ~
+10 GCLscalarfield3d
+1 (
+1 )
+s
+c $comment-119
+fa
+ed
+cop
+0 
+41b
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1050
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Standard assignment operator.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+fb
+ed
+mop
+0 
+41d
+9
+10 GCLscalarfield3d
+1 &
+8 operator
+1 =
+1 (
+5 const
+10 GCLscalarfield3d
+1 &
+1 )
+s
+c $comment-120
+fc
+ed
+cop
+0 
+43d
+54
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1084
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Save field to an Antelope (Datascope) database.
+a @long_desc
+2 14
+1  
+1  
+42  This routine writes the object attributes to a special table and 
+42  writes the grid coordinate data to an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+3d  The field variable data are written to a different file and 
+32  stored indexed with a different database table.  
+3e  An odd feature of this routine is that if the directory name 
+3a  for the field passed to the function is empty (the string
+40  equivalent of NULL) the grid is not saved.  This is a necessary
+3b  feature for saving multiple fields on the same parent grid
+d  structure.  
+1  
+7 @params
+1 5
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 3
+7 gclgdir
+30 directory to save gclgrid data.  If zero length,
+1d  	    grid data is not saved.
+6 @param
+1 3
+8 fielddir
+43 directory where field (val) data will be saved.  Can be the same as
+31           gclgdir, but should not be zero length.
+6 @param
+1 2
+9 fieldname
+1c name assigned to this field.
+6 @param
+1 3
+5 dfile
+45 name of file to be used to save field (val) data.  Note the grid data
+48  	    is always saved to a name based in the name attribure of the grid.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 dbsave
+fd
+ed
+met
+0 
+43f
+16
+4 void
+6 dbsave
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+7 gclgdir
+1 ,
+6 string
+8 fielddir
+1 ,
+6 string
+9 fieldname
+1 ,
+6 string
+5 dfile
+1 )
+5 throw
+1 (
+3 int
+1 )
+s
+c $comment-121
+fe
+ed
+cop
+0 
+450
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1103
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Add one field to another.
+a @long_desc
+2 14
+1  
+1  
+3d  This acts like the += operator for simple types, but does so
+40  for an entire field defined on a grid.  As for simple types the
+3c  field on the right hand side is accumulated to the field on
+3b  the left had side of the operator.  This works even if the
+3d  the two fields have different transformation properties and 
+3e  do not match in positions.  The most important limitation to 
+3e  understand, however, is basic sampling.  The field to contain
+3f  the accumulation needs to be as denser or more densely sampled
+3f  as the field on the right hand side to avoid aliasing effects.
+44  This is exactly like time series sampling -- upsampling can just be
+40  done by interpolation but downsampling requires an antialiasing
+15  (smoother) filter.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator +=
+ff
+ed
+mop
+0 
+450
+7
+4 void
+8 operator
+2 +=
+1 (
+10 GCLscalarfield3d
+1 &
+1 )
+s
+c $comment-122
+100
+ed
+cop
+0 
+456
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1109
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+36  Multiply all field values by a constant scale factor.
+a @long_desc
+1 1
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 c
+2c constant by which the field is to be scaled.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator *=
+101
+ed
+mop
+0 
+456
+7
+4 void
+8 operator
+2 *=
+1 (
+6 double
+1 c
+1 )
+s
+c $comment-123
+102
+ed
+cop
+0 
+45d
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1116
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1f  Interpolate a 3d scalar field.
+a @long_desc
+1 5
+1  
+30  Usage and caveats are the same as described in 
+5 @link
+1b GCLscalarfield::interpolate
+1b GCLscalarfield::interpolate
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b interpolate
+103
+ed
+met
+0 
+45d
+9
+6 double
+b interpolate
+1 (
+6 double
+1 ,
+6 double
+1 ,
+6 double
+1 )
+s
+c $comment-124
+104
+ed
+cop
+0 
+467
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1126
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f   stream output operator for a 3d scalar field.
+a @long_desc
+1 7
+1  
+c   Format is:
+7   <pre>
+11 line 1:  n1 n2 n3
+47 line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order 
+21 		(index 3 most rapidly varying).
+6 </pre>
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 ostream&operator<<
+105
+ed
+frf
+0 
+467
+c
+6 friend
+7 ostream
+1 &
+8 operator
+2 <<
+1 (
+7 ostream
+1 &
+1 ,
+10 GCLscalarfield3d
+1 &
+1 )
+s
+10 GCLscalarfield3d
+106
+1
+clx
+0 
+468
+0
+s
+c $comment-125
+107
+1
+cop
+0 
+468
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1127
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3e Three-dimensional vector field defined on a GCLgrid framework.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+108
+1
+cls
+0 
+46b
+5
+5 class
+10 GCLvectorfield3d
+1 :
+6 public
+9 GCLgrid3d
+s
+c $comment-126
+109
+108
+cop
+0 
+46c
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1131
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+31 Number of components to each vector of the field.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+2 nv
+10a
+108
+att
+0 
+46e
+2
+3 int
+2 nv
+s
+c $comment-127
+10b
+108
+cop
+0 
+475
+29
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1140
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3c  Scalar field variable stored in a four-dimensional C array.
+a @long_desc
+1 3
+45  Index of the field is parallel with coordinate arrays x1, x2, and x3
+45  that define grid point positions in space.  The fourth index defines
+2b  the component of each vector of the field.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+3 val
+10c
+108
+att
+0 
+475
+6
+6 double
+1 *
+1 *
+1 *
+1 *
+3 val
+s
+c $comment-128
+10d
+108
+cop
+0 
+476
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1141
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14 Default constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+10e
+108
+con
+0 
+478
+3
+10 GCLvectorfield3d
+1 (
+1 )
+s
+c $comment-129
+10f
+108
+cop
+0 
+482
+39
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1153
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Simple constructor.
+a @long_desc
+1 3
+3f  Allocates space for x1, x2, x3, and val arrays and initializes
+22  object data attributes to zero.  
+1  
+7 @params
+1 4
+6 @param
+1 2
+6 n1size
+37 number of grid points on generalized coordinate axis 1.
+6 @param
+1 2
+6 n2size
+37 number of grid points on generalized coordinate axis 2.
+6 @param
+1 2
+6 n3size
+37 number of grid points on generalized coordinate axis 3.
+6 @param
+1 2
+6 nvsize
+2d number of components of vectors in this field
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+110
+108
+con
+0 
+482
+e
+10 GCLvectorfield3d
+1 (
+3 int
+6 n1size
+1 ,
+3 int
+6 n2size
+1 ,
+3 int
+6 n3size
+1 ,
+3 int
+6 nvsize
+1 )
+s
+c $comment-130
+111
+108
+cop
+0 
+482
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1153
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a Standard copy constructor.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+112
+108
+con
+0 
+484
+6
+10 GCLvectorfield3d
+1 (
+5 const
+10 GCLvectorfield3d
+1 &
+1 )
+s
+c $comment-131
+113
+108
+cop
+0 
+491
+35
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1168
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+46  Partial copy constructor cloning grid but not setting field variable.
+a @long_desc
+1 7
+1  
+42  A common situation is to have a grid that is already defined that
+43  needs to be cloned and have field variables set through some other
+43  mechanism.  For example, one might create a standard grid and then
+44  plan to load it with values from a different grid or compute values
+2a  of a field variable at the grid points.  
+1  
+7 @params
+1 2
+6 @param
+1 2
+1 g
+12 Grid to be cloned.
+6 @param
+1 2
+6 nvsize
+37 number of vector components for vector field val array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+114
+108
+con
+0 
+491
+8
+10 GCLvectorfield3d
+1 (
+9 GCLgrid3d
+1 &
+1 ,
+3 int
+6 nvsize
+1 )
+s
+c $comment-132
+115
+108
+cop
+0 
+4a6
+46
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1189
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27   Antelope database driven constructor.
+a @long_desc
+1 7
+27  This is a specialized constructor that
+51   loads a field tagged with two names:  grid name and the field name (see below).
+4a   The two components are stored separately in the external database using 
+4e   two different tables.  This constructor has a fair amount of memory overhead
+4f   as it loads a copy of the parent GCLgrid object before creating the field and
+35   then loading field variable data from the database.
+1  
+7 @params
+1 4
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 2
+5 grdnm
+2c name of grid to be loaded from the database.
+6 @param
+1 2
+2 fn
+36 name tag for the field to be loaded from the database.
+6 @param
+1 2
+6 nvsize
+33 expected number of components for vectors in field.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+35  Exception is thrown if there are any input problems.
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 GCLvectorfield3d
+116
+108
+con
+0 
+4a6
+e
+10 GCLvectorfield3d
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+5 grdnm
+1 ,
+6 string
+2 fn
+1 ,
+3 int
+6 nvsize
+1 )
+s
+c $comment-133
+117
+108
+cop
+0 
+4ac
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1195
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 6
+1  
+51  Note the same precautions about application of the default constructor as noted 
+3  in
+5 @link
+15 GCLgrid3d::~GCLgrid3d
+15 GCLgrid3d::~GCLgrid3d
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+11 ~GCLvectorfield3d
+118
+108
+des
+0 
+4ac
+4
+1 ~
+10 GCLvectorfield3d
+1 (
+1 )
+s
+c $comment-134
+119
+108
+cop
+0 
+4ac
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1195
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d Standard assignment operator.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+11a
+108
+mop
+0 
+4ae
+9
+10 GCLvectorfield3d
+1 &
+8 operator
+1 =
+1 (
+5 const
+10 GCLvectorfield3d
+1 &
+1 )
+s
+c $comment-135
+11b
+108
+cop
+0 
+4ce
+54
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1229
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Save field to an Antelope (Datascope) database.
+a @long_desc
+2 14
+1  
+1  
+42  This routine writes the object attributes to a special table and 
+42  writes the grid coordinate data to an output file.  Note the file
+46  name used to store the grid is the same as the name parameter passed 
+12  to this function.
+3d  The field variable data are written to a different file and 
+32  stored indexed with a different database table.  
+3e  An odd feature of this routine is that if the directory name 
+3a  for the field passed to the function is empty (the string
+40  equivalent of NULL) the grid is not saved.  This is a necessary
+3b  feature for saving multiple fields on the same parent grid
+d  structure.  
+1  
+7 @params
+1 5
+6 @param
+1 2
+2 db
+1a Antelope database pointer.
+6 @param
+1 3
+7 gclgdir
+30 directory to save gclgrid data.  If zero length,
+1d  	    grid data is not saved.
+6 @param
+1 3
+8 fielddir
+43 directory where field (val) data will be saved.  Can be the same as
+31           gclgdir, but should not be zero length.
+6 @param
+1 2
+9 fieldname
+1c name assigned to this field.
+6 @param
+1 3
+5 dfile
+45 name of file to be used to save field (val) data.  Note the grid data
+48  	    is always saved to a name based in the name attribure of the grid.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 7
+3 int
+26  Exception is thrown if save failed.  
+3a  A simple int exception is used because errors are posted 
+21  to the Antelope elog mechanism. 
+3e  If this exception is caught, call elog_complain to flush the 
+d  elog buffer.
+1  
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+6 dbsave
+11c
+108
+met
+0 
+4cf
+16
+4 void
+6 dbsave
+1 (
+5 Dbptr
+2 db
+1 ,
+6 string
+7 gclgdir
+1 ,
+6 string
+8 fielddir
+1 ,
+6 string
+9 fieldname
+1 ,
+6 string
+5 dfile
+1 )
+5 throw
+1 (
+3 int
+1 )
+s
+c $comment-136
+11d
+108
+cop
+0 
+4e0
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1247
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Add one field to another.
+a @long_desc
+2 14
+1  
+1  
+3d  This acts like the += operator for simple types, but does so
+40  for an entire field defined on a grid.  As for simple types the
+3c  field on the right hand side is accumulated to the field on
+3b  the left had side of the operator.  This works even if the
+3d  the two fields have different transformation properties and 
+3e  do not match in positions.  The most important limitation to 
+3e  understand, however, is basic sampling.  The field to contain
+3f  the accumulation needs to be as denser or more densely sampled
+3f  as the field on the right hand side to avoid aliasing effects.
+44  This is exactly like time series sampling -- upsampling can just be
+40  done by interpolation but downsampling requires an antialiasing
+15  (smoother) filter.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator +=
+11e
+108
+mop
+0 
+4e0
+7
+4 void
+8 operator
+2 +=
+1 (
+10 GCLvectorfield3d
+1 &
+1 )
+s
+c $comment-137
+11f
+108
+cop
+0 
+4e6
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1253
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+36  Multiply all field values by a constant scale factor.
+a @long_desc
+1 1
+1  
+7 @params
+1 1
+6 @param
+1 2
+1 c
+2c constant by which the field is to be scaled.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator *=
+120
+108
+mop
+0 
+4e6
+6
+4 void
+8 operator
+2 *=
+1 (
+6 double
+1 )
+s
+c $comment-138
+121
+108
+cop
+0 
+4ef
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1262
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1f  Interpolate a 3d scalar field.
+a @long_desc
+1 5
+1  
+30  Usage and caveats are the same as described in 
+5 @link
+1b GCLvectorfield::interpolate
+1b GCLvectorfield::interpolate
+7 @params
+1 0
+8 @returns
+1 2
+34 pointer to vector of doubles allocated with new []. 
+42   User must take caution to free this array to avoid memory leaks.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b interpolate
+122
+108
+met
+0 
+4ef
+a
+6 double
+1 *
+b interpolate
+1 (
+6 double
+1 ,
+6 double
+1 ,
+6 double
+1 )
+s
+c $comment-139
+123
+108
+cop
+0 
+4f9
+2d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1272
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f   stream output operator for a 3d scalar field.
+a @long_desc
+1 7
+1  
+c   Format is:
+7   <pre>
+14 line 1:  n1 n2 n3 nv
+50 line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order 
+21 		(index 3 most rapidly varying).
+6 </pre>
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 ostream&operator<<
+124
+108
+frf
+0 
+4f9
+c
+6 friend
+7 ostream
+1 &
+8 operator
+2 <<
+1 (
+7 ostream
+1 &
+1 ,
+10 GCLvectorfield3d
+1 &
+1 )
+s
+10 GCLvectorfield3d
+125
+1
+clx
+0 
+4fa
+0
+s
+c $comment-140
+126
+1
+cop
+0 
+504
+2a
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1283
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2e  Error object throw by some GCLgrid functions.
+a @long_desc
+1 4
+1  
+1  
+49  Any function that does not use Antelope routines in the GCLgrid library 
+37  will throw this object in the event of an exception.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+d GCLgrid_error
+127
+1
+cls
+0 
+505
+2
+5 class
+d GCLgrid_error
+s
+c $comment-141
+128
+127
+cop
+0 
+506
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1285
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+4d This will contain the error message from the function which threw this error.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 message
+129
+127
+att
+0 
+508
+2
+6 string
+7 message
+s
+c $comment-142
+12a
+127
+cop
+0 
+508
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1287
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+29 Default constructor with generic message.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+d GCLgrid_error
+12b
+127
+con
+0 
+50a
+3
+d GCLgrid_error
+1 (
+1 )
+s
+c $comment-143
+12c
+127
+cop
+0 
+50a
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1289
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+11 copy constructor 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+d GCLgrid_error
+12d
+127
+con
+0 
+50c
+6
+d GCLgrid_error
+1 (
+5 const
+6 string
+4 mess
+1 )
+s
+c $comment-144
+12e
+127
+cop
+0 
+50c
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1291
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d Routine to print the error message to stderr.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 log_error
+12f
+127
+met
+0 
+50e
+5
+7 virtual
+4 void
+9 log_error
+1 (
+1 )
+s
+d GCLgrid_error
+130
+127
+con
+0 
+0
+6
+d GCLgrid_error
+1 (
+5 const
+d GCLgrid_error
+1 &
+1 )
+s
+e ~GCLgrid_error
+131
+127
+des
+0 
+0
+4
+1 ~
+d GCLgrid_error
+1 (
+1 )
+s
+a operator =
+132
+127
+mop
+0 
+0
+9
+d GCLgrid_error
+1 &
+8 operator
+1 =
+1 (
+5 const
+d GCLgrid_error
+1 &
+1 )
+s
+d GCLgrid_error
+133
+1
+clx
+0 
+50f
+0
+s
+c $comment-145
+134
+1
+cop
+0 
+51e
+2f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1309
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+66  Returns distance from the center of the Earth (km) of the standard ellipsoid at a specified latitude.
+a @long_desc
+1 4
+1  
+5a  The reference ellipsoid depends only on latitude.  A GCLgrid uses the reference ellipsoid
+2c  as the reference datum to define a depth.  
+1  
+7 @params
+1 1
+6 @param
+1 2
+3 lat
+49 latitude (in radians) for which the standard ellipse radius is requested.
+8 @returns
+1 1
+6f distance (in kilometers) from the center of the Earth to the sea level geoid surface at the requested latitude.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a r0_ellipse
+135
+1
+fct
+0 
+51e
+5
+6 double
+a r0_ellipse
+1 (
+6 double
+1 )
+s
+c $comment-146
+136
+1
+cop
+0 
+524
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1315
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3a   retrieves a path along a gridline of a GCLgrid3d object.
+a @long_desc
+1 2
+1  
+1e   see man(3) extract_gridline.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 extract_gridline
+137
+1
+fct
+0 
+525
+1b
+7 dmatrix
+1 *
+10 extract_gridline
+1 (
+9 GCLgrid3d
+1 &
+4 grid
+1 ,
+3 int
+3 ix1
+1 ,
+3 int
+3 ix2
+1 ,
+3 int
+3 ix3
+1 ,
+3 int
+4 comp
+1 ,
+4 bool
+7 reverse
+1 )
+5 throw
+1 (
+d GCLgrid_error
+1 )
+s
+c $comment-147
+138
+1
+cop
+0 
+52b
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1322
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+38   Integrate a 3D field variable along a predefined path.
+a @long_desc
+1 2
+1  
+1a   see man(3) pathintegral.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+c pathintegral
+139
+1
+fct
+0 
+52c
+12
+6 vector
+1 <
+6 double
+1 >
+c pathintegral
+1 (
+10 GCLscalarfield3d
+1 &
+5 field
+1 ,
+7 dmatrix
+1 &
+4 path
+1 )
+5 throw
+1 (
+d GCLgrid_error
+1 )
+s
+c $comment-148
+13a
+1
+cop
+0 
+532
+28
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1329
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3d  Transformation from standard spherical to local coordinates.
+a @long_desc
+1 2
+1  
+15   see man(3) ustrans.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 ustrans
+13b
+1
+fct
+0 
+532
+d
+7 dmatrix
+7 ustrans
+1 (
+7 GCLgrid
+1 &
+1 g
+1 ,
+6 double
+3 lat
+1 ,
+6 double
+3 lon
+1 )
+s
+c $comment-149
+13c
+1
+cop
+0 
+543
+3f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1346
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  Initialize a field with a layered structure.
+a @long_desc
+1 7
+1  
+42  It is often useful to initialize a 3d field to a depth dependent 
+46  function.  This function uses 1d interpolation to take a 1d function 
+46  specified in a depth format and project it into all parts of a field.
+4a  A typical example would be initializing a 3d velocity model in tomography
+1a  to a 1d starting model.  
+1  
+7 @params
+1 4
+6 @param
+1 2
+5 field
+18 field to to initialized.
+6 @param
+1 2
+5 val1d
+34 vector containing field variables at 1d grid points.
+6 @param
+1 3
+3 z1d
+3e parallel vector to val1d containing depths (NOT Radius) of the
+37     grid points with values stored in the val1d vector.
+6 @param
+1 3
+4 grad
+46 vector of gradients (forward looking) of field between 1d grid points.
+3b     (Use 0.0 for all values for constant val layer models).
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+13 initialize_1Dscalar
+13d
+1
+fct
+0 
+544
+19
+4 void
+13 initialize_1Dscalar
+1 (
+10 GCLscalarfield3d
+1 &
+5 field
+1 ,
+6 vector
+1 <
+6 double
+1 >
+5 val1d
+1 ,
+6 vector
+1 <
+6 double
+1 >
+3 z1d
+1 ,
+6 vector
+1 <
+6 double
+1 >
+4 grad
+1 )
+s
+c $comment-150
+13e
+1
+cop
+0 
+54d
+2f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1356
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  Overloaded version of function by same name.
+a @long_desc
+1 5
+1  
+1  
+48  See long form for full description.  This form is used for block models
+3d  where the gradient is forced to zero between 1d grid points.
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 1
+4 @see
+1 2
+16 initialize_1Dscalar[0]
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+13 initialize_1Dscalar
+13f
+1
+fct
+0 
+54e
+13
+4 void
+13 initialize_1Dscalar
+1 (
+10 GCLscalarfield3d
+1 &
+5 field
+1 ,
+6 vector
+1 <
+6 double
+1 >
+5 val1d
+1 ,
+6 vector
+1 <
+6 double
+1 >
+3 z1d
+1 )
+s
+c $comment-151
+140
+1
+cop
+0 
+55f
+3c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1374
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+37  Map a path from one grid coordinate system to another.
+a @long_desc
+1 7
+1  
+47  Sometimes one has a line (path) in one grid that one wants to map into
+44  another.  If the two grids have identical transformation properties
+48  (can be determined with == or != operators) this is not necessary, but 
+46  if they are not congruent the points need to be converted between the
+40  two coordinate systems.  This function simplifies that process.
+1  
+7 @params
+1 3
+6 @param
+1 2
+a parentgrid
+38 grid the path to be converted was originally defined in.
+6 @param
+1 3
+4 path
+3a path defined as an 3 x n array of points in the coordinate
+17  	system of parentgrid.
+6 @param
+1 3
+b newpathgrid
+25 grid onto which path is to be mapped.
+1  
+8 @returns
+1 1
+3e a 3 X n matrix of points in the newpathgrid coordinate system.
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a remap_path
+141
+1
+fct
+0 
+55f
+10
+7 dmatrix
+1 &
+a remap_path
+1 (
+9 GCLgrid3d
+1 &
+a parentgrid
+1 ,
+7 dmatrix
+1 &
+4 path
+1 ,
+9 GCLgrid3d
+1 &
+b newpathgrid
+1 )
+s
+c $comment-152
+142
+1
+cop
+0 
+566
+2f
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1381
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+49  Saves a 3d scalarfield to a stream in Data Explorer's native forma (dx).
+a @long_desc
+1 1
+1  
+7 @params
+1 2
+6 @param
+1 2
+1 g
+24 grid to be written to output stream.
+6 @param
+1 2
+3 out
+e output stream.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 dx_output
+143
+1
+fct
+0 
+566
+b
+4 void
+9 dx_output
+1 (
+10 GCLscalarfield3d
+1 &
+1 g
+1 ,
+7 ostream
+1 &
+3 out
+1 )
+s
+c $comment-153
+144
+1
+cop
+3 "C"
+57e
+3d
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1405
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2e  Allocate memory for a four dimensional array.
+a @long_desc
+1 7
+1  
+3f  The GCLgrid library uses a contiguous block of memory to hold 
+3d  arrays and uses C pointers to create the indexing needed for
+21  standard C style subscripting.  
+3b  A contiguous block is used in preference to a potentially 
+3c  millions of malloc calls if the array were built in pieces.
+31  This function creates a 4d array in this manner.
+7 @params
+1 4
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+6 @param
+1 2
+2 n2
+19 size of index 2 of array.
+6 @param
+1 2
+2 n3
+19 size of index 3 of array.
+6 @param
+1 2
+2 n4
+19 size of index 4 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+18 create_4dgrid_contiguous
+145
+1
+fct
+3 "C"
+57e
+13
+6 double
+1 *
+1 *
+1 *
+1 *
+18 create_4dgrid_contiguous
+1 (
+3 int
+2 n1
+1 ,
+3 int
+2 n2
+1 ,
+3 int
+2 n3
+1 ,
+3 int
+2 n4
+1 )
+s
+c $comment-154
+146
+1
+cop
+3 "C"
+58c
+39
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1419
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Allocate memory for a three dimensional array.
+a @long_desc
+1 7
+1  
+3f  The GCLgrid library uses a contiguous block of memory to hold 
+3d  arrays and uses C pointers to create the indexing needed for
+21  standard C style subscripting.  
+3b  A contiguous block is used in preference to a potentially 
+3c  millions of malloc calls if the array were built in pieces.
+31  This function creates a 3d array in this manner.
+7 @params
+1 3
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+6 @param
+1 2
+2 n2
+19 size of index 2 of array.
+6 @param
+1 2
+2 n3
+19 size of index 3 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+18 create_3dgrid_contiguous
+147
+1
+fct
+3 "C"
+58c
+f
+6 double
+1 *
+1 *
+1 *
+18 create_3dgrid_contiguous
+1 (
+3 int
+2 n1
+1 ,
+3 int
+2 n2
+1 ,
+3 int
+2 n3
+1 )
+s
+c $comment-155
+148
+1
+cop
+3 "C"
+59a
+36
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1433
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2d  Allocate memory for a two dimensional array.
+a @long_desc
+1 8
+1  
+3f  The GCLgrid library uses a contiguous block of memory to hold 
+3d  arrays and uses C pointers to create the indexing needed for
+21  standard C style subscripting.  
+3e  This follows the pattern for 3 and 4d arrays for consistency,
+3d  although the reasons for needing a contiguous block in this 
+1b  case are not as important.
+31  This function creates a 2d array in this manner.
+7 @params
+1 2
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+6 @param
+1 2
+2 n2
+19 size of index 2 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+18 create_2dgrid_contiguous
+149
+1
+fct
+3 "C"
+59a
+b
+6 double
+1 *
+1 *
+18 create_2dgrid_contiguous
+1 (
+3 int
+2 n1
+1 ,
+3 int
+2 n2
+1 )
+s
+c $comment-156
+14a
+1
+cop
+3 "C"
+5a7
+3c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1446
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+31  Plain C destructor for a four-dimensional array.
+a @long_desc
+2 10
+1  
+34  This a companion free function to destroy an array 
+b  created by
+5 @link
+18 create_4dgrid_contiguous
+18 create_4dgrid_contiguous
+2  .
+37  The the GCLgrid library it is hidden in the destructor
+17  for different objects.
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+6 @param
+1 2
+2 n2
+19 size of index 2 of array.
+6 @param
+1 2
+2 n3
+19 size of index 3 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+16 free_4dgrid_contiguous
+14b
+1
+fct
+3 "C"
+5a7
+13
+4 void
+16 free_4dgrid_contiguous
+1 (
+6 double
+1 *
+1 *
+1 *
+1 *
+5 array
+1 ,
+3 int
+2 n1
+1 ,
+3 int
+2 n2
+1 ,
+3 int
+2 n3
+1 )
+s
+c $comment-157
+14c
+1
+cop
+3 "C"
+5b3
+38
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1458
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+32  Plain C destructor for a three-dimensional array.
+a @long_desc
+2 10
+1  
+34  This a companion free function to destroy an array 
+b  created by
+5 @link
+18 create_3dgrid_contiguous
+18 create_3dgrid_contiguous
+2  .
+37  The the GCLgrid library it is hidden in the destructor
+17  for different objects.
+1  
+7 @params
+1 2
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+6 @param
+1 2
+2 n2
+19 size of index 2 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+16 free_3dgrid_contiguous
+14d
+1
+fct
+3 "C"
+5b3
+f
+4 void
+16 free_3dgrid_contiguous
+1 (
+6 double
+1 *
+1 *
+1 *
+5 array
+1 ,
+3 int
+2 n1
+1 ,
+3 int
+2 n2
+1 )
+s
+c $comment-158
+14e
+1
+cop
+3 "C"
+5be
+34
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1469
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Plain C destructor for a two-dimensional array.
+a @long_desc
+2 10
+1  
+34  This a companion free function to destroy an array 
+b  created by
+5 @link
+18 create_2dgrid_contiguous
+18 create_2dgrid_contiguous
+2  .
+37  The the GCLgrid library it is hidden in the destructor
+17  for different objects.
+1  
+7 @params
+1 1
+6 @param
+1 2
+2 n1
+19 size of index 1 of array.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+16 free_2dgrid_contiguous
+14f
+1
+fct
+3 "C"
+5be
+b
+4 void
+16 free_2dgrid_contiguous
+1 (
+6 double
+1 *
+1 *
+5 array
+1 ,
+3 int
+2 n1
+1 )
+s
+c $comment-159
+150
+1
+cop
+3 "C"
+5ce
+3b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1485
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3f  FORTRAN function that does interpolation for a distorted cube.
+a @long_desc
+1 6
+1  
+41  This is a core function for interpolation of a field using shape
+44  functions for a distorted cube element.  Computes a Jacobian to map
+45  actual geometry into a standard space and computes weights using the
+35  standard 8 point (cube) serendipity shape functions.
+1  
+7 @params
+1 3
+6 @param
+1 2
+2 xx
+3b 3 vector defining point in space interpolation is requested
+6 @param
+1 3
+5 coord
+33 array holding actual coordinates of 8 corner points
+3c  		of distorted cube.  xx assumed to be inside this element.
+6 @param
+1 3
+3 fun
+36 return vector of length 8.  On return holds weights of
+35  		to used in sum of values of function on 8 corners.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+c Kagan Tuncay
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+c fme_weights_
+151
+1
+fct
+3 "C"
+5ce
+f
+4 void
+c fme_weights_
+1 (
+6 double
+1 *
+2 xx
+1 ,
+6 double
+1 *
+5 coord
+1 ,
+6 double
+1 *
+3 fun
+1 )
+s
+a $comment-0
+152
+0
+cod
+0 
+1d
+31
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+2 28
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27  Geographical Curvilinear Grid library.
+a @long_desc
+1 9
+1b  This is an object oriented
+4a  library for distorted grid objects.  These are common in 3d visualization
+39  but the distinguishing factor here is that a GCLgrid is 
+47  geographically referenced.  Points in a grid have both a Cartesian and
+46  Geographical equivalent.  The data are actually stored in a Cartesian
+48  format to allow common distorted grid algorithms to work.  Geographical
+3f  elements are added through member functions that convert to a 
+4c  geographical reference frame.  The concepts of the library are described in
+48  a paper by Fan and Pavlis (in review, 2005 or 2006 publication date).  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+e Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 1
+5 @root
+5 @todo
+1 0
+2 @}
+f 11 htdocs/gclgrid.db
+s
+7 dmatrix
+153
+0
+pkg
+0 
+0
+0
+f 9 dmatrix.h
+s
+b _DMATRIX_H_
+154
+153
+m00
+0 
+3
+2
+6 define
+b _DMATRIX_H_
+s
+a $comment-0
+155
+153
+cop
+0 
+d
+29
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 12
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+45  Generic data object thrown by dmatrix object for nondescript errors.
+a @long_desc
+1 2
+38  dmatrix_error is a base class for more specific errors.
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+e Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+d dmatrix_error
+156
+153
+cls
+0 
+f
+2
+5 class
+d dmatrix_error
+s
+a $comment-1
+157
+156
+cop
+0 
+14
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 19
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Base error message string
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 message
+158
+156
+att
+0 
+14
+2
+6 string
+7 message
+s
+a $comment-2
+159
+156
+cop
+0 
+18
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 23
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c  Writes the error message to standard error.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 log_error
+15a
+156
+met
+0 
+18
+5
+7 virtual
+4 void
+9 log_error
+1 (
+1 )
+s
+d dmatrix_error
+15b
+156
+con
+0 
+0
+3
+d dmatrix_error
+1 (
+1 )
+s
+d dmatrix_error
+15c
+156
+con
+0 
+0
+6
+d dmatrix_error
+1 (
+5 const
+d dmatrix_error
+1 &
+1 )
+s
+e ~dmatrix_error
+15d
+156
+des
+0 
+0
+4
+1 ~
+d dmatrix_error
+1 (
+1 )
+s
+a operator =
+15e
+156
+mop
+0 
+0
+9
+d dmatrix_error
+1 &
+8 operator
+1 =
+1 (
+5 const
+d dmatrix_error
+1 &
+1 )
+s
+d dmatrix_error
+15f
+153
+clx
+0 
+19
+0
+s
+a $comment-3
+160
+153
+cop
+0 
+21
+29
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 32
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 2
+3f  Thrown by a dmatrix if a requested index is outside the bounds
+19  of the matrix dimension.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+e Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+13 dmatrix_index_error
+161
+153
+cls
+0 
+23
+5
+5 class
+13 dmatrix_index_error
+1 :
+6 public
+d dmatrix_error
+s
+a $comment-4
+162
+161
+cop
+0 
+2c
+36
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 43
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+29  Basic constructor for this error object.
+a @long_desc
+1 0
+7 @params
+1 4
+6 @param
+1 2
+5 nrmax
+18 number of rows in matrix
+6 @param
+1 2
+5 ncmax
+1b number of columns in matrix
+6 @param
+1 2
+2 ir
+13 row index requested
+6 @param
+1 2
+2 ic
+16 column index requested
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+13 dmatrix_index_error
+163
+161
+con
+0 
+2d
+e
+13 dmatrix_index_error
+1 (
+3 int
+5 nrmax
+1 ,
+3 int
+5 ncmax
+1 ,
+3 int
+2 ir
+1 ,
+3 int
+2 ic
+1 )
+s
+a $comment-5
+164
+161
+cop
+0 
+31
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 48
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c  Writes the error message to standard error.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 log_error
+165
+161
+met
+0 
+33
+5
+7 virtual
+4 void
+9 log_error
+1 (
+1 )
+a pri
+s
+3 row
+166
+161
+att
+0 
+35
+2
+3 int
+3 row
+s
+6 column
+167
+161
+att
+0 
+35
+2
+3 int
+6 column
+s
+3 nrr
+168
+161
+att
+0 
+36
+2
+3 int
+3 nrr
+s
+3 ncc
+169
+161
+att
+0 
+36
+2
+3 int
+3 ncc
+a pub
+s
+13 dmatrix_index_error
+16a
+161
+con
+0 
+0
+6
+13 dmatrix_index_error
+1 (
+5 const
+13 dmatrix_index_error
+1 &
+1 )
+s
+14 ~dmatrix_index_error
+16b
+161
+des
+0 
+0
+4
+1 ~
+13 dmatrix_index_error
+1 (
+1 )
+s
+a operator =
+16c
+161
+mop
+0 
+0
+9
+13 dmatrix_index_error
+1 &
+8 operator
+1 =
+1 (
+5 const
+13 dmatrix_index_error
+1 &
+1 )
+s
+13 dmatrix_index_error
+16d
+153
+clx
+0 
+37
+0
+s
+a $comment-6
+16e
+153
+cop
+0 
+3e
+28
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 61
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+3c  Thrown by a dmatrix when two matrices have a size mismatch.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+e Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 dmatrix_size_error
+16f
+153
+cls
+0 
+40
+5
+5 class
+12 dmatrix_size_error
+1 :
+6 public
+d dmatrix_error
+s
+a $comment-7
+170
+16f
+cop
+0 
+49
+36
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 72
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+29  Basic constructor for this error object.
+a @long_desc
+1 0
+7 @params
+1 4
+6 @param
+1 2
+3 nr1
+1a number of rows in matrix 1
+6 @param
+1 2
+3 nc1
+1d number of columns in matrix 1
+6 @param
+1 2
+3 nr1
+1a number of rows in matrix 2
+6 @param
+1 2
+3 nc1
+1d number of columns in matrix 2
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 dmatrix_size_error
+171
+16f
+con
+0 
+4a
+e
+12 dmatrix_size_error
+1 (
+3 int
+3 nr1
+1 ,
+3 int
+3 nc1
+1 ,
+3 int
+3 nr2
+1 ,
+3 int
+3 nc2
+1 )
+s
+a $comment-8
+172
+16f
+cop
+0 
+4e
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+2 77
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2c  Writes the error message to standard error.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 log_error
+173
+16f
+met
+0 
+54
+5
+7 virtual
+4 void
+9 log_error
+1 (
+1 )
+a pri
+s
+5 nrow1
+174
+16f
+att
+0 
+56
+2
+3 int
+5 nrow1
+s
+5 ncol1
+175
+16f
+att
+0 
+56
+2
+3 int
+5 ncol1
+s
+5 nrow2
+176
+16f
+att
+0 
+56
+2
+3 int
+5 nrow2
+s
+5 ncol2
+177
+16f
+att
+0 
+56
+2
+3 int
+5 ncol2
+a pub
+s
+12 dmatrix_size_error
+178
+16f
+con
+0 
+0
+6
+12 dmatrix_size_error
+1 (
+5 const
+12 dmatrix_size_error
+1 &
+1 )
+s
+13 ~dmatrix_size_error
+179
+16f
+des
+0 
+0
+4
+1 ~
+12 dmatrix_size_error
+1 (
+1 )
+s
+a operator =
+17a
+16f
+mop
+0 
+0
+9
+12 dmatrix_size_error
+1 &
+8 operator
+1 =
+1 (
+5 const
+12 dmatrix_size_error
+1 &
+1 )
+s
+12 dmatrix_size_error
+17b
+153
+clx
+0 
+57
+0
+s
+a $comment-9
+17c
+153
+cop
+0 
+67
+31
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 102
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+34  Lightweight, simple double precision matrix object.
+a @long_desc
+2 10
+3f  Provides basic matrix functionality. Note that elements of the
+38  matrix are stored internally in FORTRAN order but using
+3f  C style indexing.  That is, all indices begin at 0, not 1 and 
+40  run to size - 1.  Further, FORTRAN order means the elements are
+3b  actually ordered in columns as in FORTRAN in a continuous,
+43  logical block of memory.  This allow one to use the BLAS functions
+3f  to access the elements of the matrix.  As usual be warned this
+43  is useful for efficiency and speed, but completely circumvents the
+31  bounds checking used by methods in the object.  
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 1
+1b Robert R and Gary L. Pavlis
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dmatrix
+17d
+153
+cls
+0 
+69
+2
+5 class
+7 dmatrix
+s
+b $comment-10
+17e
+17d
+cop
+0 
+6e
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 109
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+15  Default constructor.
+a @long_desc
+1 1
+29  Produces a 1x1 matrix as a place holder.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dmatrix
+17f
+17d
+con
+0 
+6e
+3
+7 dmatrix
+1 (
+1 )
+s
+b $comment-11
+180
+17d
+cop
+0 
+74
+2f
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 115
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+13  Basic constructor.
+a @long_desc
+1 1
+23  Allocates space for nr x nc array.
+7 @params
+1 2
+6 @param
+1 2
+2 nr
+2b number of rows to allocate for this matrix.
+6 @param
+1 2
+2 nc
+2e number of columns to allocate for this matrix.
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dmatrix
+181
+17d
+con
+0 
+74
+8
+7 dmatrix
+1 (
+3 int
+2 nr
+1 ,
+3 int
+2 nc
+1 )
+s
+b $comment-12
+182
+17d
+cop
+0 
+79
+2a
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 120
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1a  Standard copy constructor
+a @long_desc
+1 0
+7 @params
+1 1
+6 @param
+1 2
+5 other
+14 matrix to be copied/
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dmatrix
+183
+17d
+con
+0 
+79
+7
+7 dmatrix
+1 (
+5 const
+7 dmatrix
+1 &
+5 other
+1 )
+s
+b $comment-13
+184
+17d
+cop
+0 
+7d
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 124
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+c  Destructor.
+a @long_desc
+1 1
+11  Nothing special.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+8 ~dmatrix
+185
+17d
+des
+0 
+7d
+4
+1 ~
+7 dmatrix
+1 (
+1 )
+s
+b $comment-14
+186
+17d
+cop
+0 
+86
+35
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 133
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+27  Indexing operator for a matrix object.
+a @long_desc
+1 2
+f  Gets value of 
+21  matrix at (rowindex,colindex).  
+7 @params
+1 2
+6 @param
+1 2
+8 rowindex
+c row to fetch
+6 @param
+1 2
+8 colindex
+10 column to fetch.
+8 @returns
+1 1
+3b Reference to matrix element at position (rowindex,colindex)
+b @exceptions
+1 1
+a @exception
+1 2
+13 dmatrix_index_error
+24 is thrown if request is out of range
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator ()
+187
+17d
+mop
+0 
+86
+c
+6 double
+1 &
+8 operator
+1 (
+1 )
+1 (
+3 int
+8 rowindex
+1 ,
+3 int
+8 colindex
+1 )
+s
+b $comment-15
+188
+17d
+cop
+0 
+8a
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 137
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d  Standard assignment operator
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+a operator =
+189
+17d
+mop
+0 
+8a
+9
+4 void
+8 operator
+1 =
+1 (
+5 const
+7 dmatrix
+1 &
+5 other
+1 )
+s
+b $comment-16
+18a
+17d
+cop
+0 
+8f
+2b
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 142
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1c  Adds one matrix to another.
+a @long_desc
+1 1
+23  X->X+A where A is right hand side.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+12 dmatrix_size_error
+32 is thrown if two matrices are not of the same size
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator +=
+18b
+17d
+mop
+0 
+8f
+9
+4 void
+8 operator
+2 +=
+1 (
+5 const
+7 dmatrix
+1 &
+5 other
+1 )
+s
+b $comment-17
+18c
+17d
+cop
+0 
+94
+2b
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 147
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+23  Subtracts one matrix from another.
+a @long_desc
+1 1
+23  X->X-A where A is right hand side.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+12 dmatrix_size_error
+32 is thrown if two matrices are not of the same size
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator -=
+18d
+17d
+mop
+0 
+94
+9
+4 void
+8 operator
+2 -=
+1 (
+5 const
+7 dmatrix
+1 &
+5 other
+1 )
+s
+b $comment-18
+18e
+17d
+cop
+0 
+99
+2b
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 152
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+12  Add two matrices.
+a @long_desc
+1 1
+7  X=A+B.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+12 dmatrix_size_error
+32 is thrown if two matrices are not of the same size
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 dmatrixoperator+
+18f
+17d
+frf
+0 
+99
+d
+6 friend
+7 dmatrix
+8 operator
+1 +
+1 (
+5 const
+7 dmatrix
+1 &
+1 ,
+5 const
+7 dmatrix
+1 &
+1 )
+s
+b $comment-19
+190
+17d
+cop
+0 
+9e
+2b
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 157
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+25  Take the difference of two matrices.
+a @long_desc
+1 1
+7  X=A-B.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+12 dmatrix_size_error
+32 is thrown if two matrices are not of the same size
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 dmatrixoperator-
+191
+17d
+frf
+0 
+9e
+d
+6 friend
+7 dmatrix
+8 operator
+1 -
+1 (
+5 const
+7 dmatrix
+1 &
+1 ,
+5 const
+7 dmatrix
+1 &
+1 )
+s
+b $comment-20
+192
+17d
+cop
+0 
+a3
+2b
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 162
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+17  Multiply two matrices.
+a @long_desc
+1 1
+7  X=A*B.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+12 dmatrix_size_error
+27 is thrown if columns in A != rows of B.
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 dmatrixoperator*
+193
+17d
+frf
+0 
+a3
+d
+6 friend
+7 dmatrix
+8 operator
+1 *
+1 (
+5 const
+7 dmatrix
+1 &
+1 ,
+5 const
+7 dmatrix
+1 &
+1 )
+s
+b $comment-21
+194
+17d
+cop
+0 
+a7
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 166
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1e  Scale a matrix by a constant.
+a @long_desc
+1 1
+1d  X=c*A where c is a constant.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 dmatrixoperator*
+195
+17d
+frf
+0 
+a7
+d
+6 friend
+7 dmatrix
+8 operator
+1 *
+1 (
+5 const
+6 double
+1 &
+1 ,
+5 const
+7 dmatrix
+1 &
+1 )
+s
+b $comment-22
+196
+17d
+cop
+0 
+ab
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 170
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2f  Divide each element of a matrix by a constant.
+a @long_desc
+1 1
+1c  X=A/c where c is a scalar. 
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+10 dmatrixoperator/
+197
+17d
+frf
+0 
+ab
+d
+6 friend
+7 dmatrix
+8 operator
+1 /
+1 (
+5 const
+7 dmatrix
+1 &
+1 ,
+5 const
+6 double
+1 &
+1 )
+s
+b $comment-23
+198
+17d
+cop
+0 
+af
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 174
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+14  Transpose a matrix.
+a @long_desc
+1 1
+18  Given X, returns X^T.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+9 dmatrixtr
+199
+17d
+frf
+0 
+af
+8
+6 friend
+7 dmatrix
+2 tr
+1 (
+5 const
+7 dmatrix
+1 &
+1 )
+s
+b $comment-24
+19a
+17d
+cop
+0 
+b8
+35
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 183
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+30  Return a pointer to an element (r,c) of matrix.
+a @long_desc
+1 3
+d  This is most
+45  useful in constructs using the BLAS that require a pointer reference
+1d  to an element of a matrix.  
+7 @params
+1 2
+6 @param
+1 2
+1 r
+17 is row index requested.
+6 @param
+1 2
+1 c
+1a is column index requested.
+8 @returns
+1 0
+b @exceptions
+1 1
+a @exception
+1 2
+13 dmatrix_index_error
+24 is thrown if request is out of range
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b get_address
+19b
+17d
+met
+0 
+b8
+a
+6 double
+1 *
+b get_address
+1 (
+3 int
+1 r
+1 ,
+3 int
+1 c
+1 )
+s
+b $comment-25
+19c
+17d
+cop
+0 
+bc
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 187
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+25  Output stream operator for a matrix.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 ostream&operator<<
+19d
+17d
+frf
+0 
+bc
+c
+6 friend
+7 ostream
+1 &
+8 operator
+2 <<
+1 (
+7 ostream
+1 &
+1 ,
+7 dmatrix
+1 &
+1 )
+s
+b $comment-26
+19e
+17d
+cop
+0 
+c0
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 191
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+24  Input stream operator for a matrix.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+12 istream&operator>>
+19f
+17d
+frf
+0 
+c0
+c
+6 friend
+7 istream
+1 &
+8 operator
+2 >>
+1 (
+7 istream
+1 &
+1 ,
+7 dmatrix
+1 &
+1 )
+s
+b $comment-27
+1a0
+17d
+cop
+0 
+c6
+29
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 197
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1d  Get the size of this matrix.
+a @long_desc
+1 2
+20  User must delete [] the result.
+43  User should use rows() and columns() method in preference to this.
+7 @params
+1 0
+8 @returns
+1 1
+35 Two element int vector with row=[0] and column=[1].  
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 size
+1a1
+17d
+met
+0 
+c6
+5
+3 int
+1 *
+4 size
+1 (
+1 )
+s
+b $comment-28
+1a2
+17d
+cop
+0 
+ca
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 201
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2a  Return the number of rows in this matrix.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 rows
+1a3
+17d
+met
+0 
+ca
+4
+3 int
+4 rows
+1 (
+1 )
+s
+b $comment-29
+1a4
+17d
+cop
+0 
+ce
+27
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 205
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+2e   Return the number of columns in this matrix.
+a @long_desc
+1 1
+1  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 columns
+1a5
+17d
+met
+0 
+ce
+4
+3 int
+7 columns
+1 (
+1 )
+s
+b $comment-30
+1a6
+17d
+cop
+0 
+d2
+26
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 209
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+23   Initialize a matrix to all zeros.
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 zero
+1a7
+17d
+met
+0 
+d2
+4
+4 void
+4 zero
+1 (
+1 )
+a pri
+s
+3 ary
+1a8
+17d
+att
+0 
+d4
+3
+6 double
+1 *
+3 ary
+s
+6 length
+1a9
+17d
+att
+0 
+d5
+2
+3 int
+6 length
+s
+3 nrr
+1aa
+17d
+att
+0 
+d6
+2
+3 int
+3 nrr
+s
+3 ncc
+1ab
+17d
+att
+0 
+d6
+2
+3 int
+3 ncc
+a pub
+s
+7 dmatrix
+1ac
+153
+clx
+0 
+d7
+0
+e

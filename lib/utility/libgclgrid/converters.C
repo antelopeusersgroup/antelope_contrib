@@ -4,7 +4,7 @@
 #include "gclgrid.h"
 
 
-void GCLgrid::set_transformation_matrix()
+void BasicGCLgrid::set_transformation_matrix()
 {
 	double pole_lat, pole_lon;
 	double x0[3], xpole[3], xcros[3];
@@ -25,7 +25,7 @@ void GCLgrid::set_transformation_matrix()
 	dcopy(3,x0,1,translation_vector,1);
 	dscal(3,r0,translation_vector,1);
 }
-dmatrix GCLgrid::fetch_transformation_matrix()
+dmatrix BasicGCLgrid::fetch_transformation_matrix()
 {
 	dmatrix U(3,3);
 	int i,j;
@@ -34,14 +34,14 @@ dmatrix GCLgrid::fetch_transformation_matrix()
 			U(i,j) = gtoc_rmatrix[i][j];
 	return(U);
 }
-double *GCLgrid::fetch_translation_vector()
+double *BasicGCLgrid::fetch_translation_vector()
 {
 	int i;
 	double *t = new double[3];
 	for(i=0;i<3;++i) t[i]=translation_vector[i];
 	return(t);
 }
-Cartesian_point GCLgrid::gtoc(double plat, double plon, double pr)
+Cartesian_point BasicGCLgrid::gtoc(double plat, double plon, double pr)
 {
 	Cartesian_point p;
 	double xp[3],dxp[3];
@@ -61,11 +61,11 @@ Cartesian_point GCLgrid::gtoc(double plat, double plon, double pr)
 	p.x3=ddot(3,gtoc_rmatrix[2],1,dxp,1);
 	return(p);
 }
-Cartesian_point GCLgrid::gtoc(Geographic_point p)
+Cartesian_point BasicGCLgrid::gtoc(Geographic_point p)
 {
 	return(this->gtoc(p.lat,p.lon,p.r));
 }
-Geographic_point GCLgrid::ctog(double x1p, double x2p, double x3p)
+Geographic_point BasicGCLgrid::ctog(double x1p, double x2p, double x3p)
 {
 	Geographic_point p;
 	double dxp[3], x[3];
@@ -91,10 +91,12 @@ Geographic_point GCLgrid::ctog(double x1p, double x2p, double x3p)
 	p.r = dnrm2(3,x,1);
 	return(p);
 }
-Geographic_point GCLgrid::ctog(Cartesian_point p)
+Geographic_point BasicGCLgrid::ctog(Cartesian_point p)
 {
 	return(this->ctog(p.x1,p.x2,p.x3));
 }
+// The following should probably be in a separate file as
+// they aren't the BasicGCLgrid type.
 Geographic_point GCLgrid::geo_coordinates(int i, int j)
 {
 	return(ctog(x1[i][j],x2[i][j],x3[i][j]));
