@@ -241,7 +241,21 @@ void dbsave(Time_Series& ts,
 			switch(ami->second.mdt)
 			{
 			case MDint:
-				ival = ts.get_int(ami->second.internal_name);
+				if(ami->second.is_key)
+				{
+					ival = dbnextid(db,
+					  const_cast<char *>
+					   (ami->second.db_attribute_name.c_str()) );
+					if(ival<0)throw seispp_error(
+					  	string("dbsave:  ")
+						+ ami->second.db_attribute_name
+						+ string(" is defined as integer key for table ")
+						+ ami->second.db_table_name
+						+ string(" but dbnextid failed") );
+					
+				}
+				else
+					ival = ts.get_int(ami->second.internal_name);
 				dbputv(db,0,ami->second.db_attribute_name.c_str(),
 					ival,0);
 				break;

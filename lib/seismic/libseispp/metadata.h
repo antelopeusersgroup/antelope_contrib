@@ -37,6 +37,7 @@ public:
 	string db_table_name;
 	string internal_name;
 	MDtype mdt;
+	bool is_key;
 	Attribute_Properties();
 	Attribute_Properties(string);// main constructor parses string 
 	Attribute_Properties(const Attribute_Properties&);

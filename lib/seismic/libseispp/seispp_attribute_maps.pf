@@ -1,10 +1,14 @@
+#
+# In the below the is_key field is set only for integer
+# ids that are lised in the schema as "Defines"
+#
 css3.0 &Tbl{
 affiliation.net net affiliation string
 affiliation.sta sta affiliation string
 affiliation.lddate lddate affiliation real
 arrival.sta sta arrival string
 arrival.time time arrival real
-arrival.arid arid arrival int
+arrival.arid arid arrival int true
 arrival.jdate jdate arrival  int
 arrival.stassid stassid arrival int
 arrival.chanid chanid arrival int
@@ -94,7 +98,7 @@ centryd.dused dused centryd string
 centryd.auth auth centryd string
 centryd.commid commid centryd int
 centryd.lddate lddate centryd real
-event.evid evid event int
+event.evid evid event int true
 event.evname evname event string
 event.prefor prefor event int
 event.auth auth event string
@@ -145,7 +149,7 @@ snetsta.lddate lddate snetsta real
 gregion.grn grn gregion int
 gregion.grname grname gregion string
 gregion.lddate lddate gregion real
-instrument.inid inid instrument int
+instrument.inid inid instrument int true
 instrument.insname insname instrument string
 instrument.instype instype instrument string
 instrument.band band instrument string
@@ -194,7 +198,7 @@ moment.dused dused moment string
 moment.auth auth moment string
 moment.commid commid moment int
 moment.lddate lddate moment real
-netmag.magid magid netmag int
+netmag.magid magid netmag int true
 netmag.net net netmag string
 netmag.orid orid netmag int
 netmag.evid evid netmag int
@@ -235,7 +239,7 @@ origin.lat lat origin real
 origin.lon lon origin real
 origin.depth depth origin real
 origin.time time origin real
-origin.orid orid origin int
+origin.orid orid origin int true
 origin.evid evid origin int
 origin.jdate jdate origin  int
 origin.nass nass origin int
@@ -257,7 +261,7 @@ origin.algorithm algorithm origin string
 origin.auth auth origin string
 origin.commid commid origin int
 origin.lddate lddate origin real
-remark.commid commid remark int
+remark.commid commid remark int true
 remark.lineno lineno remark int
 remark.remark remark remark string
 remark.lddate lddate remark real
@@ -301,7 +305,7 @@ site.lddate lddate site real
 sitechan.sta sta sitechan string
 sitechan.chan chan sitechan string
 sitechan.ondate ondate sitechan  int
-sitechan.chanid chanid sitechan int
+sitechan.chanid chanid sitechan int true
 sitechan.offdate offdate sitechan  int
 sitechan.ctype ctype sitechan string
 sitechan.edepth edepth sitechan real
@@ -342,7 +346,7 @@ stamag.uncertainty uncertainty stamag real
 stamag.auth auth stamag string
 stamag.commid commid stamag int
 stamag.lddate lddate stamag real
-stassoc.stassid stassid stassoc int
+stassoc.stassid stassid stassoc int true
 stassoc.sta sta stassoc string
 stassoc.etype etype stassoc string
 stassoc.review review stassoc string
@@ -380,7 +384,7 @@ stgrid.lddate lddate stgrid real
 wfdisc.sta sta wfdisc string
 wfdisc.chan chan wfdisc string
 wfdisc.time time wfdisc real
-wfdisc.wfid wfid wfdisc int
+wfdisc.wfid wfid wfdisc int true
 wfdisc.chanid chanid wfdisc int
 wfdisc.jdate jdate wfdisc  int
 wfdisc.endtime endtime wfdisc real
@@ -399,7 +403,7 @@ wfdisc.commid commid wfdisc int
 wfdisc.lddate lddate wfdisc real
 wfedit.sta sta wfedit string
 wfedit.chan chan wfedit string
-wfedit.edid edid wfedit int
+wfedit.edid edid wfedit int true
 wfedit.time time wfedit real
 wfedit.endtime endtime wfedit real
 wfedit.probtype probtype wfedit string
@@ -577,6 +581,7 @@ emodel.emodelz emodelz emodel real
 emodel.emodelt emodelt emodel real
 emodel.lddate lddate emodel real
 # aliases go here
+# id key fields all get obvious aliases
 atime time arrival real
 deltim deltim arrival real
 slow slow arrival real
@@ -603,6 +608,10 @@ datatype datatype wfdisc string
 dir dir wfdisc string
 dfile dfile wfdisc string
 foff foff wfdisc int
+arid arid arrival int true
+evid evid event int true
+orid orid origin int true
+wfid wfid wfdisc int true
 }
 
 rt1.0 &Tbl{

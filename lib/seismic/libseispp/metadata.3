@@ -186,6 +186,7 @@ public:
         string db_table_name;
         string internal_name;
         MDtype mdt;
+        bool is_key;
         Attribute_Properties();
         Attribute_Properties(string);// main constructor parses string 
         Attribute_Properties(const Attribute_Properties&);
@@ -212,10 +213,10 @@ For example, if we set the key to "Sample_Attribute_Map" we would
 want an entry like this in the parameter file:
 .nf
 Sample_Attribute_Map &Tbl{
-#internal_name	db_attribute_name	db_table_name	MDtype
-sta		sta			wfdisc		string
-chan		chan			wfdisc		string
-wfstime		time			wfdisc		real
+#internal_name	db_attribute_name	db_table_name	MDtype	is_key
+sta		sta			wfdisc		string	yes
+chan		chan			wfdisc		string	yes
+wfstime		time			wfdisc		real	yes
 Ptime		time			arrival		real
 Stime		time			arrival		real
 wfetime		endtime			wfdisc		real
@@ -230,6 +231,13 @@ that defines this rigid order.  Tokens are separated by standard
 unix white space.  When the constructor reads this data there must
 be exactly four token per line or the constructor will throw a
 Metadata_error exception object (see below).  
+The \fIis_key\fR field is optional and when missing the constructor sets
+the is_key boolean to false.  
+Note that in the current implementation with Datascope the is_key
+field is relevant only to integer keys that require a dbnextid(3)
+call to maintain the integrity of the index.  Datascope will complain
+about noninteger key problems, but maintaining noninteger keys is
+a more complicated problem that is viewed as the applications problem.
 .LP
 The Attribute_Map should normally be static and defines the fixed
 mapping of an internal namespace to a collection of metadata stored

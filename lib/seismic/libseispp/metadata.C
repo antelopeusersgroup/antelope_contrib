@@ -485,6 +485,7 @@ Attribute_Properties::Attribute_Properties(string st)
 	int current=0,next;
 	int end_current;
 	string mdtype_word;
+	string bool_word;
 	string stmp;  // use temporary to allow string edits
 	const string emess("Attribute_Properties(string) constructor failure:  failure parsing the following string:\n");
 
@@ -536,7 +537,18 @@ Attribute_Properties::Attribute_Properties(string st)
 		mdt = MDinvalid;
 		throw Metadata_error(string("Attribute_Properties(string) constructor:  Unrecognized metadata type = ")+mdtype_word);
 	}
+	// optional is_key field.  Defaulted false 
+	is_key = false;
 	
+	current = stmp.find_first_not_of(white,end_current);
+	if(current>=0) 
+	{
+		end_current=stmp.find_first_of(white,current);
+		if(end_current<0) end_current=stmp.length();
+		bool_word.assign(stmp,current,end_current-current);
+		if(bool_word=="yes" || bool_word=="true"
+			|| bool_word=="TRUE")  is_key=true;
+	}
 }
 Attribute_Properties::Attribute_Properties(const Attribute_Properties& apin)
 {
@@ -544,6 +556,7 @@ Attribute_Properties::Attribute_Properties(const Attribute_Properties& apin)
 	db_table_name=apin.db_table_name;
 	internal_name=apin.internal_name;
 	mdt = apin.mdt;
+	is_key = apin.is_key;
 }
 Attribute_Properties& Attribute_Properties::operator=(const Attribute_Properties& apin)
 {
@@ -552,6 +565,7 @@ Attribute_Properties& Attribute_Properties::operator=(const Attribute_Properties
 	db_table_name=apin.db_table_name;
 	internal_name=apin.internal_name;
 	mdt = apin.mdt;
+	is_key = apin.is_key;
 	return(*this);
 }
 // An Attribute_Map is a higher order object built up o
