@@ -1,0 +1,56 @@
+MEX=mex
+MEXEXT=mexsol
+
+ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
+
+include $(ANTELOPEMAKE)
+
+# Suppress -KPIC, which mex compiler doesn't understand
+DCFLAGS= 
+
+# Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
+MEXFLAGS=-L$(ANTELOPE)/lib -L$(PACKAGE_PATH)/lib \
+  -L$(XLIB) LDFLAGS='$$LDFLAGS -R$(ANTELOPE)/lib -R$(PACKAGE_PATH)/lib' $(DBG)
+
+CLEAN += *.$(MEXEXT) *.m *.html
+
+.SUFFIXES: .SUFFIXES .$(MEXEXT) .doc .xm .m .xhtml .html
+.c.o:
+	$(MEX) $(CFLAGS) -c $*.c
+
+.c.$(MEXEXT):
+	$(MEX) -output $*.$(MEXEXT) $(CFLAGS) $*.c $(MEXFLAGS) $(LDLIBS)
+
+.xm.m:
+	$(RM) $@
+	cat $< > $@
+
+.xm.html:
+	$(RM) $@
+	matdoc_htmlwrap $< $@
+
+.doc.m:
+	matdoc2dotm $*.doc 
+
+.doc.html:
+	matdoc2html $*.doc 
+
+.xhtml.html:
+	$(RM) $@
+	cp $< $@
+
+
+all:: $(HTML)
+install:: $(HTML:%=$(ANTELOPE)/data/$(HTMLDIR)/%)
+uninstall::
+	(cd $(ANTELOPE)/data/$(HTMLDIR) ; $(RM) $(HTML))
+
+$(ANTELOPE)/data/$(HTMLDIR)/% : %
+	if [ ! -h $< ] ; then \
+	    if [ ! -d $(ANTELOPE)/data/$(HTMLDIR) ] ; then \
+		mkdir -p $(ANTELOPE)/data/$(HTMLDIR) ; \
+	    fi ; \
+	    $(RM) $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
+	    cp -pf $< $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
+	    chmod a+r $(ANTELOPE)/data/$(HTMLDIR)/$< ; \
+	fi

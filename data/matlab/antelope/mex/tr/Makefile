@@ -32,6 +32,6 @@ fflags=
 ldflags=
 ldlibs=
 
-include ../../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 DBG += -argcheck
 

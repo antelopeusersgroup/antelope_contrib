@@ -3,7 +3,7 @@ DATA= Antelope_Toolbox_for_Matlab.pdf
 
 CLEAN= *.backup.fm *.pdf fmbatch_script
 
-include ../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 
 .SUFFIXES: .SUFFIXES .pdf .fm
 

@@ -98,5 +98,5 @@ DATA= \
 HTMLDIR= matlab/antelope/html/examples
 HTML= $(DATA:.m=.html)
 
-include ../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 

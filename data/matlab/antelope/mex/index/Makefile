@@ -5,5 +5,5 @@ DATA= \
 HTMLDIR= matlab/antelope/html
 HTML= antelope.html
 
-include ../../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 

@@ -12,6 +12,6 @@ MEXSRCS= \
 	eval_response.c \
 	free_response.c 
 
-include ../../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 DBG += -argcheck
 

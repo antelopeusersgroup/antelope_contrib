@@ -1,3 +1,4 @@
+LIB= libantelopemex.a
 INCLUDE= antelope_mex.h
 
 CLEAN=
@@ -7,7 +8,7 @@ fflags=
 ldflags=
 ldlibs=
 
-include ../../antelope_mex_make
+include $(ANTELOPE)/include/mex_antelope_makerules
 DBG += -argcheck
 
 OBJS= 	  variables2mxArray.o \
