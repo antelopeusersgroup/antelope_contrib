@@ -120,12 +120,10 @@ int StuffLiss(
     loc[2] = '\0';
     TRIM( loc, 3);
 
-    if( !strncmp( loc, "10", 2 ) &&
-        ( !strncmp( sta, "ANMO", 4 ) || !strncmp( sta, "GUMO", 4 ) ) )  {
-	chan[2] = 'U';
-    }
+    if( !strncmp( loc, "10", 2 ) || !strncmp( loc, "00", 2 ) )  {
+    	sprintf( srcname, "%s_%s_%s%s\0", net, sta, chan, loc );
+    }  else sprintf( srcname, "%s_%s_%s11\0", net, sta, chan );
     
-    sprintf( srcname, "%s_%s_%s\0", net, sta, chan );
 
     if( match ) 
        if( regexec( &srcmatch, srcname, (size_t) 0, NULL, 0 ) != 0 )
