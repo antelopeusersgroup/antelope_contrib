@@ -1,0 +1,59 @@
+.\" %W% %G%
+.TH GCLGRID 3  "%G%"
+.SH NAME
+GCLGRID - Geographic CurviLinear GRID library
+.SH SYNOPSIS
+.nf
+#include "gclgrid.h"
+double ***create_3dgrid_contiguous(int n1, int n2, int n3);
+double **create_2dgrid_contiguous(int n1, int n2);
+GCL3Dgrid *GCL3Dgrid_load_db(Dbptr db,char *gridname);
+GCL2Dgrid *GCL2Dgrid_load_db(Dbptr db,char *gridname);
+int save_3dgclgrid(GCL3Dgrid *g,Dbptr db,char *dir);
+int save_2dgclgrid(GCL2Dgrid *g,Dbptr db,char *dir);
+void free_3dgrid_contiguous(double ***x,int n1, int n2);
+void free_2dgrid_contiguous(double **x,int n1);
+double r0_ellipse(double lat);
+double r_to_depth(double r, double lat);
+.fi
+.SH DESCRIPTION
+.LP
+Describing features of the earth at regional (hundreds to thousands
+of kilometers) scale often requires a grid scheme that is like 
+a latitude-longitude grid (e.g. 1 degree squares) but is not 
+necessarily aligned with the geographic reference.  
+.LP
+This library is an attempt at a fairly general, but restricted
+gridding scheme for defining 2D or 3D functions that
+are defined on a spherical earth.  The concepts behind the
+library are described in a paper in preparation and a poster
+by Fan and Pavlis [2002] presented at the fall 2002 AGU meeting.
+Consult the Antelope User Group Web pages for updates of these
+sources (http://www.indiana.edu/~aug).  The man page will not 
+attempt to describe the concepts but will focus on 
+documenting the C interface
+functions to the library.
+.LP
+The GCL2Dgrid and GCL3Dgrid are complex data objects defined
+with a typedef found in the include file gclgrid.h.  Since 
+both involve 2 or 3D arrays they can easily get huge.  
+This implementation is under development.  
+Use the create routines to build these and the free routines
+too destroy them.  The routines with the Dbptr are used to
+save and retrieve GCLgrids stored to disk.
+.LP
+The r0_ellipse and r_to_depth function implement ellipticity
+using the standard reference ellipsoid.
+.SH "SEE ALSO"
+.nf
+Look for the C++ man page as it evolves.
+.fi
+.SH "BUGS AND CAVEATS"
+This C interface was the original development for the concepts of 
+this library.  Be aware that it is being depricated almost as soon
+as it is added in favor of a C++ implementation.  
+.SH AUTHOR
+Gary L. Pavlis and Chengliang Fan, Department of Geological Sciences,
+Indiana University, Bloomington, IN  47405 
+(pavlis@indiana.edu, cfan@indiana.edu)
+.\" $Id$
