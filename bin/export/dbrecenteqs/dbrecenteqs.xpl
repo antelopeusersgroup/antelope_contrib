@@ -58,6 +58,11 @@ sub init_globals {
 		$State{$param} = datafile_abspath( $State{$param} );
 	}
  
+	if( ref( $State{authtrans} ) eq "HASH" ) {
+		die( "Old-style authtrans table in dbrecenteqs.pf. " .
+		     "Please convert to new syntax. Bye.\n" );
+	}
+
 	if( $State{use_qgrids} =~ m/y|yes|1|true|t/i ) {
 		$State{use_qgrids} = 1;
 	} else {
@@ -369,16 +374,17 @@ sub mag_description {
 sub translate_author {
 	my( $auth ) = @_;
 
-	foreach $key ( keys( %{$State{authtrans}} ) ) {
+	foreach $authref ( @{$State{authtrans}} ) {
 
-		if( $auth =~ m/$key/ ) {
+		if( $auth =~ m/$authref->{regex}/ ) {
 
-			return ( $State{authtrans}->{$key}->{"text"},
-				 $State{authtrans}->{$key}->{"url"} );
+			return ( $authref->{"text"},
+				 $authref->{"url"},
+				 $authref->{"authoritative"} );
 		}
 	}
 
-	return ( $auth, "" );
+	return ( $auth, "", 0 );
 }
 
 sub station_vitals {
@@ -671,7 +677,7 @@ sub hypocenter_vitals {
 
 	my( $name ) = "orid$orid";
 
-	my( $authtrans, $auth_href ) = translate_author( $auth );
+	my( $authtrans, $auth_href, $authoritative ) = translate_author( $auth );
 
 	$depth_km = sprintf( "%.0f", $depth );
 	$depth_mi = sprintf( "%.0f", $depth_km / 1.609 );
@@ -703,6 +709,7 @@ sub hypocenter_vitals {
 	$writer->dataElement( "depth_km", "$depth_km" );
 	$writer->dataElement( "auth_href", "$auth_href" );
 	$writer->dataElement( "auth", "$authtrans" );
+	$writer->dataElement( "authoritative", "$authoritative" );
 	$writer->dataElement( "shape", "$shape" );
 	$writer->dataElement( "coords", "$coords" );
 	$writer->dataElement( "x", "$x" );

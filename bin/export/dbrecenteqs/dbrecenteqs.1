@@ -211,9 +211,13 @@ given the associated URL. Further decisions on what to do with that
 are up to the stylesheet author. Although the example parameter file
 only shows one entry per institution, this mechanism can be used to
 point each hypocentral solution at the home page of the responsible analyst.
-Note that when traversing this array, the first matching regular expression
+Note that when traversing this table, the first matching regular expression
 is used. Thus, careful regular-expression writing may be necessary
 if one obtains unexpected results. In general, simple, intuitive entries should suffice.
+If no matching regular expression is found, the auth field is left untranslated, 
+i.e. identical to its entry in the database, and the url is left blank. The 'authoritative' 
+field for each entry in the authtrans field is passed through to 
+the XML files created by dbrecenteqs. This is useful for some web-page applications. 
 
 .ft CW
 .in 2c
@@ -382,19 +386,31 @@ map_config &Arr{
 	tilesize_deg 10
 }
 
-authtrans &Arr{
-	UCSD &Arr{
-		text UCSD Personnel
+authtrans &Tbl{
+	&Arr{
+		regex 	UCSD
+		text 	UCSD Personnel
 		url	http://eqinfo.ucsd.edu/personnel/
+		authoritative 1
 	}
-	UAF &Arr{
-		text AEIC staff
-		url http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+	&Arr{
+		regex 	UAF
+		text 	AEIC staff
+		url 	http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+		authoritative 1
 	}
-	orbassoc &Arr{
-		text Antelope Automatic System
-		url http://www.brtt.com
+	&Arr{
+		regex 	orbassoc
+		text 	Antelope Automatic System
+		url 	http://www.brtt.com
+		authoritative 0
 	}
+#	&Arr{
+#		regex 	.*
+#		text 	Default description
+#		url 	http://www.yoyodyne.com
+#		authoritative 0
+#	}
 }
 
 other_region_links &Arr{

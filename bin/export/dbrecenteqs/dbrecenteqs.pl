@@ -89,10 +89,11 @@ sub setup_State {
 		die( "Couldn't find $State{pf}.pf. Bye.\n" );
 	}
 
-	$pf_change_time = "1063497600";
+	$pf_change_time = "1083945262";
 
 	if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
 
+		elog_flush( 1, 0 );
 		die( "The parameter file '$State{pf}.pf' is out of date. " .
 		     "Please upgrade to the latest version. Bye.\n" );
 

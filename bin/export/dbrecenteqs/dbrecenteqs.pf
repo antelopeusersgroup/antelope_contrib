@@ -163,19 +163,31 @@ map_config &Arr{
 	tilesize_deg 10
 }
 
-authtrans &Arr{
-	UCSD &Arr{
-		text UCSD Personnel
+authtrans &Tbl{
+	&Arr{
+		regex 	UCSD
+		text 	UCSD Personnel
 		url	http://eqinfo.ucsd.edu/personnel/
+		authoritative 1
 	}
-	UAF &Arr{
-		text AEIC staff
-		url http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+	&Arr{
+		regex 	UAF
+		text 	AEIC staff
+		url 	http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
+		authoritative 1
 	}
-	orbassoc &Arr{
-		text Antelope Automatic System
-		url http://www.brtt.com
+	&Arr{
+		regex 	orbassoc
+		text 	Antelope Automatic System
+		url 	http://www.brtt.com
+		authoritative 0
 	}
+#	&Arr{
+#		regex 	.*
+#		text 	Default description
+#		url 	http://www.yoyodyne.com
+#		authoritative 0
+#	}
 }
 
 other_region_links &Arr{
