@@ -30,7 +30,11 @@ open_IN_ports( RunArg *par )
        }  else if( S_ISCHR(buf.st_mode) )  {
 	  
 	   if( !strncmp( par->iport , "/dev/rsd", strlen("/dev/rsd") ) )  
+#ifndef __i386
                return open_disk( par );
+#else
+	       return 0;
+#endif
    
                else return open_chr( par );
 
@@ -44,6 +48,8 @@ open_IN_ports( RunArg *par )
 }
 
 /* Input Port is Raw Disk.  */
+#ifndef __i386
+
 
 int open_disk( RunArg *par )
 
@@ -143,6 +149,7 @@ int open_disk( RunArg *par )
   
    	return IN_DISK;
 }
+#endif
 
 
 /* Input Port is Character Special device.  */
