@@ -1,5 +1,5 @@
 #
-MAN=liss2orb.1
+MAN1=liss2orb.1
 BIN=liss2orb
 #
 cflags=
