@@ -243,6 +243,9 @@ NY = cggrid_ny( CGG )
 [X, Y, Z] = cggrid_getmesh( CGG )
     get X,Y,Z coordinate meshes representing cggrid object
 
+VAL = cggrid_probe( CGG, X, Y )
+    probe the cggrid for the value at a given point
+
 cggrid_write( CGG, FORMAT, FILE )
     write a cggrid object to a file
 
