@@ -1,28 +1,20 @@
-.\" @(#)orbmag.1        1.1 05/15/98
+.\" @(#)orbampmag.1        1.3 06/03/04
 .TH ORBAMPMAG 1 "$Date$"
 .SH NAME
 orbampmag \- real-time magnitude computation
 .SH SYNOPSIS
 .nf
-\fBorbampmag \fP
-         [-v]
-         [-start {\fIpktid\fP|\fItime\fP}]        
-         [-number \fInumber\fP]
-         [-nowait] 
-         [-state \fIstatefile\fP]        
-         [-pf \fIparameter_file\fP] 
-         [-auth_expr \fIauth_expr\fP]
-         [-target_orbmag \fItorbmag\fP] 
-         [\fInext_target_orbmag\fP \fIntorbmag\fP]            
-         [-make_magtables] 
-         [-use_mean]
-         [-use_p2p]        
-         [{-use_if_not_associated|-use_if_not_defining}]
-            \fIorbwf\fP \fIorbdb\fP \fIdbname\fP
+\fBorbampmag \fP[-v]    [-start {\fIpktid\fP|\fItime\fP}]    [-number \fInumber\fP]
+          [-nowait] [-state \fIstatefile\fP] [-pf \fIparameter_file\fP]
+		[-auth_expr \fIauth_expr\fP]   [-target_orbmag \fItorbmag\fP]
+ 		[-next_target_orbmag \fIntorbmag\fP]  [-make_magtables]
+ 		[-use_mean] [-use_p2p]
+          [{-use_if_not_associated | -use_if_not_defining}]
+          \fIorbwf\fP \fIorbdb\fP \fIdbname\fP
 .fi
 .SH DESCRIPTION
 \fBorbampmag\fP is a program that continuously looks for parameter file
-packets (/pf/\fItorbmagi\fP) on an ORB and computes magnitude whenever a packet
+packets (/pf/\fItorbmag\fP) on an ORB and computes magnitude whenever a packet
 is read. The input parameter file packets are produced by orbassoc(1).
 The magnitude is written back to the ORB as a modified
 \fI/db/origin\fP packet. Optionally, \fI/db/netmag\fP and
@@ -71,7 +63,7 @@ A target name for this instance of \fBorbampmag\fP. Input parameter
 file packets will be selected based upon this name.
 The name should match the \fBorbampmag\fP target name specified
 in orbassoc(1). The default is "orbmag".
-These packets are created by \fBorbassoc\fP and may be modified by various
+These packets are created by \fBorbassoc\fP or \fBorb2dbt\fP and may be modified by various
 instances of \fBorbampmag\fP.
 .IP "-next_target_orbmag torbmag"
 A target file for the next instance of \fBorbampmag\fP. This enables
@@ -118,16 +110,18 @@ The \fBorbampmag\fP parameter file must contain a table, named "mag",
 that defines a list of all network_stations to be used
 for processing magnitude values. An example \fBorbampmag\fP
 parameter file is as follows:
-.ft CW
 .in 2c
+.ft CW
 .nf
 
-.ne 12
-# latency and maxwaittime are only needed for orbampmag
+.ne 5
+
+# latency and maxwaittime are only needed for \fBorbampmag\fP
 # but to allow the usage of the same parameter file for both
-# realtime (orbampmag) computations and postprocessing (dbampmag)
+# realtime (\fBorbampmag\fP) computations and postprocessing (dbampmag)
 # they are included in the parameterfile
 
+.ne 7
 latency     30.0 # group latency
 maxwaittime 60.0 # A hard timeout value in seconds for reading
                 # waveform packets.  If no waveform packets
@@ -155,10 +149,10 @@ time_window 0.5 # The waveform for processing the
                 # magnitude is determined by a time window
                 # starting from the arrival defined by the
                 # time0 parameter to
-                # time_factor*(S_time-P-time) seconds
+                # time_factor*(S_time - P_time) seconds
                 # after the first P-arrival.
 
-.ne 17
+.ne 18
 mindelta    0   # distance range in degrees
 maxdelta    180 #
 
@@ -182,36 +176,30 @@ c1      1.66
 filter BW 0.6 3 3 3
 
 mag &Tbl{    # station parameters for computing magnitudes
-#           calib              apply
-#      chan  from deconvolve    wa      snr
-#sta   expr   \fIdb\fP  instrument  filter threshold latency c2  c3  c4  c5
-ARSA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-DAVA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-OBKA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-JAVC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-KRUC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-MORC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-KBA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-MOA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+#                  calib              apply
+#      chan        from  deconvolve    wa      snr
+#sta   expr         db   instrument  filter threshold latency c2  c3  c4  c5
+ARSA   HHZ          yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+DEMO   HH[ZNE]_00   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
 }
 
 .fi
-.in
 .ft R
+.in
 .LP
 The parameters are defined below.
-.IP "c0, c1, c2, c3, c4, c5" 
+.IP "c0, c1, c2, c3, c4, c5"
 define whatever you might find appropriate to compute your magnitudes.
 .IP filter
 Defines the filter applied to your data
 .IP sta
 The sta parameter identifies the station.
-.IP chan
-the channel code 
+.IP chan_expr
+A regular expression that is matched against the actual css3.0 channel codes.
 .IP calib_from_db
-If set to yes (or true or 1) then the \fIcalib\fP value for
+If set to yes (or true or 1) then the calib value for
 converting counts to ground velocity (or displacement) is obtained
-from the database calibration table. Otherwise, \fIcalib\fP is obtained directly
+from the database calibration table. Otherwise, calib is obtained directly
 from the wfdisc row entries.
 .IP decon_instr
 If set to yes (or true or 1) then the instrument response
@@ -239,15 +227,17 @@ the responses are converted to displacement and the correct
 gains are applied to produce equivalent Wood-Anderson
 drum recorder displacement.
 .SH EXAMPLES
-This is how I call orbampmag 3 times in rtexec.pf 
+This is how I call orbampmag 3 times in rtexec.pf
 to compute more or less independent of each other mb,ml,ms.
 .LP
 orbassoc puts out the default /pf/orbmag packets which are read to compute mb.
 This instance then puts /pf/orbml, which is read by another instance that computs ml, etc...
 Obviously, the last instance puts nothing back.
-.ft CW
 .in 2c
+.ft CW
 .nf
+
+.ne 10
 
 orbmb orbampmag -state state/mb -v -use_p2p \\
             -auth_expr mb -next_target_orbmag orbml \\
@@ -260,14 +250,32 @@ orbms orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p \\
             -make_magtables $ORB $ORB $DB
 
 .fi
-.in
 .ft R
+.in
+This example shows how to run both \fBorbampmag\fP and \fBorbmag\fP together. \fBOrbmag\fP must be called last, as it does not hand over the modified \fI/pf/orbmag/\fP packets.
+The auth_expr for orbmag looks a bit strange, but it does the job. 
+.in 2c
+.ft CW
+.nf
+.ne 10
+
+orbmb orbampmag -state state/mb -v -use_p2p \\
+            -auth_expr mb -next_target_orbmag orbms \\
+            -make_magtables -pf mb $ORB $ORB $DB
+orbms orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p \\
+            -target_orbmag orbms -net_target_orbmag orbml \\
+			-auth_expr ms -pf ms \\
+            -make_magtables $ORB $ORB $DB
+orbml orbmag -state state/ml -v -target_orbmag orbml \\
+            -auth_expr "orbassoc.*/ && auth!~/.*ma.*" -p orbmag \\
+            -make_magtables $ORB $ORB $DB
+
+.fi
+.ft R
+.in
 .SH "BUGS AND CAVEATS"
-Instrument response deconvolution is not supported at this \fItime\fP.
-Acceleration sensor channels are not supported at this \fItime\fP.
-In order to use stations with loc-codes, I had to give up the regexp-matching for channels.
-The current version requires that you fully specify the channel. 
-Therefore pf_revision_time is checked in the parameterfile ...
+Instrument response deconvolution is not supported at this time.
+Acceleration sensor channels are not supported at this time.
 .SH AUTHOR
 Nikolaus Horn, using orbmag by Danny Harvey
 .br

@@ -13,8 +13,8 @@
        source code in this software module. */
 
 /* Modified by Nikolaus Horn for ZAMG, Vienna */
-#define REVISION_CODE "1.2"
-#define REVISION_DATE "2003-05-23 11:00"
+#define REVISION_CODE "1.3"
+#define REVISION_DATE "2004-06-03 15:00"
 
 
 #include <stdio.h>
@@ -1210,7 +1210,8 @@ static int
 mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 
 {
-	char *chan, *ptr;
+	/*char *chan, *ptr;*/
+	char chan[20];
 	int i, n;
 	Dbptr dbs, dbc, dbi, dbv1, dbv2;
 	char expr[512], fname[1024];
@@ -1230,6 +1231,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	char msg[128];
 	char *s1,*s2;
 	char filter_specification[120];
+	Srcname	parts;
 
 	if (verbose) {
 		sprintf (msg, "Processing %s \n\t%s \n\t%s\n\t", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
@@ -1237,24 +1239,33 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		free(s1);
 		free(s2);
 	}
+	/*
 	chan = strchr(netstachan, '_');
 	chan++;
 	chan = strchr(chan, '_');
 	chan++;
 	ptr = strchr(chan, '_');
 	if (ptr) *ptr ='\0';
+	*/
+	
+	split_srcname(netstachan, &parts);
+	strcpy(chan,parts.src_chan);
+	if (!blank(parts.src_loc)) {
+		strcat(chan,"_");
+		strcat(chan,parts.src_loc);
+	}
 
 	dbs = dblookup (sp->db, 0, "sensor", 0, 0);
 	dbi = dblookup (sp->db, 0, "instrument", 0, 0);
 	sprintf (expr, "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime <= 0.0 || endtime >= %f)",
-			sp->sta, sp->chan_expr, sp->t0_noise, sp->t0_noise);
+			sp->sta, chan, sp->t0_noise, sp->t0_noise);
 	dbv1 = dbsubset (dbs, expr, 0);
 	dbv2 = dbjoin (dbv1, dbi, 0, 0, 0, 0, 0);
 	n = 0;
 	dbquery (dbv2, dbRECORD_COUNT, &n);
 	if (n != 1) {
 		if (verbose) elog_debug (0, "%s - cannot find instrument row\n", msg);
-		else complain (0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, sp->chan_expr);
+		else complain (0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, chan);
 		dbfree (dbv1);
 		dbfree (dbv2);
 
@@ -1263,7 +1274,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	dbv2.record = 0;
 	if (dbgetv (dbv2, 0, "rsptype", rsptype, 0) < 0) {
 		if (verbose) elog_debug (0, "%s - dbgetv(rsptype) error\n", msg);
-		else complain (0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, sp->chan_expr);
+		else complain (0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, chan);
 		dbfree (dbv1);
 		dbfree (dbv2);
 		return 0;
@@ -1273,7 +1284,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		ret = dbextfile (dbv2, "instrument", fname);
 		if (ret != 1) {
 			if (verbose) elog_debug (0, "%s - dbextfile(instrument) error\n", msg);
-			else complain (0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, sp->chan_expr);
+			else complain (0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, chan);
 			dbfree (dbv1);
 			dbfree (dbv2);
 			return 0;
@@ -1281,14 +1292,14 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		file = fopen(fname, "r");
 		if (file == NULL) {
 			if (verbose) elog_debug (1, "%s - fopen(%s) error\n", msg, fname);
-			else complain (1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, sp->chan_expr);
+			else complain (1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, chan);
 			dbfree (dbv1);
 			dbfree (dbv2);
 			return 0;
 		}
 		if (read_response (file, &resp) < 0) {
 			if (verbose) elog_debug (0, "%s - read_response(%s) error\n", msg, fname);
-			else complain (0, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, sp->chan_expr);
+			else complain (0, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, chan);
 			dbfree (dbv1);
 			dbfree (dbv2);
 			return 0;
@@ -1305,20 +1316,20 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		dbquery (dbv1, dbRECORD_COUNT, &n);
 		if (n != 1) {
 			if (verbose) elog_debug (0, "%s - cannot find calibration row\n", msg);
-			else complain (0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, sp->chan_expr);
+			else complain (0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, chan);
 			dbfree (dbv1);
 			return 0;
 		}
 		dbv1.record = 0;
 		if (dbgetv (dbv1, 0, "calib", &calib, 0) < 0) {
 			if (verbose) elog_debug (0, "%s - dbgetv(calib) error\n", msg);
-			else complain (0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, sp->chan_expr);
+			else complain (0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, chan);
 			dbfree (dbv1);
 			return 0;
 		}
 		if (calib == 0.0) {
 			if (verbose) elog_debug (0, "%s - calib == 0\n", msg);
-			else complain (0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, sp->chan_expr);
+			else complain (0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, chan);
 			dbfree (dbv1);
 			return 0;
 		}
@@ -1469,6 +1480,10 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			/*compmag (sp->delta*111.11, signal, &mag);*/
 			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, signal, &mag);
 		}
+		if (mag > MAX_REASONABLE_MAGNITUDE) {
+			complain(1,"mycallback: magnitude %.2f unreasonably high -> ignored\n",mag);
+			mag = -999.00;
+		}
 	}
 	if (mag > sp->mag) {
 		sp->mag = mag;
@@ -1498,7 +1513,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			return 0;
 		}
 	}
-	strcpy (sp->channels[sp->nchannels].chan, sp->chan_expr);
+	strcpy (sp->channels[sp->nchannels].chan, chan);
 	sp->channels[sp->nchannels].mag = mag;
 	sp->channels[sp->nchannels].signal = signal;
 	sp->channels[sp->nchannels].signal_time = signal_time;

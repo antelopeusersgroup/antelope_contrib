@@ -42,9 +42,9 @@ c0	-0.104
 c1	1.66
 filter BW 0.6 3 3 3
 mag &Tbl{		# stations parameters for computing magnitudes
-#             calib   deconvolve apply     snr    
-#sta   chan   from_db instrument wa_filter thresh latency c2   c3   c4   c5
+#      chan       calib   deconvolve apply     snr    
+#sta   expr   from_db instrument wa_filter thresh latency c2   c3   c4   c5
 ARSA   HHZ    yes     no         no        2.0    0.0     0.0  1.0  1.0  0.0
-DEMO   HHZ_00 yes     no         no        2.0    0.0     0.0  1.0  1.0  0.0
+DEMO   HH[ZNE]_00 yes no         no        2.0    0.0     0.0  1.0  1.0  0.0
 }
 pf_revision_time 1053388800
