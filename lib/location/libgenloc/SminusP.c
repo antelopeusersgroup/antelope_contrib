@@ -410,13 +410,6 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 			}
 			free(work);
 		}
-		/* This is strange, but because this was born from
-		strdup setting work and phase1=work this clears that
-		memory alloc.   Work is recycled in the later loop
-		and now points at the segment pointed to by that
-		strdup call.*/
-		free(phase1);
-		free(work);
 	}
 	/*Last, but not least we have to destory the contents of 
 	editlist to avoid a memory leak.  There are stray pointers
