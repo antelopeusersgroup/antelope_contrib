@@ -231,7 +231,7 @@ unless( $opt_a ) {
 
 if( $opt_l ) {
 
-	$ENV{ELOG_DELIVER} = "stderr " . abspath( $opt_l );
+	$ENV{ELOG_DELIVER} = "stderr " . abspath( $opt_l ) . "\@ncdf";
 }
 
 elog_init( "filemail", @ARGV );
