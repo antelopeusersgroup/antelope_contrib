@@ -27,6 +27,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     char *modtype;
     int model;
     int	rc;
+    double wgt;
 
     *oridp = orid = dbnextid(dbin, "orid" ) ;
     if ( orid < 1 ) {
@@ -139,7 +140,73 @@ save_results (Dbptr dbin, Dbptr dbout,
 	dist(rad(hypo->lat),rad(hypo->lon),rad(a->sta->lat),rad(a->sta->lon), &delta,&esaz);
 	dist(rad(a->sta->lat),rad(a->sta->lon),rad(hypo->lat),rad(hypo->lon), &delta,&seaz);
 
-	if ( dbaddv(dbout, "assoc", 
+	/* The previous version of this program had this computed 
+	incorrectly */
+	wgt = (double)((a->res.weighted_residual)/(a->res.raw_residual));
+	/* S-P type phases are inconsistent with the use in datascope
+	of time as a key.  For this reason we have to keep a reference
+	to the original arid of both components of a double phase
+	like this.  This is done through the arid and arid2 elements
+	of the Arrival structure.  This condition, of course, branches
+	for normal phases and "minus" phases like S-P composites
+	handling them differently. */
+	if(strchr(a->phase->name,'-'))
+	{
+		char *phase1,*phase2;
+
+		/* This strange use of char pointers splits a name 
+		like S-P so phase1="S" and phase2="P" */
+		phase1=strdup(a->phase->name);
+		phase2 = strchr(phase1,'-');
+		*phase2='\0';
+		++phase2;
+		/* The error is only a notify level when the addv
+		fails because this can happen readily of one uses
+		multiple composite phases.  e.g. S-P, Pg-P, etc. */
+		if ( dbaddv(dbout, "assoc", 
+			"orid", orid, 
+			"arid", a->arid, 
+			"sta", a->sta->name, 
+			"phase", phase1, 
+			"delta", deg(delta),
+			"seaz", deg(seaz),
+			"esaz", deg(esaz),
+			"timeres", (double) a->res.raw_residual,
+			"timedef", "d",
+			"vmodel", vmodel,
+			"wgt",wgt, 
+				0 ) < 0 ) 
+	    			elog_notify ( 0, "Can't add assoc record for station %s, arid=%d, orid=%d for composite component %s of %s\n", 
+	    				a->sta->name, a->arid, orid,
+					 phase1,a->phase->name) ;
+		/* Be a bit more cautious for the second component */
+		if( ((a->arid2)>0) && ((a->arid)!=(a->arid2)) )
+			if ( dbaddv(dbout, "assoc", 
+				"orid", orid, 
+				"arid", a->arid2, 
+				"sta", a->sta->name, 
+				"phase", phase2, 
+				"delta", deg(delta),
+				"seaz", deg(seaz),
+				"esaz", deg(esaz),
+				"timeres", (double) a->res.raw_residual,
+				"timedef", "d",
+				"vmodel", vmodel,
+				"wgt",wgt, 
+					0 ) < 0 ) 
+	    			    elog_notify ( 0, "Can't add assoc record for station %s, arid=%d, orid=%d for composite component %s of %s\n", 
+	    				a->sta->name, a->arid2, orid,
+					 phase2,a->phase->name) ;
+
+
+		elog_log(0,"Station %s used composite phase %s for orid %d\n",
+			a->sta->name,a->phase->name,orid);
+		free(phase1);
+	}
+	else
+	{
+	    /* Regular phases land here */
+	    if ( dbaddv(dbout, "assoc", 
 		"orid", orid, 
 		"arid", a->arid, 
 		"sta", a->sta->name, 
@@ -150,10 +217,11 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"timeres", (double) a->res.raw_residual,
 		"timedef", "d",
 		"vmodel", vmodel,
-		"wgt", (double) a->res.residual_weight, 
+		"wgt", wgt,
 		0 ) < 0 ) 
-	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
-	    	a->sta->name, a->arid, orid ) ;
+	    	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+	    			a->sta->name, a->arid, orid ) ;
+	}
     }
 
 

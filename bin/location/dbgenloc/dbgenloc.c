@@ -1,3 +1,6 @@
+#include <string.h>
+#include "stock.h"
+#include "elog.h"
 #include "dbgenloc.h"
 
 static void
@@ -29,7 +32,10 @@ char          **argv;
     char           *pfname, *error;
     int		   orid ;
 
+/*
     pfname = Program_Name = argv[0];
+*/
+    pfname=strdup("dbgenloc");
 
     elog_init (argc, argv);
     elog_set ( ELOG_MAXMSG, -1, 0 )  ;
