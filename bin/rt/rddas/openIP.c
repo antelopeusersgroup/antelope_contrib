@@ -7,7 +7,6 @@
  *
  *************************************************************************/
 #include "rddas.h"
-#include <sys/vtoc.h>
 #include <termio.h>
 #include <sys/termios.h>
 
