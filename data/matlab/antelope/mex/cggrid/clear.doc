@@ -1,0 +1,21 @@
+CGGRID/CLEAR	CGGRID elimination routine
+
+CLEAR ( CGG )
+
+CLEAR removes the computational-geometry grid specified by CGG.
+
+The CGG argument is a link to a cggrid object in the underlying
+Antelope libraries.  Although multiple copies of the matlab object may
+be made, only one copy of the underlying cggrid object exists (unless
+the CGGRID constructor is called repeatedly). The functional form
+
+	CLEAR( CGG )
+	
+destroys the underlying object itself, freeing the memory used by the
+Antelope libraries and unregistering the object (thereby preventing
+it's further use via other references). If one merely wants to destroy
+a reference to the CGGRID object, without removing or destroying the
+underlying CGGRID itself, use the command form (No parentheses around
+the argument):
+
+	CLEAR CGG
