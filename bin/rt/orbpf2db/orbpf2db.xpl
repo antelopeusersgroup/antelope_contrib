@@ -188,8 +188,9 @@ for(;;) {
 
 		$crunch = 0; # Keep the hooks unique across crunches
 
+		$hookname = "hook$crunch\_clean_$cleantable";
 		@records = dbmatches( @dbscratch, @dbtable, 
-		  		"hook$crunch\_clean_$table", @matchfields  );
+						$hookname, @matchfields  );
 
 		foreach $record ( @records ) {
 			
@@ -269,7 +270,8 @@ for(;;) {
 
 				} elsif( $write_mode eq "overwrite" ) {
 	
-					@records = dbmatches( @dbscratch, @dbtable, "hook$crunch\_$table" );	
+					$hookname = "hook$crunch\_$table";	
+					@records = dbmatches( @dbscratch, @dbtable, $hookname );	
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
 					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
@@ -311,7 +313,8 @@ for(;;) {
 			
 			} elsif( $write_mode eq "overwrite" ) {
 
-				@records = dbmatches( @dbscratch, @dbtable, "hook$crunch\_$table" );
+				$hookname = "hook$crunch\_$table";
+				@records = dbmatches( @dbscratch, @dbtable, $hookname );
 
 				if( ! defined( @records ) || scalar( @records ) < 1 ) {
 	
