@@ -1268,6 +1268,13 @@ sub write_pixfile_pffile {
 
 	my( $normal_lonc ) = normal_lon( $Mapspec{lonc} );
 
+	if( ! -e "$Mapspec{pixfile}" ) {
+
+		complain( 1, "Won't write $Mapspec{pixfile}.pf; "
+			     "$Mapspec{pixfile} does not exist\n" );
+		return;
+	}
+
 	open( P, ">$Mapspec{pixfile}.pf" );
 
 	print P "$Mapspec{file_basename} &Arr{\n";
