@@ -1,0 +1,6 @@
+DBRESPONSE/EVAL_RESPONSE Dbresponse evaluation routine
+
+RESPONSE = EVAL_RESPONSE ( DBRESPONSE, OMEGA )
+
+EVAL_RESPONSE takes a DBRESPONSE object and evaluates it
+for the complex response at angular frequency OMEGA.

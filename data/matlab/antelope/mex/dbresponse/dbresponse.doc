@@ -1,0 +1,6 @@
+DBRESPONSE Dbresponse class constructor
+
+R = DBRESPONSE ( FILE )
+
+DBRESPONSE creates a dbresponse object R by opening the
+response file named in FILE.
