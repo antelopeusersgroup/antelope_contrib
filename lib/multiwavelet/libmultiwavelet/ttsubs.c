@@ -79,7 +79,7 @@ int MWget_model_tt_slow(Arr *stations,
 	}
 	model = pfget_string(pf,"TTmodel");
 	method = pfget_string(pf,"TTmethod");
-method=strdup("tttaup,tttaup,utaup");
+method=strdup("tttaup,tttaup,tttaup_ucalc");
 	if( (model == NULL) || (method == NULL) )
 	{
 		elog_complain(0,"MWget_model_tt_slow:  TTmodel or TTmethod missing from parameter file\nCannot compute theoretical travel times and slowness vector\n");
