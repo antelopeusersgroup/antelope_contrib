@@ -91,58 +91,39 @@ Tcl_AppInit(interp)
 
     main = Tk_MainWindow(interp);
 
-    /*
-     * Call the init procedures for included packages.  Each call should
-     * look like this:
-     *
-     * if (Mod_Init(interp) == TCL_ERROR) {
-     *     return TCL_ERROR;
-     * }
-     *
-     * where "Mod" is the name of the module.
-     */
+    if (Tcl_Init (interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
 
-#define EndTclCommand (ClientData) NULL, (void (*)()) NULL
+    if (Tk_Init (interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
+    Tcl_StaticPackage (interp, "Tk", Tk_Init, Tk_SafeInit);
 
-     if (dbtcl_init(interp) == TCL_ERROR) {
-          return TCL_ERROR;
-     }
+
+    if (Tclx_Init(interp) == TCL_ERROR) {
+	return TCL_ERROR;
+    }
+    Tcl_StaticPackage (interp, "Tclx", Tclx_Init, Tclx_SafeInit);
+
+    if (Tkx_Init(interp) == TCL_ERROR) {
+	return TCL_ERROR;
+    }
+    Tcl_StaticPackage (interp, "Tkx", Tkx_Init, Tkx_SafeInit);
+
+    if (dbtcl_init(interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
 
     Tcl_CreateCommand(interp, "dpadm", dpadmCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dcrt", dcrtCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dprt", dprtCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dcc", dccCmd, main, NULL) ; 
 
-    /* Extended tcl */
-    if (TclX_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
-    }
 
-    if (TkX_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
-    }
-
-    /*
-     *  Add [incr Tcl] facilities...
-     */
-    /* 
-    if (Itcl_Init(interp) == TCL_ERROR) {
-	    return TCL_ERROR;
-    } */
-
-    /*
-     * Call Tcl_CreateCommand for application-specific commands, if
-     * they weren't already created by the init procedures called above.
-     */
-
-    /*
-     * Specify a user-specific startup file to invoke if the application
-     * is run interactively.  Typically the startup file is "~/.apprc"
-     * where "app" is the name of the application.  If this line is deleted
-     * then no user-specific startup file will be run under any conditions.
-     */
-
-    tcl_RcFileName = "~/.tclrc";
+    Tcl_SetVar ( interp, "tcl_precision", "17", TCL_GLOBAL_ONLY ) ;
+    Tcl_SetVar(interp, "tcl_rcFileName", "~/.wishrc", TCL_GLOBAL_ONLY);
+    
     return TCL_OK;
 }
 

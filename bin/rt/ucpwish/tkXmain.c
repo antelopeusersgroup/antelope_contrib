@@ -43,7 +43,7 @@ main(argc, argv)
     elog_init ( argc, argv ) ; 
     envfile ( "dbwish" ) ;
 
-    Tk_Main(argc, argv, Tcl_AppInit);
+    Tk_MainEx(argc, argv, Tcl_AppInit, Tcl_CreateInterp());
     return 0;                   /* Needed only to prevent compiler warning. */
 }
 
