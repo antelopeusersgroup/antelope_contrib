@@ -1,4 +1,4 @@
-.TH RDDAS
+.TH RDDAS 1 "7 August 1998" " "
 .SH NAME
 rddas \- read data from RefTek DAS to orb  
 .SH SYNOPSIS
@@ -7,7 +7,7 @@ rddas \- read data from RefTek DAS to orb
 rddas [-R]
     [-l] 
     [-p parameter-file]
-    [-r baudrate]
+    [-s B,P,D,S]
     [-u] 
     [-v] 
     inport orb
@@ -40,9 +40,21 @@ Data and Information packets.  A parameter file \fIparameter-file\fR
 will be used to get parameters of a raw data packet, it's type, header type, 
 to get station and channel names code for each component of a raw data packet. 
 By defauld a \fBpscl.pf\fP parameter file is used.
-.IP "-r baudrate"
-Specify a baudrate of a serial port to which RefTek DAS is connected.
-Default value is 57600. 
+.IP "-s B,P,D,S"
+Specify a serial port parameters to match the RefTek's serial port.
+Parameters must be specified in form B,P,D,S where:
+
+.nf
+
+	B is baud rate ( 9600, 38400, 57600, etc.); 
+    	P is a parity ( n => no parity, o = > odd parity, 
+				e => even parity );
+    	D is a number of data bits ( 7 or 8 );
+    	S is a number of stop bits ( 1 or 2 )
+
+.fi
+
+The default parameter settings  57600,n,8,1 . 
 .IP "-u "
 Uncompress seismic data before putting them on an \fIorb\fR ring buffer.
 .IP "-v"

@@ -57,18 +57,15 @@ struct Prts *inport;
 	   die( 1, "TCGETS error\n");
 	}
 
-	termios.c_iflag &= ~ICRNL;
-	termios.c_iflag &= ~ISTRIP;
-	termios.c_iflag &= ~IXOFF;
-	termios.c_iflag &= ~IXON;
-	termios.c_iflag &= ~IMAXBEL;
-  	termios.c_oflag &= ~OPOST;
-  	termios.c_oflag &= ~CSIZE;
-	termios.c_lflag = IEXTEN;
-/*
-        termios.c_lflag &= ~( ICANON | ISIG | ECHO );
-        termios.c_lflag &= NOFLSH;
-*/
+	termios.c_iflag &= ~ICRNL;	/* map CR to NL on input  */
+	termios.c_iflag &= ~ISTRIP;	/* set strip from 8 to 7 char */
+	termios.c_iflag &= ~IXOFF;	/* enable start/stop input control  */
+	termios.c_iflag &= ~IXON;	/* enable start/stop output control  */
+	termios.c_iflag &= ~IMAXBEL;	/* if line too long - echo bell  */
+  	termios.c_oflag &= ~OPOST;	/* postprocess output */
+  	termios.c_cflag &= ~CSIZE;	/* character size  */
+        termios.c_lflag = IEXTEN;
+	termios.c_cflag |= CLOCAL;	/* local line not a dial-up  */
 
  	switch ( inport->brate )  {
 	    
@@ -100,11 +97,61 @@ struct Prts *inport;
 		complain(  0,"baudrate set to 19200\n");
                 break;
 	}
-	termios.c_cflag |= PARENB;
-	termios.c_cflag |= PARODD;
-	termios.c_cflag |= CLOCAL;
-	termios.c_cflag |= CS8;	
+   	        termios.c_cflag |= PARODD|PARENB;
+/*	
+	switch( inport->parity )  {
+	    case 'n':
+                  
+   	        termios.c_cflag &= ~PARENB;
+		break;
 
+	    case 'e':
+
+   	        termios.c_cflag &= ~PARODD;
+   	        termios.c_cflag |= PARENB;
+		break;
+
+	    case 'o':
+
+   	        termios.c_cflag |= PARODD|PARENB;
+		break;
+   	        
+            default:
+		
+		termios.c_cflag &= ~PARENB;
+		break;
+        }
+*/
+	switch( inport->stop_bits )  {
+	
+	    case 1:
+		termios.c_cflag &= ~CSTOPB;
+		break;
+
+	    case 2:
+		termios.c_cflag |= CSTOPB;
+		break;
+	  
+	    default:
+		termios.c_cflag &= ~CSTOPB;
+		break;
+	}
+
+
+	switch( inport->data_bits )  {
+	
+	    case 8:
+		termios.c_cflag |= CS8;
+                break;
+
+	    case 7:
+		termios.c_cflag |= CS7;
+                break;
+	    default:
+		termios.c_cflag |= CS8;
+                break;
+
+        }
 	for (i = 0; i < NCCS; i++)
 		termios.c_cc[i] = 0;	
 	termios.c_cc[VMIN] = 1;

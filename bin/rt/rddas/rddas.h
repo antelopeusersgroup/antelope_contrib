@@ -40,9 +40,12 @@
 struct Prts  {
     int ifp;			/* input port file pointer  */
     int orb;			/* orb file pointer  */
-    int brate;			/* baud rate on input port  */
     int reset;			/* do we want reset inport at the beginning */
     int uncompress;		/* do we want uncompress data before ORB  */
+    int brate;			/* baud rate on input port  */
+    int data_bits;		/* data bits 8 or 7  */
+    int stop_bits;		/* stop bits 1 or 2  */
+    char parity;		/* parity n=none, o=odd, e=even  */
     char ip_name[132];		/* input port name  */
     char orbname[132];		/* orbserver name  */
 };

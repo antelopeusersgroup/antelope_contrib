@@ -11,7 +11,7 @@ extern int PsclLog;
 
 void usage ()
 {
-    fprintf (stderr, "Usage: %s [-l] [ -p pfile ] [-R] [-r baudrate] [-u] [-v] iport orbname \n", Program_Name);
+    fprintf (stderr, "Usage: %s [-l] [ -p pfile ] [-R] [-s B,P,D,S] [-u] [-v] iport orbname \n", Program_Name);
     fprintf (stderr, "Where: \n");
     fprintf (stderr, "	iport    - input port name.\n");
     fprintf (stderr, "	orbname  - orbserver name.\n");
@@ -22,10 +22,35 @@ void null_port( struct Prts *iport )
 {
    iport->ifp = -1;
    iport->orb = -1;
-   iport->brate = DASRATE;
+   iport->brate = 57600;
+   iport->parity = 'n';
+   iport->data_bits = 8;
+   iport->stop_bits = 1;
    iport->reset = 0;
    iport->uncompress = 0;
 
+}
+void parse_port_par( struct Prts *port, char *pstring)
+{
+    int ipar;
+    char *tmp, cpar;
+
+    tmp = strtok( pstring, ",");
+    if( tmp != 0 )
+       port->brate = atoi( tmp ); 
+    
+    tmp = strtok( NULL, ",");
+    if( tmp != 0 )
+      port->parity = *tmp;
+
+    tmp = strtok( NULL, ",");
+    if( tmp != 0 )
+      port->data_bits = atoi(tmp);
+    
+    tmp = strtok( NULL, ",");
+    if( tmp != 0 )
+      port->stop_bits = atoi(tmp);
+    
 }
 
 main(argc, argv)
@@ -35,6 +60,7 @@ char *argv[];
   extern char    *optarg;
   extern int      optind;
   int     	  i;
+  char            *port_par = 0;
   char            *iport = 0;
   char            *pffile = "pscl";
   char            *version = "1.1 (03/22/97)";
@@ -49,7 +75,7 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "p:Rr:luv")) != -1)
+  while ( ( i = getopt (argc, argv, "p:Rs:luv")) != -1)
         switch (i) {
 
         case 'l':
@@ -64,8 +90,8 @@ char *argv[];
         case 'u':
             Ports.uncompress = 1;
             break;
-        case 'r':
-            Ports.brate = atoi(optarg);           
+        case 's':
+            port_par = strdup(optarg);           
             break;
         case 'v':
             Log = 1;
@@ -78,6 +104,7 @@ char *argv[];
          
        iport = argv[optind++];
        orbname = argv[optind++] ; 
+       parse_port_par( &Ports, port_par );
 
        initpf( pffile );
        if( !PsclLog )  {
