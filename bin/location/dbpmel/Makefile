@@ -7,7 +7,6 @@ MAN1=	dbpmel.1
 cflags=-g
 ldlibs=  -lgenloc -lglputil -lpmel -ltrvltm $(DBLIBS) -lperf 
 include $(ANTELOPEMAKE)
-CC=insure
 
 OBJS=dbpmel.o dbsubs.o pmel_process.o
 $(BIN) : $(OBJS)

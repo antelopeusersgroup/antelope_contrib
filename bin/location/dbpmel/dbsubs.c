@@ -313,7 +313,7 @@ for new orid %d of evid %d\n",
 		nmatch=dbmatches(dbas,dba,&aspat,&aspat,&hooka,&matches);
 		if(nmatch<=0)
 		{
-			elog_notify(0,"No assoc records for orid %d\
+			elog_complain(0,"No assoc records for orid %d\
 found\nFail to create new assoc records for orid %d\n",
 				prefor,orid);
 			freetbl(matches,0);

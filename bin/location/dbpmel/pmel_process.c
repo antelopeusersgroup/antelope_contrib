@@ -35,7 +35,7 @@ int load_hypocentroid(Dbptr dbv,int rec, Hypocenter *h)
 		"hypocentroid.dlon",&lon,
 		"hypocentroid.depth",&depth,0) == dbINVALID)
 	{
-		elog_notify(0,"dbgetv error reading hypocentroid coordinates from row %d of working view\n",
+		elog_complain(0,"dbgetv error reading hypocentroid coordinates from row %d of working view\n",
 			rec);
 		h->lat = 0.0;
 		h->lon = 0.0;
@@ -268,7 +268,7 @@ option which is know to cause problems\nrecenter set off\n");
 				if(minus_phases_arrival_edit(ta[j],
 					arr_phase,badclocks))
 				{
-					elog_notify(0,"Warning (dbpmel_process):  problems in editing arrival table for minus phases in minus_phases_arrival function\n");
+					elog_complain(0,"Warning (dbpmel_process):  problems in editing arrival table for minus phases in minus_phases_arrival function\n");
 				}
 			}
 			ndata += maxtbl(ta[j]);
@@ -294,7 +294,7 @@ option which is know to cause problems\nrecenter set off\n");
 			stations,&hypocentroid);
 		if(ierr>0)
 		{
-			elog_notify(0,"%d problems setting path anomaly corrections for gridid=%d\n",
+			elog_complain(0,"%d problems setting path anomaly corrections for gridid=%d\n",
 				ierr,gridid);
 		}
 		else if(ierr<0)
@@ -323,7 +323,7 @@ option which is know to cause problems\nrecenter set off\n");
 			arr_phase,arr_phase_3D);
 		if(ierr)
 		{
-			elog_notify(0,"%d errors in compute_scref\n",ierr);
+			elog_complain(0,"%d errors in compute_scref\n",ierr);
 		}
 		/* It is necessary to initialize the sc vector in smatrix
 		to the contents of the reference station corrections to make
@@ -369,7 +369,7 @@ option which is know to cause problems\nrecenter set off\n");
 				ta,o,pf))
 
 			{
-				elog_notify(0,"Problems saving results\
+				elog_complain(0,"Problems saving results\
 for cluster id %d\n",
 					gridid);
 			}
