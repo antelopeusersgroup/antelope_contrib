@@ -19,7 +19,8 @@
  *    Modified for for use in RTP library, 18-Jul-1198, DEC
  */
 
-/* If REVERSE_BYTE_ORDER is defined, the encode_steim( ) and decode_steim( )
+
+/* If WORDS_BIGENDIAN is not defined, the encode_steim( ) and decode_steim( )
  * functions will swap the byte order of all INT16 and INT32 integers
  * during processing.  This constant should be defined if this code
  * will run on an 80x86 or VAX.  If this code will run on 68000
@@ -300,7 +301,7 @@ BOOL _save_chunk( STEIM *rec, DATA_STATE *ds, CHUNK chunk, INT32 c_type ) {
    /* Update frame flags */
    ds->flags |= c_type << (2 * (15 - (ds->c_ndx + 1)));
 
-#ifdef REVERSE_BYTE_ORDER
+#ifndef WORDS_BIGENDIAN
    /* Perform byte swapping as needed */
    switch( c_type ) {
       case CHUNK_WORDS:
@@ -498,7 +499,7 @@ INT8 _chunk_type( UINT32 flags, INT8 c_ndx ) {
 
 INT16 swap_w( INT16 inword ) {
 
-#ifdef REVERSE_BYTE_ORDER
+#ifndef WORDS_BIGENDIAN
    INT8 tmp;
 
    union {
@@ -524,7 +525,7 @@ INT16 swap_w( INT16 inword ) {
 
 INT32 swap_l( INT32 inlong ) {
 
-#ifdef REVERSE_BYTE_ORDER
+#ifndef WORDS_BIGENDIAN
    INT8 tmp;
 
    union {
@@ -550,6 +551,15 @@ INT32 swap_l( INT32 inlong ) {
 /* Revision History
  *
  * $Log$
+ * Revision 1.2  2004/08/27 16:50:44  danq
+ * Hi Frank,
+ *
+ * I've made some modifications to hopefully allow this to compile and run
+ * under Linux.  But I can't test it, and there's a reasonable chance I screwed
+ * up even the Solaris version.
+ *
+ * -- danq
+ *
  * Revision 1.1  2004/08/25 22:47:59  vernon
  * Rebuilt all the software and was able to get it to complie now.
  *
