@@ -24,6 +24,34 @@ initial_hypocenter ( double lat, double lon, double depth, double time )
     h.t0 = h.time;
     return(h);
 }
+/*  process routine for dbgenloc.  Handles the set of operations of
+computing a location and associated error estimates.  
+
+arguments:
+
+dbin, dbout - input and output db handles respectively.
+pfname - parameter file name
+orid - origin id of event being processed
+error - contains a string describing and error condition if 
+processing fails. Left unaltered if there are not errors.
+
+Normal return is a 0.  -1 if there is a error.
+
+Original code by Dan Quinlan.
+
+Altered May 2001 by G Pavlis.  
+
+The original code used an associative array to store handles
+to multiple models and travel time calculators.  This, unfortunately
+causes a problem with some genloc calculators that are not
+initialized correctly with that logic and probably leave memory
+leaks when reinitialized with a different model name.  The fix
+here slows the code execution, but avoids this initialization problem
+by reinitializing the phase handles anytime the velocity model name
+changes.  
+*/
+
+static char *lastmodel=NULL; /* needs to be here to initialize correctly */
 
 int
 run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
@@ -31,7 +59,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     int             retcode = -1;
     Arr            *stations=0;
     Arr            *arrays=0;
-    Arr *arr_phase;
+    static Arr *arr_phase;
     Pf		   *pf, *vpf ;
     Tbl		   *converge_history=0, *reason_converged=0, *residual=0 ;
     Location_options o;
@@ -41,9 +69,9 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     Hypocenter *hypo ;
     float *emodel;
     double **C;
-    static Arr *models = 0 ; 
     static char static_error[256];
     int loc_ret;
+    int reload=0;
 
     *error = "" ; 
 
@@ -61,21 +89,29 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	complain ( 0, "travel_time_model not specified in parameter file\n") ;
 	*error = "travel_time_model not specified in parameter file" ; 
 	return -1 ; 
-    } else {
-	if ( models == 0 ) {
-	    models = newarr (0) ; 
-	}
-	if ( (arr_phase = getarr ( models, vmodel ) ) == 0 ) {
+    } 
+    if(lastmodel==NULL)
+    {
+	lastmodel = strdup(vmodel);
+	reload = 1;
+    }
+    else if(strcmp(lastmodel,vmodel))
+    {
+	freearr(arr_phase,free_phase_handle);
+	reload = 1;
+    }
+    if(reload)
+    {
 	    if(pfload("GENLOC_MODELS", "tables/genloc", vmodel, &vpf) != 0) {
 		*error = "can't read travel time model" ;
 		return -1 ; 
 	    } else { 
 		arr_phase = parse_phase_parameter_file (vpf);
-		setarr ( models, vmodel, arr_phase ) ;
 		pffree ( vpf ) ; 
 	    }
-	}
     }
+    free(lastmodel);
+    lastmodel=strdup(vmodel);
 
     if ( load_observations ( pf, dbin, arr_phase, 
 	    &stations, &arrays, &ta, &tu ) < 1 ) {
