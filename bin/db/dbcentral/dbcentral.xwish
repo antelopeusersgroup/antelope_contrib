@@ -160,7 +160,7 @@ proc myexec { nickname task } {
 proc run_cmdline {} {
 	global argc argv
 	global Template_time Template_time_format
-	global Nicknames Tasks
+	global Nicknames Tasks Commands
 
 	set i 0
 	set n [llength $argv]
@@ -187,18 +187,38 @@ proc run_cmdline {} {
 		incr i
 	}
 
-	if { $List_Nicknames && [llength $stripped_argv] == 0 } {
-
-		puts stdout "\ndbcentral database nicknames:\n\n"
+	if { [llength $stripped_argv] >= 1 } {
 		
-		foreach key [array names Nicknames] {
-			puts stdout "\t$key\n"
-		}
-		puts stdout "\n"
-
-	} elseif { $List_Nicknames } {
-
 		set nickname [lindex $stripped_argv 0]
+
+	} else {
+
+		set nickname ""
+	}
+
+	if { [llength $stripped_argv] >= 2 } {
+		
+		set task [lindex $stripped_argv 1]
+
+	} else {
+
+		set task ""
+	}
+
+	if { ! [info exists Tasks($nickname)] ||
+	       [llength $Tasks($nickname)] <= 0 } {
+
+		puts stderr "dbcentral: No tasks defined for database '$nickname'\n"
+		exit -1
+	}
+
+	if { $task != "" && ! [info exists Commands($nickname,$task)] } {
+		puts stderr "dbcentral: No task '$task' defined for database '$nickname'\n"
+		exit -1
+
+	}
+
+	if { $List_Nicknames && $nickname != "" } {
 
 		puts stdout "\ndbcentral command nicknames for $nickname:\n\n"
 
@@ -207,28 +227,31 @@ proc run_cmdline {} {
 		}
 		puts stdout "\n"
 
-	} elseif { $Resolve_dbname && [llength $stripped_argv] == 0 } {
+	} elseif { $List_Nicknames } {
+
+		puts stdout "\ndbcentral database nicknames:\n\n"
+		
+		foreach key [array names Nicknames] {
+			puts stdout "\t$key\n"
+		}
+		puts stdout "\n"
+
+	} elseif { $Resolve_dbname && $nickname == "" } {
 
 		puts stderr "Must specify a database nickname with -D\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
 
-		set nickname [lindex $stripped_argv 0]
-
 		puts stdout [get_dbpath $nickname]	
 
 	} elseif { [llength $stripped_argv] == 1 } {
 
-		set nickname [lindex $stripped_argv 0]
 		set task [lindex $Tasks($nickname) 0]
 
 		myexec $nickname $task
 
 	} elseif { [llength $stripped_argv] == 2 } {
-
-		set nickname [lindex $stripped_argv 0]
-		set task [lindex $stripped_argv 1]
 
 		myexec $nickname $task
 

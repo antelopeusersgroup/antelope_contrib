@@ -169,9 +169,17 @@ dbcentral command nicknames for antelope_demo:
 .SH LIBRARY
 .SH ATTRIBUTES
 .SH DIAGNOSTICS
+.nf
+yukon% dbcentral fake_nickname
+dbcentral: No tasks defined for database 'fake_nickname'
+
+yukon% dbcentral antelope_demo fake_task
+dbcentral: No task 'fake_task' defined for database 'antelope_demo'
+
+.fi
 .SH "SEE ALSO"
 .nf
-dbe(1)
+dbe(1), epoch(1)
 .fi
 .SH "BUGS AND CAVEATS"
 The task-names in the parameter file may not contain spaces or other 
