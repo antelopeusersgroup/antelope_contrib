@@ -337,7 +337,6 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 			dependent */
 	int ntest;
 	Dbptr db;  /* generic db lookup parameter */
-	Dbptr dbgrp;  /* group db pointer */
 	Dbptr dbpm;   /* pointer to mwpm table -- kept because used repeatedly*/
 	Dbptr dbsnr;  /* pointer to mwsnr table */
 	Dbptr tr;  /* trace database */
@@ -456,63 +455,28 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 	dtstart = MIN( Window_stime(swinall),Window_stime(nwinall));
 	dtend = MAX(Window_etime(swinall), Window_etime(nwinall));
 
-	/* Now we loop through the database view station by station
-	using the station grouped view STABDLNAME.  This is actually
-	unnecessary in the current implementation as dbv is passed
-	as this group pointer, but this is safer. */  
-	dbgrp = dblookup(dbv,0,STABDLNAME,0,0);
-	if (dbgrp.record == dbINVALID)
-		die(0,"Error in dblookup for named station group table = %s\n",
-			STABDLNAME);
-        dbquery(dbgrp,dbRECORD_COUNT,&narrivals);
+	/* Now we loop through the arrival table subset view */  
+	db = dblookup(dbv,0,"arrival_subset",0,0);
+	if (db.record == dbINVALID)
+		die(0,"Error in dblookup for arrival subset view\n");
+        dbquery(db,dbRECORD_COUNT,&narrivals);
         elog_notify(0,"Processing begins for %d arrivals\n",narrivals);
 
-	for(dbgrp.record=0;dbgrp.record<narrivals;++dbgrp.record)
+	for(db.record=0;db.record<narrivals;++db.record)
 	{
 		Dbptr db_bundle;
 		int evid; 
 		int is, ie; 
 		int ierr;
 
-		if(dbgetv(dbgrp,0,"sta", &sta,
-                        "bundle", &db_bundle,0) == dbINVALID)
+		if(dbgetv(db,0,"sta", &sta,"time",&arrival_time,
+				"arid",&arid,0) == dbINVALID)
 		{
-                        elog_complain(1,"dbgetv error for row %d of station group\nAttempting to continue by skipping to next station\n",
-                                dbgrp.record);
-			continue;
-		}
-		/* This is an ugly trick done to avoid having to rewrite code
-		from mwap to work in this program.  The stations variable in
-		mwap is used to hold an associative array of MWstation objects.
-		Here we fake this and create an empty MWstation object for
-		each station as it is encountered.  Note this function wastes
-		memory as it creates a stack of empty MWstation objects
-		that gets bigger with each new station processed. */
-
-		check_sta_arr(stations,sta,nbands);
-
-
-                dbget_range(db_bundle,&is,&ie);
-
-		/* Skip any bundle without at least 3 rows as this is 
-		guaranteed to have a missing channel */
-		if((ie-is)<3)
-		{
-			elog_complain(0,"Missing channels for station %s for rows %d to %d of database view\nData skipped\n",
-				sta,is,ie);
+                        elog_complain(1,"dbgetv error reading row %d of subsetted arrival table\n",
+                                db.record);
 			continue;
 		}
 
-		/* Time windows are laid down relative to the arrival
-		time associated with this bundle */
-		db_bundle.record = is;
-		if(dbgetv(db_bundle,0,"arrival.time",&arrival_time,
-			"arid",&arid,0))
-		{
-			elog_complain(0,"dbgetv error reading arrival time for station %s at row %d of station bundled view\n",
-				sta,is);
-			continue;
-		}
 		setarr(arrivals,sta,&arrival_time);
         	tr = trnew(NULL,NULL); if(tr.record == dbINVALID)
         	{
@@ -520,11 +484,11 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 		}
 		tstart = arrival_time + dtstart;
 		tend = arrival_time + dtend;
-		ierr = mwap_load_stagrp(db_bundle,tr,tstart, tend);
-		if(ierr)
+		ierr = mwap_load_sta(db,tr,tstart,tend,sta);
+		if(ierr<=0)
 		{
-			elog_complain(0,"%d read errors while trying to load data for station %s on bundle starting at row %d\n",
-				ierr,sta,is);
+			elog_complain(0,"mwap_load_sta read error code %d for station %s\nData not processed for arrival at time %s\n",
+				ierr,sta,strtime(arrival_time));
 			continue;
 		}
 

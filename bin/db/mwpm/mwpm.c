@@ -19,7 +19,6 @@ int main(int argc, char **argv)
 	char subset_string[128];
 
 	int nrows_total, nevents;  /* rows in join and # of groups */
-	Tbl *grp_tbl;
 	Tbl *sortkeys;
 
 	Pf *pf;
@@ -68,52 +67,40 @@ int main(int argc, char **argv)
 	are missing */
 	check_required_pf(pf);
 
-	/* We open the db and do a simple joint of arrival->wfdisc 
-	This view is then subsetted by the combination of phase and the 
-	sift parameter (if given) and grouped by station/channel */
 
 	if(dbopen(dbname,"r+",&db) == dbINVALID)
                 die(1,"Unable to open input database %s\n",dbname);
-	dbj = dbjoin ( dblookup(db,0,"wfdisc",0,0),
-                dblookup(db,0,"arrival",0,0),
-                0,0,0,0,0);
- 	if(dbj.table == dbINVALID)
-                die(1,"wfdisc->arrival join failed\n");
-	dbj = dbjoin( dbj, dblookup(db,0,"sitechan",0,0),0,0,0,0,0);
-	if(dbj.table == dbINVALID)
-		die(1,"wfdisc->arrival->sitechan join failed\n");
+	
+	/* We need a subset of arrival to a specified phase  */
+	db = dblookup(db,0,"arrival",0,0);
 	sprintf(subset_string,
-		"(arrival.iphase =~ /%s/)",phase);
+		"(iphase =~ /%s/)",phase);
 	if(sift_exp != NULL)
 	{
 		strcat(subset_string," && ");
 		strcat(subset_string,sift_exp);
 		elog_log(0,"Subsetting input db with expression %s\n",subset_string);
 	}
-	dbj = dbsubset(dbj,subset_string,0);
+	dbj = dbsubset(db,subset_string,"arrival_subset");
 	if(dbj.record == dbINVALID)
                 die(1,"dbsubset of %s with expression %s failed\n",
                                 dbname, sift_exp);
 
 	dbquery(dbj,dbRECORD_COUNT,&nrows_total);
-	elog_log(0,"Working database view has %d rows\n",nrows_total);
+	elog_log(0,"Working database view has %d arrivals\n",nrows_total);
 
-	sortkeys = newtbl(4);
-	pushtbl(sortkeys,"arrival.time");
-	pushtbl(sortkeys,"sta");
-	pushtbl(sortkeys,"wfdisc.chan");
-	dbj = dbsort(dbj,sortkeys,0,0);
-	if(dbj.record == dbINVALID)
-		die(0,"dbsort of input db failed\n");
-
-	grp_tbl = newtbl(2);
-	pushtbl(grp_tbl,"sta");
-	db = dbgroup(dbj,grp_tbl,STABDLNAME,STABUNDLE);
-	if(db.record == dbINVALID)
-		die(0,"dbgroup failure of wfdisc->sitechan by sta\n");
+        db = dbjoin ( dblookup(db,0,"wfdisc",0,0),
+                dblookup(db,0,"sitechan",0,0),
+                0,0,0,0,0);
+        if(db.table == dbINVALID)
+                die(1,"wfdisc->sitechan join failed\n");
+        clrtbl(sortkeys,0);
+        sortkeys=strtbl("sta","chan","time",0);
+        db = dbsort(db,sortkeys,0,WFVIEW);
+        if(db.record == dbINVALID)
+                die(0,"dbsort of input db failed\n");
 
 	freetbl(sortkeys,0);
-	freetbl(grp_tbl,0);
 
 	/* Now we call the function that actually does all the work
 	passing the grouped db pointer and the parameter space */
