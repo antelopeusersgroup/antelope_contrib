@@ -15,8 +15,6 @@
 #include "db.h"
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
-#include "elog.h"
 
 int loop;
 
