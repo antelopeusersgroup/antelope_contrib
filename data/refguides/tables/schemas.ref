@@ -31,7 +31,7 @@ cvs1.0
 Db2sd1.0
     additions to css3.0 for generating SEED volumes.
 
-dbrecenteqs1.0
+dbrecenteqs1.1
     expansion of css3.0 and rt1.0 to support web-based mapping of 
     hypocenters and related information. 
 
@@ -49,6 +49,9 @@ Logs1.0
 
 models0.4
     prototype css3.0 expansion schema to store travel-time models. 
+
+MWavelet1.1
+    Extension of css3.0 for multiwavelet array-processing 
 
 notify1.2
     holds contact information used in earthquake response procedures. 
@@ -72,7 +75,7 @@ SDAS1.0
     acquisition, transport, and processing for the Seismic Data Acquisition
     System.
 
-statrans1.0
+statrans1.1
     Supports translation of station-names from station-name-only (used 
     by some networks in the past) to css3.0-compatible station and
     channel names.
@@ -96,4 +99,7 @@ Trace4.0
 
 USGS_pde1.0
     USGS 1995 format for Preliminary Determination of Epicenters.
+
+wfrecords1.0
+    Schema for cataloging non-digital records, e.g. helicorder paper
 
