@@ -40,6 +40,17 @@ Attribute clientaddress
 	}
 	;
 
+Attribute clientid
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "client id" )
+	Detail {
+		This is a machine-generated unique id for this 
+		client, usually represented by a hex string. 
+	}
+	;
+
 Attribute clientport
 	Integer (10)
 	Format ( "%10d" )
@@ -685,8 +696,9 @@ Attribute written
 	;
 
 Relation clients
-	Fields ( serveraddress serverport thread host what perm clientaddress clientport fd who latency_sec reject select lastpkt lastrequest mymessages nreads nreject nselect nwrites nrequests errors packets read written bytes pid pktid priority started statmachine when lddate )
+	Fields ( serveraddress serverport thread host what perm clientaddress clientport fd who latency_sec reject select lastpkt lastrequest mymessages nreads nreject nselect nwrites nrequests errors packets read written bytes pid pktid priority started statmachine when clientid lddate )
 	Primary ( serveraddress serverport what )
+	Alternate ( clientid )
 	Description ( "running orbserver clients" )
 	Detail {
 		This table describes individual orbserver clients
@@ -694,8 +706,9 @@ Relation clients
 	;
 
 Relation connections
-	Fields ( fromaddress fromport o2omachine toaddress toport closeorb latency_sec reject select statmachine when what lddate )
+	Fields ( fromaddress fromport o2omachine toaddress toport closeorb latency_sec reject select statmachine when what clientid lddate )
 	Primary ( fromaddress fromport toaddress toport o2omachine statmachine )
+	Foreign ( clientid )
 	Description ( "data-flow connections between orbs" )
 	Detail {
 		This table describes data-flow connections between orbs, 
