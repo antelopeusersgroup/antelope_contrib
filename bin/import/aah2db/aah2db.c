@@ -18,7 +18,7 @@ static int aah_abstime_to_epoch( struct time, double * );
 static void
 usage ()
 {
-	char *usage = "aah2db [-vV] ahfile [ahfile...] dbname";
+	char *usage = "[-vV] ahfile [ahfile...] dbname";
 	char *author = "Kent Lindquist";
 	char *location = "Geophysical Institute, U. of Alaska";
 	char *email = "kent@giseis.alaska.edu";
