@@ -281,6 +281,8 @@ deeper sources.  Otherwise we use only the ray angle dependent terms.
 
 Author:  Gary L Pavlis
 Written:  August 1996
+Modification:  April 1998, bug fix. Original code failed for z=0
+when computing derivatives of u wrt z.  Always produced a infinitity.
 */
 
 /* These constants are used in numerical calculation of du/dr below */
@@ -312,6 +314,7 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 	int nz;
 	double time, p;
 	int up;  /* direct ray flag from ttlvz */
+	double ztmp;
 
 	/* First we compute the epicentral distance and azimuth */
 	dist(rad(x.slat), rad(x.slon), rad(x.rlat), rad(x.rlon), 
@@ -537,14 +540,25 @@ Slowness_Function_Output ttlvz_slow_exec (Ray_Endpoints x,
 			accuracy should not be a serious problem with 
 			fairly crude scaling like this.  We do a simple
 			backward difference to avoid crossing over into
-			refracted branches. */
+			refracted branches. However, when source is shallow
+			we always use a forward difference to avoid 
+			negative depths problems.  */
 			if(x.sz <= DZ_STEP_SIZE)
 			{
-				dudz = (p - (1.0/v[0]))/x.sz;
+				ztmp = x.sz+DZ_STEP_SIZE;
+				ttlvz_(&d_km,&ztmp, &nz, v, z, 
+					work1, work2, &time, &p0, &up);
+        			if (time < 0.0)
+        			{
+                		  register_error(1,"ttlvz_time_exec: ttlvz could not compute direct wave slowness vector for phase %s while computing derivatives\n",phase);
+                	   	  o.ux = SLOWNESS_INVALID;
+                	  	  o.uy = SLOWNESS_INVALID;
+                		  return(o);
+        			}
+				dudz = (p0 - p)/DZ_STEP_SIZE;
 			}
 			else
 			{
-				double ztmp;
 				ztmp = x.sz-DZ_STEP_SIZE;
 				ttlvz_(&d_km,&ztmp, &nz, v, z, 
 					work1, work2, &time, &p0, &up);
