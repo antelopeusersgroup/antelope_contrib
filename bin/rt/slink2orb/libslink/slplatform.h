@@ -82,6 +82,18 @@ extern "C" {
   typedef unsigned __int64 uint64_t;
 
 #else
+
+  #include <stdlib.h>
+  #include <unistd.h>
+  #include <stdarg.h>
+  #include <inttypes.h>
+  #include <errno.h>
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <netinet/in.h>
+  #include <netdb.h>
+  #include <sys/time.h>
+
   typedef signed char int8_t;
   typedef unsigned char uint8_t;
   typedef signed short int int16_t;
