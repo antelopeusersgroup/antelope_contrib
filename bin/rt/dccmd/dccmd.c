@@ -2,6 +2,17 @@
 
 extern char *ucase();
 
+char *pfile;
+Arr *Dases;
+Arr *Dasid;
+Tbl *CmdArg;
+Tbl *Dlist;
+int Log;
+regex_t argument;
+
+struct sockaddr_in myadd_in;           
+struct sockaddr_in peer_in;
+
 main(argc, argv)
 int argc;
 char *argv[];

@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <stropts.h>
 #include <netdb.h>
 #include "db.h"
 #include "coords.h"
@@ -38,16 +37,16 @@
 #define CRCMD   0x22
 #define DASCMD  0x33
 
-char *pfile;
-Arr *Dases;
-Arr *Dasid;
-Tbl *CmdArg;
-Tbl *Dlist;
-int Log;
-regex_t argument;
+extern char *pfile;
+extern Arr *Dases;
+extern Arr *Dasid;
+extern Tbl *CmdArg;
+extern Tbl *Dlist;
+extern int Log;
+extern regex_t argument;
 
-struct sockaddr_in myadd_in;           
-struct sockaddr_in peer_in;
+extern struct sockaddr_in myadd_in;           
+extern struct sockaddr_in peer_in;
 
 #ifdef __STDC__
 #define PL_(x) x
