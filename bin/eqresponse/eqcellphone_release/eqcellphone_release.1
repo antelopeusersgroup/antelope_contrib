@@ -1,0 +1,45 @@
+.\" $Name$ $Date$
+.TH EQCELLPHONE_RELEASE 1 "$Date$"
+.SH NAME
+eqcellphone_release \- email to cell phones information-release reports of earthquakes from database
+.SH SYNOPSIS
+.nf
+eqcellphone_release [-pf pffile] dbname
+.fi
+.SH DESCRIPTION
+eqcellphone_release reads a hypocenter out of a CSS3.0 database
+and sends it to cell-phone email addresses specified in the parameter file.
+eqcellphone_release requires a database of places
+from which to calculate the distance of the detected earthquake. The pathname
+to this database is also in the parameter file. eqcellphone_release will echo
+a copy of each message to stdout. The email addresses in the parameter file are
+intended to be addresses corresponding to cell-phones.
+
+The array specifying email recipients may contain a subsetting expression
+for the origin-table row, filtering out unwanted origins.
+
+.SH OPTIONS
+-pf pffile specify an alternate name for the parameter file. The default is eqcellphone_release.pf.
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+
+cellphone_reference_cities /Seis/databases/places/cellphone_cities
+
+cellphone_mail_recipients &Arr{
+        9075551212@msg.mactel.com ndef > 14 && ml > 2.7
+        9071111111@msg.mactel.com
+}
+
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+orb_quake_cell(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Don't put quotes around the subsetting expression in the recipients arrays.
+.SH AUTHOR
+Kent Lindquist

@@ -1,0 +1,43 @@
+.TH EQRELEASE_DISTRIBUTOR 1 "$Date$"
+.SH NAME
+eqrelease_distributor\- distribute information for Earthquake release notices
+.SH SYNOPSIS
+.nf
+\fBeqrelease_distributor \fP[\fInofangs\fP]
+.fi
+.SH DESCRIPTION
+\fBeqrelease_distributor\fP allows information to be distributed via
+email and web during the Earthquake information-release process. This
+script is intended to be launched by a driver script. However, in
+the event something has gone wrong, it may be launched from the directory
+containing the information-release files, such as the text of the email
+message and the documents to go on the web.
+
+There is one GUI button for each info-distribution task. A row of
+checkboxes at left marks which tasks have been completed. The buttons
+are disabled when the task is completed, however if repetition of a task
+is necessary, deactivation of the checkoff box will allow
+re-activation of the button.
+
+In the event one wishes to skip a step intentionally, checking off
+the checkbox manually will suppress the "incomplete" warning at the
+end without actually taking that distribution step.
+
+The \fInofangs\fP option on the command line will allow the process to be
+dry-run without the events taking place.
+.SH PARAMETER FILE
+eqrelease.pf
+.SH "BUGS AND CAVEATS"
+Clicking on an actual checkoff box will not trigger the event
+to occur. One must click on the colored buttons themselves. The
+checkoff boxes are intended for notetaking. This feature can
+be used to suppress the warning of incompletion upon exit, if
+a step is intentionally skipped.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+1999
+.fi
+.\" $Id$

@@ -1,0 +1,47 @@
+.TH TITLE 1 "$Date$"
+.SH FELT_REPORT_TOOL
+felt_report_tool \- GUI interface for reporting felt information
+.SH SYNOPSIS
+.nf
+felt_report_tool dbname
+.fi
+.SH DESCRIPTION
+felt_report_tool is a GUI interface which allows the user to
+get a convenient list of phone numbers from a database, call them
+to find out if an earthquake was felt, and edit a few sentences
+describing the felt reports. This tool, although accessible from
+the command line, is intended to be launched from a script as
+part of a larger package.
+
+The dbname specified on the command line must contain a single origin
+row.
+row for the
+.SH PARAMETER FILE
+The parameter file for felt_report_tool is eqrelease.pf
+.ft CW
+.in 2c
+.nf
+
+.ne 7
+
+contact_database /home/kent/data/db/mycities
+number_of_contacts 40
+subset_database release_db
+maintainer kent@giseis.alaska.edu
+
+stock_felt_report &Literal{
+No reports of this event having been felt and/or causing damage
+have been received at this time.
+}
+
+.fi
+.in
+.ft R
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska, Fairbanks
+February, 1999
+.fi
+.\" $Id$

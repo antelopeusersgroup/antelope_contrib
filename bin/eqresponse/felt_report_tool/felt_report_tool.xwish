@@ -1,0 +1,486 @@
+# Felt report tool
+#
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# February, 1999
+
+package require Tclx
+
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library]
+
+proc init_globals {} {
+	global argc argv argv0
+
+	global progname
+	set progname [exec basename $argv0]
+
+	if { $argc != 1 } {
+		puts "Usage: $progname dbname\n"
+		exit -1
+	} else {
+		global Quake_Database
+		set Quake_Database [lindex $argv 0]
+	}
+
+	set pfname eqrelease
+	
+	global Contact_Database
+	set Contact_Database [pfget $pfname contact_database]
+
+	global Ncontacts 
+	set Ncontacts [pfget $pfname number_of_contacts]
+
+	global Report
+	set Report [pfget $pfname stock_felt_report]
+
+	global Maintainer
+	set Maintainer [pfget $pfname maintainer]
+}
+
+proc init_database {} {
+	global Quake_Database
+	global Lat Lon Depth Time Mag
+	global progname
+
+	set db [dbopen $Quake_Database r]
+	set db [dblookup $db 0 origin 0 0]
+
+	set nrows [dbquery $db dbRECORD_COUNT]
+
+	if { $nrows <= 0 } {
+		puts "$progname: No origin rows in $Quake_Database"
+		exit -1
+	} elseif { $nrows > 1 } {
+		puts "$progname: Too many origin rows in $Quake_Database"
+		exit -1
+	}
+
+	set Lat [dbgetv $db origin 0 lat]
+	set Lon [dbgetv $db origin 0 lon]
+	set Depth [dbgetv $db origin 0 depth]
+	set Time [dbgetv $db origin 0 time]
+	set ml [dbgetv $db origin 0 ml]
+	set mb [dbgetv $db origin 0 mb]
+	set ms [dbgetv $db origin 0 ms]
+
+	if { $ml != -999.00 } {
+		set Mag "$ml ML"
+	} elseif { $mb != -999.00 } {
+		set Mag "$mb Mb"
+	} elseif { $ms != -999.00 } {
+		set Mag "$ms Ms"
+	} else {
+		set Mag "No Magnitude"
+	}
+
+}
+
+proc set_contact_list {} {
+	global Contact_Database
+	global Ncontacts
+	global Lat Lon
+	global Contact_list
+
+	set db [dbopen $Contact_Database r]
+	set db [dblookup $db 0 places 0 0]
+	set dbt [dblookup $db 0 phone 0 0]
+	set db [dbjoin $db $dbt]
+
+	set db [dbsort $db "distance(lat,lon,$Lat,$Lon)"]
+
+	set nrecs [dbquery $db dbRECORD_COUNT]
+
+	set nrows [expr $nrecs > $Ncontacts ? $Ncontacts : $nrecs]
+
+	for { set n 0 } { $n < $nrows } { incr n } {
+		lappend Contact_list(place) [quotestrip [dbgetv $db 0 $n place]]
+		lappend Contact_list(contact_name) [quotestrip [dbgetv $db 0 $n contact_name]]
+		lappend Contact_list(phone) [quotestrip [dbgetv $db 0 $n phone]]
+
+		set note [quotestrip [dbgetv $db 0 $n note]]
+		if { $note == "-" } { set note "" }
+		lappend Contact_list(note) $note
+
+		set db [lreplace $db 3 3 $n]
+		set distance [dbeval $db "distance(lat,lon,$Lat,$Lon)*111.195/1.609"]
+		lappend Contact_list(distance) $distance
+
+		set azimuth [dbeval $db "azimuth(lat,lon,$Lat,$Lon)"]
+		lappend Contact_list(compass) [compass_from_azimuth $azimuth]
+	}
+}
+
+proc quotestrip { mystring } {
+	regsub ^\{ $mystring "" mystring
+	regsub \}$ $mystring "" mystring
+
+	return $mystring
+}
+
+proc max_string_length { mylist } {
+	
+	set max 0
+
+	set N [llength $mylist]
+
+	for { set i 0 } { $i < $N } { incr i } {
+		set mystring [lindex $mylist $i]
+		set mylength [clength $mystring]
+
+		set max [max $max $mylength]
+	}
+
+	return $max
+}
+
+proc print_contacts {} {
+	global Contact_list
+	global Mag Time Lat Lon Depth
+
+	set fmtstring "%4.0f mi %3s of %-"
+	append fmtstring [max_string_length $Contact_list(place)] "s %-"
+	append fmtstring [max_string_length $Contact_list(contact_name)] "s %-"
+	append fmtstring [max_string_length $Contact_list(phone)] "s %s"
+
+	set N [llength $Contact_list(phone)]
+
+	set lp [open "|lp >& /dev/null" w]
+
+	set local_time [fmtclock [int $Time] "%I:%M:%S %p %Z,  %m/%d/%Y"]
+	puts $lp "Contact list for mag $Mag earthquake at $local_time\n"
+	puts $lp "\t Lat: $Lat"
+	puts $lp "\t Lon: $Lon"
+	puts $lp "\t Depth: $Depth km\n"
+
+	for { set i 0 } { $i < $N } { incr i } {
+
+		set place [lindex $Contact_list(place) $i]
+		set distance [lindex $Contact_list(distance) $i]
+		set compass [lindex $Contact_list(compass) $i]
+		set contact_name [lindex $Contact_list(contact_name) $i]
+		set phone [lindex $Contact_list(phone) $i]
+		set note [lindex $Contact_list(note) $i]
+
+		set contact [format $fmtstring $distance $compass \
+				    $place $contact_name $phone $note]
+		puts $lp $contact
+	}
+
+	close $lp
+}
+
+proc fill_contact_list { t } {
+	global Contact_list
+
+	set list_width [lindex [$t config -width] 4]
+
+	set place_format "%-[max_string_length $Contact_list(place)]s "
+	set contact_format "%-[max_string_length $Contact_list(contact_name)]s "
+	set phone_format " %-[max_string_length $Contact_list(phone)]s "
+	set distaz_format "%4.0f mi %3s of "
+	set note_format "%s"
+
+	set N [llength $Contact_list(phone)]
+
+	for { set i 0 } { $i < $N } { incr i } {
+
+		set line ""
+
+		set place [lindex $Contact_list(place) $i]
+		set distance [lindex $Contact_list(distance) $i]
+		set compass [lindex $Contact_list(compass) $i]
+		set contact_name [lindex $Contact_list(contact_name) $i]
+		set phone [lindex $Contact_list(phone) $i]
+		set note [lindex $Contact_list(note) $i]
+
+		set part [format $distaz_format $distance $compass]
+		$t insert end $part
+		append line $part
+
+		set part [format $place_format $place]
+		$t insert end $part place_tag
+		append line $part
+
+		set part [format $contact_format $contact_name]
+		$t insert end $part
+		append line $part
+
+		set part [format $phone_format $phone]
+		$t insert end $part phone_tag
+		append line $part
+
+		set part [format $note_format $note]
+		$t insert end $part
+		append line $part
+
+		set list_width [max $list_width [clength $line]]
+
+		$t insert end "\n"
+	}
+
+	$t config -width $list_width
+}
+
+proc compass_from_azimuth { azimuth } {
+
+	while { $azimuth < 0. } { set azimuth [expr $azimuth + 360.] }
+	while { $azimuth > 360. } { set azimuth [expr $azimuth - 360.] }
+
+	if { $azimuth >= 348.75 || $azimuth < 11.25 } {
+
+		# 0.00
+		return "N"
+
+	} elseif { $azimuth >= 11.25 && $azimuth < 33.75 } {
+
+		# 22.50
+		return "NNE"
+
+	} elseif { $azimuth >= 33.75 && $azimuth < 56.25 } {
+
+		# 45.00	
+		return "NE"
+
+	} elseif { $azimuth >= 56.25 && $azimuth < 78.75 } {
+
+		# 67.50	
+		return "ENE"
+
+	} elseif { $azimuth >= 78.75 && $azimuth < 101.25 } {
+
+		# 90.00	
+		return "E"
+
+	} elseif { $azimuth >= 101.25 && $azimuth < 123.75 } {
+
+		# 112.50	
+		return "ESE"
+
+	} elseif { $azimuth >= 123.75 && $azimuth < 146.25 } {
+
+		# 135.00	
+		return "SE"
+
+	} elseif { $azimuth >= 146.25 && $azimuth < 168.75 } {
+
+		# 157.50	
+		return "SSE"
+
+	} elseif { $azimuth >= 168.75 && $azimuth < 191.25 } {
+
+		# 180.00	
+		return "S"
+
+	} elseif { $azimuth >= 191.25 && $azimuth < 213.75 } {
+
+		# 202.50	
+		return "SSW"
+
+	} elseif { $azimuth >= 213.75 && $azimuth < 236.25 } {
+
+		# 225.00 	
+		return "SW"
+
+	} elseif { $azimuth >= 236.25 && $azimuth < 258.75 } {
+
+		# 247.50	
+		return "WSW"
+
+	} elseif { $azimuth >= 258.75 && $azimuth < 281.25 } {
+
+		# 270.00	
+		return "W"
+
+	} elseif { $azimuth >= 281.25 && $azimuth < 303.75 } {
+
+		# 292.50	
+		return "WNW"
+
+	} elseif { $azimuth >= 303.75 && $azimuth < 326.25 } {
+
+		# 315.00	
+		return "NW"
+
+	} elseif { $azimuth >= 326.25 && $azimuth < 348.75 } {
+
+		# 337.50	
+		return "NNW"
+	} 
+
+	puts "Faulty logic in compass_from_azimuth subroutine\n" 
+	exit -1
+}
+
+proc Exit {} {
+	puts [.felt.text get 1.0 end]
+	destroy .
+}
+
+proc report_problem {} {
+	global Maintainer
+	global Problem_report
+	global Submit
+
+	catch {destroy .rep}
+	toplevel .rep -class Dialog
+
+	frame .rep.enter
+	pack .rep.enter -side top -fill x
+
+	label .rep.enter.l -text "Describe Problem:" 
+	pack .rep.enter.l -side left -anchor n
+
+	frame .rep.enter.f
+	pack .rep.enter.f -side left
+
+	set Problem_report ""
+	entry .rep.enter.f.e -textvariable Problem_report \
+			-width 40 -xscrollcommand ".rep.enter.f.s set"
+	pack .rep.enter.f.e -side top
+
+	scrollbar .rep.enter.f.s -orient horizontal -command ".rep.enter.f.e xview"
+	pack .rep.enter.f.s -side top -fill x
+
+	frame .rep.f
+	pack .rep.f -side bottom -fill x -expand yes
+
+	set Submit 0
+	button .rep.f.submit -text "Submit" -bg chartreuse -command {
+		global Submit
+		set Submit 1
+		destroy .rep
+	}
+	pack .rep.f.submit -side top -fill x
+
+	button .rep.f.cancel -text "Cancel" -bg red -command {
+		global Submit
+		destroy .rep
+	}
+	pack .rep.f.cancel -side top -fill x
+
+	grab set .rep
+	tkwait window .rep
+	grab release .rep
+
+	if { $Submit } {
+		set mail [open \
+		   "|/usr/bin/mailx -s \"Contact_Database Problem\" $Maintainer" w]
+
+		puts $mail $Problem_report 
+
+		close $mail
+	}
+}
+
+proc summarize_quake { w } {
+	global Lat Lon Depth Time Mag
+
+	set color beige
+
+	label $w.mag -text "Magnitude: $Mag" -background $color -justify left
+	pack $w.mag -side top -fill x -anchor w
+
+	set local_time [fmtclock [int $Time] "%I:%M:%S %p %Z,  %m/%d/%Y"]
+	label $w.time -text "Origin Time: $local_time" -background $color -justify left
+	pack $w.time -side top -fill x -anchor w
+
+	label $w.lat -text "Lat: $Lat" -background $color -justify left
+	pack $w.lat -side top -fill x -anchor w
+
+	label $w.lon -text "Lon: $Lon" -background $color -justify left
+	pack $w.lon -side top -fill x -anchor w
+
+	label $w.depth -text "Depth: $Depth km" -background $color -justify left
+	pack $w.depth -side top -fill x -anchor w
+}
+
+proc init_windows {} {
+	global Report
+
+	set height [expr [winfo screenheight .] - 50]
+	set width [expr [winfo screenwidth .] - 50]
+	wm maxsize . $width $height
+
+	label .lsum -justify center -text "Summary:" 
+	pack .lsum -side top -fill x
+
+	frame .sum 
+	pack .sum -side top -fill x 
+
+	label .lfelt -justify center -text "Felt report:" -bg orange
+	pack .lfelt -side top -fill x
+
+	frame .felt
+	pack .felt -side top -fill x
+
+	frame .cmd 
+	pack .cmd -side bottom -fill both
+
+	label .lcall -justify center -text "Contact list:"
+	pack .lcall -side top -fill x
+
+	frame .call 
+	pack .call -side top -fill both -expand yes
+
+	summarize_quake .sum
+
+	scrollbar .felt.scroll -relief flat -command ".felt.text yview"
+	pack .felt.scroll -side right -fill y
+
+	text .felt.text -yscrollcommand ".felt.scroll set" \
+		-height 6 -bg white 
+	pack .felt.text -expand yes -fill both
+
+	scrollbar .call.scroll -relief flat -command ".call.text yview"
+	pack .call.scroll -side right -fill y
+
+	text .call.text -yscrollcommand ".call.scroll set" 
+	pack .call.text -expand yes -fill both
+
+	.call.text tag configure phone_tag -background yellow 
+	.call.text tag configure place_tag -background lightyellow
+	.call.text tag configure sel -background magenta \
+			-spacing1 10 -spacing3 10
+
+	fill_contact_list .call.text
+	.call.text config -state disabled
+
+	button .cmd.print -text "Print contact list" \
+				-command print_contacts -bg pink
+	pack .cmd.print -side top -fill x
+
+	global Contact_Database
+	button .cmd.db -text "Show contact database" \
+		   -command "exec dbe $Contact_Database &" -bg yellow
+	pack .cmd.db -side top -fill x
+
+	button .cmd.problem -text "Report phone-number problem" \
+			-command report_problem -bg "light blue"
+	pack .cmd.problem -side top -fill x
+
+	button .cmd.submit -text "Submit felt-report synopsis" \
+			-bg chartreuse -command Exit 
+	pack .cmd.submit -side top -fill x 
+
+	button .cmd.abandon -text "Abandon Response to Earthquake" \
+			-bg black -fg red -command {
+				set res [tk_dialog .giveup "Abandon Response" \
+				 "Really Abandon Response?" "" 0 No Abandon]
+				 if { $res } {
+					destroy .
+				 }
+			}
+	pack .cmd.abandon -side top -fill x
+
+	.felt.text insert end $Report
+}
+
+init_globals 
+
+init_database
+
+set_contact_list
+
+init_windows
+

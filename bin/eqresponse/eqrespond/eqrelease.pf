@@ -1,0 +1,103 @@
+# eqrelease parameter file
+# 
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# 1999
+
+# Where to send the output 
+#########################################################################
+email_release_recipient aeic_release
+web_directory /usr/local/frame2html/results
+EVA_LOG /home/quake/eva_alarm.log
+release_database /Seis/catalogs/releases/initial_releases
+
+cellphone_mail_recipients &Arr{
+	9074607214@msg.mactel.com
+	9074607215@msg.mactel.com
+	9073222014@msg.mactel.com
+}
+
+printer lexbw
+
+# Where to get necessary information and templates
+#########################################################################
+
+place_database /Seis/databases/places/cities
+common_place_database /Seis/databases/places/wellknown_alaskan_cities
+contact_database /Seis/databases/places/cities
+calldown_database /Seis/databases/notify/contacts
+region_phrases_database /Seis/databases/regions/alaska_region_phrases
+cellphone_reference_cities /Seis/databases/places/cellphone_cities
+maker_template /usr/local/aeic/4.4/data/response/eqresponse_template.fm
+
+number_of_contacts 40	# How many contacts to show for felt report investigation
+
+# What the output should look like
+#########################################################################
+
+num_nearest 8		# Number of nearest cities shown
+map_range 4		# Range of map in degrees
+
+stock_felt_report &Literal{
+No reports of this event being felt or causing damage
+have been received at this time.
+}
+
+
+# Where and how to get the job done, and with what software
+#########################################################################
+
+base_release_dir 	HOME/releases
+
+# Working files. These templates refer to the origin time
+email_file 		eqrelease.email
+voicemail_file		eqvoicemail_text
+makertextfile 		eqrelease.makertext
+fmrelease_file 		myrelease.fm
+fmpdf_file 		%Y%m%d%H%M%S_.pdf
+gif_release_file 	%Y%m%d%H%M%S_.gif
+map_epsi_file 		db_release.epsi
+eva_log_file		eva_log.text
+subset_database		myrelease_db
+
+Helpers &Arr{
+eqrelease_distributor	/usr/local/aeic/4.4/bin/eqrelease_distributor
+alchemy 			/usr/local/bin/alchemy
+cellphone_notifier		/usr/local/aeic/4.4/bin/eqcellphone_release
+dbmaprelease 			/usr/local/aeic/4.4/bin/dbmaprelease
+felt_report_tool 		/usr/local/aeic/4.4/bin/felt_report_tool
+tkshow_message			/usr/local/aeic/4.4/bin/tkshow_message
+Framemaker 			/usr/local/frame6.0/bin/maker
+update_finger			/usr/local/aeic/4.4/bin/update_finger
+update_qdds			/usr/local/bin/info_release_script.tcsh
+calldown_notification		/usr/local/aeic/4.4/bin/calldown_notification_tool
+}
+
+# Avoid the following displays when starting framemaker, due to
+# obscure framemaker/Xserver interaction bug
+bad_framemaker_displays &Arr{
+nordic 1
+tensor 1
+}
+
+voicemail_instructions &Literal{
+Dial 1800		on campus for voice-mail access
+Enter 7320#	for the box number 
+Enter XXXX for the password
+Press 82		to access the greetings 
+Press 1		to access the external greeting
+Press 76		to delete the old greeting
+		Record the new greeting:
+Press 5
+read the new greeting
+
+Press #		to stop
+Press 2		to review the greeting (!)
+Press 4		to exit the mailbox
+}
+
+# Who to harass with problems
+#########################################################################
+
+maintainer martin@giseis.alaska.edu

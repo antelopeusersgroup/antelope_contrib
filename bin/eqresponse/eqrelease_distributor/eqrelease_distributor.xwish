@@ -1,0 +1,555 @@
+ 
+# Earthquake information-release information distributor
+#
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# February, 1999
+
+package require Tclx
+
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library]
+
+proc init_globals {} {
+	global argc argv argv0
+
+	global progname
+	set progname [exec basename $argv0]
+
+	if { $argc > 1 } {
+		puts "Usage: $progname \[-n\]"
+		exit 1
+	} elseif { $argc == 1 } {
+		global Exec
+		puts "Defanging $progname"
+		set Exec "echo"
+	} else {			
+		global Exec
+		set Exec "exec"
+	}
+	
+	global Pfname
+	set Pfname "eqrelease"
+
+	global mail_recipient 
+	set mail_recipient [pfget $Pfname email_release_recipient]
+
+	global web_directory
+	set web_directory [pfget $Pfname web_directory]
+
+	global email_file 
+	set email_file [pfget $Pfname email_file]
+
+	global voicemail_file 
+	set voicemail_file [pfget $Pfname voicemail_file]
+
+	global voicemail_instructions
+	set voicemail_instructions [pfget $Pfname voicemail_instructions]
+
+	global gif_file
+	set gif_file [pfget $Pfname gif_release_file]
+
+	global pdf_file
+	set pdf_file [pfget $Pfname fmpdf_file]
+
+	global eva_file
+	set eva_file [pfget $Pfname eva_log_file]
+
+	global eva_log_target
+	set eva_log_target [pfget $Pfname EVA_LOG]
+
+	global subset_database
+	set subset_database [pfget $Pfname subset_database]
+
+	global release_database
+	set release_database [pfget $Pfname release_database]
+
+	global printer
+	set printer [pfget $Pfname printer]
+
+	global Helpers
+	pfgetarr Helpers %$Pfname#Helpers
+
+	global maintainer
+	set maintainer [pfget $Pfname maintainer]
+}
+
+
+proc CommandCheckoff {w args} { 
+	frame $w
+	button $w.b 
+	checkbutton $w.cb -command "$w.b config -state normal"
+	pack $w.cb -side left
+	pack $w.b -side left -fill x -expand 1
+	while { ! [lempty $args] } {
+		set option [lvarpop args]
+		switch -- $option {
+		-label	{ set value [lvarpop args] ; $w.b config -text $value }
+		-variable { 
+			set value [lvarpop args] 	
+			global $value
+			$w.cb config -variable $value
+		}
+		-background { set value [lvarpop args] ; $w.b config -background $value }
+		-command { 
+			set value [lvarpop args] 
+			$w.b config -command \
+			     "$w.cb select; $w.b config -state disabled; $value"
+			}
+		}
+	}
+	return $w
+}
+
+proc send_feedback {} {
+	global maintainer
+	
+	catch { [ destroy .fbw] }
+	toplevel .fbw -class Dialog
+	wm title .fbw Feedback
+
+	text .fbw.text -yscrollcommand ".fbw.scroll set" -exportselection yes
+	scrollbar .fbw.scroll -relief flat -command ".fbw.text yview"
+
+	pack .fbw.scroll -side right -fill y
+	pack .fbw.text -expand yes -fill both
+
+	.fbw.text insert end "\nFeedback on response process:\n"
+
+	button .fbw.cancel -text "Cancel" -bg red -command "destroy .fbw"
+	button .fbw.send -text "Send to $maintainer" \
+			  -bg chartreuse -command {
+				global progname maintainer 
+				set cmd "|/usr/bin/mailx "
+				append cmd "-s \"Feedback on $progname\" "
+				append cmd "$maintainer"
+				set fd [open $cmd w]
+				puts -nonewline $fd [.fbw.text get 1.0 end]
+				flush $fd
+				close $fd
+				destroy .fbw
+			}
+
+	pack .fbw.send -side top -fill x 
+	pack .fbw.cancel -side top -fill x 
+
+	grab set .fbw
+	tkwait window .fbw
+	grab release .fbw
+
+}
+
+proc save_mail_text { w filename } {
+	if { [catch "open $filename w+" fd] } {
+		return 0
+	}
+
+	puts -nonewline $fd [$w get 1.0 end]
+	flush $fd
+	close $fd
+}
+
+proc edit_email_file { filename } {
+	global mail_recipient
+	
+	catch { destroy .edml }
+
+	toplevel .edml -class Dialog
+	wm title .edml $filename
+
+	text .edml.text -yscrollcommand ".edml.scroll set" -exportselection yes
+	scrollbar .edml.scroll -relief flat -command ".edml.text yview"
+
+	global SendMail
+	button .edml.cancel -text "Cancel" -bg red -command \
+			"set SendMail 0  ; destroy .edml"
+	button .edml.send -text "Send to $mail_recipient" \
+			  -bg chartreuse -command \
+	  "save_mail_text .edml.text $filename ; set SendMail 1; destroy .edml"
+	
+	if { [FileInText .edml.text $filename] } {
+		pack .edml.scroll -side right -fill y
+		pack .edml.text -expand yes -fill both
+		pack .edml.send -side top -fill x 
+		pack .edml.cancel -side top -fill x 
+		update
+	} else {
+		destroy .edml
+	}
+
+	grab set .edml
+	tkwait window .edml
+	grab release .edml
+
+}
+
+proc send_mail { cb } {
+	global email_file mail_recipient
+
+	edit_email_file $email_file
+
+	global SendMail
+	if { $SendMail } {
+		global Exec
+		$Exec /usr/bin/mail $mail_recipient < $email_file
+	} else {
+		$cb invoke
+	}
+}
+
+proc update_voicemail {} {
+	global voicemail_file voicemail_instructions
+	global printer Exec
+
+	catch { destroy .edvcml }
+
+	toplevel .edvcml -class Dialog
+	wm title .edvcml $voicemail_file
+	wm resizable .edvcml 0 0
+
+	label .edvcml.inst -text $voicemail_instructions -bg beige \
+		-justify left -anchor w
+
+	frame .edvcml.f
+
+	text .edvcml.f.text -yscrollcommand ".edvcml.f.scroll set" \
+		-exportselection yes -bg "pale turquoise"
+	scrollbar .edvcml.f.scroll -relief flat -command ".edvcml.f.text yview"
+
+	button .edvcml.print -text "Print to $printer" -bg beige -command \
+	"save_mail_text .edvcml.f.text $voicemail_file; $Exec lp -d$printer $voicemail_file"
+	button .edvcml.done -text "Done" \
+			  -bg chartreuse -command \
+	  "save_mail_text .edvcml.f.text $voicemail_file; destroy .edvcml"
+	
+	if { [FileInText .edvcml.f.text $voicemail_file] } {
+		pack .edvcml.inst -side top -fill x -expand yes
+		pack .edvcml.f -side top -fill x -expand yes
+		pack .edvcml.f.scroll -side right -fill y
+		pack .edvcml.f.text -expand yes -fill both
+		pack .edvcml.print -side top -fill x 
+		pack .edvcml.done -side top -fill x 
+		update
+	} else {
+		destroy .edvcml
+	}
+
+	grab set .edvcml
+	tkwait window .edvcml
+	grab release .edvcml
+}
+
+proc notify_cell_phones {} {
+	global Helpers Exec subset_database Pfname
+
+	if { ! [info exists Helpers(cellphone_notifier)] } {
+		puts "No cellphone_notifier Helper in $Pfname.pf!"
+		return
+	} elseif { ! [file executable $Helpers(cellphone_notifier) ] } {
+		puts "helper $Helpers(cellphone_notifier) is not executable!"
+		return
+	}
+
+	$Exec $Helpers(cellphone_notifier) -pf $Pfname $subset_database
+}
+
+proc update_finger {} {
+	global Helpers Exec
+
+	$Exec nohup $Helpers(update_finger) &
+}
+
+proc update_qdds {} {
+	global Helpers Exec subset_database
+	$Exec nohup $Helpers(update_qdds) $subset_database &
+}
+
+proc update_web {} {
+	global gif_file pdf_file web_directory 
+	global progname
+	global Exec
+
+	if { [file exists $gif_file] } {
+		$Exec /usr/bin/cp $gif_file $web_directory
+	} else {
+		puts "$progname: file $gif_file does not exist!"
+	}
+
+	if { [file exists $pdf_file] } {
+		$Exec /usr/bin/cp $pdf_file $web_directory
+	} else {
+		puts "$progname: file $pdf_file does not exist!"
+	}
+}
+
+proc edit_eva_line { line } {
+	global Submit
+	global EVA_Log_Report
+
+	set EVA_Log_Report $line
+	
+	catch {destroy .eva}
+	toplevel .eva -class Dialog 
+
+	frame .eva.enter
+	pack .eva.enter -side top -fill x
+
+	label .eva.enter.l -text "Edit EVA Log Report:" 
+	pack .eva.enter.l -side left -anchor n
+
+	frame .eva.enter.f
+	pack .eva.enter.f -side left
+
+	entry .eva.enter.f.e -textvariable EVA_Log_Report \
+			-width 80 -xscrollcommand ".eva.enter.f.s set"
+	pack .eva.enter.f.e -side top
+
+	scrollbar .eva.enter.f.s -orient horizontal -command ".eva.enter.f.e xview"
+	pack .eva.enter.f.s -side top -fill x
+
+	frame .eva.f
+	pack .eva.f -side bottom -fill x -expand yes
+
+	global Exec
+	if { $Exec == "echo" } {
+		label .eva.f.defang -text "FANGS REMOVED" -background yellow
+		pack .eva.f.defang -side top -fill x
+	}
+
+	set Submit 0
+	button .eva.f.submit -text "Submit" -background chartreuse -command {
+		global Submit
+		set Submit 1
+		destroy .eva
+	}
+	pack .eva.f.submit -side top -fill x
+
+	button .eva.f.cancel -text "Cancel" -background red -command {
+		global Submit
+		destroy .eva
+	}
+	pack .eva.f.cancel -side top -fill x
+
+	grab set .eva
+	tkwait window .eva
+	grab release .eva
+
+	if { $Submit } {
+		return $EVA_Log_Report
+	} else {
+		return ""
+	}
+}
+
+proc update_releasedb {} {
+	global subset_database release_database
+
+	set db [dbopen $subset_database r]
+
+	# Assume subset database has only one origin
+	set time [dbgetv $db origin 0 time]
+
+	set release_database [epoch2str $time $release_database]
+
+	catch { 
+		exec dbmerge -x arrival,assoc,event \
+			$subset_database $release_database
+		} result
+	puts "$result"
+}
+
+proc update_eva {} {
+	global eva_file eva_log_target
+
+	set fd [open $eva_file r+]
+
+	set timestamp [gets $fd]
+	set comment [gets $fd]
+
+	ftruncate -fileid $fd 0
+
+	close $fd
+
+	set fd [open $eva_file w]
+
+	set newcomment [edit_eva_line $comment]
+
+	if { $newcomment != "" } { 
+	
+		puts $fd $timestamp
+		puts $fd $newcomment
+	}
+
+	close $fd
+
+	global Exec
+	$Exec /usr/bin/cat $eva_file $eva_log_target
+}
+
+proc calldown_notification {} {
+	global Helpers Exec subset_database Pfname
+
+	if { ! [info exists Helpers(calldown_notification)] } {
+		puts "No calldown_notification Helper in $Pfname.pf!"
+		return
+	} elseif { ! [file executable $Helpers(calldown_notification) ] } {
+		puts "helper $Helpers(calldown_notification) is not executable!"
+		return
+	}
+
+	$Exec $Helpers(calldown_notification) $subset_database
+}
+
+proc ApprovedExit {} {
+	global progname
+
+	set procedures [list send_mail \
+			     update_web \
+			     update_qdds \
+			     update_finger \
+			     notify_cell_phones \
+			     update_voicemail \
+			     update_eva \
+			     update_releasedb \
+			     calldown_notification]
+	
+	catch { [destroy .exit] } 
+	toplevel .exit -class Dialog
+
+	set report ""
+	set quit "Quit"
+	foreach var $procedures {
+		global $var
+		set checked [set $var]
+		set state [.$var.b config -state]
+		set state [lindex $state 4]
+		if { $checked && $state == "disabled" } {
+			# Task completed
+		} elseif { $checked } {
+			lappend Skipped $var
+		} else {
+			lappend Missed $var
+		}
+	}
+
+	if { [info exists Missed] } {
+		foreach var $Missed {
+			puts \007
+			append report "\nTask $var was missed !!\n"
+			set quit "Quit Anyway"
+		}
+	}
+
+	if { $report != "" } {
+		append report "\n"
+	}
+
+	if { [info exists Skipped] } {
+		foreach var $Skipped {
+			append report "\nTask $var intentionally skipped.\n"	
+		}
+	}
+
+	if { $report == "" } { 
+		destroy .
+	}
+
+	label .exit.l -text $report -background "orange red" -fg yellow
+	pack .exit.l -side top -fill x
+
+	button .exit.cancel -text "Return to $progname" -command \
+			    "destroy .exit" -background chartreuse
+	pack .exit.cancel -side top -fill x 
+
+	button .exit.fit -text $quit -command "destroy ." \
+			 -background red
+	pack .exit.fit -side top -fill x
+
+	grab set .exit
+	tkwait window .exit
+	grab release .exit
+}
+
+proc init_windows {} {
+	global mail_recipient Exec
+	global send_mail update_web update_finger update_qdds update_voicemail update_eva
+	global update_releasedb calldown_notification notify_cell_phones
+
+	if { $Exec == "echo" } {
+		label .defang1 -text "FANGS REMOVED" -background yellow
+		pack .defang1 -side top -fill x
+	}
+
+	CommandCheckoff .send_mail -background lightblue \
+			  -label "Email information release to $mail_recipient" \
+			  -variable send_mail \
+			  -command "send_mail .send_mail.cb"
+	pack .send_mail -side top -fill x
+
+	CommandCheckoff .update_web -background "pale turquoise" \
+				    -label "Update web release" \
+				    -variable update_web \
+			   	    -command update_web
+	pack .update_web -side top -fill x
+
+	CommandCheckoff .calldown_notification -background "light salmon" \
+				    -label "Notify people on calldown list" \
+				    -variable calldown_notification \
+			   	    -command calldown_notification
+	pack .calldown_notification -side top -fill x
+
+	CommandCheckoff .update_voicemail -background "turquoise" \
+				    -label "Update Lab Voice-mail Message" \
+				    -variable update_voicemail \
+			   	    -command update_voicemail
+	pack .update_voicemail -side top -fill x
+
+	CommandCheckoff .notify_cell_phones -background "green" \
+				    -label "Send Release to Cell Phones" \
+				    -variable notify_cell_phones \
+			   	    -command notify_cell_phones
+	pack .notify_cell_phones -side top -fill x
+
+	CommandCheckoff .update_finger -background "aquamarine" \
+				    -label "Update finger quake list" \
+				    -variable update_finger \
+			   	    -command update_finger
+	pack .update_finger -side top -fill x
+
+	CommandCheckoff .update_qdds -background "cyan" \
+				    -label "Update QDDS quake list" \
+				    -variable update_qdds \
+			   	    -command update_qdds
+	pack .update_qdds -side top -fill x
+
+	CommandCheckoff .update_eva -background "orange" \
+				    -label "Update EVA log" \
+				    -variable update_eva \
+			   	    -command update_eva
+	pack .update_eva -side top -fill x
+
+	CommandCheckoff .update_releasedb -background "yellow" \
+				    -label "Update Release Database" \
+				    -variable update_releasedb \
+			   	    -command update_releasedb
+	pack .update_releasedb -side top -fill x
+
+	global maintainer 
+	button .fb -text "Mail feedback to $maintainer" \
+			-command send_feedback -bg bisque2
+	pack .fb -side top -fill x 
+
+	if { $Exec == "echo" } {
+		label .defang2 -text "FANGS REMOVED" -background yellow
+		pack .defang2 -side top -fill x
+	}
+
+	button .quit -bg red -text Quit -command ApprovedExit
+	pack .quit -side top -fill x
+
+	wm resizable . 0 0
+}
+
+init_globals 
+
+init_windows

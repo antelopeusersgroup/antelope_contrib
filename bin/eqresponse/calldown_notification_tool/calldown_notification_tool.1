@@ -1,0 +1,36 @@
+.TH TITLE 1 "$Date$"
+.SH FELT_REPORT_TOOL
+calldown_notification_tool \- GUI interface for reporting felt information
+.SH SYNOPSIS
+.nf
+calldown_notification_tool dbname
+.fi
+.SH DESCRIPTION
+calldown_notification_tool is a GUI interface which allows the user to
+get a list of phone numbers from a database of people who should be
+called for significant earthquakes.
+This tool, although accessible from the command line, is intended
+to be launched from a script as part of a larger package.
+
+The dbname specified on the command line must contain a single origin
+row.
+.SH PARAMETER FILE
+The parameter file for calldown_notification_tool is eqrelease.pf
+.ft CW
+.in 2c
+.nf
+
+calldown_database /home/kent/data/db/mycontacts
+maintainer kent@giseis.alaska.edu
+
+.fi
+.in
+.ft R
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska, Fairbanks
+February, 1999
+.fi
+.\" $Id$

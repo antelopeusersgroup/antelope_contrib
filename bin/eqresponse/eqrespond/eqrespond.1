@@ -1,0 +1,142 @@
+.TH EQRESPOND 1 "$Date$"
+.SH NAME
+eqrespond \- Respond to an earthquake 
+.SH SYNOPSIS
+.nf
+eqrespond [-g] [-n] [-o orid] [ -e evid] dbname
+.fi
+.SH DESCRIPTION
+eqrespond is a driver script for alarm-response information-release
+construction.
+
+The Database name may be specified on the command line. If this database
+contains only one event, the preferred origin for that event will be
+used. If there is only one origin, that origin will be used. The -o and -e
+options allow the origin or event to be explicitly specified. If dbname is "-",
+eqrespond reads the database from stdin. Again, this presumes a unique
+event and/or origin is specified in the input database.
+.SH OPTIONS
+-g Graphical error messages option: This brings up error messages using
+the tkshow_message(1) utility, which is a more natural way to see
+error messages when eqrespond is launched from graphical
+utilities such as dbe(1).
+
+-n Nofangs option: This prevents the framemaker FAX-release from being
+printed. Also, it launches eqrelease_distributor(1) in nofangs mode.
+
+-o orid This allows a specific orid to be chosen from the database.
+
+-e evid This allows a specific evid to be chosen from the database. This
+option requires the presence of the event table, and the presence of a row
+in the origin table matching the prefor field of the event chosen.
+.SH PARAMETER FILE
+The parameter file for eqrespond is called eqrelease.pf. Several
+programs use it.
+.ft CW
+.in 2c
+.nf
+
+.ne 7
+# eqrelease parameter file
+#
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# 1999
+
+.ne 6
+# Where to send the output
+#########################################################################
+email_release_recipient aeic_release
+web_directory /usr/local/frame2html/results
+EVA_LOG /home/quake/eva_alarm.log
+
+.ne 7
+# Where to get necessary information and templates
+#########################################################################
+
+place_database /home/kent/work/mynearest/mycities_AK
+contact_database /home/kent/data/db/mycities
+maker_template /home/kent/work/response/mytemplate.fm
+
+.ne 8
+number_of_contacts 40   # How many contacts to show for felt report investigation
+
+# What the output should look like
+#########################################################################
+
+num_nearest 8           # Number of nearest cities shown
+map_range 4             # Range of map in degrees
+
+.ne 6
+stock_felt_report &Literal{
+No reports of this event having been felt and/or causing damage
+have been received at this time.
+}
+
+.ne 14
+# Where and how to get the job done, and with what software
+#########################################################################
+
+base_release_dir        HOME/releases
+
+# Working files. These templates refer to the origin time
+email_file              eqrelease.email
+makertextfile           eqrelease.makertext
+fmrelease_file          myrelease.fm
+fmpdf_file              %y%m%d%H%M%S_.pdf
+gif_release_file        %y%m%d%H%M%S_.gif
+map_epsi_file           db_release.epsi
+eva_log_file            eva_log.text
+
+.ne 13
+# Use the n'th printer listed in Framemaker's "Print..." dialog-box:
+framemaker_printer_sequence_number 6            # 6 = ec
+# framemaker_printer_sequence_number 7          # 7 = avops
+
+Helpers &Arr{
+eqregion_name                   /usr/tools/bin/eqregion_name
+eqrelease_distributor           /usr/tools/bin/eqrelease_distributor
+alchemy                         /usr/local/bin/alchemy
+dbmaprelease                    /usr/tools/bin/dbmaprelease
+felt_report_tool                /usr/tools/scripts/felt_report_tool
+Framemaker                      /usr/local/frame5.5/bin/maker
+}
+
+.ne 6
+# Avoid the following displays when starting framemaker, due to
+# obscure framemaker/Xserver interaction bug
+bad_framemaker_displays &Arr{
+nordic 1
+}
+
+# Who to harass with problems
+#########################################################################
+
+maintainer kent@giseis.alaska.edu
+
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+eqrespond exits with 0 if everything went OK. If an error occurs,
+the exit code will be nonzero.
+.SH "SEE ALSO"
+.nf
+felt_report_tool(1), eqrelease_distributor(1), dbe(1)
+.fi
+.SH "BUGS AND CAVEATS"
+eqrespond does not check if a framemaker license is available.
+
+Many items may still be specific to the University of Alaska installation.
+In particular the mapping capability is not present in this general release, 
+nor are the update_finger and update_qdds scripts. Some tweaking may be 
+necessary for a particular installation.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska, Fairbanks
+February 1999
+.fi
+.\" $Id$

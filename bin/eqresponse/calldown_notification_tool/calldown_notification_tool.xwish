@@ -1,0 +1,765 @@
+# calldown_notification tool
+# 
+# K. Lindquist
+# Geophysical Institute
+# University of Alaska, Fairbanks
+# February, 1999
+
+package require Tclx
+
+proc init_globals {} {
+	global argc argv argv0
+
+	global progname
+	set progname [exec basename $argv0]
+
+	if { $argc != 1 } {
+		puts "Usage: $progname dbname\n"
+		exit -1
+	} else {
+		global Quake_Database
+		set Quake_Database [lindex $argv 0]
+	}
+
+	set pfname eqrelease
+
+	global Calldown_Database 
+	set Calldown_Database [pfget $pfname calldown_database]
+
+	global Maintainer 
+	set Maintainer [pfget $pfname maintainer]
+}
+
+proc init_database {} {
+        global Quake_Database
+        global Lat Lon Depth Time Mag Magtype
+        global progname
+ 
+        set db [dbopen $Quake_Database r]
+        set db [dblookup $db 0 origin 0 0]
+ 
+        set nrows [dbquery $db dbRECORD_COUNT]
+ 
+        if { $nrows <= 0 } {
+                puts "$progname: No origin rows in $Quake_Database"
+                exit -1
+        } elseif { $nrows > 1 } {
+                puts "$progname: Too many origin rows in $Quake_Database"
+                exit -1
+        }
+ 
+        set Lat [dbgetv $db origin 0 lat]
+        set Lon [dbgetv $db origin 0 lon]
+        set Depth [dbgetv $db origin 0 depth]
+        set Time [dbgetv $db origin 0 time]
+        set ml [dbgetv $db origin 0 ml]
+        set mb [dbgetv $db origin 0 mb]
+        set ms [dbgetv $db origin 0 ms]
+ 
+        if { $ml != -999.00 } {
+                set Mag $ml
+		set Magtype ML
+        } elseif { $mb != -999.00 } {
+                set Mag $mb
+		set Magtype Mb
+        } elseif { $ms != -999.00 } {
+                set Mag $ms
+		set Magtype Ms
+        } else {
+                set Mag -999.
+		set Magtype "No Magnitude"
+        }
+}
+
+proc quotestrip { mystring } {
+        regsub ^\{ $mystring "" mystring
+        regsub \}$ $mystring "" mystring
+ 
+        return $mystring
+}
+ 
+proc max_string_length { mylist } {
+ 
+        set max 0
+ 
+        set N [llength $mylist]
+ 
+        for { set i 0 } { $i < $N } { incr i } {
+                set mystring [lindex $mylist $i]
+                set mylength [clength $mystring]
+ 
+                set max [max $max $mylength]
+        }
+ 
+        return $max
+}
+
+proc report_problem {} {
+        global Maintainer
+        global Problem_report
+        global Submit
+ 
+        catch {destroy .rep}
+        toplevel .rep -class Dialog
+ 
+        frame .rep.enter
+        pack .rep.enter -side top -fill x
+ 
+        label .rep.enter.l -text "Describe Problem:"
+        pack .rep.enter.l -side left -anchor n
+ 
+        frame .rep.enter.f
+        pack .rep.enter.f -side left
+ 
+        set Problem_report ""
+        entry .rep.enter.f.e -textvariable Problem_report \
+                        -width 40 -xscrollcommand ".rep.enter.f.s set"
+        pack .rep.enter.f.e -side top
+ 
+        scrollbar .rep.enter.f.s -orient horizontal -command ".rep.enter.f.e xvi
+ew"
+        pack .rep.enter.f.s -side top -fill x
+ 
+        frame .rep.f
+        pack .rep.f -side bottom -fill x -expand yes
+ 
+        set Submit 0
+        button .rep.f.submit -text "Submit" -bg chartreuse -command {
+                global Submit
+                set Submit 1
+                destroy .rep
+        }
+        pack .rep.f.submit -side top -fill x
+ 
+        button .rep.f.cancel -text "Cancel" -bg red -command {
+                global Submit
+                destroy .rep
+        }
+        pack .rep.f.cancel -side top -fill x
+ 
+        grab set .rep
+        tkwait window .rep
+        grab release .rep
+ 
+        if { $Submit } {
+                set mail [open \
+                "|/usr/bin/mailx -s \"Calldown_Database Problem\" $Maintainer"\
+			w]
+ 
+                puts $mail $Problem_report
+ 
+                close $mail
+        }
+}
+ 
+proc summarize_quake { w } {
+        global Lat Lon Depth Time Mag Magtype
+	global Damage Freq_calls
+ 
+        set color beige
+ 
+        label $w.mag -text "Magnitude: $Mag $Magtype" \
+			-background $color -justify left
+        pack $w.mag -side top -fill x -anchor w
+ 
+	if { $Damage } {
+		set damage_str "Caused Damage"
+	} else {
+		set damage_str "No Damage"
+	}
+
+	label $w.damage -text "Damage: $damage_str" -background $color \
+			-justify left
+	pack $w.damage -side top -fill x -anchor w
+
+	if { $Freq_calls } {
+		set calls_str "Yes"
+	} else {
+		set calls_str "No"
+	}
+	label $w.calls -text "Frequent Calls: $calls_str" -background $color \
+			-justify left
+	pack $w.calls -side top -fill x -anchor w
+
+	label $w.spacer -text " " -background $color -justify left
+	pack $w.spacer -side top -fill x -anchor w
+
+        set local_time [fmtclock [int $Time] "%I:%M:%S %p %Z,  %m/%d/%Y"]
+        label $w.time -text "Origin Time: $local_time" \
+			-background $color -justify left
+        pack $w.time -side top -fill x -anchor w
+ 
+        label $w.lat -text "Lat: $Lat" -background $color -justify left
+        pack $w.lat -side top -fill x -anchor w
+ 
+        label $w.lon -text "Lon: $Lon" -background $color -justify left
+        pack $w.lon -side top -fill x -anchor w
+ 
+        label $w.depth -text "Depth: $Depth km" -background $color -justify left
+        pack $w.depth -side top -fill x -anchor w
+}
+
+proc fill_calldown_list { t } {
+	global Calldown_list Ncontacts
+
+	set list_width [lindex [$t config -width] 4]
+
+	set name_format "%-[max_string_length $Calldown_list(name)]s "
+	set priority_format "%-[max_string_length $Calldown_list(priority)]s "
+	set role_format "%-[expr [max_string_length $Calldown_list(role)]+2]s "
+	set work_ph_format "(W:)%-[max_string_length $Calldown_list(work_ph)]s "
+	set home_ph_format "(H:)%-[max_string_length $Calldown_list(home_ph)]s "
+	set note_format "%s"
+	
+	for { set i 0 } { $i < $Ncontacts } { incr i } {
+
+		set line ""
+
+		set name [lindex $Calldown_list(name) $i]
+		set role [lindex $Calldown_list(role) $i]
+		set work_ph [lindex $Calldown_list(work_ph) $i]
+		set home_ph [lindex $Calldown_list(home_ph) $i]
+		set note [lindex $Calldown_list(note) $i]
+
+		set part [format $name_format $name]
+		$t insert end $part name_tag
+		append line $part
+
+		if { $role != "" } { set role "($role)" }
+		set part [format $role_format $role]
+		$t insert end $part
+		append line $part
+
+		set part [format $home_ph_format $home_ph]
+		$t insert end $part phone_tag
+		append line $part
+
+		set part [format $work_ph_format $work_ph]
+		$t insert end $part phone_tag
+		append line $part
+
+		set part [format $note_format $note]
+		$t insert end $part 
+		append line $part
+
+		set list_width [max $list_width [clength $line]]
+
+		$t insert end "\n"
+	}
+
+	$t config -width $list_width
+}
+
+proc query_consequences {} {
+
+	global Damage
+	global Freq_calls
+
+	set Damage 0
+	set Freq_calls 0
+	
+	frame .q
+	pack .q
+
+	frame .q.damage 
+	pack .q.damage -side top -fill x
+
+	frame .q.calls
+	pack .q.calls -side top -fill x
+
+	label .q.damage.l -text "Did this event cause damage?"
+	pack .q.damage.l -side left -expand yes -anchor w
+
+	radiobutton .q.damage.n -text No -variable Damage -value 0
+	pack .q.damage.n -side right
+
+	radiobutton .q.damage.y -text Yes -variable Damage -value 1
+	pack .q.damage.y -side right
+
+	label .q.calls.l -text "Have we had frequent calls about this event?"
+	pack .q.calls.l -side left
+
+	radiobutton .q.calls.y -text Yes -variable Freq_calls -value 1
+	pack .q.calls.y -side left
+
+	radiobutton .q.calls.n -text No -variable Freq_calls -value 0
+	pack .q.calls.n -side left
+
+	button .q.commit -text Commit -bg chartreuse -command {
+		destroy .q
+		setup_tool
+	}
+	pack .q.commit -side top -fill x 
+
+}
+
+proc setup_tool {} {
+	global Damage Freq_calls 
+	global Calldown_Database
+	global Ncontacts
+
+	set_calldown_list
+
+	if { $Ncontacts == 0 } {
+		
+		label .none -text "No people matched calldown criteria" \
+			    -bg yellow
+		pack .none -side top -fill x -expand yes -padx 50 -pady 50
+			
+		button .db -text "Show calldown database" \
+			   -command "exec dbe $Calldown_Database &" -bg bisque
+		pack .db -side top -fill x
+
+		button .quit -text Quit -bg red -command "destroy ."
+		pack .quit -side top -fill x
+
+		return
+	}
+
+	frame .sum 
+	pack .sum -side top -fill x
+
+	summarize_quake .sum
+
+	label .lcall -justify center -text "Ordered Calldown List:" -bg orange
+	pack .lcall -side top -fill x
+
+	frame .call 
+	pack .call -side top -fill both -expand yes
+
+	scrollbar .call.scroll -relief flat -command ".call.text yview"
+	pack .call.scroll -side right -fill y
+
+	text .call.text -yscrollcommand ".call.scroll set"
+	pack .call.text -expand yes -fill both
+	
+	.call.text tag configure name_tag -background lightyellow
+	.call.text tag configure phone_tag -background yellow
+
+	fill_calldown_list .call.text
+	.call.text config -state disabled
+
+	button .print -text "Print calldown list" -command print_calldown_list \
+			-bg pink
+	pack .print -side top -fill x
+
+	button .db -text "Show calldown database" \
+		   -command "exec dbe $Calldown_Database &" -bg yellow
+	pack .db -side top -fill x
+
+	button .problem -text "Report calldown-database problem" \
+		-command report_problem -bg "light blue"
+	pack .problem -side top -fill x
+
+	button .quit -text "Quit" -bg red -command "destroy ."
+	pack .quit -side top -fill x
+}
+
+
+# This geographic application of the winding routine is valid
+# when the polygon and the test point are entirely within
+# the same hemisphere.
+proc is_geographically_inside { lat lon polygon } {
+
+	set pi 3.14159265358979
+
+	if { ! [polygon_ok $polygon] } {
+		puts "Polygon is Not OK"
+		return 0
+	}
+	set npoints [expr [llength $polygon] / 2]
+
+	# polar stereographic projection 
+	for { set pointnum 1 } { $pointnum <= $npoints } { incr pointnum } {
+		set point_lat [lindex $polygon [expr ( $pointnum - 1 ) * 2]]
+		set point_lon [lindex $polygon [expr ( $pointnum - 1 ) * 2 + 1]]
+
+		set res [dbdist $lat $lon $point_lat $point_lon]
+		set dist [lindex $res 0]
+		set az [lindex $res 1]
+
+		if { $dist > 90. } {
+			puts "This routine is regional only."
+			puts "Polygon and test point must be entirely"
+			puts "within the same hemisphere. Bye."
+			return 0
+		}
+
+		lappend geo_polygon [expr $dist * sin( $az * $pi/180. )]
+		lappend geo_polygon [expr $dist * cos( $az * $pi/180. )]
+	}
+
+	return [is_inside 0 0 $geo_polygon]
+}
+
+proc is_inside { x y polygon } { 
+
+	if { ! [polygon_ok $polygon] } {
+		puts "Polygon is Not OK"
+		return 0
+	}
+
+	set shifted_polygon [shift_polygon $x $y $polygon]
+
+	set winding_number [winding_number $shifted_polygon]
+
+	if { $winding_number } {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+proc shift_polygon { x y polygon } {
+	
+	set nsegs [expr [llength $polygon] / 2]
+
+	for { set seg 1 } { $seg <= $nsegs } { incr seg } {
+
+		set ix [expr 2 * ( $seg - 1 )]
+		set iy [expr $ix + 1]
+		
+		set shifted_x [expr [lindex $polygon $ix] - $x]
+		set shifted_y [expr [lindex $polygon $iy] - $y]
+	
+		# Make the TCL math easier to read 
+		set shifted_x [expr double( $shifted_x )]
+		set shifted_y [expr double( $shifted_y )]
+
+		lappend shifted_polygon $shifted_x
+		lappend shifted_polygon $shifted_y
+	}
+
+	return $shifted_polygon
+}
+
+proc winding_number { shifted_polygon } {
+	
+	# polygon coordinate list must be x1,y1,x2,y2,x3,y3, etc
+	
+	set ncoords [llength $shifted_polygon]
+	set nsegs [expr $ncoords / 2]
+
+	set winding_number 0
+
+	for { set seg 1 } { $seg <= $nsegs } { incr seg } {
+		
+		set segment [segment_number $seg $shifted_polygon]
+		set scn [signed_crossing_number $segment]
+
+		set winding_number [expr $winding_number + $scn]
+	}
+
+	return $winding_number
+
+}
+
+proc polygon_ok { polygon } {
+
+	set ncoords [llength $polygon]
+
+	if { $ncoords < 6 } {
+		
+		return 0
+
+	} elseif { [is_odd $ncoords] } {
+		
+		return 0
+	} else {
+		return 1
+	}
+}
+
+proc is_odd { n } {
+
+	return [expr int( double( $n ) / 2 ) != double( $n ) / 2]
+}
+
+proc segment_number { segnum polygon } {
+	
+	set ncoords [llength $polygon]
+
+	set nsegs [expr $ncoords / 2]
+
+	if { $segnum > $nsegs } {
+		return -code error -errorcode \
+			"ERROR: not that many segments in polygon"
+	}
+
+	if { $segnum == $nsegs } {
+		lappend segment [lindex $polygon [expr $ncoords - 2]]
+		lappend segment [lindex $polygon [expr $ncoords - 1]]
+		lappend segment [lindex $polygon 0]
+		lappend segment [lindex $polygon 1]
+	} else {
+		lappend segment [lindex $polygon [expr ( $segnum - 1 ) * 2]]
+		lappend segment [lindex $polygon [expr ( $segnum - 1 ) * 2 + 1]]
+		lappend segment [lindex $polygon [expr ( $segnum - 1 ) * 2 + 2]]
+		lappend segment [lindex $polygon [expr ( $segnum - 1 ) * 2 + 3]]
+	}
+
+	return $segment
+}
+
+proc signed_crossing_number { segment } {
+
+	set x1 [lindex $segment 0]
+	set y1 [lindex $segment 1]
+	set x2 [lindex $segment 2]
+	set y2 [lindex $segment 3]
+
+	if { $y1 * $y2 > 0 } {
+		# no crossing -- both points are on same side of y axis
+		return 0
+	}
+	
+	# Horizontal lines:
+	if { $y1 == 0 && $y2 == 0 } {
+
+		if { $x1 * $x2 > 0 } {
+			# no crossing
+			return 0
+		} else {
+			# segment crosses or touches origin
+			return 2
+		}
+	}
+
+	# Compute intersection point with x-axis 
+	if { $x2 == $x1 } {
+		# Vertical lines
+		set xintercept $x1
+	} else {
+		set slope [expr ( $y2 - $y1 ) / ( $x2 - $x1 )]
+		set xintercept [expr $x1 - $y1 / $slope]
+	}
+	
+	# Precompute direction of line segment (up or down)
+	if { $y2 > $y1 } {
+		set direction 1
+	} else {
+		set direction -1
+	}
+
+	if { $xintercept > 0 } { 
+
+		return 0
+
+	} elseif { $xintercept == 0 } {
+
+		return 2
+
+	} elseif { $y1 == 0 || $y2 == 0 } {
+
+		# Line segment starts or ends on negative x-axis
+		return [expr double( $direction ) * 0.5]
+
+	} else { 
+
+		return [expr $direction]
+	}
+}
+proc get_region_names { db } {
+
+	set db [dblookup $db 0 regions 0 0]
+	set db [dbsort $db regname]
+	if { [dbquery $db dbRECORD_COUNT] <= 0 } {
+		return {}
+	}
+	set db [dbgroup $db 1 regname]
+	set nrecs [dbquery $db dbRECORD_COUNT]
+
+	for { set recno 0 } { $recno < $nrecs } { incr recno } {
+		lappend regnames [dbgetv $db 0 $recno regname]
+	}
+
+	return $regnames
+}
+
+proc get_region_polygon { db regname } {
+	
+	set regname [quotestrip $regname]
+
+	set db [dblookup $db 0 regions 0 0] 
+	set db [dbsubset $db "regname == \"$regname\""]
+
+	set nrecs [dbquery $db dbRECORD_COUNT]
+	if { $nrecs < 1 } {
+		puts "Couldn't find $regname in regions table"
+		return {}
+	} elseif { $nrecs < 3 } {
+		puts "Region $regname doesn't have enough vertices"
+		return {}
+	} else {
+		set db [dbsort $db vertex]
+	}
+	set nvertices [dbquery $db dbRECORD_COUNT]
+
+	for { set recno 0 } { $recno < $nvertices } { incr recno } {
+		set lat [dbgetv $db 0 $recno lat]
+		set lon [dbgetv $db 0 $recno lon]
+		lappend polygon $lat
+		lappend polygon $lon
+	}
+
+	return $polygon
+}
+
+proc apply_threshold { db contains mag depth damage freq_calls } {
+
+	set nregions [llength $contains]
+
+	set regname [lvarpop contains]
+	set regname [quotestrip $regname]
+	set region_expr "regname == \"$regname\""
+
+	foreach region $contains {
+		set regname [quotestrip $region]
+		append region_expr " || regname == \"$regname\""
+	}
+
+	set db [dblookup $db 0 threshold 0 0]
+	set db [dbsubset $db $region_expr]
+	set nrecs [dbquery $db dbRECORD_COUNT] 
+	if { $nrecs <= 0 } {
+		return [dbinvalid]
+	}
+
+	set threshold_expr   "( minmag <= $mag && "
+	append threshold_expr  "( maxz >= $depth || maxz == NULL ) )"
+
+	if { $damage } {
+		append threshold_expr " || damage == \"y\""
+	}
+	if { $freq_calls } {
+		append threshold_expr " || freq_calls == \"y\""
+	}
+
+	set db [dbsubset $db $threshold_expr]
+
+	return $db
+}
+
+proc print_calldown_list {} {
+	global Calldown_list Ncontacts
+	global Lat Lon Depth Mag Time Damage Freq_calls
+
+	set fmtstring "%-[max_string_length $Calldown_list(name)]s "
+	append fmtstring "%-[expr [max_string_length $Calldown_list(role)]+2]s "
+	append fmtstring "(W:)%-[max_string_length $Calldown_list(work_ph)]s "
+	append fmtstring "(H:)%-[max_string_length $Calldown_list(home_ph)]s "
+	append fmtstring "%s"
+
+	set lp [open "|lp" w]
+
+	set local_time [fmtclock [int $Time] "%I:%M:%S %p %Z,  %m/%d/%Y"]
+	puts $lp "Calldown list for mag $Mag earthquake at $local_time\n"
+	puts $lp "\t Lat: $Lat"
+	puts $lp "\t Lon: $Lon"
+	puts $lp "\t Depth: $Depth km"
+	if { $Damage } {
+		set damage_str "Caused Damage"
+	} else {
+		set damage_str "No Damage"
+	}
+	puts $lp "\t Damage: $damage_str"
+
+	if { $Freq_calls } {
+		set calls_str "Yes"
+	} else {
+		set calls_str "No"
+	}
+	puts $lp "\t Frequent Calls: $calls_str\n"
+
+	puts $lp "Ordered Calldown List:\n"
+
+	for { set i 0 } { $i < $Ncontacts } { incr i } {
+
+		set name [lindex $Calldown_list(name) $i]
+		set role [lindex $Calldown_list(role) $i]
+		if { $role != "" } { set role "($role)" }
+		set work_ph [lindex $Calldown_list(work_ph) $i]
+		set home_ph [lindex $Calldown_list(home_ph) $i]
+		set note [lindex $Calldown_list(note) $i]
+		
+		set calldown [format $fmtstring $name $role \
+					$work_ph $home_ph $note]
+
+		puts $lp $calldown
+	}
+
+	close $lp
+}
+
+proc set_calldown_list {} {
+	global Calldown_Database
+	global Lat Lon Mag Depth Damage Freq_calls
+	global Ncontacts
+	global Calldown_list
+	
+	set db [dbopen $Calldown_Database r]
+
+	foreach regname [get_region_names $db] {
+
+		set polygon [get_region_polygon $db $regname]
+
+		if { [is_geographically_inside $Lat $Lon $polygon] } {
+			lappend contains $regname
+		}
+	}
+
+	if { ! [info exists contains] } {
+		set Ncontacts 0
+		return
+	} else {
+		set db [apply_threshold $db $contains $Mag \
+					$Depth $Damage $Freq_calls]
+	}
+
+	set nrecs [dbquery $db dbRECORD_COUNT] 
+
+	if { [dbquery $db dbRECORD_COUNT] <= 0 } {
+		set Ncontacts 0
+		return
+	}
+
+	set dbcontact [dblookup $db 0 contact 0 0]
+	set db [dbjoin $db $dbcontact]
+
+	set db [dbgroup $db 1 name priority role work_ph home_ph note]
+	set db [dbsort $db priority]
+	set nrecs [dbquery $db dbRECORD_COUNT]
+	set Ncontacts $nrecs
+
+	for { set n 0 } { $n < $nrecs } { incr n } {
+		set name [quotestrip [dbgetv $db 0 $n name]]
+		lappend Calldown_list(name) $name
+
+		set priority [quotestrip [dbgetv $db 0 $n priority]]
+		lappend Calldown_list(priority) $priority
+
+		set role [quotestrip [dbgetv $db 0 $n role]]
+		if { $role == "-" } { set role "" }
+		lappend Calldown_list(role) $role
+
+		set work_ph [quotestrip [dbgetv $db 0 $n work_ph]]
+		if { $work_ph == "-" } { set work_ph "" }
+		lappend Calldown_list(work_ph) $work_ph
+
+		set home_ph [quotestrip [dbgetv $db 0 $n home_ph]]
+		if { $home_ph == "-" } { set home_ph "" }
+		lappend Calldown_list(home_ph) $home_ph
+
+		set note [quotestrip [dbgetv $db 0 $n note]]
+		if { $note == "-" } { set note "" }
+		lappend Calldown_list(note) $note
+	}
+
+	return
+}
+
+init_globals 
+
+init_database
+
+query_consequences 
