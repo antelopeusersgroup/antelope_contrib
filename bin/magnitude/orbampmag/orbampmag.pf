@@ -3,33 +3,33 @@
 # latency and maxwaittime are only needed for orbampmag
 # but to allow the usage of the same parameter file for both
 # realtime (orbampmag) computations and postprocessing (dbampmag)
-# they are included in the parameterfile
-# they are ignored when running dbampmag
+# they are included in the parameterfile but ignored when running dbampmag
 
 latency		30.0	# group latency
 maxwaittime	60.0	# A hard timeout value in seconds for reading waveform packets.
-			#  If no waveform packets for the selected channels are received
-			#  within this time period, then the waveform reading loop is
-			#  interrupted and any further processing for that event is
-			#  aborted.
+                    #  If no waveform packets for the selected channels are received
+                    #  within this time period, then the waveform reading loop is
+                    #  interrupted and any further processing for that event is
+                    #  aborted.
 
+magtype  mb # valid values are mb, ml and ms
+            # of course other parameters below 
+            # have to be set according to this choice
+            # among them are time0, time_window, filter and the constants c0 to c5
 
-magtype		ms	# valid values are mb, ml and ms
-				# of course other parameters have to be set according to this choice
+v_r    4.0  # velocity for surface waves used to determine surface wave arrival time
+            # only used when computing Ms, i.e. when time0 is set to R
 
-v_r			4.0	# velocity for surface waves used to determine surface wave arrival time
+time0  P    # center of measuring time window
+            # P - pphasetime (see man pphasetime)
+            # S - sphasetime
+            # R - rayleigh wave - here we use deg2km(delta) / v_r
 
-time0		R	# start of measuring time window
-				# P - pphasetime (see man pphasetime)
-				# S - sphasetime
-				# R - rayleigh wave - here we use deg2km(delta) / v_r
+time_window_factor 0.5 # The waveform for processing the magnitude is determined by a time
+                # window of length time_window_factor * (S-time - P-time) 
 
-time_window	1.5	# The waveform for processing the magnitude is determined by a time
-				# window starting from the arrival defined by the time0 parameter 
-				# to time_factor*(S_time-P-time) seconds after the first P-arrival.
-
-mindelta	5.5	# distance range in degrees
-maxdelta	180	# 
+mindelta  0     # distance range in degrees
+maxdelta  180   # 
 
 # a 'general' magnitude formula could be:
 # c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
@@ -38,15 +38,15 @@ maxdelta	180	#
 # thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
 # beware: c0 has to be converted if you have a formula where delta is im km
 # in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
-c0	0.52
+c0	-0.104
 c1	1.66
-filter BW 0.01 5 0 0
+filter BW 0.6 3 3 3
 mag &Tbl{		# stations parameters for computing magnitudes
-#      chan       calib   deconvolve apply     snr    
-#sta   expr   from_db instrument wa_filter thresh latency c2   c3     c4  c5
-ARSA   HHZ    yes     no         no        2.0    0.0     -1.0 0.0097 9.0 0.0
-DEMO   HH[ZNE]_00 yes no         no        2.0    0.0     -1.0 0.0097 9.0 0.0 
+#                calib   deconvolve apply            
+#     chan       from    instrument wa     snr    twin  latency                
+#sta  expr       db      response   filter thresh noise      c2   c3   c4   c5  minclip maxclip
+ARSA  HHZ        yes     no         no     2.0    60.0  0.0  0.0  1.0  1.0  0.0 
+DEMO  HH[ZNE]_00 yes     no         no     2.0    -1.0  0.0  0.0  1.0  1.0  0.0 -65000  65000
 }
 
-
-pf_revision_time 1053388800
+pf_revision_time 1086912000
