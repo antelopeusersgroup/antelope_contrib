@@ -1,0 +1,280 @@
+
+<chapter>
+Tcl/Tk Interface
+<subsection>
+Opening a database
+
+<commands>
+db2pipe db file [record# ...]
+    send records from a database view out a unix pipe
+
+dbclose dbptr
+    Close a database and free associated memory
+
+dbfree dbptr
+    Free memory resources and file descriptors for a database view/table
+
+dblookup dbptr database table field record
+    map from symbolic names to a database pointer
+
+dbopen path opentype
+    Open the specified database
+
+dbopen_database path opentype
+    Open the specified database. "-" means stdin; tables may be specified
+
+dbopen_table path opentype
+    Open the specified database table
+
+dbtruncate dbptr n
+    Truncate the specified table to n records
+<subsection>
+Manipulating Fields and Records
+
+dbadd dbptr record
+    Add the specified record
+
+dbaddnull dbptr
+    Add a null record
+
+dbaddv dbptr table field value [field value ...]
+    Add a new record with the specified field values, returning record number
+
+dbcrunch dbptr
+    Crunch out (delete) null records in the specified table
+
+dbdelete dbptr
+    Delete the specified record
+
+dbget dbptr
+    Get a table, record, or field from a table
+
+dbgetv dbptr table record field [field ...]
+    Return a list containing the specified values of the specified fields
+
+dbgroup db type field [field ..]
+    Group the (sorted) input table by the specified fields
+
+dbmark dbptr
+    Set the specified record to all nulls
+
+dbput dbptr value
+    Put the specified value into the specified location.
+
+dbputv dbptr table record field value [field value ...]
+    Save the specified values into the specified fields.
+<subsection>
+Forming Views
+
+dbjoin db1 db2 [fields]
+    Join the specified tables
+
+dbjoin_tables dbptr
+    Returns a list of tables for which some set of join keys can be inferred
+
+dbnojoin db1 db2 [field ...]
+    Returns all the records in db1 which do not join with table db2
+
+dbprocess db [command ...]
+    construct a view as series of standard operations
+
+dbsave_view [-f] db name
+    Save the specified view as a table in the same database with the specified name
+<options>
+-f  Allow overwriting files of the same name
+</options>
+
+dbsever db table
+    remove a table from a joined view
+
+dbsort [-r] [-u] db [fields ..]
+    Sort the specified table by the specified fields or the primary  key if no fields are specified
+<options>
+-r reverse the sense of the sort
+-u eliminate all records in the output view with duplicate field values
+</options>
+
+
+dbsubset db expression
+    Returns a db pointer to the rows from the specified table which satisfy expression
+
+dbtheta dbptr1 dbptr2 [ expression ]
+    Theta join the specified tables
+
+dbunjoin dbptr output
+    Unjoin the specified table, writing new tables into a new database named output
+
+<subsection>
+Error Handling
+<commands>
+
+clear_register flag
+    Clear the error register, optionally returning contents
+
+elog_clear 
+    Clear the elog message log
+
+elog_complain msg
+    Write an error message to the elog message facility for immediate output
+
+elog_die msg
+    Write a message to the elog message facility and die
+
+elog_flush deliver first
+    Get rid of messages after  #first  in  the error log, printing them if deliver is a boolean true
+
+elog_init args
+    Initialize the elog routines with the command name
+
+elog_log msg
+    Save a message on the elog message log
+
+elog_mark 
+    returns the count of messages currently held in the error log
+
+elog_notify msg
+    Write a message other than an error message to the elog facility
+<subsection>
+Evaluating expressions
+
+dbeval db expression [type]
+    Evaluate the specified expression, converting to the specified type
+<subsection>
+Getting information about the Database
+
+datafile envname filename
+    Returns complete pathname for a datafile
+
+dbquery dbptr code
+    Query the database for various parameters
+<subsection>
+Instrument response routines
+
+eval_response resphandle freq_in_hz
+    evaluate a response object at a given frequency
+
+free_response resphandle
+    free resources for a response object
+
+get_response resphandle {nstages | stage_types | paz stageno}
+    get information about a response object
+
+peterson {low|high} frequency rsptype
+    compute Peterson low/high noise model
+
+put_response resphandle stageno param_list
+    put values into a response object
+
+read_response filename
+    read a response object
+<subsection>
+Parameter Files
+
+pfget pf name
+    Get the value for the specified name from the specified parameter file
+
+pfgetarr variable name
+    Return the array corresponding to the specified name (eg, %pf#name) in the variable
+
+pfgetlist name
+    Return the list corresponding to the specified name (eg, @pf#name)
+
+pfput pf name value
+    Save the specified value into the parameter space
+
+pfputarr pf name [array]
+    Save the specified array into the parameter space
+
+pfputlist pf name [list]
+    Save the specified list into the parameter space
+
+pfread pf
+    Force rereading the parameter file
+
+pfwrite pf filename
+    Write the specified parameter file
+
+
+<subsection>
+Seismic Utility Functions
+
+carsph x y z
+    Convert from cartesian to spherical coordinates
+
+dbdist lat1 lon1 lat2 lon2
+    Return the angular distance between the specified locations. All units are degrees.
+
+dblatlon lat lon delta azimuth
+    Return the latitude and longitude of the point at distance delta, direction azimuth from lat, lon
+
+sphcar lat lon
+    Convert from spherical to cartesian coordinates
+<subsection>
+Special Functions
+
+dbadd_remark dbptr remark
+    Add the specified remark to the specified record
+
+dbcompile dbptr string
+    Add attributes and relations to a database by directly compiling schema file fragments
+
+dbfind db first backwards expression [n]
+    starting from first, locate the nth row satisfying the given expression
+
+dbget_remark dbptr
+    Get the remark associated with the specified record
+
+dbgetr dbptr convert_time record# #records [expression [format]]
+    Return a list containing the specified field or expression for the specified range of records
+
+dbinvalid 
+    Return a db pointer with all elements dbINVALID
+
+dbmatches db1 db2 hook [field ...]
+    Returns a list of records in the table specified by db2 which match (join with) the record specified by db1
+
+dbnextid dbptr name
+    Get the next (integer) id for the specified  name
+
+dbselect [-b] [-F separator] [-t] filename db [field ...]
+    Write selected fields from the input table to the specified filename
+<options>
+-b strip blanks from both ends of each field
+-t convert times to readable times
+</options>
+
+<subsection>
+Time conversion
+
+epoch yearday
+    Convert from yearday to epoch
+
+epoch2str epoch fmt
+    Convert epoch time to a human readable format
+
+str2epoch string
+    Convert human readable time to epoch time
+
+strdate epoch
+    Convert epoch time to a human readable date string
+
+strtdelta epoch
+    convert a time-difference into a string
+
+strtime epoch
+    Convert epoch time to a human readable time string
+
+strydtime epoch
+    Returns a readable time which includes the day of the year inside parentheses
+
+yearday epoch
+    Convert from yearday to epoch time
+<subsection>
+Utility Functions
+
+makedir dir
+    ensure that a directory exists
+
+writefile filename stringname
+    write contents of a string variable to a file
+

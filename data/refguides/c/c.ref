@@ -1,0 +1,26 @@
+<initialization ../refhdr.mif>
+<title Antelope C Programmer Reference Guide>
+
+<include libstock.ref>
+<include libcoords.ref>
+<include libds.ref>
+<include libtr.ref>
+<include liborb.ref>
+<include libPkt.ref>
+<include libxtra.ref>
+<include libbrttpkt.ref>
+<include libtt.ref>
+<include libtttaup.ref>
+<include libresponse.ref>
+<include libtks.ref>
+<include libproj.ref>
+<include libpixaddress.ref>
+
+<include fortran.ref>
+
+<include ../tables/time_expressions.ref>
+<include ../tables/table_time.ref>
+<include ../tables/table_expressions.ref>
+<include ../tables/table_datascope.ref>
+
+<the_end>

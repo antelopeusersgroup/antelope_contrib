@@ -1,0 +1,110 @@
+<chapter MIscellaneous Utility>
+<commands>
+
+<subsection Examples and Templates>
+
+mkmk [ - ]
+    print prototype Antelope makefile (- suppresses comments)
+
+manpage [ - ]
+    prototype Antelope man page (- suppresses comments)
+
+template [dbsimple.c|simple.c|perl|tcl]
+    get a template from templates directory
+
+<subsection Miscellaneous>
+
+private check_antelope_installation 
+    spot check for proper Antelope installation
+
+check_license [license_filename]
+    verify license.pf is valid
+
+private check_path [-v] [path]
+    check a path to ensure that 'other' users can traverse it
+
+private check_visual [-display display_name]
+    check out the default X-windows display visual
+
+private install_antelope 
+    interactive installation of Antelope from a cd
+
+private register_antelope 
+    gui for requesting Antelope license
+
+
+abspath apath [... ]
+    construct absolute path corresponding to input apath
+
+relpath here there
+    construct relative pathname from here to there
+
+deprecated uwd [-f configfile]
+    print canonical working directory (for ancient automounters) 
+
+
+epoch [-e] [-i input_timezone] [-o output_timezone] [ +format ] [ time/date components ]
+    convert time formats. Optionally specify an input and/or output timezone (refer to time expressions table for acceptable input formats).  Optionally specify an output format (refer to epoch2str table for format codes).
+
+
+pfdiff [-o newpf] pf1 [pf2]
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). also allows constructing new parameter file by interactively selecting parameters from pf1 and pf2.
+
+pfecho [-iq] [-w|W] name [ param ...]
+    print out parameters from parameter files
+<options>
+-i	interactive mode
+-q	don't echo the key
+-w	show all pf files read
+-W	show all pf filenames examined (some may not exist)
+</options>
+
+
+gsregion [lat lon]
+    show geographic and seismic region numbers and names for lat, lon
+
+dbsetrgn database
+    set seismic and geographic region codes in origin table
+
+
+private children pid
+    returns pids of children
+
+private getunique 
+    return unique integer
+
+private idinfo 
+    gather id information for register_antelope
+
+deprecated pathf [ -f configfile ] [ paths... ]
+    Filter for translating pathnames
+
+private perl_unbuffer command
+    use pty/tty pair to get unbuffered output from a command
+
+
+tksend app_name [message]
+    send a message using version 3 or 4 of the tcl/tk send mechanism
+<options>
+-i	Read stdin for more messages
+-p	Wait for and print returned messages
+-verbose	Be more verbose
+-validate	validate the application name and return the disposition and the version number
+-version	{3|4|auto}
+-wait	wait for a response
+</options>
+
+
+private unregister window_name
+    eliminate defunct tk send registries
+
+
+reflect [-d dir] [-v] remote_host remote_file
+    keep local files up to date with remote copies
+
+reflectd [-v]
+    server companion to reflect
+
+
+private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
+    X-windows plotting daemon

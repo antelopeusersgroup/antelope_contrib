@@ -1,0 +1,34 @@
+<library>
+Instrument response routines
+response
+$(STOCKLIBS)
+none
+response.h
+routines for reading, writing and evaluating CSS 3.0 response files
+
+<cdeclarations>
+
+Response *new_response (  )
+    initialize a new response object
+
+int read_response ( FILE *file, Response **p_response )
+    read a response object from a file
+
+int write_response ( FILE *file, Response **response )
+    write a response object to a file
+
+int free_response ( Response *response )
+    free memory for a response object
+
+
+int init_response_group ( Response_group gp )
+    initialize a new response-group object
+
+int add_response_group ( Response *rp, Response_group *gp )
+    add a response to an existing response group
+
+int compare_response ( Response *response1, Response *response2 )
+    Compare two response objects
+
+int eval_response ( double omega, Response *response, double *real, double *imag )
+    Evaluate a response object at the specified frequency

@@ -1,0 +1,149 @@
+<chapter>
+Foreign waveform formats
+
+<subsection Exporting data from Datascope database>
+<commands>
+
+<commands>
+autodrm [-dnv] [-D dir] [-p pf] [files]
+    Antelope IDC/GSE2.1 AutoDRM Server
+<options>
+-d	debug: print output to stderr rather than sending mail
+-D	run in specified directory
+-p	use specified parameter file
+</options>
+
+private autodrm_wrapper 
+    script which is run by sendmail to run autodrm
+
+dbresp2autodrm view
+    convert response information from view to autodrm format
+
+rtbulletin [-Av] [-s subset] view [start_time [period|end_time]]
+    create a bulletin from a view (-A causes standard autodrm output)
+
+
+db2ah dbin dbout
+    convert css waveform files into ah format
+<options>
+-sc	sta_chan
+-ts	start time
+-te	end time
+-w	wfdir
+-gap	{ none | zero | interp }
+-counts
+-h	help
+-v	version
+</options>
+
+db2sac dbin dbout
+    convert css waveform files into sac format
+<options>
+-sc sta/chan	select sta/chan pairs with dbpick style pseudo-glob
+-ts t0	starting at time t0 
+-te t1	ending at time t1
+-w wfdir	write waveform files into wfdir (default "sac")
+-gap { none | zero | interp }	handle gaps according to rule (default zero)
+-counts	keep output waveform in counts (don't apply calib)
+</options>
+
+
+db2sd [-V] database seed_volume
+    create a SEED volume from a database containing affiliation, network, sensor, site, stage, calibration and wfdisc tables
+
+mk_dataless_wfdisc [-v] [-p parameter_file] input_database
+    makes fake wfdisc file in order to create a dataless seed file
+
+trash_data [-inv] seed_volume [ seed_volume...]
+    truncate a SEED volume following the station headers, creating a dataless SEED volume
+
+mk_dmc_seed [-v] [-V] [-a] [-m mail_to] [-t tape_drive] [-d directory] rt_db
+    builds IRIS DMC files on tape or disk
+
+
+db2segy db outfile [ -pf pffile ]
+    convert waveforms from input database db to a segy disk image
+
+<subsection Importing data into a Datascope database>
+<commands>
+
+ah2db ah_file [ ah_file .. ] database
+    create CSS database from ah format waveform files 
+
+autodrm2db [-vV] reply1 [reply2 ..] database
+    convert autoDRM replies to a database
+
+edr2db edr_file dbname
+    Convert a USGS EDR file to a CSS database
+
+isc2db [-c] [-p] [-s start] [-e end] isc_bulletin database
+    read the ISC bulletin from NEIC CD into CSS database
+
+pde2origin pde_file dbname [-auth author]
+    Convert a PDE file to an origin table
+
+qed2origin qed_file dbname
+    Convert a QED file to an origin table
+
+sac2db sacfile [ sacfile ... ] database
+    create CSS database from SAC file headers
+
+psd2db seedfile dbout
+    scan PASSCAL SEED volume and produce CSS 3.0 database
+<options>
+-v             Verbose output flag
+-n             No overwritye flag
+-w             Extract wfdisc table only flag
+-t tolerance
+-respdir respdir
+-stagedir stagedir
+</options>
+
+sd2db seed_vol css_dbase
+    create a CSS database from a SEED volume
+<options>
+-d	print out each blockette as it is read
+-f n	Skip to file n
+-c n	Read just n files from the tape
+-i	Create wfdisc and extract wave form data without using other header information
+-r	response_dir
+-s	sweep identical time adjacent tuples into a single tuple
+-S	stachan
+-t	Create the database tables without extracting the wave data files
+-v	print summary of the blockettes read and processed
+-w	wfdir
+-x	tapeid
+-z	compress waveform files after they are complete
+</options>
+
+segy2css [-event] [-ftbl] "fname"
+    convert data in PASSCAL SEGY format to CSS format
+
+dbsteimu input [new_database]
+    create wfdisc file from miniseed
+<options>
+-o	Overwrite the records in the existing  input  database
+-s	The input is a miniseed volume.
+-S	The  input  is  a  miniseed  volume,  but  don't  write uncompressed waveforms
+-t	tolerance
+-v	Be more verbose.
+-w	wfname
+</options>
+
+deprecated ucsdsp2db stapardir responsedir netcode netname dbout [-s]
+    convert UCSD stapar files to a CSS v3.0 database
+
+deprecated ucsdwf2db stapardir dbin dbout
+    convert UCSD raw data wfdiscs and arrivals to a CSS3.0 database
+
+<subsection Miscellaneous utilities>
+
+sachd [sac_file ...]
+    print SAC header
+
+sdd [-f n] [ -s] [-d database] seed_volume
+    display the blockettes of a SEED volume
+
+dsteim [miniseed]
+    dump steim compressed (SEED) data frames
+

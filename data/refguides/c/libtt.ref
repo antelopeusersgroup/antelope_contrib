@@ -1,0 +1,15 @@
+<library>
+Travel Times
+tt
+$(STOCKLIBS)
+none
+tt.h
+provides generic interface for various travel time calculators
+
+<cdeclarations>
+
+int ttcalc ( char *method, char *model, char *phase_code, int mode, TTGeometry *geometry, Tbl **timesp, Hook **hook )
+    Generic interface for computing travel times
+
+int ucalc ( char *method, char *model, char *phase_code, int mode, TTGeometry *geometry, Tbl **slowsp, Hook **hook )
+    Generic interface for computing slowness vectors

@@ -1,0 +1,855 @@
+<library>
+General Utilities
+stock
+-lposix4 -lnsl -lsocket -lm
+STOCKLIBS
+stock.h
+implements various general purpose 
+programming utilities
+
+<subsection> 
+Miscellaneous
+<cdeclarations>
+
+private void banner ( char *program, char *version )
+    print a header with program name, version, BRTT address
+
+void cbanner ( char *version, char *usage, char *author, char *location, char *email );
+    print a header with program name, version, BRTT address
+
+void *usermethod ( char *methodname )
+    dynamically lookup user subroutine from libuser
+
+int verbose_exists ()
+    check for existence of file named "verbose"
+
+<subsection>
+Macros
+<cdeclarations>
+
+allot(type *, name, n)
+    malloc space for n (type *) elements, putting the address in name 
+    
+reallot(type *, name, n) 
+    realloc space for n (type *) elements, putting the address in name 
+
+ALLOTERROR
+    ALLOTERROR may be defined to be ALLOTDIE (the default), ALLOTCOMPLAIN, or ALLOTREGISTER_ERROR or your own macro with two arguments: the name and n.
+
+SIZE_BUFFER(type *, buffer, sizevar, needed) 
+    ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, free the old buffer, and malloc a new buffer
+
+RESIZE_BUFFER(type *, buffer, sizevar, needed) 
+    ensure that (type *) buffer (currently allocated with size in sizevar) has space for at least needed elements -- if not, realloc the old buffer, copying the current contents
+
+private SQR(a)
+    expands to (a)*(a) -- bad if a has side-effects
+
+private ABS(a)
+    expands to ((a>=0)?(a):-(a)) -- bad if a has side-effects
+
+private SIGN(a)
+    expands to (((a)>0)? 1.0 : ((a)<0) ? -1.0 : 0.0) -- bad if a has side-effects
+
+private MAX(a,b)
+    expands to ((a>b)?(a):(b)) -- bad if a or b have side-effects
+
+private MIN(a,b)
+    expands to ((a>b)?(b):(a)) -- bad if a or b have side-effects
+
+
+<subsection>
+Compression
+
+int gencompress ( unsigned char **out, int *nout, int *size, int *in, int nsamp, int length )
+    generic run length data compression
+
+int genuncompress ( int **out, int *nout, int *size, unsigned char *in, int nbytes )
+    generic run length data decompression
+
+<subsection>
+Environment
+
+int envfile ( char *filename )
+    Sets a list of environment variables based on $ANTELOPE/data/env
+
+int fixup_env ( char **envsetup, int nenv, int force )
+    Sets a list of environment variables relative to the ANTELOPE directory
+
+char *getantelope (  )
+    determine the Antelope root directory
+
+<subsection>
+Data file references
+
+char *datafile ( char *envname, char *filename )
+    return absolute path of file under $ANTELOPE/data 
+
+char *datapath ( char *envname, char *dirname, char *filename, char *suffix )
+    return absolute path of file under $ANTELOPE/data 
+
+int newdata ( char *returnpath, char *envname, char *dirname, char *filename, char *suffix )
+    Construct pathname for a new data file
+
+deprecated int mappath ( char *spath, char *upath )
+    translate pathnames (formerly used for remapping automount paths)
+
+deprecated void setmapcf ( char *fn )
+    set the name of the configuration file for mappath
+
+<subsection>
+State Files
+
+int bury (  )
+    save a program's state file
+
+int exhume ( char *filename, int *signal_stop, int sec, void (*mortician)() )
+    Recover state file (and set up to save new copy)
+
+int resurrect ( char *name, void *variable, int type )
+    recover an old value from a state file
+
+<subsection>
+Associative Arrays
+
+Arr *newarr ( int (*cmp)() )
+    Create a new associative array
+
+int freearr ( Arr *root, void (*free_value) () )
+    free resources for an associative array
+
+void *setarr ( Arr *arr, char *key, void *value )
+    set associative array value
+
+void *getarr ( Arr *arr, char *key )
+    get an associative array value
+
+void *delarr ( Arr *arr, char *key )
+    Delete a value from an associative array
+
+Tbl *keysarr ( Arr *arr )
+    Get keys for an associative array
+
+Tbl *valsarr ( Arr *arr )
+    Get values for an associative array
+
+int applyarr ( Arr *arr, void (*function) (), void *private )
+    apply a function to an associative array
+
+Tbl *arrgrep ( Arr *arr, char *string )
+    Match a string to array of regular expressions
+
+Tbl *greparr ( char *re, Arr *arr )
+    search an array with a regular expression
+
+int cntarr ( Arr *arr )
+    Count the nodes of an associative array
+
+<subsection>
+Bit Vectors
+<cdeclarations>
+
+Bitvector *newbit (  )
+    Create a new bit-vector
+
+void freebit ( Bitvector *b )
+    Free a bit-vector
+
+int bitclr ( Bitvector *b, int index )
+    Clear a bit of a bit-vector
+
+int bitset ( Bitvector *b, int index )
+    Set a bit of a bit-vector
+
+int bittst ( Bitvector *b, int index )
+    Test a bit of a bit-vector
+
+int bitmax ( Bitvector *b )
+    Return the size in bits of a bit-vector
+
+Bitvector *bitnot ( Bitvector *b )
+    Returns the bitwise NOT of a bit-vector
+
+Bitvector *bitand ( Bitvector *b1, Bitvector *b2 )
+    Return the bitwise AND of two bit-vectors
+
+Bitvector *bitor ( Bitvector *b1, Bitvector *b2 )
+    Return the bitwise OR of two bit-vectors
+
+Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
+    Return the bitwise eXclusive-OR of two bit-vectors
+
+int bitcmp ( Bitvector *b1, Bitvector *b2 )
+    compare two bit-vectors
+
+<subsection>
+Buffered Network Stream I/O
+<cdeclarations>
+
+Bns *bnsnew ( int fd, int sz )
+    Create a new network stream I/O buffer
+
+void bnsuse_sockio ( Bns *bns )
+    initialize socket communications for a bns
+
+void bnsfree ( Bns *bns )
+    free space associated with a bns
+
+int bnsclose ( Bns *bns )
+    close file descriptor and free space for a bns
+
+
+int bnsget ( Bns *bns, void *data, int type, int n )
+    get data from a bns
+
+int bnsput ( Bns *bns, void *data, int type, int n )
+    put data to a bns
+
+int bnsflush ( Bns *bns )
+    clear internal buffer of a bns
+
+
+void bnsmark ( Bns *bns )
+    mark the current read point in the input buffer
+
+void bnsrestore ( Bns *bns )
+    restore mark on input buffer to the old mark
+
+void bnsrelease ( Bns *bns )
+    reset mark on the input buffer
+
+
+void bnsclr ( Bns *bns )
+    Wipe clean the bns buffer
+
+int bnscnt ( Bns *bns )
+    return count of characters in bns buffer
+
+int bnseof ( Bns *bns )
+    return non-zero when end of file occurs on input
+
+int bnserr ( Bns *bns )
+    return non-zero after an error occurs on a bns
+
+int bnserrno ( Bns *bns )
+    returns any system errno recorded by bns after read or write
+
+
+int bns2buf ( Bns *bns, char *buf, int maxbuf )
+    copy bns buffered data elsewhere
+
+int buf2bns ( Bns *bns, char *buf, int nbytes )
+    put data directly into a bns buffer
+
+
+int bnstimeout ( Bns *bns, int milliseconds )
+    set the bns timeout period
+
+
+int bnswait ( Bns *bns )
+    wait until the bns timeout for data to appear
+
+
+int gbnsSync ( Bns *bns, char *sync, int nsync, int stric )
+    synchronize an input stream to a character sequence
+
+int pbnsSync ( Bns *bns, char *sync, int nsync )
+    synchronize an output stream to a character sequence
+
+<subsection>
+Error handling
+
+int elog_init ( int argc, char **argv )
+    Initialize elog routines
+
+void clear_register ( int deliver )
+    clears the error register, printing the contents if asked
+
+void register_error ( int flag, char *format, ... )
+void elog_log ( int flag, char *format, ... )
+    Add a message to the internally accumulating error log
+
+void elog_notify ( int flag, char *format, ... )
+    deliver a message and return
+
+void complain ( int flag, char *format, ... )
+void elog_complain ( int flag, char *format, ... )
+    deliver a message and return
+
+void die ( int flag, char *format, ... )
+void elog_die ( int flag, char *format, ... )
+    deliver a message and exit with error code 1
+
+void elog_fault ( int flag, char *format, ... )
+    report a hardware error and exit with error code 1
+
+void elog_clear (  )
+    Clear the log of error messages
+
+int elog_mark ()
+    return the number of messages in the error log
+
+void elog_flush ( int deliver, int first )
+    flush elog messages from first
+
+void elog_print ( FILE *file, int first )
+    print the error log from first to the end
+
+void elog_free_msg ( void *vmsg )
+    free an elog message
+
+void elog_msg_print ( FILE *file, Elog_msg *elog_msg )
+    Print an elog message
+
+int elog_query ( enum Elog_code code, int severity, void **value )
+    retrieve various parameters from elog interface
+
+int elog_set ( enum Elog_code code, int severity, void *value )
+    set various parameters for elog interface
+
+<subsection>
+General Programming Utilities
+<cdeclarations>
+
+Hook *new_hook ( void (*hookfree)() )
+    create a standard structure which contains a pointer to a free routine and
+    a (void *) pointer
+
+void free_hook ( void **hookp )
+    free a hook structure, first calling the hookfree routine to free the private pointer, and then freeing the structure
+
+
+int runcmd ( char **argv, char **result )
+    execute a command, returning a result and the exit code
+
+void compress ( char *path )
+    compress files in background
+
+
+deprecated Signal_info *signal_byname ( char *name )
+    translate a signal name into description
+
+deprecated Signal_info *signal_bysig ( int sig )
+    translate a signal code into name and description
+
+
+void wait_for_time ( double time, int verbose )
+    sleep until a specified epoch time
+
+
+int xlatname ( char *name, Xlat *xlat, int nxlat )
+    lookup a name in a static translation table
+
+char *xlatnum ( int num, Xlat *xlat, int nxlat )
+    look up a number in a static translation table
+
+
+
+int clr_fl ( int fd, int flags )
+    clear file status flags
+
+int set_fl ( int fd, int flags )
+    set file status flags
+
+
+void fill_random ( char *packet, int nchar, int *pp )
+    fill a buffer with random values
+
+int check_random ( char *packet, int nchar )
+    returns a count of bytes which differ from expected value
+
+int set_random ( int intcount )
+    return the previous count of integer values in the buffer
+
+
+int mapfile ( char *filename, Arr **maparr, char **mmap_datap )
+    map a file into memory if necessary
+
+int unmapfile ( char *filename, Arr **maparr )
+    unmap the specified filename from memory
+
+int unmaparr ( Arr **maparr )
+    unmap all mapped files
+
+<subsection>
+Filename and Path manipulation
+
+int abspath ( char *relp, char *absp )
+    return an absolute pathname from a relative pathname
+
+deprecated char **antelope_glob ( char *globpattern )
+    shell glob routine
+
+void dirbase ( char *path, char *dir, char *base )
+    separate a path into directory and basename components
+
+
+
+int gethdir ( char *user, char *home )
+    get home directory of user
+
+int makedir ( char *dir )
+    ensure that a directory exists
+
+
+
+FILE *gz_cat ( char *filename, char *permissions )
+    returns a FILE open to the output of zcat
+
+FILE *gz_open ( char *filename, char *permissions )
+    alternate interface to zopen
+
+FILE *zopen ( char *filename, char *permissions )
+    fopen a compressed or uncompressed file
+
+<subsection>
+Strings
+
+int blank ( char *s )
+    return non-zero if string is entirely blank characters
+
+int whitespace ( char *s )
+    returns non-zero if string is entirely whitespace
+
+void copystrip ( char *dest, char *source, int n )
+    copy a string, stripping leading and trailing blanks
+
+private int cs2fs ( char *dst, char *src, int nmax )
+    cast a C string for Fortran
+
+private int fs2cs ( char *dst, char *src, int nmax )
+    cast a fortran string to C format
+
+private char *newcs ( char *fs, int n )
+    copy a fortran string into a newly allocated buffer
+
+char *expand_env ( char *s )
+    substitute environment variables into string
+
+int patsub ( char *old, struct re_pattern_buffer *pattern_buffer, char *substitution, char *new )
+    string substitution
+
+void sncopy ( char *dest, char *source, int n )
+    copy a string with max n characters, padding if necessary
+
+Tbl *split ( char *string, char c )
+    split a string into component pieces
+
+int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
+    copy a string, truncating or padding as necessary
+
+void szcopy ( char *dest, char *source, int n )
+    copy exacly n characters, then append null
+
+<subsection>
+Sorting and Searching
+
+void isort ( char *a, int n, int size, int (*compare)(), void *private )
+    insertion sort implementation
+
+void quicksort ( char *a, int n, int size, int (*compare)(), void *private )
+    quick sort implementation
+
+void shellsort ( char *a, int n, int size, int (*compare)(), void *private )
+    shell sort implementation
+
+int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*compare)(), void *private, int *ns, int *ne )
+    binary search of index
+
+<subsection>
+User Interaction
+
+char *ask ( char *format, ... )
+    query user for a response
+
+char *asknoecho ( char *format, ... )
+    query user for a response with no echo
+
+int askyn ( char *format, ... )
+    query user for a yes/no response
+
+int yesno ( char *s )
+    check string for various ways of meaning yes or no
+
+int fdkey ( int fd )
+    tests file descriptor for pending input
+
+int fdwait ( int fd, int msec )
+    wait up to msec milliseconds for pending input
+
+<subsection>
+Hexadecimal dumps
+
+void Hexdump ( FILE *file, int base, void *memory, int l )
+    hex dump a memory buffer, with base added
+
+void hexdump ( FILE *file, void *memory, int l )
+    Write a hex and ascii dump of a memory buffer
+
+void read_hexdump ( FILE *file, char *memory, int l )
+    read a hex dump back into memory
+
+
+void asciidump ( FILE *file, char *memory, int l )
+    write ascii dump of a buffer, with escaped non-printing chars
+
+void read_asciidump ( FILE *file, char *memory, int l )
+    read an ascii dump back into memory
+
+
+int nomem ( char *memory, int n )
+    true if memory address range is invalid
+
+
+int hex2int ( char c )
+    returns the integer value of a hexadecimal character
+
+int printable ( char *memory, int l )
+    tests bytes to see if they're printable
+
+void printable_string ( char *buf, int n, char *memory, int l )
+    copies bytes from memory into ascii-printable form
+
+
+<subsection>
+Byteswap routines
+
+void swap2 ( unsigned char *from, unsigned char *to, int n )
+    swap two bytes
+
+void swap4 ( unsigned char *from, unsigned char *to, int n )
+    swap four bytes
+
+void swap8 ( unsigned char *from, unsigned char *to, int n )
+    swap eight bytes
+
+
+int align_double ( int i )
+    align an address to a multiple of double
+
+int align_int ( int i )
+    align an address to a multiple of int
+
+
+void HD2NF ( char *to, double *from, int n )
+    convert from host double to net float
+
+void HF2HD ( double *to, char *from, int n )
+    convert from host float to net double
+
+
+void NF2HI ( int *to, char *from, int n )
+    convert from net float to host int
+
+void HI2NF ( char *to, int *from, int n )
+    convert from host int to net float
+
+
+void HI2NC ( char *to, int *from, int n )
+    convert from host int to net character
+
+void NC2HI ( int *to, char *from, int n )
+    convert from net character to host int
+
+
+void HI2NS ( char *to, int *from, int n )
+    convert from host int to net short
+
+void NS2HI ( int *to, char *from, int n )
+    convert from net short to host int
+
+
+private double htond ( double val )
+    convert host double to net double
+
+private void htondp ( double *valp_from, double *valp_to )
+    convert pointer to host double to pointer to net double
+
+private float htonf ( float val )
+    convert host float to net float
+
+private void htonfp ( float *valp_from, float *valp_to )
+    convert pointer to host float to pointer to net float
+
+deprecated int isnetorder (  )
+    Returns true if local machine uses network order
+
+private double ntohd ( double val )
+    convert net double to host double
+
+private void ntohdp ( double *valp_from, double *valp_to )
+    convert pointer to net double to pointer to host double
+
+private float ntohf ( float val )
+    convert net float to host float
+
+private void ntohfp ( float *valp_from, float *valp_to )
+    convert pointer to net float to pointer to host float
+
+private int rev4 ( char *from, char *to, int n )
+    reverse order of 4 bytes
+
+private int rev8 ( char *from, char *to, int n )
+    reverse order of 8 bytes
+
+<subsection>
+Lists
+
+<cdeclarations>
+
+Tbl *newtbl ( int size )
+    Initialize a new list (simple interface)
+
+Tbl *inittbl ( int left_grow, int right_grow, int direct, char *null, int entry_size )
+    Initialize a new list, usually a direct list
+
+void freetbl ( Tbl *tbl, void (*free_tblval) () )
+    free memory used by a list
+
+
+int maxtbl ( Tbl *tbl )
+    Count elements of a list
+
+
+void clrtbl ( Tbl *tbl, void (*free_tblval) () )
+    Empty an existing list
+
+void trunctbl ( Tbl *tbl, int last, void (*free_tblval) () )
+    Shorten a list to the specified number of elements
+
+
+
+int settbl ( Tbl *tbl, int index, char *value )
+    Set a list element's value
+
+char *gettbl ( Tbl *tbl, int index )
+    Get a list element's value
+
+
+int instbl ( Tbl *tbl, int index, char *value )
+    Insert an element into a list
+
+char *deltbl ( Tbl *tbl, int index )
+    Delete an element from a list
+
+
+char *poptbl ( Tbl *tbl )
+    Remove and retrieve an entry from the end of a list
+
+int pushtbl ( Tbl *tbl, char *value )
+    Append an entry to the end of a list
+
+
+char *shifttbl ( Tbl *tbl )
+    Remove and retrieve an entry from the beginning of a list
+
+int unshifttbl ( Tbl *tbl, char *value )
+    Prepend an entry to the beginning of a list
+
+
+
+int filetbl ( char *filename, char *id, int size, void *null, int entry_size, Tbl **ptbl )
+    Read or create a list on disk
+
+Tbl *readtbl ( char *filename, char **id, int rw )
+    Read a list from disk
+
+int savetbl ( Tbl *tbl, char *filename, char *id )
+    Write a list to disk
+
+
+Tbl *greptbl ( char *re, Tbl *tbl )
+    search a list with a regular expression
+
+Tbl *tblgrep ( Tbl *tbl, char *string )
+    Match a string to list of regular expressions
+
+
+void sorttbl ( Tbl *tbl, int (*compare) (), void *private )
+    Sort a list given an element comparison function compare
+
+int searchtbl ( char **key, Tbl *tbl, int (*compare) (), void *private, int *ns, int *ne )
+    Search a sorted list using a binary search
+
+
+int applytbl ( Tbl *tbl, int (*function) (), void *private )
+    apply a function to all elements of a list
+
+
+Tbl *strtbl ( char *s1, ...)
+    Create a Tbl list from a list of strings
+
+char *jointbl ( Tbl *tbl, char *s )
+    Return a string containing all elements of a list
+
+
+int cattbl ( Tbl *tbldest, Tbl *tblsrc )
+    Copy one list to another
+
+int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
+    Compare two lists
+
+<subsection>
+Compression and Checksums
+
+int ccanada ( int *data, int nsamp, char **compressedp, int *nbytes, int *compressedsz )
+    data compression using the Canadian Compression Scheme
+
+int ucanada ( char *compressed, int nbytes, int **datap, int *nsamp, int *datasz )
+    data uncompression using the Canadian Compression Scheme
+
+
+int cm6 ( int *data, int nsamp, char **encoded, int *nbytes, int *encodedsz )
+    compress GSE AutoDRM CM6 format
+
+int um6 ( char *encoded, int nbytes, int **data, int *nsamp, int *datasz )
+    uncompress GSE AutoDRM CM6 format
+
+
+int gse_checksum ( int *signal, int nsamp )
+    compute gse checksum for AutoDRM
+
+
+int cucsd ( int *data, int nsamp, char **buf, int *nbytes, int *bufsiz )
+    compress data as in modified Reftek dataloggers
+
+int uucsd ( int *data, char **bufp, int bufcnt, int nsamp )
+    uncompress data from modified Reftek dataloggers
+
+<subsection>
+Parameter Files
+
+<cdeclarations>
+
+int pfread ( char *name, Pf **pf )
+    read a parameter space
+
+int pfin ( FILE *file, Pf **pf )
+    read a parameter space from an open file
+
+int pfload ( char *envname, char *dirname, char *filename, Pf **pf )
+    load a single parameter file
+
+int pfupdate ( char *name, Pf **pf )
+    update a parameter space
+
+Tbl *pffiles ( char *name, int all )
+    Return a list of parameter files examined
+
+
+int pfcompile ( char *s, Pf **pf )
+    read a parameter space from a string
+
+char *pf2string ( Pf *pf )
+    convert a parameter space to a string
+
+
+void pffree ( Pf *pf )
+    free resources for a parameter space
+
+
+int pfconfig ( char *name, void *value )
+    override default settings such as the &ask routine
+
+Tbl *pfkeys ( Pf *array )
+    returns the list of keys from a parameter space array
+
+
+Pf *pfnew ( int type )
+    start a new parameter space
+
+int pfout ( FILE *file, Pf *pf )
+    write a parameter space to the specified file
+
+int pfwrite ( char *filename, Pf *pf )
+    write a parameter file space to the specified file 
+
+
+int pfget ( Pf *pf, char *name, void **result )
+    get a value from a parameter space
+
+int pfresolve ( Pf *pf, char *name, int create, Pf **value_pf )
+    get a parameter from a parameter space allowing extended syntax to specify members of arrays or lists. (extended syntax allows expressions like arr{name}[3]).
+
+int pfeval ( Pf *pf, char *name, char **value )
+    get a parameter from a parameter space allowing extended syntax to specify members of arrays or lists, returning only scalar values (extended syntax allows expressions like arr{name}[3]).
+
+Arr *pfget_arr ( Pf *pf, char *name )
+    get an array value from a parameter space
+
+int pfget_boolean ( Pf *pf, char *name )
+    get a boolean value from a parameter space
+
+double pfget_double ( Pf *pf, char *name )
+    get a double-precision value from a parameter space
+
+int pfget_int ( Pf *pf, char *name )
+    get an integer value from a parameter space
+
+char *pfget_string ( Pf *pf, char *name )
+    get a string value from a parameter space
+
+Tbl *pfget_tbl ( Pf *pf, char *name )
+    get a list value from a parameter space
+
+int pfmaxtbl ( Pf *list )
+    get the number of elements in the parameter space list
+
+
+void pfput ( Pf *pf, char *name, char *value, int type )
+    put a value into a parameter space
+
+int pfset ( Pf *pf, char *name, char *value )
+    put a parameter into a parameter space using perl-style nested array indexing
+
+void pfput_arr ( Pf *pf, char *name, Arr *value )
+    put an array value into a parameter space
+
+void pfput_boolean ( Pf *pf, char *name, int val )
+    put a boolean value into a parameter space
+
+void pfput_double ( Pf *pf, char *name, double val )
+    put a double-precision value into a parameter space
+
+void pfput_int ( Pf *pf, char *name, int val )
+    put an integer value into a parameter space
+
+void pfput_string ( Pf *pf, char *name, char *value )
+    put a string value into a parameter space
+
+void pfput_tbl ( Pf *pf, char *name, Tbl *value )
+    put a list value into a parameter space
+
+<subsection>
+Sorted Lists
+
+<cdeclarations>
+Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) );
+    create a new sorted list
+
+char *addstbl ( Stbl *stbl, char *key )
+    add an element to a sorted list
+
+void delstbl ( Stbl *stbl, char *key )
+    delete an element from a sorted list
+
+int freestbl ( Stbl *stbl, int (*free_stbl_val) () )
+    free the resources for a sorted list
+
+
+char *getstbl ( Stbl *stbl, int index )
+    get an element from a sorted list
+
+char *tststbl ( Stbl *stbl, char *key )
+    test if an element exists in a sorted list
+
+
+int maxstbl ( Stbl *stbl )
+    returns the number of element in a sorted list
+
+Tbl *tblstbl ( Stbl *stbl )
+    returns the list of all elements in a sorted list
+
+
+int applystbl ( Stbl *stbl, int (*function) (), void *private )
+    apply a function to a sorted list

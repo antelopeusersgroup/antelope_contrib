@@ -1,0 +1,205 @@
+<chapter Datascope database tools>
+
+<subsection Database Schemas>
+<commands>
+
+dbhelp [database|schema]
+    explore a database schema with gui
+
+dbdoc database
+    generate troff formatted document describing a schema
+
+dbdesign 
+    create and edit Datascope schema files
+
+dbinfer file [file...]
+    build a schema file from a set of ascii example files
+
+
+<subsection Creating and Editing Databases>
+
+dbe [-e] database[.table] [ database[.table] ...]
+    database editor/viewer
+
+dberesp database.table
+    run by dbe to plot response curves from instrument table
+
+db_textedit database.table
+    run by dbe to edit external files 
+
+
+dbset [-clv] database[.table] field from [to]
+    change value of a field throughout a database.  -c asks before changing, -v shows each change
+
+
+dbconvert [-fv] [-s new_schema] old_database new_database[.table]
+    convert database from old to new schema
+
+
+
+dbcp source[.table] destination
+    copy database
+<options>
+-d	descriptor file only
+-i	prompt for permission to overwrite existing tables
+-f	copy external files
+-l	attempt to create local symbolic links for external files
+-o	quietly overwrite existing external files
+-s	copy tables without keeping external file references correct
+-v	verbose
+</options>
+
+
+dbadd input.table output.table expression [expression ...]
+    add rows to a database table using another table as input
+
+dbdelete [-cmsv] database.table [table ...]
+    mark or delete all records in a view
+<options>
+-c	require individual confirmations for each record
+-m	mark records only (no final crunch)
+-s	save a copy of the original file
+-v	verbose
+</options>
+
+dbcrunch [-v] database [table ...]
+    crunch out null records from a database
+
+
+dbsplit input output
+    split out portions of a database
+<options>
+-d	delete selected rows from input db after copying to output db
+-f 	force overwrite of output database
+-k 	keep original tables (renamed)
+-v 	verbose
+-vv	doubly verbose
+</options>
+
+
+dbmerge [-vV] dbin dbout
+    script to merge two databases together
+
+dbconcat_event database1 database2 [ database3 ...] dest
+    combine multiple CSS 3.0 event databases into single new database dest
+
+dbfixids database idname [ idstart ]
+    renumber id links in a database
+
+<subsection Database Operations>
+<commands>
+
+dbsubset [-n name] [-v] database.table expression
+    subset database tables
+
+
+dbsort database.table [key ...]
+    sort database tables
+<options>
+-o	Overwrite the original table  with  the  sorted  table
+-n name	save results into database.name
+-r	Reverse the sense of the sort
+-u	Eliminate rows which are identical in  the  sort  keys
+</options>
+
+
+dbjoin database.table [ :key ...] [database].table] [ :key ...] [database].table2] ...
+    join database tables, using either inference from the schema or explicit keys 
+<options>
+-o	outer join
+-n name	save results into database.name
+-v	verbose
+</options>
+
+dbnojoin [-n name] [-v] database.table [:key ...] table2
+    create view of records from database.table which do not join with table2.
+
+dbtheta [-c expression] [-n name] [-v] database.table table2
+    join a row from database.table to a row from table2 when expression evaluates true.
+
+
+dbsever [-v] [-n name] database.table table
+    remove a table from a joined view
+
+dbunjoin [-f] -o dbout view
+    create a new database dbout using the base table records from the joined view
+
+
+dbselect database.table [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]]
+    print selected fields and expressions from database
+<options>
+-b   Strip blanks from each field in the output.
+-F   separator
+-p   Cause the primary key of the input table to be printed.
+-s   Allow expressions to write to the database using the assignment operator ":=".
+</options>
+
+<subsection Verifying Databases>
+dbcheck [-v] database[.table]
+    scans database files for lines with invalid length
+
+dbverify database[.table]
+    perform some consistency checks on a database
+<options>
+-t	turn off all tests
+-A table[,table..]	uniqueness of alternate keys not required
+-P table[,table..]	uniqueness of primary keys not required
+-c	perform consistency checks
+-C test1, test2	Run only specific named consistency_checks
+-i	check that all referenced foreign ids are present in defining table
+-j	test for correct # of records in a join specified in parameter file
+-k	verify uniqueness of primary and secondary keys
+-l	check that lastid table entries are valid
+-p	perform external program tests specified in parameter file
+-r	check attribute ranges
+-u	complain about unreferenced ids
+-x	check for existence of external files
+-v	verbose
+</options>
+
+dbdiff db1[.table] db2[.table]
+    find differences between two databases
+<options>
+{-a absolute_tolerance |-r relative_tolerance}
+-e	print times as epoch seconds
+-i name	list of names to ignore
+-l {exact|compare|ignore}	(for link fields)
+-w width
+-x {exact|compare|ignore|Program}	(for external files)
+</options>
+
+
+<subsection Miscellaneous>
+<commands>
+deprecated db2perl database [ table table ...]
+    create perl subroutines to read and write database tables
+
+dbnextid database idname
+    get next available id for idname
+
+dbcalc [-ert] database.table [ record# | expression ]
+    interactive command line interface to Datascope expression calculator
+<options>
+-e	echo input to stdout
+-r	print reverse polish notation for the expression
+-t	show the type of each piece of the expression and result
+</options>
+
+dbremark [ -p ] database table field value
+    get/add remark from/to a database (must contain remark table and commid)
+
+deprecated dbtidy database
+    sort css tables and ids into a preferred order
+
+
+correctdt [-m srcmatch] [-t stime] [-v] dbname
+    Corrects times in wfdisc table
+
+dbtc BLANK
+    database time correction routine
+
+dbfixchanids [-q] dbname
+    fix chanid attributes in wfdisc and arrival tables
+
+dbfixtimeres dbname [origin_expr]
+    fix time residuals in the assoc table

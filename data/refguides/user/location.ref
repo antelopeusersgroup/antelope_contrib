@@ -1,0 +1,89 @@
+<chapter>
+Seismic source location
+<commands>
+
+dbloc2 [-r] database
+    interactive hypocenter location
+
+private dbloc_assoc arrival_db assoc_db origin_db [origin_db]
+    associate arrivals with origins in other catalogs
+
+private dbloc_buttons database
+    gui interface for dbloc2
+
+private dbloc_delorids [-k] database [ orid ...]
+    dbloc2 subprogram for deleting origins from database
+
+private dbloc_group input trial
+    group arrivals by time for dbloc
+
+private dbloc_map database.table [orid]
+    draw a map showing location and associated arrivals
+
+private dbloc_setprefor db
+    set preferred origin for an event
+
+private dbloc_verify database orid [orid ...]
+    check temporary database consistency for dbloc2
+
+dbgenloc dbin dbout
+    genloc program used by dbloc2 
+
+dblocsat2 dbin [dbout]
+    locsat program used by dbloc2
+
+dblocgrad dbin [dbout]
+    locate local earthquakes with 1D linear gradient model
+
+tabcalc 
+    travel time calculator for 1-D, continuous velocity models
+
+hypotab 
+    companion program to tabcalc travel time calculator
+
+mktt [-p phases] model
+    make tau-p and locsat travel time tables
+
+pltt phases depth d0 dd nd tmin tmax vred [table]
+    plot travel times from a tau-p travel time table
+
+prtt phases ndp dp0 ddp ndel del0 ddel [table]
+    print travel times from a tau-p travel time table
+
+remodl model_name
+    create tau-p travel time tables
+
+setbrn 
+    create tau-p travel time tables
+
+taup2locsat model
+    create locsat style travel time tables from tau-p model table
+<options>
+-i   ask before saving output files
+-h header
+-l dir
+-p phases
+-t tauprequest
+</options>
+
+tp2ls phases header [table]
+    make a locsat style travel time table file from a tau-p travel time table
+
+
+ptt2stt 
+    Make a P and S travel time table from ttcalc output
+
+relocate dbin dbout [-pf pffile] [-useold] [-sift expression]
+    relocate all events in a database using genloc
+
+orbgenloc orb [-S statefile] [-pf pffile]
+    orb interface to genloc single event location code
+
+dbml [-p pfname] db orid
+    database Richter magnitude computation
+
+taup_convert phase [-d0 x -ddelta x -z0 x -dz x -ndelta n -nz n]
+    uses taup library to produce travel time tables that can be used by genloc location programs
+
+sgnloc inpf outpf
+    command line interface to single event location code

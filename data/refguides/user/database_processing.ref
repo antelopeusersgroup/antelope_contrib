@@ -1,0 +1,48 @@
+<chapter>
+Database Processing
+<commands>
+
+dbprelim_locs [-v] parameter_file [start_time [end_time]]
+    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from a database
+
+dbdetect [-v] [-arrivals] [-plot twin] dbin dbout pf net tstart tend
+    run multifrequency STA/LTA detector on channels specified in pf from database db, writing detections and optionally arrivals into dbout. 
+
+dbarrparams db
+    make arrival parameter measurements amplitude, period, azimuth, signal to noise ration, rectilinearity and first motion
+<options>
+-pol	tlead_pol tlag_pol
+-ap	tmin_ap tmax_ap
+-fm	tmin_fm tmax_fm
+-snr	tlead_snr tlag_snr
+-filter	type lco hco lord hord tpad
+</options>
+
+dbtrigger [-v] [-out dbout] db pf
+    trigger location program based on time correlation of detections from db and rules in pf
+
+dbgrassoc db pf
+    spatial grid search based associator/locator: reads output from dbtrigger, generating new origin, assoc and arrival records in the output database db 
+
+ttgrid pfname db refsta time outfile
+    compute a travel time grid file for use by orbassoc and dbgrassoc
+
+dbassoc dbin dbout dbcat timeres_P timeres_S
+    associate origins from dbcat with arrivals in dbin, write origin, assoc and optionally predicted arrivals into dbout; timeres_P and timeres_S specify allowable travel time residuals
+<options>
+-rules r	any combination of P,S,PS,PS+,first,arids=all,best,all
+-pred
+-arid arid1 ... | -orid orid1 ... | -evid evid1 ...
+</options>
+
+dbassoc_arrival [-p delta_p] [-s delta_s] dbout dbin
+    search for arrivals from dbout which match origins in dbin, copying matching origins into dbout and creating assoc records.
+
+assoc_rayleigh [-v] dbout dbin
+    associate rayleigh wave picks from dbout to origins from dbin, copying matching origins into dbout and creating assoc records.
+
+dbmag db orid author net
+    compute mb magnitude for origin orid (or "all") in db, saving result in netmag and origin with specified author field
+
+dbmapevents db {sta | orid | lat:lon} range [-c]  [auth1 sym1 hue1 lit1 sat1 ...]
+    make map of events from database db centered on sta, origin orid, or lat:lon with a radius of range degrees.  -c starts interactive mode, ^C kills window.

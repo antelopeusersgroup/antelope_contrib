@@ -1,0 +1,55 @@
+<library>
+Orb Packet Stuffing and Unstuffing
+Pkt
+stock posix4 nsl socket m
+$(PKTLIBS)
+Pkt.h
+transforming between a c-struct and the network encoded form of an orb packet
+
+<cdeclarations>
+
+Packet *newPkt ( void )
+    Create a new, empty, initialized Packet structure
+
+PktChannel *newPktChannel ( void )
+    Create a new, empty, initialized PktChannel structure
+
+
+void freePkt ( Packet *pkt )
+    free memory associated with a Packet structure
+
+void freePktChannel ( PktChannel *achan )
+    free memory associated with a PktChannel structure
+
+
+void clrPkt ( Packet *pkt )
+    reset all parameters in a Packet structure
+
+void clrPktChannel ( PktChannel *achan )
+    reset all parameters in a PktChannel structure
+
+
+int stuffPkt ( Packet *pkt, char *srcname, double *time, char **packet, int *nbytes, int *packets )
+    create orb packet from Packet structure
+
+int unstuffPkt ( char *srcname, double time, char *packet, int nbytes, Packet **pkt )
+    separate orb packet into Packet structure
+
+void showPkt ( int pktid, char *srcname, double pkttime, char *packet, int nbytes, FILE *file, int mode )
+    display an orb packet for debugging purposes
+
+
+void join_srcname ( Srcname *parts, char *srcname )
+    create orb srcname
+
+void split_srcname ( char *srcname, Srcname *parts )
+    tear apart orb srcname
+
+
+PacketType *header2pkttype ( short hdrcode, short bodycode )
+    return PacketType corresponding to hdrcode and bodycode.  returns 0
+    if not found.  This 
+
+PacketType *suffix2pkttype ( char *suffix )
+    find packet type in list
+

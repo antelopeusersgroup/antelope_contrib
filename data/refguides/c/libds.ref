@@ -1,0 +1,195 @@
+<library>
+Database Operations
+ds
+tttaup response $(STOCKLIBS)
+DBLIBS
+db.h
+implements the basic interface to the Datascope relational database system
+
+<structures>
+typedef struct Dbptr { 
+int database ;
+int table ; 
+int field ; 
+int record ; 
+} Dbptr ;
+
+<subsection>
+Opening/Closing a database
+<cdeclarations>
+
+int dbopen ( char *path, char *permissions, Dbptr *db )
+    open the specified database
+
+int dbopen_database ( char *path, char *permissions, Dbptr *db )
+    open the specified database or table pathname
+
+int dbopen_table ( char *path, char *permissions, Dbptr *db )
+    open the specified database, table pathname, or table
+
+Dbptr dblookup ( Dbptr db, char *database_name, char *table_name, char *field_name, char *record_name )
+    lookup database pointer from ascii names
+
+int dbclose ( Dbptr db )
+    Close a database
+
+<subsection>
+Adding and retrieving values
+
+int dbadd ( Dbptr db, char *record )
+    add a record to a table
+
+int dbadd_remark ( Dbptr db, char *remark )
+    add a remark to CSS tables
+
+int dbaddnull ( Dbptr db )
+    add a null record to a table
+
+int dbaddv ( Dbptr db, char *table_name, char *field_name, value1, ...)
+    write values to a new row in a database table
+
+
+int dbget ( Dbptr db, char *s )
+    get ascii tables, records, or fields from database
+
+int dbgetv ( Dbptr db, char *table_name, char *field_name, &value1, ...)
+    read values from fields in a database table
+
+int dbget_remark ( Dbptr db, char **remark )
+    get a remark from CSS tables
+
+
+int dbput ( Dbptr db, char *s )
+    put ascii tables, records, or fields into database
+
+int dbputv ( Dbptr db, char *table_name, char *field_name, value1, ...)
+    write values to fields in a database table
+
+int dbselect ( Dbptr db, Tbl *expressions, FILE *file )
+    print selected values from a view
+
+<subsection>
+Creating Views
+
+Dbptr dbsubset ( Dbptr db, char *s, char *name )
+    create a subset view
+
+Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **pattern1, Tbl **pattern2, int outer, Tbl **nojoin, char *name )
+    create a natural join of two database tables
+
+Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1p, Tbl **keys2p, char *view_name )
+    return records of db1 which do not join with db2
+
+int dbmatches ( Dbptr dbk, Dbptr dbt, Tbl **kpatternp, Tbl **tpatternp, Hook **hookp, Tbl **tblp )
+    find matching records in second table
+
+Dbptr dbtheta ( Dbptr db1, Dbptr db2, char *ex_str, int outer, char *name )
+    Create a theta join of two database tables
+
+Dbptr dbsever ( Dbptr db, char *tablename, char *name )
+    remove a table from a joined view
+
+Dbptr dbsort ( Dbptr db, Tbl *tbl, int flag, char *name )
+    create a sorted view
+
+Dbptr dbgroup ( Dbptr db, Tbl *groupfields, char *name, int type )
+    group a sorted table
+
+int dbprocess ( Dbptr db, Tbl *list, Dbptr (*unknown)() )
+    construct a view as a series of standard operations
+
+Dbptr dblist2subset ( Dbptr db, Tbl *list )
+    convert Tbl list of records to subset
+
+int dbread_view ( FILE *file, Dbptr *dbr, char *name )
+    read a database view from a file
+
+int dbwrite_view ( Dbptr db, FILE *file )
+    write a database view to a file
+
+int dbsave_view ( Dbptr db )
+    save a database view
+
+int dbunjoin ( Dbptr db, char *database_name, int rewrite )
+    create new tables from a joined table
+
+int dbuntangle ( Dbptr db, Arr **table_records )
+    return lists of constituent records of views
+
+int dbfree ( Dbptr db )
+    free space taken by a database view
+
+<subsection>
+Manipulating and Saving Views
+
+void dbget_range ( Dbptr db, int *s, int *e )
+    extract range of record numbers from database pointer
+
+int dbcopy ( Dbptr dbin, Dbptr dbout, Arr *expressions )
+    copy records from one table to another
+
+private int dbupdate_index ( Dbindex *dbindex )
+    Force your copy of database indices to be updated
+
+<subsection>
+Removing and deleting rows
+
+int dbmark ( Dbptr db )
+    mark rows for deletion (set all fields to NULL)
+
+int dbdelete ( Dbptr db )
+    delete rows from database tables
+
+int dbcrunch ( Dbptr db )
+    remove null rows from database
+
+int dbtruncate ( Dbptr db, int nrecords )
+    truncate a database table to specified number of records
+
+int dbdestroy ( Dbptr db )
+    completely eliminate every table in a database
+
+<subsection>
+Evaluating Database Expressions
+
+int dbex_compile ( Dbptr db, char *s, Expression **expression, int type )
+    compile a database expression
+
+int dbex_eval ( Dbptr db, Expression *expression, int setflag, Dbvalue *result )
+    Evaluate a database expression
+
+int dbex_free ( Expression *expression )
+    Free a database expression
+
+int dbex_evalstr ( Dbptr db, char *s, int type, void *value )
+    Compile and evaluate a database expression
+
+<subsection>
+External files
+
+int dbextfile ( Dbptr db, char *tablename, char *filename )
+    compose a filename from a database record
+
+int dbfilename ( Dbptr db, char *filename )
+    compose a filename from a database record
+
+<subsection>
+Managing Ancillary Information
+
+int dbquery ( Dbptr db, int code, Dbvalue *value )
+    get ancillary information about a database
+
+Tbl * dbtables ( Dbptr db, char *fieldname )
+    return a list of tables which use a field
+
+int dbcompile ( Dbptr db, char *s )
+    add attributes and/or relations to a schema
+
+Dbptr dbinvalid ()
+    returns an invalid database pointer
+
+int dbnextid ( Dbptr db, char *name )
+    generate a unique id from the lastid table
+
+int dbset ( Dbptr db, int code, Dbvalue value )
+    set certain parameters in the database library

@@ -1,0 +1,81 @@
+<library>
+orb connections
+orb
+orb $(TRLIBS)
+$(ORBLIBS)
+orb.h
+routines which implement the orb protocol
+
+<cdeclarations>
+
+int orbopen ( char *name, char *perm )
+    Open an orb connection
+
+int orbclose ( int orb )
+    Close an orb connection
+
+
+int orbreject ( int orb, char *regex )
+    reject a subset of packet streams from an orb
+
+int orbselect ( int orb, char *regex )
+    select a subset of packet streams from an orb
+
+
+int orbafter ( int orb, double time )
+    set the read position to be after a specified time
+
+int orbseek ( int orb, int which )
+    set read position for an orb connection
+
+int orbresurrect ( int orb, int *last_pktid, double *last_pkttime )
+    attempts to position orbserver to previously saved position
+
+
+
+<subsection>
+Reading
+
+int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **packet, int *nbytes, int *bufsize )
+    get the packet which from orb, returning pktid, srcname, time, and nbytes of packet data
+
+int orbreap ( int orb, int *pktid, char *srcname, double *time, char **packet, int *nbytes, int *bufsize )
+    read next packet from orb, returning pktid, srcname, time, and nbytes of packet data
+
+int orbreap_nd ( int orb, int *pktid, char *srcname, double *time, )
+    read next packet from orb, returning pktid, srcname, time, and nbytes of packet data and returning ORB_INCOMPLETE if no packet is available
+
+<subsection>
+Writing
+
+int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
+    write the nbytes of packet data onto orb with specified srcname and time
+
+<subsection>
+Status Information
+
+int orbtell ( int orb )
+    return current pktid position for orb 
+
+int orbping ( int orb, int *version )
+    verify active connection to orb, returning an orb version number
+
+int orbclients ( int orb, double *when, Orbclient **client, int *nclient )
+    get list of clients of orb
+
+int orbsources ( int orb, double *when, Orbsrc **source, int *nsource )
+    get list of srcnames available from orb
+
+int orbstat ( int orb, Orbstat **orbstat )
+    get some status information from orb
+
+
+private int orbset_logging ( int orb, int level )
+    set the level of logging for an orbserver
+
+
+deprecated int orbpkt2pf ( char *packet, int packet_size, Pf **pf )
+    extracts parameter file from an orb packet
+
+deprecated int pf2orbpkt ( Pf *pf, char *name, int orb )
+    Places a parameter file on an orbserver

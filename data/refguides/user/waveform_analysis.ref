@@ -1,0 +1,238 @@
+<chapter Waveforms>
+
+<subsection Waveform manipulation>
+<commands>
+
+trexcerpt dbin dbout [start {duration|end}]
+    extract waveform segments from a database
+<options>
+-A	autodrm style (ascii) waveform files 
+-o datatype	specify output waveform datatype (default = sd)
+-a	append to existing waveform files if present
+-w pattern	specify naming convention for output waveforms
+
+-m {time|convert|event|arrival|explicit}	specify mode (default = time)
+
+-g	eliminate 'marked' data gaps
+
+-c expr	sta/chan/instrument subset
+-s expr	evid/orid/arid subset
+-j expr	origin/site subset
+
+-W db	specify database from which waveforms come
+
+-d	write complete database with site, sensor, sitechan, instrument
+-e	include correct subset of event, origin, origerr, arrival, and assoc in the output database
+
+-v	more verbose
+</options>
+
+deprecated dbsteimc input-database [output-database]
+    compress waveform data using steim compression (see also trexcerpt)
+<options>
+-v Report compression statistics for each  waveform
+-l {1|2} Compression level (default = 2)
+-L location-code
+-n net
+-o   Overwrite the records in the wfdisc table
+-r val Replacement value for data gaps
+-p pfname
+-w wfname
+-s (single) output-file
+</options>
+
+deprecated dbwfexcerpt dbin[.table] dbout
+    excerpt waveform data by event or origin
+<options>
+-v verbose
+-event
+-origin
+-input
+-sift expr
+-begin expr
+-end expr
+-pre t
+-sfactor f
+-tolerance value
+</options>
+
+event_archive dbin archive_db
+    make event archive database
+<options>
+-v   verbose
+-V   extremely verbose
+-p   name of parameter file to use
+-t   name of temporary database to use
+-s   start time of events to process from dbin
+-e   end time of events to process from dbin
+</options>
+
+trsample database[.table] [time]
+    print a few samples from waveforms in a database
+<options>
+-c   apply calib to the samples
+-e   read data from each row in the table
+-o   write samples one to a line
+-[i|t|T]  show integer, epoch time, or readable time index for each sample
+-n npts	#points
+-s expr	subset input according to expr
+</options>
+
+trsignal database
+    create wfdisc records with test signal data
+<options>
+-v   Be more verbose
+-w pattern	specify naming convention for output waveforms
+-d datatype	specify output datatype (default = "as")
+-a amplitude
+-b timebase	generating function base time
+-c channel	specify chan code
+-f f0		generating function frequency in hz
+-g calib	specify calib
+-k	keep output as floating point, not integers
+-n nsec	length of output waveform
+-p phase	generating function phase
+-r samprate	sample rate
+-s station	sta code
+-t time	start time for output
+-T type	sin, cos, sqr, tri, saw, dlt, ran, stp, pkt, dif
+-{A|D|V}	segtype
+-y yaw	constant signal drift
+</options>
+
+deprecated extrd dbname|wfd_dir|"wfd_fnames" stime etime
+    extract specified segment of the CSS data
+<options>
+-c chan
+-n network
+-o outdir
+-s sta
+</options>
+
+dbdec dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
+    Decimate waveform data
+<options>
+-sift expr	
+-c calper
+-wfdir wfdir
+-f format
+</options>
+
+<subsection Analysis>
+dbap -dbin dbin -recipe recipe1 [recipe2 [...]]
+    database array processing program
+<options>
+-script script_file
+-dbout dbout
+-v verbose
+-ts tstart_time
+-te end_time
+-arid arid
+-arid_t0 arid_t0
+-arid_tw arid_tw
+-chan chan
+-filter filter
+-samprate samprate
+-azimuth azimuth
+-slow slow
+-name1 value1 [-name2 value2] [...]
+</options>
+
+dbwfmeas {detection|arrival|time staexpr chanexpr tstart twin} dbname
+    make waveform measurements from a database
+<options>
+-p parameter_file
+-net net
+-v
+-outrecno
+-exitonerror
+</options>
+
+dbnoise dbname
+    make power spectral density plots of noise
+
+displayspec dbname
+    display power spectral density results
+
+<subsection Waveform display>
+<commands>
+
+dbplotcov database sta:chan tstart tend [-h[scale]]
+    Make a plot and listing of waveform coverage from a database
+
+dbrsec db
+    make record section plot of waveforms
+<options>
+-sc sta:chan
+-orid orid:chan
+-top top
+-bot bot
+-tstart tstart
+-twin twin
+-f filter
+-sift sift
+-clip {on|off}
+-vred vred
+-gain gain
+-amp amp
+</options>
+
+dbspgram dbname sta chan tstart twin
+    compute time varying spectragram
+<options>
+-fmin fmin
+-fmax fmax
+-units {D|V|A}
+-thalf thalf
+-noic
+-ampdecades ampdecades
+-ps psfile
+</options>
+
+
+dbpick dbname
+    waveform review, pick arrivals, and edit a CSS relational database
+<options>
+-sc sta:chan	specify station/channel "glob"; eg "*:*Z"
+-ts tstart	specify start time
+-te tend	specify end time
+-tw twin	specify window time width 
+-noexist
+-nostarttalk	suppress startup usage chatter
+-winfile wfile
+-appname name	specify tksend application name
+-gaps {segment|zero|interp|none}	
+-comout comfile
+-geom WxH+X+Y
+</options>
+
+trdisp [-r] [-s subset] [-w hours] database[.table] [start [range]]
+    display waveform data and arrivals from database or view 
+
+
+dbheli dbname sta chan  tstart  twinline  nlines  scale
+    Make helicorder type plot of waveform
+<options>
+-f filter
+-o dborigin
+-ps psfile
+</options>
+
+<subsection Waveform Verification>
+
+dbversac database
+    compare sac file headers with CSS database
+
+dbchkwf [ -v ] database
+    file consistency check for wfdisc
+
+dbcmpwf database.table1 record1 database.table2 record2
+dbcmpwf database database2
+    compare waveform files from two database records or tables.
+
+dbversdwf [-s subset] [-dvw] database
+    check SEED format waveform files for consistency with wfdisc
+
+dbcheckseed [-s] [-t tolerance] dbname
+    check PASSCAL generated wfdisc table for errors
+

@@ -1,0 +1,39 @@
+<library>
+specialized packet processing
+brttpkt
+$(ORBLIBS)
+none
+brttpkt.h
+utility  for  buffering  individual channel  waveform  samples  into contiguous traces
+
+<subsection>
+Channel Trace Buffers
+
+Chantracebuf *chantracebuf_new ( double tstart, double tend, double latency, int apply_calib )
+    create a new channel trace buffer object
+
+int chantracebuf_add ( Chantracebuf *cp, PktChannel *pktchan )
+    add new data packets to trace-buffer object
+
+int chantracebuf_free ( Chantracebuf *cp )
+    free a channel trace buffer object
+
+
+Chantraceproc chantraceproc_new ( double latency )
+    create a new channel trace process object
+
+int chantraceproc_addchan ( Chantraceproc *cp, char *netstachan, int (*callback)(), void *private, double tstart, double tend, double latency, int apply_calib )
+    specify a channel to be processed by a process object
+
+int chantraceproc_free ( Chantraceproc *cp )
+    free a channel trace process object
+
+
+int chantraceproc_process ( Chantraceproc *cp, int orb )
+    process data with a channel trace process object
+
+
+int chantracebuf_filter ( void **fil, int *type, Chantracebuf *icp, Chantracebuf **ocp, char *filspec, int filinit )
+    apply a filter to a trace-buffer object
+
+

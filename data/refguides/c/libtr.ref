@@ -1,0 +1,314 @@
+<library>
+Waveform Manipulation
+tr
+$(DBLIBS)
+TRLIBS
+tr.h
+implements routines for reading and writing waveforms from a database, and
+performing some standard operations on them.  
+
+<subsection>
+Trace objects
+
+<cdeclarations>
+Dbptr trnew ( char *tr_path, char *schema_name )
+    create a new trace database
+
+int trfree ( Dbptr tr )
+    free up memory and clear trace object tables
+
+int trdestroy ( Dbptr *trp )
+    close a trace database and free resources
+
+int trtruncate ( Dbptr tr, int leave )
+    truncate a tr database table
+
+<subsection>
+Reading and Writing waveforms
+
+<cdeclarations>
+
+int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *fill_private )
+    read trace data from file into memory
+
+void trgetwf_error ( Dbptr db, int code )
+    add error message to log for trgetwf errors
+
+
+int trload_css ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
+    load waveform data from CSS database into trace table
+
+int trload_cssgrp ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
+    load waveform data between time_str and endtime_str from database view db into trace table trp
+
+
+deprecated int trputwf ( Dbptr db, float *data )
+    save waveform data
+
+int trsave_wf ( Dbptr tr, Dbptr db, char *datatype, char *wfname, int flags )
+    save waveform data from tr to database creating waveforms of specified datatype in data files constructed by trwfname(3) using the pattern wfname.  The trAPPEND and trOVERWRITE bits in flag cause waveform data to either append to existing files or overwrite existing files.
+
+<subsection>
+Network, Aux and Loc code Remapping
+<body>
+Autodrm and SEED introduce extra keys to uniquely identify station and channel.  These extra keys must be mapped into sta and chan to work with the CSS3.0 schema.  These routines implement that mapping.
+
+<cdeclarations>
+
+int map_autodrm_netsta ( char *anet, char *fsta, char *sta )
+    map an autodrm net anet and station code fsta to a CSS3.0 sta code
+
+int autodrm_net ( char *sta, char *anet, char *fsta )
+    return autodrm network code anet and station code fsta corresponding to CSS3.0 sta code
+
+
+int map_autodrm_chanaux ( char *sta, char *fchan, char *aux, char *chan )
+    map an autodrm channel fchan and aux code into a CSS3.0 chan code for station sta
+
+int autodrm_aux ( char *sta, char *chan, char *fchan, char *aux )
+    return autodrm channel code fchan and aux code corresponding to CSS3.0 sta/chan 
+
+
+int map_seed_netsta ( char *snet, char *fsta, char *sta )
+    map a SEED net and station code into a CSS3.0 sta code
+
+int seed_net ( char *sta, char *snet, char *fsta )
+    return seed network code snet and station code fsta corresponding to CSS3.0 sta code
+
+
+int map_seed_chanloc ( char *sta, char *fchan, char *loc, char *chan )
+    map a SEED channel fchan and loc code into a CSS3.0 chan code for station sta
+
+int seed_loc ( char *sta, char *chan, char *fchan, char *loc )
+    return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan 
+
+<subsection>
+Generating test data
+
+int trsignal_argv ( Dbptr tr, int argc, char **argv )
+    generate test signal data in a trace table
+
+int trsignal ( Dbptr tr, char *params )
+    generate test signal data in a trace table; params is split into an argc/argv list
+
+
+void mksignal ( char *type, float *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
+    generate a signal of a specified type: type may be sin, cos, sqr, tri, saw, dlt, ran, stp, pkt or dif
+
+void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
+    generate a signal of a specified type
+
+<subsection>
+SEED
+
+private int ascii2int ( int *result, char *s, int n )
+    SEED reading/writing aid
+
+private int buf2int ( int *dst, char *src, int n )
+    SEED reading/writing aid
+
+private int fill_S1000 ( S1000 *blk, char *buffer )
+    SEED reading/writing aid
+
+private int fill_SDH ( SDH *blk, char *buffer )
+    SEED reading/writing aid
+
+private int fill_seed_header ( Steim *conf, int n0, int n1 )
+    SEED reading/writing aid
+
+int get_seed_data_record ( Steim *conf )
+    attempt to read a complete SEED record from miniseed volume
+
+private int int2buf ( char *dst, int value, int n )
+    SEED reading/writing aid
+
+int parse_seed_data_header ( Steim *conf )
+    read seed data block and parse the standard header and any s1000 or s100 blockettes present
+
+int parse_SDH ( char *buffer, SDH *blk )
+    parse SEED data blockette header into SDH c struct
+
+int parse_S100 ( char *buffer, S100 *blk )
+    parse 100 blockette into S100 c struct
+
+int parse_S1000 ( char *buffer, S1000 *blk )
+    parse 1000 blockette into S1000 c struct
+
+
+private int samprate2seed ( double samprate, int *factor, int *multiplier )
+    SEED reading/writing aid
+
+int seed2samprate ( int factor, int multiplier, double *samprate )
+    convert the factor/multiplier from a SEED data block header into a low precision sample rate samprate
+
+<subsection>
+Steim Compression
+
+<cdeclarations>
+Steim *initsteim ( Wfdisc *wfdisc )
+    allocate and initialize a structure used to buffer data and control compression/decompression
+
+int csteim ( Steim *conf, int (*save_record)(), void *data, int npts )
+    compress waveform data using Steim algorithm, calling save_record when a complete data block is available. When called with npts=0, flush out any buffered data.
+
+int usteim ( Steim *conf, char *record, void *data, int npts )
+    uncompress waveform data from record
+
+void *freesteim ( Steim *conf )
+    free the Steim structure
+
+
+int psteim ( FILE *file, char *record, int record_size )
+    print out Steim data block record on output file
+
+
+<subsection>
+Input/Output
+
+<cdeclarations>
+private int itr2ext ( int *in, int nsamp, Wftype *type, void **out, int *sZout, int *outbytes )
+    convert from ints to external representation
+
+private int tr2ext ( Trsample *in, int nsamp, Wftype *type, void **out, int *sZout, int *outbytes )
+    convert from floats to external representation
+
+private int tr2gpl ( Dbptr tr, Dbptr *tr_stachan, Tbl *gpl_tbl, double *t0, double *t1 )
+    convert from trace table to gpl trace list
+
+private int trgetSEEDwf ( char *seed, int size, double samprate, int nsamp, double time0, int samp0, int nrequest, float *dest )
+    read samples from a SEED volume
+
+private void gaps2tr ( Trsample *data, int nsamp, char *datatype )
+    replace marked gaps with t4 gap value
+
+private void tr2gaps ( Trsample *data, int nsamp, char *datatype )
+    replace t4 gap value with fill value for datatype
+
+void trfill_gap ( Trsample *data, int nsamp )
+    fills a data segment with th 'standard' "t4" gap value
+
+<subsection>
+Writing new waveforms
+
+<cdeclarations>
+
+int trwfnew ( Wfdisc *wfdisc )
+    Create a new wfdisc record
+
+int trwfhdr ( Wfdisc *wfdisc, void *data, int nsamp )
+    create any necessary file header (eg, a SAC header)
+
+int trwfdata ( Wfdisc *wfdisc, Trsample *data, int nsamp )
+    place data into waveform file associated with wfdisc
+
+int trwf2disc ( Wfdisc *wfdisc, char *data, int nbytes, int nsamp )
+    attempts to write the specified data to disc
+
+int trwftail ( Wfdisc *wfdisc, void *data, int nsamp )
+    create any necessary file trailer (eg, an AutoDRM checksum)
+
+int trwfclose ( Wfdisc *wfdisc )
+    close a wfdisc record
+
+
+<subsection>
+Filters
+
+int trrotate ( Dbptr tr, double phi, double theta, char **newchan )
+    rotate three component data
+
+int rotate_to_standard ( Dbptr tr, char **newchan )
+    rotate three component data to standard orientation
+
+
+int trapply ( Dbptr tr, int (*filter) (), void *private )
+    apply filter routine to each waveform segment
+
+int trapply_calib ( Dbptr tr )
+    multiply waveform data in trace object by calib value
+
+
+int trdemean ( Dbptr tr )
+    subtract mean (DC) value from trace
+
+int trdemean_seg ( Dbptr tr )
+    subtract mean (DC) value from trace segment
+
+
+int trderiv ( Dbptr tr )
+    compute derivative of trace data
+
+int trintegral ( Dbptr tr )
+    integrate waveform segments
+
+<subsection>
+Utilities
+
+int trclip ( double time, double samprate, int nsamp, double from, double until, int *pt0, int *npts, double *t0, double *t1 )
+    find sample range corresponding to time range
+
+
+int trsplit ( Dbptr tr, int (*fill) (), int (*findbad) () )
+    break up waveform records, eliminating marked missing data
+
+int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
+    splice together any data segments which fit together, eliminating overlapping portions
+
+int trglue ( Dbptr tr, int ns, int ne, double tolerance, int (*fill)(), int (*resample)() )
+    unconditionally splice together a specific set of traces from a trace table; gaps are filled with the missing data value
+
+
+double traligned ( double atime, double std_time, double std_samprate )
+    returns a time properly aligned with a specific time and sample rate
+
+
+int trwfname ( Dbptr db, char *pattern, char **path )
+    generate waveform file name, according to specified pattern, creating any non-existent directories.
+
+
+deprecated int trcontiguous ( Trseg *prv, Trseg *cur, double tolerance )
+    test for contiguousness of waveform segments
+
+
+deprecated int trsamerate ( Trseg *prv, Trseg *cur, double tolerance )
+    test for sample rate match of waveform segments
+
+deprecated int trsameticks ( Trseg *prv, Trseg *cur, double tolerance )
+    test for match of sampling 
+
+int wfchanid ( Dbptr *db )
+    lookup chanid for a wfdisc record in the sensor or sitechan table
+
+
+private int trdatacode ( char *datatype )
+    get index of waveform type corresponding to two-character datatype
+
+private char *trdatatype ( int datacode )
+    get datatype from waveform type
+
+
+Wftype *trwflist ( int i )
+    Return the i'th waveform type
+
+Wftype *trwftype ( char *datatype )
+    Get waveform type structure for specified type
+
+
+<subsection>
+Convenience Macros
+
+double ENDTIME ( time, samprate, nsamp )
+    return endtime based on input parameters
+
+int NSAMP ( time, samprate, endtime )
+    return number of samples based on input parameters
+
+double SAMP2TIME ( time0, samprate, n )
+    return a sample time given a sample index
+
+double SAMPRATE ( time, nsamp, endtime )
+    return samprate based on input parameters
+
+int TIME2SAMP ( time0, samprate, time1 )
+    return a sample index given a time
+

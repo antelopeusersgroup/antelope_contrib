@@ -1,0 +1,44 @@
+<library>
+Tau-p Travel Times
+tttaup
+$(STOCKLIBS)
+none
+tttaup.h
+provides c interface to Kennet/Buland tau-p travel time calculator
+
+<cdeclarations>
+
+
+int tttaup ( char *model, char *phase_code, int mode, TTGeometry *geometry, Tbl **timesp, Hook **hookp )
+    tt interface to tau-p travel time library
+
+
+int arr_slowness ( double delta, double depth, char ***phases, double **slowness )
+    returns slowness for all the calculated phases
+
+int arrtimes ( double delta, double depth, char ***phases, double **times )
+    Return all calculated phases
+
+
+double phasetime ( char *phase, double delta, double depth )
+    Return the first arrival time for the specified phase
+
+double phase_slowness ( char *phase, double delta, double depth )
+    returns the slowness for a specified phase
+
+
+double pphasetime ( double delta, double depth )
+    Return the first P arrival time
+
+double pphase_slowness ( double delta, double depth )
+    returns the slowness at the first P arrival
+
+
+double sphasetime ( double delta, double depth )
+    Return the first S arrival time
+
+double sphase_slowness ( double delta, double depth )
+    returns the slowness for the first S arrival
+
+
+
