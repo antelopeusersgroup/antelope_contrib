@@ -330,7 +330,7 @@ sub hypocenter_vitals {
 
 	if( $State{use_qgrids} ) {
 		@dbqgrid = dbinvalid();
-		@dbqgrid = dblookup( @dbprefor, "", "qgrid", "orid", "$prefor" );
+		@dbqgrid = dblookup( @db, "", "qgrid", "orid", "$orid" );
 		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
 
 			$qgrid_units = dbgetv( @dbqgrid, "units" );
