@@ -255,7 +255,7 @@ proc start_archive { orb match } {
     set start 0
     set name "par2db"
  
-    set pid [ exec /opt/antelope/dev/bin/check_pid $name ]                        
+    set pid [ exec $env(ANTELOPE)/bin/check_pid $name ]                        
     echo $pid
     set onepid [lindex $pid 0]
  
@@ -327,7 +327,7 @@ proc stop_archive { } {
 
      set name "par2db"
  
-     set pid [ exec /opt/antelope/dev/bin/check_pid $name ]                        
+     set pid [ exec $env(ANTELOPE)/bin/check_pid $name ]                        
      echo $pid
      set onepid [lindex $pid 0]
  
