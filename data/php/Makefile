@@ -1,4 +1,3 @@
-
 MYDLIB= Datascope.so
 
 DATADIR= php
