@@ -21,6 +21,21 @@ dbdesign
 dbinfer file [file...]
     build a schema file from a set of ascii example files
 
+dbquery [-isv] [-f fld] db[.tbl] [query ...]
+    query database/schema for parameters like field size
+
+dbsnapshot [options] db [start_time [end_time|period]]
+    create tar snapshot of database (for debugging)
+<options>
+-d d	copy output to dir d rather than tar file
+-e e	related to event evid e
+-f file	name of tar file
+-n m	max records (per table) to include
+-s s	subset expression for stations/channels
+-r	include response files
+-v	more verbose
+-w M	minutes M of data before now
+<options>
 
 <subsection Creating and Editing Databases>
 dbe [-e] db[.table] [ db[.table] ...]
@@ -29,7 +44,7 @@ dbe [-e] db[.table] [ db[.table] ...]
 dberesp db.table
     run by dbe to plot response curves for instrument 
 
-db_extfile_proc -m mode [-u] [-w nmax] dbtable
+db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
     run arbitrary commands on Datascope extfiles
 
 db_textedit db.table
@@ -52,6 +67,7 @@ dbconvert [-fv] [-s new_schema] db dbout[.table]
 dbcp [options] dbin[.table] dbout
     copy database dbin (or dbin.table) to database dbout
 <options>
+-a alt	specify alternate subdir for external file copies
 -d	make descriptor file for dbout which references dbin
 -i	prompt for permission to overwrite existing tables
 -f	copy external files (default changes references)
@@ -159,7 +175,8 @@ dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group
     print selected fields and expressions from input aview
 <options>
 -b	strip blanks from each field in the output.
--F	separator
+-h	add automatic headers to output
+-F sep	separator
 -p	print the primary key
 -s	allow expressions to modify database fields with operator ":=".
 </options>
@@ -191,10 +208,19 @@ dbverify [options] db[.table]
 -r	check attribute ranges
 -u	complain about unreferenced ids
 -x	check for existence of external files
--A t1,t2..	uniqueness of alternate keys not required in specified tables t1, t2, ..
--P t1,t2..	uniqueness of primary keys not required in t1, t2, ..
+-A t1,t2..	alternate keys need not be unique in t1, t2, ..
+-P t1,t2..	primary keys need not be unique in t1, t2, ..
+-I t1,t2..	suppress table checks on t1, t2, ..
+-O t1,t2..	perform table checks only on t1, t2, ..
+-N mx	print maximum of mx failures for some tests
+-S n	sample n records, not entire table
 -v	verbose
 </options>
+
+dbcheck_responses [-t tolerance] [-v] database
+dbcheck_responses [-t tolerance] [-v] -f response-file
+     perform simple checks on response files from instrument and stage 
+    
 
 dbdiff [options] db1[.table] db2[.table]
     find differences between two databases (or specified tables)

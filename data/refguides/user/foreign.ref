@@ -34,14 +34,13 @@ db2ah [options] dbin dbout
 -v	version
 </options>
 
-private db2ew_wave_server [-vV] [-p pfname] dbname
+private db2ew_wave_server [-vV] [-p pf] dbname
     attach to a CSS3.0 database and make the data
     therein accessible via the Earthworm protocols.
 
-db2miniseed [-ivV] [-r record_size] [-l {1|2}] [-n net] db [output]
+db2miniseed [-vV] [-r record_size] [-l {1|2}] [-n net] db [output]
     create miniseed from input database
 <options>
--i	intel order 
 -r size	specify record size (default 4096)
 -l {1|2}	specify steim compression level (default 2)
 -n net	specify default network
@@ -69,7 +68,7 @@ mk_dataless_wfdisc [-v] [-p pf] dbin
 trash_data [-inv] sd 
     truncate SEED volume sd following the station headers, creating a dataless SEED volume
 
-mk_dmc_seed [-vV] [-l lddate_offset] [-r recent_days] [-m email] [-t tape] [-d dir] rt_db
+mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tape] [-d dir] rt_db
     build IRIS DMC files on tape or disk
 
 
@@ -96,13 +95,13 @@ gnis2db gnis_file dbname [State]
 grdinfo2db [-n name] [-t type] gridfile dbname
      add GMT grid-file information to database
 
-isc2db [-c] [-p] [-s start] [-e end] isc_bulletin dbout
+deprecated isc2db [-c] [-p] [-s start] [-e end] isc_bulletin dbout
     read the ISC bulletin from NEIC CD into CSS database dbout
 
-pde2origin pde dbout [-auth author]
+deprecated pde2origin pde dbout [-auth author]
     create origin records in database dbout from input PDE file pde
 
-qed2origin qed dbout
+deprecated qed2origin qed dbout
     create origin records in database dbout from input QED file qed
 
 pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname
@@ -193,7 +192,7 @@ dbsteimu [options] input [new_database]
 -w	wfname
 </options>
 
-fix_miniseed [-iv] [-d foreignkeys] [-{p|P} pf] miniseed ...
+fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed ...
     change the network, station, channel and/or location
     codes in miniseed volumes
 
@@ -216,5 +215,5 @@ sdd [-s] sd
 dsteim [sd]
     verbosely dump miniseed data frames
 
-msdd [-v] miniseed ...
+msdd [-dvx] miniseed ...
     dump miniseed volume

@@ -37,12 +37,12 @@ deprecated dbsteimc [options] dbin [dbout]
 -n net
 -o	Overwrite the records in the wfdisc table
 -r val	Replacement value for data gaps
--p pfname
+-p pf
 -w wfname
 -s outfile
 </options>
 
-dbwfexcerpt [options] dbin[.table] dbout
+deprecated dbwfexcerpt [options] dbin[.table] dbout
     excerpt waveform data by event or origin (deprecated)
 <options>
 -event [expr] | -origin [expr] | -input [expr]
@@ -141,10 +141,10 @@ dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
 -name1 value1 [-name2 value2] [...]
 </options>
 
-dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} dbname
+dbwfmeas [options] {detection|arrival|time staexpr chanexpr tstart twin} db [dbout]
     make waveform measurements from a database
 <options>
--p parameter_file
+-p pf
 -net net
 -v
 -outrecno
@@ -211,7 +211,7 @@ dbpick [options] dbname
 tkdbpick [options] {dbname|-}
     waveform review, pick arrivals, and edit a CSS relational database
 <options>
--pf pfname
+-pf pf
 -sc sta:chan
 -ts_sift tstart_sift
 -te_sift tend_sift 
@@ -267,13 +267,13 @@ dbversac database
 dbchkwf [ -v ] database
     file consistency check for wfdisc
 
-dbcmpwf [-av]  db1[.table] record1 db2[.table] record2
-dbcmpwf [-asv] db1[.table] db2[.table]
-dbcmpwf [-a] -i db1[.table] [db2[.table]]
-dbcmpwf [-t]   db1[.table] db2[.table] time {endtime|range}
+dbcmpwf [-acmv]    db1[.table] record1 db2[.table] record2
+dbcmpwf [-acmsv]   db1[.table] db2[.table]
+dbcmpwf [-acmv] -i db1[.table] [db2[.table]]
+dbcmpwf [-cmtv]    db1[.table] db2[.table] time {endtime|range}
     compare waveform files from two database records or tables.
 
-dbversdwf [-s subset] [-dvwx] database
+dbversdwf [-s subset] [-T maxtdelta] [-dftuvwxX] database
     check SEED format waveform files for consistency with wfdisc
 
 dbcheckseed [-s] [-t tolerance] dbname

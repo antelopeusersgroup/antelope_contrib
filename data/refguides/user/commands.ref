@@ -15,7 +15,7 @@ template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
 private check_antelope_installation
     spot check for proper Antelope installation
 
-antelope_update [-ilntv] [-p proxy] [-r id] [url]
+antelope_update [-ilntv] [-m email] [-p proxy] [-r id] [url]
     update local antelope installation from BRTT patches 
 
 check_license [-v] [license_filename]
@@ -100,8 +100,10 @@ pfcompare [options] pf
 -u	show unique items
 </options>
 
-pfdiff [-o newpf] pf1 [pf2]
-    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified). -o interactively selects parameters from pf1 and pf2 to construct new parameter file newpf
+pfdiff [-1t] [-o newpf] pf1 [pf2]
+    compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is not specified)
+    -o interactively selects parameters from pf1 and pf2 to construct new parameter 
+    file newpf. -t runs tkdiff, -1 limits the depth of the recursive comparison.
 
 pfecho [options] name [ param ...]
     print out parameters from parameter files
@@ -110,6 +112,7 @@ pfecho [options] name [ param ...]
 -q	don't echo the key
 -w	show all pf files read
 -W	show all pf filenames examined (some may not exist)
+-x	expand all references inside a parameter file
 </options>
 
 pfwhich pf 
@@ -236,10 +239,11 @@ Different Modes
 -W	show what libraries require the named routine.
 </options>
 
+compile [options]
+    used by BRTT to compile with optional optimization on different architectures
 
-
-deposit [-r] file dest
-    installs file in directory dest with appropriate permisssions; with -r option, installs file as the file dest.
+deposit [-rx] file dir
+    installs file in directory dir with appropriate permisssions; -r installs file with new name dest; -x makes installed file executable
 
 produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix

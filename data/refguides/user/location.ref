@@ -29,7 +29,7 @@ private dbloc_setprefor db
 private dbloc_verify database orid [orid ...]
     check temporary database consistency for dbloc2
 
-dbgenloc dbin dbout
+dbgenloc [-p pf] dbin dbout
     genloc program used by dbloc2
 
 dblocsat2 dbin [dbout]
@@ -76,7 +76,7 @@ dbml [options] db [orid]
     database Richter magnitude computation
 <options>
 -v
--p pfname
+-p pf
 -use_if_not_associated
 -use_if_not_defining
 -make_magtables
@@ -88,10 +88,10 @@ dbproject_covariance [-v] [-c conf] dbname
     sdepth, stime, strike, and conf values, based on the covariance
     matrix from the origerr table
 
-relocate dbin dbout [-pf pffile] [-useold] [-sift expression]
+relocate dbin dbout [-pf pf] [-useold] [-sift expression]
     relocate all events in a database using genloc
 
-orbgenloc orb [-S statefile] [-pf pffile]
+orbgenloc orb [-S statefile] [-pf pf]
     orb interface to genloc single event location code
 
 sgnloc inpf outpf

@@ -29,7 +29,7 @@ dbtrigger [options] dbin
     trigger location program based on time correlation of detections from database db and rules in pf
 <options>
 -v
--pf pfname
+-pf pf
 -out dbout
 </options>
 
@@ -38,7 +38,7 @@ dbgrassoc [options] dbout ttgridf1 [ttgridf1 [...]]
 <options>
 -i
 -assoc
--pf pfname
+-pf pf
 </options>
 
 dbassoc [options] dbin dbout dbcat timeres_P timeres_S
@@ -66,5 +66,5 @@ dbmag db orid author net
 dbmapevents db {sta | orid | lat:lon} range [-c] [auth1 sym1 hue1 lit1 sat1 ...]
     make map of events from database db centered on sta, origin orid, or lat:lon with a radius of range degrees; -c starts interactive mode, ^C kills window
 
-dbrecenteqs [-h] [-p pffile] [-i indexmap_pffile] [-g globalmap_pffile] database
+dbrecenteqs [-p pf] [-v] [-h] [-u] [-e evid] [-c sourcedb] dbname
     maintain a web-site of earthquake maps for a database
