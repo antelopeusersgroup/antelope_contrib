@@ -5,9 +5,9 @@ RESULT = PFGET ( DBPF, NAME [, 'recursive' ] )
 PFGET takes an Antelope parameter-file object and extracts
 the named parameter from it. The RESULT will be either an
 ordered list (returned as a cell array); an associative
-array (returned as another DBPF object); or a string.  All
-scalar numbers are returned as strings by this function;
-the user must convert them to numeric values with STR2NUM
-if desired. If the 'recursive' argument is included, PFGET
+array (returned as another DBPF object); a string; or a numeric value. 
+PFGET will attempt to infer whether a value can be represented 
+numerically, and if so will return the parameter as a numeric value.
+If the 'recursive' argument is included, PFGET
 will attempt to recursively descend through any array
 objects it encounters.

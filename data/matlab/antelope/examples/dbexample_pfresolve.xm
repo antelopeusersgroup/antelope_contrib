@@ -6,4 +6,6 @@ pf = dbpf( 'rtexec' );
 
 pfresolve( pf,'Limit{filesize}' )
 
+pfresolve( pf,'Limit{stacksize}' )
+
 echo off

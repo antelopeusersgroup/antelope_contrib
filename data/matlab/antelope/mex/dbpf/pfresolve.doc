@@ -5,10 +5,10 @@ RESULT = PFRESOLVE ( DBPF, NAME [, 'recursive' ] )
 PFRESOLVE takes an Antelope parameter-file object and
 extracts the named parameter from it. The RESULT will be
 either an ordered list (returned as a cell array); an
-associative array (returned as another DBPF object); or a
-string.  All scalar numbers are returned as strings by this
-function; the user must convert them to numeric values with
-STR2NUM if desired. The naming convention used by PFRESOLVE
+associative array (returned as another DBPF object); a string; or 
+a numeric value. PFRESOLVE will attempt to infer whether a value
+can be represented numerically, and if so will return the parameter
+as a numeric value. The naming convention used by PFRESOLVE
 is different than that in the other DBPF routines.  Array
 fields may be specified with curly braces, and Table items
 may be specified with square-bracket indices.  If the

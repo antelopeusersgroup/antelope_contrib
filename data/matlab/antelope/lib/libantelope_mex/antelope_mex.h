@@ -66,6 +66,7 @@ extern char *matlabPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt_string PL_(( char * ));
 extern mxArray *mxTranslate_Boolean PL_(( mxArray * ));
+extern mxArray *pfstring2mxArray PL_(( char * ));
 extern int pfput_mxArray PL_(( Pf *, char *, const mxArray * ));
 extern int pfpeek PL_(( Pf *, char *, Pf ** ));
 extern int get_dbptr PL_(( const mxArray *, Dbptr * ));

@@ -56,7 +56,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	else
 	{
 		input[0] = mxCreateString( mystring );
-		mexCallMATLAB( 1, plhs, 1, input, "str2num" );
+		mexCallMATLAB( 1, plhs, 1, input, "str2double" );
 		mxDestroyArray( input[0] );
 	}
 }

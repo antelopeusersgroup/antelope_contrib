@@ -80,7 +80,7 @@ pftbl2cellarr( Pf *pftbl, int recursive )
 		case PFSTRING:
 			pfget( pftbl, (char *) i, &value );
 			antelope_mex_clear_register( 1 );
-			mystring = mxCreateString( (char *) value );
+			mystring = pfstring2mxArray( (char *) value );
 			if( mystring == 0 )
 			{
 				mxDestroyArray( result );

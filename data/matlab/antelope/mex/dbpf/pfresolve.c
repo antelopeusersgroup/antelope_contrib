@@ -85,7 +85,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	switch( value->type )
 	{
 	case PFSTRING:
-		plhs[0] = mxCreateString( value->value.s );
+		plhs[0] = pfstring2mxArray( value->value.s );
 		break;
 	case PFFILE:
 	case PFARR:

@@ -28,6 +28,7 @@ OBJS= 	  variables2mxArray.o \
 	  mxPfprompt_string.o \
 	  mxTranslate_Boolean.o \
 	  pfput_mxArray.o \
+	  pfstring2mxArray.o \
 	  pfpeek.o \
 	  get_variables.o \
 	  antelope_mex_clear_register.o \

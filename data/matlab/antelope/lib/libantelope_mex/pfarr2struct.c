@@ -121,7 +121,7 @@ pfarr2struct( Pf *pf, int recursive )
 		case PFSTRING:
 			pfget( pf, name, &value );
 			antelope_mex_clear_register( 1 );
-			mystring = mxCreateString( (char *) value );
+			mystring = pfstring2mxArray( (char *) value );
 			if( mystring == 0 )
 			{
 				mxDestroyArray( mystruct );
