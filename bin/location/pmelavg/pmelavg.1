@@ -1,0 +1,66 @@
+'\" te
+.TH PMELAVG 1 "%G%"
+.SH NAME
+pmelavg - average grid-based solutions produced by pmel
+.SH SYNOPSIS
+.nf
+pmelavg db [-pf pffile]
+.fi
+.SH DESCRIPTION
+.LP
+The implementations of pmel (dbpmel(1) found in Antelope 4.5 
+and pmelgrid, which has not yet been released) found in
+in this package focus on geographically defined gridding described
+in cluster(1).  That is, they aim to satisfy the approximations of
+multiple event location methodologies, of which pmel is an example,
+by only utilizing groups of events located close together in space.
+In this process, however, it is inevitable that many if not most 
+events in a catalog get associated with more than one target point
+in space.  As a result, the output of pmel often has multiple origin
+estimates for the same event from overlapping constellations of
+events associated with different grid points.  \fIpmelavg\fR 
+averages these multiple estimates in a fairly simple way and defines
+it's estimate as the prefor for that evid.
+.LP
+The algorithm used is a minor variant on a simple average.  Each 
+event is compared to it's distance from the hypocentroid of the group 
+with which it is associated.  Below a cutoff distances set in the parameter
+file (see below) an event is given full weight.  If the distance of an event
+from the hypocentroid of the group is larger than the cutoff a 1/r 
+weight is applied (correctly normalized to have a unit weight at the 
+cutoff distance.).  To make the algorithm a simple mean simply make the
+cutoff distance a large number.  To make the average approximate a nearest
+neighbor estimate, make r smaller than the nominal grid spacing.  
+.SH OPTIONS
+.LP
+Use the -pf option to specify an alternative pf to the stock one 
+defined by the program name (i.e. pmelavg.pf).
+.SH PARAMETER FILE
+.LP
+\fIpmelavg\fR has one major parameter that controls it's behaviour.  
+The real parameter \fIfull_weight_distance\fR sets the cutoff parameter
+described above.  Units are assumed to be kilometers.
+.LP
+This program also uses dbprocess to form a working view.  The sequence
+passed to dbprocess is defined by the input Tbl \fIpmelavg_dbview\fR.
+This should not normally be altered.  It was made a parameter instead of
+being hard wired into the program to make it less susceptible to schema
+changes and changes in attribute naming conventions.  
+
+.SH ATTRIBUTES
+NOT MT-Safe 
+.SH "SEE ALSO"
+.nf
+dbpmel(1), cluster(1), makegclgrid(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Making the cutoff very small could cause problems in an obvious way 
+with a divide by 1/r weighting scheme.  Anything rational for this 
+parameter (e.g. larger than 0.1) should not cause a problem.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi

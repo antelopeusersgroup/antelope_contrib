@@ -1,0 +1,8 @@
+full_weight_distance 1.0
+pmelavg_dbview &Tbl{
+dbopen event
+dbjoin origin
+dbsubset algorithm=~/dbpmel/
+dbjoin origerr
+dbsort evid
+}
