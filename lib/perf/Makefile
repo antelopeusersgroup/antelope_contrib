@@ -255,17 +255,17 @@ SBLAS1 = isamax.o sasum.o saxpy.o scopy.o sdot.o snrm2.o \
 CBLAS1 = scasum.o scnrm2.o icamax.o caxpy.o ccopy.o \
 	cdotc.o cdotu.o csscal.o crotg.o cscal.o cswap.o
 
-DBLAS1 = idamax.o dasum.o daxpy.o dcopy.o dsdot.o ddot.o dnrm2.o \
+DBLAS1 = idamax.o dasum.o daxpy.o dcopy.o dsdot.o ddot.o \
 	drot.o drotg.o dscal.o dswap.o
 
 ZBLAS1 = dcabs1.o dzasum.o dznrm2.o izamax.o zaxpy.o zcopy.o \
 	zdotc.o zdotu.o zdscal.o zrotg.o zscal.o zswap.o
 
-CB1AUX = isamax.o sasum.o saxpy.o scopy.o snrm2.o sscal.o
+CB1AUX = 
 
-ZB1AUX = idamax.o dasum.o daxpy.o dcopy.o dnrm2.o dscal.o
+ZB1AUX = dnrm2.o 
 
-ALLBLAS  = lsame.o xerbla.o
+ALLBLAS  = 
 
 SBLAS2 = sgemv.o sgbmv.o ssymv.o ssbmv.o sspmv.o \
 	strmv.o stbmv.o stpmv.o strsv.o stbsv.o stpsv.o \
@@ -312,7 +312,7 @@ INT =	i_abs.o i_dim.o i_dnnt.o i_indx.o i_len.o i_mod.o i_nint.o i_sign.o
 HALF =	h_abs.o h_dim.o h_dnnt.o h_indx.o h_len.o h_mod.o  h_nint.o h_sign.o
 CMP =	l_ge.o l_gt.o l_le.o l_lt.o hl_ge.o hl_gt.o hl_le.o hl_lt.o
 EFL =	ef1asc_.o ef1cmc_.o
-CHAR =	F77_aloc.o s_cat.o s_cmp.o s_copy.o
+CHAR =	s_cat.o s_cmp.o s_copy.o
 F90BIT = lbitbits.o lbitshft.o
 QINT =	pow_qq.o qbitbits.o qbitshft.o
 TIME =	dtime_.o etime_.o
