@@ -26,9 +26,9 @@ sub proceed {
 	
 	# Assume the table is there (safe if launched from dbe)
 	if( $opt_u ) {
-		@files=`dbselect $dbtable url | sort -u`;
+		@files=`dbselect $dbtable url`;
 	} else {
-		@files=`dbselect $dbtable 'extfile("$extfile_table")' | sort -u`;
+		@files=`dbselect $dbtable 'extfile("$extfile_table")'`;
 	} 
 	chomp( @files );
 
