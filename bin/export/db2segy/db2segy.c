@@ -523,7 +523,7 @@ main(int argc, char **argv)
 	int total_traces=0;
 	char *time_str;
 	int evid,shotid=1;
-	int rotate;
+	int rotate=0;
 	int ntraces, ichan;
 	int map_to_cdp;  /* logical switch to output data like cdp stacked data */
 	char *fmt="%Y %j %H %M %s %s";
@@ -549,7 +549,7 @@ main(int argc, char **argv)
 	if(pfread(pfname,&pf)) 
 		die(0,"pfread error for pf file %s.pf\n",argv[0]);
 	/* rotation parameters */
-	if(pfget_boolean(pf,"rotate"))
+	if(rotate=pfget_boolean(pf,"rotate"))
 	{
 		rotate = 1;
 		phi = pfget_double(pf,"phi");
