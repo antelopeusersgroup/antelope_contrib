@@ -599,8 +599,8 @@ Tbl *read_arrivals(Pf *pf, Arr *phases, Arr *stations)
 		row = gettbl(tin,i);
 		a = (Arrival *)malloc(sizeof(Arrival));
 		if(a == NULL) die(1,"read_arrivals:  cannot alloc memory for Arrival structure\n");
-		sscanf(row,"%s %s %lf %lf",phase_name,sta,&(a->time),
-						&(a->deltat));
+		sscanf(row,"%s %s %lf %lf %d",phase_name,sta,&(a->time),
+						&(a->deltat),&(a->arid));
 		a->sta = (Station *) getarr(stations,sta);
 		if(a->sta == NULL)
 		{
@@ -676,7 +676,7 @@ Tbl *read_slowness_vectors(Pf *pf, Arr *phases, Arr *seismic_array)
 		if(u == NULL) die(1,"read_arrivals:  cannot alloc memory for Slowness vector structure\n");
 		sscanf(row,"%s %s %lf %lf %lf %lf",
 			phase_name,array_name,&u1,&u2,
-			&(u->deltaux),&(u->deltauy));
+			&(u->deltaux),&(u->deltauy),&(u->arid));
 		u->array = (Seismic_Array *) getarr(seismic_array,array_name);
 		if(u->array == NULL)
 		{

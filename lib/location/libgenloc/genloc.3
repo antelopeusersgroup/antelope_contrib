@@ -1,0 +1,226 @@
+.\" %W% %G%
+.TH GENLOC 3 "%G%"
+.SH NAME
+parse_options_pf, load_station_table, load_array_table,
+parse_phase_parameter_file, read_arrivals, read_slowness_vectors - 
+input functions for generic location programs
+.SH SYNOPSIS
+.nf
+#include "stock.h"
+#include "arrays.h"
+#include "location.h"
+Location_options  parse_options_pf (Pf *);
+Arr *load_station_table(Pf *);
+Arr *load_array_table(Pf *);
+Arr *parse_phase_parameter_file(Pf *);
+Tbl *read_arrivals(Pf *, Arr *phases, Arr *stations);
+Tbl *read_slowness_vectors(Pf *, Arr *phases, Arr *arrays);
+Arr *dbload_station_table(Dbptr, int is, int ie);
+Arr *dbload_array_table(Dbptr, int is, int ie);
+Tbl *dbload_arrival_table(Dbptr, int is, int ie, Arr *stations, Arr *phases);
+Tbl *dbload_slowness_table(Dbptr, int is, int ie, Arr *arrays, Arr *phases);
+int destroy_network_geometry_tables(Arr *stations,Arr *arrays);
+int destroy_data_tables(Tbl *atable, Tbl *utable);
+.fi
+.SH DESCRIPTION
+.LP
+This collection of functions are used to read all the required 
+data for genloc location programs.
+The first group of functions with Pf arguments load data through
+parameter files.
+The routines labeled dbload... read comparable data from a css3.0
+database.
+.LP
+\fBparse_options_pf\fR parses all the control options used by the locate
+function.  These are returned in a special Locations_options object
+defined especially for this problem in location.h.
+There is not corresponding db routine.
+.LP
+\fBload_station_table\fR and \fBload_array_table\fR are similar 
+functions that load station geometry information for the location process
+through parameter files.  
+\fBdbload_station_table\fR and \fBdbload_array_table\fR
+are comparable routines for reading from a database.
+All four return associative arrays containing pointers to special structures 
+used internally for defining network and array geometry.  These arrays
+are keyed by the station name or array beam code respectively.  
+.LP
+\fBparse_phase_parameter_file\fR builds an associative array containing
+pointers to a novel feature of this set of programs I call a 
+\fIPhase_handle\fR.  The Phase_handle is an object that contains all
+the ingredients need to calculate travel times and slowness for any
+collection of seismic phases for which the user can calculate travel
+times and slowness vectors given source and receiver positions. 
+The array of phase handles that are returned by this function is 
+keyed by the name of all seismic phases defined in the input Pf object.
+(i.e. P, S, ScS, etc.)
+It has no db equivalent.
+.LP
+\fBread_arrivals\fR and \fBread_slowness_vectors\fR read the input 
+data that are to be used for the location.  As the names suggest,
+\fBread_arrivals\fR is used to inhale all arrival time data, while 
+\fBread_slowness_vectors\fR is used to inhale all the available 
+slowness vector measurements.  
+\fBdbload_arrival_table\fR and \fBdbload_slowness_table\fR 
+are the equivalent functions for reading from a database.
+The Arr pointers that are passed to
+any of functions are those returned in earlier calls as follows:
+.nf
+stations = load_station_table();
+arrays = load_array_table();
+phases =  parse_phase_parameter_file();
+.fi
+.LP
+or equivalently for the db interface:
+.nf
+stations = dbload_station_table();
+arrays = dbload_array_table();
+phases =  parse_phase_parameter_file();
+.fi
+.LP
+Note this implies that the above three funtions must be called before
+calling \fBread_arrivals\fR or \fBread_slowness_vectors\fR.  
+If no slowness or arrival time data are available, these routines
+will return a tbl object with no entries.
+.LP
+Note that for the datascope (db) interface, these functions assume
+the db pointer defines a view defined by a join between at least 
+the arrival and site tables.  The indices (is and ie) define the
+range of rows the routines should scan to build the associated 
+tables.  
+.LP
+\fBdestroy_network_geometry\fR and \fBdestroy_data_tables\fR 
+are the related free routines.  
+The Tbl arguments are those returned by one of the data table
+input routines.
+There is presently no free
+routine for the phase handles.  I have taken the philosophy
+that these would only be defined at startup time, and never 
+changed after that.  
+.SH EXAMPLE
+.LP
+The following example, which is an earlier version of
+the source code for the program sgnloc
+(Simple, Gauss-Newton LOCation), which is the simplest front end
+to these different procedures helps illustrate how all this works:
+.nf
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "stock.h"
+#include "arrays.h"
+#include "pf.h"
+#include "location.h"
+char *format_hypo(Hypocenter *h)
+{
+	char *s;
+	s = malloc(512);
+	if(s == NULL) die(1,"malloc error for output table\n");
+	sprintf(s,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %d %d",
+		h->lat0,h->lon0,h->z0,h->t0,
+		h->lat,h->lon,h->z,h->time,
+		h->dx,h->dy,h->dz,
+		h->rms_raw, h->rms_weighted, h->interquartile,
+		h->number_data,h->degrees_of_freedom);
+	return(s);
+}
+		
+usage()
+{
+	fprintf(stderr,"Usage:  genloc inpf outpf\n");
+	exit(1);
+}
+ 
+main(int argc, char **argv)
+{
+	Pf *pf,*pf2;
+	Tbl *t,*ta,*tu;
+	Tbl *reason_converged, *residual;
+	Location_options o;
+	Arr *a,*a2;
+	Arr *arr_phase;
+	char *key;
+	Station *s;
+	Seismic_Array *sr;
+	Arrival *ar;
+	Slowness_vector *u;
+	int i;
+	Tbl *converge_history;
+	char *line;
+
+	Hypocenter h0;
+	Hypocenter *hypos;
+
+	char *inpf, *outpf;
+
+	if(argc != 3) usage();
+
+	inpf = argv[1];
+	outpf = argv[2];
+	
+	/* First let's try to read the options parameter file */
+	i = pfread(inpf,&pf);
+	if(i != 0) die(1,"Pfread error\n");
+
+	o = parse_options_pf (pf);
+	a = load_station_table(pf);
+	a2 = load_array_table(pf);
+ 	arr_phase = parse_phase_parameter_file(pf);
+	ta = read_arrivals(pf,arr_phase,a);
+ 	tu = read_slowness_vectors(pf,arr_phase,a2);
+
+	h0.lat = pfget_double(pf,"initial_latitude");
+	h0.lon = pfget_double(pf,"initial_longitude");
+	h0.z = pfget_double(pf,"initial_depth");
+	h0.time = pfget_double(pf,"initial_origin_time");	
+        h0.dz = 0.0;
+        h0.dx = 0.0;
+        h0.dy = 0.0;
+        h0.dt = 0.0;
+        h0.lat0 = h0.lat;
+        h0.lon0 = h0.lon;
+        h0.z0 = h0.z;
+        h0.t0 = h0.time;
+        h0.rms_raw = -1.0;
+        h0.rms_weighted = -1.0;
+        h0.interquartile = -1.0;
+        h0.number_data = 0;
+        h0.degrees_of_freedom = 0;
+
+	ggnloc(h0,ta,tu,o,&converge_history,&reason_converged,&residual);
+	t = newtbl(maxtbl(converge_history));
+        for(i=0;i<maxtbl(converge_history);++i)
+        {
+                hypos = (Hypocenter *)gettbl(converge_history,i);
+                line = format_hypo(hypos);
+		pushtbl(t,line);
+        }
+	pf2 = pfnew(PFFILE);
+	pfput_tbl(pf2,"convergence_history",t);
+
+	printf("Reasons for convergence:\n");
+	for(i=0;i<maxtbl(reason_converged);++i)
+		printf("%s\n",gettbl(reason_converged,i));
+	pfput_tbl(pf2,"convergence_criteria",reason_converged);
+	pfput_tbl(pf2,"residuals",residual);
+	pfwrite(outpf,pf2);
+}
+.SH LIBRARY
+$DBLIBS
+.SH DIAGNOSTICS
+.LP
+Numerous possible malloc error are trapped and all end with a call to die.
+There are also a large number of complaining type errors that
+will cause the program to blunder on and not abort.  The list
+is too long to effectively list here.  
+.SH "SEE ALSO"
+.nf
+sgnloc(1), ggnloc(3), pfread(3), pfin(3), pfcompile(3), arr(3), tbl(3)
+.fi
+.SH "BUGS AND CAVEATS"
+The data input routines should have more parallel arguments.  
+I accidentally reversed the geometry and phase handle arguments 
+in one set relative to the other.
+.SH AUTHOR
+Gary L. Pavlis
