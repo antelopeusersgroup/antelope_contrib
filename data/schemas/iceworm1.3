@@ -367,6 +367,16 @@ Attribute reftekid
 	}
 	;
 
+Attribute reftekstream
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "reftek digitizer stream" )
+	Detail {
+		Stream number of Reftek digitizer
+	}
+	;
+
 Attribute savechan
         String (1)
         Format ( "%1s" )
@@ -499,12 +509,12 @@ Relation pins
 	;
 
 Relation reftekchan
-	Fields ( reftekid reftekchanid chan samprate )
-	Primary ( reftekid reftekchanid )
+	Fields ( reftekid reftekchanid reftekstream chan samprate )
+	Primary ( reftekid reftekchanid reftekstream )
 	Foreign ( chan )
 	Description ( "Assigns reftek channel numbers to channel codes" )
 	Detail {
-		This table associates each Reftek channel number
+		This table associates each Reftek channel number and stream
 		with the appropriate channel code.
 	}
 	;
