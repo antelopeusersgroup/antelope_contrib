@@ -131,7 +131,7 @@ sub tempgrid_rowremove {
 sub tempgrid_destroy {
 	my( $gridsref ) = shift( @_ );
 
-	my( @mykeys ) = keys( %grids );
+	my( @mykeys ) = keys( %{$gridsref} );
 
 	foreach $key ( pop( @mykeys ) ) {
 
