@@ -1,0 +1,7 @@
+CGGRID	Computational-geometry-grid class constructor
+
+CGG = CGGRID ( FILE )
+
+CGGRID creates an object representing a computational-geometry-grid. 
+This object may be generated from a pre-existing FILE by specifying 
+the pathname of the file as a string input. 

@@ -1,0 +1,6 @@
+CGGRID_FREE CGGRID elimination routine
+
+CGGRID_FREE ( CGGRID )
+
+CGGRID_FREE frees a CGGRID object. Same as
+CLEAR( CGGRID ).

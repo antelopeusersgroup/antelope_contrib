@@ -1,0 +1,7 @@
+CGGRID_WRITE	Write Computational-geometry-grid object to a file
+
+CGGRID_WRITE ( CGG, FORMAT, FILENAME )
+
+CGGRID_WRITE writes a CGGRID object to the specified FILENAME in the 
+specified FORMAT. FORMAT may be any format documented in cggrid(5), 
+such as 'as' or 't4'. 

@@ -1,0 +1,8 @@
+CGGRID_GET	Get an array of x,y,z triplets from a CGGRID object
+
+[TRIPLETS, NX, NY] = CGGRID_GET ( CGGRID )
+
+CGGRID_GET returns a two-dimensional (three column) array of
+x,y,z TRIPLETS from the input computationational-geometry
+grid object. The number of points in the x and y dimensions are 
+returned as NX and NY, respectively.
