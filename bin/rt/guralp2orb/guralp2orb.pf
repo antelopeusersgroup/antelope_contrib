@@ -1,14 +1,25 @@
 nrecovery_threads 3
-max_recovery_failures 3
+max_recovery_failures 0 # Set to zero to disable
 default_net -
 default_segtype V
-packet_queue_size 500
-recovery_queue_size 100
+reject_future_packets_sec 300 # Set to zero to disable
+reject_past_packets_sec 604800 # Set to zero to disable. 
+			       # 604800 sec = 7 days.
+buffer_tail_padding 20 # Number of packets to advance from oldest 
+		       # in buffer, to avoid thrashing
 udplisten &Tbl{
 	53764
 }
 udpinitiate &Tbl{
 	137.229.32.243:1567 10001
+	129.79.146.66:1568 10001
+	165.139.67.10:1568 10001
+	206.141.16.170:1568 10001
+	165.138.13.153:1568 10001
+	130.207.67.102:1568 10001
+	100.178.69.1:1568 10001
+	198.237.71.3:1568 10001
+	192.150.147.8:1568 10001
 }
 srcname_morph &Tbl{
 /-_SPSHE2_XXH6EY/PP_MCLA_BHZ/

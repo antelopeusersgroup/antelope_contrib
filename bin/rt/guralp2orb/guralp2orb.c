@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 #include <thread.h>
 #include <string.h>
 #include <sys/types.h>
@@ -18,6 +19,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/uio.h>
+#include <sys/priocntl.h>
+#include <sys/rtpriocntl.h>
+#include <sys/tspriocntl.h>
 #include <errno.h>
 
 #include "stock.h"
@@ -40,6 +44,7 @@
 #define IDENTIFY_SERVER 252
 #define REQUEST_OLDEST_SEQNO 254
 #define PACKET_REQUEST 255
+#define PACKET_NOT_AVAILABLE "\xFF\xFF\xFF\xFF"
 #define SERVER_ID_STRING "GCFSERV"
 #define REINITIATE_INTERVAL_SEC 60
 #define PFWATCH_SLEEPTIME_SEC 1
@@ -47,6 +52,11 @@
 #define DEFAULT_SEGTYPE "-"
 #define DEFAULT_CALIB 0
 #define DEFAULT_CALPER -1
+#define UDPLISTEN_RT_PRIORITY 10
+#define PACKET_QUEUE_SIZE 50000
+#define RECOVERY_QUEUE_SIZE 1000
+#define PRTHROTTLE_TRIGGER 100
+#define PRTHROTTLE_RELEASE 20
 
 #ifdef WORDS_BIGENDIAN
 static int Words_bigendian = 1;
@@ -129,6 +139,12 @@ Arr *ui_arr;
 Mtfifo *Packets_mtf;
 Mtfifo *Recover_mtf;
 
+int maxpacketqueue = -1;
+mutex_t mpq_mutex;
+
+cond_t prthrottle;	/* Packet Recovery Throttle */
+mutex_t prthrottle_mutex;
+
 Arr *Lastpacket;
 mutex_t lp_mutex; /* Last packet */
 
@@ -148,13 +164,17 @@ static int Verbose = 0;
 static int VeryVerbose = 0;
 static int Reject_future_packets = 0;
 static double Reject_future_packets_sec = 0;
+static int Reject_past_packets = 0;
+static double Reject_past_packets_sec = 0;
 static int nrecovery_threads = 1;
 static int max_recovery_failures = 0;
+static int Buffer_tail_padding = 20;
+
 
 static void
 usage()
 {
-	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-d calibdb] [-l file_for_logpackets] [-r sec] orbname\n" );
+	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-d calibdb] [-l file_for_logpackets] orbname\n" );
 	
 }
 
@@ -216,6 +236,20 @@ next_in_sequence( int current )
 	return ( current + 1 ) % BLOCK_SEQUENCE_MAX;
 }
 
+static void
+retry_recovery( Recoverreq *rr )
+{
+	if( VeryVerbose ) {
+		fprintf( stderr, 
+		"guralp2orb: still missing %d to %d from %s; retry recovery\n",
+			rr->first, 
+			rr->last,
+			rr->udpsource);
+	}
+
+	mtfifo_push( Recover_mtf, (void *) rr );
+}
+
 static void 
 register_packet( G2orbpkt *gpkt )
 {
@@ -237,7 +271,8 @@ register_packet( G2orbpkt *gpkt )
 
 		blockseq = getarr( Lastpacket, gpkt->udpsource );
 
-		if( gpkt->blockseq != next_in_sequence( *blockseq ) ) {
+		if( ( gpkt->blockseq != next_in_sequence( *blockseq ) ) &&
+		    ( gpkt->blockseq != *blockseq ) ) {
 
 			allot( Recoverreq *, rr, 1 );
 
@@ -266,6 +301,54 @@ register_packet( G2orbpkt *gpkt )
 	}
 
 	mutex_unlock( &lp_mutex );
+}
+
+static int
+mtfifo_getqueue( Mtfifo *mtf )
+{
+	int	queue = 0;
+
+	if( ! mtf ) return queue;
+
+	mutex_lock( &(mtf->mutex) );
+	queue = mtf->queue;
+	mutex_unlock( &(mtf->mutex) );
+
+	return queue;
+}
+
+static void
+report_queuemax( void )
+{
+	FILE	*fp;
+	int	queue;
+
+	queue = mtfifo_getqueue( Packets_mtf );
+
+	mutex_lock( &mpq_mutex );
+
+	if( queue > maxpacketqueue ) {
+
+		maxpacketqueue = queue;
+
+		if( VeryVerbose ) {
+			fprintf( stderr,
+			    "MAXQUEUE up to %d\n", maxpacketqueue );
+
+			fp = fopen( "guralp2orb_QUEUEMAX", "w" );
+			fprintf( fp, "MAXQUEUE up to %d\n", maxpacketqueue );
+			fclose( fp );
+		}
+	}
+
+	if( VeryVerbose ) {
+
+		fp = fopen( "guralp2orb_QUEUECURRENT", "w" );
+		fprintf( fp, "CURRENTQUEUE is %d\n", queue );
+		fclose( fp );
+	}
+
+	mutex_unlock( &mpq_mutex );
 }
 
 static void 
@@ -794,6 +877,75 @@ gcfpeek( G2orbpkt *gpkt )
 			   gpkt->samprate );
 }
 
+static int 
+healthy_packet( G2orbpkt *gpkt )
+{
+	Srcname	parts;
+	struct timespec tp;
+	double 	tdelta;
+	char	*s;
+
+	split_srcname( gpkt->srcname, &parts );
+
+	if( ! strcmp( parts.src_suffix, "GCFS" ) ) {
+		return 1; /* Let all status packets through */
+	}
+
+	if( ( gpkt->byteorder != GCF_MOTOROLA_BYTEORDER ) &&
+	    ( gpkt->byteorder != GCF_INTEL_BYTEORDER ) ) {
+
+		if( Verbose ) {
+			fprintf( stderr, 
+			"guralp2orb: Rejecting # %d (%s) from %s: bad byte order code %d\n",
+			gpkt->blockseq,
+			gpkt->srcname,
+			gpkt->udpsource, 
+			gpkt->byteorder );
+		}
+
+		return 0;
+	}
+
+	clock_gettime( CLOCK_REALTIME, &tp );
+	tdelta = gpkt->time - tp.tv_sec+tp.tv_nsec/1e9;
+
+	if( Reject_future_packets &&
+	    ( tdelta > Reject_future_packets_sec ) ) {
+
+		if( Verbose ) {
+			s = strtdelta( tdelta );
+			strtrim( s );
+			fprintf( stderr, 
+			"guralp2orb: Rejecting # %d (%s) from %s: starts %s in the future\n",
+			gpkt->blockseq,
+			gpkt->srcname,
+			gpkt->udpsource, 
+			s );
+			free( s );
+		}
+
+		return 0;
+	}
+
+	if( Reject_past_packets &&
+	    ( tdelta < -1 * Reject_past_packets_sec ) ) {
+
+		if( Verbose ) {
+			s = strtdelta( tdelta );
+			strtrim( s );
+			fprintf( stderr, 
+			"guralp2orb: Rejecting # %d (%s) from %s: starts %s in the past\n",
+			gpkt->blockseq,
+			gpkt->srcname,
+			gpkt->udpsource, 
+			s );
+			free( s );
+		}
+
+		return 0;
+	}
+}
+
 static G2orbpkt * 
 recover_packet( Bns *bns, unsigned short requested )
 {
@@ -808,8 +960,6 @@ recover_packet( Bns *bns, unsigned short requested )
 
 	allot( G2orbpkt *, gpkt, 1 );
 	
-	/* again assume packets are available */
-
 	/* Fill these in for completeness */
 	gpkt->len = RAWGCF_PACKET_SIZE;
 	gpkt->tcprecovered = 1;
@@ -817,15 +967,36 @@ recover_packet( Bns *bns, unsigned short requested )
 	rc = bnsget( bns, 
 		     &(gpkt->packet), 
 		     BYTES, 
-		     gpkt->len );
+		     4 );
 
 	if( rc < 0 ) {
 
 		free( gpkt );
 		gpkt = (G2orbpkt *) NULL;
+		return gpkt; 
+
+	} else if( ! strncmp( gpkt->packet, PACKET_NOT_AVAILABLE, 4 ) ) {
+
+		free( gpkt );
+		gpkt = (G2orbpkt *) NULL;
+		return (G2orbpkt *) 1; /* inelegant but effective */
 	}
 
-	return gpkt; 
+	rc = bnsget( bns, 
+		     &(gpkt->packet[4]), 
+		     BYTES, 
+		     gpkt->len - 4 ); 
+
+	if( rc < 0 ) {
+
+		free( gpkt );
+		gpkt = (G2orbpkt *) NULL;
+		return gpkt; 
+
+	} else {
+
+		return gpkt; 
+	}
 }
 
 static void
@@ -840,6 +1011,13 @@ recovery_failed( char *udpsource )
 	mutex_lock( &rf_mutex );
 
 	recovery_failures = (int *) getarr( Recovery_failures, udpsource );
+
+	if( recovery_failures == NULL ) {
+
+		allot( int *, recovery_failures, 1 );
+		*recovery_failures = 0;
+		setarr( Recovery_failures, udpsource, recovery_failures );
+	}
 	
 	*recovery_failures++;
 
@@ -864,6 +1042,13 @@ recovery_succeeded( char *udpsource )
 	mutex_lock( &rf_mutex );
 
 	recovery_failures = (int *) getarr( Recovery_failures, udpsource );
+	
+	if( recovery_failures == NULL ) {
+
+		allot( int *, recovery_failures, 1 );
+		*recovery_failures = 0;
+		setarr( Recovery_failures, udpsource, recovery_failures );
+	}
 	
 	if( *recovery_failures > 0 && VeryVerbose ) {
 		fprintf( stderr, 
@@ -904,9 +1089,45 @@ recovery_ok( char *udpsource )
 		retcode = 1;
 	}
 
-	mutex_lock( &rf_mutex );
+	mutex_unlock( &rf_mutex );
 
 	return retcode;
+}
+
+static void 
+trim_recovery_request( Recoverreq *rr, unsigned short oldest )
+{
+	int	first_available;
+	int	oldest_reasonable;
+
+	/* Assume the last missed packet is still available 
+	   (the reason we know it was missed is that 
+	   its immediate successor just came in) */
+
+	first_available = rr->last;
+
+	/* Avoid just-missed-it thrashing at the end of the buffer */
+
+	oldest_reasonable = ( oldest + Buffer_tail_padding ) % BLOCK_SEQUENCE_MAX;
+
+	while( first_available != rr->first &&
+	       first_available != oldest_reasonable ) {
+
+		first_available = previous_in_sequence( first_available );
+	}
+
+	if( ( first_available != rr->first ) && VeryVerbose ) {
+		
+		complain( 1, 
+		"TCP recovery: packets %d to %d no longer "
+		"available from %s\n",
+		rr->first,  previous_in_sequence( first_available ),
+		rr->udpsource );
+	}
+
+	rr->first = first_available;
+
+	return;
 }
 
 static void 
@@ -919,6 +1140,7 @@ recover_packetsequence( Recoverreq *rr )
 	char 	msg;
 	char	response[RAWGCF_PACKET_SIZE];
 	unsigned short requested;
+	unsigned short oldest;
 	int	next;
 	int	lastflag;
 
@@ -926,11 +1148,6 @@ recover_packetsequence( Recoverreq *rr )
 		free( rr );
 		return;
 	}
-
-	/* acquiesce to lost packets on socket failures */
-	/* N.B. This could be handled differently with some expire 
-	   mechanism that puts packets back on the recovery 
-	   queue */
 
 	so = socket( PF_INET, SOCK_STREAM, 0 );
 	if( so < 0 ) {
@@ -986,9 +1203,25 @@ recover_packetsequence( Recoverreq *rr )
 		recovery_failed( rr->udpsource );
 		free( rr );
 		return;
+	} else if( VeryVerbose ) {
+		fprintf( stderr, 
+			"Server id for %s is %s\n",
+			rr->udpsource, response );
 	}
 
-	/* assume the packets are available */
+	msg = REQUEST_OLDEST_SEQNO;
+	bnsput( bns, &msg, BYTES, 1 );
+	bnsflush( bns );
+
+	bnsget( bns, &oldest, BYTES, 2 );
+	oldest = ntohs( oldest );
+
+	if( VeryVerbose ) {
+		fprintf( stderr, "Oldest packet on %s is %d\n",
+			rr->udpsource, oldest );
+	}
+
+	trim_recovery_request( rr, oldest );
 
 	lastflag = 0;
 	next = rr->first;
@@ -997,22 +1230,34 @@ recover_packetsequence( Recoverreq *rr )
 
 		requested = htons( next );
 
-		if( next == rr->last ) lastflag++;
-		next = next_in_sequence( next );
-
 		gpkt = recover_packet( bns, requested );
 		
-		if( gpkt == (G2orbpkt *) NULL ) {
+		if( gpkt == (G2orbpkt *) 1 ) {
+
+			if( Verbose ) {
+				complain( 1, 
+				"TCP recovery: packet %d no longer "
+				"available from %s\n",
+				next, 
+				rr->udpsource );
+			}
+
+		} else if( gpkt == (G2orbpkt *) NULL ) {
 
 			if( Verbose ) {
 				complain( 1, 
 				"failed to get packet %d from %s via "
-				"TCP, errno %d\n", 
-				requested, 
+				"TCP, errno %d. Will retry block.\n", 
+				next, 
 				rr->udpsource, 
 				bnserrno( bns ) );
-				recovery_failed( rr->udpsource );
 			}
+			bnsclose( bns );
+			recovery_failed( rr->udpsource );
+			rr->first = next;
+			retry_recovery( rr );
+			return;
+
 		} else {
 
 			gpkt->udpip = rr->udpip;
@@ -1021,10 +1266,20 @@ recover_packetsequence( Recoverreq *rr )
 
 			gcfpeek( gpkt );
 
+			report_queuemax();
+
+			mutex_lock( &prthrottle_mutex );
+			while( mtfifo_getqueue( Packets_mtf ) > PRTHROTTLE_TRIGGER )
+				cond_wait( &prthrottle, &prthrottle_mutex );
+			mutex_unlock( &prthrottle_mutex );
+
 			mtfifo_push( Packets_mtf, (void *) gpkt );
 
 			recovery_succeeded( rr->udpsource );
 		}
+
+		if( next == rr->last ) lastflag++;
+		next = next_in_sequence( next );
 	} 
 
 	free( rr );
@@ -1056,8 +1311,6 @@ guralp2orb_packettrans( void *arg )
 	int	rc = 0;
 	char	*s;
 	char 	*contents = "Null string";
-	struct timespec tp;
-	double 	tdelta;
 	FILE	*fp;
 	char	cmd[STRSZ];
 
@@ -1137,28 +1390,6 @@ guralp2orb_packettrans( void *arg )
 				method );
 		}
 
-		clock_gettime( CLOCK_REALTIME, &tp );
-		tdelta = gpkt->time - tp.tv_sec+tp.tv_nsec/1e9;
-
-		/* Reject future data packets; keep log packets regardless */
-		if( Reject_future_packets &&
-		    tdelta > Reject_future_packets_sec && 
-		    strcmp( parts.src_suffix, "GCFS" ) ) {
-			if( Verbose ) {
-				s = strtdelta( tdelta );
-				strtrim( s );
-				fprintf( stderr, 
-				"guralp2orb: Rejecting # %d (%s) from %s: starts %s in the future\n",
-				gpkt->blockseq,
-				gpkt->srcname,
-				gpkt->udpsource, 
-				s );
-				free( s );
-
-			}
-			continue;
-		}
-
 		insert_orbgcf_hdr( gpkt );
 
 		rc = orbput( Orbfd, 
@@ -1170,9 +1401,84 @@ guralp2orb_packettrans( void *arg )
 		if( rc != 0 ) clear_register( 1 );
 
 		free( gpkt );
+
+		mutex_lock( &prthrottle_mutex );
+		if( mtfifo_getqueue( Packets_mtf ) <= PRTHROTTLE_RELEASE ) {
+			cond_signal( &prthrottle );
+		}
+		mutex_unlock( &prthrottle_mutex );
 	}
 
 	return( NULL );
+}
+
+void set_udplisten_priority()
+{
+	uid_t	starting_uid;
+	pcinfo_t pcinfo;
+	pcparms_t pcparams;
+	rtparms_t *rtparams;
+	tsparms_t *tsparams;
+	pri_t	oldpri;
+	int	rc;
+	char 	*s;
+
+	starting_uid = getuid();
+
+	rc = setuid( 0 );
+
+	/* Try RT priority first */
+	if( ! rc ) {
+	
+		strcpy( pcinfo.pc_clname, "RT" );
+		rc = priocntl( 0, 0, PC_GETCID, (caddr_t) &pcinfo );
+
+		pcparams.pc_cid = pcinfo.pc_cid;
+		rtparams = (rtparms_t *) &pcparams.pc_clparms;
+		rtparams->rt_pri = UDPLISTEN_RT_PRIORITY;
+		rtparams->rt_tqnsecs = RT_TQDEF;
+
+		rc = priocntl( P_LWPID, P_MYID, PC_SETPARMS, (caddr_t) &pcparams );
+
+		if( ! rc ) {
+			if( Verbose ) {
+				fprintf( stderr,
+		 		"Priority of udplisten thread set to Real-time %d\n",
+		 		UDPLISTEN_RT_PRIORITY );
+			}
+		}
+
+		setuid( starting_uid );
+
+		if( ! rc ) {
+
+			return;
+		}
+	}
+
+	/* Try TS priority increase */
+
+	strcpy( pcinfo.pc_clname, "TS" );
+	rc = priocntl( 0, 0, PC_GETCID, (caddr_t) &pcinfo );
+
+	pcparams.pc_cid = pcinfo.pc_cid;
+	tsparams = (tsparms_t *) &pcparams.pc_clparms;
+
+	rc = priocntl( P_LWPID, P_MYID, PC_GETPARMS, (caddr_t) &pcparams );
+
+	oldpri = tsparams->ts_upri;
+
+	tsparams->ts_upri = tsparams->ts_uprilim;
+
+	rc = priocntl( P_LWPID, P_MYID, PC_SETPARMS, (caddr_t) &pcparams );
+
+	if( ! rc && Verbose ) {
+		fprintf( stderr, 
+			"Priority of udplisten thread changed from Time-Share %d to %d\n",
+			(int) oldpri, (int) tsparams->ts_uprilim );
+	}
+
+	return;
 }
 
 static void * 
@@ -1228,6 +1534,8 @@ guralp2orb_udplisten( void *arg )
 		return( NULL );
 	}
 
+	set_udplisten_priority();
+
 	if( Verbose ) {
 		fprintf( stderr, 
 			"guralp2orb: udplisten: listening on port %d\n",
@@ -1275,7 +1583,16 @@ guralp2orb_udplisten( void *arg )
 		}
 
 		gcfpeek( gpkt );
+
+		if( ! healthy_packet( gpkt ) ) {
+
+			free( gpkt );
+			continue;
+		}
+
 		register_packet( gpkt );
+
+		report_queuemax();
 
 		mtfifo_push( Packets_mtf, (void *) gpkt );
 	}
@@ -1432,7 +1749,7 @@ launch_udpinitiate_thread( char *screamip, in_port_t screamport, in_port_t udpre
 	setarr( ui_arr, key, (void *) ui );
 
 	ret = thr_create( NULL, 0, guralp2orb_udpinitiate,
-		(void *) ui, THR_BOUND | THR_NEW_LWP,
+		(void *) ui, 0,
 		&(ui->initiater_thread) );
 
 	mutex_lock( &(ui->statuslock) );
@@ -1657,8 +1974,12 @@ guralp2orb_pfwatch( void *arg )
 	Tbl	*morphlist;
 	int	new_nrecovery_threads;
 	int	new_max_recovery_failures;
+	int	new_reject_future_packets_sec;
+	int	new_reject_past_packets_sec;
+	int	new_buffer_tail_padding;
 	int	ret;
 	int	i;
+	char	*s;
 
 	/* parameter-file updates cannot be triggered by 
 	   incoming packets, in case the current connections
@@ -1718,8 +2039,79 @@ guralp2orb_pfwatch( void *arg )
 				freetbl( morphlist, free );
 			}
 
+			new_reject_future_packets_sec = fabs( pfget_double( pf, "reject_future_packets_sec" ) );
+
+			if( new_reject_future_packets_sec != Reject_future_packets_sec ) {
+
+				Reject_future_packets_sec = new_reject_future_packets_sec;
+
+				if( Reject_future_packets_sec == 0 ) {
+					Reject_future_packets = 0;
+				} else {
+					Reject_future_packets = 1;
+				}
+
+				if( Verbose ) {
+					if( Reject_future_packets ) {
+						s = strtdelta( Reject_future_packets_sec );
+						strtrim( s );
+
+						fprintf( stderr, "%s%s%s\n",
+			  				"guralp2orb: rejecting all packets that are ", s,
+			  				" or more into the future" );
+						free( s );
+					} else {
+						fprintf( stderr, 
+			  			"guralp2orb: turning off future-packet rejection\n" );
+					}
+				}
+			}
+
+			new_reject_past_packets_sec = fabs( pfget_double( pf, "reject_past_packets_sec" ) );
+
+			if( new_reject_past_packets_sec != Reject_past_packets_sec ) {
+
+				Reject_past_packets_sec = new_reject_past_packets_sec;
+
+				if( Reject_past_packets_sec == 0 ) {
+					Reject_past_packets = 0;
+				} else {
+					Reject_past_packets = 1;
+				}
+
+				if( Verbose ) {
+					if( Reject_past_packets ) {
+						s = strtdelta( Reject_past_packets_sec );
+						strtrim( s );
+
+						fprintf( stderr, "%s%s%s\n",
+			  				"guralp2orb: rejecting all packets that are ", s,
+			  				" or more in the past" );
+						free( s );
+					} else {
+						fprintf( stderr, 
+			  			"guralp2orb: turning off past-packet rejection\n" );
+					}
+				}
+			}
+
 			new_nrecovery_threads = pfget_int( pf, "nrecovery_threads" );
 			new_max_recovery_failures = pfget_int( pf, "max_recovery_failures" );
+
+			new_buffer_tail_padding = pfget_int( pf, "buffer_tail_padding" );
+
+			if( new_buffer_tail_padding != Buffer_tail_padding ) {
+
+				if( Verbose ) {
+					fprintf( stderr, 
+						"guralp2orb: buffer_tail_padding changed from "
+						"%d to %d packets\n",
+						Buffer_tail_padding, 
+						new_buffer_tail_padding );
+				}
+
+				Buffer_tail_padding = new_buffer_tail_padding;
+			}
 			
 			mutex_unlock( &pfparams_mutex );
 
@@ -1738,7 +2130,9 @@ guralp2orb_pfwatch( void *arg )
 
 				if( Verbose ) {
 						fprintf( stderr, 
-					"guralp2orb: launching %d more TCP packet-recovery threads\n",
+					"guralp2orb: nrecovery_threads increased to %d, "
+					"launching %d more TCP packet-recovery threads\n",
+						new_nrecovery_threads,
 						new_nrecovery_threads - nrecovery_threads );
 				}
 
@@ -1775,7 +2169,6 @@ main( int argc, char **argv )
 	char	disabled[STRSZ];
 	int	ret;
 	int	ithread;
-	int packet_queue_size, recovery_queue_size;
 
 	elog_init( argc, argv );
 
@@ -1783,7 +2176,7 @@ main( int argc, char **argv )
 	memset( LogpktLogfile, 0, FILENAME_MAX );
 	memset( Calibinfo.dbname, 0, FILENAME_MAX );
 
-	while ( ( c = getopt( argc, argv, "vVp:d:r:l:" ) ) != -1 ) {
+	while ( ( c = getopt( argc, argv, "vVp:d:l:" ) ) != -1 ) {
 		switch( c ) {
 		case 'v':
 			Verbose++;
@@ -1798,10 +2191,6 @@ main( int argc, char **argv )
 		case 'd':
 			strcpy( Calibinfo.dbname, optarg );
 			break;
-		case 'r':
-			Reject_future_packets++;
-			Reject_future_packets_sec = atof( optarg );
-			break;
 		case 'l':
 			strcpy( LogpktLogfile, optarg );
 			break;
@@ -1809,17 +2198,6 @@ main( int argc, char **argv )
 			usage();
 			break;
 		}
-	}
-
-	if( Verbose && Reject_future_packets ) {
-
-		s = strtdelta( Reject_future_packets_sec );
-		strtrim( s );
-
-		fprintf( stderr, "%s%s%s\n",
-			  "guralp2orb: rejecting all packets that are ", s,
-			  " or more into the future" );
-		free( s );
 	}
 
 	if( Verbose && strcmp( Calibinfo.dbname, "" ) ) {
@@ -1842,12 +2220,50 @@ main( int argc, char **argv )
 	if( pfupdate( Pffile, &pf ) < 0 ) {
 		die( 1, "Couldn't read parameter file %s\n", Pffile );
 	}
-	packet_queue_size=pfget_int(pf,"packet_queue_size");
-	recovery_queue_size=pfget_int(pf,"recovery_queue_size");
 
 	mutex_init( &pfparams_mutex, USYNC_THREAD, NULL );
 
 	init_calibinfo();
+
+	Buffer_tail_padding = pfget_int( pf, "buffer_tail_padding" );
+
+	Reject_future_packets_sec = fabs( pfget_double( pf, "reject_future_packets_sec" ) );
+
+	if( Reject_future_packets_sec == 0 ) {
+		Reject_future_packets = 0;
+	} else {
+		Reject_future_packets = 1;
+	}
+
+	if( Verbose && Reject_future_packets ) {
+
+		s = strtdelta( Reject_future_packets_sec );
+		strtrim( s );
+
+		fprintf( stderr, "%s%s%s\n",
+			  "guralp2orb: rejecting all packets that are ", s,
+			  " or more into the future" );
+		free( s );
+	}
+
+	Reject_past_packets_sec = fabs( pfget_double( pf, "reject_past_packets_sec" ) );
+
+	if( Reject_past_packets_sec == 0 ) {
+		Reject_past_packets = 0;
+	} else {
+		Reject_past_packets = 1;
+	}
+
+	if( Verbose && Reject_past_packets ) {
+
+		s = strtdelta( Reject_past_packets_sec );
+		strtrim( s );
+
+		fprintf( stderr, "%s%s%s\n",
+			  "guralp2orb: rejecting all packets that are ", s,
+			  " or more in the past" );
+		free( s );
+	}
 
 	Default_net = pfget_string( pf, "default_net" );
 
@@ -1874,14 +2290,19 @@ main( int argc, char **argv )
 		freetbl( morphlist, free );
 	}
 
+	mutex_init( &mpq_mutex, USYNC_THREAD, NULL );
+
+	mutex_init( &prthrottle_mutex, USYNC_THREAD, NULL );
+	cond_init( &prthrottle, USYNC_THREAD, NULL );
+
 	Lastpacket = newarr( 0 );
 	mutex_init( &lp_mutex, USYNC_THREAD, NULL );
 
 	Recovery_failures = newarr( 0 );
 	mutex_init( &rf_mutex, USYNC_THREAD, NULL );
 
-	Packets_mtf = mtfifo_create( packet_queue_size, 1, 0 );
-	Recover_mtf = mtfifo_create( recovery_queue_size, 1, 0 );
+	Packets_mtf = mtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
+	Recover_mtf = mtfifo_create( RECOVERY_QUEUE_SIZE, 1, 0 );
 
 	ignoreSIGPIPE();
 
@@ -1889,6 +2310,16 @@ main( int argc, char **argv )
 	if( ret != 0 ) {
 		die( 1,
 		 "Failed to create packet-translation thread\n" );
+	}
+
+	max_recovery_failures = pfget_int( pf, "max_recovery_failures" );
+	if( Verbose ) {
+
+		if( max_recovery_failures ) {
+		fprintf( stderr, 
+		"guralp2orb: limiting each instance to %d recovery failures\n",
+			max_recovery_failures );
+		}
 	}
 
 	nrecovery_threads = pfget_int( pf, "nrecovery_threads" );

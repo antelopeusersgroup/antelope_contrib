@@ -4,23 +4,26 @@ guralp2orb \- Import Guralp data into an Antelope orb
 .SH SYNOPSIS
 .nf
 guralp2orb [-v] [-V] [-p parameter_file] [-d calibdb]
-		[-l file_for_logpackets] [-r reject_sec] orbname 
+		[-l file_for_logpackets] orbname 
 .fi
 .SH DESCRIPTION
 guralp2orb receives seismic data packets from Guralp digitizers, via
 the SCREAM program from Guralp Inc., and puts them onto an Antelope
-orb. The data are preserved in native GCF format, all though several
+orb. The data are preserved in native GCF format, although several
 additional pieces of information (segtype, calib, and calper; see
 below) are added during encapsulation. Waveform packets are placed on
 the orb with the suffix GCF. Datalogger log packets are given the
 suffix GCFS. Log packets will also be written to standard error when
 guralp2orb is in verbose mode. Log packets will be written to a
-specified log file if one is specified with the -l option.
+log file if one is specified with the -l option.
 
 guralp2orb will optionally reject packets which are too far into the
-future, judged by the system clock. This is specified by the -r option,
-which also needs to be told how many seconds constitutes "too far in
-the future."
+future, judged by the system clock. This is specified by the 
+reject_future_packets_sec entry in the parameter file,
+which needs to be told how many seconds constitutes "too far in
+the future." A value of zero disables this feature. Similarly guralp2orb
+will optionally discard packets too far in the past (e.g. perhaps set 
+this to one week). 
 
 guralp2orb has two main modes. In the first, udplisten, guralp2orb
 listens on one or more specified UDP ports. In this case it expects
@@ -34,7 +37,9 @@ UDP packet reception. It is not necessary to specify this port in the
 udplisten table of the parameter file; guralp2orb will coordinate the
 listener threads on its own, launching whatever listeners are
 necessary. Both the udplisten and udpinitiate modes may be used at the
-same time. Threads will be launched for all connections specified in
+same time (although presumably for different stations! Using both modes 
+at the same time for the same station will cause double copies of the data to be 
+transmitted). Threads will be launched for all connections specified in
 both tables. The udplisten and udpinitiate tables in the parameter file
 do not both need to be specified. However, if no connections at all are
 listed, guralp2orb has nothing to do and exits.
@@ -55,6 +60,23 @@ parameter limits the number of times TCP recovery may fail for a given SCREAM
 connection. If this limit is exceeded, a warning message is printed and 
 TCP recovery is disabled for that IP address. The max_recovery_failures 
 parameter may be set to zero, allowing an infinite number of retries.
+Guralp2orb will keep re-trying to acquire as long as it has some indication
+there's a GCF server on the other end.
+
+If the udplisten threads are missing UDP packets, it may be necessary to 
+set them to real-time priority class. This is done by making the 
+guralp2orb executable be suid root (if guralp2orb detects that it 
+is suid root, it will automatically promote the UDP listen threads 
+to real-time priority schedulint). To make guralp2orb suid root 
+one must, as root, execute
+.nf
+
+	# chown root guralp2orb
+	# chmod 4755 guralp2orb
+
+.fi
+Also one has to make sure the disk partition containing the executable allows 
+suid to root (consult your system administrator). 
 
 guralp2orb starts the construction of the packet sourcename from the
 sysid, streamid, and specified default network. [If the default_net
@@ -104,7 +126,8 @@ udplisten or udpinitiate connections are specified, they will be launched.
 .SH OPTIONS
 -v verbose
 
--V very verbose. Lists information on every incoming packet. 
+-V very verbose. Lists information on every incoming packet. Used for 
+debugging, not for normal continuous operation.
 
 -p parameter_file Specify alternate parameter file (default is guralp2orb.pf)
 
@@ -125,20 +148,31 @@ parameter:
 # number of tcp recovery threads. 0 to disable TCP recovery: 
 nrecovery_threads 3 
 
-# Maximum allowed number of successive recovery-attempt failures:
-max_recovery_failures 3 
-        packet_queue_size=pfget_int(pf,"packet_queue_size");   
-        recovery_queue_size="recovery_queue_size");
+# Maximum allowed number of successive recovery-attempt failures
+# for a given SCREAM instance. Set to 0 to disable. 
+# recommended to leave this disabled unless necessary.
+max_recovery_failures 0 
 
-# This sets the packetqueue size pushed on a fifo by the read thread
-# It should be set to something like 50Xnumber of stations being received
-# to be save because guralp2orb does uses blocking i/o.
-#
-packet_queue_size 500
-# This sets the size of the comparable queue used by the recovery thread
-# It can commonly be much smaller than the packet queue unless the 
-# loss rate is very high.
-recovery_queue_size 100
+# Reject packets too far ahead of the system clock. Set to
+# 0 to disable future-packet rejection
+reject_future_packets_sec 300
+
+# Reject packets too far behind of the system clock. Set to
+# 0 to disable past-packet rejection
+reject_past_packets_sec 604800	# i.e. 7 days
+
+# buffer_tail_padding is the number of packets to advance 
+# from the end of the SCREAM buffer, should we need to 
+# recover packets that span before the oldest packet in 
+# the SCREAM buffer. If set to low, the TCP recovery 
+# will thrash, continually 'just missing' the oldest 
+# packets in the buffer. If set too high, of course,
+# one will miss out on potentially recoverable data.
+# The appropriate setting will be affected by data flow
+# rate into the scream server, quality of the internet 
+# connection, and loading of the machine running guralp2orb. 
+# That said, one can probably leave this as is. 
+buffer_tail_padding 20
 
 default_net -       
 default_segtype V
@@ -183,10 +217,14 @@ srcname_morph &Tbl{
 orbserver(1), morphtbl(3)
 .fi
 .SH "BUGS AND CAVEATS"
-If something goes wrong with a particular TCP recovery of packets, that 
-block of packets is lost: no further recovery attempts are made. In 
-principle, more involved recovery attempts may be possible, though perhaps 
-of limited value.
+The future-packet rejection has been moved from the command-line
+into the parameter file. past-packet rejection has also been 
+added. The assumption is that if the timestamp is that far off, 
+the packet has been corrupted in transit, thus it is rerequested.
+This can cause a mild (i.e. fairly harmless) loop if the source-packet
+actually is that far off the system clock, in which case 
+one needs to either set the system clock, fix the source timestamping 
+problem, or turn off these filters.
 
 The file of log packets grows indefinitely, unless cleaned out 
 by hand or other process. Since guralp2orb opens and closes the log 
@@ -216,11 +254,19 @@ parameter file, the corresponding threads are not killed.
 In principle it would be possible for guralp2orb to save state information, which 
 would allow it to recover packets that were missed during short stops and restarts. 
 
+SCREAM will actually announce when it is shutting down services. It 
+might be nice to catch this and record it in the log file. 
+
 The next stage in the development of guralp2orb will be to allow it to communicate 
 directly to guralp dataloggers, without an intervening instance of scream. The 
 threading structure in principle supports this, however it will require extensive 
 work.  After that, the next thing to add would be direct command and control.
 
+The new packet format released with SCREAM4.0 is not supported. Use the 
+backwards-compatibility mode of SCREAM4.0 to produce original-style packets.
+This may be addressed in future versions. Also, it would be advantageous 
+for SCREAM (from Guralp, Inc.) to add a checksum to the UDP packets in any
+future updates. 
 .SH AUTHOR
 .nf
 Kent Lindquist
