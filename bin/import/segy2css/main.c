@@ -77,7 +77,7 @@ char *argv[];
 
     sprintf(str,"ls %s > List\0", argv[argc-1]);
     if( system(str) == -1 )  {
-	fprintf(stderr, "can't execute \""ls %s > List\"\n", argv[argc-1]); 
+	fprintf(stderr, "can't execute \"ls %s > List\"\n", argv[argc-1]); 
 	perror( "system:");
     }
    
