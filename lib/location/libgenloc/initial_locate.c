@@ -24,6 +24,9 @@ doing an initial location */
 #define DEFAULT_TRIALZ 5.0
 #define VELOCITY 6.0  /* Velocity used in origin time for nearest station
 			method from trial z (ot correction = z/VELOCITY) */
+#define DELTA_FUDGE 0.0001  /* fudge factor added to prevent odd 
+			singularity that showed up at times in nearest 
+			station measurement */
 #define DEFAULT_SPVEL  9.0 /* default pseudovelocity used for scaling S-P time
 				to a distance in km */
 #define DEFAULT_SPTIME 5.0  /* Used when no S wave data are available. */
@@ -230,6 +233,8 @@ format of the two setup routines.*/
 		a = (Arrival *) gettbl(attbl,ifirst);
 		h.lat = a->sta->lat;
 		h.lon = a->sta->lon;
+		h.lat += DELTA_FUDGE;
+		h.lon += DELTA_FUDGE;
 		h.time = a->time;
 		if((s=pfget_string(pf,"initial_depth"))==NULL)
 			h.z = DEFAULT_TRIALZ;

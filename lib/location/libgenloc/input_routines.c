@@ -110,8 +110,8 @@ Location_options parse_options_pf (Pf *pf)
 	o.max_error_scale = (float) pfget_double_wdef(pf,
 					"max_error_scale",o.max_error_scale);
 	for(i=0;i<4;++i) o.fix[i] = 0;
-	if(pfget_boolean_wdef(pf,"fix_latitude",0)) o.fix[0] = 1;
-	if(pfget_boolean_wdef(pf,"fix_longitude",0)) o.fix[1] = 1;
+	if(pfget_boolean_wdef(pf,"fix_longitude",0)) o.fix[0] = 1;
+	if(pfget_boolean_wdef(pf,"fix_latitude",0)) o.fix[1] = 1;
 	if(pfget_boolean_wdef(pf,"fix_depth",0)) o.fix[2] = 1;
 	if(pfget_boolean_wdef(pf,"fix_origin_time",0)) o.fix[3] = 1;
 	if(pfget_boolean_wdef(pf,"recenter",0)) recenter = 1;
