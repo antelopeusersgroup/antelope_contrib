@@ -158,6 +158,8 @@ Hypocenter initial_locate(Tbl *attbl, Tbl *utbl,
 			ptime = a->time;
 			sptime = DEFAULT_SPTIME;
 		}
+		else
+			sptime = stime - ptime;
 		h.z = pfget_double_wdef(pf,"initial_depth",DEFAULT_TRIALZ);
 		spvel = pfget_double_wdef(pf,"S-P_velocity",DEFAULT_SPVEL);
 		dist = sptime*spvel;
