@@ -3,8 +3,11 @@
 // Note all returns are distances and angles are returned in units of radians.  
 
 #include "coords.h"
+#include "stock.h"
 #include "tt.h"
 #include "seispp.h"
+using namespace std;
+using namespace SEISPP;
 namespace SEISPP
 {
 

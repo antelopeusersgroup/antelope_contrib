@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <list>
-#include <strings.h>
+#include <string>
 #include "db.h"
 #include "seispp.h"
+using namespace std;
 namespace SEISPP
 {
 
@@ -107,7 +108,7 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 
 	try{
 		input.open(fname.c_str(), ios::in);
-	} catch (ios_base::failure& var)
+	} catch (ios::failure& var)
 	{
 		string mess;
 		mess = var.what();

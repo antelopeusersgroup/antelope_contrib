@@ -612,6 +612,12 @@ arid arid arrival int true
 evid evid event int true
 orid orid origin int true
 wfid wfid wfdisc int true
+#
+# special for pmel and for source gather processing.  These are
+# from genloc1.1
+#
+gridid gridid cluster int true
+cluster.gridid gridid cluster int true
 }
 
 rt1.0 &Tbl{

@@ -341,7 +341,7 @@ void Metadata::put_metadata(string name, bool val)
 void Metadata::remove(string name)
 {
 	Pf *pftmp;
-	pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
+	//pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
 	// necessary because pfdel returns a pf copy of entry deleted on 
 	// success
 	if(pftmp!=NULL) pffree(pftmp);

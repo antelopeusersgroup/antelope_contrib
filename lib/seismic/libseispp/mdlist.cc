@@ -1,4 +1,4 @@
-#include <strstream.h>
+#include <sstream>
 #include "stock.h"
 #include "pf.h"
 #include "metadata.h"
@@ -19,7 +19,7 @@ Metadata_list pfget_mdlist(Pf *pf,string tag)
 	{
 		char *line;
 		line=(char *)gettbl(t,i);
-		istrstream instr(line);
+		istringstream instr(line);
 		instr >> mdname;
 		instr >> mdtype;
 		mdt.tag = mdname;
