@@ -17,8 +17,6 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Response *response;
 	mxArray	*address;
-	mxArray	*varname[1];
-	mxArray	*output_array[1];
 	Tbl	*errors;
 	char	*error;
 	double 	*real_ptr, *imag_ptr; 
@@ -47,12 +45,4 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	
 	free_response( response );
 	antelope_mex_clear_register( 1 );
-
-	varname[0] = mxCreateString( mxGetName( prhs[0] ) );
-	if( varname[0] == 0 )
-	{
-		mexErrMsgTxt ( "Couldn't allocate name string for callback" );
-	}
-
-	mexCallMATLAB( 0, output_array, 1, varname, "clear" );
 }

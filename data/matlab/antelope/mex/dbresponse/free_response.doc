@@ -2,5 +2,5 @@ DBRESPONSE/FREE_RESPONSE Dbresponse elimination routine
 
 FREE_RESPONSE ( DBRESPONSE )
 
-FREE_RESPONSE frees a DBRESPONSE object, clearing it from
-memory.  Same as CLEAR( DBRESPONSE ).
+FREE_RESPONSE frees a DBRESPONSE object. Same as
+CLEAR( DBRESPONSE ).

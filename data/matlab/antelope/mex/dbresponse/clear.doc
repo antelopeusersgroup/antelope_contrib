@@ -2,5 +2,4 @@ DBRESPONSE/CLEAR Dbresponse elimination routine
 
 CLEAR ( DBRESPONSE )
 
-CLEAR frees a DBRESPONSE object, clearing it from memory.
-Same as FREE_RESPONSE.
+CLEAR frees a DBRESPONSE object. Same as FREE_RESPONSE.

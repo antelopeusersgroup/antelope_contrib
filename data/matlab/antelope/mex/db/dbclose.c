@@ -15,9 +15,6 @@ Usage: DBCLOSE ( DBPTR )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Dbptr	db;
-	mxArray	*DbptrStruct;
-	mxArray *varname[1];
-	mxArray *output_array[1];
 
 	if( nrhs != 1 )
 	{
@@ -35,12 +32,4 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mex_clear_register( 1 );
 		mexErrMsgTxt ( "dbclose failed\n" );
 	}
-
-	varname[0] = mxCreateString( mxGetName( prhs[0] ) );
-	if( varname[0] == 0 )
-	{
-		mexErrMsgTxt ( "Couldn't allocate name string for callback" );
-	}
-
-	mexCallMATLAB( 0, output_array, 1, varname, "clear" );
 }

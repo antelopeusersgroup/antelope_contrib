@@ -2,5 +2,4 @@ DBPF/PFFREE Dbpf elimination routine
 
 PFFREE ( DBPF )
 
-PFFREE frees a DBPF object, clearing it from memory.  Same
-as CLEAR( DBPF ).
+PFFREE frees a DBPF object. Same as CLEAR( DBPF ). 

@@ -16,8 +16,6 @@ Usage: CLEAR ( DBPF )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Pf *pf;
-	mxArray	*varname[1];
-	mxArray *output_array[1];
 
 	if( nlhs > 0 ) 
 	{
@@ -41,12 +39,4 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		pffree( pf );
 		antelope_mex_clear_register( 1 );
 	}
-
-	varname[0] = mxCreateString( mxGetName( prhs[0] ) );
-	if( varname[0] == 0 )
-	{
-		mexErrMsgTxt ( "Couldn't allocate name string for callback" );
-	}
-
-	mexCallMATLAB( 0, output_array, 1, varname, "clear" );
 }
