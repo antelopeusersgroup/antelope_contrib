@@ -1,6 +1,7 @@
 #ifdef __cplusplus
 #ifndef _RAY1D_H
 #define _RAY1D_H
+#include "dmatrix.h"
 #include "gclgrid.h"
 #include "seispp.h"
 class RayPathSphere
@@ -20,6 +21,7 @@ public:
 		if(t!=NULL)delete[]t;};
 	void operator = (const RayPathSphere&);
 };
+
 dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
      double theta, int ix1, int ix2, int ix3) throw(GCLgrid_error);
 dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,

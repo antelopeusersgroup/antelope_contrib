@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include "db.h"
+using namespace std;
+
 class Velocity_Model
 {
 public:

@@ -1,7 +1,7 @@
-#include <string>
 using namespace std;
 #include "stock.h"
 #include "pf.h"
+#include <string>
 #include "metadata.h"
 //
 // needed until antelope 4.5
