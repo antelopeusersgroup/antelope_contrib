@@ -1,0 +1,135 @@
+'\" te
+.TH PFSTREAM 3 "%G%"
+.SH NAME
+pfstream - data-driven stream processing interface for parallel processing
+.SH SYNOPSIS
+.nf
+/* constructor-destructor for Pf_ensemble*/
+Pf_ensemble *create_Pf_ensemble(int nmembers, int ngroups);
+void free_Pf_ensemble(Pf_ensemble *);
+
+/* ensemble get and put functions */
+Pf_ensemble *pfget_Pf_ensemble(Pf *pfin,char *tag);
+Pf *pfensemble_convert_group(Pf_ensemble *pfe);
+Pf *build_ensemble(int ntags, ...);
+void pfensemble_put_double(Pf_ensemble *pfe,char *name,double value);
+void pfensemble_put_time(Pf_ensemble *pfe,char *name,double value);
+void pfensemble_put_int(Pf_ensemble *pfe,char *name,int value);
+void pfensemble_put_string(Pf_ensemble *pfe,char *name,char *value);
+
+
+/* Multithread readers and writers */
+Pfstream_handle *pfstream_start_read_thread(char *fname);
+Pfstream_handle *pfstream_start_write_thread(char *fname);
+Pf *pfstream_get_next_ensemble(Pfstream_handle *pfh);
+int pfstream_put_ensemble(Pfstream_handle *pfh,Pf *pf);
+.fi
+.SH DESCRIPTION
+.LP
+This is a low-level set of functions to implement data-driven processing
+on shared-memory machines with a fairly general metadata framework based on
+Antelope parameter files.  The structure of the file uses to transport 
+information by this mechanism is described in pfstream(5).  The key concept,
+however, is that the pfstream allows a way to transport relatively complex
+database tables in blocks through a streams mecahnism.  That is, a program
+can extract what amounts to a block of rows of a database that define 
+it's processing input.  These can be single tables structured as a view
+formed by joining a sequence of tables, or blocks of distinct relational
+tables.  The primary processing model for input, however, is assumed
+to be a database view in which each block contains all the attributes 
+need to describe a block of rows from the view.  At the level of this
+library I call this data object a Pf_ensemble.  A Pf_ensemble is basically
+a vector of pf pointers with one pf for each row of the database view.  
+The complete typedef is the following:
+.nf
+typedef struct Pf_ensemble {
+	Tbl *ensemble_keys;
+	Tbl *group_keys;
+	int ngroups,nmembers;
+	int *group_start,*group_end;
+	Pf **pf;
+} Pf_ensemble;
+.fi
+.LP
+where pf is a vector of nmembers *pf pointers.  The model is that nmembers is
+the number of rows of the block of data to be processed.  The ensemble itself
+can be grouped by attributes defined in the "group_keys" list. This list
+will be a NULL pointer if grouping is not defined.  When grouping is on the
+two integer arrays, group_start and group_end, will contain an ordered 
+sequence of start and end record numbers.  These are exactly like the range
+parameters described in dbgroup, but offset to start at 0 for each 
+Pf_ensemble that might be defined.  
+.LP
+This was done to support data-driven, parallel processing with MPI. 
+The current library will
+only work on shared memory machines and is defined by the four routines listed
+above as "multithread readers and writers".  To initiate processing with 
+pfstream a read thread should be created by a call to \fIpfstream_start_read_thread\fR.
+This will open a connection to the file name passed to as it's single argument.
+(This file can and probably normally should be a fifo, but it can be a plain 
+disk file in the pfstream format.)  The read thread starts reading and pushing
+Pf_ensemble data objects onto an internal queue that is thread safe.  Once the
+file is successfully opened and reading commences it returns a handle to the
+caller to this queue.  The normal sequence would then be for the caller to 
+enter a loop surrounded MPI calls to parallelize that loop.  Each MPI 
+thread would then call pfget_next_ensemble in an outer, main processing loop.
+The loop can and should be terminated by a test for a NULL return from 
+pfget_next_ensemble.  
+.LP
+The inverse is handled by the \fIpfstream_start_write_thread\fR and
+\fIpfsteam_put_ensemble\fR functions. pfstream_start_write_thread launches
+a writer thread which returns a handle on success.   Pointers to pf
+objects are pushed onto an output queue by the pfstream_put_ensemble 
+function.  This allows a processing algorithm to not block waiting for
+output data to complete.  Data are pushed onto the queue and the functions 
+with a very short latency to start processing the next block.
+.LP
+The functions listed above as "ensemble get and push functions" are used to 
+assemble and take apart pf files used for transporting tables.  
+The pf queued up for read or write is wrapped in a single pf.
+The \fIpfget_Pf_ensemble\fR function takes apart this larger pf and decomposes
+the portion encapsulated by the keyword defined by the variable tag.
+The \fIpfensemble_convert_group\fR and \fIpfbuild_ensemble\fR functions do the reverse.
+\fIpfensemble_convert_group\fR takes a single Pf_ensemble data object and 
+encapsulates it into a single Pf.  This can, itself be sent to output with 
+pfstream_put_ensemble, or multiple tables can be encoded into the output 
+by calling \fIpfbuild_ensemble\fR for ntags different tables. This is
+a complex use of variable arguments as argument list is assumed to contain
+ntags*2 arguments in pairs of (char *, Pf_ensemble *).  e.g. if ntags was 
+two a valid call to build_ensemble might be:
+.nf
+build_ensemble(2,"arrival",pfe1,"assoc",pfe2);
+.fi
+where pfe1 and pfe2 would be assumed to be pointers to Pf_ensemble data objects.
+.LP
+The pfensemble_put functions (pfensemble_put_double, pfensemble_put_string, etc.) 
+are like the comparable standard pfput functions, but the place a constant into 
+all members of an ensemble.  That is, the same quantity is placed in each 
+of elements of the vector of pf's in the Pf_ensemble data object.  The primary 
+use of this is to build an output view that has constants for the entire 
+block.  This can be used, for example, to build output tables from a virtual 
+view with one output row per output ensemble.  
+.SH LIBRARY
+.SH ATTRIBUTES
+The thread utilities use a mutex protected queue and should function correctly
+in a multiprocessor environment.
+.SH "SEE ALSO"
+.nf
+pf(3), pf(5), pfstream(5)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Be warned that this set of routines can and probably should be hidden from
+the average user.  It is described here to document the low-level functionality.
+A simplified interface in C++ for most processing is under development.
+.LP
+The process for ending an algorithm with this library with multiple processors
+working on different blocks of data is not totally finalized.  A version for
+distributed memory machines is also under development.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
