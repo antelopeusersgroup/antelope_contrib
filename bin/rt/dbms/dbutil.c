@@ -118,7 +118,7 @@ int join_db ( Dbptr db, char *want_orig )
 
         /* Select only vertical channels */ 
           
-        sprintf( key,"(chan =~ /.*Z/)\0" );     
+        sprintf( key,"(chan =~ /.*Z/&&iphase =~ /P/)\0" );     
         dball = dbsubset( dball, key, 0 );
         dbquery (dball, dbRECORD_COUNT, &jrec);
         if( jrec <= 0 )

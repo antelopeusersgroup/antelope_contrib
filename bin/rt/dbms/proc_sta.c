@@ -47,10 +47,11 @@ fprintf( stderr, "%s: %lf %lf %d %lf \n", sta, stime, endtime, nsamp,event->otim
        if( endtime <= event->stime ) continue;
        if( arid != event->arid ) continue;
       
-       buf = trgetwf(
-           db, 0, 0, 0, event->otime, event->etime, &ts, &te, &npts, 0, 0) ; 
+       trgetwf(
+           db, 0, &buf, 0, event->otime, event->etime, &ts, &te, &npts, 0, 0) ; 
        if( npts <= 0 )  {
-           buf = 0;
+           if(buf != 0) free(buf);
+	   buf = 0;
            continue;
        }
 
@@ -68,11 +69,19 @@ fprintf( stderr, "%lf %lf - %lf %lf %d \n",
        if( ts > event->stime ) {
            complain( 0, "trace start time is more than SWA time. %lf > %lf\n",
                      ts, event->stime );
-           return 0;
+           if(buf) {
+	    	free(buf);
+		buf = 0;
+	   }
+	   return 0;
        }  else {
            if( ( pos = (int) ( event->stime - ts ) * samprate) >= npts ) {
                complain( 0,  
                "no data for %s from %lf to %lf.\n", sta, event->stime, event->etime ); 
+           	if(buf) {
+	 	   free(buf);
+		   buf = 0;
+		}
                 continue;
            }
 
