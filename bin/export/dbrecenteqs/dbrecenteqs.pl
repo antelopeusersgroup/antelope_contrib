@@ -30,7 +30,7 @@ sub pfget_Mapspec {
 		);
 	# N.B. ( Handle the linefiles hash in plot_linefiles() )
 
-	if( ($hashname ne "focus_map") && (! defined( $mapspec->{mapname} )) ) {
+	if( ! defined( $mapspec->{mapname} ) ) {
 
 		die( "No 'mapname' parameter defined in $hashname array\n" );
 

@@ -29,6 +29,7 @@ sub init_globals {
 		"keep_ndays",
 		"max_num_eqs",
 		"overview_maps",
+		"focus_maps",
 		"make_index_html",
 		"use_qgrids"
 		);
@@ -73,6 +74,13 @@ sub init_globals {
 		     "overview_maps &Tbl of the parameter file. Bye.\n" );
 	}
 
+	if( ! defined( $State{focus_maps} ) || 
+	    $#{$State{focus_maps}} < 0 ) {
+
+		die( "Must have at least one entry in the " . 
+		     "focus_maps &Tbl of the parameter file. Bye.\n" );
+	}
+
 	if( ! -d $State{institute_webdir} ) {
 		die( "The directory $State{institute_webdir} does not exist.\n" .
 		     "Are you sure the parameter institute_webdir in\n" .
@@ -105,7 +113,8 @@ sub init_globals {
 	$State{quakesubdir} = "quakes";
 	mkdir( "$State{dbrecenteqs_dir}/$State{quakesubdir}", 0755 );
 
-	%Focus_Mapspec = %{pfget_Mapspec( $State{pf}, "focus_map" )};
+	%Focus_Mapspec = 
+		%{pfget_Mapspec( $State{pf}, ${$State{focus_maps}}[0] )};
 
 	$clientside_mapname = "clientsidemap";
 
@@ -726,7 +735,7 @@ sub create_focusmap_html {
 	chomp( my( $stylesheet_basename ) = `basename $Focus_Mapspec{stylesheet}` );
 	$writer->pi( 'xml-stylesheet', "href=\"$stylesheet_basename\" type=\"text/xsl\"" );
 
-	$writer->startTag( "specific_quake", "name" => "evid$evid" );
+	$writer->startTag( "specific_quake", "name" => "$Focus_Mapspec{file_basename}" );
 
 	$writer->dataElement( "page_title", 
 			      "$region_string" );
@@ -765,8 +774,8 @@ sub create_focusmap_html {
 	$fms->Read( $image_extfile );
 	my( $width ) = $fms->Get( 'width' );
 	my( $height ) = $fms->Get( 'height' );
-	my( $ydelmax ) = pfget( $image_extfile, "evid$evid\{ydelmax}" );
-	my( $ydelmin ) = pfget( $image_extfile, "evid$evid\{ydelmin}" );
+	my( $ydelmax ) = pfget( $image_extfile, "$Focus_Mapspec{file_basename}\{ydelmax}" );
+	my( $ydelmin ) = pfget( $image_extfile, "$Focus_Mapspec{file_basename}\{ydelmin}" );
 	my( $ypixperkm ) = $height / ( ( $ydelmax - $ydelmin ) * 111.195 );
 
 	$writer->startTag( "pixmap", "mapclass" => "focus" );
@@ -934,15 +943,14 @@ sub create_focusmap {
 		}
 	}
 
-	$Focus_Mapspec{file_basename} = "evid$evid";
-	$Focus_Mapspec{mapname} = $Focus_Mapspec{file_basename};
+	$Focus_Mapspec{file_basename} = "$Focus_Mapspec{mapname}$evid";
 	$Focus_Mapspec{lonc} = unwrapped_lon( \%Focus_Mapspec, $preflon );
 	$Focus_Mapspec{latc} = $preflat;
 
 	# Try to keep the directory names short enough for dir field
 	my( $reldir ) = concatpaths( $State{quakesubdir}, 
 	 	   epoch2str( $preftime, "%Y%j" ) .
-			      "_$Focus_Mapspec{mapname}" );
+			      "_$Focus_Mapspec{file_basename}" );
 	mkdir( concatpaths( $State{dbrecenteqs_dir}, $reldir ), 0755 );
 
 	$Focus_Mapspec{"psfile"} = concatpaths( $State{"workdir"},
@@ -959,7 +967,7 @@ sub create_focusmap {
 	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "" );
 	my( @dbscratch ) = dblookup( @dbwebmaps, "", "", "", "dbSCRATCH" );
 
-	dbputv( @dbscratch, "mapname", $Focus_mapspec{mapname} );
+	dbputv( @dbscratch, "mapname", $Focus_mapspec{file_basename} );
 
 	my( $url ) = $State{dbrecenteqs_url} . 
 		concatpaths( $reldir, "$Focus_Mapspec{file_basename}.html" );
@@ -982,7 +990,7 @@ sub create_focusmap {
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
-	    		"mapname", $Focus_Mapspec{mapname},
+	    		"mapname", $Focus_Mapspec{file_basename},
 			"evid", $evid,
     	    		"dir", $dir,
     	    		"dfile", $dfile,
@@ -993,7 +1001,7 @@ sub create_focusmap {
 
 	my( $modified_image ) = $Focus_Mapspec{clean_image}->Clone();
 
-	eliminate_from_mapassoc( @db, $Focus_Mapspec{mapname} );
+	eliminate_from_mapassoc( @db, $Focus_Mapspec{file_basename} );
 
 	for( $db[3]=0; $db[3] < $nhypos; $db[3]++ ) {
 
@@ -1053,7 +1061,7 @@ sub create_focusmap {
 						points=>$points );
 	
 				dbaddv( @dbmapassoc, 
-				     "mapname", $Focus_Mapspec{mapname},
+				     "mapname", $Focus_Mapspec{file_basename},
 			     	     "orid", $orid,
 			     	     "arid", $arid,
 			     	     "sta", $sta,
@@ -1103,7 +1111,7 @@ sub create_focusmap {
 				stroke=>'black',
 				points=>$points );
 	
-		dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{mapname},
+		dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{file_basename},
 			     	     "orid", $orid,
 			     	     "x", $x,
 			     	     "y", $y, 
