@@ -1,0 +1,25 @@
+## @(#)cmg3t_vel	1.2 5/14/2002
+# @(#)cmg1t_vel	03/08/2004
+# cmg1t    8.33300E-03 hz borehole seismometer
+# Normalized  response relative to velocity
+# 1                   type
+# 3                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# -45.63              normalization factor @ 1Hz
+# -286.70  1	      -45.63 x 2*pi
+# -0.001171  1        +/- .001 satisfies dbcheck_responses
+# 1.0                 gain
+# Sensitivity  1500/v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+286.5  1
+4             Poles
+-1.234E-02    +1.234E-02    0.0000E+00    0.0000E+00
+-1.234E-02    -1.234E-02    0.0000E+00    0.0000E+00
+-5.027E+02    +1.885E+02    0.0000E+00    0.0000E+00
+-5.027E+02    -1.885E+02    0.0000E+00    0.0000E+00
+3             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+1.0053E+03    0.0000E+00    0.0000E+00    0.0000E+00
