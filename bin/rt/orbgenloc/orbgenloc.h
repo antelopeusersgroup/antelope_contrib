@@ -27,6 +27,7 @@ typedef struct hypocenter_ {
 
 typedef struct RTlocate_Options
 {
+
 	/* Set range of epicentral distances from center point
 	to be examined by this instance of orbgenloc */
 	double minimum_distance, maximum_distance;
@@ -48,4 +49,4 @@ typedef struct RTlocate_Options
 } RTlocate_Options;
 int orb_arrivals_in(int, Dbptr, ORB_Hypocenter *, int *, RTlocate_Options);
 Tbl *orbhypo_to_genloc(ORB_Hypocenter *, Arr *, Arr *);
-
+int maketmpdb (char *schema, Dbptr *db, char *dbname);

@@ -20,6 +20,37 @@ static void usage (char *Program_Name)
 	die(0,"Usage:  %s orbserver [-S statefile -pf pffile]\n", 
 		Program_Name);
 }
+/* Special function used in orbgenloc for repeated task sending a db record 
+to the orb.  It basicially implements a standard error message if this
+fails.  
+
+Arguments:
+	db - input db pointer.  It is ASSUMED that db.record is dbSCRATCH
+		and the relevant record has been copied onto the scratch
+		record before calling this function. 
+	orb - orb descriptor to send the scratch record of db to.  
+Returns 0 if all worked.  Returns negative of number of failures 
+otherwise with messages placed in error log.  
+Author:  Gary L. Pavlis
+Written:  May 1997
+*/
+int save_dbrecord(Dbptr db, int orb)
+{
+	char *table_name;
+	int ret_code=0;
+
+
+	if(db2orbpkt(db,orb)) 
+	{
+		dbquery(db,dbTABLE_NAME,table_name);
+		register_error(0,"Error writing a record for table %s to orb\n",
+			table_name);
+		--ret_code;
+	}
+	return(ret_code);
+}
+	
+
 /* Initializes the scratch records for each table used in this program.  
 That is, origin, origerr, and assoc.  This only needs to be done
 once.  The procedure loads NULL files into each attribute of the
@@ -108,12 +139,12 @@ Author:  Gary Pavlis
 Written:  October 1997
 */
 
-int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
+int save_origin(int nass, int evid, Dbptr master_db, Dbptr dbtmp,
 			Hypocenter h,Location_options o, int orb)
 {
 	int ndef;
 	char dtype[2];
-        char algorithm[16]="genloc-nlls";
+        char algorithm[16]="ggnloc";
 	char auth[16]="orbgenloc";
 	int grn, srn;
 	int orid;  /* orid returned */
@@ -142,6 +173,7 @@ int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
                 "time",h.time,
                 "orid",orid,
 		"evid",evid,
+		"nass",nass,
 		"grn", grn,
 		"srn", srn,
 		"dtype",dtype,
@@ -160,37 +192,6 @@ int save_origin(int evid, Dbptr master_db, Dbptr dbtmp,
 	}
 	return(orid);
 }
-/* Special function used in orbgenloc for repeated task sending a db record 
-to the orb.  It basicially implements a standard error message if this
-fails.  
-
-Arguments:
-	db - input db pointer.  It is ASSUMED that db.record is dbSCRATCH
-		and the relevant record has been copied onto the scratch
-		record before calling this function. 
-	orb - orb descriptor to send the scratch record of db to.  
-Returns 0 if all worked.  Returns negative of number of failures 
-otherwise with messages placed in error log.  
-Author:  Gary L. Pavlis
-Written:  May 1997
-*/
-int save_dbrecord(Dbptr db, int orb)
-{
-	char *table_name;
-	int ret_code=0;
-
-
-	if(db2orbpkt(db,orb)) 
-	{
-		dbquery(db,dbTABLE_NAME,table_name);
-		register_error(0,"Error writing a record for table %s to orb\n",
-			table_name);
-		--ret_code;
-	}
-	return(ret_code);
-}
-	
-
 	
 /*This function adds a single row to the origerr table for this event.
 
@@ -209,9 +210,17 @@ Written:  February 1997
 void save_origerr(int orid, Hypocenter h, double **C, Dbptr db, int orb)
 {
 	double sdobs; 
+	int rc;
+	double smajax,sminax,strike,sdepth,stime;
+	double conf=0.683;
 
 	db = dblookup(db,0,"origerr",0,0);
 	db.record = dbSCRATCH;
+
+	/* computer error ellipse parameters */
+	rc = project_covariance(C,CHI_SQUARE,&conf,
+			h.rms_weighted,h.degrees_of_freedom,
+			&smajax,&sminax,&strike,&sdepth,&stime);
 
 	/* Bad news here is that we can't save the more useful 
 	statistics that this program calculates.  css3.0 only allows
@@ -231,6 +240,12 @@ void save_origerr(int orid, Hypocenter h, double **C, Dbptr db, int orb)
                 "sty",C[1][3],
                 "stz",C[2][3],
 		"sdobs",sdobs,
+		"smajax",smajax,
+		"sminax",sminax,
+		"strike",strike,
+		"sdepth",sdepth,
+		"stime",stime,
+		"conf",conf,
 			0) == dbINVALID)
 	{
 		complain(0,"save_origerr: dbputv error writing origerr record for orid %d\norigerr record not saved anywhere\n",
@@ -568,6 +583,7 @@ void compute_location(Location_options o,
 	double delta, seaz;
 	double **C;
 	float *emodel;
+	int nass;
 
 	initialize_hypocenter(&h0);
 
@@ -615,6 +631,7 @@ void compute_location(Location_options o,
 
 	/* Location with Generic Gauss_Newton code */
 		orid = -1;
+		nass = maxtbl(ta);
 		ret_code = ggnloc(h0,ta,tu,o,
 				&converge_history,&reason_converged,&residual);
         	if(ret_code < 0)
@@ -634,7 +651,7 @@ void compute_location(Location_options o,
                 	hypo = (Hypocenter *)gettbl(converge_history,
 							niterations-1);
 			predicted_errors(*hypo, ta, tu, o, C, emodel);
-               		orid = save_origin(hyp.evid,master_db,
+               		orid = save_origin(nass,hyp.evid,master_db,
 					 dbtmp,*hypo,o,orbout);
 
                 	save_origerr(orid,*hypo,C,dbtmp,orbout);
