@@ -296,10 +296,6 @@ sub splitmail {
 
 		$epoch = get_epoch( $mailobj );
 
-		if( $opt_v ) {
-			printf( "Splitting mail from $from at $epoch\n" );
-		}
-
 		if( $address eq "" || $epoch == 0  ) {
 			
 			$filename = sprintf( "%s/PROBLEM_%03d", 
@@ -308,8 +304,22 @@ sub splitmail {
 			$filename = "$Splitdir/$epoch-$address";
 		}
 
+		if( $opt_v ) {
+
+			if( $opt_n ) {
+
+				printf( "Would split " );
+
+			} else {
+
+				printf( "Splitting " );
+			}
+
+			printf( "mail from $from at $epoch to $filename\n" );
+		}
+
 		if( $opt_n ) {
-			print "$filename\n";
+			
 			next MAILMSG;
 		}
 		
@@ -381,6 +391,25 @@ sub filemail {
 		$dfile = $user;
 	}
 
+	if( $opt_v ) { 
+
+		if( $opt_n ) {
+
+			printf( "Would file " );
+
+		} else {
+
+			printf( "Filing " );
+		}
+
+		printf( "$file in $dir/$dfile\n" );
+	}
+
+	if( $opt_n ) {
+
+		return;
+	}
+
 	if( ! -e "$dir" ) {
 		$status = system( "mkdir -p $dir" );
 		if( $status ) {
@@ -424,7 +453,7 @@ $do_file = 0;
 $do_sort = 0;
 $do_database = 0;
 
-elog_init( "filemail", $ARGV );
+elog_init( "filemail", @ARGV );
 
 if ( ! &Getopts('aunfvsS:d:') ) { 
 
@@ -572,10 +601,6 @@ if( $do_split ) {
 if( $do_file ) {
 
 	foreach $file ( sort bytime glob( "$Splitdir/*" ) ) {
-
-		if( $opt_v ) { 
-			printf( "Filing $file\n" );
-		}
 
 		filemail( $file );
 	}
