@@ -63,7 +63,7 @@ global_map &Arr{
 focus_map_pga &Arr{
 	include 	map_config
 	stylesheet	&datafilename(xslt/specific_default.xsl)
-	vrml_stylesheet	&datafilename(specific_default_vrml.xsl)
+	vrml_stylesheet	&datafilename(xslt/specific_default_vrml.xsl)
 	mapname		evidtest
 	description	PGV Map
 	mapclass	focus
@@ -79,7 +79,7 @@ focus_map_pga &Arr{
 focus_map_main &Arr{
 	include 	map_config
 	stylesheet	&datafilename(xslt/specific_default.xsl)
-	vrml_stylesheet	&datafilename(specific_default_vrml.xsl)
+	vrml_stylesheet	&datafilename(xslt/specific_default_vrml.xsl)
 	mapname		evid
 	description	Event Map
 	mapclass	focus
