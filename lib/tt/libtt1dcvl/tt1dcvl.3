@@ -7,7 +7,7 @@ flat earth constant velocity layered model travel time calculator
 .nf
 int tt1dcvl (char *model,char *phase_code,int mode,TTGeometry *geometry,
     Tbl **timesp,Hook **hookp);
-int u1dcvl (char *model,char *phase_code,int mode,TTGeometry *geometry,
+int tt1dcvl_ucalc (char *model,char *phase_code,int mode,TTGeometry *geometry,
     Tbl **timesp,Hook **hookp);
 
 .fi
@@ -30,7 +30,7 @@ called with the method field set as tt1dcvl.
 Notice that the arguments of 
 the two functions listed above are identical to ttcalc and ucalc
 described in ttcalc(3).  
-Note, however, you should NOT call tt1dcvl or u1dcvl directly, but you
+Note, however, you should NOT call tt1dcvl or tt1dcvl_ucalc directly, but you
 should instead call ttcalc with the method set to tt1dcvl.  The
 ttcalc interface handles the translation.
 .LP
@@ -41,7 +41,7 @@ causes the package to open database tables that are used by
 the program to set up the velocity model.  Model names are used
 as a key to the database.  When a new model name is requested a function
 is called that searches for that model name in the database.  If the
-requested model name is not found tt1dcvl and u1dcvl return a nonzero
+requested model name is not found tt1dcvl and tt1dcvl_ucalc return a nonzero
 error code and leave a message on the error log.  The caller must,
 of course, trap this condition or the result will be garbage 
 or something worse like a seg fault.  The only table this

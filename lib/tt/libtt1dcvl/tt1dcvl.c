@@ -793,7 +793,7 @@ int tt1dcvl (
 /* this is the parallel entry point for ucalc defined in tt(3).
 This and tt1dcvl use the identical algorithm, but handle different
 data structures */
-int u1dcvl (
+int tt1dcvl_ucalc (
    char *model,
     char *phase_code,
     int mode,
