@@ -420,15 +420,19 @@ orbtrigger [options] orbname
 -out orbout
 </options>
 
-orbassoc [options] orbin orbout dbnextid
+orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
     spatial grid search based real time associator/locator
 <options>
--start {pktid|time|OLDEST|NEWEST}
+-start {pktid|time|OLDEST}
 -number number
 -nowait
--target_orbassoc torbassoc
+-select expr
+-S statefile
+-target_orb2dbt torb2dbt
 -target_orbmag torbmag
 -pf pfname
+-auth author
+-dbnextid dbnextid
 </options>
 
 ttgrid [-pf pfname] [-time {timestr|all}] db
@@ -604,21 +608,19 @@ orb2db [options] orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
-orb2dbt [options] orb dbout
+orb2dbt [options] orb dbout [orbout]
     read Datascope database packets from an orb and write to a database
 <options>
--select re1	read only packets matching re1
--reject re2	don't read packets matching re2
--verbose
--start {pktid|time|OLDEST|NEWEST}
- 	begin reading at specified pktid
--number n	read a maximum of n packets
--nowait
--safe
--timeout seconds
+-select expr
+-reject expr
+-start {pktid|time|OLDEST}
+-number number
+-target_orbmag torbmag
+-timeout timeout
 -overwrite
--state filename
- 	save state in filename
+-state statefile
+-pf pfname
+-v
 </options>
 
 

@@ -8,6 +8,7 @@ dbdetect [options] dbin dbout
     run multifrequency STA/LTA detector on dbin, writing detections into dbout.
 <options>
 -arrivals	write arrival records also
+-noaddchk	don't do database checks
 -pf pf	pf specifies channels and filters
 -tstart t0	start at t0
 -twin T	for T minutes
@@ -32,9 +33,11 @@ dbtrigger [options] dbin
 -out dbout
 </options>
 
-dbgrassoc [options] db
+dbgrassoc [options] dbout ttgridf1 [ttgridf1 [...]]
     spatial grid search based associator/locator: reads output from dbtrigger, generating new origin, assoc and arrival records in the output database db
 <options>
+-i
+-assoc
 -pf pfname
 </options>
 
@@ -44,6 +47,8 @@ dbassoc [options] dbin dbout dbcat timeres_P timeres_S
 -arid arid1 ... | -orid orid1 ... | -evid evid1 ...
 	select events by arid, orid or evid
 -ignoreiphase
+-v
+-writeout
 -pred	save predicted arrivals
 -prefor	set prefor
 -rules r	any combination of P,S,PS,PS+,first,arids=all,best,all
