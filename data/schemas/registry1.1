@@ -60,7 +60,7 @@ Attribute closeorb
 	Detail {
 		When a pforbstat connections analysis is done, one orb 
 		(out of the two orbs communicating via an orb2orb instance)
-		is closer to the machine running the orbstat than the other. 	
+		is closer to the machine running the orbstat than the other.         
 		The closeorb field records whether the 'fromaddress' orb in the 
 		connections table or the 'toaddress' orb in the connections table 
 		is the orb directly visible to the machine doing the orbstat.
@@ -122,6 +122,18 @@ Attribute fromport
 	Detail {
 		This is the port number for an orbserver on one end of 
 		an orb data-transfer connection
+	}
+	;
+
+Attribute griddescrip
+	String (100)
+	Format ( "%-100s" )
+	Null ( "-" )
+	Description ( "description of the grid of orbs" )
+	Detail {
+		This field gives what is essentially a title for this
+		registry database of orbs, usually describing the network
+		of orbs which it represents.
 	}
 	;
 
@@ -688,6 +700,17 @@ Relation connections
 	Detail {
 		This table describes data-flow connections between orbs, 
 		usually established with the orb2orb client.
+	}
+	;
+
+Relation grid
+	Fields ( griddescrip lddate )
+	Primary ( griddescrip )
+	Description ( "title of registry grid" )
+	Detail {
+		This table allows the grid of orbs in this registry 
+		database to be described with a human-readable 
+		title, in the griddescrip field.
 	}
 	;
 
