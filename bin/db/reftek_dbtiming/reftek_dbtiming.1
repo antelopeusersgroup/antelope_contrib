@@ -1,0 +1,54 @@
+'\" te	
+.TH REFKTEK_DBTIMING 1 "$Date$"
+.SH NAME
+reftek_dbtiming \- builds timing table for reftek data loggers
+.SH SYNOPSIS
+.nf
+reftek_dbtiming db [-rampout] 
+.fi
+.SH DESCRIPTION
+This program builds a css3.0 extension table called \fItiming\fR 
+used to deal with data logger timing problems.  It uses a table
+of drift rates determined by the PASSCAL instrument center for 
+Reftek 72A series data loggers.  That is, the constant used is 
+0.5 ppm or about 40 ms/day.  The program builds a series of entries
+in the timing table based on the SEED quality fields.  That is, 
+an entry is made in the timing table at time intervals from the 
+last lock time as defined by SEED quality fields:  
+1 hr, 2 hr, 4 hr, 8 hr, 1 day, 7 days, and greater.
+
+The timing table can be used by other programs, but the original 
+design intent was for automated handling of timing problems in 
+the genloc library of event location routines.  That is, genloc will
+now look at the timing table (if it exists) and automatically 
+switch to S-P mode when the timing accuracy of a station drops
+below a specified threshold.  
+.SH OPTIONS
+\fBrampout\fR controls what happens when the program reaches the end of
+timing information from the pcf file.  The default sets the last entry
+in the timing table at the last clock lock time listed in the pcf file.  
+If the \-rampout flag is used the program goes into a time rampout mode
+when it reaches the end of an entry for a given das.  It first checks
+for an offdate time in the site table and uses this as an absolute end time.
+If there is a time gap between offdate and the last pcf file entry it will
+add timing entries as if the last pcf file time was the last lock time.
+If offdate is not defined, it will add entries to the timing table until
+it reaches the maximum error field in the timing table (currently 30 days).
+.SH FILES
+Reads PASSCAL pcf files from stdin.  These are assumed to be in time
+order for a given data logger.  Multiple pcf files from different data
+loggers can be combined in one input stream to allow the use of a 
+unix pipe as in the following:
+.nf
+   cat NRN.pcf ACA.pcf KZN.pcf | reftek_dbtiming ghengis
+.fi
+.SH EXAMPLE
+.SH DIAGNOSTICS
+The program will die if the extension table \fItiming\fR is not defined
+in the schema.  Otherwise it dies only on malloc errors.  It will exit 
+on out of sequence time jumps (i.e. lock times jumping backward in time)
+and for a range of potential data problems.  The later will likely evolve
+based on past experience with anything from refteks.  
+.SH AUTHOR
+Gary L. Pavlis
+.\" $Id$
