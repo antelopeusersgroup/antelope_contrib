@@ -120,6 +120,10 @@ Be aware also that not only is this transformation not
 orthogonal it also changes the relative amplitudes of the
 P and S components.   That is, it does not preserve 
 original vector amplitudes.   
+This function will throw a seispp_error object if the surface
+velocities passed to the function are higher than the apparent
+velocity (1/ray_parameter)  as the transformation matrix used
+will not work for post-critical wavefields.
 .LP
 The \fIapply_transformation_matrix\fR functions more generic.
 It simply applies the 3x3 transformation matrix to the data.
