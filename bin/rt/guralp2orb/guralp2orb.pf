@@ -7,6 +7,11 @@ reject_past_packets_sec 604800 # Set to zero to disable.
 			       # 604800 sec = 7 days.
 buffer_tail_padding 20 # Number of packets to advance from oldest 
 		       # in buffer, to avoid thrashing
+recovery_host_list &Arr{
+137.229.32.243:1567 on
+129.79.146.66:1568 on
+}
+maximum_packets_to_recover 30
 udplisten &Tbl{
 	53764
 }

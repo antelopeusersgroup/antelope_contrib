@@ -173,6 +173,10 @@ static int nrecovery_threads = 1;
 static int max_recovery_failures = 0;
 static int Buffer_tail_padding = 20;
 
+/* Added by glp */
+static Arr *Recovery_list;
+static int Max_Packets_to_Recover;
+
 
 static void
 usage()
@@ -258,6 +262,7 @@ register_packet( G2orbpkt *gpkt )
 {
 	int	*blockseq;
 	Recoverreq *rr;
+	int number_to_recover;
 
 	mutex_lock( &lp_mutex );
 
@@ -276,6 +281,10 @@ register_packet( G2orbpkt *gpkt )
 
 		if( ( gpkt->blockseq != next_in_sequence( *blockseq ) ) &&
 		    ( gpkt->blockseq != *blockseq ) ) {
+fprintf(stderr,"Recovery request for udp source ->%s<-\n",gpkt->udpsource);
+		    if(getarr(Recovery_list,gpkt->udpsource)!=NULL)
+		    {
+fprintf(stderr,"Attempting recovery of data from %s\n",gpkt->udpsource);
 
 			allot( Recoverreq *, rr, 1 );
 
@@ -293,11 +302,25 @@ register_packet( G2orbpkt *gpkt )
 					rr->udpsource);
 			}
 
-			if( nrecovery_threads > 0 ) {
+			number_to_recover = (rr->last)-(rr->first)+1;
+			if((number_to_recover>0) 
+				&& (number_to_recover<Max_Packets_to_Recover)
+				&& (nrecovery_threads > 0 ) ) {
 				mtfifo_push( Recover_mtf, (void *) rr );
 			} else {
+				if(number_to_recover>0)
+					elog_log(0,"Absurd recovery request for ip %s dropped\nRequested recovery of %d packets\n",
+						rr->udpsource,
+						number_to_recover);
 				free( rr );
 			}
+		    }
+		    else
+		    {
+			elog_log(0,"guralp2orb:  ignored recovery request for %s for packets %d to %d\n",
+				gpkt->udpsource,next_in_sequence( *blockseq ),
+				previous_in_sequence( gpkt->blockseq ));
+		    }
 		}
 
 		*blockseq = gpkt->blockseq;
@@ -2075,6 +2098,14 @@ guralp2orb_pfwatch( void *arg )
 					}
 				}
 			}
+			/* Recovery list is cleared and reset.  Since we are mutex
+			protected that should be ok.  This may be a small memory
+			leak because only the keys are actually used in the arr.
+			Hence, we should not have to free the contents.*/
+			freearr(Recovery_list,0);
+			Recovery_list = pfget_arr(pf,"recovery_host_list");
+			Max_Packets_to_Recover = pfget_int(pf,"maximum_packets_to_recover");
+			
 
 			new_reject_past_packets_sec = fabs( pfget_double( pf, "reject_past_packets_sec" ) );
 
@@ -2354,6 +2385,17 @@ main( int argc, char **argv )
 		 	"Failed to create packet-recovery thread\n" );
 		}
 	}
+	/* Added March 2003 by G Pavlis.  Only attempt recovery on
+	network addresses (ip:socket) listed in the parameter file.
+	This was found necessary to screen problem stations that would
+	cause guralp2orb to go catatonic.*/
+	Recovery_list = pfget_arr(pf,"recovery_host_list");
+	if(Recovery_list == NULL) 
+	{
+		elog_notify(0,"recovery_host_list is missing from the parameter file\nAssuming null list\n");
+		Recovery_list = newarr(0);
+	}
+	Max_Packets_to_Recover = pfget_int(pf,"maximum_packets_to_recover");
 
 	ul_arr = newarr( 0 );
 	ui_arr = newarr( 0 );

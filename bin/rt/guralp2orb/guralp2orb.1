@@ -63,6 +63,18 @@ parameter may be set to zero, allowing an infinite number of retries.
 Guralp2orb will keep re-trying to acquire as long as it has some indication
 there's a GCF server on the other end.
 
+Experiece with running this program led to a series of modifications.
+The fundamental problem is the guralp packets lack any integrity check
+and UDP does not guarantee packets are delivered clean.  As a result
+packets were found to sometimes contain random errors that caused a 
+series of potential errors.  As a workaround the program contains several
+sanity checks described below in the parameter file description.  These
+check for the time stamp on packets and for garbage packet sequence numbers.
+To further reduce the impact of these problems the program will ONLY 
+initiate recovery attempts on trusted hosts named in the parameter file
+with the identifying tag recovery_host_list.  That is, recovery is ONLY 
+on for hosts whose ip:port address match an entry in that list.
+
 If the udplisten threads are missing UDP packets, it may be necessary to 
 set them to real-time priority class. This is done by making the 
 guralp2orb executable be suid root (if guralp2orb detects that it 
@@ -160,6 +172,14 @@ reject_future_packets_sec 300
 # Reject packets too far behind of the system clock. Set to
 # 0 to disable past-packet rejection
 reject_past_packets_sec 604800	# i.e. 7 days
+# absolute number of packets for one recovery request
+maximum_packets_to_recover 30
+#
+#  list of ip:port numbers.  Secondary string (here on) does nothing. 
+recovery_host_list &Arr{
+137.229.32.243:1567 on
+129.79.146.66:1568 on
+}
 
 # buffer_tail_padding is the number of packets to advance 
 # from the end of the SCREAM buffer, should we need to 
