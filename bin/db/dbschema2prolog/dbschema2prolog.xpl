@@ -172,9 +172,9 @@ foreach $table ( sort( keys( %relations ) ) ) {
 	@alternate = dbquery( @db, "dbALTERNATE_KEY" );
 	@foreign = dbquery( @db, "dbFOREIGN_KEYS" );
 
-	grep( s/::/_/g, @primary );
-	grep( s/::/_/g, @alternate );
-	grep( s/::/_/g, @foreign );
+	grep( s/::/,/g, @primary );
+	grep( s/::/,/g, @alternate );
+	grep( s/::/,/g, @foreign );
 
 	$description = dbquery( @db, "dbTABLE_DESCRIPTION" );
 	$detail = dbquery( @db, "dbTABLE_DETAIL" );
