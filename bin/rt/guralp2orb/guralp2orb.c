@@ -1,3 +1,12 @@
+/*
+ * guralp2orb
+ *
+ * Kent Lindquist
+ * Geophysical Institute
+ * University of Alaska, Fairbanks
+ * 1998
+ *
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include "stock.h"
