@@ -38,7 +38,10 @@ create one database row per entry. In this case a foreach loop will be
 wrapped around the array of entities, and the string 'FOREACH' in the
 value expressions will be replaced by the key on each iteration. If the
  'FOREACH' string appears alone as a value, it will be replaced by the
-current key.
+current key. If the value expression is preceded by the string 'BOOLEAN:', 
+the entry is interpreted as a boolean value. If the value expression is 'SRCNAME', 
+the value will be the srcname of the packet rather than part of the packet
+contents.
 
 Each entry in the 'clean' array specifies fields to \fImatch\fP to the
 incoming packet. Upon acquisition of each packet, rows matching all of

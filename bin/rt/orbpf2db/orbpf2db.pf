@@ -10,6 +10,9 @@ translations &Arr{
 				serveraddress	server{address}
 				serverport	server{port}
 			}
+			connections &Arr{
+				srcname		SRCNAME
+			}
 		}
 		tables &Arr{
 			servers &Arr{
@@ -91,6 +94,7 @@ translations &Arr{
 			}
 			connections &Arr{
 				FOREACH		connections
+				srcname		SRCNAME
 				when 		TIME:connections_when
 				fromaddress	connections[FOREACH]{fromaddress}
 				fromport	connections[FOREACH]{fromport}

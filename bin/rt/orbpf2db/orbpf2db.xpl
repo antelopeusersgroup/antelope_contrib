@@ -233,6 +233,10 @@ for( ; $stop == 0 ; ) {
 				$pattern =~ s/^BOOLEAN://;
 				$value = pfget_boolean( $pkt->pf, $pattern );
 
+			} elsif( $pattern =~ /^SRCNAME$/ ) {
+
+				$value = $srcname;
+
 			} else {
 		
 				$value = pfget( $pkt->pf, $pattern );
@@ -313,6 +317,10 @@ for( ; $stop == 0 ; ) {
 						$pattern =~ s/^BOOLEAN://;
 						$value = pfget_boolean( $pkt->pf, $pattern );
 
+					} elsif( $pattern =~ /^SRCNAME$/ ) {
+
+						$value = $srcname;
+
 					} else {
 
 						$pattern =~ s/FOREACH/$key/;
@@ -362,6 +370,10 @@ for( ; $stop == 0 ; ) {
 
 					$pattern =~ s/^BOOLEAN://;
 					$value = pfget_boolean( $pkt->pf, $pattern );
+
+				} elsif( $pattern =~ /^SRCNAME$/ ) {
+
+					$value = $srcname;
 
 				} else {
 			
