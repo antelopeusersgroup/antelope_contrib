@@ -111,7 +111,14 @@ Attribute mapname
 		This is a unique name for a map to be used for plotting 
 		events. This name is distinct from the actual file name 
 		containing the map image--the character string mapname 
-		is used in lieu of an integer map id.
+		is used in lieu of an integer map id. For all maps that 
+		are pre-generated (i.e. no earthquake etc. symbols on the map, 
+		symbols added on-the fly), the mapstock table defines the 
+		mapname attribute. The webmaps table then lists the current 
+		version of that mapname that has specific earthquake symbols 
+		on it. For maps that are generated on-the-fly, there will 
+		not be an entry in the mapstock table. In these cases
+		the mapname will be entirely defined by the webmaps table. 
 	}
 	;
 
@@ -304,7 +311,10 @@ Relation mapassoc
 	Description ( "associations between hypocenters and stock maps" )
 	Detail {
 		associates stock maps with the hypocenters that are to
-		be shown on them. 
+		be shown on them. Mapassoc entries may also be made for 
+		earthquakes on dynamically-generated pages that have 
+		webmaps-table entries but no pregenerated images in the 
+		mapstock table.
 	}
 	;
 
@@ -320,15 +330,21 @@ Relation mapstock
 	;
 
 Relation webmaps
-	Fields ( mapname dir dfile url evid )
+	Fields ( mapname dir dfile url evid orid )
 	Primary ( mapname )
 	Alternate ( dir dfile )
-	Foreign ( evid )
+	Foreign ( evid orid )
 	Description ( "map images for web" )
 	Detail {
 		The webmaps table describes where to find maps that 
 		have been customized (usually with the addition of 
 		particular earthquakes) and placed in directories 
-		accessible to the web server
+		accessible to the web server. If the the map is specific 
+		to a single evid, the evid field may be filled in as 
+		a foreign key. If the map is specific to a single 
+		hypocentral solution, the orid field may be filled in as 
+		a foreign key. In most cases it will probably not make sense
+		to fill in both evid and orid. For maps that contain more 
+		than one event, the evid and orid fields are left blank. 
 	}
 	;
