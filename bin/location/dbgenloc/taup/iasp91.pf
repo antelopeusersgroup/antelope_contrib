@@ -4,28 +4,28 @@ P  &Arr{
 travel_time_calculator general
 TTmodel iasp91
 TTmethod tttaup tttaup utaup
+#
+#  This weight function is necessary because P is a generic first arrival
+#  At the edge of the core shadow Pdiff = P which can cause large errors
+#  with short-period data where PKiKP is the normal detection
+#
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
+	90.0	1.0
+	95.0	0.1
+	130.0	0.3
+	180.0   0.3
 	}
 	ux_distance_weight_function &Tbl{
         0.0     1.0
-        10.0    1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
         uy_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
-	default_time_uncertainty 0.01
+	default_time_uncertainty 0.1
 	default_slowness_uncertainty 0.01
         dt_bound_factor 0.01
         du_bound_factor 0.035
@@ -44,25 +44,19 @@ TTmethod tttaup
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
-	5.0	0.1
-	92.0	0.0
-	360.0	0.0
+	92.0	1.0
+	100.0	0.0
+	180.0   0.0
 	}
 	ux_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
         uy_distance_weight_function &Tbl{
         0.0     1.0
-        10.0     1.0
-        90.0    0.7
-        92.0    0.0
-        360.0   0.0
+        180.0	1.0
         }
-	default_time_uncertainty 0.1
+	default_time_uncertainty 0.2
 	default_slowness_uncertainty 0.005
         dt_bound_factor 0.01
         du_bound_factor 0.035
