@@ -7,8 +7,11 @@ aah2db [-vV] ahfile [ahfile...] dbname
 .fi
 .SH DESCRIPTION
 aah2db converts non-XDR AH files ("Alaskan AH") into their database representation, with datatype 'aa'. 
+
+aah2db can handle ah files that have multiple header/data block pairs. Also, aah2db correctly handles files that are compressed or gzipped. 
 .SH OPTIONS
 -v verbose
+
 -V version
 .SH FILES
 .SH ENVIRONMENT
@@ -28,6 +31,8 @@ ah2db(1), trdefaults(5)
 .SH "BUGS AND CAVEATS"
 This should really be combined with ah2db, which handles the 
 official Lamont version of AH files based on XDR data representation. 
+That will happen after Lamont/XDR AH is made an official Antelope 
+datatype, allowing corresponding rewrite of ah2db. 
 
 Event and calibration info are currently ignored. 
 .SH AUTHOR
