@@ -38,15 +38,6 @@ http://mapping.usgs.gov/
 .SH "BUGS AND CAVEATS"
 There are a number of different GNIS file formats. Only two 
 are supported. 
-
-GNIS files are known to have occasional entries with the same 
-lat and lon and feature name (the primary keys of the places1.2
-places table), however with different feature type or elevation. 
-However, for good reason those two have not been made primary keys. 
-Therefore either the GNIS files need to be cleaned up a bit before 
-use, or gnis2db had to be made less picky about rows with duplicate
-primary keys (i.e. dbputv strategy instead of dbaddv). This latter 
-strategy was chosen, though can be easily changed. 
 .SH AUTHOR
 Jennifer Eakins. Tweaked for new schema and installed by 
 Kent Lindquist.

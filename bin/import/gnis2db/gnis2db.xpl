@@ -32,6 +32,7 @@ open (FILE, "< $file")  || die "Can't open $file for reading: $! \n";
 
 while(<FILE>) {
 
+	$unchanged_line = $_;
 	$_ =~ s/^[\'\"]//;
 	#split each line using a quote-comma-quote as the delimiter
 	if( defined( $fix_state ) ) {
@@ -57,17 +58,21 @@ while(<FILE>) {
 		$elev = -999;
 	}
 
-	# GNIS files have a few repetitions. It's easier to 
-	# let them live: garbage-in, garbage-out
-	$db_place[3] = dbaddnull( @db_place );
-	dbputv( @db_place, 	
-		"lat", 		$lat, 
- 		"lon", 		$lon, 
-		"elev", 	$elev, 
-		"place",	$fname, 
-		"placetype", 	$ftype, 
-		"county",	$county,
-		"state",	$state );
+	# GNIS files have a few repetitions, at least measured 
+	# according to the primary keys of lat, lon, place. Catch them
+	$result = eval { dbaddv( @db_place, 	
+				"lat", 		$lat, 
+ 				"lon", 		$lon, 
+				"elev", 	$elev, 
+				"place",	$fname, 
+				"placetype", 	$ftype, 
+				"county",	$county,
+				"state",	$state );
+			};
+	if( $@ ne "" ) {
+		print STDERR 
+		"$@\ngnis2db: Rejecting duplicate line\n$unchanged_line\n";
+	}
 }
 dbclose( @db );
 close( FILE );
