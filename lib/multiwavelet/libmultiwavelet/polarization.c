@@ -138,6 +138,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	double sumsq,sumwt;
 	int ndgf;
 	MW_scalar_statistics stats;
+	double nrmtest;
 
 	allot(double *,v,3*n);
 	allot(double *,weight,n);
@@ -244,10 +245,20 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	for(i=0,ii=0;i<n;++i,ii+=3)
 	{
 		dotprod = ddot(2,v+ii,1,avg,1);
-		dotprod /= dnrm2(2,v+ii,1);
+		nrmtest = dnrm2(2,v+ii,1);
+		if(nrmtest<=0.0)
+		{
+			elog_notify(0,"pmvector_average:  minor axis estimate %d of %d estimates has 0 projection perpendicular to major\nArtificially set to average\n",
+				i,n);
+			workn[0] = 0.0;
+		}
+		else
+		{
+			dotprod/= nrmtest;
 		/* because avg wasn't normalized we have divide by norm */
-		dotprod /= nrm_minor;
-		workn[i] = acos(dotprod);
+			dotprod /= nrm_minor;
+			workn[i] = acos(dotprod);
+		}
 	}
 	/* We want the final result normalized to a unit vector length */
 	for(i=0;i<3;++i) pmavg->minor[i] = work[i]/nrm_minor;
