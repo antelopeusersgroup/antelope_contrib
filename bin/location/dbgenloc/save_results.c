@@ -11,17 +11,22 @@ save_results (Dbptr dbin, Dbptr dbout,
 	Hypocenter *hypo, 
 	Tbl *residual, 
 	int *oridp,
-	float **C,
+	double **C,
 	float *emodel )
 {
     int             i, n, orid, grn, srn, retcode = 0;
     char algorithm[15];
     char *str;
     double delta, esaz, seaz, slores, duphi, azres, azimuth ;
+    double smajax, sminax, strike, sdepth, stime;
     Arrival *a ; 
     Slowness_vector *u ;
     Dbptr dborigin, dbassoc ;
     int old, new ;
+    double conf;
+    char *modtype;
+    int model;
+    int	rc;
 
     *oridp = orid = dbnextid(dbin, "orid" ) ;
     if ( orid < 1 ) {
@@ -43,7 +48,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	str = vmodel;
     else
 	++str;
-    sprintf(algorithm,"dbgenloc:%6.6s",str);
+    sprintf(algorithm,"dbgenloc:%-6.6s",str);
     if (dborigin.record < 0
        ||  dbputv(dborigin, 0,
 	   "orid", orid, 
@@ -62,6 +67,43 @@ save_results (Dbptr dbin, Dbptr dbout,
 	retcode = -1;
       }
 
+     conf = pfget_double(pf,"confidence");
+     modtype = pfget_string(pf,"ellipse_type");
+
+     if(modtype == NULL)
+     {
+	complain(0,"parameter ellipse_type not defined--default to chi_square");
+	model = CHI_SQUARE;
+     }
+     else if( strcmp( modtype, "chi_square" ) == 0 ) 
+     {
+        model = CHI_SQUARE;
+     }
+     else if( strcmp( modtype, "F_dist" ) == 0 )
+     {
+        model = F_DIST;
+     }
+     else
+     {
+        complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
+        model = CHI_SQUARE;
+     }
+
+    rc = project_covariance( C, model, &conf, 
+			     hypo->rms_weighted, hypo->degrees_of_freedom, 
+			     &smajax, &sminax, &strike, &sdepth, &stime );
+
+    if( rc != 0 ) 
+    {
+	complain(0, "project_covariance failed." );
+        smajax = -1;
+        sminax = -1;
+	strike = -1;
+	sdepth = -1;
+	stime = -1;
+	conf = 0.;
+    }
+
     if(dbaddv(dbout, "origerr", 
 		"orid", orid,
 		"sxx",C[0][0], 
@@ -74,7 +116,14 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"stx",C[0][3], 
 		"sty",C[1][3], 
 		"stz",C[2][3], 
-		"sdobs", hypo->rms_raw, 0) < 0 ) {
+		"sdobs", hypo->rms_raw,
+		"smajax", smajax,
+		"sminax", sminax,
+		"strike", strike, 
+		"sdepth", sdepth,
+		"stime", stime,
+		"conf", conf,
+		0) < 0 ) {
 	complain (1,"couldn't add origerr record to database\n" ) ;
 	retcode = -1 ;
     }

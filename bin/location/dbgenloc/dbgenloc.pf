@@ -96,3 +96,5 @@ minimum_azimuth	0.0
 maximum_azimuth	360.0
 number_points_azimuth	36
 maximum_hypocenter_adjustments 40
+confidence 0.683
+ellipse_type chi_square

@@ -10,7 +10,7 @@ write_log (char *outfile_name,
     Tbl *converge_history, 
     Tbl *reason_converged, 
     Tbl *residual,
-    float **C,
+    double **C,
     float *emodel)
 {
     int i, j, n ;
@@ -123,7 +123,7 @@ write_log (char *outfile_name,
     fprintf( file, "Unscaled Covariance matrix (x,y,z,t)\n");
     for(i=0;i<4;++i)
     {
-	for(j=0;j<4;++j) fprintf(file,"%15.6g ",C[i][j]);
+	for(j=0;j<4;++j) fprintf(file,"%15.6lg ",C[i][j]);
 	fprintf(file,"\n");
     }
     fprintf(file,"Model Error Bounds (x,y,z,t)\n");

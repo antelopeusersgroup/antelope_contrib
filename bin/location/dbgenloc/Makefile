@@ -6,7 +6,7 @@ PF=dbgenloc.pf dbgenloc_default.pf
 
 cflags = -dalign
 ldflags = 
-ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) $(F77LIBS) -ltt -ldl
+ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) $(F77LIBS) -ltt -ldl -lm
 #
 # Turn off the above, and use something like the following if the 
 # Sun Performance Library (sunperf) is not installed on your system.

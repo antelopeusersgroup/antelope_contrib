@@ -39,7 +39,8 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     Tbl		   *ta, *tu ;
     Hypocenter h0;
     Hypocenter *hypo ;
-    float **C, *emodel;  /* computed location error estimates*/
+    float *emodel;
+    double **C;
     static Arr *models = 0 ; 
     static char static_error[256];
     int loc_ret;
@@ -111,7 +112,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     if(loc_ret >= 0)
     {
 	/* computer error estimates */
-	C = matrix(0,3,0,3);
+	C = dmatrix(0,3,0,3);
 	emodel = (float *) calloc(4,sizeof(float));
         if((*C==NULL) || (emodel == NULL))
                 die(0,"malloc failed for error arrays\n");
@@ -131,8 +132,8 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 		strcpy(static_error, gettbl ( reason_converged, 0) ); 
 		*error = static_error ;
 	}
-	free_matrix((char **)C,0,3,0);
-	free(emodel);
+        free_matrix((char **)C,0,3,0);
+        free(emodel);
 	} else {
 	*error = "no reasons returned from location algorithm" ;
 	}
