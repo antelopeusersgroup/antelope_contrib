@@ -207,3 +207,6 @@ dbfixchanids [-q] db
 
 dbfixtimeres db [expr]
     fix time residuals in the assoc table (for records which satisfy expr)
+
+dbfix_calib db
+    replace null calib values in wfdisc with values from the calibration table
