@@ -762,12 +762,12 @@ int uhs2vb ( short *from, void *vto, int n );
 int vt2hi ( void *vfrom, int *to, int n );
 int hi2mt ( int *from, void *vto, int n );
 </cdeclarations>
-
 <body>
-A leading u means unsigned input and output.
-The next 2 chars indicate source architecture and type, 
-the last 2 chars indicate destination architecture
-and type.
+
+Leading u means unsigned input and output,
+next 2 chars indicate source architecture and data type, 
+and last 2 chars indicate destination architecture
+and data type.
 </body>
 
 <example>
@@ -777,6 +777,7 @@ Architecture codes
   a   Intel StrongARM.
   m   Motorola/SPARC 
   v   Vax/Intel
+
 
 Type codes 
   code   type        bits

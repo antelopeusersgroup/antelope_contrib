@@ -17,20 +17,21 @@ MAN 	install man pages
 purify	create executables using purify
 
 <subsection User Macros>
-BIN	files to be installed into $(DEST)/bin 
-LIB	files to be installed into $(DEST)/lib 
-DLIB	files to be installed into $(DEST)/lib 
-INCLUDE	files to be installed into $(DEST)/include 
-PF	files to be installed into $(DEST)/data/pf 
-DATA	files to be installed into $(DEST)/data/$(DATADIR)
-DEMO	files to be installed into $(DEST)/data/$(DEMODIR)
-DOC	files to be installed into $(DEST)/data/$(DOCDIR)
-MAN1	files to be installed into $(DEST)/man/man1
-MAN3	files to be installed into $(DEST)/man/man3
-MAN3F	files to be installed into $(DEST)/man/man3f
-MAN3P	files to be installed into $(DEST)/man/man3p
-MAN3T	files to be installed into $(DEST)/man/man3t
-MAN5	files to be installed into $(DEST)/man/man5
+BIN	files to install into $(DEST)/bin 
+LIB	files to install into $(DEST)/lib 
+DLIB	files to install into $(DEST)/lib 
+INCLUDE	files to install into $(DEST)/include 
+PF	files to install into $(DEST)/data/pf 
+DATA	files to install into $(DEST)/data/$(DATADIR)
+DEMO	files to install into $(DEST)/data/$(DEMODIR)
+DOC	files to install into $(DEST)/data/$(DOCDIR)
+MAN1	files to install into $(DEST)/man/man1
+MAN3	files to install into $(DEST)/man/man3
+MAN3F	files to install into $(DEST)/man/man3f
+MAN3H	files to install into $(DEST)/man/man3h
+MAN3P	files to install into $(DEST)/man/man3p
+MAN3T	files to install into $(DEST)/man/man3t
+MAN5	files to install into $(DEST)/man/man5
 
 cflags	special flags to be used during c compilation
 fflags	special flags to be used during fortran compilation

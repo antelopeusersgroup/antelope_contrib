@@ -34,18 +34,14 @@ int orbseek ( int orb, int which )
     ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST.
 
 
-int orbresurrect ( int orb, int *last_pktid, double *last_pkttime )
+int orbresurrect ( int orb, int *last_pktid, double *last_t)
     sets up and uses a bury(3) state file to save and restore a packet
     position for the connection orb.
 
 
 <subsection Reading>
 int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **pkt, int *nbytes, int *bufsize )
-    get the packet which from connection orb, returning pktid,
-    srcname, time, and nbytes of data pkt.  The size of the buffer pkt
-    is adjusted as needed to contain the incoming packet.  which may
-    be an explicit pktid or ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST,
-    ORBNEWEST.
+    get packet which from orb, returning pktid, srcname, time, and nbytes of data pkt. size of buffer pkt is adjusted as needed; pktid may be explicit pktid or ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST.
 
 int orbreap ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information

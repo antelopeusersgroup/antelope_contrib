@@ -124,9 +124,13 @@ int msdget ( Msd *msd, char *name, ...)
 
 int msdput ( Msd *msd, char *name, ...)
     set a parameter in msd struct
-<example>
-The possible parameter names are:
 
+<body>
+
+The possible parameter names are:
+</body>
+
+<example>
 MSD_ACTIVITY_FLAGS    MSD_CHAN              
 MSD_CNT               MSD_DATAFORMAT        
 MSD_FD                MSD_FILENAME          

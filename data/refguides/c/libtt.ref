@@ -9,16 +9,17 @@ provides generic interface for various travel time calculators
 <cdeclarations>
 
 int ttcalc ( char *method, char *model, char *phase, int flags, TTGeometry *geom, Tbl **times, Hook **hook )
-    return list of travel times using specified method and model for
-    phase given 3d source and receiver in geom
+    return travel times using specified method and model for phase given 3d source and receiver in geom
 
 int ucalc ( char *method, char *model, char *phase, int flags, TTGeometry *geom, Tbl **slows, Hook **hook )
-    return list of slowness values using specified method and model
-    for phase given 3d source and receiver in geom
+    return slowness values using specified method and model for phase given 3d source and receiver in geom
 
 <body>
+
 The following routines use the ttcalc and ucalc routines above and 
 the ttmethod and ttmodel from trvltm.pf.
+
+</body>
 <cdeclarations>
 int arrtimes ( double delta, double depth, char ***phases, double **times )
     return all calculated phases and travel times for specified delta (degrees) and depth (km)
