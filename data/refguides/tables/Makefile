@@ -16,3 +16,6 @@ include $(ANTELOPEMAKE)
 
 hier.ref:hier.ref.id
 	produce hier.ref
+
+environment.ref:environment.ref.id
+	produce environment.ref

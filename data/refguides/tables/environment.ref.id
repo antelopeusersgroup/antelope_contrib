@@ -6,7 +6,7 @@ more information.
 
 <commands>
 ANTELOPE
-    identifies the Antelope base directory, eg, "/opt/antelope/4.6"
+    identifies the Antelope base directory, eg, "/opt/antelope/$id"
 
 ANTELOPEMAKE
     specifies file with standard make(1) rules for Antelope
