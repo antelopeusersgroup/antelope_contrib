@@ -1,61 +1,26 @@
-# $Id$
-# Makefile for util library
- 
-CC      = cc
-VPATH   = 
-RANLIB  = ranlib
-LIBDIR  = $(VPATH)../../../lib/$(PLATFORM)
-INCDIR  = $(VPATH)../../include
-OPTMIZ  = -g
-INCS    = -I$(INCDIR) -I$(VPATH).
-DEFS    = -D$(OSNAME) -D$(OSTYPE) -D_REENTRANT -KPIC
-CFLAGS  = $(OPTMIZ) $(INCS) $(DEFS)
-ARCHIVE = libutil.a
-OUTPUT  = $(LIBDIR)/$(ARCHIVE)
-OBJS    = $(OUTPUT)(bcd2long.o)
-OBJS   += $(OUTPUT)(dump.o)
-OBJS   += $(OUTPUT)(getline.o)
-OBJS   += $(OUTPUT)(find.o)
-OBJS   += $(OUTPUT)(mstime.o)
-OBJS   += $(OUTPUT)(parse.o)
-OBJS   += $(OUTPUT)(string.o)
-OBJS   += $(OUTPUT)(swap.o)
-OBJS   += $(OUTPUT)(timer.o)
-OBJS   += $(OUTPUT)(timefunc.o)
- 
-.PRECIOUS : $(OUTPUT)
- 
-all: OBJS/$(PLATFORM) $(LIBDIR) FORCE
-	cd OBJS/$(PLATFORM); \
-	$(MAKE) -f ../../Makefile VPATH=../../ makestamp
- 
-$(OUTPUT): makestamp
- 
-makestamp: $(OBJS)
-	$(RANLIB) $(OUTPUT)
-	touch makestamp
- 
-clean: FORCE
-	rm -f OBJS/$(PLATFORM)/*.o
- 
-remove: FORCE
-	rm -f $(OUTPUT) OBJS/$(PLATFORM)/makestamp
- 
-sccsinfo: FORCE
-	sccs info
+LIB= libutil.a
 
-install: all
+MAN3=
 
-$(LIBDIR):
-	mkdir -p $@
+cflags= -I../../include
 
-OBJS/$(PLATFORM):
-	mkdir -p $@
- 
-FORCE:
+include $(ANTELOPEMAKE)
 
-testfind: find.c
-	$(CC) $(CFLAGS) -DDEBUG_TEST -o OBJS/$(PLATFORM)/$@ find.c -L$(LIBDIR) -lutil
+DIRS=
 
-testmstime: mstime.c
-	$(CC) $(CFLAGS) -DDEBUG_TEST -o OBJS/$(PLATFORM)/$@ mstime.c -L$(LIBDIR) -lutil -lm
+OBJS= 	bcd2long.o \
+	dump.o \
+	find.o \
+	getline.o \
+	mstime.o \
+	parse.o \
+	string.o \
+	swap.o \
+	timefunc.o \
+	timer.o 
+
+
+$(LIB) : $(OBJS)
+	$(RM) $@
+	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(RANLIB) $@

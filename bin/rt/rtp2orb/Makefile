@@ -2,6 +2,8 @@
 
 BIN= rtp2orb
 
+MAN1= rtp2orb.1
+
 ldlibs=	 -lpkt -lorb $(TRLIBS) $(ORBLIBS)
 include $(ANTELOPEMAKE)  	
 

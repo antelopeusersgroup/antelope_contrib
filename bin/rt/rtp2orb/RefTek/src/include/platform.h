@@ -28,6 +28,24 @@
  * to like those.
  */
 
+#ifdef sun
+#   ifndef SOLARIS
+#       define SOLARIS
+#   endif
+#endif
+
+#ifdef linux
+#   ifndef LINUX
+#       define LINUX
+#   endif
+#endif
+
+#ifdef _APPLE_
+#   ifndef _APPLE_
+#       define _APPLE_
+#   endif
+#endif
+
 #ifdef _SOLARIS
 #   ifndef SOLARIS
 #       define SOLARIS
@@ -456,8 +474,13 @@
 /* Revision History
  *
  * $Log$
- * Revision 1.1  2004/03/09 18:28:23  vernon
- * Initial revision
+ * Revision 1.2  2004/03/10 00:21:25  vernon
+ * got it to compile and load, but needs more testing with a real data source and
+ * a rtpserver.
+ *
+ * Revision 1.1.1.1  2004/03/09 18:28:23  vernon
+ * adding rtp2orb first attempt
+ *
  *
  * Revision 1.3  2001/07/23 19:22:18  nobody
  * Fixed THREAD_JOIN macro

@@ -1,61 +1,32 @@
-# $Id$
-# Makefile for reftek packet library
- 
-CC      = cc
-VPATH   = 
-RANLIB  = ranlib
-LIBDIR  = $(VPATH)../../../lib/$(PLATFORM)
-INCDIR  = $(VPATH)../../include
-OPTMIZ  = -g
-INCS    = -I$(INCDIR) -I$(VPATH).
-DEFS    = -D$(OSNAME) -D$(OSTYPE) -D_REENTRANT
-CFLAGS  = $(OPTMIZ) $(INCS) $(DEFS) -KPIC
-ARCHIVE = libreftek.a
-OUTPUT  = $(LIBDIR)/$(ARCHIVE)
-OBJS   += $(OUTPUT)(ad.o)
-OBJS   += $(OUTPUT)(cd.o)
-OBJS   += $(OUTPUT)(ds.o)
-OBJS   += $(OUTPUT)(dt.o)
-OBJS   += $(OUTPUT)(eh.o)
-OBJS   += $(OUTPUT)(et.o)
-OBJS   += $(OUTPUT)(om.o)
-OBJS   += $(OUTPUT)(sh.o)
-OBJS   += $(OUTPUT)(sc.o)
-OBJS   += $(OUTPUT)(com.o)
-OBJS   += $(OUTPUT)(type.o)
-OBJS   += $(OUTPUT)(steim.o)
-OBJS   += $(OUTPUT)(string.o)
- 
-.PRECIOUS : $(OUTPUT)
- 
-all: OBJS/$(PLATFORM) $(LIBDIR) FORCE
-	cd OBJS/$(PLATFORM); \
-	$(MAKE) -f ../../Makefile VPATH=../../ makestamp
- 
-$(OUTPUT): makestamp
- 
-makestamp: $(OBJS)
-	$(RANLIB) $(OUTPUT)
-	touch makestamp
- 
-clean: FORCE
-	rm -f OBJS/$(PLATFORM)/*.o
- 
-remove: FORCE
-	rm -f $(OUTPUT) OBJS/$(PLATFORM)/makestamp
- 
-sccsinfo: FORCE
-	sccs info
+LIB= libreftek.a
 
-install: all
+MAN3=
 
-$(LIBDIR):
-	mkdir -p $@
+cflags= -I../../include
 
-OBJS/$(PLATFORM):
-	mkdir -p $@
- 
-FORCE:
+include $(ANTELOPEMAKE)
 
-testlib: $(OUTPUT) testlib.c
-	$(CC) $(CFLAGS) -L$(LIBDIR) -o OBJS/$(PLATFORM)/$@ testlib.c -lreftek -lrtp -lutil -lm
+DIRS=
+
+
+
+OBJS= 	ad.o \
+	cd.o \
+	com.o \
+	dcomp.o \
+	ds.o \
+	dt.o \
+	eh.o \
+	et.o \
+	om.o \
+	sc.o \
+	sh.o \
+	steim.o \
+	string.o \
+	testlib.o \
+	type.o
+
+$(LIB) : $(OBJS)
+	$(RM) $@
+	$(AR) $(ARFLAGS) $@ $(OBJS) 
+	$(RANLIB) $@
