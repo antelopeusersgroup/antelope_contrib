@@ -35,7 +35,7 @@ dmatrix::dmatrix(const dmatrix& other)
 
 dmatrix::~dmatrix()
 {
-delete ary;
+delete [] ary;
 }
 
 double &dmatrix::operator()(int rowindex, int colindex)
@@ -75,7 +75,7 @@ if(&other==this) return;
 ncc=other.ncc;
 nrr=other.nrr;
 length=other.length;
-delete ary;
+delete [] ary;
 ary= new double[length];
 memcpy(ary,other.ary, length*sizeof(double));
 }
