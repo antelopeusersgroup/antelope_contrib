@@ -45,6 +45,7 @@ void save_run_parameters(Dbptr db,Pf *pf)
 		sprintf(dfile,"%dpmel",getpid());
 		register_error(0,"Missing parameter:  pmel_run_name\nControl pf will be saved to %s\n",
 				dfile);
+		pfput_string(pf,"pmel_run_name",dfile);
 	}
 
 	vm = pfget_string(pf,"travel_time_model");
@@ -57,7 +58,7 @@ void save_run_parameters(Dbptr db,Pf *pf)
 		"vmodel3d",vm3d,
 		"dir",dir,
 		"dfile",dfile,0);
-	if(ierr) 
+	if(ierr<0) 
 	{
 		elog_complain(0,
 		   "dbaddv error on pmelrun table using pmelrun=%s\nTrying to generate unique name\n",
@@ -70,8 +71,9 @@ void save_run_parameters(Dbptr db,Pf *pf)
 	                "vmodel3d",vm3d,
 	                "dir",dir,
 	                "dfile",dfile,0);
-		if(ierr)elog_die(0,"Attempt to append to pmelruns table with pmelruns=%s failed\nCheck database\n",
+		if(ierr<0)elog_die(0,"Attempt to append to pmelruns table with pmelruns=%s failed\nCheck database\n",
 				dfile);
+		pfput_string(pf,"pmel_run_name",dfile);
 	}
 
 	strcpy(filename,dir);
