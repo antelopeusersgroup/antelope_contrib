@@ -98,14 +98,11 @@ travel_time_model	ttlvz/iasp91
 pmel_maximum_sc_iterations 5
 #
 # This is copied from dbgenloc.pf -- it probably has unnecessary
-parameters
+# parameters
 #
 arrival_residual_weight_method	huber
 bad_clocks	&Tbl{
 }
-center_depth	10.0
-center_latitude	38.2057
-center_longitude	-88.1706
 clock_error_cutoff	0.1
 confidence	0.683
 damp_adjust_factor	5.0
@@ -120,29 +117,16 @@ fix_longitude	0
 fix_origin_time	0
 generalized_inverse	pseudoinverse
 gridsearch_norm	raw
-initial_depth	50
-initial_latitude	42.1311
 initial_location_method	manual
-initial_longitude	73.6941
 latitude_range	5.0
 longitude_range	5.0
 max_error_scale	1000.0
 max_relative_damp	1.0
-maximum_azimuth	360.0
-maximum_distance	2.0
 maximum_hypocenter_adjustments	40
 maximum_iterations	40
 min_error_scale	1.0
 min_relative_damp	0.000005
 min_step_length_scale	0.01
-minimum_azimuth	0.0
-minimum_distance	0.1
-ndepths	3
-nlat	20
-nlon	20
-number_points_azimuth	36
-number_points_r	19
-output_file	location_output
 recenter	0
 relative_rms_convergence_value	0.01
 singular_value_cutoff	0.0001
