@@ -1961,6 +1961,31 @@ sub update_stockmap {
 		system( "/bin/cp $Mapspec{legend} $State{dbrecenteqs_dir}" );
 	}
 }
+sub verified_copy {
+	my( $sourcedb, $table, $targetdb ) = @_;
+
+	$repeat_interval_sec = 5;
+
+	system( "cp $sourcedb.$table $targetdb.$table" );
+
+	while( ( $rc = system( "dbcheck $targetdb.$table" ) ) != 0 ) {
+
+		elog_complain( "Corrupt copy of $targetdb.$table; will retry " .
+			       "in $repeat_interval_sec seconds...\n" );
+
+		sleep( $repeat_interval_sec );
+
+		system( "cp $sourcedb.$table $targetdb.$table" );
+	} 
+
+	if( $opt_v  ) {
+
+		elog_notify( "Successfully copied $sourcedb.$table to " .
+			     "$targetdb.$table\n" );
+	}
+
+	return;
+}
 
 $Program = `basename $0`;
 chomp( $Program );
@@ -2000,10 +2025,10 @@ if( $opt_c ) {
 
 	$sourcedb = $opt_c;
 
-	system( "cp $sourcedb.event $dbname.event" );
-	system( "cp $sourcedb.origin $dbname.origin" );
-	system( "cp $sourcedb.assoc $dbname.assoc" );
-	system( "cp $sourcedb.arrival $dbname.arrival" );
+	verified_copy( $sourcedb, "event", $dbname );
+	verified_copy( $sourcedb, "origin", $dbname );
+	verified_copy( $sourcedb, "assoc", $dbname );
+	verified_copy( $sourcedb, "arrival", $dbname );
 }
 
 $rc = system( "dbcheck $dbname" );
