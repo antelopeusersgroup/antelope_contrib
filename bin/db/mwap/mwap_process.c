@@ -224,6 +224,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	Dbptr db;  /* generic db lookup parameter */
 	Dbptr dbgrp;  /* evid group db pointer */
 	Dbptr tr;  /* trace database */
+	Dbptr dbmps;  /* mwpredslow table */
 	Tbl *sortkeys,*sortkeys2;  /* used because different tr routines require
 				different sort orders */
 
@@ -263,6 +264,8 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		signal to noise ratio estimates (stored in a structure) for
 		every station */
 	Spherical_Coordinate polarization0,polarization;
+	Arr *model_times=NULL;
+	MWSlowness_vector model_slow;
 	double rctm[9];  /*ray coordinate transformation matrix*/
 	double timeref;  /* time reference at reference station */
 	double time;
@@ -271,6 +274,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	double fc,fwin;
 	int evid;
 	int lag;  /* optimal lab computed by coherence measure */
+	double peakcm;  /*Peak value of coherence measure */
 	double dtmax;
 	/* For a given gather we set moveout computed moveout time in
 	seconds relative to the reference station.  This time includes
@@ -377,6 +381,12 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	/* This one has to be initialized*/
 	static_result=newarr(0);
 
+	/* We need this table repeatedly below so we avoid constant 
+	lookups */
+	dbmps = dblookup(dbv,0,"mwpredslow",0,0);
+	if(dbmps.record == dbINVALID)
+		die(0,"db lookup failed for mwpredslow table\nMWavelet schema extensions are required\n");
+
 	/* Now we loop through the outer loop event by event.  
 	This is structured here by using a dbgroup defined db pointer
 	that is passed through the argument list.  The db pointer 
@@ -405,6 +415,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		int evid; 
 		int is, ie; 
 		int ierr;
+		double modaz;
 
 		if(dbgetv(dbgrp,0,"evid", &evid,
                         "bundle", &db_bundle,0) == dbINVALID)
@@ -469,12 +480,35 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 				evid);
 			continue;
 		}
+		/* This routine returns the slowness vector and an arr of 
+		estimated arrival times.  The slowness vector is saved
+		in the mwpredslow table immediately below.  Arrival times
+		are used to compute residuals later. */
+		ierr = MWget_model_tt_slow(stations, refsta, phase,
+			db_bundle, pf, &model_times, &model_slow);
+
 		timeref = compute_time_reference(stations,arrivals,refsta,u);
-		polarization0=estimate_initial_polarization(u,stations,
+		polarization0=estimate_initial_polarization(model_slow,stations,
 			refsta,phase);
 
+		modaz = atan2(model_slow.ux,model_slow.uy);
+
+		if(dbaddv(dbmps,0,"sta",array_name,
+			"evid",evid,
+			"phase",phase,
+			"time",timeref,
+			"slo",hypot(model_slow.ux,model_slow.uy),
+			"azimuth",deg(modaz),
+			"majoraz",deg(polarization0.phi),
+			"majorema",deg(polarization0.theta),
+			"vmodel",pfget_string(pf,"TTmodel"),0) == dbINVALID)
+		{
+			elog_complain(0,"dbaddv error for evid %d on mwpredslow table\n",
+				evid);
+		}
+
 		/* copy this to the working value */
-		copy_polarization(&polarization,&polarization0);
+		copy_polarization(&polarization0,&polarization);
 
 		/* This function reads in the trace data for this event
 		using time windows defined above */
@@ -607,9 +641,9 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			used a semblance measure, but that choice is not
 			necessarily optimal and future evolution could
 			occur here easily by changing this function */
-			lag = compute_optimal_lag(gathers,nwavelets,timeref,
+			compute_optimal_lag(gathers,nwavelets,timeref,
 					moveout,polarization,swin+i,
-					coherence_type,i);
+					coherence_type,i,&lag,&peakcm);
 			if(lag < LAG_ERROR)
 			{
 				elog_complain(0,"WARNING:  serious data window error in band %d\nNo data in requested time window\nNO results for this band\n",
@@ -671,6 +705,8 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 				dtmax = Linf_norm_arrival_diff(arrival_new,
 							arrivals);
 				copy_arrival_array(arrival_new,&arrivals);
+				freearr(arrival_new,free);
+				arrival_new = NULL;
 				++iterations;
 			}while ( ( dtmax > ((*gathers)->x1[0]->dt))
 				&& (iterations < MAX_MAIN_LOOP) );
@@ -704,7 +740,8 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			amplitude is extracted as a free parameter.*/
 			if(MWdb_save_slowness_vector(phase,&u,t0,
 				swin+i,array_name,evid,bankid,fc,fwin,
-				ucovariance,ampndgf+1,3,dbv))
+				ucovariance,ampndgf+1,3,
+				coherence_type,peakcm,dbv))
 					dbsave_error("mwslow",evid,i);
 			if(MWdb_save_avgamp(array_name, evid, bankid, phase,
 				fc, t0, swin+i, avgamp,amperr,ampndgf,
@@ -712,7 +749,8 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 					dbsave_error("mwavgamp",evid,i);
 			if(MWdb_save_statics(evid, bankid, phase, fc, t0,
 				swin+i,refelev,*gathers,moveout,static_result,
-				stations,sn_ratios[i],dbv))
+				stations,sn_ratios[i],
+				arrivals, model_times,dbv))
 					dbsave_error("mwtstatic:mwastatic:mwsnr",evid,i);
 			if(MWdb_save_pm(array_name,evid,bankid,phase,fc,t0,
 				swin+i,*gathers,moveout,pm_arr,pmerr_arr,
@@ -741,7 +779,6 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 		trdestroy(&tr);
 		freearr(arrival0,free);
 		freearr(arrivals,free);
-		freearr(arrival_new,free);
 		/* This may not be necessary, but better safe than sorry */
 		arrivals = NULL;   arrival0 = NULL;   arrival_new = NULL;
 	}
