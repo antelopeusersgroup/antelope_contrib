@@ -1,0 +1,15 @@
+# Sample parameter file/with defaults more-or-less
+# vpm, vsm, rhom are mantle velocities (km/s) and density (g/cc)
+#  vpb, vsb, rhob are same for top (?basin) layer (vsb overridden usually)
+#  vpvs is default value for crust; overridden by command line if VpVs>0 and Zbasin=0
+#  vpvssed is default for sed/top layer IF no cmd-line VpVs and zbasin>0
+# This will OVERRIDE any setting for vsb if it comes later in the file
+vpm  8.0
+vsm  4.62
+rhom  3.3
+vpb  3.9
+vsb  2.3
+rhob 2.4
+vpvs 1.73205
+vpvssed 1.73205
+

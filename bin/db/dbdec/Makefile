@@ -3,6 +3,7 @@ BIN=		dbdec
 
 MAN1=		dbdec.1
 
+cflags=-g
 ldlibs=		-lscv2 -ldbl2 $(TRLIBS)
 
 include $(ANTELOPEMAKE)  	

@@ -890,12 +890,13 @@ Dbptr db;
 	}
 	allot(float *,data,nsamp);
 	/* The +dt assurs that the data read are always long enough*/
+        dt=1.0/samprate;
 	if(trgetwf(db,0,&data,&nsamp,time,endtime+dt,&t0,&t1,&npts,0,0))
 	{
 		fprintf(stderr,"trgetwf error for row %d of input db\n",db.record);
 		return(NULL);
 	}
-	if(nsamp!=npts)
+	if(nsamp>npts)
         {
 		char sta[10],chan[10];
                 dbgetv(db,0,"sta",sta,"chan",chan,0);

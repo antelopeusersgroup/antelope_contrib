@@ -1,0 +1,106 @@
+.TH DBDEPEST L "3/21/96"
+.SH NAME
+dbdepest  \- estimates depth to Moho from a receiver function
+.SH SYNOPSIS
+.nf
+\fBdbdepest \fIz1 z2 dz Vcrust Fmin Fmax Delta Tfit Zbasin VpVs tshift inwf_file subset_rf [depest.pf]\fR
+.fi
+.SH DESCRIPTION
+Reads a receiver function stored in a css3.0-database, and using a grid
+search method estimates the crustal thickness that best fits that receiver
+function in a sum-of-squares sense.  The crustal thickness is varied in a
+simple crustal model to find that which best predicts the observed waveform. See
+Sheehan et al. [1995, JGR] for longer explanation and tests of an earlier
+version of this program.
+.LP
+Model receiver functions are calculated, for each set of descriptive parameters,
+using a propagator-matrix estimate of crustal response to incident plane waves
+at its base.  The model includes a single crustal layer, of specified
+velocity, and optionally a shallow basin.  Assumed parameters include mantle
+P and S velocities of 8.0 and 4.62 km/s, mantle density of 3.3 g/cc, basin
+P velocity of 3.9 km/s, basin density of 2.4 g/cc.  Vp/Vs is specified if
+there is no basin, or set at 1.73 if there is (the specified Vp/Vs then
+applies to the basin).  Crustal density is estimated from a linear fit to 
+Nafe-Drake empirical curves.
+
+.SH COMMAND LINE ARGUMENTS
+.IP \fBz1 \fR
+Shallowest depth to Moho to test, km.
+.IP \fBz2 \fR
+Deepest depth to Moho to test, km.
+.IP \fBdz \fR
+Depth increment, km, for grid search over Moho depth.
+.IP \fBVcrust \fR
+Assumed crustal P-wave velocity, km/s.
+.IP \fBFmin \fR
+Minimum frequency or High-pass filter frequency, Hz.  Both the observed and
+calculated receiver functions are filtered before they are compared. Filter
+is 3-pole zero-phase Butterworth.
+.IP \fBFmax \fR
+Maximum frequency of Low-pass filter frequency, Hz.  See Fmin.
+.IP \fBDelta \fR
+Distance, degrees, from source to receiver.  Used for calculating ray parameter,
+using iasp91.
+.IP \fBTfit \fR
+Length of the time window to evaluate fits, s, from start of the record.
+.IP \fBZbasin \fR
+Depth to bottom of a sedimentary basin, in km (Vp=3.9 km/s, rho = 2.4 g/cc).
+.IP \fBVpVs \fR
+If Zbasin=0, the P-to-S ratio assumed for the crust.  If Zbasin>0, the 
+P-to-S velocity ratio assumed for the basin sediments; in that case
+Vp/Vs=sqrt(3).  Also, if VpVs = 0 then Vp/Vs is set to sqrt(3) everywhere.
+.IP \fBtshift \fR
+Time shift of zero lag from start of record, used in generating receiver
+function.  Should match "phaseshift" in \fBdbrfcn\fR or "tshift" in 
+\fBdbtimerf\fR.
+.IP \fBinwf_file \fR
+Name of wfdisc-table with data of interest; should include (.wfdisc).   
+.IP \fBsubset_rf \fR
+A logical string used to select from the database the receiver function of interest.
+For example, a subset on station/channel/time.
+.IP \fB[depest.pf] \fR
+Parameter file prefix -- can control inversion parameters here.  Parameters 
+include:
+ \fB(vpm, vsm, rhom)\fR for Mantle;
+ \fB(vpb, vsb, rhob)\fR for Basin; 
+ \fBvpvs\fR for crustal velocity ratio;
+ \fBvpvssed\fR for basin velocity ratio.
+  These parameters override defaults and command-line arguments.
+
+.SH OUTPUT
+.IP \fBstdout \fR
+A 4-column table; columns are DEPTH, RMS1, NRMS1, RMS2.  RMS1 is the Rms
+residual between calculated and observed records; NRMS1 is RMS1 normalized
+to power in the observed receiver function; RMS2 is the rms residual calculated
+after BOTH the observed AND calculated receiver functions are normalized by
+their RMS amplitudes.
+.IP \fBsyn.filt \fR
+An ASCII file with the best-fitting receiver function calculated at minimum RMS2.
+the columns are Time, Amplitude. Record is filtered via Fmin, Fmax.
+.IP \fBdat.filt \fR
+An ASCII file with the filtered observed receiver function. Format as syn.filt.
+
+.SH EXAMPLE
+dbdepest 25. 65. 2. 6.5 .04 .2 35. 30. 4. 2.0 0. lmndb.wfdisc 0
+.LP
+Estimates crustal thickness every 2 km from 25 to 60 km depth. Assume a
+crustal thickness of 6.5 km/s, bandpass signals from .04 to .2 Hz, assume
+a 35 degree incidence angle, fit the first 30 s of record, assume a 4 km 
+thick basin with Vp/Vs = 2.0.  No phase shift was placed in the records;
+the first wfdisc record (0) is taken out of the database lmndb.
+
+.SH LIBRARY
+-ltr -ldb -lstock -lcoords -ltttaup -lm -lteles
+.SH "BUGS AND CAVEATS"
+Most of the details and parameter conventions were done to finish the
+Rocky Mt. paper and should be made more general.  As well, a better scheme
+needs to be worked out to allow more complicated crustal models, grid
+searches over other parameters,  etc.
+.LP
+Filtering, especially low-pass filtering, is very important as at high
+frequencies the synthetic seismogram calculation is unstable.  
+.SH AUTHOR
+Geoff Abers, Boston University; 
+some help from Anne Sheehan, CU, on an earlier version.  
+The origin of the
+propagator matrix routines are lost to history.
