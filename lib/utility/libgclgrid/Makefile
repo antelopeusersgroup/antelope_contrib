@@ -20,6 +20,7 @@ OBJS=converters.o \
     dx_output.o \
     ellipsoid.o \
     error_handlers.o \
+    flatten.o \
     fme_weights.o \
     initialize1d.o \
     interpolate.o \

@@ -1488,5 +1488,57 @@ void free_2dgrid_contiguous(double **array,int n1);
 // 		to used in sum of values of function on 8 corners.
 //@}
 void fme_weights_ (double *xx, double *coord, double *fun);
+//@{
+// Converts a true depth to depth in a flattened coordinate system.
+//
+// Some packages use the flattening transformation as an approximation
+// map spherical shells into a Cartesian reference frame.  This function
+// converts depths to flattened depths.
+//
+// @author Steve Roecker translation to C by Pavlis
+// @param z - actual depth
+// @returns depth with the flattening transformation applied to z
+//@}
+double flatz(double z);
+//@{
+// Inverse flattening transformation of depth.
+//
+// Some packages use the flattening transformation as an approximation
+// map spherical shells into a Cartesian reference frame.  This function
+// depths in the flattened earth coordinate system back to true depth.
+//
+// @author Steve Roecker translation to C by Pavlis
+// @param z - flattened coordinate depth
+// @returns actual depth in the earth
+//@}
+double uflatz(double z);
+//@{
+// Applies flattening transformation to a velocity.
+//
+// Some packages use the flattening transformation as an approximation
+// map spherical shells into a Cartesian reference frame.  This function
+// converts velocity at a given depth to the value with the flattening
+// transformation applied.
+//
+// @author Steve Roecker translation to C by Pavlis
+// @param v - actual velocity at depth z
+// @param z - actual depth
+// @returns velocity with the flattening transformation applied to v at z
+//@}
+double flatvel(double v,double z);
+//@{
+// Inverse flattening transformation of a velocity.
+//
+// Some packages use the flattening transformation as an approximation
+// map spherical shells into a Cartesian reference frame.  This function
+// converts velocity in a flattened coordinate system back to the true
+// value at a depth that has to be determined from applying uflatz to z.  
+//
+// @author Steve Roecker translation to C by Pavlis
+// @param v - flattened coordinate velocity
+// @param z - flattened coordinate depth
+// @returns actual depth in the earth
+//@}
+double uflatvel(double v, double z);
 }
 #endif
