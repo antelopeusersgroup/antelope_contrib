@@ -1,4 +1,4 @@
-.TH PFEXPLORE SECTION3H "$Date$"
+.TH PFEXPLORE 3H "$Date$"
 .SH NAME
 pfexplore \- library to parse a parameter file for the web
 .SH SYNOPSIS
