@@ -773,6 +773,8 @@ Arguments:
 Function has no error returns, although multiple potential errors
 will post messages throughe log.
 
+Normal return is 0.  Positive number is count of errors.
+
 Author:  Gary Pavlis
 Written:  August 2000
 */  
@@ -799,6 +801,7 @@ int save_slowness(Dbptr db,
 	double tarrival;
 	char *user;
 	char authfield[16];
+	int err_count=0;
 
 	/* This first step is kind of stupid, but we have to scan the
 	mwslow and establish the total bandwidth of the result and 
@@ -821,9 +824,10 @@ int save_slowness(Dbptr db,
 			"time",time+i,
 			"twin",twin+i, 0) == dbINVALID)
 		{
-			elog_complain(0,"save_slowness: problems reading mwslow table for row %d of evid subset view\n",
+			elog_notify(0,"save_slowness: problems reading mwslow table for row %d of evid subset view\n",
 				db.record);
 			--i;
+			++err_count;
 			continue;
 		}
 	}
@@ -865,8 +869,11 @@ int save_slowness(Dbptr db,
 		}
 	}
 	if(fcbavg>fhigh)
-		elog_complain(0,"Problem creating unique center frequency for band average estimate\nUsing fc=%lf which is outside passband upper limit of %d\nBlundering on anyway\n",
+	{
+		elog_notify(0,"Problem creating unique center frequency for band average estimate\nUsing fc=%lf which is outside passband upper limit of %d\nBlundering on anyway\n",
 			fcbavg,fhigh);
+		++err_count;
+	}
 	free(fc);  free(fwin);   free(time);  free(twin);
 
 	/* We could have read these repeatedly in the above loop, but
@@ -899,8 +906,11 @@ int save_slowness(Dbptr db,
 	for any seismic data i can conceive of.*/
 	si = 0.000001;
 	if(compute_slowness_covariance(stations,mwsarr,si,C))
+	{
 		elog_notify(0,"Errors in computing slowness vector covariance for evid %d\n",
 			evid);
+		++err_count;
+	}
 
 	/* Save this to the mwslow table first */
 	db = dblookup(db,0,"mwslow",0,0);
@@ -925,8 +935,9 @@ int save_slowness(Dbptr db,
 			"ncomp",3,
 			"algorithm","mwapbavg",0) < 0)
 	{
-		elog_complain(0,"dbaddv error for mwslow table for evid %d\n",
+		elog_notify(0,"dbaddv error for mwslow table for evid %d\n",
 				evid);
+		++err_count;
 	}
 
 	/* Now we want to add an estimate to the arrival table too 
@@ -968,10 +979,11 @@ int save_slowness(Dbptr db,
 			"delslo",delslo,
 			"auth",authfield,0) < 0)
 	{
-		elog_complain(0,"dbaddv error for arrival table with evid %d\n",
+		elog_notify(0,"dbaddv error for arrival table with evid %d\n",
 			evid);
+		++err_count;
 	}
-	
+	return(err_count);
 	
 }		
 
