@@ -132,6 +132,7 @@ pfarr2struct( Pf *pf, int recursive )
 				mxSetField( mystruct, 0, name, mystring );
 			}
 			break;
+#ifdef PFPROMPT
 		case PFPROMPT:
 			answer = mxPfprompt( ((Pf *) value)->value.s );
 			if( answer == 0 )
@@ -144,6 +145,7 @@ pfarr2struct( Pf *pf, int recursive )
 				mxSetField( mystruct, 0, name, answer );
 			}
 			break;
+#endif
 		case PFFILE:
 		case PFINVALID:
 		default:

@@ -4,7 +4,9 @@ extern Xlat	myPfxlat[];
 extern int	myNPfxlat ;
 
 Xlat myPfxlat[] = {
+#ifdef PFPROMPT
     {"PFPROMPT", PFPROMPT },
+#endif
     {"PFTBL", PFTBL },
     {"PFARR", PFARR },
     {"PFINVALID", PFINVALID },

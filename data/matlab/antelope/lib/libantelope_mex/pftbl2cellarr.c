@@ -91,6 +91,7 @@ pftbl2cellarr( Pf *pftbl, int recursive )
 				mxSetCell( result, i, mystring );
 			}
 			break;
+#ifdef PFPROMPT
 		case PFPROMPT:
 			answer = mxPfprompt( ((Pf *) value)->value.s );
 			if( answer == 0 )
@@ -103,6 +104,7 @@ pftbl2cellarr( Pf *pftbl, int recursive )
 				mxSetCell( result, i, answer );
 			}
 			break;
+#endif
 		case PFFILE:
 		case PFINVALID:
 		default:

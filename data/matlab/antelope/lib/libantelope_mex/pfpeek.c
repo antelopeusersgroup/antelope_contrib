@@ -25,7 +25,9 @@ pfpeek( Pf *pf, char *name, Pf **value )
 	case PFTBL:
 		*value = (Pf *) gettbl( pf->value.tbl, (int) name );
 		break;
+#ifdef PFPROMPT
 	case PFPROMPT:
+#endif
 	case PFSTRING:
 		/* Can't have named child of a prompt or a string */
 		*value = 0;
