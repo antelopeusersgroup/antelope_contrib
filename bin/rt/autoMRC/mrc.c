@@ -14,10 +14,22 @@
 ************************************************************************/
 #include "mrc.h"       
 
+Tbl *DC;
+
+char *
+new_name( char *name )  {
+
+    char *new;
+
+    new=strdup( name );
+    return new;
+
+}
+
 
 void usage ()
 {
-    fprintf (stderr, "Usage: %s [-V verbatim] [-m srcmatch] [-p pfile ] [-s sleep] [-t tperiod] [-v max_lta] orb dcname \n", Program_Name);
+    fprintf (stderr, "Usage: %s [-V verbatim] [-m srcmatch] [-p pfile ] [-s sleep] [-t tperiod] [-v max_lta] orb dcname1[,dcname2,dcname3...] \n", Program_Name);
     exit (1);
 }
 
@@ -30,14 +42,15 @@ char *argv[];
   Pf	 	*pf;
   int		nselect, nbytes, bsize;
   int 		err_in;
-  int 		dasid, i, id, orb;
+  int 		dasid, i, id, orb, ndc;
   int 		tperiod = 3600,
   		asleep = 30;     /* 30 seconds  */
   double 	save_time=0, 
   		pkttime;
   char          *packet = 0,
   		srcid[ORBSRCNAME_SIZE] ;
-  char 	        *dcname = 0,
+  char 	        *dces = 0,
+                *newname, *dcname,
   		*orbname = "localhost";
   char          *version = "1.1 (03/22/97)";
   char 		*s, *pfile = "pkt";
@@ -92,7 +105,7 @@ char *argv[];
  
   orbname = argv[optind++];
   
-  dcname = argv[optind++];
+  dces = argv[optind++];
   
   if( (orb = orbopen( orbname, "r")) < 0)
       die( 0, "Can't open ORB\n");
@@ -105,9 +118,22 @@ char *argv[];
   if (orbget (orb, ORBCURRENT, &id, srcid, &pkttime, &packet, &nbytes, &bsize)) 
       die(0,"fails to get ORBCURRENT time.\n") ; 
 
+  DC = newtbl(0);
   Dases = newarr(0);
   PChan = newarr(0);
   collect_dases( pfile );        
+
+  if( (dcname = strtok( dces, "," )) != 0 )  {
+    newname = (char *) new_name(dcname);
+    pushtbl( DC, newname );
+  }
+  while( (dcname = strtok( NULL, "," )) != 0 )  {
+    newname = (char *) new_name(dcname);
+    pushtbl( DC, newname );
+  }
+  ndc = maxtbl(DC);
+  if( ndc <= 0 ) 
+     die( 0, "can't get a DC names\n");
 
   /* Print current settings  */
 
@@ -116,7 +142,12 @@ char *argv[];
 	   free(s);
 
   fprintf( stderr, "    ORBNAME:\t\t %s\n", orbname );
-  fprintf( stderr, "    DCNAME:\t\t %s\n", dcname );
+  fprintf( stderr, "    DCNAMES:\t\t ");
+  for( i = 0; i < ndc; i++ )  {
+     dcname = (char *) gettbl(DC, i );
+     fprintf( stderr, "%s  ", dcname );
+  }
+  fprintf( stderr, "\n");
   fprintf( stderr, "    DATA TYPE:\t\t %s\n", match );
   fprintf( stderr, "    LTA time period:\t %d\n", tperiod );
   fprintf( stderr, "    Max LTA allowed:\t %d\n", MaxOff );
@@ -148,8 +179,7 @@ char *argv[];
                     case 1:
                     
 		       if( offscale(unstuffed, pkttime, srcid, tperiod, &dasid ) )  {
-		           sendmrc( dcname, dasid, asleep );
-			   complain( 0, "send 'RCRC' to %s on %s\n", srcid, dcname );
+		           sendmrc(dasid, asleep );
 		       }
 		       break;
 		       
@@ -165,6 +195,7 @@ char *argv[];
 	  complain( 0, "Can't get packet after %lf.\n", save_time );
 	  if( err_in > 900 )  {
 	       orbclose( orb );
+	       sleep(10);
                if( (orb = orbopen( orbname, "r")) < 0)
                    die( 0, "Can't open ORB\n");
 
@@ -174,8 +205,8 @@ char *argv[];
                if ( save_time > 0 ) {
                    if ( orbafter ( orb, save_time ) < 0) {
                         complain ( 1, "orbafter to %lf failed\n", save_time )  ;
-                        id = orbtell ( orb );            
-                        complain( 0, " pktid is still #%d\n", id ) ;
+                        if (orbseek (orb, ORBCURRENT ) < 0 ) 
+                             die(0,"fails to get ORBCURRENT time.\n") ; 
                    } 
                }  else  {
                    if (orbseek (orb, ORBCURRENT ) < 0 ) 

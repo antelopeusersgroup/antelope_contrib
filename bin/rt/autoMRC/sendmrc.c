@@ -12,25 +12,31 @@
 #include "mrc.h"       
 #define LEN   8
 
-int sendmrc( char *iport, int dasid, int timeout )
+extern Tbl *DC;
+
+int sendmrc( int dasid, int timeout )
 
 {
 
-    int i;
+    int i, numdc, num;
     int nbytes;
     char buffer[64],
          echo_buf[64];
-    char *s;
+    char *iport, *s;
 
 
-  if( open_dc( iport) <= 0 )               
-     die(1, "Can't open command DC port\n");
-		    
     /* Send DAS RC command to specific DAS  */
 	     
   sprintf( &buffer[0], "RC%4dRC\0", dasid);
-  
-  for( i = 0; i < 2; i++ )  {
+ 
+  numdc = maxtbl(DC);
+  for( num = 0; num < numdc; num++ )  {
+
+    iport = (char *) gettbl(DC, num );
+    if( open_dc( iport) <= 0 )               
+       die(1, "Can't open command DC port\n");
+		    
+    for( i = 0; i < 2; i++ )  {
         nbytes = write ( Ls, (char *) buffer, LEN );
         if ( nbytes == LEN ) {
             if ( logname )
@@ -54,19 +60,21 @@ int sendmrc( char *iport, int dasid, int timeout )
 		         die( 1, "can't reopen DC port: %s\n", iport );
 		}
             }
-            complain( 0, "%s: send %s to %d\n", s=strtime(now()), buffer, dasid );
+            complain( 0, "%s: send %s to %d on %s\n", 
+	              s=strtime(now()), buffer, dasid, iport );
             free(s);
 
         } else { 
-	   complain (0, "can't send a DC command - %s\n", buffer );
+	   complain (0, "can't send a DC command - %s on %s\n", buffer, iport );
            close( Ls );
            if( open_dc( iport) <= 0 )               
               die( 1, "can't reopen DC port: %s\n", iport);
         }
         sleep(timeout); 
 
-   }
-   close(Ls);
+      }
+      close(Ls);
+  }
    return 1;
 }
 
