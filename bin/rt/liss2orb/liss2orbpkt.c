@@ -60,13 +60,15 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    HD2NF (cp, &samprate, 1);
 	    cp += 4 ;
 
-	    if (map_seed_netsta ( conf->sdh.net, conf->sdh.sta, sta )  < 0) {
-		retcode = -1;
-		break;
-	    }
-	    if (map_seed_chanloc ( sta, conf->sdh.chan, conf->sdh.loc, chan )  < 0) {
-		retcode = -1;
-		break;
+	    if (database) {
+	    	if (map_seed_netsta ( conf->sdh.net, conf->sdh.sta, sta )  < 0) {
+			retcode = -1;
+			break;
+	    	}
+	    	if (map_seed_chanloc ( sta, conf->sdh.chan, conf->sdh.loc, chan )  < 0) {
+			retcode = -1;
+			break;
+	    	}
 	    }
 	    if ( remap ) {
 		strcpy ( parts.src_sta, sta ) ;
@@ -75,7 +77,12 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    }
 	    join_srcname ( &parts, srcname) ; 
 
-	    dbget_calib ( sta, chan, *time, database, &calib, &calper, segtype );
+	    if (database) dbget_calib ( sta, chan, *time, database, &calib, &calper, segtype );
+	    else {
+		calib = 0.0;
+		calper = -1.0;
+		strcpy (segtype, "V");
+	    }
 	    fcalib = calib ;
 	    N2H4 (cp, &fcalib, 1);
 	    cp += 4 * 1;
