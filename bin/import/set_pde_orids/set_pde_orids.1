@@ -1,0 +1,14 @@
+.\" $Name$ $Date$
+.TH SET_PDE_ORIDS 1 "$Date$"
+.SH NAME
+set_pde_orids \- set the format of orids for pde databases as in pde2origin
+.SH SYNOPSIS
+.nf
+set_pde_orids dbname
+.fi
+.SH DESCRIPTION
+set_pde_orids sets the orids in a css database converted from PDE
+(Preliminary Determination of Epicenter) files into the format established
+by pde2origin, (year-1900)*1000000 + day_of_year*1000 + day_count.
+.SH AUTHOR
+Kent Lindquist
