@@ -7,10 +7,6 @@ int nbr;
 char fname[80];
 long rl,rh,lastp;
 {
-#ifndef ERRNO
-   extern int errno;
-   extern char *sys_errlist[];
-#endif
    fprintf(stderr,"Error in reading from file %s\n",fname);
    fprintf(stderr,"Terms to be read were %ld through %ld.\n",rl,rh);
    if(nbr>0){
@@ -23,17 +19,10 @@ long rl,rh,lastp;
 	exit(-15);
 	}
    else {
-#ifndef ERRNO
-	{
-      fprintf(stderr,"Bad read: ( %s ), program aborts...\n",sys_errlist[errno]);
-	exit(-15);
-	}
-#else
 	{
       perror("Bad read; program aborts");
 	exit(-15);
 	}
-#endif
    }
 }
 
