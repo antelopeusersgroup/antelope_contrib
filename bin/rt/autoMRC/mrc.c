@@ -129,6 +129,8 @@ char *argv[];
          err_in = 0;
          save_time = pkttime;
 
+	 if( strncmp( srcid, "/", 1 ) == 0 ) continue;
+
          if (( das = ( Das *) getarr ( Dases, srcid )) == 0) {
                  das = ( Das *) new_das ( srcid, pkttime );
                  setarr ( Dases, srcid, das );
