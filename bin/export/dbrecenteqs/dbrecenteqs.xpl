@@ -329,8 +329,12 @@ sub station_vitals {
 	@db = dbprocess( @db, "dbopen mapassoc",
 			   "dbsubset orid == $orid",
 			   "dbsubset symtype == \"station\"",
+			   "dbjoin origin",
 			   "dbjoin arrival arid",
-			   "dbjoin site sta" );
+			   "dbjoin site sta",
+			   "dbsort distance(site.lat,site.lon,origin.lat,origin.lon)" );
+
+	my( $qgrid_units, $qgrid_extfile ) = undef;
 
 	if( $State{use_qgrids} ) {
 
@@ -354,15 +358,33 @@ sub station_vitals {
 			       "Warning: dbrecenteqs does not yet support" .
 			       "wfmeas station-measurements\n";
 		}
+
+		@dbqgrid = dbinvalid();
+		@dbqgrid = dblookup( @db, "", "qgrid", "orid", "$orid" );
+		if( $dbqgrid[1] >= 0 && $dbqgrid[3] >= 0 ) {
+
+			$qgrid_units = dbgetv( @dbqgrid, "units" );
+			$qgrid_extfile = dbextfile( @dbqgrid );
+		}
 	}
 
 	my( $nrecs ) = dbquery( @db, dbRECORD_COUNT );
 	
 	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
 
+		my( $dist_km ) = 
+			dbex_eval( @db, 
+			   "111.195*distance(origin.lat,origin.lon,site.lat,site.lon)" );
+		$dist_km = sprintf( "%.0f", $dist_km );
+
+		my( $seaz ) = 
+			dbex_eval( @db, 
+			   "azimuth(site.lat,site.lon,origin.lat,origin.lon)" );
+		$seaz = sprintf( "%.0f", $seaz );
+
 		my( $sta, $arrtime, $lat, $lon, $iphase ) =
 			dbgetv( @db, "sta", "arrival.time", 
-				     "lat", "lon", "iphase" );
+				     "site.lat", "site.lon", "iphase" );
 		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
 
 		my( $sta_url ) = $event_url;
@@ -383,6 +405,8 @@ sub station_vitals {
 		$writer->dataElement( "shape", "$shape" );
 		$writer->dataElement( "color", "$color" );
 		$writer->dataElement( "coords", "$coords" );
+		$writer->dataElement( "dist_km", "$dist_km" );
+		$writer->dataElement( "seaz", "$seaz" );
 
 		if( $State{use_qgrids} && $wfmgme_present ) {
 
@@ -402,7 +426,7 @@ sub station_vitals {
 			} else {
 				$pva = sprintf( "%.3f", $pva );
 				$trpva = sprintf( "%.2f", $trpva );
-				$pva_units = "mg";
+				$pva_units = "milli-g";
 			}
 
 			if( $pvv == -9.000000e+99 ) {
@@ -423,7 +447,7 @@ sub station_vitals {
 				$trwa = "";
 				$chanwa = "";
 			} else {
-				$wa = sprintf( "%.2f", $wa );
+				$wa = sprintf( "%.2f", abs( $wa ) );
 				$trwa = sprintf( "%.2f", $trwa );
 				$wa_units = "mm";
 			}
@@ -443,6 +467,19 @@ sub station_vitals {
 			$writer->dataElement( "trwa", $trwa );
 			$writer->dataElement( "snrwa", $snrwa );
 			$writer->dataElement( "chanwa", $chanwa );
+
+			if( defined( $qgrid_extfile ) ) {
+				$qgrid_val = 
+				   `cggrid_probe -n -f '%.6f' $qgrid_extfile $lon $lat`;
+
+				if( $qgrid_val ne "NaN" && 
+				    $qgrid_units eq "g" ) {
+					$qgrid_val *= 1000;
+					$qgrid_val_units = "milli-g";
+				}
+				$writer->dataElement( "qgrid_val", $qgrid_val );
+				$writer->dataElement( "qgrid_val_units", $qgrid_val_units );
+			}
 
 			$writer->endTag( "measurement" );
 
@@ -468,7 +505,7 @@ sub hypocenter_vitals {
 		dbgetv( @db, "lat", "lon", "depth", "time", 
 			     "origin.orid", "origin.auth" );
 	
-	my( $qgrid_units, $qgrid_maxval ) = undef;
+	my( $qgrid_units, $qgrid_maxval, $qgrid_extfile ) = undef;
 
 	if( $State{use_qgrids} ) {
 		@dbqgrid = dbinvalid();
@@ -478,6 +515,8 @@ sub hypocenter_vitals {
 			$qgrid_units = dbgetv( @dbqgrid, "units" );
 
 			$qgrid_maxval = dbgetv( @dbqgrid, "maxval" );
+
+			$qgrid_extfile = dbextfile( @dbqgrid );
 		}
 	}
 
@@ -525,6 +564,7 @@ sub hypocenter_vitals {
 
 		$writer->dataElement( "qgrid_units", $qgrid_units );
 		$writer->dataElement( "qgrid_maxval", $qgrid_maxval );
+		$writer->dataElement( "qgrid_extfile", $qgrid_extfile );
 	}
 
 	$writer->endTag( "origin" );
