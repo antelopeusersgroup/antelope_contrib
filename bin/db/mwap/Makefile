@@ -2,6 +2,8 @@ BIN=mwap_engine
 PF=mwap.pf
 MAN1=mwap.1 mwap_engine.1
 
+#cflags= -DSP5 -g
+#cflags=-DSUNPERF6 -g
 ldflags=
 ldlibs= -lmultiwavelet -lglputil -lgenloc  -ltrvltm -ldl \
 	    -lperf $(TRLIBS) $(F77LIBS) -lmultiwavelet
