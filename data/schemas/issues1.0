@@ -1,0 +1,119 @@
+Schema issues1.0
+        Description ( "Schema for database of issues" )
+ 	Detail {
+ 		This schema provides a way to track descriptions 
+ 		of issues encountered while running an Antelope 
+ 		real-time system, Datascope database, seismic network, 
+ 		etc. The issues are described in external text files. 
+ 	}
+ 	Timedate lddate
+        ;
+ 
+Attribute descrip
+        String (80)
+        Format ( "%-80s" )
+        Null ( "-" )
+        Description ( "Concise description of issue" )
+        Detail {
+		This field provides a concise description of the 
+		issue being described. One approach to keep the files 
+		well organized is to use similar identifying words 
+		in the actual filename describing the issue, e.g.
+		yyyy_mm_dd_identifying_words
+        }
+        ;
+
+Attribute dfile
+        String (40)
+        Format ( "%-40s" )
+        Null ( "-" )
+        Description ( "name of file describing issue" )
+        Detail {
+		This field gives the name of the actual file containing 
+		a text description of the issue. One approach to keep
+		the files well organized and easily handled is to use 
+		identifying words in the filename that are similar 
+		to those used in the descrip field, e.g. 
+		yyyy_mm_dd_identifying_words. The file 
+		may contain detailed descriptions of issue, as well as 
+		subsequent logging of other info or actions taken.
+        }
+        ;
+
+Attribute dir
+        String (64)
+        Format ( "%-64s" )
+        Null ( "-" )
+        Description ( "Directory issue file is located in." )
+        Detail {
+                Directory paths can be either relative to location of
+                database files, or absolute.
+        }
+        ;
+
+Attribute issuetype
+        String (20)
+        Format ( "%-20s" )
+        Null ( "-" )
+        Description ( "general category of issue" )
+	Detail {
+		This field describes the general category of issue. Common 
+		categories might include comment, howto, problem, suggestion, 
+		support, etc.
+	}
+        ;
+
+Attribute lddate
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999.99999" )
+        Units ( "seconds" )
+        Description ( "Time of latest record modification." )
+        ;
+
+Attribute reported
+        String (2)
+        Format ( "%-2s" )
+        Null ( "-" )
+	Range ( "reported =~ /y|n/" ) 
+        Description ( "whether an issue has been reported to BRTT" )
+        Detail {
+                Comment, problem, or suggestion was sent to support@brtt.com
+        }
+        ;
+
+Attribute resolved
+        String (2)
+        Format ( "%-2s" )
+        Null ( "-" )
+	Range ( "reported =~ /y|n/" ) 
+        Description ( "whether an issue has been resolved" )
+        Detail {
+                If issue was reported to BRTT (support@brtt.com) then 
+                resolved means that BRTT responded to the email.  This 
+                does not mean that they chose to act on the issue at the 
+                time of response.  Check file for further logging of info.
+		This field may also indicate that the issue was resolved 
+		by alternate means to the users satisfaction.
+        }
+        ;
+
+Attribute time
+        Time (17)
+        Format ( "%17.5f" )
+        Null ( "-9999999.99999" )
+        Units ( "seconds" )
+        Description ( "epoch time at which the issue was generated." )
+        ;
+
+Relation issues
+        Fields ( issuetype descrip time resolved reported dir dfile lddate )
+        Primary ( descrip time )
+        Alternate ( dir dfile )
+        Description ( "Tracks history of issue" )
+	Detail {
+		This table contains records of individual issues 
+		encountered, describing where to find the files 
+		which describe the issues in detail.
+	}
+        ;
