@@ -3,6 +3,22 @@ Schema Images1.0
 	Timedate lddate
 	;
 
+Attribute azimuth
+	Real (7)
+	Format ( "%7.2f" )
+	Null ( "-1.00" )
+	Range ( "azimuth >= 0.0 && azimuth < 360.0" )
+	Units ( "Degrees" )
+	Description ( "observed azimuth" )
+	Detail {
+		This is the estimated look-angle of a camera,
+		with azimuth measured clockwise from north.  
+		A camera pointing straight north would have 
+		an azimuth of zero; a camera pointing straight east 
+		would have an azimuth of 90 degrees. 
+	}
+	;
+
 Attribute description
 	String (64)
 	Format ( "%-64s" )
@@ -138,6 +154,18 @@ Attribute lddate
 	}
 	;
 
+Attribute lens
+	String (25)
+	Format ( "%-25s" )
+	Null ( "-" )
+	Description ( "lens type" )
+	Detail {
+		This field describes the lens used on a camera, 
+		for example 'fixed' or 'variable' (or any other 
+		reasonable lens description, such as focal length etc.)
+	}
+	;
+
 Attribute lon
 	Real (9)
 	Format ( "%9.4f" )
@@ -152,6 +180,33 @@ Attribute lon
 	}
 	;
 
+Attribute stereo
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "stereo =~ /L|R|-/" )
+	Description ( "stereo pair location" )
+	Detail {
+		This field describes which element of a stereo pair
+		this camera represents, for example 'L' if it is the 
+		leftmost camera or 'R' if it is the rightmost camera.
+	}
+	;
+
+Attribute stereotwin
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "imagename of other camera in this stereo pair" )
+	Detail {
+		This field gives the imagename of the stereo twin 
+		of this camera, if it is paired with another camera. 
+		The 'stereo' field designation for a camera and its 
+		stereotwin should be different, i.e. one 'L' and one
+		'R'.
+	}
+	;
+
 Attribute time
 	Time (17)
 	Format ( "%17.5f" )
@@ -161,6 +216,22 @@ Attribute time
 	Detail {
 		The time field records the Unix epoch timestamp of a stored
 		image, or the beginning of a time range
+	}
+	;
+
+Attribute vang
+	Real (6)
+	Format ( "%6.1f" )
+	Null ( "-999.9" )
+	Range ( "vang >= 0.0 && vang <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "vertical angle" )
+	Detail {
+		This attribute measures the look-angle of a camera, 
+		measured from vertical. I.e. a camera pointing vertically
+		upwards would have vang of 0; a camera pointing horizontally
+		would have vang of 90; a camera pointing straight down 
+		would have vang of 180. 
 	}
 	;
 
@@ -217,7 +288,7 @@ Relation images
 	;
 
 Relation site
-	Fields ( imagename lat lon time endtime description lddate )
+	Fields ( imagename lat lon time endtime azimuth vang description stereo stereotwin lddate )
 	Primary ( imagename time::endtime )
 	Description ( "geographic location of image" )
 	Detail {
@@ -226,6 +297,8 @@ Relation site
 		one entry for an entire stream of images taken by a 
 		static (non-moving) camera, giving the location of 
 		the camera along with a short description of the site.
+		If this camera is part of a stereo pair, the stereo 
+		and stereotwin fields explain the relationship. 
 	}
 	;
 
