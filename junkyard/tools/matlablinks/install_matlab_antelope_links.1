@@ -1,0 +1,106 @@
+.TH INSTALL_MATLAB_ANTELOPE_LINKS 1 "$Date$"
+.SH NAME
+install_matlab_antelope_links \- make soft-links to install Antelope Toolkit
+.SH SYNOPSIS
+.nf
+install_matlab_antelope_links
+.fi
+.SH DESCRIPTION
+This script installs the soft-links between an existing Matlab installation 
+and an installed copy of Antelope that has the Antelope Matlab Toolbox. Two 
+soft-links are made automatically:
+.nf
+
+	$ANTELOPE/data/matlab/antelope 
+to 
+	$MATLAB/toolbox/antelope
+
+.fi
+and also
+.nf
+
+	$ANTELOPE/data/matlab/antelope/html
+to 
+	$MATLAB/help/toolbox/antelope
+
+.fi
+The script complains and dies if difficulties 
+occur along the way. Finally, the script launches a vi editor for the user 
+to add the
+.nf
+
+	$MATLAB/toolbox/antelope/commands 
+and
+	$MATLAB/toolbox/antelope/examples
+
+.fi 
+directories to the matlab path. Usually this is done by editing 
+$MATLAB/toolbox/local/pathdef.m. If the user does not succeed in this edit, 
+a warning message is displayed.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+nordic% ./install_matlab_antelope_links
+
+1) Successfully soft-linked
+        /opt/antelope/4.2u/data/matlab/antelope
+to
+        /usr/local/matlab/toolbox/antelope
+
+2) Successfully soft-linked
+        /opt/antelope/4.2u/data/matlab/antelope/html
+to
+        /usr/local/matlab/help/toolbox/antelope
+
+
+3) *** Now you must please add
+
+        $MATLAB/toolbox/antelope/commands and
+
+        $MATLAB/toolbox/antelope/examples
+
+to your Matlab path. The standard way to do this is to edit
+
+        $MATLAB/toolbox/local/pathdef.m
+
+***: Edit pathdef.m ?? (recommended...):
+
+   (showing part of the editor session for pathdef.m, the two 
+    antelope lines below have been added):
+
+	% PATH DEFINED HERE -- Don't change this line.
+
+	p = [...
+        	matlabroot,'/toolbox/local/seismo:',...
+        	matlabroot,'/toolbox/antelope/antelope:',...
+        	matlabroot,'/toolbox/antelope/examples:',...
+        	matlabroot,'/toolbox/matlab/general:',...
+        	matlabroot,'/toolbox/matlab/ops:',...
+        	matlabroot,'/toolbox/matlab/lang:',...
+        	matlabroot,'/toolbox/matlab/elmat:',...
+        	matlabroot,'/toolbox/matlab/elfun:',...
+        	matlabroot,'/toolbox/matlab/specfun:',...
+
+   (end of editor session snapshot)
+	
+Antelope Toolbox for Matlab successfully installed.
+
+nordic% 
+.fi
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
