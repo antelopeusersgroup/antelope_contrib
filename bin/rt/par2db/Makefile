@@ -12,7 +12,6 @@ SRCS= \
     dc_par.c \
     flush2db.c \
     gps_coord.c \
-    init.c \
     par2db.c \
     new_free_util.c \
     pkt2db.c \

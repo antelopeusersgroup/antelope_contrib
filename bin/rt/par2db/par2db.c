@@ -222,7 +222,7 @@ char          **argv;
        if( ( fplcmd = fopen( lcmdfile, "a+")) == NULL )
           die( 1, "can't open '%s' for LAST COMMAND rerords.\n", lcmdfile);
     }
-    init( pffile ); 
+    /* init( pffile );   */
     errreap = 0;
     do {
 	if (orbreap (rdorb, &pktid, srcname, &pkttime, &packet, &nbytes, &bufsize)) {
@@ -239,9 +239,9 @@ char          **argv;
 		    
     	    }
 	} else errreap = 0;
-
+/*
 	if( (site = ( Ste *) getarr( Pid, srcname)) == 0 ) continue;
-
+*/
 	if (Verbose > 1) {
 	    printf ("%5d %s %s\n", pktid, srcname, s = strtime (pkttime));
 	    free (s);

@@ -72,11 +72,16 @@ new_dbrecord (Db_buffer *buf)
 	    retcode++;
 	} else if (trwfname (buf->db, buf->params->wfname, &(buf->path)) < 0) {
 	    retcode++;
-	} else if ((buf->file = fopen (buf->path, "w+")) == 0) {
+	} else 
+	/*
+	if ((buf->file = fopen (buf->path, "a+")) == 0) {
 	    register_error (1, "Can't open %s to write trace data.\n", 
 		buf->path);
 	    retcode++;
 	}
+	*/
+	buf->file = 0;
+
 	buf->disk->nsamp = 0 ; 
 	buf->disk->samprate = buf->mem->samprate ;
 	buf->disk->t0 = buf->mem->t0 ;
