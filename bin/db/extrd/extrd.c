@@ -50,7 +50,7 @@ char *argv[];
            record_size, i, j;
  int       wfdrec;
  int       err_in, id;
- int 	   affil = 0;
+ int 	   affil = 0, gotone;
  char      subset_condition[80];
  char      *out_dir = 0;
  char      *sta = ".*" ;
@@ -187,6 +187,7 @@ char *argv[];
 
 
     while((fname = fgets(fname, 132,fd)) != NULL)  {
+      gotone = 1;
       for(i = strlen(fname); i >= 0; i--) {
          if( fname[i] == '\n' )
          break;
@@ -213,6 +214,7 @@ char *argv[];
       if( nrec <= 0 )  {
 	  complain(0, "No records in  %s after '%s' subset\n", 
 	                fname, subset_condition );
+	  gotone = 0;
 	  continue;
       } 
       sprintf(subset_condition,"(chan =~ /%s/ && sta =~ /%s/)", chan, sta);
@@ -221,6 +223,7 @@ char *argv[];
       if( nrec <= 0 )  {
 	  complain(0, "No records in  %s after '%s' subset\n", 
 	                fname, subset_condition );
+	  gotone = 0;
 	  continue;
       } 
       for( dbsub.record = 0; dbsub.record < nrec; dbsub.record++ )  {
@@ -256,7 +259,7 @@ char *argv[];
 
        }
 
-      if( !Network )  {
+      if( !Network && gotone )  {
 
           tmpaf = dblookup (tmpdb, 0, "affiliation", 0, 0);
           if (tmpaf.table < 0)  {
@@ -287,39 +290,40 @@ char *argv[];
    }
    unlink( ".tmp" ); 
 
-   dbquery (db, dbRECORD_COUNT, &nrec);
-   if( nrec <= 0 )
-      die( 0, "No records in dbin.\n");
+   if( gotone )  {
+      dbquery (db, dbRECORD_COUNT, &nrec);
+      if( nrec <= 0 ) {
+         complain( 0, "No records in dbin.\n");
+      }  else  {
+         sort_sta_ch_tm = strtbl("sta", "chan", "time", 0 ) ;
+         db = dbsort (db, sort_sta_ch_tm, 0, 0 ) ; 
 
-   sort_sta_ch_tm = strtbl("sta", "chan", "time", 0 ) ;
-   db = dbsort (db, sort_sta_ch_tm, 0, 0 ) ; 
-
-   if(!mkfname( &out_dbase, stime, out_dir))  {
-        die( 0, " can't make outdb\n");
-   } 
+         if(!mkfname( &out_dbase, stime, out_dir))  {
+              die( 1, " can't make outdb\n");
+         } 
    
-   if (dbopen_database ( out_dbase, "r+", &dbout) < 0)
-        die (0, "Can't open output database %s\n", out_dbase);
-   if (dbout.table < 0) {
-        dbout = dblookup (dbout, 0, "wfdisc", 0, 0);
-        if (dbout.table < 0)
-            die (0, "Can't open wfdisc table '%s'\n", out_dbase);
-   }
+         if (dbopen_database ( out_dbase, "r+", &dbout) < 0)
+              die (1, "Can't open output database %s\n", out_dbase);
+         if (dbout.table < 0) {
+              dbout = dblookup (dbout, 0, "wfdisc", 0, 0);
+              if (dbout.table < 0)
+                  die (1, "Can't open wfdisc table '%s'\n", out_dbase);
+         }
  
 
-   Seq = 1;
-   if(!get_data( stime, etime, nrec ))  {
-          complain(0, "error in get_data()\n");
-          system(CLEAN); 
-          exit(1);
+         Seq = 1;
+         if(!get_data( stime, etime, nrec ))  {
+             complain(0, "error in get_data()\n");
+             system(CLEAN); 
+         }
+      }
+
+      if( affil)
+        if( unlink( afname ) < 0 )  
+           complain( 1, "can't remove %s\n", afname);
+      if( unlink( in_dbase ) < 0 )  
+           complain( 1, "can't remove %s\n", in_dbase);
    }
-
-   if( affil)
-     if( unlink( afname ) < 0 )
-        die( 1, "can't remove %s\n", afname);
-   if( unlink( in_dbase ) < 0 )
-     die( 1, "can't remove %s\n", in_dbase);
-
 
   exit(0);
 }
