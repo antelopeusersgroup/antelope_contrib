@@ -1,0 +1,26 @@
+2003.017: version 1.4
+	- Included OpenBSD versions of strlcpy() and strlcat() for
+	  portability to Linux.
+
+2002.066: version 1.3
+	- Added explicit string initialization, so as not to assume
+	  that the compiler does this for us.
+	- Added more resetting to the substitution string so as not
+	  to print junk when no substitution was actually done.
+
+2001.353:
+	- Changed the call to orbreap_nd() to orbreap() and re-fitted
+	  things such that the program is now data driven.
+	- Removed the '-nowait' option.  The logic is different using
+	  a blocking call to orbreap(). (and I never used the option)
+	- Added the option '-state' to make use of a state file for
+	  saving/restoring the ORB position.
+
+2001.3??:
+	Added the ability to extract fields in database rows that are in
+	parameter file packets; such as is found in /pf/orbmag packets.
+	These substitutions are indicated with '@' delimeters, i.e. 
+	a substitution indicated with @origin.evid@ will look in a
+	parameter file packet for an origin table database row and
+	substitute with the 'evid' field of that row.
+	

@@ -1,0 +1,128 @@
+.TH ORBPTRIGGER 1 2001/12/19
+.SH NAME
+orbptrigger \- ORB packet trigger
+.SH SYNOPSIS
+.nf
+orbptrigger [-select packet] [-start {pktid|time}] [-number number]
+	       [-state file] [-background] ORB command ...
+
+.fi
+.SH DESCRIPTION
+\fBorbptrigger\fP listens to an ORB and exectutes a specified system
+call (command string) when specified packets are read.  Simple
+substitution can be performed for variables in the system call using 
+parameters/fields from parameter file or database table packets.
+
+.SH OPTIONS
+.IP "-select \fIpacket\fR"
+Select which packet name to listen for.  This can be any type of 
+packet in the ORB.  The default is "/db/origin".
+
+.IP "-start \fIpktid|time\fR"
+Specify the starting position in the ORB.  If the argument is all
+digits it is assumed to indicate a packet id, otherwise it is
+processed as a time string.  The default starting position is the
+next packet received by the ORB.
+
+.IP "-number \fInumber\fR"
+Only process this number of packets, exiting when fullfilled.  The
+default is to listen forever.
+
+.IP "-state \fIfile\fR"
+Save/restore the position in the ORB to/from this \fIfile\fR
+
+.IP "-background"
+Run the specified system call in the background.  This simply adds
+an '&' to the end of the command string before executing with system().
+The default is to run the system call in the foreground.
+
+.IP "\fIORB\fR"
+Specifies the location of the ORB server in host:port format. This is
+a required argument.
+
+.IP "\fIcommand\fR"
+The system call to be executed after reading a specified type of
+packet.  After substitution (see below) this is executed with
+a system(command ...) call.  This is a required argument.
+
+.SH SUBSTITUTION
+
+The command string is scanned for pairs of '%' or '@' characters.
+Anything inside pairs of these delimiters is substituted with matching
+values of parameters/fields from parameter file or database table packets.
+This only works with these two types of packets, indicated by
+source names starting with "/pf/" or "/db/".  The delimiters must
+fit the parameter/field name tightly, i.e. spaces inside the
+delimiters are treated as part of the parameter/field name.  See
+LIMITATIONS below.
+
+.IP "Substitution with the '%' delimiter:"
+Substitutions are made directly with parameters from paramter file packets
+or fields in database packets
+
+.IP "Substitution with the '@' delimiter:"
+This can only be used with parameter file packets.  Substitutions should
+always be specified with the format '@<table>.<field>@'.  A database row
+for a given <table> will be extracted from the parameter file packet and
+the substitution will be with the value of <field> in that table record.
+A database schema of 'rt1.0' is assumed.
+
+.SH EXAMPLES
+
+>orbptrigger ORB /archive/addbulletin %evid% -lat %lat% -lon %lon%
+
+This will execute the program /archive/addbulletin with %evid%,
+%lat%, and %lon% replaced with the values of their respective fields
+in the database packet /db/origin (the default packet) that triggered
+execution. The final command string might look like:
+"/archive/addbulletin 71 -lat 14.6784 -lon 70.8901"
+
+>orbptrigger -select /pf/orbpftrigger -number 2 ORB sendalert %start%
+
+This will execute 'sendalert' with the substituted value of 'start'
+taken from a /pf/orbpftrigger packet for the next two /pf/orbpftrigger
+packets read.
+
+>orbptrigger -select IU_KONO_BHZ ORB /bin/date >> /log/KONO.recvd.packets
+
+Sure, that's possible as well if you really want to do so.
+
+>orbptrigger -select "/pf/orbmag" ORB report_mag @origin.evid@
+
+This will execute 'report_mag' with 'evid' taken from the database
+row/record for an 'origin' table inside the parameter file packet.
+
+.SH "LIMITATIONS"
+
+- Parameters in parameter file packets must be of type string, int, or
+double.  Array (&Arr) and table (&Tbl) values cannot be used for
+substitution.  A special exception is when using '@' delimiters for
+substitution; usually database rows/records are then of type &Literal.
+
+- Required values for the command line arguments that are expecting an
+associated number, time, pktid, etc. are not robustly checked.
+
+- Problems abound if the specified command string contains flags
+that are recognized by orbptrigger.
+i.e. 'orbptrigger ORB calc -number %lat%', will *not* work.
+
+.SH "NOTES"
+
+Any pre-pended spaces in the value of a database field are removed,
+just to make the command line a little cleaner.
+
+This program is very similar to orbpftrigger, with major differences
+being:
+
+- The ability to trigger on any arbitrary packet.
+
+- The ability to substitute values from a database table packets/rows.
+
+- Only simple substitution of variables, no expression evaluation is
+performed.
+
+.SH AUTHOR
+.nf
+Chad Trabant
+ORFEUS Data Center/EC-Project MEREDIAN
+.fi

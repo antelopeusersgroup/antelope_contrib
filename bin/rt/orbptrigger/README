@@ -1,0 +1,8 @@
+
+A module to trigger command execution (much like orbpftrigger)
+after specific packets are read from an ORB.
+
+Variable substitution is possible when listening for
+parameter file or database table objects.
+
+Read the man page.
