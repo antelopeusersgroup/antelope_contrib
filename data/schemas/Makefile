@@ -1,10 +1,11 @@
-DATADIR=schemas2
+DATADIR=schemas
 DATA=	iceworm1.3 \
 	takeoff \
 	places1.2 \
 	notify1.2 \
 	contacts1.0 \
 	dbrecenteqs1.0 \
+	dbrecenteqs1.1 \
 	statrans1.0 \
 	statrans1.1 \
 	models0.4 \

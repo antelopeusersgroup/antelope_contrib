@@ -1,0 +1,369 @@
+Schema dbrecenteqs1.1
+	Description ( "Schema for web-displayed maps" )
+	Detail {
+		The dbrecenteqs schema supports mapping of hypocenters 
+		and related information. This is an expansion schema
+		designed to be used with css3.0, rt1.0 or other related
+		schema.
+	}
+	;
+
+Attribute downdellat
+	Real (7)
+	Format ( "%7.2lf" )
+	Null ( "-999.0000" )
+	Range ( "downdellat >= -180.0 && downdellat <= 0" )
+	Units ( "degrees" )
+	Description ( "distance from center of map projection to bottom of map" )
+	Detail {
+		This is the distance in degrees from the center of a 
+		map projection to the bottom of a map. By convention, 
+		downdellat is negative.
+	}
+	;
+
+Attribute format
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "graphics format for map image" )
+	Detail {
+		This is the graphics format used for a map image, e.g. 
+		gif for graphics interchange format or jpg for 
+		joint photographics expert group format.
+	}
+	;
+
+Attribute height
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "height >= 0" )
+	Units ( "pixels" )
+	Description ( "height of map image in pixels" )
+	Detail {
+		This is the height of a map image in pixels
+	}
+	;
+
+Attribute latc
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "latc >= -90.0 && latc <= 90.0" )
+	Units ( "degrees" )
+	Description ( "center-latitude of a map projection" )
+	Detail {
+		This is the center latitude of a map projection (not 
+		necessarily the center of the map image itself).
+	}
+	;
+
+Attribute leftdellon
+	Real (7)
+	Format ( "%7.2lf" )
+	Null ( "-999.0000" )
+	Range ( "leftdellon >= -180.0 && leftdellon <= 0" )
+	Units ( "degrees" )
+	Description ( "distance from center of map projection to left side of map" )
+	Detail {
+		This is the distance in degrees from the center of a 
+		map projection to the left side of a map. By convention, 
+		leftdellon is negative.
+	}
+	;
+
+Attribute lonc
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "lonc >= -180.0 && lonc <= 180.0" )
+	Units ( "degrees" )
+	Description ( "center-longitude of a map projection" )
+	Detail {
+		This is the center longitude of a map projection (not 
+		necessarily the center of the map image itself).
+	}
+	;
+
+Attribute mapclass
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "usage class of map" )
+	Detail {
+		This is the usage class of a stock map image, i.e. 
+		how it will be used in a running instance of 
+		dbrecenteqs. Currently accepted values are "index", 
+		"global", and "detail". A further class is "focus", 
+		for maps that show (focus on) a specific hypocenter,
+		however these usually are generated dynamically
+		and do not appear in the mapstock table. 
+	}
+	;
+
+Attribute mapname
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "name of map" )
+	Detail {
+		This is a unique name for a map to be used for plotting 
+		events. This name is distinct from the actual file name 
+		containing the map image--the character string mapname 
+		is used in lieu of an integer map id. For all maps that 
+		are pre-generated (i.e. no earthquake etc. symbols on the map, 
+		symbols added on-the fly), the mapstock table defines the 
+		mapname attribute. The webmaps table then lists the current 
+		version of that mapname that has specific earthquake symbols 
+		on it. For maps that are generated on-the-fly, there will 
+		not be an entry in the mapstock table. In these cases
+		the mapname will be entirely defined by the webmaps table. 
+	}
+	;
+
+Attribute proj
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "projection for map" )
+	Detail {
+		This is the projection used for a map, e.g. edp for 
+		equidistant projection or merc for mercator.
+	}
+	;
+
+Attribute regname
+	String ( 80 )
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( " Name of the region of interest" )
+	;
+
+Attribute rightdellon
+	Real (7)
+	Format ( "%7.2lf" )
+	Null ( "-999.0000" )
+	Range ( "updellat >= 0 && updellat <= 180.0" )
+	Units ( "degrees" )
+	Description ( "distance from center of map projection to right side of map" )
+	Detail {
+		This is the distance in degrees from the center of a 
+		map projection to the right side of a map. By convention, 
+		rightdellon is positive.
+	}
+	;
+
+Attribute symcolor
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "color for a map symbol" )
+	Detail {
+		This is the color used for a map symbol, e.g. 'red' 
+		or any other color format supported by the plotting 
+		software used
+	}
+	;
+
+Attribute symshape
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "shape for a map symbol" )
+	Detail {
+		This is the shape used for a map symbol, e.g. circle 
+		or square
+	}
+	;
+
+Attribute symsize
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "symsize >= 0" )
+	Units ( "pixels" )
+	Description ( "pixel size of map symbol" )
+	Detail {
+		This is the size in pixels of a symbol
+		(usually a symbol for an earthquake) on
+		a map. This is a one-dimensional number 
+		which can hopefully fully characterize 
+		the size. For example, symsize is the 
+		radius of a circle or the side-length of 
+		a square. 
+	}
+	;
+
+Attribute updellat
+	Real (7)
+	Format ( "%7.2lf" )
+	Null ( "-999.0000" )
+	Range ( "updellat >= 0 && updellat <= 180.0" )
+	Units ( "degrees" )
+	Description ( "distance from center of map projection to top of map" )
+	Detail {
+		This is the distance in degrees from the center of a 
+		map projection to the top of a map. By convention, 
+		updellat is positive.
+	}
+	;
+
+Attribute url
+	String (100)
+	Format ( "%100s" )
+	Null( "-" )
+	Description( "URL for a map image on the web" )
+	Detail {
+		This is the URL for the enclosing html page for 
+		a map image on the web. 
+	}
+	;
+
+Attribute width
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "width >= 0" )
+	Units ( "pixels" )
+	Description ( "width of map image in pixels" )
+	Detail {
+		This is the width of a map image in pixels
+	}
+	;
+
+Attribute x
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "x >= 0" )
+	Units ( "pixels" )
+	Description ( "horizontal pixel coordinate of map symbol" )
+	Detail {
+		This is the horizontal coordinate in pixels of 
+		the center of a symbol (usually a symbol for an
+		earthquake) on a map. 
+	}
+	;
+
+Attribute xc
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "xc >= 0" )
+	Units ( "pixels" )
+	Description ( "horizontal center of map image projection in pixels" )
+	Detail {
+		This is the horizontal center of a map image 
+		projection in pixels
+	}
+	;
+
+Attribute xpixperdeg
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "0" )
+	Range ( "xpixperdeg" )
+	Units ( "pixels/degree" )
+	Description ( "horizontal scale of map image" )
+	Detail {
+		This is the horizontal scale of a map image 
+		projection in pixels per degree
+	}
+	;
+
+Attribute y
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "y >= 0" )
+	Units ( "pixels" )
+	Description ( "horizontal pixel coordinate of map symbol" )
+	Detail {
+		This is the vertical coordinate in pixels of 
+		the center of a symbol (usually a symbol for an
+		earthquake) on a map. 
+	}
+	;
+
+Attribute yc
+	Integer (6)
+	Format ( "%6d" )
+	Null ( "-1" )
+	Range ( "yc >= 0" )
+	Units ( "pixels" )
+	Description ( "vertical center of map image projection in pixels" )
+	Detail {
+		This is the vertical center of a map image 
+		projection in pixels
+	}
+	;
+
+Attribute ypixperdeg
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "0" )
+	Range ( "ypixperdeg" )
+	Units ( "pixels/degree" )
+	Description ( "vertical scale of map image" )
+	Detail {
+		This is the vertical scale of a map image 
+		projection in pixels per degree
+	}
+	;
+
+Relation mapassoc
+	Fields ( mapname orid x y symsize symshape symcolor lddate )
+	Primary ( mapname orid  )
+	Description ( "associations between hypocenters and stock maps" )
+	Detail {
+		associates stock maps with the hypocenters that are to
+		be shown on them. Mapassoc entries may also be made for 
+		earthquakes on dynamically-generated pages that have 
+		webmaps-table entries but no pregenerated images in the 
+		mapstock table.
+	}
+	;
+
+Relation mapstock
+	Fields ( mapname mapclass latc lonc updellat downdellat leftdellon rightdellon proj format width height xc yc xpixperdeg ypixperdeg dir dfile lddate )
+	Primary ( mapname )
+	Alternate ( dir dfile )
+	Description ( "stock map images" )
+	Detail {
+		This table describes stock map images used for plotting 
+		earthquakes.
+	}
+	;
+
+Relation quakeregions 
+	Fields ( orid regname lddate )
+	Primary( orid )
+	Description( "region of occurrence for hypocenters" )
+	Detail {
+		This table is a cache of the region-name decided
+		upon for each hypocenter. The cache is useful
+		because generation of this name can sometimes
+		be computationally expensive.
+	}
+	;
+
+Relation webmaps
+	Fields ( mapname dir dfile url evid orid lddate )
+	Primary ( mapname )
+	Alternate ( dir dfile )
+	Foreign ( evid orid )
+	Description ( "map images for web" )
+	Detail {
+		The webmaps table describes where to find maps that 
+		have been customized (usually with the addition of 
+		particular earthquakes) and placed in directories 
+		accessible to the web server. If the the map is specific 
+		to a single evid, the evid field may be filled in as 
+		a foreign key. If the map is specific to a single 
+		hypocentral solution, the orid field may be filled in as 
+		a foreign key. In most cases it will probably not make sense
+		to fill in both evid and orid. For maps that contain more 
+		than one event, the evid and orid fields are left blank. 
+	}
+	;
