@@ -360,16 +360,19 @@ sdepth, stime - depth and time error attributes in css3.0
 
 Normal return is 0.  Returns -1 if computation totally fails.  Calling
 function should trap this condition results are all set 0 in that 
-situation.*/
+situation.
+Written:  November 2000
+Authors:  G Pavlis and Kent Lindquist
+*/
 int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 		double *smajax, double *sminax, double *strike,
 		double *sdepth, double *stime)
 {
 	int i,j;
 	double cwork[16];  /* covariance subset work space in FORTRAN order*/
-	/* These are chisqure critical values.  First index is critical
-	level and second in degress of freedom.  e.g. 
-	chisq_crit[1][2] is 90% level for 2 dgf*/
+	/* These are chisquare critical values.  First index is critical
+	level and second is degrees of freedom.  e.g. 
+	chisq_crit[1][2] is 90% level for 3 dgf*/
 	double chisq_crit[2][3]={1.001284,2.297707,3.529159,
 				2.705543, 4.60517, 6.251389};
 	double evals[4];
@@ -377,7 +380,7 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 	int info,ecount=0;
 	int iconf;
 
-	if((*conf<0.0) || (*conf>1.0))
+	if((*conf<=0.0) || (*conf>=1.0))
 	{
 		elog_complain(0,"project_confidence passed illegal confidence level.  Default to 68.3 percent\n");
 		iconf = 0;
@@ -451,9 +454,9 @@ int project_covariance(double **C, int model, double *conf, double rms, int dgf,
 	/* Note sunperf implementation of blas returns an index based
 	from 0 ala C while the FORTRAN version uses 1.  Dangerous
 	inconsistency to watch out for. */
-	*sdepth = vwork[2+i*4];
+	*sdepth = fabs(vwork[2+i*4]);
 	i = idamax(4,vwork+3,4);
-	*stime = vwork[3+i*4];
+	*stime = fabs(vwork[3+i*4]);
 	switch(model)
 	{
 	case(F_DIST):
