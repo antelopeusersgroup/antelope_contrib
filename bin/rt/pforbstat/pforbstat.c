@@ -77,6 +77,7 @@ main (int argc, char **argv)
 
 		case 'a':
 			flags |= PFORBSTAT_CONNECTIONS;
+			flags |= PFORBSTAT_DATABASES;
 			break;
 
 		case 'm':
