@@ -4,7 +4,12 @@ if 0;
 
 foreach ( split(':', $ENV{PATH}) ) { 
     if ( -x "$_/mex" ) { 
-	exit 0 
+	$result = `$_/matlab -nodisplay < /dev/null` ; 
+	if ( $result =~ /Version/ ) { 
+	    exit 0 
+	} else { 
+	    print STDERR "Problem: Matlab present but not executable!\n" ; 
+	}
     }
 }
 exit 1
