@@ -1,0 +1,22 @@
+# @(#)cmg3t_vel	1.2 8/28/98
+# cmg3t    8.33300E-03 hz seimometer
+# Normalized  response relative to velocity
+# 1                   type
+# 3                   num of zeroes
+# 4                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# -2.904E+02           normalization factor
+# 1.0                 gain
+# Sensitivity  1500/v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+-2.904E+02
+4             Poles
+-3.701E-02    +3.701E-02    0.0000E+00    0.0000E+00
+-3.701E-02    -3.701E-02    0.0000E+00    0.0000E+00
+-4.599E+02    +2.362E+02    0.0000E+00    0.0000E+00
+-4.599E+02    -2.362E+02    0.0000E+00    0.0000E+00
+3             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+9.2050E+02    0.0000E+00    0.0000E+00    0.0000E+00

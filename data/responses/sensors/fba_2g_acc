@@ -1,0 +1,18 @@
+# @(#)fba_2g_acc   1.0 10/30/2000
+# K2 2G FBA-23    50.00000 hz seimometer
+#    0.700000 damping
+# Normalized  response relative to acceleration 
+# 1                   type
+# 2                   num of zeroes
+# 3                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 normalization factor
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pzseismo
+98218319.68
+3             Poles
+-0.222E+03    0.222E+03     0.0000E+00    0.0000E+00
+-0.222E+03   -0.222E+03     0.0000E+00    0.0000E+00
+-1.000E+03    0.000E+00     0.0000E+00    0.0000E+00
+0             Zeros

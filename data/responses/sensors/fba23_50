@@ -1,0 +1,17 @@
+# @(#)fba23_50	1.1 5/1/93
+# FBA23_50    50 Hz natural frequency accelerometer
+# 0.600000  damping
+# Normalized  response relative to acceleration
+# 1                   type
+# 0                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 98696.0            normalization factor
+# 1.0                 gain
+theoretical   1 anti-alias   paz  Kinemetrics
+98696.0
+2         Poles
+-.2007e+03   .2409e+03   0.0000E+00    0.0000E+00
+-.2007e+03  -.2409e+03   0.0000E+00    0.0000E+00
+0         Zeroes
