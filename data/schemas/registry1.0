@@ -63,7 +63,7 @@ Attribute closes
 	}
 	;
 
-Attribute connections
+Attribute printconn
 	Integer (2)
 	Format ( "%2d" )
 	Null ( "-1" )
@@ -586,8 +586,18 @@ Relation clients
 	}
 	;
 
+Relation connections
+	Fields ( serveraddress serverport clientaddress clientport latency_sec when lddate )
+	Primary ( serveraddress serverport clientaddress clientport )
+	Description ( "data-flow connections between orbs" )
+	Detail {
+		This table describes data-flow connections between orbs, 
+		usually established with the orb2orb client.
+	}
+	;
+
 Relation servers
-	Fields ( serveraddress serverport host started orb_start nclients nsources opens closes rejected errors connections messages maxdata maxpkts maxsrc who pid version orbversion when lddate )
+	Fields ( serveraddress serverport host started orb_start nclients nsources opens closes rejected errors printconn messages maxdata maxpkts maxsrc who pid version orbversion when lddate )
 	Primary ( serveraddress serverport )
 	Alternate ( host )
 	Description ( "running orbserver instances" )
