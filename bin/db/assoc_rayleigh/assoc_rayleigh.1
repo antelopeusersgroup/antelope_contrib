@@ -1,0 +1,42 @@
+'\" et
+.TH ASSOC_RAYLEIGH 1# "$Date$"
+.SH NAME
+assoc_rayleigh \- associates rayleigh wave picks to origins
+.SH SYNOPSIS
+.nf
+assoc_rayleigh [-v] db origin_db 
+.fi
+.SH DESCRIPTION
+assoc_rayleigh associates rows in the arrival table in db with "iphase=='R'"
+with the origin table in origin_db.  The condition for association is
+that an R arrival must occur with a velocity between 3.4 and 4.2 km/sec
+based on the origin_db origin.time, db arrival.time and the 
+distance between the site and the origin.  For each origin-arrival subset 
+which satisfies these conditions, a check is made to see if the origin 
+already exists in the db origin table by matching the lat, lon, depth, time,
+auth fields. If so, then the value of nass is updated and the rows are added to the assoc table.  If the origin does not match, but is within 1 degree in
+distance and 60 seconds in origin time, then a new origin is added to 
+the db origin table using the same evid as the existing origin in 
+db origin.  Otherwise a new origin and event are added to db.
+.SH OPTIONS
+.IP -v
+very verbose
+.SH FILES
+needs a minimum of arrival table and site table in db.
+.SH ENVIRONMENT
+needs to be run in ANTELOPE environment
+.SH "BUGS AND CAVEATS"
+assoc_rayleigh will associate any origins in origin_db with the "R"
+arrivals in db.  It does not look at magnitudes or any other criteria,
+so it is possible to get mis-associations.  The best way to deal with this
+is to run dbverify to identify which arrivals are associated with multiple
+events, followed by dbloc2 to remove the offending events.
+.SH "SEE ALSO"
+.nf
+dbloc2(1), dbverify(1)
+.fi
+.SH AUTHOR
+Frank Vernon
+.br
+UCSD
+.\" $Id$
