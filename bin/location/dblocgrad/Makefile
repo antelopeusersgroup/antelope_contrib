@@ -1,6 +1,6 @@
 PF=dblocgrad.pf
 BIN=dblocgrad		
-DATADIR=schemas2
+DATADIR=schemas
 DATA=css_vel
 
 
