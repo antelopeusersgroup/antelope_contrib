@@ -232,7 +232,7 @@ RECONNECT:			clear_register (0);
 				lastpkt_age += 10;
 				/* continue; */
 
-				while (1) {
+				/* while (1) {
 					int ok;
 
 					sleep (10);
@@ -285,8 +285,8 @@ RECONNECT:			clear_register (0);
 						}
 					}
 					if (ok) break;
-				}
-				orbclose (orbs);
+				} 
+				orbclose (orbs); */
 
 				if (messages) putmsg (orbout, db, "orbcp", "orb close");
 				orbclose (orbin);
