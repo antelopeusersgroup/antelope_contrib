@@ -12,7 +12,7 @@
  ********************************************************************/
 #include "ipd2.h"
 
-extern int Dump;
+extern int PktLog;
 extern int NoSP;
 extern int Psize; 
 static double          prev_time = 0.0;
@@ -496,12 +496,11 @@ int timeout;
 				    state = 0;
 				    break;
 				}
-		                if(Dump) hexdump(stderr, newbuffer, plength);
+		                if(PktLog) hexdump(stderr, newbuffer, plength);
 				
 				err = 0;
 				if((err = valid_pkt (&newbuffer, &srcname[0], &epoch, &psize, plength, hdrtype)) > 0) {
-				    complain (0, "read_socket(): Not valid packet \n");
-				    complain (0, "read_socket():Wrong HEADER?\n");
+				    complain (0, "read_socket(): Not valid packet. Wrong HEADER? \n");
 				} else {
 				        cansend = 1;
 					if( fabs( epoch - prev_time) > 86400.0 )  {
