@@ -144,9 +144,20 @@ if( $opt_s ) {
 	orbseek( $orb, "$pktid" );
 }
 
+$DEBUG_timeout = 600;
+
 for( ; $stop == 0 ; ) {
 
-	($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
+	#DEBUG ($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
+
+	($pktid, $srcname, $time, $packet, $nbytes) = 
+				orbreap_timeout( $orb, $DEBUG_timeout );
+
+	if( ! defined( $pktid ) ) {
+		
+		elog_complain( "FYI orbreap timed out at $DEBUG_timeout seconds\n" );
+		next;
+	}
 
 	if( $opt_s ) {
 
