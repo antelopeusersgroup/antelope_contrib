@@ -87,6 +87,9 @@ main (int argc, char **argv)
 	while( optind < argc - 1 ) {
 
 		ahfile = argv[optind];
+		if( verbose ) {
+			fprintf( stderr, "Converting %s\n", ahfile );
+		}
 		parsepath( ahfile, dir, dfile, suffix );
 
 		if( strcmp( dir, dbdir ) ) {
@@ -120,6 +123,13 @@ main (int argc, char **argv)
 			n2h_ak_ahhead( &ah );
 
 			datasize = aah_datatype_to_size( ah.record.type );
+			if( datasize <= 0 ) {
+				register_error( 1, 
+				  "Unrecognized datatype %d; skipping %s\n",
+				  ah.record.type, ahfile );
+				clear_register( 1 );
+				break;
+			}
 			nsamp = ah.record.ndata;
 			samprate = 1.0 / ah.record.delta;
 
