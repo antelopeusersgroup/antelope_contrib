@@ -1,6 +1,7 @@
+PERLMAKEFILE = perl_makefile
 AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 MAN3P=perlwf.3p
-CLEAN=  .make.state  runmake Makefile.old Makefile.PL Makefile wfutil.bs wfutil.c pm_to_blib 
+CLEAN=  .make.state  $(PERLMAKEFILE).old Makefile.PL $(PERLMAKEFILE) runmake Makefile.PL wfutil.bs wfutil.c pm_to_blib 
 
 PD=$(ANTELOPE)$(SUBDIR)/data/perl
 PM=$(ANTELOPE)$(SUBDIR)/man
@@ -12,16 +13,16 @@ DIRS=
 SUBDIR=
 
 SRCS= errlog2string.c wfutil.pm wfutil.xs 
-install:: runmake $(SRCS) Makefile 
+install:: runmake $(SRCS) $(PERLMAKEFILE) 
 	./runmake install 
 
-all:: $(SRCS) Makefile runmake
+all:: $(SRCS) $(PERLMAKEFILE) runmake
 	./runmake all
 
 clean::
 	rm -rf blib
 	
-Makefile : Makefile.PL
+$(PERLMAKEFILE) : Makefile.PL
 	$(PERL) Makefile.PL INSTALLPRIVLIB=$(PD) INSTALLSCRIPT=$(PD) INSTALLSITELIB=$(PD) INSTALLSITELIB=$(PD) INSTALLMAN3DIR=$(PM)/man3
 
 Makefile.PL : Makefile.PL.proto 
