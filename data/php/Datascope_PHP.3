@@ -82,6 +82,17 @@ $dbbundle = split ( ' ', $dbbundle ) ;
 .fi
 .in
 .ft R
+.IP "\fBpfget\fP ( pfname, key )"
+Get the value for the named key in the parameter named pfname:
+
+.nf
+
+print pfget( "dbrecenteqs", "max_num_eqs" ) . "\\n";
+print pfget( "dbrecenteqs", "other_region_links{Hawaii}" ) . "\\n";
+
+.fi
+.in
+.ft R
 .IP "\fBtrloadchan\fP ( $db, t0, t1, sta, chan )"
 read channel waveform data
 .ft CW

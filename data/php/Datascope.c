@@ -1,8 +1,14 @@
 /*
  * Antelope interface for PHP
- * Kent Lindquist
- * Lindquist Consulting
- * 2003-2004
+ *
+ * Copyright (c) 2005 Lindquist Consulting, Inc.
+ * All rights reserved. 
+ *                                                                     
+ * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+ * 
+ * This software may be used freely in any way as long as 
+ * the copyright statement above is not removed. 
+ * 
  */
 
 #include "config.h"
@@ -15,6 +21,7 @@
 #include "stock.h"
 #include "coords.h"
 #include "response.h"
+#include "pf.h"
 #include "dbxml.h"
 
 static int le_Datascope;
@@ -42,6 +49,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
 	PHP_FE(eval_response, NULL)		
+	PHP_FE(pfget, NULL)		
 	PHP_FE(strtdelta, NULL)		
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trfree, NULL)		
@@ -279,6 +287,60 @@ PHP_FUNCTION(template)
 	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
 
 		return;
+	}
+}
+/* }}} */
+
+/* {{{ proto array pfget( string pfname, string pfkey ) */
+PHP_FUNCTION(pfget)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	char	*key;
+	int	key_len;
+	Pf	*pf;
+	Pf	*pfvalue;
+	char	*string_value;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+					&pfname, &pfname_len,
+					&key, &key_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		/* SCAFFOLD needs cleanup and error msg */
+		return;
+	}
+
+	rc = pfresolve( pf, key, 0, &pfvalue );
+
+	if( rc == PFINVALID  ) {
+
+		fprintf( stderr, "SCAFFOLD: parameter not found by pfget\n" );
+		return;
+
+	} else if( rc != PFSTRING ) {
+		
+		fprintf( stderr, "SCAFFOLD: only strings/ints/reals supported by pfget right now\n" );
+		return;
+		
+	} else {
+
+		string_value = pfexpand( pfvalue );
+
+		RETURN_STRING( string_value, 1 );
 	}
 }
 /* }}} */
