@@ -42,7 +42,13 @@ Attribute newchan
             of the seismic data, including the geographic location,
             spatial orientation, sensor and subsequent data
             processing. This field is the same as the chan field in
-	    css3.0
+	    css3.0. In some cases, it is not appropriate to assign a 
+	    single channel name, for example when the station name 
+	    does indeed indicate a multiple-component installation. 
+	    Sometimes these cases are mixed in with data that also use
+	    separate station names for different components. In these 
+	    cases, a blank channel names leaves resolution to 
+	    later processing or standardized decisions within software.
         }
         ;
  
