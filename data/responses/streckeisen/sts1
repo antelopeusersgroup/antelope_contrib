@@ -1,0 +1,22 @@
+# @(#)sts1_vel	1.2 11/2/95
+# STS-1    2.77777778-03 hz seimometer
+# Normalized  response relative to velocity
+# 1                   type
+# 2                   num of zeroes
+# 4                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 986.763             normalization factor
+# 1.0                 gain
+# sensitivity  1500 v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+986.763
+4             Poles
+-1.234120E-02  1.234150E-02  0.000000E+00  0.000000E+00
+-1.234120E-02 -1.234150E-02  0.000000E+00  0.000000E+00
+-1.958780E+01  2.456170E+01  0.000000E+00  0.000000E+00
+-1.958780E+01 -2.456170E+01  0.000000E+00  0.000000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+

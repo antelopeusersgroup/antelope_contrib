@@ -1,5 +1,5 @@
 DATADIR=responses
-DATA= sts2
+DATA= sts1 sts2
                        
 include $(ANTELOPEMAKE)  	
 DIRS=
