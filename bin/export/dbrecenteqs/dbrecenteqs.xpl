@@ -1167,3 +1167,7 @@ for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
 }
 
 dbcrunch( dblookup( @db, "", "mapassoc", "", "dbALL" ) );
+
+if( defined( $State{"workdir"} ) && $State{"workdir"} ne "" ) {
+	system( "/bin/rm -rf $State{workdir}" );
+}
