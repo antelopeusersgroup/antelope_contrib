@@ -1,0 +1,20 @@
+# @(#)DPG_1B  1.0 1/27/1999	
+# DPG_1B   pressure sensor 
+# Normalized  response relative to pressure 
+# 1                   type
+# 3                   num of zeroes
+# 5                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# -1.7276E03           normalization factor
+# 1.0                 gain
+theoretical   1 anti-alias   paz    hydrophone
+3.65306e12
+5             Poles
+-1.2771e03     0.5290e03    0.0000E+00    0.0000E+00
+-1.2771e03    -0.5290e03    0.0000E+00    0.0000E+00
+-0.5290e03     1.2771e03    0.0000E+00    0.0000E+00
+-0.5290e03    -1.2771e03    0.0000E+00    0.0000E+00
+-0.0126e03   0.0000E+00    0.0000E+00    0.0000E+00
+1             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00

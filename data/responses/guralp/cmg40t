@@ -1,0 +1,22 @@
+# cmg40t_3pz	Nikolaus Horn 30/3/2001
+# data from calibration sheet multiplied with 2 Pi
+# cmg40t    3.33300E-02 hz seimometer
+# Normalized  response relative to velocity
+# 1                   type
+# 2                   num of zeroes
+# 2                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 1.0                 normalization factor
+# 1.0                 gain
+# sensitivity  800 v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+-0.0314
+3             Poles
+-.148031	 .14803	0.0	0.0
+-.148031	-.14803	0.0	0.0
+-314.159265359	0.0	0.0	0.0
+3             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+9990.026463842	0.0	0.0	0.0
