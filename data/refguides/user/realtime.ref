@@ -21,7 +21,7 @@ rtexec [options] [comment]
 -v	more verbose
 </options>
 
-rtinit
+rtinit [-q] [db]
     initialize directory for rtexec/rtm by creating directories and copying pf files
 
 rtdemo
@@ -52,11 +52,12 @@ rtorbcmd [-d] [-n npkts] [-p pf] [-S state] orb
 rtreport [options] [directory]
     report some statistics on data collection
 <options>
--c	show reporting stations
--C	show reporting channels
 -d start	start of reporting period
+-g	only show gaps
 -m email,..	list of email recipients
+-N re	only report on network codes matching re
 -n days	number of days report covers
+-p pf	use specified pf instead of rtreports.pf 
 -s subset	report only on stations statisfying subset
 -v	more detail about gaps
 -z	only z channels
@@ -67,6 +68,8 @@ rtsys [options] [directory]
 <options>
 -d time	start of reporting period
 -m email,..	list of email recipients
+-N re	only report on network codes matching re
+-P pf	use specified pf instead of rtreports.pf 
 -p	mail only when problem is detected
 -n n	last n lines from log files (default = 10)
 </options>
@@ -95,6 +98,8 @@ rtoutage [options] db t0 t1
     show data gaps for database db from time t0 to t1
 <options>
 -A	format output as an autodrm outage report
+-d gapdb	save gap info into database gapdb
+-n netcode	only process station from netcode
 -P maxpts	maximum # waveform points to load at one time
 -p	print percentage of data recovered for time period
 -S	show gaps as seconds only
@@ -235,10 +240,11 @@ rddas [options] port orb
 </options>
 
 q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
-    communicate between Q330 Quanterra digitizer and orb
+    communicate with Q330 Quanterra digitizer, bringing data from Q330 into orb, and sending and monitoring commands from orb to Q330
 <options>
--pf pf
 -calib_db dbname
+-pf pf
+-S statefile
 -v
 </options>
 
@@ -268,7 +274,7 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 -v	verbose
 </options>
 
-cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] [-select re] station orbout
+cs2orb [-v] [-seedout] [-t pf] [-dbcalib db] station orbout
     copy data from comserv to an orbserver orb
 
 private cs2orb_1_0_1 comserv orbout [-v]
@@ -454,6 +460,7 @@ orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
 <options>
 -nopending	suppress pending detection packets
+-onlypicks
 -out orb
 -out_detev orb	output orb for detev packets
 -pf pf
@@ -486,16 +493,16 @@ orbtrigger [options] orbname
 orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
     spatial grid search based real time associator/locator
 <options>
--start {pktid|time|OLDEST}
--number number
--nowait
--select expr
+-auth author
+-delay delay
+-pf pf
 -S statefile
+-select expr
+-start {pktid|time|OLDEST}
 -target_orb2dbt torb2dbt
 -target_orbmag torbmag
--pf pf
--auth author
--dbnextid dbnextid
+-trigger_start_only
+-v
 </options>
 
 ttgrid [-pf pf] [-time {timestr|all}] db
@@ -598,15 +605,6 @@ qedd [options] dbname
 -author author
 </options>
 
-dbassoc_rt [options] dbcat dbassoc
-    real time association of events from an external catalog
-<options>
--after time
--number number
--safe
--nowait
-</options>
-
 <subsection Orb Real Time Display>
 dlmon [options] orb [-cmd cmdorb]
     monitor/control generic digitizers
@@ -624,20 +622,23 @@ deprecated qtmon dataorb data2orb cmdorbname [database]
 orbmonrtd [options] orb
     real time waveform trace display
 <options>
+-dump dt gif	dump image to gif every dt seconds
+-filter filter	
+-height pixels	single trace window height in pixels
+-hmax hmax	maximum height of main window in pixels
+-ntinc nt	number of traces between time scales
+-pf pf	
+-redraw	start with oldest orb packet
+-reject re	reject channels matching re
+-select re	select channels matching re
+-source net_sta_chan
+ 	select display channel on command line
 -title title	title for orbmonrtd window
 -tshift_time t	specify initial time of window rhs, "-" to use first packet read 
 -twin minutes	window size in minutes
+-unmap	remove controls from display (for vnc in browser)
 -width pixels	trace width in pixels
--height pixels	single trace window height in pixels
--pf pf	
--hmax hmax	maximum height of main window in pixels
 -wmax wmax	maximum width of main window in pixels
--log	
--filter filter	
--source net_sta_chan
- 	select display channel on command line
--select re	select channels matching re
--reject re	reject channels matching re
 </options>
 
 orbdisp [options] orbserver [start [range|end]]
@@ -667,6 +668,7 @@ ps2orb [options] orb
 <options>
 -a m	report on all processes every m'th iteration
 -i t	report every t seconds
+-n mx	quit after mx iterations
 -t n	report on top n processes every iteration
 -r {mem|cpu}	sort by mem or cpu
 -vv	print reports on stderr
@@ -753,6 +755,7 @@ orblatency [options] orb database
     accumulate latency statistics from network
 <options>
 -m re	select packets matching regular expression re
+-n n	quit after n iterations
 -r re	reject packets matching regular expression re
 -p period	specify period over which latencies are averaged
 -v	more verbose
@@ -783,6 +786,13 @@ orb2pf [options] orb [file]
 -number number
 -nowait
 </options>
+
+orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
+orbxfer [-b pktsize] [-d dir] [-ovv] -w dir orb
+    write files into orb
+
+orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
+    receive incoming files, save into dir
 
 mail_parser [options] [file [file...]]
     direct incoming email to customized perl handlers

@@ -1,9 +1,6 @@
 <chapter Processing Database Data>
 <commands>
 
-dbprelim_locs [-v] pf [t0 [t1]]
-    run dbdetect, dbtrigger and dbgrassoc to create automatic locations from database for time t0 to t1
-
 dbdetect [options] dbin dbout
     run multifrequency STA/LTA detector on dbin, writing detections into dbout.
 <options>
@@ -15,30 +12,14 @@ dbdetect [options] dbin dbout
 -v
 </options>
 
-dbarrparams [options] db
-    measure amplitude, period, azimuth, signal to noise ration, rectilinearity and first motion of arrivals
+dbgrassoc [options] dbin dbout ttgridf1 [ttgridf2 [...]]
+    spatial grid search based associator/locator: reads detections from dbin, generating new origin, assoc and arrival records in dbout
 <options>
--pol tlead_pol tlag_pol
--ap tmin_ap tmax_ap
--fm tmin_fm tmax_fm
--snr tlead_snr tlag_snr
--filter	type lco hco lord hord tpad
-</options>
-
-dbtrigger [options] dbin
-    trigger location program based on time correlation of detections from database db and rules in pf
-<options>
--v
--pf pf
--out dbout
-</options>
-
-dbgrassoc [options] dbout ttgridf1 [ttgridf1 [...]]
-    spatial grid search based associator/locator: reads output from dbtrigger, generating new origin, assoc and arrival records in dbout
-<options>
+-auth auth
 -i
--assoc
+-noassoc
 -pf pf
+-v
 </options>
 
 dbassoc [options] dbin dbout dbcat timeres_P timeres_S

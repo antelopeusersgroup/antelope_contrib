@@ -75,7 +75,7 @@ mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tap
     build IRIS DMC files on tape or disk
 
 
-db2segy db outfile [-pf pf]
+db2segy db outfile [-pf pf] [-v]
     convert waveforms from input database db to segy disk image
 
 <subsection Importing data into a Datascope database>
@@ -88,9 +88,6 @@ ah2db ah1 [ah2 .. ] dbout
 
 autodrm2db [-vV] reply1 [reply2 ..] dbout
     read autoDRM replies reply1, reply2, ... and copy into output database dbout
-
-edr2db edr dbout
-    create arrival, origin and assoc rows in database dbout from USGS EDR
 
 gnis2db gnis_file dbname [State]
      convert GNIS feature-name files to database
@@ -182,8 +179,8 @@ sd2db [options] sd dbout
 segy2css [-event] [-ftbl] fname ..
     convert PASSCAL SEGY format data to CSS format
 
-miniseed2db [-T tolerance] [-v] miniseed [msd2 ...] db
-    create wfdisc rows in db for miniseed volume(s)
+miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
+    create wfdisc rows in db for miniseed volume(s), or miniseed volumes under directories
 
 miniseed2orb [-v] file ... orb
     put each data block from input miniseed files into packet on orb
@@ -212,9 +209,8 @@ deprecated dbsteimu [options] input [new_database]
 -w	wfname
 </options>
 
-fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed ...
-    change network, station, channel and/or location
-    codes in miniseed volumes
+fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed|dir ...
+    change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
 
 patch_miniseed [-nvv] miniseed ...
     look for and fix bad reverse integration constants, unless -n
@@ -232,7 +228,7 @@ Xphase2db db [-phase name]
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 
-sdd [-s] sd
+sdd [-vs] sd
     dump blockettes (summary only if -s) from SEED volume sd
 
 dsteim [sd]

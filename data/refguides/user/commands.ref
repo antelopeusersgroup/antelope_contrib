@@ -27,12 +27,8 @@ check_path [-v] [path]
 private check_visual [-display display_name]
     check out default X-windows display visual
 
-private install_antelope
-    interactive installation of Antelope from cd
-
-private register_antelope
+private register_antelope [-t]
     gui for requesting Antelope license
-
 
 abspath apath [...]
     construct absolute path corresponding to input apath
@@ -174,10 +170,10 @@ private unregister window_name
 comsim connection
     monitor, test and debug serial or ip communications
 
-reflect [-d dir] [-v] remote_host remote_file
+reflect [-d dir] [-v] remote_host[:port] remote_file
     keep local files up to date with remote copies
 
-reflectd [-v]
+reflectd [-p port] [-v] 
     server companion to reflect
 
 warp [-nv] command
