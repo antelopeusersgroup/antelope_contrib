@@ -45,6 +45,7 @@ int check_param( SegData *segment , SegData *new )
 {
 
    int code;
+   int nsamp;
 
 
 
@@ -53,12 +54,12 @@ fprintf( stderr, "check %lf - %lf * %lf \n",
 new->time, segment->endtime, segment->samprate);
 #endif
 
+        nsamp = (int) fabs ( ( (new->time - segment->endtime) * segment->samprate));
         if( segment->calib != new->calib ||
             segment->calper != new->calper ||       
             segment->samprate != new->samprate ||
             segment->dcode != new->dcode  ||
-            fabs( new->time - segment->endtime ) *
-                  segment->samprate > 1 )   {
+            nsamp > 1 )   {
             
             flush_db( segment );
             update_segdata( segment, new );
