@@ -1,0 +1,164 @@
+.TH PFSTREAM2DB 1 "$Date$"
+.SH NAME
+pfstream2db - extracts attributes from a pfstream to database tables
+.SH SYNOPSIS
+.nf
+pfstream2db file db [-V -v -pf pffile]
+.fi
+.SH DESCRIPTION
+.LP
+pfstream is a database output function for a processing system based on
+the concept of a pfstream.  A pfstream is a way to encapsulate pieces
+of metadata related to some arbitrary data object.  It provides a 
+transfer structure to move data through a data-driven processing system.
+The structure of a pfstream is described in pfstream(5).  It builds on
+antelope pf file structure to essentially transfer database tables in
+ensembles that are blocks equivalent to grouping a database table.
+The program takes a pfstream input (file) and writes named parameters in
+the pfstream to an output database (db).  The output to the database can be 
+arranged to go to multiple tables with one, some, or all rows of an 
+ensemble saved to the db.  This program can be viewed as the inverse
+of db2pfstream(1).
+.LP
+The db and file parameters are required. The input pfstream, file,
+can be a fifo connected to another program that is emitting pfstream
+format data.  The db parameter is assumed to be an Antelope database
+name.  If the database exists pfstream2db will try to append to it.
+If a requested database table is empty, it will be created and 
+data added until the end of file is reached on input.   
+.SH OPTIONS
+.IP -V
+Prints usage line and exits immediately.
+.IP -v 
+Be verbose in output. Mostly useful for tracking database id problems.
+.IP -pf
+Use pffile in place of default parameter file pfstream2db.pf.
+.SH PARAMETER FILE
+.LP
+The behavior of this program is mostly driven by a fairly complex
+parameter file.  To understand the logic of the parameter file it might
+be useful to first read pfstream(5). The outermost grouping of a pfstream
+file is a name attached to a block of text surrounded by the &Arr{ ... }.
+The contents of each of these named blocks are associated with database
+tables through a Tbl list associated with the parameter \fItable_name_maps\fR.
+For example,
+.nf
+
+table_name_maps &Tbl{
+pmel_arrivals origin
+pmel_arrivals assoc
+station_corrections gridstat
+station_corrections gridscor
+}
+
+.fi
+says the origin and assoc table information is to be extracted from the 
+block of data tagged with "pmel_arrivals" while two extension tables 
+(gridstat and gridscor) are to be extracted from a different block 
+tagged with the name "station_correction".  
+.LP
+Which attributes are extracted from each of these named blocks and how
+this is done is controlled by three key parameters:  \fIsave_by_row, 
+save_by_group,\fR and \fIsave_by_ensemble\fR.  As described in pfstream(5)
+the pfstream format essentially defines an ordered table with three levels
+of grouping:  (1) rows of the table, (2) ranges of rows grouped by one or
+more attributes in the table, and (3) the whole table that defines one
+block (ensemble) of data.  These three parameters control which attributes are
+pushed to output tables and, by inference, how the output has been grouped.  
+For example,
+.nf
+
+save_by_group &Arr{
+origin &Tbl{
+origin.lat      real    origin.lat
+origin.lon      real    origin.lon
+origin.depth    real    origin.z
+origin.time     time    origin.time
+orid    int     orid
+evid    int     evid
+origin.jdate    int     origin.jdate
+origin.nass     int     nass
+origin.ndef     int     ndef
+origin.ndp      int     ndp
+grn     int     grn
+srn     int     srn
+etype   string  etype
+review  string  review
+depdp   real    depdp
+dtype   string  dtype
+mb      real    mb
+mbid    int     mbid
+ms      real    ms
+msid    int     msid
+ml      real    ml
+mlid    int     mlid
+auth    string  auth
+algorithm string algorithm
+}
+}
+
+.fi
+can be used to save origin rows in a CSS3.0 database when the pfstream is grouped
+by orid.  Note the nesting of the parameter space here.  The outer block says these
+attributes are to be saved once for each group boundary (note this blindly assumes
+all entries in the table have the same attributes for the range that defines this
+group).  The "origin &Tbl{" says the enclosed attributes are to be mapped to the
+table called origin.  The inner &Tbl is a list of name maps.  This list structure
+is intentionally identical to that used in the (inverse) program db2pfstream to a
+allow the list to be cut and pasted.  The first item is the database attribute name,
+the second is the type of the field, and the third is the name used in the pfstream
+file.  
+.LP
+The same structure is used for save_by_row and save_by_ensemble.  The difference is
+in how many rows are saved per ensemble (many for save_by_row and only one for 
+save_by_ensemble).  
+.LP
+Finally, pfstream2db has to deal with the infamous id problem in the output 
+database.  That is, some parameters in the pfstream may be database id fields 
+that have to be dealt with carefully to avoid problems with duplicate key errors.
+The &Arr parameter \fInewids_required\fR tells pfstream2db how to handle this.
+For example,
+.nf
+
+newids_required &Arr{
+arrival arid
+origin orid
+}
+
+.fi
+tells pfstream2db that the attributes arid in the arrival table and orid in the origin
+table are keys and need to be handled as such.  That is, dbnextid will be called 
+for arid when writing to an arrival table to replace the value of this attribute
+stored in the pfstream.  The same, for this example, is done for orid when 
+writing to the origin table.  
+.SH ATTRIBUTES
+.LP
+Be aware this program is multithreaded with a read thread that pulls data from
+the pfstream and a processing thread that does the work.  This was done to 
+implement a type of nonblocking i/o on both ends of a pfstream.  For compute
+intensive jobs this can be important as database updates can be time consuming.
+.
+.SH "SEE ALSO"
+.nf
+db2pfstream(1),pfstream(5),pfstream(3),pf(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1)
+The id problem is thorny.  It works for simple id changes, but ids that cross-link
+tables like origin, assoc, and arrival are problematic.
+The pfstream2db program tries to handle this, but this has not been throughly tested.
+.IP (2)
+The pfstream format is not intended for humans to look at, but was viewed as a
+convenient transmission mechanism for table-driven processing algorithms.  
+The corollary worth noting here is that if there are problems in the pfstream 
+data it can be very hard to find them.  Similarly, you need to have a good knowledge
+of how the data are organized in the pfstream or crazy results can be produced.  
+The expectation is that the writer of any algorithm that emits of pfstream 
+should supply a pf file to parse it's ouptut into an output database if that is
+what is desired.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University (pavlis@indiana.edu)
+.fi
+.\" $Id$
