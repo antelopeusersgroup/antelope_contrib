@@ -14,21 +14,21 @@ maxwaittime	60.0	# A hard timeout value in seconds for reading waveform packets.
 			#  aborted.
 
 
-magtype		mb	# valid values are mb, ml and ms
+magtype		ms	# valid values are mb, ml and ms
 				# of course other parameters have to be set according to this choice
 
 v_r			4.0	# velocity for surface waves used to determine surface wave arrival time
 
-time0		P	# start of measuring time window
+time0		R	# start of measuring time window
 				# P - pphasetime (see man pphasetime)
 				# S - sphasetime
 				# R - rayleigh wave - here we use deg2km(delta) / v_r
 
-time_window	0.5	# The waveform for processing the magnitude is determined by a time
-			# window starting from the arrival defined by the time0 parameter 
-			# to time_factor*(S_time-P-time) seconds after the first P-arrival.
+time_window	1.5	# The waveform for processing the magnitude is determined by a time
+				# window starting from the arrival defined by the time0 parameter 
+				# to time_factor*(S_time-P-time) seconds after the first P-arrival.
 
-mindelta	0	# distance range in degrees
+mindelta	5.5	# distance range in degrees
 maxdelta	180	# 
 
 # a 'general' magnitude formula could be:
@@ -38,17 +38,15 @@ maxdelta	180	#
 # thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
 # beware: c0 has to be converted if you have a formula where delta is im km
 # in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
-c0	-0.104
+c0	0.52
 c1	1.66
-filter BW 0.6 3 3 3
+filter BW 0.01 5 0 0
 mag &Tbl{		# stations parameters for computing magnitudes
-#sta		chan_expr	calib_from_db	decon_instr	apply_wa_filter	snr_thresh	latency		c2		c3		c4		c5
-ARSA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-DAVA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-OBKA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-JAVC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-KRUC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-MORC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-KBA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
-MOA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+#             calib   deconvolve apply     snr    
+#sta   chan   from_db instrument wa_filter thresh latency c2   c3     c4  c5
+ARSA   HHZ    yes     no         no        2.0    0.0     -1.0 0.0097 9.0 0.0
+DEMO   HHZ_00 yes     no         no        2.0    0.0     -1.0 0.0097 9.0 0.0 
 }
+
+
+pf_revision_time 1053388800

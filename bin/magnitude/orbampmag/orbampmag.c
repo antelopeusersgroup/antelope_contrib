@@ -13,10 +13,14 @@
        source code in this software module. */
 
 /* Modified by Nikolaus Horn for ZAMG, Vienna */
+#define REVISION_CODE "1.2"
+#define REVISION_DATE "2003-05-23 11:00"
+
 
 #include <stdio.h>
 #include <signal.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "xtra.h"
 #include "db.h"
@@ -28,6 +32,9 @@
 #include "response.h"
 #include "stock.h"
 
+#define PF_REVISION_TIME "1053388800"
+#define MAX_REASONABLE_MAGNITUDE 9.5
+
 #define	default_time_window	3.0
 #define	AUTH_EXPR	"orbassoc"
 #define default_v_r 4.0
@@ -36,9 +43,9 @@ void
 usage ()
 
 {
-	fprintf (stderr, "usage: orbampmag [-start {pktid|time}]\n");
+	fprintf (stderr, "usage: orbampmag [-v] [-start {pktid|time}]\n");
 	fprintf (stderr, "              [-number number] [-nowait] [-state statefile]\n");
-	fprintf (stderr, "              [-p parameter_file] [-auth_expr auth_expr]\n");
+	fprintf (stderr, "              [-pf parameter_file] [-auth_expr auth_expr]\n");
 	fprintf (stderr, "              [-target_orbmag torbmag] [-next_target_orbmag ntorbmag]\n");
 	fprintf (stderr, "              [-make_magtables] [-use_mean] [-use_p2p]\n");
 	fprintf (stderr, "              [{-use_if_not_associated|-use_if_not_defining}]\n");
@@ -86,9 +93,11 @@ struct station_params {
 	} consts;
 };
 
-static void mycallback();
+static int mycallback();
 static int mycompare();
 static int myans ();
+static int put_next_target();
+
 char *statefile=NULL;
 int lastpktid = -1;
 Pf *pf=NULL;
@@ -153,6 +162,7 @@ main (int argc, char **argv)
 
 
 	elog_init (argc, argv) ;
+	elog_notify ( 0, "%s : Revision: %s Date: %s\n", argv[0],REVISION_CODE,REVISION_DATE ) ;
 
 	if (argc < 4) {
 		usage();
@@ -200,10 +210,10 @@ main (int argc, char **argv)
 				exit (1);
 			}
 			statefile = *argv;
-		} else if (!strcmp(*argv, "-p")) {
+		} else if (!strcmp(*argv, "-pf")) {
 			argc--; argv++;
 			if (argc < 1) {
-				complain (0, "Need -p argument.\n");
+				complain (0, "Need -pf argument.\n");
 				usage();
 				exit (1);
 			}
@@ -288,6 +298,10 @@ main (int argc, char **argv)
 	dbsm = dblookup (db, 0, "stamag", 0, 0);
 
 	/* Read orbmag parameter file */
+
+	if (pfrequire(pfname,PF_REVISION_TIME) != 0) {
+		elog_die(1,"%s\n");
+	}
 
 	if (pfread (pfname, &pf) < 0) {
 		complain (0, "pfread(%s) error.\n", pfname);
@@ -522,7 +536,10 @@ main (int argc, char **argv)
 		pfpkt = NULL;
 		if (orbpkt2pf (packet, nbytes, &pfpkt) < 0) {
 			complain (0, "orbpkt2pf() error.\n");
-			if (pfpkt) pffree (pfpkt);
+			if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt=0;
+			}
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
 		}
@@ -530,13 +547,19 @@ main (int argc, char **argv)
 			Keep_stass=NULL;
 			if (parse_param (pfpkt, "assocs", P_ARR, 1, &Keep_stass) < 0) {
 				complain (0, "parse_param(assocs) error.\n");
-				pffree (pfpkt);
+				if (pfpkt) {
+					pffree (pfpkt);
+					pfpkt= 0;
+				}
 				if (Keep_stass) freearr (Keep_stass, 0);
 				continue;
 			}
 			if (parse_param (pfpkt, "origin", P_STR, 1, &Keep_origin) < 0) {
 				complain(0, "parse_param(origin) error\n");
-				if (pfpkt) pffree(pfpkt);
+				if (pfpkt) {
+					pffree(pfpkt);
+					pfpkt= 0;
+				}
 				if (Keep_origin) free(Keep_origin);
 				continue;
 			}
@@ -546,7 +569,10 @@ main (int argc, char **argv)
 		record = NULL;
 		if (parse_param (pfpkt, "origin", P_STR, 1, &record) < 0) {
 			complain (0, "parse_param(origin) error.\n");
-			if (pfpkt) pffree (pfpkt);
+			if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			if (record) free (record);
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
@@ -555,7 +581,10 @@ main (int argc, char **argv)
 		dbo.record = dbSCRATCH;
 		if (dbput (dbo, record) == dbINVALID) {
 			complain (0, "dbput() error.\n");
-			if (pfpkt) pffree (pfpkt);
+			if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			if (record) free (record);
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
@@ -565,7 +594,10 @@ main (int argc, char **argv)
 		if (dbgetv (dbo, 0, "lat", &olat, "lon", &olon, "time", &otime, "orid", &orid, "evid", &evid,
 							"depth", &odepth, "auth", auth, 0) < 0) {
 			complain (0, "dbgetv() error.\n");
-			if (pfpkt) pffree (pfpkt);
+			if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
 		}
@@ -583,7 +615,10 @@ main (int argc, char **argv)
 			if (verbose) {
 				elog_debug (0, "wrong author.\n");
 			}
-		   	if (pfpkt) pffree (pfpkt);
+		   	if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 		    	continue;
 		}
 
@@ -594,7 +629,10 @@ main (int argc, char **argv)
 		if (n < 1) {
 			dbfree (dbj);
 			complain (0, "Nothing to process.\n");
-		   	if (pfpkt) pffree (pfpkt);
+		   	if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
 		}
@@ -603,7 +641,10 @@ main (int argc, char **argv)
 		if (cp == NULL) {
 			dbfree (dbj);
 			complain (0, "chantraceproc_new() error.\n");
-		   	if (pfpkt) pffree (pfpkt);
+		   	if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			if (!wait && pktidin == pktidnewest) break;
 			continue;
 		}
@@ -625,7 +666,10 @@ main (int argc, char **argv)
 		}
 		first = 1;
 		if (use_if_not_associated) {
-		   	if (pfpkt) pffree (pfpkt);
+		   	if (pfpkt) {
+				pffree (pfpkt);
+				pfpkt= 0;
+			}
 			tstart = 1.e30;
 			tend = -1.e30;
 			nn = 0;
@@ -719,7 +763,10 @@ main (int argc, char **argv)
 				complain (0, "parse_param(assocs) error.\n");
 				chantraceproc_free (cp);
 				dbfree (dbj);
-				pffree (pfpkt);
+				if (pfpkt) {
+					pffree (pfpkt);
+					pfpkt= 0;
+				}
 				if (starr) freearr (starr, 0);
 				if (!wait && pktidin == pktidnewest) break;
 				if (next_target_orbmag) {
@@ -1086,7 +1133,10 @@ main (int argc, char **argv)
 			
 		}
 		
-		pffree (pfpkt);
+		if (pfpkt) {
+			pffree (pfpkt);
+			pfpkt= 0;
+		}
 
 		num++;
 		if (numager > 0 && num >= numager) 
@@ -1156,7 +1206,7 @@ myhand (int sig)
 	exit (0);
 }
 
-static void
+static int
 mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 
 {
@@ -1182,8 +1232,10 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	char filter_specification[120];
 
 	if (verbose) {
-		sprintf (msg, "Processing %s %s %s", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
-		elog_debug(0, "Processing %s\n\t%s\n\t%s", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
+		sprintf (msg, "Processing %s \n\t%s \n\t%s\n\t", netstachan, s1=strtime(buf->tstart), s2=strtime(buf->tend));
+		elog_debug(0, "%s\n",msg);
+		free(s1);
+		free(s2);
 	}
 	chan = strchr(netstachan, '_');
 	chan++;
@@ -1195,50 +1247,51 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	dbs = dblookup (sp->db, 0, "sensor", 0, 0);
 	dbi = dblookup (sp->db, 0, "instrument", 0, 0);
 	sprintf (expr, "sta == \"%s\" && chan == \"%s\" && time <= %f && (endtime <= 0.0 || endtime >= %f)",
-			sp->sta, chan, sp->t0_noise, sp->t0_noise);
+			sp->sta, sp->chan_expr, sp->t0_noise, sp->t0_noise);
 	dbv1 = dbsubset (dbs, expr, 0);
 	dbv2 = dbjoin (dbv1, dbi, 0, 0, 0, 0, 0);
 	n = 0;
 	dbquery (dbv2, dbRECORD_COUNT, &n);
 	if (n != 1) {
 		if (verbose) elog_debug (0, "%s - cannot find instrument row\n", msg);
-		else complain (0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, chan);
+		else complain (0, "mycallback: cannot find instrument row for %s_%s.\n", sp->sta, sp->chan_expr);
 		dbfree (dbv1);
 		dbfree (dbv2);
-		return;
+
+		return 0;
 	}
 	dbv2.record = 0;
 	if (dbgetv (dbv2, 0, "rsptype", rsptype, 0) < 0) {
 		if (verbose) elog_debug (0, "%s - dbgetv(rsptype) error\n", msg);
-		else complain (0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, chan);
+		else complain (0, "mycallback: dbgetv(rsptype) error for %s_%s.\n", sp->sta, sp->chan_expr);
 		dbfree (dbv1);
 		dbfree (dbv2);
-		return;
+		return 0;
 	}
 
 	if (sp->decon_instr) {
 		ret = dbextfile (dbv2, "instrument", fname);
 		if (ret != 1) {
 			if (verbose) elog_debug (0, "%s - dbextfile(instrument) error\n", msg);
-			else complain (0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, chan);
+			else complain (0, "mycallback: dbextfile(instrument) error for %s_%s.\n", sp->sta, sp->chan_expr);
 			dbfree (dbv1);
 			dbfree (dbv2);
-			return;
+			return 0;
 		}
 		file = fopen(fname, "r");
 		if (file == NULL) {
 			if (verbose) elog_debug (1, "%s - fopen(%s) error\n", msg, fname);
-			else complain (1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, chan);
+			else complain (1, "mycallback: fopen(%s) error for %s_%s.\n", fname, sp->sta, sp->chan_expr);
 			dbfree (dbv1);
 			dbfree (dbv2);
-			return;
+			return 0;
 		}
 		if (read_response (file, &resp) < 0) {
 			if (verbose) elog_debug (0, "%s - read_response(%s) error\n", msg, fname);
-			else complain (0, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, chan);
+			else complain (0, "mycallback: read_response(%s) error for %s_%s.\n", fname, sp->sta, sp->chan_expr);
 			dbfree (dbv1);
 			dbfree (dbv2);
-			return;
+			return 0;
 		}
 		fclose (file);
 	}
@@ -1252,22 +1305,22 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		dbquery (dbv1, dbRECORD_COUNT, &n);
 		if (n != 1) {
 			if (verbose) elog_debug (0, "%s - cannot find calibration row\n", msg);
-			else complain (0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, chan);
+			else complain (0, "mycallback: cannot find calibration row for %s_%s.\n", sp->sta, sp->chan_expr);
 			dbfree (dbv1);
-			return;
+			return 0;
 		}
 		dbv1.record = 0;
 		if (dbgetv (dbv1, 0, "calib", &calib, 0) < 0) {
 			if (verbose) elog_debug (0, "%s - dbgetv(calib) error\n", msg);
-			else complain (0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, chan);
+			else complain (0, "mycallback: dbgetv(calib) error for %s_%s.\n", sp->sta, sp->chan_expr);
 			dbfree (dbv1);
-			return;
+			return 0;
 		}
 		if (calib == 0.0) {
 			if (verbose) elog_debug (0, "%s - calib == 0\n", msg);
-			else complain (0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, chan);
+			else complain (0, "mycallback: calib == 0 for %s_%s.\n", sp->sta, sp->chan_expr);
 			dbfree (dbv1);
-			return;
+			return 0;
 		}
 		dbfree (dbv1);
 		for (i=0; i<buf->nsamp; i++) if (buf->data[i] < 1.e20) buf->data[i] *= calib;
@@ -1278,7 +1331,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	if (sp->decon_instr) {
 		if (verbose) elog_debug (0, "%s - cannot support instrument deconvolution\n", msg);
 		else complain (0, "mycallback: cannot support instrument deconvolution\n");
-		return;
+		return 0;
 	} else if (sp->apply_wa_filter) {
 		type = BRTTFILTER_NEW;
 		fil = NULL;
@@ -1292,12 +1345,12 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		} else {
 			if (verbose) elog_debug (0, "%s - cannot use rsptype '%s'\n", msg, rsptype);
 			else complain (0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
-			return;
+			return 0;
 		}
 		if (chantracebuf_filter (&fil, &type, buf, &obuf, filspec, 1) < 0) {
 			if (verbose) elog_debug (0, "%s - chantracebuf_filter() error\n", msg);
 			else complain (0, "mycallback: chantracebuf_filter() error.\n");
-			return;
+			return 0;
 		}
 		fil_free (fil);
 		memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
@@ -1311,7 +1364,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			if (chantracebuf_filter (&fil, &type, buf, &obuf, sp->filter, 1) < 0) {
 				if (verbose) elog_debug (0, "%s - chantracebuf_filter() error\n", msg);
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
-				return;
+				return 0;
 			}
 			fil_free (fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
@@ -1326,7 +1379,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			if (chantracebuf_filter (&fil, &type, buf, &obuf, filter_specification, 1) < 0) {
 				if (verbose) elog_debug (0, "%s - chantracebuf_filter() error\n", msg);
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
-				return;
+				return 0;
 			}
 			fil_free (fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
@@ -1339,7 +1392,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		} else {
 			if (verbose) elog_debug (0, "%s - cannot use rsptype '%s'\n", msg, rsptype);
 			else complain (0, "mycallback: Cannot use rsptype '%s'.\n", rsptype);
-			return;
+			return 0;
 		}
 	}
 
@@ -1354,7 +1407,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	}
 	if (n < 1) {
 		if (verbose) elog_debug (0, "%s - no data samples to process\n", msg);
-		return;
+		return 0;
 	}
 	noise_mean = noise_mean/n;
 	noise = noise/n;
@@ -1430,7 +1483,9 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		if (sp->channels == NULL) {
 			if (verbose) elog_debug (1, "%s - malloc() error.\n", msg);
 			else complain (1, "mycallback: malloc() error.\n");
-			return;
+			free(s1);
+			free(s2);
+			return 0;
 		}
 		sp->nchannels = 0;
 	} else {
@@ -1438,10 +1493,12 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		if (sp->channels == NULL) {
 			if (verbose) elog_debug (1, "%s - realloc() error.\n", msg);
 			else complain (1, "mycallback: realloc() error.\n");
-			return;
+			free(s1);
+			free(s2);
+			return 0;
 		}
 	}
-	strcpy (sp->channels[sp->nchannels].chan, chan);
+	strcpy (sp->channels[sp->nchannels].chan, sp->chan_expr);
 	sp->channels[sp->nchannels].mag = mag;
 	sp->channels[sp->nchannels].signal = signal;
 	sp->channels[sp->nchannels].signal_time = signal_time;
@@ -1450,7 +1507,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 	(sp->nchannels)++;
 
 	if (verbose) {
-		elog_debug (0, "%s signal %.3f(%.3f) at %s snr %.3f noise_mean %.3f(%.3f) mag %.2f\n", msg, signal, signal_raw/calib, s=strtime(signal_time), 
+		elog_debug (0, "%s signal %.3f(%.3f) at %s\n\t\tsnr %.3f noise_mean %.3f(%.3f) mag %.2f\n", msg, signal, signal_raw/calib, s=strtime(signal_time), 
 						snr, noise_mean, noise_mean/calib, mag);
 		free(s) ;
 	}
