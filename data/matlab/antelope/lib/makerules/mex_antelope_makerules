@@ -1,7 +1,15 @@
 MEX=mex
-MEXEXT=mexsol
 
 ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
+
+# Include the platform-dependent rules. Work around
+# substitution-reference differences between GNU and Solaris make Solaris
+# make will substitute in the middle; GNU only at the end. 
+# The PLATFORMRULES line is irrelevant at execution time on linux.
+# The TMPRULES line does nothing on solaris.
+TMPRULES=$(ANTELOPEMAKE:antelopemake.linux=mex_antelope_makerules.linux)
+PLATFORMRULES=$(TMPRULES:antelopemake=mex_antelope_makerules.sol)
+include $(PLATFORMRULES)
 
 include $(ANTELOPEMAKE)
 
@@ -9,11 +17,11 @@ include $(ANTELOPEMAKE)
 DCFLAGS= 
 
 # Suppress -i, which mex compiler doesn't understand 
-CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) $(MEX_CEXTRA)
 
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
 MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
-  -L$(XLIB) LDFLAGS='$$LDFLAGS -R$(ANTELOPE)/lib -R$(DEST)/lib' $(DBG)
+  -L$(XLIB) LDFLAGS='$$LDFLAGS $(RPATH)$(ANTELOPE)/lib $(RPATH)$(DEST)/lib' $(DBG)
 
 clean ::
 	@-$(RM) *.$(MEXEXT) *.m *.html

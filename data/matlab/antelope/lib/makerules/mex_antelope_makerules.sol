@@ -1,0 +1,3 @@
+MEXEXT=mexsol
+MEX_CEXTRA=
+RPATH=-R
