@@ -1,0 +1,120 @@
+.\" $Name$ $Date$
+.TH GURALP2ORB 1
+.SH NAME
+guralp2orb \- Import Guralp data over UDP port into Antelope ORB
+.SH SYNOPSIS
+.nf
+guralp2orb \[-v\] \[-pf parameter_file\] orbname port
+.fi
+.SH DESCRIPTION
+guralp2orb receives seismic data from Guralp digitizers in GCF format
+and puts these data, unpacked, onto an Antelope ORB. The data are put on
+the ORB in Iceworm format, meaning there is an optional pin number in the
+data packet. 
+
+A parameter file specifies the network, station, and channel names to which
+each guralp system ID and stream ID should be translated. Unwanted streams
+may be ignored by setting the "chan" field in the parameter file (see below)
+to "Ignore".  guralp2orb rereads its parameter file once every 10 packets,
+allowing dynamic reconfiguration of the running program. 
+
+guralp2orb ignores status packets (state-of-health packets) from the digitizer.
+.SH OPTIONS
+-v verbose. List system ID and stream ID of each incoming packet, along with
+the ORB source identifier to which it is converted.
+
+-pf parameter_file. Allows optional specification of the parameter file. 
+.SH FILES
+The parameter file is guralp2orb.pf, unless otherwise specified with the 
+-pf option.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+WO0694 &Arr{
+   net AK
+   sta SBEA
+   channels &Arr{
+     7023Z4 &Arr{
+        chan BHZ
+     }
+   }
+}
+
+00CHSA &Arr{
+   net AK
+   sta CHSA
+}
+
+MCK000 &Arr{
+   net AK
+   sta MCK
+   channels &Arr{
+     00BHZ4 &Arr{
+        chan BHZ
+        pinno 331
+	calib 0.0
+     }
+     00BHE4 &Arr{
+        chan BHE
+        pinno 333
+	calib 0.0
+     }
+     00BHN4 &Arr{
+        chan BHN
+        pinno 332
+	calib 0.0
+     }
+     00BHM8 &Arr{
+	chan Ignore
+     }
+     00BHM9 &Arr{
+	chan Ignore
+     }
+     00BHMA &Arr{
+	chan Ignore
+     }
+     00BHME &Arr{
+	chan Ignore
+     }
+     00BH00 &Arr{
+	chan Ignore
+     }
+   }
+}
+.fi
+.SH EXAMPLE
+.SH DIAGNOSTICS
+.nf
+Ignoring station MCK stream_id 00BHME
+Converting MCK000 00BHE4 as AK_MCK_BHE
+truncating packet from 18.960000 to 18.000000 seconds,
+	000FIB 00BHE4 timestamp 902964536.000000
+Final sample value -120297, doesn't match RIC -16781529,
+	000FIB 00BHE4 timestamp 902964536.000000
+.fi
+.SH "SEE ALSO"
+.nf
+orbserver(1), pf(3)
+.fi
+.SH "BUGS AND CAVEATS"
+Packets containing non-integral numbers of seconds worth of data are
+not technically valid GCF packets, but are sometimes sent anyway
+by older digitizers (firmware versions circa V.031). Guralp2orb
+trims these packets to the nearest even number of seconds, on the 
+advice of Guralp Systems Ltd. 
+
+The Posix time_t standard (IEEE 1003.1) does not include leap seconds. 
+The Antelope/Datascope epoch-time implementation agrees with POSIX. 
+Scream's interpretation of the digitizer timestamps agree with the
+Datascope interpretation. Therefore guralp2orb ignores leap seconds. 
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+.fi
+
+decompression subroutines modified from originals
+by Murray McGowan. Earlier versions of guralp2orb by Mitch Robinson.
+Tested against GCF decompression routines by Paul Friberg and Sid Hellman.

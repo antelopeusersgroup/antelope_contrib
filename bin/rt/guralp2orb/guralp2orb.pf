@@ -1,0 +1,90 @@
+00SBEA &Arr{
+   net AK
+   sta SBEA
+   channels &Arr{
+     00BHZ4 &Arr{
+        chan BHZ
+     }
+   }
+}
+00CHSA &Arr{
+   net AK
+   sta CHSA
+   channels &Arr{
+     00BHZ4 &Arr{
+	chan BHZ
+     }
+   }
+}
+MCK000 &Arr{
+   net AK
+   sta MCK
+   channels &Arr{
+     00BHZ4 &Arr{
+        chan BHZ
+        pinno 331
+	calib 0.0
+     }
+     00BHE4 &Arr{
+        chan BHE
+        pinno 333
+	calib 0.0
+     }
+     00BHN4 &Arr{
+        chan BHN
+        pinno 332
+	calib 0.0
+     }
+     00BHM8 &Arr{
+	chan Ignore
+     }
+     00BHM9 &Arr{
+	chan Ignore
+     }
+     00BHMA &Arr{
+	chan Ignore
+     }
+     00BHME &Arr{
+	chan Ignore
+     }
+     00BH00 &Arr{
+	chan Ignore
+     }
+   }
+}
+00RC01 &Arr{
+   net AK
+   sta RC01
+   channels &Arr{
+     00BHZ4 &Arr{
+	chan BHZ
+	calib 0.0
+     }
+     00BHN4 &Arr{
+	chan BHN
+	calib 0.0
+     }
+     00BHE4 &Arr{
+	chan BHE
+	calib 0.0
+     }
+   }
+}
+000FIB &Arr{
+   net AK
+   sta FIB
+   channels &Arr{
+     00BHZ4 &Arr{
+	chan BHZ
+	calib 0.0
+     }
+     00BHN4 &Arr{
+	chan BHN
+	calib 0.0
+     }
+     00BHE4 &Arr{
+	chan BHE
+	calib 0.0
+     }
+   }
+}
