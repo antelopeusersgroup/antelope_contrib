@@ -354,6 +354,14 @@ with the exception of relocate(1).  That program reads this
 same information from the css3.0 site table.  The parameter
 file can contain the geometry information for relocate, but
 it will simply be ignored.
+.LP
+A final parameter that is implemented in both the db and parameter
+file geometry input is the parameter \fIelevation_datum\fR.  This
+parameter can be used to set a reference elevation for 0 depth to
+something other than sea level.  Note, however, that at present
+the depths computed by the location program are RELATIVE TO THIS
+DATUM NOT TO SEA LEVEL.  This parameter defaults to 0.0 in which
+case the computed depths are sea level.  
 .SH PHASE DESCRIPTION PARAMETERS
 .LP
 This section of the parameter file is by far the most complex.

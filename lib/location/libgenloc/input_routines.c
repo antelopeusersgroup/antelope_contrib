@@ -198,7 +198,10 @@ Arr *load_station_table(Pf *pf)
 
 	Station *s;
 
+	double elev_datum;
+
 	a = newarr(0);
+	elev_datum = pfget_double_wdef(pf,"elevation_datum",0.0);
 	t = pfget_tbl(pf,"seismic_stations");
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -212,7 +215,10 @@ Read error in station tbl read from parameter file\n\
 The following line of the station table was skipped\n%s\n",
 				value);
 		else
+		{
+			s->elev -= elev_datum;
 			setarr(a,s->name,s);
+		}
 	}
 	return(a);
 }
@@ -229,7 +235,10 @@ Arr *load_array_table(Pf *pf)
 
 	Seismic_Array *s;
 
-	a = newarr(0);
+        double elev_datum;
+ 
+        a = newarr(0);
+        elev_datum = pfget_double_wdef(pf,"elevation_datum",0.0);
 	t = pfget_tbl(pf,"seismic_arrays");
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -243,7 +252,10 @@ Read error in array tbl read from parameter file\n\
 The following line of the array table was skipped\n%s\n",
 				value);
 		else
+		{
+                        s->elev -= elev_datum;
 			setarr(a,s->name,s);
+		}
 	}
 	return(a);
 }

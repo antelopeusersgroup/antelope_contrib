@@ -22,7 +22,7 @@ Author:  Gary L. Pavlis
 Date:  January 1997
 */
 
-Arr *dbload_station_table(Dbptr db,int row_start,int row_end)
+Arr *dbload_station_table(Dbptr db,int row_start,int row_end,Pf *pf)
 {
 	Arr *a;
 	int i;
@@ -32,8 +32,11 @@ Arr *dbload_station_table(Dbptr db,int row_start,int row_end)
 	double lat, lon, elev;
 	char staname[12];
 	char laststa[12];
+	double elev_datum;
 
 	a = newarr(0);
+        elev_datum = pfget_double_wdef(pf,"elevation_datum",0.0);
+	
 	for(db.record=row_start;db.record<row_end;++db.record)
 	{
 		if((dbgetv( db, 0,
@@ -53,6 +56,7 @@ Arr *dbload_station_table(Dbptr db,int row_start,int row_end)
 			strcpy(s->name,staname);
 			s->lat = lat;
 			s->lon = lon;
+			elev -= elev_datum;
 			s->elev = elev;
 			setarr(a,s->name,s);
 		}
@@ -71,7 +75,7 @@ of more general use.
 Author:  Gary L. Pavlis
 Written:  January 1997
 */ 
-Arr *dbload_array_table(Dbptr db,int row_start,int row_end)
+Arr *dbload_array_table(Dbptr db,int row_start,int row_end,Pf *pf)
 {
 	Arr *a;
 	int i;
@@ -81,8 +85,11 @@ Arr *dbload_array_table(Dbptr db,int row_start,int row_end)
 	double lat, lon, elev;
 	char staname[12];
 	char laststa[12];
+	double elev_datum;
 
 	a = newarr(0);
+        elev_datum = pfget_double_wdef(pf,"elevation_datum",0.0);
+
 	for(db.record=row_start;db.record<row_end;++db.record)
 	{
 		if((dbgetv( db, 0,
@@ -102,6 +109,7 @@ Arr *dbload_array_table(Dbptr db,int row_start,int row_end)
 			strcpy(s->name,staname);
 			s->lat = lat;
 			s->lon = lon;
+			elev -= elev_datum;
 			s->elev = elev;
 			setarr(a,s->name,s);
 		}
