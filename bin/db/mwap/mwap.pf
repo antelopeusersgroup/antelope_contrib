@@ -6,7 +6,6 @@ bankid 1 100000
 }
 double &Tbl{
 sample_interval 0.00001 100.0
-snr_cutoff
 }
 string &Tbl{
 TTmodel
@@ -16,6 +15,7 @@ snr_cutoff_statistic
 coherence_measure
 }
 }
+graphics true
 get_wavelets_from_database false
 bankid 1
 array_name LODORE
@@ -24,7 +24,11 @@ TTmodel iasp91
 TTmethod tttaup tttaup utaup
 snr_component_to_test z
 snr_cutoff_statistic max
-snr_cutoff 1.5
+snr_cutoff &Tbl{
+1.5 
+1.5
+-1.0
+}
 #
 #  This file is a template for multiwavelet parameter file definitions 
 #
@@ -258,7 +262,7 @@ wavelets &Tbl{
 #
 number_frequency_bands 3
 bands &Tbl{
-none
+/u/pavlis/response/RT72A_2_f 
 /u/pavlis/response/RT72A_2_f 
 /u/pavlis/response/RT72A_4_f /u/pavlis/response/RT72A_2_f
 }
@@ -281,18 +285,18 @@ none
 # versions for a fast debug with fake data
 
 signal_analysis_windows &Tbl{
--70 60 40 1 1
--70 60 40 1 1
--70 60 40 1 1
+-60 60 40 1 1
+-60 60 40 1 1
+-60 60 40 1 1
 }
 #
 # Noise windows in samples
 #  order is the same as for signal windows 
 #
 noise_analysis_windows &Tbl{
--150 -80 40 1 1
--150 -80 40 1 1
--150 -80 40 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
+-100 -40 40 1 1
 }
 #
 #  This defines the list of stations to be used and the

@@ -16,7 +16,7 @@ void print_band_info(MWbasis *mw,int *decfac,Pf *pf)
 	sample_interval = pfget_double(pf,"sample_interval");
 	nbands = pfget_int(pf,"number_frequency_bands");
 
-	elog_log(0,"Multiwavelet transform frequency bands\n\nBand\tf0\tf_low\tf_high\tfw\n");
+	fprintf(stdout,"Multiwavelet transform frequency bands\n\nBand\tf0\tf_low\tf_high\tfw\n");
 	for(i=0;i<nbands;++i)
 	{
 		scale = 1.0/(2.0*sample_interval*decfac[i]);
@@ -24,7 +24,7 @@ void print_band_info(MWbasis *mw,int *decfac,Pf *pf)
 		fw = (mw->fw)*scale;
 		flow = f0 - (fw/2.0);
 		fhigh = f0 + (fw/2.0);
-		elog_log(0,"%8d%8.4lf%8.4lf%8.4lf%8.4lf\n",
+		fprintf(stdout,"%8d%8.4lf%8.4lf%8.4lf%8.4lf\n",
 			i,f0,flow,fhigh,fw);
 	}
 }
@@ -41,10 +41,10 @@ void print_window_data(int *dec,
 	int i;
 	double sstart, send, nstart, nend;
 
-	elog_log(0,"Analysis time windows in samples:\nsignal start\tsignal end\tnoise start\tnoise end\tdecimation factor\n");
+	fprintf(stdout,"Analysis time windows in samples:\nsignal start\tsignal end\tnoise start\tnoise end\tdecimation factor\n");
 	for(i=0;i<n;++i)
 	{
-		elog_log(0,"band %d:\t%d\t%d\t%d\t%d\t%d\n",
+		fprintf(stdout,"band %d:\t%d\t%d\t%d\t%d\t%d\n",
 			i,
 			sig[i].tstart,
 			sig[i].tend,
@@ -52,14 +52,14 @@ void print_window_data(int *dec,
 			noise[i].tend,
 			dec[i]);
 	}
-	elog_log(0,"Analysis time windows in seconds:\nsignal start\tsignal end\tsignal tpad\tnoise start\tnoise end\tsignal tpad\tsample interval\n");
+	fprintf(stdout,"Analysis time windows in seconds:\nsignal start\tsignal end\tsignal tpad\tnoise start\tnoise end\tsignal tpad\tsample interval\n");
 	for(i=0;i<n;++i)
 	{
 		sstart = (sig[i].tstart)*(sig[i].si);
 		send = (sig[i].tend)*(sig[i].si);
 		nstart = (noise[i].tstart)*(noise[i].si);
 		nend = (noise[i].tend)*(noise[i].si);
-		elog_log(0,"band %d: %lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+		fprintf(stdout,"band %d: %lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
 			i,
 			sstart,send,sig[i].tpad,
 			nstart,nend,noise[i].tpad,

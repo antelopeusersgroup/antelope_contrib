@@ -294,6 +294,14 @@ data that aren't required later.
 */
 void free_MWgather_traces(MWgather *gather)
 {
+	int i;
+
+	for(i=0;i<gather->nsta;++i)
+	{
+		free(gather->x1[i]);
+		free(gather->x2[i]);
+		free(gather->x3[i]);
+	}
 	free(gather->x1);
 	free(gather->x2);
 	free(gather->x3);
@@ -336,15 +344,58 @@ void free_MWtransform_arr(Arr *mwtarr,int nbands, int nwavelets)
 /* This is a small companion function to the one immediately 
 following.  It grabs items from pf to test if the computed
 signal to noise passes.  It returns 1 when the snr is inadequate,
-0 of snr is big by it's definition */
-int snr_is_too_low(Signal_to_Noise *snr,Pf *pf)
+0 if snr is big by it's definition 
+
+Arguments:
+	snr - signal to noise ratio structure pointer t
+
+Modification, June 2000:
+Original version just tested a single snr cutoff and applied
+it to all bands equally.  This was changed for two reasons.
+First, it might be useful sometimes to make the snr cutoff
+frequency dependent so it is useful to have the cutoff change
+to a tbl with a different cutoff possible for each band.  
+Second, segmented data or triggered data often have 
+an insufficient preevent time window to allow for the 
+long pad times induced by decimators.  This can make it 
+hard to compute a reasonable noise window.  To avoid
+an unrecoverable error in that situation, I added the
+feature that if the cutoff value is <= 0.0 the test run
+here will always return 0.  i.e. the snr values are not
+tested and all data are used without checking in that
+band.  A couple examples help here:
+
+snr_cutoff &Tbl{
+5.0
+10.0
+4.0
+}
+sets the cutoff to 5.0 for band 0, 10 for band 1, and 4 for band 3.
+
+snr_cutoff &Tbl{
+5.0
+10.0
+-1.0
+}
+Sets cutoff the same for band 0 and 1, but disables the
+snr test for band 3.  
+*/
+
+int snr_is_too_low(Signal_to_Noise *snr,int band, Pf *pf)
 {
 	double snr_cutoff;
 	char *snr_component;
 	char *statistic;
 	double test_value;
-	/* grab required items from pf */
-	snr_cutoff = pfget_double(pf,"snr_cutoff");
+	char *line;
+	Tbl *t;
+
+	t = pfget_tbl(pf,"snr_cutoff");
+	if(t == NULL) return(0);
+	if(maxtbl(t)<band) return(0);
+	line = gettbl(t,band);
+	sscanf(line,"%lf",&snr_cutoff);
+
 	statistic = pfget_string(pf,"snr_cutoff_statistic");
 	snr_component = pfget_string(pf,"snr_component_to_test");
 	if(!strcmp(snr_component,"z"))
@@ -370,7 +421,34 @@ int snr_is_too_low(Signal_to_Noise *snr,Pf *pf)
 	else
 		return(1);
 }
+/* This short function us used to check if a signal to 
+noise ratio test is enabled for a particular band.  It 
+parses the "snr_cutoff" Tbl in the pf space identical
+to that used in snr_is_too_low, but here it simply 
+looks for a value of the cutoff <= 0.0 which is a 
+signal to not perform an snr test.  
 
+Arguments:
+	band - frequency band to check
+	pf - parameter space
+
+Returns 0 or 1.   0 means do not run an snr check
+on this band while 1 says it is ok to try.
+*/
+int check_snr_this_band(int band, Pf *pf)
+{
+	char *line;
+	Tbl *t;
+	double snr_cutoff;
+
+	t = pfget_tbl(pf,"snr_cutoff");
+	if(t == NULL) return(0);
+	if(maxtbl(t)<band) return(0);
+	line = gettbl(t,band);
+	sscanf(line,"%lf",&snr_cutoff);
+	if(snr_cutoff<=0.0) return(0);
+	return(1);
+}
 
 /* This routine takes a collection of MWtransformed traces and builds
 a MWgather object.  The algorithm is pretty straightforward except it
@@ -435,9 +513,14 @@ MWgather *build_MWgather(int band, int wavelet,
 		if( (((*x1)[band][wavelet].nz) == 0)
 		|| (((*x2)[band][wavelet].nz) == 0)
 		|| (((*x3)[band][wavelet].nz) == 0) ) continue;
-		/* test snr This test skips stations with low snr*/
-		snr = (Signal_to_Noise *)getarr(snrarr,sta);
-		if(snr_is_too_low(snr,pf)) continue;
+		/* test snr This test skips stations with low snr
+		but do this only if the snr cutoff test is
+		enabled.*/
+		if(check_snr_this_band(band,pf))
+		{
+			snr = (Signal_to_Noise *)getarr(snrarr,sta);
+			if(snr_is_too_low(snr,band,pf)) continue;
+		}
 
 		gather->sta[ii] = (MWstation *)getarr(stations,sta);
 		/* Hideous pointer/array syntax here, but the idea
@@ -1156,7 +1239,7 @@ independent of the phase being analyzed.
 */
 int compute_optimal_lag(MWgather **g,int nwavelets,double timeref, 
 	double *moveout,Spherical_Coordinate polarization,
-	Time_Window *win,int coherence_type, int band, Pf *pf)
+	Time_Window *win,int coherence_type, int band)
 {
 	int i,j;
 	double U[9];  /* transformation matrix */
@@ -1170,12 +1253,8 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	MW_scalar_statistics stats; 
 	float peak_semb;
 	int lag_at_peak;
-	int show_graphics;
 	char *array_name;
 
-	/* We'll do this right away in case this aborts the program */
-	show_graphics = pfget_boolean(pf,"graphics");
-	array_name = pfget_string(pf,"array_name");
 
 	/* First we define a rotation matrix to ray coordinates and
 	then form new gathers rotated into ray coordinates */
@@ -1231,38 +1310,12 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 			lag_at_peak = j;
 		}
 	}
-	if(show_graphics)
-	{
-		Dbptr trdb;
-		int narrival_rows;
-		trdb = trnew(0,0);
-		/* We have to reset the lags array because it is 
-		altered above */
-		free(lags);
-		lags = compute_lag_in_samples(*trans_gath,moveout,timeref);
-		for(j=0;j<trans_gath[0]->nsta;++j) lags[j] += win->tstart;
-		/* Note we only plot the wavelet 0 functions to reduce
-		clutter*/
-		MWgather_to_trace(trans_gath[0],trdb,0,band,lags);
-
-		/* This routine resets the start time of all all the traces
-		to timeref so they will appear aligned in display. (a trick).
-		At the same time it creates an arrival table with flags
-		marking the bounds of the optimal analysis window determined*/
-		MWtrace_gather_reset_stime(trans_gath[0],trdb,timeref);
-		/* This adds the coherence trace to the trace db */
-		MWtrace_put_semblance(trdb,avgsemb,lensemb,timeref,
-			lag_at_peak,trans_gath[0]->x3[i]->dt,
-			coherence_type,array_name);
-
-		narrival_rows = MWtrace_mark_window(trans_gath[0],
-				trdb,win,lag_at_peak);
-		if(narrival_rows <= 0) 
-		   elog_complain(0,"Problems adding arrival table rows to trace table in band %d\n",band);
-
-		trdisp(trdb,0);
-		trdestroy(&trdb);
-	}
+	/* This is not the clearest way to do this, but this is repairing
+	a bug in the original version of this code that failed to make
+	this correction.  Basically, the lag_at_peak is not referenced
+	correctly.  We have to take away the window start increment
+	added above to get the timing right */
+	lag_at_peak += win->tstart;
 
 	free_matrix((char **)semb,0,lensemb,0);
 	free(avgsemb);

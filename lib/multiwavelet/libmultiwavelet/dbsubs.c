@@ -225,11 +225,12 @@ int MWdb_save_statics(
 		deleted in processing so it is useful to record this fact in
 		the database in the mwsnr table.  Note we silently skip stations
 		not found in the array for snr */
- 		snr = (Signal_to_Noise *)getarr(snrarr,g->sta[i]->sta);
+		sta = g->sta[i]->sta;
+ 		snr = (Signal_to_Noise *)getarr(snrarr,sta);
 		if(snr != NULL)
 		{
 		    if( dbaddv(dbsnr,0,
-			"sta",g->sta[i]->sta,
+			"sta",sta,
 			"fc",fc,
 			"bankid",bankid,
 			"phase",phase,
@@ -249,18 +250,18 @@ int MWdb_save_statics(
 			++errcount;
 		    }
 		}
-		mws = (MWstatic *)getarr(statics,g->sta[i]->sta);
+		mws = (MWstatic *)getarr(statics,sta);
 
    		/* Again we silently skip stations without an entry in
 		this array because they can auto-edited in processing
 		so this is not an error. */
 		if(mws != NULL)
                 {
-			s = (MWstation *)getarr(stations,g->sta[i]->sta);
+			s = (MWstation *)getarr(stations,sta);
 			if(s == NULL)
 			{
 				elog_complain(0,"MWdb_save_time_statics cannot find entry for station %s\nThis should NOT happen--program may have ovewritten itself!\n",
-					g->sta[i]->sta);
+					sta);
 				continue;
 			}
 			/* We have to correct the start time for moveout.
@@ -270,7 +271,7 @@ int MWdb_save_statics(
 				+ moveout[i] + ((double)(w->tstart))*(w->si);
 		
 			if( dbaddv(dbt,0,
-				"sta",g->sta[i]->sta,
+				"sta",sta,
 				"fc",fc,
 				"bankid",bankid,
 				"phase",phase,
@@ -300,7 +301,7 @@ int MWdb_save_statics(
 			    ampdb = 20.0*(mws->log10amp);
 			    aerrdb = 20.0*(mws->sigma_log10amp);
 			    if( dbaddv(dba,0,
-				"sta",g->sta[i]->sta,
+				"sta",sta,
 				"ampcomp",AMPCOMP,
 				"fc",fc,
 				"bankid",bankid,

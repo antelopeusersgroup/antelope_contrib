@@ -282,5 +282,6 @@ MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
 		work = newtrace;
 		n_this_band = n;
 	}
+	free(newtrace);
 	return(allmw);
 }

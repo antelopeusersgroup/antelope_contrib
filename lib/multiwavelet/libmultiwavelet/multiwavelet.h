@@ -258,7 +258,7 @@ char *make_mw_key(char *, char *);
 Arr *tr_mwtransform(Dbptr , Arr *, Time_Window *, int *, Tbl **, int , MWbasis *, int );
 MWgather *MWgather_alloc(int );
 void free_MWgather_traces(MWgather *);
-int snr_is_too_low(Signal_to_Noise *,Pf *);
+int snr_is_too_low(Signal_to_Noise *,int, Pf *);
 MWgather *build_MWgather(int , int , Arr *, Arr *, Arr *, Pf *);
 MWtrace *MWtrace_dup(MWtrace *);
 MWgather *MWgather_transformation(MWgather *,double *);
@@ -269,7 +269,7 @@ int computer_total_moveout(MWgather *,Arr *, char *, MWSlowness_vector , double,
 int *compute_lag_in_samples(MWgather *,double *, double );
 double phase_to_time(double ,double , double );
 int compute_optimal_lag(MWgather **,int ,double ,
-        double *,Spherical_Coordinate, Time_Window *,int, int, Pf *);
+        double *,Spherical_Coordinate, Time_Window *,int, int);
 void compute_mw_arrival_times(MWgather **,int ,double ,double *, int , 
 	Spherical_Coordinate, Time_Window *, Arr **, Arr **,
 	double *,double *,int *);

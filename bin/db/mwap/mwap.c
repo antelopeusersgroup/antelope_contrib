@@ -101,7 +101,7 @@ int main(int argc, char **argv)
                die(1,"dbsubset of %s with expression %s failed\n",
                              dbname, sift_exp);
 	dbquery(dbj,dbRECORD_COUNT,&nrows_total);
-	elog_log(0,"Working database has %d arrivals\n",nrows_total);
+	fprintf(stdout,"Working database has %d arrivals\n",nrows_total);
 
 	sortkeys = newtbl(4);
 	pushtbl(sortkeys,"evid");
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 	dbevid_group = dbgroup(dbj,grp_tbl,EVIDBDLNAME,EVIDBUNDLE);
 	dbquery(dbevid_group,dbRECORD_COUNT,&nevents);
 	if(nevents <= 0) die(0,"dbgroup failed -- no data to process\n");
-	elog_log(0,"%s will attempt to process %d events in this run\n",argv[0],nevents);
+	fprintf(stdout,"%s will attempt to process %d events in this run\n",argv[0],nevents);
 	/*This view is used repeatedly, so we create it here and
 	then look it up later.  It is a join of wfdisc and sitechan 
 	sorted and grouped by station */

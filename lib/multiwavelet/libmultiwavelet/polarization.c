@@ -114,8 +114,8 @@ void pmvector_copy(int n, Particle_Motion_Ellipse *x, int incx,
 		y[iy] = x[ix];
 	}
 }
-#define PM_MINSCALE 0.1  /* This needs to be pretty large compared to 
-				some data because if the errors get much
+#define PM_MINSCALE 0.2  /* This needs to be pretty large compared to 
+				good data because if the errors get much
 				larger than this the results are trash anyway */
 void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	Particle_Motion_Ellipse *pmavg, Particle_Motion_Error *pmerr)
@@ -146,6 +146,10 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 		v[ii+1] = pmv[i].major[1];
 		v[ii+2] = pmv[i].major[2];
 	}
+	/* We use relative scaling here because the pm vectors are 
+	not normalized.  We could use absolute scaling if we normalized
+	them above.  This is a modification that might actually give
+	better results.  */
 	M_estimator_n_vector(v,3,n,IQ_SCALE_RELATIVE,PM_MINSCALE,avg,weight);
 	nrm_major = dnrm2(3,avg,1);
 	for(i=0;i<3;++i) pmavg->major[i] = avg[i]/nrm_major;

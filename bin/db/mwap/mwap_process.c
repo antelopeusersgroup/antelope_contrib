@@ -382,7 +382,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		die(0,"Error in dblookup for named evid group table = %s\n",
 			EVIDBDLNAME);
         dbquery(dbgrp,dbRECORD_COUNT,&nevents);
-        elog_notify(0,"Processing begins for %d events\n",nevents);
+        fprintf(stdout,"Processing begins for %d events\n",nevents);
 
 	for(dbgrp.record=0;dbgrp.record<nevents;++dbgrp.record)
 	{
@@ -400,7 +400,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		}
 
                 dbget_range(db_bundle,&is,&ie);
-		elog_notify(0,"Evid %d trace bundle = rows %d to %d\n",
+		fprintf(stdout,"Evid %d trace bundle = rows %d to %d\n",
 			evid, is, ie);
 
 		/* At least three stations an array make.  This won't
@@ -580,13 +580,7 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			occur here easily by changing this function */
 			lag = compute_optimal_lag(gathers,nwavelets,timeref,
 					moveout,polarization,swin+i,
-					coherence_type,i,pf);
-			if(lag < 0)
-			{
-				elog_complain(0,"Data loss computing semblance\nSkipping evid %d\n",
-					evid);
-				continue;
-			}
+					coherence_type,i);
 
 			/* We repeat the analysis at a fixed lag until
 			the smallest time adjustment is less than one
@@ -668,7 +662,7 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 		}
 		/*release main work spaces with this series of complicated free routines.
 		Here is where you really wish C had garbage collection */
-		free_sn_ratios_arr(sn_ratios,nwavelets);
+		free_sn_ratios_arr(sn_ratios,nbands);
 		free_MWtransform_arr(mwsig_arr,nbands,nwavelets);
 		free_MWtransform_arr(mwnoise_arr,nbands,nwavelets);
 		trdestroy(tr);

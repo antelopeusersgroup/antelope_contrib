@@ -18,6 +18,8 @@ Parameters to be checked are grouped by type.  Each numerical fields
 can contain an optional range check.  This is not allowed for strings.
 Code below only checks int, double, boolean, and string variables.  Because of
 the complexity of Tbl and Arrs I thought this not worth messing with.
+Furthermore, it is not unusual to have an empty Tbl list or Arr that
+the program should handle correctly.  
 
 Function will die on the first occurence of a problem parameter.
 It is void because it only returns if everything checks out.
