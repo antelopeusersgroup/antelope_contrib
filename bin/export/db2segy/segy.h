@@ -68,5 +68,7 @@ typedef struct SegyReel{
         long            kjob, kline, kreel;
         short           kntr, knaux, sr, kfldsr, knsamp, 
 				kfsamp, dsfc, kmfold, ksort;
-        unsigned char   unused[370];
+	unsigned char unused1[24];
+	short int kunits;
+	unsigned char unused2[344];
 } SegyReel;

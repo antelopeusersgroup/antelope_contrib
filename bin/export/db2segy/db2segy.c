@@ -525,6 +525,7 @@ main(int argc, char **argv)
 	int evid,shotid=1;
 	int rotate;
 	int ntraces, ichan;
+	int map_to_cdp;  /* logical switch to output data like cdp stacked data */
 	char *fmt="%Y %j %H %M %s %s";
 	char *pfname;
 
@@ -558,6 +559,8 @@ main(int argc, char **argv)
 	station channel names */
 	channels = build_stachan_list(pf,&nchan);
 
+	map_to_cdp = pfget_boolean(pf,"map_to_cdp");
+	if(map_to_cdp) fprintf(stdout,"Casting data as CDP stacked section\n");
 	if(dbopen(dbin,"r",&db) == dbINVALID) 
 	{
 		fprintf(stderr,"Cannot open db %s\n", dbin);
@@ -634,7 +637,11 @@ main(int argc, char **argv)
 	reel.kfsamp = (short)nsamp0;
 	reel.dsfc=1;  /* I think this is host floats*/
 	reel.kmfold = 0;
-	reel.ksort = 1;
+	if(map_to_cdp)
+		reel.ksort = 2;
+	else
+		reel.ksort = 1;
+	reel.kunits = 1;  /* This sets units to always be meters */
 
 	if(fwrite((void *)(&reel),sizeof(SegyReel),1,fp) != 1) 
 	{
@@ -657,18 +664,26 @@ main(int argc, char **argv)
 			initialize_header(&(header[i]));
 			header[i].lineSeq = total_traces + i + 1;
 			header[i].reelSeq = header[i].lineSeq;
-			header[i].channel_number = i + 1;
+			if(map_to_cdp)
+			{
+				header[i].cdpEns = i + 1;
+				header[i].traceInEnsemble = 1;  /* 1 trace per cdp faked */
+			}
+			else
+			{
+				header[i].channel_number = i + 1;
+			}
 			header[i].event_number = shotid;
 			for(j=0;j<nsamp0;++j)  traces[i][j] = 0.0;
 		}
 		time0 = str2epoch(s);
 		endtime0 = time0 + tlength;
-		sprintf(stime,"\"%20.4f\"",time0);
-		sprintf(etime,"\"%20.4f\"",endtime0);
+		sprintf(stime,"%20.4f",time0);
+		sprintf(etime,"%20.4f",endtime0);
 		trdb.database = -1;
-		if(trload_css(dbj,stime,etime,&trdb,0, 0))
+		if(trload_css(dbj,stime,etime,&trdb,0, 0) < 0)
 		{
-			elog_complain(0,"trload_css failed for data in time range %s to %s\nDate skipped\n",
+			elog_complain(0,"trload_css failed for data in time range %s to %s\nNo data found for this time interval\n",
 				stime, etime);
 			continue;
 		}
@@ -770,13 +785,27 @@ main(int argc, char **argv)
 				header[ichan].trigminute = header[ichan].minute;
 				header[ichan].trigsecond = header[ichan].second;
 				free(time_str);
-				/* This is the mechamism for adding other
+				if(map_to_cdp)
+				{
+				/* When faking CDP data we make this look 
+				like a zero offset, single fold data set */
+				  header[ichan].sourceLongOrX = header[ichan].recLongOrX;
+				  header[ichan].sourceLatOrY = header[ichan].recLatOrY;
+				  header[ichan].sourceSurfaceElevation = header[ichan].recElevation;
+				  header[ichan].sourceDepth = 0.0;
+				  header[ichan].sourceToRecDist = 0.0;
+				}
+				else
+				{
+				/* This is the mechanism for adding other
 				information with added tables.  The one
 				table currently supported is a "shot" table 
 				that holds shot coordinates.  If other tables
 				were added new functions could be added with
 				a similar calling sequence */
-				set_shot_variable(db,table_list,evid,&header[ichan]);
+					set_shot_variable(db,table_list,
+						evid,&header[ichan]);
+				}
 			}			
 
 		}
