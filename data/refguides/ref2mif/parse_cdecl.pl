@@ -69,7 +69,9 @@ sub format_type {
 	$result .= &string($dimension) if ( $dimension ne "" ) ;
 
 	if ( $fontcode eq "FunctionName" ) { 
-	    $result .= &marker("Index", $name) if ! $No_index ;
+	    if ( $No_index == 0 ) { 
+		$result .= &marker("Index", $name) ;
+	    }
 	} elsif ( $fontcode eq "ParameterName" ) {
 	    $Parameters{$name} = 1 ;
 	}

@@ -14,8 +14,8 @@
 <include ../tables/projections.ref>
 <include libtks.ref>
 <include libpixaddress.ref>
+<no_index don't index appendices >
 <include fortran.ref>
-<no_index>
 <include ../tables/datascope_constants.ref>
 <include ../tables/datascope_expressions.ref>
 <include ../tables/antelopemake.ref>

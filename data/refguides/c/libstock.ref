@@ -306,10 +306,10 @@ void elog_flush ( int deliver, int first )
 void elog_print ( FILE *file, int first )
     print the error log from first to the end
 
-void elog_free_msg ( void *vmsg )
+private void elog_free_msg ( void *vmsg )
     free an elog message
 
-void elog_msg_print ( FILE *file, Elog_msg *elog_msg )
+private void elog_msg_print ( FILE *file, Elog_msg *elog_msg )
     print an elog message
 
 int elog_query ( enum Elog_code code, int severity, void **value )
@@ -368,6 +368,22 @@ int set_random ( int nbytes )
 
 double disordered()
     uniform [0,1] pseudo random number
+
+char *getaline ( FILE *file, char *aline, int n )
+    reads a line from file, replacing any terminal linefeed
+    with a null byte
+
+int is_file(char *path)
+    returns 1 if path is plain file, 0 otherwise
+
+int is_dir(char *path)
+    returns 1 if path is directory, 0 otherwise
+
+int is_nfs(char *path)
+    returns 1 if path is on nfs mounted filesystem, 0 otherwise
+
+char *memdup(void *a, int n)
+    return pointer to copy of n bytes of memory at address a
 
 <subsection Filename and Path manipulation>
 int abspath ( char *relp, char *absp )
@@ -496,6 +512,9 @@ void pushstr(void **sbuf, char *s)
 
 char *popstr(void **sbuf, int sfree)
     retrieve the entire string from sbuf, freeing sbuf if sfree != 0
+
+char *strdbl(double x, char *buf)
+    formats the input double x into a compact and convenient string
 
 <subsection Sorting and Searching>
 void isort ( char *a, int n, int size, int (*cmp)(), void *pvt )
@@ -851,6 +870,13 @@ Arr *pfget_arr ( Pf *pf, char *name )
 
 Tbl *pfkeys ( Pf *pf )
     return a list of keys from a parameter space pf (pf must be array, not list)
+    
+double pfget_time(Pf *pf, char *name)
+    return time for key name from parameter space pf
+
+double pfget_size(Pf *pf, char *name)
+    return size for key name from parameter space pf, interpreting suffix of
+    G (10^9), M (10^6), or k (10^3)
 
 Tbl *pfget_tbl ( Pf *pf, char *name )
     get a list value for key name from parameter space pf
@@ -877,6 +903,9 @@ void pfput_int ( Pf *pf, char *name, int value )
 void pfput_string ( Pf *pf, char *name, char *value )
     put a string value for key name into parameter space pf
 
+void pfput_time(Pf *pf, char *name, double time)
+    put time into parameter space pf under key name 
+
 void pfput_arr ( Pf *pf, char *name, Arr *value )
     put an array value for key name into parameter space pf
 
@@ -885,6 +914,12 @@ void pfput_tbl ( Pf *pf, char *name, Tbl *value )
 
 int pfcmp(Pf *pf1, Pf *pf2)
     returns 0 if pf1 and pf2 are identical, 1 otherwise
+
+Pf *pfdup(Pf *old)
+    duplicates a parameter file space
+
+int pfrequire(char *pfname, char *atime )
+    require pf_revision_code later than atime
 
 <subsection Sorted Lists>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )

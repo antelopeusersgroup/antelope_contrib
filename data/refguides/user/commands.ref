@@ -15,6 +15,9 @@ template [dbsimple.c|simple.c|perl|tcl]
 private check_antelope_installation
     spot check for proper Antelope installation
 
+antelope_update [-ilntv] [-p proxy] [-r id] [url]
+    update local antelope installation from BRTT patches 
+
 check_license [license_filename]
     verify license.pf is valid
 
@@ -40,6 +43,9 @@ relpath here there
 cleanpath apath
     eliminates repeated slashes, unnecessary ./
 
+ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
+    filter list of files according to various options
+
 deprecated uwd [-f configfile]
     print canonical working directory (for ancient automounters)
 
@@ -55,6 +61,9 @@ epoch [options] [ +format ] [ time/date components ]
 -o tz	specify an output timezone tz, eg Japan
 +format	specify the format of the output (refer to epoch escapes table)
 </options>
+
+elog [-cdln] [-f signal] [message]
+    exhibit behavior of elog error routines with specified message
 
 pfcompare [options] pf
      find differences between local parameter file and remainder of pf files found along PFPATH
@@ -198,6 +207,8 @@ Different Modes
 -W	show what libraries require the named routine.
 </options>
 
+
+
 deposit [-r] file dest
     installs file in directory dest with appropriate permisssions; with -r option, installs file as the file dest.
 
@@ -209,3 +220,10 @@ installman manpage dir
 	
 private nxplotd -window window [-geom geomspec] [-title title] [-icon_pm icon_pm]
     X-windows plotting daemon
+
+fixman [-BInd] pages
+    check a man page, correct some problems, and suggest other changes
+
+cleartmp [-nv] directory idle
+     cleartmp removes files from directory which have not been used in over idle
+     days, and finishes by removing any empty directories.

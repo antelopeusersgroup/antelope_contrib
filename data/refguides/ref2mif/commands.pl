@@ -1,3 +1,4 @@
+$No_index = 0 ;
 
 sub no_index {
     $No_index = 1 ; 
@@ -92,7 +93,9 @@ sub parse_command {
 	$name = $1 ; 
 	$in = $' ; 
 	$result = &fontstring ( "FunctionName", "$name "  ) ;
-	$result .= &marker("Index", $name) if ! $No_index ;
+	if ( $No_index == 0 ) { 
+	    $result .= &marker("Index", $name) ;
+	}
 	$result .= &parse_command_arguments($in) ; 
 
     } elsif ( $in =~ /^\s*\(\s*(\w+)\s*\)\s+(\w+)/ ) { 
@@ -101,7 +104,9 @@ sub parse_command {
 	$in = $' ; 
 	$result = &string ( "($instance) ") ;
 	$result .= &fontstring ( "FunctionName", "$name "  ) ;
-	$result .= &marker("Index", $name) if ! $No_index ;
+	if ($No_index == 0) {
+	    $result .= &marker("Index", $name) ;
+	}
 	$result .= &parse_command_arguments($in) ; 
     } else { 
 	xf_warn ( "parse_command doesn't understand '$in'" ) ; 

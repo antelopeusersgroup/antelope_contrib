@@ -20,6 +20,12 @@ typedef struct Dbptr {
 int dbopen ( char *path, char *p, Dbptr *db )
     open the database path with permission p ("r" or "r+"), returning new database pointer db
 
+int dbcreate(char *path, char *schema, char *dbpath, char *description, char *detail)
+    create a new database descriptor file path and schema.  
+
+Dbptr dbtmp(char *schema)
+    create a temporary and transient database with the specified schema
+
 int dbopen_database ( char *path, char *p, Dbptr *db )
     open the database or table path with permission p ("r" or "r+"), returning new database pointer db
 
@@ -111,6 +117,10 @@ Dbptr dbtheta ( Dbptr db1, Dbptr db2, char *s, int outer, char *name )
     return a new joined view of views db1 and db2 where the expression s,
     evaluated against a trial join of a row from each input view, is non-zero.
 
+Dbptr dbseparate ( Dbptr db, char *tablename )
+    creates a new subset of base table tablename, containing
+    only records which participate in the input view db
+
 Dbptr dbsever ( Dbptr db, char *t, char *name )
     remove table t from the joined view db, returning a new view
 
@@ -123,6 +133,10 @@ Dbptr dbgroup ( Dbptr db, Tbl *fields, char *name, int type )
     return a new view in which each row references groups of 1 or more 
     contiguous records of the input view db; all of the list of fields
     for each group are identical.
+
+Dbptr dbungroup(Dbptr db, char *name)
+    produces a view containing all the rows referenced by the 
+    input grouped view db
 
 int dbprocess ( Dbptr db, Tbl *operations, Dbptr (*unknown)() )
     construct a new view according to the list of operations, where 
@@ -190,6 +204,10 @@ int dbex_evalstr ( Dbptr db, char *s, int type, void *v )
 
 int dbfind(Dbptr db, char *string, int flags, Hook **hook)
     search for record matching string in view db, where string is a regular expression, Datascope expression, or a plain string.  if flags&1, search backward.
+
+int dbstrtype ( Dbptr db, char *s )
+    returns strREAL, strINTEGER, strNULL, strSTRING, strTIME, strEXPR, 
+    strFIELD, or strUNKNOWN, indicating how s may be evaluated
 
 <subsection External files>
 int dbextfile ( Dbptr db, char *table, char *p )

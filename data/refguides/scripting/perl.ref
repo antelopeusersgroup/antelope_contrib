@@ -18,6 +18,12 @@ dbopen_database (database, permissions)
 dbopen_table (database.table, permissions)
     open database.table (or "-" for view from stdin), returning database pointer for a table
 
+dbcreate(filename, schema, dbpath, desc, detail)
+    create database descriptor file filename with specified schema, dbpath, desc and detail
+
+dbtmp(schema)
+    returns a database pointer to a temporary, transient database with specified schema
+
 
 dbclose (@db)
     closes the database, freeing all resources used by it
@@ -146,6 +152,9 @@ dbstrtype (@db, string)
     classifies string, returning "strREAL", "strINTEGER", "strNULL", "strSTRING", 
     "strTIME", "strFIELD", or "strUNKNOWN"
 
+dbinvalid()
+    return a database pointer of dbINVALID
+
 <subsection Error handling>
 elog_init ($0, @ARGV)
     initialize the elog message routines
@@ -168,6 +177,8 @@ elog_complain (msg)
 elog_die (msg)
     send a message to the elog message facility and die
 
+elog_string (n)
+    return a string containing the error log contents from message n
 
 elog_clear ()
     clear the elog message log
@@ -189,6 +200,26 @@ pfupdate (pfname)
 pffiles (pfname [, all]) 
     returns a list of filenames which make up the corresponding parameter file object.
     If all is specified, returns all filenames inspected, including non-existent files.
+
+pf2string(pfname)
+    returns a string representation of the parameter file object pfname
+
+pfcompile (string, pfname)
+  convert the specified string into a parameter file object name pfname.
+ 
+pfput (key, value, pfname)
+    save the specified value into the pf object  with  name
+    pfname under the specified key.  The value is converted
+    to a string if it's a scalar; when it's a reference  to
+    a  perl array or hash, the entire perl array or hash is
+    stored in the pf object.
+
+pfwrite (filename, pfname)
+    write out pf object pfname to filename
+
+pfrequire(pfname, atime)
+    require pf_revision_code from last file pfname is later than atime.
+
 
 <subsection Special functions>
 ask (string)
@@ -269,6 +300,9 @@ openring(filename, id, depth, flags) ;
     set, open read-only, no locking; otherwise ring buffer must be
     on local filesystem. returns handle to ring buffer.
 
+newring(filename, id, depth, flags) ;
+    create new simple ring buffer like openring, overwriting any old ring buffer
+
 closering(rb)
     close specified ring buffer
     
@@ -294,6 +328,9 @@ maxring(rb, tdelta)
 countring(rb)
     returns the number of time/value pairs in the ring
 
+findring(rb, value, tdelta)
+     findring searches the ring buffer rb over the specified time
+     period tdelta for the specific value.
 
 <subsection Time conversion>
 
@@ -376,22 +413,19 @@ orbwait(orb, re, mintime, timeout)
     if the timeout expires before the specified program
     catch up.
 
-orbget(orb, which)
+($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbget(orb, which)
     get a single packet corresponding to which; this be an
     explicit pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
-    "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". returns
-    ($pktid, $srcname, $pkttime, $pkt, $nbytes) 
+    "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". 
 
-orbreap(orb)
+($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbreap(orb)
     get the next packet from the orb; this is the fastest,
     most efficient way of reading packets.
-    returns ($pktid, $srcname, $pkttime, $pkt, $nbytes) 
 
-orbreap_timeout(orb, maxseconds)
+($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbreap_timeout(orb, maxseconds)
     get the next packet from the orb, but return early if
     no packets have appeared in maxseconds. In this case,
     the returned pktid will be undef.
-    returns ($pktid, $srcname, $pkttime, $pkt, $nbytes) 
 
 orbput(orb, srcname, pkttime, pkt, nbytes)
     put the specified packet onto the orb.
@@ -409,8 +443,8 @@ rejected    started     version
 when        who         
 </example>
 
-orbclients(orb)
-    returns ($when, @sources). $when is a scalar; @sources is a list of client
+($when, @clients) = orbclients(orb)
+    $when is a scalar; @clients is a list of client
     objects, one object per client. Each object has the
     following methods:
 <example>
@@ -480,6 +514,9 @@ sta      time
 </example>
     The data method returns all the waveform data in a list of integers.
 
+split_srcname(srcname)
+    returns net, sta, chan, loc, suffix, and subcode corresponding to srcname
+
 <chapter Perl System Information >
 <info>
 use sysinfo ; 
@@ -487,19 +524,64 @@ use sysinfo ;
 <man>
 % man perlsysinfo
 </man>
-
 <function>
-%vminfo = vminfo() ;
-     returns free memory, physical memory, reserved swap and total swap space
 
-%loadavg = loadavg() ;
+my_ip()
+    returns ip address (eg, 207.174.76.135)
+
+my_os()
+    return os name (eg, SunOS)
+
+my_hardware()
+    returns hardware string (eg, sun4u)
+
+my_hostname()
+    returns hostname (eg, ament)
+
+ip(dot-notation)
+    returns integer corresponding to dot-notation
+
+ip2name(ip)
+    looks up hostname for ip address
+
+name2ip(hostname)
+    looks up ip address for hostname
+
+nomem(address,n)
+    returns first bad address if no memory in range address to address + n 
+
+%sysmem = sysmem()
+     returns information about physical memory and swap space
+
+%loadavg = sysloadavg()
      returns 15, 5 and 1 minute load averages and the number of cpus and processes
 
-%psinfo  = psinfo($pid) ;
-    returns cpu percentage, memory percentage, resident set size,
-    total size, start time, execname, truncated command line, parent
-    pid and total cpu time for $pid and its children.
+@mounted = sysmounted() 
+    returns list of mounted partitions, including mount point, filesystem type,
+    remote host, and remote directory
 
-($idle, $user, $kernel, $iowait, $swap, $dummy) = cpu_usage() ;
-     returns a list of cpu time percentages: idle time, user time,
-     kernel time, iowait and swap times.
+pidcmdline(pid)
+    returns command line for specified pid
+
+pidpwd(pid)
+    returns working directory for process pid
+
+pidexecname(pid)
+    returns executable name for specified pid
+
+%info = pidinfo(pid)
+    returns usage in percent, parent pid, user id, size in kilobytes,
+    resident set size in kilobytes, run state, epoch start time, total cpu time,
+    and total children cputime for a process pid
+
+   
+%statvfs = statvfs (path)
+    returns Mb_total, Mb_avail, inodes_avail, inodes_used on disk
+    containing path, % disk and inodes used, and a unique id
+
+($ncpu, $idle, $user, $kernel, $iowait, $swap, @othercpus) = syscpu() ;
+    returns number of cpus, and idle, user, kernel, iowait and swap time 
+    for each cpu.
+
+
+ 

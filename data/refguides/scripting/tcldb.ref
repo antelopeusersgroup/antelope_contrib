@@ -11,6 +11,10 @@ package require Datascope
 dbopen db {r|r+}
     open database db read-only (r) or read-write(r+); returns a db pointer
 
+dbopen_table db[.table] {r|r+}
+    open datbase table.  The first argument may also be "-", allowing
+    a view to be read from stdin.  returns a db pointer
+
 dbopen_database db[.table] {r|r+}
     open database db, or optionally a specific table. The
     first argument may also be "-", allowing a view to be read from stdin.
@@ -147,9 +151,9 @@ dbstrtype db string
     returns type of string:  strREAL, strINTEGER, strNULL, strSTRING,
     strTIME, strEXPR, strFIELD or strUNKNOWN
 
-dbsearch db first backwards string
-    starting from first, locate the first row in db satisfying the
-    given expression string, or containing the string
+dbfind db first backwards expression [n]
+    starting from first, locate the next (or nth) row in db satisfying the
+    given expression; search down from first if backwards is non-zero.
 
 dbadd_remark db remark
     add the specified remark to the specified row
@@ -161,6 +165,11 @@ dbgetr db tz i n [expr [fmt]]
     return list of values for n rows beginning at row #i for expr
     optionally formatted using fmt; tz=0 may be 1 to use epoch2str for
     times, or a timezone code (eg, US/Mountain or LOCAL)
+
+dbsetr db field first n expression
+    set the specified field in the specified table to the
+    value of the expression in records first to first+n.
+
 
 dbinvalid
     return a db pointer with all elements dbINVALID
@@ -258,6 +267,9 @@ sphcar lat lon
     convert from latitude, longitude to unit vector x, y, z
 
 <subsection Time conversion>
+now
+    return current time
+
 epoch yearday
     convert yearday (eg, 1999234) to epoch time
 
@@ -292,3 +304,7 @@ writefile filename var
 
 datafile envname file 
     returns complete path for file under $ANTELOPE/data
+
+sig2str sig
+    returns a string describing the signal #sig
+

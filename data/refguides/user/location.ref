@@ -5,6 +5,9 @@ Seismic source location
 dbloc2 [-r] database
     interactive hypocenter location
 
+dbloc_snapshot [-f output-file] [-v] database
+    creates snapshot of dbloc2 directory for problem resolution
+
 private dbloc_assoc arrival_db assoc_db origin_db [origin_db]
     associate arrivals with origins in other catalogs
 

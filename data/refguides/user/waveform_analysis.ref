@@ -25,6 +25,9 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 trtally [-d output] [-ekv] [-r start stop] db1 [{+|-|!|&|^|a} [db2]]
     compute intersections and other operations on two sets of waveform time ranges
 
+trmapnames [-av] db [net fsta fchan {loc|aux}]
+     map foreign net/sta or sta/chan/loc codes into local sta and chan codes
+
 deprecated dbsteimc [options] dbin [dbout]
     compress waveform data using steim compression (see also trexcerpt)
 <options>

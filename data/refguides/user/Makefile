@@ -1,5 +1,6 @@
 DATADIR=refguides/user
 DATA= \
+	cd1.ref \
 	commands.ref \
 	database_processing.ref \
 	datascope.ref \

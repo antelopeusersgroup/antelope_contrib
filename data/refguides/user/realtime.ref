@@ -5,9 +5,6 @@
 rtm [-icon iconname] [-title title]
     real time system monitor -- displays tasks and resource usage
 
-dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
-    launch commands on commonly used databases
-
 dbevents dbname
     display map of seismic events, display waveforms
 
@@ -31,6 +28,9 @@ rtexec [options] [comment]
 
 rtinit
     initialize directory for use by rtexec/rtm by creating appropriate directories and copying pf files
+
+rtdemo
+     setup to run an Antelope realtime demo
 
 rtincident [options] [output_file]
     collect some system related information into a report; rtexec
@@ -438,6 +438,9 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 ttgrid [-pf pfname] [-time {timestr|all}] db
     compute a travel time grid file for use by orbassoc and dbgrassoc
 
+displayttgrid ttgrid [gridname]
+    display map with grid from ttgrid file
+
 orbmag [options] orbwf orbdb dbname
     real time magnitude computation
 <options>
@@ -734,9 +737,10 @@ private orbreap [options] orb [start [end|range]]
 -n n	reap n packets, then quit
 -N	show delays.
 -o file	save packets in file in forb(5) format
+-p bufsize	set socket buffer sizes to bufsize
 -R {a|x|f}	choose forb representation: ascii, hex, or header only
 -s pktid	start at pktid
--S bufsize	set socket buffer sizes to bufsize
+-S state	save state file
 -v	more verbose
 </options>
 
@@ -858,3 +862,12 @@ forbserver [options] filename
 -v	more verbose
 </options>
 
+pkttypes [-c]
+    print summary of the packet types for the installed packet library 
+
+orbstash [-m match] [-o out] [-r reject] [-v] in [srcname]
+     get and print stash packets from an orbserver in
+
+ipvalidate [-n list] [-p pf] [-v] [ip-addresses]
+     test whether a particular ip address will be accepted or rejected by valid_ip_address list in pf
+  

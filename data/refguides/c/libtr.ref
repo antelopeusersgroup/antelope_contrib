@@ -99,67 +99,61 @@ void mksignal ( char *type, float *data, double time, int nsamp, double samprate
 void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
     generate a signal of a specified type. creates integers.
 
-<subsection SEED>
-private int ascii2int ( int *result, char *s, int n )
-    SEED reading/writing aid
-
-private int buf2int ( int *dst, char *src, int n )
-    SEED reading/writing aid
-
-private int fill_S1000 ( S1000 *blk, char *buffer )
-    SEED reading/writing aid
-
-private int fill_SDH ( SDH *blk, char *buffer )
-    SEED reading/writing aid
-
-private int fill_seed_header ( Steim *conf, int n0, int n1 )
-    SEED reading/writing aid
-
-int get_seed_data_record ( Steim *conf )
-    attempt to read a complete SEED record from miniseed volume
-
-private int int2buf ( char *dst, int value, int n )
-    SEED reading/writing aid
-
-int parse_seed_data_header ( Steim *conf )
-    read seed data block and parse the standard header and any s1000 or s100 blockettes present
-
-int parse_SDH ( char *buffer, SDH *blk )
-    parse SEED data blockette header into SDH c struct
-
-int parse_S100 ( char *buffer, S100 *blk )
-    parse 100 blockette into S100 c struct
-
-int parse_S1000 ( char *buffer, S1000 *blk )
-    parse 1000 blockette into S1000 c struct
-
-
-private int samprate2seed ( double samprate, int *factor, int *multiplier )
-    SEED reading/writing aid
-
-int seed2samprate ( int factor, int multiplier, double *samprate )
-    convert the factor/multiplier from a SEED data block header into a low precision sample rate samprate
-
-<subsection Steim Compression>
-Steim *initsteim ( Wfdisc *wfdisc )
-    allocate and initialize a structure used to buffer data and control compression/decompression
-
-int csteim ( Steim *conf, int (*save_record)(), void *data, int npts )
-    compress waveform data using Steim algorithm, calling save_record when a complete data block is available. When called with npts=0, flush out any buffered data.
-
-int usteim ( Steim *conf, char *record, void *data, int npts )
-    uncompress waveform data from record
-
-void *freesteim ( Steim *conf )
-    free the Steim structure
-
-
-int psteim ( FILE *file, char *record, int record_size )
-    print out Steim data block record on output file
-
-
-
+<subsection miniseed and Steim Compression>
 <cdeclarations>
+Msd *msdnew ()
+    create new configuration block for miniseed generation
+
+void msdfree(Msd *msd) ;
+    free miniseed configuration block
+
+int msdget ( Msd *msd, char *name, ...)
+    get a parameter from msd struct
+
+int msdput ( Msd *msd, char *name, ...)
+    set a parameter in msd struct
+    The possible parameter names are:
+<example>
+    MSD_NET               MSD_STA               
+    MSD_CHAN              MSD_LOC               
+    MSD_TIME              MSD_NSAMP             
+    MSD_SAMPRATE          MSD_TIME_CORRECTION   
+    MSD_ACTIVITY_FLAGS    MSD_QUALITY_FLAGS     
+    MSD_SAMPRATE_FLAGS    MSD_IO_FLAGS          
+    MSD_HAS_B100          MSD_HAS_B1000         
+    MSD_HAS_SEED_HEADER   MSD_DATAFORMAT        
+    MSD_LEVEL             MSD_RECORD_SIZE       
+    MSD_FILENAME          MSD_FD                
+    MSD_MSEED             MSD_MSEED_NBYTES      
+    MSD_OFFSET            MSD_SPARC_ORDER       
+    MSD_FIRST_DATA_FRAME  MSD_FRAMES_PER_RECORD 
+    MSD_SEQUENCE          MSD_CNT               
+</example>
+
+int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc) () );
+    reads through a miniseed volume with msdnxt(3), calls 
+    add_wfdisc whenever a new data segment is found
+
+int msdnxt ( Msd *msd );
+    read header of next input record
+
+int msdrec ( Msd *msd, int rec );
+    read header of input record #rec
+
+int umsd ( Msd *msd, int **data, int *npts );
+    unpack the msd data record, returning the samples 
+
+int ustc ( Msd * msd, int **data, int *npts );
+    uncompresses a single Steim level 1 or level 2 miniseed record
+
+int cstc ( Msd * msd, int (*save_record) (), int *data, int npts );
+    compresses the npts input sample data into a miniseed
+    record that is accumulated inside the msd struct, and written
+    by save_record when full. npts=0 flushes msd.
+
+int dstc(FILE *file, char *rcd, int nbytes)
+    prints out a single Steim compressed miniseed record
+
 private int itr2ext ( int *in, int nsamp, Wftype *type, void **out, int *sZout, int *outbytes )
     convert from ints to external representation
 

@@ -17,6 +17,9 @@ int stuffPkt ( Packet *pkt, char *srcname, double *time, char **buffer, int *n, 
     from c structure pkt, create binary representation of packet in buffer.  returns srcname, time, 
     length of packet n, and size of buffer (size >= n).
 
+int stuffStashPkt ( char *stash, int nstash, char **packet, int *nbytes, int *packetsz );
+    stuff input stash into output packet, allocating space in packet 
+    as necessary and returning size nbytes
 
 Packet *newPkt ( void )
     create a new, empty, initialized Packet structure

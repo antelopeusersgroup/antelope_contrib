@@ -12,6 +12,9 @@ dbdescribe {db|schema} [table]
 dbdoc db
     generate troff formatted document describing schema for database db
 
+dbfilenames db
+    list database tables and permissions
+
 dbdesign
     create and/or edit Datascope schema files
 
@@ -208,6 +211,9 @@ dbdiff [options] db1[.table] db2[.table]
 <commands>
 deprecated db2perl db [ table1 table2 ...]
     create perl subroutines to read and write database tables
+
+dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
+    launch commands on commonly used databases
 
 dbids [-p port] [-P pf] [-v] database
     idserver for Datascope databases
