@@ -1,0 +1,55 @@
+# db2loon.pf parameter file
+
+# Choosing what to include: 
+origin_subset_expr 	 
+
+# Mailing pickfiles: 
+
+email_recipients &Tbl{
+	mulder@pgc.nrcan.gc.ca
+	kent@lindquistconsulting.com
+}
+email_subject 	pick files
+attach_dbtables	1
+
+# Saving pickfiles:
+
+pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
+auth_suffixes &Tbl{
+	PGC:mulder	tm
+	PGC:bentkowski	wb
+	PGC:bird	ab
+	PGC:.*		xx
+	orbassoc.*	auto
+}
+auth_suffix_default 	xx
+
+auth_agencies &Arr{
+	PGC:.*		PGC
+}
+auth_agency_default	???
+
+# Formatting pickfiles:
+primary_agency PGC
+ignore_fm 	1
+
+model_codes &Arr{
+	cn01		01
+	cn03		03
+	cn06		06
+	cn07		07
+}
+locator_codes &Arr{
+	dbgenloc	G
+	dblocsat	I
+}
+
+# Extracting raw info from database for pickfiles:
+
+dbprocess_commands &Tbl{
+	dbopen event
+	dbjoin origin
+	dbjoin -o origerr
+	dbjoin -o netmag orid
+	<SUBSET>
+}

@@ -1,0 +1,255 @@
+.TH DB2LOON 1 "$Date$"
+.SH NAME
+db2loon \- Create Loon-pickfile(s) from database
+.SH SYNOPSIS
+.nf
+db2loon [-m] [-d dbout] [-l lddate_cutoff] [-s origin_subset_expr] 
+	[-o orid] [-p pffile] database [filename]
+.fi
+.SH DESCRIPTION
+This program converts selected database rows to the Loon pickfile format as
+implemented by Newt Inc. and used at, among other locations, the Geological
+Survey of Canada, Pacific Geoscience Centre, Sidney, B.C. The default is 
+to send the results to stdout. If filename is specified, the results are sent to 
+the named file instead. 
+
+.SH OPTIONS
+.IP "-p pffile"
+Use the named parameter-file instead of the default db2loon.pf
+
+.IP "-s origin_subset_expr"
+This subsetting expression is applied to the origin table before creating 
+pickfiles. If specified, this value overrides the origin_subset_expr parameter
+in the parameter file. The -s option is ignored if the -o option is 
+specified. 
+
+.IP "-l lddate_cutoff"
+This option omits all origins that have modification times older than the 
+specified cutoff (i.e. origin.lddate must be more recent than the specified 
+cutoff). If the lddate_cutoff argument contains a colon, it is interpreted 
+as a number of hours and minutes (HH:MM) or hours, minutes, and seconds (HH:MM:SS)
+behind the current system-clock time. If not, the lddate_cutoff is interpreted 
+as a number of days behind the current system-clock time. 
+
+.IP "-o orid"
+Create a pickfile only for the specified origin id. If this option is 
+used, the -o option, the -l option, and the origin_subset_expr parameter 
+in the parameter file are all ignored.  
+
+.IP -i
+Save the results as individual pickfiles in the directory specified by 
+pickfile_name_pattern
+
+.IP -m 
+Send mail to recipients specified in parameter file.
+
+.IP "-d dbout" 
+The -d option saves a copy of the subsetted database tables contributing to the pickfiles 
+to the new database name given as an argument. 
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+
+# db2loon.pf parameter file
+
+# Choosing what to include: 
+
+# the origin_subset_expr parameter may be filled in with an 
+# subset expression to be applied to the origin table,
+# beyond any already implied by the -l option
+origin_subset_expr 	 
+
+# Mailing pickfiles: 
+
+# The following three parameters specify the behavior of mail
+# sent by db2loon: namely the recipient(s) of the email, the 
+# subject line of the mail message, and whether to attach the 
+# subsetted database tables used to generate the pickfiles as 
+# attachments to the email
+email_recipients &Tbl{
+	mulder@pgc.nrcan.gc.ca
+}
+email_subject 	pick files
+attach_dbtables	1
+
+# Saving pickfiles:
+
+# If the -i option is specified, requesting that pickfiles 
+# be saved individually in a directory hierarchy with specific 
+# naming convention, the pickfile_name_pattern specifies 
+# the naming convention. Percent-escape codes in the style 
+# of the epoch2str(3) command may be used, in which case they 
+# will be replaced by values taken from the preferred origin 
+# time of the hypocenter. If the %{suffix} string is present in 
+# this pattern, an attempt is made to translate the author name 
+# for the origin in the database into a suffix as specified by the 
+# auth_suffixes table. 
+
+pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
+
+# the auth_suffixes table gives a set of regular expressions 
+# to match against the preferred origin's auth field, in order
+# to set the suffix for a pickfile. The first regular expression 
+# that matches will be used. If none match, the suffix specified
+# in auth_suffix_default is used. 
+
+auth_suffixes &Tbl{
+	PGC:mulder	tm
+	PGC:bentkowski	wb
+	PGC:bird	ab
+	PGC:.*		xx
+	orbassoc.*	auto
+}
+auth_suffix_default 	xx
+
+# the auth_agencies array translates the auth field from the 
+# database into the sending-agency quoted in the pickfile. If 
+# no match is found, the specified value for auth_agency_default is 
+# used. 
+auth_agencies &Arr{
+	PGC:.*		PGC
+}
+auth_agency_default	???
+
+# Formatting pickfiles:
+
+# the primary_agency field lists the agency for which 
+# origin, error, and magnitude rows will start with 
+# S, E, and M, respectively, instead of lowercase s,e,m
+primary_agency PGC
+
+# An attempt is made to translate first motions into 
+# the pickfile, unless the ignore_fm parameter is nonzero. 
+ignore_fm 	1
+
+# The model_codes and locator_codes arrays translate
+# the algorithm specified in the database into 
+# appropriate model and locator codes for the pickfiles 
+model_codes &Arr{
+	cn01		01
+	cn03		03
+	cn06		06
+	cn07		07
+}
+locator_codes &Arr{
+	dbgenloc	G
+	dblocsat	I
+}
+
+# Extracting raw info from database for pickfiles:
+# This table is really part of the internal programming
+# of db2loon, made external and configurable for expert 
+# users. The table is a set of commands fed to dbprocess(3) 
+# to make the initial database view to be converted .The 
+# optional <SUBSET> line will be replaced at run-time 
+# by a dbprocess-style dbsubset command constructed dynamically
+# from command-line options and parameter-file entries. 
+
+dbprocess_commands &Tbl{
+	dbopen event
+	dbjoin origin
+	dbjoin -o origerr
+	dbjoin -o netmag orid
+	<SUBSET>
+}
+.ne 21
+.fi
+.in
+.ft R
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.ne 6
+% db2loon sample_event
+C TF YearMoDy HrMn Secnd Latitude Longitude Depth  #St #Ph    -Magnitude-- Agncy
+C VM L Weight RMS- TErr  LatErr-- LonErr--- DErr-- MajHE MinHE VertE AzHor Agncy
+S L  20050203 1408 03.20  48.0109 -122.6018  29.76      29    ML     3.38  PGC
+E 03 G WT ON  0.33  0.07                      3.47  7.12  4.15  3.47 226.1 PGC
+M  ML     3.38 (0.37)  11                                                  PGC
+C E WASHINGTON                                                             PGC
+C F WASHINGTON                                                             PGC
+C Statn IC nHHMM SSSSS TCorr Q-Phase- IUW TTres LocW StDly Edistnc Azm Ain Agncy
+  VGZ   BZ  1408 14.75  0.00  P         0 -0.06 0.58  0.00    69.8 310     PGC
+  VGZ   BE  1408 23.32  0.00  S         0  0.02 5.00  0.00    69.8 310     PGC
+  SNB   BZ  1408 18.71  0.00  P         0  0.31 2.38  0.00    94.8 334     PGC
+  SNB   BE  1408 29.71  0.00  S         0  0.18 1.09  0.00    94.8 334     PGC
+  PGC   BZ  1408 18.44  0.00  P         0  0.11 1.35  0.00    94.7 319     PGC
+  PGC   BN  1408 29.34  0.00  S         0 -0.07 2.36  0.00    94.7 319     PGC
+  LZB   HZ  1408 20.95  0.00  P         0  0.03 0.40  0.00   112.4 307     PGC
+  LZB   HE  1408 33.71  0.00  S         0 -0.19 0.58  0.00   112.4 307     PGC
+  VDB   EZ  1408 21.99  0.00  P         0  0.23 1.09  0.00   118.8  18     PGC
+  VDB   EZ  1408 34.74  0.00  S         0 -0.60 0.67  0.00   118.8  18     PGC
+  GOBB  EZ  1408 22.84  0.00  P         0  0.37 0.64  0.00   124.0 328     PGC
+  GOBB  EZ  1408 36.68  0.00  S         0  0.12 0.77  0.00   124.0 328     PGC
+  HNB   BZ  1408 24.75  0.00  P         0 -0.05 0.97  0.00   140.6   1     PGC
+  HNB   BE  1408 39.68  0.00  S         0 -0.92 0.32  0.00   140.6   1     PGC
+  PFB   HZ  1408 26.18  0.00  P         0 -0.00 0.35  0.00   150.0 295     PGC
+  PFB   HE  1408 43.20  0.00  S         0  0.20 0.42  0.00   150.0 295     PGC
+  BIB   EZ  1408 28.00  0.00  P         0 -0.08 5.13  0.00   163.9 342     PGC
+  BIB   EZ  1408 46.30  0.00  S         0  0.02 7.81  0.00   163.9 342     PGC
+  NLLB  BZ  1408 28.59  0.00  P         0 -0.27 0.24  0.00   169.3 324     PGC
+  NLLB  BN  1408 47.29  0.00  S         0 -0.35 0.46  0.00   169.3 324     PGC
+  HOPB  BZ  1408 30.03  0.00  P         0  0.24 0.62  0.00   175.9  29     PGC
+  HOPB  BE  1408 49.68  0.00  S         0  0.43 0.67  0.00   175.9  29     PGC
+  WPB   EZ  1408 31.30  0.00  P         0 -0.12 0.54  0.00   187.4 347     PGC
+  WPB   EZ  1408 51.29  0.00  S         0 -0.77 0.36  0.00   187.4 347     PGC
+  MGB   EZ  1408 31.77  0.00  P         0 -0.10 0.47  0.00   189.6 306     PGC
+  SHB   BZ  1408 33.02  0.00  P         0 -0.20 0.54  0.00   199.3 332     PGC
+  SHB   BN  1408 55.08  0.00  S         0 -0.09 0.46  0.00   199.3 332     PGC
+  ALB   EZ  1408 35.67  0.00  P         0  0.45 0.51  0.00   215.4 311     PGC
+  PNT   BZ  1408 40.95  0.00  P         0 -0.45 0.54  0.00   263.0  55     PGC
+C Statn IC nHHMM SSSSS TCorr  -Phase-- Period -Amplitude-- T  -Magnitude-- Agncy
+A LZB                                                         ML     2.83  PGC
+A VDB                                                         ML     2.84  PGC
+A ALB                                                         ML     3.06  PGC
+A MGB                                                         ML     3.16  PGC
+A SNB                                                         ML     3.39  PGC
+A WPB                                                         ML     3.40  PGC
+A PGC                                                         ML     3.46  PGC
+A BIB                                                         ML     3.55  PGC
+A VGZ                                                         ML     3.59  PGC
+A HNB                                                         ML     3.92  PGC
+A GOBB                                                        ML     3.99  PGC
+
+.fi
+.in
+.ft R
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+db2pgc(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The exact translations from database to loon, and formatting, should be considered 
+a proof of concept pending thorough review of the Loon pickfile documentation. 
+
+The -l option does not do any rounding off to align the subset with particular 
+day boundaries. The value calculated is literally the system clock time minus 
+the specified number of 86400-second blocks. If day-boundary alignment is 
+critical, the -s option should be used with an appropriate subsetting expression. 
+
+db2loon does an internal sort on orid of the database table before creating 
+pickfiles. Therefore any previous dbsort commands in the dbprocess_commands table
+will be ignored.
+
+The code assumes there is only one netmag per origin and that it will be 
+found with a straight outer join of origin and netmag. This may be too 
+simplistic for some databases. 
+
+The French location comments are in English.  Comments currently are limited, consisting
+only of a simple automatically-generated Flinn-Engdahl geographic region name.
+
+Caution should be used with the -d option not to specify any previously 
+existing databases (especially the input database!!) since the new database may overwrite
+the old. 
+
+.SH AUTHOR
+.nf
+Kent Lindquist, Lindquist Consulting, Inc.
+Taimi Mulder, Geological Survey of Canada, Sidney, B.C. 
+February, 2005
+.fi
+.\" $Id$
