@@ -8,6 +8,8 @@
  ********************************************************************/
 #include "rddas.h"
 
+ extern struct Prm Par;
+
 
 int read_packet ( struct Prts *ports, char **buffer)
 
