@@ -117,7 +117,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 		* negative sign on each component.
 		*/
 
-		slow = deg2km(slow) ;
+		slow *= km2deg(1.0);
 		u->ux = -slow*sin(rad(azimuth));
 		u->uy = -slow*cos(rad(azimuth));
 		u->deltaux = u->phase->deltau0;
