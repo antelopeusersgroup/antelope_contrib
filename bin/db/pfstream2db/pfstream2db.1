@@ -146,6 +146,16 @@ db2pfstream(1),pfstream(5),pfstream(3),pf(3)
 The id problem is thorny.  It works for simple id changes, but ids that cross-link
 tables like origin, assoc, and arrival are problematic.
 The pfstream2db program tries to handle this, but this has not been throughly tested.
+The limit is basically that ids can only be sequenced correctly if they are 
+connected to the two levels of grouping in the pfstream.  This more or less
+means the ids have to be keys of the parent grouping or the results may be 
+not what you want.  The algorithm is basically this:  if the table associated
+with the id is by_row, it will be incremented for each row; if the table 
+is by_group, it will be incremented by group; and if the table is by_ensemble
+it will be updated for each ensemble block.  Be VERY careful about qualified
+id attributes (e.g. orid versus origerr.orid) as only the field matching the
+specified description is incremented.  As a result table qualified attributes
+are not altered.  
 .IP (2)
 The pfstream format is not intended for humans to look at, but was viewed as a
 convenient transmission mechanism for table-driven processing algorithms.  

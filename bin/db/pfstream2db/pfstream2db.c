@@ -55,6 +55,36 @@ Arr *pfget_table_map(Pf *pf)
 	freetbl(list_aliases,0);
 	return(table_map);
 }
+/* this is a similar routine that scans the same list as above 
+but returns a list of unique tags.  Used below to index pf after
+it is taken apart.
+*/
+Tbl *pfget_pftags(Pf *pf)
+{
+	Arr *a;
+	char tag[50];
+	char *l;
+	Tbl *list_aliases;
+	Tbl *tout;
+	int i;
+
+	list_aliases = pfget_tbl(pf,"table_name_maps");
+	/* We use the Arr just to build a set of unique keys.  */
+	a = newarr(0);
+	for(i=0;i<maxtbl(list_aliases);++i)
+        {
+		l=(char *)gettbl(list_aliases,i);
+                sscanf(l,"%s",tag);
+		setarr(a,tag,NULL);
+	}
+	/*  I intentionally do not free the Arr here because I'm unsure of 
+	possible side effects.  Because it is unclear who manages the memory
+	assigned by the keys it is best to leak it here because this routine
+	is only called once.  Do NOT use this approach in a loop.
+	*/
+	tout = keysarr(a);
+	return(tout);
+}
 /* Cracks a description for a group of attributes headed by "tag" 
 and surrounded by &Arr{}.  The tagged group is assumed to be a set of
 database table names.  Within the Tbl tagged by that list are attribute
@@ -279,6 +309,7 @@ void main(int argc, char **argv)
 	Arr *table_map;
 	Arr *required_newids;
 	Pfstream_handle *pfshi;
+	Tbl *pftags;
 	
 
 	PF2DBSVerbose=0;
@@ -322,6 +353,12 @@ void main(int argc, char **argv)
 	a list of aliases defined in the parameter file.  */
 	table_map=pfget_table_map(pf);
 
+	/* We need the inverse mapping here.  That is, we also need the 
+	list of unique tags used to block up components of the pfsteam.
+	This is needed below to avoid having to parse the full pf 
+	multiple times. */
+	pftags = pfget_pftags(pf);
+
 	/* Another nasty detail of databases is keeping integer
 	ids consistently mapped.  The following NOT a general solution
 	to this problem, but will work provided the ids listed are
@@ -351,87 +388,134 @@ void main(int argc, char **argv)
 		int chide;
 		Arr *pfearr=newarr(0);
 
-		/* note the order of processing here is critical
-		for the id updates to work correctly */
-		table_list = keysarr(save_by_row);
-		/* This is a workaround for a spooky memory problem I never
-		solved.  Following calls to pfget_Pf_ensemble the contents of
-		table_map kept getting corrupted.  Workshop did not detect 
-		any access violations and I was unable to track the problem 
-		down.  I made up this workaround (and duplicates of it later
-		in this loope) to work around the problem for now.  It will
-		probably surface in another form later. */
-		freearr(table_map,free);
-		table_map=pfget_table_map(pf);
+		/* First we have to take apart the raw pf and break it into
+		components or the different tags.  */
+		for(i=0;i<maxtbl(pftags);++i)
+		{
+			pftable = (char *)gettbl(pftags,i);
+			pfe = pfget_Pf_ensemble(pfis,pftable);
+			if(pfe!=NULL)
+				setarr(pfearr,pftable,pfe);
+			else
+			{
+				elog_complain(0,"Search in this data block for ensemble tag %s failed\nData from table %s ill not be saved\n",
+						pftable,table);
+				break;
+			}
+		}
+		/* next we have to edit the ids required in the newid list.  
+		The algorithm here is a bit inefficient, but I don't think
+		it will consume excessive time.  It is inefficient because
+		the program was changed and this was the simplest path to solution*/
+		for(i=0;i<maxtbl(pftags);++i)
+                {
+			pftable = (char *)gettbl(pftags,i);
+			pfe = (Pf_ensemble *)getarr(pfearr,pftable);
+			if(pfe==NULL) continue; /* silent because flagged above*/
 
+			/* Block for save_by_row*/
+			table_list = keysarr(save_by_row);
+			for(i=0;i<maxtbl(table_list);++i)
+			{
+				table = (char *)gettbl(table_list,i);
+                        	tam = (Tbl *)getarr(save_by_row,table);
+				db = dblookup(db,0,table,0,0);
+				if(db.record == dbINVALID)
+					elog_die(0,"Lookup failed for required table %s\n",
+							table);
+				for(j=0;j<pfe->nmembers;++j)
+                        	{
+					chide=change_id(pfe,j,j,
+                                          required_newids,db,table,tam);
+					if( (chide!=0) && (PF2DBSVerbose) )
+						elog_notify(0,"Update of id for table %s failed\n",
+							table);
+				}
+			}
+
+			/* Block for save_by_group*/
+			freetbl(table_list,0);
+			table_list = keysarr(save_by_group);
+			for(i=0;i<maxtbl(table_list);++i)
+			{
+				table = (char *)gettbl(table_list,i);
+                        	tam = (Tbl *)getarr(save_by_group,table);
+				db = dblookup(db,0,table,0,0);
+				if(db.record == dbINVALID)
+					elog_die(0,"Lookup failed for required table %s\n",
+							table);
+				for(j=0;j<pfe->ngroups;++j)
+                        	{
+					chide=change_id(pfe,
+					  pfe->group_start[j],
+					  pfe->group_end[j],
+					  required_newids,db,table,tam);
+					if((chide!=0) && PF2DBSVerbose && (j==0))
+						elog_notify(0,"Update of id for table %s failed\n",
+							table);
+				}
+			}
+
+			/* Block for save_by_ensemble*/
+			freetbl(table_list,0);
+			table_list = keysarr(save_by_ensemble);
+			for(i=0;i<maxtbl(table_list);++i)
+			{
+				table = (char *)gettbl(table_list,i);
+                        	tam = (Tbl *)getarr(save_by_ensemble,table);
+				db = dblookup(db,0,table,0,0);
+				if(db.record == dbINVALID)
+					elog_die(0,"Lookup failed for required table %s\n",
+							table);
+				chide = change_id(pfe,0,(pfe->nmembers) - 1,
+                                          required_newids,db,table,tam);
+				if( (chide!=0) && (PF2DBSVerbose) )
+					elog_notify(0,"Update of id for table %s failed\n",
+							table);
+			}
+		}
+		
+		/*
+		Now we enter a slightly different series of loops to save
+		the data.  The only difference is that we don't loop over
+		the tags array but are driven by tables.  i.e. we save blocks
+		of grouped data into output database tables.
+		*/
+
+		if(table_list!=NULL) freetbl(table_list,0);
+		table_list = keysarr(save_by_row);
 		for(i=0;i<maxtbl(table_list);++i)
 		{
 			table = (char *)gettbl(table_list,i);
 			pftable=get_table_name(table,table_map);
 			tam = (Tbl *)getarr(save_by_row,table);
 			pfe=(Pf_ensemble *)getarr(pfearr,pftable);
-			if(pfe==NULL)
-			{
-				pfe = pfget_Pf_ensemble(pfis,pftable);
-				if(pfe!=NULL)
-					setarr(pfearr,pftable,pfe);
-				else
-				{
-					elog_complain(0,"Search in this data block for ensemble tag %s failed\nData from table %s ill not be saved\n",
-						pftable,table);
-					break;
-				}
-			}
+			if(pfe==NULL) continue;  /* again silence becasue flagged above */
 			db = dblookup(db,0,table,0,0);
 			for(j=0;j<pfe->nmembers;++j)
 			{
-				chide=change_id(pfe,j,j,
-				          required_newids,db,table,tam);
-				if((chide!=0) && PF2DBSVerbose)
-				  elog_notify(0,"Cannot update id for table %s\n",
-					table);
 				if(pfget_boolean(pfe->pf[j],"data_valid"))
 				      dbadd_row_pfe(db,pfe->pf[j],tam);
 			}
 		}
+		freetbl(table_list,0);
 		table_list = keysarr(save_by_group);
-		freearr(table_map,free);
-		table_map=pfget_table_map(pf);
 		for(i=0;i<maxtbl(table_list);++i)
 		{
 			table = (char *)gettbl(table_list,i);
 			pftable=get_table_name(table,table_map);
 			tam = (Tbl *)getarr(save_by_group,table);
 			pfe=(Pf_ensemble *)getarr(pfearr,pftable);
-			if(pfe==NULL)
-			{
-				pfe = pfget_Pf_ensemble(pfis,pftable);
-				if(pfe!=NULL)
-					setarr(pfearr,pftable,pfe);
-				else
-				{
-					elog_complain(0,"Search in this data block for ensemble tag %s failed\nData from table %s ill not be saved\n",
-						pftable,table);
-					break;
-				}
-			}
+			if(pfe==NULL) continue;  
 			db = dblookup(db,0,table,0,0);
 			for(j=0;j<pfe->ngroups;++j)
 			{
-				chide=change_id(pfe,
-				  pfe->group_start[j],
-				  pfe->group_end[j],
-				  required_newids,db,table,tam);
-				if((chide!=0) && PF2DBSVerbose && (j==0))
-				   elog_notify(0,"Cannot update id for table %s\n",
-					table);
 				if(pfget_boolean(pfe->pf[pfe->group_start[j]],"data_valid"))
 				    dbadd_row_pfe(db,
 					pfe->pf[pfe->group_start[j]],tam);
 			}
 		}
-		table_list = keysarr(save_by_ensemble);
-		freearr(table_map,free);
+		freearr(table_map,0);
 		table_map=pfget_table_map(pf);
 		for(i=0;i<maxtbl(table_list);++i)
 		{
@@ -439,22 +523,7 @@ void main(int argc, char **argv)
 			pftable=get_table_name(table,table_map);
 			tam = (Tbl *)getarr(save_by_ensemble,table);
 			pfe=(Pf_ensemble *)getarr(pfearr,pftable);
-			if(pfe==NULL) 
-			{
-				pfe = pfget_Pf_ensemble(pfis,pftable);
-				if(pfe!=NULL)
-					setarr(pfearr,pftable,pfe);
-				else
-				{
-					elog_complain(0,"Search in this data block for ensemble tag %s failed\nData from table %s ill not be saved\n",
-						pftable,table);
-					break;
-				}
-			}
-			chide=change_id(pfe,0,0,required_newids,db,table,tam);
-			if((chide!=0) && PF2DBSVerbose)
-				elog_notify(0,"Cannot update id for table %s\n",
-                                        table);
+			if(pfe==NULL) continue;  
 			db = dblookup(db,0,table,0,0);
 			if(pfget_boolean(pfe->pf[0],"data_valid"))
 				dbadd_row_pfe(db,pfe->pf[0],tam);

@@ -5,7 +5,6 @@ station_corrections gridstat
 station_corrections gridscor
 }
 newids_required &Arr{
-arrival arid
 origin orid
 }
 save_by_row &Arr{
