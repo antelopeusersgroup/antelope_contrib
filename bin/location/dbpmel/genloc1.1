@@ -1,0 +1,796 @@
+#
+#  This is a set of extensions to css3.0.  The entries here do not
+#  stand alone as these tables mainly reference attributes defined
+#  in css3.0.  These extensions would normally be used with the 
+#  database descriptor as:  css3.0:PMEL1.0
+#
+#  These extensions serve three purposes.  First, the tables define
+#  predicted values for measurements in the arrival table that 
+#  are based on some earth model and a particular travel time calculator.
+#  This should allow future software to not be burdened with matching
+#  theoretical travel times to data.  That is, these tables can be used
+#  to simply show the predicted value without having to recompute it
+#  and worry about whether the results will be consistent.  
+#  Secondly, they define extension tables used in the genloc implementation
+#  of pmel.  Note this final element was added after the first two 
+#  because genloc already looked for some of these tables and I (glp)
+#  viewed it better to extend this schema patch rather than add the
+#  mess of a long string of extensions in the database descriptor. 
+#  Finally, it adds tables for dbpmel that relate to multiple event
+#  locations and area grids. 
+#
+#  WARNING:  these extension can collide with other extension
+#  schemas.  In particular, the reftek relations are stolen from
+#  iceworm1.3  
+#
+
+#
+#  These define gclgrids.  Be careful as there may be collisins
+#  with this name space with other programs taht use gclgrids
+#
+
+Attribute gridname
+	String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "Name attached to a coordinate grid mesh" )
+        Detail {
+                Several contexts require geographical 2d or 3d 
+		grids.  This attribute ties a name to a name to 
+		a grid that is a useful key for many tables defining
+		such an entity.
+        }
+        ;
+
+Attribute gridid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "gridid > 0" )
+        Description ( "grid id index" )
+        Detail {
+		Spatial grids are conveniently indexed with a single
+		integer.  This allows the structure of the grid to be
+		defined as desired.  This index is also a convenient
+		key if the grid is defined in a database table instead
+		of being stored on disk.
+        }
+        ;
+
+Attribute radius
+	Real (10)
+	Format ( "%10.3f" )
+	Null ( "-1.0" )
+	Range ( "radius > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "radius of a spherical surface" )
+	Detail {
+		The earth is approximately spherical and large scale
+		imaging requires spherical shaped objects.  Radius is
+		a base parameter to describe location of a point in
+		the earth when spherical coordinates are used.
+	}
+	;
+
+Attribute dx1nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx1nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x1 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute dx2nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx2nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x2 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute dx3nom
+	Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+	Range ( "dx3nom > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Nominal grid spacing in x3 direction" )
+	Detail {
+		This and two related attributes define the nominal 
+		grid spacing of a geographical curvilinear grid coordinate
+		definition file.  Because the mapping is not required to
+		be uniform this is only a nominal value, not the actual
+		grid spacing. 
+	}
+	;
+
+Attribute azimuth_y
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "azimuth_y >= 0.0 && azimuth_y < 360.0" )
+        Units ( "Degrees" )
+        Description ( "Azimuth of y axis at coordinate origin" )
+        Detail {
+		In geographical curvilinear coordinates this is the
+		trajectory of the y Cartesian axis at the origin of
+		the coordinate system.  The x axis is always assumed
+		to be 90 degrees away and z is assumed up.  This
+		uniquely defines the origin and orientation of
+		the Cartesian system when combined with the 
+		origin definition parameters.
+        }
+        ;
+
+Attribute dimensions
+	Integer (3)
+	Format ( "%3d" )
+	Null ("0")
+	Range ( "dimensions > 0" )
+	Description ("Number of dimensions" )
+	Detail {
+		Graphical objects multidimensional.  This parameter
+		defines the number of dimensions in the object.  
+		It is normally 2 or 3.
+	}
+	;
+
+Attribute n1
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n1 >= 0" )
+	Description ( "Number of grid cells in dimension 1" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute n2
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n2 >= 0" )
+	Description ( "Number of grid cells in dimension 2" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute n3
+	Integer (4)
+	Format ( "%4d")
+	Null ("-1")
+	Range ( "n3 >= 0" )
+	Description ( "Number of grid cells in dimension 3" )
+	Detail {
+		Geographical curvilinear grids are defined by 
+		3d arrays with n1 points for dimension 1 
+		n2 points for dimension 2 and n3 points for dimension 3.
+	}
+	;
+
+Attribute xlow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the x direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute xhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the x direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute ylow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the y direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute yhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the y direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute zlow
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "minimum grid extent in the z direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute zhigh
+	Real (10)
+        Format ( "%10.3lf" )
+	Units ( "Kilometers" )
+	Description ( "maximum grid extent in the z direction" )
+	Detail {
+		Geographic curvilinear grids define a mapping
+		of ordered groups of points onto Cartesian and/or 
+		geographical coordinaes.  xlow, xhigh, ylow, yhigh,
+		and zlow, zhigh define a bounding box for the 
+		fully defined grid in the Cartesian system.  
+		These are useful to quickly reject points outside the grid.
+	}
+	;
+
+Attribute i0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "i0 >= 0" )
+        Description ( "index for dimension 1 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute j0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "j0 >= 0" )
+        Description ( "index for dimension 2 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute k0
+        Integer (4)
+        Format ( "%4d")
+        Null ("-1")
+        Range ( "i0 >= 0" )
+        Description ( "index for dimension 3 of origin point" )
+        Detail {
+                Geographical curvilinear grids are defined by
+                3d arrays with n1 points for dimension 1
+                n2 points for dimension 2 and n3 points for dimension 3.
+		i0, j0, and k0 define the location of the origin
+		of the Cartesian coordinate system used in the mapping
+		within the grid.  That is, a quanity like f[i0][j0][k0] 
+		is at the origin.
+        }
+        ;
+
+Attribute cdefined
+	String (1)
+        Format ( "%-1s" )
+        Null ( "-" )
+        Range ( "cdefined =~ /d|n/" )
+        Description ( " Cartesian mapping = defining, non-defining" )
+        Detail {
+		Geographical curvilinear coordinates define mappings from
+		3d arrays to a Cartesian and/or geographical coordinate
+		system.  This parameter allows the option of turning
+		off the Cartesian mapping and leaving it undefined.
+		Be warned this may or may not be allowed in an 
+		implementation that uses this. i.e. the "or" is
+		not necessary a good thing.
+	}
+	;
+
+Attribute geodefined
+	String (1)
+        Format ( "%-1s" )
+        Null ( "-" )
+        Range ( "geodefined =~ /d|n/" )
+        Description ( " Cartesian mapping = defining, non-defining" )
+        Detail {
+		Geographical curvilinear coordinates define mappings from
+		3d arrays to a Cartesian and/or geographical coordinate
+		system.  This parameter allows the option of turning
+		off the Geographical mapping and leaving it undefined.
+		Be warned this may or may not be allowed in an 
+		implementation that uses this. i.e. the "or" is
+		not necessary a good thing.
+	}
+	;
+
+#
+#  PMEL attributes
+#
+
+Attribute dlat
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlat >= -90.0 && dlat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "estimated latitude (double precision)" )
+        Detail {
+                This attribute is the geographic latitude.  Locations
+                north of the equator have positive latitudes.  It is
+		comparable to css3.0's lat, but has sufficient precision
+		for doubles.  css3.0 defines only single precision.
+        }
+        ;
+
+Attribute dlon
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "dlon >= -180.0 && dlon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "estimated longitude (double precision)" )
+        Detail {
+                This attribute is the geographic longitude in degrees.
+                Longitudes are measured positive east of the Greenwich
+                meridian.  It is comparable to css3.0's lat, but has 
+		sufficient precision for doubles.  css3.0 defines only 
+		single precision.
+
+        }
+        ;
+
+Attribute hclat
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "hclat >= -90.0 && hclat <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "hypocentroid latitude" )
+        Detail {
+                Latitude of the hypocentroid of a group of events.
+               	Supplement to dlat.
+        }
+        ;
+
+Attribute hclon
+        Real (15)
+        Format ( "%15.9lf" )
+        Null ( "-999.0000" )
+        Range ( "hclon >= -180.0 && hclon <= 180.0" )
+        Units ( "Degrees" )
+        Description ( "hypocentroid longitude" )
+        Detail {
+                Latitude of the hypocentroid of a group of events.
+               	Supplement to dlat.
+        }
+        ;
+
+Attribute hcdepth
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "depth >= 0.0 && depth < 1000.0" )
+        Units ( "Kilometers" )
+        Description ( "hypocentroid depth" )
+        Detail {
+                Depth of the hypocentroid of a group of events.
+        }
+        ;
+Attribute ztop
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "ztop >= -10.0 && ztop < 1000.0" )
+        Units ( "Kilometer" )
+        Description ( "Top of a depth range" )
+        Detail {
+                Regions can be specified in terms of a top and bottom
+		depth.  This is the top.
+        }
+        ;
+
+Attribute zbot
+        Real (9)
+        Format ( "%9.4lf" )
+        Null ( "-999.0000" )
+        Range ( "zbot >= -10.0 && zbot < 1000.0" )
+        Units ( "Kilometer" )
+        Description ( "Bottom of a depth range" )
+        Detail {
+                Regions can be specified in terms of a top and bottom
+		depth.  This is the bottom.
+        }
+        ;
+
+Attribute velocity
+        Real (9)
+        Format ( "%9.6lf" )
+        Null ( "-999.0000" )
+        Range ( "velocity > 0.0" )
+        Units ( "Kilometers/sec" )
+        Description ( "Seismic wave velocity" )
+        Detail {
+                Generic seismic wave velocity attribute.  Wave type
+		should be inferred from association with a phase attribute.
+        }
+        ;
+#
+#  Used by dbpmel 
+#
+Attribute pmelrun
+	String (5)
+        Format ( "%-5s" )
+        Null ( "-" )
+        Description ( "Run code for dbpmel program" )
+        Detail {
+		The dbpmel program builds several special output
+		tables.  To allow multiple runs with different 
+		parameters against a common database we need this
+		key in some of these tables.
+        }
+        ;
+Attribute tsc
+	Real ( 10 )
+	Format ( "%10.3lf" )
+	Units ( "Seconds" )
+	Description ( "Travel time station correction" )
+        Null ( "-999.0000" )
+	Detail {
+		Station corrections are corrections added to a computed
+		travel time that are tagged to a particular receiver 
+		position.  
+		}
+	;
+
+Attribute tscref
+	Real ( 10 )
+	Format ( "%10.3lf" )
+	Units ( "Seconds" )
+	Description ( "Reference station correction" )
+        Null ( "-999.0000" )
+	Detail {
+		Station corrections are corrections added to a computed
+		travel time that are tagged to a particular receiver 
+		position.  A reference station correction is a concept
+		used by pmel to denote a correction formed as the 
+		difference between two model realizations.  Normally
+		this would be a difference T3d - T1d where T3d is a
+		time computed for a 3D model and T1d is time computed
+		for a 1D reference model.  
+		}
+	;
+	
+Attribute tscbias
+	Real ( 10 )
+	Format ( "%10.3lf" )
+	Units ( "Seconds" )
+	Description ( "Bias component of station correction" )
+        Null ( "-999.0000" )
+	Detail {
+		Station corrections are corrections added to a computed
+		travel time that are tagged to a particular receiver 
+		position.  A reference/bias station correction is a concept
+		used by pmel to denote a correction used as a bias
+		contribute.  That is, a bias is applied that is derived
+		from the reference corrections (tsref) and this is the
+		component of tsc derived from tsref.   
+		}
+	;
+		
+Attribute sswrodgf
+	Real ( 15 )
+	Format ( "%15.6lg" )
+	Range ( "sswrodgf>0.0" )
+	Description ( "Normalized sum of squared weighted residuals" )
+        Null ( "-999.0000" )
+	Detail {
+		Proper statistical description of a misfit statistic
+		for data with variable uncertainties uses a weighting
+		of e_i/sigma_i where sigma_i is the estimated uncertainty
+		in e_i.  sswrodgf is the sum of squared weighted residuals
+		divided by the number of degrees of freedom.  This is 
+		a normalized form of rms used with this type of weighting.
+		}
+	;
+
+Attribute ndgf
+	Integer (4)
+	Format ( "%4d" )
+	Null ("-1")
+	Range ( "ndgf>=0")
+	Description ( "Number of degrees of freedom" )
+	Detail {
+		Many statistical metrics require a degrees of freedom
+		parameter which is typically number of data - number
+		of parameters.  Other contexts may use this to mean
+		something different that is consistent with the words.
+		}
+	;
+
+Attribute vmodel3d
+        String (15)
+        Format ( "%-15s" )
+        Null ( "-" )
+        Description ( "3D velocity model name" )
+        Detail {
+                This character string identifies the velocity model of
+the
+                earth used to compute the travel times of seismic
+phases.
+                These are required for event location (if phase is
+                defining) or for computing travel-time residuals.
+		This is a companion to vmodel used to tag 3D reference
+		models in dbpmel and related programs.
+        }
+        ;
+
+#
+#  Reftek attributes 
+#
+Attribute reftekchanid
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer channel" )
+        Detail {
+                Channel number of Reftek digitizer
+        }
+        ;
+
+Attribute reftekid
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer id" )
+        Detail {
+                Identification number of Reftek digitizer
+        }
+        ;
+
+Attribute reftekstream
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Description ( "reftek digitizer stream" )
+        Detail {
+                Stream number of Reftek digitizer
+        }
+        ;
+#
+# Used for timing table 
+#
+Attribute clkerr
+	Real ( 10 )
+	Format ( "%10.6lg" )
+	Description ( "Upper bound on clock error" )
+	Null ( "-1.0" )
+	Units ( "Seconds" )
+	Detail {
+		Used to provide a measure of the accuracy of a timing
+		system.  During a related time period the clock accuracy
+		should be presumed to be no worse than this number.
+	}
+	;
+
+Attribute seedtqual
+	Integer (4)
+	Format ( "%4d" )
+	Null ("-1")
+	Description ( "SEED Timing Quality" )
+	Detail {
+		SEED has a timing quality field specified as a percent
+		figure with small percentages indicating a bad clock.
+		This attribute stores this form of timing tabulation.
+	}
+	;
+
+Relation stavel
+	Fields (
+		sta phase vmodel velocity lddate
+	)
+	Primary ( sta phase vmodel )
+	Foreign ( sta phase vmodel )
+	Description ( "Surface velocity of different phases" )
+	Detail {
+		This table is used to define the surface velocity that
+		is to be used for a given velocity model and phase 
+		type.  This table allows different surface velocities
+		to be defined for each station and phase combination.
+		This is needed in computing the emergence angle 
+		in the predarr table, but probably has other uses
+		in things like time statics.
+	}
+	;
+
+Relation cluster
+	Fields ( gridname gridid evid lddate )
+	Primary ( gridname gridid evid )
+	Foreign ( gridid evid )
+	Description ( "linking table to define event clusters" )
+	Detail {
+		This table is used to link a set of events to a grid 
+		point that defines a particular point in space. 
+		Normally many evids are linked to each gridid.
+	}
+	;
+
+Relation gridscor
+	Fields (
+		sta phase gridname gridid pmelrun tsc tscref tscbias lddate )
+	Primary ( sta phase gridname gridid pmelrun )
+	Foreign ( gridid pmelrun )
+	Detail {
+		This is this one of two primary output tables of dbpmel.
+		It contains the station corrections computed for each
+		station/phase combination.
+	}
+	;
+	
+Relation gridstat
+	Fields ( gridname gridid pmelrun sswrodgf ndgf sdobs lddate )
+	Primary ( gridname gridid pmelrun )
+	Foreign ( gridid )
+	Description ( "Location misfit statistics for multievent location" )
+	Detail {
+		Used by dbpmel to save misfit statistics for different
+		grid points.  These statistics are ensemble averages for
+		all events associated with a given grid point defined
+		by gridid and gridname. 
+	}
+	;
+
+Relation hypocentroid
+	Fields (
+		gridname gridid dlat dlon depth hclat hclon hcdepth 
+		nass delta ztop zbot lddate
+
+	)
+	Primary ( gridname gridid )
+	Description ( "hypocentroid of a group of seismic events" )
+	Detail {
+		The center of mass of a group of seismic events is a 
+		useful concept called a hypocentroid.  This table 
+		stores the hypocentroid corresponding to a cluster of
+		events tied to a particular grid point defined with the
+		reference point dlat, lon, depth. nass is the number of 
+		events within a distance range delta from dlat,dlon and 
+		within a depth interval zupper to zlower.
+	}
+	;
+	
+Relation pmelruns
+	Fields (
+		pmelrun vmodel vmodel3d dir dfile lddate )
+	Primary ( pmelrun )
+	Detail {
+		This is a special working table for dbpmel that is 
+		used to save the large set of parameters that control
+		it's operation.  The run code, pmelrun, is used as a
+		key in several other tables to allow multiple runs
+		to be stored in a single database.
+	}
+	;
+	
+
+
+#
+#  These are copied from iceworm1.3  but I added time fields
+#
+Relation reftekchan
+        Fields ( reftekid reftekchanid reftekstream 
+		time endtime chan samprate lddate )
+        Primary ( reftekid reftekchanid reftekstream time::endtime )
+        Foreign ( chan )
+        Description ( "Assigns reftek channel numbers to channel codes" )
+        Detail {
+                This table associates each Reftek channel number and stream
+                with the appropriate channel code.
+        }
+        ;
+
+Relation reftekdas
+        Fields ( reftekid sta time endtime net lddate )
+        Primary ( reftekid time::endtime )
+        Alternate ( sta )
+        Defines reftekid
+        Description ( "translation table from Reftek digitizer ID to station cod
+e" )
+        Detail {
+                This table associates each Reftek digitizer ID number
+                with the assigned station code, as well as the network
+                code if appropriate.
+        }
+        ;
+
+Relation timing
+	Fields ( sta time endtime clkerr seedtqual lddate)
+	Primary ( sta time::endtime )
+	Description ( "Timing accuracy table" )
+	Detail {
+		This table defines figures on the absolute accuracy of
+		a clock during a given time period.  Unlisted time 
+		intervals for a given station should be interpreted as 
+		having high accuracy clocks to avoid excessive database
+		patching.
+	}
+	;
+	
+Relation gclgdisk
+	Fields (
+		gridname dimensions 
+		lat lon radius azimuth_y dx1nom dx2nom dx3nom
+		n1 n2 n3 i0 j0 k0 xlow xhigh ylow yhigh zlow zhigh
+		cdefined geodefined datatype dir dfile foff
+	)
+	Primary ( gridname dimensions )
+	Description ( "Geographical curvilinear coordinate grid file information" )
+	Detail {
+		This relation defines parameter information for geographical
+		curvilinear grid files stored on disk.  2d and 3d grids 
+		are indexed with the same table allowing a surface 2d
+		grid to have the same base name as a 3d extension of it. 
+	}
+	;
+

@@ -1,0 +1,288 @@
+'\" te
+.TH DBPMEL 3 "%G"
+.SH NAME
+dbpmel - database driven implementation of pmel
+.SH SYNOPSIS
+.nf
+dbpmel db gridlist [-sift expression -pf file]
+.fi
+.SH DESCRIPTION
+.LP
+The \fBdbpmel\fR program is a relocation program based on the concept of
+a multiple event location procedure.  It is designed mainly to relocate
+entire catalogs, but it can be utilized for the more traditional role
+of multiple event location procedures which is relocation of mainshock
+aftershock sequences.  A multiple event location method assumes that
+errors in the earth model can be absorbed into a set of simple 
+time constants commonly called station corrections.  The \fBdbpmel\fR 
+program implements an exact solution for this problem within the 
+limitations of a linearization approximation.  That is, it solves
+a matrix problem in which the data are the observed arrival times of ensemble
+of events and the unknowns are: (1) the location of all events in the 
+ensemble and (2) a set of station corrections.  This approximation for
+earth model errors is only valid for some limited region of space.  
+How large that "limited region" is will generally be dependent on
+where the sources were.  \fBdbpmel\fR aims to get around this limitation
+by relocating entire catalogs grouped into ensembles by spatial position.
+That is, the program is driven by associations of events into groups 
+defined by a CSS3.0 extension table called "cluster".  This table defines
+which events in a catalog are linked to a particular point in space.  
+The outer loop of the program loops through all grid points relocating 
+the events in each ensemble and estimating a set of station corrections
+for that grid point.  
+.LP
+This program implements an algorithm described in two closely related
+papers:  (1) Pavlis and Booker (1983) BSSA, pp.1753-1777; and (2) 
+Pavlis and Hokanson (1985) JGR, pp. 12,777-12,789.  The 1983 paper
+describes PMEL (Progressive Multiple Event Location) which was a name
+used to distinguish it from Joint Hypocenter Decomposition.  The 
+"progressive" was used to highlight the fact that a primary difference
+between PMEL and JHD is that PMEL does iterative adjustments to the 
+earthquake locations (the nonlinear parameters in the problem) while
+JHD solves the entire problem in one large matrix inversion.  In
+the 1985 paper we added the insight of using orthogonal projectors to
+"separate" different components of the model error estimate.  The
+projectors defined in that paper divide the model space into components
+that can and cannot be determined from the data.  The parts that are
+indeterminate from the data define a bias term that cannot be corrected
+without auxiliary data.  This property is the primary innovation of
+this program.  In \fBdbpmel\fR we allow the bias to be projected into 
+the solution through the use of an auxiliary 3D reference model.  In 
+this way unbiased estimates of travel time variations can be extracted
+from the data but critical biases can be added back in (to correct for
+absolute position) from an externally determined 3D reference model.  
+This can be thought of as a way to utilize minimal information from a
+3D reference model while extracting the maximum possible information
+from the catalog times. 
+.LP
+This program is database driven.  The first thing it does is form 
+an (often large) working view defined by the following join
+.nf
+cluster->event->origin->assoc->arrival
+   A           B
+.fi
+where the -> is used to symbolize a database join operation and A and B
+are modifiers (standard notation doesn't translate to a man page).  
+The A modifier here means that when the cluster table is accessed it is
+subsetted to only contain grid index values that the program was 
+instructed to process (see gridlist option description below).  The 
+B modifier refers to a (standard) modifier for the event to origin 
+join where the view is subsetted to make the join one-to-one 
+("orid==prefor" in Antelope syntax).  Once this view is formed the 
+processing is completely driven by this virtual table.  
+Each ensemble defined by a common "gridid" attribute in the cluster
+table is processed as a group.  The resulting solution is then saved
+to two output (extension tables to CSS3.0 defined in genloc1.1) called
+"gridstat" and "gridscor".  The "gridstat" table stores summary 
+statistical data for each grid point.  The "gridscor" table stores the
+station correction estimates keyed by gridid:sta:phase.  
+.LP
+The program has a lot of options that can be set at run time through
+the input parameter file.  These are described below.    
+.SH OPTIONS
+.LP
+The \fBgridlist\fB argument is a comma separated list of gridid (integers) 
+to be processed in this run.  Ranges of integers can be specified with two
+integers separated by the - symbol.  Multiple ranges can be specified and 
+mixed with simple numbers.  e.g. if gridlist is the string
+"1,5,500-5000,8000-10000"  dbpmel will process grid points defined by gridid
+of 1, 5, the range 500 to 5000, and the range 8000 to 10000.  Be warned that
+the working database view is formed by the outer range of this list so for 
+the example above the database would be subsetted include all grid ids from 
+1 to 10000.  It would, however, only process the grid point specified.  
+.LP
+The \fB-pf\fR flag is used to specify an alternative parameter file to the 
+stock one based on the name (i.e. dbpmel.pf).  
+.SH PARALLEL PROCESSING IMPLEMENTATION
+.LP
+Because this program has been found to run for days on the fastest computers
+around attempts have been made to apply parallel processing techniques to 
+reduce run times to more useful scales.  The program has been parallelized
+at the outer loop level (over gridid) using MPI (Message Passing Interface).  
+For reference we achieved about a 12 fold reduction in wall clock time on 
+a 16 processor system with the MPI implementation.  Be aware, however, that
+the binary of this program distributed with Antelope and that produced by
+the default Makefile found in the source code do not utilize MPI.
+You will need to modify the Makefile and recompile the
+source code to get the parallel processing version of dbpmel.  
+The Makefile has commented out lines that can be restored to guide you.
+.SH PARAMETER FILE
+The \fBdbpmel\fR has a large (perhaps excessive) number of configurable
+parameters.  A large number of them are inherited from genloc.  That is
+dbpmel uses the same location engine as dbgenloc.  Thus the user is referred
+to dbgenloc(1), genloc(3), and genloc_intro(3) for generic location parameters
+that are also shared by dbpmel.  
+.LP
+The following are major control parameters for dbpmel.  They are grouped in 
+categories defined by headings.  
+.ce
+\fBTravel Times\fR
+.LP
+\fBtravel_time_model\fR and \fB3Dreference_model\fR specify travel time 
+handle definitions in the same vein as dbgenloc.  That is, these parameters 
+refer to a parameter file located relative to $ANTELOPE/data/tables/genloc.
+For example, taup/iasp91 would define travel times using the recipe
+defined in the file $ANTELOPE/data/tables/genloc/taup/iasp91.pf.  The
+\fBtravel_time_model\fR parameter defines the calculators used internally as
+a reference model for most travel time calculations.  The calculation
+methods defined by \fB3Dreference_model\fR are used to compute the bias
+terms as the difference between travel times computed from this model and 
+that computed by \fBtravel_time_model\fR.  To produce an unbiased estimate
+simply use the same name for these two parameters and the computed
+corrections will be zero.  
+.ce
+\fBStation/phase control\fR
+.LP
+Stations information is read from the database.  To use every station in
+the input database set the boolean parameter \fBuse_all_stations\fR to true.
+It is sometimes desirable to not use the full station list.  To do this
+set \fBuse_all_stations\fR false and provide a list with the parameter
+\fRpmel_stations\fR (an &Tbl parameter). Because this program aims for
+high precision it tries to make up for a format deficiency in the site
+table.  That is, the lat and lon attributes are only defined to 32 bit
+precision which has lower precision than is routinely possible with 
+GPS locations.  If the boolean parameter \fBuse_dnorth_deast\fR is
+set true values stored in the dnorth and deast attributes of the
+site table will be treated as corrections to be added to the point
+defined in the lat and lon attributes.  WARNING: dnorth and deast 
+are used for an entirely different purpose by some other programs.
+dbap(1) and mwap (1) uses these fields for computing plane wave delays.
+If these fields have been set by the setdne(1) program the internal
+geometry used by dbpmel may be vastly distorted.  For this reason
+this parameter should normally be set false.
+.LP
+Which phases to use are controlled explicitly through a list (&Tbl) 
+defined by the parameter \fBphases_to_use\fB.  It is also implicitly
+controlled by what phases you define with valid travel time 
+calculator descriptions (see above).  Having more travel times 
+defined than used by pmel is considered normal.  If phases_to_use
+contains a phase that is not defined a large cascade of errors will
+follow and dbpmel may or may not abort.  
+.ce
+\fBPMEL control parameters\fR
+.LP
+The location procedure does an iterative adjustment to locations and a
+set of station correct estimates.  Truncation of the hypocenter iterations
+are controlled by genloc parameters described in genloc_intro(3).  The 
+station correction loop truncation is controlled by two parameters.
+The loop can terminate on count as defined by the parameter 
+\fBpmel_maximum_sc_iterations\fR.  When the loop is truncated on count
+an error message is written to the log file.  Normal truncation is 
+controlled by the parameter \fBpmel_sc_fraction_convergence_error\fR.
+.LP
+How the inverse for the station corrections is computed is controlled by
+two parameters:  \fBpmel_svd_relative_cutoff\fR and \fBpmel_cluster_mode\fR.
+This implementation of PMEL always uses a pseudoinverse to invert the 
+matrix solved for station correction estimates.  \fBpmel_svd_relative_cutoff\fR
+defines the singular value cutoff used for constructing this inverse.
+Note it is a relative cutoff which means the actual cutoff is defined 
+as the largest singular value of the matrix times this value.  
+The \fBpmel_cluster_mode\fR parameter is more subtle.  When this boolean is
+set true events are relocated normally, but when forming the parameter 
+separation projectors the partial derivatives are computed using the 
+position defined by the hypocentroid NOT the actual location of the event.
+This mode is recommended when run in the 3D grid mode provided the 
+grid association forces the associations to reasonably small volumes.
+If events are too widely spread around the hypocentroid this approximation
+is clearly poor.  The reason this feature is used is that it removes 
+ambiguities in the projectors defined in the Pavlis and Hokanson paper.
+The reasons for this are described in that paper. The key point is that
+for normal use this parameter should be true.  It should be turned off
+for a traditional JHD type solution.  A final side issue on the inversion
+is important.  The input parameter to genloc called \fBgeneralized_inverse\fR
+MUST be set to "pseudoinverse" or dbpmel will issue a diagnostic and terminate
+execution immediately.  This was done because the damped least-squares 
+solution can artificially stabilize poorly constrained solutions and produce
+incorrect solutions.  As a result the program forces a pseudoinverse solution
+to avoid this problem.
+.LP
+Six different parameters control the handling of outliers:  
+\fBpmel_initial_error_scale, pmel_minimum_error_scale,
+pmel_minimum_sswrodgf, pmel_F_test_critical_value,
+pmel_autodelete_high_rms\fR and
+\fBpmel_svd_relative_cutoff\fR.  The pmel implementation used here
+handles problem data with a dual weighting and outlier detector.
+First, it implicitly uses the residual weighting scheme of genloc
+whenever it is turned on (see genloc_intro(3)).  A major variant, 
+however, is that the error scale used to define outliers is not
+determined independently for each event (the normal procedure
+for dbgenloc), but is derived from the global rms figure for each
+ensemble.  This should normally provide a more stable measure since
+it is a statistic that by definition has more degrees of freedom than
+that from a single event.  Three parameters define how this error
+scale is handled:  \fBpmel_initial_error_scale, pmel_minimum_error_scale,\fR
+and \fBpmel_minimum_sswrodgf\fR.  As the names should imply the first sets
+the starting value of the error scale for the initial pass when rms 
+statistics are not normally available.  The second two are used to 
+prevent the common problem of M-estimators.  That is, the error scale
+needs to have a floor to prevent a downward spiral of continuous 
+downweighting until all weights go to zero.  The defaults should
+normally work, but if you observe large number of zero weights in the
+output assoc table these numbers should be made larger.
+.LP
+\fBpmel_F_test_critical_value\fR and \fBpmel_autodelete_high_rms\fR
+are tightly coupled.  The first is ignored unless the second (boolean)
+is set true.  When true a second level outlier detector is enabled 
+on an event basis.  That is, a single bad pick (or a small number 
+among many) can normally be handled well by residual weighting.  
+Multiple bad picks or an event that is inconsistent with the rest of
+the ensemble will yield an elevated overall rms statistic relative to
+the ensemble.  When this feature is enabled the rms of each event is
+compared to the global average (this is properly corrected by 
+removing each event from the global rms figure before doing the 
+test) using an F-test. \fBpmel_F_test_critical_value\fR controls 
+the critical value used to throw out events with high rms relative
+to the ensemble average.   
+.ce
+\fBLabelling Parameters\fR
+.LP
+dbpmel stores a record of the parameter space it ran under in the
+directory \fBpmelrun_archive_directory\fR with a file name defined
+by \fBpmel_run_name\fR (a ".pf" is appended to this string).  
+Note that this information is stored in an extension table defined
+in genloc1.1 called "pmelruns".  
+.LP
+The parameter \fBgridname\fR defines the grid name used to define
+the cluster table.  The program will abort if no matching attribute
+by this name is found in the cluster table.  (This is present to allow
+multiple clustering sets to be defined on the same catalog.)  
+.LP
+The \fBauthor\fR parameter is used to set the auth field in the output
+origin table.  
+.SH "SEE ALSO"
+.nf
+genloc(3), genloc_intro(3), makegclgrid(1), cluster(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1) 
+On large catalogs the database view can very quickly get overwhelming.  I have
+seen this program fail multiple times trying to simply allocate memory to 
+build the working view. If this happens use the \fBgridlist\fR argument to limit
+the view to a smaller region and run the program multiple times for the different,
+sequential gridid.  e.g. if you had a grid with 10000 grid points you could run
+the program 10 times (on 10 machines if you had them available) in blocks of 
+1000.  
+.IP (2)
+This program can and has run for days on large catalogs.  The process is automatically
+checkpointed because it works through the catalog sequentially by gridid. That is,
+if the program dies or has to be aborted during a run, check the last line of the
+gridstat table or the log file for the last gridid processed.
+.IP (3)
+The parallel processing implementation with MPI works but was done after the fact 
+leading to design problems.  It is only known to work on shared memory machines 
+(i.e. Sun Enterprise machines) and running it on a linux cluster is virgin 
+territory.  User's interested in a parallel processing implementation should
+contact the author as a redesigned implementation is under development 
+that uses a completely different data flow model than dbpmel.
+.IP (4)
+The pmel_run_name parameter must be specified uniquely for each run.  This gets
+extremely annoying if you have to run in a batch environment because the program
+will abort when it finds the name has already been used. The name should probably
+be a random file name generated by some mechanism to assure it is unique.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
