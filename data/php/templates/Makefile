@@ -1,6 +1,8 @@
 DATA = wphp
 DATADIR = templates
 
+CLEAN= wphp
+
 include $(ANTELOPEMAKE)
 
 wphp : wphp.id
