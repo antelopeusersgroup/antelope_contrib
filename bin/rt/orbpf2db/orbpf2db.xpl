@@ -7,9 +7,6 @@ use orb;
 # orbpf2db
 # July, 2003
 
-$DEBUG = 0;
-$|++;
-
 sub database_prep {
 	my( $wantschema ) = pop( @_ );
 	my( $dbname ) = pop( @_ );
@@ -63,6 +60,8 @@ sub reopen_database {
 
 	dbclose( @db );
 
+	system( "dbcrunch $dbname" );
+
 	@db = dbopen( $dbname, "r+" );
 
 	return;
@@ -72,14 +71,19 @@ $Pf = "orbpf2db.pf";
 $match = ".*/pf/orbstat";
 $write_mode = "overwrite";
 
-if ( ! &Getopts('s:w:f:p:m:v') || @ARGV != 2 ) { 
+if ( ! &Getopts('s:w:f:p:m:vV') || @ARGV != 2 ) { 
 
-    	die ( "Usage: orbpf2db [-p pffile] [-m match] [-f from] [-w mode] orb database\n" ) ; 
+    	die ( "Usage: orbpf2db [-vV] [-p pffile] [-m match] [-f from] [-w mode] orb database\n" ) ; 
 
 } else {
 	
 	$orbname = $ARGV[0];
 	$dbname = $ARGV[1];
+}
+
+if( $opt_V ) {
+	
+	$opt_v++;
 }
 
 if( $opt_p ) {
@@ -133,8 +137,6 @@ if( $opt_s ) {
 	orbseek( $orb, "$pktid" );
 }
 
-$crunch = 0; # Keep the hooks unique across crunches
-
 for(;;) {
 
 	($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
@@ -153,7 +155,7 @@ for(;;) {
 		next;
 	}
 
-	if( $opt_v ) {
+	if( $opt_V ) {
 
 		printf "Received a parameter-file '$srcname':\n" . 
 		pf2string( $pkt->pf ) . "\n\n";
@@ -202,12 +204,9 @@ for(;;) {
 			push( @matchfields, $field );
 		}
 
-		$hookname = "hook$crunch\_clean_$cleantable";
-		$hookname = "hook_$DEBUG"; $DEBUG++;
-		printf "DEBUG PLACE1 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable ) . " Matchfields: " . join( " ", @matchfields ) . " scratchstuff: " . join( " ", dbgetv( @dbscratch, "serveraddress", "serverport" ) ) . "\n\n";
+		$hookname = "hook_clean_$dbtable[0]_$cleantable";
 		@records = dbmatches( @dbscratch, @dbtable, 
 						$hookname, @matchfields  );
-		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
 
 		foreach $record ( @records ) {
 			
@@ -216,12 +215,9 @@ for(;;) {
 			dbmark( @dbtable );
 		}
 
-		# dbcrunch( @dbtable );
-
-		# DEBUG reopen_database();
-
-		$crunch++;
 	}
+
+	reopen_database();
 
 	%tables = %{$trans{$key}{"tables"}};
 
@@ -261,8 +257,6 @@ for(;;) {
 
 					$pattern = $fieldmap{$field};
 					
-				printf "DEBUG: processing key $key pattern $pattern\n";
-
 					if( $pattern =~ /^FOREACH$/ ) {
 						
 						$value = $key;
@@ -295,11 +289,9 @@ for(;;) {
 
 				} elsif( $write_mode eq "overwrite" ) {
 	
-					$hookname = "hook$crunch\_$table";	
-		$hookname = "hook_$DEBUG"; $DEBUG++;
-		printf "DEBUG PLACE2 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable )  . "\n\n";
-					@records = dbmatches( @dbscratch, @dbtable, $hookname );	
-		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
+					$hookname = "hook__$dbtable[0]_$table";	
+					@matchfields = dbquery( @dbtable, dbPRIMARY_KEY );
+					@records = dbmatches( @dbscratch, @dbtable, $hookname, @matchfields );	
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
 					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
@@ -346,11 +338,9 @@ for(;;) {
 			
 			} elsif( $write_mode eq "overwrite" ) {
 
-				$hookname = "hook$crunch\_$table";
-		$hookname = "hook_$DEBUG";$DEBUG++;
-		printf "DEBUG PLACE3 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable ) . "\n\n";
-				@records = dbmatches( @dbscratch, @dbtable, $hookname );
-		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
+				$hookname = "hook_$dbtable[0]_$table";
+				@matchfields = dbquery( @dbtable, dbPRIMARY_KEY );
+				@records = dbmatches( @dbscratch, @dbtable, $hookname, @matchfields );
 
 				if( ! defined( @records ) || scalar( @records ) < 1 ) {
 	

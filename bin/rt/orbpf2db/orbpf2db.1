@@ -3,8 +3,8 @@
 orbpf2db \- generic transfer of parameter-files to database
 .SH SYNOPSIS
 .nf
-\fBorbpf2db \fP[-p \fIpffile\fP] [-s \fIstatefile\fP] [-m \fImatch\fP] [-f
-                \fIfrom\fP] [-w \fImode\fP] \fIorb\fP \fIdbname\fP
+\fBorbpf2db \fP [-vV] [-p \fIpffile\fP] [-s \fIstatefile\fP] [-m \fImatch\fP] 
+		[-f \fIfrom\fP] [-w \fImode\fP] \fIorb\fP \fIdbname\fP
 .fi
 .SH DESCRIPTION
 \fBorbpf2db\fP is a generic utility to map parameter-files on an \fIorb\fP into a
@@ -46,6 +46,12 @@ the fields specified in the 'clean' array will be deleted before new
 rows are added.
 
 .SH OPTIONS
+.IP "-v"
+verbose
+
+.IP "-V" 
+Very Verbose
+
 .IP "-p pffile"
 This specifies an alternate parameter-file name. The default is \fBorbpf2db\fP.pf
 
