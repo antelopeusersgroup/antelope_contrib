@@ -3,6 +3,18 @@ Schema Images1.0
 	Timedate lddate
 	;
 
+Attribute auth
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "author of an image product" )
+	Detail {
+		This field gives the name (or username or other identifier)
+		of the creator of an image product, such as a custom 
+		movie.
+	}
+	;
+
 Attribute azimuth
 	Real (7)
 	Format ( "%7.2f" )
@@ -344,7 +356,7 @@ Relation images
 	;
 
 Relation movies
-	Fields ( imagename time endtime length_sec imagesize format description dir dfile lddate )
+	Fields ( imagename time endtime length_sec imagesize format description dir dfile auth lddate )
 	Primary ( imagename time length_sec imagesize format )
 	Description ( "time-lapse movies" )
 	Detail {
