@@ -1,59 +1,574 @@
-.\" %W% %G%
-.TH GCLGRID 3  "%G%"
+'\" te
+.TH gclgrid 3 "$Date$"
 .SH NAME
-GCLGRID - Geographic CurviLinear GRID library
+gclgrid - C++ Geographical Curvilinear Coordinate grid library
 .SH SYNOPSIS
 .nf
 #include "gclgrid.h"
-double ***create_3dgrid_contiguous(int n1, int n2, int n3);
-double **create_2dgrid_contiguous(int n1, int n2);
-GCL3Dgrid *GCL3Dgrid_load_db(Dbptr db,char *gridname);
-GCL2Dgrid *GCL2Dgrid_load_db(Dbptr db,char *gridname);
-int save_3dgclgrid(GCL3Dgrid *g,Dbptr db,char *dir);
-int save_2dgclgrid(GCL2Dgrid *g,Dbptr db,char *dir);
-void free_3dgrid_contiguous(double ***x,int n1, int n2);
-void free_2dgrid_contiguous(double **x,int n1);
-double r0_ellipse(double lat);
-double r_to_depth(double r, double lat);
+// main objects
+class GCLgrid;
+class GCLgrid3d;
+class GCLscalarfield:GCLgrid;
+class GCLvectorfield:GCLgrid;
+class GCLscalarfield3d:GCLgrid3d;
+class GCLvectorfield3d:GCLgrid3d;
+// helpers
+double r0_ellipse(double);
+double ****create_4dgrid_contiguous(int, int, int, int);
+double ***create_3dgrid_contiguous(int, int, int);
+double **create_2dgrid_contiguous(int, int);
 .fi
 .SH DESCRIPTION
 .LP
-Describing features of the earth at regional (hundreds to thousands
-of kilometers) scale often requires a grid scheme that is like 
-a latitude-longitude grid (e.g. 1 degree squares) but is not 
-necessarily aligned with the geographic reference.  
+A GCLgrid is defined as a 2d or 3D uniform grid 
+(i.e. squares in 2D and cubes in 3D) with a one-to-one 
+mapping into geographic coordinates on the earth.  
+The mapped grid does not need to be uniformly spaced 
+nor flat in any sense.  A GCLgrid (2d), for example, can,
+and often is a spherical surface at constant radius, but 
+it does not have to be.  On a spherical surface the spacing
+between nodes can only approximately be constant.  Similarly
+a GCLgrid3d may define a spherical shell broken into approximate
+cubes or it can be some more general shape.  The primary 
+restiction is that the library assumes that the mapping operator
+from a standard rectangle (2D) or box (3D) does not fold space.
+This is the "Curvilinear" modifier.  It means that the coordinate
+axes and all grid lines form a mesh of curves that never cross 
+along constant trajectories of the curvilinear axes (x1, x2, and x3).  
+Two type examples are a deformed box and a box warped into a 
+spherical shell.  
+
+The library centers on two critical algorithms:  lookup and interpolate.
+By lookup I mean given a point in space (on the earth) find the position
+of that point within the grid.  For uniformly divided box this is a 
+trivial calculation but for a distorted grid the process is never simple.
+The GCLgrid library uses a search method that is a form of Newton's
+method. We compute vector direction for the local tangent to each 
+grid line by simple forward differences.  We then project the actual 
+position onto this vector direction and estimate the number of grid 
+points to jump to get to the new position.  An important efficiency
+element is that the interface always stored the previous index and 
+will normally start from the previously computed point.  This makes it
+relatively quick to search down a grid line to, for example, map one
+GCLgrid onto another.  The lookup function only has to make large 
+corrections when a large position shift is requested.  This is 
+important to realize as the lookup time for a grid that has significant
+distortion is drastically different for random access than sequential
+access along curved trajectories through space.  
+
+The interpolation methods are based on 8 point (corners of a box) 
+shape functions borrowed from finite element analysis.  Note that in
+this implementation this is true of both 2d and 3d grids.  These are
+used in 2d because a GCLgrid is a surface embedded in 3-space.  
+When the four points that define the region to be interpolated are 
+not coplanar a rectangular interpolator that assumes a 2D projection
+is problematic.
+The interpolate method should only be called after a successful lookup.
+.SH INTERFACE
 .LP
-This library is an attempt at a fairly general, but restricted
-gridding scheme for defining 2D or 3D functions that
-are defined on a spherical earth.  The concepts behind the
-library are described in a paper in preparation and a poster
-by Fan and Pavlis [2002] presented at the fall 2002 AGU meeting.
-Consult the Antelope User Group Web pages for updates of these
-sources (http://www.indiana.edu/~aug).  The man page will not 
-attempt to describe the concepts but will focus on 
-documenting the C interface
-functions to the library.
-.LP
-The GCL2Dgrid and GCL3Dgrid are complex data objects defined
-with a typedef found in the include file gclgrid.h.  Since 
-both involve 2 or 3D arrays they can easily get huge.  
-This implementation is under development.  
-Use the create routines to build these and the free routines
-too destroy them.  The routines with the Dbptr are used to
-save and retrieve GCLgrids stored to disk.
-.LP
-The r0_ellipse and r_to_depth function implement ellipticity
-using the standard reference ellipsoid.
-.SH "SEE ALSO"
+Here is the full definition of the data objects that define the
+GCLgrid interface.  They are defined beginning a the top of the
+class heirarchy and working down.  
+.ce
+\fIGCLgrid\fR - Basic 2D GCLgrid object
 .nf
-Look for the C++ man page as it evolves.
+class GCLgrid
+{
+	public:
+		char name[10];  // name assigned to this coordinate grid
+		double lat0, lon0, r0;  // geographical location of origin 
+		double azimuth_y;  // Azimuth of positive y axis 
+		double dx1_nom, dx2_nom;  // nominal grid spacing 
+		int n1,n2;  // grid size in each component direction
+		int i0, j0;  // origin location in grid 
+		double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
+		bool cartesian_defined, geographic_defined;
+		double **x1, **x2, **x3; //cartesian coordinates of nodes
+		double **lat, **lon, **r;  //geographical coordinates of nodes
+
+		GCLgrid(){
+			n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+		};
+		GCLgrid(int n1size, int n2size);
+		GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
+			double radius0, double az, double dx1n, double dx2n, 
+			int iorigin, int jorigin);
+		GCLgrid(Dbptr db, char *nm) throw(int);
+		GCLgrid(const GCLgrid&);  //standard copy constructor
+		GCLgrid& operator=(const GCLgrid& );
+		void dbsave(Dbptr, char *) throw(int);
+		int lookup(double lat, double lon);
+		void reset_index() {ix1=i0; ix2=j0;};
+		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
+		Geographic_point ctog(double, double, double);
+		Cartesian_point gtoc(double, double, double);
+		void GCLset_transformation_matrix();
+		double depth(int,int);
+		~GCLgrid();
+		//
+		//These derived classes need private access so are declared
+		//friends
+		//
+		friend class GCLgrid3d;
+		friend class GCLscalarfield;
+		friend class GCLvectorfield;
+		friend class GCLscalarfield3d;
+		friend class GCLvectorfield3d;
+	private:
+		int ix1, ix2;
+		double gtoc_rmatrix[3][3];
+		double translation_vector[3];
+};
 .fi
+.LP
+The simple type parameters that define this data object are, I hope,
+reasonably well defined by the comments in the above code segment.  
+The key groups of defining parameters are these:
+.IP (1)
+lat, lon, and r are 2d grids that define a 2d surface in geographical
+coordinates.
+.IP (2)
+x1, x2, and x3 are parallel 2d arrays that give coordinates in a 
+Cartesian coordinate system.  The transformation from geographic
+to the Cartesian system is defined through the member functions
+gtoc(lat,lon,r) and ctog(x1,x2,x3).  These use the private variables
+gtoc_rmatrix and translation_vector to do this transformation.
+The Cartesian system is produced by translating spherical geometry 
+coordinates to a standard Cartesian system.  That system is defined
+with x1 through the intersection of the prime merdian and the equator,
+x2 through the equator and +90 degrees longitude, and x3 through the
+north pole.  The Cartesian system in a GCLgrid translates this 
+coordinate system to an origin defined by the \fItranslation_vector[3]\fR.
+This coordinate system is then rotated by the transformation matrix
+defined as \fIgtoc_rmatrix\fR.  (Note that gtoc_rmatrix is orthogonal
+so the inverse tranformation is simply the transpose of it.)  
+The origin of the Cartesian system is visible publically as the
+variables lat0, lon0, and r.  Note that internally ALL angle
+variables (like lat0 and lon0) are stored in radians.  
+.IP (3)
+i0 and j0 define the location of the Cartesian origin inside the grid.
+The azimuth_y variable is set to the azimuth of the x2 axis at this
+origin.  For example, if azimuth_y is 10 degrees (note internally this
+is radians) the x2 axis at the origin will point 10 degrees east of
+north.  For some grids azimuth_y has no purpose but for a standard
+grid produced by the parameterized constructor (see below) it 
+uniquely defines the grid orientation.  
+.IP (4)
+n1 and n2 define the size of the 2d arrays used to define the grids of
+points.  
+.IP (5) 
+dx1_nom and dx2_nom are the nominal grid spacing intervals for the
+x1 and x2 axes.  Units are always kilometers.
+.IP (6)
+x1low, x1high, x2low, x2high, x3low, and x3high define a bounding box
+in the Cartesian system for all the points in the grid.  This provides
+a simple sanity check and a fast way to discard any request for points
+well outside the area the grid defines.  
+.IP (7)
+The two booleans, cartesian_defined and geographic_defined, 
+are set true when the contents of the cartesian and geographic 
+arrays are valid.  They will be set false if if the contents of
+these arrays are not defined.  
+.LP
+\fIConstructors\fR.  
+Notice that the GCLgrid has several levels of constructors.  
+The one with no parameters simply creates the basic structure using
+system generated constructors and sets the 2d array points all NULL.  
+It also initializes all regular variables to 0.
+GCLgrid(int n1size, int n2size) is similar but it allocates
+memory for the 2d coordinate arrays.  (See Memory Management section
+below)
+The only complete constructor is this one:
+.nf
+GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
+	double radius0, double az, double dx1n, double dx2n, 
+	int iorigin, int jorigin);
+.fi
+The parallel to the defining parameters should be clear.  
+This constructor builds what we might call a "standard GCLgrid".
+This function is called directly by the makegclgrid(1) program 
+which amounts to little more than a front end to this constructor.
+This object is produced by this sequence of steps:
+.IP a)
+At the Cartesian origin
+project an x1 axis at the azimuth of azimuth_y+PI_2 
+(i.e. 90 degrees clockwise from what will become the x2 axis)
+along a great circle path.  Divide this path into 
+n1size segments of size dx1n.  The origin is set at 
+grid point iorigin (Note C indexing convention.  This 
+is the index position in the grid for the origin point. 
+There is no -1 correction to get it.)  
+.IP b)
+Get the pole to this great circle (in direction azimuth_y)
+and draw a great circle along that trajectory.  Divide this
+curve into segments of size dx2n.  The origin is set at 
+grid point jorigin.
+.IP c)
+The constant x1 trajectory lines are drawn like longitude 
+lines to the pole that defines x2 and the equator defined by
+the x1 axis passing through the origin.  The constant x2 trajectory
+lines are then latitude-like paths (i.e. they are not great circles).  
+.LP
+A final specialized constructors is defined by GCLgrid(Dbptr db, char *nm).
+This function attempts to read a GCLgrid from an Antelope database 
+with handle db by searching for a unique grid with the name defined by nm.
+.LP
+\fIMember Functions\fR.
+The \fIdbsave\fR function is the inverse of the Antelope-based constructor.
+That is, it saves a GCLgrid object to disk storage indexing the result
+in the database with a unique name nm.
+Note that this function will throw an error if this process fails (see below).
+.LP
+\fIlookup\fR finds the grid index for a specified latitude and longitude.
+The actual indices were intentionally made private and are only accessible
+through the \fIget_index\fR function.  (Note the caller must pass 
+get_index a 2 vector to hold the pair of indices requested.  It does
+NOT allocate storage for this vector but simply assumes it was declared
+as int ind[2]. )  
+To reset the index use the \fIreset_index()\fR function which always 
+resets the index to the origin.  When a lookup fails, it is wise to have
+the calling program call reset_index to keep the lookup procedure from
+falling into a hole.  That is, it is not hard to create a distorted grid
+that will cause convergence problems at it's edges.  Resetting the index
+to the origin should avoid most such problems.  
+.LP
+\fIgtoc, ctog, GCLset_transformation_matrix,\fR and \fIdepth\fR are 
+utilities to deal with the two coordinate systems.  gtoc converts
+a point from the geographic to cartesian coordinate frame and 
+ctog does the inverse.  If anything but the fully parameterized, 
+standard GCLgrid constructor is used to create a GCLgrid you will
+need to call GCLset_transformation_matrix or you will generate lots
+of garbage.  The transformation is totally defined by specifying
+the origin position which means you must set the origin parameters 
+(lat0, lon0, and r0) before calling GCLset_transformation_matrix.  
+The \fIdepth\fR function returns the depth of a point within the
+earth.  Note that internally in this library depth is defined 
+relative to the standard reference ellipsoid (accesssible through
+the helper function \fIr0_ellipse\fR.)  
+.ce
+\fIGCLgrid3d\IR - 3D GCLgrid object
+.nf
+.LP
+The 3d version of a GCLgrid is similar to the 2d version.  In fact,
+it acquires most of it's members by inheritance.  Here is the 
+full description:
+.nf
+class GCLgrid3d : public GCLgrid
+{
+	public:
+		double dx3_nom;
+		int n3;
+		int k0;
+		double ***x1, ***x2, ***x3;
+		double ***lat, ***lon, ***r;
+
+		GCLgrid3d(){
+			n1=0;n2=0;n3=0;
+			x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+		};
+		GCLgrid3d(int n1size, int n2size, int n3size);
+		GCLgrid3d(int n1size, int n2size, int n3size, 
+			char *n, double la0, double lo0,
+			double radius0, double az, 
+			double dx1n, double dx2n, double dx3n,
+			int iorigin, int jorigin);
+		GCLgrid3d(Dbptr db, char *nm) throw(int); 
+		GCLgrid3d(const GCLgrid3d&); 
+		GCLgrid3d& operator=(const GCLgrid3d& );
+		void dbsave(Dbptr, char *) throw(int);
+		int lookup(double x, double y, double z);
+		void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
+		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
+		double depth(int,int,int);
+		~GCLgrid3d();
+	private:
+		int ix1, ix2, ix3;
+};	  		
+.fi
+.LP
+All of these variables have parallel elements 
+for a GCLgrid except 2d things become 3d.  This
+requires adding:  nx3 = size of objects in the third dimension; 
+dx3_nom = nominal grid size in x3 direction; and k0 = location of
+the origin in the 3rd dimension.
+The member functions require a third parameter when required.
+.LP
+The \fIConstructors\fR and \fImember_functions\fR all have exact
+parallels to the 2d versions.  The most important difference to 
+note is that the lookup function uses Cartesian rather than 
+Geographical coordinates.  
+.ce
+
+\fIGCLscalarfield, GCLvectorfield, GCLscalarfield3d, GCLvectorfield3d\fR
+.nf
+.LP
+The following detail a set of generic 2d and 3d fields specified
+on a GCLgrid.  The GCLgrid objects simply store geometry while
+these objects normally contain data that are associated with these
+points.  
+.nf
+class GCLscalarfield :  public GCLgrid
+{
+	public:
+		double **val;
+
+		GCLscalarfield();
+		GCLscalarfield(int, int);
+		GCLscalarfield(GCLgrid& );
+		GCLscalarfield& operator=(const GCLscalarfield&);
+		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+		void operator+=(const GCLscalarfield&);
+		void operator*=(double);
+		double interpolate(double,double,double);
+		~GCLscalarfield();
+};
+class GCLvectorfield : public GCLgrid
+{
+	public:
+		int nv;
+		double ***val;
+
+		GCLvectorfield();
+		GCLvectorfield(int,int,int);
+		GCLvectorfield(GCLgrid &,int);
+		GCLvectorfield& operator=(const GCLvectorfield&);
+		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+		void operator+=(const GCLvectorfield&);
+		void operator*=(double);
+		double *interpolate(double,double,double);
+		~GCLvectorfield();
+};
+class GCLscalarfield3d : public GCLgrid3d 
+{
+	public:
+		double ***val;
+
+		GCLscalarfield3d();
+		GCLscalarfield3d(int,int,int);
+		GCLscalarfield3d(GCLgrid3d &);
+		GCLscalarfield3d& operator=(const GCLscalarfield3d&);
+		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+		void operator+=(const GCLscalarfield3d&);
+		void operator*=(double);
+		double interpolate(double,double,double);
+		~GCLscalarfield3d();
+};
+class GCLvectorfield3d : public GCLgrid3d
+{
+	public:
+		int nv;
+		double ****val;
+
+		GCLvectorfield3d();
+		GCLvectorfield3d(int,int,int,int);
+		GCLvectorfield3d(GCLgrid3d &,int);
+		GCLvectorfield3d& operator=(const GCLvectorfield3d&);
+		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
+		void operator+=(const GCLvectorfield3d&);
+		void operator*=(double);
+		double *interpolate(double,double,double);
+		~GCLvectorfield3d();
+};
+.fi
+.LP
+Because of inheritance these objects can be viewed as extensions of
+the GCLgrid objects from which they are derived.  Most importantly
+all the member functions of the GCLgrid and GCLgrid3d objects are
+inherited by these objects.  The primary extensions of these 
+objects is the added data areas for the arrays of values 
+(the "val" variable), appropriate constructors, and the interpolate 
+member function.  
+.LP
+These objects each contain a constructor which clones the geometry 
+from a base GCLgrid object.  That is, the coordinates of the parent
+GCLgrid (or GCLgrid3d as appropriate) are copied to the new field
+object and then space for the val array is allocated.  
+.LP
+Each object also contains a constructor to build the object from 
+an Antelope database description.  The constuctors are all of this
+form:
+.nf
+OBJname(Dbptr db, char *gclgname, char *fieldname);
+.fi
+where db is a standard Antelope databae pointer, gclgname is the
+name of the parent GCLgrid object to which the field is attached
+and fieldname is a unique name attached to the particular set of
+values to be used.  As in the GCLgrid objects there the inverse
+to this operation is a dbsave operation, which for this group of
+objects has this form:
+.nf
+OBJname(Dbptr db, char *gdir, char *fdir, char *fieldname, char *dfile);
+.fi
+where gdir and fdir are the locations to save the GLCgrid parent and
+field values respectively, fieldname is as above, and dfile is the 
+actual file name to store the field values.  Note that if gdir is
+NULL the parent GCLgrid is assumed already stored and not to be saved.
+This allows, for example, several actual data objects to be stored 
+and associated with a common GCLgrid without having to store 
+multiple copies of the same GCLgrid.  Since GCLgrids can get large
+this extra complexity was considered useful.  Be warned, however, it
+is error prone because it would be easy to fail to save a GCLgrid 
+or try to save it twice.  Either will introduce an error but at
+different times;  the first when you try to use the output of 
+dbsave and the other when dbsave is called.  
+Do note this uses two tables;  one for the GCLgrid and the other to 
+index the field output.
+.LP
+The \fIinterpolate\fR function is a workhorse for a field.  Note that it
+should only be called AFTER first calling the appropriate lookup function
+from the base class AND testing success of the lookup.  
+.LP
+The *= and += operators allow complex mapping operations.  The 
+*=operator multiplies each value of the field by a scalar. 
+The += is much more complex as it maps every point in the field on
+the right hand side to the object on the left before summing.
+This is a building block for accumulated weighted sums of data on
+different grids.  
+.SH MEMORY MANAGEMENT
+.LP
+Be aware that these functions can consume large quantities of memory
+very quickly.  GCLvectorfield3d, for example, requires allocation of
+a 4D array which can quickly get huge even for fairly small dimensions.  
+The user should also note that all the constructors used here for
+building these arrays are in plain C and build these arrays from
+contiguous blocks of memory.  That is, C implements subscripted
+arrays through arrays of pointers.  To avoid what could easily
+be millions of new (malloc) memory requests the arrays are built
+by constructing pointers into contiguous blocks of memory.  
+This is hidden in the interface for normal use.  If, however, you
+try to construct one of these objects manually from the
+unparameterized constructors you are nearly guaranteed to encounter
+problems when the destructor is called on the object.  You might
+get by with this if the destructor is called only on program exit, but
+otherwise its the old Clint Eastwood line:  "Do you feel lucky, punk?".
+In short, if you have to build one of these objects manually, you 
+should use the size parameterized constructors (e.g. GCLGrid(int n1, int n2))
+and then fill in the contents.  
+.LP
+The vector field interpolate function has a memory issue that must be
+handled carefully.  To make the vector length arbitrary the function 
+internally creates a "new" vector of length nv which is returned.  This
+means the calling program MUST call delete on this vector after finishing
+with it.  
+.SH ERROR CONDITION
+.LP
+The db (dbsave and the constructor with the Dbptr argument) functions 
+throw an exception if problems are encounted.  Consequently, calls to 
+these functions need to be enclosed in the C++ try/catch construct 
+with an int error handler.  
+All thrown errors by these functions are serious and should probably
+normally cause the program to die with a diagnostic.
+Actually, all these functions post an elog (elog(3)) message before
+throwing an error.
+The return codes that need to be caught are:
+.IP 1
+This indicates a database related error of some kind.  
+An extension table that defines a GCLgrid object 
+(gclgrid table) needs to be defined and correct attributes names need to be
+defined or this error will be returned.  I can also come from 
+multiple possible db problems.
+The elog will contain details that should help define the problem.
+.IP  2
+I/O error problems.  These functions read a GCLgrid or GCLgrid3d object stored
+on disk.  Any read problems will throw this code.
+.SH RETURN VALUES
+.LP
+The \fBlookup\fB functions are implemented in the C fashion of returning
+an error code rather than the C++ approach of throwing exceptions.  
+This was intentional because Sun's documentation points out that
+throwing exceptions is "computationally expensive" compared to this 
+approach.  Further, lookup has a classic problem with complex algorithms
+that have multiple ways they can fail:  some failures are serious problems that
+should cause the program to abort while others are not really errors
+but a condition the algorithm can't handle.  These are distinguished
+in lookup's error returns by sign.  A positive return means a problem
+that should be handled, but which should be considered common and normal.
+Negative returns are a serious error that should be handled differently.
+The actual codes are:
+.IP 2
+A warning about a point in the grey area at the edge of the grid.  
+It means interpolation is possible, but is potentially subject to
+fairly large errors because we have to extrapolate instead of
+interpolate.  This is returned only when the distance of the requested
+point is within one unit cell of the grid in all directions.
+Unless the function being interpolated is extremely rapidly varying
+the results in this case are probably ok.
+.IP 1
+The requested point is outside the bounds of this grid.  Index 
+position is undefined.  This condition should be caught as a nonfatal
+error as it should be common to ask for a point outside a defining
+box.  This will also be returned if the point is inside the bounding
+box but more than one nominal cell length from the edge.
+.IP -1
+Convergence error.  The user should assume the point returned in
+the index is meaningless and handle the error appropriately.
+.IP -2
+One or more parts of the GCLgrid arrays are incomplete.  This should
+only happen if one creates a GCLgrid manually using an incomplete
+constructor.  
+The calling program should trap this condition and terminate the program
+as a coding error.  
+
+.SH LIBRARY
+$(DBLIBS) -lgclgrid
+.SH "SEE ALSO"
+.LP
+makegclgrid(1)
 .SH "BUGS AND CAVEATS"
-This C interface was the original development for the concepts of 
-this library.  Be aware that it is being depricated almost as soon
-as it is added in favor of a C++ implementation.  
+This library is the author's first serious attempt at a C++
+package.  Some things may be done in an odd way as a result and
+the results should be viewed with a healthy dose of skepticism.
+Some specifics are:
+.IP (1)
+Although in theory the interface should allow a space reduction by 
+defining only the geographic or cartesian arrays I've used the 
+memory hog model here.  That is, one really need only store the
+Cartesian coordinates and use the ctog function compute latitude
+and longitudes.  I've used the parallel array (at a huge memory
+cost) approach expecting the need to have both sets of coordinates
+be a very common operation.  If memory becomes an issue an extension 
+of the library could do this without changing the interface.
+.IP (2)
+The reset_index function should probably be overloaded to allow resetting
+the index to something other than the origin but I considered the extra
+baggage of that unnecessary.  Similarly, the lookup functions probably should
+call reset_origin() and retry automatically if a convergence problem 
+occurs, but I will not add this until I see evidence that this is a 
+real problem and not my paranoia.  
+.IP (3)
+The inconsistency between the use of geographic coodinates for the lookup
+function for a GCLgrid object while using a Cartesian point for a
+GCLgrid3d object is going to be a point of confusion.  
+This was done under the assumption that
+lookup is expected to be called millions of times and the added
+overhead of using geographic coordinate specifications for
+the 3d form would be 
+a bad thing.  
+In contrast, for a 2D object draped on a sphere a Cartesian 
+specification is totally irrational and cumbersome.  
+Unfortunately, there is no simple way to overload the lookup function
+to make this switch automatic and simultaneously any less confusing.  
+.IP (4)
+The vector and scalar field constructors are memory pigs.  The 
+stock way to build one is to first construct a GLCgrid or GCLgrid3d 
+object and then call the cloning constructor described above.  
+This requires two copies of the grid be kept in memory plus the
+added memory for the actual values.  There probably should be a 
+fully parameterized constructor for a "standard" field, but it is
+not in the library at this time.  
+.IP (5)
+The field objects probably should contain a hit array to 
+allow the user to sort out where an operation like += maps
+one field onto another.  This may need to eventually be implemented
+for some potential applications.
+It is not clear, however, that such an entity should be part of the
+object definition.  It would probably be smarter to have a mapping
+function that simply returns a definition of this mapping process
+as a procedure and not as part of the object definition.  
 .SH AUTHOR
-Gary L. Pavlis and Chengliang Fan, Department of Geological Sciences,
-Indiana University, Bloomington, IN  47405 
-(pavlis@indiana.edu, cfan@indiana.edu)
+.nf
+Gary L. Pavlis and Chengliang Fan
+Indiana University
+pavlis@indiana.edu
+.fi
 .\" $Id$
