@@ -1,0 +1,7 @@
+sleep	60					#naptime between checks
+check_lddate_interval	5	#check lddate every nth iteration
+prefix	dbn2orb				#sourcenames <prefix>/db/<tablename> 
+ignore_tables	&Tbl{
+}
+check_tables	&Tbl{
+}
