@@ -1,3 +1,10 @@
+/* 
+ * db2xml.c
+ * Kent Lindquist
+ * Lindquist Consulting
+ * 2003-2004
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include "db.h"
@@ -69,6 +76,96 @@ add_dataelement( void **vstack, char *tagname, char *value )
 	free( copy );
 }
 
+static void
+add_fieldname( Tbl *fieldnames, char *tablename, char *fieldname )
+{
+	char	qualified[STRSZ];
+
+	sprintf( qualified, "%s.%s", tablename, fieldname );
+
+	pushtbl( fieldnames, strdup( qualified ) );
+
+	return;
+}
+
+static Tbl *
+get_fieldnames( Dbptr db, int flags )
+{
+	Tbl	*fieldnames;
+	Tbl	*view_tables;
+	Tbl	*table_fields;
+	char	*tablename;
+	char	*fieldname;
+	char	afield[STRSZ];
+	Dbvalue	result;
+	int	itable;
+	int	ifield;
+	static Hook *hook = 0;
+	int	start;
+	int	nchars;
+	int	is_view;
+
+	fieldnames = newtbl( 0 );
+	view_tables = newtbl( 0 );
+
+	dbquery( db, dbTABLE_IS_VIEW, &is_view );
+
+	if( is_view ) {
+
+		dbquery( db, dbVIEW_TABLES, &view_tables );
+
+		view_tables = duptbl( view_tables, strdup );
+
+	} else {
+
+		dbquery( db, dbTABLE_NAME, &result );
+
+		view_tables = strtbl( strdup( result.t ), 0 );
+	}
+
+	for( itable = 0; itable < maxtbl( view_tables ); itable++ ) {
+
+		tablename = gettbl( view_tables, itable );
+
+		db = dblookup( db, "", tablename, "", "" );
+
+		if( flags & DBXML_PRIMARY ) {
+
+			dbquery( db, dbPRIMARY_KEY, &table_fields );
+
+		} else {
+
+			dbquery( db, dbTABLE_FIELDS, &table_fields );
+		}
+
+		for( ifield = 0; ifield < maxtbl( table_fields ); ifield++ ) {
+			
+			fieldname = gettbl( table_fields, ifield );
+
+			if( strcontains( fieldname, "::", &hook,
+					 &start, &nchars ) ) {
+				
+				strcpy( afield, fieldname );
+				afield[start] = '\0';
+				fprintf( stderr, "SCAFFOLD: adding %s\n", afield);
+				add_fieldname( fieldnames, tablename, afield );
+
+				strcpy( afield, fieldname + start + 2 );
+				fprintf( stderr, "SCAFFOLD: adding %s\n", afield);
+				add_fieldname( fieldnames, tablename, afield );
+
+			} else {
+
+				add_fieldname( fieldnames, tablename, fieldname );
+			}
+		}
+	}
+
+	freetbl( view_tables, free );
+
+	return fieldnames;
+}
+
 int
 db2xml( db, rootnode, rownode, fields_in, expressions_in, xml, flags )
 Dbptr 	db; 
@@ -99,10 +196,18 @@ int 	flags;
 	char	temp[STRSZ]; 
 	int 	retcode = 0; 
 	int	ns, ne; 
+	int	free_fieldnames = 0;
 
 	if( db.table < 0 ) {
-		complain( 0, "db2xml: not a view or a table\n" );
+		register_error( 0, "db2xml: not a view or a table\n" );
 		return -1;
+	}
+
+	if( ( flags & DBXML_PRIMARY ) && 
+	    ( fields_in != 0 || expressions_in != 0 ) ) {
+
+		register_error( 0, "db2xml: fields are explicitly specified; "
+				   "ignoring useless request for primary keys\n" );
 	}
 
 	if( rootnode != 0 && *rootnode != 0 ) {
@@ -128,9 +233,10 @@ int 	flags;
 
 	if( fields_in == 0 && expressions_in == 0 ) {
 
-		dbquery( db, dbTABLE_FIELDS, &result );
+		fields = expressions = get_fieldnames( db, flags );
 
-		fields = expressions = result.tbl;
+		free_fieldnames++;
+
 
 	} else if( expressions_in == 0 ) {
 
@@ -138,7 +244,7 @@ int 	flags;
 
 	} else if( fields_in == 0 ) {
 
-		complain( 0, 
+		register_error( 0, 
 		"db2xml: must specify field names with nonzero list "
 		"of expressions\n" );
 		return -1;
@@ -151,7 +257,7 @@ int 	flags;
 
 	if( maxtbl( fields ) != maxtbl( expressions ) ) {
 
-		complain( 0, 
+		register_error( 0, 
 		"db2xml: number of fields must match number of expressions\n" );
 		return -1;
 	}
@@ -222,6 +328,11 @@ int 	flags;
 		pushstr( (void **) &vstack, indent );
 		add_endtag( (void **) &vstack, rowtag );
 		pushstr( (void **) &vstack, separator );
+	}
+
+	if( free_fieldnames ) {
+
+		freetbl( fields, free );
 	}
 
 	for ( i=0; i<n; i++ ) {

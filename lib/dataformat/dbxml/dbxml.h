@@ -3,6 +3,7 @@
 #define XMLDB
 
 #define DBXML_BNS 1
+#define DBXML_PRIMARY 2
 
 #ifdef  __cplusplus
 extern "C" {

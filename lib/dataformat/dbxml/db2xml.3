@@ -20,7 +20,7 @@ behavior).
 Each row of the view is entered as an element named \fIrow\fP unless an
 alternative is specified with the \fIrownode\fP argument. If both \fIfields\fP
 and \fIexpressions\fP are zero, all \fIfields\fP present in the database view
-are used. Each appears as its own element, named the same as the field.
+are used. Each appears as its own element, named the same as the fully-qualified (i.e. "table.field") field name .
 If \fIfields\fP is nonzero and \fIexpressions\fP is zero, the \fIfields\fP specified
 are used both as element names and as \fIexpressions\fP (usually simple \fIfields\fP)
 from the database. If a table of \fIexpressions\fP is supplied, each expression is
@@ -36,6 +36,10 @@ ignored. Freeing the returned string is the responsibility of the user. If the
 object, which allows the XML result to be read out in pieces. For
 further detail see bns(3). Once again, freeing the returned Bns structure is 
 the responsibility of the user.
+
+If the \fIflags\fP argument is set to DBXML_PRIMARY, only the primary 
+keys of the table(s) in the input view are reported. This flag is ignored
+if any fields or expressions are explicitly specified. 
 
 .SH EXAMPLE
 .ft CW
@@ -79,32 +83,32 @@ yukon%
 yukon% try
 <View45>
    <row>
-      <lat>40.0740</lat>
-      <lon>69.1640</lon>
-      <depth>155.1660</depth>
-      <time>704371900.66886</time>
-      <orid>1</orid>
-      <evid>-1</evid>
-      <jdate>1992118</jdate>
-      <nass>7</nass>
-      <ndef>7</ndef>
-      <ndp>-1</ndp>
-      <grn>715</grn>
-      <srn>48</srn>
-      <etype>-</etype>
-      <review></review>
-      <depdp>-999.0000</depdp>
-      <dtype>f</dtype>
-      <mb>2.62</mb>
-      <mbid>1</mbid>
-      <ms>-999.00</ms>
-      <msid>-1</msid>
-      <ml>-999.00</ml>
-      <mlid>-1</mlid>
-      <algorithm>locsat:kyrghyz</algorithm>
-      <auth>JSPC</auth>
-      <commid>-1</commid>
-      <lddate>790466871.00000</lddate>
+      <origin.lat>40.0740</origin.lat>
+      <origin.lon>69.1640</origin.lon>
+      <origin.depth>155.1660</origin.depth>
+      <origin.time>704371900.66886</origin.time>
+      <origin.orid>1</origin.orid>
+      <origin.evid>-1</origin.evid>
+      <origin.jdate>1992118</origin.jdate>
+      <origin.nass>7</origin.nass>
+      <origin.ndef>7</origin.ndef>
+      <origin.ndp>-1</origin.ndp>
+      <origin.grn>715</origin.grn>
+      <origin.srn>48</origin.srn>
+      <origin.etype>-</origin.etype>
+      <origin.review></origin.review>
+      <origin.depdp>-999.0000</origin.depdp>
+      <origin.dtype>f</origin.dtype>
+      <origin.mb>2.62</origin.mb>
+      <origin.mbid>1</origin.mbid>
+      <origin.ms>-999.00</origin.ms>
+      <origin.msid>-1</origin.msid>
+      <origin.ml>-999.00</origin.ml>
+      <origin.mlid>-1</origin.mlid>
+      <origin.algorithm>locsat:kyrghyz</origin.algorithm>
+      <origin.auth>JSPC</origin.auth>
+      <origin.commid>-1</origin.commid>
+      <origin.lddate>790466871.00000</origin.lddate>
    </row>
 </View45>
 
