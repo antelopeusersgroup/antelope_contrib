@@ -119,9 +119,7 @@ c
       else 
 c -- calculate direct wave travel time                                  ttlvz.64  
         vmax=v(1)                                                         ttlvz.66  
-        pmax=1.0/v(1)
         do 175 j=2,lhpz                                                   ttlvz.67  
-		pmax=max(pmax,1.0/v(j))
 175     vmax=  max(vmax,v(j))                                             ttlvz.68  
 c -- This loop seeks a ray parameter for a direct ray with 
 c -- delta > given distance.  The earlier version would sometimes enter
@@ -130,9 +128,10 @@ c -- precision limitation.  We trap this now with a test for
 c -- the condition that p == pmax.  In this condition, an error is
 c -- returned that has to be handled by the caller.  Here this is
 c -- signaled by setting the returned time to -1.0.
+        pmax = 1./vmax                                                    ttlvz.70  
         p = 0.5*pmax                                                      ttlvz.71  
 155     p = (p+pmax)/2.
-	if(p.ge.pmax)then
+	if(p.eq.pmax)then
 		t = -1.0
 		return
 	endif
