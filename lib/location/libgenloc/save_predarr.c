@@ -326,7 +326,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 			utotal = hypot(u_calc.ux,u_calc.uy);
 			/* css3.0 stores slowness is s/deg so we have
 			to convert */
-			utotal /= KMPERDEG;
+			utotal *= KMPERDEG;
 			seaz = compute_seaz(u_calc);
 			if(stavel_ok) ema = compute_ema(&u,&u_calc,db,vmodel);
 			if(ema < 0.0) ema = ema_null;
@@ -404,6 +404,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 			else
 			{
 				utotal = hypot(u_calc.ux,u_calc.uy);
+				utotal *= KMPERDEG;
 				seaz = compute_seaz(u_calc);
 				if(stavel_ok) ema = compute_ema(&u,&u_calc,db,vmodel);
 				if(ema < 0.0) ema = ema_null;
