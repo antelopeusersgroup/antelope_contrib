@@ -43,6 +43,7 @@ c  language- 1977 ansi standard fortran
 c  author  - gary l. pavlis 
 c-------------------------------------------------------------------- 
 	include 'model.common' 
+	include 'first.common'
       integer nraw,ngrid
       character branch
       real dx,zhypo 
@@ -55,7 +56,10 @@ c--nwsize should be set to some number .gt. maxdx/xminsc  (see below)
 c--the actual storage allocated is nwmax = nwsize + 1 
 c--nwsize is used for loop termination to assure space for at least 
 c--one extra ray used to mark end of upward branches. 
-      parameter(maxdx=50,nwsize=120)
+c     parameter(maxdx=50,nwsize=120)
+c--rather than hardwired, we now make maxdx = first arrival table size
+      parameter(maxdx=nxtab)
+      parameter(nwsize=120)
       parameter(nwmax = nwsize + 1) 
 c--these numbers are used to determine the size of dxmin and dxmax
 c--compared to dx (see below)  entries in work array will all 

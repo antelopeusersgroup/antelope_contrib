@@ -53,7 +53,7 @@ c-----------------------------------------------------------------------
 c--holds header from travel time table for comparison with header 
 c--on velocity model  
       character*80 headtab
-      parameter(maxwork=100)
+      parameter(maxwork=2*nxtab)
       real twork(maxwork),pwork(maxwork)
       character brwork(maxwork) 
       character refr  

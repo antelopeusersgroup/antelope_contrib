@@ -60,13 +60,17 @@ c       blaim ansi for not including while in the new standard.
 c 
 c-----------------------------------------------------------------------
 	include 'switch.common'
+	include 'first.common'
       dimension p(np),t(np),x(np) 
       character branch(np)
 c--nxmax defines sizes of work space
 c--maxdx defines the distance at which the curves are truncated.
 c--that distance is maxdx*dx
 c--careful maxdx must be consistent with same parameter in intrp
-      parameter(nxmax=20000,maxdx=50) 
+c     parameter(nxmax=20000,maxdx=50) 
+c--rather than hardwired, we now make this = to first arrival table size
+      parameter(maxdx=nxtab)
+      parameter(nxmax=20000)
       real pwork(nxmax),twork(nxmax),xwork(nxmax) 
       character brwork(nxmax) 
       character bnorm,revs,shad,up
