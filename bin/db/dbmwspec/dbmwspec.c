@@ -1,9 +1,7 @@
-
 #include <malloc.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <sunmath.h>
 
 #include "stock.h"
 #include "coords.h"
@@ -491,7 +489,7 @@ int main(int argc, char **argv)
 			time window */
 			tstart = pick + this_phase->start;
 			tend = pick + this_phase->end;
-			nsamples = nint ( (tend - tstart)*samprate);
+			nsamples = rint ( (tend - tstart)*samprate);
 			if( (tstart < time) || (tend > endtime) )
 			{
 				dbserr("Spectra window does all contained in waveform segment",

@@ -1,7 +1,7 @@
 BIN=dbmwspec
 PF=dbmwspec.pf
 MAN1=dbmwspec.1
-ldlibs= -lmw -lscv2 -ldbl2 -lgrx $(TRLIBS) -lX11 -lm
+ldlibs= -lmw -lscv2 -ldbl2  $(TRLIBS) -lm
 include $(ANTELOPEMAKE)  
 
 OBJS=dbmwspec.o \

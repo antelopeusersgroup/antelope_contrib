@@ -3,7 +3,6 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sunmath.h>
 
 #include "stock.h"
 #include "coords.h"
@@ -54,7 +53,7 @@ Trace *read_trace (Dbptr db, double tstart, double tend)
 				== dbINVALID)
 		die(1,"read_trace error reading from database wfdisc table\n");
 
-	nsamp = nint( (tend-tstart)*samprate);
+	nsamp = rint( (tend-tstart)*samprate);
 	allot(float *,data,nsamp);
 	dt = 1.0/samprate;
 	if(trgetwf(db,0,&data,&nsamp,tstart,tend,&t0,&t1,&npts,0,0))

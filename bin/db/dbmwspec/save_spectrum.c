@@ -2,7 +2,6 @@
 #include <string.h>
 #include <malloc.h>
 #include <unistd.h>
-#include <sunmath.h>
 #include "stock.h"
 #include "coords.h"
 #include "arrays.h"
@@ -140,7 +139,7 @@ int save_spectrum(Dbptr db,
 	items come from. */
 	phase = strdup(p->phase_reference);
 	tbp = p->tbwp;
-	nwin = nint(tbp*2);
+	nwin = rint(tbp*2);
 
 	/* We extract these items from the db.  This assumes that
 	the db record pointer is set properly. Note we are getting the
