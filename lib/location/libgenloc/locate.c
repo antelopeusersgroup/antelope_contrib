@@ -1563,6 +1563,7 @@ Hypocenter gridloc (Tbl *attbl, Tbl *utbl, Point *grid, int ngrid,
 		statistics = form_equations(RESIDUALS_ONLY,hypo,
 			attbl,utbl,
 			options, dummy, b, r, w, reswt,&nused);
+                for(j=0;j<natimes;++j) work[j] = r[j];
 		time_statistics = calc_statistics(work,nused);
 		/* reset the arrival time residuals */
 		for(j=0;j<natimes;++j) 
