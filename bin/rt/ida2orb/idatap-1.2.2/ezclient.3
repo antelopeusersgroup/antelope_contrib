@@ -1,0 +1,257 @@
+.\" %W% %G%
+.TH XFER_CLIENT 3 "March 1997" "IDA Data Exchange Routines"
+.SH NAME
+Xfer_Open, Xfer_Read, Xfer_Close\- client side routines for simplified dialog with an IDA data server
+.SH SYNOPSIS
+.B cc
+.RI "[ " "flag" " \|.\|.\|. ] " "file" " \|.\|.\|."
+.B \-lxfer
+.RI "[ " "library" " \|.\|.\|. ]"
+.LP
+.B #include "xfer.h"
+.ft
+.fi
+.LP
+.nf
+.ft B
+XFER *Xfer_Open(host, sc, beg, end, keepup, retry)
+char *host;
+char *sc;
+double beg;
+double end;
+int keepup;
+int retry;
+.ft
+.fi
+.LP
+.nf
+.ft B
+int Xfer_Read(xp, packet)
+XFER *xp;
+struct xfer_packet *packet;
+.ft
+.fi
+.LP
+.nf
+.ft B
+void Xfer_Close(xp)
+XFER *xp;
+.ft
+.fi
+.SH DESCRIPTION
+These functions provide a simple interface to an IDA data server, without
+requiring the user to understand any of the details of the
+underlying data exchange prototol.  Programs should call 
+.B Xfer_Open(\|)
+to establish the connection and submit the data request and then
+loop around calls to
+.B Xfer_Read(\|)
+until such time as all data have been received or an error
+occurs.  The client side of the connection is broken with a
+call to \fBXfer_Close(\|)\fR.
+The details of each function call follow.
+.PP
+.B Xfer_Open(\|)
+is used to establish a connection with \fIhost\fR, where \fIhost\fR
+is a null-terminated string containing the remote hostname or IP address
+in the conventional \fB` . '\fR notation.  The \fIsc\fR argument is a
+null-terminated string specfying the desired station(s) and channel(s),
+in the form "sta:chn,...+sta:chn,...".  For example,
+.sp
+.ce 1
+sc = "pfo:bhz,bhn,bhe"
+.sp
+would request the broad band channels from station PFO, while
+.sp
+.ce 1
+sc = "pfo:bhz,bhn,bhe+tau:lhz,lhn,lne"
+.sp
+would request the same channels as the first example plus the long
+period channels from station TAU.
+.sp
+The next two arguments, \fIbeg\fR and \fIend\fR, give the time span of
+the desired data segment, where time is given as the number of seconds
+since 00:00:00 UTC, January 1, 1970.  The constants XFER_YNGEST
+and XFER_OLDEST are interpreted by the server to mean the youngest
+and oldest data available, respectively.  If a continuous data feed is desired, then
+specify \fIend\fR to be \XFER_YNGEST and set \fIkeepup\fR to any
+non-zero value.  If \fIend\fR is anything other than XFER_YNGEST,
+or if \fIkeepup\fR is zero, then the server will break the connection 
+after the last available data are sent.  If \fIkeepup\fR is positive,
+then the server will maintain an open connection and send new data
+as they are acquired on the server. The \fIretry\fR flag determines
+what to do if there is a timeout while establishing the connection or
+when sending or receiving data over the connection.  If \fIretry\fR is
+non-zero, then the 
+.B Xfer_Open(\|)
+will not 
+return until the operation is successful or until some error occurs.
+If \fIretry\fR is zero, then the operation will not attempt to 
+reconnect after a timeout.  This flag also affects the behaviour of
+.B Xfer_Read(\|)
+on timeout, as described below.
+.B Xfer_Open(\|)
+returns a pointer to an \fIXFER\fR object which is used by the other
+functions.  If there is an error (or timeout if \fIretry\fR is zero)
+then
+.B Xfer_Open(\|)
+returns a NULL pointer and the global variable \fIxfer_errno\fR is
+set to indicate the reason.
+.sp
+.B Xfer_Read(\|)
+takes the next data packet from the server pointed to by \fIxp\fR, where
+\fIxp\fR was obtained by a prior call to
+.B Xfer_Open(\|)
+If 
+.B Xfer_Open(\|)
+was called with a non-zero \fIretry\fR
+.B Xfer_Read(\|)
+will not return until a packet is received, or the server sends a message
+saying no further data are to be coming, or if an I/O error occurs.
+(The protocol insures that a timeout means loss of communication over
+the socket (as opposed to an application induced delay by setting
+\fIkeepup\fR positive in \fBXfer_Open(\|)\fR) by sending regular
+heartbeat messages when waiting for new data to be acquired by the
+server.  These heartbeats are dealt with transparent to the application.)
+.PP
+The contents of the structure pointed to by
+.I packet
+include the following members:
+.PP
+.RS
+.nf
+.ft 3
+.ta 9n 22n
+char	*sname;	/* station name */
+float	lat;	/* latitutude, decimal degrees */
+float	lon;	/* longitude, decimal degrees */
+float	elev;	/* surface elevation, meters */
+float	depth;	/* depth of burial of sensor, meters */
+char	*cname;	/* channel name                        */
+char	*instype;	/* GSE2.0 instype */
+float	sint;	/* nominal sample interval in seconds */
+float	calib;	/* CSS 3.0 calib */
+float	calper;	/* CSS 3.0 calper */
+float	vang;	/* CSS 3.0 vang (vertial orientation of sensor */
+float	hang;	/* CSS 3.0 hang (horizontal orientation of sensor */
+double	beg;	/* time of first sample in packet */
+double	end;	/* time of last  sample in packet */
+int	tear;	/* if non-zero, there was a time tear */
+long	nsamp;	/* number of samples */
+long	*data;	/* array of nsamp longs, in local host byte order */
+.ft 1
+.fi
+.RE
+.PP
+.B Xfer_Read(\|)
+will return \fBXFER_OK\fR if the read was successful, \fBXFER_FINISHED\fR
+if the server has replied that no further data are to be coming.
+If there is an error (or timeout if \fIretry\fR was zero in 
+\fBXfer_Open(\|)\fR) then
+.B Xfer_Read(\|)
+returns a NULL pointer and the global variable \fIxfer_errno\fR is
+set to indicate the reason.
+.PP
+.B Xfer_Close(\|)
+closes the connection pointed to by \fIxp\fR and frees resources
+allocated by the underlying routines.  It has no return value.
+.SH SIGNALS
+.B Xfer_Open(\|)
+installs signal handlers to trap
+\fBSIGPIPE\fR (for writes to a server which has died) and
+\fBSIGALRM\fR (to handle socket I/O timeouts).
+.SH ERRORS
+.TP 18
+.SM XFER_EBUSY
+The server is too busy to accept the connection.
+.TP
+.SM XFER_ECONNECT
+No connection with peer.
+.TP
+.SM XFER_EHANDLER
+Unable to install signal handler.
+.TP
+.SM XFER_EINVAL
+Illegal data were received.  
+This usually means that one or more of the parameters passed
+to \fBXfer_Open(\|)\fR were bad.
+.TP
+.SM XFER_EIO
+An I/O error occured.  
+.TP
+.SM XFER_ELIMIT
+An implementation defined limit was exceeded.
+.TP
+.SM XFER_EPIPE
+The server died.
+.TP
+.SM XFER_ENOSUCH
+None of the requested stations/channels are available.
+.TP
+.SM XFER_EREFUSED
+The request was sent by an unauthorized client and the server refused
+to accept the connection.
+.TP
+.SM XFER_EREJECTED
+The request was rejected by the server, due to invalid contents.
+This indicates a bug in underlying library routines, should it ever occur.
+.TP
+.SM XFER_ETIMEDOUT
+The socket I/O time limit expired.
+.TP
+.SM XFER_ETOOBIG
+An incoming message exceeded the implementation message size limit.
+This indicates a bug in the server, should it ever occur.
+.SH EXAMPLE
+The following program illustrates the use of these
+functions.  It will establish a continuous data feed from the
+indicated server and print a few of the header contents of each
+packet as it is received.
+.PP
+.RS
+.ft 3
+.nf
+#include <stdio.h>
+#include "xfer.h"
+ 
+main(argc, argv)
+int argc;
+char *argv[];
+{
+static char *host = "idahub.ucsd.edu";
+static char *sc   = "pfo:bhz+tau:bhz";
+int status;
+XFER *xp;
+struct xfer_packet packet;
+int header_only = 1; /* use 0 to enable stdout packet dumps */
+ 
+    xp = Xfer_Open(host, sc, XFER_YNGEST, XFER_YNGEST, 1, 1);
+    if (xp == (XFER *) NULL) {
+        fprintf(stderr, "%s: %s\\n", host, Xfer_ErrStr());
+        exit(1);
+    }
+ 
+    while ((status = Xfer_Read(xp, &packet)) == XFER_OK) {
+        if (header_only) {
+            printf("%s:%s %13.3lf %13.3lf %4d %6.2f %7ld %7ld\\n",
+                packet.sname, packet.cname, packet.beg, packet.end,
+                packet.nsamp, packet.sint, packet.data[0],
+                packet.data[packet.nsamp-1]
+            );
+        } else {
+            fwrite(&packet, sizeof(packet), 1, stdout);
+        }
+    }
+ 
+    if (status != XFER_FINISHED) {
+        fprintf(stderr, "%s: %s\\n", host, Xfer_ErrStr());
+        exit(1);
+    }
+    
+    Xfer_Close(xp);
+ 
+    exit(0);
+}
+.fi
+.ft
+.RE
