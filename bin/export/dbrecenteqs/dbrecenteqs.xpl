@@ -124,12 +124,12 @@ sub init_globals {
 
 	my( @db ) = dbopen( $State{region_phrases_database}, "r" );
 	if( $db[0] < 0 ) {
-		print STDERR "Couldn't open $State{region_phrases_database}\n";
+		elog_complain "Couldn't open $State{region_phrases_database}\n";
 		undef $State{region_phrases_database};
 	}
 	@db = dblookup( @db, "", "regions", "", "" );
 	if( $db[1] < 0 ) {
-		print STDERR
+		elog_complain
 			"No regions table in $State{region_phrases_database}\n";
 		undef $State{region_phrases_database};
 	} else {
@@ -153,14 +153,18 @@ sub cleanup_database {
 	my( $cmd, $cutoff, $table );
 
 	if( ! defined( $State{keep_ndays} ) || $State{keep_ndays} == 0 ) {
-		print
-		  "dbrecenteqs: keep_ndays undefined or set to " .
-		  "zero (cleanup disabled). No cleanup initiated.\n";
+		if( $opt_v ) { 
+			elog_notify 
+		  	"dbrecenteqs: keep_ndays undefined or set to " .
+		  	"zero (cleanup disabled). No cleanup initiated.\n";
+		}
 		return;
 	} else {
-		print
-		  "dbrecenteqs: Trimming $dbname to $State{keep_ndays} " .
-		  "most recent days.\n";
+		if( $opt_v ) { 
+			elog_notify 
+		  		"dbrecenteqs: Trimming $dbname to $State{keep_ndays} " .
+		  		"most recent days.\n";
+		}
 	}
 
 	$cutoff = str2epoch( "now" ) - $State{keep_ndays} * 86400;
@@ -170,31 +174,37 @@ sub cleanup_database {
 
 	foreach $table ("arrival", "detection", "origin" ) {
 
-		print "dbrecenteqs: Cleaning $table table\n";
+		if( $opt_v ) {
+			elog_notify "dbrecenteqs: Cleaning $table table\n";
+		}
 
 		next if( ! -e "$dbname.$table" );
 
 		$cmd = "dbsubset $dbname.$table \"time < $cutoff\" | " .
 			"dbdelete - $table";
 		system( $cmd );
-		if( $? ) { print STDERR "\t command error $?\n"; }
+		if( $? ) { elog_complain "\t command error $?\n"; }
 	}
 
 	foreach $table ( "assoc", "event", "mapassoc" ) {
 
-		print "dbrecenteqs: Cleaning $table table\n";
+		if( $opt_v ) {
+			elog_notify "dbrecenteqs: Cleaning $table table\n";
+		}
 
 		next if( ! -e "$dbname.$table" );
 		next if( ! -e "$dbname.origin" );
 
 		$cmd = "dbnojoin $dbname.$table origin | dbdelete - $table";
 		system( $cmd );
-		if( $? ) { print STDERR "\t command error $?\n"; }
+		if( $? ) { elog_complain "\t command error $?\n"; }
 	}
 
 	foreach $table ( "webmaps" ) {
 
-		print "dbrecenteqs: Cleaning $table table\n";
+		if( $opt_v ) {
+			elog_notify "dbrecenteqs: Cleaning $table table\n";
+		}
 
 		next if( ! -e "$dbname.$table" );
 		next if( ! -e "$dbname.event" );
@@ -203,7 +213,7 @@ sub cleanup_database {
 			"dbsubset - \"evid != NULL\" | " .
 			"dbdelete - $table";
 		system( $cmd );
-		if( $? ) { print STDERR "\t command error $?\n"; }
+		if( $? ) { elog_complain "\t command error $?\n"; }
 	}
 	$cmd = "orb2db_msg $dbname continue";
 	system( $cmd );
@@ -411,7 +421,7 @@ sub station_vitals {
 			# SCAFFOLD
 			# Need to handle the potential of multiple rows
 
-			fprintf STDERR 
+			elog_complain 
 			       "Warning: dbrecenteqs does not yet support" .
 			       "wfmeas station-measurements\n";
 		}
@@ -849,7 +859,7 @@ sub create_focusmap_html {
 
 	if( ! defined( $output ) ) {
 
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping evid $evid--" .
 			"\tFailed to open '$xml_filename'\n" .
@@ -949,7 +959,7 @@ sub create_focusmap_html {
 	if( ! defined( $State{"nearest_places"}->{"cities_dbname"} ) ||
 	      $State{"nearest_places"}->{"cities_dbname"} eq "" ) {
 
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping cities--" .
 			"no cities_dbname specified\n" .
@@ -957,7 +967,7 @@ sub create_focusmap_html {
 
 	} elsif( ! -e "$State{nearest_places}->{cities_dbname}" ) {
 
-		print STDERR
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping cities--" .
 			"$State{nearest_places}->{cities_dbname}.places " .
@@ -1595,7 +1605,9 @@ sub create_stockmap_html {
 
 	my( $ypixperkm ) = $height / ( ( $updellat - $downdellat ) * 111.195 );
 	
-	print "dbrecenteqs: Updating html for $mapclass map $mapname\n";
+	if( $opt_v ) {
+		elog_notify "dbrecenteqs: Updating html for $mapclass map $mapname\n";
+	}
 
 	my( @db ) = dbprocess( @db, 
 			       "dbopen webmaps",
@@ -1812,7 +1824,9 @@ sub update_stockmap {
 
 	my( $mapname ) = dbgetv( @db, "mapname" );
 
-	print "dbrecenteqs: Updating map $mapname\n";
+	if( $opt_v ) { 
+		elog_notify "dbrecenteqs: Updating map $mapname\n";
+	}
 
 	my( @dbbundle ) = split( ' ', dbgetv( @db, "bundle" ) );
 
@@ -1833,7 +1847,9 @@ sub update_stockmap {
 		    ( $State{max_num_eqs} > 0 ) &&
 		    ( ( $endrec - $startrec ) > $State{max_num_eqs} ) ) {
 
-		    print "dbrecenteqs: limiting $mapname to $State{max_num_eqs} earthquakes\n";
+		    if( $opt_v ) {
+			elog_notify "dbrecenteqs: limiting $mapname to $State{max_num_eqs} earthquakes\n";
+		    }
 
 		    $startrec = $endrec - $State{max_num_eqs};
 		}
@@ -1936,17 +1952,28 @@ chomp( $Program );
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('e:p:huc:') || @ARGV != 1 ) {
+elog_notify( "$Program started at " . 
+	     epoch2str( str2epoch( "now" ),  "%D %T %Z", "" ) . "\n" );
 
-	die ( "Usage: $Program [-h] [-u] [-p pffile] " .
+if ( ! &Getopts('ve:p:huc:') || @ARGV != 1 ) {
+
+	die ( "Usage: $Program [-v] [-h] [-u] [-p pffile] " .
 	      "[-e evid] [-c sourcedb] database\n" ); 
 
 } else {
+
 	$dbname = $ARGV[0];
+
 	if( $opt_p ) {
 		$State{pf} = $opt_p;
 	} else {
 		$State{pf} = "dbrecenteqs";
+	}
+
+	if( $opt_v ) {
+		$V = "-V";
+	} else {
+		$V = "";
 	}
 }
 
@@ -1973,8 +2000,8 @@ if( ! expansion_schema_present( @db ) ) {
 
 if( $State{use_qgrids} && ! gme_schema_present( @db ) ) {
 
-	printf STDERR "Turning off use_qgrids option: gme1.0 expansion " .
-		  "schema is not present in $dbname. Bye.\n";
+	elog_complain "Turning off use_qgrids option: gme1.0 expansion " .
+		  "schema is not present in $dbname.\n";
 	$State{use_qgrids} = 0;
 }
 
@@ -2086,7 +2113,9 @@ if( $opt_e ) {
 
 	$nmaps = dbquery( @dbwebmaps, "dbRECORD_COUNT" );
 
-	print "dbrecenteqs: updating html for $nmaps focus maps\n";
+	if( $opt_v ) {
+		elog_notify "dbrecenteqs: updating html for $nmaps focus maps\n";
+	}
 
 	for( $dbwebmaps[3]=0; $dbwebmaps[3]<$nmaps; $dbwebmaps[3]++ ) {
 
@@ -2129,14 +2158,18 @@ if( $opt_e ) {
 
 	$nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
 
-	print "dbrecenteqs: creating $nmaps focus maps\n";
+	if( $opt_v ) {
+		elog_notify "dbrecenteqs: creating $nmaps focus maps\n";
+	}
 
 	for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
 
 		( $evid ) = dbgetv( @dbneedmaps, "evid" );
 
-		print sprintf "Creating focus map %d of %d:\n",
+		if( $opt_v ) {
+			elog_notify sprintf "Creating focus map %d of %d:\n",
 			      $dbneedmaps[3]+1, $nmaps;
+		}
 
 		foreach $map ( @{$State{focus_maps}} ) {
 	
@@ -2150,7 +2183,9 @@ if( $opt_e ) {
 	}
 }
 
-print "dbrecenteqs: updating $ngroups stock maps\n";
+if( $opt_v ) {
+	elog_notify "dbrecenteqs: updating $ngroups stock maps\n";
+}
 
 for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
 
@@ -2164,3 +2199,7 @@ dbcrunch( dblookup( @db, "", "mapassoc", "", "dbALL" ) );
 if( defined( $State{"workdir"} ) && $State{"workdir"} ne "" ) {
 	system( "/bin/rm -rf $State{workdir}" );
 }
+
+elog_notify( "$Program finished at " . 
+	     epoch2str( str2epoch( "now" ),  "%D %T %Z", "" ) . "\n\n" );
+

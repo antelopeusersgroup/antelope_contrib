@@ -133,7 +133,7 @@ sub check_dir_dfile {
 	$dir_size = dbquery( @db, "dbFIELD_SIZE" );
 
 	if( length( $dir ) > $dir_size ) {
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Truncating dir\n\t'$dir';\n" .
 			"\tPROBABLE DATABASE CORRUPTION!!\n" .
@@ -144,7 +144,7 @@ sub check_dir_dfile {
 	$dfile_size = dbquery( @db, "dbFIELD_SIZE" );
 
 	if( length( $dfile ) > $dfile_size ) {
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Truncating dfile\n\t'$dfile';\n" .
 			"\tPROBABLE DATABASE CORRUPTION!!\n" .
@@ -176,7 +176,7 @@ sub expansion_schema_present {
 		$lddate_used = 
 			grep( /lddate/, dbquery( @db, "dbTABLE_FIELDS" ) );
 		if( ! $lddate_used ) {
-			print STDERR "Please upgrade to dbrecenteqs1.2.\n";
+			elog_complain "Please upgrade to dbrecenteqs1.2.\n";
 			$present = 0;
 		}
 	}
@@ -186,7 +186,7 @@ sub expansion_schema_present {
 		$symtype_used = 
 			grep( /symtype/, dbquery( @db, "dbTABLE_FIELDS" ) );
 		if( ! $symtype_used ) {
-			print STDERR "Please upgrade to dbrecenteqs1.2.\n";
+			elog_complain "Please upgrade to dbrecenteqs1.2.\n";
 			$present = 0;
 		}
 	}
@@ -251,7 +251,9 @@ sub remove_stale_webmaps {
 
 	my( $stale_nrecs ) = dbquery( @db, "dbRECORD_COUNT" );
 
-	print STDERR "Removing $stale_nrecs stale webmap entries\n";
+	if( $opt_v ) {
+		elog_notify "Removing $stale_nrecs stale webmap entries\n";
+	}
 
 	for( $db[3] = 0; $db[3] < $stale_nrecs; $db[3]++ ) {
 		my( $mapname ) = dbgetv( @db, "mapname" );
@@ -476,7 +478,7 @@ sub more_ps {
 	} elsif( $position eq "last" ) {
 		return ( "-O", ">>" );
 	} else {
-		print STDERR "Unknown position $position in &more_ps\n";
+		elog_complain "Unknown position $position in &more_ps\n";
 		return "";
 	}
 }
@@ -488,12 +490,14 @@ sub plot_basemap {
 	my( $more, $redirect ) = more_ps( $position );
 
 	my( $cmd ) = "psbasemap " . 
-			"-X0 -Y0 -P -V " .
+			"-X0 -Y0 -P $V " .
 			"-Bg$Mapspec{gridline_interval_deg}wesn " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " . 
 			$more . 
 			"$redirect $Mapspec{psfile}";
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -503,14 +507,16 @@ sub plot_lakes {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P -X0 -Y0 " .
+	my( $cmd ) = "pscoast $V -P -X0 -Y0 " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-D$Mapspec{detail_density} " .
 			"-C0/0/255 " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -520,14 +526,16 @@ sub plot_state_boundaries {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P -X0 -Y0 " .
+	my( $cmd ) = "pscoast $V -P -X0 -Y0 " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-D$Mapspec{detail_density} " .
 			"-N2/2/0/0/0 " . 
 			$more . 
 			"$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -537,14 +545,16 @@ sub plot_national_boundaries {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P -X0 -Y0 " .
+	my( $cmd ) = "pscoast $V -P -X0 -Y0 " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-D$Mapspec{detail_density} " .
 			"-N1/5/0/0/0 " . 
 			$more . 
 			"$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -554,14 +564,16 @@ sub plot_rivers {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P -X0 -Y0 " .
+	my( $cmd ) = "pscoast $V -P -X0 -Y0 " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-D$Mapspec{detail_density} " .
 			"-Ir/1/0/0/255 " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -645,13 +657,19 @@ sub make_hypocenter_tempfile {
 		"(lon > $minlon $lon_wrap " .
 		"lon < $maxlon)";
 
-	print STDERR "Subsetting database for hypocenters...";
+	if( $opt_v ) {
+		elog_notify "Subsetting database for hypocenters...";
+	}
 	@db = dbsubset( @db, $expr );
-	print STDERR "done\n";
+	if( $opt_v ) {
+		elog_notify "done\n";
+	}
 
 	$nrecs = dbquery( @db, "dbRECORD_COUNT" );
 			
-	print STDERR "Building temp file of $nrecs hypocenters...";
+	if( $opt_v ) {
+		elog_notify "Building temp file of $nrecs hypocenters...";
+	}
 	open( H, ">$tempfile" );
 
 	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
@@ -662,7 +680,9 @@ sub make_hypocenter_tempfile {
 	}
 
 	close( H );
-	print STDERR "done\n";
+	if( $opt_v ) {
+		elog_notify "done\n";
+	}
 
 	dbclose( @db );
 
@@ -675,7 +695,7 @@ sub plot_hypocenters {
 
 	if( ! defined( $Mapspec{hypocenter_dbname} ) || 
 	      $Mapspec{hypocenter_dbname} eq "" ) {
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping hypocenters--" .
 			"\tno hypocenter_dbname specified\n" .
@@ -684,7 +704,7 @@ sub plot_hypocenters {
 
 	} elsif( ! -e "$Mapspec{hypocenter_dbname}.origin" ) {
 
-		print STDERR
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping hypocenters--" .
 			"\t$Mapspec{hypocenter_dbname}.origin not found\n" .
@@ -697,14 +717,16 @@ sub plot_hypocenters {
 	my ( $hypocenter_tempfile ) =
 		make_hypocenter_tempfile( \%Mapspec );
 
-	my( $cmd ) = "cat $hypocenter_tempfile | psxy -V -P " .
+	my( $cmd ) = "cat $hypocenter_tempfile | psxy $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-C$Mapspec{depth_color_palette_file} " .
 			"-Ss$Mapspec{background_magsize_pixels}p " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	unlink( $hypocenter_tempfile );
@@ -746,7 +768,7 @@ sub plot_qgrid {
 	}
 
 	if( $position ne "middle" ) {
-		printf STDERR "Warning: qgrid only implemented for " .
+		elog_complain "Warning: qgrid only implemented for " .
 		 "middle-position plotting\n";
 	}
 
@@ -758,12 +780,14 @@ sub plot_qgrid {
 		"$Mapspec{qgrid_minlat}/$Mapspec{qgrid_maxlat}";
 
 	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
-		     "xyz2grd -V -H1 -N0 " .
+		     "xyz2grd $V -H1 -N0 " .
 		     "-I$Mapspec{qgrid_dlon}/$Mapspec{qgrid_dlat} " .
 		     "-G$gmt_qgrid " .
 		     "$gmt_qgrid_rectangle";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	if( ! defined( $Mapspec{qgrid_nintervals} ) ) {
@@ -788,7 +812,7 @@ sub plot_qgrid {
 		$units_name = $Mapspec{qgrid_units};
 	}
 
-	$cmd = "grdcontour -V $gmt_qgrid " .
+	$cmd = "grdcontour $V $gmt_qgrid " .
 	       "$Mapspec{Rectangle} $Mapspec{Projection} " .
 	       "-C$interval -N$units_name " .
 	       "-W8/255/255/0 -Af12/255/255/0 " .
@@ -796,7 +820,9 @@ sub plot_qgrid {
 	       $more . 
 	       "$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	unlink( "$gmt_qgrid" );
@@ -807,7 +833,7 @@ sub plot_drape {
 	my( $position ) = shift( @_ );
 
 	if( $position ne "middle" ) {
-		printf STDERR "Warning: contours only implemented for " .
+		elog_complain "Warning: contours only implemented for " .
 		 "middle-position plotting\n";
 	}
 
@@ -817,7 +843,7 @@ sub plot_drape {
 
 	if( ! -e "$Mapspec{grddb}" ) {
 
-		print STDERR
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Not plotting draped data values;\n" .
 			"\tgrddb '$Mapspec{grddb}' not found\n" .
@@ -866,11 +892,16 @@ sub plot_drape {
 	$elimit_normal = normal_lon( $elimit );
 	my( $tile_normal ) = "-R$wlimit_normal/$elimit_normal/$slimit/$nlimit";
 
-	print "Running dbgmtgrid for $tile, output=$grdfile\n";
+	if( $opt_v ) {
+		elog_notify "Running dbgmtgrid for $tile, output=$grdfile\n";
+		$extractverbose = 1;
+	} else {
+		$extractverbose = 0;
+	}
 
-	my( $rc ) = dbgmtgrid( @dbgrid, $tile, $grdfile, verbose => 1 );
+	my( $rc ) = dbgmtgrid( @dbgrid, $tile, $grdfile, verbose => $extractverbose );
 	if( $rc < 0 ) {
-		print STDERR
+		elog_complain
 		"\n\t************************************\n" . 
 		"\tWARNING: dbgmtgrid() failed for '$tile'\n" .
 		"\t************************************\n\n";
@@ -878,33 +909,41 @@ sub plot_drape {
 	}
 	dbclose( @dbgrid );
 
-	$cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
+	$cmd = "grdgradient $grdfile -G$gradfile $V $Mapspec{grdgradient_opt}";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
-		     "xyz2grd -V -H1 -N0 " .
+		     "xyz2grd $V -H1 -N0 " .
 		     "-I$Mapspec{qgrid_dlon}/$Mapspec{qgrid_dlat} " .
 		     "-G$gmt_qgrid_file " .
 		     "$tile_normal";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
-	my( $cmd ) = "grdedit -V $gmt_qgrid_file $tile";
+	my( $cmd ) = "grdedit $V $gmt_qgrid_file $tile";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
-	my( $cmd ) = "grdsample -V -F $gmt_qgrid_file " .
+	my( $cmd ) = "grdsample $V -F $gmt_qgrid_file " .
 		     "-G$gmt_qgridresamp_file " .
 		     "$tile -I$dx/$dy";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
-	$cmd = "grdview -V -P -Qi50 -JZ0.5i " .
+	$cmd = "grdview $V -P -Qi50 -JZ0.5i " .
 	      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
 		"$grdfile " .
 		"-I$gradfile " .
@@ -913,7 +952,9 @@ sub plot_drape {
 		$more .
 		"$redirect $Mapspec{psfile}";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -922,7 +963,7 @@ sub plot_contours {
 	my( $position ) = shift( @_ );
 
 	if( $position ne "middle" ) {
-		printf STDERR "Warning: contours only implemented for " .
+		elog_complain "Warning: contours only implemented for " .
 		 "middle-position plotting\n";
 	}
 
@@ -932,31 +973,35 @@ sub plot_contours {
 
 	if( $Mapspec{contour_mode} eq "none" ) {
 
-		$cmd = "pscoast -V -P " .
+		$cmd = "pscoast $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-C200/200/255 -S200/200/255 -G255/243/230 " .
 			"-D$Mapspec{detail_density} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
-		print "$cmd\n";
+		if( $opt_v ) {
+			elog_notify "$cmd\n";
+		}
 		system( $cmd );
 
 	} elsif( ( $Mapspec{contour_mode} eq "grddb" ) &&
 	    ( ! -e "$Mapspec{grddb}" ) ) {
 
-		print STDERR
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Setting contour_mode to \"none\":\n" .
 			"\tgrddb '$Mapspec{grddb}' not found\n" .
 			"\t************************************\n\n";
 
-		$cmd = "pscoast -V -P " .
+		$cmd = "pscoast $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-C200/200/255 -S200/200/255 -G255/243/230 " .
 			"-D$Mapspec{detail_density} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
-		print "$cmd\n";
+		if( $opt_v ) {
+			elog_notify "$cmd\n";
+		}
 		system( $cmd );
 
 	} elsif( $Mapspec{contour_mode} eq "grddb" ) {
@@ -1019,20 +1064,27 @@ sub plot_contours {
 
 		    my( $tile ) = "-R$w/$e/$s/$n";
 
-		    print "Running dbgmtgrid for $tile, output=$grdfile\n";
+		    if( $opt_v ) {
+			elog_notify "Running dbgmtgrid for $tile, output=$grdfile\n";
+			$extractverbose = 1;
+		    } else {
+			$extractverbose = 0;
+		    }
 
 		    my( $rc ) = dbgmtgrid( @dbgrid, $tile,
-				           $grdfile, verbose => 1 );
+				           $grdfile, verbose => $extractverbose );
 		    if( $rc < 0 ) {
-			print STDERR
+			elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: dbgmtgrid() failed for tile '$tile'\n" .
 			"\t************************************\n\n";
 			next;
 		    }
 
-		    $cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
-		    print "$cmd\n";
+		    $cmd = "grdgradient $grdfile -G$gradfile $V $Mapspec{grdgradient_opt}";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
 		    open( C, ">$psclipfile" );
@@ -1054,15 +1106,17 @@ sub plot_contours {
 
 		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
 
-		    $cmd = "psclip -V $psclipfile " .
+		    $cmd = "psclip $V $psclipfile " .
 			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
 			   $more .
 			   "$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
-		    $cmd = "grdimage -V -P " .
+		    $cmd = "grdimage $V -P " .
 		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"$grdfile " .
 			"-I$gradfile " .
@@ -1070,14 +1124,18 @@ sub plot_contours {
 			$more .
 			"$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
-		    $cmd = "psclip -V -C " .
+		    $cmd = "psclip $V -C " .
 			   $more .
 			   "$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
 		    unlink( $grdfile );
@@ -1096,20 +1154,27 @@ sub plot_contours {
 
 		    next unless defined( $maskregion );
 
-		    print "Running dbgmtgrid for Land mask $maskregion, output=$grdfile\n";
+		    if( $opt_v ) {
+			elog_notify "Running dbgmtgrid for Land mask $maskregion, output=$grdfile\n";
+			$extractverbose = 1;
+		    } else {
+			$extractverbose = 0;
+		    }
 
 		    my( $rc ) = dbgmtgrid( @dbgrid, $maskregion,
-				           $grdfile, verbose => 1 );
+				           $grdfile, verbose => $extractverbose );
 		    if( $rc < 0 ) {
-			print STDERR
+			elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: dbgmtgrid() failed for maskregion '$maskregion'\n" .
 			"\t************************************\n\n";
 			next;
 		    }
 
-		    $cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
-		    print "$cmd\n";
+		    $cmd = "grdgradient $grdfile -G$gradfile $V $Mapspec{grdgradient_opt}";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
 		    open( C, ">$psclipfile" );
@@ -1131,15 +1196,17 @@ sub plot_contours {
 
 		    system( "/bin/cp $psclipfile /tmp/DEBUG_CLIPFILE" );
 
-		    $cmd = "psclip -V $psclipfile " .
+		    $cmd = "psclip $V $psclipfile " .
 			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
 			   $more .
 			   "$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
-		    $cmd = "grdimage -V -P " .
+		    $cmd = "grdimage $V -P " .
 		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"$grdfile " .
 			"-I$gradfile " .
@@ -1147,14 +1214,18 @@ sub plot_contours {
 			$more .
 			"$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
-		    $cmd = "psclip -V -C " .
+		    $cmd = "psclip $V -C " .
 			   $more .
 			   "$redirect $Mapspec{psfile}";
 
-		    print "$cmd\n";
+		    if( $opt_v ) {
+			elog_notify "$cmd\n";
+		    }
 		    system( $cmd );
 
 		}
@@ -1251,14 +1322,16 @@ sub plot_coastlines {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P " .
+	my( $cmd ) = "pscoast $V -P " .
 		     "$Mapspec{Rectangle} $Mapspec{Projection} " .
 		     "-W2/0/0/0 " .
 		     "-D$Mapspec{detail_density} " .
 		     $more .
 		     "$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -1268,13 +1341,15 @@ sub plot_oceans {
 
 	my( $more, $redirect ) = more_ps( $position );
 
-	my( $cmd ) = "pscoast -V -P -S0/0/200 " .
+	my( $cmd ) = "pscoast $V -P -S0/0/200 " .
 		     "$Mapspec{Rectangle} $Mapspec{Projection} " .
 		     "-D$Mapspec{detail_density} " .
 		     $more .
 		     "$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -1303,7 +1378,7 @@ sub plot_linefiles {
 	my( $position ) = shift( @_ );
 
 	if( $position ne "middle" ) {
-		printf STDERR "Warning: linefiles only implemented for " .
+		elog_complain "Warning: linefiles only implemented for " .
 		 "middle-position plotting\n";
 	}
 
@@ -1321,7 +1396,7 @@ sub plot_linefiles {
 
 		if( ! -e $file ) {
 
-			print STDERR 
+			elog_complain
 				"\n\t************************************\n" . 
 				"\tWARNING: Couldn't find linefile " .
 			     	"$file -- skipping\n" .
@@ -1330,7 +1405,7 @@ sub plot_linefiles {
 
 		} elsif( ! defined( $pen ) || $pen eq "" ) {
 
-			print STDERR 
+			elog_complain
 				"\n\t************************************\n" . 
 				"\tWARNING: No pen for linefile " .
 			     	"$file -- default to black\n" .
@@ -1339,13 +1414,15 @@ sub plot_linefiles {
 			$pen = "4/0/0/0";
 		}
 
-		$cmd = "psxy -V -P " .
+		$cmd = "psxy $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"$file -M -W$pen " .	
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
-		print "plotting $name:\n$cmd\n";
+		if( $opt_v ) {
+			elog_notify "plotting $name:\n$cmd\n";
+		}
 		system( $cmd );
 	}
 }
@@ -1356,7 +1433,7 @@ sub plot_cities {
 
 	if( ! defined( $Mapspec{cities_dbname} ) || 
 	      $Mapspec{cities_dbname} eq "" ) {
-		print STDERR 
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping cities--" .
 			"no cities_dbname specified\n" .
@@ -1365,7 +1442,7 @@ sub plot_cities {
 
 	} elsif( ! -e "$Mapspec{cities_dbname}.places" ) {
 
-		print STDERR
+		elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping cities--" .
 			"$Mapspec{cities_dbname}.places not found\n" .
@@ -1384,13 +1461,15 @@ sub plot_cities {
 		( $more, $redirect ) = more_ps( "middle" );
 	}
 
-	my( $cmd ) = "cat $locs_tempfile | psxy -V -P " .
+	my( $cmd ) = "cat $locs_tempfile | psxy $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			"-Ss$Mapspec{city_symbols_inches}i -G0 " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	if( $position eq "first" ) {
@@ -1401,12 +1480,14 @@ sub plot_cities {
 		( $more, $redirect ) = more_ps( $position );
 	}
 
-	my( $cmd ) = "cat $names_tempfile | pstext -V -P " .
+	my( $cmd ) = "cat $names_tempfile | pstext $V -P " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	unlink( $locs_tempfile );
@@ -1421,7 +1502,9 @@ sub plot_template {
 
 	my( $cmd ) = "";
 			
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 }
 
@@ -1577,7 +1660,9 @@ sub read_map_from_file {
 
 	$map_pathname =~ s/\.pf$//;
 
-	print STDERR "Re-reading index map $Mapspec{mapname} from file...\n";
+	if( $opt_v ) {
+		elog_notify "Re-reading index map $Mapspec{mapname} from file...\n";
+	}
 
 	if( "$map_pathname" =~ m@^\.?/@ && -e "$map_pathname" ) {
 
@@ -1717,7 +1802,9 @@ sub pixfile_convert {
 		     "not supported." );
 	}
 
-	print "$cmd\n";
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
 	system( $cmd );
 
 	$Mapspec{clean_image} = Image::Magick->new();
@@ -1736,7 +1823,7 @@ sub write_pixfile_pffile {
 
 	if( ! -e "$Mapspec{pixfile}" ) {
 
-		print STDERR "Won't write $Mapspec{pixfile}.pf; " .
+		elog_complain "Won't write $Mapspec{pixfile}.pf; " .
 			     "$Mapspec{pixfile} does not exist\n";
 		return;
 	}
@@ -1808,7 +1895,9 @@ sub add_to_mapstock {
 sub setup_index_Mapspec {
 	my( %Mapspec ) = %{ shift( @_ )};
 
-	print STDERR "Re-generating index map $Mapspec{mapname} dynamically...\n";
+	if( $opt_v ) {
+		elog_notify "Re-generating index map $Mapspec{mapname} dynamically...\n";
+	}
 	
 	$Mapspec{"file_basename"} = $Mapspec{"mapname"};
 

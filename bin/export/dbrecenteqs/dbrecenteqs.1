@@ -3,8 +3,8 @@
 dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
-\fBdbrecenteqs \fP[-p \fIpffile\fP] [-h] [-u] [-e \fIevid\fP]             [-c
-                \fIsourcedb\fP] \fIdbname\fP
+\fBdbrecenteqs \fP[-p \fIpffile\fP] [-v] [-h] [-u] [-e \fIevid\fP] 
+	       [-c \fIsourcedb\fP] \fIdbname\fP
 .fi
 .SH DESCRIPTION
 
@@ -91,23 +91,31 @@ will probably require libxml2 and libxslt from www.xmlsoft.org.
 
 .ne 7
 
--p \fIpffile\fP Specify name of parameter file (default is
+.IP "-p pffile"
+Specify name of parameter file (default is
 \fBdbrecenteqs\fP.pf)
 
--e \fIevid\fP Refresh the page for a single \fIevid\fP, and
+.IP -v
+verbose output
+
+.IP "-e evid"
+Refresh the page for a single \fIevid\fP, and
 regenerate stock maps
 
 .ne 7
--h don't regenerate focus maps; only recreate html
+.IP -h
+don't regenerate focus maps; only recreate html
 
--c \fIsourcedb\fP Copy the arrival, assoc, origin, and event
+.IP "-c sourcedb"
+Copy the arrival, assoc, origin, and event
 tables from the specified source database to the target database.
 This is useful to make \fBdbrecenteqs\fP entirely responsible
 for the web database, avoiding problems of views getting
 modified independently while \fBdbrecenteqs\fP is using them.
 .ne 4
 
--u die if another instance of \fBdbrecenteqs\fP is running.
+.IP -u
+die if another instance of \fBdbrecenteqs\fP is running.
 This behavior is deprecated due to the increased
 discretion of the modern rtexec(1) program.
 
@@ -436,6 +444,12 @@ To force by hand an evid to be updated:
 according to your installation)
 
 .SH DIAGNOSTICS
+
+"Processing instruction target begins with 'xml' at /opt/antelope/4.5p/bin/dbrecenteqs line 882", "Processing instruction target begins with 'xml' at /opt/antelope/4.5p/bin/dbrecenteqs line 1656": 
+These are apparently non-fatal messages from XML::Writer. The relevant 
+code is taken from the XML::Writer man-page, which may be deviating 
+slightly from the XML specification. Thes messages may be safely ignored. 
+
 "Couldn't find alchemy. Use alternate image-conversion method or fix
 path." This message indicates that the preferred image-conversion
 method, via the ImageAlchemyPS software package from HandMade Software
