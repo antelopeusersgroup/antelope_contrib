@@ -1,9 +1,0 @@
-DATADIR= matlab/antelope/examples/demodb/wf/knetc/1995/051/030555
-DATA= \
-	19950510746.23.AAK.BHE \
-	19950510746.23.AAK.BHN
-
-CLEAN=
-
-include $(ANTELOPEMAKE)
-
