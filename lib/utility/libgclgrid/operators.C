@@ -16,17 +16,17 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 
 	reset_index(); 
 
-	for(i=0;i<g.n1;++i)
+	for(i=0;i<n1;++i)
 	{
-		for(j=0;j<g.n2;++j)
+		for(j=0;j<n2;++j)
 		{
-			for(k=0;k<g.n3;++k)
+			for(k=0;k<n3;++k)
 			{
 				Cartesian_point cx;
 				Geographic_point gp;
-				gp = g.geo_coordinates(i,j,k);
-				cx = gtoc(gp.lat,gp.lon,gp.r);
-				err=lookup(cx.x1,cx.x2,cx.x3);
+				gp = geo_coordinates(i,j,k);
+				cx = g.gtoc(gp.lat,gp.lon,gp.r);
+				err=g.lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
 				case 1:
@@ -37,7 +37,7 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
 				case 2:
 				case 0:
-					valnew = interpolate(cx.x1,cx.x2,cx.x3);
+					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					val[i][j][k]+=valnew;
 
 					break;
@@ -57,18 +57,18 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 
 	reset_index(); 
 
-	for(i=0;i<g.n1;++i)
+	for(i=0;i<n1;++i)
 	{
-		for(j=0;j<g.n2;++j)
+		for(j=0;j<n2;++j)
 		{
-			for(k=0;k<g.n3;++k)
+			for(k=0;k<n3;++k)
 			{
 				Cartesian_point cx;
 				Geographic_point gp;
-				gp = g.geo_coordinates(i,j,k);
-				cx = gtoc(gp.lat,gp.lon,gp.r);
+				gp = geo_coordinates(i,j,k);
+				cx = g.gtoc(gp.lat,gp.lon,gp.r);
 
-				err=lookup(cx.x1,cx.x2,cx.x3);
+				err=g.lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
 				case 1:
@@ -80,7 +80,7 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				case 2:
 				case 0:
 
-					valnew = interpolate(cx.x1,cx.x2,cx.x3);
+					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					for(l=0;l<nv;++nv) val[i][j][k][l]=valnew[l];
 					delete valnew;
 					break;
@@ -99,13 +99,13 @@ void GCLscalarfield::operator += (GCLscalarfield& g)
 
 	reset_index(); 
 
-	for(i=0;i<g.n1;++i)
+	for(i=0;i<n1;++i)
 	{
-		for(j=0;j<g.n2;++j)
+		for(j=0;j<n2;++j)
 		{
 			Cartesian_point cx;
 
-			err=lookup(g.lat(i,j),g.lon(i,j));
+			err=g.lookup(lat(i,j),lon(i,j));
 			switch(err)
 			{
 			case 1:
@@ -116,8 +116,8 @@ void GCLscalarfield::operator += (GCLscalarfield& g)
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
 			case 2:
 			case 0:
-				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
-				valnew = interpolate(cx.x1,cx.x2,cx.x3);
+				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
+				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 				val[i][j]+=valnew;
 
 				break;
@@ -136,13 +136,13 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 
 	reset_index(); 
 
-	for(i=0;i<g.n1;++i)
+	for(i=0;i<n1;++i)
 	{
-		for(j=0;j<g.n2;++j)
+		for(j=0;j<n2;++j)
 		{
                         Cartesian_point cx;
 
-			err=lookup(g.lat(i,j),g.lon(i,j));
+			err=g.lookup(lat(i,j),lon(i,j));
 			switch(err)
 			{
 			case 1:
@@ -153,8 +153,8 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
 			case 2:
 			case 0:
-				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
-				valnew = interpolate(cx.x1,cx.x2,cx.x3);
+				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
+				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 				for(l=0;l<nv;++nv) val[i][j][l]=valnew[l];
 				delete valnew;
 

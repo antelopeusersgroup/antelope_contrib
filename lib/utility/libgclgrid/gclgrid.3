@@ -348,7 +348,8 @@ class GCLscalarfield :  public GCLgrid
 
         GCLscalarfield();
         GCLscalarfield(int, int);
-        GCLscalarfield(GCLgrid& );
+        GCLscalarfield(const GCLgrid& );
+        GCLscalarfield(const GCLscalarfield& );
 	GCLscalarfield(Dbptr db, char *grdnm, char *fn);
         GCLscalarfield& operator=(const GCLscalarfield&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
@@ -366,7 +367,8 @@ class GCLvectorfield : public GCLgrid
 
         GCLvectorfield();
         GCLvectorfield(int,int,int);
-        GCLvectorfield(GCLgrid &,int);
+        GCLvectorfield(const GCLgrid &,int);
+        GCLvectorfield(const GCLvectorfield& );
         GCLvectorfield(Dbptr db, char *grdnm, char *fn);
         GCLvectorfield& operator=(const GCLvectorfield&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
@@ -384,7 +386,8 @@ class GCLscalarfield3d : public GCLgrid3d
         GCLscalarfield3d();
         GCLscalarfield3d(int,int,int);
         GCLscalarfield3d(Dbptr db, char *grdnm, char *fn);
-        GCLscalarfield3d(GCLgrid3d &);
+        GCLscalarfield3d(const GCLgrid3d &);
+        GCLscalarfield3d(const GCLscalarfield3d& );
         GCLscalarfield3d& operator=(const GCLscalarfield3d&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
         void operator+=(const GCLscalarfield3d&);
@@ -401,7 +404,8 @@ class GCLvectorfield3d : public GCLgrid3d
 
         GCLvectorfield3d();
         GCLvectorfield3d(int,int,int,int);
-        GCLvectorfield3d(GCLgrid3d &,int);
+        GCLvectorfield3d(const GCLgrid3d &,int);
+        GCLvectorfield3d(const GCLvectorfield3d& );
         GCLvectorfield3d(Dbptr db, char *grdnm, char *fn);
         GCLvectorfield3d& operator=(const GCLvectorfield3d&);
         void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
