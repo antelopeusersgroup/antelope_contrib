@@ -6,8 +6,7 @@ STOCKLIBS
 coords.h
 conversions between epoch time and strings, 2-d and 3-d coordinate transformations, and seismic region routines
 
-<subsection>
-Flinn-Engdahl Regions
+<subsection Flinn-Engdahl Regions>
 <cdeclarations>
 
 int grnumber ( double lat, double lon )
@@ -23,8 +22,7 @@ int srnumber ( int grn )
 int srname ( int srn, char *name )
     returns the Flinn-Engdahl seismic region name for seismic region srn
 
-<subsection>
-Earth Units conversion
+<subsection Earth Units conversion>
 <cdeclarations>
 
 double deg2km ( double degrees )
@@ -34,8 +32,7 @@ double km2deg ( double km )
     convert from kilometers to degrees at the equator
 
 
-<subsection>
-Time conversion
+<subsection Time conversion>
 
 <cdeclarations>
 
@@ -114,8 +111,7 @@ private int time_string2epoch ( char *string, double *time )
     earlier interface to str2epoch
 
 
-<subsection>
-Spherical Geometry
+<subsection Spherical Geometry>
 <cdeclarations>
 
 
@@ -135,8 +131,7 @@ void latlon ( double lat1, double long1, double delta, double azimuth, double *l
 void xyztortp ( float u[3], float *r, float *theta, float *phi )
     Convert cartesian coordinates into spherical coordinates
 
-<subsection>
-Vectors and Rotation Matrices
+<subsection Vectors and Rotation Matrices>
 
 void carsph ( float u[3], float *ra, float *dec )
     convert a unit 3-vector to ra and dec in radians

@@ -7,8 +7,7 @@ stock.h
 implements various general purpose 
 programming utilities
 
-<subsection> 
-Miscellaneous
+<subsection Miscellaneous>
 <cdeclarations>
 
 private void banner ( char *program, char *version )
@@ -23,8 +22,7 @@ void *usermethod ( char *methodname )
 int verbose_exists ()
     check for existence of file named "verbose"
 
-<subsection>
-Macros
+<subsection Macros>
 <cdeclarations>
 
 allot(type *, name, n)
@@ -58,8 +56,7 @@ private MIN(a,b)
     expands to ((a>b)?(b):(a)) -- bad if a or b have side-effects
 
 
-<subsection>
-Compression
+<subsection Compression>
 
 int gencompress ( unsigned char **out, int *nout, int *size, int *in, int nsamp, int length )
     generic run length data compression
@@ -67,8 +64,7 @@ int gencompress ( unsigned char **out, int *nout, int *size, int *in, int nsamp,
 int genuncompress ( int **out, int *nout, int *size, unsigned char *in, int nbytes )
     generic run length data decompression
 
-<subsection>
-Environment
+<subsection Environment>
 
 int envfile ( char *filename )
     Sets a list of environment variables based on $ANTELOPE/data/env
@@ -79,8 +75,7 @@ int fixup_env ( char **envsetup, int nenv, int force )
 char *getantelope (  )
     determine the Antelope root directory
 
-<subsection>
-Data file references
+<subsection Data file references>
 
 char *datafile ( char *envname, char *filename )
     return absolute path of file under $ANTELOPE/data 
@@ -97,8 +92,7 @@ deprecated int mappath ( char *spath, char *upath )
 deprecated void setmapcf ( char *fn )
     set the name of the configuration file for mappath
 
-<subsection>
-State Files
+<subsection State Files>
 
 int bury (  )
     save a program's state file
@@ -109,8 +103,7 @@ int exhume ( char *filename, int *signal_stop, int sec, void (*mortician)() )
 int resurrect ( char *name, void *variable, int type )
     recover an old value from a state file
 
-<subsection>
-Associative Arrays
+<subsection Associative Arrays>
 
 Arr *newarr ( int (*cmp)() )
     Create a new associative array
@@ -145,8 +138,7 @@ Tbl *greparr ( char *re, Arr *arr )
 int cntarr ( Arr *arr )
     Count the nodes of an associative array
 
-<subsection>
-Bit Vectors
+<subsection Bit Vectors>
 <cdeclarations>
 
 Bitvector *newbit (  )
@@ -182,8 +174,7 @@ Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
 int bitcmp ( Bitvector *b1, Bitvector *b2 )
     compare two bit-vectors
 
-<subsection>
-Buffered Network Stream I/O
+<subsection Buffered Network Stream I/O>
 <cdeclarations>
 
 Bns *bnsnew ( int fd, int sz )
@@ -256,8 +247,7 @@ int gbnsSync ( Bns *bns, char *sync, int nsync, int stric )
 int pbnsSync ( Bns *bns, char *sync, int nsync )
     synchronize an output stream to a character sequence
 
-<subsection>
-Error handling
+<subsection Error handling>
 
 int elog_init ( int argc, char **argv )
     Initialize elog routines
@@ -307,8 +297,7 @@ int elog_query ( enum Elog_code code, int severity, void **value )
 int elog_set ( enum Elog_code code, int severity, void *value )
     set various parameters for elog interface
 
-<subsection>
-General Programming Utilities
+<subsection General Programming Utilities>
 <cdeclarations>
 
 Hook *new_hook ( void (*hookfree)() )
@@ -371,8 +360,7 @@ int unmapfile ( char *filename, Arr **maparr )
 int unmaparr ( Arr **maparr )
     unmap all mapped files
 
-<subsection>
-Filename and Path manipulation
+<subsection Filename and Path manipulation>
 
 int abspath ( char *relp, char *absp )
     return an absolute pathname from a relative pathname
@@ -402,8 +390,7 @@ FILE *gz_open ( char *filename, char *permissions )
 FILE *zopen ( char *filename, char *permissions )
     fopen a compressed or uncompressed file
 
-<subsection>
-Strings
+<subsection Strings>
 
 int blank ( char *s )
     return non-zero if string is entirely blank characters
@@ -441,8 +428,7 @@ int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
 void szcopy ( char *dest, char *source, int n )
     copy exacly n characters, then append null
 
-<subsection>
-Sorting and Searching
+<subsection Sorting and Searching>
 
 void isort ( char *a, int n, int size, int (*compare)(), void *private )
     insertion sort implementation
@@ -456,8 +442,7 @@ void shellsort ( char *a, int n, int size, int (*compare)(), void *private )
 int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*compare)(), void *private, int *ns, int *ne )
     binary search of index
 
-<subsection>
-User Interaction
+<subsection User Interaction>
 
 char *ask ( char *format, ... )
     query user for a response
@@ -477,8 +462,7 @@ int fdkey ( int fd )
 int fdwait ( int fd, int msec )
     wait up to msec milliseconds for pending input
 
-<subsection>
-Hexadecimal dumps
+<subsection Hexadecimal dumps>
 
 void Hexdump ( FILE *file, int base, void *memory, int l )
     hex dump a memory buffer, with base added
@@ -511,8 +495,7 @@ void printable_string ( char *buf, int n, char *memory, int l )
     copies bytes from memory into ascii-printable form
 
 
-<subsection>
-Byteswap routines
+<subsection Byteswap routines>
 
 void swap2 ( unsigned char *from, unsigned char *to, int n )
     swap two bytes
@@ -592,8 +575,7 @@ private int rev4 ( char *from, char *to, int n )
 private int rev8 ( char *from, char *to, int n )
     reverse order of 8 bytes
 
-<subsection>
-Lists
+<subsection Lists>
 
 <cdeclarations>
 
@@ -689,8 +671,7 @@ int cattbl ( Tbl *tbldest, Tbl *tblsrc )
 int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
     Compare two lists
 
-<subsection>
-Compression and Checksums
+<subsection Compression and Checksums>
 
 int ccanada ( int *data, int nsamp, char **compressedp, int *nbytes, int *compressedsz )
     data compression using the Canadian Compression Scheme
@@ -716,8 +697,7 @@ int cucsd ( int *data, int nsamp, char **buf, int *nbytes, int *bufsiz )
 int uucsd ( int *data, char **bufp, int bufcnt, int nsamp )
     uncompress data from modified Reftek dataloggers
 
-<subsection>
-Parameter Files
+<subsection Parameter Files>
 
 <cdeclarations>
 
@@ -820,8 +800,7 @@ void pfput_string ( Pf *pf, char *name, char *value )
 void pfput_tbl ( Pf *pf, char *name, Tbl *value )
     put a list value into a parameter space
 
-<subsection>
-Sorted Lists
+<subsection Sorted Lists>
 
 <cdeclarations>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) );

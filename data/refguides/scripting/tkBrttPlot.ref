@@ -1,5 +1,4 @@
-<subsection>
-Data Objects
+<subsection Data Objects>
 
 <commands>
 append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
@@ -46,8 +45,7 @@ vector_maxmin vector_handle [iy]
 vector_puty vector_handle ix ylist
     Replace dependent values in a vector object
 
-<subsection>
-Plotting
+<subsection Plotting>
 
 (canvas) create axes viewport ?options?
     viewport (canvas) object to plot a set of coordinate axes
@@ -153,8 +151,7 @@ Plotting
 -fill_frame fill_frame   Fill color for the frame around the viewport
 </options>
 
-<subsection>
-Time Histories
+<subsection Time Histories>
 
 thistory_add thistory_handle time value
     Add an element to a time-history object

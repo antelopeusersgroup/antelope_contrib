@@ -2,8 +2,7 @@
 Fortran Interface
 
 
-<subsection>
-Database Operations
+<subsection Database Operations>
 <options>
 include "db.i"
 integer db(4)
@@ -103,8 +102,7 @@ integer dbunjoin ( db, database_name, rewrite )
 subroutine trgetwf ( db, 0, data, NMAX, t0_req, t1_req, t0, t1, npts, fill, fill_value )
     read trace data from file into memory
 
-<subsection>
-Spatial Transformations
+<subsection Spatial Transformations>
 <fdeclarations>
 subroutine dist ( lat1, long1, lat2, long2, *delta, *azimuth )
     compute angular distance and azimuth between two points (all in radians)
@@ -112,8 +110,7 @@ subroutine dist ( lat1, long1, lat2, long2, *delta, *azimuth )
 subroutine latlon ( lat1, long1, del, azimuth, *lat2, *long2 )
     compute lat and long given starting point and distance (all radians)
 
-<subsection>
-Time Transformations
+<subsection Time Transformations>
 
 subroutine doy2mday ( doy, year, month, day )
     convert day of year to month and day
@@ -149,8 +146,7 @@ integer yearday ( e )
     convert epoch time to yearday
 
 
-<subsection>
-Error Handling
+<subsection Error Handling>
 
 <fdeclarations>
 subroutine clear_register ( printflag )
@@ -165,8 +161,7 @@ subroutine die ( sysflag, msg )
 subroutine register_error ( sysflag, msg )
     register an error message
 
-<subsection>
-General Programming Utilities
+<subsection General Programming Utilities>
 
 <fdeclarations>
 subroutine datafile ( pathname, envname, filename )
@@ -186,8 +181,7 @@ subroutine shellsort ( a, n, size, compare, private )
 
 integer ssearch ( key, keysize, a, n, unique, compare, private, ns, ne )
     binary search of index
-<subsection>
-Niceplot
+<subsection Niceplot>
 
 <fdeclarations>
 subroutine axis ( xdim, ydim, xmarg, ymarg, xlow, ylow, xmax,  xmin, ymax,  ymin,  dxsmal, dxnumb, dysmal, dynumb, fmtx, fmty, labelx, labely, title, iclear )
@@ -308,8 +302,7 @@ subroutine xmap ( real x )
 
 subroutine ymap ( real y )
     convert from plotting to raster units
-<subsection>
-Ordered Lists
+<subsection Ordered Lists>
 
 <fdeclarations>
 integer maxtbl ( itbl )
@@ -327,8 +320,7 @@ subroutine strputtbl ( itbl, i, s )
 subroutine strtbl ( itbl, s, ... )
     Create a new list from a list of strings
 
-<subsection>
-Parameter Files
+<subsection Parameter Files>
 
 <fdeclarations>
 subroutine pfcompile ( string, pf, retcode )
@@ -387,8 +379,7 @@ subroutine pfread ( name, pf, retcode )
 
 subroutine pfwrite ( pf, filename, retcode )
     write a parameter file object to the specified file
-<subsection>
-Seismic Information
+<subsection Seismic Information>
 
 <fdeclarations>
 integer arrtimes ( delta, depth, phases, times )

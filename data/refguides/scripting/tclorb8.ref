@@ -1,5 +1,4 @@
-<subsection>
-Real-time system connections
+<subsection Real-time system connections>
 
 orbafter orb time
     Set the orb read pointer to the first packet after specified time

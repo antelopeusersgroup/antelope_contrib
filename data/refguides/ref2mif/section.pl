@@ -37,6 +37,7 @@ sub option {
 }
 
 sub library { 
+    xf_popprocess;
     chomp () ;
     $title = $_ ;
     $library = xf_input() ;

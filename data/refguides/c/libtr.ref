@@ -7,8 +7,7 @@ tr.h
 implements routines for reading and writing waveforms from a database, and
 performing some standard operations on them.  
 
-<subsection>
-Trace objects
+<subsection Trace objects>
 
 <cdeclarations>
 Dbptr trnew ( char *tr_path, char *schema_name )
@@ -23,8 +22,7 @@ int trdestroy ( Dbptr *trp )
 int trtruncate ( Dbptr tr, int leave )
     truncate a tr database table
 
-<subsection>
-Reading and Writing waveforms
+<subsection Reading and Writing waveforms>
 
 <cdeclarations>
 
@@ -48,9 +46,8 @@ deprecated int trputwf ( Dbptr db, float *data )
 int trsave_wf ( Dbptr tr, Dbptr db, char *datatype, char *wfname, int flags )
     save waveform data from tr to database creating waveforms of specified datatype in data files constructed by trwfname(3) using the pattern wfname.  The trAPPEND and trOVERWRITE bits in flag cause waveform data to either append to existing files or overwrite existing files.
 
-<subsection>
-Network, Aux and Loc code Remapping
-<body>
+<subsection Network, Aux and Loc code Remapping>
+<List>
 Autodrm and SEED introduce extra keys to uniquely identify station and channel.  These extra keys must be mapped into sta and chan to work with the CSS3.0 schema.  These routines implement that mapping.
 
 <cdeclarations>
@@ -82,8 +79,7 @@ int map_seed_chanloc ( char *sta, char *fchan, char *loc, char *chan )
 int seed_loc ( char *sta, char *chan, char *fchan, char *loc )
     return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan 
 
-<subsection>
-Generating test data
+<subsection Generating test data>
 
 int trsignal_argv ( Dbptr tr, int argc, char **argv )
     generate test signal data in a trace table
@@ -98,8 +94,7 @@ void mksignal ( char *type, float *data, double time, int nsamp, double samprate
 void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
     generate a signal of a specified type
 
-<subsection>
-SEED
+<subsection SEED>
 
 private int ascii2int ( int *result, char *s, int n )
     SEED reading/writing aid
@@ -141,8 +136,7 @@ private int samprate2seed ( double samprate, int *factor, int *multiplier )
 int seed2samprate ( int factor, int multiplier, double *samprate )
     convert the factor/multiplier from a SEED data block header into a low precision sample rate samprate
 
-<subsection>
-Steim Compression
+<subsection Steim Compression>
 
 <cdeclarations>
 Steim *initsteim ( Wfdisc *wfdisc )
@@ -162,8 +156,7 @@ int psteim ( FILE *file, char *record, int record_size )
     print out Steim data block record on output file
 
 
-<subsection>
-Input/Output
+<subsection Input/Output>
 
 <cdeclarations>
 private int itr2ext ( int *in, int nsamp, Wftype *type, void **out, int *sZout, int *outbytes )
@@ -187,8 +180,7 @@ private void tr2gaps ( Trsample *data, int nsamp, char *datatype )
 void trfill_gap ( Trsample *data, int nsamp )
     fills a data segment with th 'standard' "t4" gap value
 
-<subsection>
-Writing new waveforms
+<subsection Writing new waveforms>
 
 <cdeclarations>
 
@@ -211,8 +203,7 @@ int trwfclose ( Wfdisc *wfdisc )
     close a wfdisc record
 
 
-<subsection>
-Filters
+<subsection Filters>
 
 int trrotate ( Dbptr tr, double phi, double theta, char **newchan )
     rotate three component data
@@ -241,8 +232,7 @@ int trderiv ( Dbptr tr )
 int trintegral ( Dbptr tr )
     integrate waveform segments
 
-<subsection>
-Utilities
+<subsection Utilities>
 
 int trclip ( double time, double samprate, int nsamp, double from, double until, int *pt0, int *npts, double *t0, double *t1 )
     find sample range corresponding to time range
@@ -294,8 +284,7 @@ Wftype *trwftype ( char *datatype )
     Get waveform type structure for specified type
 
 
-<subsection>
-Convenience Macros
+<subsection Convenience Macros>
 
 double ENDTIME ( time, samprate, nsamp )
     return endtime based on input parameters

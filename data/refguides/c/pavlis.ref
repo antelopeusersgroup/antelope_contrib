@@ -1,8 +1,7 @@
 
 <section>
 Contributed Code
-<subsection>
-Genloc
+<subsection Genloc>
 <cdeclarations>
 
 Arr *dbload_array_table ( Dbptr db, int is, int ie )

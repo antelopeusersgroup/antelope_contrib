@@ -1,7 +1,6 @@
 <chapter>
 Perl Interface
-<subsection>
-Opening a database
+<subsection Opening a database>
 <function>
 
 dbclose ( @db )
@@ -19,8 +18,7 @@ dbopen ( database, permissions )
 dbopen_table ( database, permissions )
     Returns a database pointer to the specified database table ("-" is stdin)
 
-<subsection>
-Manipulating fields and records
+<subsection Manipulating fields and records>
 
 dbadd ( @db, [record] )
     Add the new record to the table in @db.  If no record is specified, use the scratch record.  Returns the new record number.
@@ -67,8 +65,7 @@ dbsave_view ( @db, table_name )
 dbtruncate ( @db, n )
     Truncate a table to the specified number of records
 
-<subsection>
-Forming views
+<subsection Forming views>
 
 dbgroup ( @db, key, [key, ...] )
     Group the input table according to the specified keys
@@ -94,14 +91,12 @@ dbtheta ( @db1, @db2, [expression] )
 dbunjoin ( @db, database_name )
     Creates a new database, which contains all the records referenced in the input view
 
-<subsection>
-Getting information about the database
+<subsection Getting information about the database>
 
 dbquery ( @db, code )
     Query the database for information. Codes must be in quotes.
 
-<subsection>
-Error handling
+<subsection Error handling>
 
 elog_clear (  )
     Clear the elog message log
@@ -127,8 +122,7 @@ elog_mark (  )
 elog_notify ( msg )
     Send a message other than an error message to the elog facility
 
-<subsection>
-Parameter files
+<subsection Parameter files>
 
 pfget ( pfname, key )
     extracts the value for the key from the parameter file pfname
@@ -136,8 +130,7 @@ pfget ( pfname, key )
 pfupdate ( pfname )
     checks and rereads a parameter file if one of the components along PFPATH has changed
 
-<subsection>
-Special functions
+<subsection Special functions>
 
 ask ( string )
     Pose a question string of the controlling tty, and return the response
@@ -190,8 +183,7 @@ srn ( lat, lon )
 srname ( lat, lon )
     Return the seismic region name
 
-<subsection>
-Time conversion
+<subsection Time conversion>
 
 epoch ( yearday )
     Returns the epoch time corresponding to the integer yearday

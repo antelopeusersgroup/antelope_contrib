@@ -1,8 +1,7 @@
 
 <chapter>
 Tcl/Tk Interface
-<subsection>
-Opening a database
+<subsection Opening a database>
 
 <commands>
 db2pipe db file [record# ...]
@@ -28,8 +27,7 @@ dbopen_table path opentype
 
 dbtruncate dbptr n
     Truncate the specified table to n records
-<subsection>
-Manipulating Fields and Records
+<subsection Manipulating Fields and Records>
 
 dbadd dbptr record
     Add the specified record
@@ -63,8 +61,7 @@ dbput dbptr value
 
 dbputv dbptr table record field value [field value ...]
     Save the specified values into the specified fields.
-<subsection>
-Forming Views
+<subsection Forming Views>
 
 dbjoin db1 db2 [fields]
     Join the specified tables
@@ -104,8 +101,7 @@ dbtheta dbptr1 dbptr2 [ expression ]
 dbunjoin dbptr output
     Unjoin the specified table, writing new tables into a new database named output
 
-<subsection>
-Error Handling
+<subsection Error Handling>
 <commands>
 
 clear_register flag
@@ -134,21 +130,18 @@ elog_mark
 
 elog_notify msg
     Write a message other than an error message to the elog facility
-<subsection>
-Evaluating expressions
+<subsection Evaluating expressions>
 
 dbeval db expression [type]
     Evaluate the specified expression, converting to the specified type
-<subsection>
-Getting information about the Database
+<subsection Getting information about the Database>
 
 datafile envname filename
     Returns complete pathname for a datafile
 
 dbquery dbptr code
     Query the database for various parameters
-<subsection>
-Instrument response routines
+<subsection Instrument response routines>
 
 eval_response resphandle freq_in_hz
     evaluate a response object at a given frequency
@@ -167,8 +160,7 @@ put_response resphandle stageno param_list
 
 read_response filename
     read a response object
-<subsection>
-Parameter Files
+<subsection Parameter Files>
 
 pfget pf name
     Get the value for the specified name from the specified parameter file
@@ -195,8 +187,7 @@ pfwrite pf filename
     Write the specified parameter file
 
 
-<subsection>
-Seismic Utility Functions
+<subsection Seismic Utility Functions>
 
 carsph x y z
     Convert from cartesian to spherical coordinates
@@ -209,8 +200,7 @@ dblatlon lat lon delta azimuth
 
 sphcar lat lon
     Convert from spherical to cartesian coordinates
-<subsection>
-Special Functions
+<subsection Special Functions>
 
 dbadd_remark dbptr remark
     Add the specified remark to the specified record
@@ -243,8 +233,7 @@ dbselect [-b] [-F separator] [-t] filename db [field ...]
 -t convert times to readable times
 </options>
 
-<subsection>
-Time conversion
+<subsection Time conversion>
 
 epoch yearday
     Convert from yearday to epoch
@@ -269,8 +258,7 @@ strydtime epoch
 
 yearday epoch
     Convert from yearday to epoch time
-<subsection>
-Utility Functions
+<subsection Utility Functions>
 
 makedir dir
     ensure that a directory exists
