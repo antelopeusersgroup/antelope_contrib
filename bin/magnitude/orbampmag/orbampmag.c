@@ -1116,6 +1116,7 @@ put_next_target(Arr *arr, char *record, char* target_name, int orb)
 	
 	pfput_arr(pf,"assocs",arr);
 	while(pf2orbpkt(pf,target_name,orb));
+	pffree(pf) ;
 	return(0);
 }
 	
