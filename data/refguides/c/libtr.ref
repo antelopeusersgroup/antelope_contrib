@@ -15,10 +15,10 @@ int trfree ( Dbptr tr )
     free up memory and clear trace object tables
 
 int trdestroy ( Dbptr *trp )
-    close a trace database and free resources
+    close a trace database and free its resources
 
-int trtruncate ( Dbptr tr, int leave )
-    truncate a tr database table
+int trtruncate ( Dbptr tr, int n )
+    truncate a tr database table after record n
 
 <subsection Reading and Writing waveforms>
 <cdeclarations>
@@ -112,22 +112,23 @@ int msdget ( Msd *msd, char *name, ...)
 
 int msdput ( Msd *msd, char *name, ...)
     set a parameter in msd struct
-    The possible parameter names are:
 <example>
-    MSD_NET               MSD_STA               
-    MSD_CHAN              MSD_LOC               
-    MSD_TIME              MSD_NSAMP             
-    MSD_SAMPRATE          MSD_TIME_CORRECTION   
-    MSD_ACTIVITY_FLAGS    MSD_QUALITY_FLAGS     
-    MSD_SAMPRATE_FLAGS    MSD_IO_FLAGS          
-    MSD_HAS_B100          MSD_HAS_B1000         
-    MSD_HAS_SEED_HEADER   MSD_DATAFORMAT        
-    MSD_LEVEL             MSD_RECORD_SIZE       
-    MSD_FILENAME          MSD_FD                
-    MSD_MSEED             MSD_MSEED_NBYTES      
-    MSD_OFFSET            MSD_SPARC_ORDER       
-    MSD_FIRST_DATA_FRAME  MSD_FRAMES_PER_RECORD 
-    MSD_SEQUENCE          MSD_CNT               
+The possible parameter names are:
+
+MSD_ACTIVITY_FLAGS    MSD_CHAN              
+MSD_CNT               MSD_DATAFORMAT        
+MSD_FD                MSD_FILENAME          
+MSD_FIRST_DATA_FRAME  MSD_FRAMES_PER_RECORD 
+MSD_HAS_B100          MSD_HAS_B1000         
+MSD_HAS_SEED_HEADER   MSD_IO_FLAGS          
+MSD_LEVEL             MSD_LOC               
+MSD_MSEED             MSD_MSEED_NBYTES      
+MSD_NET               MSD_NSAMP             
+MSD_OFFSET            MSD_QUALITY_FLAGS     
+MSD_RECORD_SIZE       MSD_SAMPRATE          
+MSD_SAMPRATE_FLAGS    MSD_SEQUENCE          
+MSD_SPARC_ORDER       MSD_STA               
+MSD_TIME              MSD_TIME_CORRECTION   
 </example>
 
 int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc) () );
@@ -171,9 +172,6 @@ private void gaps2tr ( Trsample *data, int nsamp, char *datatype )
 
 private void tr2gaps ( Trsample *data, int nsamp, char *datatype )
     replace t4 gap value with fill value for datatype
-
-void trfill_gap ( Trsample *data, int nsamp )
-    fills a data segment with the 'standard' "t4" gap value
 
 private int trwfnew ( Wfdisc *wfdisc )
     create a new wfdisc record
@@ -252,6 +250,9 @@ double traligned ( double atime, double std_time, double std_samprate )
     returns a time properly aligned with a specific time and sample rate
 
 
+void trfill_gap ( Trsample *data, int nsamp )
+    fills a data segment with the 'standard' "t4" gap value
+
 
 deprecated int trcontiguous ( Trseg *prv, Trseg *cur, double tolerance )
     test for contiguousness of waveform segments
@@ -282,38 +283,36 @@ Wftype *trwftype ( char *datatype )
 
 
 <subsection Convenience Macros>
-double ENDTIME ( time, samprate, nsamp )
+double ENDTIME ( t0, samprate, nsamp )
     return endtime based on input parameters
 
-int NSAMP ( time, samprate, endtime )
+int NSAMP ( t0, samprate, endtime )
     return number of samples based on input parameters
 
-double SAMP2TIME ( time0, samprate, n )
+double SAMP2TIME ( t0, samprate, n )
     return a sample time given a sample index
 
-double SAMPRATE ( time, nsamp, endtime )
+double SAMPRATE ( t0, nsamp, endtime )
     return samprate based on input parameters
 
-int TIME2SAMP ( time0, samprate, time1 )
+int TIME2SAMP ( t0, samprate, t1 )
     return a sample index given a time
 
 
-int TRCONTIGUOUS(time0,time1,samprate,nsamp)
+int TRCONTIGUOUS(t0, t1, samprate, nsamp)
     test whether a segment of nsamp samples beginning at
-    time0 with sample rate samprate abut to time1, within
+    t0 with sample rate samprate abut to t1, within
     the tolerance specified in trdefaults.pf.
 
 int TRSAMERATE(samprate0,samprate1)
     test whether certain values of sample rate are the same
     to within the tolerance specified in trdefaults.pf.
 
-int TRSAMETICKS(time0,time1,samprate)
+int TRSAMETICKS(t0,t1,samprate)
     test whether two values of time are on the same
     tick marks, within the tolerance specified in trdefaults.pf.
 
-int TRSAMETIME(time0,time1,samprate)
+int TRSAMETIME(t0,t1,samprate)
     test whether two values of time are the same
     to within the tolerance specified in trdefaults.pf.
-
-
 

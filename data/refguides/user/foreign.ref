@@ -38,6 +38,15 @@ private db2ew_wave_server [-vV] [-p pfname] dbname
     attach to a CSS3.0 database and make the data
     therein accessible via the Earthworm protocols.
 
+db2miniseed [-ivV] [-r record_size] [-l {1|2}] [-n net] db [output]
+    create miniseed from input database
+<options>
+-i	intel order 
+-r size	specify record size (default 4096)
+-l {1|2}	specify steim compression level (default 2)
+-n net	specify default network
+</options>
+
 db2sac [options] dbin dbout
     convert css waveform files into sac format
 <options>
@@ -171,6 +180,9 @@ sd2db [options] sd dbout
 segy2css [-event] [-ftbl] "fname"
     convert data in PASSCAL SEGY format to CSS format
 
+miniseed2db [-T tolerance] [-v] miniseed [msd2 ...] db
+    create wfdisc rows in db for miniseed volume(s)
+
 dbsteimu [options] input [new_database]
     create wfdisc file from miniseed
 <options>
@@ -180,21 +192,6 @@ dbsteimu [options] input [new_database]
 -v	more verbose.
 -w	wfname
 </options>
-
-miniseed2db [-T tolerance] [-v] miniseed [msd2 ...] db
-    create wfdisc rows in db for miniseed volume(s)
-
-db2miniseed [-ivV] [-r record_size] [-l {1|2}] [-n net] db [output]
-    create miniseed from input database
-<options>
--i	intel order 
--r size	specify record size (default 4096)
--l {1|2}	specify steim compression level (default 2)
--n net	specify default network
-</options>
-
-msdd [-v] miniseed ...
-    dump miniseed volume
 
 fix_miniseed [-iv] [-d foreignkeys] [-{p|P} pf] miniseed ...
     change the network, station, channel and/or location
@@ -219,3 +216,5 @@ sdd [-s] sd
 dsteim [sd]
     verbosely dump miniseed data frames
 
+msdd [-v] miniseed ...
+    dump miniseed volume

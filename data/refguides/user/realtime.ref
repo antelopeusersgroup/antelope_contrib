@@ -19,8 +19,6 @@ rtexec [options] [comment]
 -f	don't ask about killing previous rtexec
 -k	kill running rtexec
 -n	show what processes would be run, but don't run them
--q x	run for x minutes
--R x	run for x minutes, shutdown, repeat
 -s	save old logs in new subdirectory
 -t	run 'tail -f logs/rtexec' after changing to a daemon
 -v	more verbose
@@ -37,8 +35,7 @@ rtincident [options] [output_file]
     may run this program and send the results to someone
 <options>
 -c corefile	specify corefile (on which dbx is run)
--e command 
- 	specify command line
+-e command	specify command line
 -l log	specify log file for program
 -M msg	specify message to include in report
 -m addr	send report as email to addr
@@ -46,12 +43,14 @@ rtincident [options] [output_file]
 -p program 	specify program
 </options>
 
-rtmail [-s subject] [-a filename] recipient
+rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-d] recipients
     script to send mail with attachments
 
 rtreport [options] [directory]
     report some statistics on data collection
 <options>
+-c	show reporting stations
+-C	show reporting channels
 -d start	start of reporting period
 -m email,..	list of email recipients
 -n days	number of days report covers
@@ -194,7 +193,7 @@ guralp2orb [options] orbname
 ida2orb [-u] orb nrts selection
     copy selected data from IDA nrts to orbserver
 
-ipd [options] port orb
+ipd2 [options] port orb
     copy data from UCSD data multiplexer at port to orbserver orb
 <options>
 -c check_rate
@@ -271,10 +270,8 @@ k22orb [options] target orbdata [orbcmd]
 -pf pf	specify alternate parameter file
 -db db	specify database for calib information
 -v	be more verbose
--state filename
-	save state in filename
--start time
-	only get events after time
+-state file	save state in filename
+-start time	only get events after time
 </options>
 
 b3s2orb [options]
@@ -299,9 +296,7 @@ slink2orb [options] SeedLink orb
 -S statefile
 -o dumpfile
 -r	remap net/sta/chan
--v	verbose
--vv	very verbose
--vvv	extremely verbose
+-v[v[v]]	verboser
 </options>
 
 <subsection Other Orb Writers>
@@ -314,8 +309,8 @@ dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
 db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
 <options>
--d	make a hexadecimal dump of the output packets.
--D delay
+-d	hex dump the output packets
+-D delay	make packets delay second late
 -f fast	send packets as quickly as possible
 -l	loop forever
 -m #timesteps
@@ -438,8 +433,10 @@ orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
 ttgrid [-pf pfname] [-time {timestr|all}] db
     compute a travel time grid file for use by orbassoc and dbgrassoc
 
-displayttgrid ttgrid [gridname]
-    display map with grid from ttgrid file
+displayttgrid [-shownames] filename [gridname]
+    display travel-time grids on a map
+
+ttgrid_show [-v] ttgridfile
 
 orbmag [options] orbwf orbdb dbname
     real time magnitude computation
@@ -457,12 +454,6 @@ orbmag [options] orbwf orbdb dbname
 -use_if_not_associated
 -use_if_not_defining
 </options>
-
-displayttgrid [-shownames] filename [gridname]
-    display travel-time grids on a map
-
-ttgrid_show [-v] ttgridfile
-    dump the contents of a ttgrid file
 
 orbpftrigger [options] orb [cmdstring]
     parameter file trigger of a program execution
@@ -526,21 +517,17 @@ orbmonrtd [options] orb
     real time waveform trace display
 <options>
 -title title	title for orbmonrtd window
--tshift_time t	
-	specify initial time of window rhs, "-" to use first packet read 
--twin minutes
- 	window size in minutes
+-tshift_time t	specify initial time of window rhs, "-" to use first packet read 
+-twin minutes	window size in minutes
 -width pixels	trace width in pixels
--height pixels
- 	single trace window height in pixels
+-height pixels	single trace window height in pixels
 -pf pfile	
 -hmax hmax	maximum height of main window in pixels
--wmax wmax
- 	maximum width of main window in pixels
+-wmax wmax	maximum width of main window in pixels
 -log	
 -filter filter	
 -source net_sta_chan
- 	select display channels on command line
+ 	select a display channel on command line
 -select re	select channels matching re
 -reject re	reject channels matching re
 </options>
@@ -694,12 +681,12 @@ rtbackup [-v] [-m who] [-p parameter_file] db drive
     copy data from db to archive tape on drive, using orb2db_msg
     to stop and restart orb2db and orb2dbt
 
-get_archive [options] db dbout tape_drive [start_time [end_time]]
-    restore tape backups made by rtbackup using db.wftar to dbout
+get_archive [options] db dbout tape_drive [t0 [t1]]
+    restore waveforms (between t0 and t1) to dbout using db.wftar from rtbackup tape 
 <options>
--c channels
--s stas
--v
+-c re	select channels with regular expression
+-s re	select stations with regular expression
+-v	more verbosely
 </options>
 
 rtdbclean [-n] [-v] [-p parameter_file] orb rt_db

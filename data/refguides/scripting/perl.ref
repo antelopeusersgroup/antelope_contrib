@@ -551,14 +551,14 @@ nomem(address,n)
     returns first bad address if no memory in range address to address + n 
 
 %sysmem = sysmem()
-     returns information about physical memory and swap space
+     returns physical memory, total swap space, and swap used
 
 %loadavg = sysloadavg()
-     returns 15, 5 and 1 minute load averages and the number of cpus and processes
+     returns nproc, avg1m, avg5m, and avg15m: number of processes and 15, 5 and 1 minute load averages 
 
 @mounted = sysmounted() 
-    returns list of mounted partitions, including mount point, filesystem type,
-    remote host, and remote directory
+    returns list of mounted partitions; each element has mount point, filesystem type,
+    and remote host and directory 
 
 pidcmdline(pid)
     returns command line for specified pid

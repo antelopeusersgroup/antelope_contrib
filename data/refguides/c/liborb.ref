@@ -58,6 +58,11 @@ int orbreap_nd ( int orb, int *pktid, char *srcname, double *time, )
 int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
     write the nbytes of packet data onto orb with specified srcname and time
 
+int orbwait(int orb, char *re, double mintime, double timeout)
+    throttle output by waiting for readers on orb which match re to have
+    read packets younger than mintime.  returns with error code if timeout
+    expires first
+
 <subsection Status Information>
 int orbtell ( int orb )
     return current pktid position for orb

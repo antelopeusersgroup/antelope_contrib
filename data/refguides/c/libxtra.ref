@@ -23,8 +23,8 @@ deprecated int orbsort ( Orbpipe *pipe, int *pktid, double *time, char *srcname,
     retrieve the oldest packet in sorted order
 
 
-int netstachan ( int orb, Arr **netstachan, Arr **srcnames )
-    return net_station_channels and srcnames for an orb
+int netstachanloc ( int orb, Arr **netstachan, Arr **srcnames )
+    return net/sta/chan/loc combinations and srcnames for an orb
 
 deprecated int orbacc ( int orb, char *accselect, double req_twin, double overlap, double latency, Dbptr *trp, Hook **hookp )
     accumulate real time trace data from orb buffer

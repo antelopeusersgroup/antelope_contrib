@@ -4,805 +4,8 @@ stock
 -lposix4 -lnsl -lsocket -lm
 STOCKLIBS
 stock.h
-implements various general purpose
+implements variety of general purpose
 programming utilities
-
-<subsection Miscellaneous>
-<cdeclarations>
-
-private void banner ( char *program, char *version )
-    print header with program name, version, BRTT address
-
-void cbanner ( char *version, char *usage, char *author, char *location, char *email )
-    print header with program name, version, and author contact information
-
-void *usermethod ( char *method )
-    returns pointer to routine method from libuser.so (0 if not found) 
-
-int verbose_exists ()
-    return 1 if file "verbose" exists, 0 otherwise
-
-<subsection Compression>
-int gencompress ( uchar **out, int *nout, int *szout, int *in, int n, int len )
-    compress n input integers in, using run length len, returning result as
-    *nout bytes in *out. 
-
-int genuncompress ( int **out, int *nout, int *size, unsigned char *in, int n )
-    uncompress the n bytes buffer in, returning result as *nout integers in *out.
-
-<subsection Environment>
-int envfile ( char *filename )
-    set the environment according to the key, value list from $ANTELOPE/data/env/filename
-
-int fixup_env ( char **list, int n, int force )
-    set the environment using the n key,value pairs of list;
-    if force is 0, only unset environment variables are set
-
-private char *getantelope ( )
-    return the ANTELOPE root directory
-
-void unsetenv ( char *name )
-    eliminate the environment variable name
-
-<subsection Data file references>
-char *datafile ( char *env, char *file)
-    return path of filename file under $ANTELOPE/data, possibly overridden with environment variable env
-
-char *datapath ( char *env, char *dir, char *file, char *sfx )
-    return path of filename file (with suffix sfx) in directory dir under $ANTELOPE/data, possibly overridden with environment variable env
-
-int newdata ( char *path, char *env, char *dir, char *file, char *sfx )
-    return complete path for file (with suffix sfx) in directory dir under $ANTELOPE/data, 
-    allowing environment variable env to override
-
-Tbl *datasearch(char *search, char *dir, char *file, int flags)
-    returns list of all paths matching dir/file along the path search. If (flags & 1), $name in paths is expanded; if (flags & 2), all possible paths are returned.
-
-deprecated int mappath ( char *spath, char *upath )
-    translate pathnames (formerly used for remapping automount paths)
-
-deprecated void setmapcf ( char *fn )
-    set the name of the configuration file for mappath
-
-<subsection State Files>
-int bury ( )
-    save state file, as specified by calls to exhume and resurrect
-
-int exhume ( char *nm, int *stop, int sec, void (*f)() )
-    recover state file nm, and set up to save new copy.  sets up interrupt
-    handlers which set stop to cause the application to quit.  If timer
-    expires sec seconds after interrupt, calls the routine f, then 
-    bury, and then exits.
-
-int resurrect ( char *name, void *value, int type )
-    recover old value for name from state file, set up to save on later
-    calls to bury.  type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
-
-<subsection Associative Arrays>
-Arr *newarr ( int (*cmp)() )
-    create a new associative array with string compare routine cmp
-
-int freearr ( Arr *root, void (*free_value) () )
-    free an associative array, calling free_value on each value of the array
-
-void *setarr ( Arr *arr, char *key, void *value )
-    set the key element of associative array arr to the pointer value
-
-void *getarr ( Arr *arr, char *key )
-    return the value pointer for element key of associative array arr 
-
-void *delarr ( Arr *arr, char *key )
-    delete the key, value pair from associative array arr, returning the value pointer
-
-int cntarr ( Arr *arr )
-    return the number of key, value pairs in associative array arr
-
-Tbl *keysarr ( Arr *arr )
-    get a list of all the keys of associative array arr
-
-Tbl *valsarr ( Arr *arr )
-    get a list of all the values of associative array arr
-
-int applyarr ( Arr *arr, void (*f) (char *key, void *value, void *p), void *p)
-    apply function f to each key, value pair of associative array arr
-
-Tbl *arrgrep ( Arr *arr, char *s )
-    match each key of array arr as a regular expression against string s, returning a list of all keys which match
-
-Tbl *greparr ( char *re, Arr *arr )
-    match regular expression re to each key of array arr, returning a list of all keys which match
-
-<subsection Bit Vectors>
-
-Bitvector *bitnew ( )
-    create a new bit vector
-
-void bitfree ( Bitvector *b )
-    free a bit vector
-
-
-int bitclr ( Bitvector *b, int index )
-    clear bit index of bit vector b
-
-int bitset ( Bitvector *b, int index )
-    set bit index of bit vector b
-
-int bittst ( Bitvector *b, int index )
-    test bit index of bit vector b
-
-
-int bitmax ( Bitvector *b )
-    return current allocated size of b
-
-
-Bitvector *bitnot ( Bitvector *b )
-    return the bitwise NOT of b
-
-Bitvector *bitand ( Bitvector *b1, Bitvector *b2 )
-    return the bitwise AND of b1 and b2
-
-Bitvector *bitor ( Bitvector *b1, Bitvector *b2 )
-    return the bitwise OR of b1 and b2
-
-Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
-    return the bitwise eXclusive-OR of b1 and b2
-
-int bitcmp ( Bitvector *b1, Bitvector *b2 )
-    compare two bit vectors
-
-<subsection Simple Ring Buffer>
-
-RingBuffer *openring(char *filename, char *id, int depth, int flags)
-    open (or create) a simple ring buffer in filename with size depth
-
-int newring(char *filename, char *id, int depth, int flags)
-    create (or reinitialize) a simple ring buffer in filename with size depth
-
-void closering(RingBuffer *rb)
-    close the ring buffer rb
-
-void pushring(RingBuffer *rb, double time, double value)
-    push a time/value pair onto the ring buffer rb
-
-int getring(RingBuffer *rb, int i, double *time, double *value)
-    get the i'th time/value pair from the ring buffer rb
-
-int countring(RingBuffer *rb)
-    return the number of pairs in the ring buffer
-
-double maxring(RingBuffer *rb, double tdelta, int *index)
-    return the maximum value and its index within tdelta from the ring buffer rb
-
-double minring(RingBuffer *rb, double tdelta, int *index)
-    return the minimum value and its index within tdelta from the ring buffer rb
-
-double avgring(RingBuffer *rb, double tdelta)
-    return the average value over tdelta from the ring buffer rb
-
-int findring(RingBuffer *rb, double value, double tdelta)
-    find the index of ring buffer entry which has the specified value within tdelta entries
-
-int changedring ( RingBuffer *rb, double tdelta );
-    return 1 if the value has changed over the period tdelta
-
-<subsection Buffered Network Stream I/O>
-
-Bns *bnsnew ( int fd, int sz )
-    create a new network stream I/O buffer
-
-void bnsfree ( Bns *bns )
-    free space for bns
-
-int bnsclose ( Bns *bns )
-    close file descriptor and free space for bns
-
-
-void bnsuse_sockio ( Bns *bns )
-    setup bns to use socket routines rather than read and write
-
-
-int bnsget ( Bns *bns, void *data, int t, int n )
-    get n elements of type t from bns, returning the result in data ; t 
-    may be BYTES, TWO_BYTES, FOUR_BYTES, or EIGHT_BYTES
-
-int bnsput ( Bns *bns, void *data, int t, int n )
-    put n elements of type t from data, into buffer of bns 
-
-int bnsflush ( Bns *bns )
-    write all data currently in bns buffer
-
-
-void bnsmark ( Bns *bns )
-    save the current read point in the input buffer; keep all
-    data after this mark until bnsrelease
-
-void bnsrelease ( Bns *bns )
-    reset mark on the input buffer
-
-void bnsrestore ( Bns *bns )
-    back up bns pointer to previous mark 
-
-
-void bnsclr ( Bns *bns )
-    wipe clean the bns buffer
-
-int bnscnt ( Bns *bns )
-    return count of characters in bns buffer
-
-int bnseof ( Bns *bns )
-    return non-zero when end of file occurs on input
-
-int bnserr ( Bns *bns )
-    return non-zero after an error occurs on a bns
-
-int bnserrno ( Bns *bns )
-    returns any system errno recorded by bns after read or write
-
-
-int bns2buf ( Bns *bns, char *buf, int maxbuf )
-    copy bns buffered data elsewhere
-
-int buf2bns ( Bns *bns, char *buf, int nbytes )
-    put data directly into a bns buffer
-
-
-int bnstimeout ( Bns *bns, int milliseconds )
-    set the bns timeout period
-
-
-int bnswait ( Bns *bns )
-    wait until the bns timeout for data to appear
-
-
-int gbnsSync ( Bns *bns, char *sync, int nsync, int strict )
-    read bns input until nsync chars matching sync are encountered
-
-int pbnsSync ( Bns *bns, char *sync, int nsync )
-    write nsync chars of sync to bns output
-
-<subsection Error handling>
-int elog_init ( int argc, char **argv )
-    initialize elog routines
-
-private void clear_register ( int deliver )
-    clears the error register, printing the contents if asked
-
-private void register_error ( int flag, char *format, ... )
-void elog_log ( int flag, char *format, ... )
-    add a message to the internally accumulating error log
-
-void elog_debug ( int flag, char *format, ... )
-    deliver a message and return
-
-void elog_notify ( int flag, char *format, ... )
-    deliver a message and return
-
-void elog_alert ( int flag, char *format, ... )
-    deliver a message and return
-
-private void complain ( int flag, char *format, ... )
-void elog_complain ( int flag, char *format, ... )
-    deliver a message and return
-
-private void die ( int flag, char *format, ... )
-void elog_die ( int flag, char *format, ... )
-    deliver a message and exit with error code 1
-
-void elog_fault ( int flag, char *format, ... )
-    report a hardware error and exit with error code 1
-
-char *elog_string ( int first )
-    returns freshly allocated string reproducing the entire error log 
-
-void elog_clear ()
-    clear the log of error messages
-
-int elog_mark ()
-    return the number of messages in the error log
-
-void elog_flush ( int deliver, int first )
-    flush elog messages from first, printing them if deliver is non-zero
-
-void elog_print ( FILE *file, int first )
-    print the error log from first to the end
-
-private void elog_free_msg ( void *vmsg )
-    free an elog message
-
-private void elog_msg_print ( FILE *file, Elog_msg *elog_msg )
-    print an elog message
-
-int elog_query ( enum Elog_code code, int severity, void **value )
-    retrieve various parameters from elog interface
-
-int elog_set ( enum Elog_code code, int severity, void *value )
-    set various parameters for elog interface
-
-<subsection General Programming Utilities>
-
-Hook *new_hook ( void (*hookfree)() )
-    create a standard structure which contains a pointer to a free routine and
-    a (void *) pointer
-
-void free_hook ( void **hookp )
-    free a hook structure, first calling the hookfree routine to free the private pointer, and then freeing the structure
-
-
-int runcmd ( char **argv, char **result )
-    execute a command, returning a result and the exit code
-
-void compress ( char *path )
-    compress files in background
-
-deprecated Signal_info *signal_byname ( char *name )
-    translate a signal name into description
-
-deprecated Signal_info *signal_bysig ( int sig )
-    translate a signal code into name and description
-
-void wait_for_time ( double time, int verbose )
-    sleep until specified epoch time
-
-
-int xlatname ( char *name, Xlat *xlat, int nxlat )
-    return number corresponding to name in translation table xlat
-
-char *xlatnum ( int num, Xlat *xlat, int nxlat )
-    return name corresponding to number in translation table xlat
-
-private int clr_fl ( int fd, int flags )
-    clear file status flags
-
-private int set_fl ( int fd, int flags )
-    set file status flags
-
-void fill_random ( char *buffer, int nbytes, int *position )
-    fill a buffer with random values
-
-int check_random ( char *buffer, int nbytes )
-    compare a buffer previously filled with fill_random
-    with the values expected.
-
-int set_random ( int nbytes )
-    set the size of the check_random internal buffer
-
-double disordered()
-    uniform [0,1] pseudo random number
-
-char *getaline ( FILE *file, char *aline, int n )
-    reads a line from file, replacing any terminal linefeed
-    with a null byte
-
-int is_file(char *path)
-    returns 1 if path is plain file, 0 otherwise
-
-int is_dir(char *path)
-    returns 1 if path is directory, 0 otherwise
-
-int is_nfs(char *path)
-    returns 1 if path is on nfs mounted filesystem, 0 otherwise
-
-char *memdup(void *a, int n)
-    return pointer to copy of n bytes of memory at address a
-
-<subsection Filename and Path manipulation>
-int abspath ( char *relp, char *absp )
-    return absolute path absp for the relative path relp
-
-int relpath ( char *fromdir, char *tofile, char *relp )
-    return a relative path relp from fromdir to tofile
-
-int cleanpath ( char *path, int flags, char *new )
-    remove unnecessary '/', '..', and '.' strings from path, returning the result
-    in new; if flags is 1, resolve intermediate symbolic links 
-
-char *concatpaths ( char *seg1, *seg2, ... 0 )
-    concatenate the path segments seg1, seg2, ... and
-    return the result in a newly allocated string
-
-int fspath ( char *path, char *host, char *filesystem )
-    return the host and filesystem corresponding to the path
-
-InfoPath * infopath ( char *path )
-    return additional information about path including
-    disk space and inodes available
-
-char *homedir(char *user)
-    return the home directory of the specified user.
-
-int is_file(char *path)
-    returns 1 if path is plain file, 0 otherwise
-
-int is_nfs(char *path)
-    returns 1 if path is nfs mounted, 0 otherwise
-
-void parsepath ( char *path, char *d, char *b, char *s )
-    separate path into directory d, basename b, and suffix s
-
-deprecated char **antelope_glob ( char *globpattern )
-    shell glob routine
-
-void dirbase ( char *path, char *dir, char *base )
-    separate a path into directory and basename components
-
-private int gethdir ( char *user, char *home )
-    get home directory of user
-
-int makedir ( char *dir )
-    make complete directory path dir (like "mkdir -p")
-
-int mapfile ( char *name, Arr **arr, char **addr )
-    return memory address addr for file name, mmapping it when not already present in arr
-
-int unmapfile ( char *name, Arr **arr )
-    unmap file name, removing it from arr
-
-int mkfile ( char *name, ulong nbytes, char *init, int initsize)
-    make file name nbytes long initialized with the first initsize bytes of init, otherwise zero
-
-FILE *gz_cat ( char *name)
-    returns FILE opened for reading on the output of "zcat name"
-
-FILE *gz_open ( char *name)
-    returns FILE opened for reading on the uncompressed version of name
-
-private FILE *zopen ( char *filename, char *permissions )
-    fopen a compressed or uncompressed file
-
-<subsection Strings>
-int blank ( char *s )
-    return non-zero if string is entirely blank characters
-
-int whitespace ( char *s )
-    returns non-zero if string is entirely whitespace
-
-void copystrip ( char *dest, char *source, int n )
-    copy a string, stripping leading and trailing blanks
-
-private int cs2fs ( char *dst, char *src, int nmax )
-    cast a C string for Fortran
-
-private int fs2cs ( char *dst, char *src, int nmax )
-    cast a fortran string to C format
-
-private char *newcs ( char *fs, int n )
-    copy a fortran string into a newly allocated buffer
-
-char *expand_env ( char *s )
-    return new string with delimited strings like $env or ${env} in s replaced 
-    with the value of environment variable env if defined
-
-void strtrim ( char *s )
-    trim leading and trailing whitespace characters from string s
-
-void str2lower ( char *s )
-void str2upper ( char *s )
-    convert string s to all lower/upper case
-
-void strsub ( char *old, char *s, char *sub, char *r )
-    replace all occurences of string s in old with sub, leaving result in r
-
-void regsubstitute ( char *old, char *sub, regmatch_t *matches, char *new ) 
-    given results matches of regexec, substitute sub in old, returning result in new
-
-int patsub ( char *old, regex_t *pat, char *sub, char *r )
-    replace first occurence of regular expression pat in string old with sub, leaving result in r
-
-int strmatches ( char *s, char *pattern, Hook **hook );
-    returns 1 if entire string s matches the regular expression pattern
-
-int strcontains ( char *s, char *pattern, Hook **hook, int *start, int *nchars );
-    returns 1 if string s contains the regular expression pattern; the
-    index and number of matching chars nchars are returned.
-
-Tbl *split ( char *s, char c )
-    return list of fields of s which are delimited by the character c
-
-void sncopy ( char *dst, char *src, int n )
-    copy n chars from string src to dst with no trailing null, padding with spaces if necessary
-
-void szcopy ( char *dst, char *src, int n )
-    copy n chars from string src to dst, then append null
-
-private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
-    copy a string, truncating or padding as necessary
-
-void pushstr(void **sbuf, char *s)
-    add the string s to the string buffer sbuf, creating sbuf if *sbuf == 0
-
-char *popstr(void **sbuf, int sfree)
-    retrieve the entire string from sbuf, freeing sbuf if sfree != 0
-
-char *strdbl(double x, char *buf)
-    formats the input double x into a compact and convenient string
-
-<subsection Sorting and Searching>
-void isort ( char *a, int n, int size, int (*cmp)(), void *pvt )
-    sort list a of n elements each size bytes using the comparison function cmp and
-    an insertion sort implementation
-
-void quicksort ( char *a, int n, int size, int (*cmp)(), void *pvt )
-    sort list a of n elements each size bytes using the comparison function cmp and
-    a quick sort implementation
-
-void shellsort ( char *a, int n, int size, int (*cmp)(), void *pvt )
-    sort list a of n elements each size bytes using the comparison function cmp and
-    a shell sort implementation
-
-int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*cmp)(), void *pvt, int *ns, int *ne )
-    search sorted index for key with binary search, where keys are size bytes and comparison function cmp. 
-    returns number of matches and the index range ns <= i <= ne of matches.  unique indicates index has no duplicate entries
-
-<subsection User Interaction>
-char *ask ( char *format, ... )
-    query user for a response
-
-char *asknoecho ( char *format, ... )
-    query user for a response with no echo
-
-int askyn ( char *format, ... )
-    query user for a yes/no response
-
-int askynaq ( char *format, ... )
-    query user for a yes/no/all/quit response
-
-int yesno ( char *s )
-    check string for various ways of meaning yes or no
-
-int fdkey ( int fd )
-    tests file descriptor for pending input
-
-int fdwait ( int fd, int msec )
-    wait up to msec milliseconds for pending input
-
-<subsection Hexadecimal dumps>
-private void Hexdump ( FILE *file, int base, void *mem, int n )
-    hex dump a buffer mem, with base added
-
-void hexdump ( FILE *file, void *mem, int n )
-    write a hex and ascii dump of n bytes of buffer mem 
-
-void read_hexdump ( FILE *file, char *mem, int n )
-    read at most n bytes of a hex dump from file into mem
-
-void asciidump ( FILE *file, char *mem, int n )
-    write ascii dump of n bytes of buffer mem, with escaped non-printing chars
-
-void read_asciidump ( FILE *file, char *mem, int n )
-    read at most n bytes of a ascii dump from file into mem
-
-int nomem ( char *mem, int n )
-    true if address range mem to mem+n has invalid memory addresses
-
-int hex2int ( char c )
-    returns the integer value of a hexadecimal character
-
-int printable ( char *mem, int l )
-    returns 1 if all l bytes at mem are printable
-
-void printable_string ( char *buf, int n, char *mem, int l )
-    copies l bytes from mem to buf (maximum of n output bytes), 
-    replacing non-printable bytes with a hexadecimal representation
-
-<subsection Byteswap routines>
-void swap2 ( unsigned char *from, unsigned char *to, int n )
-    swap two bytes
-
-void swap4 ( unsigned char *from, unsigned char *to, int n )
-    swap four bytes
-
-void swap8 ( unsigned char *from, unsigned char *to, int n )
-    swap eight bytes
-
-
-int align_double ( int i )
-    align an address to a multiple of double
-
-int align_int ( int i )
-    align an address to a multiple of int
-
-void H2N2(char *to, char *from, int n)
-void N2H2(char *to, char *from, int n)
-
-void H2N4(char *to, char *from, int n)
-void N2H4(char *to, char *from, int n)
-
-void H2N8(char *to, char *from, int n)
-void N2H8(char *to, char *from, int n)
-    convert n 2 byte ints, 4 byte ints (or floats) or 8 byte
-    ints (or doubles) from Host order to Network order, or vice versa
-
-void H42N3 ( char *to, int *from, int n )
-    convert n 3 byte signed integers from network order to 4 byte host order signed integers
-
-void N32H4 ( int *to, char *from, int n )
-    convert n 4 byte host order signed integers to 3 byte signed network order integers
-
-void HD2NF ( char *to, double *from, int n )
-    convert from host double to net float
-
-void NF2HD ( double *to, char *from, int n )
-    convert from network float to host double
-
-
-void NF2HI ( int *to, char *from, int n )
-    convert from net float to host int
-
-void HI2NF ( char *to, int *from, int n )
-    convert from host int to net float
-
-
-void HI2NC ( char *to, int *from, int n )
-    convert from host int to net character
-
-void NC2HI ( int *to, char *from, int n )
-    convert from net character to host int
-
-
-void HI2NS ( char *to, int *from, int n )
-    convert from host int to net short
-
-void NS2HI ( int *to, char *from, int n )
-    convert from net short to host int
-
-
-private double htond ( double val )
-    convert host double to net double
-
-private void htondp ( double *valp_from, double *valp_to )
-    convert pointer to host double to pointer to net double
-
-private float htonf ( float val )
-    convert host float to net float
-
-private void htonfp ( float *valp_from, float *valp_to )
-    convert pointer to host float to pointer to net float
-
-deprecated int isnetorder ( )
-    returns true if local machine uses network order
-
-private double ntohd ( double val )
-    convert net double to host double
-
-private void ntohdp ( double *valp_from, double *valp_to )
-    convert pointer to net double to pointer to host double
-
-private float ntohf ( float val )
-    convert net float to host float
-
-private void ntohfp ( float *valp_from, float *valp_to )
-    convert pointer to net float to pointer to host float
-
-private int rev4 ( char *from, char *to, int n )
-    reverse order of 4 bytes
-
-private int rev8 ( char *from, char *to, int n )
-    reverse order of 8 bytes
-
-<subsection Lists>
-Tbl *newtbl ( int n )
-    return a new list with n elements
-
-Tbl *inittbl ( int left, int right, int direct, char *null, int sz )
-    return a new direct list with specified null value and elements of sz bytes
-
-void freetbl ( Tbl *tbl, void (*tfree) () )
-    free memory used by list tbl, calling tfree on each element
-
-int maxtbl ( Tbl *tbl )
-    return number of elements in list tbl
-
-Tbl *duptbl(Tbl *tbl, void *(*dup)())
-    return a duplicate (clone) of the list tbl using the dup routine to duplicate individual elements.
-
-void clrtbl ( Tbl *tbl, void (*tfree) () )
-    empty an existing list tbl, calling tfree on each element
-
-void trunctbl ( Tbl *tbl, int last, void (*tfree) () )
-    shorten a list tbl to contain only last elements, calling tfree on other elements 
-
-int settbl ( Tbl *tbl, int index, char *value )
-    set element #index of list tbl to value
-
-char *gettbl ( Tbl *tbl, int index )
-    return value for element #index of list tbl
-
-int instbl ( Tbl *tbl, int index, char *value )
-    insert element value at position index of list tbl, shifting other element to the right
-
-char *deltbl ( Tbl *tbl, int index )
-    delete element #index from list tbl, returning the deleted element
-
-char *poptbl ( Tbl *tbl )
-    remove last element from list tbl, returning that element 
-
-char *shifttbl ( Tbl *tbl )
-    remove first element from tbl, returning that element 
-
-int pushtbl ( Tbl *tbl, char *value )
-    append an element value to the end of the list tbl
-
-int unshifttbl ( Tbl *tbl, char *value )
-    insert an element value at the front of the list tbl
-
-int filetbl ( char *name, char *id, int n, void *null, int sz, Tbl **tbl )
-    read or create a list in file name with n elements of sz bytes, returning the tbl
-
-Tbl *readtbl ( char *name, char **id, int rw )
-    read a list from file name
-
-int savetbl ( Tbl *tbl, char *name, char *id )
-    write a list tbl to file name 
-
-Tbl *greptbl ( char *re, Tbl *tbl )
-    search each element of list tbl with regular expression re, returning new list of matching rows
-
-Tbl *tblgrep ( Tbl *tbl, char *s )
-    considering each element of list tbl as a regular expression, return a new list of elements which match string s
-
-void sorttbl ( Tbl *tbl, int (*cmp) (), void *pvt )
-    sort a list tbl using the comparison function cmp
-
-int searchtbl ( char *key, Tbl *tbl, int (*cmp) (), void *pvt, int *ns, int *ne )
-    search a sorted list tbl for key using a binary search and comparison function cmp; returns count
-    and range ns <= i <= ne of matches
-
-int applytbl ( Tbl *tbl, int (*f) (), void *pvt )
-    apply function f to each elements of list tbl
-
-Tbl *strtbl ( char *s1, ... 0)
-    create a new list from a variable argument list of strings, terminated with zero
-
-char *jointbl ( Tbl *tbl, char *s )
-    return a new string containing all elements of list tbl, separated by string s.
-
-int cattbl ( Tbl *dst, Tbl *src )
-    append list src to list dst
-
-int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
-    return 0 if lists tbl1 and tbl2 are identical
-
-
-int newmorphtbl ( Tbl *list, Morphtbl **map )
-    create a new Morphtbl: a list of patterns and substitutions
-
-int morphtbl ( char *old, Morphtbl *map, int flags, char *r )
-    apply the patterns and substitutions in map to the string old, leaving
-    the result in r. flags may contain MORPH_PARTIAL and/or MORPH_ALL.
-    if MORPH_PARTIAL is set, the pattern need not match the entire string.
-    if MORPH_ALL is set, all the patterns are applied; otherwise replacement
-    stops at the first matching pattern
-
-void freemorphtbl ( Morphtbl *map )
-    free Morphtbl map
-
-<subsection Compression and Checksums>
-int ccanada ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
-    compress nuc integers from uc to "Canadian Compression" format,
-    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
-
-int ucanada ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
-    uncompress "Canadian Compression"  buffer cmp of ncmp bytes, 
-    result is *nuc integers in buffer *uc of dynamic size *ucsz.
-
-int cm6 ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
-    compress nuc integers from uc to plain ascii "GSE AutoDRM CM6" format,
-    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
-
-int um6 ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
-    uncompress plain ascii "GSE AutoDRM CM6" format buffer cmp of ncmp bytes, 
-    result is *nuc integers in buffer *uc of dynamic size *ucsz.
-
-int gse_checksum ( int *uc, int nuc )
-    compute gse checksum over nuc integers in uc for AutoDRM
-
-int cucsd ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
-    compress nuc integers from uc to UCSD RefTek datalogger format,
-    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
-
-int uucsd ( int *uc, char **cmp, int ncmp, int nuc )
-    uncompress nuc integers from "UCSD RefTek datalogger" format buffer cmp of ncmp bytes, 
-    advancing *cmp to the next location after uncompressed data
 
 <subsection Parameter Files>
 int pfread ( char *name, Pf **pf )
@@ -904,7 +107,7 @@ void pfput_string ( Pf *pf, char *name, char *value )
     put a string value for key name into parameter space pf
 
 void pfput_time(Pf *pf, char *name, double time)
-    put time into parameter space pf under key name 
+    put readable time into parameter space pf under key name 
 
 void pfput_arr ( Pf *pf, char *name, Arr *value )
     put an array value for key name into parameter space pf
@@ -920,6 +123,137 @@ Pf *pfdup(Pf *old)
 
 int pfrequire(char *pfname, char *atime )
     require pf_revision_code later than atime
+
+<subsection Associative Arrays>
+Arr *newarr ( int (*cmp)(char *, char *) )
+    create a new associative array with string compare routine cmp
+
+int freearr ( Arr *root, void (*free_value) () )
+    free an associative array, calling free_value on each value of the array
+
+void *setarr ( Arr *arr, char *key, void *value )
+    set the key element of associative array arr to the pointer value
+
+void *getarr ( Arr *arr, char *key )
+    return the value pointer for element key of associative array arr 
+
+void *delarr ( Arr *arr, char *key )
+    delete the key, value pair from associative array arr, returning the value pointer
+
+int cntarr ( Arr *arr )
+    return the number of key, value pairs in associative array arr
+
+Tbl *keysarr ( Arr *arr )
+    get a list of all the keys of associative array arr
+
+Tbl *valsarr ( Arr *arr )
+    get a list of all the values of associative array arr
+
+int applyarr ( Arr *arr, void (*f) (char *key, void *value, void *p), void *p)
+    apply function f to each key, value pair of associative array arr
+
+Tbl *arrgrep ( Arr *arr, char *s )
+    match each key of array arr as a regular expression against string s, returning a list of all keys which match
+
+Tbl *greparr ( char *re, Arr *arr )
+    match regular expression re to each key of array arr, returning a list of all keys which match
+
+<subsection Lists>
+Tbl *newtbl ( int n )
+    return a new list with n elements
+
+Tbl *inittbl ( int left, int right, int direct, char *null, int sz )
+    return a new direct list with specified null value and elements of sz bytes
+
+void freetbl ( Tbl *tbl, void (*tfree) () )
+    free memory used by list tbl, calling tfree on each element
+
+int maxtbl ( Tbl *tbl )
+    return number of elements in list tbl
+
+Tbl *duptbl(Tbl *tbl, void *(*dup)())
+    return a duplicate (clone) of the list tbl using the dup routine to duplicate individual elements.
+
+void clrtbl ( Tbl *tbl, void (*tfree) () )
+    empty an existing list tbl, calling tfree on each element
+
+void trunctbl ( Tbl *tbl, int last, void (*tfree) () )
+    shorten a list tbl to contain only last elements, calling tfree on other elements 
+
+int settbl ( Tbl *tbl, int index, char *value )
+    set element #index of list tbl to value
+
+char *gettbl ( Tbl *tbl, int index )
+    return value for element #index of list tbl
+
+int instbl ( Tbl *tbl, int index, char *value )
+    insert element value at position index of list tbl, shifting other element to the right
+
+char *deltbl ( Tbl *tbl, int index )
+    delete element #index from list tbl, returning the deleted element
+
+char *poptbl ( Tbl *tbl )
+    remove last element from list tbl, returning that element 
+
+char *shifttbl ( Tbl *tbl )
+    remove first element from tbl, returning that element 
+
+int pushtbl ( Tbl *tbl, char *value )
+    append an element value to the end of the list tbl
+
+int unshifttbl ( Tbl *tbl, char *value )
+    insert an element value at the front of the list tbl
+
+int filetbl ( char *name, char *id, int n, void *null, int sz, Tbl **tbl )
+    read or create a list in file name with n elements of sz bytes, returning the tbl
+
+Tbl *readtbl ( char *name, char **id, int rw )
+    read a list from file name
+
+int savetbl ( Tbl *tbl, char *name, char *id )
+    write a list tbl to file name 
+
+Tbl *greptbl ( char *re, Tbl *tbl )
+    search each element of list tbl with regular expression re, returning new list of matching rows
+
+Tbl *tblgrep ( Tbl *tbl, char *s )
+    considering each element of list tbl as a regular expression, return a new list of elements which match string s
+
+void sorttbl ( Tbl *tbl, int (*cmp) (), void *pvt )
+    sort a list tbl using the comparison function cmp
+
+int searchtbl ( char *key, Tbl *tbl, int (*cmp) (), void *pvt, int *ns, int *ne )
+    search a sorted list tbl for key using a binary search and comparison function cmp; returns count
+    and range ns <= i <= ne of matches
+
+int applytbl ( Tbl *tbl, int (*f) (), void *pvt )
+    apply function f to each elements of list tbl
+
+Tbl *strtbl ( char *s1, ... 0)
+    create a new list from a variable argument list of strings, terminated with zero
+
+char *jointbl ( Tbl *tbl, char *s )
+    return a new string containing all elements of list tbl, separated by string s.
+
+int cattbl ( Tbl *dst, Tbl *src )
+    append list src to list dst
+
+int cmptbl ( Tbl *tbl1, Tbl *tbl2 )
+    return 0 if lists tbl1 and tbl2 are identical
+
+
+int newmorphtbl ( Tbl *list, Morphtbl **map )
+    create a new Morphtbl: a list of patterns and substitutions
+
+int morphtbl ( char *old, Morphtbl *map, int flags, char *r )
+    apply the patterns and substitutions in map to the string old, leaving
+    the result in r. flags may contain MORPH_PARTIAL and/or MORPH_ALL.
+    if MORPH_PARTIAL is set, the pattern need not match the entire string.
+    if MORPH_ALL is set, all the patterns are applied; otherwise replacement
+    stops at the first matching pattern
+
+void freemorphtbl ( Morphtbl *map )
+    free Morphtbl map
 
 <subsection Sorted Lists>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
@@ -963,6 +297,590 @@ int idset ( Stbl *map, int key, int x )
 int idget ( Stbl *map, int key )
     returns the value of key in map, or -1 if it's not set
 
+<subsection Bit Vectors>
+
+Bitvector *bitnew ( )
+    create a new bit vector
+
+void bitfree ( Bitvector *b )
+    free a bit vector
+
+
+int bitclr ( Bitvector *b, int index )
+    clear bit index of bit vector b
+
+int bitset ( Bitvector *b, int index )
+    set bit index of bit vector b
+
+int bittst ( Bitvector *b, int index )
+    test bit index of bit vector b
+
+
+int bitmax ( Bitvector *b )
+    return current allocated size of b
+
+
+Bitvector *bitnot ( Bitvector *b )
+    return the bitwise NOT of b
+
+Bitvector *bitand ( Bitvector *b1, Bitvector *b2 )
+    return the bitwise AND of b1 and b2
+
+Bitvector *bitor ( Bitvector *b1, Bitvector *b2 )
+    return the bitwise OR of b1 and b2
+
+Bitvector *bitxor ( Bitvector *b1, Bitvector *b2 )
+    return the bitwise eXclusive-OR of b1 and b2
+
+int bitcmp ( Bitvector *b1, Bitvector *b2 )
+    compare two bit vectors
+
+<subsection Simple Ring Buffer>
+
+RingBuffer *openring(char *filename, char *id, int depth, int flags)
+    open (or create) a simple ring buffer in filename with size depth
+
+int newring(char *filename, char *id, int depth, int flags)
+    create (or reinitialize) a simple ring buffer in filename with size depth
+
+void closering(RingBuffer *rb)
+    close the ring buffer rb
+
+void pushring(RingBuffer *rb, double time, double value)
+    push a time/value pair onto the ring buffer rb
+
+int getring(RingBuffer *rb, int i, double *time, double *value)
+    get the i'th time/value pair from the ring buffer rb
+
+int countring(RingBuffer *rb)
+    return the number of pairs in the ring buffer
+
+double maxring(RingBuffer *rb, double tdelta, int *index)
+    return the maximum value and its index within tdelta from the ring buffer rb
+
+double minring(RingBuffer *rb, double tdelta, int *index)
+    return the minimum value and its index within tdelta from the ring buffer rb
+
+double avgring(RingBuffer *rb, double tdelta)
+    return the average value over tdelta from the ring buffer rb
+
+int findring(RingBuffer *rb, double value, double tdelta)
+    find the index of ring buffer entry which has the specified value within tdelta entries
+
+int changedring ( RingBuffer *rb, double tdelta );
+    return 1 if the value has changed over the period tdelta
+
+<subsection Time conversion>
+<cdeclarations>
+int is_epoch_string ( char *s, double *e )
+    returns true if string s can be interpreted as a time, returning epoch time e
+
+int zstr2epoch ( char *s, double *e )
+    returns zero if no errors occur translating string s to an epoch time e
+
+double str2epoch ( char *s )
+    returns epoch time corresponding to string s, printing error messages
+
+
+double now ()
+    return current epoch time, to clock resolution (typically microseconds)
+
+void wait_for_time ( double time, int verbose )
+    sleep until specified epoch time
+
+
+char *epoch2str ( double e, char *f )
+    returns freshly allocated string containing epoch time e formatted according to format f
+
+char *zepoch2str ( double epoch, char *f, char *timezone )
+    returns freshly allocated string containing epoch time e formatted according to format f for timezone; if timezone == 0, use UTC, if timezone == "", use $TZ
+
+
+private int fmttime ( double e, char *result, int fmt, char *timezone )
+    returns a formatted time string
+
+char *strdate ( double e )
+    returns string representing date portion of epoch time
+
+char *strtime ( double e )
+    returns string representing epoch time
+
+char *strydtime ( double e )
+    returns standard string representing epoch time
+
+
+char *strtdelta ( double e )
+    returns a string representation of elapsed time
+
+
+double epoch ( int yearday )
+    convert yearday to epoch time
+
+int yearday ( double e )
+    returns yearday corresponding to given epoch time
+
+
+char *getTZ ( )
+    get value for environment variable TZ (time zone)
+
+private void bcdtime ( char *tmstamp, struct date_time *ptim )
+    parse BCD timestamp into date-time structure
+
+private void epoch2bcd ( char *tmstamp, double epoch )
+    convert epoch time to BCD
+
+
+void doy2mday ( int doy, int year, int *month, int *day )
+    convert from year and Day-Of-Year doy to month and day of month
+
+private void e2h ( double epoch, int *iyear, int *iday, int *ihour, int *imin, double *sec )
+    returns year, doy, h:m:s given epoch time
+
+
+private double h2e ( int iyear, int iday, int ihour, int imin, double sec )
+    returns the epoch time given inputs
+
+private int mday2doy ( int year, int month, int day )
+    convert from year, month, day to Day-Of-Year
+
+private void sdate ( char **tmstr )
+    make a file name based on current epoch time
+
+private int time_string2epoch ( char *string, double *time )
+    earlier interface to str2epoch
+
+<subsection Error handling>
+int elog_init ( int argc, char **argv )
+    initialize elog routines
+
+private void clear_register ( int deliver )
+    clears the error register, printing the contents if asked
+
+private void register_error ( int flag, char *format, ... )
+void elog_log ( int flag, char *format, ... )
+    add a message to the internally accumulating error log
+
+void elog_debug ( int flag, char *format, ... )
+    deliver a message and return
+
+void elog_notify ( int flag, char *format, ... )
+    deliver a message and return
+
+void elog_alert ( int flag, char *format, ... )
+    deliver a message and return
+
+private void complain ( int flag, char *format, ... )
+void elog_complain ( int flag, char *format, ... )
+    deliver a message and return
+
+private void die ( int flag, char *format, ... )
+void elog_die ( int flag, char *format, ... )
+    deliver a message and exit with error code 1
+
+void elog_fault ( int flag, char *format, ... )
+    report a hardware error and exit with error code 1
+
+char *elog_string ( int first )
+    returns freshly allocated string reproducing the entire error log 
+
+void elog_clear ()
+    clear the log of error messages
+
+int elog_mark ()
+    return the number of messages in the error log
+
+void elog_flush ( int deliver, int first )
+    flush elog messages from first, printing them if deliver is non-zero
+
+void elog_print ( FILE *file, int first )
+    print the error log from first to the end
+
+private void elog_free_msg ( void *vmsg )
+    free an elog message
+
+private void elog_msg_print ( FILE *file, Elog_msg *elog_msg )
+    print an elog message
+
+int elog_query ( enum Elog_code code, int severity, void **value )
+    retrieve various parameters from elog interface
+
+int elog_set ( enum Elog_code code, int severity, void *value )
+    set various parameters for elog interface
+
+<subsection Filename and Path manipulation>
+int abspath ( char *relp, char *absp )
+    return absolute path absp for the relative path relp
+
+int relpath ( char *fromdir, char *tofile, char *relp )
+    return a relative path relp from fromdir to tofile
+
+int cleanpath ( char *path, int flags, char *new )
+    remove unnecessary '/', '..', and '.' strings from path, returning the result
+    in new; if flags is 1, resolve intermediate symbolic links 
+
+char *concatpaths ( char *seg1, *seg2, ... 0 )
+    concatenate the path segments seg1, seg2, ... and
+    return the result in a newly allocated string
+
+int fspath ( char *path, char *host, char *filesystem )
+    return the host and filesystem corresponding to the path
+
+InfoPath * infopath ( char *path )
+    return additional information about path including
+    disk space and inodes available
+
+char *homedir(char *user)
+    return the home directory of the specified user.
+
+int is_file(char *path)
+    returns 1 if path is plain file, 0 otherwise
+
+int is_dir(char *path)
+    returns 1 if path is directory, 0 otherwise
+
+int is_nfs(char *path)
+    returns 1 if path is on nfs mounted filesystem, 0 otherwise
+
+void parsepath ( char *path, char *d, char *b, char *s )
+    separate path into directory d, basename b, and suffix s
+
+deprecated char **antelope_glob ( char *globpattern )
+    shell glob routine
+
+void dirbase ( char *path, char *dir, char *base )
+    separate a path into directory and basename components
+
+private int gethdir ( char *user, char *home )
+    get home directory of user
+
+int makedir ( char *dir )
+    make complete directory path dir (like "mkdir -p")
+
+int mapfile ( char *name, Arr **arr, char **addr )
+    return memory address addr for file name, mmapping it when not already present in arr
+
+int unmapfile ( char *name, Arr **arr )
+    unmap file name, removing it from arr
+
+int mkfile ( char *name, ulong nbytes, char *init, int initsize)
+    make file name nbytes long initialized with the first initsize bytes of init, otherwise zero
+
+<subsection Strings>
+int blank ( char *s )
+    return non-zero if string is entirely spaces
+
+int whitespace ( char *s )
+    returns non-zero if string is entirely whitespace
+
+void copystrip ( char *dest, char *source, int n )
+    copy a string, stripping leading and trailing blanks
+
+private int cs2fs ( char *dst, char *src, int nmax )
+    cast a C string for Fortran
+
+private int fs2cs ( char *dst, char *src, int nmax )
+    cast a fortran string to C format
+
+private char *newcs ( char *fs, int n )
+    copy a fortran string into a newly allocated buffer
+
+void strtrim ( char *s )
+    trim leading and trailing whitespace from string s
+
+void strtr( char *s, char *from, char *to ) 
+    substitute chars in s using lists in from and to  
+
+void str2lower ( char *s )
+void str2upper ( char *s )
+    convert string s to all lower/upper case
+
+void strsub ( char *old, char *s, char *sub, char *r )
+    replace all occurences of string s in old with sub, leaving result in r
+
+void regsubstitute ( char *old, char *sub, regmatch_t *matches, char *new ) 
+    given results matches of regexec, substitute sub in old, returning result in new
+
+int patsub ( char *old, regex_t *pat, char *sub, char *r )
+    replace first occurence of regular expression pat in string old with sub, leaving result in r
+
+int strmatches ( char *s, char *pattern, Hook **hook );
+    returns 1 if entire string s matches the regular expression pattern
+
+int strcontains ( char *s, char *pattern, Hook **hook, int *start, int *nchars );
+    returns 1 if string s contains the regular expression pattern; the
+    index and number of matching chars nchars are returned.
+
+Tbl *split ( char *s, char c )
+    return list of fields of s which are delimited by the char c
+
+void sncopy ( char *dst, char *src, int n )
+    copy n chars from string src to dst with no trailing null, padding with spaces if necessary
+
+void szcopy ( char *dst, char *src, int n )
+    copy n chars from string src to dst, then append null
+
+private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad )
+    copy a string, truncating or padding as necessary
+
+void pushstr(void **sbuf, char *s)
+    add the string s to the string buffer sbuf, creating sbuf if *sbuf == 0
+
+char *popstr(void **sbuf, int sfree)
+    retrieve the entire string from sbuf, freeing sbuf if sfree != 0
+
+char *strdbl(double x, char *buf)
+    formats the input double x into a compact and convenient string
+
+<subsection Sorting and Searching>
+void isort ( char *a, int n, int size, int (*cmp)(), void *pvt )
+    sort list a of n elements each size bytes using the comparison function cmp and
+    an insertion sort implementation
+
+void quicksort ( char *a, int n, int size, int (*cmp)(), void *pvt )
+    sort list a of n elements each size bytes using the comparison function cmp and
+    a quick sort implementation
+
+void shellsort ( char *a, int n, int size, int (*cmp)(), void *pvt )
+    sort list a of n elements each size bytes using the comparison function cmp and
+    a shell sort implementation
+
+int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*cmp)(), void *pvt, int *ns, int *ne )
+    search sorted index for key with binary search, where keys are size bytes and comparison function cmp. 
+    returns number of matches and the index range ns <= i <= ne of matches.  unique indicates index has no duplicate entries
+
+<subsection User Interaction>
+char *ask ( char *format, ... )
+    query user for a response
+
+char *asknoecho ( char *format, ... )
+    query user for a response with no echo
+
+int askyn ( char *format, ... )
+    query user for a yes/no response
+
+int askynaq ( char *format, ... )
+    query user for a yes/no/all/quit response
+
+int yesno ( char *s )
+    check string for various ways of meaning yes or no
+
+int fdkey ( int fd )
+    tests file descriptor for pending input
+
+int fdwait ( int fd, int msec )
+    wait up to msec milliseconds for pending input
+
+char *getaline ( FILE *file, char *aline, int n )
+    reads a line from file, replacing any terminal linefeed
+    with a null byte
+
+<subsection Hexadecimal dumps>
+private void Hexdump ( FILE *file, int base, void *mem, int n )
+    hex dump a buffer mem, with base added
+
+void hexdump ( FILE *file, void *mem, int n )
+    write a hex and ascii dump of n bytes of buffer mem 
+
+void read_hexdump ( FILE *file, char *mem, int n )
+    read at most n bytes of a hex dump from file into mem
+
+void asciidump ( FILE *file, char *mem, int n )
+    write ascii dump of n bytes of buffer mem, with escaped non-printing chars
+
+void read_asciidump ( FILE *file, char *mem, int n )
+    read at most n bytes of a ascii dump from file into mem
+
+int nomem ( char *mem, int n )
+    true if address range mem to mem+n has invalid memory addresses
+
+int hex2int ( char c )
+    returns the integer value of a hexadecimal char
+
+int printable ( char *mem, int l )
+    returns 1 if all l bytes at mem are printable
+
+void printable_string ( char *buf, int p, char *mem, int n )
+    copies n bytes from mem to p-byte buf, replacing unprintable chars with hex
+
+<subsection Byteswap routines>
+#include "swapbytes.h"
+<body>
+Over 250 routines for byteswapping, encoded as follows
+</body>
+<example>
+Architecture code X
+    h   current host
+    a   Intel StrongARM.
+    m   Motorola/SPARC 
+    v   Vax/Intel
+
+Type codes T, S
+    code   type        bits
+    b      byte/char     8
+    s      short        16
+    t      3-byte       24
+    i      int          32
+    l      long long    64
+    f      float        32
+    d      double       64
+
+leading u indicates unsigned input and output
+
+Prototypes:
+     int hT2XS(Type *from, unsigned char **to, int n)
+     int XS2hT(unsigned char **from, Type *to, int n)
+     int uhT2XS(Type *from, unsigned char **to, int n)
+     int uXS2hT(unsigned char **from, Type *to, int n)
+
+Examples:
+    int hs2vb ( short *from, void *vto, int n );
+    int mf2hd ( void *vfrom, double *to, int n );
+    int vt2hi ( void *vfrom, int *to, int n );
+    int hi2mt ( int *from, void *vto, int n );
+</example>
+
+deprecate void swap2 ( unsigned char *from, unsigned char *to, int n )
+    swap two bytes
+
+deprecated void swap4 ( unsigned char *from, unsigned char *to, int n )
+    swap four bytes
+
+deprecated void swap8 ( unsigned char *from, unsigned char *to, int n )
+    swap eight bytes
+
+
+int align_double ( int i )
+    align an address to a multiple of double
+
+int align_int ( int i )
+    align an address to a multiple of int
+
+deprecated void H2N2(char *to, char *from, int n)
+deprecated void N2H2(char *to, char *from, int n)
+
+deprecated void H2N4(char *to, char *from, int n)
+deprecated void N2H4(char *to, char *from, int n)
+
+deprecated void H2N8(char *to, char *from, int n)
+deprecated void N2H8(char *to, char *from, int n)
+    convert n 2 byte ints, 4 byte ints (or floats) or 8 byte
+    ints (or doubles) from Host order to Network order, or vice versa
+
+deprecated void H42N3 ( char *to, int *from, int n )
+    convert n 3 byte signed integers from network order to 4 byte host order signed integers
+
+deprecated void N32H4 ( int *to, char *from, int n )
+    convert n 4 byte host order signed integers to 3 byte signed network order integers
+
+deprecated void HD2NF ( char *to, double *from, int n )
+    convert from host double to net float
+
+deprecated void NF2HD ( double *to, char *from, int n )
+    convert from network float to host double
+
+
+deprecated void NF2HI ( int *to, char *from, int n )
+    convert from net float to host int
+
+deprecated void HI2NF ( char *to, int *from, int n )
+    convert from host int to net float
+
+
+deprecated void HI2NC ( char *to, int *from, int n )
+    convert from host int to net character
+
+deprecated void NC2HI ( int *to, char *from, int n )
+    convert from net character to host int
+
+
+deprecated void HI2NS ( char *to, int *from, int n )
+    convert from host int to net short
+
+deprecated void NS2HI ( int *to, char *from, int n )
+    convert from net short to host int
+
+
+private double htond ( double val )
+    convert host double to net double
+
+private void htondp ( double *valp_from, double *valp_to )
+    convert pointer to host double to pointer to net double
+
+private float htonf ( float val )
+    convert host float to net float
+
+private void htonfp ( float *valp_from, float *valp_to )
+    convert pointer to host float to pointer to net float
+
+deprecated int isnetorder ( )
+    returns true if local machine uses network order
+
+private double ntohd ( double val )
+    convert net double to host double
+
+private void ntohdp ( double *valp_from, double *valp_to )
+    convert pointer to net double to pointer to host double
+
+private float ntohf ( float val )
+    convert net float to host float
+
+private void ntohfp ( float *valp_from, float *valp_to )
+    convert pointer to net float to pointer to host float
+
+private int rev4 ( char *from, char *to, int n )
+    reverse order of 4 bytes
+
+private int rev8 ( char *from, char *to, int n )
+    reverse order of 8 bytes
+
+<subsection Compression and Checksums>
+
+int gencompress ( uchar **out, int *nout, int *szout, int *in, int n, int len )
+    compress n input integers in, using run length len, returning result as
+    *nout bytes in *out. 
+
+int genuncompress ( int **out, int *nout, int *size, uchar *in, int n )
+    uncompress the n bytes buffer in, returning result as *nout integers in *out.
+
+int ccanada ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
+    compress nuc integers from uc to "Canadian Compression" format,
+    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
+
+int ucanada ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
+    uncompress "Canadian Compression"  buffer cmp of ncmp bytes, 
+    result is *nuc integers in buffer *uc of dynamic size *ucsz.
+
+int cm6 ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
+    compress nuc integers from uc to plain ascii "GSE AutoDRM CM6" format,
+    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
+
+int um6 ( char *cmp, int ncmp, int **uc, int *nuc, int *ucsz )
+    uncompress plain ascii "GSE AutoDRM CM6" format buffer cmp of ncmp bytes, 
+    result is *nuc integers in buffer *uc of dynamic size *ucsz.
+
+int gse_checksum ( int *uc, int nuc )
+    compute gse checksum over nuc integers in uc for AutoDRM
+
+int cucsd ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
+    compress nuc integers from uc to UCSD RefTek datalogger format,
+    result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
+
+int uucsd ( int *uc, char **cmp, int ncmp, int nuc )
+    uncompress nuc integers from "UCSD RefTek datalogger" format buffer cmp of ncmp bytes, 
+    advancing *cmp to the next location after uncompressed data
+
+void compress ( char *path )
+    compress files in background
+
+FILE *gz_cat ( char *name)
+    returns FILE opened for reading on the output of "zcat name"
+
+FILE *gz_open ( char *name)
+    returns FILE opened for reading on the uncompressed version of name
+
+private FILE *zopen ( char *filename, char *permissions )
+    fopen a compressed or uncompressed file
+
 <subsection Convenience Macros>
 allot(type *, name, n)
     malloc space for n (type *) elements, putting the address in name
@@ -1002,6 +920,9 @@ private MIN(a,b)
 int is_infinity ( double x )
     returns 1 if x is infinity
 
+int is_denormalized ( double x )
+    returns 1 if x is denormalized
+
 int is_nan ( double x )
     returns 1 if x is nan
 
@@ -1033,3 +954,231 @@ int my_ip(char *hostname, char *ipc, long *ip)
 
 int my_os(char *name)
     returns operating system (Solaris, Linux, ...)
+
+int ip2name(long addr, char *name)
+    return name corresponding to addr
+
+int name2ip(char *name, struct in_addr *addr, char *ipstr)
+    return ip address for name
+
+char *pidexecname(int pid)
+    return path to executable for process pid
+
+char *pidcmdline(int pid)
+    return command line for process pid
+            
+char *pidpwd(int pid)
+    return working directory for process pid
+
+int pidinfo(pid_t pid, Pidstat *process)
+    return ppid, uid, memory size, resident set size, run state, start time, 
+    cpu time for process pid
+
+void syscpu(int *ncpu, CpuUsage **cpu)
+    return user, nice, system and idle time for each cpu
+
+void sysloadavg(double *avg, int *nproc)
+    return 1 minute, 5 minute and 15 minute load averages
+
+void sysmem(double *total, double *physical, double *used)
+    return size of virtual and actual physical memory, and size
+    of memory in use.
+
+int sysproc(Tbl **procsp)
+    return list of system processes, with pid, uid, ppid, pcpu, state, 
+    and cpu time for each
+
+int sysmounted(Tbl **sysmnt)
+    return list of mounted filesystems, with mount point, filesystem type, 
+    and remote host and filesystem if mounted remotely.
+
+<subsection Environment>
+int envfile ( char *filename )
+    set environment using list in $ANTELOPE/data/env/filename
+
+int fixup_env ( char **list, int n, int force )
+    set environment using list; if force==0, set only unset variables 
+
+private char *getantelope ( )
+    return the ANTELOPE root directory
+
+void unsetenv ( char *name )
+    eliminate the environment variable name
+
+char *expand_env ( char *s )
+    return new string substituting $env or ${env} in s with value from environment
+
+<subsection Data file references>
+char *datafile ( char *env, char *file)
+    return path of filename file in $ANTELOPE/data, perhaps overridden by environment variable env
+
+char *datapath ( char *env, char *dir, char *file, char *sfx )
+    return path of filename file (with suffix sfx) in directory dir under $ANTELOPE/data, perhaps overridden by environment variable env
+
+int newdata ( char *path, char *env, char *dir, char *file, char *sfx )
+    return complete path for file (with suffix sfx) in directory dir under $ANTELOPE/data, 
+    allowing environment variable env to override
+
+Tbl *datasearch(char *search, char *dir, char *file, int flags)
+    return paths matching dir/file along the path search. If (flags & 1), expand $name in search; if (flags & 2), return non-existent paths too
+
+deprecated int mappath ( char *spath, char *upath )
+    translate pathnames (formerly used for remapping automount paths)
+
+deprecated void setmapcf ( char *fn )
+    set the name of the configuration file for mappath
+
+<subsection State Files>
+int bury ( )
+    save state file, specified by exhume and resurrect calls
+
+int exhume ( char *nm, int *stop, int sec, void (*f)() )
+    recover state file nm, and set up to save new copy.  set up interrupt
+    handlers to set flag stop and timer.  If timer
+    expires sec seconds later, calls bury and exits.
+
+int resurrect ( char *name, void *value, int type )
+    recover old value for name from state file, set up to save on later
+    calls to bury.  type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
+
+<subsection Buffered Network Stream I/O>
+
+Bns *bnsnew ( int fd, int sz )
+    create a new network stream I/O buffer
+
+void bnsfree ( Bns *bns )
+    free space for bns
+
+int bnsclose ( Bns *bns )
+    close file descriptor and free space for bns
+
+
+void bnsuse_sockio ( Bns *bns )
+    setup bns to use socket routines rather than read and write
+
+
+int bnsget ( Bns *bns, void *data, int t, int n )
+    get n elements of type t from bns, returning the result in data ; t 
+    may be BYTES, TWO_BYTES, FOUR_BYTES, or EIGHT_BYTES
+
+int bnsput ( Bns *bns, void *data, int t, int n )
+    put n elements of type t from data, into buffer of bns 
+
+int bnsflush ( Bns *bns )
+    write all data currently in bns buffer
+
+
+void bnsmark ( Bns *bns )
+    save the current read point in the input buffer; keep all
+    data after this mark until bnsrelease
+
+void bnsrelease ( Bns *bns )
+    reset mark on the input buffer
+
+void bnsrestore ( Bns *bns )
+    back up bns pointer to previous mark 
+
+
+void bnsclr ( Bns *bns )
+    wipe clean the bns buffer
+
+int bnscnt ( Bns *bns )
+    return count of bytes in bns buffer
+
+int bnseof ( Bns *bns )
+    return non-zero when end of file occurs on input
+
+int bnserr ( Bns *bns )
+    return non-zero after an error occurs on a bns
+
+int bnserrno ( Bns *bns )
+    returns any system errno recorded by bns after read or write
+
+
+int bns2buf ( Bns *bns, char *buf, int maxbuf )
+    copy bns buffered data elsewhere
+
+int buf2bns ( Bns *bns, char *buf, int nbytes )
+    put data directly into a bns buffer
+
+
+int bnstimeout ( Bns *bns, int milliseconds )
+    set the bns timeout period
+
+
+int bnswait ( Bns *bns )
+    wait until the bns timeout for data to appear
+
+
+int gbnsSync ( Bns *bns, char *sync, int nsync, int strict )
+    read bns input until nsync chars matching sync are encountered
+
+int pbnsSync ( Bns *bns, char *sync, int nsync )
+    write nsync chars of sync to bns output
+
+<subsection Miscellaneous>
+<cdeclarations>
+
+private void banner ( char *program, char *version )
+    print header with program name, version, BRTT address
+
+void cbanner ( char *version, char *usage, char *author, char *location, char *email )
+    print header with program name, version, usage, and author contact information
+
+
+void *usermethod ( char *method )
+    returns pointer to routine method from libuser.so 
+
+
+int verbose_exists ()
+    return 1 if file "verbose" exists, 0 otherwise
+
+
+Hook *new_hook ( void (*hookfree)() )
+    create a standard structure which contains a pointer to a free routine and
+    a (void *) pointer
+
+void free_hook ( void **hookp )
+    free a hook structure, first calling the hookfree routine to free the private pointer, and then freeing the structure
+
+
+int runcmd ( char **argv, char **result )
+    execute a command, returning a result and the exit code
+
+deprecated Signal_info *signal_byname ( char *name )
+    translate a signal name into description
+
+deprecated Signal_info *signal_bysig ( int sig )
+    translate a signal code into name and description
+
+
+char *memdup(void *a, int n)
+    return pointer to copy of n bytes of memory at address a
+
+
+
+int xlatname ( char *name, Xlat *xlat, int nxlat )
+    return number corresponding to name in translation table xlat
+
+char *xlatnum ( int num, Xlat *xlat, int nxlat )
+    return name corresponding to number in translation table xlat
+
+
+private int clr_fl ( int fd, int flags )
+    clear file status flags
+
+private int set_fl ( int fd, int flags )
+    set file status flags
+
+void fill_random ( char *buffer, int nbytes, int *position )
+    fill a buffer with random values
+
+int check_random ( char *buffer, int nbytes )
+    compare a buffer previously filled with fill_random
+    with the values expected.
+
+int set_random ( int nbytes )
+    set the size of the check_random internal buffer
+
+double disordered()
+    uniform [0,1] pseudo random number

@@ -7,6 +7,9 @@ package require Vogle
 </man>
 
 <subsection  Device Related Commands>
+graphic widget-name
+    create graphic widget for drawing
+
 g_init deviceName
   (re)-initialize the Vogle device deviceName. For  exam-
   ple, to initialize the Vogle postscript device.
@@ -39,7 +42,7 @@ g_clear
 
 g_color colorName
 <example>
-    Set the current color.
+Set the current color.
     black      0
     red        1
     green      2
@@ -193,12 +196,13 @@ g_backfaceclockwise flag
 g_font fontName
   The following software fonts are supported:
 <example>
-  astrology     cursive      cyrillic     futura.l
-  futura.m      gothic.eng   gothic.ger   gothic.ita
-  greek         markers      math.low     math.upp
-  meteorology   music        script       symbolic
-  times.g       times.i      times.ib     times.r
-  times.rb      japanese
+astrology   cursive     cyrillic    
+futura.l    futura.m    gothic.eng  
+gothic.ger  gothic.ita  greek       
+japanese    markers     math.low    
+math.upp    meteorology music       
+script      symbolic    times.g     
+times.i     times.ib    times.r     
 </example>
 
 g_numchars

@@ -211,13 +211,13 @@ elog_flush deliver first
 
 <subsection Parameter Files>
 pfget pf name
-    get the value for the specified name from the specified parameter file
+    get value for name from parameter file pf
 
 pfgetarr variable name
-    return the array corresponding to the specified name (e.g. %pf#name) in the variable
+    return array for name (e.g. %pf#name) in variable
 
 pfgetlist name
-    return the list corresponding to the specified name (e.g. @pf#name)
+    return list for name (e.g. @pf#name)
 
 pfput pf name value
     save the specified value into the parameter space
@@ -303,7 +303,7 @@ writefile filename var
     write value of variable var to filename
 
 datafile envname file 
-    returns complete path for file under $ANTELOPE/data
+    returns path for file under $ANTELOPE/data
 
 sig2str sig
     returns a string describing the signal #sig

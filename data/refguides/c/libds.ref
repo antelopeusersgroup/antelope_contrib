@@ -21,7 +21,7 @@ int dbopen ( char *path, char *p, Dbptr *db )
     open the database path with permission p ("r" or "r+"), returning new database pointer db
 
 int dbcreate(char *path, char *schema, char *dbpath, char *description, char *detail)
-    create a new database descriptor file path and schema.  
+    create a new database descriptor file path 
 
 Dbptr dbtmp(char *schema)
     create a temporary and transient database with the specified schema
@@ -175,7 +175,7 @@ int dbfree ( Dbptr db )
     and views referenced by other views should not be freed.
 
 void dbget_range ( Dbptr db, int *s, int *e )
-    extract range of record numbers from database pointer
+    get record number range from grouped view bundle pointer
 
 int dbcopy ( Dbptr dbin, Dbptr dbout, Arr *expressions )
     copy records field by field from table dbin to table dbout, translating
@@ -186,13 +186,13 @@ private int dbupdate_index ( Dbindex *dbindex )
 
 <subsection Evaluating Database Expressions>
 int dbex_compile ( Dbptr db, char *s, Expression **e, int type )
-    compile the string s as a database expression, returning the compiled
-    representation e.  type may be specified as dbBOOLEAN, dbINTEGER, dbREAL, 
-    dbTIME, dbYEARDAY, or dbSTRING, forcing the expression result, or 0
-    leaving the result as dictated by the expression.
+    compile string s as a database expression, returning the compiled
+    representation e.  type may be dbBOOLEAN, dbINTEGER, dbREAL, 
+    dbTIME, dbYEARDAY, or dbSTRING (forcing the expression result) or 0
+    letting the result type be dictated by the expression
 
-int dbex_eval ( Dbptr db, Expression *e, int flag, Dbvalue *v )
-    evaluate expression e for database record db.  If flag is non-zero,
+int dbex_eval ( Dbptr db, Expression *e, int f, Dbvalue *v )
+    evaluate expression e for database record db.  If flag f is non-zero,
     allow the expression to change field values in the record.
 
 int dbex_free ( Expression *e)
@@ -207,7 +207,7 @@ int dbfind(Dbptr db, char *string, int flags, Hook **hook)
 
 int dbstrtype ( Dbptr db, char *s )
     returns strREAL, strINTEGER, strNULL, strSTRING, strTIME, strEXPR, 
-    strFIELD, or strUNKNOWN, indicating how s may be evaluated
+    strFIELD, or strUNKNOWN, indicating how s might be evaluated
 
 <subsection External files>
 int dbextfile ( Dbptr db, char *table, char *p )

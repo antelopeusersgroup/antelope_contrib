@@ -2,7 +2,7 @@
 Cubic Earth Coordinates
 pixaddress
 
-
+none
 pixaddress.h
 coordinate system for sphere based on projection to a cube; 
 arbitrary resolution, very nearly equal size pixels and easy
@@ -13,26 +13,26 @@ Pixaddress sph2bin ( double ra, double dec, int res )
     convert ra, dec to bin address
 
 Pixaddress sph2pix ( double ra, double dec )
-    convert ra, dec to quadrilateralized cubic pixel address
+    convert ra, dec to cubic pixel address
 
 Pixaddress vec2bin ( double vec[3], int res )
     convert vector to bin address
 
 Pixaddress vec2pix ( double vec[3] )
-    convert vector to quadrilateralized cubic pixel address
+    convert vector to cubic pixel address
 
 
 void bin2sph ( Pixaddress binnum, int res, double *ra, double *dec )
     convert bin address to ra, dec
 
 void pix2sph ( Pixaddress pixnum, double *ra, double *dec )
-    convert quadrilateralized cubic pixel address to ra, dec
+    convert cubic pixel address to ra, dec
 
 void bin2vec ( Pixaddress binnum, double vec[3], int res )
     convert bin address to unit vector
 
 void pix2vec ( Pixaddress pixnum, double vec[3] )
-    convert quadrilateralized cubic pixel address to unit vector
+    convert cubic pixel address to unit vector
 
 
 private void decode_quadrant ( code, int *detector_id, int *primbsch_region, int *radius_bin )

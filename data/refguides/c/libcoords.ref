@@ -4,83 +4,7 @@ coords
 stock posix4 nsl socket m
 STOCKLIBS
 coords.h
-conversions between epoch time and strings, 2-d and 3-d coordinate transformations, and seismic region routines
-
-<subsection Time conversion>
-<cdeclarations>
-int is_epoch_string ( char *s, double *e )
-    returns true if string s can be interpreted as a time, returning epoch time e
-
-int zstr2epoch ( char *s, double *e )
-    returns zero if no errors occur translating string s to an epoch time e
-
-double str2epoch ( char *s )
-    returns epoch time corresponding to string s, printing error messages
-
-
-double now ()
-    return current epoch time, to clock resolution (typically microseconds)
-
-
-char *epoch2str ( double e, char *f )
-    returns freshly allocated string containing epoch time e formatted according to format f
-
-char *zepoch2str ( double epoch, char *f, char *timezone )
-    returns freshly allocated string containing epoch time e formatted according to format f for timezone; if timezone == 0, use UTC, if timezone == "", use $TZ
-
-
-private int fmttime ( double e, char *result, int fmt, char *timezone )
-    returns a formatted time string
-
-char *strdate ( double e )
-    returns string representing date portion of epoch time
-
-char *strtime ( double e )
-    returns string representing epoch time
-
-char *strydtime ( double e )
-    returns standard string representing epoch time
-
-
-char *strtdelta ( double e )
-    returns a string representation of elapsed time
-
-
-double epoch ( int yearday )
-    convert yearday to epoch time
-
-int yearday ( double e )
-    returns yearday corresponding to given epoch time
-
-
-char *getTZ ( )
-    get value for environment variable TZ (time zone)
-
-private void bcdtime ( char *tmstamp, struct date_time *ptim )
-    parse BCD timestamp into date-time structure
-
-private void epoch2bcd ( char *tmstamp, double epoch )
-    convert epoch time to BCD
-
-
-void doy2mday ( int doy, int year, int *month, int *day )
-    convert from year and Day-Of-Year doy to month and day of month
-
-private void e2h ( double epoch, int *iyear, int *iday, int *ihour, int *imin, double *sec )
-    returns year, doy, h:m:s given epoch time
-
-
-private double h2e ( int iyear, int iday, int ihour, int imin, double sec )
-    returns the epoch time given inputs
-
-private int mday2doy ( int year, int month, int day )
-    convert from year, month, day to Day-Of-Year
-
-private void sdate ( char **tmstr )
-    make a file name based on current epoch time
-
-private int time_string2epoch ( char *string, double *time )
-    earlier interface to str2epoch
+2-d and 3-d coordinate transformations, and seismic region routines
 
 
 <subsection Earth Units conversion>
@@ -147,7 +71,7 @@ void dmtoea ( double m[9], double *a, double *b, double *c)
     convert rotation matrix m to Euler angles a, b, c
 
 void rotmat ( double u[3], double A[9], double theta )
-    create a rotation matrix A which rotates about axis u by angle theta
+    create matrix A which rotates by angle theta about axis u 
 
 void xrotate ( double u[3], v[3], w[3], theta )
     rotate v by angle theta about axis u, returned in w
@@ -172,7 +96,7 @@ void r3mxm ( float A[9], float B[9], float C[9] )
     multiply two 3x3 matrices A and B, returning result C
 
 void r3mxv ( float A[9], float u[3], float v[3] )
-    multiply a 3x3 matrix A by a 3-vector u, returning result v
+    multiply 3x3 matrix A by 3-vector u, returning vector v
 
 void r3norm ( float u[3] )
     make u a unit vector
