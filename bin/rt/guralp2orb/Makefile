@@ -7,6 +7,7 @@ ldflags =
 ldlibs=  -lthread -lbrttutil $(ORBLIBS) 
 
 include $(ANTELOPEMAKE)  	
+DBG=-g
 
 DIRS=
 

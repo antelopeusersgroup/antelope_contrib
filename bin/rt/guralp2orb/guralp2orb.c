@@ -407,7 +407,7 @@ guralp2orb_packetrecover( void *arg )
 
 	}
 
-	return &rc;
+	return( NULL );
 }
 
 static void *
@@ -515,7 +515,7 @@ guralp2orb_packettrans( void *arg )
 		free( gpkt );
 	}
 
-	return &rc;
+	return( NULL );
 }
 
 static void *
@@ -527,7 +527,6 @@ guralp2orb_udplisten( void *arg )
 	int	lenforeign = sizeof( foreign );
 	G2orbpkt *gpkt;
 	int	rc = 0;
-	int	so;
 
 	if( Verbose ) {
 		fprintf( stderr, 
@@ -538,7 +537,7 @@ guralp2orb_udplisten( void *arg )
 	if( ul->so < 0 ) {
 		complain( 1, "Can't open socket for port %d\n", ul->port );
 		rc = -1;
-		return &rc;
+		return( NULL );
 	}
 
 	setsockopt( ul->so, SOL_SOCKET, SO_REUSEADDR, (char *) 0, 0 );
@@ -553,14 +552,14 @@ guralp2orb_udplisten( void *arg )
 	if( bind( ul->so, (struct sockaddr *) &(ul->local), ul->lenlocal ) < 0 ) {
 		complain( 1, "Can't bind address to socket\n" );
 		rc = -1;
-		return &rc;
+		return( NULL );
 	}
 
 	if( getsockname( ul->so, (struct sockaddr *) &(ul->local),
 			 &ul->lenlocal ) < 0 ) {
 		complain( 1, "Error getting socket name\n" );
 		rc = -1;
-		return &rc;
+		return( NULL );
 	}
 
 	mutex_lock( &(ul->statuslock) );
@@ -609,7 +608,7 @@ guralp2orb_udplisten( void *arg )
 		mtfifo_push( Packets_mtf, (void *) gpkt );
 	}
 
-	return &rc;
+	return( NULL );
 }
 
 static Udplistener * 
@@ -661,8 +660,6 @@ guralp2orb_udpinitiate( void *arg )
 	Udpinitiater *ui = (Udpinitiater *) arg;
 	Udplistener *ul;
 	char	port[STRSZ];
-	int	ret;
-	int	rc = 0;
 	struct sockaddr_in remote;
 	int	lenremote = sizeof( remote );
 	int	first = 1;
@@ -694,10 +691,11 @@ guralp2orb_udpinitiate( void *arg )
 		sleep( REINITIATE_INTERVAL );
 	}
 
-	return &rc;
+	return( NULL );
 
 }
 
+int
 main( int argc, char **argv )
 {
 	Udpinitiater *ui;
@@ -705,7 +703,6 @@ main( int argc, char **argv )
 	char	orbname[STRSZ];
 	char	c;
 	char 	*s;
-	int	orbfd;
 	Pf	*pf;
 	Tbl	*udplisten;
 	Tbl	*udpinitiate;
@@ -840,7 +837,9 @@ main( int argc, char **argv )
 			&(ui->initiater_thread) );
 	}
 
-	while( thr_join( NULL, NULL, NULL ) == 0 );
+	while( thr_join( (thread_t) NULL, 
+			 (thread_t *) NULL,
+			 (void **) NULL ) == 0 );
 
 	return 0;
 }
