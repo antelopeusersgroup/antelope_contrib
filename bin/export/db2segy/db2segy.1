@@ -99,6 +99,12 @@ file is a segy tape image.  The 3200 byte EBCDIC reel header is written
 as a block of pure nulls.  The binary reel header is filled in 
 an written immediately after the EBCDIC section as required by 
 the standard.  The trace data follow.  
+.LP
+An optional extension table to css3.0 called segy1.0 can be used to 
+set the source coordinates in the segy header.  It defines a table
+called \fBshot\fR that is used to set the source coordinate fields
+in the segy header.  If this table is not present db2segy will 
+silently leave the source coordinate fields in the segy header null.
 .SH PARAMETER FILE
 .LP
 The main controlling input for this program enters through a parameter

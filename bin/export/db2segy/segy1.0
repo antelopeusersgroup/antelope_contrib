@@ -1,0 +1,35 @@
+Attribute shotsize
+        Real ( 10 )
+        Format ( "%10.2lf" )
+        Units ( "Kilograms" )
+        Null  ( "-999999.99"  )
+	Range ( "shotsize > 0.0")
+        Description ( "shot size (kg) " )
+        Detail {
+		This attribute holds the size of an explosive charge
+		in kilograms.  Used for controlled source data with
+		explosives.
+        }
+        ;
+
+Relation shot 
+	Fields ( 
+		evid evname lat lon elev time dnorth deast edepth shotsize lddate
+	    )
+	Primary ( evid )
+	Foreign ( evid )
+	Description ( "Shot information table" ) 
+	Detail {
+		Special table for dealing with controlled source explosion
+		data with datascope.  Table is used to hold basic information
+		about an individual shot.  Note that lat and lon
+		serve as a reference absolute position for a local 
+		coordinate system.  dnorth and deast are local coordinates
+		relative to this refernce point.  This is used because
+		of common practice in controlled source studies to use
+		local coordinates relative to an origin.  The relation
+		of elev and edepth is different.  elev is the elevation
+		of the top of the ground surface for a shot point and
+		edepth is the depth of emplacement of the shot. 
+	}
+	;
