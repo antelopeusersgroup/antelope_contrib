@@ -38,6 +38,8 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     char	   *vmodel ;
     Tbl		   *ta, *tu ;
     Hypocenter h0;
+    Hypocenter *hypo ;
+    float **C, *emodel;  /* computed location error estimates*/
     static Arr *models = 0 ; 
     static char static_error[256];
     int loc_ret;
@@ -108,15 +110,22 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     loc_ret =  ggnloc (h0, ta, tu, o, &converge_history, &reason_converged, &residual);
     if(loc_ret >= 0)
     {
+	/* computer error estimates */
+	C = matrix(0,3,0,3);
+	emodel = (float *) calloc(4,sizeof(float));
+	hypo = (Hypocenter *) gettbl (converge_history, 
+			maxtbl(converge_history)-1);
+	predicted_errors(*hypo, ta, tu, o, C, emodel);
     	write_log (pfget_string(pf, "output_file"), &h0, ta, tu, &o,
-		converge_history, reason_converged, residual);
+		converge_history, reason_converged, residual,C,emodel);
 
 	if (reason_converged != 0 
 	&& maxtbl(reason_converged) > 0 ) {
 	if ( strncmp(gettbl(reason_converged,0), "Location hit iteration count limit", 34) != 0) {
-		Hypocenter * hypo ;
-		hypo = (Hypocenter *) gettbl (converge_history, maxtbl(converge_history)-1);
-		save_results (dbin, dbout, pf, ta, tu, &o, vmodel, hypo, residual, orid ) ;
+		save_results (dbin, dbout, pf, ta, tu, &o, 
+			vmodel, hypo, residual, orid , C, emodel) ;
+		free_matrix((char **)C,0,3,0);
+		free(emodel);
 		retcode = 0 ;
 	} else { 
 		strcpy(static_error, gettbl ( reason_converged, 0) ); 

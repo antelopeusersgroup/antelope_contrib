@@ -8,7 +8,9 @@ save_results (Dbptr dbin, Dbptr dbout,
 	char *vmodel, 
 	Hypocenter *hypo, 
 	Tbl *residual, 
-	int *oridp )
+	int *oridp,
+	float **C,
+	float *emodel )
 {
     int             i, n, orid, grn, srn, retcode = 0;
     char *algorithm ="dbgenloc";
@@ -48,7 +50,19 @@ save_results (Dbptr dbin, Dbptr dbout,
 	retcode = -1;
       }
 
-    if(dbaddv(dbout, "origerr", "orid", orid, "sdobs", hypo->rms_raw, 0) < 0 ) {
+    if(dbaddv(dbout, "origerr", 
+		"orid", orid,
+		"sxx",C[0][0], 
+		"syy",C[1][1], 
+		"szz",C[2][2], 
+		"stt",C[3][3], 
+		"sxy",C[0][1], 
+		"sxz",C[0][2], 
+		"syz",C[1][2], 
+		"stx",C[0][3], 
+		"sty",C[1][3], 
+		"stz",C[2][3], 
+		"sdobs", hypo->rms_raw, 0) < 0 ) {
 	complain (1,"couldn't add origerr record to database\n" ) ;
 	retcode = -1 ;
     }

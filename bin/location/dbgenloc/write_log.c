@@ -9,9 +9,11 @@ write_log (char *outfile_name,
     Location_options *o,
     Tbl *converge_history, 
     Tbl *reason_converged, 
-    Tbl *residual)
+    Tbl *residual,
+    float **C,
+    float *emodel)
 {
-    int i, n ;
+    int i, j, n ;
     Hypocenter *hypo ; 
     char *s ;
     FILE *file ;
@@ -118,7 +120,15 @@ write_log (char *outfile_name,
     for ( i=0 ; i<n ; i++ ) {
 	fprintf ( file, "\t%s\n", (char *) gettbl(reason_converged, i )) ; 
     }
-
+    fprintf( file, "Unscaled Covariance matrix (x,y,z,t)\n");
+    for(i=0;i<4;++i)
+    {
+	for(j=0;j<4;++j) fprintf(file,"%15.6g ",C[i][j]);
+	fprintf(file,"\n");
+    }
+    fprintf(file,"Model Error Bounds (x,y,z,t)\n");
+    fprintf(file,"%15.6g km EW\n%15.6g km NS\n%15.6g km Z\n%15.6g s origin time\n",
+			emodel[0],emodel[1],emodel[2],emodel[3]);
 #if 0
     fprintf ( file, "\nResiduals\n" ) ;
     fprintf ( file, "\t                               weighted   raw       residual      other\n"  ) ; 
