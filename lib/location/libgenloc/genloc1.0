@@ -135,63 +135,6 @@ Attribute velocity
 		should be inferred from association with a phase attribute.
         }
         ;
-Attribute dip
-        Real ( 5 )
-        Format ( "%5.1lf" )
-        Description ("Dip of a vector")
-        Detail {
-            Used for strike and dip of a line segment.
-        }
-        ;
-
-Attribute emodelx
-	Real ( 15 )
-	Format ( "%15.6lg" )
-	Description ( "Location error bound in x (EW) due to model errors" )
-	Null ( "-1.0" )
-	Detail {
-		Provides a bound estimate on the effect of velocity model
-		errors complimentary to conventional covariance estimate.
-		This component is for the EW direction in km.
-		}
-	;
-
-Attribute emodely
-	Real ( 15 )
-	Format ( "%15.6lg" )
-	Description ( "Location error bound in y (NS) due to model errors" )
-	Detail {
-		Provides a bound estimate on the effect of velocity model
-		errors complimentary to conventional covariance estimate.
-		This component is for the NS direction in km.
-		}
-	Null ( "-1.0" )
-	;
-
-Attribute emodelz
-	Real ( 15 )
-	Format ( "%15.6lg" )
-	Description ( "Location error bound in depth due to model errors" )
-	Detail {
-		Provides a bound estimate on the effect of velocity model
-		errors complimentary to conventional covariance estimate.
-		This component is for the vertical direction in km.
-		}
-	Null ( "-1.0" )
-	;
-
-Attribute emodelt
-	Real ( 15 )
-	Format ( "%15.6lg" )
-	Description ( "Location error bound in origin timedue to model errors" )
-	Detail {
-		Provides a bound estimate on the effect of velocity model
-		errors complimentary to conventional covariance estimate.
-		This component is for the origin time in seconds.
-		}
-	Null ( "-1.0" )
-	;
-
 #
 #  Reftek attributes 
 #
@@ -252,32 +195,6 @@ Attribute seedtqual
 	}
 	;
 
-#
-#  Used in error appraisal 
-#
-Relation predarr
-        Fields (
-            arid orid time slow seaz ema esaz dip lddate )
-        Primary ( arid  orid  )
-        Foreign  ( arid orid )
-        Description ( "Earth model predictions of data associated with arrivals" )
-        Detail {
-                This table has information that connects arrival rows
-                to predicted values of related observable based on a
-                particular earth model.  It is keyed similar to assoc, but
-                the attributes in this relation are all predicted values
-                based on some earth model.  This relations can be thought
-                of as a supplement to assoc that directly stores predicted
-                values of observables rather than residuals.  Note that
-                esaz and dip are azimuth and dip of the predicted emergence
-                angle of a given arrival in the focal sphere.  esaz is not
-                necessarily the same as that stored in assoc which is 
-                conventionally the great circle path angle.  Similarly
-                seaz and ema are computed from a model, not from simple
-                spherical geometry.
-        }
-        ;
-
 Relation stavel
 	Fields (
 		sta phase vmodel velocity lddate
@@ -294,21 +211,6 @@ Relation stavel
 		in the predarr table, but probably has other uses
 		in things like time statics.
 	}
-	;
-
-Relation emodel
-	Fields ( 
-	    orid emodelx emodely emodelz emodelt lddate
-	    )
-        Primary ( orid )
-	Foreign ( orid )
-
-	Description ( "Velocity model error bound estimates table" )
-	Detail {
-		This relation holds velocity model error bound
-		estimates computed by genloc using theory from
-		Pavlis (1986).
-	    }
 	;
 
 #
