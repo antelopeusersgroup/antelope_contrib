@@ -62,23 +62,11 @@ class Slowness_vector
 {
 public:
 	double ux,uy;   // base vector stored as components in s/km units
-	double mag(){return(hypot(ux,uy));};
-	double azimuth(){
-		double phi;
-		phi=M_PI_2-atan2(uy,ux);
-		if(phi>M_PI)
-			return(phi-2.0*M_PI);
-		else
-			return(phi);
-	};
-	double baz(){
-		double phi;
-		phi = M_PI_2-atan2(-uy,-ux);
-		if(phi>M_PI)
-			return(phi-2.0*M_PI);
-		else
-			return(phi);
-	};
+	Slowness_vector();
+	Slowness_vector(const Slowness_vector&);
+	double mag();
+	double azimuth();
+	double baz();
 };
 class Rectangular_Slowness_Grid
 {
@@ -91,8 +79,10 @@ public:
 	Rectangular_Slowness_Grid(string nm, double uxl, double uxh,
 		double du1,double du2,int n1, int n2);
 	Rectangular_Slowness_Grid(Pf *pf,string tag);
+	Rectangular_Slowness_Grid(const  Rectangular_Slowness_Grid&);
 	double ux(int i) {return(uxlow+i*dux);};
 	double uy(int i) {return(uylow+i*duy);};
+	Slowness_vector slow(int i, int j);
 };
 
 // This is used to define gaps and/or time variable weights

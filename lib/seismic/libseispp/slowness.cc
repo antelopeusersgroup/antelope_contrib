@@ -34,7 +34,7 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(Pf *pf,string tag)
 {
 	Metadata md(pf,tag);
 	try {
-		md.get_string("Slowness_Grid_Name");
+		name=md.get_string("Slowness_Grid_Name");
 		uxlow=md.get_double("uxlow");
 		uylow=md.get_double("uylow");
 		nux = md.get_int("nux");
@@ -43,5 +43,70 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(Pf *pf,string tag)
 		duy = md.get_double("duy");
 	} catch (...) {throw;}
 }
+// Copy constructor needed due to string variable (always wise anyway they say)
+Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(const Rectangular_Slowness_Grid& rsg)
+{
+	name=rsg.name;
+	uxlow=rsg.uxlow;
+	uylow=rsg.uylow;
+	nux=rsg.nux;
+	nuy=rsg.nuy;
+	dux=rsg.dux;
+	duy=rsg.duy;
+}
+// Returns a slowness vector for a grid position i,j
+Slowness_vector Rectangular_Slowness_Grid::slow(int i, int j)
+{
+	Slowness_vector u;
+	u.ux=uxlow+i*dux;
+	u.uy=uylow+j*duy;
+	return(u);
+}
+// these are trivial constructors and could be done inline, but 
+// decided to put them here to keep things together.  Learned this
+// lesson the hard way
+//
+Slowness_vector::Slowness_vector()
+{
+	ux=0.0;
+	uy=0.0;
+}
+Slowness_vector::Slowness_vector(const Slowness_vector& old)
+{
+	ux=old.ux;
+	uy=old.uy;
+}
+
+// These could (and once were) inline, but decided that was poor
+// memory management
+double Slowness_vector::mag()
+{
+	return(hypot(ux,uy));
+}
+double Slowness_vector::azimuth()
+{
+	if(this->mag() <= 0.0) return(0.0);
+	double phi;
+	phi=M_PI_2-atan2(uy,ux);
+	if(phi>M_PI)
+                return(phi-2.0*M_PI);
+	else if(phi<-M_PI)
+		return(phi+2.0*M_PI);
+        else
+                return(phi);
+}
+double Slowness_vector::baz()
+{
+	if(this->mag() <= 0.0) return(0.0);
+	double phi;
+	phi=3.0*M_PI_2-atan2(uy,ux);
+	if(phi>M_PI)
+                return(phi-2.0*M_PI);
+	else if(phi<-M_PI)
+		return(phi+2.0*M_PI);
+        else
+                return(phi);
+}
+
 
 }  // End namespace SEISPP

@@ -1,0 +1,103 @@
+.TH slowness 3 "$Date$"
+.SH NAME
+slowness - C++ objects for slowness vectors
+.SH SYNOPSIS
+.nf
+include "seispp.h"
+using namespace SEISPP;
+class Slowness_vector
+{
+public:
+        double ux,uy;   // base vector stored as components in s/km units
+        Slowness_vector();
+        Slowness_vector(const Slowness_vector&);
+        double mag();
+        double azimuth();
+        double baz();
+};
+class Rectangular_Slowness_Grid
+{
+public:
+        string name;
+        double uxlow, uylow;
+        double dux, duy;
+        int nux, nuy;
+        Rectangular_Slowness_Grid();  // generic default is defined
+        Rectangular_Slowness_Grid(string nm, double uxl, double uxh,
+                double du1,double du2,int n1, int n2);
+        Rectangular_Slowness_Grid(Pf *pf,string tag);
+        Rectangular_Slowness_Grid(const  Rectangular_Slowness_Grid&);
+        double ux(int i) {return(uxlow+i*dux);};
+        double uy(int i) {return(uylow+i*duy);};
+        Slowness_vector slow(int i, int j);
+};
+.fi
+.SH DESCRIPTION
+.LP
+Slowness vectors are a common concept in array processing.  
+The Slowness_vector object encapsulates this concept.  
+The slowness vector is defined by a local geographical coordinate
+system with +x pointing east and +y pointing north.  The 
+azimuth function returns a geographical azimuth (0 is north
+for an azimuth) for the slowness vector defined by the 
+components ux and uy in the local cartesian system.  
+Similar baz returns the back azimuth.  
+.LP
+In array processing slowness grids are commonly used to find 
+a best beam.  The Rectangular_Slowness_Grid object defines one
+particular class of such a grid.  Slowness space in the 
+Cartesian system (ux and uy) is gridded in a rectangular area with
+(uxlow, uylow) defining the lower left corner of the grid.  
+The slowness grid is then uniformly spaced in units of dux (for x)
+and duy (for y).  nux and nuy define the total number of grid points
+in each of the x and y directions.  Slowness vectors for the grid
+can be obtained by calling the component functions (ux and uy) 
+the slow function which returns a Slowness_vector object.
+.SH CONSTRUCTORS
+.LP
+The default constructor for a Slowness_vector initializes ux and uy to
+zero.
+.LP
+The Rectangular_Slowness_Grid object has a fully parameterized 
+constructor which loads all the data in the object directly.  
+I trust it's usage is obvious.
+.LP
+A less obvious usage is the parameter file based constructor for
+a Rectangular_Slowness_Grid object.  In that usage pf is a 
+pointer to an Antelope pf and tag is string used to define 
+the block of the parameter file to load the data from. 
+The example below is the best way to document this.
+.SH PARAMETER FILE
+.LP
+To use the parameter file constructor for a 
+Rectangular_Slowness_Grid object follow this template.
+.nf
+Slowness_Grid_Example &Arr{  #Here the tag is Slowness_Grid_Example
+Slowness_Grid_Name test  # name of the grid object 
+# This creates a 21 x 21 grid from -0.1 to 0.1 in increments of .01
+uxlow -0.1
+uylow -0.1
+nux 21
+nuy 21
+dux 0.01
+duy 0.01
+}
+.fi
+.SH EXCEPTIONS
+.LP
+None of these objects currently will throw an exception.  
+.SH LIBRARY
+-lseispp
+.SH "BUGS AND CAVEATS"
+.LP
+The default constructor sets the slowness vector components to 
+zero.  The azimuth and baz functions will silently return 0
+in this situation.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Department of Geological Sciences
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
