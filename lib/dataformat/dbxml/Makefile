@@ -17,7 +17,7 @@ DBG= -g
 
 DIRS=
 
-OBJS= db2xml.o
+OBJS= db2xml.o xml2db.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

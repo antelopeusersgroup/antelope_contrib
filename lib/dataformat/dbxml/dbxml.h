@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 extern int db2xml( Dbptr db, char *rootnode, char *rownode, Tbl *fields, Tbl *expressions, void **xml, int flags );
+extern int xml2db( Dbptr db, char *xml );
 
 #ifdef  __cplusplus
 }
