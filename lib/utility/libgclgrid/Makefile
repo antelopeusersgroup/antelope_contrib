@@ -7,14 +7,12 @@ DATADIR=schemas
 INCLUDE=gclgrid.h 
 MAN3=gclgrid.3 pathintegral.3 ustrans.3 extract_gridline.3
 
-ldlibs= $(DBLIBS) -lperf
+ldlibs= $(DBLIBS) -lperf -lseispp
 
 include $(ANTELOPEMAKE)  	
 
-#    fme_weights.o GCLproject_ray.o interpolate.o lookup.o operators.o \
-CXX=g++
-OBJS=converters.o create_destroy.o dbsubs.o ellipsoid.o \
-    extract_gridline.o interpolate.o lookup.o operators.o \
+OBJS=converters.o create_destroy.o dbsubs.o ellipsoid.o error_handlers.o \
+    extract_gridline.o fme_weights.o interpolate.o lookup.o operators.o \
     pathintegral.o ustrans.o
 $(LIB) : $(OBJS)
 	$(RM) $@
