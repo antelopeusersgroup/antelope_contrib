@@ -56,6 +56,19 @@ Attribute hopto
 	}
 	;
 
+Attribute hoteldeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "hotel deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the deadline for making hotel reservations
+		(usually at meeting-specific discount rates).
+	}
+	;
+
 Attribute inst
 	String (50)
 	Format ( "%-50s" )
@@ -116,6 +129,20 @@ Attribute pending
 		If this field is 'y', the record indicates an upcoming 
 		intended trip. If the field is 'n' or null, the row records
 		an actual trip that has already occurred.
+	}
+	;
+
+Attribute preregdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "pre-registration deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the pre-registration deadline for the meeting. 
+		Meeting this deadline usually allows discounted meeting
+		fees. 
 	}
 	;
 
@@ -239,7 +266,7 @@ Relation colleagues
 	;
 
 Relation potential
-	Fields ( destination leave return purpose traveler absdeadline regdeadline skip lddate )
+	Fields ( destination leave return purpose traveler absdeadline preregdeadline regdeadline hoteldeadline skip lddate )
 	Primary ( destination leave return purpose )
 	Description ( "potential trips being considered" )
 	Detail {
@@ -249,7 +276,9 @@ Relation potential
 		for abstracts and registration, if appropriate. N.B.: for upcoming
 		trips that will almost certainly be made and for which travel plans 
 		have already been confirmed, the trips table should be used instead 
-		of this table, with trips.pending set to 'y'.
+		of this table, with trips.pending set to 'y'. Time-periods in which 
+		it is necessary to remain in town may be anchored by specifying 
+		"destination" as one's home town.
 	}
 	;
 
