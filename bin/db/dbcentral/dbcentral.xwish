@@ -1,0 +1,151 @@
+
+# dbcentral
+#
+# GUI utility to keep track of databases and launch commands on them
+#
+# Kent Lindquist 
+# Lindquist Consulting
+# July, 2002
+
+package require Tclx
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+
+proc init_globals {} {
+	global Template_time Template_time_format Nicknames
+	
+	set Template_time_format "%m/%d/%Y %H:%M:%S.%s %Z"
+
+	set Template_time [epoch2str [str2epoch now] $Template_time_format]
+
+	pfgetarr Nicknames %dbcentral
+}
+
+proc init_windows {} {
+
+	global Template_time Nicknames Commands
+
+	label .timelbl -text "Time: " -bg beige
+
+	entry .template_time -textvariable Template_time \
+		 	     -relief sunken -width 26 -bg beige
+	
+	bind .template_time <KeyPress-Return> normalize_template_time
+
+	grid .timelbl .template_time -sticky ew
+	grid columnconfigure . 0 -weight 0
+	grid columnconfigure . 1 -weight 1
+
+	foreach nickname [array names Nicknames] {
+
+		set buttonname .b$nickname
+		regsub -all " " $buttonname _ buttonname
+
+		set menuname $buttonname.m
+
+		set tasks [pfgetlist @dbcentral#$nickname#tasks]
+		
+		menubutton $buttonname -text $nickname \
+			 -relief raised -menu $menuname \
+			 -direction right -bg beige
+		menu $menuname -tearoff 0
+
+		bind $buttonname <Button-3> "show_path {$nickname} $buttonname"
+		bind $buttonname <ButtonRelease-3> "unshow_path $buttonname"
+
+		foreach taskline $tasks {
+
+			set parts [split $taskline]
+			set task [lindex $parts 0]
+			set runline [join [lrange $parts 1 end]]
+
+			set key "$nickname:$task"
+			array set Commands [list $key "$runline"]
+
+			set cmd "myexec {$nickname} $task"
+
+			$menuname add command -label $task \
+				-command $cmd \
+				-background lightblue \
+				-activebackground lightyellow
+		}
+
+		grid $buttonname -sticky ew -columnspan 2
+	}
+
+	button .quit -text Quit -command "destroy ." -bg red
+	grid .quit -sticky ew -columnspan 2
+
+	wm resizable . 0 0
+}
+
+proc normalize_template_time {} {
+	global Template_time Template_time_format
+
+	if { [catch "set time [str2epoch $Template_time]" error] } {
+		tkdialog .err "Conversion problem" \
+		  "Couldn't convert time string. Resetting to current time." \
+		   OK 
+		
+		set time [str2epoch now]
+	} 
+	set Template_time [epoch2str $time $Template_time_format]
+}
+
+proc get_dbpath { nickname } {
+	global Template_time
+
+	set time [str2epoch $Template_time]
+
+	pfgetarr myarray %dbcentral#$nickname
+	set dbname_template [lindex [array get myarray dbname_template] 1]
+
+	set dbname [epoch2str $time $dbname_template]
+}
+
+proc unshow_path { w } {
+	destroy .path
+
+	$w configure -width 0
+}
+
+proc show_path { nickname w } {
+	
+	set dbname [get_dbpath $nickname]
+
+	set width [winfo width $w]
+
+	if { [info exists .path] } {
+		destroy .path
+	}
+	label .path -text $dbname -bg yellow -font [font create -size 10]
+
+	set reqwidth [winfo reqwidth .path]
+	if { $reqwidth > $width } {
+		$w configure -width [clength $dbname]
+		update
+	}
+
+	set width [winfo width $w]
+	set height [winfo height $w]
+	set x [expr $width / 2]
+	set y [expr $height / 2]
+
+	place .path -anchor center -in $w -x $x -y $y 
+
+}
+
+proc myexec { nickname task } {
+	global Commands
+
+	set dbname [get_dbpath $nickname]
+
+	set key "$nickname:$task"
+	set cmd_template [lindex [array get Commands $key] 1]
+
+	regsub -all DBNAME $cmd_template $dbname command
+
+	eval exec $command &
+}
+
+init_globals
+init_windows

@@ -191,7 +191,7 @@ proc start_dbpick {} {
 
 	set DbpickCommandWindowName "smartpick_dbpick_[pid]"
 
-  	exec sh -c "/usr/openwin/bin/xterm -title $DbpickCommandWindowName \
+  	exec sh -c "xterm -title $DbpickCommandWindowName \
 -iconic -geometry 80x24+0-0 -e dbpick -nostarttalk $WinfileCommand \
 -geom 1000x700 -appname $DbpickWinName $ComoutCommand $dbname" &
 

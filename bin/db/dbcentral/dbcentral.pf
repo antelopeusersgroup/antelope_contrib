@@ -1,0 +1,9 @@
+antelope_demo &Arr{
+	dbname_template	/opt/antelope/data/db/demo/demo
+	tasks	&Tbl{
+		dbe		dbe DBNAME
+		dbe_editable	dbe -e DBNAME
+		dbpick		xterm -e dbpick -nostarttalk DBNAME
+		smartpick 	smartpick -nowait DBNAME
+	}
+}
