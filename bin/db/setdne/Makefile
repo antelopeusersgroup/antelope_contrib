@@ -1,6 +1,6 @@
 BIN=setdne
 
-MAN1=		# man pages for commands
+MAN1=setdne.1		# man pages for commands
 
 
 cflags=-g
