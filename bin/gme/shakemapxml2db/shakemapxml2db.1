@@ -1,0 +1,80 @@
+.TH SHAKEMAPXML2DB 1 "$Date$"
+.SH NAME
+shakemapxml2db \- Create database from USGS ShakeMap XML data
+.SH SYNOPSIS
+.nf
+shakemapxml2db xmlfile [xmlfile...] dbname
+.fi
+.SH DESCRIPTION
+shakemapxml2db takes XML data from the USGS ShakeMap program and 
+creates a test database representing the data. Conversion is 
+approximate and meant for scaffolding purposes and debugging. 
+
+For each station, shakemapxml2db predicts the P-phase arrival, 
+assigning a measurement time at the P-phase time with a validity
+interval extending from the predicted arrival to a time P+2S later.
+These predicted arrivals are added as "+P" to the arrival and assoc tables,
+with the arid used in wfmeas.
+
+shakemapxml2db expects each xml document to contain one shakemap-data 
+element, which in turn contains one each of the earthquake and stationlist
+elements. The latter in turn contains station elements, each with one or more
+comp elements, each with one or more measurements that are either acc, vel, 
+psa03, psa10, or psa30. For further detail see the ShakeMap documentation
+(approx. version 2.4). For compatibility with orbwfmeas databases, 
+the 'acc' and 'vel' tags are renamed 'peaka' and 'peakv' in the meastype 
+field of the wfmeas table. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+
+shakemapxml2db requires the Perl module XML::LibXML.
+
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+XML::LibXML(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The magnitude listed in the XML file is always entered as an ML.
+
+The filter for wfmeas is listed as "UNKNOWN". The ondate for site/sitechan is
+1970001.
+
+A more sophisticated version might check for existing site/sitechan
+entries and defer to them. This is a low-investment script, thus the
+created site/sitechan can be discarded if one has a better site
+database.
+
+shakemapxml2db is careful not to add duplicate origin and
+arrival rows. However, it will put wfmeas rows in the database regardless
+of any matching keys. This situation occurs in some TriNet data sets; 
+handling the confusion is left to downstream processors.
+
+shakemapxml2db  skips stations with codes more than 6 characters,
+complaining as it does so.
+
+shakemapxml2db converts data apparently labeled as Troubled (flag='T').
+This may or may not be desirable (good for testing, though).
+
+shakemapxml2db does not fill in arrival.chan for the synthetic arrivals, 
+since one arrival may apply to more than one waveform-measurement for a 
+station. Programs using the resulting database should therefore select 
+channels based on wfmeas.chan if they need to do any subsetting.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
