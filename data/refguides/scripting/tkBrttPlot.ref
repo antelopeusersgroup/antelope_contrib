@@ -8,9 +8,6 @@ package require Brttplot
 % man bplot_thistory
 </man>
 <commands>
-append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
-    appends a vector element after an existing element
-
 create_scg db tstart tend ?options?
     create a station-channel-gather data object for plotting with a viewport gpl object
 <options>
@@ -22,26 +19,23 @@ create_scg db tstart tend ?options?
 -orient orient_flag
 </options>
 
-create_vector [ny] [-tag tag]
+vector_append vector_handle index xvalue ylist [label]
+    appends a vector element after an existing element
+
+vector_create [ny] [-tag tag]
     create an empty generic data-vector object
+
+vector_copy vector_handle [-tag tag]
+    copy a vector object
 
 destroy_scg scg_handle
     destroy a station-channel-gather data object
 
-eval_vector vector_handle xvalue
+vector_eval vector_handle xvalue
     compute and return a Y (dependent) value from a vector object
 
-free_vector {-tag tag | vector_handle}
+vector_free {-tag tag | vector_handle}
     destroys previously created vector objects
-
-read_vector filename ?options?
-    create and read a vector object from an ASCII file
-<options>
--tag tag
--loff line_off
--xpos xpos
--ypos ypos1 [ypos2] [...]
-</options>
 
 vector_get vector_handle {nx|ny|xy ix}
     get information relating to a vector handle
@@ -49,8 +43,22 @@ vector_get vector_handle {nx|ny|xy ix}
 vector_maxmin vector_handle [iy]
     retrieve min and max X, min and max Y from a vector object
 
-vector_puty vector_handle ix ylist
+vector_puty vector_handle ix ylist [label]
     replace dependent values in a vector object
+
+vector_read filename ?options?
+    create and read a vector object from an ASCII file
+<options>
+-tag tag
+-loff line_off
+-xpos xpos
+-ypos ypos1 [ypos2] [...]
+-lpos lpos
+</options>
+
+vector_transform_edp vector_handle lonr latr
+    transform vector longitude-latitude coordinates to
+    equal distance projection coordinates in place
 
 <subsection Plotting>
 (canvas) create axes viewport ?options?
@@ -162,7 +170,7 @@ vector_puty vector_handle ix ylist
 thistory_add thistory time value
     add time/value pair to thistory object
 
-thistory_create maxnp [-tag tag]
+thistory_create maxnp [-tag tag] [-file file]
     create a thistory object
 
 thistory_eval thistory time
@@ -176,4 +184,15 @@ thistory_get thistory {np|ty it}
 
 thistory_maxmin thistory
     return max and min values for thistory object
+
+<subsection Utilities>
+latlon2edp latr lonr lat lon
+    convert latitude-longitude to equal distance projecition coordinates
+
+edp2latlon latr lonr delx dely
+    convert equal distance projecition coordinates to latitude-longitude
+
+hls2colorstring hue lightness saturation [gamma]
+    convert color in hue-lightness-saturation[-gamma] to standard
+    X-window rgb color string
 
