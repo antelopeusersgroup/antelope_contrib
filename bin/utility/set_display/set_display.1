@@ -1,0 +1,75 @@
+'\" et
+.TH SET_ALTERNATE_DISPLAY 1 "$Date$"
+.SH NAME
+set_display \- choose opposing X windows screen for display
+.SH SYNOPSIS
+.nf
+set_display [-o] [-a #]
+.fi
+.SH DESCRIPTION
+set_display is a helper program for programs like dbloc2 and dbloc_buttons. It may be run 
+alone but was not intended for standalone use. set_display echos an 
+appropriate string to be fed as an Xwindows general option to an Xwindows program. If 
+there is only one screen on the current display, set_display refers to the current
+screen. If there are two screens for the current display, set_display refers to the 
+other screen. This allows programs like dbloc_buttons to come up on one screen and the dbpick waveforms
+to come up on the opposing screen.
+
+The instruction to avoid a specific display takes precedence over the 
+instruction to use the opposing display. If no options are specified, 
+the current display is indicated.
+.SH OPTIONS
+-o set to opposing display
+-a # avoid specified display 
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+dbloc2.pf should have, as an entry in its Processes array, a line for dbpick that 
+looks like this:
+
+
+.nf
+dbpick          /usr/openwin/bin/xterm `set_display` -geometry 80x24+0-0 -e dbpick -nostarttalk -winfile $Define{Work_dir}/dbpick_window -geom 1000x700 -appname dbloc_dbpick -comout $Define{Work_dir}/dbpick_pipe $Input_database
+.fi
+
+.SH EXAMPLE
+Standalone example: 
+
+.nf
+nordic% echo $DISPLAY
+:0.0
+nordic% set_display ; echo " "
+-display :0.0 
+nordic% set_display -o ; echo " "
+-display :0.1 
+nordic% set_display -a 0 ; echo " "
+-display :0.1 
+nordic% set_display -a 1 ; echo " "
+-display :0.0 
+nordic% set_display -o -a 1 ; echo " "
+-display :0.0 
+nordic%
+
+.fi
+
+For a more appropriate example of set_display, see the parameter file entry above
+
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+X11(7),dbloc2(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist 
+Geophysical Institute
+University of Alaska
+.fi
+.\" $Id$

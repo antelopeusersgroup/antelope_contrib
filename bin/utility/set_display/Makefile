@@ -1,16 +1,16 @@
-BIN= dbloc_set_display
+BIN= set_display
 
 DATADIR=	
 DATA=		
 INCLUDE=	
-MAN1= dbloc_set_display.1
+MAN1= set_display.1
 MAN3=		
 MAN5=		
 CLEAN= 		
 cflags=		
 fflags= 	
-ldflags= 	
-ldlibs=	 $(X11LIBS)
+ldflags= 
+ldlibs=	 $(DBLIBS) $(X11LIBS)
 
 include $(ANTELOPEMAKE)  	
 			
