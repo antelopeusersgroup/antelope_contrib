@@ -62,6 +62,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
+#ifdef PFPROMPT
 	type = pfpeek( pf, name, &value );
 	if( type == PFINVALID )
 	{
@@ -74,6 +75,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		plhs[0] = mxPfprompt( ((Pf *) value)->value.s );
 		return;
 	}
+#else
+	pfconfig( "ask", matlabPfprompt );
+#endif
 
 	type = pfget( pf, name, &value );
 	antelope_mex_clear_register( 1 );
@@ -97,7 +101,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	case PFTBL:
 		plhs[0] = pftbl2cellarr( (Pf *) value, recursive );
 		break;
+#ifdef PFPROMPT
 	case PFPROMPT:
+#endif
 	case PFINVALID:
 	default:
 		plhs[0] = NULL;

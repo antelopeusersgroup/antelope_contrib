@@ -16,7 +16,6 @@ Usage: NUM = PFGET_NUM ( DBPF, NAME )\n"
 void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	Pf 	*pf;
-	Pf	*promptpf;
 	char	*name;
 	char	*mystring;
 	mxArray	*input[1];
@@ -43,24 +42,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
 	}
 
-	switch( pfpeek( pf, name, &promptpf ) )
-	{
-	case PFINVALID:
-		mxFree( name );
-		mexErrMsgTxt( "pfget_num: Specified parameter not found" );
-	case PFPROMPT:
-		mxFree( name );
-		plhs[0] = mxPfprompt( promptpf->value.s );
-		return;
-	case PFSTRING:
-		break;
-	case PFARR:
-	case PFTBL:
-	default:
-		mxFree( name );
-		mexErrMsgTxt( 
-		    "pfget_num: Specified parameter is not a scalar value" );
-	}
+	pfconfig( "ask", matlabPfprompt );
 
 	mystring = pfget_string( pf, name );	
 	antelope_mex_clear_register( 1 );

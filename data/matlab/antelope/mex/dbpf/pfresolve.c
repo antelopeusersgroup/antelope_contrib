@@ -62,6 +62,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
+	pfconfig( "ask", matlabPfprompt );
+
 	rc = pfresolve( pf, name, 0, &value );
 	if( rc == PFINVALID || rc < 0 )
 	{
@@ -99,9 +101,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	case PFTBL:
 		plhs[0] = pftbl2cellarr( value, recursive );
 		break;
+#ifdef PFPROMPT
 	case PFPROMPT:
 		plhs[0] = mxPfprompt( value->value.s );
 		break;
+#endif
 	case PFINVALID:
 	default:
 		plhs[0] = NULL;

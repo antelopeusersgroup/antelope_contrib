@@ -43,6 +43,7 @@ extern Pf *mxArray2Pf PL_(( mxArray * ));
 extern mxArray *Pf2mxArray PL_(( Pf *, char * ));
 extern Response *mxArray2Response PL_(( mxArray * ));
 extern mxArray *Response2mxArray PL_(( Response * ));
+extern char *matlabPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt_string PL_(( char * ));
 extern mxArray *mxTranslate_Boolean PL_(( mxArray * ));

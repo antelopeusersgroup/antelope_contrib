@@ -43,29 +43,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
 	}
 
-	switch( pfpeek( pf, name, &promptpf ) )
-	{
-	case PFINVALID:
-		mxFree( name );
-		mexErrMsgTxt( "pfget_boolean: Specified parameter not found" );
-	case PFPROMPT:
-		mxFree( name );
-		plhs[0] = 0;
-		while( ! plhs[0] )
-		{
-			mxboolean = mxPfprompt_string( promptpf->value.s );
-			plhs[0] = mxTranslate_Boolean( mxboolean );
-		}
-		return;
-	case PFSTRING:
-		break;
-	case PFARR:
-	case PFTBL:
-	default:
-		mxFree( name );
-		mexErrMsgTxt( 
-		    "pfget_boolean: Specified parameter is not a scalar value" );
-	}
+	pfconfig( "ask", matlabPfprompt );
 
 	boolean = pfget_boolean( pf, name );
 	antelope_mex_clear_register( 1 );
