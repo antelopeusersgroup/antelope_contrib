@@ -6,7 +6,7 @@ cflags =  -g
 ldflags = 
 ldlibs= -lpkt -lorb $(TRLIBS) -lcoords -lstock $(SVR4LIBS)
 
-include $(DSAPMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 OBJS= \
