@@ -745,6 +745,8 @@ public:
 	// in @link GCLgrid::~GCLgrid @endlink
 	//@}
 	~GCLscalarfield();
+	/** Zeros the field variable */
+	void zero();
 	/** Standard assignment operator */
 	GCLscalarfield& operator=(const GCLscalarfield&);
 	//@{
@@ -902,6 +904,8 @@ public:
 	// in @link GCLgrid::~GCLgrid @endlink
 	//@}
 	~GCLvectorfield();
+	/** Zeros the field variable */
+	void zero();
 	//@{
 	// Save field to an Antelope (Datascope) database.  
 	// 
@@ -1053,6 +1057,8 @@ public:
 	// in @link GCLgrid3d::~GCLgrid3d @endlink
 	//@}
 	~GCLscalarfield3d();
+	/** Zeros field variable array */
+	void zero();
 	/** Standard assignment operator. */
 	GCLscalarfield3d& operator=(const GCLscalarfield3d&);
 	//@{
@@ -1198,6 +1204,8 @@ public:
 	// in @link GCLgrid3d::~GCLgrid3d @endlink
 	//@}
 	~GCLvectorfield3d();
+	/** Zeros the field variable */
+	void zero();
 	/** Standard assignment operator. */
 	GCLvectorfield3d& operator=(const GCLvectorfield3d&);
 	//@{

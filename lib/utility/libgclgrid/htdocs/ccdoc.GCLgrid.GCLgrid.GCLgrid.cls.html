@@ -7,9 +7,9 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html">
-<meta name="ccdoc_creation_date" content="Fri Jan 21 08:54:54 2005">
+<meta name="ccdoc_creation_date" content="Tue Mar 15 11:25:30 2005">
 <meta name="keywords" content="ccdoc, source code, documentation">
-<title>ccdoc GCLgrid gclgrid.h:279:class</title>
+<title>ccdoc GCLgrid gclgrid.h:296:class</title>
 </head>
 
 <body>
@@ -38,7 +38,7 @@
 <p>
  Note the object inherits most data attributes from the BasicGCLgrid object.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:279</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:296</dd>
 <dt><b>Author:</b></dt><dd>unascribed</dd>
 <dt><b>Version:</b></dt><dd>unknown</dd>
 </dl>
@@ -133,13 +133,7 @@ undocumented</td>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html#met-lookup-int-lookup--28-double-x1p--2c-double-x2p--29">lookup</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Find the index position of a point in a GCLgrid.
 </td></tr>
 <tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html#mop-operator-20!-3d-bool-operator-!-3d--28-const-GCLgrid--26--29">operator !=</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Comparison of two grids for inequality.
-</td></tr>
-<tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html#mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29">operator =</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Standard assignment operator.
-</td></tr>
-<tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-GCLgrid--26--29">operator ==</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Comparison of two grids for equality.
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid.cls.html#met-r-double-r--28-int-i1--2c-int-i2--29">r</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the radius from the center of the Earth of a grid point.
@@ -177,7 +171,7 @@ undocumented</td>
  are not called.  This is important to know if you try to create a GCLgrid
  object by the default constructor.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:358</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:375</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLgrid</b> ( )</td></tr></table>
 </dd></dl>
@@ -192,7 +186,7 @@ undocumented</td>
  which is used as a test to avoid duplicate free calls on these potentially 
  large arrays.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:303</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:320</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLgrid</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -207,7 +201,7 @@ undocumented</td>
  other data attributes to zero.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:311</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:328</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -234,7 +228,7 @@ undocumented</td>
   version of this constructor.
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:336</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:353</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -288,7 +282,7 @@ undocumented</td>
   from the object definition.
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:346</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:363</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -307,7 +301,7 @@ undocumented</td>
 <blockquote>
  Standard copy constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:350</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:367</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLgrid</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLgrid</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -594,7 +588,7 @@ See
 </blockquote>
 <a name="met-lookup-int-lookup--28-double-x1p--2c-double-x2p--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lookup</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#met-lon-double-lon--28-int-i1--2c-int-i2--29">&lt;</a>&nbsp;<a href="#mop-operator-20!-3d-bool-operator-!-3d--28-const-GCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#met-lon-double-lon--28-int-i1--2c-int-i2--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Find the index position of a point in a GCLgrid.
 <p>
@@ -630,55 +624,20 @@ See
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>int</b></font> <b><b>lookup</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> x1p ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> x2p )</td></tr></table>
 </dd></dl>
 </blockquote>
-<a name="mop-operator-20!-3d-bool-operator-!-3d--28-const-GCLgrid--26--29"></a>
-<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator !=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#met-lookup-int-lookup--28-double-x1p--2c-double-x2p--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
-<blockquote>
- Comparison of two grids for inequality.
-<p>
- Equality in this context is NOT the obvious.  
- Equality means the transformation properties of the two grids being compared are the same.
- That is, the operator tests only the transformation matrix and translation vector for
- equality.  This is a necessary condition to allow to grids to be mapped onto each other
- for higher level operations like +=.  Returns true if the transformation properties of 
- two matrices do not match.
-<dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:379</dd>
-</dl>
-<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>bool</b></font> <b><b>operator !=</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLgrid</b> &amp; )</td></tr></table>
-</dd></dl>
-</blockquote>
 <a name="mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator =</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20!-3d-bool-operator-!-3d--28-const-GCLgrid--26--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-GCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#met-lookup-int-lookup--28-double-x1p--2c-double-x2p--29">&lt;</a>&nbsp;<a href="#met-r-double-r--28-int-i1--2c-int-i2--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Standard assignment operator.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:362</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:379</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLgrid</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLgrid</b> &amp; )</td></tr></table>
 </dd></dl>
 </blockquote>
-<a name="mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-GCLgrid--26--29"></a>
-<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator ==</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29">&lt;</a>&nbsp;<a href="#met-r-double-r--28-int-i1--2c-int-i2--29">&gt;</a>&nbsp;</td></tr></table>
-<blockquote>
- Comparison of two grids for equality.
-<p>
- Equality in this context is NOT the obvious.  
- Equality means the transformation properties of the two grids being compared are the same.
- That is, the operator tests only the transformation matrix and translation vector for
- equality.  This is a necessary condition to allow to grids to be mapped onto each other
- for higher level operations like +=.  
-<dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:370</dd>
-</dl>
-<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>bool</b></font> <b><b>operator ==</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLgrid</b> &amp; )</td></tr></table>
-</dd></dl>
-</blockquote>
 <a name="met-r-double-r--28-int-i1--2c-int-i2--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method r</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-GCLgrid--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-void-reset_index--28--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#mop-operator-20-3d-GCLgrid--26-operator--3d--28-const-GCLgrid--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-void-reset_index--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Get the radius from the center of the Earth of a grid point.
 <p>
@@ -739,7 +698,7 @@ See
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:285</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:302</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * <b>x1</b>
 </dd></dl>
@@ -753,7 +712,7 @@ See
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:290</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:307</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * <b>x2</b>
 </dd></dl>
@@ -767,7 +726,7 @@ See
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:295</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:312</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * <b>x3</b>
 </dd></dl>
@@ -777,7 +736,7 @@ See
 <center>
 <p>
 <font size="-1">
-Created Fri Jan 21 08:54:54 2005.
+Created Tue Mar 15 11:25:30 2005.
 <br>
 This documentation was generated automatically by
 <br>

@@ -1,6 +1,6 @@
 ccdoc v0.8 verbose
 $ 0
-S 1b5
+S 1c5
 f 11 htdocs/gclgrid.db
 s
 5 @root
@@ -2383,8 +2383,143 @@ a
 1 =
 1 0
 s
-d ~BasicGCLgrid
+b $comment-40
 4c
+e
+cop
+0 
+10b
+2b
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 266
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+26  Comparison of two grids for equality.
+a @long_desc
+1 5
+2f  Equality in this context is NOT the obvious.  
+5b  Equality means the transformation properties of the two grids being compared are the same.
+56  That is, the operator tests only the transformation matrix and translation vector for
+58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
+27  for higher level operations like +=.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator ==
+4d
+e
+mop
+0 
+10b
+8
+4 bool
+8 operator
+2 ==
+1 (
+5 const
+c BasicGCLgrid
+1 &
+1 )
+s
+b $comment-41
+4e
+e
+cop
+0 
+114
+2c
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 275
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+28  Comparison of two grids for inequality.
+a @long_desc
+1 6
+2f  Equality in this context is NOT the obvious.  
+5b  Equality means the transformation properties of the two grids being compared are the same.
+56  That is, the operator tests only the transformation matrix and translation vector for
+58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
+58  for higher level operations like +=.  Returns true if the transformation properties of 
+1b  two matrices do not match.
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+b operator !=
+4f
+e
+mop
+0 
+114
+8
+4 bool
+8 operator
+2 !=
+1 (
+5 const
+c BasicGCLgrid
+1 &
+1 )
+s
+d ~BasicGCLgrid
+50
 e
 des
 0 
@@ -2396,7 +2531,7 @@ c BasicGCLgrid
 1 )
 s
 a operator =
-4d
+51
 e
 mop
 0 
@@ -2413,25 +2548,25 @@ c BasicGCLgrid
 1 )
 s
 c BasicGCLgrid
-4e
+52
 1
 clx
 0 
-104
+115
 0
 s
-b $comment-40
-4f
+b $comment-42
+53
 1
 cop
 0 
-114
+125
 32
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 275
+3 292
 5 @type
 1 1
 7 @prefix
@@ -2479,11 +2614,11 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-50
+54
 1
 cls
 0 
-117
+128
 5
 5 class
 7 GCLgrid
@@ -2491,18 +2626,18 @@ cls
 6 public
 c BasicGCLgrid
 s
-b $comment-41
-51
-50
+b $comment-43
+55
+54
 cop
 0 
-11d
+12e
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 284
+3 301
 5 @type
 1 1
 7 @prefix
@@ -2540,29 +2675,29 @@ b @deprecated
 2 @}
 s
 2 x1
-52
-50
+56
+54
 att
 0 
-11d
+12e
 4
 6 double
 1 *
 1 *
 2 x1
 s
-b $comment-42
-53
-50
+b $comment-44
+57
+54
 cop
 0 
-122
+133
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 289
+3 306
 5 @type
 1 1
 7 @prefix
@@ -2600,29 +2735,29 @@ b @deprecated
 2 @}
 s
 2 x2
+58
 54
-50
 att
 0 
-122
+133
 4
 6 double
 1 *
 1 *
 2 x2
 s
-b $comment-43
-55
-50
+b $comment-45
+59
+54
 cop
 0 
-127
+138
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 294
+3 311
 5 @type
 1 1
 7 @prefix
@@ -2660,29 +2795,29 @@ b @deprecated
 2 @}
 s
 2 x3
-56
-50
+5a
+54
 att
 0 
-127
+138
 4
 6 double
 1 *
 1 *
 2 x3
 s
-b $comment-44
-57
-50
+b $comment-46
+5b
+54
 cop
 0 
-12d
+13e
 29
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 300
+3 317
 5 @type
 1 1
 7 @prefix
@@ -2721,28 +2856,28 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-58
-50
+5c
+54
 con
 0 
-12f
+140
 3
 7 GCLgrid
 1 (
 1 )
 s
-b $comment-45
-59
-50
+b $comment-47
+5d
+54
 cop
 0 
-137
+148
 31
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 310
+3 327
 5 @type
 1 1
 7 @prefix
@@ -2789,11 +2924,11 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-5a
-50
+5e
+54
 con
 0 
-137
+148
 8
 7 GCLgrid
 1 (
@@ -2804,18 +2939,18 @@ con
 6 n2size
 1 )
 s
-b $comment-46
-5b
-50
+b $comment-48
+5f
+54
 cop
 0 
-14e
+15f
 5b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 333
+3 350
 5 @type
 1 1
 7 @prefix
@@ -2904,11 +3039,11 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-5c
-50
+60
+54
 con
 0 
-150
+161
 23
 7 GCLgrid
 1 (
@@ -2946,18 +3081,18 @@ con
 7 jorigin
 1 )
 s
-b $comment-47
-5d
-50
+b $comment-49
+61
+54
 cop
 0 
-15a
+16b
 33
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 345
+3 362
 5 @type
 1 1
 7 @prefix
@@ -3006,11 +3141,11 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-5e
-50
+62
+54
 con
 0 
-15a
+16b
 8
 7 GCLgrid
 1 (
@@ -3021,18 +3156,18 @@ con
 2 nm
 1 )
 s
-b $comment-48
-5f
-50
+b $comment-50
+63
+54
 cop
 0 
-15e
+16f
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 349
+3 366
 5 @type
 1 1
 7 @prefix
@@ -3068,11 +3203,11 @@ b @deprecated
 2 @}
 s
 7 GCLgrid
-60
-50
+64
+54
 con
 0 
-15e
+16f
 6
 7 GCLgrid
 1 (
@@ -3081,18 +3216,18 @@ con
 1 &
 1 )
 s
-b $comment-49
-61
-50
+b $comment-51
+65
+54
 cop
 0 
-166
+177
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 357
+3 374
 5 @type
 1 1
 7 @prefix
@@ -3133,29 +3268,29 @@ b @deprecated
 2 @}
 s
 8 ~GCLgrid
-62
-50
+66
+54
 des
 0 
-166
+177
 4
 1 ~
 7 GCLgrid
 1 (
 1 )
 s
-b $comment-50
-63
-50
+b $comment-52
+67
+54
 cop
 0 
-16a
+17b
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 361
+3 378
 5 @type
 1 1
 7 @prefix
@@ -3191,11 +3326,11 @@ b @deprecated
 2 @}
 s
 a operator =
-64
-50
+68
+54
 mop
 0 
-16a
+17b
 9
 7 GCLgrid
 1 &
@@ -3207,144 +3342,9 @@ mop
 1 &
 1 )
 s
-b $comment-51
-65
-50
-cop
-0 
-172
-2b
-2 @{
-5 @file
-1 2
-9 gclgrid.h
-3 369
-5 @type
-1 1
-7 @prefix
-b @short_desc
-1 1
-26  Comparison of two grids for equality.
-a @long_desc
-1 5
-2f  Equality in this context is NOT the obvious.  
-5b  Equality means the transformation properties of the two grids being compared are the same.
-56  That is, the operator tests only the transformation matrix and translation vector for
-58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
-27  for higher level operations like +=.  
-7 @params
-1 0
-8 @returns
-1 0
-b @exceptions
-1 0
-b @deprecated
-1 0
-8 @authors
-1 0
-8 @version
-1 0
-5 @sees
-1 0
-6 @since
-1 0
-7 @source
-1 0
-4 @pkg
-1 0
-7 @pkgdoc
-1 0
-5 @todo
-1 0
-2 @}
-s
-b operator ==
-66
-50
-mop
-0 
-172
-8
-4 bool
-8 operator
-2 ==
-1 (
-5 const
-7 GCLgrid
-1 &
-1 )
-s
-b $comment-52
-67
-50
-cop
-0 
-17b
-2c
-2 @{
-5 @file
-1 2
-9 gclgrid.h
-3 378
-5 @type
-1 1
-7 @prefix
-b @short_desc
-1 1
-28  Comparison of two grids for inequality.
-a @long_desc
-1 6
-2f  Equality in this context is NOT the obvious.  
-5b  Equality means the transformation properties of the two grids being compared are the same.
-56  That is, the operator tests only the transformation matrix and translation vector for
-58  equality.  This is a necessary condition to allow to grids to be mapped onto each other
-58  for higher level operations like +=.  Returns true if the transformation properties of 
-1b  two matrices do not match.
-7 @params
-1 0
-8 @returns
-1 0
-b @exceptions
-1 0
-b @deprecated
-1 0
-8 @authors
-1 0
-8 @version
-1 0
-5 @sees
-1 0
-6 @since
-1 0
-7 @source
-1 0
-4 @pkg
-1 0
-7 @pkgdoc
-1 0
-5 @todo
-1 0
-2 @}
-s
-b operator !=
-68
-50
-mop
-0 
-17b
-8
-4 bool
-8 operator
-2 !=
-1 (
-5 const
-7 GCLgrid
-1 &
-1 )
-s
 b $comment-53
 69
-50
+54
 cop
 0 
 18d
@@ -3413,7 +3413,7 @@ b @deprecated
 s
 6 dbsave
 6a
-50
+54
 met
 0 
 18d
@@ -3434,7 +3434,7 @@ d
 s
 b $comment-54
 6b
-50
+54
 cop
 0 
 1a3
@@ -3505,7 +3505,7 @@ b @deprecated
 s
 6 lookup
 6c
-50
+54
 met
 0 
 1a3
@@ -3522,7 +3522,7 @@ met
 s
 b $comment-55
 6d
-50
+54
 cop
 0 
 1a3
@@ -3572,7 +3572,7 @@ b @deprecated
 s
 b reset_index
 6e
-50
+54
 met
 0 
 1a5
@@ -3584,7 +3584,7 @@ b reset_index
 s
 b $comment-56
 6f
-50
+54
 cop
 0 
 1a5
@@ -3634,7 +3634,7 @@ b @deprecated
 s
 9 get_index
 70
-50
+54
 met
 0 
 1a7
@@ -3649,7 +3649,7 @@ met
 s
 b $comment-57
 71
-50
+54
 cop
 0 
 1b3
@@ -3713,7 +3713,7 @@ b @deprecated
 s
 f geo_coordinates
 72
-50
+54
 met
 0 
 1b3
@@ -3730,7 +3730,7 @@ f geo_coordinates
 s
 b $comment-58
 73
-50
+54
 cop
 0 
 1bb
@@ -3786,7 +3786,7 @@ b @deprecated
 s
 3 lat
 74
-50
+54
 met
 0 
 1bb
@@ -3803,7 +3803,7 @@ met
 s
 b $comment-59
 75
-50
+54
 cop
 0 
 1c3
@@ -3859,7 +3859,7 @@ b @deprecated
 s
 3 lon
 76
-50
+54
 met
 0 
 1c3
@@ -3876,7 +3876,7 @@ met
 s
 b $comment-60
 77
-50
+54
 cop
 0 
 1cb
@@ -3932,7 +3932,7 @@ b @deprecated
 s
 1 r
 78
-50
+54
 met
 0 
 1cb
@@ -3949,7 +3949,7 @@ met
 s
 b $comment-61
 79
-50
+54
 cop
 0 
 1d3
@@ -4005,7 +4005,7 @@ b @deprecated
 s
 5 depth
 7a
-50
+54
 met
 0 
 1d3
@@ -4022,7 +4022,7 @@ met
 s
 f compute_extents
 7b
-50
+54
 met
 0 
 1d5
@@ -4034,7 +4034,7 @@ f compute_extents
 s
 e GCLscalarfield
 7c
-50
+54
 frc
 0 
 1d6
@@ -4045,7 +4045,7 @@ e GCLscalarfield
 s
 e GCLvectorfield
 7d
-50
+54
 frc
 0 
 1d7
@@ -4057,7 +4057,7 @@ a pri
 s
 3 ix1
 7e
-50
+54
 att
 0 
 1d9
@@ -4067,7 +4067,7 @@ att
 s
 3 ix2
 7f
-50
+54
 att
 0 
 1d9
@@ -6246,6 +6246,64 @@ cop
 7 @prefix
 b @short_desc
 1 1
+19 Zeros the field variable 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 zero
+c1
+b1
+met
+0 
+2ed
+4
+4 void
+4 zero
+1 (
+1 )
+s
+b $comment-92
+c2
+b1
+cop
+0 
+2ed
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 748
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
 1d Standard assignment operator 
 a @long_desc
 1 0
@@ -6276,11 +6334,11 @@ b @deprecated
 2 @}
 s
 a operator =
-c1
+c3
 b1
 mop
 0 
-2ed
+2ef
 9
 e GCLscalarfield
 1 &
@@ -6292,18 +6350,18 @@ e GCLscalarfield
 1 &
 1 )
 s
-b $comment-92
-c2
+b $comment-93
+c4
 b1
 cop
 0 
-30d
+30f
 54
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 780
+3 782
 5 @type
 1 1
 7 @prefix
@@ -6385,11 +6443,11 @@ b @deprecated
 2 @}
 s
 6 dbsave
-c3
+c5
 b1
 met
 0 
-30e
+310
 16
 4 void
 6 dbsave
@@ -6414,18 +6472,18 @@ met
 3 int
 1 )
 s
-b $comment-93
-c4
+b $comment-94
+c6
 b1
 cop
 0 
-31f
+321
 34
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 798
+3 800
 5 @type
 1 1
 7 @prefix
@@ -6475,11 +6533,11 @@ b @deprecated
 2 @}
 s
 b operator +=
-c5
+c7
 b1
 mop
 0 
-31f
+321
 7
 4 void
 8 operator
@@ -6489,18 +6547,18 @@ e GCLscalarfield
 1 &
 1 )
 s
-b $comment-94
-c6
+b $comment-95
+c8
 b1
 cop
 0 
-325
+327
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 804
+3 806
 5 @type
 1 1
 7 @prefix
@@ -6541,11 +6599,11 @@ b @deprecated
 2 @}
 s
 b operator *=
-c7
+c9
 b1
 mop
 0 
-325
+327
 7
 4 void
 8 operator
@@ -6555,18 +6613,18 @@ mop
 1 c
 1 )
 s
-b $comment-95
-c8
+b $comment-96
+ca
 b1
 cop
 0 
-339
+33b
 40
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 824
+3 826
 5 @type
 1 1
 7 @prefix
@@ -6628,11 +6686,11 @@ b @deprecated
 2 @}
 s
 b interpolate
-c9
+cb
 b1
 met
 0 
-339
+33b
 c
 6 double
 b interpolate
@@ -6647,18 +6705,18 @@ b interpolate
 3 x3p
 1 )
 s
-b $comment-96
-ca
+b $comment-97
+cc
 b1
 cop
 0 
-343
+345
 2d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 834
+3 836
 5 @type
 1 1
 7 @prefix
@@ -6701,11 +6759,11 @@ b @deprecated
 2 @}
 s
 12 ostream&operator<<
-cb
+cd
 b1
 frf
 0 
-343
+345
 c
 6 friend
 7 ostream
@@ -6721,25 +6779,25 @@ e GCLscalarfield
 1 )
 s
 e GCLscalarfield
-cc
+ce
 1
 clx
 0 
-344
+346
 0
 s
-b $comment-97
-cd
+b $comment-98
+cf
 1
 cop
 0 
-345
+347
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 836
+3 838
 5 @type
 1 1
 7 @prefix
@@ -6775,11 +6833,11 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-ce
+d0
 1
 cls
 0 
-348
+34a
 5
 5 class
 e GCLvectorfield
@@ -6787,18 +6845,18 @@ e GCLvectorfield
 6 public
 7 GCLgrid
 s
-b $comment-98
-cf
-ce
+b $comment-99
+d1
+d0
 cop
 0 
-349
+34b
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 840
+3 842
 5 @type
 1 1
 7 @prefix
@@ -6834,27 +6892,27 @@ b @deprecated
 2 @}
 s
 2 nv
+d2
 d0
-ce
 att
 0 
-34b
+34d
 2
 3 int
 2 nv
 s
-b $comment-99
-d1
-ce
+c $comment-100
+d3
+d0
 cop
 0 
-352
+354
 29
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 849
+3 851
 5 @type
 1 1
 7 @prefix
@@ -6893,11 +6951,11 @@ b @deprecated
 2 @}
 s
 3 val
-d2
-ce
+d4
+d0
 att
 0 
-352
+354
 5
 6 double
 1 *
@@ -6905,18 +6963,18 @@ att
 1 *
 3 val
 s
-c $comment-100
-d3
-ce
+c $comment-101
+d5
+d0
 cop
 0 
-353
+355
 27
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 850
+3 852
 5 @type
 1 1
 7 @prefix
@@ -6953,28 +7011,28 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-d4
-ce
+d6
+d0
 con
 0 
-355
+357
 3
 e GCLvectorfield
 1 (
 1 )
 s
-c $comment-101
-d5
-ce
+c $comment-102
+d7
+d0
 cop
 0 
-35e
+360
 35
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 861
+3 863
 5 @type
 1 1
 7 @prefix
@@ -7025,11 +7083,11 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-d6
-ce
+d8
+d0
 con
 0 
-35e
+360
 8
 e GCLvectorfield
 1 (
@@ -7040,18 +7098,18 @@ e GCLvectorfield
 3 int
 1 )
 s
-c $comment-102
-d7
-ce
+c $comment-103
+d9
+d0
 cop
 0 
-35e
+360
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 861
+3 863
 5 @type
 1 1
 7 @prefix
@@ -7087,11 +7145,11 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-d8
-ce
+da
+d0
 con
 0 
-360
+362
 6
 e GCLvectorfield
 1 (
@@ -7100,18 +7158,18 @@ e GCLvectorfield
 1 &
 1 )
 s
-c $comment-103
-d9
-ce
+c $comment-104
+db
+d0
 cop
 0 
-36c
+36e
 31
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 875
+3 877
 5 @type
 1 1
 7 @prefix
@@ -7158,11 +7216,11 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-da
-ce
+dc
+d0
 con
 0 
-36c
+36e
 7
 e GCLvectorfield
 1 (
@@ -7172,18 +7230,18 @@ e GCLvectorfield
 3 int
 1 )
 s
-c $comment-104
-db
-ce
+c $comment-105
+dd
+d0
 cop
 0 
-380
+382
 45
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 895
+3 897
 5 @type
 1 1
 7 @prefix
@@ -7250,11 +7308,11 @@ b @deprecated
 2 @}
 s
 e GCLvectorfield
-dc
-ce
+de
+d0
 con
 0 
-380
+382
 e
 e GCLvectorfield
 1 (
@@ -7271,18 +7329,18 @@ e GCLvectorfield
 6 nvsize
 1 )
 s
-c $comment-105
-dd
-ce
+c $comment-106
+df
+d0
 cop
 0 
-380
+382
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 895
+3 897
 5 @type
 1 1
 7 @prefix
@@ -7318,11 +7376,11 @@ b @deprecated
 2 @}
 s
 a operator =
-de
-ce
+e0
+d0
 mop
 0 
-382
+384
 9
 e GCLvectorfield
 1 &
@@ -7334,18 +7392,18 @@ e GCLvectorfield
 1 &
 1 )
 s
-c $comment-106
-df
-ce
+c $comment-107
+e1
+d0
 cop
 0 
-388
+38a
 2c
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 903
+3 905
 5 @type
 1 1
 7 @prefix
@@ -7387,29 +7445,87 @@ b @deprecated
 2 @}
 s
 f ~GCLvectorfield
-e0
-ce
+e2
+d0
 des
 0 
-388
+38a
 4
 1 ~
 e GCLvectorfield
 1 (
 1 )
 s
-c $comment-107
-e1
-ce
+c $comment-108
+e3
+d0
 cop
 0 
-3a8
+38a
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+3 905
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+19 Zeros the field variable 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 zero
+e4
+d0
+met
+0 
+38c
+4
+4 void
+4 zero
+1 (
+1 )
+s
+c $comment-109
+e5
+d0
+cop
+0 
+3ac
 54
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 935
+3 939
 5 @type
 1 1
 7 @prefix
@@ -7491,11 +7607,11 @@ b @deprecated
 2 @}
 s
 6 dbsave
-e2
-ce
+e6
+d0
 met
 0 
-3a9
+3ad
 16
 4 void
 6 dbsave
@@ -7520,18 +7636,18 @@ met
 3 int
 1 )
 s
-c $comment-108
-e3
-ce
+c $comment-110
+e7
+d0
 cop
 0 
-3ba
+3be
 34
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 953
+3 957
 5 @type
 1 1
 7 @prefix
@@ -7581,11 +7697,11 @@ b @deprecated
 2 @}
 s
 b operator +=
-e4
-ce
+e8
+d0
 mop
 0 
-3ba
+3be
 7
 4 void
 8 operator
@@ -7595,18 +7711,18 @@ e GCLvectorfield
 1 &
 1 )
 s
-c $comment-109
-e5
-ce
+c $comment-111
+e9
+d0
 cop
 0 
-3c0
+3c4
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 959
+3 963
 5 @type
 1 1
 7 @prefix
@@ -7647,11 +7763,11 @@ b @deprecated
 2 @}
 s
 b operator *=
-e6
-ce
+ea
+d0
 mop
 0 
-3c0
+3c4
 6
 4 void
 8 operator
@@ -7660,18 +7776,18 @@ mop
 6 double
 1 )
 s
-c $comment-110
-e7
-ce
+c $comment-112
+eb
+d0
 cop
 0 
-3d7
+3db
 43
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 982
+3 986
 5 @type
 1 1
 7 @prefix
@@ -7736,11 +7852,11 @@ b @deprecated
 2 @}
 s
 b interpolate
-e8
-ce
+ec
+d0
 met
 0 
-3d7
+3db
 d
 6 double
 1 *
@@ -7756,18 +7872,18 @@ b interpolate
 3 x3p
 1 )
 s
-c $comment-111
-e9
-ce
+c $comment-113
+ed
+d0
 cop
 0 
-3e1
+3e5
 2d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 992
+3 996
 5 @type
 1 1
 7 @prefix
@@ -7810,11 +7926,11 @@ b @deprecated
 2 @}
 s
 12 ostream&operator<<
-ea
-ce
+ee
+d0
 frf
 0 
-3e1
+3e5
 c
 6 friend
 7 ostream
@@ -7830,25 +7946,25 @@ e GCLvectorfield
 1 )
 s
 e GCLvectorfield
-eb
+ef
 1
 clx
 0 
-3e2
+3e6
 0
 s
-c $comment-112
-ec
+c $comment-114
+f0
 1
 cop
 0 
-3e2
+3e6
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-3 993
+3 997
 5 @type
 1 1
 7 @prefix
@@ -7884,11 +8000,11 @@ b @deprecated
 2 @}
 s
 10 GCLscalarfield3d
-ed
+f1
 1
 cls
 0 
-3e5
+3e9
 5
 5 class
 10 GCLscalarfield3d
@@ -7896,18 +8012,18 @@ cls
 6 public
 9 GCLgrid3d
 s
-c $comment-113
-ee
-ed
+c $comment-115
+f2
+f1
 cop
 0 
-3ec
+3f0
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1003
+4 1007
 5 @type
 1 1
 7 @prefix
@@ -7945,11 +8061,11 @@ b @deprecated
 2 @}
 s
 3 val
-ef
-ed
+f3
+f1
 att
 0 
-3ec
+3f0
 5
 6 double
 1 *
@@ -7957,18 +8073,18 @@ att
 1 *
 3 val
 s
-c $comment-114
-f0
-ed
+c $comment-116
+f4
+f1
 cop
 0 
-3ed
+3f1
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1004
+4 1008
 5 @type
 1 1
 7 @prefix
@@ -8004,28 +8120,28 @@ b @deprecated
 2 @}
 s
 10 GCLscalarfield3d
+f5
 f1
-ed
 con
 0 
-3ef
+3f3
 3
 10 GCLscalarfield3d
 1 (
 1 )
 s
-c $comment-115
-f2
-ed
+c $comment-117
+f6
+f1
 cop
 0 
-3f8
+3fc
 35
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1015
+4 1019
 5 @type
 1 1
 7 @prefix
@@ -8076,11 +8192,11 @@ b @deprecated
 2 @}
 s
 10 GCLscalarfield3d
-f3
-ed
+f7
+f1
 con
 0 
-3f8
+3fc
 b
 10 GCLscalarfield3d
 1 (
@@ -8094,18 +8210,18 @@ b
 6 n3size
 1 )
 s
-c $comment-116
-f4
-ed
+c $comment-118
+f8
+f1
 cop
 0 
-3f8
+3fc
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1015
+4 1019
 5 @type
 1 1
 7 @prefix
@@ -8141,11 +8257,11 @@ b @deprecated
 2 @}
 s
 10 GCLscalarfield3d
-f5
-ed
+f9
+f1
 con
 0 
-3fa
+3fe
 6
 10 GCLscalarfield3d
 1 (
@@ -8154,18 +8270,18 @@ con
 1 &
 1 )
 s
-c $comment-117
-f6
-ed
+c $comment-119
+fa
+f1
 cop
 0 
-406
+40a
 31
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1029
+4 1033
 5 @type
 1 1
 7 @prefix
@@ -8212,11 +8328,11 @@ b @deprecated
 2 @}
 s
 10 GCLscalarfield3d
-f7
-ed
+fb
+f1
 con
 0 
-406
+40a
 6
 10 GCLscalarfield3d
 1 (
@@ -8225,18 +8341,18 @@ con
 1 g
 1 )
 s
-c $comment-118
-f8
-ed
+c $comment-120
+fc
+f1
 cop
 0 
-41f
+423
 49
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1054
+4 1058
 5 @type
 1 1
 7 @prefix
@@ -8307,29 +8423,87 @@ b @deprecated
 2 @}
 s
 11 ~GCLscalarfield3d
-f9
-ed
+fd
+f1
 des
 0 
-41f
+423
 4
 1 ~
 10 GCLscalarfield3d
 1 (
 1 )
 s
-c $comment-119
-fa
-ed
+c $comment-121
+fe
+f1
 cop
 0 
-41f
+423
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1054
+4 1058
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1b Zeros field variable array 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 zero
+ff
+f1
+met
+0 
+425
+4
+4 void
+4 zero
+1 (
+1 )
+s
+c $comment-122
+100
+f1
+cop
+0 
+425
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1060
 5 @type
 1 1
 7 @prefix
@@ -8365,11 +8539,11 @@ b @deprecated
 2 @}
 s
 a operator =
-fb
-ed
+101
+f1
 mop
 0 
-421
+427
 9
 10 GCLscalarfield3d
 1 &
@@ -8381,18 +8555,18 @@ mop
 1 &
 1 )
 s
-c $comment-120
-fc
-ed
+c $comment-123
+102
+f1
 cop
 0 
-441
+447
 54
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1088
+4 1094
 5 @type
 1 1
 7 @prefix
@@ -8474,11 +8648,11 @@ b @deprecated
 2 @}
 s
 6 dbsave
-fd
-ed
+103
+f1
 met
 0 
-443
+449
 16
 4 void
 6 dbsave
@@ -8503,18 +8677,18 @@ met
 3 int
 1 )
 s
-c $comment-121
-fe
-ed
+c $comment-124
+104
+f1
 cop
 0 
-454
+45a
 34
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1107
+4 1113
 5 @type
 1 1
 7 @prefix
@@ -8564,11 +8738,11 @@ b @deprecated
 2 @}
 s
 b operator +=
-ff
-ed
+105
+f1
 mop
 0 
-454
+45a
 7
 4 void
 8 operator
@@ -8578,18 +8752,18 @@ mop
 1 &
 1 )
 s
-c $comment-122
-100
-ed
+c $comment-125
+106
+f1
 cop
 0 
-45a
+460
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1113
+4 1119
 5 @type
 1 1
 7 @prefix
@@ -8630,11 +8804,11 @@ b @deprecated
 2 @}
 s
 b operator *=
-101
-ed
+107
+f1
 mop
 0 
-45a
+460
 7
 4 void
 8 operator
@@ -8644,18 +8818,18 @@ mop
 1 c
 1 )
 s
-c $comment-123
-102
-ed
+c $comment-126
+108
+f1
 cop
 0 
-461
+467
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1120
+4 1126
 5 @type
 1 1
 7 @prefix
@@ -8696,11 +8870,11 @@ b @deprecated
 2 @}
 s
 b interpolate
-103
-ed
+109
+f1
 met
 0 
-461
+467
 9
 6 double
 b interpolate
@@ -8712,18 +8886,18 @@ b interpolate
 6 double
 1 )
 s
-c $comment-124
-104
-ed
+c $comment-127
+10a
+f1
 cop
 0 
-46b
+471
 2d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1130
+4 1136
 5 @type
 1 1
 7 @prefix
@@ -8766,11 +8940,11 @@ b @deprecated
 2 @}
 s
 12 ostream&operator<<
-105
-ed
+10b
+f1
 frf
 0 
-46b
+471
 c
 6 friend
 7 ostream
@@ -8786,25 +8960,25 @@ c
 1 )
 s
 10 GCLscalarfield3d
-106
+10c
 1
 clx
 0 
-46c
+472
 0
 s
-c $comment-125
-107
+c $comment-128
+10d
 1
 cop
 0 
-46c
+472
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1131
+4 1137
 5 @type
 1 1
 7 @prefix
@@ -8840,11 +9014,11 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
-108
+10e
 1
 cls
 0 
-46f
+475
 5
 5 class
 10 GCLvectorfield3d
@@ -8852,18 +9026,18 @@ cls
 6 public
 9 GCLgrid3d
 s
-c $comment-126
-109
-108
+c $comment-129
+10f
+10e
 cop
 0 
-470
+476
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1135
+4 1141
 5 @type
 1 1
 7 @prefix
@@ -8899,27 +9073,27 @@ b @deprecated
 2 @}
 s
 2 nv
-10a
-108
+110
+10e
 att
 0 
-472
+478
 2
 3 int
 2 nv
 s
-c $comment-127
-10b
-108
+c $comment-130
+111
+10e
 cop
 0 
-479
+47f
 29
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1144
+4 1150
 5 @type
 1 1
 7 @prefix
@@ -8958,11 +9132,11 @@ b @deprecated
 2 @}
 s
 3 val
-10c
-108
+112
+10e
 att
 0 
-479
+47f
 6
 6 double
 1 *
@@ -8971,18 +9145,18 @@ att
 1 *
 3 val
 s
-c $comment-128
-10d
-108
+c $comment-131
+113
+10e
 cop
 0 
-47a
+480
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1145
+4 1151
 5 @type
 1 1
 7 @prefix
@@ -9018,28 +9192,28 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
+114
 10e
-108
 con
 0 
-47c
+482
 3
 10 GCLvectorfield3d
 1 (
 1 )
 s
-c $comment-129
-10f
-108
+c $comment-132
+115
+10e
 cop
 0 
-486
+48c
 39
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1157
+4 1163
 5 @type
 1 1
 7 @prefix
@@ -9094,11 +9268,11 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
-110
-108
+116
+10e
 con
 0 
-486
+48c
 e
 10 GCLvectorfield3d
 1 (
@@ -9115,18 +9289,18 @@ e
 6 nvsize
 1 )
 s
-c $comment-130
-111
-108
+c $comment-133
+117
+10e
 cop
 0 
-486
+48c
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1157
+4 1163
 5 @type
 1 1
 7 @prefix
@@ -9162,11 +9336,11 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
-112
-108
+118
+10e
 con
 0 
-488
+48e
 6
 10 GCLvectorfield3d
 1 (
@@ -9175,18 +9349,18 @@ con
 1 &
 1 )
 s
-c $comment-131
-113
-108
+c $comment-134
+119
+10e
 cop
 0 
-495
+49b
 35
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1172
+4 1178
 5 @type
 1 1
 7 @prefix
@@ -9237,11 +9411,11 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
-114
-108
+11a
+10e
 con
 0 
-495
+49b
 8
 10 GCLvectorfield3d
 1 (
@@ -9252,18 +9426,18 @@ con
 6 nvsize
 1 )
 s
-c $comment-132
-115
-108
+c $comment-135
+11b
+10e
 cop
 0 
-4aa
+4b0
 46
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1193
+4 1199
 5 @type
 1 1
 7 @prefix
@@ -9331,11 +9505,11 @@ b @deprecated
 2 @}
 s
 10 GCLvectorfield3d
-116
-108
+11c
+10e
 con
 0 
-4aa
+4b0
 e
 10 GCLvectorfield3d
 1 (
@@ -9352,18 +9526,18 @@ e
 6 nvsize
 1 )
 s
-c $comment-133
-117
-108
+c $comment-136
+11d
+10e
 cop
 0 
-4b0
+4b6
 2c
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1199
+4 1205
 5 @type
 1 1
 7 @prefix
@@ -9405,29 +9579,87 @@ b @deprecated
 2 @}
 s
 11 ~GCLvectorfield3d
-118
-108
+11e
+10e
 des
 0 
-4b0
+4b6
 4
 1 ~
 10 GCLvectorfield3d
 1 (
 1 )
 s
-c $comment-134
-119
-108
+c $comment-137
+11f
+10e
 cop
 0 
-4b0
+4b6
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1199
+4 1205
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+19 Zeros the field variable 
+a @long_desc
+1 0
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+4 zero
+120
+10e
+met
+0 
+4b8
+4
+4 void
+4 zero
+1 (
+1 )
+s
+c $comment-138
+121
+10e
+cop
+0 
+4b8
+26
+2 @{
+5 @file
+1 2
+9 gclgrid.h
+4 1207
 5 @type
 1 1
 7 @prefix
@@ -9463,11 +9695,11 @@ b @deprecated
 2 @}
 s
 a operator =
-11a
-108
+122
+10e
 mop
 0 
-4b2
+4ba
 9
 10 GCLvectorfield3d
 1 &
@@ -9479,18 +9711,18 @@ mop
 1 &
 1 )
 s
-c $comment-135
-11b
-108
+c $comment-139
+123
+10e
 cop
 0 
-4d2
+4da
 54
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1233
+4 1241
 5 @type
 1 1
 7 @prefix
@@ -9572,11 +9804,11 @@ b @deprecated
 2 @}
 s
 6 dbsave
-11c
-108
+124
+10e
 met
 0 
-4d3
+4db
 16
 4 void
 6 dbsave
@@ -9601,18 +9833,18 @@ met
 3 int
 1 )
 s
-c $comment-136
-11d
-108
+c $comment-140
+125
+10e
 cop
 0 
-4e4
+4ec
 34
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1251
+4 1259
 5 @type
 1 1
 7 @prefix
@@ -9662,11 +9894,11 @@ b @deprecated
 2 @}
 s
 b operator +=
-11e
-108
+126
+10e
 mop
 0 
-4e4
+4ec
 7
 4 void
 8 operator
@@ -9676,18 +9908,18 @@ mop
 1 &
 1 )
 s
-c $comment-137
-11f
-108
+c $comment-141
+127
+10e
 cop
 0 
-4ea
+4f2
 2b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1257
+4 1265
 5 @type
 1 1
 7 @prefix
@@ -9728,11 +9960,11 @@ b @deprecated
 2 @}
 s
 b operator *=
-120
-108
+128
+10e
 mop
 0 
-4ea
+4f2
 6
 4 void
 8 operator
@@ -9741,18 +9973,18 @@ mop
 6 double
 1 )
 s
-c $comment-138
-121
-108
+c $comment-142
+129
+10e
 cop
 0 
-4f3
+4fb
 2d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1266
+4 1274
 5 @type
 1 1
 7 @prefix
@@ -9795,11 +10027,11 @@ b @deprecated
 2 @}
 s
 b interpolate
-122
-108
+12a
+10e
 met
 0 
-4f3
+4fb
 a
 6 double
 1 *
@@ -9812,18 +10044,18 @@ b interpolate
 6 double
 1 )
 s
-c $comment-139
-123
-108
+c $comment-143
+12b
+10e
 cop
 0 
-4fd
+505
 2d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1276
+4 1284
 5 @type
 1 1
 7 @prefix
@@ -9866,11 +10098,11 @@ b @deprecated
 2 @}
 s
 12 ostream&operator<<
-124
-108
+12c
+10e
 frf
 0 
-4fd
+505
 c
 6 friend
 7 ostream
@@ -9886,25 +10118,25 @@ c
 1 )
 s
 10 GCLvectorfield3d
-125
+12d
 1
 clx
 0 
-4fe
+506
 0
 s
-c $comment-140
-126
+c $comment-144
+12e
 1
 cop
 0 
-508
+510
 2a
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1287
+4 1295
 5 @type
 1 1
 7 @prefix
@@ -9944,27 +10176,27 @@ b @deprecated
 2 @}
 s
 d GCLgrid_error
-127
+12f
 1
 cls
 0 
-509
+511
 2
 5 class
 d GCLgrid_error
 s
-c $comment-141
-128
-127
+c $comment-145
+130
+12f
 cop
 0 
-50a
+512
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1289
+4 1297
 5 @type
 1 1
 7 @prefix
@@ -10000,27 +10232,27 @@ b @deprecated
 2 @}
 s
 7 message
-129
-127
+131
+12f
 att
 0 
-50c
+514
 2
 6 string
 7 message
 s
-c $comment-142
-12a
-127
+c $comment-146
+132
+12f
 cop
 0 
-50c
+514
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1291
+4 1299
 5 @type
 1 1
 7 @prefix
@@ -10056,28 +10288,28 @@ b @deprecated
 2 @}
 s
 d GCLgrid_error
-12b
-127
+133
+12f
 con
 0 
-50e
+516
 3
 d GCLgrid_error
 1 (
 1 )
 s
-c $comment-143
-12c
-127
+c $comment-147
+134
+12f
 cop
 0 
-50e
+516
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1293
+4 1301
 5 @type
 1 1
 7 @prefix
@@ -10113,11 +10345,11 @@ b @deprecated
 2 @}
 s
 d GCLgrid_error
-12d
-127
+135
+12f
 con
 0 
-510
+518
 6
 d GCLgrid_error
 1 (
@@ -10126,18 +10358,18 @@ d GCLgrid_error
 4 mess
 1 )
 s
-c $comment-144
-12e
-127
+c $comment-148
+136
+12f
 cop
 0 
-510
+518
 26
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1295
+4 1303
 5 @type
 1 1
 7 @prefix
@@ -10173,11 +10405,11 @@ b @deprecated
 2 @}
 s
 9 log_error
+137
 12f
-127
 met
 0 
-512
+51a
 5
 7 virtual
 4 void
@@ -10186,8 +10418,8 @@ met
 1 )
 s
 d GCLgrid_error
-130
-127
+138
+12f
 con
 0 
 0
@@ -10200,8 +10432,8 @@ d GCLgrid_error
 1 )
 s
 e ~GCLgrid_error
-131
-127
+139
+12f
 des
 0 
 0
@@ -10212,8 +10444,8 @@ d GCLgrid_error
 1 )
 s
 a operator =
-132
-127
+13a
+12f
 mop
 0 
 0
@@ -10229,25 +10461,25 @@ d GCLgrid_error
 1 )
 s
 d GCLgrid_error
-133
+13b
 1
 clx
 0 
-513
+51b
 0
 s
-c $comment-145
-134
+c $comment-149
+13c
 1
 cop
 0 
-522
+52a
 2f
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1313
+4 1321
 5 @type
 1 1
 7 @prefix
@@ -10292,11 +10524,11 @@ b @deprecated
 2 @}
 s
 a r0_ellipse
-135
+13d
 1
 fct
 0 
-522
+52a
 5
 6 double
 a r0_ellipse
@@ -10304,18 +10536,18 @@ a r0_ellipse
 6 double
 1 )
 s
-c $comment-146
-136
+c $comment-150
+13e
 1
 cop
 0 
-528
+530
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1319
+4 1327
 5 @type
 1 1
 7 @prefix
@@ -10353,11 +10585,11 @@ b @deprecated
 2 @}
 s
 10 extract_gridline
-137
+13f
 1
 fct
 0 
-529
+531
 1b
 7 dmatrix
 1 *
@@ -10387,18 +10619,18 @@ fct
 d GCLgrid_error
 1 )
 s
-c $comment-147
-138
+c $comment-151
+140
 1
 cop
 0 
-52f
+537
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1326
+4 1334
 5 @type
 1 1
 7 @prefix
@@ -10436,11 +10668,11 @@ b @deprecated
 2 @}
 s
 c pathintegral
-139
+141
 1
 fct
 0 
-530
+538
 12
 6 vector
 1 <
@@ -10461,18 +10693,18 @@ c pathintegral
 d GCLgrid_error
 1 )
 s
-c $comment-148
-13a
+c $comment-152
+142
 1
 cop
 0 
-536
+53e
 28
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1333
+4 1341
 5 @type
 1 1
 7 @prefix
@@ -10510,11 +10742,11 @@ b @deprecated
 2 @}
 s
 7 ustrans
-13b
+143
 1
 fct
 0 
-536
+53e
 d
 7 dmatrix
 7 ustrans
@@ -10530,18 +10762,18 @@ d
 3 lon
 1 )
 s
-c $comment-149
-13c
+c $comment-153
+144
 1
 cop
 0 
-547
+54f
 3f
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1350
+4 1358
 5 @type
 1 1
 7 @prefix
@@ -10602,11 +10834,11 @@ b @deprecated
 2 @}
 s
 13 initialize_1Dscalar
-13d
+145
 1
 fct
 0 
-548
+550
 19
 4 void
 13 initialize_1Dscalar
@@ -10634,18 +10866,18 @@ fct
 4 grad
 1 )
 s
-c $comment-150
-13e
+c $comment-154
+146
 1
 cop
 0 
-551
+559
 2f
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1360
+4 1368
 5 @type
 1 1
 7 @prefix
@@ -10690,11 +10922,11 @@ b @deprecated
 2 @}
 s
 13 initialize_1Dscalar
-13f
+147
 1
 fct
 0 
-552
+55a
 13
 4 void
 13 initialize_1Dscalar
@@ -10716,18 +10948,18 @@ fct
 3 z1d
 1 )
 s
-c $comment-151
-140
+c $comment-155
+148
 1
 cop
 0 
-563
+56b
 3c
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1378
+4 1386
 5 @type
 1 1
 7 @prefix
@@ -10785,11 +11017,11 @@ b @deprecated
 2 @}
 s
 a remap_path
-141
+149
 1
 fct
 0 
-563
+56b
 10
 7 dmatrix
 1 &
@@ -10808,18 +11040,18 @@ a parentgrid
 b newpathgrid
 1 )
 s
-c $comment-152
-142
+c $comment-156
+14a
 1
 cop
 0 
-56a
+572
 2f
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1385
+4 1393
 5 @type
 1 1
 7 @prefix
@@ -10864,11 +11096,11 @@ b @deprecated
 2 @}
 s
 9 dx_output
-143
+14b
 1
 fct
 0 
-56a
+572
 b
 4 void
 9 dx_output
@@ -10882,18 +11114,18 @@ b
 3 out
 1 )
 s
-c $comment-153
-144
+c $comment-157
+14c
 1
 cop
 3 "C"
-582
+58a
 3d
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1409
+4 1417
 5 @type
 1 1
 7 @prefix
@@ -10952,11 +11184,11 @@ b @deprecated
 2 @}
 s
 18 create_4dgrid_contiguous
-145
+14d
 1
 fct
 3 "C"
-582
+58a
 13
 6 double
 1 *
@@ -10978,18 +11210,18 @@ fct
 2 n4
 1 )
 s
-c $comment-154
-146
+c $comment-158
+14e
 1
 cop
 3 "C"
-590
+598
 39
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1423
+4 1431
 5 @type
 1 1
 7 @prefix
@@ -11044,11 +11276,11 @@ b @deprecated
 2 @}
 s
 18 create_3dgrid_contiguous
-147
+14f
 1
 fct
 3 "C"
-590
+598
 f
 6 double
 1 *
@@ -11066,18 +11298,18 @@ f
 2 n3
 1 )
 s
-c $comment-155
-148
+c $comment-159
+150
 1
 cop
 3 "C"
-59e
+5a6
 36
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1437
+4 1445
 5 @type
 1 1
 7 @prefix
@@ -11129,11 +11361,11 @@ b @deprecated
 2 @}
 s
 18 create_2dgrid_contiguous
-149
+151
 1
 fct
 3 "C"
-59e
+5a6
 b
 6 double
 1 *
@@ -11147,18 +11379,18 @@ b
 2 n2
 1 )
 s
-c $comment-156
-14a
+c $comment-160
+152
 1
 cop
 3 "C"
-5ab
+5b3
 3c
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1450
+4 1458
 5 @type
 1 1
 7 @prefix
@@ -11216,11 +11448,11 @@ b @deprecated
 2 @}
 s
 16 free_4dgrid_contiguous
-14b
+153
 1
 fct
 3 "C"
-5ab
+5b3
 13
 4 void
 16 free_4dgrid_contiguous
@@ -11242,18 +11474,18 @@ fct
 2 n3
 1 )
 s
-c $comment-157
-14c
+c $comment-161
+154
 1
 cop
 3 "C"
-5b7
+5bf
 38
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1462
+4 1470
 5 @type
 1 1
 7 @prefix
@@ -11307,11 +11539,11 @@ b @deprecated
 2 @}
 s
 16 free_3dgrid_contiguous
-14d
+155
 1
 fct
 3 "C"
-5b7
+5bf
 f
 4 void
 16 free_3dgrid_contiguous
@@ -11329,18 +11561,18 @@ f
 2 n2
 1 )
 s
-c $comment-158
-14e
+c $comment-162
+156
 1
 cop
 3 "C"
-5c2
+5ca
 34
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1473
+4 1481
 5 @type
 1 1
 7 @prefix
@@ -11390,11 +11622,11 @@ b @deprecated
 2 @}
 s
 16 free_2dgrid_contiguous
-14f
+157
 1
 fct
 3 "C"
-5c2
+5ca
 b
 4 void
 16 free_2dgrid_contiguous
@@ -11408,18 +11640,18 @@ b
 2 n1
 1 )
 s
-c $comment-159
-150
+c $comment-163
+158
 1
 cop
 3 "C"
-5d2
+5da
 3b
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1489
+4 1497
 5 @type
 1 1
 7 @prefix
@@ -11476,11 +11708,11 @@ c Kagan Tuncay
 2 @}
 s
 c fme_weights_
-151
+159
 1
 fct
 3 "C"
-5d2
+5da
 f
 4 void
 c fme_weights_
@@ -11498,18 +11730,18 @@ c fme_weights_
 3 fun
 1 )
 s
-c $comment-160
-152
+c $comment-164
+15a
 1
 cop
 3 "C"
-5de
+5e6
 31
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1501
+4 1509
 5 @type
 1 1
 7 @prefix
@@ -11556,11 +11788,11 @@ b @deprecated
 2 @}
 s
 5 flatz
-153
+15b
 1
 fct
 3 "C"
-5de
+5e6
 6
 6 double
 5 flatz
@@ -11569,18 +11801,18 @@ fct
 1 z
 1 )
 s
-c $comment-161
-154
+c $comment-165
+15c
 1
 cop
 3 "C"
-5ea
+5f2
 31
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1513
+4 1521
 5 @type
 1 1
 7 @prefix
@@ -11627,11 +11859,11 @@ b @deprecated
 2 @}
 s
 6 uflatz
-155
+15d
 1
 fct
 3 "C"
-5ea
+5f2
 6
 6 double
 6 uflatz
@@ -11640,18 +11872,18 @@ fct
 1 z
 1 )
 s
-c $comment-162
-156
+c $comment-166
+15e
 1
 cop
 3 "C"
-5f8
+600
 36
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1527
+4 1535
 5 @type
 1 1
 7 @prefix
@@ -11703,11 +11935,11 @@ b @deprecated
 2 @}
 s
 7 flatvel
-157
+15f
 1
 fct
 3 "C"
-5f8
+600
 9
 6 double
 7 flatvel
@@ -11719,18 +11951,18 @@ fct
 1 z
 1 )
 s
-c $comment-163
-158
+c $comment-167
+160
 1
 cop
 3 "C"
-606
+60e
 36
 2 @{
 5 @file
 1 2
 9 gclgrid.h
-4 1541
+4 1549
 5 @type
 1 1
 7 @prefix
@@ -11782,11 +12014,11 @@ b @deprecated
 2 @}
 s
 8 uflatvel
-159
+161
 1
 fct
 3 "C"
-606
+60e
 9
 6 double
 8 uflatvel
@@ -11800,7 +12032,7 @@ fct
 f 11 htdocs/gclgrid.db
 s
 7 dmatrix
-15a
+162
 0
 pkg
 0 
@@ -11809,8 +12041,8 @@ pkg
 f 9 dmatrix.h
 s
 b _DMATRIX_H_
-15b
-15a
+163
+162
 m00
 0 
 3
@@ -11819,8 +12051,8 @@ m00
 b _DMATRIX_H_
 s
 a $comment-0
-15c
-15a
+164
+162
 cop
 0 
 d
@@ -11868,8 +12100,8 @@ e Gary L. Pavlis
 2 @}
 s
 d dmatrix_error
-15d
-15a
+165
+162
 cls
 0 
 f
@@ -11878,8 +12110,8 @@ f
 d dmatrix_error
 s
 a $comment-1
-15e
-15d
+166
+165
 cop
 0 
 14
@@ -11924,8 +12156,8 @@ b @deprecated
 2 @}
 s
 7 message
-15f
-15d
+167
+165
 att
 0 
 14
@@ -11934,8 +12166,8 @@ att
 7 message
 s
 a $comment-2
-160
-15d
+168
+165
 cop
 0 
 18
@@ -11980,8 +12212,8 @@ b @deprecated
 2 @}
 s
 9 log_error
-161
-15d
+169
+165
 met
 0 
 18
@@ -11993,8 +12225,8 @@ met
 1 )
 s
 d dmatrix_error
-162
-15d
+16a
+165
 con
 0 
 0
@@ -12004,8 +12236,8 @@ d dmatrix_error
 1 )
 s
 d dmatrix_error
-163
-15d
+16b
+165
 con
 0 
 0
@@ -12018,8 +12250,8 @@ d dmatrix_error
 1 )
 s
 e ~dmatrix_error
-164
-15d
+16c
+165
 des
 0 
 0
@@ -12030,8 +12262,8 @@ d dmatrix_error
 1 )
 s
 a operator =
+16d
 165
-15d
 mop
 0 
 0
@@ -12047,16 +12279,16 @@ d dmatrix_error
 1 )
 s
 d dmatrix_error
-166
-15a
+16e
+162
 clx
 0 
 19
 0
 s
 a $comment-3
-167
-15a
+16f
+162
 cop
 0 
 21
@@ -12104,8 +12336,8 @@ e Gary L. Pavlis
 2 @}
 s
 13 dmatrix_index_error
-168
-15a
+170
+162
 cls
 0 
 23
@@ -12117,8 +12349,8 @@ cls
 d dmatrix_error
 s
 a $comment-4
-169
-168
+171
+170
 cop
 0 
 2c
@@ -12179,8 +12411,8 @@ b @deprecated
 2 @}
 s
 13 dmatrix_index_error
-16a
-168
+172
+170
 con
 0 
 2d
@@ -12201,8 +12433,8 @@ e
 1 )
 s
 a $comment-5
-16b
-168
+173
+170
 cop
 0 
 31
@@ -12247,8 +12479,8 @@ b @deprecated
 2 @}
 s
 9 log_error
-16c
-168
+174
+170
 met
 0 
 33
@@ -12261,8 +12493,8 @@ met
 a pri
 s
 3 row
-16d
-168
+175
+170
 att
 0 
 35
@@ -12271,8 +12503,8 @@ att
 3 row
 s
 6 column
-16e
-168
+176
+170
 att
 0 
 35
@@ -12281,8 +12513,8 @@ att
 6 column
 s
 3 nrr
-16f
-168
+177
+170
 att
 0 
 36
@@ -12291,8 +12523,8 @@ att
 3 nrr
 s
 3 ncc
+178
 170
-168
 att
 0 
 36
@@ -12302,8 +12534,8 @@ att
 a pub
 s
 13 dmatrix_index_error
-171
-168
+179
+170
 con
 0 
 0
@@ -12316,8 +12548,8 @@ con
 1 )
 s
 14 ~dmatrix_index_error
-172
-168
+17a
+170
 des
 0 
 0
@@ -12328,8 +12560,8 @@ des
 1 )
 s
 a operator =
-173
-168
+17b
+170
 mop
 0 
 0
@@ -12345,16 +12577,16 @@ mop
 1 )
 s
 13 dmatrix_index_error
-174
-15a
+17c
+162
 clx
 0 
 37
 0
 s
 a $comment-6
-175
-15a
+17d
+162
 cop
 0 
 3e
@@ -12401,8 +12633,8 @@ e Gary L. Pavlis
 2 @}
 s
 12 dmatrix_size_error
-176
-15a
+17e
+162
 cls
 0 
 40
@@ -12414,8 +12646,8 @@ cls
 d dmatrix_error
 s
 a $comment-7
-177
-176
+17f
+17e
 cop
 0 
 49
@@ -12476,8 +12708,8 @@ b @deprecated
 2 @}
 s
 12 dmatrix_size_error
-178
-176
+180
+17e
 con
 0 
 4a
@@ -12498,8 +12730,8 @@ e
 1 )
 s
 a $comment-8
-179
-176
+181
+17e
 cop
 0 
 4e
@@ -12544,8 +12776,8 @@ b @deprecated
 2 @}
 s
 9 log_error
-17a
-176
+182
+17e
 met
 0 
 54
@@ -12558,8 +12790,8 @@ met
 a pri
 s
 5 nrow1
-17b
-176
+183
+17e
 att
 0 
 56
@@ -12568,8 +12800,8 @@ att
 5 nrow1
 s
 5 ncol1
-17c
-176
+184
+17e
 att
 0 
 56
@@ -12578,8 +12810,8 @@ att
 5 ncol1
 s
 5 nrow2
-17d
-176
+185
+17e
 att
 0 
 56
@@ -12588,8 +12820,8 @@ att
 5 nrow2
 s
 5 ncol2
+186
 17e
-176
 att
 0 
 56
@@ -12599,8 +12831,8 @@ att
 a pub
 s
 12 dmatrix_size_error
-17f
-176
+187
+17e
 con
 0 
 0
@@ -12613,8 +12845,8 @@ con
 1 )
 s
 13 ~dmatrix_size_error
-180
-176
+188
+17e
 des
 0 
 0
@@ -12625,8 +12857,8 @@ des
 1 )
 s
 a operator =
-181
-176
+189
+17e
 mop
 0 
 0
@@ -12642,16 +12874,16 @@ mop
 1 )
 s
 12 dmatrix_size_error
-182
-15a
+18a
+162
 clx
 0 
 57
 0
 s
 a $comment-9
-183
-15a
+18b
+162
 cop
 0 
 67
@@ -12707,8 +12939,8 @@ b @deprecated
 2 @}
 s
 7 dmatrix
-184
-15a
+18c
+162
 cls
 0 
 69
@@ -12717,8 +12949,8 @@ cls
 7 dmatrix
 s
 b $comment-10
-185
-184
+18d
+18c
 cop
 0 
 6e
@@ -12764,8 +12996,8 @@ b @deprecated
 2 @}
 s
 7 dmatrix
-186
-184
+18e
+18c
 con
 0 
 6e
@@ -12775,8 +13007,8 @@ con
 1 )
 s
 b $comment-11
-187
-184
+18f
+18c
 cop
 0 
 74
@@ -12830,8 +13062,8 @@ b @deprecated
 2 @}
 s
 7 dmatrix
-188
-184
+190
+18c
 con
 0 
 74
@@ -12846,8 +13078,8 @@ con
 1 )
 s
 b $comment-12
-189
-184
+191
+18c
 cop
 0 
 79
@@ -12896,8 +13128,8 @@ b @deprecated
 2 @}
 s
 7 dmatrix
-18a
-184
+192
+18c
 con
 0 
 79
@@ -12911,8 +13143,8 @@ con
 1 )
 s
 b $comment-13
-18b
-184
+193
+18c
 cop
 0 
 7d
@@ -12958,8 +13190,8 @@ b @deprecated
 2 @}
 s
 8 ~dmatrix
+194
 18c
-184
 des
 0 
 7d
@@ -12970,8 +13202,8 @@ des
 1 )
 s
 b $comment-14
-18d
-184
+195
+18c
 cop
 0 
 86
@@ -13031,8 +13263,8 @@ b @deprecated
 2 @}
 s
 b operator ()
-18e
-184
+196
+18c
 mop
 0 
 86
@@ -13051,8 +13283,8 @@ c
 1 )
 s
 b $comment-15
-18f
-184
+197
+18c
 cop
 0 
 8a
@@ -13097,8 +13329,8 @@ b @deprecated
 2 @}
 s
 a operator =
-190
-184
+198
+18c
 mop
 0 
 8a
@@ -13114,8 +13346,8 @@ mop
 1 )
 s
 b $comment-16
-191
-184
+199
+18c
 cop
 0 
 8f
@@ -13165,8 +13397,8 @@ b @deprecated
 2 @}
 s
 b operator +=
-192
-184
+19a
+18c
 mop
 0 
 8f
@@ -13182,8 +13414,8 @@ mop
 1 )
 s
 b $comment-17
-193
-184
+19b
+18c
 cop
 0 
 94
@@ -13233,8 +13465,8 @@ b @deprecated
 2 @}
 s
 b operator -=
-194
-184
+19c
+18c
 mop
 0 
 94
@@ -13250,8 +13482,8 @@ mop
 1 )
 s
 b $comment-18
-195
-184
+19d
+18c
 cop
 0 
 99
@@ -13301,8 +13533,8 @@ b @deprecated
 2 @}
 s
 10 dmatrixoperator+
-196
-184
+19e
+18c
 frf
 0 
 99
@@ -13322,8 +13554,8 @@ d
 1 )
 s
 b $comment-19
-197
-184
+19f
+18c
 cop
 0 
 9e
@@ -13373,8 +13605,8 @@ b @deprecated
 2 @}
 s
 10 dmatrixoperator-
-198
-184
+1a0
+18c
 frf
 0 
 9e
@@ -13394,8 +13626,8 @@ d
 1 )
 s
 b $comment-20
-199
-184
+1a1
+18c
 cop
 0 
 a3
@@ -13445,8 +13677,8 @@ b @deprecated
 2 @}
 s
 10 dmatrixoperator*
-19a
-184
+1a2
+18c
 frf
 0 
 a3
@@ -13466,8 +13698,8 @@ d
 1 )
 s
 b $comment-21
-19b
-184
+1a3
+18c
 cop
 0 
 a7
@@ -13513,8 +13745,8 @@ b @deprecated
 2 @}
 s
 10 dmatrixoperator*
-19c
-184
+1a4
+18c
 frf
 0 
 a7
@@ -13534,8 +13766,8 @@ d
 1 )
 s
 b $comment-22
-19d
-184
+1a5
+18c
 cop
 0 
 ab
@@ -13581,8 +13813,8 @@ b @deprecated
 2 @}
 s
 10 dmatrixoperator/
-19e
-184
+1a6
+18c
 frf
 0 
 ab
@@ -13602,8 +13834,8 @@ d
 1 )
 s
 b $comment-23
-19f
-184
+1a7
+18c
 cop
 0 
 af
@@ -13649,8 +13881,8 @@ b @deprecated
 2 @}
 s
 9 dmatrixtr
-1a0
-184
+1a8
+18c
 frf
 0 
 af
@@ -13665,8 +13897,8 @@ af
 1 )
 s
 b $comment-24
-1a1
-184
+1a9
+18c
 cop
 0 
 b8
@@ -13726,8 +13958,8 @@ b @deprecated
 2 @}
 s
 b get_address
-1a2
-184
+1aa
+18c
 met
 0 
 b8
@@ -13744,8 +13976,8 @@ b get_address
 1 )
 s
 b $comment-25
-1a3
-184
+1ab
+18c
 cop
 0 
 bc
@@ -13790,8 +14022,8 @@ b @deprecated
 2 @}
 s
 12 ostream&operator<<
-1a4
-184
+1ac
+18c
 frf
 0 
 bc
@@ -13810,8 +14042,8 @@ c
 1 )
 s
 b $comment-26
-1a5
-184
+1ad
+18c
 cop
 0 
 c0
@@ -13856,8 +14088,8 @@ b @deprecated
 2 @}
 s
 12 istream&operator>>
-1a6
-184
+1ae
+18c
 frf
 0 
 c0
@@ -13876,8 +14108,8 @@ c
 1 )
 s
 b $comment-27
-1a7
-184
+1af
+18c
 cop
 0 
 c6
@@ -13925,8 +14157,8 @@ b @deprecated
 2 @}
 s
 4 size
-1a8
-184
+1b0
+18c
 met
 0 
 c6
@@ -13938,8 +14170,8 @@ c6
 1 )
 s
 b $comment-28
-1a9
-184
+1b1
+18c
 cop
 0 
 ca
@@ -13984,8 +14216,8 @@ b @deprecated
 2 @}
 s
 4 rows
-1aa
-184
+1b2
+18c
 met
 0 
 ca
@@ -13996,8 +14228,8 @@ ca
 1 )
 s
 b $comment-29
-1ab
-184
+1b3
+18c
 cop
 0 
 ce
@@ -14043,8 +14275,8 @@ b @deprecated
 2 @}
 s
 7 columns
-1ac
-184
+1b4
+18c
 met
 0 
 ce
@@ -14055,8 +14287,8 @@ ce
 1 )
 s
 b $comment-30
-1ad
-184
+1b5
+18c
 cop
 0 
 d2
@@ -14101,8 +14333,8 @@ b @deprecated
 2 @}
 s
 4 zero
-1ae
-184
+1b6
+18c
 met
 0 
 d2
@@ -14114,8 +14346,8 @@ d2
 a pri
 s
 3 ary
-1af
-184
+1b7
+18c
 att
 0 
 d4
@@ -14125,8 +14357,8 @@ d4
 3 ary
 s
 6 length
-1b0
-184
+1b8
+18c
 att
 0 
 d5
@@ -14135,8 +14367,8 @@ d5
 6 length
 s
 3 nrr
-1b1
-184
+1b9
+18c
 att
 0 
 d6
@@ -14145,8 +14377,8 @@ d6
 3 nrr
 s
 3 ncc
-1b2
-184
+1ba
+18c
 att
 0 
 d6
@@ -14156,16 +14388,164 @@ d6
 a pub
 s
 7 dmatrix
-1b3
-15a
+1bb
+162
 clx
 0 
 d7
 0
+s
+b $comment-31
+1bc
+162
+cop
+0 
+de
+29
+2 @{
+5 @file
+1 2
+9 dmatrix.h
+3 221
+5 @type
+1 1
+7 @prefix
+b @short_desc
+1 1
+1f  Vector derived from a dmatrix.
+a @long_desc
+1 3
+3b  A vector is matrix with only one column.  We can derive it
+3f  easily by using inheritance from dmatrix but forcing number of
+15  columns to be one.  
+7 @params
+1 0
+8 @returns
+1 0
+b @exceptions
+1 0
+b @deprecated
+1 0
+8 @authors
+1 0
+8 @version
+1 0
+5 @sees
+1 0
+6 @since
+1 0
+7 @source
+1 0
+4 @pkg
+1 0
+7 @pkgdoc
+1 0
+5 @todo
+1 0
+2 @}
+s
+7 dvector
+1bd
+162
+cls
+0 
+df
+5
+5 class
+7 dvector
+1 :
+6 public
+7 dmatrix
+s
+7 dvector
+1be
+1bd
+con
+0 
+e1
+7
+7 dvector
+1 (
+1 )
+1 :
+7 dmatrix
+1 (
+1 )
+s
+7 dvector
+1bf
+1bd
+con
+0 
+e2
+c
+7 dvector
+1 (
+3 int
+3 nrv
+1 )
+1 :
+7 dmatrix
+1 (
+3 nrv
+1 ,
+1 1
+1 )
+s
+7 dvector
+1c0
+1bd
+con
+0 
+0
+6
+7 dvector
+1 (
+5 const
+7 dvector
+1 &
+1 )
+s
+8 ~dvector
+1c1
+1bd
+des
+0 
+0
+4
+1 ~
+7 dvector
+1 (
+1 )
+s
+a operator =
+1c2
+1bd
+mop
+0 
+0
+9
+7 dvector
+1 &
+8 operator
+1 =
+1 (
+5 const
+7 dvector
+1 &
+1 )
+s
+7 dvector
+1c3
+162
+clx
+0 
+e3
+0
 f 9 gclgrid.h
 s
 a $comment-0
-1b4
+1c4
 0
 cod
 0 

@@ -855,7 +855,7 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 
 	//Save the parent GCLgrid when gclgdir is defined
 	//Skip if this string was not defined
-	if(!gclgdir.empty())
+	if(gclgdir.length()>0)
 	{
 		try {
 			GCLgrid *g;
@@ -930,7 +930,7 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 
 	//Save the parent GCLgrid when gclgdir is defined
 	//Skip if this string was not defined
-	if(!gclgdir.empty())
+	if(gclgdir.length()>0)
 	{
 		try {
 			GCLgrid3d *g;
@@ -1005,7 +1005,7 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 
 	//Save the parent GCLgrid when gclgdir is defined
 	//Skip if this string was not defined
-	if(!gclgdir.empty())
+	if(gclgdir.length()>0)
 	{
 		try {
 			GCLgrid *g;
@@ -1025,7 +1025,7 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = gclgdir+"/"+dfile;
+	filename = fielddir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),"a+");
 	if(fp==NULL)
@@ -1080,7 +1080,7 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 
 	//Save the parent GCLgrid when gclgdir is defined
 	//Skip if this string was not defined
-	if(!gclgdir.empty())
+	if(gclgdir.length()>0)
 	{
 		try {
 			GCLgrid3d *g;
@@ -1099,7 +1099,7 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
-	filename = gclgdir+"/"+dfile;
+	filename = fielddir+"/"+dfile;
 
 	fp = fopen(filename.c_str(),(char *)"a+");
 	if(fp==NULL)

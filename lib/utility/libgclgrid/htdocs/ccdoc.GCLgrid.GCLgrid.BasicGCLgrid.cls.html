@@ -7,7 +7,7 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html">
-<meta name="ccdoc_creation_date" content="Fri Jan 21 08:54:54 2005">
+<meta name="ccdoc_creation_date" content="Tue Mar 15 11:25:30 2005">
 <meta name="keywords" content="ccdoc, source code, documentation">
 <title>ccdoc BasicGCLgrid gclgrid.h:81:class</title>
 </head>
@@ -111,7 +111,13 @@
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#att-name">name</a></td><td align=left valign=top>attribute&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Name assigned to this object
 </td></tr>
 <tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#mop-operator-20!-3d-bool-operator-!-3d--28-const-BasicGCLgrid--26--29">operator !=</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Comparison of two grids for inequality.
+</td></tr>
+<tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29">operator =</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>automatically generated</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-BasicGCLgrid--26--29">operator ==</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Comparison of two grids for equality.
+</td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html#att-r0">r0</a></td><td align=left valign=top>attribute&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Radial distance of origin of the grid's Cartesian coordinate system from Earth's center.
 </td></tr>
@@ -464,7 +470,7 @@ is used to ask what the current index position.
 </blockquote>
 <a name="att-name"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>attribute name</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#att-n2">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#att-n2">&lt;</a>&nbsp;<a href="#mop-operator-20!-3d-bool-operator-!-3d--28-const-BasicGCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Name assigned to this object
 <dl>
@@ -473,9 +479,27 @@ is used to ask what the current index position.
 <dl><dt><b>Code:</b></dt><dd>public string <b>name</b>
 </dd></dl>
 </blockquote>
+<a name="mop-operator-20!-3d-bool-operator-!-3d--28-const-BasicGCLgrid--26--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator !=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#att-name">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Comparison of two grids for inequality.
+<p>
+ Equality in this context is NOT the obvious.  
+ Equality means the transformation properties of the two grids being compared are the same.
+ That is, the operator tests only the transformation matrix and translation vector for
+ equality.  This is a necessary condition to allow to grids to be mapped onto each other
+ for higher level operations like +=.  Returns true if the transformation properties of 
+ two matrices do not match.
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:276</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>bool</b></font> <b><b>operator !=</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>BasicGCLgrid</b> &amp; )</td></tr></table>
+</dd></dl>
+</blockquote>
 <a name="mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator =</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#att-name">&lt;</a>&nbsp;<a href="#att-r0">&gt;</a>&nbsp;</td></tr></table>
+<a href="#mop-operator-20!-3d-bool-operator-!-3d--28-const-BasicGCLgrid--26--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-BasicGCLgrid--26--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
 automatically generated<dl>
 <dt><b>Source:</b></dt><dd>gclgrid.h</dd>
@@ -483,9 +507,26 @@ automatically generated<dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>BasicGCLgrid</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>BasicGCLgrid</b> &amp; )</td></tr></table>
 </dd></dl>
 </blockquote>
+<a name="mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-BasicGCLgrid--26--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator ==</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29">&lt;</a>&nbsp;<a href="#att-r0">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Comparison of two grids for equality.
+<p>
+ Equality in this context is NOT the obvious.  
+ Equality means the transformation properties of the two grids being compared are the same.
+ That is, the operator tests only the transformation matrix and translation vector for
+ equality.  This is a necessary condition to allow to grids to be mapped onto each other
+ for higher level operations like +=.  
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:267</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>bool</b></font> <b><b>operator ==</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>BasicGCLgrid</b> &amp; )</td></tr></table>
+</dd></dl>
+</blockquote>
 <a name="att-r0"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>attribute r0</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20-3d-BasicGCLgrid--26-operator--3d--28-const-BasicGCLgrid--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-virtual-void-reset_index--28--29--3d-0">&gt;</a>&nbsp;</td></tr></table>
+<a href="#mop-operator-20-3d-3d-bool-operator--3d-3d--28-const-BasicGCLgrid--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-virtual-void-reset_index--28--29--3d-0">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Radial distance of origin of the grid's Cartesian coordinate system from Earth's center.
 <dl>
@@ -636,7 +677,7 @@ The full transformation used to
 <center>
 <p>
 <font size="-1">
-Created Fri Jan 21 08:54:54 2005.
+Created Tue Mar 15 11:25:30 2005.
 <br>
 This documentation was generated automatically by
 <br>

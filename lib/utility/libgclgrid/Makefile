@@ -30,7 +30,8 @@ OBJS=converters.o \
     dmatrix.o \
     extract_gridline.o \
     pathintegral.o \
-    ustrans.o
+    ustrans.o \
+    zero.o
 
 $(LIB) : $(OBJS)
 	$(RM) $@

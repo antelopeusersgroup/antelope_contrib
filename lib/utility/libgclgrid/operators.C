@@ -129,7 +129,7 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				case 0:
 
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
-					for(l=0;l<nv;++nv) val[i][j][k][l]=valnew[l];
+					for(l=0;l<nv;++l) val[i][j][k][l]=valnew[l];
 					delete valnew;
 					break;
 				default:
@@ -203,7 +203,7 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 			case 0:
 				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
 				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
-				for(l=0;l<nv;++nv) val[i][j][l]=valnew[l];
+				for(l=0;l<nv;++l) val[i][j][l]=valnew[l];
 				delete valnew;
 
 				break;

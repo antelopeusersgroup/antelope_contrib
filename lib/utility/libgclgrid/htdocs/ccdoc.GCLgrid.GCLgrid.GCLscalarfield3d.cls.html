@@ -7,9 +7,9 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html">
-<meta name="ccdoc_creation_date" content="Fri Jan 21 08:54:55 2005">
+<meta name="ccdoc_creation_date" content="Tue Mar 15 11:25:30 2005">
 <meta name="keywords" content="ccdoc, source code, documentation">
-<title>ccdoc GCLscalarfield3d gclgrid.h:997:class</title>
+<title>ccdoc GCLscalarfield3d gclgrid.h:1001:class</title>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
 <blockquote>
 Three-dimensional scalar field defined on a GCLgrid framework.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:997</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1001</dd>
 <dt><b>Author:</b></dt><dd>unascribed</dd>
 <dt><b>Version:</b></dt><dd>unknown</dd>
 </dl>
@@ -139,6 +139,9 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#att-val">val</a></td><td align=left valign=top></td><td align=left valign=top>attribute&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Scalar field variable stored in a three-dimensional C array.
 </td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#met-zero-void-zero--28--29">zero</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Zeros field variable array 
+</td></tr>
 </table>
 </blockquote>
 <a name="des--7eGCLscalarfield3d--7e-GCLscalarfield3d--28--29"></a>
@@ -155,7 +158,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
   then loading field variable data from the database.
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1055</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1059</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -190,7 +193,7 @@ GCLscalarfield3d(Dbptr db, string grdnm, string fn);
 <blockquote>
 Default constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1007</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1011</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -205,7 +208,7 @@ Default constructor.
  object data attributes to zero.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1016</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1020</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1size
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -227,7 +230,7 @@ Default constructor.
 <blockquote>
 Standard copy constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1018</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1022</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -246,7 +249,7 @@ Standard copy constructor.
  of a field variable at the grid points.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1030</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1034</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>g
 </i></td><td align=left valign=top>Grid to be cloned.
@@ -334,7 +337,7 @@ undocumented<dl>
  structure.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1091</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1097</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -529,7 +532,7 @@ See
 <p>
  Usage and caveats are the same as described in 
 <a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html#met-interpolate-double-interpolate--28-double-x1p--2c-double-x2p--2c-double-x3p--29">GCLscalarfield::interpolate</a><dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1121</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1127</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>interpolate</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> )</td></tr></table>
 </dd></dl>
@@ -633,7 +636,7 @@ void dbsave(Dbptr db, string nm) throw(int);
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1114</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1120</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>c
 </i></td><td align=left valign=top>constant by which the field is to be scaled.
@@ -664,7 +667,7 @@ void dbsave(Dbptr db, string nm) throw(int);
  done by interpolation but downsampling requires an antialiasing
  (smoother) filter.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1108</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1114</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -675,7 +678,7 @@ void dbsave(Dbptr db, string nm) throw(int);
 <blockquote>
 Standard assignment operator.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1057</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1063</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLscalarfield3d</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -754,16 +757,27 @@ See
 </blockquote>
 <a name="att-val"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>attribute val</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#met-set_transformation_matrix-void-set_transformation_matrix--28--29">&lt;</a>&nbsp;<a href="#att-val">&gt;</a>&nbsp;</td></tr></table>
+<a href="#met-set_transformation_matrix-void-set_transformation_matrix--28--29">&lt;</a>&nbsp;<a href="#met-zero-void-zero--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Scalar field variable stored in a three-dimensional C array.
 <p>
  Index of the field is parallel with coordinate arrays x1, x2, and x3
  that define grid point positions in space.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1004</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1008</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * * <b>val</b>
+</dd></dl>
+</blockquote>
+<a name="met-zero-void-zero--28--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method zero</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#att-val">&lt;</a>&nbsp;<a href="#met-zero-void-zero--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+Zeros field variable array 
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1061</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>zero</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
 </blockquote>
 <a name=ccdoc_bottom></a>
@@ -771,7 +785,7 @@ See
 <center>
 <p>
 <font size="-1">
-Created Fri Jan 21 08:54:55 2005.
+Created Tue Mar 15 11:25:30 2005.
 <br>
 This documentation was generated automatically by
 <br>
