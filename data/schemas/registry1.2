@@ -92,6 +92,52 @@ Attribute closes
 	}
 	;
 
+Attribute dbmachine
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "machine on which database is being created" )
+	Detail {
+		This is the IP address of the machine on which a 
+		database is being created. 
+	}
+	;
+
+Attribute dbpath
+	String (96)
+	Format ( "%-96s" )
+	Null ( "-" )
+	Description ( "path name of database" )
+	Detail {
+		This is the pathname of a database being created 
+		from an orbserver, usually by a database-creation
+		program such as orb2db.
+	}
+	;
+
+Attribute dbprogram
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "name of database creation program" )
+	Detail {
+		This is the name of a program creating databases
+		from an orbserver, the canonical example being orb2db.
+	}
+	;
+
+Attribute domainname
+	String (60)
+	Format ( "%-60s" )
+	Null ( "-" )
+	Description ( "domain name" )
+	Detail {
+		This is the domain name corresponding to an orbserver's 
+		IP address. Preferably this will be a fully qualified 
+		domain name. 
+	}
+	;
+
 Attribute errors
 	Integer (10)
 	Format ( "%10d" )
@@ -440,6 +486,18 @@ Attribute pktid
 	}
 	;
 
+Attribute portname
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "port name" )
+	Detail {
+		This is the port name corresponding to an orbserver's 
+		port number. This quantity is usually found in the 
+		parameter file orbserver_names.pf on the local system.
+	}
+	;
+
 Attribute printconn
 	Integer (2)
 	Format ( "%2d" )
@@ -521,7 +579,8 @@ Attribute serveralias
 	Description ( "nickname for an orbserver" )
 	Detail {
 		This is the name used to refer to an orbserver in 
-		descriptive applications.
+		descriptive applications, usually a concatenation of the 
+		fully qualified domain name and the port name. 
 	}
 	;
 
@@ -573,6 +632,28 @@ Attribute soldest_time
 	Description ( "time of oldest packet on orb" )
 	Detail {
 		This is the timestamp of the oldest packet on an orb
+	}
+	;
+
+Attribute sourceorb_address
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "IP address of orbserver used as a data source" )
+	Detail {
+		This is the IP address of an orbserver used as a data
+		source, for example in the databases table
+	}
+	;
+
+Attribute sourceorb_port
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "orbserver port" )
+	Detail {
+		This is the port number of an orbserver used as a data
+		source, for example in the databases table
 	}
 	;
 
@@ -716,6 +797,18 @@ Relation connections
 	}
 	;
 
+Relation databases
+	Fields ( sourceorb_address sourceorb_port dbprogram dbmachine dbpath when clientid lddate )
+	Primary ( sourceorb_address sourceorb_port dbprogram dbmachine dbpath )
+	Foreign ( clientid )
+	Description ( "Database utilities connected to orbservers" )
+	Detail {
+		This table describes database-generation utilities, 
+		such as orb2db, which are connected to orbservers
+		being monitored. 
+	}
+	;	
+
 Relation grid
 	Fields ( griddescrip lddate )
 	Primary ( griddescrip )
@@ -728,12 +821,16 @@ Relation grid
 	;
 
 Relation servernames
-	Fields ( serveraddress serverport serveralias lddate )
+	Fields ( serveraddress serverport serveralias domainname portname lddate )
 	Primary ( serveraddress serverport )
+	Alternate ( serveralias )
 	Description ( "names for orbservers" )
 	Detail {
 		This table defines common names for orbservers, under
-		which they may be commonly known to users
+		which they may be commonly known to users. The domainname 
+		and portname fields translate the serveraddress and serverport 
+		independently, whereas serveralias is usually a colon-separated
+		concatenation of these two. 
 	}
 	;
 
