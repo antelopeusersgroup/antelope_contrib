@@ -1,0 +1,37 @@
+DATADIR=matlab/antelope/antelope
+
+DATA= $(MEXSRCS:.c=.$(MEXEXT)) \
+      $(MEXSRCS:.c=.m)
+
+HTMLDIR= matlab/antelope/html
+HTML= $(MEXSRCS:.c=.html)
+
+MEXSRCS= \
+	trnew.c \
+	trload_css.c \
+	trload_cssgrp.c \
+	trfree.c \
+	trdestroy.c \
+	trgetwf.c \
+	trputwf.c \
+	trsave_wf.c \
+	trextract_data.c \
+	trinsert_data.c \
+	trapply_calib.c \
+	trsplice.c \
+	tr_nsamp.c \
+	tr_endtime.c \
+	tr_samprate.c \
+	tr_time2samp.c \
+	tr_samp2time.c 
+
+CLEAN= 
+
+cflags=
+fflags=
+ldflags=
+ldlibs=
+
+include ../../antelope_mex_make
+DBG += -argcheck
+

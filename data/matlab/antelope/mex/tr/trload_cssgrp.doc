@@ -1,0 +1,11 @@
+TRLOAD_CSSGRP Load waveform data from grouped CSS database into trace table
+
+TRPTR = TRLOAD_CSSGRP ( DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE] )
+
+TRLOAD_CSSGRP is quite similar to TRLOAD_CSS, but expects to be passed
+a db pointer which has already been sorted by station, channel, time.
+In addition,  it  may  interpret  this pointer  as  a bundle pointer,
+with db.record specifying the first record, and db.field specifying the
+last  record.   If db.field is dbALL, then all records from the
+specified table are used.
+

@@ -1,0 +1,11 @@
+TRINSERT_DATA Put data from a Matlab matrix into a trace-object
+
+TRINSERT_DATA ( TRPTR, DATA )
+
+TRINSERT_DATA puts a copy of data from the Matlab array DATA
+into the single database-row of a trace object specified by 
+TRPTR. The user is responsible for making sure the trace-object
+row does not already contain data from another operation. 
+TRINSERT_DATA sets the nsamp field of the trace-database row; 
+however, the user is responsible for other fields such as 
+time, samprate, etc.

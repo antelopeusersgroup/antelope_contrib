@@ -1,0 +1,24 @@
+TRPUTWF Save waveform data into a file
+
+TRPUTWF ( DBPTR, DATA )
+
+*********************** WARNING **********************
+*                                                    *
+*   trputwf has been DEPRECATED and will disappear.  *
+*                                                    *
+*   Please switch to the TRSAVEWF command.           *
+*                                                    *
+*********************** WARNING **********************
+
+TRPUTWF saves waveform DATA into a file.  The input
+database pointer DBPTR must point to a record in a wfdisc
+table (or another table with the necessary fields). This
+record should be completely filled out; in particular, the
+fields nsamp, datatype, foff, and dir and dfile must be
+specified. TRPUTWF uses this information to write the data
+to the output file. The data is converted to the specified
+output type (datatype), and written to the specified file
+at the specified offset foff. Any header is not
+overwritten, but the file is truncated following the
+written data.  trputwf will attempt to create any necessary
+directories which do not already exist.

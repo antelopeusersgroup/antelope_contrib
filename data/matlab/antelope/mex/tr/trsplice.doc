@@ -1,0 +1,17 @@
+TRSPLICE splice together data segments
+
+TRSPLICE ( TRPTR, TOLERANCE )
+
+TRSPLICE attempts to splice together data segments to form a
+single  array.  When  this is successful, it eliminates gaps
+which may have arisen because the data was segmented as part
+of  the  recording  process, and also eliminates overlapping
+segments which may have been created during recording.
+However, it may not be possible to splice  two  segments  if
+(for  example)  an  actual  gap  exists, or if there is some
+irregularity with the sampling rate, or the  sampling  combs
+appear  not  to match. TOLERANCE is the percentage of a time 
+period by which  adjacent segments may differ and still be
+spliced together.
+
+

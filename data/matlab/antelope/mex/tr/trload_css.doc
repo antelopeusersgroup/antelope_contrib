@@ -1,0 +1,20 @@
+TRLOAD_CSS Load waveform data from CSS database into trace table
+
+TRPTR = TRLOAD_CSS ( DBPTR, TIME, ENDTIME [, TRPTR] [, TABLE] )
+
+TRLOAD_CSS takes as input a view DBPTR which includes
+pointers to waveform records. It selects from this view
+waveform sections which fall in the range TIME to ENDTIME,
+reading them into memory and adding new rows in the trace
+table TRPTR. If TRPTR.database is < 0, a new trace database
+is created, and the records are added into the new trace
+table in that database. if TRPTR is not specified, a new
+trace database is automatically created. Because the input
+is a view which may contain multiple tables with dir/dfile
+fields, the component TABLE which contains the waveforms
+may be specifically indicated; if TABLE is zero, the
+default is wfdisc.  Note that if TIME and ENDTIME are
+character strings, they will be evaluated as expressions on
+the input table DBPTR, so the time range may be, for
+example, a complex function of station, channel, and event,
+or a simple time expression enclosed in quotes.

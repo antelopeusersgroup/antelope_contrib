@@ -1,0 +1,10 @@
+TRDESTROY free up memory buffers and tables for Datascope trace object
+
+TRDESTROY ( TRPTR )
+
+TRDESTROY frees up the memory buffers and clears the trace
+object tables for a Datascope trace object pointed to by
+TRPTR. The TRPTR structure is cleared from memory to
+prevent attempts to manipulate a freed trace object. Note
+that despite the name, the trace object is currently not an
+Object in the Matlab sense.

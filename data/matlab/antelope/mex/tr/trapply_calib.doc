@@ -1,0 +1,8 @@
+TRAPPLY_CALIB multiply trace-object waveform data by calib value
+
+TRAPPLY_CALIB ( TRPTR )
+
+TRAPPLY_CALIB takes an input trace object and multiplies
+all the data points by the appropriate value of calib
+obtained from the trace table.  This calib value is then
+set to 1.0.

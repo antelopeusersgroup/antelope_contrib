@@ -1,0 +1,7 @@
+TR_ENDTIME Calculate the endtime based on start, rate, and number of samples
+
+N = TR_ENDTIME ( TIME, SAMPRATE, NSAMP )
+
+TR_ENDTIME returns the epoch time of the last sample in a data vector,
+given the epoch TIME of the first sample, the sample rate SAMPRATE,
+and the number of samples NSAMP.

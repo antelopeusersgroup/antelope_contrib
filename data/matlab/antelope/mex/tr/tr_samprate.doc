@@ -1,0 +1,7 @@
+TR_SAMPRATE Calculate the sample rate based on endpoints and number of samples
+
+N = TR_SAMPRATE ( TIME, NSAMP, ENDTIME )
+
+TR_SAMPRATE returns the sample rate for a data vector given the epoch
+times of the first and last samples, and the number of samples NSAMP
+in the data vector. 

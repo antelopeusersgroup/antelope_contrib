@@ -1,0 +1,12 @@
+TR_TIME2SAMP Calculate the index of a data point based on its time
+
+N_INDEXED_BY_1 = TR_TIME2SAMP ( TIME0, SAMPRATE, TIME1 )
+
+TR_TIME2SAMP returns the sample index of a data sample at TIME1,
+given the starting epoch time TIME0 and the sample rate SAMPRATE 
+of the data vector.
+
+C Programmers WAKE UP:
+TR_TIME2SAMP conforms to the Matlab indexing convention of starting
+at 1, thus this interface differs from Antelope interfaces in other
+languages which start at 0.

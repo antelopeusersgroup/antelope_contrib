@@ -1,0 +1,14 @@
+TRNEW	Create a new trace database
+
+TR = TRNEW ( [ PATH [, SCHEMA_NAME ] ] )
+
+TRNEW creates a new trace database. If PATH is specified, 
+the database is created under the pathname PATH. Otherwise
+the database is created in /tmp, with a name like 
+trdbXXXXXX, where XXXXXX is an integer (following the 
+conventions of mktemp(3)). If SCHEMA_NAME is specified, 
+the database is created under the named schema. Otherwise
+the 'Trace4.0' schema is used. The PATH must be explicitly
+specified in order to specify a SCHEMA_NAME other than the 
+default. 
+

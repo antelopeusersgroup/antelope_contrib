@@ -1,0 +1,18 @@
+TRGETWF Read trace data from file into memory
+
+[DATA, NSAMP, T0, T1] = TRGETWF ( DBPTR [, REQS, REQE] )
+
+Given a single database record specified by DBPTR, TRGETWF
+reads the specified time range of trace data into the array
+DATA.  Because the times of individual samples or the span
+of available data may not correspond exactly to the data in
+the file, the actual number of samples NSAMP, and starttime T0
+returned may differ from the requested times. The time samples
+of the returned data vector satisfy T0 <= T < T1. In other words,
+T1 is **not** the endtime of the data vector, rather the time 
+of the next sample-point beyond the data vector. 
+T0 and T1 are specified as epoch times. REQS and
+REQE, the requested start and end times, may be specified
+as epoch times or as time-strings decodable by str2epoch.
+If REQS and REQE are omitted, or if REQS >= REQE, the entire
+time range specified by the database row is returned.

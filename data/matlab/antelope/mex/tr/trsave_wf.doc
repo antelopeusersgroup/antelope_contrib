@@ -1,0 +1,20 @@
+TRSAVE_WF Save trace-object waveform data to a new database
+
+TRSAVE_WF ( TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append' ] )
+
+TRSAVE_WF saves waveform data from a trace object TRPTR to
+the specified database table DBPTR (usually wfdisc).
+Datatype may be specified as any type in the waveform_type
+table of trdefaults.pf, or this argument may be set to
+zero.  In the former case, the data is saved to disk in the
+specified format; in the latter case, the data is saved in
+the format specified by the datatype field in the trace
+table.  In the event the datatype field is not specified in
+the trace table, s4 floating point format is used.
+Waveform names are generated according to the pattern
+WFNAME, as described in trwfname(3).  Directories will be
+created as needed (provided permissions allow this).
+If the file to be written already exists, the default behavior
+of trsave_wf is to fail with an error message. If the 'overwrite' 
+flag is specified, the existing file will be overwritten. If 
+the 'append' flag is specified, the existing file will be appended.

@@ -1,0 +1,14 @@
+TRFREE free up memory for part of a trace object
+
+TRFREE ( TRPTR )
+
+TRFREE frees up the memory buffers and clears the trace
+object tables for the part of a Datascope trace object 
+pointed to by TRPTR. For example, if TRPTR points to 
+a single row, the resources for that row will be freed and
+the row will be marked for deletion. If the TRPTR has the
+table set to dbALL, TRFREE acts like TRDESTROY, removing
+all the resources for the entire trace object and removing
+the TRPTR structure itself to prevent attempts to manipulate
+a freed trace object. Note that despite the name, the trace
+object is currently not an Object in the Matlab sense.

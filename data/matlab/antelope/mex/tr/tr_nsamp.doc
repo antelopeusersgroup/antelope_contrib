@@ -1,0 +1,7 @@
+TR_NSAMP Calculate the number of samples based on endpoints and rate
+
+N = TR_NSAMP ( TIME, SAMPRATE, ENDTIME )
+
+TR_NSAMP returns the number of samples in a datastream sample at
+SAMPRATE. TIME and ENDTIME are the epoch times of the first and
+last sample. 

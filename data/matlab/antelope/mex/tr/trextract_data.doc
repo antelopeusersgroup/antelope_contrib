@@ -1,0 +1,8 @@
+TREXTRACT_DATA Read data from a trace object into a Matlab matrix
+
+DATA = TREXTRACT_DATA ( TRPTR )
+
+Given a single database record specified by TRPTR, TREXTRACT_DATA
+reads the corresponding data into a Matlab array. This does
+not free the user from the obligation of freeing the tr
+structure when it is no longer needed.
