@@ -23,8 +23,12 @@ system( $cmd );
 
 chdir( "/tmp" );
 
+printf STDERR "Copying readme file:\n";
+$cmd = "/bin/cp $ENV{ANTELOPE}/data/misc/README.contrib .";
+system( $cmd );
+
 printf STDERR "Building tar-file $tarfile_name:\n";
-$cmd = "tar cvf $pwd/$tarfile_name contrib/src";
+$cmd = "tar cvf $pwd/$tarfile_name README.contrib contrib/src";
 system( $cmd );
 
 printf STDERR "Compressing tar-file $tarfile_name:\n";
