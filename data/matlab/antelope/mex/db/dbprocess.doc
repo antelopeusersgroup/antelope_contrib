@@ -1,0 +1,24 @@
+DBPROCESS Construct a Datascope database view as a series of operations
+
+DBPTR = DBPROCESS ( DBPTR, STATEMENT_LIST )
+
+DBPROCESS provides a simplified interface for forming various views.
+Input to dbprocess is a cell-array of strings STATEMENT_LIST, which 
+are performed in order, creating a view. For a full discussion of valid 
+statements, see the Unix man-page on the Antelope dbprocess command. In 
+brief, they are:
+
+	dbopen table
+	dbjoin [-o] table [ key key  ..]
+	dbgroup key [ key  ..]
+	dbleftjoin [-o] table [ key key  ..]
+	dbnojoin table [ key key  ..]
+	dbselect expr [expr ...]
+	dbseparate table
+	dbsever table
+	dbsort [-ru] key .. ]
+	dbsubset expression
+	dbtheta table [ expression ..]
+	dbungroup
+
+
