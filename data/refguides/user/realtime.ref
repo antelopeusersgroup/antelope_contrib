@@ -5,7 +5,7 @@
 rtm [-icon iconname] [-title title]
     real time system monitor -- displays tasks and resource usage
 
-dbcentral
+dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
     launch commands on commonly used databases
 
 dbevents dbname
@@ -157,6 +157,19 @@ orbstat [options] orb [secs]
 -v	more verbose
 </options>
 
+pforbstat [options] orb [secs]
+    Create parameter files of orb status
+<options>
+-c	show client statistics
+-s 	show source statistics
+-m re	show only packets or clients matching re
+-r re 	don't show packets or clients matching re
+-f	specify output filename
+-o orb	specify output orb
+-n name	specify srcname for packets on output orb
+-v	more verbose
+</options>
+
 <subsection Data Loggers>
 <commands>
 adsend2orb orb port
@@ -165,7 +178,7 @@ adsend2orb orb port
 eworm2orb pf
     copy earthworm packets from memory ring buffer to orbserver
 
-guralp2orb [-v] [-pf parameter_file] orb port
+guralp2orb [-v] [-V] [-pf parameter_file] [-d calibdb] [-l file_for_logpackets] [-r reject_sec] orbname
     copy data from Guralp datalogger udp port to orbserver orb
 
 ida2orb [-u] orb nrts selection

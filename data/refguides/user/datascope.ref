@@ -26,6 +26,9 @@ dbe [-e] db[.table] [ db[.table] ...]
 dberesp db.table
     run by dbe to plot response curves for instrument 
 
+db_extfile_proc -m mode [-u] [-w nmax] dbtable
+    run arbitrary commands on Datascope extfiles
+
 db_textedit db.table
     run by dbe to edit external text files
 
