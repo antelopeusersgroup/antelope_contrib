@@ -103,13 +103,25 @@ Attribute dbmachine
 	}
 	;
 
-Attribute dbpath
-	String (96)
-	Format ( "%-96s" )
+Attribute dir
+	String (64)
+	Format ( "%-64s" )
 	Null ( "-" )
-	Description ( "path name of database" )
+	Description ( "directory part of a database pathname" )
 	Detail {
-		This is the pathname of a database being created 
+		This is the directory part of a pathname for a database being created 
+		from an orbserver, usually by a database-creation
+		program such as orb2db.
+	}
+	;
+
+Attribute dfile
+	String (32)
+	Format ( "%-32s" )
+	Null ( "-" )
+	Description ( "database name" )
+	Detail {
+		This is the name of a database being created 
 		from an orbserver, usually by a database-creation
 		program such as orb2db.
 	}
@@ -779,8 +791,8 @@ Relation connections
 	;
 
 Relation databases
-	Fields ( serveraddress serverport dbprogram dbmachine dbpath when clientid lddate )
-	Primary ( serveraddress serverport dbprogram dbmachine dbpath )
+	Fields ( serveraddress serverport dbprogram dbmachine dir dfile when clientid lddate )
+	Primary ( serveraddress serverport dbprogram dbmachine dir dfile )
 	Foreign ( clientid )
 	Description ( "Database utilities connected to orbservers" )
 	Detail {
