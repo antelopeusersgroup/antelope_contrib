@@ -181,6 +181,15 @@ main (int argc, char **argv)
 	die (0, "Can't open output orb %s", orbname ) ; 
     }
 
+    if (database) {
+	Dbptr db;
+
+	if (dbopen(database, "r+", &db) == dbINVALID) {
+		die (0, "dbopen(%s) error.\n", database);
+	}
+	finit_db (db);
+    }
+
     allot ( char *, seed, size ) ;
     for(;;) { 
 	Bns *bns ;
