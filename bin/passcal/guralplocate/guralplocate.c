@@ -102,6 +102,7 @@ int main(int argc, char **argv)
 	}
 	latstat = MW_calc_statistics_double(lat,ngpsfix);
 	lonstat = MW_calc_statistics_double(lon,ngpsfix);
+	fprintf(stdout,"Results from %d GPS fixes\n",ngpsfix);
 	printstat("Latitude:  ",latstat);
 	printstat("Longitude:  ",lonstat);
 }
