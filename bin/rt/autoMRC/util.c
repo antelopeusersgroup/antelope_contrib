@@ -2,6 +2,10 @@
  *
  * util.c
  *
+ *
+ *  Author: Marina Harkins-Glushko
+ *  	    UCSD, IGPP
+ *	    glushko@ucsd.edu
  ********************************************************************/
 #include "mrc.h"
 

@@ -1,7 +1,15 @@
 /************************************************************************
   *
+  *  mrc.c
+  *
+  *  Read data from ORD; calculate LTA; 
+  *  if LTA >= MAX value send mass re-centering command to coresponding DAS.
   * 
   *
+  *
+  *  Author: Marina Harkins-Glushko
+  *  	    UCSD, IGPP
+  *	    glushko@ucsd.edu
   *
 ************************************************************************/
 #include "mrc.h"       
@@ -79,7 +87,9 @@ char *argv[];
       
   if ( argc - optind != 2 )
        usage ();
-  
+ 
+/* open ORB and select specified packet type  */
+ 
   orbname = argv[optind++];
   
   dcname = argv[optind++];
@@ -99,6 +109,8 @@ char *argv[];
   PChan = newarr(0);
   collect_dases( pfile );        
 
+  /* Print current settings  */
+
   fprintf( stderr, "\nmrc was started at %s with the following parameters:\n\n",
            s=strtime(now()) );
 	   free(s);
@@ -110,7 +122,7 @@ char *argv[];
   fprintf( stderr, "    Max LTA allowed:\t %d\n", MaxOff );
   fprintf( stderr, "    'RCRC' command will be send twice to the problem DAS at %d second intervals\n\n", asleep );
 
-/* Loop through RB; runnin triggering algorithm  */
+/* Loop through RB; aclculate LTA  */
 
   while(1)  {   
     if( !orbreap( orb, &id, srcid, &pkttime, &packet, &nbytes, &bsize)  ) {

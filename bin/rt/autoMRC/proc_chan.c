@@ -1,7 +1,14 @@
 /************************************************************************
   *
+  *  offscale.c
+  * 
+  *  calculate LTA; compare LTA value with MAX allowed value;
   *  
   *
+  *
+  *  Author: Marina Harkins-Glushko
+  *  	    UCSD, IGPP
+  *	    glushko@ucsd.edu
 ***********************************************************************/
 #include "mrc.h"       
 

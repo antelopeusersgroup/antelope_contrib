@@ -2,7 +2,11 @@
  *
  *  open_dc.c
  *
+ *  open a DC port;
  *
+ *  Author: Marina Harkins-Glushko
+ *  	    UCSD, IGPP
+ *	    glushko@ucsd.edu
  *************************************************************************/
 #include "mrc.h"
 #include <sys/dkio.h>

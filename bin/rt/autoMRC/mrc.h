@@ -4,6 +4,10 @@
  *
  *  Include file of constants, macros, function declarations, etc.
  *
+ *
+ *  Author: Marina Harkins-Glushko
+ *  	    UCSD, IGPP
+ *	    glushko@ucsd.edu
  ***********************************************************************/
 #ifndef mrc_h_included
 #define mrc_h_included

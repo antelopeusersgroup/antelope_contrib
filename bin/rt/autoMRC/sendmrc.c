@@ -1,6 +1,13 @@
 /************************************************************************
   *
+  *  sendmrc.c
   *
+  *  send a mass re-centering 'RCRC' command to DAS trhough DC port
+  *
+  *
+  *  Author: Marina Harkins-Glushko
+  *  	    UCSD, IGPP
+  *	    glushko@ucsd.edu
 ************************************************************************/
 #include "mrc.h"       
 #define LEN   8
