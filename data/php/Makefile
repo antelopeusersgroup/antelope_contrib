@@ -7,7 +7,7 @@ DATA= $(MYDLIB) \
       webdbe.inc \
       webdbe_style.css
 
-MAN3= phpdb.3
+MAN3= Datascope_PHP.3
 
 CLEAN= $(MYDLIB)
 

@@ -1,0 +1,278 @@
+.TH DATASCOPE_PHP 3 "$Date$"
+.SH NAME
+Datascope_PHP \- Datascope interface for PHP
+.SH SYNOPSIS
+.nf
+
+<?php
+\fBdl\fP('Datascope.so')
+?>
+
+.fi
+.SH DESCRIPTION
+
+The Datascope interface for PHP is under development, intended to
+parallel the Perl interface to Datascope. For information
+contact kent@lindquistconsulting.com.
+
+These extensions must first be loaded with a \fBdl\fP statement:
+.ft CW
+.in 2c
+.nf
+
+\fBdl('Datascope.so');\fP
+
+.fi
+.in
+.ft R
+.LP
+
+The following functions have been implemented. Since these functions
+are wrappers around the respective C function calls, the documentation
+on the identically-named C routines may also be helpful.
+
+.SS Datascope functions
+.IP "\fBdbopen\fP ( database, permissions )"
+Returns a database pointer to the specified database.
+.ft CW
+.in 2c
+.nf
+
+$db = dbopen ( $database, 'r+' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdblookup\fP ( $db, database, table, field, record )"
+Returns a database pointer for the specified database, table, field,
+and record. The names should be specified as strings, or left
+as empty strings to leave desired parts of the pointer untouched, where
+possible).
+.ft CW
+.in 2c
+.nf
+
+$db = dblookup( $db, '', 'wfdisc', '', '' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbgetv\fP ( $db, field_name, [field_name, ...] )"
+Returns the values of the specified fields for a particular record:
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+list( $sta, $chan, $time ) =
+        dbgetv( $db, 'sta', 'chan', 'time' );
+
+.fi
+.in
+.ft R
+For a database pointer, like \fBbundle\fP from dbgroup(3), use the
+following syntax:
+.ft CW
+.in 2c
+.nf
+
+$dbbundle = dbgetv( $db, 'bundle' );
+$dbbundle = split ( ' ', $dbbundle ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbex_eval\fP ( $db, expression )"
+Evaluate an expression for a particular record.
+.ft CW
+.in 2c
+.nf
+
+$distance = dbex_eval ( $db,
+            'distance( lat, lon, site.lat, site.lon )' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbextfile( $db [,\fP base-table] )"
+return the filename for an external file for a particular record in
+a view, for a particular base-table if specified.
+.ft CW
+.in 2c
+.nf
+
+$filename = dbextfile( $db ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbaddv\fP ( $db, field_name, value, [field_name, value, ...] )"
+Add a new record with the specified values to the database.
+New records are checked to insure the keys are filled out and don't
+conflict with other records in the table.
+If the id key in a defining table (orid in the origin table, for example)
+is not specified, a new id is automatically generated, using dbnextid.
+.ft CW
+.in 2c
+.nf
+
+.ne 6
+
+$new = dbaddv( $dbevent, 'evid', 1,
+            'evname', 'fake',
+            'prefor', 1,
+            'auth', 'danq' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbaddnull\fP ( $db )"
+Add a null record to the specified table, returning the record number 
+of the added row.
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+$recno =  dbaddnull( $db );
+
+.fi
+.in
+.ft R
+.IP "\fBdbputv\fP ( $db, field_name, value, [field_name, value, ...] )"
+Change the fields for an existing record to the specified values.
+.ft CW
+.in 2c
+.nf
+
+.ne 6
+
+dbputv( $dbevent, 'evid', 1,
+                  'evname', 'fake',
+                  'prefor', 1,
+                  'auth', 'danq' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbsubset\fP ( $db, expression )"
+returns a new view which is the set of all row which satisfy the expression
+.ft CW
+.in 2c
+.nf
+
+$dbsubsetted = dbsubset ( $dbwfdisc, 'sta=="AAK"' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbprocess\fP ( $db, cmd1, cmd2, cmd3 ... )"
+returns a new view which is the result of applying the dbprocess
+commands cmd1, cmd2, etc to the input database pointer.
+.ft CW
+.in 2c
+.nf
+
+$dbprocess = dbprocess ( $db, 'dbopen wfdisc',
+                              'dbjoin site',
+                              'dbsubset distance(38,-104,lat,lon)<15') ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbquery\fP ( $db, code )"
+Query the database for information. The standard Datascope codes must
+be in quotes.
+.ft CW
+.in 2c
+.nf
+
+.ne 6
+
+$nrecords =  dbquery( $db, 'dbRECORD_COUNT' ) ;
+$description = dbquery( $db, 'dbTABLE_DESCRIPTION' ) ;
+$detail = dbquery( $db, 'dbTABLE_DETAIL' ) ;
+$ntables = dbquery( $db, 'dbTABLE_COUNT' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbnrecs\fP ( $db )"
+Return the number of records in a table or view. This function is
+shorthand for dbquery( $db, 'dbRECORD_COUNT' );
+.ft CW
+.in 2c
+.nf
+.ne 3
+
+$nrecords =  dbnrecs( $db );
+
+.fi
+.in
+.ft R
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.ne 16
+
+#!/bin/sh
+exec /usr/local/bin/php -f $0
+
+<?php
+if(!extension_loaded('Datascope')) {
+        dl('Datascope.so');
+}
+$module = 'Datascope';
+$functions = get_extension_funcs($module);
+echo "Functions available in the test extension:<br>\\n";
+foreach($functions as $func) {
+    echo $func."<br>\\n";
+}
+echo "<br>\\n";
+
+.ne 6
+$mydb =dbopen( "/opt/antelope/data/db/demo/demo", "r" );
+
+$mydb = dbprocess( $mydb, "dbopen origin",
+                          "dbsubset ml > 3" );
+echo "table has ", dbnrecs( $mydb ),
+     " records after subset\\n";
+
+.ne 5
+$mydb[3] = 0;
+list( $lat, $lon, $ndef, $auth, $lddate ) =
+    dbgetv( $mydb, "lat", "lon", "ndef", "auth", "lddate" );
+
+echo "$lat, $lon, $ndef, $auth, $lddate\\n";
+
+.ne 6
+$moo = dbex_eval( $mydb, "lat + lon" );
+
+echo var_dump( $moo ), "\\n";
+
+$moo = dbquery( $mydb, "dbVIEW_TABLES" );
+echo var_dump( $moo ), "\\n";
+
+?>
+
+.fi
+.in
+.ft R
+.SH LIBRARY
+.SH "SEE ALSO"
+.nf
+perldb(3P)
+.fi
+.SH "BUGS AND CAVEATS"
+
+WARNING: This is an unfinished prototype!!
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

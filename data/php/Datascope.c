@@ -11,6 +11,9 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
 	PHP_FE(dbgetv, NULL)		
+	PHP_FE(dbaddv, NULL)		
+	PHP_FE(dbputv, NULL)		
+	PHP_FE(dbaddnull, NULL)		
 	PHP_FE(dblookup, NULL)		
 	PHP_FE(dbnrecs, NULL)		
 	PHP_FE(dbopen, NULL)		
@@ -84,6 +87,95 @@ z_arrval_to_dbptr( zval *array, Dbptr *db )
 	zend_hash_move_forward( target_hash );
 	zend_hash_get_current_data( target_hash, (void **) &entry );
 	db->record = Z_LVAL_PP( entry );
+
+	return 0;
+}
+
+int
+zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
+{
+	if( value == (Dbvalue *) NULL ) {
+
+		return -1;
+	}
+
+	switch( type ) {
+	case dbDBPTR:
+		if( z_arrval_to_dbptr( *zvalue, &value->db ) < 0 ) {
+			return -1;
+		}
+		break;
+	case dbSTRING:
+		if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
+			strcpy( value->s, Z_STRVAL_PP( zvalue ) );
+		} else if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
+			sprintf( value->s, "%f", Z_DVAL_PP( zvalue ) );
+		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
+			sprintf( value->s, "%f", Z_LVAL_PP( zvalue ) );
+		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
+			if( Z_BVAL_PP( zvalue ) ) { 
+				sprintf( value->s, "true" );
+			} else {
+				sprintf( value->s, "false" );
+			}
+		} else {
+			return -1;
+		}
+		break;
+	case dbBOOLEAN:
+		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
+			value->i = (int) Z_DVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
+			value->i = Z_LVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
+			value->i = Z_BVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
+			/* SCAFFOLD: Should translate string */
+			value->i = atoi( Z_STRVAL_PP( zvalue ) );
+		} else {
+			return -1;
+		}
+		break;
+	case dbINTEGER:
+	case dbYEARDAY:
+		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
+			value->i = (int) Z_DVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
+			value->i = Z_LVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
+			value->i = Z_BVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
+			value->i = atoi( Z_STRVAL_PP( zvalue ) );
+		} else {
+			return -1;
+		}
+		break;
+	case dbREAL:
+		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
+			value->d = Z_DVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
+			value->d = Z_LVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
+			value->d = atof( Z_STRVAL_PP( zvalue ) );
+		} else {
+			return -1;
+		}
+		break;
+	case dbTIME:
+		if( Z_TYPE_PP( zvalue ) == IS_DOUBLE ) {
+			value->d = Z_DVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_LONG ) {
+			value->d = Z_LVAL_PP( zvalue );
+		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
+			value->d = str2epoch( Z_STRVAL_PP( zvalue ) );
+		} else {
+			return -1;
+		}
+		break;
+	default:
+		return -1;
+		break;
+	}
 
 	return 0;
 }
@@ -392,6 +484,34 @@ PHP_FUNCTION(dbprocess)
 }
 /* }}} */
 
+/* {{{ proto array dbaddnull( array db ) */
+PHP_FUNCTION(dbaddnull)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbaddnull( db );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
 /* {{{ proto array dbnrecs( array db ) */
 PHP_FUNCTION(dbnrecs)
 {
@@ -417,6 +537,247 @@ PHP_FUNCTION(dbnrecs)
 	dbquery( db, dbRECORD_COUNT, &nrecs );
 
 	RETURN_LONG( nrecs );
+}
+/* }}} */
+
+
+/* {{{ proto mixed dbputv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
+PHP_FUNCTION(dbputv)
+{
+	zval	*db_array_in;
+	zval	*db_array;
+	Dbptr	db;
+	zval	***args;
+	int	type;
+	Dbvalue	value;
+	int	argc = ZEND_NUM_ARGS();
+	int	i;
+	int	rc;
+	int	nfields;
+	int	fieldname_index;
+	int	fieldval_index;
+	char	*field_name;
+	int	retcode = 0;
+
+	if( argc < 3 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( ( argc - 1 ) % 2 != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
+
+		fprintf( stderr, "SCAFFOLD: Error parsing dbptr\n" );
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
+
+		fprintf( stderr, "SCAFFOLD: Error interpreting dbptr\n" );
+		return;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		fprintf( stderr, "SCAFFOLD: Error gettin params array\n" );
+		return;
+	}
+
+	nfields = ( argc - 1 ) / 2;
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+		fieldval_index = fieldname_index + 1;
+
+		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldname\n" );
+			return;
+		}
+
+		field_name = Z_STRVAL_PP( args[fieldname_index] );
+
+		db = dblookup( db, 0, 0, field_name, 0 );
+
+		rc = dbquery( db, dbFIELD_TYPE, &type );
+
+		if( rc == dbINVALID ) {
+			
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldtype\n" );
+			return;
+		}
+
+		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
+
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldvalue\n" );
+			return;
+		}
+
+		switch( type ) {
+		case dbDBPTR:
+			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			break;
+		case dbSTRING:
+			retcode |= dbputv( db, 0, field_name, value.s, 0 );
+			break;
+		case dbBOOLEAN:
+		case dbINTEGER:
+		case dbYEARDAY:
+			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			break;
+		case dbREAL:
+		case dbTIME:
+			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			break;
+		default:
+			retcode = dbINVALID;
+			break;
+		}
+	}
+
+	if( retcode != 0 ) {
+		fprintf( stderr, "SCAFFOLD: Error somewhere\n" );
+		return;
+	}
+
+	efree( args );
+
+	RETURN_LONG( retcode );
+}
+/* }}} */
+
+/* {{{ proto mixed dbaddv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
+PHP_FUNCTION(dbaddv)
+{
+	zval	*db_array_in;
+	zval	*db_array;
+	Dbptr	db;
+	zval	***args;
+	int	type;
+	Dbvalue	value;
+	int	argc = ZEND_NUM_ARGS();
+	int	i;
+	int	rc;
+	int	nfields;
+	int	fieldname_index;
+	int	fieldval_index;
+	char	*field_name;
+	int	retcode = 0;
+
+	if( argc < 3 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( ( argc - 1 ) % 2 != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
+
+		fprintf( stderr, "SCAFFOLD: Error parsing dbptr\n" );
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array_in, &db ) < 0 ) {
+
+		fprintf( stderr, "SCAFFOLD: Error interpreting dbptr\n" );
+		return;
+	}
+
+	db.record = dbNULL;
+
+	rc = dbget( db, 0 );
+
+	if( rc == dbINVALID ) {
+		
+		fprintf( stderr, "SCAFFOLD: Error gettin null record\n" );
+		return;
+	}
+
+	db.record = dbSCRATCH;
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		fprintf( stderr, "SCAFFOLD: Error gettin params array\n" );
+		return;
+	}
+
+	nfields = ( argc - 1 ) / 2;
+
+	for( i = 0; i < nfields; i++ ) {
+
+		fieldname_index = i * 2 + 1;
+		fieldval_index = fieldname_index + 1;
+
+		if( Z_TYPE_PP( args[fieldname_index] ) != IS_STRING ) {
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldname\n" );
+			return;
+		}
+
+		field_name = Z_STRVAL_PP( args[fieldname_index] );
+
+		db = dblookup( db, 0, 0, field_name, 0 );
+
+		rc = dbquery( db, dbFIELD_TYPE, &type );
+
+		if( rc == dbINVALID ) {
+			
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldtype\n" );
+			return;
+		}
+
+		if( zval_to_dbvalue( args[fieldval_index], type, &value ) < 0 ) {
+
+			fprintf( stderr, "SCAFFOLD: Error gettin fieldvalue\n" );
+			return;
+		}
+
+		switch( type ) {
+		case dbDBPTR:
+			retcode |= dbputv( db, 0, field_name, value.db, 0 );
+			break;
+		case dbSTRING:
+			retcode |= dbputv( db, 0, field_name, value.s, 0 );
+			break;
+		case dbBOOLEAN:
+		case dbINTEGER:
+		case dbYEARDAY:
+			retcode |= dbputv( db, 0, field_name, value.i, 0 );
+			break;
+		case dbREAL:
+		case dbTIME:
+			retcode |= dbputv( db, 0, field_name, value.d, 0 );
+			break;
+		default:
+			retcode = -1;
+			break;
+		}
+	}
+
+	if( retcode != 0 ) {
+		fprintf( stderr, "SCAFFOLD: Error somewhere\n" );
+		return;
+	}
+
+	retcode = dbaddchk( db, 0 );
+
+	if( retcode < 0 ) {
+		clear_register( 1 );
+		fprintf( stderr, "SCAFFOLD: Error with addchk\n" );
+		return;
+	}
+
+	efree( args );
+
+	RETURN_LONG( retcode );
 }
 /* }}} */
 
