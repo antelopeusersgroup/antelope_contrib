@@ -26,7 +26,7 @@ $(ANTELOPE)/include/mex_antelope_makerules : solaris linux darwin
 	@case `uname -s` in \
 	    SunOS) deposit -r solaris $@; echo deposit -r solaris $@ ;; \
 	    Linux) deposit -r linux   $@; echo deposit -r linux $@ ;; \
-	    Darwin) deposit -r darwin  $@; echo deposit -r linux $@ ;; \
+	    Darwin) deposit -r darwin  $@; echo deposit -r darwin $@ ;; \
 	    *)  echo "Error: System type `uname -s` not recognized." ;;\
 	esac
 
