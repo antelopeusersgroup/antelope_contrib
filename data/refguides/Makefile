@@ -1,6 +1,6 @@
 BIN=refguide
 MAN1=refguide.1
-DATADIR=refguides
+DATADIR=doc/refguides
 DATA=refhdr.mif
 
 include $(ANTELOPEMAKE)
@@ -12,11 +12,15 @@ install:: mif
 
 mif: user.mif scripting.mif c.mif
 
-user.mif : $(ANTELOPE)/data/refguides/user/*.ref $(ANTELOPE)/data/refguides/tables/*.ref
+DOC=$(ANTELOPE)/data/$(DATADIR)
+user.mif : $(DOC)/user/*.ref \
+	   $(DOC)/tables/*.ref
 	refguide user
 	
-scripting.mif : $(ANTELOPE)/data/refguides/scripting/*.ref $(ANTELOPE)/data/refguides/tables/*.ref
+scripting.mif : $(DOC)/scripting/*.ref \
+		$(DOC)/tables/*.ref
 	refguide scripting
 
-c.mif : $(ANTELOPE)/data/refguides/c/*.ref $(ANTELOPE)/data/refguides/tables/*.ref
+c.mif : $(DOC)/c/*.ref \
+	$(DOC)/tables/*.ref
 	refguide c

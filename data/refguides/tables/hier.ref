@@ -14,11 +14,12 @@ antelope.html master guide to documentation
 Changes	list of changes for current release
 bin	executable programs
 data	program data
+  /doc	files related to documentation
   /pf	parameter files
   /perl		perl extensions
-  /tcl		tcl extensions
   /pkt		packet library source code
   /schemas	schema descriptions
+  /tcl		tcl extensions
 demo	real time demos
 doc	miscellaneous Antelope documention
 example	Antelope source examples

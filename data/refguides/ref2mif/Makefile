@@ -1,4 +1,4 @@
-DATADIR=txform/ref2mif
+DATADIR=doc/txform/ref2mif
 DATA= \
     cdeclarations.pl \
     commands.pl \

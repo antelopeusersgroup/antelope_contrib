@@ -1,4 +1,4 @@
-DATADIR=refguides/scripting
+DATADIR=doc/refguides/scripting
 DATA= \
         matlab.ref \
 	perl.ref \

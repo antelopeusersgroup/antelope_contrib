@@ -1,4 +1,4 @@
-DATADIR=refguides/user
+DATADIR=doc/refguides/user
 DATA= \
 	cd1.ref \
 	commands.ref \

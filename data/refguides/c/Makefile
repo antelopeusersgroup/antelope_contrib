@@ -1,4 +1,4 @@
-DATADIR=refguides/c
+DATADIR=doc/refguides/c
 DATA= \
 	c.ref \
 	fortran.ref \

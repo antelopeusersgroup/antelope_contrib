@@ -1,4 +1,4 @@
-DATADIR=refguides/tables
+DATADIR=doc/refguides/tables
 DATA= \
 	antelopemake.ref \
 	environment.ref \
