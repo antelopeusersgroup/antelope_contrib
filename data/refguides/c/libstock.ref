@@ -521,6 +521,9 @@ int fspath ( char *path, char *host, char *filesystem )
 InfoPath *infopath ( char *path )
     return info about path including disk space and inodes available
 
+int samepath ( char *path1, char *path2 )
+    returns 1 if path1 and path2 resolve to same file or directory
+
 char *homedir(char *user)
     return the home directory of the specified user.
 
@@ -597,6 +600,9 @@ private char *newcs ( char *fs, int n )
 
 void strtrim ( char *s )
     trim leading and trailing whitespace from string s
+
+void chomp ( char *s ) 
+    remove trailing linefeed from string s if present
 
 void strtr( char *s, char *from, char *to ) 
     substitute chars in s using lists in from and to  

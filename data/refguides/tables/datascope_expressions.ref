@@ -25,6 +25,9 @@ sum(expr)
 sum_table(expr)
     add an expression across a table
 
+record()
+    return the Datascope record number
+
 <subsection Arithmetic Functions>
 abs(x)
     absolute value
@@ -193,6 +196,9 @@ extfile([ table ])
 
 :=	assignment
 
+" 	surrounds a string expression
+' 	surrounds a string expression
+_	surrounds a time expression (suitable for str2epoch)
 
 <expression>
 expr ? a : b
