@@ -3,7 +3,7 @@
 db2segy - conversion from css3.0 traces to segy disk image
 .SH SYNOPSIS
 
-\fBdb2segy db outfile \fR [ -pf pffile ]
+\fBdb2segy db outfile \fR [ -pf pffile -v ]
 
 .SH DESCRIPTION
 .LP
@@ -83,6 +83,9 @@ will be zeroed instead set full scale.
 .SH OPTIONS
 .IP -pf
 Alternate parameter file to use in place of db2segy.pf.
+.IP -v
+Verbose mode.  Without this option the program is totally silent
+sending only error messages to stderr.  The default is not verbose.
 .SH FILES
 .LP
 \fBdb2segy\fR expects to see a series of start times, one

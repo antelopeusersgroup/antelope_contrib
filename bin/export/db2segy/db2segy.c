@@ -42,7 +42,7 @@ that recycled some of the original code written in February 1999.
 static void
 usage()
 {
-	fprintf(stderr,"Usage:  db2segy dbin outfile [-pf pffile]\n");
+	fprintf(stderr,"Usage:  db2segy dbin outfile [-pf pffile -v]\n");
 	exit(-1);
 }
 
@@ -153,7 +153,7 @@ from a list in a parameter file and returns this as an
 associative array "a".  The function returns the number of
 channels actually found in the list.*/
 
-Arr *build_stachan_list(Pf *pf, int *nchan)
+Arr *build_stachan_list(Pf *pf, int *nchan,int verbose)
 {
 	char sta[10], chan[10];
 	char *key;
@@ -163,7 +163,8 @@ Arr *build_stachan_list(Pf *pf, int *nchan)
 	char *line;
 	int *channel_number;  /* value stored in arr */
 
-	fprintf(stdout,"Station   Channel_code    Channel_number\n");
+	if(verbose)
+		fprintf(stdout,"Station   Channel_code    Channel_number\n");
 	a = newarr(0);
 	t = pfget_tbl(pf,"channels");
 	if(t==NULL) die(0,"Parameter file error:  no channels table\n");
@@ -177,7 +178,8 @@ Arr *build_stachan_list(Pf *pf, int *nchan)
 			die(0,"malloc error for channel_number\n");
 		*channel_number = i;
 		setarr(a,key,(void *)channel_number);
-		fprintf(stdout,"%s  %s  %d\n",sta,chan,(*channel_number)+1);
+		if(verbose)
+			fprintf(stdout,"%s  %s  %d\n",sta,chan,(*channel_number)+1);
 		free(key);
 	}
 	*nchan = maxtbl(t);
@@ -528,6 +530,7 @@ main(int argc, char **argv)
 	int map_to_cdp;  /* logical switch to output data like cdp stacked data */
 	char *fmt="%Y %j %H %M %s %s";
 	char *pfname;
+	int Verbose=0;
 
 
 	if(argc < 3) usage();
@@ -540,6 +543,10 @@ main(int argc, char **argv)
 		{
 			++i;
 			pfname = argv[i];
+		}
+		if(!strcmp(argv[i],"-v"))
+		{
+			Verbose=1;
 		}
 	}
 	if(pfname == NULL) pfname = strdup("db2segy");
@@ -557,10 +564,11 @@ main(int argc, char **argv)
 	}
 	/* This function creates the channel order list keyed by
 	station channel names */
-	channels = build_stachan_list(pf,&nchan);
+	channels = build_stachan_list(pf,&nchan,Verbose);
 
 	map_to_cdp = pfget_boolean(pf,"map_to_cdp");
-	if(map_to_cdp) fprintf(stdout,"Casting data as CDP stacked section\n");
+	if(map_to_cdp && Verbose) 
+		fprintf(stdout,"Casting data as CDP stacked section\n");
 	if(dbopen(dbin,"r",&db) == dbINVALID) 
 	{
 		fprintf(stderr,"Cannot open db %s\n", dbin);
@@ -657,7 +665,8 @@ main(int argc, char **argv)
 	*/
 	while((stest=fgets(s,80,stdin)) != NULL)
 	{
-		fprintf(stdout,"Processing event with start time %s = shot %d\n",
+		if(Verbose)
+			fprintf(stdout,"Processing event with start time %s = shot %d\n",
 			s,shotid);
 		for(i=0;i<nchan;++i)
 		{
@@ -703,7 +712,8 @@ main(int argc, char **argv)
 				elog_notify(0,"Data loss in trrotate for event %s to %s\n",
 					stime, etime);
 		}
-		fprintf(stdout,"Station  chan_name  chan_number seq_number shotid  evid\n");
+		if(Verbose)
+			fprintf(stdout,"Station  chan_name  chan_number seq_number shotid  evid\n");
 		trdb = dbsort(trdb,sortkeys,0,0);
 		dbquery(trdb,dbRECORD_COUNT,&ntraces);
 		for(trdb.record=0;trdb.record<ntraces;++trdb.record)
@@ -752,7 +762,8 @@ main(int argc, char **argv)
 					ichan, nchan);
 			if(ichan >= 0)
 			{
-				fprintf(stdout,"%s:%s\t%-d\t%-ld\t%-d\t%-d\n",
+				if(Verbose) 
+				   fprintf(stdout,"%s:%s\t%-d\t%-ld\t%-d\t%-d\n",
 					sta,chan,ichan+1,
                                         header[ichan].reelSeq,
 					shotid, evid);
@@ -807,6 +818,12 @@ main(int argc, char **argv)
 						evid,&header[ichan]);
 				}
 			}			
+			else
+			{
+				if(Verbose)
+					fprintf(stdout,"Station %s and channel %s skipped\n",
+						sta,chan);
+			}
 
 		}
 		/* Now we write the data */
