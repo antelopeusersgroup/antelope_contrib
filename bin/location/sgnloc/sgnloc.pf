@@ -169,8 +169,8 @@ S  &Arr{
 slowness_units degrees
 slowness_format azimuth
 arrivals &Tbl{
-P        WABASH   816564757.88845 -1.000 
-S        WABASH   816564776.89348 -1.000
+P        WABASH   816564757.88845 -1.000  1
+S        WABASH   816564776.89348 -1.000  2
 }
 slowness_vectors &Tbl{
 P        WABASH    17.77   201.53   -1.00   -1.00
