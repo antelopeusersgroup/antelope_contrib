@@ -1,0 +1,245 @@
+velocity_model_name anza
+phases &Arr{
+P  &Arr{
+travel_time_calculator uniform table interpolation
+table_file uniform/P_anza
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+TRO      -0.060
+CRY       0.031
+BZN       0.083
+KNW      -0.167
+WMC       0.076
+SND       0.098
+PFO      -0.122
+LVA       0.173
+RDM      -0.081
+FRD       0.039
+PLM       0.127
+CAH       0.077
+COY       0.086
+HOT       0.067
+JUL      -0.049
+KEE      -0.025
+POB      -0.075
+PSP      -0.153
+SMO      -0.067
+YAQ       0.154
+VG2      -0.094
+LAQ      -0.112
+OLY      -0.006
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+S  &Arr{
+travel_time_calculator uniform table interpolation
+table_file uniform/S_anza
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+TRO       0.031
+CRY       0.153
+BZN       0.246
+KNW      -0.195
+WMC       0.294
+SND       0.488
+PFO      -0.123
+LVA       0.715
+RDM      -0.045
+FRD       0.186
+PLM       0.000
+CAH       0.000
+COY       0.000
+HOT       0.000
+JUL       0.000
+KEE       0.000
+POB       0.000
+PSP       0.000
+SMO       0.000
+YAQ       0.000
+VG2       0.000
+LAQ       0.000
+OLY       0.000
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Pg  &Arr{
+travel_time_calculator uniform table interpolation
+table_file uniform/P_anza
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+TRO      -0.060
+CRY       0.031
+BZN       0.083
+KNW      -0.167
+WMC       0.076
+SND       0.098
+PFO      -0.122
+LVA       0.173
+RDM      -0.081
+FRD       0.039
+PLM       0.127
+CAH       0.077
+COY       0.086
+HOT       0.067
+JUL      -0.049
+KEE      -0.025
+POB      -0.075
+PSP      -0.153
+SMO      -0.067
+YAQ       0.154
+VG2      -0.094
+LAQ      -0.112
+OLY      -0.006
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+Sg  &Arr{
+travel_time_calculator uniform table interpolation
+table_file uniform/S_anza
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+TRO       0.031
+CRY       0.153
+BZN       0.246
+KNW      -0.195
+WMC       0.294
+SND       0.488
+PFO      -0.123
+LVA       0.715
+RDM      -0.045
+FRD       0.186
+PLM       0.000
+CAH       0.000
+COY       0.000
+HOT       0.000
+JUL       0.000
+KEE       0.000
+POB       0.000
+PSP       0.000
+SMO       0.000
+YAQ       0.000
+VG2       0.000
+LAQ       0.000
+OLY       0.000
+BRP       0.000
+CLP       0.000
+LRP       0.000
+LVA2      0.000
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}

@@ -1,0 +1,141 @@
+velocity_model_name anza
+phases &Arr{
+P  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+S  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Pg  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+Sg  &Arr{
+travel_time_calculator general
+TTmodel iasp91
+TTmethod tttaup
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
