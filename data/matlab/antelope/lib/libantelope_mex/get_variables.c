@@ -43,6 +43,26 @@ get_string( mxArray *in, char **string )
 }
 
 int
+get_stringtbl( mxArray *in, Tbl **tbl )
+{
+	mxArray *input_array[1];
+	mxArray *output_array[1];
+
+	input_array[0] = in;
+	mexCallMATLAB( 1, output_array, 1, input_array, "iscellstr" );
+
+	if( ! mxGetScalar( output_array[0] ) )
+	{
+		*tbl = 0;
+		return 0;
+	}
+
+	*tbl = cellstr2stringtbl( in );
+
+	return 1;
+}
+
+int
 get_pf( mxArray *in, Pf **pf )
 {
         if( mxGetClassID( in ) != mxOBJECT_CLASS )

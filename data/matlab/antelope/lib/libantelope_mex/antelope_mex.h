@@ -7,7 +7,7 @@
  * 1997
  */
 
-#include <mex.h>
+#include "mex.h"
 #include "db.h"
 #include "tr.h"
 #include "stock.h"
@@ -51,6 +51,7 @@ extern int pfput_mxArray PL_(( Pf *, char *, mxArray * ));
 extern int pfpeek PL_(( Pf *, char *, Pf ** ));
 extern int get_dbptr PL_(( mxArray *, Dbptr * ));
 extern int get_string PL_(( mxArray *, char ** ));
+extern int get_stringtbl PL_(( mxArray *, Tbl ** ));
 extern int get_pf PL_(( mxArray *, Pf ** ));
 extern int get_response PL_(( mxArray *, Response ** ));
 extern int get_string PL_(( mxArray *, char ** ));
