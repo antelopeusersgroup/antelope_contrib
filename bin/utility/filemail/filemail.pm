@@ -283,7 +283,7 @@ sub chmod_dirs {
 
 	($dir, $base, $suffix) = parsepath( $dir );
 
-	while( $dir ne "." ) {
+	while( $dir ne "." && -w "$dir" ) {
 
 		system( "chmod $Dirmode $dir" );
 	
