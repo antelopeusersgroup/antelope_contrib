@@ -1,12 +1,10 @@
-'\" te
-.TH ftest 3 "$Date$"
+.TH FTEST 3 "$Date$"
 .SH NAME
-ftest - F statistic test functions
+ftest1, ftest2, ftest_subset - F statistic test functions
 .SH SYNOPSIS
 .nf
-#include <math.h>
 #include "glputil.h"
-#include "elog.h"
+
 int ftest1(double var1, int n1, double var2, int n2, double critical);
 int ftest2(double var1, int n1, double var2, int n2, double critical);
 int ftest_subset(double var1, int n1, double var2, int n2, double critical);
@@ -32,17 +30,17 @@ rms statistics for the full ensemble.  This provides an outlier test
 for entire events.  
 .SH RETURN VALUES
 1 means the null hypothesis is rejected and 0 means the null hypothesis
-cannot be rejected. ftest_subset will return a -1 if a sanity check is
+cannot be rejected. ftest_subset returns a -1 if a sanity check is
 violated when n1>n2.
 .SH LIBRARY
-$(STOCKLIBS) -lglputil -lm
+-lglputil $(STOCKLIBS) 
 .SH "BUGS AND CAVEATS"
 The incomplete beta function calculator sometimes issues this diagnostic:
 .nf
 Bad x value xxxxx passed to betai
-Must be between 0 and 1\n
+Must be between 0 and 1
 .fi
-with the posted number being a very small negative number.  This seems to
+with the posted number a very small negative number.  This seems to
 be harmless as the correct answer is returned.  It has been observed
 to happen with two 
 populations with huge variance differences suggesting it is some kind
