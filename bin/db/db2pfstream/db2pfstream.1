@@ -227,6 +227,19 @@ A typical example of this might be an ensemble of
 three-component seismograms with the gather defining
 the ensemble and the grouping defining the collections of
 three-components for each station.  
+It is VERY important that the \fIprocess_list, ensemble_keys,\fR and
+\fIgrouping_keys\fR be internally consistent and sensible for the input
+database.  The process_list must make sure the sort order is consistent
+with the grouping and the ensemble and group keys need to be consistent
+or chaos can result.  The basic advice to keep in mind is this.
+First, the process_list should sort the data in the order of the 
+combined ensemble and group keys with the ensemble sort first.  
+Second, make SURE that if group keys are used the group_key list
+should contain the ensemble keys as the first entries in the list.  
+This is necessary because the program simply calls dbgroup twice:
+once with the ensemble key and (when requested) a second time with
+the group keys.  The group keys are assumed to be a finer grouping
+than the ensemble keys.
 .LP
 \fIvirtual_table_name\fR is the tag assigned to the outer block
 defining an ensemble.  That is, multiple ensembles with 
@@ -254,6 +267,13 @@ other end does not have the fifo open for read the last block of
 data will be dropped.  This could probably be done better by using
 bidirectional communication capabilities of named pipes described
 in streamio(7).
+.LP
+The interaction of the process_list, ensemble_key, and group_key
+parameters is complex and perhaps should be forced.  Here it is 
+up to the user to make sure they understand the database well enough
+and the grouping process to guarantee it all works right.  In general
+this should not be awful because stock pf files should be build for
+any application to be the receiver of a pfstream.
 .SH AUTHOR
 Gary L. Pavlis, Indiana University (pavlis@indiana.edy)
 .\" $Id$
