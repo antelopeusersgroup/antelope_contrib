@@ -511,7 +511,7 @@ orbdatabases2pf( Pf *pfanalyze )
 	int	ikey;
 	char	*client_key;
 	char	*what;
-	char	*host;
+	char	*serverhost;
 	char	*clientid;
 	char	*clientaddress;
 	char	*serveraddress;
@@ -524,7 +524,7 @@ orbdatabases2pf( Pf *pfanalyze )
 	int	formal_count = 0;
 	char	*delim = ":";
 	char	*hostdir;
-	char	*hostcopy;
+	char	*serverhostcopy;
 	char	*abspath;
 
 	pf = pfnew( PFFILE );
@@ -536,10 +536,10 @@ orbdatabases2pf( Pf *pfanalyze )
 
 	pfeval( pfanalyze, "server{address}", &serveraddress );
 	pfeval( pfanalyze, "server{port}", &serverport );
-	pfeval( pfanalyze, "server{host}", &host );
+	pfeval( pfanalyze, "server{host}", &serverhost );
 
-	hostcopy = strdup( host );
-	strtok_r( hostcopy, delim, &hostdir );
+	serverhostcopy = strdup( serverhost );
+	strtok_r( serverhostcopy, delim, &hostdir );
 
 	pfget( pfanalyze, "clients", (void **) &pfclients );
 
@@ -558,10 +558,6 @@ orbdatabases2pf( Pf *pfanalyze )
 
 			pfdatabase = pfnew( PFARR );
 
-			abspath = concatpaths( hostdir, dbpath, 0 );
-			parsepath( abspath, dir, dfile, 0 );
-			free( abspath );
-
 			pfput_string( pfdatabase, "clientid", clientid );
 			pfput_string( pfdatabase, "serveraddress", serveraddress );
 			pfput_string( pfdatabase, "serverport", serverport );
@@ -573,9 +569,18 @@ orbdatabases2pf( Pf *pfanalyze )
 
 				pfput_string( pfdatabase, "dbmachine", serveraddress );
 
+				abspath = concatpaths( hostdir, dbpath, 0 );
+				parsepath( abspath, dir, dfile, 0 );
+				free( abspath );
+
 			} else {
 
 				pfput_string( pfdatabase, "dbmachine", clientaddress );
+
+				abspath = concatpaths( "", dbpath, 0 );
+				parsepath( abspath, dir, dfile, 0 );
+				free( abspath );
+
 			}
 
 			sprintf( formal_name, "client%03d", ++formal_count );
@@ -583,7 +588,7 @@ orbdatabases2pf( Pf *pfanalyze )
 		}
 	}
 
-	free( hostcopy );
+	free( serverhostcopy );
 
 	pfput( pf, "databases", pfdatabases, PFPF );
 
