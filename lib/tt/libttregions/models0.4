@@ -1,0 +1,262 @@
+Include css3.0
+
+Attribute modelset
+	String ( 20 )
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Name assigned to a group of regionalized earth models" )
+	Detail {
+		This is an id string used to assign a name to a 
+		group of regionalized physical
+		earth models specified in related tables.
+	}
+	;
+
+Attribute modname
+	String ( 20 )
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Name assigned to a physical earth model" )
+	Detail {
+		This is an id string used to assign a name to a physical
+		earth model specified in related tables.
+	}
+	;
+
+Attribute paramtype 
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Type of parameterization for a model" )
+	Detail {
+		Different models are parameterized in different ways. 
+		This field specifies the type of parameterization for 
+		a given model. Usually this will match a table name 
+		giving the parameters for each specific model of that 
+		parameterization type.
+	}
+	;
+
+Attribute paramname 
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "Name of a physical property" )
+	Detail {
+		Related tables store the values of physical properties
+		of some kind (e.g. P or S wave velocity).  This is
+		a unique string that describes the associated physical
+		property.  Applications will define unique strings that
+		can be used to grab the appropriate quantity. 
+	}
+	;
+
+Attribute paramval 
+	Real ( 20 )
+	Format ( "%20.13g" )
+	Null ( "9.9999999999999e99")
+	Description ("Value of a physical parameter" )
+	Detail {
+		This field holds the actual value of a physical parameter
+		used to describe an earth model.
+	}
+	;
+
+Attribute grad
+	Real ( 20 )
+	Format ( "%20.13g" )
+	Null ( "9.9999999999999e99")
+	Description ("Vertical gradient" )
+	Detail {
+		Used to hold vertical gradient of a physical parameter
+		for depth dependent (1D) earth models. 
+	}
+	;	
+
+Attribute regname
+	String ( 20 )
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( " Name of the region of interest" )
+	;
+
+Attribute vertex
+	Integer ( 8 )
+	Format ( "%8d" ) 
+	Null  ( "0" )
+	Range( "vertex > 0" )
+	Description ( "Sequence number of vertex specifying region" )
+	Detail {
+		The vertices for a polygon are listed in order, clockwise
+		around a region. The vertex field specifies the sequence
+		number of each vertex for a given region, e.g. first,
+		second, third, etc.
+	}
+	;
+
+Attribute refelev
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "0.0000" )
+	Range ( "refelev > -10.0 && refelev < 10.0" )
+	Units ( "Kilometers" )
+	Description ( "Reference elevation for velocity model" )
+	Detail {
+		Reference elevation from sea level for velocity model
+	}
+	;
+
+Attribute ceiling
+        Real ( 9 )
+        Format ( "%9.4lf" )
+        Units ( "Kilometers" )
+        Null  ( "-999.0"  )
+        Range ( "depth >= 0.0 && depth < 1000.0" )
+        Description ( "top of a given regional point" )
+        Detail {
+            A general regional polygonal shape can be define
+	    vertical prisms with a top defined by attribute ceiling and
+	    a base defined by attribute floor
+        }
+        ;
+
+Attribute floor
+        Real ( 9 )
+        Format ( "%9.4lf" )
+        Units ( "Kilometers" )
+        Null  ( "-999.0"  )
+        Range ( "depth >= 0.0 && depth < 1000.0" )
+        Description ( "bottom of a given regional point" )
+        Detail {
+             A general regional polygonal shape can be define
+	    vertical prisms with a top defined by attribute ceiling and
+	    a base defined by attribute floor
+        }
+        ;
+
+Attribute level
+	Integer ( 8 )
+	Format ( "%8d" ) 
+	Null  ( "0" )
+	Range( "level > 0" )
+	Description ( "Heirarchic level of a polygonal region" )
+	Detail {
+		Polygonal regions can overlap.  Ambiguity in choice
+		can be controlled by setting a heirarchic level to
+		each region similar to layers in drawing programs.  
+	}
+	;
+ 
+Attribute libname
+        String ( 30 )
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "Library name of a ttcalc method shared library" )
+        Detail {
+		Library name for a shared library used for ttcalc
+		interface calculator.  Note this is the short form as
+		would be passed, for example, to ld in a makefile.
+		i.e. it should not include directory info, the leading lib,
+		or the trailing .so stuff. 
+        }
+        ;
+ 
+Attribute ttentry
+        String ( 30 )
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "Travel time calculator entry point name" )
+        Detail {
+		ttcalc generic travel time calculator wants the 
+		entry point name of this function in the method
+		string defintion.
+        }
+        ;
+ 
+Attribute uentry
+        String ( 30 )
+        Format ( "%-30s" )
+        Null ( "-" )
+        Description ( "Slowness vector calculator entry point name" )
+        Detail {
+                ttcalc generic travel time calculator wants the 
+                entry point name of this function in the method
+                string defintion.
+        }
+        ;
+
+Relation mod1d
+	Fields ( modname paramname depth paramval grad units auth lddate )
+	Primary ( modname paramname depth )
+	Description ( "Indexed 1-d earth model table " )
+	Detail {
+		Earth models that depend only on depth are stored in 
+		this table.  The format allows infinite variety in the
+		range of physical properties assigned to a series points
+		that are specified here as (depth,paramval) ordered pairs.
+	}
+	;
+
+Relation sitecor
+	Fields (  sta modname regname ceiling floor phase paramval units auth lddate )
+	Primary (  modname regname ceiling sta phase )
+	Description ( "Station dependent corrections" )
+	Detail {
+		Used to define station dependent corrections to 
+		be associated with some reference earth model.
+		(e.g. for a P velocity model value will be the P
+		phase station correction.) 
+	}
+	;
+
+Relation regmodel
+	Fields ( modelset regname level algorithm modname lddate)
+	Primary ( modelset regname )
+	Description ( "Links an earth model and tt calculator to a region " )
+	Detail {
+		This table is used to specify different velocity 
+		models to be used for different regions. It links earth models,
+		tagged with the modname identifier, and a particular travel
+		time method, tagged by the algorithm attribute, to particular
+		polygonal areas defined by the regions relation.
+		The modelset field gives the modname for a given set 
+		of regionalized models. 
+	}
+	;
+
+Relation regions
+	Fields (
+		regname vertex lat lon lddate
+		)
+	Primary ( regname vertex )
+	Description ( "Vertices defining regions of interest" )
+	Detail {
+		This table specifies the vertex locations for the 
+		polygons enclosing each region. The vertex field
+		indicates the ordering of the vertices around the 
+		polygon. For implementations which need to 
+		distinguish unambiguously the difference between the 
+		inside and outside of a region, usually for regions
+		that include significant fractions of the globe or regions
+		that might be on the far side of the globe from a 
+		possibly included earthquake, the vertices should 
+		be listed in clockwise order looking down at the 
+		surface in map view. 
+	}
+	;
+
+Relation ttcalc
+	Fields (
+		algorithm libname ttentry uentry lddate
+		)
+	Primary ( algorithm )
+	Description ( "Defines ttcalc library name and entry points" )
+	Detail {
+		The ttcalc generic travel time interface uses a 
+		method string that defines three quantities:  the library
+		name, the entry point name for the travel time calculation
+		routine, and the entry point name for the slowness 
+		vector calculator.  This table puts these in a database
+		so users do not have to look these up in man pages. 
+	}
+	;
