@@ -1,4 +1,4 @@
-DATADIR= www
+DATADIR= www/cgibin
 
 DATA= pfexplorer.php
 
