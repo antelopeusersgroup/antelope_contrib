@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <strings.h>
-#include <sunmath.h>
 #include "multiwavelet.h"
 void usage(char *prog)
 {

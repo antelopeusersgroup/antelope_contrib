@@ -1,4 +1,3 @@
-#include <sunmath.h>
 #include "multiwavelet.h"
 #include "tr.h"
 
