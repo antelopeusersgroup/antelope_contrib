@@ -42,7 +42,7 @@ int dbadd_remark ( Dbptr db, char *r )
 int dbaddnull ( Dbptr db )
     add a null record to table db
 
-int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... )
+int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
     add a new record to table db/t, with values v1,...  for
     corresponding fields f1, ...  ; terminate list with zero.  returns
     record number of new record or a previously existing matching
@@ -52,7 +52,7 @@ int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... )
 int dbget ( Dbptr db, char *s )
     get a record (or field or whole table) from database into s
 
-int dbgetv ( Dbptr db, char *t, char *f1, &v1, ... )
+int dbgetv ( Dbptr db, char *t, char *f1, &v1, ... 0 )
     read values from record db for fields f1, ..., returning corresponding
     values in v1, ...; terminate list with 0.  returns -1 if
     problem occurs, and then values are undefined.
@@ -64,7 +64,7 @@ int dbget_remark ( Dbptr db, char **remark )
 int dbput ( Dbptr db, char *s )
     put a record (or field or whole table) from s into database/table/field/record db
 
-int dbputv ( Dbptr db, char *t, char *f1, v1, ...)
+int dbputv ( Dbptr db, char *t, char *f1, v1, ... 0)
     write values v1, ... to corresponding fields f1, ... in database record db.
     terminate list with zero.
 
@@ -93,20 +93,17 @@ Dbptr dbsubset ( Dbptr db, char *s, char *name )
     create a new view containing only records from db which satisfy the expression s
 
 Dbptr dbjoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, int outer, Tbl **nojoin, char *name )
-    create a new joined view from two input views db1 and db2
-    according to either the keys specified in keys1 and keys2, or join
-    keys inferred from the the primary and alternate keys of db1 and
-    db2.  in either case, the join keys used are returned.  also
-    returns a list nojoin of records from view db1 which did not join,
-    but setting outer causes every record in db1 to appear in the
+    return a new joined view from two input views db1 and db2
+    according to either inferred join keys or keys specified in keys1 and keys2. 
+    also returns the join keys used and a list nojoin of records from db1 which did not join.
+    Setting outer causes every record in db1 to appear in the
     output view, joined to a null record for db2 if necessary.
 
 Dbptr dbnojoin ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, char *view_name )
-    similar to dbjoin, but returns a view of records from view db1 which do not 
-    match records in view db2.
+    return a view of records from view db1 which do not match records in view db2.
 
 int dbmatches ( Dbptr db1, Dbptr db2, Tbl **keys1, Tbl **keys2, Hook **hook, Tbl **t )
-    similar to dbjoin, but returns in t a list of record numbers for
+    return in t a list of records for
     db2 which match the single record db1.  hook caches some
     information for a particular join, and should be set to zero
     before the first call and freed with free_hook when done.
@@ -202,11 +199,11 @@ int dbextfile ( Dbptr db, char *table, char *p )
       dfile.
 
 int dbfilename ( Dbptr db, char *filename )
-    compose a filename from a database record
+    compose a filename from dir/dfile in database record db, creating directories if needed 
 
 <subsection Managing Ancillary Information>
 int dbquery ( Dbptr db, int code, Dbvalue *value )
-    returns a variety of information for database pointer db
+    returns a variety of information for database pointer db (see Datascope Constants)
 
 Tbl * dbtables ( Dbptr db, char *f)
     return a list of tables which use the field f

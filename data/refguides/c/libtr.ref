@@ -22,31 +22,40 @@ int trtruncate ( Dbptr tr, int leave )
 
 <subsection Reading and Writing waveforms>
 <cdeclarations>
-int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *fill_private )
-    read trace data from file into memory
+int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *pvt )
+    read waveform data for single record db between times reqt0  and reqt1 into buffer data, 
+    returning #points npts and actual time range t0 to t1.  returns 0 for success
 
 void trgetwf_error ( Dbptr db, int code )
     add error message to log for trgetwf errors
 
+int trload_css ( Dbptr db, char *reqt0, char *reqt1, Dbptr *trp, char *table, Arr **map)
+    load waveform data between reqt0 and reqt1 from all records in
+    database view db into trace table trp
 
-int trload_css ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
-    load waveform data between time_str and endtime_str from database view db into trace table trp
-
-int trload_cssgrp ( Dbptr db, char *time_str, char *endtime_str, Dbptr *trp, char *table, Arr **maparr )
-    load waveform data between time_str and endtime_str from pre-sorted database view or bundle db into trace table trp
+int trload_cssgrp ( Dbptr db, char *reqt0, char *reqt1, Dbptr *trp, char *table, Arr **map )
+    load waveform data between reqt0 and reqt1 from pre-sorted database view or 
+    bundle db into trace table trp
 
 deprecated int trputwf ( Dbptr db, float *data )
     save waveform data
 
-int trsave_wf ( Dbptr tr, Dbptr db, char *datatype, char *wfname, int flags )
-    save waveform data from tr to database creating waveforms of specified datatype in data files constructed by trwfname(3) using the pattern wfname. The trAPPEND and trOVERWRITE bits in flag cause waveform data to either append to existing files or overwrite existing files.
+int trsave_wf ( Dbptr tr, Dbptr db, char *dt, char *wf, int flags )
+    save waveform data from tr to database db creating waveforms of
+    specified datatype dt in data files named by trwfname(3) using
+    the pattern wf.  trAPPEND flag bit causes data to be appended to 
+    existing files; trOVERWRITE flag bit causes data to overwrite existing files.
 
-int trwfname ( Dbptr db, char *pattern, char **path )
-    generate waveform file name, according to specified pattern, creating any non-existent directories.
+int trwfname ( Dbptr db, char *wf, char **path )
+    generate waveform file name for database row db using specified pattern wf and
+    creating any non-existent directories.
 
 <subsection Network, Aux and Loc code Remapping>
 <body>
-Autodrm and SEED introduce extra keys to uniquely identify station and channel. These extra keys must be mapped into sta and chan to work with the CSS3.0 schema. These routines implement that mapping.
+
+Autodrm and SEED introduce extra keys to uniquely identify station and
+channel.  These extra keys must be mapped into sta and chan to work
+with the CSS3.0 schema.  These routines implement that mapping.
 
 <cdeclarations>
 int map_autodrm_netsta ( char *anet, char *fsta, char *sta )
@@ -54,7 +63,6 @@ int map_autodrm_netsta ( char *anet, char *fsta, char *sta )
 
 int autodrm_net ( char *sta, char *anet, char *fsta )
     return autodrm network code anet and station code fsta corresponding to CSS3.0 sta code
-
 
 int map_autodrm_chanaux ( char *sta, char *fchan, char *aux, char *chan )
     map an autodrm channel fchan and aux code into a CSS3.0 chan code for station sta

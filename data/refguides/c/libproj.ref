@@ -1,16 +1,14 @@
 <library>
 Map Projections
 proj
-none
-none
+
+
 proj.h
 Various map projections
-
 <cdeclarations>
 
 PJ *pj_init ( int argc, char **argv )
     select and initialize a cartographic projection
-
 
 UV pj_fwd ( UV val, PJ *proj )
     perform a forward cartographic projection
@@ -18,9 +16,7 @@ UV pj_fwd ( UV val, PJ *proj )
 UV pj_inv ( UV val, PJ *proj )
     perform an inverse cartographic projection
 
-
 void pj_free ( PJ *proj )
     free a cartographic projection
 
-<List>
-
+<include ../tables/projections.table>

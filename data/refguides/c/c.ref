@@ -8,7 +8,6 @@
 <include libxtra.ref>
 <include libbrttpkt.ref>
 <include libtt.ref>
-<include libtttaup.ref>
 <include libresponse.ref>
 <include libtks.ref>
 <include libproj.ref>

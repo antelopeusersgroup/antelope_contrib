@@ -9,11 +9,11 @@ routines which implement the orb protocol
 <cdeclarations>
 
 int orbopen ( char *name, char *p )
-    open a connection to the orbserver name, with permission p = r, r&, w, or w&, return an integer descriptor or -1 
+    open a connection to the orbserver name, with permission p = "r" or "w",
+    with "&" appended to cause reconnections; returns orb or -1 for failure
 
 int orbclose ( int orb )
     close the orbserver connection orb
-
 
 int orbselect ( int orb, char *re)
     select packets from orb which match the regular expression re

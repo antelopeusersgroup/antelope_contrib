@@ -1,7 +1,7 @@
 <library>
-Tksend IPC Utility
+Tk send IPC Utility
 tks
--lposix4 -lnsl -lsocket -lm $(X11LIBS)
+$(X11LIBS) -lposix4 
 none
 tks.h
 provides a c interface to the tcl/tk send IPC mechanism
