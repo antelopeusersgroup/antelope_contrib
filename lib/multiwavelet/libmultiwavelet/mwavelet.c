@@ -1516,23 +1516,18 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 	int nsta_used;
 	int data_end,window_length;
 	complex cweight={0.0,0.0};
-/*
-float Adebug[33][40];
-for(i=0;i<33;++i)for(j=0;j<40;++j)Adebug[i][j]=0.0;
-*/
 
 	for(i=0,nsta_used=0;i<(g->nsta);++i)
 	{
-		/* We initialize this row as a default
-		condition, then we can simply issue 
-		a continue if there are problems.  I 
-		thought this simplified the logic, although
-		it is a little inefficient.*/
+                /* weight and each row is set to 0 initially.  The
+                error conditions lead to zero weight and zero row elements
+                in the result.  This simplifies indexing downstream*/
 		for(j=0;j<(w->length);++j) 
 		{
 			A[i+j*(g->nsta)].r = 0.0;
 			A[i+j*(g->nsta)].i = 0.0;
 		}
+		weights[i]=0.0;
 		if( (g->x3[i]) == NULL) continue;
 		/* negative lags indicate an error we assume
 		has already been logged.*/
@@ -1554,18 +1549,7 @@ for(i=0;i<33;++i)for(j=0;j<40;++j)Adebug[i][j]=0.0;
 			
 			++nsta_used;
 		}
-		else
-		{
-			elog_notify(0,"build_static_matrix:  analysis window overflows data bounds for station %s\nNO statics will be computed for this station for this event\n",
-				g->sta[i]->sta);
-			weights[i] = 0.0;
-		}
 	}
-/*
-for(i=0;i<nsta_used;++i)
-for(j=0;j<40;++j)
-Adebug[i][j] = A[i+j*(g->nsta)].r;
-*/
 	return(nsta_used);
 }
 /* This is a parallel routine to the above that builds a matrix from
@@ -1582,9 +1566,6 @@ int build_3c_matrix(MWgather *g,int *lags,Time_Window *w,
 	int i,ii,j;
 	int nsta_used;
 	int m;
-/*
-float Adebug[99][20];
-*/
 
 	int window_length, data_end;
 	complex cweight={0.0,0.0};
@@ -1594,6 +1575,24 @@ float Adebug[99][20];
 
 	for(i=0,ii=0,nsta_used=0;i<(g->nsta);++i,ii+=3)
 	{
+		/* We initialize each block to zero and errors will
+		then just leave that block of the matrix 0.  This
+		makes for inefficiencies of many stations are deleted
+		but assures proper indexing and prevents copying garbage*/
+		for(j=0;j<(w->length);++j) 
+		{
+			A[ii+j*(g->nsta)].r = 0.0;
+			A[ii+j*(g->nsta)].i = 0.0;
+			A[1+ii+j*(g->nsta)].r = 0.0;
+			A[1+ii+j*(g->nsta)].i = 0.0;			
+			A[2+ii+j*(g->nsta)].r = 0.0;
+			A[2+ii+j*(g->nsta)].i = 0.0;	
+		}
+		weights[ii]=0.0;
+		weights[ii+1]=0.0;
+		weights[ii+2]=0.0;
+		if(lags[i]<0) continue;
+
 		if( ((g->x1[i]) != NULL) 
 			&& ((g->x2[i]) != NULL) 
 			&& ((g->x3[i]) != NULL))
@@ -1625,47 +1624,9 @@ float Adebug[99][20];
 			cscal(w->length,&cweight,A+ii+1,m);
 			cscal(w->length,&cweight,A+ii+2,m);
 #endif
-		     }
-		     else
-		     {
-			elog_notify(0,"Warning:  statics have skewed window outside data range for station %s\nCannot compute particle motions for this station\n",
-				g->sta[i]->sta);
-			for(j=0;j<(w->length);++j) 
-			{
-				A[ii+j*(g->nsta)].r = 0.0;
-				A[ii+j*(g->nsta)].i = 0.0;
-				A[1+ii+j*(g->nsta)].r = 0.0;
-				A[1+ii+j*(g->nsta)].i = 0.0;			
-				A[2+ii+j*(g->nsta)].r = 0.0;
-				A[2+ii+j*(g->nsta)].i = 0.0;	
-			}
-			weights[ii]=0.0;
-			weights[ii+1]=0.0;
-			weights[ii+2]=0.0;
 		    }
 		}
-		else
-		{
-			elog_notify(0,"Problems with data for station %s\nCannot compute particle motions\n",
-				g->sta[i]->sta);
-			for(j=0;j<(w->length);++j) 
-			{
-				A[ii+j*(g->nsta)].r = 0.0;
-				A[ii+j*(g->nsta)].i = 0.0;
-				A[1+ii+j*(g->nsta)].r = 0.0;
-				A[1+ii+j*(g->nsta)].i = 0.0;			
-				A[2+ii+j*(g->nsta)].r = 0.0;
-				A[2+ii+j*(g->nsta)].i = 0.0;	
-			}
-			weights[ii]=0.0;
-			weights[ii+1]=0.0;
-			weights[ii+2]=0.0;
-		}
 	}
-/*
-for(i=0;i<m;++i) for(j=0;j<w->length;++j)
-		Adebug[i][j] = A[i+j*m].r;
-*/
 	return(nsta_used);
 }
 /* This small function converts a phase angle measured in radians to 
@@ -1795,6 +1756,8 @@ no iterations for a wavelet short enough that phi of one sample is
 less than this limit.
 */
 #define PHASE_ANGLE_LIMIT 2.3561945
+int save_aligned_wavelets(MWgather *, int *, char *);
+
 int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	double *moveout, int opt_lag, Spherical_Coordinate polarization,
 	Time_Window *win, Arr **arrival, Arr **results_array,
@@ -1875,6 +1838,9 @@ int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	    if(lags != NULL) free(lags);
 	    lags = compute_lag_in_samples(*trans_gath,current_moveout,timeref);
 	    for(i=0;i<nsta;++i) lags[i] += opt_lag;
+elog_log(0,"saving initial wavelets in w0_start.dat\n");
+if(save_aligned_wavelets(trans_gath[0],lags,"w0_start.dat"))
+  elog_complain(0,"save_aligned_wavelets failed\n");
 	    for(i=0;i<nwavelets;++i)
 	    {
 		nsta_used = build_static_matrix(trans_gath[i],lags,win,
@@ -2046,6 +2012,9 @@ int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	else
 		elog_notify(0,"Static calculation converged in %d iterations\n",
 			iteration);
+elog_log(0,"saving corrected wavelets in w0_final.dat\n");
+if(save_aligned_wavelets(trans_gath[0],lags,"w0_final.dat"))
+  elog_complain(0,"save_aligned_wavelets failed\n");
 
 	/* We have to compute and remove the mean value from the amplitude
 	values.  We have irq values that measure uncertainty of amplitude

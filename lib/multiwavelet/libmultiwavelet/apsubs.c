@@ -890,7 +890,7 @@ int estimate_slowness_vector(
 			A[i+m] = 0.0;
 			A[i+2*m] = 0.0;
 			atime[i] = *atptr;
-			sptr = NULL;
+			sptr[i] = NULL;
 			++error_code;
 		}
 		else
@@ -930,7 +930,7 @@ int estimate_slowness_vector(
 		for(i=0;i<m;i++) 
 		{
 			b[i] = atime[i] - time_ref;
-			if((sptr+i) != NULL)
+			if((sptr[i]) != NULL)
 			{
 				b[i] -= sptr[i]->initial_static;
 				b[i] -= sptr[i]->plane_wave_static;
@@ -1010,7 +1010,7 @@ int estimate_slowness_vector(
 		do this even for zero weight stations */
 		for(i=0;i<m;i++) 
 		{
-			if((sptr+i) != NULL)
+			if(sptr[i] != NULL)
 			{
 				b[i] = atime[i] - time_ref;
 				b[i] -= sptr[i]->initial_static;
@@ -1050,11 +1050,11 @@ int estimate_slowness_vector(
 			for(i=0,rmean=0.0;i<m;++i)rmean+=bw[i];
 			rmean /= ((double)ndata);
 			for(i=0;i<m;i++)
-				if((sptr+i) != NULL) bw[i] -= rmean;
+				if(sptr[i] != NULL) bw[i] -= rmean;
 		}
 		for(i=0;i<m;i++) 
 		{
-			if((sptr+i) != NULL)
+			if(sptr[i] != NULL)
 				sptr[i]->residual_static = bw[i];
 		}
 		/* We compute a convergence test as a ratio of the 

@@ -111,6 +111,7 @@ void check_required_pf(Pf *pf)
 				key);
 		}
 	}
+	freetbl(t,0);
 }
 /* NOTE:  the following two routines work with "spherical coordinate"
 angles.  It bears repeating the these angles are in radians and

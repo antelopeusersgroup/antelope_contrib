@@ -278,6 +278,8 @@ void compute_mw_particle_motion(MWgather **,int ,double ,
         double *, int , Time_Window *, double *up, 
 	Particle_Motion_Ellipse *, Particle_Motion_Error *,
 	Arr **, Arr **);
+void set_pm_null(Particle_Motion_Ellipse *);
+int mwap_load_sta(Dbptr, Dbptr, double, double, char *);
 MW_scalar_statistics MW_calc_statistics_float(float *,int );
 MW_scalar_statistics MW_calc_statistics_double(double *,int );
 float M_estimator_float(float *,int,int, double);
