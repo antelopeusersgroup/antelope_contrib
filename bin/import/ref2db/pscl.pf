@@ -1,0 +1,37 @@
+# PSIZE TOFF PTYPE  HDRTYP HDRSIZ NSTA NCH SRATE NSAMP SMPSIZ   NET  
+Inputs &Tbl{
+  1024   6  CPSCLHS   BBA   64     1    1    100  -1    c0   pscl 
+  1024   6  PSCLHS    BBA   24     1    1    100  -1    s4   pscl
+  1024   6  CPSCLLS   BBA   64     1    1    20   -1    c0   pscll 
+  1024   6  PSCLLS    BBA   24     1    1    20   -1    s4   pscll
+  1024   6  PSCLIP    IPH   16     0    0    0     0    -1   pscl 
+}
+ 
+#DTYPE    SID NAME  UP?   COMP   SENS TRG? PICK? CALIB
+Site &Tbl{
+ CPSCLHS   565   565   Y      1    001    Y Y 6.551734
+ CPSCLHS   565   565   Y      2    002    N N 6.551734
+ CPSCLHS   565   565   Y      3    003    N N 6.551734
+ CPSCLHS   565   565   Y      4    004    Y Y 6.551734
+ CPSCLHS   565   565   Y      5    005    N N 6.551734
+ CPSCLHS   565   565   Y      6    006    N N 6.551734
+ PSCLHS    565   565   Y      1    001    Y Y 6.551734
+ PSCLHS    565   565   Y      2    002    N N 6.551734
+ PSCLHS    565   565   Y      3    003    N N 6.551734
+ PSCLHS    565   565   Y      4    004    Y Y 6.551734
+ PSCLHS    565   565   Y      5    005    N N 6.551734
+ PSCLHS    565   565   Y      6    006    N N 6.551734
+ CPSCLLS   565   565   Y      1    001    Y Y 6.551734
+ CPSCLLS   565   565   Y      2    002    N N 6.551734
+ CPSCLLS   565   565   Y      3    003    N N 6.551734
+ CPSCLLS   565   565   Y      4    004    Y Y 6.551734
+ CPSCLLS   565   565   Y      5    005    N N 6.551734
+ CPSCLLS   565   565   Y      6    006    N N 6.551734
+ PSCLLS    565   565   Y      1    001    Y Y 6.551734
+ PSCLLS    565   565   Y      2    002    N N 6.551734
+ PSCLLS    565   565   Y      3    003    N N 6.551734
+ PSCLLS    565   565   Y      4    004    Y Y 6.551734
+ PSCLLS    565   565   Y      5    005    N N 6.551734
+ PSCLLS    565   565   Y      6    006    N N 6.551734
+}
+

@@ -1,0 +1,143 @@
+.TH REF2DB 1 "$Date$"
+.SH NAME
+ref2db \- convert data in REFTEK format to css3.0               
+.SH SYNOPSIS
+.nf
+
+ref2db [-d datatype] 
+    [-e]
+    [-l]
+    [-m dasmatch] 
+    [-n net] 
+    [-p pfile] 
+    [-s size] 
+    [-v] 
+    [-w] 
+    input dbname [start-time [end_time]]
+
+
+.fi
+.SH DESCRIPTION
+\fBref2db\fP reads data in REFTEK format, converts it to css3.0 and copies data
+to a continuous database \fIdbname\fR. \fBref2db\fP can read REFTEK tapes,
+REFTEK raw disks and REFTEK files, which where created with \fBrefdump\fP.
+.SH OPTIONS
+.IP "-d datatype"
+The output datatype may be specified to be "s4". The default
+is "sd" - data in mini-seed format.
+.IP "-e"
+Tells \fBref2db\fP create data files and wfdisc records based on RefTek 
+event start and end time. Each data file will contain data for one RefTek
+event.
+.IP "-l"
+Will create logfile representing  data  in  Reftek instrument format.
+It contains the instrument set-up information, the state-of-health 
+information, and records on all events and their start&end&trigger times.
+The logfile name will be in a form of \fIDASID_log\fR. 
+.IP "-m srcname"
+Only packets which belongs to DAS with serial number \fIdasmatch\fR
+will be converted to css3.0.  
+.IP "-p pfile"
+A parameter file can be specified for \fBref2db\fP which contains a 
+"DAS_serial_number to station_name" conversion table. By default
+\fBref2db\fP looks for a parameter file with a name \fIref2db.pf\fR.
+If \fBref2db\fP  can't find a parameter file then it makes 
+station names as DAS serial numbers.    
+.IP "-s size"
+Specifies size of files which contain waveforms. Size should be specified
+in seconds.
+.IP "-n net"
+If data will be converted to mini-seed format then a network code must 
+be specified. \fIPS\fR is the default network code. 
+.IP "-v"
+Will print to stderr srcname and time of every packet read.
+.IP "-w"
+Will not write data to database. This option is usefull when user
+wants only to get RefTek logfile or get information on data time gaps.
+.IP "start_time end_time"
+Specifies a time range of the RefTek data to be processed.
+ 
+.SH TIMING ISSUE
+.LP
+Real life shows that RefTek data has many problems related to time. Time
+jumps can be discovered in Data ( DT ) packets within one event as
+well as between Event ( EH&ET ) packets in a continuous data flow. 
+The following rule is used to calculate \fItime\fR in ref2db:
+.IP
+1. Time of a first data sample ( FDST ) of the event is equal to \fIFirst sample Time\fR
+value from an Event Header ( EH ) packet.
+.IP
+2. Time of each next DT packet is calculated as:
+.nf
+		
+		DT_extected_time = FDST + NSAMP*SAMPRATE
+.fi
+.IP
+Where NSAMP is total number of samples of a current event 
+were 
+read before that packet and SAMPRATE is a sample rate in a current 
+experiment. \fIDT_extected_time\fR will be used as a \fIreal time\fR 
+for that packet.  \fIDT_extected_time\fR is compared to a time value 
+of a DT packet to see that they are consistent. An information about 
+time jumps between data packets  and RefTek events are placed to \fBTimErr.log\fP
+file.  
+.SH PARAMETER FILE
+.LP
+\fBref2db\fP uses a parameter file to convert DAS_serial_number 
+to station name. 
+If an environment variable PFPATH  is  specified,  \fBref2db\fP
+searches   along   this   path for the parameter file;  otherwise  it  
+searches  in $DSAP/data/pf and then the  current  directory.
+The parameter file should be in form:
+.nf
+
+
+Site &Tbl{
+DAS_serial_number start_time  end_time  station_name
+}
+
+For eaxample:
+
+Site &Tbl{
+ 7338 1997300:00:00:00.0 1999365:23:59:59.9 PUPE
+ 7358 1997298:00:00:00.0 1999365:23:59:59.9 ELAR
+ 7363 1997299:00:00:00.0 1999365:23:59:59.9 SACA
+ 7432 1997289:20:00:00.0 1999365:23:59:59.0 TELM
+ 7441 1997293:22:00:00.0 1999365:23:59:59.9 ALAM
+ 7442 1997293:02:00:00.0 1999365:23:59:59.0 SAJO
+ 7443 1997293:19:00:00.0 1999365:23:59:59.0 OBTO
+ 7450 1997296:00:00:00.0 1999365:23:59:59.0 LACB
+ 7453 1997290:01:00:00.0 1999365:23:59:59.0 LOQI
+ 7458 1997297:00:00:00.0 1999365:23:59:59.9 SAFE
+ 7465 1997302:00:00:00.0 1999365:23:59:59.9 ROKO
+}
+
+.fi
+.SH EXAMPLE
+.LP
+1. Convert REFTEK data from 7838.raw file to mini-seed volumes with a network code
+"XY"; store data in "saudi" database; show srcname and time of each packet. 
+.nf
+
+    ref2db -v -n "XY" 7838.raw saudi 
+
+.fi
+.LP
+2. Convert data on a REFTEK tape which is in /dev/rst5 device 
+to mini-seed volumes with a network code "XY"; store data in "saudi" database. 
+.nf
+
+    ref2db -n "XY" /dev/rst5 saudi 
+
+.fi
+.LP
+3. Do not create database. Make RefTek logfile and get information about timing
+problems. 
+.nf
+
+    ref2db -w -l  /dev/rst5 tmp 
+
+.fi
+.SH AUTHOR
+Marina Glushko
+
