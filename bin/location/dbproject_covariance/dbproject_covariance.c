@@ -158,15 +158,16 @@ char	*argv[];
 			conf = 0.;
 		}
 		
-		dbputv( db, 0, "conf", conf, 
+		rc = dbputv( db, 0, "conf", conf, 
 			       "strike", strike_deg,
 			       "smajax", smajax,
 			       "sminax", sminax,
 			       "sdepth", sdepth,
 			       "stime", stime,
 			       0 );
-
-		if( verbose ) {
+		if( rc < 0 ) {
+			complain( 1, "dbputv failed on orid %d.\n", orid );
+		} else if( verbose ) {
 		printf( "orid %d\tndef %d\tdtype %s\tconf %5.3f\n",
 			orid, ndef, dtype, conf );
 		printf( "\tsmajax %5.2f sminax %5.2f\tstrike %5.1f\n",
