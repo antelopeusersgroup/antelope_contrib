@@ -1,0 +1,43 @@
+.TH PROJECT_ELLIPSE 1 "%G%"
+.SH NAME
+project_ellipse \- project a 3-D error ellipse onto the surface
+.SH SYNOPSIS
+.nf
+project_ellipse azimuth_1 dip_1 se_1 azimuth_2 dip_2 se_2 se_3
+.fi
+.SH DESCRIPTION
+project_ellipse takes a three-dimensional error ellipse and projects
+it onto the surface of the earth. Specified on the command line
+are the azimuths and dips (degrees) for two of the axes; the corresponding
+standard errors; and the standard error along the third axis.
+
+.nf
+Four quantities are printed to standard-out:
+	The standard error along the major axis;
+	The standard error along the minor axis;
+	The standard error in depth;
+	The strike of the major axis.
+(In that order.)
+.fi
+.SH OPTIONS
+none.
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.nf
+ugle% project_ellipse 209 16 0.76 305 18 0.76 5.4
+   1.2559    0.4036    2.6266  279.791
+ugle% 
+.fi
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+"Usage: project_ellipse azim1 dip1 se1 azim2 dip2 se2 se3"
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Kent Lindquist wrote the shell wrapper. The real work is done by
+projax.f, authorship unknown.
