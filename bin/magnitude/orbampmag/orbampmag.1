@@ -1,0 +1,254 @@
+.\" @(#)orbmag.1	1.1 05/15/98
+.TH ORBAMPMAG 1 2000/11/15 "BRTT Antelope 4.4" "User Commands"
+.SH NAME
+orbampmag \- real-time magnitude computation
+.SH SYNOPSIS
+.nf
+
+orbampmag [-start {pktid|time}]
+       [-number number] [-nowait] [-state statefile]
+       [-p parameter_file] [-auth_expr auth_expr]
+       [-target_orbmag torbmag] [next_target_orbmag ntorbmag] 
+	   [-make_magtables] [-use_mean] [-use_p2p]
+       [{-use_if_not_associated|-use_if_not_defining}]
+       orbwf orbdb dbname
+
+.fi
+.SH DESCRIPTION
+orbampmag is a program that continuously looks for parameter file
+packets (/pf/\fItorbmagi\fP) on an ORB and computes magnitude whenever a packet
+is read. The input parameter file packets are produced by orbassoc(1).
+The magnitude is written back to the ORB as a modified
+\fI/db/origin\fP packet. Optionally, \fI/db/netmag\fP and
+\fI/db/stamag\fP packets may also be written. 
+Intended to compute mb,ML,Ms.
+Each different magnitude has to be computed in a different instance of orbampmag,
+what requires different parameter files for each magnitude.
+.SH OPTIONS
+.IP "-start {pktid|time|OLDEST|NEWEST}"
+Where to start in the ORB that contains the origin packets.
+This argument is optional.
+If this is not specified, then the start will be at the
+next newest packet.
+.IP "-number number"
+How many origin pakets to process. This argument is optional.
+If this is not specified, then there will be no limit on
+the number of origin packets processed.
+.IP "-nowait"
+If this is specified, then \fBorbampmag\fP will exit when
+the ORB read pointer gets to the most recent packet. If
+not specifed, then \fBorbampmag\fP will wait for new packets
+to arrive indefinitely.
+.IP "-state statefile"
+A file for storing start/stop state information.
+This argument is optional.
+.IP "-p parameter_file"
+Name of program parameter file. This argument is optional.
+The actual parameter file name is parameter_file.pf. 
+The default value of parameter_file is orbampmag.
+.IP "-auth_expr auth_expr"
+Datascope expression for matching the input author field.
+This argument is optional and if not specified, then
+the default is \fIorbassoc\fP.
+The \fIauth\fP field in all input origin packets is
+tested against this expression and if it does NOT match,
+then the origin is not processed. Whenever \fBorbampmag\fP
+successfully processes an origin, it appends \fImag\fP
+onto the \fIauth\fP field before it writes it out.
+It is important to set auth_expr so that origin rows
+that are written by \fBorbampmag\fP are not re-processed
+endlessly.
+.IP "-target_orbmag torbmag"
+A target name for this instance of orbampmag. Input parameter
+file packets will be selected based upon this name.
+The name should match the orbampmag target name specified
+in orbassoc(1). The default is "orbmag".
+These packets are created by \fBorbassoc\fP and may be modified by various
+instances of \fBorbampmag\fP.
+.IP "-next_target_orbmag torbmag"
+A target file for the next instance of orbampmag. This enables
+the independent computation of mb,ML,Ms in different instances of
+\fBorbampmag\fP.
+.IP "-make_magtables"
+If this is set, then the netmag and stamag table rows
+will be created and written as ORB packets. Otherwise,
+by default, no netmag or stamag rows are created.
+.IP "-use_mean"
+If this is set, then mean and standard deviation statistics are
+used in the network magnitude averages. Otherwise, by
+default, median and quartile statistics are used in the
+network magnitude averages.
+.IP "-use_p2p"
+If this is set, then the amplitude is computed as peak2peak/2,
+wherever the minimum and maximum amplitude appear in the trace.
+By default, the absolute maximum is used.
+.IP "{-use_if_not_associated|-use_if_not_defining}"
+If -use_if_not_associated is set, then all stations in the
+orbampmag parameter file are used regardless if they were
+detected and associated with each origin.
+If -use_if_not_defining is set, then only stations in the
+orbampmag parameter file that are detected and associated with
+each origin are used, including stations that are associated
+but are not "defining" in the location. 
+If neither option is set, then, by default, only stations
+in the orbampmag parameter file that are detected, associated
+and are "defining" in the location for each origin are used.
+.IP "orbwf"
+The input orb that will contain all of the waveform data.
+This argument is required. 
+.IP "orbdb"
+The input/output orb that will contain all of the database rows.
+\fI/db/origin\fP packets are read and modified \fI/db/origin\fP
+packets are written.
+This argument is required. 
+.IP "dbname"
+The name of the database that contains site and instrument
+information. The tables used are \fIsite\fP, \fIsensor\fP,
+\fIinstrument\fP, and \fIcalibration\fP.
+.SH "PROGRAM PARAMETER FILE"
+The orbampmag parameter file must contain a table, named "mag",  
+that defines a list of all network_stations that will be used
+for processing magnitude values. An example orbampmag
+parameter file is as follows:
+.nf
+#	Parameter file for orbampmag and dbampmag
+
+# latency and maxwaittime are only needed for orbampmag
+# but to allow the usage of the same parameter file for both
+# realtime (orbampmag) computations and postprocessing (dbampmag)
+# they are included in the parameterfile
+# they are ignored when running dbampmag
+
+latency		30.0	# group latency
+maxwaittime	60.0	# A hard timeout value in seconds for reading waveform packets.
+			#  If no waveform packets for the selected channels are received
+			#  within this time period, then the waveform reading loop is
+			#  interrupted and any further processing for that event is
+			#  aborted.
+
+
+magtype		mb	# valid values are mb, ml and ms
+				# of course other parameters have to be set according to this choice
+
+v_r			4.0	# velocity for surface waves used to determine surface wave arrival time
+
+time0		P	# start of measuring time window
+				# P - pphasetime (see man pphasetime)
+				# S - sphasetime
+				# R - rayleigh wave - here we use deg2km(delta) / v_r
+
+time_window	0.5	# The waveform for processing the magnitude is determined by a time
+			# window starting from the arrival defined by the time0 parameter 
+			# to time_factor*(S_time-P-time) seconds after the first P-arrival.
+
+mindelta	0	# distance range in degrees
+maxdelta	180	# 
+
+# a 'general' magnitude formula could be:
+# c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
+# delta is the distance in degrees
+# where c2,c3,c4,c5 are station-dependent
+# thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
+# beware: c0 has to be converted if you have a formula where delta is im km
+# in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
+c0	-0.104
+c1	1.66
+filter BW 0.6 3 3 3
+mag &Tbl{		# stations parameters for computing magnitudes
+#sta		chan_expr	calib_from_db	decon_instr	apply_wa_filter	snr_thresh	latency		c2		c3		c4		c5
+ARSA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+DAVA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+OBKA		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+JAVC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+KRUC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+MORC		HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+KBA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+MOA			HHZ			yes				no			no				2.0			0.0			0.0		1.0		1.0		0.0
+}
+.fi
+.LP
+The parameters are defined below.
+.IP v_r	
+The surface wave velocity to compute the maximum phase of surface waves
+.IP time_window
+The time window for processing waveforms is determined from this factor.
+Processing starts at the first arrival and extends beyond that by
+time_window*(Stime - Ptime) seconds.
+.IP maxwaittime
+This is a hard timeout value that is applied to waveform packet reading.
+There are situations where all of the channels for processing, for
+a particular event, may be dead or otherwise missing in the waveform
+ORB. When this happens, the waveform packet reading loop can block
+indefinitely waiting for packets to process. This timeout value
+prevents such situations.
+If no waveform packets for the selected channels are received
+within this time period, then the waveform reading loop is
+interrupted and any further processing for that event is
+aborted.
+.IP c0 to c5 define whatever you might find appropriate
+to compute your magnitudes.
+.IP filter
+Defines the filter applied to your data
+.IP sta
+The sta parameter identifies the CSS3.0 station code.
+.IP chan_expr 
+This is a regular UNIX expression that is matched against the
+actual data chan codes. If a match occurs, then the data channel is used.
+.IP calib_from_db
+If set to yes (or true or 1) then the \fIcalib\fP value for
+converting counts to ground velocity (or displacement) is obtained
+from the database. Otherwise, \fIcalib\fP is obtained directly
+from the data packet headers.
+.IP decon_instr
+If set to yes (or true or 1) then the instrument response
+will be deconcolved. Otherwise, the instrument response
+is not deconcolved.
+.IP apply_wa_filter
+If set to yes (or true or 1) then the Wood-Anderson filter
+is applied. Otherwise, the Wood-Anderson filter
+is not applied.
+.IP snr_thresh
+This is a signal to noise threshold value. The noise for each
+waveform preceding the initial P arrival is computed as a
+root mean square. If the observed peak value (the signal)
+of the event divided by the noise value is less than snr_thresh,
+then the magnitude is not computed for the particular channel.
+.IP latency
+A maximum latency value in seconds for waiting for out
+of time order data packets. There is also a latency value
+for the entire group of channels. The most recent packet time
+for all of the channels is stored. If the difference between
+this most recent time and the requested end time of a particular
+data channel is greater than the group latency, then the
+particular channel is processed and cleared.
+.LP
+Applying instrument deconvolution can cause instabilites. For
+broadband instruments, it is usually not necessary to apply
+instrument deconvolution since the instrument response
+is flat in the response band of the Wood-Anderson filter.
+In cases where the instrument is a narrow band short period
+at 1 Hertz, it is usually not necessary to apply either
+the deconvolution or the Wood-Anderson filter. In all cases
+the responses will be converted to displacement and the correct
+gains will be applied to produce equivalent Wood-Anderson
+drum recorder displacement.
+.SH EXAMPLES
+This is how I call orbampmag 3 times to compute more or less independent of each other mb,ml,ms.
+.LP
+orbassoc puts out the default /pf/orbmag packets which are read to compute mb.
+This instance then puts /pf/orbml, which is read by another instance that computs ml, etc...
+Obviously, the last instance puts nothing back.
+.nf
+
+orbmb	orbampmag -state state/mb -v -use_p2p -auth_expr mb -next_target_orbmag orbml -make_magtables -p mb $ORB $ORB $DB
+orbml	orbampmag -state state/ml -v -target_orbmag orbml -auth_expr ml -next_target_orbmag orbms -p ml -make_magtables $ORB $ORB $DB
+orbms	orbampmag  -start OLDEST  -state state/ms3 -v -use_p2p -make_magtables -target_orbmag orbms -auth_expr ms -p ms $ORB $ORB $DB
+.fi
+.SH "BUGS AND CAVEATS"
+Instrument response deconvolution is not supported at this time.
+Acceleration sensor channels are not supported at this time.
+.SH AUTHOR
+Nikolaus Horn, using orbmag by Danny Harvey
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+
