@@ -1,6 +1,10 @@
 translations &Arr{
 	/pf/orbstat &Arr{
-		schema	registry1.1
+		schema	registry1.2
+		version &Arr{
+			version_field	pforbstat_version
+			version_min	2.0
+		}
 		clean &Arr{
 			clients &Arr{
 				serveraddress	server{address}
@@ -97,6 +101,7 @@ translations &Arr{
 				latency_sec	connections[FOREACH]{latency_sec}
 				reject		connections[FOREACH]{reject}
 				select		connections[FOREACH]{select}
+				what		connections[FOREACH]{what}
 			}
 		}
 	}

@@ -45,6 +45,13 @@ incoming packet. Upon acquisition of each packet, rows matching all of
 the fields specified in the 'clean' array will be deleted before new
 rows are added.
 
+The 'version' array in the parameter file allows optional specification 
+of a minimum packet version to consider. If the version array is 
+omitted or if the version_field element is blank, no filtering is 
+applied. Otherwise version{version_field} specifies a field name in the 
+incoming packets which must be greater than or equal to the value 
+of version{version_min} in order to be processed. 
+
 .SH OPTIONS
 .IP "-v"
 verbose
@@ -78,102 +85,112 @@ already exists, it is overwritten with the new values.
 .nf
 
 translations &Arr{
-        /pf/orbstat &Arr{
-                schema  registry1.0
-                clean &Arr{
-                        clients &Arr{
-                                serveraddress   server{address}
-                                serverport      server{port}
-                        }
-                }
-                tables &Arr{
-                        servers &Arr{
-                                serveraddress   server{address}
-                                closes          server{closes}
-                                printconn       server{connections}
-                                errors          server{errors}
-                                host            server{host}
-                                maxdata         server{maxdata}
-                                maxpkts         server{maxpkts}
-                                maxsrc          server{maxsrc}
-                                messages        server{messages}
-                                nclients        server{nclients}
-                                nsources        server{nsources}
-                                opens           server{opens}
-                                orb_start       TIME:server{orb_start}
-                                orbversion      server{orbversion}
-                                pid             server{pid}
-                                serverport      server{port}
-                                rejected        server{rejected}
-                                started         TIME:server{started}
-                                version         server{version}
-                                when            TIME:server{when}
-                                who             server{who}
-                        }
-                        clients &Arr{
-                                FOREACH         clients
-                                when            TIME:client_when
-                                serveraddress   server{address}
-                                serverport      server{port}
-                                thread          clients{FOREACH}{thread}
-                                clientaddress   clients{FOREACH}{address}
-                                clientport      clients{FOREACH}{port}
-                                bytes           clients{FOREACH}{bytes}
-                                errors          clients{FOREACH}{errors}
-                                fd              clients{FOREACH}{fd}
-                                host            clients{FOREACH}{host}
-                                lastpkt         TIME:clients{FOREACH}{lastpkt}
-                                lastrequest     clients{FOREACH}{lastrequest}
-                                latency_sec     clients{FOREACH}{latency_sec}
-                                mymessages      clients{FOREACH}{mymessages}
-                                nreads          clients{FOREACH}{nreads}
-                                nreject         clients{FOREACH}{nreject}
-                                nrequests       clients{FOREACH}{nrequests}
-                                nselect         clients{FOREACH}{nselect}
-                                nwrites         clients{FOREACH}{nwrites}
-                                packets         clients{FOREACH}{packets}
-                                perm            clients{FOREACH}{perm}
-                                pid             clients{FOREACH}{pid}
-                                pktid           clients{FOREACH}{pktid}
-                                priority        clients{FOREACH}{priority}
-                                read            clients{FOREACH}{read}
-                                reject          clients{FOREACH}{reject}
-                                select          clients{FOREACH}{select}
-                                started         TIME:clients{FOREACH}{started}
-                                what            clients{FOREACH}{what}
-                                who             clients{FOREACH}{who}
-                                written         clients{FOREACH}{written}
-                        }
-                        sources &Arr{
-                                FOREACH         sources
-                                when            TIME:client_when
-                                serveraddress   server{address}
-                                serverport      server{port}
-                                srcname         FOREACH
-                                when            TIME:source_when
-                                active          sources{FOREACH}{active}
-                                kbaud           sources{FOREACH}{kbaud}
-                                latency_sec     sources{FOREACH}{latency_sec}
-                                nbytes          sources{FOREACH}{nbytes}
-                                npkts           sources{FOREACH}{npkts}
-                                slatest         sources{FOREACH}{slatest}
-                                slatest_time    TIME:sources{FOREACH}{slatest_time}
-                                soldest         sources{FOREACH}{soldest}
-                                soldest_time    TIME:sources{FOREACH}{soldest_time}
-                        }
-                        connections &Arr{
-                                FOREACH         connections
-                                when            TIME:connections_when
-                                fromaddress     connections[FOREACH]{fromaddress}
-                                fromport        connections[FOREACH]{fromport}
-                                toaddress       connections[FOREACH]{toaddress}
-                                toport          connections[FOREACH]{toport}
-                                latency_sec     connections[FOREACH]{latency_sec}
-                        }
-                }
-        }
+	/pf/orbstat &Arr{
+		schema	registry1.1
+		version &Arr{
+			version_field	pforbstat_version
+			version_min	2.0
+		}
+		clean &Arr{
+			clients &Arr{
+				serveraddress	server{address}
+				serverport	server{port}
+			}
+		}
+		tables &Arr{
+			servers &Arr{
+				serveraddress 	server{address}
+				closes 		server{closes}
+				printconn 	BOOLEAN:server{connections}
+				errors 		server{errors}
+				host 		server{host}
+				maxdata 	server{maxdata}
+				maxpkts 	server{maxpkts}
+				maxsrc 		server{maxsrc}
+				messages 	BOOLEAN:server{messages}
+				nclients 	server{nclients}
+				nsources 	server{nsources}
+				opens 		server{opens}
+				orb_start 	TIME:server{orb_start}
+				orbversion 	server{orbversion}
+				pid 		server{pid}
+				serverport	server{port}
+				rejected 	server{rejected}
+				started 	TIME:server{started}
+				version 	server{version}
+				statmachine	orbstat_machine
+				when 		TIME:server{when}
+				who 		server{who}
+			}
+			clients &Arr{
+				FOREACH		clients
+				when		TIME:client_when
+				serveraddress	server{address}
+				serverport	server{port}
+				thread		clients{FOREACH}{thread}
+				clientaddress	clients{FOREACH}{address}
+				clientport	clients{FOREACH}{port}
+				bytes		clients{FOREACH}{bytes}
+				errors		clients{FOREACH}{errors}
+				fd		clients{FOREACH}{fd}
+				host		clients{FOREACH}{host}
+				lastpkt		TIME:clients{FOREACH}{lastpkt}
+				lastrequest	clients{FOREACH}{lastrequest}
+				latency_sec	clients{FOREACH}{latency_sec}
+				mymessages	clients{FOREACH}{mymessages}
+				nreads		clients{FOREACH}{nreads}
+				nreject		clients{FOREACH}{nreject}
+				nrequests	clients{FOREACH}{nrequests}
+				nselect		clients{FOREACH}{nselect}
+				nwrites		clients{FOREACH}{nwrites}
+				packets		clients{FOREACH}{packets}
+				perm		clients{FOREACH}{perm}
+				pid		clients{FOREACH}{pid}
+				pktid		clients{FOREACH}{pktid}
+				priority	clients{FOREACH}{priority}
+				read		clients{FOREACH}{read}
+				reject		clients{FOREACH}{reject}
+				select		clients{FOREACH}{select}
+				started		TIME:clients{FOREACH}{started}
+				what		clients{FOREACH}{what}
+				who		clients{FOREACH}{who}
+				written		clients{FOREACH}{written}
+				statmachine	orbstat_machine
+			}
+			sources &Arr{
+				FOREACH 	sources
+				when		TIME:client_when
+				serveraddress	server{address}
+				serverport	server{port}
+				srcname		FOREACH
+				when		TIME:source_when
+				active		BOOLEAN:sources{FOREACH}{active}
+				kbaud		sources{FOREACH}{kbaud}
+				latency_sec	sources{FOREACH}{latency_sec}
+				nbytes		sources{FOREACH}{nbytes}
+				npkts		sources{FOREACH}{npkts}
+				slatest		sources{FOREACH}{slatest}
+				slatest_time	TIME:sources{FOREACH}{slatest_time}
+				soldest		sources{FOREACH}{soldest}
+				soldest_time	TIME:sources{FOREACH}{soldest_time}
+			}
+			connections &Arr{
+				FOREACH		connections
+				when 		TIME:connections_when
+				fromaddress	connections[FOREACH]{fromaddress}
+				fromport	connections[FOREACH]{fromport}
+				toaddress	connections[FOREACH]{toaddress}
+				toport		connections[FOREACH]{toport}
+				closeorb	connections[FOREACH]{closeorb}
+				statmachine	orbstat_machine
+				o2omachine	connections[FOREACH]{o2omachine}
+				latency_sec	connections[FOREACH]{latency_sec}
+				reject		connections[FOREACH]{reject}
+				select		connections[FOREACH]{select}
+			}
+		}
+	}
 }
-
 .fi
 .ft R
 .in

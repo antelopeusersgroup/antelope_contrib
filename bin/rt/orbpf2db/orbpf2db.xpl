@@ -123,12 +123,15 @@ orbselect( $orb, $match );
 
 if( $opt_f && ( ! $opt_s || ! -e "$opt_s" ) ) {
 	
-	orbposition( $orb, $opt_f );
-	$pktid = orbtell( $orb );
+	$pktid = orbposition( $orb, $opt_f );
+
+	if( $opt_v ) {
+		elog_notify( "Positioned to packet $pktid\n" );
+	}
 
 } elsif( $opt_f ) {
 
-	print STDERR "Ignoring -f in favor of existing state-file\n";
+	elog_complain( "Ignoring -f in favor of existing state-file\n" );
 }
 
 if( $opt_s ) {
@@ -152,15 +155,21 @@ for( ; $stop == 0 ; ) {
 
 	if( $result ne "Pkt_pf" ) {
 		if( $opt_v ) {
-			printf "Received a $result, skipping\n";
+			elog_notify( "Received a $result, skipping\n" );
 		}
 		next;
 	}
 
-	if( $opt_V ) {
+	if( $opt_v ) {
 
-		printf "Received a parameter-file '$srcname':\n" . 
-		pf2string( $pkt->pf ) . "\n\n";
+		print "Received a parameter-file '$srcname' at " .
+  			strtime( $time );
+
+		if( $opt_V ) {
+			print ":\n" . pf2string( $pkt->pf ) . "\n\n";
+		} else {
+			print "\n";
+		}
 	}
 
 	( $key ) = grep( "$srcname", keys( %trans ) );
@@ -170,6 +179,32 @@ for( ; $stop == 0 ; ) {
 	$schema = $trans{$key}{"schema"};
 
 	next unless database_prep( $dbname, $schema );
+
+	%version = %{$trans{$key}{"version"}};
+
+	if( defined( $version{"version_field"} ) &&
+	    $version{"version_field"} ne "" ) {
+
+		$version_min = $version{"version_min"};
+
+		$packet_version = pfget( $pkt->pf, $version{"version_field"} );
+
+		if( ! defined( $packet_version ) ) {
+
+			elog_complain( "No field '$version{version_field}' in " .
+				"packet '$srcname' timestamped " . strtime( $time ) . 
+				" ; Skipping\n\n" );
+			next;
+
+		} elsif( $packet_version < $version_min ) {
+
+			elog_complain( "field '$version{version_field}' is less than " .
+				       "minimum allowed value '$version_min' in " .
+					"packet '$srcname' timestamped " . strtime( $time ) . 
+					" ; Skipping\n\n" );
+			next;
+		}
+	}
 
 	%clean = %{$trans{$key}{"clean"}};
 
@@ -246,8 +281,8 @@ for( ; $stop == 0 ; ) {
 				@mykeys = 0..$#{$structref};
 
 			} else {
-				printf STDERR
-				  "Problem with FOREACH for table '$table'\n";
+				elog_complain( "Problem with FOREACH " .
+					       " for table '$table'\n" );
 				next;
 			}
 
