@@ -104,6 +104,7 @@ int dbpmel_save_results(Dbptr db,
 	int *evid,
 	Hypocenter *h,
 	Tbl **ta,
+	Location_options o,
         Pf *pf, FILE* fp)
 #else
 int dbpmel_save_results(Dbptr db,
@@ -111,6 +112,7 @@ int dbpmel_save_results(Dbptr db,
 	int *evid,
 	Hypocenter *h,
 	Tbl **ta,
+	Location_options o,
 	Pf *pf)
 #endif
 {
@@ -129,6 +131,7 @@ int dbpmel_save_results(Dbptr db,
 	int orid;
 	int nmatch;
 	double **C;
+	float emodel[4];
 	char *alg=(char *)strdup("dbpmel");
 	/* A collection of variables from assoc that have to be 
 	copied.  Earlier algorithm using dbget raw on a subset 
@@ -136,8 +139,13 @@ int dbpmel_save_results(Dbptr db,
 	double belief;
 	char timedef[2],slodef[2],azdef[2];
 	double azres,slores,emares;
+	Tbl *utbl;  
 
 
+	/* This is needed as a stub for the predicted_error function.
+	Because we don't support slowness vector data in pmel this 
+	has to be an empty (NOT NULL) tbl list */
+	utbl=newtbl(0);
 	/* All of these are used repeatedly so we do one lookup at the
 	top */
 	dbe = dblookup(db,0,"event",0,0);
@@ -228,6 +236,7 @@ record for orid %d prefor of event %d\n",
         		complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
         		model = CHI_SQUARE;
      		}
+		predicted_errors(h[i],ta[i],utbl,o,C,emodel);
     		rc = project_covariance( C, model, &conf,
                              h[i].rms_weighted, h[i].degrees_of_freedom,
                              &smajax, &sminax, &strike, &sdepth, &stime );
@@ -426,6 +435,7 @@ found\nFail to create new assoc records for orid %d\n",
 	free_hook(&hooko);
 	free_hook(&hooka);
 	free_matrix((char **)C,0,3,0);
+	freetbl(utbl,0);
 
 	return(0);
 }

@@ -364,7 +364,7 @@ option which is know to cause problems\nrecenter set off\n");
 
 
 			if(dbpmel_save_results(db,nevents,evid,h0,
-				ta,pf))
+				ta,o,pf))
 
 			{
 				elog_notify(0,"Problems saving results\
