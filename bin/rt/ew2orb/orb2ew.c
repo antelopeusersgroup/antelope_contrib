@@ -8,6 +8,7 @@
  */
 
 #include <stdlib.h>
+#include <setjmp.h>
 
 #include "orbew.h"
 
@@ -15,6 +16,7 @@
 #define DATASIZE 4
 #define SOCKET_LISTEN_BACKLOG 10
 #define SERVER_RESET_ALLOWANCE_SEC 1
+#define BIND_FAILURE_SLEEP_SEC 10
 #define VERYVERBOSE_DEBUGBNS 0
 
 #define THR_PRIORITY_EXPORT_SERVER 1
@@ -79,6 +81,8 @@ Arr	*Export_Server_Threads;
 rwlock_t Export_Server_Threads_rwlock;
 Arr	*Pins;
 rwlock_t Pins_rwlock;
+thread_key_t handler_key;
+thread_key_t sigusr1_buf_key;
 
 static void
 usage() 
@@ -307,6 +311,68 @@ find_export_server_thread_byname( char *name )
 	return es;
 }
 
+void 
+close_export_connection( ExportThread *et )
+{
+	char	eof = 004;
+
+	close( et->so );
+
+/*
+	bnsput( et->bnsout, &eof, BYTES, 1 );
+	bnsflush( et->bnsout );
+
+	bnsfree( et->bnsout );
+
+	et->bnsout = 0;
+
+	/* Keep import_generic from interpreting flushed data
+   	   as a malformed heartbeat: *
+
+	bnsclr( et->bnsin );
+
+	bnsclose( et->bnsin );
+
+	et->bnsin = 0;
+
+DEBUG */
+
+	delarr( et->es->Export_Threads, et->name );
+
+	return;
+}
+
+void
+close_export_server_connection( ExportServerThread *es )
+{
+	ExportThread *et;
+	Tbl	*keys;
+	char	*akey;
+	int	i;
+
+	close( es->so );
+
+	keys = keysarr( es->Export_Threads );
+
+	for( i = 0; i < maxtbl( keys ); i++ ) {
+
+		akey = gettbl( keys, i );
+
+		et = getarr( es->Export_Threads, akey );
+
+		thr_kill( et->thread_id, SIGUSR1 );
+	}
+
+	freetbl( keys, 0 );
+
+	if( es->stop == 0 ) {
+		
+		sleep( SERVER_RESET_ALLOWANCE_SEC );
+	}
+
+	return;
+}
+
 static void
 stop_export_server_thread( char *name )
 {
@@ -326,11 +392,9 @@ stop_export_server_thread( char *name )
 			     "thread-id %d\n", name, es->thread_id );
 	}
 
-	mutex_lock( &es->es_mutex );
-
 	es->stop = 1;
 
-	mutex_unlock( &es->es_mutex );
+	thr_kill( es->thread_id, SIGUSR1 );
 
 	return;
 }
@@ -406,61 +470,6 @@ delete_export_server_thread( ExportServerThread *es )
 	return;
 }
 
-void 
-close_export_connection( ExportThread *et )
-{
-	char	eof = 004;
-
-	bnsput( et->bnsout, &eof, BYTES, 1 );
-	bnsflush( et->bnsout );
-
-	bnsfree( et->bnsout );
-
-	/* Keep import_generic from interpreting flushed data
-	   as a malformed heartbeat: */
-
-	bnsclr( et->bnsin );
-
-	bnsclose( et->bnsin );
-
-	et->bnsin = 0;
-
-	delarr( et->es->Export_Threads, et->name );
-
-	return;
-}
-
-void
-close_export_server_connection( ExportServerThread *es )
-{
-	ExportThread *et;
-	Tbl	*keys;
-	char	*akey;
-	int	i;
-
-	keys = keysarr( es->Export_Threads );
-
-	for( i = 0; i < maxtbl( keys ); i++ ) {
-
-		akey = gettbl( keys, i );
-
-		et = getarr( es->Export_Threads, akey );
-
-		close_export_connection( et );
-
-		thr_kill( et->thread_id, SIGKILL );
-	}
-
-	freetbl( keys, 0 );
-
-	if( es->stop == 0 ) {
-		
-		sleep( SERVER_RESET_ALLOWANCE_SEC );
-	}
-
-	return;
-}
-
 static void
 orb2ew_export_server_shutdown()
 {
@@ -493,8 +502,6 @@ orb2ew_export_server_shutdown()
 	delete_export_server_thread( es );
 
 	thr_exit( (void *) &status );
-
-	return;
 }
 
 static void
@@ -674,10 +681,49 @@ buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 	return retcode;
 }
 
+static void
+process_sigusr1( int sig )
+{
+	void	(*handler)(int);
+
+	thr_getspecific( handler_key, (void **) &handler );
+
+	if( sig != SIGUSR1 || handler == NULL ) {
+
+		abort();
+	}
+
+	(*handler)( sig );
+}
+
+static int
+set_sigusr1_handler( void (*handler)(int) )
+{
+	if( handler == SIG_DFL || handler == SIG_IGN ) {
+		
+		return EINVAL;
+	}
+
+	thr_setspecific( handler_key, (void *) handler );
+
+	return 0;
+}
+
+void
+sigusr1_handler( int sig )
+{
+	sigjmp_buf *sigusr1_buf;
+
+	thr_getspecific( sigusr1_buf_key, (void **) &sigusr1_buf );
+
+	siglongjmp( *sigusr1_buf, 1 );
+}
+
 static void *
 orb2ew_export( void *arg )
 {
 	ExportThread *et = (ExportThread *) arg;
+	sigjmp_buf sigusr1_buf;
 	int	rc;
 	int     pktid;
 	char    srcname[STRSZ];
@@ -741,10 +787,18 @@ orb2ew_export( void *arg )
 		et->bnsout->debug = 1;
 	}
 
+	set_sigusr1_handler( sigusr1_handler );
+
+	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
+
+	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
+
+		goto close_export;	
+	}
+
 	if( et->es->send_heartbeat_sec*1000 < DEFAULT_BNS_TIMEOUT ) {
 
-		bnstimeout( et->bnsin, 
-			et->es->send_heartbeat_sec * 1000 );
+		bnstimeout( et->bnsin, et->es->send_heartbeat_sec * 1000 );
 
 	} else {
 
@@ -833,6 +887,11 @@ refresh_export_server_thread( ExportServerThread *es )
 
 	es->so = socket( PF_INET, SOCK_STREAM, 0 );
 
+	if( es->so < 0 ) {
+
+		elog_complain( 1, "'%s': Failed to create socket\n", es->name );
+	}
+
 	es->sin.sin_family = AF_INET;
 
 	es->sin.sin_port = htons( es->server_port ); 
@@ -848,19 +907,46 @@ refresh_export_server_thread( ExportServerThread *es )
 
 	rc = setsockopt( es->so, SOL_SOCKET, SO_REUSEADDR, 
 			 &on, sizeof( char *) );
+	
+	if( rc < 0 ) {
+		
+		elog_complain( 1, "'%s': Failed to set address reuse on socket\n",
+				es->name );
+	}
 
-	rc = bind( es->so, (struct sockaddr *) &es->sin, sizeof( es->sin ) );
+	while( ( rc = bind( es->so, (struct sockaddr *) &es->sin, 
+			    sizeof( es->sin ) ) ) < 0 ) {
+
+		elog_complain( 1, "'%s': Failed to bind socket; sleeping %d sec\n", 
+				es->name, BIND_FAILURE_SLEEP_SEC );
+
+		sleep( BIND_FAILURE_SLEEP_SEC );
+	}
+
+	if( Flags.VeryVerbose || es->loglevel >= VERYVERBOSE ) {
+
+		elog_notify( 1, "'%s': Bound socket %d\n", es->name, es->so );
+	}
 
 	rc = listen( es->so, SOCKET_LISTEN_BACKLOG ); 
+
+	if( rc != 0 ) {
+			elog_complain( 1, 
+				"'%s': Failed listen() on socket %d\n",
+				es->name, es->so );
+	}
 
 	for( ;; ) {
 
 		aso = accept( es->so, (struct sockaddr *) &client, &clientlen ); 
 		if( aso < 0 ) {
 			
-			elog_complain( 0, 
-				"'%s': Failed socket fd %d on accept\n", 
-				es->name, aso );
+			elog_complain( 1, 
+				"'%s': Failed accept on socket fd %d from passive socket %d\n", 
+				es->name, aso, es->so );
+
+			sleep( 10 );
+
 			continue;	
 		}
 
@@ -897,8 +983,6 @@ refresh_export_server_thread( ExportServerThread *es )
 			setarr( es->Export_Threads, et->name, et );
 		
 			mutex_unlock( &es->es_mutex );
-
-			thr_continue( et->thread_id );
 		}
 	}
 }
@@ -908,8 +992,11 @@ orb2ew_export_server( void *arg )
 {
 	char	*name = (char *) arg;
 	ExportServerThread *es;
+	sigjmp_buf sigusr1_buf;
 	int	status = 0;
 	int	rc;
+
+	set_sigusr1_handler( sigusr1_handler );
 
 	thr_setprio( thr_self(), THR_PRIORITY_EXPORT_SERVER );
 
@@ -930,6 +1017,13 @@ orb2ew_export_server( void *arg )
 
 		thr_exit( (void *) &status );
 	} 
+
+	thr_setspecific( sigusr1_buf_key, (void *) &sigusr1_buf );
+
+	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
+
+		orb2ew_export_server_shutdown();
+	}
 
 	for( ;; ) {
 
@@ -1321,6 +1415,7 @@ main( int argc, char **argv )
 	char	c;
 	int	rc;
 	thread_t pfwatch_tid;
+	struct sigaction sa;
 
 	elog_init( argc, argv );
 
@@ -1347,6 +1442,18 @@ main( int argc, char **argv )
 		
 		Orbname = argv[optind++];
 	}
+
+	thr_keycreate( &sigusr1_buf_key, NULL );
+	
+	thr_keycreate( &handler_key, NULL );
+
+	sa.sa_handler = process_sigusr1;
+
+	sigemptyset( &sa.sa_mask );
+
+	sa.sa_flags = 0;
+
+	sigaction( SIGUSR1, &sa, NULL );
 
 	rc = thr_create( NULL, 0, orb2ew_pfwatch, 0, 0, &pfwatch_tid );
 

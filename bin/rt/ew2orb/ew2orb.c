@@ -1639,8 +1639,6 @@ ew2orb_import( void *arg )
 			close_import_connection( it );
 		}
 	}
-
-	return NULL;
 }
 
 static ImportThread *
@@ -2306,8 +2304,6 @@ ew2orb_pfwatch( void *arg )
 
 		sleep( PFWATCH_SLEEPTIME_SEC );
 	}
-
-	return NULL;
 }
 
 static int
