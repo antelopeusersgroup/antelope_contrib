@@ -694,7 +694,7 @@ Tbl *tblgrep ( Tbl *tbl, char *string )
 void sorttbl ( Tbl *tbl, int (*compare) (), void *private )
     sort a list given an element comparison function compare
 
-int searchtbl ( char **key, Tbl *tbl, int (*compare) (), void *private, int *ns, int *ne )
+int searchtbl ( char *key, Tbl *tbl, int (*compare) (), void *private, int *ns, int *ne )
     search a sorted list using a binary search
 
 
