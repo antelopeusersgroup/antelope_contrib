@@ -15,4 +15,4 @@ include $(ANTELOPEMAKE)  	# This line must appear following the definitions abov
 			# and before the DIRS definition below..
 DIRS=			# Omit this line to run make in subdirectories, or
 			# fill in to run make only in certain subdirectories
-SUBDIR=/local
+#SUBDIR=/local
