@@ -499,12 +499,12 @@ int timeout;
 					    if( fabs( epoch - prev_time) > 86400.0 )  {
 						sp = ( ushort_t * ) &newbuffer[0];
 						hdrsiz = *sp;
-						memcpy( (char *) &ysec, newbuffer[hdrsiz+10], 4 );
+						memcpy( (char *) &ysec, newbuffer+hdrsiz+10, 4 );
 						complain(0, 
 						    "%s packet has bad time - %s (epoch:%lf - ysec:%ld). Will discard packet.\n",
 						    srcname, s=strtime(epoch), epoch, ysec );
 						free(s);
-						hexdump( stderr, newbuffer+hdrsiz, psize-hdrsiz );
+						if( Log) hexdump( stderr, newbuffer+hdrsiz, 48 );
 						cansend = 0;
 					    } else prev_time = epoch;
 					}  else  prev_time = epoch;
