@@ -188,6 +188,9 @@ trsplice ( TRPTR, TOLERANCE )
 trwfname ( DB [, PATTERN] )
     generate external file names
 
+S = tr2struct ( TR )
+    Generate an exportable structure of waveform data
+
 <subsection Error handling>
 clear_register ( [ 'print' ] )
     clear the Datascope error register
