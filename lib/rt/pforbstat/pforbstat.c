@@ -591,6 +591,13 @@ orbconnections2pf( Pf *pfanalyze )
 				continue;
 			}
 
+			if( ! strcmp( closeorb, orbstat_machine_ipc ) && 
+			    is_localhost( farorb ) && 
+			    ! is_localhost( clientaddress ) ) {
+
+				strcpy( farorb, clientaddress );
+			}
+
 			if( STREQ( perm, "w" ) ) {
 			
 				pfput_string( pfconnection, "fromaddress", farorb );
