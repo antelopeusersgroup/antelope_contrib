@@ -21,10 +21,7 @@ sub pfget_Mapspec {
 		"depth_color_palette_file",
 		"map_color_palette_file",
 		"cities_dbname",
-		"grdfile",
-		"gradfile",
 		"grddb",
-		"premade_contour_ps",
 		"hypocenter_dbname",
 		"stylesheet"
 		);
@@ -416,7 +413,8 @@ sub plot_basemap {
 	my( $more, $redirect ) = more_ps( $position );
 
 	my( $cmd ) = "psbasemap " . 
-			"-X0 -Y0 -P -V -Bg5wesn " .
+			"-X0 -Y0 -P -V " .
+			"-Bg$Mapspec{gridline_interval_deg}wesn " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " . 
 			$more . 
 			"$redirect $Mapspec{psfile}";
@@ -634,192 +632,39 @@ sub plot_hypocenters {
 	unlink( $hypocenter_tempfile );
 }
 
+sub next_round {
+	my( $rough, $interval ) = @_;
+	my( $clean );
+
+	if( int( $rough / $interval ) == $rough / $interval ) { 
+
+		$clean = $rough;
+
+	} elsif( $rough > 0 ) {
+
+		$clean = int( ( $rough + $interval ) / $interval ) * $interval;
+
+	} else {
+
+		$clean = int( $rough / $interval ) * $interval;
+	}
+
+	return $clean;
+}
+
 sub plot_contours {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $position ) = shift( @_ );
+
+	if( $position ne "middle" ) {
+		printf STDERR "Warning: contours only implemented for " .
+		 "middle-position plotting\n";
+	}
 
 	my( $more, $redirect ) = more_ps( $position );
 
 	my( $cmd );
 
-	if( ( $Mapspec{contour_mode} eq "premade" ) &&
-	    ( ! defined( $Mapspec{premade_contour_ps} ) ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"none\":\n" .
-			"\t$Mapspec{mapclass}_map{premade_contour_ps} not defined\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "none";
-
-	} elsif( ( $Mapspec{contour_mode} eq "premade" ) &&
-	    ( ! -e "$Mapspec{premade_contour_ps}" ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"none\":\n" .
-			"\t$Mapspec{premade_contour_ps} not found\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "none";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grdimage" ) &&
-	    ( ! defined( $Mapspec{gradfile} ) ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"grdcut\":\n" .
-			"\t$Mapspec{mapclass}_map{gradfile} not defined\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "grdcut";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grdimage" ) &&
-	    ( ! -e "$Mapspec{gradfile}" ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"grdcut\":\n" .
-			"\t$Mapspec{gradfile} not found\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "grdcut";
-	}
-
-	if( ( $Mapspec{contour_mode} eq "grdcut" ) &&
-	    ( ! defined( $Mapspec{grdfile} ) ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"none\":\n" .
-			"\t$Mapspec{mapclass}_map{grdfile} not defined\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "none";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grdcut" ) &&
-	    ( ! -e "$Mapspec{grdfile}" ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"none\":\n" .
-			"\t$Mapspec{grdfile} not found\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "none";
-
-	} elsif( ( $Mapspec{contour_mode} eq "grddb" ) &&
-	    ( ! -e "$Mapspec{grddb}" ) ) {
-
-		print STDERR
-			"\n\t************************************\n" . 
-			"\tWARNING: Setting contour_mode to \"none\":\n" .
-			"\tgrddb '$Mapspec{grddb}' not found\n" .
-			"\t************************************\n\n";
-
-		$Mapspec{contour_mode} = "none";
-
-	}
-
-	if( $Mapspec{contour_mode} eq "premade" ) {
-
-		$cmd = "cat $Mapspec{premade_contour_ps} $redirect $Mapspec{psfile}";
-		print "$cmd\n";
-		system( $cmd );
-		
-	} elsif( $Mapspec{contour_mode} eq "none" ) {
-
-		# Fallthrough
-
-	} elsif( $Mapspec{contour_mode} =~ /grdcut|grdimage|grddb/ ) {
-
-		my( $grdfile, $gradfile );
-
-		if( $Mapspec{contour_mode} eq "grdimage" ) {
-
-			$grdfile = $Mapspec{grdfile};
-			$gradfile = $Mapspec{gradfile};
-
-		} elsif( $Mapspec{contour_mode} eq "grddb" ) {
-
-			$grdfile = "$State{workdir}/grd_$<_$$.grd";
-			$gradfile = "$State{workdir}/grad_$<_$$.grad";
-
-			my( @dbgrid ) = dbopen( "$Mapspec{grddb}", "r" );
-			if( $dbgrid[0] < 0 ) {
-
-			 print STDERR
-			 "\n\t************************************\n" . 
-			 "\tWARNING: Setting contour_mode to \"none\":\n" .
-			 "\tFailed to open grddb $Mapspec{grddb}\n" .
-			 "\t************************************\n\n";
-			 $Mapspec{contour_mode} = "none";
-
-			} else {
-
-			 @dbgrid = dblookup( @dbgrid, "", "grids", "", "" );
-			 if( $dbgrid[1] < 0 ) {
-			 print STDERR
-			 "\n\t************************************\n" . 
-			 "\tWARNING: Setting contour_mode to \"none\":\n" .
-			 "\tFailed to open grids table of grddb $Mapspec{grddb}\n" .
-			 "\t************************************\n\n";
-			 dbclose( @dbgrid );
-			 $Mapspec{contour_mode} = "none";
-			 } else {
-
-			  my( $rc ) = dbgmtgrid( @dbgrid, 
-					       $Mapspec{InclusiveRectangle},
-					       $grdfile, verbose => 1 );
-			  if( $rc < 0 ) {
-			  print STDERR
-			  "\n\t************************************\n" . 
-			  "\tWARNING: Setting contour_mode to \"none\":\n" .
-			  "\tdbgmtgrid() failed\n" .
-			  "\t************************************\n\n";
-			  dbclose( @dbgrid );
-			  $Mapspec{contour_mode} = "none";
-			  } else {
-
-			   dbclose( @dbgrid );
-
-			   $cmd = "grdgradient $grdfile -G$gradfile -V -A60 -Nt";
-			   print "$cmd\n";
-			   system( $cmd );
-			  }
-			 }
-			}
-			
-		} else { # grdcut
-
-			$grdfile = "$State{workdir}/grd_$<_$$.grd";
-			$gradfile = "$State{workdir}/grad_$<_$$.grad";
-
-			$cmd = "grdcut $Mapspec{grdfile} -G$grdfile " .
-				"-V $Mapspec{InclusiveRectangle}";
-			print "$cmd\n";
-			system( $cmd );
-
-			$cmd = "grdgradient $grdfile -G$gradfile -V -A60 -Nt";
-			print "$cmd\n";
-			system( $cmd );
-		}
-
-		$cmd = "grdimage -V -P " .
-			"$Mapspec{Rectangle} $Mapspec{Projection} " .
-			"$grdfile " .
-			"-I$gradfile " .
-			"-C$Mapspec{map_color_palette_file} " .
-			$more .
-			"$redirect $Mapspec{psfile}";
-		print "$cmd\n";
-		system( $cmd );
-
-	} else {
-		die( "contour_mode $Mapspec{contour_mode} not supported\n" );
-	}
-	
 	if( $Mapspec{contour_mode} eq "none" ) {
 
 		$cmd = "pscoast -V -P " .
@@ -830,6 +675,145 @@ sub plot_contours {
 			"$redirect $Mapspec{psfile}";
 		print "$cmd\n";
 		system( $cmd );
+
+	} elsif( ( $Mapspec{contour_mode} eq "grddb" ) &&
+	    ( ! -e "$Mapspec{grddb}" ) ) {
+
+		print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: Setting contour_mode to \"none\":\n" .
+			"\tgrddb '$Mapspec{grddb}' not found\n" .
+			"\t************************************\n\n";
+
+		$cmd = "pscoast -V -P " .
+			"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			"-C200/200/255 -S200/200/255 -G255/243/230 " .
+			"-D$Mapspec{detail_density} " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+		print "$cmd\n";
+		system( $cmd );
+
+	} elsif( $Mapspec{contour_mode} eq "grddb" ) {
+
+		my( @dbgrid ) = dbopen( "$Mapspec{grddb}", "r" );
+		if( $dbgrid[0] < 0 ) {
+
+		 	die( 
+		 	"\n\t************************************\n" . 
+		 	"\tERROR: Failed to open grddb $Mapspec{grddb}\n" .
+		 	"\t************************************\n\n" );
+
+		} 
+
+		@dbgrid = dblookup( @dbgrid, "", "grids", "", "" );
+		if( $dbgrid[1] < 0 ) {
+			die( 
+			"\n\t************************************\n" . 
+			"\tERROR: Failed to open grids table of grddb $Mapspec{grddb}\n" .
+			"\t************************************\n\n" );
+
+		} 
+
+		$grdfile = "$State{workdir}/grd_$<_$$.grd";
+		$gradfile = "$State{workdir}/grad_$<_$$.grad";
+		$psclipfile = "$State{workdir}/psclip_$<_$$.clip";
+
+		my( $wlimit, $elimit, $slimit, $nlimit );
+		if( $Mapspec{InclusiveRectangle} =~ 
+			 m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
+			$wlimit = $1;
+			$elimit = $2;
+			$slimit = $3;
+			$nlimit = $4;
+		}
+
+		my( $w, $e, $s, $n );
+
+		for( $s = $slimit; $s<$nlimit; $s+=$Mapspec{tilesize_deg} ) {
+
+		  # Put the potentially ugly sutures under the grid lines:
+
+		  $n = $s + $Mapspec{tilesize_deg};
+		  $n = next_round( $n, $Mapspec{gridline_interval_deg} );
+		  $n > $nlimit ? $nlimit : $n;
+
+		  for( $w = $wlimit; $w<$elimit; $w+=$Mapspec{tilesize_deg} ) {
+
+		    $e = $w + $Mapspec{tilesize_deg};
+		    $e = next_round( $e, $Mapspec{gridline_interval_deg} );
+		    $e > $elimit ? $elimit : $e;
+
+		    my( $tile ) = "-R$w/$e/$s/$n";
+
+		    my( $rc ) = dbgmtgrid( @dbgrid, $tile,
+				           $grdfile, verbose => 1 );
+		    if( $rc < 0 ) {
+			print STDERR
+			"\n\t************************************\n" . 
+			"\tWARNING: dbgmtgrid() failed for tile '$tile'\n" .
+			"\t************************************\n\n";
+			next;
+		    }
+
+		    $cmd = "grdgradient $grdfile -G$gradfile -V $Mapspec{grdgradient_opt}";
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    open( C, ">$psclipfile" );
+		    my( $ewincr ) = ($e - $w) / 100;
+		    my( $nsincr ) = ($n - $s) / 100;
+		    for( $cliplon=$w; 
+			  $cliplon<=$e; 
+			   $cliplon += $ewincr ) { print C "$cliplon $s\n"; }
+		    for( $cliplat=$s+$nsincr; 
+			  $cliplat<$n; 
+			   $cliplat += $nsincr ) { print C "$e $cliplat\n"; }
+		    for( $cliplon=$e; 
+			  $cliplon>=$w; 
+			   $cliplon -= $ewincr ) { print C "$cliplon $n\n"; }
+		    for( $cliplat=$n-$nsincr; 
+			  $cliplat>=$s; 
+			   $cliplat -= $nsincr ) { print C "$w $cliplat\n"; }
+		    close( C );
+
+		    $cmd = "psclip -V $psclipfile " .
+			   "$Mapspec{Rectangle} $Mapspec{Projection} " .
+			   $more .
+			   "$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    $cmd = "grdimage -V -P " .
+		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			"$grdfile " .
+			"-I$gradfile " .
+			"-C$Mapspec{map_color_palette_file} " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    $cmd = "psclip -V -C " .
+			   $more .
+			   "$redirect $Mapspec{psfile}";
+
+		    print "$cmd\n";
+		    system( $cmd );
+
+		    unlink( $grdfile );
+		    unlink( $gradfile );
+		    unlink( $psclipfile );
+		  }
+		}
+
+		dbclose( @dbgrid );
+
+	} else {
+
+		die( "contour_mode $Mapspec{contour_mode} not supported\n" );
 	}
 }
 
@@ -1066,7 +1050,7 @@ sub read_map_from_db {
 
 	if( ! -e "$Mapspec{pixfile}" ) {
 		die( "\n\t************************************\n" . 
-		     "\tERRROR: the file '$Mapspec{pixfile}' has disappeared!\n" . 
+		     "\tERROR: the file '$Mapspec{pixfile}' has disappeared!\n" . 
 		     "\t************************************\n\nBye.\n\n" );
 	}
 
@@ -1297,6 +1281,13 @@ sub add_to_mapstock {
 	my( @db ) = @_;
 
 	my( $abspath ) = abspath( $Mapspec{pixfile} );
+
+	if( ! -e "$abspath" ) {
+		die( "\n\t************************************\n" . 
+		     "\tERROR: file '$abspath' does not exist!\n" . 
+		     "\t************************************\n\nBye.\n\n" );
+	}
+
 	my( $dir ) = `dirname $abspath`;
 	my( $dfile ) = `basename $abspath`;
 	chomp( $dir );

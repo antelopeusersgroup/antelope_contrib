@@ -79,16 +79,13 @@ should be fairly self-explanatory.
 
 All external files referenced in the parameter file are expected 
 to be either absolute path-names, or are expected to be found 
-in $ANTELOPE/data/dbrecenteqs/.  All but three of the 
+in $ANTELOPE/data/dbrecenteqs/.  Most of the
 external files referenced here are provided in the default installation, however
-the user may want to modify these values and databases. The 
-three that are not provided are the local_topography.grd file 
-with topography information for GMT, the optional local_topography.grad
-file containing gradient shading for this file (both grdfile 
-and gradfile must be have identically registered pixel meshes), 
+the user may want to modify these values and databases.
+What is not provided is the optional file of GMT grid databases 
+for adding topography/bathymetry shading to the maps, and 
 and the database of historical hypocenters (used for pastel-shading
-of background seismicity on the maps). The grid files should be 
-large enough to cover the region of interest. 
+of background seismicity on the maps). 
 
 Three methods are supported for converting postscript files 
 to pixelized images. Those are "alchemy", using the commercial 
@@ -145,14 +142,7 @@ Another parameter to change will be the contour_mode, specifying
 how any topography shading is done. "none" means no shaded topography. 
 A contour mode of "grddb" will generate topography shading from a database 
 of grid files, using the dbgmtgrid(3) command. This is the recommended
-approach. A
-contour_mode of "grdimage" will run grdimage on the specified grdfile, 
-shaded by the gradients in gradfile. If "grdcut" is specified, an 
-appropriate grid is cut out of grdfile and the gradients are re-computed
-on the fly. There are two other modes that remain primarily for 
-debugging purposes. A contour mode of "premade" interpolates 
-postscript code contained in a file given by premade_contour_ps. 
-Again, this 'premade' mode is more for debugging.
+approach. 
 The parameter longitude_branchcut_high should be either 180 or 360, 
 depending on whether the phase of the specified grid files has 
 been unwrapped.
@@ -232,6 +222,7 @@ focus_map &Arr{
 	include 	map_config
 	stylesheet	specific_default.xsl
 	mapclass	focus
+	gridline_interval_deg 1
 	left_dellon 	-2
 	right_dellon 	2
 	down_dellat 	-2
@@ -248,9 +239,7 @@ map_config &Arr{
 	format 		gif
 	proj 		edp
 	mapclass	index
-	contour_mode 	grddb  # none, premade, grdcut, grdimage, or grddb
-	grdfile 	local_topography.grd
-	gradfile 	local_topography.grad
+	contour_mode 	grddb  # none or grddb
 	grddb		/space/world30_grids/world30
 	stylesheet	index_default.xsl
 	longitude_branchcut_high 360
@@ -281,6 +270,9 @@ map_config &Arr{
 	cityname_shift_deg 0.2
 	reserve_colors 	12
 	detail_density 	f  # f,h,i,l,c
+	gridline_interval_deg 5
+	grdgradient_opt -A60 -Nt1/2000/0
+	tilesize_deg 10
 }
 
 authtrans &Arr{
@@ -347,14 +339,23 @@ dbrecenteqs will fail and die if its top-level directory does not
 exist. This is an intentional safety feature to help keep from 
 building huge web directories where they don't belong. 
 
-dbrecenteqs will fail and die if expected to regenerate a map for 
-which a pixel-file already exists. [The exception is for focus 
-maps, which are always updated dynamically]. Large index maps often 
-take significant time to compute, thus if they are to be overwritten 
-it should be intentional. The other option, providing the .pf file 
-for the image still exists, would be to change the 'source' parameter 
-for the map to be the .pf file for the image.
+dbrecenteqs will fail and die if expected to regenerate a map for which
+a pixel-file already exists. [The exception is for focus maps, which
+are always updated dynamically]. Large index maps often take
+significant time to compute, thus if they are to be overwritten it
+should be intentional. The other option, providing the .pf file for the
+image still exists, would be to change the 'source' parameter for the
+map to be the .pf file for the image.
 .SH "BUGS AND CAVEATS"
+Although the initial, dynamic creation of the overview maps can be 
+time-consuming, this should not cause concern since this configuration 
+step is usually done only on the first run. Once each index map is generated,
+it is saved and noted in the mapstock table of the database, after 
+which this pregenerated map is used to create the web site. That 
+latter process is relatively quick. Only if these index maps are 
+accidentally erased (or if their corresponding database-table
+entries are corrupted) will the maps have to be regenerated. 
+
 Some architecture is in place for the detail maps (maps showing 
 zoom-ins of particular subregions of the index maps), however this 
 feature is not yet supported. 
@@ -365,13 +366,12 @@ has not yet been implemented.
 
 The maps written have dbevents-style parameter files, although those 
 omit the palette, priority, and bounding box values. These could 
-be fairly easily added. 
+be fairly easily added. One catch is that while dbevents is not 
+picky about the name of the array of parameters in a parameter-file 
+for a map, dbrecenteqs expects this array to match the name of the map. 
 
 The code to allow exactly one instance per database may be 
 broken.
-
-A "grdtile" contour_mode would probably be useful to aid in the creation 
-of large maps on machines with small memories. 
 
 cities_dbname appears both in nearest_places and in map_config. It 
 would be nice to clean this up.

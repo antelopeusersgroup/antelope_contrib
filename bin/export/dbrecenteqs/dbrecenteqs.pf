@@ -56,6 +56,7 @@ focus_map &Arr{
 	include 	map_config
 	stylesheet	specific_default.xsl
 	mapclass	focus
+	gridline_interval_deg 1
 	left_dellon 	-2
 	right_dellon 	2
 	down_dellat 	-2
@@ -72,9 +73,7 @@ map_config &Arr{
 	format 		gif
 	proj 		edp
 	mapclass	index
-	contour_mode 	grddb  # none, premade, grdcut, grdimage, or grddb
-	grdfile 	local_topography.grd
-	gradfile 	local_topography.grad
+	contour_mode 	grddb  # none or grddb
 	grddb		/space/world30_grids/world30
 	stylesheet	index_default.xsl
 	longitude_branchcut_high 360
@@ -105,6 +104,9 @@ map_config &Arr{
 	cityname_shift_deg 0.2
 	reserve_colors 	12
 	detail_density 	f  # f,h,i,l,c
+	gridline_interval_deg 5
+	grdgradient_opt -A60 -Nt1/2000/0
+	tilesize_deg 10
 }
 
 authtrans &Arr{
