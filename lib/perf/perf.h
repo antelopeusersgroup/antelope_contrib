@@ -1,7 +1,9 @@
 #ifndef __perf__
 #define __perf__
 
+#define __no_macros__
 #include "f2c.h"
+#undef __no_macros__
 
 #ifdef  __cplusplus
 extern "C" {

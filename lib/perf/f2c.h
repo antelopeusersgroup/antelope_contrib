@@ -45,8 +45,8 @@ typedef short ftnlen;
 typedef short ftnint;
 #else
 typedef int flag;
-typedef int ftnlen;
 typedef int ftnint;
+typedef int ftnlen;
 #endif
 
 /*external read, write*/
