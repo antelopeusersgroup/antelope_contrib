@@ -546,7 +546,7 @@ sub station_vitals {
 				   `cggrid_probe -n -f '%.6f' $qgrid_pga_extfile $lon $lat`;
 
 				if( $qgrid_pga_val ne "NaN" && 
-				    $qgrid_pga_units eq "g" ) {
+				    $qgrid_pga_units eq "gravity" ) {
 					$qgrid_pga_val *= 1000;
 					$qgrid_pga_units = "milli-g";
 				}
@@ -1212,7 +1212,7 @@ sub create_focusmap {
 							$symcolor = "black";
 
 						} else {
-	chomp( $val = `xunits -q '$pva millig' $Focus_Mapspec{qgrid_units}` );
+	chomp( $val = `xunits -q '$pva milligravity' $Focus_Mapspec{qgrid_units}` );
 							$symcolor = 
 					  		cpt_color( \%Focus_Mapspec, $val );
 						}
