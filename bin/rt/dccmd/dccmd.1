@@ -1,4 +1,4 @@
-.TH SENDMRC
+.TH SENDMRC 1
 .SH NAME
 dccmd \- send commands to DAS/DC
 .SH SYNOPSIS
@@ -50,8 +50,6 @@ opening a new connection. Default value is 5 seconds.
 Be more verbose.
 .IP "start-time window"
 Specifies a time range of the \fIdccmd\fR process to be active.
-.SH FILES
-.SH ENVIRONMENT
 .SH EXAMPLE
 .LP
 Send an MRC  command with options specified in \fItmrc.pf\fR 
@@ -79,16 +77,14 @@ dccmd  -R 132.239.4.194
 
 
 .SH PARAMETER FILE
-
 .nf
+
    start_time  6/5/97 1:00   # when to start
    num_repeats          2    # number times to send command for one das              
    timeout_btw_onedas   300  # number of sec between commands to a single DAS 
    timeout_btw_dases    5    # number of min between commands to subsequent DASes 
    timeout_btw_cmds     7    # number of days between commands sent to DC 
 
-.SH DIAGNOSTICS
-.SH "SEE ALSO"
-.SH "BUGS AND CAVEATS"
+.fi
 .SH AUTHOR
 Marina Glushko
