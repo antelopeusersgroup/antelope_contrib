@@ -3,6 +3,8 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'		=> 'polygon',
+    'FIRST_MAKEFILE' => 'perl_makefile',
+    'MAKEFILE' => 'perl_makefile',
     'VERSION_FROM'	=> 'polygon.pm', # finds $VERSION
     'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
