@@ -24,6 +24,7 @@ need be filled in by a function. */
 typedef struct Travel_Time_Function_Output {
 	double time;
 	double dtdx, dtdy, dtdz;  
+	double dtdtau;  /* origin time -- either 0 or 1 */
 } Travel_Time_Function_Output;
 typedef struct Slowness_Function_Output {
 	double ux, uy;
@@ -141,6 +142,8 @@ typedef struct Residual {
 of these objects defines the raw arrival time data */
 typedef struct Arrival {
 	int	arid ;
+	int arid2;  /* set only for things like S-P to define
+		arid of second element of pair */
 	Station *sta; /* pointer back to row of Station structure */
 	Phase_handle *phase;  /* handle to phase definition object */
 	double time;  /* epoch time of this arrival */
@@ -182,6 +185,23 @@ typedef struct Hypocenter {
 							- number parameters */
 
 } Hypocenter;
+/* These structures are used for S-P times (or other minus
+phase types.  The time interval structure is used to define
+epoch time intervals.  These are used in in the Bad_Clock 
+structure to define time intervals that have clocks that should
+be considered completely unreliable.  */
+typedef struct Time_Interval {
+	double tstart;
+	double tend;
+} Time_Interval;
+typedef struct Bad_Clock_ {
+	char sta[10];  /* station this tags */
+	int alltime;  /* if set nonzero assume clocks is always bad */
+	Tbl *badtimes;  /* This tbl contains pointers to 
+			Time_Interval structures that define
+			time intervals when the clock was bad */
+} Bad_Clock;
+
 /* this defines list of options for items below */
 
 /* These are for weighting functions  */
@@ -365,6 +385,7 @@ Arr *load_array_table(Pf *);
 Arr *parse_phase_parameter_file(Pf *);
 Tbl *read_arrivals(Pf *, Arr *, Arr *);
 Tbl *read_slowness_vectors(Pf *, Arr *, Arr *);
+int free_phase_handle(void *);
 
 /* linear algebra functions - numerical recipe variants */
 float **matrix(int, int, int, int);
@@ -373,10 +394,17 @@ char **cmatrix(int, int, int, int);
 void free_matrix(char **, int, int, int);
 int svdcmp(float **,int,int,float *,float **);
 
+/* db routines used when data are loaded directly from db */
 Arr *dbload_station_table(Dbptr, int, int, Pf*);
 Arr *dbload_array_table(Dbptr, int, int, Pf *);
 Tbl *dbload_arrival_table(Dbptr, int, int, Arr *, Arr *);
 Tbl *dbload_slowness_table(Dbptr, int, int, Arr *, Arr *);
-int destroy_data_tables(Tbl *, Tbl *);
+int dbtable_invalid(Dbptr,char *);
+
+/* S-P (or other "minus" phases) related functions*/
+int db_badclock_definitions(Dbptr, Pf *, Arr *);
+void pfget_badclocks(Pf *,Arr *);
+void Bad_Clock_free(Bad_Clock *);
+int minus_phases_arrival_edit(Tbl *,Arr *,Arr *);
 
 /* $Id$ */
