@@ -263,13 +263,13 @@ MWgather *build_MWgather(int , int , Arr *, Arr *, Arr *, Pf *);
 MWtrace *MWtrace_dup(MWtrace *);
 MWgather *MWgather_transformation(MWgather *,double *);
 void free_sn_ratios_arr(Arr **,int);
-Arr **compute_signal_to_noise(Arr *,Arr *,Arr *,int , int);
+Arr **compute_signal_to_noise(Arr *,Arr *,Arr *,Arr *,
+	Time_Window *,Time_Window *, int , int);
 int computer_total_moveout(MWgather *,Arr *, char *, MWSlowness_vector , double, char *, double *);
 int *compute_lag_in_samples(MWgather *,double *, double );
-float compute_coherence_measure(MWgather *,Time_Window ,int *,int);
-int compute_optimal_lag(MWgather **,int ,double ,double *,
-	Spherical_Coordinate, Time_Window *,int);
 double phase_to_time(double ,double , double );
+int compute_optimal_lag(MWgather **,int ,double ,
+        double *,Spherical_Coordinate, Time_Window *,int, int, Pf *);
 void compute_mw_arrival_times(MWgather **,int ,double ,double *, int , 
 	Spherical_Coordinate, Time_Window *, Arr **, Arr **,
 	double *,double *,int *);
@@ -292,6 +292,9 @@ Particle_Motion_Ellipse compute_particle_motion(complex, complex, complex,
 				double *);
 Spherical_Coordinate unit_vector_to_spherical(double *);
 void MWgather_to_trace(MWgather *,Dbptr, int, int, int *);
+void MWtrace_gather_reset_stime(MWgather *,Dbptr ,double );
+int MWtrace_mark_window(MWgather *,Dbptr,Time_Window *,int);
+void MWtrace_put_semblance(Dbptr,float *,int,double,int,double,int,char*);
 void trplot_by_sta(Dbptr,char *);
 void trplot_one_mwtrace(MWtrace *,char *);
 

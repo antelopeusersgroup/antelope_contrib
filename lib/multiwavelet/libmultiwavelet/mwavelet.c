@@ -646,22 +646,103 @@ void free_sn_ratios_arr(Arr **snr_vector,int nwavelets)
 		freearr(snr_vector[i],free);
 	}
 }
+/* Simple companion to below used to avoid cluttering main code.
+A simple large negative number will suffice as an error code
+since a signal to noise ratio less than 0 makes no physical sense. */
+void set_snr_to_error(Signal_to_Noise *snr)
+{
+	snr->ratio_z = -99999.9;
+	snr->ratio_n = -99999.9;
+	snr->ratio_e = -99999.9;
+	snr->ratio_3c = -99999.9;
+	snr->min_ratio_z = -99999.9;
+	snr->min_ratio_n = -99999.9;
+	snr->min_ratio_e = -99999.9;
+	snr->min_ratio_3c = -99999.9;
+	snr->max_ratio_z = -99999.9;
+	snr->max_ratio_n = -99999.9;
+	snr->max_ratio_e = -99999.9;
+	snr->max_ratio_3c = -99999.9;
+}
+/* Another companion to signal to noise function below.  This one
+takes a complex input vector,z, of length n and computes |x_i| 
+and stores the result in a[i].  i.e. it returns a vector of 
+complex moduli 
+*/
+void cmplx_vector_mod(int n, complex *z,float *a)
+{
+	int i;
+	for(i=0;i<n;++i) 
+	  a[i] = (float)hypot((double)z[i].r,(double)z[i].i);
+}
+/* This function computes estimates of signal to noise ratio from 
+multiwavelet transformed traces passed and indexed through 
+associative arrays "signal" and "noise".  Signal to noise in 
+a band is defined as the ratio of the modulus of complex
+valued samples contained in the signal window divided by the 
+MEDIAN modulus of the noise window.  The median measure makes
+the ratio more robust in the presence of noise bursts in a 
+preevent window normally used to define the noise segment.  The
+s/n ratios from each wavelet in the bank are averaged to define
+the elements of the Signal_to_Noise structure.  
 
+The function returns a vector of Arr pointers of length nbands.
+Each element of this vector is an Arr indexed by station that
+contains pointers to Signal_to_Noise structures for that station.
+e.g. if a is the Arr ** returned by this function, a[1] would be
+an Arr * from which one can extract Signal_to_Noise pointers for
+a named station.  Complicated, I know, but a useful construct here.
+
+Arguments:
+	signal - associative array indexing multiwavelet transformed
+		signal windows.  Indexed by the make_mw_key function
+		that indexes by station channel.
+	noise - comparable array to signal for noise window segments
+	arrivals - associative array indexed by station name of pointers
+		to doubles containing arrival time reference for that
+		station.  (Time_Window structures components
+		are relative to this absolute time).
+	swin - vector of nbands time window structures used to define
+		signal segments in each band
+	nwin - same as swin for noise.
+	nbands - number of frequency bands in multiwavelet transform
+	nwavelets - number of wavelets. 
+
+Author:  G Pavlis
+Written:  Sept. 1999
+Modified:
+April 2000
+Original code used full windows passed to it with no trimming.  
+This sometimes caused incorrect values because the transformed
+segments did not always mesh with the original time windows leading
+to wrong results.  Modified at this time in two major ways:
+1.  fixed the time window problem
+2.  I changed the measure of signal/noise.  Original code used rms/rms.
+I changed it to mod(max)/median (mod full vector of noise)
+*/ 
 Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
+		Arr *arrivals, Time_Window *swin, Time_Window *nwin,
 		int nbands,int nwavelets)
 {
 	Arr **snrarr_vector;
 	int i,j,k,l;
-	Signal_to_Noise *snr;
-	MW_scalar_statistics stats;
-	MWtrace ***ts[3],***tn[3];
-	char *chans[3]={ EW, NS, VERTICAL };
-	int missing_channel;
-	char *sta,*key;
-	float signal_rms,noise_rms;
+	Signal_to_Noise *snr;   /* we build this */
+	MW_scalar_statistics stats;   /* target for statistics functions */
+	MWtrace ***ts[3],***tn[3];	/* ugly constructs of MWtransform output.
+					3 is for three components in x,y,z order */
+	char *chans[3]={ EW, NS, VERTICAL };   /* set fixed channel code names 
+						items are defined in multiwavelet.h*/
+	int missing_channel;  /* flag*/
+	char *sta,*key;   /*keys */
+	float signal_rms,noise_rms;  
 	float *snr_wavelet,*sig3c,*noise3c;
 	int nsamp;
 	Tbl *tkeys;
+	double *arrival_time;
+	int is,ie;  /* start end in samples for a vector */
+	double si, sttest, setest, dt;  /* temporaries */
+	float *ampwork;   /* hold vector of amplitudes sorted
+			to compute s/n statistics */
 
 	snrarr_vector = (Arr **)calloc(nbands,sizeof(Arr *));
 	if(snrarr_vector == NULL) die(0,"compute_signal_to_noise:  cannot alloc memory for %d Arr pointers\n",nbands);
@@ -707,12 +788,68 @@ printf("Signal to noise ratio estimates:  station, z,n,e, 3c\n");
 		{
 			allot(Signal_to_Noise *,snr,1);
 			snr->sta = strdup(sta);
-			/* This assumes all pieces in a band for a station have the same
-			start end time */
-			snr->nstime = tn[0][0][j][0].starttime;
-			snr->netime = tn[0][0][j][0].endtime;
-			snr->sstime = ts[0][0][j][0].starttime;
-			snr->setime = ts[0][0][j][0].endtime;
+			/* perhaps superflous, but paranoia can be good*/
+			si = swin[j].si;
+			if( (si != ts[0][0][j][0].dt) 
+			  || (si != tn[0][0][j][0].dt) )
+				elog_complain(0,
+			 	 "Warning(compute_signal_to_noise): inconsistent sample intervals, window specifies %lf and traces have %lf\nUsing window value\n",
+					si,ts[0][0][j][0].dt);
+			/* We set time window positions for snr calculations.
+			Normal algorithm is to use the boundaries defined
+			by the input time window.  However, in the event
+			the data have been truncated due to gaps or 
+			who knows what, we use a more cautious algorithm
+			that silently truncates the window in the event
+			such a truncation occurs. It is assumed the user
+			can catch this as the time periods will be stored
+			in the mw programs in database tables */
+			arrival_time = (double *)getarr(arrivals,sta);
+			if(arrival_time == NULL)
+			{
+				/* This shouldn't happen and is probably
+				unnecessarily paranoid */
+				elog_notify(0,"Warning (compute_signal_to_noise):  no arrival time for station %s\nBand %d will use full trace window\n",
+					sta,j);
+				snr->nstime = tn[0][0][j][0].starttime;
+				snr->netime = tn[0][0][j][0].endtime;
+				snr->sstime = ts[0][0][j][0].starttime;
+				snr->setime = ts[0][0][j][0].endtime;
+			}
+			else
+			{
+				sttest = (*arrival_time);
+				setest = (*arrival_time);
+				sttest += si*((double)swin[j].tstart);
+				setest += si*((double)swin[j].tend);
+				snr->sstime = MAX(sttest,
+					ts[0][0][j][0].starttime);
+				snr->setime = MIN(setest,
+					ts[0][0][j][0].endtime);
+				sttest = (*arrival_time);
+				setest = (*arrival_time);
+				sttest += si*((double)nwin[j].tstart);
+				setest += si*((double)nwin[j].tend);
+				snr->nstime = MAX(sttest,
+					tn[0][0][j][0].starttime);
+				snr->netime = MIN(setest,
+					tn[0][0][j][0].endtime);
+			}
+			/* Careful of extreme truncation errors */
+			if( ((snr->sstime)>(snr->setime))
+			  || ((snr->nstime)>(snr->netime)) )
+			{
+			/* The logic here is perverted because I added
+			this test.  The continue skips all the below
+			stuff.  The part after the continue realy
+			should be an else clause */
+				set_snr_to_error(snr);
+				elog_notify(0,"compute_signal_to_noise:  no data in requested time window for station %s in band %d\nData gap problem in signal or noise window\n",
+					sta,j);
+				setarr(snrarr_vector[j],sta,snr);
+				continue;
+			}
+
 			for(l=0;l<nwavelets;++l){
 				sig3c[l]=0.0;
 				noise3c[l]=0.0;
@@ -721,21 +858,66 @@ printf("Signal to noise ratio estimates:  station, z,n,e, 3c\n");
 			{
 			    for(k=0;k<nwavelets;++k)
 			    {
-				nsamp = ts[l][0][j][k].nz;
-				signal_rms = scnrm2(nsamp,ts[l][0][j][k].z,1);
-				signal_rms *= signal_rms;
-				signal_rms /= (float)nsamp;
+				dt = snr->sstime - ts[l][0][j][k].starttime;
+				is = nint(dt/si);
+				if(is<0)
+				{
+					snr->sstime = ts[l][0][j][k].starttime;
+					is = 0;
+				}
+				dt = snr->setime - ts[l][0][j][k].starttime;
+				ie = nint(dt/si);
+				/* -1 is from the age old fact that C indexing
+				starts at 0 */
+				if(ie > ((ts[l][0][j][k].nz) - 1) )
+				{
+					ie = ts[l][0][j][k].nz;
+					--ie;
+					snr->setime = ts[l][0][j][k].endtime;
+				}
+				nsamp = ie - is + 1;
+				allot(float *,ampwork,nsamp);
+				cmplx_vector_mod(nsamp,
+				   (ts[l][0][j][k].z)+is,ampwork);
+				stats = MW_calc_statistics_float(ampwork,nsamp);
+				signal_rms = (float)stats.high;
 				/* This assumes nsamp is the same for 
 				all wavelets in this band */
-				sig3c[k] += signal_rms;
+				sig3c[k] += (signal_rms*signal_rms);
+				free(ampwork);
 
-				nsamp = tn[l][0][j][k].nz;
-				noise_rms = scnrm2(nsamp,tn[l][0][j][k].z,1);
-				noise_rms *= noise_rms;
-				noise_rms /= (float)nsamp;
-				noise3c[k] += noise_rms;
-				snr_wavelet[k] = sqrt((double)(signal_rms
-						/noise_rms));
+				/* Now we do almost the same thing with
+				the noise segment, but use median amplitudes
+				instead of the peak we used in the signal 
+				window */
+				dt = snr->nstime - tn[l][0][j][k].starttime;
+				is = nint(dt/si);
+				if(is<0)
+				{
+					snr->nstime = tn[l][0][j][k].starttime;
+					is = 0;
+				}
+				dt = snr->netime - tn[l][0][j][k].starttime;
+				ie = nint(dt/si);
+				/* -1 is from the age old fact that C indexing
+				starts at 0 */
+				if(ie > ((tn[l][0][j][k].nz) - 1) )
+				{
+					ie = tn[l][0][j][k].nz;
+					--ie;
+					snr->netime = tn[l][0][j][k].endtime;
+				}
+				nsamp = ie - is + 1;
+				allot(float *,ampwork,nsamp);
+				cmplx_vector_mod(nsamp,
+				   (tn[l][0][j][k].z)+is,ampwork);
+				stats = MW_calc_statistics_float(ampwork,nsamp);
+				noise_rms = (float)stats.median;
+				/* This assumes nsamp is the same for 
+				all wavelets in this band */
+				noise3c[k] += (noise_rms*noise_rms);
+				free(ampwork);
+				snr_wavelet[k] = signal_rms/noise_rms;
 			    }
 			    stats=MW_calc_statistics_float(snr_wavelet,nwavelets);
 			    switch(l){
@@ -892,13 +1074,6 @@ float compute_coherence_measure(MWgather *g,Time_Window w,int *lags, int type)
 	double denom;
 	int data_end;
 	complex cweight={0.0,0.0};
-/*
-float A_debug[40][40];
-
-float seisr[500],seisi[500];
-int idbug,jdbug;
-for(idbug=0;idbug<40;++idbug)for(jdbug=0;jdbug<40;++jdbug) A_debug[idbug][jdbug]=0.0;
-*/
 
 	/*This is one of those interval versus points things again */
 	total_window_length = ((w.length)-1)*(w.increment);
@@ -938,18 +1113,6 @@ for(idbug=0,jdbug=0;jdbug<w.length;++jdbug,idbug+=(w.increment))
 	}
 	else
 	{
-/*
-for(idbug=0;idbug<nsta_used;++idbug)
-for(jdbug=0;jdbug<(w.length);++jdbug) 
-	A_debug[idbug][jdbug] = A[idbug+jdbug*(g->nsta)].r;
-printf("Pause here for debug\n");
-for(idbug=0;idbug<nsta_used;++idbug)
-for(jdbug=0;jdbug<(w.length);++jdbug) 
-	A_debug[idbug][jdbug] = A[idbug+jdbug*(g->nsta)].i;
-printf("Pause here for debug\n");
-*/
-
-
 	/* call complex svd routine */
 		cgesvd('o','n',nsta_used,w.length,A,g->nsta,
 			svalue,U,nsta_used,Vt,nsta_used,&info);
@@ -993,7 +1156,7 @@ independent of the phase being analyzed.
 */
 int compute_optimal_lag(MWgather **g,int nwavelets,double timeref, 
 	double *moveout,Spherical_Coordinate polarization,
-	Time_Window *win,int coherence_type)
+	Time_Window *win,int coherence_type, int band, Pf *pf)
 {
 	int i,j;
 	double U[9];  /* transformation matrix */
@@ -1001,13 +1164,18 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	int *lags;  /* base lag computed from moveout for each 
 			station.  Stored in a parallel array to 
 			moveout and elements of MWgather */
-	float **semb;  
+	float **semb; /* a window size by nwavelets matrix */
+	float *avgsemb;  /* This stores a trace of the average coherence*/
 	int lenwin,lensemb; 
 	MW_scalar_statistics stats; 
 	float peak_semb;
 	int lag_at_peak;
+	int show_graphics;
+	char *array_name;
 
-float semb_debug[500];
+	/* We'll do this right away in case this aborts the program */
+	show_graphics = pfget_boolean(pf,"graphics");
+	array_name = pfget_string(pf,"array_name");
 
 	/* First we define a rotation matrix to ray coordinates and
 	then form new gathers rotated into ray coordinates */
@@ -1042,6 +1210,8 @@ float semb_debug[500];
 	/* this creates a matrix to hold the actual semblance
 	 computed for each wavelet as a function of time.*/
 	semb = matrix(0,lensemb,0,nwavelets-1);
+	allot(float *,avgsemb,lensemb);
+
 	for(i=0;i<lensemb;++i)
 	{
 		for(j=0;j<nwavelets;++j)
@@ -1054,16 +1224,48 @@ float semb_debug[500];
 	for(i=0,j=0,peak_semb=0.0,lag_at_peak=0;i<lensemb;++i,j+=win->stepsize)
 	{
 		stats = MW_calc_statistics_float(semb[i],nwavelets);
-semb_debug[i] = stats.mean;
-		semb[i][0] = stats.mean;
-		if(semb[i][0]>peak_semb)
+		avgsemb[i] = stats.mean;
+		if(avgsemb[i]>peak_semb)
 		{
-			peak_semb = semb[i][0];
+			peak_semb = avgsemb[i];
 			lag_at_peak = j;
 		}
 	}
+	if(show_graphics)
+	{
+		Dbptr trdb;
+		int narrival_rows;
+		trdb = trnew(0,0);
+		/* We have to reset the lags array because it is 
+		altered above */
+		free(lags);
+		lags = compute_lag_in_samples(*trans_gath,moveout,timeref);
+		for(j=0;j<trans_gath[0]->nsta;++j) lags[j] += win->tstart;
+		/* Note we only plot the wavelet 0 functions to reduce
+		clutter*/
+		MWgather_to_trace(trans_gath[0],trdb,0,band,lags);
+
+		/* This routine resets the start time of all all the traces
+		to timeref so they will appear aligned in display. (a trick).
+		At the same time it creates an arrival table with flags
+		marking the bounds of the optimal analysis window determined*/
+		MWtrace_gather_reset_stime(trans_gath[0],trdb,timeref);
+		/* This adds the coherence trace to the trace db */
+		MWtrace_put_semblance(trdb,avgsemb,lensemb,timeref,
+			lag_at_peak,trans_gath[0]->x3[i]->dt,
+			coherence_type,array_name);
+
+		narrival_rows = MWtrace_mark_window(trans_gath[0],
+				trdb,win,lag_at_peak);
+		if(narrival_rows <= 0) 
+		   elog_complain(0,"Problems adding arrival table rows to trace table in band %d\n",band);
+
+		trdisp(trdb,0);
+		trdestroy(&trdb);
+	}
 
 	free_matrix((char **)semb,0,lensemb,0);
+	free(avgsemb);
 	free(lags);
 	for(i=0;i<nwavelets;++i) free_MWgather_traces(trans_gath[i]);
 

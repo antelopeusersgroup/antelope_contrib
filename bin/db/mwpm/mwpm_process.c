@@ -1,41 +1,5 @@
 #include "multiwavelet.h"
 #include "tr.h"
-/* This is a debug function used in conjunction with sun's workshop
-visualization stuff.  We copy complex trace data into real, fixed 
-length buffers to allow them to be graphed with workshop's gizmo.
-void debug_mwtrace(Arr *d,char *sta, int nbands, int nwavelets)
-{
-        char *chans[3]={ EW, NS, VERTICAL };
-	int i, j,k,l;
-	float t[10000];
-	MWtrace ***trace;
-	char *key;
-	int nz;
-
-	for(j=0;j<nbands;++j)
-	for(i=0;i<nwavelets;++i)
-	for(k=0;k<3;++k)
-	{
-		key = make_mw_key(sta,chans[k]);
-		trace = (MWtrace ***)getarr(d,key);
-		free(key);
-		nz = trace[0][j][k].nz;
-		for(l=0;l<nz;++l)
-		{
-			t[l] = trace[0][j][k].z[l].r;
-		}
-		fprintf(stderr,"%s:%s real\n",sta,chans[k]);
-		for(l=0;l<nz;++l)
-		{
-			t[l] = trace[0][j][k].z[l].i;
-		}
-		fprintf(stderr,"%s:%s imag\n",sta,chans[k]);
-	}
-}
-*/
-		
-
-		
 
 /* This function computes and returns a vector of time pad lengths 
 (in samples) for multiwavelet transforms.  The time pad vector is alloced
@@ -98,6 +62,8 @@ int *ss_compute_tpad(Tbl **d, MWbasis *mw, Pf *pf)
 	}
 	return(pad);
 }
+#define PC 1
+#define WA 2
 /* This function computes and returns a particle motion ellipse estimate
 and associated error estimates for a single, 3-component station.  Input
 data is multiwavelet transformed data stored in the following complicated
@@ -108,7 +74,11 @@ a ***MWtrace object
 2.  The ***MWtrace object is a matrix of pointers to MWtrace objects that 
 define the multiwavelet transform implemented here (see man mwtransform(3)).
 
-The algorithm used is a principle component method.  The program assembles
+Two different algorithms are available depending upon setting of the
+parameter particle_motion_averaging_method 
+
+method = principle_component
+He we use a principle component method.  The program assembles
 the three components of the multiwavelet tranformed, complex valued traces,
 and applies a complex svd routine from sunperf.  This reduces to a special
 case of the approach used in mwap for a single station.  (mwap is multichannel
@@ -117,6 +87,15 @@ motion ellipses for each station relative to the array average)
 The phase estimates of the left singular vector are converted to a 
 particle motion ellipse, and errors are computed using the redundancy of
 the multiwavelet transformed wavelets.  
+
+method = window_average
+In this case we compute sample by sample particle motion ellipses within
+the specified window and average them to produce a final estimate.
+The averaging is complicated by the multiplicity of the multiwavelets.
+Here we use a dual averaging scheme in which we first compute averages
+from each wavelet group.  The averages combined in a weighted mean
+of the nwavelet groups with the weights based on the estimated 
+uncertainties of each group.  
 
 Arguments:
 	band - frequency band of transform to compute estimates for
@@ -152,7 +131,7 @@ int ssmwpm(int band, int nwavelets, char *sta,
 	char *key;
 	MWtrace ***x1,***x2,***x3;
 	Signal_to_Noise *snr;
-	int i;
+	int i,j;
 	int nz, nz_used;
 	complex *A,*U,*Vt;
 	Particle_Motion_Ellipse *pmwork;
@@ -160,9 +139,18 @@ int ssmwpm(int band, int nwavelets, char *sta,
 	int info;
 	double starttime,si;
 	int istart;
-float tdebug[10000];
-int j,jj;
+	char *method;
+	int averaging;
+	/* These are used as work space for window averaging method 
+	over wavelets */
+	Particle_Motion_Ellipse *pmaw;
+	Particle_Motion_Error *pmeaw;
 
+	method = pfget_string(pf,"particle_motion_averaging_method");
+	if( (method == NULL) || (!strcmp(method,"principle_component")) )
+		averaging = PC;
+	else
+		averaging = WA;
 	/* This extracts data from the mwdata arr */
 	key = make_mw_key(sta,EW);
 	x1 = (MWtrace ***)getarr(mwdata,key);
@@ -213,7 +201,6 @@ int j,jj;
 		if(((*x3)[band][i].dt) != si) return(-5);
 
 	}
-for(j=0;j<nz;++j) tdebug[j] = (*x3)[band][0].z[j].r;
 
 	
 	snr = (Signal_to_Noise *)getarr(snrarr,sta);
@@ -237,29 +224,58 @@ for(j=0;j<nz;++j) tdebug[j] = (*x3)[band][0].z[j].r;
 	/* We assume this will always work once we get here */
 	nz_used = nint( (tend - tstart)/si ) + 1;
 
-	allot(complex *,A,3*nz);
-	allot(Particle_Motion_Ellipse *,pmwork,nwavelets);
-
-	/* Now we compute particle motion ellipses for each wavelet in
-	this band storing the results in vector of pointers pmwork*/
-	for(i=0;i<nwavelets;++i)
+	if(averaging == PC)
 	{
-		ccopy(nz_used,((*x1)[band][i].z)+istart,1,A,3);
-		ccopy(nz_used,((*x2)[band][i].z)+istart,1,A+1,3);
-		ccopy(nz_used,((*x3)[band][i].z)+istart,1,A+2,3);
-for(j=0,jj=0;j<nz_used;++j,jj+=3) tdebug[j] = A[jj].r;
-		/* Note in this svd routine U and Vt are pure dummies
-		because the o and n arguments say to overwrite A with 
-		the left singular vectors and to just not compute the
-		right singular vectors */
-		cgesvd('o','n',3,nz_used,A,3,svalues,U,3,Vt,3,&info);
-
-		set_pm_null(pmwork+i);
-		pmwork[i] = compute_particle_motion (A[0],A[1],A[2],up);
+		allot(complex *,A,3*nz);
+		allot(Particle_Motion_Ellipse *,pmwork,nwavelets);
+	
+		/* Now we compute particle motion ellipses for each wavelet in
+		this band storing the results in vector of pointers pmwork*/
+		for(i=0;i<nwavelets;++i)
+		{
+			ccopy(nz_used,((*x1)[band][i].z)+istart,1,A,3);
+			ccopy(nz_used,((*x2)[band][i].z)+istart,1,A+1,3);
+			ccopy(nz_used,((*x3)[band][i].z)+istart,1,A+2,3);
+			/* Note in this svd routine U and Vt are pure dummies
+			because the o and n arguments say to overwrite A with 
+			the left singular vectors and to just not compute the
+			right singular vectors */
+			cgesvd('o','n',3,nz_used,A,3,svalues,U,3,Vt,3,&info);
+	
+			set_pm_null(pmwork+i);
+			pmwork[i] = compute_particle_motion (A[0],A[1],A[2],up);
+		}
+	
+		pmvector_average(pmwork,nwavelets,pmavg,pmeavg);
 	}
-
-	pmvector_average(pmwork,nwavelets,pmavg,pmeavg);
-
+	else
+	{
+		allot(Particle_Motion_Ellipse *,pmwork,nwavelets);
+		allot(complex *,A,3);
+		allot(Particle_Motion_Ellipse *,pmaw,nz_used);
+		/* We don't actually use pmeaw below, but it doesn't
+		waste enough space to worry about and for debugging it
+		is a useful thing to have */
+		allot(Particle_Motion_Error *,pmeaw,nz_used);	
+		for(j=0;j<nz_used;++j)
+		{
+			for(i=0;i<nwavelets;++i)
+			{
+				A[0].r = (*x1)[band][i].z[j+istart].r;
+				A[0].i = (*x1)[band][i].z[j+istart].i;
+				A[1].r = (*x2)[band][i].z[j+istart].r;
+				A[1].i = (*x2)[band][i].z[j+istart].i;
+				A[2].r = (*x3)[band][i].z[j+istart].r;
+				A[2].i = (*x3)[band][i].z[j+istart].i;
+				pmwork[i] = compute_particle_motion (A[0],
+							A[1],A[2],up);
+			}
+			pmvector_average(pmwork,nwavelets,pmaw+j,pmeaw+j);
+		}
+		pmvector_average(pmaw,nz_used,pmavg,pmeavg);	
+		free(pmaw);
+		free(pmeaw);
+	}
 	free(A);
 	free(pmwork);
 	return(0);
@@ -289,25 +305,12 @@ void check_sta_arr(Arr *stations,char *sta,int nbands)
 }
 	
 
-/* small companion function to avoid repetitious error messages
-from saving various special tables at the end of processing */
-void dbsave_error(char *table,int evid, int band)
-{
-	elog_complain(0,"Error saving %s table for evid %d and band %d\n",
-			table, evid, band);
-}
-
 			
 /* This is the main processing function for this program.  
 
 Arguments:
-	dbv - db pointer to a complex view of the database to be 
-		processed.  That is, it has these properties:
-		1.  It is a join of:
-			event->origin->assoc->arrival
-		2.  subset to single arrival name AND orid==prefor
-		3.  sorted by evid/sta
-
+	dbv - db pointer to working db.  
+	phase - phase name being processed
 	pf - input parameter space
 
 The main processing loop here keys on the grouping defined in the view
@@ -380,8 +383,22 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 	int narrivals;
 	char sta[10];
 	double arrival_time,dtstart,dtend,tstart,tend,twin;
+	int arid;
         Spherical_Coordinate scoor;
         double majaz, majema, minaz, minema;
+	char *method, algorithm[16]="mwpm:";
+
+        method = pfget_string(pf,"particle_motion_averaging_method");
+        if( (method == NULL) || (!strcmp(method,"principle_component")) )
+	{
+		elog_log(0,"Using principle component method\n");
+		strcat(algorithm,"pcomp");
+	}
+        else
+	{
+		elog_log(0,"Using time window average, point-by-point method\n");
+                strcat(algorithm,"winavg");
+	}
 
 	arrivals = newarr(0);
 	stations = newarr(0);
@@ -489,7 +506,8 @@ void mwpm_process(Dbptr dbv,char *phase,  Pf *pf)
 		/* Time windows are laid down relative to the arrival
 		time associated with this bundle */
 		db_bundle.record = is;
-		if(dbgetv(db_bundle,0,"arrival.time",&arrival_time,0))
+		if(dbgetv(db_bundle,0,"arrival.time",&arrival_time,
+			"arid",&arid,0))
 		{
 			elog_complain(0,"dbgetv error reading arrival time for station %s at row %d of station bundled view\n",
 				sta,is);
@@ -559,17 +577,52 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
 		object, and it must be freed after each event is 
 		processed. */
 		sn_ratios=compute_signal_to_noise(mwsig_arr,mwnoise_arr,
-					stations,nbands,nwavelets);
+					stations,arrivals,
+					swin,nwin,nbands,nwavelets);
 
 		for(i=nbands-1;i>=0;--i)
 		{
 			Signal_to_Noise *snr;
 			double wts, wte;
 			fc = (mw[i].f0)/(2.0*si*decfac[i]);
+			/* We save the snr info always.  i.e. even if s/n is
+			to low to compute a particle motion, we still can save
+			the snr ratios info */
+			snr = (Signal_to_Noise *)getarr(sn_ratios[i],sta);
+			if(snr->ratio_z<0.0) continue;
+        		if( dbaddv(dbsnr,0,
+                		"sta",sta,
+				"arid",arid,
+                		"bankid",bankid,
+                		"fc",fc,
+                		"phase",phase,
+	                        "nstime",snr->nstime,
+	                        "netime",snr->netime,
+	                        "sstime",snr->sstime,
+	                        "setime",snr->setime,
+	                        "snrz",snr->ratio_z,
+	                        "snrn",snr->ratio_n,
+	                        "snre",snr->ratio_e,
+                        	"snr3c",snr->ratio_3c,
+
+           			"algorithm",algorithm,0) < 0)
+			{
+				elog_complain(0,"dbaddv error on table mwsnr for station %s\n",
+					sta);
+			}
 			wts = arrival_time + (swin[i].si)*((double)(swin[i].tstart));
 			wte = arrival_time + (swin[i].si)*((double)(swin[i].tend));
 			ierr = ssmwpm(i,nwavelets,sta,mwsig_arr,sn_ratios[i],
 				wts, wte, up,pf,&avgpm,&avgerr);
+			if(ierr!=0)
+			{
+				/* Skip all nonzero returns.  say nothing if >0 as
+				this is how low s/n events are dropped */
+				if(ierr<0)
+					elog_complain(0,"Error processing particle motion estimates for station %s in band %d\nNo results for this arrival in this band\n",
+						sta,i);
+				continue;
+			}
 			scoor = unit_vector_to_spherical(avgpm.major);
 			majaz = deg(scoor.phi);
 			majema = deg(scoor.theta);
@@ -600,29 +653,9 @@ debug_mwtrace(mwsig_arr, sta, nbands, nwavelets);
                 		"majndgf",avgerr.ndgf_major,
                 		"minndgf",avgerr.ndgf_minor,
                 		"rectndgf",avgerr.ndgf_rect,
-           			"algorithm","mwpm",0) < 0)
+           			"algorithm",algorithm,0) < 0)
 			{
 				elog_complain(0,"dbaddv error on table mwpm for station %s\n",
-					sta);
-			}
-			snr = (Signal_to_Noise *)getarr(sn_ratios[i],sta);
-        		if( dbaddv(dbsnr,0,
-                		"sta",sta,
-                		"bankid",bankid,
-                		"fc",fc,
-                		"phase",phase,
-	                        "nstime",snr->nstime,
-	                        "netime",snr->netime,
-	                        "sstime",snr->sstime,
-	                        "setime",snr->setime,
-	                        "snrz",snr->ratio_z,
-	                        "snrn",snr->ratio_n,
-	                        "snre",snr->ratio_e,
-                        	"snr3c",snr->ratio_3c,
-
-           			"algorithm","mwpm",0) < 0)
-			{
-				elog_complain(0,"dbaddv error on table mwsnr for station %s\n",
 					sta);
 			}
 		}

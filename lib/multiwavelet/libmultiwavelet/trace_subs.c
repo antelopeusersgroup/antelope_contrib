@@ -477,3 +477,227 @@ void MWgather_to_trace(MWgather *g,Dbptr tr, int wavelet, int band,
 	}
 	free(sta);
 }
+/* Resets start times of traces produced by the MWgather_to_trace
+function immediately above.  As such it is intimately linked to it
+and changes to the above can easily cause this function to go
+haywire.  The idea of this function is to effectively produce a 
+group of traces that are corrected for the current moveout.  Because
+MWgather_to_trace actually uses a vector of lags to determine a 
+start time this involves only a resetting of the start times for 
+each trace to a common value.  The only trick is making the time 
+of this common start time something sensible and that followup 
+routines can lay down quantities with a time stamp that aren't 
+totally irrational.  
+
+Arguments:
+	g - MWgather object used to build trdb 
+	trdb - trace object database pointer
+	timeref - global reference epoch time.  This is used only
+		if the reference station is not found in which 
+		case this value is used as the start time.  
+Author:  Gary Pavlis
+Written:  May 2000, found graphics were a useful option to judge data
+quality and progress of program. 
+*/
+void MWtrace_gather_reset_stime(MWgather *g,Dbptr trdb,double timeref)
+{
+	char *refsta;
+	int i;
+	double stime_at_refsta;
+	int nrec;
+	int nsamp;
+	double samprate;
+
+	/* Scan the gather object to determine the reference station.
+	This avoids a need to pass it down a chain of function calls */
+	for(i=0;i<g->nsta;++i)
+		if( !strcmp(g->sta[i]->sta,g->sta[i]->refsta))break;
+	refsta = g->sta[i]->refsta;
+
+	/* We blindly assume all traces listed under refsta have a 
+	common start time.  This normally a very bad assumption but
+	it is appropriate as long as this function is only used in
+	combination with the MWgather_to_trace function above. 
+	The dblookup here only works right when that is the case */
+	trdb = dblookup(trdb,0,"trace","sta",refsta);
+	if(dbgetv(trdb,0,"time",&stime_at_refsta,0) == dbINVALID)
+	{
+		elog_complain(0,"MWtrace_gather_reset_stime:  cannot find reference station %s in trace database\nUsing global time reference\n",
+			refsta);
+		stime_at_refsta = timeref;
+	}
+	
+	trdb = dblookup(trdb,0,"trace",0,0);
+	dbquery(trdb,dbRECORD_COUNT,&nrec);
+
+	for(trdb.record=0;trdb.record<nrec;++trdb.record)
+	{
+		dbgetv(trdb,0,"nsamp",&nsamp,"samprate",&samprate,0);
+		dbputv(trdb,0,"time",stime_at_refsta,
+			"endtime",ENDTIME(stime_at_refsta,samprate,nsamp),0);
+	}
+}
+/* This short function is also intimately linked with the two previous
+ones.  It adds arrival flags with predefined names to each station:chan in
+a trace table.  It does so in a stupid way that works because of the way
+the previous two function work.  As such, the point is this function should
+ONLY be called after the two previous (i.e. this is the third of a sequence
+of functions).  Because the two previous functions build fix length 
+traces with moveout corrected times, the "arrival" we define here are 
+all relative times in samples. 
+
+Arguments:
+	g - parent gather from which the trdb was created
+	trdb - trace database produced by previous call to MWgather_to_trace
+		subsequently modified by MWtrace_gather_reset_stime
+	win - time window structure defining the analysis window for this
+		wavelet band
+	lag_at_peak - lag in samples of optimal coherence stack point.
+
+Normal return is a count of the number of entries added to the arrival
+table.
+
+Author:  Gary Pavlis
+Written:  May 2000, found graphics were a useful option to judge data
+quality and progress of program. 
+*/ 
+
+/* These define fake phase names used to mark traces */
+#define ANAL_STIME "AST"
+#define ANAL_ETIME "AET"
+#define WIN_STIME "WST"
+#define WIN_ETIME "WET"
+#define TWIN_STIME "TWST"
+#define TWIN_ETIME "TWET"
+
+int MWtrace_mark_window(MWgather *g, Dbptr trdb,Time_Window *win,
+	int lag_at_peak)
+{
+	int nsamp_basis;  
+	char sta[8],laststa[8];
+	double trace_stime;
+	double wstime,wetime,astime,aetime,twstime,twetime;
+	int arrival_count;
+	double si;
+	int nrec;
+	double samprate;
+
+	Dbptr tra;
+
+	tra = dblookup(trdb,0,"arrival",0,0);
+	trdb = dblookup(trdb,0,"trace",0,0);
+	dbquery(trdb,dbRECORD_COUNT,&nrec);
+	/* return silently if the trace table is empty*/
+	if(nrec <= 0) return(0);
+
+	/* We need this to compute the grey area of 1/2 of a wavelet */
+	nsamp_basis = g->x3[0]->basis->n;
+	/* We set laststa to random sequence of characters to
+	be sure the check against changes in sta is triggered in
+	the loop below.  Probably a more elegant solution to this*/
+	strcpy(laststa,"kIB%+@");
+	for(trdb.record=0,arrival_count=0;trdb.record<nrec;++trdb.record)
+	{
+		if(dbgetv(trdb,0,"sta",sta,
+			"time",&trace_stime,
+			"samprate",&samprate,0) == dbINVALID)
+		{
+			elog_complain(0,"dbgetv error reading trace table at record %d\nMWtrace_mark_window returning after marking %d arrivals\n",
+				trdb.record,arrival_count);
+			return(arrival_count);
+		}
+		if(strcmp(sta,laststa))
+		{
+			/* this wastes a little space, but it is clearer
+			to explicitly define all these times and then
+			write the arrival records.*/
+			si = 1.0/samprate; 
+			wstime = trace_stime;
+			wetime = trace_stime 
+			   + ((double)((win->tend)-(win->tstart)))*si;
+			astime = trace_stime + ((double)lag_at_peak)*si;
+			aetime = astime +  ((double)(win->length)
+				*(win->increment))*si;
+			twstime = astime - ((double)nsamp_basis)*si/2.0;
+			twetime = aetime + ((double)nsamp_basis)*si/2.0;
+			dbaddv(tra,0,"sta",sta,
+				"time",wstime,
+				"phase",WIN_STIME,0);
+			dbaddv(tra,0,"sta",sta,
+				"time",wetime,
+				"phase",WIN_ETIME,0);
+			dbaddv(tra,0,"sta",sta,
+				"time",astime,
+				"phase",ANAL_STIME,0);
+			dbaddv(tra,0,"sta",sta,
+				"time",aetime,
+				"phase",ANAL_ETIME,0);
+			dbaddv(tra,0,"sta",sta,
+				"time",twstime,
+				"phase",TWIN_STIME,0);
+			dbaddv(tra,0,"sta",sta,
+				"time",twetime,
+				"phase",TWIN_ETIME,0);
+
+			strcpy(laststa,sta);
+			arrival_count += 7;
+		}
+	}
+	return(arrival_count);
+}
+#define SEM_CHAN_NAME "semb"
+#define COH_CHAN_NAME "cohnce"
+
+void MWtrace_put_semblance(Dbptr trdb,
+	float *avgsemb,
+	int lensemb,
+	double timeref,
+	int lag_at_peak,
+	double dt,
+	int coherence_type,
+	char *staname)
+{
+	float *semtrace;  /* We need to copy trace here */
+	char net[4]="MW"; 
+	char chan[10];
+	double calib=1.0;
+	char datatype[4]="t4";
+	double stime;
+	double samprate;
+
+	allot(float *,semtrace,lensemb);
+	scopy(lensemb,avgsemb,1,semtrace,1);
+	samprate = 1.0/dt;
+
+	switch(coherence_type)
+	{
+		case(USE_COHERENCE):
+			strcpy(chan,COH_CHAN_NAME);
+			break;
+		case(USE_SEMBLANCE):
+		default:
+			strcpy(chan,SEM_CHAN_NAME);
+	}
+	/* note this is the start time of the left side of 
+	the analysis window which is the way the lag is defined
+	internally here.  There is an ambiguity were to place
+	the sample for graphical clarity, but this needs to just
+	be documented clearly. */
+	stime = timeref + ((double)lag_at_peak)*dt;
+
+	if( dbaddv(trdb,"trace",
+		"net",net,
+		"sta",staname,
+		"chan",chan,
+		"time",stime,
+		"endtime",ENDTIME(stime,samprate,lensemb),
+		"nsamp",lensemb,
+		"samprate",samprate,
+		"calib",calib,
+		"datatype",datatype,
+		"data",semtrace,0) < 0) 
+	{
+		elog_complain(0,"dbaddv error creating coherence trace %s:%s\n",
+					staname,chan);
+	}
+}
