@@ -70,6 +70,18 @@ Entries in the regular expression that are surrounded by parentheses may
 be inserted into the replacement string as $1, $2, etc. See morphtbl(3) and
 regex(5) for more information on string replacement and regular expressions.
 
+If this is too confusing, the rule of thumb is as follows: take the source-name 
+that is showing up in the orb for your new station. Then decide what you want 
+it to be. Put in an entry that expresses that mapping. For example, if your station 
+is showing up as PN_0PPPCC_7055Z4 but you really want it to be PN_PPPCC_BHZ, 
+use an entry that says 
+
+.nf
+	/PN_0PPPCC_7055Z4/PN_PPPCC_BHZ/
+.fi
+
+More complex examples are available in the parameter file shown below.
+
 The segtype field inserted into the packets may be controlled through the parameter 
 file. By default, the segtype is NULL, i.e. "-". This default may be changed with the
 default_segtype parameter in the parameter file. A common setting is 
