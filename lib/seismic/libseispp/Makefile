@@ -9,6 +9,7 @@ MAN3=Basic_Time_Series.3 \
   GCLrays.3 \
   Three_Component_Seismogram.3 \
   Time_Series.3 \
+  interpolate1d.3 \
   metadata.3 \
   metadata_error.3 \
   resample.3 \

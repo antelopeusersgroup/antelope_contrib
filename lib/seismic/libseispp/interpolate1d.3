@@ -1,0 +1,124 @@
+'\" te
+.TH INTERPOLATOR1D 3 "$Date$"
+#
+.SH NAME
+interpolator1d - Library of basic 1D interpolator procedures
+.SH SYNOPSIS
+.nf
+#include "interpolator1d.h"
+using namespace INTERPOLATOR1D;
+// Get index position of xp in grid
+int regular_lookup(double xp, double min_x, double dx);
+int irregular_lookup(double xp, double *x,int nx);
+// low level single point interpolators
+double linear_scalar ( double x, double x1, double y1,
+                                        double x2, double y2 );
+void linear_vector (double x, double x1, double *y1,
+	double x2, double *y2, int nv, double *y);
+// single point in a grid interpolators
+double linear_scalar_regular ( double xp, double x0, double dx,
+		double *y, int nx);
+double linear_scalar_irregular(double xp,double *x, double *y, int nx);
+double *linear_vector_regular ( double	xp, double x0, double dx,dmatrix& y);
+double *linear_vector_irregular(double xp,double *x, dmatrix& y);
+// Mappers from one grid to another
+void linear_scalar_regular_to_regular(int nin, double x0in, double dxin, double *yin,
+		int nout, double x0out, double dxout, double *yout);
+void linear_scalar_irregular_to_regular(int nin, double *xin, double *yin,
+		int nout, double x0out, double dxout, double *yout);
+void linear_scalar_regular_to_irregular(int nin, double x0in, double dxin, double *yin,
+		int nout, double *xout, double *yout);
+void linear_scalar_irregular_to_irregular(int nin, double *xin, double *yin,
+		int nout, double *xout, double *yout);
+
+void linear_vector_regular_to_regular(double x0in, double dxin, dmatrix& yin,
+		double x0out, double dxout, dmatrix& yout);
+void linear_vector_irregular_to_regular(double *xin, dmatrix& yin,
+		double x0out, double dxout, dmatrix& yout);
+void linear_vector_regular_to_irregular(double x0in, double dxin, dmatrix& yin,
+		double *xout, dmatrix& yout);
+void linear_vector_irregular_to_irregular(double *xin, dmatrix& yin,
+		double *xout, dmatrix& yout);
+.fi
+.SH DESCRIPTION
+.LP
+Interpolation is a standard numerical algorithm that is needed for a long
+list of scientific computing problems.  This group of procedures provide
+a basic set of interpolator functions from one one-dimensional grid
+onto another.  The primary assumption is that the input grid is ordered 
+from smallest to largest.  Chaos will result if this basic assumption is
+violated.
+.LP
+The library assumes the grid is one of two flavors:  regular or irregular.
+Regular means the grid is uniformly sampled in the x axis (like a time
+series).  An irregular grid means one where the sampling on the x axis
+varies.  The names of the functions indicate the direction of conversion
+in a convention that should be obvious.
+.LP
+The functions are of three flavors:
+.IP (1)
+The lookup functions (\fIregular_lookup\fR and \fIirregular_lookup\fR)
+return an integer index into a vector to find the position of point xp 
+on the grid.  
+.IP (2)
+The functions \fIlinear scalar\fR, and \fIlinear_vector\fR
+are simple single point interpolators.  They return the interpolated value of a field variable
+y for a point x that is assumed to be between (x1,y1) and (x2,y2) using a
+simple linear interpolation formula.  The scalar functions assume y is a
+scalar field variable while the vector functions assume it is a vector of
+length nv.  
+.IP (3)
+The functions \fIlinear_scalar_regular,
+linear_scalar_irregular, linear_vector_regular,\fR 
+and \fIlinear_vector_irregular\fR are variants of the single point interpolators.
+They combine lookup with interpolation.  The routine locates the point xp in
+the grid and then computes the interpolated value.  The scalar routines
+return the interpolated value.  The vector routines return an array of
+doubles of length = number of rows in the dmatrix that defines the grid 
+as the argument y (see dmatrix(3)).  
+As always this array needs to be freed.  Use the C++ delete not the
+free function.
+.IP (4)
+The family of \fIlinear_TYPE_GRIDA_to_GRIDB\fR functions are mappers from 
+one grid to another.  That is, they interpolate data of TYPE (scalar or vector)
+from grid type GRIDA to grid type GRIDB.  
+.SH RETURN VALUES
+.LP
+The regular grid lookup functions will blindly return negative indices or
+an index larger than the grid size if asked.  The caller must test this
+for an error condition.  The irregular grid lookup function will return 
+0 if the requested point is smaller than the left side of the grid or
+nx-1 if the point is to the right of last grid point.  
+.LP
+With the mappers when a point that is outside the edges of the grid is requested the point
+is filled with the last valid sample to the left or right as appropriate.
+This allows these functions to always return something, although the
+result will clearly be of limited use outside the range of input data.
+.SH LIBRARY
+-lperf -lgclgrid
+.SH "SEE ALSO"
+.nf
+dmatrix(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1)
+The linear search lookup function for an irregular grid is horribly inefficient.
+For large grids a different algorithm should be used.
+.IP (2) 
+This library currently focuses exclusively on simple linear interpolators.  
+Higher order interpolators are commonly available in various mathematical 
+libraries readily available now on the web.  
+.IP (3)
+These functions try to always return something even if a point is outside
+the range of the input grid.  As noted above it does this by using the
+last point on the right or left as appropriate.  The mappers should
+probably return an int with an error code when this happens, but this
+has not been implemented.  Note that throwing an exception would be a 
+bad idea in this case as the result when an exception is thrown can
+be undefined.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+.fi
+.\" $Id$
