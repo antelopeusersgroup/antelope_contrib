@@ -346,6 +346,18 @@ dbreplay [options] view [[[orb] t0] t1|T]
 </options>
 
 <subsection Datalogger commanding>
+dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
+    execute command cmd on generic remote dataloggers
+<options>
+-waittime waittime
+-timeout timeout
+-noblock
+-noreply
+-prm
+-replytarget replytarget
+-delayhangup delayhangup
+</options>
+
 k2cmd [options] orb target datalogger cmd
     execute command cmd on remote Kinemetrics Altus digitizer
 <options>
@@ -411,6 +423,33 @@ orbxfer [-vv] file ... orb
 orbxfer [-d dir] [-vv] orb
     unpack files from orb to local directory [optionally directory dir]
 
+orb2genc [options] orbin orbout
+    convert input waveforms into unmultiplexed GENC format
+<options>
+-t translation_pf
+-start {pktid|time|OLDEST}	starting ORB read pointer
+-select select_expr
+-reject reject_expr
+-S statefile	
+-dbcalib dbcalib
+-v
+</options>
+
+orbstaseg [options] csssta orbdetect orbwfin orbwfout
+    single station waveform segmenter
+<options>
+-start {pktid|time|OLDEST}	starting ORB read pointer
+-select_wf expr
+-twin_pre twin_pre	pre-event time window for segmenting
+-twin_post twin_post	post-event time window for segmenting
+-twin_write_timeout twin_write_timeout	
+-twin_maxon twin_maxon	
+-S statefile	
+-repackage "twin subcode"	
+-detev
+-v
+</options>
+
 orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
 <options>
@@ -422,6 +461,15 @@ orbdetect [options] orbname dbname
 -select re
 -tstart t0
 -twin minutes
+-v
+</options>
+
+orbdetev2detection [options] dbfkeys orbin orbout
+    convert detev database rows to detection rows
+<options>
+-delay delay_seconds
+-start {pktid|time|OLDEST}	starting ORB read pointer
+-S statefile	
 -v
 </options>
 
@@ -683,6 +731,7 @@ orb2dbt [options] orb dbout [orbout]
 -overwrite
 -state statefile
 -pf pf
+-orbdbout orbdbout
 -v
 </options>
 
