@@ -38,7 +38,7 @@ private db2ew_wave_server [-vV] [-p pf] dbname
     attach to a CSS3.0 database and make data
     therein accessible via the Earthworm protocols.
 
-db2miniseed [-vV] [-r record_size] [-l {1|2}] [-n net] db [output]
+db2miniseed [options] db [output]
     create miniseed from input database
 <options>
 -r size	specify record size (default 4096)
@@ -46,8 +46,8 @@ db2miniseed [-vV] [-r record_size] [-l {1|2}] [-n net] db [output]
 -n net	specify default network
 </options>
 
-log2miniseed [-a] [-c chan] [-l loc] -n net -s sta log [log2 ...]
-     read input files and create miniseed
+log2miniseed [-a] [-c chan] [-l loc] -n net -s sta log ...
+     read input log files and create miniseed
 
 db2sac [options] dbin dbout
     convert css waveform files into sac format
@@ -57,7 +57,8 @@ db2sac [options] dbin dbout
 -ts t0	starting at time t0
 -te t1	ending at time t1
 -w wfdir	write waveform files into wfdir (default "sac")
--gap { none | zero | interp }	handle gaps according to rule (default zero)
+-gap {none|zero|interp}	
+	handle gaps according to rule (default zero)
 -counts	keep output waveform in counts (don't apply calib)
 </options>
 

@@ -15,24 +15,19 @@ BNS_RESEND
     # of packets to resend when orbput fails and reconnects; default 1
 
 BNS_TIMEOUT
-    overrides the default timeout used by Antelope routines on 
-    orb socket connections (and other sockets handled by bns(3) routines).
+    overrides the default timeout used by Antelope routines on orb socket connections (and other sockets handled by bns(3) routines).
 
 DATAPATH
-    overrides the default directory $ANTELOPE/data where
-    Antelope programs find a variety of data files.
+    overrides the default directory $ANTELOPE/data where Antelope programs find a variety of data files.
 
 ELOG_DELIVER
-    list of error message destinations: filenames, 
-    "stderr" or "stdout", or "orb:"hostname:port.
+    list of error message destinations: filenames, "stderr" or "stdout", or "orb:hostname:port".
 
 ELOG_DEBUG
     when set, a debugger is started for program faults
 
 ELOG_SIGNALS
-    signals for which handlers are set up;
-    default is "ILL:TRAP:FPE:BUS:SEGV:SYS".   
-    if null, don't install any handlers.
+    signals for which handlers are set up; default is "ILL:TRAP:FPE:BUS:SEGV:SYS". if null, don't install any handlers.
 
 ELOG_MAXMSG
     maximum number of messages allowed on the error log.
@@ -49,33 +44,26 @@ ELOG_TAG
 %t local time tag, eg "Thu May 29 15:27:59 1997"
 %T thread id
 %u UTC time code, eg "1997-149 21:27:59"
-<\options>
+</options>
 
 EUROPEAN_DATE
-  when set, interpret dates like xx/xx/xx  as day/month/year.  
-  various output formats are also changed equivalently.
+  when set, interpret dates like xx/xx/xx  as day/month/year. various output formats are also changed equivalently; see time_formats.pf for alternative.
 
 FORBRECVTIME
   when set, record time packet is received in forb(5) files
 
 GRX_PSCOLOR
-  affects niceplot hardcopy output, eg from dbpick.
-
-  full - full color PostScript 
-
-  fore - color PostScript for contour images, but background is white
-
-  color -  color PostScript only for color contour images
-
-  not set -  grayscale or black&white  output
+  affects niceplot hardcopy output, eg from dbpick:
+  full     full color PostScript 
+  fore     color PostScript for contour images, but background is white
+  color    color PostScript only for color contour images
+  unset    grayscale or black&white  output
 
 GRX_FONTPATH
-  overrides the default location $ANTELOPE/data/fonts.bin for the binary font file
-  used by niceplot 
+  overrides the default location $ANTELOPE/data/fonts.bin for the binary font file used by niceplot 
 
 PFPATH
-  overrides the default path to parameter
-  files "$(ANTELOPE)/data/pf:."
+  overrides the default path to parameter files: "$(ANTELOPE)/data/pf:."
 
 SCHEMA_DEFAULT
   overrides the default schema (css3.0) to use when no descriptor file is present.   
@@ -91,5 +79,4 @@ TTMODEL
 
 TAUP_PATH
 TAUP_TABLE
-  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel
-  time tables and the default tau-p model iasp91
+  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel time tables and the default tau-p model iasp91

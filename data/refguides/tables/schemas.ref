@@ -67,16 +67,8 @@ places1.2
     Describes places on the earth: cities, populated places, summits etc.
     Includes support for specifying polygonal regions.
 
-rt1.0
-    extends css3.0 to support automated real-time processing.
-
 rtexec1.0
     supports Antelope real-time executive program rtexec. 
-
-SDAS1.0
-    extends css3.0 to support automated real-time data 
-    acquisition, transport, and processing for the Seismic Data Acquisition
-    System.
 
 statrans1.1
     Supports translation of station-names from station-name-only (used 

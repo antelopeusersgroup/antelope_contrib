@@ -1,4 +1,5 @@
 <chapter Datascope database tools>
+<commands>
 
 <subsection Database Schemas>
 <commands>
@@ -39,20 +40,21 @@ dbsnapshot [options] db [start_time [end_time|period]]
 -r	include response files
 -v	more verbose
 -w M	minutes M of data before now
-<options>
+</options>
 
 syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
     create tar snapshot of system configuration 
 
 <subsection Creating and Editing Databases>
+<commands>
 dbe [-e] db[.table] [ db[.table] ...]
-    general purpose viewer/editor for databases (see .dbe.pf to configure)
+    general purpose viewer/editor for databases 
 
 dberesp [db.table | response ..]
-    plot response curves from database table or plain response file(s)
+    plot response curves from database table or response files
 
 db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
-    run arbitrary commands on Datascope extfiles
+    run arbitrary commands on database external files
 
 db_textedit db.table
     run by dbe to edit external text files
@@ -66,10 +68,8 @@ db_showurl db.table
 dbset [-clv] db[.table] field from [to]
     change value of attribute field throughout database, when initial value is from ('*' specifies all values). -c asks before changing, -v shows each change
 
-
 dbconvert [-fv] [-s new_schema] db dbout[.table]
     create dbout (or dbout.table) from database db, using rules from dbconvert parameter file
-
 
 dbcp [options] dbin[.table] dbout
     copy database dbin (or dbin.table) to database dbout
@@ -198,6 +198,7 @@ db2xml [options] aview [name expr [name expr ...]]
 </options>
 
 <subsection Verifying Databases>
+<commands>
 dbcheck [-v] db[.table]
     scans database (or table) for lines with invalid length
 

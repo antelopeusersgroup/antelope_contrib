@@ -544,8 +544,7 @@ orbmag [options] orbwf orbdb dbname
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
--state filename
- 	save state in filename
+-state file	save state in file
 -p pf
 -auth_expr auth_expr
 -target_orbmag torbmag
@@ -558,7 +557,7 @@ orbmag [options] orbwf orbdb dbname
 orbampmag  [options] orbwf orbdb dbname
     real time computation of mb, ML or Ms magnitudes
 <options>
--auth_expr auth_expr	only process packets with matching author
+-auth_expr auth	only use packets with matching author
 -make_magtables	make netmag and stamag packets
 -nowait	quit when no packets left to process
 -number n	limit on packets to process
@@ -641,8 +640,8 @@ dlmon [options] orb [-cmd cmdorb]
 -select_log expr_log
 </options>
 
-dlmontxt [-m select_expr] [-r reject_expr] [-d dlselect_expr] [-M mail_list] orbname [orbname2 [...]]
-     generate simple, terse status summary for dataloggers
+dlmontxt [options] orbname [orbname2 [...]]
+     generate terse status summary for dataloggers
 <options>
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
@@ -661,14 +660,15 @@ orbmonrtd [options] orb
 -height pixels	single trace window height in pixels
 -hmax hmax	maximum height of main window in pixels
 -ntinc nt	number of traces between time scales
--pf pf	
+-pf pf	use alternate parameter file
 -redraw	start with oldest orb packet
 -reject re	reject channels matching re
 -select re	select channels matching re
 -source net_sta_chan
- 	select display channel on command line
+ 	select display channels on command line
 -title title	title for orbmonrtd window
--tshift_time t	specify initial time of window rhs, "-" to use first packet read 
+-tshift_time t0	specify t0 for right edge of window
+	use t0="-" to use first packet time
 -twin minutes	window size in minutes
 -unmap	remove controls from display (for vnc in browser)
 -width pixels	trace width in pixels
@@ -681,7 +681,7 @@ orbdisp [options] orbserver [start [range|end]]
 -c re	save channel matching regular expression re
 -m re	select packets matching regular expression re
 -r re	reject packets matching regular expression re
--l latency	specify how long window may pause waiting for data
+-l latency	expected max latency for packets
 -n	show network on display
 -p period	specify minimum packet period
 -w t	make time window t seconds
@@ -793,7 +793,7 @@ orblatency [options] orb database
 -m re	select packets matching regular expression re
 -n n	quit after n iterations
 -r re	reject packets matching regular expression re
--p period	specify period over which latencies are averaged
+-p period	period over which latencies are averaged
 -v	more verbose
 </options>
 
@@ -808,7 +808,7 @@ orbmsd2days [options] orb
 -r re2	reject packets matching regular expression re2
 -s st	save data only when block start time >= st
 -e et	save data only when block start time < et
--w wf	alternate pattern for the output miniseed volumes
+-w wf	pattern for the output miniseed files
 -v	Be more verbose.
 </options>
 
@@ -873,7 +873,7 @@ online_backup [options] [directories]
 -d dir	specify an alternate base directory
 -m	send mail rather than writing to stdout
 -n	don't actually run backup, but show what would happen
--p pf	specify parameter fil
+-p pf	specify parameter file
 -t t	backup files modified more recently than time t
 -v	more verbose
 -V	show generated perl procedure which selects files to be saved
@@ -1020,7 +1020,7 @@ forbserver [options] filename
 -a
 -b
 -x	specify format in output forb(5) file
--f	flash mode: disregard timing, pump out data as quickly as possible
+-f	disregard timing, pump data out quickly 
 -l	loop over input file
 -v	more verbose
 </options>

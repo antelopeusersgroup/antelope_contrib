@@ -270,8 +270,8 @@ tkdbpick [options] {dbname|-}
 trdisp [-g geom] [-r] [-s subset] [-w hours] database[.table] [start [range]]
     display waveform data and arrivals from database or view
 
-dbheli [options] dbname sta chan tstart twinline nlines scale
-    make helicorder type plot of waveform
+dbheli [options] db sta chan tstart twinline nlines scale
+    make helicorder type plot of channel waveforms
 <options>
 -f filter
 -o dborigin
@@ -288,7 +288,7 @@ dbchkwf [ -v ] database
 dbcmpwf [-acmv]    db1[.table] record1 db2[.table] record2
 dbcmpwf [-acmsv]   db1[.table] db2[.table]
 dbcmpwf [-acmv] -i db1[.table] [db2[.table]]
-dbcmpwf [-cmtv]    db1[.table] db2[.table] time {endtime|range}
+dbcmpwf [-cmtv]    db1[.table] db2[.table] t0 {t1|range}
     compare waveform files from two database records or tables.
 
 dbversdwf [-s subset] [-T maxtdelta] [-dftuvwxX] database
