@@ -1,0 +1,51 @@
+.TH PF2XML 3 "$Date$"
+.SH NAME
+pf2xml \- Convert a parameter-file to XML
+.SH SYNOPSIS
+.nf
+char *pf2xml( Pf *pf, char *name, char *prolog, int flags )
+.fi
+.SH DESCRIPTION
+pf2xml converts an Antelope parameter-file to eXtensible Markup 
+Language (XML). Currently four tags are defined, those being pffile, 
+pfarr, pftbl, and pfstring. Each may have an optional name as an attribute. 
+The composite entities pffile, pfarr, and pftbl may be nested to 
+arbitrary depth. pffile and pfarr elements require that their child
+elements have non-null names. pftbl elements require that their child 
+elements do not have names. A pfstring may be any ASCII-representable string. 
+If flags is set to PFXML_NEWLINES, newlines are added after tags 
+and values. Otherwise the return value is one long string. Conversion 
+errors result in a null value being returned.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+pf2xml returns a character string with the XML value, or a NULL 
+string on error. 
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pf2xml(1), pf(3), pf(5)
+.fi
+.SH "BUGS AND CAVEATS"
+No indentation is supported. 
+
+Only one simplistic output format is supported.
+
+This routine is under development and may change without notice. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
