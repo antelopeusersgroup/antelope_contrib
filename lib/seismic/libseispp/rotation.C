@@ -1,5 +1,8 @@
 #include "seispp.h"
 #include "perf.h"
+namespace SEISPP
+{
+
 void Three_Component_Seismogram::rotate_to_standard()
 {
 	double *work[3];
@@ -15,12 +18,12 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//
 		for(i=0;i<3;++i)
 		{
-			dcopy(ns,x[0].s,1,work[i],1);
+			dcopy(ns,&x[0].s[0],1,work[i],1);
 			dscal(ns,tmatrix[0][i],work[i],1);
-			daxpy(ns,tmatrix[1][i],x[1].s,1,work[i],1);
-			daxpy(ns,tmatrix[2][i],x[2].s,1,work[i],1);
+			daxpy(ns,tmatrix[1][i],&x[1].s[0],1,work[i],1);
+			daxpy(ns,tmatrix[2][i],&x[2].s[0],1,work[i],1);
 		}
-		for(i=0;i<3;++i) dcopy(ns,work[i],1,x[i].s,1);
+		for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
 	}
 	else
 	{
@@ -69,12 +72,12 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//
 		for(i=0;i<3;++i)
 		{
-			dcopy(ns,x[0].s,1,work[i],1);
+			dcopy(ns,&x[0].s[0],1,work[i],1);
 			dscal(ns,tmatrix[i][0],work[i],1);
-			daxpy(ns,tmatrix[i][1],x[1].s,1,work[i],1);
-			daxpy(ns,tmatrix[i][2],x[2].s,1,work[i],1);
+			daxpy(ns,tmatrix[i][1],&x[1].s[0],1,work[i],1);
+			daxpy(ns,tmatrix[i][2],&x[2].s[0],1,work[i],1);
 		}
-		for(i=0;i<3;++i) dcopy(ns,work[i],1,x[i].s,1);
+		for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
 		components_are_orthogonal = true;
 	}
 	//
@@ -186,12 +189,12 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
 	for(i=0;i<3;++i)work[i] = new double[ns];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,x[0].s,1,work[i],1);
+		dcopy(ns,&x[0].s[0],1,work[i],1);
 		dscal(ns,tmatrix[i][0],work[i],1);
-		daxpy(ns,tmatrix[i][1],x[1].s,1,work[i],1);
-		daxpy(ns,tmatrix[i][2],x[2].s,1,work[i],1);
+		daxpy(ns,tmatrix[i][1],&x[1].s[0],1,work[i],1);
+		daxpy(ns,tmatrix[i][2],&x[2].s[0],1,work[i],1);
 	}
-	for(i=0;i<3;++i) dcopy(ns,work[i],1,x[i].s,1);
+	for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
 	//
 	//If they weren't before they are now
 	//
@@ -225,12 +228,12 @@ void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
 	double twork[3];
 	for(i=0;i<3;++i)
 	{
-		dcopy(ns,x[0].s,1,work[i],1);
+		dcopy(ns,&x[0].s[0],1,work[i],1);
 		dscal(ns,a[i][0],work[i],1);
-		daxpy(ns,a[i][1],x[1].s,1,work[i],1);
-		daxpy(ns,a[i][2],x[2].s,1,work[i],1);
+		daxpy(ns,a[i][1],&x[1].s[0],1,work[i],1);
+		daxpy(ns,a[i][2],&x[2].s[0],1,work[i],1);
 	}
-	for(i=0;i<3;++i) dcopy(ns,work[i],1,x[i].s,1);
+	for(i=0;i<3;++i) dcopy(ns,work[i],1,&x[i].s[0],1);
 	// update tmatrix -- note this is a matrix multiply
 	// so this accumulates transformations
 	for(i=0;i<3;++i)
@@ -244,3 +247,4 @@ void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
 	}
 	 for(i=0;i<3;++i) delete [] work[i];
 }
+} // Termination of namespace SEISPP definitions

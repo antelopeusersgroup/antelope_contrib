@@ -1,4 +1,7 @@
 #include "seispp.h"
+namespace SEISPP
+{
+
 /* This function uses the analytic formula from Aki and Richards for
 particle motion emergence angle for a P wave with a particular slowness
 emergent at a half space.  The formula is not just Snell's law because
@@ -78,3 +81,4 @@ Spherical_Coordinate compute_ray_coordinates(
 	while(rayref.phi < -M_PI) rayref.phi += M_PI;
 	return(rayref);
 }
+} // Termination of namespace SEISPP definitions

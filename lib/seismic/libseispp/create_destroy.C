@@ -1,8 +1,30 @@
+#include "tr.h" // Antelope trace library
 #include "seispp.h"
+namespace SEISPP
+{
 //
 // simple constructors for the Time_Series object are defined inline
 // in seispp.h.  First the copy constructors
 //
+Time_Series::Time_Series()
+{
+	live=false;
+	s.reserve(0);
+	dt=0.0;
+	t0=0.0;
+	ns=0;
+	tref=absolute;
+}
+Time_Series::Time_Series(int nsin)
+{
+	live=false;
+	s.reserve(nsin);
+	dt=0.0;
+	t0=0.0;
+	ns=0;
+	tref=absolute;
+}
+	
 Time_Series::Time_Series(const Time_Series& tsi)
 {
 	int i;
@@ -14,11 +36,9 @@ Time_Series::Time_Series(const Time_Series& tsi)
         md= Metadata(tsi.md);
 	if(live)
 	{
-	        s=new double[ns];
-	        for(i=0;i<tsi.ns;++i) s[i]=tsi.s[i];
+		s.reserve(ns);
+		s=tsi.s;
 	}
-	else
-		s=NULL;
 }
 Time_Series::Time_Series(const Time_Series *tsi)
 {
@@ -32,11 +52,9 @@ Time_Series::Time_Series(const Time_Series *tsi)
         md= Metadata(tsi->md);
 	if(live)
 	{
-        	s=new double[ns];
-        	for(i=0;i<tsi->ns;++i) s[i]=tsi->s[i];
+		s.reserve(ns);
+		s=tsi->s;
 	}
-	else
-		s=NULL;
 }
 //
 // This much more complex example uses a Pf to build a time series
@@ -51,11 +69,11 @@ Time_Series::Time_Series(Pf *pf)
 	int foff;
 	FILE *fp;
 	string dtype;
+	double *inbuffer;
 
-	s=NULL;  // explictly necessary to avoid problems when an error is thrown
 	pfstr = pf2string(pf);
 	try {
-		md.load_metadata((string)pfstr);
+		md=Metadata(pfstr);
 		free(pfstr);
 		// Names space is frozen.  Not as general as it
 		// probably should be, but until proven necessary 
@@ -69,8 +87,8 @@ Time_Series::Time_Series(Pf *pf)
 		else
 			tref = absolute;
 		dtype = md.get_string("datatype");
-		if(dtype!="t4") 
-			throw(seispp_error("Unsupported datatype:  pf constructor only supports t4 data with external files"));
+		if(dtype!="t8") 
+			throw(seispp_error("Unsupported datatype:  pf constructor only supports t8 data with external files"));
 		dir = md.get_string("dir");
 		dfile = md.get_string("dfile");
 		foff = md.get_int("foff");
@@ -78,27 +96,83 @@ Time_Series::Time_Series(Pf *pf)
 		if((fp=fopen(fname.c_str(),"r")) == NULL) 
 			throw("Open failure for file "+fname);
 		if (foff>0)fseek(fp,(long)foff,SEEK_SET);
-		s = new double[ns];
-		if(fread((void *)(s),sizeof(double),ns,fp)
+		inbuffer = new double[ns];
+		if(fread((void *)(inbuffer),sizeof(double),ns,fp)
 				!= ns ) 
 		{
-			delete [] s;  // memory leak possible without this
+			delete [] inbuffer;  // memory leak possible without this
 			throw(seispp_error("fread error on file "+fname));
 		}
+		s.reserve(ns);
+		for(int i=0;i<ns;++i) s[i]=inbuffer[i];
+		delete [] inbuffer;
 		fclose(fp);
 	}
 	catch (Metadata_error mderr)
 	{
-		// We can land here if the object is only partially constructed
-		// A NULL value of s is handled correctly in the destructor
-		// so we clear s before returning with anexception
-		//
-		if(s!=NULL) delete [] s;
+		// Land here when any of the metadata routines fail
 		mderr.log_error();
 		throw seispp_error("Constructor for Time_Series object failed");
 
 	}
 }
+Time_Series::Time_Series(Dbptr db,
+		Metadata_list& md_to_extract, 
+			Attribute_map& am)
+{
+	float *inbuffer=NULL;
+	try{
+		double te,t0read,teread;
+		int nread;
+
+		md=Metadata(db,md_to_extract,am);
+		dt = 1.0/md.get_double("samprate");
+		t0 = md.get_double("starttime");
+		te = md.get_double("endtime");
+		ns = md.get_int("nsamp");
+		tref = absolute;  // perhaps to dogmatic
+		/* This will create a memory leak if trgetwf fails 
+		// trgetwf returns an error for multiple conditions and
+		// some are more fatal than others.  For most applications
+		// I can imagine any error in trgetwf is serious and probably
+		// would normally lead to an exit.
+		//
+		// Problem is that I can't just test for a NULL pointer 
+		// and expect it is safe to free inbuffer before exit
+		*/
+		if(trgetwf(db,0,&inbuffer,NULL,t0,te,
+					&t0read,&teread,&nread,
+					0,0))
+				throw seispp_error("Time_Series database constructor:  trgetwf error");
+		if(nread!=ns)
+		{
+			cerr << "Data read mismatch on row "
+				<< db.record 
+				<< " of input database" << endl
+				<< "Expected to read "
+				<< ns 
+				<< " data points but read "
+				<< nread << endl;
+			ns = nread;
+			t0 = t0read;
+			md.put_metadata("endtime",teread);
+		}
+		s.reserve(ns);
+		for(int i=0;i<ns;++i) s[i]=inbuffer[i];
+		// trgetwf is a C function so we need to use free to 
+		// release the space it allocated.
+		free(inbuffer);
+	}
+	catch (Metadata_error mderr)
+	{
+		// Land here when any of the metadata routines fail
+		mderr.log_error();
+		throw seispp_error("Constructor for Time_Series object failed");
+
+	}
+}
+
+	
 
 // Default constructor for Three_Component_Seismogram could be 
 // done inline in seispp.h, but it is complication enough I put
@@ -139,7 +213,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(int nsin)
 			else
 				tmatrix[i][j]=0.0;
 	for(int i=0; i<3;++i) 
-		x[i].s = new double(nsin);
+		x[i].s.reserve(ns);
 	
 }
 Three_Component_Seismogram::Three_Component_Seismogram
@@ -155,7 +229,7 @@ Three_Component_Seismogram::Three_Component_Seismogram
         components_are_cardinal=t3c.components_are_cardinal;
 	for(i=0;i<3;++i)
 		for(j=0;j<3;++j) tmatrix[i][j]=t3c.tmatrix[i][j];
-	for(i=0;i<3;++i) x[i]=Time_Series((t3c.x)+i);
+	for(i=0;i<3;++i) x[i]=Time_Series(t3c.x[i]);
 }
 //No destructor is needed for current Three_Component_Seismogram object
 // because the Time_Series destructor and default deletions should
@@ -192,3 +266,4 @@ Three_Component_Ensemble::Three_Component_Ensemble(int nstations, int nsamples)
 	}
 	mdlist=newtbl(0);
 }
+} // Termination of namespace SEISPP definitions

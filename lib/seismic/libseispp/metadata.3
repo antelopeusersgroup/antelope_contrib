@@ -4,88 +4,231 @@
 Metadata - A C++ handler for variable metadata in an object
 .SH SYNOPSIS
 .nf
+include "metadata.h"
+using namespace SEISPP;
 class Metadata
 {
 public:
         Metadata();
-	Metadata(const Metadata&)
-		throw(Metadata_parse_error);
-	Metadata& operator=(const Metadata& );
+        Metadata(Pf*);
+        Metadata(char *) throw(Metadata_parse_error);
+        Metadata(string) throw(Metadata_parse_error);
+        Metadata(Dbptr,Metadata_list&,Attribute_map&) throw(Metadata_error);
+        Metadata(const Metadata&)
+                throw(Metadata_parse_error);
+        Metadata& operator=(const Metadata& );
         ~Metadata();
 
         double get_double(string) throw(Metadata_get_error);
         int get_int(string)throw(Metadata_get_error);
         string get_string(string)throw(Metadata_get_error);
         bool get_bool(string)throw(Metadata_get_error);
-	// The next two are antelope specific
-	Tbl *get_list(string)throw(Metadata_get_error);
-	Arr *get_map(string)throw(Metadata_get_error);
-	//These put new metadata in
-	//These use the same name but depend on overloading
+        // The next two are antelope specific
+        Tbl *get_list(string)throw(Metadata_get_error);
+        Arr *get_map(string)throw(Metadata_get_error);
+        //These put new metadata in
+        //These use the same name but depend on overloading
         void put_metadata(string,double);
         void put_metadata(string,int);
         void put_metadata(string,string); // C++ basic string 
         void put_metadata(string,char *);  // for plain C strings
         void put_metadata(string,bool);
-	void put_metadata(string,Arr *);  // antelope map
-	void put_metadata(string,Tbl *);  // antelope list
-	// This compiles a large string with pfcompile to load a full pf
-        void load_metadata(string) throw(Metadata_parse_error);
-	void load_metadata(char *) throw(Metadata_parse_error);
-	void print_all_metadata();
-	Pf *extract_all_metadata_to_pf();
+        void put_metadata(string,Arr *);  // antelope map
+        void put_metadata(string,Tbl *);  // antelope list
+        friend ostream& operator<<(ostream&,Metadata&);
+        void print_all_metadata();
+        Pf *extract_all_metadata_to_pf();
+
 };
+
+enum MDtype {MDreal, MDint, MDstring, MDlist, MDmap, MDboolean, MDinvalid};
+typedef struct Metadata_typedef {
+        string tag;
+        enum MDtype mdt;
+} Metadata_typedef;
+typedef list<Metadata_typedef> Metadata_list;
+Metadata_list pfget_mdlist(Pf *pf,string tag);
 .fi
 .SH DESCRIPTION
 .LP
 Metadata is a proverbial problem in data processing.  
-By metadata I mean a set of parameters that are associated with 
+By metadata I mean a set of ancillary parameters that are associated with 
 a data object.  Some parameters are essential for describing
 an object while others are not always needed.  The later 
-are what I mean by metadata.  That is, one
-algorithm may require a set of metadata while another does not.
+are what I mean by metadata.  
 Dealing with this causes major portability and consistency issues
 in data processing.  The traditional solution is using a fixed 
-name space through parameters stored as headers.  The more modern
-approach would be to input required parameters and use some 
-elegantly designed inheritance mechanism with an object-oriented
-programming language like C++.  That is, each algorithm would 
-inherit a base class and add other parameters to a data structure
-it wanted to use internally.  
+name space through parameters stored as headers.  
+The Metadata object provides a more flexible and extendible approach
+to dealing with this problem.
 .LP
-The Metadata class in this library is a generalization of this idea.
+The Metadata class in this library is a generalization of the
+idea of a header to store metadata.  
 Rather than burden code with different sets of extracted metadata for
 each algorithm, the model here is to place the metadata in a private
 namespace.  This is a classic use of data hiding and abstraction of
-the interface to a concept:  here the pool of metadata tagged with 
-a name key.  The basic idea is that a data object to be used in 
-some data processing model will inherit Metadata as a base class.
-Truly required data from the Metadata space can (and should) be 
-extracted immediately into binary components of the inherited 
-class.  Other elements can be left in the Metadata space and 
-extracted only when needed by a particular algorithm within a 
-program.  This allows data objects to be specified with the 
-minimum number of base parameters while having some assurance
-that algorithms using other parameters have a hope of getting
-access to them without creating a specialized data structure 
-for each algorithm.  
+the interface to a concept:  here the pool of metadata is tagged with 
+a name key.  The basic idea is that a data object that is to be used in 
+some data processing algorithm will include a Metadata object as 
+a component of a higher order object.  A good example of how this
+is intended is this fragment of the Time_Series object definition
+in SEISPP that uses a Metadata object as a component.
+.nf
+class Time_Series  
+{
+public:      
+	bool live;
+        Metadata md;
+        double dt,t0;
+        int ns;
+        Time_Reference_Type tref;
+        vector<double>s;
+        ...  more components of object definition
+
+};
+.fi
+Constructors for a Time_Series include methods to copy or
+build the Metadata object as part of the Time_Series whose
+actual data is stored in the vector<double> STL container. 
+This definition of a time series requires start time (t0),
+sample interval (dt), and the number of samples (ns).  
+Any other elements of special interest are assumed held
+in the Metadata object.  
 .LP
-The Metadata space is created by one of the constructors 
-described in detail below.  The \fIload_metadata\fR function 
-can be used to compile a block of parametric data into a 
-Metadata space.  The current implementation uses the pf(5)
-format of Antelope and calls pfcompile( see pf(3)) but 
-the idea is that alternative formats could be used to build
-a Metadata space provided the have a mechanism to tag each
-item with a unique name.  Since parameters of standard types
-can be placed into the Metadata space one at a time with the 
-overloaded \fIput_metadata_by_name\fR functions.  The name
-field in all puts is used to tag the parameter.  If the same
-name is used multiple times the last put will be the one used.
-(The follows the same model described in pf(3) on which the
-library is based.  If anyone ever tried to replace that 
-functionality with another approach this functionality should
-be maintained, however, as applications will depend on it.)
+The Metadata space is created by one of several constructors.
+All the constructors for a Metadata object use a default 
+set of parameters.  Defaulted parameters are loaded from an 
+Antelope parameter file with the fixed name of metadata_default.pf.
+This file follows standard rules of pf files using the PFPATH
+search method so be cautious as stray parameters are easily
+loaded or a program can abort because this file is missing.
+The default constructor loads only this set of parameter.
+Metadata(char*) uses Antelope's pfcompile function
+to append parameter file like input data loaded in the form
+a string (char * and string forms are supplied for convenience).  
+The Pf constructor, Metadata (Pf*), is similar but appends the
+contents of Pf in the Metadata object's namespace.  
+The database constructor allows loading metadata from a database.
+It's calling sequence is
+.nf
+Metadata(Dbptr db,Metadata_list& mdl,Attribute_map& am)
+.fi
+where db must point at a single database row and am is an associated
+object with this definition:
+.nf
+
+class Attribute_map
+{
+public:
+        map<string,Attribute_Properties> attributes;
+
+        Attribute_map(Pf *pf,string name);  
+        Attribute_map(string);
+        Attribute_map(const Attribute_map&);
+        Attribute_map& operator=(const Attribute_map&);
+};
+.fi
+noting that the STL map container holds the following objects:
+.nf
+class Attribute_Properties
+{
+public:
+        string db_attribute_name;
+        string db_table_name;
+        string internal_name;
+        MDtype mdt;
+        Attribute_Properties();
+        Attribute_Properties(string);// main constructor parses string 
+        Attribute_Properties(const Attribute_Properties&);
+        Attribute_Properties& operator=(const Attribute_Properties&);
+};
+.fi
+This STL map is used to provide a general way to map data from an 
+external namespace to an internal one.  For example, externally
+a database attribute might be referred to the Antelope
+word with a name like "arrival.time", but internally you 
+might want to refer to this as "atime" for simplicity or 
+to mesh with some other naming convention.  Bear in mind that
+is is the internal name that will be needed to retrieve the
+correct information from a Metadata object.  This could be 
+cumbersome baggage, but it is assumed this can be hidden from
+most users by defining this mapping in the global parameter
+file for the application.  The Pf constructor for 
+the Attribute_map object, which is the one that that
+would probably normally be used to build this, looks for 
+a Tbl pf list with the key defined by the string
+that is the second argument of the constructor.  This is expected
+to be followed by a list of pairs of (external,internal) names.
+For example, if we set the key to "Sample_Attribute_Map" we would
+want an entry like this in the parameter file:
+.nf
+Sample_Attribute_Map &Tbl{
+#internal_name	db_attribute_name	db_table_name	MDtype
+sta		sta			wfdisc		string
+chan		chan			wfdisc		string
+wfstime		time			wfdisc		real
+Ptime		time			arrival		real
+Stime		time			arrival		real
+wfetime		endtime			wfdisc		real
+nsamp		nsamp			wfdisc		integer
+samprate	samprate		wfdisc		real
+wfdir		dir			wfdisc		string
+wfdfile		dfile			wfdisc		string
+}
+.fi
+Note the order of the tokens is fixed and the top row is a comment
+that defines this rigid order.  Tokens are separated by standard
+unix white space.  When the constructor reads this data there must
+be exactly four token per line or the constructor will throw a
+Metadata_error exception object (see below).  
+.LP
+The Attribute_map should normally be static and defines the fixed
+mapping of an internal namespace to a collection of metadata stored
+in an external database.  Hence, the Attribute_map has an intrinsic
+database model for the data it is indexing.  That is, don't expect it
+to be capable of defining anything that cannot be stored in an
+antelope database.  If you need additional capabilities the interface
+allows it, but only simple types are currently supported in the 
+MDtype definition.  
+.LP
+The Attribute_map should normally be loaded from a parameter file
+early on in a programs initialization phase.  It should define the
+entire namespace of parameters of interest.  The information actually
+passed in and out of a program is controlled by a Metadata_list 
+object.  Metadata_list objects might commonly be constructed 
+using different sets of names for input and output.  These are 
+easily constructed from a parameter file using the function 
+pfget_mdlist defined as:
+.nf
+Metadata_list pfget_mdlist(Pf *pf, string pftag);
+.fi
+where pf is an Antelope Pf handle (see man pf(3)) and pftag is a 
+string that identifies a tag to an &Tbl entry in a parameter file.
+For example, to select only entries from the wfdisc table for the
+example Attribute_map defined above one could set pftag="Input_mdlist"
+and place the following the the parameter file used for initialization:
+.nf
+Input_mdlist &Tbl{
+sta		string
+chan		string
+wfstime		real
+wfetime		real
+nsamp		integer
+samprate	real
+wfdir		string
+wfdfile		string
+}  
+.fi
+.LP
+Putting all this together,
+the Attribute_map and Metadata_list are used together in the 
+database constructor;  the Attribute_map defines the namespace
+mapping from external (database centric naming) to a set of 
+internal names while the Metadata_list passed to that constructor
+defines what metadata to attempt to extract from the database.
+The db pointer, db, is expected to be one row of a database view.
+This can be a join of several tables as the table names are resolved
+through the Attribute_map.
 .LP
 Metadata are retrieved by the get_type 
 functions.  The get routines will throw an exception if the requested
@@ -108,25 +251,11 @@ metadata requests require different actions.
 As in all proper error handlers the program can abort, set
 a default and try to continue, or something else.  
 .LP
-The default parameter problem is so pervasive, on the other hand,
-that the Metadata interface uses a more elaborate model for trying
-to handle this problem in a general way.  On program startup a 
-program using this library will search for an parameter file
-with the default name of "metadata_defaults.pf".  (This can be
-changed to a different parameter file by setting the environment
-variable METADATA_DEFAULTS to an alternative pf name -- noting 
-the usual rule about NOT including the ".pf" extension.)  
-These parameters are loaded as defaults for the Metadata space.  
-The default constructor loads this Metadata to build the defaults
-for parameters.  This provides a general way to set defaults 
-at run time, although it may cause serious confusion if the
-user does not recognize that this is going on.  
-.LP
-The \fIprinta_all_metadata\fR and \fIextract_all_metadata_to_pf\fR functions
-are ways to extract retrieve an entire metadata object's contents.  
-The first probably should be converted to the << operator.  The later
-retrieves a copy of the metadata as an Antelope pf. 
-
+A copy constructor and an assignment operator are provided to
+allow depositing Metadata objects into STL containers.  
+An output function is supplied through the "<<" friend function.
+A corresponding input function was intentionally not included in
+the class definition.  
 .SH FILES
 .LP
 A defaults parameter file must be found in the PFPATH 
@@ -143,10 +272,19 @@ $(STOCKLIBS)
 pf(3), pf(5), pfecho(1)
 .fi
 .SH "BUGS AND CAVEATS"
-.LP
+.IP (1)
 The dark side of the generality is some loss of efficiency and 
 bloated memory usage because in this implementation all metadata
 are stored as strings in an Antelope pf structure.  
+.IP (2)
+The Attribute_map object adds complexity to something that is already
+a bit messy. Applications using these functions should strive to hide
+this element of the implementation from normal use.  In most cases this
+is expected to mean you will build a static Attribute_map pf description
+for all programs using this library and a particular database 
+schema.  In the same way the mdlist can and should be prepared in
+standard pf file for a program, placed in the standard Antelope location
+for pf files, and not be advertised to the user.  
 .SH AUTHOR
 .nf
 Gary L. Pavlis

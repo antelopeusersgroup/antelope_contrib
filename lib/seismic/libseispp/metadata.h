@@ -3,14 +3,57 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <map>
 #include "stock.h"
 #include "arrays.h"
 #include "pf.h"
-// This line can be removed for Antelope 4.5
-extern "C" {
-Pf *pfdup(Pf *);
-}
+#include "db.h"
+
 using namespace std;
+namespace SEISPP 
+{
+//
+//This object is used for selective copy
+//
+enum MDtype {MDreal, MDint, MDstring, MDlist, MDmap, MDboolean, MDinvalid};
+typedef struct Metadata_typedef {
+	string tag;
+	enum MDtype mdt;
+} Metadata_typedef;
+
+typedef list<Metadata_typedef> Metadata_list;
+
+// Constructors of a Metadata from a database are driven by
+// the following pair of objects.  Attribute_Properties provides
+// the data to map from db namespace to an internal namespace.
+// Attribute_map provides maintains the actual map of Attribute_Properties
+// objects keyed by a string = Attribute_Properties::internal_name
+
+class Attribute_Properties
+{
+public:
+	string db_attribute_name;
+	string db_table_name;
+	string internal_name;
+	MDtype mdt;
+	Attribute_Properties();
+	Attribute_Properties(string);// main constructor parses string 
+	Attribute_Properties(const Attribute_Properties&);
+	Attribute_Properties& operator=(const Attribute_Properties&);
+};
+
+class Attribute_map
+{
+public:
+	map<string,Attribute_Properties> attributes;
+
+	Attribute_map(Pf *pf,string name);  
+	Attribute_map(string);
+	Attribute_map(const Attribute_map&);
+	Attribute_map& operator=(const Attribute_map&);
+};
+
+
 //
 // This follows a method of inherited objects as a way to build
 // exception handlers described in books by Stroustrup on C++
@@ -21,7 +64,10 @@ class Metadata_error
 {
 public:
 	string message;
-	virtual void log_error(){cerr<<"Pf error: "<< message<<endl;}
+	Metadata_error(){message="Metadata error";};
+	Metadata_error(string mess){message=mess;};
+	Metadata_error(char *mess){message=mess;};
+	virtual void log_error(){cerr<<"Metadata error: "<< message<<endl;}
 };
 class Metadata_get_error : public Metadata_error
 {
@@ -51,6 +97,10 @@ class Metadata
 {
 public:
         Metadata();
+	Metadata(Pf*);
+	Metadata(char *) throw(Metadata_parse_error);
+	Metadata(string) throw(Metadata_parse_error);
+	Metadata(Dbptr,Metadata_list&,Attribute_map&) throw(Metadata_error);
 	Metadata(const Metadata&)
 		throw(Metadata_parse_error);
 	Metadata& operator=(const Metadata& );
@@ -72,29 +122,19 @@ public:
         void put_metadata(string,bool);
 	void put_metadata(string,Arr *);  // antelope map
 	void put_metadata(string,Tbl *);  // antelope list
-	// This compiles a large string with pfcompile to load a full pf
-        void load_metadata(string) throw(Metadata_parse_error);
-	void load_metadata(char *) throw(Metadata_parse_error);
+	friend ostream& operator<<(ostream&,Metadata&);
 	void print_all_metadata();
 	Pf *extract_all_metadata_to_pf();
 private:
         Pf *pf;  // Antelope's pf handle
 };
-//
-//This object is used for selective copy
-//
-enum MDtype {MDreal, MDint, MDstring, MDlist, MDmap, MDboolean};
-typedef struct Metadata_typedef {
-	string tag;
-	enum MDtype mdt;
-} Metadata_typedef;
 
 //
 // Helpers
 //
 void copy_selected_metadata(Metadata& mdin, Metadata& mdout, 
-		list<Metadata_typedef>& mdlist)
-			throw(Metadata_error);
-list<Metadata_typedef> pfget_mdlist(Pf *pf,string tag);
+	Metadata_list& mdlist) throw(Metadata_error);
+Metadata_list pfget_mdlist(Pf *pf,string tag);
 
+}
 #endif

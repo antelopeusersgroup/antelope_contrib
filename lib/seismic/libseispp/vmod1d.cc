@@ -4,6 +4,8 @@
 #include <strings.h>
 #include "db.h"
 #include "seispp.h"
+namespace SEISPP
+{
 
 double Velocity_Model_1d::getv(double zin)
 {
@@ -186,3 +188,4 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 	}
 	input.close();
 }
+} // Termination of namespace SEISPP definitions

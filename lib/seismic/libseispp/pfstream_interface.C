@@ -7,6 +7,8 @@
 #include "seispp.h"
 
 using namespace std;
+namespace SEISPP
+{
 
 /* Gets a Time_Series_Ensemble object from a pfstream pfh.  The
  * requested ensemble is assumed to be keyed by tag in the 
@@ -23,7 +25,7 @@ using namespace std;
  */
 Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh, 
 		char *tag,
-		list<Metadata_typedef>& mdlist)
+		Metadata_list& mdlist)
 		throw(seispp_error)
 {
 	Pf *pfin;
@@ -88,7 +90,7 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 
 Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh, 
 		char *tag,
-		list<Metadata_typedef>& mdlist)
+		Metadata_list& mdlist)
 		throw(seispp_error)
 {
 	Pf *pfin;
@@ -193,7 +195,7 @@ void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
 		{
 			long int foff;
 			pfe->pf[i]=seis.x[i].md.extract_all_metadata_to_pf();
-			foff = vector_fwrite(seis.x[i].s,seis.x[i].ns,dir,dfile);
+			foff = vector_fwrite(&(seis.x[i].s[0]),seis.x[i].ns,dir,dfile);
 		}
 	}
 	catch (seispp_error err)
@@ -207,3 +209,4 @@ void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
 	// the fifo.
 	pfstream_put_ensemble(pfh,pf);
 }
+} // Termination of namespace SEISPP definitions

@@ -2,6 +2,9 @@
 #include "stock.h"
 #include "pf.h"
 #include "metadata.h"
+namespace SEISPP
+{
+
 list<Metadata_typedef> pfget_mdlist(Pf *pf,string tag)
 {
 	list<Metadata_typedef> mdl;
@@ -37,6 +40,5 @@ list<Metadata_typedef> pfget_mdlist(Pf *pf,string tag)
 	}
 	return(mdl);
 }
-		
-
+} // Termination of namespace SEISPP definitions
 

@@ -4,6 +4,9 @@
 #include "dmatrix.h"
 #include "gclgrid.h"
 #include "seispp.h"
+namespace SEISPP 
+{
+
 class RayPathSphere
 {
 public:
@@ -27,5 +30,6 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
      double theta, int ix1, int ix2) throw(GCLgrid_error);
 
+}
 #endif
 #endif

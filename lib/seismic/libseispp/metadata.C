@@ -1,12 +1,12 @@
-using namespace std;
+#include <strstream>
 #include "stock.h"
 #include "pf.h"
 #include <string>
 #include "metadata.h"
-//
-// needed until antelope 4.5
-//
-Pf *pfdup(Pf*);
+using namespace std;
+namespace SEISPP
+{
+
 //
 // This file is used to create a shared object library.  This 
 // approach may not be universally applicable, but it is known to work
@@ -45,6 +45,17 @@ Metadata::Metadata()
 	if(Metadata_defaults_pf==NULL)_init();
 	pf=pfdup(Metadata_defaults_pf);
 };
+Metadata::Metadata(Pf *pfin)
+{
+	if(Metadata_defaults_pf==NULL)_init();
+	pf=pfdup(Metadata_defaults_pf);
+	// Have to do this using pf2string and pfcompile
+	// to allow default to work
+	char *pfs=pf2string(pfin);
+	pfcompile(pfs,&pf);
+	free(pfs);
+};
+
 Metadata::~Metadata()
 {
 	pffree(pf);
@@ -68,6 +79,98 @@ Metadata::Metadata(const Metadata& md)
 	if(ierr) throw Metadata_parse_error(ierr,
 		"pfcompile error in copy constructor");
 	free(pfstr);
+}
+// constructor from an antelope database (possibly view) row driven by
+// mdlist and am.  The list of attributes found in mdlist are extracted
+// from the database row using dbgetv.  am defines how the Antelope
+// attributes (e.g. wfdisc.time) are translated to an internal namespace.
+// That is, will attempt to read all attributes in Attribute_map list 
+// and put them in the Metadata object
+
+Metadata::Metadata(Dbptr db,Metadata_list& mdlist, Attribute_map& am)
+	throw(Metadata_error)
+{
+	Metadata_list::iterator i;
+	map<string,Attribute_Properties>::iterator ape=am.attributes.end();
+
+	if(Metadata_defaults_pf==NULL)_init();
+        pf=pfdup(Metadata_defaults_pf);
+	// Myer's book says I should use a for_each for a loop like this.
+	// It is faster and more efficient.  I don't understand 
+	// STL algorithms and function objects well enough to implement this 
+	// right now.  Point is is maybe should be modified later.
+	for(i=mdlist.begin();i!=mdlist.end();++i)
+	{
+		MDtype mdtype;
+		char csval[128]; // ugly to used fixed buffer, but no choice
+		double fpval;
+		int ival;
+		map<string,Attribute_Properties>::iterator ap;
+		string dbattributename;
+		string internal_name;
+
+		internal_name = (*i).tag;
+		mdtype = (*i).mdt;
+		ap = am.attributes.find(internal_name);
+		if(ap==ape) throw (Metadata_error(
+				string("Metadata db constructor:  required attribure ")
+				+ internal_name
+				+string(" is not in Attribute_map.  Check initialization")));
+		// the weird ap->second is a STL oddity for the item
+		// two of a pair <key,type>
+		dbattributename=ap->second.db_table_name
+				+ "." +ap->second.db_attribute_name;  // antelope naming
+		if((*i).mdt != ap->second.mdt) throw (Metadata_error(
+				string("Metadata db constructor:  mismatch of type definitions for database attribute ")+(ap->second.db_attribute_name)));
+
+		switch((*i).mdt)
+		{
+		case MDreal:
+			if(dbgetv(db,0,dbattributename.c_str(),
+				&fpval,0)==dbINVALID)
+			{
+				pffree(pf);
+				throw (Metadata_error(
+				  string("Metadata db constructor failed with dbgetv error\n")
+				  +string("Trying to read attribute ")
+				  +internal_name
+				  +string("from database")));
+			}
+			put_metadata(internal_name,fpval);
+			break;
+		case MDint:
+			if(dbgetv(db,0,
+				dbattributename.c_str(),
+				&ival,0)==dbINVALID)
+			{
+				pffree(pf);
+				throw Metadata_error(string("Metadata db constructor failed with dbgetv error\n")
+				+string("Trying to read attribute ")
+				+internal_name
+				+string("from database"));
+			}
+			put_metadata(internal_name,ival);
+			break;
+		case MDstring:
+			if(dbgetv(db,0,
+			  dbattributename.c_str(),
+				csval,0)==dbINVALID)
+			{
+				pffree(pf);
+				throw Metadata_error(string("Metadata db constructor failed with dbgetv error\n")
+				+string("Trying to read attribute ")
+				+internal_name
+				+string("from database"));
+			}
+			put_metadata(internal_name,csval);
+			break;
+		default:
+			pffree(pf);
+			throw Metadata_error(string("Metadata db constructor: ")
+			 + string("requested unsupported metadata type.  Check parameter file definitions"));
+		}
+
+	}
 }
 Metadata& Metadata::operator=(const Metadata& md)
 {
@@ -202,7 +305,7 @@ void Metadata::put_metadata(string name, bool val)
 	else
 		pfput_boolean(pf,(char *)name.c_str(),0);
 }
-void Metadata::load_metadata(string mdin) 
+Metadata::Metadata(char *mdin) 
 	throw(Metadata_parse_error)
 {
 	int ierr;
@@ -212,21 +315,23 @@ void Metadata::load_metadata(string mdin)
 	// This is a handy way to deal with defaults
 	// The char * cast is necessary to keep the compiler
 	// from bitching about a const char
-	ierr = pfcompile((char *)mdin.c_str(),&pf);
-	if(ierr!=0) throw Metadata_parse_error(ierr,"Failure in load_metadata");
+	if(Metadata_defaults_pf==NULL)_init();
+        pf=pfdup(Metadata_defaults_pf);
+	ierr = pfcompile(mdin,&pf);
+	if(ierr!=0) throw Metadata_parse_error(ierr,"pfcompile failure in Metadata constructor");
 }
-// near dup of above done for convenience
-void Metadata::load_metadata(char *mdin) 
+// Nearly identical function for string input.  There are probably
+// ways to have done this more simply, but this function is small
+Metadata::Metadata(string mdin)
 	throw(Metadata_parse_error)
 {
 	int ierr;
-	// We might think this was needed:  if(pf!=NULL) pffree(pf);
-	// it is not because pfcompile checks for *pf==NULL and
-	// assumes it is valid and to be updated if nonzero.
-	// This is a handy way to deal with defaults
-	ierr = pfcompile(mdin,&pf);
-	if(ierr!=0) throw Metadata_parse_error(ierr,"Failure in load_metadata");
+	if(Metadata_defaults_pf==NULL)_init();
+        pf=pfdup(Metadata_defaults_pf);
+	ierr = pfcompile(const_cast<char *>(mdin.c_str()),&pf);
+	if(ierr!=0) throw Metadata_parse_error(ierr,"pfcompile failure in Metadata constructor");
 }
+
 
 //
 //Sometimes we need to not copy all of the metadata from one object
@@ -234,7 +339,7 @@ void Metadata::load_metadata(char *mdin)
 //
 
 void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
-		                list<Metadata_typedef>& mdlist)
+			Metadata_list& mdlist)
 	throw(Metadata_error)
 {
 	list<Metadata_typedef>::iterator i;
@@ -279,6 +384,9 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 				b=mdin.get_bool(mdti.tag);
 				mdout.put_metadata(mdti.tag,b);
 				break;
+			case MDinvalid:
+			// silently skip values marked as invalid
+				break;
 			default:
 				cerr<<"Fatal: copy_selected_metadata was passed illegal type definition\nFatal error as this indicates a coding error that must be fixed" << endl;
 				exit(-1);
@@ -293,20 +401,22 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 		}
 	}
 }
-// Simple function to dump all metadata in a md object to 
-// stdout
+// output stream operator.  Originally was in ignorance made
+// a named function called print_all_metadata (older versions may
+// have this as debris.
 //
-void Metadata::print_all_metadata()
+ostream& operator<<(ostream& os, Metadata& md)
 {
 	char *md_contents;
-	md_contents=pf2string(pf);
+	md_contents=pf2string(md.pf);
 	if(md_contents==NULL)
-		cout << "ERROR: Metadata object is empty";
+		cerr << "ERROR: Metadata object is empty";
 	else
 	{
-		cout << md_contents;
+		os << md_contents;
 		free(md_contents);
 	}
+	return os;
 }
 //
 // Small function to extract the entire metadata contents to a pf.  
@@ -317,3 +427,150 @@ Pf *Metadata::extract_all_metadata_to_pf()
 {
 	return(pfdup(pf));
 }
+// Attribute_Properties encapsulate concepts about what a piece
+// of metadata is.  It was designed originally with attributes
+// extracted from a relational database as the model.  The
+// Attribute_Properties object, however, should be more general
+// than this as it can support things like lists ala antelope tbls.
+Attribute_Properties::Attribute_Properties()
+{
+	db_attribute_name="none";
+	db_table_name="";
+	internal_name="NULL";
+	mdt=MDstring;
+}
+Attribute_Properties::Attribute_Properties(string st)
+{
+	const string white(" \t\n");
+	int current=0,next;
+	int end_current;
+	string mdtype_word;
+	string stmp;  // use temporary to allow string edits
+	const string emess("Attribute_Properties(string) constructor failure:  failure parsing the following string:\n");
+
+	if(st.empty()) 
+		throw Metadata_error(string("Attribute_Properties constructor failure;  Constructor was passed an empty string\n"));
+
+	// this should find first nonwhite position
+	//INCOMPLETE needs error checking for missing values
+	
+	// create a copy of st and remove any leading white 
+	// space at the head of the string
+	stmp = st;
+	if((current=stmp.find_first_not_of(white,0)) != 0)
+	{
+		stmp.erase(0,current);
+		current = 0;
+	} 
+	end_current=stmp.find_first_of(white,current);
+	if(end_current<0) throw Metadata_error(string(emess+st));
+	internal_name.assign(stmp,current,end_current-current);
+	current = stmp.find_first_not_of(white,end_current);
+	if(current<0) throw Metadata_error(string(emess+st));
+	end_current=stmp.find_first_of(white,current);
+	if(end_current<0) throw Metadata_error(string(emess+st));
+	db_attribute_name.assign(stmp,current,end_current-current);
+	current = stmp.find_first_not_of(white,end_current);
+	if(current<0) throw Metadata_error(string(emess+st));
+	end_current=stmp.find_first_of(white,current);
+	if(end_current<0) throw Metadata_error(string(emess+st));
+	db_table_name.assign(stmp,current,end_current-current);
+	current = stmp.find_first_not_of(white,end_current);
+	if(current<0) throw Metadata_error(string(emess+st));
+	end_current=stmp.find_first_of(white,current);
+	if(end_current<0) end_current=stmp.length();
+	mdtype_word.assign(stmp,current,end_current-current);
+	if(mdtype_word=="REAL" || mdtype_word=="real")
+		mdt=MDreal;
+	else if(mdtype_word=="INT" || mdtype_word=="int"
+		|| mdtype_word=="integer")
+		mdt = MDint;
+	else if(mdtype_word=="STRING" || mdtype_word=="string")
+		mdt=MDstring;
+	else if(mdtype_word=="LIST" || mdtype_word=="list")
+		mdt=MDlist;
+	else if(mdtype_word=="MAP" || mdtype_word=="map")
+		mdt=MDmap;
+	else
+	{
+		mdt = MDinvalid;
+		throw Metadata_error(string("Attribute_Properties(string) constructor:  Unrecognized metadata type = ")+mdtype_word);
+	}
+	
+}
+Attribute_Properties::Attribute_Properties(const Attribute_Properties& apin)
+{
+	db_attribute_name=apin.db_attribute_name;
+	db_table_name=apin.db_table_name;
+	internal_name=apin.internal_name;
+	mdt = apin.mdt;
+}
+Attribute_Properties& Attribute_Properties::operator=(const Attribute_Properties& apin)
+{
+	if(&apin==this)return(*this);
+	db_attribute_name=apin.db_attribute_name;
+	db_table_name=apin.db_table_name;
+	internal_name=apin.internal_name;
+	mdt = apin.mdt;
+	return(*this);
+}
+// An Attribute_map is a higher order object built up o
+// name definitions defined by a set of Attribute_Properties
+// objects.  
+//
+	
+Attribute_map::Attribute_map(Pf *pf,string name)
+{
+	Tbl *t;
+	// temporary typedef to keep an already awful syntax for a map
+	// from being impossible.  Used in most books for this reason.
+	typedef map<string,Attribute_Properties> APMAP;
+
+	t = pfget_tbl(pf,const_cast<char *>(name.c_str()));
+	if(t==NULL) 
+		throw Metadata_error(string("Parameter file missing required ")
+			+name);
+	for(int i=0;i<maxtbl(t);++i)
+	{
+		char *line;
+		Attribute_Properties *ap;
+		line = (char *)gettbl(t,i);
+		ap = new Attribute_Properties(string(line));
+		(*this).attributes.insert(APMAP::value_type(ap->internal_name,*ap));
+	}
+}
+	
+/* an  inefficient way to do this constructor, but should be acceptable since
+I don't expect this function to be called more than once in any given program.
+*/
+
+Attribute_map::Attribute_map(string s)
+{
+	string stbl;
+	Pf *pf;
+	int ierr;
+	Attribute_map *amtmp;
+
+	stbl = string("Attribute_map &Tbl{\n")
+		+ s +string("\n}\n");
+	ierr=pfcompile(const_cast<char *>(stbl.c_str()),&pf);
+	if(ierr!=0)
+		throw Metadata_parse_error(ierr,"pfcompile failure building Attribute_map object");
+	amtmp = new Attribute_map(pf,"Attribute_map");
+	*this = *amtmp;
+	delete amtmp;
+	pffree(pf);
+}
+Attribute_map& Attribute_map::operator=(const Attribute_map& am)
+{
+	if(this!=&am)
+	{
+		attributes = am.attributes;
+	}
+	return (*this);
+}
+Attribute_map::Attribute_map(const Attribute_map& am)
+{
+	attributes = am.attributes;
+}
+} // Termination of namespace SEISPP definitions

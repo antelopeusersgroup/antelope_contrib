@@ -1,5 +1,6 @@
 #include <math.h>
 #include "seispp.h"
+namespace SEISPP {
 /* this group of functions implement gap processing for time series
  * objects and their descendents called Three_Component_Seismograms.
  * They use indexing through the STL standard container called a
@@ -121,9 +122,5 @@ void Three_Component_Seismogram::zero_gaps()
 {
 	for(int i=0;i<3;++i) x[i].zero_gaps();
 }
-
-
-
-		
-		
+} // Termination of namespace SEISPP definitions
 

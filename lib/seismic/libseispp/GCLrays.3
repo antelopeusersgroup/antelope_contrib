@@ -4,6 +4,7 @@ GCLgrid_Ray_project - transfers a ray path to GCLgrid coordinates
 .SH SYNOPSIS
 .nf
 #include "ray1d.h"
+using namespace SEISPP;
 dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
                 double theta, int ix1, int ix2,ix3)
 			throw(GLCgrid_error);

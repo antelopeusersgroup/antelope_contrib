@@ -1,4 +1,7 @@
 #include "seispp.h"
+namespace SEISPP
+{
+
 // Rather trivial routines to apply a geometric static as a simple elevation
 // divided by an input velocity.  
 void apply_geometric_static(Time_Series *ts, double vel, double elev)
@@ -7,7 +10,8 @@ void apply_geometric_static(Time_Series *ts, double vel, double elev)
 }
 void apply_geometric_static(Three_Component_Seismogram *s, double vel, double elev)
 {
-	for(int i=0;i<3;++i) apply_geometric_static(&(s->x[i]),vel,elev);
+	for(int i=0;i<3;++i) 
+		apply_geometric_static(&(s->x[i]),vel,elev);
 }
 // Here we use overloading to allow simplified and/or defaulted values
 // This implementation is always verbose if errors are thrown in
@@ -34,3 +38,5 @@ void apply_geometric_static(Time_Series *ts)
 	}
 	apply_geometric_static(ts,vel,elev);
 }
+} // Termination of namespace SEISPP definitions
+

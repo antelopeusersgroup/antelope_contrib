@@ -1,7 +1,13 @@
+#ifdef __cplusplus
+#ifndef _VMODEL_H
+#define _VMODEL_H
+
 #include <iostream>
 #include <string>
 #include "db.h"
 using namespace std;
+namespace SEISPP 
+{
 
 class Velocity_Model_1d
 {
@@ -48,3 +54,5 @@ public:
 			<< ioerr << endl;
 	};
 };
+}
+#endif

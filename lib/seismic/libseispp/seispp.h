@@ -1,12 +1,15 @@
 #ifndef _SEISPP_H_
 #define _SEISPP_H_
-extern bool SEISPP_verbose;
 #include <vector>
 #include <set>
 #include "db.h"
 #include "metadata.h"
 #include "pf.h"
 #include "pfstream.h"
+namespace SEISPP 
+{
+extern bool SEISPP_verbose;
+
 
 // This is used to define gaps and/or time variable weights
 // The later is not implemented, but we 
@@ -16,6 +19,7 @@ class Time_Window
 public:
 	double start, end;  // time period of window (relative or abs)
 	Time_Window(){start=0.0;end=1.0e99;};
+	Time_Window(double ts,double te){start=ts;end=te;};
 };
 class Time_Variable_Weight : public Time_Window
 {
@@ -63,16 +67,14 @@ public:
 	double dt,t0;
 	int ns;
 	Time_Reference_Type tref;
-	double *s;
-	Time_Series() {live=false;s=NULL;dt=0.0; t0=0.0; ns=0; tref=absolute;};
-	Time_Series(int nsin) {live=0; dt=0.0; t0=0.0; ns=nsin;
-		tref=absolute; s = new double[nsin];};
-	// This constructor can throw a seispp_error.  
-	// Explicity declaration in the prototype does not seem to be allowed. 
+	vector<double>s;
+	// member functions
+	Time_Series();
+	Time_Series(int nsin);
 	Time_Series(Pf *pf);
+	Time_Series(Dbptr, Metadata_list&, Attribute_map&);
 	Time_Series(const Time_Series&);
 	Time_Series(const Time_Series *);
-	~Time_Series() {  if(s!=NULL) delete [] s; };
 	Time_Series& operator=(const Time_Series&);
 	// gap processing functions need to be an intrinsic part 
 	// of the object defintion with real data
@@ -325,14 +327,20 @@ void apply_geometric_static(Three_Component_Seismogram *ts);
 //complicated to be an intrinsic part of the objects.
 //
 Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
-	 char *tag,list<Metadata_typedef>& mdlist) throw(seispp_error);
+	 char *tag,Metadata_list& mdlist) throw(seispp_error);
 Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
-	 char *tag,list<Metadata_typedef>& mdlist) throw(seispp_error);
+	 char *tag,Metadata_list& mdlist) throw(seispp_error);
 // Inverse of above
 void pfstream_save_3cseis(Three_Component_Seismogram *seis,string tag,
 	string dir, string dfile, Pfstream_handle *pfh) throw(seispp_error);
 // low level i/o routines
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error);
 long int vector_fwrite(double *x,int n, string fname) throw(seispp_error);
+long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error);
+long int vector_fwrite(float *x,int n, string fname) throw(seispp_error);
+// Antelope database output routine
+void dbsave(Time_Series& ts,string table, Metadata_list& md, Attribute_map& am)
+		throw(seispp_error);
 
+}
 #endif

@@ -4,6 +4,9 @@
 #include "ray1d.h"
 #include "dmatrix.h"
 #include "gclgrid.h"
+namespace SEISPP
+{
+
 
 /*
  * Full constructor that traces a ray to yield a RayPathSphere object
@@ -244,4 +247,5 @@ dmatrix *GCLgrid_Ray_project(GCLgrid3d& grid, RayPathSphere& path,
 	}
 	return(pathptr);
 }
+} // Termination of namespace SEISPP definitions
 

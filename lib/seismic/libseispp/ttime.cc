@@ -1,4 +1,3 @@
-
 // These are methods for the Hypocenter object to compute common standard things.`
 // These are mostly interface routines to Antelopes coords library.
 // Note all returns are distances and angles are returned in units of radians.  
@@ -6,6 +5,8 @@
 #include "coords.h"
 #include "tt.h"
 #include "seispp.h"
+namespace SEISPP
+{
 
 double Hypocenter::distance(double lat0, double lon0)
 {
@@ -192,3 +193,5 @@ Slowness_vector Hypocenter::pslow(double lat0, double lon0, double elev)
 	}
 	return(u);
 }
+} // Termination of namespace SEISPP definitions
+

@@ -1,4 +1,7 @@
 #include "seispp.h"
+namespace SEISPP
+{
+
 Time_Series& Time_Series::operator=(const Time_Series& tsi)
 {
 	if(this!=&tsi)
@@ -9,15 +12,11 @@ Time_Series& Time_Series::operator=(const Time_Series& tsi)
 		ns=tsi.ns;
 		tref=tsi.tref;
 		md=tsi.md;  //Metadata assignment operator must create destroy
-		if(s!=NULL) delete [] s;
 		if(live)
 		{
-			s=new double[ns];
+			s.reserve(ns);
 			for(int i=0;i<tsi.ns;++i) s[i]=tsi.s[i];
 		}
-		else
-			s=NULL;
-		
 	}
 	return(*this);
 }			
@@ -46,3 +45,4 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 	}
 	return(*this);
 }
+} // Termination of namespace SEISPP definitions
