@@ -20,8 +20,9 @@ environment variable PFREAD.   See pf(3)) This parameter file is read at startup
 initial pf object used as a control structure.  This parameter file can be relatively complex due
 to the long list of options in genloc (see genloc_intro(3)).  
 .LP
-The code uses orbreap selecting only packets labeled as /pf/orbgenloc.  This means it will
-only see pf packets targeted to it.  Most options of genloc can be changed this way on the fly
+The code uses orbreap selecting only packets labeled as /pf/X 
+where X is a variable "target" name this program uses to sort out pf object
+bound for this specific process.  Most options of genloc can be changed this way on the fly
 by sending new parameter definitions into the pf packet.  This allows the user, for example,
 to do things like change the residual weighting scheme, fix source depth, or other comparable
 control features.  Two important restrictions presently exist, however.  Network geomtry and
@@ -29,18 +30,19 @@ phase definition parameters can only be set at startup.   It was felt the comple
 add did not justify the need.  The time required to kill orbgenloc and restart it with a new
 parameter file definition is not a significant issue.
 .LP
-Unless one is changing the control state of orbgenloc, normally we would expect an input
+Unless one is changing the control state of orbgenloc, normally the program expect an input
 packet to contain only arrival time and slowness data produced from an associator program. 
 However, it should work properly if sent either control data alone or control data mixed with
 new data.  orbgenloc has no concept of data source, but just blindly looks at it's input for new
-instructions.   Whenever new data is found (signalled internally by finding enough data to
-locate an event in it's internal data structures) it tries to locate an event.  Data is passed to
-this program from an associator using the parameter file "arrivals" Tbl object defined in
-genloc_intro(3).  The user is cautioned, however, that the arid field in these input objects
-must be maintained externally.  The arid values read from the input fields are stripped and
-used blindly in the assoc tables produced as output.  orbgenloc assumes some other process is
-writing arrival records with matching arid fields that the associator has used to build
-orbgenloc's inputs.  
+instructions.   It will locate a new event for each pf object it read from the orb.  
+Data is passed to
+this program from an associator using the parameter file "arrivals" Tbl object.
+The current version accepts only the output of orbtrigger, but a planned addition is
+to allow alternative "arrival" Tbl objects as defined in 
+genloc_intro(3).  At present the issue of how to handle the db id called arid remains
+problematic.  This program basically maintains it's own arid value that can be 
+reset by several mechanisms.  This feature is likely to change as the protocols
+of this program's interaction with other programs gets clarified.
 .LP
 orbgenloc's output is a series of datascope db records saved with db2orbpkt.  This version
 writes what it can compute into four standard css3.0 db tables: origin, origerr, event, and
@@ -65,30 +67,75 @@ latest time in it's working db and ignores data it finds in the ring buffer with
 earlier than this time.  Note is does this with some intelligence using another parameter
 defined below.
 .LP
-\fIvelocity_model_name\fR name to be used in model field for output db records.  No
-checking is made to see if this is consistent with anything else, so be warned.  This could
-cause problem a user should be aware if when using the generic tt interface where a model is
-given a specific name.  
+\fItarget_name\fR is the packet id name used as a target for pf objects directed to this
+program.  That is, the program seaches for packets labeled as /pf/target_name where
+target_name is set to the value of this parameter.  Default is "orbgenloc".
+Note for fairly obvious reasons this parameter cannot be changed on the fly.
 .LP
-\fImaximum_network_transit_time\fR is used to define the db startup condition noted above. 
-That is, the only times orbgenloc stores in it's working db are origin times.  To check a given
-set of arrivals in a give pf packet, it has to make a sensible guess about each packet of data. 
-To do this, it uses this parameter.  If any time is found in a group of arrivals in a given pf
-packet which satisfies t<t0+maximum_network_transit_time, the event is assumed to have
-already been processed.
-.LP
-\fIreset_orid, reset_evid, orid, evid\fR This group of parameters control another potential id
-problem.  orbgenloc assumes it has control of two css3.0 database ids: orid and evid.  These
-parameters allow an external agent to manually reset these ids to a new value (After that they
+\fIreset_orid, reset_evid, reset_arid, orid, evid, arid\fR 
+This group of parameters control potential id
+problems.  
+orbgenloc assumes it has control of three css3.0 database ids: orid, evid, and arid.  These
+parameters allow the user to manually reset these ids to a new value (After that they
 would normally be incremented, although one could, in priciple, reset these ids for each event
-externally).  Both mix booleans (reset_orid and reset_evid) with a corresponding integer
+externally).  This parameter can appear in the startup parameter file, but this is a little
+dangerous because if the program crashes and restarts an id collision will occur when
+new records are added to the scratch db.  As a result, if these parameters are used it
+is preferable to pass them through pf packets directed at a this specific target 
+rather than in the startup.  In fact, orbgenloc does not even try to parse these
+parameters until it enters the main processing loop.
+Nonetheless, because it is convenient to have these parameters wired into the startup
+file, they can appear there.  All that will happen when they do is that if the id set
+in the startup file is smaller than that which appears in the nextid field of for 
+that counter, it will be reset to that from the nextid field and the parameter will
+be ignored.  In contrast, if there is no nextid table and/or the value passed is larger
+than the value in the current nextid field, it will be reset to the value given in the
+parameter file.
+Each of these parameters mix booleans 
+(reset_orid, reset_evid, and reset_arid) with a corresponding integer
 parameter to actually set that value.  When the boolean is true, the corresponding integer
 parameter MUST be present or orbgenloc will die.  Once the value is reset, the boolean value
 is changed back to false.  Because of the way the pf routines work, this means that later
-attempts to make reset_orid or reset_evid true without a corresponding entry for orid or evid,
+attempts to make reset_orid or reset_evid true without a corresponding entry for the
+corresponding integer id value
 will not cause orbgenloc to die, but instead it cause he program to use the previously set
-value.  It is not clear which is worse, but the point is don't do it, or bad things result in either
-case.
+value. 
+This should be handled gracefully with an error posted warning of the problem.  In this
+case the request to reset the id value would be ignored.
+.LP
+\fIdo_no_save_arrival\fR  and \fIdo_no_save_event\fR controls what this code does with rows of 
+the arrival and event table.
+By default orbgenloc assume it has complete control of the database ids orid, evid, and arid. 
+As a result by default it writes all the db records back onto the orb related to the location
+process (arrival, assoc, origin, origerr, and event).  These two boolean variables can be 
+used in more complex procedures to change that.  When either of these are set true the 
+associated table is written to the programs scratch db, but the related rows of these
+tables are not written back to the orb.  This can be used in more complex setups where
+multiple locators and associators might be running on different subnets and/or different
+hosts.  To have multiple instances of this program running off the same orb it is essential
+that both of these parameters be set true AND each instance of the program should have 
+a large range or ids available to them in a reasonable range.  That is, each orbgenloc
+process should be passed a well seperated starting id value through the reset id mechanism
+described above.  (e.g. Process x might be given an initial orid of 1000 while process
+y was given an initial orid of 10000.)  In this way another program downstream in the 
+processing chain can examine all the origin records produced by various instances of
+orbgenloc and set the best origin through the prefor field of the event table.  
+Note these two parameters could probably be combined in one since I can't conceive 
+why you would save one and not the other, but I think it is clearer this way and
+flexibility is usually a good thing.
+.LP
+\fIvelocity_model_name\fR name to be used in model field for output db records.  No
+checking is made to see if this is consistent with anything else, so be warned.  This could
+cause problem a user should be aware if when using the generic tt interface where a model is
+given a specific name in a different field in the parameter file.
+.LP
+\fImaximum_network_transit_time\fR is used to define the db startup condition noted above. 
+That is, the only times information orbgenloc stores in it's working db 
+that it trusts are origin times.  To check a given
+set of arrivals in a given pf packet, it has to make a sensible guess about each packet of data. 
+To do this, it uses this parameter.  If any time is found in a group of arrivals in a given pf
+packet which satisfies t<t0+maximum_network_transit_time, the event is assumed to have
+already been processed
 .LP
 \fIshutdown\fR Setting this boolean parameter true, will cause orbgenloc to exit gracefully. 
 This message can appear with a block of data, and the event will be located before shutdown
@@ -104,6 +151,10 @@ or you hit a programming bug.
 relocate(1), sgnloc(1), dbloc2(1), genloc_intro(3), genloc(3), ggnloc(3), pfread(3), elog(3)
 .fi
 .SH "BUGS AND CAVEATS"
-This program is under development, so problems are likely.
+This program is under development, so problems are likely.  The \fImaximum_network_transit_time\fR
+parameter is a anachronistic.  I've maintained it because I'm not sure we will always be writing
+arrival records in the working db.  A simpler algorithm for figuring state
+would be to just look at the arrival table and not process events with duplicate arrivals.  
+When this issue stablizes, this parameter may disappear.  
 .SH AUTHOR
 Gary L. Pavlis

@@ -11,11 +11,65 @@
 #include "elog.h"
 
 #define DEFAULT_PFFILE "orbgenloc"
+#define NULL_ORB -1  /* used to signal a record not be sent to orb */
 
 static void usage (char *Program_Name)
 {
 	die(0,"Usage:  %s orbserver [-pf pffile]\n", 
 		Program_Name);
+}
+/* Temporary, special function to replace read_arrival for
+pf records produced by orbtrigger.  This is mostly a format
+difference.
+
+*/
+Tbl *read_orbtrigger_arrivals(Pf *pf, Arr *phases, Arr *stations)
+{
+	Tbl *tin, *tout;
+	Arrival *a;
+	char *row;
+	int i;
+
+	char phase_name[20],sta[12];
+
+	tin = pfget_tbl(pf,"arrivals");
+
+	if(tin == NULL) return(newtbl(0));
+
+	tout = newtbl(0);	
+
+	/* Now we just read each tbl entry string returned by 
+	pfget_tbl, convert the string values to entries in the
+	Arrival structure, and load the pointers into the tbl
+	we will ultimately return */
+	for(i=0;i<maxtbl(tin);++i)
+	{
+		row = gettbl(tin,i);
+		a = (Arrival *)malloc(sizeof(Arrival));
+		if(a == NULL) die(1,"read_orbtrigger_arrivals:  cannot alloc memory for Arrival structure\n");
+		sscanf(row,"%*s %s %*s %s %lf",sta,phase_name,&(a->time));
+		a->arid = -1;
+		a->sta = (Station *) getarr(stations,sta);
+		if(a->sta == NULL)
+		{
+			complain(1,"Warning (read_orbtrigger_arrivals):  Can't find coordinates for station %s\n%s phase arrival for this station skipped\n",
+				sta, phase_name);
+			free(a);
+			continue;
+		}
+		a->phase = (Phase_handle *) getarr(phases,phase_name);
+		if(a->phase == NULL)
+		{
+			complain(1,"Warning (read_orbtrigger_arrivals):  No phase handle for phase name %s\nArrival for station %s skipped\n",
+				phase_name,sta);
+			free(a);
+			continue;
+		}
+		/* Always use the detault deltat here */
+		a->deltat = (double)a->phase->deltat0;
+		pushtbl(tout,a);
+	}
+	return(tout);
 }
 /* This function reads all parameters special to this program.  
 It provides a simple way to keep all this together. */
@@ -25,6 +79,7 @@ typedef struct RTlocate_Options
 	char *working_directory;
 	char *work_db;
 	char *logdir;
+	int save_arrival,save_event;  /* booleans that are ! of actual parameters*/
 	
 } RTlocate_Options;
 RTlocate_Options parse_rt_options (Pf *pf)
@@ -36,11 +91,15 @@ RTlocate_Options parse_rt_options (Pf *pf)
 	if(o.work_db  == NULL) o.work_db = strdup("orbgenloc");
 	o.logdir=pfget_string(pf,"RT_logfile_directory");
 	if(o.logdir == NULL) o.logdir = strdup(".");
+	o.save_arrival = !(pfget_boolean(pf,"do_not_save_arrival"));
+	o.save_event = !(pfget_boolean(pf,"do_not_save_event"));
+	return(o);
 }
 typedef struct RTids
 {
 	int orid;
 	int evid;
+	int arid;
 } RTids;
 /* For this version we handle database ids through this routine.  Database ids can be
 be reset by passing a message through the parameter file to reset the counter for that
@@ -63,6 +122,11 @@ RTids set_ids(RTids ids, Pf *pf)
 	{
 		ids.evid = pfget_int(pf,"evid");
 		pfput_boolean(pf,"reset_evid",0);
+	}
+	if(pfget_boolean(pf,"reset_arid"))
+	{
+		ids.evid = pfget_int(pf,"arid");
+		pfput_boolean(pf,"reset_arid",0);
 	}
 	return(ids);
 }
@@ -126,12 +190,119 @@ int event_already_processed(double t0,Pf *pf)
 	for(i=0;i<maxtbl(t);++i)
 	{
 		s = gettbl(t,i);
-		sscanf(s,"%* %* %lf",&time);
+/* This is the format of arrival records used by sgnloc 
+		sscanf(s,"%*s%*s%lf",&time);
+For now we use the format from orbtrigger 
+*/
+		sscanf(s,"%*s%*s%*s%*s%lf",&time);
+
 		if(time < t0) return(1);
 	}
 	return(0);
 
 }
+RTids save_arrival(RTids id, Dbptr db, Tbl *ta, Tbl *tu, int orb)
+{
+	Arrival *a;
+	Slowness_vector *u;
+	int n;
+	int recstart, recend;  /* range of record numbers for this
+				event */
+	int i;
+	/* To allow us to insert slowness data records we 
+	write the arrival records to the db first, then send them
+	to the orb if this is desired.  The problem relates to
+	the fact that we have to connect slowness measures with
+	a given arid to a particular record.  thus we first
+	write the arrival records, insert the slowness 
+	data, then write to orb.*/
+
+	db = dblookup(db,0,"arrival",0,0);
+
+	n=maxtbl(ta);
+	for(i=0;i<n;i++)
+	{
+		a=(Arrival*)gettbl(ta,i);
+		if(a->arid <= 0) 
+		{
+			a->arid = dbnextid(db,"arid");
+			id.arid = a->arid;
+		}
+		/* We are going to lose the channel code here.
+		avoiding this would cause a cascade of related headaches*/
+		recend = dbaddv(db,0,
+			"sta",a->sta->name,
+			"time",a->time,
+			"arid",a->arid,
+			"jdate",yearday(a->time),
+			"iphase",a->phase->name,0);
+		if(recend==dbINVALID)
+			complain(0,"dbaddv error writing arrival record for arid %d -- phase %s at time %lf to working db\n",
+					a->arid, a->phase->name, a->time);
+		else if(i==0)
+			recstart = recend;
+
+	}
+	/* Now we add the slowness vector data with dbputv matching arid
+	fields.  When arids are not defined slowness vectors data will
+	not be written into the arrival table and a warning will be issued.*/
+	n=maxtbl(tu);
+	for(i=0;i<n;++i)
+	{
+		u = (Slowness_vector *)gettbl(tu,i);
+		if(u->arid <= 0)
+		{
+			complain(0,"Slowness vector measurement from array %s for phase %s has no arid.\nArrival record not saved\n",
+				u->array->name, u->phase->name);
+		}
+		else
+		{
+			for(db.record=recstart;db.record<recend;++db.record)
+			{
+				int testarid;
+				double azimuth, slow;
+				dbgetv(db,0,"arid",testarid,0);
+				if(u->arid == testarid)
+				{
+					slow = sqrt((u->uy)*(u->uy)
+						+(u->uy)*(u->uy));
+					azimuth = atan2 ( u->uy, u->ux );
+					slow = deg2km(slow);
+					azimuth=deg(azimuth);
+					if(dbputv(db,0,
+						"slow",slow,
+						"azimuth",azimuth,0)
+						== dbINVALID)
+					   complain(0,"dbputv error adding slowness vector data to arrival for arid %d\n",
+						u->arid);
+					break;
+				}
+			}
+			if(db.record >= recend)
+				complain(0,"Cannot find matching arrival record for slowness vector with arid %d\nCannot save slowness vector data\n",
+					u->arid);
+		}
+	}
+	if(orb != NULL_ORB)
+	{
+		for(db.record=recstart;db.record<recend;++db.record)
+		{
+			if(dbget(db,0) == dbINVALID)
+			{
+				complain(0,"cannot fetch record %d from working arrival table\nrecord not send to orb\n",
+					db.record);
+			}
+			else
+			{
+				if(db2orbpkt(db,orb)) 
+					complain(0,"Error writing arrival record from record %d of working db to orb\n",
+						db.record);
+			}
+		}
+	}
+	return(id);
+}
+
 RTids save_origin(RTids id, Dbptr db,int depth_fixed,Hypocenter h,int orb)
 {
 	int ndef;
@@ -161,8 +332,9 @@ RTids save_origin(RTids id, Dbptr db,int depth_fixed,Hypocenter h,int orb)
 	if(id.orid != nextorid)
 		if(id.orid < nextorid)
 		{
-			complain(0,"Illegal orid reset requested\nCurrent orid = %d;  requested change to %d illegal (must be > current)",
+			complain(0,"Illegal orid reset requested\nCurrent orid = %d;  requested change to %d illegal (must be > current)\n",
 				nextorid, id.orid);
+			id.orid = nextorid;
 		}
 		else
 		{
@@ -175,6 +347,7 @@ RTids save_origin(RTids id, Dbptr db,int depth_fixed,Hypocenter h,int orb)
 		{
 			complain(0,"Illegal evid reset requested\nCurrent evid = %d;  requested change to %d illegal (must be > current)",
 				nextevid, id.evid);
+			id.evid = nextevid;
 		}
 		else
 		{
@@ -218,7 +391,9 @@ Arguments:
 		record before calling this function.  This record is 
 		added to the working db and a complaint is issued if the
 		add fails.
-	orb - orb descriptor to send the scratch record of db to.  
+	orb - orb descriptor to send the scratch record of db to.  If
+		set to NULL_ORB (defined above) the record is not written
+		to the orb.
 
 Returns 0 if all worked.  Returns negative of number of failures 
 otherwise with messages placed in error log.  
@@ -238,6 +413,7 @@ int save_dbrecord(Dbptr db, int orb)
 			table_name);
 		--ret_code;
 	}
+	if(orb == NULL_ORB) return(ret_code);
 
 	if(db2orbpkt(db,orb)) 
 	{
@@ -511,8 +687,73 @@ void save_assoc(Tbl *ta, Tbl *tu,
 	freetbl(udregs,free_nothing);
 	freearr(u_arr,free_nothing);
 }
+char *format_hypo(Hypocenter *h)
+{
+        char *s;
+        s = malloc(512);
+        if(s == NULL) die(1,"malloc error for hypocenter output tabulation\n");
+        sprintf(s,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %d %d",
+                h->lat0,h->lon0,h->z0,h->t0,
+                h->lat,h->lon,h->z,h->time,
+                h->dx,h->dy,h->dz,
+                h->rms_raw, h->rms_weighted, h->interquartile,
+                h->number_data,h->degrees_of_freedom);
+        return(s);
+}
+int write_to_logfile(RTlocate_Options rtopts, int orid,
+	Pf *pf, Tbl *converge_history, Tbl *reason_converged,Tbl *residual)
+{
+	char fname[256];
+	FILE *fp;
+	/* We write the logfile output as a pf object copying
+	code from sgnloc */
+	Pf *pflog;
+	Tbl *t;  /* formatted output tbl of hypo convergence history */
+	char *line; 
+	int i;
+	Hypocenter *hypos;
 
-RTids compute_location(RTids id, Arr *stations, Arr *arrays, Arr *phases, Pf *pf,
+	/* Here we save the pf state */
+	sprintf(fname,"%s/orid%d.pf",rtopts.logdir,orid);
+	pfwrite(fname,pf);
+
+	/* Here we encapsulate the convergence history information into
+	a second pf object, and write this onto the same pf file */
+        t = newtbl(maxtbl(converge_history));
+        for(i=0;i<maxtbl(converge_history);++i)
+        {
+                hypos = (Hypocenter *)gettbl(converge_history,i);
+                line = format_hypo(hypos);
+                pushtbl(t,line);
+        }
+        pflog = pfnew(PFFILE);
+        pfput_tbl(pflog,"convergence_history",t);
+  
+        printf("Reasons for convergence:\n");
+        for(i=0;i<maxtbl(reason_converged);++i)
+                printf("%s\n",gettbl(reason_converged,i));
+        pfput_tbl(pflog,"convergence_criteria",reason_converged);
+        pfput_tbl(pflog,"residuals",residual);
+	/* We use pf2string rather than pfwrite since I'm not 
+	sure what pfwrite will do when the file already exists. 
+	Here we just append the new pf info to the end of the
+	stuff written above. */
+	if((fp=fopen(fname,"a")) == NULL)
+	{
+		complain(1,"Cannot open log file %s\n",fname);
+		return(1);
+	}
+	fseek(fp,0L,SEEK_END);
+        line = pf2string(pflog);
+	fwrite(line,1,strlen(line),fp);
+	fclose(fp);
+	free(line);
+	pffree(pflog);
+	freetbl(t,free);
+	return(0);	
+}
+RTids compute_location(RTlocate_Options rtopts, RTids id, 
+	Arr *stations, Arr *arrays, Arr *phases, Pf *pf,
 	Dbptr db, int orbout)
 {
 	Tbl *ta,*tu;  /* Arrival and slowness tables respectively */
@@ -525,6 +766,8 @@ RTids compute_location(RTids id, Arr *stations, Arr *arrays, Arr *phases, Pf *pf
 	RTlocate_Options rt_opts;
 	int niterations;
 	char *vmodel;
+	int i;
+	char *s;
 
 	/* it is a little inefficient to reparse all the options every
 	time this function is called, but it makes it very flexible.*/
@@ -532,7 +775,12 @@ RTids compute_location(RTids id, Arr *stations, Arr *arrays, Arr *phases, Pf *pf
 	rt_opts = parse_rt_options(pf);
 
 	/* Now read data from pf object */
+
+/* This is the libgenloc function for this, call orbtrigger version
+defined above instead 
 	ta = read_arrivals(pf,phases,stations);
+*/
+	ta = read_orbtrigger_arrivals(pf,phases,stations);
 	tu = read_slowness_vectors(pf,phases,arrays);
 	vmodel = pfget_string(pf,"velocity_model_name");
 
@@ -552,20 +800,36 @@ RTids compute_location(RTids id, Arr *stations, Arr *arrays, Arr *phases, Pf *pf
                                 ret_code,id.orid);
 		niterations = maxtbl(converge_history);
                 hypo = (Hypocenter *)gettbl(converge_history,niterations-1);
-/* these are stubbed.  Can't finish these until we decide on possible 
-revisions to rt schema */
+		if(rt_opts.save_arrival)
+			id = save_arrival(id,db,ta,tu,orbout);
+		else
+			id = save_arrival(id,db,ta,tu,NULL_ORB);
                 id = save_origin(id,db,o.fix[3],*hypo,orbout);
-                save_event(id,db,orbout);
+		if(rt_opts.save_event)
+                	save_event(id,db,orbout);
+		else
+			save_event(id,db,NULL_ORB);
                 save_origerr(id.orid,*hypo,db,orbout);
-		/* needs tu and ta */
 		save_assoc(ta, tu, id.orid, vmodel, stations, arrays, 
 			*hypo, db,orbout);
+		elog_notify(0,"orid %d converged in %d iterations\n",
+				id.orid,niterations);
+		elog_notify(0,"Reason(s) for convergence:  \n");
+		for(i=0;i<maxtbl(reason_converged);++i)
+                        elog_notify(0,"%s",gettbl(reason_converged,i));
+		elog_notify(0,"\n");
+		s=format_hypo(hypo);
+		elog_notify(0,"%s\n",s);
+		free(s);
+		write_to_logfile(rtopts, id.orid,
+			pf, converge_history, reason_converged,residual);
 	}
 
 	if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 	if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);
 	if(maxtbl(residual)>0)freetbl(residual,free);
 	destroy_data_tables(tu, ta);
+	return(id);
 }
 
 int main (int argc, char **argv)
@@ -594,9 +858,14 @@ int main (int argc, char **argv)
 	int nbytes,bufsize=0;  /* packet and bufsize are initialized this way
 				for automatic allocs in orbreap--copied from
 				orb2db*/
+	char orbselect_string[40];  /* holds target selection for orbselect*/
 	int orid_used;
 	RTids ids;
 	RTlocate_Options rt_opts;
+	char *target_name;  /*Target name of this process used to 
+			select pf packets from orb */
+
+	ids.orid = 0;  ids.evid=0;  ids.arid=0;
 	
 	elog_init(argc, argv);
 	elog_notify(0,"%s version %s\n", argv[0],version);
@@ -630,6 +899,9 @@ have the arguments botched */
  	arr_phase = parse_phase_parameter_file(pf);
 
 	rt_opts = parse_rt_options(pf);
+	target_name=pfget_string(pf,"target_name");
+	if(target_name == NULL) target_name = strdup("orbgenloc");
+	sprintf(orbselect_string,"/pf/%s",target_name);
 
 	if(chdir(rt_opts.working_directory)) 
 		die(1,"Cannot chdir to working directory %s\n",
@@ -647,7 +919,7 @@ have the arguments botched */
 		die(0,"Cannot open ring buffer %s for writing\n",orbname);
 
 	/* This selects only pf packets */
-	if(orbselect(orbin,"/pf/orbgenloc") < 1)
+	if(orbselect(orbin,orbselect_string) < 1)
 		die(0,"Cannot select any pf records from ring buffer %s\n",
 			orbname);
 	if(orbseek(orbin,ORBOLDEST)<0)
@@ -657,8 +929,7 @@ have the arguments botched */
 		if(orbreap (orbin, &pktid, srcname, &pkttime, &packet,
 			&nbytes, &bufsize)) 
 		{
-			complain (1,"orbreap failed\n");
-			continue;
+			die (1,"orbreap failed on %s\n",orbname);
 		}
 		orbpkt2pf(packet,nbytes,&pf);
 		/* This routine looks at arrival times and decides if this 
@@ -674,11 +945,8 @@ have the arguments botched */
 		for comparison with the orid in pf.  This is necessary in
 		case orid list from associator gets out of sync with this
 		program */
-		ids = compute_location(ids, arr_sta,arr_a,arr_phase,
+		ids = compute_location(rt_opts, ids, arr_sta,arr_a,arr_phase,
 						pf,wdb,orbout);
-		if(orid != orid_used) 
-			complain(0,"WARNING:  orid sequencing error\nAssociator assigned orid = %d; %s assigned orid %d\n",
-				orid,argv[0],orid_used);
 	}while (!pfget_boolean(pf,"shutdown"));
 
 }
