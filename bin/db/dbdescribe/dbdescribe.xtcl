@@ -106,6 +106,12 @@ proc dbfield {db} {
 	set units [dbquery $db dbFIELD_UNITS]
 	if { "$units" != "" } { puts stdout "\tUnits: $units" }
 	# puts stdout "\tUsed in tables: [dbquery $db dbFIELD_TABLES]"
+
+	set mydetail [dbquery $db dbFIELD_DETAIL]
+	set mydetail [string trim $mydetail]
+	set mydetail [exec echo $mydetail | fmt -50]
+	regsub -all {\n} $mydetail "\n\t   " mydetail
+	puts stdout "\tDetail:\n\t   $mydetail"
 }
 
 proc mkdatabase {schema} { 
