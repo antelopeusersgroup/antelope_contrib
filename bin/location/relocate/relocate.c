@@ -665,9 +665,9 @@ Which picks will be used here is unpredictable\n\
 		dbget_range(db_bundle,&is,&ie);
 
 		station_table = dbload_station_table(dbv,
-						is,ie);
+						is,ie,pf);
 		array_table = dbload_array_table(dbv,
-						is,ie);
+						is,ie,pf);
 		ta = dbload_arrival_table(dbv,
 				is,ie,station_table, arr_phase);
 		tu = dbload_slowness_table(dbv,
