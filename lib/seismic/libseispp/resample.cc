@@ -103,19 +103,14 @@ Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin,
 	double dtout=dtin;
 	double decout=1.0;
 	int total_lag=0;
-//DEBUG
-cout << "In Resample_Operator::apply  ns="<<ns<<endl;
 
 	for(i=0;i<ns;++i) result->d.push_back(s[i]);
-cout << "size vector s = "<<result->d.size()<<endl;
 	result->lag=0;  // not really necessary, but clearly shows initialization
 
 	for(this_decimator=declist.begin();
 		this_decimator!=declist.end();++this_decimator)
 	{
 		*result = this_decimator->apply(result->d,trim);
-//DEBUG
-cout << "vector length after decimate by " << this_decimator->decfac 
 		<< " is " << result->d.size();
 		total_lag += rint(static_cast<double>(result->lag)*decout);
 		dtout *= this_decimator->decfac;
@@ -123,8 +118,6 @@ cout << "vector length after decimate by " << this_decimator->decfac
 	}
 	if(fabs(dtout-dtout_target)/dtout_target > DT_FRACTIONAL_ERROR)
 	{
-// DEBUG
-cout << "Running resample before returning" << endl;
 		double final_decfac= dtout_target/dtout;
 		Decimator dfinal("resample",final_decfac);
 		*result = dfinal.apply(result->d,trim);
