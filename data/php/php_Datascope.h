@@ -32,6 +32,7 @@ PHP_FUNCTION(dbfind);
 PHP_FUNCTION(dbquery);
 PHP_FUNCTION(dbresponse);
 PHP_FUNCTION(dbsubset);
+PHP_FUNCTION(db2xml);
 PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
 

@@ -1,3 +1,10 @@
+/*
+ * Antelope interface for PHP
+ * Kent Lindquist
+ * Lindquist Consulting
+ * 2003-2004
+ */
+
 #include "config.h"
 #include "php.h"
 #include "php_ini.h"
@@ -7,6 +14,7 @@
 #include "stock.h"
 #include "coords.h"
 #include "response.h"
+#include "dbxml.h"
 
 static int le_Datascope;
 static int le_dbresponse;
@@ -29,6 +37,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
+	PHP_FE(db2xml, NULL)		
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
 	PHP_FE(strtdelta, NULL)		
@@ -112,6 +121,46 @@ z_arrval_to_dbptr( zval *array, Dbptr *db )
 	zend_hash_move_forward( target_hash );
 	zend_hash_get_current_data( target_hash, (void **) &entry );
 	db->record = Z_LVAL_PP( entry );
+
+	return 0;
+}
+
+int
+z_arrval_to_strtbl( zval *array, Tbl **tbl )
+{
+	HashTable *target_hash;
+	zval	**entry;
+	int	nelements;
+
+	if( Z_TYPE_P( array ) != IS_ARRAY ) {
+
+		*tbl = 0;
+		return -1;
+
+	} 
+
+	nelements = zend_hash_num_elements( Z_ARRVAL_P( array ) );
+
+	if( nelements < 1 ) {
+
+		*tbl = 0;
+		return -1;
+	}
+
+	*tbl = newtbl( 0 );
+
+	target_hash = HASH_OF( array );
+
+	zend_hash_internal_pointer_reset( target_hash );
+
+	while( nelements-- > 0 ) {
+
+		zend_hash_get_current_data( target_hash, (void **) &entry );
+
+		pushtbl( *tbl, strdup( Z_STRVAL_PP( entry ) ) );
+
+		zend_hash_move_forward( target_hash );
+	}
 
 	return 0;
 }
@@ -226,6 +275,142 @@ PHP_FUNCTION(template)
 	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
 
 		return;
+	}
+}
+/* }}} */
+
+/* {{{ proto array db2xml( array db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]]  ) */
+PHP_FUNCTION(db2xml)
+{
+	zval	*db_array;
+	zval	***args;
+	Dbptr	db;
+	Tbl	*fields = 0;
+	Tbl	*expressions = 0;
+	int	argc = ZEND_NUM_ARGS();
+	char	*rootnode = 0;
+	char	*rownode = 0;
+	char	*flags_string = 0;
+	int	flags = 0;
+	char	*xml = 0;
+	int	rc = 0;
+
+	if( argc < 1 || argc > 6 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( argc >= 2 ) { 
+
+		args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+		if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+			efree( args );
+			return;
+		}
+
+		if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			efree( args );
+			return;
+
+		} else {
+			
+			flags_string = Z_STRVAL_PP( args[1] );
+
+			if( ! strcmp( flags_string, "DBXML_PRIMARY" ) ) {
+				
+				flags |= DBXML_PRIMARY;
+			
+			} else if( ! strcmp( flags_string, "" ) ) {
+
+				;
+
+			} else {
+
+				/* SCAFFOLD; need cleanup and error msg */
+				efree( args );
+			}
+		}
+	}
+
+	if( argc >= 3 ) {
+
+		if( Z_TYPE_PP( args[2] ) != IS_STRING ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			efree( args );
+			return;
+
+		} else {
+			
+			rootnode = Z_STRVAL_PP( args[2] );
+		}
+	}
+
+	if( argc >= 4 ) {
+
+		if( Z_TYPE_PP( args[3] ) != IS_STRING ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			efree( args );
+			return;
+
+		} else {
+			
+			rownode = Z_STRVAL_PP( args[3] );
+		}
+	}
+
+	if( argc >= 5 ) {
+	
+		if( z_arrval_to_strtbl( *args[4], &fields ) < 0 ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			efree( args );
+			return;
+		}
+	}
+
+	if( argc >= 6 ) {
+	
+		if( z_arrval_to_strtbl( *args[5], &expressions ) < 0 ) {
+
+			/* SCAFFOLD; need cleanup and error msg */
+			efree( args );
+			return;
+		}
+	}
+
+	if( argc >= 2 ) {
+
+		efree( args );
+	}
+
+	rc = db2xml( db, rootnode, rownode, fields, expressions,
+		     (void **) &xml, flags );
+
+	if( rc < 0 ) {
+
+		/* SCAFFOLD: need cleanup and error msg */
+		return;
+
+	} else {
+
+		/* SCAFFOLD: memory leak? */
+		RETURN_STRING( xml, 1 );
 	}
 }
 /* }}} */

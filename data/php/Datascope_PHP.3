@@ -82,6 +82,19 @@ $dbbundle = split ( ' ', $dbbundle ) ;
 .fi
 .in
 .ft R
+.IP "\fBdb2xml\fP ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )"
+Return an eXtensible Markup Language (XML) representation of a datascope view via the db2xml(3) command. The flags argument may be empty or DBXML_PRIMARY, in
+which case only the primary keys are returned.
+.fi CW
+.in 2c
+.nf
+.ne 4
+
+$xml = db2xml( $db );
+
+.fi
+.in
+.ft R
 .IP "\fBdbex_eval\fP ( $db, expression )"
 Evaluate an expression for a particular record.
 .ft CW

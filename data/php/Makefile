@@ -19,7 +19,7 @@ CLEAN= $(MYDLIB)
 
 cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC
-ldlibs= $(DBLIBS)
+ldlibs= $(DBLIBS) -ldbxml
 
 include $(ANTELOPEMAKE)
 DBG=
