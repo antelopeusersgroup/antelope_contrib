@@ -1,0 +1,47 @@
+.TH DBSCHEMA2PROLOG 1 "$Date$"
+.SH NAME
+dbschema2prolog \- Wrap a Datascope database schema into Prolog syntax
+.SH SYNOPSIS
+.nf
+dbschema2prolog schema
+.fi
+.SH DESCRIPTION
+dbschema2prolog reads a Datascope database schema, putting out Prolog
+unit clauses which represent the attributes and relations of the
+schema. This is useful for a variety of further relational operations
+on the schema. If the schema definition file is found in the current
+directory, it is used. After that, paths in the SCHEMA_DIR environment
+variable are searched. In addition to individual schemas, dbschema2prolog 
+is able to handle combined schemas specified via the schema1:schema2 mechanism
+described in dbschema(5). The resulting prolog clauses are sent to standard-out.
+
+The time::endtime key is expressed as time_endtime. Less-than, Greater-than,
+Double-Quote, and Ampersand characters are replaced by their respective
+tokens &lt;, &gt;, &quot;, and &amp;. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+	yukon% dbschema2prolog css3.0 > css30.swi
+	yukon% 
+
+	yukon% dbschema2prolog rt1.0:dbrecenteqs1.0 > expandedschema.swi
+	yukon%
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbschema(5)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Kent Lindquist and Bertram Ludaescher
+.\" $Id$
