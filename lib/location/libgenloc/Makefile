@@ -1,5 +1,7 @@
 LIB=		libgenloc.a
 INCLUDE = location.h
+MAN3 = genloc.3 \
+       genloc_intro.3
 
 CLEAN= 		
 
