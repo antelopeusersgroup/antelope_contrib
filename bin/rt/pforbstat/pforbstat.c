@@ -154,7 +154,7 @@ main (int argc, char **argv)
 		if( orbout ) {
 
 			pkt->pf = pf;
-			pkt->time = pfget_double( pf, "server{when}" );
+			pkt->time = str2epoch( pfget_string( pf, "server{when}" ) );
 
 			rc = stuffPkt( pkt, 
 				       srcname, 
