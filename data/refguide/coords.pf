@@ -7,6 +7,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert from degrees to kilometers at the Earth's surface
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -17,6 +18,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert from kilometers to degrees at the Earth's surface
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -27,6 +29,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Convert cartesian coordinates into spherical coordinates
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -37,6 +40,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description select and initialize a cartographic projection
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -47,6 +51,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description perform a forward cartographic projection
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -57,6 +62,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description perform an inverse cartographic projection
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -67,6 +73,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description free a cartographic-projectioin object
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -77,6 +84,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description create a rotation matrix A about axis u by angle theta
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -87,6 +95,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description rotates v by angle theta about axis u, returned in w
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -97,6 +106,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description multiply a scalar c by a three-vector v
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -107,6 +117,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description add two three-vectors u and v
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -117,6 +128,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description subtracts v from u
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -127,6 +139,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description returns dot product of two three-vectors
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -137,6 +150,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description computes cross-product of two three-vectors
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -147,6 +161,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description returns the length of a three-vector
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -157,6 +172,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description move a vector u to a vector v
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -167,6 +183,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description replaces u with a unit vector
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -177,6 +194,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description makes u and v orthonormal vectors
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -187,6 +205,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert vector to quadrilateralized-cubic-pixel address
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -197,6 +216,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert vector to bin address
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -207,6 +227,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert ra, dec to quadrilateralized-cubic-pixel address
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -217,6 +238,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert ra, dec to bin address
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -227,6 +249,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert quadrilateralized-cubic-pixel address to unit vector
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -237,6 +260,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert bin address to unit vector
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -247,6 +271,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert quadrilateralized-cubic-pixel address to ra, dec
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -257,6 +282,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert bin address to ra, dec
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -267,6 +293,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Pack detector id, primbsch region, and radius bin into one byte
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -277,6 +304,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Extract detector id, primbsch region, and radius bin from a byte
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -287,6 +315,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Compute angular distance between two points
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -297,6 +326,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description computes lat and lon from azimuth, angular distance, and starting point
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -307,6 +337,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description converts input radians to degrees
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -317,6 +348,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert input degrees to radians
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -327,6 +359,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert radians to degrees latitude
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -337,6 +370,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description converts radians to degrees longitude
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -347,6 +381,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert Euler angles to rotation matrix
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -357,6 +392,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Convert rotation matrix to Euler angles
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -367,6 +403,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description multiply two 3x3 matrices A and B
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -377,6 +414,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description multiply a 3x3 matrix A by a 3-vector u
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -387,6 +425,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description return the transpose of the 3x3 matrix A
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -397,6 +436,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description convert a unit 3-vector to ra and dec in radians
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -407,6 +447,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Convert ra and dec in radians to cartesian coords
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
@@ -417,6 +458,7 @@ Entries &Tbl{
 		options &Tbl{
 		}
 		description Convert ra and dec in radians to cartesian coords
+		section Coordinate Manipulations
 		private 0
 		deprecated 0
 	}
