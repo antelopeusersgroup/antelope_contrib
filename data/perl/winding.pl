@@ -65,7 +65,7 @@ sub get_region_polygon {
 
 sub dbview_to_polygon {
 	my( @db ) = @_;
-	my( $nrecs, @polygon );
+	my( $nrecs, @polygon, $lat, $lon, $vertex );
 	my( $previous_vertex ) = 0;
 
 	@db = dbsort( @db, "regname", "vertex" );
