@@ -97,7 +97,7 @@ packet_convert( char *packet,
 				if( p = getarr( channel, "pinno" ) ) 
 					pinno = atoi( (char *) p );
 				if( p = getarr( channel, "calib" ) ) 
-					pinno = atof( (char *) p );
+					calib = atof( (char *) p );
 			}
 		}
 	}
