@@ -1,0 +1,651 @@
+#  
+# This is a set of extensions to css3.0 used for multiwavelet array process
+#  code called mwap.  The db descriptor needs to modified to append this
+#  schema to css3.0 or it won't work.
+#
+Attribute bankid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "bankid > 0" )
+        Description ( "Multiwavelet filter bank id" )
+        Detail {
+                Multiwavelets are a type of filter bank that define an 
+		ensemble of estimates obtained by application of members
+		of the ensemble.  Each group of multiwavelets that are to
+		be used together have a common bank id number.  
+        }
+	;
+
+Attribute waveletid
+        Integer (8)
+        Format ( "%8d" )
+        Null ( "-1" )
+        Range ( "bankid > 0" )
+        Description ( "Multiwavelet function id " )
+        Detail {
+                Multiwavelets are a type of filter bank that define an 
+		ensemble of estimates obtained by application of members
+		of the ensemble.  These are always used in pairs of 
+		even and odd functions to form a complex valued function.
+		The waveletid is the same for real and imag parts and is
+		used to form these pairs from data stored as real functions.    
+        }
+	;
+
+Attribute f0
+        Real (11)
+        Format ( "%11.6lf" )
+        Null ( "-1.000000" )
+        Range ( "f0 >= 0.0" )
+        Description ( "" )
+        Detail {
+		Nondimensional center frequency parameter for mutliwavelets.  
+		Scaling to nondimensional is by nyquist frequency.
+        }
+        ;
+
+Attribute fw
+        Real (11)
+        Format ( "%11.6lf" )
+        Null ( "-1.000000" )
+        Range ( "fw >= 0.0" )
+        Description ( "" )
+        Detail {
+		Nondimensional bandwidth parameter for mutliwavelets.  
+		Scaling to nondimensional is by nyquist frequency.
+        }
+        ;
+
+Attribute eigenval
+        Real (11)
+        Format ( "%11.6lf" )
+        Null ( "-1.000000" )
+        Range ( "eigenval >= 0.0" )
+        Description ( "eigenvalue associated with a mutliwavelet" )
+        Detail {
+		Each multiwavelet is produced from an eigenvalue problem that defines
+		the fraction of energy inside the frequency band designed.  We tabulate
+		this for reference.  
+        }
+        ;
+
+Attribute mwpart
+        String (1)
+        Format ( "%-1s" )
+        Null ( "-" )
+        Range ( "mwpart =~ /r|i/" )
+        Description ( "real or imaginary part" )
+        Detail {
+		Multiwavelet functions are used in pairs as real and 
+		imaginary parts based on odd and even pairs.  This is
+		used to correctly sort out related components.  
+        }
+        ;
+
+Attribute cxx
+        Real (15)
+        Format ( "%15.6lg" )
+        Null ( "-999999.9999999" )
+        Range ( "cxx >= 0.0" )
+        Description ( "covariance matrix element" )
+        Detail {
+		Generic form of sxx attribute defined in css3.0.  That
+		is a covariance matrix component Cxx, but in this case
+		it isn't specific to location as specified in css3.0 
+        }
+        ;
+
+Attribute cxy
+        Real (15)
+        Format ( "%15.6lg" )
+        Null ( "-999999.9999999" )
+        Description ( "covariance matrix element" )
+        Detail {
+		Generic form of sxy attribute defined in css3.0.  That
+		is a covariance matrix component Cxy, but in this case
+		it isn't specific to location as specified in css3.0 
+        }
+        ;
+
+Attribute cyy
+        Real (15)
+        Format ( "%15.6lg" )
+        Null ( "-999999.9999999" )
+        Range ( "cyy >= 0.0" )
+        Description ( "covariance matrix element" )
+        Detail {
+		Generic form of syy attribute defined in css3.0.  That
+		is a covariance matrix component Cyy, but in this case
+		it isn't specific to location as specified in css3.0 
+        }
+        ;
+
+Attribute ncomp
+        Integer (2)
+        Format ( "%2d" )
+        Null ( "-1" )
+        Range ( "ncomp > 0" )
+        Description ( "number of components used" )
+        Detail {
+                This quantity is the number of components used 
+		in some estimator.  Anything other than 1 or 3 would be odd.
+        }
+        ;
+
+
+Attribute estatic
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "Seconds" )
+	Description ( "Elevation static " )
+	Detail {
+		Static correction to correct for elevation relative to 
+		a specified datum.
+	}
+	;
+
+Attribute datum
+	Real (10)
+	Format ( "%10.5lf" )
+	Null ("-999.99999" )
+	Units ( "kilometers" )
+	Description ( "Elevation static datum " )
+	Detail {
+		Datum position elevations are computed relative to.
+		Intentionally made 0 for a null entry since that is likely
+		to be the norm.
+	}
+	;
+Attribute pwstatic
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "Seconds" )
+	Description ( "Plane wave static" )
+	Detail {
+		Arrays use a plane wave correction to time align data to 
+		a reference point on the earth.  A plane wave static is
+		an attempt to correct the error in this approximation for
+		large arrays.  It is computed relative to an earth model.		
+	}
+	;
+
+Attribute rstatic
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "Seconds" )
+	Description ( "Residual static" )
+	Detail {
+		Residual static is computed relative to a best plane wave fit
+		and normally would include be applied in addition to 
+		all other statics as defined in exploration seismology.		
+	}
+	;
+
+Attribute errstatic
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "Seconds" )
+	Description ( "Estimated error in residual static" )
+	Detail {
+		Special attribute for multiwavelet estimates where
+		redundancy can be exploited to produce error estimates
+		of an estimated parameter.  In this case it is the
+		error in the estimated residual static.		
+	}
+	;
+
+Attribute ampstatic
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "db" )
+	Description ( "Amplitude static" )
+	Detail {
+		Estimated variation in amplitude of a given station
+		relative to some reference value defined in another
+		table.  		
+	}
+	;
+
+Attribute erramp
+	Real (10)
+	Format ( "%10.6lf" )
+	Null ("-9999.9999" )
+	Units ( "db" )
+	Description ( "Amplitude static" )
+	Detail {
+		Estimated variation in amplitude of a given station
+		relative to some reference value defined in another
+		table.  		
+	}
+	;
+
+Attribute ndgf
+        Integer (5)
+        Format ( "%5d" )
+        Null ( "-1" )
+        Range ( "ndgf >= 0" )
+        Description ( "number of degrees of freedom in a statistical estimate" )
+        Detail {
+                Statistical estimates commonly have a number of degrees of
+		freedom parameter that helps define reliability.  
+        }
+        ;
+
+Attribute ampcomp
+        String (4)
+        Format ( "%-4s" )
+        Null ( "-" )
+        Range ( "ampcomp =~ /3C|Z|E|N|/" )
+        Description ( "Component used to make an amplitude measurement" )
+        Detail {
+		Z = amplitude measured from vertical component
+		E = amplitude measured from east-west component
+		N = amplitude measured from north-south component
+		3C = a total vector amplitude measurement
+                
+        }
+        ;
+
+Attribute mwamp
+        Real (10)
+        Format ( "%10.1lf" )
+        Null ( "-1.0" )
+        Range ( "mwamp > 0.0" )
+        Units ( "Nanometers" )
+        Description ( "rms amplitude measured with multiwavelets" )
+        Detail {
+		The rms amplitude of the modulus of a complex multiwavelet 
+		trace averaged over a window can provide a narrow band 
+		estimate of amplitude.                  
+        }
+        ;
+Attribute pmtype
+        String (4)
+        Format ( "%-4s" )
+        Null ( "-" )
+        Range ( "pmtype =~ /ar|ss/" )
+        Description ( "type of particle motion estimate" )
+        Detail {
+		ar = particle motion estimate from an array average
+		ss = single station particle motion estimate	
+        }
+        ;
+
+Attribute majoraz
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "majoraz >= 0.0 && majoraz < 360.0" )
+        Units ( "Degrees" )
+        Description ( "azimuth of major axis of particle motion ellipse" )
+        Detail {
+		The major axis of a particle motion ellipse defines 
+		a direction in space.  This attribute defines the 
+		azimuth of that vector.                
+        }
+        ;
+
+Attribute majorema
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "majorema >= 0.0 && majorema <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "major axis ema of particle motion ellipse" )
+        Detail {
+               	The major axis of a particle motion ellipse defines 
+		a direction in space.  This attribute defines the 
+		emergence angle of that vector which is comparable to
+		the colatitude angle in spherical coordinates. 	
+        }
+        ;
+
+Attribute errmajaz
+        Real (7)
+        Format ( "%7.3lf" )
+        Null ( "-1.00" )
+        Range ( "errmajaz >= 0.0" )
+        Units ( "Degrees" )
+        Description ( "estimated error in major particle motion azimuth" )
+        Detail {
+               	Estimated error in the estimated azimuth of the major axis
+		of a particle motion ellipse figure.   	
+        }
+        ;
+
+Attribute errmajema
+        Real (7)
+        Format ( "%7.3lf" )
+        Null ( "-1.00" )
+        Range ( "errmajema >= 0.0" )
+        Units ( "Degrees" )
+        Description ( "estimated error in particle motion ema for major axis" )
+        Detail {
+                Estimated error in the estimated emergence angle
+		(majorema attribute) of the major axis
+		of a particle motion ellipse figure.   	
+              	
+        }
+        ;
+
+Attribute minoraz
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "minoraz >= 0.0 && minoraz < 360.0" )
+        Units ( "Degrees" )
+        Description ( "azimuth of minor axis of particle motion ellipse" )
+        Detail {
+		The minor axis of a particle motion ellipse defines 
+		a direction in space.  This attribute defines the 
+		azimuth of that vector.                
+        }
+        ;
+
+Attribute minorema
+        Real (7)
+        Format ( "%7.2lf" )
+        Null ( "-1.00" )
+        Range ( "minorema >= 0.0 && minorema <= 90.0" )
+        Units ( "Degrees" )
+        Description ( "minor axis ema of particle motion ellipse" )
+        Detail {
+               	The minor axis of a particle motion ellipse defines 
+		a direction in space.  This attribute defines the 
+		emergence angle of that vector which is comparable to
+		the colatitude angle in spherical coordinates. 	
+        }
+        ;
+
+Attribute errminaz
+        Real (7)
+        Format ( "%7.3lf" )
+        Null ( "-1.00" )
+        Range ( "errminaz >= 0.0" )
+        Units ( "Degrees" )
+        Description ( "estimated error in minor particle motion azimuth" )
+        Detail {
+               	Estimated error in the estimated azimuth of the minor axis
+		of a particle motion ellipse figure.   	
+        }
+        ;
+
+Attribute errminema
+        Real (7)
+        Format ( "%7.3lf" )
+        Null ( "-1.00" )
+        Range ( "errminema >= 0.0" )
+        Units ( "Degrees" )
+        Description ( "estimated error in particle motion ema for minor axis" )
+        Detail {
+                Estimated error in the estimated emergence angle
+		(minorema attribute) of the minor axis
+		of a particle motion ellipse figure.   	
+              	
+        }
+        ;
+
+Attribute errrect
+        Real (7)
+        Format ( "%7.3lf" )
+        Null ( "-1.00" )
+        Range ( "errrect >= 0.0 && errrect <= 1.0" )
+        Description ( "estimated error rectilinearity estimate" )
+        Detail {
+                Estimated error in the estimated rectilinearity
+		(rect attribute) of a particle motion ellipse figure.  	
+              	
+        }
+        ;
+
+Attribute majndgf
+        Integer (5)
+        Format ( "%5d" )
+        Null ( "-1" )
+        Range ( "majndgf >= 0" )
+        Description ( "ndgf in major axis estimate" )
+        Detail {
+                Number of degrees of freedom in an estimates of parameters
+		associated with the major axis of a particle motion 
+		ellipse.  
+        }
+        ;
+
+Attribute minndgf
+        Integer (5)
+        Format ( "%5d" )
+        Null ( "-1" )
+        Range ( "minndgf >= 0" )
+        Description ( "ndgf in minor axis estimate" )
+        Detail {
+                Number of degrees of freedom in an estimates of parameters
+		associated with the minor axis of a particle motion 
+		ellipse.  
+        }
+        ;
+
+Attribute rectndgf
+        Integer (5)
+        Format ( "%5d" )
+        Null ( "-1" )
+        Range ( "rectndgf >= 0" )
+        Description ( "ndgf in rectilinearity estimate" )
+        Detail {
+                Number of degrees of freedom in estimated rectilinearity.
+        }
+        ;
+ 
+Attribute snrz
+        Real (7)
+        Format ( "%7.1lf" )
+        Null ( "-1.00" )
+        Range ( "snrz >= 0.0" )
+        Description ( "Signal to noise estimate for z component" )
+        Detail {
+                Three-component, broadband data make signal-to-noise
+		estimation a complicated affair due to colored noise
+		and variations between components.  This parameter is
+		used in multiwavelet processing which is generally 
+		narrow band.  This parameter is for the z component. 	
+              	
+        }
+        ;
+
+Attribute snrn
+        Real (7)
+        Format ( "%7.1lf" )
+        Null ( "-1.00" )
+        Range ( "snrn >= 0.0" )
+        Description ( "Signal to noise estimate for n-s component" )
+        Detail {
+                Three-component, broadband data make signal-to-noise
+		estimation a complicated affair due to colored noise
+		and variations between components.  This parameter is
+		used in multiwavelet processing which is generally 
+		narrow band.  This parameter is for the north-south
+		component. 	
+              	
+        }
+        ;
+
+Attribute snre
+        Real (7)
+        Format ( "%7.1lf" )
+        Null ( "-1.00" )
+        Range ( "snre >= 0.0" )
+        Description ( "Signal to noise estimate for e-w component" )
+        Detail {
+                Three-component, broadband data make signal-to-noise
+		estimation a complicated affair due to colored noise
+		and variations between components.  This parameter is
+		used in multiwavelet processing which is generally 
+		narrow band.  This parameter is for the east-west
+		component. 	
+              	
+        }
+        ;
+
+Attribute snr3c
+        Real (7)
+        Format ( "%7.1lf" )
+        Null ( "-1.00" )
+        Range ( "snr3c >= 0.0" )
+        Description ( "SNR estimate for vector sum of 3 components" )
+        Detail {
+                Three-component, broadband data make signal-to-noise
+		estimation a complicated affair due to colored noise
+		and variations between components.  This parameter is
+		used in multiwavelet processing which is generally 
+		narrow band.  This parameter is for the vector sum
+		of all squared amplitudes of signal/squared amplitudes
+		of noise normalized to square root.   	
+              	
+        }
+        ;
+
+
+Attribute nstime
+        Time (17)
+        Format ( "%17.5lf" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "start time of noise segment in snr analysis" )
+        Detail {
+                Signal to Noise analysis definition requires specifying
+		both a signal and noise time window.  This parameter
+		defines the start time of the noise window.
+        }
+        ;
+Attribute netime
+        Time (17)
+        Format ( "%17.5lf" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "end time of noise segment in snr analysis" )
+        Detail {
+                Signal to Noise analysis definition requires specifying
+		both a signal and noise time window.  This parameter
+		defines the end time of the noise window.
+        }
+        ;
+
+Attribute sstime
+        Time (17)
+        Format ( "%17.5lf" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "start time of signal segment in snr analysis" )
+        Detail {
+                Signal to Noise analysis definition requires specifying
+		both a signal and noise time window.  This parameter
+		defines the start time of the signal window.
+        }
+        ;
+Attribute setime
+        Time (17)
+        Format ( "%17.5lf" )
+        Null ( "-9999999999.99900" )
+        Units ( "Seconds" )
+        Description ( "end time of signal segment in snr analysis" )
+        Detail {
+                Signal to Noise analysis definition requires specifying
+		both a signal and noise time window.  This parameter
+		defines the end time of the signal window.
+        }
+        ;
+
+
+Relation mwdisk
+        Fields ( wfid bankid waveletid eigenval f0 fw mwpart lddate )
+        Primary ( wfid )
+        Alternate ( waveletid )
+        Foreign ( wfid  )
+        Defines bankid 
+	Defines waveletid
+        Description ( "supplemental table to wfdisc table used to index multiwavelets" )
+        Detail {
+		Multiwavelets are a set of special functions that are not easily generated
+		automatically.  Therefore it is convenient to store them in disk files.
+		Because they are essentially FIR filters that come in pairs we can store
+		them like seismograms indexed by wfdisc tables.  This table is of use only
+		joined to a wfdisc table of a db dedicated to holding banks of multiwavelet
+		functions.  Note the real and imaginary parts are placed in separate traces not
+		defined by a complex valued object.  This was intentional to allow viewing
+		the collection of functions with something like dbpick or trdisp in dbe.  
+        }
+        ;
+
+Relation mwslow
+        Fields ( sta evid bankid phase fc time twin slo azimuth cxx cyy cxy nsta ncomp algorithm lddate )
+        Primary ( evid bankid phase fc )
+        Foreign ( bankid evid  )
+        Description ( "Slowness vector and associated error estimates for multiwavelet code" )
+        Detail {
+		Special table for holding parameters related to slowness vector estimates 
+		using multiwavelet array processing.  Similar tables in css3.0 are 
+		inadequate because they do now allow the frequency dependence that is
+		an inherent feature of multiwavelets.  
+        }
+        ;
+
+Relation mwavgamp
+        Fields ( sta evid bankid phase fc ampcomp time twin mwamp erramp ndgf algorithm lddate )
+        Primary (  sta evid bankid phase fc ampcomp )
+        Foreign ( evid bankid  )
+        Description ( "Array averaged amplitudes estimated by multiwavelets" )
+        Detail {
+		Special table to hold parameters related to array averaged amplitude estimates
+		computed with multiwavelet array processing.  
+        }
+        ;
+
+Relation mwtstatic
+        Fields ( sta fc bankid phase evid time twin wgt estatic pwstatic rstatic errstatic ndgf datum algorithm lddate )
+        Primary ( sta fc time bankid )
+        Foreign ( bankid evid )
+        Description ( "time static corrections table computed with multiwavelets" )
+        Detail {
+		Special table to hold a collection of time statics computed by multiwavelets
+		in plane wave array processing.  Error estimates and associated parameters
+		are also in this table.
+        }
+        ;
+
+Relation mwastatic
+        Fields ( sta ampcomp fc bankid phase evid time twin wgt ndgf ampstatic erramp algorithm  lddate )
+        Primary ( sta fc time bankid ampcomp )
+        Foreign (  bankid evid )
+        Description ( "amplitude static corrections table computed with multiwavelets" )
+        Detail {
+		Special table to hold a collection of amplitude corrections and associated
+		error statistics computed by multiwavelet array processing.
+        }
+        ;
+
+Relation mwpm
+        Fields ( sta bankid phase fc time twin evid pmtype majoraz majorema minoraz minorema rect errmajaz errmajema errminaz errminema errrect majndgf minndgf rectndgf algorithm lddate )
+        Primary ( sta bankid fc time  )
+        Foreign (  bankid evid )
+        Description ( "particle motion and associated error estimates computed with multiwavelets" )
+        Detail {
+		Special table to hold a collection of estimates and associated errors of
+		particle motion ellipses estimated by multiwavelets.  
+        }
+        ;
+
+Relation mwsnr
+        Fields ( sta bankid phase fc evid nstime netime sstime setime snrz snrn snre snr3c algorithm lddate)
+        Primary ( sta bankid fc evid phase  )
+        Foreign (  bankid evid )
+        Description ( "signal to noise estimates in multiwavelet processing" )
+        Detail {
+		Special table to hold estimate of signal to noise ratio 
+		computed in multiwavelet processing.  
+        }
+        ;
