@@ -25,7 +25,6 @@ int             ntapers;
     int             bundletype;
     int             retcode = 0;
     double          time,
-                    endtime,
                     t0,
                     t1;
     int             nwanted,
@@ -41,6 +40,7 @@ int             ntapers;
     double          sum,
                     variance;
     int             i;
+    int		    nsamp ;
     Expression 	*time_expr, *endtime_expr ;
 
 
@@ -70,7 +70,7 @@ int             ntapers;
 		    "calib", &calib,
 		    "segtype", segtype,
 		    "time", &time,
-		    "endtime", &endtime,
+		    "nsamp", &nsamp, 
 		    "samprate", &samprate,
 		    "data", &data,
 		    0);
@@ -82,7 +82,7 @@ int             ntapers;
 	}
 
 	    nwanted = TIME2SAMP ( w0, samprate, w1) ;
-	    if (troverlap (time, endtime, samprate, w0, w1, &pt0, &t0, &t1, &npts) >= nwanted) {
+	    if (trclip (time, samprate, nsamp, w0, w1, &pt0, &npts, &t0, &t1 ) >= nwanted) {
 		dp = data + pt0;
 		sum = 0.;
 		for (i = 0; i < npts; i++)
