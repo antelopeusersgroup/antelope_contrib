@@ -795,7 +795,7 @@ Relation clients
 	;
 
 Relation connections
-	Fields ( fromaddress fromport o2omachine toaddress toport closeorb statmachine when clientid lddate )
+	Fields ( fromaddress fromport o2omachine toaddress toport closeorb statmachine when clientid srcname lddate )
 	Primary ( fromaddress fromport toaddress toport o2omachine statmachine )
 	Foreign ( clientid )
 	Description ( "data-flow connections between orbs" )
