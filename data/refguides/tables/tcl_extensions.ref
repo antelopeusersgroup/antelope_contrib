@@ -1,9 +1,9 @@
 <chapter Tcl/Tk Extensions>
 <commands>
-tcl
+atcl
     Tcl shell
 
-wish
+awish
     Tk shell 
 
 <body>

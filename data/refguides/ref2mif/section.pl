@@ -62,7 +62,7 @@ sub body {
 sub options { 
     return &paragraph("Indented", "") if /^\s*$/ ;
     my ($option, $desc ) = split ( "\t", $_, 2) ; 
-    if ( $option =~ /(-\w+)\s+(\S+)/ ) { 
+    if ( $option =~ /(-\w+)\s+(.*)/ ) { 
 	$option = &string("$1 ") 
 		  . &fontstring ( "ParameterName", $2 ) ; 
 	$Parameters{$1} = 1 ; 
@@ -70,7 +70,11 @@ sub options {
 	$option = &string($option) ; 
     }
     $desc = &emphasize(\%Parameters, "ParameterName", "\t$desc") if $desc !~ /^\s*$/ ;
-    return &paragraph("Indented", "#\n" . $option . "\t" . $desc ) ;
+    if ( $option =~ /^\s*$/ ) { 
+	return &paragraph("Indented", "#\n" .  $desc ) ;
+    } else {
+	return &paragraph("Indented", "#\n" . $option . "\t" . $desc ) ;
+    }
 }
 
 sub option { 

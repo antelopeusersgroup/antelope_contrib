@@ -287,8 +287,8 @@ subroutine text ( x, y, angle, iref, string, iclip )
 subroutine tics ( x1, y1, x2, y2, stic, ntic, dtic, tlen, thick, idir )
     plot tic marks
 
-subroutine trackcursor ( external callback(x, y) )
-    executes callback routine when cursor is moved
+subroutine trackcursor ( external track(x,y) )
+    calls routine track with coordinates x, y as cursor moves
 
 subroutine trackcursoroff ( )
     disables cursor tracking callback routine

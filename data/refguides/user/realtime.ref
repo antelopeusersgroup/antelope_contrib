@@ -203,7 +203,7 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
 -pf pf	specify parameter file
--sta net_sta1[net_sta2[...]] 
+-sta net_sta1 [net_sta2 [...]] 
  	override names from parameter file
 -msglevel {0|1}
 -v	verbose
@@ -234,8 +234,9 @@ k22orb [options] target orbdata [orbcmd]
 -db db	specify database for calib information
 -v	be more verbose
 -state filename
- 	save state in filename
--start time	only get events after time
+	save state in filename
+-start time
+	only get events after time
 </options>
 
 k2cmd [options] orb target datalogger cmd

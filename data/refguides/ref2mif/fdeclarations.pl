@@ -26,7 +26,7 @@ sub fdeclarations {
     } else {
 	$ignored = 0 ; 
 	undef %Parameters ;  # parse_cdeclarations creates the array %Parameters as a side effect.
-	$_ = &paragraph ( "cdeclaration", "#\n" . parse_cdeclaration($_) ) ;
+	$_ = &paragraph ( "cdeclaration", "#\n" . parse_fdeclaration($_) ) ;
     }
     return $_ ;
 }

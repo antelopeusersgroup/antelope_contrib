@@ -1,5 +1,6 @@
 DATADIR=refguides/tables
 DATA= \
+	antelopemake.ref \
 	environment.ref \
 	projections.ref \
 	datascope_constants.ref \

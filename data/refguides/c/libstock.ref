@@ -823,7 +823,7 @@ Pf *pfnew ( int type )
 void pffree ( Pf *pf )
     free resources for parameter space pf
 
-int pfconfig ( "ask", char *(*)(char *) askx )
+int pfconfig ( "ask", char *(*askx)(char *query) )
     replace default &ask routine with user supplied version askx
 
 int pfget ( Pf *pf, char *name, void **result )

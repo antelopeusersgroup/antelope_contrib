@@ -3,7 +3,7 @@
 refguide \- prepare a Framemaker mif version of a reference guide
 .SH SYNOPSIS
 .nf
-refguide {creference|user|scripting}
+refguide {c|user|scripting}
 .fi
 .SH DESCRIPTION
 \fBrefguide\fR runs \fbtxform\fR(1) to create a Framemaker
@@ -11,7 +11,7 @@ mif format reference guide.  Currently, there are the following
 different reference guides:
 .IP user
 This covers Antelope command line programs.
-.IP creference
+.IP c
 The c reference covers the c interfaces.
 .IP scripting
 This covers the various scripting languages which can 
@@ -20,7 +20,7 @@ be used with Antelope: tcl/tk, perl and matlab.
 The ascii input files which are used to create the
 Framemaker output are kept in $ANTELOPE/data/refguides.
 The output is a file named 
-\fIcreference.mif\fR,
+\fIc.mif\fR,
 \fIuser.mif\fR or
 \fIscripting.mif\fR.
 .SH EXAMPLE

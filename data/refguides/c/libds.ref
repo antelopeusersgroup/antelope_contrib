@@ -45,9 +45,8 @@ int dbaddnull ( Dbptr db )
 int dbaddv ( Dbptr db, char *t,  char *f1, v1, ... 0 )
     add a new record to table db/t, with values v1,...  for
     corresponding fields f1, ...  ; terminate list with zero.  returns
-    record number of new record or a previously existing matching
-    record, or a negative result if no record can be added or the new
-    record would conflict with an existing record.
+    record number of new record (or existing matching record), 
+    or a negative result if no record can be added 
 
 int dbget ( Dbptr db, char *s )
     get a record (or field or whole table) from database into s
