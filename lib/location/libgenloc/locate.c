@@ -109,8 +109,16 @@ Robust_statistics form_equations(int mode, Hypocenter current_location,
 		}
 		else
 		{
-			r[i] = (float) (atimes->time - current_location.time  
-			- tto.time);
+			/* We have to handle phases like S-P specially
+			because these do not require differencing the 
+			origin time.  We use the phase name to 
+			trigger this switch.*/
+			if(strchr(atimes->phase->name,'-')!=NULL)
+				r[i] = (float) (atimes->time - tto.time);
+			else
+				r[i] = (float)(atimes->time 
+					- current_location.time  
+					- tto.time);
 			w[i] = (float)(1.0/atimes->deltat);
 			if(options.atime_distance_weight) 
 		   	  w[i] *= distance_weight_time(*atimes,current_location);

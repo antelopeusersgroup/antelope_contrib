@@ -768,6 +768,40 @@ number_points_r         11
 number_points_azimuth   41
 ndepths                 1
 .nf
+.SH MINUS PHASES
+.LP
+Sometimes it is desirable to use phases like S-P instead of
+using the actual arrival time.  The main application of this approach
+is to handle stations that have timing problems, but it is conceivable 
+one would want to use this for other reasons.  Nonetheless, the 
+underlying assumption of genloc is that the use of phases like S-P
+should be driven by timing problems.  
+For this reason genloc is set up to handle minus phases like this 
+automatically when it is told a station has a bad clock.  This is
+triggered by two parameters.
+.PP
+\fIbad_clock\fR is a Tbl parameter that lists stations that should
+be viewed as always having bad clocks.  To use only S-P times make
+this list all the stations in your network.  
+.PP
+\fIclock_error_cutoff\fR is a real number cutoff on clock timing
+accuracy.  Programs using libgenloc can call a function that 
+checks for an extension table to css3.0 called \fItiming\fR
+that defines clock accuracy over various time spans.  That
+table is scanned against this parameter to find time periods
+where the clock accuracy is worse than the value specified
+by this parameter.  (see also reftek_dbtiming(1) which 
+builds this table for reftek data loggers).  
+During processing any station that has a clock with a
+listed accuracy below this threshold will automatically 
+revert to only using minus phases.
+.LP
+A final requirement is that any minus phase must have a full
+description in the phase handle section.  That is, one must have
+built a phase handle for each desired "minus" phase.  
+Note `that minus phase
+handle can be built for multiple difference-based phases
+(e.g. S-P, PP-P, pP-P, etc.) 
 
 .SH  DEFAULTS
 All the parameters described in the CONTROL PARAMETERS section 
@@ -929,7 +963,8 @@ Several things are presently lacking and/or incomplete the user is warned
 about:  (1) a
 cascaded grid search procedure is planned, but has not yet been
 implemented; (2) the set of travel time options is not as rich as it
-could be;  and (3) not all the initial location options have been
-as thoroughly tested as they should be.  
+could be;  and (3) the minus phase handlers (e.g. S-P, pP-P, etc.) 
+will only work with travel time calculators connected through the
+generic (tt(3)) interface.  
 .SH AUTHOR
 Gary L. Pavlis

@@ -41,7 +41,8 @@ OBJS=	  bisquare.o \
     thomson.o \
     ttcalc_interface.o\
     ttlvz.o \
-    ttlvz_interface.o
+    ttlvz_interface.o \
+    SminusP.o
 
 $(LIB) : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)

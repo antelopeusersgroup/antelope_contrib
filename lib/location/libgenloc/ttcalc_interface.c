@@ -14,6 +14,7 @@ were defined because it did not handle the potential variations in
 type of the "hook" defined by different calculators.  This hopefully
 fixes this.  
 */
+#include <strings.h>
 #include "stock.h"
 #include "arrays.h"
 #include "tt.h"
@@ -33,11 +34,7 @@ This is the init procedure that does this.  Pf is the input
 Pf object defining these relationships, and phase is the phase name
 we use to key these Arr. 
 */
-static Arr *TTmethod=NULL;
-static Arr *TTmodel=NULL; 
-static Arr *TThooks=NULL;  /* This array is keyed by method string
-				to allow keeping mixed type hooks for
-				different methods */
+static Arr *TTmethod,*TTmodel,*TThooks;
 int ttcalc_interface_init(char *phase, Pf *pf)
 {
 	char *model;
@@ -47,6 +44,9 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 	int result;
 	Tbl *times=NULL;
 
+	/* This assumes the TTmethod, TTmodel, and TThooks pointers are
+	initialized to NULL.  Earlier code had it explicitly set above
+	but this led to seg faults for reasons I could not figure glp,6/2001*/
 	if(TTmethod == NULL) TTmethod = newarr(0);
 	if(TTmodel == NULL) TTmodel = newarr(0);
 	if(TThooks == NULL) TThooks = newarr(0);
@@ -82,6 +82,10 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 	Hook *hook;
 	int hook_is_null=0;
 
+	/*Always this value for "regular" phases.  Set to 0 for
+	things like S-P */
+	o.dtdtau = 1.0;
+
 	strcpy(geometry.receiver.name,x.sta);
 	geometry.receiver.lat = x.rlat;
 	geometry.receiver.lon = x.rlon;
@@ -101,36 +105,109 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 	TTmode = 0;
 	if(mode == ALL) TTmode |= TT_DERIVATIVES;
 
-	result = ttcalc(method,model,phase,TTmode,&geometry,&t,&hook);
-	if(hook_is_null)setarr(TThooks,method,hook);
+	/* Assume phase names containing - are to be treated like
+	a difference of two arrival times of a pair of phases.*/
+	if(strchr(phase,'-'))
+	{
+		/* minus phases like S-P are handled here.  
+		First step is to split the phase name into
+		components */
+		char *phase1,*phase2;
+		phase1 = strdup(phase);
+		phase2 = strchr(phase1,'-');
+		*phase2 = '\0';
+		++phase2; 
+		/* Theoretically we could call ttcalc once with phase1
+		and phase2 in the list, but not all calculators can 
+		be assured of working this way (I know as I got lazy
+		myself on this point) so we call the calculator twice
+		and form the results from the pieces. */
+		result = ttcalc(method,model,phase1,TTmode,&geometry,&t,&hook);
+		if(hook_is_null)setarr(TThooks,method,hook);
+		if((result < 0) || ( (result == 1) && (mode == ALL) ))
+		{
+			complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
+				x.sta, result, phase1,phase);
+			o.time = TIME_INVALID;
+			o.dtdx = 0.0;
+			o.dtdy = 0.0;
+			o.dtdz = 0.0;
+			return(o);
+		}
+		atime = (TTTime *) gettbl(t,0);
+		o.time = atime->value;
+		if(mode == ALL)
+		{
+			o.dtdx = atime->deriv[0];
+			o.dtdy = atime->deriv[1];
+			o.dtdz = atime->deriv[2];
+		}
+		else
+		{
+			o.dtdx = 0.0;
+			o.dtdy = 0.0;
+			o.dtdz = 0.0;
+		}
+		result = ttcalc(method,model,phase2,TTmode,&geometry,&t,&hook);
+		if((result < 0) || ( (result == 1) && (mode == ALL) ))
+		{
+			complain(1,"Station %s:  ttcalc returned error %d for phase %s of composite phase %s\nDatum skipped\n",
+				x.sta, result, phase2,phase);
+			o.time = TIME_INVALID;
+			o.dtdx = 0.0;
+			o.dtdy = 0.0;
+			o.dtdz = 0.0;
+			return(o);
+		}
+		atime = (TTTime *) gettbl(t,0);
+		o.time -= atime->value;
+		if(mode == ALL)
+		{
+			o.dtdx -= atime->deriv[0];
+			o.dtdy -= atime->deriv[1];
+			o.dtdz -= atime->deriv[2];
+			o.dtdtau = 0.0;
+		}
+		/* If we didn't ask for partials they are already set 0*/
 
-	if((result < 0) || ( (result == 1) && (mode == ALL) ))
-	{
-		complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
-			x.sta, result, phase);
-		o.time = TIME_INVALID;
-		o.dtdx = 0.0;
-		o.dtdy = 0.0;
-		o.dtdz = 0.0;
-		return(o);
-	}
-	/* In this context, we can assume the returned Tbl has only one
-	entry, and it corresponds to the phase requested.  This may
-	not be guaranteed.  This is necessary to handle generic phase
-	names like "P" */
-	atime = (TTTime *) gettbl(t,0);
-	o.time = atime->value;
-	if(mode == ALL)
-	{
-		o.dtdx = atime->deriv[0];
-		o.dtdy = atime->deriv[1];
-		o.dtdz = atime->deriv[2];
+
+		/* We only have one free here because of how this was created*/
+		free(phase1);
 	}
 	else
 	{
-		o.dtdx = 0.0;
-		o.dtdy = 0.0;
-		o.dtdz = 0.0;
+		/* normal phases are handled in this block */
+		result = ttcalc(method,model,phase,TTmode,&geometry,&t,&hook);
+		if(hook_is_null)setarr(TThooks,method,hook);
+	
+		if((result < 0) || ( (result == 1) && (mode == ALL) ))
+		{
+			complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
+				x.sta, result, phase);
+			o.time = TIME_INVALID;
+			o.dtdx = 0.0;
+			o.dtdy = 0.0;
+			o.dtdz = 0.0;
+			return(o);
+		}
+		/* In this context, we can assume the returned Tbl has only one
+		entry, and it corresponds to the phase requested.  This may
+		not be guaranteed.  This is necessary to handle generic phase
+		names like "P" */
+		atime = (TTTime *) gettbl(t,0);
+		o.time = atime->value;
+		if(mode == ALL)
+		{
+			o.dtdx = atime->deriv[0];
+			o.dtdy = atime->deriv[1];
+			o.dtdz = atime->deriv[2];
+		}
+		else
+		{
+			o.dtdx = 0.0;
+			o.dtdy = 0.0;
+			o.dtdz = 0.0;
+		}
 	}
 	if(t != NULL) freetbl(t,free);
 	return(o);
