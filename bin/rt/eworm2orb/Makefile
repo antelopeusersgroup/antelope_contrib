@@ -3,8 +3,8 @@ PF=eworm2orb.d eworm2orb.desc
  
 MAN1=eworm2orb.1
 
-ldflags= -xildoff 
+ldflags= 
 cflags = -D_SPARC -D_SOLARIS -mt
-ldlibs= -lpkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt 
+ldlibs= $(ORBLIBS) -lwormds -lwormutil -lwormsol -mt
 
 include $(ANTELOPEMAKE)
