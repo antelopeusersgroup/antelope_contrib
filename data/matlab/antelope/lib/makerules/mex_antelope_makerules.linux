@@ -1,0 +1,57 @@
+MEX=mex
+MEXEXT=mexglx
+
+ldlibs= -lantelope_mex -lmex_orb $(ORBLIBS)
+
+include $(ANTELOPEMAKE)
+
+# Suppress -KPIC, which mex compiler doesn't understand
+DCFLAGS= 
+
+# Suppress -i, which mex compiler doesn't understand 
+CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS) -Dlinux
+
+# Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
+MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(DEST)/lib \
+  -L$(XLIB) LDFLAGS='$$LDFLAGS -Wl,-rpath,$(ANTELOPE)/lib -Wl,-rpath,$(DEST)/lib' $(DBG)
+
+clean ::
+	@-$(RM) *.$(MEXEXT) *.m *.html
+
+.SUFFIXES: .SUFFIXES .$(MEXEXT) .doc .xm .m .xhtml .html
+.c.o:
+	$(MEX) $(CFLAGS) -c $*.c
+
+.c.$(MEXEXT):
+	$(MEX) -output $*.$(MEXEXT) $(CFLAGS) $*.c $(MEXFLAGS) $(LDLIBS)
+
+.xm.m:
+	$(RM) $@
+	cat $< > $@
+
+.xm.html:
+	$(RM) $@
+	matdoc_htmlwrap $< $@
+
+.doc.m:
+	matdoc2dotm $*.doc 
+
+.doc.html:
+	matdoc2html $*.doc 
+
+.xhtml.html:
+	$(RM) $@
+	cp $< $@
+
+HTML :: $(HTML) 	$(HTML:%=$(DEST)/data/$(HTMLDIR)/%)
+install :: HTML
+all:: $(HTML)
+
+uninstall::
+	@echo uninstalling $(HTML)
+	@-if [ -d $(DEST)/data/$(HTMLDIR) ] ; then \
+	    (cd $(DEST)/data/$(HTMLDIR) ; $(RM) $(HTML)) \
+	fi
+
+$(DEST)/data/$(HTMLDIR)/% : %
+	$(INSTALL) $< $(DEST)/data/$(HTMLDIR)

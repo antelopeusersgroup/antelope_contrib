@@ -1,4 +1,4 @@
-RULES=mex_antelope_makerules
+RULES=mex_antelope_makerules mex_antelope_makerules.linux
 include $(ANTELOPEMAKE)
 
 # Don't use the standard INCLUDE macro for the makerules
