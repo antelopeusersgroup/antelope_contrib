@@ -257,11 +257,14 @@ Tbl *orbhypo_to_genloc(ORB_Hypocenter *hyp, Arr *arrphase, Arr *stations)
 					hyp->assocs[i].iphase);
 		if(a->phase == NULL)
 		{
-			complain(1,"Don't know how to handle phase %s\nArrival at %s at time %lf skipped\n",
+		    if ( strcmp(hyp->assocs[i].iphase, "D") != 0 ) { 
+			elog_complain(1,"Don't know how to handle phase '%s'"
+				" -- Arrival at %s at time %lf skipped\n",
 				hyp->assocs[i].iphase,hyp->assocs[i].sta,
 				hyp->assocs[i].time);
-			free(a);
-			continue;
+		    } 
+		    free(a);
+		    continue;
 		}
 		/* the current real-time system has no uncertainty 
 		estimate on the picks so we always use the default */

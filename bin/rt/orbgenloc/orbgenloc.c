@@ -26,11 +26,20 @@ It provides a simple way to keep all this together. */
 RTlocate_Options parse_rt_options (Pf *pf)
 {
 	RTlocate_Options o;
+	char failure_dirs[STRSZ] ;
 	o.work_db=pfget_string(pf,"RT_working_db");
 	if(o.work_db  == NULL) o.work_db = strdup("orbgenloc");
 	o.logdir=pfget_string(pf,"RT_logfile_directory");
-	if(o.logdir == NULL) o.logdir = strdup(".");
+	if(o.logdir == NULL) {
+	    o.logdir = strdup(".");
+	} else { 
+	    makedir ( o.logdir ) ; 
+	}
 	o.failure_sdir = pfget_string(pf,"RT_failure_subdir");
+	strcpy ( failure_dirs, o.logdir ) ; 
+	strcat ( failure_dirs, "/" ) ; 
+	strcat ( failure_dirs, o.failure_sdir ) ; 
+	makedir ( failure_dirs ) ; 
 	if(o.failure_sdir == NULL) o.failure_sdir = strdup("failure");
 	o.minimum_distance = pfget_double(pf,"RT_minimum_distance");
 	o.maximum_distance = pfget_double(pf,"RT_maximum_distance");
@@ -565,12 +574,12 @@ void compute_location(Location_options o,
 				&converge_history,&reason_converged,&residual);
         	if(ret_code < 0)
         	{
-                	complain(0,"ggnloc failed to produce a solution for evid %d\n",hyp.evid);
+                	elog_notify (0,"ggnloc failed to produce a solution for evid %d\n",hyp.evid);
         	}
         	else
 		{
 			if(ret_code > 0)
-				complain(0,"Warning:  %d travel time calculator failures in ggnloc\nSolution ok for evid %d\n",
+				elog_notify(0,"Warning:  %d travel time calculator failures in ggnloc\nSolution ok for evid %d\n",
                                 	ret_code,hyp.evid);
 			C = matrix(0,3,0,3);
 			emodel = (float *) calloc(4,sizeof(float));
