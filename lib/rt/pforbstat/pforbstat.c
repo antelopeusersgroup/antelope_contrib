@@ -445,14 +445,6 @@ orbconnections2pf( Pf *pfanalyze )
 	serveraddress = pfget_string( pfserver, "address" );
 	serverport = pfget_int( pfserver, "port" );
 
-	if( ! STREQ( orbstat_machine_ipc, serveraddress ) ) {
-		complain( 0, 
-		  "Turning off pforbstat connections mode: must run on a "
-		  "machine local to the orb\n" );
-		pffree( pf );
-		return 0;
-	}
-
 	translate_nonroutable_address( orbstat_machine_ipc, anaddress );
 	pfput_string( pf, "orbstat_machine", anaddress );
 
