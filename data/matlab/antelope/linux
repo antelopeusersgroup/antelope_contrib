@@ -1,14 +1,14 @@
 MEX=mex
 
-CGEOM_CFLAGS:sh= if [ -r $ANTELOPE/include/cgeom.h ] && \
-		 grep cggrid_write $ANTELOPE/include/cgeom.h >&1 > /dev/null ; \
+CGEOM_CFLAGS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
+		 grep cggrid_write $(ANTELOPE)/include/cgeom.h >&1 > /dev/null ; \
 		 then echo -DHAVE_CGEOM; \
-		 fi
+		 fi)
 
-CGEOM_LIBS:sh= if [ -r $ANTELOPE/include/cgeom.h ] && \
-	       grep cggrid_write $ANTELOPE/include/cgeom.h >&1 > /dev/null ; \
+CGEOM_LIBS= $(shell if [ -r $(ANTELOPE)/include/cgeom.h ] && \
+	       grep cggrid_write $(ANTELOPE)/include/cgeom.h >&1 > /dev/null ; \
 	       then echo -lcgeom ; \
-	       fi
+	       fi)
 
 ldlibs= -lantelope_mex -lmex_orb $(CGEOM_LIBS) $(ORBLIBS)
 
