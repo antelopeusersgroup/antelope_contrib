@@ -1,6 +1,12 @@
 translations &Arr{
 	/pf/orbstat &Arr{
 		schema	registry1.0
+		clean &Arr{
+			clients &Arr{
+				serveraddress	server{address}
+				serverport	server{port}
+			}
+		}
 		tables &Arr{
 			servers &Arr{
 				serveraddress 	server{address}
@@ -75,6 +81,15 @@ translations &Arr{
 				slatest_time	TIME:sources{FOREACH}{slatest_time}
 				soldest		sources{FOREACH}{soldest}
 				soldest_time	TIME:sources{FOREACH}{soldest_time}
+			}
+			connections &Arr{
+				FOREACH		connections
+				when 		TIME:connections_when
+				fromaddress	connections[FOREACH]{fromaddress}
+				fromport	connections[FOREACH]{fromport}
+				toaddress	connections[FOREACH]{toaddress}
+				toport		connections[FOREACH]{toport}
+				latency_sec	connections[FOREACH]{latency_sec}
 			}
 		}
 	}

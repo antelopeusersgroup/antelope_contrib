@@ -137,6 +137,50 @@ for(;;) {
 
 	next unless database_prep( $dbname, $schema );
 
+	%clean = %{$trans{$key}{"clean"}};
+
+	foreach $cleantable ( keys( %clean ) ) {
+
+		@dbscratch = dblookup( @db, "", "$cleantable", "", "dbSCRATCH" );
+		@dbtable = dblookup( @db, "", "$cleantable", "", "dbALL" );
+
+		%fieldmap = %{$trans{$key}{"clean"}{$cleantable}};
+
+		@matchfields = ();
+		foreach $field ( keys( %fieldmap ) ) {
+
+			$pattern = $fieldmap{$field};
+
+			if( $pattern =~ /^TIME:/ ) {
+
+				$pattern =~ s/^TIME://;
+				$value = pfget( $pkt->pf, $pattern );
+				$value =~ s/^\s*([\d-.]+).*/$1/;
+
+			} else {
+		
+				$value = pfget( $pkt->pf, $pattern );
+			}
+
+			dbputv( @dbscratch, "$field", $value );
+
+			push( @matchfields, $field );
+		}
+
+
+		@records = dbmatches( @dbscratch, @dbtable, 
+				      "hook_clean_$table", @matchfields  );
+
+		foreach $record ( @records ) {
+			
+			$dbtable[3] = $record;
+
+			dbmark( @dbtable );
+		}
+
+		dbcrunch( @dbtable );
+	}
+
 	%tables = %{$trans{$key}{"tables"}};
 
 	foreach $table ( keys( %tables ) ) {
@@ -148,9 +192,26 @@ for(;;) {
 
 		if( defined( $fieldmap{FOREACH} ) ) {
 
-			%arrays = %{pfget( $pkt->pf, $fieldmap{FOREACH} )};
+			$structref = pfget( $pkt->pf, $fieldmap{FOREACH} );
 
-			foreach $key ( keys( %arrays ) ) {
+			next if( ! defined( $structref ) );
+
+			if( ref( $structref ) eq "HASH" ) {
+
+				%arrays = %$structref;
+				@mykeys = keys( %arrays );
+
+			} elsif( ref( $structref ) eq "ARRAY" ) {
+
+				@mykeys = 0..@#{$structref};
+
+			} else {
+				printf STDERR
+				  "Problem with FOREACH for table '$table'\n";
+				next;
+			}
+
+			foreach $key ( @mykeys ) {
 
 				foreach $field ( keys( %fieldmap ) ) {
 
@@ -197,9 +258,6 @@ for(;;) {
 						$dbreplace[3] = $recno;
 						dbput( @dbreplace );
 					}
-					#@dbmoo = dbsubset( @db, "serveraddress == \"132.239.4.66\" && serverport == 6510 && thread == 297861131" );
-					#$myn = dbquery( @dbmoo, dbRECORD_COUNT );
-					#print "Myn is $myn\n";
 				}
 			}
 

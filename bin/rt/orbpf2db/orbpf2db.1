@@ -3,69 +3,88 @@
 orbpf2db \- generic transfer of parameter-files to database
 .SH SYNOPSIS
 .nf
-orbpf2db [-p pffile] [-s statefile] [-m match] [-f from] [-w mode] orb database
+\fBorbpf2db \fP[-p \fIpffile\fP] [-s \fIstatefile\fP] [-m \fImatch\fP] [-f
+                \fIfrom\fP] [-w \fImode\fP] \fIorb\fP \fIdbname\fP
 .fi
 .SH DESCRIPTION
-orbpf2db is a generic utility to map parameter-files on an orb into a
-database of an arbitrary schema. The program presumes some stability
-in the format of a given type of parameter file. The database should be in the 
-correct schema for the parameter-files chosen with the 'match' option. 
-The translation from parameter-file keys to database fields is specified in the 
-parameter file for the orbpf2db program (this parameter file is called orbpf2db.pf
-by default). See below for an example.
+\fBorbpf2db\fP is a generic utility to map parameter-files on an \fIorb\fP into a
+database \fIdbname\fP of an arbitrary schema. The program presumes some stability in
+the format of a given type of parameter file. The database should be in
+the correct schema for the parameter-files chosen with the '\fImatch\fP'
+option.  The translation from parameter-file keys to database fields is
+specified in the parameter file for the \fBorbpf2db\fP program (this
+parameter file is called \fBorbpf2db\fP.pf by default). See below for an
+example.
 
-The parameter file consists of a translation array called "translations". Each 
-key in this array is a match expression for the orb source-names of the input 
-packets. For a given incoming packet, the first entry matching the srcname of the packet 
-is used.  The values of this array specify translation instructions via nested 
-arrays. In the outermost layer is an array with a 'schema' entry giving the target
-database schema, and a 'tables' entry giving the database tables to create. Each 
-entry of the 'tables' array has a key for the database table name, with a value 
-giving an array of translations. These translations are again key-value pairs: the key 
-is the name of a database field in the given table; the value is an expression to 
-give to the pfget(3) routine for the unstuffed parameter-file orb packet. Several 
-special values are allowed for these key-value pairs. If a value expression is 
-preceded by the string 'TIME:', the value is assumed to be the output of the pfput_time(3)
-function. In this case the first element (epoch time) is taken from the string and 
-used as a double-precision epoch time. If the key 'FOREACH' appears, the value is assumed 
-to be an array of entities which will create one database row per entry. In this case
-a foreach loop will be wrapped around the array of entities, and the string 'FOREACH'
-in the value expressions will be replaced by the key on each iteration. If the 'FOREACH'
-string appears alone as a value, it will be replaced by the current key. 
+The parameter file consists of a translation array called
+"translations". Each key in this array is a \fImatch\fP expression for the
+\fIorb\fP source-names of the input packets. For a given incoming packet, the
+first entry matching the srcname of the packet is used.  The values of
+this array specify translation instructions via nested arrays. In the
+outermost layer is an array with a 'schema' entry giving the target
+database schema, a 'tables' entry giving the database tables to create,
+and a 'clean' entry giving tables to clean. Each entry of the 'tables'
+array has a key for the database table name, with a value giving an
+array of translations. These translations are again key-value pairs:
+the key is the name of a database field in the given table; the value
+is an expression to give to the pfget(3) routine for the unstuffed
+parameter-file \fIorb\fP packet. Several special values are allowed for these
+key-value pairs. If a value expression is preceded by the string
+ 'TIME:', the value is assumed to be the output of the pfput_time(3)
+function. In this case the first element (epoch time) is taken from the
+string and used as a double-precision epoch time. If the key 'FOREACH'
+appears, the value is assumed to be an array of entities which will
+create one database row per entry. In this case a foreach loop will be
+wrapped around the array of entities, and the string 'FOREACH' in the
+value expressions will be replaced by the key on each iteration. If the
+ 'FOREACH' string appears alone as a value, it will be replaced by the
+current key.
+
+Each entry in the 'clean' array specifies fields to \fImatch\fP to the
+incoming packet. Upon acquisition of each packet, rows matching all of
+the fields specified in the 'clean' array will be deleted before new
+rows are added.
 
 .SH OPTIONS
 .IP "-p pffile"
-This specifies an alternate parameter-file name. The default is orbpf2db.pf
+This specifies an alternate parameter-file name. The default is \fBorbpf2db\fP.pf
 
 .IP "-s statefile"
-This specifies a filename in which to save the state of the program (current orb position).
+This specifies a filename in which to save the state of the program (current \fIorb\fP position).
 
 .IP "-m match"
-This specifies a regular-expression with which to select orb packets.
+This specifies a regular-expression with which to select \fIorb\fP packets.
 The default is '.*/pf/.*".
 
 .IP "-f from"
-This specifies the starting packet for acquisition. Options are 
+This specifies the starting packet for acquisition. Options are
 "newest", "oldest", or a string time specification parsable by str2epoch(3).
 
 .IP "-w mode"
-This specifies the write mode for the program, either "add" or "overwrite". 
-The default mode is "overwrite". In "add" mode, orbpf2db adds new 
-parameter-file rows to the database regardless of existing contents. In "overwrite" 
-mode, a search based on primary keys is performed for matching rows. If a row 
+This specifies the write \fImode\fP for the program, either "add" or "overwrite".
+The default \fImode\fP is "overwrite". In "add" \fImode\fP, \fBorbpf2db\fP adds new
+parameter-file rows to the database regardless of existing contents. In "overwrite"
+\fImode\fP, a search based on primary keys is performed for matching rows. If a row
 already exists, it is overwritten with the new values.
-.SH FILES
-.SH ENVIRONMENT
 .SH PARAMETER FILE
+.in 2c
+.ft CW
 .nf
+
 translations &Arr{
         /pf/orbstat &Arr{
-                schema        registry1.0
+                schema  registry1.0
+                clean &Arr{
+                        clients &Arr{
+                                serveraddress   server{address}
+                                serverport      server{port}
+                        }
+                }
                 tables &Arr{
-                        server &Arr{
+                        servers &Arr{
                                 serveraddress   server{address}
                                 closes          server{closes}
-                                connections     server{connections}
+                                printconn       server{connections}
                                 errors          server{errors}
                                 host            server{host}
                                 maxdata         server{maxdata}
@@ -135,27 +154,40 @@ translations &Arr{
                                 slatest_time    TIME:sources{FOREACH}{slatest_time}
                                 soldest         sources{FOREACH}{soldest}
                                 soldest_time    TIME:sources{FOREACH}{soldest_time}
-			}
+                        }
+                        connections &Arr{
+                                FOREACH         connections
+                                when            TIME:connections_when
+                                fromaddress     connections[FOREACH]{fromaddress}
+                                fromport        connections[FOREACH]{fromport}
+                                toaddress       connections[FOREACH]{toaddress}
+                                toport          connections[FOREACH]{toport}
+                                latency_sec     connections[FOREACH]{latency_sec}
+                        }
                 }
         }
 }
+
 .fi
-.SH EXAMPLE
-.ft CW
-.in 2c
-.nf
-yukon% orbpf2db -s state/orbpf2db mercali.ucsd.edu db/orbregistry
-.fi
-.in
 .ft R
-.SH RETURN VALUES
-.SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+%\fB orbpf2db -s state/orbpf2db mercali.ucsd.edu db/orbregistry\fP
+
+.fi
+.ft R
+.in
 .SH "SEE ALSO"
 .nf
+pforbstat(1)
 .fi
 .SH "BUGS AND CAVEATS"
+The row deletions from cleanup may invalidate views held by other
+programs.
 .SH AUTHOR
 .nf
 Kent Lindquist
