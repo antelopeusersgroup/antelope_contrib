@@ -110,6 +110,15 @@ dbsever ( DBPTR, TABLE )
 dbseparate ( DBPTR, TABLE )
     extract a subset view of a base table from a joined view
 
+DBPTR = dbread_view ( FILENAME [, VIEWNAME] )
+    read a Datascope database view from a file
+
+dbsave_view( DBPTR )
+    save a datascope database view in the main database
+
+dbwrite_view( DBPTR, FILENAME )
+    write a datascope database view to the specified file
+
 <subsection Getting information about the database>
 DBPTR = dbjoin_keys ( DBPTR1, DBPTR2 **or**DBPTR, TABLE1, TABLE2 )
     show the inferred join keys between two database tables
