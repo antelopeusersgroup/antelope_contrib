@@ -77,7 +77,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 		// probably should be, but until proven necessary 
 		// will do it the easy way
 		dt = 1.0/this->get_double("samprate");
-		t0 = this->get_double("starttime");
+		t0 = this->get_double("time");
 	        ns = this->get_int("nsamp");
 		s.reserve(ns);
 		if(load_data)
@@ -148,7 +148,7 @@ Time_Series::Time_Series(Database_Handle& rdb,
 		ns = this->get_int("nsamp");
 		s.reserve(ns);
 		dt = 1.0/(this->get_double("samprate"));
-		t0 = this->get_double("starttime");
+		t0 = this->get_double("time");
 		tref = absolute;  // perhaps too dogmatic
 
 		te = this->get_double("endtime");
@@ -252,7 +252,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 		// probably should be, but until proven necessary 
 		// will do it the easy way
 		dt = 1.0/this->get_double("samprate");
-		t0 = this->get_double("starttime");
+		t0 = this->get_double("time");
 	        ns = this->get_int("nsamp");
 		components_are_cardinal=this->get_bool("components_are_cardinal");
 		if(components_are_cardinal)
@@ -471,7 +471,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 
 		ns = this->get_int("nsamp");
 		dt = 1.0/(this->get_double("samprate"));
-		t0 = this->get_double("starttime");
+		t0 = this->get_double("time");
 		tref = absolute;  // perhaps too dogmatic
 		double te_md;
 		te_md = this->get_double("endtime");
@@ -681,7 +681,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 		// We need a copy of this bundle pointer 
 		Datascope_Handle dbhv(ensemble_bundle.parent,
-			ensemble_bundle.parent,false);
+			ensemble_bundle.parent,true);
 		// Necessary because the Three_Component_Seismogram
 		// constructor uses a generic handle
 		Database_Handle *rdbhv=dynamic_cast

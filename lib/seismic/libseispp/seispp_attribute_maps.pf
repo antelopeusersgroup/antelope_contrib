@@ -592,12 +592,14 @@ hang hang sitechan real
 vang vang sitechan real
 sta sta wfdisc string
 chan chan wfdisc string
-stime time wfdisc real
-etime endtime wfdisc real
+time time wfdisc real
+endtime endtime wfdisc real
+jdate jdate wfdisc  int
 nsamp nsamp wfdisc int
 samprate samprate wfdisc real
 calib calib wfdisc real
 calper calper wfdisc real
+datatype datatype wfdisc string
 dir dir wfdisc string
 dfile dfile wfdisc string
 foff foff wfdisc int
@@ -1273,3 +1275,5 @@ wfmgme.snrwa snrwa wfmgme real
 wfmgme.chanwa chanwa wfmgme string
 wfmgme.lddate lddate wfmgme 
 }
+
+pf_revision_time 1094848708

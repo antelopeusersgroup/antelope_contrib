@@ -146,7 +146,7 @@ Metadata::Metadata(Database_Handle& dbh,
 		mdtype = (*i).mdt;
 		ap = am.attributes.find(internal_name);
 		if(ap==ape) throw (Metadata_error(
-				string("Metadata db constructor:  required attribure ")
+				string("Metadata db constructor:  required attribute ")
 				+ internal_name
 				+string(" is not in Attribute_Map.  Check initialization")));
 		// the weird ap->second is a STL oddity for the item

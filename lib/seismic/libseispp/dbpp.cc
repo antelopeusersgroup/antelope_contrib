@@ -79,6 +79,9 @@ Datascope_Handle::Datascope_Handle(string dbname,
 	if(db.record == dbINVALID)
 		throw seispp_dberror("dbprocess failed",db,complain);
 	pffree(pf);
+	// Always initialize -- better than garbage
+	parent_table=db;
+	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
 }
 // somewhat repetitious, but a useful subset of above
@@ -98,6 +101,9 @@ Datascope_Handle::Datascope_Handle(Dbptr dbi, Pf *pf, string tag)
         db = dbprocess(dbi,process_list,0);
         if(db.record == dbINVALID)
                 throw seispp_dberror("dbprocess failed",db,complain);
+	// Always initialize -- better than garbage
+	parent_table=db;
+	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
 }
 
@@ -123,11 +129,13 @@ Datascope_Handle::Datascope_Handle(Datascope_Handle& dbi)
 	db = dbi.db;
 	is_bundle=dbi.is_bundle;
 	close_on_destruction=false; // copies should be this by default
+	parent_table=dbi.parent_table;
 }
 // An odd specialized copy constructor for Datascope db.  
 Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip,bool ib)
 {
 	db = dbi;
+	parent_table = dbip;
 	is_bundle=ib;
 	close_on_destruction=false; // copies should be this by default
 }
@@ -207,6 +215,7 @@ Datascope_Handle& Datascope_Handle::operator=(const Datascope_Handle& dbi)
 		db=dbi.db;
 		is_bundle=dbi.is_bundle;
 		close_on_destruction=false;
+		parent_table=dbi.parent_table;
 	}
 	return(*this);
 }
@@ -346,6 +355,7 @@ void Datascope_Handle::group(list<string> groupkeys)
 {
 	Tbl *t;
 	t = list_to_tbl(groupkeys);
+	parent_table=db;
 	db = dbgroup(db,t,0,0);
 	is_bundle=true;
 	freetbl(t,myfree);

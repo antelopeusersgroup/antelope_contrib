@@ -384,6 +384,8 @@ void set_gaps(Time_Series&,Trsample *,int, string)
 // Spherical coordinate routines
 Spherical_Coordinate unit_vector_to_spherical(double nu[3]);
 double *spherical_to_unit_vector(Spherical_Coordinate&);
+Spherical_Coordinate pm_halfspace_model(double vp0,double vs0,
+	double ux,double uy);
 // converters between types of time series objects
 Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component,
         Metadata_list& mdl);

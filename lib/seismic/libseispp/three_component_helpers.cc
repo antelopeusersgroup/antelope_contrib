@@ -92,9 +92,9 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 		if(jstart>0)
 		{
 			try{
-				double stime=tcso->get_double("starttime");
+				double stime=tcso->get_double("time");
 				stime -= atime;
-				tcso->put_metadata("starttime",stime);
+				tcso->put_metadata("time",stime);
 			} catch (Metadata_error mde)
 			{
 				cerr << base_error_message << endl;
