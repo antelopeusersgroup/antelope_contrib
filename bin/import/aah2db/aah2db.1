@@ -1,0 +1,35 @@
+.TH AAH2DB 1 "$Date$"
+.SH NAME
+aah2db \- Convert non-XDR AH files to database
+.SH SYNOPSIS
+.nf
+aah2db [-vV] ahfile [ahfile...] dbname
+.fi
+.SH DESCRIPTION
+aah2db converts non-XDR AH files ("Alaskan AH") into their database representation, with datatype 'aa'. 
+.SH OPTIONS
+-v verbose
+-V version
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+ah2db(1), trdefaults(5)
+.fi
+.SH "BUGS AND CAVEATS"
+This should really be combined with ah2db, which handles the 
+official Lamont version of AH files based on XDR data representation. 
+
+Event and calibration info are currently ignored. 
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
