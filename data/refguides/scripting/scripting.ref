@@ -3,6 +3,7 @@
 <include tcldb.ref>
 <include tclorb8.ref>
 <include tkBrttPlot.ref>
+<include tkGpl.ref>
 <include ../tables/tcl_extensions.ref>
 <include matlab.ref>
 <no_index>
