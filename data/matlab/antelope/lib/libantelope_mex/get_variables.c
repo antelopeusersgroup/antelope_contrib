@@ -132,11 +132,7 @@ get_inttbl( const mxArray *in, Tbl **tbl )
 int
 get_pf( const mxArray *in, Pf **pf )
 {
-        if( mxGetClassID( in ) != mxOBJECT_CLASS )
-        {
-		return 0;
-        }
-	else if( ! mxIsClass( in, "dbpf" ) ) 
+	if( ! mxIsClass( in, "dbpf" ) ) 
 	{
 		return 0;
 	}

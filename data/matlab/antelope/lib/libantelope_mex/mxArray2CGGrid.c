@@ -104,12 +104,7 @@ CGGrid *mxArray2CGGrid( mxArray *array )
 	CGGrid *cgg;
 	mxArray *address;
 
-        if( mxGetClassID( array ) != mxOBJECT_CLASS )
-        {
-		mexWarnMsgTxt( "Input must be a cggrid object" );
-		return 0;
-        }
-	else if( ! mxIsClass( array, "cggrid" ) ) 
+	if( ! mxIsClass( array, "cggrid" ) ) 
 	{
 		mexWarnMsgTxt( "Input must be a cggrid object" );
 		return 0;
