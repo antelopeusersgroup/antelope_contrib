@@ -2,6 +2,9 @@
 #include <strings.h>
 #include "multiwavelet.h"
 #include "mwap.h"
+
+FILE *MWpin=0,*MWpout=0;
+
 void usage(char *prog)
 {
 	die(0,"usage: %s db [-phase phase -sift expression -pf pfname]\n",

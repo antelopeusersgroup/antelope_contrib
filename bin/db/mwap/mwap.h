@@ -6,7 +6,7 @@ connected to stdin and stdout of a program but tcl does not have this
 capability.  These are file pointers for the input and output streams
 from
 mwap.  Note they are the reverse ina gui.*/
-FILE *MWpin,*MWpout;
+extern FILE *MWpin,*MWpout;
 
 /* function prototypes */
 int  MWcompute_array_particle_motion(MWgather **, int, MWstack *,

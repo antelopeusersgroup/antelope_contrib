@@ -1,4 +1,4 @@
-#include <values.h>
+#include <float.h>
 #include "multiwavelet.h"
 #include "mwap.h"
 
