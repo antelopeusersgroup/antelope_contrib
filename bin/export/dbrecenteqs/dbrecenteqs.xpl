@@ -410,7 +410,7 @@ sub create_focusmap_html {
 	$writer->xmlDecl();
 
 	chomp( my( $stylesheet_basename ) = `basename $State{focus_map_stylesheet}` );
-	$writer->pi( 'xml-stylesheet', 'href="$stylesheet_basename" type="text/xsl"' );
+	$writer->pi( 'xml-stylesheet', "href=\"$stylesheet_basename\" type=\"text/xsl\"" );
 
 	$writer->startTag( "specific_quake", "name" => "evid$evid" );
 
@@ -792,7 +792,7 @@ sub create_stockmap_html {
 
 	chomp( my( $stylesheet_basename ) = `basename $State{index_map_stylesheet}` );
 	$writer->xmlDecl();
-	$writer->pi( 'xml-stylesheet', 'href="$stylesheet_basename" type="text/xsl"' );
+	$writer->pi( 'xml-stylesheet', "href=\"$stylesheet_basename\" type=\"text/xsl\"" );
 
 	$writer->startTag( "dbrecenteqs_main" );
 
