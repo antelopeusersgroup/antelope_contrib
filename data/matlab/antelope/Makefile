@@ -11,7 +11,7 @@ all clean Include install installMAN pf relink tags :: FORCED
         done
 
 uninstall :: FORCED
-	@-if [ -e $(ANTELOPE)/include/mex_antelope_makerules ] ; then \
+	@-if [ -r $(ANTELOPE)/include/mex_antelope_makerules ] ; then \
 	    DIRS="$(DIRS)" ;\
 	    for i in $$DIRS ; do \
 		printf "+    %-40s  %s\n" $$i "`date`" ; \
