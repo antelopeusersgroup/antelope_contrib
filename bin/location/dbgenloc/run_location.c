@@ -52,6 +52,7 @@ changes.
 */
 
 static char *lastmodel=NULL; /* needs to be here to initialize correctly */
+static Arr *badclocks=NULL;
 
 int
 run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
@@ -72,6 +73,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     static char static_error[256];
     int loc_ret;
     int reload=0;
+    int nbcs;
 
     *error = "" ; 
 
@@ -83,6 +85,16 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 
     o = parse_options_pf (pf);
     o.max_hypo_adjustments = pfget_int ( pf, "maximum_iterations") ;
+    if(badclocks==NULL)
+    {
+	badclocks = newarr(0);
+	if(db_badclock_definition(dbin,pf,badclocks))
+                elog_notify(0,"Problems in database definitions of bad clock time periods\n");
+    }
+    /* This is intentionally outside the previous block to allow turning
+    S-P  on and off interactively through this mechanism.*/
+    pfget_badclocks(pf,badclocks);
+    nbcs = cntarr(badclocks);
 
     vmodel = pfget_string (pf, "travel_time_model");
     if ( vmodel == 0 ) {
@@ -97,7 +109,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     }
     else if(strcmp(lastmodel,vmodel))
     {
-	freearr(arr_phase,free_phase_handle);
+	if(arr_phase!=NULL)freearr(arr_phase,free_phase_handle);
 	reload = 1;
     }
     if(reload)
@@ -118,6 +130,11 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	complain (0, "No data to locate\n" ) ; 
 	*error = "No arrival data for a location" ; 
 	return -1 ;
+    }
+    if(nbcs)
+    {
+	if(minus_phases_arrival_edit(ta,arr_phase,badclocks))
+		elog_notify(0,"problems in minus_phase_arrival_edit function\n");
     }
     /* When depth is fixed,  we have to reset center_depth to 
     the initial_depth field and set the number of depths for

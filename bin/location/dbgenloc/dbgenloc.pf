@@ -98,3 +98,9 @@ number_points_azimuth	36
 maximum_hypocenter_adjustments 40
 confidence 0.683
 ellipse_type chi_square
+#
+#  S-P processing related parameters 
+#
+clock_error_cutoff 0.1
+bad_clocks &Tbl{
+}
