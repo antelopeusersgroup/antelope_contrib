@@ -7,7 +7,6 @@
 #include <sunmath.h>
 #include <sunperf.h>
 
-
 int difference_is_zero(float x, float y)
 {
 	double test;
@@ -330,6 +329,7 @@ from ggnloc these are base weights and residual weights (rw) respectively,
 but the order is actually irrelevant.  Note also for the weighted rms
 function it is assumed that wd is the vector of weighted residuals.  
 In calculate_rms, in contrast, d is used raw. */
+#ifdef SUNPERF
 double calculate_rms(float *d,int n)
 {
 	double value;
@@ -344,7 +344,24 @@ double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
 	for(i=0,sumw=0.0;i<n;++i) sumw += (double)(w[i]*rw[i]);
 	return(value/sqrt(sumw));
 }
-	
+#else
+double calculate_rms(float *d,int n)
+{
+	double value;
+	int one=1;
+	value = (double) snrm2_(&n,d,&one);
+	return(value/sqrt( (double)n) );
+}
+double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
+{
+	int i;
+	double value,sumw;
+	int one=1;
+	value = (double) snrm2_(&n,wd,&one);
+	for(i=0,sumw=0.0;i<n;++i) sumw += (double)(w[i]*rw[i]);
+	return(value/sqrt(sumw));
+}
+#endif	
 
 void copy_hypocenter(Hypocenter *from,Hypocenter *to)
 {
@@ -555,6 +572,9 @@ Written:  March 1996
 void lminverse_solver(float **U, float *s, float **V, float *b,
 	int m, int n, float damp, float *x)
 {
+#ifndef SUNPERF
+	int one=1;
+#endif
 	int i,j;  /* counters*/
 	float *work;  /* work array alloced below */
 	float smax;  /* largest singular value */
@@ -576,10 +596,18 @@ void lminverse_solver(float **U, float *s, float **V, float *b,
 		for(i=0;i<m;++i) x[j] += U[i][j]*b[i];
 		x[j] *= s[j]/(s[j]*s[j] + damp*damp);
 	}
+#ifdef SUNPERF
 	scopy(n,x,1,work,1);
+#else
+	scopy_(&n,x,&one,work,&one);
+#endif
 	/* multiply by V */
 	for (j=0;j<n;++j)
+#ifdef SUNPERF
 		x[j] = sdot(n,V[j],1,work,1);
+#else
+		x[j] = sdot_(&n,V[j],&one,work,&one);
+#endif
 	free(work);
 }
 
@@ -616,6 +644,9 @@ int pseudoinverse_solver(float **U, float *s, float **V, float *b,
 	int nsvused;  /* number of nonzero singular values used in solution*/
 	float sv_cutoff, smax;
 	float *work;  /* work space */
+#ifndef SUNPERF
+	int one=1;
+#endif
 
         if((work=(float *)calloc(n,sizeof(float))) == NULL)
                 die(1,"Inverse solver cannot alloc work array of length %d\n",
@@ -640,10 +671,18 @@ int pseudoinverse_solver(float **U, float *s, float **V, float *b,
 		x[j] /= s[j];
 		++nsvused;
 	}
+#ifdef SUNPERF
 	scopy(n,x,1,work,1);
+#else
+	scopy_(&n,x,&one,work,&one);
+#endif
 	/* multiply by V */
 	for (j=0;j<n;++j)
+#ifdef SUNPERF
 		x[j] = sdot(n,V[j],1,work,1);
+#else
+		x[j] = sdot_(&n,V[j],&one,work,&one);
+#endif
 	free(work);
 	return(nsvused);
 }
@@ -775,6 +814,9 @@ int ggnloc (Hypocenter initial_location,
 	char *phase;
 
 	int ret_code=0;
+#ifndef SUNPERF
+	int one=1;
+#endif
 
 	if( (options.generalized_inverse == PSEUDO_RECENTERED)
 		  || (options.generalized_inverse == DAMPED_RECENTERED))
@@ -1027,7 +1069,11 @@ int ggnloc (Hypocenter initial_location,
 		We could use a velocity scale factor, but in practice
 		it should not matter.  Furthermore, recentering causes
 		other complications to lengthy to discuss in code comments. */
+#ifdef SUNPERF
 		nrm2_dx = (double)snrm2(np,dx,1);
+#else
+		nrm2_dx = (double)snrm2_(&np,dx,&one);
+#endif
 		if(nrm2_dx <= options.dx_convergence)
 		{
 			converge = 1;

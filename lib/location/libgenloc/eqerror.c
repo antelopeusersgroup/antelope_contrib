@@ -59,6 +59,10 @@ int pseudoinverse(float **U, float *s, float **V, int m, int n, float **Agi)
 	float sinv;
 	double sv_cutoff;
 	int nsv_used;
+#ifndef SUNPERF
+	int one=1;
+#endif
+
 
         if((work=(float *)calloc(n,sizeof(float))) == NULL)
                 die(1,"Pseudoinverse computation: cannot alloc work array of length %d\n",
@@ -85,14 +89,22 @@ int pseudoinverse(float **U, float *s, float **V, int m, int n, float **Agi)
 		}
 		else
 			sinv = 0.0;
+#ifdef SUNPERF
 		sscal(m,sinv,Agi[j],1);
+#else
+		sscal_(&m,&sinv,Agi[j],&one);
+#endif
 	}
 	/* multiply by V using a column work vector*/
 	for(j=0;j<m;++j)
 	{
 		for(k=0;k<n;++k) work[k] = Agi[k][j];
 		for(i=0;i<n;++i)
+#ifdef SUNPERF
 			Agi[i][j] = sdot(n,work,1,V[i],1);
+#else
+			Agi[i][j] = sdot_(&n,work,&one,V[i],&one);
+#endif
 	}
 	free(work);
 	return(nsv_used);
@@ -118,6 +130,9 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *f
 	float *c;
 	int i,j,ii,jj;
 	int ret_code;
+#ifndef SUNPERF
+	int one=1;
+#endif
 
 	for(i=0,ii=0;i<ntotal;++i)
 	{
@@ -130,8 +145,13 @@ void compute_covariance(float **Agi, int m, int n, int ntotal, float **C, int *f
 					C[i][j] = 0.0;
 				else
 				{
+#ifdef SUNPERF
 					C[i][j] = sdot(m,Agi[jj],1,
 							Agi[ii],1);
+#else
+					C[i][j] = sdot_(&m,Agi[jj],&one,
+							 Agi[ii],&one);
+#endif
 					++jj;
 				}
 			++ii;
