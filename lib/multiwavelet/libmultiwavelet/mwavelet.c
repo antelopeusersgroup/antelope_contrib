@@ -1756,7 +1756,9 @@ no iterations for a wavelet short enough that phi of one sample is
 less than this limit.
 */
 #define PHASE_ANGLE_LIMIT 2.3561945
+/*
 int save_aligned_wavelets(MWgather *, int *, char *);
+*/
 
 int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	double *moveout, int opt_lag, Spherical_Coordinate polarization,
@@ -1838,9 +1840,11 @@ int compute_mw_arrival_times(MWgather **g,int nwavelets,double timeref,
 	    if(lags != NULL) free(lags);
 	    lags = compute_lag_in_samples(*trans_gath,current_moveout,timeref);
 	    for(i=0;i<nsta;++i) lags[i] += opt_lag;
+/*
 elog_log(0,"saving initial wavelets in w0_start.dat\n");
 if(save_aligned_wavelets(trans_gath[0],lags,"w0_start.dat"))
   elog_complain(0,"save_aligned_wavelets failed\n");
+*/
 	    for(i=0;i<nwavelets;++i)
 	    {
 		nsta_used = build_static_matrix(trans_gath[i],lags,win,
@@ -2012,9 +2016,11 @@ if(save_aligned_wavelets(trans_gath[0],lags,"w0_start.dat"))
 	else
 		elog_notify(0,"Static calculation converged in %d iterations\n",
 			iteration);
+/*
 elog_log(0,"saving corrected wavelets in w0_final.dat\n");
 if(save_aligned_wavelets(trans_gath[0],lags,"w0_final.dat"))
   elog_complain(0,"save_aligned_wavelets failed\n");
+*/
 
 	/* We have to compute and remove the mean value from the amplitude
 	values.  We have irq values that measure uncertainty of amplitude
