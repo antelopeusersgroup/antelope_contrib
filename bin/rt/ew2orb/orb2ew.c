@@ -900,7 +900,7 @@ refresh_export_server_thread( ExportServerThread *es )
 	ExportThread *et;
 	char	*loglevel;
 	char	*starttime_string;
-	
+
 	mutex_lock( &es->es_mutex );
 
 	if( es->stop == 1 ) {
@@ -1147,7 +1147,10 @@ orb2ew_export_server( void *arg )
 		orb2ew_export_server_shutdown();
 	}
 
-	sigsetjmp( sigusr2_buf, 1 ); 
+	if( sigsetjmp( sigusr2_buf, 1 ) != 0 ) {
+
+		mutex_unlock( &es->es_mutex );
+	}
 
 	mutex_lock( &es->ready_mutex );
 	es->ready = 1;
@@ -1363,6 +1366,8 @@ update_export_server_thread( char *name, Pf *pf )
 	}
 
 	if( es->update ) {
+
+		mutex_lock( &es->es_mutex ); 
 
 		thr_kill( es->thread_id, SIGUSR2 );
 	}
