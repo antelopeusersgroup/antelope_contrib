@@ -21,7 +21,6 @@ Ucp2_Init(Tcl_Interp *interp)
     Tcl_PkgProvide(interp, "Ucp2", "3.0" ) ; 
 
     main = Tk_MainWindow(interp);
-    Tcl_CreateCommand(interp, "dpadm", dpadmCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dcrt", dcrtCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dprt", dprtCmd, main, NULL) ; 
     Tcl_CreateCommand(interp, "dcc", dccCmd, main, NULL) ; 
