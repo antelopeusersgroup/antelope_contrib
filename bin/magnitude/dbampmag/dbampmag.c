@@ -29,13 +29,15 @@
 
 #define default_v_r 4.0
 
+#define PF_REVISION_TIME "1086912000"
+
 int verbose=0;
 int quiet=0;
 static void
 usage ()
 
 {
-    fprintf (stderr, "usage: dbampmag [-p pfname] [{-use_if_not_associated|-use_if_not_defining}]\n");
+    fprintf (stderr, "usage: dbampmag [-pf pfname] [{-use_if_not_associated|-use_if_not_defining}]\n");
     fprintf (stderr, "                [-make_magtables] [-use_mean] [-use_p2p] [-v] [-quiet] db [orid]\n");
     exit (1) ;
 }
@@ -51,11 +53,15 @@ struct station_params {
 	int calib_from_db;
 	int decon_instr;
 	int apply_wa_filter;
+	int apply_clip_limits;
+	int minclip;
+	int maxclip;
 	int use;
 	Dbptr db;
 	Dbptr dbgr;
 	Dbptr dbsc;
 	double snr_thresh;
+	double twin_noise_param;
 	double latency;
 	double delta;
 	double parrival;
@@ -144,14 +150,14 @@ main (int argc, char **argv)
 		complain (0, "newarr() error.\n");
 		exit (1);
 	}
-	strcpy (pfname, "dbml");
+	strcpy (pfname, "dbampmag");
 	for (argv++,argc--; argc>0; argv++,argc--) {
 		if (**argv != '-') break;
 		if (!strcmp(*argv, "-")) break;
-		if (!strcmp(*argv, "-p")) {
+		if (!strcmp(*argv, "-pf")) {
 			argv++; argc--;
 			if (argc < 1) {
-				complain (0, "Need argument for -p\n");
+				complain (0, "Need argument for -pf\n");
 				usage();
 			}
 			strcpy (pfname, *argv);
@@ -214,20 +220,24 @@ main (int argc, char **argv)
 
 	/* Read orbmag parameter file */
 
+	if (pfrequire(pfname,PF_REVISION_TIME) != 0) {
+		elog_die(1,"%s\n");
+	}
+
 	if (pfread (pfname, &pf) < 0) {
 		complain (0, "pfread(%s) error.\n", pfname);
 		exit (1);
 	}	
-	if (parse_param (pf, "v_r", P_DBL, 0, &v_r) < 0) {
+	if (parse_param (pf, "v_r", P_DBL, 1, &v_r) < 0) {
 		complain (0, "parse_param(v_r) error.\n");
 		exit (1);
 	}
 	tbl = NULL;
-	if (parse_param (pf, "time_window", P_DBL, 0, &time_window) < 0) {
-		complain (0, "parse_param(time_window) error.\n");
+	if (parse_param (pf, "time_window_factor", P_DBL, 1, &time_window) < 0) {
+		complain (0, "parse_param(time_window_factor) error.\n");
 		exit (1);
 	}
-	if (parse_param (pf, "magtype", P_STR, 0, &magtype) < 0) {
+	if (parse_param (pf, "magtype", P_STR, 1, &magtype) < 0) {
 		complain (0, "parse_param(magtype) error.\n");
 		exit (1);
 	}
@@ -235,7 +245,7 @@ main (int argc, char **argv)
 		complain(0, "magtype must be mb,ml or ms instead of %s\n",magtype);
 		exit(1);
 	}
-	if (parse_param (pf, "filter", P_STR, 0, &filter) < 0) {
+	if (parse_param (pf, "filter", P_STR, 1, &filter) < 0) {
 		complain (0, "parse_param(filter) error.\n");
 		exit (1);
 	}
@@ -243,15 +253,15 @@ main (int argc, char **argv)
 		complain(0,"parse_filter(%s) error.\n",filter);
 		exit(1);
 	}
-	if (parse_param (pf, "c0", P_DBL, 0, &c0) < 0) {
+	if (parse_param (pf, "c0", P_DBL, 1, &c0) < 0) {
 		complain (0, "parse_param(c0) error.\n");
 		exit (1);
 	}
-	if (parse_param (pf, "c1", P_DBL, 0, &c1) < 0) {
+	if (parse_param (pf, "c1", P_DBL, 1, &c1) < 0) {
 		complain (0, "parse_param(c1) error.\n");
 		exit (1);
 	}
-	if (parse_param (pf, "time0", P_STR, 0, &time0) < 0) {
+	if (parse_param (pf, "time0", P_STR, 1, &time0) < 0) {
 		complain (0, "parse_param(time0) error.\n");
 		exit (1);
 	}
@@ -259,11 +269,11 @@ main (int argc, char **argv)
 		complain(0, "time0 must be P,S or R instead of %s\n",time0);
 		exit(1);
 	}
-	if (parse_param (pf, "mindelta", P_DBL, 0, &mindelta) < 0) {
+	if (parse_param (pf, "mindelta", P_DBL, 1, &mindelta) < 0) {
 		complain (0, "parse_param(mindelta) error.\n");
 		exit (1);
 	}
-	if (parse_param (pf, "maxdelta", P_DBL, 0, &maxdelta) < 0) {
+	if (parse_param (pf, "maxdelta", P_DBL, 1, &maxdelta) < 0) {
 		complain (0, "parse_param(maxdelta) error.\n");
 		exit (1);
 	}
@@ -276,19 +286,29 @@ main (int argc, char **argv)
 		double snr_thresh;
 		char *line;
 		int ret;
-		double c2,c3,c4,c5,dummy;
+		int apply_clip_limits, minclip, maxclip;
+		double c2,c3,c4,c5,dummy,twin_noise;
 
 		line = (char *) gettbl (tbl, i);
-		ret = sscanf (line, "%s %s %s %s %s %lf %lf %lf %lf %lf %lf", sta, chan_expr, calib_ans, decon_ans, wa_ans, &snr_thresh, &dummy, &c2, &c3 ,&c4 ,&c5);
-		if (ret != 11) {
-			complain (0, "Cannot parse: %s", line);
-			continue;
+		ret = sscanf (line, "%s %s %s %s %s %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+				sta, chan_expr, calib_ans, decon_ans, wa_ans, 
+				&snr_thresh, &twin_noise, &dummy, &c2, &c3 ,&c4 ,&c5, &minclip, &maxclip);
+		if (ret != 12 && ret != 14) {
+			die (0, "Cannot parse line '%s'\n", line);
+		}
+		if (ret == 12) {
+			apply_clip_limits=0;
+			minclip = -2147283648;
+			maxclip = 2147283647;
+		} else if ( ret == 14) {
+			apply_clip_limits=1;
 		}
 		sp = (struct station_params *) malloc (sizeof (struct station_params));
 		if (sp == NULL) {
 			complain (1, "malloc() error.\n");
 			exit (1);
 		}
+		memset(sp, 0, sizeof(struct station_params));
 		strcpy (sp->sta, sta);
 		strcpy (sp->chan_expr, chan_expr);
 		sp->calib_from_db = myans(calib_ans);
@@ -308,6 +328,10 @@ main (int argc, char **argv)
 		strcpy (sp->filter,filter);
 		setarr (proc_arr, sta, sp);
 		sp->snr_thresh = snr_thresh;
+		sp->twin_noise_param = twin_noise;
+		sp->apply_clip_limits = apply_clip_limits;
+		sp->minclip = minclip;
+		sp->maxclip = maxclip;
 		sp->mag = -999.0;
 	}
 	proc_tbl = valsarr (proc_arr);
@@ -337,7 +361,7 @@ main (int argc, char **argv)
 	for (dbo.record=0; dbo.record<n; dbo.record++) {
 		int nm;
 		double otime, olat, olon, odepth;
-		char whichid[10];
+		char whichid[10],auth[64];
 
 		ret = dbgetv (dbo, 0, 	"orid", &orid, 
 					"evid", &evid, 
@@ -345,11 +369,20 @@ main (int argc, char **argv)
 					"lat", &olat, 
 					"lon", &olon, 
 					"depth", &odepth, 
+					"auth", auth,
 					0);
 		if (ret == dbINVALID) {
 			die (0, "dbgetv(orid) error.\n");
 		}
 		if (orid < 0) continue;
+		if (verbose && !quiet) {
+			char *s;
+			elog_debug (0, "\n");
+			elog_debug (0, "Processing origin %d at lat %.3f lon %.3f depth %.3f time %s auth %s\n", 
+				orid, olat, olon, odepth, s=strtime(otime), auth);
+			free(s) ;
+
+		}
 
 		for (i=0; i<maxtbl(proc_tbl); i++) {
 			sp = (struct station_params *) gettbl (proc_tbl, i);
@@ -408,7 +441,11 @@ main (int argc, char **argv)
 				dbex_evalstr (dbs, expr, dbREAL, &sarrival);
 				sp->use = 1;		
 				sp->delta = delta;
-				twin_noise = 60;
+				if (sp->twin_noise_param <= 0.0) {
+					twin_noise=0.0;
+				} else {
+					twin_noise=sp->twin_noise_param;
+				}
 				twin = time_window*(sarrival - parrival);
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
@@ -479,7 +516,11 @@ main (int argc, char **argv)
 				dbex_evalstr (dbs, expr, dbREAL, &sarrival);
 				sp->use = 1;		
 				sp->delta = delta;
-				twin_noise = 60;
+				if (sp->twin_noise_param <= 0.0) {
+					twin_noise=0.0;
+				} else {
+					twin_noise=sp->twin_noise_param;
+				}
 				twin = time_window*(sarrival - parrival);
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
@@ -503,10 +544,12 @@ main (int argc, char **argv)
 		}
 		freetbl (mtbl, 0);
 	
-		/*if ( strlen(missing_stations) > 0 ) { 
-				complain ( 0, "parameter file is missing stations:%s%s\n", 
-				missing_stations, too_long ? " and others" : "" ) ; 
-		}*/
+		if ( !quiet) {
+			if ( strlen(missing_stations) > 0 ) { 
+					complain ( 0, "parameter file is missing stations:%s%s\n", 
+					missing_stations, too_long ? " and others" : "" ) ; 
+			}
+		}
 	
 		if (nn < 1) {
 			if (!quiet) {
@@ -886,8 +929,52 @@ mycallback (struct station_params *sp, int ichan)
 			return;
 		}
 		clear_register (0);
+		
+		if (sp->apply_clip_limits) {
+			float minclip, maxclip;
+
+			minclip = sp->minclip;
+			maxclip = sp->maxclip;
+			if (getcalib) {
+				Dbptr trcalib;
+				double calib2;
+
+				trcalib = trace;
+				if (iseg >= 0) trcalib.record += iseg;
+				if (dbgetv (trcalib, 0, "calib", &calib2, 0) == dbINVALID) {
+					complain (0, "getsegment: dbgetv(calib) error.\n");
+					calib = 1.0;
+				}
+				minclip *= calib2;
+				maxclip *= calib2;
+			}
+			for (i=0; i<nsamp; i++) {
+				if (data[i] >= 1.e20) continue;
+				if (data[i] >= maxclip) {
+					if (verbose) {
+						printf ("clip limit exceeded\n");
+						fflush (stdout);
+					}
+					trdestroy (&trace);
+					return;
+				}
+				if (data[i] <= minclip) {
+					if (verbose) {
+						printf ("clip limit exceeded\n");
+						fflush (stdout);
+					}
+					trdestroy (&trace);
+					return;
+				}
+			}
+		}
+		
 		if (sp->calib_from_db) {
-			for (i=0; i<nsamp; i++) if (data[i] < 1.e20) data[i] *= calib;
+			for (i=0; i<nsamp; i++) {
+				if (data[i] < 1.e20) {
+					data[i] *= calib;
+				}
+			}
 		}
 		gain = 1.0;
 	
@@ -986,23 +1073,60 @@ mycallback (struct station_params *sp, int ichan)
 			}
 		}
 
-		for (i=0,time=tstart; i<nsamp; i++,time+=dt) {
-			if (time < sp->t0_noise) continue;
-			if (time > sp->t0_noise+sp->twin_noise) break;
-			if (data[i] >= 1.e20) continue;
-			n++;
-			noise_mean += data[i];
-			noise += data[i]*data[i];
+		if (sp->twin_noise > 0.0) {
+			for (i=0,time=tstart; i<nsamp; i++,time+=dt) {
+				if (time < sp->t0_noise) continue;
+				if (time > sp->t0_noise+sp->twin_noise) {
+			    	char *s ; 
+			    	if ( n < 1 && iseg == nsegs-1 ) { 
+					complain ( 1, "no preceding noise data for %s:%s at time %s", 
+						sta, chan, s=strtime(sp->t0_noise)) ; 
+					free(s) ;
+			    	}
+					break;
+				}
+				if (data[i] >= 1.e20) {
+					continue;
+				}
+				n++;
+				noise_mean += data[i];
+				noise += data[i]*data[i];
+			}
 		}
 	}
-	if (n < 1) {
-		if (verbose) {printf ("\n"); fflush (stdout);}
-		return;
+	if (sp->twin_noise > 0.0) {
+		if (n < 1) {
+			if (verbose) {printf ("\n"); fflush (stdout);}
+			return;
+		}
+		noise_mean = noise_mean/n;
+		noise = noise/n;
+		noise -= noise_mean*noise_mean;
+		noise = sqrt(noise);
+	} else {
+		double signal_mean;
+
+		signal_mean = 0.0;
+		n = 0;
+		for (iseg = 0; iseg<nsegs; iseg++) {
+			if (getsegment (trace, iseg, &tstart, &dt, &nsamp, &data) < 0) {
+				complain (0, "getsegment() error for %s:%s.\n", sta, chan);
+				trdestroy (&trace);
+				return;
+			}
+			clear_register (0);
+	
+			for (i=0,time=tstart,signal=0.0; i<nsamp; i++,time+=dt) {
+				if (data[i] >= 1.e20) continue;
+				if (time < sp->t0_noise) continue;
+				if (time < sp->t0_signal) continue;
+				if (time > sp->t0_signal+sp->twin_signal) break;
+				signal_mean += data[i];
+				n++;
+			}
+		}
+		if (n > 0) noise_mean = signal_mean/n;
 	}
-	noise_mean = noise_mean/n;
-	noise = noise/n;
-	noise -= noise_mean*noise_mean;
-	noise = sqrt(noise);
 	signal = 0.0;
 	max_a = -1.0e20;
 	min_a =  1.0e20;
@@ -1016,7 +1140,11 @@ mycallback (struct station_params *sp, int ichan)
 		}
 		clear_register (0);
 
-		for (i=0; i<nsamp; i++) if (data[i] < 1.e20) data[i] -= noise_mean;
+		for (i=0; i<nsamp; i++) {
+			if (data[i] < 1.e20) {
+				data[i] -= noise_mean;
+			}
+		}
 
 		for (i=0,time=tstart,signal=0.0; i<nsamp; i++,time+=dt) {
 			if (data[i] >= 1.e20) continue;
@@ -1080,10 +1208,12 @@ mycallback (struct station_params *sp, int ichan)
 
 
 	if (verbose) {
+		char *t;
 	    printf (
-	     "signal %.3f(%.3f) at %s snr %.3f noise_mean %.3f(%.3f) mag %.2f\n",
-		signal, signal_raw/calib, strtime(signal_time),
-		snr, noise_mean, noise_mean/calib, mag);
+	     	"signal %.3f(%.3f) at %s snr %.3f noise_mean %.3f(%.3f) mag %.2f\n",
+			signal, signal_raw/calib, t=strtime(signal_time),
+			snr, noise_mean, noise_mean/calib, mag);
 		fflush (stdout);
+		free(t);
 	}
 }

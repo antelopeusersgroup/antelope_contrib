@@ -10,6 +10,7 @@ ldflags =
 ldlibs = -lbrttfilter -lbrttutil $(TRLIBS) $(SVR4LIBS) 
 
 include $(ANTELOPEMAKE)
+#SUBDIR=/local
 DIRS=
 
 OBJS= \

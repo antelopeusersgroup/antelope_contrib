@@ -3,9 +3,9 @@
 dbampmag \- database magnitude computation
 .SH SYNOPSIS
 .nf
-\fBdbampmag \fP[-p \fIpfname\fP] [{-use_if_not_associated|-use_if_not_defining}]
-                [-make_magtables] [-use_mean] [-use_p2p] [-v] \fIdb\fP
-                [\fIorid\fP]
+\fBdbampmag\fP [-v] [-quiet] [-pf \fIpfname\fP] 
+         [{-use_if_not_associated|-use_if_not_defining}]
+         [-make_magtables] [-use_mean] [-use_p2p] \fIdb\fP [\fIorid\fP]
 .fi
 .SH DESCRIPTION
 \fBdbampmag\fP is a program that computes magnitudes for a
@@ -15,7 +15,7 @@ origin row is filled in with the respective magnitude. This
 program computes magnitudes in a manner similar to
 \fBorbampmag(1)\fP.
 .SH OPTIONS
-.IP "-p pfname"
+.IP "-pf pfname"
 Name of program parameter file. This argument is optional.
 The actual parameter file name is \fIpfname\fP.pf.
 The default value of \fIpfname\fP is \fBdbampmag\fP.
@@ -44,6 +44,8 @@ wherever the minimum and maximum amplitude appear in the trace.
 By default, the absolute maximum is used.
 .IP "-v"
 Verbose output flag.
+.IP "-quiet"
+This flag supresses all diagnostic messages. Set this flag to suppress the noise when running from \fBdbloc2\fP.
 .IP "db"
 The input/output database name. If this is set to "-", then
 a view is read from standard input and it is assumed that
@@ -61,94 +63,104 @@ parameter file is as follows:
 .ft CW
 .in 2c
 .nf
+.ne 13
+#    Parameter file for orbampmag and dbampmag
 
-.ne 12
 # latency and maxwaittime are only needed for orbampmag
 # but to allow the usage of the same parameter file for both
-# realtime (orbampmag) computations and postprocessing (\fBdbampmag\fP)
-# they are included in the parameterfile
+# realtime (orbampmag) computations and postprocessing (dbampmag)
+# they are included in the parameterfile but ignored when running dbampmag
 
-latency     30.0 # group latency
-maxwaittime 60.0 # A hard timeout value in seconds for reading
-                # waveform packets.  If no waveform packets
-                # for the selected channels are received
-                # within this time period, then the waveform
-                # reading loop is interrupted and any further
-                # processing for that event is aborted.
-
-.ne 7
-
-magtype     mb  # valid values are mb, ml and ms of
-                # course other parameters have to be
-                # set according to this choice
-
-v_r         4.0 # velocity for surface waves used to
-                # determine surface wave arrival time
-
-.ne 11
-time0       P   # start of measuring time window
+latency        30.0    # group latency
+maxwaittime    60.0    # A hard timeout value in seconds for reading waveform packets.
+            #  If no waveform packets for the selected channels are received
+            #  within this time period, then the waveform reading loop is
+            #  interrupted and any further processing for that event is
+            #  aborted.
+.ne 5
+magtype   mb    # valid values are mb, ml and ms
+                # of course other parameters below 
+                # have to be set according to this choice
+                # among them are time0, time_window_factor, filter and the constants c0 to c5
+.ne 3
+v_r      4.0    # velocity for surface waves used to determine surface wave arrival time
+                # only used when computing Ms, i.e. when time0 is set to R
+.ne 8
+time0      P    # center of measuring time window
                 # P - pphasetime (see man pphasetime)
                 # S - sphasetime
                 # R - rayleigh wave - here we use deg2km(delta) / v_r
 
-time_window 0.5 # The waveform for processing the
-                # magnitude is determined by a time window
-                # starting from the arrival defined by the
-                # time0 parameter to
-                # time_factor*(S_time-P-time) seconds
-                # after the first P-arrival.
+time_window_factor 0.5 # The waveform for processing the magnitude is 
+                       # determined by a time window of length 
+                       # time_window_factor * (S-time - P-time) 
+
+.ne 3
+mindelta  0    # distance range in degrees
+maxdelta  180  # 
 
 .ne 17
-mindelta    0   # distance range in degrees
-maxdelta    180 #
-
 # a 'general' magnitude formula could be:
-#
-#       c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
-#
-#       delta is the distance in degrees
-#       where c2,c3,c4,c5 are station-dependent
-#       thus c0 and c1 are to be changed here,
-#       while c2,c3,c4,c5 are to be changed station-wise
-#
-# beware:  c0 has to be converted if you have a formula where delta is
-# in km in this case subtract log10(deg2km(1))*c1 from the 'original'
-# coefficient
-#
-c0     -0.104
-c1      1.66
-
-.ne 15
+# c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
+# delta is the distance in degrees
+# where c2,c3,c4,c5 are station-dependent
+# thus c0 and c1 are to be changed here, where c2,c3,c4,c5 are to be changed station-wise
+# beware: c0 has to be converted if you have a formula where delta is im km
+# in this case subtract log10(deg2km(1))*c1 from the 'original' coefficient
+c0    -0.104
+c1    1.66
 filter BW 0.6 3 3 3
-
-mag &Tbl{    # station parameters for computing magnitudes
-#           calib              apply
-#      chan  from deconvolve    wa      snr
-#sta   expr   \fIdb\fP  instrument  filter threshold latency c2  c3  c4  c5
-ARSA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-DAVA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-OBKA   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-JAVC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-KRUC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-MORC   HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-KBA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
-MOA    HHZ   yes     no        no       2.0      0.0  0.0 1.0 1.0 0.0
+mag &Tbl{        # stations parameters for computing magnitudes
+#                calib   deconvolve apply            
+#     chan       from    instrument wa     snr    twin  latency                
+#sta  expr       db      response   filter thresh noise      c2   c3   c4   c5  minclip maxclip
+ARSA  HHZ        yes     no         no     2.0    60.0  0.0  0.0  1.0  1.0  0.0 
+DEMO  HH[ZNE]_00 yes     no         no     2.0    -1.0  0.0  0.0  1.0  1.0  0.0 -65000  65000
 }
 
+pf_revision_time 1053388800
 .fi
-.in
-.ft R
 .LP
 The parameters are defined below.
+.IP maxwaittime
+his is a hard timeout value that is applied to waveform packet reading.
+There are situations where all of the channels for processing, for
+a particular event, may be dead or otherwise missing in the waveform
+ORB. When this happens, the waveform packet reading loop can block
+indefinitely waiting for packets to process. This timeout value
+prevents such situations.
+If no waveform packets for the selected channels are received
+within this time period, then the waveform reading loop is
+interrupted and any further processing for that event is
+aborted.
+.IP magtype
+Specifies the magnitude to compute. Currently supported values are 
+\fImb\fP,\fIml\fP and \fIms\fP. Depending on the choice here, 
+other parameters have to be specified accordingly.
+.IP v_r
+Surface wave velocity to determine surface wave arrival time. 
+Only needed when computing \fIMs\fP.
+.IP "time0, time_window_factor"
+The time window for processing waveforms is determined from 
+\fItime0\fP and \fItime_window_factor\fP. The processing window is 
+\fBcenterd\fP around the theoretical arrival time of the onset 
+specified by \fItime0\fP and has a width of (S-time - P-time) * \fItime_window_factor\fP.
+.IP "mindelta, maxdelta"
+These values in degrees define the distance region for magnitude computations.
+Only stations where the distance from the origin falls into the region defined here are taken into account.
 .IP "c0, c1, c2, c3, c4, c5" 
 define whatever you might find appropriate to compute your magnitudes.
+The formula actually used for magnitude computation is the following:
+c0+log10(amp)+c1*log10(delta)+c2*log10(delta*c3+c4)+c5
+.br
+the units for amp are nanometers while the units for delta are degrees
 .IP filter
-Defines the filter applied to your data
+Defines the filter applied to the data.
 .IP sta
 The sta parameter identifies the station.
 .IP chan_expr
 This is a regular UNIX expression that is matched against the
-actual data chan codes. If a match occurs, then the data channel is used.
+actual css3.0 data chan codes. If a match occurs, then the data channel is used.
 .IP calib_from_db
 If set to yes (or true or 1) then the \fIcalib\fP value for
 converting counts to ground velocity (or displacement) is obtained
@@ -168,8 +180,30 @@ waveform preceding the initial P arrival is computed as a
 root mean square. If the observed peak value (the signal)
 of the event divided by the noise value is less than snr_thresh,
 then the magnitude is not computed for the particular channel.
+.IP twin_noise
+This determines the time window for computing
+the noise in front of the first P-arrival. 
+If this is set to \fB0.0\fP or negative, then a noise estimate is not computed 
+and the signal-to-noise testing is
+not done. If this is set to a floating number greater than 0.0, then
+that value is used as a noise time window in seconds.
+.IP latency
+A maximum latency value in seconds for waiting for out
+of time order data packets. There is also a latency value
+for the entire group of channels. The most recent packet time
+for all of the channels is stored. If the difference between
+this most recent time and the requested end time of a particular
+data channel is greater than the group latency, then the
+particular channel is processed and cleared.
+.IP "minclip maxclip"
+These are optional clip limits that are applied to the raw waveform data
+before applying \fIcalib\fP or any filtering. These should be specified in
+units of counts. If any of the channels for a particular station exceed
+either clip limit across either the noise or signal time windows, then
+the station is not used in the magnitude calculation. If these are not specified,
+then the data is not checked for clipping. 
 .LP
-Applying instrument deconvolution can cause instabilites. For
+Applying instrument deconvolution can cause instabilities. For
 broadband instruments, it is usually not necessary to apply
 instrument deconvolution since the instrument response
 is flat in the response band of the Wood-Anderson filter.
@@ -179,10 +213,47 @@ the deconvolution or the Wood-Anderson filter. In all cases
 the responses are converted to displacement and the correct
 gains are applied to produce equivalent Wood-Anderson
 drum recorder displacement.
+.SH EXAMPLES
+.ne 8
+This an example how to call dbampmag from dbloc2
+.nf
+magnitude_calculators   &Tbl{
+dbampmag -quiet -use_p2p -pf mb -make_magtables
+dbampmag -quiet -use_p2p -pf ml -make_magtables
+dbampmag -quiet -use_p2p -pf ms -make_magtables
+}
+.fi
+
 .SH "BUGS AND CAVEATS"
+\fBorbampmag/dbampmag\fP uses the predicted P arrival based on the IASPEI91
+model to define the time windows for processing.  \fBorbampmag/dbampmag\fP does
+not use the P and S arrivals from the arrival table.
+.br
 Instrument response deconvolution is not supported at this time.
 Acceleration sensor channels are not supported at this time.
+.br
+The program should have been named velocityampmag. Instead of deriving displacment 
+amplitudes, the program directly uses velocity amplitudes to compute the respective 
+magnitudes. This of course requires the conversion of the "normal" formulas into 
+the velocity regime.
+.SH "DIFFERENCE TO DBML / ORBMAG"
+While \fBdbml/orbmag\fP only compute Richter magnitudes, \fBdbampmag/orbampmag\fP 
+allow the computation of mb,ml and ms. 
+.br
+The curent versions of \fBorbmag/dbml\fP allows the magnitude computation based 
+on previous mesurements stored in the database table wfmeas. This feature is 
+NOT supported by \fBdbampmag/orbampmag\fP.
+.br
+In \fBdbml/orbmag\fP, the starttime for waveform processing is defined 
+by the \fItime0\fP parameter, while in \fBdbampmag/orbampmag\fP this 
+parameter defines the center of the processing window.
+.br
+While \fBdbml/orbmag\fP allow to set the parameter \fItwin_noise\fP 
+to \fItproc\fP, this is not supported by \fBdbampmag/orbampmag\fP.
 .SH "SEE ALSO"
+The default parameter files mb.pf,ml.pf and ms.pf contain values 
+used for the computation of \fImb\fP, \fIML\fP and \fIMs\fP by the author at ZAMG/Vienna. 
+.br
 orbampmag(1), orbmag(1), dbml(1)
 .SH AUTHOR
 Nikolaus Horn, using dbml by Danny Harvey (@BRTT)
