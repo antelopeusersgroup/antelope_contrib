@@ -796,7 +796,7 @@ int save_slowness(Dbptr db,
 	char phase[10];
 	Arr *mwsarr;
 	double C[9];
-	double si,slow, azimuth;
+	double slow, azimuth;
 	double delslo,delaz;
 	double tarrival;
 	char *user;
@@ -899,13 +899,7 @@ int save_slowness(Dbptr db,
 
 	map_static_arrays(statics,&mwsarr);
 
-	/* The current implementation of the following function
-	does not allow the error estimate to fall below a sample
-	value.  That was expedient in mwap, but here is something
-	we want to override.  We do this by making absurdly small
-	for any seismic data i can conceive of.*/
-	si = 0.000001;
-	if(compute_slowness_covariance(stations,mwsarr,si,C))
+	if(compute_slowness_covariance(stations,mwsarr,C))
 	{
 		elog_notify(0,"Errors in computing slowness vector covariance for evid %d\n",
 			evid);
