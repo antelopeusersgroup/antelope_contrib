@@ -1,0 +1,116 @@
+.TH GIS_HELPER 3 "$Date$"
+.SH NAME 
+polycode, polytype, writePolygonData, readPolygon, isGeographicallyInside, \
+	inWhichPolygons, windrose \
+	\- routines for polygon handling
+
+.SH SYNOPSIS
+.nf
+#include "polygon.h"
+
+int \fBpolycode\fP(char *\fItype\fP)
+
+char *\fBpolytype\fP(int \fIcode\fP)
+
+int \fBwritePolygonData\fP(Dbptr \fIdb\fP, Point *\fIpoly\fP, 
+	int \fInpoints\fP, char *\fIpname\fP, char *\fIptype\fP, 
+	char *\fIauth\fP, char *\fIdir\fP, char *\fIdfile\fP, int \fIpcode\fP);
+
+int \fBreadPolygon\fP(Dbptr \fIdb\fP, Point **\fIPoly\fP);
+
+Dbptr \fBinWhichPolygons\fP(Dbptr \fIdb\fP,Point \fIP\fP);
+
+char *\fBwindrose\fP(double \fIazimuth\fP);
+
+int \fBisGeographicallyInside\fP(Point \fIP\fP, Point *\fIpolygon\fP, int \fIn\fP);
+.fi
+.SH DESCRIPTION
+.SS polycode, polytype
+These routines translate from textual description to integers.
+Currently, the following types are supported:
+.ft CW
+.in 2C
+.nf
+s4 -> sun4 byte integer
+i4 -> intel order 4 byte integer
+t4 -> sun 4 byte float
+u4 -> intel order 4 byte float
+.fi
+.in
+.ft R
+Note that when integer are selected as storage type, the actual values are multiplied by 1e6 to preserve some of the original resolution.
+\fBpolytype\fP returns -1 if nothing is found, \fBpolycode\fP returns - in that case.
+.SS  windrose 
+returns the direction in textual form -> N, NNE,NE,... 
+Note that the string has to be freed by the user.
+.SS writePolygonData
+.ft CW
+.in 2c
+.nf
+db 	-> database pointer \fBmust be in schema polygon1.1\fP	
+poly	-> vertices
+npoints	-> number of vertices
+pname	-> label of polygon, e.g. "border of Austria"
+ptype	-> type of polygon, e.g. "cb" (could mean coutry border)
+auth	-> author
+dir,dfile
+	-> file and path for storage. If NULL, some default values are used.
+pcode	-> storage type (see polycode above)
+.in
+.ft R
+.fi
+writes polygon data to a file and fills a database row pointing to that file. returns dbINVALID or record number if successful.
+.SS readPolygon
+reads Polygon data into array Polygon, returns number of vertices.
+.SS isGeographicallyInside
+returns TRUE (1) if point P fall entirely in Polygon P (with n vertices)
+.SS inWhichPolygons
+returns all rows of database db where point P falls into.
+.SH ENVIRONMENT
+The routines \fBwritePolygonData\fP, \fBreadPolygon\fP and \fBisGeographicallyInside\fP expect the schema polygon1.1 to be accessible via the environmant variable \fBSCHEMA_DIR\fP.
+.SH EXAMPLE
+#
+# This section should contain an example that the user can follow
+# verbatim.  For a command, this should show a sample command line and output.
+# Use the same fonts as in \fBSYNOPSIS\fR. What the user types in should
+# be bold, and program response or output should be roman. All commands 
+# should be preceded by a representative UNIX prompt.
+#
+# For a library, you might show an example program (This is usually only 
+# done for more complex routines or packages.)
+#
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH LIBRARY
+-lpolygon
+.SH ATTRIBUTES
+MT-Safe ?
+To be honest, I don't know...
+.SH DIAGNOSTICS
+The error messages should tell what went wrong...
+.SH "SEE ALSO"
+.nf
+dbhelp polygon1.1
+
+perlpolygon(3p)
+
+winding(3)
+	
+.fi
+.SH "BUGS AND CAVEATS"
+All vertices of a polygon and the point under test for inclusion must be within the same hemisphere.
+#
+# Describe any shortcomings of the programs, known bugs, or surprising 
+# results.
+.SH AUTHOR
+These routines are based on a Pascal library I wrote many years ago. Some Ideas were taken from Kent Lindquists (Lindquist Consulting) winding number routines.
+.nf
+Nikolaus Horn, 2003
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+.\" $Id$

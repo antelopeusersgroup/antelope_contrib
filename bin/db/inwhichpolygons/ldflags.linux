@@ -1,0 +1,2 @@
+
+ldflags= -Wl,-rpath,$(ANTELOPE)/local/lib -L$(ANTELOPE)/local/lib	# flags to linker/loader

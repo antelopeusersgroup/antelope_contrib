@@ -1,0 +1,25 @@
+.TH INWHICHPOLYGONS 1 2003/07/28 "Antelope Contrib SW" "User Commands"
+.SH NAME
+inwhichpolygons \-  search a database with polygons for point inclusion 
+.SH SYNOPSIS
+.nf
+inwhichpolygons dbname [lat lon]
+.fi
+.SH DESCRIPTION
+Inwhichpolygons is a simple tool to search a database with polygon information. It is mainly a debugging tool.
+.SH OPTIONS
+.IP "dbname"
+Name of database with polygon information. This argument is required. Note that the database must be in polygon1.x schema.
+.IP "lat lon"
+Coordinates, separated by space(s). If no coordinates are give on the commandline, the program will ask for.
+.SH "SEE ALSO"
+.nf
+polygon(3), inWhichPolygons(3), polygon_schema(5), regions2polygon(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2003 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+	

@@ -1,0 +1,54 @@
+.TH POLYGON1.1 5 2003/05/22 "Antelope Contrib SW" "File Format"
+.SH 
+polygon1.1 \- schema for storage of polyline data
+.SH DESCRIPTION
+The schema polygon1.1 provides the relations (tables) polygon and remark.
+.SH "FIELDS"
+.IP "pid" 
+unique id. (polygon ID)
+.IP "pname"
+name of polygon. Text. Pname and ptype together must be unique (primary key)
+.IP "ptype" 
+polygon type. Can be used to distinguish several types of polygons (Continents, Countries, etc...). Pname and ptype together must be unique (primary key).
+.IP "closed"
+closed flag. Used to distinguish between open (polylines, lines, points) and closed polylines (polygons).
+.IP "level"
+idea from GSHHS. could be used to distinguish polygons of inceasing detail. 
+.IP "area"
+Area of the polygon in km^2. For reference only, not necessary.
+.IP "west, east, north, south"
+These 4 fields befine the bounding box of a polygon. Used for preselection to speed up searching of point-inclusion or similar tasks.
+.IP "npoints" 
+number of vertices.
+.IP ftype
+storage type.
+Currently, the folllowing types are allowed:
+
+.in 2c
+.nf
+s4 -> sun 4 byte integer
+i4 -> intel order 4 byte integer
+t4 -> sun 4 byte float
+u4 -> intel order 4 byte float
+.fi
+.in
+Note: when using integer storage, all data values should be multiplied with 1e6 to preserve some of the initial accuracy. As this schema is designed to hold polygon coordinates in lat/lon resolution, this should be preise enough.
+.IP "dir,dfile,foff"
+Identify actual data storage
+.IP "auth"
+Author.
+.IP "commid"
+remark pointer
+.IP "lddate"
+Modification time
+.SH "SEE ALSO"
+.nf
+dbschema(5), dbhelp(1), dbdesign(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2003 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+	

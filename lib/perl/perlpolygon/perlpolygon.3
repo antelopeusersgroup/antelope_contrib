@@ -1,0 +1,62 @@
+.TH PERLPOLYGON 3p 2003/06/06 "Antelope Contrib SW" "perl utility"
+.SH "NAME"
+perlpolygon \- Perl interface to the polygon library
+.SH "DESCRIPTION"
+The polygon extension to perl provides some of the functionality of the polygon library. 
+.Sh "FUNCTIONS"
+The extensions must be loaded with a \fIuse\fP statement:
+.ft CW
+.in 2c
+.nf
+
+\fBuse polygon;\fP
+
+.fi
+.ft R
+.LP
+Following are brief descriptions of the functions implemented.
+
+.IP "\fBinWhichPolygons\fP (database, lat, lon)"
+Returns a database pointer to the records where lat,lon falls in.
+.ft CW
+.in 2c
+.nf
+
+@db= inWhichPolygons(@db, lat, lon);
+
+.fi
+.in
+.ft R
+
+.IP "\fBreadPolygon\fP (database )"
+Retuns all vertices from the specified record in a single array.
+.ft CW
+.in 2c
+.nf
+
+@vertices= readPolygon( @db );
+
+.fi
+.in
+.ft R
+.IP "\fBwindrose\fP( heading )"
+Returns the direction in textual form -> N, NNE, NE, ...
+.ft CW
+.in 2c
+.nf
+
+$str= windrose( $azimuth );
+
+.fi
+.in
+.ft R
+.SH "SEE ALSO"
+.nf
+perldb(3p), polygon(3), polygon1.1(5)
+.fi
+.SH "AUTHOR"
+.nf
+Nikolaus Horn 2003
+
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+.fi

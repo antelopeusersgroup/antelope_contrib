@@ -1,0 +1,29 @@
+.TH REGIONS2POLYGON 1 2003/01/29 "Antelope Contrib SW" "User Commands"
+.SH NAME
+regions2polygon \- convert polygon information from places1.2 to a (new) database in polygon1.2 schema 
+.SH SYNOPSIS
+.nf
+regions2polygon [-v] dbin dbout
+.fi
+.SH DESCRIPTION
+Regions2polygon saves data from the regions table of a database in places1.2 schema in polygon1.2 schema.
+.SH OPTIONS
+.IP "-v" 
+verbose flag
+.IP "dbin"
+Name of database in places1.2 schema. This argument is required. The table regions MUST be present.
+.IP "dbout"
+Name of output database.
+.SH "BUGS AND CAVEATS"
+The program creates the file \fIpolygons\fP in the current directory or appends data to it. The data from database \fIdbin\fP are always added to database \fIdbout\fP, eventually creating duplicate entries.
+.SH "SEE ALSO"
+.nf
+polygon_schema(5), polygon(3)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2003 
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+	
