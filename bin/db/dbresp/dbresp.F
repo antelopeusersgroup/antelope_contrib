@@ -28,7 +28,7 @@ c
       real*8 time, times, endtime, h2e
       integer idb, db(4), dummy
       external h2e
-#include 'dbl2.i'
+#include "dbl2.i"
 c
 c    Process command line
 c

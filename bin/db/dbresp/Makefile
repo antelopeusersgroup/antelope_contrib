@@ -1,7 +1,6 @@
 
-
 BIN 	= dbresp
-ldlibs = -ldbl2 $(TRLIBS) -lgrx -lXext
+ldlibs = -ldbl2 $(TRLIBS) -lgrx $(X11LIBS) -lXext 
 
 include	$(ANTELOPEMAKE)
 DIRS=

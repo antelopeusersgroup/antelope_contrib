@@ -1,7 +1,5 @@
-
-
 BIN 	= dbresp1f
-ldlibs=         -ldbl2 $(TRLIBS) -lM77 -lF77 -lsunmath -lm
+ldlibs=         -ldbl2 $(TRLIBS) 
 
 include	$(ANTELOPEMAKE)
 DIRS=
@@ -9,7 +7,7 @@ DIRS=
 
 OBJS=	 dbresp1f.o
 $(BIN) : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+	$(FC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 
 # $Id$ 
