@@ -165,7 +165,8 @@ Time_Series::Time_Series(Database_Handle& rdb,
 					&t0read,&teread,&nread,
 					0,0))
 				throw seispp_dberror("Time_Series database constructor:  trgetwf error",dbh.db);
-		if(nread!=ns)
+		// allow one sample deviation
+		if(abs(nread-ns)>1)
 		{
 			cerr << "Data read mismatch on row "
 				<< dbh.db.record 

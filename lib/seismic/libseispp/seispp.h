@@ -388,6 +388,11 @@ double *spherical_to_unit_vector(Spherical_Coordinate&);
 Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component,
         Metadata_list& mdl);
 Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component);
+// Three_Component_Seismogram processing procedures
+Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& din,
+	string key, Time_Window tw);
+Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& din,
+	string key, Time_Window tw);
 
 
 // low level i/o routines

@@ -81,6 +81,7 @@ long int vector_fwrite(float *x,int n, string fname) throw(seispp_error)
 		fclose(fp);
 		throw seispp_error("fwrite error to file "+fname);
 	}
+	fclose(fp);
 	return(foff);
 }
 
@@ -356,7 +357,7 @@ void dbsave(Time_Series& ts,
 		// in the database as the absolutely correct value
 		// Reasons is that if the file exists these functions
 		// always append and return foff.
-		dbputv(db,0,"foff",foff,0);
+		dbputv(db,0,"foff",static_cast<int>(foff),0);
 	}
 	catch (seispp_error serr)
 	{

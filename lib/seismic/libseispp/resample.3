@@ -1,0 +1,117 @@
+.TH RESAMPLE 3 "%G"
+.SH NAME
+resample - time series resampling operators for seispp library
+.SH SYNOPSIS
+.nf
+#include "seispp.h"
+#include "resample.h"
+Time Series& Resample_Time_Series(Time_Series& ts,
+	Resampling_Definitions& rd, double dtout, bool trim);
+
+class Resampling_Definitions
+{
+public:
+        map<Interval,Resample_Operator,Interval_Cmp> decset;
+        Resampling_Definitions(Pf *pf);
+};
+
+.fi
+.SH DESCRIPTION
+.LP
+Resampling modern seismic data to a common sample rate is often 
+needed in data processing to simplify many algorithms.  
+This set of functions provide a very general way to accomplish this in
+the framework of the seispp library.  
+The main procedure, \fIResample_Time_Series\fR, will both 
+upsample and downsample to integer or noninteger multiples
+of an original sample rate.  What exactly is done is driven 
+by the \fIResampling_Definitions\fR object.  
+The \fIResampling_Definitions\fR contains the recipes used
+to define how resampling is to be done for different sample rates.
+The interface selects the recipe for handling input automatically 
+based on the original sample rate of the data.
+.LP
+The constructor for a \fIResampling_Definitions\fR object is 
+driven by a parameter file description (see pf(3)).  The
+pf object to be passed to the constructor would normally be
+built itself using pfread as part of a program's initialization.
+The format of the parameter file assumed to used to construct
+pf is fairly complex and is described in detail in 
+dbresample(1), which is an application built around this function.
+As usual for this kind of thing the best advice is to edit 
+the default dbresample.pf file to set this up rather than start from
+scratch.
+.LP
+Downsampling always requires a decimator unless the degree of 
+downsampling is small (currently 10%).  In downsampling a 
+decimation FIR filter is used and the output is constructed as
+dot products of this FIR filter skipping through the data at the
+integral decimation factor defined for that filter (see 
+description of the parameter file format in dbresample(1)).  
+The FIR filters are assumed to be symmetric zero phase filters 
+with the zero lag point at the center of the vector of coefficients.
+This is the norm for most FIR filters used in data loggers that
+would be the normal choice for defining decimators for this 
+function.  
+.LP
+Upsampling is defined by a decimation stage with a decimation factor
+smaller than unity.  Upsamping is accomplished by simple linear 
+interpolation between data points.  
+.LP
+The \fIResample_Time_Series\fR function returns a Time_Series(3) object
+resampled to the target sample interval \fIdtout\fR.  
+The \fItrim\fR variable is a switch to control how the function handles
+the transients at the ends of the data that are the norm for a FIR filter.
+When set true, the edges of the data are trimmed to remove all transients. 
+When false the edges may contain filter startup transients at the edges 
+due to incomplete coverage.   The trim switch has no effect when upsampling
+since no antialiasing filter is required in that case. 
+.SH PARAMETER FILE
+.LP
+See dbresample(1) for a sample that could be used to define a
+resampling set.
+.SH EXAMPLE
+.LP
+This is a template for a function that would use this 
+function.  
+.in 2c
+.ft CW
+.nf
+... other parts of program ...
+string pfname("mypf");
+Pf *pf;
+//the oddities here are the standard C++ interface to C function
+pfread(const_cast<char *>(pffile.c_str()),&pf); 
+Resampling_Definitions rd(pf);
+...
+Time_Series ts(db,mdl,am);  // see Time_Series(3)
+tsnew = Resample_Time_Series(ts,rd,0.1,true);  // resample to 10 sps
+dbsave(tsnew,db,"wfdisc",mdl,am);
+...
+.fi
+.ft R
+.in
+.SH EXCEPTIONS
+.LP
+The \fIResampling_Defininitions\fR  constructor and the \fIResample_Time_Series\fR
+function will throw a seispp_error(3) in the event of a serious problem.  
+In both cases the result is null.  For the constructor one would normally abort.
+For data processing handling failure of the resampling function is application 
+dependent.
+.SH LIBRARY
+-lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid
+.SH "SEE ALSO"
+.nf
+Basic_Time_Series(3), Time_Series(3), dbresample(1), seispp_error(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+It might be nice to allow something other than a FIR filter for the antialiasing
+definitions in decimation, but this has not been implemented.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

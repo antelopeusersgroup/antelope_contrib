@@ -32,6 +32,7 @@ OBJS=basic_time_series.o \
   slowness.o \
   spherical_coordinate.o \
   statics.o \
+  three_component_helpers.o \
   ttime.o \
   vmod1d.o
 
