@@ -427,7 +427,7 @@ orb2genc [options] orbin orbout
     convert input waveforms into unmultiplexed GENC format
 <options>
 -t translation_pf
--start {pktid|time|OLDEST}	starting ORB read pointer
+-start {pktid|time|OLDEST}
 -select select_expr
 -reject reject_expr
 -S statefile	
@@ -438,14 +438,14 @@ orb2genc [options] orbin orbout
 orbstaseg [options] csssta orbdetect orbwfin orbwfout
     single station waveform segmenter
 <options>
--start {pktid|time|OLDEST}	starting ORB read pointer
+-start {pktid|time|OLDEST}
 -select_wf expr
--twin_pre twin_pre	pre-event time window for segmenting
--twin_post twin_post	post-event time window for segmenting
--twin_write_timeout twin_write_timeout	
+-twin_pre twin_pre
+-twin_post twin_post
+-twin_write_timeout
 -twin_maxon twin_maxon	
 -S statefile	
--repackage "twin subcode"	
+-repackage twin subcode	
 -detev
 -v
 </options>
@@ -468,7 +468,7 @@ orbdetev2detection [options] dbfkeys orbin orbout
     convert detev database rows to detection rows
 <options>
 -delay delay_seconds
--start {pktid|time|OLDEST}	starting ORB read pointer
+-start {pktid|time|OLDEST}
 -S statefile	
 -v
 </options>
