@@ -94,6 +94,9 @@ strtime(epoch)
 strydtime(epoch)
     convert time to string with yearday
 
+epoch2str(epoch,format[,timezone])
+    convert time to string using format, optionally for a timezone
+
 yearday(epoch)
     convert from epoch time to yearday (jdate)
 
