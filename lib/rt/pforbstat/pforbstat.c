@@ -267,6 +267,7 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 	char	orbname_port[STRSZ];
 	Hook	*hook = 0;
 	static Pf *pfnames = 0;
+	int	len = 0;
 		
 	if( STREQ( orbname, ":" ) ) {
 		
@@ -303,6 +304,14 @@ parse_orbname( char *orbname, char *orb_address, int *orb_port )
 
 		free( split_orbname );
 		freetbl( orbname_parts, 0 );
+	}
+
+	if( ( len = strlen( orbname_port ) ) > 0 ) {
+
+		if( orbname_port[len-1] == '@' ) {
+			
+			orbname_port[len-1] = '\0';
+		}
 	}
 
 	if( STREQ( orbname_port, "" ) ) {
