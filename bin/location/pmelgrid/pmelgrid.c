@@ -313,6 +313,7 @@ option which is know to cause problems\nrecenter set off\n");
 		Tbl *converge=NULL,*pmelhistory=NULL;
 		int pmelfail;
 
+		fprintf(stderr,"Ensemble read from pmtfifo\n");
 		pfe=pfget_Pf_ensemble(pfi,"pmel_arrivals");
 		if(pfe==NULL)
 		{
@@ -345,6 +346,8 @@ option which is know to cause problems\nrecenter set off\n");
 				pfe->pf[pfe->group_start[i]],"evid");
 			ndata += maxtbl(ta[i]);
 		}
+		fprintf(stdout,"Working on gridid=%d\nEnsemble has %d arrivals\n",
+			gridid,ndata);
 		/* This function alters the phase handles by setting
 		the station corrections to those computed from the
 		difference in arrival time between the earth model
