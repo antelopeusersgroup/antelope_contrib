@@ -1,15 +1,16 @@
 LIB=libmultiwavelet.a		
 DLIB=$(LIB:.a=$(DSUFFIX)) # uncomment when creating a dynamic library
-DATADIR=schemas2
-DATA=MWavelet1.2
+DATADIR=	# directory under $(ANTELOPE)/data in which to put $(DATA) files
+DATA=		# data files to be placed in data/$(DATADIR)
 INCLUDE=multiwavelet.h 	# include files to be placed in include
 PF=		# parameter files to be placed in data/pf
 
-MAN3=mwtransform.3 mwstatistics.3
+MAN3=mwtransform.3		
 
 CLEAN= 		# Extra files which should be removed during a "make clean"
 
-cflags=-g		# -g or -O is the most common option here and in fflags
+#cflags= -g -DSUNPERF6
+cflags= -g
 fflags= 	# 
 ldflags= 	# flags to linker/loader
 ldlibs=		# libraries to link in.

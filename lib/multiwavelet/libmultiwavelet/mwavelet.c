@@ -679,6 +679,57 @@ Dbptr tr;
 	allot(complex *,z1,nz);	
 	allot(complex*,z2,nz);
 	allot(complex *,z3,nz);
+
+/*  Sun changed the argument list for caxpy in version
+6.0 of their workshop compilers that use sunperf.  Rather than
+have a bunch of ifdefs below, I enclose this entire loop in
+an ifdef to make it cleaner */
+
+#ifdef SUNPERF6
+	for(i=0;i<nsta;i++)
+	{
+		if(gather->x1[i] == NULL) continue;
+		nz_sta=gather->x1[i]->nz;
+		/* This is a matrix multiply using csscal and caxpy */
+		ccopy(nz_sta,gather->x1[i]->z,1,
+					z1,1);
+		csscal(nz_sta,(float)u[0],z1,1);
+		ztmp.r = (float)u[1];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x2[i]->z,1,z1,1);
+		ztmp.r = (float)u[2];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x3[i]->z,1,z1,1);
+
+		/* repeat for x2 and x3 rotated components */
+
+		ccopy(nz_sta,gather->x1[i]->z,1,
+					z2,1);
+		csscal(nz_sta,(float)u[3],z2,1);
+		ztmp.r = (float)u[4];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x2[i]->z,1,z2,1);
+		ztmp.r = (float)u[5];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x3[i]->z,1,z2,1);
+
+		ccopy(nz_sta,gather->x1[i]->z,1,
+					z3,1);
+		csscal(nz_sta,(float)u[6],z3,1);
+		ztmp.r = (float)u[7];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x2[i]->z,1,z3,1);
+		ztmp.r = (float)u[8];
+		ztmp.i = 0.0;
+		caxpy(nz_sta,ztmp,gather->x3[i]->z,1,z3,1);
+
+		/* finally copy work vectors back to gather */
+		ccopy(nz_sta,z1,1,gather->x1[i]->z,1);
+		ccopy(nz_sta,z2,1,gather->x2[i]->z,1);
+		ccopy(nz_sta,z3,1,gather->x3[i]->z,1);
+
+	}
+#else
 	for(i=0;i<nsta;i++)
 	{
 		if(gather->x1[i] == NULL) continue;
@@ -722,6 +773,7 @@ Dbptr tr;
 		ccopy(nz_sta,z3,1,gather->x3[i]->z,1);
 
 	}
+#endif
 	free(z1);  free(z2);   free(z3);
 /*
 tr = trnew(NULL,NULL);
@@ -1192,7 +1244,11 @@ int idbug, jdbug;
 			ccopy(w.length,(g->x3[i]->z)+lags[i],(w.increment),
 						A+ii,g->nsta);
 			cweight.r = (float)(g->sta[i]->current_weight_base);
+#ifdef SUNPERF6
+			cscal(w.length,cweight,A+ii,g->nsta);
+#else
 			cscal(w.length,&cweight,A+ii,g->nsta);
+#endif
 /*
 for(idbug=0,jdbug=0;jdbug<w.length;++jdbug,idbug+=(w.increment))
 {
@@ -1446,7 +1502,11 @@ float Adebug[33][10];
 			/* This does row scaling */
 			weights[i] = (float)(g->sta[i]->current_weight_base);
 			cweight.r = weights[i];
+#ifdef SUNPERF6
+			cscal(w->length,cweight,A+i,g->nsta);
+#else
 			cscal(w->length,&cweight,A+i,g->nsta);
+#endif
 			
 			++nsta_used;
 		}
@@ -1510,9 +1570,15 @@ float Adebug[99][20];
 			weights[ii+1] = weights[ii];
 			weights[ii+2] = weights[ii];
 			cweight.r = weights[ii];
+#ifdef SUNPERF6
+			cscal(w->length,cweight,A+ii,m);
+			cscal(w->length,cweight,A+ii+1,m);
+			cscal(w->length,cweight,A+ii+2,m);
+#else
 			cscal(w->length,&cweight,A+ii,m);
 			cscal(w->length,&cweight,A+ii+1,m);
 			cscal(w->length,&cweight,A+ii+2,m);
+#endif
 		     }
 		     else
 		     {
