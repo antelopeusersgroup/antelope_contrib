@@ -1,12 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <sunperf.h>
 
-#include "perf.h"
 #include "stock.h"
 #include "response.h"
 #include "elog.h"
 #include "multiwavelet.h"
-
 /* This routine parses the parameter object pf to produce the decimator
 definitions used by the general decimation routine found below.  
 It returns a vector of Tbl objects in t containing a sequence of
@@ -24,11 +23,20 @@ Tbl **define_decimation(Pf *pf, int *nbands)
 	int i;
 	char *line;
 	char *s;
+	int ntest;
 	
 	list = pfget_tbl(pf, "bands");
 	*nbands = maxtbl(list);
 	if(*nbands <= 0)
-		die(0,"define_decimation:  wavelet bands not defined\n");
+		elog_die(0,"define_decimation:  wavelet bands not defined\n");
+	ntest=pfget_int(pf,"number_frequency_bands");
+	if(ntest>*nbands)
+		elog_die(0,"define_decimation:  decimation band definition not consistent with number_frequency_bands\nband tbl is of length %d while number_frequency_bands parameter is %d\n",
+			*nbands,ntest);
+	/* note we silently truncate if the Tbl is larger than requested.  We could
+	log and error, but why be so verbose */
+	else if(ntest<*nbands) 
+		*nbands=ntest;
 
 	t = (Tbl **)calloc(*nbands,sizeof(Tbl *));
 	for(i=0;i<*nbands;i++)

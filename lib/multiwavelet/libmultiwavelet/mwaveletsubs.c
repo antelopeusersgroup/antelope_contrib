@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <sunmath.h>
+#include <sunperf.h>
 
-#include "perf.h"
 #include "stock.h"
 #include "pf.h"
 #include "response.h"

@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <values.h>
+#include <sunperf.h>
 #include <math.h>
-
+#include <sunmath.h>
 #include "multiwavelet.h"
 #include "location.h"
-#include "perf.h"
 #include "tr.h"
 
 /* This collection of functions handle various tasks related to the 
@@ -361,6 +361,10 @@ void set_snr_to_error(Signal_to_Noise *snr)
 	snr->ratio_n = -99999.9;
 	snr->ratio_e = -99999.9;
 	snr->ratio_3c = -99999.9;
+	snr->noise_z = -99999.9;
+	snr->noise_n = -99999.9;
+	snr->noise_e = -99999.9;
+	snr->noise_3c = -99999.9;
 	snr->min_ratio_z = -99999.9;
 	snr->min_ratio_n = -99999.9;
 	snr->min_ratio_e = -99999.9;
@@ -651,9 +655,6 @@ MWgather *MWgather_transformation(MWgather *ingath,double *u)
 	complex ztmp;
 	/* These are needed by cdotu because of fortran interface */
 	int ndim=3,one=1;
-/*  Debug trace database 
-Dbptr tr;
-*/
 
 	gather = MWgather_alloc(ingath->nsta);
 	gather->nsta = ingath->nsta;
@@ -809,14 +810,53 @@ an ifdef to make it cleaner */
 	}
 #endif
 	free(z1);  free(z2);   free(z3);
-/*
-tr = trnew(NULL,NULL);
-MWgather_to_trace(gather,tr,0,0,0);
-trplot_by_sta(tr,"sta =~ /LOOK/");
-trdestroy(&tr);
-*/
 	return(gather);
 }			
+
+/* Copy function for an MWgather object.  In C++ this would
+define the = operator. The ingath object is allocated and 
+duplicated returning a pointer to the new copy.  
+*/
+MWgather *MWgather_copy(MWgather *ingath)
+{
+	MWgather *gather;
+	int nsta;
+	int i;
+
+	gather = MWgather_alloc(ingath->nsta);
+	gather->nsta = ingath->nsta;
+	nsta = gather->nsta;
+	gather->ncomponents = ingath->ncomponents;
+	for(i=0;i<nsta;i++)
+	{
+		/* the station name should be set even on stations
+		marked dead (with NULL pointers) and we always copy
+		this pointer so errors can be tagged by station name */
+		gather->sta[i] = ingath->sta[i];
+		gather->x1[i] = NULL;
+		gather->x2[i] = NULL;
+		gather->x3[i] = NULL;
+		if(ingath->ncomponents<=1)
+		{
+			gather->x3[i] = MWtrace_dup(ingath->x3[i]);
+		}
+		else
+		{
+			if(ingath->x1[i]!=NULL) 
+				gather->x1[i] = MWtrace_dup(ingath->x1[i]);
+			if(ingath->x2[i]!=NULL) 
+				gather->x2[i] = MWtrace_dup(ingath->x2[i]);
+			if(ingath->x3[i]!=NULL) 
+				gather->x3[i] = MWtrace_dup(ingath->x3[i]);
+		}
+	}
+	return(gather);
+}
+/*   SIGNAL TO NOISE computation related functions */
+
+/* Destroy function for associative arrays of snr objects.
+snr_vector is assumed to an array of Arr's of length nwavelets.
+*/
 void free_sn_ratios_arr(Arr **snr_vector,int nwavelets)
 {
 	int i;
@@ -889,7 +929,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 	Arr **snrarr_vector;
 	int i,j,k,l;
 	Signal_to_Noise *snr;   /* we build this */
-	MW_scalar_statistics stats;   /* target for statistics functions */
+	MW_scalar_statistics stats,noisestats;   /* target for statistics functions */
 	MWtrace ***ts[3],***tn[3];	/* ugly constructs of MWtransform output.
 					3 is for three components in x,y,z order */
 	char *chans[3]={ EW, NS, VERTICAL };   /* set fixed channel code names 
@@ -898,6 +938,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 	char *sta,*key;   /*keys */
 	float signal_rms,noise_rms;  
 	float *snr_wavelet,*sig3c,*noise3c;
+	float *noise1c;
 	int nsamp;
 	Tbl *tkeys;
 	double *arrival_time;
@@ -912,6 +953,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 	allot(float *,snr_wavelet,nwavelets);
 	allot(float *,sig3c,nwavelets);
 	allot(float *,noise3c,nwavelets);
+	allot(float *,noise1c,nwavelets);
 	/* we loop through the list of station and channels to build
 	signal to noise structures.  Stations use the Arr while the
 	channel codes are locked down and come from the multiwavelet.h
@@ -1022,6 +1064,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 			for(l=0;l<nwavelets;++l){
 				sig3c[l]=0.0;
 				noise3c[l]=0.0;
+				noise1c[l]=0.0;
 			}
 			for(l=0;l<3;++l)
 			{
@@ -1085,23 +1128,28 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 				/* This assumes nsamp is the same for 
 				all wavelets in this band */
 				noise3c[k] += (noise_rms*noise_rms);
+				noise1c[k] = noise_rms;
 				free(ampwork);
 				snr_wavelet[k] = signal_rms/noise_rms;
 			    }
 			    stats=MW_calc_statistics_float(snr_wavelet,nwavelets);
+			    noisestats=MW_calc_statistics_float(noise1c,nwavelets);
 			    switch(l){
 			    case(0):
 				snr->ratio_e = stats.median;
+				snr->noise_e = noisestats.median;
 				snr->min_ratio_e = stats.low;
 				snr->max_ratio_e = stats.high;
 				break;
 			    case(1):
 				snr->ratio_n = stats.median;
+				snr->noise_n = noisestats.median;
 				snr->min_ratio_n = stats.low;
 				snr->max_ratio_n = stats.high;
 				break;
 			    case(2):
 				snr->ratio_z = stats.median;
+				snr->noise_z = noisestats.median;
 				snr->min_ratio_z = stats.low;
 				snr->max_ratio_z = stats.high;
 				break;
@@ -1111,7 +1159,9 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 				snr_wavelet[k] = sqrt((double)(sig3c[k]
 							/noise3c[k]));
 			stats=MW_calc_statistics_float(snr_wavelet,nwavelets);
+			noisestats=MW_calc_statistics_float(noise3c,nwavelets);
 			snr->ratio_3c = stats.median;
+			snr->noise_3c = sqrt((double)(noisestats.median));
 			snr->min_ratio_3c = stats.low;
 			snr->max_ratio_3c = stats.high;
 			}
@@ -1121,6 +1171,7 @@ Arr **compute_signal_to_noise(Arr *signal,Arr *noise,Arr *stations,
 	
 	free(sig3c);
 	free(noise3c);
+	free(noise1c);
 	return(snrarr_vector);
 }
 /* This function combines all the terms used to compute moveout 
@@ -1508,6 +1559,10 @@ This allows a simple test for negative entry to flag null fields.
 Note this depends upon stability of numerical algorithm used to handle
 A later in the presence of zero rows.  
 3.  weights vector entries are set.
+
+Modification:  Major change in algorithm May 27, 2002.  New algorithm
+is more forgiving.  Previous was when in doubt throw it out.  Now 
+we zero pad missing data where before gaps led to discarding data.
 */
 int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 		float *weights, complex *A)
@@ -1516,6 +1571,7 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 	int nsta_used;
 	int data_end,window_length;
 	complex cweight={0.0,0.0};
+	int i0,window_end,copy_length,ioffset;
 
 	for(i=0,nsta_used=0;i<(g->nsta);++i)
 	{
@@ -1529,22 +1585,36 @@ int build_static_matrix(MWgather *g, int *lags, Time_Window *w,
 		}
 		weights[i]=0.0;
 		if( (g->x3[i]) == NULL) continue;
-		/* negative lags indicate an error we assume
-		has already been logged.*/
-		if(lags[i]<0) continue;
+		/* silently zero pad traces that are truncated
+		on either side */
+		if(lags[i]<0)
+			i0= -lags[i];
+		else
+			i0=0;
 		window_length = ((w->length)-1)*(w->increment)+1;
 		data_end = g->x3[i]->nz;
-		if(lags[i]+window_length<=data_end)
+		window_end = i0+window_length;
+		if(window_end<=data_end)
+                	copy_length=((w->length)-1)*(w->increment)+1;
+		else
 		{
-			ccopy(w->length,(g->x3[i]->z)+lags[i],(w->increment),
-						A+i,g->nsta);
+			copy_length=window_length-(window_end-data_end);
+			copy_length /= w->increment;
+		}
+		if(copy_length>0)
+		{
+			/* This is the pointer offset for this trace
+			relative to start */
+			ioffset=i+i0*g->nsta;
+			ccopy(copy_length,(g->x3[i]->z)+lags[i]+i0,(w->increment),
+						A+ioffset,g->nsta);
 			/* This does row scaling */
 			weights[i] = (float)(g->sta[i]->current_weight_base);
 			cweight.r = weights[i];
 #ifdef SUNPERF6
-			cscal(w->length,cweight,A+i,g->nsta);
+			cscal(copy_length,cweight,A+ioffset,g->nsta);
 #else
-			cscal(w->length,&cweight,A+i,g->nsta);
+			cscal(copy_length,&cweight,A+ioffset,g->nsta);
 #endif
 			
 			++nsta_used;
@@ -1577,16 +1647,16 @@ int build_3c_matrix(MWgather *g,int *lags,Time_Window *w,
 	{
 		/* We initialize each block to zero and errors will
 		then just leave that block of the matrix 0.  This
-		makes for inefficiencies of many stations are deleted
+		makes for inefficiencies if many stations are deleted
 		but assures proper indexing and prevents copying garbage*/
 		for(j=0;j<(w->length);++j) 
 		{
-			A[ii+j*(g->nsta)].r = 0.0;
-			A[ii+j*(g->nsta)].i = 0.0;
-			A[1+ii+j*(g->nsta)].r = 0.0;
-			A[1+ii+j*(g->nsta)].i = 0.0;			
-			A[2+ii+j*(g->nsta)].r = 0.0;
-			A[2+ii+j*(g->nsta)].i = 0.0;	
+			A[ii+j*m].r = 0.0;
+			A[ii+j*m].i = 0.0;
+			A[1+ii+j*m].r = 0.0;
+			A[1+ii+j*m].i = 0.0;			
+			A[2+ii+j*m].r = 0.0;
+			A[2+ii+j*m].i = 0.0;	
 		}
 		weights[ii]=0.0;
 		weights[ii+1]=0.0;

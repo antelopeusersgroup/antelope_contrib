@@ -124,11 +124,7 @@ as that proposed in Bear and Pavlis (1997).  They used variations in
 estimates made in semblance/slowness space.  Here we use the estimated
 uncertainties in the static estimates as estimates of the data covariance
 that is scaled by the inverse of the slowness estimation matrix to 
-produce a covariance estimate for the slowness vector.  One detail
-is that we do not allow a static error estimate to be less than one
-sample interval.  This is probably important only for low frequency
-estimates, but it prevents uncertain error estimate from underestimating
-the covariance. 
+produce a covariance estimate for the slowness vector.  
 
 This routine is confused greatly by being forced to use FORTRAN
 indexing to mesh with sunperf.  This leads to some very messy
@@ -138,7 +134,6 @@ covariance with the SVD components.
 Arguments:
 	stations - associative array of station objects
 	statics - associative array of MWstatic objects
-	si - sample interval of this band
 	c - 3x3 covariance estimate (result) in order of
 		ux, uy, dt
 
@@ -148,9 +143,15 @@ from malloc errors.
 
 Author: G Pavlis
 Written:  March 2000
+Modified:  March 2002
+Removed the sample interval floor on the error.  Previously this
+function did not allow the error for a single station to drop
+below the one sample lever.  This was done to be conservative
+but the new algorithm seems capable of resolving subsample
+timing.  Hence, I removed this feature.
 */
 int compute_slowness_covariance(Arr *stations,Arr *statics,
-				double si, double *c)
+				 double *c)
 {
 	double *A;
 	double vt[9];
@@ -191,10 +192,7 @@ int compute_slowness_covariance(Arr *stations,Arr *statics,
 			A[ii] = s->deast;
 			A[ii+nsta] = s->dnorth;
 			A[ii+2*nsta] = 1.0;
-			if((mws->sigma_t)>si)
-				Cd1_2[ii] = (mws->sigma_t);
-			else
-				Cd1_2[ii] = si;
+			Cd1_2[ii] = (mws->sigma_t);
 			++ii;
 		}
 	}

@@ -1,4 +1,5 @@
 #include <math.h>
+#include <sunmath.h>
 #include "stock.h"
 #include "arrays.h"
 #include "coords.h"
@@ -154,7 +155,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	not normalized.  We could use absolute scaling if we normalized
 	them above.  This is a modification that might actually give
 	better results.  */
-	M_estimator_n_vector(v,3,n,
+	M_estimator_double_n_vector(v,3,n,
 		IQ_SCALE_RELATIVE,PM_MINSCALE_MAJOR,avg,weight);
 	nrm_major = dnrm2(3,avg,1);
 	for(i=0;i<3;++i) pmavg->major[i] = avg[i]/nrm_major;
@@ -230,7 +231,7 @@ void pmvector_average(Particle_Motion_Ellipse *pmv, int n,
 	}
 	/* Note the change from above to a 2-d space now.  The above 
 	transformations zero the x3 direction after the transformation */
-	M_estimator_n_vector(v,2,n,
+	M_estimator_double_n_vector(v,2,n,
 		IQ_SCALE_RELATIVE,PM_MINSCALE_MINOR,avg,weight);
 	avg[2] = 0.0;
 	nrm_minor = hypot(avg[0],avg[1]);

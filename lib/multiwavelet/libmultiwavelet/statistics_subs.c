@@ -472,7 +472,7 @@ Written:  January 2000
 #define MIN_DGF 10  /* I've seen the Thompson formula work badly with 
 		small degrees of freedom.  When dgf are less than 
 		this the Thomson section is skipped */
-void M_estimator_n_vector(double *v, 
+void M_estimator_double_n_vector(double *v, 
 	int n, 
 	int nv,
 	int mode, 

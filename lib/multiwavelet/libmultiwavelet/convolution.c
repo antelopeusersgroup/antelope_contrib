@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "perf.h"
+#include <sunperf.h>
 #include "elog.h"
 
 /* sconv is a general purpose convolution routine using sunperf BLAS function

@@ -15,9 +15,8 @@ This table hold slowness vector estimates.
 arguments:
 	phase - name of seismic phase
 	u - estimated slowness vector
-	timeref - reference time at reference station
-	w - time window structure that defines the analysis window
-		for this slowness estimate
+	t0 - start time at reference station
+	twin - length of analysis time window relative to t0
 	array - array name to use in table for station key field
 	evid - css3.0 evid of parent data
 	bankid - defines unique multiwavelet bank (could be 
@@ -37,8 +36,8 @@ Written:  March 2000
 */
 int MWdb_save_slowness_vector(char *phase, 
 	MWSlowness_vector *u,
-	double timeref,
-	Time_Window *w,
+	double t0,
+	double twin,
 	char *array,
 	int evid,
 	int bankid,
@@ -51,14 +50,12 @@ int MWdb_save_slowness_vector(char *phase,
 	double peakcm,
 	Dbptr db)
 {
-	double time, twin, slo, azimuth, cxx, cyy, cxy;
+	double slo, azimuth, cxx, cyy, cxy;
 	char cmeasure[2];
 
 	slo = hypot(u->ux,u->uy);
 	azimuth = atan2(u->ux,u->uy);
 	azimuth = deg(azimuth);
-	time = timeref + (w->si)*((double)(w->tstart));
-	twin = ((double)((w->tend)-(w->tstart)))*(w->si);
 	db = dblookup(db,0,"mwslow",0,0);
 
 	switch(cohtype)
@@ -77,7 +74,7 @@ int MWdb_save_slowness_vector(char *phase,
 		"phase", phase,
 		"fc",fc,
 		"fwin",fwin,
-		"time",time,
+		"time",t0,
 		"twin",twin,
 		"slo",slo,
 		"azimuth",azimuth,
@@ -109,10 +106,8 @@ evid - css3.0 event id
 bankid - multiwavelet group id 
 phase - phase name as in css3.0
 fc - center frequency (in Hz) of the wavelets used
-timeref - reference start time.  This time needs to be lag corrected
-	so the window defintion works correctly.  
-w - time window structure used in mwap.  relation of timeref and
-	this structure are shown clearly below.  
+t0 - start time at reference station
+twin - length of analysis time window relative to t0
 mwamp - computed array average amplitude
 erramp - estimate of error in mwamp 
 	Note: both mwap and erramp are log10 values derived from nm/s
@@ -128,17 +123,14 @@ int MWdb_save_avgamp(char *array,
 	int bankid,
 	char *phase,
 	double fc,
-	double timeref,
-	Time_Window *w,
+	double t0,
+	double twin,
 	double mwamp,
 	double erramp,
 	int ndgf,
 	Dbptr db)
 {
-	double time,twin;
 
-	time = timeref + (w->si)*((double)(w->tstart));
-	twin = ((double)((w->tend)-(w->tstart)))*(w->si);
 	db = dblookup(db,0,"mwavgamp",0,0);
 
 	/* Note algorithm and ampcomp are frozen here.   */
@@ -149,7 +141,7 @@ int MWdb_save_avgamp(char *array,
 		"phase", phase,
 		"fc",fc,
 		"ampcomp",AMPCOMP,
-		"time",time,
+		"time",t0,
 		"twin",twin,
 		"mwamp",mwamp,
 		"erramp",erramp,
@@ -179,13 +171,8 @@ evid - css3.0 event id
 bankid - multiwavelet group id 
 phase - phase name as in css3.0
 fc - center frequency (in Hz) of the wavelets used
-timeref - reference start time.  This time needs to be lag corrected
-	so the window defintion works correctly.  
-w - time window structure used in mwap. Note timeref, w, and moveout
-	(see below) all interact to define exact sliding windows 
-	that vary from station to station.  The window start time 
-	stored here could, in fact, be stored as arrival times although
-	they would generally have a dc bias.  
+t0 - start time at reference station
+twin - length of analysis time window relative to t0
 refelev - reference elevation in km used for elevation static estimates
 g - MWgather structure from which a lot of base information is extracted.
 	In fact, the gather is parsed so every nonnull entry in the gather
@@ -212,8 +199,8 @@ int MWdb_save_statics(
 	int bankid,
 	char *phase,
 	double fc,
-	double timeref,
-	Time_Window *w,
+	double t0,
+	double twin,
 	double refelev,
 	MWgather *g,
 	double *moveout,
@@ -230,7 +217,7 @@ int MWdb_save_statics(
 	MWstation *s;
 	Signal_to_Noise *snr;
 	int errcount=0;
-	double time, twin;
+	double time;
 	int nsta;
 	Dbptr dbt, dba, dbsnr;
 	double ampdb, aerrdb;  
@@ -242,7 +229,6 @@ int MWdb_save_statics(
 	dbsnr = dblookup(db,0,"mwsnr",0,0);
 
 	nsta = g->nsta;
-	twin = ((double)((w->tend)-(w->tstart)))*(w->si);
 
 	for(i=0;i<nsta;++i)
 	{
@@ -302,8 +288,7 @@ int MWdb_save_statics(
 			/* We have to correct the start time for moveout.
 			This asssumes the moveout vector has the current 
 			best estimate */
-			time = timeref 
-				+ moveout[i] + ((double)(w->tstart))*(w->si);
+			time = t0 + moveout[i];
 			/* We store the residual relative to a model time.
 			There may be a more elegant way to skip saving resid
 			in the conditional below with dbNULL, but I couldn't
@@ -402,8 +387,8 @@ evid - css3.0 event id
 bankid - multiwavelet bank id tag
 phase - seismic phase name as in css3.0
 fc - center frequency of band in hz.
-timeref - window start time reference at reference station
-w - time window structure for the band
+t0 - start time at reference station for particle motion analysis
+twin - length of analysis time window relative to t0
 g - MWgather structure for this band.  The routine loops through
 	the list defined by this complicated structure.
 moveout - moveout vector.  Elements of moveout are a parallel array
@@ -423,8 +408,8 @@ int MWdb_save_pm(
 	int bankid,
 	char *phase,
 	double fc,
-	double timeref,
-	Time_Window *w,
+	double t0,
+	double twin,
 	MWgather *g,
 	double *moveout,
 	Arr *pmarr,
@@ -439,7 +424,7 @@ int MWdb_save_pm(
 	Particle_Motion_Ellipse *pm;
 	Particle_Motion_Error *pmerr;
 	int errcount=0;
-	double time, twin;
+	double time;
 	int nsta;
 	Spherical_Coordinate scoor;
 	double majaz, majema, minaz, minema;
@@ -447,7 +432,6 @@ int MWdb_save_pm(
 	db = dblookup(db,0,"mwpm",0,0);
 
 	nsta = g->nsta;
-	twin = ((double)((w->tend)-(w->tstart)))*(w->si);
 
 	/* We look through the whole gather quietly skipping entries
 	flagged bad with a null pointer */
@@ -464,8 +448,7 @@ int MWdb_save_pm(
 			/* We have to correct the start time for moveout.
 			This asssumes the moveout vector has the current 
 			best estimate */
-			time = timeref 
-				+ moveout[i] + ((double)(w->tstart))*(w->si);
+			time = t0 + moveout[i];
 			/* The pm structure stores the major and minor axes
 			as unit vectors.  It is more compact and more 
 			intuitive to store these quantities in spherical coord
@@ -557,16 +540,121 @@ space.  It is functionally similar to load_multiwavelets_pf.
 
 Arguments:
 
+db - input database that contains a "mwdisc" table that indexes a selection
+	of multiwavelet basis functions
 pf - parameter object
 nwavelets - returned as the number of wavelets found in the bank requested
 	through definitions in pf
 bankid - an id tag on this bank of multiwavelet functions  (returned).
 
+The function returns a pointer to an array of MWbasis objects of length 
+*nwavelets.  The fact that the function returns this object and also sets
+*nwavelets and bankid is admittedly an abomination, but the syntax for 
+using something like MWbasis ** causes so much confusion I considered
+this the lesser of two evils.
+
+Author:  Gary Pavlis
+Written: April 2002
 */
 
-MWbasis *load_multiwavelets_db(Pf *pf,int *nwavelets, int *bankid)
+MWbasis *load_multiwavelets_db(Dbptr db, Pf *pf,int *nwavelets, int *bankid)
 {
 	MWbasis *mwb;
-	die(0,"db input for multiwavelets not yet implemented--use parameter file form\n");
+	int nw;
+	char *select_condition;
+	Dbptr dbv;
+	int nrecords;
+	/* These are the attribute in the mwdisc table minus
+	those returned in the argument list */
+
+	int nsamp,foff;
+	double f0,fw;
+	char datatype[4],mworder[4];
+	char fname[128];
+	FILE *fp;
+	int i,j,jj;
+	
+	dbv = dblookup(db,0,"mwdisc",0,0);
+	if(dbv.record == dbINVALID) elog_die(0,"load_multiwavelets_db:  no mwdisc table in input database\nThese are required for multiwavelet transform\nCheck database descriptor\n");
+	select_condition=pfget_string(pf,"multiwavelet_select_condition");
+	if(select_condition==NULL)
+		elog_die(0,"Missing required parameter string called multiwavelet_select_contion\nThis is required when loading multiwavelets from a database\n");
+	dbv=dbsubset(dbv,select_condition,0);
+	dbquery(dbv,dbRECORD_COUNT,&nrecords);
+	if(nrecords<=0)
+		elog_die(0,"load_multiwavelet_db:  no records in mwdisc match condition: %s\n",
+			select_condition);
+	else if (nrecords>1)
+		elog_complain(0,"load_multiwavelet_db:  multiple records in mwdisc match the condition %s\nUsing first record found\n",
+			select_condition);
+	dbv.record=0;
+	dbgetv(dbv,0,"bankid",bankid,
+		"nsamp",&nsamp,
+		"nwavelets",nwavelets,
+		"f0",&f0,
+		"fw",&fw,
+		"datatype",datatype,
+		"foff",&foff,
+		"mworder",mworder,0);
+	if(strcmp(datatype,"t4"))
+		elog_die(0,"multiwavelets must be in t4 binary form\n");
+	if(strcmp(mworder,"ti") || strcmp(mworder,"ts") )
+	{
+		if(dbextfile(dbv,0,fname)<=0)
+			elog_die(0,"load_multiwavelet_db: multiwavelet basis file %s not found\n",
+				fname);
+		fp = fopen(fname,"r");
+		if(foff>0) fseek(fp,foff,0);
+		allot(MWbasis *,mwb,*nwavelets);
+		for(i=0;i<*nwavelets;++i)
+		{
+			allot(float *,mwb[i].r,nsamp);
+			allot(float *,mwb[i].i,nsamp);
+			mwb[i].n=nsamp;
+			mwb[i].f0=f0;
+			mwb[i].fw=fw;
+		}
+		
+		if(!strcmp(mworder,"ti"))
+		{
+			/* This is case for storage as complex number */
+			float *buffer;
+			allot(float *,buffer,2*nsamp);
+			for(i=0;i<*nwavelets;++i)
+			{
+				if(fread(buffer,sizeof(float),2*nsamp,fp)
+					!= (2*nsamp))
+				{
+					elog_die(0,"read error on file %s while reading wavelet %d\n",
+						fname,i);
+				}
+				for(j=0,jj=0;j<nsamp;++j,jj+=2)
+				{
+					mwb[i].r[j]=buffer[jj];
+					mwb[i].i[j]=buffer[jj+1];
+				}
+			
+			}
+			free(buffer);
+		}
+		else
+		{
+			for(i=0;i<*nwavelets;++i)
+			{
+				int nr,ni;
+				nr=fread(mwb[i].r,sizeof(float),nsamp,fp);
+				ni=fread(mwb[i].i,sizeof(float),nsamp,fp);
+				if( (nr!=nsamp) || (ni!=nsamp) )
+					elog_die(0,"read error on file %s while reading wavelet %d\nRead %d real and %d imaginary samples while expecting %d\n",
+						fname,i,
+						nr,ni,nsamp);
+			}
+		}
+	}
+	else
+		elog_die(0,"load_multiwavelet_db: don't know how to read mworder %s\nCurrently support only ti and ts\n",
+			mworder);
+	
+	fclose(fp);
 	return(mwb);
 }

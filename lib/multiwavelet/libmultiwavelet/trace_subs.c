@@ -207,6 +207,13 @@ Dbptr mwap_readdata(Dbptr db, Arr *arrivals,
 				sta,stime,etime);
 			continue;
 		}
+		if(ntraces==0)
+		{
+			delarr(arrivals,sta);
+			elog_log(0,"No waveform data for arrival at\
+station %s\nCannot process data from that station.",
+				sta);
+		}
 	}
 	return(tr);
 }

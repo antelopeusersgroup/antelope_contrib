@@ -125,19 +125,13 @@ Arr *create_station_objects(Pf *pf, int nbands)
 			}
 			s->weights[j] = atof(word);
 		}
+		/* we set the clock_is_bad variable false here and depend
+		upon the genloc bad clock definitions to set a station as
+		being always bad with this flag */
+		s->clock_is_bad = 0;
 		setarr(a,s->sta,s);
 	}
 
-	/* Now we set the clock_is_bad field for stations flagged that
-	way in the parameter file */
-	t = pfget_tbl(pf,"clock_is_bad");
-        for(i=0;i<maxtbl(t);i++)
-        {
-                sta = gettbl(t,i);
-		s = (MWstation *)getarr(a,sta);
-		s->clock_is_bad = 1;
-	}
-	
 	return(a);
 }
 

@@ -6,6 +6,7 @@ Gary Pavlis:$
 
 #include <stdlib.h>
 #include <math.h>
+#include <sunmath.h>
 #include <ctype.h>
 #include "multiwavelet.h"
 #include "location.h"
@@ -163,7 +164,7 @@ int *compute_tpad(Tbl **d, MWbasis *mw, Arr *sta, Pf *pf)
 		}
 		pad[i] = paddec;
 		dec_previous_band = decfac;
-		pad[i] += (padmw + pad_prop/decfac);
+		pad[i] += (padmw + pad_prop);
 	}
 	return(pad);
 }
@@ -329,10 +330,16 @@ Time_Window compute_time_window(Time_Window *win, int *decfac, int n)
 
 	if(n<1)die(0,"Invalid array length %d passed to compute_time_window\n",
 				n);
-	for(i=1,s = Window_stime(win[0]),e = Window_etime(win[0]);i<n;i++)
+	/* Note tpad is time pad for each that the decimators and
+	wavelet truncate the signal.  Hence we pad both left and
+	right sides.*/
+	for(i=1,
+	s = Window_stime(win[0])-win[0].tpad,
+	e = Window_etime(win[0])+win[0].tpad;
+		i<n;i++)
 	{
-		s = MIN(s,Window_stime(win[i]));
-		e = MAX(e,Window_etime(win[i]));
+		s = MIN(s,Window_stime(win[i])-win[i].tpad);
+		e = MAX(e,Window_etime(win[i])+win[i].tpad);
 	}
 	/* We use a nint because we assume there are other fudge factors
 	that assure rounding makes no significant difference. */
@@ -500,8 +507,8 @@ int compute_plane_wave_static(MWstation *s,
 		atime = (TTTime *)gettbl(treturn,0);
 		s->plane_wave_static = (atime->value) - tpw;
 	}
-	freetbl(treturn,free);
-	freetbl(ureturn,free);
+	freetbl(treturn,0);
+	freetbl(ureturn,0);
 	return(0);
 }	
 

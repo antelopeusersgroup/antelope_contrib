@@ -1,5 +1,6 @@
 #include <math.h>
 #include <float.h>
+#include <sunmath.h>
 #include "multiwavelet.h"
 /* This function is used to check a list of pf names to verify they
 are in the parameter space.  It is useful for any program that uses
@@ -310,4 +311,72 @@ int remove_null_float(int n, float *w, int incw, float *x, int incx)
 	return(ixtmp);
 }
 
+/* Fairly general interpolation routine to take a function specified on an irregular
+grid of points defined by x1 and y1 and interpolate them onto a regular grid, y,
+with a simple linear interpolation formula between (x1,y1) pairs.  
+This algorithm was written with an implicit assumption that x1,y1 pairs were
+widely spaced compared to dx so this was mainly a fill opertion.  I think it will
+handle vertical discontinuities correctly, but I'm not sure it will deal with
+a highly oversampled x1,y1 relative to dx.  Unpredictable behaviour is guaranteed
+if the x1,y1 pairs are not in order of increasing x1.  
+
+arguments:
+	x1 - vector of length n1 of abscissa values of irregular grid to be 
+		interpolated.
+	y1 - parallel vector to x1 of function values.
+	n1 - length of x1 and y1
+	y - output function of regularly sampled values
+	x0 - abscissa value of first sample of y
+	dx - sample interval of y.
+	ny - length of y.
+
+Author:  Gary Pavlis
+Written:  December 2001
+Modified:  May 2002
+Changed error codes.  Now returns an error if elements of y are set.
+*/
+int irregular_to_regular_interpolate(double *x1, double *y1, int n1,
+	double *y, double x0, double dx, int ny)
+{
+	int i1,i;
+	int istart,i1start;
+	double grad;
+	double x;
+	int ny_set=0;
+
+	/* first zero y*/
+	for(i=0;i<ny;++i) y[i] = 0.0;
+	/* silently do nothing if n1 is invalid */
+	if(n1<=0) return(-1);
+
+	/* find the starting point */
+	i1start = 0;
+	istart = nint((x1[0]-x0)/dx);  
+	if(istart<0) 
+	{
+		do
+		{
+			++i1start;
+			istart = nint((x1[i1start]-x0)/dx);
+		}
+		while (istart<0);
+	}
+	for(i=istart,i1=i1start;i<ny,i1<n1-1;++i1)
+	{
+		if(x1[i1+1]==x1[i1])continue;
+		grad = (y1[i1+1]-y1[i1])/(x1[i1+1]-x1[i1]);
+		x = x0 + dx*((double)i);
+		while((x<=x1[i1+1]) && (i<ny) )
+		{
+			y[i] = y1[i1] + grad*(x-x1[i1]);
+			++i;
+			++ny_set;
+			x += dx;
+		}
+	}
+	if(ny_set<=0)
+		return(-2);
+	else
+		return(0);
+}
 

@@ -13,7 +13,7 @@ current presumption is that this is an encapsulated set of C programs */
 #include "elog.h"
 #include "pf.h"
 #include "tt.h"
-#include "perf.h"
+#include <sunperf.h>
 
 /* This object defines a complex pair of multiwavelet functions.
 They are implemented as two vectors rather than a complex function
@@ -46,6 +46,32 @@ typedef struct FIR_decimation{
 	int ncoefs;
 	float *coefs;
 } FIR_decimation;
+/* Object returned by stacking function */
+typedef struct MWstack_
+{
+	/* start time, end time, and sample interval (s). Note this
+	is ALWAYS in an arrival time reference frame because a stack
+	usually makes no sense in an absolute time reference */
+	double tstart,tend,dt; 
+	int nwavelets,nchan,nt; /*number of wavelets,
+					 number of channels,
+					and time length in stack*/
+	complex **amp;  /* nwavelets by nchan matrix of relative amplitude and
+				time (phase) estimates */
+	double *weights;  /*nchan vector of weights applied to each channel
+				to compute stack.  Note this is a residual type
+				weight NOT a predefined weight.  In mwap there is
+				a second weight applied that is tied to each station.
+				This weight is applied separately as part of the robust
+				estimation step. */
+	double *timeweight;  /* weights applied in time to produce this stack 
+				This is a vector of length nt that is a generalized
+				time window function.  */
+	int timeweight_applied;  /* set 1 if z has been multiplied by timewght vector*/
+	int stack_is_valid;  /* set 0 if contents are garbage */
+	complex **z;  /* nwavelet by nt multiwavelet stack */
+	double *coherence;  /* nt length coherence vector */
+}MWstack;
 /* These objects contain station specific information used in multiwavelet
 array processing.  They encapulate all the station dependent information
 required by array processing functions in a single structure */
@@ -87,15 +113,19 @@ typedef struct MWSlowness_vector_ {
 } MWSlowness_vector;
 
 /* In the following in this program angles are stored in radians.
-We use atan2 convention for phi from -Pi to Pi.  WARNING:
-these aren't spherical coordinates as in the textbooks, but spherical
-coordinates ala compass azimuth.  i.e. phi is an angle relative to 
-north, which by convention is the x2 axis in this code.*/
+We use atan2 convention for phi from -Pi to Pi.  Angles
+are standard spherical coordinates, which means geographically
+x1 is positive east. */
 typedef struct Spherical_Coordinate_{
 	double radius;
 	double theta;
 	double phi;
 } Spherical_Coordinate;
+/* These define different array average estimates of particle motion.
+They are used as keys for an Arr in mwap */
+#define PMOTION_BEAM "bm"
+#define PMOTION_AA "aa"
+#define PMOTION_WAA "waa"
 
 /* This structure defines particle motion major and minor ellipses
 defined in cartesian coordinates.  Each vector is normalized to
@@ -148,10 +178,14 @@ typedef struct Time_Window {
 /* This structure holds signal to noise statistics for a given 
 station in a particular band.  the ratio_? values are averages
 from multiwavelets in the band, and the min and max define the 
-range.  This can allow some flexibility in how s/n cutoffs are set */
+range.  This can allow some flexibility in how s/n cutoffs are set 
+Dec. 2001:  added noise_? entries.  This allows an estimate of the
+noise floor to be computed from the snr figures.  Otherwise there
+is not absolute standard to compare with.*/
 typedef struct Signal_to_Noise_ {
 	char sta[8];
 	double ratio_z,ratio_n,ratio_e,ratio_3c;
+	double noise_z,noise_n,noise_e,noise_3c;  
 	double min_ratio_z,max_ratio_z;
 	double min_ratio_n,max_ratio_n;
 	double min_ratio_e,max_ratio_e;
@@ -250,7 +284,7 @@ int estimate_slowness_vector(MWSlowness_vector, Arr *, Arr *,
   char *, double, double, char *, int, MWSlowness_vector *);
 int pseudo_inv_solver(double *, double *, double *, int, int, double *, double, double *);
 int null_project(double *,int, int , double *, double *);
-int compute_slowness_covariance(Arr *,Arr *,double, double *);
+int compute_slowness_covariance(Arr *,Arr *, double *);
 void mwap_process(Dbptr ,char *,  Pf *);
 double unwrap_delta_phase(complex , complex );
 char *make_mw_key(char *, char *);
@@ -262,6 +296,7 @@ int snr_is_too_low(Signal_to_Noise *,int, Pf *);
 MWgather *build_MWgather(int , int , Arr *, Arr *, Arr *, Pf *);
 MWtrace *MWtrace_dup(MWtrace *);
 MWgather *MWgather_transformation(MWgather *,double *);
+MWgather *MWgather_copy(MWgather *);
 void free_sn_ratios_arr(Arr **,int);
 Arr **compute_signal_to_noise(Arr *,Arr *,Arr *,Arr *,
 	Time_Window *,Time_Window *, int , int);
@@ -284,7 +319,7 @@ MW_scalar_statistics MW_calc_statistics_float(float *,int );
 MW_scalar_statistics MW_calc_statistics_double(double *,int );
 float M_estimator_float(float *,int,int, double);
 complex M_estimator_complex(complex *,int );
-void M_estimator_n_vector(double *,int, int, int, double, double *, double *);
+void M_estimator_double_n_vector(double *,int, int, int, double, double *, double *);
 double d1_jack_err(int, double *);
 Dbptr mwap_readdata(Dbptr , Arr *, Time_Window , Time_Window );
 int free_noncardinal_traces(Dbptr );
@@ -304,17 +339,17 @@ void trplot_by_sta(Dbptr,char *);
 void trplot_one_mwtrace(MWtrace *,char *);
 
 int MWdb_save_slowness_vector(char *, MWSlowness_vector *, double,
-	Time_Window *,char *, int, int, double, double, double *,
+	double,char *, int, int, double, double, double *,
 	int, int, int, double, Dbptr);
 int MWdb_save_avgamp(char *, int, int, char *, double, double,
-	Time_Window *, double, double, int, Dbptr);
-int MWdb_save_statics(int, int, char *, double, double, Time_Window *,
+	double, double, double, int, Dbptr);
+int MWdb_save_statics(int, int, char *, double, double, double,
 	double, MWgather *, double *, Arr *, Arr *, Arr *, 
 	Arr *, Arr *, Dbptr);
-int MWdb_save_pm(char *, int, int, char *, double, double, 
-	Time_Window *, MWgather *, double *, Arr *, Arr *, 
+int MWdb_save_pm(char *, int, int, char *, double, double, double,
+	MWgather *, double *, Arr *, Arr *, 
 	Particle_Motion_Ellipse *, Particle_Motion_Error *, Dbptr);
-MWbasis *load_multiwavelets_db(Pf *,int *, int *);
+MWbasis *load_multiwavelets_db(Dbptr, Pf *, int *, int *);
 double Window_stime(Time_Window);
 double Window_etime(Time_Window);
 int remove_null_complex(int, float *,int, complex *, int);
@@ -327,3 +362,24 @@ int compute_total_moveout(MWgather *, Arr *, char *,
 	MWSlowness_vector, double, char *, double *);
 int  MWget_model_tt_slow(Arr *, char *, char *, Dbptr, Pf *, Arr **, 
 	MWSlowness_vector *);
+MWstack *create_MWstack(int,int,int);
+void destroy_MWstack(MWstack *s);
+int irregular_to_regular_interpolate(double *, double *, int, double *,
+		double, double, int);
+int build_static_matrix(MWgather *, int *, Time_Window *,
+                float *, complex *);
+double *get_time_weight_function(char *,
+	double, double, int, Pf *);
+int build_3c_matrix(MWgather *,int *,Time_Window *,
+                float *, complex *, char **);
+double *MWstack_set_trapezoidal_window(double, double, int ,double, double,
+		double, double);
+void MWsave_gather(MWgather *,complex ***, int, int, int, double, double);
+void MWsave_coherence(MWgather *, double **, double *,
+		int, int, double, double);
+MWstack *MWextract_stack_window(MWstack *,Time_Window *);
+void MWapply_time_window(complex *,int, int, int, double *);
+void MWstack_apply_timeweight(MWstack *);
+MWstack *MWrobuststack(complex ***, int, int, int,
+	double, double, double *, double *, double **);
+int MWcoherence(MWstack *,complex ***,double **,double *);
