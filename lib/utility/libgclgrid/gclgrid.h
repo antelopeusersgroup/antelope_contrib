@@ -1,10 +1,13 @@
 #ifndef _GCLGRID_H_
 #define _GCLGRID_H_
 #include <stdlib.h>
+#include <string>
+#include <vector>
 #include "stock.h"
 #include "db.h"
 #include "perf.h"
 #include "coords.h"
+#include "dmatrix.h"
 
 #ifdef	__cplusplus
 
@@ -20,6 +23,15 @@ typedef struct cart_ {
 } Cartesian_point;
 
 extern int GCLverbose;  //verbosity level.  0 terse, 1 verbose, 2 very verbose
+class GCLgrid_error
+{
+public:
+	string message;
+	GCLgrid_error(){message="GCLgrid library error\n";};
+	GCLgrid_error(const string mess){message=mess;};
+	virtual void log_error(){cerr<<"GCLgrid_error: "<<message<<endl;};
+};
+		
 
 class GCLgrid
 {
@@ -52,6 +64,8 @@ class GCLgrid
 		Geographic_point ctog(double, double, double);
 		Cartesian_point gtoc(double, double, double);
 		void set_transformation_matrix();
+		dmatrix fetch_transformation_matrix();
+		double *fetch_translation_vector();
 		double depth(int,int);
 		~GCLgrid();
 		//
@@ -176,6 +190,11 @@ class GCLvectorfield3d : public GCLgrid3d
 //C++ helpers
 //
 double r0_ellipse(double);
+dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3, 
+	int comp, bool reverse) throw(GCLgrid_error);
+vector<double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
+                                throw(GCLgrid_error);
+dmatrix ustrans(GCLgrid& g, double lat, double lon);
 #endif
 
 #ifdef	__cplusplus

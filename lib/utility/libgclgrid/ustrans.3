@@ -1,0 +1,36 @@
+.TH USTRANS 3 "$Date$"
+.SH NAME
+ustrans - transformation from standard spherical to local coordinates
+.SH SYNOPSIS
+.nf
+#include "gclgrid.h"
+dmatrix ustrans(GCLgrid& g, double lat, double lon);
+.fi
+.SH DESCRIPTION
+.LP
+Sometimes it is useful to work in a local, Cartesian reference frame
+with a standard convention with x1 positive east, x2 positive north,
+and x3 positive up. This routine computes a transformation matrix from
+the standard geographic Cartesian reference frame
+(origin at Earth's center, x1 pointed at intersection of the prime
+meridian and the equator, x2 pointed at 90 east and the equator, 
+and x3 pointed at the north pole) to a local coordinate system 
+at (lat,lon).
+.SH RETURN VALUES
+The result is returned as a 3x3 matrix defined as a simple
+dmatrix object.   
+.SH LIBRARY
+.nf
+-lgclgrid
+.fi
+.SH "SEE ALSO"
+.nf
+dmatrix(3)
+.fi
+.SH AUTHOR
+.nf
+Gary Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

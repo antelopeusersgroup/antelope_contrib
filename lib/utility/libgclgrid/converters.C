@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "dmatrix.h"
 #include "gclgrid.h"
 
 
@@ -23,6 +24,22 @@ void GCLgrid::set_transformation_matrix()
 	dcopy(3,xcros,1,gtoc_rmatrix[0],1);
 	dcopy(3,x0,1,translation_vector,1);
 	dscal(3,r0,translation_vector,1);
+}
+dmatrix GCLgrid::fetch_transformation_matrix()
+{
+	dmatrix U(3,3);
+	int i,j;
+	for(i=0;i<3;++i)
+		for(j=0;j<3;++j)
+			U(i,j) = gtoc_rmatrix[i][j];
+	return(U);
+}
+double *GCLgrid::fetch_translation_vector()
+{
+	int i;
+	double *t = new double[3];
+	for(i=0;i<3;++i) t[i]=translation_vector[i];
+	return(t);
 }
 Cartesian_point GCLgrid::gtoc(double plat, double plon, double pr)
 {

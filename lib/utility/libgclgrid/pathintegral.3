@@ -1,0 +1,66 @@
+.TH PATHINTEGRAL 3 "$Date$"
+#
+.SH NAME
+pathintegral - integrate a 3D field variable along a predefined path
+.SH SYNOPSIS
+.nf
+#include "gclgrid.h"
+vector <double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
+				throw(GCLgrid_error);
+.fi
+.SH DESCRIPTION
+.LP
+A path integral of a field variable is a common mathematical 
+construct in physics.  This function assumes the field to be
+integrated is defined by the GCLscalarfield3d object which
+is derived by inheritance from a GCLgrid3d object
+(see gclgrid(3)).  The integration path is defined in the
+Cartesian coordinate system of the GCLgrid3d parent object
+using a matrix passed as the simple matrix object
+path (see dmatrix(3)).  The path matrix is assumed to be a
+3xN matrix where the rows define the coordinates and each 
+column defines and ordered sequence that define the path 
+through space.  
+.LP
+The path is integrated using a trapezoidal rule with no endpoint
+corrections.  That is, each piece of the sum is formed as the 
+average of the current and previous values of the field variable.  
+This means the first point is always 0.0 and each successive point
+should be thought of as an approximation of the integral to that
+point. As a practical matter it tacitly assumes that path is more
+finely sampled than the field variable.
+The result is returned as an STL vector object with the 
+ith component of the result approximating the integral from the
+first to the ith point in path. If the path wanders outside the
+domain of the GCLscalarfield3d object the path output 
+vector will be truncated at the point where this happens.  
+An exception is no thrown in this case but a valid vector
+is returned. 
+This was done by design because this
+should not normally be considered an exception.  The caller
+is expected to handle this problem cleanly by testing 
+size.path() against return_vector.size() (see dmatrix(3) and
+vector(3)).   
+.LP
+The function will throw an exception only in one condition.  If the
+path object does not have exactly 3 rows the function will throw a GCLgrid_error
+exception announcing this.  This would always be a coding error and 
+most applications can probably choose to not arrange to catch this
+exception.  
+.SH RETURN VALUES
+.LP
+See above and vector(3) if you are unfamiliar with the standard template library.
+.SH LIBRARY
+-lgclgrid
+.SH "SEE ALSO"
+.nf
+gclgrid(3), dmatrix(3), vector(3), and C++ books discussing the Standard 
+Template Library
+.fi
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

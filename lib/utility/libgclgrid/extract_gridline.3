@@ -1,0 +1,56 @@
+.TH EXTRACT_GRIDLINE 3 "$Date$"
+.SH NAME
+extract_gridline - retrieves a path along a gridline of a GCLgrid3d object
+.SH SYNOPSIS
+.nf
+#include "gclgrid.h"
+dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
+        int comp, bool reverse) throw (GCLgrid_error);
+.fi
+.SH DESCRIPTION
+.LP
+A GCLgrid3d object is defined as an object that is conveniently
+thought of as a distorted, uniform 3D grid.  A box divided up
+into cubes can be defined by a framework of lines formed by the
+edges of all cubes.  In the same way a GCLgrid3d object can be
+defined by a framework of curves defining the edges of all the 
+elemental (distorted) boxes.  This function extracts one of the 
+family of curves that defines this framework.
+.LP
+The parent grid from which a curve is to be extracted is the input 
+object grid.  The beginning of the output path is defined by
+the coordinates at the grid index point (ix1,ix2, ix3).  That is,
+these variables define the integer subscripts of the 3D array that
+define the geometry of grid.  From 3 to 6 points emerge from 
+any such point.  The variables comp and reverse determine which
+of these curves are extracted.  The comp variable sets the 
+gridline component to be extracted.  (The indexing of comp is in
+standard mathematical language, not C indexing.)  For example, if
+comp is 1, the curve following the x1 trajectory from
+point at the position of the grid point at ix1,ix2, and ix3 is 
+extracted (i.e. ix2 and ix3 are held constant).  If reverse is
+false, the direction of the output path is in increasing index
+order (e.g.ix1, ix1+1, ix1+2, ..., grid.n1-1).   If reverse
+is true the path defined using an index decreasing to 0 is used.
+.LP
+The path is returned as a 3xN matrix with N computed based on
+the size of the grid.  This matrix is created with the new operator
+internally in this function and must be cleared when finished by
+the caller to avoid a memory leak.
+.LP
+The program will throw a GCLgrid_error exception in two situations:
+.IP (1)
+If any of the index point (ix1,ix2, or ix3) are outside the range
+of the actual grid.
+.IP (2)
+If the comp variable is anything but 1, 2, or 3.  
+.SH "SEE ALSO"
+.nf
+gclgrid(3), dmatrix(3)
+.fi
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.\" $Id$
