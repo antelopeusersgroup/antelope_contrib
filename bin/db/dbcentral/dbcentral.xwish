@@ -11,18 +11,35 @@ package require Tclx
 lappend auto_path $env(ANTELOPE)/data/tcl/library
 
 proc init_globals {} {
-	global Template_time Template_time_format Nicknames
+	global Template_time Template_time_format 
+	global Nicknames Tasks Commands
 	
 	set Template_time_format "%m/%d/%Y %H:%M:%S.%s %Z"
 
 	set Template_time [epoch2str [str2epoch now] $Template_time_format]
 
 	pfgetarr Nicknames %dbcentral
+
+	foreach nickname [array names Nicknames] {
+
+		set tasklines [pfgetlist @dbcentral#$nickname#tasks]
+
+		foreach taskline $tasklines {
+
+			set parts [split $taskline]
+			set task [lindex $parts 0]
+			set runline [join [lrange $parts 1 end]]
+
+			lappend Tasks($nickname) $task
+
+			set Commands($nickname,$task) "$runline"
+		}
+	}
 }
 
 proc init_windows {} {
 
-	global Template_time Nicknames Commands
+	global Template_time Nicknames Tasks Commands
 
 	label .timelbl -text "Time: " -bg beige
 
@@ -42,8 +59,6 @@ proc init_windows {} {
 
 		set menuname $buttonname.m
 
-		set tasks [pfgetlist @dbcentral#$nickname#tasks]
-		
 		menubutton $buttonname -text $nickname \
 			 -relief raised -menu $menuname \
 			 -direction flush -bg beige \
@@ -53,16 +68,9 @@ proc init_windows {} {
 		bind $buttonname <Button-3> "show_path {$nickname} $buttonname"
 		bind $buttonname <ButtonRelease-3> "unshow_path $buttonname"
 
-		foreach taskline $tasks {
+		foreach task $Tasks($nickname) {
 
-			set parts [split $taskline]
-			set task [lindex $parts 0]
-			set runline [join [lrange $parts 1 end]]
-
-			set key "$nickname:$task"
-			array set Commands [list $key "$runline"]
-
-			set cmd "myexec {$nickname} $task"
+			set cmd "myexec {$nickname} {$task}"
 
 			$menuname add command -label $task \
 				-command $cmd \
@@ -101,6 +109,8 @@ proc get_dbpath { nickname } {
 	set dbname_template [lindex [array get myarray dbname_template] 1]
 
 	set dbname [epoch2str $time $dbname_template]
+
+	return $dbname
 }
 
 proc unshow_path { w } {
@@ -140,13 +150,106 @@ proc myexec { nickname task } {
 
 	set dbname [get_dbpath $nickname]
 
-	set key "$nickname:$task"
-	set cmd_template [lindex [array get Commands $key] 1]
+	set cmd_template $Commands($nickname,$task)
 
 	regsub -all DBNAME $cmd_template $dbname command
 
 	eval exec $command &
 }
 
+proc run_cmdline {} {
+	global argc argv
+	global Template_time Template_time_format
+	global Nicknames Tasks
+
+	set i 0
+	set n [llength $argv]
+
+	set List_Nicknames 0
+	set Resolve_dbname 0
+
+	set stripped_argv {}
+
+	while { $i < $n } {
+		set myarg [lindex $argv $i]
+		if { [cequal $myarg -N] } {
+			set List_Nicknames 1
+		} elseif { [cequal $myarg -t] } {
+			incr i
+			set time [lindex $argv $i]
+			set Template_time [epoch2str [str2epoch $time] \
+					   $Template_time_format]
+		} elseif { [cequal $myarg -D] } {
+			set Resolve_dbname 1
+		} else {
+			lappend stripped_argv $myarg
+		}
+		incr i
+	}
+
+	if { $List_Nicknames && [llength $stripped_argv] == 0 } {
+
+		puts stdout "\ndbcentral database nicknames:\n\n"
+		
+		foreach key [array names Nicknames] {
+			puts stdout "\t$key\n"
+		}
+		puts stdout "\n"
+
+	} elseif { $List_Nicknames } {
+
+		set nickname [lindex $stripped_argv 0]
+
+		puts stdout "\ndbcentral command nicknames for $nickname:\n\n"
+
+		foreach key $Tasks($nickname) {
+			puts stdout "\t$key\n"
+		}
+		puts stdout "\n"
+
+	} elseif { $Resolve_dbname && [llength $stripped_argv] == 0 } {
+
+		puts stderr "Must specify a database nickname with -D\n"
+		exit -1
+
+	} elseif { $Resolve_dbname } {
+
+		set nickname [lindex $stripped_argv 0]
+
+		puts stdout [get_dbpath $nickname]	
+
+	} elseif { [llength $stripped_argv] == 1 } {
+
+		set nickname [lindex $stripped_argv 0]
+		set task [lindex $Tasks($nickname) 0]
+
+		myexec $nickname $task
+
+	} elseif { [llength $stripped_argv] == 2 } {
+
+		set nickname [lindex $stripped_argv 0]
+		set task [lindex $stripped_argv 1]
+
+		myexec $nickname $task
+
+	} else {
+
+		puts stderr {Usage: dbcentral [-N] [-t timestring] [-D] [database_nickname [task_nickname]]}
+	}
+
+}
+
 init_globals
-init_windows
+
+if { $argc == 0 } {
+
+	init_windows
+
+} else {
+
+	wm withdraw .
+
+	run_cmdline
+
+	exit 0
+}

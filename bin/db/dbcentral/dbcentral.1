@@ -3,7 +3,7 @@
 dbcentral \- centralized GUI to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-dbcentral
+dbcentral [-N] [-t timestring] [-D] [database_nickname [task_nickname]]
 .fi
 .SH DESCRIPTION
 Many institutions have a variety of databases which are commonly used
@@ -82,7 +82,23 @@ That may be replaced by a reference to the central parameter file:
 If one holds down the right mouse button over the database nickname, 
 the fully resolved pathname (i.e. for the current time specification)
 for that database is displayed. 
+
+In addition to the GUI mode, launched with no arguments, dbcentral has 
+a command-line mode for easy retrieval of and command-launches on common 
+databases. If one of the database nicknames is specified on the 
+command line, the first task listed for that database is launched. A task 
+nickname may be specified in addition to the database nickname, in which
+case the specified task is launched. The -t option may be used to 
+specify a time other than the current time to use in the database name 
+template. Finally, the -D option may be used to retrieve absolute 
+pathnames, and the -N option may be used to print a list of available database 
+nicknames, or available task nicknames for a given database nickname.
 .SH OPTIONS
+-D Show absolute pathname of database
+
+-N Show available database nicknames or task nicknames 
+
+-t Specify a time-string interpretable by the epoch(1) command (default is "now")
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
@@ -103,6 +119,49 @@ antelope_demo &Arr{
 .ft CW
 .in 2c
 .nf
+To launch the GUI application:
+
+yukon% dbcentral
+yukon% 
+
+To launch dbe on the demo database, given the above parameter file:
+
+yukon% dbcentral antelope_demo
+
+To launch dbpick on the demo database, given the above parameter file:
+
+yukon% dbcentral antelope_demo dbpick
+
+To get the absolute pathname of the demo database:
+
+yukon% dbcentral -D antelope_demo
+/opt/antelope/data/db/demo/demo
+
+To get the currently-configured database nicknames:
+
+yukon% dbcentral -N
+
+dbcentral database nicknames:
+
+
+        antelope_demo
+
+
+To get the currently configured task nicknames for the demo database:
+
+yukon% dbcentral -N antelope_demo
+
+dbcentral command nicknames for antelope_demo:
+
+
+        dbe
+
+        dbe_editable
+
+        dbpick
+
+        smartpick
+
 .fi
 .in
 .ft R
