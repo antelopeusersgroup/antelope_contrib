@@ -15,9 +15,9 @@ require "getopts.pl" ;
 
 $schema = "Mail1.2";
 
-if ( ! &Getopts('v') || @ARGV != 2 ) { 
+if ( ! &Getopts('1v') || @ARGV != 2 ) { 
 
-    	die ( "Usage: $0 [-v] mail_file dbname\n" ) ; 
+    	die ( "Usage: $0 [-v] [-1] mail_file dbname\n" ) ; 
 
 } else {
 	
@@ -41,8 +41,17 @@ dbtruncate( @dbsummary, 0 );
 
 @msgs = read_mbox( $mfile );
 
+$first = 1;
+
 foreach $msg ( @msgs ) {
-		
+
+	if( $first == 1 ) {
+
+		$first = 0;
+
+		next if $opt_1;
+	}
+
 	$mailobj = new Mail::Internet( $msg );	
 	$mailobj->head->unfold();
 

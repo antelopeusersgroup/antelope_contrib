@@ -3,7 +3,7 @@
 dbinbox \- summarize a mail file in a database
 .SH SYNOPSIS
 .nf
-dbinbox [-v] mail_file dbname
+dbinbox [-v] [-1] mail_file dbname
 .fi
 .SH DESCRIPTION
 Mail files, especially in-boxes, can sometimes grow to unfortunately 
@@ -29,6 +29,10 @@ become available such as monitoring the database with PHP web-scripts etc.
 .SH OPTIONS
 .IP -v
 Verbose
+.IP -1 
+Skip first message in mail_file. This is useful for deployments where 
+mail delivery agents use an automatically generated placeholder message as the first
+message in a mailbox. 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
