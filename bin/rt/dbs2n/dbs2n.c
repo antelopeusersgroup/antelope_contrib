@@ -28,10 +28,12 @@ char **argv;
 	double tm, ss, sn, s2n;
 	int nn, ns;
 
+
 	/* Parse command line */
 
 	if (argc < 8) {
 		usage();
+	        banner (Program_Name, "$Revision$ $Date$");
 		exit (1);
 	}
 	dbname = argv[1];
