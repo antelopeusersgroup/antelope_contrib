@@ -53,10 +53,11 @@ record (Ch_data *buf, PktChannel *new )
  
     if( buf->ev_over ) {   
 
-
+/*
 fprintf( stderr, "%s_%s RefTek even over.  Stime = %lf Etime = %lf\n",  
 buf->sta, buf->chan, buf->stime, buf->crnt_time );
 fflush(stderr);
+*/
 
 
        if( buf->params->datacode == trSEED ) wrt_last_rec ( buf ) ; 
@@ -68,11 +69,11 @@ fflush(stderr);
     if ( !TRCONTIGUOUS(buf->stime, new->time, buf->samprate, buf->nsamp))  {
        flush = 1;
 
-
+/*
 fprintf( stderr, "gap in %s_%s.  prev_record over at %lf new starts at %lf\n",  
 buf->sta, buf->chan, buf->crnt_time, new->time );
 fflush(stderr);
-
+*/
 
     }
 
@@ -101,12 +102,12 @@ fflush(stderr);
        nsamp_now =  new->nsamp >= maxnsamp ? maxnsamp:new->nsamp;
        if( nsamp_now >= maxnsamp ) ev_over = 1; 
        else ev_over = 0;
-
+/*
 fprintf( stderr, "%s_%s nsamp %d will write %d at %lf\n",  
 buf->sta, buf->chan, new->nsamp, nsamp_now, buf->crnt_time);
 fprintf( stderr, "%lf - %lf %d %d \n",  buf->tmax, crnt_time, new->nsamp, maxnsamp );
 fflush(stderr);
- 
+*/ 
        switch (buf->params->datacode) {
 
           case trSEED:
