@@ -58,8 +58,8 @@ a failure in pfcompile.  The function will die if memory allocation fails.
 Author:  Gary L. Pavlis
 Written:  September 2002
 */
-#define BUFSIZE0 10000
-#define DELTA_BUF 5000  /* realloc when this close to end of buffer*/
+#define BUFSIZE0 100000
+#define DELTA_BUF 10000  /* realloc when this close to end of buffer*/
 #define MAXLINE 512   
 /* low level read from fp using stdio routine fgets.   Reads a pfstream
 one line at a time pushing data into a large string buffer.  Then call
@@ -67,6 +67,7 @@ pfcompile to encapsulate the entire input into a single pf */
 Pf *pfstream_read(FILE *fp)
 {
 	char *buffer;
+	int i,ibuf;
 	char line[MAXLINE];
 	int current_buffer_size=BUFSIZE0;
 	int fd;
@@ -88,9 +89,9 @@ Pf *pfstream_read(FILE *fp)
 		}
 		if(strstr(line,END_OF_DATA_SENTINEL)!=NULL) return(NULL);
 
-		strcat(buffer,line);
-		high_water_mark=strlen(buffer);
-		if(high_water_mark>(current_buffer_size-MAXLINE))
+		ncread=strlen(line);
+		/* it is safter to do this test before copying */
+		if((high_water_mark+ncread)>(current_buffer_size-MAXLINE))
 		{
 			/* This assumes realloc does not destroy the 
 			current contents that includes the data already read */
@@ -100,8 +101,14 @@ Pf *pfstream_read(FILE *fp)
 			  elog_die(0,"pfstream_read:  realloc of %d byte buffer failed\n",
 							current_buffer_size);
 		}
+		for(i=0;i<ncread;++i)
+		{
+			buffer[high_water_mark]=line[i];
+			++high_water_mark;
+		}
 	}
 	if(linecount<=0) return(NULL);
+	buffer[high_water_mark]='\0';
 	ierr=pfcompile(buffer,&pf);
 	if(ierr!=0) 
 	{
