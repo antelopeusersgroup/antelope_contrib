@@ -1,3 +1,5 @@
-# cvsroot aesn.geology.indiana.edu:/opt/antelope/cvs
-cvsroot /opt/antelope/cvs
-package contrib
+# cvsroot 	aesn.geology.indiana.edu:/opt/antelope/cvs
+cvsroot 	/opt/antelope/cvs
+package 	contrib
+#tarfile 	Antelope_contrib_src_%b_%d_%Y.tar
+tarfile 	Antelope_contrib_src_latest.tar
