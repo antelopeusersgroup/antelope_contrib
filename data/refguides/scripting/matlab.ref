@@ -53,7 +53,7 @@ dbcrunch ( DBPTR )
     crunch out null rows in a Datascope database table
 
 dbdelete ( DBPTR )
-    delete the specified record in a Datascope databas
+    delete the specified record in a Datascope database
 
 RECORD = dbget ( DBPTR [, 'dbSCRATCH'] )
     get a table, record, or field from a database
@@ -81,7 +81,7 @@ DBPTR = dbjoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer'] )
     join the specified Datascope database tables
 
 DBPTR = dbnojoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
-    find records which do not join
+    find records in DBPTR1 which do not join with DBPTR2
 
 DBPTR = dbprocess ( DBPTR, STATEMENT_LIST )
     construct a view as a series of standard operations
@@ -117,19 +117,19 @@ N = tr_nsamp ( TIME, SAMPRATE, ENDTIME )
     calculate number of samples from time, sample rate, and endtime
 
 TIME1 = tr_samp2time ( TIME0, SAMPRATE, N_INDEXED_BY_1 )
-    calculate sample time from times and sample index
+    calculate sample time from sample index
 
 SAMPRATE = tr_samprate ( TIME, NSAMP, ENDTIME )
     calculate sample rate from time, endtime, and number of samples
 
 N_INDEXED_BY_1 = tr_time2samp ( TIME0, SAMPRATE, TIME1 )
-    calculate sample index from times and sample rate
+    calculate sample index from sample time 
 
 trapply_calib ( TRPTR )
     multiply trace-object waveform data by calib value
 
 trdestroy ( TRPTR )
-    free memory and trace object for trace object
+    free trace object and its associated memory
 
 DATA = trextract_data ( TRPTR )
     read a copy of data from a trace object into a matrix
@@ -175,11 +175,13 @@ RESPONSE = eval_response ( DBRESPONSE, OMEGA )
 clear ( DBRESPONSE )
     dbresponse elimination routine
 
-R = free_response ( DBRESPONSE )
+free_response ( DBRESPONSE )
     dbresponse elimination routine
 
 <subsection Parameter Files>
-PF = dbpf ( (nothing) **or**PFNAME **or** PF, STRING )
+PF = dbpf ( )
+PF = dbpf ( PFNAME )
+PF = dbpf ( PF, STRING )
     dbpf (Parameter File) class constructor
 
 STRING = pf2string ( DBPF )
@@ -246,7 +248,7 @@ PKTID = orbafter ( ORBFD, TIME )
 orbclose ( ORBFD )
     close a connection to an Antelope object-ring-buffer
 
-[RESULT, TIME, SRCNAME, PKTID, TYPE] = orbget ( ORBFD [, CODE **or**PKTID] )
+[RESULT, TIME, SRCNAME, PKTID, TYPE] = orbget ( ORBFD [, CODE|PKTID] )
     get packets from an Antelope ORB connection
 
 ORBFD = orbopen ( ORBNAME, OPENTYPE )
@@ -271,7 +273,7 @@ PKTID = orbtell ( ORBFD )
     ask for the current read-position on an Antelope ORB
 
 <subsection Seismic Travel Times>
-[TIMES, PHASENAMES] = ARRTIMES ( DELTA, DEPTH )
+[TIMES, PHASENAMES] = arrtimes ( DELTA, DEPTH )
     Returns predicted seismic phase arrival times
 
 <subsection Special functions>
@@ -307,10 +309,10 @@ STRTDELTA = strtdelta ( EPOCH )
     convert an epoch time difference to an elapsed time
 
 STRTIME = strtime ( EPOCH )
-    convert an epoch time to a string specification
+    convert an epoch time to a string date and time
 
 STRYDTIME = strydtime ( EPOCH )
-    convert an epoch time to a string date and time
+    convert an epoch time to a string date and time, including day of year
 
 YEARDAY = yearday ( EPOCH )
     convert an epoch time to a yearday value

@@ -70,7 +70,7 @@ dbput ( @db [, string] )
     copies from string (or from the scratch rows) to the specified field or rows
 
 dbputv ( @db, field_name, value [, field_name, value, ...] )
-    save the specified values into the specified fields for a particular rows
+    save the specified values into the specified fields for a particular row
 
 
 dbadd_remark ( @db, remark )
@@ -84,13 +84,13 @@ dbget_remark ( @db )
 dbgroup ( @db, key [, key, ...] )
     group the input table according to the specified keys
 
-dbjoin ( @db1, @db2[, join-keys] )
+dbjoin ( @db1, @db2 [, join-keys] )
     return a join of the two tables, using the join-keys if specified
 
 dbmatches ( @db1, @db2, hookname [, join-keys] )
     returns a list of the rows in db2 which match the rows specified by db1
 
-dbnojoin ( db1, db2[, join-keys] )
+dbnojoin ( db1, db2 [, join-keys] )
     returns a view of all rows in the first table which don't join to the second.
 
 dbprocess ( @db, commands )
@@ -119,8 +119,8 @@ dbsave_view ( @db, name )
 
 <subsection Miscellaneous Datascope Functions>
 dbquery ( @db, code )
-    query the database for information, eg dbquery(@db, "dbRECORD_COUNT").  see 
-    Datascope Constants
+    query the database for information, e.g. dbquery(@db, "dbRECORD_COUNT").  see 
+    Datascope Constants for valid query codes.
 
 dbex_eval ( @db, expression )
     evaluate expression for a particular row
@@ -347,7 +347,7 @@ when        who
 </example>
 
 orbclients(orb)
-          returns a scalar when, followed by  a  list  of  client
+          returns ($when, @sources). $when is a scalar; @sources is a list of client
           objects,  one  object  per client.  Each object has the
           following methods:  
 <example>
@@ -363,7 +363,7 @@ thread      what        who
 </example>
 
 orbsources(orb)
-          returns a scalar when, followed by  a  list  of  source
+          returns ($when, @sources). $when is a scalar; @sources is a list of source
           objects,  one  object  per source.  Each object has the
           following methods:  
 <example>
@@ -385,26 +385,26 @@ unstuffPkt(srcname, time, packet, nbytes)
     unstuffPkt unstuffs  the  input packet,  returning  a  packet kind and a packet object.
     the result code  indicates  what  kind  of  packet  was unpacked:
 <example>
-kind  kind of packet
-Pkt_wf	waveform packet
-Pkt_st	status packet
-Pkt_db	database row
-Pkt_pf	parameter file
-Pkt_cn	control messages
-Pkt_rw	binary data
-Pkt_ch	character string
-Pkt_tp	test packet
+kind    kind of packet
+----    --------------
+Pkt_wf  waveform packet
+Pkt_st  status packet
+Pkt_db  database row
+Pkt_pf  parameter file
+Pkt_cn  control messages
+Pkt_rw  binary data
+Pkt_ch  character string
+Pkt_tp  test packet
 </example>
     The packet object  has  the following methods which return various
-    values from the c Packet structure: parts, time, Pack-
-    etType, nchannels, channels(i), pf, string, db, dfile,
+    values from the c Packet structure: parts, time, PacketType,
+    nchannels, channels(i), pf, string, db, dfile,
     and version.
 
     The parts method returns (net, sta, chan, loc, suffix, subcode)
 
     The PacketType method returns  the  packet  kind  (also
-    returned  by unstuffPkt) and the corresponding descrip-
-    tion.  
+    returned  by unstuffPkt) and the corresponding description.  
 
     The channels method takes an index (0..n-1) argument 
     and returns a channel object with  its  own  methods:   

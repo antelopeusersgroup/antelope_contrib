@@ -3,7 +3,7 @@
 package require Datascope
 </info>
 <man>
-% man tcldb
+% man Datascope
 </man>
 
 <subsection Opening a database>
@@ -23,7 +23,7 @@ dbfree db
     free memory resources and file descriptors for a database view/table
 
 dblookup db database table field row
-    return a database pointer for the specified db, database, table, field, and row
+    return a database pointer for the specified db, database, table, field, and row. 
     row can be "dbALL", "dbNULL" or "dbSCRATCH", or a value corresponding to field; then
     the first row number where field == value is returned
 
@@ -32,13 +32,13 @@ dbtruncate db n
 
 <subsection Manipulating Fields and Records>
 dbadd db row
-    add the specified row to a table, return row number
+    add the specified row to a table; return row number
 
 dbaddnull db
-    add a null row to the table, return row number
+    add a null row to the table; return row number
 
 dbaddv db table field value [field value ...]
-    add new row with specified field values, return row number
+    add new row with specified field values; return row number
 
 dbmark db
     set the specified row to all null values
@@ -86,7 +86,9 @@ dbmatches db1 db2 hook [keys ...]
     returns a list of rows in the table specified by db2 which match (join with) the row specified by db1
 
 dbprocess db [command ...]
-    construct a view as series of standard operations
+    construct a view as a series of standard operations. 
+    These include dbopen, dbjoin, dbgroup, dbleftjoin, dbnojoin, 
+    dbselect, dbseparate, dbsever, dbsort, dbsubset, dbtheta, dbungroup.
 
 dbsever db table
     returns a new view which removes the specified table from the joined view db  
@@ -221,10 +223,10 @@ pfget pf name
     get the value for the specified name from the specified parameter file
 
 pfgetarr variable name
-    return the array corresponding to the specified name (eg, %pf#name) in the variable
+    return the array corresponding to the specified name (e.g. %pf#name) in the variable
 
 pfgetlist name
-    return the list corresponding to the specified name (eg, @pf#name)
+    return the list corresponding to the specified name (e.g. @pf#name)
 
 pfput pf name value
     save the specified value into the parameter space
