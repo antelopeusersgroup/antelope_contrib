@@ -136,7 +136,6 @@ int dbpmel_save_results(Dbptr db,
 	double belief;
 	char timedef[2],slodef[2],azdef[2];
 	double azres,slores,emares;
-	int commid;
 
 
 	/* All of these are used repeatedly so we do one lookup at the
