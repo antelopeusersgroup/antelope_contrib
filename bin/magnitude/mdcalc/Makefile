@@ -1,29 +1,15 @@
-INC_DIR = ${ANTELOPE}/include
-LIB_DIR = /opt/SUNWspro/SC5.0/lib
-LIB_DIR2 = ${ANTELOPE}/lib
+BIN =  mdcalc
+MAN1 = # mdcalc.1
 
-DBLIBS = -lds -ldbl2 -ltr -lcoords -lposix4 -ltttaup -lresponse -lstock
-GPLLIBS = -lgpl -lol -ltks -lgrx -lX11
+ldlibs = $(F77LIBS) $(TRLIBS) 
 
-####### EXECUTABLE FILE #######
-EXEC =  mdcalc
+include $(ANTELOPEMAKE)
+DIRS=
 
-####### SOURCE FILES #######
-SRCS =  mdcalc.c
+OBJS =  mdcalc.o rms.o coda.o lstsqr.o 
+$(BIN) : $(OBJS)
+	$(RM) $@
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
-####### OBJECT FILES #######
-OBJS =  mdcalc.o rms.o coda.o lstsqr.o
 
-LIBS = ${DBLIBS} ${GPLLIBS} -lF77 -lM77 -lsunmath -lm
 
-CC = cc
-CFLAGS = -g
-CFLAGS = $(cflags) -I$(INC_DIR)
-
-####### COMPILE SOURCE FILES TO CREATE OBJECT FILES #######
-.c :
-	${CC} ${CFLAGS} -c $<
-
-####### LINK OBJECT FILES TO CREATE EXECUTABLE #######
-${EXEC} :       ${INCS} ${OBJS}
-	${CC} -L ${LIB_DIR} -L ${LIB_DIR2} ${OBJS} ${LIBS} -o ${EXEC}
