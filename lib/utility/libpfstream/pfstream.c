@@ -305,6 +305,21 @@ Pf_ensemble *pfget_Pf_ensemble(Pf *pfin,char *tag)
 			sscanf(line,"%d%d",&is,&ie);
 			pfe->group_start[i]=is;
 			pfe->group_end[i]=ie;
+                        /* This is paranoia, but it has been executed */
+                        if(ie>nmembers)
+                        {
+                            if(is<(nmembers-1) && i==(ngroups-1))
+                            {
+                                elog_notify(0,"Warning:  inconsistent group_records\nTruncated final group from record %d to %d\n",
+                                        ie,nmembers-1);
+                                pfe->group_end[i]=ie;
+                            }
+                            else
+                            {
+                                elog_die(0,"Illegal input on pfstream:  group_record Tbl is corrupted\nFor group %d end was listed as %d but there are only %d members in the ensemble\n",
+                                    i,ie,nmembers);
+                            }
+			}
 		}
 		freetbl(ttmp,0);
 	}
