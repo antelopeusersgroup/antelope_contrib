@@ -106,7 +106,7 @@ main (int argc, char **argv)
 			strcat( dfile, suffix );
 		}
 
-		fp = zopen( ahfile, "r" );
+		fp = zopen(ahfile);
 		if( fp == NULL ) {
 			register_error( 1, 
 				"Error opening %s; skipping", ahfile );
