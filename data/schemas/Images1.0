@@ -108,19 +108,19 @@ Attribute imagename
 	}
 	;
 
-Attribute thumbsize
+Attribute imagesize
 	String (25)
 	Format ( "%-25s" )
 	Null ( "-" )
-	Description ( "size of a thumbail image" )
+	Description ( "size of an image" )
 	Detail {
-		This field records the size of a thumbnail image, 
+		This field records the size of a thumbnail or frame image, 
 		for applications that might have several different 
-		scales of thumbails. The contents of this field 
+		scales of thumbails or frames. The contents of this field 
 		should be determined by the end-user application of the 
 		database contents, however a fairly standard approach 
 		might be to use the phrases 'small' and 'medium' or 
-		alternatively an approximate size specifier such as '120x120'.
+		better yet an approximate size specifier such as '120x120'.
 	}
 	;
 
@@ -163,6 +163,16 @@ Relation groups
 	}
 	;
 
+Relation frames
+	Fields ( imagename time imagesize format dir dfile lddate )
+	Primary ( imagename time imagesize )
+	Description ( "video frames for externally stored images" )
+	Detail {
+		This table allows the storage of pre-computed individual  
+		video frames for a set of images.
+	}
+	;
+
 Relation images
 	Fields ( imagename time format description dir dfile lddate )
 	Primary ( imagename time )
@@ -173,8 +183,8 @@ Relation images
 	;
 
 Relation thumbnails
-	Fields ( imagename time thumbsize format dir dfile lddate )
-	Primary ( imagename time thumbsize )
+	Fields ( imagename time imagesize format dir dfile lddate )
+	Primary ( imagename time imagesize )
 	Description ( "thumbnails for externally stored images" )
 	Detail {
 		This table allows the storage of pre-computed thumbnails 
