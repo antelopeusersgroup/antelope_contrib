@@ -1,41 +1,62 @@
-.TH LISS2ORB 1 "1 August 1998" " "
+.TH TITLE SECTION# "$Date$"
 .SH NAME
 liss2orb \- read data in LISS format 
 .SH SYNOPSIS
 .nf
 
-liss2orb [-m srcmatch]
-    [-s liss_pkt_size]
-    [-t timeout]
-    [-v] 
-    inport orb
+liss2orb [-d database] [-m match] [-s pktsize] [-t timeout] [-v] liss-server orb
 
 .fi
 .SH DESCRIPTION
-An \fBliss2orb\fP reads seismic data in LISS format from an \fIinport\fR input port 
-and sends it in an \fBorb\fP ring buffer.
+\fBliss2orb\fP reads seismic data in LISS format from a \fIliss-server\fR 
+and sends it to an \fBorb\fP ring buffer.
 .SH OPTIONS
-.IP "-m srcmatch"
-Only packets  which \fIsrcname\fR  matches the regular 
-expression \fIsrcmatch\fR will be sent to an ORB.
-.IP "-s liss_pkt_size"
-Specifies a LISS packet size. Default value is 512 bytes.  
-.IP "-t timeout "
-This option is valid only for a socket connection and specified number of
-seconds wait data on a connected socket before close socket and open a
-new connection. Default value is 30 seconds.
+.IP "-d database"
+Copy calib, calper and segtype from the calibration table in the
+specified database.  (Since this information is not available from the
+datafeed, it has to be obtained from a static database; this database
+can be generated using psd2db and the corresponding dataless seed
+volume from the IRIS DMC).
+
+.IP "-m match"
+Only packets with srcname containing the regular expression \fImatch\fR
+are forwarded to the orbserver.
+
+.IP "-s pktsize"
+liss2orb attempts to derive the individual packet size by inspecting
+the name of the liss server.  Currently, at least, all packets are
+512 bytes, except for packets from the GT network, where packets
+are all 256 bytes.  Consequently, liss2orb inspects the liss server name;
+if it contains the (case insensitive) string ".gt.", liss2orb expects
+256 byte packets, and otherwise 512 byte packets.
+
+.IP "-t timeout"
+Specify a timeout on the read.  This should not be necessary.
+
 .IP "-v"
-Be more verbose.
+Be more verbose, mentioning each packet copied.
+
 .SH EXAMPLE
 .LP
-Read data from an kono.iu.liss.org remote site. Select data only for BHZ, BHN, BHE
-channels and store them in a  bbarray:9999 ORB. Set timeout value between 
-local host and a remote site to 5 minutes. 
+Read data from an kono.iu.liss.org remote site.  Select data only for
+BHZ, BHN, BHE channels and store them in a bbarray:9999 ORB.  Fill in
+calib, calper and segtype from the calibration table of the database
+asl.
 
 .nf
 
-liss2orb -t 300 -m ".*BH[ZNE]" kono.iu.liss.org bbarray:9999
+liss2orb -d asl -m "BH[ZNE]" kono.iu.liss.org bbarray:9999
 
 .fi
+.SH "BUGS AND CAVEATS"
+The individual packets are SEED data blocks containing 
+blockette 1000's.  The blockette 1000 should specify the 
+data block size, but currently ( 9/15/1999 ) some 1000
+blockettes contain the wrong size.  Hence the size is
+derived from either explicit command line argument or
+by inspecting the liss server name.  
+
 .SH AUTHOR
+.nf
 Marina Glushko
+Daniel Quinlan
