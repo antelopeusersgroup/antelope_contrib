@@ -1,0 +1,117 @@
+.\" %%W%% %%G%%
+.TH LIBTELES 3 "5/29/96"
+.SH NAME
+libteles \- library of handy teleseismic calculation routines/GA-KU
+.SH SYNOPSIS
+.nf
+\fB bjdaz2\fI (zlat0,alon0,zlat,alon,delt,az1,az2,lattype) \fR
+\fB elpcr\fI (elat,delta,azdg,depth,elpc,iphase,ic)\fR
+\fB find\fI (x,xt,n,ians)\fR
+\fB readiasp\fI (lun)\fR
+\fB getiasp\fI (del,dep,pt,st,dpdx,dpddep,dsdx,dsddep)\fR
+\fB glat\fI (hlat)\fR
+\fB redtab\fI (lun)\fR
+
+.fi
+.SH DESCRIPTION
+.nf
+subroutine \fB bjdaz2\fI (zlat0,alon0,zlat,alon,delt,az1,az2,lattype)\fR
+	real*4 zlat0,alon0,zlat,alon,delt,az1,az2
+	integer lattype
+calculate geocentric distance, azimuth, and back azimuth from a  
+c  reference point to another point on the earth's surface.  
+c  input arguments:
+c	if lattype = 1 then  
+c	zlat0 = geocentric latitude of reference point. 
+c	zlat = geocentric latitude of point   
+c	if lattype = 0 then  
+c	zlat0 = geocentric colatitude of reference point.
+c	zlat = geocentric colatitude of point   
+c  
+c	alon0 = longitude of reference point.  
+c	alon = longitude of point  
+c  
+c  output arguments:  
+c	delt = epicentral distance  
+c	az1 =  azimuth of the point from the reference point.  
+c	az2 =  azimuth of the reference point from the point.  
+c  
+c  ***  note  ***  
+c	   all angles are in radians.  
+c	   north latitude and east longitude are positive.  
+c	   azimuth is measured clockwise from north.  
+c	   if one point is at north or south pole, azimuth from that  
+c		 point will be the limit of the azimuth as the pole is  
+c		 approached along the meridian whose longitude is given.  
+.fi
+.LP
+subroutine \fB elpcr\fI (elat,delta,azdg,depth,elpc,iphase,ic)\fR
+	real*4 elat,delta,azdg,depth,elpc
+	integer iphase,ic
+.nf
+c   Compute ellipticity correction from dziewonski and gilbert
+c   Geophys. J. R. Astr. Soc. (1976) 44, 7-17.
+c   elat   =  epicentral latitude
+c   delta  =  distance in degrees
+c   azdg   =  azimuth from epicenter to receiver in degrees
+c   depth  =  earthquake depth in km.
+c   iphase =  0 for p or 1 for s
+c   elpc   =  ellipticity correction in seconds
+c   if input latitude is in geographic (?geocentric?) degrees   ic=0
+c   if input latitude is in geocentric radians   ic=1
+.fi
+
+.LP
+\fB find\fI (x,xt,n,ians)\fR
+.nf
+	real*4 x(n), xt
+	integer n, ians
+Sorting utility used by REDTAB
+c     x is a monotonically increasing vector of dimension n.
+c     xt is greater than or equal to x(ians) but less than
+c     x(ians+1).
+
+.fi
+.LP
+\fB readiasp\fI (lun)\fR
+reads iaspei travel-time curves from disk: /etna/home/abers/IASPEI/iaspei.time2
+ -- Call before getiasp()
+.LP
+\fB getiasp\fI (del,dep,pt,st,dpdx,dpddep,dsdx,dsddep)\fR
+	real*4 del,dep,pt,st,dpdx,dpddep,dsdx,dsddep
+.nf
+c  interpolates iaspei table to get times at del,dep and derivatives
+c  also, numerically calculate derivatives w/distance
+c  d.dx is in sec/deg, d.dz id in sec/km; del in deg, dep in km
+.fi
+.LP
+\fB glat\fI (hlat)\fR
+	real*4 hlat
+.nf
+c------convert geographic latitude to geocentric latitude------------- 
+c	 hlat (input) = geographic latitude in radians (north positive) 
+c	 glat (output)= geocentric latitude in radians (north positive) 
+c--------------------------------------------------------------------- 
+.fi
+.LP
+\fB redtab\fI (lun)\fR
+.nf
+c     read file of ellipticity corrections:  call before elpcr()
+.fi
+.LP
+.LP
+
+
+.SH EXAMPLE
+
+.SH LIBRARY
+-lteles
+ 
+.SH "SEE ALSO"
+.nf
+
+.fi
+.SH "BUGS AND CAVEATS"
+
+.SH AUTHOR
+Geoff Abers, U Kansas; some bits by S. Roecker, K. Creager, B. Julian
