@@ -3,7 +3,7 @@ The following environment variables may be set to change
 the default Antelope behavior.  See antelopeenv(5) for 
 more information.
 
-<function>
+<commands>
 ANTELOPE
     usually set (by setup.csh) to indicate the Antelope base directory, for example "/opt/antelope/4.2u"
 
