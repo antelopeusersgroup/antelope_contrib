@@ -58,8 +58,8 @@ Hypocenter::Hypocenter(Metadata& md)
 	method=string("tttaup");
 	model = string("iasp91");
 	try {
-		method=md.get_string("method");
-		model=md.get_string("model");
+		method=md.get_string("TTmethod");
+		model=md.get_string("TTmodel");
 	} catch (Metadata_error mderr){}
 }
 		
