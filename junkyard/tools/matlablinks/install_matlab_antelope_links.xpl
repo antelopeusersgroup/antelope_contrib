@@ -17,6 +17,11 @@ sub successfully_edit_path {
 	return 1;
 }
 
+if( ! defined( $ENV{ANTELOPE} ) ) {
+
+	die( "ANTELOPE environment variable not defined.\n" );
+}
+
 if( ! defined( $ENV{MATLAB} ) ) {
 	
 	die( "MATLAB environment variable not defined.\n" );
@@ -51,7 +56,7 @@ if( ! symlink( "$ENV{ANTELOPE}/data/matlab/antelope/html",
 	print STDERR "\n2) Successfully soft-linked\n\t$ENV{ANTELOPE}/data/matlab/antelope/html\nto\n\t$ENV{MATLAB}/help/toolbox/antelope\n";
 }
 
-print STDERR "\n\n3) *** Now you must please add\n\n\t\$MATLAB/toolbox/antelope/commands and\n\n\t\$MATLAB/toolbox/antelope/examples\n\nto your Matlab path. The standard way to do this is to edit\n\n\t\$MATLAB/toolbox/local/pathdef.m\n\n";
+print STDERR "\n\n3) *** Now you must please add\n\n\t\$MATLAB/toolbox/antelope/antelope and\n\n\t\$MATLAB/toolbox/antelope/examples\n\nto your Matlab path. The standard way to do this is to edit\n\n\t\$MATLAB/toolbox/local/pathdef.m\n\n";
 
 if( askyn( 'Edit pathdef.m ?? (recommended...): ' ) && successfully_edit_path() ) {
 	print STDERR "\nAntelope Toolbox for Matlab successfully installed.\n\n";
