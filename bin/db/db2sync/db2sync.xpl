@@ -101,6 +101,17 @@ require "getopts.pl";
     }
 
 
+# Are we using default snetsta or affiliation table?
+
+    if ($opt_a) {
+	$affnet	= "affiliation";
+	$mynet	= "net";
+    } else {
+	$affnet	= "snetsta";
+	$mynet	= "snet";
+    } 
+
+
 #Check if input tables exist.  Exit if they don't.
 
 
@@ -111,13 +122,14 @@ require "getopts.pl";
 
     @dbcheck = dbopen($rt_db,"r");
 
-    @dbaffil = dblookup(@dbcheck,"","affiliation","","");
-    $nrecsaffl   = dbquery(@dbaffil,"dbRECORD_COUNT");
-    if (!$nrecsaffl) {
-	print STDERR "\nERROR:  No records in $rt_db.affiliation table or table does not exist.\n";
+    @dbaffnet = dblookup(@dbcheck,"","$affnet","",""); 
+    $nrecsaffnet   = dbquery(@dbaffnet,"dbRECORD_COUNT") ;
+
+    if (!$nrecsaffnet) {
+	print STDERR "\nERROR:  No records in $rt_db.$affnet table or table does not exist.\n"; 
 	&bad_exit();
     } else {
-	print STDERR "Found affiliation table with $nrecsaffl records.\n" if $opt_v ;
+	print STDERR "Found $afnet table with $nrecsaffnet records.\n" if $opt_v ;
     }
 
     @dbwf    = dblookup(@dbcheck,"","$wftable","","");
@@ -147,11 +159,11 @@ require "getopts.pl";
     @db1 = dbopen_table("$rt_db.$wftable","r");
 
 
-#Join with affilation table.
+#Join with affilation or snetsta table.
 
 
-    @db2 = dbopen_table("$rt_db.affiliation","r");	
-    print  STDERR "Joining $wftable table with affiliation table.\n" if $opt_v ;
+    @db2 = dbopen_table("$rt_db.$affnet","r");	
+    print  STDERR "Joining $wftable table with $affnet table.\n" if $opt_v ;
 	
     @db1 = dbjoin(@db1,@db2);
 
@@ -160,12 +172,12 @@ require "getopts.pl";
 		    if ($opt_d) {
 		    print STDERR "\nWARNING:  Number of records after join is $nrecsj1,\n";
 		    print STDERR "          but number of records in $wftable before join was $nrecs.\n";
-		    print STDERR "          Afilliation table is not joining correctly with $wftable.\n\n";
+		    print STDERR "          $affnet table is not joining correctly with $wftable.\n\n";
 		    print STDERR "Working in dummy mode; continuing after warning.\n";
 		    } else {
 		    print STDERR  "\nWARNING:  Number of records after join is $nrecsj1,";
 		    print STDERR  "          but number of records in $wftable before join was $nrecs.";
-		    print STDERR  "          Afilliation table is not joining correctly with $wftable.\n";
+		    print STDERR  "          $affnet table is not joining correctly with $wftable.\n";
 		    print STDERR "\nRun dbverify before running db2sync to find database errors.\n";
 		    &bad_exit();
 		    }
@@ -331,7 +343,7 @@ require "getopts.pl";
 	    $DMCmod[$i] = "";
 	    }
 
-	($net[$i],$sta[$i],$chan[$i],$time[$i],$endtime[$i]) = dbgetv(@db1,"net","sta","chan","time","endtime");
+	($net[$i],$sta[$i],$chan[$i],$time[$i],$endtime[$i]) = dbgetv(@db1,"$mynet","sta","chan","time","endtime") ;
 	$bettertime[$i] = epoch2str($time[$i],"%Y,%j,%H:%M:%S");
 	$betterendtime[$i] = epoch2str($endtime[$i],"%Y,%j,%H:%M:%S");
 	print OUT "$net[$i]|$sta[$i]|$loc[$i]|$chan[$i]|$bettertime[$i]|$betterendtime[$i]||$samprate[$i]|$nsamp[$i]|$flag[$i]||$tapename[$i]|||$DMCmod[$i]|$mod[$i]\n";
@@ -398,7 +410,7 @@ sub bad_exit {
  
 sub usage {
 	print STDERR <<END;
-		\nUSAGE: $0 [-s start_time] [-e end_time] [-S subset_expression] [-p pf_file] [-d] [-h] [-o] [-w] [-v] dbin fileout
+		\nUSAGE: $0 [-s start_time] [-e end_time] [-S subset_expression] [-p pf_file] [-a] [-l] [-d] [-h] [-o] [-w] [-v] dbin fileout
 
 END
 	exit(1);

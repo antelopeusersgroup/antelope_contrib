@@ -1,10 +1,10 @@
-.TH DB2SYNC 1 "$Date$"
+.TH DB2SYNC 1 2003/11/06 "Antelope Contrib SW" "User Commands"
 .SH NAME
-db2sync \- create a DCC-DMC Synchronization file of the data holdings in a Datascope database. 
+db2sync \- create a DCC-DMC Synchronization file of the data holdings in a Datascope database.
 .SH SYNOPSIS
 .nf
-\fBdb2sync  \fP [-s \fIstart_time\fP] [-e \fIend_time\fP] [-S \fIsubset_expression\fP] 
-          [-p \fIpf_file\fP] [-d] [-h] [-o] [-w] [-v] \fIdbin\fP \fIfileout\fP 
+\fBdb2sync  \fP [-s \fIstart_time\fP] [-e \fIend_time\fP] [-S \fIsubset_expression\fP]
+          [-p \fIpf_file\fP] [-a] [-l] [-d] [-h] [-o] [-w] [-v] \fIdbin\fP \fIfileout\fP
 .fi
 .SH DESCRIPTION
 \fBdb2sync\fP is designed to create a Synchronization file in the format
@@ -15,34 +15,40 @@ field|field|field|....
 .LP
 where the fields are network, station, location id, channel, start time, end time, max clock drift, sample rate, number of samples, channel flag (continuous or triggered data), station volume ID, DCC tape number, DMC volume number, comment, modification time - DMC, modification time - DCC.
 .LP
-\fBdb2sync\fP will use the affiliation, schanloc and wfdisc (or optionally wftar) tables
+\fBdb2sync\fP will use the snetsta (or affiliation), schanloc and wfdisc (or optionally wftar) tables
 to write the rows of this text file, where each row in the sync file corresponds to one
-wfdisc entry.  The sync file produced always includes values for network, station, channel, start time, and end time, and will include either blank values or non-blank values for all other fields based on the db2sync parameter file specifications.  Also, the header line will be produced only if the '-h' option is specified.  
-.LP 
-The DMC has resources available on their website to use sync files to view Gaps/Overlaps in 
+wfdisc entry.  The sync file produced always includes values for network, station, channel, start time, and end time, and will include either blank values or non-blank values for all other fields based on the db2sync parameter file specifications.  Also, the header line will be produced only if the '-h' option is specified.
+.LP
+The DMC has resources available on their website to use sync files to view Gaps/Overlaps in
 a data holding or to compare a data holding to the DMC's holdings of that same data. These tools can
-be found at http://www.iris.washington.edu/SeismiQuery/goat/abouttools.html.     
+be found at http://www.iris.washington.edu/SeismiQuery/goat/abouttools.html.
 .SH OPTIONS
 .IP "-s start_time"
-Start time of data holdings to write into a sync file.  Default is to write all rows listed in the wfdisc/wftar table to the sync file. 
+Start time of data holdings to write into a sync file.  Default is to write all rows listed in the wfdisc/wftar table to the sync file.
 .IP "-e end_time"
-End time of data holdings to write into a sync file.  Default is to write all rows listed in the wfdisc/wftar table to the sync file. 
+End time of data holdings to write into a sync file.  Default is to write all rows listed in the wfdisc/wftar table to the sync file.
 .IP "-S subset_expression"
 Subset the data to write to the sync file by an expression specified by subset_expression.  Subset by sta, chan, loc, and net are acceptable.
 .IP "-p pf_file"
 use \fIpf_file\fP instead of the default pf file.
-.IP -d 
-work in dummy mode.  Forces program to continue even if wfdisc does not join properly with the affiliation table or schanloc table.
+.IP -a
+use affilation table.  Newer databases built with dbbuild do not have affiliation tables.  
+Instead the snetsta table is generated.  The default is to use the snetsta table.  This 
+option overrides the default and uses the affiliation table.
+.IP -l
+include location codes in output sync file.  
+.IP -d
+work in dummy mode.  Forces program to continue even if wfdisc does not join properly with the snetsta (or affiliation) table or schanloc table.
 .IP -h
 include header line.  DCC name taken from pf file.
 .IP -o
 If a file already exists by the name given for the fileout, overwrite it.
 .IP -w
-use wftar table instead of wfdisc.  
+use wftar table instead of wfdisc.
 .IP -v
 verbose
 .IP \fIdbin\fP
-name of the input Datascope database.  It must contain a wfdisc (or wftar if -w used) and affiliation table.  It must also contain an schanloc table if LOCATION is set to 1 in the pf file.
+name of the input Datascope database.  It must contain a wfdisc (or wftar if -w used) and snetsta (or affiliation) table.  It must also contain an schanloc table if LOCATION is set to 1 in the pf file.
 .IP \fIfileout\fP
 name of the output sync file created.
 .SH PARAMETER FILE
@@ -52,15 +58,14 @@ The required parameter file is used to specify which optional fields to fill wit
 .nf
 #Pf file for db2sync
 
-# Required Sync file fields are Network, Station, Channel, 
+# Required Sync file fields are Network, Station, Channel,
 # Time, Endtime.  They are missing from the pf file because
-# all usable sync files must have those fields filled in.  
+# all usable sync files must have those fields filled in.
 # Db2sync will always fill in these fields.
 
+#Optional Fields.
 
-#Optional Fields. 
-
-# '1' means include these values. '0' means print a blank 
+# '1' means include these values. '0' means print a blank
 # value in that field
 
 LOCATION                0
@@ -70,17 +75,15 @@ DCC_TAPE_NUMBER         0
 DATE_LINE_MOD_DMC       0
 DATE_LINE_MOD_DCC       1
 
-
-# Channel Flag has a value of 'C' for continuous data and 
+# Channel Flag has a value of 'C' for continuous data and
 # 'T' for triggered, or blank for no specified value.
 
 CHANNEL_FLAG            C
 
-#Data Collection Center Name.  This is used in the header, 
+#Data Collection Center Name.  This is used in the header,
 #  if a header is made.
 
 DCC_NAME                Anza_Group
- 
 
 .SH EXAMPLE
 .ft CW
@@ -88,7 +91,7 @@ DCC_NAME                Anza_Group
 .nf
 .ne 3
 
-db2sync -v -s "2002001 00:00:00" -e "2003001 00:00:00" 
+db2sync -v -s "2002001 00:00:00" -e "2003001 00:00:00"
         -S "sta=~/BZN/&&chan=~/B.*/" anza2review sync_out
 
 .fi
@@ -101,7 +104,6 @@ AZ|BZN||BHE|2003,002,00:00:00|2003,134,01:19:34||||||||||
 AZ|BZN||BHE|2003,002,01:19:35|2003,134,23:59:59||||||||||
 AZ|BZN||BHN|2003,001,00:00:00|2003,133,23:59:59||||||||||
 AZ|BZN||BHN|2003,002,00:00:00|2003,134,01:19:34||||||||||
-
 
 .ft CW
 .in 2c
@@ -120,10 +122,13 @@ STDERR.
 .in
 .ft R
 .SH "BUGS AND CAVEATS"
-Currently, values for 'max clock drift,' 'station volume,' 'DMC volume number' and 'comment' fields cannot be found in the Datascope database schemas, and so there is no option to write these values into the output sync file with this program. 
+Currently, values for 'max clock drift,' 'station volume,' 'DMC volume number' and 'comment' fields cannot be found in the Datascope database schemas, and so there is no option to write these values into the output sync file with this program.
 .LP
-This program is set to fail if the affiliation table does not join properly to the wfdisc (or wftar) table.  If the wfdisc/wftar includes stations that are not listed in the affiliation table, the wfdisc/wftar will lose the rows that do not have affiliations.  The program sees this and exits.  Avoid this by making sure the affiliation table is complete or by using the -d option to force the program to continue producing the incomplete sync file.  The same holds true for joining with the schanloc table (which only happens if LOCATION is set to 1 in the parameter file).
+This program is set to fail if the affiliation (with -a) or snetsta table does not join properly to the wfdisc (or wftar) table.  If the wfdisc/wftar includes stations that are not listed in the affiliation table, the wfdisc/wftar will lose the rows that do not have affiliations.  The program sees this and exits.  Avoid this by making sure the affiliation table is complete or by using the -d option to force the program to continue producing the incomplete sync file.  The same holds true for joining with the schanloc table (which only happens if LOCATION is set to 1 in the parameter file).
 .SH AUTHOR
-Leah Ziegler
+Leah Ziegler, Jennifer Eakins
+.br 
 IGPP, Univ. of Calif. San Diego
+.br 
+jeakins@ucsd.edu
 .\" $Id$
