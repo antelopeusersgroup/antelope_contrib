@@ -1,0 +1,89 @@
+.\" $Name $Revision$ $Date$
+.TH MDCALC 1 "$Date$"
+.SH NAME
+mdcalc \- computes duration magnitude
+.SH SYNOPSIS
+.nf
+
+\fBmdcalc\fR  [-p pfile] database orid [size]
+
+.fi
+
+.SH DESCRIPTION
+
+This program emulates the computation of coda-duration magnitude MD by the
+PICKEM program at UNR Seismological Laboratory.  PICKEM was run interactively,
+and the analyst got immediate feedback on coda-length calculation at each
+station and could change the coda-start pick according to the result.  This
+has been automated in the current program due to lack of a communication
+method with dbpick.  Thus, this program is a post-processor.
+
+The algorithm basically fits an exponential function to the coda, starting
+at the point picked by the analyst.  The correlation coefficient of the fit
+is computed, with r > 0.90 being acceptable, according to PICKEM practice.
+The magnitude is computed from all the individual coda lengths according to
+
+    md = 2.65*log10[Sum(ti)/n]-1.70
+
+Due to the fact that interactive processing is eliminated, the program will
+do a search around the time of the "C1" phase to get a coda estimate with
+a correlation coef. > 0.90.  The search is performed forwards by increments
+which depend on event size.  Event size must be given on the command line if
+other than small -- S, M, L are the 3 allowable inputs.  For larger events,
+this increases the coda length to be fit.  This option is for compatibility
+with PICKEM and anything other than S, the default, is not expected to be
+used but rarely.  For any event large enough to do M or L, a standard ML
+magnitude should be available.
+
+A "C2" pick by the analyst specifies the end of the coda.  The coda length is
+then merely the C2 time minus the P time.  No computations are involved.
+This program will compute MD for events in the Antelope origin table using
+available data as indicated by arrival picks in the arrival table.
+
+Only sta-chan's specified in the parameter file (default = mdcalc.pf) are used
+in the calculation even though "C" picks can be made on any component.
+Former practice with PICKEM at UNRSL was to use only vertical components.
+
+.SH OPTIONS
+.IP "-p pfile"
+specify the parameter file name [optional, "mdcalc" is default]
+.IP "database"
+database name
+.IP "orid"
+orid of event to be processed
+.IP "[size]"
+earthquake size ("S"|"M"|"L", with default = "S" if not given)
+.SH EXAMPLE
+.nf
+
+% mdcalc -p mdcalc_anza anza 97114 M
+
+.fi
+
+.SH PF FILE
+
+The parameter file for mdcalc contains a list of stations and channels for 
+which duration magnitudes may be computed.  A sample file is 
+.nf
+
+stachans        &Tbl{
+ADH  EHZ
+GMN  EHZ
+QSM  EHZ
+VIP  EHZ
+}
+
+.fi
+
+.SH DIAGNOSTICS
+\fBmdcalc\fR will complain about various data problems as appropriate.
+.SH "SEE ALSO"
+.nf
+N/A
+.fi
+.SH "BUGS AND CAVEATS"
+None.
+.SH AUTHOR
+David von Seggern
+
+.\" $Id$ 
