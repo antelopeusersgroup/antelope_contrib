@@ -29,7 +29,8 @@ DATA= \
 	ranger \
 	s6000 \
 	sh \
-	sts2
+	sts2 \
+	terratech
                 
 include $(ANTELOPEMAKE)  	
 DIRS=
