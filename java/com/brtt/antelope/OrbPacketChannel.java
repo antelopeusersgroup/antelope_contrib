@@ -107,8 +107,7 @@ public class OrbPacketChannel extends Object {
     public String toString() {
         Epoch epoch = new Epoch (time);
 
-	String s = epoch.toString () + ":" + srcname.toString() + 
-	    " " + samprate + " " + nsamp;
+	String s = epoch + ":" + srcname + " " + samprate + " " + nsamp;
         
         for (int i=0; i < (nsamp > 10 ? 10 : nsamp) ; i++ ) {
             s += " " + data[i];

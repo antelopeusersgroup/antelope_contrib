@@ -31,6 +31,9 @@ public class Orb extends java.lang.Object {
     static private final int defaultPort = 6510;
     static private final int defaultTimeout = 60000;
     static private final int ORBMAGIC = 0x6d62726f;
+
+    /** The following are orb commands */
+
     static private final int ORBPUT = 1;
     static private final int ORBGET = 2;
     static private final int ORBREAP = 3;
@@ -64,7 +67,23 @@ public class Orb extends java.lang.Object {
     static private final int ORBVERSION_SIZE = 128;
     static private final int ORBSRCNAME_SIZE = 64;
     static private final int SELECT_MAX = 96;
-   
+
+    /** The following are valid values for the "whickpkt" argument to
+     *   Orb.select and Orb.get
+     */
+
+    static public final int ORBCURRENT    =	-10;  // FIXME: I don't think these are being 
+    static public final int ORBNEXT       =	-11;  //        transmitted properly.
+    static public final int ORBPREV	  =    -12;
+    static public final int ORBOLDEST     =	-13;
+    static public final int ORBNEWEST     =	-14;
+    static public final int ORBNEXT_WAIT  =	-15;
+    static public final int ORBNEXTT	  =    -16;
+    static public final int ORBPREVT	  =    -17;
+    static public final int ORBSTASH	  =    -18;
+    static public final int ORBPREVSTASH  =    -19;
+
+
     private byte syncIn[] = new byte[4];
     private Socket socket;
     private String host;
@@ -132,7 +151,9 @@ public class Orb extends java.lang.Object {
     /** Public class methods */
 
     /**
-     * Sends a packet to the Antelope orbserver.
+     * Sends a packet to the Antelope orbserver.  If the packet object's "time"
+     * field is nonzero, it is used as the time stamp for the packet sent to 
+     * the orb; otherwise the current time is used.
      * 
      * @param packet An instance of OrbPacket representing the (stuffed) 
      *               packet to be sent. 
@@ -145,10 +166,12 @@ public class Orb extends java.lang.Object {
      * Written Thu Jun 17 11:11:32 PDT 2004
      */
     
-    public void put(OrbPacket packet) throws OrbErrorException, IOException {
+    public void put(OrbRawPacket packet) throws OrbErrorException, 
+	IOException {
 	request.what = ORBPUT;
 	request.pkg = packet;
-	request.time = Epoch.fromString("now").epoch;
+	request.time = packet.time == 0 ? 
+	    Epoch.fromString("now").epoch : packet.time;
 	orbClient(request,null);
     }
     
@@ -306,7 +329,7 @@ public class Orb extends java.lang.Object {
      * @exception java.io.IOException
      *              IO error during communication with orbserver.
      */     
-    public OrbPacket reap () throws OrbErrorException, IOException {
+    public OrbRawPacket reap () throws OrbErrorException, IOException {
         if (reaped == 0) {
             startReap (0.0, -1, -1);
             reaped = 1;
@@ -314,7 +337,7 @@ public class Orb extends java.lang.Object {
         
         reapPacket ();
         
-        reply.pkg.unstuff ();
+//        reply.pkg.unstuff ();
         
         return (reply.pkg);
     }
@@ -627,7 +650,8 @@ public class Orb extends java.lang.Object {
                         rsp.pkg.srcname = new SourceName(inbuf2str(srcsize));
                         if (rsp.pkg.pktsize > 0) {
                             if (rsp.pkg.packet == null || rsp.pkg.packet.length < rsp.pkg.pktsize) {
-                                // FixMe System.out.println ("Resizing to " + rsp.pkg.pktsize + " bytes");
+                                // FixMe: remove debug statement 
+				System.out.println ("Resizing to " + rsp.pkg.pktsize + " bytes");
                                 rsp.pkg.packet = new byte[rsp.pkg.pktsize];
                             }
                             inBuf.readFully (rsp.pkg.packet, 0, rsp.pkg.pktsize) ;
@@ -733,7 +757,7 @@ public class Orb extends java.lang.Object {
         public double reapMaxtime;
         public String select;
         public String reject;
-        public OrbPacket pkg = new OrbPacket();
+        public OrbRawPacket pkg = new OrbRawPacket();
         public Openstring hello;
         public int thread;
         public int newPri;
@@ -752,7 +776,7 @@ public class Orb extends java.lang.Object {
         public double orbStart;
         public OrbClient client[] = null;
         public OrbSource source[] = null;
-        public OrbPacket pkg = new OrbPacket();
+        public OrbRawPacket pkg = new OrbRawPacket();
         public OrbStat orbStat = new OrbStat();
         public int pktid;
         public int nSelections;

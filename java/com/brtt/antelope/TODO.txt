@@ -1,0 +1,11 @@
+==============================================================================
+To-Do list for com.brtt.antelope
+==============================================================================
+
+bug fixes:
+- give OrbPacket a decent constructor
+- check failure reporting for Orb.open()
+
+new features:
+- parameter files!
+
