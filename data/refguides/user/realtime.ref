@@ -455,6 +455,9 @@ orbmag [options] orbwf orbdb dbname
 -use_if_not_defining
 </options>
 
+displayttgrid [-shownames] filename [gridname]
+    display travel-time grids on a map
+
 ttgrid_show ttgridfile
     dump the contents of a ttgrid file
 
