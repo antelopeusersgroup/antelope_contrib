@@ -1,0 +1,62 @@
+.\" $Name$ $Date$
+.TH ORB2EWORM 1 "$Date$"
+.SH NAME
+orb2eworm \- module to export waveform data from an Antelope ORB to an 
+Earthworm system
+.SH SYNOPSIS
+.nf
+orb2eworm parameter_file.d
+.fi
+.SH DESCRIPTION
+orb2eworm takes waveform-data packets from an Antelope ORB and puts them in
+TYPE_TRACEBUF format onto an Earthworm shared-memory ring. orb2eworm is designed
+to be one component of a running earthworm system. It was written with the v3.2
+release of Earthworm from the USGS. 
+
+The parameter file specifies the name of the orbserver containing the waveform data.
+
+The parameter file also contains two strings, ChannelSelect and ChannelReject,
+which if non-null are used as regular expressions to limit which stations
+are exported from the ORB to Earthworm. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+The Earthworm run directory must be specified in EW_PARAMS. 
+
+The environment-variable SITE_DB must specify the name of a site database in 
+iceworm1.3 format containing information on the station-channels being imported. 
+.SH PARAMETER FILE
+.nf
+nordic% cat orb2eworm.d
+#
+# This is orb2eworm's parameter file
+
+#  Basic Earthworm setup:
+#
+MyModuleId         MOD_ORB2EWORM  # module id for this instance of orb2eworm 
+RingName           TRACE_RING   # shared memory ring for input/output
+LogFile            1           # 0 to completely turn off disk log file
+HeartBeatInterval  15          # seconds between heartbeats
+
+OrbName        nordic:12345  # Name of orbserver to which to connect
+ChannelSelect  ""            # Regular-expression match for data streams to import
+ChannelReject  ""            # Regular-expression match for data streams not to import
+nordic%
+.fi
+.SH EXAMPLE
+.RS .2i
+.RE
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orbserver(1), eworm2orb(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+.fi
