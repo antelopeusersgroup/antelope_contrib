@@ -52,7 +52,7 @@ sub format_type {
 	my $name = $1 ; 
 	$decl =~ s/\*\s+/*/ ;
 	$result = &string("$decl(*")
-		  . &fontstring ( $fontcode, $name ) ; 
+		  . &fontstring ( $fontcode, $name ) . &string (")") ; 
 
 #                       int x[3]
     } elsif ( $type =~ /(\w+)(\[\d*\])?$/ ) { 
