@@ -1,11 +1,12 @@
 
-# reb2db for IMS1.0 and GSE2.0 format REB bulletins
+# reb2db for IMS1.0, IMS1.0:SHORT, and GSE2.0 format REB bulletins
 #
 # Kent Lindquist
 # Geophysical Institute
 # University of Alaska
 # December, 1999 (IMS1.0)
 # September 2000 (Added GSE2.0 support)
+# October 2000 (IMS1.0:SHORT)
 
 use Datascope ;
 
@@ -23,6 +24,10 @@ sub init_globals {
 	  "or_deptherr", "or_ndef", "or_nsta", "or_gap", "or_nearest", 
 	  "or_furthest", "or_antype", "or_locmeth", "or_evtype", 
 	  "or_auth", "orid" ];
+
+	$Event_unpack{"IMS1.0:SHORT-line1"} = $Event_unpack{"IMS1.0-line1"};
+
+	$Event_names{"IMS1.0:SHORT-line1"} = $Event_names{"IMS1.0-line1"};
 
 	$Event_unpack{"GSE2.0-line1"} = "A21 x A1 x2 A8 x A9 x A1 x2 A5 x " .
 	  "A1 x2 A4 x A4 x A3 x2 A2 A4 x A2 x2 A2 A4 x A2 x2 A2 A4 x A2 x2 " .
@@ -51,6 +56,10 @@ sub init_globals {
 	  "ph_amp_nm", "ph_per", "ph_type", "ph_fm", "ph_qual", "ph_magtype",
 	  "ph_minmax", "ph_mag", "ph_arid" ];
 
+	$Phase_unpack{"IMS1.0:SHORT"} = $Phase_unpack{"IMS1.0"};
+
+	$Phase_names{"IMS1.0:SHORT"} =  $Phase_names{"IMS1.0"};
+
 	$Phase_unpack{"GSE2.0"} = "A5 x A6 x A5 x A1 A1 A1 x A7 x A21 x A5 x " .
 	  "A5 x A6 x A5 x A5 x A1 A1 A1 x A5 x A9 x A5 x A2 A4 x A2 A4 x A8";
 
@@ -64,6 +73,10 @@ sub init_globals {
 
 	$Mag_names{"IMS1.0"} = [ "mag_type", "mag_minmax", "mag_val", "mag_err",
 	  "mag_nsta", "mag_auth", "mag_orid" ];
+
+	$Mag_unpack{"IMS1.0:SHORT"} = $Mag_unpack{"IMS1.0"};
+
+	$Mag_names{"IMS1.0:SHORT"} = $Mag_names{"IMS1.0"};
 
 	use vars qw(%Phase_unpack %Event_unpack %Mag_unpack
 		    $or_strike $or_antype $or_deptherr $or_smaj $or_smin
@@ -84,8 +97,11 @@ sub stateswitch {
 
 	if( $line =~ /^\s*DATA_TYPE\s+BULLETIN\s+(\S+)/ ) {
 		$format = uc( $1 );
-		if( $format ne "IMS1.0" && $format ne "GSE2.0" ) {
-			die( "File $ARGV Not in IMS1.0 or GSE2.0 format\n" ); 
+		if( $format ne "IMS1.0" &&
+		    $format ne "IMS1.0:SHORT" &&
+		    $format ne "GSE2.0" ) {
+			die( "File $ARGV Not in IMS1.0, IMS1.0:SHORT, " .
+			     "or GSE2.0 format\n" ); 
 		}
 		$State = "searching";
 		return 1;
@@ -273,7 +289,7 @@ sub write_net_magnitude {
 		write_netmag_row($or_magtype2, $or_mag2, $or_magnsta2, $or_mag2err);
 		write_netmag_row($or_magtype3, $or_mag3, $or_magnsta3, $or_mag3err);
 
-	} elsif( $format eq "IMS1.0" ) {
+	} elsif( $format eq "IMS1.0" || $format eq "IMS1.0:SHORT" ) {
 		
 		write_netmag_row( $mag_type, $mag_val, $mag_nsta, $mag_err );
 
@@ -390,7 +406,7 @@ sub write_phase {
 
 	@Db = dblookup( @Db, "", "arrival", "", "" );
 
-	if( $format eq "IMS1.0" ) {
+	if( $format eq "IMS1.0" || $format eq "IMS1.0:SHORT" ) {
 		$origin_time = str2epoch( $or_timestr );
 
 		$arrival_time = str2epoch( strdate( $origin_time ) ) + 
@@ -492,7 +508,7 @@ sub write_phase {
          	);
 
 
-	if( $format eq "IMS1.0" ) {
+	if( $format eq "IMS1.0" || $format eq "IMS1.0:SHORT" ) {
 
 		write_stamag_row( $ph_magtype, $ph_mag );
 
@@ -518,7 +534,9 @@ sub event {
 	
 	map { eval "\$$_ =~ s/^\\s+//;" } @{$Event_names{$key}};
 
-	if( $format eq "IMS1.0" || ( $format eq "GSE2.0" && $Event_line == 2 ) ) {
+	if( $format eq "IMS1.0" ||
+	    $format eq "IMS1.0:SHORT" ||
+	    ( $format eq "GSE2.0" && $Event_line == 2 ) ) {
 
 		write_hypocenter;
 	}
