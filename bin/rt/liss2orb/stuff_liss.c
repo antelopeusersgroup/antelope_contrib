@@ -85,8 +85,8 @@ int StuffLiss(
      int 	hsize, psize;
      char 	tim_str[64];
      char 	loc[4], sta[8],
-          	chan[12],
-	  	net[12];
+          	*newchan, chan[12],
+	  	key[32], net[12];
      char 	*data;
      LissPkt  *seed_hdr;
      LissHdr    hdr;
@@ -120,11 +120,17 @@ int StuffLiss(
     loc[2] = '\0';
     TRIM( loc, 3);
 
-    if( !strncmp( loc, "10", 2 ) || !strncmp( loc, "00", 2 ) )  {
-    	sprintf( srcname, "%s_%s_%s%s\0", net, sta, chan, loc );
-    }  else sprintf( srcname, "%s_%s_%s11\0", net, sta, chan );
-    
-
+    if( !strncmp( loc, "00", 2 ) )  {
+	newchan = (char *) lcase( &chan[0] );
+	strcpy((char *) &chan[0], newchan );
+    }
+    sprintf( srcname, "%s_%s_%s\0", net, sta, chan );
+    if(NewCh != 0 )  {
+        newchan = (char *) getarr(NewCh, srcname);
+	if( newchan != 0 )
+	  strcpy( (char *) &srcname[0], newchan);
+    }
+   
     if( match ) 
        if( regexec( &srcmatch, srcname, (size_t) 0, NULL, 0 ) != 0 )
           return 0; 
@@ -135,7 +141,6 @@ int StuffLiss(
     min  =  seed_hdr->Start_Time.minute ;
     sec  =  seed_hdr->Start_Time.seconds ;
     msec = lbyte_order(seed_hdr->Start_Time.fracs, 2 ) ;
-/*    msec /= 10;  */
 
     sprintf( tim_str, "%04d%03d:%02d:%02d:%02d.%04d\0",  
            yr, day, hr, min, sec, msec);   
@@ -165,11 +170,11 @@ int StuffLiss(
     hdr.nsamp =  htons( lbyte_order( seed_hdr->Number_Samps, 2) );      
     hdr.doff  = htons( lbyte_order( seed_hdr->Data_Start, 2) ); 
 
-if(Log)  {
-    fprintf( stderr, "%s %lf %f %d %d (%d) \n", 
-    srcname, *epoch,  hdr.samprate, hdr.nsamp, hdr.doff,seed_hdr->Number_Samps );
-    fflush(stderr);
-}
+    if(Log)  {
+        fprintf( stderr, "%s %lf %f %d %d (%d) \n", 
+        srcname, *epoch,  hdr.samprate, hdr.nsamp, hdr.doff,seed_hdr->Number_Samps );
+        fflush(stderr);
+    }
     if( new == 0 )
        allot( char *, new, 2048 );
     

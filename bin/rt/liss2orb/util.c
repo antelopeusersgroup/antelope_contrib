@@ -101,4 +101,15 @@ int lbyte_order( int val, int nbytes )
     } die( 0, "unknown local word_order!\n");
 
 }
+/* convert string to LOWER case  */
+ 
+char *lcase( char *string)
+{
+      int i;
+	   
+      for (i = 0; i < strlen(string); i++)
+          string[i] = tolower(string[i]);
+          return string;
+}
+			        
 

@@ -35,6 +35,17 @@
 #define IBUF_SIZE       4096
 #define Def_Seed_Size   512
 
+typedef struct newch {
+    char oldkey[32];
+    char newkey[32];
+} Newchan;
+
+Arr *NewCh;
+
+#define NCH_SCS "%s %s[^\n] \n"
+#define NCH_RVL(SP)  (SP)->oldkey, (SP)->newkey
+#define NCH_TRIM(SP) TRIM((SP)->oldkey,31); TRIM((SP)->newkey, 11)
+
 int PSize;
 int Log;
 struct sockaddr_in peer_in;

@@ -1,4 +1,5 @@
 #
+#PF=liss.pf
 MAN1=liss2orb.1
 BIN=liss2orb
 #
