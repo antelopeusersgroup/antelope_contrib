@@ -45,10 +45,10 @@ set db [lindex $argv 0]
 #
 #  This will fail if the usage line changes.  
 #
-exec xterm -geometry 80x24+0-0 -e mwap_engine $argv &
+#exec xterm -geometry 80x24+0-0 -e mwap_engine $argv &
 # use this if you want to execute from the current window.
 # useful for debugging if mwap_engine crashes
-#exec mwap_engine $argv &
+exec mwap_engine $argv &
 
 set current_wavelet 0
 set pass 0

@@ -421,3 +421,8 @@ reference_elevation  0.0  # reference elevation to compute statics (km)
 
 coherence_measure coherence
 
+#
+#  read and write pipes
+#
+mwap_inpipe /tmp/mwapin
+mwap_outpipe /tmp/mwapout
