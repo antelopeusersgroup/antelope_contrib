@@ -34,6 +34,7 @@
 %   dbtheta		- Theta-join two Datascope database tabl
 %   dbunjoin		- Unjoin the specified Datascope database view
 %   dbnojoin		- Find records which do not join between tables
+%   dbread_view		- Read a Datascope database view from a file
 %   dbsave_view		- Save a Datascope database view
 %   dbseparate		- Extract a subset view of a table from a joined view
 %   dbsever		- Remove an unwanted table from a view

@@ -1,0 +1,8 @@
+DBREAD_VIEW	Read a Datascope database view from a file
+
+DBREAD_VIEW ( FILENAME [, VIEWNAME] )
+
+DBREAD_VIEW reads a database view from the specified FILENAME. if 
+VIEWNAME is specified, the view is given that name and can be 
+accessed like a regular table under that name. Otherwise a new,
+unique name is created. 

@@ -6,6 +6,7 @@
 %   dbexample_sort_and_subset -	sort and subset a table; print a few lines
 %   dbexample_joins - show some simple table joins
 %   dbexample_writing - Writing information to a database
+%   dbexample_runall - Run all examples
 %
 % Command Examples
 %   dbexample_arrtimes
@@ -43,7 +44,9 @@
 %   dbexample_dbput
 %   dbexample_dbputv
 %   dbexample_dbquery
+%   dbexample_dbread_view
 %   dbexample_dbresponse
+%   dbexample_dbsave_view
 %   dbexample_dbseparate
 %   dbexample_dbsever
 %   dbexample_dbsort

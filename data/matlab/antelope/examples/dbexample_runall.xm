@@ -33,6 +33,7 @@ dbexample_dbprocess
 dbexample_dbput
 dbexample_dbputv
 dbexample_dbquery
+dbexample_dbread_view
 dbexample_dbresponse
 dbexample_dbsave_view
 dbexample_dbseparate

@@ -37,6 +37,7 @@ DATA= \
 	dbexample_dbput.m \
 	dbexample_dbputv.m \
 	dbexample_dbquery.m \
+	dbexample_dbread_view.m \
 	dbexample_dbresponse.m \
 	dbexample_dbsave_view.m \
 	dbexample_dbseparate.m \
