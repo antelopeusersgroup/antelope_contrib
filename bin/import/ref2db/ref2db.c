@@ -7,6 +7,11 @@
 #include "ref2db.h"       
 #include <regex.h>
 
+Arr *Dases;	    /* selected Dases  */
+struct PsclDk PsclDk;
+int Pblcks;
+FILE *timerr;
+
 extern int PsclLog;
 int VLog=0;
 int Log=0;

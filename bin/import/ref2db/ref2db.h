@@ -36,7 +36,7 @@
 extern struct Prm Par;
 extern Arr *RawPkts;
 extern Arr *Packets;
-Arr *Dases;	    /* selected Dases  */
+extern Arr *Dases;	    /* selected Dases  */
 
 struct PsclDk {
   int leod;         /* last data block on diak  */
@@ -44,12 +44,12 @@ struct PsclDk {
   char label[16];   /* disk label  */
 };
 
-struct PsclDk PsclDk;
-int Pblcks;
+extern struct PsclDk PsclDk;
+extern int Pblcks;
 
 #define  timerr_fname "TimErr.log"
-FILE *timerr;
-int Log;
+extern FILE *timerr;
+extern int Log;
 
 typedef struct runarg {
    double stime;	/* start time of extracted data */
