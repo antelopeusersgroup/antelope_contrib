@@ -51,7 +51,7 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "c:v:ih:p:t:us:")) != -1)
+  while ( ( i = getopt (argc, argv, "c:ip:s:t:uv")) != -1)
         switch (i) {
 
         case 'c':
@@ -61,7 +61,8 @@ char *argv[];
             NoSP = 1;
             break;
         case 'p':
-            pffile = argv[optind++];
+            /* pffile = argv[optind++]; */
+            pffile = argv[optind-1];
             break;
         case 's':
             pktsize = atoi(optarg);
