@@ -1,0 +1,42 @@
+.TH RTALARM 1 "1 April 1999" " "
+.SH NAME
+RTALARM \- alarm messanger 
+.SH SYNOPSIS
+.nf
+
+acalarm 
+    [-d ] 
+    [-m srcmatch]
+    orb receipient1[,receipient2...]
+
+battalarm 
+    [-d ] 
+    [-m srcmatch]
+    orb receipient1[,receipient2...]
+
+.fi
+.SH DESCRIPTION
+\fBacalarm\fP and \fBbattalarm\fP are reading DC Status packets from \fIorb\fR and check
+an \fIAC\fR and \fIBATT\fR values of a DC. If \fIAC\fR is failed or \fIBATT\fR value is less than 
+24 volts then an \fIalarm\fR email will be sent to \fIreceipients\fR specified in a command line. Several receipients may be specified in a command line separated by comma.
+
+.SH OPTIONS
+.IP "-d"
+Make an hexdump of a DC Status Packet into stderr.
+.IP "-m srcname"
+Only  packets   which  srcname   matches  the   regular
+expression  srcmatch  will  be  used  to extract \fIAC&BATT\fP
+parameters.
+.SH EXAMPLE
+.LP
+Read DC packets for \fIigpprt:9999\fR orb with YB_194/BSP srcname. Send alarm email to
+"rt" and admin@bbarray.ucsd.edu" users.
+
+.nf
+
+acalarm igpprt:9999 rt,admin@bbarray.ucsd.edu
+
+.fi
+.SH "SEE ALSO"
+.SH AUTHOR
+Marina Glushko
