@@ -33,9 +33,9 @@ sub format_fortran_args {
 	$name =~ s/^\s+// ;
 	$name =~ s/\s+$// ;
 	if ( $result eq "" ) { 
-	    $result = &fontstring ($fontcode, $name) ; 
+	    $result = &fontstring ("ParameterName", $name) ; 
 	} else { 
-	    $result .= &string(", ") . &fontstring ($fontcode, $name) ; 
+	    $result .= &string(", ") . &fontstring ("ParameterName", $name) ; 
 	}
     }
     return $result ;
