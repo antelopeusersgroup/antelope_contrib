@@ -1,15 +1,10 @@
-BIN=	trrotd
+BIN=trrotd
 MAN1=trrotd.1
 PF=trrotd.pf
 
-cflags=
-FFTLIB=$(ANTELOPE)/static/fftlib.a
-ldlibs= $(TRLIBS)  $(GPLLIBS) $(FFTLIB) -lsunmath
+ldlibs= $(TRLIBS)  $(GPLLIBS) -lfft -lsunmath
 
 include $(ANTELOPEMAKE)
-#DBG= -g
-
-
 DIRS=
 
 OBJS=	trrotd.o \
