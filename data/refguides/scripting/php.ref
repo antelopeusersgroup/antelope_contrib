@@ -58,6 +58,17 @@ dbprocess ($db, commands)
 dbsubset ($db, expression)
     returns a new view which is the set of all rows which satisfy the expression
 
+<subsection Handling Waveform Data>
+
+trloadchan ( $db, t0, t1, sta, chan )
+    load a channel of waveform data into a Datascope trace object
+
+trextract_data ( $tr )
+    extract waveform data into a PHP array
+
+trfree ( $tr )
+    free a Datascope trace-object structure
+
 <subsection Miscellaneous Datascope Functions>
 dbquery ($db, code)
     query the database for information, e.g. dbquery($db, "dbRECORD_COUNT"). see 
