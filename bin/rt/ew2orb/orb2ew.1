@@ -93,6 +93,13 @@ will be called to position the orbserver read pointer, and packets
 before the specified time will be rejected. This parameter may also be used
 to rewind the server to start at an earlier position in the orb.
 
+.IP timesort_queue_maxpkts
+This parameter specifies the size of the packet-sorting queue. If this 
+parameter is nonzero, \fBorb2ew\fP attempts to sort packets into time order, 
+using the pktchannelpipe(3) routines [specifically, the 
+\fItimesort_queue_maxpkts\fP is sent as the \fImaxpkts\fP argument 
+to pktchannelpipe_new(3)].
+
 .IP my_inst
 This is the Earthworm institution code for \fBorb2ew\fP to report itself
 as when it sends out heartbeats. This institution code is translated
@@ -153,6 +160,7 @@ defaults &Arr{
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
 	starttime
+	timesort_queue_maxpkts	0
 }
 
 export_servers &Arr{
@@ -199,6 +207,9 @@ a small run-time inefficiency; it's advantageous to have translations
 present in earthworm.pf for all modules, message types, and installations
 encountered.
 
+The channels_select and channels_reject tables of pktchannelpipe_new
+are not passed through (there is no support for these in orb2ew.pf), 
+since the orb2ew select and reject expressions already cover that function. 
 .SH AUTHOR
 .nf
 Kent Lindquist

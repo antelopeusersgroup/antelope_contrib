@@ -23,6 +23,7 @@
 #include "Pkt.h"
 #include "bns.h"
 #include "brttutil.h"
+#include "brttpkt.h"
 #include "pf.h"
 #include "trace_buf.h"
 
@@ -37,6 +38,7 @@
 #define DEFAULT_SEND_HEARTBEAT_STRING "alive"
 #define DEFAULT_EXPECT_HEARTBEAT_SEC 300
 #define DEFAULT_EXPECT_HEARTBEAT_STRING ".*alive"
+#define DEFAULT_TIMESORT_QUEUE_MAXPKTS 0
 #define DEFAULT_LOGLEVEL "quiet"
 #define DEFAULT_EARTHWORM_PFNAME "earthworm"
 #define DEFAULT_INST "INST_UNKNOWN"

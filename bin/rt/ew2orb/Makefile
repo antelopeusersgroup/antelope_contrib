@@ -9,7 +9,7 @@ CLEAN=
 cflags=
 fflags=
 ldflags=
-ldlibs= -lbrttutil $(ORBLIBS) $(THREAD)
+ldlibs= -lbrttutil -lbrttpkt $(ORBLIBS) $(THREAD)
 
 include $(ANTELOPEMAKE)
 DIRS=

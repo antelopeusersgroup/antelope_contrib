@@ -9,6 +9,7 @@ defaults &Arr{
 	select
 	reject
 	starttime
+	timesort_queue_maxpkts	0
 }
 
 export_servers &Arr{

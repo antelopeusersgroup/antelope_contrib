@@ -56,6 +56,7 @@ typedef struct ExportServerThread {
 	int	my_mod;	
 	int	my_type_heartbeat;		
 	int	my_type_tracebuf;		
+	int	timesort_queue_maxpkts;
 	int	so;
 	struct sockaddr_in sin;
 	char	*buf;	
@@ -76,6 +77,7 @@ typedef struct ExportThread {
 	int	orbfd;
 	Bns	*bnsin;			
 	Bns	*bnsout;			
+	PktChannelPipe *pcp;
 
 } ExportThread;
 
@@ -186,6 +188,7 @@ new_ExportThread( ExportServerThread *es, int so )
 	et->orbfd = -1;
 	et->bnsin = NULL;
 	et->bnsout = NULL;
+	et->pcp = NULL;
 
 	return et;
 }
@@ -194,6 +197,11 @@ static void
 free_ExportThread( void *arg ) 
 {
 	ExportThread *et = (ExportThread *) arg;
+
+	if( et->pcp != NULL ) {
+		
+		pktchannelpipe_free( et->pcp );
+	}
 
 	free( et );
 
@@ -224,6 +232,7 @@ new_ExportServerThread( char *name )
 	es->last_heartbeat_received = 0;
 	es->expect_heartbeat_hook = NULL;
 	es->starttime = NULL_STARTTIME;
+	es->timesort_queue_maxpkts = 0;
 
 	es->Export_Threads = newarr( 0 );
 
@@ -679,6 +688,84 @@ sigusr2_handler( int sig )
 	siglongjmp( *sigusr2_buf, 1 );
 }
 
+int
+pktchan_send( void *private, PktChannel *pktchan,
+	       int queue_code, double gaptime )
+{
+	ExportThread *et = (ExportThread *) private;
+	char    netstachan[STRSZ];
+	int	nbytes_tp = 0;
+	TracePacket tp;
+	int	pinno = 0;
+	int	rc;
+	char	*ptr;
+	char	*s;
+	char	*t;
+
+	sprintf( netstachan, "%s_%s_%s", 
+			pktchan->net,
+			pktchan->sta,
+			pktchan->chan );
+
+	if( et->es->starttime != NULL_STARTTIME &&
+	    pktchan->time < et->es->starttime ) {
+
+		if( ( et->es->loglevel >= VERYVERBOSE ) ||
+			Flags.VeryVerbose ) {
+
+			elog_notify( 0, 
+			"'%s': Skipping packet-channel %s: "
+			"timestamp %s is before requested "
+			"start %s\n", 
+			et->name, netstachan, 
+			s = strtime( pktchan->time ),
+			t = strtime( et->es->starttime ) );
+			free( s );
+			free( t );
+		}
+
+		freePktChannel( pktchan );
+
+		return 0;
+	}
+
+	if( pktchan_to_tracebuf( pktchan, &tp,
+				 pktchan->time, &nbytes_tp  ) )
+	{
+		freePktChannel( pktchan );
+
+		return 0;
+	}
+
+	if( ( et->es->loglevel >= VERYVERBOSE ) || 
+		Flags.VeryVerbose ) {
+
+		ptr = (char *) &tp.trh.pinno;
+		mi2hi( &ptr, &pinno, 1 );
+
+		elog_notify( 0, 
+			"'%s': Sending packet-channel %s "
+			"timed %s as pin %d from %s %s\n", 
+			et->name, netstachan, 
+			s = strtime( pktchan->time ), 
+			pinno, 
+			et->es->my_inst_str,
+			et->es->my_mod_str );
+		free( s );
+	}
+
+	freePktChannel( pktchan );
+
+	rc = buf_send( et, &tp, nbytes_tp );
+
+	if( rc != 0 ) {
+		
+		thr_kill( et->thread_id, SIGUSR1 );
+	}
+
+	return 0;
+}
+
 static void *
 orb2ew_export( void *arg )
 {
@@ -687,21 +774,12 @@ orb2ew_export( void *arg )
 	int	rc;
 	int     pktid;
 	char    srcname[STRSZ];
-	char    netstachan[STRSZ];
 	double  mytime;
 	char    *rawpkt = NULL;
 	struct Packet *Pkt = NULL;
-	struct PktChannel *pktchan = NULL;
-	int	ichan;
 	int     bufsize = 0;
 	int	nbytes_orb = 0;
-	int	nbytes_tp = 0;
-	TracePacket tp;
 	int	status = 0;
-	int	pinno = 0;
-	char	*ptr;
-	char	*s;
-	char	*t;
 
 	if( ( et->orbfd = orbopen( Orbname, "r&" ) ) < 0 ) {
 		
@@ -773,6 +851,9 @@ orb2ew_export( void *arg )
 		bnstimeout( et->bnsin, DEFAULT_BNS_TIMEOUT );
 	}
 
+	et->pcp = pktchannelpipe_new( 0, 0, et->es->timesort_queue_maxpkts,
+				      pktchan_send, (void *) et );
+
 	for( ;; ) {
 
 		rc = orbreap( et->orbfd, &pktid, srcname, &mytime,
@@ -784,77 +865,16 @@ orb2ew_export( void *arg )
 			continue;
 		}
 
-		rc = unstuffPkt( srcname, mytime, rawpkt, nbytes_orb, &Pkt );
-		if( rc == 0 )
-		{
-			elog_complain( 0, 
-				"'%s': Unstuff failure in orb2ew for %s\n",
-				et->name, srcname );
-			continue;
-		}
-
-		for( ichan = 0; ichan < Pkt->nchannels; ichan++ )
-		{
-			pktchan = gettbl( Pkt->channels, ichan );
-			
-			sprintf( netstachan, "%s_%s_%s", 
-					pktchan->net,
-					pktchan->sta,
-					pktchan->chan );
-
-			if( et->es->starttime != NULL_STARTTIME &&
-			    pktchan->time < et->es->starttime ) {
-
-				if( ( et->es->loglevel >= VERYVERBOSE ) ||
-					Flags.VeryVerbose ) {
-
-					elog_notify( 0, 
-					"'%s': Skipping packet-channel %s: "
-					"timestamp %s is before requested "
-					"start %s\n", 
-					et->name, netstachan, 
-					s = strtime( pktchan->time ),
-					t = strtime( et->es->starttime ) );
-					free( s );
-					free( t );
-				}
-
-				continue;
-			}
-
-			if( pktchan_to_tracebuf( pktchan, &tp,
-						 mytime, &nbytes_tp  ) )
-			{
-				continue;
-			}
-
-			if( ( et->es->loglevel >= VERYVERBOSE ) || 
-				Flags.VeryVerbose ) {
-
-				ptr = (char *) &tp.trh.pinno;
-				mi2hi( &ptr, &pinno, 1 );
-
-				elog_notify( 0, 
-					"'%s': Sending packet-channel %s "
-					"timed %s as pin %d from %s %s\n", 
-					et->name, netstachan, 
-					s = strtime( pktchan->time ), 
-					pinno, 
-					et->es->my_inst_str,
-					et->es->my_mod_str );
-				free( s );
-			}
-
-			rc = buf_send( et, &tp, nbytes_tp );
-
-			if( rc != 0 ) {
-
-				goto close_export;
-			}
-		}
+		pktchannelpipe_push( et->pcp, srcname, mytime, 
+				     rawpkt, nbytes_orb );
 	}
 
 	close_export:
+
+	if( et->pcp ) {
+		
+		pktchannelpipe_flush( et->pcp );
+	}
 
 	if( et->es->loglevel >= VERBOSE || Flags.verbose ) {
 
@@ -921,6 +941,9 @@ refresh_export_server_thread( ExportServerThread *es )
 		es->server_port = 
 			(in_port_t) pfget_int( es->pf, "server_port" );
 
+		es->timesort_queue_maxpkts = 
+			pfget_int( es->pf, "timesort_queue_maxpkts" );
+
 		strcpy( es->expect_heartbeat_string,
 			pfget_string( es->pf, "expect_heartbeat_string" ) );
 
@@ -929,11 +952,11 @@ refresh_export_server_thread( ExportServerThread *es )
 			free_hook( &es->expect_heartbeat_hook );
 		}
 
-		strcpy( es->send_heartbeat_string,
-			pfget_string( es->pf, "send_heartbeat_string" ) );
-
 		es->send_heartbeat_sec = 
 			pfget_int( es->pf, "send_heartbeat_sec" );
+
+		strcpy( es->send_heartbeat_string,
+			pfget_string( es->pf, "send_heartbeat_string" ) );
 
 		strcpy( es->select, pfget_string( es->pf, "select" ) );
 
@@ -1158,6 +1181,10 @@ update_export_server_thread( char *name, Pf *pf )
 			   "expect_heartbeat_sec", 
 			   DEFAULT_EXPECT_HEARTBEAT_SEC );
 
+		pfput_int( es->pf, 
+			   "timesort_queue_maxpkts", 
+			   DEFAULT_TIMESORT_QUEUE_MAXPKTS );
+
 		pfput_string( es->pf, 
 			      "send_heartbeat_string", 
 			      DEFAULT_SEND_HEARTBEAT_STRING );
@@ -1200,6 +1227,9 @@ update_export_server_thread( char *name, Pf *pf )
 	pfreplace( pf, es->pf, "defaults{server_port}",
 			       "server_port", "int" );
 
+	pfreplace( pf, es->pf, "defaults{timesort_queue_maxpkts}",
+			       "timesort_queue_maxpkts", "int" );
+
 	pfreplace( pf, es->pf, "defaults{send_heartbeat_sec}",
 			       "send_heartbeat_sec", "int" );
 
@@ -1230,6 +1260,9 @@ update_export_server_thread( char *name, Pf *pf )
 
 	sprintf( key, "export_servers{%s}{server_port}", name );
 	pfreplace( pf, es->pf, key, "server_port", "int" );
+
+	sprintf( key, "export_servers{%s}{timesort_queue_maxpkts}", name );
+	pfreplace( pf, es->pf, key, "timesort_queue_maxpkts", "int" );
 
 	sprintf( key, "export_servers{%s}{server_ipaddress}", name );
 	pfreplace( pf, es->pf, key, "server_ipaddress", "string" );
@@ -1264,6 +1297,8 @@ update_export_server_thread( char *name, Pf *pf )
 	sprintf( key, "export_servers{%s}{my_mod}", name );
 	pfreplace( pf, es->pf, key, "my_mod", "string" );
 
+	mutex_unlock( &es->es_mutex );
+
 	if( es->new ) {
 
 		add_export_server_thread( name, es );
@@ -1279,8 +1314,6 @@ update_export_server_thread( char *name, Pf *pf )
 			    "'%s': Failed to create export_server thread: "
 			    "thr_create error %d\n", name, ret );
 			
-			mutex_unlock( &es->es_mutex );
-
 			delete_export_server_thread( es );
 
 			return;
@@ -1328,8 +1361,6 @@ update_export_server_thread( char *name, Pf *pf )
 				es->name, es->thread_id );
 		}
 	}
-
-	mutex_unlock( &es->es_mutex );
 
 	if( es->update ) {
 
