@@ -117,6 +117,9 @@ main( int argc, char **argv )
 
 	orb2eworm_config( argv[1] );
 
+	logit_init( "orb2eworm", (short) MyModId, MAX_LOGMSG_SIZE, LogSwitch );
+	logit( "", "%s: Read command file <%s>\n", argv[0], argv[1] );
+
 	orb2eworm_lookup( );
 
 	if( ( sitedb = getenv( "SITE_DB" ) ) == NULL )
@@ -127,9 +130,6 @@ main( int argc, char **argv )
 	}
 
 	read_site_db( sitedb );
-
-	logit_init( "orb2eworm", (short) MyModId, MAX_LOGMSG_SIZE, LogSwitch );
-	logit( "", "%s: Read command file <%s>\n", argv[0], argv[1] );
 
 	OrbFd = orbopen( OrbName, "r&" );
 	if( OrbFd < 0 ) 
