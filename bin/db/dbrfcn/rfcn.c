@@ -151,8 +151,8 @@ float	phshift, wlev, gfreq, hpfreq;
 	/* correct for sign convention */
 	for (i=0; i<length_2; i++) result[i] *= -1.0;
 
-	cfree((char *)data_2);
-	cfree((char *)data_1);
+	free((char *)data_2);
+	free((char *)data_1);
 	return (result);
 }
 
