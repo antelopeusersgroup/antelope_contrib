@@ -1,0 +1,77 @@
+'\" te	
+.TH Xphase2db 1 "$Date$"
+.SH NAME
+Xphase2db - Save Xphase pickfile to an arrival table
+.SH SYNOPSIS
+.nf
+Xphase2db db [-phase name]
+.fi
+.SH DESCRIPTION
+.LP
+Special purpose program to take pickfiles created by the Xphase
+picking program and store the resulting information in a css3.0
+arrival table.  
+The pickfile can only contain for a single phase type.  By
+default this is P.  If other phases are picked, the -phase 
+argument is used to set the phase name in the arrival table. 
+.LP
+The program reads the pickfile from standard input, so 
+this program needs to be used either in a pipeline or
+with input redirection.  
+.LP
+One field in the Xphase pickfile is the filename of the 
+parent waveform file.  A parameter file is used to define
+how this file name is parsed to extract the station and 
+channel codes.
+.SH OPTIONS
+.IP "-phase"
+Use following argument as the phase name instead of default phase name of P.
+.SH PARAMETER FILE
+.LP
+These parameters define how a file name in the pickfile should
+be parsed to extract a proper station and channel code to use
+for the sta and chan fields of the arrival table.  The parameters
+involved are as follows:
+.LP
+\fBseparators\fR sets the separators used to divide the tokens
+used to parse the file name in the pick file.  This string of 
+characters is directly passed to the C function strtok(3).  
+.LP
+\fBstation_token_number\fR sets the number (the first token is
+numbered 1 here, not 0 ala C) position of the token that defines
+the station code in the file name.
+.LP
+\fBchan_token_number\fR is the same as station_token_number, but
+for the channel code.
+.LP
+An example should clarify this.  Suppose we had the following
+file name pattern:
+.nf
+1997273063118.00.ANA.BHZ
+.fi
+The separator here is the period character and the station
+name, ANA, is the thrid token while the channel code, BHZ,
+is the fourth token.  This file name would be correctly 
+parsed with the following paramters:
+.nf
+separators .
+station_token_number 3
+chan_token_number 4
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH "SEE ALSO"
+.nf
+strtok(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The strtok approach will not work on every obtuse naming
+convention I've ever seen, but it should work most of the time.
+Remember you can use multiple separators to parse something
+strange like 1999244:13_22_33.2_ANA:BHZ.  (In this case it
+would be :_. as the set of separators.
+.SH AUTHOR
+Gary L. Pavlis
+.\" $Id$
