@@ -31,6 +31,11 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 	float *afort, *vfort;  /*Vector format work spaces */
 	int i,j;
 	int info=0;
+#ifndef SUNPERF
+	int one=1;
+	float *swork;
+	int ldwork;
+#endif
 
 	/*Alloc work spaces and copy from numerical recipes matrix
 	form to the form sunperf wants */
@@ -39,12 +44,29 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 	vfort = (float *) calloc(n*n,sizeof(float));
 	if( (afort == NULL) || (vfort == NULL))
 		die(0,"svdcmp could not alloc work arrays\n");
+#ifdef SUNPERF
 	for(i=0;i<m;++i)
 		scopy(n,A[i],1,(afort+i),m);
+#else
+        for(i=0;i<m;++i)
+                scopy_(&n,A[i],&one,(afort+i),&m);
+#endif
 	/* old rule:  always initialize things like this */
 	for(i=0;i<n*n;++i) vfort[i] = 0.0;
 
+#ifdef SUNPERF
 	sgesvd('o','s',m,n,afort,m,s,NULL,m,vfort,n,&info);
+#else
+	ldwork = 12+2*n;  /* This is slightly larger than the minimum
+			required for safety.  Space required is never
+			large by modern standards  */
+	swork = calloc(ldwork,sizeof(float));
+	if(n == NULL) die(0,"Cannot alloc work space for SVD routine\n");
+	sgesvd_('o','s',&m,&n,afort,&m,s,NULL,&m,vfort,&n,
+		swork, &ldwork,
+		&info);
+	free(swork);
+#endif
 	if(info > 0)
 		elog_notify(0,"Convergence failure in svd routine\n");
 	else if(info < 0)
@@ -55,6 +77,7 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 		free(vfort);
 		return(info);
 	}
+#ifdef SUNPERF
 	/* note we do return something even when convergence failed.
 	Must handle negative return as junk is returned then. */
 	for(i=0;i<m;++i)
@@ -63,6 +86,13 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 	Tricky BLAS code I know*/
 	for(i=0;i<n;++i)
 		scopy(n,(vfort+i*n),1,V[i],1);
+#else
+	for(i=0;i<m;++i)
+                scopy_(&n,(afort+i),&m,A[i],&one);
+        for(i=0;i<n;++i)
+                scopy_(&n,(vfort+i*n),&one,V[i],&one);
+#endif
+
 
 	free(afort);
 	free(vfort);
