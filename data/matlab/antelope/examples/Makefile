@@ -2,6 +2,7 @@ DATADIR= matlab/antelope/examples
 DATA= \
 	Contents.m \
 	dbexample_runall.m \
+	dbexample_arr_slowness.m \
 	dbexample_arrtimes.m \
 	dbexample_cggrid.m \
 	dbexample_cggrid_dx.m \

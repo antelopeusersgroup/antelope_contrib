@@ -92,6 +92,7 @@
 %   zepoch2str		- Convert epoch time to a string in a given timezone
 %
 % Seismic Travel Times
+%   arr_slowness	- Returns predicted seismic phase slownesses
 %   arrtimes		- Returns predicted seismic phase arrival times
 %
 % Error handling

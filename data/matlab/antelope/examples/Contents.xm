@@ -9,6 +9,7 @@
 %   dbexample_runall - Run all examples
 %
 % Command Examples
+%   dbexample_arr_slowness
 %   dbexample_arrtimes
 %   dbexample_cggrid
 %   dbexample_cggrid_dx
