@@ -43,4 +43,4 @@ mapspec	&Arr{
 	tilesize_deg	10
 }
 
-pixfile_conversion_method	imagick
+pixfile_conversion_method	none
