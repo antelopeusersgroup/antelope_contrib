@@ -350,19 +350,19 @@ sub mag_description {
 
 	if( $ml != -999 ) {
 
-		return "$ml ML";
+		return "$ml ML", $ml;
 
 	} elsif( $mb != -999 ) {
 
-		return "$mb Mb";
+		return "$mb Mb", $mb;
 
 	} elsif( $ms != -999 ) {
 
-		return "$ms Ms";
+		return "$ms Ms", $ms;
 
 	} else {
 
-		return "Unknown";
+		return "Unknown", -999;
 	}
 }
 
@@ -684,7 +684,7 @@ sub hypocenter_vitals {
 
 	my( $utc_time ) = epoch2str( $time, "%m/%d/%Y %H:%M:%S.%s %Z" );
 
-	my( $mag_description ) = mag_description( @db );
+	my( $mag_description, $mag_value ) = mag_description( @db );
 
 	my( $depth_string ) = "$depth_mi miles ($depth_km km)";
 
@@ -696,6 +696,7 @@ sub hypocenter_vitals {
 	$writer->dataElement( "localtime_string", "$local_hour" );
 	$writer->dataElement( "utc_string", "$utc_time" );
 	$writer->dataElement( "mag_string", "$mag_description" );
+	$writer->dataElement( "mag_value", "$mag_value" );
 	$writer->dataElement( "lat", "$lat" );
 	$writer->dataElement( "lon", "$lon" );
 	$writer->dataElement( "depth_string", "$depth_string" );
@@ -1429,7 +1430,7 @@ sub stockmap_earthquake_xml {
 		$vrml_url = $url;
 		$vrml_url =~ s/html$/wrl/;
 
-		my( $mag_description ) = mag_description( @db );
+		my( $mag_description, $mag_value ) = mag_description( @db );
 
 		my( $local_time ) = epoch2str( $time, 
 		"%I:%M %p %Z %A %B %o, %Y", $ENV{TZ} );
@@ -1444,6 +1445,7 @@ sub stockmap_earthquake_xml {
 		$writer->dataElement( "vrml_url", "$vrml_url" );
 		$writer->dataElement( "localtime_string", "$local_time" );
 		$writer->dataElement( "mag_string", "$mag_description" );
+		$writer->dataElement( "mag_value", "$mag_value" );
 		$writer->dataElement( "region_string", "$region" );
 		$writer->dataElement( "shape", "$shape" );
 		$writer->dataElement( "coords", "$coords" );
