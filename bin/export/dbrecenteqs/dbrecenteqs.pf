@@ -73,11 +73,19 @@ map_config &Arr{
 	quakeshape 	square
 	prefor_quakecolor yellow
 	nonprefor_quakecolor white
+	quake_agecolors &Arr{
+		red	  21600
+		orange	  43200
+		yellow	  86400
+		green	 259200
+		blue	 604800
+		grey	1209600
+	}
 	pixels_per_inch 100
 	size_inches 	5
 	city_symbols_inches 0.08
 	cityname_shift_deg 0.2
-	reserve_colors 	8
+	reserve_colors 	12
 	detail_density 	f  # f,h,i,l,c
 }
 

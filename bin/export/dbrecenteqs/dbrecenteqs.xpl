@@ -177,12 +177,14 @@ sub cleanup_database {
 
 sub set_hypocenter_symbol {
 	my( %Mapspec ) = %{shift( @_ )};
-	my( $isprefor ) = pop( @_ );
+	my( $colormode ) = pop( @_ );
 	my( @db ) = @_;
 
 	my( $mag, $symsize, $symshape, $symcolor );
 
-	my( $ml, $mb, $ms ) = dbgetv( @db, "ml", "mb", "ms" );
+	my( $ml, $mb, $ms, $time ) = dbgetv( @db, "ml", "mb", "ms", "time" );
+
+	my( $age ) = str2epoch( "now" ) - $time;
 
 	if( $ml != -999 ) {
 		$mag = $ml;
@@ -202,11 +204,29 @@ sub set_hypocenter_symbol {
 
 	$symshape = $Mapspec{quakeshape};
 
-	if( $isprefor ) {
+	if( $colormode eq "age" ) {
+
+		foreach $key ( sort
+				    { $Mapspec{quake_agecolors}->{$a} <=>
+				      $Mapspec{quake_agecolors}->{$b}
+				    } 
+				keys %{$Mapspec{quake_agecolors}} ) {
+
+			$symcolor = $key;
+
+			if( $age < $Mapspec{quake_agecolors}->{$key} ) {
+				last;
+			}
+		}	
+
+	} elsif( $colormode eq "prefor" ) {
+
 		$symcolor = $Mapspec{prefor_quakecolor};
+
 	} else {
+
 		$symcolor = $Mapspec{nonprefor_quakecolor};
-	}
+	}	
 
 	return ( $symsize, $symshape, $symcolor );
 }
@@ -596,7 +616,7 @@ sub create_focusmap {
 		my( $lat, $lon, $orid ) =
 	  	  dbgetv( @db, "lat", "lon", "orid" );
 
-		$isprefor = ( $orid == $prefor ) ? 1 : 0;
+		my( $colormode ) = ( $orid == $prefor ) ? "prefor" : "nonprefor"; 
 
 		( $x, $y ) = latlon_to_xy( 
 				   $Focus_Mapspec{proj},
@@ -611,7 +631,7 @@ sub create_focusmap {
 				   );
 
 		( $symsize, $symshape, $symcolor ) = 
-	  		set_hypocenter_symbol( \%Focus_Mapspec, @db, $isprefor );
+	  		set_hypocenter_symbol( \%Focus_Mapspec, @db, $colormode );
 
 		if( $symshape eq "square" ) {
 			$primitive = "rectangle";
@@ -978,7 +998,7 @@ sub update_stockmap {
 					   	$xscale_pixperdeg, $yscale_pixperdeg );
 
 			( $symsize, $symshape, $symcolor ) = 
-  			set_hypocenter_symbol( \%Mapspec, @db, 1 );
+  			set_hypocenter_symbol( \%Mapspec, @db, "age" );
 
 			my( $primitive, $points, $xul, $yul, $xlr, $ylr );
 
