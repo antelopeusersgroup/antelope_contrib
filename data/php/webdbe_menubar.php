@@ -53,8 +53,11 @@
   <li id="menu5">
     <div><a href="#">Graphics</a></div>
     <ul>
-      <li><a href="javascript:void(0)" onClick="document.forms.webdbe.graphics.value='graphics';document.forms.webdbe.submit()">Graph</a></li>
       <li><a href="javascript:void(0)" onClick="document.forms.webdbe.graphics.value='map';document.forms.webdbe.submit()">Map</a></li>
+      <li><a href="#">ShowThumbnail</a></li>
+      <li><a href="#">ShowImage</a></li>
+      <li><a href="#">MakeTimeLapse</a></li>
+      <li><a href="#">PlotStation</a></li>
     </ul>
   </li>
   <li id="menu6">
