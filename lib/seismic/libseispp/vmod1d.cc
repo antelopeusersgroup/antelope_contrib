@@ -86,11 +86,12 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 read and form is a format name.  Currently supports two 
 names:  rbh - Herrmmann synthetics package format; and 
 plain - simple ascii depth, velocity pairs.  
-For plain the order is depth,P,S.  i.e. three columns of 
-ascii numbers, free form with blank separators, depth to
-layer top in column 1, P velocity column 2, and S velocity
-in column 2.  (no gradients in this format allowed). 
-property must be "P" or "S" */
+For plain the order is thickness,P,S.  i.e. three columns of 
+ascii numbers, free form with blank separators, layer thicknes
+is in column 1, P velocity is in column 2, and S velocity
+is in column 3.  (no gradients in this format allowed). 
+property must be "P" or "S".  IMPORTANT:  note the use of
+layer THICKNESS not DEPTH. */
 Velocity_Model_1d::Velocity_Model_1d(string fname,
 	string form, string property) throw(Velocity_Model_1d_ioerror)
 {
@@ -110,21 +111,24 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 
 	if(form=="rbh" || form=="plain")
 	{
-		char line[255],*sptr;
+		char line[255];
 		list <double> zin,vin;
 		list <double>::iterator znow,vnow;
 
 		// throw away the first few lines for rbh format
 		if(form=="rbh")
 		{
-			for(i=0;i<12;++i) input.getline(sptr,255);
+			for(i=0;i<12;++i) input.getline(line,255);
 		}
 		while(input.good())
 		{
 			double f1,f2,f3;
+			double skipper;
 			input >> f1;
 			input >> f2;
 			input >> f3;
+			if(form=="rbh")
+				for(i=0;i<7;++i) input >> skipper;
 			if(property=="P")
 			{
 				zin.push_back(f1);
@@ -142,9 +146,11 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 					"Velocity_Model_1d constructor failed"));
 			}
 		}
+		input.close();
 		nlayers = zin.size();
 		z=new double[nlayers];
 		v=new double[nlayers];
+		// this function only handles constant velocity layers
                 grad=new double[nlayers];
 		for(i=0;i<nlayers;++i)grad[i]=0.0;
 		for(i=0,znow=zin.begin(),vnow=vin.begin();
@@ -156,8 +162,20 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 		if(i!=nlayers)
 		{
 			nlayers = i-1;
+			input.close();
 			throw(Velocity_Model_1d_ioerror("Format error:  need at least z,vp,vs lines in the input model description lines",
 				"Velocity_Model_1d object only partially constructed"));
+		}
+		// replace z values (currently intervals) with accumulated
+		// depth to top of each layer
+		double zbot,ztmp;
+		zbot = z[0];
+		z[0]=0.0;
+		for(i=1;i<nlayers;++i)
+		{
+			ztmp = z[i];
+			z[i]=zbot;
+			zbot += ztmp;
 		}
 	}
 	else

@@ -161,9 +161,9 @@ return temp;
 ostream& operator<<(ostream& os, dmatrix& x1)
   {
   int i,j;
-  for(i=0;i<=x1.nrr;i++)
+  for(i=0;i<x1.nrr;i++)
   {
-  for(j=0;j<=x1.ncc;j++) os << x1(i,j) <<" ";
+  for(j=0;j<x1.ncc;j++) os << x1(i,j) <<" ";
   os<<"\n";
   }
   return os;
@@ -172,9 +172,9 @@ ostream& operator<<(ostream& os, dmatrix& x1)
 istream& operator>>(istream& is, dmatrix& x1)
   {
   int i,j;
-  for(i=0;i<=x1.nrr;i++)
+  for(i=0;i<x1.nrr;i++)
   {
-  for(j=0;j<=x1.ncc;j++) is >> x1(i,j);
+  for(j=0;j<x1.ncc;j++) is >> x1(i,j);
   }
   return is;
   }
