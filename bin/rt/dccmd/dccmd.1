@@ -1,90 +1,136 @@
-.TH SENDMRC 1
+.TH DCCMD 1 "$Date$"
 .SH NAME
 dccmd \- send commands to DAS/DC
 .SH SYNOPSIS
 .nf
 
-dccmd [-d dasid | -s staname] 
-    [-o mcrpar-file]
-    [-p parameter-file]
-    [-t timeout ]
-    [-R]
+dccmd [-p parameter-file]
     [-v] 
-    output 
+    cmdname cmdarg dcname 
 
 .fi
 .SH DESCRIPTION
-\fBdccmd\fP sends commands DASes or DC itself through
-\fIoutput\fR, which usually specifies the IP address of the DC.
-\fBdccmd\fP may require two parameter files.
-One contains all existing in RT system DAS IDs - \fIparameter-file\fR 
-(\fIpkt.pf\fR is default) and the second one contains command parameters for
-a "mass re-centering" (MRC) command - \fImrcpar-file\fR ( \fIdccmd.pf\fR is default ).
+\fBdccmd\fP sends \fIcmdname\fR command with \fIcmdarg\fR arguments to 
+DASes or DC itself through \fIdcname\fR, which usually specifies the IP 
+address of the DC. A \fIcmdarg\fR can be in form of 'regular   expression'
+to specify multiple arguments to \fIcmdname\fR command.
+\fBdccmd\fP requires a presence of a parameter files wich contains all 
+existing in RT system DAS IDs (\fIpkt.pf\fR is default). 
+The following commands and command arguments are supported by \fBdccmd\fP:
+
+.IP "IP new_dc_IP"
+change a DC IP address to a \fInew_dc_IP\fR address.
+For example, to set DC IP address 132.239.4.196:
+.nf
+
+        dccmd IP 132.239.4.196 132.239.4.194
+
+.fi
+.IP "CF clock" 
+turn MAIN or AUX Clock OFF. Argument \fIclock\fR must be only "main" or
+"aux".
+For example, turn OFF MAIN Clock:
+.nf
+
+        dccmd CF main 132.239.4.194
+
+.fi
+.IP "CO main|aux" 
+turn MAIN or AUX Clock ON. Argument \fIclock\fR must be only "main" or
+"aux".
+For example, turn ON AUX Clock:
+.nf
+
+        dccmd CF aux 132.239.4.194
+
+.fi
+.IP "RF radio_num"
+turn \fIradio_num\fR Master Radio OFF. 
+For example, turn OFF Master Radios 1 and 2 OFF:
+.nf
+
+        dccmd RF 1|2 132.239.4.194
+
+.fi
+.IP "RO radio_num"
+turn \fIradio_num\fR Master Radio ON. 
+For example, turn ON Master Radios 3 ON:
+.nf
+
+        dccmd RF 3 132.239.4.194
+
+.fi
+.IP "RC dasnum|staname"
+send "Mass Recentering" command to a DAS. A DAS can be specified
+by a das number or by a station name where that das is located.
+For example, send MRC command to all dases with "72*" ids.
+.nf
+
+        dccmd RC "72.*" 132.239.4.194
+
+.fi
+.IP "RS dasnum|stanam"
+reset DAS. A DAS can be specified
+by a das number or by a station name where that das is located.
+For example, reset dases with "6*" ids and das on TRO station.
+.nf
+
+        dccmd RC "6.*|TRO" 132.239.4.194
+
+.fi
+.IP "TO dasid|staname"  
+set a DAS transmittion ON. A DAS can be specified
+by a das number or by a station name where that das is located.
+For example, turn ON transmission of dases on all BB1* and BB2* station.
+.nf
+
+        dccmd TO "BB1.*|BB2.*" 132.239.4.194
+
+.fi
+.IP "TF dasid|staname"  
+set a DAS transmission OFF. A DAS can be specified
+by a das number or by a station name where that das is located.
+For example, turn OFF transmission of dases with 812 and 933 ids.
+.nf
+
+        dccmd TO "812|933" 132.239.4.194
+
+.fi
+.IP "XX dc_ip_address"
+reset DC. A DC IP addres must be specified as an command argument.        
+For example, reset 132.239.4.194 DC:
+.nf
+
+        dccmd XX 132.239.4.194 132.239.4.194
+
+.fi
+.IP "ZS => Zero_DAS_Counters
+clear all DAS counters. A DAS can be specified
+by a das number or by a station name where that das is located.
+For example, clear all counters for all dases:
+.nf
+
+        dccmd ZS ".*" 132.239.4.194
+
+.fi
+.IP "ZD => Zero_DC_Counters
+clear all DC counters. DC IP addres must be specified as an command argument.
+For example, clear all 132.239.4.194 DC counters: 
+.nf
+
+        dccmd ZD 132.239.4.194 132.239.4.194
+
+.fi
 
 .SH OPTIONS
-.IP "-D dasid"
-Send an "reset-DAS"command  to a das with a \fIdasid\fR number.
-.IP "-R "
-Send 'DC RESET' command to specified DC.
-.IP "-d dasid"
-Send an MRC  only to a das with a \fIdasid\fR number.
-By default send command to all DASes which exist in RT system.
-.IP "-o mrcpar-file"
-A parameter file \fImrcpar-file\fR
-will be used to select all constants for an MRC  command, such as
-number of times to repeat command, timeout between command send to one das, 
-timeout between command send to different dases, etc.
-A \fBdccmd.pf\fP parameter file is used by default.  
 .IP "-p parameter-file"
 A parameter file \fIparameter-file\fR
 will be used to select all possible DAS IDs in a RT system.
 A \fBpkt.pf\fP parameter file is used by default.  
-.IP "-s staname"
-Send an MRC  only to a station with a \fIstaname\fR name.
-By default send command to all DASes which exist in RT system.
-.IP "-t timeout "
-This option is valid only for a socket connection and specifies the number of
-seconds to wait for data on a connected socket before closing the socket and 
-opening a new connection. Default value is 5 seconds.
 .IP "-v"
 Be more verbose.
-.IP "start-time window"
-Specifies a time range of the \fIdccmd\fR process to be active.
 .SH EXAMPLE
 .LP
-Send an MRC  command with options specified in \fItmrc.pf\fR 
-to all DASes in \fItoro.pf\fR starting on "6/6/97 1:00" GMT time via 
-the DC port on IP address 132.239.4.194.
-
-.nf
-dccmd  -o tmrc -p toro 132.239.4.194 "6/6/97 1:00"    
-.fi
-
-.LP
-Send an immediate "reset DAS" command to DAS with ID number - 446 via 
-the DC port on address 132.239.4.196.
-
-.nf
-dccmd  -D 446 132.239.4.194 
-.fi
-
-.LP
-Send an immediate "reset DC" command the DC port on address 132.239.4.196. 
-
-.nf
-dccmd  -R 132.239.4.194 
-.fi
-
-
-.SH PARAMETER FILE
-.nf
-
-   start_time  6/5/97 1:00   # when to start
-   num_repeats          2    # number times to send command for one das              
-   timeout_btw_onedas   300  # number of sec between commands to a single DAS 
-   timeout_btw_dases    5    # number of min between commands to subsequent DASes 
-   timeout_btw_cmds     7    # number of days between commands sent to DC 
-
-.fi
+See above.
 .SH AUTHOR
 Marina Glushko

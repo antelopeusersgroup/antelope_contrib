@@ -11,7 +11,7 @@ char *argv[];
   int    dasid, i, code;
   int    cmdlen, err, num;
   int    dcfp;
-  char   *dcname, *cmd, *name ;     
+  char   *dcname, *cmd, *name ;
   char   buffer[IBUF_SIZE];
   char  *key;
 
@@ -27,7 +27,6 @@ char *argv[];
         case 'v':
             Log = 1;
             break;
-	    break;
         case 'p':
             pfile = optarg;
             break;
@@ -38,7 +37,7 @@ char *argv[];
           usage ();
 
        cmd = ucase( strdup(argv[optind++]));
-       name = strdup(argv[optind++]);
+       name = ucase( strdup(argv[optind++]) );
        dcname = strdup(argv[optind++]);
         
        if ( (code = regcomp( &argument, name, REG_EXTENDED|REG_NOSUB)) != 0)
@@ -75,14 +74,30 @@ char *argv[];
 	          close(dcfp);
                   die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
               }
-	     complain(0, "\n%s command was sent to %s.\n", cmd, dcname);
+	     complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
 
 
      }  else if ( !strncmp( cmd, "CF", strlen("CF")) ||
-               !strncmp( cmd, "CO", strlen("CO")) ||
-               !strncmp( cmd, "RO", strlen("CO")) ||
+               !strncmp( cmd, "CO", strlen("CO"))  )  {
+               if( strncmp( name, "MAIN", 4 ) == 0 )
+                   sprintf( &buffer[0], "%2s01%2s\0", cmd, cmd );
+	       else if ( strncmp( name, "AUX", 3 ) == 0 )
+                   sprintf( &buffer[0], "%2s02%2s\0", cmd, cmd );
+	       else 
+	       die( 0, 
+	       "\n%s command has illegal argument - %s\n. \nOnly \'MAIN\' or \'AUX\' must be specified.", cmd, name );
+              
+	    cmdlen = strlen(buffer);
+            if( !sendcmd( dcfp, &buffer[0], cmdlen, 0 )) {
+	          close(dcfp);
+                  die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
+            }
+	    complain(0, "\n%s was sent to %s.\n", buffer, dcname);
+
+
+     }  else if ( !strncmp( cmd, "RO", strlen("CO")) ||
                !strncmp( cmd, "RF", strlen("CO")) )  {
 
           if( (num = islegal( name, CRCMD)) )  {
@@ -95,7 +110,7 @@ char *argv[];
 	               close(dcfp);
                        die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
-	         complain(0, "\n%s command was sent to %s.\n", cmd, dcname);
+	         complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 		 sleep(30);
 	      }
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
@@ -116,7 +131,7 @@ char *argv[];
 	               close(dcfp);
                        die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
-	         complain(0, "\n%s command was sent to %s.\n", cmd, dcname);
+	         complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 		 sleep(30);
 	      }
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
