@@ -11,7 +11,8 @@ DATA= $(MYDLIB) \
       webdbe_menubar.php \
       webdbe_functions.js
 
-MAN3= Datascope_PHP.3
+MAN3= Datascope_PHP.3 \
+      webdbe.3
 
 CLEAN= $(MYDLIB)
 
