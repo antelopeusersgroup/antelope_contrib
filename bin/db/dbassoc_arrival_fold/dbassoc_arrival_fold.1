@@ -1,0 +1,57 @@
+.TH DBASSOC_ARRIVAL_FOLD 1 "$Date$"
+.SH NAME
+dbassoc_arrival_fold \- run dbassoc_arrival and fold the assocs into hypocenter database
+.SH SYNOPSIS
+.nf
+dbassoc_arrival_fold [-p pdelta] [-s sdelta] arrival_db origin_db
+.fi
+.SH DESCRIPTION
+dbassoc_arrival_fold is a wrapper around dbassoc_arrival(1). For details on the 
+command-line arguments, see dbassoc_arrival(1). This program runs dbassoc_arrival, 
+then folds the resulting associations back into the origin_db database. What this 
+means is that every arrival in arrival_db that associates with an origin_db hypocenter 
+will be copied into origin_db.arrival, with the arid reset appropriately. An assoc 
+row will also be added to origin_db.assoc. Finally, the 'nass' field of the origin 
+row in origin_db will be incremented to reflect the additional associations. 
+
+This program is useful for incorporating externally-derived collections of picks
+into a copy of an existing catalog, without going through the extensive work of 
+relocating all the events in a database of the combined arrivals. This can be useful if, 
+for example, one needs to run scientific experiments with a set of picked data
+from an external experimental network, combined with the earthquake locations from 
+a main network.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+MT-Safe ?
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+This should probably be an option in dbassoc_arrival, rather than a separate program.
+
+Written as a workaround for Glenn Biasi. 
+
+This program assumes there are no conflicts between any picks in the two databases.
+
+The files arrival_db.origin and arrival_db.assoc are used as scratch space. If they 
+exist (or if tables by those names are accessible through the descriptor file) 
+when dbassoc_arrival_fold is launched, the program will complain and die.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
