@@ -12,14 +12,14 @@ int pfread ( char *name, Pf **pf )
     read parameter space name into pf, returning 0 for success.
 
 int pfupdate ( char *name, Pf **pf )
-    check files which compose parameter space name, and reread if any have changed;
-    may also be used for first read
+    check files which compose parameter space name, reread and return 1 if changed;
+    on first read, pf must = 0 
 
 Tbl *pffiles ( char *name, int all )
-    return a list of files which compose parameter space name
+    return list of files which compose name
 
-int pfload ( char *env, char *dir, char *file, Pf **pf )
-    read single parameter file into pf, as found by datapath(3)
+int pfload ( char *env, char *dir, char *fname, Pf **pf )
+    read single parameter file found by datapath(3) into pf
 
 int pfcompile ( char *s, Pf **pf )
     read parameter space from string s into pf
@@ -34,132 +34,136 @@ int pfout ( FILE *out, Pf *pf )
     write parameter space pf to file out
 
 char *pf2string ( Pf *pf )
-    convert parameter space pf to a newly allocated string
+    return new string representation of pf 
 
 Pf *pfnew ( int type )
     start a new parameter space
 
 void pffree ( Pf *pf )
-    free resources for parameter space pf
+    free resources for pf
+
+Pf *pfdel( Pf *pf, char *name)
+    remove branch for name from pf, returning the deleted branch
 
 int pfconfig ( "ask", char *(*askx)(char *query) )
-    replace default &ask routine with user supplied version askx
+    replace default &ask routine with new version askx
 
 int pfget ( Pf *pf, char *name, void **result )
-    get a value from a parameter space
+    put value for name from pf in result, returning type
 
-int pfresolve ( Pf *pf, char *name, int create, Pf **value_pf )
-    get parameter name from parameter space pf allowing extended syntax
-    like arr{name}[3]
+int pfresolve ( Pf *pf, char *name, int create, Pf **result )
+    put value for name from pf into result, allowing extended syntax
+    like arr{name}[3], returning type
 
-Pf *pfdel( Pf *pfr, char *name)
-     remove pf branch for name from pfr, returning the deleted branch
-
-int pfeval ( Pf *pf, char *name, char **value )
-    get parameter name from parameter space pf allowing extended syntax
+int pfeval ( Pf *pf, char *name, char **result )
+    put value for name from pf into result, allowing extended syntax
     like arr{name}[3], but returning only scalar values
 
 int pfget_boolean ( Pf *pf, char *name )
-    get a boolean value for key name from parameter space pf
+    return boolean value for name from pf
 
 double pfget_double ( Pf *pf, char *name )
-    get a double precision float value for key name from parameter space pf
+    return double value for name from pf
 
 int pfget_int ( Pf *pf, char *name )
-    get an integer value for key name from parameter space pf
+    return integer value for name from pf
 
 char *pfget_string ( Pf *pf, char *name )
-    get a string value for key name from parameter space pf
-
-Arr *pfget_arr ( Pf *pf, char *name )
-    get an array value for key name from parameter space pf
-
-Tbl *pfkeys ( Pf *pf )
-    return a list of keys from a parameter space pf (pf must be array, not list)
+    return string value for name from pf
     
 double pfget_time(Pf *pf, char *name)
-    return time for key name from parameter space pf
+    return epoch time for name from pf
 
 double pfget_size(Pf *pf, char *name)
-    return size for key name from parameter space pf, interpreting suffix of
+    return size for name from pf, interpreting suffix of
     G (10^9), M (10^6), or k (10^3)
 
+Tbl *pfkeys ( Pf *arr )
+    return list of keys for pf arr
+
+Arr *pfget_arr ( Pf *pf, char *name )
+    return array value for name from pf
+
 Tbl *pfget_tbl ( Pf *pf, char *name )
-    get a list value for key name from parameter space pf
+    return list value for name from pf
 
 int pfmaxtbl ( Pf *list )
-    get the number of elements in the parameter space list
+    return the number of elements in the pf list
 
-void pfput ( Pf *pf, char *name, char *value, int type )
-    put a value into a parameter space
+void pfput ( Pf *pf, char *name, char *value, int t )
+    put a value (of type t) into pf under name
 
 int pfset ( Pf *pf, char *name, char *value )
-    put parameter name/value intto parameter space pf allowing extended syntax
-    like arr{name}[3]
+    put a character value into pf under name,
+    allowing extended syntax like arr{name}[3]
 
 void pfput_boolean ( Pf *pf, char *name, int value )
-    put a boolean value for key name into parameter space pf
+    put boolean value into pf under name 
 
 void pfput_double ( Pf *pf, char *name, double value )
-    put a double precision value for key name into parameter space pf
+    put double value into pf under name 
 
 void pfput_int ( Pf *pf, char *name, int value )
-    put an integer value for key name into parameter space pf
+    put integer value into pf under name 
 
 void pfput_string ( Pf *pf, char *name, char *value )
-    put a string value for key name into parameter space pf
+    put string value into pf under name 
 
 void pfput_time(Pf *pf, char *name, double time)
-    put readable time into parameter space pf under key name 
+    put readable time into pf under name 
 
 void pfput_arr ( Pf *pf, char *name, Arr *value )
-    put an array value for key name into parameter space pf
+    put array value into pf under name 
 
 void pfput_tbl ( Pf *pf, char *name, Tbl *value )
-    put a list value for key name into parameter space pf
+    put list value into pf under name 
 
 int pfcmp(Pf *pf1, Pf *pf2)
-    returns 0 if pf1 and pf2 are identical, 1 otherwise
+    return 0 if pf1 and pf2 are identical, 1 otherwise
 
 Pf *pfdup(Pf *old)
-    duplicates a parameter file space
+    duplicates(clones) a parameter file space
 
 int pfrequire(char *pfname, char *atime )
     require pf_revision_code later than atime
 
 <subsection Associative Arrays>
 Arr *newarr ( int (*cmp)(char *, char *) )
-    create a new associative array with string compare routine cmp
+    create a new associative array with string compare routine cmp;
+    if cmp=0, use strcmp().
 
-int freearr ( Arr *root, void (*free_value) () )
-    free an associative array, calling free_value on each value of the array
+Arr *duparr(Arr *arr, void *(*adup)())
+    return duplicate (clone) of the array arr using the adup routine to duplicate individual values.
 
-void *setarr ( Arr *arr, char *key, void *value )
-    set the key element of associative array arr to the pointer value
+int freearr ( Arr *arr, void (*afree) () )
+    free array arr, calling afree on each value of the array
+
+void *setarr ( Arr *arr, char *key, void *val )
+    set the value for key in arr to val, returning previous value
 
 void *getarr ( Arr *arr, char *key )
-    return the value pointer for element key of associative array arr 
+    return the value for key in arr 
 
 void *delarr ( Arr *arr, char *key )
-    delete the key, value pair from associative array arr, returning the value pointer
+    delete the key, value pair for key in arr, returning value 
 
 int cntarr ( Arr *arr )
-    return the number of key, value pairs in associative array arr
+    return the number of key, value pairs in arr
 
 Tbl *keysarr ( Arr *arr )
-    get a list of all the keys of associative array arr
+    return list of all the keys in arr
 
 Tbl *valsarr ( Arr *arr )
-    get a list of all the values of associative array arr
+    return list of all the values in arr
 
 int applyarr ( Arr *arr, void (*f) (char *key, void *value, void *p), void *p)
-    apply function f to each key, value pair of associative array arr
+    apply function f to each key, value pair in arr
 
 Tbl *arrgrep ( Arr *arr, char *s )
-    match each key of array arr as a regular expression against string s, returning a list of all keys which match
+    match each key of arr as a regular expression against string s, returning list matching keys 
 
 Tbl *greparr ( char *re, Arr *arr )
-    match regular expression re to each key of array arr, returning a list of all keys which match
+    return list of all keys in arr which match regular expression re
 
 <subsection Lists>
 Tbl *newtbl ( int n )
@@ -174,8 +178,8 @@ void freetbl ( Tbl *tbl, void (*tfree) () )
 int maxtbl ( Tbl *tbl )
     return number of elements in list tbl
 
-Tbl *duptbl(Tbl *tbl, void *(*dup)())
-    return a duplicate (clone) of the list tbl using the dup routine to duplicate individual elements.
+Tbl *duptbl(Tbl *tbl, void *(*tdup)())
+    return duplicate (clone) of the list tbl using the tdup routine to duplicate individual elements.
 
 void clrtbl ( Tbl *tbl, void (*tfree) () )
     empty an existing list tbl, calling tfree on each element
@@ -226,7 +230,7 @@ void sorttbl ( Tbl *tbl, int (*cmp) (), void *pvt )
     sort a list tbl using the comparison function cmp
 
 int searchtbl ( char *key, Tbl *tbl, int (*cmp) (), void *pvt, int *ns, int *ne )
-    search a sorted list tbl for key using a binary search and comparison function cmp; returns count
+    search a sorted list tbl for key using a binary search and comparison function cmp; return count
     and range ns <= i <= ne of matches
 
 int applytbl ( Tbl *tbl, int (*f) (), void *pvt )
@@ -278,15 +282,15 @@ char *tststbl ( Stbl *stbl, char *key )
     test if element corresponding to key exists in sorted list stbl
 
 int maxstbl ( Stbl *stbl )
-    returns the number of elements in sorted list stbl
+    return the number of elements in sorted list stbl
 
 Tbl *tblstbl ( Stbl *stbl )
-    returns a list of all elements in a sorted list (should be freed with freetbl(tbl,0))
+    return list of all elements in a sorted list (should be freed with freetbl(tbl,0))
 
 int applystbl ( Stbl *stbl, int (*f) (), void *pvt )
     call function f for each element of sorted list stbl
 
-
+<subsection Id Maps>
 Stbl * newidmap ( void )
     create a new id map, mapping one set of positive integers to another
 
@@ -298,7 +302,7 @@ int idset ( Stbl *map, int key, int x )
     value for key is returned, or -1
 
 int idget ( Stbl *map, int key )
-    returns the value of key in map, or -1 if it's not set
+    return the value of key in map, or -1 if it's not set
 
 <subsection Bit Vectors>
 
@@ -375,13 +379,13 @@ int changedring ( RingBuffer *rb, double tdelta );
 
 <subsection Time conversion>
 int is_epoch_string ( char *s, double *e )
-    returns true if string s can be interpreted as a time, returning epoch time e
+    return true if string s can be interpreted as a time, returning epoch time e
 
 int zstr2epoch ( char *s, double *e )
-    returns zero if no errors occur translating string s to an epoch time e
+    return zero if no errors occur translating string s to an epoch time e
 
 double str2epoch ( char *s )
-    returns epoch time corresponding to string s, printing error messages
+    return epoch time corresponding to string s, printing error messages
 
 
 double now ()
@@ -392,17 +396,17 @@ void wait_for_time ( double time, int verbose )
 
 
 char *epoch2str ( double e, char *f )
-    returns freshly allocated string containing epoch time e formatted according to format f
+    return freshly allocated string containing epoch time e formatted according to format f
 
 char *zepoch2str ( double epoch, char *f, char *timezone )
-    returns freshly allocated string containing epoch time e formatted according to format f for timezone; if timezone == 0, use UTC, if timezone == "", use $TZ
+    return freshly allocated string containing epoch time e formatted according to format f for timezone; if timezone == 0, use UTC, if timezone == "", use $TZ
 
 
 private int fmttime ( double e, char *result, int fmt, char *timezone )
-    returns a formatted time string
+    return a formatted time string
 
 char *strdate ( double e )
-    returns string representing date portion of epoch time
+    return string representing date portion of epoch time
 
 char *strtime ( double e )
     returns string representing epoch time

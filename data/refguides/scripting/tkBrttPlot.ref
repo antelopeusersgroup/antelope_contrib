@@ -19,6 +19,10 @@ create_scg db tstart tend ?options?
 -orient orient_flag
 </options>
 
+destroy_scg scg_handle
+    destroy a station-channel-gather data object
+
+<subsection Vectors>
 vector_append vector_handle index xvalue ylist [label]
     appends a vector element after an existing element
 
@@ -28,11 +32,8 @@ vector_create [ny] [-tag tag]
 vector_copy vector_handle [-tag tag]
     copy a vector object
 
-destroy_scg scg_handle
-    destroy a station-channel-gather data object
-
 vector_eval vector_handle xvalue
-    compute and return a Y (dependent) value from a vector object
+    compute and return a y (dependent) value from a vector object
 
 vector_free {-tag tag | vector_handle}
     destroys previously created vector objects
@@ -41,13 +42,13 @@ vector_get vector_handle {nx|ny|xy ix}
     get information relating to a vector handle
 
 vector_maxmin vector_handle [iy]
-    retrieve min and max X, min and max Y from a vector object
+    retrieve min and max x, min and max y from a vector object
 
 vector_puty vector_handle ix ylist [label]
     replace dependent values in a vector object
 
 vector_read filename ?options?
-    create and read a vector object from an ASCII file
+    create a vector object from an input ASCII file
 <options>
 -tag tag
 -loff line_off
@@ -61,134 +62,128 @@ vector_transform_edp vector_handle lonr latr
     equal distance projection coordinates in place
 
 <subsection Plotting>
-(canvas) create axes viewport ?options?
-    canvas item to plot a set of coordinate axes
+
+(canvas) create \fBviewport name x y ?options?
+    create canvas window for graph
 <options>
--tags tags
--fill_labels labels_color
--fill_numbers numbers_color
--fill_axes axes_color
--font_labels labels_font
--font_numbers numbers_font
--font_numbers_superscripts numbers_superscripts_font
--xvisible {0|1}
--yvisible {0|1}
--linewidth linewidth
--linewidth_small linewidth_small
--mindx mindx
--mindy mindy
--xincrement xincrement
--xincrement_small -xincrement_small
--xlabel xlabel
--xformat xformat
--yincrement yincrement
--yincrement_small -yincrement_small
--ylabel xlabel
--yformat yformat
--axis_style axis_style
--tic_style tic_style
+-margin left right bottom top	margin widths in pixels
+-anchor {n|ne|e|se|s|sw|w|nw|c}
+-tags taglist
+-width width	width in pixels (0: rubber-band)
+-height height 	height in pixels (0: rubber-band)
+-xmode {lin|log|time} 	
+-ymode {lin|log}
+-xleft x0 	data-coordinate of left edge of plot 
+-xright x1	data-coordinate of right edge of plot 
+-ybottom ybottom	data-coordinate of bottom edge of plot
+-ytop ytop	data-coordinate of top edge of plot 
+-fill color	background color for plot region 
+-fill_frame color	background color for margins
 </options>
 
-(canvas) create edpmap viewport ?options?
-    canvas item to plot world maps using equal distance projection
+(canvas) create \fBaxes viewport ?options?
+    create axes associated with viewport
 <options>
--tags tags
--fill_land land_color
--fill_water water_color
--coasts coastline_color:coastline_linewidth
--political admin_index:boundary_color:boundary_linewidth,...
--rivers river_color
--visible {0|1}
--resolution {auto|crude|low|intermediate|high|full}
--latr ref_latitude
--lonr ref_longitude
+-tags taglist	
+-fill_labels color	x and y labels color
+-fill_numbers color	numbers color
+-fill_axes color	axes color
+-font_labels font	labels font
+-font_numbers font	numbers font
+-font_numbers_superscripts font	exponent font
+-xvisible {0|1}		draw and label xaxis ticks
+-yvisible {0|1}		draw and label yaxis ticks
+-linewidth width	
+-linewidth_small width
+-mindx dx
+-mindy dy
+-xincrement dx
+-xincrement_small dx
+-xlabel label	label along x axis
+-xformat {auto|none|time}	tick label style
+-yincrement dy
+-yincrement_small dy
+-ylabel label	label along y axis
+-yformat {auto|none}	tick label style
+-axis_style [nesw]*	draw these sides of box
+-tic_style ([nesw][ioc])*   ticks inward, outward, center
 </options>
 
-(canvas) create grid viewport ?options?
+(canvas) create \fBgrid viewport ?options?
     canvas item to create a mesh of grid lines
 <options>
--tags tags
--fill major_grid_line_color
--fill_small minor_grid_line_color
--linewidth major_grid_linewidth
--linewidth_small minor_grid_linewidth
+-tags taglist
+-fill color
+-fill_small color
+-linewidth width
+-linewidth_small width
 -visible {0|1}
 -visible_x {0|1}
 -visible_xsmall {0|1}
 -visible_y {0|1}
 -visible_ysmall {0|1}
--mindx mindx
--mindy mindy
--xincrement major_grid_xline_increment
--xincrement_small minor_grid_xline_increment
--yincrement major_grid_yline_increment
--yincrement_small minor_grid_yline_increment
+-mindx dx
+-mindy dy
+-xincrement dx
+-xincrement_small dx
+-yincrement dy
+-yincrement_small dy
 </options>
 
-(canvas) create polyline viewport ?options?
-    canvas item to plot a polyline(polygon) in data coordinates
+(canvas) create \fBpolypoint viewport ?options?
+    create item to draw set of points or symbols
 <options>
--vector input_data_vector_handle
--thistory input_data_thistory_handle
--test
--tags tags
--fill polygon_fill_color
--outline polyline_outline_color
--linewidth polyline_outline_linewidth
--label label
--visible {0|1}
-</options>
-
-(canvas) create polypoint viewport ?options?
-    canvas item to plot a set of points or symbols in data coordinates
-<options>
--vector input_data_vector_handle
--tags tags
--symbol {point|cross|x|triangle|square|circle|star}
--fill symbol_fill_color
--outline symbol_outline_color
--linewidth symbol_outline_linewidth
--textforeground label_color
--font label_font
--size symbol_size
+-vector handle|tag	vector containing the points
+-tags taglist
+-symbol {point|cross|x|triangle|square|circle|diamond|star}
+-fill color	fill the symbols with this color
+-outline color	draw outline in this color
+-linewidth width
+-textforeground color
+-font font
+-size size
 -visible {0|1}
 -showsymbols {0|1}
 -showtext {0|1}
 </options>
 
-(canvas) create ptext viewport textstring x y ?options?
+(canvas) create \fBpolyline viewport ?options?
+    create item drawn with lines 
+<options>
+-vector handle|tag	vector containing the points
+-thistory handle|tag
+-tags taglist
+-fill color	if specified, fill object with color
+-outline color	draw lines in this color
+-linewidth width
+-label label
+-visible {0|1}
+</options>
+
+(canvas) create \fBptext viewport textstring x y ?options?
     canvas item to plot text in data coordinates
 <options>
--tags tags
--fill text_color
--font text_font
+-tags taglist
+-fill color
+-font font
 -visible {0|1}
--justification justification
+-justification {n|ne|e|se|s|sw|w|nw|c}
 -angle angle
 </options>
 
-(canvas) create viewport name x y ?options?
-    abstract canvas item with data-coordinate mapping
+(canvas) create \fBedpmap viewport ?options?
+    canvas item to plot world maps using equal distance projection
 <options>
--margin margin	Width in pixels of all margins
--anchor anchor
--tags tags
--width width	Viewport width in pixels (0: rubber-band)
--height height 	Viewport height in pixels (0: rubber-band)
--mleft mleft	Width of left margin in pixels
--mright mright	Width of right margin in pixels
--mbottom mbottom	Width of bottom margin in pixels
--mtop mtop 	Width of top margin in pixels
--xmode xmode 	plotting mode: lin, log, or time
--ymode ymode	plotting mode: lin, log, or time
--xleft xleft 	data-coordinate of left edge of viewport
--xright xright	data-coordinate of right edge of viewport
--x0 x0
--ybottom ybottom	data-coordinate of bottom edge of viewport
--ytop ytop	data-coordinate of top edge of viewport
--y0 y0
--fill fill	Fill color for the viewport itself
--fill_frame fill_frame	Fill color for the frame around the viewport
+-tags taglist
+-fill_land color
+-fill_water color
+-coasts color:linewidth
+-political index:color:linewidth,...
+-rivers color
+-visible {0|1}
+-resolution {auto|crude|low|intermediate|high|full}
+-latr latitude
+-lonr longitude
 </options>
 
 <subsection Time Histories>
@@ -196,7 +191,7 @@ thistory_add thistory time value
     add time/value pair to thistory object
 
 thistory_create maxnp [-tag tag] [-file file]
-    create a thistory object
+    create a thistory object, saving data in file
 
 thistory_eval thistory time
     return value corresponding to time for thistory object

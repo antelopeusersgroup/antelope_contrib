@@ -137,7 +137,7 @@ MSD_SPARC_ORDER       MSD_STA
 MSD_TIME              MSD_TIME_CORRECTION   
 </example>
 
-int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc) () );
+int msd2wf ( Msd *msd, Dbptr db, int (add_wfdisc)() );
     reads through a miniseed volume with msdnxt(3), calls 
     add_wfdisc whenever a new data segment is found
 

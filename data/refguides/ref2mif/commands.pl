@@ -120,14 +120,18 @@ sub parse_command_arguments {
     my $result, $name ; 
     $result = "" ;
     my $left, $match ; 
-    while ( $in =~ /(-?\w+)/ ) { 
+    while ( $in =~ /(-?\S+)/ ) { 
 	$in = $' ; 
 	$match = $1 ;
 	$left = $` ;
 	if ( $match =~ /^-/ ) { 
 	    $result .= &string("${left}$match") ;
+	} elsif ( $match =~ /^\\fB(.*)/ ) { 
+	    $result .= &string("$left") . &fontstring("FunctionName", $1) ;
+	} elsif ( $match =~ /^\\fR(.*)/ ) { 
+	    $result .= &string($left . $1) ;
 	} else { 
-	    $result .= &string("$left") . &fontstring("ParameterName", $match) ; 
+	    $result .= &string("$left") . &fontstring("ParameterName", $match) ;
 	    $Parameters{$match} = 1 ;
 	}
     }
