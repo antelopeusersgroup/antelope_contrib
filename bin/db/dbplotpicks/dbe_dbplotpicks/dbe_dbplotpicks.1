@@ -1,0 +1,73 @@
+.TH DBE_DBPLOTPICKS 1 "$Date$"
+.SH NAME
+dbe_dbplotpicks \- call dbplotpicks from arrival table view in dbe
+.SH SYNOPSIS
+.B dbe_dbplotpicks view [timespan [filter]]
+.SH DESCRIPTION
+.B dbe_dbplotpicks
+selects an appropriate time_window and the sta_chans to call dbplotpicks.
+If the user leaves the display by entering CTRL-c, the user can choose  to print the file.
+.SH OPTIONS
+.IP \fIview\fP
+The name of the input table or view. Typically -.
+This argument is required. 
+.IP \fItimespan\fP
+This optional argument specifies the length of the time-window.
+.IP \fIfilter\fP
+This optional argument specifies the filter applied to the waveforms.
+If not specified, a default value is read from the parameterfile.
+Note that the filter can be specified as \fInone\fP which means that no filter is applied
+.SH "PARAMETER FILE"
+.in 2c
+.ft CW
+.nf
+
+.ne 9
+
+filter  BW 0.7 5 10.0 5
+polygondb      none
+placedb        none
+#polygondb   /opt/antelope/4.6/local/data/database/borders
+#placedb     /opt/antelope/4.6/local/data/database/places
+print_dialog fileaction
+delete_tempfile yes
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 10
+
+something like the following enables dbplotpicks from within dbe
+graphics &Arr{
+        arrival &Tbl{
+                Picks   dbe_dbplotpicks -
+                Picks-local-30s dbe_dbplotpicks - 30 "BW 1.0 5 0 0"
+                Picks-tele-60s dbe_dbplotpicks - 60 "BW 0.5 5 3.0 5"
+        }
+}
+
+.fi
+.ft R
+.in
+.SH SEE ALSO
+.nf
+dbplotpicks(1)
+trfilter(3)
+polygon1.2(5)
+fileaction(1)
+.fi
+.SH "BUGS AND CAVEATS"
+No usage line, almost no feedback on mispeled parameters.
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2005
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+.\" $Id$
+

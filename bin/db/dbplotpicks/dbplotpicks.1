@@ -1,0 +1,107 @@
+.TH DBPLOTPICKS 1 "$Date$"
+.SH NAME
+dbplotpicks \- Make waveform plots with arrivals
+.SH SYNOPSIS
+.B dbplotpicks
+.I dbname
+.I sta_expr
+.I chan_expr
+.I tstart
+.I twinline
+.I scale
+.I [-f filter]
+.I [-ps psfile]
+.I [-display]
+.I [-polygons polygondb]
+.I [-places placesdb]
+.SH DESCRIPTION
+.B dbplotpicks
+will make a PostScript output file that contains a helicorder
+style display of one or more station(s)-channel(s) including arrivals. The output file
+name begins with \fIdbplotpicks.\fP and ends with \fI.ps\fP and
+is unique to avoid collisions with previously created PostScript
+files.
+.SH OPTIONS
+.IP \fIdbname\fP
+The name of the input database.
+This argument is required.
+.IP \fIsta_expr\fP
+A regular expression determining the station(s).
+This argument is required.
+.IP \fIchan_expr\fP
+A regular expression determining the channels(s).
+This argument is required.
+.IP \fItstart\fP
+The start time for the display.
+This argument is required.
+.IP \fItwinline\fP
+The time window for each sta-chan line in the display in seconds.
+This argument is required.
+.IP \fIscale\fP
+The amplitude scale factor in data units per inch or \fI-1\fP, which indicates autoscaling.
+This argument is required.
+.IP "\fI-f filter\fP"
+A filter specification. This filter is applied to
+the waveform before it is plotted.
+The \fIfilter\fP specification is a character string like
+"BW 0.1 5 1.0 5" which would be a 5 order Butterworth filter
+with a low corner frequency of 0.1 Hz and a high corner
+frequency of 1.0 Hz. See trfilter(3). Note that specifications such as
+this with embedded blanks must be quoted in the command line.
+This argument is optional and if not specified, then
+no filtering is done.
+.IP "\fI-ps psfile\fP"
+The output PostScript file name.
+This argument is optional and if not specified, then
+a unique PostScript file name is created by the program.
+.IP "\fI-display \fP"
+If this flag is given, the PostScript file will be displayed immediately.
+This argument is optional.
+.IP "\fI-places dbplaces\fP"
+Name of databases with places (in places1.2 schema). If this argument is specified and origin information associated to arrivals in the specified time-window is found in the database, then the place closest to the origin is displayed.
+This argument is optional.
+.IP "\fI-polygons dbpolygons\fP"
+Name of databases with polygons (in polygon1.2 schema). If this argument is specified and origin information associated to arrivals in the specified time-window is found in the database, then the name of the polygon surrounding the origin is displayed.
+This argument is optional.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 7
+
+  dbplotpicks db "ARSA|DAVA" "HHZ" "7/19/1999" 30 -1 -display
+
+  will display 30 seconds from all Z-channels for stations
+  ARSA and DAVA, starting from July 19th 1999 Midnight,
+  using autoscaling
+
+.ne 7
+  dbplotpicks db "ARSA|DAVA" "HHZ" "7/19/1999" 30 500 -display \\
+     -places /databases/places -polygons /databases/polygons \\
+         -ps /tmp/testrun.ps
+
+  same as above, but with a fixed scale of 500nm/s/inch. The
+  place next to the preferred origin and the countryname are
+  also given. The filename is known.
+
+.fi
+.ft R
+.in
+.SH SEE ALSO
+.nf
+dbheli(1)
+trfilter(3)
+dbe_dbplotpicks(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Certainly  a lot. This was the first program I wrote at ZAMG after we decided to use the Antelope Software. The calling could need some fixes.
+.SH AUTHOR
+.nf
+This is a modified version of \fBdbheli\fP by \fIDanny Harvey\fP.
+Nikolaus Horn, 1998,2005
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.fi
+.\" $Id$
+

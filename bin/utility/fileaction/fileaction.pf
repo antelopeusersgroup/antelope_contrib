@@ -1,0 +1,8 @@
+question	What shall I do with this file?
+actions &Arr{
+	laser	lp -c -o duplex -o A4 $filename 
+	mail_horn	rtmail -a $filename -s $basename horn < /dev/null
+	hp8150  lp -c -d hp8150 -o A4 $filename
+}
+#default action is listed on top, all others in arbitrary order
+default_action	laser

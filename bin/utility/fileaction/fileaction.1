@@ -1,0 +1,49 @@
+.TH FILEACTION 1 "$Date$"
+.SH NAME
+fileaction \- GUI to run action from a list
+.SH SYNOPSIS
+.nf
+\fBfileaction \fP[-pf \fIpffile\fP] \fIfilename\fP
+.fi
+
+.SH DESCRIPTION
+Fileaction allows to choose a command for a file specified on the commandline, e.g selection of a printer
+The GUI offers a list of actions specified in the parameter file.
+The Escape-Key closes the window, while the Return-key executes the selected action. If no action is selected, both the Return-key and the OK-button are disabled.
+.SH OPTIONS
+.IP "-pf pffile"
+parameter file name
+.IP "filename"
+Name of file. This argument is required
+
+.SH PARAMETER FILE
+The following is a sample parameter file.
+.in 2c
+.ft CW
+.nf
+
+question        What shall I do with this file?
+#$filename -> filename
+#$basename -> basename
+actions &Arr{
+        default_printer lp -o duplex -o A4 $filename
+        mail_horn       rtmail -a $filename -s $basename horn < /dev/null
+        hp8150  lp -d hp8150 -o A4 $filename
+}
+#default action is listed on top, all others in arbitrary order
+default_action  default_printer
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+The screen is not very nice.
+.SH "SEE ALSO"
+.nf
+dbplotpicks(1), run_dbplotpicks(1)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2005
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at

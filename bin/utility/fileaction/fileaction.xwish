@@ -1,0 +1,98 @@
+package require Tclx;
+
+proc positionWindow { w } {
+    wm geometry $w +300+300
+}
+proc fname2pfname {fname} {
+	regsub ".*/" $fname "" tmpstr		;# remove everything up to last "/"
+	regsub "\[.\].*" $tmpstr "" pfname	;# remove everything after "."
+	return $pfname
+}
+
+proc usage {} {
+	global argv0
+	puts stderr "";
+	puts stderr "Usage: $argv0 \[-pf pfname\] filename";
+	puts stderr "or better run from dbe. See remark_gui(1)";
+	puts stderr "";
+	exit
+}
+proc do_action {} {
+	global actions filename basename
+	set actionname [.frame.list get [.frame.list curselection]]
+	set cmd [lindex [array get actions $actionname] 1]
+	set cmd [subst -nocommands $cmd]
+	set cmdline "exec $cmd"
+	if [ catch { eval $cmdline } result ] {
+		bgerror $result
+	}	
+#wm withdraw .
+	destroy .
+}
+set Pf [fname2pfname $argv0]
+set Progname $Pf
+for {set i 0} {$i<[expr $argc - 2]} {incr i} {
+	switch -- [lindex $argv $i] {
+		-pf {
+			set Pf [lindex $argv [expr $i + 1]]
+			incr i 
+		}
+	}
+}
+if {$argc <1} {
+	usage
+}
+
+set filename [lindex $argv end]
+
+set question [pfget $Pf question]
+set default_action [pfget $Pf default_action]
+pfgetarr actions %$Pf#actions
+
+
+eval destroy [winfo child .]
+set basename [file tail $filename]
+wm title . "$Progname basename ?"
+wm iconname . "? $filename ?"
+positionWindow .
+
+label .fn -background yellow -foreground blue -justify center -text $filename
+pack .fn -side top
+label .ask -justify left -text $question
+pack .ask -side top
+
+frame .frame -borderwidth 10
+pack .frame -side top -expand yes -fill y
+scrollbar .frame.scroll -command ".frame.list yview"
+set len [array size actions]
+if {$len > 10} {
+	set len 10
+}
+listbox .frame.list -yscroll ".frame.scroll set" \
+	-width 20 -height $len -setgrid 1
+pack .frame.list .frame.scroll -side left -fill y -expand 1
+for_array_keys action actions {
+	set cmdline [lindex [array get actions $action] 1]
+	if {$action == $default_action} {
+		.frame.list insert 0 $action	
+	} else {	
+		.frame.list insert end $action	
+	}
+}
+bind .frame.list <Button-1> {
+	.buttons.ok configure -state normal
+}
+frame .buttons
+pack .buttons -side bottom -fill x -pady 2m
+button .buttons.cancel -background white -foreground red -text Cancel -command "destroy ."
+button .buttons.ok -state disabled -background white -foreground green -text "OK" -command do_action
+pack .buttons.ok .buttons.cancel -side left -expand 1
+
+bind . <Key-Escape> {
+	destroy .
+}
+bind . <Key-Return> {
+	if {[.buttons.ok cget -state] == "normal"} {
+		do_action
+	}
+}

@@ -1,0 +1,87 @@
+package require Tclx;
+
+#this scripst reads the quite confusing output from dbe
+# and tries to gather information about selected data
+# resulting in a call to dbplotpicke and finally dtdbprintdialog
+
+set Pf dbe_dbplotpicks
+
+set database_table [lindex $argv 0]
+if {$argc > 1} {
+	set timespan [lindex $argv 1]
+} else {
+	set timespan 0
+}
+if {$argc >2} {
+	set filtername [lindex $argv 2]
+} else {
+	set filtername [pfget $Pf filter]
+}
+
+set polygondb [pfget $Pf polygondb]
+set placedb [pfget $Pf placedb]
+set delete_tempfile [pfget $Pf delete_tempfile]
+set print_dialog [pfget $Pf print_dialog]
+
+set db [dbopen_table $database_table r]
+set dbname [dbquery $db dbDATABASE_NAME]
+
+
+
+set db_sc [dbsort $db sta chan]
+set n [dbquery $db dbRECORD_COUNT]
+set stas [dbgetv $db_sc 0 0 sta]
+set chans [dbgetv $db_sc 0 0 chan]
+set starttime [dbgetv $db_sc 0 0 time]
+set endtime $starttime
+loop i 1 $n { 
+	set sta [dbgetv $db_sc 0 $i sta]
+	set chan [dbgetv $db_sc 0 $i chan]
+	set time [dbgetv $db_sc 0 $i time]
+	if { [string first $sta $stas] < 0 } {
+		set stas [ format "%s|%s" $stas $sta ]
+	}
+	if { [string first $chan $chans] < 0 } {
+		set chans [ format "%s|%s" $chans $chan ]
+	}
+	if { $time < $starttime } {
+		set starttime $time
+	} elseif { $time > $endtime } {
+		set endtime $time
+	}
+	
+}
+
+#set starttime [expr floor($starttime - ($cmdlinetimespan / 10.0))]
+set starttime [expr floor(floor($starttime /10)* 10)]
+if { !$timespan} {
+	set timespan [expr ceil(ceil($endtime/10) * 10 - $starttime)]
+}
+
+set tmpfilename [format "/tmp/dbplotpicks.%o.ps" [pid]]
+set cmdline {exec dbplotpicks $dbname "$stas" "$chans" $starttime $timespan -1 -f "$filtername" -display -ps $tmpfilename}
+if [file isfile $polygondb] {
+	set cmdline [append cmdline " -polygons $polygondb" ]
+}
+if [file isfile $placedb] {
+	set cmdline [append cmdline " -places $placedb" ]
+}
+set cmdline [subst -nocommands $cmdline]
+
+#if [ catch { exec dbplotpicks $dbname "$stas" "$chans" $starttime $timespan -1 -f "$filtername" -display -ps $tmpfilename -places $env(ANTELOPE)/local/data/database/BekannteOrte -polygons $env(ANTELOPE)/local/data/database/BekannteGrenzen} result ] {
+if [ catch { eval $cmdline } result ] {
+	puts "error calling dbplotpicks"
+	puts stderr $result
+} else {
+#catch {exec dtdbprintdialog $tmpfilename}
+catch {exec $print_dialog $tmpfilename}
+	
+}
+if {[string is true $delete_tempfile]} { 
+	catch {exec rm $tmpfilename}
+}
+
+
+	
+
+

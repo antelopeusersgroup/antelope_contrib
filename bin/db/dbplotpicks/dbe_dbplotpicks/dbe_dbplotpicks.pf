@@ -1,0 +1,7 @@
+filter	BW 0.7 5 10.0 5
+polygondb	none
+placedb		none
+#polygondb	/opt/antelope/4.6/local/data/database/BekannteGrenzen
+#placedb	/opt/antelope/4.6/local/data/database/places
+print_dialog fileaction
+delete_tempfile	yes
