@@ -1,0 +1,872 @@
+.\" %W% %G%
+.TH GENLOC_INTRO 3 "%G%"
+.SH NAME
+genloc_intro - introduction to generic event location library
+.SH DESCRIPTION
+\fBgenloc\fR is a collection of routines that form the core of a
+new suite of event location tools presently under development.  
+I refer to these procedures as genloc as a shorthand for for generic location.  
+This was done because the intent of the original design was to 
+produce a set of location modules that were flexible enough that
+this program could come close to simulating any other existing 
+location code.  At present, however, this is largely limited 
+to the class of algorithms that are variants of what I 
+would call the "standard method".  This is a class of method variously
+known as (1) nonlinear least squares, (2) Gauss-Newton method, or
+(3) Geiger's method.  A wide range of solution are actually possible
+with this package, however, due to wide flexibility in the choice
+of various weighting schemes and the method of solving the 
+matrix of partial derivatives that are an integral part of this 
+methodology.  These are described in more detail below when I 
+describe the host of input parameters that control the behavior
+of the location procedure.   
+.LP
+This package has at least seven features that together make it different from 
+any existing location code I'm aware of.
+.IP (1)
+It accepts arbitrary combinations of arrival time and array slowness vector
+measurements.
+.IP (2) 
+It can utilize any seismic phase for which the user can define a 
+predicted travel time and/or slowness vector. 
+This is accomplished through an extremely general travel time 
+interface that should allow someone to hook in alternative 
+travel time calculators to those I supply relatively easily.  
+.IP (3)
+The program has no intrinsic concept of scale.  It should be 
+equally applicable at any scale from local seismic networks to 
+global network scales.  
+.IP (4)
+The concept of establishing an initial location estimate is 
+treated as an independent problem.  Many traditional codes contain
+a short list of standard methods that are hardwired into the code
+and highly scale dependent.  The view I took
+here was that this was a separate problem that should be dealt
+with by a different collection of algorithms.  
+.IP (5) 
+A rich mixture of possible generalized inverse solutions is 
+possible through a combination of a variety of weighting options
+and choice of a pseudoinverse or Marquardt (damped) solution.  
+.IP (6)
+A range of features can be implemented that should make the
+location procedure highly robust when the control parameters are properly
+defined.  Alternatively, it can be just as easily made to behave
+in quite the opposite fashion and implement plain, vanilla 
+nonlinear least squares.  
+.IP (7)
+I convert all array measurements internally into two orthogonal
+components of the slowness vector (ux and uy).  Slowness vectors 
+specified as bearing and slowness magnitude are accepted as input, but
+are converted to components internally.  This is done because 
+azimuth data have nasty statistical properties for very high 
+velocities when the azimuth becomes unstable.  In reality 
+errors in slowness vectors are fundamentally related to the 
+array beam pattern, which has well defined properties in 
+terms of vector components.  
+.LP
+genloc(3) describes input functions that can be used to load the
+data objects that are used by the location process.  
+These functions all data from parameter files (see pf(3)).
+This can be all merged into a single parameter file (or 
+parameter file hierarchy) as is done with the simple command
+line front end to this package called sgnloc (see sgnloc(1)).
+That program reads a single parameter file object, and writes
+and output parameter file.
+.LP
+dbloc2(1) how includes genloc as a location option.  The program it
+runs is a special interface program written by Dan Quinlan called
+.LP
+relocate(1) is a datascope program designed for relocating a
+complete catalog using a different velocity model, travel time
+calculator, station corrections, or whatever.  It reads a css3.0
+database and produces a set of new output css3.0 tables with
+appropriate fields updated.
+.LP
+orbgenloc(1) is a real time implementation of genloc through the
+orb server routines.  
+.LP
+The genloc routines all use a long list of options loaded into
+the different programs through a parameter file.  Some programs
+have special parameters peculiar to that program.  In the remainder
+of this man "page" parameters common to all the genloc routines are
+descripbed.  
+For these parameters it is most appropriate to divide the input parameter
+space into at least five subsets:  (1) control parameters, (2) network
+geometry parameters, (3) seismic phase description parameters, 
+(4) data tables, and (5) initial hypocenter guess parameters.  
+Parameters in each of these categories are summarized in separate
+sections below.
+.SH  CONTROL PARAMETERS
+.ce 
+\fIWeighting Parameters\fR
+.LP
+\fBarrival_residual_weight_method\fR.  Sets type of residual weighting to 
+be applied to arrival time data.  Options are:
+.nf
+huber - implements Huber formula
+bisquare - use bisquare formula
+thomson - use thomson's redescending formula
+none - turns off residual weighting
+.fi
+.LP
+\fBslowness_residual_weight_method\fR.  Same as arrival_residual_weight_method
+for slowness vectors.  Options are identical.
+.LP
+\fBmin_error_scale\fR and 
+\fBmax_error_scale\fR.  Residual weighting functions that are used here
+are analytic functions that assume the errors are scaled to have 
+scatter of order 1.0.  Horrible things happen if this is not 
+forced upon the data.  To guarantee this happens, internally 
+I calculate a scale factor using a well known robust statistic
+for this scale factor known as the interquartiles.  
+These are calculated by first scaling all data by 
+reciprocal of the given 
+time uncertainty (see data parameter section below).
+We take these numbers, calculate the interquartiles, and determine
+the scale by the magic number of 1.349 that is the appropriate
+constant for residuals with a normal distribution.  
+There is an intrinsic problem, however, with residual weighting
+that these two parameters are used to keep from becoming 
+disastrous.  The scale factor can become too large in the 
+presence of multiple outliers, or more commonly become too low
+as the solution converges.  In the later case, if min_error_scale
+is set too low the solution can get caught in a downward spiral 
+where more and more data are discarded, reducing rms, reducing
+rms further, etc.  If the data uncertainties are properly 
+set, the minimum should range from 1.0 to 5.0 or so.  
+The maximum depends upon how well refined the solution is.  
+When only a rough initial estimate is available, this should
+be set to a large number like 1000.0.  For a relocation from
+a good initial solution,  max_error_scale can be made as small
+as one can get by with.  An extreme case is to set 
+min_error_scale=max_error_scale, in which case the error scale
+factor will never be adjusted.
+.LP
+Residual weighting requires some additional practical advice.  
+The standard advice in the literature is to use the Huber formula
+for data at an early stage where potentially large outliers might
+be present and we are not necessarily close to a minimum.  Use
+of the more aggressive Thomson formula is generally advised only
+after the solution has converged.  You are welcome to experiment
+with the bisquare function, but it has less than ideal properties.
+That is, it tends to downweight data too soon unless the error scale is
+forced to remain relatively high.  This can be achieved by
+setting min_error_scale to a fairly high value like 10.0.   
+.LP
+\fBtime_distance_weighting\fR.
+Boolean switch set to true or false.  Setting this to true enables
+distance weighting for all arrival times.  The actual form of 
+the distance weight to be used can be phase dependent and the method
+for defining the weighting function is defined below.
+.LP
+\fBslowness_distance_weighting\fR.
+Same as \fBtime_distance_weighting\fR, but for slowness vector data.
+.LP
+\fBslowness_weight_scale_factor\fR.  
+Slowness data are intrinsically of a different scale than arrival time
+data.  The weights of all slowness data are multiplied by this scale
+factor.  This can be used to increase or decrease the importance 
+assigned to array data relative to arrival time data.  I reiterate,
+however, that ALL data are scaled by 1/uncertainty parameters that
+loaded with the data or set from defaults (see below).
+.ce
+\fIInversion Parameters\fR
+.LP
+\fBrecenter\fR.
+Boolean parameter that when true turns on a feature pioneered by
+Lienert and Fraser (BSSA, vol. 76, no. 3, p. 771-783, 1986) 
+called recentering.  In this 
+approach the origin time is treated separately from the 
+spatial coordinates.  In their original implementation they 
+utilized the mean value of the residuals at each step as a 
+correction to the origin time, and then solved the spatial 
+coordinate equations by the standard method.  
+I've modified this slightly here by utilizing the median rather
+than the mean as this is a more stable approach in the presence
+of outliers.  
+.LP
+\fBgeneralized_inverse\fR.
+Two options are presently supported:  (1) pseudoinverse, or (2) marquardt.
+The first is linked to a single related parameter that is required
+when the pseudoinverse is selected.  \fBsingular_value_cutoff\fR
+sets the singular value cutoff used to form the pseudoinverse.
+Note this is a relative cutoff value.  The actual singular value 
+cutoff is determined from the largest singular value of the 
+matrix that is inverted.  That is, if smax is the largest singular
+value, we delete singular values from pseudoinverse solution 
+smaller than smax*singular_value_cutoff.  A typical value to 
+use for most data is about 0.001 to 0.0001. 
+.LP
+The second invokes a damped least squares commonly attributed to 
+Marquardt.  I utilize the the dynamically variable damping form of
+this methodology in which the damping parameter is adjusted 
+automatically at each iteration.  The basic recipe is to 
+increase damping whenever a calculated step would lead to 
+an increase in rms, and decreasing the damping factor in
+a regular way otherwise.  For this to be stable, however, 
+we require three parameters:  (1) a ceiling on the damping 
+parameter, (2) a floor on the damping parameter, and (3) an
+adjustment factor that determines how the damping parameter is 
+scaled upward or downward.  These three parameters are defined
+here by parameters called
+\fBmax_relative_damp\fR, 
+\fBmin_relative_damp\fR, and \fBdamp_adjust_factor\fR respectively.
+Note that the first two are labeled "relative" because they 
+are not defined by an absolute scale, but are scaled by the
+largest singular value of the matrix being solved in the 
+same way as singular_value_cutoff parameter is defined above.  
+Reasonable ranges for these three numbers are 1 to 10 for
+max_relative_damp, 0.0001 to 0.000001 for min_relative_damp, 
+and 5 to 10 for damp_adjust_factor.
+.ce 
+\fIIteration control parameters\fR
+.LP
+\fBstep_length_scale_factor\fR, 
+\fBmin_step_length_scale\fR,
+\fBdepth_floor\fR, and 
+\fBdepth_ceiling\fR
+are all utilized for step length damping.  At present 
+step length damping is not optional, and is always enabled.
+It is utilized here only to control unstable depth estimates.
+The basic algorithm is that whenever a calculated step would
+lead to a depth adjustment that would place the source above
+depth_ceiling (normally 0.0) OR below depth_floor, 
+the step length (vector magnitude, not direction) is MULTIPLIED
+by the step_length_scale_factor repeatedly until the solution 
+falls inside the bounds of depth_ceiling to depth_floor.
+That is, if we let s=step_length_scale_factor,
+the program first tries the step s\fBx\fR.  If the solution still
+violates the ceiling or floor, it tries s\fBx=\fR**2, 
+s\fBx=\fR**3, s\fBx=\fR**4, ...  
+Just as in Marquardt's method, for this to be stable the 
+range of this scaling must be limited.  Internally, the program
+never allows the scale factor to exceed 1.0 for obvious reasons.
+This is done when the control file is read.  
+If step_length_scale_factor is specified as a number greater than
+1.0, the program will post a warning diagnostic and reset this 
+parameter to a default.  The reciprocal parameter is 
+the floor on the scale factor which the user controls with
+the parameter min_step_length_scale.   
+min_step_length_scale represents the smallest scale factor
+that is allowed on a calculated correction that would fall 
+outside the depth ceiling or floor.   It is 
+easy to show that if s is the scale factor and m is the 
+min_step_length_scale, the maximum number of adjustments that will
+be attempted is log(m)/log(s).  
+It is equally important to understand what the algorithm does
+if the scale factor is reduced to min_step_length_scale.
+When this occurs, the algorithm fixes the depth at the ceiling
+or floor (whichever is involved) and determines the 
+horizontal adjustment from s\fBx=\fR.  
+.LP
+If you understand this algorithm, it should be obvious that
+improper setting of these parameters can easily produce a
+solution that will never converge.  The most important 
+guideline is that, in general, it is a bad idea to 
+let min_step_length_scale get too small. 
+Step-length damping is most likely to become significant for
+events that are shallow with bad depth control.  It is important
+to recognize that in this situation the final solution can depend 
+upon the choice of the step-length parameters. 
+The key advice is that for rough estimates (e.g. an estimate
+made automatically by a real-time system) the parameter 
+min_step_length_scale should be kept relatively small
+(I recommend 0.1 to 0.25) to speed convergence of shallow sources
+where steps are calculated that would place the source in 
+the ionosphere. Conversely, for refined catalogs where one 
+is starting from a reasonable first guess for all events, 
+min_step_length_scale should be set to a small number like
+0.001.   
+.LP
+\fBfix_latitude\fR, 
+\fBfix_longitude\fR,
+\fBfix_depth\fR, and 
+\fBfix_origin_time\fR are boolean parameters whose purpose should
+be obvious.  Note that any combination of these four parameters
+can be set to true, although setting all four true is absurd except 
+as an expensive way to calculate travel time residuals.  
+.LP
+\fBmaximum_hypocenter_adjustments\fR.  Sets the maximum number
+of times a solution will be adjusted before the program will 
+give up and exit.  A typical number is 50.
+.LP
+\fBdeltax_convergence_size\fR.  The iteration sequence will 
+terminate when the vector correction in the space coordinates 
+of the hypocenter (in units of KILOMETERS) falls below this
+parameter.  
+.LP
+\fBrelative_rms_convergence_value\fR.  
+A common reason to terminate a solution is based on data fit.
+Clearly when a solution is not improving the fit to the data
+significantly, further steps are not necessarily warranted.  
+Here I use "relative" rms convergence.  That is, the solution 
+is terminated when the ratio of the difference in weighted rms
+residuals between the current step and the previous step with
+the rms residuals of the previous step (i.e. delta_rms/rms)
+falls below this parameter.  This number should not be made
+too small, or the solution may terminate prematurely when
+the rms minimum of the solution has a very flat floor.  
+This may be proper, but the answer in this case can depend 
+strongly on the starting solution.  My general opinion, is
+that this parameter should be used as a fallback 
+to terminate marginal solutions that bounce around in 
+flat floored rms valley and never converge when measured by
+spatial adjustments.  I recommend setting this parameter to 
+0.001 to 0.0001. 
+.SH GEOMETRY PARAMETERS
+.LP
+There are two basic geometry tables:  station coordinates, and
+array coordinates.  These are specified by two tables that 
+are most easily seen by showing a simple example:
+.nf
+seismic_stations                                &Tbl{
+CHM      42.9986   74.7513    0.6550
+EKS2     42.6615   73.7772    1.3600
+USP      43.2669   74.4997    0.7400
+BGK2     42.6451   74.2274    1.6400
+AML      42.1311   73.6941    3.4000
+KZA      42.0778   75.2496    3.5200
+TKM      42.8601   75.3184    0.9600
+KBK      42.6564   74.9478    1.7600
+AAK      42.6333   74.4944    1.6800
+UCH      42.2275   74.5134    3.8500
+KZA      42.0778   75.2496    3.5200
+KBK      42.6564   74.9478    1.7600
+ULHL     42.2456   76.2417    2.0400
+TKM2     42.9208   75.5966    2.0200
+}
+seismic_arrays                                  &Tbl{
+GEYBB9   37.9293   58.1125    0.6629
+GEYG36   37.9293   58.1125    0.6629
+}
+.fi
+.LP
+Note that both tables are identical and contain: name, latitude,
+longitude, elevation (in km).  They are set in a parameter file
+as a Tbl object.  The only difference for the seismic_arrays 
+table is that the name field may by be doubled for a given array 
+due to different subarray configurations.  In the example 
+shown these are referenced to a common origin, but this may 
+not always be the case.
+.LP
+All the genloc programs use this form of geometry input
+with the exception of relocate(1).  That program reads this
+same information from the css3.0 site table.  The parameter
+file can contain the geometry information for relocate, but
+it will simply be ignored.
+.SH PHASE DESCRIPTION PARAMETERS
+.LP
+This section of the parameter file is by far the most complex.
+It makes use of a novel feature of Dan Quinlan's parameter files
+that allows a hierarchy of Arr object.  This allows the parameter
+file to repeat key words nested within curly brackets.  
+This is useful here to build the descriptions of what I call 
+"phase handles" and use a common set of parameter names for 
+each phase.  It is most easily understood by first presenting 
+an example:
+.nf
+phases &Arr{
+P	&Arr{
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	10.0	1.0
+	90.0	0.7
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.05
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+		GEYBB9	0.01
+		KBK	0.02
+		USP	-0.2
+	}
+	ux_station_corrections &Tbl{
+                GEYBB9  0.001
+		GEYBB12 0.0015
+        }
+        uy_station_corrections &Tbl{
+                GEYBB9  -0.001
+                GEYBB12 -0.0015
+        }
+	travel_time_calculator	ttlvz	
+	velocity_model &Tbl{
+	3.5   0.0
+	6.0  5.0
+	8.0  30.0
+	}
+}
+S	&Arr{
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	10.0	1.0
+	90.0	0.7
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.2
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+		GEYBB9	0.01
+		KBK	0.02
+		USP	-0.2
+	}
+	ux_station_corrections &Tbl{
+                GEYBB9  0.001
+		GEYBB12 0.0015
+        }
+        uy_station_corrections &Tbl{
+                GEYBB9  -0.001
+                GEYBB12 -0.0015
+        }
+	travel_time_calculator	ttlvz	
+	velocity_model &Tbl{
+	2.0  0.0
+	3.5 5.0
+	4.5 30.0
+	}
+}
+}
+.fi
+.LP
+Notice the hierarchy that begins with the keyword "phases" and that the 
+closing curly bracket does not end until the close of this example.  
+Thus, "phases" is the highest level keyword that encloses this 
+entire section of the input parameter file.  This section can 
+sometimes become huge as we will see in a moment.  
+.LP
+The next level of the hierarchy is phase identifiers.
+A phase handle is built for 
+each named "phase" within this block. 
+In the example here, this is P and S, but it could be extended 
+to as many phase names as one wished.
+.LP
+Within each phase identifier block, the following parameters are
+fixed and all are required:  \fBtime_distance_weight_function,
+ux_distance_weight_function, uy_distance_weight_function,
+default_time_uncertainty, default_slowness_uncertainty,
+time_station_corrections, ux_station_corrections,\fR and
+\fBuy_station_corrections\fR.  The admittedly verbose names
+should make their purpose obvious.  However, the following 
+points should avoid any confusions:
+.IP (1) 
+The units of all quantities related to time are in seconds.
+.IP (2) 
+The units of all quantities related to slowness are in seconds/km.
+.LP
+The distance weight parameters define a distance weighting function
+as a series of ordered pairs.  These are distances (in degrees) 
+followed by the weight to be assigned at that position.  
+These are interpolated internally using a simple linear interpolation
+between points to define the weight at a given distances.  
+Note these parameters are required for each phase even if residual 
+weighting is turned off (see above), and each list MUST end 
+with 360.0.  If the last point is not given as 360.0 it will 
+be added with a weight of 0.0 and a diagnostic will be issued.
+.LP
+Station corrections are NOT required for each station.  If 
+a correction for either time or slowness is not found for 
+a given station-phase-data type, that term will be set to 0.0.
+.LP
+The bottom level of the hierarchy in this set of parameters is
+the travel time section.  A dependency on the form of the 
+parameter file pertaining to calculation of travel times for 
+a given phase depend upon the setting of the parameter
+\fRtravel_time_calculator\fR.  At present this keyword should
+be followed by one of three strings used to define the travel
+time calculator:  (1) ttlvz, (2) "uniform table interpolation"
+(the quotes are not necessary, but they emphasize the string has 
+embedded blanks), or (3) generic.   
+ttlvz is a simple, constant velocity, flat-earth, layered model
+travel time calculator.
+Note you can use this for any phase, but be aware that
+this function always calculates first arrivals.  Thus, it would
+produce stupid answers form something like PmP, for example, but
+it could be used to compute phases like Pn or Lg provided one
+properly defined the distance weights on these phases.
+"uniform table interpolation" selects
+a general-purpose travel time table grid interpolation routine.
+(A program taup_convert(1) can be used to build these tables for
+a wide range of seismic phases using the tau-p calculator.)
+Finally, generic implements a generic travel time interface
+presently under development that would unify travel time
+calculation with other datascope applications like dbpick.
+At present, this is only used as a direct interface into the
+tau-p library.
+.LP
+I anticipate alternative travel time calculators
+could be inserted here in the future, but at present these are
+the only ones that are accepted.  Different parameters are searched 
+for in this section depending on which calculator is selected.
+.ce
+\fIParameters needed for ttlvz\fR
+.LP
+The example above illustrates parameters required by the
+ttlvz function.  That is, all we require is a Tbl headed by
+the keyword \fBvelocity_model\fR.  Each entry in the table
+is an ordered (velocity, depth) pair where the depth defines
+the depth to the top of the layer.  Note that negative depths
+are allowed, and highly recommended for local problems like 
+volcanos where sources often occur above the elevation of 
+all stations. 
+.ce 
+\fIParameters needed for travel time tables\fR
+.LP
+For the tables, only one parameter will follow. 
+\fBtable_file\fR gives the name of a parameter file containing
+the uniform grid table in a format described in the FILES section 
+below.
+Note that the name used will have the ".pf" added after it 
+since this string is passed directly to pfread.
+.ce
+\fIParameters required for generic travel time interface\fR
+.LP
+In this case the only required parameter are two parameters
+required by the generic interface:  TTmethod and TTmodel.
+See man tt in section 3 for a description.
+.SH DATA PARAMETERS
+.LP
+This is also most easily seen by an example:
+.nf
+arrivals &Tbl{
+P        CHM      712788677.83217  0.028  1011
+P        KBK      712788673.29933  0.028  1013
+P        TKM      712788676.35498  0.014  1015
+P        USP      712788680.86788  0.038  1017
+S        CHM      712788726.71320 -1.000  1012
+S        KBK      712788720.20059 -1.000  1014
+S        TKM      712788725.74570 -1.000  1016
+S        USP      712788746.91177 -1.000  1018
+}
+slowness_vectors &Tbl{
+P       GEYBB9  -0.125 0.009 0.01 0.01  1024
+}
+.fi
+.LP
+Note the order of entries for arrival time measurements is:
+phase name, station, epoch time, time uncertainty, and arid.  
+Note that the -1.0 is used to flag a point with an unknown 
+uncertainty.  Listing any negative number for the 
+uncertainty will lead to use of the default time uncertainty
+parameter defined for that phase.
+The "arid" field (integer at the end of the example) is
+not required by all programs.  This field is ignored
+by sgnloc, but is required by orbgenloc.  
+In contrast, the relocate program doesn't even look at 
+this parameter, but obtains these data from a css3.0 database.
+.LP
+By default it is assumed that slowness_vectors are tabulated
+as shown:  phase name, array, ux, uy, delta_ux, and delta_uy
+Again if delta_ux or delta_uy are set to a negative number, 
+the default defined for this phase will be used.  
+Two options exist for slowness data.  
+By default slowness is assumed to be tabulated in units of 
+seconds/km.  However, the parameter \fBslowness_units\fR 
+can be use to override this.  If the parameter \fBslowness_units\fR
+is found, the line is scanned for the string "degrees".  
+If found, all slowness measurements are assumed to be in s/degree.
+In addition, slowness vectors by default are assumed to be 
+tabulated by components ux (east positive) and uy (north positive)
+of the slowness vector.  If the parameter \fBslowness_format\fR
+appears, followed by the string "azimuth", it is assumed that
+the two numbers following the array name are the 
+slowness (units can be specified in either degrees of km if
+the \fBslowness_units\fR parameter is used).  Only standard 
+azimuths measured in degrees are accepted.  
+.SH INITIAL HYPOCENTER PARAMETERS
+.LP
+\fBinitial_location_method\fR switch for method used.
+The following options are accepted:
+.IP (1)
+\fImanual\fR use a specified latitude, longitude, depth,
+and origin time as initial location.
+.IP (2)
+\fIrectangular_gridsearch\fR use a uniformly spaced gridsearch
+method to determine an initial location.
+Grid is uniformly spaced in latitude and longitude and depth.
+Note this will work badly for a source near the poles since the grid
+is uniform in latitude and longitude, not in in distance.
+Note this gridsearch ALWAYS uses recentering (see above)
+so the origin time is removed as a variable in the gridsearch.
+.IP (3)
+\fIradial_gridsearch\fR  similar to rectangular gridsearch,
+but a polar grid centered on a specified point is used.
+The grid can span a full circle, or be limited to a specified
+range of azimuths.  The later can, for example, make sense
+with array data.
+.IP (4)
+\fInearest_station\fR  Use the location of the first arrival
+station as an intial guess.  Depth is set as in the manual
+method using the initial_depth parameter.
+.IP (5)
+\fIS-Ptime\fR  Uses the S-P of the station with the earliest arriving
+P wave that also has an S arrival defined.  This actually uses a
+fast, simple grid search method.  Distance is computed from the
+S-P time, and a radial grid search is conducted at that distance
+using the initial_depth parameter.
+.LP
+The initial location methods interact with a series of parameters
+that cascade from the choice of the method.
+.ce
+\fImanual method parameters\fR
+.LP
+\fBinitial_latitude\fR, \fBinitial_longitude\fR,
+\fBinitial_origin_time\fR, and \fBinitial_depth\fR set the
+initial hypocenter guess manually.  Latitude and longitude
+need to be in degrees, depth in km, and origin time must
+be specified as an epoch time.
+.ce
+\fIS-P method parameters\fR
+.LP
+\fBinitial_depth\fR sets depth used for trial location.  In the S-P method
+a single depth search is used along a circular arc computed from the
+S-P time of the nearest station.  The conversion from S-P to derive 
+this circule is computed from the parameter 
+\fBS-P_velocity\fR.  The program searches a circular region at this
+distance and the given depth computing rms residuals at 
+\fBnumber_angles\fR equally spaced points.  
+.ce
+\fIgeneral grid search parameters\fR
+.LP
+The following parameters are used by all methods that use
+a grid search either explicitly or implicitly.
+.IP (1)
+\fIcenter_latitude, center_longitude, center_depth\fR specify
+the center point of all grid search areas.  Note that
+center_depth is used implicitly as the trial depth in the
+S-P and the nearest station methods, but the other coordinates
+are ignored in that case.
+.IP (2)
+\fIgridsearch_norm\fR controls what measure is used to compute
+the minimum misfit in gridsearch methods.  Currently two
+options are allowed:  weighted_rms and raw_rms.
+Both are L2 norm measures of residuals.
+raw_rms is the L2 norm of the residuals in seconds.
+weighted_rms residuals are scaled by distance and individual
+specified weighted, but NOT residual weights.  Residual
+weights are a BAD idea in an initial location determination
+because they tend to produce multiple minima, especially
+when the number of degrees of freedom is low.
+.ce
+\fIMethod dependent grid search parameters\fR
+.LP
+\fIlatitude_range, longitude_range, depth_range, nlat, nlon, ndepths\fR.
+These parameters set the area used in a rectangular grid search.
+A grid of nlat by nlon by ndepths points is computed
+starting from the center_latitude, center_longtiude, and center_depth
+point.  The program determines an initial location by and searching for
+a travel time residual in this grid.
+Latitudes and longitudes are, as always, in
+degrees and depths are in kilometers.  Thus, to search the whole
+world with on point per degree and 0 to 500 km depths at 50 km
+intervals use:
+.nf
+center_latitude         0.0
+center_longitude        0.0
+center_depth            250.0
+latitude_range          180.0
+longitude_range         360.0
+depth_range             500.0
+nlat                    180
+nlon                    360
+ndepths                 11
+.fi
+.LP
+\fIminimum_distance, maximum_distance, minimum_azimuth,
+number_points_r, number_points_azimuth, ndepths\fR set
+radial grid search.  Azimuth values are assumed to
+be in degrees.  The following would search a radial
+segment from 1 to 2 degrees away from a specified
+center point (see above) with a range of azimuths from
+70 to 110 degrees at 1 degree intervals in azimuth and
+0.1 degree increments in distance (about 11 km) at a
+fixed depth of 5 km.
+.nf
+minimum_distance        1.0
+maximum_distance        2.0
+minimum_azimuth         70.0
+maximum_azimuth         110.0
+center_depth            5.0
+number_points_r         11
+number_points_azimuth   41
+ndepths                 1
+.nf
+
+.SH  DEFAULTS
+All the parameters described in the CONTROL PARAMETERS section 
+above can be omitted and the following defaults would
+be set:
+.nf
+arrival_residual_weight_method                  huber
+slowness_residual_weight_method                 huber
+time_distance_weighting                         true
+slowness_distance_weighting                     true
+slowness_weight_scale_factor                    1.0
+min_error_scale                                 1.0
+max_error_scale                                 50.0
+depth_ceiling                                   0.0
+depth_floor                                     700.0
+generalized_inverse                             marquardt
+min_relative_damp                               0.000005
+max_relative_damp                               1.0
+damp_adjust_factor                              5.0
+recenter                                        false
+fix_latitude                                    false
+fix_longitude                                   false
+fix_depth                                       false
+fix_origin_time                                 false
+step_length_scale_factor                        0.5
+min_step_length_scale                           0.01
+maximum_hypocenter_adjustments                  50
+deltax_convergence_size                         0.01
+relative_rms_convergence_value                  0.0001
+.fi
+.SH FILES
+.LP
+The travel time tables are specified as ascii parameter files.
+These can be placed in a standard place using the path search
+features of the parameter file interface (see pf(3)).  
+The structure of this parameter file is as follows:
+.LP
+\fBnx\fR and \fBnz\fR define the number of points in
+the grid.  nx, is obviously the number of points in epicentral distance.
+.LP
+\fBdx\fR and \fBdz\fR define the grid point spacing and have mixed units.
+dx is specified in degrees, and dz is specified in kilometers.  These
+are fixed intervals that specify the regular mesh on which travel times
+and slowness are tabulated.  
+.LP
+\fBx0\fR and \fBz0\fR are optional parameters.  They both default to 0.0.
+They specify the distance and depth of the first point in the table.
+This is useful, for example, with a phase like Pn that does not exist
+until one is beyond a critical distance.
+.LP
+It is highly recommended that the parameter \fBdepth_floor\fR be 
+set to the minimum value of z0+(nz-1)*dz for all phases, or 
+the calculator will not know how to handle steps that put the 
+source below the bottom of the tables.   
+.LP
+The tables are then specified in the parameter file as a very 
+long Tbl tagged with the keyword \fBuniform_grid_time_slowness_table\fR.
+The entries of the table will look something like
+the following:
+.nf
+
+uniform_grid_time_slowness_table &Tbl{
+0.001100 0.172414 -0.000000 t
+9.585741 0.172412 -0.000000 t
+19.171297 0.172407 -0.000000 t
+28.149948 0.123692 -0.000000 c
+35.026741 0.123686 -0.000000 t
+41.903145 0.123677 -0.000000 t
+48.778996 0.123666 -0.000000 t
+55.654144 0.123652 -0.000000 t
+62.528427 0.123635 -0.000000 t
+69.401695 0.123615 -0.000000 t
+76.273788 0.123593 -0.000000 t
+83.144547 0.123567 -0.000000 t
+ ...
+1152.625244 0.001050 -0.000005 t
+1152.676392 0.000788 -0.000005 t
+1152.712891 0.000526 -0.000005 t
+1152.734863 0.000263 -0.000005 t
+}
+.fi
+.LP
+where the actual table has a total of nx*ny lines.
+These are assumed arranged as scans at constant depth so the table is
+expected to contain nx entries for a source at z0, followed by nx
+entries for a source at z0+dz, etc.
+The format of 
+each lines is:
+.nf
+	time	slowness	du/dx	branch_code
+.fi
+Unit of time are seconds, slowness units are seconds/kilometer, and
+du/dx is seconds/km-km.  Note that du/dx can often be neglected, so
+if you wish to make a set of tables using a routine other than
+taup_convert, you may well be able to get by with setting that column
+of the table to 0.0 everywhere.  du/dx is largest for direct 
+wave branches at offsets less than the source depth.  Everywhere
+else the dominate terms come from angle terms and terms that
+scale with slowness.  Note, for example, that existing programs
+like LOCSAT implicitly ignore terms involving du/dx anyway by
+keying on the azimuth rather than the slowness vector components. 
+.LP
+The branch_code is used to work around various levels of discontinuity
+that commonly exist in travel time tables and an ambiguity in sign.  
+The following characters are presently recognized (anything else
+will generate an error, and cause the table for the offending 
+phase to be ignored.):  
+.nf
+	t = turning ray 
+	u = upward directed branch
+	c = crossover
+	j = jump discontinuity
+	n = not observable at this distance
+.fi
+t and u are used to distinguish an ambiguity in sign between 
+direct arrivals that result from a source very close to a receiver 
+and arrivals from more distant events.  
+Both can have the same apparent slowness, but the sign must be 
+known to properly compute derivatives of time and slowness wrt to 
+depth.  c and j describe two levels of discontinuities that
+exist in all travel time tables.  A crossover is a discontinuity
+in slope that occurs, for example, at the Pg-Pn crossover for
+the generic phase "P".  A jump discontinuity, in contrast, is 
+a step discontinuity in travel time.  This occurs, for example,
+in the core shadow where we have a jump of over 250 s between 
+Pdiff and PKiKP.  n is used to flag a phase that is simply 
+not observable at a given distance range in the table 
+(e.g. S waves in the core shadow, or pP at close distance ranges).
+.LP
+In order to analytically compute time and slowness derivatives, 
+velocities at each of the depths that the travel time tables
+are tabulated at are required. 
+These are assumed to be present in the parameter file 
+headed by the keyword \fBvelocities\fR that begin a Tbl
+with nz entries tabulating velocity at each of the nz
+tabulated source depths.   
+.SH "SEE ALSO"
+.nf
+sgnloc(1), ggnloc(3), taup_pf_convert(1)
+.fi
+.SH "BUGS AND CAVEATS"
+genloc is under development, and bugs will be a fact of life until
+it has been heavily exercised on its full range of possible applications.
+Several things are presently lacking and/or incomplete the user is warned
+about:  (1) a
+cascaded grid search procedure is planned, but has not yet been
+implemented; (2) the set of travel time options is not as rich as it
+could be;  and (3) not all the initial location options have been
+as thoroughly tested as they should be.  
+.SH AUTHOR
+Gary L. Pavlis
