@@ -27,6 +27,10 @@ liss2orbpkt ( char *seed, int size, char *database,
     Srcname parts ;
     int retcode = 0 ;
 
+    if ( strncmp(seed, "000000                                                          ", 64 ) == 0 ) { 
+	return -5 ; /* some kind of empty packet to keep connection open? */
+    }
+
     retcode = UNSEED ( seed, size, &conf, time, &samprate, &nsamp, 
 		    &data, &datasz ) ; 
     switch ( retcode ) { 
@@ -77,8 +81,11 @@ liss2orbpkt ( char *seed, int size, char *database,
 	    break ;
 
 	case -2:  /* got garbage */
-	    complain ( 0, "Can't decode this packet:"  ) ;
-	    hexdump ( stderr, seed, size ) ;
+	    if (   conf->sdh.samprate_factor != 0 
+		|| conf->sdh.samprate_multiplier != 0) {
+		complain ( 0, "Can't decode this packet:"  ) ;
+		hexdump ( stderr, seed, size ) ;
+	    }
 	    break; 
 
 	default:
