@@ -63,8 +63,10 @@ static char string[STRLEN];
         sprintf(string, "SIGIOT");
     } else if (signal == SIGABRT) {
         sprintf(string, "SIGABRT");
+#ifdef SIGEMT
     } else if (signal == SIGEMT) {
         sprintf(string, "SIGEMT");
+#endif
     } else if (signal == SIGFPE) {
         sprintf(string, "SIGFPE");
     } else if (signal == SIGKILL) {

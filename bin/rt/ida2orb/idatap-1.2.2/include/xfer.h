@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include "deviants.h"
 
 /* Protocol requires RAW and GEN1 waveform formats, but permits others
  * to be offered.  Below are the additional formats supported by this
