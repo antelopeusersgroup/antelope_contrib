@@ -1,0 +1,208 @@
+Schema css3.0
+	Description ( "Center for Seismic Studies Schema Version 3.0 " )
+	Detail {
+		Modifications from original CSS documentation:
+		1) Null values corrected for certain attributes.
+		2) offdate added to primary keys for tables in which it occurs.
+		3) endtime added to primary keys for tables in which it occurs.
+		4) time made first primary key in origin for sorting.
+		5) arid and orid added to foreign keys in assoc.
+		6) made range values expression for automated testing
+		7) added wfedit relation 12/3/93
+		8) changed the primary key in sitechan to chanid, and added
+		chanid as a foreign key in sensor to force joins
+		of sitechan to go through sensor table.
+		9) changed primary keys in moment and centryd table to orid.
+		10) added calibration and stage tables 1/31/94
+		11) changed primary keys in stamag to arid, magtype, sta, orid
+		12) changed primary key in site to sta (no ondate, offdate)
+		13) changed null values for origerr's covariant matrix
+		14) changed definition of ndef for origins included from other catalogs
+		15) added beam, fkgrid and stgrid tables to accomodate array processing
+		           12/15/94
+		16) added wftar table to accomodate tar tape waveform archiving 1/9/95
+		17) changed all NONULL null values to reasonable values
+		18) added wfrms table
+	}
+	Timedate lddate
+	;
+
+Attribute density
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "density > 0.0 " )
+	Units ( "grams/cc" )
+	Description ( "density of material in layer" )
+	Detail {
+		density of material in layer
+	}
+	;
+
+Attribute pcorr
+	Real (8)
+	Format ( "%8.3lf" )
+	Null ( "-999.000" )
+	Range ( "pcorr > -5.0 && pcorr < 5.0" )
+	Units ( "Seconds" )
+	Description ( "P wave station correction" )
+	Detail {
+		P wave station correction
+	}
+	;
+
+Attribute pwgt
+	Real (6)
+	Format ( "%6.3lf" )
+	Null ( "-1.000" )
+	Range ( "pwgt >= 0.0 && pwgt <= 1.0" )
+	Description ( "P wave station weight" )
+	Detail {
+		P wave station weight
+	}
+	;
+
+Attribute gradvp
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "gradvp > -1.0 && gradvp < 1.0" )
+	Units ( "Kilometers/sec/Kilometer" )
+	Description ( "P wave velocity gradient in layer" )
+	Detail {
+		P wave velocity change in layer
+	}
+	;
+
+Attribute gradvs
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "gradvs > -1.0 && gradvs < 1.0" )
+	Units ( "Kilometers/sec/Kilometer" )
+	Description ( "S wave velocity gradient in layer" )
+	Detail {
+		S wave velocity change in layer
+	}
+	;
+
+Attribute qp
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "qp > 0.0" )
+	Description ( "P wave attenuation" )
+	Detail {
+		P wave attenuation
+	}
+	;
+
+Attribute qs
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "qs > 0.0" )
+	Description ( "S wave attenuation" )
+	Detail {
+		S wave attenuation
+	}
+	;
+
+Attribute refelev
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "0.0000" )
+	Range ( "refelev > -10.0 && refelev < 10.0" )
+	Units ( "Kilometers" )
+	Description ( "Reference elevation for velocity model" )
+	Detail {
+		Reference elevation from sea level for velocity model
+	}
+	;
+
+Attribute scorr
+	Real (8)
+	Format ( "%8.3lf" )
+	Null ( "-999.000" )
+	Range ( "scorr > -5.0 && scorr < 5.0" )
+	Units ( "Seconds" )
+	Description ( "S wave station correction" )
+	Detail {
+		S wave station correction
+	}
+	;
+
+Attribute swgt
+	Real (6)
+	Format ( "%6.3lf" )
+	Null ( "-1.000" )
+	Range ( "swgt >= 0.0 && swgt <= 1.0" )
+	Description ( "S wave station weight" )
+	Detail {
+		S wave station weight
+	}
+	;
+
+Attribute thick
+	Real (9)
+	Format ( "%9.4lf" )
+	Null ( "-999.0000" )
+	Range ( "thick > 0.0" )
+	Units ( "Kilometers" )
+	Description ( "Thickness of velocity layer" )
+	Detail {
+		Thickness of velocity layer
+	}
+	;
+
+Attribute vp
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "vp > 0.0" )
+	Units ( "Kilometers/sec" )
+	Description ( "P wave velocity" )
+	Detail {
+		P wave velocity
+	}
+	;
+
+Attribute vs
+	Real (9)
+	Format ( "%9.6lf" )
+	Null ( "-999.0000" )
+	Range ( "vs > 0.0" )
+	Units ( "Kilometers/sec" )
+	Description ( "S wave velocity" )
+	Detail {
+		S wave velocity
+	}
+	;
+
+Relation sitecor
+	Fields (  sta pcorr scorr pwgt swgt vmodel auth lddate )
+	Primary (  vmodel sta )
+	Description ( "Station corrections and weights" )
+	Detail {
+		Station corrections and weights
+	}
+	;
+
+Relation velocity
+	Fields ( depth thick vp vs gradvp gradvs qp qs density vmodel auth lddate )
+	Primary (  vmodel depth )
+	Description ( "Velocity model parameters" )
+	Detail {
+		Velocity model parameters
+	}
+	;
+
+Relation velref
+	Fields ( vmodel lat lon refelev auth lddate )
+	Primary (  vmodel  )
+	Description ( "Velocity model reference parameters" )
+	Detail {
+		Velocity model reference parameters
+	}
+	;
+

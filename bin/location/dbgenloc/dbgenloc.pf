@@ -1,0 +1,80 @@
+arrival_residual_weight_method 			huber	# {huber,none}
+slowness_residual_weight_method 		none	# {huber,none}
+time_distance_weighting 			true	# {BOOLEAN}
+slowness_distance_weighting 			true	# {BOOLEAN}
+slowness_weight_scale_factor 			1.0	# {0.0-2.0}
+min_error_scale 				1.0	# {1.0-1000.0}
+max_error_scale  				1000.0	# {1.0-1000.0}
+depth_ceiling 					0.0	# {25.0-0.0}
+depth_floor 					100.0	# {600.0-0.0}
+generalized_inverse 				marquardt # {marquardt,pseudoinverse}
+min_relative_damp 				0.000005	
+max_relative_damp 				1.0	
+damp_adjust_factor 				5.0
+singular_value_cutoff				0.0001
+recenter 					true	# {BOOLEAN}
+fix_latitude					false	# {BOOLEAN}
+fix_longitude					false	# {BOOLEAN}
+fix_depth 					true	# {BOOLEAN}
+fix_origin_time					false	# {BOOLEAN}
+step_length_scale_factor 			0.5	# {0.1-1.0}
+min_step_length_scale 				0.01	# 
+maximum_hypocenter_adjustments 			100	#
+deltax_convergence_size 			0.01
+relative_rms_convergence_value 			0.00001
+initial_location_method				radial_gridsearch  # {radial_gridsearch,manual,nearest_station,S-Ptime,rectangle_gridsearch}
+gridsearch_norm					weighted_rms	
+
+initial_origin_time				712788670.0
+
+#parameters used in S-P method
+
+#parameters used in rectangle_gridsearch
+center_latitude					38.2057
+center_longitude				-88.1706
+center_depth					5.0
+#latitude_range					2.0
+#longitude_range					2.0
+#depth_range					0.0
+#nlat						10
+#nlon						10
+#ndepths						1
+
+#parameters used in radial gridsearch
+#center_latitude				22.0
+#center_longitude				44.0
+#center_depth					5.0
+depth_range					0.0
+minimum_distance				50.0
+maximum_distance				50.0
+minimum_azimuth				0.0
+maximum_azimuth				360.0
+number_points_r				1
+number_points_azimuth			36		# {10-360}
+ndepths					1		# {1-10}
+
+output_file    location_output
+#travel_time_model       test_model
+travel_time_model       iasp91
+verbose y
+maximum_iterations      40
+initial_latitude        42.1311
+initial_longitude       73.6941
+initial_depth           10.0
+fix_depth       n
+use_starting_location   y
+author                  UC:ludar
+arrival_table           &Tbl{
+8022 AML P 792123660.82500 0.1 d -1.00 10.0 n -1.00 0.01 n
+8023 AML S 792123714.67500 0.431 d -1.00 10.0 n -1.00 0.01 n
+8062 UCH P 792123664.97500 0.1 d -1.00 10.0 n -1.00 0.01 n
+16845 UCH S 792123718.08812 1.326 d -1.00 10.0 n -1.00 0.01 n
+8052 KZA P 792123665.32500 0.1 d -1.00 10.0 n -1.00 0.01 n
+16846 KZA S 792123724.82824 0.884 d -1.00 10.0 n -1.00 0.01 n
+8018 AAK P 792123670.05000 0.1 d -1.00 10.0 n -1.00 0.01 n
+16847 AAK S 792123728.52978 1.326 d -1.00 10.0 n -1.00 0.01 n
+16848 CHM P 792123675.45263 0.071 d -1.00 10.0 n -1.00 0.01 n
+}
+
+
+# $Id$ 

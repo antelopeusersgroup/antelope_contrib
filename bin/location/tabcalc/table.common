@@ -1,0 +1,4 @@
+      parameter(npmax=4800) 
+      common/table1/ntab,ptab(npmax),ttab(npmax),xtab(npmax)
+      character branch
+      common/table2/branch(npmax) 

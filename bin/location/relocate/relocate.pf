@@ -1,0 +1,213 @@
+velocity_model_name anza_test
+phases &Arr{
+P  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+	5.8	0.0
+	8.0	40.0
+        }
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+S  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+	3.36	0.0
+	4.5	40.0
+        }
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+Pg  &Arr{
+
+ travel_time_calculator uniform table interpolation
+ table_file Pg
+
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.01
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+# Vs = Vp / sqrt(3) = Vp / 1.7321 = 0.5774*Vp
+Sg  &Arr{
+
+travel_time_calculator uniform table interpolation
+table_file Sg
+
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.1
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
+arrival_residual_weight_method 			huber
+slowness_residual_weight_method 		none
+time_distance_weighting 			true
+slowness_distance_weighting 			false
+slowness_weight_scale_factor 			1.0
+min_error_scale 				10.0
+max_error_scale  				1000.0
+depth_ceiling 					0.0
+depth_floor 					19.0
+generalized_inverse 				marquardt
+min_relative_damp 				0.000005
+max_relative_damp 				1.0
+damp_adjust_factor 				5.0
+#generalized_inverse				pseudoinverse
+singular_value_cutoff				0.0001
+recenter 					false
+fix_latitude					false
+fix_longitude					false
+fix_depth 					false
+fix_origin_time					false
+step_length_scale_factor 			0.5
+min_step_length_scale 				0.01
+maximum_hypocenter_adjustments 			50
+deltax_convergence_size 			0.1
+relative_rms_convergence_value 			0.01
+#initial_location_method				manual
+#initial_location_method				nearest_station
+#initial_location_method				S-Ptime
+initial_location_method				rectangle_gridsearch
+#initial_location_method				radial_gridsearch
+gridsearch_norm					weighted_rms
+
+# parameters for manual method (initial_depth used by others)
+initial_latitude				 37.9293
+initial_longitude				 58.1125 
+initial_origin_time				712788670.0
+initial_depth					5.0
+
+#parameters used in S-P method
+
+#parameters used in rectangle_gridsearch
+center_latitude					33.5
+center_longitude				-116.7
+center_depth					15.0
+latitude_range					1.0
+longitude_range					1.0
+depth_range					0.0
+nlat						20
+nlon						20
+ndepths						1
+
+#parameters used in radial gridsearch
+#center_latitude				22.0
+#center_longitude				44.0
+#center_depth					5.0
+#depth_range					0.0
+#minimum_distance				2.0
+#maximum_distance				50.0
+#minimum_azimuth				0.0
+#maximum_azimuth				360.0
+#number_points_r				48
+#number_points_azimuth			36
+#ndepths					1
+
+
+# $Id$ 

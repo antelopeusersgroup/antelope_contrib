@@ -1,0 +1,72 @@
+.TH segy2css 1 "16 April 1993" " "
+.SH NAME
+segy2css \- convert data in PASSCAL SEGY format to CSS format
+.SH SYNOPSIS
+.PP
+\fBsegy2css [-event] [-ftbl] "fname"\fP
+.SH DESCRIPTION
+.PP
+Program reads seismic data in PASSCAL SEGY format and converts them to CSS format version 3.0.
+.PP
+Program reads PASSCAL SEGY data, name of which should be specified in a command line.
+Filename should be specified in quotes (""). This allows the user to use wildcard
+in filenames and handle entire groups of files at once, refer to long
+names with abbrevations, and use part of names when we are uncertain about
+complete versions. For example, if all data under directory \fB/test/data\fP
+should be convert to CSS  format, the command line should be:
+.RS
+.IP 
+\fBsegy2css "/test/data/*"\fP
+.RE
+.PP
+Parameter \fB-event\fP can be optionally specified in the command line.
+If this parameter is specified in the command line then the program
+makes one \fIwfdisc\fR file for all data from one directory, even if those data
+have a different \fIstart time\fR. If that parameter is not specified in the 
+command 
+line (i.e. by default), program will make as many \fIwfdisc\fR files as there are 
+different start times.
+.PP
+Each PASSCAL SEGY file has a 240 byte header, which contains information about the data. The information includes:
+\fIchannel number, number of samples, sample rate, instrument serial number,
+event start time\fR and more. The program builds \fIwfdisc\fR file using these parameters. 
+.PP
+The program makes data and \fIwfdisc\fR files in current directory.
+Name of the data file will be in form \fBYYDDDHHMMSS.w\fP and name of \fIwfdisc\fR file will be in form \fBYYDDDHHMMSS.wfdisc\fP.
+.PP
+A conventional name for the specific instrument code can be specified in the
+ascii file.
+The full name of that file should be specified with the argument \fB-ftbl\fP in a command line (where \fBtbl\fP is full file name). A conventional name also can be specified  in the ".segy2css" file,
+which should be in the HOME directory. In this case program automatically looks for 
+that file and reads it, so it's not necassary to specify \fB-ftbl\fP option.  The format of the \fBtbl\fP and ".segy2css" files are:
+.RS
+.IP 
+INSNUM  STIME  ETIME  STANAME 
+.RE
+.PP
+where INSNUM is the instrument serial number, STIME and ETIME are start and end 
+time when instrument was operational; and STANAME is station code for instrument serial number. The time format is \fBYYYYDDD:HH:MM:SS.s\fP. 
+.SH EXAMPLE
+.PP
+To convert all PASSCAL SEGY data whose name starts with '92.345' from directory
+/data/segy:
+.RS
+.IP
+\fBsegy2css "/data/segy/92.345*"\fP
+.RE
+.PP
+To convert all PASSCAL SEGY data from directory 'segy' and put all information in one
+wfdisc file:
+.RS
+.IP
+\fBsegy2css -event "segy/*"\fP
+.RE
+.PP
+.PP
+\fBNOTE:\fP If in the command line you are specifying the whole directory as \fBfname\fP, then
+that directory should contains only PASSCAL SEGY data and nothing else.
+.PP
+.SH AUTHOR
+M. Glushko
+
+.\" $Id$ 

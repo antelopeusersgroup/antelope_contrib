@@ -1,0 +1,180 @@
+arrival_residual_weight_method 			huber
+slowness_residual_weight_method 		none
+time_distance_weighting 			true
+slowness_distance_weighting 			true
+slowness_weight_scale_factor 			1.0
+min_error_scale 				1.0
+max_error_scale  				1000.0
+depth_ceiling 					0.0
+depth_floor 					100.0
+generalized_inverse 				marquardt
+min_relative_damp 				0.000005
+max_relative_damp 				1.0
+damp_adjust_factor 				5.0
+#generalized_inverse				pseudoinverse
+singular_value_cutoff				0.0001
+recenter 					true
+fix_latitude					false
+fix_longitude					false
+fix_depth 					true
+fix_origin_time					false
+step_length_scale_factor 			0.5
+min_step_length_scale 				0.01
+maximum_hypocenter_adjustments 			50
+deltax_convergence_size 			0.01
+relative_rms_convergence_value 			0.00001
+#initial_location_method				manual
+#initial_location_method				nearest_station
+#initial_location_method				S-Ptime
+#initial_location_method				rectangle_gridsearch
+initial_location_method				radial_gridsearch
+gridsearch_norm					weighted_rms
+
+# parameters for manual method (initial_depth used by others)
+initial_latitude				 38.2877
+initial_longitude				 -87.6412  
+initial_origin_time				712788670.0
+initial_depth					5.0
+
+#parameters used in S-P method
+
+#parameters used in rectangle_gridsearch
+center_latitude					38.2057
+center_longitude				-88.1706
+center_depth					5.0
+#latitude_range					2.0
+#longitude_range					2.0
+#depth_range					0.0
+#nlat						10
+#nlon						10
+#ndepths						1
+
+#parameters used in radial gridsearch
+#center_latitude				22.0
+#center_longitude				44.0
+#center_depth					5.0
+depth_range					0.0
+minimum_distance				50.0
+maximum_distance				50.0
+minimum_azimuth				0.0
+maximum_azimuth				360.0
+number_points_r				1
+number_points_azimuth			36
+ndepths					1
+
+seismic_stations				&Tbl{
+A0       38.2057   -88.1706    0.1088
+A1       38.2057   -88.1706    0.0982
+A2       38.2057   -88.1706    0.1092
+A3       38.2057   -88.1706    0.1093
+B1       38.2057   -88.1706    0.0860
+B2       38.2057   -88.1706    0.0918
+B3       38.2057   -88.1706    0.1099
+B4       38.2057   -88.1706    0.1138
+B5       38.2057   -88.1706    0.1011
+B6       38.2057   -88.1706    0.1035
+BCH      38.5344   -87.3139    0.1311
+GRD      38.4201   -87.6815    0.1250
+KNG      38.0794   -87.6831    0.1600
+KRA      37.9588   -88.1545    0.1295
+LEA      38.8415   -87.7446    0.1524
+MCN      38.4532   -88.0950    0.1341
+MUM      38.2195   -87.9049    0.1372
+OWN      38.2877   -87.6412    0.1463
+STF      38.5892   -87.6421    0.1280
+SUM      38.6854   -87.8351    0.1524
+WABASH   38.2057   -88.1706    0.0982
+}
+# TKM is made up for this test 
+seismic_arrays					&Tbl{
+WABASH   38.2057   -88.1706    0.0982
+}
+
+phases &Arr{
+P  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+        3.5   0.0
+        6.0  5.0
+        8.0  30.0
+        }
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0    1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.05
+	default_slowness_uncertainty 0.01
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+S  &Arr{
+        travel_time_calculator  ttlvz
+        velocity_model &Tbl{
+        2.0  0.0
+        3.5 5.0
+        4.5 30.0
+        }
+	time_distance_weight_function &Tbl{
+	0.0	1.0
+	1.0	1.0
+	5.0	0.1
+	92.0	0.0
+	360.0	0.0
+	}
+	ux_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+        uy_distance_weight_function &Tbl{
+        0.0     1.0
+        10.0     1.0
+        90.0    0.7
+        92.0    0.0
+        360.0   0.0
+        }
+	default_time_uncertainty 0.2
+	default_slowness_uncertainty 0.005
+	time_station_corrections &Tbl{
+	}
+	ux_station_corrections &Tbl{
+        }
+        uy_station_corrections &Tbl{
+        }
+}
+}
+slowness_units degrees
+slowness_format azimuth
+arrivals &Tbl{
+P        WABASH   816564757.88845 -1.000 
+S        WABASH   816564776.89348 -1.000
+}
+slowness_vectors &Tbl{
+P        WABASH    17.77   201.53   -1.00   -1.00
+S        WABASH    40.47   210.85   -1.00   -1.00
+}
+
+# $Id$ 

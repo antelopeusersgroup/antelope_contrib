@@ -1,0 +1,67 @@
+.\" @(#)orbcp.1	1.1 07/12/96
+.TH ORBCP 1 "07/12/96"
+.SH NAME
+orbcp \- orb copy program
+.SH SYNOPSIS
+.nf
+
+orbcp {-orbin in_orbname | -filein in_filename} [-src srcexpr]
+      [-orbout out_orbname] [-fileout out_filename] [-reverse]
+      [-repeat] [-npackets npackets] [-sim_latency sim_latency]
+
+.fi
+.SH DESCRIPTION
+orbcp is a program for copying packets from one orb to another.
+It also can copy from/to a plain disk file. When copying to
+a plain disk file, the file is a raw image of the data stream
+and can be used later as simulated input. When copying from
+a plain disk file, the input time stamps can be offset to 
+simulate a near real time data stream.
+.SH OPTIONS
+.IP "-orbin in_orbname | -filein in_filename"
+Name of input orbserver or a plain input disk file. One
+and only one of these must be specified.
+.IP "-src srcexpr"
+A source expression string. This is used to sift the types of packets
+for copying. If this is not specified, then all packet types are
+copied. This is only used when copying from an input orbserver.
+.IP "-orbout out_orbname"
+Name of output orbserver.
+.IP "-fileout out_filename"
+Name of output plain disk file.
+.IP "-reverse"
+If this flag is specified, then the time values and pakcet sizes
+are byte reversed upon reading and/or writing to/from plain
+disk files. This has no effect on the orbserver connections.
+.IP "-repeat"
+If this flag is specified and the input is a plain disk file,
+then the input file is reread upon EOF indefinitely to provide
+a continuous data source. Every time the file is rewinded, the
+subsequent packet times are offset to preserve a monotonic
+time stream.
+.IP "-npackets npackets"
+A total packet count for copying. orbcp will exit when this
+count is reached. If not specified, then orbcp will execute
+indefinitely.
+.IP "-sim_latency sim_latency"
+A simulation time latency in seconds. If this is specified and
+the input is from a plain disk file, then orbcp will attempt
+to further offset the time values to be close to sim_latency
+seconds behind real time.
+.SH DIAGNOSTICS
+.IP "orbcp: Need argument for -src"
+.IP "orbcp: Illegal argument '%s'"
+.IP "orbcp: orbopen() error for '%s'"
+.IP "orbcp: orbselect(%s, %s) error"
+.IP "orbcp: orbseek() error for '%s'"
+.IP "orbcp: orbreap() error for '%s'"
+.IP "orbcp: orbput() error for '%s'"
+.SH "SEE ALSO"
+.nf
+
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+Danny Harvey
+
+.\" $Id$ 
