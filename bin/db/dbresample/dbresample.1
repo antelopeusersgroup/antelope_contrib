@@ -1,0 +1,209 @@
+.TH DBRESAMPLE 3 "%
+.SH NAME
+dbresample - convert all data in an event segmented database to common sample rate
+.SH SYNOPSIS
+.nf
+dbresample dbin dbout [-pf pffile -notrim]
+.fi
+.SH DESCRIPTION
+.LP
+It is common to have a suite of data assembled from multiple sources
+with a mix of sample rates.  In continuous processing you need to 
+just deal with it, but with event segmented data it is frequently 
+desirable to convert all data to a single sample rate.  
+This program does this.  It should ONLY be used on segmented data.
+.LP
+The program is very general.  It will both upsample and downsample 
+data using a very general recipe driven by a (admittedly complicated)
+parameter file description.  Downsampling always requires specification
+of one or more decimation operators to provide antialiasing.  This 
+currently must be specified as FIR filters, with the normal expectation
+that they are selected from response files from standard instruments.
+This, for example, allows one to exactly replicate something like 5 sps
+LP data from a 100 sps stream from the same instrument by using the 
+same response files as the originating instrument.  Upsampling does
+not require an antialiasing filter and is accomplished by a simple
+linear interpolation scheme.  Consequently upsamping by large amounts
+is not advised.  The best advice (Read this also as the
+somewhat implicit assumption
+in the design of the program.) is plan to always
+downsample all data to the 
+lowest common denominator and use upsampling only when necessary to
+match irreconcilable sample mismatches (e.g. targetting 20 sps when
+some of the data are 50 sps).  Upsampling creates serious problems in
+properly characterizing the response characteristic of the output.
+.LP
+With that warning comes the related warning that the program does 
+not itself attempt to do the complicated bookkeeping to characterize
+the response of each output trace it produces.  The expectation is that
+the user will have a handle on what stations had what type of 
+instrumentation.  If response information is needed for the output 
+this should be relatively easily achieved IF you do your best to 
+simulate hardware implementations.  e.g. if you have Reftek data 
+at 250 sps and you want to convert them to 50 sps, use Reftek's
+decimate by 5 FIR filter to define a decimation by 5.  In this 
+way you treat the output as if the original data logger had been
+set to have a data stream output at 50 sps.  As noted above, if
+you are forced to upsample good luck describing the response.
+.LP
+The program normally processes every trace in the input database,
+\fIdbin\fR.  When the data are read it looks up the recipe for 
+handling the sample rate of that trace, applies the appropriate
+resampling operator, and then writes the result to the output database.
+The program makes an implicit assumption that channel codes of the 
+input data are SEED codes, which means it expects them to be 
+in the form of ?H[ZNE] (i.e. things like BHZ, BHN, and BHE).  
+All output data have channel codes with a fixed first character controlled
+by an input parameter (see below).  (e.g. BHZ, BHN, and BHE)  
+.LP
+The method used to create new output trace files is fairly rigid.
+Data are placed in the same directory of their parent from dbin.  
+The file name they are written to is the same as dfile in the wfdisc of
+the parent trace EXCEPT the string ".resampled" is appended to the
+name.  This means every input file will be replicated with the 
+".resampled" appendage and the output will be found in the same directory
+as the parent data files.  (e.g. if a parent trace comes from a file
+called ./wf/2004/001/BCH.w this program will create a file 
+called ./wf/2004/001/BCH.w.resampled.)   Furthermore, the output is always
+forced to be host floating point format.  This was an intentional
+design decision as the prejudice of the author is that you don't 
+resample archive data, but only data you are ready to really work on
+seriously.  In that case, efficiency in reading is usually more important
+than storage space.  
+.SH OPTIONS
+.IP -pf
+Use this option to specify an alternative parameter file that the default of
+dbresample.pf.
+.IP -notrim 
+FIR filters used as decimators will often produce transients at the edges of
+trace segments where the filter does not completely overlap the FIR filter
+vector of points.  By default the edges of all input traces are trimmed to
+remove these transients.  When this flag is used the original trace lengths
+are preserved. This flag has no effect on upsampled data.
+.SH PARAMETER FILE
+.LP
+The parameter file mainly specifies what to do 
+with data within ranges of 
+specified sample intervals.  It is best understood from an 
+example.  This is an example of a recipe to take 100 sps, 33.5, and
+20 sps data and reduce them all to 10 sps.  
+.nf
+resample_definitions &Arr{
+100 &Arr{
+low_limit	99
+high_limit	101
+Decimator_response_files &Tbl{
+5	response/RT72A_5_f
+2	response/RT72A_2_f
+}
+}
+}
+33.5 &Arr{
+low_limit       30
+high_limit      35
+Decimator_response_files &Tbl{
+0.8375	resample #this means interpolate without antialias 
+4       response/RT72A_4_f
+}
+}
+20 &Arr{
+low_limit       19
+high_limit      21
+Decimator_response_files &Tbl{
+#decfac file
+2       response/RT72A_2_f
+}
+}
+}
+output_sample_rate 10
+.fi
+.LP
+Note that each sample rate is specified by a range of sample
+rates that are to be associated with a generic sample rate.  
+In this example  99 to 101 sps is treated as equivalent to 100 sps; 
+30 to 35 sps is treated as equivalent to 33.5; and 19 to 21 sps 
+is treated as equivalent to 20 sps.  Intervals are used to 
+handle some instruments that dither the sample rate to avoid time
+tears or processing that handles time corrections by that method.  
+Note that it is VERY IMPORTANT that the sample intervals for
+different generic sample rates do not overlap.  The program 
+determines the recipe to use by a unique match on an interval
+of sample rates.  If specified intervals overlap the results
+are unpredictable and there is a strong chance the wrong 
+recipe will be applied to some data.  
+.LP
+The Decimator_response_files Tbl lines specify decimation factors
+and response files to be used to achieve that decimation factor.  
+Note that the file names are taken literally and the program will
+fail if the file specified relative to that path does not exist.
+These files must specify FIR filters.  Only the real part of the
+response file is extracted, which is the norm for FIR filters in 
+response files.  The program will abort if the response file 
+type is anything but an FIR filter.  
+.LP
+The 33.5 sps example (there really is such a data logger) 
+illustrates an example of upsampling.  Upsampling is
+triggered by two things;  specifying a decimation factor
+smaller than unity AND the keyword resample.  In this example
+the data would be upsampled to 40 sps then decimated by 4 
+using a Reftek FIR filter as the antialiasing filter.  
+.LP
+The following is a list of other parameters used by dbresample
+that are not found in the above example.  First, two important
+ones that almost always require a user's attention:
+.LP
+\fIoutput_sample_rate\fR appears in the above example.  It specifies
+the sample rate all data will be aimed at.  If the recipes specified
+by the description above do not match this the program will abort or
+spew a lot of error messages and probably will fail.  
+Note also that this is a fixed target.  If the computed sample
+rate after applying decimators does not match this target, 
+the linear interpolator will be called to force an exact match to
+this sample rate.
+.LP
+\fIoutput_channel_code\fR is a single character that will become
+the first letter in the output channel code for each output trace.
+As noted above the assumption of the program is that input data
+have channels specified by SEED codes made up of 3 characters
+with the 3rd character defining the orientation of the sensor.  
+The character defined by this parameter is made the first character
+of the output channel code.  e.g. if you set output_channel_code 
+to "B" output will be expected to be things like BHZ, BHN, and BHE.
+.LP
+The following do not normally require editing by a user.  One 
+would normally only need to edit these if data were indexed 
+with a different table than wfdisc and a different schema than
+css3.0 (rt1.0).  
+.LP
+\fIAttribute_Map\fR defines namespace mapping from database attribute
+names to the internal namespace used by the program.  (see metadata(3))
+.LP
+\fImetadata_list\fR defines metadata that is extracted from the input
+database tables and copied to output.  (see metadata(3))
+.LP
+\fIdbprocess_commands\fR is a list of strings passed to dbprocess
+to build a working view for the program to work through.  
+Currently this is just "dbopen wfdisc".
+.SH "SEE ALSO"
+.nf
+resample(3), metadata(3), Time_Series(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.IP (1)
+The channel mapping is pretty restrictive and should be made more general.
+.IP (2) 
+The output file format is equally rigid and it would also be useful
+to make it more general.
+.IP (3)
+Same for the restriction that output will always to host floating point.
+.IP (4)
+Data gaps are not handled properly in the current implementation.
+The original gaps are preserved, but I don't handle the edge transients
+from decimators correctly.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

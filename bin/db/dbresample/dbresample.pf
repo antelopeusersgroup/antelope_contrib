@@ -1,0 +1,87 @@
+resample_definitions &Arr{
+100 &Arr{
+low_limit	99
+high_limit	101
+Decimator_response_files &Tbl{
+#decfac	file
+5	response/RT72A_5_f
+2	response/RT72A_2_f
+}
+}
+40 &Arr{
+low_limit       39
+high_limit      41
+Decimator_response_files &Tbl{
+#decfac file
+4       response/RT72A_4_f
+}
+}
+#  example for irregular sample rate.  This would take a 33.5 sps 
+# channel, updample to 40 sps, and then decimate by 4 to target of 10 sps
+33.5 &Arr{
+low_limit       30
+high_limit      35
+Decimator_response_files &Tbl{
+0.8375	resample #this means interpolate without antialias 
+4       response/RT72A_4_f
+}
+}
+20 &Arr{
+low_limit       19
+high_limit      21
+Decimator_response_files &Tbl{
+#decfac file
+2       response/RT72A_2_f
+}
+}
+}
+
+output_sample_rate 10
+trim_gap_edges true  #if true shorten data around gaps to avoid edge transients of FIR filters
+output_channel_code  M
+
+Attribute_Map &Tbl{
+sta sta  wfdisc string
+chan chan  wfdisc string
+starttime time wfdisc real
+endtime endtime wfdisc real
+nsamp nsamp wfdisc int
+samprate samprate wfdisc real
+directory dir wfdisc string
+jdate	jdate wfdisc int
+file	dfile wfdisc string
+calib	calib wfdisc real
+calper calper wfdisc real
+instype instype wfdisc string
+}
+input_metadata_list &Tbl{
+sta string
+chan string
+starttime real
+endtime real
+nsamp int
+samprate real
+file string
+directory string
+jdate int
+calib real
+calper real
+instype string
+}
+output_metadata_list &Tbl{
+sta string
+chan string
+starttime real
+endtime real
+nsamp int
+samprate real
+file string
+directory string
+jdate int
+calib real
+calper real
+instype string
+}
+dbprocess_commands &Tbl{
+dbopen wfdisc
+}
