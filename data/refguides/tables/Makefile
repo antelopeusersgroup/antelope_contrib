@@ -1,6 +1,7 @@
 DATADIR=refguides/tables
 DATA= \
 	environment.ref \
+	projections.ref \
 	table_datascope.ref \
 	table_expressions.ref \
 	table_time.ref \

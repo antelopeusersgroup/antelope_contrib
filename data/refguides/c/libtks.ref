@@ -1,5 +1,5 @@
 <library>
-Tk send IPC Utility
+Tk Send IPC 
 tks
 $(X11LIBS) -lposix4 
 none

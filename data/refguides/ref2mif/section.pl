@@ -16,12 +16,26 @@ sub author {
     return $result ; 
 }
 
+sub info { 
+    return &paragraph("cdeclaration", "#\n" . &fontstring("FunctionName", $_ )) 
+	if $_ !~ /^\s*$/ ;
+}
+
+sub man {
+    return &paragraph("cdeclaration", "#\n" . &fontstring("computer", $_ )) 
+	if $_ !~ /^\s*$/ ;
+}
+
 sub publisher { 
     return &paragraph("Publisher", $_ ) if $_ !~ /^\s*$/ ; 
 }
 
 
 sub Examples { 
+    return &paragraph("Examples", $_ ) if $_ !~ /^\s*$/ ; 
+}
+
+sub example { 
     return &paragraph("Examples", $_ ) if $_ !~ /^\s*$/ ; 
 }
 

@@ -1,4 +1,4 @@
-<initialization ../refhdr.mif>
+<initialization Programmer ../refhdr.mif>
 <include libstock.ref>
 <include libcoords.ref>
 <include libds.ref>
@@ -9,8 +9,9 @@
 <include libbrttpkt.ref>
 <include libtt.ref>
 <include libresponse.ref>
-<include libtks.ref>
 <include libproj.ref>
+<include ../tables/projections.ref>
+<include libtks.ref>
 <include libpixaddress.ref>
 <include fortran.ref>
 <no_index>

@@ -1,8 +1,13 @@
-<Chapter Orb connections>
-<commands>
+<chapter Tcl Orb Access>
+<info>
 package require Orb
+</info>
+<man>
+% man tclorb
+</man>
 
 <subsection Orbserver communications>
+<commands>
 orbopen orbname permission
     open an orb connection
 
@@ -38,54 +43,57 @@ orbreapstart orb [block]
 
 <subsection Orbserver status>
 orbstat orb [args]
-    returns requested status information for the specified orb
+    returns specified status information for orb
 <example>
-address     closes      connections errors      
-host        maxdata     maxpkts     maxsrc      
-messages    nclients    nsources    opens       
-orb_start   pid         port        rejected    
-started     version     when        who         
+address     closes      connections 
+errors      host        maxdata     
+maxpkts     maxsrc      messages    
+nclients    nsources    opens       
+orb_start   pid         port        
+rejected    started     version     
+when        who         
 </example>
 
-orbsources orb
-    reads status information for sources of orb, returning a handle
-
 orbgetdatasources orb
-    returns a list of data source names from the specified orb
+    returns list of source names for orb
 
-orbsourcesfree sources_handle
-    frees the sources information referenced by the specified handle
+orbsources orb
+    returns handle for orb source status
 
-orbgetnsources sources_handle
+orbsourcesfree handle
+    frees orbsources handle resources
+
+orbgetnsources handle
     returns the number of individual sources referenced by the sources_handle
 
-orbgetsource sources_handle index [args]
-    returns source information for the indexed source
+orbgetsource handle n [args]
+    returns specified source information for the n'th source
 <example>
 active       nbytes       npkts        
 slatest      slatest_time soldest      
 soldest_time srcname      
 </example>
 
-
 orbclients orb
-    return a handle to status information for clients of the specified orb
+    returns handle for orb client status
 
-orbclientsfree clients_handle
-    frees the clients information referenced by the specified handle
+orbclientsfree handle
+    frees orbclients handle resources
 
-orbgetnclients clients_handle
-    returns the number of individual clients referenced by the clients_handle
+orbgetnclients handle
+    returns the number of clients for client handle
 
-orbgetclient clients_handle index [args]
-    returns client information for the specified client in the clients_handle
+orbgetclient handle n [args]
+    returns specified client information for the n'th source
 <example>
-address     bytes       errors      fd          
-host        lastpkt     lastrequest mymessages  
-nreads      nreject     nrequests   nselect     
-nwrites     packets     perm        pid         
-pktid       port        priority    read        
-reject      select      started     thread      
+address     bytes       errors      
+fd          host        lastpkt     
+lastrequest mymessages  nreads      
+nreject     nrequests   nselect     
+nwrites     packets     perm        
+pid         pktid       port        
+priority    read        reject      
+select      started     thread      
 what        who         written     
 </example>  
 

@@ -1,4 +1,4 @@
-<initialization ../refhdr.mif>
+<initialization User ../refhdr.mif>
 <include realtime.ref>
 <include database_processing.ref>
 <include location.ref>

@@ -1,9 +1,13 @@
-<chapter Brttplot>
-<example>
-% man bplot_scg bplot_vector bplot_thistory
-<commands>
+<chapter Tk Brttplot>
+<info>
 package require Brttplot
-
+</info>
+<man>
+% man bplot_scg 
+% man bplot_vector 
+% man bplot_thistory
+</man>
+<commands>
 append_vector vector_handle index xvalue yvalue1 [yvalue2 [...]]
     appends a vector element after an existing element
 

@@ -1,5 +1,5 @@
 <library>
-specialized packet processing
+Special Packet Processing
 brttpkt
 $(ORBLIBS)
 none

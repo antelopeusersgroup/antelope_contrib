@@ -1,6 +1,6 @@
 
 sub initialization { 
-    my $header = $_ ;
+    my ($title, $header) = split(' ', $_) ;
     if ( ! -e $header ) { 
 	my $old = $Filename ;
 	$old =~ s"/[^/]+$"" ; 
@@ -9,11 +9,13 @@ sub initialization {
     open HEADER, $header || die ( "Can't open $header" ) ;
     my @header = <HEADER> ;
     close HEADER ;
+    grep ( s"#TITLE#"$title", @header ) ;
     return @header ;
 }
 
 sub the_end { 
-    return "\n> # The End\n" ; 
+    @eof = ( "> # end of TextFlow\n", "# End of MIFFile\n" ) ; 
+    return @eof ;
 }
 
 1;

@@ -1,4 +1,4 @@
-<initialization ../refhdr.mif>
+<initialization Scripting ../refhdr.mif>
 <include perl.ref>
 <include tcldb.ref>
 <include tclorb8.ref>

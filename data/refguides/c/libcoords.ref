@@ -1,11 +1,10 @@
 <library>
-Time and Coordinate Transformations
+Time and Space
 coords
 stock posix4 nsl socket m
 STOCKLIBS
 coords.h
 conversions between epoch time and strings, 2-d and 3-d coordinate transformations, and seismic region routines
-
 
 <subsection Time conversion>
 <cdeclarations>

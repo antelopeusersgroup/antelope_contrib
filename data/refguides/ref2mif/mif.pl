@@ -16,7 +16,7 @@ sub string {
 
 sub font { 
     my ($font) = @_ ; 
-    my $result = "<Font <FTag \`$font'>>\n" ; 
+    my $result = "<Font\n<FTag \`$font'>\n>\n" ; 
     return $result ; 
 }
 
@@ -32,19 +32,19 @@ sub fontstring {
 
 sub marker {
     my ( $type, $text ) = @_ ; 
-    my $result = "<Marker <MTypeName \`$type'> <MText \`" . &mifquote($text) . "'>>\n" ; 
+    my $result = "<Marker\n<MTypeName \`$type'>\n<MText \`" . &mifquote($text) . "'>\n>\n" ; 
     return $result ; 
 }
 
 sub paragraph { 
     my ( $type, $text ) = @_ ;
-    my $result = "<Para <PgfTag \`$type'> <ParaLine\n" ; 
+    my $result = "<Para\n<TextRectID 9>\n<PgfTag \`$type'>\n<ParaLine\n" ; 
     if ( $text =~ /^#\n</ ) {
 	$result .= $text ; 
     } else { 
 	$result .= &string($text) ; 
     }
-    $result .= "\n>>\n" ;
+    $result .= "\n>\n>\n" ;
     return $result ;
 }
 1;

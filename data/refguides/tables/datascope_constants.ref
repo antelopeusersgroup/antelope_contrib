@@ -62,9 +62,6 @@ dbIDSERVER
 dbLOCKS
     returns value of DBLOCKS 
 
-dbTABLE_IS_ADDABLE
-    returns non-zero if locks and permissions allow adding rows 
-
 dbDATABASE_COUNT
     count of databases open
 dbDBPATH

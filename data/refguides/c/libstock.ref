@@ -427,11 +427,11 @@ int unmaparr ( Arr **arr )
 int mkfile ( char *name, ulong nbytes, char *init, int initsize)
     make file name nbytes long initialized with the first initsize bytes of init, otherwise zero
 
-FILE *gz_cat ( char *name, char *permissions )
-    returns a FILE open to the output of zcat name
+FILE *gz_cat ( char *name)
+    returns FILE opened for reading on the output of "zcat name"
 
-FILE *gz_open ( char *filename, char *permissions )
-    alternate interface to zopen
+FILE *gz_open ( char *name)
+    returns FILE opened for reading on the uncompressed version of name
 
 private FILE *zopen ( char *filename, char *permissions )
     fopen a compressed or uncompressed file

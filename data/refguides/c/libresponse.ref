@@ -1,5 +1,5 @@
 <library>
-Instrument response routines
+Instrument Response
 response
 $(STOCKLIBS)
 none

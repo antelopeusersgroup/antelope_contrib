@@ -1,8 +1,10 @@
-<chapter Tcl/Tk Datascope and Utilities>
-<example>
-% man tcldb
-<commands>
+<chapter Tcl Datascope and Utilities>
+<info>
 package require Datascope
+</info>
+<man>
+% man tcldb
+</man>
 
 <subsection Opening a database>
 <commands>
@@ -196,7 +198,6 @@ elog_mark
 elog_flush deliver first
     get rid of messages after #first in the error log, printing them if deliver is a boolean true
 
-private <subsection Instrument response routines>
 private eval_response resphandle freq_in_hz
     evaluate a response object at a given frequency
 

@@ -1,8 +1,10 @@
 <chapter Perl Interface>
-<body>
-% man perldb
-<function>
+<info>
 use Datascope ; 
+</info>
+<man>
+% man perldb
+</man>
 
 <subsection Opening a database>
 <function>
@@ -229,9 +231,9 @@ limit ( resource, [limit2set] )
     return the current resource limit, or set a new resource limit; possible
     resources are:
 <example>
-cputime      filesize     datasize     
-stacksize    coredumpsize vmemoryuse   
-</options>
+cputime      filesize     datasize      
+stacksize    coredumpsize vmemoryuse    
+</example>
 
 <subsection Time conversion>
 
@@ -261,12 +263,13 @@ epoch ( yearday )
 yearday ( epoch )
     returns the yearday corresponding to an epoch time
 
-<subsection orbserver and packet routines>
-<body>
-% man perlorb
-<function>
+<chapter Perl Orb Access>
+<info>
 use orb; 
-use Datascope ; 
+</info>
+<man>
+% man perlorb
+</man>
 <function>
 
 orbopen(name, perm)
@@ -282,8 +285,9 @@ orbreject(orb, re)
     reject  packets  with sourcenames which match the regular expression re.
 
 orbseek(orb, which)
-    position the orb connection packet pointer according to which; which may be an explicit pktid, or "ORBCURRENT",
-    "ORBPREV", "ORBNEXT", "ORBNEXT_WAIT",  "ORBOLDEST",  or "ORBNEWEST".
+    position the orb connection packet pointer according to which;
+    which may be an explicit pktid, or "ORBCURRENT", "ORBPREV",
+    "ORBNEXT", "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST".
 
 orbposition(orb, from)
     position the orb connection packet pointer according to
@@ -313,7 +317,7 @@ orbget(orb, which)
     get a single packet corresponding to which; this be  an
     explicit  pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
     "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". returns
-    ($pktid, $srcname, $time, $packet, $nbytes) =
+    ($pktid, $srcname, $time, $packet, $nbytes) 
 
 orbreap(orb)
     get the next packet from the orb; this is the  fastest,
@@ -333,11 +337,13 @@ orbstat(orb)
     Get the standard  status  values  from  the  orb;  this
     returns  an object with the following methods:
 <example>
-address     closes      connections errors      
-host        maxdata     maxpkts     maxsrc      
-messages    nclients    nsources    opens       
-orb_start   pid         port        rejected.   
-started     version     when        who         
+address     closes      connections 
+errors      host        maxdata     
+maxpkts     maxsrc      messages    
+nclients    nsources    opens       
+orb_start   pid         port        
+rejected    started     version     
+when        who         
 </example>
 
 orbclients(orb)
@@ -345,13 +351,15 @@ orbclients(orb)
           objects,  one  object  per client.  Each object has the
           following methods:  
 <example>
-address     and         bytes       errors      
-fd          host        lastpkt     lastrequest 
-mymessages  nreads      nreject     nrequests   
-nselect     nwrites     packets     perm.       
-pid         pktid       port        priority    
-read        reject      select      started     
-thread      what        who         written     
+address     and         bytes       
+errors      fd          host        
+lastpkt     lastrequest mymessages  
+nreads      nreject     nrequests   
+nselect     nwrites     packets     
+perm.       pid         pktid       
+port        priority    read        
+reject      select      started     
+thread      what        who         
 </example>
 
 orbsources(orb)
@@ -359,60 +367,64 @@ orbsources(orb)
           objects,  one  object  per source.  Each object has the
           following methods:  
 <example>
-active        and           nbytes        
-npkts         slatest       slatest_time 
-soldest       soldest_time  srcname       
+active       and          nbytes       
+npkts        slatest      slatest_time 
+soldest      soldest_time srcname      
 </example>
 
 showPkt(srcname, time, packet, nbytes, mode)
     print out packet summary, depending on mode:
-<list>
+<example>
 1	hex dump
 2	unstuff, print all data samples
 3	unstuff, print no data samples
 4	just show the header information
-</list>
+</example>
 
 unstuffPkt(srcname, time, packet, nbytes)
     unstuffPkt unstuffs  the  input packet,  returning  a  packet kind and a packet object.
     the result code  indicates  what  kind  of  packet  was unpacked:
-<list>
-kind  kind of packet
-Pkt_wf  waveform packet
-Pkt_st  status packet
-Pkt_db  database row
-Pkt_pf  parameter file
-Pkt_cn  control messages
-Pkt_rw  arbitrary binary data, wrapped in orb packet
-Pkt_ch  arbitrary character string
-Pkt_tp  test packet
-</list>
-The packet object  has  the following methods which return various
-values from the c Packet structure: parts, time, Pack-
-etType, nchannels, channels(i), pf, string, db, dfile,
-and version.
-
-The parts method returns (net, sta, chan, loc, suffix, subcode)
-
-The PacketType method returns  the  packet  kind  (also
-returned  by unstuffPkt) and the corresponding descrip-
-tion.  
-
-The channels method takes an index (0..n-1) argument 
-and returns a channel object with  its  own  methods:   
 <example>
-calib    calper   chan     cuser1   cuser2.  
-data     duser1   duser2   iuser1   iuser2   
-iuser3   loc      net      nsamp    samprate 
-segtype  sta      time     
+kind  kind of packet
+Pkt_wf	waveform packet
+Pkt_st	status packet
+Pkt_db	database row
+Pkt_pf	parameter file
+Pkt_cn	control messages
+Pkt_rw	binary data
+Pkt_ch	character string
+Pkt_tp	test packet
 </example>
-the data method returns all the waveform data in a list of integers.
+    The packet object  has  the following methods which return various
+    values from the c Packet structure: parts, time, Pack-
+    etType, nchannels, channels(i), pf, string, db, dfile,
+    and version.
 
-<subsection sysinfo routines>
-<body>
-% man perlsysinfo
-<function>
+    The parts method returns (net, sta, chan, loc, suffix, subcode)
+
+    The PacketType method returns  the  packet  kind  (also
+    returned  by unstuffPkt) and the corresponding descrip-
+    tion.  
+
+    The channels method takes an index (0..n-1) argument 
+    and returns a channel object with  its  own  methods:   
+<example>
+calib    calper   chan     cuser1   
+cuser2   data     duser1   duser2   
+iuser1   iuser2   iuser3   loc      
+net      nsamp    samprate segtype  
+sta      time     
+</example>
+    The data method returns all the waveform data in a list of integers.
+
+<chapter Perl System Information >
+<info>
 use sysinfo ; 
+</info>
+<man>
+% man perlsysinfo
+</man>
+
 <function>
 %vminfo  = vminfo() ;
      returns free memory, physical memory, reserved swap and total swap space
@@ -421,8 +433,10 @@ use sysinfo ;
      returns 15, 5 and 1 minute load averages and the number of cpus and processes
 
 %psinfo  = psinfo($pid) ;
-     returns cpu percentage, memory percentage, resident set size, total size, start time, execname, 
-truncated command line, parent pid and total cpu time for $pid and its children.
+    returns cpu percentage, memory percentage, resident set size,
+    total size, start time, execname, truncated command line, parent
+    pid and total cpu time for $pid and its children.
 
 ($idle, $user, $kernel, $iowait, $swap, $dummy)  = cpu_usage() ;
-     returns a list of cpu time percentages:  idle time,  user time, kernel time, iowait and swap times.
+     returns a list of cpu time percentages:  idle time, user time,
+     kernel time, iowait and swap times.

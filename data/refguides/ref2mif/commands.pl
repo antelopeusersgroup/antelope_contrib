@@ -33,8 +33,6 @@ sub gobble_blank_lines {
 	if ( ! /^\s*$/ ) { 
 	    xf_putbak($_) ; 
 	    last ; 
-	} else { 
-	    print STDERR "deleting '$_'\n" ; 
 	}
     }
 }

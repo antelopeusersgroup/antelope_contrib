@@ -1,5 +1,5 @@
 <library>
-orb connections
+Orbserver Access
 orb
 -lpkt -lorb -lxtra $(TRLIBS)
 ORBLIBS
