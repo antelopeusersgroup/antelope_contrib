@@ -562,21 +562,26 @@ sub create_focusmap {
 
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
+	my( $dir ) = concatpaths( $State{dbrecenteqs_dir}, $reldir );
+	my( $dfile ) = "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}";
+
+	check_dir_dfile( @dbwebmaps, $dir, $dfile );
+
 	if( defined( $rec = shift( @recs ) ) ) {
 		
 		$dbwebmaps[3] = $rec;
 
 		dbputv( @dbwebmaps, 
-    	    		"dir", concatpaths( $State{dbrecenteqs_dir}, $reldir ),
-    	    		"dfile", "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}",
+    	    		"dir", $dir,
+    	    		"dfile", $dfile,
     	    		"url", $url );
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
 	    		"mapname", $Focus_Mapspec{mapname},
 			"evid", $evid,
-    	    		"dir", concatpaths( $State{dbrecenteqs_dir}, $reldir ),
-    	    		"dfile", "$Focus_Mapspec{file_basename}.$Focus_Mapspec{format}",
+    	    		"dir", $dir,
+    	    		"dfile", $dfile,
     	    		"url", $url );
 	}
 
@@ -918,6 +923,11 @@ sub create_stockmap_entry {
 
 	my( $url ) = $State{dbrecenteqs_url} . "$mapclass.html";
 
+	my( $dir ) = "placeholder"; # Not very elegant
+	my( $dfile ) = $mapname;
+
+	check_dir_dfile( @dbwebmaps, $dir, $dfile );
+
 	if( defined( $rec = shift( @recs ) ) ) {
 		
 		$dbwebmaps[3] = $rec;
@@ -928,8 +938,8 @@ sub create_stockmap_entry {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
 	    		"mapname", $mapname,
-    	    		"dir", "placeholder", # Not very elegant
-    	    		"dfile", $mapname,
+    	    		"dir", $dir,
+    	    		"dfile", $dfile,
     	    		"url", $url );
 	}
 }
@@ -1007,21 +1017,26 @@ sub update_stockmap {
 
 	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapclass}.html";
 
+	my( $dir ) = $State{dbrecenteqs_dir};
+	my( $dfile ) = "$Mapspec{mapclass}.$Mapspec{format}";
+
+	check_dir_dfile( @dbwebmaps, $dir, $dfile );
+
 	if( defined( $rec = shift( @recs ) ) ) {
 		
 		$dbwebmaps[3] = $rec;
 
 		dbputv( @dbwebmaps, 
 	    		"mapname", $Mapspec{mapname},
-    	    		"dir", $State{dbrecenteqs_dir},
-    	    		"dfile", "$Mapspec{mapclass}.$Mapspec{format}",
+    	    		"dir", $dir,
+    	    		"dfile", $dfile,
     	    		"url", $url );
 	} else {
 
 		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
 	    		"mapname", $Mapspec{mapname},
-    	    		"dir", $State{dbrecenteqs_dir},
-    	    		"dfile", "$Mapspec{mapclass}.$Mapspec{format}",
+    	    		"dir", $dir,
+    	    		"dfile", $dfile,
     	    		"url", $url );
 	}
 
@@ -1039,9 +1054,9 @@ chomp( $Program );
 
 elog_init( $Program, @ARGV );
 
-if ( ! &Getopts('p:hi:g:') || @ARGV != 1 ) {
+if ( ! &Getopts('e:p:hi:g:') || @ARGV != 1 ) {
 	die ( "Usage: $Program [-h] [-p pffile] [-i indexmap_pffile] " .
-	      "[-g globalmap_pffile] database\n" ); 
+	      "[-g globalmap_pffile] [-e evid] database\n" ); 
 } else {
 	$dbname = $ARGV[0];
 	if( $opt_p ) {
@@ -1122,7 +1137,21 @@ for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
 	create_stockmap_entry( @dbstockmaps );
 }
 
-if( $opt_h ) {
+if( $opt_e ) {
+	
+	$evid = $opt_e;
+	
+	@db = dblookup( @db, "", "event", "evid", $evid );
+
+	if( $db[3] < 0 ) {
+
+		die( "dbrecenteqs: Couldn't find evid $evid\n" );
+	}
+
+	create_focusmap( $evid, @db );
+	create_focusmap_html( $evid, @db );
+
+} elsif( $opt_h ) {
 
 	@dbwebmaps = dbprocess( @db, "dbopen webmaps",
 				     "dbsubset evid != NULL" );

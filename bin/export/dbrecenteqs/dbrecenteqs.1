@@ -4,7 +4,7 @@ dbrecenteqs \- maintain a web site showing recent earthquakes
 .SH SYNOPSIS
 .nf
 dbrecenteqs [-p pffile] [-h] [-i indexmap_pffile] 
-	    [-g globalmap_pffile] dbname
+	    [-g globalmap_pffile] [-e evid] dbname
 .fi
 .SH DESCRIPTION
 
@@ -60,6 +60,8 @@ will probably require libxml2 and libxslt from www.xmlsoft.org.
 -g globalmap_pffile Add specified global map to mapstock table
 
 -i indexmap_pffile Add specified index map to mapstock table
+
+-e evid Refresh the page for a single evid, and regenerate stock maps
 
 -h don't regenerate focus maps; only recreate html
 .fi
@@ -294,6 +296,13 @@ crontab &Arr{
 dbrecenteqs UTC 0,5,10,15,20,25,30,35,40,45,50,55 * * * * dbrecenteqs /iwrun/bak/db/webquakes/quakes
 }
 .fi
+
+To force by hand an evid to be updated:
+
+localhost% rtrun dbrecenteqs -e 5225 db/quakes
+
+(assuming you're in the rtexec run directory; exact details will vary 
+according to your installation)
 
 .SH DIAGNOSTICS
 "Couldn't find alchemy. Use alternate image-conversion method or fix

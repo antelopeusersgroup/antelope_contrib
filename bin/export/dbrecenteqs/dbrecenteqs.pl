@@ -86,6 +86,34 @@ sub setup_State {
 	}
 }
 
+sub check_dir_dfile {
+	my( $dfile ) = pop( @_ );
+	my( $dir ) = pop( @_ );
+	my( @db ) = @_;
+
+	@db = dblookup( @db, "", "", "dir", "" );
+	$dir_size = dbquery( @db, "dbFIELD_SIZE" );
+
+	if( length( $dir ) > $dir_size ) {
+		print STDERR 
+			"\n\t************************************\n" . 
+			"\tWARNING: Truncating dir\n\t'$dir';\n" .
+			"\tPROBABLE DATABASE CORRUPTION!!\n" .
+			"\t************************************\n\n";
+	}
+
+	@db = dblookup( @db, "", "", "dfile", "" );
+	$dfile_size = dbquery( @db, "dbFIELD_SIZE" );
+
+	if( length( $dfile ) > $dfile_size ) {
+		print STDERR 
+			"\n\t************************************\n" . 
+			"\tWARNING: Truncating dfile\n\t'$dfile';\n" .
+			"\tPROBABLE DATABASE CORRUPTION!!\n" .
+			"\t************************************\n\n";
+	}
+}
+
 sub expansion_schema_present {
 	my( @db ) = @_;
 
@@ -1210,6 +1238,8 @@ sub add_to_mapstock {
 
 		die( "Table mapstock is not writeable\n" );
 	}
+
+	check_dir_dfile( @db, $dir, $dfile );
 
 	dbaddv( @db, "mapname", $Mapspec{mapname},
 	     "proj", $Mapspec{proj},
