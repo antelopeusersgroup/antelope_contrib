@@ -916,7 +916,19 @@ sub plot_drape {
 		$extractverbose = 0;
 	}
 
-	my( $rc ) = dbgmtgrid( @dbgrid, $tile, $grdfile, verbose => $extractverbose );
+	@spacing_option = ();
+
+	if( defined( $Mapspec{topo_resolution} ) && 
+		     $Mapspec{topo_resolution} ne "" ) {
+
+		@spacing_option = ( "spacing" => "$Mapspec{topo_resolution}" );
+	}
+
+	my( $rc ) = dbgmtgrid( @dbgrid, $tile, $grdfile,
+			       verbose => $extractverbose,
+			       workdir => $State{workdir},
+			       @spacing_option );
+
 	if( $rc < 0 ) {
 		elog_complain
 		"\n\t************************************\n" . 
@@ -1088,8 +1100,19 @@ sub plot_contours {
 			$extractverbose = 0;
 		    }
 
+		    @spacing_option = ();
+
+		    if( defined( $Mapspec{topo_resolution} ) && 
+		    	$Mapspec{topo_resolution} ne "" ) {
+
+			@spacing_option = ( "spacing" => "$Mapspec{topo_resolution}" );
+		    }
+
 		    my( $rc ) = dbgmtgrid( @dbgrid, $tile,
-				           $grdfile, verbose => $extractverbose );
+				           $grdfile,
+					   verbose => $extractverbose,
+			       		   workdir => $State{workdir},
+					   @spacing_option );
 		    if( $rc < 0 ) {
 			elog_complain
 			"\n\t************************************\n" . 
