@@ -2,7 +2,7 @@ BIN=mwapbavg
 MAN1=mwapbavg.1
 
 #cflags= -DSP5
-ldlibs=-lmultiwavelet -lgenloc -ltt -lxtra $(GPLLIBS) $(TRLIBS) -xlic_lib=sunperf -ldl 
+ldlibs=-lmultiwavelet -lgenloc -lsunperf $(TRLIBS) $(F77LIBS)
 
 include $(ANTELOPEMAKE)
 DIRS=

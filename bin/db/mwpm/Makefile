@@ -2,7 +2,7 @@ BIN=mwpm
 PF=mwpm.pf
 
 cflags= -g
-ldlibs=-lmultiwavelet -lgenloc -ltt -lxtra $(TRLIBS) $(GPLLIBS) -xlic_lib=sunperf -ldl 
+ldlibs=-lmultiwavelet -lgenloc -lsunperf $(TRLIBS) $(F77LIBS)
 
 include $(ANTELOPEMAKE) 
 DIRS=
