@@ -48,3 +48,8 @@ tkgpl pathName widgetNamespace dbpick dbname
 </options>
 
 (tkgpl) bind {arrivals2|arrivals3} menuPathname
+    binds mouse button events in arrival flags to popup menus
+
+gplcolor colorname
+    returns a legitimate tk color string
+

@@ -102,6 +102,9 @@ what        who         written
 orbpfget pf_handle name
     returns the value for parameter name from the referenced pf_handle
 
+orbpfgetstr pf_handle [name]
+    returns an ASCII string version of a parameter file object
+
 orbpffree pf_handle
     frees the parameter file object referenced by pf_handle
 
@@ -113,10 +116,10 @@ orbpktchanfree pkt
     free the specified unstuffed packet-channel
 
 
-private orbpktchangetcd1 packetchan_handle
+orbpktchangetcd1 packetchan_handle
     returns CD1 status information for CD-1-format packet channels
 
-private orbpktchangethdr packetchan_handle
+orbpktchangethdr packetchan_handle
     returns packet-channel header information
 
 orbpktunstuffdata pkt
