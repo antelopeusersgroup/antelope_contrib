@@ -1,0 +1,39 @@
+.\" @(#)orbstatj.1	1.1 01/03/02
+.TH ORBSTATJ 1 "$Date$"
+.SH NAME
+orbstatj \- java version of ORB status display
+.SH SYNOPSIS
+.nf
+
+orbstatj [orbname]
+
+.fi
+.SH DESCRIPTION
+\fBorbstatj\fP is a script that points a Java 2 SDK java virtual machine
+at the Antelope java class JFrameOrbStat. This java class presents
+a GUI window showing ORB status information similar to the text
+displays of orbstat(1). Note that a java virtual machine of name
+"java" must be installed on the user's system and must be present
+in the user's execution path (the java virtual machine is not
+part of the Antelope distribution).
+.SH OPTIONS
+.IP "orbname"
+The subject orbserver name. This defaults to "localhost".
+.SH BUGS AND CAVEATS
+In order to run the java Antelope classes, you must use a java virtual
+machine that is equivalent or later than SUN's Java 2 SDK 1.3.0 version.
+Earlier versions of the JVM do not include the Java swing classes
+nor do they handle jar files in the manner necessary for this script
+to operate properly. Java 2 SDK is available free of charge from
+http://java.sun.com for SPARC/INTEL Solaris and INTEL Windows.
+The java Antelope classes do not currently support the port number
+name mapping that is implemented in the C-based Antelope libraries.
+Therefore, you cannot use an orbname like localhost:scdemo but
+instead would have to use localhost:32742.
+.SH SEE ALSO
+orbstat(1)
+.SH AUTHOR
+Danny Harvey
+.br
+Boulder Real Time Technologies, Inc.
+
