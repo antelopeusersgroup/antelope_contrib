@@ -14,7 +14,15 @@ DATA= \
     FIRBC \
     FIRBCDP \
     FIRBNC \
-    FIRBNCDP
+    FIRBNCDP \
+    README_KMI_appnote39a.pdf \
+    episensor \
+    fba11 \
+    fba23_6damp_100hz \
+    fba23_6damp_50hz \
+    fba23_7damp_50hz \
+    ranger \
+    sh 
                                
 include $(ANTELOPEMAKE)  	
 DIRS=
