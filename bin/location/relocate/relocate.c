@@ -246,7 +246,7 @@ void save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 }
 /*This function adds a single row to the origerr table for this event.
 
-arguements:
+arguments:
 	orid - orid assign to this solution
 	h - Hypocenter object for this solution
 	dbo - output db
@@ -258,12 +258,11 @@ written yet.
 Author:  Gary L. Pavlis
 Written:  February 1997
 */
-void save_origerr(int orid, Hypocenter h, Dbptr dbo)
+void save_origerr(int orid, Hypocenter h, float **C, Dbptr dbo)
 {
 	double sdobs; 
 	double lddate;
-	/* Intentionally ignored:  sxx, syy, szz, stt, sxy, sxz, syz, stx,sty,
-					stz, smajax,sminax,strike,sdepth,stime,
+	/* Intentionally ignored: smajax,sminax,strike,sdepth,stime,
 					conf,commid */
 
 	dbo = dblookup(dbo,0,"origerr",0,0);
@@ -276,6 +275,16 @@ void save_origerr(int orid, Hypocenter h, Dbptr dbo)
 	lddate = now();
 	if(dbaddv(dbo,0,
 		"orid",orid,
+                "sxx",C[0][0],
+                "syy",C[1][1],
+                "szz",C[2][2],
+                "stt",C[3][3],
+                "sxy",C[0][1],
+                "sxz",C[0][2],
+                "syz",C[1][2],
+                "stx",C[0][3],
+                "sty",C[1][3],
+                "stz",C[2][3],
 		"sdobs",sdobs,
                 "lddate",lddate,
 			0) == dbINVALID)
@@ -527,7 +536,7 @@ int main(int argc, char **argv)
 	char *vmodel;
 
 	int ret_code;  /* ggnloc return code */
-
+	float C[4][4], emodel[4];  /* error arrays */
 	if(argc < 3) usage();
 	dbin = argv[1];
 	dbout = argv[2];
@@ -703,6 +712,7 @@ Which picks will be used here is unpredictable\n\
 	
 			hypos = (Hypocenter *)gettbl(converge_history,
 								niterations-1);
+			predicted_errors(*hypos,ta,tu,o,C,emodel);
 	
 			fprintf(stdout,"%lf %lf %lf %lf %g %g %g %d %d\n",
 					hypos->lat,hypos->lon,hypos->z,hypos->time,
@@ -713,7 +723,7 @@ Which picks will be used here is unpredictable\n\
 	
 			orid = save_origin(dbv,is,ie,o.fix[3],*hypos,dbo);
 			save_event(dbv,is,ie,orid,dbo);
-			save_origerr(orid,*hypos,dbo);
+			save_origerr(orid,*hypos,C,dbo);
 			save_assoc(dbv,is,ie,orid,vmodel,residual,*hypos,dbo);
 		}
 	
