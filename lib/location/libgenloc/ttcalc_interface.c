@@ -209,7 +209,7 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 			o.dtdz = 0.0;
 		}
 	}
-	if(t != NULL) freetbl(t,free);
+	if(t != NULL) freetbl(t,0);
 	return(o);
 }
 Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase, int mode)
@@ -282,7 +282,7 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 		o.duydy = 0.0;
 		o.duydz = 0.0;
 	}
-	if(u != NULL) freetbl(u,free);
+	if(u != NULL) freetbl(u,0);
 	return(o);
 }
 	

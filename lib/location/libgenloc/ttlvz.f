@@ -74,12 +74,12 @@ c    station elevation                                                  ttlvz.22
       t = 1.00e+10                                                      ttlvz.31  
       rayp = 0.0
       if(lhpz.eq.n) go to 360                                           ttlvz.32  
-      h(lhpz+1) = z(lhpz+1)-amax1(hpz,z(1))                             ttlvz.33  
+      h(lhpz+1) = z(lhpz+1)-  max(hpz,z(1))                             ttlvz.33  
 c -- calculate smallest refracted wave time                             ttlvz.34  
       istrt = lhpz+1                                                    ttlvz.35  
       vmax = 0.                                                         ttlvz.36  
       do 760 j=1,lhpz                                                   ttlvz.37  
-760   vmax = amax1(v(j),vmax)                                           ttlvz.38  
+760   vmax =   max(v(j),vmax)                                           ttlvz.38  
       do 190 lowlr=istrt,n                                              ttlvz.39  
 c -- check to see if ray exists                                         ttlvz.40  
       if(v(lowlr).le.vmax) go to 190                                    ttlvz.41  
@@ -120,7 +120,7 @@ c
 c -- calculate direct wave travel time                                  ttlvz.64  
         vmax=v(1)                                                         ttlvz.66  
         do 175 j=2,lhpz                                                   ttlvz.67  
-175     vmax=amax1(vmax,v(j))                                             ttlvz.68  
+175     vmax=  max(vmax,v(j))                                             ttlvz.68  
 c -- This loop seeks a ray parameter for a direct ray with 
 c -- delta > given distance.  The earlier version would sometimes enter
 c -- an infinite loop if the given delta was large due to a machine 

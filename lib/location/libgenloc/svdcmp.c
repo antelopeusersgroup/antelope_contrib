@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sunperf.h>
+#include <perf.h>
 #include "stock.h"
 #include "elog.h"
 /* This is a plug in interface module that replaces the svdcmp

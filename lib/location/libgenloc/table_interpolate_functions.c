@@ -9,7 +9,6 @@ Written:  Sept-Oct. 1996
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <sunmath.h>
 #include "stock.h"
 #include "coords.h"
 #include "arrays.h"
