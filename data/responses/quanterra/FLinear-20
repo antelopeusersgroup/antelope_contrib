@@ -8,7 +8,7 @@
 # normalization factor	1.0 
 # gain factor		1.000000 
 theoretical  1  anti_alias   fir    coef_conv 
-20 1 34 
+20 1 33 
 67 
  3.7716220E-17	0.0 
 -1.6971263E-10	0.0 
