@@ -1,0 +1,26 @@
+mail_database &exec(dbcentral -d mail)
+splitdir split
+archivedir /home/kent/mailarchive
+sent_archive_pattern %Y/SENT/%B
+Me &Tbl{
+	kent@localhost
+	kent@giseis.alaska.edu
+	kent@lindquistconsulting.com
+	kent@yukon.lindquistconsulting.com
+}
+Hosts &Arr{
+	NULL localhost
+	Preserve &Tbl{
+		giseis.alaska.edu
+		gi.alaska.edu
+		pgc.nrcan.gc.ca
+		seismo.nrcan.gc.ca
+		brtt.com
+		iris.washington.edu
+	}
+}
+Subjects &Arr{
+"Earthquake Data Message" PEPP_Request
+"rtexec (startup|shutdown).*" rtsystem
+"^CVS:.*" CVS
+}

@@ -1,0 +1,282 @@
+.TH FILEMAIL 1 "$Date$"
+.SH NAME
+filemail \- split and sort mail messages
+.SH SYNOPSIS
+.nf
+filemail [-anfsvu] [-S output_file] 
+         [-d new_database_name] [mailfile ...]
+.fi
+.SH DESCRIPTION
+
+            *****   WARNING   ******
+
+THIS PROGRAM EXISTS FOR THE SOLE PURPOSE OF DELIBERATELY DESTROYING THE
+EMAIL FILE SPECIFIED ON THE COMMAND LINE, ALONG WITH ANY DATABASES OR
+MAIL ARCHIVES THAT MAY OR MAY NOT BE ASSOCIATED WITH IT, RENDERING THE
+FILE(S) CORRUPTED, ERASED, IRRETRIEVABLE, DISORGANIZED AND/OR LOST
+FOREVER. ADDITIONALLY IT IS NOT GUARANTEED TO WORK. THIS SOFTWARE MAY
+NOT BE EXECUTED WITHOUT UNCONDITIONAL ASSENT TO THE ABOVE TERMS.
+
+            *****   WARNING   ******
+
+MAKE REMOTE BACKUP COPIES OF ALL EMAIL FILES BEFORE EXECUTING THIS SCRIPT. 
+
+Possible failure modes of the program may or may not include the following:
+
+This program splits mbox-style mail files into separate messages, then
+records them in a database and refiles by year, domain, and sender. The
+database is specified in the parameter file and uses Mail1.1 format.
+For the normal operation mode, filemail proceeds in two separate
+stages. In the first stage, input mail files are split into their
+component messages. In the second, split messages are reassembled into
+organized directories and listed in a database. These stages may be run
+separately with the -s and -f options (usually in that order).
+
+Parameter-file mapping tables list domains to preserve as-is (rather
+than trying to shorten them to something convenient to use as directory 
+names). The parameter-file also lists equivalent email addresses 
+of the sender (in the table called "Me") for sorting of outgoing mail.
+The Hosts{NULL} parameter describes what to do with email addresses 
+that do not have a fully qualified domain name.
+
+The "Subjects" array in the parameter file lists regular expressions 
+together with their target destinations. Mail matching these subject
+lines will be filed by the shorthand version of the subject instead 
+of by username.
+
+The archive directory for filed mail is specified in the parameter 
+file, along with the temporary directory ("splitdir") for 
+split messages. The latter directory and the individual messages 
+are not removed by the filemail program. This sacrifices cleanup 
+convenience to the user for the benefit of safer mail handling. Sent 
+email messages are stored in an archive subdirectory specified by the 
+sent_archive_pattern, which is a string which should be interpretable
+by epoch2str(3).
+
+The -S option will sort the specified messages in time order, omitting
+any identical messages, and place the results into the specified
+output file.
+
+.SH OPTIONS
+.IP -a
+Assent to the complete terms of the filemail man-page. This 
+option suppresses the startup warning.
+
+.IP -n
+don't split or sort any messages; just report the split filenames that 
+will be used. This option allows a sanity check before running on a new 
+mail file, mainly for debugging purposes. 
+
+.IP -v
+verbose
+
+.IP -f
+don't split any mail files. Just file the messages that are in
+the split directory.
+
+.IP -s
+split mail only; do not make database entries or re-concatenate 
+into archive files
+
+.IP "-S output_file"
+sort input messages in time order and place the results in the specified 
+output file
+
+.IP -u
+unsafe mode. Writes over split mail files regardless of whether 
+they already exist.
+
+.IP "-d new_database_name"
+The -d option adds the messages in the specified mail file(s) to a Mail1.1
+database. Note that the filing operation automatically adds messages
+to the database specified in the parameter file, so the -d option is 
+normally not needed unless rebuilding that archive database.
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+mail_database /home/kent/data/db/maildb
+splitdir split
+archivedir /home/kent/mailarchive
+sent_archive_pattern %Y/SENT/%B
+Me &Tbl{
+	kent@localhost
+	kent@giseis.alaska.edu
+	kent@lindquistconsulting.com
+	kent@yukon.lindquistconsulting.com
+}
+Hosts &Arr{
+	NULL localhost
+	Preserve &Tbl{
+		giseis.alaska.edu
+		gi.alaska.edu
+		pgc.nrcan.gc.ca
+		seismo.nrcan.gc.ca
+		brtt.com
+		iris.washington.edu
+	}
+}
+Subjects &Arr{
+"Earthquake Data Message" PEPP_Request
+"rtexec (startup|shutdown).*" rtsystem
+"^CVS:.*" CVS
+}
+.fi
+.SH EXAMPLE
+One configuration might be as follows. Use the parameter file from 
+the sample above. Designate the directory ~/Mail_Archive as the
+archive directory. Direct all incoming mail to files in ~/Imapmail. 
+Specifically, sent mail is auto-copied to ~/Imapmail/Sent and 
+received mail is moved from the in-box to ~/Imapmail/Unsorted. 
+
+Periodically, run the following sequence:
+.nf
+
+yukon% cd ~/Imapmail
+yukon% filemail -v Unsorted
+
+.fi
+Then check to see that mail was properly archived. Then
+.nf
+
+yukon% rm split/* Unsorted
+yukon% touch Unsorted
+
+.fi
+Repeat for the mail in 'Sent'. As necessary, hand-edit the 
+realname fields of the maildb.correspondents table to give 
+regular names to each email correspondent. To view this
+mail, try a command like 
+.nf
+
+yukon% dbshow_mail -f 'Lindquist, Kent' 
+
+presuming this is one of the realnames you have defined in 
+maildb.correspondents, and dbshow_mail.pf is correctly set
+up as specified in the dbshow_mail(1) man page. One additionally 
+might want to have dbshow_mail alias that name if commonly 
+used, e.g. 
+.nf
+
+yukon% dbshow_mail -f kl
+
+.fi
+For details on this see the dbshow_mail(1) man page. 
+
+Additionally, one may wish to put an entry in .dbe.pf for 
+the mail schema, e.g. 
+.nf
+
+Mail1.1	&Arr{
+    correspondents	realname from descrip corrtype
+    graphics	&Arr{
+        in	&Tbl{
+            "View Messages" dbshow_mail -
+        }
+        out	&Tbl{
+            "View Messages" dbshow_mail -
+        }
+    }
+    views	&Arr{
+        From	&Tbl{
+            dbjoin in
+            dbsort -r time
+        }
+        People	&Tbl{
+            dbopen correspondents
+            dbsubset realname != NULL && corrtype == "person"
+            dbsort realname
+            dbgroup realname
+        }
+        To	&Tbl{
+            dbjoin out from\\#to
+            dbsort -r time
+        }
+    }
+}
+
+.fi
+Note that in this example, if a subset is performed on the 'People' view, 
+the result must be ungrouped in order for the 'From' and 'To' views 
+(joins) to work. For further details, please see the dbe(1) man page.
+.ft CW
+.in 2c
+.nf
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbshow_mail(1), dbe(1), procmail(1), Mail::Internet(3), 
+Mail::Util(3), mail_parser(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Tests and backup copies are strongly advised. 
+
+filemail(1) does not actually destroy, remove, touch or erase the input
+file specified on the command line. At least by intent.  The warning at
+the beginning of this man page is a bit of legalese intended to get the
+user to take full responsibility for whatever happens to their mail.
+The author of filemail will not be held accountable for anything that
+happens to anybody's email except his own.
+
+With large volumes of email, there are still a few failure modes 
+that can turn up. One disadvantage of this script is that, especially
+with the filing (second) stage, it's hard to restart in the middle 
+of a failed run. Usually one must erase the previous results 
+and start over (although the -f option can help by allowing the 
+user to sidestep an expensive repeat of the split operation).
+
+A future version could rely more heavily on the database, e.g. 
+for replicated message detection. 
+
+Messages that are absolutely identical will be detected and will not 
+be double-filed. However, both copies of a message will be filed if 
+they differ in any respect (for example, sometimes some mail-readers
+add extra header fields to indicate whether a message is new or has been 
+read already; also sometimes the header lines get linewrapped differently 
+in multiple copies). 
+
+The 'realnames' field of the correspondents table often has to be 
+hand-edited to give a clean, consistent name to the person behind 
+each of several email addresses. For example, one might wish to 
+label all of the email addresses corresponding to the current author 
+with the realname 'Lindquist, Kent'. 
+
+If the initial 'From ' line is not properly filled out, the descriptive 
+messages in verbose mode may cause some alarm:
+.nf
+
+Splitting mail from - at 990527765
+
+.fi
+While not to promise success under these conditions, often filemail
+will nevertheless file these messages correctly, because
+it relies on the 'From: ' [note the semicolon] and/or 'Mail-From: '
+header-fields for the rest of itls processing.
+
+The messages from a given run of filemail will be sorted into time order 
+before filing. If multiple runs of filemail are conducted to fill a 
+mail database, they should be done in time order if the user wants 
+the resulting raw archive files to be in time order. 
+
+The 'to' fields for sent messages could use more sophisticated database schema 
+and parsing that would allow one to find all messages sent to, CC'd to, 
+or BCC'd to a given address or person. Right now, only the principal 
+recipient is tracked.
+
+Filing gets slower as the target archive files get larger. For this 
+reason, especially for sent emails, it is important to choose a 
+sent_archive_pattern which keeps the file sizes reasonable (20 MB and
+under works well for the author; achieved by setting sent_archive_pattern 
+to make month volumes, as in the above parameter file).
+.SH AUTHOR
+.nf
+Kent Lindquist, heavily modifying an earlier version 
+by Dan Quinlan
+.fi
+.\" $Id$
