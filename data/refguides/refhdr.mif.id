@@ -2549,7 +2549,7 @@
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Current Date (Long)'>
-  <VariableDef `<$monthname\> <$daynum\>, <$year\>'>
+  <VariableDef `<$monthname\> <$daynum\>, <\$year\>'>
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Current Date (Short)'>
@@ -2557,7 +2557,7 @@
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Modification Date (Long)'>
-  <VariableDef `<$monthname\> <$daynum\>, <$year\> <$hour\>:<$minute00\> <$ampm\>'>
+  <VariableDef `<$monthname\> <$daynum\>, <\$year\> <$hour\>:<$minute00\> <$ampm\>'>
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Modification Date (Short)'>
@@ -2565,7 +2565,7 @@
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Creation Date (Long)'>
-  <VariableDef `<$monthname\> <$daynum\>, <$year\>'>
+  <VariableDef `<$monthname\> <$daynum\>, <\$year\>'>
  > # end of VariableFormat
  <VariableFormat 
   <VariableName `Creation Date (Short)'>
@@ -4414,7 +4414,7 @@
   > # end of Pgf
   <ParaLine 
    <TextRectID 1>
-   <String `Antelope 4.5'>
+   <String `Antelope $id'>
   > # end of ParaLine
  > # end of Para
 > # end of TextFlow

@@ -5,3 +5,5 @@ DATA=refhdr.mif
 
 include $(ANTELOPEMAKE)
 
+refhdr.mif : refhdr.mif.id
+	produce $@
