@@ -833,7 +833,7 @@ sub create_focusmap_html {
 	$xml_filename =~ s/\..*//g;
 	$xml_filename .= ".xml";
 	my( $vrml_filename ) = $xml_filename;
-	$vrml_filename =~ s/.xml$/.wrl/;
+	$vrml_filename =~ s/\.xml$/.wrl/;
 
 	my( $vrml_url ) = $url;
 	$vrml_url =~ s/\.[^.]*$//;
@@ -1426,6 +1426,9 @@ sub stockmap_earthquake_xml {
 			dbgetv( @db, "lat", "lon", "depth", 
 				     "time", "origin.orid", "url" );
 
+		$vrml_url = $url;
+		$vrml_url =~ s/html$/wrl/;
+
 		my( $mag_description ) = mag_description( @db );
 
 		my( $local_time ) = epoch2str( $time, 
@@ -1438,11 +1441,14 @@ sub stockmap_earthquake_xml {
 		$writer->startTag( "quake" );
 
 		$writer->dataElement( "href", "$url" );
+		$writer->dataElement( "vrml_url", "$vrml_url" );
 		$writer->dataElement( "localtime_string", "$local_time" );
 		$writer->dataElement( "mag_string", "$mag_description" );
 		$writer->dataElement( "region_string", "$region" );
 		$writer->dataElement( "shape", "$shape" );
 		$writer->dataElement( "coords", "$coords" );
+		$writer->dataElement( "lat", "$lat" );
+		$writer->dataElement( "lon", "$lon" );
 		$writer->dataElement( "x", "$x" );
 		$writer->dataElement( "y", "$y" );
 		$writer->dataElement( "depth_km", "$depth" );
@@ -1638,7 +1644,7 @@ sub create_stockmap_html {
 	my( $image_relpath ) = dbextfile( @db );
 	$image_relpath = substr( $image_relpath, 	
 				 length( $State{dbrecenteqs_dir} ) );
-	
+
 	my( $output ) = new IO::File( ">$xml_filename" );
 
 	my( $writer ) = new XML::Writer( OUTPUT => $output, 
