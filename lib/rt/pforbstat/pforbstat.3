@@ -33,7 +33,7 @@ thread-id of the client.
 The pforbstat routine calls all necessary routines to build a parameter
 file containing orb status. orbfd is the file descriptor returned by
 the orbopen(3) call. The flags argument can be one or more of
-PFORBSTAT_SERVER, PFORBSTAT_SOURCES, PFORBSTAT_CLIENTS, and
+PFORBSTAT_SERVER, PFORBSTAT_SOURCES, PFORBSTAT_CLIENTS, PFORBSTAT_DATABASES, and
 PFORBSTAT_CONNECTIONS, thus determining the contents included in the
 returned parameter file. These flags can be combined via the bitwise-or
 operator "|". The PFORBSTAT_CONNECTIONS flag causes an attempt to
@@ -42,6 +42,8 @@ This flag requires the PFORBSTAT_CLIENTS flag, which is turned on by
 PFORBSTAT_CONNECTIONS even if not explicitly specified. The 
 PFORBSTAT_CONNECTIONS option also adds the orbstat_machine parameter, 
 specifying the machine on which the pforbstat command was run.
+The PFORBSTAT_DATABASES option similarly analyzes the database-writing clients, 
+forming an array of information on each database utility. 
 
 The user must call pffree to free the parameter file objects returned
 by these routines.

@@ -3,7 +3,7 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 DATADIR=
 DATA=
 INCLUDE= pforbstat.h
-PF=
+PF= libpforbstat.pf
 
 MAN3= pforbstat.3
 

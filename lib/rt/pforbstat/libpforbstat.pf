@@ -1,0 +1,5 @@
+dbprograms_morph &Tbl{
+	'^([[:alnum:]/.]*)orb2db .* ([[:alnum:]/.]+)$'orb2db $2'
+	'^([[:alnum:]/.]*)orb2dbt .* ([[:alnum:]/.]+)$'orb2dbt $2'
+	'^([[:alnum:]/.]*)orbimg2db .* ([[:alnum:]/.]+)$'orbimg2db $2'
+}

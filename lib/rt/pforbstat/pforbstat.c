@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <inttypes.h>
 #include <regex.h>
+#include <string.h>
 #include "stock.h"
 #include "coords.h"
 #include "orb.h"
@@ -260,7 +261,7 @@ id_clients( Pf *pf )
 		clientaddress = pfget_string( pfclient, "address" );
 		what = pfget_string( pfclient, "what" );
 
-		sprintf( client_summary, "hi Kent! : %s %s %s %s", 
+		sprintf( client_summary, "%s %s %s %s", 
 				serveraddress, serverport,
 				clientaddress, what );
 
@@ -421,6 +422,174 @@ is_nonroutable( char *address )
 	}
 }
 
+static int
+is_dbprogram( char *what, char *dbprogram, char *dbpath ) 
+{
+	static Pf *pflib = 0;
+	static Morphtbl *morphmap = 0;
+	Tbl	*morphlist;
+	int	rc;
+	char	result[STRSZ];
+	Tbl	*parts;
+
+	rc = pfupdate( "libpforbstat", &pflib );
+
+	if( rc < 0 || pflib == NULL ) {
+
+		register_error( 0, "pforbstat: failed to load libpforbstat.pf "
+				   "during database analysis\n" );
+		return 0;
+
+	}  else if( rc == 0 && morphmap == NULL ) {
+
+		register_error( 0, "pforbstat: no morphmap present for database analysis\n" );
+		return 0;
+	}
+
+	if( rc > 0 ) {
+
+		if( morphmap != (Morphtbl *) NULL ) {
+
+			freemorphtbl( morphmap );
+			
+			morphmap = 0;
+		}
+
+		morphlist = pfget_tbl( pflib, "dbprograms_morph" );
+
+		if( morphlist == NULL ) {
+			
+			register_error( 0, "pforbstat: failed to get dbprograms_morph "
+					"from libpforbstat.pf during database analysis\n" );
+			return 0;
+		}
+		
+		rc = newmorphtbl( morphlist, &morphmap );
+
+		freetbl( morphlist, 0 );
+
+		if( rc != 0 ) {
+
+			register_error( 0, "pforbstat: %d errors translating dbprograms_morph "
+					"from libpforbstat.pf during database analysis\n" );
+			return 0;
+		}
+	} 
+	
+	rc = morphtbl( what, morphmap, 0, result );
+
+	if( rc <= 0 ) {
+
+		strcpy( dbprogram, "" );
+		strcpy( dbpath, "" );
+
+		return 0;
+
+	} else {
+
+		parts = split( result, ' ' );
+
+		strcpy( dbprogram, gettbl( parts, 0 ) );
+		strcpy( dbpath, gettbl( parts, 1 ) );
+		
+		freetbl( parts, 0 );
+
+		return 1;
+	} 
+}
+
+static Pf *
+orbdatabases2pf( Pf *pfanalyze ) 
+{
+	Pf	*pf;
+	Pf	*pfdatabases;
+	Pf	*pfdatabase;
+	Pf	*pfclients;
+	Pf	*pfclient;
+	double	atime;
+	Tbl	*client_keys;
+	int	ikey;
+	char	*client_key;
+	char	*what;
+	char	*host;
+	char	*clientid;
+	char	*clientaddress;
+	char	*serveraddress;
+	char	*serverport;
+	char	dbprogram[STRSZ];
+	char	dbpath[STRSZ];
+	char	dir[STRSZ];
+	char	dfile[STRSZ];
+	char	formal_name[STRSZ];
+	int	formal_count = 0;
+	char	*delim = ":";
+	char	*hostdir;
+	char	*hostcopy;
+	char	*abspath;
+
+	pf = pfnew( PFFILE );
+
+	pfdatabases = pfnew( PFTBL );
+
+	atime = pfget_time( pfanalyze, "client_when" );
+	pfput_time( pf, "databases_when", atime );
+
+	pfeval( pfanalyze, "server{address}", &serveraddress );
+	pfeval( pfanalyze, "server{port}", &serverport );
+	pfeval( pfanalyze, "server{host}", &host );
+
+	hostcopy = strdup( host );
+	strtok_r( hostcopy, delim, &hostdir );
+
+	pfget( pfanalyze, "clients", (void **) &pfclients );
+
+	client_keys = pfkeys( pfclients );
+
+	for( ikey = 0; ikey < maxtbl( client_keys ); ikey++ ) {
+
+		client_key = gettbl( client_keys, ikey );
+		pfget( pfclients, client_key, (void **) &pfclient );
+
+		what = pfget_string( pfclient, "what" );
+		clientaddress = pfget_string( pfclient, "address" );
+		clientid = pfget_string( pfclient, "clientid" );
+
+		if( is_dbprogram( what, dbprogram, dbpath ) ) {
+
+			pfdatabase = pfnew( PFARR );
+
+			abspath = concatpaths( hostdir, dbpath, 0 );
+			parsepath( abspath, dir, dfile, 0 );
+			free( abspath );
+
+			pfput_string( pfdatabase, "clientid", clientid );
+			pfput_string( pfdatabase, "serveraddress", serveraddress );
+			pfput_string( pfdatabase, "serverport", serverport );
+			pfput_string( pfdatabase, "dbprogram", dbprogram );
+			pfput_string( pfdatabase, "dir", dir );
+			pfput_string( pfdatabase, "dfile", dfile );
+
+			if( is_localhost( clientaddress ) ) {
+
+				pfput_string( pfdatabase, "dbmachine", serveraddress );
+
+			} else {
+
+				pfput_string( pfdatabase, "dbmachine", clientaddress );
+			}
+
+			sprintf( formal_name, "client%03d", ++formal_count );
+			pfput( pfdatabases, formal_name, pfdatabase, PFPF );
+		}
+	}
+
+	free( hostcopy );
+
+	pfput( pf, "databases", pfdatabases, PFPF );
+
+	return pf;
+}
+
 static Pf *
 orbconnections2pf( Pf *pfanalyze )
 {
@@ -459,11 +628,8 @@ orbconnections2pf( Pf *pfanalyze )
 	char	cmdline_toipc[STRSZ];
 	char	formal_name[STRSZ];
 	int	formal_count = 0;
-	char	*reject;
-	char	*select;
 	int	cmdline_fromport;
 	int	cmdline_toport;
-	double	latency_sec;
 	struct in_addr addr;
 	
 	regcomp( &preg_findclient, "^orb2orb ", 0 );
@@ -538,35 +704,11 @@ orbconnections2pf( Pf *pfanalyze )
 
 			pfput_string( pfconnection, "what", what );
 
-			if( ( reject = pfget_string( pfclient, "reject") ) != NULL ) {
-
-				pfput_string( pfconnection, "reject", reject );
-			}
-			
-			if( ( select = pfget_string( pfclient, "select") ) != NULL ) {
-
-				pfput_string( pfconnection, "select", select );
-			}
-			
 			if( ( clientid = pfget_string( pfclient, "clientid") ) != NULL ) {
 
 				pfput_string( pfconnection, "clientid", clientid );
 			}
 			
-			if( pfget_string( pfclient, "latency_sec" ) != NULL ) {
-
-				latency_sec =
-					pfget_double( pfclient, "latency_sec" );
-
-				pfput_double( pfconnection, 
-					      "latency_sec", latency_sec );
-
-			} else {
-
-				pfput_double( pfconnection, 
-					      "latency_sec", -9999999.99999 );
-			}
-
 			/* Preparatory raw-information acquisition: */
 
 			extract_orb2orb_orbargs( what, 
@@ -707,6 +849,11 @@ pforbstat( int orbfd, int flags )
 		flags |= PFORBSTAT_CLIENTS;
 	}
 
+	if( flags & PFORBSTAT_DATABASES ) {
+
+		flags |= PFORBSTAT_CLIENTS;
+	}
+
 	orbping( orbfd, &orbversion );
 
 	pf = pfnew( PFFILE );
@@ -748,6 +895,16 @@ pforbstat( int orbfd, int flags )
 	if( flags & PFORBSTAT_CONNECTIONS ) {
 
 		pfans = orbconnections2pf( pf );
+
+		pfcompile( s = pf2string( pfans ), &pf );
+		free( s );
+	
+		pffree( pfans );
+	}
+
+	if( flags & PFORBSTAT_DATABASES ) {
+
+		pfans = orbdatabases2pf( pf );
 
 		pfcompile( s = pf2string( pfans ), &pf );
 		free( s );
