@@ -91,6 +91,9 @@ dbsetrgn db
 tabulate_missed_stations translation_db dbname [dbname...]
     find station names that do not appear in the translation_db
 
+private capitalize_station dbname
+    capitalize the station field in dbname
+
 translate_stachan_names translation_db dbname
     apply the station name-translations listed in translation_db
 	
@@ -117,7 +120,8 @@ tksend [options] app_name [message]
 -p	wait for and print returned messages
 -verbose	be more verbose
 -validate	validate the application name and return the disposition and the version number
--version {3|4|auto}	select older or newer tksend protocol; default is auto{matic}
+-version {3|4|auto}
+ 	select older or newer tksend protocol; default is auto{matic}
 -wait	wait for a response
 </options>
 

@@ -6,7 +6,7 @@ more information.
 
 <commands>
 ANTELOPE
-    usually set (by setup.csh) to indicate the Antelope base directory, for example "/opt/antelope/4.2u"
+    usually set (by setup.csh) to indicate the Antelope base directory, for example "/opt/antelope/4.4u"
 
 ANTELOPEMAKE
     usually set (by setup.csh) to a file containing standard make(1) rules for Antelope

@@ -7,7 +7,7 @@ dbhelp [db|s]
     gui to explore schema for database db or schema s
 
 dbdescribe {db|schema} [table]
-    describe the format of a database or schema
+    generate ascii formatted document describing schema, database, or database table
 
 dbdoc db
     generate troff formatted document describing schema for database db
@@ -185,11 +185,14 @@ dbverify [options] db[.table]
 dbdiff [options] db1[.table] db2[.table]
     find differences between two databases (or specified tables)
 <options>
-{-a absolute_tolerance |-r relative_tolerance}	allow floating point values to vary by some absolute or relative tolerance
-{-A absolute_tolerance |-R relative_tolerance}	allow floating point values to vary by some absolute or relative tolerance in indexes
+{-a absolute_tolerance | -r relative_tolerance}
+ 	allow floating point values to vary by some absolute or relative tolerance
+{-A absolute_tolerance | -R relative_tolerance}
+ 	allow floating point values to vary by some absolute or relative tolerance in indexes
 -e	print times as epoch seconds
 -i name	list of names to ignore
--l {exact|compare|ignore}	(for link fields)
+-l {exact|compare|ignore}
+ 	(for link fields)
 -w width
 -x {exact|compare|ignore|Program}	(for external files)
 </options>

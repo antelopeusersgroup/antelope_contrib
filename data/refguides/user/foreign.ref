@@ -34,7 +34,7 @@ db2ah [options] dbin dbout
 -v	version
 </options>
 
-db2ew_wave_server [-vV] [-p pfname] dbname
+private db2ew_wave_server [-vV] [-p pfname] dbname
     attach to a CSS3.0 database and make the data
     therein accessible via the Earthworm protocols.
 
@@ -68,6 +68,9 @@ db2segy db outfile [-pf pf]
 
 <subsection Importing data into a Datascope database>
 <commands>
+aah2db [-vV] ahfile [ahfile...] dbname
+    convert non-XDR AH files to database
+
 ah2db ah1 [ah2 .. ] dbout
     create CSS database dbout from AH format waveform files ah1, ah2, ...
 
@@ -86,8 +89,18 @@ pde2origin pde dbout [-auth author]
 qed2origin qed dbout
     create origin records in database dbout from input QED file qed
 
+pick2db [-cvp] [-r reference_db[:reference_db...]] pickfile [pickfile...] dbname
+    convert hypoellipse pickfile(s) to CSS3.0 database
+<options>
+-c	attempt to fake channel names
+-v	verbose
+-p	put component code into channel field
+-r reference_db[:reference_db...]]
+ 	add references to other databases in descriptor file
+</options>
+
 reb2db filename [filename ...] db
-    convert Reviewed Event Bulletins to CSS3.0 database db
+    convert Reviewed Event Bulletins of GSE2.0, IMS1.0, or IMS1.0:SHORT format to CSS3.0 database db
 
 sac2db sac1 [sac2 ... ] dbout
     create wfdisc, site, sitechan (and possibly origin, event, arrival and assoc records) in output database dbout from SAC files sac1, sac2 ...
@@ -99,7 +112,8 @@ psd2db [options] sd dbout
 -w	only create a wfdisc table
 -t tolerance
 -respdir dir1	use directory dir1 for response files
--stagedir dir2	also create stage table, using directory dir2 for stage table response files
+-stagedir dir2
+ 	also create stage table, using directory dir2 for stage table response files
 -v	more verbose
 </options>
 

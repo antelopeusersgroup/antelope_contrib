@@ -34,7 +34,8 @@ rtincident [options] [output_file]
     may run this program and send the results to someone
 <options>
 -c corefile	specify corefile (on which dbx is run)
--e command 	specify command line
+-e command 
+ 	specify command line
 -l log	specify log file for program
 -M msg	specify message to include in report
 -m addr	send report as email to addr
@@ -202,7 +203,8 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
 -pf pf	specify parameter file
--sta net_sta1 [net_sta2 [...]]	override names from parameter file
+-sta net_sta1[net_sta2[...]] 
+ 	override names from parameter file
 -msglevel {0|1}
 -v	verbose
 </options>
@@ -231,7 +233,8 @@ k22orb [options] target orbdata [orbcmd]
 -pf pf	specify alternate parameter file
 -db db	specify database for calib information
 -v	be more verbose
--state filename	save state in filename
+-state filename
+ 	save state in filename
 -start time	only get events after time
 </options>
 
@@ -391,7 +394,8 @@ orbmag [options] orbwf orbdb dbname
 -start {pktid|time|OLDEST|NEWEST}
 -number number
 -nowait
--state filename	save state in filename
+-state filename
+ 	save state in filename
 -p parameter_file
 -auth_expr auth_expr
 -target_orbmag torbmag
@@ -452,15 +456,19 @@ qtmon dataorb data2orb cmdorbname [database]
 orbmonrtd [options] orb
     real time waveform trace display
 <options>
--twin minutes	window size in minutes
+-twin minutes
+ 	window size in minutes
 -width pixels	trace width in pixels
--height pixels	single trace window height in pixels
+-height pixels
+ 	single trace window height in pixels
 -pf pfile	
 -hmax hmax	maximum height of main window in pixels
--wmax wmax	maximum width of main window in pixels
+-wmax wmax
+ 	maximum width of main window in pixels
 -log	
 -filter filter	
--source net_sta_chan	select display channels on command line
+-source net_sta_chan
+ 	select display channels on command line
 -select re	select channels matching re
 -reject re	reject channels matching re
 </options>
@@ -541,13 +549,14 @@ orb2dbt [options] orb dbout
 -reject re2	don't read packets matching re2
 -verbose
 -start {pktid|time|OLDEST|NEWEST}
-	begin reading at specified pktid
+ 	begin reading at specified pktid
 -number n	read a maximum of n packets
 -nowait
 -safe
 -timeout seconds
 -overwrite
--state filename	save state in filename
+-state filename
+ 	save state in filename
 </options>
 
 

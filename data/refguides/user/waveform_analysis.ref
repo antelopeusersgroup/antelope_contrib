@@ -9,7 +9,8 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -o datatype	specify output waveform datatype (default = sd)
 -a	append to existing waveform files if present
 -w pattern	specify naming convention for output waveforms
--m {time|convert|event|arrival|explicit}	specify mode (default = time)
+-m {time|convert|event|arrival|explicit}
+ 	specify mode (default = time)
 -g	eliminate 'marked' data gaps
 -c expr	sta/chan/instrument subset
 -s expr	evid/orid/arid subset
@@ -200,7 +201,8 @@ dbpick [options] dbname
 -noexist
 -nostarttalk	suppress startup usage chatter
 -winfile wfile
--appname name	specify tksend application name
+-appname name
+ 	specify tksend application name
 -gaps {segment|zero|interp|none}
 -comout comfile
 -geom WxH+X+Y
