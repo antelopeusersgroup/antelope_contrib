@@ -228,6 +228,21 @@ Attribute kbaud
 	}
 	;
 
+Attribute preserve
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "preserve =~ /y|n/" )
+	Description ( "whether to preserve an entry untouched by automatic processes" )
+	Detail {
+		This field specifies whether an entry in the servernames table
+		may be automatically modified. If preserve is 'y', the row was 
+		entered by hand and should not be modified by any automated processes
+		attempting to 'do the right thing.' If preserve is 'n' or null, 
+		the row may be modified as necessary by automated routines.
+	}
+	;
+
 Attribute lastpkt
 	Time (17)
 	Format ( "%17.5f" )
@@ -816,7 +831,7 @@ Relation grid
 	;
 
 Relation servernames
-	Fields ( serveraddress serverport serveralias fqhostname portname lddate )
+	Fields ( serveraddress serverport serveralias fqhostname portname preserve lddate )
 	Primary ( serveraddress serverport )
 	Alternate ( serveralias )
 	Description ( "names for orbservers" )
