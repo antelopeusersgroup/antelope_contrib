@@ -3,7 +3,7 @@
 dbdepest  \- estimates depth to Moho from a receiver function
 .SH SYNOPSIS
 .nf
-\fBdbdepest \fIz1 z2 dz Vcrust Fmin Fmax Delta Tfit Zbasin VpVs tshift inwf_file subset_rf [depest.pf]\fR
+\fBdbdepest \fIz1 z2 dz Vcrust Fmin Fmax Delta Tfit Zbasin VpVs tshift inwf_file subset_rf [depest.pf]\fP
 .fi
 .SH DESCRIPTION
 Reads a receiver function stored in a css3.0-database, and using a grid
@@ -24,60 +24,60 @@ applies to the basin).  Crustal density is estimated from a linear fit to
 Nafe-Drake empirical curves.
 
 .SH COMMAND LINE ARGUMENTS
-.IP \fBz1 \fR
+.IP \fBz1\fP
 Shallowest depth to Moho to test, km.
-.IP \fBz2 \fR
+.IP \fBz2\fP
 Deepest depth to Moho to test, km.
-.IP \fBdz \fR
+.IP \fBdz\fP
 Depth increment, km, for grid search over Moho depth.
-.IP \fBVcrust \fR
+.IP \fBVcrust\fP
 Assumed crustal P-wave velocity, km/s.
-.IP \fBFmin \fR
+.IP \fBFmin\fP
 Minimum frequency or High-pass filter frequency, Hz.  Both the observed and
 calculated receiver functions are filtered before they are compared. Filter
 is 3-pole zero-phase Butterworth.
-.IP \fBFmax \fR
+.IP \fBFmax\fP
 Maximum frequency of Low-pass filter frequency, Hz.  See Fmin.
-.IP \fBDelta \fR
+.IP \fBDelta\fP
 Distance, degrees, from source to receiver.  Used for calculating ray parameter,
 using iasp91.
-.IP \fBTfit \fR
+.IP \fBTfit\fP
 Length of the time window to evaluate fits, s, from start of the record.
-.IP \fBZbasin \fR
+.IP \fBZbasin\fP
 Depth to bottom of a sedimentary basin, in km (Vp=3.9 km/s, rho = 2.4 g/cc).
-.IP \fBVpVs \fR
+.IP \fBVpVs\fP
 If Zbasin=0, the P-to-S ratio assumed for the crust.  If Zbasin>0, the 
 P-to-S velocity ratio assumed for the basin sediments; in that case
 Vp/Vs=sqrt(3).  Also, if VpVs = 0 then Vp/Vs is set to sqrt(3) everywhere.
-.IP \fBtshift \fR
+.IP \fBtshift\fP
 Time shift of zero lag from start of record, used in generating receiver
-function.  Should match "phaseshift" in \fBdbrfcn\fR or "tshift" in 
-\fBdbtimerf\fR.
-.IP \fBinwf_file \fR
+function.  Should match "phaseshift" in \fBdbrfcn\fP or "tshift" in 
+\fBdbtimerf\fP.
+.IP \fBinwf_file\fP
 Name of wfdisc-table with data of interest; should include (.wfdisc).   
-.IP \fBsubset_rf \fR
+.IP \fBsubset_rf\fP
 A logical string used to select from the database the receiver function of interest.
 For example, a subset on station/channel/time.
-.IP \fB[depest.pf] \fR
+.IP \fB[depest.pf]\fP
 Parameter file prefix -- can control inversion parameters here.  Parameters 
 include:
- \fB(vpm, vsm, rhom)\fR for Mantle;
- \fB(vpb, vsb, rhob)\fR for Basin; 
- \fBvpvs\fR for crustal velocity ratio;
- \fBvpvssed\fR for basin velocity ratio.
+ \fB(vpm, vsm, rhom)\fP for Mantle;
+ \fB(vpb, vsb, rhob)\fP for Basin; 
+ \fBvpvs\fP for crustal velocity ratio;
+ \fBvpvssed\fP for basin velocity ratio.
   These parameters override defaults and command-line arguments.
 
 .SH OUTPUT
-.IP \fBstdout \fR
+.IP \fBstdout\fP
 A 4-column table; columns are DEPTH, RMS1, NRMS1, RMS2.  RMS1 is the Rms
 residual between calculated and observed records; NRMS1 is RMS1 normalized
 to power in the observed receiver function; RMS2 is the rms residual calculated
 after BOTH the observed AND calculated receiver functions are normalized by
 their RMS amplitudes.
-.IP \fBsyn.filt \fR
+.IP \fBsyn.filt\fP
 An ASCII file with the best-fitting receiver function calculated at minimum RMS2.
 the columns are Time, Amplitude. Record is filtered via Fmin, Fmax.
-.IP \fBdat.filt \fR
+.IP \fBdat.filt\fP
 An ASCII file with the filtered observed receiver function. Format as syn.filt.
 
 .SH EXAMPLE
