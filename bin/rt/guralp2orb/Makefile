@@ -4,13 +4,13 @@ PF=guralp2orb.pf
 
 cflags = 
 ldflags =
-ldlibs=	 $(TRLIBS) -lpkt -lorb $(SVR4LIBS) 
+ldlibs=	 $(ORBLIBS) 
 
 include $(ANTELOPEMAKE)  	
 
 DIRS=
 
-OBJS = $(BIN).o receiver.o mygcf.o
+OBJS = $(BIN).o receiver.o mygcf.o stuff_iw_tracebuf.o
 
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS) 
