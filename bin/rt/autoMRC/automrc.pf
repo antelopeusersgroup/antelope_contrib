@@ -1,0 +1,7 @@
+ srcname                 .*/CBB1S 	# data will be used in LTA calculation
+ max_lta                 20000       	# MAX allowed LTA value                
+ lta_window              3600        	# # of sec for LTA                       
+ num_repeats             2           	# # times to repeat command for one das   
+ timeout_btw_cmds        30          	# # of sec between command send to DAS 
+ max_mrc                 4          	# max # of failed MRC to send 'alarm' email 
+ receipient              rt@localhost	# whom to send an email in a case of MRC failed
