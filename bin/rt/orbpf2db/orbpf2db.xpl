@@ -103,6 +103,11 @@ if( $opt_w ) {
 
 $orb = orbopen( $orbname, "r&" );
 
+if( $orb < 0 ) {
+
+	die( "Failed to open orb '$orbname' for reading\n" );
+}
+
 orbselect( $orb, $match );
 
 if( $opt_f && ( ! $opt_s || ! -e "$opt_s" ) ) {
@@ -306,7 +311,7 @@ for(;;) {
 
 				@records = dbmatches( @dbscratch, @dbtable, "hook$crunch\_$table" );
 
-				if( ! defined( @records ) ) {
+				if( ! defined( @records ) || scalar( @records ) < 1 ) {
 	
 					dbadd( @dbtable );
 	

@@ -1,6 +1,6 @@
 translations &Arr{
 	/pf/orbstat &Arr{
-		schema	registry1.0
+		schema	registry1.1
 		clean &Arr{
 			clients &Arr{
 				serveraddress	server{address}
@@ -28,6 +28,7 @@ translations &Arr{
 				rejected 	server{rejected}
 				started 	TIME:server{started}
 				version 	server{version}
+				statmachine	orbstat_machine
 				when 		TIME:server{when}
 				who 		server{who}
 			}
@@ -64,6 +65,7 @@ translations &Arr{
 				what		clients{FOREACH}{what}
 				who		clients{FOREACH}{who}
 				written		clients{FOREACH}{written}
+				statmachine	orbstat_machine
 			}
 			sources &Arr{
 				FOREACH 	sources
