@@ -2,7 +2,7 @@
 .TH DBTC 1 "$Date$"
 
 .SH NAME
-dbtc, correctdt \- database time correction routine
+dbtc, correctdt \- perform waveform and database time corrections 
 
 .SH SYNOPSIS
 .nf
@@ -11,7 +11,7 @@ dbtc, correctdt \- database time correction routine
                 \fIgdb\fP:\fIgnet\fP:\fIgsta\fP:\fIgch\fP
                 \fIbdb\fP:\fIbnet\fP:\fIbsta\fP:\fIbch\fP
 
-\fBcorrectdt \fP[-t \fIstime\fP] \fIbdb\fP
+\fBcorrectdt\fP [-v] [-m \fIsrcmatch\fP] [-t \fIstime\fP] \fIbdb\fP
 
 .fi
 
@@ -94,7 +94,6 @@ Specify time of \fBbad data\fP  waveform from which start to do a cross correlat
 By default start at data start time.
 
 .IP "-v"
-
 Be more verbose.
 
 .SS correctdt
@@ -106,8 +105,10 @@ expression \fIsrcid\fP is used in a time correction procedure.
 .IP "-t stime"
 Start fixing time in \fIbad data\fP set at \fIstime\fP.
 
-.SH PARAMETER FILE
+.IP "-v"
+Be more verbose.
 
+.SH PARAMETER FILE
 .LP
 \fBdbtc\fP uses a parameter file, which has the following parameters:
 
