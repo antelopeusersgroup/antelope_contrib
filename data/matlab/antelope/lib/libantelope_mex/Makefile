@@ -1,4 +1,4 @@
-LIB= libantelopemex.a
+LIB= libantelope_mex.a
 INCLUDE= antelope_mex.h
 
 CLEAN=
@@ -21,6 +21,7 @@ OBJS= 	  variables2mxArray.o \
 	  pftbl2cellarr.o \
 	  mxArray2Response.o \
 	  mxArray2Pf.o \
+	  matlabPfprompt.o \
 	  mxPfprompt.o \
 	  mxPfprompt_string.o \
 	  mxTranslate_Boolean.o \
