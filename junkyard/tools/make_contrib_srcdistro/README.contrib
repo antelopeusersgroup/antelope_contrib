@@ -36,6 +36,7 @@ ANTELOPE environment variable is correctly set.
 	
 	cd $ANTELOPE/src/contrib
 	make Include
+	(cd lib; make install)
 	make install
 
 If you have already made the source distribution previously, or if you have a 
