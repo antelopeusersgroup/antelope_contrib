@@ -1,0 +1,139 @@
+<HTML>
+
+<HEAD>
+	<TITLE>Antelope Toolbox for Matlab</TITLE>
+</HEAD>
+
+<BODY bgcolor="lightblue">
+<PRE>
+
+
+ <H1><CENTER>Antelope Toolbox for Matlab</CENTER></H1>
+
+ <I><B>Opening a database</B></I>
+   <A HREF="dbopen.html">dbopen</A>		- Open a Datascope Database
+   <A HREF="dblookup.html">dblookup</A>		- Aim a Datascope database pointer as specified 
+   <A HREF="dblookup_table.html">dblookup_table</A>	- Aim a Datascope database pointer at a specified table
+   <A HREF="dbclose.html">dbclose</A>		- Close a Datascope database
+
+ <I><B>Manipulating fields and records</B></I>
+   <A HREF="dbadd.html">dbadd</A>		- Add a record to a Datascope database
+   <A HREF="dbaddnull.html">dbaddnull</A>		- Add a null record to a Datascope database 
+   <A HREF="dbaddv.html">dbaddv</A>		- Add values to a Datascope database
+   <A HREF="dbget.html">dbget</A>		- Get a table, record, or field from a database
+   <A HREF="dbgetv.html">dbgetv</A>		- Get the specified values from a Datascope database
+   <A HREF="dbput.html">dbput</A>		- Put the specified value into a Datascope database
+   <A HREF="dbputv.html">dbputv</A>		- Put the specified values into a Datascope database
+   <A HREF="db2struct.html">db2struct</A>		- Convert a database view to a Matlab structure array
+
+   <A HREF="dbmark.html">dbmark</A>		- Set the specified Datascope database rows to null
+   <A HREF="dbcrunch.html">dbcrunch</A>		- Crunch out null rows in a Datascope database table
+   <A HREF="dbdelete.html">dbdelete</A>		- Delete the specified record in a Datascope databas
+   <A HREF="dbinvalid.html">dbinvalid</A>		- Create an invalid database pointer
+
+ <I><B>Getting information about the database</B></I>
+   <A HREF="dbquery.html">dbquery</A>		- Query a Datascope database for various parameters
+   <A HREF="dbjoin_keys.html">dbjoin_keys</A>		- Show the inferred join keys between two database tables
+
+ <I><B>Forming views</B></I>
+   <A HREF="dbjoin.html">dbjoin</A>		- Join the specified Datascope database tables
+   <A HREF="dbsort.html">dbsort</A>		- Sort the specified Datascope database table
+   <A HREF="dbsubset.html">dbsubset</A>		- Subset a Datascope database table 
+   <A HREF="dbtheta.html">dbtheta</A>		- Theta-join two Datascope database tabl
+   <A HREF="dbunjoin.html">dbunjoin</A>		- Unjoin the specified Datascope database view
+   <A HREF="dbnojoin.html">dbnojoin</A>		- Find records which do not join
+
+ <I><B>Evaluating expressions</B></I>
+   <A HREF="dbeval.html">dbeval</A>		- Evaluate an expression on a Datascope database
+
+ <I><B>Special functions</B></I>
+   <A HREF="dbadd_remark.html">dbadd_remark</A>		- Add a remark to a datascope Database
+   <A HREF="dbget_remark.html">dbget_remark</A>		- Get a remark from a Datascope Database
+   <A HREF="dbfind.html">dbfind</A>		- Locate a database row satisfying some condition 
+   <A HREF="dbfilename.html">dbfilename</A>		- Compose a filename from a database record
+   <A HREF="dbnextid.html">dbnextid</A>		- Get the next integer id for id field from a database
+
+ <I><B>Handling waveform data</B></I>
+   <A HREF="trload_css.html">trload_css</A>		- Load waveform data from CSS database into trace object
+   <A HREF="trload_cssgrp.html">trload_cssgrp</A>	- Load waveform data from grouped CSS database into trace object
+   <A HREF="trextract_data.html">trextract_data</A>	- Read a copy of data from a trace object into a matrix
+   <A HREF="trinsert_data.html">trinsert_data</A>	- Put data from a Matlab matrix into a trace-object
+   <A HREF="trsplice.html">trsplice</A>		- Splice together data segments
+   <A HREF="trgetwf.html">trgetwf</A>		- Read trace data from database into matrix
+   <A HREF="trputwf.html">trputwf</A>		- Save waveform data into a file
+   <A HREF="trnew.html">trnew</A>		- Create a new trace-object
+   <A HREF="trsave_wf.html">trsave_wf</A>		- Save trace-object waveform data to a new database
+   <A HREF="trfree.html">trfree</A>		- free memory for part of a trace object
+   <A HREF="trdestroy.html">trdestroy</A>		- free memory and trace object for trace object
+   <A HREF="trapply_calib.html">trapply_calib</A>	- multiply trace-object waveform data by calib value
+
+   <A HREF="tr_nsamp.html">tr_nsamp</A>		- Calculate number of samples from time, sample rate, and endtime
+   <A HREF="tr_samprate.html">tr_samprate</A>		- Calculate sample rate from time, endtime, and number of samples
+   <A HREF="tr_endtime.html">tr_endtime</A>		- Calculate endtime from time, sample rate, and number of samples
+   <A HREF="tr_time2samp.html">tr_time2samp</A>		- Calculate sample index from times and sample rate
+   <A HREF="tr_samp2time.html">tr_samp2time</A>		- Calculate sample time from times and sample index
+
+ <I><B>Time conversion</B></I>
+   <A HREF="str2epoch.html">str2epoch</A>		- Convert a string to epoch time
+   <A HREF="epoch2str.html">epoch2str</A>		- Convert epoch time to a string
+   <A HREF="strdate.html">strdate</A>		- Convert an epoch time to its corresponding date
+   <A HREF="strtime.html">strtime</A>		- Convert an epoch time to a string specification
+   <A HREF="strydtime.html">strydtime</A>		- Convert an epoch time to a string date and time
+   <A HREF="strtdelta.html">strtdelta</A>		- Convert an epoch time difference to an elapsed time 
+   <A HREF="yearday.html">yearday</A>		- Convert an epoch time to a yearday value
+
+ <I><B>Error handling</B></I>
+   <A HREF="clear_register.html">clear_register</A>	- Clear the Datascope error register
+
+ <I><B>Parameter Files</B></I>
+   <A HREF="dbpf.html">dbpf</A>			- Dbpf (Parameter File) class constructor
+
+   <A HREF="pfwrite.html">pfwrite</A>		- Save a parameter-file object to a file
+   <A HREF="pfget_num.html">pfget_num</A>		- Get a numeric value from a parameter-file object
+   <A HREF="pfget_string.html">pfget_string</A>		- Get a string from a parameter-file object
+   <A HREF="pfget_boolean.html">pfget_boolean</A>	- Get a boolean value from a parameter-file object
+   <A HREF="pfget_tbl.html">pfget_tbl</A>		- Get an ordered list from a parameter-file object
+   <A HREF="pfget_arr.html">pfget_arr</A>		- Get an associative array from a parameter-file object
+   <A HREF="pfget.html">pfget</A>		- Get a generic parameter from a parameter-file object
+   <A HREF="pfput_boolean.html">pfput_boolean</A>	- Put a boolean value into a parameter-file object
+   <A HREF="pfput.html">pfput</A>			- Put a value into a parameter-file object
+   <A HREF="pfresolve.html">pfresolve</A>		- Alternate interface to retrieve parameters
+   <A HREF="pf2string.html">pf2string</A>		- Convert a parameter file object to a string
+   <A HREF="pf2struct.html">pf2struct</A>		- Convert a parameter file object to a Matlab struct
+   <A HREF="pfkeys.html">pfkeys</A>		- Find the parameter names in a parameter-file object
+   <A HREF="pftype.html">pftype</A>		- Find the type of a parameter-file object
+   <A HREF="pffiles.html">pffiles</A>		- List file names for parameter-file
+   <A HREF="pfname.html">pfname</A>		- Find the name of a top-level parameter-file object
+   <A HREF="pfupdate.html">pfupdate</A>		- Refresh a Dbpf object to reflect changes in the file
+   <A HREF="pffree.html">pffree</A>		- Dbpf elimination routine
+   <A HREF="clear.html">clear</A>		- Dbpf elimination routine
+
+ <I><B>Instrument response routines</B></I>
+   <A HREF="dbresponse.html">dbresponse</A>		- Dbresponse class constructor
+   <A HREF="eval_response.html">eval_response</A>	- Dbresponse evaluation routine
+   <A HREF="free_response.html">free_response</A>	- Dbresponse elimination routine
+   <A HREF="clear.html">clear</A>		- Dbresponse elimination routine
+
+ <I><B>Real-time system connections</B></I>
+   <A HREF="orbopen.html">orbopen</A>             - Open a connection to an Antelope object-ring-buffer
+   <A HREF="orbclose.html">orbclose</A>            - Close a connection to an Antelope object-ring-buffer
+   <A HREF="orbping.html">orbping</A>             - Ask for the version number of an Antelope ORB server
+   <A HREF="orbget.html">orbget</A>              - Get packets from an Antelope ORB connection
+   <A HREF="orbreap.html">orbreap</A>             - Get successive packets from an Antelope ORB connection
+   <A HREF="orbselect.html">orbselect</A>           - Select sources on an Antelope ORB read connection
+   <A HREF="orbreject.html">orbreject</A>           - Reject sources on an Antelope ORB read connection
+   <A HREF="orbseek.html">orbseek</A>             - Set an ORB Read connection to the specified position
+   <A HREF="orbafter.html">orbafter</A>            - set ORB connection to first packet after a specified time
+   <A HREF="orbtell.html">orbtell</A>             - Ask for the current read-position on an Antelope ORB
+
+ <I><big><A HREF="Antelope_Toolbox_for_Matlab.pdf">Online Manual for Antelope Toolbox</A> (PDF)</big></I> 
+
+	<A HREF="http://brtt.com/">Antelope</A> Toolbox for <A HREF="http://www.mathworks.com/">Matlab</A> 
+                    [Antelope is a product of <A HREF="http://brtt.com/">Boulder Real-Time Technologies, Inc.</A>]
+	<A HREF="http://giseis.alaska.edu/Input/kent/kent.html">Kent Lindquist</A>
+	<A HREF="http://www.gi.alaska.edu/">Geophysical Institute</A>
+	University of Alaska, Fairbanks
+	1999
+</PRE>
+</BODY>
+</HTML>
