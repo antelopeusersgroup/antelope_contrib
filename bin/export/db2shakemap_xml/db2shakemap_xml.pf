@@ -1,0 +1,35 @@
+# earthquake_dtd 	/opt/ShakeMap/lib/xml/earthquake.dtd
+# wfdata_dtd 		/opt/ShakeMap/lib/xml/stationlist.dtd
+# dbname 		/files/users/rt/temp/$jday\_reno
+# output_dir 		/opt/ShakeMap/data/$event/input
+
+earthquake_dtd 		./earthquake.dtd
+earthquake_filename 	event.xml
+wfdata_dtd		./stationlist.dtd
+wfdata_filename		db_dat.xml
+places_dbname 		/ymp13/ANTELOPE/RENO/places/new_nevada
+dbname 			/home/kent/projects/unr_shakemap/sample_database/266/reno
+output_dir 		.
+origin_subset		ml >= 1
+wfmeas_subset		filter =~ /.*1. 5 0 0.*/
+# wfmeas_thetajoin_recipe	arid == wfmeas.arid
+wfmeas_thetajoin_recipe		sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time == arrival.time - 10 
+insttype		UNR
+commtype		DIG
+
+containing_polygon &Tbl{
+ 	42,-120
+ 	42,-114
+ 	35,-114
+	39,-120
+}
+
+meastype_xmltags &Arr{
+	peaka 	acc
+	peakv 	vel
+	acc 	acc
+	vel 	vel
+	psa30 	psa30
+	psa10 	psa10
+	psa03 	psa03
+}
