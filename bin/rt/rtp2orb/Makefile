@@ -1,25 +1,9 @@
 
 BIN=rtp2orb
-LIB=
-DLIB=$(LIB:.a=$(DSUFFIX))
-DATADIR=
-DATA=
-INCLUDE=
-PF=
-
 MAN1=rtp2orb.1
-MAN3=
-MAN5=
 
-CLEAN=
-
-cflags=
-fflags=
-ldflags=
 ldlibs=$(ORBLIBS)
-
 include $(ANTELOPEMAKE)
-
 DIRS=
 
 OBJS= 	rtp2orb.o \

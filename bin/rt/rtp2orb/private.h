@@ -8,7 +8,7 @@
 #define reftek_private_included
 
 #include "reftek.h"
-#include "steim.h"         /* Steim structures and constants */
+#include "rtp_steim.h"         /* Steim structures and constants */
 
 #ifndef BIG_ENDIAN_HOST
 #   define REVERSE_BYTE_ORDER
@@ -31,6 +31,10 @@ BOOL decode_steim( VOID *ptr, INT16 *n, INT32 *samples );
 /* Revision History
  *
  * $Log$
+ * Revision 1.2  2004/08/26 15:17:23  danq
+ * clean up the Makefile, rename steim.h to rtp_steim.h to avoid name conflict
+ * with tr steim.h, fix minor problem in man page
+ *
  * Revision 1.1  2004/08/25 22:47:59  vernon
  * Rebuilt all the software and was able to get it to complie now.
  *
