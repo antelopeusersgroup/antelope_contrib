@@ -8,4 +8,5 @@ MAN1=pfstream2db.1
 ldlibs=$(DBLIBS) -lpfstream -lbrttutil
 
 include $(ANTELOPEMAKE)
+CC=insure
 DIRS=

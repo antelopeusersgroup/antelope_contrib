@@ -515,8 +515,8 @@ void main(int argc, char **argv)
 					pfe->pf[pfe->group_start[j]],tam);
 			}
 		}
-		freearr(table_map,0);
-		table_map=pfget_table_map(pf);
+		freetbl(table_list,0);
+		table_list = keysarr(save_by_ensemble);
 		for(i=0;i<maxtbl(table_list);++i)
 		{
 			table = (char *)gettbl(table_list,i);
@@ -529,6 +529,7 @@ void main(int argc, char **argv)
 				dbadd_row_pfe(db,pfe->pf[0],tam);
 		}
 		freearr(pfearr,free_Pf_ensemble);
+		pffree(pfis);
 	}
 	exit(0);
 }
