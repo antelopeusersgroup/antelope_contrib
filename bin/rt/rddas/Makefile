@@ -1,7 +1,7 @@
 BIN = rddas
 MAN1=rddas.1
 
-ldlibs	= -lpkt -lorb $(TRLIBS) -lsocket -lnsl 
+ldlibs	= -lpkt -lorb $(TRLIBS) 
 
 include $(ANTELOPEMAKE)
 OBJSM	= rddas.o\

@@ -86,7 +86,11 @@ struct Prts *inport;
 	    case 57600:
 	        termios.c_cflag &= ~CBAUD;	
 		termios.c_cflag |= B57600;
+#if defined sun
 	        termios.c_cflag &= ~CIBAUDEXT;
+#else
+	        termios.c_cflag &= ~CBAUDEX;
+#endif
 		complain(  0,"baudrate set to 57600\n");
 		break;
 	
