@@ -108,7 +108,7 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 	double lddate;
 	
 
-	/* these are intentionally left null: ndp,depdp,commid
+	/* these are intentionally left null: ndp,depdp,commid*/
 
 
 	/* set but obtained directly from hypo structure 
@@ -258,7 +258,7 @@ written yet.
 Author:  Gary L. Pavlis
 Written:  February 1997
 */
-void save_origerr(int orid, Hypocenter h, float **C, Dbptr dbo)
+void save_origerr(int orid, Hypocenter h, double **C, Dbptr dbo)
 {
 	double sdobs; 
 	double lddate;
@@ -492,7 +492,7 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 				arid);
 		}
 	}
-	freearr(residual_array,free);
+	freearr(residual_array,0);
 }
 
 	
@@ -536,7 +536,10 @@ int main(int argc, char **argv)
 	char *vmodel;
 
 	int ret_code;  /* ggnloc return code */
-	float C[4][4], emodel[4];  /* error arrays */
+	double **C; 
+	float emodel[4];  
+	C=dmatrix(0,3,0,3);
+
 	if(argc < 3) usage();
 	dbin = argv[1];
 	dbout = argv[2];
