@@ -241,6 +241,14 @@ ref2db [options] input dbname [start [end]]
 -w	do not save waveform data; used to extract log file or get gap info
 </options>
 
+q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+    communicate between a Q330 Quanterra digitizer and orb
+<options>
+-pf pfname
+-calib_db dbname
+-v
+</options>
+
 qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
     communicate between Quanterra digitizer and orb
 <options>
@@ -250,18 +258,6 @@ qt2orb [options] -dataorb orbd -cmdorb orbc -calib_db calib_db [-dataorb2 orbd2]
 -msglevel {0|1}
 -v	verbose
 </options>
-
-qtdownload [-timeout sec] [-nowait] cmdorb net_sta filename [localfilename]
-    download a file from a remote Quanterra digitizer
-
-qtupload [-timeout sec] [-nowait] cmdorb net_sta filename [remotefilename]
-    upload a file to a remote Quanterra digitizer
-
-qtping [-timeout sec] [-nowait] cmdorb
-    ping the qt2orb instances attached to a single command orb
-
-qtset cmdorb net_sta name value
-    set internal state within an instance of qt2orb
 
 cs2orb comserv orb [-v]
     copy data from comserv to an orbserver orb
@@ -279,16 +275,6 @@ k22orb [options] target orbdata [orbcmd]
 	save state in filename
 -start time
 	only get events after time
-</options>
-
-k2cmd [options] orb target datalogger cmd
-    execute command cmd on a remote Kinemetrics Altus digitizer
-<options>
--timeout timeout
--noblock
--noreply
--prm
--delayhangup delayhangup
 </options>
 
 b3s2orb [options]
@@ -354,6 +340,16 @@ dbreplay [options] view [[[orb] t0] t1|T]
 </options>
 
 <subsection Datalogger commanding>
+k2cmd [options] orb target datalogger cmd
+    execute command cmd on a remote Kinemetrics Altus digitizer
+<options>
+-timeout timeout
+-noblock
+-noreply
+-prm
+-delayhangup delayhangup
+</options>
+
 qtcmd [options] cmdorb net_sta cmd [params]
     execute commands on a remote Quanterra digitizer
 <options>
@@ -361,15 +357,6 @@ qtcmd [options] cmdorb net_sta cmd [params]
 -replytarget replytarget
 -timeout timeout
 -noreply
-</options>
-
-qtmassrecenter [options] cmdorb net_sta
-    issue a mass recenter command to a remote Quanterra digitizer
-<options>
--timeout sec
--nowait
--board board#
--duration duration
 </options>
 
 automrc [options] orbname dc_name

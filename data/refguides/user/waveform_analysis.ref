@@ -188,7 +188,6 @@ dbspgram [options] dbname sta chan tstart twin
 -ps psfile
 </options>
 
-
 dbpick [options] dbname
     waveform review, pick arrivals, and edit a CSS relational database (see .dbpickrc for filter specs)
 <options>
@@ -204,6 +203,46 @@ dbpick [options] dbname
 -gaps {segment|zero|interp|none}
 -comout comfile
 -geom WxH+X+Y
+</options>
+
+tkdbpick [options] {dbname|-}
+    waveform review, pick arrivals, and edit a CSS relational database
+<options>
+-pf pfname
+-sc sta:chan
+-ts_sift tstart_sift
+-te_sift tend_sift 
+-ts tstart_display 
+-tw twin_display 
+-gaps {segment|zero|interp|none} 
+-maxchannels maximum_channels_in_display 
+-appname tkdbpick_application_name 
+-comout comfile 
+-geom WxH+X+Y 
+-stam {css|seed} 
+-trcrm {both|time|none} 
+-ampm {auto|auto0|auto1|autoa} 
+-bg tracewin_background_color 
+-fg tracewin_foreground_color 
+-cr tracecursor_foreground_color 
+-fgcss sta_css_label_foreground_color 
+-fgseed sta_seed_label_foreground_color 
+-fgfil filter_label_foreground_color 
+-bga arrival_background_color 
+-fga arrival_foreground_color 
+-bgsa selected_arrival_background_color 
+-fgsa selected_arrival_foreground_color 
+-timefm time_format_string 
+-datefm date_format_string 
+-phase_default default_phase_code 
+-switchbuttons
+-noedit 
+-nosort
+-noshowwfs 
+-noshowarrs
+-noshowpreds 
+-cliptraces
+-counts 
 </options>
 
 trdisp [-r] [-s subset] [-w hours] database[.table] [start [range]]
