@@ -31,8 +31,8 @@ nrecs_after_rotate = dbnrecs( tr );
 % subset to ignore the rest:
 tr = dblist2subset( tr, nrecs_before_rotate:nrecs_after_rotate-1 );
 
-dbclose( db );
-
 trdestroy( tr );
+
+dbclose( db );
 
 echo off

@@ -51,6 +51,8 @@ pause( 0.5 ); % Pause to let plot display during batch mode
 
 dbclose( db );
 
+%SCAFFOLD: set tr to a base table pending resolution of possible bug
+tr.table = 0;
 trdestroy( tr );
 
 echo off
