@@ -1,6 +1,8 @@
 #include "gclgrid.h"
 /* function prototype used only here (FORTRAN routine) */
-void fme_weights_(double *,double *,double *);
+extern "C" {
+extern void fmeweights_(double *,double *,double *);
+}
 /*This is an interpolation function for 3d grids.
 This function is mostly an interface function to the fme_interpolate
 (FORTRAN) function that actually does the interpolation.  
@@ -109,7 +111,7 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		fme_weights_(xp,coord,weights);
+		fmeweights_(xp,coord,weights);
 	}
 	/* Compute interpolated vector as a linear combination of the
 	 * corners using weights just computed (or from the last pass)
@@ -203,7 +205,7 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		fme_weights_(xp,coord,weights);
+		fmeweights_(xp,coord,weights);
 	}
 
 	f=0.0;
@@ -298,7 +300,7 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		fme_weights_(xp,coord,weights);
+		fmeweights_(xp,coord,weights);
 	}
 	for(l=0;l<nv;++l)
 	{
@@ -392,7 +394,7 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		xp[0]=xp1;
 		xp[1]=xp2;
 		xp[2]=xp3;
-		fme_weights_(xp,coord,weights);
+		fmeweights_(xp,coord,weights);
 	}
 	f=0.0;
 	f+=weights[0]* val[i][j];

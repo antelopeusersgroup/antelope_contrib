@@ -19,7 +19,7 @@ c  in.  This function returns the weights so that multiple
 c  calls with no change in position can be recomputed faster.
 c------------------------------------------------------------
 
-      subroutine fme_weights(xx,coord,fun)
+      subroutine fmeweights(xx,coord,fun)
       implicit none
       integer i,itno,j
       double precision x(3),xx(3),xdum
