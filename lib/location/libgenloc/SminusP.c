@@ -292,17 +292,22 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 {
 	Arr *editlist;  /* We store the Arrival pointers that are
 		marked bad here */
+	Arr *badsta;  /* Array used purely as a logical to define
+		stations with a bad clock.  Any sta with a key match 
+		in this arr is used to flag bad */
+	int bcflag=1;  /* contents of badsta arr all contain pointers 1*/
 	char *key;  /* key for editlist created using function above */
 	int narrivals;
 	Arrival *a;
 	int i,j;
 	Bad_Clock *bcp;
-	Tbl *kt,*ktarriv; 
+	Tbl *kt,*ktbs; 
 
 	/* Return immediately if there are no entries in the bad arr*/
 	if(cntarr(bad)<=0)return(0);
 	narrivals = maxtbl(arrivals);
 	editlist = newarr(0);
+	badsta=newarr(0);
 	for(i=0;i<narrivals;++i)
 	{
 		a = (Arrival *)gettbl(arrivals,i);
@@ -319,6 +324,8 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 			}
 			key = make_staphase_key(a->sta->name,a->phase->name);
 			setarr(editlist,key,a);
+			/* the contents of badsta should not be accessed*/
+			setarr(badsta,a->sta->name,&bcflag);
 			free(key);
 			/* we delete this entry form the list and because
 			of this the length of the list changes.  This is
@@ -331,12 +338,10 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 	/* We loop through the list of phase handles looking for any
 	phase name that has a "-" in it.  When we find one of these
 	we build an Arrival object from the pieces that define it.
-	The logic used follows from the fact that when we pull the
-	elements of the arr out by the keysarr generated listed
-	the list is sorted.  By the way we generated the keys this
-	means all the data for a given station will be together. */
+	We look through the badsta list and grab the pieces for each
+	part of the - phase.  If both aren't present we ignore them.*/
 	kt = keysarr(phases);
-	ktarriv = keysarr(editlist);
+	ktbs = keysarr(badsta);
 	for(i=0;i<maxtbl(kt);++i)
 	{
 		char *phasename;
@@ -347,7 +352,7 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 		Arr *phsgrp;  /*Arrivals for each station are pushed on
 				to this arr */
 		char *laststa,*sta;
-		int nktarriv;
+		int nktbs;
 
 		phasename = gettbl(kt,i);
 		if(strchr(phasename,'-')!=NULL)
@@ -360,77 +365,55 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 			/* silently skip a couple of obvious problems */
 			if(strlen(phase2)<=0) continue;
 			if(!strcmp(phase1,phase2)) continue;
-			nktarriv = maxtbl(ktarriv);
+			nktbs = maxtbl(ktbs);
 
-			for(j=0,a1=NULL,a2=NULL;j<nktarriv;++j)
+			for(j=0;j<nktbs;++j)
 			{
-				key = gettbl(ktarriv,j);
-				work = strdup(key);
-				phstest = splitwords(work,':');
-				if(j==0)
-				{
-					laststa=strdup(work);
-					sta = work;
-				}
-				else
-					sta = work;
-				/* The logic is a little bizarre here because we need to 
-				execute the second if block below when the station
-				names changes or at the end of the list.  This could
-				probably have been done more cleanly with a do-while 
-				loop*/
-				if(!strcmp(laststa,sta))
-				{
-					if(!strcmp(phase1,phstest))
-					    a1=(Arrival *)getarr(editlist,key);
-					if(!strcmp(phase2,phstest))
-					    a2=(Arrival *)getarr(editlist,key);
-				}
-				if(strcmp(laststa,sta) || ((j+1)==nktarriv))
-				{
-					if((a1!=NULL) && (a2!=NULL))
-					{
-						allot(Arrival *,a,1);
-						/* Arbitrarily set arid
-						to the one for a1 -- unclear
-						what problems this will cause*/
-						a->arid = a1->arid;
-						a->arid2 = a2->arid;
-						a->sta = a1->sta;
-						a->phase = php;
-						a->time = (a1->time)-(a2->time);
-						/* This uses standard formula
-						for sum of uncorrelated errors*/
-						a->deltat = hypot(a1->deltat,
-								a2->deltat);
-						/* initialize the residual*/
-						a->res.raw_residual = 0.0;  
-						a->res.weighted_residual=0.0;
-						a->res.residual_weight=1.0;
-						a->res.other_weights=1.0;
+				sta = gettbl(ktbs,j);
+				key = make_staphase_key(sta,phase1);
+				a1=(Arrival *)getarr(editlist,key);
+				free(key);
+				if(a1==NULL) continue;
+				key = make_staphase_key(sta,phase2);
+				a2=(Arrival *)getarr(editlist,key);
+				free(key);
+				if(a2==NULL) continue;
 
-						pushtbl(arrivals,a);
-					}
-					a1 = NULL;
-					a2 = NULL;
-					free(laststa);
-					laststa=strdup(sta);
-				}
-				free(work);
+				allot(Arrival *,a,1);
+				/* Arbitrarily set arid
+				to the one for a1 -- unclear
+				what problems this will cause*/
+				a->arid = a1->arid;
+				a->arid2 = a2->arid;
+				a->sta = a1->sta;
+				a->phase = php;
+				a->time = (a1->time)-(a2->time);
+				/* This uses the standard formula
+				for sum of uncorrelated errors*/
+				a->deltat = hypot(a1->deltat,a2->deltat);
+				/* initialize the residual*/
+				a->res.raw_residual = 0.0;  
+				a->res.weighted_residual=0.0;
+				a->res.residual_weight=1.0;
+				a->res.other_weights=1.0;
+				pushtbl(arrivals,a);
 			}
-			/* This is strange, but because this was born from
-			strdup setting work and phase1=work this clears that
-			memory alloc.   Work is recycled in the later loop
-			and now points at the segment pointed to by that
-			strdup call.*/
-			free(phase1);
 			free(work);
 		}
+		/* This is strange, but because this was born from
+		strdup setting work and phase1=work this clears that
+		memory alloc.   Work is recycled in the later loop
+		and now points at the segment pointed to by that
+		strdup call.*/
+		free(phase1);
+		free(work);
 	}
 	/*Last, but not least we have to destory the contents of 
 	editlist to avoid a memory leak.  There are stray pointers
 	inside the Arrival structure, but these are not manageable
-	from here without chaos. */
+	from here without chaos so we just use free */
 	freearr(editlist,free);
+	/* we don't free the contents of badsta because is has none*/
+	freearr(badsta,0);
 	return(0);
 }
