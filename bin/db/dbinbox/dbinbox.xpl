@@ -1,0 +1,93 @@
+#
+# dbinbox
+# Kent Lindquist
+# Lindquist Consulting
+# 2004
+# 
+
+use Mail::Util qw( read_mbox );
+use Mail::Internet;
+
+use Datascope ;
+use filemail;
+
+require "getopts.pl" ;
+
+$schema = "Mail1.2";
+
+if ( ! &Getopts('v') || @ARGV != 2 ) { 
+
+    	die ( "Usage: $0 [-v] mail_file dbname\n" ) ; 
+
+} else {
+	
+	$mfile = shift( @ARGV );
+	$dbname = shift( @ARGV );
+}
+
+elog_init( "dbinbox", @ARGV );
+
+if( $opt_v ) {
+	
+	$filemail::Verbose++;
+}
+
+dbcreate( $dbname, $schema );
+
+@db = dbopen( $dbname, "r+" );
+@dbsummary = dblookup( @db, "", "summary", "", "" );
+
+dbtruncate( @dbsummary, 0 );
+
+@msgs = read_mbox( $mfile );
+
+foreach $msg ( @msgs ) {
+		
+	$mailobj = new Mail::Internet( $msg );	
+	$mailobj->head->unfold();
+
+	$from = $mailobj->head->get( "From" );
+
+	if( ! defined( $from ) || $from eq "" ) {
+			
+		$from = $mailobj->head->get( "Mail-From" );
+	} 
+
+	( $user, $host, $address ) = parse_address( $from );
+
+	$epoch = get_epoch( $mailobj );
+
+	if( $address eq "" || $epoch == 0  ) {
+			
+		elog_complain( "Insufficient header info for " .
+			       "message! Skipping\n" );
+		next;
+	}
+
+	$Nmessages{$address}++;
+
+	if( ! defined( $Oldest{$address} ) || 
+	    $Oldest{$address} > $epoch ) {
+
+		$Oldest{$address} = $epoch;
+	}
+
+	if( ! defined( $Newest{$address} ) || 
+	    $Newest{$address} < $epoch ) {
+
+		$Newest{$address} = $epoch;
+	}
+}
+
+foreach $address ( keys %Nmessages ) {
+
+	dbaddv( @dbsummary, "from", $address,
+			    "nmessages", $Nmessages{$address}, 
+			    "oldest", $Oldest{$address},
+			    "newest", $Newest{$address} );
+
+	if( $opt_v ) {
+
+		printf( "$Nmessages{$address} messages from $address\n" );
+	}
+}

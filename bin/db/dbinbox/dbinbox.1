@@ -1,0 +1,59 @@
+.TH DBINBOX 1 "$Date$"
+.SH NAME
+dbinbox \- summarize a mail file in a database
+.SH SYNOPSIS
+.nf
+dbinbox [-v] mail_file dbname
+.fi
+.SH DESCRIPTION
+Mail files, especially in-boxes, can sometimes grow to unfortunately 
+large sizes, leaving unhandled emails (and therefore the issues and 
+people connected to them) hanging indefinitely in hope of response. The 
+dbinbox utility is intended to help audit this problem, by creating 
+summary statistics on a given mailbox. For example, by aiming the 
+utility at a user's raw inbox file, one can create a table with the 
+senders' email addresses, the number of messages from each sender, and the 
+dates and times of the oldest and newest messages from that sender. 
+This summary is saved in the \fIsummary\fP table of a database 
+in Mail1.2 schema. Seen in this summarized form, unacceptable omissions 
+and delays in responding can often be spotted more readily. 
+
+dbinbox erases the summary table of the mail database before each run. 
+This allows the table to be easily refreshed, which will be necessary frequently
+for something that changes as often as an email inbox. One option is 
+to run dbinbox out of the cron utility, keeping an inbox summary that 
+is pretty much up-to-date.
+
+Once the database summary is created and maintained, other options 
+become available such as monitoring the database with PHP web-scripts etc.
+.SH OPTIONS
+.IP -v
+Verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+%crontab -l
+
+0 8 * * * /bin/tcsh -c "/opt/antelope/4.6p/bin/dbinbox /var/mail/kent /home/kent/maildb/dbmy_inbox"
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+filemail(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
