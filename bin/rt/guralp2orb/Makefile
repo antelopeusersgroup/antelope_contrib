@@ -1,6 +1,6 @@
 BIN= guralp2orb
 MAN1=guralp2orb.1
-DATA=guralp2orb.pf
+PF=guralp2orb.pf
 
 cflags = 
 ldflags =
