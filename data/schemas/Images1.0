@@ -43,6 +43,7 @@ Attribute endtime
 		end of a time range
 	}
 	;
+
 Attribute format
 	String (10)
 	Format ( "%-10s" )
@@ -76,27 +77,6 @@ Attribute grouptype
 	}
 	;
 
-Attribute imggroup
-	String (30)
-	Format ( "%-30s" )
-	Null ( "-" )
-	Description ( "image group" )
-	Detail {
-		This field specifies a short mnemonic for a group of related images or image streams
-	}
-	;
-
-Attribute lddate
-	Time (17)
-	Format ( "%17.5f" )
-	Null ( "-9999999.99999" )
-	Units ( "seconds" )
-	Description ( "time of last record modification" )
-	Detail {
-		The lddate field records the time at which a record is entered or modified
-	}
-	;
-
 Attribute imagename
 	String (64)
 	Format ( "%-64s" )
@@ -104,7 +84,7 @@ Attribute imagename
 	Description ( "name of image or image sequence" )
 	Detail {
 		This field records the name of an image or sequence 
-		of timestamped images. 
+		of timestamped images.
 	}
 	;
 
@@ -121,6 +101,54 @@ Attribute imagesize
 		database contents, however a fairly standard approach 
 		might be to use the phrases 'small' and 'medium' or 
 		better yet an approximate size specifier such as '120x120'.
+	}
+	;
+
+Attribute imggroup
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "image group" )
+	Detail {
+		This field specifies a short mnemonic for a group of related images or image streams
+	}
+	;
+
+Attribute lat
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lat >= -90.0 && lat <= 90.0" )
+	Units ( "Degrees" )
+	Description ( "estimated latitude" )
+	Detail {
+		This attribute is the geographic latitute. Locations
+		north of the equator have positive latitutes.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of last record modification" )
+	Detail {
+		The lddate field records the time at which a record is entered or modified
+	}
+	;
+
+Attribute lon
+	Real (9)
+	Format ( "%9.4f" )
+	Null ( "-999.0000" )
+	Range ( "lon >= -180.0 && lon <= 180.0" )
+	Units ( "Degrees" )
+	Description ( "estimated longitude" )
+	Detail {
+		This attribute is the geographic longitude in degrees.
+		Longitudes are measured positive east of the Greenwich 
+		meridian.
 	}
 	;
 
@@ -152,17 +180,6 @@ Relation affiliation
 	}
 	;
 
-Relation groups
-	Fields ( imggroup grouptype groupname lddate )
-	Primary ( imggroup )
-	Defines imggroup
-	Description ( "image groups" )
-	Detail {
-		This table specifies the names of image groups or
-		image-stream groups in a database of images.
-	}
-	;
-
 Relation frames
 	Fields ( imagename time imagesize format dir dfile lddate )
 	Primary ( imagename time imagesize )
@@ -175,7 +192,18 @@ Relation frames
 		frames table may have vastly different cleanup 
 		requirements (for example, perhaps saving only the last 
 		couple days of video frames). For convenience, the 
-		two tables are separate. 
+		two tables are separate.
+	}
+	;
+
+Relation groups
+	Fields ( imggroup grouptype groupname lddate )
+	Primary ( imggroup )
+	Defines imggroup
+	Description ( "image groups" )
+	Detail {
+		This table specifies the names of image groups or
+		image-stream groups in a database of images.
 	}
 	;
 
@@ -188,6 +216,19 @@ Relation images
 	}
 	;
 
+Relation site
+	Fields ( imagename lat lon time endtime description lddate )
+	Primary ( imagename time::endtime )
+	Description ( "geographic location of image" )
+	Detail {
+		The site table records the geographic location of 
+		images or sequences of images. Often their will be 
+		one entry for an entire stream of images taken by a 
+		static (non-moving) camera, giving the location of 
+		the camera along with a short description of the site.
+	}
+	;
+
 Relation thumbnails
 	Fields ( imagename time imagesize format dir dfile lddate )
 	Primary ( imagename time imagesize )
@@ -197,3 +238,4 @@ Relation thumbnails
 		of a set of images.
 	}
 	;
+
