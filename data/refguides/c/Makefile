@@ -4,6 +4,7 @@ DATA= \
 	fortran.ref \
 	libPkt.ref \
 	libbrttpkt.ref \
+	libbrttutil.ref \
 	libcoords.ref \
 	libds.ref \
 	liborb.ref \

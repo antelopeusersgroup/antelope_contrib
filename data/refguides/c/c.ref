@@ -10,6 +10,7 @@
 <include libpforbstat.ref>
 <include libxtra.ref>
 <include libbrttpkt.ref>
+<include libbrttutil.ref>
 <include libproj.ref>
 <no_index don't index appendices >
 <include ../tables/projections.ref>

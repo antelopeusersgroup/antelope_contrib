@@ -1,0 +1,39 @@
+<library>
+Other BRTT Utilities
+brttutil
+none
+brttutil.h
+other miscellaneous utilities
+
+<subsection Pf Parameter Processing>
+int parse_param (Pf *pf, char *name, int type, int need, void *val)
+    parse name parameter from pf parameter file object of a certain type into val and return an error if need is set and name with type does not exist; type may be P_SINT, P_LINT, P_FLT, P_DBL, P_STR, P_BOOL, P_TBL, P_TBLPF, P_ARR, P_ARRPF
+
+<subsection MT-Safe FIFO>
+Pmtfifo *pmtfifo_create (int maxqueue, int block, int check)
+    create a POSIX MT-safe FIFO queue of maximum size maxqueue, block when the queue is full and check all subsequent calls to see if the queue still exists
+
+int pmtfifo_set_timeout (Pmtfifo *mtf, double timeout)
+    (re)set a read timeout on the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_destroy (Pmtfifo *mtf, void (*free_value) (void *ptr))
+    destroy the mtf POSIX MT-safe FIFO queue and free all resources
+
+int pmtfifo_push (Pmtfifo *mtf, void *ptr)
+    push pointer ptr onto the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_pop (Pmtfifo *mtf, void **ptr)
+    pop pointer *ptr from the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_unpop (Pmtfifo *mtf, void *ptr)
+    unpop pointer ptr back onto the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_data_available (Pmtfifo *mtf)
+    check for data availability on the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_release_block (Pmtfifo *mtf)
+    release an existing blocking condition on the mtf POSIX MT-safe FIFO queue
+
+int pmtfifo_release_blocks (Pmtfifo *mtf)
+    release any existing and all future blocking conditions (i.e. make the FIFO non-blocking) on the mtf POSIX MT-safe FIFO queue
+
