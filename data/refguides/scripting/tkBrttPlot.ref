@@ -115,8 +115,8 @@ vector_puty vector_handle ix ylist
     viewport (canvas) object to plot a vector in data coordinates
 <options>
 -tags tags
--fill fill
--outline outline
+-fill fill-color
+-outline outline-color
 -visible visible
 -linewidth linewidth
 -label label

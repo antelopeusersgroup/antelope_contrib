@@ -112,35 +112,41 @@ srn(lat,lon)
 
 <subsection Seismic Travel Times>
 <function>
-arrival(phase)
-    arrival of specified phase
+
+pphasetime(delta,depth)
+ptime(delta,depth)
+    elapsed time for first p-arrival from event at delta, depth
+
+sphasetime(delta,depth)
+stime(delta,depth)
+    elapsed time for first s-arrival from event at delta, depth
+
+phasetime(phase, delta, depth)        
+    elapsed time for specified phase for event at delta, depth
+
 
 parrival()
     time of first p-arrival
 
+sarrival()
+    time of first s-arrival
+
+arrival(phase)
+    arrival of specified phase
+
 phase_arrival(velocity)
     time of phase arrival, given velocity in degrees/second
+
 
 pphase_slowness(delta,depth)
     slowness of first p-arrival from event at delta, depth
 
-pphasetime(delta,depth)
-    elapsed time for first p-arrival from event at delta, dept
-
-ptime(delta,depth)
-    elapsed time for first p-arrival from event at delta, depth
-
-sarrival()
-    time of first s-arrival
-
 sphase_slowness(delta,depth)
     slowness of first s-arrival from event at delta, depth
 
-sphasetime(delta,depth)
-    elapsed time for first s-arrival from event at delta, depth
+phase_slowness(phase, delta, depth)   
+    slowness for specified phase for event at delta, depth
 
-stime(delta,depth)
-    elapsed time for first s-arrival from event at delta, depth
 
 <subsection Spherical Geometry>
 <function>
