@@ -725,6 +725,9 @@ Which picks will be used here is unpredictable\n\
 			save_event(dbv,is,ie,orid,dbo);
 			save_origerr(orid,*hypos,C,dbo);
 			save_assoc(dbv,is,ie,orid,vmodel,residual,*hypos,dbo);
+			/* These save genloc add on tables */
+			save_emodel(orid,emodel,dbo);
+			save_predarr(dbo,ta,tu,*hypos,orid,vmodel);
 		}
 	
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
