@@ -302,6 +302,7 @@ option which is know to cause problems\nrecenter set off\n");
 			elog_complain(0,"Cannot compute any path anomaly corrections for gridid=%d\nSkipping to next grid point\n",
 				gridid);
 			for(k=0;k<nevents;++k) freetbl(ta[k],free);
+			free(evid);
 			free(ta);
 			continue;
 		}
@@ -390,6 +391,7 @@ for cluster id %d\n",
 		}
 		for(k=0;k<nevents;++k) freetbl(ta[k],free);
 		free(ta);
+		free(evid);
 		free(h0);
 		freetbl(converge,0);
 		freetbl(pmelhistory,free);
