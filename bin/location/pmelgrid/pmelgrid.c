@@ -313,7 +313,6 @@ option which is know to cause problems\nrecenter set off\n");
 		Tbl *converge=NULL,*pmelhistory=NULL;
 		int pmelfail;
 
-		fprintf(stderr,"Ensemble read from pmtfifo\n");
 		pfe=pfget_Pf_ensemble(pfi,"pmel_arrivals");
 		if(pfe==NULL)
 		{
