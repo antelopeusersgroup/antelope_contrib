@@ -34,8 +34,7 @@ Written:  June 2003
 dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
         int comp, bool reverse) throw (GCLgrid_error)
 {
-	dmatrix *dmptr;
-	dmatrix& coords=*dmptr;
+	dmatrix coords;
 	int npts, i0, di;
 	int i,ii;
 	if(reverse)
@@ -50,7 +49,7 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 		else
 			npts = grid.n1 - ix1;
 		if(npts<0)throw(GCLgrid_error("extract_gridline:  requested offset inconsistent with grid dimensions\n"));
-		dmptr = new dmatrix(3,npts);
+		coords=dmatrix(3,npts);
 		for(i=ix1,ii=0;ii<npts;i+=di,++ii)
 		{
 			coords(0,ii)=grid.x1[i][ix2][ix3];
@@ -64,7 +63,7 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 		else
 			npts = grid.n2 - ix2;
 		if(npts<0)throw(GCLgrid_error("extract_gridline:  requested offset inconsistent with grid dimensions\n"));
-		dmptr = new dmatrix(3,npts);
+		coords=dmatrix(3,npts);
 		for(i=ix1,ii=0;ii<npts;i+=di,++ii)
 		{
 			coords(0,ii)=grid.x1[ix1][i][ix3];
@@ -78,7 +77,7 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 		else
 			npts = grid.n3 - ix3;
 		if(npts<0)throw(GCLgrid_error("extract_gridline:  requested offset inconsistent with grid dimensions\n"));
-		dmptr = new dmatrix(3,npts);
+		coords=dmatrix(3,npts);
 		for(i=ix1,ii=0;ii<npts;i+=di,++ii)
 		{
 			coords(0,ii)=grid.x1[ix1][ix2][i];
@@ -89,5 +88,6 @@ dmatrix *extract_gridline(GCLgrid3d& grid, int ix1, int ix2, int ix3,
 	default:
 		throw(GCLgrid_error("extract_gridline function: Illegal component requested.  Must be 1 2 or 3"));
 	}
+	dmatrix *dmptr=new dmatrix(coords);
 	return dmptr;
 }

@@ -257,6 +257,23 @@ public:
 //@param ind vector of ints of length sufficient to hold the index  (2 for 2d and 3 for 3d grids)
 //@}
 	virtual void get_index(int *ind)=0;
+//@{
+// Comparison of two grids for equality.  Equality in this context is NOT the obvious.  
+// Equality means the transformation properties of the two grids being compared are the same.
+// That is, the operator tests only the transformation matrix and translation vector for
+// equality.  This is a necessary condition to allow to grids to be mapped onto each other
+// for higher level operations like +=.  
+//@}
+	bool operator==(const BasicGCLgrid&);
+//@{
+// Comparison of two grids for inequality.  Equality in this context is NOT the obvious.  
+// Equality means the transformation properties of the two grids being compared are the same.
+// That is, the operator tests only the transformation matrix and translation vector for
+// equality.  This is a necessary condition to allow to grids to be mapped onto each other
+// for higher level operations like +=.  Returns true if the transformation properties of 
+// two matrices do not match.
+//@}
+	bool operator!=(const BasicGCLgrid&);
 };
 
 //@{
@@ -360,23 +377,6 @@ public:
 // Standard assignment operator.
 //@}
 	GCLgrid& operator=(const GCLgrid& );
-//@{
-// Comparison of two grids for equality.  Equality in this context is NOT the obvious.  
-// Equality means the transformation properties of the two grids being compared are the same.
-// That is, the operator tests only the transformation matrix and translation vector for
-// equality.  This is a necessary condition to allow to grids to be mapped onto each other
-// for higher level operations like +=.  
-//@}
-	bool operator==(const GCLgrid&);
-//@{
-// Comparison of two grids for inequality.  Equality in this context is NOT the obvious.  
-// Equality means the transformation properties of the two grids being compared are the same.
-// That is, the operator tests only the transformation matrix and translation vector for
-// equality.  This is a necessary condition to allow to grids to be mapped onto each other
-// for higher level operations like +=.  Returns true if the transformation properties of 
-// two matrices do not match.
-//@}
-	bool operator!=(const GCLgrid&);
 	//@{
 	// Save grid to an Antelope (Datascope) database.  
 	// This routine writes the object attributes to a special table and 

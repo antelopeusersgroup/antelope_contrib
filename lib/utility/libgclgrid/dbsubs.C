@@ -330,12 +330,10 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 //
 GCLscalarfield::GCLscalarfield(Dbptr db,
 		string gclgnamein,
-		string fieldnamein) : GCLgrid(db, gclgnamein)
+		string fieldname) : GCLgrid(db, gclgnamein)
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char fieldname[16];
-	strncpy(fieldname,fieldnamein.c_str(),16);
 
 	char sstring[80];
 	int foff;
@@ -351,7 +349,7 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 	        throw 1;
         }
-	if(fieldname==NULL)
+	if(fieldname.length()==0)
 	{
 		val=create_2dgrid_contiguous(n1, n2);
 		for(int i=0;i<n1;++i)
@@ -361,26 +359,26 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 	{	
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
-			gclgname,fieldname);
+			gclgname,fieldname.c_str());
 		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
 			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-			                        gclgname,fieldname);
+			                        gclgname,fieldname.c_str());
 	                throw 1;
 	        }
 		dbgrd.record = 0;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
 		if(fp == NULL)
 		{
 			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-					filename,fieldname);
+					filename,fieldname.c_str());
 			throw 2;
 		}
 		dbfree(dbgrd);
@@ -398,12 +396,10 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 //
 GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		string gclgnamein,
-		string fieldnamein) : GCLgrid3d(db, gclgnamein)
+		string fieldname) : GCLgrid3d(db, gclgnamein)
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char fieldname[16];
-	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char filename[512];
@@ -412,7 +408,7 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	int gridsize;
 	int nrec;
 
-	if(fieldname==NULL)
+	if(fieldname.length()==0)
 	{
 		val=create_3dgrid_contiguous(n1, n2, n3);
 		for(int i=0;i<n1;++i)
@@ -429,27 +425,27 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 	        }
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
-			gclgname,fieldname);
+			gclgname,fieldname.c_str());
 		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
 			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-			                        gclgname,fieldname);
+			                        gclgname,fieldname.c_str());
 	                throw 1;
 	        }
 		dbgrd.record = 0;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
 			elog_notify(0,(char *)"Cannot open external file %s for gclfield %s\n",
-				filename,fieldname);
+				filename,fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
 		if(fp == NULL)
 		{
 			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-					filename,fieldname);
+					filename,fieldname.c_str());
 			throw 2;
 		}
 		dbfree(dbgrd);
@@ -464,13 +460,11 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 }
 GCLvectorfield::GCLvectorfield(Dbptr db,
 		string gclgnamein,
-		string fieldnamein,
+		string fieldname,
 		int nvsize) : GCLgrid(db, gclgnamein)
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char fieldname[16];
-	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char filename[512];
@@ -479,7 +473,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	int gridsize;
 	int nrec;
 	nv = nvsize;
-	if(fieldname==NULL)
+	if(fieldname.length()==0)
 	{
 		val=create_3dgrid_contiguous(n1, n2, nv);
 		for(int i=0;i<n1;++i)
@@ -496,26 +490,26 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	        }
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 2 && fieldname =~ /%s/",
-			gclgname,fieldname);
+			gclgname,fieldname.c_str());
 		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
 			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-			                        gclgname,fieldname);
+			                        gclgname,fieldname.c_str());
 	                throw 1;
 	        }
 		dbgrd.record = 0;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
 		if(fp == NULL)
 		{
 			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-					filename,fieldname);
+					filename,fieldname.c_str());
 			throw 2;
 		}
 		dbfree(dbgrd);
@@ -530,13 +524,11 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 }
 GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		string gclgnamein,
-		string fieldnamein,
+		string fieldname,
 		int nvsize) : GCLgrid3d(db, gclgnamein)
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char fieldname[16];
-	strncpy(fieldname,fieldnamein.c_str(),16);
 	char sstring[80];
 	int foff;
 	char dir[65],dfile[36];
@@ -547,7 +539,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	int nrec;
 
 	nv=nvsize;
-	if(fieldname==NULL)
+	if(fieldname.length()==0)
 	{
 		val=create_4dgrid_contiguous(n1, n2, n3, nv);
 		for(int i=0;i<n1;++i)
@@ -565,26 +557,26 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	        }
 		sprintf(sstring,
 			"gridname =~ /%s/ && dimensions == 3 && fieldname =~ /%s/",
-			gclgname,fieldname);
+			gclgname,fieldname.c_str());
 		dbgrd = dbsubset(dbgrd,sstring,0);
 		dbquery(dbgrd,dbRECORD_COUNT,&nrec);
 		if(nrec <= 0)
 		{
 			elog_notify(0,(char *)"Grid with name=%s and fieldname= %s not found in database\n",
-			                        gclgname,fieldname);
+			                        gclgname,fieldname.c_str());
 	                throw 1;
 	        }
 		dbgrd.record = 0;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname);
+			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
 		if(fp == NULL)
 		{
 			elog_notify(0,(char *)"Cannot open file %s to read gclfield %s\n",
-					filename,fieldname);
+					filename,fieldname.c_str());
 			throw 2;
 		}
 		dbfree(dbgrd);
