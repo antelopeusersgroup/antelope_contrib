@@ -3,7 +3,7 @@ MAN1=db2segy.1
 INCLUDE=segy.h
 PF=db2segy.pf
 
-ldlibs=-lgenloc -ltt -ldl -xlic_lib=sunperf $(TRLIBS) 
+ldlibs=-lgenloc -lsunperf $(TRLIBS) $(F77LIBS)
 
 include $(ANTELOPEMAKE)  	
 DIRS=			

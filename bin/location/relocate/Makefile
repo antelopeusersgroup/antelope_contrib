@@ -4,7 +4,8 @@ PF=relocate.pf
 cflags = 
 ldflags = 
 
-ldlibs= -lgenloc -ltt  -xlic_lib=sunperf -lcoords -lposix4 -lstock $(DBLIBS) $(F77LIBS) -ldl
+ldlibs=-lgenloc $(DBLIBS) -lsunperf $(F77LIBS)
+
 #
 # Turn off the above, and use something like the following if the 
 # Sun Performance Library (sunperf) is not installed on your system.

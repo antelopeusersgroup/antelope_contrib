@@ -4,7 +4,7 @@ MAN1=sgnloc.1
 
 cflags = 
 ldflags = 
-ldlibs= -lgenloc  -xlic_lib=sunperf $(DBLIBS) -ltt -ldl
+ldlibs= -lgenloc $(DBLIBS) -lsunperf $(F77LIBS)
 include $(ANTELOPEMAKE)
 DIRS=
 

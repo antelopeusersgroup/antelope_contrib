@@ -18,7 +18,7 @@ DATA=genloc1.0
 #
 cflags=	-DSUNPERF
 ldflags= 	
-ldlibs=-ltt $(DBLIBS) 
+ldlibs=$(DBLIBS) 
 
 include $(ANTELOPEMAKE)  	
 		
