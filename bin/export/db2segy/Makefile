@@ -2,6 +2,8 @@ BIN=db2segy
 MAN1=db2segy.1
 INCLUDE=segy.h
 PF=db2segy.pf
+DATADIR=schemas
+DATA=segy1.0
 
 ldlibs=-lgenloc $(PERFLIBS) $(TRLIBS) $(F77LIBS)
 
