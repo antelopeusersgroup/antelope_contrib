@@ -202,9 +202,16 @@ int main(int argc, char **argv)
 	streamin=argv[2];
 	streamout=argv[3];
 	/* launch read and write threads */
+#ifdef MPI_SET
+        MPI_Barrier(MPI_COMM_WORLD);
+	/* Only process 0 should launch the read and write thread in mp mode */
+	if(rank==0) pfshi = pfstream_start_read_thread(streamin);
+	if(rank==0) pfsho = pfstream_start_write_thread(streamout);
+#else
 	pfshi = pfstream_start_read_thread(streamin);
-	if(pfshi==NULL) elog_die(1,"Read thread  %s create failed\n",argv[2]);
 	pfsho = pfstream_start_write_thread(streamout);
+#endif
+	if(pfshi==NULL) elog_die(1,"Read thread  %s create failed\n",argv[2]);
 	if(pfsho==NULL) elog_die(1,"Write thread %s create failed\n",argv[2]);
 
 	for(i=4;i<argc;++i)
@@ -293,7 +300,6 @@ option which is know to cause problems\nrecenter set off\n");
 
 	events_to_fix = load_calibration_events(pf);
 #ifdef MPI_SET
-        MPI_Barrier(MPI_COMM_WORLD);
 	/* Only process 0 should save the state of the program when running mp mode */
 	if(rank==0)save_run_parameters(db,pf);
 #else
