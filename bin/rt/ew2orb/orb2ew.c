@@ -228,6 +228,7 @@ new_ExportServerThread( char *name )
 	es->nbytes = 0;
 	es->loglevel = QUIET;
 	es->thread_id = -1;
+	es->so = -1;
 	es->last_heartbeat_sent = 0;
 	es->last_heartbeat_received = 0;
 	es->expect_heartbeat_hook = NULL;
@@ -338,9 +339,6 @@ close_export_connection( ExportThread *et )
 {
 	char	eof = 004;
 
-	close( et->so );
-
-/*
 	bnsput( et->bnsout, &eof, BYTES, 1 );
 	bnsflush( et->bnsout );
 
@@ -349,15 +347,13 @@ close_export_connection( ExportThread *et )
 	et->bnsout = 0;
 
 	/* Keep import_generic from interpreting flushed data
-   	   as a malformed heartbeat: *
+   	   as a malformed heartbeat: */
 
 	bnsclr( et->bnsin );
 
 	bnsclose( et->bnsin );
 
 	et->bnsin = 0;
-
-DEBUG */
 
 	delarr( et->es->Export_Threads, et->name );
 
@@ -371,8 +367,9 @@ close_export_server_connection( ExportServerThread *es )
 	Tbl	*keys;
 	char	*akey;
 	int	i;
+	int	*statusp;
 
-	close( es->so );
+	close( es->so ); 
 
 	keys = keysarr( es->Export_Threads );
 
@@ -383,6 +380,14 @@ close_export_server_connection( ExportServerThread *es )
 		et = getarr( es->Export_Threads, akey );
 
 		thr_kill( et->thread_id, SIGUSR1 );
+
+		thr_join( et->thread_id, 0, (void **) &statusp );
+
+		if( et->es->loglevel >= VERBOSE || Flags.verbose ) {
+
+			elog_notify( 0, "'%s': Export connection closed with status %d\n",
+				et->name, *statusp );
+		}
 	}
 
 	freetbl( keys, 0 );
@@ -399,6 +404,7 @@ static void
 stop_export_server_thread( char *name )
 {
 	ExportServerThread *es;
+	int	*statusp;
 
 	if( ( es = find_export_server_thread_byname( name ) ) == 0 ) { 
 
@@ -417,6 +423,13 @@ stop_export_server_thread( char *name )
 	es->stop = 1;
 
 	thr_kill( es->thread_id, SIGUSR1 );
+
+	if( Flags.verbose ) {
+
+		elog_notify( 0, "'%s': Export_server thread (thread-id %d) "
+			     "stopped with status %d\n",
+			     name, es->thread_id, *statusp );
+	} 
 
 	return;
 }
@@ -495,7 +508,6 @@ delete_export_server_thread( ExportServerThread *es )
 static void
 orb2ew_export_server_shutdown()
 {
-	int	status = 0;
 	ExportServerThread *es;
 	char	name[STRSZ] = "Unknown";
 
@@ -517,13 +529,11 @@ orb2ew_export_server_shutdown()
 	if( Flags.verbose ) {
 
 		elog_notify( 0, 
-		"'%s': Thread (thread-id %d) stopping at user request\n",
+		"'%s': Export Server Thread (thread-id %d) stopping at user request\n",
 		  name, thr_self() );
 	}
 
 	delete_export_server_thread( es );
-
-	thr_exit( (void *) &status );
 }
 
 
@@ -896,16 +906,22 @@ refresh_export_server_thread( ExportServerThread *es )
 	int	aso;
 	struct sockaddr_in client;
 	socklen_t clientlen = sizeof( client );
+	struct linger Linger;
 	int	on = 1;
 	ExportThread *et;
 	char	*loglevel;
 	char	*starttime_string;
+	int	status = 0;
+	char	*clienthost;
+	int	clientport;
 
 	mutex_lock( &es->es_mutex );
 
 	if( es->stop == 1 ) {
 
 		orb2ew_export_server_shutdown();
+
+		thr_exit( (void *) &status );
 	}
 
 	if( es->update == 1 ) {
@@ -1033,6 +1049,18 @@ refresh_export_server_thread( ExportServerThread *es )
 				es->name );
 	}
 
+	Linger.l_onoff = 1;
+	Linger.l_linger = 0;
+
+	rc = setsockopt( es->so, SOL_SOCKET, SO_LINGER, 
+			(char *) &Linger, sizeof( struct linger ) );
+
+	if( rc < 0 ) {
+		
+		elog_complain( 1, "'%s': Failed to set linger to hard-close for socket\n",
+				es->name );
+	}
+
 	while( ( rc = bind( es->so, (struct sockaddr *) &es->sin, 
 			    sizeof( es->sin ) ) ) < 0 ) {
 
@@ -1042,16 +1070,16 @@ refresh_export_server_thread( ExportServerThread *es )
 		sleep( BIND_FAILURE_SLEEP_SEC );
 	}
 
-	if( Flags.VeryVerbose || es->loglevel >= VERYVERBOSE ) {
+	if( Flags.verbose || es->loglevel >= VERBOSE ) {
 
-		elog_notify( 1, "'%s': Bound socket %d\n", es->name, es->so );
+		elog_notify( 1, "'%s': Bound passive socket %d\n", es->name, es->so );
 	}
 
 	rc = listen( es->so, SOCKET_LISTEN_BACKLOG ); 
 
 	if( rc != 0 ) {
 			elog_complain( 1, 
-				"'%s': Failed listen() on socket %d\n",
+				"'%s': Failed to listen() on passive socket %d\n",
 				es->name, es->so );
 	}
 
@@ -1061,25 +1089,28 @@ refresh_export_server_thread( ExportServerThread *es )
 		if( aso < 0 ) {
 			
 			elog_complain( 1, 
-				"'%s': Failed accept on socket fd %d from passive socket %d\n", 
-				es->name, aso, es->so );
+				"'%s': Failed accept on passive socket %d\n", 
+				es->name, es->so );
 
 			sleep( 10 );
 
 			continue;	
 		}
 
+		clienthost = inet_ntoa( client.sin_addr  );
+		clientport = ntohs( client.sin_port );
+
 		if( ( es->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			 elog_notify( 0, "'%s': Accepted socket fd %d\n", 
-					es->name, aso );
+			 elog_notify( 0, "'%s': Accepted socket fd %d from %s:%d\n", 
+					es->name, aso, clienthost, clientport );
 		}
 		
 		et = new_ExportThread( es, aso );
 
 		rc = thr_create( NULL, 0, orb2ew_export, 
 				  (void *) et, 
-				  THR_DETACHED,
+				  0,
 				  &et->thread_id );
 
 		if( rc != 0 ) {
@@ -1094,8 +1125,14 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		} else {
 
-			sprintf( et->name, "%s_tid_%d", 
+			sprintf( et->name, "%s#tid_%d", 
 				 es->name, et->thread_id );
+
+			if( ( es->loglevel >= VERBOSE ) || Flags.verbose ) {
+
+			 	elog_notify( 0, "'%s': Serving %s:%d with export thread '%s'\n", 
+					es->name, clienthost, clientport, et->name );
+			}
 
 			mutex_lock( &es->es_mutex );
 
@@ -1145,6 +1182,8 @@ orb2ew_export_server( void *arg )
 	if( sigsetjmp( sigusr1_buf, 1 ) != 0 ) {
 
 		orb2ew_export_server_shutdown();
+
+		thr_exit( (void *) &status );
 	}
 
 	if( sigsetjmp( sigusr2_buf, 1 ) != 0 ) {
@@ -1332,14 +1371,13 @@ update_export_server_thread( char *name, Pf *pf )
 
 		es->update = 1;
 
+		mutex_lock( &es->es_mutex ); 
+
+		thr_kill( es->thread_id, SIGUSR2 );
+
 	} else {
 
 		es->update = 0;
-	}
-
-	if( oldpf ) {
-
-		pffree( oldpf );
 	}
 
 	if( Flags.VeryVerbose ) {
@@ -1347,8 +1385,8 @@ update_export_server_thread( char *name, Pf *pf )
 		if( es->new ) {
 
 			elog_notify( 0,
-				"'%s': Started export_server thread as thread-id %d\n", 
-				es->name, es->thread_id );
+				"'%s': Started export_server thread '%s' as thread-id %d\n", 
+				es->name, es->name, es->thread_id );
 
 		} else if( es->update ) {
 
@@ -1365,11 +1403,9 @@ update_export_server_thread( char *name, Pf *pf )
 		}
 	}
 
-	if( es->update ) {
+	if( oldpf ) {
 
-		mutex_lock( &es->es_mutex ); 
-
-		thr_kill( es->thread_id, SIGUSR2 );
+		pffree( oldpf );
 	}
 
 	return;
