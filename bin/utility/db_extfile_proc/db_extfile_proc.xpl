@@ -28,7 +28,7 @@ sub proceed {
 	if( $opt_u ) {
 		@files=`dbselect $dbtable url | sort -u`;
 	} else {
-		@files=`dbselect $dbtable 'extfile()' | sort -u`;
+		@files=`dbselect $dbtable 'extfile("$extfile_table")' | sort -u`;
 	} 
 	chomp( @files );
 
@@ -116,7 +116,7 @@ sub proceed {
 
 $Usage = "db_extfile_proc -m mode [-u] [-w nmax] dbtable\n";
 
-if( ! &Getopts( 'uw:m:' ) || @ARGV != 1 ) {
+if( ! &Getopts( 'uw:m:t:' ) || @ARGV != 1 ) {
 
 	die( "$Usage" );	
 
@@ -136,6 +136,15 @@ if( ! defined( $opt_w ) ) {
 	
 	$max_nfiles_unquestioned = $opt_w;
 } 
+
+if( ! defined( $opt_t ) ) {
+	
+	$extfile_table = "";
+
+} else {
+
+	$extfile_table = $opt_t;
+}
 
 $top = MainWindow->new();
 $top->withdraw();

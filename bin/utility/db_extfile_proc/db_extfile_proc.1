@@ -3,7 +3,7 @@
 db_extfile_proc \- Run arbitrary commands on Datascope extfiles
 .SH SYNOPSIS
 .nf
-db_extfile_proc -m mode [-u] [-w nmax] dbtable
+db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
 .fi
 .SH DESCRIPTION
 db_extfile_proc takes an input database view and runs commands on the
@@ -11,7 +11,11 @@ files referenced by dir/dfile with arbitrary programs.
 db_extfile_proc is meant to be run from the .dbe.pf parameter file, 
 although it can take any table name from the command line as long as 
 that table has dir/dfile references. A common use is to run the 
-image-display program xv(1) on a set of files containing images. 
+image-display program xv(1) on a set of files containing images. This is 
+useful if the user wishes to pass in a view via standard-input, in 
+which case the dbtable argument should be given as "-".  With the -t option,
+the base table from which to take dir and dfile may be specified (useful 
+if the input table is a view with multiple dir/dfile fields).
 
 The mode specified in the command line identifies a set of commands 
 from the parameter file. These commands may include the macro values 
@@ -27,15 +31,22 @@ in the order in which they show up in the view. This is useful for such
 things as row comparison and combined processing.
 
 .SH OPTIONS
--m mode Specifies the block of commands to be used from the parameter file.
+.IP "-m mode"
+Specifies the block of commands to be used from the parameter file.
 Required.
 
--w nmax Specifies the maximum number of files to accept without requiring 
+.IP "-t table"
+Specify the name of the table from which extfile() dir and dfile entries 
+are taken.
+
+.IP "-w nmax"
+Specifies the maximum number of files to accept without requiring 
 confirmation from the user. This is intended to prevent swamping the window
 manager or CPU with requests to display or otherwise process thousands 
 of files.
 
--u If this is specified, the field "url" is extracted from the table instead
+.IP -u 
+If this is specified, the field "url" is extracted from the table instead
 of the dir/dfile combination constructed by extfile().
 .SH FILES
 .SH ENVIRONMENT
