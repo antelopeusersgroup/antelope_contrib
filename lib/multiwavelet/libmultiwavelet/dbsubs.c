@@ -578,7 +578,7 @@ MWbasis *load_multiwavelets_db(Dbptr db, Pf *pf,int *nwavelets, int *bankid)
 	if(dbv.record == dbINVALID) elog_die(0,"load_multiwavelets_db:  no mwdisc table in input database\nThese are required for multiwavelet transform\nCheck database descriptor\n");
 	select_condition=pfget_string(pf,"multiwavelet_select_condition");
 	if(select_condition==NULL)
-		elog_die(0,"Missing required parameter string called multiwavelet_select_contion\nThis is required when loading multiwavelets from a database\n");
+		elog_die(0,"Missing required parameter string called multiwavelet_select_condition\nThis is required when loading multiwavelets from a database\n");
 	dbv=dbsubset(dbv,select_condition,0);
 	dbquery(dbv,dbRECORD_COUNT,&nrecords);
 	if(nrecords<=0)

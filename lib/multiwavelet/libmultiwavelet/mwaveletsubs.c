@@ -257,7 +257,7 @@ MWtrace **MWtransform(float *trace, double dt, double starttime, int nsamples,
 			}
 			else
 			{
-				z = (complex *)calloc(nout,sizeof(complex));
+				allot(complex *,z,nout);
 				for(k=0;k<nout;++k)
 				{
 					z[k].r = re_work[k];
