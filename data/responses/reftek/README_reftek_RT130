@@ -1,0 +1,70 @@
+
+The RT130 uses a slightly different input scheme than the older generation units.
+
+This discussion concerns the new version digitizer in the 130. 
+
+The REF TEK reported bit weight (least significant of the upper 16 bits) is 104.2 mv.
+
+Divide these numbers by 65536 to get the true weight of the LSB, i.e. 1.589 uV
+for unity gain.
+
+The 130 differs both the 72A-07 and 72A-08 in the way it achieves all of its sample
+rates.  Some of the sample rates are obtained by varying the settings on the Crystal
+part in a manner similar to the 07 while others are obtained by a filter and decimation
+scheme similar to the 08.  A significant difference between the 130 and the 08 is that 
+the filter and decimation scheme does not depend on other data streams.  That is a 
+given sample rate will always be obtained in the same manner.
+
+The first stage of filtering and decimation takes place in the Crystal chip.  The 
+Crystal chip uses three different filters in its decimation they are:
+
+	CF1	- filter for decimate by 8
+	CF2 - short filter for decimate by 2
+	CF3 - longer filter for decimate by 2
+	
+All sample rates out of the Crystal chip are achieved by a CF1-decimate by 8 stage then
+one or more CF2-decimate by 2 stages and a final CF3-decimate by 2 stage. 
+
+
+            Sample Rate Table for PASSCAL Rates
+
+       Sample    A/D       A/D       Number of     Total
+        Rate    Entry   Sample Rate   CF2 stages  Decimation
+       ------   -----   ----------   ----------   --------
+        1000      4       256,000         4          256
+        500       3       256,000         5          512
+        250       2       256,000         6         1024
+        125       1       256,000         7         2048
+
+        200       3       102,400         5          512
+        50        1       102,400         7         2048
+        25        0       102,400         8         4096
+        
+        
+The rest of the sample rates are derived from the 200 sps data stream.  The filter and decimation
+is done in the 130 CPU.  There are two different filters used.  One is associated with a 
+decimation factor of 5 and the second is associated with a decimation factor of 2.  These are 
+the same filters used by the 72A08.  They are the fast roll-off filters.  The additional
+sample rates are derived as shown below:
+
+
+       Sample   Start   Additional   
+        Rate    Rate    Decimation 
+       ------   -----   ----------  
+        100      200         2       
+         40      200         5         
+         20      200        5,2         
+         10      200        5,2,2       
+          5      200       5,2,2,2        
+          1      200      5,2,2,2,5      
+
+
+
+Note:
+If any one of the rates 1000, 500, 250, 125, 50, and 25 is selected for a data stream, 
+then all data streams must be at that rate, i.e. these are single sample rate rates.
+
+If any of the rates 200, 100, 40, 20, 10, 5, and 1 are selected, then all
+are available for other data streams.  This is the only way to get multiple sample rates.
+
+
