@@ -59,7 +59,8 @@ verbose output
 Specify library directory with *.pl files containing handlers. 
 Note that if handlers are contained in the standard $(ANTELOPE)/data/perl
 directory this should not be necessary. 
-.IP "-p \fIpffile\fR" Specify the parameter file. Default is mail_parser.pf
+.IP "-p \fIpffile\fR" 
+Specify the parameter file. Default is mail_parser.pf
 .IP "-f \fIlogfile\fR"
 Specify a file for log messages and program output
 .IP "-m"
@@ -77,6 +78,9 @@ in which the handlers appear in this table. The example shown here is
 for the submit_pepp handler. For further details on this handler, please 
 see the submit_pepp(3) man page. 
 .nf
+.ft CW
+.in 2c
+
 Handlers &Tbl{
 &Arr{
 handler 	submit_pepp
@@ -97,10 +101,14 @@ ftp_password	kent@giseis.alaska.edu
 ftp_timeout 	60
 }
 }
+.ft R
+.in
 .fi
 .SH EXAMPLE
 .nf
-nordic% mail_parser -v -p check pepp_mail
+.ft CW
+.in 2c
+% \fBmail_parser -v -p check pepp_mail\fP
 Event             1        1  9/30/2000  19:05:07.000   57.5700 -142.9700   33.0000 -999.00
                   GCSA   BHE       9/30/2000  18:59:25.340  28:00 minutes    84000  50.0000000          0 sc
                   GCSA   BHN       9/30/2000  18:59:25.340  28:00 minutes    84000  50.0000000          0 sc
@@ -148,7 +156,10 @@ ftp> put PPSA_2000_09_30_19:05.BHZ.sac
 local: PPSA_2000_09_30_19:05.BHZ.sac remote: PPSA_2000_09_30_19:05.BHZ.sac
 135032 bytes sent in 1.2 seconds (113.40 Kbytes/s)
 ftp> quit
-nordic%
+%
+
+.in
+.ft R
 .fi
 .SH RETURN VALUES
 .SH LIBRARY
