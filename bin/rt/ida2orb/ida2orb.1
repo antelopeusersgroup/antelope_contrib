@@ -7,7 +7,7 @@ ida2orb \- import data from an IDA hub to a Datascope ORB
 ida2orb [-r sec] [-u] orbname idahost importstring
 .fi
 .SH DESCRIPTION
-ida2orb takes data from an IDA hub and imports it into a Datascope 
+ida2orb takes data from an IDA hub and imports it into an Antelope
 O-Ring Buffer (ORB). The IDA connection is established and tapped with
 David Chavez's idatap library. 
 .LP
@@ -16,16 +16,22 @@ is running. idahost is the internet address of the ida server software.
 
 importstring specifies the station(s) and channel(s) to import (see example
 below). 
+.LP
+If the IDA channel-name is three characters or less, the orb channel name
+will be set to the IDA channel name and the loc code will be left empty. 
+If the IDA channel-name is more than three characters, the fourth and fifth
+characters will be mapped to the loc code of the orb packet.
 .SH OPTIONS
 -u convert station and channel names to uppercase
+
 -r seconds reject packets that are more than the specified number of seconds into the future, according to the system clock
 .SH EXAMPLE
 .nf
-ida2orb nordic kdak-gw.giseis.alaska.edu kdak:bhz,bhn,bhe
+localhost% ida2orb -u : idahub.ucsd.edu coco:bhz20,bhn20,bhe20
 
 or
 
-ida2orb nordic idahub.ucsd.edu pfo:bhz,bhn,bhe+tau:bhz,bhn,bhe
+localhost% ida2orb -u : idahub.ucsd.edu coco:bhz20,bhn20,bhe20+ascn:vhzxx,vh1xx,vh2xx
 .fi
 .SH "SEE ALSO"
 .nf

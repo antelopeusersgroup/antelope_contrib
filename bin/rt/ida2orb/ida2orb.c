@@ -14,6 +14,12 @@
         bring only one packets. beg is set to XFER_OLDEST and 'end'
 	to a  9.999e99;
 
+ * Modified by K. Lindquist: 
+
+      - IDA channel name changed to 5 characters in 2002, with 
+	the last two being the equivalent of the SEED Loc code. 
+	parse that out and handle it appropriately in source-name.
+
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -141,6 +147,7 @@ main( int argc, char **argv )
 		    strcpy (pkt->parts.src_net, pktchan->net ) ;
 		    strcpy (pkt->parts.src_sta, pktchan->sta ) ;
 		    strcpy (pkt->parts.src_chan, pktchan->chan ) ;
+		    strcpy (pkt->parts.src_loc, pktchan->loc ) ;
 		    pkt->nchannels =1 ; 
 		    settbl(pkt->channels, 0, pktchan ) ;
 		    if ( stuffPkt(  pkt, srcid, &pkttime, &packet, &nbytes, &bufsize ) < 0 ) { 
@@ -215,7 +222,22 @@ xfer_packet_to_orb_pktchan( char *net,
 	(*pktchan)->nsamp = xf_packet->nsamp;
 	strcpy( (*pktchan)->net, net );
 	strcpy( (*pktchan)->sta, xf_packet->sname );
-	strcpy( (*pktchan)->chan, xf_packet->cname );
+
+	if( strlen( xf_packet->cname ) <= 3 ) {
+		strcpy( (*pktchan)->chan, xf_packet->cname );
+		strcpy( (*pktchan)->loc, "" );
+	} else {
+		for( i=0; i<3; i++ )
+		{
+			(*pktchan)->chan[i] = xf_packet->cname[i];
+		}
+		(*pktchan)->chan[3] = 0;
+		for( i=3; i<5; i++ )
+		{
+			(*pktchan)->loc[i-3] = xf_packet->cname[i];
+		}
+		(*pktchan)->loc[2] = 0;
+	}
 
 	if( upper )
 	{
@@ -226,6 +248,10 @@ xfer_packet_to_orb_pktchan( char *net,
 		for( i=0; i<strlen((*pktchan)->chan); i++ )
 		{
 			(*pktchan)->chan[i] = toupper( (*pktchan)->chan[i] );
+		}
+		for( i=0; i<strlen((*pktchan)->loc); i++ )
+		{
+			(*pktchan)->loc[i] = toupper( (*pktchan)->loc[i] );
 		}
 	}
  
