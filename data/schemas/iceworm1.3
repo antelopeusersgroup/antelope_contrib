@@ -18,6 +18,7 @@ Schema iceworm1.3
 		5) 2/97 added field n1 to picker table
 		6) 8/97 added reftekchan and reftekdas tables
 		7) 11/97 added field net to pins table
+		8) 6/2000 added field net to win table
 	}
 	Timedate lddate
 	;
@@ -427,7 +428,7 @@ Attribute wincode
 		to a channel) in the Japanese win format for 
 		multichannel seismic data. The channel number 
 		ranges from 0x0000 to 0xFFFF. We represent it here
-		in it's convenient four-byte character equivalent
+		in its convenient four-byte character equivalent
 		instead of the two-byte hex number.
 		The first two characters (upper byte) represent the
 		seismic system (i.e. network), and the second two
@@ -550,8 +551,8 @@ Relation timecorr
 	;
 
 Relation win
-	Fields ( wincode sta chan )
-	Primary ( wincode sta chan )
+	Fields ( wincode sta chan net )
+	Primary ( wincode sta chan net )
 	Defines wincode
 	Description ( "Table for win-format channels of seismic data" )
 	Detail {
