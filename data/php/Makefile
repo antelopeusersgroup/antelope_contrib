@@ -8,6 +8,7 @@ DATA= $(MYDLIB) \
       webdbe_title.gif \
       webdbe_pagenums.php \
       webdbe_pages.php \
+      webdbe_menubar.php \
       webdbe_functions.js
 
 MAN3= Datascope_PHP.3
