@@ -1,0 +1,30 @@
+#Pf file for db2sync
+
+# Required Sync file fields are Network, Station, Channel, 
+# Time, Endtime.  They are missing from the pf file because 
+# all usable sync files must have those fields filled in.  
+# Db2sync will always fill in these fields.
+
+
+#Optional Fields. 
+
+#  '1' means include these values. 
+#  '0' means print a blank value in that field
+
+LOCATION		0
+SAMPLE_RATE		0
+NUMBER_OF_SAMPLES	0
+DCC_TAPE_NUMBER		0
+DATE_LINE_MOD_DMC	0
+DATE_LINE_MOD_DCC	1
+
+
+#  Channel Flag has a value of 'C' for continuous data and 
+#  'T' for triggered, or blank for no specified value.
+
+CHANNEL_FLAG			
+
+#  Data Collection Center Name.  This is used in the header, 
+#  if a header is made.
+
+DCC_NAME		Anza_Group
