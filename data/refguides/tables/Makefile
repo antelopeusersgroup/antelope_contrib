@@ -13,3 +13,6 @@ DATA= \
 	time_format_codes.ref 
 
 include $(ANTELOPEMAKE)
+
+hier.ref:hier.ref.id
+	produce hier.ref
