@@ -66,7 +66,8 @@ Attribute format
 	Null ( "-" )
 	Description ( "graphics format for image" )
 	Detail {
-		This is the graphics format (e.g. gif, jpg) of a stored image.
+		This is the graphics format (e.g. gif, jpg) of a stored image
+		or stored movie.
 	}
 	;
 
@@ -151,6 +152,22 @@ Attribute lddate
 	Description ( "time of last record modification" )
 	Detail {
 		The lddate field records the time at which a record is entered or modified
+	}
+	;
+
+Attribute length_sec
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "length in seconds of a time-lapse movie" )
+	Detail {
+		The length_sec field records the approximate length in 
+		seconds of a time-lapse movie. Exact timing information 
+		should be taken from the time::endtime fields. Often this 
+		field will be used for the intended length of a movie, for example 
+		for 24-hour period time-lapses, which may in truth cover slightly 
+		less or more time.
 	}
 	;
 
@@ -326,6 +343,18 @@ Relation images
 	}
 	;
 
+Relation movies
+	Fields ( imagename time endtime length_sec imagesize format description dir dfile lddate )
+	Primary ( imagename time length_sec imagesize format )
+	Description ( "time-lapse movies" )
+	Detail {
+		This table allows the storage of time-lapse movies made from 
+		image sequences. The endtime field is deliberately left out 
+		of the primary keys in order to allow overlapping movies, as long 
+		as they are unique in length, size, and format.
+	}
+	;
+
 Relation site
 	Fields ( imagename lat lon time endtime azimuth vang description stereo stereotwin lddate )
 	Primary ( imagename time::endtime )
@@ -360,4 +389,3 @@ Relation triggers
 		of a set of images.
 	}
 	;
-
