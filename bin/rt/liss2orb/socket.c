@@ -44,27 +44,15 @@ open_socket ( char *name, int default_port )
     struct hostent hostent, *hostentp ; 
     char server[256] ;
     char buffer[256] ; 
+    char ipc[32] ;
     int error ;
     int port ;
 
     memset ( (char *) &serv_addr, 0, sizeof(serv_addr) ) ; 
     parsename ( name, default_port, server, &port ) ;
     
-    if ( gethostbyname_r(server, &hostent, buffer, 255, &error) == 0 ) {
-	register_error ( 1, "Can't find ip address for host '%s'\n", server ) ; 
-	return -1 ; 
-    }
-    hostentp = &hostent ;
-
-    if ( hostentp->h_addr_list == 0 ) {
-	register_error ( 1, "Can't find ip address for '%s'\n", server ) ; 
-	return -1 ; 
-    }
-    memcpy ( &(serv_addr.sin_addr.s_addr), 
-	hostentp->h_addr_list[0],
-	sizeof(serv_addr.sin_addr.s_addr) ) ; 
+    name2ip(server, &serv_addr.sin_addr.s_addr, ipc ) ;
     serv_addr.sin_family = AF_INET ; 
-   
     serv_addr.sin_port = htons ( port ) ; 
 
     if ( (fd = socket(PF_INET, SOCK_STREAM, 0 )) < 0 ) {
