@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <malloc.h>
-#include <values.h>
+#include <float.h>
+#define MAXDOUBLE DBL_MAX
 #include "stock.h"
 #include "location.h"
 
@@ -35,7 +36,7 @@ IMPORTANT:  THIS PROCESS IS DESTRUCTIVE, AND THE Y ARRAY IS REORDERED
 ON RETURN SINCE THE ROUTINE RECEIVE A POINTER TO y.
 
 If ny < 2 returns with error signaled by setting elements of the 
-returned structure to MAXDOUBLE (defined in values.h).  If ny = 2 or 3
+returned structure to MAXDOUBLE (defined in values.h from float.h).  If ny = 2 or 3
 the interquartiles are determined from the full range and not error is
 signaled.  
 

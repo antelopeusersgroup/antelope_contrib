@@ -8,7 +8,8 @@ Date:  February 1996
 */
 #include <stdlib.h>
 #include <math.h>
-#include <values.h>
+#include <float.h>
+#define MAXDOUBLE DBL_MAX
 
 #define CENTRAL_RANGE 0.7
 double erfinv( double y)
