@@ -53,6 +53,7 @@ DATA= \
 	dbexample_free_response.m \
 	dbexample_get_demodb_path.m \
 	dbexample_get_hypocenter_vitals.m \
+	dbexample_getpid.m \
 	dbexample_joins.m \
 	dbexample_orbafter.m \
 	dbexample_orbclose.m \

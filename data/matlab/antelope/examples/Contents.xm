@@ -58,6 +58,7 @@
 %   dbexample_epoch2str
 %   dbexample_eval_response
 %   dbexample_free_response
+%   dbexample_getpid
 %   dbexample_orbafter
 %   dbexample_orbclose
 %   dbexample_orbget

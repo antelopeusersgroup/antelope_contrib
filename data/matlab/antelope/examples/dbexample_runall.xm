@@ -49,6 +49,7 @@ dbexample_eval_response
 dbexample_free_response
 dbexample_get_demodb_path
 dbexample_get_hypocenter_vitals
+dbexample_getpid
 dbexample_joins
 % orb support is still experimental
 % dbexample_orbafter

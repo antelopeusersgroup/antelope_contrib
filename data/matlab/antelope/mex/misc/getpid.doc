@@ -1,0 +1,6 @@
+GETPID Get the current process-id of the Matlab interpreter
+
+GETPID()
+
+GETPID returns the system process-id number of the  
+Matlab interpreter from which it was called. 

@@ -133,6 +133,9 @@
 %   orbafter		- set ORB connection to first packet after a specified time
 %   orbtell		- Ask for the current read-position on an Antelope ORB
 %
+% Miscellaneous
+%   getpid		- Get the process-id of the calling process
+%
 %       Antelope Toolbox for Matlab
 %	   [Antelope is a product of Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
