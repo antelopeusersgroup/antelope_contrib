@@ -1,9 +1,11 @@
 LIB=libmultiwavelet.a		
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-DATADIR=schemas 
+
+DATADIR=schemas
 DATA=MWavelet1.3	
+
 INCLUDE=multiwavelet.h 	
-PF=mwap.pf	
+PF=mwap.pf		
 
 MAN3=mwtransform.3		
 
@@ -12,7 +14,7 @@ MAN3=mwtransform.3
 
 include $(ANTELOPEMAKE)  	
 DIRS=			
-
+			
 
 OBJS=	apsubs.o convolution.o dbsubs.o decimate.o lapack_routines.o \
    matrix_subs.o mwavelet.o \
