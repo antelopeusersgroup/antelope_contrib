@@ -194,37 +194,35 @@ public class DatabaseSchema {
     
     public static void main(String argv[]) {
 	if (argv.length == 0) {
-	    System.out.println("Usage : java DatabaseSchema <inputfile>");
+	    System.out.println("Usage : java DatabaseSchema <inputfile> -action1 -action2 ...");
+	    System.out.println("Where the available actions are \"toXML\" and \"regurgitate\".");
 	} else {
 	    
+	    DatabaseSchema schema = null;
+
 	    for (int i = 0; i < argv.length; i++) {
 		
-		try {		    
-		    System.out.println("Opening the file '" + argv[i] + "'.");
-		    
-		    Reader input = new java.io.FileReader(argv[i]);
-		    
-		    System.out.println("Parsing the schema.");
-		    
-		    DatabaseSchema schema = DatabaseSchema.parse(input);
-		    
-		    System.out.println("Checking the schema object for consistency.");
-		    
-		    boolean valid = schema.isWellFormed();
-		    
-		    System.out.println("Checking schema wellformedness: " + (valid ? "passed" : "FAILED")); 
-		    
-		    System.out.println("Dumping the schema from internal representation:");
-		    
-		    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));
-		    
-		    schema.unparse(w);
+		try {	
 
-		    System.out.println("Dumping the schema in XML format:");
-		    
-		    schema.unparseAsXML(w);
+		    if (argv[i].charAt(0) == '-') {
+			
+			if (argv[i].compareTo("-toXML") == 0) {
+			    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));	
+			    schema.unparseAsXML(w);
+			    w.flush();
+			} else if (argv[i].compareTo("-regurgitate") == 0) {
+			    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));	
+			    schema.unparse(w);
+			    w.flush();
+			}
+			
+		    } else {
 
-		    w.flush();
+			/* Assume this is a schema file.  Load and parse it. */
+
+			Reader input = new java.io.FileReader(argv[i]);
+			schema = DatabaseSchema.parse(input);
+		    }
 		    
 		} catch (java.io.FileNotFoundException e) {
 		    System.out.println("File not found : \""+argv[i]+"\"");

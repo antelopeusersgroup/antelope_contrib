@@ -1,0 +1,35 @@
+.\" @(#)orbstatj.1	1.1 01/03/02
+.TH DBSCHEMA2XML 1 "$Date$"
+.SH NAME
+dbschema2xml \- Write a Datascope schema definition in XML syntax
+.SH SYNOPSIS
+.nf
+
+dbschema2xml [schema]
+
+.fi
+.SH DESCRIPTION
+\fBdbschema2xml\fP is a Java program that parses a Datascope schema definition
+and outputs the same schema definition as an XML application.
+.SH OPTIONS
+.IP "schema"
+The filename containing the Datascope schema definition.  Note that this 
+program isn't yet smart enough to search the schema search path, so you
+have to provide a full filename.
+.SH BUGS AND CAVEATS
+The format of the output is described by ds-schema.dtd, which is currently
+filed away in the source directory of dbxml.  This DTD should be considered
+'alpha' and subject to change.
+
+The Datascope schema is parsed using a new parser implemented in Java, so it's
+possible that it recognizes a slightly different syntax.
+
+You need to have Java installed and working.
+
+The program should be able to search for schemas in the usual way.
+.SH SEE ALSO
+dbschema2prolog(1), db2xml(1)
+.SH AUTHOR
+Tobin Fricke (tobin@splorg.org)
+.br
+University of California

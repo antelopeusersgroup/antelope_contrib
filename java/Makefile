@@ -1,17 +1,17 @@
 
-all: antelope.jar
+#all: antelope.jar
 
-BIN = orbstatj
+BIN = orbstatj dbschema2xml
 
 DATADIR = java
 DATA = antelope.jar
-MAN1 = orbstatj.1
+MAN1 = orbstatj.1 dbschema2xml.1
 
 #
 JFLEX = /home/tobin/build/jflex-1.4/bin/jflex
 
 CLASSPATH=.
-#include $(ANTELOPEMAKE)
+include $(ANTELOPEMAKE)
 DIRS=
 
 JFLEXES = \
@@ -30,6 +30,7 @@ JAVAS = \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbErrorException.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbPacket.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbRawPacket.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbImagePacket.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbWaveformPacket.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbStringPacket.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbPacketChannel.java \
@@ -44,8 +45,8 @@ JAVAS = \
 
 
 #FIXME
-com/brtt/antelope/DatabaseSchemaLexer.java: com/brtt/antelope/DatabaseSchemaLexer.flex
-	$(JFLEX) com/brtt/antelope/DatabaseSchemaLexer.flex -d com/brtt/antelope/
+#com/brtt/antelope/DatabaseSchemaLexer.java: com/brtt/antelope/DatabaseSchemaLexer.flex
+#	$(JFLEX) com/brtt/antelope/DatabaseSchemaLexer.flex -d com/brtt/antelope/
 
 CLASSES = \
 	com/brtt/antelope/DatabaseAttribute.class \
@@ -59,6 +60,7 @@ CLASSES = \
 	com/brtt/antelope/OrbErrorException.class \
 	com/brtt/antelope/OrbPacket.class \
 	com/brtt/antelope/OrbRawPacket.class \
+	com/brtt/antelope/OrbImagePacket.class \
 	com/brtt/antelope/OrbWaveformPacket.class \
 	com/brtt/antelope/OrbStringPacket.class \
 	com/brtt/antelope/OrbPacketChannel.class \
@@ -72,8 +74,8 @@ CLASSES = \
 #	com/brtt/antelope/OrbDatabasePacket.class \
 #	com/brtt/antelope/OrbParameterFilePacket.class \
 
-%.class : %.java
-	javac $<
+#%.class : %.java
+#	javac $<
 
 antelope.jar	: $(CLASSES)
 	jar cvf antelope.jar com/brtt/antelope/*.class
