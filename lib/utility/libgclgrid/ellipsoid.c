@@ -1,4 +1,5 @@
 #include <math.h>
+#include "gclgrid.h"
 /* Standize functions to handle ellipticity corrections */
 
 /* Earth ellipticity constants from Turcotte and Schubert */

@@ -6,24 +6,24 @@ c  in all three coordinate directions.  The routine computes
 c  a vector valued function evaluated at each point given
 c
 c Arguments:
-c nv - number of components in each vector of this field
-c   (1 for a scalar field, of course)
 c xx - 3 vector defining point in space to evaluate result at
-c func_element = 8 by nv matrix of values of nv components of
-c 	each vector at the corners of a distorted cube.
 c coord = array holding actual coordinates of 8 corner points
-c value - nv length vector of results.
+c fun = return vector of 8 weights to interpolate result for
+c      point x using actual values at corners defined by coord.
 c
 c  Author:  Kagan Tuncay with modifications by G Pavlis
 c  Written:  Oct-DEc 2000
+c  Modified:  December 2002 Original subroutine found in older
+c  libgclgrid interpolated a function based on values passed
+c  in.  This function returns the weights so that multiple
+c  calls with no change in position can be recomputed faster.
 c------------------------------------------------------------
 
-      subroutine fmeinterpolate(nv,xx,func_element,coord,value)
+      subroutine fme_weights(xx,coord,fun)
       implicit none
-      integer i,itno,j,iv
-      integer nv
+      integer i,itno,j
       double precision x(3),xx(3),xdum
-      double precision func_element(8,nv),value(nv),coord(8,3)
+      double precision coord(8,3)
       double precision der(3,8),fun(8),jac(3,3)
       double precision residual(3),solution(3),er,det,jac1(3,3)
       integer MAXIT
@@ -93,13 +93,6 @@ c
       er = er/scale
       itno = itno + 1
       if( (itno.lt.MAXIT) .and. (er.gt.CONVTEST)) goto 100
-
-      do iv=1,nv
-	      value(iv) = 0.0
-	      do i=1,8
-	         value(iv)=value(iv)+func_element(i,iv)*fun(i)
-	      enddo
-      enddo
 
       return
       end
