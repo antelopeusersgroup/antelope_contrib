@@ -232,11 +232,18 @@ sub set_rectangle {
 					$Mapspec{"lon_ur"},
 					$Mapspec{"lat_ur"} );
 
+	my( $incl_lon_ll ) = min( $Mapspec{"lon_ll"}, $Mapspec{"lon_ul"} );
+	my( $incl_lat_ll ) = min( $Mapspec{"lat_ll"}, $Mapspec{"lat_lr"} );
+	my( $incl_lon_ur ) = max( $Mapspec{"lon_ur"}, $Mapspec{"lon_lr"} );
+	my( $incl_lat_ur ) = max( $Mapspec{"lat_ur"}, $Mapspec{"lat_ul"} );
+
+	# The small additions and subtractions are for 
+	# sign-independent rounding (i.e., this is not hard-coded cheating...):
 	$Mapspec{"InclusiveRectangle"} = sprintf( "-R%d/%d/%d/%dr", 
-					int( $Mapspec{"lon_ll"} - 1 ),
-					int( $Mapspec{"lat_ll"} - 1 ),
-					int( $Mapspec{"lon_ur"} + 1.5 ),
-					int( $Mapspec{"lat_ur"} + 1.5 ) );
+					int( $incl_lon_ll - 1 ),
+					int( $incl_lat_ll - 1 ),
+					int( $incl_lon_ur + 1.5 ),
+					int( $incl_lat_ur + 1.5 ) );
 
 	return \%Mapspec;
 }

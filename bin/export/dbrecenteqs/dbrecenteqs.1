@@ -7,6 +7,12 @@ dbrecenteqs [-h] [-i indexmap_pffile] [-g globalmap_pffile] dbname
 .fi
 .SH DESCRIPTION
 
+dbrecenteqs_setup creates or adds to the mapstock table of the database 
+in dbrecenteqs1.0 or related schema. If no options are specified, a new 
+stock index map is created based on the specifications in the parameter 
+file. Otherwise an index map or global map is added to the mapstock table, 
+reading from a parameter file in the style of dbevents(1). 
+
 dbrecenteqs watches a real-time database of hypocenters, customizing
 the stock maps and creating individual maps for each earthquake as they
 occur.  dbrecenteqs creates the html code for a complete web-site of

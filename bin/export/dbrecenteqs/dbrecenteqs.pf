@@ -1,7 +1,7 @@
 
 # Where you want recenteqs to run:
-html_base http://lcmobile/dbrecenteqs/
-web_topdir /usr/local/httpd/htdocs/dbrecenteqs
+html_base http://www.lindquistconsulting.com/dbrecenteqs/
+web_topdir /var/apache/htdocs/dbrecenteqs
 
 # Things you need to have available in web_topdir:
 wiggle mini_logo.gif
@@ -10,8 +10,8 @@ local_logo phAEIC_fastload.gif
 # Things to customize for your installation:
 title Recent Earthquakes in Alaska
 caption_default Recent Alaskan Earthquakes
-local_html_home http://lcmobile/
-description_of_local_html_home Alaska Earthquake Information Center
+local_html_home http://www.lindquistconsulting.com/
+description_of_local_html_home Lindquist Consulting
 region_phrases_database alaska_region_phrases
 keep_ndays 0
 nearest_places &Arr{
@@ -97,11 +97,12 @@ other_region_links &Arr{
 pixfile_conversion_method imagick  # pnm, imagick, or alchemy
 
 index_map_config &Arr{
-	contour_mode grdimage  # none, premade, grdcut or grdimage
+	contour_mode none  # none, premade, grdcut or grdimage
 	premade_contour_ps /home/kent/work/recenteqs/mkmap/premade_grdimage
-	grdfile /home/kent/misc/webquakes_sample/alaska_final.grd
-	gradfile /home/kent/misc/webquakes_sample/alaska_final.grad
-	longitude_branchcut_high 360
+	#grdfile /home/kent/misc/webquakes_sample/alaska_final.grd
+	#gradfile /home/kent/misc/webquakes_sample/alaska_final.grad
+	grdfile /space/GTOPO30/Grd/North_Hemi.grd
+	longitude_branchcut_high 180
 	hypocenter_dbname /Seis/catalogs/aeic/Total/Total
 	map_color_palette_file alaska.cpt
 	depth_color_palette_file depthmag2.cpt
