@@ -601,6 +601,8 @@ Attribute_Map::Attribute_Map(Pf *pf,string name)
 		line = (char *)gettbl(t,i);
 		ap = new Attribute_Properties(string(line));
 		(*this).attributes.insert(APMAP::value_type(ap->internal_name,*ap));
+		// had a memmory leak here.  insert copies need to delete
+		delete ap;
 	}
 }
 // Default constructor uses a frozen name and utilizes the above
