@@ -1,12 +1,19 @@
 LIB= libwormds.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 
-INCLUDE= iceworm_extensions.h
+MAN3=wave_client.3
 
-# ldlibs= -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) 
-cflags = -D_SPARC -D_SOLARIS 
+INCLUDE=iceworm_extensions.h \
+	iw_wfheader.h \
+	wave_client.h \
+	trace_buf.h \
+	ak_ahheader.h 
 
+cflags=	-mt -D_SPARC -D_SOLARIS
+
+PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
+		
 DIRS=
 
 OBJS= site_iw_ext.o \
@@ -17,13 +24,12 @@ OBJS= site_iw_ext.o \
       write_ak_ahheader.o \
       write_sac_header.o \
       save_waveform_header.o \
-      save_waveform_data.o
+      save_waveform_data.o \
+      wave_client.o
 
 $(LIB) : $(OBJS)
-	$(RM) $@
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(RM) $@
 	$(DLD) $(DLDFLAGS) $(LDLIBS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT)

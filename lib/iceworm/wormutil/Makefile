@@ -1,29 +1,33 @@
 LIB= libwormutil.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 
-CLEAN= $(LIB) $(DLIB) $(DLIB).[0-9]
-
-INCLUDE= earthworm.h \
-	chron3.h \
+INCLUDE=chron3.h \
 	kom.h \
-	platform.h \
-	trace_buf.h 
+	mem_circ_queue.h \
+	parse_trig.h \
+	site.h \
+	swap.h \
+	tlay.h \
+	earthworm.h \
+	platform.h
+
 
 cflags=	-D_SPARC -D_SOLARIS -D_LOGITMT
 
+PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
-
-OBJS=   chron3.o \
-        getutil.o \
-        kom.o \
-        logit.o \
-        site.o \
-        tlay.o \
-        mnbrak.o \
-        brent.o \
-        swap.o \
-        socket_ew_common.o \
-        mem_circ_queue.o
+		
+OBJS= 	chron3.o \
+	getutil.o \
+	kom.o \
+	logit.o \
+	site.o \
+	tlay.o \
+	mnbrak.o \
+	brent.o \
+	swap.o \
+	socket_ew_common.o \
+	mem_circ_queue.o
 
 $(LIB) : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)

@@ -309,8 +309,6 @@ double julsec17( char *c17 )
 int epochsec17( double *sec, char *tstr )
 {
    double jsec;
-   double sec1970 = 11676096000.00;  /* # seconds between Carl Johnson's     */
-                                     /* time 0 and 1970-01-01 00:00:00.0 GMT */
 
    jsec = julsec17( tstr );
    if( jsec==0.0 )
@@ -319,7 +317,7 @@ int epochsec17( double *sec, char *tstr )
       return ( -1 );
    }
 
-   *sec = jsec-sec1970;
+   *sec = jsec-GSEC1970;
    return ( 0 );
 }
 

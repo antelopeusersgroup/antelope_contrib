@@ -7,6 +7,10 @@
 
 #include <time.h>
 
+#define GSEC1970 11676096000.00 /* Gregorian seconds equivalent for 19700101 */
+                                /* # seconds between Carl Johnson's chron3   */
+                                /* time 0 and 1970-01-01 00:00:00.0 GMT      */
+
 struct Greg {
         int year;
         int month;

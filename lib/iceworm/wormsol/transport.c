@@ -35,7 +35,7 @@ void  tport_buferror( short, char * );
 /* These statements and variables are required by the functions of 
    the input-buffering thread 
    ***************************************************************/
-#include "earthworm.h"
+#include <earthworm.h>  
 volatile SHM_INFO *PubRegion;      /* transport public ring      */
 volatile SHM_INFO *BufRegion;      /* pointer to private ring    */
 volatile MSG_LOGO *Getlogo;        /* array of logos to copy     */

@@ -2,7 +2,7 @@
  *                 sleep_ew.c    for   SOLARIS                      *
  *                                                                  *
  *  Any program that uses this function must contain:		    *
-#include "earthworm.h"
+ *   #include <earthworm.h> 					    *
  *  and must link with the posix4 library:			    *
  *   cc [ flag ... ] file ... -lposix4 [ library ... ]		    *
  ********************************************************************/
