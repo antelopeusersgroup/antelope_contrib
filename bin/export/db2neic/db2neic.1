@@ -15,15 +15,16 @@ to stdout for testing purposes.
 The minimum magnitude for earthquake submission is specified in the
 parameter file.
 .SH OPTIONS
--s      submit data to NEIC. Without this, no submission is made to
-        NEIC.
+.IP -s
+Submit data to NEIC. Without this, no submission is made to NEIC.
 
--a      Instead of the mailing address specified in the parameter
-        file, db2neic mails the report to the specified recipient.
+.IP "-a address"
+Instead of the mailing address specified in the parameter file,
+db2neic mails the report to the specified recipient.
 
--c      Sends a copy of the email report to the specified recipient,
-        in addition to sending to the NEIC (-s option) or another
-        address (-a option).
+.IP "-c address"
+Sends a copy of the email report to the specified recipient,
+in addition to sending to the NEIC (-s option) or another address (-a option).
 .SH PARAMETER FILE
 .ft CW
 .in 2c
