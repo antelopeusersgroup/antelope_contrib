@@ -497,9 +497,9 @@ public class Orb extends java.lang.Object {
 		// FixMe: check that packet length < 65538 and srcname.length < 64.
 		outBuf.writeInt(-1);     
 		outBuf.writeShort(req.pkg.packet.length); 
-		outBuf.writeShort(req.pkg.srcname.length() + 1); 
+		outBuf.writeShort(req.pkg.srcname.toString().length() + 1); 
 		outBuf.writeDouble(req.time);
-                outBuf.write(req.pkg.srcname.getBytes("US-ASCII"), 0, req.pkg.srcname.length());
+                outBuf.write(req.pkg.srcname.toString().getBytes("US-ASCII"), 0, req.pkg.srcname.toString().length());
 		outBuf.writeByte(0); // null termination
 		outBuf.write(req.pkg.packet, 0, req.pkg.packet.length); 
 		break;
@@ -624,10 +624,10 @@ public class Orb extends java.lang.Object {
                         int srcsize = inBuf.readUnsignedShort () ;
                         if (srcsize > ORBSRCNAME_SIZE) srcsize = ORBSRCNAME_SIZE;
                         rsp.pkg.time = inBuf.readDouble () ;
-                        rsp.pkg.srcname = inbuf2str (srcsize) ;
+                        rsp.pkg.srcname = new SourceName(inbuf2str(srcsize));
                         if (rsp.pkg.pktsize > 0) {
                             if (rsp.pkg.packet == null || rsp.pkg.packet.length < rsp.pkg.pktsize) {
-                                System.out.println ("Resizing to " + rsp.pkg.pktsize + " bytes");
+                                // FixMe System.out.println ("Resizing to " + rsp.pkg.pktsize + " bytes");
                                 rsp.pkg.packet = new byte[rsp.pkg.pktsize];
                             }
                             inBuf.readFully (rsp.pkg.packet, 0, rsp.pkg.pktsize) ;

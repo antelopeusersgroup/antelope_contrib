@@ -14,6 +14,7 @@ package com.brtt.antelope;
 
 import java.io.*;
 import java.text.*;
+import java.util.*;
 
 /**
  * This class represents a single Antelope Orb packet.
@@ -42,7 +43,7 @@ public class OrbPacket extends Object {
     /**
      * Holds the packet Orb source name.
      */
-    public String srcname;
+    public SourceName srcname;
     
     /**
      * Holds the current packet data size.
@@ -50,57 +51,9 @@ public class OrbPacket extends Object {
     public int pktsize = 0;
         
     /**
-     * Holds the packet type (after unstuffing). One of "waveform", for waveform
-     *      data, "database", for an ASCII database row, "parameter", for a 
-     *      free-form parameter packet, "string", for a character string packet,
-     *      "log", for a log packet, or "unknown".
-     */
-    public String type;
-            
-    /**
-     * Holds the packet format (for waveform packets after unstuffing).
-     */
-    public String format;
-                
-    /**
-     * Holds a packet name (database table name for type db, parameter
-     *      object name for type pf, etc., after unstuffing).
-     */
-    public String name;
-                
-    /**
-     * Holds the packet SEED network code as derived from the srcname
-     *      (for waveform packets after unstuffing).
-     */
-    public String net;
-                    
-    /**
-     * Holds the packet SEED station code as derived from the srcname
-     *      (for waveform packets after unstuffing).
-     */
-    public String sta;
-                        
-    /**
-     * Holds the packet SEED channel code as derived from the srcname
-     *      (for waveform packets after unstuffing).
-     */
-    public String chan;
-                        
-    /**
-     * Holds the packet SEED location code as derived from the srcname
-     *      (for waveform packets after unstuffing).
-     */
-    public String loc;
-    
-    /**
-     * Holds the number of waveform channels (after unstuffing)
-     */
-    public int nchannels = 0;
-    
-    /**
      * Holds the waveform channel objects (after unstuffing)
      */
-    public OrbPacketChannel channel[] = null;
+    public List channels = null;
         
     /** Constructors */
     
@@ -111,28 +64,36 @@ public class OrbPacket extends Object {
     }
           
     /** Public Methods */
-        
+    
+    public void addChannel(OrbPacketChannel channel) {
+	if (channels == null) {
+	    channels = new Vector();
+	}
+	channels.add(channel);
+    }
+
     /**
      * This converts on Antelope data packet into a usable format.
      * @exception java.io.IOException
      *              IO error during parsing of data packet.
      */
     public void unstuff () throws IOException {
-        parseSrcname (); 
-        
-        if (type.compareTo("waveform") != 0) return;
 
-        if (format.compareTo("MGENC") == 0) {
+	// parse the sourcename?
+
+        if (srcname.type.compareTo("waveform") != 0) return;
+
+        if (srcname.format.compareTo("MGENC") == 0) {
 	    unstuffMGENC ();
 	    return;
 	}
 
-        if (format.compareTo("GENC") == 0) {
+        if (srcname.format.compareTo("GENC") == 0) {
             unstuffGENC ();
             return;
         }
                 
-        if (format.compareTo("GEN") == 0) {
+        if (srcname.format.compareTo("GEN") == 0) {
             unstuffGEN ();
             return;
         }
@@ -141,97 +102,10 @@ public class OrbPacket extends Object {
     }
     
     /**
-     * This parses the OrbPacket {@link #srcname} into the public fields 
-     * {@link #type}, {@link #format}, {@link #name}, {@link #net},
-     * {@link #sta}, {@link #chan} and {@link #loc}.
-     */    
-    public void parseSrcname () {
-         nchannels = 0;
-         name = "";
-         format = "";
-         net = "";
-         sta = "";
-         chan = "";
-         loc = "";
-         if (srcname.length() > 3 && srcname.substring(0,4).compareTo("/db/") == 0) {
-             type = "database";
-             if (srcname.length() > 4) name = srcname.substring(5,srcname.length());
-             return;
-         } else if (srcname.length() > 3 && srcname.substring(0,4).compareTo("/pf/") == 0) {
-             type = "parameter";
-             if (srcname.length() > 4) name = srcname.substring(5,srcname.length());
-             return;
-         } else if (srcname.length() > 3 && srcname.substring(0,4).compareTo("/ch/") == 0) {
-             type = "string";
-             if (srcname.length() > 4) name = srcname.substring(5,srcname.length());
-             return;
-         } else if (srcname.length() > 4 && srcname.substring(0,5).compareTo("/log/") == 0) {
-             type = "log";
-             if (srcname.length() > 5) name = srcname.substring(6,srcname.length());
-             return;
-         } else if (srcname.charAt(0) == '/') {
-             type = "unknown";
-             return;
-         }
-         
-         type = "waveform";
-         int i = srcname.indexOf ("_");
-         if (i < 0) {
-             i = srcname.indexOf ("/");
-             if (i < 0) {
-                 net = srcname;
-                 format = "IW";
-                 return;
-             }
-             net = srcname.substring(0, i);
-             format = srcname.substring(i+1, srcname.length());
-             return;
-         }
-         net = srcname.substring(0, i);
-         String temp = srcname.substring(i+1, srcname.length());
-         i = temp.indexOf ("_");
-         if (i < 0) {
-             i = temp.indexOf ("/");
-             if (i < 0) {
-                 sta = temp;
-                 format = "IW";
-                 return;
-             }
-             sta = temp.substring(0, i);
-             format = temp.substring(i+1, temp.length());
-             return;
-         }
-         sta = temp.substring(0, i);
-         temp = temp.substring(i+1, temp.length());
-         i = temp.indexOf ("_");
-         if (i < 0) {
-             i = temp.indexOf ("/");
-             if (i < 0) {
-                 chan = temp;
-                 format = "IW";
-                 return;
-             }
-             chan = temp.substring(0, i);
-             format = temp.substring(i+1, temp.length());
-             return;
-         }
-         chan = temp.substring(0, i);
-         temp = temp.substring(i+1, temp.length());
-         i = temp.indexOf ("/");
-         if (i < 0) {
-             loc = temp;
-             format = "IW";
-             return;
-         }
-         loc = temp.substring(0, i);
-         format = temp.substring(i+1, temp.length());
-    }
-    
-    /**
      * This gets a string description of the Antelope data packet.
      * @return A string suitable for display.
      */
-    public String getList () {
+    public String toString() {
         int i;
         
         DecimalFormat fmpktid = new DecimalFormat ( "000000" );
@@ -242,10 +116,10 @@ public class OrbPacket extends Object {
                         + srcname
                         ;
         
-        s += "\n        nchannels = " + nchannels ;
+        s += "\n        nchannels = " + channels.size();
         
-        for (i=0; i<nchannels; i++) {
-            s += "\n        " + channel[i].getList () ;
+        for (i=0; i<channels.size(); i++) {
+            s += "\n        " + channels.get(i).toString() ;
         }
         
         return (s);
@@ -282,64 +156,61 @@ public class OrbPacket extends Object {
         DataInputStream pktBuf = new DataInputStream (inBuf);
 	
 	int version = pktBuf.readUnsignedShort ();  
-        nchannels   = pktBuf.readUnsignedShort ();
+        int nchannels = pktBuf.readUnsignedShort ();
 	
-        if (channel == null || channel.length < nchannels) {
-            channel = new OrbPacketChannel[nchannels];
-	    for (int i=0; i<nchannels; i++) {
-		if (channel[i] == null) {
-		    channel[i] = new OrbPacketChannel();
-		}
-	    }
+	channels = new Vector(nchannels);
+	
+	for (int i = 0; i < nchannels; i ++) {
+	    channels.add(new OrbPacketChannel());
 	}
-	
+
 	/* An MGENC packet with only one channels is pretty much the same
 	   as a GENC packet, but some of the fields are reordered. */
 	
 	for (int c=0; c<nchannels; c++) {
+
+	    OrbPacketChannel channel = (OrbPacketChannel)(channels.get(c));	
+
 	    if (nchannels == 1) {
-		channel[c].net = net;
-		channel[c].sta = sta;
-		channel[c].chan = chan;
-		channel[c].loc = loc;
+		channel.srcname = srcname;
 	    } else {
-		channel[c].net = buf2str(pktBuf, 10);
-		channel[c].sta = buf2str(pktBuf, 10);
-		channel[c].chan = buf2str(pktBuf, 10);
-		channel[c].loc = buf2str(pktBuf, 10);
+		String net = buf2str(pktBuf, 10);
+		String sta = buf2str(pktBuf, 10);
+		String chan = buf2str(pktBuf, 10);
+		String loc = buf2str(pktBuf, 10);
+
+		channel.srcname = new SourceName(net, sta, chan, loc);
 	    }
 	    
-	    channel[c].segtype = buf2str(pktBuf, 2); 
+	    channel.segtype = buf2str(pktBuf, 2); 
 	    if (nchannels == 1) {
-		channel[c].time = this.time;	  
+		channel.time = this.time;	  
 	    } else {
-		channel[c].time = pktBuf.readDouble();	  
+		channel.time = pktBuf.readDouble();	  
 	    }
 	    
-	    channel[c].nsamp       = pktBuf.readUnsignedShort () ;
-	    channel[c].samprate    = pktBuf.readFloat () ;
-	    channel[c].calib       = pktBuf.readFloat () ;
-	    channel[c].calper      = pktBuf.readFloat () ;
+	    channel.nsamp       = pktBuf.readUnsignedShort () ;
+	    channel.samprate    = pktBuf.readFloat () ;
+	    channel.calib       = pktBuf.readFloat () ;
+	    channel.calper      = pktBuf.readFloat () ;
 	    
-	    if (channel[c].data == null || channel[c].datasize < channel[c].nsamp) {
-		channel[c].datasize = channel[c].nsamp;
-		channel[c].data = new int[channel[c].datasize];
-	    }
-	    
+	    channel.datasize = channel.nsamp;
+	    channel.data = new int[channel.datasize];
+
             int nout;
-            if (channel[c].nsamp < 5) {
-		for (int i=0; i<channel[c].nsamp; i++)
-		    channel[c].data[i] = pktBuf.readInt();
-		nout = channel[c].nsamp;
+            if (channel.nsamp < 5) {
+		for (int i=0; i<channel.nsamp; i++)
+		    channel.data[i] = pktBuf.readInt();
+		nout = channel.nsamp;
             } else { 
 		int bytecount = pktBuf.readUnsignedShort();
-		nout = uncompressGENC (channel[c].data, pktBuf, bytecount) ;
-		for (int i=1; i<channel[c].nsamp; i++) 
-		    channel[c].data[i] += channel[c].data[i-1];
+		nout = uncompressGENC (channel.data, pktBuf, bytecount) ;
+		for (int i=1; i<channel.nsamp; i++) 
+		    channel.data[i] += channel.data[i-1];
             }
 	    
-	    if (nout != channel[c].nsamp) {
-		System.out.println ("nsamp = " + channel[c].nsamp + ", but nout = " + nout);
+	    if (nout != channel.nsamp) {
+		System.out.println ("nsamp = " + channel.nsamp + ", but nout = " + nout);
 	    }
 	}
 	
@@ -349,45 +220,35 @@ public class OrbPacket extends Object {
     
 
     private void unstuffGENC () throws IOException {
-        double samprate, calib, calper;
-        int nsamp;
-        String segtype;
-        int i;
-        
+                
         if (packet == null || pktsize < 1) return;
         
         ByteArrayInputStream inBuf = new ByteArrayInputStream (packet, 0, pktsize);
         DataInputStream pktBuf = new DataInputStream (inBuf);
         
-        samprate    = pktBuf.readFloat () ;
-        calib       = pktBuf.readFloat () ;
-        calper      = pktBuf.readFloat () ;
-        nsamp       = pktBuf.readUnsignedShort () ;
-        segtype     = buf2str (pktBuf, 2); 
+        double samprate    = pktBuf.readFloat () ;
+        double calib       = pktBuf.readFloat () ;
+        double calper      = pktBuf.readFloat () ;
+        int nsamp          = pktBuf.readUnsignedShort () ;
+        String segtype     = buf2str (pktBuf, 2); 
         
-        nchannels = 1;
-        if (channel == null || channel.length < nchannels) {
-            channel = new OrbPacketChannel[nchannels];
-            channel[0] = new OrbPacketChannel ();
-        }
+        int nchannels = 1;
+   	channels = new Vector(nchannels);
+	OrbPacketChannel channel = new OrbPacketChannel();
+	channels.add(channel);
+
+        channel.srcname  = srcname;
+
+        channel.calib    = calib;
+        channel.calper   = calper;
+        channel.samprate = samprate;
+        channel.nsamp    = nsamp;
+        channel.segtype  = segtype;
         
-        channel[0].time     = time;
-        channel[0].net      = net;
-        channel[0].sta      = sta;
-        channel[0].chan     = chan;
-        channel[0].loc      = loc;
-        channel[0].calib    = calib;
-        channel[0].calper   = calper;
-        channel[0].samprate = samprate;
-        channel[0].nsamp    = nsamp;
-        channel[0].segtype  = segtype;
+	channel.datasize = channel.nsamp;
+	channel.data = new int[channel.datasize];
         
-        if (channel[0].data == null || channel[0].datasize < channel[0].nsamp) {
-            channel[0].datasize = channel[0].nsamp;
-            channel[0].data = new int[channel[0].datasize];
-        }
-        
-        int nout = uncompressGENC (channel[0].data, pktBuf) ;
+        int nout = uncompressGENC (channel.data, pktBuf) ;
         
         if (nout != nsamp) {
             System.out.println ("nsamp = " + nsamp + ", but nout = " + nout);
@@ -396,70 +257,64 @@ public class OrbPacket extends Object {
         pktBuf.close () ;
         inBuf.close () ;
         
-        for (i=1; i<channel[0].nsamp; i++) channel[0].data[i] += channel[0].data[i-1];
+        for (int i=1; i<channel.nsamp; i++) channel.data[i] += channel.data[i-1];
     }
         
     private void unstuffGEN () throws IOException {
-        double samprate, calib, calper;
-        int nsamp;
-        String segtype;
-        int i;
-        
+                
         if (packet == null || pktsize < 1) return;
         
         ByteArrayInputStream inBuf = new ByteArrayInputStream (packet, 0, pktsize);
         DataInputStream pktBuf = new DataInputStream (inBuf);
         
-        samprate    = pktBuf.readFloat () ;
-        calib       = pktBuf.readFloat () ;
-        calper      = pktBuf.readFloat () ;
-        nsamp       = pktBuf.readUnsignedShort () ;
-        segtype     = buf2str (pktBuf, 2); 
+        double samprate    = pktBuf.readFloat () ;
+        double calib       = pktBuf.readFloat () ;
+        double calper      = pktBuf.readFloat () ;
+        int nsamp          = pktBuf.readUnsignedShort () ;
+        String segtype     = buf2str (pktBuf, 2); 
         
-        nchannels = 1;
-        if (channel == null || channel.length < nchannels) {
-            channel = new OrbPacketChannel[nchannels];
-            channel[0] = new OrbPacketChannel ();
-        }
+        int nchannels = 1;
+	channels = new Vector(nchannels);
+	OrbPacketChannel channel = new OrbPacketChannel();
+	
+        channel.time     = time;
+	channel.srcname  = srcname;
+        channel.calib    = calib;
+        channel.calper   = calper;
+        channel.samprate = samprate;
+        channel.nsamp    = nsamp;
+        channel.segtype  = segtype;
         
-        channel[0].time     = time;
-        channel[0].net      = net;
-        channel[0].sta      = sta;
-        channel[0].chan     = chan;
-        channel[0].loc      = loc;
-        channel[0].calib    = calib;
-        channel[0].calper   = calper;
-        channel[0].samprate = samprate;
-        channel[0].nsamp    = nsamp;
-        channel[0].segtype  = segtype;
-        
-        if (channel[0].data == null || channel[0].datasize < channel[0].nsamp) {
-            channel[0].datasize = channel[0].nsamp;
-            channel[0].data = new int[channel[0].datasize];
-        }
+	channel.datasize = channel.nsamp;
+	channel.data = new int[channel.datasize];
                        
-        for (i=1; i<channel[0].nsamp; i++) channel[0].data[i] = pktBuf.readInt () ;
+        for (int i=1; i<channel.nsamp; i++) channel.data[i] = pktBuf.readInt () ;
             
         pktBuf.close () ;
         inBuf.close () ;
 
     }
     
-    private void stuffGEN() throws IOException {
+    /** Stuff the packet using the GEN format. */
+
+    public void stuffGEN() throws IOException {
 	
 	ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
         DataOutputStream pktBuf = new DataOutputStream (outBuf);
-	
-	pktBuf.writeFloat((float)channel[0].samprate);
-	pktBuf.writeFloat((float)channel[0].calib);
-	pktBuf.writeFloat((float)channel[0].calper);
-	pktBuf.writeShort(channel[0].nsamp); // FixMe: Is this unsigned?
-	str2buf(channel[0].segtype, pktBuf, 2);
+
+	// FixMe: check that exactly one channel exists
+	OrbPacketChannel channel = (OrbPacketChannel)(channels.get(0));
+
+	pktBuf.writeFloat((float)channel.samprate);
+	pktBuf.writeFloat((float)channel.calib);
+	pktBuf.writeFloat((float)channel.calper);
+	pktBuf.writeShort(channel.nsamp); // FixMe: Is this unsigned?
+	str2buf(channel.segtype, pktBuf, 2);
 	
 	// FixMe: warn if too many channels
 	
-	for (int i=1; i<channel[0].nsamp; i++) 
-	    pktBuf.writeInt(channel[0].data[i]);
+	for (int i=1; i<channel.nsamp; i++) 
+	    pktBuf.writeInt(channel.data[i]);
 	
 	packet = outBuf.toByteArray();
         pktBuf.close();

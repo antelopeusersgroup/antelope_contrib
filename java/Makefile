@@ -1,4 +1,6 @@
 
+
+
 BIN = orbstatj
 
 DATADIR = java
@@ -19,6 +21,7 @@ JAVAS = \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbPacketChannel.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbSource.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/OrbStat.java \
+	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/SourceName.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/SourcesModel.java \
 	$(ANTELOPE)/src/contrib/java/com/brtt/antelope/Stock.java
 
@@ -32,10 +35,14 @@ CLASSES = \
 	com/brtt/antelope/OrbSource.class \
 	com/brtt/antelope/OrbStat.class \
 	com/brtt/antelope/Orb.class \
+	com/brtt/antelope/SourceName.class \
 	com/brtt/antelope/SourcesModel.class \
 	com/brtt/antelope/JFrameOrbStat.class 
 
-antelope.jar	: remove_classes $(CLASSES)
+%.class : %.java
+	javac $<
+
+antelope.jar	: $(CLASSES)
 	jar cvf antelope.jar com/brtt/antelope/*.class
 
 $(ANTELOPE)/man/javadoc : $(JAVAS)

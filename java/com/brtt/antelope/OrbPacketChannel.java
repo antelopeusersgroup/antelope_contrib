@@ -76,6 +76,13 @@ public class OrbPacketChannel extends Object {
      * Creates a new OrbPacketChannel object.
      **/
 
+    public OrbPacketChannel() {
+    }
+
+    /**
+     * Creates a new OrbPacketChannel object.
+     **/
+
     public OrbPacketChannel(int data[], SourceName srcname, double calib, double calper, 
 			    String segtype, double time, double samprate) {
 	
