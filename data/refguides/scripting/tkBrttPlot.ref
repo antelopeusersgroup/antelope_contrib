@@ -6,6 +6,8 @@ package require Brttplot
 % man bplot_scg 
 % man bplot_vector 
 % man bplot_thistory
+% man bplot_utils
+% man brttplot
 </man>
 <commands>
 create_scg db tstart tend ?options?
@@ -61,9 +63,43 @@ vector_transform_edp vector_handle lonr latr
     transform vector longitude-latitude coordinates to
     equal distance projection coordinates in place
 
+<subsection Time Histories>
+thistory_add thistory time value
+    add time/value pair to thistory object
+
+thistory_create maxnp [-tag tag] [-file file]
+    create a thistory object, saving data in file
+
+thistory_eval thistory time
+    return value corresponding to time for thistory object
+
+thistory_free {-tag tag | thistory}
+    free thistory object, or all thistories tagged with tag
+
+thistory_get thistory {np|ty it}
+    return information from a thistory object
+
+thistory_maxmin thistory
+    return max and min values for thistory object
+
+<subsection Utilities>
+latlon2edp latr lonr lat lon
+    convert latitude-longitude to equal distance projection coordinates
+
+edp2latlon latr lonr delx dely
+    convert equal distance projection coordinates to latitude-longitude
+
+getviewportwcoords viewportName x y
+    transform a canvas pixel coordinate, x, y, to untransformed data world coordinates
+    through viewport viewportName
+
+hls2colorstring hue lightness saturation [gamma]
+    convert color in hue-lightness-saturation[-gamma] to standard
+    X-window rgb color string
+
 <subsection Plotting>
 
-(canvas) create \fBviewport name x y ?options?
+(canvas) create viewport name x y ?options?
     create canvas window for graph
 <options>
 -margin left right bottom top	margin widths in pixels
@@ -71,6 +107,9 @@ vector_transform_edp vector_handle lonr latr
 -tags taglist
 -width width	width in pixels (0: rubber-band)
 -height height 	height in pixels (0: rubber-band)
+-wtran {none|edp|merc}
+-latr reference latitude
+-lonr reference longitude
 -xmode {lin|log|time} 	
 -ymode {lin|log}
 -xleft x0 	data-coordinate of left edge of plot 
@@ -81,7 +120,7 @@ vector_transform_edp vector_handle lonr latr
 -fill_frame color	background color for margins
 </options>
 
-(canvas) create \fBaxes viewport ?options?
+(canvas) create axes viewport ?options?
     create axes associated with viewport
 <options>
 -tags taglist	
@@ -109,7 +148,7 @@ vector_transform_edp vector_handle lonr latr
 -tic_style ([nesw][ioc])*   ticks inward, outward, center
 </options>
 
-(canvas) create \fBgrid viewport ?options?
+(canvas) create grid viewport ?options?
     canvas item to create a mesh of grid lines
 <options>
 -tags taglist
@@ -130,7 +169,7 @@ vector_transform_edp vector_handle lonr latr
 -yincrement_small dy
 </options>
 
-(canvas) create \fBpolypoint viewport ?options?
+(canvas) create polypoint viewport ?options?
     create item to draw set of points or symbols
 <options>
 -vector handle|tag	vector containing the points
@@ -147,7 +186,7 @@ vector_transform_edp vector_handle lonr latr
 -showtext {0|1}
 </options>
 
-(canvas) create \fBpolyline viewport ?options?
+(canvas) create polyline viewport ?options?
     create item drawn with lines 
 <options>
 -vector handle|tag	vector containing the points
@@ -160,7 +199,7 @@ vector_transform_edp vector_handle lonr latr
 -visible {0|1}
 </options>
 
-(canvas) create \fBptext viewport textstring x y ?options?
+(canvas) create ptext viewport textstring x y ?options?
     canvas item to plot text in data coordinates
 <options>
 -tags taglist
@@ -171,7 +210,7 @@ vector_transform_edp vector_handle lonr latr
 -angle angle
 </options>
 
-(canvas) create \fBedpmap viewport ?options?
+(canvas) create map viewport ?options?
     canvas item to plot world maps using equal distance projection
 <options>
 -tags taglist
@@ -182,37 +221,5 @@ vector_transform_edp vector_handle lonr latr
 -rivers color
 -visible {0|1}
 -resolution {auto|crude|low|intermediate|high|full}
--latr latitude
--lonr longitude
 </options>
-
-<subsection Time Histories>
-thistory_add thistory time value
-    add time/value pair to thistory object
-
-thistory_create maxnp [-tag tag] [-file file]
-    create a thistory object, saving data in file
-
-thistory_eval thistory time
-    return value corresponding to time for thistory object
-
-thistory_free {-tag tag | thistory}
-    free thistory object, or all thistories tagged with tag
-
-thistory_get thistory {np|ty it}
-    return information from a thistory object
-
-thistory_maxmin thistory
-    return max and min values for thistory object
-
-<subsection Utilities>
-latlon2edp latr lonr lat lon
-    convert latitude-longitude to equal distance projection coordinates
-
-edp2latlon latr lonr delx dely
-    convert equal distance projection coordinates to latitude-longitude
-
-hls2colorstring hue lightness saturation [gamma]
-    convert color in hue-lightness-saturation[-gamma] to standard
-    X-window rgb color string
 
