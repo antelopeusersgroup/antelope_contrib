@@ -7,5 +7,3 @@ PF= dbrecenteqs.pf
 MAN1= dbrecenteqs.1
 
 include $(ANTELOPEMAKE)
-
-DIRS= Data
