@@ -75,7 +75,6 @@ char          **argv;
     double	    window ;
     double          after = 0.0, until=VERY_LARGE_DOUBLE;
     char           *match = ".*/CBBHS";
-    char           *pffile = "par2db";
     int             version;
     Dbptr           db;
     char           *database;
@@ -107,7 +106,7 @@ char          **argv;
 
     maxpkts = 30;
 
-    while ((c = getopt (argc, argv, "c:gm:p:i:u:Vvw:")) != -1)
+    while ((c = getopt (argc, argv, "cgm:i:u:Vvw:")) != -1)
 	switch (c) {
 
 	case 'c':
@@ -120,10 +119,6 @@ char          **argv;
 
 	case 'm':
 	    match = optarg;
-	    break;
-
-	case 'p':
-	    pffile = optarg;
 	    break;
 
 	case 'i':
