@@ -169,7 +169,13 @@ Relation frames
 	Description ( "video frames for externally stored images" )
 	Detail {
 		This table allows the storage of pre-computed individual  
-		video frames for a set of images.
+		video frames for a set of images. This table is very 
+		similar to the thumbnails table, however the latter 
+		will probably refer to permanent files, whereas the 
+		frames table may have vastly different cleanup 
+		requirements (for example, perhaps saving only the last 
+		couple days of video frames). For convenience, the 
+		two tables are separate. 
 	}
 	;
 
