@@ -113,7 +113,8 @@ map_config &Arr{
 	legend 		&datafilename(dbrecenteqs/legend.gif)
 	legend_description Magnitude and Age Legend for Earthquakes
 	landmask_regions &Arr{
-		Salton_Sea   -R-116.8/-115/32/34
+		Salton_Sea   		-R-116.8/-115/32/34
+		Caspian_Depression	-R43/58/35/50
 	}
 	depth_color_palette_file &datafilename(gmt/depthmag2.cpt)
 	linefiles &Tbl{
