@@ -1,0 +1,555 @@
+Include css3.0
+
+Schema iceworm1.3
+	Description ( "Iceworm Schema Version 1.3 " )
+	Detail {
+		This schema is an expansion of the css3.0 schema for use
+		with the Iceworm system. The databases produced by Iceworm
+		for external consumption are intended to be in strict 
+		css3.0 format. The additions to css3.0 represented by the
+		iceworm schema are designed to help the iceworm system 
+		manage internal details, and are intended to be invisible
+		to the end user. 
+		Modifications:
+		1) 8/96 split pins table into pins, ewanalog, picker tables
+		2) 9/96 added parameters to picker table for rex-allen picker
+		3) 9/96 added timecorr table for shifting raw waveform data
+		4) 11/96 added win table for Japanese stations
+		5) 2/97 added field n1 to picker table
+		6) 8/97 added reftekchan and reftekdas tables
+		7) 11/97 added field net to pins table
+	}
+	Timedate lddate
+	;
+
+Attribute active
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "0" )
+	Range ( "active == 0 || active == 1" )
+	Description ( "active describes whether a station should be used" )
+	Detail {
+		The field "active" is 1 if a station should be used
+		in calculation. For example in the eva table an entry 
+		in this field can be used to turn stations on or off
+		while leaving their information in the database.
+	}
+	;
+
+Attribute adchan
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "adchan >= 0" )
+	Description ( "Channel number on a given A/D converter" )
+	Detail {
+		This indicates which channel on a given A/D unit is
+		handling this data stream. The acquisition board 
+		digitizes the incoming data and puts the digital 
+		data sequentially in memory. For multiplexed data,
+		the digitized data is therefore a sequence in memory
+		of the different multiplexer inputs. The A/D 
+		channel numbers in the adchan field reflect the
+		sequence in which incoming data is digitized, i.e. 
+		the same as the sequence in which the multiplexer
+		scans across its data inputs. On the National brand
+		acquisition board, model AT-MIO-16F-5, this scan 
+		sequence is given by the following formula, 
+		assuming four multiplexer boards:
+		(boardchan-boardchan%4)*4+(muxboard-1)*4+boardchan%4,
+		where % indicates modulo division.
+	}
+	;
+
+Attribute admod
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "admod >= 0" )
+	Description ( "Module ID number of the A/D" )
+	Detail {
+		This indicates the Earthworm Module ID number for the 
+		A/D converter from which this data stream is coming.
+	}
+	;
+
+
+Attribute boardchan
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "boardchan >= 0" )
+	Description ( "Channel number on a given Demultiplexer board" )
+	Detail {
+		This indicates which channel on a given demultiplexer
+		board on a given A/D unit is handling this data stream.
+		The physical terminals on each demultiplexer board have 
+		numbers painted next to them--this is the same number.
+		On the AMUX-64T Multiplexer boards, each of which has
+		64 channels, the numbers go from 0-63.
+	}
+	;
+
+Attribute c1
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "fiter parameter for raw data" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the filter paramter for raw data
+	}
+	;
+
+Attribute c2
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "fiter parameter for characteristic function " )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the filter paramter for characteristic function
+	}
+	;
+
+Attribute c3
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "fiter parameter for short-term average" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the filter paramter for short-term average
+	}
+	;
+
+Attribute c4
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "fiter parameter for long-term average" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the filter paramter for long-term average
+	}
+	;
+
+Attribute c5
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "STA/LTA Event Threshold" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the STA/LTA Event Threshold
+	}
+	;
+
+Attribute c6
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "Dead station threshold" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the dead station Threshold
+	}
+	;
+
+Attribute c7
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "Coda termination threshold" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the coda termination Threshold
+	}
+	;
+
+Attribute c8
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "alt coda termination" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the fraction of c7 at which alt coda termination 
+		is used
+	}
+	;
+
+Attribute c9
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "pre-event level" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the fraction of pre-event level for alt coda termination
+	}
+	;
+
+Attribute commdelay
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "0.000" )
+	Range ( "commdelay >= 0" )
+	Description ( "Subtract this from raw waveform data to adjust for comm delays" )
+	Detail {
+		This field describes the number of seconds to subtract from raw
+		waveform data to adjust for delays in communication. A positive 
+		delay is normal. By the time data reaches a wfdisc relation,
+		this correction should have been applied. In the iceworm system,
+		this correction must be applied by the time the data reach the
+		TRACE_RING.
+	}
+	;
+
+Attribute discno
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "discno >= 0" )
+	Description ( "Discriminator number" )
+	Detail {
+		This indicates which discriminator is taking the 
+		analog signal off of the phone lines before feeding
+		it to the A/D unit. This number should be unique to
+		an installation.
+	}
+	;
+
+Attribute i5
+	Integer (10)
+	Format ( "%10d" )
+	Description ( "Picker parameter i5" )
+	Detail {
+		Parameter in Rex-Allen picker used to calculate itrm
+	}
+	;
+
+Attribute i6
+	Integer (10)
+	Format ( "%10d" )
+	Description ( "min small zero crossings" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the minimum number of small zero crossings
+	}
+	;
+
+Attribute i7
+	Integer (10)
+	Format ( "%10d" )
+	Description ( "min big zero crossings" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the minimum number of big zero crossings
+	}
+	;
+
+Attribute i8
+	Integer (10)
+	Format ( "%10d" )
+	Description ( "min size of first three peaks" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the minimum size of the first three peaks
+	}
+	;
+
+Attribute i9
+	Integer (10)
+	Format ( "%10d" )
+	Units ( "seconds" )
+	Description ( "min coda length" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the minimum coda length in seconds
+	}
+	;
+
+Attribute mstrigsec
+        Integer (10)
+        Format ( "%10d" )
+        Null ( "-1" )
+        Range ( "mstrigsec > 0" )
+        Units ( "seconds" )
+        Description ( "multi-station triggering duration in seconds" )
+        Detail {
+                mstrigsec defines the minimum number of seconds a station
+                has to be above the corresponding threshold level
+                (mstrigthresh) in order for that station to contribute
+                along with other stations in its network to a
+                multi-station EVA alarm
+        }
+        ;
+
+Attribute mstrigthresh
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "-1.000" )
+	Range ( "mstrigthresh > 0" )
+	Description ( "multi-station triggering threshold" )
+	Detail {
+		mstrigthresh defines the threshold amplitude of the
+		eva envelope function computed for a seismic trace. A 
+		station in a given network that holds a value above
+		this threshold for mstrigsec seconds can contribute to
+		a multi-station EVA alarm for its network.
+	}
+	;
+
+Attribute muxboard
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "muxboard >= 0" )
+	Description ( "Demultiplexer board number" )
+	Detail {
+		This indicates which demultiplexer board on a given
+		A/D unit is handling this data stream. For an A/D box
+		with four multiplexer boards, the boards are numbered
+		0,1,2, and 3.
+	}
+	;
+
+Attribute n1
+	Integer (10)
+	Format ( "%10d" )
+	Units ( "samples" )
+	Description ( "filter stabilization window" )
+	Detail {
+		Parameter in Rex-Allen picker specifying
+		the number of samples to process before
+		starting detection processing
+	}
+	;
+
+Attribute pickit
+	String (1)
+	Format ( "%1s" )
+	Null ( "-" )
+	Description ( "Whether to pick this channel" )
+	Detail {
+		This indicates whether the information on this channel
+		should be picked by the automatic picker.
+	}
+	;
+
+Attribute pinno
+	Integer (5)
+	Format ( "%5d" )
+	Null ( "-1" )
+	Range ( "pinno >= 0" )
+	Description ( "Earthworm Pin number" )
+	Detail {
+		The pin number is an arbitrary "social security number" 
+		of a data stream in the Iceworm A/D conversion process.
+		This number is unique to an installation, so if there
+		are multiple A/D converters running at one site, pin
+		numbers must be coordinated between them to avoid 
+		overlap. pinno and chanid are somewhat redundant. Pinno
+		has the advantage of privacy to the earthworm system 
+		and historical compatibility.
+	}
+	;
+
+Attribute reftekchanid
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "reftek digitizer channel" )
+	Detail {
+		Channel number of Reftek digitizer
+	}
+	;
+
+Attribute reftekid
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Description ( "reftek digitizer id" )
+	Detail {
+		Identification number of Reftek digitizer
+	}
+	;
+
+Attribute savechan
+        String (1)
+        Format ( "%1s" )
+        Null ( "-" )
+        Description ( "Whether to save this channel" )
+        Detail {
+                This indicates whether the information on this channel
+                is at all interesting. It is used to weed out garbage
+                data from freely-floating, unused pins.
+        }
+        ;
+
+Attribute sstrigsec
+	Integer (10)
+	Format ( "%10d" )
+	Null ( "-1" )
+	Range ( "sstrigsec > 0" )
+	Units ( "seconds" )
+	Description ( "single-station triggering duration in seconds" )
+	Detail {
+		sstrigsec defines the minimum number of seconds a station
+		has to be above the threshold level (sstrigthresh) in
+		order for that station to single-handedly trigger an
+		EVA alarm
+	}
+	;
+
+Attribute sstrigthresh
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "-1.000" )
+	Range ( "sstrigthresh > 0" )
+	Description ( "single-station triggering threshold" )
+	Detail {
+		sstrigthresh defines the threshold amplitude of the
+		eva envelope function computed for a seismic trace 
+		necessary to trigger a single-station alarm.
+	}
+	;
+
+Attribute wincode
+	String (4)
+	Format ( "%-4s" )
+	Null ( "-" )
+	Description ( "channel address code in win format" )
+	Detail {
+		This is the channel address (unique number assigned
+		to a channel) in the Japanese win format for 
+		multichannel seismic data. The channel number 
+		ranges from 0x0000 to 0xFFFF. We represent it here
+		in it's convenient four-byte character equivalent
+		instead of the two-byte hex number.
+		The first two characters (upper byte) represent the
+		seismic system (i.e. network), and the second two
+		characters (lower byte) represent the channel.
+	}
+	;
+
+Relation eva
+	Fields (  sta chan net active sstrigsec sstrigthresh mstrigsec mstrigthresh )
+	Primary (  sta chan net )
+	Description ( "parameters for Alaskan EVA alarm" )
+	Detail {
+		The entries in this table define the parameters for the
+		EVA alarm stations in Iceworm's digital re-cast of the
+		Earthquake-Volcano-Alarm. Pin numbers
+		are deliberately omitted from this table to enforce
+		consistency of pin-number to station-channel-name 
+		assignments. One station-channel can be entered for 
+		several networks, if it contributes to the triggering
+		of different networks in different ways. Values for 
+		the single-station triggers should be entered only
+		once if multiple rows are listed for a given station.
+	}
+	;
+
+Relation ewanalog
+	Fields (  sta chan discno admod adchan muxboard boardchan )
+	Primary (  adchan )
+	Description ( "Wiring Information for data from Earthworm A-to-D converter" )
+	Detail {
+		This table contains information on physical wiring of analog
+		stations being digitized by the Earthworm Analog to Digital converter.
+		The "discno" field allows this information to be connected
+		to information on how the discriminators are wired to the 
+		Earthworm A/D in Fairbanks. The "ew" prefix in the name of this 
+		table is intended to specify the digitizer constructed by the 
+		Menlo Park Earthworm team. Other digitizing strategies and hardware
+		may require a different table. Note that the relationship 
+		between discno and admod/adchan/muxboard/boardchan should 
+		be left untouched unless physical wiring at the A/D box is 
+		changed. Under normal day-to-day operations, sta-chan fields
+		should be changed to reflect changing assignments of discriminators. 
+		Sta and Chan are deliberately left out of the join keys, i.e.
+		any join of this table with another must be a theta join. Full 
+		justification for this engineering decision is described elsewhere.
+	}
+	;
+
+Relation picker
+	Fields (  sta chan net pickit n1 i5 i6 i7 i8 i9 c1 c2 c3 c4 c5 c6 c7 c8 c9 )
+	Primary (  sta chan )
+	Description ( "Picker parameters" )
+	Detail {
+		The picker table contains information necessary for
+		the rex-allen picker to pick individual stations. The
+		boolean "pickit" specifies whether or not to pick the
+		station-channel.
+	}
+	;
+
+Relation pins
+	Fields (  pinno net sta chan savechan )
+	Primary (  pinno )
+	Alternate (  sta chan )
+	Defines pinno
+	Description ( "Information about a given Iceworm data stream" )
+	Detail {
+		This allows the tracking of information about the
+		data streams flowing into the Iceworm system.
+		The savechan field indicates whether seismic data coming
+		in on a given channel should be saved, i.e. whether it 
+		should ever make it to the trace-ring. Where net name
+		is part of the namespace for a channel, the net
+		field indicates the appropriate net. Net is not
+		part of the namespace within the css3.0 schema, 
+		therefore nor in the iceworm1.3 schema, so net is 
+		not one of the alternate keys.
+	}
+	;
+
+Relation reftekchan
+	Fields ( reftekid reftekchanid chan samprate )
+	Primary ( reftekid reftekchanid )
+	Foreign ( chan )
+	Description ( "Assigns reftek channel numbers to channel codes" )
+	Detail {
+		This table associates each Reftek channel number
+		with the appropriate channel code.
+	}
+	;
+
+Relation reftekdas
+	Fields ( reftekid sta net )
+	Primary ( reftekid )
+	Alternate ( sta )
+	Defines reftekid
+	Description ( "translation table from Reftek digitizer ID to station code" )
+	Detail {
+		This table associates each Reftek digitizer ID number 
+		with the assigned station code, as well as the network
+		code if appropriate.
+	}
+	;
+
+Relation timecorr
+	Fields (  sta chan time endtime commdelay )
+	Primary (  sta chan time::endtime )
+	Description ( "Time shifts to apply to raw waveform data" )
+	Detail {
+		Timecorr describes the time shifts to apply to the raw
+		data streams coming into the Iceworm system. Currently 
+		there is only one field to use to modifiy the data,
+		commdelay. In the Iceworm system, this correction must 
+		happen before data reach the TRACE_RING, usually when
+		trace-packets are being built. 
+		After application of this correction the waveforms will
+		be timestamped with the real UTC time to which the earth
+		motion corresponds.
+	}
+	;
+
+Relation win
+	Fields ( wincode sta chan )
+	Primary ( wincode sta chan )
+	Defines wincode
+	Description ( "Table for win-format channels of seismic data" )
+	Detail {
+		This table contains information necessary to keep 
+		track of stations that originate in win format, the
+		Japanese multichannel seismic waveform data format
+		produced by Dr. T. Urabe in the Earthquake Research
+		Institute, Tokyo University.
+	}
+	;
+
