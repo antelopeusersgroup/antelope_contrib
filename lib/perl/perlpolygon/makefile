@@ -1,5 +1,5 @@
 AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
-MAN3=perlpolygon.3
+MAN3P=perlpolygon.3p
 CLEAN=  .make.state  runmake Makefile.old Makefile.PL Makefile polygon.bs polygon.c pm_to_blib 
 
 PD=$(ANTELOPE)/local/data/perl
