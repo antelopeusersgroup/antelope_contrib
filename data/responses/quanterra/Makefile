@@ -1,10 +1,10 @@
 DATADIR=responses
 DATA= \
+    AD20M \
+    AD32M \
     BalerDec10 \
     F260 \
     F260M \
-    F400M \
-    F640M \
     F64C \
     F64CM \
     F72B \
