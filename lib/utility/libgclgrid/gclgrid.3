@@ -17,6 +17,9 @@ double r0_ellipse(double);
 double ****create_4dgrid_contiguous(int, int, int, int);
 double ***create_3dgrid_contiguous(int, int, int);
 double **create_2dgrid_contiguous(int, int);
+void free_4dgrid_contiguous(double ***,int,int,int);
+void free_3dgrid_contiguous(double ***,int,int);
+void free_2dgrid_contiguous(double ***,int);
 .fi
 .SH DESCRIPTION
 .LP
@@ -77,54 +80,41 @@ class heirarchy and working down.
 
 class GCLgrid
 {
-    public:
-        char name[10];  // name assigned to this coordinate grid
-        double lat0, lon0, r0;  // geographical location of origin 
-        double azimuth_y;  // Azimuth of positive y axis 
-        double dx1_nom, dx2_nom;  // nominal grid spacing 
-        int n1,n2;  // grid size in each component direction
-        int i0, j0;  // origin location in grid 
-        double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
-        bool cartesian_defined, geographic_defined;
-        double **x1, **x2, **x3; //cartesian coordinates of nodes
-        double **lat, **lon, **r;  //geographical coordinates of nodes
+        public:
+                char name[10];  // name assigned to this coordinate grid
+                double lat0, lon0, r0;  // geographical location of origin
+                double azimuth_y;  // Azimuth of positive y axis
+                double dx1_nom, dx2_nom;  // nominal grid spacing
+                int n1,n2;  // grid size in each component direction
+                int i0, j0;  // origin location in grid
+                double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box
+                double **x1, **x2, **x3; //cartesian coordinates of nodes
 
-        GCLgrid(){
-                n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
-        };
-        GCLgrid(int n1size, int n2size);
-        GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
-                double radius0, double az, double dx1n, double dx2n, 
-                int iorigin, int jorigin);
-        GCLgrid(Dbptr db, char *nm) throw(int);
-        GCLgrid(const GCLgrid&);  //standard copy constructor
-        GCLgrid& operator=(const GCLgrid& );
-        void dbsave(Dbptr, char *) throw(int);
-        int lookup(double lat, double lon);
-        void reset_index() {ix1=i0; ix2=j0;};
-        void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
-        Geographic_point ctog(double, double, double);
-        Cartesian_point gtoc(double, double, double);
-        void set_transformation_matrix();
-	dmatrix fetch_transformation_matrix();
-	double *fetch_translation_vector();
-        double depth(int,int);
-        ~GCLgrid();
-        //
-        //These derived classes need private access so are declared
-        //friends
-        //
-        friend class GCLgrid3d;
-        friend class GCLscalarfield;
-        friend class GCLvectorfield;
-        friend class GCLscalarfield3d;
-        friend class GCLvectorfield3d;
-    private:
-        int ix1, ix2;
-        double gtoc_rmatrix[3][3];
-        double translation_vector[3];
+                GCLgrid();
+                GCLgrid(int n1size, int n2size);
+                GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
+                        double radius0, double az, double dx1n, double dx2n,
+                        int iorigin, int jorigin);
+                GCLgrid(Dbptr db, char *nm);  // acquire from Antelope database
+                GCLgrid(const GCLgrid&);  //standard copy constructor
+                GCLgrid& operator=(const GCLgrid& );
+                void dbsave(Dbptr, char *) throw(int);
+                int lookup(double, double);
+                void reset_index() {ix1=i0; ix2=j0;};
+                void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2;};
+                Geographic_point ctog(double, double, double);
+                Cartesian_point gtoc(double, double, double);
+                void set_transformation_matrix();
+                dmatrix fetch_transformation_matrix();
+                double *fetch_translation_vector();
+                void compute_extents();
+		Geographic_point geo_coordinates(int,int);
+                double lat(int,int);
+                double lon(int,int);
+                double r(int,int);
+                double depth(int,int);
+                ~GCLgrid();
 };
-
 .fi
 .ft R
 .in
@@ -132,9 +122,6 @@ The simple type parameters that define this data object are, I hope,
 reasonably well defined by the comments in the above code segment.  
 The key groups of defining parameters are these:
 .IP (1)
-lat, lon, and r are 2d grids that define a 2d surface in geographical
-coordinates.
-.IP (2)
 x1, x2, and x3 are parallel 2d arrays that give coordinates in a 
 Cartesian coordinate system.  The transformation from geographic
 to the Cartesian system is defined through the member functions
@@ -152,7 +139,10 @@ so the inverse tranformation is simply the transpose of it.)
 The origin of the Cartesian system is visible publically as the
 variables lat0, lon0, and r.  Note that internally ALL angle
 variables (like lat0 and lon0) are stored in radians.  
-.IP (3)
+The functions \fIlat, lon,\fR and \fIr\fR provide a simple
+conversion from the internally stored grid (x1,x2,x3 coordinates)
+to the conventional geographic reference frame.  
+.IP (2)
 i0 and j0 define the location of the Cartesian origin inside the grid.
 The azimuth_y variable is set to the azimuth of the x2 axis at this
 origin.  For example, if azimuth_y is 10 degrees (note internally this
@@ -160,22 +150,17 @@ is radians) the x2 axis at the origin will point 10 degrees east of
 north.  For some grids azimuth_y has no purpose but for a standard
 grid produced by the parameterized constructor (see below) it 
 uniquely defines the grid orientation.  
-.IP (4)
+.IP (3)
 n1 and n2 define the size of the 2d arrays used to define the grids of
 points.  
-.IP (5) 
+.IP (4) 
 dx1_nom and dx2_nom are the nominal grid spacing intervals for the
 x1 and x2 axes.  Units are always kilometers.
-.IP (6)
+.IP (5)
 x1low, x1high, x2low, x2high, x3low, and x3high define a bounding box
 in the Cartesian system for all the points in the grid.  This provides
 a simple sanity check and a fast way to discard any request for points
 well outside the area the grid defines.  
-.IP (7)
-The two booleans, cartesian_defined and geographic_defined, 
-are set true when the contents of the cartesian and geographic 
-arrays are valid.  They will be set false if if the contents of
-these arrays are not defined.  
 .LP
 \fIConstructors\fR.  
 Notice that the GCLgrid has several levels of constructors.  
@@ -197,7 +182,7 @@ GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
 .fi
 .ft R
 .in
-The parallel to the defining parameters should be clear.  
+The parallel structure to the defining parameters should be clear.  
 This constructor builds what we might call a "standard GCLgrid".
 This function is called directly by the makegclgrid(1) program 
 which amounts to little more than a front end to this constructor.
@@ -231,6 +216,11 @@ The \fIdbsave\fR function is the inverse of the Antelope-based constructor.
 That is, it saves a GCLgrid object to disk storage indexing the result
 in the database with a unique name nm.
 Note that this function will throw an error if this process fails (see below).
+Note also that the external representation is ALWAY converted
+to geographical reference coordinates (lat,lon, r) since the
+Cartesian reference frame really only means something internally.
+The database constructor has to do the opposite on reading a
+gclgrid from external storage.
 .LP
 \fIlookup\fR finds the grid index for a specified latitude and longitude.
 The actual indices were intentionally made private and are only accessible
@@ -271,34 +261,32 @@ full description:
 
 class GCLgrid3d : public GCLgrid
 {
-    public:
-        double dx3_nom;
-        int n3;
-        int k0;
-        double ***x1, ***x2, ***x3;
-        double ***lat, ***lon, ***r;
-
-        GCLgrid3d(){
-                n1=0;n2=0;n3=0;
-                x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
-        };
-        GCLgrid3d(int n1size, int n2size, int n3size);
-        GCLgrid3d(int n1size, int n2size, int n3size, 
-                char *n, double la0, double lo0,
-                double radius0, double az, 
-                double dx1n, double dx2n, double dx3n,
-                int iorigin, int jorigin);
-        GCLgrid3d(Dbptr db, char *nm) throw(int); 
-        GCLgrid3d(const GCLgrid3d&); 
-        GCLgrid3d& operator=(const GCLgrid3d& );
-        void dbsave(Dbptr, char *) throw(int);
-        int lookup(double x, double y, double z);
-        void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
-        void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
-        double depth(int,int,int);
-        ~GCLgrid3d();
-    private:
-        int ix1, ix2, ix3;
+        public:
+                double dx3_nom;
+                int n3;
+                int k0;
+                double ***x1, ***x2, ***x3;
+                GCLgrid3d();
+                GCLgrid3d(int n1size, int n2size, int n3size);
+                GCLgrid3d(int n1size, int n2size, int n3size,
+                        char *n, double la0, double lo0,
+                        double radius0, double az,
+                        double dx1n, double dx2n, double dx3n,
+                        int iorigin, int jorigin);
+                GCLgrid3d(Dbptr db, char *nm);
+                GCLgrid3d(const GCLgrid3d&);
+                GCLgrid3d& operator=(const GCLgrid3d& );
+                void dbsave(Dbptr, char *) throw(int);
+                int lookup(double, double, double);
+                void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
+                void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
+                void compute_extents();
+		Geographic_point geo_coordinates(int,int,int);
+                double lat(int,int,int);
+                double lon(int,int,int);
+                double r(int,int,int);
+                double depth(int,int,int);
+                ~GCLgrid3d();
 };
 
 .fi
@@ -544,14 +532,13 @@ package.  Some things may be done in an odd way as a result and
 the results should be viewed with a healthy dose of skepticism.
 Some specifics are:
 .IP (1)
-Although in theory the interface should allow a space reduction by 
-defining only the geographic or cartesian arrays I've used the 
-memory hog model here.  That is, one really need only store the
-Cartesian coordinates and use the ctog function compute latitude
-and longitudes.  I've used the parallel array (at a huge memory
-cost) approach expecting the need to have both sets of coordinates
-be a very common operation.  If memory becomes an issue an extension 
-of the library could do this without changing the interface.
+The use of lat,lon,r coordinates in the external storage of
+a gclgrid and only using Cartesian coordinates for the 
+internal representation causes a conversion overhead that
+is not very efficient if large numbers of these objects
+are read and written.  
+An older version of this library kept both forms which has
+other (memory pig) problems. 
 .IP (2)
 The reset_index function should probably be overloaded to allow resetting
 the index to something other than the origin but I considered the extra

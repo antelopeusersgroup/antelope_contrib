@@ -158,11 +158,6 @@ GCLgrid::GCLgrid (int n1size, int n2size)
 	x1=create_2dgrid_contiguous(n1size,n2size);
 	x2=create_2dgrid_contiguous(n1size,n2size);
 	x3=create_2dgrid_contiguous(n1size,n2size);
-	lat=create_2dgrid_contiguous(n1size,n2size);
-	lon=create_2dgrid_contiguous(n1size,n2size);
-	r=create_2dgrid_contiguous(n1size,n2size);
-	cartesian_defined=0;  // these are only set high when valid data loaded
-	geographic_defined=0;
 }
 
 GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size)
@@ -177,11 +172,6 @@ GCLgrid3d::GCLgrid3d (int n1size, int n2size, int n3size)
 	x1=create_3dgrid_contiguous(n1size,n2size,n3size);
 	x2=create_3dgrid_contiguous(n1size,n2size,n3size);
 	x3=create_3dgrid_contiguous(n1size,n2size,n3size);
-	lat=create_3dgrid_contiguous(n1size,n2size,n3size);
-	lon=create_3dgrid_contiguous(n1size,n2size,n3size);
-	r=create_3dgrid_contiguous(n1size,n2size,n3size);
-	cartesian_defined=0;
-	geographic_defined=0;
 }
 //  Copy constructor is far more complex and here it is
 GCLgrid::GCLgrid(const GCLgrid& g)
@@ -209,14 +199,9 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	x1=create_2dgrid_contiguous(n1,n2);
 	x2=create_2dgrid_contiguous(n1,n2);
 	x3=create_2dgrid_contiguous(n1,n2);
-	lat=create_2dgrid_contiguous(n1,n2);
-	lon=create_2dgrid_contiguous(n1,n2);
-	r=create_2dgrid_contiguous(n1,n2);
 	//
 	//I use separate loops for each array here as this is highly
 	//optimized on most compilers 
@@ -227,12 +212,6 @@ GCLgrid::GCLgrid(const GCLgrid& g)
 		for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) lat[i][j]=g.lat[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) lon[i][j]=g.lon[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) r[i][j]=g.r[i][j];
 
 }
 GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
@@ -257,14 +236,9 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	x1=create_3dgrid_contiguous(n1,n2,n3);
 	x2=create_3dgrid_contiguous(n1,n2,n3);
 	x3=create_3dgrid_contiguous(n1,n2,n3);
-	lat=create_3dgrid_contiguous(n1,n2,n3);
-	lon=create_3dgrid_contiguous(n1,n2,n3);
-	r=create_3dgrid_contiguous(n1,n2,n3);
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j]=g.x1[i][j];
@@ -274,15 +248,6 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j]=g.x3[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lat[i][j]=g.lat[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lon[i][j]=g.lon[i][j];
-	for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) r[i][j]=g.r[i][j];
 
 }
 //
@@ -311,14 +276,9 @@ GCLgrid& GCLgrid::operator=(const GCLgrid& g)
 		x2high=g.x2high;
 		x3low=g.x3low;
 		x3high=g.x3high;
-		cartesian_defined=g.cartesian_defined;
-		geographic_defined=g.geographic_defined;
 		x1=create_2dgrid_contiguous(n1,n2);
 		x2=create_2dgrid_contiguous(n1,n2);
 		x3=create_2dgrid_contiguous(n1,n2);
-		lat=create_2dgrid_contiguous(n1,n2);
-		lon=create_2dgrid_contiguous(n1,n2);
-		r=create_2dgrid_contiguous(n1,n2);
 		//
 		//I use separate loops for each array here as this is highly
 		//optimized on most compilers 
@@ -329,13 +289,6 @@ GCLgrid& GCLgrid::operator=(const GCLgrid& g)
 			for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
 		for(i=0;i<n1;++i)
 			for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) lat[i][j]=g.lat[i][j];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) lon[i][j]=g.lon[i][j];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) r[i][j]=g.r[i][j];
-	
 	}
 	return *this;
 }
@@ -366,14 +319,9 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 		x2high=g.x2high;
 		x3low=g.x3low;
 		x3high=g.x3high;
-		cartesian_defined=g.cartesian_defined;
-		geographic_defined=g.geographic_defined;
 		x1=create_3dgrid_contiguous(n1,n2,n3);
 		x2=create_3dgrid_contiguous(n1,n2,n3);
 		x3=create_3dgrid_contiguous(n1,n2,n3);
-		lat=create_3dgrid_contiguous(n1,n2,n3);
-		lon=create_3dgrid_contiguous(n1,n2,n3);
-		r=create_3dgrid_contiguous(n1,n2,n3);
 		for(i=0;i<n1;++i)
 			for(j=0;j<n2;++j) 
 				for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
@@ -383,16 +331,6 @@ GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
 		for(i=0;i<n1;++i)
 			for(j=0;j<n2;++j) 
 				for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) lat[i][j][k]=g.lat[i][j][k];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) lon[i][j][k]=g.lon[i][j][k];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) r[i][j][k]=g.r[i][j][k];
-	
 	}
 	return *this;
 }
@@ -469,6 +407,8 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 	double xwork[3];
 	double rotation_angle,azimuth_i;
 	double dx1_rad,dx2_rad;
+	// temporary grids to hold lat-lon-r
+	double **plat, **plon, **pr;
 
 	strcpy(name,namein);
 	lat0=lat0in;
@@ -500,14 +440,12 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 
 	/* We now allocate memory for the large coordinate arrays
 	themselves and set the elements of the structure */
-	lat = create_2dgrid_contiguous(n1,n2);
-	lon = create_2dgrid_contiguous(n1,n2);
-	r = create_2dgrid_contiguous(n1,n2);
+	plat = create_2dgrid_contiguous(n1,n2);
+	plon = create_2dgrid_contiguous(n1,n2);
+	pr = create_2dgrid_contiguous(n1,n2);
 	x1 = create_2dgrid_contiguous(n1,n2);
 	x2 = create_2dgrid_contiguous(n1,n2);
 	x3 = create_2dgrid_contiguous(n1,n2);
-	cartesian_defined = 1;
-	geographic_defined = 1;
 
 	/* We now complete the latitude/longitude grid by projecting
 	lines from the baseline toward the computed pole.  Grid points 
@@ -526,17 +464,17 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 			if(j<j0)
 				latlon(baseline_lat[i],baseline_lon[i],
 					fabs(delta),azimuth_i-M_PI,
-					lat[i]+j,lon[i]+j);
+					plat[i]+j,plon[i]+j);
 			else if(j==j0)
 			{
-				lat[i][j] = baseline_lat[i];
-				lon[i][j] = baseline_lon[i];
+				plat[i][j] = baseline_lat[i];
+				plon[i][j] = baseline_lon[i];
 			}
 			else
 				latlon(baseline_lat[i],baseline_lon[i],
 					fabs(delta),azimuth_i,
-					lat[i]+j,lon[i]+j);
-			r[i][j] = r0_ellipse(lat[i][j]);
+					plat[i]+j,plon[i]+j);
+			pr[i][j] = r0_ellipse(plat[i][j]);
 		}
 	}
 	//
@@ -548,8 +486,8 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 	for(i=0;i<n1;++i) 
 	    for(j=0;j<n2;++j)
 	    {
-			cpt = gtoc(lat[i][j],lon[i][j],
-					r[i][j]);
+			cpt = gtoc(plat[i][j],plon[i][j],
+					pr[i][j]);
 
 			x1[i][j] = cpt.x1;
 			x2[i][j] = cpt.x2;
@@ -582,6 +520,9 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 
 	delete baseline_lat;
 	delete baseline_lon;
+	free_2dgrid_contiguous(plat,n1);
+	free_2dgrid_contiguous(plon,n1);
+	free_2dgrid_contiguous(pr,n1);
 }
 //
 // This is the C++ constructor that uses a pf and coord routines to compute
@@ -603,6 +544,7 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 	double xwork[3];
 	double dx1_rad,dx2_rad;
 	double rotation_angle, azimuth_i;
+	double ***plat, ***plon, ***pr;
 
 	strcpy(name,namein);
 	lat0=lat0in;
@@ -640,11 +582,9 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 
 	/* We now allocate memory for the large coordinate arrays
 	themselves and set the elements of the structure */
-	cartesian_defined = 1;
-	geographic_defined = 1;
-	lat = create_3dgrid_contiguous(n1,n2,n3);
-	lon = create_3dgrid_contiguous(n1,n2,n3);
-	r = create_3dgrid_contiguous(n1,n2,n3);
+	plat = create_3dgrid_contiguous(n1,n2,n3);
+	plon = create_3dgrid_contiguous(n1,n2,n3);
+	pr = create_3dgrid_contiguous(n1,n2,n3);
 	x1 = create_3dgrid_contiguous(n1,n2,n3);
 	x2 = create_3dgrid_contiguous(n1,n2,n3);
 	x3 = create_3dgrid_contiguous(n1,n2,n3);
@@ -675,17 +615,17 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 			if(j<j0)
 				latlon(baseline_lat[i],baseline_lon[i],
 					fabs(delta),azimuth_i-M_PI,
-					&(lat[i][j][top_of_grid]),&(lon[i][j][top_of_grid]));
+					&(plat[i][j][top_of_grid]),&(plon[i][j][top_of_grid]));
 			else if(j==j0)
 			{
-				lat[i][j][top_of_grid] = baseline_lat[i];
-				lon[i][j][top_of_grid] = baseline_lon[i];
+				plat[i][j][top_of_grid] = baseline_lat[i];
+				plon[i][j][top_of_grid] = baseline_lon[i];
 			}
 			else
 				latlon(baseline_lat[i],baseline_lon[i],
 					fabs(delta),azimuth_i,
-					&(lat[i][j][top_of_grid]),&(lon[i][j][top_of_grid]));
-			r[i][j][top_of_grid] = r0_ellipse(lat[i][j][top_of_grid]);
+					&(plat[i][j][top_of_grid]),&(plon[i][j][top_of_grid]));
+			pr[i][j][top_of_grid] = r0_ellipse(plat[i][j][top_of_grid]);
 		}
 	}
 //
@@ -697,9 +637,9 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 		for(i=0;i<n1;++i)
 			for(j=0;j<n2;++j)
 			{
-				lat[i][j][k]=lat[i][j][top_of_grid];
-				lon[i][j][k]=lon[i][j][top_of_grid];
-				r[i][j][k] = r0_ellipse(lat[i][j][top_of_grid]) - z;
+				plat[i][j][k]=plat[i][j][top_of_grid];
+				plon[i][j][k]=plon[i][j][top_of_grid];
+				pr[i][j][k] = r0_ellipse(plat[i][j][top_of_grid]) - z;
 			}
 	}
 	//
@@ -711,8 +651,8 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 	    for(j=0;j<n2;++j)
 		for(k=0;k<n3;++k) 
 		{
-			cpt = gtoc(lat[i][j][k],lon[i][j][k],
-					r[i][j][k]);
+			cpt = gtoc(plat[i][j][k],plon[i][j][k],
+					pr[i][j][k]);
 
 			x1[i][j][k] = cpt.x1;
 			x2[i][j][k] = cpt.x2;
@@ -742,6 +682,9 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 
 	delete baseline_lat;
 	delete baseline_lon;
+	free_3dgrid_contiguous(plat,n1,n2);
+	free_3dgrid_contiguous(plon,n1,n2);
+	free_3dgrid_contiguous(pr,n1,n2);
 }
 //
 // constructors for derived types for scalar and vector fields defined on
@@ -768,10 +711,6 @@ GCLvectorfield::GCLvectorfield(int n1size, int n2size, int n3size)
 	nv=n3size;
 	val=create_3dgrid_contiguous(n1size, n2size, n3size);
 }
-//
-// Some of the repetition below may be avoidable with virtual functions
-// if I understood how to do that better I'd try it.
-//
 GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
 {
 	int i,j;
@@ -792,32 +731,17 @@ GCLscalarfield::GCLscalarfield(GCLgrid& g) : GCLgrid(g.n1, g.n2)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
 	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
 	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
 	dcopy(3,g.translation_vector,1,translation_vector,1);
 	// We don't waste this effort unless these arrays contain something
-	if(cartesian_defined)
-	{
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
-	}
-	if(geographic_defined)
-	{
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) lat[i][j]=g.lat[i][j];
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) lon[i][j]=g.lon[i][j];
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) r[i][j]=g.r[i][j];
-
-	}
 	val=create_2dgrid_contiguous(g.n1, g.n2);
 }
 GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
@@ -840,32 +764,16 @@ GCLvectorfield::GCLvectorfield(GCLgrid& g, int n3) : GCLgrid(g.n1, g.n2)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
 	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
 	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
 	dcopy(3,g.translation_vector,1,translation_vector,1);
-	// We don't waste this effort unless these arrays contain something
-	if(cartesian_defined)
-	{
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
-            for(i=0;i<n1;++i)
+        for(i=0;i<n1;++i)
                     for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
-	}
-	if(geographic_defined)
-	{
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) lat[i][j]=g.lat[i][j];
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) lon[i][j]=g.lon[i][j];
-            for(i=0;i<n1;++i)
-                    for(j=0;j<n2;++j) r[i][j]=g.r[i][j];
-
-	}
 	nv=n3;
 	val=create_3dgrid_contiguous(g.n1, g.n2,n3);
 }
@@ -915,37 +823,19 @@ GCLscalarfield3d::GCLscalarfield3d(GCLgrid3d& g) : GCLgrid3d(g.n1, g.n2, g.n3)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
 	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
 	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
 	dcopy(3,g.translation_vector,1,translation_vector,1);
-	if(cartesian_defined)
-	{
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
-	}
-	if(geographic_defined)
-	{
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lat[i][j][k]=g.lat[i][j][k];
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lon[i][j][k]=g.lon[i][j][k];
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) r[i][j][k]=g.r[i][j][k];
-
-	}
 	val=create_3dgrid_contiguous(g.n1, g.n2, g.n3);
 }
 GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4) 
@@ -971,37 +861,19 @@ GCLvectorfield3d::GCLvectorfield3d(GCLgrid3d& g, int n4)
 	x2high=g.x2high;
 	x3low=g.x3low;
 	x3high=g.x3high;
-	cartesian_defined=g.cartesian_defined;
-	geographic_defined=g.geographic_defined;
 	dcopy(3,g.gtoc_rmatrix[0],1,gtoc_rmatrix[0],1);
 	dcopy(3,g.gtoc_rmatrix[1],1,gtoc_rmatrix[1],1);
 	dcopy(3,g.gtoc_rmatrix[2],1,gtoc_rmatrix[2],1);
 	dcopy(3,g.translation_vector,1,translation_vector,1);
-	if(cartesian_defined)
-	{
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
-	    for(i=0;i<n1;++i)
+	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
-	}
-	if(geographic_defined)
-	{
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lat[i][j][k]=g.lat[i][j][k];
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) lon[i][j][k]=g.lon[i][j][k];
-	    for(i=0;i<n1;++i)
-		for(j=0;j<n2;++j) 
-			for(k=0;k<n3;++k) r[i][j][k]=g.r[i][j][k];
-
-	}
 	nv=n4;
 	val=create_4dgrid_contiguous(g.n1, g.n2, g.n3,n4);
 }
@@ -1015,18 +887,12 @@ GCLgrid::~GCLgrid()
 	if(x1!=NULL) free_2dgrid_contiguous(x1,n1);
 	if(x2!=NULL) free_2dgrid_contiguous(x2,n1);
 	if(x3!=NULL) free_2dgrid_contiguous(x3,n1);
-	if(lat!=NULL) free_2dgrid_contiguous(lat,n1);
-	if(lon!=NULL) free_2dgrid_contiguous(lon,n1);
-	if(r!=NULL) free_2dgrid_contiguous(r,n1);
 }
 GCLgrid3d::~GCLgrid3d()
 {
 	if(x1!=NULL) free_3dgrid_contiguous(x1,n1,n2);
 	if(x2!=NULL) free_3dgrid_contiguous(x2,n1,n2);
 	if(x3!=NULL) free_3dgrid_contiguous(x3,n1,n2);
-	if(lat!=NULL) free_3dgrid_contiguous(lat,n1,n2);
-	if(lon!=NULL) free_3dgrid_contiguous(lon,n1,n2);
-	if(r!=NULL) free_3dgrid_contiguous(r,n1,n2);
 }
 //
 //Note standard rule that a derived class utilizes the base class destructor

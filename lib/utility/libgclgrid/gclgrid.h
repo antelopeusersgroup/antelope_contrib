@@ -47,12 +47,10 @@ class GCLgrid
 		int n1,n2;  // grid size in each component direction
 		int i0, j0;  // origin location in grid 
 		double x1low, x1high, x2low, x2high, x3low, x3high;// bounding box 
-		int cartesian_defined, geographic_defined;
 		double **x1, **x2, **x3; //cartesian coordinates of nodes
-		double **lat, **lon, **r;  //geographical coordinates of nodes
 
 		GCLgrid(){
-			n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+			n1=0;n2=0;x1=NULL;x2=NULL;x3=NULL;
 		};
 		GCLgrid(int n1size, int n2size);
 		GCLgrid(int n1size, int n2size, char *n, double la0, double lo0,
@@ -71,6 +69,10 @@ class GCLgrid
 		dmatrix fetch_transformation_matrix();
 		double *fetch_translation_vector();
 		void compute_extents();
+		Geographic_point geo_coordinates(int,int);
+		double lat(int,int);
+		double lon(int,int);
+		double r(int,int);
 		double depth(int,int);
 		~GCLgrid();
 		//
@@ -97,11 +99,10 @@ class GCLgrid3d : public GCLgrid
 		int n3;
 		int k0;
 		double ***x1, ***x2, ***x3;
-		double ***lat, ***lon, ***r;
 
 		GCLgrid3d(){
 			n1=0;n2=0;n3=0;
-			x1=NULL;x2=NULL;x3=NULL;lat=NULL;lon=NULL;r=NULL;
+			x1=NULL;x2=NULL;x3=NULL;
 		};
 		GCLgrid3d(int n1size, int n2size, int n3size);
 		GCLgrid3d(int n1size, int n2size, int n3size, 
@@ -117,6 +118,10 @@ class GCLgrid3d : public GCLgrid
 		void reset_index() {ix1=i0; ix2=j0; ix3=k0;};
 		void get_index(int *ind) {ind[0]=ix1; ind[1]=ix2; ind[2]=ix3;};
 		void compute_extents();
+		Geographic_point geo_coordinates(int,int,int);
+		double lat(int,int,int);
+		double lon(int,int,int);
+		double r(int,int,int);
 		double depth(int,int,int);
 		~GCLgrid3d();
 	private:
@@ -137,7 +142,7 @@ class GCLscalarfield :  public GCLgrid
 		GCLscalarfield(Dbptr db, char *grdnm, char *fn);
 		GCLscalarfield& operator=(const GCLscalarfield&);
 		void dbsave(Dbptr,char *,char *,char *, char *) throw(int);
-		void operator+=(const GCLscalarfield&);
+		void operator+=(GCLscalarfield&);
 		void operator*=(double);
 		double interpolate(double,double,double);
 		~GCLscalarfield();
@@ -154,7 +159,7 @@ class GCLvectorfield : public GCLgrid
 		GCLvectorfield(Dbptr db, char *grdnm, char *fn); 
 		GCLvectorfield& operator=(const GCLvectorfield&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
-		void operator+=(const GCLvectorfield&);
+		void operator+=(GCLvectorfield&);
 		void operator*=(double);
 		double *interpolate(double,double,double);
 		~GCLvectorfield();
@@ -170,7 +175,7 @@ class GCLscalarfield3d : public GCLgrid3d
 		GCLscalarfield3d(Dbptr db, char *grdnm, char *fn);
 		GCLscalarfield3d& operator=(const GCLscalarfield3d&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
-		void operator+=(const GCLscalarfield3d&);
+		void operator+=(GCLscalarfield3d&);
 		void operator*=(double);
 		double interpolate(double,double,double);
 		~GCLscalarfield3d();
@@ -187,7 +192,7 @@ class GCLvectorfield3d : public GCLgrid3d
 		GCLvectorfield3d(Dbptr db, char *grdnm, char *fn); 
 		GCLvectorfield3d& operator=(const GCLvectorfield3d&);
 		void dbsave(Dbptr, char *,char *, char *, char *) throw(int);
-		void operator+=(const GCLvectorfield3d&);
+		void operator+=(GCLvectorfield3d&);
 		void operator*=(double);
 		double *interpolate(double,double,double);
 		~GCLvectorfield3d();
@@ -218,6 +223,9 @@ extern "C" {
 double ****create_4dgrid_contiguous(int, int, int, int);
 double ***create_3dgrid_contiguous(int, int, int);
 double **create_2dgrid_contiguous(int, int);
+void free_4dgrid_contiguous(double ****,int,int,int);
+void free_3dgrid_contiguous(double ***,int,int);
+void free_2dgrid_contiguous(double **,int);
 void fme_weights_ (double *, double *, double *);
 #ifdef  __cplusplus
 }

@@ -5,7 +5,7 @@
 identical.  We have no reason to believe this should always be so.  Now all these operators
 are paranoid and use the geographhic points and convert them to the cartesian components.
 */
-void GCLscalarfield3d::operator+=(const GCLscalarfield3d& g)
+void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 {
 	int i,j,k;
 	double valnew;
@@ -20,8 +20,9 @@ void GCLscalarfield3d::operator+=(const GCLscalarfield3d& g)
 			for(k=0;k<g.n3;++j)
 			{
 				Cartesian_point cx;
-
-				cx = gtoc(g.lat[i][j][k],g.lon[i][j][k], g.r[i][j][k]);
+				Geographic_point gp;
+				gp = g.geo_coordinates(i,j,k);
+				cx = gtoc(gp.lat,gp.lon,gp.r);
 				err=lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
@@ -44,7 +45,7 @@ void GCLscalarfield3d::operator+=(const GCLscalarfield3d& g)
 	}
 }
 
-void GCLvectorfield3d::operator += (const GCLvectorfield3d& g)
+void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 {
 	int i,j,k,l;
 	double *valnew;
@@ -59,8 +60,10 @@ void GCLvectorfield3d::operator += (const GCLvectorfield3d& g)
 			for(k=0;k<g.n3;++j)
 			{
 				Cartesian_point cx;
+				Geographic_point gp;
+				gp = g.geo_coordinates(i,j,k);
+				cx = gtoc(gp.lat,gp.lon,gp.r);
 
-				cx = gtoc(g.lat[i][j][k],g.lon[i][j][k], g.r[i][j][k]);
 				err=lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
@@ -83,7 +86,7 @@ void GCLvectorfield3d::operator += (const GCLvectorfield3d& g)
 		}
 	}
 }
-void GCLscalarfield::operator += (const GCLscalarfield& g)
+void GCLscalarfield::operator += (GCLscalarfield& g)
 {
 	int i,j;
 	double valnew;
@@ -97,7 +100,7 @@ void GCLscalarfield::operator += (const GCLscalarfield& g)
 		{
 			Cartesian_point cx;
 
-			err=lookup(g.lat[i][j],g.lon[i][j]);
+			err=lookup(g.lat(i,j),g.lon(i,j));
 			switch(err)
 			{
 			case -1:
@@ -107,7 +110,7 @@ void GCLscalarfield::operator += (const GCLscalarfield& g)
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
 			case 0:
-				cx = gtoc(g.lat[i][j],g.lon[i][j],g.r[i][j]);
+				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
 				valnew = interpolate(cx.x1,cx.x2,cx.x3);
 				val[i][j]+=valnew;
 
@@ -119,7 +122,7 @@ void GCLscalarfield::operator += (const GCLscalarfield& g)
 	}
 }
 
-void GCLvectorfield::operator += (const GCLvectorfield& g)
+void GCLvectorfield::operator += (GCLvectorfield& g)
 {
 	int i,j,l;
 	double *valnew;
@@ -133,7 +136,7 @@ void GCLvectorfield::operator += (const GCLvectorfield& g)
 		{
                         Cartesian_point cx;
 
-			err=lookup(g.lat[i][j],g.lon[i][j]);
+			err=lookup(g.lat(i,j),g.lon(i,j));
 			switch(err)
 			{
 			case -1:
@@ -143,7 +146,7 @@ void GCLvectorfield::operator += (const GCLvectorfield& g)
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
 			case 0:
-				cx = gtoc(g.lat[i][j],g.lon[i][j],g.r[i][j]);
+				cx = gtoc(g.lat(i,j),g.lon(i,j),g.r(i,j));
 				valnew = interpolate(cx.x1,cx.x2,cx.x3);
 				for(l=0;l<nv;++nv) val[i][j][l]=valnew[l];
 				delete valnew;
@@ -155,6 +158,7 @@ void GCLvectorfield::operator += (const GCLvectorfield& g)
 		}
 	}
 }
+// Multiplication by scalar operators
 void GCLscalarfield3d::operator *= (double c1)
 {
 	int i,j,k;

@@ -23,9 +23,9 @@ double r_to_depth(double r, double lat)
 }
 double GCLgrid::depth(int i, int j)
 {
-	return(r0_ellipse(lat[i][j])-r[i][j]);
+	return(r0_ellipse(lat(i,j)-r(i,j)));
 }
 double GCLgrid3d::depth(int i, int j, int k)
 {
-	return(r0_ellipse(lat[i][j][k])-r[i][j][k]);
+	return(r0_ellipse(lat(i,j,k)-r(i,j,k)));
 }

@@ -78,7 +78,6 @@ int GCLgrid3d::lookup(double x, double y, double z)
 	int count=0;
 	double delta[3];
 
-	if(!cartesian_defined) return(-2);
 
 	/* return immediately if outside the extents bounding box */
 	if( (x > (x1high)) || (x < (x1low)) 
@@ -197,12 +196,6 @@ int GCLgrid::lookup(double target_lat, double target_lon)
 	Cartesian_point target_x;
 	double r0p;
 	double x,y,z;
-	//
-	//first find the cartesian coordinates of the requested lat/lon
-	//cartesian and geographic both need to be defined or we throw
-	//an error and give up.  Note both are required here unlike 3d case
-	//
-	if(!cartesian_defined || !geographic_defined) return(-2);
 
 	//
 	// This can incorrectly throw an error if the 2d grid is highly
@@ -235,7 +228,7 @@ int GCLgrid::lookup(double target_lat, double target_lon)
 		//  update the radius vector and the effective target vector
 		//  Confusing difference from 3D case, but necessary
 		//
-		r0p=r[i][j];
+		r0p=r(i,j);
 		target_x = gtoc(target_lat, target_lon, r0p);
 		x=target_x.x1;
 		y=target_x.x2;

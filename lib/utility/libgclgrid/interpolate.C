@@ -259,7 +259,7 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		//correct even when the 4 points are not coplanar.
 		//
 		//start with point 0
-		cp=gtoc(lat[i][j], lon[i][j],r[i][j]-cell_size);
+		cp=gtoc(lat(i,j), lon(i,j),r(i,j)-cell_size);
 		coord[0]=cp.x1;
 		coord[8]=cp.x2;
 		coord[16]=cp.x3;
@@ -272,14 +272,14 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		coord[10] = x2[i+1][j];
 		coord[18] = x3[i+1][j];	
 		/* point 3 */
-		cp=gtoc(lat[i+1][j], 
-			lon[i+1][j],r[i+1][j]-cell_size);
+		cp=gtoc(lat(i+1,j), 
+			lon(i+1,j),r(i+1,j)-cell_size);
 		coord[3]=cp.x1;
 		coord[11]=cp.x2;
 		coord[19]=cp.x3;
 		/* point 4 (other side of element in dimension 2) */
-		cp=gtoc(lat[i][j+1], 
-			lon[i][j+1],r[i][j+1]-cell_size);
+		cp=gtoc(lat(i,j+1), 
+			lon(i,j+1),r(i,j+1)-cell_size);
 		coord[4]=cp.x1;
 		coord[12]=cp.x2;
 		coord[20]=cp.x3;
@@ -292,8 +292,8 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		coord[14] = x2[i+1][j+1];
 		coord[22] = x3[i+1][j+1];
 		/* point 7 */
-		cp=gtoc(lat[i+1][j+1], 
-			lon[i+1][j+1],r[i+1][j+1]-cell_size);
+		cp=gtoc(lat(i+1,j+1), 
+			lon(i+1,j+1),r(i+1,j+1)-cell_size);
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;
@@ -353,7 +353,7 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		//correct even when the 4 points are not coplanar.
 		//
 		//start with point 0
-		cp=gtoc(lat[i][j], lon[i][j],r[i][j]-cell_size);
+		cp=gtoc(lat(i,j), lon(i,j),r(i,j)-cell_size);
 		coord[0]=cp.x1;
 		coord[8]=cp.x2;
 		coord[16]=cp.x3;
@@ -366,14 +366,14 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		coord[10] = x2[i+1][j];
 		coord[18] = x3[i+1][j];	
 		/* point 3 */
-		cp=gtoc(lat[i+1][j], 
-			lon[i+1][j],r[i+1][j]-cell_size);
+		cp=gtoc(lat(i+1,j), 
+			lon(i+1,j),r(i+1,j)-cell_size);
 		coord[3]=cp.x1;
 		coord[11]=cp.x2;
 		coord[19]=cp.x3;
 		/* point 4 (other side of element in dimension 2) */
-		cp=gtoc(lat[i][j+1], 
-			lon[i][j+1],r[i][j+1]-cell_size);
+		cp=gtoc(lat(i,j+1), 
+			lon(i,j+1),r(i,j+1)-cell_size);
 		coord[4]=cp.x1;
 		coord[12]=cp.x2;
 		coord[20]=cp.x3;
@@ -386,8 +386,8 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		coord[14] = x2[i+1][j+1];
 		coord[22] = x3[i+1][j+1];
 		/* point 7 */
-		cp=gtoc(lat[i+1][j+1], 
-			lon[i+1][j+1],r[i+1][j+1]-cell_size);
+		cp=gtoc(lat(i+1,j+1), 
+			lon(i+1,j+1),r(i+1,j+1)-cell_size);
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;

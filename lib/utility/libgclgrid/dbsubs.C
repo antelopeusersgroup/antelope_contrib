@@ -2,6 +2,22 @@
 #include <cstdio>
 #include "gclgrid.h"
 using namespace std;
+/* Major change June 15, 2004 (GLP):
+
+Previously a gclgrid stored both a lat,lon,r and x1,x2,x3 representation
+of the grid.  I realized this was VERY inefficient in memory use so
+I dropped the lat,lon,r for internal use, but turned them into 
+a function for so what used to be lat[i][j][k] became lat(i,j,k)
+(3d example, 2d similar).  
+
+This impacted this group of function strong as a question arises
+how to externally represent this type of data.  I chose to external
+store these data in the opposite way.  That is, the external files
+store lat,lon,r form of the grid.  This made sense as geographic
+form is more portable externally not requiring the internal 
+transformations that produce the cartesian form.
+*/
+
 // Constructor creating a GCLgrid object by reading data from
 // an Antelope database.  Uses an extension table used to index
 // GCLgrid objects.  This is the 3d version.  The 2d Version 
@@ -33,10 +49,10 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 	char *base_message=(char *)"Cannot create GCL3Dgrid object: ";
 	char *read_error=(char *)"fread failed";
 	int nrec;
-	char cdef[2],gdef[2];
 	int retcode;
 	int gridsize;  
 	FILE *fp;
+	double ***plat,***plon,***pr;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
 	if(dbgrd.record == dbINVALID) 
@@ -77,8 +93,6 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 		"i0",&(i0),
 		"j0",&(j0),
 		"k0",&(k0),
-		"cdefined",cdef,
-		"geodefined",gdef,
 		"datatype",datatype,
 		"dir",dir,
 		"dfile",dfile,
@@ -94,17 +108,6 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 	lat0 = rad(lat0);
 	lon0 = rad(lon0);
 	azimuth_y = rad(azimuth_y);
-	if(!strcmp(cdef,"n") || !strcmp(gdef,"n") )
-	{
-		elog_notify(0,(char *)"%s Cartesian and Geographical mapping (cdefined and geodefined attributes) must both be defined for input\n",
-			base_message);
-		throw 1;
-	}
-	else
-	{
-		cartesian_defined=1;
-		geographic_defined=1;
-	}
 	if(strcmp(datatype,"t8"))
 	{
 		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support t8\n",
@@ -132,51 +135,49 @@ GCLgrid3d::GCLgrid3d(Dbptr db, char *gridname)
 	x1 = create_3dgrid_contiguous(n1,n2,n3);
 	x2 = create_3dgrid_contiguous(n1,n2,n3); 
 	x3 = create_3dgrid_contiguous(n1,n2,n3); 
-	lat = create_3dgrid_contiguous(n1,n2,n3);
-	lon = create_3dgrid_contiguous(n1,n2,n3); 
-	r = create_3dgrid_contiguous(n1,n2,n3); 
+	plat = create_3dgrid_contiguous(n1,n2,n3);
+	plon = create_3dgrid_contiguous(n1,n2,n3); 
+	pr = create_3dgrid_contiguous(n1,n2,n3); 
 
 	//read data from file.  Assume the destructor will be called
 	//when throw an exception
 	gridsize = (n1)*(n2)*(n3);
-	if(fread(x1[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x1\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(x2[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x2\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(x3[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x3\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(lat[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(plat[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading latitude\n",
 			base_message,read_error);
 		throw 2;
 	}
-	if(fread(lon[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(plon[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading longitude\n",
 			base_message,read_error);
 		throw 2;
 	}
 
-	if(fread(r[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(pr[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading radius\n",
 			base_message,read_error);
 		throw 2;
 	}
+	// essential  -- cannot convert to cartesian until this is set
 	set_transformation_matrix();
+	int i,j,k;
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+			{
+				Cartesian_point p;
+				p=gtoc(plat[i][j][k],plon[i][j][k],
+						pr[i][j][k]);
+				x1[i][j][k]=p.x1;			
+				x2[i][j][k]=p.x2;			
+				x3[i][j][k]=p.x3;			
+			}
+	free_3dgrid_contiguous(plat,n1,n2);
+	free_3dgrid_contiguous(plon,n1,n2);
+	free_3dgrid_contiguous(pr,n1,n2);
 }
 /* close companion to the above for 2d grid */
 GCLgrid::GCLgrid(Dbptr db,char *gridname) 
@@ -190,10 +191,10 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 	char *base_message=(char *)"Cannot create GCL2Dgrid object: ";
 	char *read_error=(char *)"fread failed";
 	int nrec;
-	char cdef[2],gdef[2];
 	int retcode;
 	int gridsize;  
 	FILE *fp;
+	double **plat, **plon, **pr;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
 	if(dbgrd.record == dbINVALID) 
@@ -231,8 +232,6 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 		(char *)"zhigh",&(x3high),
 		(char *)"i0",&(i0),
 		(char *)"j0",&(j0),
-		(char *)"cdefined",cdef,
-		(char *)"geodefined",gdef,
 		(char *)"datatype",datatype,
 		(char *)"dir",dir,
 		(char *)"dfile",dfile,
@@ -249,17 +248,6 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 	lon0 = rad(lon0);
 	azimuth_y = rad(azimuth_y);
 
-	if(!strcmp(cdef,(char *)"n") || !strcmp(gdef,(char *)"n") )
-	{
-		elog_notify(0,(char *)"%s Cartesian and Geographical mapping (cdefined and geodefined attributes) must both be defined for input\n",
-			base_message);
-		throw 1;
-	}
-	else
-	{
-		cartesian_defined=1;
-		geographic_defined=1;
-	}
 	if(strcmp(datatype,"t8"))
 	{
 		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support t8\n",
@@ -287,50 +275,46 @@ GCLgrid::GCLgrid(Dbptr db,char *gridname)
 	x1 = create_2dgrid_contiguous(n1,n2);
 	x2 = create_2dgrid_contiguous(n1,n2); 
 	x3 = create_2dgrid_contiguous(n1,n2); 
-	lat = create_2dgrid_contiguous(n1,n2);
-	lon = create_2dgrid_contiguous(n1,n2); 
-	r = create_2dgrid_contiguous(n1,n2); 
+	plat = create_2dgrid_contiguous(n1,n2);
+	plon = create_2dgrid_contiguous(n1,n2); 
+	pr = create_2dgrid_contiguous(n1,n2); 
 
 	/* read data trapping read errors */
 	gridsize = (n1)*(n2);
-	if(fread(x1[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x1\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(x2[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x2\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(x3[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,(char *)"%s %s reading x3\n",
-			base_message,read_error);
-		throw 2;
-	}
-	if(fread(lat[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(plat[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading latitude\n",
 			base_message,read_error);
 		throw 2;
 	}
-	if(fread(lon[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(plon[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading longitude\n",
 			base_message,read_error);
 		throw 2;
 	}
 
-	if(fread(r[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fread(pr[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading radius\n",
 			base_message,read_error);
 		throw 2;
 	}
 	set_transformation_matrix();
+	int i,j;
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+		{
+			Cartesian_point p;
+			p=gtoc(plat[i][j],plon[i][j],
+					pr[i][j]);
+			x1[i][j]=p.x1;			
+			x2[i][j]=p.x2;			
+			x3[i][j]=p.x3;			
+		}
+	free_2dgrid_contiguous(plat,n1);
+	free_2dgrid_contiguous(plon,n1);
+	free_2dgrid_contiguous(pr,n1);
 }
 //
 // This set of functions construct fields.  The algorithm
@@ -574,7 +558,6 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 	int gridsize;
 	int dimensions=3;
 	char *fwerr=(char *)"fwrite error on file %s";
-	char *cdef=(char *)"d",*gdef=(char *)"d";
 
 	db = dblookup(db,0,(char *)"gclgdisk",0,0);
 	if(db.record == dbINVALID)
@@ -600,43 +583,48 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 	fpos = ftell(fp);
 	foff = (int)fpos;
 	gridsize = (n1)*(n2)*(n3);
-	if(fwrite(x1[0][0],sizeof(double),gridsize,fp) != gridsize)
+	// convert to external representation
+	double ***plat=create_3dgrid_contiguous(n1,n2,n3);
+	double ***plon=create_3dgrid_contiguous(n1,n2,n3);
+	double ***pr=create_3dgrid_contiguous(n1,n2,n3);
+	int i,j,k;
+	Geographic_point p;
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+			for(k=0;k<n3;++k)
+			{
+				p = ctog(x1[i][j][k],
+					x2[i][j][k],
+					x3[i][j][k]);
+				plat[i][j][k]=p.lat;
+				plon[i][j][k]=p.lon;
+				pr[i][j][k]=p.r;
+			}
+	// brutal to keep pushing fwrites here, but otherwise
+	// there is excessive cleanup code.  Any write errors
+	// lead to throwing an error.  Write errors like this
+	// may well cause the program to (properly) abort anyway
+	bool writeok=true;
+	if(fwrite(plat[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
+		writeok=false;
 	}
-	if(fwrite(x2[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(plon[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
+		writeok=false;
 	}
-	if(fwrite(x3[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(pr[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
+		writeok=false;
 	}
-	if(fwrite(lat[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
-	if(fwrite(lon[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
-	if(fwrite(r[0][0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
+	free_3dgrid_contiguous(plat,n1,n2);
+	free_3dgrid_contiguous(plon,n1,n2);
+	free_3dgrid_contiguous(pr,n1,n2);
 	fclose(fp);
+	if(!writeok) throw 2;
 	/* Now we write a row in the database for this grid.  Note
 	some quantities have to be converted from radians to degrees.*/
 	if(dbaddv(db,0,
@@ -661,8 +649,6 @@ void GCLgrid3d::dbsave(Dbptr db, char *dir) throw(int)
 		"i0",i0,
 		"j0",j0,
 		"k0",k0,
-		"cdefined",cdef,
-		"geodefined",gdef,
 		"datatype","t8",
 		"dir",dir,
 		"dfile",name,
@@ -684,7 +670,6 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 	int gridsize;
 	int dimensions=2;
 	char *fwerr=(char *)"fwrite error on file %s";
-	char cdef[2]="d",gdef[2]="d";
 
 	db = dblookup(db,0,(char *)"gclgdisk",0,0);
 	if(db.record == dbINVALID)
@@ -709,43 +694,45 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 	fpos = ftell(fp);
 	foff = (int)fpos;
 	gridsize = (n1)*(n2);
-	if(fwrite(x1[0],sizeof(double),gridsize,fp) != gridsize)
+	// convert to external representation
+	double **plat=create_2dgrid_contiguous(n1,n2);
+	double **plon=create_2dgrid_contiguous(n1,n2);
+	double **pr=create_2dgrid_contiguous(n1,n2);
+	int i,j;
+	Geographic_point p;
+	for(i=0;i<n1;++i)
+		for(j=0;j<n2;++j)
+		{
+			p = ctog(x1[i][j],
+				x2[i][j],
+				x3[i][j]);
+			plat[i][j]=p.lat;
+			plon[i][j]=p.lon;
+			pr[i][j]=p.r;
+		}
+	bool writeok=true;
+	if(fwrite(plat[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
+		writeok=false;
 		fclose(fp);
 		throw 2;
 	}
-	if(fwrite(x2[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(plon[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
+		writeok=false;
 	}
-	if(fwrite(x3[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(pr[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
+		writeok=false;
 	}
-	if(fwrite(lat[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
-	if(fwrite(lon[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
-	if(fwrite(r[0],sizeof(double),gridsize,fp) != gridsize)
-	{
-		elog_notify(0,fwerr,filename.c_str());
-		fclose(fp);
-		throw 2;
-	}
+	free_2dgrid_contiguous(plat,n1);
+	free_2dgrid_contiguous(plon,n1);
+	free_2dgrid_contiguous(pr,n1);
 	fclose(fp);
+	if(!writeok) throw 2;
 	/* Now we write a row in the database for this grid*/
 	if(dbaddv(db,0,
 		"gridname",name,
@@ -766,8 +753,6 @@ void GCLgrid::dbsave(Dbptr db, char *dir) throw(int)
 		"zhigh",x3high,
 		"i0",i0,
 		"j0",j0,
-		"cdefined",cdef,
-		"geodefined",gdef,
 		"datatype","t8",
 		"dir",dir,
 		"dfile",name,

@@ -87,3 +87,48 @@ Geographic_point GCLgrid::ctog(double x1p, double x2p, double x3p)
 	p.r = dnrm2(3,x,1);
 	return(p);
 }
+Geographic_point GCLgrid::geo_coordinates(int i, int j)
+{
+	return(ctog(x1[i][j],x2[i][j],x3[i][j]));
+}
+Geographic_point GCLgrid3d::geo_coordinates(int i, int j, int k)
+{
+	return(ctog(x1[i][j][k],x2[i][j][k],x3[i][j][k]));
+}
+double GCLgrid::lat(int i, int j)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j],x2[i][j],x3[i][j]);
+	return(p.lat);
+}
+double GCLgrid::lon(int i, int j)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j],x2[i][j],x3[i][j]);
+	return(p.lon);
+}
+double GCLgrid::r(int i, int j)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j],x2[i][j],x3[i][j]);
+	return(p.r);
+}
+double GCLgrid3d::lat(int i, int j, int k)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j][k],x2[i][j][k],x3[i][j][k]);
+	return(p.lat);
+}
+double GCLgrid3d::lon(int i, int j, int k)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j][k],x2[i][j][k],x3[i][j][k]);
+	return(p.lon);
+}
+double GCLgrid3d::r(int i, int j, int k)
+{
+	Geographic_point p;
+	p = ctog(x1[i][j][k],x2[i][j][k],x3[i][j][k]);
+	return(p.r);
+}
+
