@@ -16,7 +16,7 @@ require "getopts.pl";
 #
 
 
-    if (! &Getopts('s:e:S:p:dhovw')  || @ARGV != 2 ) {
+    if (! &Getopts('s:e:S:p:dhovwal')  || @ARGV != 2 ) {
 	&usage;
     }
 
