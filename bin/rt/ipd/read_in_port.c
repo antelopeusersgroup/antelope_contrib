@@ -256,12 +256,14 @@ int timeout;
 {
 
     double          epoch;
+    ulong	    ysec;
     struct hostent *hp;
     int             connected = 0;
     int             bufcnt,
                     pid,
                     plength;
-    unsigned short  pchecksum,
+    unsigned short  hdrsiz,
+                    pchecksum,
                     checksum,
 		    chs_val,
                    *sp;
@@ -278,11 +280,11 @@ int timeout;
                     lpid[NUMDAS],
                     missed_cnt[NUMDAS],
                     check_cnt[NUMDAS];
-    char           *pname;
+    char           *s, *pname;
     char           *inet_ntoa ();
     unsigned char  *newbuffer,
                    *buffer;
-    int 	   err = 0;
+    int 	   cansend, err = 0;
     int            off_pid,
                    off_plen,
 		   off_uid;
@@ -491,9 +493,23 @@ int timeout;
 				    complain (0, "read_socket(): Not valid packet \n");
 				    complain (0, "read_socket():Wrong HEADER?\n");
 				} else {
-					prev_time = epoch;
+				        cansend = 1;
+					if( fabs( epoch - prev_time) > 86400.0 )  {
+					    prev_time = now();
+					    if( fabs( epoch - prev_time) > 86400.0 )  {
+						sp = ( ushort_t * ) &newbuffer[0];
+						hdrsiz = *sp;
+						memcpy( (char *) &ysec, newbuffer[hdrsiz+10], 4 );
+						complain(0, 
+						    "%s packet has bad time - %s (epoch:%lf - ysec:%ld). Will discard packet.\n",
+						    srcname, s=strtime(epoch), epoch, ysec );
+						free(s);
+						hexdump( stderr, newbuffer+hdrsiz, psize-hdrsiz );
+						cansend = 0;
+					    } else prev_time = epoch;
+					}  else  prev_time = epoch;
 
-			            if( ports->orb > 0 ) {
+			            if( ports->orb > 0 && cansend ) {
 				       if (orbput ( ports->orb, &srcname[0], epoch, (char *) newbuffer, psize) < 0) {
 				 	    orbclose( ports->orb );
                                             die (1, "Can't send a packet to orbserver.\n");
