@@ -8,7 +8,7 @@
 void
 usage()
 {
-	fprintf( stderr, "Usage: pf2xml [-n] pfname\n" );
+	fprintf( stderr, "Usage: pf2xml [-s] [-n] pfname\n" );
 }
 
 int 
@@ -23,10 +23,13 @@ main( int argc, char **argv )
 
 	elog_init( argc, argv );
 	
-	while( (c = getopt( argc, argv, "n" )) != -1 ) {
+	while( (c = getopt( argc, argv, "ns" )) != -1 ) {
 		switch( c ) {
 		case 'n':
 			flags |= PFXML_NEWLINES;
+			break;
+		case 's':
+			flags |= PFXML_STRONG;
 			break;
 		default:
 			usage();
