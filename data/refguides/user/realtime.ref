@@ -8,9 +8,9 @@ rtm [-icon iconname] [-title title]
 dbevents [options] dbname [start [end]]
     display map of seismic events and waveforms
 <options>
--max_age max_age
--show_detections
--title window_title
+-max_age max_age	limit age of displayed events
+-show_detections	show stations with detecitons only
+-title window_title	window title
 </options>
 
 rtexec [options] [comment]
@@ -249,9 +249,9 @@ rddas [options] port orb
 q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
     communicate with Q330 Quanterra digitizer, bringing data from Q330 into orb, and sending and monitoring commands from orb to Q330
 <options>
--calib_db dbname
--pf pf
--S statefile
+-calib_db dbname	metadata database
+-pf pf	parameter file
+-S statefile	
 -v
 </options>
 
@@ -375,23 +375,23 @@ dbreplay [options] view [[[orb] t0] {t1|T}]
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
     execute command cmd on generic dataloggers
 <options>
--waittime waittime
--timeout timeout
--noblock
--noreply
--prm
+-waittime waittime	wait time for multiple targets
+-timeout timeout	timeout waiting for response
+-noblock	dont wait for response
+-noreply	dont generate response packets
+-prm	delete parameter files
 -replytarget replytarget
--delayhangup delayhangup
+-delayhangup delayhangup	delay digitizer hangup
 </options>
 
 k2cmd [options] orb target datalogger cmd
     execute command cmd on remote Kinemetrics Altus digitizer
 <options>
--timeout timeout
--noblock
--noreply
--prm
--delayhangup delayhangup
+-timeout timeout	timeout waiting for response
+-noblock	dont wait for response
+-noreply	dont generate response packets
+-prm	delete parameter files
+-delayhangup delayhangup	delay digitizer hangup
 </options>
 
 q330util {pollsn  targetip | register targetip,sn,lport | getconfig  targetip,sn,lport,config | control targetip,sn,{eeprom|reboot|resync|gpson|gpsoff|gpscs}}
@@ -493,7 +493,7 @@ orbdetect [options] orbname dbname
     multi-frequency STA/LTA detector
 <options>
 -nopending	suppress pending detection packets
--onlypicks
+-onlypicks	only output onset time packets
 -out orb
 -out_detev orb	output orb for detev packets
 -pf pf
@@ -526,8 +526,8 @@ orbtrigger [options] orbname
 orbassoc [options] orbin orbout ttgridf1 [ttgridf2 [...]]
     spatial grid search based real time associator/locator
 <options>
--auth author
--delay delay
+-auth author	origin author field
+-delay delay	time delay for processing latent stations
 -pf pf
 -select expr
 -start {pktid|time|OLDEST}
@@ -639,13 +639,13 @@ qedd [options] dbname
 dlmon [options] orb [-cmd cmdorb]
     monitor/control generic digitizers
 <options>
--model model
+-model model	datalogger model
 -start_status {OLDEST|pktid|time}
 -start_log {OLDEST|pktid|time}
 -select_status expr_status
 -select_log expr_log
 -dump period imagefile
--pf pffile
+-pf pffile	parameter file
 </options>
 
 dlmontxt [options] orbname [orbname2 [...]]
@@ -654,7 +654,7 @@ dlmontxt [options] orbname [orbname2 [...]]
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -d dl_re	match datalogger names
--M email	list of email addresses, or @filename for reports
+-M email	list of email addresses, or @filename for addresses in filename
 </options>
 
 deprecated qtmon dataorb data2orb cmdorbname [database]
