@@ -234,7 +234,7 @@ void initdas( )
 	istr = (char *) gettbl(Site, i);
 	sscanf(istr, STE_SCS,  STE_RVL(&site));
 	sprintf( key, "%d\0", site.sid);
-	if( strncmp( &key[0], &prev_key[0], strlen(&key[0]) != 0 )  {
+	if( strncmp( &key[0], &prev_key[0], strlen(&key[0])) != 0 )  {
 	    das = (char *) newname( key );
 	    sta = (char *) newname( site.name );
 	    pushtbl( Dlist, das );

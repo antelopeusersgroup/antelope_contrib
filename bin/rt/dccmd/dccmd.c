@@ -50,8 +50,8 @@ char *argv[];
        CmdArg=0; Dases=0; Dasid=0; Dlist=0;
        pfile = "pkt";
 
-       if(  !strncmp( cmd, "ZD", 2 ))  ||
-            !strncmp( cmd, "XX", 2 ))  )  {
+       if(  !strncmp( cmd, "ZD", 2 )  ||
+            !strncmp( cmd, "XX", 2 )  )  {
 
           if( islegal( name, DCCMD) )  {
 	     sprintf( &buffer[0], "%2s%2s\0", cmd, cmd );
@@ -89,7 +89,7 @@ char *argv[];
 	       die( 0, 
 	       "\n%s command has illegal argument - %s\n. \nOnly \'MAIN\' or \'AUX\' must be specified.", cmd, name );
               
-	    cmdlen = strlen(buffer); echo 1;
+	    cmdlen = strlen(buffer); echo = 1;
             if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
                   die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
