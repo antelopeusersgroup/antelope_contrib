@@ -7,9 +7,11 @@
 ************************************************************************/
 #include "rddas.h"       
 
+extern int PsclLog;
+
 void usage ()
 {
-    fprintf (stderr, "Usage: %s [-V verbatim] [ -p pfile ] [-r] [-s baudrate] [-t timeout] [-u] [-v] iport orbname \n", Program_Name);
+    fprintf (stderr, "Usage: %s [-V verbatim] [-l] [ -p pfile ] [-r] [-s baudrate] [-t timeout] [-u] [-v] iport orbname \n", Program_Name);
     fprintf (stderr, "Where: \n");
     fprintf (stderr, "	iport    - input port name.\n");
     fprintf (stderr, "	orbname  - orbserver name.\n");
@@ -50,7 +52,7 @@ char *argv[];
 
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "V:p:rs:t:uv")) != -1)
+  while ( ( i = getopt (argc, argv, "V:p:rs:t:luv")) != -1)
         switch (i) {
         case 'V':
             verbatim_file = optarg; 
@@ -60,6 +62,9 @@ char *argv[];
 
         case 'v':
             Log = 1;
+            break;
+        case 'l':
+	    PsclLog = 1;
             break;
         case 'r':
             Ports.reset = 1;
@@ -87,6 +92,10 @@ char *argv[];
        orbname = argv[optind++] ; 
 
        initpf( pffile );
+       if( !PsclLog )  {
+          elog_notify( 0, "rddas will work in a silent mode.\n");
+          elog_notify( 0, "Restart rddas with the '-l' option to get a PASSCAL log file.\n");
+       }
 
        strcpy( Ports.ip_name, iport );
        Ports.ip_name[strlen(iport)] = '\0';
