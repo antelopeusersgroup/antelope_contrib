@@ -16,7 +16,7 @@ which means that changes to the parameter file are monitored and
 noticed automatically. There should be no need to stop and restart the program
 after  removing an old server or adding a new one.
 
-The \fIorb\fP name to which to write data is specified on the command line. After
+The \fIorb\fP name from which to read data is specified on the command line. After
 that, most of the \fBorb2ew\fP configuration is in the \fBorb2ew\fP parameter file,
 named \fBorb2ew\fP.pf by default. 
 
@@ -108,38 +108,6 @@ translated to any new names) which match this regular expression will
 be rejected and not allowed to go out over the export connection. The default,
 which is to leave this blank, allows all sources on the orb to go out.
 
-.IP srcname_morph
-This table contains search-and-replace patterns used to rename channels
-of seismic data. If left empty, the output source-names of stations
-will correspond to the names taken out of the earthworm packets. If desired,
-individual stations may also renamed with entries like
-.ft CW
-.in 2c
-.nf
-.ne 3
-
-        /CN_PFB_HHE/CN_TEST_BHE/
-
-.fi
-.in
-.ft R
-These patterns are actually fed to the morphtbl(3) routine, which means
-that for the advanced user they may be regular expressions. For example,
-the entry below would map all incoming data in the XX network to the
-CN network:
-.ft CW
-.in 2c
-.nf
-.ne 3
-
-        /XX_(.*)/CN_$1/
-
-.fi
-.in
-.ft R
-All matching patterns listed in the srcname_morph table will be applied.
-For further details please see the documentation on the morphtbl(3) routine.
-
 .SH OPTIONS
 .IP "-p pfname"
 Specify an alternate parameter-file name for the \fIorb\fP to earthworm module.
@@ -151,6 +119,24 @@ The default parameter file is "\fBorb2ew\fP.pf".
 .ft CW
 .in 2c
 .nf
+program_loglevel verbose
+defaults &Arr{
+	send_heartbeat_sec 	120
+	send_heartbeat_string 	alive
+	expect_heartbeat_sec	300
+	expect_heartbeat_string	.*alive.*
+	my_inst		        INST_UNKNOWN
+	my_mod			MOD_UNKNOWN
+}
+
+export_servers &Arr{
+	PGC_test &Arr{
+		server_ipaddress	# blank = use all interfaces on machine
+		server_port 16015
+		send_heartbeat_sec 100
+		send_heartbeat_string alive
+	}
+}
 .fi
 .in
 .ft R
