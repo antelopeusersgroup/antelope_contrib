@@ -1,7 +1,6 @@
 CGGRID2DB	Save a Computational-Geometry grid to a Datascope database
 
-CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS,
- ['overwrite'] )
+CGGRID2DB ( CGG, DBPTR, RECIPE_NAME, GRID_NAME, OUTPUT_FILE, FMT, UNITS [, 'overwrite'] )
 
 CGGRID2DB saves a computational-geometry grid CGG to a Datascope
 database with the gme1.0 extensions.  The RECIPE_NAME, GRID_NAME,
