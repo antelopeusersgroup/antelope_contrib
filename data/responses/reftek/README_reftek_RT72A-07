@@ -1,0 +1,364 @@
+
+This discussion concerns the new version digitizer in the 72A-07, ie. 
+the Crystal part CS5321 on board RT371.  The earlier version, CS5323 on 
+board RT331, worked in a similar fashion, but had different gains with
+the same coefficients.
+
+The old bit weight (least significant of the upper 16 bits for:
+
+1000, 500, 250, 125 sps was 125.0 mv and now is 125.0 mv
+ 200, 100,  50,  25 sps was 124.7 mv and now is 125.0 mv
+  40,  20,  10,   5 sps was 133.3 mv and now is 125.0 mv
+   8,   4,   2,   1 sps was  38.7 mv and now is 125.0 mv
+
+Divide these numbers by 65536 to get the weight of the LSB, i.e. 1.907 uV
+for unity gain.
+
+The 72A-07 differs from the 72A-08 in that it does not use a DSP to
+get the final sample rates.  The 24 bit digitizer in the 08 always 
+outputs a data stream at 1000 sps and the final sample rate is obtained
+by using a DSP to filter and decimate.  In the 07 the only way to get
+get a desired sample rate is to use the Crystal 24 bit digitizer.
+
+The response for the Crystal part has an input stage and 3 distinct 
+filter and decimation stages.  The SEED description for the input stage
+denoted INP is given below: 
+
+***********************************************************************
+
+#           +               +-------------------------------------------+                 +
+#           +               |   Response (Coefficients), HOT06 ch LHE   |                 +
+#           +               +-------------------------------------------+                 +
+#           
+B054F03     Transfer function type:                B
+B054F04     Stage sequence number:                 2
+B054F05     Response in units lookup:              V - Volts
+B054F06     Response out units lookup:             COUNTS - Digital Counts
+B054F07     Number of numerators:                  1
+B054F10     Number of denominators:                0
+#           Numerator coefficients:
+#             i, coefficient,  error
+B054F08-09    0  1.000000E+00  0.000000E+00
+#           
+#           +                      +------------------------------+                       +
+#           +                      |   Decimation, HOT06 ch LHE   |                       +
+#           +                      +------------------------------+                       +
+#           
+B057F03     Stage sequence number:                 2
+B057F04     Input sample rate:                     1.280000E+05
+B057F05     Decimation factor:                     1
+B057F06     Decimation offset:                     0
+B057F07     Estimated delay (seconds):             0.000000E+00
+B057F08     Correction applied (seconds):          0.000000E+00
+#           
+#           +                  +---------------------------------------+                  +
+#           +                  |       Channel Gain, HOT06 ch LHE      |                  +
+#           +                  +---------------------------------------+                  +
+#           
+B058F03     Stage sequence number:                 2
+B058F04     Gain:                                  5.242880E+05
+B058F05     Frequency of gain:                     5.000000E+00 HZ
+B058F06     Number of calibrations:                0
+# 
+
+***********************************************************************
+
+The first digital stage is a divide by 8 stage denoted by CF1.  The
+SEED response for this stage is given by:
+
+***********************************************************************
+
+#           +               +-------------------------------------------+                 +
+#           +               |   Response (Coefficients), HOT06 ch LHE   |                 +
+#           +               +-------------------------------------------+                 +
+#           
+B054F03     Transfer function type:                D
+B054F04     Stage sequence number:                 3
+B054F05     Response in units lookup:              COUNTS - Digital Counts
+B054F06     Response out units lookup:             COUNTS - Digital Counts
+B054F07     Number of numerators:                  29
+B054F10     Number of denominators:                0
+#           Numerator coefficients:
+#             i, coefficient,  error
+B054F08-09    0  2.440000E-04  0.000000E+00
+B054F08-09    1  9.770000E-04  0.000000E+00
+B054F08-09    2  2.441000E-03  0.000000E+00
+B054F08-09    3  4.883000E-03  0.000000E+00
+B054F08-09    4  8.545000E-03  0.000000E+00
+B054F08-09    5  1.367200E-02  0.000000E+00
+B054F08-09    6  2.050800E-02  0.000000E+00
+B054F08-09    7  2.929700E-02  0.000000E+00
+B054F08-09    8  3.930700E-02  0.000000E+00
+B054F08-09    9  4.980500E-02  0.000000E+00
+B054F08-09   10  6.005900E-02  0.000000E+00
+B054F08-09   11  6.933600E-02  0.000000E+00
+B054F08-09   12  7.690400E-02  0.000000E+00
+B054F08-09   13  8.203100E-02  0.000000E+00
+B054F08-09   14  8.398400E-02  0.000000E+00
+B054F08-09   15  8.203100E-02  0.000000E+00
+B054F08-09   16  7.690400E-02  0.000000E+00
+B054F08-09   17  6.933600E-02  0.000000E+00
+B054F08-09   18  6.005900E-02  0.000000E+00
+B054F08-09   19  4.980500E-02  0.000000E+00
+B054F08-09   20  3.930700E-02  0.000000E+00
+B054F08-09   21  2.929700E-02  0.000000E+00
+B054F08-09   22  2.050800E-02  0.000000E+00
+B054F08-09   23  1.367200E-02  0.000000E+00
+B054F08-09   24  8.545000E-03  0.000000E+00
+B054F08-09   25  4.883000E-03  0.000000E+00
+B054F08-09   26  2.441000E-03  0.000000E+00
+B054F08-09   27  9.770000E-04  0.000000E+00
+B054F08-09   28  2.440000E-04  0.000000E+00
+#           
+#           +                      +------------------------------+                       +
+#           +                      |   Decimation, HOT06 ch LHE   |                       +
+#           +                      +------------------------------+                       +
+#           
+B057F03     Stage sequence number:                 3
+B057F04     Input sample rate:                     1.280000E+05
+B057F05     Decimation factor:                     8
+B057F06     Decimation offset:                     0
+B057F07     Estimated delay (seconds):             0.000000E+00
+B057F08     Correction applied (seconds):          0.000000E+00
+#           
+#           +                  +---------------------------------------+                  +
+#           +                  |       Channel Gain, HOT06 ch LHE      |                  +
+#           +                  +---------------------------------------+                  +
+#           
+B058F03     Stage sequence number:                 3
+B058F04     Gain:                                  1.000000E+00
+B058F05     Frequency of gain:                     0.000000E+00 HZ
+B058F06     Number of calibrations:                0
+#
+
+************************************************************************
+
+Following the first digital stage there are a number of intermediate
+divide by 2 stages denoted by CF2.  The response for this stage is given
+below:
+
+*************************************************************************
+
+#           +               +-------------------------------------------+                 +
+#           +               |   Response (Coefficients), HOT06 ch LHE   |                 +
+#           +               +-------------------------------------------+                 +
+#           
+B054F03     Transfer function type:                D
+B054F04     Stage sequence number:                 4
+B054F05     Response in units lookup:              COUNTS - Digital Counts
+B054F06     Response out units lookup:             COUNTS - Digital Counts
+B054F07     Number of numerators:                  13
+B054F10     Number of denominators:                0
+#           Numerator coefficients:
+#             i, coefficient,  error
+B054F08-09    0  2.440000E-04  0.000000E+00
+B054F08-09    1  2.930000E-03  0.000000E+00
+B054F08-09    2  1.611300E-02  0.000000E+00
+B054F08-09    3  5.371100E-02  0.000000E+00
+B054F08-09    4  1.208500E-01  0.000000E+00
+B054F08-09    5  1.933590E-01  0.000000E+00
+B054F08-09    6  2.255860E-01  0.000000E+00
+B054F08-09    7  1.933590E-01  0.000000E+00
+B054F08-09    8  1.208500E-01  0.000000E+00
+B054F08-09    9  5.371100E-02  0.000000E+00
+B054F08-09   10  1.611300E-02  0.000000E+00
+B054F08-09   11  2.930000E-03  0.000000E+00
+B054F08-09   12  2.440000E-04  0.000000E+00
+#           
+#           +                      +------------------------------+                       +
+#           +                      |   Decimation, HOT06 ch LHE   |                       +
+#           +                      +------------------------------+                       +
+#           
+B057F03     Stage sequence number:                 4
+B057F04     Input sample rate:                     1.600000E+04
+B057F05     Decimation factor:                     2
+B057F06     Decimation offset:                     0
+B057F07     Estimated delay (seconds):             0.000000E+00
+B057F08     Correction applied (seconds):          0.000000E+00
+#           
+#           +                  +---------------------------------------+                  +
+#           +                  |       Channel Gain, HOT06 ch LHE      |                  +
+#           +                  +---------------------------------------+                  +
+#           
+B058F03     Stage sequence number:                 4
+B058F04     Gain:                                  1.000000E+00
+B058F05     Frequency of gain:                     0.000000E+00 HZ
+B058F06     Number of calibrations:                0
+#           
+
+***********************************************************************
+
+The final stage in the Crystal part is a final divide by 2 stage denoted
+as CF3.  The response for this stage is given below:
+
+*************************************************************************`
+
+#           +               +-------------------------------------------+                 +
+#           +               |   Response (Coefficients), HOT06 ch LHE   |                 +
+#           +               +-------------------------------------------+                 +
+#           
+B054F03     Transfer function type:                D
+B054F04     Stage sequence number:                 7
+B054F05     Response in units lookup:              COUNTS - Digital Counts
+B054F06     Response out units lookup:             COUNTS - Digital Counts
+B054F07     Number of numerators:                  101
+B054F10     Number of denominators:                0
+#           Numerator coefficients:
+#             i, coefficient,  error
+B054F08-09    0 -1.000000E-06  0.000000E+00
+B054F08-09    1 -6.000000E-06  0.000000E+00
+B054F08-09    2 -3.000000E-06  0.000000E+00
+B054F08-09    3 -4.300000E-05  0.000000E+00
+B054F08-09    4 -5.000000E-06  0.000000E+00
+B054F08-09    5  1.000000E-06  0.000000E+00
+B054F08-09    6  2.300000E-05  0.000000E+00
+B054F08-09    7  1.000000E-06  0.000000E+00
+B054F08-09    8 -5.300000E-05  0.000000E+00
+B054F08-09    9 -3.670000E-04  0.000000E+00
+B054F08-09   10  3.760000E-04  0.000000E+00
+B054F08-09   11  8.540000E-04  0.000000E+00
+B054F08-09   12  3.100000E-05  0.000000E+00
+B054F08-09   13 -1.276000E-03  0.000000E+00
+B054F08-09   14 -9.110000E-04  0.000000E+00
+B054F08-09   15  1.277000E-03  0.000000E+00
+B054F08-09   16  2.152000E-03  0.000000E+00
+B054F08-09   17 -4.620000E-04  0.000000E+00
+B054F08-09   18 -3.338000E-03  0.000000E+00
+B054F08-09   19 -1.409000E-03  0.000000E+00
+B054F08-09   20  3.771000E-03  0.000000E+00
+B054F08-09   21  4.194000E-03  0.000000E+00
+B054F08-09   22 -2.643000E-03  0.000000E+00
+B054F08-09   23 -7.201000E-03  0.000000E+00
+B054F08-09   24 -6.440000E-04  0.000000E+00
+B054F08-09   25  9.184000E-03  0.000000E+00
+B054F08-09   26  6.084000E-03  0.000000E+00
+B054F08-09   27 -8.578000E-03  0.000000E+00
+B054F08-09   28 -1.274000E-02  0.000000E+00
+B054F08-09   29  3.982000E-03  0.000000E+00
+B054F08-09   30  1.862600E-02  0.000000E+00
+B054F08-09   31  5.205000E-03  0.000000E+00
+B054F08-09   32 -2.094100E-02  0.000000E+00
+B054F08-09   33 -1.816300E-02  0.000000E+00
+B054F08-09   34  1.666700E-02  0.000000E+00
+B054F08-09   35  3.224500E-02  0.000000E+00
+B054F08-09   36 -3.466000E-03  0.000000E+00
+B054F08-09   37 -4.295300E-02  0.000000E+00
+B054F08-09   38 -1.932600E-02  0.000000E+00
+B054F08-09   39  4.430900E-02  0.000000E+00
+B054F08-09   40  4.979100E-02  0.000000E+00
+B054F08-09   41 -2.941600E-02  0.000000E+00
+B054F08-09   42 -8.260800E-02  0.000000E+00
+B054F08-09   43 -9.342000E-03  0.000000E+00
+B054F08-09   44  1.075520E-01  0.000000E+00
+B054F08-09   45  8.166000E-02  0.000000E+00
+B054F08-09   46 -1.031100E-01  0.000000E+00
+B054F08-09   47 -2.042080E-01  0.000000E+00
+B054F08-09   48 -3.100000E-05  0.000000E+00
+B054F08-09   49  3.904330E-01  0.000000E+00
+B054F08-09   50  5.899580E-01  0.000000E+00
+B054F08-09   51  3.904330E-01  0.000000E+00
+B054F08-09   52 -3.100000E-05  0.000000E+00
+B054F08-09   53 -2.042080E-01  0.000000E+00
+B054F08-09   54 -1.031100E-01  0.000000E+00
+B054F08-09   55  8.166000E-02  0.000000E+00
+B054F08-09   56  1.075520E-01  0.000000E+00
+B054F08-09   57 -9.342000E-03  0.000000E+00
+B054F08-09   58 -8.260800E-02  0.000000E+00
+B054F08-09   59 -2.941600E-02  0.000000E+00
+B054F08-09   60  4.979100E-02  0.000000E+00
+B054F08-09   61  4.430900E-02  0.000000E+00
+B054F08-09   62 -1.932600E-02  0.000000E+00
+B054F08-09   63 -4.295300E-02  0.000000E+00
+B054F08-09   64 -3.466000E-03  0.000000E+00
+B054F08-09   65  3.224500E-02  0.000000E+00
+B054F08-09   66  1.666700E-02  0.000000E+00
+B054F08-09   67 -1.816300E-02  0.000000E+00
+B054F08-09   68 -2.094100E-02  0.000000E+00
+B054F08-09   69  5.205000E-03  0.000000E+00
+B054F08-09   70  1.862600E-02  0.000000E+00
+B054F08-09   71  3.982000E-03  0.000000E+00
+B054F08-09   72 -1.274000E-02  0.000000E+00
+B054F08-09   73 -8.578000E-03  0.000000E+00
+B054F08-09   74  6.084000E-03  0.000000E+00
+B054F08-09   75  9.184000E-03  0.000000E+00
+B054F08-09   76 -6.440000E-04  0.000000E+00
+B054F08-09   77 -7.201000E-03  0.000000E+00
+B054F08-09   78 -2.643000E-03  0.000000E+00
+B054F08-09   79  4.194000E-03  0.000000E+00
+B054F08-09   80  3.771000E-03  0.000000E+00
+B054F08-09   81 -1.409000E-03  0.000000E+00
+B054F08-09   82 -3.338000E-03  0.000000E+00
+B054F08-09   83 -4.620000E-04  0.000000E+00
+B054F08-09   84  2.152000E-03  0.000000E+00
+B054F08-09   85  1.277000E-03  0.000000E+00
+B054F08-09   86 -9.110000E-04  0.000000E+00
+B054F08-09   87 -1.276000E-03  0.000000E+00
+B054F08-09   88  3.100000E-05  0.000000E+00
+B054F08-09   89  8.540000E-04  0.000000E+00
+B054F08-09   90  3.760000E-04  0.000000E+00
+B054F08-09   91 -3.670000E-04  0.000000E+00
+B054F08-09   92 -4.100000E-04  0.000000E+00
+B054F08-09   93  2.500000E-05  0.000000E+00
+B054F08-09   94  2.620000E-04  0.000000E+00
+B054F08-09   95  1.210000E-04  0.000000E+00
+B054F08-09   96 -1.000000E-04  0.000000E+00
+B054F08-09   97 -1.620000E-04  0.000000E+00
+B054F08-09   98 -9.800000E-05  0.000000E+00
+B054F08-09   99 -2.900000E-05  0.000000E+00
+B054F08-09  100 -3.000000E-06  0.000000E+00
+#           
+#           +                      +------------------------------+                       +
+#           +                      |   Decimation, HOT06 ch LHE   |                       +
+#           +                      +------------------------------+                       +
+#           
+B057F03     Stage sequence number:                 7
+B057F04     Input sample rate:                     2.000000E+03
+B057F05     Decimation factor:                     2
+B057F06     Decimation offset:                     0
+B057F07     Estimated delay (seconds):             0.000000E+00
+B057F08     Correction applied (seconds):          0.000000E+00
+#           
+#           +                  +---------------------------------------+                  +
+#           +                  |       Channel Gain, HOT06 ch LHE      |                  +
+#           +                  +---------------------------------------+                  +
+#           
+B058F03     Stage sequence number:                 7
+B058F04     Gain:                                  1.000000E+00
+B058F05     Frequency of gain:                     0.000000E+00 HZ
+B058F06     Number of calibrations:                0
+#
+
+***********************************************************************
+
+The responses for the different Crystal stages given above were from an
+08.  In the 08 the input sample rate to each Crystal stage is always the
+same.  The initial sample rate is 128,000 sps and the final sample rate 
+always comes out 1000 sps, and there are always 1-INP stage, 1-CF1 stage,
+3-CF2 stages and 1-CF3 stage.  For the 07, in order to get all of the 
+desired output sample rates, we must vary the input sample frequency and
+the number of CF2 stages.
+
+The overall response for a 72A-07 will always consist of the seismometer
+stage, followed by an INP stage at the proper initial sample rate, 
+followed by a CF1 stage, then multiple CF2 stages, and a final CF3 stage.
+The table below gives the initial sample rate and the number of CF2
+stages for each desired 07 sample rate.
+
+Final Sample Rate	Initial Sample Freq	Number of CF2 stages
+1000				128,000			3
+500				128,000			4
+250				128,000			5
+125				128,000			6
+200				102,400			5
+100				102,400			6
+50				102,400			7
+25				102,400			8
+40				 20,480			5
+20				 20,480			6
+10				 20,480			7
+5				 20,480			8
+8				  4,096			5
+4				  4,096			6
+2				  4,096			7
+1				  4,096			8
+
