@@ -133,6 +133,13 @@ Attribute proj
 	}
 	;
 
+Attribute regname
+	String ( 80 )
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( " Name of the region of interest" )
+	;
+
 Attribute rightdellon
 	Real (7)
 	Format ( "%7.2lf" )
@@ -326,6 +333,18 @@ Relation mapstock
 	Detail {
 		This table describes stock map images used for plotting 
 		earthquakes.
+	}
+	;
+
+Relation quakeregions 
+	Fields ( orid regname )
+	Primary( orid )
+	Description( "region of occurrence for hypocenters" )
+	Detail {
+		This table is a cache of the region-name decided
+		upon for each hypocenter. The cache is useful
+		because generation of this name can sometimes
+		be computationally expensive.
 	}
 	;
 
