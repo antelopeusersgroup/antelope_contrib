@@ -29,7 +29,8 @@
 #include <stropts.h>
 #include <netdb.h>
 #include <regex.h>
-#include "pkt.h"
+
+#include "Pkt.h"
 
 #define LISS_PORT 4000         /* input port; data from DAS  */
 #define IBUF_SIZE       4096
@@ -50,17 +51,8 @@ int PSize;
 int Log;
 struct sockaddr_in peer_in;
  
-#ifdef __STDC__
-#define PL_(x) x
-#else
-#define PL_(x) ( )
-#endif /* __STDC__ */
- 
-extern void usage PL_(( void ));
-extern int main PL_(( int argc, char *argv[] ));
-extern int open_socket PL_(( char *iport));
-extern void *read_server PL_(( int ifp, int orb, int timeout, char *match ));
- 
-#undef PL_
+extern void *read_server ( int ifp, int orb, int timeout, char *match );
+extern int open_socket ( char *name, int default_port );
+extern int liss2orbpkt ( char *seed, int size, char *database, int remap, char *srcname, double *time, char **packet, int *nbytes, int *bufsize );
 
 #endif

@@ -6,11 +6,12 @@
 #include "coords.h"
 #include "xtra.h"
 #include "tr.h"
+#include "liss2orb.h"
 
 extern int UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, int *nsamp, int **outp, int *datasz );
 
 int
-liss2orbpkt ( char *seed, int size, char *database, 
+liss2orbpkt ( char *seed, int size, char *database, int remap, 
 	char *srcname, double *time, char **packet, int *nbytes, int *bufsize ) 
 {
     int zero = 0, two=2 ;
@@ -46,7 +47,6 @@ liss2orbpkt ( char *seed, int size, char *database,
 	    strcpy ( parts.src_loc, conf->sdh.loc ) ;
 	    strcpy ( parts.src_suffix, "LISS" ) ; 
 	    *parts.src_subcode = 0 ;
-	    join_srcname ( &parts, srcname) ; 
 
 	    N2H4 (cp, &zero, 1);
 	    cp += 4 ;
@@ -62,6 +62,12 @@ liss2orbpkt ( char *seed, int size, char *database,
 
 	    map_seed_netsta ( conf->sdh.net, conf->sdh.sta, sta ) ;
 	    map_seed_chanloc ( sta, conf->sdh.chan, conf->sdh.loc, chan ) ;
+	    if ( remap ) {
+		strcpy ( parts.src_sta, sta ) ;
+		strcpy ( parts.src_chan, chan ) ;
+		strcpy ( parts.src_loc, "" ) ;
+	    }
+	    join_srcname ( &parts, srcname) ; 
 
 	    dbget_calib ( sta, chan, *time, database, &calib, &calper, segtype );
 	    N2H4 (cp, &calib, 1);

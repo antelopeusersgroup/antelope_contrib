@@ -4,17 +4,13 @@
 #include "stock.h"
 #include "orb.h"
 #include "coords.h"
-
-
-
-extern int open_socket ( char *name, int default_port );
-extern int liss2orbpkt ( char *seed, int size, char *database, char *srcname, double *time, char **packet, int *nbytes, int *bufsize );
+#include "liss2orb.h"
 
 static void 
 usage ()
 {
     fprintf (stderr,
-    "Usage: %s [-d database] [-m match] [-s size] [-t timeout] [-v] liss orb\n",
+    "Usage: %s [-d database] [-m match] [-r] [-s size] [-t timeout] [-v] liss orb\n",
 	     Program_Name);
     exit (1);
 }
@@ -119,11 +115,12 @@ main (int argc, char **argv)
     double 	   time ; 
     char 	  *packet ; 
     int 	   nbytes = 0, bufsize = 0 ;
+    int		   remap = 0 ;
 
     elog_init (argc, argv);
     elog_notify ( 0, "%s $Revision$ $Date$\n", Program_Name ) ; 
 
-    while ((c = getopt (argc, argv, "d:m:s:t:v")) != -1) {
+    while ((c = getopt (argc, argv, "d:m:rs:t:vV")) != -1) {
 	switch (c) {
 	  case 'd':
 	    database = optarg ; 
@@ -132,6 +129,10 @@ main (int argc, char **argv)
 	  case 'm':
 	    match = optarg;
 	    break;
+
+	  case 'r':
+	    remap = 1 ; 
+	    break ;
 
 	  case 's':
 	    pktsize = atoi(optarg) ; 
@@ -144,6 +145,12 @@ main (int argc, char **argv)
 	  case 'v':
 	    verbose++ ;
 	    break;
+
+	  case 'V':
+	    cbanner ( "$Revision$", 0,
+		"Daniel Quinlan", "BRTT", "danq@brtt.com" ) ;
+	    usage() ;
+	    break ;
 
 	  default:
 	    usage ();
@@ -204,7 +211,7 @@ main (int argc, char **argv)
 #else
 	if (bnsget(bns, seed, BYTES, pktsize) == 0) { 
 #endif
-	    if ( liss2orbpkt ( seed, pktsize, database, 
+	    if ( liss2orbpkt ( seed, pktsize, database, remap,
 		    srcname, &time, &packet, &nbytes, &bufsize ) == 0 ) { 
 		if ( matches ( srcname, match) ) { 
 		    orbput ( orb, srcname, time, packet, nbytes ) ; 

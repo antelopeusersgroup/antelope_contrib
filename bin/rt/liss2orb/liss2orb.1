@@ -4,7 +4,7 @@ liss2orb \- read data in LISS format
 .SH SYNOPSIS
 .nf
 
-liss2orb [-d database] [-m match] [-s pktsize] [-t timeout] [-v] liss-server orb
+liss2orb [-d database] [-m match] [-r] [-s pktsize] [-t timeout] [-v] liss-server orb
 
 .fi
 .SH DESCRIPTION
@@ -21,6 +21,11 @@ volume from the IRIS DMC).
 .IP "-m match"
 Only packets with srcname containing the regular expression \fImatch\fR
 are forwarded to the orbserver.
+
+.IP -r
+Use the local foreignkeys database to remap input net, sta, chan, and loc codes
+to local sta and chan codes.  This makes orbmonrtd and other programs which
+don't recognize the loc code in the source name work better.
 
 .IP "-s pktsize"
 liss2orb attempts to derive the individual packet size by inspecting
