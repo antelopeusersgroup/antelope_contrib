@@ -23,7 +23,8 @@ sub pfget_Mapspec {
 		"cities_dbname",
 		"grddb",
 		"hypocenter_dbname",
-		"stylesheet"
+		"stylesheet",
+		"vrml_stylesheet"
 		);
 	# N.B. ( Handle the linefiles hash in plot_linefiles() )
 
@@ -192,8 +193,8 @@ sub remove_stale_webmaps {
 	return;
 }
 
-sub xml_to_html {
-	my( $xml_file, $xsl_file, $html_file ) = @_;
+sub xml_to_output {
+	my( $xml_file, $xsl_file, $output_file ) = @_;
 
 	my( $parser ) = XML::LibXML->new();
 
@@ -207,11 +208,11 @@ sub xml_to_html {
 
 	my( $results ) = $stylesheet->transform( $source );
 
-	my( $htmlout ) = IO::File->new( ">$html_file" );
+	my( $outputfd ) = IO::File->new( ">$output_file" );
 	
-	print $htmlout $stylesheet->output_string( $results );
+	print $outputfd $stylesheet->output_string( $results );
 
-	$htmlout->close();
+	$outputfd->close();
 }
 
 sub normal_lon {

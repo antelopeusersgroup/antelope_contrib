@@ -187,6 +187,47 @@ sub cleanup_database {
 	system( $cmd );
 }
 
+sub age2quakecolor {
+	my( $agecolors ) = shift( @_ );
+	my( $age ) = shift( @_ );
+
+	my( $agecolor ) = "gray";
+
+	foreach $key ( sort
+			    { $agecolors->{$a} <=>
+			      $agecolors->{$b}
+			    } 
+			keys %{$agecolors} ) {
+
+		$agecolor = $key;
+
+		if( $age < $agecolors->{$key} ) {
+
+			last;
+		}
+	}	
+
+	return $agecolor;
+}
+
+sub mag2symsize {
+	my( $magsizes ) = shift( @_ );
+	my( $mag ) = shift( @_ );
+
+	foreach $key ( sort { $a <=> $b } 
+			keys %{$magsizes} ) {
+
+		$symsize  = $magsizes->{$key};
+
+		if( $mag < $key ) {
+
+			last;
+		}
+	}	
+
+	return $symsize;
+}
+
 sub set_hypocenter_symbol {
 	my( %Mapspec ) = %{shift( @_ )};
 	my( $colormode ) = pop( @_ );
@@ -208,28 +249,13 @@ sub set_hypocenter_symbol {
 		$mag = -999;
 	}
 
-	if( $mag < 2 ) {
-		$symsize = 4;
-	} else {
-		$symsize = int( $mag ) + 3;
-	}
+	$symsize = mag2symsize( $Mapspec{quake_magsize_pixels}, $mag );
 
 	$symshape = $Mapspec{quakeshape};
 
 	if( $colormode eq "age" ) {
 
-		foreach $key ( sort
-				    { $Mapspec{quake_agecolors}->{$a} <=>
-				      $Mapspec{quake_agecolors}->{$b}
-				    } 
-				keys %{$Mapspec{quake_agecolors}} ) {
-
-			$symcolor = $key;
-
-			if( $age < $Mapspec{quake_agecolors}->{$key} ) {
-				last;
-			}
-		}	
+		$symcolor = age2quakecolor( $Mapspec{quake_agecolors}, $age );
 
 	} elsif( $colormode eq "prefor" ) {
 
@@ -310,7 +336,7 @@ sub hypocenter_vitals {
 
 	my( $depth_string ) = "$depth_mi miles ($depth_km km)";
 
-	my( $shape, $coords ) = imagemap_symbol( @db );
+	my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
 
 	$writer->startTag( "origin", "type" => "$type", "name" => "$name" );
 	$writer->dataElement( "orid", "$orid" );
@@ -325,6 +351,10 @@ sub hypocenter_vitals {
 	$writer->dataElement( "auth", "$authtrans" );
 	$writer->dataElement( "shape", "$shape" );
 	$writer->dataElement( "coords", "$coords" );
+	$writer->dataElement( "x", "$x" );
+	$writer->dataElement( "y", "$y" );
+	$writer->dataElement( "depth_km", "$depth_km" );
+	$writer->dataElement( "color", "$color" );
 
 	$writer->endTag( "origin" );
 }
@@ -433,12 +463,19 @@ sub create_focusmap_html {
 	$db[3] = 0;
 
 	my( $url, $dfile ) = dbgetv( @db, "url", "dfile" );
+	my( $image_extfile ) = dbextfile( @db );
 	my( $html_relpath ) = substr( $url, length( $State{dbrecenteqs_url} ) );
 	my( $html_filename ) = 
 		concatpaths( $State{dbrecenteqs_dir}, $html_relpath );
 	my( $xml_filename ) = "$html_filename";
 	$xml_filename =~ s/\..*//g;
 	$xml_filename .= ".xml";
+	my( $vrml_filename ) = $xml_filename;
+	$vrml_filename =~ s/.xml$/.wrl/;
+
+	my( $vrml_url ) = $url;
+	$vrml_url =~ s/\.[^.]*$//;
+	$vrml_url .= ".wrl";
 
 	chomp( my( $dir_relpath ) = `dirname $html_relpath` );
 
@@ -498,12 +535,27 @@ sub create_focusmap_html {
 	$writer->dataElement( "legend_description", 
 			      "$State{legend_description}" );
 
+	$writer->dataElement( "vrml_url", $vrml_url );
+	my( $abs_dbname ) = `abspath $dbname`;
+	chomp( $abs_dbname );
+	$writer->dataElement( "dbname", $abs_dbname );
 	$writer->dataElement( "region_string", $region_string );
 
 	$writer->dataElement( "subdir", "$dir_relpath" );
 
+	my( $fms ) = Image::Magick->new();
+	$fms->Read( $image_extfile );
+	my( $width ) = $fms->Get( 'width' );
+	my( $height ) = $fms->Get( 'height' );
+	my( $ydelmax ) = pfget( $image_extfile, "evid$evid\{ydelmax}" );
+	my( $ydelmin ) = pfget( $image_extfile, "evid$evid\{ydelmin}" );
+	my( $ypixperkm ) = $height / ( ( $ydelmax - $ydelmin ) * 111.195 );
+
 	$writer->startTag( "pixmap", "mapclass" => "focus" );
 	$writer->dataElement( "file", "$dfile" );
+	$writer->dataElement( "width", $width );
+	$writer->dataElement( "height", $height );
+	$writer->dataElement( "ypixperkm", $ypixperkm );
 	$writer->dataElement( "clientside_mapname", "vitals" );
 	$writer->endTag( "pixmap" );
 
@@ -554,7 +606,11 @@ sub create_focusmap_html {
 
 	$output->close();
 
-	xml_to_html( $xml_filename, $Focus_Mapspec{stylesheet}, $html_filename );
+	xml_to_output( $xml_filename, $Focus_Mapspec{stylesheet}, $html_filename );
+
+	if( -e "$Focus_Mapspec{vrml_stylesheet}" ) {
+		xml_to_output( $xml_filename, $Focus_Mapspec{vrml_stylesheet}, $vrml_filename );
+	}
 }
 
 sub create_focusmap {
@@ -724,7 +780,7 @@ sub stockmap_earthquake_xml {
 
 		my( $region ) = quake_region( @db, $lat, $lon, $orid );
 
-		my( $shape, $coords ) = imagemap_symbol( @db );
+		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
 
 		$writer->startTag( "quake" );
 
@@ -734,6 +790,10 @@ sub stockmap_earthquake_xml {
 		$writer->dataElement( "region_string", "$region" );
 		$writer->dataElement( "shape", "$shape" );
 		$writer->dataElement( "coords", "$coords" );
+		$writer->dataElement( "x", "$x" );
+		$writer->dataElement( "y", "$y" );
+		$writer->dataElement( "depth_km", "$depth" );
+		$writer->dataElement( "color", "$color" );
 
 		$writer->endTag( "quake" );
 	}
@@ -810,8 +870,8 @@ sub imagemap_symbol {
 	my( $shape, $coords );
 	my( $primitive, $xul, $yul, $xlr, $ylr );
 
-	my( $x, $y, $symsize, $symshape ) = 
-	   dbgetv( @db, "x", "y", "symsize", "symshape" );
+	my( $x, $y, $symsize, $symshape, $symcolor ) = 
+	   dbgetv( @db, "x", "y", "symsize", "symshape", "symcolor" );
 
 	if( $symshape eq "square" ) {
 		$primitive = "rect";
@@ -827,7 +887,7 @@ sub imagemap_symbol {
 		die( "symbol shape $symshape not understood\n" );
 	}
 
-	return ( $shape, $coords );
+	return ( $shape, $coords, $x, $y, $symcolor );
 }
 
 sub create_stockmap_html {
@@ -836,8 +896,11 @@ sub create_stockmap_html {
 	my( $mapname ) = dbgetv( @db, "mapname" );
 
 	my( @dbt ) = dblookup( @db, "", "mapstock", "mapname", "$mapname" );
-	my( $mapclass ) = dbgetv( @dbt, "mapclass" );
+	my( $mapclass, $width, $height, $updellat, $downdellat ) = 
+		dbgetv( @dbt, "mapclass", "width", "height", "updellat", "downdellat" );
 
+	my( $ypixperkm ) = $height / ( ( $updellat - $downdellat ) * 111.195 );
+	
 	print "dbrecenteqs: Updating html for $mapclass map $mapname\n";
 
 	my( @db ) = dbprocess( @db, 
@@ -855,6 +918,13 @@ sub create_stockmap_html {
 	my( $xml_filename ) = $html_filename;
 	$xml_filename =~ s/\..*//;
 	$xml_filename .= ".xml";
+
+	my( $vrml_url ) = $url;
+	$vrml_url =~ s/\.[^.]*$//;
+	$vrml_url .= ".wrl";
+
+	my( $vrml_filename ) = $xml_filename;
+	$vrml_filename =~ s/.xml$/.wrl/;
 
 	my( $main_index_filename ) = $html_filename;
 	$main_index_filename =~ s@/([^/]*)$@/index.html@;
@@ -901,9 +971,16 @@ sub create_stockmap_html {
 			      "$State{institute_description}" );
 	$writer->dataElement( "legend_description", 
 			      "$State{legend_description}" );
+	my( $abs_dbname ) = `abspath $dbname`;
+	chomp( $abs_dbname );
+	$writer->dataElement( "dbname", $abs_dbname );
+	$writer->dataElement( "vrml_url", $vrml_url );
 
 	$writer->startTag( "pixmap", "mapclass" => "$mapclass" );
 	$writer->dataElement( "file", "$image_relpath" );
+	$writer->dataElement( "width", "$width" );
+	$writer->dataElement( "height", "$height" );
+	$writer->dataElement( "ypixperkm", "$ypixperkm" );
 	$writer->dataElement( "clientside_mapname", "$clientside_mapname" );
 	$writer->endTag( "pixmap" );
 
@@ -921,7 +998,7 @@ sub create_stockmap_html {
 	
 	$output->close();
 
-	xml_to_html( $xml_filename, 
+	xml_to_output( $xml_filename, 
 		     $stylesheet,
 		     $html_temp_filename );
 
@@ -932,6 +1009,15 @@ sub create_stockmap_html {
 	    ( $html_filename !~ m@.*/index.html$@ ) ) {
 
 		system( "/usr/bin/cp $html_filename $main_index_filename" );
+	}
+
+	my( $vrml_stylesheet ) = $State{maphashes}->{$mapname}->{vrml_stylesheet};
+
+	if( -e "$vrml_stylesheet" ) {
+
+		xml_to_output( $xml_filename, 
+		     	$vrml_stylesheet,
+		     	$vrml_filename );
 	}
 }
 
