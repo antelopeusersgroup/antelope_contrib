@@ -3,7 +3,7 @@ phases &Arr{
 P  &Arr{
 travel_time_calculator general
 TTmodel iasp91
-TTmethod tttaup tttaup utaup
+TTmethod tttaup 
 #
 #  This weight function is necessary because P is a generic first arrival
 #  At the edge of the core shadow Pdiff = P which can cause large errors
@@ -143,7 +143,7 @@ TTmethod tttaup
 S-P  &Arr{
 travel_time_calculator general
 TTmodel iasp91
-TTmethod tttaup tttaup utaup
+TTmethod tttaup 
 	time_distance_weight_function &Tbl{
 	0.0	1.0
 	1.0	1.0
