@@ -8,7 +8,7 @@ cflags =
 ldflags = 
 ldlibs= -lgenloc -lblas $(DBLIBS) $(F77LIBS) -ltt -ldl
 include $(DSAPMAKE)
-DIRS=ttlvz
+DIRS=ttlvz taup uniform
 
 OBJS= dbgenloc.o run_location.o load_observations.o write_log.o save_results.o 
 CC=cc
