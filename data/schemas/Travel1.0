@@ -1,0 +1,198 @@
+Schema Travel1.0
+	Description ( "record of travel" )
+	Detail {
+		The Travel schema provides a record of trips taken for 
+		business and pleasure.
+	}
+	Timedate lddate
+	;
+
+Attribute business
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "business =~ /y|n/" )
+	Description ( "whether the trip involved a business component" )
+	Detail {
+		This field records whether part or all of the trip was 
+		for business
+	}
+	;
+
+Attribute destination
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "destination" )
+	Detail {
+		This records the main destination of the travel
+	}
+	;
+
+Attribute hopto
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "next vertex in a multi-leg trip" )
+	Detail {
+		If after completing activities at a destination, the 
+		traveller goes on to another leg of the trip instead 
+		of returning home, the hopto field records the arrival
+		location for the next leg of the trip. If triptype 
+		is 'leg' and hopto is null, it is implied that this 
+		is the return trip home. 
+	}
+	;
+
+Attribute inst
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "home institution" )
+	Detail {
+		This field identifies the employing institution if the 
+		travel is business related (i.e. the employer of the 
+		traveller, as opposed to the company for which work is 
+		being done)
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of record modification" )
+	Detail {
+		Epoch time of record creation or last modification
+	}
+	;
+
+Attribute leave
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "day on which trip starts" )
+	Detail {
+		This field records the start day of the trip. Note that
+		while this field allows the option of very precise
+		takeoff-time tracking, in practice often it may only 
+		be specified to the nearest day.
+	}
+	;
+
+Attribute international
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "international =~ /y|n/" )
+	Description ( "whether the trip involved an international destination" )
+	Detail {
+		This field records whether the traveller left the country
+	}
+	;
+
+Attribute pending
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "pending =~ /y|n/" )
+	Description ( "whether the trip is still pending" )
+	Detail {
+		This field records whether the trip has actually been taken.
+		If this field is 'y', the record indicates an upcoming 
+		intended trip. If the field is 'n' or null, the row records
+		an actual trip that has already occurred.
+	}
+	;
+
+Attribute purpose
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "short description of the purpose of the trip" )
+	Detail {
+		This field describes the purpose of the trip, e.g. 
+		"vacation" or name of meeting attended or name of 
+		company for which work was performed
+	}
+	;
+
+Attribute return
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "day on which trip ends" )
+	Detail {
+		This field records the end day of the trip. If the 
+		triptype is 'leg', the return field indicates the day 
+		of travel to the next destination in the trip, as 
+		recorded in the 'hopto' field. 
+	}
+	;
+
+Attribute side
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "other places visited along the way" )
+	Detail {
+		This records side destinations during a trip, especially if 
+		other countries were visited in the meantime. Note the 
+		difference between this and the 'hopto' field, which is 
+		used to record the vertices of multi-leg trips. The "side" 
+		field is useful if the side-trip does not need to 
+		be independently tracked as part of a multi-leg 
+		journey, or if it is entirely self-contained. 
+		If the side trip extends over multiple days or 
+		involves countries other than the destination country, 
+		the dates of the side trip should be listed.
+	}
+	;
+
+Attribute traveller
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "name of traveller" )
+	Detail {
+		This field identifies the traveller
+	}
+	;
+
+Attribute triptype
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Range ( "triptype =~ /rt|leg/" )
+	Description ( "Trip type (round-trip or leg)" )
+	Detail {
+		The trip type field records whether the listed trip is a 
+		round-trip ("rt"), or one leg of a multi-leg trip ("leg").
+	}
+	;
+
+Attribute tz
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "Timezone" )
+	Detail {
+		The tz field records the time-zone in which the leave and 
+		return fields are specified. The timezone should be
+		specified in the form of a unix zoneinfo entry, e.g.
+		"US/Alaska".
+	}
+	;
+
+Relation trips
+	Fields ( destination leave return purpose side triptype hopto pending international business traveller inst tz lddate )
+	Primary ( destination leave::return )
+	Description ( "trips taken" )
+	Detail {
+		This table describes trips taken
+	}
+	;
+
