@@ -101,6 +101,16 @@ translations &Arr{
 				o2omachine	connections[FOREACH]{o2omachine}
 				clientid	connections[FOREACH]{clientid}
 			}
+			databases &Arr{
+				FOREACH		databases
+				when 		TIME:databases_when
+				sourceaddress	databases[FOREACH]{sourceaddress}
+				sourceport	databases[FOREACH]{sourceport}
+				dbprogram	databases[FOREACH]{dbprogram}
+				dbmachine	databases[FOREACH]{dbmachine}
+				dbpath		databases[FOREACH]{dbpath}
+				clientid	databases[FOREACH]{clientid}
+			}
 		}
 	}
 }
