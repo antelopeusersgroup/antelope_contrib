@@ -9,7 +9,24 @@
  ********************************************************************/
 #include "mrc.h"
 
-#define MAX_SORT    1 
+void usage ()
+{
+        fprintf (stderr,
+        "Usage: %s [-p pfile ] [-v]  orb dcname1[,dcname2,dcname3...] \n",
+        Program_Name);
+        exit (1);
+}
+                
+char *new_name( char *name )  {
+      
+     char *new;
+	    
+    new=strdup( name );
+    return new;
+		 
+}
+  
+#define MAX_SORT    1
 
 int *new_dasid( int id )
 
@@ -100,7 +117,7 @@ ChPipe *new_chpipe ( maxtbl )
     achan->time = 0.0; 
     achan->nsamp = 0; 
     achan->maxtbl = maxtbl; 
-    achan->tbl = inittbl( 0, maxtbl+1, 1, 0, sizeof(Ch) ); 
+    achan->tbl = inittbl( 0, maxtbl, 1, 0, sizeof(Ch) ); 
     achan->crnt_chan.lta = 0;
     return achan;
 }
@@ -119,6 +136,7 @@ ChRec *new_ch (
      ch->time = ttime ;
      ch->pktlta = 0;
      ch->lta = 0;
+     ch->mrcnum = 0;
      ch->nsamp = 0;
      dasid = (int *)getarr(Dasid, sta );
      ch->dasid = *dasid ;
@@ -132,8 +150,6 @@ ChRec *new_ch (
 
 void free_chpipe ( ChPipe *achan )
 {
-    int i, ntbl; 
-    Ch *ch; 
 
     freetbl( achan->tbl, 0)  ;
     free( achan ) ; 

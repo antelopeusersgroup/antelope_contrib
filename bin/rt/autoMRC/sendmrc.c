@@ -14,7 +14,7 @@
 
 extern Tbl *DC;
 
-int sendmrc( int dasid, int timeout )
+int sendmrc( int dasid, int timeout, int rep )
 
 {
 
@@ -36,7 +36,7 @@ int sendmrc( int dasid, int timeout )
     if( open_dc( iport) <= 0 )               
        die(1, "Can't open command DC port\n");
 		    
-    for( i = 0; i < 2; i++ )  {
+    for( i = 0; i < rep; i++ )  {
         nbytes = write ( Ls, (char *) buffer, LEN );
         if ( nbytes == LEN ) {
             if ( logname )

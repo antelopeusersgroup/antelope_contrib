@@ -10,6 +10,7 @@ include $(ANTELOPEMAKE)
 OBJSM	= mrc.o\
 	  open_dc.o\
 	  proc_chan.o\
+	  send_alarm.o\
 	  sendmrc.o\
 	  util.o
 $(BIN):	$(OBJSM)

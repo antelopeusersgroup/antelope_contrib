@@ -27,17 +27,15 @@ int offscale(
   int 		i, npkts;  
   Ch 		*crnt_chan=0; 
   ulong_t       fullsc= 0x80000000;
+  long 		lta;
   int		*data;
   int 		max_nsamp,
   		nrec;
-  int 		new = 0,
-  		retcode=0,
-		off_scale;
+  int 		mrcnum = 0, new = 0;
   char 		key[64];
 
   for( nrec=0 ; nrec < packet->nchannels ; nrec++ ) {
 
-      off_scale = 0;
       crnt_chan = 0;
 
       achan = (PktChannel * ) gettbl ( packet->chan, nrec );
@@ -45,13 +43,10 @@ int offscale(
       sprintf( key, "%s/%s_%s\0", achan->net, achan->sta, achan->chan );
       max_nsamp = achan->samprate * tm_period;
       
-/*
-  complain( 0, " %s %lf %d\n ", key, pkttime, achan->nsamp );
-*/
       ch = ( ChRec *) getarr( PChan, key );
-      if( ch == 0 ) 
+      if( ch == 0 ) { 
 	 ch = ( ChRec *) new_ch( key, achan->sta, pkttime, tm_period );
-      
+      } 
       *dasid = ch->dasid;
 	  
       ch->nsamp += achan->nsamp;
@@ -70,34 +65,43 @@ int offscale(
       npkts = maxtbl( chpipe->tbl );
       if ( npkts >= chpipe->maxtbl ) 
           crnt_chan = shifttbl( chpipe->tbl);
-      
-      pushtbl( chpipe->tbl, &chpipe->crnt_chan);
+     
   
       if( crnt_chan != 0 )  {
 
 	  ch->nsamp -= crnt_chan->nsamp;
 	  ch->lta -= crnt_chan->lta;
 
-      }
-      
+      } 
+      pushtbl( chpipe->tbl, &(chpipe->crnt_chan) );
+/*     
+lta = (ch->lta / ch->nsamp) ;
+fprintf(stderr, "%s %ld %d - %ld\n", key, ch->lta, ch->nsamp, lta );
+*/
       if( pkttime - ch->time >= tm_period )  {
-	  if( labs(ch->lta / ch->nsamp) >= MaxOff )  {
+	  lta = (ch->lta / ch->nsamp) ;
+	  if( labs(lta) >= MaxOff )  {
               complain( 0, " %s_%s LTA is to high - %ld \n ", 
-	                achan->sta, achan->chan, ch->lta );
-	      off_scale = 1;
+	                achan->sta, achan->chan, lta );
 	      ch->lta = 0;
 	      ch->nsamp = 0;
-	  } else off_scale = 0;
+	      (ch->mrcnum)++ ;
+	      freetbl(chpipe->tbl, 0 );
+	      chpipe->tbl = inittbl( 0, chpipe->maxtbl, 1, 0, sizeof(Ch) );
+
+	  } else {
+	      ch->mrcnum = 0;
+	  }
 	  ch->time = pkttime;
 	
-      }
-  
+          if( ch->mrcnum > mrcnum ) mrcnum = ch->mrcnum; 
+      } else mrcnum = 0;
+      
       setarr( PChan, key, ch );
-      retcode += off_scale;
 
    }
 
-   return retcode;
+   return mrcnum;
 
 }
 

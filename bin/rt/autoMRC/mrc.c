@@ -13,25 +13,10 @@
   *
 ************************************************************************/
 #include "mrc.h"       
+#include "pf.h"
 
+int Log = 0;
 Tbl *DC;
-
-char *
-new_name( char *name )  {
-
-    char *new;
-
-    new=strdup( name );
-    return new;
-
-}
-
-
-void usage ()
-{
-    fprintf (stderr, "Usage: %s [-V verbatim] [-m srcmatch] [-p pfile ] [-s sleep] [-t tperiod] [-v max_lta] orb dcname1[,dcname2,dcname3...] \n", Program_Name);
-    exit (1);
-}
 
 main(argc, argv)
 int argc;
@@ -39,61 +24,56 @@ char *argv[];
 {
   extern char   *optarg;
   extern int    optind;
-  Pf	 	*pf;
+  Pf	 	*pf, *lpf;
+  Arr 		*Dases;
+  Das		*das;
+  double 	save_time, pkttime;
   int		nselect, nbytes, bsize;
   int 		err_in;
   int 		dasid, i, id, orb, ndc;
-  int 		tperiod = 3600,
-  		asleep = 30;     /* 30 seconds  */
-  double 	save_time=0, 
-  		pkttime;
+  int 		tperiod, asleep;     
+  int 		max_mrc, mrcnum, repeats;
   char          *packet = 0,
   		srcid[ORBSRCNAME_SIZE] ;
-  char 	        *dces = 0,
-                *newname, *dcname,
-  		*orbname = "localhost";
+  char          *newname, *name;
+  char 		*s, *mypf, *pfile ;
+  char          *madd, *receipient, *match;
   char          *version = "1.1 (03/22/97)";
-  char 		*s, *pfile = "pkt";
-  char          *match = ".*/CBB1S";
   static Packet *unstuffed=0 ;
-  Arr 		*Dases;
-  Das		*das;
+  char 		*reciepient=0;
+  char 	        *dces = 0,
+  		*orbname = 0 ;
 
    elog_init (argc, argv) ;
    elog_notify (0, "%s version %s\n", argv[0], version) ;
    Program_Name = argv[0];
-  		
-  logname= 0; MaxOff = MAX_OFF; 
-   
+  
+   /* Set default parameters  */
+
+  mypf="mrc"; pfile = "pkt";
+  
+  match = ".*/CBB1S";	/* use those packets for LTA calculation */
+  MaxOff = 100000;	/* MAX allowed LTA value  */ 
+  tperiod = 3600;  	/* one hour for LTA  */
+  asleep = 30;	   	/* 30 seconds interval between commands */
+  repeats=2;		/* # MRC will be sent in one session  */
+  max_mrc=4;		/* max # of unsuccessfull MRC before 
+  			   "alarm" email will be sent  */  
+
+  MailSent = newarr(0);
+
   /* Set command line parameters default values  */
  
-  while ( ( i = getopt (argc, argv, "V:vm:p:t:")) != -1)
+  while ( ( i = getopt (argc, argv, "vp:")) != -1)
         switch (i) {
-        case 'V':
-            logname = optarg; 
-            if ( ( fplog = fopen ( logname, "a+" ) ) == NULL ) 
-              die ( 1, "Can't open '%s' for logs \n", logname ) ; 
-            break ;
-
         case 'v':
-            MaxOff = atoi(optarg);
-            break;
-
-        case 'm':
-            match = optarg;
-            break;
+            Log = 1;
+	    break ;
 
         case 'p':
             pfile = optarg;
             break;
 
-        case 's':
-            asleep = atoi(optarg);
-	    break;
-
-        case 't':
-            tperiod = atoi(optarg);
-            break;
         default: 
             usage();
         }
@@ -110,7 +90,27 @@ char *argv[];
   if( (orb = orbopen( orbname, "r")) < 0)
       die( 0, "Can't open ORB\n");
      
- 
+  if( pfread ( mypf, &lpf) == 0 )  {
+       elog_notify (0, "Will read parameters from %s parameter file\n", mypf);
+       MaxOff = pfget_int( lpf, "max_lta");
+       tperiod = pfget_int( lpf, "lta_window");
+       asleep = pfget_int( lpf, "timeout_btw_cmds");
+       repeats = pfget_int( lpf, "num_repeats");
+       max_mrc = pfget_int( lpf, "max_mrc");
+       match = pfget_string( lpf, "srcname");
+       receipient = pfget_string( lpf, "receipient");
+  }
+  if( receipient != 0 ) {
+      MailAdd = newtbl(0);
+      if( ( madd = strtok( receipient, "," )) != 0 )  {
+          newname = (char *) new_name(madd);
+          pushtbl( MailAdd, newname );
+      }
+      while( ( madd = strtok( NULL, "," )) != 0 )  {
+          newname = (char *) new_name( madd);
+          pushtbl( MailAdd, newname );
+      }
+  }
   if ((nselect = orbselect ( orb, match)) < 1 )
       die (1, "orbselect '%s' failed\n", match);
   
@@ -123,12 +123,12 @@ char *argv[];
   PChan = newarr(0);
   collect_dases( pfile );        
 
-  if( (dcname = strtok( dces, "," )) != 0 )  {
-    newname = (char *) new_name(dcname);
+  if( ( name = strtok( dces, "," )) != 0 )  {
+    newname = (char *) new_name( name);
     pushtbl( DC, newname );
   }
-  while( (dcname = strtok( NULL, "," )) != 0 )  {
-    newname = (char *) new_name(dcname);
+  while( ( name = strtok( NULL, "," )) != 0 )  {
+    newname = (char *) new_name( name);
     pushtbl( DC, newname );
   }
   ndc = maxtbl(DC);
@@ -144,14 +144,25 @@ char *argv[];
   fprintf( stderr, "    ORBNAME:\t\t %s\n", orbname );
   fprintf( stderr, "    DCNAMES:\t\t ");
   for( i = 0; i < ndc; i++ )  {
-     dcname = (char *) gettbl(DC, i );
-     fprintf( stderr, "%s  ", dcname );
+      name = (char *) gettbl(DC, i );
+     fprintf( stderr, "%s  ",  name );
   }
   fprintf( stderr, "\n");
   fprintf( stderr, "    DATA TYPE:\t\t %s\n", match );
   fprintf( stderr, "    LTA time period:\t %d\n", tperiod );
   fprintf( stderr, "    Max LTA allowed:\t %d\n", MaxOff );
-  fprintf( stderr, "    'RCRC' command will be send twice to the problem DAS at %d second intervals\n\n", asleep );
+  fprintf( stderr, "    'RCRC' command will be send twice to the DAS at %d second intervals\n\n", asleep );
+  fprintf( stderr, "    in case of failed MRCs email will be sent to:\t"  );
+    
+  ndc = maxtbl(MailAdd);
+  for( i = 0; i < ndc; i++ )  {
+      name = (char *) gettbl(MailAdd, i );
+      fprintf( stderr, "%s  ",  name );
+  }
+
+  fprintf( stderr, "\n    data starts at %s \n", s=strtime(pkttime) );
+  free(s);
+  fprintf( stderr, "\n\n"); fflush(stderr);
 
 /* Loop through RB; aclculate LTA  */
 
@@ -178,8 +189,10 @@ char *argv[];
 		     
                     case 1:
                     
-		       if( offscale(unstuffed, pkttime, srcid, tperiod, &dasid ) )  {
-		           sendmrc(dasid, asleep );
+		       if( (mrcnum = offscale(unstuffed, pkttime, srcid, tperiod, &dasid )) )  {
+		           if( mrcnum >= max_mrc && receipient != 0 ) 
+			       send_alarm( mrcnum, dasid, receipient );
+			     /*  sendmrc(dasid, repeats, asleep );  */
 		       }
 		       break;
 		       

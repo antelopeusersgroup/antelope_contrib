@@ -36,6 +36,9 @@
 
 #define MAX_OFF  100000  /* Max LTA value which good data should not exceed */
 
+Tbl *MailAdd;
+Arr *MailSent;
+
 Arr *Dasid;
 Arr *PChan;
 
@@ -59,6 +62,7 @@ typedef struct ChRec {
     long lta;
     int nsamp;
     int dasid;
+    int mrcnum;
     char srcid[ORBSRCNAME_SIZE];
     ChPipe *chpipe;
 } ChRec;
