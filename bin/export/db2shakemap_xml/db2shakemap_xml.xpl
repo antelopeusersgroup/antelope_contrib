@@ -8,7 +8,6 @@
 use Datascope ;
 use XML::Writer;
 use IO::File;
-require "getopts.pl";
 require "compass_from_azimuth.pl";
 require "winding.pl";
 
@@ -134,22 +133,48 @@ sub write_amp {
 $Usage = "Usage: db2shakemap_xml -event event_id\n";
 $Pf = "db2shakemap_xml";
 
-if( ! &Getopts( 'j' ) || @ARGV != 2  ) {
-	die( $Usage );
-} else {
+while( $arg = shift( @ARGV ) ) {
+	
+	if( $arg eq "-event" ) { 
 
-	while( $arg = shift( @ARGV ) ) {
-		if( $arg eq "-event" ) { 
-			$event_id  = shift( @ARGV );
-		}
-	}
+		if( $#ARGV < 0 ) { die( $Usage ); }
+		$event_id  = shift( @ARGV );
 
-	if( ! defined( $event_id ) || $event_id eq "" ) {
+	} elsif( $arg eq "-j" ) {
+
+		$opt_j++;
+
+	} else {
+
 		die( $Usage );
 	}
 }
 
+if( ! defined( $event_id ) || $event_id eq "" ) {
+	die( $Usage );
+}
+
 $dbname = pfget( "$Pf", "dbname" );
+
+if( $opt_j ) {
+	
+	if( $event_id =~ /(\d+)_(\d+)/ ) {
+		
+		$jdate = $1;
+		$evid = $2;
+
+		$dbname = epoch2str( str2epoch( "$jdate" ), $dbname );
+
+	} else {
+		
+		$evid = $event_id;
+	}
+	
+} else {
+
+	$evid = $event_id;
+}
+
 @db = dbopen( $dbname, "r" );
 if( $db[0] < 0 ) {
 	die( "$dbname does not exist\n" );
@@ -158,11 +183,16 @@ if( $db[0] < 0 ) {
 @db = dbprocess( @db, "dbopen event",
 		      "dbjoin origin",
 		      "dbsubset orid == prefor" );
-@db = dblookup( @db, "", "", "evid", $event_id );
+@db = dblookup( @db, "", "", "evid", $evid );
 $db[3] >= 0 || die( "Couldn't find event $event_id\n" );
 
 ( $lat, $lon, $depth, $ml, $mb, $ms, $time ) = 
 	dbgetv( @db, "lat", "lon", "depth", "ml", "mb", "ms", "time" );
+
+if( $opt_j && $evid == $event_id ) {
+	
+	$event_id = yearday( $time ) . "_" . $evid;
+}
 
 $origin_subset = pfget( "$Pf", "origin_subset" );
 if( defined( $origin_subset ) && $origin_subset ne "" ) {
@@ -262,10 +292,10 @@ $output->close();
 @db = dbprocess( @db, "dbopen event",
 		      "dbjoin origin",
 		      "dbsubset orid == prefor" );
-@db = dblookup( @db, "", "", "evid", $event_id );
+@db = dblookup( @db, "", "", "evid", $evid );
 $db[3] >= 0 || die( "Couldn't find event $event_id" );
 
-@db = dbprocess( @db, "dbsubset evid == $event_id",
+@db = dbprocess( @db, "dbsubset evid == $evid",
 		      "dbjoin assoc",
 		      "dbjoin arrival",
 		      "dbtheta wfmeas $wfmeas_thetajoin_recipe",
