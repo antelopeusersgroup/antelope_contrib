@@ -52,6 +52,22 @@ by these routines.
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
+The libpforbstat.pf parameter file gives a table of search expressions 
+which are used to identify database-writing utilities. Each expression 
+should return a two-element line separated by a single space, in which the 
+first word is the name of the database-writing utility (for example orb2db), 
+and the second word is the name of the output database. See morphtbl(3)
+for more detail on the regular-expression morphing syntax.
+.nf
+
+% pfecho libpforbstat
+dbprograms_morph &Tbl{
+	'^([[:alnum:]/.]*)orb2db .* ([[:alnum:]/.]+)$'orb2db $2'
+	'^([[:alnum:]/.]*)orb2dbt .* ([[:alnum:]/.]+)$'orb2dbt $2'
+	'^([[:alnum:]/.]*)orbimg2db .* ([[:alnum:]/.]+)$'orbimg2db $2'
+}
+%
+.fi
 .SH EXAMPLE
 .ft CW
 .in 2c
@@ -184,7 +200,8 @@ parameter files returned by these routines.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-pforbstat(1), orbserver(1), orbstat(3), orbsources(3), orbclients(3), pffree(3)
+pforbstat(1), orbserver(1), orbstat(3), orbsources(3), orbclients(3), 
+pffree(3), morphtbl(3)
 .fi
 .SH "BUGS AND CAVEATS"
 There are a number of slight variations one could imagine for the
