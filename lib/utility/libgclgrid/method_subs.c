@@ -6,7 +6,7 @@ to make a C++ monster out of this. */
 #include "perf.h"
 
 /* function prototype used only here (FORTRAN routine) */
-void fme_interpolate_(int *,double *,double *,double *,double *);
+void fmeinterpolate_(int *,double *,double *,double *,double *);
 /* This is an indexing routine for finding the location of a point in 3 space
 within what I'm calling here a geographical curvilinear grid (gclgrid).  
 This algorithm will work only if the grid defines an object that is 
@@ -167,7 +167,7 @@ int GCL3Dgrid_index_lookup(GCL3Dgrid *g,
 }
 
 /*This is an interpolation function for GCL3dgrid objects.  
-This function is mostly an interface function to the fme_interpolate
+This function is mostly an interface function to the fmeinterpolate
 (FORTRAN) function that actually does the interpolation.  
 that routine uses distorted box, finite element interpolation 
 functions to obtain an interpolation of the vector valued function
@@ -254,7 +254,7 @@ double ****fg, double *f, int nf)
 		fvals[6+iv*8] = fg[iv][i+1][j+1][k+1];
 		fvals[7+iv*8] = fg[iv][i+1][j+1][k];
 	}
-	fme_interpolate_(&nf,xp,fvals,coord,f);
+	fmeinterpolate_(&nf,xp,fvals,coord,f);
 	free(fvals);
 	return(0);
 }

@@ -3,7 +3,6 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 DATADIR=schemas
 INCLUDE=gclgrid.h
 MAN3=gclgrid.3
-MAN5=		# man pages for file formats
 
 cflags=-g
 

@@ -18,7 +18,7 @@ c  Author:  Kagan Tuncay with modifications by G Pavlis
 c  Written:  Oct-DEc 2000
 c------------------------------------------------------------
 
-      subroutine fme_interpolate(nv,xx,func_element,coord,value)
+      subroutine fmeinterpolate(nv,xx,func_element,coord,value)
       implicit none
       integer i,itno,j,iv
       integer nv
