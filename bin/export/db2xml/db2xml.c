@@ -32,6 +32,8 @@ main (int argc, char **argv)
 	char	*rowname = 0;
 	Tbl	*fields = 0;
 	Tbl	*expressions = 0;
+	int	rc;
+	int	flags;
 
 	elog_init( argc, argv ) ; 
 
@@ -83,18 +85,23 @@ main (int argc, char **argv)
 		
 		if( primary ) {
 			complain( 1, 
-			"Useless use of '-p' with specified expressions\n" );
+			"Useless use of '-p' with specified expressions, ignoring\n" );
 		}
 
 	} else if( primary ) {
 
-		dbquery( db, dbPRIMARY_KEY, (Dbvalue *) &fields );
+		flags |= DBXML_PRIMARY;
 	}
 
-	db2xml( db, rootname, rowname, fields, expressions, 
-		(void **) &xmlstring, 0 );
+	rc = db2xml( db, rootname, rowname, fields, expressions, 
+		(void **) &xmlstring, flags );
 
-	if( xmlstring != NULL ) {
+	if( rc < 0 ) {
+		
+		clear_register( 1 );
+		die( 0, "db2xml failed\n" );
+
+	} else if( xmlstring != NULL ) {
 
 		fwrite( xmlstring, sizeof(char), strlen( xmlstring ), stdout );
 		free( xmlstring );
