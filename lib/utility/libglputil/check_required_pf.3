@@ -1,0 +1,88 @@
+'\" te
+.TH check_required_pf 3 "$Date$"
+.SH NAME
+check_required_pf - prescan parameter files for critical parameters
+.SH SYNOPSIS
+.nf
+#include "glputil.h"
+void check_required_pf(Pf *pf);
+.fi
+.SH DESCRIPTION
+Programs can use parameter files to pass around large trees of
+parameters as an inefficient, but simple mechanism for
+data encapsulation.  The problem with this, however, is that 
+a program must be certain these parameters are defined early 
+in execution.  Otherwise  program could run for hours before
+dying on a trial error caused by a missing parameter.  
+This function uses options defined in the pf itself to state
+what parameters need to be checked.  The program will die immediately
+inside this function when a required parameter is not found in pf.
+
+The function also allows range checking on numerical parameters.
+This is a potentially useful sanity check on input that might be
+useful in some applications.  
+.SH PARAMETER FILE
+This function is driven by a pf description that is assumed to be
+embedded in the same pf space that is to be checked.  The simplest
+way to define what is required is to give an example from dbpmel:
+.nf
+
+require &Arr{
+    boolean     &Tbl{
+        use_all_stations
+        use_dnorth_deast
+        pmel_autodelete_high_rms
+        pmel_cluster_mode
+    }
+    double      &Tbl{
+        pmel_initial_error_scale
+        pmel_minimum_error_scale
+        pmel_minimum_sswrodgf
+        pmel_F_test_critical_value 0.9 1.0
+        pmel_svd_relative_cutoff 0.0000000001 1.0
+        pmel_sc_fraction_convergence_error 0.0000001 0.1
+    }
+    int &Tbl{
+        pmel_maximum_sc_iterations 1 100
+    }
+    string      &Tbl{
+        3Dreference_model
+        travel_time_model
+        pmel_run_name
+        gridname
+        pmelrun_archive_directory
+        author
+    }
+}
+
+.fi
+Note how the definitions are keyed by the \fBrequire\fR parameter
+and the related curly brackets.  Within the outer brackets the 
+lines are broken into type segments defined by the keywords:  boolean, double,
+int, and string.  This is followed by a list of required parameter
+names.  For numerical fields this is (optionally) followed by 
+a range of valid values.  For example, the above requires the
+parameter pmel_F_test_critical_value to be between 0.9 and 1.0.  
+When used the actual value will extracted and elog_die is called
+if the parameter read is outside this range.  
+.SH LIBRARY
+$(STOCKLIBS) -lglputil
+.SH DIAGNOSTICS
+Announces offending parameters and dies on all errors.
+.SH "SEE ALSO"
+.nf
+pf(3)
+.fi
+.SH "BUGS AND CAVEATS"
+Should probably also allow Arr and Tbl parameters in require list, but 
+this has not been implemented.  The function should probably scan the
+entire list listing all errors and then terminating.  Instead it 
+dies on each error which may require multiple false starts to get 
+a program running.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana Univesity
+pavlis@indiana.edu
+.fi
+.\" $Id$

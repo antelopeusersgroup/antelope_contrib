@@ -3,7 +3,11 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 DATADIR=
 DATA=
 INCLUDE=glputil.h
-MAN3=
+MAN3=check_required_pf.3 \
+  ftest.3  \
+  dbform_working_view.3 \
+  glp_matrix_utils.3
+
 MAN5=		# man pages for file formats
 
 cflags=-g

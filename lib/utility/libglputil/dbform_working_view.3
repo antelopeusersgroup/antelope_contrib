@@ -1,0 +1,61 @@
+'\" te
+.TH dbform_working_view 3 "$Date$"
+.SH NAME
+dbform_working_view - simplified database view constructor
+.SH SYNOPSIS
+.nf
+Dbptr dbform_working_view(Dbptr db, Pf *pf, char *tname);
+.fi
+.SH DESCRIPTION
+Many Antelope programs that are driven by a database start processing
+by forming a working database view and then working through the
+resulting virtual table from top to bottom.  This generalizes
+this process by using a standard function to build such a view.
+
+\fBdbform_working view\fR can be thought of as a simpified front
+end to dbprocess driven off a parameter file description.  The basic
+algorithm is this:  pfget_tbl is called against the parameter
+name passed through the tname argument on pf;  dbprocess is then called on
+the database defined by db using the Tbl created by pfget_tbl as
+an argument; and the resulting db pointer is returned.  If anything
+in this process fails errors or posted by the elog mechanism and 
+db.record will be returned as dbINVALID.  This error should be 
+caught and handled as it means the view will not be useable.  
+.SH PARAMETER FILE
+Here is an example fragment from a parameter file that shows how
+this can be used.  
+.nf
+arrival_view        &Tbl{
+    dbjoin event
+    dbjoin origin
+    dbsubset orid==prefor
+    dbjoin assoc
+    dbjoin arrival
+}
+
+.fi
+If pf contained this fragment then passing tname="arrival_view"
+would lead to this group of command being passed to dbprocess.  
+This example forms the standard catalog view of arrival time data
+in the CSS3.0 schema. 
+.SH RETURN VALUES
+Returns a valid db pointer with success.  Record field is set
+to dbINVALID when any problems occur in constructing the view.
+.SH LIBRARY
+$(DBLIBS) -lglputil
+.SH "SEE ALSO"
+.nf
+dbprocess(3)
+.fi
+.SH "BUGS AND CAVEATS"
+dbprocess does not always give a clear reason in elog why the process
+of building a working view fails.  Be aware that dbprocess can't do
+all possible database manipulations and if you need more flexibility 
+it isn't the right choice.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana Univesity
+pavlis@indiana.edu
+.fi
+.\" $Id$

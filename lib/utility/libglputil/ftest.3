@@ -1,0 +1,57 @@
+'\" te
+.TH ftest 3 "$Date$"
+.SH NAME
+ftest - F statistic test functions
+.SH SYNOPSIS
+.nf
+#include <math.h>
+#include "glputil.h"
+#include "elog.h"
+int ftest1(double var1, int n1, double var2, int n2, double critical);
+int ftest2(double var1, int n1, double var2, int n2, double critical);
+int ftest_subset(double var1, int n1, double var2, int n2, double critical);
+.fi
+.SH DESCRIPTION
+An F-test is a standard statistical test to determine if the variance of
+two normally distributed statistical distributions are significantly
+different.  These routines test populations with variances of var1 and
+var2 with n1 and n2 degrees of freedom respectively against a critical
+value defined by argument 5.  All functions return zero if the
+two populations are indistiguishable and a nonzero number if they 
+different significantly at the level defined by critical.
+
+\fBftest1\fR does a conventional one-sided F-test which means the null
+hypothesis is rejected only if var1 is significantly larger than var2. 
+\fBftest2\fR is two-sided and essentially can also yield a true 
+answer if var1 is much smaller than var2.  
+\fBftest_subset\fR is a one-sided test performed when var1 is a 
+subset of var2.  That is, var1 is effectively subtracted from var2 and
+var1 is compared to the corrected var2.  This is used, for example,
+in dbpmel(1) to test rms of one event in an ensemble against the global
+rms statistics for the full ensemble.  This provides an outlier test
+for entire events.  
+.SH RETURN VALUES
+1 means the null hypothesis is rejected and 0 means the null hypothesis
+cannot be rejected. ftest_subset will return a -1 if a sanity check is
+violated when n1>n2.
+.SH LIBRARY
+$(STOCKLIBS) -lglputil -lm
+.SH "BUGS AND CAVEATS"
+The incomplete beta function calculator sometimes issues this diagnostic:
+.nf
+Bad x value xxxxx passed to betai
+Must be between 0 and 1\n
+.fi
+with the posted number being a very small negative number.  This seems to
+be harmless as the correct answer is returned.  It has been observed
+to happen with two 
+populations with huge variance differences suggesting it is some kind
+of roundoff error problem in the numerical recipe routine called betai
+that was modified to produce these functions.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana Univesity
+pavlis@indiana.edu
+.fi
+.\" $Id$

@@ -1,7 +1,7 @@
 #include "stock.h"
 #include "pf.h"
 #include "db.h"
-int check_required_pf(Pf *);
+void check_required_pf(Pf *);
 Dbptr dbform_working_view(Dbptr, Pf *, char *);
 int dpinv_solver(int, int, double *,int, double *,double *,int,
 	double *, double *,double);

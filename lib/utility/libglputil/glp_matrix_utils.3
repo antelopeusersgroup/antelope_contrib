@@ -1,0 +1,50 @@
+'\" te
+.TH glp_matrix_utilities 3 "$Date$"
+.SH NAME
+matrix utilities - miscellaneous matrix utilities
+.SH SYNOPSIS
+.nf
+#include "stock.h"
+#include "perf.h"
+int dpinv_solver(int m, int n, double *U,int ldu, 
+	double *s,double *Vt,int ldv,
+        double *b, double *x,double rscv);
+int model_space_null_project(double *Vt, int ldvt, int nsv, int n,
+	double *x, double *xp);
+int model_space_range_project(double *Vt, int ldvt, int nsv, int n,
+	double *x, double *xp);
+int data_space_null_project(double *U, int ldu, int nsv, int m, 
+	double *x, double *xp);
+.fi
+.SH DESCRIPTION
+This is a collection of matrix routines intimately connected to the 
+LAPACK singular value decomposition routine called dgesvd(3).  The
+argument names above are identical to those in the current documentation
+for lapack as implemented in sunperf.  See man dgesvd(3), the Sun 
+Performance Library documentation, or books on LAPACK for more background.
+Note that all matrices are stored in FORTRAN order which C treats as
+vectors broken into blocks (columns) of length ldu, ldvt, etc.  (Think
+of the ld as standing for  
+"leading dimension of...".  
+
+\fRdpinv_solver\fR is a pseudoinverse solver using left singular values
+stored in U and right singular vectors stored in Vt (assumes LAPACK 
+convention of dgesvd that this is the transpose of V).  rsvc defines
+the relative cutoff for singular values set as rsvc*max(s) where s
+is the vector of singular values.  This function returns the number of
+singular values used in the solution based on this cutoff.
+
+\fBmodel_space_null_projector\fR and \fBmodel_space_range_projector\fR
+are complementary projectors using nsv singular values and the right
+singular vectors Vt.  \fBdata_space_null_projector\fR is similar but is
+constructed from the left singular vectors in the data space.  
+.SH LIBRARY
+$(STOCKLIBS) -lperf
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana Univesity
+pavlis@indiana.edu
+.fi
+.\" $Id$
