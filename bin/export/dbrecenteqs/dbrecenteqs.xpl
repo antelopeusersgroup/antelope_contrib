@@ -456,6 +456,16 @@ sub create_focusmap_html {
 	my( $region_string ) = location_header_line( @dbprefor, $lat, $lon, $orid );
 	my( $output ) = new IO::File( ">$xml_filename" );
 
+	if( ! defined( $output ) ) {
+
+		print STDERR 
+			"\n\t************************************\n" . 
+			"\tWARNING: Skipping evid $evid--" .
+			"\tFailed to open '$xml_filename'\n" .
+			"\t************************************\n\n";
+		return;
+	}
+
 	my( $writer ) = new XML::Writer( OUTPUT => $output, 
 					 DATA_MODE => 'true', 
 					 DATA_INDENT => 2 );
@@ -1249,7 +1259,11 @@ if( $opt_e ) {
 } elsif( $opt_h ) {
 
 	@dbwebmaps = dbprocess( @db, "dbopen webmaps",
-				     "dbsubset evid != NULL" );
+				     "dbsubset evid != NULL",
+				     "dbjoin event",
+				     "dbjoin origin event.prefor#origin.orid",
+				     "dbjoin mapassoc mapname origin.orid#mapassoc.orid"
+				     );
 
 	$nmaps = dbquery( @dbwebmaps, "dbRECORD_COUNT" );
 
