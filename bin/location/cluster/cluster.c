@@ -8,8 +8,12 @@
 #include "glputil.h"
 void usage()
 {
-	banner(Program_Name, "$Revision$ $Date$") ;
-	elog_die(0,"usage:  %s db [-v -pf pfname]\n",Program_Name);
+	cbanner("$Revision$ $Date$",
+		"db [-v -pf pfname]",
+		"Gary Pavlis",
+		"Indiana University",
+		"pavlis@indiana.edu") ;
+	elog_die(0,"Exit on usage error\n");
 }
 /* This is an internal definition of an event location object that holds
 all the things we need here.
