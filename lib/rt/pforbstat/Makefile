@@ -14,7 +14,7 @@ fflags=
 ldflags=
 ldlibs=
 
-include $(LINDCNSMAKE)
+include $(ANTELOPEMAKE)
 
 DIRS=
 DBG= -g
