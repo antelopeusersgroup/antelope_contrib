@@ -53,9 +53,22 @@ public class DatabaseRelation {
 
     public String defines;
 
-    /** List<String> of separators. */
+    /** String that separates individual records (by default, "\n"). */
 
-    public String separator;
+    public String recordSeparator;
+
+    /** String that separates individual fields (by default, " " [or ""?]). 
+     *  DataScope requires that fields have a fixed number of characters, so
+     *  the recordSeparator and fieldSeparator are pretty much just fluff.
+     *  This can save us effort in parsing, since we can explicity calculate
+     *  the character range corresponding to a given field in a given record.
+     *  But it might be quite useful to allow a second mode of processing, 
+     *  where the tables are actually parsed according to these separators
+     *  and some (not yet invented) quoting convention.  Then we could use
+     *  a Datascope-style interface to access comma-separated-values files, 
+     *  etc, which would be pretty handy. */
+
+    public String fieldSeparator;
 
     /** Short description of the table. */
 
@@ -145,7 +158,7 @@ public class DatabaseRelation {
     }
 
     /** Verify whether this DatabaseRelation is self-consistent with respect to
-     *  a given schema. */
+     *  a given schema.  Currently returns the same value as isWellFormed(). */
     
     public boolean isWellFormed(DatabaseSchema schema) {
 
@@ -154,7 +167,8 @@ public class DatabaseRelation {
 	return true;
     }
 
-    /** Verify whether this DatabaseRelation is self-consistent.  */
+    /** Verify whether this DatabaseRelation is self-consistent.  Currently
+     *  returns true in all circumstances. */
 
     public boolean isWellFormed() {
 	return true;

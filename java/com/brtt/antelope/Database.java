@@ -47,19 +47,11 @@ class TableLoc {
 
 public class Database {
 
-    /** Contains the schemas that describe the format of this database. 
-     *  Attribute and Relation names must be unique across all schemas;
-     *  that is, a given name corresponds to at most one object, either
-     *  an Attribute or a Relation, in this set of schemas.  The schemas
-     *  are present in this list as compiled DatabaseSchema objects.
-     *
-     *  Note: it might make more sense to just have one DatabaseSchema 
-     *  pointer, since all of the schemas present will just be combined
-     *  into one "super schema" anyway (just as if there were a file that
-     *  listed each of these schemas with an "Include" statement).
+    /** Contains the schema that describe the format of this database. 
+     *  All schemas listed for this database are merged into this object.
      */
 
-    public List schemas;
+    DatabaseSchema schema;
 
     /** Contains a list of directories and basenames (combined using the
      *  TableLoc class to provide pairs) that forms a search path for tables
@@ -72,6 +64,51 @@ public class Database {
      *   */
 
     public void addSources(String sourcelist) {
+	
+	/* First split this string into fields separated by colons */
+	
+	/* This could all be done in two lines of Perl. */
+
+	while (sourcelist.length() > 0) {
+	    
+	    String source;
+
+	    /* Pop off the first element of the list */
+
+	    if (sourcelist.indexof(":") >= 0) {
+		source = sourcelist.indexof(":");
+		sourcelist = sourcelist.subString(sourcelist.indexof(":")+1, 
+						  sourcelist.length());
+	    } else {
+		source = sourcelist;
+		sourcelist = "";
+	    }
+
+	    /* Now, split into the format foo{bar} or just foo */
+
+	    if (source.indexof("{") >= 0) {
+		directory = source.subString(0,source.indexof("{"));
+
+		if (source.indexOf("}") < 0) {
+		    // FixMe: throw an error
+		}
+
+		basename = source.subString(source.indexOf("{")+1,
+					    source.indexOf("}"));
+		
+		if (source.indexOf("}") < source.length()) {
+		    // FixMe: generate a warning about spurious extra characters
+		}
+
+	    } else {
+		directory = source;
+	    }
+
+	    /* Now we have the top item of the list parsed into 'directory'
+	       and 'basename'. */
+
+	    addSource(directory, basename);
+	}
 	
     }
 
@@ -93,9 +130,34 @@ public class Database {
      *  containing the descriptor file is searched for the schema definition,
      *  and if it is not found there, the directory $ANTELOPE/data/schemas is
      *  searched.  Note: this means we have to remember the directory that 
-     *  contained the descriptor file. */
+     *  contained the descriptor file. 
+     *
+     *  Attribute and Relation names must be unique across all schemas;
+     *  that is, a given name corresponds to at most one object, either
+     *  an Attribute or a Relation, in this set of schemas.   Note: should we 
+     *  verify the uniqueness of names, and throw an exception if it is 
+     *  violated, or should we trust the user?  Probably the former. (-:
+     */
     
     public void addSchema(String schemaName) {
+
+	/* First we have to find the schema file. */
+
+	String filename;
+
+	Reader reader = new FileReader(filename);
+
+	/* Now we compile the Schema. */
+
+	DatabaseSchema schema = new DatabaseSchema(reader);
+
+	/* Now combine this schema with the existing schema (if any). */
+
+	if (this.schema == null)
+	    this.schema = schema;
+	else
+	    this.schema.merge(schema);
+	    
     }
 
     /** Add the given schema to the database's schema list.  In actual fact
@@ -112,6 +174,22 @@ public class Database {
      *  is what the user is after anyway. */
 
     public DatabaseTable getTable(String tableName) {
-      return null;
+
+	/* Search for the Relation definition of this table. */
+
+	if (!schema.relations.contains(tableName)) {
+	    // Fixme: throw an exception
+	}
+
+	DatabaseRelation relation = (DatabaseRelation)(schema.relations.get(tableName));
+
+	/* Search for the table in the 'sources' list. */
+
+	String filename = null;
+
+	/* Now we have all of the information we need. */
+
+	return new DatabaseTable(relation, filename);
+
     }
 }

@@ -68,4 +68,19 @@ class DatabaseTable {
   //  int            *tr_database;       /* translate table for database id */
   //  int            *tr_table;	       /* translate table for table id */
   //  char           *scratch;	       /* scratch record */
+
+    /* Public Methods */
+
+    public DatabaseTable(DatabaseRelation relation, String filename) {
+	
+    }
+
+    public DatabaseTable(DatabaseRelation relation, Reader reader) {
+	
+    }
+
+    public DatabaseRecord getRow(int index) {
+	return (DatabaseRecord)(records.get(index));
+    }
+
 } 

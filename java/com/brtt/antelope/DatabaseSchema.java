@@ -49,7 +49,7 @@ public class DatabaseSchema {
     public String timedate;
 
     /** Parse a textual description of  database schema into a DatabaseSchema
-     *  object. */
+     *  object. Note: why don't we just turn this into a constructor? */
 
     public static DatabaseSchema parse(Reader input) {
 
