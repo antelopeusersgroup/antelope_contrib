@@ -1,4 +1,4 @@
-.TH DB_XVIMAGE 1 "$Date$"
+.TH DB_SHOWURL 1 "$Date$"
 .SH NAME
 db_showurl\- display databased hypertext references with netscape
 .SH SYNOPSIS
@@ -6,6 +6,8 @@ db_showurl\- display databased hypertext references with netscape
 db_showurl db
 .fi
 .SH DESCRIPTION
+This is a DEPRECATED utility. It has been replaced by db_extfile_proc(1).
+
 db_showurl takes an input database view and displays the URL references 
 (World-Wide-Web Uniform Reference Locators) described by the url field of the 
 input database, using netscape. db_showurl is meant to be run from
@@ -24,7 +26,7 @@ the .dbe.pf parameter file.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-netscape(1), dbe(1)
+db_extfile_proc(1), netscape(1), dbe(1)
 .fi
 .SH "BUGS AND CAVEATS"
 .SH AUTHOR

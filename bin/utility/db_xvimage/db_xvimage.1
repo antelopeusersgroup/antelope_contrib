@@ -6,6 +6,9 @@ db_xvimage\- display databased images in xv
 db_xvimage db
 .fi
 .SH DESCRIPTION
+This is a DEPRECATED interface. It has been replaced by 
+db_extfile_proc(1).
+
 db_xvimage takes an input database view and displays the image 
 files referenced by dir/dfile with the program xv. db_xvimage 
 is meant to be run from the .dbe.pf parameter file.
@@ -27,7 +30,7 @@ box is presented first for confirmation.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-xv(1), dbe(1)
+db_extfile_proc(1), xv(1), dbe(1)
 .fi
 .SH "BUGS AND CAVEATS"
 The number of files considered to be a 'large request' is 

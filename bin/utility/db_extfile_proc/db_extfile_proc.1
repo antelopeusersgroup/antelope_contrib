@@ -1,0 +1,116 @@
+.TH DB_EXTFILE_PROC 1 "$Date$"
+.SH NAME
+db_extfile_proc \- Run arbitrary commands on Datascope extfiles
+.SH SYNOPSIS
+.nf
+db_extfile_proc -m mode [-u] [-w nmax] dbtable
+.fi
+.SH DESCRIPTION
+db_extfile_proc takes an input database view and runs commands on the
+files referenced by dir/dfile with arbitrary programs. 
+db_extfile_proc is meant to be run from the .dbe.pf parameter file, 
+although it can take any table name from the command line as long as 
+that table has dir/dfile references. A common use is to run the 
+image-display program xv(1) on a set of files containing images. 
+
+The mode specified in the command line identifies a set of commands 
+from the parameter file. These commands may include the macro values 
+"EXTFILE" and "EXTFILES". The latter is replaced by a list of all external 
+files in the view. The former triggers a loop around the block of 
+commands. In this case the block of commands is executed once for each 
+specified external file, with EXTFILE being replaced by the filename. 
+Both EXTFILE and EXTFILES may be used at once, in which case the 
+file-list substitution is performed before the iterative loop over each file.
+
+.SH OPTIONS
+-m mode Specifies the block of commands to be used from the parameter file.
+Required.
+
+-w nmax Specifies the maximum number of files to accept without requiring 
+confirmation from the user. This is intended to prevent swamping the window
+manager or CPU with requests to display or otherwise process thousands 
+of files.
+
+-u If this is specified, the field "url" is extracted from the table instead
+of the dir/dfile combination constructed by extfile().
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+yukon% pfecho db_extfile_proc.pf
+animate &Tbl{
+	/opt/sfw/bin/animate EXTFILES &
+}
+url &Tbl{
+	netscape -remote "openURL(EXTFILE, new-window)" &
+}
+xv &Tbl{
+	xv EXTFILE &
+}
+yukon%
+
+A corresponding entry in .dbe.pf might look like this:
+
+yukon% pfecho .dbe.pf Images0.1
+Images0.1:
+&Arr{
+    graphics    &Arr{
+        images  &Tbl{
+            Image db_extfile_proc -m xv -
+            Animate db_extfile_proc -m animate -
+        }
+    }
+}
+yukon% 
+
+or
+
+yukon% pfecho .dbe.pf dbrecenteqs1.0 
+dbrecenteqs1.0:
+&Arr{
+    graphics &Arr{
+	webmaps &Tbl{
+		Image db_extfile_proc -m xv -
+		Url db_extfile_proc -u -m url -
+	}
+	mapstock Image db_extfile_proc -m xv -
+        instrument	Response  dberesp -
+        origin	Hypocenters dbmaporigins -
+        site	Stations  dbmapstations -
+        stage	Response  dberesp -
+        wfdisc	Waveforms trdisp -
+    }
+}
+}
+.fi
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+xv(1), dbe(1)
+.fi
+.SH "BUGS AND CAVEATS"
+This is intended to replace db_xvimage(1), which is deprecated.
+
+Since this is assumed to have been launched from dbe, no checking 
+is done to see that the input view or table is valid and contains 
+one or more files. 
+
+A more complex macro mode would be possible, in which EXTFILEs are numbered
+and specified explicitly, e.g. EXTFILE_1, EXTFILE_2 etc. 
+
+db_extfile_proc currently wraps each command in a perl system() 
+command. A '-e' option could be added to trigger direct eval() of
+the listed commands, allowing more general perl processing. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
