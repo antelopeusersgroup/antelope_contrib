@@ -32,13 +32,13 @@ are wrappers around the respective C function calls, the documentation
 on the identically-named C routines may also be helpful.
 
 .SS Datascope functions
-.IP "\fBdbopen\fP ( database, permissions )"
+.IP "\fBds_dbopen\fP ( database, permissions )"
 Returns a database pointer to the specified database.
 .ft CW
 .in 2c
 .nf
 
-$db = dbopen ( $database, 'r+' ) ;
+$db = ds_dbopen ( $database, 'r+' ) ;
 
 .fi
 .in
@@ -221,13 +221,13 @@ $nrecords =  dbnrecs( $db );
 .fi
 .in
 .ft R
-.IP "\fBdbclose\fP ( $db )"
+.IP "\fBds_dbclose\fP ( $db )"
 Close a Datascope database
 .ft CW
 .in 2c
 .nf
 
-dbclose ( $db );
+ds_dbclose ( $db );
 
 .fi
 .in
@@ -300,7 +300,7 @@ foreach($functions as $func) {
 echo "<br>\\n";
 
 .ne 6
-$mydb =dbopen( "/opt/antelope/data/db/demo/demo", "r" );
+$mydb =ds_dbopen( "/opt/antelope/data/db/demo/demo", "r" );
 
 $mydb = dbprocess( $mydb, "dbopen origin",
                           "dbsubset ml > 3" );
