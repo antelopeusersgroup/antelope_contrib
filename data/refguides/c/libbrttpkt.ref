@@ -1,10 +1,11 @@
 <library>
 Special Packet Processing
 brttpkt
+brttutil
 $(ORBLIBS)
 none
 brttpkt.h
-utility for buffering individual channel waveform samples into contiguous traces
+utilities for processing ORB waveform packets 
 
 <subsection Channel Trace Buffers>
 Chantracebuf *chantracebuf_new ( double tstart, double tend, double latency, int apply_calib )
@@ -34,4 +35,60 @@ int chantraceproc_process ( Chantraceproc *cp, int orb )
 int chantracebuf_filter ( void **fil, int *type, Chantracebuf *icp, Chantracebuf **ocp, char *filspec, int filinit )
     apply a filter to a trace-buffer object
 
+<subsection Orb Reap/Put Threads>
+OrbreapThr *orbreapthr_new (int orb, double timeout, int queuesize)
+    create a new ORB reap thread that will read from orb with a read timeout and queuesize slots in the FIFO
+
+int orbreapthr_stop (OrbreapThr *orbth)
+    stop the orbth ORB reap thread from reading new packets
+
+int orbreapthr_destroy (OrbreapThr *orbth)
+    destroy the orbth ORB reap thread and free all resources
+
+int orbreapthr_data_available (OrbreapThr *orbth)
+    check for data availability on the orbth ORB reap thread
+
+int orbreapthr_set_timeout (OrbreapThr *orbth, double timeout)
+    (re)set the read timeout on the orbth ORB reap thread
+
+int orbreapthr_get (OrbreapThr *orbth, int *pktid, char *srcname, double *time, char **packet, int *nbytes, int *bufsize)
+    get the next packet from the orbth ORB reap thread
+
+OrbputThr *orbputthr_new (int orb, int queuesize)
+    create a new ORB put thread that will write to orb with queuesize slots in the FIFO
+
+int orbputthr_stop (OrbputThr *orbth)
+    stop the orbth ORB put thread from writing new packets
+
+int orbputthr_destroy (OrbputThr *orbth)
+    destroy the orbth ORB write thread and free all resources
+
+int orbputthr_put (OrbputThr *orbth, char *srcname, double time, char *packet, int nbytes)
+    put a packet into the orbth ORB reap thread FIFO for eventual writing to the ORB
+
+<subsection Packet-Channel Calib Caching>
+OrbreapThr *orbreapthr_new (int orb, double timeout, int queuesize)
+    create a new ORB reap thread that will read from orb with a read timeout and queuesize slots in the FIFO
+
+PktChannelCalib * pktchannelcalib_new (char *dbname, int need_calib, int need_response, int need_site)
+    create a new packet-channel calib object from dbname database with need_calib, need_response, need_site metadata needs
+
+int pktchannelcalib_free (PktChannelCalib *ch)
+    destroy the ch packet-channel calib object and free all resources
+
+int pktchannelcalib_get (PktChannelCalib *ch, char *snet, char *ssta, char *schan, char *sloc, double time, int check, char *sta, char *chan, double *lat, double *lon, double *elev, double *calib, double *calper, char *segtype, Response **response)
+    get metadata from the ch packet-channel calib object for snet, ssta, schan, sloc SEED codes at this time and check the database table access times to see if it is necessary to reread the database
+
+<subsection Packet-Channel Pipe Processing>
+PktChannelPipe *pktchannelpipe_new (Tbl *channels_select, Tbl *channels_reject, int maxpkts, int (*callback) (void *private, PktChannel **pktchan, int queue_code, double gaptime), void *private)
+    create a new packet-channel pipe object using channels_select expressions for selecting channels, channels_reject expressions for rejecting channels, maxpkts packets in the time-ordered queue, and using the user supplied callback function when packet-channels are ready for processing
+
+int pktchannelpipe_free (PktChannelPipe *pcp)
+    destroy the pcp packet-channel pipe object and free all resources
+
+int pktchannelpipe_push (PktChannelPipe *pcp, char *srcname, double pkttime, char *pkt, int nbytes)
+    push a new ORB packet onto the pcp packet-channel pipe object
+
+int pktchannelpipe_flush (PktChannelPipe *pcp)
+    flush all packet-channels from the pcp packet-channel pipe object
 
