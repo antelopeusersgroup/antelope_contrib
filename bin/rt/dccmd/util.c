@@ -206,7 +206,7 @@ void initdas( )
 {
    Pf  		*Param;
    Tbl 		*Site;
-   char		*das, *sta, key[16];
+   char		*das, *sta, prev_key[16], key[16];
    struct Site 	 site;
    char 	*istr;
    int 		i;
@@ -227,17 +227,21 @@ void initdas( )
   Dases = newarr( 0 );
   Dasid = newarr( 0 );
 	   
+  sprintf( &prev_key[0], "null\0");
+  
   for( i = 0; i < nsite; i++ )  {
 
 	istr = (char *) gettbl(Site, i);
 	sscanf(istr, STE_SCS,  STE_RVL(&site));
 	sprintf( key, "%d\0", site.sid);
-	das = (char *) newname( key );
-	sta = (char *) newname( site.name );
-	pushtbl( Dlist, das );
-	pushtbl( Dlist, sta );
-	setarr(Dases, site.name, das );
-	setarr(Dasid, das, das );
+	if( strncmp( &key[0], &prev_key[0], strlen(&key[0]) != 0 )  {
+	    das = (char *) newname( key );
+	    sta = (char *) newname( site.name );
+	    pushtbl( Dlist, das );
+	    pushtbl( Dlist, sta );
+	    setarr(Dases, site.name, das );
+	    setarr(Dasid, das, das );
+	}
    }
 }           
 

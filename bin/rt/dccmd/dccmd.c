@@ -10,7 +10,7 @@ char *argv[];
   extern int      optind;
   int    dasid, i, code;
   int    cmdlen, err, num;
-  int    dcfp;
+  int    echo, dcfp;
   char   *dcname, *cmd, *name ;
   char   buffer[IBUF_SIZE];
   char  *key;
@@ -50,13 +50,13 @@ char *argv[];
        CmdArg=0; Dases=0; Dasid=0; Dlist=0;
        pfile = "pkt";
 
-       if(  !strncmp( cmd, "ZD", strlen("ZD"))  ||
-            !strncmp( cmd, "XX", strlen("XX"))  )  {
+       if(  !strncmp( cmd, "ZD", 2 ))  ||
+            !strncmp( cmd, "XX", 2 ))  )  {
 
           if( islegal( name, DCCMD) )  {
 	     sprintf( &buffer[0], "%2s%2s\0", cmd, cmd );
-             cmdlen = 4;
-             if( !sendcmd( dcfp, &buffer[0], cmdlen, 0 )) {
+             cmdlen = 4; echo = 0; 
+             if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
                   die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
              }
@@ -64,13 +64,13 @@ char *argv[];
 
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
 
-     }  else if ( strncmp( cmd, "IP", strlen("IP")) == 0 )  {            
+     }  else if ( strncmp( cmd, "IP", 2 ) == 0 )  {            
 
           if( islegal( name, DCCMD) )  {
 	      key = (char *) gettbl( CmdArg, 0 );
               sprintf( &buffer[0], "%2s%s\0", cmd, key );
-              cmdlen = strlen(buffer);
-              if( !sendcmd( dcfp, &buffer[0], cmdlen, 0 )) {
+              cmdlen = strlen(buffer); echo = 0;
+              if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
                   die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
               }
@@ -79,8 +79,8 @@ char *argv[];
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
 
 
-     }  else if ( !strncmp( cmd, "CF", strlen("CF")) ||
-               !strncmp( cmd, "CO", strlen("CO"))  )  {
+     }  else if ( !strncmp( cmd, "CF", 2 ) ||
+               !strncmp( cmd, "CO", 2 )  )  {
                if( strncmp( name, "MAIN", 4 ) == 0 )
                    sprintf( &buffer[0], "%2s01%2s\0", cmd, cmd );
 	       else if ( strncmp( name, "AUX", 3 ) == 0 )
@@ -89,24 +89,24 @@ char *argv[];
 	       die( 0, 
 	       "\n%s command has illegal argument - %s\n. \nOnly \'MAIN\' or \'AUX\' must be specified.", cmd, name );
               
-	    cmdlen = strlen(buffer);
-            if( !sendcmd( dcfp, &buffer[0], cmdlen, 0 )) {
+	    cmdlen = strlen(buffer); echo 1;
+            if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	          close(dcfp);
                   die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
             }
 	    complain(0, "\n%s was sent to %s.\n", buffer, dcname);
 
 
-     }  else if ( !strncmp( cmd, "RO", strlen("CO")) ||
-               !strncmp( cmd, "RF", strlen("CO")) )  {
+     }  else if ( !strncmp( cmd, "RO", 2 ) ||
+               !strncmp( cmd, "RF", 2 ) )  {
 
           if( (num = islegal( name, CRCMD)) )  {
               for(i = 0; i < num ; i++ ) {
 		 key = gettbl( CmdArg, i );
 		 dasid = atoi( key);
 		 sprintf( &buffer[0], "%2s%02d%2s\0", cmd, dasid, cmd );
-                 cmdlen = 6;
-                 if( !sendcmd( dcfp, &buffer[0], cmdlen, 1 )) {
+                 cmdlen = 6; echo = 1;
+                 if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	               close(dcfp);
                        die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
@@ -115,19 +115,19 @@ char *argv[];
 	      }
 	  }  else die( 0, "\n%s command has illegal argument - %s\n", cmd, name );
            
-     }  else if ( !strncmp( cmd, "RC", strlen("RC")) ||           
-               !strncmp( cmd, "RS", strlen("RS")) ||
-               !strncmp( cmd, "ZS", strlen("ZS")) ||
-               !strncmp( cmd, "TO", strlen("TO")) ||
-               !strncmp( cmd, "TF", strlen("TF")) ) {
+     }  else if ( !strncmp( cmd, "RC", 2 ) ||           
+               !strncmp( cmd, "RS", 2 ) ||
+               !strncmp( cmd, "ZS", 2 ) ||
+               !strncmp( cmd, "TO", 2 ) ||
+               !strncmp( cmd, "TF", 2 ) ) {
 
           if( (num = islegal( name, DASCMD)) )  {
               for(i = 0; i < num ; i++ ) {
 		 key = gettbl( CmdArg, i );
 		 dasid = atoi( key);
                  sprintf( &buffer[0], "%2s%4d%2s\0", cmd, dasid, cmd );
-                 cmdlen = 8;
-                 if( !sendcmd( dcfp, &buffer[0], cmdlen, 1 )) {
+                 cmdlen = 8; echo = 1;
+                 if( !sendcmd( dcfp, &buffer[0], cmdlen, echo )) {
 	               close(dcfp);
                        die( 0, "\nCan't send %s to %s DC.\n", buffer, dcname );
                  }
