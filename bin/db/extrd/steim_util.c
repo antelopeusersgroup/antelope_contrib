@@ -7,6 +7,7 @@
 
 static int      comp_format[] = {0, 10, 11, 20};
 extern int Seq;
+extern char *Network;
 
 Steim *init_steim( SegData *segment)
 {
@@ -19,7 +20,10 @@ Steim *init_steim( SegData *segment)
     szcopy (steim->sdh.sta, segment->sta, STA_LEN);
     szcopy (steim->sdh.chan, segment->chan, CHAN_LEN);
     szcopy (steim->sdh.loc, "", LOC_LEN) ;
-    szcopy (steim->sdh.net, "", NET_LEN);
+    if( Network != 0 )
+      szcopy (steim->sdh.net, Network, NET_LEN);
+    else
+      szcopy (steim->sdh.net, "", NET_LEN);
  
     steim->sdh.seq = Seq;
     steim->sdh.activity_flags = 0;

@@ -13,9 +13,23 @@
 #include "extrd.h"
 
 extern void sig_hdlr();
+char *Network = 0;
 int Seq;
 char in_dbase[132];
- 
+
+static void usage()
+{ 
+        fprintf(stderr,"\nusage:  %s [-n network] [-o outdir] dbname|wfd_dir|\"wfd_fls\" stime etime \n\n", Program_Name);
+        fprintf(stderr,"  Arguments:\n\n");
+        fprintf(stderr,"dbname    => DB name \n");
+        fprintf(stderr,"wfd_dir   => directory with wfdisc files\n");
+        fprintf(stderr,"wfd_fls   => Wfdisc files names. Quotes are required!\n");
+        fprintf(stderr,"stime     => start time of the data subset\n");
+        fprintf(stderr,"etime     => end time of the data subset\n");
+        fprintf(stderr,"network   => network name.\n");
+        fprintf(stderr,"outdir    => output directory. Current directory by default.\n");
+        exit(1);
+}
 
 main(argc, argv)
 int argc;
@@ -23,6 +37,8 @@ char *argv[];
 
 {
 
+ extern int optind;
+ extern char *optarg; 
  Dbptr dbsub,tmpdb, wfddb;
  Tbl  *sort_sta_ch_tm;
  FILE *fd;
@@ -33,93 +49,93 @@ char *argv[];
  char path[132], name[132];
  char wfd_name[512], *fname;
  char *str;
- char *out_dir = NULL;
+ char *out_dir = 0;
+ char inname[512]; 
  char newdir[132], *tmpname;
  char rec[512];
  int nrec, oldsize, record_size, i, j;
  int wfdrec;
+ int err_in=0, id;
  char subset_condition[80];
  
 
-    if( (out_dbase = (char *) malloc(132) ) == NULL )  {
-       perror("extrd/main(): malloc");
-       exit(1);
-    }
+    while( ( id = getopt( argc, argv, "n:o:") ) != -1 )
+      switch( id )  {
 
-    if( (fname = (char *) malloc(512) ) == NULL )  {
-       perror("extrd/main(): malloc");
-       exit(1);
-    }
-
-    if( (str = (char *) malloc(512) ) == NULL )  {
-       perror("extrd/main(): malloc");
-       exit(1);
-    }
-
-
-
-/*  Get input parameters from comand line and initialized its */
-
-    if(argc < 4)  {
-        fprintf(stderr,"\nusage:  %s dbname | wfd_dir | \"wfd_fls\" stime etime [out_dir]\n\n", argv[0]);
-        fprintf(stderr,"  Arguments:\n\n");
-        fprintf(stderr,"dbname    => DB name \n\n");
-        fprintf(stderr,"wfd_dir   => directory with wfdisc files\n\n");
-        fprintf(stderr,"wfd_fls   => Wfdisc files names. Quotes are required!\n\n");
-        fprintf(stderr,"stime     => start time of the data subset\n\n");
-        fprintf(stderr,"etime     => end time of the data subset\n\n");
-        fprintf(stderr,"\nout_dir  => output directory. Current directory by default.\n");
-        exit(1);
-   }
-   if(argc == 5)  {
-       out_dir = argv[4];
-       if(!create_dir(out_dir))   {
-          die( 1, "Can't create an output directory: %s\n", out_dir); 
-       }  
-   } 
-   if(strncmp(argv[1], "./", strlen("./")) == 0  ||  
-      (strncmp(argv[1], ".", strlen(".")) == 0 && 
-       strncmp(argv[1], "..", strlen("..")) != 0 ) )  {
-      die(0, "extrd: Do not run extrd in the directory with original data.\n");
-   }
+        case 'n':
+          Network = strdup( optarg );
+          break;
+        
+        case 'o':
+          out_dir = strdup( optarg);
+          break;
+ 
+        case '?':
+          err_in++;
+      }
 
     elog_init (argc, argv) ;
     elog_notify (0, "%s v2.0\n", argv[0] ) ;
     Program_Name = argv[0];
+    
+    if( err_in || argc - optind < 3 )
+      usage();
 
-    signal(SIGINT, sig_hdlr );
-    signal(SIGBUS, sig_hdlr );
-    signal(SIGSEGV, sig_hdlr );
+    strcpy(inname,argv[optind++]);
 
-   stime = str2epoch(argv[2]);
-   etime = str2epoch(argv[3]);
+    stime = str2epoch(argv[optind++]);
+    etime = str2epoch(argv[optind]);
    
+    
+    if( (out_dbase = (char *) malloc(132) ) == NULL )  {
+       die( 1, "extrd/main(): malloc");
+    }
+
+    if( (fname = (char *) malloc(512) ) == NULL )  {
+       die(1, "extrd/main(): malloc");
+    }
+
+    if( (str = (char *) malloc(512) ) == NULL )  {
+       die(1, "extrd/main(): malloc");
+    }
+
+
+/*  Get input parameters from comand line and initialized its */
+
+   if(out_dir != 0) 
+       if(!create_dir(out_dir))
+          die( 1, "Can't create an output directory: %s\n", out_dir); 
+       
+   signal(SIGINT, sig_hdlr );
+   signal(SIGBUS, sig_hdlr );
+   signal(SIGSEGV, sig_hdlr );
+
    tmpname = mktemp(strdup("extrdXXXXXX") );
    strcat( tmpname, ".wfdisc");
    sprintf( in_dbase, "%s\0",  tmpname );  
    
-   if(stat(argv[1], &buf) == 0) {
+   if(stat(inname, &buf) == 0) {
      if(S_ISDIR(buf.st_mode) != 0)  {
-        strcpy(path, argv[1]);
-        sprintf(str, "ls %s/*.wfdisc > .tmp \0",argv[1]);
+        strcpy(path, inname );
+        sprintf(str, "ls %s/*.wfdisc > .tmp \0",inname );
      }  else if(S_ISREG(buf.st_mode) != 0)  {
 
-         namefrpath( argv[1], name);
+         namefrpath( inname , name);
          fexten(name, exten);
          if( strlen(exten) <= 0)  {
-             get_wfd_name(argv[1], wfd_name);
+             get_wfd_name(inname , wfd_name);
                  sprintf(str, "ls %s > .tmp \0",wfd_name);
          } else if( strncmp(exten, "wfdisc", strlen("wfdisc")) == 0)  {
-            sprintf(str, "ls %s > .tmp\0",argv[1]);
+            sprintf(str, "ls %s > .tmp\0",inname );
          }
      }
    } else  if(ENOENT) {
-       fexten(argv[1], exten);
+       fexten(inname , exten);
        if( strlen(exten) > 0 && strncmp(exten,"wfdisc", strlen("wfdisc") ) == 0)  {
-           pathfrname(argv[1], path);
-           sprintf(str, "ls %s > .tmp \0", argv[1]);
+           pathfrname(inname , path);
+           sprintf(str, "ls %s > .tmp \0", inname );
        }  else if(strlen(exten) <= 0)  {
-           sprintf(wfd_name,"%s.wfdisc\0", argv[1]);
+           sprintf(wfd_name,"%s.wfdisc\0", inname );
            if(stat(wfd_name, &buf) == 0) { 
                pathfrname(wfd_name, path);
                sprintf(str, "ls %s > .tmp\0",wfd_name );
@@ -274,10 +290,10 @@ char *argv[];
           exit(1);
    }
 
-/*
+
    if( unlink( in_dbase ) < 0 )
      die( 1, "can't remove %s\n", in_dbase);
-*/
+
 
   exit(0);
 }

@@ -67,7 +67,7 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
        if(strcmp(new.sta, segment.sta)!= 0 || 
           strcmp(new.chan, segment.chan) != 0) { 
            if( First ) segment.sbytes = 0;
-           else if ( saved )  flush_db( segment );
+           else if ( saved )  flush_db( &segment );
 
            saved = 0;
 	   update_segdata( &segment, &new );
@@ -177,6 +177,7 @@ fprintf( stderr, "ST:%lf ET:%lf NSMP:%d\n", segment.time, segment.endtime, segme
            if( etime <= crnt_time ) done = 1;
       }  
   }
+  if( segment.dcode == trSEED ) flush_db( &segment );
 
   if( mydata.c != 0 ) free( mydata.c);
   if( buf != 0 ) free( buf);

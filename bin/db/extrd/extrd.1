@@ -1,9 +1,12 @@
-.TH extrd L "20 May 1994" " "
+.TH extrd L "23 September 1997" " "
 .SH NAME
 extrd \- extract specified segment of the css data           
 .SH SYNOPSIS
 .PP
-\fBextrd\fP \fIdbname|wfd_dir|"wfd_fnames" start_time end_time [out_dir]\fR
+\fBextrd\fP 
+	[-n network]
+	[-o outdir]
+	\fIdbname|wfd_dir|"wfd_fnames" stime etime\fR
 .SH COMMAND LINE ARGUMENTS
 .PP
 \fIdbname\fR		The database name.
@@ -12,26 +15,31 @@ extrd \- extract specified segment of the css data
 .PP
 \fI"wfd_fnames"\fR	The wfdisc file names. Can use wild characters.
 .PP
-\fIstart_time\fR	The start time to start data subset with.
+\fIstime\fR	The start time to start data subset with.
 .PP
-\fIend_time\fR 	The end time to finished data subset with. 	
+\fIetime\fR 	The end time to finished data subset with. 	
 Program accepts time as a string in any date format (see DATASCOPE time utilities).
 .PP
-\fIout_dir\fR
+\fInetwork\fR
+A network code name. Should be used for data in mini-SEED format. 
+.PP
+\fIoutdir\fR
 The name of the output directory for merged data. Current directory by 
 default.
 .PP
 .SH DESCRIPTION
 .PP
-Program reads seismic data in CSS 3.0 format, the wfdisc files of which are specified by one of the arguments (dbname |  wfd_dir | wfd_fnames).
+Program reads seismic data in CSS 3.0 format, 
+the wfdisc files of which are specified by one of the 
+arguments (dbname |  wfd_dir | wfd_fnames).
 and extracts the specified subset of data. 
-Program will create a data file and a wfdisc file with name of the form YYDDDHHMM.w and YYDDDHHMM.wfdisc respectively,
+Program will create a data file and a wfdisc file with name of the 
+form YYDDDHHMM.w and YYDDDHHMM.wfdisc respectively,
 which give the year, day, hour, and minute of the begining of the event.
-The output names are based on the 'real' start time of data subset. 
-If there are data which start on the start time specified on the command line  in the \fIwfd_dir\fR then that time will be used for output names.
-If data starts later then the time specified on the command line, the data start time will be used for output names.
-If \fIout_dir\fR is specified in the command line then the program will create such 
-directory and all output data will be placed there otherwise the output data will be placed in a current directory.
+If \fIoutdir\fR is specified in the command line then the program 
+will create such 
+directory and all output data will be placed there otherwise 
+the output data will be placed in a current directory.
 .SH EXAMPLE
 To extract a subset of data with a time window  1992053-14:00:00 to 1992063-14:00:00:00
 from the set of data wfdisc files of which are located in directory 
