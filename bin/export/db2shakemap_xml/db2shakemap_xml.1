@@ -173,6 +173,32 @@ nickel%\fB \fP
 .nf
 dbcentral(1), db2xml(1), orbwfmeas(1)
 .fi
+.SH "BUGS AND CAVEATS"
+The ShakeMap retrieve program, out of which db2shakemap_xml might be run, 
+both refuses to take extra command-line arguments for its program and demands that 
+the executable be found in /opt/ShakeMap/bin. Thus a wrapper script similar
+to the following may be useful:
+.nf
+
+nickel% cat /opt/ShakeMap/bin/db2shakemap_xml_wrapper
+#!/opt/antelope/perl/bin/perl
+
+exec( "db2shakemap_xml -j -pf /files/users/rt/run/pf/db2shakemap_xml " .
+	join( " ", @ARGV ) );
+nickel%
+
+.fi
+
+Then in /opt/ShakeMap/config/retrieve.conf one needs the line
+.nf
+
+program         : db2shakemap_xml_wrapper
+
+.fi
+
+Note that this deliberately skirts the ShakeMap database-access mechanisms in order
+to allow the utility to be run easily outside of ShakeMap context. 
+
 .SH AUTHOR
 .nf
 Kent Lindquist
