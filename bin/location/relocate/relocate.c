@@ -499,6 +499,7 @@ int main(int argc, char **argv)
 	char *sift_exp;  /* sift expression for subset */
 	int sift = 0;  /* default is no sift.  */
 	Tbl *sortkeys;
+	Tbl *joinkey1, *joinkey2;
 	/*Pointers to views returned by dbgroup (keyed to origin and event
 	respectively */
 	Dbptr dborigin_group;
@@ -582,8 +583,16 @@ int main(int argc, char **argv)
 			0,0,0,0,0);
 	if(dbv.table == dbINVALID)
 		die(1,"event->origin->assoc->arrival join failed\n");
+	/* We will explicitly set the keys for this join because it
+	was found to fail sometimes */
+	joinkey1 = newtbl(0);
+	joinkey2 = newtbl(0);
+	pushtbl(joinkey1,"arrival.sta");
+	pushtbl(joinkey1,"arrival.time");
+	pushtbl(joinkey2,"sta");
+	pushtbl(joinkey2,"ondate::offdate");
 	dbv = dbjoin ( dbv, dblookup(db,0,"site",0,0),
-			0,0,0,0,0);
+			&joinkey1,&joinkey2,0,0,0);
 	if(dbv.table == dbINVALID)
 		die(1,"event->origin->assoc->arrival->site join failed\n");
 
