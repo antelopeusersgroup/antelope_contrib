@@ -7,6 +7,9 @@ use orb;
 # orbpf2db
 # July, 2003
 
+$DEBUG = 0;
+$|++;
+
 sub database_prep {
 	my( $wantschema ) = pop( @_ );
 	my( $dbname ) = pop( @_ );
@@ -130,6 +133,8 @@ if( $opt_s ) {
 	orbseek( $orb, "$pktid" );
 }
 
+$crunch = 0; # Keep the hooks unique across crunches
+
 for(;;) {
 
 	($pktid, $srcname, $time, $packet, $nbytes) = orbreap( $orb );
@@ -146,6 +151,12 @@ for(;;) {
 			printf "Received a $result, skipping\n";
 		}
 		next;
+	}
+
+	if( $opt_v ) {
+
+		printf "Received a parameter-file '$srcname':\n" . 
+		pf2string( $pkt->pf ) . "\n\n";
 	}
 
 	( $key ) = grep( "$srcname", keys( %trans ) );
@@ -174,7 +185,12 @@ for(;;) {
 
 				$pattern =~ s/^TIME://;
 				$value = pfget( $pkt->pf, $pattern );
-				$value =~ s/^\s*([\d-.]+).*/$1/;
+				$value =~ s/^\s*([\d\-.]+).*/$1/;
+
+			} elsif( $pattern =~ /^BOOLEAN:/ ) {
+
+				$pattern =~ s/^BOOLEAN://;
+				$value = pfget_boolean( $pkt->pf, $pattern );
 
 			} else {
 		
@@ -186,11 +202,12 @@ for(;;) {
 			push( @matchfields, $field );
 		}
 
-		$crunch = 0; # Keep the hooks unique across crunches
-
 		$hookname = "hook$crunch\_clean_$cleantable";
+		$hookname = "hook_$DEBUG"; $DEBUG++;
+		printf "DEBUG PLACE1 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable ) . " Matchfields: " . join( " ", @matchfields ) . " scratchstuff: " . join( " ", dbgetv( @dbscratch, "serveraddress", "serverport" ) ) . "\n\n";
 		@records = dbmatches( @dbscratch, @dbtable, 
 						$hookname, @matchfields  );
+		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
 
 		foreach $record ( @records ) {
 			
@@ -199,9 +216,9 @@ for(;;) {
 			dbmark( @dbtable );
 		}
 
-		dbcrunch( @dbtable );
+		# dbcrunch( @dbtable );
 
-		reopen_database();
+		# DEBUG reopen_database();
 
 		$crunch++;
 	}
@@ -228,7 +245,7 @@ for(;;) {
 
 			} elsif( ref( $structref ) eq "ARRAY" ) {
 
-				@mykeys = 0..@#{$structref};
+				@mykeys = 0..$#{$structref};
 
 			} else {
 				printf STDERR
@@ -243,6 +260,8 @@ for(;;) {
 					next if( $field eq "FOREACH" );
 
 					$pattern = $fieldmap{$field};
+					
+				printf "DEBUG: processing key $key pattern $pattern\n";
 
 					if( $pattern =~ /^FOREACH$/ ) {
 						
@@ -253,7 +272,13 @@ for(;;) {
 						$pattern =~ s/FOREACH/$key/;
 						$pattern =~ s/^TIME://;
 						$value = pfget( $pkt->pf, $pattern );
-						$value =~ s/^\s*([\d-.]+).*/$1/;
+						$value =~ s/^\s*([\d\-.]+).*/$1/;
+
+					} elsif( $pattern =~ /^BOOLEAN:/ ) {
+
+						$pattern =~ s/FOREACH/$key/;
+						$pattern =~ s/^BOOLEAN://;
+						$value = pfget_boolean( $pkt->pf, $pattern );
 
 					} else {
 
@@ -271,12 +296,15 @@ for(;;) {
 				} elsif( $write_mode eq "overwrite" ) {
 	
 					$hookname = "hook$crunch\_$table";	
+		$hookname = "hook_$DEBUG"; $DEBUG++;
+		printf "DEBUG PLACE2 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable )  . "\n\n";
 					@records = dbmatches( @dbscratch, @dbtable, $hookname );	
+		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
 					@records = sort {$a <=> $b} @records;
 					if( ! defined( @records ) || 
 					    ( $recno = shift( @records ) ) !~ /^\d+$/ ) {
 	
-						$newrec = dbadd( @dbtable );
+						dbadd( @dbtable );
 	
 					} else {
 	
@@ -297,7 +325,12 @@ for(;;) {
 
 					$pattern =~ s/^TIME://;
 					$value = pfget( $pkt->pf, $pattern );
-					$value =~ s/^\s*([\d-.]+).*/$1/;
+					$value =~ s/^\s*([\d\-.]+).*/$1/;
+
+				} elsif( $pattern =~ /^BOOLEAN:/ ) {
+
+					$pattern =~ s/^BOOLEAN://;
+					$value = pfget_boolean( $pkt->pf, $pattern );
 
 				} else {
 			
@@ -314,7 +347,10 @@ for(;;) {
 			} elsif( $write_mode eq "overwrite" ) {
 
 				$hookname = "hook$crunch\_$table";
+		$hookname = "hook_$DEBUG";$DEBUG++;
+		printf "DEBUG PLACE3 About to run dbmatches $hookname Scratch: " . join( " ", @dbscratch ) . "  Table: " . join( " ", @dbtable ) . "\n\n";
 				@records = dbmatches( @dbscratch, @dbtable, $hookname );
+		printf "DEBUG dbmatches result " . join( " ", @records ) . "\n";
 
 				if( ! defined( @records ) || scalar( @records ) < 1 ) {
 	

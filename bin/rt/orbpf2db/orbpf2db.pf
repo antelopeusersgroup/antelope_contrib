@@ -11,13 +11,13 @@ translations &Arr{
 			servers &Arr{
 				serveraddress 	server{address}
 				closes 		server{closes}
-				printconn 	server{connections}
+				printconn 	BOOLEAN:server{connections}
 				errors 		server{errors}
 				host 		server{host}
 				maxdata 	server{maxdata}
 				maxpkts 	server{maxpkts}
 				maxsrc 		server{maxsrc}
-				messages 	server{messages}
+				messages 	BOOLEAN:server{messages}
 				nclients 	server{nclients}
 				nsources 	server{nsources}
 				opens 		server{opens}
@@ -74,7 +74,7 @@ translations &Arr{
 				serverport	server{port}
 				srcname		FOREACH
 				when		TIME:source_when
-				active		sources{FOREACH}{active}
+				active		BOOLEAN:sources{FOREACH}{active}
 				kbaud		sources{FOREACH}{kbaud}
 				latency_sec	sources{FOREACH}{latency_sec}
 				nbytes		sources{FOREACH}{nbytes}
