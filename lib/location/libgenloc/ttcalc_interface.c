@@ -8,6 +8,11 @@ these interface function to allow greater flexibility in the transition.
 
 Author:  Gary Pavlis
 Written:  March 21, 1997
+Modified:  July 1999
+Previous version would not work correctly when multiple methods
+were defined because it did not handle the potential variations in
+type of the "hook" defined by different calculators.  This hopefully
+fixes this.  
 */
 #include "stock.h"
 #include "arrays.h"
@@ -30,8 +35,9 @@ we use to key these Arr.
 */
 static Arr *TTmethod=NULL;
 static Arr *TTmodel=NULL; 
-static Hook *hook=0;  /* this is necessary, I think, to initialize
-			the ttcalc function properly */
+static Arr *TThooks=NULL;  /* This array is keyed by method string
+				to allow keeping mixed type hooks for
+				different methods */
 int ttcalc_interface_init(char *phase, Pf *pf)
 {
 	char *model;
@@ -43,6 +49,7 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 
 	if(TTmethod == NULL) TTmethod = newarr(0);
 	if(TTmodel == NULL) TTmodel = newarr(0);
+	if(TThooks == NULL) TThooks = newarr(0);
 
 	model = strdup(pfget_string(pf,"TTmodel"));
 	method = strdup(pfget_string(pf,"TTmethod"));
@@ -59,24 +66,8 @@ int ttcalc_interface_init(char *phase, Pf *pf)
 	}
 	setarr(TTmodel,phase,model);
 	setarr(TTmethod,phase,method);
-/*
-	geometry.source.lat=0.0;
-        geometry.source.lon = 0.0 ;
-        geometry.source.z = 0.0 ;
-        geometry.source.time = 0.0 ;
-        strcpy(geometry.source.name, "SOURCE" ) ;
-        geometry.receiver.lat = 1.0 ;
-        geometry.receiver.lon = 1.0 ;
-        geometry.receiver.z = 0.0 ;
-        geometry.receiver.time = 0.0 ;
-        strcpy(geometry.receiver.name, "RECEIVER" ) ;
-	result = ttcalc(method,model,phase,mode,&geometry,&times,&hook);
-	if(result < 0) 
-	{
-		register_error(1,"ttcalc initialization failed for phase %s\nData from this phase will be ignored",phase);
-		return(2);
-	}
-*/
+	setarr(TThooks,method,NULL);  /* this initializes the hook NULL for
+					this method */
 
 	return(0);
 }
@@ -88,6 +79,8 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 	int result,TTmode;
 	TTTime *atime;
 	Travel_Time_Function_Output o;
+	Hook *hook;
+	int hook_is_null=0;
 
 	strcpy(geometry.receiver.name,x.sta);
 	geometry.receiver.lat = x.rlat;
@@ -103,10 +96,13 @@ Travel_Time_Function_Output  ttcalc_interface_exec(Ray_Endpoints x, char *phase,
 
 	model = (char *) getarr(TTmodel,phase);
 	method = (char *) getarr(TTmethod,phase);
+	hook = getarr(TThooks,method);
+	if(hook == NULL) hook_is_null = 1;
 	TTmode = 0;
 	if(mode == ALL) TTmode |= TT_DERIVATIVES;
 
 	result = ttcalc(method,model,phase,TTmode,&geometry,&t,&hook);
+	if(hook_is_null)setarr(TThooks,method,hook);
 
 	if((result < 0) || ( (result == 1) && (mode == ALL) ))
 	{
@@ -148,6 +144,8 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 
 	Slowness_Function_Output o;
 	TTSlow *ttu;
+	Hook *hook;
+	int hook_is_null=0;
 
 	strcpy(geometry.receiver.name,x.sta);
 	geometry.receiver.lat = x.rlat;
@@ -163,13 +161,16 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 
 	model = (char *) getarr(TTmodel,phase);
 	method = (char *) getarr(TTmethod,phase);
+	hook = getarr(TThooks,method);
+	if(hook == NULL) hook_is_null=1;
 	TTmode = TT_SLOWNESS;
 	if(mode == ALL) TTmode |= TT_DERIVATIVES;
 
 	result = ucalc(method,model,phase,TTmode,&geometry,&u,&hook);
+	if(hook_is_null)setarr(TThooks,method,hook);
 	if((result < 0) || ( (result == 1) && (mode == ALL) ))
 	{
-		complain(1,"Station %s:  ttcalc returns error %d for phase %s\nDatum skipped\n",
+		complain(1,"Station %s:  ucalc returns error %d for phase %s\nDatum skipped\n",
 			x.sta, result, phase);
 		o.ux = SLOWNESS_INVALID;
 		o.uy = SLOWNESS_INVALID;
