@@ -9,7 +9,7 @@ scec2db  \- retrieval and conversion of SCEC bulletin
 	[-f \fIfile\fP]
 	[-s \fIstart_time\fP]
 	[-e \fIend_time\fP]
-	-c \fIcatread|scecdc|hypo71|hypo2000\fP}
+	-c {\fIcatread|scecdc|hypo71|hypo2000\fP}
 	\fIdb_to_update\fP
 
 .fi
@@ -75,9 +75,13 @@ Example of hypo2000 format listing:
 
 .ft CW
 .nf
+
 20010221090058.6336  3.48117 49.43 5.38    17160  60.12                                4 0.59  0.37  7                  H    40 l1.57 12.0l1.57 12.0   9630697L1.57 12.0          
 20010221110106.8333 29.01116 30.2112.95    10284  90.20                                3 1.65  1.79  0                  H    36 c1.45  5.0c1.45  5.0   9630701 1.45  5.0          
 20010221114912.3234 51.51116 24.46 4.25     6151  70.11     
+
+.ft R
+.fi
 
 .IP Hypo71
 
@@ -173,7 +177,7 @@ Get a catalog of events for the last week.
 .ft CW
 .in 2c
 .nf
-.ne4
+.ne 4
 
 myhost%\fB scec2db -w -c hypo71 catalogs/cit
 
@@ -186,7 +190,7 @@ Retrieve bulletin for a month of events starting on October 11, 1999
 .ft CW
 .in 2c
 .nf
-.ne4
+.ne 4
 
 myhost%\fB scec2db -m -c hypo71 -s "10/11/1999" catalogs/post_HM
 
@@ -213,13 +217,6 @@ scec2db    UTC 00 06 * * 5 scec2db -m -c catread catalogs/cit
 }
 .fi
 .in
-.ft R
-
-
-.ft CW
-.in .2i
-.nf
-
 .ft R
 .SH "SEE ALSO"
 .nf
