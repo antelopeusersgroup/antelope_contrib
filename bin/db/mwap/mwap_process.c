@@ -2,8 +2,12 @@
 are a few internal functions defined first.  The main routine
 here is mwap_process */
 
+#include <stdio.h>
+#include <sunmath.h>
 #include "tr.h"
+#include "location.h"
 #include "multiwavelet.h"
+#include "mwap.h"
 /* This small function returns an associative array of pointers to 
 doubles keyed by station names that are the arrival times read from
 the database.  Because we are dealing with this db bundle pointer
@@ -138,34 +142,39 @@ void copy_MWslowness_vector(MWSlowness_vector *u0,MWSlowness_vector *u)
 	u->uy = u0->uy;
 	u->refsta = u0->refsta;
 }
-/* this short routine computes the L infinity norm (max absolute value)
-of the vector formed by differencing the contents of two associative
-arrays a1 and a0 passed as input.  This is used as a convergence
-test and making it a function is useful as this is not the only
-test that is sensible for terminating the loop it is used in below
-It returns the entry in a1 and a2 that differ by the largest 
-absolute value. */
-double Linf_norm_arrival_diff(Arr *a1,Arr *a0)
-{
-	Tbl *t;
-	double *t1,*t0;
-	char *key;
-	int i;
-	double linf;
+/* This short routine parses a parameter space for the alignment option 
+to use for the stack.  That is, how a 3c array should be rotated.
+Function returns an int that relates to the group of defines immediately
+below */
+#define PMTHEORY 1 /* Use theoretical value from a model */
+#define PMESTIMATE 2  /* Use the particle motion major axis computed here */
+#define PMZ 3   /* Use the veritical component and do not rotate.*/
 
-	t = keysarr(a1);
-	for(i=0,linf=0.0;i<maxtbl(t);++i)
+int get_stack_align_mode(Pf *pf)
+{
+	char *s;
+	int align_opt;
+
+	s=pfget_string(pf,"stack_alignment");
+	if(s==NULL)
 	{
-		key = gettbl(t,i);
-		t1 = (double *)getarr(a1,key);
-		t0 = (double *)getarr(a0,key);
-		if(t0 == NULL)
-			elog_notify(0,"Linf_norm_arrival_diff:  station %s not found in reference time array\nProbably harmless, but check results\n",
-				key);
-		else
-			linf = MAX(linf,fabs((*t1)-(*t0)));
+		elog_notify(0,"stack_alignment parameter not defined\nDefaulting to model based estimate\n");
+		align_opt=PMTHEORY;
 	}
-	return(linf);
+	else if(!strcmp(s,"theoretical"))
+		align_opt=PMTHEORY;
+	else if(!strcmp(s,"pmestimate"))
+		align_opt=PMESTIMATE;
+	else if(!strcmp(s,"vertical"))
+		align_opt=PMZ;
+	else
+	{
+		elog_notify(0,"Illegal stack_alignment parameter = %s\nUsing default=model-based estimate\n",
+			s);
+		align_opt=PMTHEORY;
+	} 
+
+	return(align_opt);
 }
 /* small companion function to avoid repetitious error messages
 from saving various special tables at the end of processing */
@@ -174,8 +183,66 @@ void dbsave_error(char *table,int evid, int band)
 	elog_complain(0,"Error saving %s table for evid %d and band %d\n",
 			table, evid, band);
 }
+/* This function implements a scan for timing problems using 
+procedures borrowed from libgenloc.  The algorith basically utilizes
+an array of "Bad_Clock" objects that define time intervals marked
+as bad for a given station.  When timing is always good for a station
+it is simply marked ok.  If a station has any times in it's history 
+flagged with time problems the algorithm search and tests the arrival
+time it is given against that list.  If time is bad during that period
+the MWstation object flag for timing problems is raised. 
 
-			
+Arguments:
+
+a - Associative array of arrival times keyed by station names.
+	This list drives the algorithm as each station in this
+	list and only stations in this list are scanned.  
+arrsta - Associative array of MWstation objects keyed by station
+	name.  The clock_is_bad field of this object for any 
+	station with a timing problem is set nonzero.
+bcarr - associative array of Bad_Clock structures (objects) that
+	are passed to method functions that check for timing
+	problems.  
+
+Author:  GAry L. Pavlis
+Written:  April 2002
+*/
+
+void MWcheck_timing(Arr *a,Arr *arrsta,Arr *bcarr)
+{
+	Tbl *stakeys;
+	char *name;
+	int i;
+
+	stakeys = keysarr(a);
+
+	for(i=0;i<maxtbl(stakeys);++i)
+	{
+		Bad_Clock *bc;
+		MWstation *sta;
+		double *atime;
+
+		name=gettbl(stakeys,i);
+		bc=(Bad_Clock *)getarr(bcarr,name);
+		sta=(MWstation *)getarr(arrsta,name);
+		if(sta==NULL)
+			elog_complain(0,"MWcheck_timing: no match in station table for arrival at station %s\n",name);
+		else
+		{
+			if(bc==NULL)
+				sta->clock_is_bad=0;
+			else
+			{
+				atime = (double *)getarr(a,name);
+				if(clock_is_bad(bc->badtimes,*atime))
+					sta->clock_is_bad=1;
+				else
+					sta->clock_is_bad=0;
+			}
+		}
+	}
+}
+				
 /* This is the main processing function for this program.  
 
 Arguments:
@@ -196,8 +263,6 @@ processing as described in Bear and Pavlis (1999a,b).
 Author:  Gary Pavlis
 Date:  March 1999+
 */
-#define MAX_MAIN_LOOP 10  /* maximum number of interations on statics 
-				polarization, etc in each band */
 #define LAG_ERROR -100000 /* Computed lags smaller than this returned
 			by compute_optimal_lag are treated as an error
 			condition.  Should probably be in an include file*/
@@ -217,6 +282,8 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	Arr *stations;  /* This associative array holds MWstation objects
 			that contain header like data that is station 
 			dependent */
+	Arr *badclocks;  /* associative array keyed by sta name holding
+			list of time intervals with bad timing */
 	char *refsta;  /* Name of reference station */
 	double refelev;  /* reference elevation from parameter file */
 	int nsta;  /* number of stations */
@@ -264,18 +331,18 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		signal to noise ratio estimates (stored in a structure) for
 		every station */
 	Spherical_Coordinate polarization0,polarization;
+	Spherical_Coordinate polarz={1.0,0.0,0.0};
 	Arr *model_times=NULL;
 	MWSlowness_vector model_slow;
 	double rctm[9];  /*ray coordinate transformation matrix*/
 	double timeref;  /* time reference at reference station */
 	double time;
-	double t0;
+	double t0,twin;
 	double si;
 	double fc,fwin;
 	int evid;
 	int lag;  /* optimal lab computed by coherence measure */
 	double peakcm;  /*Peak value of coherence measure */
-	double dtmax;
 	/* For a given gather we set moveout computed moveout time in
 	seconds relative to the reference station.  This time includes
 	the combined current static estimates.  This is a vector workspace
@@ -283,15 +350,28 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	know the number of stations in the site table.  */
 	double *moveout;
 	MWgather **gathers;
-	Particle_Motion_Ellipse avgpm;
-	Particle_Motion_Error avgerr;
+	Particle_Motion_Ellipse *avgpm;
+	Particle_Motion_Error *avgerr;
+	char *pmtype_to_use;  /* type of particle motion estimate to use
+				for polarization */
 	Arr *pm_arr,*pmerr_arr;
+	Arr *pmarray,*errarray;
 	/* This vector defines the "up" direction.  For P waves this
 	initialization is correct.  For S it may not be appropriate, but
 	this is something to repair later */
 	double up[3]={0.0,0.0,1.0};
 	int bankid;  /* mutliwavelet group id */
 	int band_exit = 0;
+	/* name of parameter file produced by GUI to control this program */
+	char *guipf;
+	int stack_alignment;
+	Pf *pfcontrol;
+	int loopback;
+	int numberpasses=0;
+	/* These define the relative time window used for stack and
+	particle motion.  s denotes stack, ts0 etc are pm */
+	double sts0,ste0;  /* we don't need the equivalent of ts1 and te1 */
+	double ts0,ts1,te1,te0;
 
 	/* This is essential or copy_arrival_array can produce garbage */
 	arrival0=NULL;
@@ -299,6 +379,8 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	arrival_new=NULL;
 	pm_arr = NULL;
 	pmerr_arr = NULL;
+	pmarray = NULL;
+	errarray = NULL;
 	si = pfget_double(pf,"sample_interval");
 	/* First we need to load the multiwavelet functions and the 
 	associated decimators for the transform.  Each of these
@@ -306,7 +388,9 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	error returns.  Wavelet functions can be loaded from a parameter
 	file or a db.  */
 	if(pfget_boolean(pf,"get_wavelets_from_database"))
-		mw = load_multiwavelets_db(pf,&nwavelets,&bankid);
+	{	
+		mw = load_multiwavelets_db(dbv,pf,&nwavelets,&bankid);
+	}
 	else
 	{
         	mw = load_multiwavelets_pf(pf,&nwavelets);
@@ -334,20 +418,26 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	{
 		elog_complain(0,"WARNING:  array_name not defined in parameter file.  Set to default of ARRAY\n");
 		array_name = strdup("ARRAY");
+
 	}
 	refelev = pfget_double(pf,"reference_elevation");
-
-	if(!strcmp(pfget_string(pf,"coherence_measure"),"coherence"))
+	/* This loads a definition of bad clocks from an extension
+	table called timing.  This comes from libgenloc where it
+	is used to handle automatic switching to S-P times. */
+	badclocks=newarr(0);
+	if(db_badclock_definition(dbv,pf,badclocks))
 	{
-		elog_log(0,"Using singular value ratio based coherence measure\n");
+		elog_notify(0,"Problems in setting up table of stations with timing problems\n");
+	}
+	/* This function can define stations as always having bad timing
+	based on a parameter Tbl list of station names keyed by bad_clock.*/
+	pfget_badclocks(pf,badclocks);
 
-		coherence_type = USE_COHERENCE;
-	}
-	else
-	{
-		elog_log(0,"Using semblance as coherence measure\n");
-		coherence_type = USE_SEMBLANCE;
-	}
+	pmtype_to_use = pfget_string(pf,"array_particle_motion_to_use");
+	if(pmtype_to_use==NULL) pmtype_to_use=strdup(PMOTION_BEAM);
+	/* this used to be a variable, but we no longer have a choice.*/
+	coherence_type=USE_COHERENCE;
+	
 	/* This variable sets if we should reset the arrival estimates
 	to starting values for each band.  When true the results accumulate
 	from band to band.  That is we keep adding corrections from previous
@@ -368,6 +458,13 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 	reading data (i.e. largest time ranges needed) */
 	swinall = compute_time_window(swin,decfac,nbands);
 	nwinall = compute_time_window(nwin,decfac,nbands);
+
+	guipf = pfget_string(pf,"mwapcontrol");
+	/* better safe than sorry */
+	if(guipf==NULL)
+	{
+		elog_die(0,"Missing required parameter mwapcontrol");
+	}
 
 	/* We can create these works spaces now for efficiency so 
 	we don't have to constantly recreate them dynamically below */
@@ -426,16 +523,11 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		}
 
                 dbget_range(db_bundle,&is,&ie);
-		fprintf(stdout,"Evid %d trace bundle = rows %d to %d\n",
-			evid, is, ie);
 
-		/* At least three stations an array make.  This won't
-		always work right when there are missing channels.  This
-		simple test assumes 3 components per station */
-		if((ie-is+1)<9)
+		if(ie-is<3)
 		{
 			elog_complain(0,"Insufficient data to process for evid %d\nNeed at least three station -- found only %d\n",
-				evid,(ie-is+1)/3);
+				evid,ie-is);
 			continue;
 		}
 		/* We utilize what we call plane wave statics here
@@ -452,6 +544,10 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		the input db to be used to compute initial slowness
 		vector and initial statics.  */
 		arrival0 = get_arrivals(db_bundle);
+
+		/* We edit the MWstation array to flag stations
+		with bad timing in this function */
+		MWcheck_timing(arrival0,stations,badclocks);
 
 		/* Save these times */
 		copy_arrival_array(arrival0,&arrivals);
@@ -507,9 +603,6 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 				evid);
 		}
 
-		/* copy this to the working value */
-		copy_polarization(&polarization0,&polarization);
-
 		/* This function reads in the trace data for this event
 		using time windows defined above */
 		tr = mwap_readdata(dbgrp,arrivals,swinall, nwinall);
@@ -536,6 +629,7 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		trsplit(tr,0,0);
 
 		trapply_calib(tr);
+		trdemean_seg(tr);
 		/* Now we have reorder the traces or this will not work
 		correctly*/
 		tr = dbsort(tr,sortkeys2,0,0);
@@ -552,10 +646,9 @@ void mwap_process(Dbptr dbv,char *phase,  Pf *pf)
 		/* This releases the space held by the raw data traces
 		keeping only the rotate_to_standard outputs */
 		free_noncardinal_traces(tr);
-/*
-trdisp(tr,"Input trace data");
-*/
 
+		elog_log(0,"Computing multiwavelet transform:  be\
+ patient as this can take a while with many channels\n");
 		/* This function computes the multiwavelet transform
 		of all traces currently in tr for signals around arrival*/
 		mwsig_arr = tr_mwtransform(tr,arrivals,swin,decfac,dec_objects,
@@ -581,6 +674,10 @@ trdisp(tr,"Input trace data");
 		row of the mw transform matrices of pointers */
 
 		copy_MWslowness_vector(&u,&u0);
+		if(numberpasses>0)
+		{
+			fprintf(MWpout,"NEWEVENT %d\n",evid);
+		}
 		for(i=nbands-1;i>=0;--i)
 		{
 			if(!accumulate)
@@ -590,7 +687,7 @@ trdisp(tr,"Input trace data");
 			fc = (mw[i].f0)/(2.0*si*decfac[i]);
 			fwin = (mw[i].fw)/(2.0*si*decfac[i]);
 
-			fprintf(stdout,"Processing begins on band %d with center frequency %lf\n",
+			fprintf(stdout,"Processing begins on band %d with center frequency %lf\nWait for -Hit Accept button when ready- prompt\n",
 				i,fc);
 
 			/* This builds the basic working gathers for
@@ -601,13 +698,7 @@ trdisp(tr,"Input trace data");
 				gathers[j] = build_MWgather(i,j,
 						mwsig_arr,stations,
 						sn_ratios[i],pf);
-/*
-				MWgather_to_trace(gathers[j],tr,j,i,0);
-*/
 			}
-/*
-trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
-*/
 			fprintf(stdout,"Working gather for this band has %d stations\n",
 				gathers[0]->nsta);
 			/* Testing band 0 should be sufficient.  The
@@ -636,39 +727,68 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 				elog_die(0,"Cannot find reference station to compute moveout:  Should not happen unless program overwrites itself\n");
 			}
 
-			/*Here we compute the time lag at which the main
-			analysis will be performed.  Bear and Pavlis 1999
-			used a semblance measure, but that choice is not
-			necessarily optimal and future evolution could
-			occur here easily by changing this function */
-			compute_optimal_lag(gathers,nwavelets,timeref,
-					moveout,polarization,swin+i,
-					coherence_type,i,&lag,&peakcm);
-			if(lag < LAG_ERROR)
+			if(numberpasses>0)
 			{
-				elog_complain(0,"WARNING:  serious data window error in band %d\nNo data in requested time window\nNO results for this band\n",
-					i);
-				continue;
+				fprintf(MWpout,"NEWBAND %d\n",i);
+				fflush(MWpout);
 			}
 			else
-				elog_log(0,"Optimal lag for this band is %d\n",
-					lag);
+			{
+				char ctmp[40];
+				fprintf(stdout,"Starting processing of first event\nSelect and options and press the Start button when ready\n");
+				fprintf(MWpout,"STARTUP %d %d\n", 
+					evid,i);
+				fflush(MWpout);
+				fgets(ctmp,40,MWpin);
+			}
+			++numberpasses;
 
-			/* We repeat the analysis at a fixed lag until
-			the smallest time adjustment is less than one
-			sample.  Note we simultaneously work on three 
-			items:  slowness vector, residual statics, and
-			the principal polarization direction.*/
+			/* This is placed here to allow changing the
+			alignment options on the fly.  Choice may
+			depend on data. */
+			pfread(guipf,&pfcontrol);
+			stack_alignment=get_stack_align_mode(pfcontrol);
+			pffree(pfcontrol);
 			
-			iterations = 0;
+			/* kind of a odd loop construct here made 
+			necessary by differences in stackalignment
+			options.  If we align with theoretical value
+			or use the vertical we do not need to repeat
+			this loop and we fall out the bottom.  If we
+			use the pm estimate, however, we have to 
+			realign the stack rotated to the new major
+			ellipse estimate.  In that case we have to
+			repeat the whole procedure.*/
+			loopback=2;
 			do {
-				if(compute_mw_arrival_times(gathers,
-					nwavelets,timeref,moveout,lag,
-					polarization,swin+i,
-					&arrival_new,&static_result,
-					&avgamp, &amperr, &ampndgf))
+				MWstack *stack;
+				switch(stack_alignment)
 				{
-					elog_complain(0,"compute_mw_arrival failed to compute statics\n");
+				case PMTHEORY:
+					copy_polarization(&polarization0,&polarization);
+					loopback=0;
+					break;
+				case PMZ:
+					copy_polarization(&polarz,&polarization);
+					loopback=0;
+					break;
+				case PMESTIMATE:
+				default:
+				/* This uses theoretical version for the
+				first pass then the estimate on the 
+				second */
+					if(loopback==2)
+					  copy_polarization(&polarization0,
+						&polarization);
+				}
+				stack=MWcompute_arrival_times(gathers,
+    					   nwavelets,timeref,moveout,
+    					   polarization,swin[i],
+					   sn_ratios[i],guipf,
+    					   &arrival_new,&static_result,
+                                            &avgamp, &amperr, &ampndgf);
+				if(stack==NULL)
+				{
 					/* I use a flag to avoid an
 					evil goto here */
 					band_exit = 1;
@@ -698,18 +818,68 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 				polarization vector */
 				compute_total_moveout(*gathers,stations,refsta,
 				u,refelev,phase,moveout);
-				compute_mw_particle_motion(gathers,
-					nwavelets,timeref,moveout,lag,
-					swin+i,up,&avgpm,&avgerr,
-					&pm_arr,&pmerr_arr);
-				dtmax = Linf_norm_arrival_diff(arrival_new,
-							arrivals);
+				/* This segment converts particle motions
+				for 3-c arrays.  */
+				if(gathers[0]->ncomponents==3)
+				{
+					MWstack *spm; 
+					Time_Window pmtwindow;
+					double *timeweight;
+					
+					/* We extract the time window
+					from a control parameter file which
+					is assumed to be created by a GUI
+					with tcl/tk */
+					pfread(guipf,&pfcontrol);
+					ts0=pfget_double(pfcontrol,"pm_ts0");
+					ts1=pfget_double(pfcontrol,"pm_ts1");
+					te1=pfget_double(pfcontrol,"pm_te1");
+					te0=pfget_double(pfcontrol,"pm_te0");
+					/* we need these below, not here */
+					sts0=pfget_double(pfcontrol,"stack_ts0");
+					ste0=pfget_double(pfcontrol,"stack_te0");
+					twin = ste0-sts0;
+					pffree(pfcontrol);
+					pmtwindow.tstart = nint(ts0/(stack->dt));
+					pmtwindow.tend = nint(te0/(stack->dt));
+
+					spm = MWextract_stack_window(stack,
+						&pmtwindow);
+					if(spm==NULL)
+						elog_die(0,
+						  "Fatal error in MWextract_stack_window\n");
+					/* Sets time weight function for 
+					a trapezoidal window */
+					timeweight=MWstack_set_trapezoidal_window(spm->tstart,
+						spm->dt,spm->nt,
+						ts0,ts1,te1,te0);
+					dcopy(spm->nt,timeweight,1,spm->timeweight,1);
+					free(timeweight);
+					MWstack_apply_timeweight(spm);
+
+					if(MWcompute_array_particle_motion(gathers,
+					  nwavelets,spm,timeref,moveout,
+					  up,&pmarray,&errarray, &pm_arr,&pmerr_arr) )
+					{
+					  elog_complain(0,"Errors in MWcompute_array_particle_motion\n");
+					}
+					avgpm = (Particle_Motion_Ellipse *)getarr(pmarray,pmtype_to_use);
+					avgerr = (Particle_Motion_Error *)getarr(pmarray,pmtype_to_use);
+
+					polarization
+					  =unit_vector_to_spherical(avgpm->major);
+					destroy_MWstack(spm);
+				}
+				peakcm=stack->coherence[idamax(
+					stack->nt,
+					stack->coherence,1)];
 				copy_arrival_array(arrival_new,&arrivals);
 				freearr(arrival_new,free);
 				arrival_new = NULL;
-				++iterations;
-			}while ( ( dtmax > ((*gathers)->x1[0]->dt))
-				&& (iterations < MAX_MAIN_LOOP) );
+				destroy_MWstack(stack);
+				if(stack_alignment==PMESTIMATE)
+						--loopback;
+			}while(loopback>0);
 			if(band_exit)
 			{
 				band_exit = 0;
@@ -719,14 +889,14 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			/* This routine computes the covariance of
 			the estimated slowness vector */
 			if(compute_slowness_covariance(stations,static_result,
-				swin[i].si, ucovariance) )
+				ucovariance) )
 				elog_complain(0,"Problems computing slowness vector covariance estimate for evid %d and band %d\n",
 					evid, i);
 			/* routines below save a time window.  We compute
 			the lag corrected start time at the reference station
 			here as t0 to simplify this in functions that
 			need this.*/
-			t0 = timeref + (swin[i].si)*((double)lag);
+			t0 = timeref + sts0;
 			/* This series of functions save results in a set
 			of css3.0 extension tables.  */
 
@@ -737,24 +907,27 @@ trplot_by_sta(tr,"sta =~ /BLUE/ || sta =~ /X300[ri]/");
 			force this to be saved explicitly, but ampndgf is
 			an exact surrogate.  The +1 is needed because the
 			calculation uses number_used - 1 since the average
-			amplitude is extracted as a free parameter.*/
-			if(MWdb_save_slowness_vector(phase,&u,t0,
-				swin+i,array_name,evid,bankid,fc,fwin,
+			amplitude is extracted as a free parameter.
+			*/
+			if(MWdb_save_slowness_vector(phase,&u,t0,twin,
+				array_name,evid,bankid,fc,fwin,
 				ucovariance,ampndgf+1,3,
 				coherence_type,peakcm,dbv))
 					dbsave_error("mwslow",evid,i);
 			if(MWdb_save_avgamp(array_name, evid, bankid, phase,
-				fc, t0, swin+i, avgamp,amperr,ampndgf,
+				fc, t0, twin, avgamp,amperr,ampndgf,
 				dbv) )
 					dbsave_error("mwavgamp",evid,i);
 			if(MWdb_save_statics(evid, bankid, phase, fc, t0,
-				swin+i,refelev,*gathers,moveout,static_result,
+				twin,refelev,*gathers,moveout,static_result,
 				stations,sn_ratios[i],
 				arrivals, model_times,dbv))
 					dbsave_error("mwtstatic:mwastatic:mwsnr",evid,i);
+			t0=timeref+ts0;
+			twin = te0-ts0;
 			if(MWdb_save_pm(array_name,evid,bankid,phase,fc,t0,
-				swin+i,*gathers,moveout,pm_arr,pmerr_arr,
-				&avgpm,&avgerr,dbv)  )
+				twin,*gathers,moveout,pm_arr,pmerr_arr,
+				avgpm,avgerr,dbv)  )
 					dbsave_error("mwpm",evid,i);
 			/* We have to release the memory held in these
 			associative arrays.  In the earlier loop the 

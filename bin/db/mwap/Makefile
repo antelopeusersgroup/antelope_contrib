@@ -1,14 +1,17 @@
-BIN=mwap		
+BIN=mwap_engine	
 PF=mwap.pf
 MAN1=mwap.1
 
-#cflags= -DSP5		
+cflags= -DSP5 -g
+#cflags=-DSUNPERF6 -g
 ldflags=
-ldlibs= -lmultiwavelet -lgenloc $(PERFLIBS) $(TRLIBS) $(F77LIBS)
+ldlibs= -lmultiwavelet -lglputil -lgenloc  -ltrvltm -ldl \
+-xlic_lib=sunperf,fui,fai,fsu $(TRLIBS) $(F77LIBS) -lmultiwavelet
 
 include $(ANTELOPEMAKE)  
-DIRS=		
+DIRS=mwap_gui
 
-OBJS=	mwap.o mwap_process.o 
+OBJS=	mwap_engine.o mwap_process.o MWcompute_array_particle_motion.o \
+	MWcompute_arrival_time.o
 $(BIN) : $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
