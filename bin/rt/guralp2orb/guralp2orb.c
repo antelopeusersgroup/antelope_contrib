@@ -152,7 +152,7 @@ static int nrecovery_threads = 1;
 static void
 usage()
 {
-	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-l file_for_logpackets] [-r sec] orbname\n" );
+	die( 1, "Usage: guralp2orb [-v] [-V] [-p pffile] [-d calibdb] [-l file_for_logpackets] [-r sec] orbname\n" );
 	
 }
 
