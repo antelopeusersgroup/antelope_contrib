@@ -543,6 +543,12 @@ int is_dir(char *path)
 int is_nfs(char *path)
     return 1 if path is on nfs mounted filesystem, 0 otherwise
 
+Tbl * dirfiles(char *dir, int flag)
+    return list of files in dir; if flag==1, only files, if flag==2, only dirs
+
+int fstraverse(char *dir, int flag, int (*user)(char *, struct stat *, void *), void *pvt)
+    run user routine on each file below dir; flag=FS_ONLY_DIR, FS_ONLY_FILE, FS_DEPTH_FIRST
+
 void parsepath ( char *path, char *d, char *b, char *s )
     separate path into directory d and basename b, and suffix s if s!=0
 
