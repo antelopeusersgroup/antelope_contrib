@@ -23,7 +23,8 @@ char          **argv;
     double          after = 0.0;
     int             err=0, c;
     int             rdorb;
-    int             nselect,
+    int             npkt = 15,
+		    nselect,
                     pktid;
     char	   *after_str=0 ;
     char           *orbname = 0;
@@ -54,7 +55,7 @@ char          **argv;
     params.wfname = 0;
     params.gapmax = 600.0 ;
     
-    while ((c = getopt (argc, argv, "Ocgm:i:v")) != -1)
+    while ((c = getopt (argc, argv, "Ocgm:i:s:v")) != -1)
 	switch (c) {
 
 	case 'c':
@@ -76,6 +77,10 @@ char          **argv;
 
 	case 'i':
 	    DINTV = atoi(optarg);
+	    break;
+
+	case 's':
+	    npkt = atoi(optarg);
 	    break;
 
 	case 'v':
@@ -170,7 +175,7 @@ char          **argv;
 	}
 
 	if ((asource = (Source *) getarr (sources, srcname)) == 0) {
-	    asource = new_source ();
+	    asource = new_source (npkt);
 	    setarr (sources, srcname, asource);
 	}
 

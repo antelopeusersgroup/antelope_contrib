@@ -59,7 +59,7 @@ extern int flush2db PL_(( Db_buffer *buf, int finish ));
 extern Data_segment * new_data_segment PL_(( int maxsamp ));
 extern Db_buffer * new_db_buffer PL_(( PktChannel *src, Save_params *params ));
 extern int new_dbrecord PL_(( Db_buffer *buf ));
-extern Source * new_source PL_(( ));
+extern Source * new_source PL_(( int npkt ));
 extern double get_last_dbtimes PL_(( Dbptr db ));
 extern int main PL_(( int argc, char **argv ));
 extern int seg_append PL_(( PktChannel *new, Db_buffer *buf ));
