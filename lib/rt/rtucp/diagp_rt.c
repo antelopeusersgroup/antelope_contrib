@@ -25,8 +25,6 @@ extern Arr *pfnames;
 static int 
 dp_tclCmd _ANSI_ARGS_((ClientData clientData, Tcl_Interp *, int argc, char **argv));
 
-extern void ckfree();
-
 /*
  *--------------------------------------------------------------
  *

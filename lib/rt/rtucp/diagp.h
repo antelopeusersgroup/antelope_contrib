@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <regex.h>
+#include "tcl.h"
 #include "tk.h"
 #include "arrays.h"
 #include "pkt.h"
