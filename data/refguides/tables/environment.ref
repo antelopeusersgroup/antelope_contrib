@@ -62,7 +62,13 @@ SCHEMA_DEFAULT
 SCHEMA_DIR
   overrides the default location ($(ANTELOPE)/data/schemas) for Datascope schema files
 
+TTMETHOD
+  override default travel time method (tttaup)
+
+TTMODEL
+  override default travel time model (iasp91)
+
 TAUP_PATH
 TAUP_TABLE
-  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the travel
-  time tables and the default travel time model iasp91
+  override the default directory $(ANTELOPE)/data/tables/taup_ttimes for the tau-p travel
+  time tables and the default tau-p model iasp91
