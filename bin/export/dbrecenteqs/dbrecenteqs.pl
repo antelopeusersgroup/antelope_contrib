@@ -1066,7 +1066,7 @@ sub read_map_from_db {
 
 	if( ! -e "$Mapspec{pixfile}" ) {
 		die( "\n\t************************************\n" . 
-		     "\tERRROR: $Mapspec{pixfile} has disappeared!\n" . 
+		     "\tERRROR: the file '$Mapspec{pixfile}' has disappeared!\n" . 
 		     "\t************************************\n\nBye.\n\n" );
 	}
 

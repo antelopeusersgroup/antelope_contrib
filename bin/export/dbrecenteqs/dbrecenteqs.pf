@@ -125,6 +125,7 @@ authtrans &Arr{
 other_region_links &Arr{
 "Western Canada"	http://www.pgc.nrcan.gc.ca/seismo/recent/wc.50evt.html
 "U.S. Pacific Northwest" 	http://www.geophys.washington.edu/recenteqs/
+Alaska			http://www.aeic.alaska.edu/Seis/recenteqs/index.html
 California 		http://quake.wr.usgs.gov/recenteqs/latest.htm
 Nevada			http://www.seismo.unr.edu/jrted/
 Hawaii			http://tux.wr.usgs.gov/results/seismic/recenteqs/
