@@ -409,8 +409,8 @@ int minus_phases_arrival_edit(Tbl *arrivals,Arr *phases,Arr *bad)
 						a->res.residual_weight=1.0;
 						a->res.other_weights=1.0;
 
+						pushtbl(arrivals,a);
 					}
-					pushtbl(arrivals,a);
 					a1 = NULL;
 					a2 = NULL;
 					free(laststa);
