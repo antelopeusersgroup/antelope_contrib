@@ -8,7 +8,7 @@ wish
 
 <body>
     package require XXX
-
+<commands>
 Tclx
 Tkx
     extended tcl/tk -- variety of extensions to unix functions
@@ -32,7 +32,7 @@ Datascope
     Datascope database extensions
 
 Dbe
-    Extensions for implementing dbe
+    extensions for implementing dbe
 
 Orb
     extensions for reading and writing to an orbserver
@@ -44,7 +44,7 @@ Rtd
     extension for real time trace display
 
 Rtm
-    Extensions for implementing rtm
+    extensions for implementing rtm
 
 Ttgrid
     extensions for the time travel grid file used by orbassoc and dbgrassoc

@@ -1,4 +1,6 @@
 <chapter Brttplot>
+<example>
+% man bplot_scg bplot_vector bplot_thistory
 <commands>
 package require Brttplot
 
@@ -152,21 +154,21 @@ vector_puty vector_handle ix ylist
 </options>
 
 <subsection Time Histories>
-thistory_add thistory_handle time value
-    add an element to a time-history object
+thistory_add thistory time value
+    add time/value pair to thistory object
 
 thistory_create maxnp [-tag tag]
-    create a time-history object
+    create a thistory object
 
-thistory_eval thistory_handle time
-    compute and return a dependent value from a time-history object
+thistory_eval thistory time
+    return value corresponding to time for thistory object
 
-thistory_free {-tag tag | thistory_handle}
-    free a time-history object
+thistory_free {-tag tag | thistory}
+    free thistory object, or all thistories tagged with tag
 
-thistory_get thistory_handle {np|ty it}
-    get information from a time-history object
+thistory_get thistory {np|ty it}
+    return information from a thistory object
 
-thistory_maxmin thistory_handle
-    get max and min values out of a time-history object
+thistory_maxmin thistory
+    return max and min values for thistory object
 

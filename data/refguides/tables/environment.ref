@@ -1,6 +1,6 @@
 <chapter Environment variables>
 <body>
-The following environment variables may be set to change
+The following environment variables may be used to change
 the default Antelope behavior.  See antelopeenv(5) for 
 more information.
 
@@ -24,7 +24,9 @@ DBIDSERVER
     Datascope database id server: dbids(1).
 
 DBLOCKS
-    if set, causes Datascope routines to lock locally mounted 
+    deprecated -- use the database descriptor file instead.
+
+    when set, causes Datascope routines to lock locally mounted 
     tables for record additions and nextid operations (and fail
     for nfs mounted tables).
 
@@ -32,7 +34,7 @@ DBLOCKS
     record additions and nextid operations.
 
 EUROPEAN_DATE
-  If set, interpret dates like xx/xx/xx  as day/month/year.  
+  when set, interpret dates like xx/xx/xx  as day/month/year.  
   various output formats are also changed equivalently.
 
 GRX_PSCOLOR

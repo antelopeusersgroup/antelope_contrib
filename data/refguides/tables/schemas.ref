@@ -5,73 +5,70 @@ The following schemas are included with the Antelope distribution.
 
 <commands>
 autodrm1.0
-    This keeps logs of the messages sent and received by autodrm.
+    logs of messages sent and received by autodrm.
 
 certify2.0
-    These databases document how to execute a test and provide 
-    some history of the results of the tests.
+    database of regression tests and results
 
 contacts1.0
-    This schema lists phone-numbers and contact names for investigation
+    phone-numbers and contact names for investigation
     of felt reports from earthquakes.
 
 css2.8
-    Predecessor to css3.0. See css3.0.
+    predecessor to css3.0. See css3.0.
 
 css3.0
-    Center for Seismic Studies schema version 3.0. Stores seismic 
+    Center for Seismic Studies schema version 3.0;  seismic 
     information including waveforms, parametric data, and station details.
 
 css_vel
-    Schema based on css3.0 to support the dblocgrad program.
+    supports the dblocgrad program.
 
 cvs1.0
-    Provides an alternative representation for CVS (Concurrent 
+    alternative representation for CVS (Concurrent 
     Version System) log information.
 
 Db2sd1.0
-    Additions to css3.0 for generating SEED volumes.
+    additions to css3.0 for generating SEED volumes.
 
 dbrecenteqs1.0
-    Expansion of css3.0 and rt1.0 to support web-based mapping of 
+    expansion of css3.0 and rt1.0 to support web-based mapping of 
     hypocenters and related information. 
 
 genloc1.0
-    Extensions of css3.0 to support the genloc program.
+    extensions of css3.0 to support the genloc program.
 
 iceworm1.3
-    This schema is an expansion of the css3.0 schema for use with 
-    the Iceworm system.
+    extensions to css3.0 schema for use with the Iceworm system.
 
 Id1.0
-    For use by the database id-server program dbids.
+    used by the database id server program dbids.
 
 Logs1.0
-    This schema defines a table to hold log files.
+    defines a table to hold log files.
 
 models0.4
     prototype css3.0 expansion schema to store travel-time models. 
 
 notify1.2
-    Schema to hold contact information used in earthquake response 
-    procedures. 
+    holds contact information used in earthquake response procedures. 
 
 pde
-    Schema representation of the Preliminary Determination of Epicenters 
-    from the National Earthquake Information Center.
+    Datascope schema representation of the Preliminary Determination of Epicenters 
+    reports from the National Earthquake Information Center.
 
 places1.2
     Describes places on the earth: cities, populated places, summits etc.
     Includes support for specifying polygonal regions.
 
 rt1.0
-    This schema extends css3.0 to support automated real-time processing.
+    extends css3.0 to support automated real-time processing.
 
 rtexec1.0
-    This schema supports the Antelope real-time executive program, rtexec. 
+    supports Antelope real-time executive program rtexec. 
 
 SDAS1.0
-    This schema extends css3.0 to support automated real-time data 
+    extends css3.0 to support automated real-time data 
     acquisition, transport, and processing for the Seismic Data Acquisition
     System.
 
@@ -81,22 +78,21 @@ statrans1.0
     channel names.
 
 Status1.0
-    Schema for monitoring and maintenance of one or more Antelope real-time 
-    systems.
+    monitoring and maintenance of one or more Antelope real-time systems.
 
 strawman1.0
     strawman proposal for a schema which fixes some of the problems with css3.0.
 
 takeoff
-    Extensions to css3.0 used for focal mechanisms and theoretical travel-times.
+    extensions to css3.0 used for focal mechanisms and theoretical travel-times.
 
 tcpmonitor1.0
     Keep TCP link statistics
 
 Trace4.0
-    Trace manipulation and processing database. Provides the parameter 
+    trace manipulation and processing database; provides the parameter 
     information needed during standard processing of seismic waveform data, and 
-    their representation in memory. Largely derived from the css3.0 database.
+    their representation in memory. 
 
 USGS_pde1.0
     USGS 1995 format for Preliminary Determination of Epicenters.

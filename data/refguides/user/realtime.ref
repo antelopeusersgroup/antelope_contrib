@@ -6,7 +6,7 @@ rtm [-icon iconname] [-title title]
     real time system monitor -- displays tasks and resource usage
 
 dbevents dbname
-    display seismic events and waveforms
+    display map of seismic events, display waveforms
 
 deprecated rtcron name 'execline'
     run real time system cron jobs
@@ -27,7 +27,7 @@ rtexec [options] [comment]
 </options>
 
 rtinit
-    initialize directory for use by rtexec/rtm by creating appropriate directories and copying pf files.
+    initialize directory for use by rtexec/rtm by creating appropriate directories and copying pf files
 
 rtincident [options] [output_file]
     collect some system related information into a report; rtexec
@@ -37,7 +37,7 @@ rtincident [options] [output_file]
 -e command 	specify command line
 -l log	specify log file for program
 -M msg	specify message to include in report
--m addresses	send report as email to addresses
+-m addr	send report as email to addr
 -x	append corefile to email
 -p program 	specify program
 </options>
@@ -74,29 +74,36 @@ rtrun command
 cronrun command
     run command immediately, reproducing the cron environment 
 
-rtsnapshot [-c] [-d #rows] [-f filename] [-l #loglines] [-v][-v]
-    collect some data from a real time system (for a problem report)
+rtsnapshot [options] 
+    collect some pertinent info from a real time system into tar file for a problem report
+<options>
+-c	include core files
+-d #rows	max rows from database tables
+-f filename	specify output filename
+-l #loglines	max lines from log files
+-v	more verbose
+</options>
 
 rtoutage [options] db t0 t1
     show data gaps for database db from time t0 to t1
 <options>
--A	Format output as an autodrm outage report
--P maxpts	specify maximum # waveform points to load at one time
+-A	format output as an autodrm outage report
+-P maxpts	maximum # waveform points to load at one time
 -p	print percentage of data recovered for time period
 -S	show gaps as seconds only
 -s subset	show gaps only for station/channels which satisfy subset
--t	Show only the totals, not each individual gap
--z	Select only channels ending in 'z' or 'Z'
+-t	show only the totals, not each individual gap
+-z	select only channels ending in 'z' or 'Z'
 </options>
 
 truncate_log [options] log [log..]
     eliminate old lines in a log file
 <options>
 -c	also remove lines without time tags
--r	suppresses transfer of removed lines to new file with dash suffix
+-r	suppress saving removed lines in new file
 -v	be more verbose
--d n	Trim lines before n days ago
--s n	Only trim files larger than n kbytes
+-d n	trim lines before n days ago
+-s n	only trim files larger than n kbytes
 </options>
 
 <subsection IP network monitoring>
@@ -115,27 +122,36 @@ tcpmonitor [options] host
 -m	run in monitor (server) mode
 -n #loops	# of bursts to send
 -P #ping	# of pings between bursts
--r lrsz	set size of client receive buffer.
--R rrsz	set size of server receive buffer.
--s lssz	set size of client send buffer.
--S rssz	set size of server send buffer.
+-r lrsz	set size of client receive buffer
+-R rrsz	set size of server receive buffer
+-s lssz	set size of client send buffer
+-S rssz	set size of server send buffer
 -t timeout	set timeout (in  seconds) for  socket reads  
 -v	more verbose
--W sec/ping	set number of seconds between "pings".  
+-W sec/ping	set number of seconds between "pings"  
 </options>
 
 <subsection orbserver and utilities>
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
--k	Don't reset the ring buffer
+-k	don't reset the ring buffer
 -p port	use specified port
 -r	reset the ring buffer
 -v[v]	verbose/doubly verbose
 </options>
 
-orbstat [-cs] [-i] [-m expr] [-r expr] [-n avg] [-v] orb [secs]
-    show client[-c] or source [-s] statistic for orbserver orb every secs seconds; average througput statistics over avg iterations ; select/reject certain sourcenames. -i selects interactive mode
+orbstat [options] orb [secs]
+    show statistics for orbserver orb every secs seconds
+<options>
+-c	show client statistics
+-s	show source statistics
+-i	interactive mode
+-m re	show only packets or clients matching re
+-r re	don't show packets or clients matching re
+-n avg	boxcar average over avg queries 
+-v	more verbose
+</options>
 
 <subsection Data Loggers>
 <commands>
@@ -169,10 +185,10 @@ rddas [options] port orb
 </options>
 
 ref2db [options] input dbname [start [end]]
-    copy Reftek format data files/tapes/disks to Antelope database (over time range start to end)
+    copy RefTek format data files/tapes/disks to Antelope database (over time range start to end)
 <options>
 -d datatype	specify waveform datatype
--e	specify Reftek event based waveform files
+-e	specify RefTek event based waveform files
 -l	create logfile containing instrument status information
 -m das	copy only packets with serial number das
 -p pf	specify parameter file to match das to station name
@@ -247,7 +263,7 @@ pf2orb pfile orb
 dbt2orb [-v] [-s subset_expr] [-l naptime] db table orb
     read Datascope database rows from a database and post them to an orb
 
-db2orb [options] {database|view} [server]
+db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
 <options>
 -d	make a hexadecimal dump of the output packets.
@@ -256,17 +272,17 @@ db2orb [options] {database|view} [server]
 -l	loop forever
 -m #timesteps
 -n n	stop after sending n packets
--p packettype	make output packets in packettype format
+-p pkttype	make output packets in pkttype format
 -s subset	use only wfdisc rows which match subset
 -t timestep	size of packets in seconds
 -v	verbose
 </options>
 
-dbreplay [options] database|view [[[server] mintime] maxtime|period]
-    replay a database to an orbserver w/o modifying time
+dbreplay [options] view [[[orb] t0] t1|T]
+    replay database view to orb from t0 to t1 (or t0+T)
 <options>
 -w client	specify read client to watch (to avoid overruns)
--b max_behind	with -w, pause output if client is more than max seconds behind
+-b behind	with -w, pause output if client is more than max seconds behind
 -r rate	alternatively, specify a data rate as a ratio where real time = 1
 -n n	send only n packets
 -p pktsuffix	specify the output packet type
@@ -295,7 +311,7 @@ qtmassrecenter [options] cmdorb net_sta
 </options>
 
 automrc [options] orbname dc_name
-    automatically send mass recentering command to a Reftek DAS
+    automatically send mass recentering command to a RefTek DAS
 <options>
 -m srcmatch
 -p pf
@@ -366,7 +382,7 @@ orbassoc [options] orbin orbout dbnextid
 -pf pfname
 </options>
 
-ttgrid pfname db refsta time outfile
+ttgrid [-pf pfname] [-time {timestr|all}] db
     compute a travel time grid file for use by orbassoc and dbgrassoc
 
 orbmag [options] orbwf orbdb dbname
@@ -433,18 +449,20 @@ dbassoc_rt [options] dbcat dbassoc
 qtmon dataorb data2orb cmdorbname [database]
     monitor Quanterra digitizers
 
-orbmonrtd [options] server
+orbmonrtd [options] orb
     real time waveform trace display
 <options>
--twin minutes
--width pixels
--height pixels
--pf pfile
--hmax hmax
--wmax wmax
--log
--filter filter
--source net_sta_chan
+-twin minutes	window size in minutes
+-width pixels	trace width in pixels
+-height pixels	single trace window height in pixels
+-pf pfile	
+-hmax hmax	maximum height of main window in pixels
+-wmax wmax	maximum width of main window in pixels
+-log	
+-filter filter	
+-source net_sta_chan	select display channels on command line
+-select re	select channels matching re
+-reject re	reject channels matching re
 </options>
 
 orbdisp [options] orbserver [start [range|end]]
@@ -485,16 +503,16 @@ tail2orb [options] orb [file ...]
 -m m	specify maximum number of files monitored  
 -p pf 	specify alternate parameter file
 -S state	specify alternate state file 
--v 
+-vv	print lines on stderr also
 </options>
 
 orblog [-f file] [-s subcode] orb [log info]
     write a single log packet to orb; the packet contents are
-    remainder of the command line, stdin, or the specified file.
+    remainder of the command line, stdin, or the specified file
 
 orb2logs [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start]
     saves logs packets (from tail2orb) back into corresponding plain files 
-    divided by day boundaries.
+    divided by epoch day boundaries.
 
 rtlogs orb
     display log messages from orbserver orb
@@ -508,7 +526,7 @@ orb2db [options] orb db [start [end|period]]
 -r re	reject packets matching regular expression re
 
 -p pf	specify parameter file
--S state	specify state file
+-S file	save state in file
 -s datatype	specify output waveform type (overriding pf)
 -t timetags	create a file of time tags from input packets
 -v	more verbose
@@ -522,7 +540,8 @@ orb2dbt [options] orb dbout
 -select re1	read only packets matching re1
 -reject re2	don't read packets matching re2
 -verbose
--start {pktid|time|OLDEST|NEWEST}	begin reading at specified pktid
+-start {pktid|time|OLDEST|NEWEST}
+	begin reading at specified pktid
 -number n	read a maximum of n packets
 -nowait
 -safe
@@ -572,8 +591,8 @@ resetnetblazer hostname line timeout
 orb2eworm parameter_file.d
     export waveform data from an Antelope orb to an Earthworm system
 
-orb2pf [options] orb [out]
-    dump out the parameter file objects from an orb
+orb2pf [options] orb [file]
+    copy parameter file objects from an orb to file
 <options>
 -select expr
 -start {pktid|time}
@@ -597,12 +616,12 @@ rtbackup [-v] [-m who] [-p parameter_file] db drive
     copy data from db to archive tape on drive, using orb2db_msg
     to stop and restart orb2db and orb2dbt
 
-get_archive [options] dbmaster dbout tape_drive [start_time [end_time]]
-    restores tape backups made by rtbackup
+get_archive [options] db dbout tape_drive [start_time [end_time]]
+    restore tape backups made by rtbackup using db.wftar to dbout
 <options>
-[-v]
-[-c channels]
-[-s stas]
+-c channels
+-s stas
+-v
 </options>
 
 rtdbclean [-n] [-v] [-p parameter_file] orb rt_db
@@ -614,7 +633,7 @@ get_wftar -v dbmaster tape_drive
 online_backup [options] [directories]
     backup certain files to an online directory
 <options>
--d dir	Specify an alternate base directory
+-d dir	specify an alternate base directory
 -m	send mail rather than writing to stdout
 -n	don't actually run backup, but show what would happen
 -p pf	specify parameter fil

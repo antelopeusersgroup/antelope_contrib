@@ -46,7 +46,7 @@ RECORD_NUMBER = dbadd ( DBPTR, RECORD )
 RECORD_NUMBER = dbaddnull ( DBPTR )
     add a null record to a Datascope database
 
-dbaddv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
+dbaddv ( DBPTR, FIELD, VALUE [, FIELD, VALUE ... ] )
     add values to a Datascope database
 
 dbcrunch ( DBPTR )
@@ -55,10 +55,10 @@ dbcrunch ( DBPTR )
 dbdelete ( DBPTR )
     delete the specified record in a Datascope databas
 
-RECORD = dbget ( DBPTR, ['dbSCRATCH'] )
+RECORD = dbget ( DBPTR [, 'dbSCRATCH'] )
     get a table, record, or field from a database
 
-[VALUE, VALUE, ...] = dbgetv ( DBPTR, FIELD [,FIELD, ...] )
+[VALUE, VALUE, ...] = dbgetv ( DBPTR, FIELD [, FIELD, ...] )
     get the specified values from a Datascope database
 
 DBPTR = dbinvalid ( )
@@ -70,7 +70,7 @@ dbmark ( DBPTR )
 dbput ( DBPTR, VALUE )
     put the specified value into a Datascope database
 
-dbputv ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
+dbputv ( DBPTR, FIELD, VALUE [, FIELD, VALUE ... ] )
     put the specified values into a Datascope database
 
 <subsection Forming views>
@@ -86,7 +86,7 @@ DBPTR = dbnojoin ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
 DBPTR = dbprocess ( DBPTR, STATEMENT_LIST )
     construct a view as a series of standard operations
 
-DBPTR = dbsort ( DBPTR [,FIELD, FIELD,...] )
+DBPTR = dbsort ( DBPTR [, FIELD, FIELD,...] )
     sort the specified Datascope database table
 
 DBPTR = dbsubset ( DBPTR, EXPRESSION )
@@ -106,7 +106,7 @@ QUERY_RESULT = dbquery ( DBPTR, CODE )
     query a Datascope database for various parameters
 
 <subsection Evaluating expressions>
-RESULT = dbeval ( DBPTR, EXPRESSION [,TYPE] )
+RESULT = dbeval ( DBPTR, EXPRESSION [, TYPE] )
     evaluate an expression on a Datascope database
 
 <subsection Handling waveform data>
@@ -155,7 +155,7 @@ TRPTR = trnew ( )
 trputwf ( DBPTR, DATA )
     save waveform data into a file
 
-trsave_wf ( TRPTR, DBPTR, DATATYPE, WFNAME, ['overwrite' | 'append'] )
+trsave_wf ( TRPTR, DBPTR, DATATYPE, WFNAME [, 'overwrite' | 'append'] )
     save trace-object waveform data to a new database
 
 trsplice ( TRPTR, TOLERANCE )
@@ -189,7 +189,7 @@ STRUCT = pf2struct ( DBPF [, 'recursive' ] )
     convert a parameter file object to a Matlab struct
 
 FILENAMES = pffiles ( PFNAME [, 'all' ] )
-    list file names for parameter-file
+    list file corresponding to parameter file PFNAME
 
 clear ( DBPF )
     dbpf elimination routine
@@ -198,46 +198,46 @@ pffree ( DBPF )
     dbpf elimination routine
 
 RESULT = pfget ( DBPF, NAME [, 'recursive' ] )
-    get a generic parameter from a parameter-file object
+    get a generic parameter from a parameter file object
 
 PF = pfget_arr ( DBPF, NAME [, 'recursive' ] )
-    get an associative array from a parameter-file object
+    get an associative array from a parameter file object
 
 BOOLEAN = pfget_boolean ( DBPF, NAME )
-    get a boolean value from a parameter-file object
+    get a boolean value from a parameter file object
 
 NUM = pfget_num ( DBPF, NAME )
-    get a numeric value from a parameter-file object
+    get a numeric value from a parameter file object
 
 STRING = pfget_string ( DBPF, NAME )
-    get a string from a parameter-file object
+    get a string from a parameter file object
 
 LIST = pfget_tbl ( DBPF, NAME [, 'recursive' ] )
-    get an ordered list from a parameter-file object
+    get an ordered list from a parameter file object
 
 KEYS = pfkeys ( DBPF )
-    find the parameter names in a parameter-file object
+    find the parameter names in a parameter file object
 
 NAME = pfname ( DBPF )
-    find the name of a top-level parameter-file object
+    find the name of a top-level parameter file object
 
 pfput ( DBPF, NAME, VALUE )
-    put a value into a parameter-file object
+    put a value into a parameter file object
 
 pfput_boolean ( DBPF, NAME, VALUE )
-    put a boolean value into a parameter-file object
+    put a boolean value into a parameter file object
 
 RESULT = pfresolve ( DBPF, NAME [, 'recursive' ] )
     alternate interface to retrieve parameters
 
 TYPESTRING = pftype ( DBPF )
-    find the type of a parameter-file object
+    find the type of a parameter file object
 
 [PF, MODIFIED] = pfupdate ( DBPF )
     refresh a Dbpf object to reflect changes in the file
 
 pfwrite ( DBPF, FILENAME )
-    save a parameter-file object to a file
+    save a parameter file object to a file
 
 <subsection Real-time system connections>
 PKTID = orbafter ( ORBFD, TIME )
@@ -276,7 +276,7 @@ PKTID = orbtell ( ORBFD )
 
 <subsection Special functions>
 dbadd_remark ( DBPTR, REMARK )
-    add a remark to a datascope Database
+    add a remark to a CSS3.0 database table
 
 [FILENAME STATUS] = dbextfile( DBPTR, TABLENAME )
     Compose a filename from the specified Datascope database record
@@ -284,11 +284,11 @@ dbadd_remark ( DBPTR, REMARK )
 [FILENAME STATUS] = dbfilename ( DBPTR )
     compose a filename from a database record
 
-IRECORD = dbfind ( DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards'] )
+IRECORD = dbfind ( DBPTR, EXPRESSION [, FIRST [, COUNT]] [, 'backwards'] )
     locate a database row satisfying some condition
 
 REMARK = dbget_remark ( DBPTR )
-    get a remark from a Datascope Database
+    get a remark from a CSS3.0 database table
 
 ID = dbnextid ( DBPTR, IDNAME )
     get the next integer id for id field from a database

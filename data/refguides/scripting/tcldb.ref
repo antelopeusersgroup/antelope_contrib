@@ -1,4 +1,6 @@
-<chapter Tcl/Tk Interface>
+<chapter Tcl/Tk Datascope and Utilities>
+<example>
+% man tcldb
 <commands>
 package require Datascope
 
@@ -18,45 +20,45 @@ dbclose db
 dbfree db
     free memory resources and file descriptors for a database view/table
 
-dblookup db database table field record
-    return a database pointer for the specified db, database, table, field, and record
-    record can be "dbALL", "dbNULL" or "dbSCRATCH", or a value corresponding to field; then
-    the first record number where field == value is returned
+dblookup db database table field row
+    return a database pointer for the specified db, database, table, field, and row
+    row can be "dbALL", "dbNULL" or "dbSCRATCH", or a value corresponding to field; then
+    the first row number where field == value is returned
 
 dbtruncate db n
-    truncate the specified table to the first n records
+    truncate the specified table to the first n rows
 
 <subsection Manipulating Fields and Records>
-dbadd db record
-    add the specified record to a table, return record number
+dbadd db row
+    add the specified row to a table, return row number
 
 dbaddnull db
-    add a null record to the table, return record number
+    add a null row to the table, return row number
 
 dbaddv db table field value [field value ...]
-    add new record with specified field values, return record number
+    add new row with specified field values, return row number
 
 dbmark db
-    set the specified record to all null values
+    set the specified row to all null values
 
 dbcrunch db
-    delete marked (all null) records from the table
+    delete marked (all null) rows from the table
 
 dbdelete db
-    delete a record
+    delete a row
 
 
 dbget db
-    get a table, record, or field from a table
+    get a table, row, or field from a table
 
-dbgetv db table record field [field ...]
+dbgetv db table row field [field ...]
     return a list with the specified values of the specified fields
 
 
 dbput db value
     put the specified value into the specified location.
 
-dbputv db table record field value [field value ...]
+dbputv db table row field value [field value ...]
     save the specified values into the specified fields.
 
 <subsection Forming Views>
@@ -64,9 +66,9 @@ dbgroup db type field [field ..]
     group the (sorted) input table by the specified fields
 
 dbungroup db
-    returns a view containing all the records which the grouped view references.
+    returns a view containing all the rows which the grouped view references.
 
-dbjoin db1 db2 [join-keys]
+dbjoin db1 db2 [keys]
     join the two tables (using the specified join keys)
 
 dbjoin_tables db
@@ -75,11 +77,11 @@ dbjoin_tables db
 dbjoin_keys db table
     returns the inferred join keys between db and table 
 
-dbnojoin db1 db2 [join-keys]
-    returns all the records in db1 which do not join with table db2
+dbnojoin db1 db2 [keys]
+    returns view of all rows in db1 which do not join with table db2
 
-dbmatches db1 db2 hook [join-keys ...]
-    returns a list of records in the table specified by db2 which match (join with) the record specified by db1
+dbmatches db1 db2 hook [keys ...]
+    returns a list of rows in the table specified by db2 which match (join with) the row specified by db1
 
 dbprocess db [command ...]
     construct a view as series of standard operations
@@ -88,13 +90,13 @@ dbsever db table
     returns a new view which removes the specified table from the joined view db  
 
 dbseparate db table
-    returns a new view containing only the records from table which participate in the joined view db
+    returns a new view containing only the rows from table which participate in the joined view db
 
 dbsort [-r] [-u] db [fields ..]
     sort a table by fields, or the primary key if no fields are specified
 <options>
 -r	reverse the sense of the sort
--u	eliminate all records in the output view with duplicate field values
+-u	eliminate all rows in the output view with duplicate field values
 </options>
 
 dbsubset db expression
@@ -118,8 +120,8 @@ dbsave_view [-f] db name
 -f	Allow overwriting files of the same name
 </options>
 
-db2pipe db file [record# ...]
-    send records from a database view out a unix pipe
+db2pipe db file [row# ...]
+    send rows from a database view out a unix pipe
 
 dbunjoin db output
     unjoin the specified table, writing new tables into a new database named output
@@ -133,23 +135,28 @@ dbquery db code
     query the database for various parameters
 
 dbcompile db string
-    add attributes and relations to a database by directly compiling schema file fragments
+    add attributes and relations to a database by directly compiling
+    schema file fragments
 
 
 dbstrtype db string
-    returns type of string: strREAL,  strINTEGER, strNULL, strSTRING, strTIME, strEXPR, strFIELD or strUNKNOWN
+    returns type of string:  strREAL, strINTEGER, strNULL, strSTRING,
+    strTIME, strEXPR, strFIELD or strUNKNOWN
 
 dbsearch db first backwards string
-    starting from first, locate the first record in db satisfying the given expression string, or containing the string
+    starting from first, locate the first row in db satisfying the
+    given expression string, or containing the string
 
 dbadd_remark db remark
-    add the specified remark to the specified record
+    add the specified remark to the specified row
 
 dbget_remark db
-    get the remark associated with the specified record
+    get the remark associated with the specified row
 
 dbgetr db tz i n [expr [fmt]]
-    return list of values for n records beginning at record #i for expr optionally formatted using fmt; tz=0 may be 1 to use epoch2str for times, or a timezone code (eg, US/Mountain or LOCAL)
+    return list of values for n rows beginning at row #i for expr
+    optionally formatted using fmt; tz=0 may be 1 to use epoch2str for
+    times, or a timezone code (eg, US/Mountain or LOCAL)
 
 dbinvalid
     return a db pointer with all elements dbINVALID
@@ -189,23 +196,23 @@ elog_mark
 elog_flush deliver first
     get rid of messages after #first in the error log, printing them if deliver is a boolean true
 
-<subsection Instrument response routines>
-eval_response resphandle freq_in_hz
+private <subsection Instrument response routines>
+private eval_response resphandle freq_in_hz
     evaluate a response object at a given frequency
 
-free_response resphandle
+private free_response resphandle
     free resources for a response object
 
-get_response resphandle {nstages | stage_types | paz stageno}
+private get_response resphandle {nstages | stage_types | paz stageno}
     get information about a response object
 
-peterson {low|high} frequency rsptype
+private peterson {low|high} frequency rsptype
     compute Peterson low/high noise model
 
-put_response resphandle stageno param_list
+private put_response resphandle stageno param_list
     put values into a response object
 
-read_response filename
+private read_response filename
     read a response object
 
 <subsection Parameter Files>
@@ -236,16 +243,16 @@ pfwrite pf filename
 
 <subsection Seismic Utility Functions>
 carsph x y z
-    convert from cartesian to spherical coordinates
+    convert from unit vector x y z to latitude, longitude in degrees
 
 dbdist lat1 lon1 lat2 lon2
     return the angular distance between the specified locations. All units are degrees.
 
 dblatlon lat lon delta azimuth
-    return the latitude and longitude of the point at distance delta, direction azimuth from lat, lon
+    return the latitude and longitude of the point at delta degrees in the direction azimuth from lat, lon
 
 sphcar lat lon
-    convert from spherical to cartesian coordinates
+    convert from latitude, longitude to unit vector x, y, z
 
 <subsection Time conversion>
 epoch yearday
@@ -257,27 +264,28 @@ epoch2str epoch fmt
 str2epoch string
     convert time strings from many formats to epoch time
 
-strdate epoch
-    convert epoch time to a date, eg "4/23/2001"
-
-strtdelta epoch
-    convert the time-difference epoch (in seconds) to a string, eg "30:35 minutes"
-
 strtime epoch
     convert epoch time to a time string like "4/23/2001  15:35:15.000"
 
 strydtime epoch
     convert epoch time to a time string like "4/23/2001 (113) 15:35:15.000"
 
+strdate epoch
+    convert epoch time to a date, eg "4/23/2001"
+
+strtdelta dt
+    convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
+
+
 yearday epoch
     convert from epoch time to yearday
 
 <subsection Utility Functions>
 makedir dir
-    ensure that the entire directory hierarchy dir exists (like mkdir -p)
+    make the directory hierarchy dir (like "mkdir -p")
 
-writefile filename stringname
-    write contents of a string variable to a file
+writefile filename var
+    write value of variable var to filename
 
 datafile envname file 
-    returns pathname for file in $ANTELOPE/data
+    returns complete path for file under $ANTELOPE/data

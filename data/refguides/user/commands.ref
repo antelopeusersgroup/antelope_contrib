@@ -89,10 +89,10 @@ dbsetrgn db
     set seismic and geographic region codes in origin table for database db
 
 tabulate_missed_stations translation_db dbname [dbname...]
-    Find station names that do not appear in the translation_db
+    find station names that do not appear in the translation_db
 
 translate_stachan_names translation_db dbname
-    Apply the station name-translations listed in translation_db
+    apply the station name-translations listed in translation_db
 	
 private children pid
     returns children of process pid
@@ -147,7 +147,7 @@ refguide {creference|user|scripting}
 txform [-v] dir filename
     text transform program
 
-grepsrc [options] [-cfhilMmpsTtvyw] [-d dir] [pattern [dir]]
+grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
     look through certain files below dir for a pattern; useful for finding occurrences of a call to a function, or for many other problems
 <options>
 -i	case insensitive
@@ -171,12 +171,12 @@ ldlibs [options] names
     provide information about object libraries and link lines
 <options>
 Modifying Options
--f	Generate fortran ldlibs line (default is c).
--i	Initialize the database, eg, completely rebuild it.
--k	Rebuild the database, if it's out of date.
--n	Don't use macros to collapse the dependency list.
--v	Be more verbose.
--x	Specify entry points on command line, rather than object files.
+-f	generate fortran ldlibs line (default is c).
+-i	initialize the database, eg, completely rebuild it.
+-k	rebuild the database, if it's out of date.
+-n	don't use macros to collapse the dependency list.
+-v	be more verbose.
+-x	specify entry points on command line, rather than object files.
 Different Modes
 -r lib1 lib2	show references from lib1 which are resolved in lib2.
 -R a.o b.o ..	lib show undefined references from .o files which are resolved in lib

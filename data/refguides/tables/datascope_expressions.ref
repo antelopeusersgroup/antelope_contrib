@@ -199,6 +199,7 @@ patsub(old, pattern, replacement)
 
 <subsection Relational Operators>
 <List>
+
 ==	equals
 !=	not equal to
 

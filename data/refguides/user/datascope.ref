@@ -3,8 +3,8 @@
 <subsection Database Schemas>
 <commands>
 
-dbhelp [db|schema]
-    gui to explore schema for database db or specified schema
+dbhelp [db|s]
+    gui to explore schema for database db or schema s
 
 dbdoc db
     generate troff formatted document describing schema for database db
@@ -18,10 +18,10 @@ dbinfer file [file...]
 
 <subsection Creating and Editing Databases>
 dbe [-e] db[.table] [ db[.table] ...]
-    general purpose viewer/editor for databases
+    general purpose viewer/editor for databases (see .dbe.pf to configure)
 
 dberesp db.table
-    run by dbe to plot response curves from instrument table
+    run by dbe to plot response curves for instrument 
 
 db_textedit db.table
     run by dbe to edit external text files
@@ -93,8 +93,8 @@ dbsplit [options] dbin dbout
 </options>
 
 
-dbmerge [-vV] dbin dbout
-    merge two databases together
+dbmerge [-vV] [-x tb1,tb2] dbin dbout
+    merge database dbin into database dbout (except for tables tb1, tb2, ...)
 
 dbconcat_event db1 db2 [ db3 ...] dbout
     combine multiple CSS 3.0 event databases db1, db2, ... (arrival, assoc, event, origin, and origerr tables) into a single new database dbout
@@ -127,7 +127,7 @@ dbjoin [options] aview [:key ...] table2 [[:key ...] table3 ...]
 </options>
 
 dbnojoin [-n name] [-v] aview [:key ...] table2
-    create view of records from aview which do not join with table2.
+    create view of records from aview which do not join with table2
 
 dbtheta [-c expr] [-n name] [-v] aview table2
     create view joining rows from aview to rows from table2 only when expression expr (evaluated on the joined record) is satisfied
@@ -147,8 +147,8 @@ dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group
 <options>
 -b	strip blanks from each field in the output.
 -F	separator
--p	cause the primary key of the input table to be printed.
--s	allow expressions to modify fields in base tables from aview using the assignment operator ":=".
+-p	print the primary key
+-s	allow expressions to modify database fields with operator ":=".
 </options>
 
 <subsection Verifying Databases>
@@ -159,9 +159,8 @@ dbverify [options] db[.table]
     perform some consistency checks on database db (or specified table only)
 <options>
 -t	turn off all tests
-
 -c	perform consistency checks
--C chk1,chk2,...	run only specific named consistency checks chk1,chk2,...
+-C c1,c2,..	run only specific consistency checks c1,c2,...
 -i	check that all referenced foreign ids are present in defining table
 -j	test for correct # of records in a join specified in parameter file
 -k	verify uniqueness of primary and secondary keys
@@ -170,10 +169,8 @@ dbverify [options] db[.table]
 -r	check attribute ranges
 -u	complain about unreferenced ids
 -x	check for existence of external files
-
--A table1[,table2..]	uniqueness of alternate keys not required in specified tables
--P table1[,table2..]	uniqueness of primary keys not required
-
+-A t1,t2..	uniqueness of alternate keys not required in specified tables t1, t2, ..
+-P t1,t2..	uniqueness of primary keys not required in t1, t2, ..
 -v	verbose
 </options>
 

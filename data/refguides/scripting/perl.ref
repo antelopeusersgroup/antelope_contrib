@@ -1,4 +1,6 @@
 <chapter Perl Interface>
+<body>
+% man perldb
 <function>
 use Datascope ; 
 
@@ -8,11 +10,11 @@ use Datascope ;
 dbopen ( database, permissions )
     returns a database pointer to the database
 
-dbopen_database ( db, permissions )
-    open database db (optionally db.table or "-" for stdin), returning database pointer
+dbopen_database ( database, permissions )
+    open database (or database.table or "-" for view from stdin), returning database pointer
 
-dbopen_table ( db.table, permissions )
-    open database db.table or "-" for stdin, returning database pointer for a table
+dbopen_table ( database.table, permissions )
+    open database.table (or "-" for view from stdin), returning database pointer for a table
 
 
 dbclose ( @db )
@@ -22,105 +24,110 @@ dbfree ( @db )
     frees resources for a table or a database
 
 
-dblookup ( @db, database, table, field, record )
-    returns a database pointer for the specified database, table, field, and record.
+dblookup ( @db, database, table, field, row )
+    returns a database pointer for the specified database, table, field, and row.
 
 dbfind ( @db, expression [, first [,reverse]])
-    find first record matching expression, starting with first. 
-    if reverse, search backwards 
+    find first row matching expression, starting with first; if reverse, search backwards 
 
 <subsection Manipulating fields and records>
-dbadd ( @db, [record] )
-    add the new record to the table in @db. If no record is specified, add the scratch record. returns the new record number.
+dbadd ( @db [, record] )
+    add the new record to the table in @db. If record is not specified, add the scratch record. returns the new row number, or an error code < 0.
 
 dbaddnull ( @db )
-    add a new null record to a table
+    add a new null row to a table
 
 dbaddv ( @db, field_name, value, [field_name, value, ...] )
-    add a new record with the specified values to the database
+    add a new row with the specified values to the database
 
 
 dbmark ( @db )
-    set the specified record to all null values
+    set the specified rows to all null values
 
 dbdelete ( @db )
-    delete a record from the database
+    delete a row from the database
 
 dbcrunch ( @db )
-    delete all marked (null) records from the specified table
+    delete all marked (null) rows from the specified table
 
 dbtruncate ( @db, n )
-    truncate a table to the specified number of records
+    truncate a table to the specified number of rows
 
 dbdestroy ( @db )
-    delete all tables and the descriptor file for the specified database
+    delete all tables and the descriptor file for the specified database, but not external files
 
 
 dbget ( @db [, 0] )
-    returns [or copies to the scratch record] the specified table, record, or field from the database
+    returns [or copies to the scratch rows] the specified field or rows 
 
 dbgetv ( @db, field_name [, field_name, ...] )
-    returns the values of the specified fields for a particular record
+    returns the values of the specified fields for a particular rows
 
 
 dbput ( @db [, string] )
-    if no string is specified, the value is taken from the scratch record
+    copies from string (or from the scratch rows) to the specified field or rows
 
-dbputv ( @db, field_name, value, [field_name, value, ...] )
-    save the specified values into the specified fields for a particular record
+dbputv ( @db, field_name, value [, field_name, value, ...] )
+    save the specified values into the specified fields for a particular rows
 
 
 dbadd_remark ( @db, remark )
-    add a comment in the remark table for the specified table/record
+    add a comment in the remark table for the specified table/rows
 
 dbget_remark ( @db )
-    get any comment from the remark table for the specified table/record
+    get any comment from the remark table for the specified table/rows
 
 
 <subsection Forming views>
-dbgroup ( @db, key, [key, ...] )
+dbgroup ( @db, key [, key, ...] )
     group the input table according to the specified keys
 
-dbjoin ( @db1, @db2, [join-keys] )
+dbjoin ( @db1, @db2[, join-keys] )
     return a join of the two tables, using the join-keys if specified
 
-dbmatches ( @db1, @db2, hookname, [join-keys] )
-    returns a list of the records in db2 which match the record specified by db1
+dbmatches ( @db1, @db2, hookname [, join-keys] )
+    returns a list of the rows in db2 which match the rows specified by db1
 
-dbnojoin ( db1, db2, [join-keys] )
-    returns a view of all records in the first table which don't join to the second.
+dbnojoin ( db1, db2[, join-keys] )
+    returns a view of all rows in the first table which don't join to the second.
 
-dbprocess ( @db, cmd1, cmd2, cmd3 ... )
-    returns a new view which is the result of applying the dbprocess commands cmd1, cmd2, etc to the input database pointer
+dbprocess ( @db, commands )
+    returns a new view which is the result of applying the dbprocess
+    commands to the input view; possible operations are: dbopen,
+    dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
+    dbsever, dbsort, dbsubset, dbtheta, dbungroup
 
-dbsort ( @db, [-u,] [-r,] [key, key..] )
-    sort the input table according to the specified keys
+dbsort ( @db [, -u][, -r][, key, key..] )
+    sort the input table according to the specified keys, uniquely if -u, 
+    in reverse order if -r 
 
 dbsubset ( @db, expression )
-    returns a new view which is the set of all row which satisfy the expression
+    returns a new view which is the set of all rows which satisfy the expression
 
 dbtheta ( @db1, @db2, [expression] )
-    returns combinations of rows from the two tables which satisfy the expression, or all combinations if no expression is specified
+    returns new join view with all combinations of rows from the two tables which 
+    satisfy expression, or all combinations if no expression is specified
 
-dbunjoin ( @db, database_name )
-    create a new database, which contains all the records referenced in the input view
+dbunjoin ( @db, database )
+    create a new database, containing all the records referenced in the input view @db
 
 
-dbsave_view ( @db, table_name )
-    save the view into a file named after the database and tablename
+dbsave_view ( @db, name )
+    save the view into a file named database.name
 
 <subsection Miscellaneous Datascope Functions>
 dbquery ( @db, code )
-    query the database for information. Codes must be in quotes.
+    query the database for information, eg dbquery(@db, "dbRECORD_COUNT").  see 
+    Datascope Constants
 
 dbex_eval ( @db, expression )
-    evaluate an expression for a particular record
+    evaluate expression for a particular row
 
 dbcompile ( @db, string )
     add new attributes or relations to the schema directly from the perl script
 
 dbextfile ( @db [, base-table] )
-    return the filename for an external file for a particular record in a view
+    return the filename for an external file for a particular row in a view
 
 dbnextid ( @db, id_name )
     gets the next free id value for the specified database and id_name
@@ -132,14 +139,20 @@ elog_init ( $0, @ARGV )
 elog_log ( msg )
     save a message on the elog message log
 
+elog_debug ( msg )
+    send a debug message to the elog facility
+
 elog_notify ( msg )
-    send a message other than an error message to the elog facility
+    send a notify message to the elog facility
+
+elog_alert ( msg )
+    send a alert message to the elog facility
 
 elog_complain ( msg )
-    write an error message to the elog message facility for immediate output
+    send an error message to the elog message facility 
 
 elog_die ( msg )
-    write a message to the elog message facility and die
+    send a message to the elog message facility and die
 
 
 elog_clear ( )
@@ -178,16 +191,16 @@ datapath ( env, dir, file, suffix )
     find the specified file by looking at first the environment variable, and then along the path
 
 makedir(d)
-    make the complete directory path d (like "mkdir -p d") 
+    make the complete directory path d (like "mkdir -p") 
 
 abspath (a)
     returns the absolute path to the specified file a.
 
-relpath (a, b)
+relpath (f, t)
     returns a relative path from f to t. f must be a directory.
 
-cleanpath (a [, nolinks])
-    normalize the input path a, removing extra "..", "//", and
+cleanpath (p [, nolinks])
+    normalize the input path p, removing extra "..", "//", and
     "./"  strings.   With a  second  argument,
     resolve any symbolic links along the path.
 
@@ -213,15 +226,11 @@ srname ( lat, lon )
 
 
 limit ( resource, [limit2set] )
-    return the current resource limit, or set a new resource limit
-<options>
-cputime
-filesize
-datasize
-stacksize
-coredumpsize
-vmemoryuse
-descriptors
+    return the current resource limit, or set a new resource limit; possible
+    resources are:
+<example>
+cputime      filesize     datasize     
+stacksize    coredumpsize vmemoryuse   
 </options>
 
 <subsection Time conversion>
@@ -234,16 +243,16 @@ str2epoch ( string )
 
 
 strtime ( epoch )
-    returns a formatted string of the time and date
+    returns epoch time formatted like "4/23/2001  15:35:15.000"
 
 strydtime ( epoch )
-    returns a formatted string of the time and date, including the day of year
+    returns epoch time formattted like "4/23/2001 (113) 15:35:15.000"
 
 strdate ( epoch )
-    returns a formatted string of the date
+    convert epoch time to a date, eg "4/23/2001"
 
-strtdelta ( epoch )
-    returns a formatted string of the specified time interpreted as a time difference
+strtdelta ( dt )
+    convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
 
 
 epoch ( yearday )

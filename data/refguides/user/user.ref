@@ -6,8 +6,8 @@
 <include waveform_analysis.ref>
 <include datascope.ref>
 <include commands.ref>
-<include ../scripting/tclinterp.ref>
 <no_index>
+<include ../scripting/tclinterp.ref>
 <include ../tables/time_expressions.ref>
 <include ../tables/table_time.ref>
 <include ../tables/table_expressions.ref>

@@ -14,6 +14,7 @@ trexcerpt [options] dbin dbout [start {duration|end}]
 -c expr	sta/chan/instrument subset
 -s expr	evid/orid/arid subset
 -j expr	origin/site subset
+-p	in arrival mode, save waveforms only for the pick channel 
 -W db	specify database from which waveforms come
 -d	write complete database with site, sensor, sitechan, instrument
 -e	include correct subset of event, origin, origerr, arrival, and assoc in the output database
@@ -56,16 +57,13 @@ dbwfexcerpt [options] dbin[.table] dbout
 event_archive [options] dbin dbout
     copy event information (arrivals, origins, and waveforms) from continuous database dbin to archive dbout
 <options>
-
 -l n	wait n days before copying an event
--m addresses	send errors as email to addresses
-
+-m addr	send errors as email to addr
 -s t1	process events after time t1
 -e t2	process events before time t2
-
+-n	ignore check for reviewed events
 -p pf	use parameter file pf
 -t tdb	use temporary database tdb
-
 -v	be verbose
 -V	be extremely verbose
 </options>
@@ -84,7 +82,7 @@ trsample [options] database[.table] [time]
 trsignal [options] database
     create wfdisc records with test signal data
 <options>
--v	Be more verbose
+-v	be more verbose
 -w pattern	specify naming convention for output waveforms
 -d datatype	specify output datatype (default = "as")
 -a amplitude
@@ -193,7 +191,7 @@ dbspgram [options] dbname sta chan tstart twin
 
 
 dbpick [options] dbname
-    waveform review, pick arrivals, and edit a CSS relational database
+    waveform review, pick arrivals, and edit a CSS relational database (see .dbpickrc for filter specs)
 <options>
 -sc sta:chan	specify station/channel "glob"; eg "*:*Z"
 -ts tstart	specify start time

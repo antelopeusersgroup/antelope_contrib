@@ -56,7 +56,7 @@ db2sd db sd
 mk_dataless_wfdisc [-v] [-p pf] dbin
     makes fake wfdisc file in order to create a dataless seed file
 
-trash_data [-inv] sd1 [sd2 ...]
+trash_data [-inv] sd 
     truncate SEED volume sd following the station headers, creating a dataless SEED volume
 
 mk_dmc_seed [-av] [-m addr] [-t tape_drive] [-d directory] db
