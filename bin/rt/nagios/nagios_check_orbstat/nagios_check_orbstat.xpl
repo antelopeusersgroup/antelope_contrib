@@ -44,6 +44,8 @@ use vars qw($opt_version $opt_help $opt_verbose $opt_warn $opt_crit $opt_orb
 
 use nagios_antelope_utils qw(&categorize_return_value
 			     &parse_ranges
+			     &print_results
+			     &print_version
 		  	     %ERRORS
 			     $VERBOSE);
 
@@ -54,14 +56,11 @@ use Socket;
 
 # Prototypes
 sub check_args();
-sub print_version();
-sub print_verbose();
 sub print_help();
 sub print_usage();
 sub get_latest_orbstat_packet($);
 sub check_recent_packet_exists($$$$$);
 sub check_recent_pforbstat_packet_value($$$$$$$$);
-sub print_results($$$);
 sub convert_pforbstat_to_numbers($);
 
 # Constants
@@ -98,7 +97,7 @@ MAIN:
     # check if you have a packet first
     if (!defined $pktid)
     {
-	print_results($ERRORS{'CRITICAL'}, 0,
+	print_results($NAGIOS_SERVICE_NAME, $ERRORS{'CRITICAL'}, 0,
 		      "No orbstat packet found, age");
 	exit $ERRORS{'CRITICAL'};
     }
@@ -112,12 +111,12 @@ MAIN:
 						  $opt_param);
 	if ($opt_type eq $SERVER_TYPE)
 	{
-	    print_results($result_code, $result_perf,
+	    print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
 			  "$opt_type:$opt_param");
 	}
 	else
 	{
-	    print_results($result_code, $result_perf,
+	    print_results($NAGIOS_SERVICE_NAME, $result_code, $result_perf,
 			  "$opt_type:$opt_index:$opt_param");
 	}
 	exit $result_code;
@@ -130,12 +129,12 @@ MAIN:
 	# pretty print if it isnt an error
 	if ($result_code != $ERRORS{'UNKNOWN'})
 	{
-	    print_results($result_code, strtdelta($result_perf), 
+	    print_results($NAGIOS_SERVICE_NAME, $result_code, strtdelta($result_perf), 
 			  "last packet age");
 	}
 	else
 	{
-	    print_results($result_code, $result_perf, 
+	    print_results($NAGIOS_SERVICES_NAME, $result_code, $result_perf, 
 			  "last packet age");	    
 	}
 	exit $result_code;
@@ -168,7 +167,7 @@ sub check_args()
     # handle options here
     if ($opt_version)
     {
-	print_version();
+	print_version($VERSION, $AUTHOR);
 	exit $ERRORS{'OK'};
     }
     
@@ -256,13 +255,6 @@ sub check_args()
 
 ######
 #
-sub print_version()
-{
-    print "$0 version $VERSION\nwritten by $AUTHOR\n";
-}
-
-######
-#
 sub print_usage()
 {
     print "Usage: $0 -s <src> (-e | (-t <type> (-i <index>) -p <param>)) "
@@ -273,7 +265,7 @@ sub print_usage()
 #
 sub print_help()
 {
-    print_version();
+    print_version($VERSION, $AUTHOR);
     print_usage();
     print "\n";
     print " Check on ORB status values for the source at the specified ORB\n";
@@ -446,45 +438,6 @@ sub check_recent_pforbstat_packet_value($ $ $ $ $ $ $ $)
     {
 	return ($ERRORS{'OK'}, $packet_value);
     }
-}
-
-######
-# Print the results in a nagios friendly format given a result code 
-# and possibly some performance data.
-# Param: result_code - A scalar from %ERRORS
-# Param: result_perf - A scalar performance value that was fetched
-# Param: result_descr - A short description (1-2 words) describing the
-#                       performance value (ie "descr = $result_perf")
-sub print_results($ $ $)
-{
-    my ($result_code, $result_perf, $result_descr) = @_;
-    my ($prefix);
-
-    SWITCH :
-    {
-	if ($result_code == $ERRORS{'OK'})
-	{
-	    $prefix = "$NAGIOS_SERVICE_NAME OK:";
-	    last SWITCH;
-	}
-	if ($result_code == $ERRORS{'WARNING'})
-	{
-	    $prefix = "WARNING:";
-	    last SWITCH;
-	}
-	if ($result_code == $ERRORS{'CRITICAL'})
-	{
-	    $prefix = "CRITICAL:";
-	    last SWITCH;
-	}
-	if ($result_code == $ERRORS{'UNKNOWN'})
-	{
-	    $prefix = "UNKNOWN:";
-	    last SWITCH;
-	}
-    }
-    print "$prefix $result_descr = $result_perf "
-	. "| \'$result_descr\' = $result_perf\n";
 }
 
 ######
