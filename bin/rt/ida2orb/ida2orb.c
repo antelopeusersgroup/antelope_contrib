@@ -158,12 +158,10 @@ main( int argc, char **argv )
 		        fflush( stderr);
 		    }
 
-		    clock_gettime( CLOCK_REALTIME, &tp );
-
 		    endtime = ENDTIME( pktchan->time, 
 				       pktchan->samprate, 
 				       pktchan->nsamp );
-		    tdelta = endtime - tp.tv_sec+tp.tv_nsec/1e9;
+		    tdelta = endtime - now() ;
 
 		    if( reject_future_packets && tdelta > reject_future_packets_sec ) {
 			complain( 1,

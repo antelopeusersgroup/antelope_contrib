@@ -20,8 +20,8 @@
 
 static int slen = sizeof(u_short);
 static int llen = sizeof(u_long);
-u_short sval;
-u_long lval;
+extern u_short sval;
+extern u_long lval;
 
 static size_t len;
 
