@@ -42,7 +42,10 @@ proc init_windows {} {
 
 	global Template_time Nicknames Tasks Commands
 
-	label .timelbl -text "Time: " -bg beige
+	button .timelbl -text "Time: " -bg lemonchiffon2 -command {
+		global Template_time
+		set Template_time [epoch2str [str2epoch now] $Template_time_format]
+	}
 
 	entry .template_time -textvariable Template_time \
 		 	     -relief sunken -width 26 -bg beige
@@ -66,8 +69,8 @@ proc init_windows {} {
 			 -activebackground orange
 		menu $menuname -tearoff 0
 
-		bind $buttonname <Button-3> "show_path {$nickname} $buttonname"
-		bind $buttonname <ButtonRelease-3> "unshow_path $buttonname"
+		bind $buttonname <Button-2> "show_path {$nickname} $buttonname"
+		bind $buttonname <ButtonRelease-2> "unshow_path $buttonname"
 
 		foreach task $Tasks($nickname) {
 
@@ -78,6 +81,8 @@ proc init_windows {} {
 				-background lightblue \
 				-activebackground lightyellow
 		}
+
+		bind $buttonname <Button-3> "$menuname invoke 0"
 
 		grid $buttonname -sticky ew -columnspan 2
 	}
