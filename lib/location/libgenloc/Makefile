@@ -1,6 +1,6 @@
 LIB=		libgenloc.a
 INCLUDE = location.h
-DLIB=libgenloc.so.$(VERSION)
+DLIB=libgenloc$(DSUFFIX)
 
 MAN3 = genloc.3 \
        genloc_intro.3 \
@@ -49,6 +49,6 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	$(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(LORDER) $(OBJS) $(TSORT)
 
 # $Id$ 

@@ -240,8 +240,8 @@ Slowness_Function_Output ttcalc_interface_slow_exec(Ray_Endpoints x, char *phase
 	method = (char *) getarr(TTmethod,phase);
 	hook = getarr(TThooks,method);
 	if(hook == NULL) hook_is_null=1;
-	TTmode = TT_SLOWNESS;
-	if(mode == ALL) TTmode |= TT_DERIVATIVES;
+	if(mode == ALL) 
+	    TTmode |= TT_DERIVATIVES;
 
 	result = ucalc(method,model,phase,TTmode,&geometry,&u,&hook);
 	if(hook_is_null)setarr(TThooks,method,hook);
