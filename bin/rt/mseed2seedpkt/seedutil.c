@@ -70,8 +70,10 @@ find_reclen ( const char *msrecord, int maxheaderlen )
 	  
 	  /* Calculate record size in bytes as 2^(blk_1000->rec_len) */
 	  for (reclen=1, idx=1; idx <= blk_1000->rec_len; idx++)
-	    reclen *= 2;      
-	}    
+	    reclen *= 2;
+
+	  break;
+	}
 
       begin_blockette = blk_head.next_blk;
     }

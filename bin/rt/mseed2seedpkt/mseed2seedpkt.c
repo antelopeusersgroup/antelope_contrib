@@ -15,7 +15,7 @@
 
 #include "seedutil.h"
 
-static char *version   = "2004.203";
+static char *version   = "2004.237";
 static char  verbose   = 0;   /* Verbosity flag */
 static int orbin       = 0;   /* Input ORB descriptor */
 static int orbout      = 0;   /* Output ORB descriptor */
@@ -32,7 +32,6 @@ extern int  mseed2orbpkt(char *, int, char *, char *, double *,
 static void packethandler (char *srcname, char *rawpacket, int nbytes, int offset);
 static int isalldig (char *check);
 static int lprintf (int level, const char *fmt, ...);
-static void dummy_sighandler (int sig);
 static void term_sighandler (int sig);
 static void usage ();
 
@@ -73,10 +72,8 @@ main (int argc, char **argv)
   struct sigaction sa;
 
   /* Signal handling, use POSIX calls with standardized semantics */
-  sa.sa_handler = dummy_sighandler;
-  sa.sa_flags = SA_RESTART | SA_RESETHAND;
+  sa.sa_flags = SA_RESTART;
   sigemptyset(&sa.sa_mask);
-  sigaction(SIGALRM, &sa, NULL);
 
   sa.sa_handler = term_sighandler;
   sigaction(SIGINT, &sa, NULL);
@@ -401,14 +398,10 @@ lprintf (int level, const char *fmt, ...)
 
 
 /***************************************************************************
- * dummy_sighandler and term_sighandler:
+ * term_sighandler:
  *
- * Signal handler routines.
+ * Signal handler routine for termination.
  ***************************************************************************/
-static void
-dummy_sighandler (int sig)
-{ }
-
 static void
 term_sighandler (int sig)
 {
