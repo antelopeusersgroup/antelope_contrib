@@ -854,7 +854,7 @@ send_heartbeat( ImportThread *it )
 	char 	msg[STRSZ]; 
 	char	stx = STX;
 	char	etx = ETX;
-	char	nul = NULL;
+	char	nul = 0;
 	int	msglen;
 
 	if( now() - it->last_heartbeat_sent < it->send_heartbeat_sec ) {

@@ -2,6 +2,7 @@ BIN=  ew2orb    orb2ew
 PF=   ew2orb.pf orb2ew.pf earthworm.pf
 MAN1= ew2orb.1  orb2ew.1
 MAN5= earthworm.5
+INCLUDE= trace_buf.h
 
 CLEAN=
 

@@ -302,7 +302,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 		*inst = INST_WILDCARD;
 
-	} else if( ( *inst = (int) getarr( Ewinfo.inst_ids, inststr ) ) != NULL ) {
+	} else if( ( *inst = (int) getarr( Ewinfo.inst_ids, inststr ) ) != 0 ) {
 		
 		; /* Success */
 
@@ -317,7 +317,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 		*mod = MOD_WILDCARD;
 
-	} else if( ( *mod = (int) getarr( Ewinfo.mod_ids, modstr ) ) != NULL ) {
+	} else if( ( *mod = (int) getarr( Ewinfo.mod_ids, modstr ) ) != 0 ) {
 		
 		; /* Success */
 
@@ -332,7 +332,7 @@ ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 
 		*type = TYPE_WILDCARD;
 
-	} else if( ( *type = (int) getarr( Ewinfo.type_ids, typestr ) ) != NULL ) {
+	} else if( ( *type = (int) getarr( Ewinfo.type_ids, typestr ) ) != 0 ) {
 		
 		; /* Success */
 
