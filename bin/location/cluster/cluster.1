@@ -1,0 +1,128 @@
+'\" te
+.TH CLUSTER 1 "%G%"
+.SH NAME
+cluster - build simple event clusters based on initial loations
+.SH SYNOPSIS
+.nf
+cluster db [-pf pfname]
+.fi
+.SH DESCRIPTION
+.LP
+This program is a companion to \fBdbpmel\fR(1) and 
+\fBpmelgrid\fR (under development, look for it in future contrib updates).
+The are two different front ends to the relocation method 
+called PMEL (progressive multiple event location method) described
+in a paper by Pavlis and Booker (1982).  
+.LP
+The \fBcluster\fR program associates events in a catalog to a grid
+of points in space.   The purpose of this is to define ensembles of
+events that can be relocated as a group and satisfy the fundamental
+assumption of multiple event location methods.  That is PMEL, 
+double differencing, JHD, and Hypocentroidal Decomposition (the
+family of multiple event location methods) all assume travel time
+errors in the model can be parameterized as simple constants
+(station corrections) for the full ensemble of events.  Cluster
+assumes this can be accomplished by grouping events spatially.
+.LP
+Cluster searches an approximately cyclindrical region for events
+relative to a grid of target points.  The region is defined by
+the center of this region in space, it's radius, and the top and 
+bottom depth of the volume.  The ceiling and floor are fixed but
+the diameter of the cyclinder can be made variable (see input
+parameter description below).  
+.LP
+This program requires a CSS3.0 schema extension called genloc1.1.
+This defines three tables fundamental to cluster:  cluster, gclgdisk, 
+and hypocentroid.
+The gclgdisk table drives this program and the
+cluster and hypocentroid tables are it's primary output. 
+The gclgdisk table is built by running the makegclgrid(1) program.
+This builds a 3D grid of target points within a study area.  
+These target points are searched sequentially by cluster.
+.LP
+Cluster builds the event->origin (subset with orid==prefor) 
+database view and tests every event in this view for proximity
+(as defined by the cyclindical region noted above) to each target 
+point.  That is, the basic algorithm in pseudocode is:
+.nf
+1) foreach grid_point 
+	2) foreach event in event_list
+		3) if ( event_in_region) mark
+	4) save marked events
+5) continue
+.fi
+The algorithm has one added complexity.  The loop
+defined by 2) may be entered multiple times for each grid point.  
+The user specifies a minimum event count for each grid_point.  
+If on the first pass the number of associated events is smaller
+than this threshold the radius of the search region is incremented
+(parameter radius_step_size) and the search is repeated.  This 
+process continues until either the event count is satisified or
+the search radius reaches a threshold (parameter maximum_radius).  
+If the event count threshold is not reached, no processing of that
+target point will occur downstream by dbpmel/pmelgrid.
+.LP
+The primary output of this program is the cluster table defined
+in genloc1.1.  The cluster table is much like assoc.  It defines
+which events (as defined by attribute evid)
+associate with each grid point.  The grid
+points are defined by the hypocentroid table.  Stored there are
+the target points (the center of the search region) and the computed
+hypocentroid (centroid of the ensemble of event locations associated
+with that grid point) of that group.  
+.SH OPTIONS
+.LP
+Default reads the parameter file with the name of the program (cluster.pf).
+The -pf flag can be used to select an alternate pf file.
+.SH PARAMETER FILE
+.LP
+Here is a simple example.  
+.nf
+#  Search volume parameters, all have units of km
+minimum_radius 10.0
+maximum_radius 80.0
+radius_step_size 5.0
+depth_range 20.0
+# 
+minimum_event_count 10
+GCLgrid_name kyrghyz
+
+.fi
+.LP
+The search volume concept is described above.  The minimum_event_count
+parameter is the count threshold described above.  GCLgrid_name is 
+used to find the unique row of the gclgdisk table that contains
+the 3D grid of target points.  These are read from a disk file created
+by makegclgrid(1).
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbpmel(1), makegclgrid(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Be aware the clustering algorithm here knows absolutely nothing about
+waveforms.  Recent work in the field has focused on clustering 
+defined by waveforms with a high correlation coefficient.  This program
+uses only spatial association to define groupings.  
+To avoid this confusion the program perhaps should have been called
+something like group_grid, but I've had it around too long to change
+this.
+.LP
+The program takes a very long time to execute on large catalogs.  
+Because it has to search every event for every node grid point this
+can quickly approach trillions of distance calculations for 
+catalogs of a few thousand events.  
+Expect it to run for several hours.
+.LP
+Cluster should be generalized to not depend upon the gclgrid object.
+The algorithm has no dependency at all on the regular grid 
+produced by makeglcgrid.  All it really knows is spherical geometry
+and a simple search rule based on distance.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

@@ -1,0 +1,7 @@
+# These quantities have units of km
+minimum_radius 10.0
+maximum_radius 80.0
+radius_step_size 5.0
+minimum_event_count 10
+depth_range 20.0
+GCLgrid_name kyrghyz
