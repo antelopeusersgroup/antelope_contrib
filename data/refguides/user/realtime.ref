@@ -5,6 +5,9 @@
 rtm [-icon iconname] [-title title]
     real time system monitor -- displays tasks and resource usage
 
+dbcentral
+    launch commands on commonly used databases
+
 dbevents dbname
     display map of seismic events, display waveforms
 
