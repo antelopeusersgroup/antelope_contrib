@@ -1,0 +1,12 @@
+DBGROUP Group a sorted table
+
+DBPTR = DBGROUP ( DBPTR, GROUPFIELDS [,TYPE] )
+
+DBGROUP clusters the rows of an input view into groups, each of which
+has the same values for the fields specified in GROUPFIELDS. The input
+table must be sorted by the GROUPFIELDS for this to work properly. Two
+new columns are added to the output view: bundle and bundletype.  The
+bundle is a database pointer specifying a continuous range of rows in
+the input table. The bundletype is an integer field which is filled in
+with the TYPE argument to DBGROUP. TYPE defaults to 1 if not
+specified.

@@ -1,0 +1,7 @@
+DBSEVER remove a table from a joined view
+
+DBSEVER ( DBPTR, TABLE )
+
+DBSEVER removes a table from a joined view, eliminating all 
+duplicate rows in the process. The view that is returned is 
+devoid of all the columns from TABLE. 

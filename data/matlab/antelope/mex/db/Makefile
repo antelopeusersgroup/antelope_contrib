@@ -39,7 +39,12 @@ MEXSRCS= \
 	dbfind.c \
 	dbadd_remark.c \
 	dbget_remark.c \
-	dbprocess.c
+	dbprocess.c \
+	dbseparate.c \
+	dbsever.c \
+	dbnrecs.c \
+	dbgroup.c \
+	dbungroup.c
 
 CLEAN= 
 

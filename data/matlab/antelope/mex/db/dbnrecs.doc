@@ -1,0 +1,6 @@
+DBNRECS Count the number of records in a database view 
+
+DBNRECS ( DBPTR )
+
+DBNRECS counts the number of records in a database view.
+This is equivalent to dbquery( DBPTR, 'dbRECORD_COUNT' ).

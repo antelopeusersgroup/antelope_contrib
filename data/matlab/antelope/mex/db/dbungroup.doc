@@ -1,0 +1,6 @@
+DBUNGROUP Ungroup a grouped table
+
+DBPTR = DBUNGROUP ( DBPTR )
+
+DBUNGROUP takes a grouped database view and ungroups it into a view 
+of the component records. 

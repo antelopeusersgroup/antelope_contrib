@@ -21,4 +21,8 @@ brief, they are:
 	dbtheta table [ expression ..]
 	dbungroup
 
+Here is an example of how to create a cell array of strings:
 
+db = dbprocess( db, { 'dbopen arrival'; 
+                      'dbsubset sta == "AAK"'; 
+                      'dbjoin assoc' } );

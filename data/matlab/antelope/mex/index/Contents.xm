@@ -24,6 +24,7 @@
 %
 % Getting information about the database
 %   dbquery		- Query a Datascope database for ancillary parameters
+%   dbnrecs		- Get the number of records in a database view
 %   dbjoin_keys		- Show the inferred join keys between two tables
 %
 % Forming views
@@ -33,7 +34,11 @@
 %   dbtheta		- Theta-join two Datascope database tabl
 %   dbunjoin		- Unjoin the specified Datascope database view
 %   dbnojoin		- Find records which do not join between tables
+%   dbseparate		- Extract a subset view of a table from a joined view
+%   dbsever		- Remove an unwanted table from a view
 %   dbprocess		- Construct a view as a series of standard operations
+%   dbgroup		- Group a sorted view
+%   dbungroup		- Ungroup a grouped database view into its component records
 %   dbfree		- Free resources used by a Datascope database view
 %
 % Evaluating expressions
@@ -125,7 +130,6 @@
 %       Antelope Toolbox for Matlab
 %	   [Antelope is a product of Boulder Real Time Technologies, Inc.]
 %       Kent Lindquist
-%       Geophysical Institute
-%       University of Alaska, Fairbanks
-%       1999
+%       Lindquist Consulting
+%       1997-2002
 %

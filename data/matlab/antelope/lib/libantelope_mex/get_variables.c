@@ -1,5 +1,5 @@
 /*
- * Matlab interface to Datascope package
+ * Antelope Toolbox for Matlab
  *
  * Kent Lindquist
  * Geophysical Institute
@@ -72,6 +72,7 @@ get_stringtbl( const mxArray *in, Tbl **tbl )
 
 	if( ! mxGetScalar( output_array[0] ) )
 	{
+		mexPrintf( "Input must be a cell-array of strings, e.g. {'string1'; 'string2'}\n" );
 		*tbl = 0;
 		return 0;
 	}

@@ -1,6 +1,6 @@
 
 /* 
- * Matlab interface to Datascope package
+ * Antelope Toolbox for Matlab
  *
  * Kent Lindquist
  * Geophysical Institute
