@@ -4,7 +4,7 @@ DATA= \
 	DPG_1S \
 	DPG_2AIR \
 	DPG_2WATER \
-	cmg3esp* \
+	cmg3esp \
 	cmg3t \
 	cmg3t_100sec \
 	cmg40t \
