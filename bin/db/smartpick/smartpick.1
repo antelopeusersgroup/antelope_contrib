@@ -63,6 +63,13 @@ the ambiguity of "network" in the CSS3.0 database causes difficulties.
 
 Note that both the station and network menus are tear-off menus, for 
 convenience (just click on the dotted line at the top of the list). 
+
+smartpick can compute and display spectra, or extract segments of waveform 
+data, based on the waveforms shown in the window. It does this by 
+subcontracting to the dbspgram(1) and trexcerpt(1) commands, respectively. 
+In the case of the "spectrograms" button, only the first trace in dbpick's 
+display list is used. Note that if you did a "Zoom" instead of a "Select" 
+in dbpick, you won't get what you expected!! 
 .SH OPTIONS
 .IP -nowait
 Bring up dbpick automatically upon startup
@@ -97,7 +104,7 @@ is not specified on the command line. If one already exists, a unique name
 will be generated. This file is removed upon normal exit.
 .SH "SEE ALSO"
 .nf
-dbpick(1), dbe(1), dbloc2(1)
+dbpick(1), dbe(1), dbloc2(1), dbspgram(1), trexcerpt(1)
 .fi
 .SH "BUGS AND CAVEATS"
 This program was originally written for a specific application, 
