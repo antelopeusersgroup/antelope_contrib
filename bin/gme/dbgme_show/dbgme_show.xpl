@@ -1,9 +1,10 @@
-#   Copyright (c) 2003 Boulder Real Time Technologies, Inc.           
+#   Copyright (c) 2004 Boulder Real Time Technologies, Inc.           
+#   All rights reserved. 
 #                                                                     
-#   This software module is wholly owned by Boulder Real Time         
-#   Technologies, Inc. Any use of this software module without        
-#   express written permission from Boulder Real Time Technologies,   
-#   Inc. is prohibited.                                               
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# 
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
 
 use Datascope ;
 use Tk;
