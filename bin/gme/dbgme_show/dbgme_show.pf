@@ -31,3 +31,10 @@ recipes &Arr{
 		nintervals 4
 	}
 }
+
+error_messages &Tbl{
+	No such file or directory
+	read error reading magic number
+	GMT ERROR
+	\\*fatal\\*
+}

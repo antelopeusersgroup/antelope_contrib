@@ -21,10 +21,20 @@ sub append_output {
 	return;
 }
 
+sub append_cmdline {
+	my( $text ) = @_;
+
+	append_output( "$text", "greentag" );
+	append_output( "\n" );
+
+	return;
+}
+
 sub append_error {
 	my( $text ) = @_;
 
-	append_output( "$text (Can't continue).\n", "redtag" );
+	append_output( "$text", "redtag" );
+	append_output( "\n" );
 
 	return;
 }
@@ -32,7 +42,8 @@ sub append_error {
 sub append_warning {
 	my( $text ) = @_;
 
-	append_output( "$text\n", "orangetag" );
+	append_output( "$text", "orangetag" );
+	append_output( "\n" );
 
 	return;
 }
@@ -60,18 +71,30 @@ sub cleanup_and_quit {
 sub watch_command_output {
 	my( $cmd ) = @_;
 
-	append_output( "Executing: $cmd\n" );
+	my( $errors ) = 0;
+
+	append_cmdline( "Executing: $cmd\n" );
 
 	open( F, "sh -c '$cmd' 2>&1 |" );
 
 	while( ( $nbytes = sysread( F, $input, 8192 ) ) > 0 ) {
 	
-		append_output( "$input" );
+		if( map { $expr = $_; grep( /$expr/, $input ) } @error_messages ) {
+			
+			append_error( $input );
+
+			$errors++;
+
+		} else {
+
+			append_output( "$input" );
+		}
+
 	}
 
 	close( F );
 
-	return;
+	return $errors;
 }
 
 sub go {
@@ -83,13 +106,15 @@ sub go {
 		   "grdview", 
 		   "grdcut", 
 		   "grdsample", 
+		   "grdinfo", 
 		   "psxy",
 		   "cat",
 		   "gs",
 		   "pnmcrop", 
 		   "ppmquant",
 		   "ppmtogif",
-		   "cggrid_convert"
+		   "cggrid_convert", 
+		   "cggrid_info"
 		   );
 
 	foreach $helper ( @helpers ) {
@@ -214,7 +239,7 @@ sub go {
 	$description .= "orid: $orid" .
 			"\tOrigin Time: $origin_timestring\n"; 
 
-	append_output( "Extracting grid...\n" );
+	append_output( "Extracting qgrid from database...\n" );
 
 	$qgridfile = dbextfile( @db );
 
@@ -243,6 +268,7 @@ sub go {
 	$griddb = pfget( $Pf, "grid_database" );
 	$projection = pfget( $Pf, "gmt_projection" );
 	%recipe = %{&pfget( $Pf, "recipes{$recipe}" )};
+	@error_messages = @{&pfget( $Pf, "error_messages" )};
 
 	if( ( $griddb eq "" ) || ( ! -e "$griddb" ) ) {
 
@@ -291,6 +317,26 @@ sub go {
 	$tmpgme_resamp = "/tmp/dbgme_show_tmp_$<_$$.gme_resamp";
 	$tmpstas = "/tmp/dbgme_show_tmp_$<_$$.tmpstas";
 
+	append_output( "Examining qgrid...\n" );
+
+	$cmd = "cggrid_info -s $qgridfile";
+
+	$errors += watch_command_output( $cmd );
+
+	if( $errors > 0 ) {
+
+		append_error( "Stopping due to errors; can't continue." );
+
+		return;
+	}
+
+	# Use values from the qgrid file itself to avoid rounding errors from database:
+
+	( $minlon, $maxlon, $minlat, $maxlat,
+	  $dlon, $dlat, $nlon, $nlat, $units ) = split( /\s+/, `$cmd` );
+
+	chomp( $units );
+
 	$Rectangle = "$minlon/$maxlon/$minlat/$maxlat";
 
 	append_output( "Building commands...\n" );
@@ -302,6 +348,7 @@ sub go {
 		"-R$Rectangle -I$dx/$dy" );
 	
 	if( -e "$griddb" ) {
+
 		push( @commands,
 		"dbgmtgrid -V -R$Rectangle $griddb $tmpgrd",
 		"grdgradient -V $tmpgrd -G$tmpgrad -A60 -Nt" );
@@ -436,33 +483,51 @@ sub go {
 
 	append_output( "Running display commands...\n" );
 	
-	foreach $cmd ( @commands ) {
+	$errors = 0;
+
+	while( ( $cmd = shift( @commands ) ) && $errors == 0 ) {
 	
-		watch_command_output( "$cmd" );
+		$errors += watch_command_output( "$cmd" );
+	}
+
+	if( $errors > 0 ) {
+		
+		append_error( "Stopping due to errors; can't continue." );
+
+		return;
 	}
 
 	$output_gif = $output_psfile;
 	$output_gif =~ s/.ps$/.gif/;
 	$pixels_per_inch = 100;
-	$size_pixels = 800;
 	$ncolors = 256;
-	watch_command_output( 
-	   "cat $output_psfile | gs -sOutputFile=- -q " .
-	   "-sDEVICE=ppm -r$pixels_per_inch - | pnmcrop - " .
-	   "| ppmquant $ncolors | ppmtogif > $output_gif"
-	   );
+
+	$cmd = "cat $output_psfile | gs -sOutputFile=- -q " .
+   	       "-sDEVICE=ppm -r$pixels_per_inch - | pnmcrop - " .
+   	       "| ppmquant $ncolors | ppmtogif > $output_gif";
+
+	$errors += watch_command_output( $cmd );
+
+	if( $errors > 0 ) {
+
+		append_error( "Stopping due to errors; can't continue." );
+
+		return;
+	}
+
 	append_output( "Loading image..." );
+
 	$image = $mw->Photo( "myimage", file => "$output_gif" );
 	append_output( "." );
 	$canvas = $mw->Scrolled( Canvas, 
-				 -width => $image->width(),
-				 -height => $image->height(),
-				 -scrollbars => "sw", 
-				 -scrollregion => 
-				   	[0,
-					 0,
-					 $image->width(),
-					 $image->height()]);
+			 	-width => $image->width(),
+			 	-height => $image->height(),
+			 	-scrollbars => "sw", 
+			 	-scrollregion => 
+			   		[0,
+				 	0,
+				 	$image->width(),
+				 	$image->height()]);
 	append_output( "." );
 	$canvas->createImage( 0, 0, -image => "myimage", -anchor => "nw" );
 	append_output( "Done." );
@@ -616,6 +681,7 @@ $mw->gridRowconfigure( 0, -weight => 0 );
 $rotext = $mw->Scrolled( ROText, -scrollbars => "w" );
 $rotext->tagConfigure( "redtag", -background => "red" );
 $rotext->tagConfigure( "orangetag", -background => "orange" );
+$rotext->tagConfigure( "greentag", -background => "green" );
 $rotext->grid( -row => 1, -columnspan => 2, -sticky => "nsew" );
 $mw->gridRowconfigure( 1, -weight => 1 );
 
