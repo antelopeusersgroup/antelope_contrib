@@ -1,0 +1,45 @@
+.TH DB2AMPMAGPF 1 "$Date$"
+.SH NAME
+db2ampmagpf \- generate parameterfiles for \fBdbampmag\fP/\fBorbampmag\fP from dbmaster.
+.SH SYNOPSIS
+.nf
+\fBdb2ampmagpf\fP \fIdbname\fP
+.fi
+
+.SH DESCRIPTION
+\fBdb2ampmagpf\fP reads a database, and tries to guess the best channels for magnitude computation. It merges this information with the default parameterfiles for \fBdbampmag\fP/\fBorbampmag\fP and saves this as new parameter files in the current directory.
+.SH OPTIONS
+.IP "dbname" 
+Name of the database with station/channel information. At least the tables \fIsite\fP and \fIsensor\fP must be present. This argument is required.
+.SH PARAMETER FILE
+The program reads the default parameter files for \fBdbampmag\fP/\fBorbampmag\fP, mb.pf, ml.pf, ms.pf. 
+To produce station parameters, it reads the 1st entry found there and replaces sta and chan_expr with the values found in the database specified on the commandline. 
+.SH "BUGS AND CAVEATS"
+The program uses the information from in the default parameterfiles mb/ml/ms. You can adapt the defaults by modifying these files somewhere in your PFPATH.
+.LP
+The program assumes that for all station/channel combinations configured in the database waveforms are available.
+.LP
+The program uses the following mechanism to guess the \fIbest\fP channels for a given station.:
+.LP
+higher samplerates are preferred, e.g. HHZ is preferred over BHZ
+.LP
+Higher gain is preferred, e.g. HHZ is preferred over HLZ.
+.LP
+For body wave magnitudes, vertical components are preferred over horizontals, i.e. if there's HHZ, it will use that.
+.LP
+For other magnitudes, vertical components are preferred, i.e. it tries to use HH[NE] if available.
+.LP
+For channels with loc-codes, all selected components will have the same loc-code. If there is HHN_00 and HHE_01, only HHN_00 is used.
+
+.SH EXAMPLE
+db2ampmagpf $ANTELOPE/demo/socalif/dbmaster/scdemo
+
+.SH "SEE ALSO"
+.nf
+dbampmag(1), orbampmag(1), dbml(1), orbmag(1), antelopeenv(5)
+.fi
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2004 
+.fi
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
