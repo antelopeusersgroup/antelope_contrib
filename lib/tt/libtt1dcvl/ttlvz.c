@@ -24,10 +24,10 @@ int *up;
     static double sdel;
     static int jlim;
     static double sder, pmax, temp;
-    static float vmax;
+    static double vmax;
     static int lhpz;
     static double test;
-    static float dmdp0;
+    static double dmdp0;
     static double term1;
     static int j;
     static double p;
@@ -35,6 +35,7 @@ int *up;
     static double t1;
     static int istrt;
     static double offset, sum;
+    static double hyz;
 
 /*-- ttlvz calculates travel time of seismic wave from hypocenter       tt
 lvz.3*/
@@ -71,6 +72,12 @@ e*/
 /*  Editorial note:  I should have burned this and started from scratch. 
 */
 
+/*  August 2002 */
+/*  Another repair to deal with case described above.  Roundoff errors */
+/* still occasionally caused problems.  Used an approximate fix described 
+below.*/
+/*  also added a special exit for delta=0,hpz=0 case. */
+
 
 /*  test is used as iteration distance cutoff for upward traveling */
 /*  ray convergence.  To avoid infinite loops, especially in the */
@@ -80,6 +87,9 @@ e*/
 /*  the convergence variable test for large delta.  See code below */
 /*  Modified by glp:  August 1996 */
 
+
+/* return immediately for 0 0 request */
+
     /* Parameter adjustments */
     --term;
     --h__;
@@ -87,7 +97,13 @@ e*/
     --v;
 
     /* Function Body */
-    test = (float).001;
+    if (*delta <= 0. && *hpz == 0.) {
+	*t = 0.;
+	*rayp = 0.;
+	*up = 1;
+	return 0;
+    }
+    test = .001;
     if (*delta * 1e-5 > test) {
 	test = *delta * 1e-5;
     }
@@ -134,22 +150,22 @@ L123:
 L120:
 	;
     }
-    *t = (float)1e10;
-    *rayp = (float)0.;
+    *t = 1e10;
+    *rayp = 0.;
     if (lhpz == *n) {
 	goto L360;
     }
-    h__[lhpz + 1] = z__[lhpz + 1] - (float) max(*hpz,z__[1]);
+    h__[lhpz + 1] = z__[lhpz + 1] - max(*hpz,z__[1]);
 /*-- calculate smallest refracted wave time                             tt
 lvz.34*/
     istrt = lhpz + 1;
-    vmax = (float)0.;
+    vmax = 0.;
     i__1 = lhpz;
     for (j = 1; j <= i__1; ++j) {
 /* L760: */
 /* Computing MAX */
 	d__1 = v[j];
-	vmax = (float) max(d__1,(double) vmax);
+	vmax = max(d__1,(double) vmax);
     }
     i__1 = *n;
     for (lowlr = istrt; lowlr <= i__1; ++lowlr) {
@@ -162,13 +178,13 @@ lvz.34*/
 	jlim = lowlr - 1;
 /*-- calculate offset distance                                        
   ttlvz.44*/
-	p = (float)1. / v[lowlr];
-	sum = (float)0.;
+	p = 1. / v[lowlr];
+	sum = 0.;
 	i__2 = lhpz;
 	for (j = 1; j <= i__2; ++j) {
 /* Computing 2nd power */
 	    d__1 = p * v[j];
-	    term[j] = sqrt((float)1. - d__1 * d__1) + (float)1e-10;
+	    term[j] = sqrt(1. - d__1 * d__1) + 1e-10;
 /* L710: */
 	    sum = h__[j] * v[j] / term[j] + sum;
 	}
@@ -176,9 +192,9 @@ lvz.34*/
 	for (j = lhpz; j <= i__2; ++j) {
 /* Computing 2nd power */
 	    d__1 = p * v[j];
-	    term[j] = sqrt((float)1. - d__1 * d__1) + (float)1e-10;
+	    term[j] = sqrt(1. - d__1 * d__1) + 1e-10;
 /* L720: */
-	    sum = h__[j + 1] * (float)2. * v[j] / term[j] + sum;
+	    sum = h__[j + 1] * 2. * v[j] / term[j] + sum;
 	}
 	offset = sum * p;
 	if (offset - *delta <= 0.) {
@@ -189,7 +205,7 @@ lvz.34*/
 /*-- calculate refraction path travel time for lowlr                  
   ttlvz.55*/
 L780:
-	sum = (float)0.;
+	sum = 0.;
 	i__2 = lhpz;
 	for (j = 1; j <= i__2; ++j) {
 /* L730: */
@@ -198,7 +214,7 @@ L780:
 	i__2 = jlim;
 	for (j = lhpz; j <= i__2; ++j) {
 /* L740: */
-	    sum = h__[j + 1] * (float)2. * term[j] / v[j] + sum;
+	    sum = h__[j + 1] * 2. * term[j] / v[j] + sum;
 	}
 	t1 = *delta * p + sum;
 	if (t1 < *t) {
@@ -226,12 +242,8 @@ L360:
 /*-- calculate direct wave travel time                                
   ttlvz.64*/
 	vmax = v[1];
-	pmax = (float)1. / v[1];
 	i__1 = lhpz;
 	for (j = 2; j <= i__1; ++j) {
-/* Computing MAX */
-	    d__1 = pmax, d__2 = (float)1. / v[j];
-	    pmax = max(d__1,d__2);
 /* L175: */
 /* Computing MAX */
 	    d__1 = vmax, d__2 = v[j];
@@ -246,20 +258,35 @@ er */
 /* -- the condition that p == pmax.  In this condition, an error is */
 /* -- returned that has to be handled by the caller.  Here this is */
 /* -- signaled by setting the returned time to -1.0. */
-	p = pmax * (float).5;
+/* -- */
+/*-- Repaired August 2002.  This process sometimes failed when request
+ing an*/
+/*-- extremely large delta in some models.  This is a roundoff error p
+roblem*/
+/*-- caused by the situation of p==pmax, which makes the sqrt term bel
+ow go*/
+/*-- to zero.  To return a reasonable approximation of a valid travel 
+time*/
+/*-- in that situation we assume the time in layer vmax dominates so w
+e just*/
+/* -- compute this as r/vmax and return as if it were perfectly normal
+. */
+/* -- consequences are not yet clear. */
+	pmax = 1. / vmax;
+	p = pmax * .5;
 L155:
-	p = (p + pmax) / (float)2.;
+	p = (p + pmax) / 2.;
 	if (p >= pmax) {
-	    *t = (float)-1.;
+	    *t = sqrt(*delta * *delta + hyz * hyz) / vmax;
 	    return 0;
 	}
-	sdel = (float)0.;
+	sdel = 0.;
 	i__1 = lhpz;
 	for (j = 1; j <= i__1; ++j) {
 /* L160: */
 /* Computing 2nd power */
 	    d__1 = p * v[j];
-	    sdel = v[j] * h__[j] / sqrt((float)1. - d__1 * d__1) + sdel;
+	    sdel = v[j] * h__[j] / sqrt(1. - d__1 * d__1) + sdel;
 	}
 	if ((d__1 = *delta - p * sdel) < 0.) {
 	    goto L166;
@@ -271,13 +298,13 @@ L155:
 /*-- now perform newton convergence from top down                     
   ttlvz.77*/
 L166:
-	sdel = (float)0.;
-	sder = (float)0.;
+	sdel = 0.;
+	sder = 0.;
 	i__1 = lhpz;
 	for (j = 1; j <= i__1; ++j) {
 /* Computing 2nd power */
 	    d__1 = p * v[j];
-	    temp = sqrt((float)1. - d__1 * d__1);
+	    temp = sqrt(1. - d__1 * d__1);
 	    term1 = v[j] * h__[j] / temp;
 	    sdel = term1 + sdel;
 /* Computing 2nd power */
@@ -303,13 +330,13 @@ L161:
   ttlvz.91*/
 /*-- calculate direct wave travel time by summation                   
   ttlvz.92*/
-	sum = (float)0.;
+	sum = 0.;
 	i__1 = lhpz;
 	for (j = 1; j <= i__1; ++j) {
 /* L180: */
 /* Computing 2nd power */
 	    d__1 = p * v[j];
-	    sum = h__[j] / (v[j] * sqrt((float)1. - d__1 * d__1)) + sum;
+	    sum = h__[j] / (v[j] * sqrt(1. - d__1 * d__1)) + sum;
 	}
 	t1 = sum;
     }
