@@ -1,0 +1,19 @@
+<chapter Antelope release hierarchy>
+<List>
+bin	executable programs
+lib	libraries
+data	program data
+  /pf	parameter files
+  /examples	program development examples
+  /perl		perl extensions
+  /tcl		tcl extensions
+  /pkt		packet library source code
+  /schemas	schema descriptions
+include	include files for program development
+man	man pages
+  /html	html version of man pages
+setup.csh	sets up shell environment variables
+Changes	list of changes for current release
+patches	patches in tar format
+patched	descriptions of applied patches
+Release	information about release
