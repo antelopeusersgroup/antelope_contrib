@@ -1,0 +1,49 @@
+.TH CGGRID_CONVERT 1 "$Date$"
+.SH NAME
+cggrid_convert \- convert files from one cggrid format to another
+.SH SYNOPSIS
+.nf
+cggrid_convert [-v] [-f format] [-o outfile] filename
+.fi
+.SH DESCRIPTION
+cggrid_convert reads a file in cggrid format (i.e. as saved by the 
+cggrid_write(3) routine) and saves it in the specified format. If no 
+format is given explicitly, the default is 'as' (ASCII). If no 
+output file is specified with the -o option, the result is printed to 
+standard-out (This behavior can be used to good effect with commands 
+such as the xyz2grd(1) command of the Generic Mapping Tools package,
+http://gmt.soest.hawaii.edu).
+.SH OPTIONS
+-v	verbose
+
+-f format 	output format. Currently either 'as' or 't4'
+
+-o outfile  	output file
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+yukon% cggrid_convert -o ascii_gridfile orid_25_trinetsm_es99.t4 
+cggrid_convert: cggrid_convert : $Revision$ $Date$ Started  5/13/2003  23:31:47.668
+yukon% 
+.fi
+.in
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+cggrid(3)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

@@ -1,0 +1,44 @@
+.TH GRD2CGGRID 1 "$Date$"
+.SH NAME
+grd2cggrid \- convert a GMT grid file to a cggrid
+.SH SYNOPSIS
+.nf
+\fBgrd2cggrid \fP[-V] \fIgrdfile\fP \fIcggridfile\fP
+.fi
+.SH DESCRIPTION
+The \fBgrd2cggrid\fP command converts a GMT grid file into an ascii
+computational-geometry grid from the cgeom(3) library.
+.SH OPTIONS
+.IP -V
+Verbose output
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+
+% \fBgrd2cggrid -V fakevs30.grd fakevs30.xyz\fP
+grdinfo: Processing file fakevs30.grd
+grd2xyz: Working on file fakevs30.grd
+grd2xyz: 288000 values extracted
+%
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBgrd2cggrid\fP returns 0 upon success.
+.SH "SEE ALSO"
+.nf
+make_fake_vs30(1), cggrid_convert(1), cggrid(5)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBgrd2cggrid\fP requires the GMT commands grdinfo and grd2xyz. It
+complains and dies if these are not found.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
