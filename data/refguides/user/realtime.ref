@@ -170,6 +170,9 @@ pforbstat [options] orb [secs]
 -v	more verbose
 </options>
 
+orblook { start orbname interval | restart orbname interval | stop orbname }
+     Start/Stop orblookupd daemon for monitoring orb status
+
 <subsection Data Loggers>
 <commands>
 adsend2orb orb port
