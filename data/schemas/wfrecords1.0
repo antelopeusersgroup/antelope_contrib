@@ -39,6 +39,17 @@ Attribute chan
 	}
 	;
 
+Attribute endtime
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "record end time" )
+	Detail {
+		This field lists the epoch time of the end of a seismic recording.
+	}
+	;
+
 Attribute lddate
 	Time (17)
 	Format ( "%17.5f" )
@@ -47,6 +58,16 @@ Attribute lddate
 	Description ( "(epoch) time of last record modification" )
 	Detail {
 		This is the last time the record was modified.
+	}
+	;
+
+Attribute network
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "seismic network name" )
+	Detail {
+		This field records the name of the subnetwork to which a seismic recording belongs.
 	}
 	;
 
@@ -114,6 +135,17 @@ Attribute storagename
 	}
 	;
 
+Attribute time
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "record start time" )
+	Detail {
+		This field lists the epoch time of the start of a seismic recording.
+	}
+	;
+
 Attribute writingloc
 	String (16)
 	Format ( "%-16s" )
@@ -122,6 +154,15 @@ Attribute writingloc
 	Detail {
 		This field specifies the source location of the helicorder
 		record, i.e. where the record was written.
+	}
+	;
+
+Relation develocorder
+	Fields ( sta chan time endtime writingloc network boxlabel storageloc lddate )
+	Primary ( sta chan time endtime writingloc network )
+	Description ( "develocorder recordings " )
+	Detail {
+		This table tabulates seismic traces recorded by develocorders. Enough information is included to locate the box in which the develocorder film is stored.
 	}
 	;
 
