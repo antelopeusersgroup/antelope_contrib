@@ -1,9 +1,9 @@
 LIB=libmultiwavelet.a		
 DLIB=$(LIB:.a=$(DSUFFIX)) # uncomment when creating a dynamic library
-DATADIR=	# directory under $(ANTELOPE)/data in which to put $(DATA) files
-DATA=		# data files to be placed in data/$(DATADIR)
+DATADIR=schemas2 # directory under $(ANTELOPE)/data in which to put $(DATA) files
+DATA=MWavelet1.3	# data files to be placed in data/$(DATADIR)
 INCLUDE=multiwavelet.h 	# include files to be placed in include
-PF=		# parameter files to be placed in data/pf
+PF=mwap.pf		# parameter files to be placed in data/pf
 
 MAN3=mwtransform.3		
 
@@ -24,7 +24,7 @@ DIRS=			# Omit this line to run make in subdirectories, or
 OBJS=	apsubs.o convolution.o dbsubs.o decimate.o lapack_routines.o \
    matrix_subs.o mwavelet.o \
    mwaveletsubs.o print_band_info.o polarization.o stations.o statistics_subs.o \
-   utilities.o trace_subs.o
+   utilities.o trace_subs.o ttsubs.o
 $(LIB) : $(OBJS)
 	rm -f $@
 	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)

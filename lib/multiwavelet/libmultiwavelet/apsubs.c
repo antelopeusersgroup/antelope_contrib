@@ -414,7 +414,7 @@ int compute_plane_wave_static(MWstation *s,
 	TTSlow *u0,*u;
 	char refphase[TTPHASE_SIZE];
 	MWSlowness_vector slow;
-	int mode=0,tresult,uresult;
+	int tresult,uresult;
 	Tbl *treturn=NULL,*ureturn=NULL;
 
 	double t0;  /* computed time and slowness at reference station */

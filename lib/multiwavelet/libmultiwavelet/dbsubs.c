@@ -27,6 +27,8 @@ arguments:
 	fwin - bandwidth (in Hz) of this wavelet
 	C - 3x3 covariance matrix estimate for this slowness vector
 		(ux,uy, t order assumed )
+	cohtype - type of coherence measure used (mapped in multiwavelet.h)
+	peakcm - value of coherence measure for this fc and evid. 
 	db - output database
 Returns 0 if dbaddv was successful, -1 if dbaddv fails.
 
@@ -45,17 +47,29 @@ int MWdb_save_slowness_vector(char *phase,
 	double *C,
 	int nsta,
 	int ncomp,
+	int cohtype,
+	double peakcm,
 	Dbptr db)
 {
 	double time, twin, slo, azimuth, cxx, cyy, cxy;
+	char cmeasure[2];
 
 	slo = hypot(u->ux,u->uy);
 	azimuth = atan2(u->ux,u->uy);
-	if(azimuth<0.0) azimuth += 2.0*M_PI;
 	azimuth = deg(azimuth);
 	time = timeref + (w->si)*((double)(w->tstart));
 	twin = ((double)((w->tend)-(w->tstart)))*(w->si);
 	db = dblookup(db,0,"mwslow",0,0);
+
+	switch(cohtype)
+	{
+	case(USE_COHERENCE):
+		strcpy(cmeasure,"c");
+		break;
+	case(USE_SEMBLANCE):
+	default:
+		strcpy(cmeasure,"s");
+	}
 
 	if( dbaddv(db,0,"sta",array,
 		"evid",evid,
@@ -72,6 +86,8 @@ int MWdb_save_slowness_vector(char *phase,
 		"cxy",C[1],
 		"nsta",nsta,
 		"ncomp",ncomp,
+		"cohtype",cmeasure,
+		"cohmeas",peakcm,
 		"algorithm","mwap",0) < 0) 
 	{
 		elog_notify(0,
@@ -181,6 +197,9 @@ statics - result array of static estimates indexed by station
 stations - array of MW station objects
 snrarr - array of Signal_to_Noise objects indexed by sta (Warning
 	mwap has a stack of these for each frequency band being analyzed.)
+arrivals - array of current measured arrival times keyed by sta name
+model_times - array of theoretical arrival times for these same data
+	(Both arrivals and model_arrivals contain double *'s to times)
 db - output database 
 
 Author:  G Pavlis
@@ -201,6 +220,8 @@ int MWdb_save_statics(
 	Arr *statics,
 	Arr *stations,
 	Arr *snrarr,
+	Arr *arrivals,
+	Arr *model_times,
 	Dbptr db)
 {
 	char *sta;
@@ -213,6 +234,8 @@ int MWdb_save_statics(
 	int nsta;
 	Dbptr dbt, dba, dbsnr;
 	double ampdb, aerrdb;  
+	double *atime,*modtime,resid;
+	int ierr;
 
 	dbt = dblookup(db,0,"mwtstatic",0,0);
 	dba = dblookup(db,0,"mwastatic",0,0);
@@ -281,23 +304,53 @@ int MWdb_save_statics(
 			best estimate */
 			time = timeref 
 				+ moveout[i] + ((double)(w->tstart))*(w->si);
-		
-			if( dbaddv(dbt,0,
-				"sta",sta,
-				"fc",fc,
-				"bankid",bankid,
-				"phase",phase,
-				"evid",evid,
-				"time",time,
-				"twin",twin,
-				"wgt",s->current_weight_base,
-				"estatic",s->elevation_static,
-				"pwstatic",s->plane_wave_static,
-				"rstatic",s->residual_static,
-				"errstatic",mws->sigma_t,
-				"ndgf",mws->ndgf,
-				"datum",refelev,
-				"algorithm","mwap",0) < 0) 
+			/* We store the residual relative to a model time.
+			There may be a more elegant way to skip saving resid
+			in the conditional below with dbNULL, but I couldn't
+			figure out that process. */
+			atime = (double *)getarr(arrivals,sta);
+		    	modtime = (double *)getarr(model_times,sta);
+		    	if((atime==NULL) || (modtime == NULL) )
+			{
+				ierr = dbaddv(dbt,0,
+					"sta",sta,
+					"fc",fc,
+					"bankid",bankid,
+					"phase",phase,
+					"evid",evid,
+					"time",time,
+					"twin",twin,
+					"wgt",s->current_weight_base,
+					"estatic",s->elevation_static,
+					"pwstatic",s->plane_wave_static,
+					"rstatic",s->residual_static,
+					"errstatic",mws->sigma_t,
+					"ndgf",mws->ndgf,
+					"datum",refelev,
+					"algorithm","mwap",0);
+			}
+		    	else
+			{
+				resid = (*atime) - (*modtime);
+				ierr = dbaddv(dbt,0,
+					"sta",sta,
+					"fc",fc,
+					"bankid",bankid,
+					"phase",phase,
+					"evid",evid,
+					"time",time,
+					"twin",twin,
+					"wgt",s->current_weight_base,
+					"estatic",s->elevation_static,
+					"pwstatic",s->plane_wave_static,
+					"rstatic",s->residual_static,
+					"errstatic",mws->sigma_t,
+					"ndgf",mws->ndgf,
+					"datum",refelev,
+					"timeres",resid,
+					"algorithm","mwap",0);
+			}
+			if(ierr<0)
 			{
 				elog_notify(0,"mwtstatic dbaddv error for station %s\n",sta);
 

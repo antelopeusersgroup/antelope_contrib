@@ -268,8 +268,9 @@ Arr **compute_signal_to_noise(Arr *,Arr *,Arr *,Arr *,
 int computer_total_moveout(MWgather *,Arr *, char *, MWSlowness_vector , double, char *, double *);
 int *compute_lag_in_samples(MWgather *,double *, double );
 double phase_to_time(double ,double , double );
-int compute_optimal_lag(MWgather **,int ,double ,
-        double *,Spherical_Coordinate, Time_Window *,int, int);
+void compute_optimal_lag(MWgather **,int ,double ,
+        double *,Spherical_Coordinate, Time_Window *,int, int,
+	int *, double *);
 int compute_mw_arrival_times(MWgather **,int ,double ,double *, int , 
 	Spherical_Coordinate, Time_Window *, Arr **, Arr **,
 	double *,double *,int *);
@@ -302,11 +303,12 @@ void trplot_one_mwtrace(MWtrace *,char *);
 
 int MWdb_save_slowness_vector(char *, MWSlowness_vector *, double,
 	Time_Window *,char *, int, int, double, double, double *,
-	int, int, Dbptr);
+	int, int, int, double, Dbptr);
 int MWdb_save_avgamp(char *, int, int, char *, double, double,
 	Time_Window *, double, double, int, Dbptr);
 int MWdb_save_statics(int, int, char *, double, double, Time_Window *,
-	double, MWgather *, double *, Arr *, Arr *, Arr *, Dbptr);
+	double, MWgather *, double *, Arr *, Arr *, Arr *, 
+	Arr *, Arr *, Dbptr);
 int MWdb_save_pm(char *, int, int, char *, double, double, 
 	Time_Window *, MWgather *, double *, Arr *, Arr *, 
 	Particle_Motion_Ellipse *, Particle_Motion_Error *, Dbptr);
@@ -321,3 +323,5 @@ void pmvector_average(Particle_Motion_Ellipse *, int ,
         Particle_Motion_Ellipse *, Particle_Motion_Error *);
 int compute_total_moveout(MWgather *, Arr *, char *,
 	MWSlowness_vector, double, char *, double *);
+int  MWget_model_tt_slow(Arr *, char *, char *, Dbptr, Pf *, Arr **, 
+	MWSlowness_vector *);

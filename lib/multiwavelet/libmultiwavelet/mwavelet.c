@@ -1336,6 +1336,7 @@ matrix created here is the largest principal component direction
 independent of the phase being analyzed.  
 
 Arguments:
+--inputs---
 g - gather object used for computatoin
 nwavelets - number of wavelets in transform
 timeref - time reference (lag are computed from here based on
@@ -1347,19 +1348,30 @@ polarization - defines direction to transform coordinates to
 win - array of time window structures (value for win[band] is used )
 coherence_type - coherence or semblance switch (see multiwavelet.h)
 band - band index of mw transform
+---output----
+lagout - output optimal lag in samples (former function return).
+peakcm - value of coherence measure at the lagout.
 
-Return:
+Author:  Gary Pavlis
+History:  
+This function went through some evolutionary changes that have
+left it in less than desirable state.  The original version was a
+int function that returned the optimal lag only.  It also had
+some nasty bugs that were patched early on.  Now (Dec 2000) I
+patched it again to return not only the lag but the actual 
+coherence measure at the optimal lag value.  This made it into
+a void subroutine like function that is somewhat bad form.  
 
-normal value is some "small" integer.  Error returns a large
-negative integer defined immediately below.  "large" is relative
-but for conceivable applications the number there should be more
-than adequate.
-
+Probably the most confusing issue here is the LAG_ERROR_RETURN.
+This value means the computation failed due to a windowing error.
+In that situation the peakcm value is not set and this return
+must be trapped as the results are garbage.  
 */
 #define LAG_ERROR_RETURN -9999999
-int compute_optimal_lag(MWgather **g,int nwavelets,double timeref, 
+void compute_optimal_lag(MWgather **g,int nwavelets,double timeref, 
 	double *moveout,Spherical_Coordinate polarization,
-	Time_Window *win,int coherence_type, int band)
+	Time_Window *win,int coherence_type, int band,
+	int *lagout, double *peakcm)
 {
 	int i,j;
 	double U[9];  /* transformation matrix */
@@ -1427,6 +1439,8 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 		}
 		for(j=0;j<trans_gath[0]->nsta;++j) lags[j] += win->stepsize;
 	}
+	/* Note LAG_ERROR_RETURN is the return when the the loop exits
+	without ever setting the lag_at_peak value to anything else */
 	for(i=0,j=0,peak_semb=0.0,lag_at_peak=LAG_ERROR_RETURN;
 				i<lensemb;++i,j+=win->stepsize)
 	{
@@ -1455,7 +1469,9 @@ int compute_optimal_lag(MWgather **g,int nwavelets,double timeref,
 	if(lag_at_peak > LAG_ERROR_RETURN)
 		lag_at_peak += win->tstart;
 
-	return(lag_at_peak);
+	*lagout = lag_at_peak;
+	*peakcm = peak_semb;
+	return;
 }
 
 /* This small function builds the complex matrix of trace data

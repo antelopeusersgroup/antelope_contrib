@@ -306,6 +306,6 @@ spherical coordinates.  Arguments are obvious */
 void copy_polarization(Spherical_Coordinate *from, Spherical_Coordinate *to)
 {
 	to->radius = from->radius;
-	to->theta = from->radius;
+	to->theta = from->theta;
 	to->phi = from->phi;
 }
