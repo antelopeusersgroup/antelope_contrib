@@ -728,21 +728,29 @@ sub plot_contours {
 			$nlimit = $4;
 		}
 
-		my( $w, $e, $s, $n );
+		my( $w, $e, $s, $n, $nextsmin, $nextwmin );
 
-		for( $s = $slimit; $s<$nlimit; $s+=$Mapspec{tilesize_deg} ) {
+		$nexsmin = $nextwmin = -9999;
+
+		for( $s = $slimit; 
+		      $s<$nlimit; 
+		       $s=$s+$Mapspec{tilesize_deg}<$nexsmin?$nextsmin:$s+$Mapspec{tilesize_deg} ) {
 
 		  # Put the potentially ugly sutures under the grid lines:
 
 		  $n = $s + $Mapspec{tilesize_deg};
 		  $n = next_round( $n, $Mapspec{gridline_interval_deg} );
 		  $n > $nlimit ? $nlimit : $n;
+		  $nextsmin = $n;
 
-		  for( $w = $wlimit; $w<$elimit; $w+=$Mapspec{tilesize_deg} ) {
+		  for( $w = $wlimit; 
+			$w<$elimit; 
+			 $w=$w+$Mapspec{tilesize_deg}<$nextwmin?$nextwmin:$w+$Mapspec{tilesize_deg} ) {
 
 		    $e = $w + $Mapspec{tilesize_deg};
 		    $e = next_round( $e, $Mapspec{gridline_interval_deg} );
 		    $e > $elimit ? $elimit : $e;
+		    $nextwmin = $e;
 
 		    my( $tile ) = "-R$w/$e/$s/$n";
 
