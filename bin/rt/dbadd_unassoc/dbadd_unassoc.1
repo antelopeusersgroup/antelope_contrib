@@ -1,0 +1,74 @@
+.TH DBADD_UNASSOC 1 "$Date$"
+.SH NAME
+dbadd_unassoc \- Add unassociated events from a catalog to a real-time database
+.SH SYNOPSIS
+.nf
+dbadd_unassoc [-l seconds] [-n] [-s catalog_subset_expression] dbcat dbname
+.fi
+.SH DESCRIPTION
+dbadd_unassoc is a companion to dbassoc_rt. Whereas dbassoc_rt looks in a catalog
+for hypocenters that associate with arrivals in the target database, dbadd_unassoc
+looks in a catalog for hypocenters that do not correspond to any of the events 
+in the target database. The presumption is that dbassoc_rt has been run first, and 
+has identified all the catalog events that associate with events in the existing 
+catalog. The primary value of this is to put into the target database a note about
+earthquakes that were reported by other institutions or processes and "should 
+have been seen" in the target database. The catalog_subset_expression specified
+with the -s option hopefully characterizes events in the catalog which should 
+have been seen, for example with the grn() function of dbexpressions(5) or other 
+strategy. The database resulting from the target database (probably from a 
+real-time system), from the following dbassoc_rt process, and from the following 
+dbadd_unassoc process should be a valuable diagnostic tool for system performance, 
+system cross-comparison, and integration of multiple regional and national 
+location systems. 
+
+
+	Pending further insight, one must specify a lag-time after which 
+dbadd_unassoc has given up on the real-time system and is willing to add the 
+listed event [based on origin time and lddate]. Unfortunately this switches
+from a data-driven model to a process-synchronization model, which is not
+desirable in an asynchronous processing system. 
+.SH OPTIONS
+-l seconds how long to wait after real-time to decide that a catalog hypocenter
+was 'missed' and to add it
+
+-n exit after the catalog database has been initially processed. Otherwise, 
+wait indefinitely for new hypocenters to appear in the catalog database. 
+
+-s catalog_subset_expression Only include catalog hypocenters that match this 
+expression
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbassoc_rt(1), dbassoc(1), dbloc2(1)
+.fi
+.SH "BUGS AND CAVEATS"
+Aside from the process-synchronization problems of the -l option mentioned 
+above, dbadd_unassoc could probably be better handled as an additional task
+within dbassoc_rt, perhaps checking "missed" hypocenters agaist the detections 
+in a real-time database instead of just the associated arrivals [Suggested 
+by Frank Vernon].
+
+	Since the dbloc2 analysis which may follow on this database requires 
+at least some pick information to recognize that there is a "next event" at a 
+certain time, there perhaps should be a -p option that will add a predicted 
+phase of +P from the listed hypocenter at the closest station. As an
+alternative to adding predicted phases, dbadd_unassoc should look for 
+real phases in the catalog database and add them instead. In addition to helping 
+an analyst get to the event with dbloc2, having phases present would hopefully 
+prevent separate evids for the same event if more than one external catalog 
+sees an event missed by the real-time system.
+.SH AUTHOR
+Kent Lindquist, Geophysical Institute, University of Alaska
+.\" $Id$
