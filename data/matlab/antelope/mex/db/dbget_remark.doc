@@ -1,0 +1,6 @@
+DBGET_REMARK Get the remark associated with a record in a database
+
+REMARK = DBGET_REMARK ( DBPTR )
+
+DBGET_REMARK returns the comment(s) for the record and
+table specified by DBPTR.

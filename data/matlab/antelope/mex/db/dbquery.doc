@@ -1,0 +1,93 @@
+DBQUERY	Query a Datascope database for ancillary information
+
+QUERY_RESULT = DBQUERY ( DBPTR, CODE )
+
+DBQUERY is the  method  for  getting  ancillary  information
+(names,  descriptions, number of rows, columns, tables, etc)
+about a database.  Depending on the code, it may  return  an
+integer,  a  character string, or an array of strings.
+Following are the valid codes and their explanation
+
+dbDATABASE_COUNT
+dbTABLE_COUNT
+dbFIELD_COUNT
+dbRECORD_COUNT
+These return counts of the number  of  databases  open,
+the  number  of  tables  in  a  database, the number of
+fields in a table, and  the  number  of  records  in  a
+table.
+
+dbSCHEMA_DESCRIPTION
+dbDATABASE_DESCRIPTION
+dbTABLE_DESCRIPTION
+dbFIELD_DESCRIPTION
+These return short  descriptions  of  the
+schema, database, table or field.
+
+dbSCHEMA_DETAIL
+dbDATABASE_DETAIL
+dbTABLE_DETAIL
+dbFIELD_DETAIL
+These return verbose  descriptions  of  a
+schema, database, table or field.
+
+dbSCHEMA_NAME
+dbDATABASE_NAME
+dbTABLE_NAME
+dbFIELD_NAME
+These return names of a schema,  database, table or field.
+
+The following return other useful values, which if not self
+explanatory may be understood after perusal of the Antelope 
+documentation and man pages
+
+String values:
+dbSCHEMA_DESCRIPTION
+dbTIMEDATE_NAME
+dbDATABASE_DESCRIPTION
+dbTABLE_DESCRIPTION
+dbFIELD_DESCRIPTION
+dbSCHEMA_DETAIL
+dbDATABASE_DETAIL
+dbTABLE_DETAIL
+dbFIELD_DETAIL
+dbSCHEMA_NAME
+dbDATABASE_NAME
+dbTABLE_NAME
+dbFIELD_NAME
+dbTABLE_FILENAME
+dbTABLE_DIRNAME
+dbFIELD_RANGE
+dbFIELD_FORMAT
+dbDBPATH
+dbFORMAT
+dbFIELD_UNITS
+dbFIELD_BASE_TABLE
+dbUNIQUE_ID_NAME
+dbFIELD_TYPE
+
+Scalar values:
+dbDATABASE_COUNT
+dbTABLE_COUNT
+dbFIELD_COUNT
+dbRECORD_COUNT
+dbTABLE_SIZE
+dbFIELD_SIZE
+dbFIELD_INDEX
+dbVIEW_TABLE_COUNT
+dbRECORD_SIZE
+dbTABLE_IS_WRITEABLE
+dbTABLE_IS_VIEW
+dbUNIQUE_ID
+
+Lists of strings:
+dbLINK_FIELDS
+dbSCHEMA_FIELDS
+dbSCHEMA_TABLES
+dbFIELD_TABLES
+dbVIEW_TABLES
+dbTABLE_FIELDS
+dbPRIMARY_KEY
+dbALTERNATE_KEY
+dbFOREIGN_KEYS
+

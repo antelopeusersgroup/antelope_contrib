@@ -1,0 +1,20 @@
+DBJOIN Join the specified Datascope database tables
+
+DBPTR = DBJOIN ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] [, 'outer' ] )
+
+DBJOIN joins two tables, specified by the database pointers
+DBPTR1 and DBPTR2, of a Datascope Database. The result is
+returned as another Database pointer, DBPTR.  Normally, for
+some records in the first table, there may be no matching
+record in the second table. This would normally mean that
+there would be no corresponding record in the joined
+table. Setting the 'outer' option forces an entry for every
+record in the first table. 
+
+If PATTERN1 and PATTERN2 are not specified, the join keys
+between the tables are inferred. If PATTERN1 is specified, it
+gives the join keys to use in both tables, presuming the 
+named fields are present in both tables. If PATTERN1 and PATTERN2
+are both specified, PATTERN1 specifies the DBPTR1 fields that should
+match the corresponding fields in PATTERN2 for DBPTR2, respectively.
+PATTERN1 and PATTERN2 are cell-arrays of strings.

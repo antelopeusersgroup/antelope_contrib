@@ -1,0 +1,8 @@
+DBGETV Get the specified values from a Datascope database
+
+[VALUE, VALUE, ...] = DBGETV ( DBPTR, FIELD [,FIELD, ...] )
+
+DBGETV reads values from fields in the database pointed to
+by DBPTR. FIELD are string-names of requested fields in the
+table pointed to by DBPTR. If DBPTR.record is the value for
+dbALL, DBGETV returns arrays of values for all the rows.

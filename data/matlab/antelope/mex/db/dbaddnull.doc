@@ -1,0 +1,7 @@
+DBADDNULL	Add a null record to a Datascope database
+
+RECORD_NUMBER = DBADDNULL ( DBPTR )
+
+DBADDNULL adds a new, null row to the table pointed to by
+DBPTR.  DBADDNULL returns the record-number of the added
+record, equal to dbINVALID if an error occurred.

@@ -1,0 +1,9 @@
+DBDELETE Delete the specified record in a Datascope database
+
+DBDELETE ( DBPTR )
+
+DBDELETE immediately deletes a row from a Datascope
+database, pointed to by DBPTR. When immediate deletion is
+undesirable (say when further processing on the database
+may rely on current indices), use DBMARK and DBCRUNCH
+instead.

@@ -1,0 +1,12 @@
+DBUNJOIN Unjoin the specified database table, writing to new database
+
+DBUNJOIN ( DBPTR, OUTPUT )
+
+DBUNJOIN finds all the rows in the base tables which make
+up a  particular view, and writes them to a new set of
+database tables.  By creating a subset of some table in
+the  original database,  then joining this subset to
+several other tables, and then using DBUNJOIN to create a
+new  database,  you  can effectively create a subsetted
+database.  DBPTR points to the input view. OUTPUT is the
+filename of the output database.

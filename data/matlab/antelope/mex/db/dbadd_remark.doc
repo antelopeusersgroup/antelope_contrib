@@ -1,0 +1,6 @@
+DBADD_REMARK	Add a remark to a Datascope database
+
+DBADD_REMARK ( DBPTR, REMARK )
+
+DBADD_REMARK adds the passed remark to the record and table
+specified by the Database pointer DBPTR.

@@ -1,0 +1,12 @@
+DBCRUNCH Crunch out null fields in a Datascope database table
+
+DBCRUNCH ( DBPTR )
+
+DBCRUNCH searches database tables  for  records  which  are
+null,  and  removes them.  While a program is operating on
+a database, it is usually better to "mark" records  for
+dele- tion,  by setting them to all nulls, rather than
+immediately deleting them.  Immediate deletion changes the
+record number of  all  succeeding  records, invalidating
+views and indexes based on that table, as well as any
+counters which the  program may be keeping itself.

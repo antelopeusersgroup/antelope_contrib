@@ -1,0 +1,8 @@
+DBCLOSE	Close a Datascope database
+
+DBCLOSE ( DBPTR )
+
+DBCLOSE closes the database specified by the database
+pointer DBPTR.  This command also clears the DBPTR
+structure from memory, to prevent attempts to read or
+manipulate a closed database.

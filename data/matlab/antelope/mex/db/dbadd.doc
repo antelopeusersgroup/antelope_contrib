@@ -1,0 +1,10 @@
+DBADD	Add a record to a Datascope database
+
+RECORD_NUMBER = DBADD ( DBPTR, RECORD )
+
+DBADD adds a new row to the table pointed to by DBPTR.  The
+new record is taken from RECORD, or if RECORD is 'dbSCRATCH',
+from the scratch record for that table.  (Thus the scratch
+record may be used to build up a record before adding it to
+a table).  DBADD returns the record-number of the added
+record, equal to dbINVALID (<0) if an error occurred.

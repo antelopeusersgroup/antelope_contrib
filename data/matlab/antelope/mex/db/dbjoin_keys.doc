@@ -1,0 +1,9 @@
+DBJOIN_KEYS Show inferred keys for joining two tables
+
+DBPTR = DBJOIN_KEYS ( DBPTR1, DBPTR2 **or** DBPTR, TABLE1, TABLE2 )
+
+Occasionally it is useful to know the inferred keys which will be
+used to join two tables. DBJOIN_KEYS provides a cell array of strings
+listing the join keys for two tables. The arguments are either 
+two database pointers pointing to the two tables, or a database
+pointer to the open database plus two string table-names. 

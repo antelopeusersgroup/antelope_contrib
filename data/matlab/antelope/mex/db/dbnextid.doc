@@ -1,0 +1,14 @@
+DBNEXTID Get the next integer id for the specified name from a database
+
+ID = DBNEXTID ( DBPTR, IDNAME )
+
+DBNEXTID returns the next available integer for  the
+specified field name IDNAME. It looks up the current
+value in the table, increments that by one, updates the
+lastid table, and returns  the incremented value.  If no
+entry is found in the table corresponding to the name, a
+new entry is created, and its value set to one.  In the
+event the specified field name is a Unique key  in  a
+table  and no entry exists in lastid, that table is
+searched and the next available id found. The lastid table
+is updated appropriately.

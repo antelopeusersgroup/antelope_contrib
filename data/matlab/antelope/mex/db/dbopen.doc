@@ -1,0 +1,12 @@
+DBOPEN	Open a Datascope database
+
+DBPTR = DBOPEN ( FILENAME, OPENTYPE )
+
+DBOPEN opens the database specified by the path name
+FILENAME,  using the  permissions given by opentype.  A
+database pointer with the database index filled in is
+returned in DBPTR. The opentype may be either r (for  read
+only)  or  r+  (for reading  and  writing).   In the latter
+case, the db package will attempt to open tables
+read/write, but  if  permissions are incorrect, will open
+the table read only.

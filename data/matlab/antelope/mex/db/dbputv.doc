@@ -1,0 +1,12 @@
+DBPUTV Put the specified values into a Datascope database
+
+DBPUTV ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
+
+DBPUTV may be used to read and  write  values  to and
+from  fields  in a database table.  The values are con-
+verted between the ascii representation and  double  or
+int for  floating  point  or  integer  fields.  Character
+string fields are stripped of leading and trailing
+blanks,  and  a null  is appended when they are read; when
+they are written, they are (silently) truncated or padded
+with blanks  to  the correct length.

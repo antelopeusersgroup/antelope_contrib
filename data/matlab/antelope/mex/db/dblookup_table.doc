@@ -1,0 +1,6 @@
+DBLOOKUP_TABLE	Aim a database pointer at a specified table
+
+DBPTR = DBLOOKUP_TABLE ( DBPTR, TABLE )
+
+DBLOOKUP_TABLE is equivalent to
+DBLOOKUP( DBPTR, '', TABLE, '', '' );

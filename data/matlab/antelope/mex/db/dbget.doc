@@ -1,0 +1,9 @@
+DBGET get a table, record, or field from a Datascope database
+
+RECORD = DBGET( DBPTR, [ 'dbSCRATCH' ] )
+
+DBGET may be usee to get records, fields, or even an entire
+table from a database. The requested information is
+returned as RECORD, unless the second argument 'dbSCRATCH'
+is given, in which case the requested information is put
+into the scratch record for the corresponding table.

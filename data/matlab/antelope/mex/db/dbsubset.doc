@@ -1,0 +1,7 @@
+DBSUBSET Subset a Datascope database table according to an expression
+
+DBPTR = DBSUBSET ( DBPTR, EXPRESSION )
+
+DBSUBSET creates a new view of a dtabase table, containing
+only the records which satisfy the expression represented
+by EXPRESSION.

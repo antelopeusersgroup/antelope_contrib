@@ -1,0 +1,8 @@
+DBEVAL Evaluate the specified expression for a Datascope database
+
+DBEVAL ( DBPTR, EXPRESSION [,TYPE] )
+
+DBEVAL applies the specified expression to the rows pointed
+to by DBPTR, computing a result and casting it to the
+specified TYPE if requested.  TYPE is one of dbBOOLEAN,
+dbREAL, dbINTEGER, dbTIME, or dbYEARDAY.

@@ -1,0 +1,16 @@
+DBFIND Locate a row satisfying some condition in a database
+
+IRECORD = DBFIND ( DBPTR, EXPRESSION [,FIRST [,COUNT]] [,'backwards'] )
+
+DBFIND looks for a row which matches the specified
+EXPRESSION.  DBFIND searches backwards if the last argument
+is the 'backwards' option. If FIRST is specified, DBFIND
+starts the search from the specified record. Otherwise, the
+search starts from record 0 for forwards searches and from
+the last record for backwards searches.  If COUNT is not
+specified, DBFIND returns the index of the first record it
+finds. Otherwise it looks for the n'th matching record,
+where n is given by COUNT. If COUNT is specified, FIRST
+must be explicitly specified, even if you want the default
+value of zero. If DBFIND does not find a record matching
+the criteria, it returns an IRECORD of -102 (dbINVALID).

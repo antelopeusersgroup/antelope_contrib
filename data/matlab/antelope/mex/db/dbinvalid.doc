@@ -1,0 +1,5 @@
+DBINVALID Create an invalid database pointer
+
+DBPTR = DBINVALID
+
+DBINVALID creates and returns an invalid database pointer.

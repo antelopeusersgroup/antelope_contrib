@@ -1,0 +1,23 @@
+DBLOOKUP Aim a database pointer at the specified table, field, record
+
+DBPTR = DBLOOKUP ( DBPTR, DATABASE, TABLE, FIELD, RECORD )
+
+DBLOOKUP is a means for translating  from  a  symbolic
+name (the  name  of  a  database,  table,  field  or
+record,  eg wfdisc.dir) to the integer id in the database
+pointer.   You specify  an  input  database  pointer and
+one or more names.  Names which are not specified
+explicitly  in  the call  are represented by the null
+string. For example, given a database pointer which
+specifies a particular database, to find the database
+pointer which specifies the 'dir' field in the 'wfdisc'
+table, use the following:
+	db = DBLOOKUP ( db, '', 'wfdisc', 'dir', '' ).
+If the specified database is not found among the open
+databases, dblookup will attempt to open it.
+Since records have no corresponding names,  the
+record_name parameter  is  not  very  useful.   However,
+you can specify 'dbALL', 'dbSCRATCH' or 'dbNULL' in this
+position.  Alternatively,  dblookup will search for the
+first record for which the specified field has the
+specified (string) value, starting with record zero.

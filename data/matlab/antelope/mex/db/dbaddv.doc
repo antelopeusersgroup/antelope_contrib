@@ -1,0 +1,28 @@
+DBADDV	Add values to a Datascope database
+
+DBADDV ( DBPTR, FIELD, VALUE [,FIELD, VALUE ... ] )
+
+DBADDV adds a new record to a plain table (not a view),
+filling in the specified fields, just as DBPUTV does.
+However, the new record is first filled with null  values,
+and  the lddate  field  is  filled in after the values from
+the call.  (Thus, if you pass  in  a  value  for  lddate,
+it  will  be overwritten).  DBADDV checks to ensure that
+the primary and  alternate  key for  the  record  are
+completely  filled in (no null fields allowed, except for
+offdate and endtime), and unique.   However,  you  may
+leave out an id field that is a primary key, eg wfid in
+wfdisc or arid in arrival, and the field will  be filled in
+with the results from dbnextid.  If the record you
+provide  is  not  unique,  ie,  there  is another record
+with the same primary or alternate key in the table, the
+table is not updated.  dbaddv goes on to  compare all  the
+fields  in  the record.  If the all the fields are either
+the same, or the new record has a  null  value,  then
+dbaddv  returns the record number of the matching record.
+If there is a discrepancy in some field of the matching
+record, then dbaddv returns a negative value which is equal
+to dbINVALID - matching_record_number - 1.  Dbaddv uses
+the scratch record to hold the new record before adding
+it  to  the  table,  so any previous contents of the record
+are lost.

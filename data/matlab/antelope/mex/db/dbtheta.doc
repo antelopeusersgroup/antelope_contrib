@@ -1,0 +1,10 @@
+DBTHETA	Theta join two Datascope database tables
+
+DBPTR = DBTHETA ( DBPTR1, DBPTR2 [, EXPRESSION ] [, 'outer'] )
+
+DBTHETA joins two  database  tables DBPTR1 and DBPTR2.
+Each  record  in  the result  table must satisfy the
+specified EXPRESSION. If EXPRESSION is omitted, 
+the result table  has  one  record for every combination
+of the records from the two tables. If the 'outer' keyword
+is specified, DBTHETA performs an outer join.

@@ -1,0 +1,16 @@
+DBNOJOIN Find records which do not join between two database tables
+
+DBPTR = DBNOJOIN ( DBPTR1, DBPTR2 [, PATTERN1 [, PATTERN2]] )
+
+DBNOJOIN returns a view composed of  all  the  records
+from  the table specified with DBPTR1 which don't join with the
+table specified with DBPTR2.  As with DBJOIN, the join keys may
+be specified explicitly, or inferred from the schema.
+
+If PATTERN1 and PATTERN2 are not specified, the join keys
+between the tables are inferred. If PATTERN1 is specified, it
+gives the join keys to use in both tables, presuming the 
+named fields are present in both tables. If PATTERN1 and PATTERN2
+are both specified, PATTERN1 specifies the DBPTR1 fields that should
+match the corresponding fields in PATTERN2 for DBPTR2, respectively.
+PATTERN1 and PATTERN2 are cell-arrays of strings.

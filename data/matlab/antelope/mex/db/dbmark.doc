@@ -1,0 +1,7 @@
+DBMARK Set the specified Datascope database rows to null
+
+DBMARK ( DBPTR )
+
+DBMARK marks all the fields in the row(s) specified by the
+database pointer DBPTR with their null values. DBCRUNCH may
+later be used to delete all the rows that are null.

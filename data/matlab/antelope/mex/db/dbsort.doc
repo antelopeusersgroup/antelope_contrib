@@ -1,0 +1,8 @@
+DBSORT Sort the specified Datascope database table
+
+DBPTR = DBSORT ( DBPTR [,FIELD, FIELD,...] )
+
+DBSORT creates a new view of the database table specified
+by DBPTR, sorted by the fields specified in the argument
+list.  if no fields are specified, the table is sorted by
+its primary keys.

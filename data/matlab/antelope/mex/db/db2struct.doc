@@ -1,0 +1,10 @@
+DB2STRUCT Convert a database view to a Matlab structure array
+
+S = DB2STRUCT ( DBPTR [, FIELD [, FIELD, ... ]] )
+
+DB2STRUCT is an experimental interface that reads values from
+fields in the database pointed to by DBPTR into a Matlab structure array. 
+The DBPTR must be a single table or a view on a single table. Multiple-
+table views are not supported because of difficulties in structure-field
+naming conventions. If one or more optional FIELD names are specified,
+the structures are limited to the fields requested. 

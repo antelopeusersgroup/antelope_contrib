@@ -1,0 +1,8 @@
+DBPUT Put the specified value into a Datascope database
+
+DBPUT ( DBPTR, VALUE )
+
+DBPUT may be used to put records, fields, or entire tables,
+given as the string value VALUE, into the database
+specified by DBPTR.  If VALUE is 'dbSCRATCH', the scratch
+record is put into the database specified by DBPTR.
