@@ -380,6 +380,29 @@ double calculate_weighted_rms(float *wd, float *w, float *rw, int n)
 	return(value/sqrt(sumw));
 }
 #endif	
+/* initializes the hypocenter structure to stock defaults */
+void initialize_hypocenter(Hypocenter *h)
+{
+        h->dx=0.0;
+        h->dy=0.0;
+        h->dz=0.0;
+        h->dt=0.0;
+        h->lat=0.0;
+        h->lon=0.0;
+        h->z = 0.0;
+        h->lat0=0.0;
+        h->lon0=0.0;
+        h->z0 = 0.0;
+	h->t0 = 0.0;
+        h->rms_raw=0.0;
+        h->rms_weighted=0.0;
+        h->interquartile = 0.0;
+        h->number_data = 0;
+        h->degrees_of_freedom = 0;
+	h->used=1;
+}
+
+/* copies hypocenter structure from to */
 
 void copy_hypocenter(Hypocenter *from,Hypocenter *to)
 {
@@ -499,6 +522,7 @@ Hypocenter adjust_hypocenter(Hypocenter current_location, float *dx,
 	new_hypo.dy = 0.0;
 	new_hypo.dz = 0.0;
 	new_hypo.dt = 0.0;
+	new_hypo.used = 1;
 	/* the i< 4 is not required, but safer */
 	for(i=0,k=0;(k<npar) && (i<4);++i)
 	{
@@ -896,7 +920,9 @@ int ggnloc (Hypocenter initial_location,
 		die(1,"Alloc errors in main location function\n");
 
 
+	/* This initializes both of these work objects correctly */
 	copy_hypocenter(&initial_location,&current_location);
+	copy_hypocenter(&initial_location,&trial_location);
 	iteration = 0;
 	converge = 0;  
 	if((options.generalized_inverse == DAMPED_RECENTERED)

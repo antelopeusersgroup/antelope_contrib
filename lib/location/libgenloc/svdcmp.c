@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sunperf.h>
+#include "stock.h"
 #include "elog.h"
 /* This is a plug in interface module that replaces the svdcmp
 routine from numerical recipes and calls the sunperf singular
@@ -40,7 +41,7 @@ int svdcmp (float **A, int m, int n, float *s, float **V)
 	/*Alloc work spaces and copy from numerical recipes matrix
 	form to the form sunperf wants */
 
-	afort = (float *) calloc(m*n,sizeof(float));
+	afort = (float *) calloc(m*MAX(m,n),sizeof(float));
 	vfort = (float *) calloc(n*n,sizeof(float));
 	if( (afort == NULL) || (vfort == NULL))
 		die(0,"svdcmp could not alloc work arrays\n");
