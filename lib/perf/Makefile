@@ -359,7 +359,7 @@ OBJS= \
     $(ZBLAS1) \
     $(ZBLAS2) \
     $(ZBLAS3) \
-    $(ZLASRC)  \
+    $(ZLASRC)  
 
 $(LIB) : $(OBJS)
 	$(RM) $@
@@ -369,3 +369,4 @@ $(LIB) : $(OBJS)
 $(DLIB) : $(OBJS)
 	$(RM) $@
 	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+
