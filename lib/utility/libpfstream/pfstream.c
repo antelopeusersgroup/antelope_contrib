@@ -87,7 +87,11 @@ Pf *pfstream_read(FILE *fp)
 		{
 			break;
 		}
-		if(strstr(line,END_OF_DATA_SENTINEL)!=NULL) return(NULL);
+		if(strstr(line,END_OF_DATA_SENTINEL)!=NULL) 
+		{
+			free(buffer);
+			return(NULL);
+		}
 
 		ncread=strlen(line);
 		/* it is safter to do this test before copying */
@@ -107,7 +111,11 @@ Pf *pfstream_read(FILE *fp)
 			++high_water_mark;
 		}
 	}
-	if(linecount<=0) return(NULL);
+	if(linecount<=0) 
+	{
+		free(buffer);
+		return(NULL);
+	}
 	buffer[high_water_mark]='\0';
 	ierr=pfcompile(buffer,&pf);
 	if(ierr!=0) 
@@ -164,7 +172,7 @@ void free_Pf_ensemble(Pf_ensemble *pfe)
 	{
 		for(i=0;i<(pfe->nmembers);++i)
 			if(pfe->pf[i] != NULL) pffree(pfe->pf[i]);
-		if(pfe->pf != NULL) free(pfe->pf);
+		free(pfe->pf);
 	}
 	if(pfe->ngroups>0)
 	{
@@ -261,13 +269,13 @@ Pf_ensemble *pfget_Pf_ensemble(Pf *pfin,char *tag)
 	Pf_ensemble *pfe;
 	Tbl *ttmp;
 	int nmembers,ngroups;
-	Tbl *t=newtbl(0);
 	Pf *pferaw,*pf,*pf_ens_arr;
 	Tbl *list_keys;
 	int i;
 
 
 	pferaw=NULL;
+	allot(Pf_ensemble *,pfe,1);
 
 	/*This extracts the data enclosed by "tag &Arr {" to "}" */
 	if(pfget(pfin,tag,(void **)&pferaw) != PFARR) return(NULL);

@@ -26,8 +26,9 @@ and the queue is empty.*/
 
 void * pfstream_read_data(void *arg)
 {
-	Pfstream_control *pfsc=(Pfstream_control *)arg;
+	Pfstream_control *pfsc;
 	Pf *pf;  /* Data read in as a single, raw pf object*/
+	pfsc = (Pfstream_control *)arg;
 
 	while( (pf=pfstream_read(pfsc->fp)) != NULL)
 	{
