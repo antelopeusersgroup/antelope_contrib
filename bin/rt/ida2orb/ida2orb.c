@@ -115,8 +115,8 @@ main( int argc, char **argv )
 		    }
 		    rc = orbput( orbfd, srcid, pktchan->time, packet, nbytes );
 		    orbflush( orbfd );
+		    status = XFER_OK;  
 		 }  else complain( 0, "Xfer_Read return code is %d\n", status );
-		 status = XFER_OK;  
 	}
 	
 	Xfer_Close( xp );
