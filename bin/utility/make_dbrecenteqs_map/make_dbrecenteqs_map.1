@@ -111,6 +111,11 @@ for dbevents. These affect the run-time behavior of dbevents and thus are
 left to the discretion of the system operator. 
 
 Currently, the only supported projection is the EquiDistant Projection (edp). 
+
+dbevents(1) does not appear to support too many colors in the input map.
+It may be necessary to set the reserve_colors parameter to a fairly 
+high value (186 has worked in initial experiments) in order to limit 
+the number of colors in the pixfile map created.
 .SH AUTHOR
 .nf
 Kent Lindquist 
