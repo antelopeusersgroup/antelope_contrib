@@ -1,0 +1,33 @@
+.\" %W% %G%
+.TH Q330GPSLOCATE 1 "%G%"
+.SH NAME
+q330gpslocate - estimates station location from Q330 log file
+.SH SYNOPSIS
+.nf
+q330gpslocate log1 log2 ... 
+.fi
+.SH DESCRIPTION
+.LP
+The \fIq330gpslocate\fR program parses a series of log files
+from a Quanterra Q330 data logger.  From these files it extracts
+lines in the log file containing latitude and longitude information.
+It reads all these numbers into memory and computes the following
+statistical estimates of the distribution of numbers:
+mean, median, lower quartile, upper quartile, lower bound, 
+upper bound, and the number of samples in the ensemble.  
+The statistics are sent to standard output with labels 
+defining the results for the latitude, longitude, and elevation.
+.SH "BUGS AND CAVEATS"
+.LP
+The method used to find the GPS fix data is crude and depends upon
+a simple keyword search for Latitude and Longitude.  If Quanterra
+changes the format of that line, this program will fail.  
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Department of Geological Sciences
+Indiana University
+Bloomington, IN 47405
+pavlis@indiana.edu
+.fi
+.\" $Id$
