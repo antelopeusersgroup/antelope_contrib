@@ -7,6 +7,7 @@ DATA= \
 	libcoords.ref \
 	libds.ref \
 	liborb.ref \
+	libpforbstat.ref \
 	libpixaddress.ref \
 	libproj.ref \
 	libresponse.ref \
