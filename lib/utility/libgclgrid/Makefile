@@ -12,8 +12,7 @@ MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 #
 #ldlibs= $(PERFLIBS) $(DBLIBS) -lm
 
-#include $(ANTELOPEMAKE)  	
-include /opt/antelope/4.6/include/antelopemake.solaris
+include $(ANTELOPEMAKE)  	
 #CXX=g++ -g
 
 OBJS=converters.o \
