@@ -1,16 +1,22 @@
 .\" %W% %G%
 .TH GGNLOC 3 "%G%"
 .SH NAME
-ggnloc - generic Gauss-Newton location procedure
+ggnloc - generic Gauss-Newton location procedure and location error analysis
 .SH SYNOPSIS
 .nf
 #include "stock.h"
 #include "arrays.h"
 #include "location.h"
-void ggnloc(Hypocenter *h0, Tbl *ta, Tbl *tu, 
+int ggnloc(Hypocenter *h0, Tbl *ta, Tbl *tu, Location_options o,
 	Tbl **history, Tbl **reasons, Tbl **residuals);
+void predicted_errors(Hypocenter h, Tbl *ta, Tbl *tu,
+        Location_options o, float **C, float *emodel)
 .fi
 .SH DESCRIPTION
+.LP
+This pair of functions implement the standard Gauss-Newton
+(Geiger's method) single event location method and provide
+error estimates of the resulting solution.  
 .LP
 \fBggnloc\fR is a general purpose location procedure for
 locating seismic events using an arbitrary mix of arrival times and
@@ -24,7 +30,10 @@ range of options that are available are rich and a huge
 variation in behavior of the algorithm is possible depending 
 upon the inputs supplied to it.  
 .LP
-Inputs to the procedure are described in greater detail under 
+The behavior of ggnloc is primarily controlled by a long
+list of parameters passed through the control structure
+Location_options o.  
+Inputs that build this structure are described in greater detail under 
 genloc_intro(3), but major features of the procedure are as
 follows:
 .LP
@@ -67,7 +76,7 @@ virtually unlimited capabilities for supporting arbitrarily
 complex earth models and any combinations of seismic
 phases.  For further details see genloc_intro(3). 
 .LP
-Function arguments:
+ggnloc arguments:
 .ce
 INPUTS
 .LP
@@ -78,6 +87,8 @@ are found in location.h)
 Tbl *ta = Arrival time table returned by related function read_arrivals.
 .LP
 Tbl *tu = Slowness vector returned by function read_slowness_vectors
+.LP
+Location_options o = control structure (see genloc_intro(3)).
 .ce 
 OUTPUTS
 .LP
@@ -92,24 +103,87 @@ Tbl **residuals = table of strings containing residual and weighting
 information about the final solution.  For a description of the 
 quantities in this table see sgnloc(1) which dumps this table 
 directly to an output parameter file.  
+.LP
+The companion function predicted_errors computes two different error estimates 
+for an earthquake location computed by ggnloc:  (1)  the standard covariance matrix 
+used to compute conventional error ellipses, and (2) a velocity model error bound (defined 
+in the following paper:  Pavlis, G. L. (1986).  Appraising earthquake hypocenter errors:  
+a complete practical approach for single-event locations, 
+\fIBull. Seism. Soc. Amer.\fR, \fB76\fR, 1699-1717. ).  
+.LP
+The covariance matrix computed by predicted_errors has three 
+features the user must recognize. 
+.IP (1)
+C is unscaled.  That is, it defines the form of the covariance matrix, 
+but a scale factor is required to convert the covariance to an ellipsoid of 
+a specified statistical confidence level.  This was an intentional design decision 
+imposed because multiple statistical measures can be used to define this scale 
+factor (notably chi-squared or F statistics).  Furthermore, the author's strong 
+prejudice is that error ellipsoids computed by this measure should be "taken with 
+a grain of salt" to use a cliche.  This said, it is important to recognize the scaling 
+that actually has been applied to compute the covariance because it is a simple 
+process to rescale C to produce true confidence ellipses.  The matrix C returned 
+by predicted_errors is computed from the standard matrix of partial derivatives 
+with the full suite of weights the user selected.  This always includes 
+the base weights determined from the 1/sigma (deltime field in css3.0's arrival table) 
+and can optionally include distance weights and/or residual weights.   
+.IP (2)
+C is computed from a pure pseudoinverse no matter which generalized inverse 
+the user selected for running ggnloc.  That is, the program forms A_w=WA and 
+computed the SVD of A_w=USV^T.  C is then computed from the pure pseudoinverse 
+form C=V(S-2)V^T where S-2 is the diagonal matrix of reciprocal singular values 
+(squared).  The "pure" adjective means that we do not do singular value truncation 
+unless the singular value, s, is a machine zero.  This is established here in 
+the standard way by finding the largest singular value, smax, and deleting 
+only singular values that have s/smax < epsilon where epsilon is the floating 
+point precision constant (around E-6 for 32 bit IEEE floats).  This was done because 
+the error estimates computed this way are more honest than those that would be 
+computed by other inverses that are useful in a iterative program like ggnloc for 
+stability.  Error analysis is about appraising the reliability of the final answer, 
+not about getting an answer.  Consequently, a near singular matrix will yield a 
+C matrix with very large elements and can be recognized as poorly constrained 
+even if a stable solution was returned by ggnloc. 
+.IP (3)
+ggnloc allows fixing any of the four hypocentral parameters.  
+The predicted_errors function handles this by setting the rows and columns of 
+C for any fixed parameter to 0.  Thus, C is always returned as a 4 by 4 array with 
+the rows/columns in x,y,z,t order, but whenever a fixed coordinate is used one or 
+more columns and rows are zeroed.  Programs using the output of this function 
+downstream with datascope and the css3.0 schema (notably dbgenloc, relocate, 
+and orbgenloc) can then  dump the full form of this matrix into the origerr table 
+with no complications.  
+.LP
+The model error return (emodel) is a different measure described in the 
+Pavlis (1986) paper.  It is computed by a modification of equation (25) of 
+that paper.  There are two differences.    
+.IP (1)
+In the 1986 paper I used a travel time bounding criteria that scaled 
+with source to receiver distance and a slowness error scale factor.  
+Here the bound on the model error in each travel time is computed with 
+a simple scale factor derived from the predicted travel time of each measured 
+travel time as b=dtscale*T.  dtscale is a fraction that describes how good 
+you think your vecocity model is.  Physically is is of the rate at which 
+travel time errors accumulate with time.  It's value is set independently 
+for each phase in the phase description portion of the input parameter 
+space.
+.IP (2)
+The 1986 paper did not consider slowness measurements.  
+Slowness data enter into the solution, however, the same as travel times, 
+but their dependence upon source position is definitely different.  Here I 
+adopted the simplest possible approach and made the slowness model 
+error bound  a fixed constant (in units of s/km) for each phase.  
+This choice was made because my experience is that slowness residuals 
+do not seem to consistently scale with distance like travel times.  
+A more exact approach would be use an empirical function that depended 
+upon the slowness vector, but my view was that this was uncharted territory 
+and use of a simple constant for each phase was preferable.  This constant 
+is set in the phase descriptions 
+(see genloc_intro(3) and genloc_ttinterface(3)). 
 .SH DIAGNOSTICS
 .LP
-This procedure uses Dan Quinlan's library error functions 
+These functions both use Dan Quinlan's library error functions 
 (die, complain, and register_error) to post warning messages.
-It will only die from malloc failures.  Some of the following
-may be followed by additional diagnostic messages from lower
-level routines.
-What I hope are 
-self explanatory warning messages are as follows:
-.nf
-Station: %s, Phase: %s Travel time calculator failed
-
-Station: %s, Phase: %s Slowness vector calculator failed
-
-calculate_statistics:  Insufficient data to calculate meaningful statistics
-Received only %d data to process
-
-svdcmp:  QR algorithm failed to converge in 30 iterations.  Gave up
+They will only die from malloc failures.  
 .SH "SEE ALSO"
 .nf
 genloc_ttinterface(3), sgnloc(1), genloc(3), arr(3), tbl(3)

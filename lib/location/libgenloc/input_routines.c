@@ -463,6 +463,8 @@ Arr *parse_phase_parameter_file(Pf *pfall)
 				"default_time_uncertainty");
 		p->deltau0 = (float) pfget_double(pf,
 				"default_slowness_uncertainty");
+		p->deltat_bound = pfget_double(pf,"dt_bound_factor");
+		p->deltau_bound = pfget_double(pf,"du_bound_factor");
 		tv = pfget_tbl(pf,"time_station_corrections");
 		if(tv == NULL)
 		{

@@ -20,6 +20,7 @@ OBJS=	  bisquare.o \
     dbinput_routines.o \
     distance_weight.o \
     erfinv.o \
+    eqerror.o \
     generic_tu_calculate.o \
     huber.o \
     initial_locate.o \

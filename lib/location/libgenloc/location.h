@@ -111,6 +111,8 @@ typedef struct Phase_handle {
 	Distance_weight_function *ux,*uy;  /* weight functions for slowness */
 	float deltat0, deltau0;  /* default uncertainties in measured arrival
 				times and slownesses respectively */
+	double deltat_bound, deltau_bound;  /* travel time and slowness bound scaling constants
+					for this phase -- used in emodel error calculation */
 	Arr *time_station_corrections;  /* Associative array of station corrections 
 					keyed by station name */
 	Arr *ux_sc, *uy_sc;  /* slowness station corrections, another 
@@ -315,6 +317,10 @@ float distance_weight_time(Arrival, Hypocenter);
 float distance_weight_ux(Slowness_vector, Hypocenter);
 float distance_weight_uy(Slowness_vector, Hypocenter);
 int ggnloc (Hypocenter, Tbl *, Tbl *, Location_options, Tbl **, Tbl **, Tbl **);
+Robust_statistics form_equations(int, Hypocenter, Tbl *, Tbl *, Location_options, 
+	float **, float *, float *, float *, float *, int *);
+void predicted_errors(Hypocenter, Tbl *, Tbl *, Location_options,
+	float **, float *);
 Hypocenter initial_locate(Tbl *, Tbl *, Location_options, Pf *);
 Hypocenter gridloc(Tbl *, Tbl *, Point *, int, int, Location_options);
 Hypocenter cascade_grid_locate(Tbl *, Tbl *, Location_options, Gridloc_options);

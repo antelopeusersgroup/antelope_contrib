@@ -412,6 +412,8 @@ P	&Arr{
         }
 	default_time_uncertainty 0.05
 	default_slowness_uncertainty 0.01
+	dt_bound_factor 0.01
+	du_bound_factor 0.035
 	time_station_corrections &Tbl{
 		GEYBB9	0.01
 		KBK	0.02
@@ -456,6 +458,8 @@ S	&Arr{
         }
 	default_time_uncertainty 0.2
 	default_slowness_uncertainty 0.005
+	dt_bound_factoR 0.01
+	du_bound_factor 0.035
 	time_station_corrections &Tbl{
 		GEYBB9	0.01
 		KBK	0.02
@@ -495,14 +499,26 @@ Within each phase identifier block, the following parameters are
 fixed and all are required:  \fBtime_distance_weight_function,
 ux_distance_weight_function, uy_distance_weight_function,
 default_time_uncertainty, default_slowness_uncertainty,
+dt_bound_factor, du_bound_factor,
 time_station_corrections, ux_station_corrections,\fR and
 \fBuy_station_corrections\fR.  The admittedly verbose names
-should make their purpose obvious.  However, the following 
-points should avoid any confusions:
-.IP (1) 
-The units of all quantities related to time are in seconds.
-.IP (2) 
-The units of all quantities related to slowness are in seconds/km.
+should make most of their purposes obvious.  
+Note that the units of all time quantities are seconds and 
+slowness related quantitites have units of s/km.
+.LP
+Two less obvious parameters are \fBdt_bound_factor\fR and \fBdu_bound_factor\fR.
+These are used in computing "model error" estimates following
+a theory described in the following paper:  Pavlis (1986) BSSA, 76, 1699-1717.
+dt_bound_factor is used to compute a bound on model related travel times.
+The formula is modifed from equation (25) of that paper.  That is, rather
+than use arc length (in km) and a relative slowness error, here we use
+a fractional travel time error accumulation.  
+That means the computed errors assume the travel time model error is bounded
+by T*dt_bound_factor.  Thus, for example, if dt_bound_factor was 0.01, we
+assume the travel time error for a travel with with a 100 s travel time is
+bounded by 1 s.  du_bound_factor is similar, but it is has dimensions
+(s/km) and has no distance dependence.  (This problem was not discussed
+in the 1986 paper, but the extension is straightforward.)  
 .LP
 The distance weight parameters define a distance weighting function
 as a series of ordered pairs.  These are distances (in degrees) 
