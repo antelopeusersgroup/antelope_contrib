@@ -141,6 +141,13 @@ save_results (Dbptr dbin, Dbptr dbout,
 	   "nass", new-old,
 	   "ndef", new-old,
 	   0 ) ; 
+   /* This routine saves the predicted arrival information for each data point 
+    WARNING:  the str variable passed here is computed above as the base 
+    velocity "name" removing the directory portion used by dbgenloc.  
+    This should interact correctly with the stavel table to allow generic
+    naming of a velocity model computed by multiple calculators */
+    if(save_predarr(dbout,ta,tu,*hypo,orid,str))
+    	complain(0,"save_results:  problems saving predarr table\n");
 
     return retcode ;
 }
