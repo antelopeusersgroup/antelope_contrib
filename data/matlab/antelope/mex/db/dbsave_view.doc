@@ -1,0 +1,8 @@
+DBSAVE_VIEW	Save a Datascope database view
+
+DBSAVE_VIEW ( DBPTR )
+
+DBSAVE_VIEW saves a view into the main database directory, following
+the standard naming conventions for the database. Such a saved
+view can be referenced as a regular table later in a different 
+program.

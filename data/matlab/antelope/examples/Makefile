@@ -38,6 +38,7 @@ DATA= \
 	dbexample_dbputv.m \
 	dbexample_dbquery.m \
 	dbexample_dbresponse.m \
+	dbexample_dbsave_view.m \
 	dbexample_dbseparate.m \
 	dbexample_dbsever.m \
 	dbexample_dbsort.m \

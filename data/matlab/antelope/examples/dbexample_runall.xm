@@ -34,6 +34,7 @@ dbexample_dbput
 dbexample_dbputv
 dbexample_dbquery
 dbexample_dbresponse
+dbexample_dbsave_view
 dbexample_dbseparate
 dbexample_dbsever
 dbexample_dbsort
