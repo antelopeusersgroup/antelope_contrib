@@ -21,7 +21,8 @@ sub database_prep {
 
 			if( $haveschema ne $wantschema ) {
 
-				elog_complain( "Wrong schema in '$dbname' for current packet\n" );
+				elog_complain( "Wrong schema in '$dbname' for current packet " .
+					       "(have $haveschema, want $wantschema)\n" );
 				return 0;
 
 			} else {
@@ -42,7 +43,8 @@ sub database_prep {
 
 		if( $haveschema ne $wantschema ) {
 
-			elog_complain( "Wrong schema in '$dbname' for current packet\n" );
+			elog_complain( "Wrong schema in '$dbname' for current packet " .
+				       "(have $haveschema, want $wantschema)\n" );
 			return 0;
 
 		} else {
