@@ -108,6 +108,7 @@
 %   dbexample_trputwf
 %   dbexample_trsave_wf
 %   dbexample_trsplice
+%   dbexample_trwfname
 %   dbexample_yearday
 %
 %       Matlab interface to Antelope

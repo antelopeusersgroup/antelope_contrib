@@ -106,6 +106,7 @@ DATA= \
 	dbexample_trputwf.m \
 	dbexample_trsave_wf.m \
 	dbexample_trsplice.m \
+	dbexample_trwfname.m \
 	dbexample_writing.m \
 	dbexample_yearday.m \
 	dbexample_zepoch2str.m 

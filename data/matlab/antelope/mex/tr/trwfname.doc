@@ -1,0 +1,22 @@
+TRWFNAME Generate external file names
+
+PATH = TRWFNAME ( DB [, PATTERN] )
+
+TRWFNAME provides a mechanism for generating the names of external
+files, stored outside an Antelope database. Although originally 
+designed for files of seismic waveforms, the utility is applicable
+generally. The database-pointer DB should refer to a table with 
+dir and dfile fields, and should point to the row for which 
+a file is to be added. The row should be filled in with all
+necessary information before calling TRWFNAME. The PATTERN is 
+a string, a combination of plain characters interspersed with '%'
+signs which introduce either an epoch2str(3) code for 
+introducing time elements into the pathname, or a '%{field}' to
+take fields from the specified database record. For more detail 
+on the time fields see the documentation for the EPOCH2STR command. 
+The complete path is returned. If this path does not exist, 
+TRWFNAME will create it. If PATTERN is omitted, TRWFNAME uses 
+the default pattern 
+
+	"%Y/%j/%{sta}.%{chan}.%Y:%j:%H:%M:%S"
+

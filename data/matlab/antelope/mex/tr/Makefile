@@ -23,7 +23,8 @@ MEXSRCS= \
 	tr_endtime.c \
 	tr_samprate.c \
 	tr_time2samp.c \
-	tr_samp2time.c 
+	tr_samp2time.c \
+	trwfname.c
 
 
 CLEAN= 
