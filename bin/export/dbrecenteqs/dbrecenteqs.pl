@@ -24,6 +24,10 @@ sub read_map_config {
 sub setup_State {
 	$Pf = "dbrecenteqs_setup";
 
+	if( system("pfecho $Pf > /dev/null 2>&1" ) ) {
+		die( "Couldn't find $Pf.pf\n" );
+	}
+
 	my( @params ) = (
 		"pixfile_conversion_method",
 		"stock_mapdir"
@@ -40,6 +44,36 @@ sub setup_State {
 
 	$State{workdir} = "/tmp/dbrecenteqs_$<_$$";
 	mkdir( $State{workdir}, 0755 );
+
+	my( @helpers ) = (
+		"pscoast",
+		"psbasemap",
+		"psxy",
+		"pstext",
+		"grdcut",
+		"grdgradient",
+		"grdimage"
+		);
+
+	foreach $helper ( @helpers ) {
+		next if check_for_executable( $helper );
+		die( "Couldn't find executable named $helper\n" );
+	}
+}
+
+sub check_for_executable {
+	my( $program ) = @_;
+
+	my( $ok ) = 0;
+
+	foreach $path ( split( ':', $ENV{'PATH'} ) ) {
+		if( -x "$path/$program" ) {
+			$ok = 1;
+			last;
+		}
+	}
+	
+	return $ok;
 }
 
 sub normal_lon {
@@ -770,6 +804,11 @@ sub pixfile_convert {
 			die( "format $Mapspec{format} not supported--bye!\n" );
 		} 
 
+		if( ! check_for_executable( "alchemy" ) ) {
+			die( "Couldn't find alchemy. Use alternate " .
+				"image-conversion method or fix path\n" );
+		}
+
 		$cmd = "alchemy -Zm4 -Zc1 -o $format " .
 			"$Mapspec{psfile} $Mapspec{pixfile} " .
 			"-c 256 $Mapspec{reserve_colors} " .
@@ -779,6 +818,13 @@ sub pixfile_convert {
 
 		if( $Mapspec{format} eq "jpg" ) {
 			die( "jpg incompatible with pnm conversion\n" );
+		}
+
+		my( @helpers ) = ( "gs", "pnmcrop", "ppmquant", "ppmtogif" );
+		foreach $helper ( @helpers ) {
+			next if check_for_executable( $helper );
+			die( "Couldn't find $helper in path. Fix path or " .
+				"don't use image conversion method \"pnm\"" );
 		}
 
 		my( $ncolors ) = 256 - $Mapspec{reserve_colors};

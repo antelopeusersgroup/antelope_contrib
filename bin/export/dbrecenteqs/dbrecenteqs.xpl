@@ -11,6 +11,10 @@ sub init_globals {
 
 	my( $Pf ) = "dbrecenteqs";
 
+	if( system("pfecho $Pf > /dev/null 2>&1" ) ) {
+		die( "Couldn't find $Pf.pf\n" );
+	}
+
 	my( @params ) = (
 		"title",
 		"caption_default",
@@ -20,7 +24,9 @@ sub init_globals {
 		"local_logo",
 		"local_html_home",
 		"description_of_local_html_home",
-		"region_phrases_database"
+		"region_phrases_database",
+		"page_refresh_seconds",
+		"credits"
 		);
 	
 	foreach $param ( @params ) {
@@ -50,6 +56,17 @@ sub init_globals {
 		undef $State{region_phrases_database};
 	} else {
 		$State{region_phrases_database} = \@db;
+	}
+}
+
+sub die_if_already_running {
+
+	my( @procs ) = split( /\n/,
+		`pgrep -lf 'dbrecenteqs' | grep -v pgrep | egrep -v '^ *$$ '` );
+
+	if( $#procs >= 0 ) {
+		die( "dbrecenteqs: already running as \n" .
+			join( "\n", @procs ) . "\nBye!\n" );
 	}
 }
 
@@ -175,10 +192,15 @@ sub create_focusmap_html {
 	$dbprefor[3] = 0;
 	my( @dbnonprefors ) = dbsubset( @db, "orid != prefor" );
 
-	my( $lat, $lon ) = dbgetv( @dbprefor, "lat", "lon" );
+	my( $lat, $lon, $mapname ) = 
+		dbgetv( @dbprefor, "lat", "lon", "mapname" );
 
 	open( H, ">$html_filename" );
 	print H "<HTML>\n";
+	print H "<HEAD>\n";
+	print H "<META HTTP-EQUIV=\"refresh\" " .
+		"CONTENT=\"$State{page_refresh_seconds}\">\n";
+	print H "</HEAD>\n";
 	print H "<BODY BGCOLOR='white'>\n";
 	print H "<MAP NAME=\"vitals\">" . 
 		imagemap_symbol( @dbprefor, "#prefor" ) .
@@ -199,7 +221,7 @@ sub create_focusmap_html {
 	print H "<BR>";
 	print H "<CENTER>\n";
 	print H "<A NAME=\"prefor\">";
-	print H "<H2>Preferred Vital Statistics:</H2>\n";
+	print H "<H2>Preferred Hypocentral Solution:</H2>\n";
 	print H hypocenter_vitals( @dbprefor );
 	my( $nothers ) = dbquery( @dbnonprefors, "dbRECORD_COUNT" );
 	if( $nothers > 0 ) {
@@ -213,6 +235,7 @@ sub create_focusmap_html {
 	print H "<BR>\n<CENTER>",
 		other_map_links( @db, $mapname ),
 		"</CENTER>\n";
+	print H "<HR>\n" . credits();
 	print H "</BODY>\n";
 	print H "</HTML>\n";
 	close( H );
@@ -335,8 +358,10 @@ sub hyperlinked_earthquake_table {
 		       "dbopen mapassoc",
 		       "dbsubset mapname == \"$mapname\"",
 		       "dbjoin origin",
+		       "dbjoin event",
 		       "dbsort -r time",
-		       "dbjoin webmaps evid" );
+		       "dbjoin webmaps evid",
+		       "dbsubset origin.orid == prefor" );
 
 	my( $nsymbols ) = dbquery( @db, "dbRECORD_COUNT" );
 
@@ -495,6 +520,8 @@ sub create_stockmap_html {
 	open( H, ">$html_filename" );
 	print H "<HTML><HEAD>\n";
 	print H "<BASE HREF=\"$State{html_base}\">\n";
+	print H "<META HTTP-EQUIV=\"refresh\" " .
+		"CONTENT=\"$State{page_refresh_seconds}\">\n";
 	print H "<TITLE>$State{title}</TITLE>\n";
 	print H "</HEAD>\n";
 	print H "<BODY BGCOLOR='white'>\n";
@@ -528,9 +555,16 @@ sub create_stockmap_html {
 		hyperlinked_earthquake_table( @db, $mapname ),
 		"</CENTER>";
 
+	print H "<HR>\n" . credits();
+
 	print H "</BODY></HTML>\n";
 
 	close( H );
+}
+
+sub credits {
+
+	return "<H2>Credits:</H2>$State{credits}\n";
 }
 
 sub eliminate_from_mapassoc {
@@ -654,6 +688,8 @@ if ( ! &Getopts('') || @ARGV != 1 ) {
 } else {
 	$dbname = $ARGV[0];
 }
+
+die_if_already_running();
 
 @db = dbopen( $dbname, "r+" );
 @dbmapstock = dblookup( @db, "", "mapstock", "", "" );

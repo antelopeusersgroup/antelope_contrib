@@ -51,6 +51,10 @@ sub setup_Index_Mapspec {
 
 	$Pf = "dbrecenteqs_setup";
 
+	if( system("pfecho $Pf > /dev/null 2>&1" ) ) {
+		die( "Couldn't find $Pf.pf\n" );
+	}
+
 	%Mapspec = %{pfget( $Pf, "index_map" );};
 
 	%Mapspec = ( %Mapspec, %{$State{index_map_config}} );
