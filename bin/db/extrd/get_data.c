@@ -14,7 +14,7 @@ extern char *Network;
 int get_data( double stime, double etime, int nrec )
 {
     SegData segment, new;
-    TrDataGap *datagap;
+    Wftype *datagap;
     double ts, te, et ;
     double crnt_time;
     float *buf=0;
@@ -62,7 +62,7 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
        if( stime >= new.endtime ) continue;
        if( etime <= new.time ) continue;
        new.dcode = trdatacode ( new.datatype);
-       datagap = trdatagap(new.datatype) ;
+       datagap = trwftype(new.datatype) ;
        done = skip = 0;
        if( segment.time <= 0.0 ) segment.time = new.time;
        if(strcmp(new.net, segment.net)!= 0 || 
@@ -98,9 +98,11 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
            if( buf != 0 && *buf != 0 ){
 	      free( buf );
 	   }
-           buf = trgetwf(db, 0, 0, 0, crnt_time, et, 
+           trgetwf(db, 0, &buf, 0, crnt_time, et, 
                      &ts, &te, &npts, 0, 0) ; 
            if( npts <= 0 )  {
+	      if ( buf != 0 ) 
+		  free(buf) ;
               buf = 0;
               continue;
            }
@@ -114,14 +116,14 @@ crnt_time, et, ts, te, stime, etime, npts );
 
 
            if( buf == 0 )  { 
-              complain( 0, "can't get data for %s_%s_%s from %lf to %lf\n", 
+              complain( 0, "can't get data for %s_%s_%s from %f to %f\n", 
                         new.net, new.sta, new.chan, crnt_time, et ); 
               continue;
            }
            if( te <= crnt_time ) continue;
            if( ( skip = TIME2SAMP( ts, new.samprate, crnt_time ) ) > 0 )  {
 
-                 complain( 0, "overlapped traces %s_%s_%s: last time = %lf\tnew_t0=%lf new_te=%lf\n", 
+                 complain( 0, "overlapped traces %s_%s_%s: last time = %f\tnew_t0=%f new_te=%f\n", 
                            new.net, new.sta, new.chan, crnt_time, ts, te );
                  complain( 0, "will skip %d points\n", skip);
 
@@ -143,7 +145,7 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
            if( fabs( ts - crnt_time ) > 1.0/new.samprate )  {
 
 #ifdef DEBUG
-	      complain( 0, "problem get data. Ask %lf -  got %lf\n", 
+	      complain( 0, "problem get data. Ask %f -  got %f\n", 
                             crnt_time, ts );
 #endif
 
@@ -171,7 +173,7 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 	   }
 								   
            if(!wrt_data( &segment, crnt_time, save_npts, mydata.i ))   {
-               complain(0, "can't save data for %s_%s_%s at %lf.\n",
+               complain(0, "can't save data for %s_%s_%s at %f.\n",
                   segment.net, segment.sta, segment.chan, crnt_time);
                fflush(Df);
                fclose(Df);
@@ -181,7 +183,7 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 
 
 #ifdef DEBUG
-fprintf( stderr, "ST:%lf ET:%lf NSMP:%d\n", 
+fprintf( stderr, "ST:%f ET:%f NSMP:%d\n", 
 segment.time, segment.endtime, segment.nsamp );
 #endif
 
