@@ -8,6 +8,8 @@
 #include <regex.h>
 
 extern int PsclLog;
+int VLog=0;
+int Log=0;
   
 Tbl		*DasList=0;
 
@@ -73,7 +75,7 @@ char *argv[];
 	    break;
 
         case 'l':
-            PsclLog = 1;
+            Log = 1;
             break;
 	
         case 'm':
@@ -94,7 +96,7 @@ char *argv[];
 	    break;
 
         case 'v':
-            Log = 1;
+            VLog = 1;
             break;
         case 'w':
             arg.nodata = 1;

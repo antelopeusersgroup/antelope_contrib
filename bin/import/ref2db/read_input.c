@@ -1,8 +1,9 @@
 #include "ref2db.h"
 
-Arr *StrmDas = 0;
 Arr *Chan = 0;
 extern Arr *Packets;
+extern int Log;
+extern int PsclLog;
     
 int read_input( SpecPar *par, RunArg *arg )
 {
@@ -19,7 +20,6 @@ int read_input( SpecPar *par, RunArg *arg )
     Pblcks = 0;
     allot ( unsigned char *, buffer, IBUF_SIZE );
 
-    StrmDas = newarr(0);
     Chan = newarr(0);
     if( Packets == 0 ) init_pkt( par );
 
@@ -44,6 +44,7 @@ int read_input( SpecPar *par, RunArg *arg )
                 done = 1;
                 break;                
 	     default:
+                if( Log ) PsclLog = 1 ;
                 switch( ( retcode = valid_pkt( &buffer, &srcname[0], &epoch,
                                &psize, nbytes, par->byevent )) )  {
                    case -1:
@@ -67,6 +68,7 @@ int read_input( SpecPar *par, RunArg *arg )
                        }
                        if( epoch >= arg->stime )  {
 		           if( arg->nodata ) break;
+                           PsclLog = 0;
                            if( !wrt2db ( epoch, srcname, buffer, par ) )
 		                die (0, "pkt2db fails\n");
 		           in_err = 0;

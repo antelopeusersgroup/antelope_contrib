@@ -167,7 +167,8 @@ int read_pscl_CD(
       struct PsclCD pkt;
       DASPar *das;
       int dasid;  
-      char key[24];
+      int yr, hr, day, min, sec, msec;
+      char sstring[64], key[24];
       struct DataPar *hdr;
       int hdrsize = 0;
 
@@ -193,9 +194,17 @@ int read_pscl_CD(
            return 0;
 	}
     } 
+    if(  pkt.prehdr.bcdtime[0] != ' ')  {
+       yr = bcd2hex( pkt.prehdr.year, 2 );                                        
+       sprintf( key, "%02x%02x%02x%02x%02x%02x", pkt.prehdr.bcdtime[0], pkt.prehdr.bcdtime[1],
+           pkt.prehdr.bcdtime[2], pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
+       sscanf( key, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
+       sprintf( sstring,"%2d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec); 
+    } 
+ 
     
-     fprintf(das->daslog_fp, "\nCalibration Definition \n");
-     fprintf(das->daslog_fp, "  Start: Year %.4s Day %.3s %.2s:%.2s:%.2s \n",
+     fprintf(das->daslog_fp, "\nCalibration Definition\t%s\tST:  %d\n", sstring, dasid );
+     fprintf(das->daslog_fp, "  Start time: Year %.4s Day %.3s %.2s:%.2s:%.2s \n",
          &( pkt.stime[0]), &( pkt.stime[4]), &( pkt.stime[7]), 
          &( pkt.stime[9]), &( pkt.stime[11]));
      fprintf(das->daslog_fp, "  Repeat Interval Days %.2s %.2s:%.2s:%.2s", 
@@ -218,7 +227,6 @@ int read_pscl_CD(
     }
  
 /*
- 
     if ( !strncmp( (char *) &( pkt.freq[0]), "ON", 2)) {
         fprintf(das->daslog_fp, "  Freq ON\n");
         fprintf(das->daslog_fp, "    Start (hertz) %.8s ", &( pkt.freq_start[0]));
@@ -239,8 +247,7 @@ int read_pscl_CD(
     else {
         fprintf(das->daslog_fp, "  Noise OFF\n");    
     }
- */ 
-
+*/
       fflush( das->daslog_fp ); 
       return 2;
 
@@ -274,12 +281,15 @@ int read_pscl_DS(
      memcpy( (char *) &pkt, packet+hdrsize, sizeof( struct PsclDS ) );
 
     dasid = bcd2hex(  pkt.prehdr.unit , 4 );
-    yr = bcd2hex(  pkt.prehdr.year , 2 );
-    sprintf(string, "%02x%02x%02x%02x%02x%02x", 
-       pkt.prehdr.bcdtime[0],  pkt.prehdr.bcdtime[1], pkt.prehdr.bcdtime[2], 
-       pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
-    sscanf( string, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
-   
+    
+    if(  pkt.prehdr.bcdtime[0] != ' ')  {
+       yr = bcd2hex( pkt.prehdr.year, 2 );                                        
+       sprintf( key, "%02x%02x%02x%02x%02x%02x", pkt.prehdr.bcdtime[0], pkt.prehdr.bcdtime[1],
+           pkt.prehdr.bcdtime[2], pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
+       sscanf( key, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
+       sprintf( string,"%2d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec); 
+    } 
+ 
     if( PsclLog )  {
 	sprintf( &key[0], "%d\0", dasid );
         if( DasPar == 0 )  DasPar = newarr( 0 );
@@ -288,30 +298,30 @@ int read_pscl_DS(
         if( das == 0 )  {
             das = ( DASPar *) getDAS( dasid );
             if( das == 0 ) {
-               complain( 0, "Can't record CD for DAS#%d to the LOG file.\n", dasid);
+               complain( 0, "Can't record DS for DAS#%d to the LOG file.\n", dasid);
                return 0;
 	    }
         } 
     
-        fprintf( das->daslog_fp, "\nDATA STREAM DEFINITION\n\n");
+        fprintf( das->daslog_fp, "\nData Stream Defenition\t%s\tST:  %d\n\n", string, dasid);
     }
 
     for( i = 0; i < 4; i++ )  {
       if(  pkt.dstreams[i].streamnum[0] == ' ' ) continue;
       if( PsclLog  )  {
 	  fprintf( das->daslog_fp, 
-	          " 19%.2d-%3d:%2d:%2d:%2d.%3d: STREAM ID %.2s NAME: %.24s\n",
-                    yr, day, hr, min, sec, msec,  
-                    pkt.dstreams[i].streamnum,  pkt.dstreams[i].stream_name );  
-          fprintf( das->daslog_fp, 
-	            "	Sample Rate: %.4s Data Type: %.2s Channels: ",
-                    pkt.dstreams[i].samprate,  pkt.dstreams[i].datatype ); 
+	          "Data Stream  %.2s\n",
+                    pkt.dstreams[i].streamnum);  
+          fprintf( das->daslog_fp, "Channels "); 
           for( ch = 0; ch < 16; ch++)  
             if(  pkt.dstreams[i].channels[ch] != 0x20) {
                nchan++;
-               fprintf( das->daslog_fp, "%c ", pkt.dstreams[i].channels[ch]);
+               fprintf( das->daslog_fp, "%c", pkt.dstreams[i].channels[ch]);
             }
-          fprintf( das->daslog_fp, "	Trigger Type: %.4s \n", 
+          fprintf( das->daslog_fp, 
+	            "\nSample Rate: %.4s samples per second\nData Format: %.2s \n",
+                    pkt.dstreams[i].samprate,  pkt.dstreams[i].datatype ); 
+          fprintf( das->daslog_fp, "Trigger Type: %.4s \n", 
                    pkt.dstreams[i].trgtype); 
           if( !strncmp( pkt.dstreams[i].trgtype, "CON", strlen("CON")) )  {
                 fprintf(das->daslog_fp, "  Record Length (seconds) %.8s\n",
@@ -476,7 +486,7 @@ int read_pscl_EH(
 	
     if(  pkt.fsmp_time[0] != ' ')  {
        sscanf( pkt.fsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
-       sprintf( sstring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
+       sprintf( sstring,"%04d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
       stream->stime = str2epoch(&sstring[0]);
     }  else  {
       complain(0, "Can't get First Sample Time ( %.6s )\n", &pkt.fsmp_time[0] );
@@ -494,29 +504,30 @@ int read_pscl_EH(
           stream->datatype = 0;
     else stream->datatype = -1;
 
-    stream->etime = -1; 
+    stream->etime = 0.0;
+ 
     if( !set_Stream( streamid, dasid, stream ) ) return 0; 
-  
+ /* 
     if( PsclLog  )  {
 
-       fprintf( das->daslog_fp, "\nEvent: %d ", event_num);
-       fprintf( das->daslog_fp, "  Das ID: %d  Stream: %d", dasid, streamid);
-       if(  pkt.tmmsg[0] != ' ')
-           fprintf( das->daslog_fp, "  Start: %.24s\n",  pkt.tmmsg);
-/*
-       for( i = 0, off=0; i < 16; i++  )  {
-         if(  pkt.weight[off] != 0x20 )
-             fprintf( das->daslog_fp, "	Channel: %d with  %.8s (volts/count) \n", 
-                i, &( pkt.weight[off]));
-         off += 8;
-       } 
-*/
-       if( stream->stime > 0 )
-          fprintf( das->daslog_fp, "  First sample: %s ( %lf )  ", sstring, stream->stime);
+       if( event_num <= 1 ) stream->pktnum = 0 ;
+       else stream->pktnum = stream->stime - stream->etime + 1.0/stream->samprate;
+   
+       fprintf( das->daslog_fp, "DAS: %d\tEV: %04d\tDS: %d\t", dasid, event_num, streamid);
+       if(  pkt.fsmp_time[0] != ' ')
+           fprintf( das->daslog_fp, "FST = %.18s",  sstring );
+
+       if(  pkt.trgtime[0] != ' ')  {
+          sscanf( pkt.trgtime, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
+          sprintf( sstring,"%04d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
+       } else sprintf( sstring, "  \0");
+
+       fprintf( das->daslog_fp, "\tTT = %.18s", sstring );
     
-       fprintf( das->daslog_fp, "\n\n");
-       fflush( das->daslog_fp );
     }
+    fflush( das->daslog_fp );
+*/
+
     return 2;
 }
 
@@ -536,10 +547,11 @@ int read_pscl_ET(
       int yr, day, hr, min, sec, msec;
       int event_num, streamid; 
       int off, i;
-      char skey[64], estring[64];
+      char skey[64], sstring[64], estring[64];
       char key[16];
       struct DataPar *hdr;
       int hdrsize = 0;
+      int eto = 0;
 
      if( par != 0 )  {
 	hdr = ( struct DataPar *) par;
@@ -572,24 +584,36 @@ int read_pscl_ET(
     sprintf( key, "%d_%d\0", dasid, streamid );
     if( ( stream = (Stream *) getarr( PsclSTRM, key ) ) == 0 ) return 2;
 
-    if(  pkt.lsmp_time[0] != ' ')  {
-       sscanf( pkt.lsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
-       sprintf( estring,"%04d%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
-       etime = str2epoch( &estring[0] );
-    } else  {
-       complain(0, "Can't get last sample time.\n");
-       return 0;
-    }
     if( PsclLog  )  {
-	if( etime > 0 )
-           fprintf( das->daslog_fp, "  Last Sample: %s ( %lf ) \n", estring, etime);
+       
+       if(  pkt.fsmp_time[0] != ' ')  {
+          sscanf( pkt.fsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
+          sprintf( sstring,"%04d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
+          etime = str2epoch( &sstring[0] );
+       } else sprintf (sstring, " \0");
+
+       fprintf( das->daslog_fp, "DAS: %d\tEV: %04d\tDS: %d\t", dasid, event_num, streamid);
+       fprintf( das->daslog_fp, "FST = %.21s",  sstring );
+
+       if(  pkt.trgtime[0] != ' ')  {
+          sscanf( pkt.trgtime, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
+          sprintf( sstring,"%04d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec);
+       } else sprintf( sstring, "  \0");
+
+       fprintf( das->daslog_fp, "\tTT = %.21s", sstring );
     
-       fprintf( das->daslog_fp, "\nEvent %d Das: %d Stream: %d is Over at :", 
-                event_num, dasid, streamid );
-       fprintf( das->daslog_fp, " %.24s\n",  pkt.tmmsg);
+       if(  pkt.lsmp_time[0] != ' ')  {
+          sscanf( pkt.lsmp_time, "%4d%3d%2d%2d%2d%3d", &yr, &day, &hr, &min, &sec, &msec);
+          sprintf( estring,"%04d:%03d:%02d:%02d:%02d:%03d\0", yr, day, hr, min, sec, msec);
+          etime = str2epoch( &estring[0] );
+       } else sprintf( estring, "  \0");  
+    
+       fprintf( das->daslog_fp, "\tNS:%8d\tSPS:%6d\tETO:%d", 
+                stream->nsamp,stream->samprate, stream->pktnum );
        fprintf( das->daslog_fp, "\n\n");
        fflush( das->daslog_fp );
     } 
+
     stream->stime = -1;
     stream->ev_num = -1;
     if( !set_Stream( streamid, dasid, stream ) ) return 0; 
@@ -609,7 +633,8 @@ int read_pscl_OM(
       DASPar *das;
       int dasid;  
       int i;
-      char key[16];
+      int yr, hr, day, min, sec, msec;
+      char string[64], key[16];
       struct DataPar *hdr;
       int hdrsize = 0;
 
@@ -636,7 +661,16 @@ int read_pscl_OM(
 	}
     } 
     
-    fprintf( das->daslog_fp, "\nWake-up Sequence Definition:\n   State:%.2s\n   Recording_Mode:%.2s\n", 
+    if(  pkt.prehdr.bcdtime[0] != ' ')  {
+       yr = bcd2hex( pkt.prehdr.year, 2 );                                        
+       sprintf( key, "%02x%02x%02x%02x%02x%02x", pkt.prehdr.bcdtime[0], pkt.prehdr.bcdtime[1],
+           pkt.prehdr.bcdtime[2], pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
+       sscanf( key, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
+       sprintf( string,"%2d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec); 
+    } 
+ 
+    fprintf( das->daslog_fp, "\nWake-up Sequence Definition\t%s\tST:  %d\n\n", string, dasid );
+    fprintf( das->daslog_fp, "  Power State : %.2s\n  Recording Mode : %.2s\n", 
          pkt.power_state,  pkt.recmode);
     fflush( das->daslog_fp);
     
@@ -685,7 +719,8 @@ int read_pscl_SH(
       DASPar *das;
       int dasid;  
       uchar_t *cline, *line, cr, lf;
-      char key[16];
+      char key[16], sstring[64];
+      int yr, hr, day, min, sec, msec;
       struct DataPar *hdr;
       int hdrsize = 0;
     
@@ -712,21 +747,29 @@ int read_pscl_SH(
            return 0;
 	}
     } 
-    
+    if(  pkt.prehdr.bcdtime[0] != ' ')  {
+       yr = bcd2hex( pkt.prehdr.year, 2 );                                        
+       sprintf( key, "%02x%02x%02x%02x%02x%02x", pkt.prehdr.bcdtime[0], pkt.prehdr.bcdtime[1],
+           pkt.prehdr.bcdtime[2], pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
+       sscanf( key, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
+       sprintf( sstring,"%2d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec); 
+    } 
+ 
     line =  pkt.info;
-    fprintf( das->daslog_fp, "SH:DAS# %d\n ", dasid ); 
+    fprintf( das->daslog_fp, "State of Health\t%s\tST: %d\n", sstring, dasid ); 
     while( (int) line < (int) &packet[1023+hdrsize])  {
         cline = (uchar_t *) strchr((char*) line, cr );
         if( cline == 0 ) break;
         if ( *(cline + 1) == lf ) {
             *cline = 0;
-            fprintf( das->daslog_fp, "  %s\n ", line ); 
+            fprintf( das->daslog_fp, "%s\n", line ); 
             line  = (cline + 2);
         } else {
                 complain(0, "Warning: CR/LF missing in SOH block\n");
             line  = (cline + 2);
         }
     }
+    fprintf( das->daslog_fp, "\n" ); 
     fflush( das->daslog_fp );
     return 2;
 
@@ -745,7 +788,8 @@ int read_pscl_SC(
       DASPar *das;
       int dasid, id;  
       int  i;
-      char key[16];
+      int yr, hr, day, min, sec, msec;
+      char string[64], key[16];
       struct DataPar *hdr;
       int hdrsize = 0;
 
@@ -773,29 +817,40 @@ int read_pscl_SC(
 	}
     } 
     
-    fprintf( das->daslog_fp, "\n Station-Channel Definition \n");
-    fprintf( das->daslog_fp, " Experiment: %.2s  Name: %.24s Comments: %.40s \n", 
+    if(  pkt.prehdr.bcdtime[0] != ' ')  {
+       yr = bcd2hex( pkt.prehdr.year, 2 );                                        
+       sprintf( key, "%02x%02x%02x%02x%02x%02x", pkt.prehdr.bcdtime[0], pkt.prehdr.bcdtime[1],
+           pkt.prehdr.bcdtime[2], pkt.prehdr.bcdtime[3], pkt.prehdr.bcdtime[4], pkt.prehdr.bcdtime[5]);
+       sscanf( key, "%3d%2d%2d%2d%3d", &day, &hr, &min, &sec, &msec);
+       sprintf( string,"%2d:%03d:%02d:%02d:%02d.%03d\0", yr, day, hr, min, sec, msec); 
+    } 
+ 
+    fprintf( das->daslog_fp, "\nStation Channel Definition\t%s\tST: %d \n", string, dasid );
+    fprintf( das->daslog_fp, "Experiment Number =  %.2s\nExperiment Name = %.24s\n  Comments - %.40s \n", 
       &( pkt.expnum[0]), &( pkt.expname[0]),&( pkt.comment[0]));
-     fprintf( das->daslog_fp, "  Start: %.14s\n", &( pkt.start[0]));
-     fprintf( das->daslog_fp, "  Station ID: %.4s Name: %.24s Comments: %.40s\n", 
+     fprintf( das->daslog_fp, "Station Number = %.4s\nStation Name = %.24s\n  Station Comments - %.40s\n", 
        &( pkt.staid[0]), &( pkt.sta[0]),&( pkt.sta_comment[0]));
-     fprintf( das->daslog_fp, "  Das Serial Number: %.12s Model: %.12s\n ", 
-              &(pkt.dasid[0]), &( pkt.dastype[0]));
-     fprintf( das->daslog_fp, "  Clock SN#:%.10s Type: %.4s\n",
-              &(pkt.clkid[0]), &(pkt.clktype[0]));
+     fprintf( das->daslog_fp, "DAS Model Number = %.12s\nDas Serial Number= %.12s\n ", 
+              &( pkt.dastype[0]), &(pkt.dasid[0]));
+     fprintf( das->daslog_fp, "Experiment Start Time = %.14s\n", &( pkt.start[0]));
+     fprintf( das->daslog_fp, "Time Clock Type = %.4s\nClock Serial Number = %.10s\n",
+              &(pkt.clktype[0]), &(pkt.clkid[0]));
      for( i = 0; i < 5; i++)  
        if(   pkt.ch[i].chid[0] != ' ' )  {
-          fprintf( das->daslog_fp, "  \nChannel ID: %.2s Channel Name: %.10s \n", 
+          fprintf( das->daslog_fp, "  \nChannel Number = %.2s\n\tName - %.10s\n", 
              &( pkt.ch[i].chid[0]), &( pkt.ch[i].name[0]));
           fprintf( das->daslog_fp, 
-             "  AZ:%.10s INC:%.10s X-%.10s Y:-.10s XYType:%.4s Z-%.10s-ZType:%.4s\n", 
-             &( pkt.ch[i].azimuth[0]),&( pkt.ch[i].inclination[0]),
-             &( pkt.ch[i].xcoord[0]), &( pkt.ch[i].ycoord[0]), &( pkt.ch[i].xytype[0]),
-             &( pkt.ch[i].zcoord[0]),  &( pkt.ch[i].ztype[0]));
-         fprintf( das->daslog_fp, "  Gain: %.4s Sensor: %.12s Model: %.12s\n", 
-             &(pkt.ch[i].gain[0]), &(pkt.ch[i].sensid[0]), &(pkt.ch[i].sens_model[0]));
-         fprintf( das->daslog_fp, "  Volts per BIT:%.8s\n", &( pkt.ch[i].volt[0]));
-         fprintf( das->daslog_fp, "  Comments:%.40s\n\n", &( pkt.ch[i].comment[0]));
+             "\tAzimuth - %.10s\n\tInclination - %.10s\n\tLocation\n",
+             &( pkt.ch[i].azimuth[0]),&( pkt.ch[i].inclination[0]));
+          fprintf( das->daslog_fp, 
+             "\tX - %.10s\tY - %.10s\tZ - %.10s\n", 
+             &( pkt.ch[i].xcoord[0]), &( pkt.ch[i].ycoord[0]), &( pkt.ch[i].zcoord[0]));
+          fprintf( das->daslog_fp, 
+             "\tXY Units - %.4s\tZ Units - %.4s\n", &( pkt.ch[i].xytype[0]), &( pkt.ch[i].ztype[0]));
+         fprintf( das->daslog_fp, "\tPreamplifier Gain = %.4s\n\tSensor Model - %.12s\n\tSensor Serial Number - %.12s\n", 
+             &(pkt.ch[i].gain[0]), &(pkt.ch[i].sens_model[0]), &(pkt.ch[i].sensid[0]) );
+         fprintf( das->daslog_fp, "\tVolts per Bit = %.8s\n", &( pkt.ch[i].volt[0]));
+         fprintf( das->daslog_fp, "\tComments - %.40s\n\n", &( pkt.ch[i].comment[0]));
      } 
      fflush( das->daslog_fp );
      

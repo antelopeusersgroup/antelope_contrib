@@ -8,9 +8,10 @@
 #include "ref2db.h"
 
 extern Arr *StaCh;
-extern Arr *StrmDas;
+extern Arr *PsclSTRM;
 extern Arr *Chan;
 extern ChArr *anewchan();
+extern int VLog;
 
 int valid_pkt( unsigned char **data,
 	char *srcname,
@@ -60,7 +61,7 @@ int valid_pkt( unsigned char **data,
           return (int) raw->pkttype;
    }
 
-   if( Log ) {
+   if( VLog ) {
        fprintf( stderr, "dasid %d time %lf\n", Par.staid, Par.time );
        fflush( stderr );
    }
@@ -110,8 +111,9 @@ int record_eh_et( uchar_t *packet , int pkttype )
      streamid++;
  
      sprintf( key, "%d_%d\0", dasid, streamid );
-         
-     if( ( stream = (Stream *) getarr( StrmDas, key ) ) == 0 )
+        
+     if( PsclSTRM == 0 ) PsclSTRM = newarr(0); 
+     if( ( stream = (Stream *) getarr( PsclSTRM, key ) ) == 0 )
          stream = ( Stream *) new_stream( dasid, streamid );
 
      if( !timerr )
@@ -154,7 +156,6 @@ fflush(stdout);
                  }
 
             }
-            stream->etime=0.0;
          break;
 
        case PSCLET: 
@@ -176,7 +177,7 @@ fflush(stdout);
           stream->stime = 0.0;
        break;
     }
-    setarr( StrmDas, key, (char *) stream );
+    setarr( PsclSTRM, key, (char *) stream );
 
     return 1;
 }
@@ -195,7 +196,7 @@ int check_dt( uchar_t *packet, int byevent )
      
    sprintf( str_key, "%d_%d\0", Par.staid, streamid );
          
-   if( ( stream = (Stream *) getarr( StrmDas, str_key ) ) == 0 )  {
+   if( ( stream = (Stream *) getarr( PsclSTRM, str_key ) ) == 0 )  {
          complain( 0, "Can't get %s stream info\n",str_key);
          return 0;
    }
@@ -256,9 +257,10 @@ fflush(stdout);
       comp->srate = Par.packet.srate;
     }
     comp->nsamp += Par.packet.nsamp;
+    stream->nsamp = comp->nsamp;
     setarr (Chan, key, (char *) comp);
     stream->etime = ENDTIME( Par.time, Par.packet.nsamp, Par.packet.srate);
-    setarr(StrmDas, str_key, stream);
+    setarr(PsclSTRM, str_key, stream);
  
    return 1;
 } 
