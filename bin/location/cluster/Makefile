@@ -1,7 +1,7 @@
 BIN=cluster
 PF=cluster.pf
 
-#MAN1=	cluster.1
+MAN1=	cluster.1
 ldlibs=-lgenloc -lgclgrid -lperf -lglputil -ltrvltm $(DBLIBS) 
 
 include $(ANTELOPEMAKE)  	

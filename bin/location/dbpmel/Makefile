@@ -3,7 +3,7 @@ DATADIR=schemas
 DATA=genloc1.1
 PF=dbpmel.pf
 
-#MAN1=	dbpmel.1
+MAN1=	dbpmel.1
 ldlibs=  -lgenloc -lglputil -lpmel -ltrvltm $(DBLIBS) -lperf 
 include $(ANTELOPEMAKE)
 
