@@ -1,80 +1,98 @@
-arrival_residual_weight_method 			huber	# {huber,none}
-slowness_residual_weight_method 		none	# {huber,none}
-time_distance_weighting 			true	# {BOOLEAN}
-slowness_distance_weighting 			true	# {BOOLEAN}
-slowness_weight_scale_factor 			1.0	# {0.0-2.0}
-min_error_scale 				1.0	# {1.0-1000.0}
-max_error_scale  				1000.0	# {1.0-1000.0}
-depth_ceiling 					0.0	# {25.0-0.0}
-depth_floor 					100.0	# {600.0-0.0}
-generalized_inverse 				marquardt # {marquardt,pseudoinverse}
-min_relative_damp 				0.000005	
-max_relative_damp 				1.0	
-damp_adjust_factor 				5.0
-singular_value_cutoff				0.0001
-recenter 					true	# {BOOLEAN}
-fix_latitude					false	# {BOOLEAN}
-fix_longitude					false	# {BOOLEAN}
-fix_depth 					true	# {BOOLEAN}
-fix_origin_time					false	# {BOOLEAN}
-step_length_scale_factor 			0.5	# {0.1-1.0}
-min_step_length_scale 				0.01	# 
-maximum_hypocenter_adjustments 			100	#
-deltax_convergence_size 			0.01
-relative_rms_convergence_value 			0.00001
-initial_location_method				radial_gridsearch  # {radial_gridsearch,manual,nearest_station,S-Ptime,rectangle_gridsearch}
-gridsearch_norm					weighted_rms	
-
-initial_origin_time				712788670.0
-
-#parameters used in S-P method
-
-#parameters used in rectangle_gridsearch
-center_latitude					38.2057
-center_longitude				-88.1706
-center_depth					5.0
-#latitude_range					2.0
-#longitude_range					2.0
-#depth_range					0.0
-#nlat						10
-#nlon						10
-#ndepths						1
-
-#parameters used in radial gridsearch
-#center_latitude				22.0
-#center_longitude				44.0
-#center_depth					5.0
-depth_range					0.0
-minimum_distance				50.0
-maximum_distance				50.0
-minimum_azimuth				0.0
-maximum_azimuth				360.0
-number_points_r				1
-number_points_azimuth			36		# {10-360}
-ndepths					1		# {1-10}
-
-output_file    location_output
-#travel_time_model       test_model
-travel_time_model       iasp91
-verbose y
+output_file     location_output
+travel_time_model       taup/iasp91
 maximum_iterations      40
 initial_latitude        42.1311
 initial_longitude       73.6941
-initial_depth           10.0
-fix_depth       n
-use_starting_location   y
-author                  UC:ludar
+initial_depth           50
+fix_depth       	    n
+author                  UC:danq
 arrival_table           &Tbl{
-8022 AML P 792123660.82500 0.1 d -1.00 10.0 n -1.00 0.01 n
-8023 AML S 792123714.67500 0.431 d -1.00 10.0 n -1.00 0.01 n
-8062 UCH P 792123664.97500 0.1 d -1.00 10.0 n -1.00 0.01 n
-16845 UCH S 792123718.08812 1.326 d -1.00 10.0 n -1.00 0.01 n
-8052 KZA P 792123665.32500 0.1 d -1.00 10.0 n -1.00 0.01 n
-16846 KZA S 792123724.82824 0.884 d -1.00 10.0 n -1.00 0.01 n
-8018 AAK P 792123670.05000 0.1 d -1.00 10.0 n -1.00 0.01 n
-16847 AAK S 792123728.52978 1.326 d -1.00 10.0 n -1.00 0.01 n
-16848 CHM P 792123675.45263 0.071 d -1.00 10.0 n -1.00 0.01 n
+14337 AML P 793267678.25705 -1.000 d -1.00 -1.00 n -1.00 -1.00 n
+14344 AML S 793267696.35994 0.637 d -1.00 -1.00 n -1.00 -1.00 n
+14338 EKS2 P 793267686.52500 0.205 d -1.00 -1.00 n -1.00 -1.00 n
+14349 EKS2 S 793267709.80916 0.252 d -1.00 -1.00 n -1.00 -1.00 n
+14339 UCH P 793267688.25804 -1.000 d -1.00 -1.00 n -1.00 -1.00 n
+14350 UCH S 793267713.95679 1.290 d -1.00 -1.00 n -1.00 -1.00 n
+14340 AAK P 793267691.52051 0.149 d -1.00 -1.00 n -1.00 -1.00 n
+14351 AAK S 793267719.11153 2.082 d -1.00 -1.00 n -1.00 -1.00 n
+14342 KZA P 793267694.80195 0.121 d -1.00 -1.00 n -1.00 -1.00 n
+14353 KZA S 793267726.20449 1.206 d -1.00 -1.00 n -1.00 -1.00 n
+14343 KBK P 793267696.31520 0.090 d -1.00 -1.00 n -1.00 -1.00 n
+14354 KBK S 793267728.08480 0.430 d -1.00 -1.00 n -1.00 -1.00 n
+14345 CHM P 793267696.64488 0.107 d -1.00 -1.00 n -1.00 -1.00 n
+14355 CHM S 793267728.94137 0.692 d -1.00 -1.00 n -1.00 -1.00 n
+14346 USP P 793267697.59614 0.121 d -1.00 -1.00 n -1.00 -1.00 n
+14356 USP S 793267730.40815 0.252 d -1.00 -1.00 n -1.00 -1.00 n
+14347 TKM2 P 793267702.74517 0.077 d -1.00 -1.00 n -1.00 -1.00 n
+14357 TKM2 S 793267740.18817 0.586 d -1.00 -1.00 n -1.00 -1.00 n
+14348 ULHL P 793267704.85287 0.671 d -1.00 -1.00 n -1.00 -1.00 n
+14358 ULHL S 793267748.20922 4.908 d -1.00 -1.00 n -1.00 -1.00 n
+14352 TLG P 793267719.27442 0.517 d -1.00 -1.00 n -1.00 -1.00 n
+14360 TLG S 793267770.35128 1.742 d -1.00 -1.00 n -1.00 -1.00 n
+14359 NIL P 793267767.48769 0.287 d -1.00 -1.00 n -1.00 -1.00 n
+14365 NIL S 793267851.36022 2.974 d -1.00 -1.00 n -1.00 -1.00 n
+14361 KUR P 793267802.25414 0.484 d -1.00 -1.00 n -1.00 -1.00 n
+14367 KUR S 793267925.32234 3.409 d -1.00 -1.00 n -1.00 -1.00 n
+14363 BRVK P 793267822.92781 0.268 d -1.00 -1.00 n -1.00 -1.00 n
+14370 BRVK S 793267962.40285 2.757 d -1.00 -1.00 n -1.00 -1.00 n
+14362 ZRN P 793267822.20598 0.818 d -1.00 -1.00 n -1.00 -1.00 n
+14368 ZRN S 793267938.02988 -1.000 d -1.00 -1.00 n -1.00 -1.00 n
+14364 AKT P 793267845.36933 0.309 d -1.00 -1.00 n -1.00 -1.00 n
+14373 AKT S 793267990.83460 2.735 d -1.00 -1.00 n -1.00 -1.00 n
+14366 ARU P 793267899.68275 1.034 d -1.00 -1.00 n -1.00 -1.00 n
+14379 ARU S 793268109.42351 7.343 d -1.00 -1.00 n -1.00 -1.00 n
+14369 KIV P 793267949.57577 0.251 d -1.00 -1.00 n -1.00 -1.00 n
+14371 TLY P 793267966.86533 0.249 d -1.00 -1.00 n -1.00 -1.00 n
+14372 ULN P 793267981.52870 0.110 d -1.00 -1.00 n -1.00 -1.00 n
+14374 ANTO P 793268023.13192 0.833 d -1.00 -1.00 n -1.00 -1.00 n
+14376 LVZ P 793268052.36636 0.186 d -1.00 -1.00 n -1.00 -1.00 n
+14378 YAK P 793268103.34047 0.184 d -1.00 -1.00 n -1.00 -1.00 n
+14391 YAK S 793268465.11822 -1.000 d -1.00 -1.00 n -1.00 -1.00 n
+14392 YAK S 793268481.85890 -1.000 d -1.00 -1.00 n -1.00 -1.00 n
+14380 KONO P 793268125.33685 0.171 d -1.00 -1.00 n -1.00 -1.00 n
+14381 GRFO P 793268130.75102 0.170 d -1.00 -1.00 n -1.00 -1.00 n
+14383 KBS P 793268142.12425 0.414 d -1.00 -1.00 n -1.00 -1.00 n
+14385 ESK P 793268184.95776 0.405 d -1.00 -1.00 n -1.00 -1.00 n
+14388 COL P 793268321.45304 0.263 d -1.00 -1.00 n -1.00 -1.00 n
+14389 WRAB P 793268400.23354 0.512 d -1.00 -1.00 n -1.00 -1.00 n
 }
-
-
-# $Id$ 
+deltax_convergence_size	0.1
+relative_rms_convergence_value	0.01
+generalized_inverse	marquardt
+depth_ceiling	0.0
+depth_floor	100.0
+recenter	1
+min_error_scale	1.0
+max_error_scale	1000.0
+min_relative_damp	0.000005
+max_relative_damp	1.0
+damp_adjust_factor	5.0
+singular_value_cutoff	0.0001
+step_length_scale_factor	0.5
+min_step_length_scale	0.01
+arrival_residual_weight_method	none
+slowness_residual_weight_method	none
+time_distance_weighting	0
+slowness_distance_weighting	0
+slowness_weight_scale_factor	1.0
+fix_latitude	0
+fix_longitude	0
+fix_origin_time	0
+initial_location_method	nearest_station
+gridsearch_norm	raw
+center_latitude	38.2057
+center_longitude	-88.1706
+center_depth	10.0
+depth_range	5.0
+ndepths	3
+latitude_range	5.0
+nlat	20
+longitude_range	5.0
+nlon	20
+minimum_distance	0.1
+maximum_distance	2.0
+number_points_r	19
+minimum_azimuth	0.0
+maximum_azimuth	360.0
+number_points_azimuth	36
+maximum_hypocenter_adjustments 40

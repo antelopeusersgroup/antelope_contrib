@@ -1,0 +1,225 @@
+.\" %W% %G%
+.TH DBGENLOC 1 "%G%"
+.SH NAME
+dbgenloc - dbloc2 interface to genloc library of event location code
+.SH SYNOPSIS
+.nf
+dbgenloc \fIinput-db output-db\fR
+.fi
+.SH DESCRIPTION
+\fBdbgenloc\fR computes event location estimates from travel
+time and/or array slowness measurements. 
+It can also utilize three-component particle motion measurements
+as data if cast as array data (see below).
+This program is the dbloc2 interface program to the genloc 
+(GENeric/GENeralized LOCation) library whose features are 
+described more completely in genloc_intro(3) and related
+man pages (see below) and will not be repeated here.  
+.LP
+dbgenloc is a plug in substitute for dblocsat2.
+dbgenloc reads from input and and writes to an output css3.0 database 
+with control parameters defined through a pair of parameter files
+described in a separate section below. 
+dbloc2 points dbgenloc at databases set in the dbloc2.pf 
+parameter file.  Most commonly the input-db is the master
+database for the data set being processed, and output-db is
+a trial database setup by dbloc2 (presently always tmp/trial).
+The key use of the input database for dbgenloc is to extract the 
+site table.  The data are actually passed to dbgenloc through 
+a parameter file, but are cross referenced to the original database
+to assure consistence of arid values in building the assoc table.
+The major database output tables are origin, assoc, and origerr
+These are normally written under dbloc2's trial database to allow
+a series of trial solutions.  The user selects which they want to
+keep and which is to be the preferred origin under interactive
+control (see dbloc2(1)). 
+.LP
+Because dbgenloc reads data through the input database, slowness
+measurements are passed to dbgenloc through the slowness and
+azimuth fields defined in the arrival table by the css3.0 schema.
+dbap(1), for example, can be used to perform slowness analysis
+on P and S phases for array data and set these fields.  
+Alternatively, although there are known limitations to this,
+three-component polarization analysis can be used to also infer
+a slowness vector.  In either case, it is important to recognize
+two features of the way genloc (not just dbgenloc) handles slowness
+data.  First, all slowness data are converted to Cartesian component form 
+(see genloc_intro for more on this) in spite of the fact that
+the arrival table stores this information in polar form.  That is,
+the data are ALWAY treated as Cartesian components.
+Second, only the delslo 
+(slowness error estimate) field of the arrival record is ever looked
+at.  The delaz entry (error in azimuth) is always ignored.  
+If delslo is set, each component (i.e. Ux and Uy with x positive east
+and y positive north) of
+the slowness vector computed from the (slow,azimuth) polar form 
+is weighted by 1.0/delslo in the solution.  If delslo is not set,
+the value set as the default in the phase description parameter 
+file (see below) is used.  A more exact form of this
+would require a complete specification of the covariance matrix for
+the slowness vector (a 2 by 2 matrix), but this is not possible
+with the css3.0 schema.  This is a reasonable approximation
+for most data given that quantifying errors in slowness vectors 
+is a significant challenge anyway.
+.SH PARAMETER FILES
+.LP
+Main inputs to dbgenloc come through two parameter files:  
+\fIdbgenloc.pf\fR, and \fIdbgenloc_default.pf\fR.
+The first is a dynamic file created in the working
+directory by dbloc2 and should not be edited by the user.
+The default parameter file can be anywhere convenience 
+provided you pay attention to the path search rules for
+parameter files (see pfread(3)), but the most common 
+choice is the working directory from which you start dbloc2.
+.LP
+Because of the attempt to make genloc as general as possible, the
+number of control options that exist are large (see genloc_intro(3)).
+The dbgenloc_default.pf file was created to simplify setting 
+these parameters for most people.  
+The recommended approach is to copy the version of dbgenloc_default.pf
+found in $DSAP/data/pf into your working directory and edit the 
+following parameters to appropriate values for your data:
+.LP
+\fIinitial_location_method\fR and associated parameters 
+(\fIcenter_latitude, center_longitude, center_depth, depth_range, 
+ndepths, latitude_range, longitude_range, nlat, nlon, 
+minimum_distance, maximum_distance, number_points_r,\fR and
+\fInumber_points_azimuth\fR)
+need to be defined at scales appropriate for your network of
+stations. 
+.LP
+\fIdeltax_convergence_size\fR may need to be reset in some cases.
+This is the step size (in km) used to define convergence.  This 
+tends to be scale dependent as smaller sizes are needed to define
+convergence for high-frequency, local events compared to 
+the other end member -- teleseismic locations.    
+.LP
+\fIarrival_residual_weight_method\fR and \fIslowness_residual_weight_method\fR
+define whether or not residual weight should be used. 
+We would generally advise against using residual weighting as the default 
+in an interactive mode
+that is the model for dbgenloc.  
+Common experience is that
+odd convergence artifacts can occur in small data sets when residual
+weighting is used.  As a result, a rough rule is to not
+use residual weighting with dbgenloc unless the number of arrivals exceeds
+about 20.  Residual weighting is a feature designed more for 
+an application like relocate(1).
+.LP
+There are some subtle issue about the parameters \fIdepth_ceiling\fR and
+\fIdepth_floor\fR the user should be aware of.  These two parameters
+limit the range of allowed source depths.  That is, source depths cannot
+lie above the specified ceiling or below the depth floor.  
+As described in genloc_intro(3) attempts to move the source
+depth outside this range automatically 
+invokes step-length damping.  This feature is not optional,
+and this can, in some cases, lead to very slow convergence.
+To avoid problems with these parameters, make sure two things 
+are set properly.
+.IP (1)
+Make sure the
+fixed depth values selected in dbloc2.pf are consistent with the values
+you choose.  If you use values in dbloc2.pf that are outside the 
+range specified by the ceiling and floor, 
+dbgenloc will almost surely break.
+.IP (2)
+If you are using the table interpolation calculator for travel times,
+it is critical that the floor and ceiling be set consistent with the
+travel time tables.  That is, the sensible choice is to set the 
+ceiling to the minimum source depth tabulated and to set the floor to
+the maximum source depth tabulated.  
+.LP
+Some may wish to change the default generalized inverse used in the
+nonlinear least squares solution depending on their prejudices.  
+The default parameters are known to work well for local and regional
+event locations.
+.SH OPTIONS CONTROL PANEL
+.LP
+Options that might prove valuable to change in working with
+data interactively (the model of dbloc2) are changeable by 
+pushing the options button on the dbloc2 control panel when dbgenloc
+is selected.  The control panel is actually seperated into two 
+parts:  (1) the main panel that appears when the options button is
+pushed, and (2) a secondary panel appears when the button
+labelled "Gridsearch options" is pushed.  If these are not
+self explanatory, more details are given in genloc_intro(3), and
+the parameters associated with each button should be clear.  
+If they aren't, try copying dbgenloc.pf from one run, changing
+a setting, and running diff on the two files.
+.SH TRAVEL TIME SETUP
+.LP
+Different travel time methods and models are specified by 
+phase handle parameter file descriptions that are expected to
+be stored in one or more directories below $DSAP/data/tables/genloc.
+The distribution should contain a minimum of three examples in a
+a directories below this called:  taup, ttlvz, and uniform.
+Each directory should hold an example phase description for each 
+of the three travel time methods currently available with
+genloc.  That is, taup is for global scale data using the tau-p
+tables; ttlvz uses a stack of constant velocity layers; and 
+uniform implements a general travel time table interpolator.  
+(The later can be used as an alternative to directly using
+the taup calculator by use of the program taup_convert(1).).
+.LP
+The easiest way to alter these for your use is to choose
+a method appropriate for your needs and copy the example
+file to a different file with a name appropriate for your
+data (it must have the ".pf" ending to be work correctly
+with the parameter file routines). 
+Details on parameters other than the velocity model are
+best found by reading genloc_intro(3). 
+Changing the velocity model is a bit different for each interface.
+.LP
+For the taup interface, change the TTmodel parameter
+to any model name the 
+taup library has a set of tables for.  
+.LP
+For the ttlvz interface, change the \fIvelocity_model\fR
+table entries for your model.  The entries are
+velocity(km/s)-depth (in km) pairs.  There is no limit on
+the number of layers, but speed decreases dramatically as 
+the number of layers gets large because of the algorithm.
+.LP
+If the travel time table interpolator (uniform table interpolation)
+is used, the key parameter that commonly needs to be changed
+is that called \fItable_file\fR.  
+This parameter defines the travel time table parameter file
+to be used for the associated phase.
+If a relative path name is used, it will be assumed
+to be rooted at $DSAP/data/tables/genloc.  
+To store these tables elsewhere, use a full path name.
+The format of
+these tables is described in genloc_intro(3).  
+They can be created by one of four methods:  (1) they
+can be entered by hand (convenient, for example, for a phase
+like Lg where the velocity is fixed so the table
+can be very small); (2) using taup_convert (1); 
+(3) using tabcalc(1) and hypotab(1); 
+.SH FILES
+More verbose output from the program is stored in the file
+called \fIlocation_output\fR.  The contents of this file
+are what is viewed in dbloc2 by pushing the "View Results" 
+button.  
+.SH DIAGNOSTICS
+.LP
+The programs uses the elog interface, so setting elog_deliver 
+properly can assure that all diagnostic messages will arrive
+intact.  There are too many diagnostic messages to list them all. 
+.SH "SEE ALSO"
+.nf
+dbloc2(1), sgnloc(1), relocate(1), orbgenloc(1),
+genloc(3), genloc_intro(3), ggnloc(3), elog(3), pfread(3), dbintro(3),
+taup_convert(1), tabcalc(1), hypotab(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+Setup errors can cause dbgenloc to die immediately the first
+time a location is attempted, and unless elog_deliver is set
+properly it can be hard to figure out why.  When this happens
+dbloc2 freezes with the infamous tcl hourglass figure, 
+and is unable to restart dbgenloc.  The only solution
+is to kill dbloc2 and all it's childen, figure out what
+was set wrong, and restart dbloc2.    
+.SH AUTHOR
+Dan Quinlan and 
+Gary L. Pavlis

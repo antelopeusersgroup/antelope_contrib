@@ -1,3 +1,4 @@
+MAN1=dbgenloc.1
 BIN=dbgenloc
 PF=dbgenloc.pf 
 #DATADIR=tables/genloc
