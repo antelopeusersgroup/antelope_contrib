@@ -15,6 +15,7 @@
 #define DATASIZE 4
 #define SOCKET_LISTEN_BACKLOG 10
 #define SERVER_RESET_ALLOWANCE_SEC 1
+#define VERYVERBOSE_DEBUGBNS 0
 
 #define THR_PRIORITY_EXPORT_SERVER 1
 #define THR_PRIORITY_PFWATCH 2
@@ -54,7 +55,7 @@ typedef struct ExportServerThread {
 	int	nbytes;
 	enum Loglevel loglevel;
 
-	Tbl	*Export_Threads;
+	Arr	*Export_Threads;
 
 } ExportServerThread;
 
@@ -62,6 +63,7 @@ typedef struct ExportThread {
 
 	ExportServerThread *es;
 	thread_t thread_id;
+	char	name[STRSZ];
 	int	so;
 	int	orbfd;
 	Bns	*bnsin;			
@@ -163,6 +165,8 @@ new_ExportThread( ExportServerThread *es, int so )
 
 	allot( ExportThread *, et, 1 );
 
+	strcpy( et->name, "" );
+
 	et->es = es; 
 	et->so = so;
 	et->orbfd = -1;
@@ -203,7 +207,7 @@ new_ExportServerThread( char *name )
 	es->last_heartbeat_received = 0;
 	es->expect_heartbeat_hook = NULL;
 
-	es->Export_Threads = newtbl( 0 );
+	es->Export_Threads = newarr( 0 );
 
 	mutex_init( &es->es_mutex, USYNC_THREAD, NULL );
 
@@ -228,7 +232,7 @@ free_ExportServerThread( ExportServerThread **es )
 
 	if( (*es)->Export_Threads ) {
 		
-		freetbl( (*es)->Export_Threads, free_ExportThread );
+		freearr( (*es)->Export_Threads, free_ExportThread );
 	}
 
 	free( *es );
@@ -416,6 +420,8 @@ close_export_connection( ExportThread *et )
 
 	et->bnsin = 0;
 
+	delarr( et->es->Export_Threads, et->name );
+
 	return;
 }
 
@@ -423,14 +429,25 @@ void
 close_export_server_connection( ExportServerThread *es )
 {
 	ExportThread *et;
+	Tbl	*keys;
+	char	*akey;
+	int	i;
 
-	while( ( et = shifttbl( es->Export_Threads ) ) != NULL ) {
+	keys = keysarr( es->Export_Threads );
+
+	for( i = 0; i < maxtbl( keys ); i++ ) {
+
+		akey = gettbl( keys, i );
+
+		et = getarr( es->Export_Threads, akey );
 
 		close_export_connection( et );
 
 		thr_kill( et->thread_id, SIGKILL );
 	}
-	
+
+	freetbl( keys, 0 );
+
 	if( es->stop == 0 ) {
 		
 		sleep( SERVER_RESET_ALLOWANCE_SEC );
@@ -571,6 +588,8 @@ buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 	char	etx = ETX;	
 	char	esc = ESC;	
 	char	*cp;
+	int	rc;
+	int	retcode = 0;
 	int	i;
 
 	sprintf( msg, "%c%3d%3d%3d", 
@@ -581,22 +600,69 @@ buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 	
 	cp = (char *) tp;
 
+	rc = bnsput( et->bnsout, msg, BYTES, 10 );
+	retcode += rc;
+
+	if( rc != 0 ) {
+
+		elog_complain( 1, "'%s': bnsput error %d\n",
+				et->name, bnserrno( et->bnsout ) );
+	}
+
 	for( i = 0; i < nbytes_tp; i++ ) {
 
 		if( *cp == STX || *cp == ETX || *cp == ESC ) {
 
-			bnsput( et->bnsout, &esc, BYTES, 1 );
-			bnsput( et->bnsout, cp++, BYTES, 1 );
+			rc = bnsput( et->bnsout, &esc, BYTES, 1 );
+			retcode += rc;
+
+			if( rc != 0 ) {
+
+				elog_complain( 1, "'%s': bnsput error %d\n", 
+						et->name, bnserrno( et->bnsout ) );
+			}
+
+			rc = bnsput( et->bnsout, cp++, BYTES, 1 );
+			retcode += rc;
+
+			if( rc != 0 ) {
+
+				elog_complain( 1, "'%s': bnsput error %d\n", 
+						et->name, bnserrno( et->bnsout ) );
+			}
 
 		} else {
 
-			bnsput( et->bnsout, cp++, BYTES, 1 );
+			rc = bnsput( et->bnsout, cp++, BYTES, 1 );
+			retcode += rc;
+
+			if( rc != 0 ) {
+
+				elog_complain( 1, "'%s': bnsput error %d\n", 	
+						et->name, bnserrno( et->bnsout ) );
+			}
 		}
 	}
 	
-	bnsput( et->bnsout, &etx, BYTES, 1 );
+	rc = bnsput( et->bnsout, &etx, BYTES, 1 );
+	retcode += rc;
 
-	return 0;
+	if( rc != 0 ) {
+
+		elog_complain( 1, "'%s': bnsput error %d\n", 
+				et->name, bnserrno( et->bnsout ) );
+	}
+
+	rc = bnsflush( et->bnsout );
+	retcode += rc;
+
+	if( rc != 0 ) {
+
+		elog_complain( 1, "'%s': bnsflush error %d\n",
+				et->name, bnserrno( et->bnsout ) );
+	}
+
+	return retcode;
 }
 
 static void *
@@ -622,7 +688,8 @@ orb2ew_export( void *arg )
 	if( ( et->orbfd = orbopen( Orbname, "r&" ) ) < 0 ) {
 		
 		elog_complain( 0,
-			"Failed to open orb '%s' for reading\n", Orbname );
+			"'%s': Failed to open orb '%s' for reading\n",
+			et->name, Orbname );
 
 		status = -1;
 
@@ -635,7 +702,7 @@ orb2ew_export( void *arg )
 	bnsuse_sockio( et->bnsin );
 	bnsuse_sockio( et->bnsout );
 
-	if( et->es->loglevel == VERYVERBOSE ) {
+	if( et->es->loglevel == VERYVERBOSE && VERYVERBOSE_DEBUGBNS ) { 
 
 		et->bnsin->debug = 1;
 		et->bnsout->debug = 1;
@@ -666,8 +733,8 @@ orb2ew_export( void *arg )
 		if( rc == 0 )
 		{
 			elog_complain( 0, 
-				"Unstuff failure in orb2ew for %s\n",
-				srcname );
+				"'%s': Unstuff failure in orb2ew for %s\n",
+				et->name, srcname );
 			continue;
 		}
 
@@ -688,13 +755,32 @@ orb2ew_export( void *arg )
 				mi2hi( &ptr, &pinno, 1 );
 
 				elog_notify( 0, 
-					"Got packet %s timed %s, will be pin %d\n", 
-					srcname, strtime( mytime ), pinno );
+					"'%s': Sending packet %s timed %s as pin %d\n", 
+					et->name, srcname, strtime( mytime ), pinno );
 			}
 
-			buf_send( et, &tp, nbytes_tp );
+			rc = buf_send( et, &tp, nbytes_tp );
+
+			if( rc != 0 ) {
+
+				goto close_export;
+			}
 		}
 	}
+
+	close_export:
+
+	if( et->es->loglevel >= VERBOSE || Flags.verbose ) {
+
+		elog_notify( 0, "'%s': Closing export connection\n",
+				et->name );
+	}
+
+	close_export_connection( et );
+
+	status = 0;
+
+	thr_exit( (void *) &status );
 }
 
 static void
@@ -740,13 +826,15 @@ refresh_export_server_thread( ExportServerThread *es )
 		if( aso < 0 ) {
 			
 			elog_complain( 0, 
-				"Failed socket fd %d on accept\n", aso );
+				"'%s': Failed socket fd %d on accept\n", 
+				es->name, aso );
 			continue;	
 		}
 
 		if( ( es->loglevel >= VERBOSE ) || Flags.verbose ) {
 
-			 elog_notify( 0, "Accepted socket fd %d\n", aso );
+			 elog_notify( 0, "'%s': Accepted socket fd %d\n", 
+					es->name, aso );
 		}
 		
 		et = new_ExportThread( es, aso );
@@ -768,9 +856,12 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		} else {
 
+			sprintf( et->name, "%s_tid_%d", 
+				 es->name, et->thread_id );
+
 			mutex_lock( &es->es_mutex );
 
-			pushtbl( es->Export_Threads, et );
+			setarr( es->Export_Threads, et->name, et );
 		
 			mutex_unlock( &es->es_mutex );
 
