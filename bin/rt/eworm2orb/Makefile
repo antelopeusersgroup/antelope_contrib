@@ -7,5 +7,4 @@ ldflags= -xildoff
 cflags = -D_SPARC -D_SOLARIS -mt
 ldlibs= -lpkt -lorb -lwormsol -lwormutil -lwormds $(TRLIBS) $(SVR4LIBS) -mt 
 
-PACKAGE=$(ANTELOPE)/contrib
 include $(ANTELOPEMAKE)
