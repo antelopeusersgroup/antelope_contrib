@@ -193,13 +193,10 @@ char          **argv;
                           &packet, &nbytes, &bufsize)) {
      
 	         case 0:
-		     bufsize = 0;
-		     break;
 	         case 2:
 	         case 3:
-		     complain ( 0, "orbsort error at %lf for %s\n", 
-		         pkttime, srcname) ; 
-		     break ;
+		     bufsize = 0;
+		     break;
      
 	         default:
      

@@ -90,6 +90,10 @@ int dc_par( uchar_t *packet, struct Packet **Pkt )
               off = DCPAR_OFF[dc] + hdr->prehdr.hdrsiz;
               memcpy( (char *) &lval, (char *) &packet[off], 4 );
               val = lval;
+      } else if( !strncmp( DCFILE_NAME[dc], "BATT", 4 ) )  {
+	     off = DCPAR_OFF[dc] + hdr->prehdr.hdrsiz;
+             memcpy( (char *) &sval, (char *) &packet[off], 2 );
+             val = sval/100;
       }  else {
        
 	     off = DCPAR_OFF[dc] + hdr->prehdr.hdrsiz;

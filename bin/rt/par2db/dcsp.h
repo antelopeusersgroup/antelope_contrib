@@ -3,8 +3,8 @@
 
 #include "pkt.h"
 
-#define MAX_DCPAR  3
-#define MAXDAS 3
+#define MAX_DCPAR  4
+#define MAXDAS 4
  
 /* DC parametrs offset  */
  
@@ -56,30 +56,30 @@ static char *comname="DC";
 /*  The extantions of file name for all  network parameters  */
 
 static char *DCFILE_NAME[MAX_DCPAR] = {
-"RECNCT" , "TCPSND", "TCPDEL"
+"RECNCT" , "TCPSND", "TCPDEL", "BATT"
 };
  
 static int DCPAR_OFF[MAX_DCPAR] = {
-RECNCT_DC , TCPSEND_DC, TCPDEL_DC
+RECNCT_DC , TCPSEND_DC, TCPDEL_DC, DCBATT
 };
  
  
-static int DCPAR_BYTE[MAX_DCPAR] = {2,4,2,};
+static int DCPAR_BYTE[MAX_DCPAR] = {2,4,2,2};
 
 
 /*   DAS Parameters  */
  
 static int PAR_OFF_DAS[MAXDAS] = {
- RTXREQ_DAS, RTXREC_DAS, RTXSKP_DAS 
+ CHKSUM_DAS, RTXREQ_DAS, RTXREC_DAS, RTXSKP_DAS 
 };
 
 /*  The extantions of file name for all  network parameters  */
  
 static char *FILE_NAME_DAS[MAXDAS] = {
-  "RTXREQ", "RTXREC", "RTXSKP" 
+  "CHKSUM", "RTXREQ", "RTXREC", "RTXSKP" 
 };
 
-static int PAR_BYTE_DAS[MAXDAS] = {2,2,2 };
+static int PAR_BYTE_DAS[MAXDAS] = {2,2,2,2 };
 
 typedef struct DcStat {
    double time;
