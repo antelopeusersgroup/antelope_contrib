@@ -169,7 +169,7 @@ elog_notify (msg)
     send a notify message to the elog facility
 
 elog_alert (msg)
-    send a alert message to the elog facility
+    send an alert message to the elog facility
 
 elog_complain (msg)
     send an error message to the elog message facility 
@@ -234,13 +234,13 @@ askynaq (string)
     0=false, 1=true, 2=all, 3=quit
 
 yesno (string) 
-    returns 1 if 
+    returns -1 true; 0 false; 1 if the string doesn't match a valid value
 
 datafile (env, file)
-    find the specified file by looking at first the environment variable, and then along the path
+    find the specified file by looking first at the environment variable, then along the path
 
 datapath (env, dir, file, suffix)
-    find the specified file by looking at first the environment variable, and then along the path
+    find the specified file by looking first at the environment variable, then along the path
 
 makedir(d)
     make the complete directory path d (like "mkdir -p") 
@@ -411,10 +411,10 @@ orbwait(orb, re, mintime, timeout)
     read packets younger than mintime. If timeout is
     non-zero, then orbwait returns with an error code
     if the timeout expires before the specified program
-    catch up.
+    catches up.
 
 ($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbget(orb, which)
-    get a single packet corresponding to which; this be an
+    get a single packet corresponding to which; this can be an
     explicit pktid, or "ORBCURRENT", "ORBPREV", "ORBNEXT",
     "ORBNEXT_WAIT", "ORBOLDEST", or "ORBNEWEST". 
 

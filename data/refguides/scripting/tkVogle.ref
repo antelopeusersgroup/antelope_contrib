@@ -11,8 +11,8 @@ graphic widget-name
     create graphic widget for drawing
 
 g_init deviceName
-  (re)-initialize the Vogle device deviceName. For  exam-
-  ple, to initialize the Vogle postscript device.
+  (re)-initialize the Vogle device deviceName. For  example,
+  to initialize the Vogle postscript device.
 
      See also: g_newdev, g_getdev, g_exit, g_output, graphic
 
@@ -93,8 +93,8 @@ g_popattributes
 
 <subsection Projection commands>
 g_ortho left right top bottom [near [far]]
-      Define a parallel projection, 3d if near and far are sup-
-      plied, 2d otherwise
+      Define a parallel projection, 3d if near and far are
+      supplied, 2d otherwise
 
 g_perspective fieldOfView aspect near far
       Specify a perspective viewing pyramid in world coordinates  
