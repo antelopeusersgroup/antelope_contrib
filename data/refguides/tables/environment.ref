@@ -22,6 +22,35 @@ DATAPATH
     overrides the default directory $ANTELOPE/data where
     Antelope programs find a variety of data files.
 
+ELOG_DELIVER
+    list of error message destinations: filenames, 
+    "stderr" or "stdout", or "orb:"hostname:port.
+
+ELOG_DEBUG
+    when set, a debugger is started for program faults
+
+ELOG_SIGNALS
+    signals for which handlers are set up;
+    default is "ILL:TRAP:FPE:BUS:SEGV:SYS".   
+    if null, don't install any handlers.
+
+ELOG_MAXMSG
+    maximum number of messages allowed on the error log.
+    If zero, no limit.
+
+ELOG_TAG
+    tag prepended to each message; see elog.pf for default.
+<options>
+%a argument list
+%h host name
+%p pid
+%P program name
+%r complete path to program
+%t local time tag, eg "Thu May 29 15:27:59 1997"
+%T thread id
+%u UTC time code, eg "1997-149 21:27:59"
+<\options>
+
 EUROPEAN_DATE
   when set, interpret dates like xx/xx/xx  as day/month/year.  
   various output formats are also changed equivalently.
