@@ -11,9 +11,10 @@ DOC= \
     Antelope_Toolbox_for_Matlab.html \
     Antelope_Toolbox_for_Matlab.pdf 
 
-CLEAN= *.backup.fm *.pdf fmbatch_script fmbatch_wrapper
+CLEAN= *.backup.fm fmbatch_script fmbatch_wrapper
 
-include $(ANTELOPE)/include/mex_antelope_makerules
+# include $(ANTELOPE)/include/mex_antelope_makerules
+include $(ANTELOPEMAKE)
 
 .SUFFIXES: .SUFFIXES .pdf .fm
 
