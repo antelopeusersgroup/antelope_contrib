@@ -1,6 +1,6 @@
 MAN1=dbgenloc.1
 BIN=dbgenloc
-PF=dbgenloc.pf 
+PF=dbgenloc.pf dbgenloc_default.pf
 #DATADIR=tables/genloc
 #DATA=iasp91.pf iasp91.P.pf iasp91.S.pf test_model.pf kyrghyz.pf kyrghyz.P.pf kyrghyz.S.pf 
 
