@@ -48,6 +48,7 @@ int svdcmp(float *a[], int m, int n, float w[], float *v[])
 	int             flag, i, its, j, jj, k, l, nm;
 	float          c, f, h, s, x, y, z, *rv1;
 	float          anorm = 0.0, g = 0.0, scale = 0.0;
+	float test;
 
 	rv1 = (float *) calloc(n,sizeof(float));
 
@@ -175,12 +176,27 @@ int svdcmp(float *a[], int m, int n, float w[], float *v[])
 				 * change it. Note this is different from
 				 * having the number be equal to 0.0!
 				 */
-				if (fabs((double)rv1[l]) < FLT_EPSILON*anorm) {
+/*
+				if ((float)fabs((double)rv1[l]) 
+					< FLT_EPSILON*anorm) {
 					flag = 0;
 					break;
 				}
-				if (fabs((double)w[nm]) < FLT_EPSILON*anorm)
+				if ((float)fabs((double)w[nm]) 
+					< FLT_EPSILON*anorm)
 					break;
+*/
+/* New test code */
+				test = anorm + ((float)fabs((double)rv1[l]));
+				if(anorm == test)
+				{
+					flag = 0;
+					break;
+				}
+				test = anorm + ((float)fabs((double)w[nm]));
+				if(anorm == test)
+					break;
+				
 			}
 			if (flag) {
 				c = 0.0;	/* Cancellation of rv1[l], if
@@ -194,7 +210,8 @@ int svdcmp(float *a[], int m, int n, float w[], float *v[])
 					 * disk program
 					 */
 					rv1[i] *= c;
-					if (fabs((double)f) < FLT_EPSILON*anorm)
+					test = anorm + ((float)fabs((double)f));
+					if(test == anorm)
 						break;
 					g = w[i];
 					h = PYTHAG(f, g);

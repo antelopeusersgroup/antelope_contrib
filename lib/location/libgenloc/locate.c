@@ -88,8 +88,10 @@ Robust_statistics form_equations(int mode, Hypocenter current_location,
 	nslow = maxtbl(utbl);
 	ndata = natimes+2*nslow;
 	work = (float *) calloc(ndata,sizeof(float));
-	/* determine npar using pattern of fix and depencency on how 
-	the origin time is handled */
+	/* determine npar using pattern of fix.  Note origin time
+	recenter option is always ignored and we always return 
+	a term for the origin time.  This is just turned off
+	when recentering is actually used.*/ 
 	for(i=0,npar=0;i<4;++i) if(!options.fix[i]) ++npar;
 
 	/* this is the main loop to form the equations */
@@ -805,7 +807,8 @@ int ggnloc (Hypocenter initial_location,
 	*reason_converged = newtbl(0);
 	*restbl = newtbl(0);
 
-	/* Determine npar and iz.  (iz points to column of A for depth variable)*/
+	/* Determine npar and iz.  
+	(iz points to column of A for depth variable) */
 	for(i=0,npar=0;i<4;++i)
 	{
 		if(i==2) iz = npar;
@@ -886,9 +889,12 @@ int ggnloc (Hypocenter initial_location,
 		(including slowness measurements) while here we look at
 		only the arrival times.  The weighting is also different
 		Here we only use the reswt values.  We do, however,
-		still skip data flagged with w set to zero.*/
+		still skip data flagged with w set to zero. 
+		Note variable np which is actual number of parameters
+		inverted for with matrix solution*/
 		if( recenter && (options.fix[3] == 0))
 		{
+			np = npar - 1;
 			for(i=0,ndata_used=0;i<natimes;++i) 
 			{
 				if(w[i] > 0.0 )
@@ -907,13 +913,16 @@ int ggnloc (Hypocenter initial_location,
 			}
 			previous_wrms = calculate_weighted_rms(b,w,reswt,m);
 		}
+		else
+			np = npar;
 		/* Now compute the SVD of A.  We copy A to U for clarity, 
 		but we wouldn't absolutely have to do this.
 		Error calculations I anticipate in the future need A.  
 		(svdcmp overwrites U)*/
 		for(i=0;i<m;++i)
-			for(j=0;j<npar;++j) U[i][j] = A [i][j];
-		svdcmp(U,m,npar,s,V);
+			for(j=0;j<np;++j) 
+				U[i][j] = A [i][j];
+		svdcmp(U,m,np,s,V);
 
 		/* Now how we construct a solution depends on the algorithm*/
 
@@ -921,22 +930,22 @@ int ggnloc (Hypocenter initial_location,
 		{
 		case (PSEUDOINVERSE):
 		case (PSEUDO_RECENTERED):
-			nsv_used= pseudoinverse_solver(U,s,V,b,m,npar,
+			nsv_used= pseudoinverse_solver(U,s,V,b,m,np,
 				options.sv_relative_cutoff,dx);
-			if(nsv_used != npar)
+			if(nsv_used != np)
 			{
-				fprintf(stderr,"ggnloc:  svdtrucation applied to invert equations of condition\n");
-				fprintf(stderr,"Using %d of %d singular values\n",
-					nsv_used,npar);
-				fprintf(stderr,"Singular values: ");
-				for(i=0;i<npar;++i)fprintf(stderr," %f ",s[i]);
-				fprintf(stderr,"\n");
+				elog_log(0,"ggnloc:  svdtrucation applied to invert equations of condition\n");
+				elog_log(0,"Using %d of %d singular values\n",
+					nsv_used,np);
+				elog_log(0,"Singular values: ");
+				for(i=0;i<np;++i)elog_log(0," %f ",s[i]);
+				elog_log(0,"\n");
 			}
 			if(!options.fix[2]) step_length_damp(current_location,
-				dx,npar,iz,options);
+				dx,np,iz,options);
 
 			trial_location = adjust_hypocenter(current_location,
-					dx,npar,options);
+					dx,np,options);
 			/* We recalculate residuals in tmp work spaces to allow
 			parallel code to damped solver below */
 			test = form_equations(RESIDUALS_ONLY,
@@ -950,13 +959,13 @@ int ggnloc (Hypocenter initial_location,
 		case (DAMPED_RECENTERED): 
 			do
 			{
-				lminverse_solver(U,s,V,b,m,npar,damp,dx);
+				lminverse_solver(U,s,V,b,m,np,damp,dx);
 				if(!options.fix[2]) step_length_damp(current_location,
-					dx,npar,iz,options)
+					dx,np,iz,options)
 ;
 				trial_location 
 				       = adjust_hypocenter(current_location,
-						dx,npar,options);
+						dx,np,options);
 
 				/* Note use of tmp arrays here.  This preserves
 				original weights consistent with original matrix
@@ -969,7 +978,7 @@ int ggnloc (Hypocenter initial_location,
 					options, A, btmp, rtmp, wtmp, 
 					reswttmp, &ndata_feq);
 				if(ndata_feq != m) ret_code += (m - ndata_feq);
-				if(ndata_feq < npar) break;
+				if(ndata_feq < np) break;
 
 				test_wrms = calculate_weighted_rms(btmp,wtmp,
 						reswttmp,m);
@@ -988,7 +997,7 @@ int ggnloc (Hypocenter initial_location,
 			if(damp < options.min_relative_damp) 
 				damp = options.min_relative_damp;
 		}
-		if(ndata_feq < npar)
+		if(ndata_feq < np)
 		{
 			register_error(0,"Data loss leading to insufficient data for event %lf\n",
 				current_location.time);
@@ -1024,12 +1033,6 @@ int ggnloc (Hypocenter initial_location,
 		We could use a velocity scale factor, but in practice
 		it should not matter.  Furthermore, recentering causes
 		other complications to lengthy to discuss in code comments. */
-		if(recenter) 
-			np = npar - 1;
-		else if(options.fix[3])
-			np = npar;
-		else
-			np = npar - 1;
 		nrm2_dx = (double)snrm2_(&np,dx,&one);
 		if(nrm2_dx <= options.dx_convergence)
 		{

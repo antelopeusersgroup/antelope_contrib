@@ -230,7 +230,7 @@ Travel_Time_Function_Output ttlvz_time_exec(Ray_Endpoints x,
 		if(d_km <= 0.0)
 		{
 			o.dtdx = 0.0;
-			o.dtdz = 0.0;
+			o.dtdy = 0.0;
 			p = 0.0;
 		}
 		else

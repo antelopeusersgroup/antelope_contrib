@@ -226,6 +226,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	/* Values set by dbgetv from row of view */
 	char staname[14];
 	double slow,azimuth;
+	double delslo;
 	char phase_name[10];
 	
 
@@ -234,17 +235,18 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	for(db.record=row_start;db.record<row_end;++db.record)
 	{
 		/* I (glp) am inserting a prejudice here.  Uncertainties
-		delaz and delslo are largely meaningless, and because
-		I insist on converting these to components it is not
-		simple to convert them to component uncertainties. I'll
-		just always use the defaults.  This is not fixable
-		with the CSS3.0 schema.  Doing it right would require
-		a change in the table.  */
+		in azimuth are hard to convert to a useable form in genloc
+		because of the exclusive use of cartesian components rather
+		than the polar form.  The approach here is to use the value
+		of delslo, when set, and use the same value for both components.
+		This is reasonable for most arrays with a nearly round beam
+		pattern, but will be quite wrong in colored noise.*/
 
 		if((dbgetv( db, 0,
 			"sta",staname,
 			"phase",phase_name,
 			"slow",&slow,
+			"delslo",&delslo,
 			"azimuth",&azimuth,
 			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
 
@@ -291,8 +293,17 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			slow /= KMPERDEG;
 			u->ux = -slow*sin(azimuth*M_PI/180.0);
 			u->uy = -slow*cos(azimuth*M_PI/180.0);
-			u->deltaux = (double)u->phase->deltau0;
-			u->deltauy = (double)u->phase->deltau0;
+		/* her we set the uncertainties equal to delslo as noted above */
+			if(delslo > 0.0)
+			{
+				u->deltaux = delslo/KMPERDEG;
+				u->deltauy = delslo/KMPERDEG;
+			}
+			else
+			{
+				u->deltaux = (double)u->phase->deltau0;
+				u->deltauy = (double)u->phase->deltau0;
+			}
                 	pushtbl(t,u);
 		}
 	}
