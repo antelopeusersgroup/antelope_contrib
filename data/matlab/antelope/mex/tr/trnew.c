@@ -25,7 +25,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-        else if( nrhs >= 1 && ! get_string( prhs[0], &tr_path ) )
+        else if( nrhs >= 1 && ! get_trimmed_string( prhs[0], &tr_path ) )
         {
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;

@@ -24,8 +24,10 @@ MEXSRCS= \
 	tr_samprate.c \
 	tr_time2samp.c \
 	tr_samp2time.c \
-	trwfname.c
-
+	trwfname.c \
+	trrotate.c \
+	trrotate_to_standard.c \
+	trfilter.c
 
 CLEAN= 
 

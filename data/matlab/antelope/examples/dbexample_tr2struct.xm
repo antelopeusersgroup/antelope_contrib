@@ -24,6 +24,7 @@ s = tr2struct( tr );
 save '/tmp/dbexample_data.mat' s
 
 % Also plot one of the time-series as an example of structure access:
+subplot( 1, 1, 1 );
 plot(s(2).data)
 
 dbclose( db );

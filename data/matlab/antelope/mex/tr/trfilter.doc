@@ -1,0 +1,12 @@
+TRFILTER apply time-domain filters to trace data
+
+TRFILTER ( TRPTR, FILTER_STRING )
+
+TRFILTER performs time-domain filtering on all of the traces 
+in the input trace-object TRPTR. The filter is specified 
+in the FILTER_STRING argument, as described by the Unix man-page
+trfilter(3). For example, to apply a Butterworth Band-pass filter 
+from 1 to 5 Hz with eight poles, the FILTER_STRING would be 
+'BW 1 4 5 4'. For full details on FILTER_STRING options, please see 
+the referenced man page. The data arrays are filtered in place 
+so that original sample values are replaced with the new filtered values.

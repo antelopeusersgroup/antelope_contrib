@@ -70,6 +70,9 @@
 %   trfree		- free memory for part of a trace object
 %   trdestroy		- free memory and trace object for trace object
 %   trapply_calib	- multiply trace-object waveform data by calib value
+%   trfilter		- time-domain filtering of trace objects
+%   trrotate		- rotation of three-component trace data
+%   trrotate_to_standard - rotation of three-component trace data to standard coordinates
 %   tr_nsamp		- Calculate number of samples from time, sample rate, and endtime
 %   tr_samprate		- Calculate sample rate from time, endtime, and number of samples
 %   tr_endtime		- Calculate endtime from time, sample rate, and number of samples

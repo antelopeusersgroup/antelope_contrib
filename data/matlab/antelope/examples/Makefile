@@ -110,6 +110,7 @@ DATA= \
 	dbexample_trapply_calib.m \
 	dbexample_trdestroy.m \
 	dbexample_trextract_data.m \
+	dbexample_trfilter.m \
 	dbexample_trfree.m \
 	dbexample_trgetwf.m \
 	dbexample_trinsert_data.m \
@@ -117,6 +118,8 @@ DATA= \
 	dbexample_trload_cssgrp.m \
 	dbexample_trnew.m \
 	dbexample_trputwf.m \
+	dbexample_trrotate.m \
+	dbexample_trrotate_to_standard.m \
 	dbexample_trsave_wf.m \
 	dbexample_trsplice.m \
 	dbexample_trwfname.m \

@@ -14,6 +14,7 @@ db.record = 0;
 
 [data, nsamp, t0, t1] = trgetwf( db, time, endtime );
 
+subplot( 1, 1, 1 );
 plot( data );
 
 title( ['waveform data for ' sta ' ' chan] )

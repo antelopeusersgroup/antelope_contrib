@@ -13,6 +13,7 @@ orbreject( fd, '/db/.*|/pf/.*' );
 
 result.record = 0;  
 
+subplot( 1, 1, 1);
 plot( trextract_data( result ) );
 
 % (Allow time for figure to come up when running in batch mode)

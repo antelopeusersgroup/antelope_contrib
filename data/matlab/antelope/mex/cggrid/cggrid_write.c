@@ -45,7 +45,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-        else if( ! get_string( prhs[2], &filename ) )
+        else if( ! get_trimmed_string( prhs[2], &filename ) )
         {
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;

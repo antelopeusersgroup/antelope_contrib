@@ -20,6 +20,7 @@ tr = trload_cssgrp( db,time(1),endtime(1) )
 
 tr.record=0;
 data=trextract_data( tr );
+subplot( 1, 1, 1 );
 plot(data)
 
 % (Allow time for figure to come up when running in batch mode)

@@ -66,6 +66,7 @@ extern int pfput_mxArray PL_(( Pf *, char *, const mxArray * ));
 extern int pfpeek PL_(( Pf *, char *, Pf ** ));
 extern int get_dbptr PL_(( const mxArray *, Dbptr * ));
 extern int get_string PL_(( const mxArray *, char ** ));
+extern int get_trimmed_string PL_(( const mxArray *, char ** ));
 extern int get_stringtbl PL_(( const mxArray *, Tbl ** ));
 extern int get_inttbl PL_(( const mxArray *, Tbl ** ));
 extern int get_pf PL_(( const mxArray *, Pf ** ));

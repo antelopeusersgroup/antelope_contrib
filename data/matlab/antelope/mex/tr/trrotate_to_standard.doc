@@ -1,0 +1,18 @@
+TRROTATE_TO_STANDARD rotate three-component trace data to standard coordinates
+
+TRROTATE_TO_STANDARD ( TRPTR, NEWCHANS )
+
+TRROTATE_TO_STANDARD takes all traces pointed to by a trace-object TRPTR
+and rotates them to a standard coordinate system, i.e. standard
+geographical coordinates comonly used in seismology where the first
+coordinate (X1) is positive to the East, the second (X2) is positive
+North, and the third (X3) is positive upward. NEWCHANS is a
+three-element cell-array of strings, such as {'BHE','BHN','BHZ'},
+specifying the channel-names of the newly rotated components.  The
+TRROTATE_TO_STANDARD command is a direct link to the underlying C-library
+rotate_to_standard(3) command, including the return codes of that
+routine. There are a number of important caveats in using this routine.
+Therefore, if problems are encountered, one should consult the Unix man
+page for rotate_to_standard(3). Among these concerns is the necessity
+to call TRAPPLY_CALIB before calling TRROTATE_TO_STANDARD on real data.
+Also see the command TRROTATE.

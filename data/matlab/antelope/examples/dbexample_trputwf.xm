@@ -39,6 +39,7 @@ trputwf( db, data );
 % As a test, get the data back out:
 [newdata, nsamp, t0, t1] = trgetwf( db, time-1, endtime+1 );
  
+subplot( 1, 1, 1 );
 plot( newdata );
   
 % (Allow time for figure to come up when running in batch mode)

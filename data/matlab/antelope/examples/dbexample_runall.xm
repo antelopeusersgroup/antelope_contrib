@@ -109,6 +109,7 @@ dbexample_tr2struct
 dbexample_trapply_calib
 dbexample_trdestroy
 dbexample_trextract_data
+dbexample_trfilter
 dbexample_trfree
 dbexample_trgetwf
 dbexample_trinsert_data
@@ -116,6 +117,8 @@ dbexample_trload_css
 dbexample_trload_cssgrp
 dbexample_trnew
 dbexample_trputwf
+dbexample_trrotate
+dbexample_trrotate_to_standard
 dbexample_trsave_wf
 dbexample_trsplice
 dbexample_trwfname

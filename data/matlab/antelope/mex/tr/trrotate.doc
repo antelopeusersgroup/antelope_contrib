@@ -1,0 +1,20 @@
+TRROTATE three-component rotation of trace object
+
+TRROTATE ( TRPTR, PHI, THETA, NEWCHANS )
+
+TRROTATE rotates three-component traces of waveform data by the
+specified angles PHI and THETA, translating the input 'E', 'N', and 'Z'
+components (X1, X2, X3) into the three-component, right-handed
+coordinate system specified by NEWCHANS. PHI is the azimuthal rotation
+around the X3 axis in degrees (positive clockwise looking towards
+negative X3). THETA is the rotation in the X1-X3 plane about the X2
+axis (positive clockwise looking towards negative X2). NEWCHANS 
+is a three-element cell-array of strings, such as {'BHR','BHT','BHZ'}, 
+specifying the channel-names of the rotated E,N, and Z components. 
+The TRROTATE command is a direct link to the underlying C-library
+trrotate(3) command, including the return codes of that routine. There 
+are a number of important caveats in using this routine. Therefore, 
+if problems are encountered, one should consult the Unix man page 
+for trrotate(3). Among these concerns is the necessity to call 
+TRAPPLY_CALIB before calling TRROTATE on real data. Also see the 
+routine TRROTATE_TO_STANDARD.

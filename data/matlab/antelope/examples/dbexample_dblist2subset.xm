@@ -22,7 +22,11 @@ format long
 % exists in the row being pointed to, which may or may not defeat the strength
 % of the trload_css command, depending on the application.
 
+dbnrecs( db )
+
 db = dblist2subset( db, 3 );
+
+dbnrecs( db )
 
 tr = trload_css( db,time,endtime )
 

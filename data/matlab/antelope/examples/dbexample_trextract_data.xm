@@ -20,6 +20,7 @@ data=trextract_data( tr );
 
 whos data
 
+subplot( 1, 1, 1 );
 plot( data )
 
 % (Allow time for figure to come up when running in batch mode)

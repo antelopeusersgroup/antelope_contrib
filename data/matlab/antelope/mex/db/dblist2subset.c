@@ -40,15 +40,17 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-
-	/* Work around bug in dblist2subset 	   SCAFFOLD */
-	dbget_range( db, &ns, &ne );		/* SCAFFOLD */
-	n = ne - ns;				/* SCAFFOLD */
-	list_is_scaffold++;			/* SCAFFOLD */
-	list = newtbl( 0 );			/* SCAFFOLD */
-	for( i = 0; i < n; i++ ) {		/* SCAFFOLD */
-		pushtbl( list, (char *) i );	/* SCAFFOLD */
-	}					/* SCAFFOLD */
+	else if( nrhs == 1 ) 
+	{
+		/* Work around bug in dblist2subset 	   SCAFFOLD */
+		dbget_range( db, &ns, &ne );		/* SCAFFOLD */
+		n = ne - ns;				/* SCAFFOLD */
+		list_is_scaffold++;			/* SCAFFOLD */
+		list = newtbl( 0 );			/* SCAFFOLD */
+		for( i = 0; i < n; i++ ) {		/* SCAFFOLD */
+			pushtbl( list, (char *) i );	/* SCAFFOLD */
+		}					/* SCAFFOLD */
+	}
 
 	db = dblist2subset( db, list );
 	antelope_mex_clear_register( 1 );

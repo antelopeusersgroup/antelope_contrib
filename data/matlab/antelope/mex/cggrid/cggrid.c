@@ -32,7 +32,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( nrhs == 1 )
 	{
-		if( ! get_string( prhs[0], &filename ) )
+		if( ! get_trimmed_string( prhs[0], &filename ) )
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;

@@ -2,9 +2,8 @@
  * Antelope Toolbox for Matlab
  *
  * Kent Lindquist
- * Geophysical Institute
- * University of Alaska, Fairbanks
- * 1999
+ * Lindquist Consulting
+ * 1997-2003
  */
 
 #include "antelope_mex.h"
@@ -26,6 +25,21 @@ get_dbptr( const mxArray *in, Dbptr *db )
 	}
 
 	return 1;
+}
+
+int
+get_trimmed_string( const mxArray *in, char **string )
+{
+	int	rc;
+
+	rc = get_string( in, string );
+
+	if( rc != 0 ) 
+	{
+		strtrim( *string );
+	}
+
+	return rc;
 }
 
 int 
