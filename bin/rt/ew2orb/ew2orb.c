@@ -2210,7 +2210,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		pktchan->datasz *= sizeof(int);
 
-		genuncompress( &pktchan->data, &pktchan->nsamp, &pktchan->datasz, 
+		retcode = genuncompress( &pktchan->data, &pktchan->nsamp, &pktchan->datasz, 
 			       (unsigned char *) dp, e2opkt->nbytes - sizeof( TRACE_HEADER ) );
 
 		pktchan->datasz /= sizeof(int);
@@ -2249,7 +2249,6 @@ ew2orb_convert( void *arg )
 				       e2opkt->orbpkt, 
 				       e2opkt->orbpktnbytes );
 		}
-				
 
 		free_Ew2orbPacket( e2opkt );
 	}
