@@ -30,6 +30,10 @@ DOC=ccdoc.GCLgrid.GCLgrid.BasicGCLgrid.cls.html \
 	ccdoc.GCLgrid.dmatrix.dmatrix_index_error.cls.html \
 	ccdoc.GCLgrid.dmatrix.dmatrix_size_error.cls.html \
 	ccdoc.GCLgrid.dmatrix.pkg.html \
+	ccdoc.GCLgrid.GCLgrid.flatvel.double.flatvel.-28.double.v.-2c.double.z.-29.fct.html \
+	ccdoc.GCLgrid.GCLgrid.flatz.double.flatz.-28.double.z.-29.fct.html \
+	ccdoc.GCLgrid.GCLgrid.uflatvel.double.uflatvel.-28.double.v.-2c.double.z.-29.fct.html \
+	ccdoc.GCLgrid.GCLgrid.uflatz.double.uflatz.-28.double.z.-29.fct.html \
 	ccdoc.class_summary.html \
 	gclgrid.db \
 	index.html
