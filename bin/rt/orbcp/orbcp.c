@@ -149,7 +149,8 @@ char **argv;
 
 	if (orbname) {
 		if (ircnt) {
-			orbin = orbopen (orbname, "r&");
+			/* orbin = orbopen (orbname, "r&"); */
+			orbin = orbopen (orbname, "r");
 		} else {
 			orbin = orbopen (orbname, "r");
 		}
@@ -255,6 +256,34 @@ char **argv;
 					clear_register (0);
 					sleep (10);
 					lastpkt_age += 10;
+					/* continue; */
+
+					orbclose (orbin);
+					while (1) {
+						sleep (10);
+						lastpkt_age += 10;
+						orbin = orbopen (orbname, "r");
+						if (orbin < 0) {
+							clear_register (0);
+							continue;
+						}
+						if (srcexpr) {
+							sleep (20);
+							if (orbselect (orbin, srcexpr) < 0) {
+								orbclose (orbin);
+								clear_register (0);
+								continue;
+							}
+						}
+						break;
+					}
+					first = 1;
+					if (orbseek (orbin, lastpkt_pktid) != lastpkt_pktid) {
+						clear_register (0);
+						orbseek (orbin, ORBNEWEST);
+					} else {
+						orbseek (orbin, ORBNEXT);
+					}
 					continue;
 				} else {
 					clear_register (1);
