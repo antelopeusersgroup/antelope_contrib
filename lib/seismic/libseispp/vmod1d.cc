@@ -7,6 +7,8 @@
 namespace SEISPP
 {
 
+using namespace SEISPP;
+
 double Velocity_Model_1d::getv(double zin)
 {
 	double dz;
@@ -56,13 +58,13 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr db,string name,string property)
 			throw(Velocity_Model_1d_dberror(name,
 			  "Error forming working view for P velocity"));
 		}
-		z.reserve(nlayeres);
+		z.reserve(nlayers);
 		v.reserve(nlayers);
-		grad.reserver(nlayers);
+		grad.reserve(nlayers);
 		for(i=0,dbs2.record=0;dbs2.record<nlayers;++dbs2.record,++i)
 		{
 			double vin, zin, gradin;
-			dbgetv(dbs2,0,"paramval",vin, 
+			if(dbgetv(dbs2,0,"paramval",vin, 
 				"depth",zin,
 				"grad",gradin,0) == dbINVALID)
 			{

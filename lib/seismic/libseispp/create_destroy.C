@@ -680,6 +680,11 @@ cerr << "Ensemble has data for " << nsta << " stations"<<endl;
 				cerr << "Data for this station skipped" << endl;
 				continue;
 			}
+			catch (Metadata_error mderr)
+			{
+				mderr.log_error();
+				throw seispp_error(string("Metadata problem"));
+			}
 			tcse.push_back(*data3c);
 			delete data3c;
 			// copy global metadata only for the first 

@@ -19,6 +19,8 @@ using namespace INTERPOLATOR1D;
 #include "resample.h"
 #include "response.h"
 #include "perf.h"
+//namespace SEISPP
+//{
 // Constructs this object from exact sample rate key (e) 
 // and using a pf 
 Resample_Operator::Resample_Operator(double e,Pf *pf)
@@ -36,6 +38,7 @@ Resample_Operator::Resample_Operator(double e,Pf *pf)
 	low = pfget_double(pf,const_cast<char *>("low_limit"));
 	high = pfget_double(pf,const_cast<char *>("high_limit"));
 	t = pfget_tbl(pf,const_cast<char *>("Decimator_response_files"));
+	try{
 
 	for(i=0;i<maxtbl(t);++i)
 	{
@@ -48,6 +51,12 @@ Resample_Operator::Resample_Operator(double e,Pf *pf)
 				+fname+" and input line\n"+string(line));
 		declist.push_back(*dec);
 	}
+	}catch (...)
+	{
+		freetbl(t,0);
+		throw;
+	}
+		
 	freetbl(t,0);
 }
 /* builds an empty Resample_Operator with an empty declist, but 
@@ -390,9 +399,9 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 	map<Interval,Resample_Operator,Interval_Cmp>::iterator this_ro;
 	// First we need to find the right resampling operator for this sample rate
 	double sr_in=1.0/(ts.dt);
-	Time_Series tsout;
 	si_range.low=sr_in;
 	si_range.high=sr_in;
+	try {
 	this_ro = rd.decset.find(si_range);
 	if(this_ro == rd.decset.end())
 	{
@@ -403,7 +412,7 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 			+string(dt_str));
 	}
 	dv = this_ro->second.apply(ts.ns,&(ts.s[0]),ts.dt,dtout,trim);
-	tsout=ts;
+	Time_Series tsout=ts;
 	tsout.dt=dtout;
 	// necessary because tsout.s is a container
 	tsout.ns = dv.d.size();
@@ -415,4 +424,6 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 	tsout.put_metadata("starttime",tsout.t0);
 	tsout.put_metadata("endtime",tsout.t0+tsout.time(tsout.ns-1));
 	return(tsout);
+	} catch (...) {throw;};
 }
+//} // end namespace enscapsulation

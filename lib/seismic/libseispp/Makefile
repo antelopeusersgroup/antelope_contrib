@@ -1,6 +1,6 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
-INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h resample.h vmodel.h
+INCLUDE=dbpp.h interpolator1d.h metadata.h seispp.h ray1d.h resample.h 
 # This is uses for Attribute_Map constructor and was built with 
 # an external program
 PF=seispp_attribute_maps.pf
@@ -29,7 +29,6 @@ OBJS=basic_time_series.o \
   metadata.o \
   mute.o \
   operators.o \
-  pfstream_interface.o \
   raytrace.o \
   readwrite.o \
   resample.o \
@@ -41,6 +40,8 @@ OBJS=basic_time_series.o \
   three_component_helpers.o \
   ttime.o \
   vmod1d.o
+# not included for now
+#  pfstream_interface.o 
 
 $(LIB) : $(OBJS)
 	$(RM) $@
