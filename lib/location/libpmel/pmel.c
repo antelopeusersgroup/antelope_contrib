@@ -419,7 +419,7 @@ Nevents Nevents_used\n");
                 if(locrcode>0)
                 {
                     elog_notify(0,"%d travel time errors locating event %d of current group for iteration %d\n",
-                        locrcode,sc_iterations);
+                        locrcode,evid[i],sc_iterations);
                 }
                 hypo_iterations = maxtbl(history);
                 current_hypo = (Hypocenter *)gettbl(history,
@@ -646,8 +646,8 @@ station corrections\n");
 	    in the phase handles.  */
 	    if(update_scarr(s,phase_arr))
 	    {
-		elog_complain(0,"%d problems updating station \
-corrections %d during iteration %d\n",
+		elog_complain(0,"problems updating station \
+corrections during iteration %d\n",
 			sc_iterations);
 	    }
 	    /* Test for small correction vector relative to norm s.
