@@ -86,6 +86,15 @@ If size() is called the user is responsible for deleting the returned
 array.  Alternatively, just use the rows() or columns() 
 function to retrieve the size elements individually.
 .LP
+The stream output operator writes out the matrix in row order with
+space characters between elements.
+This is done for the convenience of reading the result into matlab.
+For example, if a matrix produced by the >> operator is written to 
+a file matrix.out, it can be read into matlab using:
+.nf
+      A=dlmread('matrix.out',' ');
+.fi
+.LP
 This is a bare-bones library with basic constructors and a few 
 basic operators.  The usage should be obvious, but a few routines
 can throw an exception that needs to be handled.  

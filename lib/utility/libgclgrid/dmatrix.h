@@ -40,6 +40,7 @@ public:
 class dmatrix
 {
 public:
+  dmatrix();
   dmatrix(int nr, int nc);
   dmatrix(const dmatrix& other);
   ~dmatrix();

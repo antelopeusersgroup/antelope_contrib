@@ -3,6 +3,14 @@
 #include "dmatrix.h"
 
 using namespace std;
+dmatrix::dmatrix()
+{
+  nrr=0;
+  ncc=0;
+  length=0;
+  // might be able to set ary to NULL here, but this is safer
+  ary=new double[1];
+}
 dmatrix::dmatrix(int nr, int nc)
 {
   nrr=nr;
@@ -163,7 +171,7 @@ ostream& operator<<(ostream& os, dmatrix& x1)
   int i,j;
   for(i=0;i<x1.nrr;i++)
   {
-  for(j=0;j<x1.ncc;j++) os << x1(i,j) <<" ";
+  for(j=0;j<x1.ncc;j++) os << " "<< x1(i,j);
   os<<"\n";
   }
   return os;
