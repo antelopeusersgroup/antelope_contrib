@@ -1,0 +1,81 @@
+.TH TRANSLATE_STACHAN_NAMES 1 "$Date$"
+.SH NAME
+translate_stachan_names \- look for stations not in translation database
+.SH SYNOPSIS
+.nf
+translate_stachan_names [-v] [-n] translation_db dbname [dbname...]
+.fi
+.SH DESCRIPTION
+translate_stachan_names replaces old station-names with new ones in the
+specified database, based on the entries in the translation_db database. If 
+the verbose option or the -n option is specified, a report is produced on the 
+translation decisions.
+
+The database of station-name translations maps old station names, where
+the channel and/or gain band are sometimes coded into the station-name itself, 
+into CSS3.0-style station and channel codes. For example, "CRPN" translates to 
+"CRP SHN". 
+
+Here is the cascade of translation decisions:
+
+1) If there is a non-null entry for 'newchan' in the translation database, 
+use it regardless of what the target database says.
+
+2) Otherwise: If there is a non-null entry for 'chan' in the target database,
+and that value shows up in the parameter file of channel-name translations,
+use the specified translation value from the parameter file. 
+
+3) Otherwise: If there is a non-null entry for 'chan' in the target database, 
+preserve it.
+
+4) Otherwise: Use the value specified for 'defaultchan' in the translation 
+database.
+.SH OPTIONS
+-v verbose
+
+-n announce intended changes only; do not execute
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+nordic% pfecho translate_stachan_names.pf
+chantrans       &Arr{
+    SHP BDF
+    bhe BHE
+    bhn BHN
+    bhz BHZ
+    ppp BDF
+    she SHE
+    shl SLZ
+    shn SHN
+    shp BDF
+    sht TIME
+    shz SHZ
+    spz SHZ
+    tcc TIME
+}
+nordic%
+.fi
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+tabulate_missed_stations(1), capitalize_station(1)
+.fi
+.SH "BUGS AND CAVEATS"
+It is critical to resolve all omissions in the translation database before 
+running this script, since in general the translation may not be run twice.
+Problems would occur, for example, if RDTN becomes RDT:SHN on the first run,
+then the new RDT becomes RDT:SHZ on the second run. Thus, the
+tabulate_missed_stations script must be run first to identify all omissions 
+from the translation database, and the translation database must be updated.
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
