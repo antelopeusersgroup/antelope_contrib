@@ -10,14 +10,8 @@ package com.brtt.antelope;
 import java.util.*;
 import java.io.*;
 
-
-class SyntaxException extends java.lang.Throwable {
-    public SyntaxException(java.lang.String str) {message = str; }
-    private String message;
-    public String toString() { return message; }
-}
 /** 
- * This class represents a Datascope schema.
+ * This class represents, parses, and unparses a Datascope schema.
  *
  * @author Tobin Fricke, University of California
  *
@@ -59,9 +53,10 @@ public class DatabaseSchema {
 
     public static DatabaseSchema parse(Reader input) {
 
+	DatabaseSchema schema = new DatabaseSchema();
+    
 	try {
 	    
-	    DatabaseSchema schema = new DatabaseSchema();
 	    DatabaseSchemaLexer lexer = new DatabaseSchemaLexer(input);
 	    DatabaseSchemaToken token = null;
 	    
@@ -71,94 +66,59 @@ public class DatabaseSchema {
 		} else if (token.type == lexer.SCHEMA) {
 		    parseSchemaStatement(schema, lexer);
 		} else if (token.type == lexer.ATTRIBUTE) {
-		    DatabaseAttribute attribute = DatabaseAttribute.parse(input);
+		    DatabaseAttribute attribute = DatabaseAttribute.parse(lexer);
+		    if (schema.attributes == null)
+			schema.attributes = new Hashtable();
+		    schema.attributes.put(attribute.name, attribute);
 		} else if (token.type == lexer.RELATION) {
-		    DatabaseRelation relation = DatabaseRelation.parse(input);
+		    DatabaseRelation relation = DatabaseRelation.parse(lexer);
+		    if (schema.relations == null)
+			schema.relations = new Hashtable();
+		    schema.relations.put(relation.name, relation);
 		} else {
-		    throw new SyntaxException("Error: unexpected token " + token); 
+		    throw new SyntaxException("Expected INCLUDE, SCHEMA, ATTRIBUTE, or RELATION while parsing SCHMADEF. ",token); 
 		}
 	    }
-	 
+	    
 	} catch (IOException e) {
 	    System.out.println("IOException "+e+"!"); // FIXME
 	} catch (SyntaxException e) {
 	    System.out.println("Syntax error: "+e);
 	}
-
-
-	    return null;
-	}
-
+	
+	return schema;
+    }
+    
     
     private static void parseIncludeStatement(DatabaseSchema schema, 
 					     DatabaseSchemaLexer lexer) 
-	throws SyntaxException {
-	String include = expectIdentifier(lexer);
+	throws SyntaxException, IOException {
+	String include = lexer.expectIdentifier();
 	/* FIXME: parse the included schema, and merge it into this one. */
-    }
-
-
-    /** Require that the next token is the given character.  Throw it
-	away if it exists, throw a SyntaxException if it doesn't. */
-
-    private static void expectChar(DatabaseSchemaLexer lexer, String chr) throws SyntaxException, IOException {
-	DatabaseSchemaToken token = lexer.getToken();
-
-	if (token.type == lexer.CHARACTER_LITERAL && (chr.compareTo((String)(token.value)) == 0)) {
-	    /* Throw it away. */
-	} else {
-	    throw new SyntaxException("Expected character '"+chr+"' but got "+
-				      "unexpected token "+token);
-	}
-    }
-
-    private static String expectString(DatabaseSchemaLexer lexer) throws SyntaxException, IOException { 
-	DatabaseSchemaToken token = lexer.getToken();
-	if (token.type == lexer.STRING_LITERAL) {
-//	    System.out.println("Token value is of class " + token.value.getClass().getName());
-	    return (String)(token.value);
-	} else {
-	    throw new SyntaxException("Expected a string literal, but found "+
-				      "unexpected token "+token);
-	}
-    }
-
-    private static String expectIdentifier(DatabaseSchemaLexer lexer) throws SyntaxException, IOException { 
-	DatabaseSchemaToken token = lexer.getToken();
-	if (token.type == lexer.IDENTIFIER_LITERAL) {
-	    return (String)(token.value);
-	} else {
-	    throw new SyntaxException("Expected a string literal, but found "+
-				      "unexpected token "+token);
-	}
     }
 
     private static void parseSchemaStatement(DatabaseSchema schema, 
 					     DatabaseSchemaLexer lexer) 
 	throws SyntaxException, IOException {
 	
-	DatabaseSchemaToken token = lexer.getToken();
-	
-	if (token.type != lexer.IDENTIFIER_LITERAL) 
-	    throw new SyntaxException("Error: unexpected token " + token) ;
-
-	schema.name = (String)token.value;
+	schema.name = lexer.expectIdentifier();
 
 	while (true) {
-	    token = lexer.getToken();
+	    DatabaseSchemaToken token = lexer.getToken();
 	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
 		break;
 	    } else if (token.type == lexer.DESCRIPTION) {
-		expectChar(lexer,"(");
-		schema.description = expectString(lexer);
-		expectChar(lexer,")");
+		lexer.expectChar("(");
+		schema.description = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.DETAIL) {
-		schema.detail = expectString(lexer);
+		schema.detail = lexer.expectString();
 	    } else if (token.type == lexer.TIMEDATE) {
-		schema.timedate = expectIdentifier(lexer);
+		schema.timedate = lexer.expectIdentifier();
 	    } else {
 		throw new SyntaxException("Expected but did not find " +
-					  "DESCRIPTION, DETAIL, TIMEDATE, or ;. Unexpected token " + token) ;
+					  "DESCRIPTION, DETAIL, TIMEDATE, or ';'.", 
+					  token) ;
 	    }
 	}
     }
@@ -176,8 +136,29 @@ public class DatabaseSchema {
 
     /** Produce a textual representation of this schema. */
 
-    public String unparse() {
-	return null; //FIXME
+    public void unparse(Writer w) throws IOException{
+
+	w.write("Schema " + name + "\n");
+	if (description != null)
+	    w.write("  Description ( \"" + description + "\" )\n");
+	if (detail != null)
+	    w.write("  Detail {" + detail + "}\n");
+	if (timedate != null)
+	    w.write("  Timedate " + timedate + "\n");
+	w.write("  ;\n\n");
+	
+	for (Enumeration e = attributes.elements(); e.hasMoreElements(); ) {
+	    DatabaseAttribute attribute = (DatabaseAttribute)(e.nextElement());
+	    attribute.unparse(w);
+	    w.write("\n");
+	}
+
+	for (Enumeration e = relations.elements(); e.hasMoreElements(); ) {
+	    DatabaseRelation relation = (DatabaseRelation)(e.nextElement());
+	    relation.unparse(w);
+	    w.write("\n");
+	}
+	
     }
 
     /** as a facility for testing, this class can be run from the 
@@ -209,7 +190,10 @@ public class DatabaseSchema {
 		    
 		    System.out.println("Dumping the schema from internal representation:");
 		    
-		    schema.unparse();
+		    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(System.out));
+		    
+		    schema.unparse(w);
+		    w.flush();
 		    
 		} catch (java.io.FileNotFoundException e) {
 		    System.out.println("File not found : \""+argv[i]+"\"");

@@ -51,11 +51,11 @@ public class DatabaseRelation {
     /**  If  a  table  has an integer key which identifies a row in that table,
      *   it is specified with the Defines */
 
-    public String Defines;
+    public String defines;
 
     /** List<String> of separators. */
 
-    public List separator;
+    public String separator;
 
     /** Short description of the table. */
 
@@ -65,68 +65,83 @@ public class DatabaseRelation {
 
     public String detail;
 
+
     /** Parse a textual description of a DatabaseRelation.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseRelation parse(DatabaseSchemaLexer lexer) {
+    public static DatabaseRelation parse(DatabaseSchemaLexer lexer) 
+	throws SyntaxException, IOException {
 	DatabaseRelation relation = new DatabaseRelation();
 
-	relation.name = expectIdentifier();
+	relation.name = lexer.expectIdentifier();
 
 	while (true) {
-	    token = lexer.getToken();
+	    DatabaseSchemaToken token = lexer.getToken();
 	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
 		break;
 	    } else if (token.type == lexer.FIELDS) {
-		expectChar("(");
-		while (true) {
-		    token = lexer.getToken();
-		    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(")")==0) {
-			break;
-		    } else if (token.type == lexer.IDENTIFIER_LITERAL) {
-		    } else {
-			// error
-		    }
-		}
+		relation.fields = lexer.parseIdentifierList(relation.fields);
 	    } else if (token.type == lexer.PRIMARY) {
+		relation.primary = lexer.parseIdentifierList(relation.primary);
 	    } else if (token.type == lexer.ALTERNATE) {
+		relation.alternate = lexer.parseIdentifierList(relation.alternate);
 	    } else if (token.type == lexer.FOREIGN) {
+		relation.foreign = lexer.parseIdentifierList(relation.foreign);
 	    } else if (token.type == lexer.DEFINES) {
-		expectIdentifier();
+		relation.defines = lexer.expectIdentifier();
 	    } else if (token.type == lexer.SEPARATOR) {
-		expectChar("(");
-		expectString();
-		expectChar(")");
+		lexer.expectChar("(");
+		relation.separator = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.DESCRIPTION) {
-		expectChar(lexer,"(");
-		schema.description = expectString(lexer);
-		expectChar(lexer,")");
+		lexer.expectChar("(");
+		relation.description = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.DETAIL) {
-		schema.detail = expectString(lexer);
+		relation.detail = lexer.expectString();
 	    } else {
-		throw SyntaxException("");
+		throw new SyntaxException("Expected FIELDS, PRIMARY, ALTERNATE, FOREIGN, SEPARATOR, DESCRIPTION, DETAIL, or ';' while parsing RELATION.");
 	    }
 	     
 	}  
-	
+
+	return relation;
+    }
+
+    private String unparseList(List l) {
+	String s = "";
+	if (l == null) return "(null)";
+	for (Iterator i = l.iterator(); i.hasNext(); ) {
+	    Object o = i.next();
+	    if (s.length() > 0) s += " ";
+	    s += o.toString();
+	}
+	return s;
     }
 
     /** Produce a textual description of this DatabaseRelation.  This will most
      *  likely only be called by DatabaseSchema.unparse(). */
 
-    public String unparse() {
-	String result = "";
-	result += "Relation " + name + "\n";
-	result += "   Fields (" + ") \n";
-	result += "   Primary (" + ") \n";
-	result += "   Alternate (" + ") \n";
-	result += "   Foreign (" + ") \n";
-	result += "   Defines " + "\n";
-	result += "   Separator (" + ")\n";
-	result += "   Description ( \"" + description + "\" )\n";
-	result += "   Detail {" + detail + "}\n";
-        result += "   ;";
-	return result;
+    public void unparse(Writer w) throws IOException {
+
+	w.write("Relation " + name + "\n");
+	if (fields != null) 
+	    w.write("   Fields (" + unparseList(fields) + ") \n");
+	if (primary != null)
+	    w.write("   Primary (" + unparseList(primary) + ") \n");
+	if (alternate != null)
+	    w.write("   Alternate (" + unparseList(alternate) + ") \n");
+	if (foreign != null)
+	    w.write("   Foreign (" + unparseList(foreign) + ") \n");
+	if (defines != null)
+	    w.write("   Defines " + defines + "\n");
+	if (separator != null) 
+	    w.write("   Separator ( \"" + separator + "\" )\n");
+	if (description != null)
+	    w.write("   Description ( \"" + description + "\" )\n");
+	if (detail != null) 
+	    w.write("   Detail {" + detail + "}\n");
+        w.write("   ;\n");
     }
 
     /** Verify whether this DatabaseRelation is self-consistent with respect to

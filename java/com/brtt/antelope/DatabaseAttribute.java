@@ -34,7 +34,7 @@ public class DatabaseAttribute {
     /** The preferred format (in printf form) for converting the value to text.
         This field is required. */
 
-    public String formatStr;
+    public String format;
 
     /** Units in which this attribute is given.  This is just a character string
      *  accessible via such tools as dbquery. */
@@ -52,7 +52,7 @@ public class DatabaseAttribute {
      *  formatStr, and must fit within the size of the field when formatted
      *  according to the formatStr. */
 
-    public String nullvalue;
+    public String nullval;
 
     /** Short description of the attribute.  This value is accessible through 
      *  tools such as dbquery. */
@@ -67,20 +67,32 @@ public class DatabaseAttribute {
     /** Parse a textual description of a DatabaseAttribute.  This will most 
      *  likely only be called by DatabaseSchema.parse(). */
 
-    public static DatabaseAttribute parse(DatabaseSchemaLexer lexer) {
+    public static DatabaseAttribute parse(DatabaseSchemaLexer lexer) 
+	throws SyntaxException, IOException {
+
+	DatabaseAttribute attribute = new DatabaseAttribute();
+
+	attribute.name = lexer.expectIdentifier();
+
 	DatabaseSchemaToken token = lexer.getToken();
 	
-	if (token.type == lexer.REAL   || token.type == lexer.INTEGER ||
-	    token.type == lexer.STRING || token.type == lexer.TIME ||
-	    token.type == lexer.DATE   || token.type == lexer.YEARDAY) {
-	    // ... FIXME
-	} else {
-	    // ... FIXME
+	switch (token.type) {
+	    case DatabaseSchemaLexer.REAL:    break; /*FIXME*/
+	    case DatabaseSchemaLexer.INTEGER: break;
+	    case DatabaseSchemaLexer.STRING:  break;
+	    case DatabaseSchemaLexer.TIME:    break;
+	    case DatabaseSchemaLexer.YEARDAY: break;
+	    case DatabaseSchemaLexer.ASCII:   break;
+	    case DatabaseSchemaLexer.DBPTR:   break;
+
+	    default:
+		throw new SyntaxException("Expected a type (REAL, INTEGER, STRING, TIME, ASCII, or YEARDAY).",
+					  token);
 	}
 
-	expectChar("(");
-//	expectNumber();
-	expectChar(")");
+	lexer.expectChar("(");
+	attribute.size = lexer.expectNumber();
+	lexer.expectChar(")");
 
 	while (true) {
 
@@ -89,25 +101,57 @@ public class DatabaseAttribute {
 	    if (token.type == lexer.CHARACTER_LITERAL && ((String)(token.value)).compareTo(";")==0 ) {
 		break;
 	    } else if (token.type == lexer.FORMAT) {
+		lexer.expectChar("(");
+		attribute.format = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.UNITS) {
+		lexer.expectChar("(");
+		attribute.format = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.RANGE) {
-	    } else if (token.type == lexer.NULL) {
+		lexer.expectChar("(");
+		attribute.range = lexer.expectString();
+		lexer.expectChar(")");
+	    } else if (token.type == lexer.NULLVAL) {
+		lexer.expectChar("(");
+		attribute.nullval = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.DESCRIPTION) {
+		lexer.expectChar("(");
+		attribute.description = lexer.expectString();
+		lexer.expectChar(")");
 	    } else if (token.type == lexer.DETAIL) {
+		attribute.detail = lexer.expectString();
 	    } else {
-		// fail
+		throw new SyntaxException("Expected FORMAT, UNITS, RANGE, NULLVAL, DESCRIPTION, DETAIL, or ';'.", token);
 	    }
 	}
+
+	return attribute;
     }
 
     /** Produce a textual description of this DatabaseAttribute.  This will most
      *  likely only be called by DatabaseSchema.unparse(). */
 
-    public String unparse() {
-      return null;
+    public void unparse(Writer w) throws IOException {
+	w.write("Attribute " + name + "\n");
+	w.write("  ImagineTheTypeNameHere (" + size + ")\n");
+	if (format != null)
+	    w.write("  Format ( \"" + format + "\" )\n");
+	if (nullval != null)
+	    w.write("  Null ( \"" + null + "\" )\n");
+	if (range != null)
+	    w.write("  Range ( \"" + range + "\" )\n");
+	if (units != null)
+	    w.write("  Units ( \"" + units + "\" )\n");
+	if (description != null)
+	    w.write("  Description ( \"" + description + "\" )\n");
+	if (detail != null)
+	    w.write("  Detail {" + detail + "}\n");
+	w.write("  ;");
     }
 
-    /** Verify whether this DatabaseAttribute is self-consistent. */
+    /** Verify whether this DatabaseAttribute is self-consistent. Not Implemented yet.*/
     
     public boolean isWellFormed() {
       return true;

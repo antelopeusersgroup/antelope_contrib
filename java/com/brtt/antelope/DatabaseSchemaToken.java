@@ -13,7 +13,7 @@ public class DatabaseSchemaToken {
     public Object value;
     private int line;
     private int column;
-    
+
     public DatabaseSchemaToken(int type, int line, int column) {
 	this.type = type;
 	this.line = line;
@@ -21,7 +21,7 @@ public class DatabaseSchemaToken {
 	this.value = null;
     }
     
-    public DatabaseSchemaToken(int type, int line, int column, Object value) {
+    public DatabaseSchemaToken(int type, int line, int column,  Object value) {
 	this.type = type;
 	this.line = line;
 	this.column = column; 

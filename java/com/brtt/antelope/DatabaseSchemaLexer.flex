@@ -15,6 +15,10 @@
 
 package com.brtt.antelope;
 
+import java.io.*;
+import java.util.*;
+
+
 %%
 
 /** This section contains directives to JLex. */
@@ -31,7 +35,7 @@ package com.brtt.antelope;
    that reads a file (name given on the command line), scans it, and spits the
    output of the scanning function to standard out. */
   
-/*%debug*/
+//%debug
 
 /* Here we choose the return type of the scanning function. */
 
@@ -103,6 +107,80 @@ package com.brtt.antelope;
   private DatabaseSchemaToken symbol(int type, Object value) {
     return new DatabaseSchemaToken(type, yyline+1, yycolumn+1, value);
   }
+
+%}
+
+%{
+
+    /* FIXME: It might be appropriate to move the following into a separate
+       DatabaseSchemaParser class. */
+
+    /** Require that the next token is the given character.  Throw it
+	away if it exists, throw a SyntaxException if it doesn't. */
+
+    public void expectChar(String chr) throws SyntaxException, IOException {
+	DatabaseSchemaToken token = getToken();
+
+	if (token.type == CHARACTER_LITERAL && (chr.compareTo((String)(token.value)) == 0)) {
+	    /* Throw it away. */
+	} else {
+	    throw new SyntaxException("Expected character '"+chr+"'.", token);
+	}
+    }
+
+    public String expectString() throws SyntaxException, IOException { 
+	DatabaseSchemaToken token = getToken();
+	if (token.type == STRING_LITERAL) {
+	    return (String)(token.value);
+	} else {
+	    throw new SyntaxException("Expected STRING_LITERAL.", token);
+	}
+    }
+
+    public String expectIdentifier() throws SyntaxException, IOException { 
+	DatabaseSchemaToken token = getToken();
+	if (token.type == IDENTIFIER_LITERAL) {
+	    return (String)(token.value);
+	} else {
+	    throw new SyntaxException("Expected IDENTIFIER_LITERAL.", token);
+	}
+    }
+
+    public int expectNumber() throws SyntaxException, IOException { 
+	DatabaseSchemaToken token = getToken();
+	if (token.type == INTEGER_LITERAL) {
+	    return ((Integer)(token.value)).intValue();
+	} else {
+	    throw new SyntaxException("Expected INTEGER_LITERAL.", token);
+	}
+    }
+
+    /** Read a list of identifiers, enclosed in parentheis. Example: (foo bar
+        baz)  If the argument is null, then a new list is created and
+        returned; otherwise the list given in the argument is used.   */
+
+    public List parseIdentifierList(List list) 
+	throws SyntaxException, IOException {
+	
+	expectChar("(");
+	
+	if (list == null) {
+	    list = new ArrayList();
+	}
+	
+	while (true) {
+	    DatabaseSchemaToken token = getToken();
+	 
+	    if (token.type == IDENTIFIER_LITERAL) {
+		list.add(token.value);
+	    } else if (token.type == CHARACTER_LITERAL && ((String)(token.value)).compareTo(")")==0) {
+		break;
+	    } else {
+		throw new SyntaxException("Expected IDENTIFIER or ')'.", token);
+	    }
+	}
+	return list;
+    }
 
 %}
 
