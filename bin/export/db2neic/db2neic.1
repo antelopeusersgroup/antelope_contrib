@@ -1,0 +1,81 @@
+.TH DB2NEIC 1 "$Date$"
+.SH NAME
+db2neic \- submit arrival and hypocenter information to NEIC
+.SH SYNOPSIS
+.nf
+db2neic [-s] [-c address] [-a address] dbname
+.fi
+.SH DESCRIPTION
+This program submits the arrival and hypocenter information in a database
+to the National Earthquake Information Center (NEIC). For the submission to
+take place to the address specified in the parameter file, the -s option
+must be used. With no options specified, db2neic merely dumps its output
+to stdout for testing purposes.
+
+The minimum magnitude for earthquake submission is specified in the
+parameter file.
+.SH OPTIONS
+-s      submit data to NEIC. Without this, no submission is made to
+        NEIC.
+
+-a      Instead of the mailing address specified in the parameter
+        file, db2neic mails the report to the specified recipient.
+
+-c      Sends a copy of the email report to the specified recipient,
+        in addition to sending to the NEIC (-s option) or another
+        address (-a option).
+.SH PARAMETER FILE
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+nordic% pfecho db2neic
+ml_min 2.5
+neic_address neisdata@gldfs.cr.usgs.gov
+nordic%
+
+.fi
+.in
+.ft R
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% db2neic -s -c kent 2000_01to10
+NEIC-format submission mailed to neisdata@gldfs.cr.usgs.gov
+% 
+
+.fi
+.in
+.ft R
+.SH DIAGNOSTICS
+db2neic: no hypocenters for events in $dbname
+
+db2neic: no hypocenters in $dbname
+
+db2neic: no qualifying hypocenters in $dbname
+
+db2neic: no arrival associations for hypocenters in $dbname
+
+db2neic: no arrivals for hypocenters in $dbname
+
+.SH "SEE ALSO"
+.nf
+analysis_control(1)
+.fi
+.SH "BUGS AND CAVEATS"
+db2neic requires that relevant quakes have local-magnitudes.
+
+db2neic only allows one phase of each type for a given station and
+a given earthquake. Conceivably, this filter belongs somewhere else.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Geophysical Institute
+University of Alaska
+February, 2000
+.fi
+.\" $Id$
