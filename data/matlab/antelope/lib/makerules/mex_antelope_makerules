@@ -8,8 +8,11 @@ include $(ANTELOPEMAKE)
 # Suppress -KPIC, which mex compiler doesn't understand
 DCFLAGS= 
 
+# Suppress -i, which mex compiler doesn't understand 
+CFLAGS  = -v -D_REENTRANT $(DBG) $(cflags) $(CEXTRA) -I$(ANTELOPE)/include -I$(XINCLUDE) $(DCFLAGS)
+
 # Suppress -xildoff (which mex doesn't understand) by rebuilding LDFLAGS
-MEXFLAGS=-L$(ANTELOPE)/lib -L$(PACKAGE_PATH)/lib \
+MEXFLAGS=-L$(ANTELOPE)/lib -L$(ANTELOPE)/static -L$(PACKAGE_PATH)/lib \
   -L$(XLIB) LDFLAGS='$$LDFLAGS -R$(ANTELOPE)/lib -R$(PACKAGE_PATH)/lib' $(DBG)
 
 CLEAN += *.$(MEXEXT) *.m *.html
