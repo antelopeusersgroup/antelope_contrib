@@ -1,0 +1,70 @@
+.TH DBLOC_RUN_DBGME 1 "$Date$"
+.SH NAME
+dbloc_run_dbgme \- run dbgme for dbloc2
+.SH SYNOPSIS
+.nf
+\fBdbloc_run_dbgme \fP\fIdbname\fP \fIorid\fP
+.fi
+.SH DESCRIPTION
+\fBdbloc_run_dbgme\fP is executed by dbloc2 to recompute a QuakeMap
+ground-motion estimate after the hypocenter has been relocated.
+\fBdbloc_run_dbgme\fP is meant to be listed in the magnitude_calculators
+table in the dbloc2.pf parameter file. The arguments are the name
+of the input database, and the \fIorid\fP of the appropriate hypocenter.
+
+\fBdbloc_run_dbgme\fP launches first dbwfmeas and then dbgme. The command lines
+for both of these are specified in the parameter file (see below).
+\fBdbloc_run_dbgme\fP subsets the origin table for the selected \fIorid\fP,
+joins the assoc and arrival tables, and feeds the result to the standard-input
+of the dbwfmeas command. dbwfmeas should be run in \fIarrival\fP mode.
+
+After dbwfmeas is run, \fBdbloc_run_dbgme\fP executes the dbgme command
+listed in the parameter file. In this case, the \fIorid\fP and \fIdbname\fP are
+appended to the dbgme command before execution; thus the last item
+in the dbgme command should be the -o option. The recipe names for dbgme
+must be specified here as well.
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+dbwfmeas_command        dbwfmeas -v arrival -
+dbgme_command           dbgme -v -f -r trinetsm_pga -r trinetsm_pgv -r trinetsm_mmi -o
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+From the Users array of dbloc2.pf:
+
+    magnitude_calculators       &Tbl{
+        dbml
+        dbloc_run_dbgme
+    }
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBdbloc_run_dbgme\fP returns 0 upon success; nonzero if an error occurs.
+.SH "SEE ALSO"
+.nf
+dbloc2(1), dbwfmeas(1), dbgme(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The dbwfmeas and dbgme parameter-files must of course be set up correctly.
+
+Depending on which dbgme computation delegate is used, it may not
+be possible to recompute a QuakeMap if the magnitude has not been generated.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$

@@ -1,0 +1,2 @@
+dbwfmeas_command 	dbwfmeas -v arrival -
+dbgme_command 		dbgme -v -f -r trinetsm_pga -r trinetsm_pgv -r trinetsm_mmi -o 
