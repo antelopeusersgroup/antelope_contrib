@@ -1,0 +1,24 @@
+# @(#)cmg6t_vel	1.2 5/14/2002
+# cmg6t   1200 V/m/s output 
+# Normalized  response relative to velocity
+# 1                   type
+# 3                   num of zeroes
+# 6                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 2.513E+09           normalization factor
+# 1.0                 gain
+# Sensitivity  1200/v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+2.513E+09
+6             Poles
+-1.485E-01    +1.485E-01    0.0000E+00    0.0000E+00
+-1.485E-01    -1.485E-01    0.0000E+00    0.0000E+00
+-4.078E+01    0.0000E+00    0.0000E+00    0.0000E+00
+-7.137E+02    -1.367E+02    0.0000E+00    0.0000E+00
+-7.137E+02    +1.367E+02    0.0000E+00    0.0000E+00
+-3.726E+03    0.0000E+00    0.0000E+00    0.0000E+00
+3             Zeros
++3.162E+01    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
