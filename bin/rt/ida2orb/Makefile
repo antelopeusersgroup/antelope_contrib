@@ -6,8 +6,7 @@ fflags=
 ldlibs=	idatap-1.2.2/libidatap.a $(ORBLIBS)
 
 include $(ANTELOPEMAKE)  	
-			
-#DIRS=idatap-1.2.2
+DIRS=idatap-1.2.2
 			
 OBJS= $(BIN).o
 $(BIN) : $(OBJS) 
