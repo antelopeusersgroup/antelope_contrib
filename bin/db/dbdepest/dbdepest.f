@@ -188,7 +188,7 @@ c debug output
 
 c start up statistics
 	    drms = 0.
-	    nfit = min1(numdb,1 + int(tfitmax/delt))
+	    nfit = min(numdb,1 + int(tfitmax/delt))
 	    do i=1,nfit
 	      drms = drms + dat(i)*dat(i)
 	    end do
