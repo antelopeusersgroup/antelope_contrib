@@ -70,6 +70,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		mexErrMsgTxt( "dbgetv: query for number of records failed" );
 	}
 
+	if( nrows <= 0 ) 
+	{
+		mexErrMsgTxt( "dbgetv: no rows in database view" );
+	}
+
 	if( db.record == dbALL ) {
 		if( nrows == 1 ) {
 			single_row = 1;
@@ -89,6 +94,11 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		db = dblookup ( db, 0, 0, field_name, 0 );
 		antelope_mex_clear_register( 1 );
+
+		if( db.field < 0 ) 
+		{
+			cleanup_and_bail( plhs, field_name, i );
+		}
 
 		if( single_row )
 		{

@@ -62,5 +62,4 @@ extern mxArray *dbcolumn2mxArray PL_(( Dbptr ));
 extern Dbvalue *mxArray2dbvalue PL_(( mxArray * ));
 extern void SCAFFOLD_fix_tr_endtime PL_(( Dbptr ));
 extern mxArray *orbpkt2mxArray PL_(( char *, double, char *, int, char * ));
-
-
+extern Dbptr dbprocess_error PL_(( Dbptr, char * ));

@@ -33,6 +33,7 @@ OBJS= 	  variables2mxArray.o \
 	  dbcolumn2mxArray.o \
 	  mxArray2dbvalue.o \
 	  orbpkt2mxArray.o \
+	  dbprocess_error.o \
 	  SCAFFOLD_fix_tr_endtime.o
 
 $(LIB) : $(OBJS)

@@ -36,6 +36,7 @@
 %   dbexample_dbnojoin
 %   dbexample_dbopen
 %   dbexample_dbpf
+%   dbexample_dbprocess
 %   dbexample_dbput
 %   dbexample_dbputv
 %   dbexample_dbquery

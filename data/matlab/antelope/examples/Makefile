@@ -29,6 +29,7 @@ DATA= \
 	dbexample_dbnojoin.m \
 	dbexample_dbopen.m \
 	dbexample_dbpf.m \
+	dbexample_dbprocess.m \
 	dbexample_dbput.m \
 	dbexample_dbputv.m \
 	dbexample_dbquery.m \
