@@ -114,6 +114,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 				break;
 			case dbSTRING:
 				plhs[0] = mxCreateString( exresult.t );
+				free( exresult.t );
 				break;
 			default:
 				dbex_free( expr );
@@ -203,6 +204,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 				}
 
 				mxSetCell( plhs[0], db.record, mxCreateString( exresult.t ) );
+				free( exresult.t );
 
 				for( db.record = 1; db.record < nrows; db.record++ )
 				{
@@ -214,6 +216,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 						mexErrMsgTxt( "dbeval: eval failed\n" );
 					} else {
 						mxSetCell( plhs[0], db.record, mxCreateString( exresult.t ) );
+						free( exresult.t );
 					}
 				}
 
