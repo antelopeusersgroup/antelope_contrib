@@ -144,7 +144,8 @@ public class Orb extends java.lang.Object {
      * @exception java.io.IOException
      *              IO error during communication with orbserver.
      */
-    public Orb(String name, String perm) throws OrbErrorException, UnknownHostException, IOException {
+    public Orb(String name, String perm) throws OrbErrorException,
+	UnknownHostException, IOException {
         setupOpen (name, perm);
     }
 
@@ -202,7 +203,8 @@ public class Orb extends java.lang.Object {
      * @exception java.io.IOException
      *              IO error during communication with orbserver.
      */
-    public int select (String expression) throws OrbErrorException, IOException {
+    public int select (String expression) throws OrbErrorException, 
+	IOException {
         request.what = ORBSELECT;
         request.select = expression;
         orbClient (request, reply);
@@ -223,7 +225,8 @@ public class Orb extends java.lang.Object {
      * @exception java.io.IOException
      *              IO error during communication with orbserver.
      */   
-    public int reject (String expression) throws OrbErrorException, IOException {
+    public int reject (String expression) throws OrbErrorException, 
+	IOException {
         request.what = ORBREJECT;
         request.reject = expression;
         orbClient (request, reply);
@@ -329,6 +332,7 @@ public class Orb extends java.lang.Object {
      * @exception java.io.IOException
      *              IO error during communication with orbserver.
      */     
+
     public OrbPacket reap(boolean unstuff) 
 	throws OrbErrorException, IOException {
 
@@ -338,7 +342,7 @@ public class Orb extends java.lang.Object {
         }
         
         reapPacket ();
-        
+
 	if (unstuff) {
 
 	    /* Call OrbPacket's general unstuffer, which dispatches to the
@@ -347,7 +351,6 @@ public class Orb extends java.lang.Object {
 	    return OrbPacket.unstuff(reply.pkg);
 
 	} 
-
 	
 	/* If the caller didn't want unstuffing, we'll return the packet
 	   we collected from the Orb, and then we'll make a new packet obj
@@ -360,7 +363,6 @@ public class Orb extends java.lang.Object {
 	OrbRawPacket thePacket = reply.pkg;
 	reply.pkg = new OrbRawPacket();
 	return thePacket;
-	
     }
         
     /** Protected class methods */
@@ -371,8 +373,10 @@ public class Orb extends java.lang.Object {
     
     /** Private Class Methods */
     
-    private void setupOpen (String name, String perm) throws OrbErrorException, UnknownHostException, IOException {
-        int i = name.indexOf(':');
+    private void setupOpen (String name, String perm) 
+	throws OrbErrorException, UnknownHostException, IOException {
+        
+	int i = name.indexOf(':');
         if (i < 0) {
             if (name.length() == 0) {
                 this.host = "localhost";
@@ -406,7 +410,7 @@ public class Orb extends java.lang.Object {
         
         this.permission = permission;
         this.name = name; 
-        String what = "java";
+        String what = "java"; // FIXME
         try {
             String who = System.getProperty ( "user.name", "none");
         }
@@ -429,8 +433,10 @@ public class Orb extends java.lang.Object {
 
     }
    
-    private void orbClient (Request req, Response rsp) throws OrbErrorException, IOException, EOFException {
-        int done = 0;
+    private void orbClient (Request req, Response rsp) 
+	throws OrbErrorException, IOException, EOFException {
+        
+	int done = 0;
         int donerecv = 0;
         
         while (done == 0) {
@@ -496,10 +502,11 @@ public class Orb extends java.lang.Object {
         switch (req.what) {
             case ORBOPEN:
                 outBuf.writeInt ( req.hello.handshake );
-                outBuf.write ( req.hello.whoBuf, 0, req.hello.whoBuf.length );
-                outBuf.write ( req.hello.whatBuf, 0, req.hello.whatBuf.length );
+                outBuf.write ( req.hello.whoBuf, 0, req.hello.whoBuf.length);
+                outBuf.write ( req.hello.whatBuf, 0, req.hello.whatBuf.length);
                 outBuf.writeInt ( req.hello.pid );
-                outBuf.write ( req.hello.permissionBuf, 0, req.hello.permissionBuf.length );
+                outBuf.write ( req.hello.permissionBuf, 
+			       0, req.hello.permissionBuf.length );
                 break;
             case ORBHALT:
             case ORBCLOSE:
@@ -552,8 +559,10 @@ public class Orb extends java.lang.Object {
         }
     }
    
-    private void recvOrbresponse (Response rsp) throws OrbErrorException, IOException, EOFException {
-        int i, size;
+    private void recvOrbresponse (Response rsp) 
+	throws OrbErrorException, IOException, EOFException {
+        
+	int i, size;
         
         if (rsp == null) return;
         sync (inBuf);
