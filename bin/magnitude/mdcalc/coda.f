@@ -63,7 +63,7 @@ c
         write(6,*)' Cannot compute coda, arg not positive: ',arg
         return
       endif
-      jcoda = jint( (alog(arg) - b)/a )      
+      jcoda = int( (alog(arg) - b)/a )      
       jerr = 0
       return
       end
