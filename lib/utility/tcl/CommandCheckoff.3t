@@ -1,0 +1,167 @@
+.TH COMMANDCHECKOFF 3t "$Date$"
+.SH NAME
+CommandCheckoff \- widget to track whether a checklist task has been completed
+.SH SYNOPSIS
+.nf
+package require Tclx
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
+
+CommandCheckoff name -label label \\ 
+                     -command command \\
+                     [-variable variable] \\
+                     [-background background]
+.fi
+.SH DESCRIPTION
+This widget provides a button and an associated checkbutton, used to build interactive
+checkoff lists. When the button is pressed, the associated command is called. The
+accompanying checkbutton is simultaneously activated to record that the task has been
+accomplished, and the button is disabled.
+
+Because some 'checklist'-type activities require retries of certain tasks (especially
+if mistakes were made the first time), the checkbox for a completed task can be
+clicked back to the 'off' state, in which case the associated task button is re-enabled to
+allow the user to start again on that task.
+
+Similarly, some checklist-type activities need the possibility to intentionally skip
+a task on the list. In this case, the checkbox may be activated manually without pushing
+the task button. To alert the user that this task was intentionally skipped,
+the task button remains enabled. These intentionally skipped tasks may be still be run
+by pushing the associated task button, in which case the task button becomes disabled
+and the 'completed' checkbox remains in its toggled state (filled in, indicating task
+completion).
+
+The state of the checkbutton is saved in a variable specified by the -variable argument.
+This is useful in writing applications that must test to see if tasks were completed,
+missed, or intentionally skipped. For a demonstration of this, see the example below.
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.ne 6
+#!/bin/sh
+# \\
+exec $ANTELOPE/bin/awish $0 -- "$@"
+
+package require Datascope
+package require Tclx
+
+.ne 5
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
+
+proc do_taskA {} {
+        puts stdout "Doing the work for task A"
+}
+
+.ne 7
+proc do_taskB {} {
+        puts stdout "Doing the work for task B"
+}
+
+proc do_taskC {} {
+        puts stdout "Doing the work for task C"
+}
+
+.ne 5
+CommandCheckoff .taskA -label "Task A" \\	
+                       -command do_taskA \\
+		       -variable taskA
+pack .taskA -side top -fill x
+
+CommandCheckoff .taskB -label "Task B" \\
+                       -command do_taskB \\
+                       -variable taskB
+pack .taskB -side top -fill x
+
+.ne 5
+CommandCheckoff .taskC -label "Task C" \\
+                       -command do_taskC \\
+                       -variable taskC
+pack .taskC -side top -fill x
+
+button .quit -bg red -text Quit -command ApprovedExit
+pack .quit -side top -fill x
+
+.ne 8
+set progname try
+
+proc ApprovedExit {} {
+        global progname
+
+        set procedures [list taskA \\
+                             taskB \\
+                             taskC ]
+
+.ne 18
+        catch { [destroy .exit] }
+        toplevel .exit -class Dialog
+
+        set report ""
+        set quit "Quit"
+        foreach var $procedures {
+                global $var
+                set checked [set $var]
+                set state [.$var.b config -state]
+                set state [lindex $state 4]
+                if { $checked && $state == "disabled" } {
+                        # Task completed
+                } elseif { $checked } {
+                        lappend Skipped $var
+                } else {
+                        lappend Missed $var
+                }
+        }
+
+.ne 7
+        if { [info exists Missed] } {
+                foreach var $Missed {
+                        puts \\007
+                        append report "\\nTask $var was missed !!\\n"
+                        set quit "Quit Anyway"
+                }
+        }
+
+.ne 9
+        if { $report != "" } {
+                append report "\\n"
+        }
+
+        if { [info exists Skipped] } {
+                foreach var $Skipped {
+                        append report "\\nTask $var intentionally skipped.\\n"
+                }
+        }
+
+.ne 6
+        if { $report == "" } {
+                destroy .
+        }
+
+        label .exit.l -text $report -background "orange red" -fg yellow
+        pack .exit.l -side top -fill x
+
+.ne 7
+        button .exit.cancel -text "Return to $progname" -command \\
+                            "destroy .exit" -background chartreuse
+        pack .exit.cancel -side top -fill x
+
+        button .exit.fit -text $quit -command "destroy ." \\
+                         -background red
+        pack .exit.fit -side top -fill x
+
+        grab set .exit
+        tkwait window .exit
+        grab release .exit
+}
+
+.fi
+.in
+.ft R
+.SH LIBRARY
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
