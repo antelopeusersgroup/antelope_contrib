@@ -1,6 +1,7 @@
 require "getopts.pl" ;
 require "dbrecenteqs.pl";
 require "winding.pl";
+require "compass_from_azimuth.pl";
 use Datascope;
 use Image::Magick;
  
@@ -26,7 +27,9 @@ sub init_globals {
 		"description_of_local_html_home",
 		"region_phrases_database",
 		"page_refresh_seconds",
-		"credits"
+		"nearest_places",
+		"credits",
+		"authtrans"
 		);
 	
 	foreach $param ( @params ) {
@@ -124,11 +127,33 @@ sub mag_description {
 	}
 }
 
+sub translate_author {
+	my( $auth ) = @_;
+
+	if( ! defined( $State{authtrans}->{$auth} ) ) {
+
+		return $auth;
+
+	} else {
+		
+		return "<A HREF=\"" . 
+			$State{authtrans}->{$auth}->{"url"} .
+			"\">" . 
+			$State{authtrans}->{$auth}->{"text"} .
+			"</A>";
+	}
+}
+
 sub hypocenter_vitals {
+	my( $bgcolor ) = pop( @_ );
 	my( @db ) = @_;
 
 	my( $lat, $lon, $depth, $time, $auth ) = 	
 		dbgetv( @db, "lat", "lon", "depth", "time", "origin.auth" );
+	
+	$auth = translate_author( $auth );
+
+	$depth = sprintf( "%.0d", $depth );
 
 	my( $local_day ) = epoch2str( $time, 
 		"%A %B %o, %Y", $ENV{TZ} );
@@ -138,7 +163,7 @@ sub hypocenter_vitals {
 
 	my( $mag_description ) = mag_description( @db );
 
-	my( $table ) = "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=beige>\n";
+	my( $table ) = "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=\"$bgcolor\">\n";
 	$table .= "<TR><TD>Local Date:</TD><TD>$local_day</TD></TR>\n";
 	$table .= "<TR><TD>Local Time:</TD><TD>$local_hour</TD></TR>\n";
 	$table .= "<TR><TD>Universal Time:</TD><TD>$utc_time</TD></TR>\n";
@@ -163,6 +188,7 @@ sub location_header_line {
 	my( @regions ) = 
 		get_containing_regions( @{$State{region_phrases_database}},
 					$lat, $lon );
+	elog_flush( 1, 0 ); # Apparent bug in dbgroup. Prevent death
 
 	if( defined( $where = shift( @regions ) ) ) {
 		return "Earthquake $where";
@@ -170,6 +196,48 @@ sub location_header_line {
 		return "Earthquake: " . grname( $lat, $lon );
 	}
 
+}
+
+sub nearest_locations {
+	my( $lat, $lon ) = @_;
+
+	my( @db ) = dbopen( $State{"nearest_places"}->{"database"}, "r" );
+	@db = dblookup( @db, "", "places", "", "" );
+
+	my( $expr ) = "distance(lat,lon,$lat,$lon)*111.195 <= " .
+			$State{"nearest_places"}->{"max_dist_km"} .
+			" || place =~ /" . 
+			$State{"nearest_places"}->{"always_include"} .
+			"/";
+	@db = dbsubset( @db, $expr );
+
+	@db = dbsort( @db, "distance(lat,lon,$lat,$lon)" );
+
+	my( $table ) .= "<TABLE BORDER=6 CELLSPACING=6 BGCOLOR=#99CCFF>\n";
+
+	my( $nplaces ) = dbquery( @db, "dbRECORD_COUNT" );
+
+	for( $db[3] = 0; $db[3] < $nplaces; $db[3]++ ) {
+		my( $azimuth ) = 
+			dbex_eval( @db, "azimuth(lat,lon,$lat,$lon)" );
+		my( $compass ) = compass_from_azimuth( $azimuth );
+
+		my( $dist_km ) = 
+			dbex_eval( @db, "distance(lat,lon,$lat,$lon)*111.195" );
+		my( $dist_mi ) = $dist_km / 1.6;
+		$dist_km = sprintf( "%.0f", $dist_km );
+		$dist_mi = sprintf( "%.0f", $dist_mi );
+		my( $place ) = dbgetv( @db, "place" );
+
+		$table .= "<TR><TD>$dist_mi miles ($dist_km km) " .
+			  "$compass of $place</TD></TR>\n";
+	}
+
+	$table .= "</TABLE>";
+
+	dbclose( @db );
+
+	return $table;
 }
 
 sub create_focusmap_html {
@@ -186,11 +254,11 @@ sub create_focusmap_html {
 		concatpaths( $State{web_topdir}, $html_relpath );
 
 	@db = dbprocess( @db, "dbjoin event",
-			      "dbjoin origin",
-			      "dbjoin -o mapassoc mapname orid" );
-	my( @dbprefor ) = dbsubset( @db, "orid==prefor" );
+			      "dbjoin origin evid#evid",
+			      "dbjoin -o mapassoc mapname origin.orid#mapassoc.orid" );
+	my( @dbprefor ) = dbsubset( @db, "origin.orid==prefor" );
 	$dbprefor[3] = 0;
-	my( @dbnonprefors ) = dbsubset( @db, "orid != prefor" );
+	my( @dbnonprefors ) = dbsubset( @db, "origin.orid != prefor" );
 
 	my( $lat, $lon, $mapname ) = 
 		dbgetv( @dbprefor, "lat", "lon", "mapname" );
@@ -222,16 +290,20 @@ sub create_focusmap_html {
 	print H "<CENTER>\n";
 	print H "<A NAME=\"prefor\">";
 	print H "<H2>Preferred Hypocentral Solution:</H2>\n";
-	print H hypocenter_vitals( @dbprefor );
+	print H hypocenter_vitals( @dbprefor, "beige" );
 	my( $nothers ) = dbquery( @dbnonprefors, "dbRECORD_COUNT" );
 	if( $nothers > 0 ) {
-		print H "<H2>Other solutions:</H2>\n";
+		print H "<H2>Previous Solutions and other agencies:</H2>\n";
 	}
 	for( $dbnonprefors[3]=0; $dbnonprefors[3]<$nothers;$dbnonprefors[3]++ ){
-		print H hypocenter_vitals( @dbnonprefors );
+		print H hypocenter_vitals( @dbnonprefors, "white" );
 	}
 	print H "</CENTER>\n";
 	print H "<BR>";
+	print H "<CENTER>\n";
+	print H "<H2>Nearby locations:</H2>\n";
+	print H nearest_locations( $lat, $lon );
+	print H "</CENTER>\n";
 	print H "<BR>\n<CENTER>",
 		other_map_links( @db, $mapname ),
 		"</CENTER>\n";
@@ -379,11 +451,15 @@ sub hyperlinked_earthquake_table {
 			dbgetv( @db, "lat", "lon", "depth", "time", "url" );
 		my( $mag_description ) = mag_description( @db );
 		my( $local_time ) = epoch2str( $time, 
-		"%I:%M %p %Z on %A %B %o, %Y", $ENV{TZ} );
+		"%I:%M %p %Z %A %B %o, %Y", $ENV{TZ} );
+		my( $region ) = location_header_line( $lat, $lon );
+		$region =~ s/Earthquake:* //;
+
 		$table .= "<TR><TD>";
 		$table .= "<A HREF=\"$url\">";
-		$table .= "Magnitude $mag_description, ";
-		$table .= "$local_time";
+		$table .= sprintf( "%-17s", "Magnitude $mag_description " );
+		$table .= sprintf( "%-43s", "$local_time" );
+		$table .= sprintf( "%-s", "$region" );
 		$table .= "</A></TD></TR>\n";
 	}
 
@@ -512,12 +588,14 @@ sub create_stockmap_html {
 	my( $html_relpath ) = substr( $url, length( $State{html_base} ) );
 	my( $html_filename ) = 
 		concatpaths( $State{web_topdir}, $html_relpath );
+	my( $html_temp_filename ) = $html_filename;
+	$html_temp_filename =~ s@/([^/]*)$@/-$1@;
 
 	my( $image_relpath ) = dbextfile( @db );
 	$image_relpath = substr( $image_relpath, 	
 				 length( $State{web_topdir} ) );
 	
-	open( H, ">$html_filename" );
+	open( H, ">$html_temp_filename" );
 	print H "<HTML><HEAD>\n";
 	print H "<BASE HREF=\"$State{html_base}\">\n";
 	print H "<META HTTP-EQUIV=\"refresh\" " .
@@ -560,6 +638,8 @@ sub create_stockmap_html {
 	print H "</BODY></HTML>\n";
 
 	close( H );
+
+	system( "/bin/mv $html_temp_filename $html_filename" );
 }
 
 sub credits {
@@ -581,6 +661,41 @@ sub eliminate_from_mapassoc {
 		dbmark( @dbmapassoc );
 	}
 	@dbmapassoc = dblookup( @db, "", "mapassoc", "", "" );
+}
+
+sub create_stockmap_entry {
+	my( @db ) = @_;
+
+	my( $mapname ) = dbgetv( @db, "mapname" );
+
+	my( @dbbundle ) = split( ' ', dbgetv( @db, "bundle" ) );
+
+	@db = dblookup( @dbbundle, "", "", "dbALL", "" );
+
+	my( $mapclass ) = dbgetv( @db, "mapclass" );
+
+	my( @dbwebmaps ) = dblookup( @db, "", "webmaps", "", "dbALL" );
+	my( @dbscratch ) = dblookup( @dbwebmaps, "", "", "", "dbSCRATCH" );
+	dbputv( @dbscratch, "mapname", $mapname );
+	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
+
+	my( $url ) = $State{html_base} . "$mapclass.html";
+
+	if( defined( $rec = shift( @recs ) ) ) {
+		
+		$dbwebmaps[3] = $rec;
+
+		dbputv( @dbwebmaps, 
+	    		"mapname", $mapname,
+    	    		"url", $url );
+	} else {
+
+		$dbwebmaps[3] = dbaddv( @dbwebmaps, 
+	    		"mapname", $mapname,
+    	    		"dir", "placeholder", # Not very elegant
+    	    		"dfile", $mapname,
+    	    		"url", $url );
+	}
 }
 
 sub update_stockmap {
@@ -681,6 +796,8 @@ sub update_stockmap {
 	undef $Mapspec{clean_image};
 }
 
+elog_init( $0, @ARGV );
+
 init_globals();
 
 if ( ! &Getopts('') || @ARGV != 1 ) {
@@ -703,8 +820,25 @@ if( dbquery( @dbmapstock, "dbRECORD_COUNT" ) <= 0 ) {
 	die( "no index map(s) in $dbname.mapstock\n" );	
 }
 
+# Should really plot only the prefor for each evid on the stock maps
+@dbstockmaps = dbprocess( @db, 
+			  "dbopen origin", 
+			  "dbtheta mapstock",
+			  "dbsort mapname time",
+			  "dbgroup mapname" );
+
+$ngroups = dbquery( @dbstockmaps, "dbRECORD_COUNT" );
+
+# Necessary to create webmaps table entries for other_map_links to work
+for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {
+
+	create_stockmap_entry( @dbstockmaps );
+}
+
 @dbneedmaps = dbprocess( @db, 
 			 "dbopen origin", 
+			 "dbjoin event",
+			 "dbsubset orid == prefor",
 			 "dbnojoin webmaps evid#evid" ); 
 
 $nmaps = dbquery( @dbneedmaps, "dbRECORD_COUNT" );
@@ -718,14 +852,6 @@ for( $dbneedmaps[3]=0; $dbneedmaps[3]<$nmaps; $dbneedmaps[3]++ ) {
 	create_focusmap_html( $evid, @db );
 }
 
-# Should really plot only the prefor for each evid on the stock maps
-@dbstockmaps = dbprocess( @db, 
-			  "dbopen origin", 
-			  "dbtheta mapstock",
-			  "dbsort mapname time",
-			  "dbgroup mapname" );
-
-$ngroups = dbquery( @dbstockmaps, "dbRECORD_COUNT" );
 print "dbrecenteqs: updating $ngroups stock maps\n";
 
 for( $dbstockmaps[3] = 0; $dbstockmaps[3] < $ngroups; $dbstockmaps[3]++ ) {

@@ -8,11 +8,51 @@ wiggle mini_logo.gif
 local_logo phAEIC_fastload.gif
 
 # Things to customize for your installation:
-title Recent Automatically-detected Earthquakes in Alaska
+title Recent Earthquakes in Alaska
 caption_default Recent Alaskan Earthquakes
 local_html_home http://www.aeic.alaska.edu/
 description_of_local_html_home Alaska Earthquake Information Center
 region_phrases_database /Seis/databases/regions/alaska_region_phrases
+nearest_places &Arr{
+	database /Seis/databases/places/wellknown_alaskan_cities
+	max_dist_km 200	
+	always_include Fairbanks|Anchorage|Valdez|Juneau
+}
+
+authtrans &Arr{
+	UAF:trilby &Arr{
+		text Trilby Cox
+		url	http://www.aeic.alaska.edu/Input/trilby/trilby.html
+	}
+	UAF:lalitha &Arr{
+		text Lalitha Rao
+		url	http://www.aeic.alaska.edu/Input/lalitha/lalitha.html
+	}
+	UAF:kent &Arr{
+		text Kent Lindquist
+		url	http://www.aeic.alaska.edu/Input/kent/kent.html
+	}
+	UAF:brent &Arr{
+		text Brent Foshee
+		url	http://www.aeic.alaska.edu/Input/brent/brent.html
+	}
+	UAF:martin &Arr{
+		text Martin LaFevers
+		url	http://www.aeic.alaska.edu/Input/martin/martin.html
+	}
+	UAF:jackie &Arr{
+		text Jackie Caplan-Auerbach
+		url	http://www.aeic.alaska.edu/Input/jackie/jackie.html
+	}
+	UAF:jjalaska &Arr{
+		text John Sanchez
+		url	http://www.aeic.alaska.edu/Input/sanchez/index.html
+	}
+	binder &Arr{
+		text Earthworm automatic
+		url	http://www.aeic.alaska.edu/Input/kent/Iceworm.html
+	}
+}
 
 page_refresh_seconds 300
 
@@ -36,5 +76,6 @@ credits &Literal{
 <A HREF="http://edcdaac.usgs.gov/gtopo30/gtopo30.html">USGS GTOPO30 topography database</A>
 <A HREF="http://topex.ucsd.edu/marine_topo/mar_topo.html">Sandwell/Smith Marine Bathymetry</A>
 <A HREF="http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/arctic.html">NOAA/NGDC Arctic Bathymetry</A>
+<A HREF="http://imina.soest.hawaii.edu/gmt/">Wessel and Smith's Generic Mapping Tools</A>
 </PRE>
 }
