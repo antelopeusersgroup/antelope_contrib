@@ -6,6 +6,7 @@
 #include "pf.h"
 #include "gclgrid.h"
 #include "glputil.h"
+
 void usage()
 {
 	cbanner("$Revision$ $Date$",
@@ -113,6 +114,12 @@ code the ENTIRE catalog is now loaded into memory the distance
 calculation is all done with native binary quantities.  I 
 expect at least an order of magnitude increase in speed.
 */
+
+void 
+myfree(char *p)
+{
+    free((void *) p) ; 
+}
 
 int
 main(int argc, char **argv)
@@ -299,6 +306,6 @@ main(int argc, char **argv)
 			    "Error updating hypocentroid table for grid point %d,%d,%d\n",
 					i,j,k);
 		}
-	freetbl(allevents,free);
+	freetbl(allevents,myfree);
     return 0 ; 
 }
