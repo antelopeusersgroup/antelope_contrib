@@ -106,7 +106,6 @@ int *last_pktid, RTlocate_Options opt)
 		if (strncmp(srcname, "/db/", 4)) continue;
 		db = orbpkt2db (packet, nbytes, dbtmp);
 		dbquery (db, dbTABLE_NAME, &table_name);
-printf("%s\n",table_name);
 		if (strcmp(table_name, "event")) continue;
 		if (dbgetv (db, 0,
 				"auth", hyp->auth,
@@ -116,7 +115,6 @@ printf("%s\n",table_name);
 			register_error (0, "orbin: dbgetv() error.\n");
 			return (-1);
 		}
-printf("evid %d, auth %s\n",hyp->evid, hyp->auth);
 		if (strcmp(hyp->auth, "orbassoc")) continue;
 		*last_pktid = pktid;
 
@@ -127,7 +125,6 @@ printf("evid %d, auth %s\n",hyp->evid, hyp->auth);
 			if (strncmp(srcname, "/db/", 4)) continue;
 			db = orbpkt2db (packet, nbytes, dbtmp);
 			dbquery (db, dbTABLE_NAME, &table_name);
-printf("%s\n",table_name);
 			if (strcmp(table_name, "origin")) continue;
 			if (dbgetv (db, 0,
 					"auth", auth,
@@ -143,7 +140,6 @@ printf("%s\n",table_name);
 				register_error (0, "orbin: dbgetv() error.\n");
 				return (-1);
 			}
-printf("evid = %d, orid = %d, auth = %s\n",evid, hyp->orid, auth);
 			if (strcmp(auth, "orbassoc")) continue;
 			if (evid != hyp->evid) continue;
 			if (prefor > 0 && prefor != hyp->orid) continue;
@@ -165,7 +161,6 @@ printf("evid = %d, orid = %d, auth = %s\n",evid, hyp->orid, auth);
 				if (strncmp(srcname, "/db/", 4)) continue;
 				db = orbpkt2db (packet, nbytes, dbtmp);
 				dbquery (db, dbTABLE_NAME, &table_name);
-printf("%s\n",table_name);
 				if (strcmp(table_name, "assoc")) continue;
 				if (dbgetv (db, 0,
 						"orid", &orid,
@@ -179,7 +174,6 @@ printf("%s\n",table_name);
 					register_error (0, "orbin: dbgetv() error.\n");
 					return (-1);
 				}
-printf("orid = %d, arid = %d\n",orid, hyp->assocs[n].arid);
 				if (orid != hyp->orid) continue;
 				/* This is the safe code to avoid an infinite loop */
 				number_skipped = 0;
@@ -189,7 +183,6 @@ printf("orid = %d, arid = %d\n",orid, hyp->assocs[n].arid);
 					if (strncmp(srcname, "/db/", 4)) continue;
 					db = orbpkt2db (packet, nbytes, dbtmp);
 					dbquery (db, dbTABLE_NAME, &table_name);
-printf("%s\n",table_name);
 					if (strcmp(table_name, "arrival")) 
 					{
 						++number_skipped;
@@ -205,8 +198,6 @@ printf("%s\n",table_name);
 						register_error (0, "orbin: dbgetv() error.\n");
 						return (-1);
 					}
-printf("arrival:  %s, %s, %lf, %s\n",hyp->assocs[n].sta,hyp->assocs[n].chan,
-hyp->assocs[n].time,hyp->assocs[n].iphase);
 					if (arid == hyp->assocs[n].arid) break;
 				}
 				if(number_skipped >= opt.db_record_skip_timeout) 

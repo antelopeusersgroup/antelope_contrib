@@ -520,7 +520,6 @@ void compute_location(Location_options o,
 	dist(rad(origin.lat),rad(origin.lon),rad(h0.lat),rad(h0.lon),
 			&delta,&seaz);
 	delta = deg(delta);
-printf("Distance from origin to source (degrees)= %lf\n",delta);
 	/* this is the distance sifting test to ignore things outside
 	specified distance range */
 	if( ((delta>=rtopts.minimum_distance) 
@@ -724,10 +723,7 @@ have the arguments botched */
 	event is processed saving the current packet id.  This should 
 	effectively skip events that cause orbgenloc to die for some
 	reason. */
-/*
 	while(1) 
-*/
-	for(i=0;i<40;++i)
 	{
 		int return_code;
 
