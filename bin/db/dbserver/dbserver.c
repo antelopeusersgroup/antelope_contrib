@@ -27,7 +27,7 @@ static int verbose = 0 ;
    file descriptor (which can be stdin, a socket, a pipe, etc).
 */
 
-void dbserve(char *database, FILE *stream) {
+void dbserve(char *database, FILE *in_stream, FILE *out_stream) {
 
     Dbptr db;
     
@@ -35,28 +35,24 @@ void dbserve(char *database, FILE *stream) {
     Pf *pf = 0 ;
     Tbl *recipe, *keys, *values ;
 
-    fprintf(stream, "HELLO\n");
-    fflush(stream);
+    fprintf(out_stream, "HELLO\n");
 
     if ( dbopen(database, "r", &db ) != 0)
 	die (0, "Couldn't open database %s\n", database ) ;
     
-    if (pfin(stream, &pf) != 0)
+    if (pfin(in_stream, &pf) != 0)
 	die(0, "Can't read parameter file\n");
 
-    if (debug) printf("reading the recipe.\n");
+    elog_debug(0, "reading the recipe.\n");
     recipe = pfget_tbl (pf, "recipe" ) ;
 
-    if (recipe == PFINVALID) 
+    if (recipe == 0) 
 	die(0, "Didn't find a 'recipe' entry in the parameter file." );
 
-    if (recipe != PFTBL) 
-        die(0, "The 'recipe' was not a &Tbl, as required." );
-
-    if (debug) printf("performing dbprocess.\n");
+    elog_debug(0, "performing dbprocess.\n");
     db = dbprocess ( db, recipe, 0 ) ;
 
-    if (debug) printf("getting 'keys' and 'values'.\n");
+    elog_debug(0, "getting 'keys' and 'values'.\n");
     keys = pfget_tbl ( pf, "keys" ) ;
     values = pfget_tbl ( pf, "values" ) ;
 
@@ -65,18 +61,21 @@ void dbserve(char *database, FILE *stream) {
     if ( strcmp(fmt, "xml") == 0 ) {
 
 	char *xml = 0;
+        elog_debug(0, "outputting results as xml\n");
 	db2xml( db, 0, 0, keys, values, (void **) &xml, 0 );
-	fprintf(stream, "%s\n", xml );
+	fprintf(out_stream, "%s\n", xml );
 
     } else if ( strcmp(fmt, "ptolemy") == 0 ) {
 
 	char *pt_expression = 0;
+        elog_debug(0, "outputting results as ptolemy expressions\n");
 	db2ptolemy( db, keys, values, (void **) &pt_expression, 0 );
-	fprintf(stream, "%s", pt_expression);	
+	fprintf(out_stream, "%s", pt_expression);	
 
     } else {
 
-	dbselect (db, values, stream ) ;
+        elog_debug(0, "outputting results as dbselect\n");
+	dbselect (db, values, out_stream ) ;
 
     }
 }
@@ -126,8 +125,9 @@ void daemonize(char *database, int port) {
 	    case 0: {
 		FILE *stream;
 		stream = fdopen( connection, "rw" );
-		dbserve(database, stream);
-		exit(0);
+                setvbuf( stream, NULL, _IOLBF, 0 );
+		dbserve( database, stream, stream );
+		exit( 0 );
 	    }
 	    case -1: 
 		die(1, "fork() failed. (%s)", strerror(errno));
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
     if (opt_daemonize) {
 	daemonize(database, port);
     } else {
-	dbserve(database, stdin);
+	dbserve(database, stdin, stdout);
     }
 
     return 0;
