@@ -68,9 +68,13 @@ sub convert_units {
                      "ug", 1e-6,
                      "ng", 1e-9,
                      "m/s", 1,
+                     "m/sec", 1,
                      "cm/s", 0.01,
+                     "cm/sec", 0.01,
                      "mm/s", 0.001,
+                     "mm/sec", 0.001,
                      "um/s", 1e-6,
+                     "um/sec", 1e-6,
                      "nm/s", 1e-9,
                      "nm/sec", 1e-9 );
 
@@ -130,7 +134,7 @@ sub write_amp {
 	return 0;
 }
 
-$Usage = "Usage: db2shakemap_xml [-j] [-pf pffile] [-version version] -event event_id\n";
+$Usage = "Usage: db2shakemap_xml [-j] [-m] [-pf pffile] [-version version] -event event_id\n";
 $Pf = "db2shakemap_xml";
 
 while( $arg = shift( @ARGV ) ) {
@@ -149,6 +153,10 @@ while( $arg = shift( @ARGV ) ) {
 
 		if( $#ARGV < 0 ) { die( $Usage ); }
 		$Pf  = shift( @ARGV );
+
+	} elsif( $arg eq "-m" ) {
+
+		$opt_m++;
 
 	} elsif( $arg eq "-j" ) {
 
@@ -249,14 +257,9 @@ $wfdata_filename = pfget( "$Pf", "wfdata_filename" );
 $output_dir = pfget( "$Pf", "output_dir" );
 $insttype = pfget( "$Pf", "insttype" );
 $commtype = pfget( "$Pf", "commtype" );
-$wfmeas_thetajoin_recipe = pfget( "$Pf", "wfmeas_thetajoin_recipe" );
-if( ! defined( $wfmeas_thetajoin_recipe ) ) {
-	$wfmeas_thetajoin_recipe = "";
-}
-$wfmeas_subset = pfget( "$Pf", "wfmeas_subset" );
-if( ! defined( $wfmeas_subset ) || $wfmeas_subset eq "" ) {
-	$wfmeas_subset = 1; # Default eval to true
-}
+
+@dbprocess_get_wfmeas = @{pfget( "$Pf", "dbprocess_get_wfmeas" )};
+grep( s/\$evid/$evid/, @dbprocess_get_wfmeas );
 
 $output_dir =~ s/\$event_id/$event_id/;
 
@@ -317,18 +320,31 @@ $output->close();
 @db = dblookup( @db, "", "", "evid", $evid );
 $db[3] >= 0 || die( "Couldn't find event $event_id" );
 
-@db = dbprocess( @db, "dbsubset evid == $evid",
-		      "dbjoin assoc",
-		      "dbjoin arrival",
-		      "dbtheta wfmeas $wfmeas_thetajoin_recipe",
-		      "dbsubset $wfmeas_subset",
-		      "dbsubset val1 != 0.0",
-		      "dbsort sta chan" );
+if( $opt_m ) {
+	%measure = %{pfget( "$Pf", "measure" )};
+
+	@db = dbprocess( @db, "dbsubset evid == $evid",
+			      "dbjoin site", 
+			      "dbjoin sitechan",
+			      "dbsubset chan =~ /$measure{chanexpr}/",
+			      "dbsever sitechan",
+			      "dbsubset distance(origin.lat,origin.lon,site.lat,site.lon) < $measure{maxdist_deg}" );
+	$nrecs = dbquery( @db, dbRECORD_COUNT );
+	for( $db[3]=0; $db[3] < $nrecs; $db[3]++ ) {
+		( $sta ) = dbgetv( @db, "sta" );
+		( $tstart ) = dbex_eval( @db, "$measure{tstart}" );
+		( $twin ) = dbex_eval( @db, "$measure{twin}" );
+		system( "dbwfmeas -v -p $measure{dbwfmeas_pffile} time $sta \'$measure{chanexpr}\' $tstart $twin $dbname\n" );
+	}
+}
+
+@db = dbprocess( @db, @dbprocess_get_wfmeas );
 
 $nrecs = dbquery( @db, "dbRECORD_COUNT" );
 $nrecs > 0 || die( "No wfmeas measurements for $event_id\n" );
 
-@db = dbprocess( @db, "dbgroup sta chan",
+@db = dbprocess( @db, "dbsort sta chan",
+		      "dbgroup sta chan",
 		      "dbgroup sta" );
 
 $output_file = concatpaths( $output_dir, $wfdata_filename );

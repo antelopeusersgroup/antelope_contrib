@@ -3,25 +3,31 @@
 db2shakemap_xml \- create input for USGS ShakeMap from database
 .SH SYNOPSIS
 .nf
-\fBdb2shakemap_xml \fP[-j] [-pf \fIpffile\fP] [-version \fIversion\fP] -event \fIevent_id\fP
+\fBdb2shakemap_xml \fP[-j] [-m] [-pf \fIpffile\fP] [-version \fIversion\fP]
+                -event \fIevent_id\fP
 .fi
 .SH DESCRIPTION
-Given a database of earthquake information and a specified event identifier,
-\fBdb2shakemap_xml\fP creates input files in XML (eXtensible Markup Language) for
-the US Geological Survey's ShakeMap program.
+Given a database of earthquake information and a specified event
+identifier, \fBdb2shakemap_xml\fP creates input files in XML
+(eXtensible Markup Language) for the US Geological Survey's ShakeMap
+program.
 
-To maintain command-line argument consistency with ShakeMap, most option specifications
-for \fBdb2shakemap_xml\fP are in the parameter-file, which by default is named \fBdb2shakemap_xml\fP.pf.
+To maintain command-line argument consistency with ShakeMap, most
+option specifications for \fBdb2shakemap_xml\fP are in the
+parameter-file, which by default is named \fBdb2shakemap_xml\fP.pf.
 
-\fBdb2shakemap_xml\fP runs on a Datascope database in rt1.0 format (css3.0 compatible). The
-pathname of this database should be specified in the \fIdbname\fP parameter of the parameter
-file. There are two basic modes of operation for \fBdb2shakemap_xml\fP. In the first, default,
-mode, the \fIevent_id\fP specified on the command line is interpreted as an evid, which
-is sought in the given database. In the second, 'jdate', mode, the \fIevent_id\fP may be
-either an evid or a string of the form jdate_evid. This mode is triggered by specifying the
+\fBdb2shakemap_xml\fP runs on a Datascope database in rt1.0 format
+(css3.0 compatible). The pathname of this database should be specified
+in the \fIdbname\fP parameter of the parameter file. There are two
+basic modes of operation for \fBdb2shakemap_xml\fP. In the first,
+default, mode, the \fIevent_id\fP specified on the command line is
+interpreted as an evid, which is sought in the given database. In the
+second, 'jdate', mode, the \fIevent_id\fP may be either an evid or a
+string of the form jdate_evid. This mode is triggered by specifying the
 -j option to \fBdb2shakemap_xml\fP. In jdate mode, the \fIdbname\fP
-parameter is interpreted as a pattern for the epoch2str(3) command, and the jdate
-gives the time for which that pattern is evaluated. For example, if \fIdbname\fP is
+parameter is interpreted as a pattern for the epoch2str(3) command, and
+the jdate gives the time for which that pattern is evaluated. For
+example, if \fIdbname\fP is
 .ft CW
 .in 2c
 .nf
@@ -45,67 +51,104 @@ and \fBdb2shakemap_xml\fP is run with the command-line
 .ft R
 the program tries to find evid 20 in the database named /ymp16/2002/266/reno.
 
-The \fIearthquake_dtd\fP and \fIwfdata_dtd\fP parameters of the parameter-file specify
-filenames in which to find the Document Type Definitions (DTDs) for earthquake and stationlist
-XML output, respectively. Likewise, the \fIoutput_dir\fP parameter specifies where to put
-the output results and the parameters \fIearthquake_filename\fP and \fIwfdata_filename\fP
-specify the files in which to write the XML results. If the string "$event_id" appears 
-in the specification of \fIoutput_dir\fP, the actual event_id will be substituted.
+If the -m option is specified, \fBdb2shakemap_xml\fP attempts to
+make the waveform-measurements itself before converting them to XML,
+delegating to dbwfmeas(1) for this task. The \fImeasure\fP array of the parameter
+file governs the behavior in this case. \fImaxdist_deg\fP specifies
+how close stations must be to be measured for peak parameters. The \fIdbwfmeas_pffile\fP
+specifies the parameter file used by dbwfmeas(1) in making the measurements.
+\fIchanexpr\fP should specify which channels to use, as a regular expression. This
+is fed to dbwfmeas(1) on the command line; further documentation may be found in
+the man page for dbwfmeas(1). The \fItstart\fP parameter is given to the Datascope expression
+calculator to compute the starting time for the dbwfmeas time-segment. The \fItwin\fP
+parameter is also passed through the expression calculator to determine the size
+of the waveform segment for computation. Note of course that dbwfmeas(1) may
+additionally pad these according to instructions in the dbwfmeas parameter file.
 
-Four parameters control which data are used in forming the XML output.
-The \fIorigin_subset\fP parameter limits processing to those hypocenters
-which match the specified criteria, for example earthquakes with ml
-greater than a specified threshold. This is often useful to prevent
-generation of ShakeMaps for earthquakes that are too small. The
-\fIcontaining_polygon\fP parameter is a table of comma-separated lat,lon
-pairs (one pair on each line) which may be used to limit the XML
-generation to earthquakes inside a given polygon region. The
-\fIwfmeas_subset\fP parameter allows subsetting of the input wfmeas-rows.
-Finally, different real-time systems may produce varying relationships
-between hypocentral (origin) rows and their accompanying measurement
-(wfmeas) rows. To specify how to connect database wfmeas rows to origin
-rows, the \fIdbwfmeas_thetajoin_recipe\fP parameter should be set
-appropriately.  This expression is then fed to the Datascope dbtheta(3)
-command. A common example is shown in the PARAMETER FILE section
-below.
+The \fIearthquake_dtd\fP and \fIwfdata_dtd\fP parameters of the
+parameter-file specify filenames in which to find the Document Type
+Definitions (DTDs) for earthquake and stationlist XML output,
+respectively. Likewise, the \fIoutput_dir\fP parameter specifies where
+to put the output results and the parameters \fIearthquake_filename\fP
+and \fIwfdata_filename\fP specify the files in which to write the XML
+results. If the string \fI$event_id\fP appears in the specification of
+\fIoutput_dir\fP, the actual \fIevent_id\fP is substituted.
 
-Several parameters allow additional attributes of the output XML to be filled in.
-The \fIplaces_dbname\fP parameter gives the pathname of a database in places1.2 format,
-yielding the names and locations of nearby places of interest. The \fIinsttype\fP and \fIcommtype\fP
-parameters allow the corresponding attributes of the XML station entries to be
-filled in (for more detail see the ShakeMap documentation).
+Three parameters control which data are used in forming the XML
+output.  The \fIorigin_subset\fP parameter limits processing to those
+hypocenters which match the specified criteria, for example earthquakes
+with ml greater than a specified threshold. This is often useful to
+prevent generation of ShakeMaps for earthquakes that are too small. The
+\fIcontaining_polygon\fP parameter is a table of comma-separated
+lat,lon pairs (one pair on each line) which may be used to limit the
+XML generation to earthquakes inside a given polygon region. Finally,
+the \fIdbprocess_get_wfmeas\fP table provides steps for the
+dbprocess(3) command to extract the wfmeas rows of interest
+corresponding to a given evid. A common example is shown in the
+PARAMETER FILE section below. This table is essentially a piece of
+program code exposed to the user, which allows \fBdb2shakemap_xml\fP to
+be useful for a wide variety of real-time system outputs and database
+structures. If the string \fI$evid\fP appears in the set of dbprocess
+commands, it is replaced at run-time with the actual evid for the
+earthquake of interest. The \fIdbprocess_get_wfmeas\fP command-set
+changes significantly if the -m option is used (i.e. if
+\fBdb2shakemap_xml\fP generates wfmeas entries on its own).  An example
+of this second \fIversion\fP is also shown in the PARAMETER FILE section
+below, and should be uncommented (removing the existing entry) if the
+-m option is used.  Note that modifying the \fIdbprocess_get_wfmeas\fP
+table requires database expertise.
 
-Finally, the meastype_xmltags specify how to translate wfmeas 'meastype' entries
-into corresponding XML tags for ShakeMap. For further information on the 
-wfmeas.meastype field, see the documentation for orbwfmeas(1).
+Several parameters allow additional attributes of the output XML to be
+filled in.  The \fIplaces_dbname\fP parameter gives the pathname of a
+database in places1.2 format, yielding the names and locations of
+nearby places of interest. The \fIinsttype\fP and \fIcommtype\fP
+parameters allow the corresponding attributes of the XML station
+entries to be filled in (for more detail see the ShakeMap
+documentation).
+
+Finally, the meastype_xmltags specify how to translate wfmeas
+ 'meastype' entries into corresponding XML tags for ShakeMap. For
+further information on the wfmeas.meastype field, see the documentation
+for orbwfmeas(1).
 .SH OPTIONS
 .IP "-event event_id"
-This required argument specifies the event-id for the desired earthquake. Without
-the -j option, \fIevent_id\fP is interpreted as an evid in the database. With -j, it may be
-interpreted as jdate_evid with the jdate used to fill in the exact name of the
-database via the epoch2str(3) command.
+This required argument specifies the event-id for the desired
+earthquake. Without the -j option, \fIevent_id\fP is interpreted as an
+evid in the database. With -j, it may be interpreted as jdate_evid with
+the jdate used to fill in the exact name of the database via the
+epoch2str(3) command.
 
 .IP -j
-jdate mode. Attempts to interpret the \fIevent_id\fP as a jdate_evid combination (e.g.
-2002266_20), in which the first part is the julian date of earthquake occurrence
-and the second part is the actual database evid (If this parsing fails, it
-assumes the \fIevent_id\fP is equivalent to the evid). Regardless of whether the parsing succeeds,
-the output XML files are written with \fIevent_id\fP as jdate_evid. The -j option
-is useful in conjunction with the dbcentral(1) command to manage earthquakes that
-are spread across multiple day or month volumes.
+jdate mode. Attempts to interpret the \fIevent_id\fP as a jdate_evid
+combination (e.g.  2002266_20), in which the first part is the julian
+date of earthquake occurrence and the second part is the actual
+database evid (If this parsing fails, it assumes the \fIevent_id\fP is
+equivalent to the evid). Regardless of whether the parsing succeeds,
+the output XML files are written with \fIevent_id\fP as jdate_evid. The
+-j option is useful in conjunction with the dbcentral(1) command to
+manage earthquakes that are spread across multiple day or month
+volumes.
 
-.IP "-version version" 
-Specify ShakeMap version for output XML. Currently only ShakeMap 2.4 is supported.
+.IP -m
+Make measurements of wfmeas values by calling dbwfmeas(1). Note that
+this may significantly alter the value necessary for the
+\fIdbprocess_get_wfmeas\fP commands in the parameter file. For an
+example of a reasonable command set, see the commented setting of
+\fIdbprocess_get_wfmeas\fP in the PARAMETER FILE section below.
+
+.IP "-version version"
+Specify ShakeMap \fIversion\fP for output XML. Currently only ShakeMap 2.4 is supported.
 
 .IP "-pf pffile"
-Specify an alternate parameter-file name. Default is db2shakemap_xml.pf.
+Specify an alternate parameter-file name. Default is \fBdb2shakemap_xml\fP.pf.
 
 .SH PARAMETER FILE
 .ft CW
 .in 2c
 .nf
 
-.ne 7
+.ne 8
+
 dbname                  db/reno
 earthquake_dtd          /opt/ShakeMap/lib/xml/earthquake.dtd
 wfdata_dtd              /opt/ShakeMap/lib/xml/stationlist.dtd
@@ -114,30 +157,21 @@ earthquake_filename     event.xml
 wfdata_filename         db_dat.xml
 places_dbname           /ymp13/ANTELOPE/RENO/places/new_nevada
 
-.ne 9
+.ne 12
 origin_subset           ml >= 3
-wfmeas_subset           filter =~ /.*/
-
-# To specify how to join origin-assoc-arrival view rows to the wfmeas table,
-# the wfmeas_thetajoin_recipe parameter must be set to an expression that
-# is fed to dbtheta. If the arids are correctly set in the wfmeas
-# table of the running system, this may be as simple as
-#       wfmeas_thetajoin_recipe arid == wfmeas.arid
-# Otherwise a common strategy is shown below:
-
-.ne 11
-wfmeas_thetajoin_recipe         sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time == arrival.time - 10
 
 insttype                UNR
 commtype                DIG
 
 containing_polygon &Tbl{
-        42,-120
-        42,-114
-        35,-114
-        39,-120
+# Uncomment this polygon or add your own to limit the region of interest
+#       42,-120
+#       42,-114
+#       35,-114
+#       39,-120
 }
 
+.ne 9
 meastype_xmltags &Arr{
         peaka   acc
         peakv   vel
@@ -147,6 +181,52 @@ meastype_xmltags &Arr{
         psa10   psa10
         psa03   psa03
 }
+
+.ne 9
+# The values in the 'measure' array govern the calculation of
+# waveform values by dbwfmeas if the -m option is used.
+measure &Arr{
+        maxdist_deg     0.5
+        dbwfmeas_pffile dbwfmeas
+        chanexpr        [EH].*
+        tstart          parrival()
+        twin            2 * (sarrival()-parrival())
+}
+
+.ne 5
+# The following Table of commands is fed to dbprocess(3) to find the wfmeas
+# entries that correspond to a given earthquake. Because this procedure
+# may vary widely amongst running real-time systems, the code is expressed in the
+# parameter file. Users are cautioned that modifying this command-set requires
+# database expertise.
+
+.ne 11
+dbprocess_get_wfmeas &Tbl{
+        dbopen event
+        dbsubset evid == $evid
+        dbjoin origin
+        dbsubset orid == prefor
+        dbjoin assoc
+        dbjoin arrival
+        dbtheta wfmeas sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time - arrival.time + 10 < 1
+        dbsubset filter =~ /.*/
+        dbsubset val1 != 0.0
+}
+
+.ne 13
+# Shown below is an alternate \fIversion\fP of dbprocess_get_wfmeas, which is
+# more appropriate if the wfmeas values are derived with the \fBdb2shakemap_xml\fP
+# -m option:
+
+# dbprocess_get_wfmeas    &Tbl{
+#        dbopen event
+#       dbsubset evid == $evid
+#       dbjoin origin
+#       dbsubset orid == prefor
+#       dbjoin site
+#       dbtheta wfmeas sta == wfmeas.sta && wfmeas.time - parrival() + 10 < 1
+#       dbsubset val1 != 0.0
+# }
 
 .fi
 .in
@@ -168,36 +248,48 @@ nickel%\fB \fP
 .in
 .ft R
 .SH "RETURN VALUES"
-\fBdb2shakemap_xml\fP exits with status 0 upon success, nonzero upon error. 
+\fBdb2shakemap_xml\fP exits with status 0 upon success, nonzero upon error.
 .SH "SEE ALSO"
 .nf
-dbcentral(1), db2xml(1), orbwfmeas(1)
+dbcentral(1), orbwfmeas(1), dbwfmeas(1), db2xml(1)
 .fi
 .SH "BUGS AND CAVEATS"
-The ShakeMap retrieve program, out of which db2shakemap_xml might be run, 
-both refuses to take extra command-line arguments for its program and demands that 
+The ShakeMap retrieve program, out of which \fBdb2shakemap_xml\fP might be run,
+both refuses to take extra command-line arguments for its program and demands that
 the executable be found in /opt/ShakeMap/bin. Thus a wrapper script similar
 to the following may be useful:
+.ft CW
+.in 2c
 .nf
+
+.ne 8
 
 nickel% cat /opt/ShakeMap/bin/db2shakemap_xml_wrapper
 #!/opt/antelope/perl/bin/perl
 
-exec( "db2shakemap_xml -j -pf /files/users/rt/run/pf/db2shakemap_xml " .
-	join( " ", @ARGV ) );
+exec( "\fBdb2shakemap_xml\fP -j -m -pf /files/users/rt/run/pf/\fBdb2shakemap_xml\fP " .
+        join( " ", @ARGV ) );
 nickel%
 
 .fi
+.in
+.ft R
 
 Then in /opt/ShakeMap/config/retrieve.conf one needs the line
+.ft CW
+.in 2c
 .nf
+.ne 3
 
 program         : db2shakemap_xml_wrapper
 
 .fi
+.in
+.ft R
 
-Note that this deliberately skirts the ShakeMap database-access mechanisms in order
-to allow the utility to be run easily outside of ShakeMap context. 
+Note that this deliberately skirts the ShakeMap database-access
+mechanisms in order to allow the utility to be run easily outside of
+ShakeMap context.
 
 .SH AUTHOR
 .nf

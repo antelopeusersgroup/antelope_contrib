@@ -7,10 +7,6 @@ wfdata_filename		db_dat.xml
 places_dbname 		/ymp13/ANTELOPE/RENO/places/new_nevada
 
 origin_subset		ml >= 3
-wfmeas_subset		filter =~ /.*/
-
-# wfmeas_thetajoin_recipe	arid == wfmeas.arid
-wfmeas_thetajoin_recipe		sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time == arrival.time - 10 
 
 insttype		UNR
 commtype		DIG
@@ -32,3 +28,44 @@ meastype_xmltags &Arr{
 	psa10 	psa10
 	psa03 	psa03
 }
+
+measure &Arr{
+	maxdist_deg 	2
+	dbwfmeas_pffile dbwfmeas
+	chanexpr 	[EH].*
+	tstart 		parrival()
+	twin 		2 * (sarrival()-parrival())
+}
+
+# The following Table of commands is fed to dbprocess(3) to find the wfmeas
+# entries that correspond to a given earthquake. Because this procedure
+# may vary widely amongst running real-time systems, the code is expressed in the 
+# parameter file. Users are cautioned that modifying this command-set requires 
+# database expertise. 
+dbprocess_get_wfmeas &Tbl{
+	dbopen event
+	dbsubset evid == $evid
+	dbjoin origin
+	dbsubset orid == prefor
+	dbjoin assoc
+	dbjoin arrival
+	dbtheta wfmeas sta == wfmeas.sta && chan == wfmeas.chan && wfmeas.time - arrival.time + 10 < 1
+	dbsubset filter =~ /.*/
+	dbsubset val1 != 0.0
+}
+
+# Shown below is an alternate version of dbprocess_get_wfmeas, which is 
+# more appropriate if the wfmeas values are derived with the db2shakemap_xml 
+# -m option:
+
+# dbprocess_get_wfmeas    &Tbl{
+#	 dbopen event
+#	dbsubset evid == $evid
+#	dbjoin origin
+#	dbsubset orid == prefor
+#	dbjoin site
+#	dbtheta wfmeas sta == wfmeas.sta && wfmeas.time - parrival() + 10 < 1
+#	dbsubset val1 != 0.0
+# }
+
+
