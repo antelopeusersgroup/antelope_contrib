@@ -596,7 +596,7 @@ main (int argc, char **argv)
 			dbv = dbtbl2view (dbw, 0, tables);
 			for (j=0; j<maxtbl(wftbl); j++) {
 				dbw.record = (int) gettbl (wftbl, j);
-				dbadd (dbv, dbref(dbw));
+				dbadd (dbv, dbref(&dbw));
 			}
 			freetbl (wftbl, 0);
 			dbsc = dbsort (dbv, wfsortfields, 0, 0);
