@@ -1,0 +1,47 @@
+.TH MAKE_CONTRIB_SRCDISTRO 1 "$Date$"
+.SH NAME
+make_contrib_srcdistro \- Package Antelope contributed-code for export
+.SH SYNOPSIS
+.nf
+make_contrib_srcdistro
+.fi
+.SH DESCRIPTION
+make_contrib_srcdistro uses the cvs(1) export command to check-out a 
+distribution of the Antelope contributed source code for distribution.
+make_contrib_srcdistro then wraps the resulting directory into a 
+compressed tar file that is intended to be unpacked from the 
+directory $ANTELOPE.
+
+As recommended from the CVS documentation, the export distribution 
+is tagged with the date of formation, such that it can be regenerated 
+if necessary. make_contrib_srcdistro names the output tar file 
+according to this timestamp.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+nordic% cat make_contrib_srcdistro.pf 
+cvsroot aesn.geology.indiana.edu:/opt/antelope/cvs
+# The package is the name of the CVS package containing the code:
+package contrib 
+nordic%
+.fi
+.SH EXAMPLE
+.ft CW
+.RS .2i
+.RE
+.ft R
+.SH RETURN VALUES
+.SH LIBRARY
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+cvs(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The timestamp is currently in UTC timezone, whereas CVS 
+is probably using local time, thus the timestamp is approximate.
+.SH AUTHOR
+Kent Lindquist
+.\" $Id$
