@@ -312,7 +312,7 @@ packethandler (char *srcname, char *rawpacket, int nbytes, int offset)
 
   /* Find the Mini-SEED record length and generally test for a
      Mini-SEED record */
-  reclen = find_reclen (rawpacket + offset, nbytes);
+  reclen = find_reclen (rawpacket + offset, nbytes - offset);
   
   if ( reclen == -1 )
     {
