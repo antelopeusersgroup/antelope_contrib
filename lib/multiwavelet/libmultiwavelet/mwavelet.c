@@ -643,7 +643,7 @@ void free_sn_ratios_arr(Arr **snr_vector,int nwavelets)
 
 	for(i=0;i<nwavelets;++i)
 	{
-		freearr((*snr_vector)+i,free);
+		freearr(snr_vector[i],free);
 	}
 }
 

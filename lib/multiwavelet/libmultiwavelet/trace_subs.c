@@ -59,8 +59,12 @@ int mwap_load_stagrp(Dbptr dbbundle, Dbptr tr, double s, double e)
 			++error_count;
 			continue;
 		}
+		/* Note I intentionally ignore if s and e do not match 
+		t0 and t1.  This is because I assume this routine is 
+		called multiple times and trglue is used later to patch
+		multiple pieces together */
 		ierr = dbgetv(dbbundle,0,"sta",sta,
-				"chan",chan,
+				"wfdisc.chan",chan,
 				"samprate",&samprate,
 				"calib", &calib,
 				"hang",&hang,

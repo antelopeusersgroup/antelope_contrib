@@ -306,3 +306,5 @@ int MWdb_save_pm(char *, int, int, char *, double, double,
 	Time_Window *, MWgather *, double *, Arr *, Arr *, 
 	Particle_Motion_Ellipse *, Particle_Motion_Error *, Dbptr);
 MWbasis *load_multiwavelets_db(Pf *,int *, int *);
+double Window_stime(Time_Window);
+double Window_etime(Time_Window);
