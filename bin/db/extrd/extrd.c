@@ -47,12 +47,12 @@ char *argv[];
  char *out_dbase;
  char odir[132], exten[132];
  char path[132], name[132];
- char wfd_name[512], *fname;
+ char wfd_name[256], *fname;
  char *str;
  char *out_dir = 0;
- char inname[512]; 
- char newdir[132], *tmpname;
- char rec[512];
+ char inname[256]; 
+ char newdir[256], *tmpname;
+ char rec[256];
  int nrec, oldsize, record_size, i, j;
  int wfdrec;
  int err_in=0, id;
@@ -67,7 +67,10 @@ char *argv[];
           break;
         
         case 'o':
-          out_dir = strdup( optarg);
+          if( (out_dir = (char *) malloc(256) ) == NULL )  {
+             die( 1, "extrd/main(): malloc");
+          }
+          strcpy(out_dir, optarg);
           break;
  
         case '?':
@@ -87,15 +90,15 @@ char *argv[];
     etime = str2epoch(argv[optind]);
    
     
-    if( (out_dbase = (char *) malloc(132) ) == NULL )  {
+    if( (out_dbase = (char *) malloc(256) ) == NULL )  {
        die( 1, "extrd/main(): malloc");
     }
 
-    if( (fname = (char *) malloc(512) ) == NULL )  {
+    if( (fname = (char *) malloc(256) ) == NULL )  {
        die(1, "extrd/main(): malloc");
     }
 
-    if( (str = (char *) malloc(512) ) == NULL )  {
+    if( (str = (char *) malloc(256) ) == NULL )  {
        die(1, "extrd/main(): malloc");
     }
 
@@ -300,13 +303,13 @@ char *argv[];
 
 get_wfd_name(dbname, wfd_name)
 char *dbname;
-char wfd_name[512];
+char wfd_name[256];
 {
 
    Dbptr db;
    Dbvalue dbv;
    struct stat buf;
-   char name[512];
+   char name[256];
 
    if (dbopen (dbname, "r", &db) == dbINVALID) {
       complain (0, "Unable to open database %s.\n",

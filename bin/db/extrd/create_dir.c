@@ -66,15 +66,14 @@ int ntoken, link_size, i;
            return -1;
        }
     } else if(S_ISLNK(buf.st_mode) != 0)  {	/* It's link; find the real path  */
-       link_size = readlink(subpath, link_path, 256);
+       link_size = readlink(subpath, link_path, 512);
        if(link_size < 0)  {
            complain(1, "read link error %s\n", subpath);
            return -1;
        }
        link_path[link_size] = '\0';
        if(link_path[0] == '/') { 
-          strcpy(real_path, link_path);
-          strcat(real_path,"/\0");
+          sprintf(real_path, "%s/\0", link_path); 
           strcpy(subpath, real_path);
        } else {
           strncpy(real_path, subpath, strlen(subpath) - strlen(tmp[i]));
@@ -95,7 +94,7 @@ int ntoken, link_size, i;
  
    }  else {
        complain( 0,"%s is not a path to the data file\n", subpath);
-       free(subpath); free(link_path); free(real_path);
+       free(tmp_str); free(subpath); free(link_path); free(real_path);
        return -1;
    }
 }
@@ -120,6 +119,6 @@ int ntoken, link_size, i;
 
 
 strcpy(fname, new_home);    
-free(subpath); free(link_path); free(real_path);
+free(tmp_str); free(subpath); free(link_path); free(real_path);
 return 1;
 }

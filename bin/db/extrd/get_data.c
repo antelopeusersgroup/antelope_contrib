@@ -54,10 +54,10 @@ int get_data( double stime, double etime )
            0 )) == dbINVALID )
            die( 0, "dbgetv faild for record #%d\n", db.record );
 
-/*
+#ifdef DEBUG
 fprintf( stderr, "%s_%s: %lf %lf %d \n", 
 new.sta, new.chan, new.time, new.endtime, new.nsamp );
-*/
+#endif
 
        if( stime >= new.endtime ) continue;
        if( etime <= new.time ) continue;
@@ -104,10 +104,12 @@ new.sta, new.chan, new.time, new.endtime, new.nsamp );
            }
 
 
-/*
+
+#ifdef DEBUG
 fprintf( stderr, "ET: %lf %lf - %lf %lf ( %lf %lf ) %d \n", 
 crnt_time, et, ts, te, stime, etime, npts );
-*/
+#endif
+
 
            if( buf == 0 )  { 
               complain( 0, "can't get data for %s_%s from %lf to %lf\n", 
@@ -123,16 +125,18 @@ crnt_time, et, ts, te, stime, etime, npts );
 
            } else  skip = 0;
 
-           if( ( extra_npts = ( te - et )*new.samprate) < 1 )
+           if( ( extra_npts = ( te - et )*new.samprate-1) < 1 )
 	      extra_npts = 0;
 	   else te = et;
 
            save_npts = npts - extra_npts - skip ;
 	  
 
-/*
+
+#ifdef DEBUG
 fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
-*/
+#endif
+
  
            if( fabs( ts - crnt_time ) > 1.0/new.samprate )  {
 
@@ -170,9 +174,12 @@ fprintf( stderr, "%d - %d - %d = %d\n", npts, skip, extra_npts, save_npts );
 	       return 0;
            } else saved = 1;
 
-/*
-fprintf( stderr, "ST:%lf ET:%lf NSMP:%d\n", segment.time, segment.endtime, segment.nsamp );
-*/ 
+
+#ifdef DEBUG
+fprintf( stderr, "ST:%lf ET:%lf NSMP:%d\n", 
+segment.time, segment.endtime, segment.nsamp );
+#endif
+
 
            if( etime <= crnt_time ) done = 1;
       }  

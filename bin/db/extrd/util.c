@@ -44,9 +44,11 @@ int check_param( SegData *segment , SegData *new )
    int code;
 
 
-/*
-fprintf( stderr, "check %lf - %lf * %lf - %d \n", new->time, segment->time, segment->samprate, segment->nsamp);
-*/
+
+#ifdef DEBUG
+fprintf( stderr, "check %lf - %lf * %lf \n", 
+new->time, segment->endtime, segment->samprate);
+#endif
 
         if( segment->calib != new->calib ||
             segment->calper != new->calper ||       
@@ -55,6 +57,7 @@ fprintf( stderr, "check %lf - %lf * %lf - %d \n", new->time, segment->time, segm
             fabs( new->time - segment->endtime ) *
                   segment->samprate > 1 )   {
             
+            flush_db( segment );
             update_segdata( segment, new );
             
        } 
@@ -111,9 +114,10 @@ int flush_db( SegData *segment )
  
      int code;
 
-/*
+
+#ifdef DEBUG
 fprintf( stderr, "flush: %lf %lf %d\n", segment->time, segment->endtime, segment->nsamp);
-*/
+#endif
     
      if( segment->new )  {
         new_db( segment );

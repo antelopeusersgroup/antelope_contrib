@@ -99,9 +99,12 @@ save_seed ( Steim *conf, int first, int last)
     Seq = conf->sdh.seq;
     segment->sbytes += nbytes;                 
     Foff += nbytes;                 
-/*
-    fprintf( stderr, "%s_%s: %lf %lf %d\n", segment->sta, segment->chan, segment->time, segment->endtime, last );
- */   
+
+#ifdef DEBUG
+fprintf( stderr, "steim: %s_%s: %lf %lf %d\n", 
+segment->sta, segment->chan, segment->time, segment->endtime, last );
+#endif
+
     segment->nsamp = last;
 
     if( segment->new ) {
