@@ -418,9 +418,6 @@ double epoch ( int yearday )
 int yearday ( double e )
     return yearday corresponding to given epoch time
 
-char *getTZ ( )
-    get value for environment variable TZ (time zone)
-
 private void bcdtime ( char *tmstamp, struct date_time *ptim )
     parse BCD timestamp into date-time structure
 
