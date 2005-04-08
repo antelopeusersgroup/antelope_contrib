@@ -67,8 +67,12 @@ sub format_pickfile {
 		my( $sdobs, $stime, $sdepth ) = dbgetv( @db, "sdobs", "stime", "sdepth" );
 		my( $smajax, $sminax, $strike ) = dbgetv( @db, "smajax", "sminax", "strike" );
 
+                $laterr = abs( $smajax / 2.0 * cos( $strike * 2.0 * 3.1416 / 360.0 ) );
+                $lonerr = abs( $smajax / 2.0 * sin( $strike * 2.0 * 3.1416 / 360.0 ) );
+
 		$pickblob .= format_error_row( $defining, $algorithm, $dtype, $sdobs, $stime, 
-				       	       $sdepth, $smajax, $sminax, $strike, $agency );
+				       	       $laterr, $lonerr, $sdepth, $smajax, $sminax, 
+                                               $strike, $agency );
 
 		my( $magerr, $nmagsta ) = dbgetv( @db, "uncertainty", "nsta" );
 
@@ -198,6 +202,11 @@ sub format_phase_row {
 	$qual = $qual != "-" ? $qual : " ";
 
 	$timeres_str = $timeres == -999 ? "     " : sprintf( "% 5.2f", $timeres );
+
+	# HACK: 0<=$wgt_str<=1.0 is required, however $wgt from assoc table exceeds 
+	# this.  Set weight to 1 as PGC location practice is weights off (either 1.0 or 0).
+	$wgt = 1.0;	
+
 	$wgt_str = $wgt == -1 ? "-1.0" : sprintf( "%4.2f", $wgt );
 
 	$row =  sprintf( "  %-5s %2s ", $sta, $chan ) . $nextday;
@@ -240,7 +249,7 @@ sub format_origin_row {
 }
 
 sub format_error_row {
-	my( $defining, $algorithm, $dtype, $sdobs, $stime, 
+	my( $defining, $algorithm, $dtype, $sdobs, $stime, $laterr, $lonerr, 
 	    $sdepth, $smajax, $sminax, $strike, $agency ) = @_;
 	
 	my( $row );
@@ -262,8 +271,8 @@ sub format_error_row {
 	$sdobs = $sdobs != -1 ? sprintf( "%4.2f", $sdobs ) : "    ";
 	$stime = $stime != -1 ? sprintf( "%5.2f", $stime ) : "     ";
 
-	my( $se_lat ) = "        ";
-	my( $se_lon ) = "         ";
+	my( $se_lat ) = $laterr != -1 ? sprintf( "%6.4fkm", $laterr ) : "        ";
+	my( $se_lon ) = $lonerr != -1 ? sprintf( "%7.4fkm", $lonerr ) : "         ";
 
 	$smajax = $smajax != -1 ? sprintf( "%5.2f", $smajax ) : "     ";
 	$sminax = $smajax != -1 ? sprintf( "%5.2f", $sminax ) : "     ";
@@ -314,7 +323,7 @@ sub format_magnitude_row {
 	$magerr = $magerr != -1 ? sprintf( "%4.2f", $magerr ) : "    ";
 	$nmagsta = $nmagsta != -1 ? sprintf( "%3d", $nmagsta ) : "   ";
 
-	$row = "$m  $magtype    $mag ";
+	$row = "$m *$magtype    $mag ";
 	$row .= "($magerr) $nmagsta";
 	$row .= ' ' x 50;
 	$row .= "$agency\n";
@@ -603,12 +612,12 @@ for( $db[3] = 0; $db[3] < $norigins; $db[3]++ ) {
 		makedir( $dir );
 
 		open( P, ">$pickfile" );
-		print P "$pickblob\n";
+		print P "$pickblob";
 		close( P );
 		
 	} else {
 
-		$all .= "$pickblob\n";
+		$all .= "$pickblob";
 	}
 }
 
@@ -628,7 +637,7 @@ if( $opt_i ) {
 	$tmpfile = "/tmp/db2loon_$<_$$";
 
 	open( T, ">$tmpfile" );
-	print T "$all\n";
+	print T "$all";
 	close( T );
 
 	$recipients = join( ",", @email_recipients );

@@ -3,167 +3,189 @@
 db2loon \- Create Loon-pickfile(s) from database
 .SH SYNOPSIS
 .nf
-db2loon [-m] [-d dbout] [-l lddate_cutoff] [-s origin_subset_expr] 
-	[-o orid] [-p pffile] database [filename]
+\fBdb2loon \fP[-m] [-d \fIdbout\fP] [-l \fIlddate_cutoff\fP] 
+		[-s \fIorigin_subset_expr\fP]  [-o \fIorid\fP] 
+		[-p \fIpffile\fP] \fIdbin\fP [\fIfilename\fP]
 .fi
 .SH DESCRIPTION
-This program converts selected database rows to the Loon pickfile format as
+This program converts selected database rows from \fIdbin\fP to the Loon pickfile format as
 implemented by Newt Inc. and used at, among other locations, the Geological
-Survey of Canada, Pacific Geoscience Centre, Sidney, B.C. The default is 
-to send the results to stdout. If filename is specified, the results are sent to 
-the named file instead. 
+Survey of Canada, Pacific Geoscience Centre, Sidney, B.C. The default is
+to send the results to stdout. If \fIfilename\fP is specified, the results are sent to
+the named file instead.
 
 .SH OPTIONS
 .IP "-p pffile"
-Use the named parameter-file instead of the default db2loon.pf
+Use the named parameter-file instead of the default \fBdb2loon\fP.pf
 
 .IP "-s origin_subset_expr"
-This subsetting expression is applied to the origin table before creating 
-pickfiles. If specified, this value overrides the origin_subset_expr parameter
-in the parameter file. The -s option is ignored if the -o option is 
-specified. 
+This subsetting expression is applied to the origin table before creating
+pickfiles. If specified, this value overrides the \fIorigin_subset_expr\fP parameter
+in the parameter file. The -s option is ignored if the -o option is
+specified. The subsetting expression should be formatted according to the
+documentation for dbexpressions(5). If time-strings are used within this expression
+they should be enclosed in their own quotes and formatted according to str2epoch(3);
+see the example below.
 
 .IP "-l lddate_cutoff"
-This option omits all origins that have modification times older than the 
-specified cutoff (i.e. origin.lddate must be more recent than the specified 
-cutoff). If the lddate_cutoff argument contains a colon, it is interpreted 
+This option omits all origins that have modification times older than the
+specified cutoff (i.e. origin.lddate must be more recent than the specified
+cutoff). If the \fIlddate_cutoff\fP argument contains a colon, it is interpreted
 as a number of hours and minutes (HH:MM) or hours, minutes, and seconds (HH:MM:SS)
-behind the current system-clock time. If not, the lddate_cutoff is interpreted 
-as a number of days behind the current system-clock time. 
+behind the current system-clock time. If not, the \fIlddate_cutoff\fP is interpreted
+as a number of days behind the current system-clock time.
 
 .IP "-o orid"
-Create a pickfile only for the specified origin id. If this option is 
-used, the -o option, the -l option, and the origin_subset_expr parameter 
-in the parameter file are all ignored.  
+Create a pickfile only for the specified origin id. If this option is
+used, the -o option, the -l option, and the \fIorigin_subset_expr\fP parameter
+in the parameter file are all ignored.
 
 .IP -i
-Save the results as individual pickfiles in the directory specified by 
+Save the results as individual pickfiles in the directory specified by
 pickfile_name_pattern
 
-.IP -m 
-Send mail to recipients specified in parameter file.
+.IP -m
+Send mail to recipients specified in parameter file. The body of the mail message
+consists of the Loon-format pickfiles created by the script. The subject of the email
+is set by the \fIemail_subject\fP parameter in the parameter file.
+If the \fIattach_dbtables\fP parameter file is set to a true value, or if the -d option
+is specified, copies of the \fIdatabase\fP tables from which the pickfiles were derived will
+be attached to the message. These attached tables will be the relevant subsets of the
+arrival, assoc, event, netmag, origerr, origin, and stamag tables of the input \fIdatabase\fP.
 
-.IP "-d dbout" 
-The -d option saves a copy of the subsetted database tables contributing to the pickfiles 
-to the new database name given as an argument. 
+.IP "-d dbout"
+The -d option saves a copy of the subsetted \fIdatabase\fP tables contributing to the pickfiles
+to the new \fIdatabase\fP name given as an argument.
 .SH PARAMETER FILE
-.ft CW
 .in 2c
+.ft CW
 .nf
 
-# db2loon.pf parameter file
+.ne 9
 
-# Choosing what to include: 
+# \fBdb2loon\fP.pf parameter file
 
-# the origin_subset_expr parameter may be filled in with an 
+# Choosing what to include:
+
+# the \fIorigin_subset_expr\fP parameter may be filled in with an
 # subset expression to be applied to the origin table,
 # beyond any already implied by the -l option
-origin_subset_expr 	 
+\fIorigin_subset_expr\fP
 
-# Mailing pickfiles: 
+.ne 12
+# Mailing pickfiles:
 
 # The following three parameters specify the behavior of mail
-# sent by db2loon: namely the recipient(s) of the email, the 
-# subject line of the mail message, and whether to attach the 
-# subsetted database tables used to generate the pickfiles as 
+# sent by \fBdb2loon\fP: namely the recipient(s) of the email, the
+# subject line of the mail message, and whether to attach the
+# subsetted \fIdatabase\fP tables used to generate the pickfiles as
 # attachments to the email
 email_recipients &Tbl{
-	mulder@pgc.nrcan.gc.ca
+        mulder@pgc.nrcan.gc.ca
 }
-email_subject 	pick files
-attach_dbtables	1
+email_subject   pick files
+attach_dbtables 1
 
+.ne 12
 # Saving pickfiles:
 
-# If the -i option is specified, requesting that pickfiles 
-# be saved individually in a directory hierarchy with specific 
-# naming convention, the pickfile_name_pattern specifies 
-# the naming convention. Percent-escape codes in the style 
-# of the epoch2str(3) command may be used, in which case they 
-# will be replaced by values taken from the preferred origin 
-# time of the hypocenter. If the %{suffix} string is present in 
-# this pattern, an attempt is made to translate the author name 
-# for the origin in the database into a suffix as specified by the 
-# auth_suffixes table. 
+# If the -i option is specified, requesting that pickfiles
+# be saved individually in a directory hierarchy with specific
+# naming convention, the pickfile_name_pattern specifies
+# the naming convention. Percent-escape codes in the style
+# of the epoch2str(3) command may be used, in which case they
+# will be replaced by values taken from the preferred origin
+# time of the hypocenter. If the %{suffix} string is present in
+# this pattern, an attempt is made to translate the author name
+# for the origin in the \fIdatabase\fP into a suffix as specified by the
+# auth_suffixes table.
 
+.ne 7
 pickfile_name_pattern /data/cnsn/%Y%m/%Y%m%d%H%M%S.%{suffix}
 
-# the auth_suffixes table gives a set of regular expressions 
+# the auth_suffixes table gives a set of regular expressions
 # to match against the preferred origin's auth field, in order
-# to set the suffix for a pickfile. The first regular expression 
+# to set the suffix for a pickfile. The first regular expression
 # that matches will be used. If none match, the suffix specified
-# in auth_suffix_default is used. 
+# in auth_suffix_default is used.
 
+.ne 8
 auth_suffixes &Tbl{
-	PGC:mulder	tm
-	PGC:bentkowski	wb
-	PGC:bird	ab
-	PGC:.*		xx
-	orbassoc.*	auto
+        PGC:mulder      tm
+        PGC:bentkowski  wb
+        PGC:bird        ab
+        PGC:.*          xx
+        orbassoc.*      auto
 }
-auth_suffix_default 	xx
+auth_suffix_default     xx
 
-# the auth_agencies array translates the auth field from the 
-# database into the sending-agency quoted in the pickfile. If 
-# no match is found, the specified value for auth_agency_default is 
-# used. 
+.ne 8
+# the auth_agencies array translates the auth field from the
+# \fIdatabase\fP into the sending-agency quoted in the pickfile. If
+# no match is found, the specified value for auth_agency_default is
+# used.
 auth_agencies &Arr{
-	PGC:.*		PGC
+        PGC:.*          PGC
 }
-auth_agency_default	???
+auth_agency_default     ???
 
+.ne 6
 # Formatting pickfiles:
 
-# the primary_agency field lists the agency for which 
-# origin, error, and magnitude rows will start with 
+# the primary_agency field lists the agency for which
+# origin, error, and magnitude rows will start with
 # S, E, and M, respectively, instead of lowercase s,e,m
 primary_agency PGC
 
-# An attempt is made to translate first motions into 
-# the pickfile, unless the ignore_fm parameter is nonzero. 
-ignore_fm 	1
+.ne 17
+# An attempt is made to translate first motions into
+# the pickfile, unless the ignore_fm parameter is nonzero.
+ignore_fm       1
 
 # The model_codes and locator_codes arrays translate
-# the algorithm specified in the database into 
-# appropriate model and locator codes for the pickfiles 
+# the algorithm specified in the \fIdatabase\fP into
+# appropriate model and locator codes for the pickfiles
 model_codes &Arr{
-	cn01		01
-	cn03		03
-	cn06		06
-	cn07		07
+        cn01            01
+        cn03            03
+        cn06            06
+        cn07            07
 }
 locator_codes &Arr{
-	dbgenloc	G
-	dblocsat	I
+        dbgenloc        G
+        dblocsat        I
 }
 
-# Extracting raw info from database for pickfiles:
+.ne 8
+# Extracting raw info from \fIdatabase\fP for pickfiles:
 # This table is really part of the internal programming
-# of db2loon, made external and configurable for expert 
-# users. The table is a set of commands fed to dbprocess(3) 
-# to make the initial database view to be converted .The 
-# optional <SUBSET> line will be replaced at run-time 
+# of \fBdb2loon\fP, made external and configurable for expert
+# users. The table is a set of commands fed to dbprocess(3)
+# to make the initial \fIdatabase\fP view to be converted .The
+# optional <SUBSET> line will be replaced at run-time
 # by a dbprocess-style dbsubset command constructed dynamically
-# from command-line options and parameter-file entries. 
+# from command-line options and parameter-file entries.
+.ne 7
 
 dbprocess_commands &Tbl{
-	dbopen event
-	dbjoin origin
-	dbjoin -o origerr
-	dbjoin -o netmag orid
-	<SUBSET>
+        dbopen event
+        dbjoin origin
+        dbjoin -o origerr
+        dbjoin -o netmag \fIorid\fP
+        <SUBSET>
 }
-.ne 21
+
 .fi
-.in
 .ft R
+.in
 
 .SH EXAMPLE
-.ft CW
 .in 2c
+.ft CW
 .nf
-.ne 6
-% db2loon sample_event
+
+.ne 51
+%\fB db2loon sample_event\fP
 C TF YearMoDy HrMn Secnd Latitude Longitude Depth  #St #Ph    -Magnitude-- Agncy
 C VM L Weight RMS- TErr  LatErr-- LonErr--- DErr-- MajHE MinHE VertE AzHor Agncy
 S L  20050203 1408 03.20  48.0109 -122.6018  29.76      29    ML     3.38  PGC
@@ -213,43 +235,54 @@ A BIB                                                         ML     3.55  PGC
 A VGZ                                                         ML     3.59  PGC
 A HNB                                                         ML     3.92  PGC
 A GOBB                                                        ML     3.99  PGC
+%\fB \fP
+
+.ne 9
+%\fB db2loon -s 'time > "2005-001"' sample_event\fP
+C TF YearMoDy HrMn Secnd Latitude Longitude Depth  #St #Ph    -Magnitude-- Agncy
+C VM L Weight RMS- TErr  LatErr-- LonErr--- DErr-- MajHE MinHE VertE AzHor Agncy
+S L  20050203 1408 03.20  48.0109 -122.6018  29.76      29    ML     3.38  PGC
+E 03 G WT ON  0.33  0.07                      3.47  7.12  4.15  3.47 226.1 PGC
+M  ML     3.38 (0.37)  11                                                  PGC
+ .....
+ .....
+%\fB \fP
 
 .fi
-.in
 .ft R
-.SH DIAGNOSTICS
+.in
 .SH "SEE ALSO"
 .nf
 db2pgc(1)
 .fi
 .SH "BUGS AND CAVEATS"
-The exact translations from database to loon, and formatting, should be considered 
-a proof of concept pending thorough review of the Loon pickfile documentation. 
+The exact translations from \fIdatabase\fP to loon, and formatting, should be considered
+a proof of concept pending thorough review of the Loon pickfile documentation.
 
-The -l option does not do any rounding off to align the subset with particular 
-day boundaries. The value calculated is literally the system clock time minus 
-the specified number of 86400-second blocks. If day-boundary alignment is 
-critical, the -s option should be used with an appropriate subsetting expression. 
+The -l option does not do any rounding off to align the subset with particular
+day boundaries. The value calculated is literally the system clock time minus
+the specified number of 86400-second blocks. If day-boundary alignment is
+critical, the -s option should be used with an appropriate subsetting expression.
 
-db2loon does an internal sort on orid of the database table before creating 
+\fBdb2loon\fP does an internal sort on \fIorid\fP of the \fIdatabase\fP table before creating
 pickfiles. Therefore any previous dbsort commands in the dbprocess_commands table
 will be ignored.
 
-The code assumes there is only one netmag per origin and that it will be 
-found with a straight outer join of origin and netmag. This may be too 
-simplistic for some databases. 
+The code assumes there is only one netmag per origin and that it will be
+found with a straight outer join of origin and netmag. This may be too
+simplistic for some databases.
 
 The French location comments are in English.  Comments currently are limited, consisting
 only of a simple automatically-generated Flinn-Engdahl geographic region name.
 
-Caution should be used with the -d option not to specify any previously 
-existing databases (especially the input database!!) since the new database may overwrite
-the old. 
+Caution should be used with the -d option not to specify any previously
+existing databases (especially the input \fIdatabase\fP!!) since the new \fIdatabase\fP may overwrite
+the old.
 
 .SH AUTHOR
 .nf
 Kent Lindquist, Lindquist Consulting, Inc.
-Taimi Mulder, Geological Survey of Canada, Sidney, B.C. 
+Taimi Mulder, Geological Survey of Canada, Sidney, B.C.
 February, 2005
 .fi
 .\" $Id$
