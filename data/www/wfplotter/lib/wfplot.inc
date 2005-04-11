@@ -20,7 +20,7 @@ function wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, $width, $height, $format
 		$mytr = dblookup( $mytr, '', '', '', 'dbALL' ); # free up the trace-object structure
 		trfree( $mytr );
 		function TimeCallback( $aVal ) { // convert timestamp to minutes and secs
-		        return date( 'H:i:s', $aVal ) ;
+		        return gmdate( 'H:i:s', $aVal ) ;
 		}
 		$graph = new Graph( $width,$height ) ;
 		$graph->img->SetAntiAliasing() ;
