@@ -2,7 +2,10 @@
 dl( 'Datascope.so' ) ;
 
 # Load config
-require_once( "lib/wfplot.inc" ) ;
+# Not sure if this is correct, but you do need to reference wfplot.inc
+# wherever it may be on the local filesystem
+
+require_once( "/library/wfplot.inc" ) ;
 
 # Get form parameters
 $sta = $_GET['sta'] ;
