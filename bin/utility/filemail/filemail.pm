@@ -1,10 +1,19 @@
+#   Copyright (c) 2005 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# 
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
 package filemail;
 
 require Exporter;
 @ISA = ('Exporter');
 
 @EXPORT = qw( parse_address message_to_database get_epoch realname filemail );
-@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode $Relpath );
+@EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode 
+		 $Relpath $Schema );
 
 use Datascope ;
 use Mail::Internet;
@@ -19,10 +28,60 @@ $FormatProblems = "FormatProblems";
 $Nullhost = "localhost";
 $Dirmode = "0755";
 $Filemode = "0444";
+$Schema = "Mail1.3";
 @PreserveHosts = ();
 @Me = ();
 %Subjects = ();
 $Sent_archive_pattern = "%Y/SENT/%B";
+
+sub parse_message_ids {
+	my( $line ) = @_;
+	my( @ids );
+
+	my( $n ) = length( $line );
+
+	my( $state ) = "searching";
+
+	my( $message_id ) = "";
+
+	for( $i = 0; $i < $n; $i++ ) {
+
+		$c = substr( $line, $i, 1 );
+
+		if( $state eq "searching" && $c eq '<' ) {
+
+			$state = "acquiring";
+
+			$message_id .= $c;
+
+		} elsif( $state eq "acquiring" && $c eq '>' ) {
+
+			$state = "searching";
+
+			$message_id .= $c;
+
+			$message_id = clean_message_id( $message_id );
+
+			push( @ids, $message_id );
+
+		} elsif( $state eq "acquiring" ) {
+
+			$message_id .= $c;
+		}
+	}
+
+	return @ids;
+}
+
+sub clean_message_id {
+	my( $message_id ) = @_;
+
+	$message_id =~ s/\s+//g;
+
+	$message_id =~ m/<(.*)>/;
+
+	return $1;
+}
 
 sub parse_address {
 	my( $address ) = @_ ; 
@@ -200,9 +259,17 @@ sub message_to_database {
 	my( @db ) = splice( @_, 0, 4 );
 	my( $name, $dir, $dfile, $foff, $lines, $bytes, @message ) = @_;
 
+	if( dbquery( @db, dbSCHEMA_NAME ) ne $Schema ) {
+		
+		elog_complain( "Please upgrade your database to schema $Schema\n" );
+
+		return;
+	}
+
 	my( @dbin ) = dblookup( @db, "", "in", "", "" );
 	my( @dbout ) = dblookup( @db, "", "out", "", "" );
 	my( @dbcorr ) = dblookup( @db, "", "correspondents", "", "" );
+	my( @dbrefs ) = dblookup( @db, "", "references", "", "" );
 
 	if( ref( $message[0] ) eq "Mail::Internet" ) {
 		
@@ -247,6 +314,7 @@ sub message_to_database {
 		$sent = 0;
 	} 
 
+	my( $subject );
 	chomp( $subject = $mailobj->head->get( "Subject" ) );
 
  	my( $epoch ) = get_epoch( $mailobj );
@@ -259,14 +327,53 @@ sub message_to_database {
 		return;
 	}
 
+	my( $message_id, $in_reply_to, $references, @in_reply_to, @references );
+
+	chomp( $message_id = $mailobj->head->get( "Message-ID" ) );
+	chomp( $in_reply_to = $mailobj->head->get( "In-Reply-To" ) );
+	chomp( $references = $mailobj->head->get( "References" ) );
+
+	@in_reply_to = parse_message_ids( $in_reply_to );
+	@references = parse_message_ids( $references );
+
+	# Remove references that are already in the in_reply_to header:
+
+	@references = 
+		map { $ref = $_; grep( m/$ref/, @in_reply_to ) ? () : $ref }
+			@references;
+
  	if( $Verbose ) {
- 		elog_notify( "Adding to database mail from $from at $epoch: foff $foff lines $lines bytes $bytes $dir $dfile\n" );
+ 		elog_notify( "Adding to database mail from $from at $epoch: " .
+			"foff $foff lines $lines bytes $bytes $dir $dfile\n" );
+	}
+
+	if( defined( $message_id ) ) {
+		
+		$message_id = clean_message_id( $message_id );
+
+		foreach $ref ( @in_reply_to ) {
+			
+			dbaddv( @dbrefs, "messageid", $message_id,
+					 "inreplyto", "y", 
+					 "reference", $ref );
+		}
+
+		foreach $ref ( @references ) {
+			
+			dbaddv( @dbrefs, "messageid", $message_id,
+					 "reference", $ref );
+		}
+
+	} else {
+
+		$message_id = "-";
 	}
 
 	my( @dbtemp ) = dblookup( @dbcorr, "", "correspondents", "from", "" );
 	my( $address_size ) = dbquery( @dbtemp, dbFIELD_SIZE );
 
 	if( $sent ) {
+
 		$dir = reset_dir( @dbout, $dir );
 		$dbout[3] = dbaddnull( @dbout );
 		dbputv( @dbout,  "to", $to, 
@@ -276,8 +383,10 @@ sub message_to_database {
 				"bytes", $bytes,
 				"foff", $foff,
 				"dir", $dir, 
-				"dfile", $dfile );
+				"dfile", $dfile,
+				"messageid", $message_id );
 	} else {
+
 		$dir = reset_dir( @dbout, $dir );
 		$dbin[3] = dbaddnull( @dbin );
 		dbputv( @dbin,  "from", $address, 
@@ -287,7 +396,8 @@ sub message_to_database {
 				"bytes", $bytes,
 				"foff", $foff,
 				"dir", $dir, 
-				"dfile", $dfile );
+				"dfile", $dfile,
+				"messageid", $message_id );
 
 		my( $expr ) = "from == substr(\"$address\",0,$address_size)";
 
@@ -455,7 +565,8 @@ sub filemail {
 
 	$dir = abspath( $dir );
 
-	message_to_database( @db, $name, $dir, $dfile, $foff, $lines, $bytes, $mailobj );
+	message_to_database( @db, $name, $dir, $dfile, $foff, 
+			     $lines, $bytes, $mailobj );
 
 }
 1;

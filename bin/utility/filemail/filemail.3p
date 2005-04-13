@@ -26,6 +26,7 @@ $filemail::Filemode = "0644";
 $filemail::FormatProblems = "FormatProblems";
 $filemail::Nullhost = "localhost";
 $filemail::Sent_archive_pattern = "%Y/SENT/%B";
+$filemail::Schema = "Mail1.3";
 @filemail::Me = ();
 @filemail::PreserveHosts = ();
 %filemail::Subjects = ();
@@ -39,8 +40,10 @@ The filemail routine takes an input message as $in. This may be either
 the name of a file containing a single mail message, or a reference 
 to a Mail::Internet object. filemail copies the message to the 
 appropriate location under the $archive_dir directory, and records 
-the mail message in a Mail1.2 Datascope database to which the @db 
-database pointer should be open with write permission. Mail messages 
+the mail message in a Datascope database of schema $filemail::Schema 
+to which the @db database pointer should be open with write permission. 
+[The variable $filemail::Schema is informational and should not be modified
+by the user]. Mail messages 
 by default are saved into subdirectories and files as YEAR/domain/sender.
 Database entries are made via the message_to_database function into 
 the \fIin\fP table of the mail database. If there are problems parsing

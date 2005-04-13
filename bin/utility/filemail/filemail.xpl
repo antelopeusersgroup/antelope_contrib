@@ -303,6 +303,8 @@ $Splitdir = pfget( $Pf, "splitdir" );
 $Fileddir = pfget( $Pf, "fileddir" );
 $Archivedir = pfget( $Pf, "archivedir" );
 
+$schema = $filemail::Schema;
+
 $filemail::Nullhost = pfget( $Pf, "Hosts{NULL}" );
 @filemail::PreserveHosts = @{pfget( $Pf, "Hosts{Preserve}" )};
 @filemail::Me = @{pfget( $Pf, "Me" )};
@@ -323,11 +325,17 @@ if( $do_database ) {
 
 	if( ! -e "$mail_dbname" ) {
 		open( D, ">$mail_dbname" );
-		print D "#\nschema Mail1.2\n";
+		print D "#\nschema $schema\n";
 		close( D );
 	}
 
 	@db = dbopen( $mail_dbname, "r+" );
+
+	if( dbquery( @db, dbSCHEMA_NAME ) ne $schema ) {
+
+		elog_die( "Please upgrade $mail_dbname to schema " .
+			  "version $schema\n" );
+	}
 
 	foreach $file ( @ARGV ) {
 
@@ -343,11 +351,17 @@ if( $do_database ) {
 	}
 	if( ! -e "$mail_dbname" ) {
 		open( D, ">$mail_dbname" );
-		print D "#\nschema Mail1.2\n";
+		print D "#\nschema $schema\n";
 		close( D );
 	}
 
 	@db = dbopen( $mail_dbname, "r+" );
+
+	if( dbquery( @db, dbSCHEMA_NAME ) ne $schema ) {
+
+		elog_die( "Please upgrade $mail_dbname to schema " .
+			  "version $schema\n" );
+	}
 }
 
 @contents = sorted_bytime();
