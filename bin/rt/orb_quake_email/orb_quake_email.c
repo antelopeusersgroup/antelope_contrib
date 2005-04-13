@@ -213,6 +213,7 @@ Arr	*recipients;
 
 	addresses_string = jointbl( targets, "," );
 
+	freetbl( interested, 0 );
 	freetbl( targets, 0 );
 
 	dbdelete( db );
@@ -261,7 +262,9 @@ main( int argc, char **argv )
 	char	*s;
 	int	pktid;
 	double	time;
-	int	nbytes;
+	int	nbytes = 0;
+	int	nmaxpkts = -1;
+	int 	npkts = 0;
 	int	optind;
 	char	*packet = NULL;
 	int	bufsize = 0;
@@ -271,7 +274,7 @@ main( int argc, char **argv )
 	char	*header;
 	char	*footer;
 	char	*addresses_string;
-	Arr	*recipients;
+	Arr	*recipients = 0;
 	double	starttime;
 	int	rc;
 	int	orid;
@@ -284,6 +287,7 @@ main( int argc, char **argv )
 	Program_Name = base;
 	strcpy( pffile, Program_Name );
 	strcpy( start, "" );
+	strcpy( srcname, "" );
 
 	for( optind = 1; optind < argc; optind++ ) {
 
@@ -297,10 +301,14 @@ main( int argc, char **argv )
 		if (strcmp(argv[optind], "-start") == 0) {
 			strcpy( start, argv[++optind] );
 		}
+
+		if (strcmp(argv[optind], "-n") == 0) {
+			nmaxpkts = atoi( argv[++optind] );
+		}
 	}
 
 	if( argc - optind != 1 ) {
-		die( 1, "Usage: %s [-pf pffile] [-start {OLDEST|NEWEST|time}] orbname\n", Program_Name );
+		die( 1, "Usage: %s [-pf pffile] [-n npkts] [-start {OLDEST|NEWEST|time}] orbname\n", Program_Name );
 	} else {
 		strcpy( orbname, argv[optind++] );
 	}
@@ -330,12 +338,19 @@ main( int argc, char **argv )
 
 	for( ;; ) {
 
+		if( nmaxpkts > 0 && npkts > nmaxpkts ) {
+
+			exit( 0 );
+		}
+
 		orbreap( orbfd, &pktid, srcname, &time, 
 			 &packet, &nbytes, &bufsize );
     
                 type = unstuffPkt (srcname, time, packet, nbytes, &unstuffed);
 
                 if (type != Pkt_db) continue;
+	
+		npkts++;
 
                 db = unstuffed->db;
 
@@ -343,9 +358,12 @@ main( int argc, char **argv )
 
 		clear_register( 1 );
 
-		pfread( pffile, &pf );
+		pfupdate( pffile, &pf );
 		header = pfget_string( pf, "header" );
 		footer = pfget_string( pf, "footer" );
+		if( recipients ) {
+			freearr( recipients, 0 );
+		}
 		recipients = pfget_arr( pf, "recipients" );
 		Placedb = pfget_string( pf, "placedb" );
 		Mailx = pfget_string( pf, "mailx" );

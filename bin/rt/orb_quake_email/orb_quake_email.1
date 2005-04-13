@@ -4,7 +4,7 @@
 orb_quake_email \- email reports of earthquakes from origin rows on orb
 .SH SYNOPSIS
 .nf
-orb_quake_email [-pf pffile] [-start {OLDEST|NEWEST|time}] orbserver
+orb_quake_email [-pf pffile] [-n npkts] [-start {OLDEST|NEWEST|time}] orbserver
 .fi
 .SH DESCRIPTION
 
@@ -30,9 +30,12 @@ for the origin-table row, filtering out unwanted origins.
 orb_quake_email dynamically rereads its parameter file for each hypocenter
 being reported. 
 .SH OPTIONS
--pf pffile specify an alternate name for the parameter file. The default is orb_quake_email.pf. 
--start {OLDEST|NEWEST|time}
+.IP "-pf pffile"
+specify an alternate name for the parameter file. The default is orb_quake_email.pf. 
+.IP "-start {OLDEST|NEWEST|time}"
 set the start time for the next packet to process. 
+.IP "-n npkts"
+Collect the specified number of database-row packets and then quit. 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
