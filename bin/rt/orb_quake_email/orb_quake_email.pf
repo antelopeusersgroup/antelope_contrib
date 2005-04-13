@@ -1,4 +1,6 @@
 placedb /home/kent/work/orb_quake_email/pipeline_places
+mailx  /usr/bin/mailx
+dist_cutoff_km  150
 
 header &Literal{
 	This is an automatic earthquake solution from the 

@@ -4,16 +4,25 @@
 orb_quake_email \- email reports of earthquakes from origin rows on orb
 .SH SYNOPSIS
 .nf
-orb_quake_email [-pf pffile] orbserver
+orb_quake_email [-pf pffile] [-start {OLDEST|NEWEST|time}] orbserver
 .fi
 .SH DESCRIPTION
-orb_quake_email watches an Antelope ORB-server for hypocenters, announced
-as database rows of the CSS3.0 origin table. Upon detection of new 
-hypocenters, orb_quake_email will mail a notification to the email addresses
-in the parameter file. Orb_quake_email requires a database of places (in places1.0 format)
-from which to calculate the distance of the detected earthquake. The pathname
-to this database is also in the parameter file. Orb_quake_email will echo
-a copy of each message to stdout.
+
+orb_quake_email watches an Antelope ORB-server for hypocenters,
+announced as database rows of the CSS3.0 origin table. Upon detection
+of new hypocenters, orb_quake_email will mail a notification to the
+email addresses in the parameter file. Orb_quake_email requires a
+database of places (in places1.2 format) from which to calculate the
+distance of the detected earthquake. The pathname to this database is
+also in the parameter file. If the dist_cutoff_km parameter is not 
+blank and not zero, places farther than the specified number of 
+kilometers from the epicenter will not be included in the report.
+
+Orb_quake_email will echo a copy of each message to stdout.
+
+The pathname for the mail program to be used is specified in the mailx
+parameter of the parameter file. This program should take arguments 
+appropriate for the Unix mailx(1) command. 
 
 The array specifying email recipients may contain a subsetting expression 
 for the origin-table row, filtering out unwanted origins.
@@ -22,11 +31,16 @@ orb_quake_email dynamically rereads its parameter file for each hypocenter
 being reported. 
 .SH OPTIONS
 -pf pffile specify an alternate name for the parameter file. The default is orb_quake_email.pf. 
+-start {OLDEST|NEWEST|time}
+set the start time for the next packet to process. 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .nf
 placedb /home/kent/work/orb_quake_email/pipeline_places
+mailx  /usr/bin/mailx
+dist_cutoff_km  150
+
 header &Literal{
 
 	This is an automatic earthquake solution from the 
