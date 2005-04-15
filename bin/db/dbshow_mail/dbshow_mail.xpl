@@ -13,7 +13,6 @@ sub proceed {
 
 		@db = dbsubset( @db, "realname == \"$lookup_from\"" );
 
-
 		@db = dbprocess( @db, "dbjoin in" );
 
 		unless( $opt_a ) {
@@ -22,6 +21,21 @@ sub proceed {
 		}
 
 		@db = dbprocess( @db, "dbsort -r time" );
+
+	} elsif( $opt_m ) {
+
+		@db = dbopen( $dbname, "r" );
+
+		@db = dblookup( @db, "", "in", "", "" );
+
+		@db = dbsubset( @db, "messageid == \"$opt_m\"" );
+
+		if( dbquery( @db, dbRECORD_COUNT ) <= 0 ) {
+
+			@db = dblookup( @db, "", "out", "", "" );
+
+			@db = dbsubset( @db, "messageid == \"$opt_m\"" );
+		}
 
 	} else {
 
@@ -50,6 +64,12 @@ sub proceed {
 		
 		print "No messages from $lookup_from\n";
 		exit 0;
+
+	} elsif( $opt_m && $nmessages == 0 ) {
+
+		print "Couldn't find message id '$opt_m' in database. Bye!\n";
+		exit 0;
+
 	}
 
 	$mail_viewer = pfget( "dbshow_mail", "mail_viewer" );
@@ -81,9 +101,9 @@ sub proceed {
 
 $Pf = "dbshow_mail";
 
-$Usage = "dbshow_mail [-n] [-a] [-f from] [-w nmax] [dbtable]\n";
+$Usage = "dbshow_mail [-n] [-a] [-w nmax] {-f from|-m messageid|dbtable}\n";
 
-if( ! &Getopts( 'naf:w:' ) || @ARGV > 1 ) {
+if( ! &Getopts( 'naf:w:m:' ) || @ARGV > 1 ) {
 
 	die( "$Usage" );	
 } 
@@ -108,15 +128,19 @@ if( $opt_a && ! $opt_f ) {
 	print STDERR "Useless use of -a without -f\n";
 }
 
-if( ! $opt_f && @ARGV < 1 ) {
+if( ! $opt_f && ! $opt_m && @ARGV < 1 ) {
 
-	die( "Table name is only optional with -f command.\n" );
+	die( "Table name is only optional when using -f or -t.\n" );
 
-} elsif( ! $opt_f ) {
+} elsif( ! $opt_f && ! $opt_m ) {
 
 	$dbname = $ARGV[0];
 
 } elsif( $opt_f && @ARGV == 1 ) {
+
+	$dbname = $ARGV[0];
+
+} elsif( $opt_m && @ARGV == 1 ) {
 
 	$dbname = $ARGV[0];
 
@@ -136,6 +160,10 @@ if( ! $opt_f && @ARGV < 1 ) {
 
 		$lookup_from = $aliases{$opt_f};
 	}
+
+} elsif( $opt_m ) {
+
+	$dbname = pfget( $Pf, "default_maildb" );
 }
 
 if( ! defined( $opt_w ) ) {
