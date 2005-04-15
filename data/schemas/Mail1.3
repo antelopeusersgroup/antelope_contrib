@@ -6,18 +6,14 @@ Schema "Mail1.3"
 	Timedate timestamp
 	;
 
-Attribute to
-	String ( 80 )
-	Format ( "%-80s" ) 
-	Null  ( "-"  ) 
-	Description ( "recipient" ) 
-	; 
-
-Attribute from
-	String ( 80 )
-	Format ( "%-80s" ) 
-	Null  ( "-"  ) 
-	Description ( "sender" ) 
+Attribute bytes
+	Integer ( 10 )
+	Format ( "%10d" ) 
+	Null  ( "-1"  ) 
+	Description ( "bytes in message" ) 
+	Detail {
+		This field gives the total number of bytes in a message.
+	}
 	; 
 
 Attribute corrtype
@@ -32,18 +28,15 @@ Attribute corrtype
 	}
 	; 
 
-Attribute subject
-	String ( 80 )
-	Format ( "%-80s" ) 
-	Null  ( "-"  ) 
-	Description ( "subject" ) 
-	; 
-
 Attribute descrip
 	String ( 80 )
 	Format ( "%-80s" ) 
 	Null  ( "-"  ) 
 	Description ( "long description from From" ) 
+	Detail {
+		This field gives the text description of a sender
+		out of the email 'From' field
+	}
 	; 
 
 Attribute dfile
@@ -83,6 +76,17 @@ Attribute foff
 	}
 	;
 
+Attribute from
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "sender" ) 
+	Detail {
+		This field gives the fully qualified email address 
+		of a mail sender
+	}
+	; 
+
 Attribute inreplyto
 	String ( 1 )
 	Format ( "%-1s" ) 
@@ -93,6 +97,18 @@ Attribute inreplyto
 		This field specifies whether a reference to a message 
 		was taken from the In-Reply-To mail header field (if not,
 		it was taken from the References field)
+	}
+	; 
+
+Attribute lines
+	Integer ( 10 )
+	Format ( "%10d" ) 
+	Null  ( "-1"  ) 
+	Description ( "lines in message" ) 
+	Detail {
+		This field gives the total count of lines in a message,
+		including all header lines, as it is stored in the mail
+		file.
 	}
 	; 
 
@@ -157,6 +173,13 @@ Attribute realname
 	Format ( "%-80s" ) 
 	Null  ( "-"  ) 
 	Description ( "Real name of a correspondent" )
+	Detail {
+		This field indicates the real name 
+		by which an email sender should be referred. 
+		For the common case where one person has 
+		several email addresses, this field should 
+		be used consistently for each person.
+	}
 	; 
 
 Attribute reference
@@ -185,6 +208,16 @@ Attribute time
 	}
 	; 
 
+Attribute subject
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "subject" ) 
+	Detail {
+		This field lists the subject of an email message.
+	}
+	; 
+
 Attribute timestamp
 	Time ( 12 )
 	Format ( "%12.0lf" ) 
@@ -196,18 +229,15 @@ Attribute timestamp
 	}
 	; 
 
-Attribute bytes
-	Integer ( 6 )
-	Format ( "%6d" ) 
-	Null  ( "-1"  ) 
-	Description ( "bytes in message" ) 
-	; 
-
-Attribute lines
-	Integer ( 6 )
-	Format ( "%6d" ) 
-	Null  ( "-1"  ) 
-	Description ( "lines in message" ) 
+Attribute to
+	String ( 80 )
+	Format ( "%-80s" ) 
+	Null  ( "-"  ) 
+	Description ( "recipient" ) 
+	Detail {
+		This field lists the fully-qualified internet email 
+		address of a person to whom email has been sent. 
+	}
 	; 
 
 Relation out 
@@ -217,6 +247,10 @@ Relation out
 	Primary ( to subject time ) 
 	Alternate ( messageid )
 	Description ( "outbound mail" ) 
+	Detail {
+		This table catalogs all messages which have been 
+		sent by a given user.
+	}
 	;
 
 Relation in 
@@ -226,6 +260,11 @@ Relation in
 	Primary ( from subject time ) 
 	Alternate ( messageid )
 	Description ( "inbound mail" ) 
+	Detail {
+		This table catalogs all email messages which have 
+		been received by a given user, or a given person
+		if they have multiple email addresses.
+	}
 	;
 
 Relation correspondents 
@@ -234,6 +273,17 @@ Relation correspondents
 	    )
 	Primary ( from ) 
 	Description ( "Info about Correspondents" ) 
+	Detail {
+		This table catalogs all the senders and 
+		recipients of emails in the database, translating
+		their email addresses to their descriptions
+		and real names (generally the description is the
+		explanation string automatically added by the 
+		email sending agent, where the realname field may be 
+		the same or may be a cleaned-up version made 
+		to be consistent for all addresses corresponding
+		to the same person).
+	}
 	;
 
 Relation references
@@ -242,6 +292,12 @@ Relation references
 	    )
 	Primary ( messageid reference )
 	Description ( "References amongst email messages" )
+	Detail {
+		This table catalogs the contents of the In-reply-to
+		and References fields of an RFC2822 internet email
+		message. This is useful for tracking threads of email 
+		discussion.
+	}
 	;
 
 Relation summary
@@ -250,4 +306,10 @@ Relation summary
 	    )
 	Primary ( from )
 	Description ( "Summary of message numbers and times" )
+	Detail {
+		This table summarizes the contents of a particular 
+		email collection, often used for inbox monitoring. 
+		Each sender is tabulated with the number of messages
+		and the time-range present for the given sender. 
+	}
 	;
