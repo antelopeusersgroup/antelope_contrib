@@ -58,7 +58,7 @@ sender		.*
 subject		.*
 database	mp_maildb
 archive_dir	mp_mail_archive
-schema		Mail1.2
+schema		Mail1.3
 dirmode		0755
 filemode	0444
 }
