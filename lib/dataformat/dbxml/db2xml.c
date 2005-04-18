@@ -298,7 +298,7 @@ int 	flags;
 			    		sprintf ( temp, "%17.5lf", result.d ); 
 			    		break; 
 				case dbREAL:
-			    		sprintf ( temp, "%10.5g", result.d ); 
+			    		sprintf ( temp, "%15.8g", result.d ); 
 			    		break;
 				case dbSTRING:
 			    		sprintf ( temp, "%-10s", result.t ); 
