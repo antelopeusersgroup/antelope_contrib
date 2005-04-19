@@ -18,6 +18,10 @@ $epoch = get_epoch( $mailobj );
 
 $real = realname( $address );
 
+@message_ids = parse_message_ids( $line );
+
+$message_id = clean_message_id( $message_id );
+
 $filemail::Verbose = 0;
 $filemail::Dryrun = 0;
 $filemail::Relpath = 0;
@@ -90,6 +94,15 @@ the source-name of an input file if the message comes from a file. The $dir, $df
 specify where the email message was saved. The $lines and $bytes record
 the size of the message. These must be exact in order for future
 message lookups to succeed.
+
+The parse_message_ids function takes a single line of text (for example,
+the contents of the References or In-Reply-To email header lines) and 
+returns an array of the message-id strings it finds within the input 
+string. 
+
+The clean_message_id function takes a Message-ID as an input string 
+and returns a copy that has illegal spaces removed and is stripped of the 
+enclosing brackets. 
 
 If the $filemail::Verbose variable is nonzero, verbose messages are
 printed.

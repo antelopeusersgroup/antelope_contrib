@@ -11,7 +11,8 @@ package filemail;
 require Exporter;
 @ISA = ('Exporter');
 
-@EXPORT = qw( parse_address message_to_database get_epoch realname filemail );
+@EXPORT = qw( parse_address message_to_database get_epoch realname filemail
+	      parse_message_ids clean_message_id );
 @EXPORT_OK = qw( $Verbose $FormatProblems $Nullhost $Dirmode $Filemode 
 		 $Relpath $Schema );
 
