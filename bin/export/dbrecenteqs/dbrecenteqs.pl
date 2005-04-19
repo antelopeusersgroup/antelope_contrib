@@ -1408,7 +1408,7 @@ sub datafile_abspath {
 
 	if( $file !~ m@^\.?/@ ) {
 
-		$file = "$ENV{ANTELOPE}/data/dbrecenteqs/" . $file;
+		$file = "$ENV{ANTELOPE}/data/www/dbrecenteqs/" . $file;
 	}
 
 	return $file;
