@@ -1,0 +1,130 @@
+.TH DBSCANMAIL 1 "$Date$"
+.SH NAME
+dbscanmail \- scan a mail database to perform one of several cleanup tasks
+.SH SYNOPSIS
+.nf
+dbscanmail [-vVo] [-a recno] dbname operation 
+.fi
+.SH DESCRIPTION
+dbscanmail loops over all the messages in a database table, processing each one 
+according to the specified operation. The default is to loop only over the 
+\fIin\fP table. The -o option forces the loop to be over the \fIout\fP table
+Note that for a complete database, two runs of the program may be necessary
+for a given operation, once each for the input and output tables. The operations
+that are currently defined are as follows:
+
+.IP set_messageid
+This operation sets the message id field in the database table for every message
+that has a message id defined. 
+
+.IP build_references
+As with set_messageid, this operation sets the message id field in the
+database table for every message that has a message id defined. In addition, 
+it examines the \fIReferences\fP and \fIIn-Reply-To\fP mail headers for
+references, and fills them in in the references table of the database if found. 
+
+.IP list_contenttypes
+This operation simply tabulates all the MIME content types present in the 
+main header fields for each message (i.e. it does not descend into attachments).
+
+.IP fix_bytecount
+This operation assumes the line count in the database is correct, and 
+recomputes the byte count according to the message reread from the file. 
+This operation makes up for the consequences of old schemas which did 
+not support mail messages of total size over a megabyte (attempt to 
+put such messages in pre-Mail1.3 schemas would result in a corrupt byte 
+count).
+.SH OPTIONS
+
+.IP -v 
+Verbose
+
+.IP -V 
+Very Verbose (describes every message as it s processed)
+
+.IP -o 
+Scan the \fIout\fP table of the database, i.e. scan messages that have 
+been sent rather than those that have been received. The default is to 
+scan the \fIin\fP table only. 
+
+.IP "-a recno"
+Start processing after the specified record number. This is useful 
+if multiple runs are necessary to complete a cleanup operation, if 
+dbscanmail is encountering fatal errors which must be cleaned up
+individually.
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+% dbscanmail -v testdb fix_bytecount
+dbscanmail: Starting run of operation 'fix_bytecount'
+Processing record 0
+dbscanmail: FIXED record 52: change 902011 bytes to 90201196 bytes for message From: rstacey@hpwren.ucsd.edu at  3/16/2004  16:12:26.000  Subject: 'Re: dual iQeye3 cameras' Message-ID: 'Pine.BSF.4.53.0403161640020.86500@mave.nlanr.net'
+% 
+% dbscanmail -o -v testdb fix_bytecount
+dbscanmail: Starting run of operation 'fix_bytecount'
+Processing record 0
+Scanned 18 messages and encountered 0 problems
+% 
+
+S%canned 70 messages and encountered 1 problems
+% 
+
+% dbscanmail testdb set_messageid
+Scanned 70 messages and encountered 0 problems
+%
+% dbscanmail -o testdb set_messageid
+Scanned 18 messages and encountered 0 problems
+% 
+
+% dbscanmail testdb build_references
+Scanned 70 messages and encountered 0 problems
+%
+% dbscanmail -o testdb build_references
+Scanned 18 messages and encountered 0 problems
+% 
+
+% dbscanmail testdb list_contenttypes
+Found Content-Type: "multipart/alternative"
+Found Content-Type: "text/html"
+Found Content-Type: "text/plain"
+Found Content-Type: ""
+Found Content-Type: "multipart/mixed"
+Totals:
+        ""      14 instances
+        "multipart/mixed"       2 instances
+        "multipart/alternative" 5 instances
+        "text/plain"    47 instances
+        "text/html"     2 instances
+Scanned 70 messages and encountered 0 problems
+% 
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+filemail(1), filemail(3p)
+.fi
+.SH "BUGS AND CAVEATS"
+The database must be in Mail1.3 schema or later. 
+
+It would be quite straightforward to document a couple routines and 
+put in a mechanism to allow arbitrary scanning functions to be added 
+externally, for any custom process a user might want to perform 
+on a mail database.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
