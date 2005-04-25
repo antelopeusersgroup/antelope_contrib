@@ -1,0 +1,106 @@
+.TH DBSERVER 1 "$Date$"
+.SH NAME
+dbserver \- server engine for Datascope databases
+.SH SYNOPSIS
+.nf
+\fBdbserver \fP[-d \fIport\fP] \fIdbname\fP
+.fi
+.SH DESCRIPTION
+The \fBdbserver\fP program provides simple client-server access to Datascope
+databases, honoring basic requests for database operations and queries
+and returning the requested data in a variety of formats. The output formats
+currently supported are XML and Ptolemy.
+
+The input requests are formatted as parameter-files. A Tbl called
+\fIrecipe\fP  gives a set of dbprocess(3) commands to be performed
+on the database. The \fIformat\fP parameter should be set to either
+\fIxml\fP or \fIptolemy\fP, which delegates to db2xml(3) or db2ptolemy(3)
+to format the resulting output. Two optional tables, \fIkeys\fP and
+\fIvalues\fP, may be specified in the parameter file. If provided,
+these tables are passed to db2xml(3) and db2ptolemy(3) as the \fIfields\fP 
+and \fIexpressions\fP arguments, allowing fine-tuning of the output fields,
+expressions, and tag names. See the example below.
+
+.SH OPTIONS
+.IP "-d port"
+This option daemonizes the server to listen to requests from the specified
+TCP port (the default is to listen to requests from stdin and respond on
+stdout).
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 6
+%\fB cat sample_request.pf\fP
+recipe &Tbl{
+        dbopen origin
+        dbsubset ml > 5
+}
+format xml
+
+.ne 6
+keys &Tbl{
+        lat
+        lon
+        depth
+        time
+}
+
+.ne 6
+values &Tbl{
+        lat
+        lon
+        depth
+        strtime(time)
+}
+
+.ne 32
+%\fB cat sample_request.pf | dbserver /opt/antelope/data/db/demo/demo\fP
+HELLO
+dbserver *debug*: reading the recipe.
+dbserver *debug*: performing dbprocess.
+dbserver *debug*: getting 'keys' and 'values'.
+dbserver *debug*: outputting results as xml
+<View41>
+   <row>
+      <lat>35.059</lat>
+      <lon>26.655</lon>
+      <depth>20</depth>
+      <time>4/30/1992  11:44:38.900</time>
+   </row>
+   <row>
+      <lat>-33.594</lat>
+      <lon>-72.018</lon>
+      <depth>30</depth>
+      <time>5/18/1992   3:02:21.500</time>
+   </row>
+   <row>
+      <lat>-33.669</lat>
+      <lon>-71.942</lon>
+      <depth>44</depth>
+      <time>5/22/1992   1:20:39.900</time>
+   </row>
+   <row>
+      <lat>51.788</lat>
+      <lon>-176.12</lon>
+      <depth>49</depth>
+      <time>5/24/1992  12:50:19.600</time>
+   </row>
+</View41>
+
+.fi
+.ft R
+.in
+.SH LIBRARY
+.SH "BUGS AND CAVEATS"
+\fBdbserver\fP needs to support dbquery(3) operations and session-based
+interactions.
+
+This is a development prototype.
+.SH AUTHOR
+.nf
+Tobin Fricke
+Documentation begun by Kent Lindquist
+.fi
+.\" $Id$
