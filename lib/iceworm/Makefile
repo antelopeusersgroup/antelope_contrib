@@ -3,6 +3,7 @@ DIRS=`find * -type d \( ! -name CVS ! -name .\* ! -name \*- ! -name +\* \) -prun
 
 all clean Include install installMAN pf relink tags uninstall :: FORCED
 	@-case `uname -s` in \
+	    Darwin) : ;; \
 	    Linux) : ;; \
 	    SunOS) DIRS="$(DIRS)" ; for i in $$DIRS ; do \
 			printf "+    %-40s  %s\n" $$i "`date`" ; \
