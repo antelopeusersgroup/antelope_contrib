@@ -458,6 +458,7 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		}
 	}
 }
+// Note comment below on 3d version of this function applies here too
 GCLvectorfield::GCLvectorfield(Dbptr db,
 		string gclgnamein,
 		string fieldname,
@@ -472,9 +473,15 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	FILE *fp;
 	int gridsize;
 	int nrec;
-	nv = nvsize;
 	if(fieldname.length()==0)
 	{
+		if(nvsize<=0)
+		{
+			elog_notify(0,"GCLvectorfield database constructor:  invalid vector length request = %d\n",
+				nvsize);
+			throw 3;
+		}
+		nv=nvsize;
 		val=create_3dgrid_contiguous(n1, n2, nv);
 		for(int i=0;i<n1;++i)
 			for(int j=0;j<n2;++j)  
@@ -500,6 +507,17 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 	                throw 1;
 	        }
 		dbgrd.record = 0;
+		int nvdb;
+		dbgetv(dbgrd,0,"nv",&nvdb,0);
+		if(nvsize>0)
+		{
+			if(nvdb!=nvsize)
+			{
+				elog_notify(0,(char *)"GCLvectorfield database constructor warning:\nnvsize=%d passed to constructor does not match nv in database = %d\nUsing database value\n",
+					nvsize,nvdb);
+			}
+		}
+		nv=nvdb;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
 			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
@@ -522,6 +540,11 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		}
 	}
 }
+/* April 2005:  Changed an oddity of this.  Previously there was an odd logic that
+allowed fieldname to be null and an nvsize parameter that allowed one to create a
+field with all zeros with nvsize components per point.  This was preserved, but 
+used a default feature that makes the nzsize parameter not required by most 
+callers. */
 GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		string gclgnamein,
 		string fieldname,
@@ -538,9 +561,15 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	int gridsize;
 	int nrec;
 
-	nv=nvsize;
 	if(fieldname.length()==0)
 	{
+		if(nvsize<=0)
+		{
+			elog_notify(0,"GCLvectorfield3d database constructor:  invalid vector length request = %d\n",
+				nvsize);
+			throw 3;
+		}
+		nv=nvsize;
 		val=create_4dgrid_contiguous(n1, n2, n3, nv);
 		for(int i=0;i<n1;++i)
 			for(int j=0;j<n2;++j)  
@@ -567,6 +596,17 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 	                throw 1;
 	        }
 		dbgrd.record = 0;
+		int nvdb;
+		dbgetv(dbgrd,0,"nv",&nvdb,0);
+		if(nvsize>0)
+		{
+			if(nvdb!=nvsize)
+			{
+				elog_notify(0,(char *)"GCLvectorfield3d database constructor warning:\nnvsize=%d passed to constructor does not match nv in database = %d\nUsing database value\n",
+					nvsize,nvdb);
+			}
+		}
+		nv=nvdb;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
 			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
@@ -1042,7 +1082,7 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 	fpos = ftell(fp);
 	foff = (int)fpos;
 	gridsize = n1*n2*nv;	
-	if(fwrite(val[0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"fwrite error for file %s\n",
 			filename.c_str());
@@ -1115,7 +1155,7 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 	fpos = ftell(fp);
 	foff = (int)fpos;
 	gridsize = n1*n2*n3*nv;	
-	if(fwrite(val[0][0],sizeof(double),gridsize,fp) != gridsize)
+	if(fwrite(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"fwrite error for file %s\n",
 			filename.c_str());

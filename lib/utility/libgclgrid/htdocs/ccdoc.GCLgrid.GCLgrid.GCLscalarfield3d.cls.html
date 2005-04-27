@@ -7,9 +7,9 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html">
-<meta name="ccdoc_creation_date" content="Tue Mar 15 11:25:30 2005">
+<meta name="ccdoc_creation_date" content="Wed Apr 27 07:05:01 2005">
 <meta name="keywords" content="ccdoc, source code, documentation">
-<title>ccdoc GCLscalarfield3d gclgrid.h:1001:class</title>
+<title>ccdoc GCLscalarfield3d gclgrid.h:1010:class</title>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
 <blockquote>
 Three-dimensional scalar field defined on a GCLgrid framework.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1001</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1010</dd>
 <dt><b>Author:</b></dt><dd>unascribed</dd>
 <dt><b>Version:</b></dt><dd>unknown</dd>
 </dl>
@@ -58,7 +58,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
 <tr>
 <th valign=bottom align=left>Entity</th><th valign=bottom align=left>Inherited From</th><th valign=bottom align=left>Type</th><th valign=bottom align=left>Scope</th><th valign=bottom align=left>Short Description</th></tr>
 <tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#des--7eGCLscalarfield3d--7e-GCLscalarfield3d--28--29">~GCLscalarfield3d</a></td><td align=left valign=top></td><td align=left valign=top>destructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Antelope database driven constructor.
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#des--7eGCLscalarfield3d--7e-GCLscalarfield3d--28--29">~GCLscalarfield3d</a></td><td align=left valign=top></td><td align=left valign=top>destructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Destructor.
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#con-GCLscalarfield3d-GCLscalarfield3d--28--29">GCLscalarfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Default constructor.
@@ -71,6 +71,9 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#con-GCLscalarfield3d-GCLscalarfield3d--28-GCLgrid3d--26-g--29">GCLscalarfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Partial copy constructor cloning grid but not setting field variable.
+</td></tr>
+<tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#con-GCLscalarfield3d-GCLscalarfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--29">GCLscalarfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Antelope database driven constructor.
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield3d.cls.html#met-compute_extents-void-compute_extents--28--29">compute_extents</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>undocumented</td></tr>
@@ -148,41 +151,13 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>destructor ~GCLscalarfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
 <a href="#con-GCLscalarfield3d-GCLscalarfield3d--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
-  Antelope database driven constructor.
+ Destructor.
 <p>
- This is a specialized constructor that
-  loads a field tagged with two names:  grid name and the field name (see below).
-  The two components are stored separately in the external database using 
-  two different tables.  This constructor has a fair amount of memory overhead
-  as it loads a copy of the parent GCLgrid object before creating the field and
-  then loading field variable data from the database.
 <p>
-<dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1059</dd>
-<dt><b>Params:</b></dt><dd><table cellspacing=4>
-<tr><td align=left valign=top><i>db
-</i></td><td align=left valign=top>Antelope database pointer.
-</td></tr>
-<tr><td align=left valign=top><i>grdnm
-</i></td><td align=left valign=top>name of grid to be loaded from the database.
-</td></tr>
-<tr><td align=left valign=top><i>fn
-</i></td><td align=left valign=top>name tag for the field to be loaded from the database.
-GCLscalarfield3d(Dbptr db, string grdnm, string fn);
- Destructor.  
  Note the same precautions about application of the default constructor as noted 
  in
-<a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#des--7eGCLgrid3d--7e-GCLgrid3d--28--29">GCLgrid3d::~GCLgrid3d</a></td></tr>
-</table></dd>
-<dt><b>Exception:</b></dt><dd><table cellspacing=4>
-<tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if there are any input problems.
- A simple int exception is used because errors are posted 
- to the Antelope elog mechanism. 
- If this exception is caught, call elog_complain to flush the 
- elog buffer.
-<p>
-</td></tr>
-</table></dd>
+<a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#des--7eGCLgrid3d--7e-GCLgrid3d--28--29">GCLgrid3d::~GCLgrid3d</a><dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1069</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLscalarfield3d</b> ( )</td></tr></table>
 </dd></dl>
@@ -193,7 +168,7 @@ GCLscalarfield3d(Dbptr db, string grdnm, string fn);
 <blockquote>
 Default constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1011</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1020</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -208,7 +183,7 @@ Default constructor.
  object data attributes to zero.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1020</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1029</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1size
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -230,14 +205,14 @@ Default constructor.
 <blockquote>
 Standard copy constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1022</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1031</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
 </blockquote>
 <a name="con-GCLscalarfield3d-GCLscalarfield3d--28-GCLgrid3d--26-g--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLscalarfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-const-GCLscalarfield3d--26--29">&lt;</a>&nbsp;<a href="#met-compute_extents-void-compute_extents--28--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-const-GCLscalarfield3d--26--29">&lt;</a>&nbsp;<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Partial copy constructor cloning grid but not setting field variable.
 <p>
@@ -249,7 +224,7 @@ Standard copy constructor.
  of a field variable at the grid points.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1034</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1043</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>g
 </i></td><td align=left valign=top>Grid to be cloned.
@@ -259,9 +234,48 @@ Standard copy constructor.
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a> &amp; g )</td></tr></table>
 </dd></dl>
 </blockquote>
+<a name="con-GCLscalarfield3d-GCLscalarfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLscalarfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-GCLgrid3d--26-g--29">&lt;</a>&nbsp;<a href="#met-compute_extents-void-compute_extents--28--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+  Antelope database driven constructor.
+<p>
+ This is a specialized constructor that
+  loads a field tagged with two names:  grid name and the field name (see below).
+  The two components are stored separately in the external database using 
+  two different tables.  This constructor has a fair amount of memory overhead
+  as it loads a copy of the parent GCLgrid object before creating the field and
+  then loading field variable data from the database.
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1063</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>db
+</i></td><td align=left valign=top>Antelope database pointer.
+</td></tr>
+<tr><td align=left valign=top><i>grdnm
+</i></td><td align=left valign=top>name of grid to be loaded from the database.
+</td></tr>
+<tr><td align=left valign=top><i>fn
+</i></td><td align=left valign=top>name tag for the field to be loaded from the database.
+</td></tr>
+</table></dd>
+<dt><b>Exception:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if there are any input problems.
+ A simple int exception is used because errors are posted 
+ to the Antelope elog mechanism. 
+ If this exception is caught, call elog_complain to flush the 
+ elog buffer.
+<p>
+</td></tr>
+</table></dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield3d</b></b> (</td><td nowrap valign=top> Dbptr db ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string grdnm ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fn )</td></tr></table>
+</dd></dl>
+</blockquote>
 <a name="met-compute_extents-void-compute_extents--28--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method compute_extents</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-GCLgrid3d--26-g--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#con-GCLscalarfield3d-GCLscalarfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
 undocumented<dl>
 <dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
@@ -337,7 +351,7 @@ undocumented<dl>
  structure.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1097</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1107</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -494,7 +508,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>  
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>reca
 </dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> plat ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> plon ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> pr )</td></tr></table>
@@ -517,7 +531,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a> )
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>le
 </dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> p )</td></tr></table>
@@ -532,7 +546,7 @@ See
 <p>
  Usage and caveats are the same as described in 
 <a href="ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html#met-interpolate-double-interpolate--28-double-x1p--2c-double-x2p--2c-double-x3p--29">GCLscalarfield::interpolate</a><dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1127</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1137</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>interpolate</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> )</td></tr></table>
 </dd></dl>
@@ -636,7 +650,7 @@ void dbsave(Dbptr db, string nm) throw(int);
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1120</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1130</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>c
 </i></td><td align=left valign=top>constant by which the field is to be scaled.
@@ -667,7 +681,7 @@ void dbsave(Dbptr db, string nm) throw(int);
  done by interpolation but downsampling requires an antialiasing
  (smoother) filter.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1114</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1124</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -678,7 +692,7 @@ void dbsave(Dbptr db, string nm) throw(int);
 <blockquote>
 Standard assignment operator.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1063</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1073</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLscalarfield3d</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -764,7 +778,7 @@ See
  Index of the field is parallel with coordinate arrays x1, x2, and x3
  that define grid point positions in space.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1008</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1017</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * * <b>val</b>
 </dd></dl>
@@ -775,7 +789,7 @@ See
 <blockquote>
 Zeros field variable array 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1061</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1071</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>zero</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -785,7 +799,7 @@ Zeros field variable array
 <center>
 <p>
 <font size="-1">
-Created Tue Mar 15 11:25:30 2005.
+Created Wed Apr 27 07:05:01 2005.
 <br>
 This documentation was generated automatically by
 <br>

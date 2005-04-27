@@ -20,6 +20,7 @@ OBJS=converters.o \
     dbsubs.o \
     dx_output.o \
     ellipsoid.o \
+    extract_component.o \
     error_handlers.o \
     flatten.o \
     fme_weights.o \
@@ -30,6 +31,7 @@ OBJS=converters.o \
     dmatrix.o \
     extract_gridline.o \
     pathintegral.o \
+    remapgrid.o \
     ustrans.o \
     zero.o
 

@@ -238,7 +238,7 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 	x1=create_3dgrid_contiguous(n1,n2,n3);
 	x2=create_3dgrid_contiguous(n1,n2,n3);
 	x3=create_3dgrid_contiguous(n1,n2,n3);
-	// could use an memcpy here and it would be faster
+	// could use an memcpy call here and it might be faster
 	for(i=0;i<n1;++i)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
@@ -249,108 +249,6 @@ GCLgrid3d::GCLgrid3d(const GCLgrid3d& g)
 		for(j=0;j<n2;++j) 
 			for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
 
-}
-//
-//  assignment operator is almost like the copy constructor but 
-//  we protect against self assignment.
-//  Maintenance issue here.  Unlike copy constructor all attributes
-//  have to be set explicitly here.  
-//  Don't know how to use inheritance in the same way used in copy
-//  constructor above.  Don't think there is one.
-//
-GCLgrid& GCLgrid::operator=(const GCLgrid& g)
-{
-	if(this != &g)  // avoid self assignment
-	{
-		int i,j;
-		name=g.name;
-		lat0=g.lat0;
-		lon0=g.lon0;
-		r0=g.r0;
-		azimuth_y=g.azimuth_y;
-		dx1_nom=g.dx1_nom;
-		dx2_nom=g.dx2_nom;
-		n1=g.n1;
-		n2=g.n2;
-		i0=g.i0;
-		j0=g.j0;
-		x1low=g.x1low;
-		x1high=g.x1high;
-		x2low=g.x2low;
-		x2high=g.x2high;
-		x3low=g.x3low;
-		x3high=g.x3high;
-		for(i=0;i<3;++i)
-		{
-			translation_vector[i]=g.translation_vector[i];
-			for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-		}
-		ix1=g.ix1;
-		ix2=g.ix2;
-		x1=create_2dgrid_contiguous(n1,n2);
-		x2=create_2dgrid_contiguous(n1,n2);
-		x3=create_2dgrid_contiguous(n1,n2);
-		//
-		//I use separate loops for each array here as this is highly
-		//optimized on most compilers 
-		//
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) x1[i][j]=g.x1[i][j];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) x2[i][j]=g.x2[i][j];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) x3[i][j]=g.x3[i][j];
-	}
-	return *this;
-}
-//
-//Same for 3D grid
-//
-GCLgrid3d& GCLgrid3d::operator=(const GCLgrid3d& g)
-{
-	if(this != &g)  // avoid self assignment
-	{
-		int i,j,k;
-		name=g.name;
-		lat0=g.lat0;
-		lon0=g.lon0;
-		r0=g.r0;
-		azimuth_y=g.azimuth_y;
-		dx1_nom=g.dx1_nom;
-		dx2_nom=g.dx2_nom;
-		dx3_nom=g.dx3_nom;
-		n1=g.n1;
-		n2=g.n2;
-		n3=g.n3;
-		i0=g.i0;
-		j0=g.j0;
-		k0=g.k0;
-		x1low=g.x1low;
-		x1high=g.x1high;
-		x2low=g.x2low;
-		x2high=g.x2high;
-		x3low=g.x3low;
-		x3high=g.x3high;
-		x1=create_3dgrid_contiguous(n1,n2,n3);
-		x2=create_3dgrid_contiguous(n1,n2,n3);
-		x3=create_3dgrid_contiguous(n1,n2,n3);
-		for(i=0;i<3;++i)
-		{
-			translation_vector[i]=g.translation_vector[i];
-			for(j=0;j<3;++j) gtoc_rmatrix[i][j]=g.gtoc_rmatrix[i][j];
-		}
-		ix1=g.ix1; ix2=g.ix2; ix3=g.ix3;
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) x1[i][j][k]=g.x1[i][j][k];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) x2[i][j][k]=g.x2[i][j][k];
-		for(i=0;i<n1;++i)
-			for(j=0;j<n2;++j) 
-				for(k=0;k<n3;++k) x3[i][j][k]=g.x3[i][j][k];
-	}
-	return *this;
 }
 
 /* This small function builds a baseline vector of latitude and

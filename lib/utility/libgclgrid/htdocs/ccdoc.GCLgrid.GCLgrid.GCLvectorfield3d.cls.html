@@ -7,9 +7,9 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html">
-<meta name="ccdoc_creation_date" content="Tue Mar 15 11:25:30 2005">
+<meta name="ccdoc_creation_date" content="Wed Apr 27 07:05:01 2005">
 <meta name="keywords" content="ccdoc, source code, documentation">
-<title>ccdoc GCLvectorfield3d gclgrid.h:1141:class</title>
+<title>ccdoc GCLvectorfield3d gclgrid.h:1151:class</title>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
 <blockquote>
 Three-dimensional vector field defined on a GCLgrid framework.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1141</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1151</dd>
 <dt><b>Author:</b></dt><dd>unascribed</dd>
 <dt><b>Version:</b></dt><dd>unknown</dd>
 </dl>
@@ -73,7 +73,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Partial copy constructor cloning grid but not setting field variable.
 </td></tr>
 <tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Antelope database driven constructor.
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--3d-0--29">GCLvectorfield3d</a></td><td align=left valign=top></td><td align=left valign=top>constructor&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>  Antelope database driven constructor.
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield3d.cls.html#met-compute_extents-void-compute_extents--28--29">compute_extents</a></td><td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>undocumented</td></tr>
@@ -160,7 +160,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order
  Note the same precautions about application of the default constructor as noted 
  in
 <a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#des--7eGCLgrid3d--7e-GCLgrid3d--28--29">GCLgrid3d::~GCLgrid3d</a><dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1206</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1227</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLvectorfield3d</b> ( )</td></tr></table>
 </dd></dl>
@@ -171,7 +171,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val[0..nv-1] in C output order
 <blockquote>
 Default constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1154</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1164</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -186,7 +186,7 @@ Default constructor.
  object data attributes to zero.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1164</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1174</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1size
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -211,14 +211,14 @@ Default constructor.
 <blockquote>
 Standard copy constructor.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1166</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1176</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
 </blockquote>
 <a name="con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-const-GCLvectorfield3d--26--29">&lt;</a>&nbsp;<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--3d-0--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Partial copy constructor cloning grid but not setting field variable.
 <p>
@@ -230,7 +230,7 @@ Standard copy constructor.
  of a field variable at the grid points.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1179</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1189</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>g
 </i></td><td align=left valign=top>Grid to be cloned.
@@ -243,7 +243,7 @@ Standard copy constructor.
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a> &amp; ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize )</td></tr></table>
 </dd></dl>
 </blockquote>
-<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29"></a>
+<a name="con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--3d-0--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>constructor GCLvectorfield3d</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
 <a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-GCLgrid3d--26--2c-int-nvsize--29">&lt;</a>&nbsp;<a href="#met-compute_extents-void-compute_extents--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
@@ -256,8 +256,17 @@ Standard copy constructor.
   as it loads a copy of the parent GCLgrid object before creating the field and
   then loading field variable data from the database.
 <p>
+  The nvsize parameter has a complicated behaviour.  Most applications should 
+  simply not use this parameter and allow the default specification of 0.
+  When nzsize is 0 it is expected nv will be extracted from the database.
+  The special case is if the field name is null.  In that case only the grid 
+  geometry is extracted from the data base.  The val array is created and
+  set to all zeros.  In this case nvsize determines the size of the vector field
+  created.  In all other cases it is ignored.  
+<p>
+<p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1200</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1221</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -274,6 +283,8 @@ Standard copy constructor.
 </table></dd>
 <dt><b>Exception:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>int</i></td><td align=left valign=top> Exception is thrown if there are any input problems.
+ Also will throw an int exception if the nvsize requested does not match
+ tabulated number of vector components in database table.  
  A simple int exception is used because errors are posted 
  to the Antelope elog mechanism. 
  If this exception is caught, call elog_complain to flush the 
@@ -282,12 +293,12 @@ Standard copy constructor.
 </td></tr>
 </table></dd>
 </dl>
-<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> Dbptr db ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string grdnm ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fn ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize )</td></tr></table>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLvectorfield3d</b></b> (</td><td nowrap valign=top> Dbptr db ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string grdnm ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> string fn ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> nvsize = 0 )</td></tr></table>
 </dd></dl>
 </blockquote>
 <a name="met-compute_extents-void-compute_extents--28--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method compute_extents</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#con-GCLvectorfield3d-GCLvectorfield3d--28-Dbptr-db--2c-string-grdnm--2c-string-fn--2c-int-nvsize--3d-0--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
 undocumented<dl>
 <dt><b>Inherited From:</b></dt><dd><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">GCLgrid3d</a></dd>
@@ -363,7 +374,7 @@ undocumented<dl>
  structure.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1243</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1264</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -520,7 +531,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>  
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>reca
 </dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> plat ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> plon ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> pr )</td></tr></table>
@@ -543,7 +554,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a> )
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>le
 </dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> p )</td></tr></table>
@@ -558,7 +569,7 @@ See
 <p>
  Usage and caveats are the same as described in 
 <a href="ccdoc.GCLgrid.GCLgrid.GCLvectorfield.cls.html#met-interpolate-double--2a-interpolate--28-double-x1p--2c-double-x2p--2c-double-x3p--29">GCLvectorfield::interpolate</a><dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1275</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1296</dd>
 <dt><b>Returns:</b></dt><dd>pointer to vector of doubles allocated with new []. 
   User must take caution to free this array to avoid memory leaks.
 </dd>
@@ -663,7 +674,7 @@ void dbsave(Dbptr db, string nm) throw(int);
 <blockquote>
 Number of components to each vector of the field.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1144</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1154</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>int</b></font> <b>nv</b>
 </dd></dl>
@@ -676,7 +687,7 @@ Number of components to each vector of the field.
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1266</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1287</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>c
 </i></td><td align=left valign=top>constant by which the field is to be scaled.
@@ -707,7 +718,7 @@ Number of components to each vector of the field.
  done by interpolation but downsampling requires an antialiasing
  (smoother) filter.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1260</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1281</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -718,7 +729,7 @@ Number of components to each vector of the field.
 <blockquote>
 Standard assignment operator.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1210</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1231</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLvectorfield3d</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLvectorfield3d</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -805,7 +816,7 @@ See
  that define grid point positions in space.  The fourth index defines
  the component of each vector of the field.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1151</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1161</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * * * <b>val</b>
 </dd></dl>
@@ -816,7 +827,7 @@ See
 <blockquote>
 Zeros the field variable 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:1208</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:1229</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>zero</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -826,7 +837,7 @@ Zeros the field variable
 <center>
 <p>
 <font size="-1">
-Created Tue Mar 15 11:25:30 2005.
+Created Wed Apr 27 07:05:01 2005.
 <br>
 This documentation was generated automatically by
 <br>

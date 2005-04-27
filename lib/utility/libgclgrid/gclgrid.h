@@ -741,8 +741,8 @@ public:
 	GCLscalarfield(Dbptr db, string grdnm, string fn);
 	//@{
 	// Destructor.  
-	// Note the same precautions about application of the default constructor as noted 
-	// in @link GCLgrid::~GCLgrid @endlink
+	// Nontrivial destructor as it has to destroy components
+	// stored in plain C arrays.
 	//@}
 	~GCLscalarfield();
 	/** Zeros the field variable */
@@ -884,6 +884,14 @@ public:
 	//  as it loads a copy of the parent GCLgrid object before creating the field and
 	//  then loading field variable data from the database.
 	//
+	//  The nvsize parameter has a complicated behaviour.  Most applications should 
+	//  simply not use this parameter and allow the default specification of 0.
+	//  When nzsize is 0 it is expected nv will be extracted from the database.
+	//  The special case is if the field name is null.  In that case only the grid 
+	//  geometry is extracted from the data base.  The val array is created and
+	//  set to all zeros.  In this case nvsize determines the size of the vector field
+	//  created.  In all other cases it is ignored.  
+	//
 	// @throws int 
 	// Exception is thrown if there are any input problems.
 	// A simple int exception is used because errors are posted 
@@ -894,8 +902,9 @@ public:
 	//  @param grdnm name of grid to be loaded from the database.
 	//  @param fn name tag for the field to be loaded from the database.
 	//  @param nvsize expected number of components for vectors in field.
+	//           (default 0)
 	//@}
-	GCLvectorfield(Dbptr db, string grdnm, string fn,int nvsize); 
+	GCLvectorfield(Dbptr db, string grdnm, string fn,int nvsize=0); 
 	/** Standard assignment operator. */
 	GCLvectorfield& operator=(const GCLvectorfield&);
 	//@{
@@ -1050,6 +1059,7 @@ public:
 	//  @param db Antelope database pointer.
 	//  @param grdnm name of grid to be loaded from the database.
 	//  @param fn name tag for the field to be loaded from the database.
+	//@}
 	GCLscalarfield3d(Dbptr db, string grdnm, string fn);
 	//@{
 	// Destructor.  
@@ -1185,8 +1195,19 @@ public:
 	//  as it loads a copy of the parent GCLgrid object before creating the field and
 	//  then loading field variable data from the database.
 	//
+	//  The nvsize parameter has a complicated behaviour.  Most applications should 
+	//  simply not use this parameter and allow the default specification of 0.
+	//  When nzsize is 0 it is expected nv will be extracted from the database.
+	//  The special case is if the field name is null.  In that case only the grid 
+	//  geometry is extracted from the data base.  The val array is created and
+	//  set to all zeros.  In this case nvsize determines the size of the vector field
+	//  created.  In all other cases it is ignored.  
+	//
+	//
 	// @throws int 
 	// Exception is thrown if there are any input problems.
+	// Also will throw an int exception if the nvsize requested does not match
+	// tabulated number of vector components in database table.  
 	// A simple int exception is used because errors are posted 
 	// to the Antelope elog mechanism. 
 	// If this exception is caught, call elog_complain to flush the 
@@ -1197,7 +1218,7 @@ public:
 	//  @param fn name tag for the field to be loaded from the database.
 	//  @param nvsize expected number of components for vectors in field.
 	//@}
-	GCLvectorfield3d(Dbptr db, string grdnm, string fn, int nvsize);
+	GCLvectorfield3d(Dbptr db, string grdnm, string fn, int nvsize=0);
 	//@{
 	// Destructor.  
 	// Note the same precautions about application of the default constructor as noted 
@@ -1549,4 +1570,106 @@ double flatvel(double v,double z);
 //@}
 double uflatvel(double v, double z);
 }
+//@{
+// Extract one component from a 2d vector field into a parallel scalar.
+//
+// It is often useful to extract one component from a vector field
+// and treat that quantity as a scalar field.  This function 
+// encapsulates that idea.  Note that it returns a pointer to a newly
+// allocated scalarfield object that the caller must deal with.
+// Use an auto_ptr to contain this pointer of just deal with the
+// usual rules of handling dynamically allocated objects to avoid
+// memory leaks.  
+//
+// @author Gary L. Pavlis
+// @throws int exception and posts and error to elog if the requested
+//      component is outside the range of the field.
+//
+// @param f input vector field to be converted.
+// @param component component number to extract.  Assumes C convention
+//      of 0 being the first component.  
+//@}
+GCLscalarfield *extract_component(GCLvectorfield& f,int component);
+//@{
+// Extract one component from a 2d vector field into a parallel scalar.
+//
+// It is often useful to extract one component from a vector field
+// and treat that quantity as a scalar field.  This function 
+// encapsulates that idea.  Note that it returns a pointer to a newly
+// allocated scalarfield object that the caller must deal with.
+// Use an auto_ptr to contain this pointer of just deal with the
+// usual rules of handling dynamically allocated objects to avoid
+// memory leaks.  
+//
+// @author Gary L. Pavlis
+// @throws int exception and posts and error to elog if the requested
+//      component is outside the range of the field.
+//
+// @param f input vector field to be converted.
+// @param component component number to extract.  Assumes C convention
+//      of 0 being the first component.  
+//@}
+GCLscalarfield3d *extract_component(GCLvectorfield3d& f,int component);
+//@{
+// Remap one grid to coordinate system of another.
+//
+// Sometimes it is useful when dealing with multiple grids to 
+// allow an algorithm to make an assumption that all grids in the
+// set have a common coordinate system.  This can avoid the
+// overhead of conversion of points to and from geographical
+// coordinates.  Experience has shown this is a nontrivial
+// calculation and needs to be minimized for algorithms that
+// might require large numbers of such conversions.  
+// This function maps one grid to the coordinate system of the
+// one passed as "pattern".  This transformation is defined
+// in the BasicGCLgrid, lowest member of the heirarchy so it
+// higher levels should be cast to a BasicGCLgrid to be used
+// as a pattern.
+//
+// Note that remap_grid can be called on field objects derived
+// from this one with no effect as the grid geometry is not
+// altered.  Only the coordinate system changes.
+// Note a pure copy is returned if the two grids are already 
+// congruent.
+//
+// @returns copy of input grid but with coordinates altered.
+//
+// @author Gary L. Pavlis
+//
+// @param g grid to be remapped.
+// @param pattern grid whose coordinate system is to be used for
+//    new version of grid.  
+//@}
+GCLgrid remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
+//@{
+// Remap one grid to coordinate system of another.
+//
+// Sometimes it is useful when dealing with multiple grids to 
+// allow an algorithm to make an assumption that all grids in the
+// set have a common coordinate system.  This can avoid the
+// overhead of conversion of points to and from geographical
+// coordinates.  Experience has shown this is a nontrivial
+// calculation and needs to be minimized for algorithms that
+// might require large numbers of such conversions.  
+// This function maps one grid to the coordinate system of the
+// one passed as "pattern".  This transformation is defined
+// in the BasicGCLgrid, lowest member of the heirarchy so it
+// higher levels should be cast to a BasicGCLgrid to be used
+// as a pattern.
+//
+// Note that remap_grid can be called on field objects derived
+// from this one with no effect as the grid geometry is not
+// altered.  Only the coordinate system changes.
+// Note a pure copy is returned if the two grids are already 
+// congruent.
+//
+// @returns copy of input grid but with coordinates altered.
+//
+// @author Gary L. Pavlis
+//
+// @param g grid to be remapped.
+// @param pattern grid whose coordinate system is to be used for
+//    new version of grid.  
+//@}
+GCLgrid3d remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern);
 #endif
