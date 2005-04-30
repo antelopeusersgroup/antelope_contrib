@@ -764,7 +764,8 @@ more_packet_data( ImportThread *it )
 
 				it->sync_state = STREAM_ACCUMULATE;
 
-				bnsget( it->bnsin, bytecount, TWO_BYTES, 1 );
+				bnsget( it->bnsin, bytecount, BYTES, 1 );
+				bnsget( it->bnsin, bytecount+1, BYTES, 1 );
 
 				APPEND_BUFFER( it->buf, it->bufsize, it->nbytes, bytecount[0] );
 				APPEND_BUFFER( it->buf, it->bufsize, it->nbytes, bytecount[1] );
