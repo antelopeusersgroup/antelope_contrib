@@ -64,6 +64,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(strlocaltime, NULL)		
 	PHP_FE(strlocalydtime, NULL)		
 	PHP_FE(strlocaldate, NULL)		
+	PHP_FE(trapply_calib, NULL)		
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
@@ -479,6 +480,35 @@ PHP_FUNCTION(trextract_data)
 		
 		add_index_double( return_value, i, (double) data[i] );
 	}
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void trapply_calib( array tr ) */
+PHP_FUNCTION(trapply_calib)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	trapply_calib( tr );
 
 	return;
 }
