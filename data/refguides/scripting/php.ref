@@ -92,6 +92,24 @@ dbfind ($db, expression, [, first [, reverse]])
 strtdelta (dt)
     convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
 
+strtime (epoch)
+    convert an epoch time to a string date and time
+
+strydtime (epoch)
+    convert an epoch time to a string date and time including julian day
+
+strdate (epoch)
+    convert an epoch time to a string date
+
+strlocaltime (epoch)
+    convert an epoch time to a string date and time in local timezone
+
+strlocalydtime (epoch)
+    convert an epoch time to a string date and time including julian day, in local timezone
+
+strlocaldate (epoch)
+    convert an epoch time to a string date in local timezone
+
 <subsection Instrument response routines>
 
 dbresponse( $filename )
