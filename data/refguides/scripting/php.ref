@@ -63,6 +63,9 @@ dbsubset ($db, expression)
 trloadchan ( $db, t0, t1, sta, chan )
     load a channel of waveform data into a Datascope trace object
 
+trapply_calib ( $tr )
+    multiply waveform data in trace object by calib value
+
 trextract_data ( $tr )
     extract waveform data into a PHP array
 
