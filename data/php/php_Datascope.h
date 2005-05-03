@@ -46,6 +46,12 @@ PHP_FUNCTION(trfree);
 PHP_FUNCTION(trextract_data);
 PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
+PHP_FUNCTION(strtime);
+PHP_FUNCTION(strydtime);
+PHP_FUNCTION(strdate);
+PHP_FUNCTION(strlocaltime);
+PHP_FUNCTION(strlocalydtime);
+PHP_FUNCTION(strlocaldate);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)

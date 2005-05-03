@@ -424,6 +424,7 @@ $imag = $cx[1];
 .fi
 .in
 .ft R
+
 .IP "\fBstrtdelta\fP ( $epoch )"
 Convert an elapsed time in seconds to a string representation
 .ft CW
@@ -431,6 +432,78 @@ Convert an elapsed time in seconds to a string representation
 .nf
 
 $elapsed = strtdelta ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrtime\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strtime ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrydtime\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strydtime ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrdate\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strdate ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrlocaltime\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strlocaltime ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrlocalydtime\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strlocalydtime ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstrlocaldate\fP ( $epoch )"
+Convert an epoch time in seconds to a string representation
+.ft CW
+.in 2c
+.nf
+
+$astring = strlocaldate ( $epoch );
 
 .fi
 .in

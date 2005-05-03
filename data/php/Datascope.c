@@ -58,6 +58,12 @@ function_entry Datascope_functions[] = {
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
 	PHP_FE(strtdelta, NULL)		
+	PHP_FE(strtime, NULL)		
+	PHP_FE(strydtime, NULL)		
+	PHP_FE(strdate, NULL)		
+	PHP_FE(strlocaltime, NULL)		
+	PHP_FE(strlocalydtime, NULL)		
+	PHP_FE(strlocaldate, NULL)		
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
@@ -959,6 +965,156 @@ PHP_FUNCTION(strtdelta)
 	}
 
 	s = strtdelta( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strtime( double epoch ) */
+PHP_FUNCTION(strtime)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strtime( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strydtime( double epoch ) */
+PHP_FUNCTION(strydtime)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strydtime( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strdate( double epoch ) */
+PHP_FUNCTION(strdate)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strdate( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strlocaltime( double epoch ) */
+PHP_FUNCTION(strlocaltime)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strlocaltime( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strlocalydtime( double epoch ) */
+PHP_FUNCTION(strlocalydtime)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strlocalydtime( epoch );
+
+	RETVAL_STRING( s, 1 );
+
+	free( s );
+}
+/* }}} */
+
+/* {{{ proto string strlocaldate( double epoch ) */
+PHP_FUNCTION(strlocaldate)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*s;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", &epoch ) == FAILURE) {
+
+		return;
+	}
+
+	s = strlocaldate( epoch );
 
 	RETVAL_STRING( s, 1 );
 
