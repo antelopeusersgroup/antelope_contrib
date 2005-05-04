@@ -24,6 +24,7 @@ DATA=	iceworm1.3 \
 	Acronyms1.2 \
 	Specevents1.0 \
 	Travel1.0 \
+	Travel1.1 \
 	webbullets1.0
 
 include $(ANTELOPEMAKE)  	
