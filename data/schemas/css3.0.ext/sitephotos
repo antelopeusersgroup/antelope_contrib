@@ -1,0 +1,48 @@
+Attribute imagedescrip
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "image description" )
+	Detail {
+		This is a description of an image stored in a database.
+	}
+	;
+
+Attribute imagename
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "name of image " )
+	Detail {
+		This field records the name of an image
+	}
+	;
+
+Attribute siteimagetype
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "type of site image" )
+	Detail {
+		This field is intended to show the general category of 
+		site image. While the field is free-form, it is expected 
+		that several standard categories will be used, for 
+		example 'sensor', 'vault', 'surroundings, 'field crew' etc.
+	}
+	;
+
+Relation sitephotos
+	Fields ( sta time siteimagetype imagename imagedescrip dir dfile auth lddate )
+	Primary ( sta time imagename )
+	Description ( "photos of seismic sites" )
+	Detail {
+		The sitephotos relation stores pictures of seismic 
+		site installations. Any photo or set of photos associated 
+		with a site may be stored, however most commonly 
+		these will be pictures of the sensor itself, pictures 
+		of the vault, pictures of the surroundings, and 
+		perhaps pictures of the installation crew or anything else 
+		deemed appropriate.
+	}
+	;
+
