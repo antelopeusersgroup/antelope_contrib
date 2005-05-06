@@ -374,6 +374,7 @@ ECEF_to_latlonheight_radians(
 	double rsq=0, r=0, e=0, rho=0, nlatr=0;
 	double cphi=0, dr=0, dz=0, dht=0, dnlatr=0;
 	double flatfn=0, funsq=0, sphi=0, g1=0, g2=0;
+	double fX;
 	int i=0;
 
 	if(m_x==0 && m_y==0 && m_z==0) {
@@ -388,7 +389,7 @@ ECEF_to_latlonheight_radians(
 
 	rsq = m_x*m_x + m_y*m_y;
 	r = sqrt(rsq);
-	double fX = m_x;
+	fX = m_x;
 	if(!(fX)) {
 		fX += 0.0001;
 	}
