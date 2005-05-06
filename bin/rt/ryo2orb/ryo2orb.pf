@@ -2,14 +2,17 @@
 GPS_epoch 1/6/1980
 GPS_leapseconds 13
 
-multiply_data_by  100
+multiply_data_by  1000000
 calper  1
 segtype d 
 
 samprate_tolerance 0.0001
+longitude_branchcut_deg 180
+ECEF_semimajor_axis 6378137.0
+ECEF_flattening     0.00335281066474
 
 net 	XX
-multiplex_stations 1
+multiplex_stations yes
 max_nsamples_per_channel 10
 
 channel_names &Arr{
@@ -17,6 +20,11 @@ channel_names &Arr{
 	ITRF_Y		ITRFY
 	ITRF_Z		ITRFZ
 	ITRF_T		ITRFT
+	LAT_RAD		LATR
+	LON_RAD		LONR
+	LAT_DEG		LATD
+	LON_DEG		LOND
+	HEIGHT_M	HGTM
 	variance_scale  VARSC
 	variance_X	VARX
 	variance_Y	VARY

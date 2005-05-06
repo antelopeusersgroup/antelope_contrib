@@ -1,7 +1,7 @@
 /*
  * ryo2orb.c
  *
- * Import RYO-format real-time GPS data into an orbserver
+ * Import RYO-format real-time GPS data into an Antelope orbserver
  *
  * Copyright (c) 2005 Lindquist Consulting, Inc.
  * All rights reserved. 
@@ -24,6 +24,7 @@
 #include <synch.h>
 #include <errno.h>
 #include "stock.h"
+#include "coords.h"
 #include "db.h"
 #include "orb.h"
 #include "Pkt.h"
@@ -41,6 +42,7 @@
 #define BNS_BUFFER_SIZE 128 * 1024
 #define DEFAULT_BNS_TIMEOUT 60000
 #define PACKET_QUEUE_SIZE 50000
+#define PI 3.1415926535897932384626433
 
 #define THR_PRIORITY_IMPORT 0
 #define THR_PRIORITY_CONVERT 1
@@ -65,8 +67,11 @@ int 	Max_nsamples_per_channel;
 char	*Net;
 char	*Segtype;
 double	Samprate_tolerance;
+double	Longitude_branchcut_deg;
 double	Multiply_data_by;
 double 	Calper = -1;
+double	ECEF_semimajor_axis;
+double	ECEF_flattening;
 Arr 	*Channel_names = 0;
 Arr 	*Track_packets = 0;
 Arr 	*Track_packetchans = 0;
@@ -148,6 +153,11 @@ typedef struct RYO2orbPacket {
 	double	covariance_TX;
 	double	covariance_TY;
 	double	covariance_TZ;
+	double	lat_radians;
+	double	lon_radians;
+	double	lat_deg;
+	double	lon_deg;
+	double	height_m;
 	int	satellite_count;
 	double	pdop;
 	Tbl	*satellites;
@@ -343,6 +353,116 @@ RYOChecksum( const unsigned char *a_pbyBuffer, unsigned int a_nByteCount )
 	return nChecksum;
 }
 
+
+/* Translation from ECEF coords to geodetic lat,lon,height.
+ * Modified from a routine from Yehuda Bock 2005 */
+
+/* "a" and "f" are semi-major axis and flattening (for the ellipsoid model),
+ * i.e. ECEF spheroid parameters */
+
+void
+ECEF_to_latlonheight_radians(
+	double m_x, 
+	double m_y, 
+	double m_z,
+	double a, 
+	double f,
+	double *lat, 
+	double *lon, 
+	double *hi )
+{
+	double rsq=0, r=0, e=0, rho=0, nlatr=0;
+	double cphi=0, dr=0, dz=0, dht=0, dnlatr=0;
+	double flatfn=0, funsq=0, sphi=0, g1=0, g2=0;
+	int i=0;
+
+	if(m_x==0 && m_y==0 && m_z==0) {
+		*lat = 0;
+		*lon = 0;
+		*hi = 0;
+		return;
+	}
+
+	flatfn = (2.0 - f)*f;
+	funsq = (1.0 - f)*(1.0 - f);
+
+	rsq = m_x*m_x + m_y*m_y;
+	r = sqrt(rsq);
+	double fX = m_x;
+	if(!(fX)) {
+		fX += 0.0001;
+	}
+	e = atan2(m_y,fX);
+	if(e<0.0) {
+		e = e + 2 * PI;
+	}
+	rho = sqrt(m_z*m_z + rsq);
+	sphi = m_z/rho;
+	nlatr = asin(sphi);
+	*hi = rho - a*(1.0 - f*sphi*sphi);
+
+	for(i=0; i<10; i++) {
+		sphi = sin(nlatr);
+		cphi = cos(nlatr);
+		g1 = a/sqrt(1.0 - flatfn*sphi*sphi);
+		g2 = g1*funsq + *hi;
+		g1 = g1 + *hi;
+		dr = r - g1*cphi;
+		dz = m_z - g2*sphi;
+		dht = dr*cphi + dz*sphi;
+		*hi = *hi + dht;
+		dnlatr = (dz*cphi - dr*sphi)/(a + *hi);
+		nlatr = nlatr + dnlatr;
+		if((fabs(dnlatr)<=(1.0e-14)) &&
+		   ((fabs(dht)/(a + *hi))<=(1.0e-14))) {
+			break;
+		}
+	}
+
+	*lat = nlatr;
+	*lon = e;
+
+	return;
+}
+
+double 
+wrap_phase( double branchcut_deg, double angle_deg )
+{
+	while( angle_deg < branchcut_deg - 360 ) {
+
+		angle_deg += 360;
+	}
+
+	while( angle_deg > branchcut_deg ) {
+
+		angle_deg -= 360;
+	}
+
+	return angle_deg;
+}
+
+void 
+add_geodetics( RYO2orbPacket *r2opkt  )
+{
+
+	ECEF_to_latlonheight_radians( r2opkt->XYZT[0], 
+				      r2opkt->XYZT[1], 
+				      r2opkt->XYZT[2], 
+				      ECEF_semimajor_axis, 
+				      ECEF_flattening,
+				      &r2opkt->lat_radians, 
+				      &r2opkt->lon_radians,
+				      &r2opkt->height_m );
+					
+	r2opkt->lat_deg = deg( r2opkt->lat_radians );
+	r2opkt->lon_deg = deg( r2opkt->lon_radians );
+
+	r2opkt->lon_deg = wrap_phase( Longitude_branchcut_deg, r2opkt->lon_deg );
+
+	return;
+}
+
+
 SatelliteInfo *
 new_SatelliteInfo()
 {
@@ -422,6 +542,12 @@ RYO2orbPacket_dump( FILE *fp, RYO2orbPacket *r2opkt )
 	fprintf( fp, "\t% 20s:\t%f\n", "ITRF Y", r2opkt->XYZT[1] );
 	fprintf( fp, "\t% 20s:\t%f\n", "ITRF Z", r2opkt->XYZT[2] );
 	fprintf( fp, "\t% 20s:\t%f\n", "ITRF T", r2opkt->XYZT[3] );
+
+	fprintf( fp, "\t% 20s:\t%f\n", "LAT(rad)", r2opkt->lat_radians );
+	fprintf( fp, "\t% 20s:\t%f\n", "LON(rad)", r2opkt->lon_radians );
+	fprintf( fp, "\t% 20s:\t%f\n", "LAT(deg)", r2opkt->lat_deg );
+	fprintf( fp, "\t% 20s:\t%f\n", "LON(deg)", r2opkt->lon_deg );
+	fprintf( fp, "\t% 20s:\t%f\n", "HEIGHT(m)", r2opkt->height_m );
 
 	fprintf( fp, "\t% 20s:\t%d\n", 
 		     "position_byte", r2opkt->position_byte );
@@ -1105,6 +1231,14 @@ enqueue_ryopkt( RYO2orbPacket *r2opkt, char *net, char *sta )
 	enqueue_sample( pkt, r2opkt, "ITRF_Z", r2opkt->XYZT[2] );
 	enqueue_sample( pkt, r2opkt, "ITRF_T", r2opkt->XYZT[3] );
 
+	enqueue_sample( pkt, r2opkt, "LAT_RAD", r2opkt->lat_radians );
+	enqueue_sample( pkt, r2opkt, "LON_RAD", r2opkt->lon_radians );
+
+	enqueue_sample( pkt, r2opkt, "LAT_DEG", r2opkt->lat_deg );
+	enqueue_sample( pkt, r2opkt, "LON_DEG", r2opkt->lon_deg );
+
+	enqueue_sample( pkt, r2opkt, "HEIGHT_M", r2opkt->height_m );
+
 	if( r2opkt->xyz_cov_present ) {
 
 		enqueue_sample( pkt, r2opkt, 
@@ -1166,6 +1300,8 @@ ryo2orb_convert( void *arg )
 
 
 	while( pmtfifo_pop( RYO2orbPackets_mtf, (void **) &r2opkt ) != 0 ) {
+
+		add_geodetics( r2opkt );
 
 		if( VeryVerbose ) {
 		
@@ -1286,7 +1422,7 @@ main( int argc, char **argv )
 	GPS_epoch = pfget_time( pf, "GPS_epoch" );
 	GPS_leapseconds = pfget_int( pf, "GPS_leapseconds" );
 
-	Multiplex_stations = pfget_int( pf, "multiplex_stations" );
+	Multiplex_stations = pfget_boolean( pf, "multiplex_stations" );
 	Max_nsamples_per_channel = pfget_int( pf, "max_nsamples_per_channel" );
 
 	Net = pfget_string( pf, "net" );
@@ -1296,6 +1432,9 @@ main( int argc, char **argv )
 	Multiply_data_by = pfget_double( pf, "multiply_data_by" );
 	Calper = pfget_double( pf, "calper" );
 	Segtype = pfget_string( pf, "segtype" );
+	Longitude_branchcut_deg = pfget_double( pf, "longitude_branchcut_deg" );
+	ECEF_semimajor_axis = pfget_double( pf, "ECEF_semimajor_axis" );
+	ECEF_flattening = pfget_double( pf, "ECEF_flattening" );
 
 	RYO2orbPackets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
 
@@ -1312,6 +1451,12 @@ main( int argc, char **argv )
 	} else {
 
 		elog_notify( 0, "Orb connection established\n" );
+	}
+
+	if( Verbose ) {
+
+		elog_notify( 0, "Using ECEF_semimajor_axis = %f\n", ECEF_semimajor_axis );
+		elog_notify( 0, "Using ECEF_flattening = %.18f\n", ECEF_flattening );
 	}
 
 	rc = thr_create( NULL, 0, ryo2orb_convert, 0, 0, &ryo_convert_tid );

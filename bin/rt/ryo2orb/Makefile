@@ -10,7 +10,7 @@ CLEAN=
 cflags=
 fflags=
 ldflags=
-ldlibs= -lbrttutil $(ORBLIBS) $(THREAD)
+ldlibs= -lbrttutil -lcoords $(ORBLIBS) $(THREAD)
 
 include $(ANTELOPEMAKE)
 

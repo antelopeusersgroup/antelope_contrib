@@ -21,7 +21,8 @@ str2epoch(3), giving the beginning of "week 0" in the tally of GPS
 weeks. The GPS_leapseconds parameter gives the number of seconds to
 subtract from the GPS time to get UTC time.
 
-Since GPS Position data is given in ITRF coordinates as floating-point
+Since GPS Position data is given in International Terrestrial Reference 
+Frame (ITRF) coordinates as floating-point
 values, these values must be multiplied by a sufficiently large scale
 factor for storage and transport in the orb packets, which expect data
 in integer counts. The multiply_data_by parameter specifies this
@@ -32,6 +33,14 @@ parameter file specify the corresponding \fIcalper\fP and \fIsegtype\fP values
 to put in the orb packets, the former being the signal period in
 seconds at which the calib factor is specified (this is a pro-forma
 entry for \fBryo2orb\fP).
+
+The incoming packets are automatically converted from Earth-Centered, 
+Earth-Fixed (ECEF) coordinates to geodetic lat, lon, and height. The former
+are provided in both radians and degrees, the latter in meters. 
+
+The phase branchcut for longitudes in degrees may be specified with the 
+parameter longitude_branchcut_deg. Set this to 180 for longitudes 
+between -180 and 180 degrees; set to 360 for longitudes between 0 and 360. 
 
 The parameter \fInet\fP in the parameter file specifies the network
 code to be used by \fBryo2orb\fP in building and naming orb packets. If
@@ -78,6 +87,7 @@ segtype d
 
 .ne 5
 samprate_tolerance 0.0001
+longitude_branchcut_deg 180
 
 net     XX
 multiplex_stations 1
@@ -89,6 +99,11 @@ channel_names &Arr{
         ITRF_Y          ITRFY
         ITRF_Z          ITRFZ
         ITRF_T          ITRFT
+	LAT_RAD		LATR
+	LON_RAD		LONR
+	LAT_DEG		LATD
+	LON_DEG		LOND
+	HEIGHT_M	HGTM
         variance_scale  VARSC
         variance_X      VARX
         variance_Y      VARY
@@ -115,6 +130,8 @@ channel_names &Arr{
 %\fB ryo2orb -v 192.168.0.57:7010 localhost\fP
 ryo2orb: Establishing orb connection to orb ':dq'...
 ryo2orb: Orb connection established
+ryo2orb: Using ECEF_semimajor_axis = 6378137.000000
+ryo2orb: Using ECEF_flattening = 0.003352810664740000
 ryo2orb: Importing from RTD server 192.168.0.57 on port 7010
 ryo2orb: 'rtd_import': Attempting to connect to remote export module at 192.168.0.57:7010
 ryo2orb: 'rtd_import': import thread Connected to remote export module
@@ -133,49 +150,55 @@ purposes:
 .ne 43
 
 %\fB ryo2orb -V 192.168.0.57:7010 localhost\fP
-ryo2orb: Establishing orb connection to orb ':dq'...
+
+ryo2orb: Establishing orb connection to orb 'localhost'...
 ryo2orb: Orb connection established
 ryo2orb: Importing from RTD server 192.168.0.57 on port 7010
 ryo2orb: 'rtd_import': Attempting to connect to remote export module at 192.168.0.57:7010
 ryo2orb: 'rtd_import': import thread Connected to remote export module
-ryo2orb: Receiving a 162-byte packet...
+ryo2orb: Receiving a 168-byte packet...
 ryo2orb: ...appending healthy RYO packet to queue
-Received RYO Packet of type 1 timestamped ' 3/21/2005   6:55:32.000':
-          site_id:   WHYT
-       site_index:   1
-       site_count:   15
-         GPS_week:   1315
-  GPS_millisecond:   111345000
-           ITRF X:   -2465333.122900
-           ITRF Y:   -4707048.690200
-           ITRF Z:   3516603.803800
-           ITRF T:   2.237992
-    position_byte:   18
-       flags_byte:   5
-  position_signal:   L1/L2
-  position_method:   Phase + code
-  xyz_cov_present:   1
-tropo_cov_present:   0
- sat_info_present:   1
-   variance_scale:   0.068604
-       variance_X:   0.000000
-       variance_Y:   0.000000
-       variance_Z:   0.000000
-    covariance_YX:   0.000000
-    covariance_YZ:   0.000000
-    covariance_ZX:   0.000000
-  satellite_count:   7
-             pdop:   3.166034
-       satellites:
-       SV PRN   Elev     Az  flags  eph_avail L1_track L2_track
-            3     19    115      7         1         1         1
-            8     12   -104      7         1         1         1
-           13     55    -27      7         1         1         1
-           16     34     48      7         1         1         1
-           20     40   -177      7         1         1         1
-           23     71     44      7         1         1         1
-           27     34    -88      7         1         1         1
-
+Received RYO Packet of type 1 timestamped ' 5/05/2005  22:55:46.000':
+	             site_id:	WHYT
+	          site_index:	1
+	          site_count:	16
+	            GPS_week:	1321
+	     GPS_millisecond:	428159000
+	              ITRF X:	-2465333.122900
+	              ITRF Y:	-4707048.690200
+	              ITRF Z:	3516603.803800
+	              ITRF T:	2.237992
+	            LAT(rad):	0.587731
+	            LON(rad):	4.229920
+	            LAT(deg):	33.674490
+	            LON(deg):	-117.643455
+	           HEIGHT(m):	265.433513
+	       position_byte:	18
+	          flags_byte:	5
+	     position_signal:	L1/L2
+	     position_method:	Phase + code
+	     xyz_cov_present:	1
+	   tropo_cov_present:	0
+	    sat_info_present:	1
+	      variance_scale:	0.097894
+	          variance_X:	0.000000
+	          variance_Y:	0.000000
+	          variance_Z:	0.000000
+	       covariance_YX:	0.000000
+	       covariance_YZ:	0.000000
+	       covariance_ZX:	0.000000
+	     satellite_count:	8
+	                pdop:	2.693795
+	          satellites:
+	          SV PRN   Elev     Az  flags  eph_avail L1_track L2_track 
+	               1     70    -66      7         1         1         1  
+	              11     36    -55      7         1         1         1  
+	              14     52     32      7         1         1         1  
+	              15     19    150      7         1         1         1  
+	              19     20   -122      7         1         1         1  
+	              20      5    -64      7         1         1         1  
+	              22     34     85      7         1         1         1  
+	              25     55    161      7         1         1         1  
 .fi
 .ft R
 .in
@@ -201,9 +224,17 @@ parameter is set to one, the first orb packet emitted will actually
 contain two samples instead of one,  so \fBryo2orb\fP can compute the sample
 rate.
 
-As a caveat for orb2db(1) users, the RYO data often exceeds the maximum-value
-allowed in the default \fIsd\fP format for orb2db, requiring a switch to
-"s4" or other similar datatype when archiving.
+The channel names shown in the example parameter file above were chosen
+fairly arbitrarily and may not conform to standardized usage in the 
+community. 
+
+The phase branchcut for longitude representation affects only the values
+that are presented in degrees, not those that are presented in radians. 
+This may be a mistake or a feature depending on your perspective. 
+
+As a caveat for orb2db(1) users, the RYO ITRF data often exceeds the
+maximum-value allowed in the default \fIsd\fP format for orb2db,
+requiring a switch to "s4" or other similar datatype when archiving.
 .SH AUTHOR
 .nf
 Kent Lindquist
