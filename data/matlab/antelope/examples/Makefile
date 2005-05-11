@@ -17,6 +17,7 @@ DATA= \
 	dbexample_cggrid2db.m \
 	dbexample_clear.m \
 	dbexample_clear_register.m \
+	dbexample_compare_response.m \
 	dbexample_db2struct.m \
 	dbexample_dbadd.m \
 	dbexample_dbadd_remark.m \

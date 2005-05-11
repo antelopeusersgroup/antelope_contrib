@@ -1,0 +1,7 @@
+DBRESPONSE/COMPARE_RESPONSE Dbresponse comparison routine
+
+COMPARE_RESPONSE ( DBRESPONSE1, DBRESPONSE2 )
+
+compare_response compares the coefficients for two
+responses, returning zero if they are equal, and one otherwise.
+

@@ -122,6 +122,7 @@
 %
 % Instrument response routines
 %   dbresponse		- Dbresponse class constructor
+%   compare_response	- Dbresponse comparison routine
 %   eval_response	- Dbresponse evaluation routine
 %   parse_response	- Dbresponse parser (returns filter coefficients)
 %   free_response	- Dbresponse elimination routine

@@ -9,6 +9,7 @@ HTML= $(MEXSRCS:.c=.html)
 MEXSRCS= \
 	clear.c \
 	dbresponse.c \
+	compare_response.c \
 	eval_response.c \
 	parse_response.c \
 	free_response.c 
