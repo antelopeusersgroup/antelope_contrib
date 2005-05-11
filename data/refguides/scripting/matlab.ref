@@ -217,6 +217,9 @@ RESPONSE = eval_response ( DBRESPONSE, OMEGA )
 RESPONSE_PARTS = parse_response ( DBRESPONSE )
     return internal contents of a response object
 
+DIFFERENT = compare_response ( DBRESPONSE1, DBRESPONSE2 )
+    dbresponse comarison routine
+
 clear ( DBRESPONSE )
     dbresponse elimination routine
 
