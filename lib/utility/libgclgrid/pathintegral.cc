@@ -40,9 +40,14 @@ vector <double> pathintegral(GCLscalarfield3d& field,dmatrix& path)
 	sz=path.size();
 	npts = sz[1];
 	if(sz[0]!=3) 
+	{
+	  delete [] sz;
 	  throw(GCLgrid_error("pathintegral:  input matrix of path coordinates has incorrect dimensions"));
+	}
 	delete [] sz;  // no longer needed
 	outvec.reserve(npts);
+	// push 0 to the first point 
+	outvec.push_back(0.0);
 	for( i=1,outval=0.0,outval_last=0.0;i<npts;++i)
 	{
 		double dx1,dx2,dx3;

@@ -1629,10 +1629,9 @@ GCLscalarfield3d *extract_component(GCLvectorfield3d& f,int component);
 // Note that remap_grid can be called on field objects derived
 // from this one with no effect as the grid geometry is not
 // altered.  Only the coordinate system changes.
-// Note a pure copy is returned if the two grids are already 
-// congruent.
-//
-// @returns copy of input grid but with coordinates altered.
+// Note the grid is altered in place so the grid object passed will
+// be modified after this function completes.  The exception is if
+// the grids are already congruent in which case it silently does nothing.
 //
 // @author Gary L. Pavlis
 //
@@ -1640,7 +1639,7 @@ GCLscalarfield3d *extract_component(GCLvectorfield3d& f,int component);
 // @param pattern grid whose coordinate system is to be used for
 //    new version of grid.  
 //@}
-GCLgrid remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
+void remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
 //@{
 // Remap one grid to coordinate system of another.
 //
@@ -1660,10 +1659,9 @@ GCLgrid remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
 // Note that remap_grid can be called on field objects derived
 // from this one with no effect as the grid geometry is not
 // altered.  Only the coordinate system changes.
-// Note a pure copy is returned if the two grids are already 
-// congruent.
-//
-// @returns copy of input grid but with coordinates altered.
+// Note the grid is altered in place so the grid object passed will
+// be modified after this function completes.  The exception is if
+// the grids are already congruent in which case it silently does nothing.
 //
 // @author Gary L. Pavlis
 //
@@ -1671,5 +1669,5 @@ GCLgrid remap_grid(GCLgrid& g, BasicGCLgrid& pattern);
 // @param pattern grid whose coordinate system is to be used for
 //    new version of grid.  
 //@}
-GCLgrid3d remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern);
+void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern);
 #endif

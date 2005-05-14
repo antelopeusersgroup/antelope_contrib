@@ -11,75 +11,80 @@
   in returning the object instead of a pointer to the object.  
   If that need arises a pointer version of these functions would be
   easy to create from these.
+
+  Major modification May 2005
+Original functions did indeed return a new object.  I realized thought
+it worked better to modify the object in place.  The reason for this is
+that the same algorithm can be applied to field objects using a dynamic_cast
+back to the parent grid.  The reason this is possible is that remap_grid 
+does not alter the grid geometry but only the coordinate system used to 
+reference each grid point.  This feature MUST be recognized by the caller,
+however, this alters the parent object.
 */
-GCLgrid remap_grid(GCLgrid& g, BasicGCLgrid& pattern)
+void remap_grid(GCLgrid& g, BasicGCLgrid& pattern)
 {
 	// return immediately if these grids are congruent
-	if(g==pattern) return(g);
+	if(g==pattern) return;
 	// First copy g
-	GCLgrid newgrid(g);
-	// since newgrid is a copy we can now alter the 
-	// transformation variables
+	GCLgrid oldgrid(g);
+	// We have a copy of the original in oldgrid so now
+	// modify g in place.
 	// This requires only setting the origin and azimuth_y 
 	// followed by use of the set_transsformation_matrix function
-	newgrid.lat0=pattern.lat0;
-	newgrid.lon0=pattern.lon0;
-	newgrid.r0=pattern.r0;
-	newgrid.azimuth_y=pattern.azimuth_y;
-	newgrid.set_transformation_matrix();
+	g.lat0=pattern.lat0;
+	g.lon0=pattern.lon0;
+	g.r0=pattern.r0;
+	g.azimuth_y=pattern.azimuth_y;
+	g.set_transformation_matrix();
 
 	// Now loop through the grid converting all the points
 	// to the coordinate system of parent
 	int i,j;
 	Geographic_point geo;
 	Cartesian_point p;
-	for(i=0;i<newgrid.n1;++i)
-		for(j=0;j<newgrid.n2;++j)
+	for(i=0;i<oldgrid.n1;++i)
+		for(j=0;j<oldgrid.n2;++j)
 		{
-			geo.lat=g.lat(i,j);
-			geo.lon=g.lon(i,j);
-			geo.r=g.r(i,j);
+			geo.lat=oldgrid.lat(i,j);
+			geo.lon=oldgrid.lon(i,j);
+			geo.r=oldgrid.r(i,j);
 			p=pattern.gtoc(geo);
-			newgrid.x1[i][j]=p.x1;
-			newgrid.x2[i][j]=p.x2;
-			newgrid.x3[i][j]=p.x3;
+			g.x1[i][j]=p.x1;
+			g.x2[i][j]=p.x2;
+			g.x3[i][j]=p.x3;
 		}
-	return(newgrid);
+	return;
 }
-GCLgrid3d remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern)
+void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern)
 {
 	// return immediately if these grids are congruent
-	if(g==pattern) return(g);
+	if(g==pattern) return;
 	// First copy g
-	GCLgrid3d newgrid(g);
-	// since newgrid is a copy we can now alter the 
-	// transformation variables
-	// This requires only setting the origin and azimuth_y 
-	// followed by use of the set_transsformation_matrix function
-	newgrid.lat0=pattern.lat0;
-	newgrid.lon0=pattern.lon0;
-	newgrid.r0=pattern.r0;
-	newgrid.azimuth_y=pattern.azimuth_y;
-	newgrid.set_transformation_matrix();
+	GCLgrid3d oldgrid(g);
+	g.lat0=pattern.lat0;
+	g.lon0=pattern.lon0;
+	g.r0=pattern.r0;
+	g.azimuth_y=pattern.azimuth_y;
+	g.set_transformation_matrix();
 
 	// Now loop through the grid converting all the points
 	// to the coordinate system of parent
 	int i,j,k;
 	Geographic_point geo;
 	Cartesian_point p;
-	for(i=0;i<newgrid.n1;++i)
-	    for(j=0;j<newgrid.n2;++j)
-		for(k=0;k<newgrid.n3;++k)
+	for(i=0;i<oldgrid.n1;++i)
+	    for(j=0;j<oldgrid.n2;++j)
+		for(k=0;k<oldgrid.n3;++k)
 		{
-			geo.lat=g.lat(i,j,k);
-			geo.lon=g.lon(i,j,k);
-			geo.r=g.r(i,j,k);
+			geo.lat=oldgrid.lat(i,j,k);
+			geo.lon=oldgrid.lon(i,j,k);
+			geo.r=oldgrid.r(i,j,k);
 			p=pattern.gtoc(geo);
-			newgrid.x1[i][j][k]=p.x1;
-			newgrid.x2[i][j][k]=p.x2;
-			newgrid.x3[i][j][k]=p.x3;
+			g.x1[i][j][k]=p.x1;
+			g.x2[i][j][k]=p.x2;
+			g.x3[i][j][k]=p.x3;
 		}
-	return(newgrid);
+	return;
 }
 			
 			
