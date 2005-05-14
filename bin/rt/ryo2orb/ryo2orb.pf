@@ -2,20 +2,17 @@
 GPS_epoch 1/6/1980
 GPS_leapseconds 13
 
-multiply_data_by  1000000
-calper  1
-segtype d 
-
-samprate_tolerance 0.0001
+samprate_tolerance      0.0001
 longitude_branchcut_deg 180
-ECEF_semimajor_axis 6378137.0
-ECEF_flattening     0.00335281066474
+ECEF_semimajor_axis 	6378137.0
+ECEF_flattening     	0.00335281066474
 
 net 	XX
 multiplex_stations yes
 max_nsamples_per_channel 10
 
 channel_names &Arr{
+# internal_identifier	external_name
 	ITRF_X		ITRFX
 	ITRF_Y		ITRFY
 	ITRF_Z		ITRFZ
@@ -38,3 +35,108 @@ channel_names &Arr{
 	covariance_TZ	COTZ
 }
 
+stachan_calibs &Arr{
+	default &Arr{
+#	internal_identifier    offset	multdataby	calper	segtype		
+		ITRF_X		0.0	1000000		1	d
+		ITRF_Y		0.0	1000000		1	d
+		ITRF_Z		0.0	1000000		1	d
+		ITRF_T		0.0	1000000		1	d
+		LAT_RAD		0.0	1000000		1	d
+		LON_RAD		0.0	1000000		1	d
+		LAT_DEG		0.0	1000000		1	d
+		LON_DEG		0.0	1000000		1	d
+		HEIGHT_M	0.0	1000000		1	d
+		variance_scale  0.0	1000000		1	d
+		variance_X	0.0	1000000		1	d
+		variance_Y	0.0	1000000		1	d
+		variance_Z	0.0	1000000		1	d
+		variance_T	0.0	1000000		1	d
+		covariance_YX	0.0	1000000		1	d
+		covariance_YZ	0.0	1000000		1	d
+		covariance_ZX	0.0	1000000		1	d
+		covariance_TX	0.0	1000000		1	d
+		covariance_TY	0.0	1000000		1	d
+		covariance_TZ	0.0	1000000		1	d
+	}
+	WHYT	&Arr{
+		LAT_DEG	33.674490	1e11	1	d
+		LON_DEG	-117.643456	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SACY	&Arr{
+		LAT_DEG	33.743244	1e11	1	d
+		LON_DEG	-117.895577	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	MJPK	&Arr{
+		LAT_DEG	33.714481	1e11	1	d
+		LON_DEG	-117.550469	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SBCC	&Arr{
+		LAT_DEG	33.552999	1e11	1	d
+		LON_DEG	-117.661484	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	OEOC	&Arr{
+		LAT_DEG	33.765857	1e11	1	d
+		LON_DEG	-117.744133	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	TRAK	&Arr{
+		LAT_DEG	33.617934	1e11	1	d
+		LON_DEG	-117.803433	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	FVPK	&Arr{
+		LAT_DEG	33.662326	1e11	1	d
+		LON_DEG	-117.935712	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	CAT2	&Arr{
+		LAT_DEG	33.311616	1e11	1	d
+		LON_DEG	-118.333814	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SCMS	&Arr{
+		LAT_DEG	33.444139	1e11	1	d
+		LON_DEG	-117.634562	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SIO5	&Arr{
+		LAT_DEG	32.840734	1e11	1	d
+		LON_DEG	-117.249687	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	BLSA	&Arr{
+		LAT_DEG	33.799543	1e11	1	d
+		LON_DEG	-118.028675	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	OGHS	&Arr{
+		LAT_DEG	33.130606	1e11	1	d
+		LON_DEG	-117.041767	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PMOB	&Arr{
+		LAT_DEG	33.357239	1e11	1	d
+		LON_DEG	-116.859544	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DVLW	&Arr{
+		LAT_DEG	33.657694	1e11	1	d
+		LON_DEG	-117.067434	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	RAAP	&Arr{
+		LAT_DEG	33.042234	1e11	1	d
+		LON_DEG	-116.917246	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DSME	&Arr{
+		LAT_DEG	33.036476	1e11	1	d
+		LON_DEG	-117.249533	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+}

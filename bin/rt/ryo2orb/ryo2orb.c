@@ -65,14 +65,12 @@ int 	GPS_leapseconds;
 int 	Multiplex_stations;
 int 	Max_nsamples_per_channel;
 char	*Net;
-char	*Segtype;
 double	Samprate_tolerance;
 double	Longitude_branchcut_deg;
-double	Multiply_data_by;
-double 	Calper = -1;
 double	ECEF_semimajor_axis;
 double	ECEF_flattening;
 Arr 	*Channel_names = 0;
+Arr 	*Stachan_calibs = 0;
 Arr 	*Track_packets = 0;
 Arr 	*Track_packetchans = 0;
 Pmtfifo	*RYO2orbPackets_mtf;
@@ -108,6 +106,7 @@ typedef struct ImportThread {
 } ImportThread;
 
 typedef struct SatelliteInfo {
+
 	int	sv_prn;
 	int	prn_flags;
 	int	ephemeris_available;
@@ -115,7 +114,17 @@ typedef struct SatelliteInfo {
 	int	L2_track;
 	int	elevation;
 	int	azimuth;
+
 } SatelliteInfo;
+
+typedef struct StachanCalib {
+
+	double	offset;
+	double	multdataby;
+	double	calper;
+	char	segtype[2];
+
+} StachanCalib;
 
 typedef struct RYO2orbPacket {
 
@@ -173,6 +182,48 @@ usage()
 		 "Lindquist Consulting", 
 		 "kent@lindquistconsulting.com" );
 	
+	return;
+}
+
+StachanCalib *
+new_StachanCalib()
+{
+	StachanCalib *scc;
+
+	allot( StachanCalib *, scc, 1 );
+
+	memset( scc, '\0', sizeof( scc ) );
+
+	return scc;
+}
+
+StachanCalib *
+get_StachanCalib( char *site_id, char *channel_identifier ) 
+{
+	char	key_specific[STRSZ];
+	char	key_default[STRSZ];
+	StachanCalib *scc;
+
+	sprintf( key_specific, "%s:%s", site_id, channel_identifier );
+	sprintf( key_default, "%s:%s", "default", channel_identifier );
+
+	scc = (StachanCalib *) getarr( Stachan_calibs, key_specific );
+
+	if( scc == (StachanCalib *) NULL ) {
+		
+		scc = (StachanCalib *) getarr( Stachan_calibs, key_default );
+	}
+
+	return scc;
+}
+
+void
+free_StachanCalib( void *sccp )
+{
+	StachanCalib *scc = (StachanCalib *) sccp;
+
+	free( scc );
+
 	return;
 }
 
@@ -1063,11 +1114,24 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 	char	*chan;
 	int	isample;
 	double	new_samprate;
+	StachanCalib *scc;
 
 	if( ( chan = getarr( Channel_names, channel_identifier ) ) == NULL ) {
 
 		elog_die( 0, "channel_identifier '%s' missing from channel_names "
 			     "in parameter file. Bye.\n" );
+	}
+
+	scc = get_StachanCalib( r2opkt->site_id, channel_identifier );
+
+	if( scc == (StachanCalib *) NULL ) {
+
+		elog_complain( 0, "Couldn't find configured or default "
+				  "offsets for %s:%s: "
+				  "Can't enqueue sample!!!\n", 
+				  r2opkt->site_id, channel_identifier );
+
+		return;
 	}
 
 	sprintf( key, "%s:%s", r2opkt->site_id, chan );
@@ -1088,15 +1152,16 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 
 		pktchan->datasz = Max_nsamples_per_channel;
 
-		strcpy( pktchan->segtype, Segtype );
+		strcpy( pktchan->segtype, scc->segtype );
 
 		strcpy( pktchan->net, pkt->parts.src_net );
 		strcpy( pktchan->sta, r2opkt->site_id );
 		strcpy( pktchan->chan, chan );
 		strcpy( pktchan->loc, "" );
 
-		pktchan->calib = 1./Multiply_data_by;
-		pktchan->calper = Calper;
+		pktchan->calib = 1./scc->multdataby;
+		pktchan->calper = scc->calper;
+		pktchan->duser1 = scc->offset;
 
 		pktchan->nsamp = 0;
 		pktchan->samprate = NULL_SAMPRATE;
@@ -1147,7 +1212,7 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 		pktchan->time = r2opkt->time;
 	}
 
-	pktchan->data[isample] = data_value * Multiply_data_by;
+	pktchan->data[isample] = ( data_value - scc->offset ) * scc->multdataby;
 
 	pktchan->nsamp++;
 
@@ -1158,6 +1223,11 @@ int
 packet_ready( Packet *pkt, RYO2orbPacket *r2opkt ) 
 {
 	PktChannel *pktchan;
+
+	if( pkt->nchannels <= 0 ) {
+
+		return 0;
+	}
 
 	pktchan = gettbl( pkt->channels, 0 );
 
@@ -1370,6 +1440,73 @@ rtd_import( void *arg )
 	return( 0 );
 }
 
+void
+load_stachan_calibs( Pf *pf ) 
+{
+	Pf	*pfstachan_calibs;
+	Tbl	*stas;
+	Arr	*chans;
+	Tbl	*chanids;
+	char	*aline;
+	char	*sta;
+	char	*chanid;
+	int	ista;
+	int	ichanid;
+	char	key[STRSZ];
+	StachanCalib *scc;
+
+	Stachan_calibs = newarr( 0 );
+
+	pfget( pf, "stachan_calibs", (void **) &pfstachan_calibs );
+
+	stas = pfkeys( pfstachan_calibs );
+
+	for( ista = 0; ista < maxtbl( stas ); ista++ ) {
+
+		sta = gettbl( stas, ista );
+
+		chans = pfget_arr( pfstachan_calibs, sta );
+
+		chanids = keysarr( chans );
+
+		for( ichanid = 0; ichanid < maxtbl( chanids ); ichanid++ ) {
+
+			chanid = gettbl( chanids, ichanid );
+
+			scc = new_StachanCalib(); 
+
+			aline = (char *) getarr( chans, chanid );
+
+			sscanf( aline, "%lf %lf %lf %s", 
+					&scc->offset,
+					&scc->multdataby, 
+					&scc->calper,
+					scc->segtype );
+
+			if( VeryVerbose ) {
+
+				elog_notify( 0, 
+					"Values for %s:%s:\n"
+					"\t\toffset\t\t%f\n\t\tdatamultby\t"
+					"%g\n\t\tcalper\t\t%f\n\t\tsegtype\t\t%s\n",
+					sta, chanid, 
+					scc->offset, 
+					scc->multdataby, 
+					scc->calper, 
+					scc->segtype );
+			}
+
+			sprintf( key, "%s:%s", sta, chanid );
+
+			setarr( Stachan_calibs, key, (void *) scc );
+		}
+
+		freetbl( chanids, 0 );
+	}
+
+	freetbl( stas, 0 );
+}
+
 int
 main( int argc, char **argv )
 {
@@ -1427,15 +1564,15 @@ main( int argc, char **argv )
 	Max_nsamples_per_channel = pfget_int( pf, "max_nsamples_per_channel" );
 
 	Net = pfget_string( pf, "net" );
-	Channel_names = pfget_arr( pf, "channel_names" );
 
 	Samprate_tolerance = pfget_double( pf, "samprate_tolerance" );
-	Multiply_data_by = pfget_double( pf, "multiply_data_by" );
-	Calper = pfget_double( pf, "calper" );
-	Segtype = pfget_string( pf, "segtype" );
 	Longitude_branchcut_deg = pfget_double( pf, "longitude_branchcut_deg" );
 	ECEF_semimajor_axis = pfget_double( pf, "ECEF_semimajor_axis" );
 	ECEF_flattening = pfget_double( pf, "ECEF_flattening" );
+
+	Channel_names = pfget_arr( pf, "channel_names" );
+
+	load_stachan_calibs( pf );
 
 	RYO2orbPackets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
 
