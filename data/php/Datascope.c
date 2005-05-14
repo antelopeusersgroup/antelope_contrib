@@ -68,6 +68,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
+	PHP_FE(trsplit, NULL)		
+	PHP_FE(trsplice, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -509,6 +511,62 @@ PHP_FUNCTION(trapply_calib)
 	}
 
 	trapply_calib( tr );
+
+	return;
+}
+/* }}} */
+
+PHP_FUNCTION(trsplit)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	trsplit( tr, 0, 0 );
+
+	return;
+}
+/* }}} */
+
+PHP_FUNCTION(trsplice)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	trsplice( tr, trTOLERANCE, 0, 0 );
 
 	return;
 }

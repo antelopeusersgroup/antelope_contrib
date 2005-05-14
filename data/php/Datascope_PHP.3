@@ -182,6 +182,29 @@ $rawdatapoints = trextract_data( $tr );
 .fi
 .in
 .ft R
+.IP "\fBtrsplit\fP ( $tr )"
+break up waveform records at marked bad data
+.ft CW
+.in 2c 
+.nf
+
+trsplit( $tr );
+
+.fi
+.in
+.ft R
+.IP "\fBtrsplice\fP ( $tr )"
+splice together data segments (input trace-object must be 
+pre-sorted by sta, chan, and time)
+.ft CW
+.in 2c 
+.nf
+
+trsplice( $tr );
+
+.fi
+.in
+.ft R
 .IP "\fBtrfree\fP ( $tr )"
 free a trace-object pointer
 .ft CW
