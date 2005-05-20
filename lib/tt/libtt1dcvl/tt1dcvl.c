@@ -137,7 +137,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 	{
 		elog_log(0,"No match in database for model named %s for property %s\n",
 			mod,property);
-		freetbl(sortkeys,free);
+		freetbl(sortkeys,0);
 		dbfree(dbs);
 		dbfree(dbs2);
 		return(NULL);
@@ -161,7 +161,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 		}		
 	}
 	/* cleanup to avoid memory leaks */
-	freetbl(sortkeys,free);
+	freetbl(sortkeys,0);
 	dbfree(dbs);
 	dbfree(dbs2);
 	return(model);
