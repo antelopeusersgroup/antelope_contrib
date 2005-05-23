@@ -592,6 +592,22 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		md.put_metadata("U31",0.0);
 		md.put_metadata("U32",0.0);
 		*this=Three_Component_Seismogram(md,false);
+		ns = this->get_int("nsamp");
+		dt = 1.0/(this->get_double("samprate"));
+		t0 = this->get_double("time");
+		// default for processed data is relative time
+		tref=relative;
+		try {
+			string timetype;
+			timetype=md.get_string("timetype");
+			if(timetype=="a") tref=absolute;
+		} catch (...)
+		{
+			cerr << "timetype field not found.  Assuming relative time reference"<<endl
+				<< "Make sure timetype is extracted from database to make this error go away"
+				<< endl;
+		}
+		
 		// these need to be forced
 		components_are_cardinal=true;
 		components_are_orthogonal=true;
