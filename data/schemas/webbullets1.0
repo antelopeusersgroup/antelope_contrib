@@ -12,7 +12,7 @@ Schema webbullets1.0
 
 Attribute bullet
 	String (300)
-	Format ( "%-30s" )
+	Format ( "%-300s" )
 	Null ( "-" )
 	Description ( "web bullet" )
 	Detail {
