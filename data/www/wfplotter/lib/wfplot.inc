@@ -1,28 +1,88 @@
 <?php
-# Include relevant libraries from JpGraph
-$jppath = "/opt/src/jpgraph-1.17/src/" ;
-include( $jppath . "jpgraph.php" ) ; # Load JpGraph
-include( $jppath . "jpgraph_line.php" ) ; # Line plot
 
-function wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, $width, $height, $format ) {
-	if( empty( $mydb ) || empty( $sta ) || empty( $cha ) || empty( $t0 ) || empty( $t1 ) || empty( $myimage ) || empty( $width ) || empty( $height ) || empty( $format ) ) {
-		echo "<b>wfplot error: One of more of the required arguments were not defined!</b>" ;
+function wfplot( $db, $sta, $cha, $t0, $t1, $width, $height, $format, $output_image ) {
+
+	if( ! class_exists( 'Graph' ) ) {
+
+		echo "<b>wfplot error: class 'Graph' is not defined. Please " .
+		     "make sure you have included jpgraph.php</b>" ;
+		return;
+	}
+
+	if( ! class_exists( 'LinePlot' ) ) {
+
+		echo "<b>wfplot error: class 'LinePlot' is not defined. Please " .
+		     "make sure you have included jpgraph_line.php</b>" ;
+		return;
+	}
+
+	if( empty( $db ) ) {
+
+		echo "<b>wfplot error: The required argument 'db' is not defined!</b>" ;
 		return ;
+
+	} elseif( empty( $sta ) ) {
+
+		echo "<b>wfplot error: The required argument 'sta' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $cha ) ) {
+
+		echo "<b>wfplot error: The required argument 'chan' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $t0 ) ) {
+
+		echo "<b>wfplot error: The required argument 't0' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $t1 ) ) {
+
+		echo "<b>wfplot error: The required argument 't1' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $width ) ) {
+
+		echo "<b>wfplot error: The required argument 'width' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $height ) ) {
+
+		echo "<b>wfplot error: The required argument 'height' is not defined!</b>" ;
+		return ;
+
+	} elseif( empty( $format ) ) {
+
+		echo "<b>wfplot error: The required argument 'format' is not defined!</b>" ;
+		return ;
+
 	} else {
-		$mytr = trloadchan( $mydb, $t0, $t1, $sta, $cha ) ;
+	
+		$mytr = trloadchan( $db, $t0, $t1, $sta, $cha ) ;
+
 		for( $mytr[3]=0; $mytr[3]<dbnrecs( $mytr ); $mytr[3]++ ) {
-			list( $time, $endtime, $nsamp, $samprate ) = dbgetv( $mytr, 'time','endtime','nsamp','samprate' ) ;
+
+			list( $time, $endtime, $nsamp, $samprate ) =
+				dbgetv( $mytr, 'time','endtime','nsamp','samprate' ) ;
+
 			$data_y = trextract_data( $mytr ) ;
+
 			for( $i=0; $i<count( $data_y ); $i++ ) {
+
 				$data_x[$i] = $time + ( $i * ( 1 / $samprate ) ) ;
 			}
 		}
-		$mytr = dblookup( $mytr, '', '', '', 'dbALL' ); # free up the trace-object structure
+
+		$mytr = dblookup( $mytr, '', '', '', 'dbALL' ); 
 		trfree( $mytr );
-		function TimeCallback( $aVal ) { // convert timestamp to minutes and secs
+
+		// convert timestamp to minutes and secs
+
+		function TimeCallback( $aVal ) { 
 		        return gmdate( 'H:i:s', $aVal ) ;
 		}
-		$graph = new Graph( $width,$height ) ;
+
+		$graph = new Graph( $width, $height ) ;
 		$graph->img->SetAntiAliasing() ;
 		$graph->img->SetImgFormat( $format ) ;
 		$graph->SetScale("intlin",0,0,$time,$data_x[count($data_y)-1] ) ;
@@ -49,13 +109,24 @@ function wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, $width, $height, $format
 		$graph->ygrid->Show(false,false) ;
 		$graph->xgrid->Show(true,false) ;
 		$graph->xgrid->SetLineStyle("dotted") ;
+
 		$lp1 = new LinePlot( $data_y, $data_x );
 		$lp1->SetWeight(1);
 		$lp1->SetColor('#FFFF00');
+
 		$graph->Add($lp1);
-		$graph->Stroke( $myimage . "." . $format );
-		$wfplot_image_name = $myimage . "." . $format ;
-		return $wfplot_image_name ;
+
+		$graph->Stroke( $output_image );
+		
+		return;
+
+		// The preferred behaviour would be to return a blob:
+		// ob_start();
+		// imagepng($graph->Stroke(_IMG_HANDLER));
+		// $blob = ob_get_contents();
+		// ob_end_clean();
+
+		// return $blob ;
 	}
 }
 ?>

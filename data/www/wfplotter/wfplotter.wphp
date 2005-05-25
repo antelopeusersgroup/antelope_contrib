@@ -1,11 +1,10 @@
 <?php
 dl( 'Datascope.so' ) ;
 
-# Load config
-# Not sure if this is correct, but you do need to reference wfplot.inc
-# wherever it may be on the local filesystem
+require_once( "library/wfplot.inc" ) ;
 
-require_once( "/library/wfplot.inc" ) ;
+require_once( "JpGraph/jpgraph.php" ) ;
+require_once( "JpGraph/jpgraph_line.php" ) ;
 
 # Get form parameters
 $sta = $_GET['sta'] ;
@@ -18,7 +17,7 @@ $mydb = "/path/to/database" ;
 $mydb = ds_dbopen( $mydb, "r" ) ;
 
 # Output image
-$img = "myimage" ;
+$img = "myimage.php" ;
 ?>
 
 <html>
@@ -30,9 +29,9 @@ $img = "myimage" ;
 <h2>Station &amp; Channel: <? echo $sta . " : " . $cha ; ?></h2>
 <h2>Start: <? echo gmdate( "Y\&\m\d\a\s\h\;m\&\m\d\a\s\h\;d H:i:s",$t0 ) . "($t0)" ; ?><br/>End: <? echo gmdate( "Y\&\m\d\a\s\h\;m\&\m\d\a\s\h\;d H:i:s",$t1 ) . "($t1)" ; ?></h2>
 <?php
-	$wvform_image_name = wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, "800", "600", "png" ) ;
-	list( $height, $width, $type, $attr ) = getimagesize( $wvform_image_name ) ;
-	echo "<img src=\"$wvform_image_name\" $attr alt=\"Waveform image: Station: $sta, Channel: $cha, Start time: $t0, End time: $t1\" />" ;
+	wfplot( $mydb, $sta, $cha, $t0, $t1, "800", "600", "png", $img ) ;
+	list( $height, $width, $type, $attr ) = getimagesize( $img ) ;
+	echo "<img src=\"$img\" $attr alt=\"Waveform image: Station: $sta, Channel: $cha, Start time: $t0, End time: $t1\" />" ;
 ?>
 </body>
 </html>

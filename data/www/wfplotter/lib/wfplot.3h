@@ -1,14 +1,14 @@
 .TH WFPLOT 3H "$Date$"
 .SH NAME
-wfplot \- library function to plot waveforms
+wfplot \- library function to plot waveforms on the web
 .SH SYNOPSIS
 .nf
-include_once( '/path/to/jpgraph/jpgraph.php' ) ;
-include_once( '/path/to/jpgraph/jpgraph_line.php' ) ;
+require_once( 'JpGraph/jpgraph.php' ) ;
+require_once( 'JpGraph/jpgraph_line.php' ) ;
 
-include( 'wfplot.inc' ) ;
+require_once( 'library/wfplot.inc' ) ;
 
-wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, $width, $height, $format ) ;
+wfplot( $mydb, $sta, $chan, $t0, $t1, $width, $height, $format, $output_image ) ;
 .fi
 .SH DESCRIPTION
 Takes a series of arguments and creates an image from data retrieved from
@@ -22,11 +22,11 @@ $sta     - Station, required.
 $cha     - Channel, required.
 $t0      - Start time, required.
 $t1      - End time, required.
-$myimage - Output image name, required. Do not include file suffix (file format).
-           Directory must be writable by the web user (eg. www, apache).
 $width   - Width of the output image in pixels, required.
 $height  - Height of the output image in pixels, required.
 $format  - Format of the output image, required. Options are png, jpeg and gif.
+$output_image - Output image name, required. Include file suffix (file format).
+           Directory must be writable by the web user (eg. www, apache).
 .SH FILES
 wfplot.inc
 .SH ENVIRONMENT
@@ -35,6 +35,8 @@ wfplot.inc
 <?php
    dl( 'Datascope.so' ) ;
    require_once( "wfplot.inc" ) ;
+   require_once( "JpGraph/jpgraph.php" ) ;
+   require_once( "JpGraph/jpgraph_line.php" ) ;
    # Get form parameters
    $sta = $_GET['sta'] ;
    $cha = $_GET['cha'] ;
@@ -43,7 +45,7 @@ wfplot.inc
    # Open db and load waveform data
    $mydb = ds_dbopen( $mydb, "r" ) ;
    # Output image name
-   $myimage = "myimage" ;
+   $myimage = "myimage.png" ;
 ?>
 
 <html>
@@ -53,7 +55,7 @@ wfplot.inc
 <body>
    <h1>wfplotter.php</h1>
 <?php
-   $wvform_image_name = wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, "800", "600", "png" ) ;
+   wfplot( $mydb, $sta, $cha, $t0, $t1, $myimage, "800", "600", "png", $myimage ) ;
    list( $height, $width, $type, $attr ) = getimagesize( $wvform_image_name ) ;
    echo "<img src=\"$wvform_image_name\" $attr alt=\"Waveform image: Station: $sta, Channel: $cha, Start time: $t0, End time: $t1\" />" ;
 ?>
