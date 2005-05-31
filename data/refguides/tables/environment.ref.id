@@ -62,6 +62,9 @@ GRX_PSCOLOR
 GRX_FONTPATH
   overrides the default location $ANTELOPE/data/fonts.bin for the binary font file used by niceplot 
 
+ORB_IP_ADDRESS
+  cause orb client connections to bind to the specified ip address
+
 PFPATH
   overrides the default path to parameter files: "$(ANTELOPE)/data/pf:."
 
