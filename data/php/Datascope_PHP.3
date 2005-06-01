@@ -591,6 +591,56 @@ Save a database view as part of the database
 .in
 .ft R
 
+.IP "\fBdbdelete\fP ( $db )"
+Delete a row from a database table
+.ft CW
+.in 2c
+.nf
+
+	$db = ds_dbopen( "testdb", "r" );
+
+	$db = dblookup( $db, "", "origin", "orid", "645" );
+
+	dbdelete( $db );
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbmark\fP ( $db )"
+Mark a row of a database table for deletion (set all fields to null)
+.ft CW
+.in 2c
+.nf
+
+	$db = ds_dbopen( "testdb", "r" );
+
+	$db = dblookup( $db, "", "origin", "orid", "645" );
+
+	dbmark( $db );
+
+.fi
+.in
+.ft R
+
+.IP "\fBdbcrunch\fP ( $db )"
+Remove null (marked) rows from a database table
+.ft CW
+.in 2c
+.nf
+
+	$db = ds_dbopen( "testdb", "r" );
+
+	$db = dblookup( $db, "", "origin", "orid", "645" );
+
+	dbmark( $db );
+
+	dbcrunch( $db );
+
+.fi
+.in
+.ft R
+
 .SH EXAMPLE
 .ft CW
 .in 2c
