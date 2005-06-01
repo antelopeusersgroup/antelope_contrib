@@ -19,6 +19,8 @@
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 #define STREQN(a, b, n) (strncmp((a), (b), (n)) == 0)
 
+static Arr *Nonroutable = 0;
+
 static double
 compute_kbaud( Orbsrc *src )
 {
@@ -423,6 +425,26 @@ is_nonroutable( char *address )
 }
 
 static int
+report_nonroutable( char *address )
+{
+	if( Nonroutable == (Arr *) NULL ) {
+		
+		Nonroutable = newarr( 0 );
+	}
+
+	if( getarr( Nonroutable, address ) == NULL ) {
+		
+		setarr( Nonroutable, address, 0x1 );
+
+		return 1;
+
+	} else {
+
+		return 0;
+	}
+}
+
+static int
 is_dbprogram( char *what, char *dbprogram, char *dbpath ) 
 {
 	static Pf *pflib = 0;
@@ -663,7 +685,8 @@ orbconnections2pf( Pf *pfanalyze )
 	serveraddress = pfget_string( pfserver, "address" );
 	serverport = pfget_int( pfserver, "port" );
 
-	if( is_nonroutable( serveraddress ) ) {
+	if( is_nonroutable( serveraddress ) && 
+	    report_nonroutable( serveraddress ) ) {
 
 		elog_complain( 0, "libpforbstat: warning: monitored server %s is nonroutable\n", serveraddress );
 	}
@@ -755,7 +778,8 @@ orbconnections2pf( Pf *pfanalyze )
 
 			/* Analysis */
 
-			if( is_nonroutable( clientaddress ) ) { 
+			if( is_nonroutable( clientaddress ) &&
+			    report_nonroutable( clientaddress ) ) { 
 				
 				elog_complain( 0, "libpforbstat: warning: clientaddress %s is nonroutable\n", 
 						clientaddress );
