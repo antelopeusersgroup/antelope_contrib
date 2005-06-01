@@ -26,6 +26,15 @@ dbdestroy ($db)
 dbtruncate ($db, $nrecords)
     truncate a database table to the specified length
 
+dbdelete ($db)
+    delete rows from a database
+
+dbmark ($db)
+    mark rows for deletion
+
+dbcrunch ($db)
+    remove marked (null) rows from a database table
+
 <subsection Manipulating fields and records>
 
 dbaddv ($db, field_name, value, [field_name, value, ...])
