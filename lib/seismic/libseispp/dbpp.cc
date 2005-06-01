@@ -116,7 +116,7 @@ Datascope_Handle::Datascope_Handle(string dbname,
 	}
 	db = dbprocess(db,process_list,0);
 	freetbl(process_list,0);
-	if(db.record == dbINVALID)
+	if(db.table == dbINVALID)
 		throw seispp_dberror("dbprocess failed",db,complain);
 	pffree(pf);
 	// Always initialize -- better than garbage
@@ -139,7 +139,7 @@ Datascope_Handle::Datascope_Handle(Dbptr dbi, Pf *pf, string tag)
 		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
 	}
         db = dbprocess(dbi,process_list,0);
-        if(db.record == dbINVALID)
+        if(db.table == dbINVALID)
                 throw seispp_dberror("dbprocess failed",db,complain);
 	// Always initialize -- better than garbage
 	parent_table=db;
@@ -414,7 +414,7 @@ void Datascope_Handle::group(list<string> groupkeys)
 void Datascope_Handle::subset(string sstr)
 {
 	db = dbsubset(db,const_cast<char *>(sstr.c_str()),0);
-	if(db.record==dbINVALID)
+	if(db.table==dbINVALID)
 		throw seispp_dberror(string("dbsubset failed"),
 			db,complain);
 }

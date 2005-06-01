@@ -201,6 +201,8 @@ Arr *tr_mwtransform(
 		{
 		/* enter here when data gaps are present in the time
 		window.  We find the longest and use it */
+fprintf(stderr,"DEBUG:  entered gap loop for %s:%s\n",sta,chan);
+
 			for(reclen = 0.0,tr.record=is;
 				tr.record<ie;++tr.record)
 			{
@@ -225,7 +227,7 @@ Arr *tr_mwtransform(
 					nrec = tr.record;
 				}
 			}
-			if(irec < 0)
+			if(reclen<=0.0)
 			{
 				elog_complain(0,"No data in window from %s to %s for sta/chan %s/%s -- probable data gap\n",
 					strtime(swtime),strtime(ewtime),
