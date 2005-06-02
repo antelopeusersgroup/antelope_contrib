@@ -124,21 +124,21 @@ Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& tcei,
 	string arrival_time_key,
 		Time_Window tw)
 {
-	int nmembers=tcei.tcse.size();
+	int nmembers=tcei.member.size();
 	// use the special constructor to only clone the metadata and 
 	// set aside slots for the new ensemble.
 	Three_Component_Ensemble *tceo
 		=new Three_Component_Ensemble(dynamic_cast<Metadata&>(tcei),nmembers);
-	tceo->tcse.reserve(nmembers);  // reserve this many slots for efficiency
+	tceo->member.reserve(nmembers);  // reserve this many slots for efficiency
 	// We have to use a loop instead of for_each as I don't see how
 	// else to handle errors cleanly here.
 	vector<Three_Component_Seismogram>::iterator indata;
-	for(indata=tcei.tcse.begin();indata!=tcei.tcse.end();++indata)
+	for(indata=tcei.member.begin();indata!=tcei.member.end();++indata)
 	{
 		try {
 			Three_Component_Seismogram tcs;
 			tcs=Arrival_Time_Reference(*indata,arrival_time_key,tw);
-			tceo->tcse.push_back(tcs);
+			tceo->member.push_back(tcs);
 		} catch ( seispp_error& serr)
 		{
 			serr.log_error();

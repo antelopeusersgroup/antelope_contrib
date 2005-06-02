@@ -62,6 +62,14 @@ bool Basic_Time_Series::is_gap(int n0)
 	else
 		return true;
 }
+// query for gap by time window
+bool Basic_Time_Series::is_gap(Time_Window twin)
+{
+	if(gaps.find(twin)==gaps.end())
+		return(false);
+	else
+		return(true);
+}
 bool Basic_Time_Series::is_gap(double t)
 {
 	if(t<t0 || t>(t0+((double)(ns-1))*dt)) return true;

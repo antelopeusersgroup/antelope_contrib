@@ -657,14 +657,14 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 //
 Time_Series_Ensemble::Time_Series_Ensemble()
 {
-	tse.reserve(0);
+	member.reserve(0);
 }
 Time_Series_Ensemble::Time_Series_Ensemble(int nensemble, int nsamples)
 {
 	for(int i=0; i<nensemble; ++i)
 	{
 		Time_Series *ts = new Time_Series(nsamples);
-		tse.push_back(*ts);
+		member.push_back(*ts);
 		delete ts;
 	}
 }
@@ -675,7 +675,7 @@ Time_Series_Ensemble::Time_Series_Ensemble(int nensemble,
 	for(int i=0; i<nensemble; ++i)
 	{
 		Time_Series *ts = new Time_Series(nsamples);
-		tse.push_back(*ts);
+		member.push_back(*ts);
 		delete ts;
 	}
 	mdlist=mdl;
@@ -683,17 +683,17 @@ Time_Series_Ensemble::Time_Series_Ensemble(int nensemble,
 Time_Series_Ensemble::Time_Series_Ensemble(Time_Series_Ensemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
-	int nmembers=tceold.tse.size();
-	tse.reserve(nmembers);
+	int nmembers=tceold.member.size();
+	member.reserve(nmembers);
 	for(int i=0; i<nmembers; ++i)
-		tse.push_back(tceold.tse[i]);
+		member.push_back(tceold.member[i]);
 }
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
 Time_Series_Ensemble::Time_Series_Ensemble(Metadata& md,int nmembers)
 	: Metadata(md)
 {
-	tse.reserve(nmembers);
+	member.reserve(nmembers);
 }
 	
 void set_global_metadata_list(Time_Series_Ensemble& tse, Metadata_list& mdl)
@@ -702,16 +702,16 @@ void set_global_metadata_list(Time_Series_Ensemble& tse, Metadata_list& mdl)
 }
 Three_Component_Ensemble::Three_Component_Ensemble()
 {
-	tcse.reserve(0);
+	member.reserve(0);
 }
 Three_Component_Ensemble::Three_Component_Ensemble(int nstations, int nsamples)
 {
-	tcse.reserve(nstations);
+	member.reserve(nstations);
 	for(int i=0;i<nstations;++i)
 	{
 		Three_Component_Seismogram *tcs 
 			= new Three_Component_Seismogram(nsamples);
-		tcse.push_back(*tcs);
+		member.push_back(*tcs);
 		delete tcs;
 	}
 }
@@ -719,12 +719,12 @@ Three_Component_Ensemble::Three_Component_Ensemble(int nstations,
 		int nsamples,
 			Metadata_list& mdl)
 {
-	tcse.reserve(nstations);
+	member.reserve(nstations);
 	for(int i=0;i<nstations;++i)
 	{
 		Three_Component_Seismogram *tcs 
 			= new Three_Component_Seismogram(nsamples);
-		tcse.push_back(*tcs);
+		member.push_back(*tcs);
 		delete tcs;
 	}
 	mdlist=mdl;
@@ -798,7 +798,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 				mderr.log_error();
 				throw seispp_error(string("Metadata problem"));
 			}
-			tcse.push_back(*data3c);
+			member.push_back(*data3c);
 			delete data3c;
 			// copy global metadata only for the first 
 			// row in this view
@@ -831,17 +831,17 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 Three_Component_Ensemble::Three_Component_Ensemble(Three_Component_Ensemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
-	int nmembers=tceold.tcse.size();
-	tcse.reserve(nmembers);
+	int nmembers=tceold.member.size();
+	member.reserve(nmembers);
 	for(int i=0; i<nmembers; ++i)
-		tcse.push_back(tceold.tcse[i]);
+		member.push_back(tceold.member[i]);
 }
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
 Three_Component_Ensemble::Three_Component_Ensemble(Metadata& md,int nmembers)
 	: Metadata(md)
 {
-	tcse.reserve(nmembers);
+	member.reserve(nmembers);
 }
 
 } // Termination of namespace SEISPP definitions

@@ -53,13 +53,13 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	    for(i=0;i<pfe->nmembers;++i)
 	    {
 		Time_Series *ts=Load_Time_Series_Using_Pf(pfe->pf[i]);
-		tseobj.tse.push_back(*ts);
+		tseobj.member.push_back(*ts);
 		delete ts;
 	    }
 	    // copy the desired global metadata to the ensemble
 	    // metadata object
 	    //
-	    t0=tseobj.tse.begin();
+	    t0=tseobj.member.begin();
 	    Time_Series& t0r = *t0;
 	    copy_selected_metadata(dynamic_cast<Metadata&>(t0r),dynamic_cast<Metadata&>(tseobj),mdlist);
 	}
@@ -161,7 +161,7 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 				=seis.x[0].md.get_bool("components_are_orthogonal");
 			seis.components_are_cardinal
 				=seis.x[0].md.get_bool("components_are_cardinal");
-		    	tceobj.tcse.push_back(seis);
+		    	tceobj.member.push_back(seis);
 		    }
 		    catch (Metadata_error& mde)
 		    {
@@ -172,7 +172,7 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	    // copy the global metadata from the first 3c entry
 	    // using same list as for individual components
 	    //
-	    t0 = tceobj.tcse.begin();
+	    t0 = tceobj.member.begin();
 	    Three_Component_Seismogram& t0r = *t0;
 	    copy_selected_metadata(t0r.md,tceobj.md,mdlist);
 	}

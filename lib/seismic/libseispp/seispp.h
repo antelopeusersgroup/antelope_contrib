@@ -436,6 +436,16 @@ public:
 //@}
 	bool is_gap(double ttest);  // query by time
 //@{
+// Checks if a given data segment has a gap.
+// For efficiency it is often useful to ask if a whole segment of data is
+// free of gaps.  Most time series algorithms cannot process through data
+// gaps so normal practice would be to drop data with any gaps in a 
+// requested time segment.
+// @returns true if time segment has any data gaps
+// @parm twin time window of data to test defined by a Time_Window object
+//@}
+	bool is_gap(Time_Window twin);
+//@{
 // Adds a gap to the gap definitions for this data object.
 // Sometimes an algorithm detects or needs to create a gap (e.g. a mute,
 // or a constructor).
@@ -814,7 +824,7 @@ public:
 // as it is common to want to use the indexing operator to ask for a member
 // and it is common to want to sort the ensemble. 
 //@}
-	vector <Time_Series> tse;
+	vector <Time_Series> member;
 
 //@{
 // Default constructor.  Does little, but is not defaulted.  
@@ -881,7 +891,7 @@ public:
 // as it is common to want to use the indexing operator to ask for a member
 // and it is common to want to sort the ensemble. 
 //@}
-	vector <Three_Component_Seismogram> tcse;
+	vector <Three_Component_Seismogram> member;
 //@{
 // Default constructor.  Does little, but is not defaulted.  
 //@}

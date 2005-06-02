@@ -55,6 +55,10 @@ void apply_top_mute(Three_Component_Seismogram &ts,Top_Mute& mute)
 		for(j=0;j<3;++j) ts.u(j,i2)*=weight;
 	}
 }
+
+
+/* THIS WAS PREVIOUS CODE.  REPLACED BELOW WITH TEMPLATE AFTER CHANGE TO MEMBER SYMBOL */
+/***************************************
 // For a group of Time_Series objects (ensemble)
 void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute)
 {
@@ -78,6 +82,12 @@ void apply_top_mute(Three_Component_Ensemble &t3ce, Top_Mute& mute)
 	{
 		apply_top_mute(*t3c,mute);
 	}
+}
+***************************************/
+template<class T>
+void apply_top_mute(T& t, Top_Mute& mute)
+{
+	foreach(t.member.begin(),t.member.end(),apply_top_mute(t,mute);
 }
 // Probably should have started with this, but we need constructors
 // This uses a pf

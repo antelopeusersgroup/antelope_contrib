@@ -54,17 +54,18 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 	}
 	return(*this);
 }
-// assignment operators for ensemble objects (could be templated)
+//
+// assignment operators for ensemble objects (could maybe be templated)
 //
 Time_Series_Ensemble& Time_Series_Ensemble::operator=(const Time_Series_Ensemble& tseold)
 {
 	if(this!=&tseold)
 	{
 		pf = pfdup(tseold.pf);
-		int nmembers=tseold.tse.size();
-		tse.reserve(nmembers);
+		int nmembers=tseold.member.size();
+		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)
-			tse.push_back(tseold.tse[i]);
+			member.push_back(tseold.member[i]);
 	}
 	return(*this);
 }
@@ -73,10 +74,10 @@ Three_Component_Ensemble& Three_Component_Ensemble::operator=(const Three_Compon
 	if(this!=&tseold)
 	{
 		pf = pfdup(tseold.pf);
-		int nmembers=tseold.tcse.size();
-		tcse.reserve(nmembers);
+		int nmembers=tseold.member.size();
+		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)
-			tcse.push_back(tseold.tcse[i]);
+			member.push_back(tseold.member[i]);
 	}
 	return(*this);
 }

@@ -15,7 +15,8 @@ public:
         Time_Reference_Type tref;
         bool is_gap(int); 
         bool is_gap(double);  
-        void add_gap(Time_Window tw){gaps.insert(tw);};
+	bool is_gap(Timw_Window);
+        void add_gap(Time_Window tw);
         virtual void zero_gaps()=0; 
 	double time(int i);
 	double endtime();
