@@ -1,4 +1,28 @@
 
+$dbrecenteqs::scriptlog = "";
+
+sub set_scriptlog {
+	my( $scriptfile ) = @_;
+
+	if( $scriptfile ne "" ) {
+		
+		$dbrecenteqs::scriptlog = $scriptfile;
+	}
+}
+
+sub system_scriptlog {
+	my( $cmd ) = @_;
+
+	if( $dbrecenteqs::scriptlog ne "" ) {
+		
+		open( L, ">>$dbrecenteqs::scriptlog" );
+		print L "$cmd\n";
+		close( L );
+	}
+
+	system( $cmd );
+}
+
 sub pfget_Mapspec {
 	my( $pf, $hashname ) = @_;
 	my( $mapspec );
@@ -517,7 +541,7 @@ sub plot_basemap {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_lakes {
@@ -536,7 +560,7 @@ sub plot_lakes {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_state_boundaries {
@@ -555,7 +579,7 @@ sub plot_state_boundaries {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_national_boundaries {
@@ -574,7 +598,7 @@ sub plot_national_boundaries {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_rivers {
@@ -593,7 +617,7 @@ sub plot_rivers {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub min {
@@ -782,9 +806,12 @@ sub plot_hypocenters {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
-	unlink( $hypocenter_tempfile );
+	if( $dbrecenteqs::scriptlog eq "" ) {
+
+		unlink( $hypocenter_tempfile );
+	}
 }
 
 sub next_round {
@@ -843,7 +870,7 @@ sub plot_qgrid {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	if( ! defined( $Mapspec{qgrid_nintervals} ) ) {
 
@@ -878,7 +905,7 @@ sub plot_qgrid {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	unlink( "$gmt_qgrid" );
 }
@@ -981,7 +1008,7 @@ sub plot_drape {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	my( $cmd ) = "cggrid_convert $Mapspec{qgridfile} | " .
 		     "xyz2grd $V -H1 -N0 " .
@@ -992,14 +1019,14 @@ sub plot_drape {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	my( $cmd ) = "grdedit $V $gmt_qgrid_file $tile";
 
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	my( $cmd ) = "grdsample $V -F $gmt_qgrid_file " .
 		     "-G$gmt_qgridresamp_file " .
@@ -1008,7 +1035,7 @@ sub plot_drape {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	$cmd = "grdview $V -P -Qi50 -JZ0.5i " .
 	      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
@@ -1022,7 +1049,7 @@ sub plot_drape {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_contours {
@@ -1049,7 +1076,7 @@ sub plot_contours {
 		if( $opt_v ) {
 			elog_notify "$cmd\n";
 		}
-		system( $cmd );
+		system_scriptlog( $cmd );
 
 	} elsif( ( $Mapspec{contour_mode} eq "grddb" ) &&
 	    ( ! -e "$Mapspec{grddb}" ) ) {
@@ -1069,7 +1096,7 @@ sub plot_contours {
 		if( $opt_v ) {
 			elog_notify "$cmd\n";
 		}
-		system( $cmd );
+		system_scriptlog( $cmd );
 
 	} elsif( $Mapspec{contour_mode} eq "grddb" ) {
 
@@ -1092,10 +1119,6 @@ sub plot_contours {
 
 		} 
 
-		$grdfile = "$State{workdir}/grd_$<_$$.grd";
-		$gradfile = "$State{workdir}/grad_$<_$$.grad";
-		$psclipfile = "$State{workdir}/psclip_$<_$$.clip";
-
 		my( $wlimit, $elimit, $slimit, $nlimit );
 		if( $Mapspec{InclusiveRectangle} =~ 
 			 m@-R([-\.\d]+)/([-\.\d]+)/([-\.\d]+)/([-\.\d]+)@ ) {
@@ -1108,6 +1131,8 @@ sub plot_contours {
 		my( $w, $e, $s, $n, $nextsmin, $nextwmin );
 
 		$nexsmin = $nextwmin = -9999;
+
+		my( $tn ) = 0; # tile-number
 
 		for( $s = $slimit; 
 		      $s<$nlimit; 
@@ -1128,6 +1153,11 @@ sub plot_contours {
 		    $e = next_round( $e, $Mapspec{gridline_interval_deg} );
 		    $e > $elimit ? $elimit : $e;
 		    $nextwmin = $e;
+
+		    $grdfile = "$State{workdir}/grd_$<_$$_$tn.grd";
+		    $gradfile = "$State{workdir}/grad_$<_$$_$tn.grad";
+		    $psclipfile = "$State{workdir}/psclip_$<_$$_$tn.clip";
+		    $tn++;
 
 		    my( $tile ) = "-R$w/$e/$s/$n";
 
@@ -1163,7 +1193,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    open( C, ">$psclipfile" );
 		    my( $ewincr ) = ($e - $w) / 100;
@@ -1190,7 +1220,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    $cmd = "grdimage $V -P " .
 		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
@@ -1203,7 +1233,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    $cmd = "psclip $V -C " .
 			   $more .
@@ -1212,11 +1242,13 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
-		    unlink( $grdfile );
-		    unlink( $gradfile );
-		    unlink( $psclipfile );
+		    if( $dbrecenteqs::scriptlog eq "" ) {
+		    	unlink( $grdfile );
+		    	unlink( $gradfile );
+		    	unlink( $psclipfile );
+		    }
 		  }
 		}
 
@@ -1229,6 +1261,11 @@ sub plot_contours {
 				$Mapspec{InclusiveRectangle} );
 
 		    next unless defined( $maskregion );
+
+		    $grdfile = "$State{workdir}/grd_$<_$$_$tn.grd";
+		    $gradfile = "$State{workdir}/grad_$<_$$_$tn.grad";
+		    $psclipfile = "$State{workdir}/psclip_$<_$$_$tn.clip";
+		    $tn++;
 
 		    if( $opt_v ) {
 			elog_notify "Running dbgmtgrid for Land mask $maskregion, output=$grdfile\n";
@@ -1251,7 +1288,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    open( C, ">$psclipfile" );
 		    my( $ewincr ) = ($e - $w) / 100;
@@ -1278,7 +1315,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    $cmd = "grdimage $V -P " .
 		      	"$Mapspec{Rectangle} $Mapspec{Projection} " .
@@ -1291,7 +1328,7 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
 		    $cmd = "psclip $V -C " .
 			   $more .
@@ -1300,8 +1337,13 @@ sub plot_contours {
 		    if( $opt_v ) {
 			elog_notify "$cmd\n";
 		    }
-		    system( $cmd );
+		    system_scriptlog( $cmd );
 
+		    if( $dbrecenteqs::scriptlog eq "" ) {
+		    	unlink( $grdfile );
+		    	unlink( $gradfile );
+		    	unlink( $psclipfile );
+		    }
 		}
 
 		dbclose( @dbgrid );
@@ -1409,7 +1451,7 @@ sub plot_coastlines {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub plot_oceans {
@@ -1427,7 +1469,7 @@ sub plot_oceans {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub datafile_abspath {
@@ -1500,7 +1542,7 @@ sub plot_linefiles {
 		if( $opt_v ) {
 			elog_notify "plotting $name:\n$cmd\n";
 		}
-		system( $cmd );
+		system_scriptlog( $cmd );
 	}
 }
 
@@ -1548,7 +1590,7 @@ sub plot_stations {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	if( $position eq "first" ) {
 		( $more, $redirect ) = more_ps( "middle" );
@@ -1567,10 +1609,13 @@ sub plot_stations {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
-	unlink( $stas_tempfile );
-	unlink( $stanames_tempfile );
+	if( $dbrecenteqs::scriptlog eq "" ) {
+
+		unlink( $stas_tempfile );
+		unlink( $stanames_tempfile );
+	}
 }
 
 sub plot_cities {
@@ -1616,7 +1661,7 @@ sub plot_cities {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
 	if( $position eq "first" ) {
 		( $more, $redirect ) = more_ps( "middle" );
@@ -1634,10 +1679,13 @@ sub plot_cities {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 
-	unlink( $locs_tempfile );
-	unlink( $names_tempfile );
+	if( $dbrecenteqs::scriptlog eq "" ) {
+
+		unlink( $locs_tempfile );
+		unlink( $names_tempfile );
+	}
 }
 
 sub plot_template {
@@ -1651,7 +1699,7 @@ sub plot_template {
 	if( $opt_v ) {
 		elog_notify "$cmd\n";
 	}
-	system( $cmd );
+	system_scriptlog( $cmd );
 }
 
 sub create_map {
@@ -1960,7 +2008,7 @@ sub pixfile_convert {
 		if( $opt_v ) {
 			elog_notify "$cmd\n";
 		}
-		system( $cmd );
+		system_scriptlog( $cmd );
 
 		if( defined( $Image::Magick::VERSION ) ) {
 			$Mapspec{clean_image} = Image::Magick->new();
