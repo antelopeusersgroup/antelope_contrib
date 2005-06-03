@@ -16,9 +16,10 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('r:c:vt:p:') || @ARGV != 1 ) {
+if ( ! &Getopts('s:r:c:vt:p:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-c lon:lat] [-r degrees] psfile\n" );
+	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-s stations_dbname] " .
+			       "[-c lon:lat] [-r degrees] psfile\n" );
 
 } else {
 
@@ -71,6 +72,11 @@ if( $opt_r ) {
 	$Mapspec{left_dellon}  = -1 * $opt_r;
 }
 
+if( $opt_s ) {
+	
+	$Mapspec{stations_dbname} = $opt_s;
+}
+
 %Mapspec = %{setup_index_Mapspec( \%Mapspec )};
 
 $Mapspec{psfile} = "$psfile";
@@ -91,6 +97,9 @@ plot_national_boundaries( \%Mapspec, "middle" );
 plot_state_boundaries( \%Mapspec, "middle" );
 plot_linefiles( \%Mapspec, "middle" );
 plot_basemap( \%Mapspec, "middle" );
+if( $opt_s ) {
+	plot_stations( \%Mapspec, "middle" );
+}
 plot_cities( \%Mapspec, "last" );
 
 if( $State{pixfile_conversion_method} ne "none" ) {

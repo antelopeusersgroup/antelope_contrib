@@ -11,6 +11,7 @@ mapspec	&Arr{
 #
 	grddb	/space/world30_grids/world30
 	cities_dbname	&datafilename(www/dbrecenteqs/world_cities)
+	stations_dbname	
 	hypocenter_dbname	historic_hypocenters_dbname
 	map_color_palette_file	&datafilename(gmt/dbrecenteqs.cpt)
 	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
@@ -33,6 +34,12 @@ mapspec	&Arr{
 	cityname_fontno	1
 	cityname_fontsize	9
 	cityname_shift_deg	0.2
+	sta_symbols_inches	0.08
+	sta_color		255/255/0
+	staname_fontjustify	LM
+	staname_fontno	1
+	staname_fontsize	9
+	staname_shift_deg	0.2
 	gridline_interval_deg	5
 	grdgradient_opt	-A60 -Nt1/2000/0
 	landmask_regions	&Arr{

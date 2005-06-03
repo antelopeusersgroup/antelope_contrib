@@ -3,7 +3,8 @@
 make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
-make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-c lon:lat] [-r degrees] psfile
+make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-s stations_dbname] 
+		     [-c lon:lat] [-r degrees] psfile
 .fi
 .SH DESCRIPTION
 The script make_dbrecenteqs_map creates a postscript map image, optionally 
@@ -47,6 +48,9 @@ Override the four parameters right_dellon, up_dellat, down_dellat,
 and left_dellon from the paramter file, specifying the extent of the map
 in radial degrees. The argument to this option gives the distance 
 in radial degrees from the center of the map to each edge.
+.IP "-s stations_dbname"
+If this database name is specified, all stations with null offdates in the site
+table will be plotted on the map. 
 .IP "-p pffile"
 Specify a parameter other than the default make_dbrecenteqs_map.pf
 .IP "-t workdir"
@@ -74,6 +78,7 @@ mapspec	&Arr{
 #
 	grddb	/space/world30_grids/world30
 	cities_dbname	world_cities
+	stations_dbname
 	hypocenter_dbname	historic_hypocenters_dbname
 	map_color_palette_file	&datafilename(gmt/dbrecenteqs.cpt)
 	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
@@ -92,9 +97,15 @@ mapspec	&Arr{
 	format	gif
 	city_symbols_inches	0.08
 	cityname_fontjustify	LM
-	cityname_fontno	1
+	cityname_fontno		1
 	cityname_fontsize	9
 	cityname_shift_deg	0.2
+	sta_symbols_inches	0.08
+	sta_color		255/255/0
+	staname_fontjustify	LM
+	staname_fontno		1
+	staname_fontsize	9
+	staname_shift_deg	0.2
 	gridline_interval_deg	5
 	grdgradient_opt	-A60 -Nt1/2000/0
 	landmask_regions	&Arr{
@@ -140,6 +151,9 @@ the number of colors in the pixfile map created.
 Although the -t option changes the directory of the intermediate files 
 made by make_dbrecenteqs_map, it does not change the location of temporary 
 grids created by dbgmtgrid(3), which it calls
+
+The stations_dbname parameter in the parameter file is ignored; only the 
+argument to the -s option will be used for station plotting. 
 .SH AUTHOR
 .nf
 Kent Lindquist 
