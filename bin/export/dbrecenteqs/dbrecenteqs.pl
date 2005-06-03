@@ -642,7 +642,43 @@ sub make_cities_tempfiles {
 	dbclose( @db );
 
 	return ( $locs_tempfile, $names_tempfile );
+}
 
+sub make_stations_tempfiles {
+	my( %Mapspec ) = %{shift( @_ )};
+
+	my( $stas_tempfile ) = "$State{workdir}/stations_$<_$$";
+	my( $stanames_tempfile ) = "$State{workdir}/stanames_$<_$$";
+
+	my( @db ) = dbopen( $Mapspec{stations_dbname}, "r" );
+	@db = dblookup( @db, "", "site", "", "" );
+	@db = dbsubset( @db, "offdate == NULL" );
+
+	my( $nrecs ) = dbquery( @db, "dbRECORD_COUNT" );
+			
+	open( S, ">$stas_tempfile" );
+	open( N, ">$stanames_tempfile" );
+
+	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
+		my( $lat, $lon, $sta ) = 
+			dbgetv( @db, "lat", "lon", "sta" );
+		print S sprintf( "%.4f %.4f\n", 
+			unwrapped_lon( \%Mapspec, $lon ), $lat );
+		print N sprintf( "%.4f %.4f %s 0.0 %s %s %s\n",
+			$lon+$Mapspec{staname_shift_deg},
+			$lat,
+			$Mapspec{staname_fontsize},
+			$Mapspec{staname_fontno},
+			$Mapspec{staname_fontjustify},
+			$sta );
+	}
+
+	close( S );
+	close( N );
+
+	dbclose( @db );
+
+	return ( $stas_tempfile, $stanames_tempfile );
 }
 
 sub make_hypocenter_tempfile {
@@ -1466,6 +1502,75 @@ sub plot_linefiles {
 		}
 		system( $cmd );
 	}
+}
+
+sub plot_stations {
+	my( %Mapspec ) = %{shift( @_ )};
+	my( $position ) = shift( @_ );
+
+	if( ! defined( $Mapspec{stations_dbname} ) || 
+	      $Mapspec{stations_dbname} eq "" ) {
+		elog_complain
+			"\n\t************************************\n" . 
+			"\tWARNING: Skipping stations--" .
+			"no stations_dbname specified\n" .
+			"\t************************************\n\n";
+		return;
+
+	} elsif( ! -e "$Mapspec{stations_dbname}.site" ) {
+
+		elog_complain
+			"\n\t************************************\n" . 
+			"\tWARNING: Skipping stations--" .
+			"$Mapspec{stations_dbname}.site not found\n" .
+			"\t************************************\n\n";
+		return;
+	}
+
+	my ( $stas_tempfile, $stanames_tempfile ) =
+		make_stations_tempfiles( \%Mapspec );
+
+	my( $more, $redirect );
+	
+	if( $position eq "first" || $position eq "single" ) {
+		( $more, $redirect ) = more_ps( "first" );
+	} else {
+		( $more, $redirect ) = more_ps( "middle" );
+	}
+
+	my( $cmd ) = "cat $stas_tempfile | psxy $V -P " .
+			"-G$Mapspec{sta_color} -W$Mapspec{sta_color} " .
+			"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			"-St$Mapspec{city_symbols_inches}i -G0 " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+			
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
+	system( $cmd );
+
+	if( $position eq "first" ) {
+		( $more, $redirect ) = more_ps( "middle" );
+	} elsif( $position eq "single" ) {
+		( $more, $redirect ) = more_ps( "last" );
+	} else {
+		( $more, $redirect ) = more_ps( $position );
+	}
+
+	my( $cmd ) = "cat $stanames_tempfile | pstext $V -P " .
+			"-G$Mapspec{sta_color} " .
+			"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
+	system( $cmd );
+
+	unlink( $stas_tempfile );
+	unlink( $stanames_tempfile );
 }
 
 sub plot_cities {
