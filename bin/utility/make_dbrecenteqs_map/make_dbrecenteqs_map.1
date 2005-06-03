@@ -3,8 +3,8 @@
 make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
-make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-s stations_dbname] 
-		     [-c lon:lat] [-r degrees] psfile
+make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-l script_logfile]
+		     [-s stations_dbname] [-c lon:lat] [-r degrees] psfile
 .fi
 .SH DESCRIPTION
 The script make_dbrecenteqs_map creates a postscript map image, optionally 
@@ -51,6 +51,8 @@ in radial degrees from the center of the map to each edge.
 .IP "-s stations_dbname"
 If this database name is specified, all stations with null offdates in the site
 table will be plotted on the map. 
+.IP "-l script_logfile" 
+Log the commands used to generate the map to a separate script file. 
 .IP "-p pffile"
 Specify a parameter other than the default make_dbrecenteqs_map.pf
 .IP "-t workdir"
@@ -154,6 +156,13 @@ grids created by dbgmtgrid(3), which it calls
 
 The stations_dbname parameter in the parameter file is ignored; only the 
 argument to the -s option will be used for station plotting. 
+
+If the -l option is used, temporary files generated during construction of the
+initial map will not be erased, allowing the resulting script to be run. However, 
+these files must then be cleaned up by hand (or left to litter /tmp), and 
+if the script is meant to be used at some later time the temp files should 
+be cached somewhere (many of them are generated from some automated code inside 
+the dbrecenteqs toolbox that is not easily cast into the output script).
 .SH AUTHOR
 .nf
 Kent Lindquist 

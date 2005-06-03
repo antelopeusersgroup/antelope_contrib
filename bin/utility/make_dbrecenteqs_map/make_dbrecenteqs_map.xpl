@@ -16,10 +16,10 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('s:r:c:vt:p:') || @ARGV != 1 ) {
+if ( ! &Getopts('l:s:r:c:vt:p:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-s stations_dbname] " .
-			       "[-c lon:lat] [-r degrees] psfile\n" );
+	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-l log_script] " .
+			"[-s stations_dbname] [-c lon:lat] [-r degrees] psfile\n" );
 
 } else {
 
@@ -41,6 +41,11 @@ if ( ! &Getopts('s:r:c:vt:p:') || @ARGV != 1 ) {
 	} else {
 		$V = "";
 	}
+}
+
+if( $opt_l ) {
+
+	set_scriptlog( $opt_l );
 }
 
 setup_State();
