@@ -40,7 +40,7 @@ Hypocenter& Hypocenter::operator=(const Hypocenter& h0)
 // the required parameters but I'm not sure how to do that
 // without making the interface clumsy. 
 //
-// Note that things like Time_Series objects can be used to create
+// Note that things like TimeSeries objects can be used to create
 // a Hypocenter through this mechanism through the use of a dynamic_cast
 //
 Hypocenter::Hypocenter(Metadata& md)
@@ -50,7 +50,7 @@ Hypocenter::Hypocenter(Metadata& md)
 		lon=md.get_double("origin.lon");
 		z=md.get_double("origin.depth");
 		time=md.get_double("origin.time");
-	} catch (Metadata_error& mderr) {throw mderr;};
+	} catch (MetadataError& mderr) {throw mderr;};
 	// We run a separate try block here and recover from
 	// model and method not being defined -- a common thing
 	// we will probably need
@@ -60,7 +60,7 @@ Hypocenter::Hypocenter(Metadata& md)
 	try {
 		method=md.get_string("TTmethod");
 		model=md.get_string("TTmodel");
-	} catch (Metadata_error& mderr){}
+	} catch (MetadataError& mderr){}
 }
 		
 
@@ -130,7 +130,7 @@ string tterror_code_translation(int ierr)
 			
 
 double Hypocenter::phasetime(double lat0, double lon0, double elev, string phase)
-		throw(seispp_error)
+		throw(SeisppError)
 {
 	TTGeometry p;
 	int ierr;
@@ -160,13 +160,13 @@ double Hypocenter::phasetime(double lat0, double lon0, double elev, string phase
 		mess = tterror_code_translation(ierr);
 		freetbl(tt,0);
 		free_hook(&h);
-		throw seispp_error(mess);
+		throw SeisppError(mess);
 	}
 	else
 	{
 		t=(TTTime *)gettbl(tt,0);
 		if(t==NULL) 
-			throw seispp_error("ttcalc function returned an empty list of times");
+			throw SeisppError("ttcalc function returned an empty list of times");
 	}	
 	// this temporary is needed to prevent as small leak
 	double tret = t->value;
@@ -176,28 +176,28 @@ double Hypocenter::phasetime(double lat0, double lon0, double elev, string phase
 }
 
 double Hypocenter::ptime(double lat0, double lon0, double elev)
-		throw(seispp_error)
+		throw(SeisppError)
 {
 	string phs="P";
 	double ttime;
 
 	try{
 		ttime = this->phasetime(lat0,lon0,elev,phs);
-	} catch (seispp_error& tte)
+	} catch (SeisppError& tte)
 	{
 		throw tte;
 	}
 	return(ttime);
 }
-Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, string phase)
-		throw(seispp_error)
+SlownessVector  Hypocenter::phaseslow(double lat0, double lon0, double elev, string phase)
+		throw(SeisppError)
 {
 	TTGeometry p;
 	int ierr;
 	Tbl *tt=NULL;
 	Hook *h=NULL;  // forced to be released on each call.  `
 	TTSlow *u;
-	Slowness_vector uout;
+	SlownessVector uout;
 
 	// note tt interface uses degrees as units for lat a lon.  I always use radians 
 	// internally
@@ -221,7 +221,7 @@ Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, st
 		mess = tterror_code_translation(ierr);
 		freetbl(tt,0);
 		free_hook(&h);
-		throw seispp_error(mess);
+		throw SeisppError(mess);
 	}
 	else
 	{
@@ -229,21 +229,21 @@ Slowness_vector  Hypocenter::phaseslow(double lat0, double lon0, double elev, st
 		freetbl(tt,0);
 		free_hook(&h);
 		if(u==NULL) 
-			throw seispp_error("Returned list of computed slowness vectors was empty");
+			throw SeisppError("Returned list of computed slowness vectors was empty");
 	}	
 	uout.ux=u->ux;
 	uout.uy=u->uy;
 	return(uout);
 }
-Slowness_vector Hypocenter::pslow(double lat0, double lon0, double elev)
-		throw(seispp_error)
+SlownessVector Hypocenter::pslow(double lat0, double lon0, double elev)
+		throw(SeisppError)
 {
 	string phs="P";
-	Slowness_vector u;
+	SlownessVector u;
 
 	try{
 		u = this->phaseslow(lat0,lon0,elev,phs);
-	} catch (seispp_error& tte)
+	} catch (SeisppError& tte)
 	{
 		throw tte;
 	}

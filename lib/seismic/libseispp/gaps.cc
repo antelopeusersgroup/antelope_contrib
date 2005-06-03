@@ -2,7 +2,7 @@
 #include "seispp.h"
 namespace SEISPP {
 /* this group of functions implement gap processing for time series
- * objects and their descendents called Three_Component_Seismograms.
+ * objects and their descendents called ThreeComponentSeismograms.
  * They use indexing through the STL standard container called a
  * set.  The comparison function is defined in the seispp.h file
  * that allows interval indexing.  That is, we can look up a time
@@ -45,7 +45,7 @@ int nint(double x)
 }
 // Returns true if the requested sample number of a gap or outside the
 // range of the data
-bool Basic_Time_Series::is_gap(int n0)
+bool BasicTimeSeries::is_gap(int n0)
 {
 	if(n0<0 || n0>ns) return true;
 	if(gaps.empty()) return false;
@@ -53,7 +53,7 @@ bool Basic_Time_Series::is_gap(int n0)
 	// This is should always work as long for processing where
 	// we don't need to worry about overlapping waveforms with slipperly 
 	// clocks
-	Time_Window twin;
+	TimeWindow twin;
 	double t=time(n0);
 	twin.start = t - dt*0.5;
 	twin.end = t +  dt*0.5;
@@ -63,18 +63,18 @@ bool Basic_Time_Series::is_gap(int n0)
 		return true;
 }
 // query for gap by time window
-bool Basic_Time_Series::is_gap(Time_Window twin)
+bool BasicTimeSeries::is_gap(TimeWindow twin)
 {
 	if(gaps.find(twin)==gaps.end())
 		return(false);
 	else
 		return(true);
 }
-bool Basic_Time_Series::is_gap(double t)
+bool BasicTimeSeries::is_gap(double t)
 {
 	if(t<t0 || t>(t0+((double)(ns-1))*dt)) return true;
 	if(gaps.empty())return false;
-	Time_Window twin;
+	TimeWindow twin;
 	twin.start = t - dt*0.5;
 	twin.end = t + dt*0.5;
 	if(gaps.find(twin)==gaps.end()) 
@@ -83,11 +83,11 @@ bool Basic_Time_Series::is_gap(double t)
 		return true;
 }
 // Forces samples in marked gaps to zero.  
-void Time_Series::zero_gaps()
+void TimeSeries::zero_gaps()
 {
 	double tsend;
 	int i,istart,iend;
-	set<Time_Window,Time_Window_Cmp>::iterator this_gap;
+	set<TimeWindow,TimeWindowCmp>::iterator this_gap;
 	tsend = t0+((double)(ns-1))*dt;
 
 	for(this_gap=gaps.begin();this_gap!=gaps.end();++this_gap)
@@ -109,11 +109,11 @@ void Time_Series::zero_gaps()
 // the data.  The algorithm used here just hits all the members of the
 // set called "gaps".  This should properly set all single channel gaps
 // to zero in all three components.
-void Three_Component_Seismogram::zero_gaps()
+void ThreeComponentSeismogram::zero_gaps()
 {
 	double tsend;
 	int i,istart,iend;
-	set<Time_Window,Time_Window_Cmp>::iterator this_gap;
+	set<TimeWindow,TimeWindowCmp>::iterator this_gap;
 	tsend = t0+((double)(ns-1))*dt;
 
 	for(this_gap=gaps.begin();this_gap!=gaps.end();++this_gap)

@@ -4,12 +4,12 @@ namespace SEISPP
 {
 using namespace SEISPP;
 /* This routine takes a 3-d unit vector, nu, and converts it
-to a Spherical_Coordinate structure which is returned.  The 
+to a SphericalCoordinate structure which is returned.  The 
 input coordinates are assume to be standard, right handed
 cartesian coordinates in 1,2,3 order */
-Spherical_Coordinate unit_vector_to_spherical(double nu[3])
+SphericalCoordinate UnitVectorToSpherical(double nu[3])
 {
-	Spherical_Coordinate xsc;
+	SphericalCoordinate xsc;
 
 	xsc.radius = 1.0;
 	xsc.theta = acos(nu[2]);
@@ -22,7 +22,7 @@ Spherical_Coordinate unit_vector_to_spherical(double nu[3])
 /* Reciprocal of above.  A bit harder as it has to handle singular
 case.  Note the double vector of 3 is allocated here and externally
 needs to be free using C++ delete NOT free.*/
-double *spherical_to_unit_vector(Spherical_Coordinate& scor)
+double *SphericalToUnitVector(SphericalCoordinate& scor)
 {
 	double *nu=new double[3];
 	// vertical vector case

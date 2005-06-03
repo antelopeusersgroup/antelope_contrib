@@ -6,8 +6,8 @@ namespace SEISPP
 // all key on the BLAS for speed.  That is, a transformation matrix could be done
 // by using the * operator between matrix objects.  
 
-void Three_Component_Seismogram::rotate_to_standard()
-	throw(seispp_error)
+void ThreeComponentSeismogram::rotate_to_standard()
+	throw(SeisppError)
 {
 	double *work[3];
 	int i,j;
@@ -58,10 +58,10 @@ void Three_Component_Seismogram::rotate_to_standard()
 		//Perf lib matrix inversion routine using LU factorizatoin
 		// Note this is changed from parent code.  Untested.
 		dgetrf_(&asize,&asize,a,&asize,ipivot,&info);
-		if(info!=0) throw(seispp_error(
+		if(info!=0) throw(SeisppError(
 			string("rotate_to_standard:  LU factorization of transformation matrix failed")));
 		dgetri_(&asize,a,&asize,ipivot,awork,&ldwork,&info);
-		if(info!=0) throw(seispp_error(
+		if(info!=0) throw(SeisppError(
 			string("rotate_to_standard:  LU factorization inversion of transformation matrix failed")));
 		
 		tmatrix[0][0] = a[0];
@@ -139,7 +139,7 @@ Written:  Sept. 1999
 Modified:  Feb 2003
 Original was plain C.  Adapted to C++ for seismic processing
 */
-void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
+void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 {
 	int i;
 	double theta, phi;  /* corrected angles after dealing with signs */
@@ -213,12 +213,12 @@ void Three_Component_Seismogram::rotate(Spherical_Coordinate xsc)
 	components_are_cardinal=false;
 	for(i=0;i<3;++i) delete [] work[i];
 }
-void Three_Component_Seismogram::rotate(double nu[3])
+void ThreeComponentSeismogram::rotate(double nu[3])
 {
-	Spherical_Coordinate xsc=unit_vector_to_spherical(nu);
+	SphericalCoordinate xsc=UnitVectorToSpherical(nu);
 	this->rotate(xsc);
 }
-void Three_Component_Seismogram::apply_transformation_matrix(double a[3][3])
+void ThreeComponentSeismogram::apply_transformation_matrix(double a[3][3])
 {
 	int i;
 	double *work[3];

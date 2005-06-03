@@ -1,22 +1,22 @@
 '\" te
 .TH BASIC_TIME_SERIES 3 "%G"
 .SH NAME
-Basic_Time_Series - base class for various types of time series data
+BasicTimeSeries - base class for various types of time series data
 .SH SYNOPSIS
 .nf
 #include "seispp.h"
 using namespace SEISPP;
-class Basic_Time_Series
+class BasicTimeSeries
 {
 public:
         bool live;
         double dt,t0;
         int ns;
-        Time_Reference_Type tref;
+        TimeReferenceType tref;
         bool is_gap(int); 
         bool is_gap(double);  
 	bool is_gap(Timw_Window);
-        void add_gap(Time_Window tw);
+        void add_gap(TimeWindow tw);
         virtual void zero_gaps()=0; 
 	double time(int i);
 	double endtime();
@@ -37,26 +37,26 @@ on a regular, one-dimensional mesh of the
 independent variable. A regular
 mesh in one dimension is completely described by only two parameters:  
 (1) the value of the independent variable (time) at the first sample 
-of the actual data (the \fIt0\fR variable in the Basic_Time_Series 
+of the actual data (the \fIt0\fR variable in the BasicTimeSeries 
 object definition), and (2) the sample interval (the \fIdt\fR variable
-in the Basic_Time_Series definition).  I use the t label on both of these
+in the BasicTimeSeries definition).  I use the t label on both of these
 parameters since the independent variable is commonly viewed as a time 
 variable.  The user should recognize, however, that the concept is 
 broader than data sampled by time alone and the most general definition
 is any physical quantity sampled at regular intervals.
 .LP
-The Basic_Time_Series is a base concept from which specific types of
+The BasicTimeSeries is a base concept from which specific types of
 actual time series data can be viewed as a derived class.  The
 reason this is useful is that the data for a particular time series
 type can thought of as a generalized vector of sample values.
 Inheritance provides a natural way to encapsulate and isolate this
 base concept from variations for special data types.  Two derived classes from
-Basic_Time_Series can be found in the seispp library that illustrate
-this idea:  (1)  the Time_Series object (man 3) defines a scalar valued
-time series, and (2) the Three_Component_Seismogram (man 3) object 
+BasicTimeSeries can be found in the seispp library that illustrate
+this idea:  (1)  the TimeSeries object (man 3) defines a scalar valued
+time series, and (2) the ThreeComponentSeismogram (man 3) object 
 defines a special seismology time series for three-components of 
 ground motion.  Note that others similar data objects that
-could be derived from a Basic_Time_Series are complex valued time
+could be derived from a BasicTimeSeries are complex valued time
 series (see example below) or an n-vector time series.  
 .LP
 This base class adds a few special parameters and functions that
@@ -73,7 +73,7 @@ only one of two values:  "absolute" or "relative".  To be
 more precise, here is the definition:
 .nf
 .in 2c
-enum Time_Reference_Type {absolute,relative};
+enum TimeReferenceType {absolute,relative};
 .fi
 .LP
 This allows absolute time reference frames (commonly called epoch times
@@ -89,7 +89,7 @@ sets the data for all times marked as a gap to zero.
 It is a pure virtual function as the definition zero 
 depends upon the actual data in the vector of samples that
 define the actual time series to be represented.  
-Since Basic_Time_Series is a base class this concept is
+Since BasicTimeSeries is a base class this concept is
 rational, but the basic idea may seem strange to a newcomer.
 .LP
 Note that the interface hides the details of the gap implementation.
@@ -122,28 +122,28 @@ set to the requested conversion they do nothing.  e.g. if tref is
 set as "relative" a call to ator will return immediately and do nothing.
 .SH EXAMPLE
 .LP
-A Basic_Time_Series is mostly a virtual base class, with a few core 
+A BasicTimeSeries is mostly a virtual base class, with a few core 
 member functions.  Here
 is an example of a bare bones implementation of a complex time
 series object:
 .nf
 .in 2c
-class Complex_Time_Series : public Basic_Time_Series
+class Complex_TimeSeries : public BasicTimeSeries
 {
 public:
 	// complex data samples stored in an STL vector object
 	vector<complex> y; 
 	// a few basic constructors
-	Complex_Time_Series(){y.reserve(0);};
-	Complex_Time_Series(int nsamp){y.reserve(nsamp)};
+	Complex_TimeSeries(){y.reserve(0);};
+	Complex_TimeSeries(int nsamp){y.reserve(nsamp)};
 };
 .fi
 .LP
-Note that by inheritance the dt, t0, etc. of the Basic_Time_Series
-become members of the derived Complex_Time_Series object.
+Note that by inheritance the dt, t0, etc. of the BasicTimeSeries
+become members of the derived Complex_TimeSeries object.
 .SH EXCEPTIONS
 .LP
-None of the member functions of a Basic_Time_Series will throw an 
+None of the member functions of a BasicTimeSeries will throw an 
 exception.  
 One can assume any useful derived class will potentially throw 
 a number of possible exceptions.
@@ -151,11 +151,11 @@ a number of possible exceptions.
 -lseispp
 .SH "SEE ALSO"
 .nf
-Time_Series(3), Three_Component_Seismogram(3)
+TimeSeries(3), ThreeComponentSeismogram(3)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP
-The Basic_Time_Series object is not very useful by itself and exists
+The BasicTimeSeries object is not very useful by itself and exists
 primarily as a base class from which useful data objects can be 
 derived. 
 Those not familiar with inheritance in object oriented program 

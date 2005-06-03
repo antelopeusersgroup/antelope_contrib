@@ -2,8 +2,8 @@
 #include "seispp.h"
 namespace SEISPP {
 using namespace SEISPP;
-/* This file contains helper procedures for Three_Component_Seismogram objects.  Most
-are truly procedural and take a Three_Component_Seismogram object or a Three_Component_Seismogram_Ensemble
+/* This file contains helper procedures for ThreeComponentSeismogram objects.  Most
+are truly procedural and take a ThreeComponentSeismogram object or a ThreeComponentSeismogram_Ensemble
 object and return one or the other.  
 
 Author:  Gary L. Pavlis
@@ -27,15 +27,15 @@ Arguments:
 		time used to define time 0.  i.e. this is the keyword
 		used to access a metadata field that defines the time
 		that will become time 0 o the result.
-	tw - Time_Window in relative time units wrt arrival time defining
+	tw - TimeWindow in relative time units wrt arrival time defining
 		section of data to be extracted.  Time 0 of the result
 		will be the arrival time.
 
 */
 
-Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& tcsi,
+ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& tcsi,
 	string arrival_time_key,
-		Time_Window tw)
+		TimeWindow tw)
 {
 	double atime;
 	string base_error_message("Arrival_Time_Reference: ");
@@ -43,23 +43,23 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 	{
 		atime = tcsi.get_double(arrival_time_key);
 	// Intentionally use the base class since the contents are discarded
-	// get_double currently would throw a Metadata_get_error
-	} catch (Metadata_error& mde)
+	// get_double currently would throw a MetadataGetError
+	} catch (MetadataError& mde)
 	{
-		throw seispp_error(base_error_message
+		throw SeisppError(base_error_message
 				+ arrival_time_key
-				+ string(" not found in Three_Component_Seismogram object"));
+				+ string(" not found in ThreeComponentSeismogram object"));
 	}
 	// We have to check this condition because ator will do nothing if
 	// time is already relative and this condition cannot be tolerated
 	// here as we have no idea what the time standard might be otherwise
 	if(tcsi.tref == relative)
-		throw seispp_error(string("Arrival_Time_Reference:  ")
+		throw SeisppError(string("Arrival_Time_Reference:  ")
 			+ string("received data in relative time units\n")
 			+ string("Cannot proceed as timing is ambiguous"));
 
 	// start with a clone of the original
-	Three_Component_Seismogram *tcso=new Three_Component_Seismogram(tcsi);
+	ThreeComponentSeismogram *tcso=new ThreeComponentSeismogram(tcsi);
 	tcso->ator(atime);  // shifts to arrival time relative time reference
 
 	// Extracting a subset of the data is not needed when the requested
@@ -94,8 +94,8 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 			try{
 				double stime=tcso->get_double("time");
 				stime -= atime;
-				tcso->put_metadata("time",stime);
-			} catch (Metadata_error& mde)
+				tcso->put("time",stime);
+			} catch (MetadataError& mde)
 			{
 				cerr << base_error_message << endl;
 				mde.log_error();
@@ -106,8 +106,8 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 			try{
 				double etime=tcso->get_double("endtime");
 				etime -= atime;
-				tcso->put_metadata("endtime",etime);
-			} catch (Metadata_error& mde)
+				tcso->put("endtime",etime);
+			} catch (MetadataError& mde)
 			{
 				cerr << base_error_message << endl;
 				mde.log_error();
@@ -120,26 +120,26 @@ Three_Component_Seismogram& Arrival_Time_Reference(Three_Component_Seismogram& t
 special thing it does is handle exceptions.  When the single object
 processing function throws an exception the error is printed and the 
 object is simply not copied to the output ensemble */
-Three_Component_Ensemble& Arrival_Time_Reference(Three_Component_Ensemble& tcei,
+ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& tcei,
 	string arrival_time_key,
-		Time_Window tw)
+		TimeWindow tw)
 {
 	int nmembers=tcei.member.size();
 	// use the special constructor to only clone the metadata and 
 	// set aside slots for the new ensemble.
-	Three_Component_Ensemble *tceo
-		=new Three_Component_Ensemble(dynamic_cast<Metadata&>(tcei),nmembers);
+	ThreeComponentEnsemble *tceo
+		=new ThreeComponentEnsemble(dynamic_cast<Metadata&>(tcei),nmembers);
 	tceo->member.reserve(nmembers);  // reserve this many slots for efficiency
 	// We have to use a loop instead of for_each as I don't see how
 	// else to handle errors cleanly here.
-	vector<Three_Component_Seismogram>::iterator indata;
+	vector<ThreeComponentSeismogram>::iterator indata;
 	for(indata=tcei.member.begin();indata!=tcei.member.end();++indata)
 	{
 		try {
-			Three_Component_Seismogram tcs;
+			ThreeComponentSeismogram tcs;
 			tcs=Arrival_Time_Reference(*indata,arrival_time_key,tw);
 			tceo->member.push_back(tcs);
-		} catch ( seispp_error& serr)
+		} catch ( SeisppError& serr)
 		{
 			serr.log_error();
 		}

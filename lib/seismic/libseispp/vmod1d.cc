@@ -10,7 +10,7 @@ namespace SEISPP
 
 using namespace SEISPP;
 
-double Velocity_Model_1d::getv(double zin)
+double VelocityModel_1d::getv(double zin)
 {
 	double dz;
 	for(int i=1;i<nlayers;++i)
@@ -27,8 +27,8 @@ double Velocity_Model_1d::getv(double zin)
 // database constructor. 
 // property must be P or S.  Errors are thrown for a range of
 // likely problems.
-Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
-    throw(Velocity_Model_1d_dberror)
+VelocityModel_1d::VelocityModel_1d(Dbptr dbi,string name,string property)
+    throw(VelocityModel_1d_Dberror)
 {
 	Dbptr dbs1,dbs2;
 	Tbl *sortkeys;
@@ -42,7 +42,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
 
 		Dbptr db=dblookup(dbi,0,(char *)"mod1d",0,0);
 		if(db.table==dbINVALID) 
-			throw(Velocity_Model_1d_dberror(name,
+			throw(VelocityModel_1d_Dberror(name,
 				"dbopen failure for mod1d table"));
 		// this builds a subset condition like this:
 		// (modname=~/name/ && (paramname=~/Pvelocity/)
@@ -56,7 +56,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
 			if(dbs1.record!=dbINVALID) dbfree(dbs1);
 			if(dbs2.record!=dbINVALID) dbfree(dbs2);
 			freetbl(sortkeys,0);
-			throw(Velocity_Model_1d_dberror(name,
+			throw(VelocityModel_1d_Dberror(name,
 			  "Error forming working view for P velocity"));
 		}
 		z.reserve(nlayers);
@@ -72,7 +72,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
 				dbfree(dbs1);
 				dbfree(dbs2);
 				freetbl(sortkeys,0);
-				throw(Velocity_Model_1d_dberror(name,
+				throw(VelocityModel_1d_Dberror(name,
 				  "dbgetv error reading P velocities"));
 			}
 			z.push_back(zin);
@@ -85,7 +85,7 @@ Velocity_Model_1d::Velocity_Model_1d(Dbptr dbi,string name,string property)
 	}
 	else
 	{
-		throw(Velocity_Model_1d_dberror(name,
+		throw(VelocityModel_1d_Dberror(name,
 		 "Coding error:  property passed to database constructor must be either P or S"));
 	}
 }
@@ -99,8 +99,8 @@ is in column 1, P velocity is in column 2, and S velocity
 is in column 3.  (no gradients in this format allowed). 
 property must be "P" or "S".  IMPORTANT:  note the use of
 layer THICKNESS not DEPTH. */
-Velocity_Model_1d::Velocity_Model_1d(string fname,
-	string form, string property) throw(Velocity_Model_1d_ioerror)
+VelocityModel_1d::VelocityModel_1d(string fname,
+	string form, string property) throw(VelocityModel_1d_IOerror)
 {
 	int i;
 
@@ -113,14 +113,14 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 	{
 		string mess;
 		mess = var.what();
-		throw(Velocity_Model_1d_ioerror("Cannot open file "+fname,
-                        "Velocity_Model_1d constructor failed"));
+		throw(VelocityModel_1d_IOerror("Cannot open file "+fname,
+                        "VelocityModel_1d constructor failed"));
 	}
 	*/
 	input.open(fname.c_str(), ios::in);
 	if(input.fail())
-		throw(Velocity_Model_1d_ioerror("Cannot open file "+fname,
-			"Velocity_Model_1d constructor failed"));	
+		throw(VelocityModel_1d_IOerror("Cannot open file "+fname,
+			"VelocityModel_1d constructor failed"));	
 	if(form=="rbh" || form=="plain")
 	{
 		char line[255];
@@ -153,8 +153,8 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 			else
 			{
 				input.close();
-				throw(Velocity_Model_1d_ioerror("Illegal property parameter = "+property,
-					"Velocity_Model_1d constructor failed"));
+				throw(VelocityModel_1d_IOerror("Illegal property parameter = "+property,
+					"VelocityModel_1d constructor failed"));
 			}
 			// all values are 0 for gradient here
 			grad.push_back(0.0);
@@ -168,8 +168,8 @@ Velocity_Model_1d::Velocity_Model_1d(string fname,
 	else
 	{
 		input.close();
-		throw(Velocity_Model_1d_ioerror("Unrecognized format namea = "+form,
-				"Velocity_Model_1d constructor failed"));
+		throw(VelocityModel_1d_IOerror("Unrecognized format namea = "+form,
+				"VelocityModel_1d constructor failed"));
 	}
 	input.close();
 }

@@ -4,16 +4,16 @@ using namespace SEISPP;
 namespace SEISPP
 {
 /* Extracts one component from a 3c seismogram returning the
- result as a pointer to a Time_Series object.  Any exceptions are
+ result as a pointer to a TimeSeries object.  Any exceptions are
 simply rethrown. 
 
 This version clones the entire metadata space of the parent to the 
-output Time_Series.  
+output TimeSeries.  
 */
-Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component)
+TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component)
 {
     try {
-	Time_Series *ts=new Time_Series(dynamic_cast<Metadata&>(tcs),false);
+	TimeSeries *ts=new TimeSeries(dynamic_cast<Metadata&>(tcs),false);
 	ts->live=tcs.live;
 	// This uses fact taht the above constructor called reserve on ns elements
 	// of the vector container to hold the time series samples.  Thus
@@ -29,14 +29,14 @@ Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component)
     }
 }
 // Overloaded version to do a selective copy
-Time_Series *Extract_Component(Three_Component_Seismogram& tcs,int component,
-	Metadata_list& mdl)
+TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
+	MetadataList& mdl)
 {
     try {
 	Metadata mdclone;
 	copy_selected_metadata(dynamic_cast<Metadata &>(tcs),
 		mdclone,mdl);
-	Time_Series *ts=new Time_Series(mdclone,false);
+	TimeSeries *ts=new TimeSeries(mdclone,false);
 	for(int i=0;i<tcs.ns;++i) 
 		ts->s.push_back(tcs.u(component,i));
 	return(ts);

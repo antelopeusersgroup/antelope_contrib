@@ -10,7 +10,7 @@ to that object.  The problem is if the Metadata implementation
 changes this will break this code.
 */
 
-Time_Series& Time_Series::operator=(const Time_Series& tsi)
+TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 {
 	if(this!=&tsi)
 	{
@@ -30,8 +30,8 @@ Time_Series& Time_Series::operator=(const Time_Series& tsi)
 	return(*this);
 }			
 
-Three_Component_Seismogram& Three_Component_Seismogram::operator
-		= (const Three_Component_Seismogram& seisin)
+ThreeComponentSeismogram& ThreeComponentSeismogram::operator
+		= (const ThreeComponentSeismogram& seisin)
 {
 	if(this!=&seisin)
 	{
@@ -57,7 +57,7 @@ Three_Component_Seismogram& Three_Component_Seismogram::operator
 //
 // assignment operators for ensemble objects (could maybe be templated)
 //
-Time_Series_Ensemble& Time_Series_Ensemble::operator=(const Time_Series_Ensemble& tseold)
+TimeSeriesEnsemble& TimeSeriesEnsemble::operator=(const TimeSeriesEnsemble& tseold)
 {
 	if(this!=&tseold)
 	{
@@ -69,7 +69,7 @@ Time_Series_Ensemble& Time_Series_Ensemble::operator=(const Time_Series_Ensemble
 	}
 	return(*this);
 }
-Three_Component_Ensemble& Three_Component_Ensemble::operator=(const Three_Component_Ensemble& tseold)
+ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEnsemble& tseold)
 {
 	if(this!=&tseold)
 	{

@@ -1,53 +1,53 @@
 '\" te
 .TH SEISPP_ERROR 3 "%G"
 .SH NAME
-seispp_error - error object for seispp library
+SeisppError - error object for seispp library
 .SH SYNOPSIS
 .nf
 #include "seispp.h"
 using namespace SEISPP;
-class seispp_error;
-class seispp_dberror : public seispp_error;
-class SAC_data_error : public seispp_error;
+class SeisppError;
+class SeisppDberror : public SeisppError;
+class SACdataError : public SeisppError;
 .fi
 .SH DESCRIPTION
 .LP
 The seispp library is an object-oriented seismic processing
 library written in C++.  One of the things C++ added to 
 plain C is exceptions as a mechanism for library routines
-to handle problems.  For Antelope users the seispp_error
+to handle problems.  For Antelope users the SeisppError
 facility is comparable to the elog library in Antelope, but
 with an object oriented flavor.  
 .LP
 The present facility is pretty basic with the 
-base class seispp_error object being defined as follows:
+base class SeisppError object being defined as follows:
 .nf
 .in 2c
-class seispp_error
+class SeisppError
 {
 public:
         string message;
-        seispp_error(){message="seispp library error\\n";};
-        seispp_error(const string mess){message=mess;};
+        SeisppError(){message="seispp library error\\n";};
+        SeisppError(const string mess){message=mess;};
         virtual void log_error(){cerr << "seispp error: "<<message<<endl;};
 };
 .fi
 .LP
-That is, a seispp_error is little more than a fancy way to return
+That is, a SeisppError is little more than a fancy way to return
 an error message through the string variable "message".  
 The simple function "log_error" is used to post that message to
 the unix standard error stream.  
 .LP
 The concept here is that more complicated error returns would
-be derived by inheritance from a seispp_error object.  The 
-\fISAC_data_error\fR object is an example.  It's actual
+be derived by inheritance from a SeisppError object.  The 
+\fISACdataError\fR object is an example.  It's actual
 definition is:
 .nf 
 .in 2c
-class SAC_data_error : public seispp_error
+class SACdataError : public SeisppError
 {
 public:
-        SAC_data_error(const string mess){message=mess;};
+        SACdataError(const string mess){message=mess;};
         virtual void log_error()
         {
                 cerr<<"Error processing SAC format time series"<<endl;
@@ -56,22 +56,22 @@ public:
 };
 .fi
 .LP
-Hence the only major difference between a SAC_data_error and 
-the base class seispp_error is that the SAC_data_error 
+Hence the only major difference between a SACdataError and 
+the base class SeisppError is that the SACdataError 
 log_error function adds an addition qualifier to the error
 message that is posted.  
 .LP
-The \fIseispp_dberror\fR is similar except it has
-the constructor defined as seispp_error(string,Database_Handle).  
+The \fISeisppDberror\fR is similar except it has
+the constructor defined as SeisppError(string,DatabaseHandle).  
 It prints a special message with log_error that can be used
 for debugging problems.
 .LP
 Users of this library can and should build their own derived
-classes from seispp_error.  If more information is needed to
+classes from SeisppError.  If more information is needed to
 handle different errors differently, this can be done using
-inheritance from seispp_error as in the examples above.  
+inheritance from SeisppError as in the examples above.  
 e.g.  an integer error code
-is easily placed in a derived object like SAC_data_error 
+is easily placed in a derived object like SACdataError 
 and a handler can be built around a switch-case on the
 error return code (a standard plain C method).  
 For the time being this library is written with the concept
@@ -84,12 +84,12 @@ class to support it.
 -lseispp
 .SH "SEE ALSO"
 .nf
-Time_Series(3),metadata_error(3)
+TimeSeries(3),metadata_error(3)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP
 Expect this class of error objects to expand.  For now assume
-that seispp library functions will only throw a seispp_error 
+that seispp library functions will only throw a SeisppError 
 exception and you have to depend on the documentation of a function
 to know how to handle any exception.
 .SH AUTHOR

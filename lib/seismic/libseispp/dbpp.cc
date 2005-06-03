@@ -57,7 +57,7 @@ bool is_a_bundle_pointer(Dbptr db)
 }
 // Default constructor needs to initialize the pointer to 
 // mark it as invalid
-Datascope_Handle::Datascope_Handle()
+DatascopeHandle::DatascopeHandle()
 {
 	db.database=dbINVALID;
 	db.table=dbINVALID;
@@ -75,11 +75,11 @@ Datascope_Handle::Datascope_Handle()
 	dbname = name of database to be openned (always openned r+)
 	pf = pf (parameter file object) pointer containing dbprocess list
 	tag = name of Tbl in pf for list of commands passed to dbprocess.
-Will throw a seispp_dberror if problems happen in dbprocess, pf routines,
+Will throw a SeisppDberror if problems happen in dbprocess, pf routines,
 or in dbprocess.  This is an example of a constructor that acquires
 a resource (in this case valid pointers to a view into a database)
 */
-Datascope_Handle::Datascope_Handle(string dbname,
+DatascopeHandle::DatascopeHandle(string dbname,
 	string pfname, 
 		string tag,
 			bool readonly)
@@ -87,37 +87,37 @@ Datascope_Handle::Datascope_Handle(string dbname,
 	if(readonly)
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
-			throw seispp_dberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,complain);
 	}
 	else
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
-			throw seispp_dberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,complain);
 	}
 	close_on_destruction=true;
 	// Probably needs to be an auto_ptr so pffree can be called
 	// Maybe should use a Metadata object
 	Pf *pf;
 	if(pfread(const_cast<char*>(pfname.c_str()),&pf))
-		throw seispp_error("Failure in pfread");
+		throw SeisppError("Failure in pfread");
 	Tbl *process_list;
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
 	if(process_list==NULL)
 	{
 		freetbl(process_list,0);
-		throw seispp_error("Tag name = "+tag+" not in parameter file");
+		throw SeisppError("Tag name = "+tag+" not in parameter file");
 	}
 	try {
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
 		freetbl(process_list,0);
-		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
+		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
 	}
 	db = dbprocess(db,process_list,0);
 	freetbl(process_list,0);
 	if(db.table == dbINVALID)
-		throw seispp_dberror("dbprocess failed",db,complain);
+		throw SeisppDberror("dbprocess failed",db,complain);
 	pffree(pf);
 	// Always initialize -- better than garbage
 	parent_table=db;
@@ -126,21 +126,21 @@ Datascope_Handle::Datascope_Handle(string dbname,
 }
 // somewhat repetitious, but a useful subset of above
 // Convenient sometimes to use with Plain Jane version immediately below
-Datascope_Handle::Datascope_Handle(Dbptr dbi, Pf *pf, string tag)
+DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
 {
 	Tbl *process_list;
 	process_list = pfget_tbl(pf,const_cast<char*>(tag.c_str()));
         if(process_list==NULL)
-                throw seispp_error("Tag name = "+tag+" not in parameter file");
+                throw SeisppError("Tag name = "+tag+" not in parameter file");
 	try {
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
-		throw seispp_error("Error in process list specification:  dbgroup can only be used as last command");
+		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
 	}
         db = dbprocess(dbi,process_list,0);
         if(db.table == dbINVALID)
-                throw seispp_dberror("dbprocess failed",db,complain);
+                throw SeisppDberror("dbprocess failed",db,complain);
 	// Always initialize -- better than garbage
 	parent_table=db;
 	if(is_bundle) --parent_table.table;
@@ -148,23 +148,23 @@ Datascope_Handle::Datascope_Handle(Dbptr dbi, Pf *pf, string tag)
 }
 
 // Plain Jane version just opens the database and sets the Dbptr
-Datascope_Handle::Datascope_Handle(string dbname,bool readonly)
+DatascopeHandle::DatascopeHandle(string dbname,bool readonly)
 {
 	if(readonly)
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r",&db))
-			throw seispp_dberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,complain);
 	}
 	else
 	{
 		if(dbopen(const_cast<char*>(dbname.c_str()),"r+",&db))
-			throw seispp_dberror("Failure in dbopen",db,complain);
+			throw SeisppDberror("Failure in dbopen",db,complain);
 	}
 	is_bundle = false;
 	close_on_destruction=false;
 }
 // copy constructor 
-Datascope_Handle::Datascope_Handle(Datascope_Handle& dbi)
+DatascopeHandle::DatascopeHandle(DatascopeHandle& dbi)
 {
 	db = dbi.db;
 	is_bundle=dbi.is_bundle;
@@ -180,7 +180,7 @@ variable.  This is necessary as Datascope has no way to independently
 tell if a Dbptr is a bundle or just a plain table or view.  
 */
 
-Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip)
+DatascopeHandle::DatascopeHandle(Dbptr dbi,Dbptr dbip)
 {
 	db = dbi;
 	parent_table = dbip;
@@ -188,75 +188,75 @@ Datascope_Handle::Datascope_Handle(Dbptr dbi,Dbptr dbip)
 	close_on_destruction=false; // copies should be this by default
 }
 	
-Datascope_Handle::~Datascope_Handle()
+DatascopeHandle::~DatascopeHandle()
 {
 	if(close_on_destruction)dbclose(db);
 }
 // function that needs to be called to force closing database
-void Datascope_Handle::close()
+void DatascopeHandle::close()
 {
 	close_on_destruction=true;
 }
-double Datascope_Handle::get_double(string name)
+double DatascopeHandle::get_double(string name)
 {
 	double val;
 	if(dbgetv(db,0,name.c_str(),&val,0))
-		throw seispp_dberror(string("dbgetv error extracting attribute ")
+		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
 	return(val);
 }
-int Datascope_Handle::get_int(string name)
+int DatascopeHandle::get_int(string name)
 {
 	int val;
 	if(dbgetv(db,0,name.c_str(),&val,0))
-		throw seispp_dberror(string("dbgetv error extracting attribute ")
+		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
 	return(val);
 }
-string Datascope_Handle::get_string(string name)
+string DatascopeHandle::get_string(string name)
 {
 	char val[128];
 	if(dbgetv(db,0,name.c_str(),&val,0))
-		throw seispp_dberror(string("dbgetv error extracting attribute ")
+		throw SeisppDberror(string("dbgetv error extracting attribute ")
 			+name,
 			db,complain);
 	return(string(val));
 }
-string  Datascope_Handle::get_filename()
+string  DatascopeHandle::get_filename()
 {
 	char str[256];
 
 	if(dbgetv(db,0,"dir",str,0) )
-		throw seispp_dberror("dbgetv error trying to read dir",db,complain);
+		throw SeisppDberror("dbgetv error trying to read dir",db,complain);
 	string dir(str);
 	if(dbgetv(db,0,"dfile",str,0) )
-		throw seispp_dberror("dbgetv error trying to read dfile",db,complain);
+		throw SeisppDberror("dbgetv error trying to read dfile",db,complain);
 	return(dir+"/"+string(str));
 }
 	
-int Datascope_Handle::number_tuples()
+int DatascopeHandle::number_tuples()
 {
 	int ierr;
 	int nrec;
 	ierr = dbquery(db,dbRECORD_COUNT,&nrec);
 	if(ierr<0)
-		throw seispp_dberror(string("dbquery of record count failed"),
+		throw SeisppDberror(string("dbquery of record count failed"),
 			db,complain);
 	return(nrec);
 }
-int Datascope_Handle::number_attributes()
+int DatascopeHandle::number_attributes()
 {
 	int ierr;
 	int natt;
 	ierr = dbquery(db,dbFIELD_COUNT,&natt);
 	if(ierr<0)
-		throw seispp_dberror(string("number_attributes:  dbquery failed"),
+		throw SeisppDberror(string("number_attributes:  dbquery failed"),
 			db,complain);
 	return(natt);
 }
-Datascope_Handle& Datascope_Handle::operator=(const Datascope_Handle& dbi)
+DatascopeHandle& DatascopeHandle::operator=(const DatascopeHandle& dbi)
 {
 	if(this!=&dbi)
 	{
@@ -267,7 +267,7 @@ Datascope_Handle& Datascope_Handle::operator=(const Datascope_Handle& dbi)
 	}
 	return(*this);
 }
-void Datascope_Handle::operator ++()
+void DatascopeHandle::operator ++()
 {
 	++db.record;
 }
@@ -275,12 +275,12 @@ void Datascope_Handle::operator ++()
 // record number of the new row.  Assumes Dbptr points at
 // one table.  Throws an exception if the add fails
 
-int Datascope_Handle::append()
+int DatascopeHandle::append()
 {
 	int row_added;
 	row_added = dbaddnull(db);
 	if(row_added==dbINVALID)
-		throw seispp_dberror(string("Datascope_Handle::append: dbaddnull failure"),
+		throw SeisppDberror(string("DatascopeHandle::append: dbaddnull failure"),
 			db,complain);
 	db.record=row_added;
 	return(row_added);
@@ -290,40 +290,40 @@ int Datascope_Handle::append()
 // is the value to be deposited in the current row.
 // I could have used a template except some versions require a cast
 // Maybe there is a way around that but I don't know it
-void Datascope_Handle::put(string name, double value)
+void DatascopeHandle::put(string name, double value)
 {
 	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
-void Datascope_Handle::put(string name, float value)
+void DatascopeHandle::put(string name, float value)
 {
 	if(dbputv(db,0,name.c_str(),static_cast<double>(value),0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
-void Datascope_Handle::put(string name, int value)
+void DatascopeHandle::put(string name, int value)
 {
 	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
-void Datascope_Handle::put(string name, string value)
+void DatascopeHandle::put(string name, string value)
 {
 	if(dbputv(db,0,name.c_str(),value.c_str(),0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
-void Datascope_Handle::put(string name, char *value)
+void DatascopeHandle::put(string name, char *value)
 {
 	if(dbputv(db,0,name.c_str(),value,0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
-void Datascope_Handle::put(string name, const char *value)
+void DatascopeHandle::put(string name, const char *value)
 {
 	if(dbputv(db,0,name.c_str(),const_cast<char *>(value),0) == dbINVALID)
-		throw seispp_dberror(string("dbputv error with attribute "+name),
+		throw SeisppDberror(string("dbputv error with attribute "+name),
 				db, complain);
 }
 Tbl *list_to_tbl(list<string> slist)
@@ -340,25 +340,25 @@ Tbl *list_to_tbl(list<string> slist)
 	return(t);
 }
 	
-void Datascope_Handle::sort(list<string> sortkeys)
+void DatascopeHandle::sort(list<string> sortkeys)
 {
 	Tbl *t;
 	t = list_to_tbl(sortkeys);
 	db = dbsort(db,t,0,0);
 	if(db.table == dbINVALID)
-		throw seispp_dberror("dbsort failed",db,complain);
+		throw SeisppDberror("dbsort failed",db,complain);
 	freetbl(t,myfree);
 }
 	
 // natural join requires no join keys
-void Datascope_Handle::natural_join(string table1, string table2)
+void DatascopeHandle::natural_join(string table1, string table2)
 {
 	Dbptr dbj1, dbj2;
 	dbj1 = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
 	dbj2 = dblookup(db,0,const_cast<char *>(table2.c_str()),0,0);
 	db = dbjoin(dbj1, dbj2,0,0,0,0,0);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("dbjoin of tables ")
+		throw SeisppDberror(string("dbjoin of tables ")
 			+ table1 
 			+ string(" and ") 
 			+ table2 
@@ -366,19 +366,19 @@ void Datascope_Handle::natural_join(string table1, string table2)
 			db,complain);
 }
 // special case appending to current db
-void Datascope_Handle::natural_join(string table)
+void DatascopeHandle::natural_join(string table)
 {
 	db = dbjoin(db,dblookup(db,0,const_cast<char *>(table.c_str()),0,0),
 		0,0,0,0,0);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("dbjoin: append to current view with table") 
+		throw SeisppDberror(string("dbjoin: append to current view with table") 
 			+ table 
 			+ string("failed"),
 			db,complain);
 }
 
 // full case with different lists for table 1 and table 2
-void Datascope_Handle::join(string table1, string table2, 
+void DatascopeHandle::join(string table1, string table2, 
 	list<string> joinkeys1, list<string> joinkeys2)
 {
 	Tbl *t1,*t2;
@@ -391,7 +391,7 @@ void Datascope_Handle::join(string table1, string table2,
 	freetbl(t1,myfree);
 	freetbl(t2,myfree);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("dbjoin of tables ")
+		throw SeisppDberror(string("dbjoin of tables ")
 			+ table1 
 			+ string(" and ") 
 			+ table2 
@@ -399,7 +399,7 @@ void Datascope_Handle::join(string table1, string table2,
 			db,complain);
 }
 
-void Datascope_Handle::group(list<string> groupkeys)
+void DatascopeHandle::group(list<string> groupkeys)
 {
 	Tbl *t;
 	t = list_to_tbl(groupkeys);
@@ -408,25 +408,25 @@ void Datascope_Handle::group(list<string> groupkeys)
 	is_bundle=true;
 	freetbl(t,myfree);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("dbgroup failed"),
+		throw SeisppDberror(string("dbgroup failed"),
 			db,complain);
 }
-void Datascope_Handle::subset(string sstr)
+void DatascopeHandle::subset(string sstr)
 {
 	db = dbsubset(db,const_cast<char *>(sstr.c_str()),0);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("dbsubset failed"),
+		throw SeisppDberror(string("dbsubset failed"),
 			db,complain);
 }
-void Datascope_Handle::lookup(string t)
+void DatascopeHandle::lookup(string t)
 {
 	db = dblookup(db,0,const_cast<char *>(t.c_str()),
 		0,0);
 	if(db.table==dbINVALID)
-		throw seispp_dberror(string("lookup:  lookup failed for table"
+		throw SeisppDberror(string("lookup:  lookup failed for table"
 			+ t),db,complain);
 }
-DBBundle Datascope_Handle::get_range()
+DBBundle DatascopeHandle::get_range()
 {
 	DBBundle bundle;
 	int s,e;
@@ -441,7 +441,7 @@ DBBundle Datascope_Handle::get_range()
 		bundle.parent = dbbundle;
 	}
 	else
-		throw seispp_dberror(
+		throw SeisppDberror(
 			string("get_range:  handle is not a bundle pointer"),
 			db,complain);
 	return(bundle);
@@ -449,20 +449,20 @@ DBBundle Datascope_Handle::get_range()
 
 
 // error object functions 
-seispp_dberror::seispp_dberror(const string mess, Dbptr dbi)
-		: seispp_error(mess)
+SeisppDberror::SeisppDberror(const string mess, Dbptr dbi)
+		: SeisppError(mess)
 {
 	db=dbi;
 	error_type=unknown;
 }
-seispp_dberror::seispp_dberror(const string mess, Dbptr dbi,
-		error_severity et) : seispp_error(mess)
+SeisppDberror::SeisppDberror(const string mess, Dbptr dbi,
+		ErrorSeverity et) : SeisppError(mess)
 {
 	db=dbi;
 	error_type=et;
 }
 
-void seispp_dberror::log_error()
+void SeisppDberror::log_error()
 {
 	cerr<<"Database related error:"<<endl
 		<<message<<endl

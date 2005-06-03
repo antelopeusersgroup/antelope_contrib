@@ -16,7 +16,7 @@ public:
 	RayPathSphere(int n)
 	{npts=n; r.resize(n); delta.resize(n); t.resize(n);};
 	// This fully parametrized version constructs a full path
-	RayPathSphere(Velocity_Model_1d& vm,
+	RayPathSphere(VelocityModel_1d& vm,
 		double p, double zmax, double tmax, double dt, 
 		const string mode);
 	RayPathSphere(const RayPathSphere& raytocopy);

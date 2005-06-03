@@ -8,7 +8,7 @@ namespace SEISPP
 
 //
 //  for a simple time series
-void apply_top_mute(Time_Series &ts,Top_Mute& mute)
+void ApplyTopMute(TimeSeries &ts,TopMute& mute)
 {
 	int i,i2;
 	double t;
@@ -19,7 +19,7 @@ void apply_top_mute(Time_Series &ts,Top_Mute& mute)
 		if(t>mute.t0e) break;
 		ts.s[i]=0.0;
 	}
-	Time_Window tw(ts.t0,t);
+	TimeWindow tw(ts.t0,t);
 	ts.add_gap(tw);  // zero portion needs to be flagged as a gap
 	if(i>=ts.ns) return;
 	for(i2=i;i2<ts.ns;++i2)
@@ -32,7 +32,7 @@ void apply_top_mute(Time_Series &ts,Top_Mute& mute)
 	}
 }
 // Unfortunately need very repetitious code for 3-component case
-void apply_top_mute(Three_Component_Seismogram &ts,Top_Mute& mute)
+void ApplyTopMute(ThreeComponentSeismogram &ts,TopMute& mute)
 {
 	int i,i2,j;
 	double t;
@@ -43,7 +43,7 @@ void apply_top_mute(Three_Component_Seismogram &ts,Top_Mute& mute)
 		if(t>mute.t0e) break;
 		for(j=0;j<3;++j) ts.u(j,i)=0.0;
 	}
-	Time_Window tw(ts.t0,t);
+	TimeWindow tw(ts.t0,t);
 	ts.add_gap(tw);  // zero portion needs to be flagged as a gap
 	if(i>=ts.ns) return;
 	for(i2=i;i2<ts.ns;++i2)
@@ -59,43 +59,43 @@ void apply_top_mute(Three_Component_Seismogram &ts,Top_Mute& mute)
 
 /* THIS WAS PREVIOUS CODE.  REPLACED BELOW WITH TEMPLATE AFTER CHANGE TO MEMBER SYMBOL */
 /***************************************
-// For a group of Time_Series objects (ensemble)
-void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute)
+// For a group of TimeSeries objects (ensemble)
+void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute)
 {
-	vector<Time_Series>::iterator i;
+	vector<TimeSeries>::iterator i;
 
 	// This might be doable with STL algorithms, but this is so
 	// simple why bother  Note the reference makes tseries an anias for *i
 	// for some strange reason the scope resolution operator 
 	// is necessary to avoid an overload ambiguity
 	for(i=t.tse.begin();i!=t.tse.end();++i) 
-		apply_top_mute(*i,mute);
+		ApplyTopMute(*i,mute);
 }
 // 
 // For an ensemble of 3-component seismograms.
 //
-void apply_top_mute(Three_Component_Ensemble &t3ce, Top_Mute& mute)
+void ApplyTopMute(ThreeComponentEnsemble &t3ce, TopMute& mute)
 {
-	vector<Three_Component_Seismogram>::iterator t3c;
+	vector<ThreeComponentSeismogram>::iterator t3c;
 
 	for(t3c=t3ce.tcse.begin();t3c!=t3ce.tcse.end();++t3c)
 	{
-		apply_top_mute(*t3c,mute);
+		ApplyTopMute(*t3c,mute);
 	}
 }
 ***************************************/
 template<class T>
-void apply_top_mute(T& t, Top_Mute& mute)
+void ApplyTopMute(T& t, TopMute& mute)
 {
-	foreach(t.member.begin(),t.member.end(),apply_top_mute(t,mute);
+	foreach(t.member.begin(),t.member.end(),ApplyTopMute(t,mute);
 }
 // Probably should have started with this, but we need constructors
 // This uses a pf
-Top_Mute::Top_Mute(Pf *pf,string tag)
+TopMute::TopMute(Pf *pf,string tag)
 {
 	try {
 		Metadata md(pf,tag);
-		string reft = md.get_string("Time_Reference_Type");
+		string reft = md.get_string("TimeReferenceType");
 		if(reft=="absolute")
 			reftype = absolute;
 		else

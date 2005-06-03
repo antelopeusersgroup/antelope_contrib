@@ -18,13 +18,13 @@ theta and phi.
 Author:  G Pavlis
 Written:  August 2000
 */
-Spherical_Coordinate pm_halfspace_model(
+SphericalCoordinate PMHalfspaceModel(
 		double vp0,
 		double vs0,
 		double ux,
 		double uy)
 {
-	Spherical_Coordinate s;
+	SphericalCoordinate s;
 	double sin_i,vpvs2,sini2;
 
 	s.radius = 1.0;
@@ -50,8 +50,8 @@ coordinates (theta 0 to pi/2 and -pi<phi<pi).
 Author:  Gary Pavlis
 Written:  August 2000
 */
-Spherical_Coordinate compute_ray_coordinates(
-	Spherical_Coordinate rayref,
+SphericalCoordinate compute_ray_coordinates(
+	SphericalCoordinate rayref,
 	double vp0,
 	double vs0,
 	double uxref,
@@ -59,11 +59,11 @@ Spherical_Coordinate compute_ray_coordinates(
 	double ux,
 	double uy)
 {
-	Spherical_Coordinate sref,snew;
+	SphericalCoordinate sref,snew;
 	double dphi, dtheta;
 
-	sref = pm_halfspace_model(vp0,vs0,uxref,uyref);
-	snew = pm_halfspace_model(vp0,vs0,ux,uy);
+	sref = PMHalfspaceModel(vp0,vs0,uxref,uyref);
+	snew = PMHalfspaceModel(vp0,vs0,ux,uy);
 	dtheta = snew.theta - sref.theta;
 	dphi = snew.phi = sref.phi;
 	rayref.theta += dtheta;

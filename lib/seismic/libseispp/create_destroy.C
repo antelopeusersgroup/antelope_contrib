@@ -10,20 +10,20 @@ using namespace SEISPP;
 namespace SEISPP
 {
 //
-// simple constructors for the Time_Series object are defined inline
+// simple constructors for the TimeSeries object are defined inline
 // in seispp.h.  
 //
-Time_Series::Time_Series() : Basic_Time_Series(), Metadata()
+TimeSeries::TimeSeries() : BasicTimeSeries(), Metadata()
 {
 	s.reserve(0);
 }
-Time_Series::Time_Series(int nsin) : Basic_Time_Series(), Metadata()
+TimeSeries::TimeSeries(int nsin) : BasicTimeSeries(), Metadata()
 {
 	s.reserve(nsin);
 }
 	
-Time_Series::Time_Series(const Time_Series& tsi) : 
-		Basic_Time_Series(dynamic_cast<const Basic_Time_Series&>(tsi)),
+TimeSeries::TimeSeries(const TimeSeries& tsi) : 
+		BasicTimeSeries(dynamic_cast<const BasicTimeSeries&>(tsi)),
 		Metadata(dynamic_cast<const Metadata&>(tsi))
 {
 	if(live)
@@ -37,13 +37,13 @@ Time_Series::Time_Series(const Time_Series& tsi) :
 // Wfdisc related fields are then extracted from the Metadata object
 // and used to read actual data.  
 // Note that this originally used a Pf as the input parameter but
-// I changed it to a Metadata object instead.  To create a Time_Series
+// I changed it to a Metadata object instead.  To create a TimeSeries
 // directly from a Pf you can just do this:
 //  md = Metadata(pf);
-//  ts = Time_Series(md);  -- i.e. this constructor
+//  ts = TimeSeries(md);  -- i.e. this constructor
 //
 
-Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
+TimeSeries::TimeSeries(Metadata& md,bool load_data) : Metadata(md)
 {
 	string stref;
 	string dfile, dir;
@@ -63,7 +63,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 		s.reserve(ns);
 		if(load_data)
 		{
-			stref = this->get_string("Time_Reference_Type");
+			stref = this->get_string("TimeReferenceType");
 			if(stref == "relative")
 				tref = relative;
 			else
@@ -71,10 +71,10 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 			dtype = this->get_string("datatype");
 #ifdef BIGENDIAN
 			if(dtype!="t4") 
-				throw(seispp_error("Unsupported datatype:  metadata-driven constructor only supports t4 data with external files"));
+				throw(SeisppError("Unsupported datatype:  metadata-driven constructor only supports t4 data with external files"));
 #else
 			if(dtype!="u4") 
-				throw(seispp_error("Unsupported datatype:  metadata-driven constructor only supports t4 data with external files"));
+				throw(SeisppError("Unsupported datatype:  metadata-driven constructor only supports t4 data with external files"));
 #endif
 			dir = this->get_string("dir");
 			dfile = this->get_string("dfile");
@@ -88,7 +88,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 					!= ns ) 
 			{
 				delete [] inbuffer;  // memory leak possible without this
-				throw(seispp_error("Time_Series constructor:  fread error on file "+fname));
+				throw(SeisppError("TimeSeries constructor:  fread error on file "+fname));
 			}
 			for(int i=0;i<ns;++i) 
 				s.push_back(static_cast<double>(inbuffer[i]));
@@ -97,7 +97,7 @@ Time_Series::Time_Series(Metadata& md,bool load_data) : Metadata(md)
 			fclose(fp);
 		}
 	}
-	catch (Metadata_error& mderr)
+	catch (MetadataError& mderr)
 	{
 		throw mderr;
 
@@ -115,13 +115,13 @@ Uses Antelope's trgetwf function which should allow it to read almost any
 common seismic trace format. 
 */
 
-Time_Series::Time_Series(Database_Handle& rdb,
-		Metadata_list& md_to_extract, 
-			Attribute_Map& am) 
+TimeSeries::TimeSeries(DatabaseHandle& rdb,
+		MetadataList& md_to_extract, 
+			AttributeMap& am) 
 	: Metadata(rdb,md_to_extract,am)
 {
 	float *inbuffer=NULL;
-	Datascope_Handle& dbh=dynamic_cast<Datascope_Handle&>(rdb); 
+	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb); 
 	try{
 		double te,t0read,teread;
 		int nread;
@@ -145,7 +145,7 @@ Time_Series::Time_Series(Database_Handle& rdb,
 		if(trgetwf(dbh.db,0,&inbuffer,NULL,t0,te,
 					&t0read,&teread,&nread,
 					0,0))
-				throw seispp_dberror("Time_Series database constructor:  trgetwf error",dbh.db);
+				throw SeisppDberror("TimeSeries database constructor:  trgetwf error",dbh.db);
 		if(nread!=ns)
 		{
 		    if(abs(nread-ns)>1)
@@ -161,8 +161,8 @@ Time_Series::Time_Series(Database_Handle& rdb,
 		    	}
 			ns = nread;
 			t0 = t0read;
-			this->put_metadata("endtime",teread);
-			this->put_metadata("nsamp",ns);
+			this->put("endtime",teread);
+			this->put("nsamp",ns);
 		}
 		s.reserve(ns);
 		for(int i=0;i<this->ns;++i) 
@@ -172,20 +172,20 @@ Time_Series::Time_Series(Database_Handle& rdb,
 		live = true;
 		free(inbuffer);
 	}
-	catch (Metadata_error& mderr)
+	catch (MetadataError& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
-		throw seispp_dberror("Constructor for Time_Series object failed from a Metadata error",
+		throw SeisppDberror("Constructor for TimeSeries object failed from a Metadata error",
 			dbh.db);
 
 	}
 }
-// Default constructor for Three_Component_Seismogram could be 
+// Default constructor for ThreeComponentSeismogram could be 
 // done inline in seispp.h, but it is complication enough I put
 // it here
 //
-Three_Component_Seismogram::Three_Component_Seismogram() : Metadata(),u(1,1)
+ThreeComponentSeismogram::ThreeComponentSeismogram() : Metadata(),u(1,1)
 {
 	live = false;
 	dt=0.0;
@@ -201,7 +201,7 @@ Three_Component_Seismogram::Three_Component_Seismogram() : Metadata(),u(1,1)
 			else
 				tmatrix[i][j]=0.0;
 }
-Three_Component_Seismogram::Three_Component_Seismogram(int nsamples) 
+ThreeComponentSeismogram::ThreeComponentSeismogram(int nsamples) 
 	: Metadata(),u(3,nsamples)
 {
 	live = false;
@@ -218,7 +218,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(int nsamples)
 			else
 				tmatrix[i][j]=0.0;
 }
-Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
+ThreeComponentSeismogram::ThreeComponentSeismogram(Metadata& md,
 				bool load_data) : Metadata(md),u()
 {
 	string stref;
@@ -272,14 +272,14 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 		if(load_data)
 		{
 			int i,j,ioff;
-			stref = this->get_string("Time_Reference_Type");
+			stref = this->get_string("TimeReferenceType");
 			if(stref == "relative")
 				tref = relative;
 			else
 				tref = absolute;
 			dtype = this->get_string("datatype");
 			if(dtype!="t8") 
-				throw(seispp_error("Unsupported datatype:  metadata-driven constructor only supports t8 data with external files"));
+				throw(SeisppError("Unsupported datatype:  metadata-driven constructor only supports t8 data with external files"));
 			
 			dir = this->get_string("dir");
 			dfile = this->get_string("dfile");
@@ -293,7 +293,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 					!= ns ) 
 			{
 				delete [] inbuffer;  // memory leak possible without this
-				throw(seispp_error("Three_Component_Seismogram constructor:  fread error on file "+fname));
+				throw(SeisppError("ThreeComponentSeismogram constructor:  fread error on file "+fname));
 			}
 			// another frozen namespace problem
 			data_order = this->get_string("three_component_data_order");
@@ -334,18 +334,18 @@ Three_Component_Seismogram::Three_Component_Seismogram(Metadata& md,
 			fclose(fp);
 		}
 	}
-	catch (Metadata_error& mderr)
+	catch (MetadataError& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
-		throw seispp_error("Constructor for Three_Component_Seismogram object failed");
+		throw SeisppError("Constructor for ThreeComponentSeismogram object failed");
 
 	}
 }
 
-Three_Component_Seismogram::Three_Component_Seismogram
-			(const Three_Component_Seismogram& t3c):
-	 Basic_Time_Series(dynamic_cast<const Basic_Time_Series&>(t3c)),
+ThreeComponentSeismogram::ThreeComponentSeismogram
+			(const ThreeComponentSeismogram& t3c):
+	 BasicTimeSeries(dynamic_cast<const BasicTimeSeries&>(t3c)),
 	 Metadata(dynamic_cast<const Metadata&>(t3c)),
 					u(t3c.u)
 {
@@ -356,7 +356,7 @@ Three_Component_Seismogram::Three_Component_Seismogram
 		for(j=0;j<3;++j) tmatrix[i][j]=t3c.tmatrix[i][j];
 }
 // small helpers to avoid cluttering up code below.
-bool tmatrix_is_cardinal(Three_Component_Seismogram& seis)
+bool tmatrix_is_cardinal(ThreeComponentSeismogram& seis)
 {
 	if( (seis.tmatrix[0][0]!=1.0) || (seis.tmatrix[0][1]!=0.0) 
 		||  (seis.tmatrix[0][2]!=0.0) )return(false);
@@ -385,16 +385,16 @@ Modified:  Jan 25, 2005
 Added support for 3c data type = dmatrix allowed in wfprocess table.
 */
 
-Three_Component_Seismogram::Three_Component_Seismogram(
-	Database_Handle& rdb,
-		Metadata_list& md_to_extract, 
-			Attribute_Map& am) : Metadata(),u()
+ThreeComponentSeismogram::ThreeComponentSeismogram(
+	DatabaseHandle& rdb,
+		MetadataList& md_to_extract, 
+			AttributeMap& am) : Metadata(),u()
 {
-	Time_Series component[3];
+	TimeSeries component[3];
 	const string this_function_base_message
-		= "Three_Component_Seismogram event database constructor:";
+		= "ThreeComponentSeismogram event database constructor:";
 	int i,j,ierr;
-	Datascope_Handle& dbh=dynamic_cast<Datascope_Handle&>(rdb);
+	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb);
 	live = false;
 	components_are_cardinal=false;
 	components_are_orthogonal=false;
@@ -412,7 +412,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 
 		DBBundle bundle = dbh.get_range();
 		if((bundle.end_record-bundle.start_record)!=3)
-			throw(seispp_dberror(
+			throw(SeisppDberror(
 			  string(this_function_base_message
 			  +	"  database bundle pointer irregularity\n"
 			  +     "All data must have exactly 3 channels per bundle"),
@@ -422,18 +422,18 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		// other times it could be one row at a time.  
 		// The handle allows this to happen independent of that
 		// nontrivial detail.
-		Datascope_Handle dbhv(bundle.parent,bundle.parent);
+		DatascopeHandle dbhv(bundle.parent,bundle.parent);
 		// This weird cast is necessary because the
-		// the Time_Series constructor uses a generic handle
-		Database_Handle *rdbhv=dynamic_cast
-				<Database_Handle*>(&dbhv);
+		// the TimeSeries constructor uses a generic handle
+		DatabaseHandle *rdbhv=dynamic_cast
+				<DatabaseHandle*>(&dbhv);
 		for(i=0,dbhv.db.record=bundle.start_record;
 			dbhv.db.record<bundle.end_record;
 				++i,++dbhv.db.record)
 		{
 		    try
 		    {
-			component[i]=Time_Series(*rdbhv,
+			component[i]=TimeSeries(*rdbhv,
 				md_to_extract,am);
 			tsread[i]=component[i].get_double("time");
 			teread[i]=component[i].get_double("endtime");
@@ -450,7 +450,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		if(samprate[0]!=samprate[1] || samprate[1]!=samprate[2]
 			|| samprate[0]!=samprate[2])
 		{
-			throw seispp_dberror(
+			throw SeisppDberror(
 				string("Irregular sample rates in ")
 				+ string("three component data set"),
 				dbh.db,complain);
@@ -482,19 +482,19 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		if(t0!=tsmin)
 		{
 			t0=tsmin;
-			this->put_metadata("starttime",tsmin);
+			this->put("starttime",tsmin);
 		}
 		if(te_md!=temax)
 		{
 			te_md=temax;
-			this->put_metadata("endtime",temax);
+			this->put("endtime",temax);
 		}
 		// Don't mark a gap unless the irregularity is
 		// greater than one sample
 		if(tsmax-t0>dt)
-			this->add_gap(Time_Window(t0,tsmax));
+			this->add_gap(TimeWindow(t0,tsmax));
 		if(te_md-temin>dt)
-			this->add_gap(Time_Window(temin,te_md));
+			this->add_gap(TimeWindow(temin,te_md));
 		ns = nint((te_md-t0)/dt) + 1;
 		u=dmatrix(3,ns);
 		for(i=0;i<3;++i)
@@ -504,7 +504,7 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		algorithm that is thorough but not fast.  We call the 
 		is_gap function for each component and mark the whole
 		object with a gap if there is a gap on any component */
-		Time_Window tw;
+		TimeWindow tw;
 		bool in_a_gap;
 		double t;
 		tw.start=t0;  // probably an unnecessary initialization
@@ -556,13 +556,13 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		// not the azimuth angle in spherical coordinates at 
 		// the station but the azimuth from north.  Hence we have
 		// convert it to a phi angle for spherical coordinates
-		Spherical_Coordinate scor;
+		SphericalCoordinate scor;
 		for(i=0;i<3;++i)
 		{
 			double *nu;
 			scor.phi = M_PI_2 - rad(hang[i]);
 			scor.theta = rad(vang[i]);
-			nu=spherical_to_unit_vector(scor);
+			nu=SphericalToUnitVector(scor);
 			for(j=0;j<3;++j)tmatrix[i][j]=nu[j];
 			delete [] nu;
 		}
@@ -582,16 +582,16 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		// In this situation we have to load the definition of the
 		// transformation matrix into the md object
 		// We must assume the data are externally defined in cardinal coordinates
-		md.put_metadata("U11",1.0);
-		md.put_metadata("U22",1.0);
-		md.put_metadata("U33",1.0);
-		md.put_metadata("U12",0.0);
-		md.put_metadata("U13",0.0);
-		md.put_metadata("U21",0.0);
-		md.put_metadata("U23",0.0);
-		md.put_metadata("U31",0.0);
-		md.put_metadata("U32",0.0);
-		*this=Three_Component_Seismogram(md,false);
+		md.put("U11",1.0);
+		md.put("U22",1.0);
+		md.put("U33",1.0);
+		md.put("U12",0.0);
+		md.put("U13",0.0);
+		md.put("U21",0.0);
+		md.put("U23",0.0);
+		md.put("U31",0.0);
+		md.put("U32",0.0);
+		*this=ThreeComponentSeismogram(md,false);
 		ns = this->get_int("nsamp");
 		dt = 1.0/(this->get_double("samprate"));
 		t0 = this->get_double("time");
@@ -614,8 +614,8 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 		// Important consistency cross check.
 		string datatype=md.get_string("datatype");
 		if(datatype!="3c")
-			throw seispp_error(
-				string("Three_Component_Seismogram constructor:")
+			throw SeisppError(
+				string("ThreeComponentSeismogram constructor:")
 				+string(" cannot handle datatype="+datatype));
 		// frozen names but essential here.
 		// assumes we alias these variables 
@@ -626,14 +626,14 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 
 		FILE *fp=fopen(fname.c_str(),"r");
 		if(fp==NULL)
-			throw seispp_error("Open failed on file"+fname);
+			throw SeisppError("Open failed on file"+fname);
 		if(foff>0) fseek(fp,static_cast<long int>(foff),SEEK_SET);
 		int readsize=(this->ns)*3;
 		if(fread(static_cast<void *>(this->u.get_address(0,0)),
 			sizeof(double),readsize,fp) != readsize)
 		{
 			fclose(fp);
-			throw seispp_error(string("fread error ")
+			throw SeisppError(string("fread error ")
 			+ string("reading  three-component data object from ")
 			+fname);
 		}
@@ -641,11 +641,11 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 	    }
 		
 	}
-	catch (Metadata_error& mderr)
+	catch (MetadataError& mderr)
 	{
 		// Land here when any of the metadata routines fail
 		mderr.log_error();
-		throw seispp_dberror("Constructor for Three_Component_Seismogram object failed from a metadata error",
+		throw SeisppDberror("Constructor for ThreeComponentSeismogram object failed from a metadata error",
 			dbh.db,complain);
 
 	}
@@ -655,32 +655,32 @@ Three_Component_Seismogram::Three_Component_Seismogram(
 // Ensemble constructors.  Both just create blank trace or 3c trace objects
 // and push them into a vector container.
 //
-Time_Series_Ensemble::Time_Series_Ensemble()
+TimeSeriesEnsemble::TimeSeriesEnsemble()
 {
 	member.reserve(0);
 }
-Time_Series_Ensemble::Time_Series_Ensemble(int nensemble, int nsamples)
+TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, int nsamples)
 {
 	for(int i=0; i<nensemble; ++i)
 	{
-		Time_Series *ts = new Time_Series(nsamples);
+		TimeSeries *ts = new TimeSeries(nsamples);
 		member.push_back(*ts);
 		delete ts;
 	}
 }
-Time_Series_Ensemble::Time_Series_Ensemble(int nensemble, 
+TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, 
 	int nsamples,
-		Metadata_list& mdl)
+		MetadataList& mdl)
 {
 	for(int i=0; i<nensemble; ++i)
 	{
-		Time_Series *ts = new Time_Series(nsamples);
+		TimeSeries *ts = new TimeSeries(nsamples);
 		member.push_back(*ts);
 		delete ts;
 	}
 	mdlist=mdl;
 }
-Time_Series_Ensemble::Time_Series_Ensemble(Time_Series_Ensemble& tceold)
+TimeSeriesEnsemble::TimeSeriesEnsemble(TimeSeriesEnsemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
 	int nmembers=tceold.member.size();
@@ -690,58 +690,58 @@ Time_Series_Ensemble::Time_Series_Ensemble(Time_Series_Ensemble& tceold)
 }
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
-Time_Series_Ensemble::Time_Series_Ensemble(Metadata& md,int nmembers)
+TimeSeriesEnsemble::TimeSeriesEnsemble(Metadata& md,int nmembers)
 	: Metadata(md)
 {
 	member.reserve(nmembers);
 }
 	
-void set_global_metadata_list(Time_Series_Ensemble& tse, Metadata_list& mdl)
+void set_global_metadata_list(TimeSeriesEnsemble& tse, MetadataList& mdl)
 {
 	tse.mdlist=mdl;
 }
-Three_Component_Ensemble::Three_Component_Ensemble()
+ThreeComponentEnsemble::ThreeComponentEnsemble()
 {
 	member.reserve(0);
 }
-Three_Component_Ensemble::Three_Component_Ensemble(int nstations, int nsamples)
+ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations, int nsamples)
 {
 	member.reserve(nstations);
 	for(int i=0;i<nstations;++i)
 	{
-		Three_Component_Seismogram *tcs 
-			= new Three_Component_Seismogram(nsamples);
+		ThreeComponentSeismogram *tcs 
+			= new ThreeComponentSeismogram(nsamples);
 		member.push_back(*tcs);
 		delete tcs;
 	}
 }
-Three_Component_Ensemble::Three_Component_Ensemble(int nstations, 
+ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations, 
 		int nsamples,
-			Metadata_list& mdl)
+			MetadataList& mdl)
 {
 	member.reserve(nstations);
 	for(int i=0;i<nstations;++i)
 	{
-		Three_Component_Seismogram *tcs 
-			= new Three_Component_Seismogram(nsamples);
+		ThreeComponentSeismogram *tcs 
+			= new ThreeComponentSeismogram(nsamples);
 		member.push_back(*tcs);
 		delete tcs;
 	}
 	mdlist=mdl;
 }
-void set_global_metadata_list(Three_Component_Ensemble& tse, Metadata_list& mdl)
+void set_global_metadata_list(ThreeComponentEnsemble& tse, MetadataList& mdl)
 {
 	tse.mdlist = mdl;
 }
 /* Database-driven constructor for an ensemble.  This implementation uses
 a Datascope database only through an immediate dynamic_cast to a 
-Datascope_Handle, but the idea is that a more generic interface 
+DatascopeHandle, but the idea is that a more generic interface 
 would change nothing in the calling sequence.
 
 station_mdl and ensemble_mdl determine which metadata are extracted 
 from the database for individual stations in the ensemble and 
 as the global metadata for the ensemble respectively.   The 
-station metadata is derived from the Three_Component_Seismogram 
+station metadata is derived from the ThreeComponentSeismogram 
 constructor, but the global metadata is arbitrarily extracted from
 the first row of the view forming the requested ensemble.  This 
 tacitly assumes then that all rows in view that forms this ensemble
@@ -749,42 +749,42 @@ have the same attributes (i.e. these are common attributes obtained
 through some form of relational join.)  
 
 The routine will pass along any exceptions thrown by functions 
-called by the constructor.  It will also throw a seispp_dberror 
+called by the constructor.  It will also throw a SeisppDberror 
 in cases best seen by inspecting the code below.
 
 Author:  Gary L. Pavlis
 Written:  July 2004
 */
-Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
-	Metadata_list& station_mdl,
-        	Metadata_list& ensemble_mdl,
-        		Attribute_Map& am)
+ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
+	MetadataList& station_mdl,
+        	MetadataList& ensemble_mdl,
+        		AttributeMap& am)
 {
 	int i;
 	int nsta;
-	const string this_function_base_message("Three_Component_Ensemble database constructor");
-	Three_Component_Seismogram *data3c;
-	Datascope_Handle& dbh=dynamic_cast<Datascope_Handle&>(rdb);
+	const string this_function_base_message("ThreeComponentEnsemble database constructor");
+	ThreeComponentSeismogram *data3c;
+	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb);
 	try {
 		// Will throw an exception if this isn't a group pointer
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
 		// We need a copy of this pointer 
-		Datascope_Handle dbhv(ensemble_bundle.parent,
+		DatascopeHandle dbhv(ensemble_bundle.parent,
 			ensemble_bundle.parent);
-		// Necessary because the Three_Component_Seismogram
+		// Necessary because the ThreeComponentSeismogram
 		// constructor uses a generic handle
-		Database_Handle *rdbhv=dynamic_cast
-			<Database_Handle *>(&dbhv);
+		DatabaseHandle *rdbhv=dynamic_cast
+			<DatabaseHandle *>(&dbhv);
 		// Loop over members
 		for(i=0,dbhv.db.record=ensemble_bundle.start_record;
 			dbhv.db.record<ensemble_bundle.end_record;
 			++i,++dbhv.db.record)
 		{
 			try {
-				data3c = new Three_Component_Seismogram(*rdbhv,
+				data3c = new ThreeComponentSeismogram(*rdbhv,
 					station_mdl,am);
-			} catch (seispp_dberror dberr)
+			} catch (SeisppDberror dberr)
 			{
 				cerr << "Problem with member "
 					<< i 
@@ -793,10 +793,10 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 				cerr << "Data for this member skipped" << endl;
 				continue;
 			}
-			catch (Metadata_error& mderr)
+			catch (MetadataError& mderr)
 			{
 				mderr.log_error();
-				throw seispp_error(string("Metadata problem"));
+				throw SeisppError(string("Metadata problem"));
 			}
 			member.push_back(*data3c);
 			delete data3c;
@@ -804,11 +804,11 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 			// row in this view
 			if(i==0)
 			{
-				Datascope_Handle dbhvsta;
+				DatascopeHandle dbhvsta;
 				if(dbhv.is_bundle)
 				{
 					DBBundle sta_bundle=dbhv.get_range();
-					dbhvsta=Datascope_Handle(
+					dbhvsta=DatascopeHandle(
 						sta_bundle.parent,
 						sta_bundle.parent);
 					dbhvsta.db.record=sta_bundle.start_record;
@@ -817,7 +817,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 				{
 					dbhvsta=dbhv;
 				}
-				Metadata ens_md(dynamic_cast<Database_Handle&>(dbhvsta),
+				Metadata ens_md(dynamic_cast<DatabaseHandle&>(dbhvsta),
 					ensemble_mdl,am);
 				copy_selected_metadata(ens_md,
 					dynamic_cast<Metadata&>(*this),
@@ -828,7 +828,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Database_Handle& rdb,
 	} catch (...) { throw;};
 }
 //copy constructor 
-Three_Component_Ensemble::Three_Component_Ensemble(Three_Component_Ensemble& tceold)
+ThreeComponentEnsemble::ThreeComponentEnsemble(ThreeComponentEnsemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
 	int nmembers=tceold.member.size();
@@ -838,7 +838,7 @@ Three_Component_Ensemble::Three_Component_Ensemble(Three_Component_Ensemble& tce
 }
 // Partial copy constructor copies metadata only.  reserves nmembers slots
 // in ensemble container
-Three_Component_Ensemble::Three_Component_Ensemble(Metadata& md,int nmembers)
+ThreeComponentEnsemble::ThreeComponentEnsemble(Metadata& md,int nmembers)
 	: Metadata(md)
 {
 	member.reserve(nmembers);

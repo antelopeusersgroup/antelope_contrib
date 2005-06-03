@@ -1,68 +1,68 @@
 '\" te
 .TH THREE_COMPONENT_SEISMOGRAM 3 "%G"
 .SH NAME
-Three_Component_Seismogram - generic data object to hold 3C seismic data
+ThreeComponentSeismogram - generic data object to hold 3C seismic data
 .SH SYNOPSIS
 .nf
 #include "seispp.h"
 using namespace SEISPP;
-class Three_Component_Seismogram : public Basic_Time_Series , public Metadata
+class ThreeComponentSeismogram : public BasicTimeSeries , public Metadata
 {
 public:
         bool components_are_orthogonal;
         bool components_are_cardinal;  
         double tmatrix[3][3];
         dmatrix u;
-        Three_Component_Seismogram();
-        Three_Component_Seismogram(int nsamples);
-        Three_Component_Seismogram(Metadata& md,bool load_data);
-        Three_Component_Seismogram(Dbptr db, 
-		Metadata_list& mdl, Attribute_Map& am);
-        Three_Component_Seismogram(const Three_Component_Seismogram&);
-        Three_Component_Seismogram& operator
-                = (const Three_Component_Seismogram&);
-        ~Three_Component_Seismogram();
+        ThreeComponentSeismogram();
+        ThreeComponentSeismogram(int nsamples);
+        ThreeComponentSeismogram(Metadata& md,bool load_data);
+        ThreeComponentSeismogram(Dbptr db, 
+		MetadataList& mdl, AttributeMap& am);
+        ThreeComponentSeismogram(const ThreeComponentSeismogram&);
+        ThreeComponentSeismogram& operator
+                = (const ThreeComponentSeismogram&);
+        ~ThreeComponentSeismogram();
         void zero_gaps();
-        void rotate_to_standard() throw(seispp_error);
-        void rotate(Spherical_Coordinate scor);
+        void rotate_to_standard() throw(SeisppError);
+        void rotate(SphericalCoordinate scor);
         void rotate(double nu[3]);
         void apply_transformation_matrix(double a[3][3]);
-        void free_surface_transformation(Slowness_vector u, double vp0, double vs0);
+        void free_surface_transformation(SlownessVector u, double vp0, double vs0);
 };
 .fi
 .SH DESCRIPTION
 .LP
-A \fIThree_Component_Seismogram\fR is a special type of time series
+A \fIThreeComponentSeismogram\fR is a special type of time series
 data.  It is special in two ways:  (1) it is vector data and not 
 scalar data and (2) that vector size matches our physical universe
 dimension of 3.  Item (1) is encapsulated in this implementation
 by making this data object a derived class from a 
-\fIBasic_Time_Series\fR object.  Item (2) and the fact that the
+\fIBasicTimeSeries\fR object.  Item (2) and the fact that the
 customers of this software are nearly guaranteed to be geophysicists
 lead to special member functions in this object that might otherwise
 be better left as external procedures.  
 .LP
-A \fIThree_Component_Seismogram\fR is a familiar concept to all
+A \fIThreeComponentSeismogram\fR is a familiar concept to all
 seismologists.  This implementation stores such data in a 
-3 by ns (defined in Basic_Time_Series (3)) matrix referenced
+3 by ns (defined in BasicTimeSeries (3)) matrix referenced
 with the symbol \fIu\fR to be consistent with the generic
 symbol used for vector seismic data in the bible of
 seismology by Aki and Richards. 
 .LP
-A \fIThree_Component_Seismogram\fR inherits three fundamental
-parameters from a \fIBasic_Time_Series\fR object definition:  
+A \fIThreeComponentSeismogram\fR inherits three fundamental
+parameters from a \fIBasicTimeSeries\fR object definition:  
 (1) dt = sample interval, (2) t0 = start time, and (3) ns = number
 of samples in this data object.  It also inherits a couple of
 auxiliary parameters and data gap processing facilities
-described in Basic_Time_Series(3).
+described in BasicTimeSeries(3).
 It also inherits a Metadata object (see metadata(3)) used
 basically as a variable length header in applications.
-See the man page for Time_Series (3) for more details about 
+See the man page for TimeSeries (3) for more details about 
 motivation and use of Metadata for time series data like 
 this.
 .SH COORDINATE TRANSFORMATION ISSUES
 .LP
-The key data difference this object adds over a Basic_Time_Series
+The key data difference this object adds over a BasicTimeSeries
 are concepts related to coordinate transformations.  This 
 begins with two booleans added for convenience:  
 \fIcomponents_are_orthogonal\fR and 
@@ -93,10 +93,10 @@ return immediately and do nothing to the data.)
 The \fIrotate\fR function will apply a special earth specific
 transformation to a form of ray coordinate.  It comes in two
 versions specified by a unit vector (double nu[3]) version)
-or angular definition (Spherical_Coordinate version).  Both 
+or angular definition (SphericalCoordinate version).  Both 
 are used to define a coordinate transformation in which:
 (a)  the x3 direction is transformed to be parallel to the
-direction defined by the unit vector nu (Spherical_Coordinate
+direction defined by the unit vector nu (SphericalCoordinate
 angles defined in scor); x2 (original north) is rotated 
 to be radial from the direction defined by nu (defined
 by the direction of the projection of nu onto a horizontal
@@ -120,7 +120,7 @@ Be aware also that not only is this transformation not
 orthogonal it also changes the relative amplitudes of the
 P and S components.   That is, it does not preserve 
 original vector amplitudes.   
-This function will throw a seispp_error object if the surface
+This function will throw a SeisppError object if the surface
 velocities passed to the function are higher than the apparent
 velocity (1/ray_parameter)  as the transformation matrix used
 will not work for post-critical wavefields.
@@ -135,17 +135,17 @@ rotate_to_standard which will always return the data to
 the standard, cardinal coordinate system.  
 .SH CONSTRUCTORS
 .IP (1)
-\fIThree_Component_Seismogram();\fR This, the default constructor, does 
+\fIThreeComponentSeismogram();\fR This, the default constructor, does 
 almost nothing.  It initializes all member data parameters to
 zero, initializes the transformation matrix properties to a default that should be 
 considered undefined, calls the default constructor for u, and marks the data dead.
 .IP (2)
-\fIThree_Component_Seismogram(int nsin);\fR This acts like the default constructor
+\fIThreeComponentSeismogram(int nsin);\fR This acts like the default constructor
 except it sets up a 3xnsin u matrix.
 .IP (3)
-\fIThree_Component_Seismogram(Time_Series&);\fR Standard copy constructor.
+\fIThreeComponentSeismogram(TimeSeries&);\fR Standard copy constructor.
 .IP (4)
-\fIThree_Component_Seismogram(Metadata& md,bool load_data);\fR  This should be 
+\fIThreeComponentSeismogram(Metadata& md,bool load_data);\fR  This should be 
 viewed as a general constructor driven by a Metadata object.  
 It provides a fairly general mechanism for file-based input
 of time series data, but it has a frozen name space for a set
@@ -159,11 +159,11 @@ internal symbols:
 .nf
 
 \fISymbol		Metadata name\fR
-\fI====Common with parallel Time_Series constructor======\fR
+\fI====Common with parallel TimeSeries constructor======\fR
 dt			samprate
 t0			starttime
 ns			nsamp
-\fI====Special for Three_Component_Seismogram======\fR
+\fI====Special for ThreeComponentSeismogram======\fR
 components_are_cardinal	components_are_cardinal
 tmatrix[0]0]		U11
 tmatrix[1]0]		U21
@@ -213,7 +213,7 @@ are:
 .in 2c
 
 \fIKeyword			Definition\fR
-Time_Reference_Type		tref field of Basic_Time_Series
+TimeReferenceType		tref field of BasicTimeSeries
 datatype			Data type ala CSS3.0 dtype attribute
 foff				File offset in bytes to first sample
 dir				Directory where data will be found
@@ -222,7 +222,7 @@ three_component_data_order	Matrix order switch
 .fi
 .IP
 Note that tref is assumed to be defined by a string field.
-If Time_Reference_Type=="relative" relative times are
+If TimeReferenceType=="relative" relative times are
 assumed, otherwise the time standard is assumed to be
 absolute (epoch) times.  
 The "datatype", "dir", and "dfile" fields define the format
@@ -233,7 +233,7 @@ any data gap definitions.
 The current implementation is limited in capabilities due
 to the design concept for this constructor described above.
 Specifically, if datatype is anything but the host float foramt
-the constructor will throw a seispp_error (3) exception.  
+the constructor will throw a SeisppError (3) exception.  
 This function also requires the data for a three-component
 station be contiguous.  Either matrix order is allowed, 
 but the most rational to allow ease of working with other
@@ -255,12 +255,12 @@ will attempt to open the file dir/dfile,
 seek to foff, read 3*ns float samples
 from the file with fread, and close the file.
 If any of the I/O operations fail the constructor will
-throw a seispp_error exception.
+throw a SeisppError exception.
 Note that if this constructor throws any exception
 the contents of the object should be viewed as garbage.
 This is standard behaviour but worth emphasizing.
 .IP (5)
-\fIThree_Component_Seismogram(Dbptr db,Metadata_list& mdl,Attribute_Map& am);\fR  
+\fIThreeComponentSeismogram(Dbptr db,MetadataList& mdl,AttributeMap& am);\fR  
 This is a generic database-driven constructor for segmented 
 data.  That is, it makes an implicit assumption the data being
 requested are defined in single, discrete segments indexed
@@ -270,7 +270,7 @@ into three-component bundles.    The current
 implementation uses an Antelope database pointer as Dbptr but
 the user should recognize that this is not a requirement of 
 the interface.  Dbptr should be viewed as a database handle
-that points at one row of a database that defines Time_Series
+that points at one row of a database that defines TimeSeries
 data.  What that handle points to is implementation dependent.
 For this implementation it is an Antelope database pointer
 and it MUST point to one and only one row of a database view
@@ -296,7 +296,7 @@ be read and loaded with this constructor.  It also means
 that the mechanisms used by trgaps(3) to define gaps in
 external data representations
 will also work and the 
-Three_Component_Seismogram object that is constructed will have 
+ThreeComponentSeismogram object that is constructed will have 
 such data gaps correctly defined.  
 Note that this function also handles irregular start and end times
 within reason.  It finds the maximum and minimum start and end times
@@ -308,29 +308,29 @@ was less mysterious.  That is, this is in fact a gap issue.
 It is also NOT treated as an exception as this should be viewed
 as a data problem that we need to plan to work around.
 .IP
-This constructor will throw a seispp_error if there are any 
+This constructor will throw a SeisppError if there are any 
 problems.  An error handler should catch this exception, call 
 log_error(), and discard such data or abort.
 .SH NON-MEMBER FUNCTIONS
 .LP
 There are two different \fIdbsave\fR functions that save a
-Three_Component_Seismogram object contents to a Datascope
+ThreeComponentSeismogram object contents to a Datascope
 Database.  The prototypes are:
 .nf
-void dbsave(Three_Component_Seismogram& ts,Dbptr db,string table,
-        Metadata_list& md, Attribute_Map& am);
-void dbsave(Three_Component_Seismogram& ts,Dbptr db,
-        string table, Metadata_list& md,
-        Attribute_Map& am, vector<string>chanmap,bool output_as_standard);
+void dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
+        MetadataList& md, AttributeMap& am);
+void dbsave(ThreeComponentSeismogram& ts,Dbptr db,
+        string table, MetadataList& md,
+        AttributeMap& am, vector<string>chanmap,bool output_as_standard);
 .fi
 The best way to understand these functions is that the first is
 a simplified, overloaded version of the second (more general)
 function.  The basic algorithm is that the three-component 
-matrix is fragmented into three Time_Series objects and the 
-Time_Series version of dbsave is called on each of the 
-resulting three Time_Series objects.  The ts, db, table, md, and
+matrix is fragmented into three TimeSeries objects and the 
+TimeSeries version of dbsave is called on each of the 
+resulting three TimeSeries objects.  The ts, db, table, md, and
 am arguments are exactly as described in the documentation
-for Time_Series(3).  The quick version is that the results 
+for TimeSeries(3).  The quick version is that the results 
 are written to the Datascope database db in table "table" 
 using the set of names in md with internal to external namespace
 mapping defined in am.  
@@ -343,22 +343,22 @@ The second version of this functions adds more generality.
 The primary distinction is the chanmap vector.  
 The chanmap variable is assumed to be a three-component, STL vector
 of strings that define the names that should be assigned to 
-the three components of the output Time_Series.  They 
+the three components of the output TimeSeries.  They 
 are assumed to be in data order so that chanmap[0], for example,
 corresponds to row 0 of the 3xns data matrix used for the
-Three_Component_Seismogram object. 
+ThreeComponentSeismogram object. 
 When the boolean variable \fIoutput_as_standard\fR 
 is true the data are rotated to standard coordinate 
 (rotate_to_standard is called) before sending the result to
 output.  
 .LP
-Both of these functions throw seispp_error objects if there
+Both of these functions throw SeisppError objects if there
 are problems on output.
 .SH LIBRARY
 -lseispp
 .SH "SEE ALSO"
 .nf
-metadata(3), Basic_Time_Series(3), Time_Series(3)
+metadata(3), BasicTimeSeries(3), TimeSeries(3)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP

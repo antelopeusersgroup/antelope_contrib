@@ -5,14 +5,14 @@ resample - time series resampling operators for seispp library
 .nf
 #include "seispp.h"
 #include "resample.h"
-Time Series& Resample_Time_Series(Time_Series& ts,
-	Resampling_Definitions& rd, double dtout, bool trim);
+Time Series& ResampleTimeSeries(TimeSeries& ts,
+	ResamplingDefinitions& rd, double dtout, bool trim);
 
-class Resampling_Definitions
+class ResamplingDefinitions
 {
 public:
-        map<Interval,Resample_Operator,Interval_Cmp> decset;
-        Resampling_Definitions(Pf *pf);
+        map<Interval,ResampleOperator,IntervalCompare> decset;
+        ResamplingDefinitions(Pf *pf);
 };
 
 .fi
@@ -22,16 +22,16 @@ Resampling modern seismic data to a common sample rate is often
 needed in data processing to simplify many algorithms.  
 This set of functions provide a very general way to accomplish this in
 the framework of the seispp library.  
-The main procedure, \fIResample_Time_Series\fR, will both 
+The main procedure, \fIResampleTimeSeries\fR, will both 
 upsample and downsample to integer or noninteger multiples
 of an original sample rate.  What exactly is done is driven 
-by the \fIResampling_Definitions\fR object.  
-The \fIResampling_Definitions\fR contains the recipes used
+by the \fIResamplingDefinitions\fR object.  
+The \fIResamplingDefinitions\fR contains the recipes used
 to define how resampling is to be done for different sample rates.
 The interface selects the recipe for handling input automatically 
 based on the original sample rate of the data.
 .LP
-The constructor for a \fIResampling_Definitions\fR object is 
+The constructor for a \fIResamplingDefinitions\fR object is 
 driven by a parameter file description (see pf(3)).  The
 pf object to be passed to the constructor would normally be
 built itself using pfread as part of a program's initialization.
@@ -58,7 +58,7 @@ Upsampling is defined by a decimation stage with a decimation factor
 smaller than unity.  Upsamping is accomplished by simple linear 
 interpolation between data points.  
 .LP
-The \fIResample_Time_Series\fR function returns a Time_Series(3) object
+The \fIResampleTimeSeries\fR function returns a TimeSeries(3) object
 resampled to the target sample interval \fIdtout\fR.  
 The \fItrim\fR variable is a switch to control how the function handles
 the transients at the ends of the data that are the norm for a FIR filter.
@@ -82,10 +82,10 @@ string pfname("mypf");
 Pf *pf;
 //the oddities here are the standard C++ interface to C function
 pfread(const_cast<char *>(pffile.c_str()),&pf); 
-Resampling_Definitions rd(pf);
+ResamplingDefinitions rd(pf);
     ...
-Time_Series ts(db,mdl,am);  // see Time_Series(3)
-tsnew = Resample_Time_Series(ts,rd,0.1,true);  // resample to 10 sps
+TimeSeries ts(db,mdl,am);  // see TimeSeries(3)
+tsnew = ResampleTimeSeries(ts,rd,0.1,true);  // resample to 10 sps
 dbsave(tsnew,db,"wfdisc",mdl,am);
     ...
 .fi
@@ -93,8 +93,8 @@ dbsave(tsnew,db,"wfdisc",mdl,am);
 .in
 .SH EXCEPTIONS
 .LP
-The \fIResampling_Defininitions\fR  constructor and the \fIResample_Time_Series\fR
-function will throw a seispp_error(3) in the event of a serious problem.  
+The \fIResampling_Defininitions\fR  constructor and the \fIResampleTimeSeries\fR
+function will throw a SeisppError(3) in the event of a serious problem.  
 In both cases the result is null.  For the constructor one would normally abort.
 For data processing handling failure of the resampling function is application 
 dependent.
@@ -102,7 +102,7 @@ dependent.
 -lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid
 .SH "SEE ALSO"
 .nf
-Basic_Time_Series(3), Time_Series(3), dbresample(1), seispp_error(3)
+BasicTimeSeries(3), TimeSeries(3), dbresample(1), SeisppError(3)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP

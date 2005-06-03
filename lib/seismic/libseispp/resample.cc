@@ -23,7 +23,7 @@ using namespace INTERPOLATOR1D;
 //{
 // Constructs this object from exact sample rate key (e) 
 // and using a pf 
-Resample_Operator::Resample_Operator(double e,Pf *pf)
+ResampleOperator::ResampleOperator(double e,Pf *pf)
 {
 	Tbl *t;
 	exact = e;
@@ -47,7 +47,7 @@ Resample_Operator::Resample_Operator(double e,Pf *pf)
 		fname=string(decfilename);
 		dec = new Decimator(fname,decfac_test);
 		if(fabs((decfac_test-(dec->decfac))/decfac_test)>DECFAC_TOLERANCE)
-			throw  seispp_error("Decimator constructor failure:  mismatch of sample rate between response file "
+			throw  SeisppError("Decimator constructor failure:  mismatch of sample rate between response file "
 				+fname+" and input line\n"+string(line));
 		declist.push_back(*dec);
 	}
@@ -59,10 +59,10 @@ Resample_Operator::Resample_Operator(double e,Pf *pf)
 		
 	freetbl(t,0);
 }
-/* builds an empty Resample_Operator with an empty declist, but 
-with the key fields used by the Resampling_Definitions operator set.
+/* builds an empty ResampleOperator with an empty declist, but 
+with the key fields used by the ResamplingDefinitions operator set.
 */
-Resample_Operator::Resample_Operator(double e,double l, double h)
+ResampleOperator::ResampleOperator(double e,double l, double h)
 {
 	low = l;
 	high = h;
@@ -71,7 +71,7 @@ Resample_Operator::Resample_Operator(double e,double l, double h)
 }
 
 // copy constructor for this class
-Resample_Operator::Resample_Operator(const Resample_Operator& roi)
+ResampleOperator::ResampleOperator(const ResampleOperator& roi)
 {
 	low = roi.low;
 	high = roi.high;
@@ -79,7 +79,7 @@ Resample_Operator::Resample_Operator(const Resample_Operator& roi)
 	declist = roi.declist;
 }
 // assignment operator
-Resample_Operator& Resample_Operator::operator=(const Resample_Operator& roi)
+ResampleOperator& ResampleOperator::operator=(const ResampleOperator& roi)
 {
 	if(this != &roi)
 	{
@@ -92,7 +92,7 @@ Resample_Operator& Resample_Operator::operator=(const Resample_Operator& roi)
 }
 /*  Main, top level function for this group of objects.  This method applies
 a series of decimation and resample stages to the input vector, s, returning
-the result as a Decimated_vector object.  dtin is the input sample rate and
+the result as a DecimatedVector object.  dtin is the input sample rate and
 dtout_target is the desired output sample rate.  A feature of the algorithm is
 that if the computed sample rate after applying the series of decimators is
 outside a (frozen) tolerance the data are resampled again onto a grid of dtout_target
@@ -102,12 +102,12 @@ slippery clocks.
 trim determines if the time series is trimmed on the left and right to 
 remove fir filter transient sections.
 */
-Decimated_vector& Resample_Operator::apply(int ns, double *s,double dtin, 
+DecimatedVector& ResampleOperator::apply(int ns, double *s,double dtin, 
 	double dtout_target, bool trim)
 {
 	list<Decimator>::iterator this_decimator;
-	Decimated_vector *dvptr=new Decimated_vector(ns);
-	Decimated_vector& result=*dvptr;
+	DecimatedVector *dvptr=new DecimatedVector(ns);
+	DecimatedVector& result=*dvptr;
 	int i;
 	const double DT_FRACTIONAL_ERROR=0.001;
 	double dtout=dtin;
@@ -167,13 +167,13 @@ Decimator::Decimator(string fname,double decfac_target)
 		coefs.reserve(0);
 		lag=0;
 		if(decfac_target>MAX_UPSAMPLE_DECFAC)
-			throw seispp_error(err_mess_head+"illegal decfac for upsample defininition.  Must specify decfac less than 1");
+			throw SeisppError(err_mess_head+"illegal decfac for upsample defininition.  Must specify decfac less than 1");
 		return;
 	}
 
 	file = fopen(fname.c_str(),"r");
 	if(file==NULL) 
-		throw seispp_error(err_mess_head
+		throw SeisppError(err_mess_head
 		+"cannot open response file "+fname);
 
 	rsp=(Response *)new_response();
@@ -181,7 +181,7 @@ Decimator::Decimator(string fname,double decfac_target)
 	if(read_response(file,&rsp))
 	{
 		fclose(file);
-		throw seispp_error(err_mess_head+"read_response() failed on file "+fname);
+		throw SeisppError(err_mess_head+"read_response() failed on file "+fname);
 	}
 	fclose(file);
 	get_response_nstages(rsp,&n);
@@ -190,13 +190,13 @@ Decimator::Decimator(string fname,double decfac_target)
 			<< fname << endl << "Using only the first stage"<<endl;	
 	get_response_stage_type(rsp,0,stage_type);
 	if(strcmp(stage_type,"fir"))
-		throw seispp_error(err_mess_head+"Response file "+fname
+		throw SeisppError(err_mess_head+"Response file "+fname
 			+"is not a FIR filter");
 	int idecfac;
 	get_response_stage_fir_ncoefs(rsp,0,&srate,&idecfac,&nnum,&nden);
-	if(nden>1) throw seispp_error(err_mess_head+
+	if(nden>1) throw SeisppError(err_mess_head+
 		"file "+fname+"has IIR component\nIIR Filter component not allowed\n");
-	if(nnum<1) throw seispp_error(err_mess_head
+	if(nnum<1) throw SeisppError(err_mess_head
 		+ string("No FIR filter coefficients defined in file ")+fname);
 	decfac=static_cast<double>(idecfac);
 	ncoefs=nnum;
@@ -239,12 +239,12 @@ decfac.  The boolean variable trim defines how the edges are handled.
 When trim is true the vector is shorted on both ends to allow the 
 decimator filter to not have an edge transient.  lag is set appropriately.
 */
-Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
+DecimatedVector& Decimator::apply(int nsamp_in, double *s,bool trim)
 {
 	int nsamp_out;
 	int i,ii;
 	int ncoefs=coefs.size();
-	Decimated_vector *dout;
+	DecimatedVector *dout;
 
 	// quietly refuse to attempt anything in either case when the
 	// input is less than the length of the filter
@@ -252,7 +252,7 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 	if(nsamp_in<ncoefs)
 	{
 		// copy data 
-		dout = new Decimated_vector(nsamp_in);
+		dout = new DecimatedVector(nsamp_in);
 		for(i=0;i<nsamp_in;++i)dout->d.push_back(s[i]);
 		return(*dout);
 	}
@@ -261,7 +261,7 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 	{
 		double dt;
 		nsamp_out = static_cast<int>( (((double)nsamp_in)/decfac));
-		dout = new Decimated_vector(nsamp_out);
+		dout = new DecimatedVector(nsamp_out);
 		dout->d.resize(nsamp_out);  // need this to actually alloc vector 
 		dout->lag=0;
 		// calculate a sample rate from decfac based a nondimensional
@@ -282,7 +282,7 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 			nsamp_out = (nsamp_in - ncoefs)/idecfac;
 		else
 			nsamp_out = nsamp_in/idecfac;
-		dout = new Decimated_vector(nsamp_out);
+		dout = new DecimatedVector(nsamp_out);
 		if(trim)
 		{
 			dout->lag = lag;
@@ -323,28 +323,28 @@ Decimated_vector& Decimator::apply(int nsamp_in, double *s,bool trim)
 	}
 	return(*dout);
 }
-Decimated_vector& Decimator::apply(int nsamp_in, double *s)
+DecimatedVector& Decimator::apply(int nsamp_in, double *s)
 {
 	return(apply(nsamp_in,s,false));
 }
-Decimated_vector& Decimator::apply(vector<double>s,bool trim)
+DecimatedVector& Decimator::apply(vector<double>s,bool trim)
 {
 	int ns=s.size();
 	return(apply(ns,&s[0],trim));
 }
 
-/*  For Decimated_vector object */
-Decimated_vector::Decimated_vector(int ns)
+/*  For DecimatedVector object */
+DecimatedVector::DecimatedVector(int ns)
 {
 	lag=0;
 	d.reserve(ns);
 }
-Decimated_vector::Decimated_vector(const Decimated_vector& dvi)
+DecimatedVector::DecimatedVector(const DecimatedVector& dvi)
 {
 	d = dvi.d;
 	lag = dvi.lag;
 }
-Decimated_vector& Decimated_vector::operator=(const Decimated_vector& dvi)
+DecimatedVector& DecimatedVector::operator=(const DecimatedVector& dvi)
 {
 	if(this != &dvi)
 	{
@@ -354,19 +354,19 @@ Decimated_vector& Decimated_vector::operator=(const Decimated_vector& dvi)
 	return(*this);
 }
 
-Resampling_Definitions::Resampling_Definitions(Pf *pf)
+ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 {
 	Pf *pfrda,*pfsr;
 	Tbl *t;
 	char *key;
 	double exact;
-	Resample_Operator *rop;
+	ResampleOperator *rop;
 	Interval si_range;
-	typedef map<Interval,Resample_Operator> ROmap;
+	typedef map<Interval,ResampleOperator> ROmap;
 
 	
 	if(pfget(pf,"resample_definitions",(void **)&pfrda) != PFARR)
-		throw seispp_error("Reample_Definition constructor:  pfget failure looking for Reample_Definition keyword");
+		throw SeisppError("Reample_Definition constructor:  pfget failure looking for Reample_Definition keyword");
 	
 	t = pfkeys(pfrda);
 	for(int i=0;i<maxtbl(t);++i)
@@ -374,17 +374,17 @@ Resampling_Definitions::Resampling_Definitions(Pf *pf)
 		key = static_cast<char *>(gettbl(t,i));
 		// thrown error here can create a memory leak if this exception is caught and one tries to continue
 		if(pfget(pfrda,key,(void **)&pfsr)!=PFARR)
-			throw seispp_error("Resampling_Definitions constructor:  Syntax error in parameter file Arr block tagged Resampling_Definitions");
+			throw SeisppError("ResamplingDefinitions constructor:  Syntax error in parameter file Arr block tagged ResamplingDefinitions");
 		exact=atof(key);
-		rop = new Resample_Operator(exact,pfsr);
+		rop = new ResampleOperator(exact,pfsr);
 		si_range.low=rop->low;
 		si_range.high=rop->high;
 		decset.insert(ROmap::value_type(si_range,*rop));
 		delete rop;
 	}
 }
-/* Higher level function that applies a Resampling_Definitions operator to an
-input time series.  Output is a new Time_Series object decimated/resampled to target
+/* Higher level function that applies a ResamplingDefinitions operator to an
+input time series.  Output is a new TimeSeries object decimated/resampled to target
 sample rate dtout.  As above if trim is true the output will be truncated at the edges to
 avoid transients from decimators.  When trim is false the edges may contain artifacts, but
 the full time window will be preserved (well, within a few samples anyway depending on 
@@ -393,11 +393,11 @@ roundoffs).
 Written:  winter and spring 2004
 Author:  Gary Pavlis
 */
-Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,double dtout,bool trim)
+TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double dtout,bool trim)
 {
-	Decimated_vector dv;
+	DecimatedVector dv;
 	Interval si_range;
-	map<Interval,Resample_Operator,Interval_Cmp>::iterator this_ro;
+	map<Interval,ResampleOperator,IntervalCompare>::iterator this_ro;
 	// First we need to find the right resampling operator for this sample rate
 	double sr_in=1.0/(ts.dt);
 	si_range.low=sr_in;
@@ -408,22 +408,22 @@ Time_Series Resample_Time_Series(Time_Series& ts, Resampling_Definitions& rd,dou
 	{
 		char  dt_str[20];
 		sprintf(dt_str,"%lf",ts.dt);
-		throw seispp_error(string("Resample_Time_Series:  ")
+		throw SeisppError(string("ResampleTimeSeries:  ")
 			+string("don't know how to resample data with sample interval ")
 			+string(dt_str));
 	}
 	dv = this_ro->second.apply(ts.ns,&(ts.s[0]),ts.dt,dtout,trim);
-	Time_Series tsout=ts;
+	TimeSeries tsout=ts;
 	tsout.dt=dtout;
 	// necessary because tsout.s is a container
 	tsout.ns = dv.d.size();
 	tsout.s.resize(dv.d.size());
 	for(int i=0;i<tsout.ns;++i) tsout.s[i]=dv.d[i];
 	tsout.t0 = ts.t0 + (dv.lag)*ts.dt; // assumes lag is in units of original sample rate
-	tsout.put_metadata("nsamp",tsout.ns);
-	tsout.put_metadata("samprate",1.0/tsout.dt);
-	tsout.put_metadata("starttime",tsout.t0);
-	tsout.put_metadata("endtime",tsout.t0+tsout.time(tsout.ns-1));
+	tsout.put("nsamp",tsout.ns);
+	tsout.put("samprate",1.0/tsout.dt);
+	tsout.put("starttime",tsout.t0);
+	tsout.put("endtime",tsout.t0+tsout.time(tsout.ns-1));
 	return(tsout);
 	} catch (...) {throw;};
 }

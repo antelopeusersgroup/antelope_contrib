@@ -1,24 +1,24 @@
 '\" te
 .TH TIME_SERIES 3 "%G"
 .SH NAME
-Time_Series - generic data object to hold scalar time series data
+TimeSeries - generic data object to hold scalar time series data
 .SH SYNOPSIS
 .nf
 #include "seispp.h"
 using namespace SEISPP;
-class Time_Series: public Basic_Time_Series, public Metadata
+class TimeSeries: public BasicTimeSeries, public Metadata
 .fi
 .SH DESCRIPTION
 .LP
-A \fITime_Series\fR object encapsulates the concept of a scalar
-time series.  A scalar time series is defined as a Basic_Time_Series
-with the dependent variable being a scalar. That is, a Time_Series
+A \fITimeSeries\fR object encapsulates the concept of a scalar
+time series.  A scalar time series is defined as a BasicTimeSeries
+with the dependent variable being a scalar. That is, a TimeSeries
 describes a function of one variable defined on a regular mesh
 of points defined by a start time, sample rate, and the number
-of samples (see Basic_Time_Series(3)).  
+of samples (see BasicTimeSeries(3)).  
 .LP
-A \fITime_Series\fR is a derived class inheriting members from
-two very different data objects.  The \fIBasic_Time_Series\fR (3)
+A \fITimeSeries\fR is a derived class inheriting members from
+two very different data objects.  The \fIBasicTimeSeries\fR (3)
 object contains basic parameters and functions common to any 
 data type sampled on a 1D regular mesh.  The \fIMetadata\fR(3) 
 object is used to provide what is effectively a variable length
@@ -30,35 +30,35 @@ the Metadata-based constructor (see below).  The Metadata concept
 and how it is expected to be applied is described in more
 detail in the metadata(3) man page.
 .LP
-The \fITime_Series\fR object itself was designed to be lightweight.
+The \fITimeSeries\fR object itself was designed to be lightweight.
 That is, the aim was to make the number of member functions
 and required data as small as reasonably possible.  Note that parameters
-common to all time-series type data are inherited from the Basic_Time_Series
+common to all time-series type data are inherited from the BasicTimeSeries
 object (i.e. sample rate, start time, etc.).  As a 
-result the actual \fITime_Series\fR
+result the actual \fITimeSeries\fR
 object definition is thus quite small.  It is:
 .nf
 .in 2c
-class Time_Series: public Basic_Time_Series , public Metadata
+class TimeSeries: public BasicTimeSeries , public Metadata
 {
 public:
         vector<double>s;
-        Time_Series();
-        Time_Series(int nsin);
-        Time_Series(Metadata& md,bool load_data);
-        Time_Series(Dbptr db, Metadata_list& mdl, Attribute_Map& am);
-        Time_Series(const Time_Series&);
-        Time_Series& operator=(const Time_Series&);
+        TimeSeries();
+        TimeSeries(int nsin);
+        TimeSeries(Metadata& md,bool load_data);
+        TimeSeries(Dbptr db, MetadataList& mdl, AttributeMap& am);
+        TimeSeries(const TimeSeries&);
+        TimeSeries& operator=(const TimeSeries&);
         void zero_gaps();
 };
 .fi
 .LP
 That is, the object mainly defines a set of constructors 
 and operators (see below) and a specific
-implementation of the Basic_Time_Series virtual function zero_gaps.  
+implementation of the BasicTimeSeries virtual function zero_gaps.  
 Most of it's contents are acquired by inheritance.
 .LP
-The primary data item added by the \fITime_Series\fR object is the
+The primary data item added by the \fITimeSeries\fR object is the
 actual sample data.  This is stored in the Standard Template Library
 (STL) vector and has the name "s".  The STL vector was chosen over 
 a regular C vector for all the standard reasons given for the STL.
@@ -70,7 +70,7 @@ C pointer to an array of doubles.  To be more precise it means
 we can do things like this:
 .nf
 .in 2c
-Time_Series x(10);
+TimeSeries x(10);
 double xC[10];
 for(int i=0;i<10;++i)x.s[i]=static_cast<double>(i);
 dcopy(10,&(x.s[0]),1,xC,1);
@@ -89,16 +89,16 @@ you can read the contents of s as a continuous vector, but
 writing to a container using that type of algorithm is dangerous.
 .SH CONSTRUCTORS
 .IP (1)
-\fITime_Series();\fR This, the default constructor, does 
+\fITimeSeries();\fR This, the default constructor, does 
 almost nothing.  It initializes all member data parameters to
 zero, sets the length of s to zero, and marks the data dead.
 .IP (2)
-\fITime_Series(int nsin);\fR This acts like the default constructor
+\fITimeSeries(int nsin);\fR This acts like the default constructor
 except it reserves nsin slots in the s vector.
 .IP (3)
-\fITime_Series(Time_Series&);\fR Standard copy constructor.
+\fITimeSeries(TimeSeries&);\fR Standard copy constructor.
 .IP (4)
-\fITime_Series(Metadata& md,bool load_data);\fR  This should be 
+\fITimeSeries(Metadata& md,bool load_data);\fR  This should be 
 viewed as a general constructor driven by a Metadata object.  
 It provides a fairly general mechanism for file-based input
 of time series data, but it has a frozen name space for a set
@@ -106,7 +106,7 @@ of parameters it needs to extract from the parent Metadata object.
 This constructor first clones the Metadata contents 
 (using the Metadata copy constructor) of the 
 object md that it is passed.  
-It then extracts data for a Basic_Time_Series from the input
+It then extracts data for a BasicTimeSeries from the input
 Metadata object using this map of external names to internal
 symbols:
 .nf
@@ -140,7 +140,7 @@ are:
 .in 2c
 
 \fIKeyword		Definition\fR
-Time_Reference_Type	tref field of Basic_Time_Series
+TimeReferenceType	tref field of BasicTimeSeries
 datatype		Data type ala CSS3.0 dtype attribute
 foff			File offset in bytes to first sample
 dir			Directory where data will be found
@@ -149,7 +149,7 @@ dfile			File name to read
 .fi
 .IP
 Note that tref is assumed to be defined by a string field.
-If Time_Reference_Type=="relative" relative times are
+If TimeReferenceType=="relative" relative times are
 assumed, otherwise the time standard is assumed to be
 absolute (epoch) times.  
 The "datatype", "dir", and "dfile" fields define the format
@@ -161,27 +161,27 @@ The current implementation is limited in capabilities due
 to the design concept for this constructor described above.
 Specifically, if datatype is anything but the host 
 float format (t4 for Suns and u4 for Intel boxes)
-thius constructor will throw a seispp_error (3) exception.  
+thius constructor will throw a SeisppError (3) exception.  
 If datatype is valid the constructor
 will attempt to open the file dir/dfile, 
 seek to foff, read ns samples 
 from the file with fread, 
 convert to doubles, and close the file.
 If any of the I/O operations fail the constructor will
-throw a seispp_error exception.  
+throw a SeisppError exception.  
 An error handler wrapped around this constructor should
-be aware that if any seispp_error exception is thrown the
+be aware that if any SeisppError exception is thrown the
 object should be considered to have valid Metadata but
 the sample data are not valid.  In particular note that in
 this situation the s vector will have
 ns slots reserved for data, but the sample data are not valid.
-This constructor may also throw a Metadata_error object 
-(see metadata(3)).  If a Metadata_error is caught the object
+This constructor may also throw a MetadataError object 
+(see metadata(3)).  If a MetadataError is caught the object
 should be discarded as it should be viewed as trash. A
-Metadata_error indicates one of the required parameters for
+MetadataError indicates one of the required parameters for
 the constructor was not found in the Metadata space.
 .IP (5)
-\fITime_Series(Dbptr db,Metadata_list& mdl,Attribute_Map& am);\fR  
+\fITimeSeries(Dbptr db,MetadataList& mdl,AttributeMap& am);\fR  
 This is a generic database-driven constructor for segmented 
 data.  That is, it makes an implicit assumption the data being
 requested are defined in single, discrete segments indexed
@@ -189,7 +189,7 @@ by a database (e.g. event-based seismograms).  The current
 implementation uses an Antelope database pointer as Dbptr but
 the user should recognize that this is not a requirement of 
 the interface.  Dbptr should be viewed as a database handle
-that points at one row of a database that defines Time_Series
+that points at one row of a database that defines TimeSeries
 data.  What that handle points to is implementation dependent.
 For this implementation it is an Antelope database pointer
 and it MUST point to one and only one row of a database view.
@@ -208,9 +208,9 @@ be read and loaded with this constructor.  It also means
 that the mechanisms used by trgaps(3) to define gaps in
 external data representations
 will also work and the 
-Time_Series object that is constructed will have 
+TimeSeries object that is constructed will have 
 such data gaps correctly defined.  
-This constructor will throw a seispp_error if there are any 
+This constructor will throw a SeisppError if there are any 
 problems.  An error handler should catch this exception, call 
 log_error(), and discard such data or abort.
 .SH OPERATORS
@@ -219,18 +219,18 @@ Current the = operator is defined and should behave as expected.
 .SH NON-MEMBER FUNCTION
 .LP
 The SEISPP library has a number of functions that operate on 
-Time_Series objects.  Thes are documented elsewhere.  Here 
+TimeSeries objects.  Thes are documented elsewhere.  Here 
 I describe only generic functions that are not seismo-centric.
 .LP
 The following is the prototype for a Datascope database output
 function:
 .nf
-void dbsave(Time_Series& ts,Dbptr db,string table, 
-	Metadata_list& md, Attribute_Map& am)
-                throw(seispp_error);
+void dbsave(TimeSeries& ts,Dbptr db,string table, 
+	MetadataList& md, AttributeMap& am)
+                throw(SeisppError);
 .fi
 .LP
-This function saves a Time_Series object to a Datascope database.
+This function saves a TimeSeries object to a Datascope database.
 The functions is fairly general, which complicates the
 interface.
 The function takes the contents of ts and writes results to 
@@ -238,7 +238,7 @@ database db storing metadata in table (usually wfdisc but
 not required).  The attributes to be stored in wfdisc are 
 extracted from the metadata(3) components of the ts object.  
 The list of names to be saved is stored in md and the
-Attribute_Map object, am, describes how these names are 
+AttributeMap object, am, describes how these names are 
 mapped to external attribute names (see metadata(3) for 
 details on this process -- dbsave uses the metadata 
 function with similar arguments).  
@@ -261,7 +261,7 @@ should be handled ONLY on input as a raw data problem.
 The viewpoint is that dbsave output is a scientific result or
 an intermediate calculation where format is not an issue.
 .LP
-Note the function will throw a seispp_error if there are any 
+Note the function will throw a SeisppError if there are any 
 problems in saving the object.  
 .SH EXAMPLE
 .LP
@@ -277,7 +277,7 @@ using namespace SEISPP;
 int main()
 {
 	string pfname("test_ts");
-        string amname="Attribute_Map";
+        string amname="AttributeMap";
         int i;
         int ierr;
 
@@ -291,30 +291,30 @@ int main()
         try {
                	cout << "Building Attribute map"<<endl;
 		// define namespace mapping using pf
-                Attribute_Map am(pf,amname);
+                AttributeMap am(pf,amname);
 		// use pf to define list of attributes to be obtained
 		// from the database
-               	Metadata_list mdl=pfget_mdlist(pf,"metadata_input");
+               	MetadataList mdl=pfget_mdlist(pf,"metadata_input");
                 Dbptr db;
                 char *dbname="testdb";
                 ierr=dbopen(dbname,"r+",&db);
                 db=dblookup(db,0,"wfdisc",0,0);
                 db.record = 0;
-		Time_Series ts(db,mdl,am);
+		TimeSeries ts(db,mdl,am);
                 cout << "Metadata contents of Time Series Read"<<endl;
                 cout << (dynamic_cast<Metadata &>(ts1));
                 cout << "Data values of trace data"<<endl;
                 for(i=0;i<ts1.ns;++i) cout << ts1.s[i] <<endl;
 		cout << "Testing assignment operator" << endl;
-                Time_Series tscopy;
+                TimeSeries tscopy;
 		tscopy=ts;
 	}
-        catch (Metadata_error mess)
+        catch (MetadataError mess)
         {
                 mess.log_error();
                 exit(-1);
         }
-        catch (seispp_error smess)
+        catch (SeisppError smess)
         {
                 smess.log_error();
                 exit(-1);
@@ -326,7 +326,7 @@ int main()
 -lseispp
 .SH "SEE ALSO"
 .nf
-Basic_Time_Series(3), seispp_error(3), metadata(3), Three_Component_Seismogram(3)
+BasicTimeSeries(3), SeisppError(3), metadata(3), ThreeComponentSeismogram(3)
 .fi
 .SH "BUGS AND CAVEATS"
 .LP

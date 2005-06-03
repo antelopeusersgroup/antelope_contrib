@@ -2,7 +2,7 @@
 namespace SEISPP
 {
 // Generic default slowness grid
-Rectangular_Slowness_Grid::Rectangular_Slowness_Grid()
+RectangularSlownessGrid::RectangularSlownessGrid()
 {
 	name=string("Generic");
 	uxlow = - 0.5;
@@ -14,7 +14,7 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid()
 }
 
 // brute force constructor 
-Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(string nm, 
+RectangularSlownessGrid::RectangularSlownessGrid(string nm, 
 	double uxl, 
 		double uyl,
 			double du1,
@@ -30,7 +30,7 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(string nm,
 	dux =du1;
 	duy=du2;
 }
-Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(Pf *pf,string tag)
+RectangularSlownessGrid::RectangularSlownessGrid(Pf *pf,string tag)
 {
 	Metadata md(pf,tag);
 	try {
@@ -44,7 +44,7 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(Pf *pf,string tag)
 	} catch (...) {throw;}
 }
 // Copy constructor needed due to string variable (always wise anyway they say)
-Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(const Rectangular_Slowness_Grid& rsg)
+RectangularSlownessGrid::RectangularSlownessGrid(const RectangularSlownessGrid& rsg)
 {
 	name=rsg.name;
 	uxlow=rsg.uxlow;
@@ -55,11 +55,11 @@ Rectangular_Slowness_Grid::Rectangular_Slowness_Grid(const Rectangular_Slowness_
 	duy=rsg.duy;
 }
 // Returns a slowness vector for a grid position i,j
-Slowness_vector Rectangular_Slowness_Grid::slow(int i, int j)
+SlownessVector RectangularSlownessGrid::slow(int i, int j)
 {
 	if(i>=nux || j>=nuy || i<0 || j<0) 
-		throw seispp_error(string("Illegal index request from Rectangular_Slowness_Grid object"));
-	Slowness_vector u;
+		throw SeisppError(string("Illegal index request from RectangularSlownessGrid object"));
+	SlownessVector u;
 	u.ux=uxlow+i*dux;
 	u.uy=uylow+j*duy;
 	return(u);
@@ -68,12 +68,12 @@ Slowness_vector Rectangular_Slowness_Grid::slow(int i, int j)
 // decided to put them here to keep things together.  Learned this
 // lesson the hard way
 //
-Slowness_vector::Slowness_vector()
+SlownessVector::SlownessVector()
 {
 	ux=0.0;
 	uy=0.0;
 }
-Slowness_vector::Slowness_vector(const Slowness_vector& old)
+SlownessVector::SlownessVector(const SlownessVector& old)
 {
 	ux=old.ux;
 	uy=old.uy;
@@ -81,11 +81,11 @@ Slowness_vector::Slowness_vector(const Slowness_vector& old)
 
 // These could (and once were) inline, but decided that was poor
 // memory management
-double Slowness_vector::mag()
+double SlownessVector::mag()
 {
 	return(hypot(ux,uy));
 }
-double Slowness_vector::azimuth()
+double SlownessVector::azimuth()
 {
 	if(this->mag() <= 0.0) return(0.0);
 	double phi;
@@ -97,7 +97,7 @@ double Slowness_vector::azimuth()
         else
                 return(phi);
 }
-double Slowness_vector::baz()
+double SlownessVector::baz()
 {
 	if(this->mag() <= 0.0) return(0.0);
 	double phi;

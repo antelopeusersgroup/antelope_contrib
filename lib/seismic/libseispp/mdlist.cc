@@ -5,7 +5,7 @@
 namespace SEISPP
 {
 
-Metadata_list pfget_mdlist(Pf *pf,string tag)
+MetadataList pfget_mdlist(Pf *pf,string tag)
 {
 	list<Metadata_typedef> mdl;
 	Metadata_typedef mdt;	

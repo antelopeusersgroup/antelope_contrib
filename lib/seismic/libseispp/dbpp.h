@@ -8,7 +8,7 @@ namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
-class Database_Handle
+class DatabaseHandle
 {
 public:
 	virtual double get_double(string)=0;
@@ -39,17 +39,17 @@ public:
 	int end_record;
 	Dbptr parent;
 };
-class Datascope_Handle : public Database_Handle
+class DatascopeHandle : public DatabaseHandle
 {
 public:
-	Datascope_Handle();
-	Datascope_Handle(string dbname,bool readonly);
-	Datascope_Handle(string dbname, string pfname, 
+	DatascopeHandle();
+	DatascopeHandle(string dbname,bool readonly);
+	DatascopeHandle(string dbname, string pfname, 
 			string tag,bool readonly);
-	Datascope_Handle(Dbptr db, Pf *pf, string tag);
-	Datascope_Handle(Datascope_Handle& dh);
-	Datascope_Handle(Dbptr dbi,Dbptr dbip);
-	~Datascope_Handle();
+	DatascopeHandle(Dbptr db, Pf *pf, string tag);
+	DatascopeHandle(DatascopeHandle& dh);
+	DatascopeHandle(Dbptr dbi,Dbptr dbip);
+	~DatascopeHandle();
 	double get_double(string);
 	int get_int(string);
 	string get_string(string);
@@ -78,7 +78,7 @@ public:
 	void subset(string sstr);
 	void group(list<string>group_keys);
 	DBBundle get_range();
-	Datascope_Handle& operator=(const Datascope_Handle&);
+	DatascopeHandle& operator=(const DatascopeHandle&);
 	void operator ++();
 	void close();  
 	// Could be private, but some processes can be made 

@@ -1,27 +1,27 @@
 '\" te
 .TH TOP_MUTE 3 "$Date$"
 .SH NAME
-Top_Mute - apply a front-end mute to various types of Time Series objects
+TopMute - apply a front-end mute to various types of Time Series objects
 .SH SYNOPSIS
 .nf
 #include "seispp.h"
 using namespace SEISPP;
-class Top_Mute
+class TopMute
 {
 public:
         double t0e, t1;
-        Time_Reference_Type reftype; 
-        Top_Mute(){t0e=1.0; t1=2.0; reftype=relative;};
-        Top_Mute(Pf *pf,string tag);
+        TimeReferenceType reftype; 
+        TopMute(){t0e=1.0; t1=2.0; reftype=relative;};
+        TopMute(Pf *pf,string tag);
 };
-void apply_top_mute(Time_Series &ts,Top_Mute& mute);
-void apply_top_mute(Three_Component_Seismogram& ts,Top_Mute& mute);
-void apply_top_mute(Time_Series_Ensemble& t, Top_Mute& mute);
-void apply_top_mute(Three_Component_Ensemble &t3c, Top_Mute& mute);
+void ApplyTopMute(TimeSeries &ts,TopMute& mute);
+void ApplyTopMute(ThreeComponentSeismogram& ts,TopMute& mute);
+void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute);
+void ApplyTopMute(ThreeComponentEnsemble &t3c, TopMute& mute);
 .fi
 .SH DESCRIPTION
 .LP
-A \fITop_Mute\fR object is an OEP implementation of the concept of
+A \fITopMute\fR object is an OEP implementation of the concept of
 a front-end or top mute common in seismic data processing.
 A mute is essentially a way to place an artificial gap in a time
 series to remove something that is not wanted.  The classic is
@@ -30,7 +30,7 @@ to remove the direct arrival from seismic reflection data.
 The mute defined here has two zones.  The front zone is a region
 that is set to zeros and the second zone is a linear ramp segment.
 The section of the data from the start to the time \fIt0e\fR
-(defined in the Top_Mute object definition) is set to zero.
+(defined in the TopMute object definition) is set to zero.
 The section between \fIt0e\fR and \fIt1\fR is the linear ramp
 segment.  Data after time \fIt1\fR are not altered.  In the
 linear ramp segment a weight is applied to each sample within
@@ -41,7 +41,7 @@ data.  This is important, for example, to avoid strong step
 offsets.
 .LP
 The \fIreftype\fR arguement is similar to the concept in
-a Basic_Time_Series(3) object.  Normally reftype would
+a BasicTimeSeries(3) object.  Normally reftype would
 be "relative" meaning the times for t0e and t1 are relative
 to the start time of the data.  If set to \fIabsolute\fR
 then the mute will be assumed to be based on an absolute
@@ -50,30 +50,30 @@ time standard.
 .LP
 This is a simple object with all of it's members public.
 It can thus be constucted manually.  The parameter file
-based constructor, \fITop_Mute(Pf *pf,string tag)\fR,
+based constructor, \fITopMute(Pf *pf,string tag)\fR,
 is provided for convenience.  \fItag\fR is an &Arr
 label for parameters to describe a top mute object. The
 tag allows multiple mutes to be defined and stored by 
 different names.  Here is an example:
 .nf
-Data_Top_Mute &Arr{
-  Time_Reference_Type relative
+Data_TopMute &Arr{
+  TimeReferenceType relative
   Zero_End_Time 1.0
   End_Time 2.0
 }
-Stack_Top_Mute &Arr{
-  Time_Reference_Type relative
+Stack_TopMute &Arr{
+  TimeReferenceType relative
   Zero_End_Time 2.0
   End_Time 3.0
 }
 .fi
 .LP
-This could be used to load two different Top_Mute definitions
-using two different tags (in this example "Data_Top_Mute" and
-"Stack_Top_Mute").  
+This could be used to load two different TopMute definitions
+using two different tags (in this example "Data_TopMute" and
+"Stack_TopMute").  
 .SH PROCEDURES
 .LP
-The overloaded versions of the function \fIapply_top_mute\fR
+The overloaded versions of the function \fIApplyTopMute\fR
 apply the specified mute to the relevant object.  
 Note the ensemble versions simply call the single object
 versions in a loop over an iterator.
@@ -91,7 +91,7 @@ parsing the parameter file.
 -lseispp
 .SH "SEE ALSO"
 .nf
-Basic_Time_Series(3), Time_Series(3), Three_Component_Seismogram(3),
+BasicTimeSeries(3), TimeSeries(3), ThreeComponentSeismogram(3),
 metadata_error(3)
 .fi
 .SH "BUGS AND CAVEATS"

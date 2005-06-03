@@ -16,7 +16,7 @@ translation of m file from Michael Bostock.
 
 Author:  Gary Pavlis
 */
-void Three_Component_Seismogram::free_surface_transformation(Slowness_vector uvec,
+void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 		 double a0, double b0) 
 {
 	double a02,b02,pslow,p2;
@@ -29,12 +29,12 @@ void Three_Component_Seismogram::free_surface_transformation(Slowness_vector uve
 	// Can't handle evanescent waves with this operator
 	double vapparent=1.0/pslow;
 	if(vapparent<a0 || vapparent<b0)
-		throw seispp_error(string("free_surface_transformation:  ")
+		throw SeisppError(string("free_surface_transformation:  ")
 		+string("cannot handle evanescent waves.\n")
 		+string("Surface velocities must be smaller than apparent velocity"));
 
 	// First the horizonal rotation
-	Spherical_Coordinate scor;
+	SphericalCoordinate scor;
 	scor.phi = M_PI_2 - uvec.azimuth(); // geo azimuth != phi of scor
 	scor.theta=0.0;
 	scor.radius=1.0;

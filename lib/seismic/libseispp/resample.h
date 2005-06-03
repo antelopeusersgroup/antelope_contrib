@@ -10,15 +10,15 @@
 
 // Defines a data structure for a vector of doubles after 
 // applying a decimator
-class Decimated_vector
+class DecimatedVector
 {
 public:
 	int lag; // lag in samples relative to parent vector (always positive)
 	vector<double>d;
-	Decimated_vector(){lag=0;};
-	Decimated_vector(int ns);
-	Decimated_vector(const Decimated_vector&);
-	Decimated_vector& operator=(const Decimated_vector&);
+	DecimatedVector(){lag=0;};
+	DecimatedVector(int ns);
+	DecimatedVector(const DecimatedVector&);
+	DecimatedVector& operator=(const DecimatedVector&);
 };
 	
 class Decimator
@@ -30,16 +30,16 @@ public:
 	Decimator(const Decimator&);
 	Decimator& operator=(const Decimator&);
 	Decimator(string fnm);
-	Decimated_vector& apply(int ns, double *di);  // apply using default for trim
-	Decimated_vector& apply(int ns, double *di,bool trim);  // overload switched for trim
-	Decimated_vector& apply(vector<double>di,bool trim);
+	DecimatedVector& apply(int ns, double *di);  // apply using default for trim
+	DecimatedVector& apply(int ns, double *di,bool trim);  // overload switched for trim
+	DecimatedVector& apply(vector<double>di,bool trim);
 	
 private:
 	vector<double>coefs;
 	int lag;  // position in coefs of zero lag point
 };
 
-class Resample_Operator
+class ResampleOperator
 {
 public:
 	double low;
@@ -47,13 +47,13 @@ public:
 	double exact;
 	list <Decimator> declist;
 
-	Resample_Operator(double e, double l, double h);
-	Resample_Operator(double e, Pf *pf);
-	Resample_Operator(const Resample_Operator& ro);
-	Resample_Operator& operator= (const Resample_Operator&);
+	ResampleOperator(double e, double l, double h);
+	ResampleOperator(double e, Pf *pf);
+	ResampleOperator(const ResampleOperator& ro);
+	ResampleOperator& operator= (const ResampleOperator&);
 	// main method.  Applies decimators to vector s and returns
 	// an stl vector as the result
-	Decimated_vector& apply(int ns,double *s,double dtin, double dtout,
+	DecimatedVector& apply(int ns,double *s,double dtin, double dtout,
 		bool trim);
 };
 class Interval
@@ -63,7 +63,7 @@ public:
 	double low;
 };
 
-class Interval_Cmp
+class IntervalCompare
 {
 public:
 	bool operator()(const Interval r1, const Interval r2) const
@@ -71,26 +71,26 @@ public:
 };
 
 /*
-class Range_Cmp
+class RangeCompare
 {
 public:
-	bool operator()(const Resample_Operator r1, const Resample_Operator r2) const
+	bool operator()(const ResampleOperator r1, const ResampleOperator r2) const
 	{return(r1.high<r2.low);};
 };
 */
 
-class Resampling_Definitions
+class ResamplingDefinitions
 {
 public:
-	map<Interval,Resample_Operator,Interval_Cmp> decset;
-	Resampling_Definitions(Pf *pf);
+	map<Interval,ResampleOperator,IntervalCompare> decset;
+	ResamplingDefinitions(Pf *pf);
 };
 
 
 // function prototypes that use the objects defined above
 
-Time_Series Resample_Time_Series(Time_Series& ts, 
-		Resampling_Definitions& rd,
+TimeSeries ResampleTimeSeries(TimeSeries& ts, 
+		ResamplingDefinitions& rd,
 			double dtout,
 				bool trim);
 

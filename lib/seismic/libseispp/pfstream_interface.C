@@ -10,7 +10,7 @@ using namespace std;
 namespace SEISPP
 {
 
-/* Gets a Time_Series_Ensemble object from a pfstream pfh.  The
+/* Gets a TimeSeriesEnsemble object from a pfstream pfh.  The
  * requested ensemble is assumed to be keyed by tag in the 
  * input pfstream.  mdlist is a list of constant metadata to 
  * copy one (the first actually) object to the ensemble metadata
@@ -19,24 +19,24 @@ namespace SEISPP
  * Normal return is a valid pointer.  A NULL pointer is
  * returned on end of input.
  *
- * This could be a constructor for a Time_Series_Ensemble but
+ * This could be a constructor for a TimeSeriesEnsemble but
  * my view was it was too ugly to be made an intrinsic part 
  * of the data object.
  */
-Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh, 
+TimeSeriesEnsemble *GetNextEnsemble(Pfstream_handle *pfh, 
 		char *tag,
-		Metadata_list& mdlist)
-		throw(seispp_error)
+		MetadataList& mdlist)
+		throw(SeisppError)
 {
 	Pf *pfin;
 	Pf_ensemble *pfe;
-	vector<Time_Series>::iterator t0;  // used to select trace 0
+	vector<TimeSeries>::iterator t0;  // used to select trace 0
 	int i;
 
 	//  This routine gets the data required to construct this
 	//  from the input pfstream.  I returns everything 
 	//  encapsulated in a single pf
-	pfin = pfstream_get_next_ensemble(pfh);
+	pfin = pfstream_GetNextEnsemble(pfh);
 	if(pfin==NULL) return(NULL);
 
 	// We next parse the input pf encapsulated in a single
@@ -45,14 +45,14 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	if(pfe==NULL)
 	{
 		pffree(pfin);
-		throw(seispp_error("get_next_ensemble: Failure parsing input pfstream"));
+		throw(SeisppError("GetNextEnsemble: Failure parsing input pfstream"));
 	}
-	Time_Series_Ensemble *tsptr=new Time_Series_Ensemble();
-	Time_Series_Ensemble& tseobj = *tsptr;
+	TimeSeriesEnsemble *tsptr=new TimeSeriesEnsemble();
+	TimeSeriesEnsemble& tseobj = *tsptr;
 	try{
 	    for(i=0;i<pfe->nmembers;++i)
 	    {
-		Time_Series *ts=Load_Time_Series_Using_Pf(pfe->pf[i]);
+		TimeSeries *ts=LoadTimeSeriesUsingPf(pfe->pf[i]);
 		tseobj.member.push_back(*ts);
 		delete ts;
 	    }
@@ -60,17 +60,17 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
 	    // metadata object
 	    //
 	    t0=tseobj.member.begin();
-	    Time_Series& t0r = *t0;
+	    TimeSeries& t0r = *t0;
 	    copy_selected_metadata(dynamic_cast<Metadata&>(t0r),dynamic_cast<Metadata&>(tseobj),mdlist);
 	}
-	catch(seispp_error serr)
+	catch(SeisppError serr)
 	{
 		throw serr;
 	}
-	catch(Metadata_error& mderr)
+	catch(MetadataError& mderr)
 	{
 		mderr.log_error();
-		throw seispp_error("get_next_ensemble: Problems building Time_Series_Ensemble object");
+		throw SeisppError("GetNextEnsemble: Problems building TimeSeriesEnsemble object");
 	}
 	return(tsptr);
 }
@@ -79,7 +79,7 @@ Time_Series_Ensemble *get_next_ensemble(Pfstream_handle *pfh,
  *  Only a single list of metadata is passed and that list is
  *  used to control copies to both the ensemble and individual
  *  3c groups.  i.e. md of the ensemble will be the same
- *  as md in each of the Three_Component_Seismogram objects.
+ *  as md in each of the ThreeComponentSeismogram objects.
  *  Overloading can be used to add a more general version of
  *  this with two different lists if wanted later, but for
  *  now I see now reason for the mess this causes.
@@ -95,20 +95,20 @@ get it working right now.
 
 
 
-Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh, 
+ThreeComponentEnsemble *GetNext3cEnsemble(Pfstream_handle *pfh, 
 		char *tag,
-		Metadata_list& mdlist)
-		throw(seispp_error)
+		MetadataList& mdlist)
+		throw(SeisppError)
 {
 	Pf *pfin;
 	Pf_ensemble *pfe;
 	int i,j;
-	vector <Three_Component_Seismogram>::iterator t0;
+	vector <ThreeComponentSeismogram>::iterator t0;
 
 	//  This routine gets the data required to construct this
 	//  from the input pfstream.  I returns everything 
 	//  encapsulated in a single pf
-	pfin = pfstream_get_next_ensemble(pfh);
+	pfin = pfstream_GetNextEnsemble(pfh);
 	if(pfin==NULL) return(NULL);
 
 	// We next parse the input pf encapsulated in a single
@@ -117,13 +117,13 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	if(pfe==NULL)
 	{
 		pffree(pfin);
-		throw(seispp_error("get_next_3c_ensemble:  Failure parsing input pfstream"));
+		throw(SeisppError("GetNext3cEnsemble:  Failure parsing input pfstream"));
 	}
 	if(pfe->ngroups<=0 || pfe->group_keys==NULL) 
-		throw(seispp_error("get_next_3c_ensemble:  Three-component traces required grouping of pfstream to define componets"));
+		throw(SeisppError("GetNext3cEnsemble:  Three-component traces required grouping of pfstream to define componets"));
 
-	Three_Component_Ensemble *tceptr=new Three_Component_Ensemble();
-	Three_Component_Ensemble& tceobj = *tceptr;
+	ThreeComponentEnsemble *tceptr=new ThreeComponentEnsemble();
+	ThreeComponentEnsemble& tceobj = *tceptr;
 	try{
 	// this is a bit prone to seg faults, but excessive error
 	// checking can also cause other problems
@@ -131,23 +131,23 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 	    {
 		    int is=pfe->group_start[i];
 		    int ie=pfe->group_end[i];
-		    Three_Component_Seismogram seis;
+		    ThreeComponentSeismogram seis;
 		    if(ie-is+1<3)
 		    {
-			    cerr << "get_next_3c_ensemble: incomplete three-component group in input stream.  Found only "
+			    cerr << "GetNext3cEnsemble: incomplete three-component group in input stream.  Found only "
 				    << ie-is+1 << "entries in group"<<endl;
 			    cerr << "Data skipped"<<endl;
 			    continue;
 		    }
 		    else if(ie-is+1>3)
 		    {
-			    cerr << "get_next_3c_ensemble (warning):  extra data in three-component grouping"<<endl;
+			    cerr << "GetNext3cEnsemble (warning):  extra data in three-component grouping"<<endl;
 			    cerr << "Found " << ie-is+1 << "entries while looking for exactly three\nUsing first three in group"<<endl;
 		    }
 		    for(int jj=0,j=pfe->group_start[i];
 				    j<=pfe->group_end[i] && jj<3;++j,++jj)
 		    {
-			    seis.x[jj]=Time_Series(pfe->pf[j]);
+			    seis.x[jj]=TimeSeries(pfe->pf[j]);
 		    }
 
 		    try {
@@ -163,38 +163,38 @@ Three_Component_Ensemble *get_next_3c_ensemble(Pfstream_handle *pfh,
 				=seis.x[0].md.get_bool("components_are_cardinal");
 		    	tceobj.member.push_back(seis);
 		    }
-		    catch (Metadata_error& mde)
+		    catch (MetadataError& mde)
 		    {
 			    mde.log_error();
-			    throw seispp_error("Error copying metadata\nEnsemble metadata may be incomplete\n");
+			    throw SeisppError("Error copying metadata\nEnsemble metadata may be incomplete\n");
 		    }
 	    }
 	    // copy the global metadata from the first 3c entry
 	    // using same list as for individual components
 	    //
 	    t0 = tceobj.member.begin();
-	    Three_Component_Seismogram& t0r = *t0;
+	    ThreeComponentSeismogram& t0r = *t0;
 	    copy_selected_metadata(t0r.md,tceobj.md,mdlist);
 	}
-	catch(seispp_error serr)
+	catch(SeisppError serr)
 	{
 		throw serr;
 	}
-	catch(Metadata_error& mderr)
+	catch(MetadataError& mderr)
 	{
 		mderr.log_error();
-		throw seispp_error("Problems building Time_Series_Ensemble object");
+		throw SeisppError("Problems building TimeSeriesEnsemble object");
 	}
 	return(tceptr);
 }
-void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
+void PfstreamSave3cseis(ThreeComponentSeismogram *sptr,
 	string tag,
 	string dir,
 	string dfile,
-	Pfstream_handle *pfh) throw(seispp_error)
+	Pfstream_handle *pfh) throw(SeisppError)
 {
 	Pf_ensemble *pfe;
-	Three_Component_Seismogram& seis=*sptr;
+	ThreeComponentSeismogram& seis=*sptr;
 
 	pfe = create_Pf_ensemble(3,0); //this function always returns or dies: no error trap
 	try {
@@ -205,10 +205,10 @@ void pfstream_save_3cseis(Three_Component_Seismogram *sptr,
 			foff = vector_fwrite(&(seis.x[i].s[0]),seis.x[i].ns,dir,dfile);
 		}
 	}
-	catch (seispp_error err)
+	catch (SeisppError err)
 	{
 		err.log_error();
-		throw seispp_error("Data not saved.  Watch for partially written files");
+		throw SeisppError("Data not saved.  Watch for partially written files");
 	}
 	Pf *pf=build_ensemble(1,tag.c_str());
 	free_Pf_ensemble(pfe);

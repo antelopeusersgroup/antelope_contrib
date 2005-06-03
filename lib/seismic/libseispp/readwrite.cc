@@ -15,7 +15,7 @@ alternative interface using dir/dfile as opposed to the simple file name in the
 function it calls.  Note this is a strange case of a function calling another of
 the same name with different argments.
 */
-long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_error)
+long int vector_fwrite(double *x,int n, string dir, string dfile) throw(SeisppError)
 {
 	string fname;
 	long int foff;
@@ -25,7 +25,7 @@ long int vector_fwrite(double *x,int n, string dir, string dfile) throw(seispp_e
 		fname=dir;
 	try {
 		foff = vector_fwrite(x,n,fname);
-	} catch ( seispp_error& err) { throw err;};
+	} catch ( SeisppError& err) { throw err;};
 	
 	return(foff);
 }
@@ -39,25 +39,25 @@ returned as a long int.  This provides a fairly bombproof way to save data
 because data are simply appended.  This avoids file name collision problems under
 an assumption that the caller is saving foff to a database table like wfdisc.
 */
-long int vector_fwrite(double *x,int n, string fname) throw(seispp_error)
+long int vector_fwrite(double *x,int n, string fname) throw(SeisppError)
 {
 	FILE *fp;
 	long int foff;
 
 	if((fp=fopen(fname.c_str(),"a")) == NULL)
-		throw seispp_error("Open failed on file "+fname);
+		throw SeisppError("Open failed on file "+fname);
 	fseek(fp,0L,2);
 	foff = ftell(fp);
 	if( fwrite(x,sizeof(double),n,fp)!=n) 
 	{
 		fclose(fp);
-		throw seispp_error("fwrite error to file "+fname);
+		throw SeisppError("fwrite error to file "+fname);
 	}
 	fclose(fp);
 	return(foff);
 }
 // similar to above but for a float vector input 
-long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_error)
+long int vector_fwrite(float *x,int n, string dir, string dfile) throw(SeisppError)
 {
 	string fname;
 	long int foff;
@@ -67,25 +67,25 @@ long int vector_fwrite(float *x,int n, string dir, string dfile) throw(seispp_er
 		fname=dir;
 	try {
 		foff = vector_fwrite(x,n,fname);
-	} catch ( seispp_error& err) { throw err;};
+	} catch ( SeisppError& err) { throw err;};
 	
 	return(foff);
 }
 
 // Again same as above but for a float vector
-long int vector_fwrite(float *x,int n, string fname) throw(seispp_error)
+long int vector_fwrite(float *x,int n, string fname) throw(SeisppError)
 {
 	FILE *fp;
 	long int foff;
 
 	if((fp=fopen(fname.c_str(),"a")) == NULL)
-		throw seispp_error("Open failed on file "+fname);
+		throw SeisppError("Open failed on file "+fname);
 	fseek(fp,0L,2);
 	foff = ftell(fp);
 	if( fwrite(x,sizeof(float),n,fp)!=n) 
 	{
 		fclose(fp);
-		throw seispp_error("fwrite error to file "+fname);
+		throw SeisppError("fwrite error to file "+fname);
 	}
 	fclose(fp);
 	return(foff);
@@ -100,16 +100,16 @@ bool trdata_is_gap(Wftype *wft,Trsample value)
 	else
 		return false;
 }
-/* Sets gap values in a Time_Series object using methods from
+/* Sets gap values in a TimeSeries object using methods from
 BRTT's trace library.  That is, in seispp I use a totally different
 method to mark gaps compared to the trace library.  The trace
-library uses magic numbers while I use a set of Time_Window 
+library uses magic numbers while I use a set of TimeWindow 
 objects.  This function scans an input vector of Trsample (float)
 values looking for gaps defined for the input datatype.  
 This is essentially a translation routine from external format
 methods for defining gaps and ones used here.
 Arguments:
-	ts - Time_Series object to define gaps for
+	ts - TimeSeries object to define gaps for
 	data_raw - input array from BRTT trace library of data
 		samples to be scanned for gaps.
 	nsamp - length of data_raw
@@ -120,21 +120,21 @@ an exception if the they are not consistent.
 
 */
 
-void set_gaps(Time_Series& ts, 
+void SetGaps(TimeSeries& ts, 
 	Trsample *data_raw, 
 		int nsamp,
 			string datatype)
-				throw(seispp_error)
+				throw(SeisppError)
 {
 	bool in_gap_now;
 	double gap_start,gap_end;
 	// some sanity checks.  Throw an exception if 
 	// any of these occur
 	if(ts.s.size()!=nsamp || ts.ns!=nsamp)
-		throw seispp_error("set_gaps:  Time_Series data size does not match pattern from raw input");
+		throw SeisppError("SetGaps:  TimeSeries data size does not match pattern from raw input");
 	string tsdtype=ts.get_string("datatype");
 	if(tsdtype!=datatype)
-		throw seispp_error("set_gaps:  Time_Series metadata definition of parent data type does not match pattern");
+		throw SeisppError("SetGaps:  TimeSeries metadata definition of parent data type does not match pattern");
 	Wftype *wft=trwftype(const_cast<char *>(datatype.c_str()));
 	// This should not be necessary but better to initialize it
 	// anyway rather than depend on a random value being accidentally set
@@ -148,7 +148,7 @@ void set_gaps(Time_Series& ts,
 			else
 			{
 				gap_end = ts.time(i-1);
-				Time_Window *tw=new Time_Window(gap_start,
+				TimeWindow *tw=new TimeWindow(gap_start,
 							gap_end);
 				ts.add_gap(*tw);
 				delete tw;
@@ -168,13 +168,13 @@ void set_gaps(Time_Series& ts,
 }
 
 
-Time_Series *Load_Time_Series_Using_Pf(Pf *pf)
+TimeSeries *LoadTimeSeriesUsingPf(Pf *pf)
 {
 	Metadata md(pf);
-	Time_Series *ts = new Time_Series(md,true);
+	TimeSeries *ts = new TimeSeries(md,true);
 	return(ts);
 }
-/* This function is used by both the Time_Series and Three_Component
+/* This function is used by both the TimeSeries and Three_Component
 versions of dbsave below.  It builds a database row from a metadata
 object, which is produced in both cases by  casting up to Metadata,
 and pushing attributes out driven by the list, mdl, and the 
@@ -189,7 +189,7 @@ Arguments:
 		(needed for consistency check).
 	mdl = defines names to be extracted from metadata to
 		write to database output
-	am = Attribute_Map object defining internal to external namespace
+	am = AttributeMap object defining internal to external namespace
 		mapping
 
 The basic algorithm is:
@@ -203,12 +203,12 @@ The basic algorithm is:
 void save_metadata_for_object(Metadata& md,
 	Dbptr db,
 		string table,
-			Metadata_list& mdl, 
-				Attribute_Map& am)
-		throw(seispp_error)
+			MetadataList& mdl, 
+				AttributeMap& am)
+		throw(SeisppError)
 {
-	Metadata_list::iterator mdli;
-	map<string,Attribute_Properties>::iterator ami,amie=am.attributes.end();
+	MetadataList::iterator mdli;
+	map<string,AttributeProperties>::iterator ami,amie=am.attributes.end();
 	string cval;
 
 	for(mdli=mdl.begin();mdli!=mdl.end();++mdli)
@@ -219,7 +219,7 @@ void save_metadata_for_object(Metadata& md,
 		if(ami==amie) 
 		{
 			dbmark(db);
-			throw seispp_error(
+			throw SeisppError(
 				string("Required attribute ")
 				+(*mdli).tag
 				+string(" cannot be mapped to output namespace"));
@@ -227,7 +227,7 @@ void save_metadata_for_object(Metadata& md,
 		if( (ami->second.db_table_name) != table)
 		{
 			dbmark(db);
-			throw seispp_error( 
+			throw SeisppError( 
 				string("dbsave (database table mismatch): attribute ")
 				+ ami->second.db_attribute_name
 				+ string(" is tagged with table name ")
@@ -244,7 +244,7 @@ void save_metadata_for_object(Metadata& md,
 					ival = dbnextid(db,
 					  const_cast<char *>
 					   (ami->second.db_attribute_name.c_str()) );
-					if(ival<0)throw seispp_error(
+					if(ival<0)throw SeisppError(
 					  	string("dbsave:  ")
 						+ ami->second.db_attribute_name
 						+ string(" is defined as integer key for table ")
@@ -258,7 +258,7 @@ void save_metadata_for_object(Metadata& md,
 					ival,0);
 				// In this case we need to push this back to metadata
 				// so it can be used downstream
-				md.put_metadata(ami->second.db_attribute_name,ival);
+				md.put(ami->second.db_attribute_name,ival);
 				break;
 			case MDreal:
 				dval = md.get_double(ami->second.internal_name);
@@ -313,10 +313,10 @@ void save_metadata_for_object(Metadata& md,
 			}
 	
 		}
-		catch (Metadata_get_error& mderr)
+		catch (MetadataGetError& mderr)
 		{
 			mderr.log_error();
-			throw seispp_error(
+			throw SeisppError(
 			    string("dbsave object failure from problem in metadata components"));
 		}
 	}
@@ -333,7 +333,7 @@ void save_metadata_for_object(Metadata& md,
 //	table = database table to write results to
 //	mdl = defines names to be extracted from metadata to
 //		write to database output
-//	am = Attribute_Map object defining internal to external namespace
+//	am = AttributeMap object defining internal to external namespace
 //		mapping
 //  The "table" argument drives the database puts.  That is the 
 //  basic algorithm is: 
@@ -343,12 +343,12 @@ void save_metadata_for_object(Metadata& md,
 	call trputwf to save data
  
 */
-int dbsave(Time_Series& ts, 
+int dbsave(TimeSeries& ts, 
 	Dbptr db,
 		string table, 
-			Metadata_list& mdl, 
-				Attribute_Map& am)
-		throw(seispp_error)
+			MetadataList& mdl, 
+				AttributeMap& am)
+		throw(SeisppError)
 {
 	int recnumber;
 	string field_name;
@@ -357,12 +357,12 @@ int dbsave(Time_Series& ts,
 	
 	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
 	recnumber = dbaddnull(db);
-	if(recnumber==dbINVALID) throw seispp_error(string("dbsave:  dbaddnull failed on table "+table));
+	if(recnumber==dbINVALID) throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
 	db.record=recnumber;
 	try {
 		save_metadata_for_object(dynamic_cast<Metadata&>(ts),
 			db,table,mdl,am);
-	} catch (seispp_error& serr)
+	} catch (SeisppError& serr)
 	{
 		dbmark(db);
 		throw serr;
@@ -406,7 +406,7 @@ int dbsave(Time_Series& ts,
 	// make sure the directory is present
 	if(makedir(dir))
 	{
-		throw seispp_error(string("makedir(dir) failed with dir=")
+		throw SeisppError(string("makedir(dir) failed with dir=")
 				+ string(dir));
 	}
 	try {
@@ -437,7 +437,7 @@ int dbsave(Time_Series& ts,
 		dbputv(db,0,"foff",static_cast<int>(foff),0);
 		return(recnumber);
 	}
-	catch (seispp_error& serr)
+	catch (SeisppError& serr)
 	{
 		// delete this database row if we had an error
 		dbmark(db);
@@ -447,57 +447,57 @@ int dbsave(Time_Series& ts,
 /*
 // Antelope database output routine.  Fragments three component
 // seismograms into scalar time series object and then uses the
-// scalar Time_Series version of dbsave.  
+// scalar TimeSeries version of dbsave.  
 // Arguments:
 //	ts = times series object to be saved
 //	db = Antelope database handle
 //	table = database table to write results to
 //	mdl = defines names to be extracted from metadata to
 //		write to database output
-//	am = Attribute_Map object defining internal to external namespace
+//	am = AttributeMap object defining internal to external namespace
 //		mapping
 
 // mdl and am define what data are pushed to the output database.
 // Two quantities are always pushed to Metadata space for each 
-// component before dbsave(Time_Series ...) is called:  hang an vang.
+// component before dbsave(TimeSeries ...) is called:  hang an vang.
 // These are the component directions using naming scheme of css3.0
 
 Author:  G Pavlis
 Written:  summer 2004
  
 */
-int dbsave(Three_Component_Seismogram& tcs, 
+int dbsave(ThreeComponentSeismogram& tcs, 
 	Dbptr db,
 		string table, 
-			Metadata_list& mdl, 
-				Attribute_Map& am,
+			MetadataList& mdl, 
+				AttributeMap& am,
 					vector<string>chanmap,
 						bool output_as_standard)
 {
 	int irec;
 	try {
 		if(output_as_standard) tcs.rotate_to_standard();
-		auto_ptr<Time_Series>x1(Extract_Component(tcs,0));
+		auto_ptr<TimeSeries>x1(ExtractComponent(tcs,0));
 		if(output_as_standard)
 		{
-			x1->put_metadata("vang",90.0);
-			x1->put_metadata("hang",0.0);
+			x1->put("vang",90.0);
+			x1->put("hang",0.0);
 		}
-		x1->put_metadata("chan",chanmap[0]);
-		auto_ptr<Time_Series>x2(Extract_Component(tcs,1));
+		x1->put("chan",chanmap[0]);
+		auto_ptr<TimeSeries>x2(ExtractComponent(tcs,1));
 		if(output_as_standard)
 		{
-			x2->put_metadata("vang",90.0);
-			x2->put_metadata("hang",90.0);
+			x2->put("vang",90.0);
+			x2->put("hang",90.0);
 		}
-		x2->put_metadata("chan",chanmap[1]);
-		auto_ptr<Time_Series>x3(Extract_Component(tcs,2));
+		x2->put("chan",chanmap[1]);
+		auto_ptr<TimeSeries>x3(ExtractComponent(tcs,2));
 		if(output_as_standard)
 		{
-			x3->put_metadata("vang",0.0);
-			x3->put_metadata("hang",0.0);
+			x3->put("vang",0.0);
+			x3->put("hang",0.0);
 		}
-		x3->put_metadata("chan",chanmap[2]);
+		x3->put("chan",chanmap[2]);
 		irec=dbsave(*x1,db,table,mdl,am);
 		irec=dbsave(*x2,db,table,mdl,am);
 		irec=dbsave(*x3,db,table,mdl,am);
@@ -518,25 +518,25 @@ int dbsave(Three_Component_Seismogram& tcs,
 // the dmatrix are in FORTRAN order with components of 
 // the seismogram in row order.  (i.e. data are multiplexed
 // in the vector sequence stored in output)  
-int dbsave(Three_Component_Seismogram& tcs, 
+int dbsave(ThreeComponentSeismogram& tcs, 
 	Dbptr db,
 		string table, 
-			Metadata_list& mdl, 
-				Attribute_Map& am)
+			MetadataList& mdl, 
+				AttributeMap& am)
 {
 	int recnumber;
 	string field_name;
 
 	if(!tcs.live) return(-1);  // return immediately if this is marked dead
 	if(table=="wfdisc")
-		throw seispp_error(string("dbsave:  Using wrong dbsave function ")
-			+string("for Three_Component_Seismogram object.\n")
+		throw SeisppError(string("dbsave:  Using wrong dbsave function ")
+			+string("for ThreeComponentSeismogram object.\n")
 			+string("Cannot save to wfdisc with this function.\n"));
 	
 	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
 	recnumber = dbaddnull(db);
 	if(recnumber==dbINVALID) 
-		throw seispp_error(string("dbsave:  dbaddnull failed on table "+table));
+		throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
 	db.record=recnumber;
 	try {
 		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
@@ -560,7 +560,7 @@ int dbsave(Three_Component_Seismogram& tcs,
 		if(makedir(dir))
 		{
 			dbmark(db);
-			throw seispp_error(string("makedir(dir) failed with dir=")
+			throw SeisppError(string("makedir(dir) failed with dir=")
 					+ string(dir));
 		}
 		// Note we always write these as doubles.  I don't
@@ -575,7 +575,7 @@ int dbsave(Three_Component_Seismogram& tcs,
 		dbputv(db,0,"foff",static_cast<int>(foff),0);
 		return(recnumber);
 	}
-	catch (seispp_error& serr)
+	catch (SeisppError& serr)
 	{
 		// delete this database row if we had an error
 		dbmark(db);

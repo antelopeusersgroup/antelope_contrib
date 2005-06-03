@@ -1,23 +1,23 @@
 '\" te
-.TH Datascope_Handle 3 "%G"
+.TH DatascopeHandle 3 "%G"
 .SH NAME
-Datascope_Handle - handle object to manipulate Datascope db
+DatascopeHandle - handle object to manipulate Datascope db
 .SH SYNOPSIS
 .nf
 #include "dbpp.h"
 using namespace SEISPP;
-class Datascope_Handle : public Database_Handle
+class DatascopeHandle : public DatabaseHandle
 .fi
 .SH DESCRIPTION
 .LP
-The \fIDatascope_Handle\fR object is an instantiation of an 
-abstract object called \fIDatabase_Handle\fR that is intended
+The \fIDatascopeHandle\fR object is an instantiation of an 
+abstract object called \fIDatabaseHandle\fR that is intended
 as a generic interface to any relational database system.
-The \fIDatascope_Handle\fR is an implementation for the
+The \fIDatascopeHandle\fR is an implementation for the
 Dan Quinlan's Datascope dbms maintained commercially by BRTT
 and used mainly in seismology.    
 .LP
-A \fIDatabase_Handle\fR must be understood to mean four fundamental
+A \fIDatabaseHandle\fR must be understood to mean four fundamental
 things the user must keep in mind:
 .IP (1)
 The object is a handle you should think of like a FILE * in 
@@ -28,7 +28,7 @@ it is.
 The handle attempts to encapsulate concepts of a relational
 database.  The interface should not be viewed as totally
 general, but encapsulating most of the common functionality
-of a Datascope database.  The Datascope_Handle allows any
+of a Datascope database.  The DatascopeHandle allows any
 Datascope function calls by making the Dbptr public.
 .IP (3) 
 You should think of the handle as a unified interface into a database
@@ -36,22 +36,22 @@ view.  The view can and should be thought of as a table.  The table
 has a current row position analogous to file offset in low level
 C read and write functions.  The index, however, is not defined by bytes
 but by row position in the table.  This could, perhaps, have been
-implemented as an iterator as in the STL, but for a Datascope_Handle
+implemented as an iterator as in the STL, but for a DatascopeHandle
 it can be viewed as a hidden implicit variable OR just realize what 
 it is in this instantiation -- db.record.  
 .IP (4)
-The \fIDatascope_Handle\fR extends the abstract base class
-\fIDatabase_Handle\fR.  To maximize portability of code to
+The \fIDatascopeHandle\fR extends the abstract base class
+\fIDatabaseHandle\fR.  To maximize portability of code to
 use the generic interface to other databases, which 
 is only vaporware at this writing, avoid anything but the
 pure virtual functions defined under the definition
-of the \fIDatabase_Handle\fR object.
+of the \fIDatabaseHandle\fR object.
 .SH OBJECT DEFINITIONS
 .LP
 This is the exact definition of the abstract base class:
 .nf
 .in 2c
-class Database_Handle
+class DatabaseHandle
 {
 public:
         virtual double get_double(string)=0;
@@ -102,19 +102,19 @@ define the tables to be joined.  In the \fIsubset\fR function
 the string is the subset clause that could be implementation 
 dependent.
 .LP
-The Datascope_Handle defines all of the above virtual 
+The DatascopeHandle defines all of the above virtual 
 functions plus a few others.  The full definition is:
 .nf
 .in 2c
-class Datascope_Handle : public Database_Handle
+class DatascopeHandle : public DatabaseHandle
 {
 public:
-        Datascope_Handle(string dbname,bool readonly);
-        Datascope_Handle(string dbname, string pfname,
+        DatascopeHandle(string dbname,bool readonly);
+        DatascopeHandle(string dbname, string pfname,
                         string tag,bool readonly);
-        Datascope_Handle(Dbptr db, Pf *pf, string tag);
-        Datascope_Handle(Datascope_Handle& dh);
-        ~Datascope_Handle();
+        DatascopeHandle(Dbptr db, Pf *pf, string tag);
+        DatascopeHandle(DatascopeHandle& dh);
+        ~DatascopeHandle();
         double get_double(string);
         int get_int(string);
         string get_string(string);
@@ -140,7 +140,7 @@ public:
         void natural_join(string t2);
         void subset(string sstr);
         void group(list<string>group_keys);
-        Datascope_Handle& operator=(const Datascope_Handle&);
+        DatascopeHandle& operator=(const DatascopeHandle&);
         void operator ++();
         void close();
         Dbptr db;
@@ -151,7 +151,7 @@ private:
 .fi
 .LP
 The following function definitions are appended from the 
-\fIDatabase_Handle\fR definition:
+\fIDatabaseHandle\fR definition:
 .LP
 The \fInatural_join\fR functions are added to use the
 Datascope feature of natural joins that do not require a key.
@@ -187,7 +187,7 @@ a form of construction is resource acquisition.  That is, they
 build the handle, but may do more and will throw an exception 
 if the resource cannot be acquired.
 .LP
-The \fIDatascope_Handle(string dbname,bool readonly)\fR constructor
+The \fIDatascopeHandle(string dbname,bool readonly)\fR constructor
 calls dbopen on the database with name dbname.  If readonly is
 true it is opened readonly.  Otherwise it is opened as r+. 
 Be aware this is a VERY simple constructor and the Dbptr will
@@ -200,8 +200,8 @@ this would be to call this constructor and immediately call the
 These two constructors are actually very similar:
 .nf
 .in 2c
-Datascope_Handle(Dbptr db, Pf *pf, string tag);
-Datascope_Handle(string dbname, string pfname,
+DatascopeHandle(Dbptr db, Pf *pf, string tag);
+DatascopeHandle(string dbname, string pfname,
                    string tag,bool readonly);
 .fi
 .LP
@@ -218,7 +218,7 @@ the parameter file using the Tbl data tagged with \fItag\fR,
 and then release pf.  The \fIreadonly\fR argument is 
 as described above and is relatively self explanatory.      
 .LP
-The copy constructor, \fIDatascope_Handle(Datascope_Handle& dh)\fR,
+The copy constructor, \fIDatascopeHandle(DatascopeHandle& dh)\fR,
 is also defined.  This is important to get a new handle to be manipulated
 to produce a different view while retaining the original, parent
 handle.  For example, to keep a copy of a view sorted in two different
@@ -250,8 +250,8 @@ handle description above.
 The = operator is defined and simply copies the Dbptr.  
 .SH EXCEPTIONS
 .LP
-Most functions in this object can and will throw a seispp_dberror
-exception in the event of a problem. Use the seispp_dberror log_error
+Most functions in this object can and will throw a SeisppDberror
+exception in the event of a problem. Use the SeisppDberror log_error
 function to dump the elog and internal message passed through the
 throw mechanism.  (Note this can be redundant and quite verbose.
 This assumes the model that exceptions are rare events.)  
@@ -260,7 +260,7 @@ This assumes the model that exceptions are rare events.)
 -lseispp
 .SH "SEE ALSO"
 .nf
-seispp_error.3
+SeisppError.3
 .fi
 .SH "BUGS AND CAVEATS"
 .LP

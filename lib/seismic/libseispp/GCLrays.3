@@ -19,7 +19,7 @@ public:
         RayPathSphere(int n)
         {npts=n; r=new double[n], delta=new double[n], t=new double[n];};
         // This fully parametrized version constructs a full path
-        RayPathSphere(Velocity_Model_1d& vm,
+        RayPathSphere(VelocityModel_1d& vm,
                 double p, double zmax, double tmax, double del,
                 const string mode);
         RayPathSphere(const RayPathSphere&);
@@ -67,7 +67,7 @@ earth geometry.
 .SH CONSTRUCTORS
 .LP
 The main constructor that should be used is the fully parameterized 
-constructor containing the Velocity_Model_1d object with the name
+constructor containing the VelocityModel_1d object with the name
 vmod.  A simple unparameterized constructor and one with a size parameter,
 n, are defined should not normally be used.
 .LP
@@ -138,13 +138,13 @@ inconsistent.  If thrown these errors indicate a programming error
 that needs to be fixed.
 .LP
 The depth member function of the RayPathSphere object will throw
-a seispp_error if the requested depth index position is outside
+a SeisppError if the requested depth index position is outside
 the range of the ray defined in the object.
 .SH LIBRARY
 -lgclgrid -lseispp
 .SH "SEE ALSO"
 .nf
-gclgrid(3), dmatrix(3), pathintegral(3), seispp_error(3)
+gclgrid(3), dmatrix(3), pathintegral(3), SeisppError(3)
 .fi
 .SH AUTHOR
 .nf

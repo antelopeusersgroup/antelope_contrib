@@ -42,7 +42,7 @@ namespace SEISPP
  * tmax large.
  */
 
-RayPathSphere::RayPathSphere(Velocity_Model_1d& vmod,
+RayPathSphere::RayPathSphere(VelocityModel_1d& vmod,
 		double u, double zmax, double tmax,
 		double del, const string mode)
 {
@@ -144,7 +144,7 @@ double RayPathSphere::depth(int ip)
 {
 	const double R0=6378.17;  
 	if( (ip>=npts) || (ip<0) )
-		throw seispp_error("RayPathSphere::depth index out of range");
+		throw SeisppError("RayPathSphere::depth index out of range");
 	else
 		return(R0-r[ip]);
 }
