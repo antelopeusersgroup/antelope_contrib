@@ -1583,7 +1583,7 @@ sub plot_stations {
 	my( $cmd ) = "cat $stas_tempfile | psxy $V -P " .
 			"-G$Mapspec{sta_color} -W$Mapspec{sta_color} " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
-			"-St$Mapspec{city_symbols_inches}i -G0 " .
+			"-St$Mapspec{city_symbols_inches}i " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
