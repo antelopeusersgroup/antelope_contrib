@@ -1,0 +1,65 @@
+Attribute period
+        Real (12)
+        Format ( "%12.3f" )
+        Null ( "-89999999999" )
+        Units ( "seconds" )
+        Description ( "period for measurement" )
+        ;
+
+Attribute pc_1
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "1 percentile of acceleration specta" )
+	Null ( "-999.000" )
+	Detail {
+	        1 percentile of acceleration specta in dB relative 
+                to 1 ((m/sec**2)**2)/Hz
+	}
+	;
+
+Attribute pc_5
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "5 percentile of acceleration specta" )
+	Null ( "-999.000" )
+	Detail {
+	        5 percentile of acceleration specta in dB relative 
+                to 1 ((m/sec**2)**2)/Hz
+	}
+	;
+
+Attribute pc_25
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "25 percentile of acceleration specta" )
+	Null ( "-999.000" )
+	Detail {
+	        25 percentile of acceleration specta in dB relative 
+                to 1 ((m/sec**2)**2)/Hz
+	}
+	;
+
+
+Attribute pc_50
+	Real (12)
+	Format ( "%12.3f" )
+	Description ( "50 percentile of acceleration specta" )
+	Null ( "-999.000" )
+	Detail {
+	        50 percentile of acceleration specta in dB relative 
+                to 1 ((m/sec**2)**2)/Hz
+	}
+	;
+
+Relation gsnspec
+	Fields ( sta chan insname period fc pc_1 pc_5 pc_25 pc_50 time endtime lddate )
+	Primary ( sta chan per time::endtime )
+	Description ( "gsn ground noise levels" )
+	Detail {
+		The gsnspec relation stores 1, 5, 25, 50 percentile spectral
+                levels for GSN stations as calculated by 
+                Berger, Davis, and Ekstrom (2004) 
+                Ambient Earth Noise: A survey of the Global Seismic Network
+                JGR Vol 109, B11307, doi:10.1029/2004JB003408
+	}
+	;
