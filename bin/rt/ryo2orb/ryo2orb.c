@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <iso/float_iso.h>
 #include <thread.h>
 #include <synch.h>
 #include <errno.h>
@@ -31,6 +32,7 @@
 #include "bns.h"
 #include "swapbytes.h"
 #include "brttutil.h"
+#include "xtra.h"
 
 #define DEFAULT_SEGTYPE "-"
 #define DEFAULT_CALIB 0
@@ -64,6 +66,8 @@ double 	GPS_epoch;
 int 	GPS_leapseconds;
 int 	Multiplex_stations;
 int 	Max_nsamples_per_channel;
+int 	Status_interval_sec;
+char	*Rtd_server;
 char	*Net;
 double	Samprate_tolerance;
 double	Longitude_branchcut_deg;
@@ -71,6 +75,8 @@ double	ECEF_semimajor_axis;
 double	ECEF_flattening;
 Arr 	*Channel_names = 0;
 Arr 	*Stachan_calibs = 0;
+Arr 	*Sta_statuses = 0;
+mutex_t Sta_statuses_mutex;
 Arr 	*Track_packets = 0;
 Arr 	*Track_packetchans = 0;
 Pmtfifo	*RYO2orbPackets_mtf;
@@ -123,8 +129,20 @@ typedef struct StachanCalib {
 	double	multdataby;
 	double	calper;
 	char	segtype[2];
+	int	announced;
 
 } StachanCalib;
+
+typedef struct StaStatus {
+
+	char	con[10];
+	double	pdop;
+	int	satellite_count;
+	char	psig[20];
+	char	pmeth[20];
+	char	log[STRSZ];
+
+} StaStatus;
 
 typedef struct RYO2orbPacket {
 
@@ -185,6 +203,177 @@ usage()
 	return;
 }
 
+StaStatus *
+new_StaStatus()
+{
+	StaStatus *ss;
+
+	allot( StaStatus *, ss, 1 );
+
+	ss->pdop = -1;
+	ss->satellite_count = -1;
+
+	strcpy( ss->con, "waiting" );
+	strcpy( ss->psig, "-" );
+	strcpy( ss->pmeth, "-" );
+
+	strcpy( ss->log, "" );
+
+	return ss;
+}
+
+StaStatus *
+add_StaStatus( char *sta )
+{
+	StaStatus *ss;
+
+	if( ! strcmp( sta, "default" ) ) {
+
+		return (StaStatus *) NULL;
+	}
+
+	mutex_lock( &Sta_statuses_mutex );
+
+	if( ( ss = (StaStatus *) getarr( Sta_statuses, sta ) ) == (StaStatus *) NULL ) {
+		
+		ss = new_StaStatus();
+
+		setarr( Sta_statuses, sta, (void *) ss );
+	}
+
+	mutex_unlock( &Sta_statuses_mutex );
+
+	return ss;
+}
+
+StaStatus *
+get_StaStatus( char *sta ) 
+{
+	StaStatus *ss;
+
+	mutex_lock( &Sta_statuses_mutex );
+
+	ss = (StaStatus *) getarr( Sta_statuses, sta );
+
+	mutex_unlock( &Sta_statuses_mutex );
+
+	return ss;
+}
+
+void
+update_StaStatus( RYO2orbPacket *r2opkt )
+{
+	StaStatus *ss;
+	char	line[STRSZ];
+	SatelliteInfo *si;
+	int	isat;
+
+	if( ( ss = get_StaStatus( r2opkt->site_id ) ) == (StaStatus *) NULL ) {
+		
+		ss = add_StaStatus( r2opkt->site_id );
+	}
+
+	strcpy( ss->con, "yes" );
+
+	if( r2opkt->sat_info_present ) {
+
+		ss->pdop = r2opkt->pdop;
+		ss->satellite_count = r2opkt->satellite_count;
+
+	} else {
+
+		ss->pdop = -1;
+		ss->satellite_count = -1;
+	}
+
+	switch( r2opkt->position_signal ) {
+	case RYO_SIGNAL_UNDETERMINED:
+		strcpy( ss->psig, "Undetermined" );
+		break;
+	case RYO_SIGNAL_L1:
+		strcpy( ss->psig, "L1" );
+		break;
+	case RYO_SIGNAL_L1L2:
+		strcpy( ss->psig, "L1/L2" );
+		break;
+	}
+
+	switch( r2opkt->position_method ) {
+	case RYO_METHOD_UNDETERMINED:
+		strcpy( ss->pmeth, "Undetermined" );
+		break;
+	case RYO_METHOD_ABSCODE:
+		strcpy( ss->pmeth, "Absolute code" );
+		break;
+	case RYO_METHOD_RELCODE:
+		strcpy( ss->pmeth, "Relative code" );
+		break;
+	case RYO_METHOD_PHASEPLUSCODE:
+		strcpy( ss->pmeth, "Phase + code" );
+		break;
+	}
+
+	if( r2opkt->sat_info_present ) {
+		
+		sprintf( ss->log, "satellites for %s ", r2opkt->site_id );
+
+		sprintf( line, "(%s;", "SV PRN" );
+		strcat( ss->log, line );
+		sprintf( line, "%s;", "Elev" );
+		strcat( ss->log, line );
+		sprintf( line, "%s;", "Az" );
+		strcat( ss->log, line );
+		sprintf( line, "%s;", "flags" );
+		strcat( ss->log, line );
+		sprintf( line, "%s;", "eph_avail" );
+		strcat( ss->log, line );
+		sprintf( line, "%s;", "L1_track" );
+		strcat( ss->log, line );
+		sprintf( line, "%s):", "L2_track" );
+		strcat( ss->log, line );
+		sprintf( line, "\n" );
+		strcat( ss->log, line );
+
+		for( isat = 0; isat < r2opkt->satellite_count; isat++ ) {
+
+			si = gettbl( r2opkt->satellites, isat );
+
+			sprintf( line, "%3d:", si->sv_prn );
+			strcat( ss->log, line );
+			sprintf( line, "%4d;", si->elevation );
+			strcat( ss->log, line );
+			sprintf( line, "%4d;", si->azimuth );
+			strcat( ss->log, line );
+			sprintf( line, "%2d;", si->prn_flags );
+			strcat( ss->log, line );
+			sprintf( line, "%2d;", si->ephemeris_available );
+			strcat( ss->log, line );
+			sprintf( line, "%2d;", si->L1_track );
+			strcat( ss->log, line );
+			sprintf( line, "%8d", si->L2_track );
+			strcat( ss->log, line );
+			sprintf( line, "\n" );
+			strcat( ss->log, line );
+		}
+
+	} else {
+
+		sprintf( ss->log, "" );
+	}
+
+	return;
+}
+
+void
+free_StaStatus( void *ssp )
+{
+	StaStatus *ss = (StaStatus *) ssp;
+
+	free( ss );
+
+	return;
+}
+
 StachanCalib *
 new_StachanCalib()
 {
@@ -195,6 +384,19 @@ new_StachanCalib()
 	memset( scc, '\0', sizeof( scc ) );
 
 	return scc;
+}
+
+StachanCalib *
+dup_StachanCalib( void *sccp )
+{
+	StachanCalib *scc = (StachanCalib *) sccp;
+	StachanCalib *dup;
+
+	dup = new_StachanCalib();
+
+	memcpy( dup, scc, sizeof( scc ) );
+
+	return dup;
 }
 
 StachanCalib *
@@ -212,9 +414,50 @@ get_StachanCalib( char *site_id, char *channel_identifier )
 	if( scc == (StachanCalib *) NULL ) {
 		
 		scc = (StachanCalib *) getarr( Stachan_calibs, key_default );
+
+		scc = dup_StachanCalib( scc );
+
+		setarr( Stachan_calibs, key_specific, (void *) scc );
 	}
 
 	return scc;
+}
+
+void
+announce_StachanCalib( void *sccp, char *sta, char *chan ) 
+{
+	StachanCalib *scc = (StachanCalib *) sccp;
+	static Dbptr db = { dbINVALID, dbINVALID, dbINVALID, dbINVALID };
+
+	if( db.database == dbINVALID ) {
+
+		db = dbtmp( "rt1.0" );
+
+		db = dblookup( db, "", "wfoffset", "", "dbSCRATCH" );
+	}
+
+	if( abs( scc->offset ) < DBL_MIN ) {
+		
+		return;
+	}
+
+	dbputv( db, 0, "sta", sta, 
+		       "chan", chan, 
+		       "time", now(), 
+		       "endtime", 9999999999.999,
+		       "valoffset", scc->offset,
+		       0 );
+
+	if( db2orbpkt( db, Orbfd ) < 0 ) {
+		
+		elog_complain( 0, "Orbput failed for wfoffset packet!\n" );
+
+	} else {
+		
+		scc->announced++;
+	}
+
+	return;
 }
 
 void
@@ -1032,6 +1275,179 @@ more_packet_data( ImportThread *it )
 }
 
 void
+send_log( char *log, char *srcname )
+{
+	static Packet *pkt = 0;
+	static char *buf = 0;
+	static int nbytes = 0;
+	static int packetsz = 0;
+	char	auto_srcname[STRSZ];
+	double	time;
+
+	if( ! strcmp( log, "" ) ) {
+		
+		return;
+	}
+
+	if( pkt == (Packet *) NULL ) {
+
+		pkt = newPkt();
+		pkt->pkttype = suffix2pkttype( "log" );
+	}
+
+	pkt->string = strdup( log );
+	pkt->string_size = strlen(log);
+
+	if( pkt->string_size > 512 ) {
+		elog_complain( 0, "Warning: log message exceeds 512 bytes\n" );
+	}
+
+	if( stuffPkt( pkt, auto_srcname, &time, &buf, &nbytes, &packetsz ) < 0 ) {
+		
+		elog_complain( 0, "stuffPkt failed for log message!\n" );
+	}
+
+	if( orbput( Orbfd, srcname, now(), buf, nbytes ) < 0 ) {
+
+		elog_complain( 0, "orbput failed for log message!\n" );
+	}
+
+	return;
+}
+
+void *
+ryo2orb_status( void *arg )
+{
+	void	*vstk;
+	char	*pf_string;
+	char	srcname[ORBSRCNAME_SIZE];
+	char	log_srcname[ORBSRCNAME_SIZE];
+	char	line[STRSZ];
+	char	hostname[STRSZ];
+	Packet *pkt = 0;
+	char *buf = 0;
+	int nbytes = 0;
+	int packetsz = 0;
+	double	time;
+	Tbl	*keys;
+	int	ikey;
+	char	*key;
+	StaStatus *ss;
+	int	true = 1;
+
+	my_hostname( hostname );
+
+	pkt = newPkt();
+	pkt->pkttype = suffix2pkttype( "pf" );
+
+	while( true ) {
+
+		vstk = 0;
+
+		pushstr( &vstk, "target ryo2orb\n" );
+		pushstr( &vstk, "model ryo\n" );
+		pushstr( &vstk, "type dl\n" );
+
+		sprintf( line, "pid %d\n", getpid() );
+		pushstr( &vstk, line );
+
+		sprintf( line, "itvl %d\n", Status_interval_sec ); 
+		pushstr( &vstk, line );
+
+		sprintf( line, "hostname %s\n", hostname );
+		pushstr( &vstk, line );
+	
+		pushstr( &vstk, "dls &Arr{\n" );
+
+		mutex_lock( &Sta_statuses_mutex );
+
+		keys = keysarr( Sta_statuses );
+
+		for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
+
+			key = gettbl( keys, ikey );
+
+			ss = getarr( Sta_statuses, key );
+
+			if( ss == (StaStatus *) NULL ) {
+
+				elog_complain( 0, 
+					"Unexpected null sta in status info!\n" );
+				continue;
+			}
+
+			sprintf( line, "%s &Arr{\n", key );
+			pushstr( &vstk, line );
+
+			sprintf( line, "con %s\n", ss->con );
+			pushstr( &vstk, line );
+
+			sprintf( line, "inp tcp:%s\n", Rtd_server );
+			pushstr( &vstk, line );
+
+			sprintf( line, "pdop %f\n", ss->pdop );
+			pushstr( &vstk, line );
+
+			sprintf( line, "satcnt %d\n", ss->satellite_count );
+			pushstr( &vstk, line );
+
+			sprintf( line, "psig %s\n", ss->psig );
+			pushstr( &vstk, line );
+
+			sprintf( line, "pmeth %s\n", ss->pmeth );
+			pushstr( &vstk, line );
+
+			pushstr( &vstk, "}\n" );
+		}	
+
+		for( ikey = 0; ikey < maxtbl( keys ); ikey++ ) {
+
+			key = gettbl( keys, ikey );
+
+			ss = getarr( Sta_statuses, key );
+
+			sprintf( log_srcname, "%s_%s/log", Net, key );
+
+			send_log( ss->log, log_srcname );
+		}
+
+
+		freetbl( keys, 0 );
+	
+		mutex_unlock( &Sta_statuses_mutex );
+
+		pushstr( &vstk, "}\n" );
+	
+		pf_string = popstr( &vstk, 1 );
+
+		pfcompile( pf_string, &pkt->pf );
+
+		pkt->time = now();
+
+		if( stuffPkt( pkt, srcname, &time, &buf, &nbytes, &packetsz ) < 0 ) {
+			
+			elog_complain( 0, "stuffPkt failed for status packet!\n" );
+		}
+
+		sprintf( srcname, "%s/pf/st", Net );
+
+		if( orbput( Orbfd, srcname, time, buf, nbytes ) < 0 ) {
+		
+			elog_complain( 0, "Orbput failed for status packet!\n" );
+		}
+
+		free( pf_string );
+
+		pffree( pkt->pf );
+		pkt->pf = 0;
+
+		sleep( Status_interval_sec );
+	}
+
+	return NULL;
+}
+
+void
 flush_packet( Packet *pkt )
 {
 	PktChannel *pktchan;
@@ -1134,6 +1550,11 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 		return;
 	}
 
+	if( scc->announced == 0 ) {
+
+		announce_StachanCalib( scc, r2opkt->site_id, chan );
+	}
+
 	sprintf( key, "%s:%s", r2opkt->site_id, chan );
 
 	if( ( pktchan = getarr( Track_packetchans, key ) ) == (PktChannel *) NULL ) {
@@ -1165,7 +1586,6 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 
 		pktchan->nsamp = 0;
 		pktchan->samprate = NULL_SAMPRATE;
-
 	} 
 	
 	if( pktchan->nsamp >= Max_nsamples_per_channel && 
@@ -1388,6 +1808,8 @@ ryo2orb_convert( void *arg )
 			enqueue_ryopkt( r2opkt, Net, r2opkt->site_id );
 		}
 
+		update_StaStatus( r2opkt );
+
 		free_RYO2orbPacket( r2opkt );
 	}
 
@@ -1456,6 +1878,7 @@ load_stachan_calibs( Pf *pf )
 	StachanCalib *scc;
 
 	Stachan_calibs = newarr( 0 );
+	Sta_statuses = newarr( 0 );
 
 	pfget( pf, "stachan_calibs", (void **) &pfstachan_calibs );
 
@@ -1464,6 +1887,8 @@ load_stachan_calibs( Pf *pf )
 	for( ista = 0; ista < maxtbl( stas ); ista++ ) {
 
 		sta = gettbl( stas, ista );
+
+		add_StaStatus( sta );
 
 		chans = pfget_arr( pfstachan_calibs, sta );
 
@@ -1477,7 +1902,7 @@ load_stachan_calibs( Pf *pf )
 
 			aline = (char *) getarr( chans, chanid );
 
-			sscanf( aline, "%lf %lf %lf %s", 
+			sscanf( aline, "%lg %lg %lg %s", 
 					&scc->offset,
 					&scc->multdataby, 
 					&scc->calper,
@@ -1512,10 +1937,10 @@ main( int argc, char **argv )
 {
 	char	c;
 	char	*orbname = 0;
-	char	*rtd_server = 0;
 	int	rc;
 	thread_t rtd_import_tid;
 	thread_t ryo_convert_tid;
+	thread_t ryo_status_tid;
 	char	*pfname = "ryo2orb";
 	Pf	*pf;
 
@@ -1551,7 +1976,7 @@ main( int argc, char **argv )
 
 	} else {
 		
-		rtd_server = argv[optind++];
+		Rtd_server = argv[optind++];
 		orbname = argv[optind++];
 	}
 
@@ -1562,6 +1987,7 @@ main( int argc, char **argv )
 
 	Multiplex_stations = pfget_boolean( pf, "multiplex_stations" );
 	Max_nsamples_per_channel = pfget_int( pf, "max_nsamples_per_channel" );
+	Status_interval_sec = pfget_int( pf, "status_interval_sec" );
 
 	Net = pfget_string( pf, "net" );
 
@@ -1580,6 +2006,16 @@ main( int argc, char **argv )
 		elog_notify( 0, 
 			"Establishing orb connection to orb '%s'...", 
 			orbname );
+	}
+
+	mutex_init( &Sta_statuses_mutex, USYNC_THREAD, NULL );
+
+	rc = thr_create( NULL, 0, ryo2orb_status, 0, 0, &ryo_status_tid );
+
+	if( rc != 0 ) {
+
+		die( 1, "Failed to create ryo_status thread, "
+			"thr_create error %d\n", rc );
 	}
 
 	if( ( Orbfd = orbopen( orbname, "w&" ) ) < 0 ) {
@@ -1605,7 +2041,7 @@ main( int argc, char **argv )
 			"thr_create error %d\n", rc );
 	}
 
-	rc = thr_create( NULL, 0, rtd_import, rtd_server, 0, &rtd_import_tid );
+	rc = thr_create( NULL, 0, rtd_import, Rtd_server, 0, &rtd_import_tid );
 
 	if( rc != 0 ) {
 

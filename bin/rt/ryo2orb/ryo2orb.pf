@@ -9,7 +9,8 @@ ECEF_flattening     	0.00335281066474
 
 net 	XX
 multiplex_stations yes
-max_nsamples_per_channel 10
+max_nsamples_per_channel 1
+status_interval_sec 10
 
 channel_names &Arr{
 # internal_identifier	external_name
@@ -137,6 +138,66 @@ stachan_calibs &Arr{
 	DSME	&Arr{
 		LAT_DEG	33.036476	1e11	1	d
 		LON_DEG	-117.249533	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PSAP	&Arr{
+		LAT_DEG	33.819237	1e11	1	d
+		LON_DEG	-116.493991	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DVLE	&Arr{
+		LAT_DEG	33.700584	1e11	1	d
+		LON_DEG	-117.000684	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	COTD	&Arr{
+		LAT_DEG	33.732486	1e11	1	d
+		LON_DEG	-116.386888	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	KYVW	&Arr{
+		LAT_DEG	33.925369	1e11	1	d
+		LON_DEG	-116.173394	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	USGC	&Arr{
+		LAT_DEG	33.030063	1e11	1	d
+		LON_DEG	-116.085333	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	CRRS	&Arr{
+		LAT_DEG	33.069807	1e11	1	d
+		LON_DEG	-115.735040	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	GLRS	&Arr{
+		LAT_DEG	33.274812	1e11	1	d
+		LON_DEG	-115.521371	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	AZRY	&Arr{
+		LAT_DEG	33.540072	1e11	1	d
+		LON_DEG	-116.629696	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DHLG	&Arr{
+		LAT_DEG	33.389806	1e11	1	d
+		LON_DEG	-115.788027	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PIN1	&Arr{
+		LAT_DEG	33.612156	1e11	1	d
+		LON_DEG	-116.458159	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PIN2	&Arr{
+		LAT_DEG	33.612148	1e11	1	d
+		LON_DEG	-116.457617	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	WIDC	&Arr{
+		LAT_DEG	33.934757	1e11	1	d
+		LON_DEG	-116.391781	1e11	1	d
 		HEIGHT_M	0.0	1e6	1	d
 	}
 }

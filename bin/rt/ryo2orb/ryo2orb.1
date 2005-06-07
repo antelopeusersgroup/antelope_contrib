@@ -1,4 +1,4 @@
-.TH RTD2ORB 1 "$Date$"
+.TH RYO2ORB 1 "$Date$"
 .SH NAME
 ryo2orb \- import RYO-format real-time GPS data from an RTD server to an orbserver
 .SH SYNOPSIS
@@ -26,13 +26,21 @@ Frame (ITRF) coordinates as floating-point
 values, these values must be multiplied by a sufficiently large scale
 factor for storage and transport in the orb packets, which expect data
 in integer counts. The multiply_data_by parameter specifies this
-multiplier.  Incoming data are multiplied by the supplied value, and
+multiplier.  Also, since the resulting value may not fit in common formats 
+for transport and storage, a constant offset may be first subtracted from the
+signal before conversion to integers. These values are specified in the parameter
+file, as in the example below, with default values for all time-series channels 
+and with the capability to override certain values (such as degrees latitude
+and longitude) for specific stations. Incoming data have the specified offset 
+subtracted from them, then are multiplied by the supplied \fImultdataby\fP value, and
 the calib field in the resulting orb packet is set to its inverse
-(calib = 1./multiply_data_by). The calper and segtype fields of the
+(calib = 1./multiply_data_by). [for the record, the offset is recorded in the 
+duser1 field of the packet structure]. The calper and segtype fields of the
 parameter file specify the corresponding \fIcalper\fP and \fIsegtype\fP values
 to put in the orb packets, the former being the signal period in
 seconds at which the calib factor is specified (this is a pro-forma
-entry for \fBryo2orb\fP).
+entry for \fBryo2orb\fP). If a nonzero offset value is used, at startup a database 
+row /db/wfoffset will be put on the orb with the offset value for each station-channel.
 
 The incoming packets are automatically converted from Earth-Centered, 
 Earth-Fixed (ECEF) coordinates to geodetic lat, lon, and height. The former
@@ -81,42 +89,205 @@ Specify a parameter-file name other than the default \fBryo2orb\fP.pf
 GPS_epoch 1/6/1980
 GPS_leapseconds 13
 
-multiply_data_by   100
-calper  1
-segtype d
-
-.ne 5
-samprate_tolerance 0.0001
+samprate_tolerance      0.0001
 longitude_branchcut_deg 180
+ECEF_semimajor_axis 	6378137.0
+ECEF_flattening     	0.00335281066474
 
-net     XX
-multiplex_stations 1
-max_nsamples_per_channel 10
+net 	XX
+multiplex_stations yes
+max_nsamples_per_channel 1
+status_interval_sec 10
 
-.ne 17
 channel_names &Arr{
-        ITRF_X          ITRFX
-        ITRF_Y          ITRFY
-        ITRF_Z          ITRFZ
-        ITRF_T          ITRFT
+# internal_identifier	external_name
+	ITRF_X		ITRFX
+	ITRF_Y		ITRFY
+	ITRF_Z		ITRFZ
+	ITRF_T		ITRFT
 	LAT_RAD		LATR
 	LON_RAD		LONR
 	LAT_DEG		LATD
 	LON_DEG		LOND
 	HEIGHT_M	HGTM
-        variance_scale  VARSC
-        variance_X      VARX
-        variance_Y      VARY
-        variance_Z      VARZ
-        variance_T      VART
-        covariance_YX   COYX
-        covariance_YZ   COYZ
-        covariance_ZX   COZX
-        covariance_TX   COTX
-        covariance_TY   COTY
-        covariance_TZ   COTZ
+	variance_scale  VARSC
+	variance_X	VARX
+	variance_Y	VARY
+	variance_Z	VARZ
+	variance_T	VART
+	covariance_YX	COYX
+	covariance_YZ	COYZ
+	covariance_ZX	COZX
+	covariance_TX	COTX
+	covariance_TY	COTY
+	covariance_TZ	COTZ
 }
 
+stachan_calibs &Arr{
+	default &Arr{
+#	internal_identifier    offset	multdataby	calper	segtype		
+		ITRF_X		0.0	1000000		1	d
+		ITRF_Y		0.0	1000000		1	d
+		ITRF_Z		0.0	1000000		1	d
+		ITRF_T		0.0	1000000		1	d
+		LAT_RAD		0.0	1000000		1	d
+		LON_RAD		0.0	1000000		1	d
+		LAT_DEG		0.0	1000000		1	d
+		LON_DEG		0.0	1000000		1	d
+		HEIGHT_M	0.0	1000000		1	d
+		variance_scale  0.0	1000000		1	d
+		variance_X	0.0	1000000		1	d
+		variance_Y	0.0	1000000		1	d
+		variance_Z	0.0	1000000		1	d
+		variance_T	0.0	1000000		1	d
+		covariance_YX	0.0	1000000		1	d
+		covariance_YZ	0.0	1000000		1	d
+		covariance_ZX	0.0	1000000		1	d
+		covariance_TX	0.0	1000000		1	d
+		covariance_TY	0.0	1000000		1	d
+		covariance_TZ	0.0	1000000		1	d
+	}
+	WHYT	&Arr{
+		LAT_DEG	33.674490	1e11	1	d
+		LON_DEG	-117.643456	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SACY	&Arr{
+		LAT_DEG	33.743244	1e11	1	d
+		LON_DEG	-117.895577	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	MJPK	&Arr{
+		LAT_DEG	33.714481	1e11	1	d
+		LON_DEG	-117.550469	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SBCC	&Arr{
+		LAT_DEG	33.552999	1e11	1	d
+		LON_DEG	-117.661484	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	OEOC	&Arr{
+		LAT_DEG	33.765857	1e11	1	d
+		LON_DEG	-117.744133	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	TRAK	&Arr{
+		LAT_DEG	33.617934	1e11	1	d
+		LON_DEG	-117.803433	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	FVPK	&Arr{
+		LAT_DEG	33.662326	1e11	1	d
+		LON_DEG	-117.935712	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	CAT2	&Arr{
+		LAT_DEG	33.311616	1e11	1	d
+		LON_DEG	-118.333814	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SCMS	&Arr{
+		LAT_DEG	33.444139	1e11	1	d
+		LON_DEG	-117.634562	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	SIO5	&Arr{
+		LAT_DEG	32.840734	1e11	1	d
+		LON_DEG	-117.249687	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	BLSA	&Arr{
+		LAT_DEG	33.799543	1e11	1	d
+		LON_DEG	-118.028675	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	OGHS	&Arr{
+		LAT_DEG	33.130606	1e11	1	d
+		LON_DEG	-117.041767	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PMOB	&Arr{
+		LAT_DEG	33.357239	1e11	1	d
+		LON_DEG	-116.859544	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DVLW	&Arr{
+		LAT_DEG	33.657694	1e11	1	d
+		LON_DEG	-117.067434	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	RAAP	&Arr{
+		LAT_DEG	33.042234	1e11	1	d
+		LON_DEG	-116.917246	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DSME	&Arr{
+		LAT_DEG	33.036476	1e11	1	d
+		LON_DEG	-117.249533	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PSAP	&Arr{
+		LAT_DEG	33.819237	1e11	1	d
+		LON_DEG	-116.493991	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DVLE	&Arr{
+		LAT_DEG	33.700584	1e11	1	d
+		LON_DEG	-117.000684	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	COTD	&Arr{
+		LAT_DEG	33.732486	1e11	1	d
+		LON_DEG	-116.386888	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	KYVW	&Arr{
+		LAT_DEG	33.925369	1e11	1	d
+		LON_DEG	-116.173394	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	USGC	&Arr{
+		LAT_DEG	33.030063	1e11	1	d
+		LON_DEG	-116.085333	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	CRRS	&Arr{
+		LAT_DEG	33.069807	1e11	1	d
+		LON_DEG	-115.735040	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	GLRS	&Arr{
+		LAT_DEG	33.274812	1e11	1	d
+		LON_DEG	-115.521371	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	AZRY	&Arr{
+		LAT_DEG	33.540072	1e11	1	d
+		LON_DEG	-116.629696	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	DHLG	&Arr{
+		LAT_DEG	33.389806	1e11	1	d
+		LON_DEG	-115.788027	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PIN1	&Arr{
+		LAT_DEG	33.612156	1e11	1	d
+		LON_DEG	-116.458159	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	PIN2	&Arr{
+		LAT_DEG	33.612148	1e11	1	d
+		LON_DEG	-116.457617	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+	WIDC	&Arr{
+		LAT_DEG	33.934757	1e11	1	d
+		LON_DEG	-116.391781	1e11	1	d
+		HEIGHT_M	0.0	1e6	1	d
+	}
+}
 .fi
 .ft R
 .in
@@ -235,6 +406,9 @@ This may be a mistake or a feature depending on your perspective.
 As a caveat for orb2db(1) users, the RYO ITRF data often exceeds the
 maximum-value allowed in the default \fIsd\fP format for orb2db,
 requiring a switch to "s4" or other similar datatype when archiving.
+
+The segtype field may be the correct dimensions, but not the officially 
+correct units for some of these time-series.
 .SH AUTHOR
 .nf
 Kent Lindquist
