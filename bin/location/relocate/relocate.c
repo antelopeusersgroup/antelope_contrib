@@ -561,6 +561,8 @@ int main(int argc, char **argv)
 	/* entries for S-P feature */
 	int nbcs;
 	Arr *badclocks;
+	/* need global setting of this to handle fixed depth solutions*/
+	int global_fix_depth;
 
 	C=dmatrix(0,3,0,3);
 
@@ -691,6 +693,7 @@ Which picks will be used here is unpredictable\n\
 	if(i != 0) die(1,"Pfread error\n");
 
 	o = parse_options_pf (pf);
+	global_fix_depth=o.fix[2];
  	arr_phase = parse_phase_parameter_file(pf);
 	vmodel = pfget_string(pf,"velocity_model_name");
 
@@ -736,7 +739,18 @@ Which picks will be used here is unpredictable\n\
 				elog_complain(0,"Warning(relocate):  problems in minus_phase_arrival_edit function\n");
 		}
 		if(useold)
+		{
+			char dtype[2];
 			h0 = db_load_initial(dbv,is);
+			/* keep fixed depth if done before.  
+			setting dbv.record here is a bit of
+			a potential maintenance problem */
+			dbv.record=is;
+			dbgetv(dbv,0,"dtype",dtype,0);
+			if( (!strcmp(dtype,"g")) || (!strcmp(dtype,"r")) )
+				o.fix[2]=1;
+			
+		}
 		else
 			h0 = initial_locate(ta, tu, o, pf);
 
@@ -774,6 +788,7 @@ Which picks will be used here is unpredictable\n\
 			save_emodel(orid,emodel,dbo);
 			save_predarr(dbo,ta,tu,*hypos,orid,vmodel);
 		}
+		o.fix[2]=global_fix_depth;
 	
 		if(maxtbl(converge_history)>0)freetbl(converge_history,free);
 		if(maxtbl(reason_converged)>0)freetbl(reason_converged,free);

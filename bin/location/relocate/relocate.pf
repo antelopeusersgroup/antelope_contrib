@@ -232,12 +232,12 @@ ndepths						1
 #center_longitude				44.0
 #center_depth					5.0
 #depth_range					0.0
-#minimum_distance				2.0
-#maximum_distance				50.0
-#minimum_azimuth				0.0
-#maximum_azimuth				360.0
-#number_points_r				48
-#number_points_azimuth			36
+minimum_distance				2.0
+maximum_distance				50.0
+minimum_azimuth				0.0
+maximum_azimuth				360.0
+number_points_r				48
+number_points_azimuth			36
 #ndepths					1
 
 #
