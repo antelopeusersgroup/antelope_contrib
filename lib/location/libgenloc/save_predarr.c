@@ -32,10 +32,22 @@ int dbtable_invalid(Dbptr db,char *t)
 
 	dbcheck = dblookup(db,0,t,0,0);
 	if(dbcheck.table == dbINVALID)
-		return(1);
+		return(-1);
 	else
 		return(0);
 }
+/* returns true if the table t is empty */
+int dbtable_empty(Dbptr db,char *t)
+{
+	int nrows;
+	db=dblookup(db,0,t,0,0);
+	dbquery(db,dbRECORD_COUNT,&nrows);
+	if(nrows>0) 
+		return(0);
+	else
+		return(1);
+}
+
 /* This collection of small functions compute the parameters
 stored in predarr from quantities computed by the travel time
 calculators.  This involves a mix of base quantities (like
@@ -238,15 +250,19 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 
 	if(dbtable_invalid(db,"predarr"))
 	{
-		register_error(0,"predarr table not defined in schema for this database\n");
+		elog_log(0,"predarr table not defined in schema for this database\n");
 		return(-1);
 	}
 	if(dbtable_invalid(db,"stavel"))
 	{
-		register_error(0,"stavel table is not defined.  Using defaults for all stations and phases\n");
+		elog_log(0,"stavel table is not defined.  Using defaults for all stations and phases\n");
 		stavel_ok = 0;
 	}
-	else
+	else if(dbtable_empty(db,"stavel"))
+	{
+		stavel_ok=0;  /* do this silently */
+	}
+	else 
 	{
 		stavel_ok = 1;
 		/* This is the correct way to find the null value for a field*/

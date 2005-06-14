@@ -237,12 +237,21 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	double slow,azimuth;
 	double delslo;
 	char phase_name[10];
+	int arid;
 	
 
 	t = newtbl(0);
 
 	for(db.record=row_start;db.record<row_end;++db.record)
 	{
+	    int retcode;
+	    char slodef[2],azdef[2];
+	    /* First make sure def is set for slowness vectors */
+	    retcode=dbgetv(db,0,"slodef",slodef,"azdef",azdef,0);
+	    if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
+	    /* don't load data unless slowness vector is defined */
+	    if( (!strcmp(slodef,"d")) && (!strcmp(azdef,"d")) )
+	    {
 		/* I (glp) am inserting a prejudice here.  Uncertainties
 		in azimuth are hard to convert to a useable form in genloc
 		because of the exclusive use of cartesian components rather
@@ -251,13 +260,14 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 		This is reasonable for most arrays with a nearly round beam
 		pattern, but will be quite wrong in colored noise.*/
 
-		if((dbgetv( db, 0,
+		retcode=dbgetv( db, 0,
+			"arid",&arid,
 			"sta",staname,
 			"phase",phase_name,
 			"slow",&slow,
 			"delslo",&delslo,
-			"azimuth",&azimuth,
-			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			"azimuth",&azimuth,0);
+		if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
 
 		/* The current schema says slow is set to -1.0 for a null
 		value.  I'll use a safer test for >= 0 since negative 
@@ -268,6 +278,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			if(u == NULL)
 				die(1,"%s:  Cannot malloc Slowness_vector structure\n",
 					prog);
+			u->arid=arid;
 			u->array = (Seismic_Array *)  getarr(arrays,staname);
 
 		/* This error would be fatal for the relocate program, but
@@ -315,6 +326,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			}
                 	pushtbl(t,u);
 		}
+	    }
 	}
 	return(t);
 }
