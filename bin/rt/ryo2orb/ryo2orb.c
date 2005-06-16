@@ -21,6 +21,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iso/float_iso.h>
+#include <limits.h>
 #include <thread.h>
 #include <synch.h>
 #include <errno.h>
