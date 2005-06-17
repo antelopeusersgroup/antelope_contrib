@@ -20,8 +20,8 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <iso/float_iso.h>
 #include <limits.h>
+#include <values.h>
 #include <thread.h>
 #include <synch.h>
 #include <errno.h>
@@ -1936,7 +1936,7 @@ load_stachan_calibs( Pf *pf )
 int
 main( int argc, char **argv )
 {
-	char	c;
+	int	c;
 	char	*orbname = 0;
 	int	rc;
 	thread_t rtd_import_tid;
