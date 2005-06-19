@@ -19,7 +19,7 @@ all the time.*/
 #define JUMP_MAX 1.0
 
 static int
-tt_taup_slowness (elat, elon, slat, slon, selev, vp_cor, vs_cor, 
+pv_tt_taup_slowness (elat, elon, slat, slon, selev, vp_cor, vs_cor, 
 		nph, times, slowness, zslowness, dslowness, phs)
 
 double     elat;
@@ -70,10 +70,13 @@ char ***                    phs;
 	*phs = phss;
 	return (1);
 }
+
 void usage()
 {
 	fprintf(stderr,"Usage:\ntaup_convert  phase [-d0 x -ddelta x -z0 x -dz x -ndelta n -nz n]\n");
 }
+
+int 
 main(int argc, char **argv)
 {
 	char *phase_desired;
@@ -156,7 +159,7 @@ main(int argc, char **argv)
 		exit(0);
 	}
 	/* We loop through a distance and depth range making repeated
-	calls to tt_taup_slowness, which is an undocumented interface
+	calls to pv_tt_taup_slowness, which is an undocumented interface
 	written by Dan Q to the Taup library.  We go ahead and 
 	set the library to calculate "all" phases, then extract the
 	phase we want looping through the entire depth range as
@@ -174,7 +177,7 @@ main(int argc, char **argv)
 		tt_taup_set_event_depth (z) ;
 		for(i=0,delta=d0,previous_branch='0';i<ndelta;++i,delta+=ddelta)
 		{
-			tt_taup_slowness (0.0, 0.0, 0.0, delta, 0.0, 0.0, 0.0, 
+			pv_tt_taup_slowness (0.0, 0.0, 0.0, delta, 0.0, 0.0, 0.0, 
 				&nphases, &times,&slowness, 
 				&zslowness, &dslowness, &phases) ;
 			/*The above function returns all the phases it knows
