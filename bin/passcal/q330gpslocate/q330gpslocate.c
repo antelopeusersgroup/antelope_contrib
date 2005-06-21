@@ -146,6 +146,9 @@ int main(int argc, char **argv)
 	lonstat = MW_calc_statistics_double(lon,nlon);
 	heightstat = MW_calc_statistics_double(height,nheight);
 	printstat("Latitude:  ",latstat);
+	fprintf(stdout,"Estimated from %d samples\n",nlat);
 	printstat("Longitude:  ",lonstat);
-	printstat("Height(m):  ",heightstat);
+	fprintf(stdout,"Estimated from %d samples\n",nlon);
+	printstat("Height(km):  ",heightstat);
+	fprintf(stdout,"Estimated from %d samples\n",nheight);
 }
