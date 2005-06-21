@@ -1,0 +1,108 @@
+.TH DBFIX_PHASE 1 "$Date$"
+.SH NAME
+dbfix_phase \- fix phasecode in assoc table
+.SH SYNOPSIS
+.nf
+\fBdbfix_phase \fP[-v] [-dry] [-pf \fIpfname\fP] [-sitedb \fIsitedb\fP]
+                [-use_assoc_vmodel] [-use_iphase] [-override_phase]
+                \fIdb\fP [\fIorid\fP]
+.fi
+.SH DESCRIPTION
+This program is intended to 'beautify' the assoc table by assigning informative phase codes. This can be useful if one wants to produce a nice bulletin.
+.SH OPTIONS
+.IP "-v"
+verbose flag. Repeat to increase verbosity.
+.IP "-dry"
+
+dry run, display only whath the program would normally do.
+.IP "-pf pfname"
+
+Paramter file name.
+.IP "-sitedb sitedb"
+
+Use site information from this database instead of the input database. Mainly for debugging purposes.
+.IP "-use_assoc_vmodel"
+
+Compute theoretical traveltimes using the velocity model specified in the assoc table. The default is to use the model specified in the parameter file with the parameter default_vmodel
+.IP "-use_iphase"
+
+Set assoc.phase to arrival.iphase and look for nicer phasenames \fBonly\fP if arrival.iphase is one of the \fIsuspicious_phase_codes\fP specified in the parameter file.
+.IP "-override_phase"
+
+Modify all pahase in assoc.phase, not only those specified in the parameter file as \fIsuspicious_phase_codes\fP.
+.IP "db"
+
+database.
+.IP "orid"
+The origin id that identifies the origin to process. If this argument is not specifie, all origins are processed.
+
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+default_vmodel  iasp91 # use this earth-model for travel time computation
+method  tttaup  # method for travel-time computation, tttaup or
+                # tt1dcvl or whatever you have/like
+apply_station_corrections       no      # set to yes only if your method allows this!
+tt_phase_code   P+,S+ # phase_code for calling ttcalc, see tt(3)
+                      # e.g. "P+" for P-phases only or "all" for all possible phases
+                      # note: you will see rare phases when specifying \fBall\fP here...
+
+max_tdelta      -1.0  # ignore all phases with a residual larger than this value
+                      # set to -1 to accept everything
+
+suspicious_phase_codes  X,P,S  # List of phases to change
+                               # P should be on this list,
+                               # otherwise all P's will be left unchanged...
+.fi
+.ft R
+.in
+.IP "apply_station_corrections"
+set to yes if you want station corrections. But station corrections require more work on other (undocumented) places. I only put this in because it is possible, not because I think it is of any use.
+.IP "method"
+see(tt)
+.IP "default_vmodel"
+velocit model used. Note that this will be overriden with the commandline argument -use_assoc_vmodel.
+.IP "tt_phase_code"
+Specifies which phases are considered. See tt(3).
+.IP "max_tdelta"
+Leave phase unchanged if residual would exceed this limit. A value of -1 accepts everything.
+.IP "suspicious_phase_codes"
+List of phases that will be changed by the Program. Typically a location program sets assoc.phase to some reasonable phasecode or simply P or S. In the latter case, this program can polish up your bulletins.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+niko > ./dbfix_phase -dry -v /opt/antelope/data/db/demo/demo
+dbfix_phase: dbfix_phase 1.0 2004-06-13
+dbfix_phase *debug*: changing phase P to Pb for arid 4850
+dbfix_phase *debug*: changing phase S to Sg for arid 4855
+dbfix_phase *debug*: changing phase P to Pb for arid 4852
+dbfix_phase *debug*: changing phase S to Sg for arid 4857
+dbfix_phase *debug*: changing phase S to Sg for arid 4856
+dbfix_phase *debug*: changing phase P to Pb for arid 4851
+dbfix_phase *debug*: changing phase P to Pb for arid 4854
+dbfix_phase *debug*: changing phase P to Pb for arid 4853
+dbfix_phase *debug*: changing phase S to Sg for arid 4858
+.fi
+.ft R
+.in
+.SH DIAGNOSTICS
+.IP "table assoc must be present!"
+This indicates that the input database is incomplete.
+.IP "table assoc must be writable!"
+Permissions don't allow modification of the input database.
+.IP "sta XYZ not found in sitetable"
+Your input database is incomplete. Consider specifying a more complete database using the -\fIsitedb\fP parameter.
+.IP "problem computing travel-times using vmodel mymodel->aborting"
+Something really went wrong. I believe this should not happen unless one experiments with -use_assoc_vmodel.
+.SH "SEE ALSO"
+tt(3), ttaup(3), rtbulletin(1), dbloc2(1)
+.SH "BUGS AND CAVEATS"
+
+.SH AUTHOR
+.nf
+Nikolaus Horn, 2005
+
+ZAMG / Vienna, Nikolaus.Horn@zamg.ac.at
+.\" $Id$
