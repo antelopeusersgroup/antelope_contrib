@@ -35,13 +35,11 @@ usage()
 int
 main(int argc, char **argv)
 {
-	int             c, errflg = 0;
 	Dbptr           db, dbs, dbts, t_dbassoc, dbp, dbassoc, dborigin,
 	                dbarrival, dbg, dbb;
 	char           *dbname = NULL, *sitedbname = NULL;
-	int             nphases;
 	Hook           *hook = NULL, *tthook = NULL, *ahook = NULL;
-	int             norigins, nos, from, to, recc;
+	int             nos, from, to, recc;
 	char           *pfname = NULL;
 	int             orid;
 	double          lat, lon, depth, time, atime, stalat, stalon, staelev,
@@ -49,7 +47,7 @@ main(int argc, char **argv)
 	Tbl            *stbl, *ttimes = NULL;
 	char            sta[10], iphase[10], phase[10], n_iphase[10];
 	char           *t;
-	Tbl            *stalist, *assoclist;
+	Tbl            *stalist ;
 	int             mode = 0, result;
 	char           *method = malloc(20), *model = malloc(20);
 	char           *phases = malloc(20), *suspicious_phase_codes = malloc(256);
@@ -57,8 +55,7 @@ main(int argc, char **argv)
 	double          max_dt, max_tdelta;
 	Pf             *pf = NULL;
 	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0, verbose = 0,
-	                quiet = 0, dry_run = 0, res, apply_station_corrections = 0,
-	                input_is_view = 0;
+	                quiet = 0, dry_run = 0, res, apply_station_corrections = 0 ;
 
 	elog_init(argc, argv);
 	elog_notify(0, "%s %s\n", Program_Name, VERSION);
@@ -141,7 +138,7 @@ main(int argc, char **argv)
 			 "parameter 'tt_phase_code' not found in the parameter file %s.pf\n",
 			 pfname);
 	}
-	if ((max_tdelta = pfget_double(pf, "max_tdelta")) == NULL) {
+	if ((max_tdelta = pfget_double(pf, "max_tdelta")) == 0) {
 		elog_die(0,
 			 "parameter 'max_tdelta' not found in the parameter file %s.pf\n",
 			 pfname);
@@ -157,7 +154,7 @@ main(int argc, char **argv)
 			 "parameter 'suspicious_phase_codes' not found in the parameter file %s.pf\n",
 			 pfname);
 	}
-	if ((max_dt = pfget_double(pf, "max_tdelta")) == NULL) {
+	if ((max_dt = pfget_double(pf, "max_tdelta")) == 0) {
 		elog_die(0,
 			 "parameter 'max_tdelta' not found in the parameter file %s.pf\n",
 			 pfname);
@@ -233,7 +230,6 @@ main(int argc, char **argv)
 	dbts.record = dbSCRATCH;
 
 	/* assoc */
-	assoclist = strtbl("orid", "arid", 0);
 	t_dbassoc = dbassoc;
 	t_dbassoc.record = dbSCRATCH;
 
@@ -295,7 +291,6 @@ main(int argc, char **argv)
 			TTTime         *t_atime;
 			int             nphases, i;
 			double          dt, min_dt;
-			char            niphase[20];
 			char            vmodel[20];
 			int             arid;
 			Tbl            *assoclist;
@@ -407,7 +402,7 @@ main(int argc, char **argv)
 			if (!dry_run && strcmp(n_iphase, iphase) != 0) {
 				if (dbputv(dbassoc, 0, "phase", n_iphase, 0)) {
 					elog_complain(1, "can't put phase %s (%s) for arid %d (sta %s @ %s) \n",
-						      n_iphase, iphase, sta, t = strtime(atime));
+						      n_iphase, iphase, dbassoc.record, sta, t = strtime(atime));
 					free(t);
 				}
 			}
