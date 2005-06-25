@@ -28,7 +28,6 @@ TimeSeries::TimeSeries(const TimeSeries& tsi) :
 {
 	if(live)
 	{
-		s.reserve(ns);
 		s=tsi.s;
 	}
 }
@@ -668,19 +667,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, int nsamples)
 		delete ts;
 	}
 }
-TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, 
-	int nsamples,
-		MetadataList& mdl)
-{
-	for(int i=0; i<nensemble; ++i)
-	{
-		TimeSeries *ts = new TimeSeries(nsamples);
-		member.push_back(*ts);
-		delete ts;
-	}
-	mdlist=mdl;
-}
-TimeSeriesEnsemble::TimeSeriesEnsemble(TimeSeriesEnsemble& tceold)
+TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
 	int nmembers=tceold.member.size();
@@ -696,10 +683,6 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(Metadata& md,int nmembers)
 	member.reserve(nmembers);
 }
 	
-void set_global_metadata_list(TimeSeriesEnsemble& tse, MetadataList& mdl)
-{
-	tse.mdlist=mdl;
-}
 ThreeComponentEnsemble::ThreeComponentEnsemble()
 {
 	member.reserve(0);
@@ -727,11 +710,6 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations,
 		member.push_back(*tcs);
 		delete tcs;
 	}
-	mdlist=mdl;
-}
-void set_global_metadata_list(ThreeComponentEnsemble& tse, MetadataList& mdl)
-{
-	tse.mdlist = mdl;
 }
 /* Database-driven constructor for an ensemble.  This implementation uses
 a Datascope database only through an immediate dynamic_cast to a 
@@ -828,7 +806,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 	} catch (...) { throw;};
 }
 //copy constructor 
-ThreeComponentEnsemble::ThreeComponentEnsemble(ThreeComponentEnsemble& tceold)
+ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
 	: Metadata(dynamic_cast <Metadata&>(tceold))
 {
 	int nmembers=tceold.member.size();

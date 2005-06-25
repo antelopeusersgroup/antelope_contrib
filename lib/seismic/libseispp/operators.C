@@ -81,4 +81,42 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 	}
 	return(*this);
 }
+/*  Sum operator for TimeSeries object */
+
+void TimeSeries::operator+=(const TimeSeries& data)
+{
+	int i,i0,iend,ntosum;
+	int j,j0=0,jend=ns;
+	// Sun's compiler complains about const objects without this.
+	TimeSeries& d=const_cast<TimeSeries&>(data);
+	// Silently do nothing if d is marked dead
+	if(!d.live) return;
+	// Silently do nothing if d does not overlap with data to contain sum
+	if( (const_cast<double>(d.endtime())<t0) 
+		|| (d.t0>(this->endtime())) ) return;
+	if(d.tref!=(this->tref)) 
+		throw SeisppError("TimeSeries += operator cannot handle data with inconsistent time base\n");
+	//
+	// First we have to determine range fo sum for d into this 
+	//
+	i0=d.sample_number(this->t0);
+	if(i0<0)
+	{
+		j=-i0;
+		i0=0;
+	}
+	iend=d.sample_number(this->endtime());
+	if(iend>(d.ns-1))
+	{
+		iend=d.ns-1;
+	}
+	//
+	// IMPORTANT:  This algorithm simply assumes zero_gaps has been called
+	// and/or d was checked for gaps befor calling this operatr.  
+	// It will produce garbage for most raw gap (sample level) marking schemes
+	//
+	for(i=i0,j=j0;i<iend;++i,++j)
+		this->s[j]+=d.s[i];
+}
+	
 } // Termination of namespace SEISPP definitions

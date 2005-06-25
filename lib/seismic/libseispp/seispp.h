@@ -46,6 +46,7 @@ using namespace std;
 // books by Stroustrup.  The base object contains only a simple 
 // generic message and a virtual log_error method common to all 
 // seispp error objects that are it's descendents.
+//@author Gary L. Pavlis
 //@}
 class SeisppError
 {
@@ -76,6 +77,7 @@ enum ErrorSeverity {fault, fatal, complain, notify, log, unknown};
 // Error object thrown by routines accessing an Antelope database.  
 // This object normally leads to errors written by Antelope elog functions
 // and extra messages attached to the error object.
+//@author Gary L. Pavlis
 //@}
 class SeisppDberror : public SeisppError
 {
@@ -106,6 +108,7 @@ public:
 };
 //@{
 // Special error object thrown by SAC file reader.
+//@author Gary L. Pavlis
 //@}
 
 class SACdataError : public SeisppError
@@ -129,6 +132,7 @@ public:
 // Slowness vectors are a seismology concept used to describe wave propagation.
 // A slowness vector points in the direction of propagation of a wave with a
 // magnitude equal to the slowness (1/velocity) of propagation.  
+//@author Gary L. Pavlis
 //@}
 
 class SlownessVector
@@ -180,6 +184,7 @@ public:
 // points in the x (EW) and y (NS) directions.  
 // Note the grid and all methods assume units of s/km, although 
 // this application is largely blind to units.
+//@author Gary L. Pavlis
 //@}
 class RectangularSlownessGrid
 {
@@ -223,20 +228,20 @@ public:
 //@{
 // Fully parameterized constructor.
 //
-// @param nm - name to be assigned to grid.
-// @param uxl - lower left corner ux.
-// @param uyl - lower left corner uy.
-// @param du1 - dux (increment in x direction)
-// @param du2 - duy (increment in y direction)
-// @param n1 - number of grid points in x direction.
-// @param n2 - number of grid points in y direction.
+//@param nm - name to be assigned to grid.
+//@param uxl - lower left corner ux.
+//@param uyl - lower left corner uy.
+//@param du1 - dux (increment in x direction)
+//@param du2 - duy (increment in y direction)
+//@param n1 - number of grid points in x direction.
+//@param n2 - number of grid points in y direction.
 //@}
 	RectangularSlownessGrid(string nm, double uxl, double uxh,
 		double du1,double du2,int n1, int n2);
 //@{
 // Parameter file driven constructor.
-// @param pf - Antelope pf pointer normally produced by earlier call to pfread
-// @param tag - name to search in pf to describe this grid object.`
+//@param pf - Antelope pf pointer normally produced by earlier call to pfread
+//@param tag - name to search in pf to describe this grid object.`
 //              The parameters to describe the object are assumed encased in an 
 //              &Arr{ } construct with this tag.  This allows multiple grids to 
 //              be defined in a single parameter file with different tags. 
@@ -256,13 +261,14 @@ public:
 	double uy(int i) {return(uylow+i*duy);};
 //@{
 // Returns a slowness grid object for grid position (i,j).
-// @throws SeisppError object if i and j are outside range.
+//@throws SeisppError object if i and j are outside range.
 //@}
 	SlownessVector slow(int i, int j);
 };
 
 // This is used to define gaps and/or time variable weights
 // The later is not implemented, but we 
+//@author Gary L. Pavlis
 //
 //@{
 // Defines a time window.
@@ -292,11 +298,24 @@ public:
 //@param te - end time 
 //@}
 	TimeWindow(double ts,double te){start=ts;end=te;};
+//@{
+// Standard copy constructor. 
+//@}
+	TimeWindow(const TimeWindow&);
+//@{
+// Returns a new time window translated by tshift argument.
+//@}
+	TimeWindow shift(double tshift);
+//@{
+// Standard assignment operator.
+//@}
+	TimeWindow& operator=(const TimeWindow&);
 };
 //@{
 // A time window with a functional form overlaid.
 // This is essential an object definition of a window function
 // for a time window defined by a TimeWindow object.
+//@author Gary L. Pavlis
 //@}
 class TimeVariableWeight : public TimeWindow
 {
@@ -343,6 +362,7 @@ private:
 // or processed induced data gaps.
 // The set container requires a weak ordering function like to correctly
 // determine if a time is inside a particular time window.
+//@author Gary L. Pavlis
 //@}
 class TimeWindowCmp
 {
@@ -377,6 +397,7 @@ int nint(double);
 // and number of samples.  Derived types can be scalar, vector, or complex 
 // but share the common property of being related to a base grid.
 // This is a classic use of inheritance in OOP.
+//@author Gary L. Pavlis
 //@}
 class BasicTimeSeries
 {
@@ -425,14 +446,14 @@ public:
 // Calls like seis.is_gap(is) return true if sample is is a data gap.  
 // It also returns true if i is outside the range of the data. 
 // (i.e. less than 0 or >= ns).
-// @param is - sample number to test.
+//@param is - sample number to test.
 //@}
 	bool is_gap(int is);  // query by sample number
 //@{
 // Checks if data at time ttest is a gap or valid data.  
 // This function is like the overloaded version with an int argument except 
 // it uses a time instead of sample number for the query.
-// @param ttest - time to be tested.
+//@param ttest - time to be tested.
 //@}
 	bool is_gap(double ttest);  // query by time
 //@{
@@ -441,10 +462,17 @@ public:
 // free of gaps.  Most time series algorithms cannot process through data
 // gaps so normal practice would be to drop data with any gaps in a 
 // requested time segment.
-// @returns true if time segment has any data gaps
-// @parm twin time window of data to test defined by a TimeWindow object
+//@returns true if time segment has any data gaps
+//@parm twin time window of data to test defined by a TimeWindow object
 //@}
 	bool is_gap(TimeWindow twin);
+//@{
+// Global test to see if data has any gaps defined. 
+// Gap processing is expensive and we need this simple method to
+// test to see if the associated object has any gaps defined.  
+//@returns true if the associated object has any gaps defined.  
+//@}
+	bool has_gap(){return(!gaps.empty());};
 //@{
 // Adds a gap to the gap definitions for this data object.
 // Sometimes an algorithm detects or needs to create a gap (e.g. a mute,
@@ -464,7 +492,7 @@ public:
 // Get the time of sample i.
 // It is common to need to ask for the time of a given sample.
 // This standardizes this common operation in an obvious way.
-// @param i - sample number to compute time for.  
+//@param i - sample number to compute time for.  
 //@}
 	double time(int i){return(t0+dt*static_cast<double>(i));};
 	// inverse of time
@@ -512,6 +540,7 @@ protected:
 // scalar data.  It uses a Metadata object to contain auxiliary parameters
 // that aren't essential to define the data object, but which are necessary
 // for some algorithms.  
+//@author Gary L. Pavlis
 //@}
 class TimeSeries: public BasicTimeSeries , public Metadata
 {
@@ -549,12 +578,12 @@ public:
 // are allowed by this constructor.  If datatype is anything else the constructor will
 // throw an exception.  
 //
-// @throws MetadataError object is thrown if any of the metadata associated with the 
+//@throws MetadataError object is thrown if any of the metadata associated with the 
 //           keywords noted above are not defined.  
-// @throws SeisppError is thrown for read errors when load_data is true.  
+//@throws SeisppError is thrown for read errors when load_data is true.  
 //
-// @param md - Metadata object to drive construction.
-// @param load_data - if true tries to read data in an antelope style ala wfdisc but using
+//@param md - Metadata object to drive construction.
+//@param load_data - if true tries to read data in an antelope style ala wfdisc but using
 //                     attributes derived from the Metadata object (see above).
 //@}
 	TimeSeries(Metadata& md,bool load_data);
@@ -563,11 +592,11 @@ public:
 // The basic model here is that this constructor builds a TimeSeries object
 // from one row of a database table (normally wfdisc, but the intent is to 
 // to be totally general).  
-// @param db DatabaseHandle object that is assumed to point at one row of a database view.
-// @param mdl A MetadataList contains a list of internal names that tells the 
+//@param db DatabaseHandle object that is assumed to point at one row of a database view.
+//@param mdl A MetadataList contains a list of internal names that tells the 
 //   constructor which attributes it will need to extract from the database and place in
 //   the Metadata area of the object.  
-// @param am This object is used to map internal names to an external namespace.  It is
+//@param am This object is used to map internal names to an external namespace.  It is
 //  normally created once at the early stage of a program's execution.  
 //@}
 	TimeSeries(DatabaseHandle& db, MetadataList& mdl, AttributeMap& am);
@@ -580,6 +609,12 @@ public:
 //@}
 	TimeSeries& operator=(const TimeSeries&);
 //@{
+// Summation operator.  Simple version of stack.  Aligns data before
+// summing.
+//@}
+	void operator+=(const TimeSeries& d);
+
+//@{
 // Scans for defined gaps and sets the data to zero in time periods defined by gaps.
 //@}
 	void zero_gaps();
@@ -591,6 +626,7 @@ public:
 // processing.  Note actual coodinate system can depend on context.
 // For whole Earth models it can define global coordinates, but in three component
 // seismograms the normal convention of geographical coordinates is always assumed.
+//@author Gary L. Pavlis
 //@}
 typedef struct SphericalCoordinate_{
 //@{
@@ -625,6 +661,7 @@ The structure of a vector time series allows the data to be stored in a matrix
 // The object inherits common concepts of a time series through the 
 // BasicTimeSeries object.  Auxiliary parameters are defined for the object
 // through inheritance of a Metadata object.
+//@author Gary L. Pavlis
 //@}
 class ThreeComponentSeismogram : public BasicTimeSeries , public Metadata
 {
@@ -685,12 +722,12 @@ public:
 // are allowed by this constructor.  If datatype is anything else the constructor will
 // throw an exception.  
 //
-// @throws MetadataError object is thrown if any of the metadata associated with the 
+//@throws MetadataError object is thrown if any of the metadata associated with the 
 //           keywords noted above are not defined.  
-// @throws SeisppError is thrown for read errors when load_data is true.  
+//@throws SeisppError is thrown for read errors when load_data is true.  
 //
-// @param md - Metadata object to drive construction.
-// @param load_data - if true tries to read data in an antelope style ala wfdisc but using
+//@param md - Metadata object to drive construction.
+//@param load_data - if true tries to read data in an antelope style ala wfdisc but using
 //                     attributes derived from the Metadata object (see above).
 //@}
 	ThreeComponentSeismogram(Metadata& md,bool load_data);
@@ -720,11 +757,11 @@ public:
 // Finally irregular start and end times for data read in single channel mode will
 // cause gaps to be defined at the beginning and/or end of the data.  
 //
-// @param db DatabaseHandle object that is assumed to point at one row of a database view.
-// @param mdl A MetadataList contains a list of internal names that tells the 
+//@param db DatabaseHandle object that is assumed to point at one row of a database view.
+//@param mdl A MetadataList contains a list of internal names that tells the 
 //   constructor which attributes it will need to extract from the database and place in
 //   the Metadata area of the object.  
-// @param am This object is used to map internal names to an external namespace.  It is
+//@param am This object is used to map internal names to an external namespace.  It is
 //  normally created once at the early stage of a program's execution.  
 //@}
 	ThreeComponentSeismogram(DatabaseHandle& db, 
@@ -814,6 +851,7 @@ public:
 // The ensemble has metadata associated with the group acquired by 
 // inheritance, but which contructors have to deal with to load the
 // right attributes into the ensemble metadata area.  
+//@author Gary L. Pavlis
 //@}
 class TimeSeriesEnsemble : public Metadata
 {
@@ -836,11 +874,99 @@ public:
 //@}
 	TimeSeriesEnsemble(int ntsin, int nsampin);
 //@{
-// Space allocating constructor with metadata.  Sets aside slots in
-// the ensemble for ntsin ensemble members with a typical size of nsampin
-// samples.  Defines global metadata elements by mdl.
+// Database-driven constructor.  
+// Seismic data are often stored today using a database to index the raw
+// waveforms.  The database contains attributes loaded here as metadata.
+// Attributes that are global to the ensemble are loaded driven by the
+// ensemble_mdl list while single 3c seismogram metadata is controlled
+// by station_mdl.  Note in both cases the list of names is the internal
+// name not external database names.  The AttributeMap object 
+// defines the mapping from the internal name space to database
+// names.
+//
+// This constructor assumes the ensemble is defined by a grouping.
+// The database interface must provide a mechanism equivalent to 
+// the "group by" clause in SQL.  The concept of this constructor 
+// is that the ensemble is defined by whatever that group by definition
+// defines.  This constructor ONLY works with segmented data.  
+// Use the TimeWindow driven constructor on continuous data.
+//
+//@throw SeisppError object if one of several unrecoverable errors
+//   occur.  These are of two main type.  First, if any of the 
+//   require booleans are true and not satisfied (e.g. site table
+//   is missing when require_coords is true) the constructor will
+//   abort by throwing an error.  Second, if any of the Antelope
+//   routines that underly this constructor fail the Antelope elog
+//   error dump routine is called and the constructor will throw an
+//   exception.
+//
+//@param db is a generalized handle to a database.  In the current
+// implementation it is assumed to be a DatascopeHandle.
+//@param station_mdl is a list of metadata attributes to be loaded 
+//   into each seismogram's metadata area.  
+//@param ensemble_mdl is a list of metadata attributes to be loaded
+//   into the global metadata area for the whole ensemble.
+//@param am is the mapping operator used to translate internal names
+//   to database attribute names (e.g. wfdisc.time).
 //@}
-	TimeSeriesEnsemble(int ntsin, int nsampin, MetadataList& mdl);
+	TimeSeriesEnsemble(DatabaseHandle& dbhi,
+	        MetadataList& ensemble_mdl,
+	                MetadataList& data_mdl,
+	                        AttributeMap& am);
+//@{
+// Time-window based database-driven constructor.  
+// Seismic data today are often stored as continous data indexed by
+// a CSS3.0 database.  These data are most rationally accessed by
+// the concept of a station-channel view over a specified time window.
+// That is, we commonly as for a subset (sometimes all) channels that
+// were on between time start and time end.  This constructor builds
+// a TimeSeriesEnsemble object containing all stations and all channels
+// that were recording in a specified time.  Optionally one can specify
+// a station or channel subset expression.  
+//
+// The current implementation is completely locked to the CSS3.0
+// schema AND the Antelope Trace4.0 library.  This constructor
+// should be thought of as more-or-less of an interface routine
+// to use the Antelope trload_css procedure.  The namespace of
+// Metadata loaded into the individual traces is completely frozen
+// as the list of attributes found in the trace table used in
+// Trace4.0.  The segmented data constructor found in this object
+// is more appropriate if more general Metadata are needed in
+// a processing system.  This method should be thought of as a
+// handle into a raw data archive or raw data tied to an 
+// Antelope orb.  
+//
+//@throw SeisppError object if one of several unrecoverable errors
+//   occur.  These are of three main type.  First, if any of the 
+//   require booleans are true and not satisfied (e.g. site table
+//   is missing when require_coords is true) the constructor will
+//   abort by throwing an error.  Second, if any of the Antelope
+//   routines that underly this constructor fail the Antelope elog
+//   error dump routine is called and the constructor will throw an
+//   exception.  Finally, SeisppError objects can be propagated from 
+//   seispp routines called internally by this constructor.
+//
+//@param db is a generalized handle to a database.  In the current
+// implementation it is assumed to be a DatascopeHandle.
+//@parmam sta_expression regular expression to sift station codes 
+//   (e.g. A.* for all stations starting with A or ..2 for all 3 station
+//   codes ending in 2.)
+//@parmam chan_expression regular expression to sift channel codes 
+//   (e.g. BH. for all BH channels or .* for all).
+//@parmam require_coords require that a site table be present.  (default true)
+//@param require_orientation require that sitechan orientation information
+//   (hang, vang) be present. (default true)
+//@param require_response require the set of css3.0 response tables be 
+//   present.   (Note that response data is currently ignored.  This is
+//   a placeholder.)  default is false
+//@}
+	TimeSeriesEnsemble(DatabaseHandle& db,
+		TimeWindow twin,
+			const string sta_expression="none",
+	                	const string chan_expression="none",
+	        bool require_coords=true,
+	                bool require_orientation=true,
+	                        bool require_response=false);
 //@{
 // Construct an ensemble from a parameter file description.  This
 // constructor is useful in combination with the pfstream library.
@@ -851,24 +977,20 @@ public:
 //@{
 // Standard copy constructor. 
 //@}
-	TimeSeriesEnsemble(TimeSeriesEnsemble& tseold);
+	TimeSeriesEnsemble(const TimeSeriesEnsemble& tseold);
 //@{
 // Partial copy constructor. 
 // Sometimes it is useful to copy only the Metadata from an ensemble 
 // and leave slots open for the container to hold the data objects for
 // the ensemble.  
-// @param md is the metadata object to copy to the metadata area for the ensemble.
-// @param nmembers is the number of slots to reserve in the new ensemble vector.
+//@param md is the metadata object to copy to the metadata area for the ensemble.
+//@param nmembers is the number of slots to reserve in the new ensemble vector.
 //@}
 	TimeSeriesEnsemble(Metadata& md,int nmembers);
 //@{
 // Standard assignment operator.
 //@}
 	TimeSeriesEnsemble& operator=(const TimeSeriesEnsemble& tseold);
-	friend void set_global_metadata_list(TimeSeriesEnsemble& te,MetadataList&);
-private:
-	// This list contains metadata copied as global to the ensemble
-	MetadataList mdlist;
 };
 
 //@{
@@ -919,13 +1041,13 @@ public:
 // defines the mapping from the internal name space to database
 // names.
 
-// @param db is a generalized handle to a database.  In the current
+//@param db is a generalized handle to a database.  In the current
 // implementation it is assumed to be a DatascopeHandle.
-// @param station_mdl is a list of metadata attributes to be loaded 
+//@param station_mdl is a list of metadata attributes to be loaded 
 //   into each 3c seismogram's metadata area.  
-// @param ensemble_mdl is a list of metadata attributes to be loaded
-//   into the global metadata area for the whole ensmeble.
-// @param am is the mapping operator used to translate internal names
+//@param ensemble_mdl is a list of metadata attributes to be loaded
+//   into the global metadata area for the whole ensemble.
+//@param am is the mapping operator used to translate internal names
 //   to database attribute names (e.g. wfdisc.time).
 //@}
 	ThreeComponentEnsemble(DatabaseHandle& db,
@@ -933,26 +1055,53 @@ public:
 		MetadataList& ensemble_mdl,
 		 AttributeMap& am);
 //@{
+// Construct a ThreeComponentEnsemble from 
+// database-indexed storage returning data defined by a fixed time window.
+// In processing continuous seismic data it is commonly necessary 
+// to read data for an array of stations within a fixed time window.
+// Many algorithms start this way and some assume data are already 
+// on a common time base.  This constructor returns a vector of 
+// ThreeComponentSeismogram objects spanning a constant time 
+// defined by the TimeWindow argument.  i.e. all objects in
+// the ensemble will have the same start time (t0).
+//
+//@throws SeisppError object with an explanatory message if process fails.
+//@param dbhi is a handle to the database that indexes these data.
+//@param twin defines the window of time to be retrieved
+//@param ensemble_mdl defines the list of attributes to be extracted
+//   from the database and loaded into the global (ensemble) metadata
+//   area.  i.e. this is the list of parameters that are global to the
+//   ensemble.
+//@param data_mdl defines the list of attributes to be extracted from
+//   the database for each TimeSeries object that forms this ensemble.
+//@param am is a schema-specific attribute map that defines the mapping
+//   from database attribute name space to the seispp internal namespace.
+//@param chanmap defines mapping operator for how channel codes map
+//   into components.  
+//@} 
+	ThreeComponentEnsemble(DatabaseHandle& dbhi,
+	        TimeWindow twin,
+	                MetadataList& ensemble_mdl,
+	                        MetadataList& data_mdl,
+	                                AttributeMap& am,
+						vector<string>chanmap);
+//@{
 // Standard copy constructor.
 //@}
-	ThreeComponentEnsemble(ThreeComponentEnsemble& tseold);
+	ThreeComponentEnsemble(const ThreeComponentEnsemble& tseold);
 //@{
 // Partial copy constructor. 
 // Sometimes it is useful to copy only the Metadata from an ensemble 
 // and leave slots open for the container to hold the data objects for
 // the ensemble.  
-// @param md is the metadata object to copy to the metadata area for the ensemble.
-// @param nmembers is the number of slots to reserve in the new ensemble vector.
+//@param md is the metadata object to copy to the metadata area for the ensemble.
+//@param nmembers is the number of slots to reserve in the new ensemble vector.
 //@}
 	ThreeComponentEnsemble(Metadata& md,int nmembers);
 //@{
 // Standard assignment operator.
 //@}
 	ThreeComponentEnsemble& operator=(const ThreeComponentEnsemble& tseold);
-	friend void set_global_metadata_list(ThreeComponentEnsemble&,
-			MetadataList&);
-private:
-	MetadataList mdlist;
 };
 //
 //  Mute definitions
@@ -962,6 +1111,7 @@ private:
 // Top Mutes are a common concept in reflection processing.  They are used to 
 // zero out sections of data with an optional taper of a specified width.  
 // This object encapsulates the idea of a top mute in a simplified package.
+//@author Gary L. Pavlis
 //@}
 class TopMute
 {
@@ -992,8 +1142,8 @@ public:
 // that define the object.  They are:  Zero_End_Time, End_Time, and TimeReferenceType 
 // which reference t0, t1e, and reftype respectively.  
 //
-// @param pf Antelope parameter file pf object.
-// @param tag is a string that defines an &Tbl{} enscapsulation of the parameters
+//@param pf Antelope parameter file pf object.
+//@param tag is a string that defines an &Tbl{} enscapsulation of the parameters
 //   parsed for the mute definition. The nesting of an &Tbl{ } with the parameters
 //   between the curly brackets allows the same keywords to be used in multiple
 //   constructors for different mute definitions.
@@ -1008,6 +1158,7 @@ public:
 // receiver positions.  This object encapsulates information about a source and 
 // provides a set of methods useful for waveform processing that depends on
 // source information.  
+//@author Gary L. Pavlis
 //@}
 class Hypocenter
 {
@@ -1049,8 +1200,8 @@ public:
 	// Event to source azimuth is defined as the azimuth of the great 
 	// circle path joining event and station at the position of the 
 	// source and looking toward the station.
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
 	//@}
 	double esaz(double lat0, double lon0);
 	//@{
@@ -1059,29 +1210,29 @@ public:
 	// great circle path joining event and station but evaluated
 	// at the position of the station and looking back toward 
 	// the source.  
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
 	//@}
 	double seaz(double lat0, double lon0);
 	//@{
 	// Compute the P wave arrival time using the currently defined travel time
 	// calculator.  
-	// @throws SeisppError object when travel time calculator fails for any reason
+	//@throws SeisppError object when travel time calculator fails for any reason
 	//
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
-	// @param elev elevation of the station relative to sea level
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
+	//@param elev elevation of the station relative to sea level
 	//@}
 	double ptime(double lat0, double lon0, double elev)
 		throw(SeisppError);
 	//@{
 	// Compute the P wave slowness vector using the currently defined travel time
 	// calculator.  
-	// @throws SeisppError object when travel time calculator fails for any reason
+	//@throws SeisppError object when travel time calculator fails for any reason
 	//
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
-	// @param elev elevation of the station relative to sea level
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
+	//@param elev elevation of the station relative to sea level
 	//@}
 	SlownessVector pslow(double lat0, double lon0, double elev)
 		throw(SeisppError);
@@ -1089,12 +1240,12 @@ public:
 	// Compute the predicted arrival time of a requested phase
 	// using the currently defined travel time
 	// calculator.  
-	// @throws SeisppError object when travel time calculator fails for any reason
+	//@throws SeisppError object when travel time calculator fails for any reason
 	//
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
-	// @param elev elevation of the station relative to sea level
-	// @param phase name of phase for which arrival time is requested.
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
+	//@param elev elevation of the station relative to sea level
+	//@param phase name of phase for which arrival time is requested.
 	//@}
 	double phasetime(double lat0, double lon0, double elev, string phase)
 		throw(SeisppError);
@@ -1102,12 +1253,12 @@ public:
 	// Compute the predicted slowness vector for a 
 	// specified seismic phase using the currently defined travel time
 	// calculator.  
-	// @throws SeisppError object when travel time calculator fails for any reason
+	//@throws SeisppError object when travel time calculator fails for any reason
 	//
-	// @param lat0 latitude of the station
-	// @param lat0 longitude of the station
-	// @param elev elevation of the station relative to sea level
-	// @param phase name of phase for which slowness estimate is requested.
+	//@param lat0 latitude of the station
+	//@param lat0 longitude of the station
+	//@param elev elevation of the station relative to sea level
+	//@param phase name of phase for which slowness estimate is requested.
 	//@}
 	SlownessVector phaseslow(double lat0, double lon0, double elev, 
 			string phase) throw(SeisppError);
@@ -1120,8 +1271,8 @@ public:
 	// function is used to invoke that type of change in the object's \
 	// behaviour.
 	//
-	// @param meth set the travel time method to meth
-	// @param mod set the earth model to that with the name mod.
+	//@param meth set the travel time method to meth
+	//@param mod set the earth model to that with the name mod.
 	//@}
 	void tt_setup(string meth, string mod); // change default method:model
 private:
@@ -1131,6 +1282,7 @@ private:
 
 //@{
 // Error object thrown by 1d velocity model objects.
+//@author Gary L. Pavlis
 //@}
 class VelocityModel_1d_Error
 {
@@ -1161,6 +1313,7 @@ public:
 };
 //@{
 // Error object thrown by 1d velocity model object for i/o error.
+//@author Gary L. Pavlis
 //@}
 class VelocityModel_1d_IOerror : public VelocityModel_1d_Error
 {
@@ -1238,12 +1391,12 @@ public:
 	// Builds a velocity model from database tables.
 	// Depends on a models database as used in tt1dcvl travel time calculator.
 	//
-	// @throws SeisppError if there are problems constructing the object
+	//@throws SeisppError if there are problems constructing the object
 	//    from the database.
 	//
-	// @param db Datascope database pointer.  
-	// @param name unique name to identify requested Earth model.
-	// @param property defines property attribute of models database table.  
+	//@param db Datascope database pointer.  
+	//@param name unique name to identify requested Earth model.
+	//@param property defines property attribute of models database table.  
 	//    Normall Pvelocity or Svelocity.
 	//@}
 	
@@ -1256,10 +1409,10 @@ public:
 	// (z,vp,vs) where z is depth, vp is P velocity at z, and vs is
 	// S velocity at z.  
 	//
-	// @throws SeisppError if is an i/o problem of any kind.
+	//@throws SeisppError if is an i/o problem of any kind.
 	//
-	// @param fname is file name to be read.
-	// @param form is either rbh or plain.  Anything else will cause
+	//@param fname is file name to be read.
+	//@param form is either rbh or plain.  Anything else will cause
 	//   an exception to be thrown.  plain is just a set of lines as 
 	//   described above.  rbh format is from Bob Herrmann's velocity
 	//   model format.  The main difference is that his format has 7 
@@ -1359,9 +1512,9 @@ SphericalCoordinate PMHalfspaceModel(double vp0,double vs0,
 // Extract one component from a ThreeComponentSeismogram and 
 // create a TimeSeries object from it.  
 //
-// @param tcs is the ThreeComponentSeismogram to convert.
-// @param component is the component to extract (0, 1, or 2)
-// @param mdl list of metadata to copy to output from input object.
+//@param tcs is the ThreeComponentSeismogram to convert.
+//@param component is the component to extract (0, 1, or 2)
+//@param mdl list of metadata to copy to output from input object.
 //@}
 TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
         MetadataList& mdl);
@@ -1371,8 +1524,8 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 // Similar to overloaded function of same name, but all metadata from
 // parent is copied to the output.
 //
-// @param tcs is the ThreeComponentSeismogram to convert.
-// @param component is the component to extract (0, 1, or 2)
+//@param tcs is the ThreeComponentSeismogram to convert.
+//@param component is the component to extract (0, 1, or 2)
 //@}
 TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
 //@{
@@ -1381,11 +1534,11 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
 // zero is defined as an arrival time extracted from the metadata area of
 // the object.
 //
-// @throws SeisppError for errors in extracting required information from metadata area.
+//@throws SeisppError for errors in extracting required information from metadata area.
 //
-// @param din  is input seismogram
-// @param key is the metadata key used to find the arrival time to use as a reference.
-// @param tw is a TimeWindow object that defines the window of data to extract around
+//@param din  is input seismogram
+//@param key is the metadata key used to find the arrival time to use as a reference.
+//@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
 ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& din,
@@ -1396,11 +1549,11 @@ ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& din,
 // zero is defined as an arrival time extracted from the metadata area of
 // each member object.
 //
-// @throws SeisppError for errors in extracting required information from metadata area.
+//@throws SeisppError for errors in extracting required information from metadata area.
 //
-// @param din  is input gather
-// @param key is the metadata key used to find the arrival time to use as a reference.
-// @param tw is a TimeWindow object that defines the window of data to extract around
+//@param din  is input gather
+//@param key is the metadata key used to find the arrival time to use as a reference.
+//@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
 ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& din,
@@ -1411,42 +1564,42 @@ ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& din,
 // Bombproof low level write routine for a vector of doubles.  
 // Uses fwrite to write vector x to the file dir+"/"+dfile.
 //
-// @throws SeisppError object if there are problems saving data to requested file.
-// @param x vector of data to be saved.
-// @param n length of vector x
-// @param dir directory to place file.  If empty assumes current directory.
-// @param dfile file name 
+//@throws SeisppError object if there are problems saving data to requested file.
+//@param x vector of data to be saved.
+//@param n length of vector x
+//@param dir directory to place file.  If empty assumes current directory.
+//@param dfile file name 
 //@}
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(SeisppError);
 //@{
 // Bombproof low level write routine for a vector of doubles.  
 // Uses fwrite to write vector x to the file fname
 //
-// @throws SeisppError object if there are problems saving data to requested file.
-// @param x vector of data to be saved.
-// @param n length of vector x
-// @param fname file name 
+//@throws SeisppError object if there are problems saving data to requested file.
+//@param x vector of data to be saved.
+//@param n length of vector x
+//@param fname file name 
 //@}
 long int vector_fwrite(double *x,int n, string fname) throw(SeisppError);
 //@{
 // Bombproof low level write routine for a vector of floats.  
 // Uses fwrite to write vector x to the file dir+"/"+dfile.
 //
-// @throws SeisppError object if there are problems saving data to requested file.
-// @param x vector of data to be saved.
-// @param n length of vector x
-// @param dir directory to place file.  If empty assumes current directory.
-// @param dfile file name 
+//@throws SeisppError object if there are problems saving data to requested file.
+//@param x vector of data to be saved.
+//@param n length of vector x
+//@param dir directory to place file.  If empty assumes current directory.
+//@param dfile file name 
 //@}
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(SeisppError);
 //@{
 // Bombproof low level write routine for a vector of floats.  
 // Uses fwrite to write vector x to the file fname
 //
-// @throws SeisppError object if there are problems saving data to requested file.
-// @param x vector of data to be saved.
-// @param n length of vector x
-// @param fname file name 
+//@throws SeisppError object if there are problems saving data to requested file.
+//@param x vector of data to be saved.
+//@param n length of vector x
+//@param fname file name 
 //@}
 long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
 //@{
@@ -1482,18 +1635,18 @@ long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
 // Note also that if the "live" boolean in the object is set false
 // this function silently returns immediately doing nothing.
 //
-// @throws SeisppError object if there are any problems saving the data or 
+//@throws SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-// @returns -1 if live is false, record number of added row otherwise
+//@returns -1 if live is false, record number of added row otherwise
 //
-// @param ts is the TimeSeries object to be saved.
-// @param db is a Datascope database pointer.  It need only point at a valid
-//    open database.
-// @param table is the name of the table to index this time series data
+//@param ts is the TimeSeries object to be saved.
+//@param db is a Datascope database pointer.  It need only point at a valid
+//   open database.
+//@param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
-// @param md  is the list of metadata to be dumped to the database as described above.
-// @param am is a mapping operator that defines how internal names are to be mapped
+//@param md  is the list of metadata to be dumped to the database as described above.
+//@param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 //@}
 int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap& am)
@@ -1541,18 +1694,18 @@ int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap&
 // wfdisc if this function is called.  Consequently, this routine will
 // throw an exception and do nothing if table=="wfdisc".
 //
-// @throws SeisppError object if there are any problems saving the data or 
+//@throws SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-// @returns -1 if live is false, record number of added row otherwise
+//@returns -1 if live is false, record number of added row otherwise
 //
-// @param ts is the TimeSeries object to be saved.
-// @param db is a Datascope database pointer.  It need only point at a valid
+//@param ts is the TimeSeries object to be saved.
+//@param db is a Datascope database pointer.  It need only point at a valid
 //    open database.
-// @param table is the name of the table to index this time series data
+//@param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
-// @param md  is the list of metadata to be dumped to the database as described above.
-// @param am is a mapping operator that defines how internal names are to be mapped
+//@param md  is the list of metadata to be dumped to the database as described above.
+//@param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
 //@}
 int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table, 
@@ -1602,24 +1755,66 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
 // chanmap array (chanmap[0]=channel name for component 0,
 // chanmap[1]=component 1, and chanmap[2]=component 2).
 //
-// @throws SeisppError object if there are any problems saving the data or 
+//@throws SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-// @returns -1 if live is false, record number of added row otherwise
+//@returns -1 if live is false, record number of added row otherwise
 //
-// @param ts is the TimeSeries object to be saved.
-// @param db is a Datascope database pointer.  It need only point at a valid
+//@param ts is the TimeSeries object to be saved.
+//@param db is a Datascope database pointer.  It need only point at a valid
 //    open database.
-// @param table is the name of the table to index this time series data
+//@param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
 // @param md  is the list of metadata to be dumped to the database as described above.
 // @param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
-// @param chanmap is a set of channel names to map each component to channel code (see above)
-// @param output_as_standard when true forces data to be converted to ew,ns, z system
+//@param chanmap is a set of channel names to map each component to channel code (see above)
+//@param output_as_standard when true forces data to be converted to ew,ns, z system
 //@}
 int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am, vector<string>chanmap,bool output_as_standard);
+//@{
+// Extracts a requested time window of data from a parent TimeSeries object.
+//
+// It is common to need to extract a smaller segment of data from a larger
+// time window of data.  This function accomplishes this in a nifty method that
+// takes advantage of the methods contained in the BasicTimeSeries object for
+// handling time and data gaps.
+//
+//@returns new TimeSeries object derived from  parent but windowed by input
+//      time window range.
+//
+//@throws SeisppError object if the requested time window does not overlap data
+//
+//@param parent is the larger TimeSeries object to be windowed
+//@param tw defines the data range to be extracted from parent.
+//@author Gary L. Pavlis
+//@}
+TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
+
+//@{
+// Extracts a requested time window of data from a parent ThreeComponentSeismogram object.
+//
+// It is common to need to extract a smaller segment of data from a larger
+// time window of data.  This function accomplishes this in a nifty method that
+// takes advantage of the methods contained in the BasicTimeSeries object for
+// handling time and data gaps.
+//
+//@returns new ThreeComponentSeismogram object derived from  parent but windowed by input
+//      time window range.
+//
+//@throws SeisppError object if the requested time window does not overlap data
+//
+//@param parent is the larger ThreeComponentSeismogram object to be windowed
+//@param tw defines the data range to be extracted from parent.
+//@author Gary L. Pavlis
+//@}
+ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw);
+
+template <class T>
+auto_ptr<T>WindowData(T& parent, TimeWindow& tw);
+
+
 }
 #endif

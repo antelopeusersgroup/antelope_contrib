@@ -130,7 +130,6 @@ public:
 	void put(string,Tbl *);  // antelope list
 	void remove(string);
 	friend ostream& operator<<(ostream&,Metadata&);
-	void print_all_metadata();
 	Pf *extract_all_metadata_to_pf();
 protected:
         Pf *pf;  // Antelope's pf handle
