@@ -22,9 +22,14 @@ TimeSeries::TimeSeries(int nsin) : BasicTimeSeries(), Metadata()
 	s.reserve(nsin);
 }
 	
+/*
 TimeSeries::TimeSeries(const TimeSeries& tsi) : 
 		BasicTimeSeries(dynamic_cast<const BasicTimeSeries&>(tsi)),
 		Metadata(dynamic_cast<const Metadata&>(tsi))
+*/
+TimeSeries::TimeSeries(const TimeSeries& tsi) : 
+		BasicTimeSeries(tsi),
+		Metadata(tsi)
 {
 	if(live)
 	{
@@ -668,7 +673,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, int nsamples)
 	}
 }
 TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
-	: Metadata(dynamic_cast <Metadata&>(tceold))
+	: Metadata(tceold)
 {
 	int nmembers=tceold.member.size();
 	member.reserve(nmembers);
@@ -807,7 +812,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 }
 //copy constructor 
 ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
-	: Metadata(dynamic_cast <Metadata&>(tceold))
+	: Metadata(tceold)
 {
 	int nmembers=tceold.member.size();
 	member.reserve(nmembers);

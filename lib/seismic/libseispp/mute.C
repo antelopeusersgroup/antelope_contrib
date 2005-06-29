@@ -87,7 +87,7 @@ void ApplyTopMute(ThreeComponentEnsemble &t3ce, TopMute& mute)
 template<class T>
 void ApplyTopMute(T& t, TopMute& mute)
 {
-	foreach(t.member.begin(),t.member.end(),ApplyTopMute(t,mute);
+	foreach(t.member.begin(),t.member.end(),ApplyTopMute(t,mute));
 }
 // Probably should have started with this, but we need constructors
 // This uses a pf

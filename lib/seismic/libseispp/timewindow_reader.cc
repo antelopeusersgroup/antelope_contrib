@@ -199,7 +199,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		//
 		dbtr_handle.lookup("event");
 		dbtr_handle.rewind();  // probably unnecessary, but can't hurt
-		Metadata mdens(dbtr_handle,BuildEnsembleMDL(),am);
+		MetadataList ensemble_mdl=BuildEnsembleMDL();
+		Metadata mdens(dynamic_cast<DatabaseHandle&>(dbtr_handle),
+			ensemble_mdl,am);
 		// This maybe should be an auto_ptr but I've had confusing results with Sun's compilere
 		
 		dbtr_handle.lookup("trace");
@@ -302,9 +304,8 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 
 			// This loads attributes but not data
 			TimeSeries seis(trattributes,false);
-			// explicit resize 
-			seis.ns=static_cast<int>((twin.end-twin.end)/seis.dt);
-			seis.s.resize(seis.ns);
+			seis.ns=static_cast<int>((twin.end-twin.start)/seis.dt);
+			seis.s.reserve(seis.ns);
 			Trsample *tdata;
 
 			if((ie-is)==1)
@@ -314,11 +315,12 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					"nsamp",&(seis.ns),0);
 				for(i=0;i<seis.ns;++i)
 				{
-					seis.s[i]=static_cast<double>(tdata[i]);
+					seis.s.push_back(static_cast<double>(tdata[i]));
 				}
 			}
 			else
 			{
+cout << "This sta:chan has multiple segments = "<<ie-is<<endl;
 				// land here if there are gaps in this
 				// time interal.
 				int ns_this_segment;
@@ -326,9 +328,8 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				double etime_this_segment;
 				double etime_last_segment;
 				double tprime;
-				// In this case we should initialize explicitly
-				// first
-				for(i=0;i<seis.ns;++i) seis.s[i]=0.0;
+				// Initialize contents so we can just leave gaps 0
+				for(i=0;i<seis.ns;++i) seis.s.push_back(0.0);
 				for(i=is;i<ie;++i)
 				{
 					dbtr_handle.db.record=i;
@@ -349,8 +350,11 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 						}
 					}
 					// Similar for endtime
-					else if(i==ie)
+					else if(i==(ie-1))
 					{
+						seis.add_gap(TimeWindow(
+							etime_last_segment,
+							t0_this_segment));
 						// test for end gap
 						if( (twin.end-etime_this_segment)
 							> seis.dt)
@@ -358,6 +362,27 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							seis.add_gap(TimeWindow(
 								etime_this_segment,
 								twin.end));
+						}
+						for(int k=0;k<ns_this_segment;++k)
+						{
+							tprime=t0_this_segment
+								+ seis.dt
+								*static_cast<double>(k);
+							if(tprime>(twin.end+0.5*seis.dt))
+							{
+cout << "DEBUG:  truncating vector" << endl << "tprime=" << tprime
+	<< " twin.end="<<twin.end<<endl;
+cout << "Current ns="<<seis.ns<<endl;
+cout << "Current vector size="<<seis.s.size()<<endl;
+								seis.ns=seis.sample_number(tprime) - 1;
+cout << "Adjusted ns="<<seis.ns<<endl;
+								break;
+							}
+								
+					
+							seis.s[seis.sample_number(tprime)]
+								= static_cast<double>(tdata[k]);
+								
 						}
 					}
 					else
@@ -368,6 +393,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					}
 					// In all cases we just copy into
 					// this container
+
 					for(int k=0;k<ns_this_segment;++k)
 					{
 						tprime=t0_this_segment
@@ -382,15 +408,11 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 
 			seis.live=true;
+			seis.ns=seis.s.size();
 			//
 			// Push these into the ensemble
 			//
 			member.push_back(seis);
-//member[irec]=seis;
-cout << "Contents pushed to ensemble"<<endl;
-cout << "sta="<<member[irec].get_string("sta")<<endl;
-cout << "chan="<<member[irec].get_string("chan")<<endl;
-cout << "time="<<member[irec].get_double("time")-twin.start<<endl;
 		}
 		trdestroy(&dbtr);
 	} catch (...)
@@ -400,7 +422,8 @@ cout << "time="<<member[irec].get_double("time")-twin.start<<endl;
 	}
 }
 
-ThreeComponentEnsemble *TSE23CE(TimeSeriesEnsemble& tse,string chanmap[3])
+ThreeComponentEnsemble *TSE23CE(TimeSeriesEnsemble& tse,
+	string chanmap[3])
 {
 	throw SeisppError("TimeSeriesEnsemble to ThreeComponentEnsemble procedure not yet implemented");
 }

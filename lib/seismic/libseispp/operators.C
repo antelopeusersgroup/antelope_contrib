@@ -92,7 +92,7 @@ void TimeSeries::operator+=(const TimeSeries& data)
 	// Silently do nothing if d is marked dead
 	if(!d.live) return;
 	// Silently do nothing if d does not overlap with data to contain sum
-	if( (const_cast<double>(d.endtime())<t0) 
+	if( (d.endtime()<t0) 
 		|| (d.t0>(this->endtime())) ) return;
 	if(d.tref!=(this->tref)) 
 		throw SeisppError("TimeSeries += operator cannot handle data with inconsistent time base\n");

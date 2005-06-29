@@ -21,7 +21,11 @@ namespace SEISPP {
 TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw)
 {
 	// Always silently do nothing if marked dead
-	if(!parent.live) return(TimeSeries());
+	if(!(parent.live)) 
+	{
+		TimeSeries tmp;
+		return(tmp);
+	}
 
 	// Start with some basic sanity checks and throw an exception if 
 	// the request is stupid
@@ -82,7 +86,13 @@ requested of purists.*/
 ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw)
 {
 	// Always silently do nothing if marked dead
-	if(!parent.live) return(ThreeComponentSeismogram());
+	if(!parent.live) 
+	{
+		// return(ThreeComponentSeismogram()) doesn't work
+		// with g++.  Have to us this long form
+		ThreeComponentSeismogram tmp;
+		return(tmp);
+	}
 
 	// Start with some basic sanity checks and throw an exception if 
 	// the request is stupid
@@ -128,7 +138,7 @@ auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
 	try{
 		for(int i=0;i<parent.tse.size();++i)
                 	result->member[i]=WindowData(parent.member[i],tw);
-        } catch (...) throw;
+        } catch (...) {throw;}
         return(result);
 }
 	
