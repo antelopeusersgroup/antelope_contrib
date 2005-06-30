@@ -206,6 +206,7 @@ int manage_hook_1dcvl (
 		if(test == NULL) return(-5);
 		setarr(old->ttlvz_models,key,test);
 	}
+	free(key);
 	old->current_model = test;
 	return(0);
 }
@@ -793,9 +794,10 @@ int tt1dcvl (
 			if(atime != NULL) 
 			{
 				pushtbl(*timesp,atime);
+				free(atime);
 			}
+			free(property);
 		}	
-		free(property);
 		phase = strtok(NULL,",");
 	}
 	free(plist);
@@ -868,9 +870,10 @@ int tt1dcvl_ucalc (
 			if(slowness != NULL) 
 			{
 				pushtbl(*timesp,slowness);
+				free(slowness);
 			}
+			free(property);
 		}	
-		free(property);
 		phase = strtok(NULL,",");
 	}
 	free(plist);
