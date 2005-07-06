@@ -1349,7 +1349,7 @@ ryo2orb_status( void *arg )
 		pushstr( &vstk, "model ryo\n" );
 		pushstr( &vstk, "type dl\n" );
 
-		sprintf( line, "pid %d\n", getpid() );
+		sprintf( line, "pid %d\n", (int) getpid() );
 		pushstr( &vstk, line );
 
 		sprintf( line, "itvl %d\n", Status_interval_sec ); 
@@ -1536,7 +1536,7 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 	if( ( chan = getarr( Channel_names, channel_identifier ) ) == NULL ) {
 
 		elog_die( 0, "channel_identifier '%s' missing from channel_names "
-			     "in parameter file. Bye.\n" );
+			     "in parameter file. Bye.\n", channel_identifier );
 	}
 
 	scc = get_StachanCalib( r2opkt->site_id, channel_identifier );
