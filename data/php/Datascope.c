@@ -863,6 +863,7 @@ PHP_FUNCTION(db2xml)
 	char	*flags_string = 0;
 	int	flags = 0;
 	char	*xml = 0;
+	char	*xml_safe_copy = 0;
 	int	rc = 0;
 
 	if( argc < 1 || argc > 6 ) {
@@ -972,7 +973,11 @@ PHP_FUNCTION(db2xml)
 
 	} else {
 
-		RETURN_STRING( xml, 0 );
+		xml_safe_copy = estrdup( xml );		
+
+		free( xml );
+
+		RETURN_STRING( xml_safe_copy, 0 );
 	}
 }
 /* }}} */
