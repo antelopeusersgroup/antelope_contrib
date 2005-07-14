@@ -110,6 +110,12 @@ dbsort (@db [, -u][, -r][, key, key..])
     sort the input table according to the specified keys, uniquely if -u, 
     in reverse order if -r 
 
+dbselect (@db, expr[, expr[, expr..]])
+    print table of expressions from view
+
+dbselect_hdr (@db, expr[, expr[, expr..]])
+    print headers for expressions
+
 dbsubset (@db, expression)
     return new view which is the set of all rows which satisfy the expression
 
