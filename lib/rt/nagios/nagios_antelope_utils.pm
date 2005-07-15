@@ -39,6 +39,7 @@ require Exporter;
 		&print_version
 		&print_results
 		%ERRORS
+		$TIMEOUT
 		$VERBOSE);
 
 
@@ -52,6 +53,7 @@ sub print_version($$);
 sub print_results($$$$);
 
 our (%ERRORS)=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
+our ($TIMEOUT) = 15;
 our ($VERBOSE) = 0;
 
 ######
