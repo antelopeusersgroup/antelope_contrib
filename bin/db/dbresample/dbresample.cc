@@ -69,54 +69,54 @@ int main(int argc, char **argv)
 				<< chan_code[0] << " will be used"<<endl;
 		}
 		// This object defines mapping from external to internal namespace
-		// old form:  Attribute_Map am(pf,string("Attribute_Map"));
-		Attribute_Map am;
+		// old form:  AttributeMap am(pf,string("AttributeMap"));
+		AttributeMap am;
 		// This defines the list of internal names actually extracted from db
-		Metadata_list md_to_input=pfget_mdlist(pf,
-			"input_metadata_list");
+		MetadataList md_to_input=pfget_mdlist(pf,
+			"input_list");
 		// This is the list saved
-		Metadata_list md_to_output=pfget_mdlist(pf,
-			"output_metadata_list");
+		MetadataList md_to_output=pfget_mdlist(pf,
+			"output_list");
 		if(dbopen(const_cast<char *>(dbname.c_str()),"r",&db))
 			die(0,"dbopen failed on database %s",dbname.c_str());
 
 		// Input and output database handles
-		Datascope_Handle dbhi(db,pf,tag);
-		Datascope_Handle dbho(dboname,false);
+		DatascopeHandle dbhi(db,pf,tag);
+		DatascopeHandle dbho(dboname,false);
 		// Builds the object that defines how decimation is
 		// and resampling is to be done.
-		Resampling_Definitions rsampdef(pf);
+		ResamplingDefinitions rsampdef(pf);
 		dbhi.rewind();
 		for(int i=0;i<dbhi.number_tuples();++i,++dbhi)
 		{
-			Time_Series *tin;
-			Time_Series traceout;
+			TimeSeries *tin;
+			TimeSeries traceout;
 			string table("wfdisc");
-			tin = new Time_Series(dynamic_cast<Database_Handle&>(dbhi),
+			tin = new TimeSeries(dynamic_cast<DatabaseHandle&>(dbhi),
 				md_to_input,am);   
-			traceout = Resample_Time_Series(*tin,rsampdef,dtout,trim);
+			traceout = ResampleTimeSeries(*tin,rsampdef,dtout,trim);
 			// Simple method to change channel code
 			// only does right thing for SEED chan codes
 			chan=traceout.get_string("chan");
 			chan[0]=chan_code[0];
-			traceout.put_metadata("chan",chan);
+			traceout.put("chan",chan);
 			// a crude way to alter files to preserve original structure
 			// append the string ".resampled"
 			dfile_name = traceout.get_string("dfile");
 			dfile_name = dfile_name + string(".resampled");
-			traceout.put_metadata("file",dfile_name);
+			traceout.put("file",dfile_name);
 			dbsave(traceout,dbho.db,table,md_to_output,am);
 			delete tin;
 		}
 	}
 	// for now we exit on any exception.  Some errors may 
 	// need to be caught and handled without exits
-	catch (Metadata_error spe)
+	catch (MetadataError spe)
 	{
 		spe.log_error();
 		exit(-1);
 	}
-	catch (seispp_error se)
+	catch (SeisppError se)
 	{
 		se.log_error();
 		exit(-1);
