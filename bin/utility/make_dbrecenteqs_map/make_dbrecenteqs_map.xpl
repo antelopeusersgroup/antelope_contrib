@@ -48,6 +48,13 @@ if( $opt_l ) {
 	set_scriptlog( $opt_l );
 }
 
+if( $opt_v ) {
+
+	elog_notify( "Setting gmt MEASURE_UNIT to inch\n" );
+}
+
+system( "gmtset MEASURE_UNIT inch" );
+
 setup_State();
 
 if( $opt_t ) {

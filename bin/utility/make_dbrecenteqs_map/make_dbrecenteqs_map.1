@@ -163,6 +163,10 @@ these files must then be cleaned up by hand (or left to litter /tmp), and
 if the script is meant to be used at some later time the temp files should 
 be cached somewhere (many of them are generated from some automated code inside 
 the dbrecenteqs toolbox that is not easily cast into the output script).
+
+make_dbrecenteqs_map uses the GMT command gmtset(1) to set the GMT 
+MEASURE_UNIT to 'inch'. This setting may persist through the .gmtdefaults
+file after make_dbrecenteqs_map has run.
 .SH AUTHOR
 .nf
 Kent Lindquist 
