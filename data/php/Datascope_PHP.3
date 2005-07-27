@@ -149,6 +149,17 @@ print_r pfget( "dlmon", "" );
 .fi
 .in
 .ft R
+.IP "\fBpfget_boolean\fP ( pfname, key )"
+Get the value for the named key in the parameter named pfname and interpret 
+it as a boolean value, i.e. "no", "0", "false" return a value of 0; 
+"yes", "1", "true" return a value of true (usually -1). 
+.nf
+
+print pfget_boolean( "trdefaults", "miniseed_sparc_order" ) . "\\n";
+
+.fi
+.in
+.ft R
 .IP "\fBtrloadchan\fP ( $db, t0, t1, sta, chan )"
 read channel waveform data
 .ft CW

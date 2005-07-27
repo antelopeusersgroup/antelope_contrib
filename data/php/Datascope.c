@@ -59,6 +59,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbcrunch, NULL)		
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
+	PHP_FE(pfget_boolean, NULL)		
 	PHP_FE(strtdelta, NULL)		
 	PHP_FE(strtime, NULL)		
 	PHP_FE(strydtime, NULL)		
@@ -421,6 +422,41 @@ PHP_FUNCTION(pfget)
 	} 
 
 	return;
+}
+/* }}} */
+
+/* {{{ proto mixed pfget_boolean( string pfname, string pfkey ) */
+PHP_FUNCTION(pfget_boolean)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	char	*key;
+	int	key_len;
+	Pf	*pf;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+					&pfname, &pfname_len,
+					&key, &key_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		zend_error( E_ERROR, "failure opening parameter file\n" );
+	}
+
+	rc = pfget_boolean( pf, key );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 

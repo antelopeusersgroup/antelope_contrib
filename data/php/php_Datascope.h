@@ -44,6 +44,7 @@ PHP_FUNCTION(dbmark);
 PHP_FUNCTION(dbdelete);
 PHP_FUNCTION(dbcrunch);
 PHP_FUNCTION(pfget);
+PHP_FUNCTION(pfget_boolean);
 PHP_FUNCTION(trapply_calib);
 PHP_FUNCTION(trsplit);
 PHP_FUNCTION(trsplice);
