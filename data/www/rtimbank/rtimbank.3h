@@ -1,0 +1,43 @@
+.TH RTIMBANK 3H "$Date$"
+.SH NAME
+rtimbank \- a web based tool to display images from Images schema databases
+.SH SYNOPSIS
+.nf
+rtimbank.php
+.fi
+.SH DESCRIPTION
+A web based php-scripted tool to explore Antelope databases that use
+the Images schema. A parameter file (rtimbank.pf) defines the location
+on the local file system of the required databases and associated files.
+A drop-down menu is populated with image sources
+(typically cameras). Selecting an option loads the latest image
+acquired by the source at the top of the webpage, with a table beneath
+showing thumbnails of the next most recent images collected. You can
+also specify a movies database.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+rtimbank.pf defines a variety of variables required by rtimbank.php
+including paths to the databases, css files, any images and library
+functions.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+Datascope_PHP(3)
+.fi
+.SH "BUGS AND CAVEATS"
+Requires a level 1.0 DOM browser.
+.SH AUTHOR
+Rob Newman, UCSD
+.\" $Id$

@@ -1,0 +1,60 @@
+# RTIMBANK Preferences
+
+server_settings &Arr{
+	img_dbpath		/export/www/html/db/rt_images_roadnet	# Path to real time images database
+	server_root		/export/www/html			# Web server root directory
+	movies_database_present	yes					# Movies database present? yes or no
+	# mv_dbpath		/export/www/html/db/rt_movies		# Daily movies database present?
+}
+
+header_settings &Arr{
+	project_title		Realtime Imagebank			# Webpage title
+	css_file                /rtapps/css/rtimbank_css.php		# CSS File to use
+	refresh_rate		300					# Webpage refresh time (secs)
+	records_per_page	20					# Records per page
+}
+
+image_settings &Arr{
+	page_bkgrd		/rtapps/images/roadnet_page_bkgrd.gif	# Repeating pattern page background
+	header			/rtapps/images/roadnet_logo.jpg		# Header image
+	header_bkgrd		/rtapps/images/roadnet_logo_bkgrd.gif	# Header background image that repeats
+	header_alt		ROADNet Header Logo			# Header alt text
+	footer_bkgrd		/rtapps/images/roadnet_bottom_line.gif	# Footer image
+	footer_color		0F1C23					# Footer background-color
+}
+
+requested_image &Arr{
+	width			600					# Width in px of requested image. Height calc from aspect ratio
+}
+
+page_text &Arr{
+	instructions_html &Literal{
+		<p>This web-based real-time application works by connecting to an images
+		database that stores images captured throughout San Diego county by the
+		ROADNet sensor network. To retrieve an image of interest please follow
+		the instructions below:</p>
+		<ol>
+			<li>Choose a camera from the drop-down menu on the left-hand side of this page.</li>
+			<li>Once you have selected a camera, this page will reload with the latest image captured by that camera and stored in the database.</li>
+			<li>Below this most recent &ldquo;Requested image&rdquo; is a table showing all the images  taken by the camera in reverse chronological order (ie. the most recent image first).</li>
+			<li>You can scroll through the images by choosing <b>NEXT</b> or <b>PREVIOUS</b> and this will load the next or previous images from the database in this page.</li>
+			<li>You can view the high resolution image for any of the database entries by clicking on the thumbnail image (the far right-side column). Even if there is not a thumbnail image, a high resolution image is available, and clicking the thumbnail image will load this high resolution image into the &ldquo;Requested image&rdquo; section of the page</li>
+		</ol>
+	}
+	credits &Tbl{
+		&Arr{
+			text	ROADNet
+			url	http://roadnet.ucsd.edu
+		}
+		&Arr{
+			text	SIO
+			url	http://www.sio.ucsd.edu
+		}
+		&Arr{
+			text	UCSD
+			url	http://www.ucsd.edu
+		}
+	}
+}
+
+pf_revision_time 1122495347
