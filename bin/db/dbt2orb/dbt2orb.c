@@ -55,10 +55,10 @@ int main(int argc, char **argv)
 
   /* read in command line options */
 
-  { char c;
+  { int c;
     unsigned char errflg = 0;
 
-    while (( c = getopt( argc, argv, "vl:s:")) != EOF)
+    while (( c = getopt( argc, argv, "vl:s:")) != -1)
         switch (c) {
           case 'l': loop = atoi(optarg);
                     sigset(SIGINT,done);
