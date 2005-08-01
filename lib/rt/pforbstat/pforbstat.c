@@ -814,11 +814,9 @@ orbconnections2pf( Pf *pfanalyze )
 				continue;
 			}
 
-			if( ! strcmp( closeorb, orbstat_machine_ipc ) && 
-			    is_localhost( farorb ) && 
-			    ! is_localhost( clientaddress ) ) {
+			if(is_localhost(farorb)) {
 
-				strcpy( farorb, clientaddress );
+				strcpy( farorb, o2omachine );
 			}
 
 			if( STREQ( perm, "w" ) ) {
