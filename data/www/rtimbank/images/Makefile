@@ -6,6 +6,4 @@ DATA= roadnet_bottom_line.gif \
       roadnet_page_bkgrd.gif \
       roadnet_sorry.gif
 
-MAN3H= rtimbank.3h
-
 include $(ANTELOPEMAKE)
