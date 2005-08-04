@@ -20,6 +20,8 @@ TimeSeries::TimeSeries() : BasicTimeSeries(), Metadata()
 TimeSeries::TimeSeries(int nsin) : BasicTimeSeries(), Metadata()
 {
 	s.reserve(nsin);
+	// This seems to be necessary at least for Sun's compiler
+	for(int i=0;i<nsin;++i)s.push_back(0.0);
 }
 	
 /*
