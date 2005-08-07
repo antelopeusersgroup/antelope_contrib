@@ -73,6 +73,9 @@ dbseparate ($db, table)
 dbsever ($db, table)
     return a view that omits the specified table
 
+dbjoin ($db1, $db2, ['-outer'], [join-keys])
+    create a new view from the input views, using join keys if specified
+
 dbunjoin ($db, database)
     create a new database from the records of the input view
 

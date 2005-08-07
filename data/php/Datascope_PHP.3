@@ -339,6 +339,18 @@ $recno = dbadd( $db ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbjoin\fP ( $db1, $db2, [join-keys] )"
+returns a new view which joins the two input views, using the join-keys 
+if specified
+.ft CW
+.in 2c
+.nf
+
+$db = dbjoin ( $dborigin, $dbassoc ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbsubset\fP ( $db, expression )"
 returns a new view which is the set of all row which satisfy the expression
 .ft CW
