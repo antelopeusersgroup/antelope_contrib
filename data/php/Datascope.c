@@ -48,6 +48,9 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
+	PHP_FE(dbseparate, NULL)		
+	PHP_FE(dbsever, NULL)		
+	PHP_FE(dbunjoin, NULL)		
 	PHP_FE(db2xml, NULL)		
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
@@ -1543,6 +1546,108 @@ PHP_FUNCTION(dbsubset)
 	db = dbsubset( db, expr, 0 );
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbseparate( array db, string table ) */
+PHP_FUNCTION(dbseparate)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	char	*table;
+	int	table_len;
+	int	retcode;
+	int	i;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array,
+					&table, &table_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	db = dbseparate( db, table );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbsever( array db, string table ) */
+PHP_FUNCTION(dbsever)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	char	*table;
+	int	table_len;
+	int	retcode;
+	int	i;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array,
+					&table, &table_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	db = dbsever( db, table, 0 );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbunjoin( array db, string database ) */
+PHP_FUNCTION(dbunjoin)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	char	*database;
+	int	database_len;
+	int	retcode;
+	int	i;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array,
+					&database, &database_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	retcode = dbunjoin( db, database, 1 );
+
+	RETURN_LONG( retcode );
 }
 /* }}} */
 

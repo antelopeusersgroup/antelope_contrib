@@ -350,6 +350,42 @@ $dbsubsetted = dbsubset ( $dbwfdisc, 'sta=="AAK"' ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbseparate\fP ( $db, table )"
+return a new view which consists of all the rows of the specified table 
+which participate in the joined view $db
+.ft CW
+.in 2c
+.nf
+
+$dboriginsubset = dbseparate ( $db, 'origin' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbsever\fP ( $db, table )"
+return a new view which consists of all the unique rows left 
+after removing the specified table from the input view
+.ft CW
+.in 2c
+.nf
+
+$dbwithoutorigin = dbsever ( $db, 'origin' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbunjoin\fP ( $db, database )"
+create a new database, containing all the records referenced 
+in the input view
+.ft CW
+.in 2c
+.nf
+
+dbunjoin ( $db, '/tmp/testdb' ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbprocess\fP ( $db, cmd1, cmd2, cmd3 ... )"
 returns a new view which is the result of applying the dbprocess
 commands cmd1, cmd2, etc to the input database pointer.

@@ -67,6 +67,15 @@ dbprocess ($db, commands)
 dbsubset ($db, expression)
     returns a new view which is the set of all rows which satisfy the expression
 
+dbseparate ($db, table)
+    returns a view containing records from the specified table that are in the input view
+
+dbsever ($db, table)
+    return a view that omits the specified table
+
+dbunjoin ($db, database)
+    create a new database from the records of the input view
+
 <subsection Handling Waveform Data>
 
 trloadchan ( $db, t0, t1, sta, chan )
