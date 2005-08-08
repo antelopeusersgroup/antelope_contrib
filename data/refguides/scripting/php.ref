@@ -64,6 +64,12 @@ dbprocess ($db, commands)
     dbjoin, dbgroup, dbleftjoin, dbnojoin, dbselect, dbseparate,
     dbsever, dbsort, dbsubset, dbtheta, dbungroup
 
+dbsort ($db [, -u][, -r][, key, key, ...])
+    sort a view by the specified fields
+
+dbgroup ($db, key [, key, ...])
+    group the input view according to the specified keys
+
 dbsubset ($db, expression)
     returns a new view which is the set of all rows which satisfy the expression
 
