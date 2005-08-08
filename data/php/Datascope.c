@@ -48,6 +48,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbsort, NULL)		
 	PHP_FE(dbgroup, NULL)		
+	PHP_FE(dbungroup, NULL)		
 	PHP_FE(dbjoin, NULL)		
 	PHP_FE(dbnojoin, NULL)		
 	PHP_FE(dbtheta, NULL)		
@@ -2330,6 +2331,34 @@ PHP_FUNCTION(dbaddnull)
 	rc = dbaddnull( db );
 
 	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto array dbungroup( array db ) */
+PHP_FUNCTION(dbungroup)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	nrecs;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	db = dbungroup( db, 0 );
+
+	RETURN_DBPTR( db );
 }
 /* }}} */
 

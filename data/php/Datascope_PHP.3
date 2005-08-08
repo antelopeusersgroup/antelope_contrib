@@ -374,6 +374,17 @@ $db = dbgroup ( $dbwfdisc, 'sta', 'chan' ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbungroup\fP ( $db )"
+separate a grouped view into its component rows
+.ft CW
+.in 2c
+.nf
+
+$db = dbungroup ( $db );
+
+.fi
+.in
+.ft R
 .IP "\fBdbjoin\fP ( $db1, $db2, [join-keys] )"
 returns a new view which joins the two input views, using the join-keys 
 if specified

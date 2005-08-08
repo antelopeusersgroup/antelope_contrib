@@ -31,6 +31,7 @@ PHP_FUNCTION(dbputv);
 PHP_FUNCTION(dbnrecs);
 PHP_FUNCTION(dbsort);
 PHP_FUNCTION(dbgroup);
+PHP_FUNCTION(dbungroup);
 PHP_FUNCTION(dbjoin);
 PHP_FUNCTION(dbnojoin);
 PHP_FUNCTION(dbtheta);
