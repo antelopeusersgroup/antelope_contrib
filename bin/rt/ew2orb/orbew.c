@@ -1,3 +1,16 @@
+/*
+ * orbew.c
+ *
+ * Copyright (c) 2003-2005 Lindquist Consulting, Inc.
+ * All rights reserved. 
+ *                                                                     
+ * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+ * 
+ * This software may be used freely in any way as long as 
+ * the copyright statement above is not removed. 
+ *
+ */
+
 #include <stdlib.h>
 #include "orbew.h"
 
