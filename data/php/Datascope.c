@@ -47,6 +47,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbdestroy, NULL)		
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbjoin, NULL)		
+	PHP_FE(dbnojoin, NULL)		
+	PHP_FE(dbtheta, NULL)		
 	PHP_FE(dbprocess, NULL)		
 	PHP_FE(dbsubset, NULL)		
 	PHP_FE(dbseparate, NULL)		
@@ -1713,6 +1715,116 @@ PHP_FUNCTION(dbex_eval)
 }
 /* }}} */
 
+/* {{{ proto array dbnojoin( array db1, array db2 [, string key, ...] ) */
+PHP_FUNCTION(dbnojoin)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	***args;
+	Dbptr	db1;
+	Dbptr	db2;
+	Dbptr	db;
+	char	*key;
+	Tbl	*pattern1 = 0;
+	Tbl	*pattern2 = 0;
+	Tbl	*halves;
+	int	i;
+
+	if( argc < 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db1 ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[1], &db2 ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+		return;
+	}	
+
+	for( i = 2; i < argc; i++ ) {
+
+		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
+			efree( args );
+			zend_error( E_ERROR, "dbnojoin join-keys must be string values\n" );
+			return;
+		}
+
+		key = Z_STRVAL_PP( args[i] );
+
+		if( pattern1 == (Tbl *) NULL ) {
+
+			pattern1 = newtbl( 0 );
+		}
+
+		if( pattern2 == (Tbl *) NULL ) {
+
+			pattern2 = newtbl( 0 );
+		}
+
+		if( strchr( key, '#' ) == 0 ) {
+
+			pushtbl( pattern1, strdup( key ) );
+			pushtbl( pattern2, strdup( key ) );
+
+		} else {
+			
+			key = strdup( key );
+
+			halves = split( key, '#' );
+
+			pushtbl( pattern1, strdup( shifttbl( halves ) ) );
+			pushtbl( pattern2, strdup( poptbl( halves ) ) );
+
+			freetbl( halves, 0 );
+
+			free( key );
+		}
+	}
+
+	db = dbnojoin( db1, db2, &pattern1, &pattern2, 0 );
+
+	if( pattern1 != (Tbl *) NULL ) {
+	
+		freetbl( pattern1, free );
+	}
+
+	if( pattern2 != (Tbl *) NULL ) {
+	
+		freetbl( pattern2, free );
+	}
+
+	efree( args );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
 /* {{{ proto array dbjoin( array db1, array db2 [, string key, ...] ) */
 PHP_FUNCTION(dbjoin)
 {
@@ -1823,6 +1935,73 @@ PHP_FUNCTION(dbjoin)
 	
 		freetbl( pattern2, free );
 	}
+
+	efree( args );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbtheta( array db1, array db2 [, string expression] ) */
+PHP_FUNCTION(dbtheta)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	***args;
+	Dbptr	db1;
+	Dbptr	db2;
+	Dbptr	db;
+	char	*expression = 0;
+
+	if( argc < 2 || argc > 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db1 ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[1], &db2 ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+		return;
+	}	
+
+	if( argc == 3 ) {
+
+		if( Z_TYPE_PP( args[2] ) != IS_STRING ) {
+
+			efree( args );
+			zend_error( E_ERROR, "dbtheta expression must be a string value\n" );
+			return;
+		}
+
+		expression = Z_STRVAL_PP( args[2] );
+	}
+
+	db = dbtheta( db1, db2, expression, 0, 0 );
 
 	efree( args );
 

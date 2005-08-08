@@ -30,6 +30,8 @@ PHP_FUNCTION(dbadd);
 PHP_FUNCTION(dbputv);
 PHP_FUNCTION(dbnrecs);
 PHP_FUNCTION(dbjoin);
+PHP_FUNCTION(dbnojoin);
+PHP_FUNCTION(dbtheta);
 PHP_FUNCTION(dbprocess);
 PHP_FUNCTION(dbex_eval);
 PHP_FUNCTION(dbextfile);
