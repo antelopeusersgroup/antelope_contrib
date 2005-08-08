@@ -53,7 +53,7 @@ dbputv ($db, field_name, value, [field_name, value, ...])
 dbgetv ($db, field_name [, field_name, ...])
     returns the values of the specified fields for a particular rows
 
-db2xmlP ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )
+db2xml ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )
     returns an XML structure corresponding to a view
 
 <subsection Forming views>
@@ -75,6 +75,12 @@ dbsever ($db, table)
 
 dbjoin ($db1, $db2, ['-outer'], [join-keys])
     create a new view from the input views, using join keys if specified
+
+dbtheta ($db1, $db2, [expression] )
+    create a new view with all combinations of rows, matching expression if specified
+
+dbnojoin ($db1, $db2, [join-keys])
+    return view with all rows in db1 which don't join to db2
 
 dbunjoin ($db, database)
     create a new database from the records of the input view
