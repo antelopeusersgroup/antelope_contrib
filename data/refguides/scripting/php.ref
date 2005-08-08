@@ -70,6 +70,9 @@ dbsort ($db [, -u][, -r][, key, key, ...])
 dbgroup ($db, key [, key, ...])
     group the input view according to the specified keys
 
+dbungroup ($db)
+    separate a grouped view into its component rows
+
 dbsubset ($db, expression)
     returns a new view which is the set of all rows which satisfy the expression
 
