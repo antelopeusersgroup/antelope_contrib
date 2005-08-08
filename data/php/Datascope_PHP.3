@@ -351,6 +351,29 @@ $db = dbnojoin ( $dborigin, $dbassoc ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbsort\fP ( $db [, -r][, -u][, key, ...] )"
+sort the input table according to the specified keys
+.ft CW
+.in 2c
+.nf
+
+$db = dbsort ( $dbwfdisc, 'sta', 'chan' ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbgroup\fP ( $db, key [, key, ...] )"
+group the pre-sorted input table according to the specified keys
+.ft CW
+.in 2c
+.nf
+
+$db = dbsort ( $dbwfdisc, 'sta', 'chan' ) ;
+$db = dbgroup ( $dbwfdisc, 'sta', 'chan' ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbjoin\fP ( $db1, $db2, [join-keys] )"
 returns a new view which joins the two input views, using the join-keys 
 if specified

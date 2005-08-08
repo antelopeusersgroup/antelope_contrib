@@ -46,6 +46,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(ds_dbclose, NULL)		
 	PHP_FE(dbdestroy, NULL)		
 	PHP_FE(dbtruncate, NULL)		
+	PHP_FE(dbsort, NULL)		
+	PHP_FE(dbgroup, NULL)		
 	PHP_FE(dbjoin, NULL)		
 	PHP_FE(dbnojoin, NULL)		
 	PHP_FE(dbtheta, NULL)		
@@ -1818,6 +1820,156 @@ PHP_FUNCTION(dbnojoin)
 	
 		freetbl( pattern2, free );
 	}
+
+	efree( args );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbsort( array db [, string key, ...] ) */
+PHP_FUNCTION(dbsort)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	***args;
+	Dbptr	db;
+	char	*key;
+	Tbl	*sortfields = 0;
+	int	flags = 0;
+	int	i;
+	
+	if( argc < 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db ) < 0 ) {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading bpointer\n" );
+
+		return;
+	}	
+
+	for( i = 1; i < argc; i++ ) {
+
+		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
+			efree( args );
+
+			zend_error( E_ERROR, "dbsort keys must be string values\n" );
+			return;
+		}
+
+		key = Z_STRVAL_PP( args[i] );
+
+		if( strcmp( key, "-u" ) == 0 ) {
+
+			flags |= dbSORT_UNIQUE;
+			continue;
+		}
+
+		if( strcmp( key, "-r" ) == 0 ) {
+
+			flags |= dbSORT_REVERSE;
+			continue;
+		}
+
+		if( sortfields == (Tbl *) NULL ) {
+
+			sortfields = newtbl( 0 );
+		}
+
+		pushtbl( sortfields, key );
+	}
+
+	db = dbsort( db, sortfields, flags, 0 );
+
+	freetbl( sortfields, 0 );
+
+	efree( args );
+
+	RETURN_DBPTR( db );
+}
+
+/* {{{ proto array dbgroup( array db, string key [, string key, ...] ) */
+PHP_FUNCTION(dbgroup)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	***args;
+	Dbptr	db;
+	char	*key;
+	Tbl	*groupfields = 0;
+	int	i;
+	
+	if( argc < 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading bpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR, "dbgroup keys must be string values\n" );
+		return;
+	}
+
+	key = Z_STRVAL_PP( args[1] );
+
+	groupfields = strtbl( key, 0 );
+
+	for( i = 2; i < argc; i++ ) {
+
+		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
+			efree( args );
+			zend_error( E_ERROR, "dbgroup keys must be string values\n" );
+			return;
+		}
+
+		key = Z_STRVAL_PP( args[i] );
+
+		pushtbl( groupfields, key );
+	}
+
+	db = dbgroup( db, groupfields, 0, 1 );
+
+	freetbl( groupfields, 0 );
 
 	efree( args );
 
