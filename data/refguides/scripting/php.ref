@@ -50,8 +50,14 @@ dbadd ($db [, $record] )
 dbputv ($db, field_name, value, [field_name, value, ...])
     change the fields for an existing row to the specified values
 
+dbput ($db [, string])
+    put a raw field or an entire record into database from the scratch record [or the specified string]
+
 dbgetv ($db, field_name [, field_name, ...])
     returns the values of the specified fields for a particular rows
+
+dbget ($db [, 0])
+    get a raw field or an entire record database from the [or load it into the scratch record]
 
 db2xml ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )
     returns an XML structure corresponding to a view

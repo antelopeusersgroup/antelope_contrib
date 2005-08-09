@@ -25,6 +25,8 @@ PHP_FUNCTION(dbtruncate);
 PHP_FUNCTION(dblookup);
 PHP_FUNCTION(dbgetv);
 PHP_FUNCTION(dbaddv);
+PHP_FUNCTION(dbget);
+PHP_FUNCTION(dbput);
 PHP_FUNCTION(dbaddnull);
 PHP_FUNCTION(dbadd);
 PHP_FUNCTION(dbputv);

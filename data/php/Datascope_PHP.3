@@ -339,6 +339,32 @@ $recno = dbadd( $db ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbput\fP ( $db [, record] )"
+Copy from scratch row [or from string] to specified field or row. Note that 
+for almost all common database operations, the routine to use is dbputv() 
+rather than dbput().
+.ft CW
+.in 2c
+.nf
+
+$rc = dbput( $db ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbget\fP ( $db [, 0] )"
+Return [or copy to the scratch row] the specified field or row. Note that 
+for almost all common database operations, the routine to use is dbgetv() 
+rather than dbget().
+.ft CW
+.in 2c
+.nf
+
+$record = dbget( $db ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbnojoin\fP ( $db1, $db2, [join-keys] )"
 returns a new view with all rows of db1 that don't join to db2, using the join-keys 
 if specified

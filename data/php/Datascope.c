@@ -33,6 +33,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbgetv, NULL)		
 	PHP_FE(dbaddv, NULL)		
 	PHP_FE(dbputv, NULL)		
+	PHP_FE(dbget, NULL)		
+	PHP_FE(dbput, NULL)		
 	PHP_FE(dbaddnull, NULL)		
 	PHP_FE(dbadd, NULL)		
 	PHP_FE(dblookup, NULL)		
@@ -686,6 +688,127 @@ PHP_FUNCTION(trloadchan)
 }
 /* }}} */
 
+
+/* {{{ proto int dbput( array db [, string row] ) */
+PHP_FUNCTION(dbput)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*row = 0;
+	int	row_len = 0;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 2 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &row, &row_len )
+	    	== FAILURE) {
+
+			return;
+		}
+	
+	} else {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
+	    	== FAILURE) {
+
+			return;
+		}
+	}
+
+	if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbput( db, 0 );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int dbget( array db [, int scratch] ) */
+PHP_FUNCTION(dbget)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*item = 0;
+	int	item_size = 0;
+	int	argc = ZEND_NUM_ARGS();
+	long	scratch = 0;
+	int	rc;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 2 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "al", 
+					&db_array, &scratch )
+	    	== FAILURE) {
+
+			return;
+		}
+
+		/* It's the presence, not the value of the argument 
+		   that counts here: */
+
+		scratch = 1;
+
+	} else { 	/* argc == 1 */
+	
+		if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
+	    		== FAILURE) {
+
+			return;
+		}
+	}
+
+	if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	if( scratch ) {
+
+		rc = dbget( db, 0 );
+
+		RETURN_LONG( rc );
+
+	} else {
+
+		if( db.record == dbALL ) {
+
+			dbquery( db, dbTABLE_SIZE, &item_size );
+
+		} else {
+
+			dbquery( db, dbRECORD_SIZE, &item_size );
+		}
+
+		item = (char *) emalloc( item_size * sizeof(char) );
+
+		rc = dbget( db, item );
+
+		if( rc < 0 ) {
+			
+			efree( item );
+
+			RETURN_STRING( "", 1 );
+
+		} else {
+
+			RETURN_STRING( item, 0 );				
+		}
+	}
+}
+/* }}} */
 
 /* {{{ proto int dbwrite_view( array db, string filename ) */
 PHP_FUNCTION(dbwrite_view)
