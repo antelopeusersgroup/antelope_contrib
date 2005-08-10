@@ -161,7 +161,11 @@ print pfget_boolean( "trdefaults", "miniseed_sparc_order" ) . "\\n";
 .in
 .ft R
 .IP "\fBtrloadchan\fP ( $db, t0, t1, sta, chan )"
-read channel waveform data
+read channel waveform data into a trace database. The return value
+is a database pointer to a trace table, which contains one row for 
+each relevant segment of waveform data from the input table. The start 
+and end-times t0 and t1 may be either double-precision values giving 
+Unix epoch times, or strings interpretable by the str2epoch(3) command. 
 .ft CW
 .in 2c 
 .nf
@@ -183,12 +187,30 @@ trapply_calib( $tr );
 .in
 .ft R
 .IP "\fBtrextract_data\fP ( $tr )"
-read channel waveform data
+extract an array of waveform data values from a single row of a 
+trace-table.
 .ft CW
 .in 2c 
 .nf
 
 $rawdatapoints = trextract_data( $tr );
+
+.fi
+.in
+.ft R
+.IP "\fBtrdata\fP ( $tr [, $i0 [, $npts]] )"
+read channel waveform data. Without the second and third arguments,
+this function is identical to trextract_data(). The optional second 
+argument $i0 gives the index of the first sample to be returned. Note that 
+this argument is zero-offset, i.e. the first sample is number zero, the 
+second available sample is number 1, etc. The third argument specifies 
+the maximum number of points to return. It fewer are available, trdata() will
+issue a warning and return as many applicable samples as are available. 
+.ft CW
+.in 2c 
+.nf
+
+$rawdatapoints = trdata( $tr, 0, 2000 );
 
 .fi
 .in

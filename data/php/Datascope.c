@@ -91,6 +91,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
+	PHP_FE(trdata, NULL)		
 	PHP_FE(trsplit, NULL)		
 	PHP_FE(trsplice, NULL)		
 	{NULL, NULL, NULL}	
@@ -497,6 +498,103 @@ PHP_FUNCTION(pfget_boolean)
 }
 /* }}} */
 
+/* {{{ proto array trdata( array tr [, int i0 [, int npts]] ) */
+PHP_FUNCTION(trdata)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	float	*data = NULL;
+	int	argc = ZEND_NUM_ARGS();
+	int 	single_row = 0;
+	int	nrecs;
+	int	nsamp_retrieve = 0;
+	int	nsamp_available = 0;
+	long 	nsamp_requested = -1;
+	long	i0 = 0;
+	int	isource;
+	int	idest;
+
+	if( argc < 1 || argc > 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( argc == 1 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "a", &tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 2 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "al", &tr_array,
+	    &i0 ) == FAILURE) {
+
+		return;
+
+	} else if( argc == 3 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "all", &tr_array,
+	    &i0, &nsamp_requested ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	dbquery( tr, dbRECORD_COUNT, &nrecs );
+
+	if( tr.record == dbALL ) {
+		if( nrecs == 1 ) {
+			single_row = 1;
+			tr.record = 0;
+		} else {
+			single_row = 0;
+		}
+	} else {
+		single_row = 1;
+	}
+
+	if( ! single_row ) {
+
+		zend_error( E_ERROR, "trextract_data requires that the "
+			"trace-object point at or contain only a single row\n");
+	}
+
+	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, 0 );
+
+	if( nsamp_available == 0 || data == NULL ) {
+	
+		zend_error( E_ERROR, 
+			"trextract_data: no data in trace object\n" );
+	}
+
+	array_init( return_value );
+
+	nsamp_retrieve = nsamp_available - i0;
+
+	if( nsamp_retrieve < nsamp_requested ) {
+		
+		zend_error( E_WARNING, "trdata: requested more samples than "
+			"are available in this row; truncating returned "
+			"array\n" );
+
+	} else if( nsamp_requested != -1 ) {
+
+		nsamp_retrieve = nsamp_requested;
+	}
+		
+	for( idest = 0, isource = i0;
+		idest < nsamp_retrieve; 
+			idest++, isource++ ) {
+		
+		add_index_double( return_value, idest, (double) data[isource] );
+	}
+
+	return;
+}
+/* }}} */
+
 /* {{{ proto array trextract_data( array tr ) */
 PHP_FUNCTION(trextract_data)
 {
@@ -679,36 +777,136 @@ PHP_FUNCTION(trfree)
 /* {{{ proto array trloadchan( array db, double t0, double t1, string sta, string chan ) */
 PHP_FUNCTION(trloadchan)
 {
-	zval	*db_array;
+	zval	***args;
+	int	argc = ZEND_NUM_ARGS();
 	Dbptr	db;
 	Dbptr	tr;
-	int	argc = ZEND_NUM_ARGS();
 	double	t0;
 	double	t1;
-	char	*sta;
-	int	sta_len;
-	char	*chan;
-	int	chan_len;
+	char	*t0_string = 0;
+	char	*t1_string = 0;
+	char	*sta = 0;
+	char	*chan = 0;
 
 	if( argc != 5 ) {
 
 		WRONG_PARAM_COUNT;
 	}
 
-	/* SCAFFOLD should overload t0 and t1 to optionally be strings */
-	if( zend_parse_parameters( argc TSRMLS_CC, "addss", 
-					&db_array, &t0, &t1,
-					&sta, &sta_len, &chan, &chan_len )
-	    == FAILURE) {
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
 
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
 		return;
+	}
 
-	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) == IS_DOUBLE ) {
+
+		t0 = Z_DVAL_PP( args[1] );
+
+	} else if( Z_TYPE_PP( args[1] ) == IS_STRING ) {
+
+		t0_string = Z_STRVAL_PP( args[1] );
+
+		if( dbstrtype( db, t0_string ) == strTIME ) {
+			
+			t0 = str2epoch( t0_string );
+
+		} else {
+
+			efree( args );
+
+			zend_error( E_ERROR, "Error reading value for t0: must "
+			   "be a double-precision epoch time or a string "
+			   "interpretable by str2epoch(3)\n" );
+
+			return;
+		}
+
+	} else {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading value for t0: must be a "
+		   "double-precision epoch time or a string interpretable by "
+		   "str2epoch(3)\n" );
 
 		return;
 	}
 
+	if( Z_TYPE_PP( args[2] ) == IS_DOUBLE ) {
+
+		t1 = Z_DVAL_PP( args[2] );
+
+	} else if( Z_TYPE_PP( args[2] ) == IS_STRING ) {
+
+		t1_string = Z_STRVAL_PP( args[2] );
+
+		if( dbstrtype( db, t1_string ) == strTIME ) {
+			
+			t1 = str2epoch( t1_string );
+
+		} else {
+
+			efree( args );
+
+			zend_error( E_ERROR, "Error reading value for t1: must "
+			   "be a double-precision epoch time or a string "
+			   "interpretable by str2epoch(3)\n" );
+
+			return;
+		}
+
+	} else {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading value for t1: must be a "
+		   "double-precision epoch time or a string interpretable by "
+		   "str2epoch(3)\n" );
+
+		return;
+	}
+
+
+	if( Z_TYPE_PP( args[3] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR, "station-name must be string value\n" );
+		return;
+
+	} else {
+
+		sta = Z_STRVAL_PP( args[3] );
+	}
+
+	if( Z_TYPE_PP( args[4] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR, "channel-name must be string value\n" );
+		return;
+
+	} else {
+
+		chan = Z_STRVAL_PP( args[4] );
+	}
+
 	tr = trloadchan( db, t0, t1, sta, chan );
+
+	efree( args );
 
 	RETURN_DBPTR( tr );
 }

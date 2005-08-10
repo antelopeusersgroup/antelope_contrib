@@ -69,6 +69,7 @@ PHP_FUNCTION(trsplice);
 PHP_FUNCTION(trloadchan);
 PHP_FUNCTION(trfree);
 PHP_FUNCTION(trextract_data);
+PHP_FUNCTION(trdata);
 PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
 PHP_FUNCTION(strtime);
