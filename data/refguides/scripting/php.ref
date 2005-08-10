@@ -117,6 +117,9 @@ trapply_calib ( $tr )
 trextract_data ( $tr )
     extract waveform data into a PHP array
 
+trdata ( $tr [, $i0 [, $npts]] )
+    extract waveform data into a PHP array, specifying the starting index $i0 and maximum number of points to return if desired
+
 trfree ( $tr )
     free a Datascope trace-object structure
 
