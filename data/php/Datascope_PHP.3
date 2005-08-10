@@ -264,6 +264,28 @@ $filename = dbextfile( $db ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbcompile\fP( $db, string )"
+dynamically add new attributes or relations to the schema
+.ft CW
+.in 2c
+.nf
+
+$rc = dbcompile( $db, $schema_addition ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbnextid\fP( $db, id_name )"
+get the next free id value for the specified id_name
+.ft CW
+.in 2c
+.nf
+
+$orid = dbnextid( $db, 'orid' ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdbfind\fP ( $db, $expression, [, $first [, $reverse]] )"
 Find the first record in the specified database that matches the 
 given expression. The search starts from the record indicated by the
@@ -275,6 +297,27 @@ forwards unless $reverse is given as non-zero.
 
 $record = dbfind( $db, "sta == \\"PFO\\"" ) ;
 $db[3] = $record;
+
+.fi
+.in
+.ft R
+.IP "\fBdbmatches\fP ( $dbk, $dbt, $hookname [, join-keys] )"
+Find records in the table $dbt which match the primary keys [or specified 
+join-keys] of the single record in $dbk. A string $hookname should be 
+given which uniquely identifies this combination of tables and keys. 
+The return value is a list of the record numbers for the matching records. 
+.ft CW
+.in 2c
+.nf
+
+$dbk = dblookup( $db, "", "wfdisc", "", "dbSCRATCH" );
+$dbt = dblookup( $db, "", "wfdisc", "", "" );
+
+dbputv( $dbk, 'sta', 'TKM' );
+
+$recs = dbmatches( $dbk, $dbt, 'station_hook', 'sta' );
+
+print_r( $recs );
 
 .fi
 .in
@@ -361,6 +404,28 @@ rather than dbget().
 .nf
 
 $record = dbget( $db ) ;
+
+.fi
+.in
+.ft R
+.IP "\fBdbadd_remark\fP ( $db, remark )"
+add comment in remark table for row $db
+.ft CW
+.in 2c
+.nf
+
+dbadd_remark( $db, 'some comment' );
+
+.fi
+.in
+.ft R
+.IP "\fBdbget_remark\fP ( $db )"
+get any comment from remark table for row $db
+.ft CW
+.in 2c
+.nf
+
+echo dbget_remark( $db );
 
 .fi
 .in
@@ -555,6 +620,29 @@ Destroy all tables of a Datascope database
 .nf
 
 dbdestroy ( $db );
+
+.fi
+.in
+.ft R
+.IP "\fBdbinvalid\fP ()"
+return a database pointer of dbINVALID
+.ft CW
+.in 2c
+.nf
+
+$db = dbinvalid ( );
+
+.fi
+.in
+.ft R
+.IP "\fBdbstrtype\fP ($db, string)"
+classifies string, returning "strREAL", "strINTEGER", "strNULL", 
+"strSTRING" , "strTIME", "strFIELD", or "strUNKNOWN"
+.ft CW
+.in 2c
+.nf
+
+$type =  dbstrtype ( $db, $value );
 
 .fi
 .in

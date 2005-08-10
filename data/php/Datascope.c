@@ -26,13 +26,18 @@
 static int le_Datascope;
 static int le_dbresponse;
 
+static Arr *Hooks = 0;
+
 function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
 	PHP_FE(dbfind, NULL)		
+	PHP_FE(dbmatches, NULL)		
 	PHP_FE(dbgetv, NULL)		
 	PHP_FE(dbaddv, NULL)		
 	PHP_FE(dbputv, NULL)		
+	PHP_FE(dbadd_remark, NULL)		
+	PHP_FE(dbget_remark, NULL)		
 	PHP_FE(dbget, NULL)		
 	PHP_FE(dbput, NULL)		
 	PHP_FE(dbaddnull, NULL)		
@@ -46,6 +51,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(ds_dbcreate, NULL)		
 	PHP_FE(dbfree, NULL)		
 	PHP_FE(ds_dbclose, NULL)		
+	PHP_FE(dbinvalid, NULL)		
+	PHP_FE(dbstrtype, NULL)		
 	PHP_FE(dbdestroy, NULL)		
 	PHP_FE(dbtruncate, NULL)		
 	PHP_FE(dbsort, NULL)		
@@ -65,6 +72,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(dbwrite_view, NULL)		
 	PHP_FE(dbread_view, NULL)		
 	PHP_FE(dbsave_view, NULL)		
+	PHP_FE(dbcompile, NULL)		
+	PHP_FE(dbnextid, NULL)		
 	PHP_FE(dbmark, NULL)		
 	PHP_FE(dbdelete, NULL)		
 	PHP_FE(dbcrunch, NULL)		
@@ -381,6 +390,23 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto array dbinvalid( array db, ... ) */
+PHP_FUNCTION(dbinvalid)
+{
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	db = dbinvalid();
+
+	RETURN_DBPTR( db );
 }
 /* }}} */
 
@@ -807,6 +833,198 @@ PHP_FUNCTION(dbget)
 			RETURN_STRING( item, 0 );				
 		}
 	}
+}
+/* }}} */
+
+/* {{{ proto int dbcompile( array db, string element ) */
+PHP_FUNCTION(dbcompile)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*element;
+	int	element_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &element, &element_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbcompile( db, element );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int dbadd_remark( array db, string remark ) */
+PHP_FUNCTION(dbadd_remark)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*remark;
+	int	remark_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &remark, &remark_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbadd_remark( db, remark );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int dbget_remark( array db ) */
+PHP_FUNCTION(dbget_remark)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*remark = 0;
+	char	*remark_safe_copy;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = dbget_remark( db, &remark );
+
+	if( rc == 0 ) {
+
+		remark_safe_copy = estrdup( remark );		
+
+		free( remark );
+
+		RETURN_STRING( remark_safe_copy, 0 );
+
+	} else {
+
+		return;
+	}
+}
+/* }}} */
+
+/* {{{ proto string dbstrtype( array db, string value ) */
+PHP_FUNCTION(dbstrtype)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*value;
+	int	value_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	type;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &value, &value_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	type = dbstrtype( db, value );
+
+	switch( type ) {
+	case strREAL:
+		RETURN_STRING( "strREAL", 1 );
+		break;
+	case strINTEGER:
+		RETURN_STRING( "strINTEGER", 1 );
+		break;
+	case strNULL:
+		RETURN_STRING( "strNULL", 1 );
+		break;
+	case strSTRING:
+		RETURN_STRING( "strSTRING", 1 );
+		break;
+	case strTIME:
+		RETURN_STRING( "strTIME", 1 );
+		break;
+	case strFIELD:
+		RETURN_STRING( "strFIELD", 1 );
+		break;
+	default:
+		RETURN_STRING( "strUNKNOWN", 1 );
+		break;
+	}
+}
+/* }}} */
+
+/* {{{ proto int dbnextid( array db, string id_name ) */
+PHP_FUNCTION(dbnextid)
+{
+	zval	*db_array;
+	Dbptr	db;
+	char	*id_name;
+	int	id_name_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	id;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array, &id_name, &id_name_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	id = dbnextid( db, id_name );
+
+	RETURN_LONG( id );
 }
 /* }}} */
 
@@ -2282,6 +2500,167 @@ PHP_FUNCTION(dbtheta)
 	efree( args );
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbmatches( array db1, array db2, string hookname [, string key, ...] ) */
+PHP_FUNCTION(dbmatches)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	***args;
+	Dbptr	dbk;
+	Dbptr	dbt;
+	char	*hookname = 0;
+	char	*key = 0;
+	Tbl	*kpattern = 0;
+	Tbl	*tpattern = 0;
+	Tbl	*halves = 0;
+	Tbl	*matches = 0;
+	Hook	*hook = 0;
+	int	hook_is_new;
+	int	rc;
+	int	i;
+
+	if( argc < 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &dbk ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading first dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[1], &dbt ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading second dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[2] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR,
+			"dbmatches hookname must be a string value\n" );
+		return;
+	}
+
+	hookname = Z_STRVAL_PP( args[2] );
+
+	if( Hooks == (Arr *) NULL ) {
+		
+		Hooks = newarr( 0 );
+	}
+
+	if( ( hook = getarr( Hooks, hookname ) ) == 0 ) {
+
+		hook_is_new = 1;
+
+	} else {
+
+		hook_is_new = 0;
+	}
+
+	for( i = 3; i < argc; i++ ) {
+
+		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
+			efree( args );
+			zend_error( E_ERROR, "dbmatches join-keys must be string values\n" );
+			return;
+		}
+
+		key = Z_STRVAL_PP( args[i] );
+
+		if( kpattern == (Tbl *) NULL ) {
+
+			kpattern = newtbl( 0 );
+		}
+
+		if( tpattern == (Tbl *) NULL ) {
+
+			tpattern = newtbl( 0 );
+		}
+
+		if( strchr( key, '#' ) == 0 ) {
+
+			pushtbl( kpattern, strdup( key ) );
+			pushtbl( tpattern, strdup( key ) );
+
+		} else {
+			
+			key = strdup( key );
+
+			halves = split( key, '#' );
+
+			pushtbl( kpattern, strdup( shifttbl( halves ) ) );
+			pushtbl( tpattern, strdup( poptbl( halves ) ) );
+
+			freetbl( halves, 0 );
+
+			free( key );
+		}
+	}
+
+	rc = dbmatches( dbk, dbt, &kpattern, &tpattern, &hook, &matches );
+
+	if( rc < 0 ) {
+
+		efree( args );
+
+		zend_error( E_ERROR, "dbmatches failed!\n" );
+
+		return;
+	}
+
+	if( hook_is_new && hook != (Hook *) NULL ) {
+		
+		setarr( Hooks, hookname, hook );
+	}
+
+	array_init( return_value );
+
+	for( i = 0; i < maxtbl( matches ); i++ ) {
+		
+		add_index_long( return_value, i, (long) gettbl( matches, i ) );
+	}
+
+	if( kpattern != (Tbl *) NULL ) {
+	
+		freetbl( kpattern, free );
+	}
+
+	if( tpattern != (Tbl *) NULL ) {
+	
+		freetbl( tpattern, free );
+	}
+
+	efree( args );
+
+	freetbl( matches, 0 );
+
+	return;
 }
 /* }}} */
 

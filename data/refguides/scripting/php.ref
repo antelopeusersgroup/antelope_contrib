@@ -59,6 +59,12 @@ dbgetv ($db, field_name [, field_name, ...])
 dbget ($db [, 0])
     get a raw field or an entire record database from the [or load it into the scratch record]
 
+dbadd_remark ($db, remark )
+    add comment in remark table for the specified row
+
+dbget_remark ($db)
+    get any comment from remark table for the specified row
+
 db2xml ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )
     returns an XML structure corresponding to a view
 
@@ -126,11 +132,27 @@ dbnrecs ($db)
 dbex_eval ($db, expression)
     evaluate expression for a particular row
 
+dbcompile ($db, string)
+    dynamically add new attributes or relations to the schema
+
+dbnextid ($db, id_name)
+    get the next free id value for the specified id_name
+
+dbinvalid ()
+    return a database pointer of dbINVALID
+
+dbstrtype ($db, string)
+    classifies string, returning "strREAL", "strINTEGER", "strNULL", "strSTRING", 
+    "strTIME", "strFIELD", or "strUNKNOWN"
+
 dbextfile ($db [, base-table])
     return the filename for an external file for a particular row in a view
 
 dbfind ($db, expression, [, first [, reverse]])
     find a record matching an expression
+
+dbmatches ($dbk, $dbt, $hookname [, join-keys])
+    return row numbers of records in $dbt that match the single row $dbk
 
 <subsection Time conversion>
 
