@@ -111,14 +111,20 @@ dbunjoin ($db, database)
 trloadchan ( $db, t0, t1, sta, chan )
     load a channel of waveform data into a Datascope trace object
 
+trsample ( $db, t0, t1, sta, chan [, apply_calib] )
+    load a channel of waveform data into a PHP array of alternating epoch-time and data-value
+
 trapply_calib ( $tr )
     multiply waveform data in trace object by calib value
 
 trextract_data ( $tr )
     extract waveform data into a PHP array
 
-trdata ( $tr [, $i0 [, $npts]] )
+trdata ( $tr [, i0 [, npts]] )
     extract waveform data into a PHP array, specifying the starting index $i0 and maximum number of points to return if desired
+
+trfilter ( $tr, filter )
+    filter data in-place according to the given filter-description string
 
 trfree ( $tr )
     free a Datascope trace-object structure
