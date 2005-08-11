@@ -89,6 +89,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(strlocaldate, NULL)		
 	PHP_FE(trapply_calib, NULL)		
 	PHP_FE(trloadchan, NULL)		
+	PHP_FE(trfilter, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
 	PHP_FE(trdata, NULL)		
@@ -256,8 +257,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 		} else if( Z_TYPE_PP( zvalue ) == IS_BOOL ) {
 			value->i = Z_BVAL_PP( zvalue );
 		} else if( Z_TYPE_PP( zvalue ) == IS_STRING ) {
-			/* SCAFFOLD: Should translate string */
-			value->i = atoi( Z_STRVAL_PP( zvalue ) );
+			value->i = yesno( Z_STRVAL_PP( zvalue ) );
 		} else {
 			return -1;
 		}
@@ -689,6 +689,7 @@ PHP_FUNCTION(trapply_calib)
 }
 /* }}} */
 
+/* {{{ proto array trsplit( array tr ) */
 PHP_FUNCTION(trsplit)
 {
 	zval	*tr_array;
@@ -717,6 +718,7 @@ PHP_FUNCTION(trsplit)
 }
 /* }}} */
 
+/* {{{ proto array trsplice( array tr ) */
 PHP_FUNCTION(trsplice)
 {
 	zval	*tr_array;
@@ -771,6 +773,38 @@ PHP_FUNCTION(trfree)
 	trfree( tr );
 
 	return;
+}
+/* }}} */
+
+/* {{{ proto array trfilter( array tr, string filter ) */
+PHP_FUNCTION(trfilter)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	char	*filter;
+	int	filter_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+			&tr_array, &filter, &filter_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	rc = trfilter( tr, filter );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 

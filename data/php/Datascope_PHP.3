@@ -238,6 +238,18 @@ trsplice( $tr );
 .fi
 .in
 .ft R
+.IP "\fBtrfilter\fP ( $tr, $filter )"
+Filter data in-place according to the specified filter string, 
+as documented in trfilter(3).
+.ft CW
+.in 2c 
+.nf
+
+$rc = trfilter( $tr, 'BW 1.0 4 5.0 4' );
+
+.fi
+.in
+.ft R
 .IP "\fBtrfree\fP ( $tr )"
 free a trace-object pointer
 .ft CW
