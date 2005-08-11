@@ -175,6 +175,24 @@ $tr = trloadchan( $db, $t0, $t1, $sta, $chan );
 .fi
 .in
 .ft R
+.IP "\fBtrsample\fP ( $db, t0, t1, sta, chan [, apply_calib] )"
+Read channel waveform data from the specified table (usually wfdisc)
+for the given time range, station, and channel name into a PHP array 
+of time/value pairs (time for datapoint with index zero, value for datapoint 
+with index zero, time for datapoint with index one, value for datapoint
+with index one, etc.). The t0 and t1 arguments may be epoch times or
+strings interpretable by str2epoch(3). If apply_calib is specified and 
+nonzero, any existing non-zero calibration values will be applied to the 
+data. Otherwise the raw counts will be returned. 
+.ft CW
+.in 2c 
+.nf
+
+$time_value_array = trsample( $db, $t0, $t1, $sta, $chan, 1 );
+
+.fi
+.in
+.ft R
 .IP "\fBtrapply_calib\fP ( $tr )"
 multiply waveform data in  trace  object by calib value
 .ft CW

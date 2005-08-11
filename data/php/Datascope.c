@@ -89,6 +89,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(strlocaldate, NULL)		
 	PHP_FE(trapply_calib, NULL)		
 	PHP_FE(trloadchan, NULL)		
+	PHP_FE(trsample, NULL)		
 	PHP_FE(trfilter, NULL)		
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
@@ -915,7 +916,6 @@ PHP_FUNCTION(trloadchan)
 		return;
 	}
 
-
 	if( Z_TYPE_PP( args[3] ) != IS_STRING ) {
 
 		efree( args );
@@ -946,6 +946,196 @@ PHP_FUNCTION(trloadchan)
 }
 /* }}} */
 
+/* {{{ proto array trsample( array db, double t0, double t1, string sta, string chan [, int apply_calib] ) */
+PHP_FUNCTION(trsample)
+{
+	zval	***args;
+	int	argc = ZEND_NUM_ARGS();
+	Dbptr	db;
+	Dbptr	tr;
+	double	t0;
+	double	t1;
+	char	*t0_string = 0;
+	char	*t1_string = 0;
+	char	*sta = 0;
+	char	*chan = 0;
+	int	apply_calib = 0;
+	int	nrecs;
+	int	nsamp;
+	int	itrace;
+	int	ireturn = 0;
+	double	time;
+	double	samprate;
+	float	*data;
+
+	if( argc < 5 || argc > 6 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	args = (zval ***) emalloc( argc * sizeof(zval **) );
+
+	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
+
+		efree( args );
+		return;
+	}
+
+	if( Z_TYPE_PP( args[0] ) != IS_ARRAY ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+
+	} else if( z_arrval_to_dbptr( *args[0], &db ) < 0 ) {
+
+		efree( args );
+		zend_error( E_ERROR, "Error reading dbpointer\n" );
+		return;
+	}	
+
+	if( Z_TYPE_PP( args[1] ) == IS_DOUBLE ) {
+
+		t0 = Z_DVAL_PP( args[1] );
+
+	} else if( Z_TYPE_PP( args[1] ) == IS_STRING ) {
+
+		t0_string = Z_STRVAL_PP( args[1] );
+
+		if( dbstrtype( db, t0_string ) == strTIME ) {
+			
+			t0 = str2epoch( t0_string );
+
+		} else {
+
+			efree( args );
+
+			zend_error( E_ERROR, "Error reading value for t0: must "
+			   "be a double-precision epoch time or a string "
+			   "interpretable by str2epoch(3)\n" );
+
+			return;
+		}
+
+	} else {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading value for t0: must be a "
+		   "double-precision epoch time or a string interpretable by "
+		   "str2epoch(3)\n" );
+
+		return;
+	}
+
+	if( Z_TYPE_PP( args[2] ) == IS_DOUBLE ) {
+
+		t1 = Z_DVAL_PP( args[2] );
+
+	} else if( Z_TYPE_PP( args[2] ) == IS_STRING ) {
+
+		t1_string = Z_STRVAL_PP( args[2] );
+
+		if( dbstrtype( db, t1_string ) == strTIME ) {
+			
+			t1 = str2epoch( t1_string );
+
+		} else {
+
+			efree( args );
+
+			zend_error( E_ERROR, "Error reading value for t1: must "
+			   "be a double-precision epoch time or a string "
+			   "interpretable by str2epoch(3)\n" );
+
+			return;
+		}
+
+	} else {
+
+		efree( args );
+
+		zend_error( E_ERROR, "Error reading value for t1: must be a "
+		   "double-precision epoch time or a string interpretable by "
+		   "str2epoch(3)\n" );
+
+		return;
+	}
+
+	if( Z_TYPE_PP( args[3] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR, "station-name must be string value\n" );
+		return;
+
+	} else {
+
+		sta = Z_STRVAL_PP( args[3] );
+	}
+
+	if( Z_TYPE_PP( args[4] ) != IS_STRING ) {
+
+		efree( args );
+		zend_error( E_ERROR, "channel-name must be string value\n" );
+		return;
+
+	} else {
+
+		chan = Z_STRVAL_PP( args[4] );
+	}
+
+	if( argc == 6 ) {
+
+		if( Z_TYPE_PP( args[5] ) != IS_LONG ) {
+
+			efree( args );
+			zend_error( E_ERROR, 
+				"apply_calib must be an integer value\n" );
+			return;
+
+		} else {
+
+			apply_calib = Z_LVAL_PP( args[5] );
+		}
+	}
+
+	tr = trloadchan( db, t0, t1, sta, chan );
+
+	if( apply_calib ) {
+		
+		trapply_calib( tr );
+	}
+
+	array_init( return_value );
+
+	dbquery( tr, dbRECORD_COUNT, &nrecs );
+
+	for( tr.record = 0; tr.record < nrecs; tr.record++ ) {
+
+		dbgetv( tr, 0, "time", &time, 
+			       "nsamp", &nsamp,
+			       "samprate", &samprate,
+			       "data", &data,
+			       0 );
+
+		for( itrace = 0; itrace < nsamp; itrace++ ) {
+
+			add_index_double( return_value, 
+					  ireturn++, 
+					  SAMP2TIME( time, samprate, itrace ) );
+
+			add_index_double( return_value, 
+					  ireturn++, 
+					  (double) data[itrace] );
+		}
+	}
+
+	trdestroy( &tr );
+
+	efree( args );
+
+	return;
+}
+/* }}} */
 
 /* {{{ proto int dbput( array db [, string row] ) */
 PHP_FUNCTION(dbput)
@@ -1667,6 +1857,7 @@ PHP_FUNCTION(eval_response)
 	eval_response( omega, response, &real, &imag );
 
 	array_init( return_value );
+
 	add_index_double( return_value, 0, real );
 	add_index_double( return_value, 1, imag );
 
