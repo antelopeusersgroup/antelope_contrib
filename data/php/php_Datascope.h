@@ -72,6 +72,11 @@ PHP_FUNCTION(trfilter);
 PHP_FUNCTION(trfree);
 PHP_FUNCTION(trextract_data);
 PHP_FUNCTION(trdata);
+PHP_FUNCTION(trendtime);
+PHP_FUNCTION(trnsamp);
+PHP_FUNCTION(trsamp2time);
+PHP_FUNCTION(trsamprate);
+PHP_FUNCTION(trtime2samp);
 PHP_FUNCTION(eval_response);
 PHP_FUNCTION(strtdelta);
 PHP_FUNCTION(strtime);
@@ -80,6 +85,12 @@ PHP_FUNCTION(strdate);
 PHP_FUNCTION(strlocaltime);
 PHP_FUNCTION(strlocalydtime);
 PHP_FUNCTION(strlocaldate);
+PHP_FUNCTION(now);
+PHP_FUNCTION(is_epoch_string);
+PHP_FUNCTION(epoch2str);
+PHP_FUNCTION(str2epoch);
+PHP_FUNCTION(epoch);
+PHP_FUNCTION(yearday);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)

@@ -23,6 +23,10 @@
 #include "pf.h"
 #include "dbxml.h"
 
+/* Prevent the deviants.h reassignment to std_now() from corrupting
+ * the name of the PHP function */
+#undef now
+
 static int le_Datascope;
 static int le_dbresponse;
 
@@ -87,6 +91,12 @@ function_entry Datascope_functions[] = {
 	PHP_FE(strlocaltime, NULL)		
 	PHP_FE(strlocalydtime, NULL)		
 	PHP_FE(strlocaldate, NULL)		
+	PHP_FE(now, NULL)
+	PHP_FE(is_epoch_string, NULL)
+	PHP_FE(epoch2str, NULL)
+	PHP_FE(str2epoch, NULL)
+	PHP_FE(epoch, NULL)
+	PHP_FE(yearday, NULL)			 
 	PHP_FE(trapply_calib, NULL)		
 	PHP_FE(trloadchan, NULL)		
 	PHP_FE(trsample, NULL)		
@@ -96,6 +106,11 @@ function_entry Datascope_functions[] = {
 	PHP_FE(trdata, NULL)		
 	PHP_FE(trsplit, NULL)		
 	PHP_FE(trsplice, NULL)		
+	PHP_FE(trendtime, NULL)
+	PHP_FE(trnsamp, NULL)
+	PHP_FE(trsamp2time, NULL)
+	PHP_FE(trsamprate, NULL)
+	PHP_FE(trtime2samp, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -392,6 +407,319 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto double now( void ) */
+PHP_FUNCTION(now)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+
+	if( argc != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	epoch = std_now();
+
+	RETURN_DOUBLE( epoch );
+}
+/* }}} */
+
+/* {{{ proto double is_epoch_string( string timestring ) */
+PHP_FUNCTION(is_epoch_string)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*timestring;
+	int	timestring_len;
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+				&timestring, &timestring_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = is_epoch_string( timestring, &epoch );
+
+	if( rc > 0 ) {
+
+		RETURN_DOUBLE( epoch );
+
+	} else {
+
+		return;
+	}
+}
+/* }}} */
+
+/* {{{ proto double epoch( int yearday ) */
+PHP_FUNCTION(epoch)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time;
+	long	yearday;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", 
+				&yearday )
+	    == FAILURE) {
+
+		return;
+	}
+
+	time = epoch( yearday );
+
+	RETURN_DOUBLE( time );
+}
+/* }}} */
+
+/* {{{ proto int yearday( double epoch ) */
+PHP_FUNCTION(yearday)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	int	yd;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "d", 
+				&epoch )
+	    == FAILURE) {
+
+		return;
+	}
+
+	yd = yearday( epoch );
+
+	RETURN_LONG( yd );
+}
+/* }}} */
+
+/* {{{ proto double str2epoch( string timestring ) */
+PHP_FUNCTION(str2epoch)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*timestring;
+	int	timestring_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+				&timestring, &timestring_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	epoch = str2epoch( timestring );
+
+	RETURN_DOUBLE( epoch );
+}
+/* }}} */
+
+/* {{{ proto string epoch2str( double epoch, string format [, string timezone] ) */
+PHP_FUNCTION(epoch2str)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	epoch;
+	char	*format = 0;
+	int	format_len;
+	char	*timezone = 0;
+	int	timezone_len = 0;
+	char	*timestring;
+	char	*timestring_safe_copy;
+
+	if( argc < 2 || argc > 3 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 2 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "ds", 
+			&epoch, &format, &format_len )
+	    		== FAILURE) {
+
+			return;
+		}
+
+	} else {	/* argc == 3 */
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "dss", 
+			&epoch, &format, &format_len, &timezone, &timezone_len )
+	    		== FAILURE) {
+
+			return;
+		}
+	}
+
+	timestring = zepoch2str( epoch, format, timezone );
+
+	if( timestring == 0 ) {
+		
+		zend_error( E_ERROR, "Time conversion failure\n" );
+		return;
+	} 
+
+	timestring_safe_copy = estrdup( timestring );
+
+	free( timestring );
+
+	RETURN_STRING( timestring_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto int trtime2samp( double time0, double samprate, double time1 ) */
+PHP_FUNCTION(trtime2samp)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time0;
+	double	samprate;
+	double	time1;
+	int	isamp;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddd", 
+			&time0, &samprate, &time1 )
+	    == FAILURE) {
+
+		return;
+	}
+
+	isamp = TIME2SAMP( time0, samprate, time1 );
+
+	RETURN_LONG( isamp );
+}
+/* }}} */
+
+/* {{{ proto double trsamp2time( double time0, double samprate, int isamp ) */
+PHP_FUNCTION(trsamp2time)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time0;
+	double	samprate;
+	long	isamp;
+	double	time1;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddl", 
+			&time0, &samprate, &isamp )
+	    == FAILURE) {
+
+		return;
+	}
+
+	time1 = SAMP2TIME( time0, samprate, isamp );
+
+	RETURN_DOUBLE( time1 );
+}
+/* }}} */
+
+/* {{{ proto double trsamprate( double time0, int nsamp, double endtime ) */
+PHP_FUNCTION(trsamprate)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time0;
+	long	nsamp;
+	double	endtime;
+	double	samprate;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "dld", 
+			&time0, &nsamp, &endtime )
+	    == FAILURE) {
+
+		return;
+	}
+
+	samprate = SAMPRATE( time0, nsamp, endtime );
+
+	RETURN_DOUBLE( samprate );
+}
+/* }}} */
+
+/* {{{ proto int trnsamp( double time0, double samprate, double endtime ) */
+PHP_FUNCTION(trnsamp)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time0;
+	double	samprate;
+	double	endtime;
+	int	nsamp;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddd", 
+			&time0, &samprate, &endtime )
+	    == FAILURE) {
+
+		return;
+	}
+
+	nsamp = NSAMP( time0, samprate, endtime );
+
+	RETURN_LONG( nsamp );
+}
+/* }}} */
+
+/* {{{ proto double trendtime( double time0, double samprate, int nsamp ) */
+PHP_FUNCTION(trendtime)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	time0;
+	double	samprate;
+	long	nsamp;
+	double	endtime;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ddl", 
+			&time0, &samprate, &nsamp )
+	    == FAILURE) {
+
+		return;
+	}
+
+	endtime = ENDTIME( time0, samprate, nsamp );
+
+	RETURN_DOUBLE( endtime );
 }
 /* }}} */
 

@@ -32,6 +32,18 @@ are wrappers around the respective C function calls, the documentation
 on the identically-named C routines may also be helpful.
 
 .SS Datascope functions
+.IP "\fBTEMPLATE\fP ( TEMPLATE )"
+TEMPLATE EXPLANATION
+.ft CW
+.in 2c
+.nf
+
+TEMPLATE = TEMPLATE 
+
+.fi
+.in
+.ft R
+
 .IP "\fBds_dbopen\fP ( database, permissions )"
 Returns a database pointer to the specified database.
 .ft CW
@@ -183,7 +195,10 @@ with index zero, time for datapoint with index one, value for datapoint
 with index one, etc.). The t0 and t1 arguments may be epoch times or
 strings interpretable by str2epoch(3). If apply_calib is specified and 
 nonzero, any existing non-zero calibration values will be applied to the 
-data. Otherwise the raw counts will be returned. 
+data. Otherwise the raw counts will be returned. Note the possibility that 
+the data for this station-channel may be incomplete for the given time 
+window (consisting of several disjoint segments), in which case the timestamps
+in the time,value pairs will not necessarily be contiguous.
 .ft CW
 .in 2c 
 .nf
@@ -275,6 +290,70 @@ free a trace-object pointer
 .nf
 
 trfree( $tr );
+
+.fi
+.in
+.ft R
+
+.IP "\fBtrtime2samp\fP ( $time0, $samprate, $time1 )"
+Find the sample index of a datapoint given its timestamp, plus the start-time
+and sample rate of the time series
+.ft CW
+.in 2c 
+.nf
+
+$isamp = trtime2samp( $time0, $samprate, $time1 );
+
+.fi
+.in
+.ft R
+.IP "\fBtrsamp2time\fP ( $time0, $samprate, $isamp )"
+Find the timestamp of a datapoint given its sample index (zero-offset), 
+plus the start-time and sample rate of the time series
+.ft CW
+.in 2c 
+.nf
+
+$time1 = trsamp2time( $time0, $samprate, $isamp );
+
+.fi
+.in
+.ft R
+.IP "\fBtrsamprate\fP ( $time0, $nsamp, $endtime )"
+Find the sample-rate of a time-series given its start-time, end-time, 
+and number of samples. Note that the end-time is the exact timestamp 
+of the very last data point that is actually present in the time-series. 
+.ft CW
+.in 2c 
+.nf
+
+$samprate = trsamprate( $time0, $nsamp, $endtime );
+
+.fi
+.in
+.ft R
+.IP "\fBtrnsamp\fP ( $time0, $samprate, $endtime )"
+Find the number of samples in a time-series given the start-time, end-time, 
+and sample rate. Note that the end-time is the exact timestamp 
+of the very last data point that is actually present in the time-series. 
+.ft CW
+.in 2c 
+.nf
+
+$nsamp = trnsamp( $time0, $samprate, $endtime );
+
+.fi
+.in
+.ft R
+.IP "\fBtrendtime\fP ( $time0, $samprate, $nsamp )"
+Find the end-time (the exact timestamp of the very last data point that
+is actually present in the time-series) of a time-series given the start-time, 
+the sample rate, and the number of samples. 
+.ft CW
+.in 2c 
+.nf
+
+$endtime = trendtime( $time0, $samprate, $nsamp );
 
 .fi
 .in
@@ -821,6 +900,92 @@ Convert an epoch time in seconds to a string representation
 .nf
 
 $astring = strlocaldate ( $epoch );
+
+.fi
+.in
+.ft R
+
+.IP "\fBnow\fP ( void )"
+Return the current system time as a unix epoch time
+.ft CW
+.in 2c
+.nf
+
+$current_epoch = now();
+
+.fi
+.in
+.ft R
+
+.IP "\fBis_epoch_string\fP ( $timestring )"
+return the epoch-time equivalent if the $timestring is interpretable
+as a time (as specified by str2epoch(3)), or an empty result if not. 
+.ft CW
+.in 2c
+.nf
+
+$teststring = 'January 28, 2005 14:57 pm';
+
+$epoch = is_epoch_string( $teststring );
+
+.fi
+.in
+.ft R
+
+.IP "\fBepoch2str\fP ( $epoch, $format [, $timezone] )"
+Convert the given epoch time to a string value, as specified by the 
+format string $format. The structure of this format string is explained
+in the man-page epoch2str(3). If no timezone is given, UTC is assumed. 
+An empty string will be interpreted as a local time-zone. The time-zones 
+are specified as in a standard Unix system (for example, with names 
+relative to /usr/share/lib/zoneinfo on a standard Solaris 2.8 system).
+.ft CW
+.in 2c
+.nf
+
+$timestring = epoch2str( now(), "%D %T %Z", "US/Eastern" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBstr2epoch\fP ( $timestring )"
+Convert a time-string conforming to str2epoch(3) into a Unix double-precision
+epoch time. 
+.ft CW
+.in 2c
+.nf
+
+$teststring = 'January 28, 2005 14:57 pm';
+
+$epoch = str2epoch( $teststring );
+
+.fi
+.in
+.ft R
+
+.IP "\fBepoch\fP ( $yearday )"
+Convert an integer yearday (YYYYJJJ, year and day-of-year) to an equivalent 
+Unix epoch time.
+.ft CW
+.in 2c
+.nf
+
+$yearday = 1995012;
+$time = epoch( $yearday );
+
+.fi
+.in
+.ft R
+
+.IP "\fByearday\fP ( $epoch )"
+Convert a Unix epoch-time to an integer julian day (YYYYJJJ, year and 
+day-of-year).
+.ft CW
+.in 2c
+.nf
+
+$yd_today = yearday( now() );
 
 .fi
 .in
