@@ -203,7 +203,29 @@ in the time,value pairs will not necessarily be contiguous.
 .in 2c 
 .nf
 
-$time_value_array = trsample( $db, $t0, $t1, $sta, $chan, 1 );
+$apply_calib = 1;
+$time_value_array = trsample( $db, $t0, $t1, $sta, $chan, $apply_calib );
+
+.fi
+.in
+.ft R
+.IP "\fBtrsamplebins\fP ( $db, t0, t1, sta, chan, binsize [, apply_calib] )"
+This is similar to trsample, however an additional argument, binsize, 
+specifies (as a number of samples) the size of bins into which to divide 
+the time series. The returned array consists of successive triplets of 
+epoch-time, minimum data value for the bin, maximum data value for the bin. 
+As with trsample, the returned data may consist of several disjoint segments. 
+Each segment is binned separately (bins will not extend across trace 
+segments). If the number of samples in a trace segment is not evenly 
+divided by the binsize, the last triplet for that segment will represent
+the partially-filled end bin. See also the trdatabins command. 
+.ft CW
+.in 2c 
+.nf
+
+$binsize = 10;
+$apply_calib = 1;
+$time_value_array = trsample( $db, $t0, $t1, $sta, $chan, $binsize, $apply_calib );
 
 .fi
 .in

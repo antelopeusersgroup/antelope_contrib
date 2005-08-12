@@ -68,6 +68,7 @@ PHP_FUNCTION(trsplit);
 PHP_FUNCTION(trsplice);
 PHP_FUNCTION(trloadchan);
 PHP_FUNCTION(trsample);
+PHP_FUNCTION(trsamplebins);
 PHP_FUNCTION(trfilter);
 PHP_FUNCTION(trfree);
 PHP_FUNCTION(trextract_data);
