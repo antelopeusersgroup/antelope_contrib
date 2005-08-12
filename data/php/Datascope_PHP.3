@@ -248,6 +248,23 @@ $rawdatapoints = trdata( $tr, 0, 2000 );
 .fi
 .in
 .ft R
+.IP "\fBtrdatabins\fP ( $tr, $binsize [, $i0 [, $npts]] )"
+This function is similar to trdata, however allows one extra argument, 
+which gives a bin size in number of samples. Before being returned, 
+the time series is divided into bins of the specified size. The returned 
+array gives the minimum, then the maximum value in each bin. If the number 
+of requested (or number of available) points is not an even multiple of 
+the binsize, the last min and max value will represent the partially filled 
+last bin. 
+.ft CW
+.in 2c 
+.nf
+
+$minmaxbins = trdatabins( $tr, 5, 0, 2000 );
+
+.fi
+.in
+.ft R
 .IP "\fBtrsplit\fP ( $tr )"
 break up waveform records at marked bad data
 .ft CW

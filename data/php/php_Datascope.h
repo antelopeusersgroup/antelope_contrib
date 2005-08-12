@@ -72,6 +72,7 @@ PHP_FUNCTION(trfilter);
 PHP_FUNCTION(trfree);
 PHP_FUNCTION(trextract_data);
 PHP_FUNCTION(trdata);
+PHP_FUNCTION(trdatabins);
 PHP_FUNCTION(trendtime);
 PHP_FUNCTION(trnsamp);
 PHP_FUNCTION(trsamp2time);

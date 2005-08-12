@@ -104,6 +104,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(trfree, NULL)		
 	PHP_FE(trextract_data, NULL)		
 	PHP_FE(trdata, NULL)		
+	PHP_FE(trdatabins, NULL)		
 	PHP_FE(trsplit, NULL)		
 	PHP_FE(trsplice, NULL)		
 	PHP_FE(trendtime, NULL)
@@ -918,6 +919,131 @@ PHP_FUNCTION(trdata)
 			idest++, isource++ ) {
 		
 		add_index_double( return_value, idest, (double) data[isource] );
+	}
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto array trdatabins( array tr, int binsize, [, int i0 [, int npts]] ) */
+PHP_FUNCTION(trdatabins)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	float	*data = NULL;
+	int	argc = ZEND_NUM_ARGS();
+	int 	single_row = 0;
+	int	nrecs;
+	int	nsamp_retrieve = 0;
+	int	nsamp_available = 0;
+	long 	nsamp_requested = -1;
+	long	binsize = 1;
+	long	i0 = 0;
+	double	min;
+	double	max;
+	int	isource;
+	int	idest;
+
+	if( argc < 2 || argc > 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( argc == 2 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "al", &tr_array, &binsize )
+	    == FAILURE) {
+
+		return;
+
+	} else if( argc == 3 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "all", &tr_array,
+	    &binsize, &i0 ) == FAILURE) {
+
+		return;
+
+	} else if( argc == 4 &&
+	    zend_parse_parameters( argc TSRMLS_CC, "alll", &tr_array,
+	    &binsize, &i0, &nsamp_requested ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	dbquery( tr, dbRECORD_COUNT, &nrecs );
+
+	if( tr.record == dbALL ) {
+		if( nrecs == 1 ) {
+			single_row = 1;
+			tr.record = 0;
+		} else {
+			single_row = 0;
+		}
+	} else {
+		single_row = 1;
+	}
+
+	if( ! single_row ) {
+
+		zend_error( E_ERROR, "trextract_data requires that the "
+			"trace-object point at or contain only a single row\n");
+	}
+
+	dbgetv( tr, 0, "nsamp", &nsamp_available, "data", &data, 0 );
+
+	if( nsamp_available == 0 || data == NULL ) {
+	
+		zend_error( E_ERROR, 
+			"trextract_data: no data in trace object\n" );
+	}
+
+	array_init( return_value );
+
+	nsamp_retrieve = nsamp_available - i0;
+
+	if( nsamp_retrieve < nsamp_requested ) {
+		
+		zend_error( E_WARNING, "trdatabins: requested more samples "
+			"than are available in this row; truncating returned "
+			"array\n" );
+
+	} else if( nsamp_requested != -1 ) {
+
+		nsamp_retrieve = nsamp_requested;
+	}
+
+	idest = 0;
+
+	for( isource = i0; isource < i0 + nsamp_retrieve; isource++ ) {
+		
+		if( ( isource - i0 ) % binsize == 0 ) {
+			
+			if( isource != i0 ) {
+
+				add_index_double( return_value, idest++, min );
+				add_index_double( return_value, idest++, max );
+			}
+
+			min = max = (double) data[isource];
+		}
+
+		if( max < (double) data[isource] ) {
+			
+			max = (double) data[isource];
+		}
+
+		if( min > (double) data[isource] ) {
+			
+			min = (double) data[isource];
+		}
+	}
+
+	if( nsamp_retrieve % binsize != 0 ) {
+
+		add_index_double( return_value, idest++, min );
+		add_index_double( return_value, idest++, max );
 	}
 
 	return;
