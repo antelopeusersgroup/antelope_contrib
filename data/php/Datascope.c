@@ -113,6 +113,15 @@ function_entry Datascope_functions[] = {
 	PHP_FE(trsamp2time, NULL)
 	PHP_FE(trsamprate, NULL)
 	PHP_FE(trtime2samp, NULL)
+	PHP_FE(finit_db, NULL)
+	PHP_FE(map_autodrm_netsta, NULL)
+	PHP_FE(map_autodrm_chanaux, NULL)
+	PHP_FE(autodrm_net, NULL)
+	PHP_FE(autodrm_aux, NULL)
+	PHP_FE(map_seed_netsta, NULL)
+	PHP_FE(map_seed_chanloc, NULL)
+	PHP_FE(seed_net, NULL)
+	PHP_FE(seed_loc, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -409,6 +418,284 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto string map_autodrm_netsta( string anet, string fsta ) */
+PHP_FUNCTION(map_autodrm_netsta)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*anet;
+	int	anet_len;
+	char	*fsta;
+	int	fsta_len;
+	char	sta[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&anet, &anet_len, &fsta, &fsta_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	map_autodrm_netsta( anet, fsta, sta );
+	
+	RETURN_STRING( sta, 1 );
+}
+/* }}} */
+
+/* {{{ proto string map_autodrm_chanaux( string sta, string fchan, string aux ) */
+PHP_FUNCTION(map_autodrm_chanaux)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	*fchan;
+	int	fchan_len;
+	char	*aux;
+	int	aux_len;
+	char	chan[STRSZ];
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "sss", 
+		&sta, &sta_len, &fchan, &fchan_len, &aux, &aux_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	map_autodrm_chanaux( sta, fchan, aux, chan );
+	
+	RETURN_STRING( chan, 1 );
+}
+/* }}} */
+
+/* {{{ proto array autodrm_net( string sta ) */
+PHP_FUNCTION(autodrm_net)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	anet[STRSZ];
+	char	fsta[STRSZ];
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&sta, &sta_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	array_init( return_value );
+
+	autodrm_net( sta, anet, fsta );
+
+	add_next_index_string( return_value, anet, 1 );
+	add_next_index_string( return_value, fsta, 1 );
+	
+	return;
+}
+/* }}} */
+
+/* {{{ proto array autodrm_aux( string sta, string chan ) */
+PHP_FUNCTION(autodrm_aux)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	*chan;
+	int	chan_len;
+	char	fchan[STRSZ];
+	char	aux[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&sta, &sta_len, &chan, &chan_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	array_init( return_value );
+
+	autodrm_aux( sta, chan, fchan, aux );
+
+	add_next_index_string( return_value, fchan, 1 );
+	add_next_index_string( return_value, aux, 1 );
+	
+	return;
+}
+/* }}} */
+
+/* {{{ proto string map_seed_netsta( string snet, string fsta ) */
+PHP_FUNCTION(map_seed_netsta)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*snet;
+	int	snet_len;
+	char	*fsta;
+	int	fsta_len;
+	char	sta[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&snet, &snet_len, &fsta, &fsta_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	map_seed_netsta( snet, fsta, sta );
+	
+	RETURN_STRING( sta, 1 );
+}
+/* }}} */
+
+/* {{{ proto string map_seed_chanloc( string sta, string fchan, string loc ) */
+PHP_FUNCTION(map_seed_chanloc)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	*fchan;
+	int	fchan_len;
+	char	*loc;
+	int	loc_len;
+	char	chan[STRSZ];
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "sss", 
+		&sta, &sta_len, &fchan, &fchan_len, &loc, &loc_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	map_seed_chanloc( sta, fchan, loc, chan );
+	
+	RETURN_STRING( chan, 1 );
+}
+/* }}} */
+
+/* {{{ proto array seed_net( string sta ) */
+PHP_FUNCTION(seed_net)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	snet[STRSZ];
+	char	fsta[STRSZ];
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&sta, &sta_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	array_init( return_value );
+
+	seed_net( sta, snet, fsta );
+
+	add_next_index_string( return_value, snet, 1 );
+	add_next_index_string( return_value, fsta, 1 );
+	
+	return;
+}
+/* }}} */
+
+/* {{{ proto array seed_loc( string sta, string chan ) */
+PHP_FUNCTION(seed_loc)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*sta;
+	int	sta_len;
+	char	*chan;
+	int	chan_len;
+	char	fchan[STRSZ];
+	char	loc[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&sta, &sta_len, &chan, &chan_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	array_init( return_value );
+
+	seed_loc( sta, chan, fchan, loc );
+
+	add_next_index_string( return_value, fchan, 1 );
+	add_next_index_string( return_value, loc, 1 );
+	
+	return;
+}
+/* }}} */
+
+/* {{{ proto int finit_db( array db ) */
+PHP_FUNCTION(finit_db)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&db_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	rc = finit_db( db );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 

@@ -1128,6 +1128,37 @@ Remove null (marked) rows from a database table
 .in
 .ft R
 
+.IP "\fBfinit_db\fP ( $db )"
+.IP "\fBmap_autodrm_netsta\fP ( $anet, $fsta )"
+.IP "\fBmap_autodrm_chanaux\fP ( $sta, $fchan, $aux )"
+.IP "\fBautodrm_net\fP ( $sta )"
+.IP "\fBautodrm_aux\fP ( $sta, $chan )"
+.IP "\fBmap_seed_netsta\fP ( $snet, $fsta )"
+.IP "\fBmap_seed_chanloc\fP ( $sta, $fchan, $loc )"
+.IP "\fBseed_net\fP ( $sta )"
+.IP "\fBseed_loc\fP ( $sta, $chan )"
+These routines map from SEED or autodrm station-naming conventions
+to CSS3.0 conventions, and vice-versa, based on the contents of a 
+foreign-keys database initialized with the finit_db function. See 
+foreign(3) for more detail. 
+.ft CW
+.in 2c
+.nf
+
+
+$sta = map_autodrm_netsta ( $anet, $fsta )"
+$chan = map_autodrm_chanaux ( $sta, $fchan, $aux )"
+( $anet, $fsta ) = autodrm_net ( $sta )"
+( $fchan, $aux ) = autodrm_aux ( $sta, $chan )"
+$sta = map_seed_netsta ( $snet, $fsta )"
+$chan =  map_seed_chanloc ( $sta, $fchan, $loc )"
+( $snet, $fsta ) = seed_net ( $sta )"
+( $fchan, $loc ) = seed_loc ( $sta, $chan )"
+
+.fi
+.in
+.ft R
+
 .SH EXAMPLE
 .ft CW
 .in 2c

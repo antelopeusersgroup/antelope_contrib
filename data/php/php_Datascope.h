@@ -93,6 +93,15 @@ PHP_FUNCTION(epoch2str);
 PHP_FUNCTION(str2epoch);
 PHP_FUNCTION(epoch);
 PHP_FUNCTION(yearday);
+PHP_FUNCTION(finit_db);
+PHP_FUNCTION(map_autodrm_netsta);
+PHP_FUNCTION(map_autodrm_chanaux);
+PHP_FUNCTION(autodrm_net);
+PHP_FUNCTION(autodrm_aux);
+PHP_FUNCTION(map_seed_netsta);
+PHP_FUNCTION(map_seed_chanloc);
+PHP_FUNCTION(seed_net);
+PHP_FUNCTION(seed_loc);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)
