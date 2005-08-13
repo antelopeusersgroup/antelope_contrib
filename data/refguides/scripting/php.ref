@@ -114,6 +114,9 @@ trloadchan ( $db, t0, t1, sta, chan )
 trsample ( $db, t0, t1, sta, chan [, apply_calib] )
     load a channel of waveform data into a PHP array of alternating epoch-time and data-value
 
+trsample ( $db, t0, t1, sta, chan, binsize [, apply_calib] )
+    same as trsample, but the data points are grouped into bins of binsize samples and the epoch-time,min,max for each group is returned
+
 trapply_calib ( $tr )
     multiply waveform data in trace object by calib value
 
@@ -123,11 +126,29 @@ trextract_data ( $tr )
 trdata ( $tr [, i0 [, npts]] )
     extract waveform data into a PHP array, specifying the starting index $i0 and maximum number of points to return if desired
 
+trdatabins ( $tr, binsize [, i0 [, npts]] )
+    same as trdata, but the data points are grouped into bins of binsize samples and the min, max for each group is returned
+
 trfilter ( $tr, filter )
     filter data in-place according to the given filter-description string
 
 trfree ( $tr )
     free a Datascope trace-object structure
+
+trtime2samp ( double time0, double samprate, double time1 )
+    find the index of a sample given its timestamp
+
+trsamp2time ( double time0, double samprate, int isamp )
+    find the timestamp of a sample given its index
+
+trsamprate ( double time0, int nsamp, double endtime )
+    find the sample rate of a time-series given its other attributes
+
+trnsamp ( double time0, double samprate, double endtime )
+    find the number of samples in a time-series given its other attributes
+
+trendtime ( double time0, double samprate, int nsamp )
+    find the end-time of a time-series given its other attributes
 
 <subsection Miscellaneous Datascope Functions>
 dbquery ($db, code)
@@ -163,7 +184,7 @@ dbfind ($db, expression, [, first [, reverse]])
 dbmatches ($dbk, $dbt, $hookname [, join-keys])
     return row numbers of records in $dbt that match the single row $dbk
 
-<subsection Time conversion>
+<subsection Parameter files >
 
 pfget (pfname, key)
     return the value for the key from the parameter file pfname
@@ -194,10 +215,91 @@ strlocalydtime (epoch)
 strlocaldate (epoch)
     convert an epoch time to a string date in local timezone
 
+now ()
+    return epoch time according to local system clock
+
+is_epoch_string (timestring)
+    return an epoch time equivalent of a valid timestring, or an empty result if translation fails
+
+epoch2str (epoch, format [, timezone])
+    return a string equivalent of an epoch time, optionally converting to the specified timezone
+
+str2epoch (timestring)
+    return the Unix epoch-time equivalent of a time string
+
+epoch (yearday)
+    return the Unix epoch-time equivalent of an integer julian day
+
+yearday (epoch)
+    return the integer julian-day corresponding to the given epoch time
+
+
 <subsection Instrument response routines>
 
-dbresponse( $filename )
+dbresponse (filename)
     return a PHP resource representing the response curve in $filename
 
-eval_response( $response, $omega )
+eval_response ($response, omega)
     return a two-element array of the real and imaginary response at $omega
+
+<subsection Special functions>
+
+yesno (s) 
+    return -1 for yes,ok,true,1,y,on,t; 0 for no,n,false,0,off,f; 1 otherwise
+
+makedir (d)
+    make the complete directory path
+
+make_pathdirs (f)
+    make the complete directory path assuming the last element is a filename
+
+datafile (env, file)
+    find the specified file by looking first at the environment variable, then along the path
+
+
+datapath (env, dir, file, suffix)
+    find the specified file by looking first at the environment variable, then along the path
+
+abspath (a)
+    return the absolute path to the specified file
+
+relpath (from,to)
+    return the path to the file 'to' relative to the directory 'from'
+
+cleanpath (p [, nolinks] )
+    return the path resolving any relative elements, and symbolic links if requested
+
+concatpaths (a, b)
+    properly concatenate two path elements
+
+parsepath (a)
+    split a pathname into directory, filename base, and suffix (if present)
+
+<subsection Foreign keys >
+
+<body>
+map between CSS3.0 station/channel naming conventions and the
+different conventions of autodrm and SEED.
+</body>
+
+<function>
+
+finit_db ($db)
+    initialize a foreign-keys translation database
+
+sta = map_autodrm_netsta (anet, fsta)
+
+chan = map_autodrm_netsta (sta, fchan, aux)
+
+(anet, fsta) = autodrm_net (sta)
+
+(fchan, aux) = autodrm_aux (sta, chan)
+
+sta = map_seed_netsta (snet, fsta)
+
+chan = map_seed_netsta (sta, fchan, loc)
+
+(snet, fsta) = seed_net (sta)
+
+(fchan, loc) = seed_loc (sta, chan)
+
