@@ -102,6 +102,16 @@ PHP_FUNCTION(map_seed_netsta);
 PHP_FUNCTION(map_seed_chanloc);
 PHP_FUNCTION(seed_net);
 PHP_FUNCTION(seed_loc);
+PHP_FUNCTION(abspath);
+PHP_FUNCTION(relpath);
+PHP_FUNCTION(cleanpath);
+PHP_FUNCTION(concatpaths);
+PHP_FUNCTION(parsepath);
+PHP_FUNCTION(yesno);
+PHP_FUNCTION(makedir);
+PHP_FUNCTION(make_pathdirs);
+PHP_FUNCTION(datafile);
+PHP_FUNCTION(datapath);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)

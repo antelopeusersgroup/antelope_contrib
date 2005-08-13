@@ -1128,6 +1128,119 @@ Remove null (marked) rows from a database table
 .in
 .ft R
 
+.IP "\fByesno\fP ( $value )"
+Return -1 for yes,ok,y,true,1,on,t; return 0 for no,n,false,0,off,f; return
+1 otherwise
+.ft CW
+.in 2c
+.nf
+
+$is_true = yesno( $answer );
+
+.fi
+.in
+.ft R
+.IP "\fBmakedir\fP ( $filename )"
+make the complete directory path
+.ft CW
+.in 2c
+.nf
+
+makedir( $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBmake_pathdirs\fP ( $filename )"
+Make the complete directory path, assuming the final element is a file
+.ft CW
+.in 2c
+.nf
+
+make_pathdirs( $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBdatafile\fP ( $env, $file )"
+Find the specified file by looking first at the environment variable, then along the path
+.ft CW
+.in 2c
+.nf
+
+$fullpath = datafile( $env, $file );
+
+.fi
+.in
+.ft R
+.IP "\fBdatapath\fP ( $env, $dir, $file, $suffix )"
+Find the specified file by looking first at the environment variable, then along the path
+.ft CW
+.in 2c
+.nf
+
+$fullpath = datafile( $env, $dir, $file, $suffix );
+
+.fi
+.in
+.ft R
+.IP "\fBabspath\fP ( $file )"
+Return the absolute path to the specified file
+.ft CW
+.in 2c
+.nf
+
+$path = abspath( $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBrelpath\fP ( $from, $to )"
+Return the relative path from directory $from to file $to
+.ft CW
+.in 2c
+.nf
+
+$path = relpath( $dir, $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBcleanpath\fP ( $path [, $nolinks] )"
+Normalize the input path, removing extra relative elements ('..' etc.).
+If $nolinks is specified and non-zero, any symbolic links along 
+the path will also be resolved. 
+.ft CW
+.in 2c
+.nf
+
+$path = cleanpath( $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBconcatpaths\fP ( $a, $b )"
+Properly concatenate the two paths $a and $b
+.ft CW
+.in 2c
+.nf
+
+$path = concatpaths( '/tmp', $filename );
+
+.fi
+.in
+.ft R
+.IP "\fBparsepath\fP ( $path )"
+return the directory, file basename, and the suffix (if present) for the given path
+.ft CW
+.in 2c
+.nf
+
+list( $dir, $base, $suffix ) = parsepath( $filename );
+
+.fi
+.in
+.ft R
 .IP "\fBfinit_db\fP ( $db )"
 .IP "\fBmap_autodrm_netsta\fP ( $anet, $fsta )"
 .IP "\fBmap_autodrm_chanaux\fP ( $sta, $fchan, $aux )"

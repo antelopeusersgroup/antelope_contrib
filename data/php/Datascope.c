@@ -122,6 +122,16 @@ function_entry Datascope_functions[] = {
 	PHP_FE(map_seed_chanloc, NULL)
 	PHP_FE(seed_net, NULL)
 	PHP_FE(seed_loc, NULL)
+	PHP_FE(abspath, NULL)
+	PHP_FE(relpath, NULL)
+	PHP_FE(cleanpath, NULL)
+	PHP_FE(concatpaths, NULL)
+	PHP_FE(parsepath, NULL)
+	PHP_FE(yesno, NULL)
+	PHP_FE(datafile, NULL)
+	PHP_FE(datapath, NULL)
+	PHP_FE(makedir, NULL)
+	PHP_FE(make_pathdirs, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -418,6 +428,333 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto int yesno( string s ) */
+PHP_FUNCTION(yesno)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*s;
+	int	s_len;
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&s, &s_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = yesno( s );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int makedir( string dir ) */
+PHP_FUNCTION(makedir)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*dir;
+	int	dir_len;
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&dir, &dir_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = makedir( dir );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int make_pathdirs( string filename ) */
+PHP_FUNCTION(make_pathdirs)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*filename;
+	int	filename_len;
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&filename, &filename_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = make_pathdirs( filename );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto string datafile( string envname, string filename ) */
+PHP_FUNCTION(datafile)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*envname;
+	int	envname_len;
+	char	*filename;
+	int	filename_len;
+	char	*dfile;
+	char	*dfile_safe_copy;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&envname, &envname_len, &filename, &filename_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	dfile = datafile( envname, filename );
+
+	if( dfile == 0 ) {
+
+		return;
+	}
+
+	dfile_safe_copy = estrdup( dfile );
+
+	free( dfile );
+	
+	RETURN_STRING( dfile_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto string datapath( string envname, string dirname, string filename, string suffix ) */
+PHP_FUNCTION(datapath)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*envname;
+	int	envname_len;
+	char	*dirname;
+	int	dirname_len;
+	char	*filename;
+	int	filename_len;
+	char	*suffix;
+	int	suffix_len;
+	char	*dfile;
+	char	*dfile_safe_copy;
+
+	if( argc != 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ssss", 
+			&envname, &envname_len, 
+			&dirname, &dirname_len, 
+			&filename, &filename_len, 
+			&suffix, &suffix_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	dfile = datapath( envname, dirname, filename, suffix );
+
+	if( dfile == 0 ) {
+
+		return;
+	}
+
+	dfile_safe_copy = estrdup( dfile );
+
+	free( dfile );
+	
+	RETURN_STRING( dfile_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto string abspath( string relpath ) */
+PHP_FUNCTION(abspath)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*rel;
+	int	rel_len;
+	char	abs[FILENAME_MAX];
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&rel, &rel_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	abspath( rel, abs );
+	
+	RETURN_STRING( abs, 1 );
+}
+/* }}} */
+
+/* {{{ proto string relpath( string from, string to ) */
+PHP_FUNCTION(relpath)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*from;
+	int	from_len;
+	char	*to;
+	int	to_len;
+	char	rel[FILENAME_MAX];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&from, &from_len, &to, &to_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	relpath( from, to, rel );
+	
+	RETURN_STRING( rel, 1 );
+}
+/* }}} */
+
+/* {{{ proto string cleanpath( string path [, int nolinks] ) */
+PHP_FUNCTION(cleanpath)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*path;
+	int	path_len;
+	char	new[FILENAME_MAX];
+	int	flags = 0;
+	long	nolinks = 0;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 1 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+				&path, &path_len )
+	    	== FAILURE) {
+	
+			return;
+		}
+
+	} else {		/* argc == 2 */
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "sl", 
+				&path, &path_len, &nolinks )
+	    	== FAILURE) {
+	
+			return;
+		}
+	}
+
+	flags = nolinks;
+
+	cleanpath( path, flags, new );
+	
+	RETURN_STRING( new, 1 );
+}
+/* }}} */
+
+/* {{{ proto string concatpaths( string a, string b ) */
+PHP_FUNCTION(concatpaths)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*a;
+	int	a_len;
+	char	*b;
+	int	b_len;
+	char	*new;
+	char	*new_safe_copy;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+			&a, &a_len, &b, &b_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	new = concatpaths( a, b, 0 );
+
+	new_safe_copy = estrdup( new );
+
+	free( new );
+	
+	RETURN_STRING( new_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto array parsepath( string a ) */
+PHP_FUNCTION(parsepath)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*a;
+	int	a_len;
+	char	dir[FILENAME_MAX];
+	char	base[FILENAME_MAX];
+	char	suffix[FILENAME_MAX];
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+			&a, &a_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	parsepath( a, dir, base, suffix );
+
+	array_init( return_value );
+
+	add_next_index_string( return_value, dir, 1 );
+	add_next_index_string( return_value, base, 1 );
+
+	if( suffix != NULL ) {
+
+		add_next_index_string( return_value, suffix, 1 );
+	}
+
+	return;
 }
 /* }}} */
 
