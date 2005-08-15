@@ -84,6 +84,12 @@ function_entry Datascope_functions[] = {
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
 	PHP_FE(pfget_boolean, NULL)		
+	PHP_FE(pfupdate, NULL)		
+	PHP_FE(pffiles, NULL)		
+	PHP_FE(pf2string, NULL)		
+	PHP_FE(pfrequire, NULL)		
+	PHP_FE(pfcompile, NULL)		
+	PHP_FE(pfwrite, NULL)		
 	PHP_FE(strtdelta, NULL)		
 	PHP_FE(strtime, NULL)		
 	PHP_FE(strydtime, NULL)		
@@ -1363,6 +1369,228 @@ PHP_FUNCTION(dbinvalid)
 	db = dbinvalid();
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto int pfupdate( string pfname ) */
+PHP_FUNCTION(pfupdate)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	int	rc;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+					&pfname, &pfname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = updatePf( pfname );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int pfrequire( string pfname, string atime ) */
+PHP_FUNCTION(pfrequire)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	char	*atime;
+	int	atime_len;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+				&pfname, &pfname_len, &atime, &atime_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	rc = pfrequire( pfname, atime );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int pfwrite( string filename, string pfname ) */
+PHP_FUNCTION(pfwrite)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*filename;
+	int	filename_len;
+	char	*pfname;
+	int	pfname_len;
+	Pf	*pf;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+				&filename, &filename_len, &pfname, &pfname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		zend_error( E_ERROR, "failure opening parameter file\n" );
+	}
+
+	rc = pfwrite( filename, pf );
+
+	if( rc != 0 ) {
+
+		zend_error( E_ERROR, "failed to write parameter file\n" );
+	}
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto void pfcompile( string value, string pfname ) */
+PHP_FUNCTION(pfcompile)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*value;
+	int	value_len;
+	char	*pfname;
+	int	pfname_len;
+	Pf	*pf;
+	int	rc;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+				&value, &value_len, &pfname, &pfname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	pf = getPf( pfname );
+
+	rc = pfcompile( value, &pf );
+
+	if( rc != 0 ) {
+
+		zend_error( E_ERROR, "failed to compile value into "
+				     "parameter file\n" );
+		return;
+	}
+
+	putPf( pfname, pf );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto string pf2string( string pfname ) */
+PHP_FUNCTION(pf2string)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	Pf	*pf;
+	char	*value;
+	char	*value_safe_copy;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+					&pfname, &pfname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		zend_error( E_ERROR, "failure opening parameter file\n" );
+	}
+	
+	value = pf2string( pf );
+
+	value_safe_copy = estrdup( value );
+
+	free( value );
+
+	RETURN_STRING( value_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto array pffiles( string pfname [, int all] ) */
+PHP_FUNCTION(pffiles)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	Tbl	*files;
+	long	all = 0;
+	int	rc;
+	int	i;
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 1 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+						&pfname, &pfname_len )
+	    		== FAILURE) {
+
+			return;
+		}
+
+	} else {	/* argc == 2 */
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "sl", 
+						&pfname, &pfname_len, &all )
+	    		== FAILURE) {
+
+			return;
+		}
+	}
+
+	files = pffiles( pfname, (int) all );
+
+	if( files == (Tbl *) NULL ) {
+
+		zend_error( E_ERROR, "No filenames returned!\n" );
+	}
+
+	array_init( return_value );
+
+	for( i = 0; i < maxtbl( files ); i++ ) {
+
+		add_next_index_string( return_value, gettbl( files, i ), 1 );
+	}
+
+	return;
 }
 /* }}} */
 
