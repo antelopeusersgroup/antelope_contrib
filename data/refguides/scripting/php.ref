@@ -192,6 +192,25 @@ pfget (pfname, key)
 pfget_boolean (pfname, key)
     return 0 or 1 depending on the value of key in the parameter file pfname
     
+pfupdate (pfname)
+    reread a parameter file if necessary
+
+pffiles (pfname [, all])
+   List the files which make up a parameter file object. If all is specified 
+   and nonzero, list all possible filenames, including non-existent files. 
+
+pf2string (pfname)
+   return a string representation of a parameter file object
+
+pfrequire (pfname, atime)
+   require pf_revision_time from last file pfname to be later than atime
+
+pfcompile (string, pfname)
+   convert the specified string into a parameter file object
+
+pfwrite (filename, pfname)
+   write a parameter file object to the specified file
+
 <subsection Time conversion>
 
 strtdelta (dt)

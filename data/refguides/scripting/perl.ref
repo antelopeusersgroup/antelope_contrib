@@ -251,7 +251,7 @@ pfwrite (filename, pfname)
     write out pf object pfname to filename
 
 pfrequire(pfname, atime)
-    require pf_revision_code from last file pfname is later than atime.
+    require pf_revision_time from last file pfname is later than atime.
 
 pfdel (pfname, key)
     delete named key from pf object pfname
@@ -429,6 +429,9 @@ map between CSS3.0 station/channel naming  conventions  and  the
 different conventions of autodrm and SEED.
 </body>
 <function>
+finit_db(@db)
+    set a database other than the default for use by the foreign keys routines 
+
 $sta = map_autodrm_netsta($anet, $fsta)
 $chan = map_autodrm_chanaux($sta,$fchan,$aux)
 ($anet, $fsta) = autodrm_net($sta)
