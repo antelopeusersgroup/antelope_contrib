@@ -90,6 +90,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(pfrequire, NULL)		
 	PHP_FE(pfcompile, NULL)		
 	PHP_FE(pfwrite, NULL)		
+	PHP_FE(pfput, NULL)		
 	PHP_FE(strtdelta, NULL)		
 	PHP_FE(strtime, NULL)		
 	PHP_FE(strydtime, NULL)		
@@ -232,10 +233,11 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 
 		*tbl = 0;
 		return -1;
-
 	} 
 
-	nelements = zend_hash_num_elements( Z_ARRVAL_P( array ) );
+	target_hash = Z_ARRVAL_P( array );
+
+	nelements = zend_hash_num_elements( target_hash );
 
 	if( nelements < 1 ) {
 
@@ -244,8 +246,6 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 	}
 
 	*tbl = newtbl( 0 );
-
-	target_hash = HASH_OF( array );
 
 	zend_hash_internal_pointer_reset( target_hash );
 
@@ -259,6 +259,47 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 	}
 
 	return 0;
+}
+
+int
+z_arrval_hashtype( zval *array )
+{
+	HashTable *target_hash;
+	int	nelements;
+	int	type;
+	int	retcode = HASH_KEY_IS_LONG;
+
+	if( Z_TYPE_P( array ) != IS_ARRAY ) {
+
+		return HASH_KEY_NON_EXISTANT;
+	} 
+
+	target_hash = Z_ARRVAL_P( array );
+
+	nelements = zend_hash_num_elements( target_hash );
+
+	if( nelements < 1 ) {
+
+		return HASH_KEY_NON_EXISTANT;
+	}
+
+	zend_hash_internal_pointer_reset( target_hash );
+
+	while( nelements-- > 0 ) {
+
+		type = zend_hash_get_current_key_type( target_hash );
+
+		if( type == HASH_KEY_IS_STRING ) {
+			
+			retcode = HASH_KEY_IS_STRING;
+
+			break;
+		}
+
+		zend_hash_move_forward( target_hash );
+	}
+
+	return retcode;
 }
 
 int
@@ -347,6 +388,108 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	}
 
 	return 0;
+}
+
+int 
+zval2pf( zval *zvalue, Pf **pf )
+{
+	int	retcode = 0;
+	char	value[STRSZ];
+	HashTable *target_hash;
+	int	nelements;
+	zval	**entry;
+	Pf	*pfvalue;
+	char	*key = 0;
+	ulong	num;
+
+	if( Z_TYPE_P( zvalue ) == IS_STRING ) {
+
+		*pf = pfnew( PFSTRING );
+
+		(*pf)->value.s = strdup( Z_STRVAL_P( zvalue ) );
+
+	} else if( Z_TYPE_P( zvalue ) == IS_LONG ) {
+
+		*pf = pfnew( PFSTRING );
+
+		sprintf( value, "%d", Z_LVAL_P( zvalue ) );
+
+		(*pf)->value.s = strdup( value );
+
+	} else if( Z_TYPE_P( zvalue ) == IS_DOUBLE ) {
+
+		*pf = pfnew( PFSTRING );
+
+		strdbl( Z_DVAL_P( zvalue ), value );
+
+		(*pf)->value.s = strdup( value );
+
+	} else if( Z_TYPE_P( zvalue ) == IS_BOOL ) {
+
+		*pf = pfnew( PFSTRING );
+
+		sprintf( value, "%d", Z_BVAL_P( zvalue ) );
+
+		(*pf)->value.s = strdup( value );
+
+	} else if( Z_TYPE_P( zvalue ) == IS_ARRAY &&
+		   z_arrval_hashtype( zvalue ) == HASH_KEY_IS_LONG ) {
+
+		*pf = pfnew( PFTBL );
+
+		target_hash = Z_ARRVAL_P( zvalue );
+
+		nelements = zend_hash_num_elements( target_hash );
+
+		zend_hash_internal_pointer_reset( target_hash );
+
+		while( nelements-- > 0 ) {
+
+			zend_hash_get_current_data( target_hash, 
+						    (void **) &entry );
+
+			zval2pf( *entry, &pfvalue );
+
+			pushtbl( (*pf)->value.tbl, (char *) pfvalue );
+
+			zend_hash_move_forward( target_hash );
+		}
+
+	} else if( Z_TYPE_P( zvalue ) == IS_ARRAY &&
+		   z_arrval_hashtype( zvalue ) == HASH_KEY_IS_STRING ) {
+
+		*pf = pfnew( PFARR );
+
+		target_hash = Z_ARRVAL_P( zvalue );
+
+		nelements = zend_hash_num_elements( target_hash );
+
+		zend_hash_internal_pointer_reset( target_hash );
+
+		while( nelements-- > 0 ) {
+
+			zend_hash_get_current_key( target_hash, &key, &num, 1 );
+						   
+			zend_hash_get_current_data( target_hash, 
+						    (void **) &entry );
+
+			zval2pf( *entry, &pfvalue );
+
+			setarr( (*pf)->value.arr, key, pfvalue );
+
+			efree( key );
+
+			zend_hash_move_forward( target_hash );
+		}
+
+	} else {
+		
+		zend_error( E_ERROR, "Type not supported for pf conversion\n" );
+
+		retcode = -1;
+	}
+
+	return retcode;
 }
 
 int
@@ -1488,7 +1631,12 @@ PHP_FUNCTION(pfcompile)
 		return;
 	}
 
-	pf = getPf( pfname );
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		pf = pfnew( PFFILE );
+
+		putPf( pfname, pf );
+	}
 
 	rc = pfcompile( value, &pf );
 
@@ -1498,8 +1646,6 @@ PHP_FUNCTION(pfcompile)
 				     "parameter file\n" );
 		return;
 	}
-
-	putPf( pfname, pf );
 
 	return;
 }
@@ -1641,6 +1787,52 @@ PHP_FUNCTION(pfget)
 
 		zend_error( E_ERROR, "pfget: failed to convert value\n" );
 	} 
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void pfput( string pfkey, mixed pfvalue, string pfname ) */
+PHP_FUNCTION(pfput)
+{
+	int	argc = ZEND_NUM_ARGS();
+	zval	*zval_pfvalue;
+	char	*pfname;
+	int	pfname_len;
+	char	*key;
+	int	key_len;
+	Pf	*pf;
+	Pf	*pfvalue;
+	int	rc;
+
+	if( argc != 3 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "szs", 
+					&key, &key_len, &zval_pfvalue, 
+					&pfname, &pfname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = existsPf( pfname ) ) == (Pf *) NULL ) {
+
+		pf = pfnew( PFFILE );
+
+		putPf( pfname, pf );
+	}
+
+	rc = zval2pf( zval_pfvalue, &pfvalue );
+
+	if( rc != 0 ) {
+		
+		zend_error( E_ERROR, "pfput failed\n" );
+	}
+
+	pfput( pf, key, (char *) pfvalue, PFPF );
 
 	return;
 }

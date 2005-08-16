@@ -218,6 +218,17 @@ pfcompile( "date 8/15/2001\\nlabel Try", "testpf" );
 .fi
 .in
 .ft R
+.IP "\fBpfput\fP ( key, value, pfname )"
+put the specified key/value pair into a parameter-file object. Values may be 
+integer, double, boolean, string, indexed lists, or associative arrays. 
+These values may be nested arbitrarily. 
+.nf
+
+pfput( "aninteger", 3, "teststuff" );
+
+.fi
+.in
+.ft R
 .IP "\fBpfwrite\fP ( filename, pfname )"
 write out pf object to the specified file
 .nf
