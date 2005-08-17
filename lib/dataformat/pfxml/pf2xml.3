@@ -6,31 +6,46 @@ pf2xml \- Convert a parameter-file to XML
 char *pf2xml( Pf *pf, char *name, char *prolog, int flags )
 .fi
 .SH DESCRIPTION
-pf2xml converts an Antelope parameter-file to eXtensible Markup 
-Language (XML). 
-
-Currently, two output modes are defined. In the default, or 'weak'
-conversion mode, four tags are defined, those being pffile, 
-pfarr, pftbl, and pfstring. Each may have an optional name as an attribute. 
-The composite entities pffile, pfarr, and pftbl may be nested to 
-arbitrary depth. pffile and pfarr elements require that their child
-elements have non-null names. pftbl elements require that their child 
-elements do not have names. A pfstring may be any ASCII-representable string. 
-
-In the 'strong' conversion mode (obtained by setting flags to PFXML_STRONG),
-each parameter-file entity name is used as an element, with the type 
-specified as an attribute taking the value pfstring, pffile, pfarr, or pftbl.
-In the strong mode it is not possible for children of a pftbl element 
-to be anonymous, so these elements are given the tag pftbl_entry.
+pf2xml converts an Antelope parameter-file to a string which contains an eXtensible 
+Markup Language (XML) translation of the information in the parameter file. 
+The 'name' parameter specifies the name for the top-level element.  This 
+argument must be non-zero and non-empty. The prolog argument specifies
+an optional header to be placed on the string in front of the converted
+parameter-file values. To omit the prolog, this argument should be set
+to 0. The flags argument may be 0 for default conversion, or may specify
+one or more conversion options (multiple options may be specified by 
+combining them with the binary 'OR' operator). Conversion errors result
+in a null value being returned.
 
 If flags is set to PFXML_NEWLINES, newlines are added after tags 
-and values. Otherwise the return value is one long string. Conversion 
-errors result in a null value being returned.
+and values. Otherwise the return value is one long string without 
+embedded newlines (unless there are any explicit newlines in the parameter 
+file, for example from a &Literal parameter). 
 
 If flags is set to PFXML_PRESERVE_PFFILE, elements of type 'pffile' are 
 preserved as such. Without this flag (i.e. the default behavior), they are
 recast into elements of type 'pfarr'. This remapping allows a parameter file 
 to be included in another parameter-file as a sub-component.
+
+Currently, two output modes for pf2xml are defined. The default mode is
+the 'weak' conversion mode. If the flags argument is set to PFXML_STRONG, 
+the 'strong' conversion mode is used. 
+
+In the weak conversion mode, four tags are defined, those being pffile, 
+pfarr, pftbl, and pfstring. All parameter-file elements will be converted 
+to an element with one of these four tags. If the parameter-file parameter 
+has a name (which is the case for everything except &Tbl entries), that name
+will be included as a 'name' attribute of the tag [For more information on 
+the distinctions between elements, tags, and their attributes, see any 
+standard documentation on XML]. 
+
+In the 'strong' conversion mode (obtained by setting flags to PFXML_STRONG),
+each parameter-file entity is converted to an element with name the 
+same as the parameter name. (The parameter-file object type of pfstring,
+pffile, pfarr, or pftbl is given as an attribute of the tag). 
+In the strong mode it is not possible for children of a pftbl element 
+to be anonymous, so these elements are given the tag pftbl_entry.
+
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -64,8 +79,6 @@ pf2xml(1), pf(3), pf(5)
 No indentation is supported. 
 
 Only one simplistic output format is supported.
-
-This routine is under development and may change without notice. 
 .SH AUTHOR
 .nf
 Kent Lindquist

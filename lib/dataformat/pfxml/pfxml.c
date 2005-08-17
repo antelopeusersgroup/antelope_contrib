@@ -127,6 +127,12 @@ pf2xml( Pf *pf, char *name, char *prolog, int flags )
 		return NULL;
 	}
 
+	if( name == NULL ) {
+
+		register_error( 0, "pf2xml: name may not be null!\n" );
+		return NULL;
+	}
+
 	if( prolog != NULL ) {
 
 		pushstr( (void **) &vstack, prolog ); 
