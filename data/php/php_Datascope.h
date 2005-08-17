@@ -70,6 +70,8 @@ PHP_FUNCTION(pfrequire);
 PHP_FUNCTION(pfcompile);
 PHP_FUNCTION(pfwrite);
 PHP_FUNCTION(pfput);
+PHP_FUNCTION(pfdel);
+PHP_FUNCTION(pf2xml);
 PHP_FUNCTION(trapply_calib);
 PHP_FUNCTION(trsplit);
 PHP_FUNCTION(trsplice);

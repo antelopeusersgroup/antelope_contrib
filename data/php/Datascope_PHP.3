@@ -229,11 +229,32 @@ pfput( "aninteger", 3, "teststuff" );
 .fi
 .in
 .ft R
+.IP "\fBpfdel\fP ( pfname, key )"
+Remove the specified parameter from a parameter-file object and return the value 
+.nf
+
+echo pfdel( "teststuff", "aninteger" );
+
+.fi
+.in
+.ft R
 .IP "\fBpfwrite\fP ( filename, pfname )"
 write out pf object to the specified file
 .nf
 
 pfwrite( "teststuff.pf", "testpf" );
+
+.fi
+.in
+.ft R
+.IP "\fBpf2xml\fP ( pfname [, flags [, prolog [, name]]] )"
+Convert a parameter file to XML. The flags argument is a string which may be 
+empty, or contain one or more of the strings PFXML_NEWLINES, PFXML_STRONG, 
+PFXML_PRESERVE_PFFILE. These have the same effects as documented in 
+pf2xml(3). 
+.nf
+
+echo pf2xml( "cron", 'PFXML_NEWLINES|PFXML_STRONG' );
 
 .fi
 .in

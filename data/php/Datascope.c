@@ -22,6 +22,7 @@
 #include "response.h"
 #include "pf.h"
 #include "dbxml.h"
+#include "pfxml.h"
 
 /* Prevent the deviants.h reassignment to std_now() from corrupting
  * the name of the PHP function */
@@ -91,6 +92,8 @@ function_entry Datascope_functions[] = {
 	PHP_FE(pfcompile, NULL)		
 	PHP_FE(pfwrite, NULL)		
 	PHP_FE(pfput, NULL)		
+	PHP_FE(pfdel, NULL)		
+	PHP_FE(pf2xml, NULL)		
 	PHP_FE(strtdelta, NULL)		
 	PHP_FE(strtime, NULL)		
 	PHP_FE(strydtime, NULL)		
@@ -1737,6 +1740,129 @@ PHP_FUNCTION(pffiles)
 	}
 
 	return;
+}
+/* }}} */
+
+/* {{{ proto mixed pfdel( string pfname, string pfkey ) */
+PHP_FUNCTION(pfdel)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	char	*key;
+	int	key_len;
+	Pf	*pf;
+	Pf	*pfvalue;
+	char	*string_value;
+	char	errstring[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ss", 
+					&pfname, &pfname_len,
+					&key, &key_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		zend_error( E_ERROR, "failure opening parameter file\n" );
+	}
+
+	pfvalue = pfdel( pf, key );
+
+	if( pfvalue == (Pf *) NULL  ) {
+
+		sprintf( errstring, 
+			"parameter '%s' not found in parameter-file '%s'\n",
+			key, pfname );
+
+		zend_error( E_ERROR, errstring );
+	} 
+	
+	if( pf2zval( pfvalue, return_value ) < 0 ) {
+
+		zend_error( E_ERROR, "pfdel: failed to convert value\n" );
+	} 
+
+	pffree( pfvalue );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto string pf2xml( string pfname [, int flags [, string prolog [, string name]]] ) */
+PHP_FUNCTION(pf2xml)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*pfname;
+	int	pfname_len;
+	char	*name = 0;
+	int	name_len = 0;
+	char	*prolog = 0;
+	int	prolog_len = 0;
+	char	*flags_string = 0;
+	int	flags_string_len = 0;
+	int	flags = 0;
+	Pf	*pf;
+	char	*xml;
+	char	*xml_safe_copy;
+
+	if( argc < 1 || argc > 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s|sss", 
+					&pfname, &pfname_len,
+					&flags_string, &flags_string_len,
+					&prolog, &prolog_len,
+					&name, &name_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( ( pf = getPf( pfname ) ) == (Pf *) NULL ) {
+
+		zend_error( E_ERROR, "failure opening parameter file\n" );
+	}
+
+	if( name == (char *) NULL ) {
+		
+		name = pfname;
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_STRONG.*", 0 ) ) {
+
+		flags |= PFXML_STRONG;
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_NEWLINES.*", 0 ) ) {
+
+		flags |= PFXML_NEWLINES;
+	}
+
+	if( flags_string != NULL &&
+	    strmatches( flags_string, ".*PFXML_PRESERVE_PFFILE.*", 0 ) ) {
+
+		flags |= PFXML_PRESERVE_PFFILE;
+	}
+
+	xml = pf2xml( pf, name, prolog, flags );
+
+	xml_safe_copy = estrdup( xml );
+
+	free( xml );
+
+	RETURN_STRING( xml_safe_copy, 0 );
 }
 /* }}} */
 
