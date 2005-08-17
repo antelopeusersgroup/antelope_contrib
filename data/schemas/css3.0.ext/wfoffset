@@ -1,0 +1,32 @@
+# rt1.0 extension
+
+# Include rt1.0  # uncomment to complete schema
+Attribute valoffset
+	Real (20)
+	Format ( "%20.12g" )
+	Null ( "0.0" )
+	Description ( "amount by which wfdisc traces are offset" )
+	Detail {
+		This field gives the constant-offset value, in user 
+		units (i.e. with calib already applied), which must 
+		be added to the wfdisc time-series for a given 
+		data stream in order to recover the full-precision, 
+		calibrated value.
+	}
+	;
+
+Relation wfoffset
+	Fields ( sta chan time endtime valoffset lddate )
+	Primary ( sta chan time endtime )
+	Description ( "abscissa offset values for wfdisc time-series" )
+	Detail {
+		Sometimes it is convenient to store wfdisc time-series
+		with a constant offset removed, especially in the 
+		case of high-precision data where the full-scale 
+		values do not fit well into the storage format 
+		chosen for the traces. This table stores the constant 
+		offset which must be added to the calibrated time-series 
+		values in order to recover the true absolute values.
+	}
+	;
+

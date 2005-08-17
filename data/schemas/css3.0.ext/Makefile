@@ -1,5 +1,5 @@
 
-DATA = qgrid sitephotos gsnspec
+DATA = qgrid sitephotos wfoffset gsnspec 
 
 DATADIR = schemas/css3.0.ext
 
