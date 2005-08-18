@@ -25,6 +25,7 @@
 #include <thread.h>
 #include <synch.h>
 #include <errno.h>
+#include <string.h>
 #include "stock.h"
 #include "coords.h"
 #include "db.h"
@@ -1409,7 +1410,7 @@ ryo2orb_status( void *arg )
 
 			sprintf( log_srcname, "%s_%s/log", Net, key );
 
-			send_log( ss->log, log_srcname );
+			/*DEBUG send_log( ss->log, log_srcname ); */
 		}
 
 
