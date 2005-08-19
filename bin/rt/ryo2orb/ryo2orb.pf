@@ -105,39 +105,9 @@ stachan_calibs &Arr{
 		LON_DEG	-117.634562	1e11	1	d
 		HEIGHT_M	0.0	1e6	1	d
 	}
-	SIO5	&Arr{
-		LAT_DEG	32.840734	1e11	1	d
-		LON_DEG	-117.249687	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
 	BLSA	&Arr{
 		LAT_DEG	33.799543	1e11	1	d
 		LON_DEG	-118.028675	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
-	OGHS	&Arr{
-		LAT_DEG	33.130606	1e11	1	d
-		LON_DEG	-117.041767	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
-	PMOB	&Arr{
-		LAT_DEG	33.357239	1e11	1	d
-		LON_DEG	-116.859544	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
-	DVLW	&Arr{
-		LAT_DEG	33.657694	1e11	1	d
-		LON_DEG	-117.067434	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
-	RAAP	&Arr{
-		LAT_DEG	33.042234	1e11	1	d
-		LON_DEG	-116.917246	1e11	1	d
-		HEIGHT_M	0.0	1e6	1	d
-	}
-	DSME	&Arr{
-		LAT_DEG	33.036476	1e11	1	d
-		LON_DEG	-117.249533	1e11	1	d
 		HEIGHT_M	0.0	1e6	1	d
 	}
 	PSAP	&Arr{
@@ -199,5 +169,77 @@ stachan_calibs &Arr{
 		LAT_DEG	33.934757	1e11	1	d
 		LON_DEG	-116.391781	1e11	1	d
 		HEIGHT_M	0.0	1e6	1	d
+	}
+	DSME	&Arr{
+		ITRF_X	-2450647.852100  1000000         1       d
+		ITRF_Y	-4758321.905000  1000000         1       d
+		ITRF_Z	3457381.334900  1000000         1       d
+		ITRF_T	2.300772  1000000         1       d
+		LAT_DEG	33.036477 1e11    1       d
+		LON_DEG	-117.249534 1e11    1       d
+		HEIGHT_M	56.138024     1e6     1       d
+	}
+	OGHS	&Arr{
+		ITRF_X	-2430835.422370  1000000         1       d
+		ITRF_Y	-4762197.875181  1000000         1       d
+		ITRF_Z	3466199.069996  1000000         1       d
+		ITRF_T	2.263496  1000000         1       d
+		LAT_DEG	33.130607 1e11    1       d
+		LON_DEG	-117.041767 1e11    1       d
+		HEIGHT_M	185.204932     1e6     1       d
+	}
+	PMOB	&Arr{
+		ITRF_X	-2410009.257412  1000000         1       d
+		ITRF_Y	-4758712.324282  1000000         1       d
+		ITRF_Z	3488033.900707  1000000         1       d
+		ITRF_T	1.838125  1000000         1       d
+		LAT_DEG	33.357239 1e11    1       d
+		LON_DEG	-116.859545 1e11    1       d
+		HEIGHT_M	1662.493598     1e6     1       d
+	}
+	DVLW	&Arr{
+		ITRF_X	-2418456.636942  1000000         1       d
+		ITRF_Y	-4732709.815691  1000000         1       d
+		ITRF_Z	3515198.813296  1000000         1       d
+		ITRF_T	2.159114  1000000         1       d
+		LAT_DEG	33.657694 1e11    1       d
+		LON_DEG	-117.067435 1e11    1       d
+		HEIGHT_M	528.041312     1e6     1       d
+	}
+	RAAP	&Arr{
+		ITRF_X	-2422981.851818  1000000         1       d
+		ITRF_Y	-4772397.206502  1000000         1       d
+		ITRF_Z	3458101.474228  1000000         1       d
+		ITRF_T	2.201793  1000000         1       d
+		LAT_DEG	33.042235 1e11    1       d
+		LON_DEG	-116.917247 1e11    1       d
+		HEIGHT_M	395.020413     1e6     1       d
+	}
+	SIO5	&Arr{
+		ITRF_X	-2456115.058512  1000000         1       d
+		ITRF_Y	-4768905.884036  1000000         1       d
+		ITRF_Z	3439232.382941  1000000         1       d
+		ITRF_T	2.252845  1000000         1       d
+		LAT_DEG	32.840734 1e11    1       d
+		LON_DEG	-117.249688 1e11    1       d
+		HEIGHT_M	185.493275     1e6     1       d
+	}
+	P472	&Arr{
+		ITRF_X	-2442691.401974  1000000         1       d
+		ITRF_Y	-4772473.489276  1000000         1       d
+		ITRF_Z	3443722.100071  1000000         1       d
+		ITRF_T	2.286944  1000000         1       d
+		LAT_DEG	32.889208 1e11    1       d
+		LON_DEG	-117.104693 1e11    1       d
+		HEIGHT_M	137.880249     1e6     1       d
+	}
+	P480	&Arr{
+		ITRF_X	-2377284.488427  1000000         1       d
+		ITRF_Y	-4799829.360798  1000000         1       d
+		ITRF_Z	3451962.907319  1000000         1       d
+		ITRF_T	2.246752  1000000         1       d
+		LAT_DEG	32.975995 1e11    1       d
+		LON_DEG	-116.348534 1e11    1       d
+		HEIGHT_M	436.034672     1e6     1       d
 	}
 }
