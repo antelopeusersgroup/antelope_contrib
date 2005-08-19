@@ -1806,10 +1806,54 @@ void *
 ryo2orb_convert( void *arg ) 
 {
 	RYO2orbPacket *r2opkt;
+	int	rc;
+	int	true = 1;
 
 	thr_setprio( thr_self(), THR_PRIORITY_CONVERT );
 
-	while( pmtfifo_pop( RYO2orbPackets_mtf, (void **) &r2opkt ) != 0 ) {
+	while( true ) {
+
+		rc = pmtfifo_pop( RYO2orbPackets_mtf, (void **) &r2opkt );
+
+		switch( rc ) {
+		case PMTFIFO_ERROR:
+			elog_complain( 0,
+				"pmtfifo_pop returned PMTFIFO_ERROR!\n" );
+			clear_register( 1 );
+			continue;
+			break;
+		case PMTFIFO_RELEASED:
+			elog_complain( 0,
+				"pmtfifo_pop returned PMTFIFO_RELEASED!\n" );
+			continue;
+			break;
+		case PMTFIFO_TIMEOUT:
+			elog_complain( 0,
+				"pmtfifo_pop returned PMTFIFO_TIMEOUT!\n" );
+			continue;
+			break;
+		case PMTFIFO_NODATA:
+			elog_complain( 0,
+				"pmtfifo_pop returned PMTFIFO_NODATA!\n" );
+			continue;
+			break;
+		case PMTFIFO_OK:
+			/* Fallthrough */
+			break;
+		default:
+			elog_complain( 0,
+				"pmtfifo_pop returned unknown code!\n" );
+			continue;
+			break;
+		}
+
+		if( r2opkt == NULL ) {
+
+			elog_complain( 0,
+			"unexpected null pointer in ryo2orb_convert!!\n" );
+
+			continue;
+		}
 
 		add_geodetics( r2opkt );
 
