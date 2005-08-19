@@ -379,11 +379,11 @@ free_StaStatus( void *ssp )
 StachanCalib *
 new_StachanCalib()
 {
-	StachanCalib *scc;
+	StachanCalib *scc = 0;
 
 	allot( StachanCalib *, scc, 1 );
 
-	memset( scc, '\0', sizeof( scc ) );
+	memset( scc, '\0', sizeof( *scc ) );
 
 	return scc;
 }
@@ -392,11 +392,11 @@ StachanCalib *
 dup_StachanCalib( void *sccp )
 {
 	StachanCalib *scc = (StachanCalib *) sccp;
-	StachanCalib *dup;
+	StachanCalib *dup = 0;
 
 	dup = new_StachanCalib();
 
-	memcpy( dup, scc, sizeof( scc ) );
+	memcpy( dup, scc, sizeof( *scc ) );
 
 	return dup;
 }
@@ -423,6 +423,18 @@ get_StachanCalib( char *site_id, char *channel_identifier )
 	}
 
 	return scc;
+}
+
+void
+show_StachanCalib( FILE *fp, StachanCalib *scc )
+{
+	fprintf( fp, "offset %f\n", scc->offset );;
+	fprintf( fp, "multdataby %f\n", scc->multdataby );
+	fprintf( fp, "calper %f\n", scc->calper );
+	fprintf( fp, "segtype %s\n", scc->segtype );
+	fprintf( fp, "announced %d\n", scc->announced );
+
+
 }
 
 void
@@ -1298,10 +1310,16 @@ send_log( char *log, char *srcname )
 	}
 
 	pkt->string = strdup( log );
-	pkt->string_size = strlen(log);
+	pkt->string_size = strlen(log) + 1;
 
 	if( pkt->string_size > 512 ) {
 		elog_complain( 0, "Warning: log message exceeds 512 bytes\n" );
+	}
+
+	if( buf == 0 ) {
+		/* stuff_log appears not to allocate correctly? */
+		allot( char *, buf, 1024 );
+		nbytes = 1024;
 	}
 
 	if( stuffPkt( pkt, auto_srcname, &time, &buf, &nbytes, &packetsz ) < 0 ) {
@@ -1410,7 +1428,7 @@ ryo2orb_status( void *arg )
 
 			sprintf( log_srcname, "%s_%s/log", Net, key );
 
-			/*DEBUG send_log( ss->log, log_srcname ); */
+			send_log( ss->log, log_srcname ); 
 		}
 
 
@@ -1790,7 +1808,6 @@ ryo2orb_convert( void *arg )
 	RYO2orbPacket *r2opkt;
 
 	thr_setprio( thr_self(), THR_PRIORITY_CONVERT );
-
 
 	while( pmtfifo_pop( RYO2orbPackets_mtf, (void **) &r2opkt ) != 0 ) {
 

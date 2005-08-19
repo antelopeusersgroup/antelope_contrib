@@ -45,8 +45,8 @@ stachan_calibs &Arr{
 		ITRF_T		0.0	1000000		1	d
 		LAT_RAD		0.0	1000000		1	d
 		LON_RAD		0.0	1000000		1	d
-		LAT_DEG		0.0	1000000		1	d
-		LON_DEG		0.0	1000000		1	d
+		LAT_DEG		0.0	1000000		1	a
+		LON_DEG		0.0	1000000		1	a
 		HEIGHT_M	0.0	1000000		1	d
 		variance_scale  0.0	1000000		1	d
 		variance_X	0.0	1000000		1	d
