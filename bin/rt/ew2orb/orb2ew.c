@@ -843,8 +843,10 @@ orb2ew_export( void *arg )
 
 	if( et->es->loglevel == VERYVERBOSE && VERYVERBOSE_DEBUGBNS ) { 
 
+#if 0  /* no longer implemented */
 		et->bnsin->debug = 1;
 		et->bnsout->debug = 1;
+#endif
 	}
 
 	set_sigusr1_handler( sigusr1_handler );
