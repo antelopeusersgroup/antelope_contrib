@@ -1312,6 +1312,8 @@ send_log( char *log, char *srcname )
 	pkt->string = strdup( log );
 	pkt->string_size = strlen(log) + 1;
 
+	pkt->time = now();
+
 	if( pkt->string_size > 512 ) {
 		elog_complain( 0, "Warning: log message exceeds 512 bytes\n" );
 	}
@@ -1319,7 +1321,7 @@ send_log( char *log, char *srcname )
 	if( buf == 0 ) {
 		/* stuff_log appears not to allocate correctly? */
 		allot( char *, buf, 1024 );
-		nbytes = 1024;
+		packetsz = 1024;
 	}
 
 	if( stuffPkt( pkt, auto_srcname, &time, &buf, &nbytes, &packetsz ) < 0 ) {
@@ -1428,7 +1430,7 @@ ryo2orb_status( void *arg )
 
 			sprintf( log_srcname, "%s_%s/log", Net, key );
 
-			/* DEBUG send_log( ss->log, log_srcname );  */
+			send_log( ss->log, log_srcname );  
 		}
 
 
