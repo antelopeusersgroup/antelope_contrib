@@ -208,8 +208,17 @@ pfrequire (pfname, atime)
 pfcompile (string, pfname)
    convert the specified string into a parameter file object
 
+pfput (key, value, pfname)
+   insert key/value pairs into a parameter file object
+
+pfdel (pfname, key)
+   remove the specified parameter from a parameter file object, returning the value
+
 pfwrite (filename, pfname)
    write a parameter file object to the specified file
+
+pf2xml (pfname [, flags [, prolog [, name]]]
+   convert a parameter file to xml
 
 <subsection Time conversion>
 
@@ -294,6 +303,18 @@ concatpaths (a, b)
 parsepath (a)
     split a pathname into directory, filename base, and suffix (if present)
 
+grn (lat, lon )
+    return geographic region number based on location 
+
+grname (lat, lon )
+    return geographic region name based on location 
+
+srn (lat, lon )
+    return seismic region number based on location 
+
+srname (lat, lon )
+    return seismic region name based on location 
+
 <subsection Foreign keys >
 
 <body>
@@ -302,9 +323,6 @@ different conventions of autodrm and SEED.
 </body>
 
 <function>
-
-finit_db ($db)
-    initialize a foreign-keys translation database
 
 sta = map_autodrm_netsta (anet, fsta)
 
@@ -321,4 +339,7 @@ chan = map_seed_netsta (sta, fchan, loc)
 (snet, fsta) = seed_net (sta)
 
 (fchan, loc) = seed_loc (sta, chan)
+
+finit_db ($db)
+    cause foreign key routines above to use specified database $db
 
