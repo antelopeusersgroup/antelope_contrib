@@ -429,8 +429,6 @@ map between CSS3.0 station/channel naming  conventions  and  the
 different conventions of autodrm and SEED.
 </body>
 <function>
-finit_db(@db)
-    set a database other than the default for use by the foreign keys routines 
 
 $sta = map_autodrm_netsta($anet, $fsta)
 $chan = map_autodrm_chanaux($sta,$fchan,$aux)
@@ -441,6 +439,9 @@ $sta = map_seed_netsta($anet, $fsta)
 $chan = map_seed_chanloc($sta,$fchan,$loc)
 ($snet, $fsta) = seed_net($sta)
 ($fchan, $loc) = seed_loc($sta,$chan)
+
+finit_db(@db) 
+    cause foreign key routines above to use specified database @db
 
 <chapter Perl Orb Access>
 <info>
