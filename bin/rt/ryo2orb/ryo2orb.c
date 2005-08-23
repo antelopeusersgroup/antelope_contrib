@@ -779,7 +779,7 @@ new_SatelliteInfo()
 
 	allot( SatelliteInfo *, si, 1 );
 
-	memset( si, '\0', sizeof( si ) );
+	memset( si, '\0', sizeof( *si ) );
 
 	return si;
 }
@@ -1454,7 +1454,7 @@ ryo2orb_status( void *arg )
 		sprintf( srcname, "%s/pf/st", Net );
 
 		if( orbput( Orbfd, srcname, time, buf, nbytes ) < 0 ) {
-		
+			
 			elog_complain( 0, "Orbput failed for status packet!\n" );
 		}
 
@@ -1473,8 +1473,8 @@ void
 flush_packet( Packet *pkt )
 {
 	PktChannel *pktchan;
-	double	time;
-	char	srcname[ORBSRCNAME_SIZE];
+	double	time = 0;
+	char	srcname[ORBSRCNAME_SIZE] = "";
 	static char *orbpkt = 0;
 	static int  orbpktnbytes = 0;
 	static int  orbpktsz = 0;
@@ -1521,7 +1521,7 @@ flush_packet( Packet *pkt )
 	}
 		
 	if( orbput( Orbfd, srcname, time, orbpkt, orbpktnbytes ) < 0 ) {
-		
+	
 		elog_complain( 0, "Orbput failed for packet! Trying to retain data internally\n" );
 
 		return;
@@ -1992,6 +1992,8 @@ load_stachan_calibs( Pf *pf )
 		}
 
 		freetbl( chanids, 0 );
+
+		freearr( chans, 0 );
 	}
 
 	freetbl( stas, 0 );
@@ -2066,6 +2068,17 @@ main( int argc, char **argv )
 	load_stachan_calibs( pf );
 
 	RYO2orbPackets_mtf = pmtfifo_create( PACKET_QUEUE_SIZE, 1, 0 );
+
+	if( RYO2orbPackets_mtf->block != 0 && 
+	    RYO2orbPackets_mtf->block != 1 ) {
+		
+		elog_complain( 0, "DEBUG WARNING: pmt fifo block is corrupted!\n" );
+	} else {
+
+		elog_notify( 0, "DEBUG NOTIFY: pmt fifo block OK.\n" );
+	}
+
+	sleep( 1 ); /* DEBUG */
 
 	if( Verbose ) {
 		elog_notify( 0, 
