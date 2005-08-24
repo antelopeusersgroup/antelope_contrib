@@ -196,7 +196,7 @@ typedef struct RYO2orbPacket {
 void
 usage() 
 {
-	cbanner( "$Date$", 
+	cbanner( "$Date$ $Revision$", 
 		 "[-v] [-V] [-p pfname] rtd_ipaddress:port orb",
 		 "Kent Lindquist", 
 		 "Lindquist Consulting", 
