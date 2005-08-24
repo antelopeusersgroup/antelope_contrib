@@ -16,7 +16,7 @@ include $(ANTELOPEMAKE)
 
 DIRS=
 
-OBJS= ryo2orb.o  myPackets.o
+OBJS= ryo2orb.o  
 $(BIN) : $(OBJS)
 	$(RM) $@
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
