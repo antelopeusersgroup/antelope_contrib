@@ -1835,8 +1835,9 @@ ryo2orb_convert( void *arg )
 			continue;
 			break;
 		case PMTFIFO_NODATA:
-			elog_complain( 0,
-				"pmtfifo_pop returned PMTFIFO_NODATA!\n" );
+			/* DEBUG elog_complain( 0,
+				"pmtfifo_pop returned PMTFIFO_NODATA!\n" ); */
+			sleep( 1 ); /* DEBUG */
 			continue;
 			break;
 		case PMTFIFO_OK:
@@ -2072,7 +2073,7 @@ main( int argc, char **argv )
 	if( RYO2orbPackets_mtf->block != 0 && 
 	    RYO2orbPackets_mtf->block != 1 ) {
 		
-		elog_complain( 0, "DEBUG WARNING: pmt fifo block is corrupted!\n" );
+		elog_complain( 0, "DEBUG WARNING: pmt fifo block is corrupted! (debugging work in progress)\n" );
 	} else {
 
 		elog_notify( 0, "DEBUG NOTIFY: pmt fifo block OK.\n" );
