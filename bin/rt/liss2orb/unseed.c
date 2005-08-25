@@ -10,6 +10,18 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
     Steim *conf ;
     char *indata ;
     int retcode = 0 ;
+    static int 
+	notified_ASCII=0, 
+	notified_DWWSSN=0,
+	notified_24bit=0,
+	notified_32bit=0,
+	notified_64bit=0,
+	notified_GEOSCOPE=0,
+	notified_USNN=0,
+	notified_Graefenberg=0,
+	notified_Strasbourg=0,
+	notified_Steim3=0,
+	notified_HGLP=0 ;
 
     conf = newsteim() ; 
     *confp = conf ;
@@ -48,9 +60,14 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 
 	    switch (conf->s1000.dataformat) { 
 		case 0:	/* ASCII text !? */
-		    register_error ( 0, 
-			"ASCII data format not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_ASCII ) { 
+			notified_ASCII = 1 ;
+			complain ( 0, 
+			    "ASCII data format not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 1:	/* 16 bit integers */ {
@@ -67,9 +84,13 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		    break ;
 
 		case 2:	/* 24 bit integers */
-		    register_error ( 0, 
-			"24 bit integers not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_24bit ) { 
+			notified_24bit = 1 ; 
+			complain ( 0, "24 bit integers not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 3:	/* 32 bit integers */
@@ -81,15 +102,23 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		    break ;
 
 		case 4:	/* 32 bit float */
-		    register_error ( 0, 
-			"32 bit floats not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_32bit ) { 
+			notified_32bit = 1 ; 
+			complain ( 0, "32 bit floats not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 5:	/* 64 bit float */
-		    register_error ( 0, 
-			"64 bit floats not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_64bit ) { 
+			notified_64bit = 1 ; 
+			complain ( 0, "64 bit floats not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 10:	/* Steim(1) compression */
@@ -102,15 +131,23 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		case 12:	/* GEOSCOPE Multiplexed */
 		case 13:
 		case 14:
-		    register_error ( 0, 
-			"GEOSCOPE multiplexed data not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_GEOSCOPE ) { 
+			notified_GEOSCOPE = 1 ;
+			complain ( 0, "GEOSCOPE multiplexed data not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break; 
 
 		case 15:    	/* US National Network Compression */
-		    register_error ( 0, 
-			"US National Network Compression not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_USNN ) { 
+			notified_USNN = 1 ;
+			complain ( 0, "US National Network Compression not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 16:	/* CDSN 16 bit gain ranged */
@@ -140,21 +177,33 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		      break ;
 
 		case 17:	/* Graefenberg 16 bit gain ranged */
-		    register_error ( 0, 
-			"Graefenberg 16 bit gain ranged not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_Graefenberg ) { 
+			notified_Graefenberg = 1 ;
+			complain ( 0, "Graefenberg 16 bit gain ranged not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 18:	/* IPG - Strasbourg 16 bit gain ranged */
-		    register_error ( 0, 
-			"IPG - Strasbourg 16 bit gain ranged not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_Strasbourg ) { 
+			notified_Strasbourg = 1 ;
+			complain ( 0, "IPG - Strasbourg 16 bit gain ranged not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break; 
 
 		case 19:	/* Steim (3) compression */
-		    register_error ( 0, 
-			"Steim (3) compression not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_Steim3 ) { 
+			notified_Steim3 = 1 ;
+			complain ( 0, "Steim (3) compression not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break; 
 
 		case 30:	/* SRO Format */
@@ -170,15 +219,23 @@ UNSEED ( char *seed, int size, Steim **confp, double *time, double *samprate, in
 		    break ;
 
 		case 31:	/* HGLP Format */
-		    register_error ( 0, 
-			"HGLP Format not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_HGLP ) { 
+			notified_Steim3 = 1 ;
+			complain ( 0, "HGLP Format not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		case 32:	/* DWWSSN Gain Range Format */
-		    register_error ( 0, 
-			"DWWSSN Gain Range Format not supported" );
-		    retcode = -1 ;
+		    if ( ! notified_DWWSSN ) { 
+			notified_DWWSSN = 1 ;
+			complain ( 0, "DWWSSN Gain Range Format not supported" );
+			hexdump ( stderr, seed, size ) ;
+			complain ( 0, "ignoring these packets hereafter" ) ; 
+		    }
+		    retcode = -3 ;
 		    break ;
 
 		default:

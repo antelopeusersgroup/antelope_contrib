@@ -112,6 +112,7 @@ liss2orbpkt ( char *seed, int size, char *database, int remap,
 	    hexdump ( stderr, seed, size ) ;
 	    break; 
 
+	case -3: /* unsupported formats */
 	case -4: /* log data */
 	    break ;
 
