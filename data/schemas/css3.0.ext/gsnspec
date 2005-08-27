@@ -53,7 +53,7 @@ Attribute pc_50
 
 Relation gsnspec
 	Fields ( sta chan insname period fc pc_1 pc_5 pc_25 pc_50 time endtime lddate )
-	Primary ( sta chan per time::endtime )
+	Primary ( sta chan period time::endtime )
 	Description ( "gsn ground noise levels" )
 	Detail {
 		The gsnspec relation stores 1, 5, 25, 50 percentile spectral
