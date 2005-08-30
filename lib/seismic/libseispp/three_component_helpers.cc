@@ -33,12 +33,12 @@ Arguments:
 
 */
 
-ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& tcsi,
+ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
 	string arrival_time_key,
 		TimeWindow tw)
 {
 	double atime;
-	string base_error_message("Arrival_Time_Reference: ");
+	string base_error_message("ArrivalTimeReference: ");
 	try
 	{
 		atime = tcsi.get_double(arrival_time_key);
@@ -54,7 +54,7 @@ ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& tcsi,
 	// time is already relative and this condition cannot be tolerated
 	// here as we have no idea what the time standard might be otherwise
 	if(tcsi.tref == relative)
-		throw SeisppError(string("Arrival_Time_Reference:  ")
+		throw SeisppError(string("ArrivalTimeReference:  ")
 			+ string("received data in relative time units\n")
 			+ string("Cannot proceed as timing is ambiguous"));
 
@@ -120,7 +120,7 @@ ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& tcsi,
 special thing it does is handle exceptions.  When the single object
 processing function throws an exception the error is printed and the 
 object is simply not copied to the output ensemble */
-ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& tcei,
+ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& tcei,
 	string arrival_time_key,
 		TimeWindow tw)
 {
@@ -137,7 +137,7 @@ ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& tcei,
 	{
 		try {
 			ThreeComponentSeismogram tcs;
-			tcs=Arrival_Time_Reference(*indata,arrival_time_key,tw);
+			tcs=ArrivalTimeReference(*indata,arrival_time_key,tw);
 			tceo->member.push_back(tcs);
 		} catch ( SeisppError& serr)
 		{

@@ -1541,7 +1541,7 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& din,
+ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& din,
 	string key, TimeWindow tw);
 //@{
 // Returns a gather of ThreeComponentSeismograms in an arrival time reference fram.
@@ -1556,7 +1556,37 @@ ThreeComponentSeismogram& Arrival_Time_Reference(ThreeComponentSeismogram& din,
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-ThreeComponentEnsemble& Arrival_Time_Reference(ThreeComponentEnsemble& din,
+ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& din,
+	string key, TimeWindow tw);
+//@{
+// Returns a new TimeSeries seismogram in an arrival time reference.
+// An arrival time reference means that the time is set to relative and 
+// zero is defined as an arrival time extracted from the metadata area of
+// the object.
+//
+//@throws SeisppError for errors in extracting required information from metadata area.
+//
+//@param din  is input seismogram
+//@param key is the metadata key used to find the arrival time to use as a reference.
+//@param tw is a TimeWindow object that defines the window of data to extract around
+//    the desired arrival time.
+//@}
+TimeSeries& ArrivalTimeReference(TimeSeries& din,
+	string key, TimeWindow tw);
+//@{
+// Returns a gather of TimeSeries objects in an arrival time reference frame.
+// An arrival time refernce means that the time is set to relative and 
+// zero is defined as an arrival time extracted from the metadata area of
+// each member object.
+//
+//@throws SeisppError for errors in extracting required information from metadata area.
+//
+//@param din  is input gather
+//@param key is the metadata key used to find the arrival time to use as a reference.
+//@param tw is a TimeWindow object that defines the window of data to extract around
+//    the desired arrival time.
+//@}
+TimeSeriesEnsemble& ArrivalTimeReference(TimeSeriesEnsemble& din,
 	string key, TimeWindow tw);
 
 

@@ -45,6 +45,7 @@ OBJS=basic_time_series.o \
   stack.o \
   statics.o \
   three_component_helpers.o \
+  tseries_helpers.o \
   time_window.o \
   timewindow_reader.o \
   ttime.o \
