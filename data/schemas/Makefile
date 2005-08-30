@@ -28,6 +28,5 @@ DATA=	iceworm1.3 \
 	webbullets1.0
 
 include $(ANTELOPEMAKE)  	
-DIRS=
 
 # $Id$ 
