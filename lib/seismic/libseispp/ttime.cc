@@ -62,6 +62,17 @@ Hypocenter::Hypocenter(Metadata& md)
 		model=md.get_string("TTmodel");
 	} catch (MetadataError& mderr){}
 }
+// the obvious fully parameterized constructor
+Hypocenter::Hypocenter(double lat0, double lon0, double z0, double t0,
+		string meth0, string mod0)
+{
+	lat=lat0;
+	lon=lon0;
+	z=z0;
+	time=t0;
+	method=meth0;
+	model=mod0;
+}
 		
 
 

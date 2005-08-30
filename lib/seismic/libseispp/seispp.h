@@ -560,8 +560,13 @@ public:
 //@}
 	TimeSeries();
 //@{
-// Similar to the default constructor but calls reserve to set aside
-// memory for nsin elements in the vector container that holds sample data.
+// Similar to the default constructor but creates a vector of data 
+// with nsin samples and initializes all samples to 0.0.  
+// This vector can safely be accessed with the vector index 
+// operator (i.e. operator []).  A corollary is that push_back 
+// or push_front applied to this vector will alter it's length
+// so use this only if the size of the data to fill the object is
+// already known.
 //@}
 	TimeSeries(int nsin);
 //@{
@@ -1189,6 +1194,20 @@ public:
 	// the parent metadata are given already in radians.  
 	//@}
 	Hypocenter(Metadata& );
+	//@{
+	// Fully parameterized constructor fill in all data members of
+	// Hypocenter object.  
+	//
+	//@param lat0 latitude of the source (in radians)
+	//@param lon0 longitude of the source (in radians)
+	//@param z0 depth of the source in km
+	//@param t0 orign time of the source (epoch time).
+	//@param meth0 method to be assigned as travel to define travel time calculations
+	//@param mod0 earth model name to use for travel time calculations.
+
+	//@}
+	Hypocenter(double lat0, double lon0, double z0, double t0,
+                string meth0, string mod0);
 	//* Standard copy constructor */
 	Hypocenter(const Hypocenter&);
 	//* Standard assignment operator.*/
@@ -1201,7 +1220,7 @@ public:
 	// circle path joining event and station at the position of the 
 	// source and looking toward the station.
 	//@param lat0 latitude of the station
-	//@param lat0 longitude of the station
+	//@param lon0 longitude of the station
 	//@}
 	double esaz(double lat0, double lon0);
 	//@{
