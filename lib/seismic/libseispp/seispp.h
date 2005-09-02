@@ -953,12 +953,12 @@ public:
 //
 //@param db is a generalized handle to a database.  In the current
 // implementation it is assumed to be a DatascopeHandle.
-//@parmam sta_expression regular expression to sift station codes 
+//@param sta_expression regular expression to sift station codes 
 //   (e.g. A.* for all stations starting with A or ..2 for all 3 station
 //   codes ending in 2.)
-//@parmam chan_expression regular expression to sift channel codes 
+//@param chan_expression regular expression to sift channel codes 
 //   (e.g. BH. for all BH channels or .* for all).
-//@parmam require_coords require that a site table be present.  (default true)
+//@param require_coords require that a site table be present.  (default true)
 //@param require_orientation require that sitechan orientation information
 //   (hang, vang) be present. (default true)
 //@param require_response require the set of css3.0 response tables be 
