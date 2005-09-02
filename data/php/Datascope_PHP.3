@@ -1359,6 +1359,26 @@ $chan =  map_seed_chanloc ( $sta, $fchan, $loc )"
 .in
 .ft R
 
+.IP "\fBgrn\fP ( $lat, $lon )"
+.IP "\fBgrname\fP ( $lat, $lon )"
+.IP "\fBsrn\fP ( $lat, $lon )"
+.IP "\fBsrname\fP ( $lat, $lon )"
+These routines provide geographic and seismic region numbers 
+based on geodetic location
+.ft CW
+.in 2c
+.nf
+
+
+$grn = grn( $lat, $lon );
+$grname = grname( $lat, $lon );
+$srn = srn( $lat, $lon );
+$srname = srname( $lat, $lon );
+
+.fi
+.in
+.ft R
+
 .SH EXAMPLE
 .ft CW
 .in 2c

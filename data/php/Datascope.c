@@ -142,6 +142,10 @@ function_entry Datascope_functions[] = {
 	PHP_FE(datapath, NULL)
 	PHP_FE(makedir, NULL)
 	PHP_FE(make_pathdirs, NULL)
+	PHP_FE(grn, NULL)
+	PHP_FE(grname, NULL)
+	PHP_FE(srn, NULL)
+	PHP_FE(srname, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -1363,6 +1367,122 @@ PHP_FUNCTION(epoch2str)
 	free( timestring );
 
 	RETURN_STRING( timestring_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto int grn( double lat, double lon ) */
+PHP_FUNCTION(grn)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	lat;
+	double	lon;
+	int	grn;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+				&lat, &lon )
+	    == FAILURE) {
+
+		return;
+	}
+
+	grn = grnumber( lat, lon ); 
+
+	RETURN_LONG( grn );
+}
+/* }}} */
+
+/* {{{ proto string grname( double lat, double lon ) */
+PHP_FUNCTION(grname)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	lat;
+	double	lon;
+	int	grn;
+	char	name[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+				&lat, &lon )
+	    == FAILURE) {
+
+		return;
+	}
+
+	grn = grnumber( lat, lon ); 
+
+	grname( grn, name );
+
+	RETURN_STRING( name, 1 );
+}
+/* }}} */
+
+/* {{{ proto int srn( double lat, double lon ) */
+PHP_FUNCTION(srn)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	lat;
+	double	lon;
+	int	grn;
+	int	srn;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+				&lat, &lon )
+	    == FAILURE) {
+
+		return;
+	}
+
+	grn = grnumber( lat, lon );
+
+	srn = srnumber( grn ); 
+
+	RETURN_LONG( srn );
+}
+/* }}} */
+
+/* {{{ proto string srname( double lat, double lon ) */
+PHP_FUNCTION(srname)
+{
+	int	argc = ZEND_NUM_ARGS();
+	double	lat;
+	double	lon;
+	int	grn;
+	int	srn;
+	char	name[STRSZ];
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "dd", 
+				&lat, &lon )
+	    == FAILURE) {
+
+		return;
+	}
+
+	grn = grnumber( lat, lon );
+
+	srn = srnumber( grn ); 
+
+	srname( srn, name );
+
+	RETURN_STRING( name, 1 );
 }
 /* }}} */
 

@@ -121,6 +121,10 @@ PHP_FUNCTION(makedir);
 PHP_FUNCTION(make_pathdirs);
 PHP_FUNCTION(datafile);
 PHP_FUNCTION(datapath);
+PHP_FUNCTION(grn);
+PHP_FUNCTION(grname);
+PHP_FUNCTION(srn);
+PHP_FUNCTION(srname);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)
