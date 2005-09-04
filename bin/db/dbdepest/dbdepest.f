@@ -4,7 +4,8 @@ C   GAA 1/03  upgraded for Antelope 4.3u
 	parameter (NMAX=16386,NMAX2=2*NMAX)
 	character*80 argu, pfile
 
-	dimension datin(NMAX),dat(NMAX),syn(NMAX2),res(NMAX),synsave(NMAX2)
+	dimension datin(NMAX),dat(NMAX),syn(NMAX2),res(NMAX),
+     *    synsave(NMAX2)
 	complex zfilt(NMAX),tranf(NMAX)
 	real*8 alphm(10),betam(10),rhom(10),thkm(10)
 	real*8 vp2,vs2,rho2,phvel
