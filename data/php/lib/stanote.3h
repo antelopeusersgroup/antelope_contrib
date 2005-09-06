@@ -1,0 +1,140 @@
+.TH STANOTE 3H "$Date$"
+.SH NAME
+stanote_add, stanote_edit, stanote_delete \- simple web based functions for modifying a stanotes table
+.SH SYNOPSIS
+.nf
+stanote_add( $database, $station, $time, $range, $format, $note, $auth )
+stanote_edit( $database, $station, $time, $range, $format, $note, $auth, $lddate )
+stanote_delete( $database, $station, $lddate )
+.fi
+.SH DESCRIPTION
+The \fIstanote\fP library of functions is an expanded PHP version of the \fIstanote\fP Perl script written by Dan Quinlan and provides functions for adding, editing or deleting a note from a stanotes table. All the arguments to the function must be supplied for it work correctly. Errors are sent to the Apache (or, if defined, PHP) error log, and also detailed errors are returned by each respective function. The result of using the function is returned as a string to the variable calling the function.
+
+The database (\fI$database\fP) and stanotes table must exist before the functions will work. The station code (\fI$station\fP) refers to the station that the note concerns. The start time (\fI$time\fP) and time range (\fI$range\fP) are used to calculate an endtime for the note. Format (\fI$format\fP) refers to the type of file being uploaded (currently either text or a web-presentable image). If the format is defined as txt then the note is encoded by the PHP-core functions htmlentities() and addslashes() to attempt to stop script injection onto the local file system. The author argument (\fI$auth\fP) refers to the person updating the stanotes table.
+.SH OPTIONS
+	$database	database
+			Specify the path to the database where the stanotes table exists.
+
+	$station	station code
+			Specify the station code.
+
+	$time		start time
+			Specify a start time that the note applies to.
+
+	$range		range
+			Specify the time range (in seconds) that the note applies to.
+
+	$format		file format
+			File format for the note. Value can be gif, jpg, png, tif or txt.
+
+	$note		note contents
+			Can be either text or an image Binary Large OBject (BLOB).
+
+	$auth		author
+			The author of the note.
+
+	$lddate		load date
+			Load date of the note in epoch milliseconds.
+.SH FILES
+	Each note ends up in a unique file in the directory notes.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+<?php
+	dl( 'Datascope.so' ) ;
+	require_once( 'stanote.inc' ) ;
+	$database = "/path/to/my/stanotes_database ;
+?>
+<html>
+<head>
+<title>stanote application example</title>
+</head>
+<body>
+<h1>stanote example code</h1>
+<?php
+	$result1 = stanote_add( $database, "PFO", "09/08/2005", "86400", "txt", "Here is a new string to be stored", "rnewman" ) ;
+	$result2 = stanote_edit( $database, "MONP", "09/10/2005", "86400", "txt", "This is a replacement note", "rnewman", "1126024603.05146" ) ;
+	$result3 = stanote_delete( $database, "109C", "1126024967.76291" ) ;
+
+	echo "<p>$result1</p>\n" ;
+	echo "<p>$result2</p>\n" ;
+	echo "<p>$result3</p>\n" ;
+?>
+</body>
+</html>
+
+If successful, this will result in HTML source code output like:
+
+<html>
+<head>
+<title>stanote application example</title>
+</head>
+
+<body>
+<h1>stanote example code</h1>
+
+<p>Success: Added note to database!</p>
+<p>Success: Edited note in database!</p>
+<p>Success: Deleted note from database and associated file!</p>
+
+</body>
+</html>
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+stanote_add return value is "Success: Added note to database!"
+stanote_edit return value is "Success: Edited note in database!"
+stanote_delete return value is "Success: Deleted note from database and associated file!"
+
+Errors in the script will result in explanatory strings being returned by the function in addition to being sent to the Apache (or, if defined, PHP) error log.
+
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+Error messages for the stanote functions:
+
+Datascope_PHP: stanote_add error: Usage: stanote_add( database, sta, time, range, format, note, auth )
+Datascope_PHP: stanote_edit error: Usage: stanote_edit( database, sta, time, range, format, note, auth, lddate )
+Datascope_PHP: stanote_delete error: Usage: stanote_delete( database, sta, lddate )
+- Supply the correct function arguments.
+
+Error: Can't open database $database
+- Ensure the path to the database is correct and that permissions allow the web-user to open and edit the stanotes table.
+
+Error: Can't open file $file for writing. Check file permissions.
+- Does the web-user have permission to write to this file and directory?
+
+Error: Can't write to file $file. Check file permissions.
+- Does the web-user have permission to write to this file and directory?
+
+Error: Can't lock file $file with flock
+- Problem with PHP-core function flock()
+
+Error: The format of your comment is $format. It must be either gif, jpg, png, tif or txt.
+- Ensure you specify the format of your comment as one one of the allowed formats.
+
+Error: dbfind compilation error.
+- Compilation error with Datascope_PHP function dbfind(). Did you supply the exact lddate that is in the stanotes table entry? See man dbfind.
+
+Error: dbfind search failed - went past last record.
+- Search failed with Datascope_PHP function dbfind(). Did you supply the exact lddate that is in the stanotes table entry? See man dbfind.
+
+Error: dbfind search failed - went past first record.
+- Search failed with Datascope_PHP function dbfind(). Did you supply the exact lddate that is in the stanotes table entry? See man dbfind.
+
+.SH "SEE ALSO"
+.nf
+Datascope_PHP(3), stanote(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The stanotes table and notes directory MUST be writable by the web-user (typically wwwrun, nobody, apache, www). Use caution in making any directories or files writable by the web-user!
+Keeping all notes in one directory is probably a mistake.
+.SH AUTHOR
+Rob Newman, UCSD
+.\" $Id$
