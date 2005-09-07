@@ -7,11 +7,15 @@ function stanote_times( $time, $range ) {
 		$time = intval( time()/86400 ) * 86400 ;
 	}
 	if( isset( $range ) ) {
-		$range = str2epoch( $range ) ;
+		if( $range == "-" ) {
+			$endtime = "9999999999.99900" ;
+		} else {
+			$range = str2epoch( $range ) ;
+			$endtime = $time + $range -1 ;
 	} else {
 		$range = 86400 ;
+		$endtime = $time + $range -1 ;
 	}
-	$endtime = $time + $range -1 ;
 	return array( $time, $endtime ) ;
 }
 
