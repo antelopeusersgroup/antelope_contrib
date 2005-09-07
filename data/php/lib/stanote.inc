@@ -12,6 +12,7 @@ function stanote_times( $time, $range ) {
 		} else {
 			$range = str2epoch( $range ) ;
 			$endtime = $time + $range -1 ;
+		}
 	} else {
 		$range = 86400 ;
 		$endtime = $time + $range -1 ;
