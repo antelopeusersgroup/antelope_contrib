@@ -17,13 +17,14 @@ function stanote_times( $time, $range ) {
 
 function stanote_add( $database, $sta, $time, $range, $format, $note, $auth ) {
 	if( empty( $database ) || empty( $sta ) || empty( $time ) || empty( $range ) || empty( $format ) || empty( $note ) || empty( $auth ) ) {
-		return "Datascope_PHP: stanote_add error: Usage: stanote_add( database, sta, time, range, format, note, auth )" ;
+		error_log( "Datascope_PHP: stanote_add error: Usage: stanote_add( database, sta, time, range, format, note, auth", 0 ) ;
+		return -1 ;
 	} else {
 		$notes_database = ds_dbopen( $database, "r+" ) ;
 		$notes_table = dblookup( $notes_database, "", "stanotes", "", "" ) ;
 		if( $notes_table[0] < 0 || $notes_table[1] < 0 ) {
 			error_log( "Datascope_PHP: stanote_add error: Can't open database $database", 0 ) ;
-			return "Error: Can't open database $database" ;
+			return -1 ;
 		} else {
 			if( $format == "gif" || $format == "jpg" || $format == "png" || $format == "tif" || $format == "txt"  ) { # check note format
 				if( $format == "txt" ) {
@@ -44,24 +45,24 @@ function stanote_add( $database, $sta, $time, $range, $format, $note, $auth ) {
 				}
 				if( !$handle = fopen( "$dir/$file", "w+" ) ) { # open file for writing
 					error_log( "Datascope_PHP: stanote_add error: Can't open file $dir/$file for writing", 0 ) ;
-					return "Error: Can't open file $file for writing. Check file permissions." ;
+					return -1 ;
 				}
 				if( flock( $handle, LOCK_EX ) ) { # exclusively lock the file
 					if( fwrite( $handle, $note ) === FALSE ) { # write note to file
 						error_log( "Datascope_PHP: stanote_add error: Can't write to file $dir/$file", 0 ) ;
-						return "Error: Can't write to file $file. Check file permissions." ;
+						return -1 ;
 					}
 					flock( $handle, LOCK_UN ) ; # unlock file
 				} else {
 					error_log( "Datascope_PHP: stanote_add error: Can't lock file $dir/$file with flock", 0 ) ;
-					return "Error: Can't lock file $file with flock" ;
+					return -1 ;
 				}
 				fclose( $handle ) ; # close file for writing
 				dbaddv( $notes_table, "sta", $sta, "time", $time, "endtime", $endtime, "auth", $auth, "format", $format, "dir", $dir, "dfile", $file ); # add entry to db
-				return "Success: Added note to database!" ;
+				return 0 ;
 			} else { 
 				error_log( "Datascope_PHP: stanote_add error: Format of comment is $format. It must be either gif, jpg, png, tif or txt", 0 ) ;
-				return "Error: The format of your comment is $format. It must be either gif, jpg, png, tif or txt." ;
+				return -1 ;
 			}
 		}
 	}
@@ -69,13 +70,14 @@ function stanote_add( $database, $sta, $time, $range, $format, $note, $auth ) {
 
 function stanote_edit( $database, $sta, $time, $range, $format, $note, $auth, $lddate ) {
 	if( empty( $database ) || empty( $sta ) || empty( $time ) || empty( $range ) || empty( $format ) || empty( $note ) || empty( $auth ) || empty( $lddate ) ) {
-		return "Datascope_PHP: stanote_edit error: Usage: stanote_edit( database, sta, time, range, format, note, auth, lddate )" ;
+		error_log( "Datascope_PHP: stanote_edit error: Usage: stanote_edit( database, sta, time, range, format, note, auth, lddate", 0 ) ;
+		return -1 ;
 	} else {
 		$notes_database = ds_dbopen( $database, "r+" ) ;
 		$notes_table = dblookup( $notes_database, "", "stanotes", "", "" ) ;
 		if( $notes_table[0] < 0 || $notes_table[1] < 0 ) {
 			error_log( "Datascope_PHP: stanote_edit error: Can't open database $database", 0 ) ;
-			return "Error: Can't open database $database\n" ;
+			return -1 ;
 		} else {
 			if( $format == "gif" || $format == "jpg" || $format == "png" || $format == "tif" || $format == "txt"  ) { # check note format
 				list( $time, $endtime ) = stanote_times( $time, $range ) ; # create time strings
@@ -85,15 +87,15 @@ function stanote_edit( $database, $sta, $time, $range, $format, $note, $auth, $l
 				switch( $notes_table[3] ) {
 					case -1:
 						error_log( "Datascope_PHP: stanote_edit error: Compilation error when using expression $expr", 0 ) ; # compilation error
-						return "Error: dbfind compilation error." ;
+						return -1 ;
 						break ;
 					case -2:
 						error_log( "Datascope_PHP: stanote_edit error: Search failed - went past last record using expression $expr", 0 ) ; # search failed - past last record
-						return "Error: dbfind search failed - went past last record." ;
+						return -1 ;
 						break ;
 					case -3:
 						error_log( "Datascope_PHP: stanote_edit error: Search failed - went past first record using expression $expr", 0 ) ; # search failed - past first record
-						return "Error: dbfind search failed - went past first record." ;
+						return -1 ;
 						break ;
 					default:
 						break ;
@@ -105,28 +107,28 @@ function stanote_edit( $database, $sta, $time, $range, $format, $note, $auth, $l
 				$file = dbgetv( $notes_table, "dfile" ) ;
 				if( !unlink( "$dir/$file" ) ) { # delete file
 					error_log( "Datascope_PHP: stanote_edit error: Can't delete file $dir/$file for replacement", 0 ) ;
-					return "Error: Can't delete file $file for replacement. Does it exist?" ;
+					return -1 ;
 				}
 				if( !$handle = fopen( "$dir/$file", "w+" ) ) { # open file for writing
 					error_log( "Datascope_PHP: stanote_edit error: Can't open file $dir/$file for writing", 0 ) ;
-					return "Error: Can't open file $file for writing. Check file permissions." ;
+					return -1 ;
 				}
 				if( flock( $handle, LOCK_EX ) ) { # exclusively lock the file
 					if( fwrite( $handle, $note ) === FALSE ) { # write note to file
 						error_log( "Datascope_PHP: stanote_edit error: Can't write to file $dir/$file", 0 ) ;
-						return "Error: Can't write to file $file. Check file permissions." ;
+						return -1 ;
 					}
 					flock( $handle, LOCK_UN ) ; # unlock file
 				} else {
 					error_log( "Datascope_PHP: stanote_edit error: Can't lock file $dir/$file with flock", 0 ) ;
-					return "Error: Can't lock file $file with flock" ;
+					return -1 ;
 				}
 				fclose( $handle ) ; # close file for writing
 				dbputv( $notes_table, "sta", $sta, "time", $time, "endtime", $endtime, "auth", $auth, "format", $format, "dir", $dir, "dfile", $file ) ; # edit entry in db
-				return "Success: Edited note in database!" ;
+				return 0 ;
 			} else { 
 				error_log( "Datascope_PHP: stanote_edit error: Format of comment is $format. It must be either gif, jpg, png, tif or txt", 0 ) ;
-				return "Error: The format of your comment is $format. It must be either gif, jpg, png, tif or txt." ;
+				return -1 ;
 			}
 		}
 	}
@@ -134,13 +136,14 @@ function stanote_edit( $database, $sta, $time, $range, $format, $note, $auth, $l
 
 function stanote_delete( $database, $sta, $lddate ) {
 	if( empty( $database ) || empty( $sta ) || empty( $lddate ) ) {
-		return "Datascope_PHP: stanote_delete error: Usage: stanote_delete( database, sta, lddate )" ;
+		error_log( "Datascope_PHP: stanote_delete error: Usage: stanote_delete( database, sta, lddate", 0 ) ;
+		return -1 ;
 	} else {
 		$notes_database = ds_dbopen( $database, "r+" ) ;
 		$notes_table = dblookup( $notes_database, "", "stanotes", "", "" ) ;
 		if( $notes_table[0] < 0 || $notes_table[1] < 0 ) {
 			error_log( "Datascope_PHP: stanote_delete error: Can't open database $database", 0 ) ;
-			return "Error: Can't open database $database\n" ;
+			return -1 ;
 		} else {
 			$nrecs_notes_table = dbnrecs( $notes_table ) ; # number of records in db
 			$expr = "sta==\"$sta\" && lddate == $lddate" ; # subset expression
@@ -148,15 +151,15 @@ function stanote_delete( $database, $sta, $lddate ) {
 			switch( $notes_table[3] ) {
 				case -1:
 					error_log( "Datascope_PHP: stanote_delete error: Compilation error when using expression $expr", 0 ) ; # compilation error
-					return "Error: dbfind compilation error." ;
+					return -1 ;
 					break ;
 				case -2:
 					error_log( "Datascope_PHP: stanote_delete error: Search failed - went past last record using expression $expr", 0 ) ; # search failed - past last record
-					return "Error: dbfind search failed - went past last record." ;
+					return -1 ;
 					break ;
 				case -3:
 					error_log( "Datascope_PHP: stanote_delete error: Search failed - went past first record using expression $expr", 0 ) ; # search failed - past first record
-					return "Error: dbfind search failed - went past first record." ;
+					return -1 ;
 					break ;
 				default:
 					break ;
@@ -168,10 +171,10 @@ function stanote_delete( $database, $sta, $lddate ) {
 			$file = dbgetv( $notes_table, "dfile" ) ;
 			if( !unlink( "$dir/$file" ) ) { # delete file
 				error_log( "Datascope_PHP: stanote_delete error: Can't delete file $dir/$file for replacement", 0 ) ;
-				return "Error: Can't delete file $file for replacement. Does it exist?" ;
+				return -1 ;
 			}
 			dbdelete( $notes_table ) ; # delete entry in db
-			return "Success: Deleted note from database and associated file!" ;
+			return 0 ;
 		}
 	}
 }
