@@ -452,5 +452,5 @@ if( isset( $camera ) && $camera!="none" ) {
 
 <?php
   html_footer( $credits ) ;
-  ds_dbclose( $dbpath ) ;
+  ds_dbclose( $mydb ) ;
 ?>
