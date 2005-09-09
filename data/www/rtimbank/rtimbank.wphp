@@ -51,6 +51,8 @@ if( !extension_loaded( 'Datascope' ) ) {
 ################################################################
 $pf = "rtimbank2" ;
 
+pfupdate( $pf ) ;
+
 # Server Settings
 $server = pfget( $pf, "server_settings" ) ;
 $dbpath = $server['img_dbpath'] ;
@@ -230,17 +232,17 @@ if( !$mydb = ds_dbopen( $dbpath,"r" ) ) {
 }
 
 # Dynamically retrieve the sites
-$dbsites = dblookup( $mydb, '', site, '', '' ) ;
+$dbsites = dblookup( $mydb, '', 'site', '', '' ) ;
 $dbsites_nrecs = dbnrecs( $dbsites ) ; # Number of records
 $dbsites = dbprocess( $dbsites, "dbsort imagename" ) ;
 
 # Get the requested image
 if ( isset( $camera ) && $camera!="none" ) {
-	$dbgetimage = dblookup( $mydb, '', images, '', '' ) ;
+	$dbgetimage = dblookup( $mydb, '', 'images', '', '' ) ;
 	$dbgetimage_nrecs = dbnrecs( $dbgetimage ) ;
 	$pages = ceil( $dbgetimage_nrecs / $recspp ) ;
 	if( $movies_online == "yes" ) {
-		$mydb_movie = dblookup( $mydb, '', movies, '', '' ) ;
+		$mydb_movie = dblookup( $mydb, '', 'movies', '', '' ) ;
 		$mydb_movie = dbsubset( $mydb_movie, "imagename == \"$camera\"" ) ;
 		$mydb_movie = dbprocess( $mydb_movie, "dbsort format" ) ;
 		$nrecs_movie = dbnrecs( $mydb_movie ) ;
@@ -249,7 +251,7 @@ if ( isset( $camera ) && $camera!="none" ) {
 		$expr = "imagename == \"$camera\" && time == $time";
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
 		# Get the other thumbs
-		$dbthumbs = dblookup( $mydb, '', images, '', '' ) ;
+		$dbthumbs = dblookup( $mydb, '', 'images', '', '' ) ;
 		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
 		$expr = "imagename == \"$camera\" && time <= $time";
 		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
