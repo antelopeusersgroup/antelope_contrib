@@ -146,6 +146,7 @@ function_entry Datascope_functions[] = {
 	PHP_FE(grname, NULL)
 	PHP_FE(srn, NULL)
 	PHP_FE(srname, NULL)
+	PHP_FE(elog_init, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -584,6 +585,69 @@ PHP_FUNCTION(template)
 
 		return;
 	}
+}
+/* }}} */
+
+/* {{{ proto int elog_init( int argc, array argv ) */
+PHP_FUNCTION(elog_init)
+{
+	int	thisfunction_argc = ZEND_NUM_ARGS();
+	long	argc;
+	zval	*zval_argv;
+	char	**Cstyle_argv;
+	HashTable *argv_hash;
+	zval	**entry;
+	int	iarg;
+	int	rc;
+
+	if( thisfunction_argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( thisfunction_argc TSRMLS_CC, "la", 
+					&argc, &zval_argv )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( zend_hash_num_elements( Z_ARRVAL_P( zval_argv ) ) != argc ) {
+		
+		zend_error( E_ERROR, "argc and argv do not match!\n" );
+	}
+
+	argv_hash = HASH_OF( zval_argv );
+
+	zend_hash_internal_pointer_reset( argv_hash );
+
+	allot( char **, Cstyle_argv, argc );
+
+	for( iarg = 0; iarg < argc; iarg++ ) {
+
+		rc = zend_hash_get_current_data( argv_hash, (void **) &entry );
+
+		if( ( rc == SUCCESS ) && 
+		    ( Z_TYPE_PP( entry ) == IS_STRING ) ) {
+
+			Cstyle_argv[iarg] = Z_STRVAL_PP( entry );
+
+		} else {
+
+			free( Cstyle_argv );
+
+			zend_error( E_ERROR, "Second argument must be " 
+					     "an array of strings\n" );
+		}
+
+		zend_hash_move_forward( argv_hash );
+	}
+
+	rc = elog_init( argc, Cstyle_argv );
+
+	free( Cstyle_argv );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 

@@ -150,6 +150,10 @@ trnsamp ( double time0, double samprate, double endtime )
 trendtime ( double time0, double samprate, int nsamp )
     find the end-time of a time-series given its other attributes
 
+<subsection Error Handling>
+elog_init ($argc, $argv) 
+    Initialize the elog message routines
+
 <subsection Miscellaneous Datascope Functions>
 dbquery ($db, code)
     query the database for information, e.g. dbquery($db, "dbRECORD_COUNT"). see 
