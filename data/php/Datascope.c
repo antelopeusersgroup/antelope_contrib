@@ -33,6 +33,8 @@ static int le_dbresponse;
 
 static Arr *Hooks = 0;
 
+static char *Elog_replacement = 0;
+
 function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
@@ -147,6 +149,17 @@ function_entry Datascope_functions[] = {
 	PHP_FE(srn, NULL)
 	PHP_FE(srname, NULL)
 	PHP_FE(elog_init, NULL)
+	PHP_FE(elog_log, NULL)
+	PHP_FE(elog_debug, NULL)
+	PHP_FE(elog_notify, NULL)
+	PHP_FE(elog_alert, NULL)
+	PHP_FE(elog_complain, NULL)
+	PHP_FE(elog_die, NULL)
+	PHP_FE(elog_string, NULL)
+	PHP_FE(elog_clear, NULL)
+	PHP_FE(elog_mark, NULL)
+	PHP_FE(elog_flush, NULL)
+	PHP_FE(elog_callback, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -648,6 +661,329 @@ PHP_FUNCTION(elog_init)
 	free( Cstyle_argv );
 
 	RETURN_LONG( rc );
+}
+/* }}} */
+
+int
+elog_callback( int severity, char *logstring, Tbl *Elog )
+{
+	int	rc;
+	char	msg[STRSZ];
+	zval	*function_name;
+	zval	*retval;
+	zval	*zval_severity;
+	zval	*zval_logstring;
+	zval	**params[2];
+
+	CLS_FETCH();
+
+	MAKE_STD_ZVAL( function_name );
+
+	ZVAL_STRING( function_name, Elog_replacement, 1 );
+
+	MAKE_STD_ZVAL( zval_severity );
+	ZVAL_LONG( zval_severity, severity );
+
+	params[0] = &zval_severity;
+
+	MAKE_STD_ZVAL( zval_logstring );
+	ZVAL_STRING( zval_logstring, logstring, 1 );
+
+	params[1] = &zval_logstring;
+
+	rc = call_user_function_ex( CG(function_table), 
+				    NULL, 
+				    function_name, 
+				    &retval, 
+				    2,
+				    params,
+				    0, 
+				    NULL TSRMLS_CC );
+
+	zval_dtor( function_name );
+
+	if( rc != SUCCESS ) {
+		
+		sprintf( msg, "Elog callback to function '%s' failed!\n", 
+			 Elog_replacement );
+
+		zend_error( E_WARNING, msg );
+
+		return 0;
+	}
+
+	if( Z_TYPE_P( retval ) != IS_LONG ) {
+
+		sprintf( msg, "Elog callback function '%s' must return an "
+			      "integer! Callback failed.\n", 
+			      Elog_replacement );
+
+		zend_error( E_WARNING, msg );
+
+		return 0;
+	}
+
+	rc = Z_LVAL_P( retval );
+
+	zval_dtor( retval );
+
+	return rc;
+}
+
+/* {{{ proto void elog_callback( string replacement ) */
+PHP_FUNCTION(elog_callback)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*replacement;
+	int	replacement_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+					&replacement, &replacement_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	Elog_replacement = strdup( replacement );
+
+	elog_set( ELOG_CALLBACK, 0, (void *) elog_callback );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_log( string msg ) */
+PHP_FUNCTION(elog_log)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_log( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_debug( string msg ) */
+PHP_FUNCTION(elog_debug)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_debug( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_alert( string msg ) */
+PHP_FUNCTION(elog_alert)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_alert( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_complain( string msg ) */
+PHP_FUNCTION(elog_complain)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_complain( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_notify( string msg ) */
+PHP_FUNCTION(elog_notify)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_notify( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void elog_die( string msg ) */
+PHP_FUNCTION(elog_die)
+{
+	int	argc = ZEND_NUM_ARGS();
+	char	*msg;
+	int	msg_len;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", &msg, &msg_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_die( 0, msg );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto string elog_string( int n ) */
+PHP_FUNCTION(elog_string)
+{
+	int	argc = ZEND_NUM_ARGS();
+	long	n;
+	char	*log;
+	char	*log_safe_copy;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &n )
+	    == FAILURE) {
+
+		return;
+	}
+
+	log = elog_string( n );
+
+	log_safe_copy = estrdup( log );
+
+	free( log );
+
+	RETURN_STRING( log_safe_copy, 0 );
+}
+/* }}} */
+
+/* {{{ proto void elog_clear( void ) */
+PHP_FUNCTION(elog_clear)
+{
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	elog_clear();
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto int elog_mark( void ) */
+PHP_FUNCTION(elog_mark)
+{
+	int	argc = ZEND_NUM_ARGS();
+	int	nmessages;
+
+	if( argc != 0 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	nmessages = elog_mark();
+
+	RETURN_LONG( nmessages );
+}
+/* }}} */
+
+/* {{{ proto void elog_flush( int deliver, int first ) */
+PHP_FUNCTION(elog_flush)
+{
+	int	argc = ZEND_NUM_ARGS();
+	long	deliver;
+	long	first;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ll", &deliver, &first )
+	    == FAILURE) {
+
+		return;
+	}
+
+	elog_flush( (int) deliver, (int) first );
+
+	return;
 }
 /* }}} */
 

@@ -1391,6 +1391,153 @@ $rc = elog_init( $_SERVER['argc'], $_SERVER['argv'] );
 .in
 .ft R
 
+.IP "\fBelog_log\fP ( $msg )"
+send a log message to the elog facility 
+.ft CW
+.in 2c
+.nf
+
+elog_log( "A For-the-record log message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_debug\fP ( $msg )"
+send a debug message to the elog facility 
+.ft CW
+.in 2c
+.nf
+
+elog_debug( "A Debugging message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_notify\fP ( $msg )"
+send a notification message to the elog facility 
+.ft CW
+.in 2c
+.nf
+
+elog_notify( "A notification message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_alert\fP ( $msg )"
+send an alert message to the elog facility 
+.ft CW
+.in 2c
+.nf
+
+elog_alert( "An alert message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_complain\fP ( $msg )"
+send a complain message to the elog facility 
+.ft CW
+.in 2c
+.nf
+
+elog_complain( "A complaint message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_die\fP ( $msg )"
+send a fatal message to the elog facility and exit 
+.ft CW
+.in 2c
+.nf
+
+elog_die( "A fatal error message" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_string\fP ( $n )"
+return the error log starting with message n
+.ft CW
+.in 2c
+.nf
+
+echo elog_string( 0 );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_clear\fP ()"
+clear the elog message log
+.ft CW
+.in 2c
+.nf
+
+elog_clear();
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_mark\fP ()"
+return the count of messages currently held in the error log
+.ft CW
+.in 2c
+.nf
+
+echo "Number of elog messages is " . elog_mark();
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_flush\fP ( $deliver, $first)"
+eliminate log messages after $first, printing them if $deliver is set
+.ft CW
+.in 2c
+.nf
+
+elog_flush( 1, 0 );
+
+.fi
+.in
+.ft R
+
+.IP "\fBelog_callback\fP ( $replacement )"
+replace standard elog processing with a PHP routine. The replacement 
+routine must take two arguments, an integer severity code and a string 
+for the contents of the error log, and return an integer. If the returned 
+integer is nonzero, the error log is cleared after being called. 
+.ft CW
+.in 2c
+.nf
+
+function replacement( $severity, $log ) {
+
+
+        $stderr = fopen( 'php://stderr', 'w' );
+        fwrite( $stderr, "Handling a log message of severity $severity " . 
+                         "and contents '$log'\\n" );
+        fclose( $stderr );
+
+        return 0;
+}
+
+elog_callback( 'replacement' );
+
+elog_debug( "Some debugging message" );
+.fi
+.in
+.ft R
+
 .SH EXAMPLE
 .ft CW
 .in 2c

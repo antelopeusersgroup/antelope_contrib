@@ -126,6 +126,17 @@ PHP_FUNCTION(grname);
 PHP_FUNCTION(srn);
 PHP_FUNCTION(srname);
 PHP_FUNCTION(elog_init);
+PHP_FUNCTION(elog_log);
+PHP_FUNCTION(elog_debug);
+PHP_FUNCTION(elog_notify);
+PHP_FUNCTION(elog_alert);
+PHP_FUNCTION(elog_complain);
+PHP_FUNCTION(elog_die);
+PHP_FUNCTION(elog_string);
+PHP_FUNCTION(elog_clear);
+PHP_FUNCTION(elog_mark);
+PHP_FUNCTION(elog_flush);
+PHP_FUNCTION(elog_callback);
 
 #ifdef ZTS
 #define DATASCOPE_G(v) TSRMG(Datascope_globals_id, zend_Datascope_globals *, v)
@@ -146,5 +157,5 @@ PHP_FUNCTION(elog_init);
 #define RETVAL_DBPTR(DB) ZVAL_DBPTR( return_value, (DB) )
 
 #define RETURN_DBPTR(DB) { RETVAL_DBPTR(DB); return; }
-
+ 
 #endif	/* PHP_DATASCOPE_H */
