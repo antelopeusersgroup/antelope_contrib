@@ -1,4 +1,4 @@
-DATADIR= php/images
+DATADIR= www/images
 
 DATA= roadnet_bottom_line.gif \
       roadnet_logo_bkgrd.gif  \
