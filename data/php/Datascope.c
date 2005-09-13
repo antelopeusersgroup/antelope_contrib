@@ -14,7 +14,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
-#include "php_Datascope.h"
+#include "Datascope_php.h"
 #include "db.h"
 #include "tr.h"
 #include "stock.h"

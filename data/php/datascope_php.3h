@@ -11,9 +11,13 @@ Datascope_PHP \- Datascope interface for PHP
 .fi
 .SH DESCRIPTION
 
-The Datascope interface for PHP is under development, intended to
-parallel the Perl interface to Datascope. For information
-contact kent@lindquistconsulting.com.
+The Datascope interface for PHP is intended to
+parallel the Perl interface to Datascope, documented in perldb(3P).
+The man page on this PHP interface is written to express the interface
+syntax in PHP. Almost all of these routines are merely wrappers around
+identically-named C function calls. For further elaboration on the
+concepts involved in each routine, please refer to the C man pages
+for the underlying routines, which describe them in depth. 
 
 These extensions must first be loaded with a \fBdl\fP statement:
 .ft CW
@@ -32,17 +36,6 @@ are wrappers around the respective C function calls, the documentation
 on the identically-named C routines may also be helpful.
 
 .SS Datascope functions
-.IP "\fBTEMPLATE\fP ( TEMPLATE )"
-TEMPLATE EXPLANATION
-.ft CW
-.in 2c
-.nf
-
-TEMPLATE = TEMPLATE 
-
-.fi
-.in
-.ft R
 
 .IP "\fBds_dbopen\fP ( database, permissions )"
 Returns a database pointer to the specified database.
@@ -1594,8 +1587,6 @@ echo var_dump( $moo ), "\\n";
 perldb(3P)
 .fi
 .SH "BUGS AND CAVEATS"
-
-WARNING: This is an unfinished prototype!!
 
 .SH AUTHOR
 .nf

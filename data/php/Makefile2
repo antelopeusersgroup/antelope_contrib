@@ -1,21 +1,27 @@
-MYDLIB= Datascope.so
+DSDLIB = Datascope.so
+SIDLIB = sysinfo.so
 
 DATADIR= php
 
-DATA= $(MYDLIB)
+DATA= $(DSDLIB) $(SIDLIB)
 
-MAN3= Datascope_PHP.3 
+MAN3H= datascope_php.3h sysinfo_php.3h
 
-CLEAN= $(MYDLIB)
+CLEAN= $(DSDLIB) $(SIDLIB)
 
 cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
 	-DHAVE_CONFIG_H -DPHP_ATOM_INC
-ldlibs= $(TRLIBS) -ldbxml -lpfxml
+ldlibs= $(STOCKLIBS) $(TRLIBS) -ldbxml -lpfxml
 
 include $(ANTELOPEMAKE)
 DBG=
 
-OBJS= Datascope.o
-$(MYDLIB) : $(OBJS)
+DSOBJS= Datascope.o
+$(DSDLIB) : $(DSOBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(MYDLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(DLDFLAGS) -o $(DSDLIB) $(LORDER) $(DSOBJS) $(TSORT) $(DLDLIBS) 
+
+SIOBJS= sysinfo.o
+$(SIDLIB) : $(SIOBJS)
+	$(RM) $@
+	$(DLD) $(DLDFLAGS) -o $(SIDLIB) $(LORDER) $(SIOBJS) $(TSORT) $(DLDLIBS) 

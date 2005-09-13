@@ -1,0 +1,301 @@
+.TH SYSINFO_PHP 3 "$Date$"
+.SH NAME
+sysinfo_PHP \- Antelope sysinfo interface for PHP
+.SH SYNOPSIS
+.nf
+
+<?php
+\fBdl\fP('sysinfo.so')
+?>
+
+.fi
+.SH DESCRIPTION
+
+The Antelope sysinfo interface for PHP provides a variety of 
+system-information routines from the Antelope libraries to scripts written 
+in PHP. This interface is intended to follow closely the Antelope 
+perlsysinfo(3) module. The man page on this interface is written to 
+express the interface syntax in PHP. Almost all of these routines are 
+merely wrappers around identically-named C function calls. For further 
+elaboration on the concepts involved in each routine, please refer to the
+C man pages for the underlying routines, which describe them in depth. 
+
+These extensions must first be loaded with a \fBdl\fP statement:
+.ft CW
+.in 2c
+.nf
+
+\fBdl('sysinfo.so');\fP
+
+.fi
+.in
+.ft R
+.LP
+
+.SS sysinfo functions
+
+.IP "\fBmy_ip\fP ()"
+Return the hostname and dot-notation IP address of the machine
+.ft CW
+.in 2c
+.nf
+
+list( $hostname, $ip ) = my_ip();
+
+.fi
+.in
+.ft R
+
+.IP "\fBmy_hostname\fP ()"
+Return the hostname of the current machine
+.ft CW
+.in 2c
+.nf
+
+$hostname = my_hostname();
+
+.fi
+.in
+.ft R
+
+.IP "\fBmy_hardware\fP ()"
+Return the hardware type of the current machine
+.ft CW
+.in 2c
+.nf
+
+$hardware = my_hardware();
+
+.fi
+.in
+.ft R
+
+.IP "\fBmy_os\fP ()"
+Return the operating system of the current machine
+.ft CW
+.in 2c
+.nf
+
+$os = my_os();
+
+.fi
+.in
+.ft R
+
+.IP "\fBmy_username\fP ()"
+Return the username of the current user
+.ft CW
+.in 2c
+.nf
+
+$username = my_username();
+
+.fi
+.in
+.ft R
+
+.IP "\fBname2ip\fP ( $hostname )"
+Translate an internet hostname to dot-notation address
+.ft CW
+.in 2c
+.nf
+
+$ipaddress = name2ip( "yukon.lindquistconsulting.com" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBip2name\fP ( $ipaddress)"
+Translate a dot-notation internet address to a hostname
+.ft CW
+.in 2c
+.nf
+
+$hostname = ip2name( "209.193.47.96" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBip\fP ( $ipaddress )"
+Translate a dot-notation intenet address to its plain integer equivalent
+.ft CW
+.in 2c
+.nf
+
+$ip = ip( $ipaddress );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpidexecname\fP ( $pid )"
+Return the name of the executable for a process-id
+.ft CW
+.in 2c
+.nf
+
+$execname = pidexecname( getmypid() );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpidcmdline\fP ( $pid )"
+Return the command-line for a process-id
+.ft CW
+.in 2c
+.nf
+
+$cmdline = pidcmdline( getmypid() );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpidpwd\fP ( $pid )"
+Return the process working directory for a process-id
+.ft CW
+.in 2c
+.nf
+
+$pwd = pidpwd( getmypid() );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpid_exists\fP ( $pid )"
+Return a boolean indicating whether the given process-id is running
+.ft CW
+.in 2c
+.nf
+
+$running  = pid_exists( getmypid() );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpidinfo\fP ( $pid )"
+Return an associative array for a process id giving the Process ID \fIpid\fP, 
+User id \fIuid\fP, Parent process ID \fIppid\fP, percent cpu consumption 
+\fIpcpu\fP, run status \fIstate\fP, total \fIsize\fP in kbytes, resident 
+set size \fIrss\fP in kbytes, start time \fIstarted\fP in epoch seconds, total 
+cpu time \fIcputime\fP in seconds, and total cpu time for children 
+\fIccputime\fP in seconds
+.ft CW
+.in 2c
+.nf
+
+$pidstats  = pidinfo( getmypid() );
+
+.fi
+.in
+.ft R
+
+.IP "\fBnomem\fP ( $address, $nbytes )"
+Return the first bad address if the specified location is invalid, zero
+otherwise
+.ft CW
+.in 2c
+.nf
+
+$bad  = nomem( $address, $nbytes );
+
+.fi
+.in
+.ft R
+
+.IP "\fBsysloadavg\fP ( )"
+Return an associative array with one-minute, five-minute, and fifteen-minute
+load averages \fIavg1m\fP, \fIavg5m\fP, \fIavg15m\fP, and the number of 
+processes \fInproc\fP.
+.ft CW
+.in 2c
+.nf
+
+$averages  = sysloadavg();
+
+.fi
+.in
+.ft R
+
+.IP "\fBsysloadavg\fP ( )"
+Return an associative array with \fItotal\fP, \fIused\fP, and physical memory
+\fIphysmem\fP in MB
+
+.ft CW
+.in 2c
+.nf
+
+$memoryusage  = sysmem();
+
+.fi
+.in
+.ft R
+
+.IP "\fBsysmounted\fP ( )"
+Returns mount-point, file-system type, remote host, and remote source directory
+(if remotely mounted) for all mounted filesystems 
+.ft CW
+.in 2c
+.nf
+
+$mount_table = sysmounted();
+
+.fi
+.in
+.ft R
+.IP "\fBsyscpu\fP ( )"
+Returns the number of cpu's, then a group of values for each cpu which 
+are, successively, the percentage time spent in idle, user, kernel, iowait, 
+and swap. 
+.ft CW
+.in 2c
+.nf
+
+list( $ncpu, $idle, $user, $kernel, $iowait, $swap, $othercpus ) = syscpu();
+
+.fi
+.in
+.ft R
+.IP "\fBstatvfs\fP ( $path )"
+Return an associative array with information about the filesystem for the 
+given path, including \fIMb_total\fP (mbytes total of disk), \fIMb_avail\fP 
+(mbytes available on disk), \fIused\fP (% of disk used), \fIinodes\fP 
+(% inodes used), \fIinodes_avail\fP (inodes available on disk), 
+\fIinodes_used\fP (inodes used on disk), and \fIid\fP (unique
+ id for filesystem)
+
+.ft CW
+.in 2c
+.nf
+
+$stats  = statvfs( '/' );
+
+.fi
+.in
+.ft R
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+.fi
+.in
+.ft R
+.SH LIBRARY
+.SH "SEE ALSO"
+.nf
+perlsysinfo(3P), Datascope_PHP(3)
+.fi
+.SH "BUGS AND CAVEATS"
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
