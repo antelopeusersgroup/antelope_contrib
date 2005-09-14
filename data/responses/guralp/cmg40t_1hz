@@ -1,0 +1,23 @@
+# @(#)cmg40t_1hz_vel	1.2 10/8/04
+# cmg40t    1 hz seismometer
+# Normalized  response relative to velocity
+# 1                   type
+# 2                   num of zeroes
+# 6                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 5.858E+08           normalization factor
+# 1.0                 gain
+# sensitivity  4000 v/m/sec
+theoretical   1 anti-alias   paz    pz6seismo
+1.0
+6             Poles
+-.4443E+01    0.4443E+01    0.0000E+00    0.0000E+00
+-.4443E+01    -.4443E+01    0.0000E+00    0.0000E+00
+-.3920E+03    0.8507E+03    0.0000E+00    0.0000E+00
+-.3920E+03    -.8507E+03    0.0000E+00    0.0000E+00
+-.2199E+04    0.0000E+00    0.0000E+00    0.0000E+00
+-.4712E+03    0.0000E+00    0.0000E+00    0.0000E+00
+2             Zeros
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
