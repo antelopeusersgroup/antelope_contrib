@@ -37,13 +37,11 @@ use Getopt::Long;
 use Q330pkt qw(qpkt_hdr_stuff qpkt_hdr_unstuff);
 use vars qw($opt_version $opt_help $opt_verbose $opt_warn $opt_crit
             $opt_host $opt_num $VERBOSE);
-#use lib "/export/nagios2/libexec/";
 use nagios_antelope_utils qw(&categorize_return_value
 			     &parse_ranges
 			     &print_version
 			     &print_results
 			     %ERRORS
-			     $TIMEOUT
 			     $VERBOSE);
 our $AUTHOR = "Chris Gross, UCSD ROADNet Project, cgross\@ucsd.edu";
 our $VERSION = '$Revision$';
@@ -54,6 +52,7 @@ our $DOMAIN = PF_INET;
 our $TYPE = SOCK_DGRAM;
 our $PROTO = getprotobyname('udp');
 our $NAGIOS_SERVICE_NAME = "QDPPING";
+our $TIMEOUT = 8;
 
 ### PROTOTYPES
 sub ping();
