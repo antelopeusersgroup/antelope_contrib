@@ -22,7 +22,7 @@ unix( ['mkdir ' output_dir] );
 
 output_dbname = [output_dir '/newdb'];
 fid = fopen( output_dbname, 'w' );
-fprintf( fid, '#\nschema rt1.0:gme1.0\n' );
+fprintf( fid, '#\nschema rt1.0\n' );
 fclose( fid );
 
 db=dbopen( output_dbname,'r+' );
