@@ -31,25 +31,25 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[1], &database ) )
+	else if( ! mtlb_get_string( prhs[1], &database ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[2], &table ) )
+	else if( ! mtlb_get_string( prhs[2], &table ) )
 	{
 		mxFree( database );
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[3], &field ) )
+	else if( ! mtlb_get_string( prhs[3], &field ) )
 	{
 		mxFree( database );
 		mxFree( table );
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[4], &record ) )
+	else if( ! mtlb_get_string( prhs[4], &record ) )
 	{
 		mxFree( database );
 		mxFree( table );

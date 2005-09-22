@@ -48,7 +48,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else if( nrhs == 3 ) 
 	{
-		if( get_string( prhs[2], &laststring ) )
+		if( mtlb_get_string( prhs[2], &laststring ) )
 		{
 			if( STREQ( laststring, "outer" ) )
 			{
@@ -77,7 +77,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	} 
 	else if( nrhs == 4 ) 
 	{ 
-		if( get_string( prhs[3], &laststring ) )
+		if( mtlb_get_string( prhs[3], &laststring ) )
 		{
 			if( STREQ( laststring, "outer" ) )
 			{
@@ -90,7 +90,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 				pattern2_p = &pattern2;
 			}
 
-			if( get_string( prhs[2], &firststring ) )
+			if( mtlb_get_string( prhs[2], &firststring ) )
 			{
 				pattern1 = strtbl( firststring, 0 );
 
@@ -116,7 +116,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		{
 			pattern2_p = &pattern2;
 
-			if( get_string( prhs[2], &firststring ) )
+			if( mtlb_get_string( prhs[2], &firststring ) )
 			{
 				pattern1 = strtbl( firststring, 0 );
 
@@ -140,7 +140,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else if( nrhs == 5 ) 
 	{
-		if( ! get_string( prhs[4], &laststring ) )
+		if( ! mtlb_get_string( prhs[4], &laststring ) )
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
@@ -156,7 +156,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			outer_join = 1;
 		}
 
-		if( get_string( prhs[3], &middlestring ) )
+		if( mtlb_get_string( prhs[3], &middlestring ) )
 		{
 			pattern2 = strtbl( middlestring, 0 );
 			pattern2_p = &pattern2;
@@ -171,7 +171,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			return;
 		}
 
-		if( get_string( prhs[2], &firststring ) )
+		if( mtlb_get_string( prhs[2], &firststring ) )
 		{
 			pattern1 = strtbl( firststring, 0 );
 			pattern1_p = &pattern1;

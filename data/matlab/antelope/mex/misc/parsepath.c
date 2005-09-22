@@ -24,7 +24,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-        else if( ! get_string( prhs[0], &path ) )
+        else if( ! mtlb_get_string( prhs[0], &path ) )
         {
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;

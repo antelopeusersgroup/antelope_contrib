@@ -79,7 +79,7 @@ int pfput_mxArray( Pf *pf, char *name, const mxArray *array )
 	}
 	else if( mxIsChar( array ) )
 	{
-		if( ! get_string( array, &string ) )
+		if( ! mtlb_get_string( array, &string ) )
 		{
 			sprintf( warning, 
 			  "failed to extract string for parameter %s\n",

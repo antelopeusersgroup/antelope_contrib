@@ -29,7 +29,7 @@ mxArray2dbvalue( const mxArray *in, int type )
 		}
 		break;
 	case dbSTRING:
-		if( ! get_string( in, &s ) )
+		if( ! mtlb_get_string( in, &s ) )
 		{
 			mxFree( value );
 			value = (Dbvalue *) NULL;

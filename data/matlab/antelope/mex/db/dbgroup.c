@@ -30,7 +30,8 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-	else if( ! get_stringtbl( prhs[1], &groupfields ) ) {
+	else if( ! get_stringtbl( prhs[1], &groupfields ) ) 
+	{
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}

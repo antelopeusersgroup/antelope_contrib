@@ -29,7 +29,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		return;
         }
 
-	if( nrhs == 2 && ( ! get_string( prhs[1], &pattern ) ) )
+	if( nrhs == 2 && ( ! mtlb_get_string( prhs[1], &pattern ) ) )
         {
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;

@@ -35,7 +35,7 @@ cellstr2stringtbl( mxArray *cellstr )
 
 		cell = mxGetCell( cellstr, i );
 
-		if( ! get_string( cell, &s ) )
+		if( ! mtlb_get_string( cell, &s ) )
 		{
 			freetbl( result, 0 );
 			mexWarnMsgTxt( 

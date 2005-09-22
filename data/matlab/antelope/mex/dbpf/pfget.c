@@ -37,7 +37,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-	if( ! get_string( prhs[1], &name ) )
+	if( ! mtlb_get_string( prhs[1], &name ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
@@ -45,7 +45,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( nrhs == 3 )
 	{
-		if( ! get_string( prhs[2], &recstring ) )
+		if( ! mtlb_get_string( prhs[2], &recstring ) )
 		{
                 	antelope_mexUsageMsgTxt ( USAGE );
 			return;

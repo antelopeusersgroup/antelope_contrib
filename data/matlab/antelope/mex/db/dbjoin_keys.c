@@ -46,12 +46,12 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else 
 	{
-		if( ! get_string( prhs[1], &table1 ) )
+		if( ! mtlb_get_string( prhs[1], &table1 ) )
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
 		}
-		else if( ! get_string( prhs[2], &table2 ) )
+		else if( ! mtlb_get_string( prhs[2], &table2 ) )
 		{
 			mxFree( table1 );
 			antelope_mexUsageMsgTxt ( USAGE );

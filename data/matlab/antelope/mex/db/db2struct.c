@@ -120,7 +120,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 		for( irhs = 1; irhs < nrhs; irhs++ )
 		{
-			if( ! get_string( prhs[irhs], &field_name ) )
+			if( ! mtlb_get_string( prhs[irhs], &field_name ) )
 			{
 				freearr( wantfields, 0 );
 				antelope_mexUsageMsgTxt ( USAGE );

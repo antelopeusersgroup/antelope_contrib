@@ -35,7 +35,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		mexErrMsgTxt( "orbselect: bad orb file descriptor\n" );
 	}
-	if( ! get_string( prhs[1], &regex ) )
+	if( ! mtlb_get_string( prhs[1], &regex ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 	}

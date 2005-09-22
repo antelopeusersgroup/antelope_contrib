@@ -30,7 +30,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-	else if( ! get_string( prhs[1], &value ) )
+	else if( ! mtlb_get_string( prhs[1], &value ) )
 	{
 		mexWarnMsgTxt ( "dbput: value must be of string type\n" );
                 antelope_mexUsageMsgTxt ( USAGE );

@@ -42,7 +42,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else
 	{
-		if( ! get_string( mxGetField( prhs[0], 0, "pfname" ), &pfname ) )
+		if( !  mtlb_get_string( mxGetField( prhs[0], 0, "pfname" ), &pfname ) )
 		{
 			mexErrMsgTxt( "pfupdate: could not retrieve name" );
 		}

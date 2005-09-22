@@ -39,7 +39,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
         }
-	else if( ! get_string( prhs[1], &expression ) )
+	else if( ! mtlb_get_string( prhs[1], &expression ) )
 	{
                 antelope_mexUsageMsgTxt ( USAGE );
 		return;
@@ -47,7 +47,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( nrhs >= 3 && mxGetClassID( prhs[nrhs-1] ) == mxCHAR_CLASS )
 	{
-		if( ! get_string( prhs[nrhs-1], &direction ) )
+		if( ! mtlb_get_string( prhs[nrhs-1], &direction ) )
 		{
 			mxFree( expression );
                 	antelope_mexUsageMsgTxt ( USAGE );

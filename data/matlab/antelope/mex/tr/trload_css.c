@@ -40,7 +40,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         }
 	else if( nrhs == 4 )
 	{
-		if( ! get_string( prhs[3], &table ) )
+		if( ! mtlb_get_string( prhs[3], &table ) )
 		{
 			if( ! get_dbptr( prhs[3], &tr ) )
 			{
@@ -57,14 +57,14 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			return;
 		}
 
-		if( ! get_string( prhs[4], &table ) )
+		if( ! mtlb_get_string( prhs[4], &table ) )
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;
 		}
 	}
 
-	if( ! get_string( prhs[1], &time_str ) )
+	if( ! mtlb_get_string( prhs[1], &time_str ) )
 	{
 		if( ! get_scalar( prhs[1], &scalar ) )
 		{
@@ -83,7 +83,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		}
 	}
 
-	if( ! get_string( prhs[2], &endtime_str ) )
+	if( ! mtlb_get_string( prhs[2], &endtime_str ) )
 	{
 		if( ! get_scalar( prhs[2], &scalar ) )
 		{

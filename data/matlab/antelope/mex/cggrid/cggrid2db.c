@@ -45,12 +45,12 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[2], &recipe_name ) )
+	else if( ! mtlb_get_string( prhs[2], &recipe_name ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[3], &grid_name ) )
+	else if( ! mtlb_get_string( prhs[3], &grid_name ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
@@ -60,22 +60,22 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[5], &format ) )
+	else if( ! mtlb_get_string( prhs[5], &format ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[6], &units ) )
+	else if( ! mtlb_get_string( prhs[6], &units ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[7], &qgridtype ) )
+	else if( ! mtlb_get_string( prhs[7], &qgridtype ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
 	}
-	else if( ! get_string( prhs[8], &auth ) )
+	else if( ! mtlb_get_string( prhs[8], &auth ) )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;
@@ -83,7 +83,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	if( nrhs == 10 ) 
 	{
-		if( ! get_string( prhs[9], &overwrite ) ) 
+		if( ! mtlb_get_string( prhs[9], &overwrite ) ) 
 		{
 			antelope_mexUsageMsgTxt ( USAGE );
 			return;

@@ -32,7 +32,7 @@ get_trimmed_string( const mxArray *in, char **string )
 {
 	int	rc;
 
-	rc = get_string( in, string );
+	rc = mtlb_get_string( in, string );
 
 	if( rc != 0 ) 
 	{
@@ -43,7 +43,7 @@ get_trimmed_string( const mxArray *in, char **string )
 }
 
 int 
-get_string( const mxArray *in, char **string )
+mtlb_get_string( const mxArray *in, char **string )
 {
 	mxArray *cell;
 

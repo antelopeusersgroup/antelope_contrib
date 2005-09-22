@@ -58,7 +58,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	}
 	else
 	{
-		if( ! get_string( prhs[1], &string ) )
+		if( ! mtlb_get_string( prhs[1], &string ) )
 		{
 			if( ! get_scalar( prhs[1], &reqs ) )
 			{
@@ -72,7 +72,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 			mxFree( string );
 		}
 	
-		if( ! get_string( prhs[2], &string ) )
+		if( ! mtlb_get_string( prhs[2], &string ) )
 		{
 			if( ! get_scalar( prhs[2], &reqe ) )
 			{
