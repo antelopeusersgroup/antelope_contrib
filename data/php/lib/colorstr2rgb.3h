@@ -1,0 +1,86 @@
+.TH COLORSTR2RGB 3h "$Date$"
+SH NAME
+colorstr2rgb.inc  \- A simple  function to create RGB strings from a UNIX system rgb text file
+
+.SH SYNOPSIS
+require_once( 'colorstr2rgb.inc' ) ;
+\fBcolorstr2rgb\fP($\fIcolorstr\fP, $\fIrgbtxtfile\fP (, \fI0|1\fP ) ) ;
+
+.SH DESCRIPTION
+\fBcolorstr2rgb\fP is a short PHP function that returns a comma delimited RGB
+string  on  success,  and \-1 on failure.  The first two arguments are
+required and specify the colorstr you wish to get the RGB value for and
+the  path  to  a standard UNIXâstem rgbâlor text file (rgbtxtfile).
+
+$\fIcolorstr\fP    Color string
+            Specify the color as a text string.
+
+$\fIrgbtxtfile\fP   Path to UNIX\-system rgb\-color text file
+            The file mst be readable by the web user.
+
+$\fI[0|1]\fP   Output the contents of the UNIX\-system rgb\-color text file
+
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 7
+
+<?php
+require_once( "colorstr2rgb.inc" ) ;
+
+$red = colorstr2rgb( "red", "/usr/X11R6/lib/X11/rgb.txt" ) ;
+print_r( $red ) ;
+?>
+
+.fi
+.ft R
+.in
+
+.SH RETURN VALUES
+.in 2c
+.ft CW
+.nf
+
+.ne 5
+
+On success a comma delimited RGB string will be returned.
+On failure a value of \-1 will be returned.
+Verbose errors are sent to the PHP error log (if defined).
+
+.fi
+.ft R
+.in
+
+.SH LIBRARY
+.SH DIAGNOSTICS
+Usage error: \fBcolorstr2rgb\fP( color, \fIrgbtxtfile\fP (, 0|1 ) )
+\-  Ensure you have specified all the arguments.
+
+Can't open file $rgbtxt. Check file exists and permissions
+\- Check file permissions.
+
+Can't read file $\fIrgbtxtfile\fP. Check file exists and permissions
+\- Check file permissions.
+
+Usage error: \fBcolorstr2rgb\fP( color, \fIrgbtxtfile\fP (, 0|1 ) ). Remove third argument (or give it a value of zero) if you don't want a list of color values
+\- Ensure the third argument is either 0 or 1.
+
+Can't find color $\fIcolorstr\fP in $\fIrgbtxtfile\fP. Add a third argument with value of 1 to return a list of all available colors
+\- Couldn't find the color asked for in the UNIX rgb file.
+
+Can't find RGB values for color \"$\fIcolorstr\fP\". The array key \"$\fIcolorstr\fP\" does not exist
+\- Couldn't find the color asked for in the UNIX rgb file.
+
+.SH "SEE ALSO"
+.nf
+Datascope_PHP(3)
+.fi
+
+.SH "BUGS AND CAVEATS"
+The UNIX rgb file MUST be readable by the web\-user (typically wwwrun, nobody, apache, www).
+
+.SH AUTHOR
+Rob Newman, UCSD
+.\" $Id$
