@@ -1,17 +1,23 @@
 .TH COLORSTR2RGB 3h "$Date$"
-SH NAME
-colorstr2rgb.inc  \- A simple  function to create RGB strings from a UNIX system rgb text file
+.SH NAME
+colorstr2rgb.inc  \- a simple  function to create RGB strings from a UNIX system rgb text file
 
 .SH SYNOPSIS
+.nf
 require_once( 'colorstr2rgb.inc' ) ;
+
 \fBcolorstr2rgb\fP($\fIcolorstr\fP, $\fIrgbtxtfile\fP (, \fI0|1\fP ) ) ;
+.fi
 
 .SH DESCRIPTION
 \fBcolorstr2rgb\fP is a short PHP function that returns a comma delimited RGB
 string  on  success,  and \-1 on failure.  The first two arguments are
 required and specify the colorstr you wish to get the RGB value for and
-the  path  to  a standard UNIXâstem rgbâlor text file (rgbtxtfile).
+the path to a standard UNIX\-system rgb\-color text file (rgbtxtfile).
+To output a list of all colors available to you from your 
+UNIX\-system rgb\-color text file provide a third argument with a value of 1.
 
+.nf
 $\fIcolorstr\fP    Color string
             Specify the color as a text string.
 
@@ -19,6 +25,7 @@ $\fIrgbtxtfile\fP   Path to UNIX\-system rgb\-color text file
             The file mst be readable by the web user.
 
 $\fI[0|1]\fP   Output the contents of the UNIX\-system rgb\-color text file
+.fi
 
 .SH EXAMPLE
 .in 2c
@@ -53,7 +60,6 @@ Verbose errors are sent to the PHP error log (if defined).
 .ft R
 .in
 
-.SH LIBRARY
 .SH DIAGNOSTICS
 Usage error: \fBcolorstr2rgb\fP( color, \fIrgbtxtfile\fP (, 0|1 ) )
 \-  Ensure you have specified all the arguments.
