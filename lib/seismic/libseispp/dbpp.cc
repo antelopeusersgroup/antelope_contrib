@@ -156,7 +156,7 @@ DatascopeHandle::DatascopeHandle(string dbname,bool readonly)
 	close_on_destruction=false;
 }
 // copy constructor 
-DatascopeHandle::DatascopeHandle(DatascopeHandle& dbi)
+DatascopeHandle::DatascopeHandle(const DatascopeHandle& dbi)
 {
 	db = dbi.db;
 	is_bundle=dbi.is_bundle;

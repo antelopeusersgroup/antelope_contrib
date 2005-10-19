@@ -1,5 +1,5 @@
-#ifndef _INTERPOLATOR1D_H
-#define _INTERPOLATOR1D_H
+#ifndef _INTERPOLATOR1D_H_
+#define _INTERPOLATOR1D_H_
 #include "dmatrix.h"
 namespace INTERPOLATOR1D
 {

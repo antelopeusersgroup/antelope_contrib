@@ -4,58 +4,28 @@
 #include <string>
 #include <list>
 #include <map>
+#include <vector>
 #include "stock.h"
 #include "arrays.h"
 #include "pf.h"
-#include "dbpp.h"
+#include "attribute_map.h"
+#include "databasehandle.h"
 
 namespace SEISPP 
 {
 using namespace std;
 using namespace SEISPP;
+
 // Holds global default metadata
 //
 //This object is used for selective copy
 //
-enum MDtype {MDreal, MDint, MDstring, MDlist, MDmap, MDboolean, MDinvalid};
 typedef struct Metadata_typedef {
 	string tag;
 	enum MDtype mdt;
 } Metadata_typedef;
 
 typedef list<Metadata_typedef> MetadataList;
-
-// Constructors of a Metadata from a database are driven by
-// the following pair of objects.  AttributeProperties provides
-// the data to map from db namespace to an internal namespace.
-// AttributeMap provides maintains the actual map of AttributeProperties
-// objects keyed by a string = AttributeProperties::internal_name
-
-class AttributeProperties
-{
-public:
-	string db_attribute_name;
-	string db_table_name;
-	string internal_name;
-	MDtype mdt;
-	bool is_key;
-	AttributeProperties();
-	AttributeProperties(string);// main constructor parses string 
-	AttributeProperties(const AttributeProperties&);
-	AttributeProperties& operator=(const AttributeProperties&);
-};
-
-class AttributeMap
-{
-public:
-	map<string,AttributeProperties> attributes;
-
-	AttributeMap();  
-	AttributeMap(Pf *pf,string name);  
-	AttributeMap(string);
-	AttributeMap(const AttributeMap&);
-	AttributeMap& operator=(const AttributeMap&);
-};
 
 
 //
@@ -142,5 +112,5 @@ void copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 	MetadataList& mdlist) throw(MetadataError);
 MetadataList pfget_mdlist(Pf *pf,string tag);
 
-}
+} // End namespace SEISPP declaration
 #endif

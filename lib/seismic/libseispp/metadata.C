@@ -3,6 +3,7 @@
 #include "pf.h"
 #include <string>
 #include "metadata.h"
+#include "dbpp.h"
 using namespace std;
 static Pf *Metadata_defaults_pf;
 namespace SEISPP

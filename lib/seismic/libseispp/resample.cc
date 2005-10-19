@@ -13,14 +13,15 @@ Written:  Winter spring 2004
 #include <vector>
 using namespace std;
 #include "seispp.h"
-using namespace SEISPP;
 #include "interpolator1d.h"
-using namespace INTERPOLATOR1D;
 #include "resample.h"
 #include "response.h"
 #include "perf.h"
-//namespace SEISPP
-//{
+namespace SEISPP 
+{
+using namespace std;
+using namespace SEISPP;
+using namespace INTERPOLATOR1D;
 // Constructs this object from exact sample rate key (e) 
 // and using a pf 
 ResampleOperator::ResampleOperator(double e,Pf *pf)
@@ -427,4 +428,4 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 	return(tsout);
 	} catch (...) {throw;};
 }
-//} // end namespace enscapsulation
+} // end namespace enscapsulation

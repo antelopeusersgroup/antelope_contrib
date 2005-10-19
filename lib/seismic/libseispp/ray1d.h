@@ -1,4 +1,3 @@
-#ifdef __cplusplus
 #ifndef _RAY1D_H
 #define _RAY1D_H
 #include "dmatrix.h"
@@ -6,6 +5,9 @@
 #include "seispp.h"
 namespace SEISPP 
 {
+using namespace std;
+using namespace SEISPP;
+
 
 class RayPathSphere
 {
@@ -32,5 +34,4 @@ dmatrix *GCLgrid_Ray_project(GCLgrid& grid, RayPathSphere& path,
      double theta, int ix1, int ix2) throw(GCLgrid_error);
 
 }
-#endif
 #endif

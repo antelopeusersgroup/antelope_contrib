@@ -1,37 +1,20 @@
-#ifndef _SEISPP_DATABASE_H
-#define _SEISPP_DATABASE_H
+#ifndef _SEISPP_DATABASE_H_
+#define _SEISPP_DATABASE_H_
 #include <string>
 #include <list>
+#include <vector>
+#include "stock.h"
 #include "db.h"
 #include "pf.h"
+#include "attribute_map.h"
+#include "metadata.h"
+#include "databasehandle.h"
+
 namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
-class DatabaseHandle
-{
-public:
-	virtual double get_double(string)=0;
-	virtual int get_int(string)=0;
-	virtual string get_string(string)=0;
-	virtual string get_filename()=0;
-	virtual int append()=0;
-	virtual void put(string,double)=0;
-	virtual void put(string,float)=0;
-	virtual void put(string,int)=0;
-	virtual void put(string,string)=0;
-	virtual void put(string,char *)=0;
-	virtual void put(string,const char *)=0;
-	virtual int number_tuples()=0;
-	virtual int number_attributes()=0;
-	virtual void rewind()=0;  // set row pointer to top
-	virtual void operator ++()=0;
-	virtual void sort(list<string>keys)=0;
-	virtual void subset(string)=0;
-	virtual void join(string t1, string t2, 
-		list<string> keys1,list<string>keys2)=0;
-	virtual void group(list<string>group_keys)=0;
-};
+
 class DBBundle
 {
 public:
@@ -47,7 +30,7 @@ public:
 	DatascopeHandle(string dbname, string pfname, 
 			string tag,bool readonly);
 	DatascopeHandle(Dbptr db, Pf *pf, string tag);
-	DatascopeHandle(DatascopeHandle& dh);
+	DatascopeHandle(const DatascopeHandle& dh);
 	DatascopeHandle(Dbptr dbi,Dbptr dbip);
 	~DatascopeHandle();
 	double get_double(string);
@@ -89,6 +72,30 @@ public:
 private:
 	bool close_on_destruction;
 	Dbptr parent_table;
+};
+class DatascopeMatchHandle : public DatascopeHandle
+{
+public:
+	DatascopeMatchHandle(DatascopeHandle& parent,
+			string table, 
+			list<string> matchkeys,
+			AttributeMap am);
+	DatascopeMatchHandle(const DatascopeMatchHandle& parent);
+	~DatascopeMatchHandle();
+	list<int> find(Metadata& md);
+private:
+	Dbptr dbscratch_record;
+	Dbptr dbt;
+	// These are always the same at present, but we'll store both
+	// partly to clarify the interface.  storage cost is small
+	Tbl *kpattern;
+	Tbl *tpattern;
+	Hook *hook;
+	// This stores the stl equivalents of the kpattern and tpattern
+	// antelope tbls.  i.e. matchkeys[i] is an expansion of
+	// gettbl(kpattern,i)
+	vector<AttributeProperties> matchkeys;
+	AttributeMap amap;
 };
 }  // end namespace seispp
 #endif

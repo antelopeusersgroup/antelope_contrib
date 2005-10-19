@@ -6,7 +6,9 @@
 #include "seispp.h"
 
 // Need this when I add this to seispp
-//namespace SEISPP {
+namespace SEISPP {
+using namespace std;
+using namespace SEISPP;
 
 // Defines a data structure for a vector of doubles after 
 // applying a decimator
@@ -95,5 +97,5 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts,
 				bool trim);
 
 
-//} // end namespace encapsulation
+} // end namespace encapsulation
 #endif

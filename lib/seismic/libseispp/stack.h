@@ -1,4 +1,8 @@
+#include "seispp.h"
 namespace SEISPP {
+using namespace SEISPP;
+using namespace std;
+
 const string moveout_keyword("moveout"); //Extract moveout from metadata using this keyword
 enum StackType {Basic, median, RobustSNR};
 
@@ -24,4 +28,4 @@ public:
 private:
 	StackType stacktype;
 };
-}
+}  // End namespace declaration

@@ -1,5 +1,13 @@
+#ifndef _FILTER_PP_H_
+#define _FILTER_PP_H_
+#include "seispp.h"
+
+
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
+
 enum Filter_Type {highpass,lowpass,bandpass,WAA,WAV,WAD,DIF,DIF2,INT,INT2,DEMEAN};
 
 class TimeInvariantFilter
@@ -36,3 +44,4 @@ void FilterEnsemble(ThreeComponentEnsemble& ensemble,
 }  // End namespace SEISPP
 
 
+#endif

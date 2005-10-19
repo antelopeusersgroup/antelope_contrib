@@ -34,11 +34,12 @@
 //@}
 namespace SEISPP 
 {
+using namespace SEISPP;
+using namespace std;
 //@{
 // Turns verbose mode on and off.  
 //@}
 extern bool SEISPP_verbose;
-using namespace std;
 //@{
 // Base class for error object thrown by seispp library routines.
 // This is the generic error object thrown by the seispp library. 
@@ -1823,6 +1824,21 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
 int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am, vector<string>chanmap,bool output_as_standard);
+//@{
+// Builds a new ensemble of members that satisfy unix regular expression
+// for sta and chan attributes passed as sta_expr and chan_expr.
+//
+// @param parent original ensemble to be subsetted
+// @param sta_expr unix regular expression to apply to sta Metadata
+//    attribute
+// @param chan_expr unix regular expression to apply to chan Metadata 
+//    attribute
+//
+//@author Gary L. Pavlis
+//@}
+TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
+        string sta_expr, string chan_expr);
+
 //@{
 // Extracts a requested time window of data from a parent TimeSeries object.
 //

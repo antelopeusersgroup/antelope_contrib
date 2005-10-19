@@ -36,7 +36,7 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw)
 		message << "WindowData:  Window data mismatch" <<endl
 			<< "Requested time window = " << tw.start <<" to "<<tw.end<<endl
 			<< "Data time range = "<<parent.t0<<" to "<<parent.endtime()<<endl;
-		throw SeisppError(buf);
+		throw SeisppError(message.str());
 	}
 	TimeSeries result(parent);
 	result.ns=nint( (tw.end - tw.start)/parent.dt) + 1;
@@ -103,7 +103,7 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 		message << "WindowData:  Window data mismatch" <<endl
 			<< "Requested time window = " << tw.start <<" to "<<tw.end<<endl
 			<< "Data time range = "<<parent.t0<<" to "<<parent.endtime()<<endl;
-		throw SeisppError(buf);
+		throw SeisppError(message.str());
 	}
 	ThreeComponentSeismogram result(parent);
 	result.ns=nint( (tw.end - tw.start)/parent.dt) + 1;
@@ -136,7 +136,7 @@ auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
 {
 	auto_ptr<T> result=new T(parent);
 	try{
-		for(int i=0;i<parent.tse.size();++i)
+		for(int i=0;i<parent.member.size();++i)
                 	result->member[i]=WindowData(parent.member[i],tw);
         } catch (...) {throw;}
         return(result);

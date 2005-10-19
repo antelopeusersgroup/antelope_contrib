@@ -1,7 +1,17 @@
 LIB=libseispp.a
 DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
-INCLUDE=dbpp.h filter++.h interpolator1d.h metadata.h seispp.h stack.h ray1d.h resample.h 
+INCLUDE=attribute_map.h \
+  databasehandle.h \
+  dbpp.h \
+  filter++.h \
+  interpolator1d.h \
+  metadata.h \
+  seispp.h \
+  stack.h \
+  ray1d.h \
+  resample.h  \
+  seismicarray.h
 # This is uses for Attribute_Map constructor and was built with 
 # an external program
 PF=seispp_attribute_maps.pf metadata_defaults.pf
@@ -21,11 +31,14 @@ DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=basic_time_series.o \
+OBJS=array_get_data.o \
+  basic_time_series.o \
   create_destroy.o \
   converters.o \
+  dbpp_matchhandle.o \
   dbpp.o \
   dsseis.o \
+  ensemble_helpers.o \
   filter.o \
   freetran.o \
   gaps.o \
@@ -39,6 +52,7 @@ OBJS=basic_time_series.o \
   resample.o \
   rotate_procedures.o \
   rotation.o \
+  seismicarray.o \
   slice_and_dice.o \
   slowness.o \
   spherical_coordinate.o \
@@ -66,13 +80,16 @@ $(DLIB) : $(OBJS)
 	$(CXXDLD)  $(CXXDLDFLAGS) -g -o $(DLIB) $(OBJS) $(DLDLIBS) 
 # New special build for html documentation using ccdoc
 CCDOC=ccdoc.exe
-htdocs/seispp.db : htdocs seispp.h dbpp.h metadata.h ray1d.h resample.h
+htdocs/seispp.db : htdocs seispp.h databasehandle.h dbpp.h filter++.h interpolator1d.h metadata.h ray1d.h resample.h stack.h seismicarray.h
 	$(CCDOC) -db htdocs/seispp.db -pkg seispp seispp.h
+	$(CCDOC) -db htdocs/seispp.db -pkg databasehandle databasehandle.h
 	$(CCDOC) -db htdocs/seispp.db -pkg dbpp dbpp.h
+	$(CCDOC) -db htdocs/seispp.db -pkg interpolator1d interpolator1d.h
 	$(CCDOC) -db htdocs/seispp.db -pkg metadata metadata.h
 	$(CCDOC) -db htdocs/seispp.db -pkg ray1d ray1d.h
 	$(CCDOC) -db htdocs/seispp.db -pkg resample resample.h
 	$(CCDOC) -db htdocs/seispp.db -pkg filter++ filter++.h
+	$(CCDOC) -db htdocs/seispp.db -pkg seismicarray seismicarray.h
 	$(CCDOC) -db htdocs/seispp.db -pkg stack stack.h
 	$(CCDOC) -db htdocs/seispp.db -index
 	$(CCDOC) -db htdocs/seispp.db -html htdocs/ \

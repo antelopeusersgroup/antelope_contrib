@@ -3,12 +3,13 @@
 #include <math.h>
 #include "coords.h"
 #include "tr.h" // Antelope trace library
+#include "metadata.h"
 #include "dbpp.h"
 #include "seispp.h"
-using namespace std;
-using namespace SEISPP;
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
 //
 // simple constructors for the TimeSeries object are defined inline
 // in seispp.h.  
