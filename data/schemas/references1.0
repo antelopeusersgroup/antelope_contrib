@@ -1,0 +1,430 @@
+Schema "references1.0"
+	Description ( "Journal References Schema" )
+	Detail {
+	    Created 1994 by Kent Lindquist
+	    }
+	;
+
+Attribute year
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "year > 1600" )
+	Description ( "year in which article was published" )
+	;
+
+Attribute artid
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "artid > 0" )
+	Description ( "article identification number" )
+	Detail {
+		This is a unique identification number 
+		for each article
+	}
+	;
+
+Attribute abscode
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-" )
+	Description ( "code for abstract" )
+	Detail {
+		This is the code identifier given to the abstract by
+		the journal publishers, if applicable. For example, 
+		AGU abstracts are identified by codes such as 
+		"S33B-0327".
+	}
+	;
+
+Attribute authcode
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-" )
+	Description ( "letter code for author" )
+	Detail {
+		This is a unique code identifying an author.
+		authcode is used as a primary key in several tables.
+		Often this will consist of as many initials as 
+		available, plus the last name of the author. 
+	}
+	;
+
+Attribute articletype
+	String ( 20 )
+	Format ( "%-20s" )
+	Null  ( "-" )
+	Description ( "type of article" )
+	Detail {
+		The articletype field identifies the type 
+		of article, for example "abstract" for a 
+		meeting or conference abstract, "journal" 
+		for a peer-reviewed journal article, etc.
+	}
+	;
+
+Attribute authrank
+	Integer ( 8 )
+	Format ( "%8d" )
+	Null( "-1" )
+	Description ( "Order of author on publication" )
+	;
+
+Attribute dfile
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "data file" )
+	Detail {
+		This is the name of an external file in which an 
+		object is stored. 
+	}
+	;
+
+Attribute dir
+	String (128)
+	Format ( "%-128s" )
+	Null ( "-" )
+	Description ( "directory" )
+	Detail {
+		This attribute is the directory-part of a path name. 
+		Relative path names or '.' (dot), the notation for the
+		current directory, may be used.
+	}
+	;
+
+Attribute topic
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-"  )
+	Description ( "topic heading under which article falls" )
+	Detail {
+	    A paper can be classed into one or more subject areas, which are
+	    cataloged in the subject relation for subsetting by topic.
+	    }
+	;
+
+Attribute keyname
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Range ( "keyname =~ /arid|chanid|commid|edid|evid|inid|magid|orid|stassid|wfid/" )
+	Description ( "id name (arid, orid, etc.)" )
+	Detail {
+		This attribute contains the actual name of a key whose
+		last assigned numeric value is saved in keyvalue.
+	}
+	;
+
+Attribute keyvalue
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "keyvalue > 0" )
+	Description ( "last value used for that id" )
+	Detail {
+		This attribute maintains the last assigned value (a
+		positive integer) of the counter for the specified
+		keyname.  The number keyvalue is the last counter value
+		used for the attribute keyname.  Key values are maintained
+		in the database to ensure uniqueness.
+	}
+	;
+
+Attribute location
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-"  )
+	Description ( "storage location of article" )
+	Detail {
+	    The location field specifies the place where a copy of the 
+	    article is stored, i.e. "Filing Cabinet 2", 
+	    "Kyrghyz articles ring-binder", "Original Journal",
+	    "/home/kent/ftp", etc.
+	    }
+	;
+
+Attribute meeting
+	String ( 50 )
+	Format ( "%-50s" )
+	Null  ( "-" )
+	Description ( "name of meeting at which paper was presented" )
+	Detail {
+		If a paper was presented at a particular scientific
+		meeting, this field gives a short
+		name for the meeting, for example "AGU 2005".
+	}
+	;
+
+Attribute publisher
+	String ( 80 )
+	Format ( "%-80s" )
+	Null  ( "-"  )
+	Description ( "publisher of book or article" )
+	Detail {
+	    The publisher field indicates the organization 
+	    which published a book or journal, e.g. 
+	    "American Geophysical Union" or "Prentice-Hall"
+	    }
+	;
+
+Attribute surname
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-"  ) 
+	Description ( "last name of author" )
+	Detail {
+		The surname relation stores the family-name/
+		surname of the author
+	}
+	;
+
+Attribute givenname
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-" ) 
+	Description ( "given name of author" )
+	Detail {
+		First/Middle name by which one prefers to
+		refer to the author, usually the version
+		with the fewest abbreviations (most 
+		likely to be unique).
+	}
+	;
+
+Attribute initials
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-" ) 
+	Description ( "initials of author" )
+	Detail {
+		initials of author. If a specific journal 
+		uses nonstandard initials for the given 
+		name of an author, this field may also be 
+		used in the jaauths table to override the 
+		initials for the given association.
+	}
+	;
+
+Attribute firstauth
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-"  ) 
+	Description ( "authcode of first author" )
+	Detail {
+		This is the author code of the first author
+		to be listed for the article
+	}
+	;
+
+Attribute title
+	String ( 300 )
+	Format ( "%-300s" )
+	Null  ( "-"  ) 
+	Description ( "title of journal article" )
+	Detail {
+		Full title of the journal article
+	}
+	;
+
+Attribute issueno
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "issueno > 0" )
+	Description ( "issue number in which article appeared" )
+	Detail {
+		issueno is the issue number of the journal in which
+		the article appeared, if applicable.
+	}
+	;
+
+Attribute jcode
+	String ( 20 )
+	Format ( "%-20s" )
+	Null  ( "-" )
+	Description ( "letter code for journal" )
+	Detail {
+		This is a unique several-letter code for a journal. 
+		jcode is used as a primary key in several tables.
+		When possible this code is chosen to be 
+		a widely-known standard, for example "JGR" or "BSSA".
+	}
+	;
+
+Attribute jabbrev
+	String ( 30 )
+	Format ( "%-30s" )
+	Null  ( "-" ) 
+	Description ( "abbreviation for journal" )
+	Detail {
+		jabbrev is the abbreviation of the journal name
+		as commonly seen in bibliographic citations, e.g.
+		"J. Geophys. Res."
+	}
+	;
+
+Attribute volume
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "volume > 0" )
+	Description ( "volume number in which article appeared" )
+	Detail {
+		volume is the volume number of the journal in which
+		the article appeared.
+	}
+	;
+
+Attribute startpg
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "startpg > 0" )
+	Description ( "page number on which article starts" )
+	;
+
+Attribute endpg
+	Integer ( 8 )
+	Format ( "%8d")
+	Null  ( "-1" )
+	Range ( "endpg > 0" )
+	Description ( "page number on which article ends" )
+	;
+
+Attribute jname
+	String ( 80 )
+	Format ( "%-80s" )
+	Null  ( "-" ) 
+	Description ( "Full name of journal" )
+	Detail {
+		Full name of a journal, e.g. 
+		Journal of Geophysical Research
+	}
+	;
+
+Attribute lddate
+	Time ( 17 )
+	Format ( "%17.5lf" )
+	Units ( "Seconds" )
+	Null  ( "-9999999999.999"  )
+	Description ( "load date" ) 
+	Detail {
+	    This is the date and time the record was
+	    inserted into the database.
+	    }
+	; 
+
+Relation jaauths 
+	Fields (
+	    artid authcode authrank initials
+	)
+	Primary ( artid authcode )
+	Description ( "authors listed for each cited journal article" )
+	Detail {
+		The jaauths relation associates the entire set 
+		of journal-article authors with a given article,
+		specifying the order in which they should be listed. 
+		If the author's initials as cited in this article
+		do not agree with those in the database, the initials 
+		field of this table may be used to override the 
+		database default for the author. 
+	}
+	;
+
+Relation journal
+	Fields (
+	    jcode jabbrev jname publisher
+	    )
+	Primary ( jcode )
+	Description ( "Journals cited" )
+	Detail {
+		The journal relation gives the names, abbreviations,
+		and codes for journals in which articles appear.
+	}
+	;
+
+Relation article
+	Fields (
+	    artid firstauth title jcode volume issueno startpg endpg abscode meeting year articletype lddate
+	    )
+	Primary ( jcode title )
+	Alternate ( artid )
+	Defines artid
+	Description ( "References fo journal articles" )
+	Detail {
+		Summary reference to a journal article.
+	}
+	;
+
+Relation abstract
+	Fields (
+	    artid dir dfile lddate
+	    )
+	Primary ( artid )
+	Description ( "locations of files containing abstracts" )
+	Detail {
+		This table stores abstracts for each article. 
+	}
+	;
+
+Relation author
+	Fields (
+	    authcode surname givenname initials
+	    )
+	Primary ( authcode )
+	Description ( "Identification of authors and the names under which they publish" )
+	Detail {
+		This table translates authcode values, which uniquely 
+		specify individual authors, into the full given name 
+		and surname for the person, or into the proper initials 
+		and surname for the person. 
+	}
+	;
+
+Relation lastid
+	Fields ( keyname keyvalue lddate )
+	Primary ( keyname )
+	Description ( "Counter values (Last value used for keys)" )
+	Detail {
+		This relation is a reference table from which programs may
+		retrieve the last sequential value of one of the numeric
+		keys.  Id keys are required before inserting a record in
+		numerous tables.  The table has exactly one row for each
+		keyname.  In the core schema there are just 9 distinct
+		identifier keys:  arid, chanid, commid, evid, inid, magid,
+		orid, stassid, wfid.  This table will also support
+		application-specific keys, provided they are defined by
+		some table.  Users are encouraged to use the dbnextid
+		library routine or command to obtain a unique counter
+		value.
+	}
+	;
+
+Relation subject
+	Fields (
+	    artid topic
+		)
+	Primary ( artid topic )
+	Description ( "Catalog of topic headings under which articles fall" )
+	Detail {
+		The subject relation contains rows specifying the subject 
+		headings applicable to various journal articles. One journal
+		article can be classified into several topics at once. This 
+		table allows journal articles to be grouped into useful 
+		categories (topics). 
+	}
+	;
+
+Relation storage
+	Fields (
+	    artid location
+		)
+	Primary ( artid )
+	Description ( "Physical storage locations of journal articles" )
+	Detail {
+		The storage relation identifies where the database owner
+		thought a copy of the article was stored.
+	}
+	;
