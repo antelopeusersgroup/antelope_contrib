@@ -316,9 +316,20 @@ Attribute lddate
 	    }
 	; 
 
+Attribute url
+	String (200)
+	Format ( "%-200s" )
+	Null ( "-" )
+	Description ( "url associated with a web bullet" )
+	Detail {
+		If there is a url associated with a web bullet, this 
+		field lists the url.
+	}
+	;
+
 Relation jaauths 
 	Fields (
-	    artid authcode authrank initials
+	    artid authcode authrank initials lddate
 	)
 	Primary ( artid authcode )
 	Description ( "authors listed for each cited journal article" )
@@ -335,7 +346,7 @@ Relation jaauths
 
 Relation journal
 	Fields (
-	    jcode jabbrev jname publisher
+	    jcode jabbrev jname publisher lddate
 	    )
 	Primary ( jcode )
 	Description ( "Journals cited" )
@@ -371,7 +382,7 @@ Relation abstract
 
 Relation author
 	Fields (
-	    authcode surname givenname initials
+	    authcode surname givenname initials url lddate
 	    )
 	Primary ( authcode )
 	Description ( "Identification of authors and the names under which they publish" )
@@ -404,7 +415,7 @@ Relation lastid
 
 Relation subject
 	Fields (
-	    artid topic
+	    artid topic lddate
 		)
 	Primary ( artid topic )
 	Description ( "Catalog of topic headings under which articles fall" )
@@ -419,7 +430,7 @@ Relation subject
 
 Relation storage
 	Fields (
-	    artid location
+	    artid location lddate
 		)
 	Primary ( artid )
 	Description ( "Physical storage locations of journal articles" )
