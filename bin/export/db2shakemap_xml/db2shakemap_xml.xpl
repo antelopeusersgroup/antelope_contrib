@@ -258,6 +258,8 @@ $output_dir = pfget( "$Pf", "output_dir" );
 $insttype = pfget( "$Pf", "insttype" );
 $commtype = pfget( "$Pf", "commtype" );
 
+@dbprocess_get_stations = @{pfget( "$Pf", "dbprocess_get_stations" )};
+
 @dbprocess_get_wfmeas = @{pfget( "$Pf", "dbprocess_get_wfmeas" )};
 grep( s/\$evid/$evid/, @dbprocess_get_wfmeas );
 
@@ -309,10 +311,7 @@ $output->close();
 
 # wfmeas section
 
-# Assume one affiliation entry per station
-@dbstas = dbprocess( @db, "dbopen site",
-			  "dbsubset offdate == NULL", 
-			  "dbjoin affiliation" );
+@dbstas = dbprocess( @db, @dbprocess_get_stations );
 
 @db = dbprocess( @db, "dbopen event",
 		      "dbjoin origin",

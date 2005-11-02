@@ -193,6 +193,16 @@ measure &Arr{
         twin            2 * (sarrival()-parrival())
 }
 
+# The following table is fed to dbprocess(3) to find the 
+# valid stations and their network affiliations. Further 
+# operations may be necessary than the ones shown in order
+# to guarantee only one network is found for each station.
+dbprocess_get_stations &Tbl{
+	dbopen site
+	dbsubset offdate == NULL
+	dbjoin affiliation
+}
+
 .ne 5
 # The following Table of commands is fed to dbprocess(3) to find the wfmeas
 # entries that correspond to a given earthquake. Because this procedure

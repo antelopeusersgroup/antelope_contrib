@@ -37,6 +37,12 @@ measure &Arr{
 	twin 		2 * (sarrival()-parrival())
 }
 
+dbprocess_get_stations &Tbl{
+	dbopen site
+	dbsubset offdate == NULL
+	dbjoin affiliation
+}
+
 # The following Table of commands is fed to dbprocess(3) to find the wfmeas
 # entries that correspond to a given earthquake. Because this procedure
 # may vary widely amongst running real-time systems, the code is expressed in the 
