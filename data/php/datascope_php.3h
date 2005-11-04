@@ -1531,6 +1531,10 @@ elog_debug( "Some debugging message" );
 .in
 .ft R
 
+.SS Datascope Constants
+
+In addition to the above functions, the standard Datascope constants (see dbconstants(5))
+such as dbALL, dbNULL, dbINVALID etc. have been implemented as PHP pre-defined constants. 
 .SH EXAMPLE
 .ft CW
 .in 2c
@@ -1588,6 +1592,9 @@ perldb(3P)
 .fi
 .SH "BUGS AND CAVEATS"
 
+Not all of the functions which should in principle take Datascope constants as arguments 
+will actually do so, using the pre-defined numeric values. The user may have to use
+string equivalents e.g. 'dbALL' in such cases. 
 .SH AUTHOR
 .nf
 Kent Lindquist

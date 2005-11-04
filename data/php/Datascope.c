@@ -185,12 +185,28 @@ _php_free_dbresponse( zend_rsrc_list_entry *rsrc TSRMLS_DC ) {
 	free_response( response );
 }
 
+void register_Datascope_constants( INIT_FUNC_ARGS )
+{
+	int	i;
+
+	for( i = 0; i < NDbxlat; i++ ) {
+
+		zend_register_long_constant( Dbxlat[i].name,
+					     strlen( Dbxlat[i].name ) + 1, 
+					     Dbxlat[i].num,
+					     CONST_CS | CONST_PERSISTENT,
+					     module_number TSRMLS_CC );
+	}
+}
+
 PHP_MINIT_FUNCTION(Datascope)
 {
 
 	le_dbresponse = zend_register_list_destructors_ex( 
 					_php_free_dbresponse, NULL, 
 					"dbresponse", module_number );
+
+	register_Datascope_constants( INIT_FUNC_ARGS_PASSTHRU );
 
 	return SUCCESS;
 }
