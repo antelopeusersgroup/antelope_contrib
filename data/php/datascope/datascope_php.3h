@@ -1588,7 +1588,7 @@ echo var_dump( $moo ), "\\n";
 .SH LIBRARY
 .SH "SEE ALSO"
 .nf
-perldb(3P)
+perldb(3P), orb_php(3H), sysinfo_php(3H)
 .fi
 .SH "BUGS AND CAVEATS"
 
