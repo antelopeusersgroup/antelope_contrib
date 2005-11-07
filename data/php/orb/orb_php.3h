@@ -108,7 +108,7 @@ $metadata = pforbstat( $orbfd, PFORBSTAT_SERVER | PFORBSTAT_SOURCES );
 
 <?php
 
-if( !extension_loaded('Datascope') ) {
+if( !extension_loaded('Orb') ) {
 	dl( 'Orb.so' ) ;
 }
 
