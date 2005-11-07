@@ -1,0 +1,21 @@
+ORBLIB = Orb.so
+
+DATADIR= php
+
+DATA= $(ORBLIB)
+
+MAN3H= orb_php.3h
+
+CLEAN= $(ORBLIB)
+
+cflags= -I$(PHP_INC) -I$(PHP_INC)/main -I$(PHP_INC)/Zend -I$(PHP_INC)/TSRM \
+	-DHAVE_CONFIG_H -DPHP_ATOM_INC
+ldlibs= $(STOCKLIBS) $(ORBLIBS) -lpforbstat
+
+include $(ANTELOPEMAKE)
+DBG=
+
+ORBOBJS= Orb.o
+$(ORBLIB) : $(ORBOBJS)
+	$(RM) $@
+	$(DLD) $(DLDFLAGS) -o $(ORBLIB) $(LORDER) $(ORBOBJS) $(TSORT) $(DLDLIBS) 

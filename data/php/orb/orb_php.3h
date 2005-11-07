@@ -1,0 +1,190 @@
+.TH ORB_PHP 3 "$Date$"
+.SH NAME
+orb_PHP \- Antelope Orb interface for PHP
+.SH SYNOPSIS
+.nf
+
+<?php
+\fBdl\fP('Orb.so')
+?>
+
+.fi
+.SH DESCRIPTION
+
+The Antelope Orb interface for PHP provides access to Antelope orbservers
+to scripts written in PHP. This interface is intended to follow closely
+ the Antelope orb(3) API. The man page on this interface is written to 
+express the interface syntax in PHP. Almost all of these routines are 
+merely wrappers around identically-named C function calls. For further 
+elaboration on the concepts involved in each routine, please refer to the
+C man pages for the underlying routines, which describe them in depth. 
+
+These extensions must first be loaded with a \fBdl\fP statement:
+.ft CW
+.in 2c
+.nf
+
+\fBdl('Orb.so');\fP
+
+.fi
+.in
+.ft R
+.LP
+
+.SS Orb functions
+
+.IP "\fBorbopen\fP ( name, perm )"
+Return an integer file-descriptor corresponding to an open orb
+.ft CW
+.in 2c
+.nf
+
+$orbfd = orbopen( ":", "r" );
+
+.fi
+.in
+.ft R
+
+.IP "\fBorbping\fP ( orbfd )"
+Return the version number of the orbserver
+.ft CW
+.in 2c
+.nf
+
+$version = orbping( $orbfd );
+
+.fi
+.in
+.ft R
+
+.IP "\fBorbselect\fP ( orbfd, regex )"
+Subset the source-names for those matching regex
+.ft CW
+.in 2c
+.nf
+
+$nsources = orbselect( $orbfd, \'.*/MGENC\' );
+
+.fi
+.in
+.ft R
+
+.IP "\fBorbreject\fP ( orbfd, regex )"
+Reject the source-names matching regex
+.ft CW
+.in 2c
+.nf
+
+$nsources = orbreject( $orbfd, \'/pf.*\' );
+
+.fi
+.in
+.ft R
+
+.IP "\fBpforbstat\fP ( orbfd, flags )"
+Create a nested PHP array containing metadata about an orb and its 
+contents. If flags is 0, only the pforbstat version is returned. Flags 
+may be a binary-or of several options: PFORBSTAT_SERVER, PFORBSTAT_SOURCES, 
+PFORBSTAT_CLIENTS, PFORBSTAT_DATABASES, and/or PFORBSTAT_CONNECTIONS (note
+that some of these automatically imply some of the others, for example 
+PFORBSTAT_CLIENTS automatically turns on PFORBSTAT_SERVER). 
+.ft CW
+.in 2c
+.nf
+
+$metadata = pforbstat( $orbfd, PFORBSTAT_SERVER | PFORBSTAT_SOURCES );
+
+.fi
+.in
+.ft R
+
+.SH EXAMPLE
+.ft CW
+.in 2c
+.nf
+
+% cat try_orb.php
+<html>
+
+<?php
+
+if( !extension_loaded('Datascope') ) {
+	dl( 'Orb.so' ) ;
+}
+
+$myorb = orbopen( ":", "r" );
+
+echo "Orb fd is $myorb\\n";
+
+print_r( pforbstat( $myorb, PFORBSTAT_SOURCES ) );
+
+?>
+
+</body>
+</html>
+
+% php -q try_orb.php
+
+<html>
+
+Orb fd is 8
+Array
+(
+    [pforbstat_version] => 2
+    [source_when] => 1131328170.112 (311) 2005-11-07  01:49:30.112 UTC Monday
+    [sources] => Array
+        (
+            [DSC/EXP/IMG] => Array
+                (
+                    [active] => False
+                    [kbaud] => 20427.9371747744
+                    [latency_sec] => 18868679.1216471
+                    [nbytes] => 835750
+                    [npkts] => 3
+                    [slatest] => 2
+                    [slatest_time] => 1112459490.990 (092) 2005-04-02  16:31:30.990 UTC Saturday
+                    [soldest] => 0
+                    [soldest_time] => 1112459490.670 (092) 2005-04-02  16:31:30.670 UTC Saturday
+                )
+
+            [IMGstuff/EXP/IMG] => Array
+                (
+                    [active] => False
+                    [kbaud] => 23472.3367408055
+                    [latency_sec] => 18868623.9331691
+                    [nbytes] => 4542294
+                    [npkts] => 7
+                    [slatest] => 9
+                    [slatest_time] => 1112459546.178 (092) 2005-04-02  16:32:26.178 UTC Saturday
+                    [soldest] => 3
+                    [soldest_time] => 1112459544.667 (092) 2005-04-02  16:32:24.667 UTC Saturday
+                )
+
+        )
+
+)
+</body>
+</html>
+
+.fi
+.in
+.ft R
+.SH LIBRARY
+.SH "SEE ALSO"
+.nf
+perlsysinfo(3P), datascope_php(3H), sysinfo_php(3H)
+.fi
+.SH "BUGS AND CAVEATS"
+Only a few of the functions are implemented so far. Full implementation
+will require a switch to PHP 5.
+
+pforbstat returns all of the values from pforbstat(3). However, the returned 
+structure is not a parameter-file entity in the proper sense, rather 
+a recursively filled PHP array representing the contents of that 
+parameter file. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
