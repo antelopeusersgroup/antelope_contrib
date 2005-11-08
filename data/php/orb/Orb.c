@@ -35,6 +35,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
 	PHP_FE(pforbstat, NULL)		
+	PHP_FE(split_srcname, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -328,6 +329,41 @@ PHP_FUNCTION(pforbstat)
 	
 		pffree( pf );
 	}
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto array split_srcname( string srcname ) */
+PHP_FUNCTION(split_srcname)
+{
+	char	*srcname;
+	int	srcname_len;
+	int	argc = ZEND_NUM_ARGS();
+	Srcname parts;
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+					&srcname, &srcname_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	split_srcname( srcname, &parts );
+
+	array_init( return_value );
+
+	add_assoc_string_ex( return_value, "net", strlen( "net" ) + 1, parts.src_net, 1 );
+	add_assoc_string_ex( return_value, "sta", strlen( "sta" ) + 1, parts.src_sta, 1 );
+	add_assoc_string_ex( return_value, "chan", strlen( "chan" ) + 1, parts.src_chan, 1 );
+	add_assoc_string_ex( return_value, "loc", strlen( "loc" ) + 1, parts.src_loc, 1 );
+	add_assoc_string_ex( return_value, "suffix", strlen( "suffix" ) + 1, parts.src_suffix, 1 );
+	add_assoc_string_ex( return_value, "subcode", strlen( "subcode" ) + 1, parts.src_subcode, 1 );
 
 	return;
 }

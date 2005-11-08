@@ -18,6 +18,7 @@ PHP_FUNCTION(orbping);
 PHP_FUNCTION(orbselect);
 PHP_FUNCTION(orbreject);
 PHP_FUNCTION(pforbstat);
+PHP_FUNCTION(split_srcname);
 
 #ifdef ZTS
 #define ORB_G(v) TSRMG(Orb_globals_id, zend_Orb_globals *, v)
