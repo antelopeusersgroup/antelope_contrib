@@ -3,7 +3,7 @@
 dl( 'Datascope.so' ); 
 </info>
 <man>
-% man Datascope_PHP
+% man datascope_php
 </man>
 
 <subsection Opening a database>
@@ -151,9 +151,45 @@ trendtime ( double time0, double samprate, int nsamp )
     find the end-time of a time-series given its other attributes
 
 <subsection Error Handling>
-elog_init ($argc, $argv) 
+elog_init ( argc, argv ) 
     Initialize the elog message routines
 
+elog_log ( msg )
+    save message on the elog message log
+
+elog_debug ( msg )
+    send a debug message to the elog facility
+	
+elog_notify ( msg )
+    send a notification message to the elog facility
+
+elog_alert ( msg )
+    send an alert message to the elog facility
+
+elog_complain ( msg )
+    send a complaint to the elog facility
+
+elog_die ( msg )
+    send a fatal message to the elog facility and exit
+
+elog_string ( n )
+    return error log starting with message n 
+
+elog_clear ()
+    clear the elog message log
+
+elog_mark ()
+    return the count of messages currently held in the error log
+
+elog_flush ( deliver, first )
+    eliminate log messages after first, printing them if deliver is set
+
+elog_callback ( replacement )
+    replace the standard elog processing with the named PHP replacement function
+    (this function takes two arguments, an integer severity code and a string 
+    containing the log messages, and returns an integer which, if nonzero,
+    will cause the log to be cleared)
+ 
 <subsection Miscellaneous Datascope Functions>
 dbquery ($db, code)
     query the database for information, e.g. dbquery($db, "dbRECORD_COUNT"). see 
@@ -347,3 +383,69 @@ chan = map_seed_netsta (sta, fchan, loc)
 finit_db ($db)
     cause foreign key routines above to use specified database $db
 
+<chapter PHP System Information >
+<info>
+dl( 'sysinfo.so' ); 
+</info>
+<man>
+% man sysinfo_php
+</man>
+<function>
+
+my_ip()
+    return ip address (eg, 209.193.47.96)
+
+my_os()
+    return os name (eg, SunOS)
+
+my_hardware()
+    return hardware string (eg, sun4u)
+
+my_hostname()
+    return hostname (eg, yukon)
+
+ip2name ( ipaddress )
+    translate a dot-notation IP address to hostname
+
+name2ip ( hostname )
+    translate a hostname to dot-notation IP address
+
+ip ( ipaddress )
+    translate a dot-notation IP address to equivalent plain-integer address
+
+pidexecname ( pid )
+    return the executable name for a process-id
+
+pidcmdline ( pid )
+    return the command line for a process-id
+
+pidpwd ( pid )
+    return the process working directory for a process-id
+
+pid_exists ( pid )
+    return true if the given process-id is running
+
+pidinfo ( pid )
+    return an associative array of statistics for a process-id
+
+nomem ( address, nbytes )
+    test a memory address for validity, returning the first bad 
+    address if the location is invalid, zero otherwise 
+
+sysloadavg ()
+    return 1, 5, and 15-minute system load-averages and number of processes
+
+sysmem ()
+    return an associative array with total, used, and physical memory in MB
+
+sysmounted ()
+    return mount-point, file-system type, remote host, and remote source
+    for all mounted filesystems 
+
+syscpu ()
+    return the number of cpus, then percent of time spent in idle, user, 
+    kernel, iowait, and swap for the first cpu, then for successive cpu's 
+    if present
+
+statvfs ( path )
+    return an associative array with filesystem information about a path
