@@ -1,0 +1,75 @@
+Schema Bookmarks0.1
+	Description ( "schema for tracking bookmarks" )
+	Detail {
+		This schema allows the user to keep track of 
+		bookmarked web-addresses, sorted by category 
+		if desired.
+	}
+	Timedate lddate
+	;
+
+Attribute category
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "bookmark category" )
+	Detail {
+		This field allows for bookmarks to be sorted into
+		basic categories. If bookmarks are appropriate to 
+		a specific project, this field may be used to 
+		record the name of the project.
+	}
+	;
+
+Attribute description
+	String (120)
+	Format ( "%-120s" )
+	Null ( "-" )
+	Description ( "description of bookmark" )
+	Detail {
+		This field gives a short description of the bookmark.
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of last record modification" )
+	Detail {
+		This is the time at which a record was last modified.
+	}
+	;
+
+Attribute subcategory
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "bookmark subcategory" )
+	Detail {
+		This field allows bookmark categories to be subdivided.
+	}
+	;
+
+Attribute url
+	String (300)
+	Format ( "%-300s" )
+	Null ( "-" )
+	Description ( "Uniform Resource Locator of bookmark" )
+	Detail {
+		This field lists the web address (URL) of a given
+		bookmark.
+	}
+	;
+
+Relation bookmarks
+	Fields ( category subcategory description url lddate )
+	Primary ( url )
+	Description ( "web bookmarks" )
+	Detail {
+		This table tracks web bookmarks and allows them to be 
+		sorted by category.
+	}
+	;
+
