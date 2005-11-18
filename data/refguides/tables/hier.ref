@@ -3,7 +3,7 @@
 <subsection /opt/antelope/>
 <List>
 perl5.8	perl 5.8.0 release
-tcltk8.4	Tcl/Tk 8.4 release
+tcltk8.4.4	Tcl/Tk 8.4.4 release
 data
   /rtdemo	demo realtime data
   /db	demo databases

@@ -168,6 +168,12 @@ latitude(lat, lon, distance, azimuth)
 longitude(lat, lon, distance, azimuth)
     longitude of the point a distance away from (lat,lon) in the direction azimuth
 
+km2deg(km)
+    convert kilometers to (nominal) degrees
+
+deg2km(deg)
+    convert degrees to (nominal) kilometers
+
 <subsection External Files and Commands>
 <expression>
 ["wc" extfile()]
