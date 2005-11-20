@@ -1,4 +1,8 @@
-mail_viewer dtmail -f 
+mail_viewer &Arr{
+	SunOS	dtmail -f 
+	Linux	xterm -e mailx -f
+	Darwin	xterm -e mailx -f
+}
 nfiles_unquestioned_default 100
 home &env(HOME)
 default_maildb &home/data/db/mail

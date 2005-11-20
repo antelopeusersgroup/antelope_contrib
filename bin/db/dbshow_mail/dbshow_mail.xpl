@@ -20,6 +20,15 @@ sub proceed {
 			@db = dbsubset( @db, "time > $age_cutoff" );
 		}
 
+		$nmessages = dbquery( @db, dbRECORD_COUNT );
+
+		if( $nmessages <= 0 ) {
+
+			@db = dblookup( @db, "", "in", "", "" );
+
+			@db = dbsubset( @db, "from == \"$lookup_from\"" );
+		}
+
 		@db = dbprocess( @db, "dbsort -r time" );
 
 	} elsif( $opt_m ) {
@@ -72,7 +81,25 @@ sub proceed {
 
 	}
 
-	$mail_viewer = pfget( "dbshow_mail", "mail_viewer" );
+	%mail_viewer = %{pfget( "dbshow_mail", "mail_viewer" )};
+
+	$uname = datafile( "PATH", "uname" );
+
+	if( ! defined( $uname ) ||
+	    $uname eq "" || 
+	    ! -x "$uname" ) {
+
+		elog_die( "Can't find uname executable on path. Bye!\n" );
+	} else {
+		
+		chomp( $os = `$uname -s` );
+
+		if( ! defined( $mail_viewer{$os} ) || 
+		    $mail_viewer{$os} eq "" ) {
+
+			elog_die( "No mail_viewer defined in pf for '$os'\n" );
+		}
+	}
 
 	$tmpfile = "/tmp/dbshow_mail_$<_$$";
 	open( VIEWFILE, ">$tmpfile" );
@@ -92,7 +119,7 @@ sub proceed {
 
 	close( VIEWFILE );
 
-	system( "$mail_viewer $tmpfile" );
+	system( "$mail_viewer{$os} $tmpfile" );
 
 	unlink( $tmpfile );
 

@@ -3,22 +3,29 @@
 dbshow_mail \- show mail messages in a database view
 .SH SYNOPSIS
 .nf
-dbshow_mail [-n] [-a] [-w nmax] {-f from|-m messageid|dbtable}
+\fBdbshow_mail\fP [-n] [-a] [-w nmax] {-f from|-m messageid|dbtable}
 .fi
 .SH DESCRIPTION
 
-dbshow_mail by default is intended to be run from dbe(1). dbshow_mail
+\fBdbshow_mail\fP
 copies the email messages referred to by the input view (Mail1.1 or
 later schema) to a temporary file, then runs a mail-viewer on that
 temporary file. The mail viewer is specified in the parameter file; the
 name of the temporary file with the selected messages will be appended
 to this parameter value and executed via a system call.
 
-With the -f option, dbshow_mail looks for the specified name in the 
-correspondents.realname field, joins to the 'in' table, subsets for 
+\fBdbshow_mail\fP s well-suited to being run from dbe(1), as shown in 
+the example below.
+
+With the -f option, \fBdbshow_mail\fP looks for the specified name in the 
+correspondents.realname field, joins to the \fIin\fP table, subsets for 
 messages newer than age_cutoff unless -a is specified, and displays
 the resulting messages in the given mail viewer. Aliases may be set 
 in the lookup_alias parameter-file table for commonly used names.
+If no alias or real-name is specified, \fBdbshow_mail\fP assumes the argument 
+given to this option is a specific email address, in which case
+it searches for messages from that sender in the \fIfrom\fP field of the 
+\fIin\fP table. 
 
 .SH OPTIONS
 
@@ -30,7 +37,9 @@ nfiles_unquestioned_default
 .IP "-f from"
 Show messages from the specified sender. Limit to messages
 more recent than the age_cutoff in the parameter file, unless -a is 
-specified
+specified. The sender may be given as a \fIrealname\fP in the 
+correspondents table, an alias for such as specified by the parameter 
+file, or a specific email address from the \fIin\fP table.
 
 .IP "-m messageid"
 Look up the given message id
@@ -45,7 +54,11 @@ Show registered name aliases and exit
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .nf
-mail_viewer dtmail -f 
+mail_viewer &Arr{
+	SunOS	dtmail -f 
+	Linux	xterm -e mailx -f
+	Darwin	xterm -e mailx -f
+}
 nfiles_unquestioned_default 100
 home &env(HOME)
 default_maildb &home/data/db/mail
@@ -63,7 +76,7 @@ tsh	Hansen, Todd
 .nf
 Here's a sample entry for .dbe.pf:
 
-Mail1.1 &Arr{
+Mail1.2 &Arr{
 graphics &Arr{
         in &Tbl{
                 "View Messages" dbshow_mail -
@@ -85,7 +98,7 @@ graphics &Arr{
 filemail(1), dbe(1)
 .fi
 .SH "BUGS AND CAVEATS"
-dbshow_mail needs a -t option to hunt for all messages in a thread
+\fBdbshow_mail\fP needs a -t option to hunt for all messages in a thread
 .SH AUTHOR
 .nf
 Kent Lindquist
