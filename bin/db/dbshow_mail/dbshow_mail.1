@@ -39,7 +39,9 @@ Show messages from the specified sender. Limit to messages
 more recent than the age_cutoff in the parameter file, unless -a is 
 specified. The sender may be given as a \fIrealname\fP in the 
 correspondents table, an alias for such as specified by the parameter 
-file, or a specific email address from the \fIin\fP table.
+file, or a specific email address from the \fIin\fP table. For this 
+latter usage, the argument to -f may be a regular expression, in which case
+all emails from addresses matching the expression are returned. 
 
 .IP "-m messageid"
 Look up the given message id
@@ -99,6 +101,15 @@ filemail(1), dbe(1)
 .fi
 .SH "BUGS AND CAVEATS"
 \fBdbshow_mail\fP needs a -t option to hunt for all messages in a thread
+
+Before matching the -f argument to actual email addresses in the \fIin\fP
+table, \fBdbshow_mail\fP converts the input address or regular expression 
+to all lowercase. This is done for compatibility with the filemail(3) 
+routines, which file all addresses in lowercase. If the mail database was
+built with something other than the filemail(1) tools, and if the addresses
+contain uppercase letters, this mode will not work. Instead, -f should be 
+used only with the standardized names listed in the \fIcorrespondents\fP
+table. 
 .SH AUTHOR
 .nf
 Kent Lindquist

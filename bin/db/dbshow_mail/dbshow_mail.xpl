@@ -24,9 +24,11 @@ sub proceed {
 
 		if( $nmessages <= 0 ) {
 
+			$lookup_from = lc( $lookup_from );
+
 			@db = dblookup( @db, "", "in", "", "" );
 
-			@db = dbsubset( @db, "from == \"$lookup_from\"" );
+			@db = dbsubset( @db, "from =~ /^$lookup_from\$/" );
 		}
 
 		@db = dbprocess( @db, "dbsort -r time" );
