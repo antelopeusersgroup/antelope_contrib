@@ -22,6 +22,11 @@ helpwin COMMAND_NAME
 help COMMAND_NAME
     standard Matlab help for specified command
 
+<subsection Initialization>
+<commands>
+setup_antelope
+    Set the Matlab path to point to the Antelope tools, examples, and scripts
+
 <subsection Opening a database>
 <function>
 DBPTR = dbopen ( FILENAME, OPENTYPE )
