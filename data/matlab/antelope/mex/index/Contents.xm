@@ -1,5 +1,8 @@
 % Antelope Toolbox
 %
+% Initialization
+%   setup_antelope	- Set the Matlab path to include Antelope utilities
+%
 % Opening a database
 %   dbopen		- Open a Datascope Database
 %   dblookup		- Aim a Datascope database pointer as specified 
