@@ -1,0 +1,6 @@
+SETUP_ANTELOPE Set up the Matlab path for Antelope
+
+SETUP_ANTELOPE
+
+SETUP_ANTELOPE adds the Antelope paths for tools, examples, and 
+scripts to the Matlab path. 
