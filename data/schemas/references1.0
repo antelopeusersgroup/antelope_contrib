@@ -169,6 +169,18 @@ Attribute publisher
 	    }
 	;
 
+Attribute peerrev
+	String ( 2 )
+	Format ( "%-2s" )
+	Null  ( "-"  )
+	Range ( "peerrev =~ /y|n/" )
+	Description ( "whether publication was peer-reviewed" )
+	Detail {
+	    This field indicates whether a publication has been 
+	    peer reviewed or not.
+	    }
+	;
+
 Attribute surname
 	String ( 30 )
 	Format ( "%-30s" )
@@ -293,6 +305,20 @@ Attribute endpg
 	Description ( "page number on which article ends" )
 	;
 
+Attribute jdescrip
+	String ( 200 )
+	Format ( "%-200s" )
+	Null  ( "-" ) 
+	Description ( "Description of Journal" )
+	Detail {
+		This field is used for a full description of a journal 
+		as it should be described in citations. This is most 
+		useful for publication venues that do not conform to 
+		an easy standard, such as abstract volumes from particular
+		meetings.
+	}
+	;
+
 Attribute jname
 	String ( 80 )
 	Format ( "%-80s" )
@@ -346,7 +372,7 @@ Relation jaauths
 
 Relation journal
 	Fields (
-	    jcode jabbrev jname publisher lddate
+	    jcode jabbrev jname jdescrip publisher lddate
 	    )
 	Primary ( jcode )
 	Description ( "Journals cited" )
@@ -358,7 +384,7 @@ Relation journal
 
 Relation article
 	Fields (
-	    artid firstauth title jcode volume issueno startpg endpg abscode meeting year articletype lddate
+	    artid firstauth title jcode volume issueno startpg endpg abscode meeting year articletype peerrev lddate
 	    )
 	Primary ( jcode title )
 	Alternate ( artid )
