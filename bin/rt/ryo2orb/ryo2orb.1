@@ -3,8 +3,8 @@
 ryo2orb \- import RYO-format real-time GPS data from an RTD server to an orbserver
 .SH SYNOPSIS
 .nf
-\fBryo2orb \fP[-v] [-V] [-p \fIpfname\fP] \fIrtd_ipaddress\fP:\fIport\fP
-                \fIorbserver\fP
+\fBryo2orb \fP[-v] [-V] [-p \fIpfname\fP] [-m \fIsubset\fP] 
+		\fIrtd_ipaddress\fP:\fIport\fP \fIorbserver\fP
 .fi
 .SH DESCRIPTION
 \fBryo2orb\fP connects to an RTD server, collects real-time Global
@@ -75,6 +75,10 @@ Verbose
 
 .IP -V
 Very Verbose
+
+.IP "-m subset"
+Only deliver the subset of station names (RYO-packet \fIsite_id\fP)
+that match the specified regular expression
 
 .IP "-p pfname"
 Specify a parameter-file name other than the default \fBryo2orb\fP.pf
@@ -409,6 +413,10 @@ requiring a switch to "s4" or other similar datatype when archiving.
 
 The segtype field may be the correct dimensions, but not the officially 
 correct units for some of these time-series.
+
+Note that the -m option is applied solely to the station names
+(RYO-packet \fIsite_id\fP field), not to the entire orb source-name 
+as with some other orb-program match expressions)
 .SH AUTHOR
 .nf
 Kent Lindquist

@@ -9,7 +9,7 @@ ECEF_flattening     	0.00335281066474
 
 net 	XX
 multiplex_stations yes
-max_nsamples_per_channel 1
+max_nsamples_per_channel 10
 status_interval_sec 10
 
 channel_names &Arr{

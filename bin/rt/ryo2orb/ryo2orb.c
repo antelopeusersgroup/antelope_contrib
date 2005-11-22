@@ -69,8 +69,9 @@ int 	GPS_leapseconds;
 int 	Multiplex_stations;
 int 	Max_nsamples_per_channel;
 int 	Status_interval_sec;
-char	*Rtd_server;
-char	*Net;
+char	*Rtd_server = 0;
+char	*Net = 0;
+char	*Match_expr = 0;
 double	Samprate_tolerance;
 double	Longitude_branchcut_deg;
 double	ECEF_semimajor_axis;
@@ -1550,7 +1551,6 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 	PktChannel *pktchan;
 	char	key[STRSZ];
 	char	*chan;
-	int	isample;
 	double	new_samprate;
 	StachanCalib *scc;
 
@@ -1610,23 +1610,20 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 		pktchan->samprate = NULL_SAMPRATE;
 	} 
 	
-	if( pktchan->nsamp >= Max_nsamples_per_channel && 
-	    pktchan->samprate != NULL_SAMPRATE ) {
+	pktchan->nsamp++;
 
-		if( VeryVerbose ) {
-			
-			elog_notify( 0, "Flushing packet because "
-			   "pktchan->nsamp (%d) >= "
-			   "Max_nsamples_per_channel (%d)\n",
-			   pktchan->nsamp, Max_nsamples_per_channel );
-		}
-		
-		flush_packet( pkt );
+	if( pktchan->nsamp == 1 ) {
+
+		pktchan->time = r2opkt->time;
 	}
 
-	isample = pktchan->nsamp;
+	if( pktchan->nsamp == 2 ) {
 
-	if( isample >= 2 ) {
+		insist( r2opkt->time != pktchan->time );
+
+		pktchan->samprate = 1. / ( r2opkt->time - pktchan->time );
+
+	} else if( pktchan->nsamp > 2 ) {
 
 		new_samprate = 1. / 
 		   ( r2opkt->time - SAMP2TIME( pktchan->time, pktchan->samprate, pktchan->nsamp - 1 ) );
@@ -1640,23 +1637,25 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 			}
 
 			flush_packet( pkt );
-
-			isample = pktchan->nsamp;
 		}
-
-	} else if( isample == 1 ) {
-
-		pktchan->samprate = 1. / ( r2opkt->time - pktchan->time );
 	} 
 	
-	if( isample == 0 ) {
+	pktchan->data[pktchan->nsamp-1] =
+			( data_value - scc->offset ) * scc->multdataby;
 
-		pktchan->time = r2opkt->time;
+	if( pktchan->nsamp >= Max_nsamples_per_channel && 
+	    pktchan->samprate != NULL_SAMPRATE ) {
+
+		if( VeryVerbose ) {
+			
+			elog_notify( 0, "Flushing packet because "
+			   "pktchan->nsamp (%d) >= "
+			   "Max_nsamples_per_channel (%d)\n",
+			   pktchan->nsamp, Max_nsamples_per_channel );
+		}
+		
+		flush_packet( pkt );
 	}
-
-	pktchan->data[isample] = ( data_value - scc->offset ) * scc->multdataby;
-
-	pktchan->nsamp++;
 
 	return;
 }
@@ -1858,6 +1857,22 @@ ryo2orb_convert( void *arg )
 			continue;
 		}
 
+		if( Match_expr != NULL ) {
+			
+			if( ! strmatches( r2opkt->site_id, Match_expr, 0 ) ) {
+
+				if( VeryVerbose ) {
+
+					elog_notify( 0,
+						"Skipping packet for '%s' "
+					 	"(not in match expression)\n",
+					 	r2opkt->site_id );
+				}
+
+				continue;
+			}
+		}
+
 		add_geodetics( r2opkt );
 
 		if( VeryVerbose ) {
@@ -2014,7 +2029,7 @@ main( int argc, char **argv )
 
 	elog_init( argc, argv );
 
-	while( ( c = getopt( argc, argv, "vVp:" ) ) != -1 ) {
+	while( ( c = getopt( argc, argv, "vVm:p:" ) ) != -1 ) {
 
 		switch( c ) {
 		case 'v':
@@ -2024,6 +2039,10 @@ main( int argc, char **argv )
 		case 'V':
 			VeryVerbose++;
 			Verbose++;
+			break;
+
+		case 'm':
+			Match_expr = optarg;
 			break;
 
 		case 'p':
