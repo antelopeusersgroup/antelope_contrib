@@ -26,6 +26,7 @@
 #include <synch.h>
 #include <errno.h>
 #include <string.h>
+#include <ieeefp.h>
 #include "stock.h"
 #include "coords.h"
 #include "db.h"
@@ -1626,7 +1627,12 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 	} else if( pktchan->nsamp > 2 ) {
 
 		new_samprate = 1. / 
-		   ( r2opkt->time - SAMP2TIME( pktchan->time, pktchan->samprate, pktchan->nsamp - 1 ) );
+		   ( r2opkt->time - 
+		     SAMP2TIME( pktchan->time, 
+				pktchan->samprate, 
+				pktchan->nsamp - 2 ) );
+
+		insist( finite( new_samprate ) );
 
 		if( abs( 1 - pktchan->samprate / new_samprate ) > Samprate_tolerance ) {
 
