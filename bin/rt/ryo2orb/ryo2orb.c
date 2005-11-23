@@ -73,7 +73,7 @@ int 	Status_interval_sec;
 char	*Rtd_server = 0;
 char	*Net = 0;
 char	*Match_expr = 0;
-double	Samprate_tolerance;
+double	Samprate_tolerance = 0;
 double	Longitude_branchcut_deg;
 double	ECEF_semimajor_axis;
 double	ECEF_flattening;
@@ -1500,8 +1500,6 @@ flush_packet( Packet *pkt )
 		}
 	}
 
-	pkt->nchannels = maxtbl( pkt->channels );;
-
 	pktchan = gettbl( pkt->channels, 0 );
 	pkt->time = pktchan->time;
 
@@ -1634,6 +1632,10 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 
 		insist( finite( new_samprate ) );
 
+		insist( abs( 1 - pktchan->samprate / new_samprate ) < 
+			Samprate_tolerance );
+		/* SCAFFOLD this code is in the wrong place
+
 		if( abs( 1 - pktchan->samprate / new_samprate ) > Samprate_tolerance ) {
 
 			if( Verbose ) {
@@ -1644,24 +1646,14 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 
 			flush_packet( pkt );
 		}
+		end SCAFFOLD */
 	} 
-	
+
+	/* SCAFFOLD prevent memory overruns under current structure: */
+	insist( pktchan->nsamp <= Max_nsamples_per_channel + 1 );
+
 	pktchan->data[pktchan->nsamp-1] =
 			( data_value - scc->offset ) * scc->multdataby;
-
-	if( pktchan->nsamp >= Max_nsamples_per_channel && 
-	    pktchan->samprate != NULL_SAMPRATE ) {
-
-		if( VeryVerbose ) {
-			
-			elog_notify( 0, "Flushing packet because "
-			   "pktchan->nsamp (%d) >= "
-			   "Max_nsamples_per_channel (%d)\n",
-			   pktchan->nsamp, Max_nsamples_per_channel );
-		}
-		
-		flush_packet( pkt );
-	}
 
 	return;
 }
@@ -1795,6 +1787,8 @@ enqueue_ryopkt( RYO2orbPacket *r2opkt, char *net, char *sta )
 		enqueue_sample( pkt, r2opkt, 
 			"covariance_TZ", r2opkt->covariance_TZ );
 	}
+
+	pkt->nchannels = maxtbl( pkt->channels );;
 
 	if( packet_ready( pkt, r2opkt ) ) {
 
@@ -2079,6 +2073,16 @@ main( int argc, char **argv )
 	GPS_leapseconds = pfget_int( pf, "GPS_leapseconds" );
 
 	Multiplex_stations = pfget_boolean( pf, "multiplex_stations" );
+
+	if( Match_expr != NULL && Multiplex_stations != 0 ) {
+
+		elog_complain( 0, "Multiplexing stations is not currently "
+			  "supported when subsetting stations; turning " 
+			  "multiplexing off.\n" );
+
+		Multiplex_stations = 0;
+	}
+
 	Max_nsamples_per_channel = pfget_int( pf, "max_nsamples_per_channel" );
 	Status_interval_sec = pfget_int( pf, "status_interval_sec" );
 
