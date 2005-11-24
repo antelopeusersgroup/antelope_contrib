@@ -1329,12 +1329,22 @@ send_log( char *log, char *srcname )
 	if( stuffPkt( pkt, auto_srcname, &time, &buf, &nbytes, &packetsz ) < 0 ) {
 		
 		elog_complain( 0, "stuffPkt failed for log message!\n" );
+
+		free( pkt->string );
+		pkt->string = 0;
+		pkt->string_size = 0;
+
+		return;
 	}
 
 	if( orbput( Orbfd, srcname, now(), buf, nbytes ) < 0 ) {
 
 		elog_complain( 0, "orbput failed for log message!\n" );
 	}
+
+	free( pkt->string );
+	pkt->string = 0;
+	pkt->string_size = 0;
 
 	return;
 }
@@ -1544,8 +1554,51 @@ flush_packet( Packet *pkt )
 	return;
 }
 
+void
+samprate_verify( Packet *pkt, RYO2orbPacket *r2opkt )
+{
+	PktChannel *pktchan;
+	double  new_samprate;
+	int	ichannel;
+
+	for( ichannel = 0; ichannel < pkt->nchannels; ichannel++ ) {
+
+		pktchan = gettbl( pkt->channels, ichannel );
+
+		if( pktchan->nsamp >= 2 ) {
+
+			new_samprate = 1. / 
+		   	( r2opkt->time - 
+		     	SAMP2TIME( pktchan->time, 
+				   pktchan->samprate, 
+				   pktchan->nsamp - 1 ) );
+
+			insist( finite( new_samprate ) );
+
+			if( abs( 1 - pktchan->samprate / new_samprate ) >
+				Samprate_tolerance ) {
+
+				if( Verbose ) {
+				elog_notify( 0, "Sample rate change detected: "
+					"was %f, now %f. Flushing packet.\n",
+					pktchan->samprate, new_samprate );
+				}
+
+				flush_packet( pkt );
+
+				break;;
+			}
+		}
+	}
+
+	return;
+}
+
 void 
-enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, double data_value )
+enqueue_sample( Packet *pkt, 
+		RYO2orbPacket *r2opkt, 
+		char *channel_identifier, 
+		double data_value )
 {
 	PktChannel *pktchan;
 	char	key[STRSZ];
@@ -1624,29 +1677,6 @@ enqueue_sample( Packet *pkt, RYO2orbPacket *r2opkt, char *channel_identifier, do
 
 	} else if( pktchan->nsamp > 2 ) {
 
-		new_samprate = 1. / 
-		   ( r2opkt->time - 
-		     SAMP2TIME( pktchan->time, 
-				pktchan->samprate, 
-				pktchan->nsamp - 2 ) );
-
-		insist( finite( new_samprate ) );
-
-		insist( abs( 1 - pktchan->samprate / new_samprate ) < 
-			Samprate_tolerance );
-		/* SCAFFOLD this code is in the wrong place
-
-		if( abs( 1 - pktchan->samprate / new_samprate ) > Samprate_tolerance ) {
-
-			if( Verbose ) {
-				elog_notify( 0, "Sample rate change detected: "
-					"was %f, now %f. Flushing packet.\n",
-					pktchan->samprate, new_samprate );
-			}
-
-			flush_packet( pkt );
-		}
-		end SCAFFOLD */
 	} 
 
 	/* SCAFFOLD prevent memory overruns under current structure: */
@@ -1735,6 +1765,8 @@ enqueue_ryopkt( RYO2orbPacket *r2opkt, char *net, char *sta )
 
 		setarr( Track_packets, key, (void *) pkt );
 	}
+
+	samprate_verify( pkt, r2opkt );
 
 	enqueue_sample( pkt, r2opkt, "ITRF_X", r2opkt->XYZT[0] );
 	enqueue_sample( pkt, r2opkt, "ITRF_Y", r2opkt->XYZT[1] );
@@ -1868,6 +1900,8 @@ ryo2orb_convert( void *arg )
 					 	"(not in match expression)\n",
 					 	r2opkt->site_id );
 				}
+
+				free_RYO2orbPacket( r2opkt );
 
 				continue;
 			}
