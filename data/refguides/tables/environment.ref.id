@@ -20,6 +20,10 @@ BNS_TIMEOUT
 DATAPATH
     overrides the default directory $ANTELOPE/data where Antelope programs find a variety of data files.
 
+EDITOR
+XEDITOR
+    specify an editor to use when editing pf files from rtm
+
 ELOG_DELIVER
     list of error message destinations: filenames, "stderr" or "stdout", or "orb:hostname:port".
 
