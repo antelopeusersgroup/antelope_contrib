@@ -1510,6 +1510,8 @@ flush_packet( Packet *pkt )
 		}
 	}
 
+	pkt->nchannels = maxtbl( pkt->channels );
+
 	pktchan = gettbl( pkt->channels, 0 );
 	pkt->time = pktchan->time;
 
