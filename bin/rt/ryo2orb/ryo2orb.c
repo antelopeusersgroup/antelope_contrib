@@ -2106,7 +2106,7 @@ main( int argc, char **argv )
 	if( Verbose ) {
 		
 		elog_notify( 0, 
-			"ryo2orb revision $Revision X.XX $ starting at %s\n",
+			"ryo2orb revision $Revision 1.11 $ starting at %s\n",
 			strtime( now() ) );
 		exit( 0 );
 	}
