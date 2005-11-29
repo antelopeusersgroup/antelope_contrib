@@ -2103,6 +2103,14 @@ main( int argc, char **argv )
 		orbname = argv[optind++];
 	}
 
+	if( Verbose ) {
+		
+		elog_notify( 0, 
+			"ryo2orb revision $REVISION X.XX$ starting at %s\n",
+			strtime( now() ) );
+		exit( 0 );
+	}
+
 	pfread( pfname, &pf );
 
 	GPS_epoch = pfget_time( pf, "GPS_epoch" );
