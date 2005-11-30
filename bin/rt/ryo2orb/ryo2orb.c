@@ -1567,7 +1567,8 @@ samprate_verify( Packet *pkt, RYO2orbPacket *r2opkt )
 
 		pktchan = gettbl( pkt->channels, ichannel );
 
-		if( pktchan->nsamp >= 2 ) {
+		if( pktchan->nsamp >= 2 &&
+		    ! strcmp( pktchan->sta, r2opkt->site_id ) ) {
 
 			new_samprate = 1. / 
 		   	( r2opkt->time - 
