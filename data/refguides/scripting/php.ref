@@ -1,4 +1,4 @@
-<chapter PHP Interface>
+<chapter Datascope PHP Interface>
 <info>
 dl( 'Datascope.so' ); 
 </info>
@@ -383,6 +383,33 @@ chan = map_seed_netsta (sta, fchan, loc)
 finit_db ($db)
     cause foreign key routines above to use specified database $db
 
+<chapter Orb PHP Interface >
+<info>
+dl( 'Orb.so' ); 
+</info>
+<man>
+% man orb_php
+</man>
+<function>
+
+orbopen (name, perm)
+    open an orbserver connection
+
+orbping (orbfd)
+    return the version number of the orbserver
+
+orbselect (orbfd, regex)
+    subset the source-names for those matching regex
+
+orbreject (orbfd, regex)
+    reject the source-names matching regex
+
+pforbstat (orbfd, flags)
+    create a nested PHP array containing orb metadata 
+
+split_srcname (srcname)
+    split an orb source-name into net,sta,chan,loc,suffix,subcode
+
 <chapter PHP System Information >
 <info>
 dl( 'sysinfo.so' ); 
@@ -392,16 +419,16 @@ dl( 'sysinfo.so' );
 </man>
 <function>
 
-my_ip()
+my_ip ()
     return ip address (eg, 209.193.47.96)
 
-my_os()
+my_os ()
     return os name (eg, SunOS)
 
-my_hardware()
+my_hardware ()
     return hardware string (eg, sun4u)
 
-my_hostname()
+my_hostname ()
     return hostname (eg, yukon)
 
 ip2name ( ipaddress )
