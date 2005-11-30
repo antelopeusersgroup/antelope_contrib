@@ -74,6 +74,7 @@ char	*Rtd_server = 0;
 char	*Net = 0;
 char	*Match_expr = 0;
 double	Samprate_tolerance = 0;
+double	Nominal_samprate = NULL_SAMPRATE;
 double	Longitude_branchcut_deg;
 double	ECEF_semimajor_axis;
 double	ECEF_flattening;
@@ -1576,15 +1577,14 @@ samprate_verify( Packet *pkt, RYO2orbPacket *r2opkt )
 				   pktchan->samprate, 
 				   pktchan->nsamp - 1 ) );
 
-			insist( finite( new_samprate ) );
-
-			if( abs( 1 - pktchan->samprate / new_samprate ) >
+			if( ! finite( new_samprate ) ||
+			      abs( 1 - Nominal_samprate / new_samprate ) >
 				Samprate_tolerance ) {
 
 				if( Verbose ) {
-				elog_notify( 0, "Sample rate change detected: "
-					"was %f, now %f. Flushing packet.\n",
-					pktchan->samprate, new_samprate );
+				elog_notify( 0, "New sample rate would be %f, outside tolerance %f of nominal rate %f. "
+					"Flushing packet.\n",
+					new_samprate, Samprate_tolerance, Nominal_samprate );
 				}
 
 				flush_packet( pkt );
@@ -2134,6 +2134,7 @@ main( int argc, char **argv )
 	Net = pfget_string( pf, "net" );
 
 	Samprate_tolerance = pfget_double( pf, "samprate_tolerance" );
+	Nominal_samprate = pfget_double( pf, "nominal_samprate" );
 	Longitude_branchcut_deg = pfget_double( pf, "longitude_branchcut_deg" );
 	ECEF_semimajor_axis = pfget_double( pf, "ECEF_semimajor_axis" );
 	ECEF_flattening = pfget_double( pf, "ECEF_flattening" );
