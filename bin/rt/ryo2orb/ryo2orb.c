@@ -2109,7 +2109,6 @@ main( int argc, char **argv )
 			"ryo2orb revision $Revision$ "
 			"starting at %s UTC\n",
 			strtime( now() ) );
-		exit( 0 );
 	}
 
 	pfread( pfname, &pf );
