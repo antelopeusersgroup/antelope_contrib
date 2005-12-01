@@ -114,7 +114,7 @@ trloadchan ( $db, t0, t1, sta, chan )
 trsample ( $db, t0, t1, sta, chan [, apply_calib] )
     load a channel of waveform data into a PHP array of alternating epoch-time and data-value
 
-trsample ( $db, t0, t1, sta, chan, binsize [, apply_calib] )
+trsamplebins ( $db, t0, t1, sta, chan, binsize [, apply_calib] )
     same as trsample, but the data points are grouped into bins of binsize samples and the epoch-time,min,max for each group is returned
 
 trapply_calib ( $tr )
