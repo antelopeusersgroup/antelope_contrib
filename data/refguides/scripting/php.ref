@@ -395,6 +395,9 @@ dl( 'Orb.so' );
 orbopen (name, perm)
     open an orbserver connection
 
+orbclose (orbfd)
+    close an orbserver connection
+
 orbping (orbfd)
     return the version number of the orbserver
 
