@@ -366,7 +366,7 @@ different conventions of autodrm and SEED.
 
 sta = map_autodrm_netsta (anet, fsta)
 
-chan = map_autodrm_netsta (sta, fchan, aux)
+chan = map_autodrm_chanaux (sta, fchan, aux)
 
 (anet, fsta) = autodrm_net (sta)
 
@@ -374,7 +374,7 @@ chan = map_autodrm_netsta (sta, fchan, aux)
 
 sta = map_seed_netsta (snet, fsta)
 
-chan = map_seed_netsta (sta, fchan, loc)
+chan = map_seed_chanloc (sta, fchan, loc)
 
 (snet, fsta) = seed_net (sta)
 
