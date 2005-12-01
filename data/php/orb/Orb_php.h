@@ -15,6 +15,7 @@ PHP_MSHUTDOWN_FUNCTION(Orb);
 PHP_MINFO_FUNCTION(Orb);
 PHP_FUNCTION(orbopen);
 PHP_FUNCTION(orbping);
+PHP_FUNCTION(orbclose);
 PHP_FUNCTION(orbselect);
 PHP_FUNCTION(orbreject);
 PHP_FUNCTION(pforbstat);

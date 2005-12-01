@@ -43,6 +43,16 @@ $orbfd = orbopen( ":", "r" );
 
 .fi
 .in
+.IP "\fBorbclose\fP ( orbfd )"
+Close an orb connection
+.ft CW
+.in 2c
+.nf
+
+orbclose( $orbfd );
+
+.fi
+.in
 .ft R
 
 .IP "\fBorbping\fP ( orbfd )"
