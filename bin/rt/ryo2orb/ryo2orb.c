@@ -1608,6 +1608,7 @@ enqueue_sample( Packet *pkt,
 	char	*chan;
 	double	new_samprate;
 	StachanCalib *scc;
+	char	*s;
 
 	if( ( chan = getarr( Channel_names, channel_identifier ) ) == NULL ) {
 
@@ -1665,22 +1666,29 @@ enqueue_sample( Packet *pkt,
 		pktchan->samprate = NULL_SAMPRATE;
 	} 
 	
-	pktchan->nsamp++;
-
-	if( pktchan->nsamp == 1 ) {
+	if( pktchan->nsamp == 0 ) {
 
 		pktchan->time = r2opkt->time;
 	}
 
-	if( pktchan->nsamp == 2 ) {
+	if( pktchan->nsamp == 1 ) {
 
-		insist( r2opkt->time != pktchan->time );
+		if( r2opkt->time != pktchan->time ) {
 
-		pktchan->samprate = 1. / ( r2opkt->time - pktchan->time );
-
-	} else if( pktchan->nsamp > 2 ) {
-
+			pktchan->samprate = 1. / ( r2opkt->time - pktchan->time );
+		} else {
+			
+			/* SCAFFOLD */	
+			elog_complain( 0, "Unexpected error appending sample"
+			  " for site_id '%s'--new packet time matches "
+			  "previous. Duplicate input data?? Skipping! \n",
+			  r2opkt->site_id, s = strtime( pktchan->time ) ); 
+			return;
+			   
+		}
 	} 
+
+	pktchan->nsamp++;
 
 	/* SCAFFOLD prevent memory overruns under current structure: */
 	insist( pktchan->nsamp <= Max_nsamples_per_channel + 1 );
