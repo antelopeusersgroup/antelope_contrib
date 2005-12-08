@@ -6,7 +6,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.276
+ * modified: 2004.196
  ***************************************************************************/
 
 #include <stdio.h>
@@ -17,7 +17,8 @@
 
 
 /***************************************************************************
- * sl_read_streamlist()
+ * sl_read_streamlist:
+ *
  * Read a list of streams and selectors from a file and add them to the 
  * stream chain for configuring a multi-station connection.
  *
@@ -55,21 +56,21 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
   selectors[0] = '\0';
 
   /* Open the stream list file */
-  if ((streamfp = fopen (streamfile, "r")) == NULL)
+  if ((streamfp = fopen (streamfile, "rb")) == NULL)
     {
       if (errno == ENOENT)
 	{
-	  sl_log_r (slconn, 0, 0, "could not open stream list file: %s\n", streamfile);
+	  sl_log_r (slconn, 2, 0, "could not find stream list file: %s\n", streamfile);
 	  return -1;
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0, "opening stream list file, %s\n", strerror (errno));
+	  sl_log_r (slconn, 2, 0, "opening stream list file, %s\n", strerror (errno));
 	  return -1;
 	}
     }
 
-  sl_log_r (slconn, 0, 1, "reading stream list from %s\n", streamfile);
+  sl_log_r (slconn, 1, 1, "Reading stream list from %s\n", streamfile);
 
   count = 1;
   stacount = 0;
@@ -85,7 +86,7 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
 
       if ( fields < 2 )
 	{
-	  sl_log_r (slconn, 1, 0, "parsing line %d of stream list\n", count);
+	  sl_log_r (slconn, 2, 0, "cannot parse line %d of stream list\n", count);
 	}
       
       /* Add this stream to the stream chain */
@@ -94,7 +95,7 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
 	  sl_addstream (slconn, net, sta, selectors, -1, NULL);
 	  stacount++;
 	}
-      else 
+      else
 	{
 	  addret = sl_addstream (slconn, net, sta, defselect, -1, NULL);
 	  stacount++;
@@ -105,25 +106,26 @@ sl_read_streamlist (SLCD * slconn, const char * streamfile,
 
   if ( stacount == 0 )
     {
-      sl_log_r (slconn, 1, 0, "no streams defined in %s\n", streamfile);
+      sl_log_r (slconn, 2, 0, "no streams defined in %s\n", streamfile);
     }
   else if ( stacount > 0 )
     {
-      sl_log_r (slconn, 0, 2, "Read %d streams from %s\n", stacount, streamfile);
+      sl_log_r (slconn, 1, 2, "Read %d streams from %s\n", stacount, streamfile);
     }
 
   if ( fclose (streamfp) )
     {
-      sl_log_r (slconn, 1, 0, "closing stream list file, %s\n", strerror (errno));
+      sl_log_r (slconn, 2, 0, "closing stream list file, %s\n", strerror (errno));
       return -1;
     }
 
   return count;
-}              /* End of sl_read_streamlist() */
+}  /* End of sl_read_streamlist() */
 
 
 /***************************************************************************
- * sl_parse_streamlist()
+ * sl_parse_streamlist:
+ *
  * Parse a string of streams and selectors and add them to the stream
  * chain for configuring a multi-station connection.
  *
@@ -170,7 +172,7 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
       /* Fill in the NET and STA fields */
       if (strparse (reqptr->element, "_", &netstalist) != 2)
 	{
-	  sl_log_r (slconn, 1, 0, "Not in NET_STA format: %s\n", reqptr->element);
+	  sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n", reqptr->element);
 	  count = -1;
 	}
       else
@@ -179,7 +181,7 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
 	  netstaptr = netstalist;
 	  if (strlen (netstaptr->element) == 0)
 	    {
-	      sl_log_r (slconn, 1, 0, "Not in NET_STA format: %s\n",
+	      sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n",
 		      reqptr->element);
 	      count = -1;
 	    }
@@ -189,7 +191,7 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
 	  netstaptr = netstaptr->next;
 	  if (strlen (netstaptr->element) == 0)
 	    {
-	      sl_log_r (slconn, 1, 0, "Not in NET_STA format: %s\n",
+	      sl_log_r (slconn, 2, 0, "not in NET_STA format: %s\n",
 		      reqptr->element);
 	      count = -1;
 	    }
@@ -202,7 +204,7 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
 	  reqptr = reqptr->next;
 	  if (strlen (reqptr->element) == 0)
 	    {
-	      sl_log_r (slconn, 1, 0, "Empty selector: %s\n", reqptr->element);
+	      sl_log_r (slconn, 2, 0, "empty selector: %s\n", reqptr->element);
 	      count = -1;
 	    }
 	  staselect = reqptr->element;
@@ -239,15 +241,15 @@ sl_parse_streamlist (SLCD * slconn, const char * streamlist,
   
   if ( count == 0 )
     {
-      sl_log_r (slconn, 1, 0, "no streams defined in stream list\n");
+      sl_log_r (slconn, 2, 0, "no streams defined in stream list\n");
     }
   else if ( count > 0 )
     {
-      sl_log_r (slconn, 0, 2, "Parsed %d streams from stream list\n", count);
+      sl_log_r (slconn, 1, 2, "Parsed %d streams from stream list\n", count);
     }
 
   /* Free the ring list */
   strparse (NULL, NULL, &ringlist);
   
   return count;
-}              /* End of sl_parse_streamlist() */
+}  /* End of sl_parse_streamlist() */

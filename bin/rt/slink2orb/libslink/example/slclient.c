@@ -8,7 +8,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified 2004.105
+ * modified 2005.087
  ***************************************************************************/
 
 #include <stdio.h>
@@ -22,7 +22,6 @@
   #include <signal.h>
 
   static void term_handler (int sig);
-  static void dummy_handler (int sig);
 #else
   #define strcasecmp _stricmp
 #endif
@@ -53,10 +52,8 @@ main (int argc, char **argv)
   /* Signal handling, use POSIX calls with standardized semantics */
   struct sigaction sa;
 
-  sa.sa_handler = dummy_handler;
-  sa.sa_flags   = SA_RESTART;
   sigemptyset (&sa.sa_mask);
-  sigaction (SIGALRM, &sa, NULL);
+  sa.sa_flags   = SA_RESTART;
 
   sa.sa_handler = term_handler;
   sigaction (SIGINT, &sa, NULL);
@@ -78,7 +75,7 @@ main (int argc, char **argv)
       fprintf(stderr, "Try '-h' for detailed help\n");
       return -1;
     }
-
+  
   /* Loop with the connection manager */
   while ( sl_collect (slconn, &slpack) )
     {
@@ -156,7 +153,8 @@ packet_handler (char *msrecord, int packet_type, int seqnum, int packet_size)
 
 
 /***************************************************************************
- * parameter_proc():
+ * parameter_proc:
+ *
  * Process the command line parameters.
  *
  * Returns 0 on success, and -1 on failure
@@ -166,11 +164,10 @@ parameter_proc (int argcount, char **argvec)
 {
   int optind;
   int error = 0;
-
+  
   char *streamfile  = 0;	/* stream list file for configuring streams */
   char *multiselect = 0;
   char *selectors   = 0;
-  char *tptr;
 
   if (argcount <= 1)
     error++;
@@ -244,17 +241,17 @@ parameter_proc (int argcount, char **argvec)
   if ( ! slconn->sladdr )
     {
       fprintf(stderr, "No SeedLink server specified\n\n");
-      fprintf(stderr, "Usage: slclient [options] [host]:port\n");
+      fprintf(stderr, "Usage: %s [options] [host][:port]\n", PACKAGE);
       fprintf(stderr, "Try '-h' for detailed help\n");
       exit (1);
     }
 
   /* Initialize the verbosity for the sl_log function */
   sl_loginit (verbose, NULL, NULL, NULL, NULL);
-
+  
   /* Report the program version */
   sl_log (0, 1, "%s version: %s\n", PACKAGE, VERSION);
-
+  
   /* If errors then report the usage message and quit */
   if (error)
     {
@@ -265,19 +262,11 @@ parameter_proc (int argcount, char **argvec)
   /* If verbosity is 2 or greater print detailed packet infor */
   if ( verbose >= 2 )
     ppackets = 1;
-
-  /* If no host is given for the SeedLink server, add 'localhost' */
-  if (*slconn->sladdr == ':')
-    {
-      tptr = (char *) malloc (strlen (slconn->sladdr) + 10);
-      sprintf (tptr, "localhost%s", slconn->sladdr);
-      slconn->sladdr = tptr;
-    }
-
+  
   /* Load the stream list from a file if specified */
   if ( streamfile )
     sl_read_streamlist (slconn, streamfile, selectors);
-
+  
   /* Parse the 'multiselect' string following '-S' */
   if ( multiselect )
     {
@@ -288,28 +277,28 @@ parameter_proc (int argcount, char **argvec)
     {			 /* No 'streams' array, assuming uni-station mode */
       sl_setuniparams (slconn, selectors, -1, 0);
     }
-
+  
   /* Attempt to recover sequence numbers from state file */
   if (statefile)
     {
       if (sl_recoverstate (slconn, statefile) < 0)
 	{
-	  sl_log (1, 0, "state recovery failed\n");
+	  sl_log (2, 0, "state recovery failed\n");
 	}
     }
-
+  
   return 0;
 }				/* End of parameter_proc() */
 
 
 /***************************************************************************
- * usage():
+ * usage:
  * Print the usage message and exit.
  ***************************************************************************/
 static void
 usage (void)
 {
-  fprintf (stderr, "\nUsage: %s [options] <[host]:port>\n\n", PACKAGE);
+  fprintf (stderr, "\nUsage: %s [options] [host][:port]\n\n", PACKAGE);
   fprintf (stderr,
 	   " ## General program options ##\n"
 	   " -V             report program version\n"
@@ -330,24 +319,21 @@ usage (void)
 	   "        'stream' is in NET_STA format, for example:\n"
 	   "        -S \"IU_KONO:BHE BHN,GE_WLF,MN_AQU:HH?.D\"\n\n"
 	   "\n"
-	   " <[host]:port>  Address of the SeedLink server in host:port format\n"
-	   "                  if host is omitted (i.e. ':18000'), localhost is assumed\n\n");
-
+	   " [host][:port]  Address of the SeedLink server in host:port format\n"
+	   "                  if host is omitted (i.e. ':18000'), localhost is assumed\n"
+	   "                  if :port is omitted (i.e. 'localhost'), 18000 is assumed\n\n");
+  
 }				/* End of usage() */
 
 #ifndef WIN32
 /***************************************************************************
- * term_handler() and dummy_handler():
- * Signal handler routines. 
+ * term_handler:
+ * Signal handler routine. 
  ***************************************************************************/
 static void
 term_handler (int sig)
 {
   sl_terminate (slconn);
 }
-
-static void
-dummy_handler (int sig)
-{
-}
 #endif
+

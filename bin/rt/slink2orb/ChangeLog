@@ -1,3 +1,12 @@
+8 Dec 2005
+  - Update to libslink 1.6rc1 including many updates: error messages
+      go to stderr, sl_connect does it's own parsing of the sladdr
+      string and fills in default hostname and port when needed, and
+      many small bug fixes.
+  - Remove checking of sladdr from slink2orb.c, it's done in libslink.
+  - Remove unused variables and other small fixes.
+  - Add version number to help message.
+
 18 Jun 2004
   - Update to libslink 1.2a with a fix for compiling using a compiler
       that does not assume *void == *char for pointer arithmetic, i.e.

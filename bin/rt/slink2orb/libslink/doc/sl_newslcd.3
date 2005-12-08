@@ -38,7 +38,7 @@ typedef struct slcd_s
   int         netto;          /* Network timeout (s) */
   int         netdly;         /* Network reconnect delay (s) */
 
-  float       server_version; /* Version of the remote SeedLink server */
+  float       protocol_ver;   /* Version of the SeedLink protocol in use */
   const char *info;           /* INFO level to request */
   int         link;           /* The network socket descriptor */
   SLstat     *stat;           /* Internal connection state */
@@ -87,5 +87,6 @@ the system anyway.
 .SH AUTHOR
 .nf
 Chad Trabant
-ORFEUS Data Center/EC-Project MEREDIAN
+Developed while at ORFEUS Data Center/EC-Project MEREDIAN
+Currently at IRIS Data Management Center
 .fi

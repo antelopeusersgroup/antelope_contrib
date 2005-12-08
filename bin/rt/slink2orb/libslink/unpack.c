@@ -37,7 +37,7 @@
  *
  *  Modified by Chad Trabant, ORFEUS/EC-Project MEREDIAN		
  *
- *  modified: 2003.276
+ *  modified: 2005.103
  ************************************************************************/
 
 /*
@@ -73,7 +73,6 @@
 #include <memory.h>
 
 #include "libslink.h"
-#include "tswap.h"
 
 /* Data types */
 #define STEIM1                  10
@@ -100,12 +99,12 @@ typedef union u_diff {                  /* union for steim 1 objects.   */
     int8_t          byte[4];            /* 4 1-byte differences.        */
     int16_t         hw[2];              /* 2 halfword differences.      */
     int32_t         fw;                 /* 1 fullword difference.       */
-} U_DIFF;
+} SLP_PACKED U_DIFF;
 
 typedef struct frame {                  /* frame in a seed data record. */
     uint32_t	    ctrl;               /* control word for frame.      */
     U_DIFF          w[15];              /* compressed data.             */
-} FRAME;
+} SLP_PACKED FRAME;
 
 
 /* Internal unpacking routines */
@@ -151,7 +150,7 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
     }
   else
     {
-      sl_log_rl (log, 1, 0, "msr_unpack(): No Blockette 1000 found!\n");
+      sl_log_rl (log, 2, 0, "msr_unpack(): No Blockette 1000 found!\n");
       return (-1);
     }
 
@@ -174,11 +173,11 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
     case STEIM1:
       if ((diffbuff = (int32_t *) malloc(unpacksize)) == NULL)
 	{
-	  sl_log_rl (log, 1, 0, "unable to malloc diff buffer in msr_unpack()\n");
+	  sl_log_rl (log, 2, 0, "unable to malloc diff buffer in msr_unpack()\n");
 	  return (-1);
 	}
       
-      sl_log_rl (log, 0, 2, "Unpacking Steim-1 data frames\n");
+      sl_log_rl (log, 1, 2, "Unpacking Steim-1 data frames\n");
 
       nsamples = unpack_steim1 ((FRAME *)dbuf, datasize, msr->fsdh.num_samples,
 				msr->fsdh.num_samples, msr->datasamples, diffbuff, 
@@ -189,11 +188,11 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
     case STEIM2:
       if ((diffbuff = (int32_t *) malloc(unpacksize)) == NULL)
 	{
-	  sl_log_rl (log, 1, 0, "unable to malloc diff buffer in msr_unpack()\n");
+	  sl_log_rl (log, 2, 0, "unable to malloc diff buffer in msr_unpack()\n");
 	  return (-1);
 	}
       
-      sl_log_rl (log, 0, 2, "Unpacking Steim-2 data frames\n");
+      sl_log_rl (log, 1, 2, "Unpacking Steim-2 data frames\n");
 
       nsamples = unpack_steim2 ((FRAME *)dbuf, datasize, msr->fsdh.num_samples,
 				msr->fsdh.num_samples, msr->datasamples, diffbuff,
@@ -202,7 +201,7 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
       break;
       
     case INT_16:
-      sl_log_rl (log, 0, 2, "Unpacking INT-16 data samples\n");
+      sl_log_rl (log, 1, 2, "Unpacking INT-16 data samples\n");
 
       nsamples = unpack_int_16 ((int16_t *)dbuf, datasize, msr->fsdh.num_samples,
 				msr->fsdh.num_samples, msr->datasamples,
@@ -210,7 +209,7 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
       break;
       
     case INT_32:
-      sl_log_rl (log, 0, 2, "Unpacking INT-32 data samples\n");
+      sl_log_rl (log, 1, 2, "Unpacking INT-32 data samples\n");
 
       nsamples = unpack_int_32 ((int32_t *)dbuf, datasize, msr->fsdh.num_samples,
 				msr->fsdh.num_samples, msr->datasamples,
@@ -218,7 +217,7 @@ msr_unpack (SLlog * log, MSrecord * msr, int swapflag)
       break;
       
     default:
-      sl_log_rl (log, 1, 0, "Unable to unpack format %d for %s.%s.%s.%s\n", format,
+      sl_log_rl (log, 2, 0, "Unable to unpack format %d for %s.%s.%s.%s\n", format,
 	      msr->fsdh.station, msr->fsdh.network,
 	      msr->fsdh.location, msr->fsdh.channel);
 
@@ -286,18 +285,22 @@ int unpack_steim1
     /* Extract forward and reverse integration constants in first frame */
     *px0 = X0;
     *pxn = XN;
-    tswap4 ((uint32_t *) px0, swapflag);
-    tswap4 ((uint32_t *) pxn, swapflag);
 
+    if ( swapflag )
+      {
+	gswap4 (px0);
+	gswap4 (pxn);
+      }
+    
     /*	Decode compressed data in each frame.				*/
     for (fn = 0; fn < num_data_frames; fn++)
       {
 	if (fast && nd >= req_samples)
 	  break;
-
+	
 	ctrl = pf->ctrl;
-	tswap4 ((uint32_t *) &ctrl, swapflag);
-
+	if ( swapflag ) gswap4 (&ctrl);
+	
 	for (wn = 0; wn < VALS_PER_FRAME; wn++)
 	  {
 	    if (nd >= num_samples) break;
@@ -325,7 +328,7 @@ int unpack_steim1
 		    if (swapflag)
 		      {
 			stmp = pf->w[wn].hw[i];
-			tswap2 ((uint16_t *) &stmp, swapflag);
+			if ( swapflag ) gswap2 (&stmp);
 			*diff++ = stmp;
 		      }
 		    else *diff++ = pf->w[wn].hw[i];
@@ -337,7 +340,7 @@ int unpack_steim1
 		if (swapflag)
 		  {
 		    itmp = pf->w[wn].fw;
-		    tswap4 ((uint32_t *) &itmp, swapflag);
+		    if ( swapflag ) gswap4 (&itmp);
 		    *diff++ = itmp;
 		  }
 		else *diff++ = pf->w[wn].fw;
@@ -346,7 +349,7 @@ int unpack_steim1
 		
 	      default:
 		/* Should NEVER get here.				*/
-		sl_log_rl (log, 1, 0, "unpack_steim1(): invalid cf = %d\n", compflag);
+		sl_log_rl (log, 2, 0, "unpack_steim1(): invalid cf = %d\n", compflag);
 		return (MSD_STBADCOMPFLAG);
 		break;
 	      }
@@ -358,7 +361,7 @@ int unpack_steim1
      * same number indicated in the header
      */
     if ( nd != num_samples )
-      sl_log_rl (log, 1, 2,
+      sl_log_rl (log, 2, 2,
 		 "unpack_steim1(): number of samples indicated in header (%d) does not equal data (%d)\n",
 		 num_samples, nd);
 
@@ -401,7 +404,7 @@ int unpack_steim1
 	/* Verify that the last value is identical to xn.		*/
 	if (last_data != *pxn)
 	  {
-	    sl_log_rl (log, 1, 0,
+	    sl_log_rl (log, 2, 0,
 		       "Data integrity for Steim-1 is bad, last_data=%d, xn=%d\n",
 		       last_data, *pxn);
 
@@ -461,15 +464,19 @@ int unpack_steim2
     /* Extract forward and reverse integration constants in first frame.*/
     *px0 = X0;
     *pxn = XN;
-    tswap4 ((uint32_t *) px0, swapflag);
-    tswap4 ((uint32_t *) pxn, swapflag);
 
+    if ( swapflag )
+      {
+	gswap4 (px0);
+	gswap4 (pxn);
+      }
+    
     /*	Decode compressed data in each frame.				*/
     for (fn = 0; fn < num_data_frames; fn++)
       {
 	if (fast && nd >= req_samples) break;
 	ctrl = pf->ctrl;
-	tswap4 ((uint32_t *) &ctrl, swapflag);
+	if ( swapflag ) gswap4 (&ctrl);
 
 	for (wn = 0; wn < VALS_PER_FRAME; wn++)
 	  {
@@ -492,7 +499,7 @@ int unpack_steim2
 
 	      case STEIM2_123_MASK:
 		val = pf->w[wn].fw;
-		tswap4 ((uint32_t *) &val, swapflag);
+		if ( swapflag ) gswap4 (&val);
 		dnib =  val >> 30 & 0x3;
 		switch (dnib)
 		  {
@@ -503,7 +510,7 @@ int unpack_steim2
 		  case 3:	/*  3 10-bit differences.		*/
 		    bits = 10; n = 3; m1 = 0x000003ff; m2 = 0x00000200; break;
 		  default:	/*	should NEVER get here.		*/
-		    sl_log_rl (log, 1, 0,
+		    sl_log_rl (log, 2, 0,
 			       "unpack_steim2(): invalid cf, dnib, fn, wn = %d, %d, %d, %d\n", 
 			       compflag, dnib, fn, wn);
 		    return (MSD_STBADCOMPFLAG);
@@ -520,7 +527,7 @@ int unpack_steim2
 
 	      case STEIM2_567_MASK:
 		val = pf->w[wn].fw;
-		tswap4 ((uint32_t *) &val, swapflag);
+		if ( swapflag ) gswap4 (&val);
 		dnib =  val >> 30 & 0x3;
 		switch (dnib)
 		  {
@@ -531,7 +538,7 @@ int unpack_steim2
 		  case 2:	/*  7 4-bit differences.		*/
 		    bits = 4; n = 7; m1 = 0x0000000f; m2 = 0x00000008; break;
 		  default:
-		    sl_log_rl (log, 1, 0,
+		    sl_log_rl (log, 2, 0,
 			       "unpack_steim2(): invalid cf, dnib, fn, wn = %d, %d, %d, %d\n", 
 			       compflag, dnib, fn, wn);
 		    return (MSD_STBADCOMPFLAG);
@@ -548,7 +555,7 @@ int unpack_steim2
 
 	      default:
 		/* Should NEVER get here.				*/
-		sl_log_rl (log, 1, 0,
+		sl_log_rl (log, 2, 0,
 			   "unpack_steim2(): invalid cf, fn, wn = %d, %d, %d\n",
 			   compflag, fn, wn);
 		return (MSD_STBADCOMPFLAG);
@@ -562,7 +569,7 @@ int unpack_steim2
      * same number indicated in the header
      */
     if ( nd != num_samples )
-      sl_log_rl (log, 1, 2,
+      sl_log_rl (log, 2, 2,
 		 "unpack_steim2(): number of samples indicated in header (%d) does not equal data (%d)\n",
 		 num_samples, nd);
 
@@ -605,7 +612,7 @@ int unpack_steim2
 	/* Verify that the last value is identical to xn.		*/
 	if (last_data != *pxn)
 	  {
-	    sl_log_rl (log, 1, 0,
+	    sl_log_rl (log, 2, 0,
 		       "Data integrity for Steim-2 is bad, last_data=%d, xn=%d\n",
 		       last_data, *pxn);
 	    return (MSD_STBADLASTMATCH);
@@ -639,7 +646,7 @@ int unpack_int_16
 
     for (nd=0; nd<req_samples && nd<num_samples; nd++) {
 	stmp = ibuf[nd];
-	tswap2 ((uint16_t *) &stmp, swapflag);
+	if ( swapflag ) gswap2 (&stmp);
 	databuff[nd] = stmp;
     }
 
@@ -669,8 +676,8 @@ int unpack_int_32
     if (req_samples < 0) req_samples = -req_samples;
 
     for (nd=0; nd<req_samples && nd<num_samples; nd++) {
-	itmp = ibuf[nd];
-	tswap4 ((uint32_t *) &itmp, swapflag);
+        itmp = ibuf[nd];
+	if ( swapflag ) gswap4 (&itmp);
 	databuff[nd] = itmp;
     }
 

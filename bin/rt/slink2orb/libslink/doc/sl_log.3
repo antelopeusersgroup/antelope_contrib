@@ -1,4 +1,4 @@
-.TH SL_LOG 3 2003/11/03
+.TH SL_LOG 3 2004/07/14
 .SH NAME
 sl_log and friends \- Central logging facility for libslink and client
 programs
@@ -17,29 +17,31 @@ programs
 .sp
 .BI "void \fBsl_loginit\fP (int " verbosity ",
 .BI "                 void (*" log_print ")(const char*), const char *" logprefix ",
-.BI "                 void (*" err_print ")(const char*), const char *" errprefix ");
+.BI "                 void (*" diag_print ")(const char*), const char *" errprefix ");
 .sp
 .BI "void \fBsl_loginit_r\fP (SLCD *" slconn ", int " verbosity ",
 .BI "                 void (*" log_print ")(const char*), const char *" logprefix ",
-.BI "                 void (*" err_print ")(const char*), const char *" errprefix ");
+.BI "                 void (*" diag_print ")(const char*), const char *" errprefix ");
 .sp
 .BI "SLlog * \fBsl_loginit_rl\fP (SLlog *" log ", int " verbosity ",
 .BI "                 void (*" log_print ")(const char*), const char *" logprefix ",
-.BI "                 void (*" err_print ")(const char*), const char *" errprefix ");
+.BI "                 void (*" diag_print ")(const char*), const char *" errprefix ");
 .fi
 .SH DESCRIPTION
 The \fBsl_log\fP functions are the central logging facility for
 all output from libslink functions.  They are also intended to be used
 by client programs.  If \fIverbosity\fP is equal to or greater than
 the currently set verbosity level the message will be processed,
-otherwise not.  If \fIlevel\fP is 0 then \fBsl_log\fP emits a log
-message, if \fIlevel\fP is >= 1 then \fBsl_log\fP emits an error
-message.
+otherwise not.
 
-It is the task of the \fBsl_log\fP functions to format a log/error
-message using \fBprintf\fP conventions and pass the formatted string
-to the appropriate printing function (\fIlog_print\fP or
-\fIerr_print\fP)
+Three message levels are recognized:
+ 0  : Normal log messgaes, printed using log_print with logprefix
+ 1  : Diagnostic messages, printed using diag_print with logprefix
+ 2+ : Error messages, printed using diag_print with errprefix
+
+It is the task of the \fBsl_log\fP functions to format a message using
+\fBprintf\fP conventions and pass the formatted string to the
+appropriate printing function (\fIlog_print\fP or \fIdiag_print\fP)
 
 \fBsl_log\fP will process messages using the global logging
 parameters.
@@ -80,10 +82,10 @@ Use NULL for the print function pointers or the prefixes if they
 should not be changed from previously set or default values.
 
 The default values for the logging parameters are:
-  verbosity  = 0       (basic messages)
-  log_print  = printf  (printing to standard out)
+  verbosity  = 0        (basic messages)
+  log_print  = fprintf  (printing to standard out)
   log_prefix = ""
-  err_print  = printf  (printing to standard out)
+  diag_print = fprintf  (printing to standard error)
   err_prefix = "error: "
 
 By setting the printing functions it is possible to re-direct all of
@@ -92,6 +94,9 @@ is embedded in a system with it's own logging facilities.
 
 It is also possible to suppress all output from libslink functions by
 setting the verbosity to a negative number.
+
+Most of the libslink internal messages are logged at either the
+diagnostic or error level.
 
 .SH RETURN VALUES
 \fBsl_log\fP, \fBsl_log_r\fP and \fBsl_log_rl\fP return the number of
@@ -118,11 +123,14 @@ main () {
 
   sl_loginit (verbose, NULL, NULL, NULL, NULL);
 
-  /* Regular log message */
+  /* Normal log message, will be printed to stdout */
   sl_log (0, 0, "Verbosity level is: %d", verbosity);
 
-  /* Error message, "error: " will be prefixed */
+  /* Diagnostic message, will be printed to stderr */
   sl_log (1, 0, "Verbosity level is: %d", verbosity);
+
+  /* Error message, will be prefixed with "error: " and printed to stderr */
+  sl_log (2, 0, "Verbosity level is: %d", verbosity);
 }
 .fi
 
@@ -132,20 +140,23 @@ A more complicated example of setting the printing functions:
 #include <libslink.h>
 
 void log_print (const char *message);
-void err_print (const char *message);
+void diag_print (const char *message);
 
 main () {
   int verbosity;
 
   ... get desired verbosity from command line, etc. 
 
-  sl_loginit (verbose, &log_print, "LOG: ", &err_print, "ERR: ");
+  sl_loginit (verbose, &log_print, "LOG: ", &diag_print, "ERR: ");
 
-  /* Regular log message, "LOG: " will be prefixed */
+  /* Normal log message, "LOG: " will be prefixed */
   sl_log (0, 0, "Verbosity level is: %d", verbosity);
 
-  /* Error message, "ERR: " will be prefixed */
+  /* Diognostic message, "LOG: " will be prefixed */
   sl_log (1, 0, "Verbosity level is: %d", verbosity);
+
+  /* Error message, "ERR: " will be prefixed */
+  sl_log (2, 0, "Verbosity level is: %d", verbosity);
 }
 
 void log_print (const char *message) {
@@ -153,7 +164,7 @@ void log_print (const char *message) {
   send_log(message);
 }
 
-void err_print (const char *message) {
+void diag_print (const char *message) {
   /* Send message to external error message facility */
   send_error(message);
 }
@@ -162,5 +173,6 @@ void err_print (const char *message) {
 .SH AUTHOR
 .nf
 Chad Trabant
-ORFEUS Data Center/EC-Project MEREDIAN
+Developed while at ORFEUS Data Center/EC-Project MEREDIAN
+Currently at IRIS Data Management Center
 .fi

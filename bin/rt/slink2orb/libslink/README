@@ -12,11 +12,10 @@ Installation instructions for libslink: the SeedLink client library.
 
 Linux/Unix: The easiest way to compile the library is to simply run
 'make'.  The included Makefile should work for most Unix-like
-environments with GNU's gcc.  The Makefile will need to be edited to
-use a different compiler (e.g. the Sun compiler), instructions are
-included in the Makefile.  By default a statically linked version of
-the library is built 'libslink.a'.  Using gcc it is possible to build
-a shared library with 'make shared'.
+environments; a special target of 'gcc' will explicitly use gcc with
+'-02' optimization and more warnings.  By default a statically linked
+version of the library is built 'libslink.a'.  Using gcc it is
+possible to build a shared library with 'make shared'.
 
 Mac OSX (Darwin): A static library can be compiled using the above
 Linux/Unix instructions, just run 'make'.  A dynamic library can be
@@ -77,3 +76,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Library General Public License (GNU-LGPL) for more details.  The
 GNU-LGPL and further information can be found here:
 http://www.gnu.org/
+
+-- Author --
+
+Chad Trabant
+Initial development at the ORFEUS Data Center/EC MEREDIAN Project
+Continuing maintenance at the IRIS Data Management Center
+

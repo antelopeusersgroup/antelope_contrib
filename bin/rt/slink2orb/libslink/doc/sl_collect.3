@@ -1,4 +1,4 @@
-.TH SL_COLLECT 3 2003/11/03
+.TH SL_COLLECT 3 2005/03/26
 .SH NAME
 sl_collect, sl_terminate \- SeedLink connection management
 
@@ -37,11 +37,21 @@ regularly this function might not be able to properly manage the
 connection, i.e. update internal timers, send keepalives, etc.  For
 this reason this is NOT A RECOMMENDED INTERFACE.
 
+The library will parse the SLCD->sladdr parameter (the SeedLink server
+address in 'host:port' format) in the following way: if the host is
+omitted 'localhost' will be assumed, if the port is omitted '18000'
+will be assumed, if both are omitted 'localhost:18000' will be asumed.
+Example translations when defaults are used:
+.nf
+  '<host>:' => '<host>:18000'
+  ':<port>' => 'localhost:<port>'
+  ':'       => 'localhost:18000'
+.fi
+
 \fBsl_terminate\fP will set the \fIterminate\fP flag in the SLCD
 causing \fBsl_collect\fP to terminate the connection and flush the
 packet buffer during subsequent calls.  This function should be called
 during program termination, for example in a signal handler.
-
 
 .SH RETURN VALUES
 When a packet is received \fBsl_collect\fP returns SLPACKET and
@@ -53,6 +63,7 @@ returned and the \fIslpack\fP pointer will be NULL.
 exception that it will return SLNOPACKET when no packets are
 available; in this case the \fIslpack\fP pointer will be NULL.
 
+.SH SeedLink PACKETS
 A SeedLink packet is simply a SeedLink header followed by a Mini-SEED
 record; defined in libslink.h as a C struct (and type):
 
@@ -120,5 +131,6 @@ shutdown the client using \fBsl_terminate\fP.
 .SH AUTHOR
 .nf
 Chad Trabant
-ORFEUS Data Center/EC-Project MEREDIAN
+Developed while at ORFEUS Data Center/EC-Project MEREDIAN
+Currently at IRIS Data Management Center
 .fi

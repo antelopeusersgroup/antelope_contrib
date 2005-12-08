@@ -18,7 +18,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.105
+ * modified: 2005.103
  ***************************************************************************/
 
 #ifndef SLPLATFORM_H
@@ -27,6 +27,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+  /* Portability to the XScale (ARM) architecture
+   * requires a packed attribute in certain places
+   * but this only works with GCC for now.
+   */
+
+#if defined (__GNUC__)
+  #define SLP_PACKED __attribute__ ((packed))
+#else
+  #define SLP_PACKED
+#endif  
 
   /* Make some guesses about the system libraries based
    * on the architecture.  Currently the assumptions are:

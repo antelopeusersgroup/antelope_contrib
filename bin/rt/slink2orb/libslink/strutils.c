@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.156
+ * modified: 2004.196
  ***************************************************************************/
 
 #include <stdio.h>
@@ -19,7 +19,8 @@
 
 
 /***************************************************************************
- * strparse():
+ * strparse:
+ *
  * splits a 'string' on 'delim' and puts each part into a linked list
  * pointed to by 'list' (a pointer to a pointer).  The last entry has
  * it's 'next' set to 0.  All elements are NULL terminated strings.
@@ -101,11 +102,12 @@ strparse (const char *string, const char *delim, strlist **list)
 
       return 0;
     }
-}				/* End of strparse() */
+}  /* End of strparse() */
 
 
 /***************************************************************************
- * strncpclean():
+ * strncpclean:
+ *
  * Copy 'length' characters from 'source' to 'dest' while removing all
  * spaces.  The result is left justified and always null terminated.
  * The source string must have at least 'length' characters and the
@@ -132,4 +134,4 @@ strncpclean (char *dest, const char *source, int length)
   *(dest+didx) = '\0';
 
   return didx;
-}				/* End of strclean() */
+}  /* End of strncpclean() */

@@ -8,7 +8,7 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2003.276
+ * Version: 2004.196
  ***************************************************************************/
 
 #include <stdio.h>
@@ -19,7 +19,8 @@
 
 
 /***************************************************************************
- * sl_dtime();
+ * sl_dtime:
+ *
  * Return a double precision version of the current time since the epoch.
  * This is the number of seconds since Jan. 1, 1970 without leap seconds.
  ***************************************************************************/
@@ -28,11 +29,12 @@ sl_dtime (void)
 {
   /* Now just a shell for the portable version */
   return slp_dtime();
-}				/* End of sl_dtime() */
+}  /* End of sl_dtime() */
 
 
 /***************************************************************************
- * sl_doy2md():
+ * sl_doy2md:
+ *
  * Compute the month and day-of-month from a year and day-of-year.
  *
  * Returns 0 on success and -1 on error.
@@ -47,7 +49,7 @@ sl_doy2md(int year, int jday, int *month, int *mday)
   /* Sanity check for the supplied year */
   if ( year < 1900 || year > 2100 )
     {
-      sl_log_r (NULL, 1, 0, "sl_doy2md(): year (%d) is out of range\n", year);
+      sl_log_r (NULL, 2, 0, "sl_doy2md(): year (%d) is out of range\n", year);
       return -1;
     }
     
@@ -60,7 +62,7 @@ sl_doy2md(int year, int jday, int *month, int *mday)
 
   if (jday > 365+leap || jday <= 0)
     {
-      sl_log_r (NULL, 1, 0, "sl_doy2md(): day-of-year (%d) is out of range\n", jday);
+      sl_log_r (NULL, 2, 0, "sl_doy2md(): day-of-year (%d) is out of range\n", jday);
       return -1;
     }
     
@@ -77,26 +79,27 @@ sl_doy2md(int year, int jday, int *month, int *mday)
     }
 
   return 0;
-}				/* End of sl_doy2md() */
+}  /* End of sl_doy2md() */
 
 
 /***************************************************************************
- * sl_checkversion():
- * Check server version number against some value
+ * sl_checkversion:
+ *
+ * Check protocol version number against some value
  *
  * Returns:
  *  1 = version is greater than or equal to value specified
- *  0 = no server version is known
+ *  0 = no protocol version is known
  * -1 = version is less than value specified
  ***************************************************************************/
 int
 sl_checkversion (const SLCD * slconn, float version)
 {
-  if (slconn->server_version == 0.0)
+  if (slconn->protocol_ver == 0.0)
     {
       return 0;
     }
-  else if (slconn->server_version >= version)
+  else if (slconn->protocol_ver >= version)
     {
       return 1;
     }
@@ -104,11 +107,12 @@ sl_checkversion (const SLCD * slconn, float version)
     {
       return -1;
     }
-}				/* End of sl_checkversion */
+}  /* End of sl_checkversion() */
 
 
 /***************************************************************************
- * sl_checkslcd():
+ * sl_checkslcd:
+ *
  * Check a SeedLink connection description (SLCD struct).
  *
  * Returns 0 if pass and -1 if problems were identified.
@@ -117,28 +121,12 @@ int
 sl_checkslcd (const SLCD * slconn)
 {
   int retval = 0;
-  char *ptr;
 
   if (slconn->streams == NULL && slconn->info == NULL)
     {
-      sl_log_r (slconn, 1, 0, "sl_checkslconn(): stream chain AND info type are empty\n");
-      retval = -1;
-    }
-
-  ptr = strchr (slconn->sladdr, ':');
-  if (slconn->sladdr == NULL)
-    {
-      sl_log_r (slconn, 1, 0, "sl_checkslconn(): server address is empty\n");
-      retval = -1;
-    }
-  else if (ptr == NULL ||
-	   ptr == slconn->sladdr ||
-	   *++ptr == '\0')
-    {
-      sl_log_r (slconn, 1, 0, "[%s] host address is not in `[hostname]:port' format\n",
-	      slconn->sladdr);
+      sl_log_r (slconn, 2, 0, "sl_checkslconn(): stream chain AND info type are empty\n");
       retval = -1;
     }
 
   return retval;
-}				/* End of sl_checkslconn */
+}  /* End of sl_checkslconn() */

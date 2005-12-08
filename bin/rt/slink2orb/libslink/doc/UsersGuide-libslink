@@ -47,7 +47,7 @@ parameter:
     int         netto;
     int         netdly;
 
-    float       server_version;
+    float       protocol_ver;
     char       *info;
     int         link;
     SLstat     *stat;
@@ -133,7 +133,7 @@ management function described below, sl_collect():
 The following parameters are maintained by the library routines and should
 not be changed by the calling program:
 
-  server_version: This is the version of the SeedLink server.  This
+  protocol_ver: This is the version of the SeedLink protocol in use.  This
 		value is parsed from the server's response to the
 		HELLO command and will be set to 0.0 when the version
 		could not be detected.  Internal library routines use
@@ -143,8 +143,7 @@ not be changed by the calling program:
 		allow all features.  The first line of response to the
 		HELLO command is expected to be in the format:
 		"seedlink v#.# <optional text>" where 'seedlink' is
-		case insensitive and '#.#' is the server/protocol
-		version.
+		case insensitive and '#.#' is the protocol version.
 
   info:         This parameter indicates that an INFO packet should be
 		requested from the server during the next call to
@@ -234,21 +233,25 @@ in the SeedLink buffer.
 
 -----------   Controlling output from the library functions   --------------
 
-All of the informational and error messages emitted by the library functions
+All of the log and diagnostic messages emitted by the library functions
 use the same interface.  The output from this interface can be controlled.
 This is useful when the library will be embedded in a larger system with
 a custom logging facility.  See the man page for more details.
 
-  sl_loginit() : initialize the verbosity level of the library functions,
-	the function and prefix used for log messages and the function
-	and prefix used for error messages.
+  sl_loginit() : initialize the verbosity level of the library
+	functions, also set the functions and prefixes used for log,
+	diagnostic and error messages.
 
   sl_log() : the central logging facility.  Behavior is controlled by the
 	settings specified with sl_loginit().
 
-The default destination for messages is standard output for both log and
-error messages.  The default prefix for log messages is nothing. The default
-prefix for error messages is "error: ".
+The default destination for log messages is standard output (stdout),
+while all diagnostic (including error) messages go to standard error
+(stderr).  Most of the internal messages emmited by the library are
+considered diagnostic and will, by default, go to standard error.
+
+The default prefix for log and diagnostic messages is nothing. The
+default prefix for diagnostic error messages is "error: ".
 
 There are reentrant versions of these functions that operation either on the
 logging parameters in a SLCD or directly on a logging parameter SLlog struct.

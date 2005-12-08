@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.168
+ * modified: 2005.097
  ***************************************************************************/
 
 #include <stdlib.h>
@@ -14,14 +14,14 @@
 #include <string.h>
 
 #include "libslink.h"
-#include "tswap.h"
 
 /* Function(s) only used in this source file */
 int update_stream (SLCD * slconn, SLpacket * slpack);
 
 
 /***************************************************************************
- * sl_collect():
+ * sl_collect:
+ *
  * Routine to manage a connection to a SeedLink server based on the values
  * given in the slconn struct and collect data.
  *
@@ -58,7 +58,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
     {
       if ( sl_checkslcd(slconn) )
 	{
-	  sl_log_r (slconn, 1, 0, "Problems with the connection description\n");
+	  sl_log_r (slconn, 2, 0, "problems with the connection description\n");
 	  return SLTERMINATE;
 	}
 
@@ -79,7 +79,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	  /* Check for network timeout */
 	  if (slconn->stat->sl_state == SL_DATA && slconn->netto && slconn->stat->netto_trig > 0)
 	    {
-	      sl_log_r (slconn, 0, 0, "network timeout (%ds), reconnecting in %ds\n",
+	      sl_log_r (slconn, 1, 0, "network timeout (%ds), reconnecting in %ds\n",
 			slconn->netto, slconn->netdly);
 	      slconn->link = sl_disconnect (slconn);
 	      slconn->stat->sl_state = SL_DOWN;
@@ -91,7 +91,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	  if (slconn->stat->sl_state == SL_DATA && !slconn->stat->expect_info &&
 	      slconn->keepalive && slconn->stat->keepalive_trig > 0)
 	    {
-	      sl_log_r (slconn, 0, 2, "sending keepalive request\n");
+	      sl_log_r (slconn, 1, 2, "sending keepalive request\n");
 	      
 	      if ( sl_send_info (slconn, "ID", 3) != -1 )
 		{
@@ -126,7 +126,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	  /* Connect to remote SeedLink */
 	  if (slconn->stat->sl_state == SL_DOWN && slconn->stat->netdly_trig == 0)
 	    {
-	      if (sl_connect (slconn) != -1)
+	      if (sl_connect (slconn, 1) != -1)
 		{
 		  slconn->stat->sl_state = SL_UP;
 		}
@@ -172,7 +172,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 		}
 	      else
 		{
-		  sl_log_r (slconn, 1, 0, "negotiation with remote SeedLink failed\n");
+		  sl_log_r (slconn, 2, 0, "negotiation with remote SeedLink failed\n");
 		  slconn->link = sl_disconnect (slconn);
 		  slconn->stat->netdly_trig = -1;
 		}
@@ -189,7 +189,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	}
 
       /* DEBUG
-      sl_log_r (slconn, 0, 0, "link: %d, sendptr: %d, recptr: %d, diff: %d\n",
+      sl_log_r (slconn, 1, 0, "link: %d, sendptr: %d, recptr: %d, diff: %d\n",
                 slconn->link, slconn->stat->sendptr, slconn->stat->recptr,
 		(slconn->stat->recptr - slconn->stat->sendptr) );
       */
@@ -208,7 +208,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	      
 	      if ( !slconn->stat->expect_info )
 		{
-		  sl_log_r (slconn, 1, 0, "unexpected INFO packet received, skipping\n");
+		  sl_log_r (slconn, 2, 0, "unexpected INFO packet received, skipping\n");
 		}
 	      else
 		{
@@ -224,11 +224,11 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 		      
 		      if ( !terminator )
 			{
-			  sl_log_r (slconn, 1, 0, "Non-terminated keep-alive packet received!?!\n");
+			  sl_log_r (slconn, 2, 0, "non-terminated keep-alive packet received!?!\n");
 			}
 		      else
 			{
-			  sl_log_r (slconn, 0, 2, "keepalive packet received\n");
+			  sl_log_r (slconn, 1, 2, "keepalive packet received\n");
 			}
 		    }
 		}
@@ -279,7 +279,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
       if ((slconn->stat->recptr - slconn->stat->sendptr) == 7 &&
 	  !strncmp (&slconn->stat->databuf[slconn->stat->sendptr], "ERROR\r\n", 7))
 	{
-	  sl_log_r (slconn, 0, 0, "SeedLink reported an error with the last command\n");
+	  sl_log_r (slconn, 2, 0, "SeedLink reported an error with the last command\n");
 	  slconn->link = sl_disconnect (slconn);
 	  return SLTERMINATE;
 	}
@@ -287,7 +287,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
       if ((slconn->stat->recptr - slconn->stat->sendptr) == 3 &&
 	  !strncmp (&slconn->stat->databuf[slconn->stat->sendptr], "END", 3))
 	{
-	  sl_log_r (slconn, 0, 1, "End of buffer or selected time window\n");
+	  sl_log_r (slconn, 1, 1, "End of buffer or selected time window\n");
 	  slconn->link = sl_disconnect (slconn);
 	  return SLTERMINATE;
 	}
@@ -313,7 +313,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	    {
 	      if (!FD_ISSET (slconn->link, &select_fd))
 		{
-		  sl_log_r (slconn, 1, 0, "select() reported data but socket not in set!\n");
+		  sl_log_r (slconn, 2, 0, "select() reported data but socket not in set!\n");
 		}
 	      else
 		{
@@ -323,7 +323,7 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	    }
 	  else if (select_ret < 0 && ! slconn->terminate)
 	    {
-	      sl_log_r (slconn, 1, 0, "select() error: %s\n", slp_strerror ());
+	      sl_log_r (slconn, 2, 0, "select() error: %s\n", slp_strerror ());
 	      slconn->link = sl_disconnect (slconn);
 	      slconn->stat->netdly_trig = -1;
 	    }
@@ -391,11 +391,12 @@ sl_collect (SLCD * slconn, SLpacket ** slpack)
 	    }
 	}
     }				/* End of primary loop */
-}   /* End of sl_collect() */
+}  /* End of sl_collect() */
 
 
 /***************************************************************************
- * sl_collect_nb():
+ * sl_collect_nb:
+ *
  * Routine to manage a connection to a SeedLink server based on the values
  * given in the slconn struct and collect data.
  *
@@ -429,7 +430,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
     {
       if ( sl_checkslcd(slconn) )
 	{
-	  sl_log_r (slconn, 1, 0, "Problems with the connection description\n");
+	  sl_log_r (slconn, 2, 0, "problems with the connection description\n");
 	  return SLTERMINATE;
 	}
 
@@ -449,7 +450,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
       if (slconn->stat->sl_state == SL_DATA &&
 	  slconn->netto && slconn->stat->netto_trig > 0)
 	{
-	  sl_log_r (slconn, 0, 0, "network timeout (%ds), reconnecting in %ds\n",
+	  sl_log_r (slconn, 1, 0, "network timeout (%ds), reconnecting in %ds\n",
 		    slconn->netto, slconn->netdly);
 	  slconn->link = sl_disconnect (slconn);
 	  slconn->stat->sl_state = SL_DOWN;
@@ -461,7 +462,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
       if (slconn->stat->sl_state == SL_DATA && !slconn->stat->expect_info &&
 	  slconn->keepalive && slconn->stat->keepalive_trig > 0)
 	{
-	  sl_log_r (slconn, 0, 2, "sending keepalive request\n");
+	  sl_log_r (slconn, 1, 2, "sending keepalive request\n");
 	  
 	  if ( sl_send_info (slconn, "ID", 3) != -1 )
 	    {
@@ -497,7 +498,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
       /* Connect to remote SeedLink */
       if (slconn->stat->sl_state == SL_DOWN && slconn->stat->netdly_trig == 0)
 	{
-	  if (sl_connect (slconn) != -1)
+	  if (sl_connect (slconn, 1) != -1)
 	    {
 	      slconn->stat->sl_state = SL_UP;
 	    }
@@ -543,7 +544,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
 	    }
 	  else
 	    {
-	      sl_log_r (slconn, 1, 0, "negotiation with remote SeedLink failed\n");
+	      sl_log_r (slconn, 2, 0, "negotiation with remote SeedLink failed\n");
 	      slconn->link = sl_disconnect (slconn);
 	      slconn->stat->netdly_trig = -1;
 	    }
@@ -560,7 +561,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
     }
 
   /* DEBUG
-     sl_log_r (slconn, 0, 0, "link: %d, sendptr: %d, recptr: %d, diff: %d\n",
+     sl_log_r (slconn, 1, 0, "link: %d, sendptr: %d, recptr: %d, diff: %d\n",
      slconn->link, slconn->stat->sendptr, slconn->stat->recptr,
      (slconn->stat->recptr - slconn->stat->sendptr) );
   */
@@ -579,7 +580,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
 	  
 	  if ( !slconn->stat->expect_info )
 	    {
-	      sl_log_r (slconn, 1, 0, "unexpected INFO packet received, skipping\n");
+	      sl_log_r (slconn, 2, 0, "unexpected INFO packet received, skipping\n");
 	    }
 	  else
 	    {
@@ -595,11 +596,11 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
 		  
 		  if ( !terminator )
 		    {
-		      sl_log_r (slconn, 1, 0, "Non-terminated keep-alive packet received!?!\n");
+		      sl_log_r (slconn, 2, 0, "non-terminated keep-alive packet received!?!\n");
 		    }
 		  else
 		    {
-		      sl_log_r (slconn, 0, 2, "keepalive packet received\n");
+		      sl_log_r (slconn, 1, 2, "keepalive packet received\n");
 		    }
 		}
 	    }
@@ -650,7 +651,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
   if ((slconn->stat->recptr - slconn->stat->sendptr) == 7 &&
       !strncmp (&slconn->stat->databuf[slconn->stat->sendptr], "ERROR\r\n", 7))
     {
-      sl_log_r (slconn, 0, 0, "SeedLink reported error with the last command\n");
+      sl_log_r (slconn, 2, 0, "SeedLink reported an error with the last command\n");
       slconn->link = sl_disconnect (slconn);
       return SLTERMINATE;
     }
@@ -658,7 +659,7 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
   if ((slconn->stat->recptr - slconn->stat->sendptr) == 3 &&
       !strncmp (&slconn->stat->databuf[slconn->stat->sendptr], "END", 3))
     {
-      sl_log_r (slconn, 0, 1, "End of buffer or selected time window\n");
+      sl_log_r (slconn, 1, 1, "End of buffer or selected time window\n");
       slconn->link = sl_disconnect (slconn);
       return SLTERMINATE;
     }
@@ -738,11 +739,12 @@ sl_collect_nb (SLCD * slconn, SLpacket ** slpack)
   /* Non-blocking and no data was returned */
   return SLNOPACKET;
   
-}   /* End of sl_collect_nb() */
+}  /* End of sl_collect_nb() */
 
 
 /***************************************************************************
- * update_stream():
+ * update_stream:
+ *
  * Update the appropriate stream chain entry given a Mini-SEED record.
  *
  * Returns 0 if successfully updated and -1 if not found or error.
@@ -759,7 +761,7 @@ update_stream (SLCD * slconn, SLpacket * slpack)
 
   if ( (seqnum = sl_sequence (slpack)) == -1 )
     {
-      sl_log_r (slconn, 1, 0, "update_stream(): could not determine sequence number\b");
+      sl_log_r (slconn, 2, 0, "update_stream(): could not determine sequence number\b");
       return -1;
     }
 
@@ -767,13 +769,16 @@ update_stream (SLCD * slconn, SLpacket * slpack)
   memcpy (&fsdh, &slpack->msrecord, sizeof(struct fsdh_s));
 
   /* Check to see if byte swapping is needed (bogus year makes good test) */
-  if ((fsdh.start_time.year < 1960) || (fsdh.start_time.year > 2050))
+  if ((fsdh.start_time.year < 1900) || (fsdh.start_time.year > 2050))
     swapflag = 1;
   
   /* Change byte order? */
-  tswap2 ((uint16_t *) &fsdh.start_time.year, swapflag);
-  tswap2 ((uint16_t *) &fsdh.start_time.day, swapflag);
-  
+  if ( swapflag )
+    {
+      gswap2 (&fsdh.start_time.year);
+      gswap2 (&fsdh.start_time.day);
+    }
+
   curstream = slconn->streams;
 
   /* Generate some "clean" net and sta strings */
@@ -841,14 +846,15 @@ update_stream (SLCD * slconn, SLpacket * slpack)
     }
 
   /* If we got here no match was found */
-  sl_log_r (slconn, 1, 0, "Unexpected data received: %.2s %.6s\n", net, sta);
+  sl_log_r (slconn, 2, 0, "unexpected data received: %.2s %.6s\n", net, sta);
 
   return -1;
-}                               /* End of update_stream() */
+}  /* End of update_stream() */
 
 
 /***************************************************************************
- * sl_newslcd():
+ * sl_newslcd:
+ *
  * Allocate, initialze and return a pointer to a new SLCD struct.
  *
  * Returns allocated SLCD struct on success, NULL on error.
@@ -862,7 +868,7 @@ sl_newslcd (void)
 
   if ( slconn == NULL )
     {
-      sl_log_r (NULL, 1, 0, "new_slconn(): error allocating memory\n");
+      sl_log_r (NULL, 2, 0, "new_slconn(): error allocating memory\n");
       return NULL;
     }
 
@@ -884,14 +890,14 @@ sl_newslcd (void)
   
   slconn->link           = -1;
   slconn->info           = NULL;
-  slconn->server_version = 0.0;
+  slconn->protocol_ver   = 0.0;
 
   /* Allocate the associated persistent state struct */
   slconn->stat = (SLstat *) malloc (sizeof(SLstat));
   
   if ( slconn->stat == NULL )
     {
-      sl_log_r (NULL, 1, 0, "new_slconn(): error allocating memory\n");
+      sl_log_r (NULL, 2, 0, "new_slconn(): error allocating memory\n");
       free (slconn);
       return NULL;
     }
@@ -914,11 +920,12 @@ sl_newslcd (void)
   slconn->log = NULL;
 
   return slconn;
-}   /* End of sl_newslconn() */
+}  /* End of sl_newslconn() */
 
 
 /***************************************************************************
- * sl_freeslcd():
+ * sl_freeslcd:
+ *
  * Free all memory associated with a SLCD struct including the 
  * associated stream chain and persistent connection state.
  *
@@ -959,20 +966,20 @@ sl_freeslcd (SLCD * slconn)
     free (slconn->log);
 
   free (slconn);  
-}   /* End of sl_freeslcd() */
+}  /* End of sl_freeslcd() */
 
 
 /***************************************************************************
- * sl_addstream():
+ * sl_addstream:
+ *
  * Add a new stream entry to the stream chain for the given SLCD
- * struct.  If the stream entry already exists do nothing and return 1.
- * Also sets the multistation flag to 1 (true).
+ * struct.  No checking is done for duplicate streams.
  *
  *  - selectors should be 0 if there are none to use
  *  - seqnum should be -1 to start at the next data
  *  - timestamp should be 0 if it should not be used
  *
- * Returns 0 if successfully added, 1 if it already exists or -1 on error.
+ * Returns 0 if successfully added or -1 on error.
  ***************************************************************************/
 int
 sl_addstream (SLCD * slconn, const char * net, const char * sta,
@@ -982,7 +989,6 @@ sl_addstream (SLCD * slconn, const char * net, const char * sta,
   SLstream *curstream;
   SLstream *newstream;
   SLstream *laststream = NULL;
-  int found = 0;
 
   curstream = slconn->streams;
 
@@ -991,7 +997,7 @@ sl_addstream (SLCD * slconn, const char * net, const char * sta,
       strcmp (curstream->net, UNINETWORK) == 0 &&
       strcmp (curstream->sta, UNISTATION) == 0)
     {
-      sl_log_r (slconn, 1, 0, "sl_addstream(): uni-station mode already configured!\n");
+      sl_log_r (slconn, 2, 0, "sl_addstream(): uni-station mode already configured!\n");
       return -1;
     }
 
@@ -999,25 +1005,14 @@ sl_addstream (SLCD * slconn, const char * net, const char * sta,
   while (curstream != NULL)
     {
       laststream = curstream;
-
-      if (strcmp (curstream->net, net) == 0 &&
-	  strcmp (curstream->sta, sta) == 0)
-	{
-	  found = 1;
-	}
-
       curstream = curstream->next;
     }
-
-  /* Return if the stream already exists in the chain */
-  if ( found )
-    return 1;
-
+  
   newstream = (SLstream *) malloc (sizeof(SLstream));
-
+  
   if ( newstream == NULL )
     {
-      sl_log_r (slconn, 1, 0, "sl_addstream(): error allocating memory\n");
+      sl_log_r (slconn, 2, 0, "sl_addstream(): error allocating memory\n");
       return -1;
     }
 
@@ -1050,11 +1045,12 @@ sl_addstream (SLCD * slconn, const char * net, const char * sta,
   slconn->multistation = 1;
 
   return 0;
-}   /* End of sl_addstream() */
+}  /* End of sl_addstream() */
 
 
 /***************************************************************************
- * sl_setuniparams():
+ * sl_setuniparams:
+ *
  * Set the parameters for a uni-station mode connection for the
  * given SLCD struct.  If the stream entry already exists, overwrite
  * the previous settings.
@@ -1080,14 +1076,14 @@ sl_setuniparams (SLCD * slconn, const char * selectors,
 
       if ( newstream == NULL )
 	{
-	  sl_log_r (slconn, 1, 0, "sl_setuniparams(): error allocating memory\n");
+	  sl_log_r (slconn, 2, 0, "sl_setuniparams(): error allocating memory\n");
 	  return -1;
 	}
     }
   else if ( strcmp (newstream->net, UNINETWORK) != 0 ||
 	    strcmp (newstream->sta, UNISTATION) != 0)
     {
-      sl_log_r (slconn, 1, 0, "sl_setuniparams(): multi-station mode already configured!\n");
+      sl_log_r (slconn, 2, 0, "sl_setuniparams(): multi-station mode already configured!\n");
       return -1;
     }
 
@@ -1113,11 +1109,12 @@ sl_setuniparams (SLCD * slconn, const char * selectors,
   slconn->multistation = 0;
 
   return 0;
-}   /* End of sl_setuniparams() */
+}  /* End of sl_setuniparams() */
 
 
 /***************************************************************************
- * sl_request_info():
+ * sl_request_info:
+ *
  * Add an INFO request to the SeedLink Connection Description.
  *
  * Returns 0 if successful and -1 if error.
@@ -1127,7 +1124,7 @@ sl_request_info (SLCD * slconn, const char * infostr)
 {
   if ( slconn->info != NULL )
     {
-      sl_log_r (slconn, 1, 0, "Cannot make '%.15s' INFO request, one is already pending\n",
+      sl_log_r (slconn, 2, 0, "Cannot make '%.15s' INFO request, one is already pending\n",
 		infostr);
       return -1;
     }
@@ -1136,11 +1133,12 @@ sl_request_info (SLCD * slconn, const char * infostr)
       slconn->info = infostr;
       return 0;
     }
-}                               /* End of sl_request_info() */
+}  /* End of sl_request_info() */
 
 
 /***************************************************************************
- * sl_sequence():
+ * sl_sequence:
+ *
  * Check for 'SL' signature and sequence number.
  *
  * Returns the packet sequence number of the SeedLink packet on success,
@@ -1166,11 +1164,12 @@ sl_sequence (const SLpacket * slpack)
     return -1;
 
   return seqnum;
-}				/* End of sl_sequence() */
+}  /* End of sl_sequence() */
 
 
 /***************************************************************************
- * sl_packettype():
+ * sl_packettype:
+ *
  * Check the type of packet.  First check for an INFO packet then check for
  * the first 'important' blockette found in the data record.  If none of
  * the known marker blockettes are found then it is a regular data record.
@@ -1246,21 +1245,21 @@ sl_packettype (const SLpacket * slpack)
     }
 
   return SLDATA;
-}				/* End of sl_packettype() */
+}  /* End of sl_packettype() */
 
 
 /***************************************************************************
- * sl_terminate():
- * Set the terminate flag in the SLCD.
+ * sl_terminate:
  *
+ * Set the terminate flag in the SLCD.
  ***************************************************************************/
 void
 sl_terminate (SLCD * slconn)
 {
-  sl_log_r (slconn, 0, 1, "Terminating connection\n");
+  sl_log_r (slconn, 1, 1, "Terminating connection\n");
 
   slconn->terminate = 1;
-}                               /* End of sl_terminate() */
+}  /* End of sl_terminate() */
 
 
 

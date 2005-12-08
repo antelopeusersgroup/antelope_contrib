@@ -25,7 +25,7 @@ mseed2orbpkt ( char *msrec, int mssize, char *calibdb, int remap,
 	       char *srcname, double *time, char **packet, int *nbytes,
 	       int *bufsize )
 {
-  int needed, reclen;
+  int reclen;
   int retcode = 0;
   int version = 2;
   double calib = 0.0;

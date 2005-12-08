@@ -17,7 +17,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.167
+ * modified: 2004.196
  ***************************************************************************/
 
 #include <fcntl.h>
@@ -30,7 +30,8 @@
 
 
 /***************************************************************************
- * slp_sockstartup():
+ * slp_sockstartup:
+ *
  * Startup the network socket layer.  At the moment this is only meaningful
  * for the WIN32 platform.
  *
@@ -52,11 +53,12 @@ slp_sockstartup (void)
 #endif
 
   return 0;
-}				/* End of slp_sockstartup() */
+}  /* End of slp_sockstartup() */
 
 
 /***************************************************************************
- * slp_sockconnect():
+ * slp_sockconnect:
+ *
  * Connect a network socket.
  *
  * Returns -1 on errors and 0 on success.
@@ -79,11 +81,12 @@ slp_sockconnect (int sock, struct sockaddr * inetaddr, int addrlen)
 #endif
 
   return 0;
-}				/* End of slp_sockconnect() */
+}  /* End of slp_sockconnect() */
 
 
 /***************************************************************************
- * slp_sockclose():
+ * slp_sockclose:
+ *
  * Close a network socket.
  *
  * Returns -1 on errors and 0 on success.
@@ -96,11 +99,12 @@ slp_sockclose (int sock)
 #else
   return close (sock);
 #endif
-}				/* End of slp_sockclose() */
+}  /* End of slp_sockclose() */
 
 
 /***************************************************************************
- * slp_socknoblock():
+ * slp_socknoblock:
+ *
  * Set a network socket to non-blocking.
  *
  * Returns -1 on errors and 0 on success.
@@ -124,11 +128,11 @@ slp_socknoblock (int sock)
 #endif
 
   return 0;
-}				/* End of slp_socknoblock() */
+}  /* End of slp_socknoblock() */
 
 
 /***************************************************************************
- * slp_noblockcheck():
+ * slp_noblockcheck:
  *
  * Return -1 on error and 0 on success (meaning no data for a non-blocking
  * socket).
@@ -148,11 +152,12 @@ slp_noblockcheck (void)
 
   /* no data available for NONBLOCKing IO */
   return 0;
-}				/* End of slp_noblockcheck() */
+}  /* End of slp_noblockcheck() */
 
 
 /***************************************************************************
- * slp_getaddrinfo():
+ * slp_getaddrinfo:
+ *
  * Resolve IP addresses and provide parameters needed for connect().
  * On Win32 this will use gethostbyname() for portability (only newer
  * Windows platforms support getaddrinfo).  On Linux (glibc2) and
@@ -251,11 +256,11 @@ slp_getaddrinfo (char * nodename, char * nodeport,
 #endif
 
   return 0;
-}				/* End of slp_getaddrinfo() */
+}  /* End of slp_getaddrinfo() */
 
 
 /***************************************************************************
- * slp_strerror():
+ * slp_strerror:
  *
  * Return a description of the last system error, in the case of Win32
  * this will be the last Windows Sockets error.
@@ -273,11 +278,12 @@ slp_strerror (void)
   return (const char *) strerror (errno);
 
 #endif
-}				/* End of slp_strerror() */
+}  /* End of slp_strerror() */
 
 
 /***************************************************************************
- * slp_dtime():
+ * slp_dtime:
+ *
  * Get the current time from the system as Unix/POSIX epoch time with double
  * precision.  On the WIN32 platform this function has millisecond
  * resulution, on *nix platforms this function has microsecond resolution.
@@ -311,7 +317,7 @@ slp_dtime (void)
   
   if ( (double)UnixTime != UnixTime )
     {
-      sl_log_r (NULL, 1, 0, "slp_dtime(): resulting value is too big for a double value\n");
+      sl_log_r (NULL, 2, 0, "slp_dtime(): resulting value is too big for a double value\n");
     }
   
   depoch = (double) UnixTime + ((double) SystemTime.wMilliseconds / 1000.0);
@@ -326,15 +332,14 @@ slp_dtime (void)
   return ((double) tv.tv_sec + ((double) tv.tv_usec / 1000000.0));
 
 #endif
-}				/* End of slp_dtime() */
+}  /* End of slp_dtime() */
 
 
 /***************************************************************************
- * slp_usleep():
+ * slp_usleep:
  * 
  * Sleep for a given number of microseconds.  Under Win32 use SleepEx()
  * and for all others use the POSIX.4 nanosleep().
- *
  ***************************************************************************/
 void
 slp_usleep (unsigned long int useconds)
@@ -353,4 +358,4 @@ slp_usleep (unsigned long int useconds)
   nanosleep (&treq, &trem);
 
 #endif
-}
+}  /* End of slp_usleep() */

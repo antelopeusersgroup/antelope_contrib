@@ -15,9 +15,11 @@
  * GNU-LGPL and further information can be found here:
  * http://www.gnu.org/
  *
- * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
+ * Written by Chad Trabant
+ *   ORFEUS/EC-Project MEREDIAN
+ *   IRIS Data Management Center
  *
- * modified: 2004.170
+ * modified: 2005.332
  ***************************************************************************/
 
 
@@ -30,8 +32,8 @@ extern "C" {
 
 #include "slplatform.h"
 
-#define LIBSLINK_VERSION "1.2a"
-#define LIBSLINK_RELEASE "2004.170"
+#define LIBSLINK_VERSION "1.6rc1"
+#define LIBSLINK_RELEASE "2005.342"
 
 #define SLRECSIZE           512      /* Mini-SEED record size */
 #define MAX_HEADER_SIZE     128      /* Max record header size */
@@ -74,7 +76,7 @@ struct blkt_head_s
 {
   uint16_t  blkt_type;
   uint16_t  next_blkt;
-};
+} SLP_PACKED;
 
 /* SEED binary time (10 bytes) */
 struct btime_s
@@ -86,7 +88,7 @@ struct btime_s
   uint8_t   sec;
   uint8_t   unused;
   uint16_t  fract;
-}; 
+} SLP_PACKED;
 
 /* 100 Blockette (12 bytes) */
 struct blkt_100_s
@@ -96,7 +98,7 @@ struct blkt_100_s
   float     sample_rate;
   int8_t    flags;
   uint8_t   reserved[3];
-};
+} SLP_PACKED;
 
 /* 1000 Blockette (8 bytes) */
 struct blkt_1000_s
@@ -107,7 +109,7 @@ struct blkt_1000_s
   uint8_t   word_swap;
   uint8_t   rec_len;
   uint8_t   reserved;
-};
+} SLP_PACKED;
 
 /* 1001 Blockette (8 bytes) */
 struct blkt_1001_s
@@ -118,7 +120,7 @@ struct blkt_1001_s
   int8_t    usec;
   uint8_t   reserved;
   int8_t    frame_cnt;
-};
+} SLP_PACKED;
 
 /* Fixed section data of header (48 bytes) */
 struct fsdh_s
@@ -141,14 +143,14 @@ struct fsdh_s
   int32_t        time_correct;
   uint16_t       begin_data;
   uint16_t       begin_blockette;
-};
+} SLP_PACKED;
 
 /* SeedLink packet, sequence number followed by miniSEED record */
 typedef struct slpacket_s
 {
   char    slhead[SLHEADSIZE];   /* SeedLink header */
   char    msrecord[SLRECSIZE];  /* Mini-SEED record */
-} SLpacket;
+} SLP_PACKED SLpacket;
 
 /* Stream information */
 typedef struct slstream_s
@@ -196,7 +198,7 @@ typedef struct SLlog_s
 {
   void (*log_print)();
   const char * logprefix;
-  void (*err_print)();
+  void (*diag_print)();
   const char * errprefix;
   int  verbosity;
 } SLlog;
@@ -219,7 +221,7 @@ typedef struct slcd_s
   int         netto;            /* Network timeout (secs) */
   int         netdly;           /* Network reconnect delay (secs) */
 
-  float       server_version;   /* Version of the remote SeedLink server */
+  float       protocol_ver;     /* Version of the SeedLink protocol in use */
   const char *info;             /* INFO level to request */
   int         link;		/* The network socket descriptor */
   SLstat     *stat;             /* Persistent state information */
@@ -251,9 +253,10 @@ extern int   sl_parse_streamlist (SLCD *slconn, const char *streamlist,
 /* network.c */
 extern int    sl_configlink (SLCD * slconn);
 extern int    sl_send_info (SLCD * slconn, const char * info_level,
-			    int verb_level);
-extern int    sl_connect (SLCD * slconn);
+			    int verbose);
+extern int    sl_connect (SLCD * slconn, int sayhello);
 extern int    sl_disconnect (SLCD * slconn);
+extern int    sl_ping (SLCD * slconn, char *serverid, char *site);
 extern int    sl_checksock (int sock, int tosec, int tousec);
 extern int    sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
 			   const char *ident, void *resp, int resplen);
@@ -274,13 +277,13 @@ extern int    sl_log_r (const SLCD * slconn, int level, int verb, ...);
 extern int    sl_log_rl (SLlog * log, int level, int verb, ...);
 extern void   sl_loginit (int verbosity,
 			  void (*log_print)(const char*), const char * logprefix,
-			  void (*err_print)(const char*), const char * errprefix);
+			  void (*diag_print)(const char*), const char * errprefix);
 extern void   sl_loginit_r (SLCD * slconn, int verbosity,
 			    void (*log_print)(const char*), const char * logprefix,
-			    void (*err_print)(const char*), const char * errprefix);
+			    void (*diag_print)(const char*), const char * errprefix);
 extern SLlog *sl_loginit_rl (SLlog * log, int verbosity,
 			     void (*log_print)(const char*), const char * logprefix,
-			     void (*err_print)(const char*), const char * errprefix);
+			     void (*diag_print)(const char*), const char * errprefix);
 
 /* statefile.c */
 extern int   sl_recoverstate (SLCD *slconn, const char *statefile);
@@ -315,6 +318,7 @@ extern MSrecord * msr_parse (SLlog * log, const char * msrecord, MSrecord ** msr
 			     int8_t blktflag, int8_t unpackflag);
 extern int        msr_print (SLlog * log, MSrecord * msr, int details);
 extern int        msr_dsamprate (MSrecord * msr, double * samprate);
+extern double     msr_dnomsamprate (MSrecord * msr);
 extern double     msr_depochstime (MSrecord * msr);
 
 
@@ -328,6 +332,25 @@ typedef struct strlist_s {
 
 extern int  strparse(const char *string, const char *delim, strlist **list);
 extern int  strncpclean(char *dest, const char *source, int length);
+
+/* gswap.c */
+
+/* Generic byte swapping routines */
+extern void   gswap2 ( void *data2 );
+extern void   gswap3 ( void *data3 );
+extern void   gswap4 ( void *data4 );
+extern void   gswap8 ( void *data8 );
+
+/* Generic byte swapping routines for memory aligned quantities */
+extern void   gswap2a ( void *data2 );
+extern void   gswap4a ( void *data4 );
+extern void   gswap8a ( void *data8 );
+
+/* Byte swap macro for the BTime struct */
+#define SWAPBTIME(x) \
+  gswap2 (x.year);   \
+  gswap2 (x.day);    \
+  gswap2 (x.fract);
 
 
 #ifdef __cplusplus

@@ -1,9 +1,9 @@
-CC = gcc
-CFLAGS = -O2 -Wall -I..
+# Standard compiler parameters
+CFLAGS = -O -I..
 
-# For using another compiler (e.g. the Sun compiler)
-#CC = cc
-#CFLAGS = -O -I..
+# GCC specific parameters
+GCC = gcc
+GCCFLAGS = -O2 -Wall -I..
  
 LDFLAGS = -L..
 LDLIBS = -lslink
@@ -23,6 +23,17 @@ $(BIN): $(OBJS)
 static: $(OBJS)
 	$(CC) -static $(CFLAGS) -o $(BIN) $(OBJS) $(LDFLAGS) $(LDLIBS)
 
+cc:
+	@$(MAKE) "CC=$(CC)" "CFLAGS=$(CFLAGS)"
+
+gcc:
+	@$(MAKE) "CC=$(GCC)" "CFLAGS=$(GCCFLAGS)"
+
+debug:
+	$(MAKE) "CC=$(CC)" "CFLAGS=-g $(CFLAGS)"
+
+gccdebug:
+	$(MAKE) "CC=$(GCC)" "CFLAGS=-g $(GCCFLAGS)"
+
 clean:
 	rm -f $(OBJS) $(BIN)
-

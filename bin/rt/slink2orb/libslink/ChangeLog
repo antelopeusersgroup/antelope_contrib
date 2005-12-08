@@ -1,3 +1,72 @@
+2005.342: version 1.6rc1
+	- Test for NULL pointers int logging.c routines and handle
+	them as best as possible.
+	- Add 'b' to the mode of all fopen() calls; WIN32 then does
+	not try to translate line endings.
+	- Add createlinks.sh in doc directory to re-create symbolic
+	links after CVS checkout.
+
+2005.103: version 1.5
+	- Fixup some in-line comments.
+	- Add an SLP_PACKED defined to __attribute__ ((packed))
+	to slplatform.h when using the GCC compiler.
+	- Use the SLP_PACKED attribute where needed for portability
+	to the XScale (ARM) architecture.  Thanks Andres.
+
+2005.097: version 1.5pre2
+	- Modify sl_addstream() to NOT check for duplicate streams.
+	- Change Makefile and example/Makefile to include specific
+	targets for 'gcc'.  By default $CC is used with the '-O' flag.
+
+2005.089: version 1.5pre1
+	- Add msr_dnomsamprate() to calculate the nominal sampling
+	rate for an MSrecord, use it in msr_dsamprate().
+	- Include calculated sample rate in Hz in msr_print() output.
+	- Support for microsecond precision in record start time,
+	including msr_print() and msr_depochstime().
+	- 'host:port' parsing extended to include possibility of a single
+	colon translating to 'localhost:18000'.  The parsing is now:
+	  ':'       => 'localhost:18000'
+	  '<host>'  => '<host>:18000'
+	  ':<port>' => 'localhost:<port>'
+	- Better checking for termination during connection opening and 
+	negotiation, termination should occur without timeout experation.
+	- Use gswap routines instead of tswap routines.
+
+2004.222: version 1.4
+	- sl_connect will set the SLCD->terminate flag if a permanent
+	error (invalid port specified) was detected.  This way the 
+	sl_collect routines will not re-connect endlessly.
+	- String termination bug fixed in the new sladdr parsing.
+	- Remove sleep call in sl_collect().
+	- Update the slclient example program.
+
+2004.219:
+	- Add sl_ping which connects to server, issues HELLO, receives
+	response lines and disconnects.
+	- sl_connect now does it's own parsing of the sladdr string and 
+	fills in default hostname *and* port (localhost and 18000).
+	- sl_connect now takes one more argument (int sayhello) which 
+	controls whether sl_sayhello is called after making the connection.
+	
+2004.196: version 1.3
+	- Add a new class of log level for a total of three levels:
+	0  : Normal log messages, defaulting to stdout with logprefix
+	1  : Diagnostic messages, defaulting to stderr with logprefix
+	2+ : Error messages, defaulting to stderr with errprefix
+	- Go through library and change most log output to the diagnostic
+	level, meaning most output will go to stderr with the exception 
+	of the msr_print() output which is logged at the 0 level.
+ 
+2004.174:
+	- sl_log_main: use fprintf instead of printf and change default
+	desitination for error messages to stderr.  Log messages still go
+	to stdout.
+	- Change SLCD->server_version to SLCD->protocol_ver to better
+	reflect what that value is or at least supposed to be.
+	- Update Windows Makefile's for the previous source file renaming
+	changes.
+
 2004.170: version 1.2a
 	- sl_recvresp: cast buffer to type (char *) so pointer arithmetic
 	will work under compilers that do not assume void* is char size
@@ -30,7 +99,7 @@
 	heartbeats were received while receiving a high rate of data
 	packets.  This behaviour was never reported with this codebase;
         nevertheless it might be possible to exercise this bug with
-	particularly written client code.
+	particularly written client code.  Thanks Anthony Lomax.
 	- Changed the sendpacket and terminator variables in
 	sl_collect[_nb] to type int8_t as they're only boolean values.
 	- Rename sendpacket to retpacket in sl_collect[_nb] for clarity.

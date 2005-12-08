@@ -9,7 +9,7 @@
  * Originally based on the SeedLink interface of the modified Comserv in
  * SeisComP written by Andres Heinloo
  *
- * Version: 2004.170
+ * Version: 2005.103
  ***************************************************************************/
 
 #include <stdio.h>
@@ -25,7 +25,8 @@ int sl_negotiate_multi (SLCD * slconn);
 
 
 /***************************************************************************
- * sl_configlink():
+ * sl_configlink:
+ *
  * Configure/negotiate data stream(s) with the remote SeedLink
  * server.  Negotiation will be either uni or multi-station
  * depending on the value of 'multistation' in the SLCD
@@ -46,9 +47,9 @@ sl_configlink (SLCD * slconn)
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0,
+	  sl_log_r (slconn, 2, 0,
 		    "[%s] detected  SeedLink version (%.3f) does not support multi-station protocol\n",
-		    slconn->sladdr, slconn->server_version);
+		    slconn->sladdr, slconn->protocol_ver);
 	  ret = -1;
 	}
     }
@@ -56,92 +57,19 @@ sl_configlink (SLCD * slconn)
     ret = sl_negotiate_uni (slconn);
 
   return ret;
-}
+}  /* End of sl_configlink() */
 
 
 /***************************************************************************
- * sl_sayhello():
- * Send the HELLO command and attempt to parse the server version
- * number from the returned string.  The server version is set to 0.0
- * if it can not be parsed from the returned string, which indicates
- * minimum protocol functionality.
+ * sl_negotiate_uni:
  *
- * Returns -1 on errors, 0 on success.
- ***************************************************************************/
-int
-sl_sayhello (SLCD * slconn)
-{
-  int ret = 0;
-  int servcnt = 0;
-  int sitecnt = 0;
-  char sendstr[100];		/* A buffer for command strings */
-  char servstr[100];		/* The remote server ident */
-  char sitestr[100];		/* The site/data center ident */
-  char servid[100];		/* Server ID string, i.e. 'SeedLink' */
-
-  /* Send HELLO */
-  sprintf (sendstr, "HELLO\r");
-  sl_log_r (slconn, 0, 2, "[%s] sending: HELLO\n", slconn->sladdr);
-  sl_senddata (slconn, (void *) sendstr, strlen (sendstr), slconn->sladdr,
-	       NULL, 0);
-  
-  /* Recv the two lines of response */
-  if ( sl_recvresp (slconn, (void *) servstr, (size_t) sizeof (servstr), 
-		    sendstr, slconn->sladdr) < 0 )
-    {
-      return -1;
-    }
-  
-  if ( sl_recvresp (slconn, (void *) sitestr, (size_t) sizeof (sitestr),
-		    sendstr, slconn->sladdr) < 0 )
-    {
-      return -1;
-    }
-  
-  servcnt = strcspn (servstr, "\r");
-  if ( servcnt > 90 )
-    {
-      servcnt = 90;
-    }
-  servstr[servcnt] = '\0';
-
-  sitecnt = strcspn (sitestr, "\r");
-  if ( sitecnt > 90 )
-    {
-      sitecnt = 90;
-    }
-  sitestr[sitecnt] = '\0';
-  
-  sl_log_r (slconn, 0, 1, "[%s] connected to: %s\n", slconn->sladdr, servstr);
-  sl_log_r (slconn, 0, 1, "[%s] organization: %s\n", slconn->sladdr, sitestr);
-  
-  /* Parse the server ID and version from the returned string.
-   * The expected format is:
-   * "seedlink v#.# <optional text>"
-   * where 'seedlink' is case insensitive and '#.#' is the server/protocol version.
-   */
-  servstr[servcnt] = ' '; servstr[servcnt+1] = '\0';
-  ret = sscanf (servstr, "%s v%f ", &servid[0], &slconn->server_version);
-  
-  if ( ret != 2 || strncasecmp (servid, "SEEDLINK", 8) )
-    {
-      sl_log_r (slconn, 0, 1,
-                "[%s] unknown server version, assuming minimum functionality\n",
-                slconn->sladdr, servstr);
-      slconn->server_version = 0.0;
-    }
-  
-  return 0;
-}				/* End of sl_sayhello() */
-
-
-/***************************************************************************
- * sl_negotiate_uni():
  * Negotiate a SeedLink connection in uni-station mode and issue
  * the DATA command.  This is compatible with SeedLink Protocol
  * version 2 or greater.
+ *
  * If 'selectors' != 0 then the string is parsed on space and each
  * selector is sent.
+ *
  * If 'seqnum' != -1 and the SLCD 'resume' flag is true then data is
  * requested starting at seqnum.
  *
@@ -177,7 +105,7 @@ sl_negotiate_uni (SLCD * slconn)
 
 	  else if (sellen > SELSIZE)
 	    {
-	      sl_log_r (slconn, 0, 0, "[%s] invalid selector: %.*s\n", slconn->sladdr,
+	      sl_log_r (slconn, 2, 0, "[%s] invalid selector: %.*s\n", slconn->sladdr,
 			sellen, selptr);
 	      selptr += sellen;
 	    }
@@ -186,7 +114,7 @@ sl_negotiate_uni (SLCD * slconn)
 
 	      /* Build SELECT command, send it and receive response */
 	      sprintf (sendstr, "SELECT %.*s\r", sellen, selptr);
-	      sl_log_r (slconn, 0, 2, "[%s] sending: SELECT %.*s\n", slconn->sladdr,
+	      sl_log_r (slconn, 1, 2, "[%s] sending: SELECT %.*s\n", slconn->sladdr,
 			sellen, selptr);
 	      bytesread = sl_senddata (slconn, (void *) sendstr,
 				       strlen (sendstr), slconn->sladdr,
@@ -199,19 +127,19 @@ sl_negotiate_uni (SLCD * slconn)
 	      /* Check response to SELECT */
 	      if (!strncmp (readbuf, "OK\r\n", bytesread) && bytesread == 4)
 		{
-		  sl_log_r (slconn, 0, 2, "[%s] selector %.*s is OK\n", slconn->sladdr,
+		  sl_log_r (slconn, 1, 2, "[%s] selector %.*s is OK\n", slconn->sladdr,
 			    sellen, selptr);
 		  acceptsel++;
 		}
 	      else if (!strncmp (readbuf, "ERROR\r\n", bytesread) &&
 		       bytesread == 7)
 		{
-		  sl_log_r (slconn, 1, 0, "[%s] selector %.*s not accepted\n",
+		  sl_log_r (slconn, 2, 0, "[%s] selector %.*s not accepted\n",
 			    slconn->sladdr, sellen, selptr);
 		}
 	      else
 		{
-		  sl_log_r (slconn, 1, 0,
+		  sl_log_r (slconn, 2, 0,
 			    "[%s] invalid response to SELECT command: %.*s\n",
 			    slconn->sladdr, bytesread, readbuf);
 		  return -1;
@@ -222,13 +150,13 @@ sl_negotiate_uni (SLCD * slconn)
       /* Fail if none of the given selectors were accepted */
       if (!acceptsel)
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] No data stream selector(s) accepted",
+	  sl_log_r (slconn, 2, 0, "[%s] no data stream selector(s) accepted",
 		    slconn->sladdr);
 	  return -1;
 	}
       else
 	{
-	  sl_log_r (slconn, 0, 2, "[%s] %d selector(s) accepted\n",
+	  sl_log_r (slconn, 1, 2, "[%s] %d selector(s) accepted\n",
 		    slconn->sladdr, acceptsel);
 	}
     }				/* End of selector processing */
@@ -249,14 +177,14 @@ sl_negotiate_uni (SLCD * slconn)
 	      sprintf (sendstr, "TIME %.25s %.25s\r", slconn->begin_time,
 		       slconn->end_time);
 	    }
-	  sl_log_r (slconn, 0, 1, "[%s] requesting specified time window\n",
+	  sl_log_r (slconn, 1, 1, "[%s] requesting specified time window\n",
 		    slconn->sladdr);
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0,
+	  sl_log_r (slconn, 2, 0,
 		    "[%s] detected SeedLink version (%.3f) does not support TIME windows\n",
-		    slconn->sladdr, slconn->server_version);
+		    slconn->sladdr, slconn->protocol_ver);
 	}
     }
   else if (curstream->seqnum != -1 && slconn->resume )
@@ -281,7 +209,7 @@ sl_negotiate_uni (SLCD * slconn)
 	  sprintf (sendstr, "%s %06X %.25s\r", cmd,
 		   (curstream->seqnum + 1) & 0xffffff, curstream->timestamp);
 
-	  sl_log_r (slconn, 0, 1, "[%s] resuming data from %06X (Dec %d) at %.25s\n",
+	  sl_log_r (slconn, 1, 1, "[%s] resuming data from %06X (Dec %d) at %.25s\n",
 		    slconn->sladdr, (curstream->seqnum + 1) & 0xffffff,
 		    (curstream->seqnum + 1), curstream->timestamp);
 	}
@@ -290,7 +218,7 @@ sl_negotiate_uni (SLCD * slconn)
 	  /* Increment sequence number by 1 */
 	  sprintf (sendstr, "%s %06X\r", cmd, (curstream->seqnum + 1) & 0xffffff);
 
-	  sl_log_r (slconn, 0, 1, "[%s] resuming data from %06X (Dec %d)\n",
+	  sl_log_r (slconn, 1, 1, "[%s] resuming data from %06X (Dec %d)\n",
 		    slconn->sladdr, (curstream->seqnum + 1) & 0xffffff,
 		    (curstream->seqnum + 1));
 	}
@@ -306,30 +234,32 @@ sl_negotiate_uni (SLCD * slconn)
 	  sprintf (sendstr, "DATA\r");
 	}
 
-      sl_log_r (slconn, 0, 1, "[%s] requesting next available data\n", slconn->sladdr);
+      sl_log_r (slconn, 1, 1, "[%s] requesting next available data\n", slconn->sladdr);
     }
 
   if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		   slconn->sladdr, (void *) NULL, 0) < 0)
     {
-      sl_log_r (slconn, 1, 0, "[%s] error sending DATA/FETCH/TIME request\n", slconn->sladdr);
+      sl_log_r (slconn, 2, 0, "[%s] error sending DATA/FETCH/TIME request\n", slconn->sladdr);
       return -1;
     }
 
   return slconn->link;
-}				/* End of sl_configlink() */
+}  /* End of sl_negotiate_uni() */
 
 
 /***************************************************************************
- * sl_negotiate_multi():
+ * sl_negotiate_multi:
+ *
  * Negotiate a SeedLink connection using multi-station mode and 
  * issue the END action command.  This is compatible with SeedLink
  * Protocol version 3, multi-station mode.
+ *
  * If 'curstream->selectors' != 0 then the string is parsed on space
  * and each selector is sent.
- * If 'curstream->seqnum' != -1 and the SLCD 'resume' flag is true then data
- * is requested starting at
- * seqnum.
+ *
+ * If 'curstream->seqnum' != -1 and the SLCD 'resume' flag is true
+ * then data is requested starting at seqnum.
  *
  * Returns -1 on errors, otherwise returns the link descriptor.
  ***************************************************************************/
@@ -359,7 +289,7 @@ sl_negotiate_multi (SLCD * slconn)
 
       /* Send the STATION command */
       sprintf (sendstr, "STATION %s %s\r", curstream->sta, curstream->net);
-      sl_log_r (slconn, 0, 2, "[%s] sending: STATION %s %s\n",
+      sl_log_r (slconn, 1, 2, "[%s] sending: STATION %s %s\n",
 		slring, curstream->sta, curstream->net);
       bytesread = sl_senddata (slconn, (void *) sendstr,
 			       strlen (sendstr), slring, readbuf,
@@ -372,19 +302,19 @@ sl_negotiate_multi (SLCD * slconn)
       /* Check the response */
       if (!strncmp (readbuf, "OK\r\n", bytesread) && bytesread == 4)
 	{
-	  sl_log_r (slconn, 0, 2, "[%s] station is OK (selected)\n", slring);
+	  sl_log_r (slconn, 1, 2, "[%s] station is OK (selected)\n", slring);
 	  acceptsta++;
 	}
       else if (!strncmp (readbuf, "ERROR\r\n", bytesread) && bytesread == 7)
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] station not accepted, skipping\n", slring);
+	  sl_log_r (slconn, 2, 0, "[%s] station not accepted, skipping\n", slring);
 	  /* Increment the loop control and skip to the next stream */
 	  curstream = curstream->next;
 	  continue;
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] invalid response to STATION command: %.*s\n",
+	  sl_log_r (slconn, 2, 0, "[%s] invalid response to STATION command: %.*s\n",
 		    slring, bytesread, readbuf);
 	  return -1;
 	}
@@ -406,7 +336,7 @@ sl_negotiate_multi (SLCD * slconn)
 
 	      else if (sellen > SELSIZE)
 		{
-		  sl_log_r (slconn, 0, 0, "[%s] invalid selector: %.*s\n",
+		  sl_log_r (slconn, 2, 0, "[%s] invalid selector: %.*s\n",
 			    slring, sellen, selptr);
 		  selptr += sellen;
 		}
@@ -415,7 +345,7 @@ sl_negotiate_multi (SLCD * slconn)
 
 		  /* Build SELECT command, send it and receive response */
 		  sprintf (sendstr, "SELECT %.*s\r", sellen, selptr);
-		  sl_log_r (slconn, 0, 2, "[%s] sending: SELECT %.*s\n", slring, sellen,
+		  sl_log_r (slconn, 1, 2, "[%s] sending: SELECT %.*s\n", slring, sellen,
 			    selptr);
 		  bytesread =
 		    sl_senddata (slconn, (void *) sendstr,
@@ -430,19 +360,19 @@ sl_negotiate_multi (SLCD * slconn)
 		  if (!strncmp (readbuf, "OK\r\n", bytesread)
 		      && bytesread == 4)
 		    {
-		      sl_log_r (slconn, 0, 2, "[%s] selector %.*s is OK\n", slring,
+		      sl_log_r (slconn, 1, 2, "[%s] selector %.*s is OK\n", slring,
 				sellen, selptr);
 		      acceptsel++;
 		    }
 		  else if (!strncmp (readbuf, "ERROR\r\n", bytesread) &&
 			   bytesread == 7)
 		    {
-		      sl_log_r (slconn, 1, 0, "[%s] selector %.*s not accepted\n",
+		      sl_log_r (slconn, 2, 0, "[%s] selector %.*s not accepted\n",
 				slring, sellen, selptr);
 		    }
 		  else
 		    {
-		      sl_log_r (slconn, 1, 0,
+		      sl_log_r (slconn, 2, 0,
 				"[%s] invalid response to SELECT command: %.*s\n",
 				slring, bytesread, readbuf);
 		      return -1;
@@ -453,13 +383,13 @@ sl_negotiate_multi (SLCD * slconn)
 	  /* Fail if none of the given selectors were accepted */
 	  if (!acceptsel)
 	    {
-	      sl_log_r (slconn, 1, 0, "[%s] No data stream selector(s) accepted",
+	      sl_log_r (slconn, 2, 0, "[%s] no data stream selector(s) accepted",
 			slring);
 	      return -1;
 	    }
 	  else
 	    {
-	      sl_log_r (slconn, 0, 2, "[%s] %d selector(s) accepted\n", slring,
+	      sl_log_r (slconn, 1, 2, "[%s] %d selector(s) accepted\n", slring,
 			acceptsel);
 	    }
 
@@ -483,14 +413,14 @@ sl_negotiate_multi (SLCD * slconn)
 		  sprintf (sendstr, "TIME %.25s %.25s\r", slconn->begin_time,
 			   slconn->end_time);
 		}
-	      sl_log_r (slconn, 0, 1, "[%s] requesting specified time window\n",
+	      sl_log_r (slconn, 1, 1, "[%s] requesting specified time window\n",
 			slring);
 	    }
 	  else
 	    {
-	      sl_log_r (slconn, 1, 0,
+	      sl_log_r (slconn, 2, 0,
 			"[%s] detected SeedLink version (%.3f) does not support TIME windows\n",
-			slring, slconn->server_version);
+			slring, slconn->protocol_ver);
 	    }
 	}
       else if (curstream->seqnum != -1 && slconn->resume )
@@ -515,7 +445,7 @@ sl_negotiate_multi (SLCD * slconn)
 	      sprintf (sendstr, "%s %06X %.25s\r", cmd,
 		       (curstream->seqnum + 1) & 0xffffff, curstream->timestamp);
 
-	      sl_log_r (slconn, 0, 1, "[%s] resuming data from %06X (Dec %d) at %.25s\n",
+	      sl_log_r (slconn, 1, 1, "[%s] resuming data from %06X (Dec %d) at %.25s\n",
 			slconn->sladdr, (curstream->seqnum + 1) & 0xffffff,
 			(curstream->seqnum + 1), curstream->timestamp);
 	    }	  
@@ -524,7 +454,7 @@ sl_negotiate_multi (SLCD * slconn)
 	      sprintf (sendstr, "%s %06X\r", cmd,
 		       (curstream->seqnum + 1) & 0xffffff);
 
-	      sl_log_r (slconn, 0, 1, "[%s] resuming data from %06X (Dec %d)\n", slring,
+	      sl_log_r (slconn, 1, 1, "[%s] resuming data from %06X (Dec %d)\n", slring,
 			(curstream->seqnum + 1) & 0xffffff,
 			(curstream->seqnum + 1));
 	    }
@@ -540,7 +470,7 @@ sl_negotiate_multi (SLCD * slconn)
 	      sprintf (sendstr, "DATA\r");
 	    }
 	  
-	  sl_log_r (slconn, 0, 1, "[%s] requesting next available data\n", slring);
+	  sl_log_r (slconn, 1, 1, "[%s] requesting next available data\n", slring);
 	}
 
       /* Send the TIME/DATA/FETCH command and receive response */
@@ -549,22 +479,22 @@ sl_negotiate_multi (SLCD * slconn)
 			       sizeof (readbuf));
       if (bytesread < 0)
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] error with DATA/FETCH/TIME request\n", slring);
+	  sl_log_r (slconn, 2, 0, "[%s] error with DATA/FETCH/TIME request\n", slring);
 	  return -1;
 	}
 
       /* Check response to DATA/FETCH/TIME request */
       if (!strncmp (readbuf, "OK\r\n", bytesread) && bytesread == 4)
 	{
-	  sl_log_r (slconn, 0, 2, "[%s] DATA/FETCH/TIME command is OK\n", slring);
+	  sl_log_r (slconn, 1, 2, "[%s] DATA/FETCH/TIME command is OK\n", slring);
 	}
       else if (!strncmp (readbuf, "ERROR\r\n", bytesread) && bytesread == 7)
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] DATA/FETCH/TIME command is not accepted\n", slring);
+	  sl_log_r (slconn, 2, 0, "[%s] DATA/FETCH/TIME command is not accepted\n", slring);
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] invalid response to DATA/FETCH/TIME command: %.*s\n",
+	  sl_log_r (slconn, 2, 0, "[%s] invalid response to DATA/FETCH/TIME command: %.*s\n",
 		    slring, bytesread, readbuf);
 	  return -1;
 	}
@@ -577,31 +507,32 @@ sl_negotiate_multi (SLCD * slconn)
   /* Fail if no stations were accepted */
   if (!acceptsta)
     {
-      sl_log_r (slconn, 1, 0, "[%s] No station(s) accepted\n", slconn->sladdr);
+      sl_log_r (slconn, 2, 0, "[%s] no station(s) accepted\n", slconn->sladdr);
       return -1;
     }
   else
     {
-      sl_log_r (slconn, 0, 1, "[%s] %d station(s) accepted\n",
+      sl_log_r (slconn, 1, 1, "[%s] %d station(s) accepted\n",
 	      slconn->sladdr, acceptsta);
     }
 
   /* Issue END action command */
   sprintf (sendstr, "END\r");
-  sl_log_r (slconn, 0, 2, "[%s] sending: END\n", slconn->sladdr);
+  sl_log_r (slconn, 1, 2, "[%s] sending: END\n", slconn->sladdr);
   if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		   slconn->sladdr, (void *) NULL, 0) < 0)
     {
-      sl_log_r (slconn, 1, 0, "[%s] error sending END command\n", slconn->sladdr);
+      sl_log_r (slconn, 2, 0, "[%s] error sending END command\n", slconn->sladdr);
       return -1;
     }
 
   return slconn->link;
-}				/* End of sl_configlink_multi() */
+}  /* End of sl_negotiate_multi() */
 
 
 /***************************************************************************
- * sl_send_info():
+ * sl_send_info:
+ *
  * Send a request for the specified INFO level.  The verbosity level
  * can be specified, allowing control of when the request should be
  * logged.
@@ -609,7 +540,7 @@ sl_negotiate_multi (SLCD * slconn)
  * Returns -1 on errors, otherwise the socket descriptor.
  ***************************************************************************/
 int
-sl_send_info (SLCD * slconn, const char * info_level, int verb_level)
+sl_send_info (SLCD * slconn, const char * info_level, int verbose)
 {
   char sendstr[40];		/* A buffer for command strings */
 
@@ -617,85 +548,116 @@ sl_send_info (SLCD * slconn, const char * info_level, int verb_level)
     {
       sprintf (sendstr, "INFO %.15s\r", info_level);
 
-      sl_log_r (slconn, 0, verb_level, "[%s] requesting INFO level %s\n",
+      sl_log_r (slconn, 1, verbose, "[%s] requesting INFO level %s\n",
 		slconn->sladdr, info_level);
 
       if (sl_senddata (slconn, (void *) sendstr, strlen (sendstr),
 		       slconn->sladdr, (void *) NULL, 0) < 0)
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] error sending INFO request\n", slconn->sladdr);
+	  sl_log_r (slconn, 2, 0, "[%s] error sending INFO request\n", slconn->sladdr);
 	  return -1;
 	}
     }
   else
     {
-      sl_log_r (slconn, 1, 0,
+      sl_log_r (slconn, 2, 0,
 		"[%s] detected SeedLink version (%.3f) does not support INFO requests\n",
-		slconn->sladdr, slconn->server_version);   
+		slconn->sladdr, slconn->protocol_ver);   
       return -1;
     }
 
   return slconn->link;
-}				/* End of sl_request_info() */
+}  /* End of sl_send_info() */
 
 
 /***************************************************************************
- * sl_connect():
- * Open a network socket connection to a SeedLink server and set
- * 'slconn->link' to the new descriptor.  Expects 'slconn->sladdr'
- * to be in 'host:port' format.
+ * sl_connect:
  *
- * Returns -1 on errors, otherwise the socket descriptor created.
+ * Open a network socket connection to a SeedLink server and set
+ * 'slconn->link' to the new descriptor.  Expects 'slconn->sladdr' to
+ * be in 'host:port' format.  Either the host, port or both are
+ * optional, if the host is not specified 'localhost' is assumed, if
+ * the port is not specified '18000' is assumed, if neither is
+ * specified (only a colon) then 'localhost' and port '18000' are
+ * assumed.
+ *
+ * If sayhello is true the HELLO command will be issued after
+ * successfully connecting, this sets the server version in the SLCD
+ * and generally verifies that the remove process is a SeedLink
+ * server and is probably always desired.
+ *
+ * If a permanent error is detected (invalid port specified) the
+ * slconn->terminate flag will be set so the sl_collect() family of
+ * routines will not continue trying to connect.
+ *
+ * Returns -1 on errors otherwise the socket descriptor created.
  ***************************************************************************/
 int
-sl_connect (SLCD * slconn)
+sl_connect (SLCD * slconn, int sayhello)
 {
   int sock;
   int on = 1;
   int sockstat;
   long int nport;
-  char *host_name, *ptr, *tail;
+  char nodename[300];
+  char nodeport[100];
+  char *ptr, *tail;
   size_t addrlen;
   struct sockaddr addr;
 
   if ( slp_sockstartup() ) {
-    sl_log_r (slconn, 1, 0, "Could not initialize network sockets\n");
+    sl_log_r (slconn, 2, 0, "could not initialize network sockets\n");
     return -1;
   }
-
-  if ((host_name = strdup (slconn->sladdr)) == NULL)
+  
+  /* Check server address string and use defaults if needed:
+   * If only ':' is specified neither host nor port specified
+   * If no ':' is included no port was specified
+   * If ':' is the first character no host was specified
+   */
+  if ( ! strcmp (slconn->sladdr, ":") )
     {
-      sl_log_r (slconn, 1, 0, "strdup(): cannot copy SeedLink address string\n");
-      return -1;
-    }				/* ? needed? a hang over from the original */
-
-  /* Sanity check for the host and port specified */
-  if ((ptr = strchr (host_name, ':')) == NULL)
-    {
-      sl_log_r (slconn, 1, 0, "[%s] server address is not in `[hostname]:port' format\n",
-		slconn->sladdr);
-      return -1;
+      strcpy (nodename, "localhost");
+      strcpy (nodeport, "18000");
     }
-  *ptr++ = '\0';
-
-  nport = strtoul (ptr, &tail, 0);
-  if ( *tail || (nport < 0 || nport > 0xffff) )
+  else if ((ptr = strchr (slconn->sladdr, ':')) == NULL)
     {
-      sl_log_r (slconn, 1, 0, "Server port specified incorrectly\n");
-      return -1;
+      strncpy (nodename, slconn->sladdr, sizeof(nodename));
+      strcpy (nodeport, "18000");
+    }
+  else
+    {
+      if ( ptr == slconn->sladdr )
+	{
+	  strcpy (nodename, "localhost");
+	}
+      else
+	{
+	  strncpy (nodename, slconn->sladdr, (ptr - slconn->sladdr));
+	  nodename[(ptr - slconn->sladdr)] = '\0';
+	}
+      
+      strcpy (nodeport, ptr+1);
+
+      /* Sanity test the port number */
+      nport = strtoul (nodeport, &tail, 10);
+      if ( *tail || (nport <= 0 || nport > 0xffff) )
+	{
+	  sl_log_r (slconn, 2, 0, "server port specified incorrectly\n");
+	  slconn->terminate = 1;
+	  return -1;
+	}
     }
   
-  if ( slp_getaddrinfo (host_name, ptr, &addr, &addrlen) )
+  if ( slp_getaddrinfo (nodename, nodeport, &addr, &addrlen) )
     {
-      sl_log_r (slconn, 0, 0, "Cannot resolve hostname %s\n", host_name );
+      sl_log_r (slconn, 2, 0, "cannot resolve hostname %s\n", nodename );
       return -1;
     }
-
-  free (host_name);
 
   if ((sock = socket (PF_INET, SOCK_STREAM, 0)) < 0)
     {
-      sl_log_r (slconn, 1, 0, "[%s] socket(): %s\n", slconn->sladdr, slp_strerror ());
+      sl_log_r (slconn, 2, 0, "[%s] socket(): %s\n", slconn->sladdr, slp_strerror ());
       slp_sockclose (sock);
       return -1;
     }
@@ -703,64 +665,64 @@ sl_connect (SLCD * slconn)
   /* Set non-blocking IO */
   if ( slp_socknoblock(sock) )
     {
-      sl_log_r (slconn, 1, 0, "Error setting socket to non-blocking\n");
+      sl_log_r (slconn, 2, 0, "Error setting socket to non-blocking\n");
     }
 
   if ( (slp_sockconnect (sock, (struct sockaddr *) &addr, addrlen)) )
     {
-      sl_log_r (slconn, 1, 0, "[%s] connect(): %s\n", slconn->sladdr, slp_strerror ());
+      sl_log_r (slconn, 2, 0, "[%s] connect(): %s\n", slconn->sladdr, slp_strerror ());
       slp_sockclose (sock);
       return -1;
     }
-
-  /* Give a second for connecting, this is stupid but needed at the moment.
-     Some firewalls that proxy/NAT TCP connections will report that the TCP
-     connection is ready even when they are still opening the "other" end.
-     Maybe a new test should be implemented to test for readiness.
-   */
-  slp_usleep (1000000);
-
+  
   /* Wait up to 10 seconds for the socket to be connected */
   if ((sockstat = sl_checksock (sock, 10, 0)) <= 0)
     {
       if (sockstat < 0)
 	{			/* select() returned error */
-	  sl_log_r (slconn, 1, 1, "[%s] socket connect error\n", slconn->sladdr);
+	  sl_log_r (slconn, 2, 1, "[%s] socket connect error\n", slconn->sladdr);
 	}
       else
 	{			/* socket time-out */
-	  sl_log_r (slconn, 0, 1, "[%s] socket connect time-out (10s)\n",
+	  sl_log_r (slconn, 2, 1, "[%s] socket connect time-out (10s)\n",
 		    slconn->sladdr);
 	}
+
       slp_sockclose (sock);
       return -1;
     }
-  else
+  else if ( ! slconn->terminate )
     {				/* socket connected */
-      sl_log_r (slconn, 0, 1, "[%s] network socket opened\n", slconn->sladdr);
-
-      /* Set the SO_KEEPALIVE socket option, not really useful in this case */
+      sl_log_r (slconn, 1, 1, "[%s] network socket opened\n", slconn->sladdr);
+      
+      /* Set the SO_KEEPALIVE socket option, although not really useful */
       if (setsockopt
 	  (sock, SOL_SOCKET, SO_KEEPALIVE, (char *) &on, sizeof (on)) < 0)
-	sl_log_r (slconn, 0, 1, "[%s] cannot set SO_KEEPALIVE socket option\n",
+	sl_log_r (slconn, 1, 1, "[%s] cannot set SO_KEEPALIVE socket option\n",
 		  slconn->sladdr);
-
+      
       slconn->link = sock;
-
-      /* Everything should be connected, say hello */
-      if (sl_sayhello (slconn) == -1)
+      
+      /* Everything should be connected, say hello if requested */
+      if ( sayhello )
 	{
-	  slp_sockclose (sock);
-	  return -1;
+	  if (sl_sayhello (slconn) == -1)
+	    {
+	      slp_sockclose (sock);
+	      return -1;
+	    }
 	}
-
+      
       return sock;
     }
-}				/* End of sl_connect() */
+  
+  return -1;
+}  /* End of sl_connect() */
 
 
 /***************************************************************************
- * sl_disconnect():
+ * sl_disconnect:
+ *
  * Close the network socket associated with connection
  *
  * Returns -1, historically used to set the old descriptor
@@ -770,25 +732,168 @@ sl_disconnect (SLCD * slconn)
 {
   if (slconn->link != -1)
     {
-      if (slp_sockclose (slconn->link))
-	{
-	  sl_log_r (slconn, 1, 1, "[%s] slp_sockclose(%d) failed: %s\n", slconn->sladdr,
-		    slconn->link, slp_strerror ());
-	}
-      else
-	{
-	  slconn->link = -1;
-	}
-
-      sl_log_r (slconn, 0, 1, "[%s] network socket closed\n", slconn->sladdr);
+      slp_sockclose (slconn->link);
+      slconn->link = -1;
+      
+      sl_log_r (slconn, 1, 1, "[%s] network socket closed\n", slconn->sladdr);
     }
-
+  
   return -1;
-}				/* End of sl_disconnect() */
+}  /* End of sl_disconnect() */
 
 
 /***************************************************************************
- * sl_checksock():
+ * sl_sayhello:
+ *
+ * Send the HELLO command and attempt to parse the server version
+ * number from the returned string.  The server version is set to 0.0
+ * if it can not be parsed from the returned string, which indicates
+ * unkown protocol functionality.
+ *
+ * Returns -1 on errors, 0 on success.
+ ***************************************************************************/
+int
+sl_sayhello (SLCD * slconn)
+{
+  int ret = 0;
+  int servcnt = 0;
+  int sitecnt = 0;
+  char sendstr[100];		/* A buffer for command strings */
+  char servstr[100];		/* The remote server ident */
+  char sitestr[100];		/* The site/data center ident */
+  char servid[100];		/* Server ID string, i.e. 'SeedLink' */
+
+  /* Send HELLO */
+  sprintf (sendstr, "HELLO\r");
+  sl_log_r (slconn, 1, 2, "[%s] sending: HELLO\n", slconn->sladdr);
+  sl_senddata (slconn, (void *) sendstr, strlen (sendstr), slconn->sladdr,
+	       NULL, 0);
+  
+  /* Recv the two lines of response */
+  if ( sl_recvresp (slconn, (void *) servstr, (size_t) sizeof (servstr), 
+		    sendstr, slconn->sladdr) < 0 )
+    {
+      return -1;
+    }
+  
+  if ( sl_recvresp (slconn, (void *) sitestr, (size_t) sizeof (sitestr),
+		    sendstr, slconn->sladdr) < 0 )
+    {
+      return -1;
+    }
+  
+  servcnt = strcspn (servstr, "\r");
+  if ( servcnt > 90 )
+    {
+      servcnt = 90;
+    }
+  servstr[servcnt] = '\0';
+
+  sitecnt = strcspn (sitestr, "\r");
+  if ( sitecnt > 90 )
+    {
+      sitecnt = 90;
+    }
+  sitestr[sitecnt] = '\0';
+  
+  sl_log_r (slconn, 1, 1, "[%s] connected to: %s\n", slconn->sladdr, servstr);
+  sl_log_r (slconn, 1, 1, "[%s] organization: %s\n", slconn->sladdr, sitestr);
+  
+  /* Parse the server ID and version from the returned string.
+   * The expected format is:
+   * "seedlink v#.# <optional text>"
+   * where 'seedlink' is case insensitive and '#.#' is the server/protocol version.
+   */
+  servstr[servcnt] = ' '; servstr[servcnt+1] = '\0';
+  ret = sscanf (servstr, "%s v%f ", &servid[0], &slconn->protocol_ver);
+  
+  if ( ret != 2 || strncasecmp (servid, "SEEDLINK", 8) )
+    {
+      sl_log_r (slconn, 1, 1,
+                "[%s] unknown server version, assuming minimum functionality\n",
+                slconn->sladdr, servstr);
+      slconn->protocol_ver = 0.0;
+    }
+  
+  return 0;
+}  /* End of sl_sayhello() */
+
+
+/***************************************************************************
+ * sl_ping:
+ *
+ * Connect to a server, issue the HELLO command, parse out the server
+ * ID and organization resonse and disconnect.  The server ID and
+ * site/organization strings are copied into serverid and site strings
+ * which should have 100 characters of space each.
+ *
+ * Returns:
+ *   0  Success
+ *  -1  Connection opened but invalid response to 'HELLO'.
+ *  -2  Could not open network connection
+ ***************************************************************************/
+int
+sl_ping (SLCD * slconn, char *serverid, char *site)
+{
+  int servcnt = 0;
+  int sitecnt = 0;
+  char sendstr[100];		/* A buffer for command strings */
+  char servstr[100];		/* The remote server ident */
+  char sitestr[100];		/* The site/data center ident */
+  
+  /* Open network connection to server */
+  if ( sl_connect (slconn, 0) == -1 )
+    {
+      sl_log_r (slconn, 2, 1, "Could not connect to server\n");
+      return -2;
+    }
+  
+  /* Send HELLO */
+  sprintf (sendstr, "HELLO\r");
+  sl_log_r (slconn, 1, 2, "[%s] sending: HELLO\n", slconn->sladdr);
+  sl_senddata (slconn, (void *) sendstr, strlen (sendstr), slconn->sladdr,
+	       NULL, 0);
+  
+  /* Recv the two lines of response */
+  if ( sl_recvresp (slconn, (void *) servstr, (size_t) sizeof (servstr), 
+		    sendstr, slconn->sladdr) < 0 )
+    {
+      return -1;
+    }
+  
+  if ( sl_recvresp (slconn, (void *) sitestr, (size_t) sizeof (sitestr),
+		    sendstr, slconn->sladdr) < 0 )
+    {
+      return -1;
+    }
+  
+  servcnt = strcspn (servstr, "\r");
+  if ( servcnt > 90 )
+    {
+      servcnt = 90;
+    }
+  servstr[servcnt] = '\0';
+  
+  sitecnt = strcspn (sitestr, "\r");
+  if ( sitecnt > 90 )
+    {
+      sitecnt = 90;
+    }
+  sitestr[sitecnt] = '\0';
+  
+  /* Copy the response strings into the supplied strings */
+  strncpy (serverid, servstr, sizeof(servstr));
+  strncpy (site, sitestr, sizeof(sitestr));
+  
+  slconn->link = sl_disconnect (slconn);
+  
+  return 0;
+}  /* End of sl_ping() */
+
+
+/***************************************************************************
+ * sl_checksock:
+ *
  * Check a socket for write ability using select() and read ability
  * using recv(... MSG_PEEK).  Time-out values are also passed (seconds
  * and microseconds) for the select() call.
@@ -829,11 +934,12 @@ sl_checksock (int sock, int tosec, int tousec)
     }
 
   return ret;
-}				/* End of sl_checksock() */
+}  /* End of sl_checksock() */
 
 
 /***************************************************************************
- * sl_senddata():
+ * sl_senddata:
+ *
  * send() 'buflen' bytes from 'buffer' to 'slconn->link'.  'ident' is
  * a string to include in error messages for identification, usually
  * the address of the remote server.  If 'resp' is not NULL then read
@@ -853,7 +959,7 @@ sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
   
   if ( send (slconn->link, buffer, buflen, 0) < 0 )
     {
-      sl_log_r (slconn, 1, 0, "[%s] error sending '%.*s '\n", ident,
+      sl_log_r (slconn, 2, 0, "[%s] error sending '%.*s'\n", ident,
 		strcspn ((char *) buffer, "\r\n"), (char *) buffer);
       return -1;
     }
@@ -865,11 +971,12 @@ sl_senddata (SLCD * slconn, void *buffer, size_t buflen,
     }
   
   return bytesread;
-}				/* End of sl_senddata() */
+}  /* End of sl_senddata() */
 
 
 /***************************************************************************
- * sl_recvdata():
+ * sl_recvdata:
+ *
  * recv() 'maxbytes' data from 'slconn->link' into a specified
  * 'buffer'.  'ident' is a string to be included in error messages for
  * identification, usually the address of the remote server.
@@ -892,7 +999,7 @@ sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
 
   if ( bytesread == 0 )		/* should indicate TCP FIN or EOF */
     {
-      sl_log_r (slconn, 1, 1, "[%s] read():%d TCP FIN or EOF received\n",
+      sl_log_r (slconn, 1, 1, "[%s] recv():%d TCP FIN or EOF received\n",
 		ident, bytesread);
       return -1;
     }
@@ -900,7 +1007,7 @@ sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
     {
       if ( slp_noblockcheck() )
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] recv():%d %s\n", ident, bytesread,
+	  sl_log_r (slconn, 2, 0, "[%s] recv():%d %s\n", ident, bytesread,
 		    slp_strerror ());
 	  return -1;
 	}
@@ -910,11 +1017,12 @@ sl_recvdata (SLCD * slconn, void *buffer, size_t maxbytes,
     }
 
   return bytesread;
-}				/* End of sl_recvdata() */
+}  /* End of sl_recvdata() */
 
 
 /***************************************************************************
- * sl_recvresp():
+ * sl_recvresp:
+ *
  * To receive a response to a command recv() one byte at a time until
  * '\r\n' or up to 'maxbytes' is read from 'slconn->link' into a
  * specified 'buffer'.  The function will wait up to 30 seconds for a
@@ -945,15 +1053,21 @@ sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
     {
       recvret = sl_recvdata (slconn, (char *)buffer + bytesread, 1, ident);
       
+      /* Trap door for termination */
+      if ( slconn->terminate )
+	{
+	  return -1;
+	}
+      
       if ( recvret > 0 )
 	{
 	  bytesread += recvret;
 	}
       else if ( recvret < 0 )
 	{
-	  sl_log_r (slconn, 1, 0, "[%s] bad response to '%.*s'\n",
-		    ident, strcspn ((char *) buffer, "\r\n"),
-		    (char *) buffer);
+	  sl_log_r (slconn, 2, 0, "[%s] bad response to '%.*s'\n",
+		    ident, strcspn ((char *) command, "\r\n"),
+		    (char *) command);
 	  return -1;
 	}
       
@@ -968,9 +1082,9 @@ sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
       /* Trap door if 30 seconds has elapsed, (ackpoll x 600) */
       if ( ackcnt > 600 )
         {
-	  sl_log_r (slconn, 1, 0, "[%s] timeout waiting for response to '%.*s'\n",
-		    ident, strcspn ((char *) buffer, "\r\n"),
-		    (char *) buffer);
+	  sl_log_r (slconn, 2, 0, "[%s] timeout waiting for response to '%.*s'\n",
+		    ident, strcspn ((char *) command, "\r\n"),
+		    (char *) command);
 	  return -1;
 	}
       
@@ -983,4 +1097,4 @@ sl_recvresp (SLCD * slconn, void *buffer, size_t maxbytes,
     }
   
   return bytesread;
-}				/* End of sl_recvresp() */
+}  /* End of sl_recvresp() */

@@ -11,17 +11,17 @@ INCS = /I.
 LIB = libslink.lib
 DLL = libslink.dll
 
-OBJS=	tswap.obj	\
+OBJS=	gswap.obj	\
 	unpack.obj	\
 	msrecord.obj	\
-	slutils.obj	\
+	genutils.obj	\
 	strutils.obj	\
 	logging.obj	\
 	network.obj	\
 	statefile.obj	\
 	config.obj	\
 	slplatform.obj	\
-	main.obj
+	slutils.obj
 
 all: lib
 

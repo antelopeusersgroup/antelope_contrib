@@ -5,7 +5,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2003.276
+ * modified: 2004.196
  ***************************************************************************/
 
 #include <stdio.h>
@@ -16,7 +16,8 @@
 
 
 /***************************************************************************
- * sl_savestate():
+ * sl_savestate:
+ *
  * Save the all the current the sequence numbers and time stamps into the
  * given state file.
  *
@@ -33,13 +34,13 @@ sl_savestate (SLCD * slconn, const char *statefile)
   curstream = slconn->streams;
 
   /* Open the state file */
-  if ((statefp = fopen (statefile, "w")) == NULL)
+  if ((statefp = fopen (statefile, "wb")) == NULL)
     {
-      sl_log_r (slconn, 1, 0, "cannot open state file for writing\n");
+      sl_log_r (slconn, 2, 0, "cannot open state file for writing\n");
       return -1;
     }
 
-  sl_log_r (slconn, 0, 2, "saving connection state to state file\n");
+  sl_log_r (slconn, 1, 2, "saving connection state to state file\n");
 
   /* Traverse stream chain and write sequence numbers */
   while (curstream != NULL)
@@ -53,16 +54,17 @@ sl_savestate (SLCD * slconn, const char *statefile)
 
   if (fclose (statefp))
     {
-      sl_log_r (slconn, 1, 0, "closing state file, %s\n", strerror (errno));
+      sl_log_r (slconn, 2, 0, "cannot close state file, %s\n", strerror (errno));
       return -1;
     }
 
   return 0;
-}
+} /* End of sl_savestate() */
 
 
 /***************************************************************************
- * sl_recoverstate():
+ * sl_recoverstate:
+ *
  * Recover the state file and put the sequence numbers and time stamps into
  * the pre-existing stream chain entries.
  *
@@ -89,21 +91,21 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
   timestamp[0] = '\0';
 
   /* Open the state file */
-  if ((statefp = fopen (statefile, "r")) == NULL)
+  if ((statefp = fopen (statefile, "rb")) == NULL)
     {
       if (errno == ENOENT)
 	{
-	  sl_log_r (slconn, 0, 0, "could not open state file: %s\n", statefile);
+	  sl_log_r (slconn, 1, 0, "could not find state file: %s\n", statefile);
 	  return 1;
 	}
       else
 	{
-	  sl_log_r (slconn, 1, 0, "opening state file, %s\n", strerror (errno));
+	  sl_log_r (slconn, 2, 0, "could not open state file, %s\n", strerror (errno));
 	  return -1;
 	}
     }
 
-  sl_log_r (slconn, 0, 1, "recovering connection state from state file\n");
+  sl_log_r (slconn, 1, 1, "recovering connection state from state file\n");
 
   count = 1;
 
@@ -117,7 +119,7 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
       
       if ( fields < 3 )
 	{
-	  sl_log_r (slconn, 1, 0, "error parsing line %d of state file\n", count); 
+	  sl_log_r (slconn, 2, 0, "could not parse line %d of state file\n", count);
 	}
       
       /* Search for a matching NET and STA in the stream chain */
@@ -142,9 +144,9 @@ sl_recoverstate (SLCD * slconn, const char *statefile)
 
   if ( fclose (statefp) )
     {
-      sl_log_r (slconn, 1, 0, "closing state file, %s\n", strerror (errno));
+      sl_log_r (slconn, 2, 0, "could not close state file, %s\n", strerror (errno));
       return -1;
     }
 
   return 0;
-}
+} /* End of sl_recoverstate() */

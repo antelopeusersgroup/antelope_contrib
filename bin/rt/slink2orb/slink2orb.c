@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2004.170
+ * modified: 2005.342
  ***************************************************************************/
 
 #include <signal.h>
@@ -18,7 +18,8 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.4 (2004.170)";
+static char   *version     = "3.5rc1 (2005.342)";
+static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
 
@@ -91,7 +92,7 @@ main(int argc, char **argv)
   orb = orbopen(orbaddr, "w&");
   if (orb < 0)
     {
-      sl_log(1, 0, "%s: orbopen() error for %s\n", Program_Name, orbaddr);
+      sl_log(1, 0, "%s: orbopen() error for %s\n", package, orbaddr);
       exit(1);
     }
 
@@ -269,7 +270,7 @@ parameter_proc(int argcount, char **argvec)
   /* Initialize the verbosity for the libslink functions */
   sl_loginit (verbose, &elog_printlog, NULL, &elog_printerr, NULL);
   
-  sl_log (0,0, "%s version %s\n", Program_Name, version);
+  sl_log (0,0, "%s version %s\n", package, version);
 
   /* For the last two required arguments */
   if ((argcount - optind) < 2)
@@ -283,27 +284,6 @@ parameter_proc(int argcount, char **argvec)
 	slconn->sladdr = argvec[optind];
       if (optind == (argcount - 1))
 	orbaddr = argvec[optind];
-    }
-
-  /* Check SeedLink address, if no host add 'localhost' */
-  if (*slconn->sladdr == ':')
-    {
-      tptr = (char *) malloc(strlen(slconn->sladdr) + 10);
-      sprintf(tptr, "localhost%s", slconn->sladdr);
-      slconn->sladdr = tptr;
-    }
-  
-  /* Check provided address for host:port format */
-  if ((tptr = strchr (slconn->sladdr, ':')) == NULL)
-    {
-      sl_log (1, 0, "Address not in 'host:port' format: %s\n", slconn->sladdr);
-      return -1;
-    }
-  if (*(slconn->sladdr + strlen (slconn->sladdr) - 1) == ':')
-    {
-      sl_log (1, 0, "Port not provided in 'host:port' format: %s\n",
-	      slconn->sladdr);
-      return -1;
     }
 
   /* Read parameter file if supplied */
@@ -563,6 +543,7 @@ elog_printerr (char const *msg)
 static void
 usage(void)
 {
+  printf("\n%s version %s\n", package, version);
   printf("\n"
 	 "Usage: slink2orb [-dc database] [-dm database] [-nd delay] [-nt timeout]\n"
 	 "                 [-k interval] [-pf parameterfile] [-S statefile]\n"
@@ -572,6 +553,7 @@ usage(void)
 	 "\n"
 	 "Chad Trabant\n"
 	 "ORFEUS/EC-Project MEREDIAN\n"
+         "IRIS Data Management Center\n"
 	 "\n"
 	 "Please report problems to chad@iris.washington.edu\n"
 	 "\n");
