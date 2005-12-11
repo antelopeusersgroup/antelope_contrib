@@ -1,5 +1,5 @@
-# DIRS=matlabdoc lib doc examples mex scripts
-DIRS=
+DIRS=matlabdoc lib doc examples mex scripts
+# DIRS=
 
 Include :: $(ANTELOPE)/include/mex_antelope_makerules
 install :: $(ANTELOPE)/include/mex_antelope_makerules
