@@ -26,7 +26,6 @@
 #include <synch.h>
 #include <errno.h>
 #include <string.h>
-#include <ieeefp.h>
 #include "stock.h"
 #include "coords.h"
 #include "db.h"
