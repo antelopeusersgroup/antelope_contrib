@@ -3,7 +3,7 @@
 dbcentral \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
+dbcentral [-n] [-t timestring] [-d] [database_clustername [task_nickname]]
 .fi
 .SH DESCRIPTION
 Many institutions have a variety of databases which are commonly used
@@ -19,22 +19,31 @@ filesystem, such as field personnel or perhaps visiting researchers,
 constantly having to refresh their memory on database locations etc. can
 slow down work. Dbcentral is intended to solve these problems.
 
+The databases and database-clusters used at a site should be listed 
+in a centralized database in the dbcluster0.5 or higher schema. This schema 
+allows a \fIclustername\fP to be given to each related set of databases (the 
+set may contain only one database for such standard administrative 
+entities as site databases etc). Each row of the dbcluster database gives 
+the time-range covered by a subset of the databases in that cluster that 
+all follow a regular naming convention. The naming convention is given in the 
+\fIdir\fP and \fIdfile\fP fields, using percent-escape characters understood 
+by the \fIepoch2str\fP(3) command. 
+
 A parameter file is set up once for the whole site, usually by system
 operators responsible for creating and maintaining all the databases. This
-parameter file contains 'nicknames' for each database, such as 
-site_database, real_time_hypocenters, pde_catalog, etc. For each
-of these databases, the parameter file contains a name of the database,
-plus an array of commands that may be run on that database. Generally it is 
-the responsibility of the software administrator for a given site to 
-maintain this parameter file for a given site, 
-adding/removing/changing entries as necessary. Of course, individual users
-can add their own databases to personal extensions of the dbcentral.pf 
-parameter file.
+parameter file contains the name of the centralized dbcluster database as 
+well as the default tasks which are commonly run on them. This list 
+of default tasks for a given database cluster may be overridden in the 
+custom_tasks array as shown in the example below.  Each task should have a 
+descriptive name for the task, then a unix command-line that will run 
+the task. The DBNAME macro in this command-line will be replaced by the 
+actual database name when dbcentral runs. 
 
 When dbcentral is launched with no command-line options, it reads this
-parameter file and creates a GUI with one pull-down menu per database.
+parameter file and cluster database and creates a GUI with one pull-down menu per
+database cluster.
 Each pull-down menu contains entries for the commands which may be run
-on that database. In addition, a time-of-interest field is specified at
+on that cluster. In addition, a time-of-interest field is specified at
 the top of the GUI window.  This time is used to interpret
 database-name templates which depend on time.  The time-of-interest
 field is initialized to be the launch time of the dbcentral program,
@@ -43,7 +52,8 @@ typed in by the user. Hitting 'return' in the entry box after changing
 the time will normalize the time-string to the standard print format.
 Any time string accepted by str2epoch(3) may be entered.
 
-The database name is intended to be a template for str2epoch(3), which
+The dir and dfile fields of the dbcluster database are intended to be a
+template for str2epoch(3), which
 allows dbcentral to handle entire structures of databases with similar,
 time-dependent names. For example, if the analyst-reviewed hypocentral
 solutions are in day volumes, such as
@@ -52,7 +62,8 @@ solutions are in day volumes, such as
 	 /catalog/2002/138/quakes_2002_05_18
 
 .fi
- the corresponding database pathname in the parameter file might be 
+the corresponding database pathname in the cluster database (combining dir
+and dfile) might be 
 .nf
 
 	/catalog/%Y/%j/quakes_%Y_%m_%d
@@ -63,9 +74,10 @@ this name template, dbcentral can use one description for the entire
 class of databases, interpret the template according to the time of
 interest specified in dbcentral, and hunt down the correct database.
 
-The parameter file for dbcentral may be useful far beyond the dbcentral
-GUI itself. This parameter file, properly configured for the installation, 
-can allow automated processes to look up databases they need, rather 
+The parameter file and supporting database for dbcentral may be useful far
+beyond the dbcentral
+GUI itself. Properly configured for the installation, 
+these can allow automated processes to look up databases they need, rather 
 than having them in their own parameter file.  For example, if a particular 
 parameter file for some application has the entry
 .nf
@@ -73,70 +85,92 @@ parameter file for some application has the entry
 	site_database /Seis/databases/stations/master_stations
 
 .fi
-That may be replaced by a reference to the central parameter file:
+That may be replaced by a parameter-file execution of dbcentral:
 .nf
 
-	site_database &ref(dbcentral,site_database{dbname_template})
+	site_database &exec(dbcentral -d site_database)
 
 .fi
-(assuming, of course, that that site_database has been specified in dbcentral.pf!).
+(assuming, of course, that that site_database has been specified in 
+the cluster database!).
 
-If one holds down the right mouse button over the database nickname, 
+If one holds down the middle mouse button over the database clustername, 
 the fully resolved pathname (i.e. for the current time specification)
 for that database is displayed. 
 
+If one clicks the right mouse button on the database clustername, the 
+first listed task is performed on the database. 
+
+A Control-C in the dbcentral GUI window will kill the application. 
+
 In addition to the GUI mode, launched with no arguments, dbcentral has 
 a command-line mode for easy retrieval of and command-launches on common 
-databases. If one of the database nicknames is specified on the 
+databases. If one of the database clustername is specified on the 
 command line, the first task listed for that database is launched. A task 
-nickname may be specified in addition to the database nickname, in which
+nickname may be specified in addition to the database clustername, in which
 case the specified task is launched. The -t option may be used to 
 specify a time other than the current time to use in the database name 
 template. Finally, the -d option may be used to retrieve absolute 
 pathnames, and the -n option may be used to print a list of available database 
-nicknames, or available task nicknames for a given database nickname. The -d 
+clusternames, or available task nicknames for a given database clustername. The -d 
 option is useful in scripts and in other parameter files (via the &exec()
 mechanism; see pf(3)). This allows common database pathnames to be 
 centrally configured.
+
 .SH OPTIONS
 .IP -d
-Show absolute pathname of database. A database nickname must 
-be uspecified when using the -d option.
+Show absolute pathname of database. A database clustername must 
+be specified when using the -d option.
 
 .IP -n
-Show available database nicknames or task nicknames.
+Show available database clusternames or task nicknames.
 
 .IP -t
 Specify a time-string interpretable by the epoch(1) command (default is "now"). 
-A database nickname must be specified when using the -t option.
+A database clustername must be specified when using the -t option.
 
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .nf
 
-antelope_demo &Arr{
-	dbname_template	/opt/antelope/data/db/demo/demo
-	tasks	&Tbl{
+home &env(HOME)
+dbcentral_database &home/dbcentral
+
+default_tasks &Tbl{
+	dbe		dbe DBNAME
+	dbe_editable	dbe -e DBNAME
+}
+
+custom_tasks &Arr{
+	antelope_demo &Tbl{
 		dbe		dbe DBNAME
-		dbe_editable	dbe -e DBNAME
+		dbe_origin	dbe  DBNAME.origin 
 		dbpick		xterm -e dbpick -nostarttalk DBNAME
 		smartpick 	smartpick -nowait DBNAME
 	}
 }
-
-pde     &Arr{
-    dbname_template     /space/pde/pde_%Y
-        tasks       &Tbl{
-                dbe             dbe DBNAME.origin
-        }
-}
-
 .fi
 .SH EXAMPLE
 .ft CW
 .in 2c
 .nf
+To create a demo cluster database:
+
+% cat > ~/dbcentral
+#
+schema dbcluster0.5
+%
+% dbaddv ~/dbcentral.clusters <<EOF
+? clustername antelope_demo
+? time 4/27/92
+? dir /opt/antelope/data/db/demo
+? dfile demo
+? volumes single
+? schema css3.0
+? % 
+
+
 To launch the GUI application:
 
 % dbcentral
@@ -155,11 +189,11 @@ To get the absolute pathname of the demo database:
 % dbcentral -d antelope_demo
 /opt/antelope/data/db/demo/demo
 
-To get the currently-configured database nicknames:
+To get the currently-configured database clusternames:
 
 % dbcentral -n
 
-dbcentral database nicknames:
+dbcentral database clusternames:
 
 
         antelope_demo
@@ -174,13 +208,14 @@ dbcentral command nicknames for antelope_demo:
 
         dbe
 
-        dbe_editable
+        dbe_origin
 
         dbpick
 
         smartpick
 
-To get the pathname for PDE database containing data for Dec. 31, 1997:
+To get the pathname for PDE database containing data for Dec. 31, 1997, provided 
+such a cluster is specified in the cluster database:
 
 % dbcentral -t "12/31/97" -d pde
 
@@ -196,9 +231,9 @@ To get the pathname for PDE database containing data for Dec. 31, 1997:
 .SH ATTRIBUTES
 .SH DIAGNOSTICS
 .nf
-% dbcentral fake_nickname
+% dbcentral fake_clustername
 
-dbcentral: No tasks defined for database 'fake_nickname'
+dbcentral: No tasks defined for database 'fake_clustername'
 
 % dbcentral antelope_demo fake_task
 
@@ -214,7 +249,7 @@ The task-names in the parameter file may not contain spaces or other
 strange characters (see pf(5), even if quoted). This allows a simple
 implementation in which the GUI menu items come up in the same order
 as they are listed in the parameter file. Spaces may be used in 
-a database nickname, providing the entire nickname is quoted.
+a database clustername, providing the entire clustername is quoted.
 
 Dbcentral does not check, after constructing a database name from the 
 parameter-file template and the time specified in the GUI, whether 
@@ -231,9 +266,16 @@ One could arguably hard-wire dbcentral to always include a dbe(1)
 line for each database. Instead, this is left at the discretion of the
 administrator. This allows the administrator to choose whether dbe 
 comes up by default in editable mode ("-e" option to dbe).
+
+dbcentral needs a -l mode to list the available databases in a cluster, 
+looping over any volume segmentation in each cluster row and checking for the 
+corresponding existing databases. 
+
+dbcentral needs a -q mode to run dbprocess queries on all databases in a 
+cluster. 
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$

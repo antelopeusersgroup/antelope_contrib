@@ -1,11 +1,15 @@
-
 # dbcentral
 #
 # GUI utility to keep track of databases and launch commands on them
 #
-# Kent Lindquist 
-# Lindquist Consulting
-# July, 2002
+#   Copyright (c) 2002-2005 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+# 
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
 
 package require Tclx
 lappend auto_path $env(ANTELOPE)/data/tcl/library
@@ -13,34 +17,76 @@ lappend auto_path $env(ANTELOPE)/data/tcl/library
 proc init_globals {} {
 	global Template_time Template_time_format 
 	global Nicknames Tasks Commands
+	global Dbcentral_dbname Db
 	
 	set Template_time_format "%m/%d/%Y %H:%M:%S.%s %Z"
 
 	set Template_time [epoch2str [str2epoch now] $Template_time_format]
 
-	pfgetarr Nicknames %dbcentral
-	unset Nicknames(pf_revision_time)
+	set Dbcentral_dbname [pfget dbcentral dbcentral_database]
+	set default_tasklines [pfgetlist @dbcentral#default_tasks]
 
-	foreach nickname [array names Nicknames] {
+	if { ! [file exists $Dbcentral_dbname] } {
+		
+		elog_die "Can't find database '$Dbcentral_dbname' specified in parameter file"
+	}
 
-		set tasklines [pfgetlist @dbcentral#$nickname#tasks]
+	set Db [dbopen $Dbcentral_dbname r]
+	set Db [dblookup $Db 0 clusters 0 0]
 
-		foreach taskline $tasklines {
+	set dbclusters [dbsort -u $Db clustername]
 
-			set parts [split $taskline]
-			set task [lindex $parts 0]
-			set runline [join [lrange $parts 1 end]]
+	set nclusters [dbquery $dbclusters dbRECORD_COUNT]
 
-			lappend Tasks($nickname) $task
+	pfgetarr custom_tasks %dbcentral#custom_tasks
 
-			set Commands($nickname,$task) "$runline"
+	for { set i 0 } { $i < $nclusters } { incr i } {
+
+		set nickname [dbgetv $dbclusters 0 $i clustername]
+
+		lappend Nicknames $nickname
+
+		if { [lsearch -exact [array names custom_tasks] $nickname] > -1 } {
+
+			set tasklines [pfgetlist @dbcentral#custom_tasks#$nickname]
+
+			set_tasks $nickname $tasklines
+
+		} else {
+
+			set_tasks $nickname $default_tasklines
 		}
 	}
 }
 
 proc init_windows {} {
 
-	global Template_time Nicknames Tasks Commands
+	global Template_time Nicknames Tasks Commands Cmdline
+
+	set Cmdline 0
+
+	bind . <Control-KeyPress-c> "destroy ."
+	bind . <Control-KeyPress-C> "destroy ."
+
+	frame .mb -background beige
+
+	menubutton .mb.file -bg beige -text File -underline 0 \
+		   -menu .mb.file.m -highlightthickness 0
+	
+	menu .mb.file.m -tearoff 0 -bg beige
+
+	.mb.file.m  add command -label Quit -underline 0 -command "destroy ."
+
+	pack .mb.file -side left
+
+	menubutton .mb.options -bg beige -text Options -underline 0 \
+		   -menu .mb.options.m -highlightthickness 0
+	
+	menu .mb.options.m -tearoff 0 -bg beige
+
+	pack .mb.options -side left
+
+	grid .mb -sticky ew -columnspan 2 
 
 	button .timelbl -text "Time: " -bg lemonchiffon2 -command {
 		global Template_time
@@ -56,7 +102,7 @@ proc init_windows {} {
 	grid columnconfigure . 0 -weight 0
 	grid columnconfigure . 1 -weight 1
 
-	foreach nickname [lsort [array names Nicknames]] {
+	foreach nickname [lsort $Nicknames] {
 
 		set buttonname .b$nickname
 		regsub -all " " $buttonname _ buttonname
@@ -87,10 +133,22 @@ proc init_windows {} {
 		grid $buttonname -sticky ew -columnspan 2
 	}
 
-	button .quit -text Quit -command "destroy ." -bg red
-	grid .quit -sticky ew -columnspan 2
-
 	wm resizable . 0 0
+}
+
+proc set_tasks { nickname tasklines } {
+	global Commands Tasks	
+
+	foreach taskline $tasklines {
+
+		set parts [split $taskline]
+		set task [lindex $parts 0]
+		set runline [join [lrange $parts 1 end]]
+
+		lappend Tasks($nickname) $task
+
+		set Commands($nickname,$task) "$runline"
+	}
 }
 
 proc normalize_template_time {} {
@@ -107,19 +165,41 @@ proc normalize_template_time {} {
 }
 
 proc get_dbpath { nickname } {
-	global Template_time
+	global Template_time Db  Cmdline
 
 	set time [str2epoch $Template_time]
 
-	pfgetarr myarray %dbcentral#$nickname
-	set dbname_template [lindex [array get myarray dbname_template] 1]
+	set expr "clustername == \"$nickname\" && time <= $time && "
+	append expr "(endtime == NULL || endtime >= $time)"
 
-	set dbname [epoch2str $time $dbname_template]
+	set dbcluster [dbsubset $Db $expr]
+
+	if { [dbquery $dbcluster dbRECORD_COUNT] <= 0 } {
+		
+		set msg "No database for clustername '$nickname' at time " 
+		append msg [strtime $time]
+		append msg " UTC"
+
+		if { ! $Cmdline } {
+			tkdialog .err "Database not found" $msg OK
+		}
+		
+		set dbname ""
+
+	} else {
+		
+		set dbcluster [lreplace $dbcluster 3 3 0]
+
+		set dbname_template [dbeval $dbcluster "extfile()"]
+
+		set dbname [epoch2str $time $dbname_template]
+	}
 
 	return $dbname
 }
 
 proc unshow_path { w } {
+
 	destroy .path
 
 	$w configure -width 0
@@ -129,11 +209,17 @@ proc show_path { nickname w } {
 	
 	set dbname [get_dbpath $nickname]
 
+	if { $dbname == "" } {
+
+		return
+	}
+
 	set width [winfo width $w]
 
 	if { [info exists .path] } {
 		destroy .path
 	}
+
 	label .path -text $dbname -bg yellow -font [font create -size 10]
 
 	set reqwidth [winfo reqwidth .path]
@@ -148,7 +234,6 @@ proc show_path { nickname w } {
 	set y [expr $height / 2]
 
 	place .path -anchor center -in $w -x $x -y $y 
-
 }
 
 proc myexec { nickname task } {
@@ -156,17 +241,23 @@ proc myexec { nickname task } {
 
 	set dbname [get_dbpath $nickname]
 
-	set cmd_template $Commands($nickname,$task)
+	if { $dbname != "" } {
 
-	regsub -all DBNAME $cmd_template $dbname command
+		set cmd_template $Commands($nickname,$task)
 
-	eval exec $command &
+		regsub -all DBNAME $cmd_template $dbname command
+
+		eval exec $command &
+	}
 }
 
 proc run_cmdline {} {
 	global argc argv
 	global Template_time Template_time_format
 	global Nicknames Tasks Commands
+	global Cmdline
+
+	set Cmdline 1
 
 	set i 0
 	set n [llength $argv]
@@ -247,9 +338,9 @@ proc run_cmdline {} {
 
 	} elseif { $List_Nicknames } {
 
-		puts stdout "\ndbcentral database nicknames:\n"
+		puts stdout "\ndbcentral database clusternames:\n"
 		
-		foreach key [array names Nicknames] {
+		foreach key $Nicknames {
 			puts stdout "\t$key"
 		}
 		puts stdout "\n"

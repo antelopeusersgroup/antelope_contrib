@@ -1,8 +1,16 @@
-antelope_demo &Arr{
-	dbname_template	/opt/antelope/data/db/demo/demo
-	tasks	&Tbl{
+home &env(HOME)
+
+dbcentral_database &home/dbcentral
+
+default_tasks &Tbl{
+	dbe		dbe DBNAME
+	dbe_editable	dbe -e DBNAME
+}
+
+custom_tasks &Arr{
+	antelope_demo &Tbl{
 		dbe		dbe DBNAME
-		dbe_editable	dbe -e DBNAME
+		dbe_origin	dbe  DBNAME.origin 
 		dbpick		xterm -e dbpick -nostarttalk DBNAME
 		smartpick 	smartpick -nowait DBNAME
 	}
