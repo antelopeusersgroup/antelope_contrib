@@ -27,7 +27,15 @@ entities as site databases etc). Each row of the dbcluster database gives
 the time-range covered by a subset of the databases in that cluster that 
 all follow a regular naming convention. The naming convention is given in the 
 \fIdir\fP and \fIdfile\fP fields, using percent-escape characters understood 
-by the \fIepoch2str\fP(3) command. 
+by the \fIepoch2str\fP(3) command. The \fIclusters.volumes\fP field of the
+dbcluster0.5 schema, described in more detail in the schema file itself (and 
+therefore with explanation available through dbhelp(1)) is intended to 
+support looping over clusters of databases that have regular volume sizes, 
+alignments, and names, for example databases segmented day, week, month, or
+year. Rows in the cluster database representing single databases will have 
+this field set to \fIsingle\fP. The optional \fInet\fP field in the 
+\fIclusters\fP table allows specific sensor network names to be given, 
+if a cluster of databases is unique to one particular sensor network. 
 
 A parameter file is set up once for the whole site, usually by system
 operators responsible for creating and maintaining all the databases. This
@@ -166,6 +174,7 @@ schema dbcluster0.5
 ? time 4/27/92
 ? dir /opt/antelope/data/db/demo
 ? dfile demo
+? net KNET
 ? volumes single
 ? schema css3.0
 ? % 
