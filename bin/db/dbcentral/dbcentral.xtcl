@@ -164,8 +164,151 @@ proc normalize_template_time {} {
 	set Template_time [epoch2str $time $Template_time_format]
 }
 
+proc database_exists { dbname } {
+
+	if { [file exists $dbname] } {
+		
+		return 1
+
+	} elseif { [llength [glob -nocomplain $dbname.*]] > 0 } {
+
+		return 1
+
+	} else {
+
+		return 0
+	}
+}
+
+proc get_dbnames { nickname } {
+	global Db Dbcentral_dbname Cmdline
+
+	set expr "clustername == \"$nickname\""
+	set dbcluster [dbsubset $Db $expr]
+	set dbcluster [dbsort $dbcluster time]
+
+	set nclusters [dbquery $dbcluster dbRECORD_COUNT]
+	if { $nclusters <= 0 } {
+		
+		set msg "No entries in $Dbcentral_dbname for clustername '$nickname'"
+
+		if { ! $Cmdline } {
+			tkdialog .err "Cluster not found" $msg OK
+		}
+		
+		set namelist [list] 
+
+	} else {
+		
+		for { set i 0 } { $i < $nclusters } { incr i } {
+
+			set dbcluster [lreplace $dbcluster 3 3 $i]
+
+			set dbname_template [dbeval $dbcluster "extfile()"]
+
+			set volumes [dbgetv $dbcluster 0 $i volumes]
+			set time [dbgetv $dbcluster 0 $i time]
+			set endtime [dbgetv $dbcluster 0 $i endtime]
+
+			if { $volumes == "single" } {
+
+				lappend namelist $dbname_template	
+
+			} elseif { $volumes == "year" } {
+
+				set start_year [epoch2str $time %Y]
+				set end_year [epoch2str $endtime %Y]
+
+				for { set vol_year $start_year } \
+				    { $vol_year <= $end_year } \
+				    { incr vol_year } {
+
+				    set voltime [str2epoch "1/1/$vol_year"]
+
+				    set dbname [epoch2str $voltime $dbname_template]
+
+				    if { [database_exists $dbname] } {
+
+				    	lappend namelist $dbname
+				    }
+				}
+
+			} elseif { $volumes == "month" } {
+
+				set start_month [epoch2str $time %L]
+				set start_year [epoch2str $time %Y]
+				set end_month [epoch2str $endtime %L]
+				set end_year [epoch2str $endtime %Y]
+
+				set vol_month $start_month
+				set vol_year $start_year
+
+				while { ($vol_year < $end_year) || \
+					($vol_year == $end_year && \
+					 $vol_month <= $end_month ) } {
+					
+				    set voltime [str2epoch "$vol_month/1/$vol_year"]
+
+				    set dbname [epoch2str $voltime $dbname_template]
+
+				    if { [database_exists $dbname] } {
+
+				    	lappend namelist $dbname
+				    }
+
+				    if { $vol_month < 12 } {
+
+					incr vol_month
+
+				    } else {
+					
+					incr vol_year
+					set vol_month 1
+				    }
+				}
+
+			}  elseif { $volumes == "day" } {
+
+				set start_day [yearday $time] 
+				set end_day [yearday $endtime] 
+
+				set vol_day $start_day 
+
+				while { $vol_day <= $end_day } {
+
+					set voltime [epoch $vol_day]
+
+					set dbname [epoch2str $voltime $dbname_template]
+
+				    	if { [database_exists $dbname] } {
+
+				    		lappend namelist $dbname
+				    	}
+
+					set vol_day [yearday [expr [epoch $vol_day] + 86400 ]]
+				}
+
+			} else {
+
+				set msg "volumes type '$volumes' in cluster database not understood"
+
+				if { $Cmdline } {
+					
+					elog_complain $msg
+
+				} else {
+
+					tkdialog .err "Volume type unknown" $msg OK
+				}
+			}
+		}
+	}
+
+	return $namelist
+}
+
 proc get_dbpath { nickname } {
-	global Template_time Db  Cmdline
+	global Template_time Db Cmdline
 
 	set time [str2epoch $Template_time]
 
@@ -265,13 +408,22 @@ proc run_cmdline {} {
 	set List_Nicknames 0
 	set Resolve_dbname 0
 	set Time_specified 0
+	set List_dbnames 0
 
 	set stripped_argv {}
 
 	while { $i < $n } {
+
 		set myarg [lindex $argv $i]
+
 		if { [cequal $myarg -n] } {
+
 			set List_Nicknames 1
+
+		} elseif { [cequal $myarg -l] } {
+
+			set List_dbnames 1
+
 		} elseif { [cequal $myarg -t] } {
 			incr i
 			if { $i == $n } {
@@ -347,16 +499,25 @@ proc run_cmdline {} {
 
 	} elseif { $Resolve_dbname && $nickname == "" } {
 
-		puts stderr "\ndbcentral: Must specify a database nickname when using -d\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -d\n"
 		exit -1
 
 	} elseif { $Resolve_dbname } {
 
 		puts stdout [get_dbpath $nickname]	
 
+	} elseif { $List_dbnames && $nickname == "" } {
+
+		puts stderr "\ndbcentral: Must specify a database clustername when using -l\n"
+		exit -1
+
+	} elseif { $List_dbnames } {
+
+		puts stdout [join [get_dbnames $nickname] "\n"]
+
 	} elseif { [llength $stripped_argv] == 0 && $Time_specified } {
 
-		puts stderr "\ndbcentral: Must specify a database nickname when using -t\n"
+		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n"
 		exit -1
 
 	} elseif { [llength $stripped_argv] == 1 } {
@@ -371,7 +532,7 @@ proc run_cmdline {} {
 
 	} else {
 
-		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]}
+		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [database_nickname [task_nickname]]}
 		exit -1
 	}
 }

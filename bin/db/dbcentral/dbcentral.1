@@ -1,9 +1,10 @@
 .TH DBCENTRAL 1 "$Date$"
 .SH NAME
-dbcentral \- centralized utility to launch commands on commonly used databases
+\fBdbcentral\fP \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-dbcentral [-n] [-t timestring] [-d] [database_clustername [task_nickname]]
+\fBdbcentral\fP [-n] [-t timestring] [-d] [-l] 
+	  [database_clustername [task_nickname]]
 .fi
 .SH DESCRIPTION
 Many institutions have a variety of databases which are commonly used
@@ -45,16 +46,16 @@ of default tasks for a given database cluster may be overridden in the
 custom_tasks array as shown in the example below.  Each task should have a 
 descriptive name for the task, then a unix command-line that will run 
 the task. The DBNAME macro in this command-line will be replaced by the 
-actual database name when dbcentral runs. 
+actual database name when \fBdbcentral\fP runs. 
 
-When dbcentral is launched with no command-line options, it reads this
+When \fBdbcentral\fP is launched with no command-line options, it reads this
 parameter file and cluster database and creates a GUI with one pull-down menu per
 database cluster.
 Each pull-down menu contains entries for the commands which may be run
 on that cluster. In addition, a time-of-interest field is specified at
 the top of the GUI window.  This time is used to interpret
 database-name templates which depend on time.  The time-of-interest
-field is initialized to be the launch time of the dbcentral program,
+field is initialized to be the launch time of the \fBdbcentral\fP program,
 determined from the system clock. However, a different time may be
 typed in by the user. Hitting 'return' in the entry box after changing
 the time will normalize the time-string to the standard print format.
@@ -62,7 +63,7 @@ Any time string accepted by str2epoch(3) may be entered.
 
 The dir and dfile fields of the dbcluster database are intended to be a
 template for str2epoch(3), which
-allows dbcentral to handle entire structures of databases with similar,
+allows \fBdbcentral\fP to handle entire structures of databases with similar,
 time-dependent names. For example, if the analyst-reviewed hypocentral
 solutions are in day volumes, such as
 .nf
@@ -78,12 +79,12 @@ and dfile) might be
 
 .fi
 The meaning of the percent-escape codes is listed in str2epoch(3). Given
-this name template, dbcentral can use one description for the entire
+this name template, \fBdbcentral\fP can use one description for the entire
 class of databases, interpret the template according to the time of
-interest specified in dbcentral, and hunt down the correct database.
+interest specified in \fBdbcentral\fP, and hunt down the correct database.
 
-The parameter file and supporting database for dbcentral may be useful far
-beyond the dbcentral
+The parameter file and supporting database for \fBdbcentral\fP may be useful far
+beyond the \fBdbcentral\fP
 GUI itself. Properly configured for the installation, 
 these can allow automated processes to look up databases they need, rather 
 than having them in their own parameter file.  For example, if a particular 
@@ -93,10 +94,10 @@ parameter file for some application has the entry
 	site_database /Seis/databases/stations/master_stations
 
 .fi
-That may be replaced by a parameter-file execution of dbcentral:
+That may be replaced by a parameter-file execution of \fBdbcentral\fP:
 .nf
 
-	site_database &exec(dbcentral -d site_database)
+	site_database &exec(\fBdbcentral\fP -d site_database)
 
 .fi
 (assuming, of course, that that site_database has been specified in 
@@ -109,9 +110,9 @@ for that database is displayed.
 If one clicks the right mouse button on the database clustername, the 
 first listed task is performed on the database. 
 
-A Control-C in the dbcentral GUI window will kill the application. 
+A Control-C in the \fBdbcentral\fP GUI window will kill the application. 
 
-In addition to the GUI mode, launched with no arguments, dbcentral has 
+In addition to the GUI mode, launched with no arguments, \fBdbcentral\fP has 
 a command-line mode for easy retrieval of and command-launches on common 
 databases. If one of the database clustername is specified on the 
 command line, the first task listed for that database is launched. A task 
@@ -130,6 +131,10 @@ centrally configured.
 Show absolute pathname of database. A database clustername must 
 be specified when using the -d option.
 
+.IP -l
+Show the pathnames of all databases in a cluster. A database clustername must 
+be specified when using the -d option.
+
 .IP -n
 Show available database clusternames or task nicknames.
 
@@ -143,7 +148,7 @@ A database clustername must be specified when using the -t option.
 .nf
 
 home &env(HOME)
-dbcentral_database &home/dbcentral
+dbcentral_database &home/\fBdbcentral\fP
 
 default_tasks &Tbl{
 	dbe		dbe DBNAME
@@ -162,14 +167,14 @@ custom_tasks &Arr{
 .SH EXAMPLE
 .ft CW
 .in 2c
-.nf
 To create a demo cluster database:
+.nf
 
-% cat > ~/dbcentral
+% cat > ~/\fBdbcentral\fP
 #
 schema dbcluster0.5
 %
-% dbaddv ~/dbcentral.clusters <<EOF
+% dbaddv ~/\fBdbcentral\fP.clusters <<EOF
 ? clustername antelope_demo
 ? time 4/27/92
 ? dir /opt/antelope/data/db/demo
@@ -179,38 +184,59 @@ schema dbcluster0.5
 ? schema css3.0
 ? % 
 
+.fi
 
 To launch the GUI application:
+.nf
 
-% dbcentral
+% \fBdbcentral\fP
 % 
+
+.fi
 
 To launch dbe on the demo database, given the above parameter file:
 
-% dbcentral antelope_demo
+.nf
+
+% \fBdbcentral\fP antelope_demo
+
+.fi
 
 To launch dbpick on the demo database, given the above parameter file:
 
-% dbcentral antelope_demo dbpick
+.nf
+
+% \fBdbcentral\fP antelope_demo dbpick
+
+.fi
 
 To get the absolute pathname of the demo database:
 
-% dbcentral -d antelope_demo
+.nf
+
+% \fBdbcentral\fP -d antelope_demo
 /opt/antelope/data/db/demo/demo
+
+.fi
 
 To get the currently-configured database clusternames:
 
-% dbcentral -n
+.nf
+
+% \fBdbcentral\fP -n
 
 dbcentral database clusternames:
 
 
         antelope_demo
 
+.fi
 
 To get the currently configured task nicknames for the demo database:
 
-% dbcentral -n antelope_demo
+.nf
+
+% \fBdbcentral\fP -n antelope_demo
 
 dbcentral command nicknames for antelope_demo:
 
@@ -223,13 +249,65 @@ dbcentral command nicknames for antelope_demo:
 
         smartpick
 
+.fi
+
 To get the pathname for PDE database containing data for Dec. 31, 1997, provided 
 such a cluster is specified in the cluster database:
 
-% dbcentral -t "12/31/97" -d pde
+.nf
+
+% \fBdbcentral\fP -t "12/31/97" -d pde
 
 /space/pde/pde_1997
 
+% 
+
+To list the names of all the pde databases that exist on the system, as specified 
+in the given cluster: 
+
+% \fBdbcentral\fP -l pde
+/space/pde/pde_pre1960
+/space/pde/pde_1960
+/space/pde/pde_1961
+/space/pde/pde_1962
+/space/pde/pde_1963
+/space/pde/pde_1964
+/space/pde/pde_1965
+/space/pde/pde_1966
+/space/pde/pde_1967
+/space/pde/pde_1968
+/space/pde/pde_1969
+/space/pde/pde_1970
+/space/pde/pde_1971
+/space/pde/pde_1972
+/space/pde/pde_1973
+/space/pde/pde_1974
+/space/pde/pde_1975
+/space/pde/pde_1976
+/space/pde/pde_1977
+/space/pde/pde_1978
+/space/pde/pde_1979
+/space/pde/pde_1980
+/space/pde/pde_1981
+/space/pde/pde_1982
+/space/pde/pde_1983
+/space/pde/pde_1984
+/space/pde/pde_1985
+/space/pde/pde_1986
+/space/pde/pde_1987
+/space/pde/pde_1988
+/space/pde/pde_1989
+/space/pde/pde_1990
+/space/pde/pde_1991
+/space/pde/pde_1992
+/space/pde/pde_1993
+/space/pde/pde_1994
+/space/pde/pde_1995
+/space/pde/pde_1996
+/space/pde/pde_1997
+/space/pde/pde_1998
+/space/pde/pde_1999
+/space/pde/pde_2000
 % 
 
 .fi
@@ -240,13 +318,13 @@ such a cluster is specified in the cluster database:
 .SH ATTRIBUTES
 .SH DIAGNOSTICS
 .nf
-% dbcentral fake_clustername
+% \fBdbcentral\fP fake_clustername
 
-dbcentral: No tasks defined for database 'fake_clustername'
+\fBdbcentral\fP: No tasks defined for database 'fake_clustername'
 
-% dbcentral antelope_demo fake_task
+% \fBdbcentral\fP antelope_demo fake_task
 
-dbcentral: No task 'fake_task' defined for database 'antelope_demo'
+\fBdbcentral\fP: No task 'fake_task' defined for database 'antelope_demo'
 
 .fi
 .SH "SEE ALSO"
@@ -264,23 +342,36 @@ Dbcentral does not check, after constructing a database name from the
 parameter-file template and the time specified in the GUI, whether 
 the database actually exists or has any tables. The command of interest 
 is blindly run on the pathname created. This is possibly a mistake. However,
-because of the general nature of dbcentral, the templates and commands 
+because of the general nature of \fBdbcentral\fP, the templates and commands 
 could just as easily be used for database creation as for running commands 
 on pre-existing databases. Thus, no checking is done. One could always add
 an existence check as one of the parameter-file entries.
 
-dbcentral does not check to see whether the command succeeded.
+\fBdbcentral\fP does not check to see whether the command succeeded.
 
-One could arguably hard-wire dbcentral to always include a dbe(1) 
+One could arguably hard-wire \fBdbcentral\fP to always include a dbe(1) 
 line for each database. Instead, this is left at the discretion of the
 administrator. This allows the administrator to choose whether dbe 
 comes up by default in editable mode ("-e" option to dbe).
 
-dbcentral needs a -l mode to list the available databases in a cluster, 
-looping over any volume segmentation in each cluster row and checking for the 
-corresponding existing databases. 
+If the -l mode is used to list database names and a cluster row with 
+the \fIvolumes\fP field specified as \fIsingle\fP has \fIdir\fP and 
+\fIdfile\fP with percent-escape characters, the time substitution will be 
+silently ignored since the appropriate timestamp to use is ill-defined. 
+Also, week-volumes have not been implemented, only day, month, year, and single
+volumes. 
 
-dbcentral needs a -q mode to run dbprocess queries on all databases in a 
+The database-existence check for the -l option is a simple check for the 
+existence of a file named for the descriptor, or a glob of $dbname.*. This 
+could go wrong if there are pathologically named non-database files in the 
+target locations. 
+
+The database-path option -d applies the time-string to the database cluster 
+names. The time string defaults to the current time if none is otherwise specified 
+with -t. If no database in the cluster explicitly covers the time value in 
+question, \fBdbcentral\fP by design will return an empty string.
+
+\fBdbcentral\fP needs a -q mode to run dbprocess queries on all databases in a 
 cluster. 
 .SH AUTHOR
 .nf
