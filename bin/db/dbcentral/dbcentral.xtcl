@@ -180,7 +180,7 @@ proc database_exists { dbname } {
 	}
 }
 
-proc get_dbnames { nickname } {
+proc get_dbnames { nickname {include_times 0} } {
 	global Db Dbcentral_dbname Cmdline
 
 	set expr "clustername == \"$nickname\""
@@ -212,7 +212,11 @@ proc get_dbnames { nickname } {
 
 			if { $volumes == "single" } {
 
-				lappend namelist $dbname_template	
+				if { $include_times } {
+					lappend namelist [list $dbname_template	$time]
+				} else {
+					lappend namelist $dbname_template	
+				}
 
 			} elseif { $volumes == "year" } {
 
@@ -229,7 +233,11 @@ proc get_dbnames { nickname } {
 
 				    if { [database_exists $dbname] } {
 
-				    	lappend namelist $dbname
+					if { $include_times } {
+						lappend namelist [list $dbname $voltime]
+					} else {
+				    		lappend namelist $dbname
+					}
 				    }
 				}
 
@@ -253,7 +261,11 @@ proc get_dbnames { nickname } {
 
 				    if { [database_exists $dbname] } {
 
-				    	lappend namelist $dbname
+					if { $include_times } {
+						lappend namelist [list $dbname $voltime]
+					} else {
+				    		lappend namelist $dbname
+					}
 				    }
 
 				    if { $vol_month < 12 } {
@@ -282,7 +294,11 @@ proc get_dbnames { nickname } {
 
 				    	if { [database_exists $dbname] } {
 
-				    		lappend namelist $dbname
+						if { $include_times } {
+							lappend namelist [list $dbname $voltime]
+						} else {
+				    			lappend namelist $dbname
+						}
 				    	}
 
 					set vol_day [yearday [expr [epoch $vol_day] + 86400 ]]
@@ -409,6 +425,7 @@ proc run_cmdline {} {
 	set Resolve_dbname 0
 	set Time_specified 0
 	set List_dbnames 0
+	set Queryfile ""
 
 	set stripped_argv {}
 
@@ -423,6 +440,17 @@ proc run_cmdline {} {
 		} elseif { [cequal $myarg -l] } {
 
 			set List_dbnames 1
+
+		} elseif { [cequal $myarg -q] } {
+
+			incr i
+
+			if { $i == $n } {
+				puts stderr "filename required for -q"
+				exit -1
+			}
+
+			set Queryfile [lindex $argv $i]
 
 		} elseif { [cequal $myarg -t] } {
 			incr i
@@ -515,6 +543,84 @@ proc run_cmdline {} {
 
 		puts stdout [join [get_dbnames $nickname] "\n"]
 
+	} elseif { $Queryfile != "" && $nickname == "" } {
+
+		puts stderr "\ndbcentral: Must specify a database clustername when using -q\n"
+		exit -1
+
+	} elseif { $Queryfile != "" } {
+
+		if { $Queryfile == "-" } {
+			
+			while { [gets stdin aline] } {
+
+				lappend query $aline
+			}
+
+		} else {
+
+			if { ! [file exists $Queryfile] } {
+				
+				puts stderr "Couldn't find query file '$Queryfile'"
+				exit -1
+			}
+
+			set fd [open $Queryfile r]
+
+			while { [gets $fd aline] > 0 } {
+				
+				puts stdout "aline is <$aline>"
+				lappend query $aline
+			}
+
+			close $fd
+		}
+
+		set cmdlist ""
+		set db2pipecmd_template ""
+		for { set icmd 0 } { $icmd < [llength $query] } { incr icmd } {
+			
+			set querycmd [lindex $query $icmd]
+
+			if { [regexp {^db2pipe (.*)} $querycmd junk db2pipecmd_template] } {
+
+				break
+
+			} else {
+
+				append cmdlist "{" $querycmd "} "
+			}
+		}
+
+		set dblist [get_dbnames $nickname 1]
+
+		for { set idb 0 } { $idb < [llength $dblist] } { incr idb } {
+
+			set alist [lindex $dblist $idb]
+			set dbname [lindex $alist 0]
+			set time [lindex $alist 1]
+			
+			set db [dbopen $dbname r]
+
+			eval "set db \[dbprocess [list $db] $cmdlist\]"
+
+			set nrecs [dbquery $db dbRECORD_COUNT]
+
+			if { $nrecs > 0 && $db2pipecmd_template != "" } {
+
+				set db2pipecmd [epoch2str $time $db2pipecmd_template]
+
+				set tmp /tmp/dbcentral[pid]$idb
+				set fd [open $tmp w]
+				db2pipe $db $fd
+				close $fd
+				puts stdout "SCAFFOLD exec $db2pipecmd < $tmp"
+				file delete $tmp
+			}
+
+			dbclose $db
+		}
+
 	} elseif { [llength $stripped_argv] == 0 && $Time_specified } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n"
@@ -532,7 +638,7 @@ proc run_cmdline {} {
 
 	} else {
 
-		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [database_nickname [task_nickname]]}
+		puts stderr {Usage: dbcentral [-n] [-t timestring] [-d] [-l] [-q queryfile] [database_nickname [task_nickname]]}
 		exit -1
 	}
 }

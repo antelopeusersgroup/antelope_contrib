@@ -3,7 +3,7 @@
 \fBdbcentral\fP \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-\fBdbcentral\fP [-n] [-t timestring] [-d] [-l] 
+\fBdbcentral\fP [-n] [-t timestring] [-d] [-l] [-q queryfile]
 	  [database_clustername [task_nickname]]
 .fi
 .SH DESCRIPTION
@@ -135,6 +135,15 @@ be specified when using the -d option.
 Show the pathnames of all databases in a cluster. A database clustername must 
 be specified when using the -d option.
 
+.IP "-q queryfile"
+Run a dbprocess(3) style query on all databases in a cluster. The query
+file should be a list of dbprocess(3) commands to apply to each database. If 
+the queryfile is specified to be '-', these commands are taken from stdin. The 
+final command should be a display instruction such as dbselect. If stdin 
+is used to deliver the query instructions, an empty line should be used to 
+indicate the end of the dbprocess command list. See the example below for a 
+demonstration. 
+
 .IP -n
 Show available database clusternames or task nicknames.
 
@@ -262,8 +271,12 @@ such a cluster is specified in the cluster database:
 
 % 
 
+.fi
+
 To list the names of all the pde databases that exist on the system, as specified 
 in the given cluster: 
+
+.nf
 
 % \fBdbcentral\fP -l pde
 /space/pde/pde_pre1960
@@ -308,6 +321,57 @@ in the given cluster:
 /space/pde/pde_1998
 /space/pde/pde_1999
 /space/pde/pde_2000
+% 
+
+.fi
+
+To run a cross-database query by entering dbprocess(3) commands from the 
+command line:
+
+.nf
+
+% dbcentral -q - pde
+dbopen origin
+dbsubset ml > 7
+dbselect lat lon depth strtime(time) ml
+
+  65.4000 -150.1000    7.0000 10/29/1968  22:16:15.600    7.10
+ -38.1830  -73.2320    6.0000  5/10/1975  14:27:38.700    7.50
+  35.9970  -17.6490   33.0000  5/26/1975   9:11:51.500    8.10
+ -29.2080 -177.8860   69.0000  1/14/1976  15:56:34.900    7.80
+ -28.4270 -177.6570   33.0000  1/14/1976  16:47:33.500    8.20
+  39.5700  117.9780   23.0000  7/27/1976  19:42:54.600    7.60
+  58.6790 -142.7860   10.0000 11/30/1987  19:23:19.500    7.10
+  56.9530 -143.0320   10.0000  3/06/1988  22:35:38.100    7.40
+  43.3000  143.6910  102.0000  1/15/1993  11:06:05.900    7.50
+ -10.9720  164.1810   20.0000  3/06/1993   3:05:49.800    7.10
+  51.2180  157.8290   71.0000  6/08/1993  13:03:36.400    7.10
+  42.8510  139.1970   17.0000  7/12/1993  13:17:11.900    7.70
+  12.9820  144.8010   59.0000  8/08/1993   8:34:24.900    7.80
+  14.7170  -92.6450   34.0000  9/10/1993  19:12:54.600    7.20
+ -18.0390 -178.4130  563.0000  3/09/1994  23:28:06.700    7.50
+ -10.4770  112.8350   18.0000  6/02/1994  18:17:34.000    7.80
+ -13.8410  -67.5530  631.0000  6/09/1994   0:33:16.200    8.20
+ -16.6200  167.5180   33.0000  7/13/1994   2:35:56.000    7.20
+  42.3400  132.8650  471.0000  7/21/1994  18:36:31.700    7.30
+  43.7730  147.3210   14.0000 10/04/1994  13:22:55.800    8.30
+  43.9050  147.9160   33.0000 10/09/1994   7:55:39.500    7.30
+  13.5250  121.0670   32.0000 11/14/1994  19:15:30.600    7.10
+  40.5250  143.4190   27.0000 12/28/1994  12:19:23.000    7.80
+ -37.7590  178.7520   21.0000  2/05/1995  22:51:05.100    7.10
+ -15.1990 -173.5290   21.0000  4/07/1995  22:06:56.800    7.40
+  12.0590  125.5800   21.0000  4/21/1995   0:34:46.000    7.10
+  12.6260  125.2970   16.0000  5/05/1995   3:53:45.000    7.10
+ -23.0080  169.9000   20.0000  5/16/1995  20:12:44.200    7.70
+  52.6290  142.8270   11.0000  5/27/1995  13:03:52.600    7.10
+ -23.3400  -70.2940   46.0000  7/30/1995   5:11:23.600    7.60
+  -5.7990  154.1780   30.0000  8/16/1995  10:27:28.600    7.70
+  16.7790  -98.5970   23.0000  9/14/1995  14:04:31.400    7.20
+  19.0550 -104.2050   33.0000 10/09/1995  15:35:53.900    7.30
+  28.8260   34.7990   10.0000 11/22/1995   4:15:11.900    7.20
+  44.6630  149.3000   33.0000 12/03/1995  18:01:08.900    7.40
+  -6.9030  129.1510  142.0000 12/25/1995   4:43:24.400    7.10
+  34.5940 -116.2710    0.0000 10/16/1999   9:46:44.130    7.30
 % 
 
 .fi
@@ -371,8 +435,8 @@ names. The time string defaults to the current time if none is otherwise specifi
 with -t. If no database in the cluster explicitly covers the time value in 
 question, \fBdbcentral\fP by design will return an empty string.
 
-\fBdbcentral\fP needs a -q mode to run dbprocess queries on all databases in a 
-cluster. 
+The \fBdbcentral\fP -q mode needs an ability to subset for time, i.e. for 
+only certain databases in a cluster.
 .SH AUTHOR
 .nf
 Kent Lindquist
