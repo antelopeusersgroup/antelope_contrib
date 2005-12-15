@@ -85,6 +85,11 @@ Arr 	*Track_packets = 0;
 Arr 	*Track_packetchans = 0;
 Pmtfifo	*RYO2orbPackets_mtf;
 
+/* This is officially declared in ieeefp.h on Solaris
+   but is in math.h on linux. Sidestep the compile issues
+   by declaring it explicitly. */
+extern int finite(double);
+
 typedef struct ImportThread {
 
 	/* Shared variables: */
