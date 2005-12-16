@@ -518,6 +518,8 @@ new_ImportThread( char *name )
 void
 refresh_import_thread( ImportThread *it )
 {
+	int	val;
+
 	while( it->bnsin == NULL ) {
 
 		it->so = socket( PF_INET, SOCK_STREAM, 0 );
@@ -535,6 +537,14 @@ refresh_import_thread( ImportThread *it )
 		it->sin.sin_family = AF_INET;
 		it->sin.sin_port = htons( 0 ); /* Any port */
 		it->sin.sin_addr.s_addr = htonl( INADDR_ANY );
+
+		val = 1;
+
+		if( setsockopt( it->so, SOL_SOCKET, SO_KEEPALIVE, 
+				&val, sizeof(int) ) ) {
+
+			elog_die( 1, "Failed to set KEEPALIVE for socket\n" );
+		}
 
 		if( bind( it->so, (struct sockaddr *) &it->sin, 
 		                                   sizeof( it->sin ) ) ) {
