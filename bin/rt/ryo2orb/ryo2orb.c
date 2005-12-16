@@ -538,14 +538,6 @@ refresh_import_thread( ImportThread *it )
 		it->sin.sin_port = htons( 0 ); /* Any port */
 		it->sin.sin_addr.s_addr = htonl( INADDR_ANY );
 
-		val = 1;
-
-		if( setsockopt( it->so, SOL_SOCKET, SO_KEEPALIVE, 
-				&val, sizeof(int) ) ) {
-
-			elog_die( 1, "Failed to set KEEPALIVE for socket\n" );
-		}
-
 		if( bind( it->so, (struct sockaddr *) &it->sin, 
 		                                   sizeof( it->sin ) ) ) {
 			if( it->bindfail < NCOMPLAIN_MAX ) {
@@ -617,6 +609,15 @@ refresh_import_thread( ImportThread *it )
 		} else {
 
 			it->connectfail = 0;
+
+			val = 1;
+
+			if( setsockopt( it->so, SOL_SOCKET, SO_KEEPALIVE, 
+					&val, sizeof(int) ) ) {
+	
+				elog_die( 1, 
+					"Failed to set KEEPALIVE for socket\n" );
+			}
 
 			if( Verbose ) {
 
