@@ -1,6 +1,7 @@
 DATADIR= www/cgibin
 
 DATA= rtimbank.php \
+      rtimbank_image.php \
       rtimbank.pf
 
 MAN3H= rtimbank.3h

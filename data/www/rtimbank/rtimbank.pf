@@ -1,8 +1,10 @@
 # RTIMBANK Preferences
 
 server_settings &Arr{
+	# dbcentral		1	# Are you using dbcentral for your databases?
+	# img_dbpath		/export/www/html/db/rtimbank_dbcentral	# Path to real time images database
+	dbcentral		0	# Are you using dbcentral for your databases?
 	img_dbpath		/export/www/html/db/rt_images_roadnet	# Path to real time images database
-	server_root		/export/www/html			# Web server root directory
 	movies_database_present	yes					# Movies database present? yes or no
 	# mv_dbpath		/export/www/html/db/rt_movies		# Daily movies database present?
 }
@@ -40,6 +42,12 @@ page_text &Arr{
 			<li>You can scroll through the images by choosing <b>NEXT</b> or <b>PREVIOUS</b> and this will load the next or previous images from the database in this page.</li>
 			<li>You can view the high resolution image for any of the database entries by clicking on the thumbnail image (the far right-side column). Even if there is not a thumbnail image, a high resolution image is available, and clicking the thumbnail image will load this high resolution image into the &ldquo;Requested image&rdquo; section of the page</li>
 		</ol>
+		<p><b>Important Note:</b> 
+		The dates and times of the images from the shipboard camera images 
+		(such as from the R/V's Melville and Revelle) may not be up to date 
+		for a variety of reasons. The dates and times of the images are 
+		indicated by their timestamps.
+                </p>
 	}
 	credits &Tbl{
 		&Arr{

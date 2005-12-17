@@ -20,7 +20,8 @@ also specify a movies database.
 .SH PARAMETER FILE
 rtimbank.pf defines a variety of variables required by rtimbank.php
 including paths to the databases, css files, any images and library
-functions.
+functions. It also allows the definition of a dbcentral database
+if your data sources are large enough to span several databases.
 .SH EXAMPLE
 .in 2c
 .ft CW

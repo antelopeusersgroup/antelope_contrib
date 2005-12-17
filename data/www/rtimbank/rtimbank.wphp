@@ -49,12 +49,13 @@ if( !extension_loaded( 'Datascope' ) ) {
 ################################################################
 #                START: READ THE PARAMETER FILE
 ################################################################
-$pf = "rtimbank2" ;
+$pf = "rtimbank" ;
 
 pfupdate( $pf ) ;
 
 # Server Settings
 $server = pfget( $pf, "server_settings" ) ;
+$dbcentral_stat = $server['dbcentral'] ;
 $dbpath = $server['img_dbpath'] ;
 $server_root = $server['server_root'] ;
 $movies_online = $server['movies_database_present'] ;
@@ -92,127 +93,196 @@ $credits = $page_text['credits'] ;
 ################################################################
 #                START: FUNCTIONS
 ################################################################
-function html_header( $project_title, $css_file, $refresh_rate ) {
-   ?>
-   <!--
-   # Copyright (c) 2005 The Regents of the University of California
-   # All Rights Reserved
-   #
-   # Permission to use, copy, modify and distribute any part of this software for
-   # educational, research and non-profit purposes, without fee, and without a
-   # written agreement is hereby granted, provided that the above copyright
-   # notice, this paragraph and the following three paragraphs appear in all
-   # copies.
-   #
-   # Those desiring to incorporate this software into commercial products or use
-   # for commercial purposes should contact the Technology Transfer Office,
-   # University of California, San Diego, 9500 Gilman Drive, La Jolla, CA
-   # 92093-0910, Ph: (858) 534-5815.
-   #
-   # IN NO EVENT SHALL THE UNIVESITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
-   # DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
-   # LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE, EVEN IF THE UNIVERSITY
-   # OF CALIFORNIA HAS BEEN ADIVSED OF THE POSSIBILITY OF SUCH DAMAGE.
-   #
-   # THE SOFTWARE PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF
-   # CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
-   # ENHANCEMENTS, OR MODIFICATIONS.  THE UNIVERSITY OF CALIFORNIA MAKES NO
-   # REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER IMPLIED OR
-   # EXPRESS, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-   # MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE
-   # SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
-   #
-   #   This code was created as part of the ROADNet project.
-   #   See http://roadnet.ucsd.edu/
-   #
-   #   Written By: Robert Newman 2005-07-27
-   -->
-   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-   <html xmlns="http://www.w3.org/1999/xhtml">
-   <head>
-   <title><?php echo "$project_title" ; ?></title>
-   <?php echo "<style type=\"text/css\" media=\"all\">@import \"" . $css_file . "\";</style>\n" ; ?>
-   <link rel="stylesheet" type="text/css" href="<?php echo $css_file ; ?>" title="due" media="screen" />
-   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
-   <meta http-equiv="refresh" content="<?php echo $refresh_rate ; ?>" />
-   <meta http-equiv="pragma" content="no-cache" />
-   <meta name="robots" content="all" />
-   <meta name="author" content="Robert Newman, UCSD" />
-   <meta name="description" content="Realtime Imagebank : ROADNet - 
-                                Real-time Observatories, Applications, and Data management Network" />
-   <meta name="keywords" content="real time realtime imagebank newman robert lindquist kent roadnet
-                                observatories applications data management network sensor camera
-                                instrument logger data stream" />
-   </head>
-   <body>
-   <?php
+function html_header( ) {
+	global $refresh_rate, $css_file, $project_title ;
+	?>
+	<!--
+	# Copyright (c) 2005 The Regents of the University of California
+	# All Rights Reserved
+	#
+	# Permission to use, copy, modify and distribute any part of this software for
+	# educational, research and non-profit purposes, without fee, and without a
+	# written agreement is hereby granted, provided that the above copyright
+	# notice, this paragraph and the following three paragraphs appear in all
+	# copies.
+	#
+	# Those desiring to incorporate this software into commercial products or use
+	# for commercial purposes should contact the Technology Transfer Office,
+	# University of California, San Diego, 9500 Gilman Drive, La Jolla, CA
+	# 92093-0910, Ph: (858) 534-5815.
+	#
+	# IN NO EVENT SHALL THE UNIVESITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
+	# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+	# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE, EVEN IF THE UNIVERSITY
+	# OF CALIFORNIA HAS BEEN ADIVSED OF THE POSSIBILITY OF SUCH DAMAGE.
+	#
+	# THE SOFTWARE PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF
+	# CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+	# ENHANCEMENTS, OR MODIFICATIONS.  THE UNIVERSITY OF CALIFORNIA MAKES NO
+	# REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER IMPLIED OR
+	# EXPRESS, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+	# MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE
+	# SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+	#
+	#   This code was created as part of the ROADNet project.
+	#   See http://roadnet.ucsd.edu/
+	#
+	#   Written By: Robert Newman 2005-07-27
+	-->
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<title><?php echo "$project_title" ; ?></title>
+	<?php echo "<style type=\"text/css\" media=\"all\">@import \"" . $css_file . "\";</style>\n" ; ?>
+	<link rel="stylesheet" type="text/css" href="<?php echo $css_file ; ?>" title="due" media="screen" />
+	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+	<meta http-equiv="refresh" content="<?php echo $refresh_rate ; ?>" />
+	<meta http-equiv="pragma" content="no-cache" />
+	<meta name="robots" content="all" />
+	<meta name="author" content="Robert Newman, UCSD" />
+	<meta name="description" content="Realtime Imagebank : ROADNet - 
+	Real-time Observatories, Applications, and Data management Network" />
+	<meta name="keywords" content="real time realtime imagebank newman robert lindquist kent roadnet
+	observatories applications data management network sensor camera
+	instrument logger data stream" />
+
+	<script language=javascript type='text/javascript'>
+	function toggle(pass) { 
+		var divs = new Array( latestdiv, searchdiv ) ;
+		for(i=0;i<divs.length;i++){ 
+			if(divs[i].id.match(pass)){//if they are 'see' divs 
+				if (document.getElementById) // DOM3 = IE5, NS6 
+					divs[i].style.display="block";// show/hide 
+				else if (document.layers) // Netscape 4 
+					document.layers[divs[i]].display = 'block'; 
+				else // IE 4 
+					document.all.divs[i].display = 'block'; 
+			} else { 
+				if (document.getElementById) 
+					divs[i].style.display="none"; 
+				else if (document.layers) // Netscape 4 
+					document.divs[i].display = 'none'; 
+				else // IE 4 
+					document.all.divs[i].display = 'none'; 
+			} 
+		} 
+	}
+	</script>
+	</head>
+	<body>
+	<?php
 }
 
-function html_instructions( $instructions ) {
-   ?>
-   <h2>Instructions</h2>
-   <?php
-   echo $instructions ;
-   ?>
+function html_instructions() {
+	global $instructions ;
+	?>
+	<h2>Instructions</h2>
+	<?php
+	echo $instructions ;
+	?>
 
-   <?php
+	<?php
 }
 
-function html_footer( $credits ) {
-   ?>
-   <div class="clearer">&nbsp;</div>
-   </div>
+function html_footer() {
+	global $credits ;
+	?>
+	<div class="clearer">&nbsp;</div>
+	</div>
 
-   <div id="footer">
-   <p align="center">
-   Prototype by <a href="http://www.lindquistconsulting.com/">Kent Lindquist</a>
-   and <a href="http://eqinfo.ucsd.edu/~rnewman/">Rob Newman</a>.
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
-   <?php
+	<div id="footer">
+	<p align="center">
+	Prototype by <a href="http://www.lindquistconsulting.com/">Kent Lindquist</a>
+	and <a href="http://eqinfo.ucsd.edu/~rnewman/">Rob Newman</a>.
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
+	<?php
 	foreach( $credits as $key=>$value ) {
 		if( is_array( $value ) ) {
 			echo "<a href=\"" . $value['url'] . "\">" . $value['text'] . "</a> | \n" ;
 		}
 	}
-   ?>
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-   Made with <a href="http://www.w3.org/MarkUp/">XHTML</a> and <a href="http://www.w3.org/Style/CSS/">CSS</a>.
-   </p>
-   </div>
-
-   </body>
-   </html>
-   <?php
+	?>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	Made with <a href="http://www.w3.org/MarkUp/">XHTML</a> and <a href="http://www.w3.org/Style/CSS/">CSS</a>.
+	</p>
+	</div>
+	</body>
+	</html>
+	<?php
 }
+
+function time_search( $time ) {
+	global $desc, $self, $timeUTC, $timeLOCAL, $camera ;
+	?>
+	<p align="center">CAMERA OPTIONS: 
+	<a href="<?php echo "$self?camera=$camera " ; ?>" onclick="toggle('latest')">Get latest image</a>&nbsp;&nbsp;&nbsp;
+	<a href="javascript:void(0)" onclick="toggle('search')">Image search function</a></p>
+	<div name="latestdiv" id="latestdiv" style="display:block;">
+		<p class="highlight">Camera Description: <span class="white"><?php echo $desc ; ?></span>
+		<br/>Image Timestamp (UTC): <span class="white"><?php echo $timeUTC ; ?></span>
+		<br/>Image Timestamp (Local): <span class="white"><?php echo $timeLOCAL ; ?></span></p>
+	</div>
+	<div name="searchdiv" id="searchdiv" style="display:none;">
+		<form id="searchform" name="searchform" action="<?php echo $self ; ?>" method="get">
+		<input type="hidden" name="camera" value="<?php echo $camera ; ?>">
+		<input type="hidden" name="search" value="1">
+		<p align="center" class="highlight">
+		Image acquistion time: 
+		<input type="text" name="time" id="time">
+		<select name="range">
+		<option value="">+/-</option>
+		<?php
+		for( $i=0;$i<=30;$i++ ) {
+			echo "\t<option value=\"$i\">$i mins</option>\n" ;
+		}
+		?>
+		</select>
+		<input type="submit" value="Search for image"><br/>
+		Format for search: YYYY-MM-DD HH:mm:ss in UTC<br/>
+		Range is minutes either side of the requested time.</p>
+		</form>
+	</div>
+	<?php
+
+}
+
+function get_dbpath( $dbcluster_path ) { # Ensure we get the correct database from dbcluster
+	global $time ;
+	if( empty( $time ) ) {
+		$mytime = time() ;
+	} else {
+		$mytime = $time ;
+	}
+	$dbcluster_path = ds_dbopen_table( "$dbcluster_path.clusters", "r" ) ;
+	$expr = "time <= $mytime && ( endtime == NULL || endtime >= $mytime )" ;
+	$dbcluster_path = dbsubset( $dbcluster_path, $expr ) ;
+	$nrecs = dbnrecs( $dbcluster_path ) ;
+	if( $nrecs == 1 ) {
+		for( $dbcluster_path[3] = 0; $dbcluster_path[3] < $nrecs; $dbcluster_path[3]++ ) {
+			$dbpath = dbextfile( $dbcluster_path ) ;
+			$dbpath = epoch2str( $mytime, $dbpath ) ;
+		}
+		return $dbpath ;
+	}
+}
+
 ################################################################
 #                END: FUNCTIONS
 ################################################################
 
-
-
-
 $self = $_SERVER['PHP_SELF'] ; # Reference self
 
 # Form parameters
-if( isset( $_GET['camera'] ) ) {
-	$camera = $_GET['camera'] ;
-} else {
-	unset( $camera ) ;
+if( isset( $_GET['camera'] ) ) $camera = $_GET['camera'] ;
+if( isset( $_GET['time'] ) ) $time = $_GET['time'] ;
+if( isset( $_GET['prev20'] ) ) $prev20 = $_GET['prev20'] ;
+if( isset( $_GET['search'] )  && $_GET['search'] == "1" ) {
+	$time = str2epoch( $_GET['time'] ) ;
 }
-if( isset( $_GET['time'] ) ) {
-	$time = $_GET['time'] ;
-} else {
-	unset( $time ) ;
-}
-if( isset( $_GET['prev20'] ) ) {
-	$prev20 = $_GET['prev20'] ;
-} else {
-	unset( $prev20 ) ;
-}
-
-if( isset( $_GET['searchtime'] ) ) {
-	$searchtime = strtotime( $_GET['searchtime']."UTC" ) ;
+if( isset( $_GET['range'] ) ) {
 	$range = ( $_GET['range'] ) * 60 ;
+} else {
+	$range = 3600 ;
 }
 
 # Start number for images returned
@@ -226,15 +296,33 @@ if( empty( $_GET['start'] ) ) {
 $thumbnail_pattern = "/(\/\d\d\d\d\/\d\d\d)\/([^\/]*)$/";
 $thumbnail_replacement = "$1/thumbnails/$2";
 
-# Open database
-if( !$mydb = ds_dbopen( $dbpath,"r" ) ) {
-	echo "<p>Error! Cannot open requested database!</p>" ;
+if( $dbcentral_stat == 1 ) {
+	$mydbpath = get_dbpath( $dbpath ) ;
+} else {
+	$mydbpath = $dbpath ;
 }
 
-# Dynamically retrieve the sites
-$dbsites = dblookup( $mydb, '', 'site', '', '' ) ;
-$dbsites_nrecs = dbnrecs( $dbsites ) ; # Number of records
-$dbsites = dbprocess( $dbsites, "dbsort imagename" ) ;
+# Open database
+if( !$mydb = ds_dbopen( $mydbpath,"r" ) ) {
+	exit( "Error! Cannot open requested database!" ) ;
+}
+
+if( $dbcentral_stat == 1 ) {
+	# Dynamically retrieve the list of CURRENT sites
+	$dbcluster = ds_dbopen_table( "$dbpath.clusters", "r" ) ;
+	for( $dbcluster[3] = 0; $dbcluster[3] < 1; $dbcluster[3]++ ) {
+		$dbpath_sites = dbextfile( $dbcluster ) ;
+		$dbpath_sites = epoch2str( $mytime, $dbpath_sites ) ;
+	}
+	$sites_tbl = $dbpath_sites ;
+	if( !$dbsites = ds_dbopen_table( "$sites_tbl.site", "r" ) ) exit( "Cannot open database" ) ;
+	$dbsites_nrecs = dbnrecs( $dbsites ) ; # Number of records
+	$dbsites = dbprocess( $dbsites, "dbsort imagename" ) ;
+} else {
+	$dbsites = dblookup( $mydb, '','site','','' ) ;
+	$dbsites_nrecs = dbnrecs( $dbsites ) ; # Number of records
+	$dbsites = dbprocess( $dbsites, "dbsort imagename" ) ;
+}
 
 # Get the requested image
 if ( isset( $camera ) && $camera!="none" ) {
@@ -247,7 +335,7 @@ if ( isset( $camera ) && $camera!="none" ) {
 		$mydb_movie = dbprocess( $mydb_movie, "dbsort format" ) ;
 		$nrecs_movie = dbnrecs( $mydb_movie ) ;
 	}
-	if( isset( $time ) ) {
+	if( isset( $time ) && empty( $search ) ) {
 		$expr = "imagename == \"$camera\" && time == $time";
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
 		# Get the other thumbs
@@ -255,18 +343,25 @@ if ( isset( $camera ) && $camera!="none" ) {
 		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
 		$expr = "imagename == \"$camera\" && time <= $time";
 		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
-	} elseif( isset( $searchtime ) ) {
-		$expr = "imagename == \"$camera\" && abs( time - $searchtime ) < $range" ;
-		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 0 ) ;
+	} elseif( isset( $time ) && $search == "1" ) {
+		$expr = "imagename == \"$camera\" && time <= abs( $time + $range ) && time >= abs( $time - $range )" ;
+		$dbthumbs = dblookup( $mydb, '', 'images', '', '' ) ;
+		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
+		$expr = "imagename == \"$camera\" && time <= $time";
+		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
+		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
 	} else {
 		$expr = "imagename == \"$camera\"";
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
+	}
+	if( is_null( $dbgetimage[3] ) || $dbgetimage[3] < 0 ) {
+		$imageexists == -1 ;
 	}
 }
 ?>
 
 <?php
-html_header( $project_title, $css_file, $refresh_rate ) ;
+html_header() ;
 ?>
 
 <div id="content">
@@ -335,30 +430,32 @@ if( isset( $camera ) && $camera!="none" && $movies_online=="yes" ) {
    <legend>Requested Image</legend>
 <?php
 if( isset( $camera ) && $camera!="none" ) {
-	$desc = dbgetv( $dbgetimage, "description" ) ;
-	$time = sprintf( '%.5f', dbgetv( $dbgetimage, "time" ) ) ;
-	$timeLOCAL = date("D, d M Y H:i:s T", $time ) ;
-	$filename = dbextfile( $dbgetimage ) ;
-	list( $filename_width, $filename_height, $filename_type, $filename_attr ) = getimagesize( $filename ) ;
-	// Get image so it fits nicely
-	$aspect_ratio = $output_width_constant / $filename_width;
-	$output_image_width = round( $filename_width * $aspect_ratio ) ;
-	$output_image_height = round( $filename_height * $aspect_ratio ) ;
-	$filename = str_replace( $server_root, "", $filename ) ;
-	if( isset( $searchtime ) ) {
-		$searchtimeUTC = gmdate("D, d M Y H:i:s T", $searchtime ) ;
-		$searchtimeLOCAL = date("D, d M Y H:i:s T", $searchtime ) ;
-		echo "\t<p align=\"center\"><b>IMAGE SEARCH TIME:</b> $searchtimeUTC (Epoch time: $searchtime)</p>" ;
+	if( $dbgetimage[3] < 0 || $imageexists == -1 ) {
+		echo "<p>No image for the time specified. Please alter you search criteria.</p>\n" ;
+	} else {
+		$desc = dbgetv( $dbgetimage, "description" ) ;
+		$time = sprintf( '%.5f', dbgetv( $dbgetimage, "time" ) ) ;
+		$timeLOCAL = date("D, d M Y H:i:s T", $time ) ;
+		$timeUTC = epoch2str( $time, "%a, %d %b %Y %H:%M:%S GMT" ) ;
+		$filename = dbextfile( $dbgetimage ) ;
+		list( $filename_width, $filename_height, $filename_type, $filename_attr ) = getimagesize( $filename ) ;
+		// Get image so it fits nicely
+		$aspect_ratio = $output_width_constant / $filename_width;
+		$output_image_width = round( $filename_width * $aspect_ratio ) ;
+		$output_image_height = round( $filename_height * $aspect_ratio ) ;
+		# $filename = str_replace( $server_root, "/db", $filename ) ;
+		# if( isset( $searchtime ) ) {
+		# 	$searchtimeUTC = gmdate("D, d M Y H:i:s \G\M\T", $searchtime ) ;
+		# 	$searchtimeLOCAL = date("D, d M Y H:i:s T", $searchtime ) ;
+		# 	echo "\t<p align=\"center\"><b>IMAGE SEARCH TIME:</b> $searchtimeUTC (Epoch time: $searchtime)</p>" ;
+		# }
+		time_search( $time ) ;
+		# echo "\t<p align=\"center\"><img src=\"$filename\" width=\"$output_image_width\" height=\"$output_image_height\" alt=\"Latest image from $camera\" style=\"border:1px solid black;\" /><br/><br/>\n" ;
+		echo "\t<p align=\"center\"><img src=\"rtimbank_image.php?filename=".base64_encode( $filename )."\" width=\"$output_image_width\" height=\"$output_image_height\" alt=\"Latest image from $camera\" style=\"border:1px solid black;\" /><br/><br/>\n" ;
+		echo "\t<p align=\"center\"><a href=\"rtimbank_image.php?filename=".base64_encode( $filename )."\"><span class=\"full_res_link\">View full resolution (" . $filename_width . "px x " . $filename_height . "px)</span></a></p>\n\n" ;
 	}
-	echo "\t<p align=\"center\">CAMERA OPTIONS: " ;
-	echo "<a href=\"$self?camera=$camera\">Get latest image</a></p>" ;
-	// echo "<a href=\"javascript:void(0)\" onclick=\"toggle('search')\">Image search function</a></p>\n\n" ;
-	// require( 'rtimbank/include/_searchform.php' ) ;
-	echo "\n\n\t<p class=\"highlight\">Camera Description: <span class=\"white\">$desc</span><br/>Image Timestamp: <span class=\"white\">$timeLOCAL</span></p>\n\n" ;
-	echo "\t<p align=\"center\"><img src=\"$filename\" width=\"$output_image_width\" height=\"$output_image_height\" alt=\"Latest image from $camera\" style=\"border:1px solid black;\" /><br/><br/>\n" ;
-	echo "\t<p align=\"center\"><a href=\"$filename\"><span class=\"full_res_link\">View full resolution (" . $filename_width . "px x " . $filename_height . "px)</span></a></p>\n\n" ;
 } else {
-	html_instructions( $instructions ) ;
+	html_instructions() ;
 }
 ?>
   </fieldset>
@@ -367,82 +464,86 @@ if( isset( $camera ) && $camera!="none" ) {
   <legend>Database Table Entries</legend>
 <?php
 if( isset( $camera ) && $camera!="none" ) {
-	if( !$time OR $time == 0  ) {
-		$itable_entry = $start ;
+	if(  $dbgetimage[3] < 0 || $imageexists == -1 ) {
+		echo "<p style=\"margin-bottom:20em;\">No image for the time specified. Please alter you search criteria.</p>\n" ;
 	} else {
-		$itable_entry = 0 ;
-	}
-	$itable_exit =  $itable_entry + $recspp + 1 ;
-
-	$entries = array() ;
-
-	while( $itable_entry++ < $itable_exit ) {
 		if( !$time OR $time == 0  ) {
-			$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs[3], 1 ) ;
-			list( $imagename, $imgtime ) = dbgetv( $dbthumbs, "imagename", "time" ) ;
-			$filename = dbextfile( $dbthumbs ) ;
+			$itable_entry = $start ;
 		} else {
-			$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage[3], 1 ) ;
-			list( $imagename, $imgtime ) = dbgetv( $dbgetimage, "imagename", "time" ) ;
-			$filename = dbextfile( $dbgetimage ) ;
+			$itable_entry = 0 ;
 		}
-		$imgtime = sprintf( '%5f', $imgtime ) ;
-		$thumbnail_filename = preg_replace( $thumbnail_pattern, $thumbnail_replacement, $filename ) ;
-		$entries[$itable_entry]['time'] = $imgtime ; 
-		if( file_exists( $thumbnail_filename ) ) {
-			$entries[$itable_entry]['thumbnail'] = str_replace( $server_root, "", $thumbnail_filename ) ;
-		} else {
-			$entries[$itable_entry]['thumbnail'] = "rtimbank/images/sorry.gif" ;
+		$itable_exit =  $itable_entry + $recspp + 1 ;
+	
+		$entries = array() ;
+	
+		while( $itable_entry++ < $itable_exit ) {
+			if( !$time OR $time == 0  ) {
+				$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs[3], 1 ) ;
+				list( $imagename, $imgtime ) = dbgetv( $dbthumbs, "imagename", "time" ) ;
+				$filename = dbextfile( $dbthumbs ) ;
+			} else {
+				$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage[3], 1 ) ;
+				list( $imagename, $imgtime ) = dbgetv( $dbgetimage, "imagename", "time" ) ;
+				$filename = dbextfile( $dbgetimage ) ;
+			}
+			$imgtime = sprintf( '%5f', $imgtime ) ;
+			$thumbnail_filename = preg_replace( $thumbnail_pattern, $thumbnail_replacement, $filename ) ;
+			$entries[$itable_entry]['time'] = $imgtime ; 
+			if( file_exists( $thumbnail_filename ) ) {
+				$entries[$itable_entry]['thumbnail'] = "rtimbank_image.php?filename=".base64_encode( $thumbnail_filename ) ;
+			} else {
+				$entries[$itable_entry]['thumbnail'] = "images/roadnet_sorry.gif" ;
+			}
+			$entries[$itable_entry]['timeUTC'] = gmdate("D, d M Y H:i:s T", $imgtime ) ;
+			$entries[$itable_entry]['timeLOCAL'] = date("D, d M Y H:i:s T", $imgtime ) ;
 		}
-		$entries[$itable_entry]['timeUTC'] = gmdate("D, d M Y H:i:s T", $imgtime ) ;
-		$entries[$itable_entry]['timeLOCAL'] = date("D, d M Y H:i:s T", $imgtime ) ;
+	
+	
+		echo "<p class=\"highlight\">$dbgetimage_nrecs records found. $recspp records shown per page. $pages pages of records.</strong></p>\n<p align=\"center\">" ;
+		$first = $entries[0]['time'] ;
+		$last = $entries[21]['time'] ;
+		# PREVIOUS / NEXT BUTTONS
+		echo "<p align=\"center\">\n" ;
+		if( isset( $prev20 ) ) {
+			echo "\t<a href=\"$self?camera=$camera&time=$prev20\"><span class=\"arrow\">&lt; PREVIOUS $recspp</span></a>\n" ;
+			echo "&nbsp;&nbsp;&nbsp;\n" ;
+		}
+		echo "\t<a href=\"$self?camera=$camera&time=$last&prev20=$time\"><span class=\"arrow\">NEXT $recspp &gt;</span></a>\n" ;
+		echo "</p>\n";
+		echo "<table align=\"center\">\n" ;
+		echo "\t<tr>\n" ;
+		echo "\t\t<th>Timestamp (UNIX)</th>\n" ;
+		echo "\t\t<th>Timestamp (UTC)</th>\n" ;
+		echo "\t\t<th>Timestamp (Local)</th>\n" ;
+		echo "\t\t<th>Thumbnail Image</th>\n" ;
+		echo "\t<tr>\n" ;
+	
+		for( $itable_entry=1; $itable_entry<=( $itable_exit-1 ); $itable_entry++  ) {
+			echo "\t<tr>\n";
+			echo "\t\t<td>" . $entries[$itable_entry]['time'] . "</td>\n";
+			echo "\t\t<td>" . $entries[$itable_entry]['timeUTC'] . "</td>\n";
+			echo "\t\t<td>" . $entries[$itable_entry]['timeLOCAL'] . "</td>\n";
+			echo "\t\t<td><a href=\"$self?camera=$camera&time=" . $entries[$itable_entry]['time'] . "&prev20=" . $time . "\"><img src=\"".$entries[$itable_entry]['thumbnail']."\" border=\"1\" alt=\"\"></a></td>\n";
+			echo "\t</tr>\n";
+		}
+	
+		echo "\t<tr>\n" ;
+		echo "\t\t<th>Timestamp (UNIX)</th>\n" ;
+		echo "\t\t<th>Timestamp (UTC)</th>\n" ;
+		echo "\t\t<th>Timestamp (Local)</th>\n" ;
+		echo "\t\t<th>Thumbnail Image</th>\n" ;
+		echo "\t<tr>\n" ;
+		echo "</table>\n" ;
+		# PREVIOUS / NEXT BUTTONS
+		echo "<p align=\"center\">\n" ;
+		if( isset( $prev20 ) ) {
+			echo "\t<a href=\"$self?camera=$camera&time=$prev20\"><span class=\"arrow\">&lt; PREVIOUS $recspp</span></a>\n" ;
+			echo "&nbsp;&nbsp;&nbsp;\n" ;
+		}
+		echo "\t<a href=\"$self?camera=$camera&time=$last&prev20=$time\"><span class=\"arrow\">NEXT $recspp &gt;</span></a>\n" ;
+		echo "</p>\n";
+	
 	}
-
-
-	echo "<p class=\"highlight\">$dbgetimage_nrecs records found. $recspp records shown per page. $pages pages of records.</strong></p>\n<p align=\"center\">" ;
-	$first = $entries[0]['time'] ;
-	$last = $entries[21]['time'] ;
-	# PREVIOUS / NEXT BUTTONS
-	echo "<p align=\"center\">\n" ;
-	if( isset( $prev20 ) ) {
-		echo "\t<a href=\"$self?camera=$camera&time=$prev20\"><span class=\"arrow\">&lt; PREVIOUS $recspp</span></a>\n" ;
-		echo "&nbsp;&nbsp;&nbsp;\n" ;
-	}
-	echo "\t<a href=\"$self?camera=$camera&time=$last&prev20=$time\"><span class=\"arrow\">NEXT $recspp &gt;</span></a>\n" ;
-	echo "</p>\n";
-	echo "<table align=\"center\">\n" ;
-	echo "\t<tr>\n" ;
-	echo "\t\t<th>Timestamp (UNIX)</th>\n" ;
-	echo "\t\t<th>Timestamp (UTC)</th>\n" ;
-	echo "\t\t<th>Timestamp (Local)</th>\n" ;
-	echo "\t\t<th>Thumbnail Image</th>\n" ;
-	echo "\t<tr>\n" ;
-
-	for( $itable_entry=1; $itable_entry<=( $itable_exit-1 ); $itable_entry++  ) {
-		echo "\t<tr>\n";
-		echo "\t\t<td>" . $entries[$itable_entry]['time'] . "</td>\n";
-		echo "\t\t<td>" . $entries[$itable_entry]['timeUTC'] . "</td>\n";
-		echo "\t\t<td>" . $entries[$itable_entry]['timeLOCAL'] . "</td>\n";
-		echo "\t\t<td><a href=\"$self?camera=$camera&time=" . $entries[$itable_entry]['time'] . "&prev20=" . $time . "\"><img src=\"" . $entries[$itable_entry]['thumbnail'] . "\" border=\"1\" alt=\"\"></a></td>\n";
-		echo "\t</tr>\n";
-	}
-
-	echo "\t<tr>\n" ;
-	echo "\t\t<th>Timestamp (UNIX)</th>\n" ;
-	echo "\t\t<th>Timestamp (UTC)</th>\n" ;
-	echo "\t\t<th>Timestamp (Local)</th>\n" ;
-	echo "\t\t<th>Thumbnail Image</th>\n" ;
-	echo "\t<tr>\n" ;
-	echo "</table>\n" ;
-	# PREVIOUS / NEXT BUTTONS
-	echo "<p align=\"center\">\n" ;
-	if( isset( $prev20 ) ) {
-		echo "\t<a href=\"$self?camera=$camera&time=$prev20\"><span class=\"arrow\">&lt; PREVIOUS $recspp</span></a>\n" ;
-		echo "&nbsp;&nbsp;&nbsp;\n" ;
-	}
-	echo "\t<a href=\"$self?camera=$camera&time=$last&prev20=$time\"><span class=\"arrow\">NEXT $recspp &gt;</span></a>\n" ;
-	echo "</p>\n";
-
 } else {
 	echo "<p style=\"margin-bottom:95px\">Currently no Camera defined</p>\n" ;
 }
@@ -451,6 +552,6 @@ if( isset( $camera ) && $camera!="none" ) {
 </div>
 
 <?php
-  html_footer( $credits ) ;
+  html_footer() ;
   ds_dbclose( $mydb ) ;
 ?>
