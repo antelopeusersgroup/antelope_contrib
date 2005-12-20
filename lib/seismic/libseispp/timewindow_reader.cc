@@ -244,7 +244,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			//
 			Dbptr db_bundle;
 			int is,ie;
-			dbgetv(dbtrgrp.db,0,"bundle",&db_bundle,0);
+			char sta[10],chan[10];  // We'll need to have these sometimes
+			dbgetv(dbtrgrp.db,0,
+				"sta",sta,"chan",chan,"bundle",&db_bundle,0);
 			dbget_range(db_bundle,&is,&ie);
 			// For either case we assume we can get the
 			// main required attributes from the first
@@ -320,7 +322,10 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			}
 			else
 			{
-cout << "This sta:chan has multiple segments = "<<ie-is<<endl;
+cout << "TimeSeriesEnsemble continuous data constructor:  "
+	<< sta << ":"<<chan
+	<<" has multiple segments = "<<ie-is<<endl
+	<< "These will be zeroed and marked as gaps"<<endl;
 				// land here if there are gaps in this
 				// time interal.
 				int ns_this_segment;
