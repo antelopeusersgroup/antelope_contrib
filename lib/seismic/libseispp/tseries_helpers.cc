@@ -86,9 +86,21 @@ TimeSeries& ArrivalTimeReference(TimeSeries& tcsi,
 		for(j=0,jj=jstart;j<ns_to_copy;++j,++jj)
 			tcso->s[j]=tcsi.s[jj];
 		tcso->t0 += (tcso->dt)*static_cast<double>(jstart);
-		// Previous version updated time and endtime metadta
-		// fields here.  Dropped this as t0 and endtime() 
-		// method now supercede these.
+		//
+		// This is necessary to allow for a rtoa (relative 
+		// to absolute time) conversion later.  Both of these
+		// Modified somewhat for an older version that was deleted
+		// by mistake in the previous version.
+		// Before updating endtime was optional.  Now it is always
+		// done.
+		//
+		if(jstart>0)
+		{
+			double stime=atime+tcso->t0;
+			tcso->put("time",stime);
+			// this one may not really be necessary
+			tcso->put("endtime",atime+tcso->endtime());
+		}
 	}
 	return(*tcso);
 }
