@@ -85,34 +85,10 @@ TimeSeries& ArrivalTimeReference(TimeSeries& tcsi,
 		tcso->ns=ns_to_copy;
 		for(j=0,jj=jstart;j<ns_to_copy;++j,++jj)
 			tcso->s[j]=tcsi.s[jj];
-		// Now we have to update these metadata.  
-		// Rather than abort if the entries are missing we just
-		// print a message.  Could get verbose, but die is
-		// to brutal and not always required in this situation
-		if(jstart>0)
-		{
-			try{
-				double stime=tcso->get_double("time");
-				stime -= atime;
-				tcso->put("time",stime);
-			} catch (MetadataError& mde)
-			{
-				cerr << base_error_message << endl;
-				mde.log_error();
-			}
-		}
-		if(jend>=tcsi.ns)
-		{
-			try{
-				double etime=tcso->get_double("endtime");
-				etime -= atime;
-				tcso->put("endtime",etime);
-			} catch (MetadataError& mde)
-			{
-				cerr << base_error_message << endl;
-				mde.log_error();
-			}
-		}
+		tcso->t0 += (tcso->dt)*static_cast<double>(jstart);
+		// Previous version updated time and endtime metadta
+		// fields here.  Dropped this as t0 and endtime() 
+		// method now supercede these.
 	}
 	return(*tcso);
 }
