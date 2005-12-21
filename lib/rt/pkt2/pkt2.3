@@ -1,0 +1,245 @@
+.\" @(#)pkt2.3	1.0 11/03/97
+.TH PKT2 3 "$Date$"
+.SH NAME
+unstuffpkt, querypkt\- routines to manipulate raw data packets (deprecated)
+.SH SYNOPSIS
+.nf
+#include "pkt2.h"
+
+int unstuffpkt( double time, char srcid, char *packet, Packet **pkt ) ;
+
+int hdr2packet( char **packet, int hdrtype, char *srcname )
+
+int rbquery( char *pkttype, int code, void *result ) ;
+
+.fi
+.SH DESCRIPTION
+These routines allow users to manipulate raw data packets  - retrieve  packet 
+information and data from raw packets; 
+add and remove a specific header to the raw packets; 
+and, get specific parameters for different packet types.
+.LP
+Raw data packets have a certain format which should be specified by \fIpkttype\fR.
+Each packet has a unique source name - \fIsrcname\fR which is determined as combination
+of a network, station code and sorce name in a form - \fInetwork_sta/srcname\fR.
+The raw packet is an opaque data type for users. The user manipulates data
+with the \fIPacket\fR structure the format of which is:
+.nf
+	
+	typedef struct PktChannel {
+    		char net[10], sta[10], chan[10] ;
+    		double time, samprate calib ;
+    		int nsamp, nbytes ;
+    		int datatype ;
+   	 	void *data ;
+	} PktChannel ;
+	 
+	#define ORB_MAXCHAN_PER_PACKET 6
+ 
+	typedef struct Packet {
+    		int nchannels ;
+    		int pkttype;
+                int hdrtype;
+    		Tbl *chan ; 
+	} Packet ;
+ 
+.fi
+.LP 
+\fBunstuffpkt()\fP - 
+input arguments are - \fItime, srcid, packet\fR .
+It will parse raw data packet and
+fill the \fIPacket\fR structure with the proper parameters. 
+On the first call to unstuffpkt, the contents of \fIpkt\fR pointer should be zero, 
+which will cause unstuffpkt to allocate the packet structure. \fBunstuffpkt\fP
+will thereafter manage the Packet memory, reusing some parts at each call, and the returned unstuffed Packet may
+contain pointers to the stuffed packet.  These pointers may not be properly aligned to be used as (for instance) int *.  You should
+first use memcpy to copy the memory somewhere if you need to.  You must also be careful not to reuse the stuffed packet memory until you are done with the unstuffed Packet.
+\fBunstuffpkt()\fP returns 0 on error, 1 on success and 2 on "non-data" packets,
+such as Status Information packets. DB packets, etc.
+.LP
+\fBhdr2packet\fP - input arguments are - \fIPacket\fR and \fIhdrtype\fR.
+Based on a \fIhdrtype\fR it will attach a header to the raw data packet.
+There can be many different header types but all they have a 
+standard pre-header, format of which is:
+.nf
+
+	struct PreHdr {
+  		int hdrsiz;           /* header size */
+  		int pktsiz;           /* raw packet size */
+  		int hdrtype;          /* header type  */
+  		int pkttype;          /* packet type tag  */
+	};
+.fi
+
+.LP
+Currently there are following header types:
+.TP 15
+.BI BBA	
+This header has format:
+.nf
+
+	typedef struct BBAHdr {
+  		struct PreHdr prehdr;
+  		float calib;         /* calibration coef */
+  		float samprate;       /*  SAMPRATE */
+  		short datatype;
+  		short nsamp;          /* sample #  */ 
+  		short nchan;          /* number of channels per packet  */ 
+  		short doff;           /* offset to the data  */ 
+  		short chanlen;        /* offset to the data  */ 
+  		char channels[ORBSRCNAME_SIZE];      /* channels names  */
+	 
+	} BBAHDR; 
+
+
+.fi
+.TP 15
+.BI DPH
+This header has format:
+.nf
+
+	typedef struct DPHdr {
+  		struct PreHdr prehdr;
+  		char net[8];          /* network type */
+  		char sta[6];          /* Sta name */
+  		char channels[64];    /* channels names in form _ch1_ch2_ch3_... */
+  		double calib;         /* calibration coef */
+  		float samprate;       /*  SAMPRATE */
+  		int nsamp;            /* sample #  */ 
+	} DPHDR; 
+
+.fi
+.TP 15
+.BI IPH
+header for the 'status' and 'information' packets.
+This header has format:
+.nf
+
+	typedef struct IPHdr {
+  		struct PreHdr prehdr;
+  		char net[10];
+	} IPHDR;
+
+.fi
+.LP
+\fBhdr2packet\fP will add a specified header to a raw packet, build a \fIsrcname\fR of the current packet.
+The size of the new packet will be returned.
+.LP
+\fBquerypkt()\fP -
+gets packet parameters for a specific packet type - \fIpkttype\fR.
+The following parameters may be gotten using the following \fIcode\fRs:
+.TP 15
+.BI pktBYTES
+returns an integer. This is a size of the data packet in bytes.
+.TP 15
+.BI pktCHANNEL_BYTES
+returns an integer. This is a number bytes per packet per channel.
+.TP 15
+.BI pktCHANNEL_NSAMP
+returns an integer. This is a number of samples per packet per channel.
+.TP 15
+.BI pktHDRSIZE
+returns an integer. This is a size of the data packet header in bytes.
+.TP 15
+.BI pktCHANNEL_COUNT
+returns an integer. This is a number of channels in a packet.
+.TP 15
+.BI pktDATATYPE
+returns an integer. This is a data type in a form \fBtr\fP set.
+.TP 15
+.BI pktSMPRATE
+returns a double. This is a sample rate in smp/sec.
+.TP 15
+.BI rbNET
+returns a pointer to a character string. This is a network name.
+.SH RETURN VALUES
+On success \fIunstuffpkt()\fR and \fIquerypkt()\fR  will return 1, 
+otherwise 0 will be returned.
+The \fIstuffpkt()\fR will return number of bytes in a packet on success,
+otherwise 0 will be returned.
+.SH FILES
+.LP
+\fBpkt.pf\fP - packet parameter file.
+.SH EXAMPLES
+.ft CW
+.nf
+
+       ...
+
+        double time;
+        int orb, pktid, ival;
+        int srcid, psize;
+        int i;
+        Packet *Pkt;
+        PktChannel *rec;
+        char *buffer, *pkttype;
+
+	...
+
+/* open & read RB  */
+
+        if (fpread (orbname, &pf) != 0)
+          die( 0, "Can't read PF file ");
+        if( (orb = orbopen( server, "read" )) < 0)
+          die(0, "Can't open ring buffer.");
+        pktid = orblatest( orb, orbANY);
+        if( orbget( orb, pktid, &srcid, &time, &buffer, &psize) < 0)
+           complain( 0, "Can't get packet from a RB\\n");
+
+
+/* Get pkttype from srcidmap table  */
+
+        ...  
+
+/* Get parameters for specified packet  */
+
+	querypkt ( pkttype, pktBYTES, &ival);
+ 		fprintf(stdout," BYTES: %d ", ival);
+ 
+   	querypkt ( pkttype, pktCHANNEL_COUNT, &ival);
+ 		fprintf(stdout," NCH: %d ", ival);
+	 
+   	querypkt ( pkttype, pktCHANNEL_NSAMP, &ival);
+ 		fprintf(stdout," NSMP: %d ", ival);
+ 
+   	querypkt ( pkttype, pktCHANNEL_BYTES, &ival);
+ 		fprintf(stdout," CHB: %d ", ival);
+ 
+   	querypkt ( pkttype, pktDATATYPE, &ival);
+ 		fprintf(stdout," pktDATATYPE: %d ", ival);
+
+/* Unstuff packet  */
+
+        switch( unstuffpkt( time, srcid, buffer,  &Pkt) )  {
+           case 0:
+     
+                fprintf(stderr, "error in unstuffpkt()\\n");
+                break;
+           case: 1:
+                for( i=0 ; i < Pkt->nchannels ; i++ ) {
+                    rec = (PktChannel * ) gettbl ( packet->chan, i );
+      
+                fprintf( stderr, "NET:%s STA:%s CHAN:%s SRATE:%lf CALIB:%lf NSAMP:%d\\n", 
+                         rec->net, rec->sta, rec->chan, rec->samprate, rec->calib, rec->nsamp );
+ 
+
+                break;
+           case 2:
+              
+                fprintf( stderr, "Current packet is a Status or DB Packet\\n");
+                break;
+
+         }
+ 
+.fi 
+.ft R
+
+.SH "SEE ALSO"
+
+ orb(3)
+
+.SH AUTHOR
+Marina Glushko
+
+
+.\" $Id$ 
