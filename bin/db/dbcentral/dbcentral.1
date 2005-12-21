@@ -142,7 +142,14 @@ the queryfile is specified to be '-', these commands are taken from stdin. The
 final command should be a display instruction such as dbselect. If stdin 
 is used to deliver the query instructions, an empty line should be used to 
 indicate the end of the dbprocess command list. See the example below for a 
-demonstration. 
+demonstration. If the last line of the query instructions begins with \fIdb2pipe\fP, 
+each resulting view is piped into the remaining command string after any 
+percent-escape strings have been replaced according to the timestamp 
+appropriate to the beginning of the database volume. This allows, for example, 
+processed results from each database in a cluster to be unpacked and saved 
+in derivative databases named by time period. If desired, these derivative 
+databases can be further merged in a separate step after the dbcentral query
+is completed. 
 
 .IP -n
 Show available database clusternames or task nicknames.
@@ -437,6 +444,11 @@ question, \fBdbcentral\fP by design will return an empty string.
 
 The \fBdbcentral\fP -q mode needs an ability to subset for time, i.e. for 
 only certain databases in a cluster.
+
+The ability of \fBdbcentral\fP to pipe results of cross-database queries to 
+arbitrary unix commands appears to be hampered by problems with interpretation 
+of the saved views used in an intermediate step. This issue is being investigated.
+
 .SH AUTHOR
 .nf
 Kent Lindquist

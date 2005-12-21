@@ -610,11 +610,12 @@ proc run_cmdline {} {
 
 				set db2pipecmd [epoch2str $time $db2pipecmd_template]
 
-				set tmp /tmp/dbcentral[pid]$idb
+				set tmp /tmp/dbcentral_[pid]_$idb
 				set fd [open $tmp w]
 				db2pipe $db $fd
 				close $fd
-				puts stdout "SCAFFOLD exec $db2pipecmd < $tmp"
+				puts stdout "executing $db2pipecmd < $tmp"
+				eval exec [set db2pipecmd] < $tmp
 				file delete $tmp
 			}
 
