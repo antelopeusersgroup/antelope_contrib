@@ -1,7 +1,7 @@
 #include <sstream>
 #include "stock.h"
 #include "pf.h"
-#include "metadata.h"
+#include "Metadata.h"
 namespace SEISPP
 {
 

@@ -1,7 +1,7 @@
 #ifndef _FILTER_PP_H_
 #define _FILTER_PP_H_
+#include <string>
 #include "seispp.h"
-
 
 namespace SEISPP
 {

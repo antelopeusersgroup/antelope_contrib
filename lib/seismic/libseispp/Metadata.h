@@ -8,7 +8,7 @@
 #include "stock.h"
 #include "arrays.h"
 #include "pf.h"
-#include "attribute_map.h"
+#include "AttributeMap.h"
 #include "databasehandle.h"
 
 namespace SEISPP 

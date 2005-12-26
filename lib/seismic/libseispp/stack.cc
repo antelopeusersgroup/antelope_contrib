@@ -36,11 +36,11 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow twin)
 			weights.push_back(0.0);
 		}
 	}
-	stacktype=Basic;
+	stacktype=BasicStack;
     } catch(...) {throw;}
 }
 //@{ Constructor for more complicated stacking methods selected by method variable.
-// Selecting method=Basic and this function will cause an exception to be thrown.
+// Selecting method=BasicStack and this function will cause an exception to be thrown.
 // Somewhat brutal, but better than mucking around with allowing this function to 
 // accept that form.  All other methods require building a matrix containing all
 // valid data, which is drastically different than accumulating a sum.
@@ -200,7 +200,7 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 			for(i=0;i<ensemblesize;++i) weights[i]=0.0;
 			for(i=0;i<dindex.size();++i) weights[dindex[i]]=rweight[i];
 			break;
-		case Basic:
+		case BasicStack:
 			throw SeisppError(basemessage
 				+ string("coding error.  Use Stack(x,x) to invoke Basic method."));
 			break;

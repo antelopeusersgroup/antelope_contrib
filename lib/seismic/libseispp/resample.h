@@ -2,8 +2,9 @@
 #define _RESAMPLE_H_
 #include <map>
 #include <vector>
+#include "stock.h"
 #include "pf.h"
-#include "seispp.h"
+#include "TimeSeries.h"
 
 // Need this when I add this to seispp
 namespace SEISPP {

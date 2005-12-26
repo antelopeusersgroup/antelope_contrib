@@ -1,5 +1,6 @@
 #include <float.h>
-#include "seispp.h"
+#include <math.h>
+#include "SphericalCoordinate.h"
 namespace SEISPP
 {
 using namespace SEISPP;

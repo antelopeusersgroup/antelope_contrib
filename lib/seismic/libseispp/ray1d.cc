@@ -6,6 +6,7 @@
 #include "ray1d.h"
 #include "dmatrix.h"
 #include "gclgrid.h"
+#include "SeisppError.h"
 namespace SEISPP
 {
 

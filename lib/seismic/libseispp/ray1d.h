@@ -1,8 +1,9 @@
-#ifndef _RAY1D_H
-#define _RAY1D_H
+#ifndef _RAY1D_H_
+#define _RAY1D_H_
+#include <vector>
 #include "dmatrix.h"
 #include "gclgrid.h"
-#include "seispp.h"
+#include "VelocityModel_1d.h"
 namespace SEISPP 
 {
 using namespace std;

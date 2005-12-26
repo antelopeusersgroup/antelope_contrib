@@ -5,7 +5,7 @@
 #include "coords.h"
 #include "stock.h"
 #include "tt.h"
-#include "seispp.h"
+#include "Hypocenter.h"
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP

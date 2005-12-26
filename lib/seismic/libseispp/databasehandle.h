@@ -2,6 +2,7 @@
 #define _DATABASEHANDLE_H_
 
 #include <string>
+#include <list>
 
 namespace SEISPP
 {

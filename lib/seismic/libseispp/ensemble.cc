@@ -1,11 +1,33 @@
-#include <stdio.h>
-#include <vector>
-#include <strings.h>
-#include "db.h"
+#include "ensemble.h"
 #include "tr.h"
-#include "seispp.h"
+namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
+//
+// Ensemble constructors.  Both just create blank trace or 3c trace objects
+// and push them into a vector container.
+//
+TimeSeriesEnsemble::TimeSeriesEnsemble()
+{
+	member.reserve(0);
+}
+TimeSeriesEnsemble::TimeSeriesEnsemble(int nensemble, int nsamples)
+{
+	for(int i=0; i<nensemble; ++i)
+	{
+		TimeSeries *ts = new TimeSeries(nsamples);
+		member.push_back(*ts);
+		delete ts;
+	}
+}
+TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
+	: Metadata(tceold)
+{
+	int nmembers=tceold.member.size();
+	member.reserve(nmembers);
+	for(int i=0; i<nmembers; ++i)
+		member.push_back(tceold.member[i]);
+}
 //
 // Currently don't define this globally in an include file
 // so will place prototype inline here.  These routines come
@@ -35,7 +57,6 @@ int grtr_sc_create(Dbptr dbscgr,
 				int ir,
 					Dbptr *dbtr);
 }
-namespace SEISPP {
 /*  These internal functions implements a frozen namespace for extracting
 attributes from the antelope Trace database.  Originally I passed the output
 of these function (two MetadataList structures containing list of attributes
@@ -427,9 +448,187 @@ cout << "Adjusted ns="<<seis.ns<<endl;
 	}
 }
 
-ThreeComponentEnsemble *TSE23CE(TimeSeriesEnsemble& tse,
-	string chanmap[3])
+// Partial copy constructor copies metadata only.  reserves nmembers slots
+// in ensemble container
+TimeSeriesEnsemble::TimeSeriesEnsemble(Metadata& md,int nmembers)
+	: Metadata(md)
 {
-	throw SeisppError("TimeSeriesEnsemble to ThreeComponentEnsemble procedure not yet implemented");
+	member.reserve(nmembers);
 }
-} // End SEISPP namespace declaration
+	
+ThreeComponentEnsemble::ThreeComponentEnsemble()
+{
+	member.reserve(0);
+}
+ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations, int nsamples)
+{
+	member.reserve(nstations);
+	for(int i=0;i<nstations;++i)
+	{
+		ThreeComponentSeismogram *tcs 
+			= new ThreeComponentSeismogram(nsamples);
+		member.push_back(*tcs);
+		delete tcs;
+	}
+}
+ThreeComponentEnsemble::ThreeComponentEnsemble(int nstations, 
+		int nsamples,
+			MetadataList& mdl)
+{
+	member.reserve(nstations);
+	for(int i=0;i<nstations;++i)
+	{
+		ThreeComponentSeismogram *tcs 
+			= new ThreeComponentSeismogram(nsamples);
+		member.push_back(*tcs);
+		delete tcs;
+	}
+}
+/* Database-driven constructor for an ensemble.  This implementation uses
+a Datascope database only through an immediate dynamic_cast to a 
+DatascopeHandle, but the idea is that a more generic interface 
+would change nothing in the calling sequence.
+
+station_mdl and ensemble_mdl determine which metadata are extracted 
+from the database for individual stations in the ensemble and 
+as the global metadata for the ensemble respectively.   The 
+station metadata is derived from the ThreeComponentSeismogram 
+constructor, but the global metadata is arbitrarily extracted from
+the first row of the view forming the requested ensemble.  This 
+tacitly assumes then that all rows in view that forms this ensemble
+have the same attributes (i.e. these are common attributes obtained
+through some form of relational join.)  
+
+The routine will pass along any exceptions thrown by functions 
+called by the constructor.  It will also throw a SeisppDberror 
+in cases best seen by inspecting the code below.
+
+Author:  Gary L. Pavlis
+Written:  July 2004
+*/
+ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
+	MetadataList& station_mdl,
+        	MetadataList& ensemble_mdl,
+        		AttributeMap& am)
+{
+	int i;
+	int nsta;
+	const string this_function_base_message("ThreeComponentEnsemble database constructor");
+	ThreeComponentSeismogram *data3c;
+	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb);
+	try {
+		// Will throw an exception if this isn't a group pointer
+		DBBundle ensemble_bundle=dbh.get_range();
+		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
+		// We need a copy of this pointer 
+		DatascopeHandle dbhv(ensemble_bundle.parent,
+			ensemble_bundle.parent);
+		// Necessary because the ThreeComponentSeismogram
+		// constructor uses a generic handle
+		DatabaseHandle *rdbhv=dynamic_cast
+			<DatabaseHandle *>(&dbhv);
+		// Loop over members
+		for(i=0,dbhv.db.record=ensemble_bundle.start_record;
+			dbhv.db.record<ensemble_bundle.end_record;
+			++i,++dbhv.db.record)
+		{
+			try {
+				data3c = new ThreeComponentSeismogram(*rdbhv,
+					station_mdl,am);
+			} catch (SeisppDberror dberr)
+			{
+				cerr << "Problem with member "
+					<< i 
+					<< " in ensemble construction" << endl;
+				dberr.log_error();
+				cerr << "Data for this member skipped" << endl;
+				continue;
+			}
+			catch (MetadataError& mderr)
+			{
+				mderr.log_error();
+				throw SeisppError(string("Metadata problem"));
+			}
+			member.push_back(*data3c);
+			delete data3c;
+			// copy global metadata only for the first 
+			// row in this view
+			if(i==0)
+			{
+				DatascopeHandle dbhvsta;
+				if(dbhv.is_bundle)
+				{
+					DBBundle sta_bundle=dbhv.get_range();
+					dbhvsta=DatascopeHandle(
+						sta_bundle.parent,
+						sta_bundle.parent);
+					dbhvsta.db.record=sta_bundle.start_record;
+				}
+				else
+				{
+					dbhvsta=dbhv;
+				}
+				Metadata ens_md(dynamic_cast<DatabaseHandle&>(dbhvsta),
+					ensemble_mdl,am);
+				copy_selected_metadata(ens_md,
+					dynamic_cast<Metadata&>(*this),
+					ensemble_mdl);
+			}
+		}
+
+	} catch (...) { throw;};
+}
+//copy constructor 
+ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tceold)
+	: Metadata(tceold)
+{
+	int nmembers=tceold.member.size();
+	member.reserve(nmembers);
+	for(int i=0; i<nmembers; ++i)
+		member.push_back(tceold.member[i]);
+}
+// Partial copy constructor copies metadata only.  reserves nmembers slots
+// in ensemble container
+ThreeComponentEnsemble::ThreeComponentEnsemble(Metadata& md,int nmembers)
+	: Metadata(md)
+{
+	member.reserve(nmembers);
+}
+
+/* Ensemble assignment operators.
+
+A maintenance issue is that most functions contain a pfdup 
+call.  This is a hidden method to clone the Metadata connected
+to that object.  The problem is if the Metadata implementation
+changes this will break this code.
+*/
+
+
+//
+// assignment operators for ensemble objects (could maybe be templated)
+//
+TimeSeriesEnsemble& TimeSeriesEnsemble::operator=(const TimeSeriesEnsemble& tseold)
+{
+	if(this!=&tseold)
+	{
+		pf = pfdup(tseold.pf);
+		int nmembers=tseold.member.size();
+		member.reserve(nmembers);
+		for(int i=0; i<nmembers; ++i)
+			member.push_back(tseold.member[i]);
+	}
+	return(*this);
+}
+ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEnsemble& tseold)
+{
+	if(this!=&tseold)
+	{
+		pf = pfdup(tseold.pf);
+		int nmembers=tseold.member.size();
+		member.reserve(nmembers);
+		for(int i=0; i<nmembers; ++i)
+			member.push_back(tseold.member[i]);
+	}
+	return(*this);
+}
+} // Termination of namespace SEISPP definitions

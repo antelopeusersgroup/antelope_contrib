@@ -1,6 +1,9 @@
 #include "seispp.h"
+#include "mute.h"
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
 
 // This is a series of functions for applying a simple top mute
 // one or more traces.  Overloading is used to sort out type of
@@ -57,8 +60,6 @@ void ApplyTopMute(ThreeComponentSeismogram &ts,TopMute& mute)
 }
 
 
-/* THIS WAS PREVIOUS CODE.  REPLACED BELOW WITH TEMPLATE AFTER CHANGE TO MEMBER SYMBOL */
-/***************************************
 // For a group of TimeSeries objects (ensemble)
 void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute)
 {
@@ -68,7 +69,7 @@ void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute)
 	// simple why bother  Note the reference makes tseries an anias for *i
 	// for some strange reason the scope resolution operator 
 	// is necessary to avoid an overload ambiguity
-	for(i=t.tse.begin();i!=t.tse.end();++i) 
+	for(i=t.member.begin();i!=t.member.end();++i) 
 		ApplyTopMute(*i,mute);
 }
 // 
@@ -78,16 +79,10 @@ void ApplyTopMute(ThreeComponentEnsemble &t3ce, TopMute& mute)
 {
 	vector<ThreeComponentSeismogram>::iterator t3c;
 
-	for(t3c=t3ce.tcse.begin();t3c!=t3ce.tcse.end();++t3c)
+	for(t3c=t3ce.member.begin();t3c!=t3ce.member.end();++t3c)
 	{
 		ApplyTopMute(*t3c,mute);
 	}
-}
-***************************************/
-template<class T>
-void ApplyTopMute(T& t, TopMute& mute)
-{
-	foreach(t.member.begin(),t.member.end(),ApplyTopMute(t,mute));
 }
 // Probably should have started with this, but we need constructors
 // This uses a pf

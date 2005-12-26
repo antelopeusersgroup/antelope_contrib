@@ -1,7 +1,4 @@
-#include "attribute_map.h"
-#include "metadata.h"
-#include "dbpp.h"
-#include "resample.h"
+#include "seispp.h"
 #include "seismicarray.h"
 using namespace std;
 using namespace SEISPP;
@@ -122,7 +119,7 @@ TimeWindow StationTimeRange(StationTime& times)
 //    read.  This needs to be large enough to mute out filter startup 
 //    transients for simple filters and decimation filters when resampling is
 //    required.
-//@param generalized database handle to read data.  At present this is immediately
+//@param dbh generalized database handle to read data.  At present this is immediately
 //    converted to a DatascopeHandle as the methods used use the Antelope API.
 //@param ensemble_mdl list of data to be read from the database and placed in
 //    the metadata area for the full ensemble.
@@ -162,6 +159,11 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 				each member
 			3) Call extract component function to retrieve only 
 				desired component 
+		ALTERNATIVE:
+			Creating a routine of this same name that 
+			loads a full 3C ensemble.  Probably should remove
+			this functionality from this routine and use that
+			approach.
 		*/
 	}
 	else if( (chan=="Z") || (chan=="N") || (chan=="E") )

@@ -1,10 +1,13 @@
-#include "seispp.h"
-namespace SEISPP {
-using namespace SEISPP;
-using namespace std;
+#ifndef _STACK_H_
+#define _STACK_H_
 
+#include <vector>
+#include "TimeWindow.h"
+#include "TimeSeries.h"
+#include "ensemble.h"
+namespace SEISPP {
 const string moveout_keyword("moveout"); //Extract moveout from metadata using this keyword
-enum StackType {Basic, median, RobustSNR};
+enum StackType {BasicStack, median, RobustSNR};
 
 //@{
 // Generalized stacking object.
@@ -28,4 +31,5 @@ public:
 private:
 	StackType stacktype;
 };
-}  // End namespace declaration
+}
+#endif

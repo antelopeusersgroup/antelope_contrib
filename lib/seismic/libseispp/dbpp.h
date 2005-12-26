@@ -6,8 +6,8 @@
 #include "stock.h"
 #include "db.h"
 #include "pf.h"
-#include "attribute_map.h"
-#include "metadata.h"
+#include "AttributeMap.h"
+#include "Metadata.h"
 #include "databasehandle.h"
 
 namespace SEISPP

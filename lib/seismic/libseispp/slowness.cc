@@ -1,6 +1,10 @@
-#include "seispp.h"
+#include "SeisppError.h"
+#include "Metadata.h"
+#include "slowness.h"
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
 // Generic default slowness grid
 RectangularSlownessGrid::RectangularSlownessGrid()
 {

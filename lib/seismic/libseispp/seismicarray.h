@@ -1,7 +1,14 @@
 #ifndef _SEISMICARRAY_H_
 #define _SEISMICARRAY_H_
-#include "dbpp.h"
-#include "seispp.h"
+#include <string>
+#include <map>
+#include <list>
+#include "TimeWindow.h"
+#include "Metadata.h"
+#include "databasehandle.h"
+#include "Hypocenter.h"
+#include "ensemble.h"
+#include "resample.h"
 
 namespace SEISPP{
 using namespace std;

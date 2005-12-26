@@ -3,12 +3,15 @@
 #include "stock.h"
 #include "pf.h"
 #include "pfstream.h"
-#include "metadata.h"
+#include "Metadata.h"
+#include "SeisppError.h"
+#include "ensemble.h"
 #include "seispp.h"
 
-using namespace std;
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
 
 /* Gets a TimeSeriesEnsemble object from a pfstream pfh.  The
  * requested ensemble is assumed to be keyed by tag in the 
@@ -36,7 +39,7 @@ TimeSeriesEnsemble *GetNextEnsemble(Pfstream_handle *pfh,
 	//  This routine gets the data required to construct this
 	//  from the input pfstream.  I returns everything 
 	//  encapsulated in a single pf
-	pfin = pfstream_GetNextEnsemble(pfh);
+	pfin = pfstream_get_next_ensemble(pfh);
 	if(pfin==NULL) return(NULL);
 
 	// We next parse the input pf encapsulated in a single

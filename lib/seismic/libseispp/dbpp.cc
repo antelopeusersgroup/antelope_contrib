@@ -1,5 +1,7 @@
+#include <stdio.h>
+#include "elog.h"
 #include "dbpp.h"
-#include "seispp.h"
+#include "SeisppError.h"
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP
@@ -487,5 +489,4 @@ void SeisppDberror::log_error()
 	}
 	clear_register(1);
 }
-}
-
+} // End SEISPP namespace declaration

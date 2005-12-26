@@ -1,4 +1,3 @@
-#include "metadata.h"
 #include "dbpp.h"
 #include "seispp.h"
 namespace SEISPP
