@@ -6,6 +6,7 @@ using namespace std;
 using namespace SEISPP;
 namespace SEISPP
 {
+
 // Simple function needed by constructors below.  Returns true if
 // the string dbgroup is found in the command to be send to dbprocess.
 // Throws an int exception if the dbgroup clause is anywhere but 

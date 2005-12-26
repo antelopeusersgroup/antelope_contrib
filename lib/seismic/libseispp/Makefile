@@ -70,7 +70,6 @@ OBJS=AttributeMap.o \
   interpolator1d.o \
   mdlist.o \
   mute.o \
-  nint.o \
   pfstream_interface.o \
   ray1d.o \
   readwrite.o \

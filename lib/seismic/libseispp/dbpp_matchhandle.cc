@@ -121,21 +121,21 @@ list<int> DatascopeMatchHandle::find(Metadata& md)
 				// perhaps should check return of this, but
 				//intentionally ignored for now
 				dbputv(dbscratch_record,0,
-					matchkeys[i].db_attribute_name,
+					matchkeys[i].db_attribute_name.c_str(),
 					rval,0);
 				++nscratch_records_set;
 				break;
 			case MDint:
 				ival=md.get_int(matchkeys[i].internal_name);
 				dbputv(dbscratch_record,0,
-					matchkeys[i].db_attribute_name,
+					matchkeys[i].db_attribute_name.c_str(),
 					ival,0);
 				++nscratch_records_set;
 				break;
 			case MDstring:
 				sval=md.get_string(matchkeys[i].internal_name);
 				dbputv(dbscratch_record,0,
-					matchkeys[i].db_attribute_name,
+					matchkeys[i].db_attribute_name.c_str(),
 					sval.c_str(),0);
 				++nscratch_records_set;
 				break;

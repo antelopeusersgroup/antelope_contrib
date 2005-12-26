@@ -53,9 +53,10 @@ TimeSeriesMaximum& TimeSeriesMaximum::operator=(const TimeSeriesMaximum& other)
 // This files scope global sets the name used for this
 //
 string mdscalename("beam_scale_factor");
-double ComputeAmplitudeStatic(TimeSeries& beam, TimeSeries& data, int lag)
+double ComputeAmplitudeStatic(TimeSeries& beam, TimeSeries& data, double tlag)
 {
 	double beam_scale=beam.get_double(mdscalename);
+	int lag=nint(tlag/beam.dt);
 	// Because used internally won't best bounds, but don't use this in
 	// another program without making it safe in that sense.
 	double datamp=ddot(beam.s.size(),&(beam.s[0]),1,&(data.s[lag]),1);
