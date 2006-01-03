@@ -26,6 +26,7 @@ TimeInvariantFilter::TimeInvariantFilter(string fspec)
 	}
 	else
 	{
+		type=none;
 		npole1 = 0;  npole2=0;
 		f1=0.0;  f2=0.0;
 	}
@@ -160,19 +161,21 @@ string TimeInvariantFilter::type_description()
 		retstr=string("Mean Removal filter");
 		break;
 	default:
-		retstr=string("Filter type is undefined");
+		retstr=string("Default is no filter");
 	}
 	return(retstr);
 }
 // apply to simple float vector of length ns and sample rate dt
 void TimeInvariantFilter::apply(int ns, float *s,double dt)
 {
+	if(type==none) return;
 	if(trfilter_segs(1,&ns,&dt,&s,const_cast<char*>(filter_spec.c_str()))<0)
 			throw SeisppError(string("Error in trfilter_segs"));
 }
 // same as above for array of doubles
 void TimeInvariantFilter::apply(int ns, double *s,double dt)
 {
+	if(type==none) return;
 	int i;
 	float *d=new float[ns];
 	for(i=0;i<ns;++i) d[i]=static_cast<float>(s[i]);
@@ -183,6 +186,7 @@ void TimeInvariantFilter::apply(int ns, double *s,double dt)
 }
 void TimeInvariantFilter::apply(TimeSeries& ts)
 {
+	if(type==none) return;
 	int i;
 	float *d=new float[ts.ns];
 	for(i=0;i<ts.ns;++i) d[i]=static_cast<float>(ts.s[i]);
@@ -193,6 +197,7 @@ void TimeInvariantFilter::apply(TimeSeries& ts)
 }
 void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 {
+	if(type==none) return;
 	int i,j;
 	float *d=new float[ts.ns];
 	for(j=0;j<3;++j)
@@ -206,6 +211,7 @@ void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 }
 void TimeInvariantFilter::apply(Dbptr tr)
 {
+	if(type==none) return;
 	if(trfilter(tr,const_cast<char*>(filter_spec.c_str()))<0)
 		throw SeisppError(string("Error in trfilter"));
 }
@@ -214,6 +220,7 @@ void TimeInvariantFilter::apply(Dbptr tr)
 // but it isn't that much code
 void FilterEnsemble(TimeSeriesEnsemble& ensemble,TimeInvariantFilter& filter)
 {
+	if(filter.type == none) return;
 	try 
 	{
 	    for(int i=0;i<ensemble.member.size();++i)
@@ -222,6 +229,7 @@ void FilterEnsemble(TimeSeriesEnsemble& ensemble,TimeInvariantFilter& filter)
 }
 void FilterEnsemble(ThreeComponentEnsemble& ensemble,TimeInvariantFilter& filter)
 {
+	if(filter.type == none) return;
 	try 
 	{
 	    for(int i=0;i<ensemble.member.size();++i)

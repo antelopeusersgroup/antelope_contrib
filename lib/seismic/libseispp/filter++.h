@@ -8,7 +8,8 @@ namespace SEISPP
 using namespace std;
 using namespace SEISPP;
 
-enum Filter_Type {highpass,lowpass,bandpass,WAA,WAV,WAD,DIF,DIF2,INT,INT2,DEMEAN};
+enum Filter_Type {highpass,lowpass,bandpass,WAA,WAV,WAD,DIF,DIF2,
+	INT,INT2,DEMEAN,none};
 
 class TimeInvariantFilter
 {
@@ -19,7 +20,7 @@ public:
 	int fmin_poles();
 	int fmax_poles();
 	string type_description();
-	TimeInvariantFilter(){f1=0.0;f2=0.0;npole1=0;npole2=0;};
+	TimeInvariantFilter(){type=none,f1=0.0;f2=0.0;npole1=0;npole2=0;};
 	TimeInvariantFilter(string);
 	TimeInvariantFilter(double flow, int npl, double fhigh, int fph);
 	TimeInvariantFilter(const TimeInvariantFilter&);
