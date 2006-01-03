@@ -74,15 +74,15 @@ int  hdr2packet(
 	        } else if ( strncmp(Par.packet.datatype, "c0", 2) == 0 )  {
 		    datatype = 0;
 		}
-		datatype = ( short ) htonl( (int) datatype);
+		datatype = htons(datatype);
 	        memcpy(phdr, &datatype, sizeof(short) );
                 nbytes += sizeof(short);
 		phdr += sizeof(short);
-	        nsamp = (short) htonl( Par.packet.nsamp);
+	        nsamp = (short) htons( Par.packet.nsamp);
 	        memcpy(phdr, &nsamp, sizeof(short) );
                 nbytes += sizeof(short);
 		phdr += sizeof(short);
-	        nchan = (short) htonl(Par.packet.nchan); 
+	        nchan = (short) htons(Par.packet.nchan); 
 	        memcpy(phdr, &nchan, sizeof(short) );
                 nbytes += sizeof(short);
 		phdr += sizeof(short);
@@ -99,8 +99,8 @@ int  hdr2packet(
 		phdr += chanlen;
 
     		hsiz = nbytes + sizeof( struct PreHdr ); 
+    		psize = hsiz + ntohs(prehdr.pktsiz);
     		prehdr.hdrsiz = htons (hsiz); 
-    		psize = hsiz + prehdr.pktsiz;
     
 	        memcpy( &hdr[0], (char *) &prehdr, sizeof( struct PreHdr ) );
 	        memcpy( &hdr[sizeof( struct PreHdr )], (char *) &hdrbuf[0], nbytes );
@@ -130,8 +130,8 @@ int  hdr2packet(
 		phdr +=  PKT_NAMESIZE;
       		
     		hsiz = nbytes + sizeof( struct PreHdr ); 
+    		psize = hsiz + ntohs(prehdr.pktsiz);
     		prehdr.hdrsiz = htons( hsiz ); 
-    		psize = hsiz + prehdr.pktsiz;
 		
 	        memcpy( &hdr[0], (char *) &prehdr, sizeof( struct PreHdr ) );
 	        memcpy( &hdr[sizeof( struct PreHdr )], (char *) &hdrbuf[0], nbytes );
@@ -159,7 +159,7 @@ int  hdr2packet(
 
 /* Add data  */
 
-      memcpy(new_pkt+hsiz, (char *) *packet, prehdr.pktsiz );
+      memcpy(new_pkt+hsiz, (char *) *packet, ntohs(prehdr.pktsiz) );
 
       memcpy(*packet, new_pkt, psize);
  

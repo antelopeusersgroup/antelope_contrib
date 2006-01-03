@@ -15,4 +15,4 @@ OBJSM	= ipd2.o\
 	  sig_hdlr.o\
 	  valid_pkt.o
 $(BIN):	$(OBJSM)
-	$(CC) $(CFLAGS) -o $(BIN) $(OBJSM) $(LDFLAGS) $(LDLIBS)
+	$(CC) $(CFLAGS) -g -o $(BIN) $(OBJSM) $(LDFLAGS) $(LDLIBS)

@@ -91,7 +91,7 @@ PktPar pack;
       e2h( ytime, &year, &day, &hour, &min, &sec);
       ptime = epoch( year * 1000 );
       memcpy( (char *) &ysec, (char *) &packet[10], 4);
-      Par.time = ptime + ysec;
+      Par.time = ptime + ntohl(ysec);
       
   return (int) pkttype; 
       
@@ -170,22 +170,22 @@ char *chname, chan[128];
       if(val == 0) { 
  	 complain(0, "Wrong header. Zero packet size detected.\n");
 	 return(-1);
-      } else pack.size = val;
+      } else pack.size = ntohs(val);
       memcpy((char *) &val, &packet[STAID_OFF],  2);   /* sta ID  */
       if(pack.size == 0) { 
  	 complain(0, "Wrong header. Zero packet size detected.\n");
 	 return(-1);
-      } else Par.staid = val;
+      } else Par.staid = ntohs(val);
       memcpy((char *) &val, &packet[NSAMP_OFF],  2);  /* # of samples */
       if(val == 0) { 
  	 complain(0, "Wrong header. Zero number of samples detected.\n");
 	 return(-1);
-      } else pack.nsamp = val;
+      } else pack.nsamp = ntohs(val);
       memcpy((char *) &val, &packet[SRATE_OFF],  2);  /* Sample rate  */
       if(val == 0) { 
  	 complain(0, "Wrong header. Zero sample rate detected.\n");
 	 return(-1);
-      }  else pack.srate = val;
+      }  else pack.srate = ntohs(val);
 
       val = packet[HSIZE_OFF]*256 + packet[HSIZE_OFF+1]; /* header size */
       if(val == 0) { 
@@ -199,13 +199,11 @@ char *chname, chan[128];
 	 return(-1);
       }
 
-
-if(PktLog)  {
-fprintf(stderr,"staid=%d rate=%f nsamp=%d psize=%d hsize=%d nchan=%d\n",
+if(PktLog) {
+fprintf(stderr, "staid=%d rate=%f nsamp=%d psize=%d hsize=%d nchan=%d\n",
 Par.staid, pack.srate, pack.nsamp, pack.size, pack.hdrsiz, pack.nchan);
-hexdump(stderr, packet, pack.size);
 fflush(stderr);
-}
+}      
       /* get data type */
       switch(packet[DTYPE_OFF])  {
 	  case 0x0:
@@ -238,7 +236,7 @@ fflush(stderr);
       ptime = epoch(year * 1000);
 
       memcpy((char *) &ysec, &packet[TIME_OFF],  4);  
-      Par.time = ptime + ysec;
+      Par.time = ptime + ntohl(ysec);
       Par.chan = -1;                 
       /* now we must to get channel names */
 
@@ -273,11 +271,9 @@ fflush(stderr);
 	    return(-1);
       }
       Par.packet = pack;
-
 /*
 printf("dtype=%s net=%s \n ", pack.datatype, pack.net_type);
 */
-
       memset( chan, 0, 128);
       memcpy( chan, "_", strlen("_"));
       len++;
@@ -288,9 +284,11 @@ printf("dtype=%s net=%s \n ", pack.datatype, pack.net_type);
         chid = val;
         val = packet[doff+CHBYTES_OFF]*256 + packet[doff+CHBYTES_OFF+1];
 	chbytes = val;
+
 /*
 printf("chan=%d bytes=%d\n", chid, chbytes);
 */
+
 	chname = get_chname_from_id(pkttype, Par.packet.pkttype, Par.staid, chid);
 	if(chname == 0) return(-1);
 	strcat(chan, chname);
@@ -302,9 +300,11 @@ printf("chan=%d bytes=%d\n", chid, chbytes);
       }
       chan[len] = '\0';
       strcpy(Par.chnames, chan);
+
 /*
 printf("chan=%s\n", chan);
 */
+
       return ((int) pkttype);
 }
 
@@ -338,7 +338,7 @@ PktPar pack;
 */
 
       memcpy( (char *) &ysec, &packet[10],  4);  
-      Par.time = ptime + ysec;
+      Par.time = ptime + ntohl(ysec);
       
       Par.chan = -1;                 
       Par.staid = packet[6]*256 + packet[7];
@@ -506,8 +506,8 @@ int whatis_pkttype( uchar_t *packet )
      char key[64];
 
      val = ( ushort_t *)  packet;
-     code = *val;
- 
+     code = ntohs(*val);
+
      Par.raw.pkttype =  code;
      if( RawPkts == NULL) init_RawPkts();
      sprintf( key, "%d\0", code );
@@ -532,7 +532,6 @@ int whatis_pkttype( uchar_t *packet )
 	case 1:
           return (int) raw->pkttype;
      }
-	
 
 }
 

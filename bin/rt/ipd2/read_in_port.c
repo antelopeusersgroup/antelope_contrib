@@ -230,6 +230,8 @@ int timeout;
 			packet[bufcnt++] = buffer[i];
 			if (bufcnt == control_cnt) {
 			    unit = (packet[off_uid] * 256) + packet[off_uid+1];
+
+
 			    for (iunit = 0; iunit < NUMDAS; iunit++) {
 				if (unit == unit_list[iunit])
 				    break;
@@ -316,13 +318,14 @@ int timeout;
 			packet[bufcnt++] = buffer[i];
 			if (bufcnt >= plength - 2) {
 			    sp = (unsigned short *) &packet[0];
-			    pchecksum = *sp++;
+			    pchecksum = ntohs(*sp++);
 			    checksum = 0;
 			    for (j = 0; j < ((plength / 2) - 2); j++) {
-				checksum ^= *sp++;
+				checksum ^= ntohs(*sp++);
 			    }
 			    pid = (packet[off_pid] * 256) + packet[off_pid+1];
 			    checksum ^= chsum_tag;
+
 			    memcpy ((char *) newbuffer + 2, (char *) &packet[0], plength - 2);
 			    if (pchecksum - checksum != 0) {
 				complain (0, 
@@ -346,7 +349,7 @@ int timeout;
 					    prev_time = now();
 					    if( fabs( epoch - prev_time) > 86400.0 )  {
 						sp = ( ushort_t * ) &newbuffer[0];
-						hdrsiz = *sp;
+						hdrsiz = ntohs(*sp);
 						memcpy( (char *) &ysec, newbuffer+hdrsiz+10, 4 );
 						complain(0, 
 						    "%s packet has bad time - %s (epoch:%lf - ysec:%ld). Will discard packet.\n",

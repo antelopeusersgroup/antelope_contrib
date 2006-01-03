@@ -35,7 +35,7 @@ the "byte_count" field. The byte count field includes the data
 bytes and the header. The header is 62 bytes long.
 */
  
-typedef unsigned long ulong ; 
+/* typedef unsigned long ulong ; */ 
  
 typedef struct ethrhdr_bba {
     ushort_t sync;            /* SW sync pattern 0xABCD = 100 SPS */

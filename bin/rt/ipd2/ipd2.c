@@ -31,14 +31,16 @@ int Ls;
 struct sockaddr_in myadd_in;           
 struct sockaddr_in peer_in;
 
+/*
 void usage ()
 {
-    fprintf (stderr, 
+   fprintf (stderr, 
              "Usage: %s [-v][-c check_rate] [-i] [-n netname] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb\n", 
              Program_Name);
     banner (Program_Name, "$Revision$ $Date$");
     exit (1);
 }
+*/
 
 main(argc, argv)
 int argc;
@@ -54,6 +56,10 @@ char *argv[];
   char           *orbname = "localhost";
   char           *tmpname=0;
   char           *netname=0;
+  char *usage_str="ipd2 [-v][-c check_rate] [-i] [-n netname] [-p pfile] [-s pkt_size] [-t timeout] [-u] iport orb";
+  char *author="Marina Harkins";
+  char *location="IGPP UCSD";
+  char *email="fvernon@ucsd.edu";
   Pf *pf;
 
    elog_init (argc, argv) ;
@@ -93,10 +99,15 @@ char *argv[];
             timeout = atoi(optarg);
             break;
         default: 
-            usage();
+           /* usage(); */
+            cbanner("$Revision$", usage_str, author, location, email);
+            exit (1);
         }
-       if ( argc - optind != 2 )
-          usage ();
+       if ( argc - optind != 2 )  {
+          /* usage (); */
+          cbanner("$Revision$", usage_str, author, location, email);
+          exit (1);
+       } 
        
 /* Open input port and ORB  */
   
