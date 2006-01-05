@@ -67,70 +67,74 @@ save_results (Dbptr dbin, Dbptr dbout,
 	complain(0, "Couldn't add origin record to database.\n");
 	retcode = -1;
       }
-
-     conf = pfget_double(pf,"confidence");
-     modtype = pfget_string(pf,"ellipse_type");
-
-     if(modtype == NULL)
+     /* Bypass all error calculations when all coordinates are fixed.
+     In that situation C and emodel are both undefined at this point */
+     if( !(o->fix[0] && o->fix[1] && o->fix[2] && o->fix[3]) )
      {
-	complain(0,"parameter ellipse_type not defined--default to chi_square");
-	model = CHI_SQUARE;
-     }
-     else if( strcmp( modtype, "chi_square" ) == 0 ) 
-     {
-        model = CHI_SQUARE;
-     }
-     else if( strcmp( modtype, "F_dist" ) == 0 )
-     {
-        model = F_DIST;
-     }
-     else
-     {
-        complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
-        model = CHI_SQUARE;
-     }
 
-    rc = project_covariance( C, model, &conf, 
-			     hypo->rms_weighted, hypo->degrees_of_freedom, 
-			     &smajax, &sminax, &strike, &sdepth, &stime );
-
-    if( rc != 0 ) 
-    {
-	complain(0, "project_covariance failed." );
-        smajax = -1;
-        sminax = -1;
-	strike = -1;
-	sdepth = -1;
-	stime = -1;
-	conf = 0.;
-    }
-
-    if(dbaddv(dbout, "origerr", 
-		"orid", orid,
-		"sxx",C[0][0], 
-		"syy",C[1][1], 
-		"szz",C[2][2], 
-		"stt",C[3][3], 
-		"sxy",C[0][1], 
-		"sxz",C[0][2], 
-		"syz",C[1][2], 
-		"stx",C[0][3], 
-		"sty",C[1][3], 
-		"stz",C[2][3], 
-		"sdobs", hypo->rms_raw,
-		"smajax", smajax,
-		"sminax", sminax,
-		"strike", strike, 
-		"sdepth", sdepth,
-		"stime", stime,
-		"conf", conf,
-		0) < 0 ) {
-	complain (1,"couldn't add origerr record to database\n" ) ;
-	retcode = -1 ;
-    }
-    if(save_emodel(orid, emodel, dbout))
-	complain(0,"Problems saving emodel vector\n");
-	
+         conf = pfget_double(pf,"confidence");
+         modtype = pfget_string(pf,"ellipse_type");
+    
+         if(modtype == NULL)
+         {
+    	complain(0,"parameter ellipse_type not defined--default to chi_square");
+    	model = CHI_SQUARE;
+         }
+         else if( strcmp( modtype, "chi_square" ) == 0 ) 
+         {
+            model = CHI_SQUARE;
+         }
+         else if( strcmp( modtype, "F_dist" ) == 0 )
+         {
+            model = F_DIST;
+         }
+         else
+         {
+            complain(0, "parameter ellipse_type %s incorrect (must be F_dist or chi_square)--default to chi_square", modtype );
+            model = CHI_SQUARE;
+         }
+    
+        rc = project_covariance( C, model, &conf, 
+    			     hypo->rms_weighted, hypo->degrees_of_freedom, 
+    			     &smajax, &sminax, &strike, &sdepth, &stime );
+    
+        if( rc != 0 ) 
+        {
+    	complain(0, "project_covariance failed." );
+            smajax = -1;
+            sminax = -1;
+    	strike = -1;
+    	sdepth = -1;
+    	stime = -1;
+    	conf = 0.;
+        }
+    
+        if(dbaddv(dbout, "origerr", 
+    		"orid", orid,
+    		"sxx",C[0][0], 
+    		"syy",C[1][1], 
+    		"szz",C[2][2], 
+    		"stt",C[3][3], 
+    		"sxy",C[0][1], 
+    		"sxz",C[0][2], 
+    		"syz",C[1][2], 
+    		"stx",C[0][3], 
+    		"sty",C[1][3], 
+    		"stz",C[2][3], 
+    		"sdobs", hypo->rms_raw,
+    		"smajax", smajax,
+    		"sminax", sminax,
+    		"strike", strike, 
+    		"sdepth", sdepth,
+    		"stime", stime,
+    		"conf", conf,
+    		0) < 0 ) {
+    	complain (1,"couldn't add origerr record to database\n" ) ;
+    	retcode = -1 ;
+        }
+        if(save_emodel(orid, emodel, dbout))
+    	complain(0,"Problems saving emodel vector\n");
+    }    	
 
     dbassoc = dblookup ( dbout, 0, "assoc", 0, 0 ) ; 
     dbquery (dbassoc, dbRECORD_COUNT, &old ) ;
