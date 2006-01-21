@@ -47,8 +47,6 @@ DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
-# Omitted for now.  Needs work to finish
-#  array_get_data_3c.o 
 OBJS=AttributeMap.o \
   BasicTimeSeries.o \
   Hypocenter.o \
@@ -59,6 +57,7 @@ OBJS=AttributeMap.o \
   ThreeComponentSeismogram.o \
   TimeSeries.o \
   VelocityModel_1d.o \
+  array_get_data_3c.o \
   array_get_data.o \
   converters.o \
   correlation.o \
@@ -70,6 +69,7 @@ OBJS=AttributeMap.o \
   interpolator1d.o \
   mdlist.o \
   mute.o \
+  nint.o \
   pfstream_interface.o \
   ray1d.o \
   readwrite.o \

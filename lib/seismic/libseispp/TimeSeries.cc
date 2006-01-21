@@ -45,7 +45,7 @@ TimeSeries::TimeSeries(const TimeSeries& tsi) :
 //  ts = TimeSeries(md);  -- i.e. this constructor
 //
 
-TimeSeries::TimeSeries(Metadata& md,bool load_data) : Metadata(md)
+TimeSeries::TimeSeries(const Metadata& md,bool load_data) : Metadata(md)
 {
 	string stref;
 	string dfile, dir;
@@ -200,6 +200,7 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 		{
 			s=tsi.s;
 		}
+		gaps=tsi.gaps;
 	}
 	return(*this);
 }			

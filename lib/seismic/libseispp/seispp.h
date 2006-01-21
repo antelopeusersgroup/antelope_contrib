@@ -14,6 +14,11 @@
 #endif
 #include <limits.h>
 //
+// These STL includes are needed for templates in this file
+//
+#include <vector>
+#include <algorithm>
+//
 // Antelope includes required
 //
 #include "stock.h"
@@ -466,9 +471,100 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
 //@}
 ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw);
 
-template <class T>
-auto_ptr<T>WindowData(T& parent, TimeWindow& tw);
+//@{ Extract a specified time window from an ensemble.
+// The seispp library defines a fairly generic ensemble object that
+// uses an STL vector container to hold an array of objects 
+// (currently TimeSeries or ThreeComponentSeismogram objects) with the
+// generic symbol "member".  This template applies a comparable 
+// WindowData function to each member of the ensemble returning a
+// new ensemble cut to the specified window.
+//
+//@throws SeisppError exception if TimeWindow is not consistent
+// with input data.
+//
+//@param  parent input ensemble 
+//@param tw TimeWindow to cut parent to produce output.
+//
+//@returns new ensemble T as an auto_ptr cut to desired window.
+//@}
+//template <class T> auto_ptr<T>WindowData(T& parent, TimeWindow& tw);
 
-
+//@{
+// Sorts an ensemble by station:channel.  
+// In earthquake seismic data processing sorting data by station name
+// and channel code is a very common operation.  This procedure implements
+// this using the STL sort algorithm.  It depends upon the metadata
+// fields keyed by "sta" and "chan" being defined in each member of the 
+// input ensemble.
+//
+//@param ensemble is the input data to be sorted.  The STL algorithm
+// sorts this in place so the result is altered.  Any indices using
+// subscripts will no longer be valid on exit.
+//@}
+void StaChanSort(TimeSeriesEnsemble& ensemble);
+//@{ Generic routine to compute a median.
+// This template can be used to compute the median of a vector
+// of objects for any class which has the default comparison
+// operator needed by STL sort.  It is most likely to be used
+// for standard numerical types (int, float, double) where it
+// is guaranteed to work.  If T is more exotic, you need to understand
+// the rules of what sort expects.  
+//
+//@param x - input STL vector of data to be compute median.
+//   x is not altered.  We make a copy of this input and sort it.
+//   Not the best algorithm if the sorted output is desired
+//@}
+template <class T> T median(vector<T>& x)
+{
+	int count=x.size();
+	if(count<=1)return(x[0]);
+	int medposition=count/2;
+	T result;
+	vector<T> copyx(x);
+	sort(copyx.begin(),copyx.end());
+	if(count%2)
+		result=copyx[medposition];
+	else
+		result=(copyx[medposition]+copyx[medposition+1])/2.0;
+	return (result);
+}
+//@{
+// Aligns an ensemble of data by moveout.  
+//
+// A common theme in multichannel processing is alignment of data
+// by a static shift.  That is, the entire trace is shifted by a fixed
+// time amount.  This generic method does this for ensembles with a
+// vector of objects held in a variable called "member".  It uses
+// a special keyword to extract a "moveout" value from the data objects
+// metadata and applies this to forever shift the 0 time reference for
+// that data object.  For this reason it always returns a copy of the
+// original data.
+//
+//@param ensemble - input data ensemble.
+//
+//@returns copy of ensemble but with t0 values modified by moveout.
+//@}
+template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
+{
+	Tensemble dshift(d);
+	try {
+		for(int i=0;i<d.member.size();++i)
+		{
+			double tshift;
+			if(d.member[i].live)
+			{
+				tshift=d.member[i].get_double(moveout_keyword);
+				dshift.member[i].t0+=tshift;
+			}
+		}
+	} catch (MetadataGetError mde)
+	{
+		throw SeisppError(string("MoveoutTimeShift:  moveout keyword")
+			+ moveout_keyword
+			+string(" not defined for one or members of input ensemble") );
+	}
+	return (dshift);
+}
+		
 }
 #endif

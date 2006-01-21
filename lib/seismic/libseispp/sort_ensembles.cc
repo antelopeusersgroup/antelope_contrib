@@ -3,6 +3,7 @@
 #include "seispp.h"
 using namespace std;
 using namespace SEISPP;
+namespace SEISPP{
 /* this file contains some prototypes for simple sorts of ensembles.
 I think it highly likely these could be made into templates, but for
 now will do this for some common examples */
@@ -30,3 +31,4 @@ void StaChanSort(TimeSeriesEnsemble& ensemble)
 {
 	sort(ensemble.member.begin(),ensemble.member.end(),less_stachan());
 }
+} // End SEISPP namespace declaration

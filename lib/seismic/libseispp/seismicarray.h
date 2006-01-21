@@ -303,6 +303,17 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 					ResamplingDefinitions& rsdef,
 						bool trim);
 
+//@{ Scans an array of times to return the range spanned by the group.
+//   This is a simple algorithm complicated by the fact that the 
+// input is an STL map object with station names keying a set of times.
+// This function simply scans the contents of the map to find the maximum
+// and mininum times found.  It returns this range as a TimeWindow
+// object.
+//
+//@param times is an STL map containing times keyed by station name.
+//@returns TimeInterval of the range of times found.
+//@}
+TimeWindow StationTimeRange(StationTime& times);
 //@{ Template for use by either a TimeSeries or ThreeComponent Ensemble.
 //It loads arrival times defined in the times map into the individual
 //station metadata area using the keyword defined by key.

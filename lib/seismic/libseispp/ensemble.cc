@@ -24,6 +24,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
 	: Metadata(tceold)
 {
 	int nmembers=tceold.member.size();
+	if(!member.empty()) member.clear();
 	member.reserve(nmembers);
 	for(int i=0; i<nmembers; ++i)
 		member.push_back(tceold.member[i]);
@@ -346,7 +347,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 cout << "TimeSeriesEnsemble continuous data constructor:  "
 	<< sta << ":"<<chan
 	<<" has multiple segments = "<<ie-is<<endl
-	<< "These will be zeroed and marked as gaps"<<endl;
+	<< "Gaps will be flagged and zeroed"<<endl;
 				// land here if there are gaps in this
 				// time interal.
 				int ns_this_segment;
@@ -396,12 +397,7 @@ cout << "TimeSeriesEnsemble continuous data constructor:  "
 								*static_cast<double>(k);
 							if(tprime>(twin.end+0.5*seis.dt))
 							{
-cout << "DEBUG:  truncating vector" << endl << "tprime=" << tprime
-	<< " twin.end="<<twin.end<<endl;
-cout << "Current ns="<<seis.ns<<endl;
-cout << "Current vector size="<<seis.s.size()<<endl;
 								seis.ns=seis.sample_number(tprime) - 1;
-cout << "Adjusted ns="<<seis.ns<<endl;
 								break;
 							}
 								
@@ -583,6 +579,7 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(const ThreeComponentEnsemble& tce
 	: Metadata(tceold)
 {
 	int nmembers=tceold.member.size();
+	if(!member.empty()) member.clear();
 	member.reserve(nmembers);
 	for(int i=0; i<nmembers; ++i)
 		member.push_back(tceold.member[i]);
@@ -611,7 +608,9 @@ TimeSeriesEnsemble& TimeSeriesEnsemble::operator=(const TimeSeriesEnsemble& tseo
 {
 	if(this!=&tseold)
 	{
+		if(pf!=NULL) pffree(pf);
 		pf = pfdup(tseold.pf);
+		if(!(this->member.empty())) this->member.clear();
 		int nmembers=tseold.member.size();
 		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)
@@ -623,7 +622,9 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 {
 	if(this!=&tseold)
 	{
+		if(pf!=NULL) pffree(pf);
 		pf = pfdup(tseold.pf);
+		if(!(this->member.empty())) this->member.clear(); 
 		int nmembers=tseold.member.size();
 		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)

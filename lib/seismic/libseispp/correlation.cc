@@ -26,22 +26,34 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	int lz=ly-lx;
 	z.s.resize(lz);
 	z.t0=y.t0-x.t0;
-	if(normalize)
+	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
+	z.ns=lz;
+	// We could try to process around gaps, but this would
+	// cost a lot in complication of uses of the results and
+	// in efficiency.  We take the attitude here of dropping
+	// data when there is any gap in the y vector
+	if(y.has_gap() || !y.live)
 	{
-		for(i=0;i<lz;++i)
-		{
-			z.s[i]=ddot(lx,&(x.s[0]),1,&(y.s[i]),1);
-			if(normalize) z.s[i]/=dnrm2(lx,&(y.s[i]),1);
-		}
+		z.live=false;
+		for(i=0;i<lz;++i) z.s[i]=0.0;
 	}
 	else
 	{
+		// This should be done in frequency domain.  
+		// It would be much faster, but done this way for now
 		for(i=0;i<lz;++i)
 		{
 			z.s[i]=ddot(lx,&(x.s[0]),1,&(y.s[i]),1);
 		}
+		if(normalize)
+		{
+			double nrmx=dnrm2(lx,&(x.s[0]),1);
+			double nrmy=dnrm2(ly,&(y.s[0]),1);
+			// an approximate normalization for length
+			nrmy*=(static_cast<double>(lx)/static_cast<double>(ly));
+			dscal(lz,1.0/(nrmx*nrmy),&(z.s[0]),1);
+		}
 	}
-
 	return z;
 }
 		

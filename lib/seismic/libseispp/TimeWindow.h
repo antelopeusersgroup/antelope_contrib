@@ -40,6 +40,13 @@ public:
 		newwindow.end += tshift;
 		return(newwindow);
 	}
+//@{
+// Returns the window length
+//@}
+	double length()
+	{
+		return(end-start);
+	};
 };
 
 /* This strange looking function is a C++ function object.

@@ -103,11 +103,11 @@ Metadata::Metadata(const Metadata& md)
         pf=pfdup(Metadata_defaults_pf);
 	pfstr = pf2string(md.pf);
 	ierr = pfcompile(pfstr,&pf);
+	free(pfstr);
 	// Just post this error and continue.  It should never happen, but
 	// at least we handle the return from pfcompile correctly.
 	if(ierr) throw MetadataParseError(ierr,
 		"pfcompile error in copy constructor");
-	free(pfstr);
 }
 // constructor from an antelope database (possibly view) row driven by
 // mdlist and am.  The list of attributes found in mdlist are extracted

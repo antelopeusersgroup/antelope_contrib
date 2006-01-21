@@ -349,7 +349,7 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 //
 //@}
 
-template <class T>
+export template <class T>
 void LoadPredictedTimes(T& ensemble, StationTime& times,string key,string phase)
 {
 	StationTime::iterator it,ite;

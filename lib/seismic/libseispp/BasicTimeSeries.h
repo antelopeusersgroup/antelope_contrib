@@ -1,12 +1,19 @@
 #ifndef _BASICTIMESERIES_H_
 #define _BASICTIMESERIES_H_
 #include <set>
-#include "perf.h"
 #include "TimeWindow.h"
 namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
+//@{
+// Nearest integer function.
+// This is the same as the standard intrinsic function by the same name.
+// It is included in this library at the moment to support g++ in linux
+// which does not seem to have this function in the standard math library.
+// Note Sun puts it in sunmath.h.
+//@}
+int nint(double);
 //@{
 // Type of time standard for time series data.
 // Time series data have two common standards.  Absolute time means the
@@ -158,6 +165,17 @@ public:
 // 
 //@}
 	void rtoa(double tshift);
+/************************************************************* 
+* This can be useful to turn on for debugging.  Left in file in 
+* case it proves useful later.  
+*
+void print_gaps()
+{
+	set<TimeWindow,TimeWindowCmp>::iterator g;
+	for(g=gaps.begin();g!=gaps.end();++g)
+		cout << "Timewindow = ("<<g->start<<","<<g->end<<")"<<endl;
+};
+***************************************************************/
 protected:
 	set<TimeWindow,TimeWindowCmp> gaps;
 };

@@ -64,7 +64,7 @@ public:
 //@param load_data - if true tries to read data in an antelope style ala wfdisc but using
 //                     attributes derived from the Metadata object (see above).
 //@}
-	TimeSeries(Metadata& md,bool load_data);
+	TimeSeries(const Metadata& md,bool load_data);
 //@{
 // Antelope database driven constructor.
 // The basic model here is that this constructor builds a TimeSeries object

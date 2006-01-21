@@ -414,7 +414,11 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 			+string(dt_str));
 	}
 	dv = this_ro->second.apply(ts.ns,&(ts.s[0]),ts.dt,dtout,trim);
-	TimeSeries tsout=ts;
+	// Subtle difference here with gaps.  This won't work
+	//TimeSeries tsout=ts;
+	// Use of copy constructor clones the gaps correctly
+	//
+	TimeSeries tsout(ts);
 	tsout.dt=dtout;
 	// necessary because tsout.s is a container
 	tsout.ns = dv.d.size();

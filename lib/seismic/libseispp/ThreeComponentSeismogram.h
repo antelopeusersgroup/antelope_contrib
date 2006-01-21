@@ -108,7 +108,7 @@ public:
 //
 //@}
 	ThreeComponentSeismogram(vector<TimeSeries>& ts,
-		int component_to_clone);
+		int component_to_clone=0);
 //@{
 // Partial constructor for a ThreeComponentSeismogram object driven by a Metadata object.
 // This is essentially uses the Metadata object as a way to make a parameterized

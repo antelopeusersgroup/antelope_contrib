@@ -481,7 +481,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 }
 
 ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts, 
-	int component_to_clone=0) 
+	int component_to_clone) 
 	 : Metadata(dynamic_cast<Metadata&>(ts[component_to_clone])),
 	  BasicTimeSeries(dynamic_cast<BasicTimeSeries&>(ts[component_to_clone])),
 	  u()
@@ -1031,6 +1031,7 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 			}
 		}
 		u=seisin.u;
+		gaps=seisin.gaps;
 	}
 	return(*this);
 }

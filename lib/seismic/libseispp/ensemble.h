@@ -167,6 +167,16 @@ public:
 // Standard assignment operator.
 //@}
 	TimeSeriesEnsemble& operator=(const TimeSeriesEnsemble& tseold);
+//@{
+// Remove a member of the ensemble using an index.
+// Sometimes one needs to edit an ensemble to remove one or more 
+// traces.  This is particularly true in using an algorithm that is
+// interactive where the user would pick one or more traces to be deleted.
+// This method removes one member from the ensemble.
+//
+//@param no trace member number to be deleted.
+//@}
+	void remove_trace(int no);
 };
 
 //@{
@@ -278,7 +288,59 @@ public:
 // Standard assignment operator.
 //@}
 	ThreeComponentEnsemble& operator=(const ThreeComponentEnsemble& tseold);
+//@{
+// Remove a member of the ensemble using an index.
+// Sometimes one needs to edit an ensemble to remove one or more 
+// traces.  This is particularly true in using an algorithm that is
+// interactive where the user would pick one or more traces to be deleted.
+// This method removes one member from the ensemble.
+//
+//@param no trace member number to be deleted.
+//@}
+	void remove_trace(int no);
 };
+template <class Tmember>
+	void remove_traces(vector<int> tobe_removed)
+{
+    int i;
+    vector<Tmember>::iterator it;
+    list< <vector<Tmember>::iterator > dellist;
+
+    it=member.begin();
+    i=0;
+    while (it != member.end()) {
+        if (find(tobe_removed.begin(),tobe_removed.end(),i)
+		!=tobe_removed.end()) 
+	{
+            dellist.push_back(it);
+        } 
+	else 
+	{
+		it++;
+	}
+        i++;
+    }
+    list< <vector<Tmember>::iterator >::iterator delptr;
+    for(delptr=dellist.begin();delptr!=dellist.end();++delptr)
+	member.erase(delptr);
+}
+template <class Tmember>
+	void remove_trace(int no)
+{
+    int i;
+    vector<Tmember>::iterator it;
+    list< <vector<Tmember>::iterator > dellist;
+
+    it=member.begin();
+    i=0;
+    while (it != member.end()) {
+        if (i==no) {
+            member.erase(it);
+	    break;
+        } else it++;
+        i++;
+    }
+}
 
 } // End SEISPP namespace declaration
 #endif

@@ -20,7 +20,8 @@ namespace SEISPP
 {
 
 enum CorrelationMethod {Basic, SimpleStack, RobustStack};
-enum PenaltyFunction {none, huber, bisquare, thomson};
+enum PenaltyFunction {NoPfunction, StackCoherence};
+static const string peakxcor_keyword("peak_xcor");
 
 TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize=false);
 
@@ -59,10 +60,11 @@ public:
 	TimeSeriesEnsemble xcor;
 	
 	MultichannelCorrelator();  
-	MultichannelCorrelator(TimeSeriesEnsemble d,
+	MultichannelCorrelator(TimeSeriesEnsemble& d,
 		CorrelationMethod meth,
 			TimeWindow beam_window,
 				TimeWindow robust_window=TimeWindow(),
+				    double lag_cutoff=5.0,
 					StackType stacktye=BasicStack,
 						TimeSeries *intial_beam=NULL,
 						     int reference_member=0,
@@ -73,6 +75,7 @@ public:
 			TimeWindow beam_window,
 				int component,
 					TimeWindow robust_window=TimeWindow(),
+				    double lag_cutoff=5.0,
 						StackType stacktye=BasicStack,
 							TimeSeries *intial_beam=NULL,
 							    int reference_member=0,

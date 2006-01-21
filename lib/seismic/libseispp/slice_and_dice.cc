@@ -131,7 +131,7 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 	return(result);
 }
 
-template <class T>
+export template <class T>
 auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
 {
 	auto_ptr<T> result=new T(parent);

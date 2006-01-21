@@ -7,11 +7,9 @@ namespace SEISPP
 TimeInvariantFilter::TimeInvariantFilter(string fspec)
 {
 	filter_spec=fspec;
-	char ftkey[20];
-	sscanf(fspec.c_str(),"%s",ftkey);
-	string sftkey(ftkey);
-	if(sftkey=="BW")
+	if(!fspec.compare(0,2,"BW"))
 	{
+		char ftkey[10];
 		sscanf(fspec.c_str(),"%s%lf%d%lf%d",ftkey,
 			&f1,&npole1,&f2,&npole2);
 		if( npole1==0 && f1<=0.0 && npole2==0 && f2<=0.0)
@@ -26,9 +24,26 @@ TimeInvariantFilter::TimeInvariantFilter(string fspec)
 	}
 	else
 	{
-		type=none;
 		npole1 = 0;  npole2=0;
 		f1=0.0;  f2=0.0;
+		if(fspec=="WAA")
+			type=WAA;
+		else if(fspec=="WAV")
+                        type=WAV;
+		else if(fspec=="WAD")
+                        type=WAD;
+		else if(fspec=="INT")
+			type=INT;
+		else if(fspec=="INT2")
+			type=INT2;
+		else if(fspec=="DIF")
+			type=DIF;
+		else if(fspec=="DIF2")
+			type=DIF2;
+		else if(fspec=="DEMEAN")
+			type=DEMEAN;
+		else
+			type=none;
 	}
 }
 TimeInvariantFilter::TimeInvariantFilter(double flow, int npl, 
@@ -45,6 +60,7 @@ TimeInvariantFilter::TimeInvariantFilter(double flow, int npl,
 // depend on the default
 TimeInvariantFilter::TimeInvariantFilter(const TimeInvariantFilter& tin)
 {
+	type=tin.type;
 	npole1=tin.npole1;
 	npole2=tin.npole2;
 	f1=tin.f1;
@@ -56,6 +72,7 @@ TimeInvariantFilter& TimeInvariantFilter::operator=(const TimeInvariantFilter& t
 {
 	if(&tin!=this)
 	{
+		type=tin.type;
 		npole1=tin.npole1;
 		npole2=tin.npole2;
 		f1=tin.f1;
@@ -160,8 +177,9 @@ string TimeInvariantFilter::type_description()
 	case DEMEAN:
 		retstr=string("Mean Removal filter");
 		break;
+	case none:
 	default:
-		retstr=string("Default is no filter");
+		retstr=string("no filter");
 	}
 	return(retstr);
 }
