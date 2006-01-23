@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 	
 	dbquery(dball,dbRECORD_COUNT, &narr);
 	if(narr<=0) die(0,"Working view has no data after dbjoins\n");
-	fprintf(stdout,"dbmwpec:  wfdisc->arrival join of %s has %d rows\n",
+	fprintf(stdout,"dbmwpec:  wfdisc->arrival->sensor->instrument->affiliation join of %s has %d rows\n",
 				dbin,narr);
 
 	/* Now we loop through the recipe file specification and 
