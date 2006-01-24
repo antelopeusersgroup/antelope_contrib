@@ -12,9 +12,27 @@ Attribute imagename
 	String (64)
 	Format ( "%-64s" )
 	Null ( "-" )
-	Description ( "name of image " )
+	Description ( "name of image" )
 	Detail {
 		This field records the name of an image
+	}
+	;
+
+Attribute imagesize
+	String (25)
+	Format ( "%-25s" )
+	Null ( "-" )
+	Description ( "size of an image" )
+	Detail {
+		This field records the size of a thumbnail or frame image, 
+		for applications that might have several different 
+		scales of thumbails or frames. The contents of this field 
+		should be determined by the end-user application of the 
+		database contents, however a fairly standard approach 
+		might be to use the phrases 'small' and 'medium' or 
+		better yet an approximate size specifier such as '120x120'.
+		For the full-size original images, imagesize should be 
+		set to 'full'. 
 	}
 	;
 
@@ -32,8 +50,8 @@ Attribute siteimagetype
 	;
 
 Relation sitephotos
-	Fields ( sta time siteimagetype imagename imagedescrip dir dfile auth lddate )
-	Primary ( sta time imagename )
+	Fields ( sta time siteimagetype imagename imagesize imagedescrip dir dfile auth lddate )
+	Primary ( sta time imagename imagesize )
 	Description ( "photos of seismic sites" )
 	Detail {
 		The sitephotos relation stores pictures of seismic 
