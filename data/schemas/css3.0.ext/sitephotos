@@ -8,6 +8,17 @@ Attribute imagedescrip
 	}
 	;
 
+Attribute format
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Description ( "graphics format for image" )
+	Detail {
+		This is the graphics format (e.g. gif, jpg) of a stored image
+		or stored movie.
+	}
+	;
+
 Attribute imagename
 	String (64)
 	Format ( "%-64s" )
@@ -50,7 +61,7 @@ Attribute siteimagetype
 	;
 
 Relation sitephotos
-	Fields ( sta time siteimagetype imagename imagesize imagedescrip dir dfile auth lddate )
+	Fields ( sta time siteimagetype imagename imagesize imagedescrip format dir dfile auth lddate )
 	Primary ( sta time imagename imagesize )
 	Description ( "photos of seismic sites" )
 	Detail {
