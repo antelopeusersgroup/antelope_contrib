@@ -1,15 +1,11 @@
 # @(#)gs13_vel	1.2 1/6/93
-# GS-13    1.00000 hz seimometer
+# GS-13/S-13    1.00000 hz seimometer
 # Normalized  response relative to velocity
 # 1                   type
 # 2                   num of zeroes
 # 2                   num of poles
-# 0.0                 input sample interval
-# 1                   decim factor
-# 1.0                 normalization factor
-# 1.0                 gain
 # sensitivity  629 v/m/sec
-theoretical   1 anti-alias   paz    pz6seismo
+theoretical   1 sensor   paz    geotech-teledyne
 1.0
 2             Poles
 -.4443E+01    0.4443E+01    0.0000E+00    0.0000E+00
