@@ -17,7 +17,7 @@
 #include "db.h"
 #include "stock.h"
 
-#define VERSION "1.0 2004-06-13"
+#define VERSION "1.1 2006-01-25"
 #define MAX_DT 20.0
 
 static void
@@ -35,27 +35,26 @@ usage()
 int
 main(int argc, char **argv)
 {
-	Dbptr           db, dbs, dbts, t_dbassoc, dbp, dbassoc, dborigin,
-	                dbarrival, dbg, dbb;
+	Dbptr           db, dbs, dbts, t_dbassoc, dbp, dbassoc, dborigin, dbarrival,
+	                dbg, dbb;
 	char           *dbname = NULL, *sitedbname = NULL;
 	Hook           *hook = NULL, *tthook = NULL, *ahook = NULL;
 	int             nos, from, to, recc;
 	char           *pfname = NULL;
 	int             orid;
-	double          lat, lon, depth, time, atime, stalat, stalon, staelev,
-	                timeres;
+	double          lat, lon, depth, time, atime, stalat, stalon, staelev, timeres;
 	Tbl            *stbl, *ttimes = NULL;
 	char            sta[10], iphase[10], phase[10], n_iphase[10];
 	char           *t;
-	Tbl            *stalist ;
+	Tbl            *stalist;
 	int             mode = 0, result;
 	char           *method = malloc(20), *model = malloc(20);
 	char           *phases = malloc(20), *suspicious_phase_codes = malloc(256);
 	TTGeometry      geometry;
 	double          max_dt, max_tdelta;
 	Pf             *pf = NULL;
-	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0, verbose = 0,
-	                quiet = 0, dry_run = 0, res, apply_station_corrections = 0 ;
+	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0,
+	                verbose = 0, quiet = 0, dry_run = 0, res, apply_station_corrections = 0;
 
 	elog_init(argc, argv);
 	elog_notify(0, "%s %s\n", Program_Name, VERSION);
@@ -159,8 +158,6 @@ main(int argc, char **argv)
 			 "parameter 'max_tdelta' not found in the parameter file %s.pf\n",
 			 pfname);
 	}
-
-
 	if (strcmp(dbname, "-")) {
 		if (dbopen(dbname, "r+", &db) == dbINVALID) {
 			complain(0, "dbopen(%s) error.\n", dbname);
@@ -224,7 +221,10 @@ main(int argc, char **argv)
 	/* prepare for dbmatches */
 	/* site */
 	stbl = strtbl("sta", 0);
-	/*dbts = dbs; better a fresh database, maybe the scratch record of the site table would be needed elsewhere*/
+	/*
+	 * dbts = dbs; better a fresh database, maybe the scratch record of
+	 * the site table would be needed elsewhere
+	 */
 	dbts = dbtmp("css3.0");
 	dbts = dblookup(dbts, 0, "site", 0, 0);
 	dbts.record = dbSCRATCH;
@@ -307,13 +307,12 @@ main(int argc, char **argv)
 					if (verbose > 1) {
 						elog_debug(0,
 							   "%s %s keep phase %s for arid %d\n",
-							   t=strtime(atime), sta, phase, arid);
+							   t = strtime(atime), sta, phase, arid);
 						free(t);
 					} else if (verbose) {
 						elog_debug(0,
 							   "keep phase %s for arid %d because it's not suspicious\n",
-							   phase, arid );
-						free(t);
+							   phase, arid);
 					}
 					break;
 				}
@@ -324,7 +323,7 @@ main(int argc, char **argv)
 					       &tthook);
 				if (result < 0) {
 					/*
-					 * fix later, allow maybe to use
+					 * fix later, allow maybe to fall back to
 					 * default vmodel...
 					 */
 					elog_die(1,
@@ -342,22 +341,25 @@ main(int argc, char **argv)
 				if (verbose > 2) {
 					elog_debug(0, "\tttimes: %s %s\n",
 						   t_atime->phase,
-						   t = strtime(t_atime->value + time));
+					t = strtime(t_atime->value + time));
 					free(t);
 				}
 				if (use_iphase &&
 				    !strcontains(suspicious_phase_codes, t_atime->phase, 0, 0, 0)
 				    && strcmp(t_atime->phase, iphase) == 0) {
-					/*min_dt = dt; need to make it small for later checks*/
-					min_dt=1e-9;
+					/*
+					 * min_dt = dt; need to make it small
+					 * for later checks
+					 */
+					min_dt = 1e-9;
 					strcpy(n_iphase, t_atime->phase);
 					if (verbose > 1) {
 						elog_debug(0, "%s %s changing phase %s to iphase %s for arid %d\n",
-							   t=strtime(atime),sta,phase, n_iphase, arid);
+							   t = strtime(atime), sta, phase, n_iphase, arid);
 						free(t);
 					} else if (verbose) {
 						elog_debug(0, "changing phase %s to iphase %s for arid %d\n",
-							   phase, n_iphase, arid);
+						     phase, n_iphase, arid);
 					}
 					break;
 				}
@@ -375,28 +377,29 @@ main(int argc, char **argv)
 			freetbl(assoclist, 0);
 
 			if (max_tdelta != -1 && min_dt > max_tdelta) {
-				if (verbose > 1)
-					elog_debug(0,"%s %s leave phase %s unchanged for arid %d because residual is too high (%7.3f > %7.3f)\n",t=strtime(atime),sta,phase,arid,min_dt,max_tdelta);
-				free(t);
+				if (verbose > 1) {
+					elog_debug(0, "%s %s leave phase %s unchanged for arid %d because residual is too high (%7.3f > %7.3f)\n",
+						   t = strtime(atime), sta, phase, arid, min_dt, max_tdelta);
+					free(t);
+				}
 				break;
 			}
 			if (verbose || dry_run) {
 				if (strcmp(n_iphase, iphase) != 0) {
 					if (verbose > 1) {
-					elog_debug(0, "%s %s changing phase %s to %s for arid %d\n",
-						   t=strtime(atime),sta,phase, n_iphase, arid);
-					free(t);
+						elog_debug(0, "%s %s changing phase %s to %s for arid %d\n",
+							   t = strtime(atime), sta, phase, n_iphase, arid);
+						free(t);
 					} else {
-					elog_debug(0, "changing phase %s to %s for arid %d\n",
-						   phase, n_iphase, arid);
+						elog_debug(0, "changing phase %s to %s for arid %d\n",
+						     phase, n_iphase, arid);
 					}
 				} else {
 					if (verbose > 1) {
-					elog_debug(0, "%s %s found same for phase %s arid= %d\n",
-						   t=strtime(atime),sta,phase, arid);
-					free(t);
-					}	
-
+						elog_debug(0, "%s %s found same for phase %s arid= %d\n",
+							   t = strtime(atime), sta, phase, arid);
+						free(t);
+					}
 				}
 			}
 			if (!dry_run && strcmp(n_iphase, iphase) != 0) {
