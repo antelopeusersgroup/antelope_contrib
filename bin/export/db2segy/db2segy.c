@@ -528,7 +528,7 @@ main(int argc, char **argv)
 	int rotate=0;
 	int ntraces, ichan;
 	int map_to_cdp;  /* logical switch to output data like cdp stacked data */
-	char *fmt="%Y %j %H %M %s %s";
+	char *fmt="%Y %j %H %M %S %s";
 	char *pfname;
 	int Verbose=0;
 
@@ -747,8 +747,8 @@ main(int argc, char **argv)
 			}
 			if(nsamp > nsamp0)
 			{
-				elog_complain(0,"%s:%s trace has extra samples\nTruncated to length %d\n",
-					sta, chan, nsamp0);
+				elog_complain(0,"%s:%s trace has extra samples=%d\nTruncated to length %d\n",
+					sta, chan, nsamp, nsamp0);
 				nsamp = nsamp0;
 			}
 			else if(nsamp < nsamp0)
