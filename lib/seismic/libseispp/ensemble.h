@@ -299,12 +299,19 @@ public:
 //@}
 	void remove_trace(int no);
 };
-template <class Tmember>
+template <typename Tmember>
 	void remove_traces(vector<int> tobe_removed)
 {
     int i;
-    vector<Tmember>::iterator it;
-    list< <vector<Tmember>::iterator > dellist;
+    // This constructo worked in Sun Workshop CC, had to 
+    // be changed to later code for g++.  g++ gives a warning
+    // error about this code, but conversations on the web say this is harmless
+    // and a bug in g++
+    //vector<Tmember>::iterator it;
+    //list< <vector<Tmember>::iterator > dellist;
+    typedef typename std::vector<Tmember> vector_type;
+    vector_type::iterator it;
+    std::list<vector_type> dellist;
 
     it=member.begin();
     i=0;
@@ -320,16 +327,24 @@ template <class Tmember>
 	}
         i++;
     }
-    list< <vector<Tmember>::iterator >::iterator delptr;
+    //list< <vector<Tmember>::iterator >::iterator delptr;
+    std::list<vector_type>::iterator delptr;
     for(delptr=dellist.begin();delptr!=dellist.end();++delptr)
 	member.erase(delptr);
 }
-template <class Tmember>
+template <typename Tmember>
 	void remove_trace(int no)
 {
     int i;
-    vector<Tmember>::iterator it;
-    list< <vector<Tmember>::iterator > dellist;
+    // This constructo worked in Sun Workshop CC, had to 
+    // be changed to later code for g++.  g++ gives a warning
+    // error about this code, but conversations on the web say this is harmless
+    // and a bug in g++
+    //vector<Tmember>::iterator it;
+    //list< <vector<Tmember>::iterator > dellist;
+    typedef typename std::vector<Tmember> vector_type;
+    vector_type::iterator it;
+    std::list<vector_type> dellist;
 
     it=member.begin();
     i=0;
