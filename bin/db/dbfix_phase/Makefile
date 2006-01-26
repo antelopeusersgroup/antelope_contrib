@@ -6,7 +6,7 @@ cflags=
 ldflags=
 ldlibs=	$(DBLIBS)
 include $(ANTELOPEMAKE)
-SUBDIR=/local
+#SUBDIR=/local
 DIRS=	
 OBJS= dbfix_phase.o
 $(BIN) : $(OBJS)
