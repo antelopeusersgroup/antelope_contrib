@@ -18,7 +18,7 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.5rc1 (2005.342)";
+static char   *version     = "3.6 (2006.027)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */

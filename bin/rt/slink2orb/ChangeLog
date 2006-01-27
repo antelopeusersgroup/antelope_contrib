@@ -1,3 +1,6 @@
+27 Jan 2006
+  - Update to libslink 1.6, no changes to library or module.
+
 8 Dec 2005
   - Update to libslink 1.6rc1 including many updates: error messages
       go to stderr, sl_connect does it's own parsing of the sladdr

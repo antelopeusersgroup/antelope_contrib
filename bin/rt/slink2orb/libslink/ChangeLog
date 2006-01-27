@@ -1,3 +1,6 @@
+2006.028: version 1.6
+	- No changes, only update version.
+
 2005.342: version 1.6rc1
 	- Test for NULL pointers int logging.c routines and handle
 	them as best as possible.
