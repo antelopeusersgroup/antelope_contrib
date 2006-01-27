@@ -1,0 +1,79 @@
+# rt1.0 extension
+
+# Include rt1.0  # uncomment to complete schema
+
+#   Copyright (c) 2006 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
+Attribute alarmid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "alarmid > 0" )
+	Description ( "alarm id" )
+	Detail {
+		This field provides a unique integer ID for 
+		each alarm issued.
+	}
+	;
+
+Attribute delaysec
+	Real (8)
+	Format ( "%8.1lf" )
+	Null ( "-1" )
+	Range ( "delaysec >= 0" )
+	Description ( "calldown delay in seconds" )
+	Detail {
+		For situations in which messages are sent to 
+		several parties in succession, usually with 
+		time delays, until the message is acknowledged, 
+		this field records the time delay used for each 
+		recipient. For recipients in the first 
+		batch of potential responders, delaysec will be 0. 
+		For those in successive attempts to 
+		communicate, delaysec will be progressively larger
+		positive values, with the exact values depending on
+		the configuration of the calldown lists. 
+	}
+	;
+
+Attribute recipient
+	String (80)
+	Format ( "%-80s" )
+	Null ( "-" )
+	Description ( "Recipient of an email alarm" )
+	Detail {
+		This message records a recipient of an 
+		email alarm. 
+	}
+	;
+Relation alarmcomm
+	Fields ( alarmid time recipient delaysec lddate )
+	Primary ( time recipient )
+	Foreign( alarmid )
+	Description ( "attempts to notify people of alarms" )
+	Detail {
+		This table tracks attempts to notify staff members
+		about alarm conditions in the network. The time field
+		in this table indicates the system-clock timestamp 
+		at which a particular message was sent to the 
+		specified recipient (note that this could be different 
+		from the time at which the alarm was declared, i.e. 
+		alarms.time, and also different from the time of the 
+		earth event of interest, e.g. origin.time).
+	}
+	;

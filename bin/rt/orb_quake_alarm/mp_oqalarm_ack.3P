@@ -1,0 +1,174 @@
+.TH MP_OQALARM_ACK 3P "$Date$"
+.SH NAME
+mp_oqalarm_ack \- mail_parser handler for acknowledging orb_quake_alarm alarms
+.SH SYNOPSIS
+.nf
+\fBmp_oqalarm_ack_handler\fP($\fImessage\fP, $\fIpfarray\fP)
+.fi
+.SH DESCRIPTION
+The \fBmp_oqalarm_ack\fP handler is intended to be launched by the
+\fBmail_parser\fP(1) utility. All incoming email messages matching
+a sender and subject expression fed in from the mail_parser.pf 
+parameter file are scanned for a string matching
+.in 2c
+.ft CW
+.nf
+.ne 2
+
+        ACK nnn
+
+.fi
+.ft R
+.in
+Where the string \fIACK\fP can be either upper or lowercase and the string
+\fInnn\fP should be replaced with the alarmid number (an integer) of
+the alarm to cancel.
+
+The database in which to record acknowledgments is specified in the
+parameter-file as the \fIdatabase\fP parameter. This database should be
+in \fIrt1.0\fP format, with the \fIalarms\fP extension table available.
+This database must be writable by the user under which the \fBmail_parser\fP is
+run.
+
+The \fIsender\fP and \fIsubject\fP parameters filter incoming messages
+such that only those messages matching the given regular expressions are
+processed.
+
+For a more detailed discussion of one possible way to configure this 
+utility, see the EXAMPLE section below. 
+
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+% cat mail_parser.pf
+Handlers &Tbl{
+        &Arr{
+                handler         mp_oqalarm_ack
+                sender          .*
+                subject         .*
+                database        /home/rt/db/rtalarms
+        }
+}
+%
+
+.fi
+.ft R
+.in
+.SH EXAMPLE 
+As an example, we show a configuration of this \fBmail_parser\fP handler 
+for a user account under the name \fIrt\fP, with the procmail(1) utility 
+available in \fI/usr/local/bin/procmail\fP. All of these commands are 
+intended to be run from the home directory for the user \fIrt\fP. Note that 
+this example repeats some steps documented in the mail_parser(1) man
+page, which may be consulted for further detail:
+
+1) Set up a .forward file for the \fIrt\fP user which forwards incoming
+emails to procmail:
+.nf
+
+% cat > .forward
+"|IFS=' ' && exec /usr/local/bin/procmail -f- || exit 75 #user"
+%
+
+.fi
+
+2) Set up a procmailrc(5) recipe to forward emails to the mail_parser:
+.nf
+
+% cat > .procmailrc
+:0w
+|/home/rt/mail_parser_wrapper
+%
+
+.fi
+
+3) Install the mail_parser_wrapper:
+.nf
+
+% cp $ANTELOPE/bin/mail_parser_wrapper .
+%
+
+.fi
+
+Note that this copy of the mail_parser_wrapper should be given execute
+permissions, and modified to point to the correct version of Antelope.
+In our example we will also modify the execution line
+.nf
+
+exec $ANTELOPE/bin/mail_parser
+
+.fi 
+to save verbose messages to a local log file:
+.nf
+
+exec $ANTELOPE/bin/mail_parser -v -f /home/rt/mail_parser_log
+
+.fi
+
+4) Finally we need to set up the mail_parser parameter file for this 
+handler:
+.nf
+
+% cat > mail_parser.pf
+Handlers &Tbl{
+	&Arr{
+		handler      mp_oqalarm_ack
+		database     /home/rt/db/quakes
+		sender       .*
+		subject      .*
+	}
+}
+%
+
+.fi
+
+Note that this allows all messages incoming to the \fIrt\fP account to be
+processed by the \fBmp_oqalarm_ack\fP handler. This may or may not be 
+desirable depending on the other uses of the account. Of course, only 
+messages which contain the specified "ACK nnn" acknowledgement string 
+will cause the handler to take any action. The \fIalarms\fP table of the
+specified database must be writable by the \fIrt\fP user.
+
+With this setup, alarms may be acknowledged by sending emails to the \fIrt\fP
+account containing the string \fIACK\fP followed by a space and the 
+\fIalarmid\fP of the alarm to cancel. A quick way to do this from the 
+command line is with the Antelope rtmail(1) command. For example the 
+following command will cancel alarmid 33 if everything is properly 
+configured:
+.nf
+
+% echo ACK 33 | rtmail rt
+
+.fi
+In tcsh this can be conveniently placed into an alias
+.nf
+
+alias oqa_cancel 'echo ACK \\!* | rtmail rt'
+
+.fi
+Which may be used similarly to cancel alarms from the local command line:
+.nf
+
+% oqa_cancel 33
+.fi
+.SH "SEE ALSO"
+.nf
+mail_parser(1), orb_quake_alarm(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting

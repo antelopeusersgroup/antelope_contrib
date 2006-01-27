@@ -1,0 +1,489 @@
+.TH ORB_QUAKE_ALARM 1 "$Date$"
+.SH NAME
+orb_quake_alarm \- configurable email-based alarm module for Antelope
+.SH SYNOPSIS
+.nf
+\fBorb_quake_alarm \fP[-p \fIpfname\fP] [-m \fImatch\fP] [-r \fIreject\fP]
+                [-n \fImaxpkts\fP] [-S \fIstatefile\fP] [-d \fIdbname\fP] [-v]
+                [-V]                   \fIorbname\fP [\fIstart-time\fP
+                [\fIperiod\fP|\fIend-time\fP]]
+.fi
+.SH DESCRIPTION
+The \fBorb_quake_alarm\fP program monitors an orbserver for database rows
+representing hypocenters, and issues email-based alarms to recipients
+as specified in the \fBorb_quake_alarm\fP parameter file. Multiple alarms are specifiable,
+each with its own criteria for triggering, based on the contents of
+the input hypocentral parameters. The trigger conditions for alarms may
+be specified in terms of polygonal regions itemized in a database in
+places1.2 schema. Two extension tables for the rt1.0 database schema, the
+\fIalarms\fP table and the \fIalarmcomm\fP table, optionally track all
+alarms that are issued as well as the addresses to which they were sent.
+Furthermore, if requested via the parameter file, \fBorb_quake_alarm\fP
+waits for acknowledgments of each alarm to appear in the database,
+optionally emailing additional recipients at configurable time-delays
+if an acknowledgment does not show up in the database in time (This feature
+allows system operators to configure a "calldown" list of email addresses
+to contact, to get the attention of the correct staff members with
+some provision to eliminate single points of failure). To limit
+the number of superfluous alarms sent to personnel, \fBorb_quake_alarm\fP
+only registers one alarm per event for each alarm-condition that is
+configured (each \fIalarmname\fP, as described in more detail below).
+
+A companion extension to the Antelope \fBmail_parser\fP(1) utility,
+documented in the man page \fBmp_oqalarm_ack\fP(3P), may be used to
+set up acknowledgment of alarms based on emails sent back to the real-time
+system (this is designed to allow duty personnel to send alarm-acknowledgment
+emails from SMS-enabled cell phones).
+
+The only required command-line argument for \fBorb_quake_alarm\fP is the
+name (\fIorbname\fP) of the orbserver to which to connect. However,
+most users may want to specify a tracking database with \fI-d dbname\fP,
+in which to save emailed alarms. Without this database,
+the alarm-acknowledgment and calldown features are automatically disabled.
+With this feature, the timing, names and keys, email message content,
+and recipients of each alarm and alarm message are recorded in the database.
+For operation in a real-time environment, a state-file may be
+desirable (given via the -S option), which allows the read position
+in the orbserver to be maintained across restarts. The -v and -V options
+provide varying levels of diagnostic output which can be helpful in
+understanding the behavior of \fBorb_quake_alarm\fP. Finally, in addition
+to the -n option which limits the total number of orb packets ingested,
+several optional command-line arguments can constrain the time ranges
+of orb packets which are processed. The \fIstart-time\fP argument gives
+the timestamp of the first packet to be processed, and may be any string
+interpretable by str2epoch(3). The \fIend-time\fP, if given, gives the
+timestamp of the last packet to be processed. Alternatively, a \fIperiod\fP
+value in seconds my be given, which specifies how far past the \fIstart-time\fP
+to process packets.
+
+Before proceeding further with configuration details, it is helpful to
+explain the taxonomy of alarms as defined in the \fIalarms\fP table of the
+rt1.0 database. First, every alarm belongs to an \fIalarmclass\fP. This
+indicates the broad class of alarms, for example alarms based on
+\fI/db/origin\fP rows belong to the class of alarms with \fIalarmclass\fP
+of \fIhypocenter\fP. Within each \fIalarmclass\fP, there may be several
+different reasons for \fBorb_quake_alarm\fP to raise the attention of the
+lab-operations staff. Each one of these situations is labeled with its
+own unique \fIalarmname\fP. For example, in a given deployment there may be
+one alarm with an \fIalarmname\fP of \fIbeeper_duty\fP, to notify
+personnel on call, one or more alarms to email reports to various
+recipients (\fIalarmname\fP of \fIemail_reports\fP and similar), etc. Finally,
+for each \fIalarmclass\fP and \fIalarmname\fP, each time an alarm
+condition is successfully activated, \fBorb_quake_alarm\fP assigns a
+unique \fIalarmkey\fP to the event. For the case of \fIalarmclass\fP =
+\fIhypocenter\fP alarms, the \fIalarmkey\fP is based on the \fIevid\fP for the
+event. This means that even if multiple \fI/db/origin\fP rows are
+produced for a given event, at most one set of calls will be issued for
+any given \fIevid\fP (this may be implicitly overridden by specifying
+multiple alarms for different levels of trigger conditions, for example
+one might configure an extra \fIalarmname\fP for very large events). For
+the convenience of database joins and alarm cancellation, there is also
+a unique identifying integer called \fIalarmid\fP for every alarm issued.
+
+The detailed behavior of \fBorb_quake_alarm\fP is determined by the
+\fBorb_quake_alarm\fP parameter file. With the exception of the
+\fIplacedb\fP parameter, which is read once at startup (as is the contents
+of that database), all parameters are dynamically re-read upon
+ingestion of each new orb packet. This means that operators can modify
+the configuration of \fBorb_quake_alarm\fP by modifying the parameter
+file while \fBorb_quake_alarm\fP is running, and have the changes take
+effect without restarting the program.
+
+The main part of the \fBorb_quake_alarm\fP parameter file is the \fIalarms\fP
+array. Within this array there is a sub-array for each \fIalarmclass\fP.
+Currently there is only one \fIalarmclass\fP implemented, i.e. \fIhypocenter\fP
+for \fI/db/origin\fP rows. Within the \fIhypocenter\fP subarray
+is one array for each \fIalarmname\fP (see the parameter-file example below).
+The names of the \fIalarmname\fP subarrays must be unique.
+
+Within each \fIalarmname\fP block there are a number of parameters
+which control the behavior of that particular alarm. The most important
+of these is \fItrigger_condition\fP. This value is a Datascope expression,
+as documented in the man page dbexpressions(5), which is applied to
+the hypocentral parameters in the incoming origin row to decide whether
+to trigger an alarm. The \fIsubject\fP parameter is a template used to
+construct the subject line of email messages that are sent out to email
+recipients for each alarm.  The \fIbody\fP parameter is a template used to
+construct the body of
+each email message. All three of the parameters \fIsubject\fP, \fIbody\fP,
+and \fItrigger_condition\fP may be either strings or Antelope parameter-file
+literal values (as documented in the pf(5) man page). In the \fIsubject\fP
+and \fIbody\fP parameter values, the operator may intersperse values from the
+incoming database row by enclosing them in squiggly brackets and preceeding
+them with a percent sign. For example, to include the latitude of an
+earthquake in the subject or body of the email message, use the escape
+string \fI%{lat}\fP. This syntax should be familiar to users of the
+Antelope trwfname(3) command. Additionally, more percent-escape values
+can be defined by the user which can intersperse results of the
+dbexpressions(5) calculator into the email messages. This feature allows
+almost arbitrary flexibility in the content of potential messages. New
+percent-escape names are defined in the \fImessage_expressions\fP array of
+the parameter file. Several additional fields are also defined to allow
+the user to include the \fI%{alarmid}\fP, \fI%{alarmkey}\fP,
+\fI%{alarmname}\fP, and/or \fI%{alarmclass}\fP in the subject and body
+of email messages.
+
+The \fIwait_ack\fP parameter is a boolean value (i.e. yes/no,
+true/false, 1/0) which determines whether \fBorb_quake_alarm\fP waits
+for an acknowledgment to appear in the database after sending the initial
+messages for an alarm. If this is set to true, \fBorb_quake_alarm\fP
+keeps sending emails to recipients in the calldown list at their specified
+delay times (described below) until it runs out of potential recipients or
+until an acknowledgment of the alarm appears in the database. The format
+of each message is given in the \fIack_subject\fP and \fIack_body\fP
+parameters. In addition to the escape codes above, these parameters also allow
+specification of %{ackauth} and %{acktime} from the database row 
+that records the alarm acknowledgment. The \fImax_ack_wait_sec\fP
+parameter specifies the maximum length of time to wait for an alarm
+acknowledgment before giving up and de-registering the alarm.
+
+Before describing the \fImessage_expressions\fP field in more detail, one
+important field remains in the subarray
+for each \fIalarmname\fP: the \fIrecipients\fP array. This lists the
+email addresses of all intended recipients of an alarm message. Each recipient
+address should be followed by a floating-point value giving the number
+of seconds to delay before sending the message. Recipients with a delay
+of 0 will be sent the alarm message immediately upon declaration of the
+alarm condition. Recipients with later delay values will be sent the alarm
+slightly after the number of seconds in their delay value has elapsed,
+unless the alarm is acknowledged beforehand in the tracking database
+or unless the \fIwait_ack\fP parameter is set to 0. The recipient addresses
+are sent to the Antelope \fBrtmail(1)\fP program for delivery.
+
+The \fImessage_expressions\fP array of the parameter file gives the names
+of any new variables which are to be evaluated for each message. As with
+the database fields, these are entrained in the subject and/or body
+of the message by surrounding them with curly braces and adding a percent-sign
+in front. Each entry in the \fImessage_expressions\fP array should be a
+unique variable name (one that does not conflict with any database field
+names) followed by an expression which can be interpreted by the Datascope
+expressions calculator (see the man page for dbexpressions(5) for more detail
+on the allowable expressions). Several examples are shown below, in the
+parameter-file section. Common uses of this feature include specifying
+a format for printed time strings, and specifying a recipe for magnitude
+reporting appropriate for the network (e.g. ML first, then Mb, then MS).
+
+Most of the data-storage into the alarm-tracking database is automatic,
+and needs no configuration from the user (other than specifying the
+database location with the -d option, which is also necessary to activate
+this feature). The \fBorb_quake_alarm\fP program saves not only the
+vital statistics for each alarm and message, but also the fully body of the
+message. These message bodies are saved in external files, with filenames
+configured via the \fIalarm_dbfilenames\fP parameter. The value for
+this parameter follows the behavior of the trwfname(3) function. In most
+cases, the default value should be sufficient.
+
+\fBorb_quake_alarm\fP allows the user to specify trigger conditions in terms
+of polygonal geographic regions, as well as in terms of the hypocentral
+parameters of each earthquake. The \fIplacedb\fP parameter gives the location
+of a database containing the polygons, in the places1.2 or higher schema.
+To avoid ambiguities with the geographic polygons defined,
+\fBorb_quake_alarm\fP requires all polygons in the database to be entirely
+on one side or the other of a particular branchcut (i.e. longitude) value.
+The \fIplacedb_branchcut_deg\fP value should be set to 180 or 360, reflecting
+the contents of the \fIplacedb\fP database. If \fIplacedb_branchcut_deg\fP
+is set to 180, none of the polygons in the regions table of the database
+should cross the 180 deg / -180 deg longitude line. If
+\fIplacedb_branchcut_deg\fP is set to 360, none of the polygons should
+cross the 0 deg / 360 deg longitude line. To use a particular
+polygon in a \fItrigger_condition\fP expression, the name of the region
+(from the \fIregions.regname\fP field in the \fIplacedb\fP) should appear
+verbatim in a percent-escape like this:
+.in 2c
+.ft CW
+.nf
+.ne 3
+
+        %{in(south of Alaska)}
+
+.fi
+.ft R
+.in
+This expression evaluates to true or false according to the
+hypocentral location in question before \fBorb_quake_alarm\fP forwards
+the expression to the Datascope expression calculator for evaluation. For
+an example, see the parameter-file section below.
+
+A final escape string for the \fIsubject\fP and \fIbody\fP expressions
+is the \fI%{nearest(1)}\fP value. This will look up the nth nearest city 
+(in this case the first, i.e. closest) in \fIplacedb\fP and format a string
+such as 
+.nf
+
+	240 km SSW of Anchorage
+
+.fi
+
+The second, third, and fourth closest places (and so on) may be 
+represented as \fI%{nearest(2)}\fP, \fI%{nearest(3)}\fP, etc. If 
+insufficient information is present in \fIplacedb\fP to derive these, 
+the values are left blank. 
+
+
+.SH OPTIONS
+.IP "-d dbname"
+If this option is specified, all alarm announcements are logged to
+the specified database. This argument is required for alarm acknowledgment,
+alarm cancellation, and calldown features.
+.IP "-p pfname"
+Specify an alternate parameter-file name. The default is \fBorb_quake_alarm\fP.pf
+.IP "-m match"
+Specify a \fImatch\fP expression for input orb packets. The default is
+\fI/db/origin\fP. This option is a placeholder, currently disabled
+since \fBorb_quake_alarm\fP only processes \fI/db/origin\fP rows.
+.IP "-r reject"
+Specify a \fIreject\fP expression for input orb packets. The default is not
+to \fIreject\fP any packets other than those not encompassed by the \fImatch\fP expression.
+This option is a placeholder, currently disabled since \fBorb_quake_alarm\fP
+only processes \fI/db/origin\fP rows.
+.IP "-n maxpkts"
+Stop after processing the specified number of packets
+.IP "-S statefile"
+Save the time and pktid of the last packet into a \fIstatefile\fP. This helps
+\fBorb_quake_alarm\fP reposition itself properly upon restart, if it quits
+unexpectedly due to an incoming signal.
+.IP -v
+Be more verbose. This includes printing out:
+.in 2c
+.ft CW
+.nf
+
+.ne 9
+
+        Registration (i.e. the inception) of new alarms
+        De-registration of acknowledged or no-longer-relevant alarms
+        Refusal to register duplicate alarms
+        Acknowledgment of alarms in the database
+        The status of all orb state-file resurrection steps upon restart
+        The number of sources selected by any \fImatch\fP expressions
+        The starting orb packet id's after any time-based repositioning
+        The summary number of packets, bytes, and kbaud at the end of execution
+
+.fi
+.ft R
+.in
+.IP -V
+Be very verbose. This includes printing out:
+.in 2c
+.ft CW
+.nf
+
+.ne 10
+
+        All information from the verbose flag, plus:
+        The path to the rtmail executable used for mailing
+        The full content-dump of each incoming packet
+        The subject+body length, subject text, full body text, and
+           recipient list for every message sent
+        All decisions about alarm triggering, registration, de-registration,
+          and email notification
+        Results of polygon-containment tests
+        Recognition of database changes
+
+.fi
+.ft R
+.in
+.SH PARAMETER FILE
+.in 2c
+.ft CW
+.nf
+
+.ne 9
+
+message_expressions &Arr{
+        local_time      epoch2str(time,"%a %b %o at %l:%M %p %Z","")
+        gmt_time        epoch2str(time,"%L/%d/%Y %H:%M:%S.%s GMT")
+        beeper_mag              ml != NULL ? "ML " . ml : ( mb != NULL ? "Mb " . mb : ( ms != NULL ? "MS " . ms : "No mag" ) )
+        email_mag               ml != NULL ? ml . " ML" : ( mb != NULL ? mb . " Mb" : ( ms != NULL ? ms . " MS" : "insufficient data for automatic solution" ) )
+        grname          grname(lat,lon)
+}
+
+.ne 25
+alarms &Arr{
+    hypocenter &Arr{
+        aeic_beeper_duty    &Arr{
+                trigger_condition       &Literal{
+                        ndef > 10 &&
+                        ( %{in(south of Alaska)} ||
+                        %{in(in the Bering Sea region of Alaska)} ||
+                        %{in(in the Kenai Peninsula region of Alaska)} ||
+                        %{in(in the central region of Alaska)} )
+                }
+                subject         %{beeper_mag}, %{ndef} phases, %{grname}
+                body            &Literal{
+      alarmid %{alarmid}: %{local_time} by %{auth}, %{lat}:%{lon}, Evid %{evid}
+                }
+                wait_ack        1
+		ack_subject Acknowledgment for alarmid %{alarmid}
+		ack_body    Cancelled by %{ackauth} at %{acktime}
+                recipients      &Arr{
+                        907XXXXXXX@msg.acsalaska.com    0
+                        907XXXXXXX@mobile.celloneusa.com        300
+                }
+        }
+        aeic_auto_email    &Arr{
+                trigger_condition ndef > 10
+                subject         Earthquake at %{lat}, %{lon}
+                body &Literal{
+
+.ne 6
+        This is an automatic earthquake solution from the
+        Alaska Earthquake Information Center.
+
+        Please DO NOT DISSEMINATE this automatic solution.
+        Contact the Alaska Earthquake Information Center
+        for updated, analyst-reviewed information.
+
+.ne 6
+        Lat:    %{lat}
+        Lon:    %{lon}
+        Depth:  %{depth} km
+        Time:   %{gmt_time}
+
+        Magnitude: %{email_mag}
+
+.ne 5
+        %{ndef} phases used in solution
+
+	This earthquake was:
+
+		%{nearest(1)}
+		%{nearest(2)}
+		%{nearest(3)}
+
+        For more information contact the
+        Alaska Earthquake Information Center
+        at 907-474-7320
+
+.ne 7
+                }
+                wait_ack        0
+		ack_subject 
+		ack_body
+                recipients &Arr{
+                        recipient@domain.com	   0
+                        recipient2@domain2.com	   0
+                }
+        }
+    }
+}
+
+placedb /Seis/databases/alaska_region_phrases
+placedb_branchcut_deg 360
+
+max_ack_wait_sec 10800
+
+alarm_dbfilenames %Y/%j/alarmid_%{alarmid}.%Y:%j:%H:%M:%S
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+A possible command line for \fBorb_quake_alarm\fP within rtexec might be
+as follows:
+.in 2c
+.ft CW
+.nf
+.ne 3
+
+orb_quake_alarm -S state/orb_quake_alarm -d db/quakes -V $ORB
+
+.fi
+.ft R
+.in
+This uses a state file for reconnection tracking, saves all alarms to the
+real-time database given by the -d option, watches the orbserver
+named in the $ORB variable for encapsulated database rows, and creates
+extensive logging information in the log file for orb_quake_alarm.
+.SH LIBRARY
+7.SH "SEE ALSO"
+.nf
+rtmail(1), mail_parser(1), mp_oqalarm_ack(3P), orb_quake_email(1),
+orb_quake_cell(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+No good reason yet exists for end-users to apply \fImatch\fP and \fIreject\fP expressions
+via the -m and -r options. These are implemented for completeness to
+support possible future uses with different types of alarms.
+
+If an \fIend-time\fP is specified, either as an explicit time or as an interval
+past the \fIstart-time\fP, \fBorb_quake_alarm\fP stops acquiring new
+orbserver packets as soon as a packet is received that is later than the
+\fIend-time\fP. This means that if the packets are out of order on the orbserver,
+later packets that fall inside the valid time window will be missed if
+they come after a packet that is later than the time interval. For
+situations in which this may be a hindrance, it is recommended not to
+specify an \fIend-time\fP for acquisition.
+
+The job of \fBorb_quake_alarm\fP is to send out exactly the messages you
+tell it to. If the filtering conditions allow a message to be sent
+without checking for a null value in a particular field, and that null value
+is used in the body or subject text for that message, the resulting
+message will contain said null values if they appear in the input packet.
+Whether this is desirable or undesirable depends on the needs of the
+system operator, so the parameter-file configuration should be carefully
+thought through with this in mind.
+
+Note that values defined in the message_expressions array should not
+have the same names as valid database fields. If a conflict arises,
+\fBorb_quake_alarm\fP silently ignores the user-defined expression
+and use the value from the named database field. If a percent-escape
+value does not have a direct translation either as a database field or
+as a member of the \fImessage_expressions\fP array, it is translated as
+the empty string (this may cause problems for any percent-escape
+strings that are used in the trigger condition parameters for the alarms).
+Although the \fImessage_expressions\fP array was designed for formatting
+email subject and body text, the expressions are by coincidence also valid
+in the \fItrigger_condition\fP parameters. Most of them may not
+make sense as valid database expressions, however, unless they are
+specifically configured by the operator to exploit some as-yet-unforeseen
+advantage. On a final note, one should not lose track of the fact that
+the \fItrigger_condition\fP values are fed directly to the Datascope expression
+calculator; therefore any native database fields to which they refer should not
+be surrounded by the %{} escape brackets (the \fIsubject\fP and \fIbody\fP
+parameters are interpreted by partially non-overlapping sections of code
+than the \fItrigger_condition\fP parameters).
+
+If the \fIwait_ack\fP parameter for an alarm is specified to \fIno\fP (\fIfalse\fP, \fI0\fP etc),
+recipients specified with nonzero delays are not notified, since the
+alarm is de-registered as soon as all immediately-sendable messages
+are delivered.
+
+Some email recipients, such as cell phones listening for SMS messages,
+may be limited to a certain message length. Often messages that are too
+long are unceremoniously truncated by the delivery system. For such
+situations it is important to choose message text and fields carefully,
+hopefully with the most important information first, to limit the impact
+of any message truncation (this is especially true if the message contains
+variable-length fields such as physical location names).
+
+The job of \fBorb_quake_alarm\fP is to send emails. Many intervening
+elements beyond the control of \fBorb_quake_alarm\fP, such as mail sending
+agents, routers, SMS gateways, cell-phone networks, etc. may affect whether
+those emails are actually received by the intended targets. It is good not
+to lose sight of this when constructing a robust set of operational procedures
+for earthquake alarm response, of which the \fBorb_quake_alarm\fP
+program is only one small part.
+
+Changing the \fIplacedb\fP parameter of the parameter file requires restarting
+\fBorb_quake_alarm\fP. If no such database is defined or if there is a problem
+reading it, all region-containment tests via the %{in(...)} function
+default to true (this provides the conservative behavior of reporting
+too many earthquakes rather than too few). \fBorb_quake_alarm\fP does not
+support polygon regions which cross the north or south pole.
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$

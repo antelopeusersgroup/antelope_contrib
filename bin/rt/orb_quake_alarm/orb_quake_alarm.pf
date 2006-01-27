@@ -1,0 +1,79 @@
+message_expressions &Arr{
+	local_time	epoch2str(time,"%a %b %o at %l:%M %p %Z","")
+	gmt_time	epoch2str(time,"%L/%d/%Y %H:%M:%S.%s GMT")
+	beeper_mag		ml != NULL ? "ML " . ml : ( mb != NULL ? "Mb " . mb : ( ms != NULL ? "MS " . ms : "No mag" ) ) 
+	email_mag		ml != NULL ? ml . " ML" : ( mb != NULL ? mb . " Mb" : ( ms != NULL ? ms . " MS" : "insufficient data for automatic solution" ) ) 
+	grname 		grname(lat,lon)
+}
+
+alarms &Arr{
+    hypocenter &Arr{
+	aeic_beeper_duty    &Arr{
+		trigger_condition	&Literal{
+			ndef > 10 &&
+			( %{in(south of Alaska)} || 
+			%{in(in the Bering Sea region of Alaska)} || 
+			%{in(in the Kenai Peninsula region of Alaska)} || 
+			%{in(in the central region of Alaska)} )
+		}
+		subject 	%{beeper_mag}, %{ndef} phases, %{grname}
+		body		&Literal{
+      alarmid %{alarmid}: %{local_time} by %{auth}, %{lat}:%{lon}, Evid %{evid}
+		}
+		wait_ack	1
+		ack_subject Acknowledgment for alarmid %{alarmid} 
+		ack_body    Cancelled by %{ackauth} at %{acktime}
+		recipients	&Arr{
+			907XXXXXXX@msg.acsalaska.com		0
+			907XXXXXXX@mobile.celloneusa.com	300
+		}
+	}
+	aeic_auto_email    &Arr{
+		trigger_condition ndef > 10
+		wait_ack 	0
+		ack_subject 
+		ack_body    
+		subject		Earthquake at %{lat}, %{lon}
+		body &Literal{
+
+	This is an automatic earthquake solution from the
+	Alaska Earthquake Information Center. 
+
+	Please DO NOT DISSEMINATE this automatic solution. 
+	Contact the Alaska Earthquake Information Center 
+	for updated, analyst-reviewed information. 
+
+	Lat:	%{lat}
+	Lon:	%{lon}
+	Depth:	%{depth} km
+	Time:	%{gmt_time}
+
+	Magnitude: %{email_mag}
+
+	%{ndef} phases used in solution 
+
+	This earthquake was:
+		
+		%{nearest(1)}
+		%{nearest(2)}
+		%{nearest(3)}
+
+	For more information contact the 
+	Alaska Earthquake Information Center 
+	at 907-474-7320
+
+		}
+		recipients &Arr{
+			recipient@domain.com	   0
+			recipient2@domain2.com	   0
+		}
+	}
+    }
+}
+
+placedb ./alaska_region_phrases
+placedb_branchcut_deg 360
+
+max_ack_wait_sec 10800 
+
+alarm_dbfilenames %Y/%j/alarmid_%{alarmid}.%Y:%j:%H:%M:%S

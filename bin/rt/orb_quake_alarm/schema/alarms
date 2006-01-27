@@ -1,0 +1,148 @@
+# rt1.0 extension
+
+# Include rt1.0  # uncomment to complete schema
+
+#   Copyright (c) 2006 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
+Attribute ackauth
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "party acknowledging an alarm." )
+	Detail {
+		This field records who acknowledged an alarm. 
+		This may be a name, username, email address, or 
+		similar appropriate string.
+	}
+	;
+
+Attribute acknowledged
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "acknowledged =~ /y|n/" )
+	Description ( "Whether an alarm has been acknowledged" )
+	Detail {
+		This field records whether an alarm 
+		has been acknowledged.
+	}
+	;
+
+Attribute acktime
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999999.99900" )
+	Units ( "Seconds" )
+	Description ( "time of alarm acknowledgment" )
+	Detail {
+		This field records when an alarm 
+		has been acknowledged.
+	}
+	;
+
+Attribute alarmid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "alarmid > 0" )
+	Description ( "alarm id" )
+	Detail {
+		This field provides a unique integer ID for 
+		each alarm issued.
+	}
+	;
+
+Attribute alarmname
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "name of alarm" )
+	Detail {
+		This field gives a standardized name for each 
+		alarm, usually specifying some kind of template 
+		that provides a useful shorthand identifier for 
+		alarm condition and recipient list. These alarmnames are 
+		generally configured in the alarm-generation software, 
+		with names such as "beeper_duty" or "large_local" etc.
+	}
+	;
+
+Attribute alarmclass
+	String (20)
+	Format ( "%-20s" )
+	Null ( "-" )
+	Description ( "type of alarm" )
+	Detail {
+		This field gives a standardized class for each 
+		type of alarm, for example "hypocenter" for 
+		automatic earthquake locations or "accel" for 
+		raw strong-motion acceleration exceedences. Generally 
+		there will be a direct correspondence between the 
+		alarmclass and the incoming packet types which are 
+		analyzed to produce the alarms, for example "/db/origin"
+		packets for "hypocenter" alarms. 
+	}
+	;
+
+Attribute alarmkey
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "key identifying a particular alarm" )
+	Detail {
+		This field gives a unique key for each 
+		alarm. The format of the key will vary depending on the
+		class of the alarm. For example, for alarmclass "hypocenter" 
+		alarms the alarm key will often be "evidNNNN" or 
+		similar. Usually a maximum of one alarm of each alarmname
+		will be issued for a given alarmkey. 
+	}
+	;
+
+Attribute subject
+	String (80)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "Subject of an email alarm" )
+	Detail {
+		This message records the subject line of an email alarm
+		sent out.
+	}
+	;
+
+Relation alarms
+	Fields ( alarmid alarmkey alarmclass alarmname time subject evid orid acknowledged acktime ackauth dir dfile foff lddate )
+	Primary ( alarmkey alarmclass alarmname )
+	Alternate ( alarmid )
+	Foreign ( evid orid ) 
+	Defines alarmid
+	Description ( "alarm conditions" )
+	Detail {
+		The alarms table tracks discrete-time events for 
+		which the automated system needs to notify human 
+		staff and/or transfer control to human staff. The time 
+		field in the alarms table indicates the system-clock timestamp 
+		at which the alarm was declared (note that this could be 
+		different than the time of interest for the earth event, 
+		for example the hypocenter origin time, and could also be 
+		different from the time at which a notification message
+		was sent, if there are delays specified for each calldown
+		recipient).
+	}
+	;
+
