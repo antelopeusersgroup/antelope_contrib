@@ -1,10 +1,14 @@
 Attribute period
-        Real (12)
-        Format ( "%12.3f" )
-        Null ( "-89999999999" )
-        Units ( "seconds" )
-        Description ( "period for measurement" )
-        ;
+	Real (12)
+	Format ( "%12.3f" )
+	Null ( "-89999999999" )
+	Units ( "seconds" )
+	Description ( "period for measurement" )
+	Detail { 
+	    This is the period in seconds over which measurments
+	    are taken and saved into the table.
+	}
+	;
 
 Attribute pc_1
 	Real (12)
