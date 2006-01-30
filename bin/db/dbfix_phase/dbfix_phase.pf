@@ -3,13 +3,15 @@ default_vmodel 	iasp91  # use this earth-model for travel time computation
 method	tttaup			# method for travel-time computation, tttaup or 
 						# tt1dcvl or whatever you have/like
 
-tt_phase_code			P+,S+ # phase_code for calling ttcalc, see tt(3)
+tt_phase_code			all #P+,S+ # phase_code for calling ttcalc, see tt(3)
 							# e.g. "P+" for P-phases only or "all" for all possible phases
 							# note: you will see rare phases when specifying all here...
 apply_station_corrections	no 	# set to yes only if your method allows this!
 max_tdelta	1.5 		# ignore all phases with a residual larger than this value
 						# set to -1 to accept everything
 
-suspicious_phase_codes	X,P,S  # List of phases to change
-								# P should be on this list, 
-								# otherwise all P's will be left unchanged...
+suspicious_phase_codes &Tbl{
+	P							# List of phases to change
+	S							# P should be on this list, 
+	X							# otherwise all P's will be left unchanged...
+}

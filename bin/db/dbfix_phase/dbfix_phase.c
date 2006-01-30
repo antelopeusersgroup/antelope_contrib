@@ -20,6 +20,12 @@
 #define VERSION "1.1 2006-01-25"
 #define MAX_DT 20.0
 
+int
+cmp_string( char **a, char **b, void *private )
+{
+    return strcmp( *a, *b );
+}
+
 static void
 usage()
 {
@@ -35,36 +41,31 @@ usage()
 int
 main(int argc, char **argv)
 {
-	Dbptr           db, dbs, dbts, t_dbassoc, dbp, dbassoc, dborigin, dbarrival,
-	                dbg, dbb;
+	Dbptr           db, dbs, dbts, t_dbassoc, dbp, dbass, dbassoc,
+	                dborigin, dbarrival, dbg, dbb;
 	char           *dbname = NULL, *sitedbname = NULL;
 	Hook           *hook = NULL, *tthook = NULL, *ahook = NULL;
 	int             nos, from, to, recc;
 	char           *pfname = NULL;
 	int             orid;
-	double          lat, lon, depth, time, atime, stalat, stalon, staelev, timeres;
+	double          lat, lon, depth, time, atime, stalat, stalon, staelev,
+	                null_timeres, timeres;
 	Tbl            *stbl, *ttimes = NULL;
-	char            sta[10], iphase[10], phase[10], n_iphase[10];
+	char            *sta=malloc(10), *iphase=malloc(10),*phase=malloc(10),*n_phase=malloc(10);
 	char           *t;
-	Tbl            *stalist;
+	Tbl            *stalist, *assoc_key, *suspicious_phase_codes;
 	int             mode = 0, result;
 	char           *method = malloc(20), *model = malloc(20);
-	char           *phases = malloc(20), *suspicious_phase_codes = malloc(256);
+	char           *phases = malloc(20);
 	TTGeometry      geometry;
 	double          max_dt, max_tdelta;
 	Pf             *pf = NULL;
-	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0,
-	                verbose = 0, quiet = 0, dry_run = 0, res, apply_station_corrections = 0;
-
+	int             use_assoc_vmodel = 0, use_iphase = 0, override_phase = 0, verbose = 0,
+	                quiet = 0, dry_run = 0, res, apply_station_corrections = 0,
+	                check_tdelta = 0;
+	void           *private = (void *) NULL;
 	elog_init(argc, argv);
 	elog_notify(0, "%s %s\n", Program_Name, VERSION);
-
-
-
-	/*
-	 * if (pfread (Program_Name, &pf) != 0) die (0, "Can't read parameter
-	 * file\n");
-	 */
 
 	for (argv++, argc--; argc > 0; argv++, argc--) {
 		if (**argv != '-')
@@ -91,6 +92,7 @@ main(int argc, char **argv)
 			use_assoc_vmodel = 1;
 		} else if (!strcmp(*argv, "-use_iphase")) {
 			use_iphase = 1;
+			override_phase = 1;
 		} else if (!strcmp(*argv, "-override_phase")) {
 			override_phase = 1;
 		} else if (!strcmp(*argv, "-dry")) {
@@ -142,21 +144,16 @@ main(int argc, char **argv)
 			 "parameter 'max_tdelta' not found in the parameter file %s.pf\n",
 			 pfname);
 	}
+	if (max_tdelta == -1) {
+		check_tdelta = 1;
+	}
+	suspicious_phase_codes = pfget_tbl(pf, "suspicious_phase_codes");
+
 	apply_station_corrections = pfget_boolean(pf, "apply_station_corrections");
 	if (apply_station_corrections == -1) {
 		mode = TT_APPLY_CORRECTIONS;
 		if (verbose)
 			elog_debug(0, "we will try to apply station corrections\n");
-	}
-	if ((suspicious_phase_codes = pfget_string(pf, "suspicious_phase_codes")) == NULL) {
-		elog_die(0,
-			 "parameter 'suspicious_phase_codes' not found in the parameter file %s.pf\n",
-			 pfname);
-	}
-	if ((max_dt = pfget_double(pf, "max_tdelta")) == 0) {
-		elog_die(0,
-			 "parameter 'max_tdelta' not found in the parameter file %s.pf\n",
-			 pfname);
 	}
 	if (strcmp(dbname, "-")) {
 		if (dbopen(dbname, "r+", &db) == dbINVALID) {
@@ -190,11 +187,13 @@ main(int argc, char **argv)
 			elog_die(0, "no records left in table origin after subset '%s'\n", expr);
 		}
 	}
-	dbassoc = dblookup(db, 0, "assoc", 0, 0);
-	dbquery(dbassoc, dbTABLE_PRESENT, &res);
+	dbass = dblookup(db, 0, "assoc", 0, 0);
+	dbquery(dbass, dbTABLE_PRESENT, &res);
 	if (!res) {
 		elog_die(0, "table assoc must be present!\n");
 	}
+	dbassoc = dbass;
+	dbopen_table("assoc", "r+", &dbassoc);
 	dbquery(dbassoc, dbTABLE_IS_WRITABLE, &res);
 	if (!res && !dry_run) {
 		elog_die(0, "table assoc must be writable!\n");
@@ -205,7 +204,7 @@ main(int argc, char **argv)
 
 	dbquery(dbp, dbRECORD_COUNT, &recc);
 	if (recc < 1) {
-		elog_die(0, "no records left ifter joining assoc and arrival\n");
+		elog_die(0, "nothing to do\n");
 	}
 	stbl = strtbl("orid", "lat", "lon", "depth", "time", "sta", 0);
 	dbp = dbsort(dbp, stbl, 0, 0);
@@ -221,6 +220,8 @@ main(int argc, char **argv)
 	/* prepare for dbmatches */
 	/* site */
 	stbl = strtbl("sta", 0);
+	/* assoc */
+	assoc_key = strtbl("arid", "orid", 0);
 	/*
 	 * dbts = dbs; better a fresh database, maybe the scratch record of
 	 * the site table would be needed elsewhere
@@ -231,6 +232,8 @@ main(int argc, char **argv)
 
 	/* assoc */
 	t_dbassoc = dbassoc;
+	t_dbassoc.record = dbNULL;
+	dbgetv(t_dbassoc, 0, "timeres", &null_timeres, 0);
 	t_dbassoc.record = dbSCRATCH;
 
 	for (dbg.record = 0; dbg.record < nos; dbg.record++) {
@@ -296,24 +299,29 @@ main(int argc, char **argv)
 			Tbl            *assoclist;
 			int             t_arid, t_orid;
 			char            t_sta[10];
+			int             nrecs, rec1, rec2;
 
 
 			dbgetv(dbp, 0, "arid", &arid, "phase", phase, "iphase", iphase,
 			       "timeres", &timeres, "arrival.time", &atime,
 			       "vmodel", vmodel, 0);
 
+			if (timeres == null_timeres) {
+				timeres = 0;
+				check_tdelta = 0;
+			} else {
+				check_tdelta = 1;
+			}
+
+			if (verbose > 1) {
+				elog_debug(0,
+				       "%s %s iphase %s phase %s arid %d\n",
+					   t = strtime(atime), sta, iphase, phase, arid);
+				free(t);
+			}
 			if (!override_phase) {
-				if (!strcontains(suspicious_phase_codes, phase, 0, 0, 0)) {
-					if (verbose > 1) {
-						elog_debug(0,
-							   "%s %s keep phase %s for arid %d\n",
-							   t = strtime(atime), sta, phase, arid);
-						free(t);
-					} else if (verbose) {
-						elog_debug(0,
-							   "keep phase %s for arid %d because it's not suspicious\n",
-							   phase, arid);
-					}
+				if (!searchtbl((char *) &phase, suspicious_phase_codes, 
+							(int(*)(void *,void *,void *))cmp_string, private, &rec1, &rec2)) {
 					break;
 				}
 			}
@@ -323,8 +331,8 @@ main(int argc, char **argv)
 					       &tthook);
 				if (result < 0) {
 					/*
-					 * fix later, allow maybe to fall back to
-					 * default vmodel...
+					 * fix later, allow maybe to fall
+					 * back to default vmodel...
 					 */
 					elog_die(1,
 						 "problem computing travel-times using vmodel %s->aborting\n",
@@ -344,74 +352,65 @@ main(int argc, char **argv)
 					t = strtime(t_atime->value + time));
 					free(t);
 				}
-				if (use_iphase &&
-				    !strcontains(suspicious_phase_codes, t_atime->phase, 0, 0, 0)
+				if (use_iphase
 				    && strcmp(t_atime->phase, iphase) == 0) {
-					/*
-					 * min_dt = dt; need to make it small
-					 * for later checks
-					 */
-					min_dt = 1e-9;
-					strcpy(n_iphase, t_atime->phase);
-					if (verbose > 1) {
-						elog_debug(0, "%s %s changing phase %s to iphase %s for arid %d\n",
-							   t = strtime(atime), sta, phase, n_iphase, arid);
-						free(t);
-					} else if (verbose) {
-						elog_debug(0, "changing phase %s to iphase %s for arid %d\n",
-						     phase, n_iphase, arid);
-					}
+				if (!searchtbl((char *) &iphase, suspicious_phase_codes, (int(*)(void *,void *,void *))cmp_string, private, &rec1, &rec2)) {
+						
+
+					strcpy(n_phase, t_atime->phase);
+					check_tdelta = 0;
+					
 					break;
+					}
 				}
 				if (dt < min_dt) {
 					min_dt = dt;
-					strcpy(n_iphase, t_atime->phase);
+					strcpy(n_phase, t_atime->phase);
 				}
 			}
 
 			dbputv(t_dbassoc, 0, "arid", arid, "orid", orid, 0);
-			dbmatches(t_dbassoc, dbassoc, &assoclist, &assoclist, &ahook, &assoclist);
+			dbmatches(t_dbassoc, dbassoc, &assoc_key, &assoc_key, &ahook, &assoclist);
+			nrecs = maxtbl(assoclist);
 			dbassoc.record = (int) gettbl(assoclist, 0);
-			dbgetv(dbassoc, 0, "orid", &t_orid, "arid", &t_arid, "sta",
-			       t_sta, 0);
-			freetbl(assoclist, 0);
+			for (i = 0; i < nrecs; i++) {
+				dbassoc.record = (int) gettbl(assoclist, i);
 
-			if (max_tdelta != -1 && min_dt > max_tdelta) {
-				if (verbose > 1) {
-					elog_debug(0, "%s %s leave phase %s unchanged for arid %d because residual is too high (%7.3f > %7.3f)\n",
-						   t = strtime(atime), sta, phase, arid, min_dt, max_tdelta);
-					free(t);
-				}
-				break;
-			}
-			if (verbose || dry_run) {
-				if (strcmp(n_iphase, iphase) != 0) {
+				if (check_tdelta && min_dt > max_tdelta) {
 					if (verbose > 1) {
-						elog_debug(0, "%s %s changing phase %s to %s for arid %d\n",
-							   t = strtime(atime), sta, phase, n_iphase, arid);
+						elog_debug(0, "%s %s leave phase %s unchanged for arid %d\n\t because residual is too high for best phase %s (%7.3f > %7.3f)\n",
+							   t = strtime(atime), sta, phase, arid, n_phase, min_dt, max_tdelta);
 						free(t);
+					}
+					break;
+				}
+				if (verbose || dry_run) {
+					if (strcmp(n_phase, phase) != 0) {
+						if (verbose > 1) {
+							elog_debug(0, "%s %s changing phase %s to %s for arid %d\n",
+								   t = strtime(atime), sta, phase, n_phase, arid);
+							free(t);
+						} else {
+							elog_debug(0, "changing phase %s to %s for arid %d\n",
+								   phase, n_phase, arid);
+						}
 					} else {
-						elog_debug(0, "changing phase %s to %s for arid %d\n",
-						     phase, n_iphase, arid);
+						if (verbose > 1) {
+							elog_debug(0, "%s %s found same for phase %s arid= %d\n",
+								   t = strtime(atime), sta, phase, arid);
+							free(t);
+						}
 					}
-				} else {
-					if (verbose > 1) {
-						elog_debug(0, "%s %s found same for phase %s arid= %d\n",
-							   t = strtime(atime), sta, phase, arid);
+				}
+				if (!dry_run && strcmp(n_phase, phase) != 0) {
+					if (dbputv(dbassoc, "assoc", "phase", n_phase, 0)) {
+						elog_complain(1, "can't put phase %s (%s) for arid %d (sta %s @ %s) \n",
+							      n_phase, iphase, dbassoc.record, sta, t = strtime(atime));
 						free(t);
 					}
 				}
 			}
-			if (!dry_run && strcmp(n_iphase, iphase) != 0) {
-				if (dbputv(dbassoc, 0, "phase", n_iphase, 0)) {
-					elog_complain(1, "can't put phase %s (%s) for arid %d (sta %s @ %s) \n",
-						      n_iphase, iphase, dbassoc.record, sta, t = strtime(atime));
-					free(t);
-				}
-			}
-			/*
-			 * }
-			 */
+			freetbl(assoclist, 0);
 		}
 	}
 	return (0);
