@@ -157,6 +157,12 @@ dbfind (@db, string [, first [,reverse]])
 dbinvalid()
     return database pointer of dbINVALID
 
+dbget_range(@bundle)
+    returns start, end of range for bundle db pointer
+
+dbbase(@db[, table])
+    returns base table database pointer corresponding to record @db
+
 <subsection Waveforms>
 trsample(@db, $t0, $t1, $sta, $chan[, $apply_calib])
     fetch waveform data from table @db for
