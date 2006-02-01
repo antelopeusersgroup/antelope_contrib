@@ -47,4 +47,10 @@ a time relative to now:
 
  +0:15
 
+<List>
+To specify a previous day, use -Ndays:
+<Examples>
+2:00 -1day
+-10days 13:35
+
 

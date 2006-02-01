@@ -171,6 +171,9 @@ int dbfree ( Dbptr db )
     free space taken by database view: specify db.table.  base tables
     and views referenced by other views should not be freed.
 
+Dbptr dbbase (Dbptr db, char *table)
+    returns the base table dbptr for a record of a join/subset/sort view
+
 void dbget_range ( Dbptr db, int *s, int *e )
     get row number range from grouped view bundle pointer
 
