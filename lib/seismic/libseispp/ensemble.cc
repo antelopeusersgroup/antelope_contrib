@@ -517,8 +517,10 @@ ThreeComponentEnsemble::ThreeComponentEnsemble(DatabaseHandle& rdb,
 		DBBundle ensemble_bundle=dbh.get_range();
 		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
 		// We need a copy of this pointer 
+		Dbptr dbparent=ensemble_bundle.parent;
+		--dbparent.table;
 		DatascopeHandle dbhv(ensemble_bundle.parent,
-			ensemble_bundle.parent);
+			dbparent);
 		// Necessary because the ThreeComponentSeismogram
 		// constructor uses a generic handle
 		DatabaseHandle *rdbhv=dynamic_cast

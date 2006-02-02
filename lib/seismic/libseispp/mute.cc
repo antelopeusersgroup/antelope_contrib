@@ -90,13 +90,13 @@ TopMute::TopMute(Pf *pf,string tag)
 {
 	try {
 		Metadata md(pf,tag);
-		string reft = md.get_string("TimeReferenceType");
+		string reft = md.get_string("time_reference_type");
 		if(reft=="absolute")
 			reftype = absolute;
 		else
 			reftype = relative;
-		t0e = md.get_double("Zero_End_Time");
-		t1 = md.get_double("End_Time");
+		t0e = md.get_double("zero_end_time");
+		t1 = md.get_double("end_time");
 	}
 	catch (...) {throw;};
 }

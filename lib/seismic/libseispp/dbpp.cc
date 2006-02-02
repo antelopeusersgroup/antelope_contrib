@@ -6,7 +6,6 @@ using namespace std;
 using namespace SEISPP;
 namespace SEISPP
 {
-
 // Simple function needed by constructors below.  Returns true if
 // the string dbgroup is found in the command to be send to dbprocess.
 // Throws an int exception if the dbgroup clause is anywhere but 
@@ -31,24 +30,19 @@ bool dbgroup_used(Tbl *t)
 	return false;
 }
 /* Tricky function to test if an Antelope Dbptr is a bundle 
-pointer.  It uses a trick to suppress an error describe by 
-Dan Quinlan to glp on Feb. 23, 2005.  
+pointer.  
 
 Function returns true of the Dbptr is the result of dbgroup.
 Returns false otherwise.
 */
 bool is_a_bundle_pointer(Dbptr db)
 {
-	int logmark;
-	Dbptr dbbundle;
-	bool ret;
-	logmark=elog_mark();
-	if(dbgetv(db,0,"bundle",&dbbundle,0)==dbINVALID)
-		ret=false;
+	Dbptr dbtest;
+	dbtest=dblookup(db,0,0,"bundle",0);
+	if(dbtest.field<0)
+		return false;
 	else
-		ret=true;
-	elog_flush(0,logmark);
-	return(ret);
+		return true;
 }
 // Default constructor needs to initialize the pointer to 
 // mark it as invalid
@@ -425,20 +419,21 @@ DBBundle DatascopeHandle::get_range()
 {
 	DBBundle bundle;
 	int s,e;
+	const string emess("get_range:  handle is not a bundle pointer");
 	if(is_bundle)
 	{
 		Dbptr dbbundle;
 		int ierr;
 		ierr = dbgetv(db,0,"bundle",&dbbundle,0);
+		if(ierr==dbINVALID)
+			throw SeisppDberror(emess,db,complain);
 		dbget_range(dbbundle,&s,&e);
 		bundle.start_record = s;
 		bundle.end_record = e;
 		bundle.parent = dbbundle;
 	}
 	else
-		throw SeisppDberror(
-			string("get_range:  handle is not a bundle pointer"),
-			db,complain);
+		throw SeisppDberror(emess,db,complain);
 	return(bundle);
 }
 

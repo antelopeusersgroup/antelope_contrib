@@ -411,19 +411,27 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// In this situation we have to load the definition of the
 		// transformation matrix into the md object
 		// We must assume the data are externally defined in cardinal coordinates
-		md.put("U11",1.0);
-		md.put("U22",1.0);
-		md.put("U33",1.0);
-		md.put("U12",0.0);
-		md.put("U13",0.0);
-		md.put("U21",0.0);
-		md.put("U23",0.0);
-		md.put("U31",0.0);
-		md.put("U32",0.0);
-		*this=ThreeComponentSeismogram(md,false);
-		ns = this->get_int("nsamp");
-		dt = 1.0/(this->get_double("samprate"));
-		t0 = this->get_double("time");
+		this->put("U11",1.0);
+		this->put("U22",1.0);
+		this->put("U33",1.0);
+		this->put("U12",0.0);
+		this->put("U13",0.0);
+		this->put("U21",0.0);
+		this->put("U23",0.0);
+		this->put("U31",0.0);
+		this->put("U32",0.0);
+		for(i=0;i<3;++i)
+			for(j=0;j<3;++j) tmatrix[i][j]=0.0;
+		for(i=0;i<3;++i) tmatrix[i][i]=1.0;
+		ns = md.get_int("nsamp");
+		double samprate=md.get_double("samprate");
+		dt = 1.0/samprate;
+		t0 = md.get_double("time");
+		this->put("nsamp",ns);
+		this->put("samprate",samprate);
+		this->put("time",t0);
+		this->put("endtime",this->endtime());
+		u=dmatrix(3,ns);
 		// default for processed data is relative time
 		tref=relative;
 		try {
@@ -467,6 +475,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			+fname);
 		}
 		fclose(fp);
+		live=true;
 	    }
 		
 	}
