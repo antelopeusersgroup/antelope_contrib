@@ -11,7 +11,7 @@
 #   the copyright statement above is not removed. 
 
 
-package require Tclx
+catch {package require Tclx}
 lappend auto_path $env(ANTELOPE)/data/tcl/library
 
 proc init_globals {} {
