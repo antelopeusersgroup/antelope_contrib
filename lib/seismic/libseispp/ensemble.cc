@@ -253,6 +253,9 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 		dbtrgrp.group(groupkeys);
 		dbtrgrp.rewind();
 		MetadataList data_mdl=BuildStationMDL();
+		// Conservative number to reserve, but this will
+		// improve efficiency
+		member.reserve(dbtrgrp.number_tuples());
 		
 		for(int irec=0;irec<dbtrgrp.number_tuples();++irec,++dbtrgrp)
 		{

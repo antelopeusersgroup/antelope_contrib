@@ -30,7 +30,7 @@ void ApplyTopMute(TimeSeries &ts,TopMute& mute)
 		double weight;
 		t = ts.time(i2);
 		if(t>mute.t1) return;
-		weight = (t-ts.t0)/(mute.t1-mute.t0e);
+		weight = (t-mute.t0e)/(mute.t1-mute.t0e);
 		ts.s[i2]*=weight;
 	}
 }
@@ -54,7 +54,7 @@ void ApplyTopMute(ThreeComponentSeismogram &ts,TopMute& mute)
 		double weight;
 		t = ts.time(i2);
 		if(t>mute.t1) return;
-		weight = (t-ts.t0)/(mute.t1-mute.t0e);
+		weight = (t-mute.t0e)/(mute.t1-mute.t0e);
 		for(j=0;j<3;++j) ts.u(j,i2)*=weight;
 	}
 }
