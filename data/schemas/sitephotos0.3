@@ -221,6 +221,16 @@ Relation affiliation
 	}
 	;
 
+Relation captions
+	Fields ( sta time imagename dir dfile auth lddate )
+	Primary ( sta time imagename )
+	Description ( "image captions" )
+	Detail {
+		The captions table stores extended captions for each image, when 
+		the sitephotos.imagedescrip field is insufficient. 
+	}
+	;
+
 Relation groups
 	Fields ( imggroup grouptype groupname lddate )
 	Primary ( imggroup )
