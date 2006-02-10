@@ -135,7 +135,7 @@ parameters. In addition to the escape codes above, these parameters also allow
 specification of %{ackauth} and %{acktime} from the database row 
 that records the alarm acknowledgment. The \fImax_ack_wait_sec\fP
 parameter specifies the maximum length of time to wait for an alarm
-acknowledgment before giving up and de-registering the alarm.
+acknowledgment before giving up and de-registering the alarm. 
 
 Before describing the \fImessage_expressions\fP field in more detail, one
 important field remains in the subarray
@@ -481,6 +481,23 @@ reading it, all region-containment tests via the %{in(...)} function
 default to true (this provides the conservative behavior of reporting
 too many earthquakes rather than too few). \fBorb_quake_alarm\fP does not
 support polygon regions which cross the north or south pole.
+
+Note that the \fImax_ack_wait_sec\fP parameter is completely different
+from the delay-times used for different recipients in the calldown list. 
+The intent of the delay-times themselves is to specify how long to wait 
+before forwarding an alarm message to the next recipient in the list. 
+The intent of the \fImax_ack_wait_sec\fP parameter is that if after all
+recipients in the calldown list have been called, and nobody has 
+acknowledged the alarm for hours and hours, or days on end, 
+\fBorb_quake_alarm\fP will eventually give up entirely on waiting for 
+acknowledgments for that alarm. If the delay times specified in a calldown
+list are on the order of tens of minutes, a standard setting for the 
+\fImax_ack_wait_sec\fP parameter might be 3 - 5 hours (specified in seconds), 
+or whatever length of time beyond which any acknowledgment would be 
+absolutely useless for monitoring operations. At the least, the value 
+of \fImax_ack_wait_sec\fP should be much larger than the largest delay time 
+specified in the calldown list. 
+
 .SH AUTHOR
 .nf
 Kent Lindquist
