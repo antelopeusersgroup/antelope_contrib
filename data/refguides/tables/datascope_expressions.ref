@@ -174,8 +174,22 @@ km2deg(km)
 deg2km(deg)
     convert degrees to (nominal) kilometers
 
+<subsection Strings>
+<expression>
+substr(str,x0,n)
+
+null("fieldname")
+
+strlen(sta)
+
 <subsection External Files and Commands>
 <expression>
+concatpaths(dir,dfile)
+
+dirname(path)
+
+basename(path)
+
 ["wc" extfile()]
     execute a unix command, as in this example
 
