@@ -453,13 +453,19 @@ orb2orb [options] in out [start [period|end]]
 orbxchange pf
     run multiple orb2orb connections controlled by pf
 
-orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
+orbxfer2 [-p pf] [-w dir] [-v] [file ...] orb
+    write files into orb; with -w, watch directory dir and send files which appear there into the orb and remove them from dir
+
+orbxfer2 [-p pf] [-S state] [-v] orb
+    receive incoming files, save into directory specified in pf
+
+deprecated orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
     write files into orb
 
-orbxfer [-b pktsize] [-d dir] [-ovv] -w dir orb
+deprecated orbxfer [-b pktsize] [-d dir] [-ovv] -w dir orb
     watch directory dir and copy files into orb
 
-orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
+deprecated orbxfer [-d dir] [-S state] [-m match] [-r reject] [-s where] [-ovv] orb
     receive incoming files, save into dir
 
 orb2genc [options] orbin orbout

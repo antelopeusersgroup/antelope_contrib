@@ -135,7 +135,22 @@ ref2db [options] input dbname [start-time [end-time]]
 -w	do not save waveform data; used to extract log file or get gap info
 </options>
 
-psd2db [options] sd dbout
+seed2db [options] seed [db]
+    read SEED volume seed, produce validation commentary and optionally database tables 
+<options>
+-lsize	size	specify logical record size
+-vvv		be increasingly verbose
+-respdir rdir	save responses into rdir
+-stagedir sdir  create stage table; save stage responses into sdir
+-chansift pf	select specific sta/chan pairs through pf
+-tstart t0	start at time t0
+-tend   t1	stop at time t1
+-nodata		create no wfdisc table
+-nodataless	only create wfdisc
+-nofirerrors	shut up about fir errors
+</options>
+
+deprecated psd2db [options] sd dbout
     read PASSCAL SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
 <options>
 -n	require that dbout database contain no records
@@ -163,7 +178,7 @@ scec2db [options] dbname
 -c	{catread|scecdc|hypo71|hypo2000}
 </options>
 
-sd2db [options] sd dbout
+deprecated sd2db [options] sd dbout
     read SEED volume sd and produce tables wfdisc, sensor, site, sitechan, and instrument in database dbout
 <options>
 -d	print out each blockette as it is read
