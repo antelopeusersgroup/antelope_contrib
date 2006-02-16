@@ -416,8 +416,8 @@ GCLgrid::GCLgrid(int n1in, int n2in,
 	and maximum in each cartesian direction */
 	this->compute_extents();
 
-	delete baseline_lat;
-	delete baseline_lon;
+	delete [] baseline_lat;
+	delete [] baseline_lon;
 	free_2dgrid_contiguous(plat,n1);
 	free_2dgrid_contiguous(plon,n1);
 	free_2dgrid_contiguous(pr,n1);
