@@ -85,8 +85,8 @@ dbcp [options] dbin[.table] dbout
 </options>
 
 
-dbadd dbin.table dbout.table expr1 [expr2 ...]
-    add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...
+dbadd [-a] dbin.table dbout.table expr1 [expr2 ...]
+    add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...; with -a, add all fields from dbin.table
 
 dbdelete [options] view [table ...]
     delete (or mark) all records in database view (or just records in table)
@@ -198,7 +198,7 @@ db2xml [options] aview [name expr [name expr ...]]
 
 <subsection Verifying Databases>
 <commands>
-dbcheck [-v] db[.table]
+dbcheck [-vv] db[.table]
     scans database (or table) for lines with invalid length
 
 dbverify [options] db[.table]

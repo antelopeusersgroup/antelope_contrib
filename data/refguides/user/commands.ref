@@ -15,7 +15,7 @@ template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
 private check_antelope_installation
     spot check for proper Antelope installation
 
-antelope_update [-ilntv] [-m email] [-p proxy] [-r id] [url]
+antelope_update [-ilntv] [-m email] [{-p|-q} proxy] [-r id] [url]
     update local antelope installation from BRTT patches 
 
 check_license [-v] [license_filename]

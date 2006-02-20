@@ -6,7 +6,7 @@ rtm [-icon iconname] [-title title]
     monitor real-time tasks and resource usage
 
 dbevents [options] dbname [start [end]]
-    display map of seismic events and waveforms
+    display map of seismic events and waveforms (between times start and end)
 <options>
 -max_age max_age	limit age of displayed events
 -show_detections	show stations with detecitons only
