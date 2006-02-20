@@ -1,7 +1,7 @@
 #ifndef dcsp_h_included
 #define dcsp_h_included
 
-#include "pkt.h"
+#include "defunctpkt.h"
 
 #define MAX_DCPAR  4
 #define MAXDAS 4

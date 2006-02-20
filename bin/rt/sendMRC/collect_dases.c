@@ -5,7 +5,7 @@
  *
  *
  ********************************************************************/
-#include "pkt.h"
+#include "defunctpkt.h"
 #include "mrc.h"
 
 extern char *pfile;

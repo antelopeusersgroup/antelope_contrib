@@ -19,7 +19,7 @@
 #include <fcntl.h>
 #include <stddef.h>
 #include <math.h>
-#include "pkt.h"
+#include "defunctpkt.h"
 #include "tr.h"
 #include "regex.h"
 

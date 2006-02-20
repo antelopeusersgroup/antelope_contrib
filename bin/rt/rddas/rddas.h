@@ -24,7 +24,7 @@
 #include <poll.h>
 #include <stddef.h>
 #include <netdb.h>
-#include "pkt.h"
+#include "defunctpkt.h"
 
 #define DSK_BLK_SIZE    1024	/* PASSCAL disk block size  */
 #define IBUF_SIZE       4096

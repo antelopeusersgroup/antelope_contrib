@@ -8,7 +8,7 @@
  *	    glushko@ucsd.edu
  *
  ***********************************************************************/
-#include "pkt.h"
+#include "defunctpkt.h"
 
 int PsclLog=0;
 Arr *DasPar = 0;

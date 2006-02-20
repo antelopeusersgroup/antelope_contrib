@@ -3,7 +3,7 @@
  *  unstuffpar.c 
  *
  ********************************************************************/
-#include "pkt.h"
+#include "defunctpkt.h"
 
 extern int GPS_COOR;
 

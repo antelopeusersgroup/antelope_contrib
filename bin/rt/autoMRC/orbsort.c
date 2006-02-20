@@ -1,4 +1,4 @@
-/* #include "pkt.h" */
+/* #include "defunctpkt.h" */
 #include "mrc.h"
 #include "stock.h"
 

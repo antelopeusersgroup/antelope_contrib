@@ -7,7 +7,7 @@
 #ifndef header_h_included
 #define header_h_included
 
-#include "pkt.h"
+#include "defunctpkt.h"
 #define MAXNUMPAR_BBA2  7
 #define NDAS 16
  

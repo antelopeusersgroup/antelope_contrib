@@ -23,7 +23,7 @@ FAIL--not coded for OS2
 #include <trace_buf.h>
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 #include "iceworm_extensions.h"
 
 float htonf (float arg);

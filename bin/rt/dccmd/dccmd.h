@@ -28,7 +28,7 @@
 #include "coords.h"
 #include "stock.h"
 #include "arrays.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 
 #define CMDDC_PORT 5001         /* input port; data from DAS  */
 #define IBUF_SIZE       64

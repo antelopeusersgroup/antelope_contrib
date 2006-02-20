@@ -6,7 +6,7 @@
 
 #include "tr.h"
 #include "orb.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 
 #define TRGAP_VALUE_S4  2147483647
 

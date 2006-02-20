@@ -14,7 +14,7 @@
 #include <xview/textsw.h>
 #include <xview/xv_xrect.h>
 #include <xview/notice.h>
-#include "pkt.h"
+#include "defunctpkt.h"
  
 #define DATA_PORT   "/dev/ttyb"
 #define CMND_PORT   "/dev/ttya"

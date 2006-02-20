@@ -23,7 +23,7 @@
 #include "db.h"
 #include "tr.h"
 #include "stock.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 #include "orb.h"
 #include "pf.h"
 #include "packet.h"

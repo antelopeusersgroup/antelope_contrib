@@ -33,7 +33,7 @@
 #include <stddef.h>
 #include <stropts.h>
 #include <netdb.h>
-#include "pkt.h"
+#include "defunctpkt.h"
 
 #define DEBUG
 #define NUMDAS 48

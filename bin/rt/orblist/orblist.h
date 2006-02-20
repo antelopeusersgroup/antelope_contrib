@@ -14,7 +14,7 @@
 #include "coords.h"
 #include "stock.h"
 #include "orb.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 
 
 int MaxGap;
