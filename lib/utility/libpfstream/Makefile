@@ -4,7 +4,7 @@ INCLUDE=pfstream.h
 MAN3=pfstream.3
 MAN5=pfstream.5
 
-ldlibs= -lbrttutil $(THREAD) $(DBLIBS) 
+#ldlibs= -lbrttutil $(THREAD) $(DBLIBS) 
 
 include $(ANTELOPEMAKE)  	
 
