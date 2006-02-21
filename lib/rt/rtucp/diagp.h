@@ -7,7 +7,7 @@
 #include "tcl.h"
 #include "tk.h"
 #include "arrays.h"
-#include "pkt.h"
+#include "defunctpkt.h"
 
 
 #define ERRR  "error_MSG"
