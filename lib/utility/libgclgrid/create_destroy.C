@@ -563,8 +563,8 @@ GCLgrid3d::GCLgrid3d(int n1in, int n2in, int n3in,
 	and maximum in each cartesian direction */
 	this->compute_extents();
 
-	delete baseline_lat;
-	delete baseline_lon;
+	delete [] baseline_lat;
+	delete [] baseline_lon;
 	free_3dgrid_contiguous(plat,n1,n2);
 	free_3dgrid_contiguous(plon,n1,n2);
 	free_3dgrid_contiguous(pr,n1,n2);
