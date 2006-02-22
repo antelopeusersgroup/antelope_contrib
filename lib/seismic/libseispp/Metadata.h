@@ -16,7 +16,6 @@ namespace SEISPP
 using namespace std;
 using namespace SEISPP;
 
-// Holds global default metadata
 //
 //This object is used for selective copy
 //
@@ -66,43 +65,56 @@ public:
 	cerr<<message<<endl;
 	};
 };
+	
 
 class Metadata
 {
 public:
-        Metadata();
+        Metadata(){};
 	Metadata(Pf*);
 	Metadata(Pf *pfin, string tag);
-	Metadata(char *) throw(MetadataParseError);
+	// Depricated.  Earlier version had this
+	//Metadata(char *) throw(MetadataParseError);
 	Metadata(string) throw(MetadataParseError);
+	// New constructor.  Loads content of string to typed
+	// content using MetadataList.
+	Metadata(string,MetadataList&);
 	Metadata(DatabaseHandle&,
 		MetadataList&,AttributeMap&) throw(MetadataError);
-	Metadata(const Metadata&)
-		throw(MetadataParseError);
-	Metadata& operator=(const Metadata& );
-        ~Metadata();
+	// Intentionally default copy constructor for now.  
+	// Use of stl map makes coding unnecessary
+	//Metadata(const Metadata&);
+	// Same for operator = .  Let the compiler generate it.
+	//Metadata& operator=(const Metadata& );
+	// In this implementation destructor can be defaulted.
+	// There is thus no need to declare it.
+        // ~Metadata();
 
         double get_double(string) throw(MetadataGetError);
         int get_int(string)throw(MetadataGetError);
         string get_string(string)throw(MetadataGetError);
-        bool get_bool(string)throw(MetadataGetError);
-	// The next two are antelope specific
-	Tbl *get_list(string)throw(MetadataGetError);
-	Arr *get_map(string)throw(MetadataGetError);
+	// Note this never throws and exception.  If not found, return false.
+        bool get_bool(string);
 	//These put new metadata in
 	//These use the same name but depend on overloading
         void put(string,double);
         void put(string,int);
-        void put(string,string); // C++ basic string 
-        void put(string,char *);  // for plain C strings
         void put(string,bool);
-	void put(string,Arr *);  // antelope map
-	void put(string,Tbl *);  // antelope list
+        void put(string,string); 
+        void put(string,char *); 
 	void remove(string);
 	friend ostream& operator<<(ostream&,Metadata&);
-	Pf *extract_all_metadata_to_pf();
+	// new method returns ordered object containing
+	// ordered pairs of keys and types
+	MetadataList keys(); 
 protected:
-        Pf *pf;  // Antelope's pf handle
+	// Typed methods use appropriate map first.  If the 
+	// key is not found in the typed version they try to
+	// fetch from mstring and convert 
+	map<string,double> mreal;
+	map<string,int> mint;
+	map<string,bool> mbool;
+	map<string,string> mstring;
 };
 
 //
@@ -111,6 +123,7 @@ protected:
 void copy_selected_metadata(Metadata& mdin, Metadata& mdout, 
 	MetadataList& mdlist) throw(MetadataError);
 MetadataList pfget_mdlist(Pf *pf,string tag);
+Pf *Metadata_to_pf(Metadata& md);
 
 } // End namespace SEISPP declaration
 #endif

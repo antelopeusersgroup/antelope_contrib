@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "stock.h"
 #include "pf.h"
 #include <string>
@@ -6,57 +7,58 @@
 #include "Metadata.h"
 #include "dbpp.h"
 using namespace std;
-static Pf *Metadata_defaults_pf;
 namespace SEISPP
 {
-
-//
-// This file is used to create a shared object library.  This 
-// approach may not be universally applicable, but it is known to work
-// in solaris.  When a library is first openned the _init() function is
-// executed.  Here we utilized this to initialized a global parameter 
-// space for the library used as a default template for metadata
-//
-void _init()
+void pf2metadatastring(Pf *pfin, map<string,string>& mdstr)
 {
-	char *mddname=(char *)"metadata_defaults";
-	char *name_from_env;
-	char *name;
-	int ierr;
-	// Get name from the environment
-	// revert to default pf name if not defined 
-	name_from_env = getenv("METADATA_DEFAULTS");
-	if(name_from_env==NULL)
-		name=mddname;
-	else
-		name=name_from_env;
-
-	ierr = pfread(name,&Metadata_defaults_pf);
-	if(ierr)
+	// Parameter files translate almost directly to the mstring
+	// map.  They are keyed arrays linking to strings.
+	// Chose to not use the Pf directly here due to 
+	// clash found in memory management in earlier version.
+	// The major complication is dealing with Arr and Tbl
+	// that have to be converted to strings without the keys
+	int i;
+	Tbl *t;
+	t=pfkeys(pfin);
+	string key;
+	char *sk,*sv;
+	int ipftype;
+	string svalue;
+	Pf *pfnested;
+	char *pfstr;
+	for(i=0;i<maxtbl(t);++i)
 	{
-		cerr << "Metadata_default initialization failed\npfread failed for" << name <<".pf\n";
-		exit(-1);
+		sk=static_cast<char *>(gettbl(t,i));
+		key=string(sk);
+		void *pfget_result;
+		ipftype=pfget(pfin,sk,&pfget_result);
+		switch (ipftype)
+		{
+		case PFSTRING:
+			svalue=string(static_cast<char *>(pfget_result));
+			break;
+		case PFARR:
+			pfnested = static_cast<Pf *>(pfget_result);
+			pfstr=pf2string(pfnested);
+			svalue=string(" &Arr{\n")
+				+ string(pfstr)+string("\n}\n");
+			free(pfstr);
+			break;
+		case PFTBL:
+			pfnested = static_cast<Pf *>(pfget_result);
+			pfstr=pf2string(pfnested);
+			svalue=string(pfstr);
+			free(pfstr);
+		}
+		mdstr[key]=svalue;
 	}
+	freetbl(t,0);
 }
-//
-// The default constructor uses the defaults as a template which
-// allows new parameters to replace defaults in place.
-//
-Metadata::Metadata()
-{
-	if(Metadata_defaults_pf==NULL)_init();
-	pf=pfdup(Metadata_defaults_pf);
-};
+	
 Metadata::Metadata(Pf *pfin)
 {
-	if(Metadata_defaults_pf==NULL)_init();
-	pf=pfdup(Metadata_defaults_pf);
-	// Have to do this using pf2string and pfcompile
-	// to allow default to work
-	char *pfs=pf2string(pfin);
-	pfcompile(pfs,&pf);
-	free(pfs);
-};
+	pf2metadatastring(pfin,mstring);
+}
 // Variant that extracts a subset of a pf with the prefix
 // label:  tag &Arr{  
 Metadata::Metadata(Pf *pfin, string tag)
@@ -64,51 +66,17 @@ Metadata::Metadata(Pf *pfin, string tag)
 	void *result;
 	int pftype_return;
 	Pf *pfnested;
-
-	if(Metadata_defaults_pf==NULL)_init();
-	pf=pfdup(Metadata_defaults_pf);
-
 	pftype_return = pfget(pfin,(char *)tag.c_str(),&result);
 	if(pftype_return != PFARR)
 	{
 		throw  MetadataError(string("Metadata pfsubset constructor: tag =")
 			+ tag + string(" &Arr{\nNot found in parameter file"));
 	}
-	// Just like above
+	// This casting seems necessary
 	pfnested = static_cast<Pf *>(result);
-	// This is a necessary workaround for a bug in the pf library in 
-	// Antelope 4.6.  It may be possible to remove it in the next release
-	// fix based on email from D. Quinlan, Jan 20, 2005.
-	pfnested->type=PFFILE;
-	char *pfs=pf2string(pfnested);
-	pfcompile(pfs,&pf);
-	free(pfs);
+	pf2metadatastring(pfnested,mstring);
 }
 
-Metadata::~Metadata()
-{
-	pffree(pf);
-};
-Metadata::Metadata(const Metadata& md)
-	throw(MetadataParseError)
-{
-	char *pfstr;  
-	int ierr;
-
-	// This approach uses the default as a template then compiles
-	// the contents of md.pf on top of the defaults.  This is the
-	// way in the current pf library to do this.  An ugly solution
-	// in terms of memory because of the conversion to and from a string
-	if(Metadata_defaults_pf==NULL)_init();
-        pf=pfdup(Metadata_defaults_pf);
-	pfstr = pf2string(md.pf);
-	ierr = pfcompile(pfstr,&pf);
-	free(pfstr);
-	// Just post this error and continue.  It should never happen, but
-	// at least we handle the return from pfcompile correctly.
-	if(ierr) throw MetadataParseError(ierr,
-		"pfcompile error in copy constructor");
-}
 // constructor from an antelope database (possibly view) row driven by
 // mdlist and am.  The list of attributes found in mdlist are extracted
 // from the database row using dbgetv.  am defines how the Antelope
@@ -132,12 +100,8 @@ Metadata::Metadata(DatabaseHandle& dbh,
 	// of function calls if the object oriented handle is used
 	Dbptr db = ddbh.db;
 
-	if(Metadata_defaults_pf==NULL)_init();
-        pf=pfdup(Metadata_defaults_pf);
-	// Myer's book says I should use a for_each for a loop like this.
-	// It is faster and more efficient.  I don't understand 
-	// STL algorithms and function objects well enough to implement this 
-	// right now.  Point is is maybe should be modified later.
+	// This could, in principle, be done with a for_each loop
+	// but I think this is easier to understand.
 	for(i=mdlist.begin();i!=mdlist.end();++i)
 	{
 		MDtype mdtype;
@@ -168,7 +132,6 @@ Metadata::Metadata(DatabaseHandle& dbh,
 			if(dbgetv(db,0,dbattributename.c_str(),
 				&fpval,0)==dbINVALID)
 			{
-				pffree(pf);
 				throw (MetadataError(
 				  string("Metadata db constructor failed with dbgetv error\n")
 				  +string("Trying to read attribute ")
@@ -182,7 +145,6 @@ Metadata::Metadata(DatabaseHandle& dbh,
 				dbattributename.c_str(),
 				&ival,0)==dbINVALID)
 			{
-				pffree(pf);
 				throw MetadataError(string("Metadata db constructor failed with dbgetv error\n")
 				+string("Trying to read attribute ")
 				+internal_name
@@ -195,7 +157,6 @@ Metadata::Metadata(DatabaseHandle& dbh,
 			  dbattributename.c_str(),
 				csval,0)==dbINVALID)
 			{
-				pffree(pf);
 				throw MetadataError(string("Metadata db constructor failed with dbgetv error\n")
 				+string("Trying to read attribute ")
 				+internal_name
@@ -204,21 +165,11 @@ Metadata::Metadata(DatabaseHandle& dbh,
 			put(internal_name,csval);
 			break;
 		default:
-			pffree(pf);
 			throw MetadataError(string("Metadata db constructor: ")
 			 + string("requested unsupported metadata type.  Check parameter file definitions"));
 		}
 
 	}
-}
-Metadata& Metadata::operator=(const Metadata& md)
-{
-	if(&md!=this)
-	{
-		if(pf!=NULL) pffree(pf);
-		pf=pfdup(md.pf);
-	}
-	return(*this);
 }
 //
 // These functions get and convert values
@@ -226,87 +177,52 @@ Metadata& Metadata::operator=(const Metadata& md)
 double Metadata::get_double(string s)
 	throw(MetadataGetError)
 {
-	void *result;
-	double val;
-	int pftype_return;
-	char *char_val;
-
-	pftype_return = pfget(pf,(char *)s.c_str(),&result);
-	if(pftype_return != PFSTRING) 
-		throw MetadataGetError("double",s,"");
-	char_val=pfget_string(pf,(char *)s.c_str());
-	val = atof(char_val);
-	return(val);
+	map<string,double>::iterator iptr;
+	iptr=mreal.find(s);
+	if(iptr!=mreal.end()) return((*iptr).second);
+	map<string,string>::iterator pfstyle;
+	pfstyle=mstring.find(s);
+	if(pfstyle==mstring.end())
+		throw MetadataGetError("real",s,"");
+	
+	string valstring=(*pfstyle).second;
+	return (  atof(valstring.c_str()) );
 }
 int Metadata::get_int(string s)
 	throw(MetadataGetError)
 {
-	void *result;
-	int val;
-	int pftype_return;
-	char *char_val;
-	pftype_return = pfget(pf,(char *)s.c_str(),&result);
-	if(pftype_return != PFSTRING) 
-		throw  MetadataGetError("int",s,"");
-	char_val=pfget_string(pf,(char *)s.c_str());
-	val = atoi(char_val);
-	return(val);
+	map<string,int>::iterator iptr;
+	iptr=mint.find(s);
+	if(iptr!=mint.end()) return((*iptr).second);
+	map<string,string>::iterator pfstyle;
+	pfstyle=mstring.find(s);
+	if(pfstyle==mstring.end())
+		throw MetadataGetError("int",s,"");
+	string valstring=(*pfstyle).second;
+	return (  atoi(valstring.c_str()) );
 }
 string Metadata::get_string(string s) 
 	throw(MetadataGetError)
 {
-	void *result;
-	string val;
-	int pftype_return;
-	char *char_val;
-	pftype_return = pfget(pf,(char *)s.c_str(),&result);
-	if(pftype_return != PFSTRING) 
-		throw  MetadataGetError("string",s,"");
-	char_val=pfget_string(pf,(char *)s.c_str());
-	val = char_val; //= is overloaded for this case so is a simple assign
-	return(val);
+	map<string,string>::iterator iptr;
+	iptr=mstring.find(s);
+	if(iptr==mstring.end()) 
+		throw MetadataGetError("string",s,"");
+	return((*iptr).second);
 }
 bool Metadata::get_bool(string s)
-	throw(MetadataGetError)
 {
-	void *result;
-	int val;
-	int pftype_return;
-	//
-	// Boolean will default to false if not found in the pf
-	// this is consistent with documentation and is rational behaviour
-	//
-	val = pfget_boolean(pf,(char *)s.c_str());
-	if(val) 
-		return(true);
-	else 
-		return(false);
-}
-Tbl *Metadata::get_list(string s)
-	throw(MetadataGetError)
-{
-	void *result;
-	int val;
-	int pftype_return;
-	Tbl *t;
-	pftype_return = pfget(pf,(char *)s.c_str(),&result);
-	if(pftype_return != PFTBL) 
-		throw  MetadataGetError("Antelope Tbl",s,"");
-	t = pfget_tbl(pf,(char *)s.c_str());
-	return(t);
-}
-Arr *Metadata::get_map(string s)
-	throw(MetadataGetError)
-{
-	void *result;
-	int val;
-	int pftype_return;
-	Arr *a;
-	pftype_return = pfget(pf,(char *)s.c_str(),&result);
-	if(pftype_return != PFARR) 
-		throw  MetadataGetError("Antelope Arr",s,"");
-	a = pfget_arr(pf,(char *)s.c_str());
-	return(a);
+	map<string,bool>::iterator iptr;
+	iptr=mbool.find(s);
+	if(iptr!=mbool.end()) return((*iptr).second);
+	map<string,string>::iterator pfstyle;
+	pfstyle=mstring.find(s);
+	if(pfstyle==mstring.end()) return (false);
+	if( ((*pfstyle).second==string("t")) 
+		|| ((*pfstyle).second==string("true"))
+		|| ((*pfstyle).second==string("1")) )
+			return(true);
+	return(false);
 }
 
 //
@@ -314,75 +230,110 @@ Arr *Metadata::get_map(string s)
 //
 void Metadata::put(string name, double val)
 {
-	pfput_double(pf,(char *)name.c_str(),val);
+	// This is supposed to be more efficient than simple
+	//mreal[name]=val;
+	mreal.insert(map<string,double>::value_type(name,val));
 }
 void Metadata::put(string name, int val)
 {
-	pfput_int(pf,(char *)name.c_str(),val);
+	mint.insert(map<string,int>::value_type(name,val));
 }
 void Metadata::put(string name, string val)
 {
-	pfput_string(pf,(char *)name.c_str(),(char *)val.c_str());
+	mstring.insert(map<string,string>::value_type(name,val));
 }
 // for C style strings, we should not depend on the compiler
 void Metadata::put(string name, char *val)
 {
-	pfput_string(pf,(char *)name.c_str(),val);
-}
-void Metadata::put(string name, Arr *val)
-{
-	pfput_arr(pf,(char *)name.c_str(),val);
-}
-void Metadata::put(string name, Tbl *val)
-{
-	pfput_tbl(pf,(char *)name.c_str(),val);
+	mstring.insert(map<string,string>::value_type(name,string(val)));
 }
 void Metadata::put(string name, bool val)
 {
-	if(val)
-		pfput_boolean(pf,(char *)name.c_str(),1);
-	else
-		pfput_boolean(pf,(char *)name.c_str(),0);
+	mbool.insert(map<string,bool>::value_type(name,val));
 }
 void Metadata::remove(string name)
 {
-	Pf *pftmp;
-	pftmp = pfdel(pf,const_cast<char *>(name.c_str()));
-	// The following is necessary because pfdel 
-	// returns a pf copy of entry deleted on 
-	// success and a 0 if the name is not in the pf. 
-	if(pftmp!=NULL)
-	{
-		pffree(pf);
-		pf=pfdup(pftmp);
-		pffree(pftmp);
-	}
+	// We assume this is an uncommon operation for Metadata
+	// so the approach used here is to search through all the
+	// maps and destroying any entry with the key name
+	map<string,int>::iterator iptr;
+	iptr=mint.find(name);
+	if(iptr!=mint.end()) mint.erase(iptr);
+
+	map<string,double>::iterator rptr;
+	rptr=mreal.find(name);
+	if(rptr!=mreal.end()) mreal.erase(rptr);
+
+	map<string,string>::iterator sptr;
+	sptr=mstring.find(name);
+	if(sptr!=mstring.end()) mstring.erase(sptr);
+
+	map<string,bool>::iterator bptr;
+	bptr=mbool.find(name);
+	if(bptr!=mbool.end()) mbool.erase(bptr);
 }
-Metadata::Metadata(char *mdin) 
+Metadata::Metadata(string mdin) 
 	throw(MetadataParseError)
 {
+	Pf *pf;
+	pf=pfnew(PFARR);
 	int ierr;
-	// We might think this was needed:  if(pf!=NULL) pffree(pf);
-	// it is not because pfcompile checks for *pf==NULL and
-	// assumes it is valid and to be updated if nonzero.
-	// This is a handy way to deal with defaults
-	// The char * cast is necessary to keep the compiler
-	// from bitching about a const char
-	if(Metadata_defaults_pf==NULL)_init();
-        pf=pfdup(Metadata_defaults_pf);
-	ierr = pfcompile(mdin,&pf);
-	if(ierr!=0) throw MetadataParseError(ierr,"pfcompile failure in Metadata constructor");
-}
-// Nearly identical function for string input.  There are probably
-// ways to have done this more simply, but this function is small
-Metadata::Metadata(string mdin)
-	throw(MetadataParseError)
-{
-	int ierr;
-	if(Metadata_defaults_pf==NULL)_init();
-        pf=pfdup(Metadata_defaults_pf);
 	ierr = pfcompile(const_cast<char *>(mdin.c_str()),&pf);
 	if(ierr!=0) throw MetadataParseError(ierr,"pfcompile failure in Metadata constructor");
+	// 
+	// The following duplicates code in the Pf constructor.
+	// There may be a tricky way to invoke that code I'm not
+	// aware of, but without making maps public I don't see how to 
+	// deal with that
+	//
+	int i;
+	Tbl *t;
+	t=pfkeys(pf);
+	string key;
+	char *sk,*sv;
+	for(i=0;i<maxtbl(t);++i)
+	{
+		sk=static_cast<char *>(gettbl(t,i));
+		key=string(sk);
+		sv=pfget_string(pf,sk);
+		mstring[key]=string(sv);
+	}
+	freetbl(t,0);
+	pffree(pf);
+}
+MetadataList Metadata::keys()
+{
+	MetadataList result;
+	Metadata_typedef member;
+	map<string,string>::iterator sptr;
+	for(sptr=mstring.begin();sptr!=mstring.end();++sptr)
+	{
+		member.tag=(*sptr).first;
+		member.mdt=MDstring;
+		result.push_back(member);
+	}
+	map<string,int>::iterator iptr;
+	for(iptr=mint.begin();iptr!=mint.end();++iptr)
+	{
+		member.tag=(*iptr).first;
+		member.mdt=MDint;
+		result.push_back(member);
+	}
+	map<string,double>::iterator rptr;
+	for(rptr=mreal.begin();rptr!=mreal.end();++rptr)
+	{
+		member.tag=(*rptr).first;
+		member.mdt=MDreal;
+		result.push_back(member);
+	}
+	map<string,bool>::iterator bptr;
+	for(bptr=mbool.begin();bptr!=mbool.end();++bptr)
+	{
+		member.tag=(*bptr).first;
+		member.mdt=MDboolean;
+		result.push_back(member);
+	}
+	return(result);
 }
 
 
@@ -395,7 +346,7 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 			MetadataList& mdlist)
 	throw(MetadataError)
 {
-	list<Metadata_typedef>::iterator mdti;
+	MetadataList::iterator mdti;
 	int count;
 
 	for(mdti=mdlist.begin(),count=0;mdti!=mdlist.end();++mdti,++count)
@@ -424,14 +375,6 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 				s=mdin.get_string(mdti->tag);
 				mdout.put(mdti->tag,s);
 				break;
-			case MDlist:
-				t=mdin.get_list(mdti->tag);
-				mdout.put(mdti->tag,t);
-				break;
-			case MDmap:
-				a=mdin.get_map(mdti->tag);
-				mdout.put(mdti->tag,a);
-				break;
 			case MDboolean:
 				b=mdin.get_bool(mdti->tag);
 				mdout.put(mdti->tag,b);
@@ -459,24 +402,45 @@ void  copy_selected_metadata(Metadata& mdin, Metadata& mdout,
 //
 ostream& operator<<(ostream& os, Metadata& md)
 {
-	char *md_contents;
-	md_contents=pf2string(md.pf);
-	if(md_contents==NULL)
-		cerr << "ERROR: Metadata object is empty";
-	else
+	map<string,string>::iterator sptr;
+	for(sptr=md.mstring.begin();sptr!=md.mstring.end();++sptr)
 	{
-		os << md_contents;
-		free(md_contents);
+		os << (*sptr).first <<" "<<(*sptr).second<<endl;
+	}
+	map<string,int>::iterator iptr;
+	for(iptr=md.mint.begin();iptr!=md.mint.end();++iptr)
+	{
+		os << (*iptr).first <<" "<<(*iptr).second<<endl;
+	}
+	map<string,double>::iterator rptr;
+	for(rptr=md.mreal.begin();rptr!=md.mreal.end();++rptr)
+	{
+		os << (*rptr).first <<" "<<(*rptr).second<<endl;
+	}
+	map<string,bool>::iterator bptr;
+	for(bptr=md.mbool.begin();bptr!=md.mbool.end();++bptr)
+	{
+		os << (*bptr).first;
+		if((*bptr).second)
+			os<<" true"<<endl;
+		else
+			os<<" false"<<endl;
 	}
 	return os;
 }
 //
 // Small function to extract the entire metadata contents to a pf.  
-// Necessary in current implementation because pf is private.  If the underlying
-// method of storing this data changes, this would become and interface routine.
+// Implementation here is very crude being a memory pig and simultaneously
+// prone to failure with finite buffer to hold content.
 //
-Pf *Metadata::extract_all_metadata_to_pf()
+Pf *Metadata_to_pf(Metadata& md)
 {
-	return(pfdup(pf));
+	const int BUFSIZE(65536);  
+	char  buf[BUFSIZE];
+	ostringstream pfinp(buf);
+	pfinp<< md;
+	Pf *pf;
+	pfcompile(const_cast<char *>(pfinp.str().c_str()),&pf);
+	return(pf);
 }
 } // Termination of namespace SEISPP definitions
