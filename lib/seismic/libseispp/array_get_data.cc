@@ -81,23 +81,14 @@ TimeWindow StationTimeRange(StationTime& times)
 // necessary fudge factor to allow for errors in the predicted arrival time
 // and extra time needed to remove filter endpoint transients.  
 // The algorithm keys on a chan string to select data from the database.
-// Only 6 values are allowed for chan: Z,N,E,L,R, and T.  If anything
+// Only 3 values are allowed for chan: Z,N,E.  If anything
 // else is passed through chan the functio will throw a SeisppError exception.
 // Z,N, or E are assumed cardinal directions.  They generate subsets of the 
 // input defined by SEED channel codes.  The result will contain ALL Z,N, or
 // E channels found in the requested time windows.  For example, if a station
 // has HHZ, BHZ, and LHZ channels the output will contain three members from
 // that station.  It is the callers job to sort out any redundancy this 
-// will produce.  When chan is L,R, or Z the data is assumed to be only 
-// from three component stations.  All single channel stations will be 
-// dropped automatically.  Like channels are assembled into 3c seismogram
-// objects.  We then apply the free surface transformation to longitudinal
-// (L), radial (R), and transverse (T) coordinates.  The requested channel
-// is extracted and pushed into the output ensemble.  Like the cardinal
-// direction version (Z,N,E) the output may contain multiple channels for
-// the same station with different sample rates.  As before this means
-// this has to be sorted out for the output.  In both cases the only
-// safe test is the dt variable of each member.  
+// will produce.  
 //
 //@returns a pointer to a newly allocated TimeSeriesEnsemble containing all 
 //   data requested.  Since this is effectively a constructor this means
@@ -122,11 +113,17 @@ TimeWindow StationTimeRange(StationTime& times)
 //@param dbh generalized database handle to read data.  At present this is immediately
 //    converted to a DatascopeHandle as the methods used use the Antelope API.
 //@param ensemble_mdl list of data to be read from the database and placed in
-//    the metadata area for the full ensemble.
+//    the metadata area for the full ensemble.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@param member_mdl list of attributes to be taken from the database for each
 //    data member (seismogram).
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@param am AttributeMap object defining mapping from database external namespace
 //    to internal namespace.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@}
 TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	string phase, string chan, TimeWindow data_window, double tpad,
@@ -139,34 +136,7 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	TimeWindow arrival_range=StationTimeRange(times);
 	TimeWindow read_window(arrival_range.start-tpad+data_window.start,
 			arrival_range.end+tpad+data_window.end);
-	// When we desire ray coordinates a rotation is required.
-	// This demands 3 component data.  In this case we require
-	// the 3c seismogram constructor and call the rotation function
-	// using the supplied Hypocenter object to compute slowness.
-	// The computed slowness vector is used to compute the free surface
-	// transformation matrix and that is applied to the data.
-	// If the chan code is anything else we fall into the else 
-	// block.  See comments there for that algorithm.
-	// 
-	if( (chan=="L") || (chan=="R") || (chan=="T") )
-	{
-		throw SeisppError("Support for ray transformation not yet implemented");
-		// Algorithm we'll use eventually
-		/*
-			1) Call a ThreeComponentEnsemble constructor that
-				is not finished that will build a 3c ensemble
-			2) Call free surface transformation routine on
-				each member
-			3) Call extract component function to retrieve only 
-				desired component 
-		ALTERNATIVE:
-			Creating a routine of this same name that 
-			loads a full 3C ensemble.  Probably should remove
-			this functionality from this routine and use that
-			approach.
-		*/
-	}
-	else if( (chan=="Z") || (chan=="N") || (chan=="E") )
+	if( (chan=="Z") || (chan=="N") || (chan=="E") )
 	{
 		/* For the single channel version we depend on the 
 		time window based TimeSeriesEnsemble constructor.
@@ -185,26 +155,10 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	else
 	{
 		throw SeisppError(string("array_get_data: cannot handle channel code ")
-			+ chan + string("\n Must be Z,N,E,L,R, or T\n"));
+			+ chan + string("\n Must be Z,N,E\n"));
 	}
-	/* Also not yet implemented:  need to load metadata as
-		required here by two metadata list args.  Here is 
-		the algorithm I'll eventually want to use:
-		1.  assume input handle is a view joining all tables needed
-			to load metadata defined in the lists.
-		2.  after read foreach member of ensemble find matching
-			sta:chan row in view, call Metadata constructor
-			with handle pointing at that row, and run 
-			copy_selected_metadata to copy result
-			(Note cannot dup because window reader posts
-			some critical metadata we need to retain).
-
-		First step is that I will now need to build a find
-		method for dbpp.
-
-		For now warn the user strongly.
-	*/
-	cerr << "Warning(array_read_data):  because of incomplete implementation the metadata list was ignored."<<endl;
+	// Currently the MetadataList elements are ignored.  This 
+	// needs to ultimately be repaired.
 	return(result);
 }
 // Common error routine for function immediately following.
@@ -314,10 +268,10 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 			raw_data_trace=raw.member[i];
 		}
 		try {
-			TimeSeries newtrace=ArrivalTimeReference(raw_data_trace,
+			auto_ptr<TimeSeries> newtrace(ArrivalTimeReference(raw_data_trace,
 						predicted_time_key,
-							result_twin);
-			result->member.push_back(newtrace);
+							result_twin));
+			result->member.push_back(*newtrace);
 		} catch (SeisppError serr)
 		{
 			AssembleRegularRatherErrorLog(raw,i,serr);
@@ -327,58 +281,6 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 		}
 	}
 	return(result);
-}
-
-//@{ Template for use by either a TimeSeries or ThreeComponent Ensemble.
-//It loads arrival times defined in the times map into the individual
-//station metadata area using the keyword defined by key.
-//The phase name is loaded into each trace's metadata area using the 
-//key "assoc.phase" to be consistent with the common css3.0 database
-//definitions.  
-//
-//Function prints a message if any station in the gather has no defined
-//time in the input.  Caller must be aware of this as the result is 
-//not set for stations that contain that error.  The result should always
-//be viewed as potentially incomplete.  
-//
-//@param ensemble is the input data to be processed
-//@param times is a map of station names containing times to be inserted
-//   into the metadata area for each member trace of the input ensemble.
-//@param key is the keyword used to store the contents of times for each station.
-//@param phase is the phase name to be stored under the "assoc.time" metadata key.
-//
-//@}
-
-export template <class T>
-void LoadPredictedTimes(T& ensemble, StationTime& times,string key,string phase)
-{
-	StationTime::iterator it,ite;
-	const string phase_key("assoc.phase");
-	ite=times.end();
-	for(int i=0;i<ensemble.member.size();++i)
-	{
-		string sta;
-		double atime;
-		try {
-			sta=ensemble.member[i].get_string("sta");
-			it=times.find(sta);
-			if(it==ite)
-			{
-				cerr << "LoadPredictedTimes:  station "
-					<< sta << " is not defined in station geometry"
-					<<endl;
-			}
-			else
-			{
-				atime=(*it).second;
-				ensemble.member[i].put(key,atime);
-				ensemble.member[i].put(phase_key,phase);
-			}
-		} catch (MetadataGetError mde)
-		{
-			mde.log_error();
-		}
-	}
 }
 
 } // End declaration of SEISPP namespace

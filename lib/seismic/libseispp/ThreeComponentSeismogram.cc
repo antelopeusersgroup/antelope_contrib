@@ -1024,7 +1024,10 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 {
 	if(this!=&seisin)
 	{
-		pf = pfdup(seisin.pf);
+		mreal=seisin.mreal;
+		mint=seisin.mint;
+		mbool=seisin.mbool;
+		mstring=seisin.mstring;
 		live=seisin.live;
 		dt=seisin.dt;
 		t0=seisin.t0;

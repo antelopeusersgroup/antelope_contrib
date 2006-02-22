@@ -280,6 +280,16 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			// this should be more than ok.
 			dbtr_handle.db.record=is;
 			Metadata trattributes(dbtr_handle,data_mdl,am);
+			// This is going to typically be redundant as these should be 
+			// loaded through data_mdl, but they are so critical they 
+			// need to be forced here.
+			double samprate,start_time;
+			int nsamp;
+			dbgetv(dbtr_handle.db,0,
+				"time",&start_time,"samprate",&samprate,"nsamp",&nsamp,0);
+			trattributes.put("time",start_time);
+			trattributes.put("samprate",samprate);
+			trattributes.put("nsamp",nsamp);
 			// These attributes are loaded conditionally
 			if(require_coords)
 			{
@@ -294,6 +304,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					"refsta",refsta,
 					0) == dbINVALID)
 				{
+					trdestroy(&dbtr);
 					throw SeisppError(base_error_message
 					 + string(" dbgetv error reading trace table coordinate attributes"));
 				}
@@ -312,6 +323,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 					"vang",&vang,
 					0) == dbINVALID)
 				{
+					trdestroy(&dbtr);
 					throw SeisppError(base_error_message
 					 + string(" dbgetv error reading trace table orientation attributes"));
 				}
@@ -330,27 +342,23 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 
 
 			// This loads attributes but not data
-			TimeSeries seis(trattributes,false);
-			seis.ns=static_cast<int>((twin.end-twin.start)/seis.dt);
-			seis.s.reserve(seis.ns);
+			auto_ptr<TimeSeries> seis(new TimeSeries(trattributes,false));
+			seis->ns=static_cast<int>((twin.end-twin.start)/seis->dt) + 1;
+			seis->s.reserve(seis->ns);
 			Trsample *tdata;
 
 			if((ie-is)==1)
 			{
 				// Block for no gaps
 				dbgetv(dbtr_handle.db,0,"data",&tdata,
-					"nsamp",&(seis.ns),0);
-				for(i=0;i<seis.ns;++i)
+					"nsamp",&(seis->ns),0);
+				for(i=0;i<seis->ns;++i)
 				{
-					seis.s.push_back(static_cast<double>(tdata[i]));
+					seis->s.push_back(static_cast<double>(tdata[i]));
 				}
 			}
 			else
 			{
-cout << "TimeSeriesEnsemble continuous data constructor:  "
-	<< sta << ":"<<chan
-	<<" has multiple segments = "<<ie-is<<endl
-	<< "Gaps will be flagged and zeroed"<<endl;
 				// land here if there are gaps in this
 				// time interal.
 				int ns_this_segment;
@@ -359,7 +367,7 @@ cout << "TimeSeriesEnsemble continuous data constructor:  "
 				double etime_last_segment;
 				double tprime;
 				// Initialize contents so we can just leave gaps 0
-				for(i=0;i<seis.ns;++i) seis.s.push_back(0.0);
+				for(i=0;i<seis->ns;++i) seis->s.push_back(0.0);
 				for(i=is;i<ie;++i)
 				{
 					dbtr_handle.db.record=i;
@@ -372,9 +380,9 @@ cout << "TimeSeriesEnsemble continuous data constructor:  "
 					{
 						// test for gap at t0
 						if((t0_this_segment-twin.start)
-							> seis.dt)
+							> seis->dt)
 						{
-							seis.add_gap(TimeWindow(
+							seis->add_gap(TimeWindow(
 								twin.start,
 								t0_this_segment));
 						}
@@ -382,37 +390,21 @@ cout << "TimeSeriesEnsemble continuous data constructor:  "
 					// Similar for endtime
 					else if(i==(ie-1))
 					{
-						seis.add_gap(TimeWindow(
+						seis->add_gap(TimeWindow(
 							etime_last_segment,
 							t0_this_segment));
 						// test for end gap
 						if( (twin.end-etime_this_segment)
-							> seis.dt)
+							> seis->dt)
 						{
-							seis.add_gap(TimeWindow(
+							seis->add_gap(TimeWindow(
 								etime_this_segment,
 								twin.end));
-						}
-						for(int k=0;k<ns_this_segment;++k)
-						{
-							tprime=t0_this_segment
-								+ seis.dt
-								*static_cast<double>(k);
-							if(tprime>(twin.end+0.5*seis.dt))
-							{
-								seis.ns=seis.sample_number(tprime) - 1;
-								break;
-							}
-								
-					
-							seis.s[seis.sample_number(tprime)]
-								= static_cast<double>(tdata[k]);
-								
 						}
 					}
 					else
 					{
-						seis.add_gap(TimeWindow(
+						seis->add_gap(TimeWindow(
 							etime_last_segment,
 							t0_this_segment));
 					}
@@ -422,22 +414,33 @@ cout << "TimeSeriesEnsemble continuous data constructor:  "
 					for(int k=0;k<ns_this_segment;++k)
 					{
 						tprime=t0_this_segment
-							+ seis.dt
+							+ seis->dt
 							*static_cast<double>(k);
-						seis.s[seis.sample_number(tprime)]
+						// Somewhat paranoid, but bombproof this way
+						// stl vector won't allow writing outside bounds
+						// but it will throw an exception if one attempts
+						// to do so.  Here we silently drop such problems.
+						// Could cause other potential problems, but makes
+						// does make this bombproof
+//cerr << k <<" "<<seis->sample_number(tprime)<<" " <<seis->ns<<endl;
+						if( (tprime>=seis->t0) && 
+							(tprime<(twin.end+0.5*(seis->dt))) )
+						{
+							seis->s[seis->sample_number(tprime)]
 							= static_cast<double>(tdata[k]);
+						}
 							
 					}
 					etime_last_segment=etime_this_segment;
 				}
 			}
 
-			seis.live=true;
-			seis.ns=seis.s.size();
+			seis->live=true;
+			seis->ns=seis->s.size();
 			//
 			// Push these into the ensemble
 			//
-			member.push_back(seis);
+			member.push_back(*seis);
 		}
 		trdestroy(&dbtr);
 	} catch (...)
@@ -613,13 +616,15 @@ TimeSeriesEnsemble& TimeSeriesEnsemble::operator=(const TimeSeriesEnsemble& tseo
 {
 	if(this!=&tseold)
 	{
-		if(pf!=NULL) pffree(pf);
-		pf = pfdup(tseold.pf);
 		if(!(this->member.empty())) this->member.clear();
 		int nmembers=tseold.member.size();
 		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)
 			member.push_back(tseold.member[i]);
+		mreal=tseold.mreal;
+		mint=tseold.mint;
+		mbool=tseold.mbool;
+		mstring=tseold.mstring;
 	}
 	return(*this);
 }
@@ -627,13 +632,15 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 {
 	if(this!=&tseold)
 	{
-		if(pf!=NULL) pffree(pf);
-		pf = pfdup(tseold.pf);
 		if(!(this->member.empty())) this->member.clear(); 
 		int nmembers=tseold.member.size();
 		member.reserve(nmembers);
 		for(int i=0; i<nmembers; ++i)
 			member.push_back(tseold.member[i]);
+		mreal=tseold.mreal;
+		mint=tseold.mint;
+		mbool=tseold.mbool;
+		mstring=tseold.mstring;
 	}
 	return(*this);
 }

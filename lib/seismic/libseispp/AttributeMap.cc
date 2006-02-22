@@ -1,5 +1,5 @@
-#include "AttributeMap.h"
 #include "Metadata.h"
+#include "AttributeMap.h"
 namespace SEISPP{
 using namespace std;
 using namespace SEISPP;
@@ -64,10 +64,6 @@ AttributeProperties::AttributeProperties(string st)
 		mdt = MDint;
 	else if(mdtype_word=="STRING" || mdtype_word=="string")
 		mdt=MDstring;
-	else if(mdtype_word=="LIST" || mdtype_word=="list")
-		mdt=MDlist;
-	else if(mdtype_word=="MAP" || mdtype_word=="map")
-		mdt=MDmap;
 	else
 	{
 		mdt = MDinvalid;
@@ -130,6 +126,7 @@ AttributeMap::AttributeMap(Pf *pf,string name)
 		// had a memmory leak here.  insert copies need to delete
 		delete ap;
 	}
+	freetbl(t,0);
 }
 // Default constructor uses a frozen name and utilizes the above
 // constructor.

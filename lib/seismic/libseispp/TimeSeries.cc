@@ -188,9 +188,6 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 {
 	if(this!=&tsi)
 	{
-		//Can't figure out how to do this with the 
-		// metadata abstraction.  Have to use the private pf 
-		pf=pfdup(tsi.pf);
 		live=tsi.live;
 		dt=tsi.dt;
 		t0=tsi.t0;
@@ -201,6 +198,10 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)
 			s=tsi.s;
 		}
 		gaps=tsi.gaps;
+		mreal=tsi.mreal;
+		mint=tsi.mint;
+		mbool=tsi.mbool;
+		mstring=tsi.mstring;
 	}
 	return(*this);
 }			

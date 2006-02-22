@@ -282,27 +282,13 @@ void save_metadata_for_object(Metadata& md,
 					ival,0);
 				break;
 				
-			case MDlist: 
-			case MDmap:
-				/* We don't throw an exception here but instead just
-				output a warning message always.  The reason for this
-				is that in a list of attributes to be output the 
-				user could make an error.  We don't want the output
-				to fail on a single bad definition, but do want
-				the user to be aware of the problem.  Same is 
-				true of each of the cases below.*/
-				cerr << "dbsave: database attribute "
-					<< ami->second.db_attribute_name
-					<< " is marked as a map or list\n"
-					<< "These types cannot be mapped to a db\n"
-					<< "Data for this attribute not saved"
-					<< endl;
 			case MDinvalid:
 				cerr << "dbsave: database attribute "
 					<< ami->second.db_attribute_name
 					<< " was marked as invalid\n"
 					<< "Data for this attribute not saved"
 					<< endl;
+				break;
 			
 			default:
 				cerr << "dbsave: database attribute "

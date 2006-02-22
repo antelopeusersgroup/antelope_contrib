@@ -148,7 +148,7 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& din,
+auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& din,
 	string key, TimeWindow tw);
 //@{
 // Returns a gather of ThreeComponentSeismograms in an arrival time reference fram.
@@ -163,7 +163,7 @@ ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& din,
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& din,
+auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& din,
 	string key, TimeWindow tw);
 //@{
 // Returns a new TimeSeries seismogram in an arrival time reference.
@@ -185,7 +185,7 @@ ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& din,
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-TimeSeries& ArrivalTimeReference(TimeSeries& din,
+auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& din,
 	string key, TimeWindow tw);
 //@{
 // Returns a gather of TimeSeries objects in an arrival time reference frame.
@@ -200,7 +200,7 @@ TimeSeries& ArrivalTimeReference(TimeSeries& din,
 //@param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
 //@}
-TimeSeriesEnsemble& ArrivalTimeReference(TimeSeriesEnsemble& din,
+auto_ptr<TimeSeriesEnsemble> ArrivalTimeReference(TimeSeriesEnsemble& din,
 	string key, TimeWindow tw);
 
 

@@ -125,6 +125,7 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
+		freetbl(process_list,0);
 		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
 	}
         db = dbprocess(dbi,process_list,0);
@@ -134,6 +135,7 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
 	parent_table=db;
 	if(is_bundle) --parent_table.table;
 	close_on_destruction=false;
+	freetbl(process_list,0);
 }
 
 // Plain Jane version just opens the database and sets the Dbptr

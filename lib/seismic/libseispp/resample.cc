@@ -51,6 +51,7 @@ ResampleOperator::ResampleOperator(double e,Pf *pf)
 			throw  SeisppError("Decimator constructor failure:  mismatch of sample rate between response file "
 				+fname+" and input line\n"+string(line));
 		declist.push_back(*dec);
+		delete dec;
 	}
 	}catch (...)
 	{

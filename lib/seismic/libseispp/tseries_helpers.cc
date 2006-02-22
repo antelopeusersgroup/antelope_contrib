@@ -37,7 +37,7 @@ Arguments:
 
 */
 
-TimeSeries& ArrivalTimeReference(TimeSeries& tcsi,
+auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& tcsi,
 	string arrival_time_key,
 		TimeWindow tw)
 {
@@ -63,7 +63,7 @@ TimeSeries& ArrivalTimeReference(TimeSeries& tcsi,
 			+ string("Cannot proceed as timing is ambiguous"));
 
 	// start with a clone of the original
-	TimeSeries *tcso=new TimeSeries(tcsi);
+	auto_ptr<TimeSeries> tcso(new TimeSeries(tcsi));
 	tcso->ator(atime);  // shifts to arrival time relative time reference
 
 	// Extracting a subset of the data is not needed when the requested
@@ -102,21 +102,22 @@ TimeSeries& ArrivalTimeReference(TimeSeries& tcsi,
 			tcso->put("endtime",atime+tcso->endtime());
 		}
 	}
-	return(*tcso);
+	return(tcso);
 }
 /* Similar function to above but processes an entire ensemble.  The only 
 special thing it does is handle exceptions.  When the single object
 processing function throws an exception the error is printed and the 
 object is simply not copied to the output ensemble */
-TimeSeriesEnsemble& ArrivalTimeReference(TimeSeriesEnsemble& tcei,
+auto_ptr <TimeSeriesEnsemble> ArrivalTimeReference(TimeSeriesEnsemble& tcei,
 	string arrival_time_key,
 		TimeWindow tw)
 {
 	int nmembers=tcei.member.size();
 	// use the special constructor to only clone the metadata and 
 	// set aside slots for the new ensemble.
-	TimeSeriesEnsemble *tceo
-		=new TimeSeriesEnsemble(dynamic_cast<Metadata&>(tcei),nmembers);
+	auto_ptr<TimeSeriesEnsemble> 
+		tceo(new TimeSeriesEnsemble(dynamic_cast<Metadata&>(tcei),
+			nmembers));
 	tceo->member.reserve(nmembers);  // reserve this many slots for efficiency
 	// We have to use a loop instead of for_each as I don't see how
 	// else to handle errors cleanly here.
@@ -124,15 +125,15 @@ TimeSeriesEnsemble& ArrivalTimeReference(TimeSeriesEnsemble& tcei,
 	for(indata=tcei.member.begin();indata!=tcei.member.end();++indata)
 	{
 		try {
-			TimeSeries tcs;
-			tcs=ArrivalTimeReference(*indata,arrival_time_key,tw);
-			tceo->member.push_back(tcs);
+			auto_ptr<TimeSeries> tcs=ArrivalTimeReference(*indata,
+					arrival_time_key,tw);
+			tceo->member.push_back(*tcs);
 		} catch ( SeisppError& serr)
 		{
 			serr.log_error();
 		}
 	}
-	return(*tceo);
+	return(tceo);
 }
 	
 

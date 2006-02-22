@@ -8,9 +8,9 @@ namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
+//Probably should be in Metadata.h
+enum MDtype {MDreal, MDint, MDstring, MDboolean, MDinvalid};
 
-// type code used below for attribute definitions
-enum MDtype {MDreal, MDint, MDstring, MDlist, MDmap, MDboolean, MDinvalid};
 // This pair of objects link internal parameter names contained 
 // (in a Metadata object in this implementation, but it could be
 // more general) within a program with external database attribute

@@ -31,10 +31,6 @@ MetadataList pfget_mdlist(Pf *pf,string tag)
 			mdt.mdt = MDstring;
 		else if(mdtype=="boolean" || mdtype=="BOOLEAN")
 			mdt.mdt = MDboolean;
-		else if(mdtype=="list" || mdtype=="LIST")
-			mdt.mdt = MDlist;
-		else if(mdtype=="map" || mdtype=="MAP")
-			mdt.mdt = MDmap;
 
 		mdl.push_back(mdt);
 	}

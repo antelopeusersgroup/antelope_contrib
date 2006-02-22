@@ -78,7 +78,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	int jdate=yearday(time);
 	char buf[128];
 	ostringstream sstr(buf);
-	sstr <<"ondate<"<<jdate;
+	sstr <<"ondate<="<<jdate;
 	dbh.subset(sstr.str());
 	if(dbh.number_tuples()<=0)
 		throw SeisppError(string("SeismicArray database constructor:")
@@ -103,7 +103,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			// ondate test not necessary because of subset above
 			// offdate< 0 is a maintenance problem.  At this time
 			// null offdate is set -1
-			if( (offdate<0)  || (jdate<offdate) )
+			if( (offdate<0)  || (jdate<=offdate) )
 			{
 				lat=dbh.get_double("lat");
 				lon=dbh.get_double("lon");
@@ -140,7 +140,9 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	if((*offdlmin)<0) 
 		valid_time_interval=TimeWindow(epoch(*ondlmax),epoch(2050001));
 	else
-		valid_time_interval=TimeWindow(epoch(*ondlmax),epoch(*offdlmin));
+	// Add one day to offdlmin as offdate day can contain data
+		valid_time_interval=TimeWindow(epoch(*ondlmax),
+				epoch(*offdlmin)+86400.0);
 }
 /* This constructor uses the one above.  Not the most efficient way to do 
 this, but I do not expect this constructor to called often.  Normally

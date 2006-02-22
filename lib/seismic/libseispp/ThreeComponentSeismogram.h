@@ -264,20 +264,5 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
 //@param component is the component to extract (0, 1, or 2)
 //@}
 TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
-//@{
-// Returns a new seismogram in an arrival time reference.
-// An arrival time reference means that the time is set to relative and 
-// zero is defined as an arrival time extracted from the metadata area of
-// the object.
-//
-//@throws SeisppError for errors in extracting required information from metadata area.
-//
-//@param din  is input seismogram
-//@param key is the metadata key used to find the arrival time to use as a reference.
-//@param tw is a TimeWindow object that defines the window of data to extract around
-//    the desired arrival time.
-//@}
-ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& din,
-	string key, TimeWindow tw);
 } // End namespace SEISPP declaration
 #endif

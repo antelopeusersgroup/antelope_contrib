@@ -514,11 +514,13 @@ Dbptr *                            trscgr;
         sprintf (endtime_str, "(%.5f)", tend);
 	dbsc.record = dbALL;
         ret = trload_css (dbsc, time_str, endtime_str, trscgr, "wfdisc", 0);
+/* DEBUG: Bypass this error for now
         if (ret != 0) {
         	register_error (0, "grtr_sc_create: trload_cssgrp() error.\n");
 		if (new_view) dbfree (dbsc);
         	return (-1);
 	}
+*/
 
 	/* Split, splice, apply calib */
 

@@ -33,7 +33,7 @@ Arguments:
 
 */
 
-ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
+auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
 	string arrival_time_key,
 		TimeWindow tw)
 {
@@ -59,7 +59,7 @@ ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
 			+ string("Cannot proceed as timing is ambiguous"));
 
 	// start with a clone of the original
-	ThreeComponentSeismogram *tcso=new ThreeComponentSeismogram(tcsi);
+	auto_ptr<ThreeComponentSeismogram> tcso(new ThreeComponentSeismogram(tcsi));
 	tcso->ator(atime);  // shifts to arrival time relative time reference
 
 	// Extracting a subset of the data is not needed when the requested
@@ -98,21 +98,22 @@ ThreeComponentSeismogram& ArrivalTimeReference(ThreeComponentSeismogram& tcsi,
 			tcso->put("endtime",atime+tcso->endtime());
 		}
 	}
-	return(*tcso);
+	return(tcso);
 }
 /* Similar function to above but processes an entire ensemble.  The only 
 special thing it does is handle exceptions.  When the single object
 processing function throws an exception the error is printed and the 
 object is simply not copied to the output ensemble */
-ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& tcei,
+auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& tcei,
 	string arrival_time_key,
 		TimeWindow tw)
 {
 	int nmembers=tcei.member.size();
 	// use the special constructor to only clone the metadata and 
 	// set aside slots for the new ensemble.
-	ThreeComponentEnsemble *tceo
-		=new ThreeComponentEnsemble(dynamic_cast<Metadata&>(tcei),nmembers);
+	auto_ptr<ThreeComponentEnsemble> 
+		tceo(new ThreeComponentEnsemble(dynamic_cast<Metadata&>(tcei),
+			nmembers));
 	tceo->member.reserve(nmembers);  // reserve this many slots for efficiency
 	// We have to use a loop instead of for_each as I don't see how
 	// else to handle errors cleanly here.
@@ -120,15 +121,15 @@ ThreeComponentEnsemble& ArrivalTimeReference(ThreeComponentEnsemble& tcei,
 	for(indata=tcei.member.begin();indata!=tcei.member.end();++indata)
 	{
 		try {
-			ThreeComponentSeismogram tcs;
-			tcs=ArrivalTimeReference(*indata,arrival_time_key,tw);
-			tceo->member.push_back(tcs);
+			auto_ptr<ThreeComponentSeismogram> 
+			tcs(ArrivalTimeReference(*indata,arrival_time_key,tw));
+			tceo->member.push_back(*tcs);
 		} catch ( SeisppError& serr)
 		{
 			serr.log_error();
 		}
 	}
-	return(*tceo);
+	return(tceo);
 }
 	
 

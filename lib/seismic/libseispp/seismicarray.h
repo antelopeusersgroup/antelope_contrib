@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include "TimeWindow.h"
+#include "StationChannelMap.h"
 #include "Metadata.h"
 #include "databasehandle.h"
 #include "Hypocenter.h"
@@ -194,23 +195,14 @@ StationTime ArrayPredictedArrivals(SeismicArray& stations,
 // necessary fudge factor to allow for errors in the predicted arrival time
 // and extra time needed to remove filter endpoint transients.  
 // The algorithm keys on a chan string to select data from the database.
-// Only 6 values are allowed for chan: Z,N,E,L,R, and T.  If anything
+// Only 3 values are allowed for chan: Z,N,E.  If anything
 // else is passed through chan the functio will throw a SeisppError exception.
 // Z,N, or E are assumed cardinal directions.  They generate subsets of the 
 // input defined by SEED channel codes.  The result will contain ALL Z,N, or
 // E channels found in the requested time windows.  For example, if a station
 // has HHZ, BHZ, and LHZ channels the output will contain three members from
 // that station.  It is the callers job to sort out any redundancy this 
-// will produce.  When chan is L,R, or Z the data is assumed to be only 
-// from three component stations.  All single channel stations will be 
-// dropped automatically.  Like channels are assembled into 3c seismogram
-// objects.  We then apply the free surface transformation to longitudinal
-// (L), radial (R), and transverse (T) coordinates.  The requested channel
-// is extracted and pushed into the output ensemble.  Like the cardinal
-// direction version (Z,N,E) the output may contain multiple channels for
-// the same station with different sample rates.  As before this means
-// this has to be sorted out for the output.  In both cases the only
-// safe test is the dt variable of each member.  
+// will produce.  
 //
 //@returns a pointer to a newly allocated TimeSeriesEnsemble containing all 
 //   data requested.  Since this is effectively a constructor this means
@@ -232,14 +224,20 @@ StationTime ArrayPredictedArrivals(SeismicArray& stations,
 //    read.  This needs to be large enough to mute out filter startup 
 //    transients for simple filters and decimation filters when resampling is
 //    required.
-//@param generalized database handle to read data.  At present this is immediately
+//@param dbh generalized database handle to read data.  At present this is immediately
 //    converted to a DatascopeHandle as the methods used use the Antelope API.
 //@param ensemble_mdl list of data to be read from the database and placed in
-//    the metadata area for the full ensemble.
+//    the metadata area for the full ensemble.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@param member_mdl list of attributes to be taken from the database for each
 //    data member (seismogram).
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@param am AttributeMap object defining mapping from database external namespace
 //    to internal namespace.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
 //@}
 TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	string phase, string chan, TimeWindow data_window, double tpad,
@@ -303,6 +301,79 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 					ResamplingDefinitions& rsdef,
 						bool trim);
 
+//@{
+// Reads a block of data defined by a time window derived from
+// input specifications and a time range computed from a set of theoretical
+// arrival times.  
+//
+// The algorithm used to define the time window is this:
+// start = atmin + data_window.start - tpad while
+// end = atmax + data_window.end + tpad.  In this relation atmin and
+// atmax are computed minimum and maximum arrival times of all stations
+// defined by the input receiver geometry.  data_window defines
+// the base time window needed around each arrival time and tpad is a
+// necessary fudge factor to allow for errors in the predicted arrival time
+// and extra time needed to remove filter endpoint transients.  
+//
+// The algorithm first calls the scalar ensemble function with the
+// same name (array_get_data).  That routine reads all channels 
+// within a specified time window.  To build three-component 
+// objects these scalar time series data need to be bundled into
+// threes to build the 3c object.  This is accomplished here through
+// a special ThreeComponentChannelMap object that defines how this
+// process should go.  The ThreeComponentChannelMap allows a heirarchy
+// of channels that provide a way to sort out multiple data streams
+// from the same station.  The ensemble that is returned by this
+// function can have irregular sample rates so beware.
+//
+// Note the output of this function is sorted by sta.
+//
+//@returns a pointer to a newly allocated TimeSeriesEnsemble containing all 
+//   data requested.  Since this is effectively a constructor this means
+//   the caller is responsible for handling this memory block.  Save the
+//   result in an auto_ptr or make sure you manage this memory carefully
+//   as this object can easily get huge.  This is why we return a pointer
+//   instead of the object itself.
+//@throws SeisppError object for one of several possible unrecoverable
+//   errors.  If this routine ever throws an exception the output is,
+//   of course, invalid by definition.  It can blast out errors to cerr
+//   for several nonfatal conditions as well. 
+//
+//@param stations Receiver geometry definition through SeismicArray object.
+//@param hypo Source geometry definition through Hypocenter object.
+//@param phase Theoretical arrival times are computed for this seismic phase name.
+//@param data_window base time window for required output.  View this as the 
+//    minimum time window desired around each arrival.
+//@param tpad extra time pad (in second) on each end of the window to be
+//    read.  This needs to be large enough to mute out filter startup 
+//    transients for simple filters and decimation filters when resampling is
+//    required.
+//@param dbwf generalized database handle to read data.  At present this is immediately
+//    converted to a DatascopeHandle as the methods used use the Antelope API.
+//@param scmap StationChannelMap object that defines what channels are to 
+//    be bundled to produce the three-components that define a 3c object.
+//@param ensemble_mdl list of data to be read from the database and placed in
+//    the metadata area for the full ensemble.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
+//@param member_mdl list of attributes to be taken from the database for each
+//    data member (seismogram).
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
+//@param am AttributeMap object defining mapping from database external namespace
+//    to internal namespace.  
+//    WARNING:  part of an interface definition that has not  yet been 
+//    been implemented.  i.e. this argument is ignored.
+//@}
+ThreeComponentEnsemble
+  *array_get_data(SeismicArray& stations,
+        Hypocenter& hypo,string phase,
+        TimeWindow data_window, double tpad,
+        DatascopeHandle& dbwf,
+        StationChannelMap& scmap,
+        MetadataList& ensemble_mdl, MetadataList& member_mdl,
+        AttributeMap& am);
+
 //@{ Scans an array of times to return the range spanned by the group.
 //   This is a simple algorithm complicated by the fact that the 
 // input is an STL map object with station names keying a set of times.
@@ -314,17 +385,18 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 //@returns TimeInterval of the range of times found.
 //@}
 TimeWindow StationTimeRange(StationTime& times);
+
 //@{ Template for use by either a TimeSeries or ThreeComponent Ensemble.
 //It loads arrival times defined in the times map into the individual
 //station metadata area using the keyword defined by key.
-//The phase name is loaded into each trace's metadata area using the
+//The phase name is loaded into each trace's metadata area using the 
 //key "assoc.phase" to be consistent with the common css3.0 database
-//definitions.
+//definitions.  
 //
 //Function prints a message if any station in the gather has no defined
-//time in the input.  Caller must be aware of this as the result is
+//time in the input.  Caller must be aware of this as the result is 
 //not set for stations that contain that error.  The result should always
-//be viewed as potentially incomplete.
+//be viewed as potentially incomplete.  
 //
 //@param ensemble is the input data to be processed
 //@param times is a map of station names containing times to be inserted
@@ -334,8 +406,36 @@ TimeWindow StationTimeRange(StationTime& times);
 //
 //@}
 
-template <class T>
-void LoadPredictedTimes(T& ensemble, StationTime& times,string key,string phase);
-
+template <class T> void LoadPredictedTimes(T& ensemble,
+	StationTime& times,string key,string phase)
+{
+	StationTime::iterator it,ite;
+	const string phase_key("assoc.phase");
+	ite=times.end();
+	for(int i=0;i<ensemble.member.size();++i)
+	{
+		string sta;
+		double atime;
+		try {
+			sta=ensemble.member[i].get_string("sta");
+			it=times.find(sta);
+			if(it==ite)
+			{
+				cerr << "LoadPredictedTimes:  station "
+					<< sta << " is not defined in station geometry"
+					<<endl;
+			}
+			else
+			{
+				atime=(*it).second;
+				ensemble.member[i].put(key,atime);
+				ensemble.member[i].put(phase_key,phase);
+			}
+		} catch (MetadataGetError mde)
+		{
+			mde.log_error();
+		}
+	}
+}
 } // End Namespace SEISPP declaration
 #endif
