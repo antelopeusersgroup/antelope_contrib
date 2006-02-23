@@ -32,6 +32,33 @@ Attribute bulletid
 	}
 	;
 
+Attribute keyname
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Range ( "keyname =~ /bulletid/" )
+	Description ( "id name (bulletid etc.)" )
+	Detail {
+		This attribute contains the actual name of a key whose
+		last assigned numeric value is saved in keyvalue.
+	}
+	;
+
+Attribute keyvalue
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "keyvalue > 0" )
+	Description ( "last value used for that id" )
+	Detail {
+		This attribute maintains the last assigned value (a
+		positive integer) of the counter for the specified
+		keyname.  The number keyvalue is the last counter value
+		used for the attribute keyname.  Key values are maintained
+		in the database to ensure uniqueness.
+	}
+	;
+
 Attribute lddate
 	Time (17)
 	Format ( "%17.5f" )
@@ -75,6 +102,19 @@ Relation bullets
 		This table stores short text segments for presentation 
 		on the web. Contents may include news items, recent 
 		highlights or hints, etc.
+	}
+	;
+
+Relation lastid
+	Fields ( keyname keyvalue lddate )
+	Primary ( keyname )
+	Description ( "Counter values (Last value used for keys)" )
+	Detail {
+		This relation is a reference table from which programs may
+		retrieve the last sequential value of one of the numeric
+		keys.  Id keys are required before inserting a record in
+		numerous tables.  The table has exactly one row for each
+		keyname.  
 	}
 	;
 
