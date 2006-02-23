@@ -11,7 +11,7 @@ lappend auto_path $env(ANTELOPE)/data/tcl/library
 lappend auto_path $env(ANTELOPE)/data/tcl/pkg2
 source $env(ANTELOPE)/data/tcl/pkg2/dbtable.tcl
 
-package require Tclx
+catch {package require Tclx}
 package require dbtable
 
 set tcl_precision 17
