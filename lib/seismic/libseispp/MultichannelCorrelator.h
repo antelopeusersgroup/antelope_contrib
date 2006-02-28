@@ -24,6 +24,8 @@ enum PenaltyFunction {NoPfunction, StackCoherence};
 static const string peakxcor_keyword("peak_xcor");
 
 TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize=false);
+TimeSeries correlation(TimeSeries& x, TimeSeries& y,
+		TimeWindow cwin, bool normalize=false);
 
 //@{
 // Generalized array cross correlation object.

@@ -554,7 +554,7 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 			if(d.member[i].live)
 			{
 				tshift=d.member[i].get_double(moveout_keyword);
-				dshift.member[i].t0+=tshift;
+				dshift.member[i].t0-=tshift;
 			}
 		}
 	} catch (MetadataGetError mde)

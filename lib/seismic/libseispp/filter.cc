@@ -139,8 +139,10 @@ int TimeInvariantFilter::fmax_poles()
 				+ this->filter_spec);
 	}
 }
-string TimeInvariantFilter::type_description()
+string TimeInvariantFilter::type_description(bool verbose)
 {
+	if(!verbose) return(filter_spec);
+
 	string retstr;
 	switch (type)
 	{
@@ -211,6 +213,9 @@ void TimeInvariantFilter::apply(TimeSeries& ts)
 	if(trfilter_segs(1,&(ts.ns),&(ts.dt),&d,const_cast<char*>(filter_spec.c_str()))<0)
 			throw SeisppError(string("Error in trfilter_segs"));
 	for(i=0;i<ts.ns;++i) ts.s[i]=static_cast<double>(d[i]);
+	// Append this filter name to Metadata part of TimeSeries.
+	ts.append_string(string("filter_spec"),string("; "),filter_spec);
+
 	delete [] d;
 }
 void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
@@ -226,6 +231,8 @@ void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 		for(i=0;i<ts.ns;++i) ts.u(j,i)=static_cast<double>(d[i]);
 	}
 	delete [] d;
+	// Append this filter name to Metadata part of object
+	ts.append_string(string("filter_spec"),string("; "),filter_spec);
 }
 void TimeInvariantFilter::apply(Dbptr tr)
 {

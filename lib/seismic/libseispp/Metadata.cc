@@ -9,6 +9,13 @@
 using namespace std;
 namespace SEISPP
 {
+Metadata::Metadata(const Metadata& mdold)
+{
+	mreal=mdold.mreal;
+	mint=mdold.mint;
+	mbool=mdold.mbool;
+	mstring=mdold.mstring;
+}
 void pf2metadatastring(Pf *pfin, map<string,string>& mdstr)
 {
 	// Parameter files translate almost directly to the mstring
@@ -230,27 +237,42 @@ bool Metadata::get_bool(string s)
 //
 void Metadata::put(string name, double val)
 {
-	// This is supposed to be more efficient than simple
-	//mreal[name]=val;
-	mreal.insert(map<string,double>::value_type(name,val));
+	mreal[name]=val;
 }
 void Metadata::put(string name, int val)
 {
-	mint.insert(map<string,int>::value_type(name,val));
+	mint[name]=val;
 }
 void Metadata::put(string name, string val)
 {
-	mstring.insert(map<string,string>::value_type(name,val));
+	mstring[name]=val;
 }
 // for C style strings, we should not depend on the compiler
 void Metadata::put(string name, char *val)
 {
-	mstring.insert(map<string,string>::value_type(name,string(val)));
+	mstring[name]=string(val);
 }
 void Metadata::put(string name, bool val)
 {
-	mbool.insert(map<string,bool>::value_type(name,val));
+	mbool[name]=val;
 }
+void Metadata::append_string(string key, string separator, string appendage)
+{
+	map<string,string>::iterator sptr;
+	sptr=mstring.find(key);
+	if(sptr==mstring.end()) 
+	{
+	// Ignore separator and just add appendage if the key is not
+	// already in the object
+		mstring[key]=appendage;
+	}
+	else
+	{
+		string newval=(*sptr).second+separator+appendage;
+		mstring[key]=newval;
+	}
+}
+
 void Metadata::remove(string name)
 {
 	// We assume this is an uncommon operation for Metadata

@@ -179,6 +179,8 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 	double TSCONVERGE;
 	const int MAXIT=30;
 	const string base_message("MultichannelCorrelator constructor:  ");
+	const double LAG_RANGE_MULTIPLIER(2.0);  // Correlation range is limited to this times lag_cutoff
+	TimeWindow lag_range(-LAG_RANGE_MULTIPLIER*lag_cutoff,LAG_RANGE_MULTIPLIER*lag_cutoff);
 
 	if(data.member.empty())
 		throw SeisppError(base_message+string("Input data ensemble is empty\n"));
@@ -213,7 +215,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 		//
 		for(i=0;i<data.member.size();++i)
 		{
-			xcor.member.push_back(correlation(beam,data.member[i],true));
+			xcor.member.push_back(correlation(beam,data.member[i],lag_range,true));
 			if(xcor.member[i].live)
 			{
 				TimeSeriesMaximum tsm(xcor.member[i]);
@@ -286,9 +288,14 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			// silently avoid divide by zero.  Shouldn't happen but worth this 
 			// safety valve.
 			if(stack_normalization_factor<=0.0) stack_normalization_factor=1.0;
+			//
+			// Note it is safe to use operator [] on the vectors
+			// in the loop below because we used push_back
+			// to initialize them all above.  
+			//
 			for(i=0;i<data.member.size();++i)
 			{
-				xcor.member[i]=correlation(beam,data.member[i],true);
+				xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
 				// Stack object handles data marked bad
 				// already.  Have to do same here as 
 				// xcor has all zeros if data had a gap
@@ -330,20 +337,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			count++;
 		} while((tshiftnorm > TSCONVERGE)
 				&& (count < MAXIT ));
-/*
-cout << "DEBUG:  correlator converged in "<<count<<" iterations"<<endl;
-cout << "(weight, amplitude static, peakxcor, coherence,moveout) values for this ensemble"<<endl;
-for(int k=0;k<data.member.size();++k)
-{
-	cout << weight[k]
-		<<"  "<<amplitude_static[k]
-		<<"  "<<peakxcor[k]
-		<<"  "<< data.member[k].get_double(coherence_keyword)
-		<<"  "<< data.member[k].get_double(moveout_keyword)
-		<<endl;
-}
-*/
-// END DEBUG
+		//
 		// We need to add these attributes to the beam
 		// so it has bare minimum need to be saved to 
 		// a database

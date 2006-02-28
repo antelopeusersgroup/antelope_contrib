@@ -304,7 +304,7 @@ bout.close();
 				d.member[id].put(coherence_keyword,coh[i]);
 				d.member[id].put(amplitude_static_keyword,
 					amplitude_statics[i]);
-				d.member[id].put(stack_weight_keyword,weights[i]);
+				d.member[id].put(stack_weight_keyword,rweight[i]);
 			}
 				
 			break;

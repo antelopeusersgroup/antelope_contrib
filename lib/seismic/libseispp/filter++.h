@@ -19,7 +19,7 @@ public:
 	double fmax();
 	int fmin_poles();
 	int fmax_poles();
-	string type_description();
+	string type_description(bool verbose=true);
 	TimeInvariantFilter(){type=none,f1=0.0;f2=0.0;npole1=0;npole2=0;};
 	TimeInvariantFilter(string);
 	TimeInvariantFilter(double flow, int npl, double fhigh, int fph);

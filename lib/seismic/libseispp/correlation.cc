@@ -48,10 +48,81 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 		if(normalize)
 		{
 			double nrmx=dnrm2(lx,&(x.s[0]),1);
-			double nrmy=dnrm2(ly,&(y.s[0]),1);
-			// an approximate normalization for length
-			nrmy*=(static_cast<double>(lx)/static_cast<double>(ly));
-			dscal(lz,1.0/(nrmx*nrmy),&(z.s[0]),1);
+			double nrmy;
+			for(i=0;i<lz;++i)
+			{
+				nrmy=dnrm2(lx,&(y.s[i]),1);
+				z.s[i]/= (nrmx*nrmy);
+			}
+		}
+	}
+	return z;
+}
+		
+
+TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool normalize)
+{
+	int i;
+	int lx,ly;
+	const string base_message("Correlation :  ");
+
+	lx=x.s.size();
+	ly=y.s.size();
+	if(ly<lx)
+	{
+	    throw SeisppError(base_message+string("ly<lx\n"));
+	}
+	if(x.dt != y.dt)
+		throw SeisppError(base_message+string(" sample rates do not match"));
+	// The return series is cloned from y as the parent
+	// This allows perservation of metadata to go with cross-correlation output.
+	TimeSeries z(y);
+	// Size of output is determined by lag_range combined with data range.
+	// First get the range of lags to cover.
+	double lagmin,lagmax;
+	int iy0;
+	lagmin=y.t0-x.t0;
+	if(lagmin<lag_range.start)
+	{
+		iy0=nint((lag_range.start-lagmin)/x.dt);
+		lagmin=lag_range.start;
+	}
+	else
+	{
+		iy0=0;
+	}
+	lagmax=y.t0-x.t0+(static_cast<double>(ly-lx-1))*x.dt;
+	if(lagmax>lag_range.end)
+		lagmax=lag_range.end;
+	int lz=static_cast<int>( (lagmax-lagmin)/x.dt ) + 1;
+	z.s.resize(lz);
+	z.t0=lagmin;
+	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
+	z.ns=lz;
+	// Test for gap in the lag window and discard if there
+	// is a gap present
+	TimeWindow gap_test(y.t0+y.dt*(static_cast<double>(iy0)),
+			y.t0+y.dt*(static_cast<double>(iy0+lz+lx)));
+	if(y.is_gap(gap_test) || !y.live)
+	{
+		z.live=false;
+		for(i=0;i<lz;++i) z.s[i]=0.0;
+	}
+	else
+	{
+		for(i=0;i<lz;++i)
+		{
+			z.s[i]=ddot(lx,&(x.s[0]),1,&(y.s[i+iy0]),1);
+		}
+		if(normalize)
+		{
+			double nrmx=dnrm2(lx,&(x.s[0]),1);
+			double nrmy;
+			for(i=0;i<lz;++i)
+			{
+				nrmy=dnrm2(lx,&(y.s[i+iy0]),1);
+				z.s[i]/= (nrmx*nrmy);
+			}
 		}
 	}
 	return z;
