@@ -76,20 +76,12 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	DatascopeHandle dbh(dynamic_cast<DatascopeHandle&>(dbi));
 	dbh.natural_join("site","snetsta");
 	int jdate=yearday(time);
-	char buf[128];
-	ostringstream sstr(buf);
-	sstr <<"ondate<="<<jdate;
-	dbh.subset(sstr.str());
-	if(dbh.number_tuples()<=0)
-		throw SeisppError(string("SeismicArray database constructor:")
-			+ string("  no stations match time condition of ")
-			+ string(buf));
+	int ondate,offdate;
 	dbh.rewind();
 	vector<int> ondl,offdl;
-	vector<int>::iterator ondlmax,offdlmin;
+	vector<int>::iterator ondlmin,offdlmin;
 	for(int i=0;i<dbh.number_tuples();++i,++dbh)
 	{
-		int ondate,offdate;
 		double lat,lon,elev,dnorth,deast;
 		string staname;
 		string netname;
@@ -100,10 +92,12 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			offdate=dbh.get_int("offdate");
 			// silently skip data for which jdate is not
 			// between ondate and offdate
-			// ondate test not necessary because of subset above
-			// offdate< 0 is a maintenance problem.  At this time
-			// null offdate is set -1
-			if( (offdate<0)  || (jdate<=offdate) )
+			// However, we load the ondate into the offdate
+			// vector for such stations to build valid time
+			// interval
+
+			if( (jdate>=ondate)
+				&& ((offdate<0)  || (jdate<=offdate) ))
 			{
 				lat=dbh.get_double("lat");
 				lon=dbh.get_double("lon");
@@ -117,11 +111,23 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 				// convert from external degrees to radians
 				lat=rad(lat);
 				lon=rad(lon);
-				ondl.push_back(ondate);
-				offdl.push_back(offdate);
+				// equivalent to
+				//if((ondate>0)&&(ondate>jdate) )
+				// since ondate is set -1 if not defined
+				//
+				if(ondate>jdate)
+					ondl.push_back(ondate);
+				if( (offdate>0) && (offdate>jdate) )
+				// Same -1 issue about offdate
+				if( offdate>jdate )
+					offdl.push_back(offdate);
 				stakey=netname+"_"+staname;
 				array[staname]=SeismicStationLocation(lat,lon,
 						elev,dnorth,deast,staname,netname,refsta);	
+			}
+			else if(ondate>jdate)
+			{
+				ondl.push_back(ondate); 
 			}
 		} catch (SeisppDberror dberr)
 		{
@@ -134,15 +140,26 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			<<"Unhandled exception. SeismicArray object may be incomplete."<<endl;
 		}
 	}
-	ondlmax=max_element(ondl.begin(),ondl.end());
-	offdlmin=min_element(offdl.begin(),offdl.end());
-	// Tests for all NULL offtimes
-	if((*offdlmin)<0) 
-		valid_time_interval=TimeWindow(epoch(*ondlmax),epoch(2050001));
+	if(offdl.empty() || ondl.empty())
+	{
+		if(offdl.empty())offdate=2050001;
+		if(!ondl.empty())
+		{
+			ondlmin=min_element(ondl.begin(),ondl.end());
+			offdate=min(offdate,*ondlmin);
+		}
+	}
 	else
-	// Add one day to offdlmin as offdate day can contain data
-		valid_time_interval=TimeWindow(epoch(*ondlmax),
-				epoch(*offdlmin)+86400.0);
+	{
+		// Get the end of the valid time as smaller of the
+		// earliest offdate or the earliest ondate
+		ondlmin=min_element(ondl.begin(),ondl.end());
+		offdlmin=min_element(offdl.begin(),offdl.end());
+		offdate=min(*ondlmin,*offdlmin);
+	}
+	// +1 on offdate because jdate is beginning of day
+	valid_time_interval=TimeWindow(epoch(jdate),
+				epoch(offdate+1));
 }
 /* This constructor uses the one above.  Not the most efficient way to do 
 this, but I do not expect this constructor to called often.  Normally
