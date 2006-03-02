@@ -41,7 +41,7 @@ pfreplace( Pf *sourcepf, Pf *destpf,
 		return;
 	}
 
-	pfold = delarr( destpf->value.arr, destkey );
+	pfold = pfdel( destpf, destkey );
 
 	if( pfold ) {
 
