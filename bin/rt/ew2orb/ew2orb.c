@@ -1166,6 +1166,7 @@ reconfig_import_thread( ImportThread *it )
 {
 	char	*loglevel;
 	Tbl	*morphlist;
+	Tbl	*new_morphlist;
 
 	mutex_lock( &it->it_mutex );
 
@@ -1261,13 +1262,16 @@ reconfig_import_thread( ImportThread *it )
 		}
 
 		morphlist = pfget_tbl( it->pf, "srcname_morph" );
-		morphlist = healthy_morphlist( morphlist );
 
-		newmorphtbl( morphlist, &it->srcname_morphmap );
+		new_morphlist = healthy_morphlist( morphlist );
 
-		if( morphlist != (Tbl *) NULL ) {
+		freetbl( morphlist, 0 );
+
+		newmorphtbl( new_morphlist, &it->srcname_morphmap );
+
+		if( new_morphlist != (Tbl *) NULL ) {
 			
-			freetbl( morphlist, (void (*)(void *)) free );
+			freetbl( new_morphlist, (void (*)(void *)) free );
 		}
 
 		it->update = 0;

@@ -85,6 +85,7 @@ refresh_earthworm_info()
 	Arr	*anarr;
 	int	anint;
 	char	*akey;
+	char	*previous;
 	char	setkey[STRSZ];
 	Tbl	*keys;
 	int	ikey;
@@ -164,6 +165,13 @@ refresh_earthworm_info()
 
 				sprintf( setkey, "%03d", anint );
 
+				previous = getarr( Ewinfo.inst_names, setkey );
+
+				if( previous != NULL ) {
+					
+					free( previous );
+				}
+
 				setarr( Ewinfo.inst_names, setkey, strdup( akey ) );
 				setarr( Ewinfo.inst_ids, akey, (void *) anint );
 			}
@@ -186,6 +194,13 @@ refresh_earthworm_info()
 
 				sprintf( setkey, "%03d", anint );
 
+				previous = getarr( Ewinfo.mod_names, setkey );
+
+				if( previous != NULL ) {
+					
+					free( previous );
+				}
+
 				setarr( Ewinfo.mod_names, setkey, strdup( akey ) );
 				setarr( Ewinfo.mod_ids, akey, (void *) anint );
 			}
@@ -207,6 +222,13 @@ refresh_earthworm_info()
 				anint = atoi( getarr( anarr, akey ) );
 
 				sprintf( setkey, "%03d", anint );
+
+				previous = getarr( Ewinfo.type_names, setkey );
+
+				if( previous != NULL ) {
+					
+					free( previous );
+				}
 
 				setarr( Ewinfo.type_names, setkey, strdup( akey ) );
 				setarr( Ewinfo.type_ids, akey, (void *) anint );
@@ -427,11 +449,7 @@ healthy_morphlist( Tbl *morphlist )
 
 	indices = greptbl( "^[/\"\'].*", new_morphlist );
 	
-	if( maxtbl( indices ) <= 0 ) {
-
-		return new_morphlist;
-
-	} else {
+	if( maxtbl( indices ) > 0 ) {
 
 		for( i=maxtbl(indices)-1; i>=0; i-- ) {
 
@@ -449,7 +467,9 @@ healthy_morphlist( Tbl *morphlist )
 
 			strtrim( entry );
 		}	
-
-		return new_morphlist;
 	}
+
+	freetbl( indices, 0 );
+
+	return new_morphlist;
 }
