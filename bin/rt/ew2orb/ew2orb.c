@@ -47,6 +47,7 @@ typedef struct ImportThread {
 	int	update;
 	int	new;
 	int	stop;
+	int	npacketrefs;
 	Morphtbl *srcname_morphmap;
 
 	/* Thread-only variables: */
@@ -879,6 +880,8 @@ buf_intake( ImportThread *it )
 			
 	} else {
 
+		e2opkt->it->npacketrefs++;
+
 		mtfifo_push( E2oPackets_mtf, (void *) e2opkt ); 
 	}
 
@@ -1087,7 +1090,10 @@ delete_import_thread( ImportThread *it )
 
 		delarr( Import_Threads, it->name );
 
-		free_ImportThread( &it );
+		if( it->npacketrefs <= 0 ) {
+
+			free_ImportThread( &it );
+		}
 
 		rw_unlock( &Import_Threads_rwlock );
 	}
@@ -1660,6 +1666,7 @@ new_ImportThread( char *name )
 	it->update = 1;
 	it->new = 1;
 	it->stop = 0;
+	it->npacketrefs = 0;
 	it->pf = pfnew( PFARR );
 	it->bnsin = NULL;
 	it->bnsout = NULL;
@@ -2254,6 +2261,14 @@ ew2orb_convert( void *arg )
 			       	       e2opkt->time,
 				       e2opkt->orbpkt, 
 				       e2opkt->orbpktnbytes );
+		}
+
+		e2opkt->it->npacketrefs--;
+
+		if( e2opkt->it->stop == 1 &&
+		    e2opkt->it->npacketrefs <= 0 ) {
+
+			free_ImportThread( &e2opkt->it );
 		}
 
 		free_Ew2orbPacket( e2opkt );
