@@ -27,8 +27,8 @@ Attribute auth
 	;
 
 Attribute dfile
-	String (32)
-	Format ( "%-32s" )
+	String (64)
+	Format ( "%-64s" )
 	Null ( "-" )
 	Description ( "data file" )
 	Detail {
@@ -39,8 +39,8 @@ Attribute dfile
 	;
 
 Attribute dir
-	String (64)
-	Format ( "%-64s" )
+	String (128)
+	Format ( "%-128s" )
 	Null ( "-" )
 	Description ( "directory" )
 	Detail {
@@ -49,6 +49,7 @@ Attribute dir
 		current directory, may be used.
 	}
 	;
+
 Attribute endtime
 	Time (17)
 	Format ( "%17.5f" )
