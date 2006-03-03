@@ -1,3 +1,6 @@
+2 Mar 2006
+  - Make 'slink2orb' the default parameter file.
+
 27 Jan 2006
   - Update to libslink 1.6, no changes to library or module.
 

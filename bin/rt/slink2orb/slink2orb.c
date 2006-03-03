@@ -4,7 +4,7 @@
  *
  * Written by Chad Trabant, ORFEUS/EC-Project MEREDIAN
  *
- * modified: 2005.342
+ * modified: 2006.061
  ***************************************************************************/
 
 #include <signal.h>
@@ -18,14 +18,14 @@
 
 #include <libslink.h>
 
-static char   *version     = "3.6 (2006.027)";
+static char   *version     = "3.7 (2006.061)";
 static char   *package     = "slink2orb";
 static char    verbose     = 0;
 static char    remap       = 0;      /* remap sta and chan from SEED tables */
 
 static int     orb         = -1;     /* the ORB descriptor */
 static char   *statefile   = 0;	     /* state file */
-static char   *parafile    = 0;	     /* parameter file */
+static char   *parafile    = "slink2orb"; /* parameter file with default */
 static char   *orbaddr     = 0;      /* the host:port of the destination ORB */
 static char   *mappingdb   = 0;      /* the database for SEED name mapping */
 static char   *calibdb     = 0;      /* the database for calibration info */
@@ -286,45 +286,42 @@ parameter_proc(int argcount, char **argvec)
 	orbaddr = argvec[optind];
     }
 
-  /* Read parameter file if supplied */
-  if (parafile)
+  /* Read parameter file */
+  if ( (pfread(parafile, &pf)) < 0 )
     {
-      if ((pfread(parafile, &pf)) < 0)
-	{
-	  sl_log (1, 0, "error reading parameter file\n");
-	  exit (1);
-	}
-      else
-	{
-	  /* Do some extra work so parameters are optional */
-	  
-	  /* Only read network timeout if not set on command line */
-	  if (!netto_argv)
-	    if ((tptr = pfget_string(pf, "nettimeout")) != 0)
-	      slconn->netto = atoi((char *) tptr);
-	  
-	  /* Only read network reconnect delay if not set on command line */
-	  if (!netdly_argv)
-	    if ((tptr = pfget_string(pf, "netdelay")) != 0)
-	      slconn->netdly = atoi((char *) tptr);
-
-	  /* Only read keepalive interval if not set on command line */
-	  if (!keepalive_argv)
-	    if ((tptr = pfget_string(pf, "keepalive")) != 0)
-	      slconn->keepalive = atoi((char *) tptr);
-	  
-	  if ((tptr = pfget_string(pf, "stateint")) != 0)
-	    stateint = atoi((char *) tptr);
-	  
-	  if ((tptr = pfget_string(pf, "selectors")) != 0 &&
-	      strlen(tptr) > 0)
-	    selectors = strdup((char *) tptr);
-	  
-	  /* 'stations' == 0 if not found */
-	  stations = pfget_arr(pf, "stations");
-	}
+      sl_log (1, 0, "error reading parameter file: %s\n", parafile);
+      exit (1);
     }
-
+  else
+    {
+      /* Do some extra work so parameters are optional */
+      
+      /* Only read network timeout if not set on command line */
+      if (!netto_argv)
+	if ((tptr = pfget_string(pf, "nettimeout")) != 0)
+	  slconn->netto = atoi((char *) tptr);
+      
+      /* Only read network reconnect delay if not set on command line */
+      if (!netdly_argv)
+	if ((tptr = pfget_string(pf, "netdelay")) != 0)
+	  slconn->netdly = atoi((char *) tptr);
+      
+      /* Only read keepalive interval if not set on command line */
+      if (!keepalive_argv)
+	if ((tptr = pfget_string(pf, "keepalive")) != 0)
+	  slconn->keepalive = atoi((char *) tptr);
+      
+      if ((tptr = pfget_string(pf, "stateint")) != 0)
+	stateint = atoi((char *) tptr);
+      
+      if ((tptr = pfget_string(pf, "selectors")) != 0 &&
+	  strlen(tptr) > 0)
+	selectors = strdup((char *) tptr);
+      
+      /* 'stations' == 0 if not found */
+      stations = pfget_arr(pf, "stations");
+    }
+  
   /* Translate the 'stations' Arr, if given */
   if (stations != 0)
     {
