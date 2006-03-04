@@ -366,9 +366,14 @@ sub get_latest_orbstat_packet($)
     ($pktid, $srcname, $time, $packet, $num_bytes) =
     orbget($orb, "ORBNEWEST");
 
+    if ($VERBOSE)
+    {
+	print "Requested source: $source_name, returned source: $srcname\n";
+    }
+
     orbclose($orb);
 
-    if (defined $pktid)
+    if ((defined $pktid) && ($source_name eq $srcname))
     {
 	return ($pktid, $srcname, $time, $packet, $num_bytes);
     }
