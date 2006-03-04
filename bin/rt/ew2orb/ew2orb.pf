@@ -13,6 +13,8 @@ defaults &Arr{
 	reject  		
 	srcname_morph &Tbl{
 	}
+	timecorr &Arr{
+	}
 }
 
 import_from &Arr{

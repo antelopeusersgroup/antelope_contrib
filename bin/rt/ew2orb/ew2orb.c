@@ -49,6 +49,7 @@ typedef struct ImportThread {
 	int	stop;
 	int	npacketrefs;
 	Morphtbl *srcname_morphmap;
+	Arr	*timecorr;
 
 	/* Thread-only variables: */
 
@@ -448,6 +449,8 @@ init_calibinfo( void )
 
 		Calibinfo.usedbsegtype = 0;
 	}
+
+	return 0;
 }
 
 void
@@ -921,6 +924,11 @@ free_ImportThread( ImportThread **it )
 		freemorphtbl( (*it)->srcname_morphmap );
 	}
 
+	if( (*it)->timecorr ) {
+
+		freearr( (*it)->timecorr, 0 );
+	}
+
 	if( (*it)->reject_hook ) {
 
 		free_hook( &((*it)->reject_hook) );
@@ -1173,6 +1181,7 @@ reconfig_import_thread( ImportThread *it )
 	char	*loglevel;
 	Tbl	*morphlist;
 	Tbl	*new_morphlist;
+	Arr	*timecorr;
 
 	mutex_lock( &it->it_mutex );
 
@@ -1262,7 +1271,7 @@ reconfig_import_thread( ImportThread *it )
 
 		it->loglevel = translate_loglevel( loglevel );
 		
-		if( it->srcname_morphmap ) {
+		if( it->srcname_morphmap != (Morphtbl *) NULL ) {
 			
 			freemorphtbl( it->srcname_morphmap );
 		}
@@ -1278,6 +1287,21 @@ reconfig_import_thread( ImportThread *it )
 		if( new_morphlist != (Tbl *) NULL ) {
 			
 			freetbl( new_morphlist, (void (*)(void *)) free );
+		}
+
+		if( it->timecorr != (Arr *) NULL ) {
+			
+			freearr( it->timecorr, free );
+		}
+
+		timecorr = pfget_arr( it->pf, "timecorr" );
+
+		if( timecorr != (Arr *) NULL ) {
+
+			it->timecorr = 
+			    duparr( timecorr, ( void *(*)(void *) ) strdup );
+
+			freearr( timecorr, 0 );
 		}
 
 		it->update = 0;
@@ -1682,6 +1706,7 @@ new_ImportThread( char *name )
 	it->connectfail = 0;
 	it->bindfail = 0;
 	it->srcname_morphmap = NULL;
+	it->timecorr = NULL;
 	it->select_hook = NULL;
 	it->reject_hook = NULL;
 
@@ -1787,6 +1812,9 @@ update_import_thread( char *name, Pf *pf )
 	pfreplace( pf, it->pf, "defaults{srcname_morph}", 
 			       "srcname_morph", "tbl" );
 
+	pfreplace( pf, it->pf, "defaults{timecorr}", 
+			       "timecorr", "arr" );
+
 	sprintf( key, "import_from{%s}{server_port}", name );
 	pfreplace( pf, it->pf, key, "server_port", "int" );
 
@@ -1825,6 +1853,9 @@ update_import_thread( char *name, Pf *pf )
 
 	sprintf( key, "import_from{%s}{srcname_morph}", name );
 	pfreplace( pf, it->pf, key, "srcname_morph", "tbl" );
+
+	sprintf( key, "import_from{%s}{timecorr}", name );
+	pfreplace( pf, it->pf, key, "timecorr", "arr" );
 
 	if( it->new ) {
 
@@ -1986,6 +2017,8 @@ crack_packet( Ew2orbPacket *e2opkt )
 	char	*sp;
 	char	old_srcname[ORBSRCNAME_SIZE];
 	char	new_srcname[ORBSRCNAME_SIZE];
+	char	*timeshift_string = 0;
+	double	timeshift = 0;
 	static char *temp_segtype = 0;
 	int	n;
 
@@ -2084,6 +2117,32 @@ crack_packet( Ew2orbPacket *e2opkt )
 		}
 	}
 
+	if( e2opkt->it->timecorr != (Arr *) NULL ) {
+
+		timeshift_string = getarr( e2opkt->it->timecorr, old_srcname );
+
+		if( timeshift_string != (char *) NULL ) {
+
+			timeshift = atof( timeshift_string );
+
+			if( e2opkt->it->loglevel == VERYVERBOSE ) {
+
+				elog_notify( 0, "'%s': adding %f seconds to "
+				"timestamp value for incoming packet %s\n", 
+				e2opkt->itname, timeshift, old_srcname );
+						
+			}
+
+		} else {
+			
+			timeshift = 0.0;
+		}
+
+	} else {
+
+		timeshift = 0.0;
+	}
+
 	n = morphtbl( old_srcname, e2opkt->it->srcname_morphmap, 
 		      MORPH_ALL|MORPH_PARTIAL, new_srcname );
 
@@ -2179,7 +2238,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	pktchan->nsamp = e2opkt->th->nsamp;
 	pktchan->samprate = e2opkt->th->samprate;
-	pktchan->time = e2opkt->th->starttime;
+	pktchan->time = e2opkt->th->starttime + timeshift;
 
 	get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
 		       &temp_segtype, &pktchan->calib, &pktchan->calper,

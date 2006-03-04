@@ -28,13 +28,11 @@ pfreplace( Pf *sourcepf, Pf *destpf,
 	   char *sourcekey, char *destkey, 
 	   char *type )
 {
-	Pf	*pfval;
+	Pf	*pfnew;
 	Pf	*pfold;
-	Arr	*anarr;
-	Tbl	*atbl;
 	int 	rc;
 
-	rc = pfresolve( sourcepf, sourcekey, 0, &pfval );
+	rc = pfresolve( sourcepf, sourcekey, 0, &pfnew );
 
 	if( rc < 0 || rc == PFINVALID ) {
 
@@ -48,32 +46,7 @@ pfreplace( Pf *sourcepf, Pf *destpf,
 		pffree( pfold );
 	}
 
-	if( ! strcmp( type, "int" ) ) {
-
-		pfput_int( destpf, destkey, 
-			   pfget_int( sourcepf, sourcekey ) );
-
-	} else if( ! strcmp( type, "string" ) ) {
-
-		pfput_string( destpf, destkey, 
-			      pfget_string( sourcepf, sourcekey ) );
-
-	} else if( ! strcmp( type, "arr" ) ) {
-
-		anarr = pfget_arr( sourcepf, sourcekey );
-
-		pfput_arr( destpf, destkey, anarr );
-
-		freearr( anarr, 0 );
-
-	} else if( ! strcmp( type, "tbl" ) ) {
-
-		atbl = pfget_tbl( sourcepf, sourcekey );
-
-		pfput_tbl( destpf, destkey, atbl );
-
-		freetbl( atbl, 0 );
-	}
+	pfput( destpf, destkey, pfdup( pfnew ), PFPF );
 
 	return;
 }
