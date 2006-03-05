@@ -94,10 +94,16 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 	lagmax=y.t0-x.t0+(static_cast<double>(ly-lx-1))*x.dt;
 	if(lagmax>lag_range.end)
 		lagmax=lag_range.end;
-	int lz=static_cast<int>( (lagmax-lagmin)/x.dt ) + 1;
-	z.s.resize(lz);
 	z.t0=lagmin;
 	z.dt=x.dt;  // probably not necessary, but forced initialization always good.
+	if(lagmin>lagmax)
+	{
+		z.live=false;
+		z.ns=0;
+		return(z); // return dead trace in this case.
+	}
+	int lz=static_cast<int>( (lagmax-lagmin)/x.dt ) + 1;
+	z.s.resize(lz);
 	z.ns=lz;
 	// Test for gap in the lag window and discard if there
 	// is a gap present
