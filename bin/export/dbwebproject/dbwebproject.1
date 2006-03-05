@@ -3,7 +3,7 @@
 dbwebproject \- automatically create and maintain a database-dependent dynamic website
 .SH SYNOPSIS
 .nf
-\fBdbwebproject \fP[-v] [-p \fIpfname\fP]
+\fBdbwebproject \fP[-v] [-p \fIpfname\fP] [-r \fIDocumentRoot\fP] [\fIrecipe\fP
 .fi
 .SH DESCRIPTION
 
@@ -68,7 +68,8 @@ itself, there are two parameters for the loader: \fIloader_location\fP and
 either as a filename with the 'source' or as a string-literal with the
 actual contents.
 
-The \fIrecipes\fP table of the \fBdbwebproject\fP.pf parameter file lists recipes
+If a single \fIrecipe\fP name is specified on the command line, it is 
+executed. Otherwise, the \fIrecipes\fP table of the \fBdbwebproject\fP.pf parameter file lists recipes
 to generate all of the automatically-created and statically installed
 files. The recipetype indicates the nature of the file creation/installation
 process; right now only the recipetype \fIinstall\fP is supported.
@@ -93,6 +94,10 @@ Verbose
 .IP "-p pfname"
 Alternate name of the parameter file. The default is \fBdbwebproject\fP.pf.
 .SH PARAMETER FILE
+.IP "-r DocumentRoot" 
+Override the DocumentRoot setting in the parameter file, using the 
+specified location instead.
+
 .in 2c
 .ft CW
 .nf

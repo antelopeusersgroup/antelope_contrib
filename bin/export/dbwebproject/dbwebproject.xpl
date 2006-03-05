@@ -152,9 +152,9 @@ $Program =~ s".*/"";
 
 $Pfname = $Program;
 
-if ( ! &Getopts('p:v') || @ARGV != 0 ) { 
+if ( ! &Getopts('r:p:v') || @ARGV > 1 ) { 
 
-    	elog_die ( "Usage: $Program [-v] [-p pfname]\n" ); 
+    	elog_die ( "Usage: $Program [-v] [-p pfname] [-r DocumentRoot] [recipe]\n" ); 
 
 } else {
 
@@ -162,9 +162,19 @@ if ( ! &Getopts('p:v') || @ARGV != 0 ) {
 		
 		$Pfname = $opt_p;
 	}
+
+	$recipe = shift( @ARGV );
 }
 
-$DocumentRoot = pfget( $Pfname, "DocumentRoot" );
+if( $opt_r ) {
+
+	$DocumentRoot = $opt_r;
+
+} else {
+
+	$DocumentRoot = pfget( $Pfname, "DocumentRoot" );
+}
+
 $DocumentRootSubdir = pfget( $Pfname, "DocumentRootSubdir" );
 
 @run_recipes = @{pfget( $Pfname, "run_recipes" )};
@@ -183,8 +193,15 @@ $TargetDir = concatpaths( $DocumentRoot, $DocumentRootSubdir );
 
 setup_web_config_pf();
 
-foreach $recipe ( @run_recipes ) {
+if( defined( $recipe ) ) {
 
-	run_recipe( $recipe );
+		run_recipe( $recipe );
+
+} else {
+
+	foreach $recipe ( @run_recipes ) {
+
+		run_recipe( $recipe );
+	}
 }
 

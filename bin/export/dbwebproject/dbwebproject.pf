@@ -23,6 +23,8 @@ web_config_pf &Arr{
    }
 }
 
+antelope	&env(ANTELOPE)
+
 run_recipes &Tbl{
 	a_static_recipe
 }
@@ -83,6 +85,44 @@ recipes &Arr{
 		#		....
 		#	}
 		#  }
+		}
+	}
+	rtimbank &Arr{
+		recipetype 	install
+		pages &Tbl{
+			&Arr{
+				sourcedir 	&antelope/data/www/cgibin
+				targetdir	rtapps
+				files &Tbl{
+					rtimbank.php
+					rtimbank_image.php
+				}
+			}
+			&Arr{
+				sourcedir 	&antelope/data/www/css
+				targetdir	rtapps/css
+				files &Tbl{
+					rtimbank_css.php
+				}
+			}
+			&Arr{
+				sourcedir 	&antelope/data/www/images
+				targetdir	rtapps/images
+				files &Tbl{
+					roadnet_bottom_line.gif
+					roadnet_logo.jpg
+					roadnet_logo_bkgrd.gif
+					roadnet_page_bkgrd.gif
+					roadnet_sorry.gif
+				}
+			}
+			&Arr{
+				sourcedir 	&antelope/data/pf
+				targetdir	rtapps
+				files &Tbl{
+					rtimbank.pf
+				}
+			}
 		}
 	}
 }
