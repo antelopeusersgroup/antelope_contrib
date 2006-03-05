@@ -157,9 +157,8 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 		offdlmin=min_element(offdl.begin(),offdl.end());
 		offdate=min(*ondlmin,*offdlmin);
 	}
-	// +1 on offdate because jdate is beginning of day
 	valid_time_interval=TimeWindow(epoch(jdate),
-				epoch(offdate+1));
+				epoch(offdate));
 }
 /* This constructor uses the one above.  Not the most efficient way to do 
 this, but I do not expect this constructor to called often.  Normally
