@@ -1,0 +1,9 @@
+
+include $(ANTELOPEMAKE)
+DIRS=
+
+install:: no-java.html
+	deposit -r no-java.html $(DEST)/man/javadoc/index.html
+
+UNINSTALL=$(DEST)/man/javadoc/index.html
+

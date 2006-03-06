@@ -1,0 +1,10 @@
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+foreach ( split(':', $ENV{PATH}) ) { 
+    if ( -x "$_/javac" ) { 
+	exit 0 
+    }
+}
+exit 1
