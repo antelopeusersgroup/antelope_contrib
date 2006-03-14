@@ -13,8 +13,8 @@
        source code in this software module. */
 
 /* Modified by Nikolaus Horn for ZAMG, Vienna */
-#define REVISION_CODE "1.4"
-#define REVISION_DATE "2004-06-11 12:00"
+#define REVISION_CODE "1.5"
+#define REVISION_DATE "2005-09-06 18:00"
 
 
 #include <stdio.h>
@@ -71,6 +71,8 @@ struct station_params {
 	double twin_noise_param;
 	double latency;
 	double delta;
+	double depth;
+	double use_hypocentral_distance;
 	double parrival;
 	double sarrival;
 	double t0_signal;
@@ -163,6 +165,7 @@ main (int argc, char **argv)
 	char *next_target_orbmag=NULL;
 	double	v_r=default_v_r;
 	int use_p2pamp = 0;
+	int use_hypocentral_distance=0;
 
 
 	elog_init (argc, argv) ;
@@ -311,6 +314,8 @@ main (int argc, char **argv)
 		complain (0, "pfread(%s) error.\n", pfname);
 		exit (1);
 	}
+
+	parse_param (pf, "use_hypocentral_distance", P_BOOL, 0, &use_hypocentral_distance);
 	if (parse_param (pf, "v_r", P_DBL, 1, &v_r) < 0) {
 		complain (0, "parse_param(v_r) error.\n");
 		exit (1);
@@ -420,6 +425,7 @@ main (int argc, char **argv)
 		sp->apply_clip_limits = apply_clip_limits;
 		sp->minclip = minclip;
 		sp->maxclip = maxclip;
+		sp->use_hypocentral_distance = use_hypocentral_distance;
 	}
 	if (parse_param (pf, "latency", P_DBL, 1, &group_latency) < 0) {
 		complain (0, "parse_param(latency) error.\n");
@@ -731,6 +737,7 @@ main (int argc, char **argv)
 				dbex_evalstr (dbj, expr, dbREAL, &sarrival);
 				
 				sp->delta = delta;
+				sp->depth= odepth;
 				if (sp->twin_noise_param <= 0.0) {
 					twin_noise=0.0;
 				} else {
@@ -886,6 +893,7 @@ main (int argc, char **argv)
 					twin_noise=sp->twin_noise_param;
 				}
 				sp->delta = delta;
+				sp->depth=odepth;
 				twin = time_window*(sarrival - parrival);
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
@@ -1249,8 +1257,14 @@ mycompare (struct station_params **a, struct station_params **b, void *private)
 }
 
 int 
-compmag (double c0, double c1, double c2, double c3, double c4, double c5, double delta, double signal, double *mag)
+compmag (double c0, double c1, double c2, double c3, double c4, double c5, double delta, double depth, int use_hypocentral_distance, double signal, double *mag)
 {
+	if (use_hypocentral_distance) {
+		double depth_deg;
+		depth_deg=km2deg(depth);
+		delta=sqrt((depth_deg*depth_deg)+delta*delta);
+	}
+		
 	if (c2 != 0.0 ) {
 		*mag=c0 + c5 + log10(signal) + c1*log10(delta) +c2*log10(delta*c3 + c4);
 	} else {
@@ -1580,14 +1594,14 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			if (sp->snr_thresh < 1.0 || snr > sp->snr_thresh) {
 				if (sp->snr_thresh >= 1.0) signal -= noise;
 				/*compmag (sp->delta*111.11, signal, &mag);*/
-				compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, signal, &mag);
+				compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, sp->depth, sp->use_hypocentral_distance, signal, &mag);
 			}
 		} else {
 			/*compmag (sp->delta*111.11, signal, &mag);*/
-			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, signal, &mag);
+			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, sp->depth, sp->use_hypocentral_distance, signal, &mag);
 		}
 		if (mag > MAX_REASONABLE_MAGNITUDE) {
-			complain(1,"mycallback: magnitude %.2f unreasonably high -> ignored\n",mag);
+			complain(0,"mycallback: magnitude %.2f unreasonably high -> ignored\n",mag);
 			mag = -999.00;
 		}
 	}
