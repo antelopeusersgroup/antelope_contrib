@@ -38,9 +38,10 @@ use POSIX qw(floor);
 					$hms=epoch2str($ts,"%H:%M:%S.%s");
 					$nm=($month + $offset) % 12;
 					$nm+=1;
-					$dy=POSIX::floor($offset / 12);
+					$dy=POSIX::floor(($month + $offset) / 12.0);
 					$year +=$dy;
 					$month= sprintf("%02i",$nm);
+#print "$dy $year-$month-$day $hms\n";
 					$t1=str2epoch("$year-$month-$day $hms");
 					$offset=$t1-$ts;
 				}
