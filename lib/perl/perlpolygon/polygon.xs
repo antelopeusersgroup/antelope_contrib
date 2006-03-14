@@ -14,6 +14,7 @@ elogmsgs()
 }
 
 MODULE = polygon		PACKAGE = polygon		
+PROTOTYPES: DISABLE
 
 
 void
@@ -36,12 +37,6 @@ inWhichPolygons(idatabase, itable, ifield, irecord, lat, lon)
 	P.lat= lat;
 	P.lon= lon;
 	dbr= inWhichPolygons(db, P);
- # for some reasons, the following does NOT work
-        if ( dbr.database < 0 ) {
- 		SV *sv;
- 		sv= errlog2string(1);
- 		croak("inWhichPolygons: %s",elogmsgs());
-	}
 	EXTEND(sp,4);
 	PUSHs(sv_2mortal(newSViv(dbr.database)));	
 	PUSHs(sv_2mortal(newSViv(dbr.table)));	

@@ -1,7 +1,7 @@
 AUTHOR_FIELD=Nikolaus Horn <nikolaus.horn\@zamg.ac.at>
 PERLMAKEFILE = perl_makefile
 MAN3P=perlpolygon.3p
-CLEAN=  .make.state  Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
+CLEAN=  Makefile.PL runmake $(PERLMAKEFILE).old $(PERLMAKEFILE).PL $(PERLMAKEFILE) polygon.bs polygon.c pm_to_blib 
 
 PD=$(ANTELOPE)/data/perl
 PM=$(ANTELOPE)/man
@@ -10,7 +10,7 @@ ldlibs=-lpolygon $(STOCKLIBS)
 include $(ANTELOPEMAKE)
 DIRS=
 
-SRCS= errlog2string.c polygon.pm polygon.xs 
+SRCS= polygon.pm polygon.xs 
 install:: runmake $(SRCS) $(PERLMAKEFILE) 
 	touch polygon.pm # so time is new in $antelope/data/perl
 	./runmake install 

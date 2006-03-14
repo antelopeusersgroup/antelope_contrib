@@ -17,12 +17,15 @@ The extensions must be loaded with a \fIuse\fP statement:
 Following are brief descriptions of the functions implemented.
 
 .IP "\fBinWhichPolygons\fP (database, lat, lon)"
-Returns a database pointer to the records where lat,lon falls in.
+Returns a database pointer to the records where lat,lon falls in or dbinvalid if nothing is found, 
 .ft CW
 .in 2c
 .nf
 
 @db= inWhichPolygons(@db, lat, lon);
+if ($db[0]>0) {
+	print "found some records\n";
+}
 
 .fi
 .in
