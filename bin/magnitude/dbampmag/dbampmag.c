@@ -30,6 +30,7 @@
 #define default_v_r 4.0
 
 #define PF_REVISION_TIME "1086912000"
+#define MAX_REASONABLE_MAGNITUDE 9.5
 
 int verbose=0;
 int quiet=0;
@@ -64,6 +65,8 @@ struct station_params {
 	double twin_noise_param;
 	double latency;
 	double delta;
+	double depth;
+	double use_hypocentral_distance;
 	double parrival;
 	double sarrival;
 	double t0_signal;
@@ -137,6 +140,8 @@ main (int argc, char **argv)
 	char filter_type[40];
 	int np1,np2;
 	double f1,f2;
+	int use_hypocentral_distance=0;
+
 
 
 	Program_Name = argv[0];
@@ -228,11 +233,12 @@ main (int argc, char **argv)
 		complain (0, "pfread(%s) error.\n", pfname);
 		exit (1);
 	}	
+
+	parse_param (pf, "use_hypocentral_distance", P_BOOL, 0, &use_hypocentral_distance);
 	if (parse_param (pf, "v_r", P_DBL, 1, &v_r) < 0) {
 		complain (0, "parse_param(v_r) error.\n");
 		exit (1);
 	}
-	tbl = NULL;
 	if (parse_param (pf, "time_window_factor", P_DBL, 1, &time_window) < 0) {
 		complain (0, "parse_param(time_window_factor) error.\n");
 		exit (1);
@@ -277,6 +283,7 @@ main (int argc, char **argv)
 		complain (0, "parse_param(maxdelta) error.\n");
 		exit (1);
 	}
+	tbl = NULL;
 	if (parse_param (pf, "mag", P_TBL, 1, &tbl) < 0) {
 		complain (0, "parse_param(ml) error.\n");
 		exit (1);
@@ -332,6 +339,7 @@ main (int argc, char **argv)
 		sp->apply_clip_limits = apply_clip_limits;
 		sp->minclip = minclip;
 		sp->maxclip = maxclip;
+		sp->use_hypocentral_distance = use_hypocentral_distance;
 		sp->mag = -999.0;
 	}
 	proc_tbl = valsarr (proc_arr);
@@ -441,6 +449,7 @@ main (int argc, char **argv)
 				dbex_evalstr (dbs, expr, dbREAL, &sarrival);
 				sp->use = 1;		
 				sp->delta = delta;
+				sp->depth = odepth;
 				if (sp->twin_noise_param <= 0.0) {
 					twin_noise=0.0;
 				} else {
@@ -516,6 +525,7 @@ main (int argc, char **argv)
 				dbex_evalstr (dbs, expr, dbREAL, &sarrival);
 				sp->use = 1;		
 				sp->delta = delta;
+				sp->depth = odepth;
 				if (sp->twin_noise_param <= 0.0) {
 					twin_noise=0.0;
 				} else {
@@ -740,8 +750,14 @@ mycompare (struct station_params **a, struct station_params **b, void *private)
 	return (0);
 }
 int 
-compmag (double c0, double c1, double c2, double c3, double c4, double c5, double delta, double signal, double *mag)
+compmag (double c0, double c1, double c2, double c3, double c4, double c5, double delta, double depth, int use_hypocentral_distance, double signal, double *mag)
 {
+	if (use_hypocentral_distance) {
+		double depth_deg;
+		depth_deg=km2deg(depth);
+		delta=sqrt((depth_deg*depth_deg)+delta*delta);
+	}
+		
 	if (c2 != 0.0 ) {
 		*mag=c0 + c5 + log10(signal) + c1*log10(delta) +c2*log10(delta*c3 + c4);
 	} else {
@@ -1192,11 +1208,16 @@ mycallback (struct station_params *sp, int ichan)
 			snr = signal/(noise*1.414);
 			if (snr > sp->snr_thresh) {
 				signal -= noise;
-				compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, signal, &mag);
+				compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, sp->depth, sp->use_hypocentral_distance, signal, &mag);
 			}
 		} else {
-			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, signal, &mag);
+			compmag (sp->consts.c0, sp->consts.c1, sp->consts.c2, sp->consts.c3, sp->consts.c4, sp->consts.c5, sp->delta, sp->depth, sp->use_hypocentral_distance, signal, &mag);
 		}
+		if (mag > MAX_REASONABLE_MAGNITUDE) {
+			complain(0,"magnitude %.2f unreasonably high -> ignored\n",mag);
+			mag = -999.00;
+		}
+
 	}
 	if (mag > sp->mag) {
 		sp->mag = mag;
