@@ -1,0 +1,44 @@
+.TH POLYGON2XY 1 "$Date$"
+.SH NAME
+polygon2xy \- export polygon data for usage with \fBGMT\fP.
+.SH SYNOPSIS
+.nf
+\fBpolygon2xy \fP[-subset \fIexpr\fP] \fIdb\fP
+.fi
+.SH DESCRIPTION
+\fBpolygon2xy\fP writes the vertices of polygons stored in a database to standard out. Polygons are closed by appending the 1st vertex if not already closed.
+.SH OPTIONS
+.IP "-subset expr"
+Datascope expression to subset the database. See dbexpressions(5) and polygon1.2(5).
+.IP db
+Database object containing the polygon data. Note that the database must at least contain a table polygon. If specified as \fI-\fP, the input is read from stdin. See the examples below.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 5
+
+Export the border of Austria:
+
+polygon2xy -subset "pname=~/Austria/" mydb > Austria.xy
+
+dbsubset mydb.polygon "pname=~/Austria/"|\\
+        polygon2xy - > Austria.xy
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+The output is in the form of a \fImultiple segment file\fP, i.e the individual polygons are preceeded by a \fB>\fP and the -M flag must be specified when running \fIpsxy\fP with the output.
+If the selected records are closed (if closed is set to "y" in the database), the output is a closed polygon, i.e there is no need to specify the -L flag to psxy. This allows to plot both polygons, lines and points from the same file.
+.SH "SEE ALSO"
+.nf
+dbsubset(1), dbexpressions(5),
+polygon1.2(5), psxy(1), xy2polygon(1).
+.fi
+.SH AUTHOR
+Nikolaus Horn
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+.\" $Id$

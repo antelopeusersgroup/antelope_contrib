@@ -1,0 +1,55 @@
+.TH XY2POLYGON 1 "$Date$"
+.SH NAME
+xy2polygon \- import polygon data from \fBGTM\fP linefiles.
+.SH SYNOPSIS
+.nf
+\fBxy2polygon \fP[-v] [-close_polygons] [-pname \fIname\fP] [-level \fIlevel\fP]
+                [-auth \fIauth\fP] [-dir \fIdir\fP] [-dfile \fIdfile\fP]
+                \fIdatafile\fP \fIdb\fP
+.fi
+.SH DESCRIPTION
+\fBxy2polygon\fP saves the objects stored in a \fBGMT\fP linefile in a database.
+.SH OPTIONS
+.IP "-v"
+Verbose flag.
+.IP "-close_polygons"
+make sure the saved polygons are all closed. Use this flag only if the input contains only polygons. Note that if the first and last point of an object from the \fIdatafile\fP are the same, they are flagged as closed in any case.
+.IP "-pname pname"
+Name of polygon in database. By default \fIdatafile\fP is used here. If multiple objects are found in the file, increasing numbers are appended to create unique names.
+.IP "-level level"
+This number can be used to distinguish polygons of different precision. Defaults to 0.
+.IP "-auth auth"
+Author \fIname\fP. Defaults to the user running the program.
+.IP "-dir dir"
+Directory to save binary polygons. By default, data is saved in current directory.
+.IP "-dfile dfile"
+File to save binary polygon data. Defaults to \fBgmt.bin\fP.
+.IP "datafile"
+Name of the input \fBGMT\fP linefile. Only the first 2 numbers of every line are read, and interpreted as longitude and latitude. If multiple records are in the file, the must be separated by the character >, which is the default separator in \fBGMT\fP linefiles. New records are appended to an existing file.
+.IP db
+Target database. Created if not already existing.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+.ne 5
+
+Import the border of Austria:
+
+xy2polygon Austria.xy mydb
+
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+The program appends objects to the database without checking if they are already present.
+.SH "SEE ALSO"
+.nf
+polygon1.2(5), psxy(1), polygon2xy(1).
+.fi
+.SH AUTHOR
+Nikolaus Horn
+.br
+ZAMG / Vienna, nikolaus.horn@zamg.ac.at
+.\" $Id$
