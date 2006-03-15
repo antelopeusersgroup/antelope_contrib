@@ -728,7 +728,8 @@ $db = dbungroup ( $db );
 .ft R
 .IP "\fBdbjoin\fP ( $db1, $db2, [join-keys] )"
 returns a new view which joins the two input views, using the join-keys 
-if specified
+if specified. If one of the join-keys is "\-outer", the view created 
+is an outer-join. 
 .ft CW
 .in 2c
 .nf
@@ -799,7 +800,12 @@ dbunjoin ( $db, '/tmp/testdb' ) ;
 .ft R
 .IP "\fBdbprocess\fP ( $db, cmd1, cmd2, cmd3 ... )"
 returns a new view which is the result of applying the dbprocess
-commands cmd1, cmd2, etc to the input database pointer.
+commands cmd1, cmd2, etc to the input database pointer. The 
+commands
+themselves are interpreted by the dbprocess(3) C\-callable API function. For details 
+on what commands can be specified to dbprocess and what their syntax 
+is, see the man-page for
+ dbprocess(3). 
 .ft CW
 .in 2c
 .nf
