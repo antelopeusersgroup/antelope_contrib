@@ -3,7 +3,7 @@
 dbwebproject \- automatically create and maintain a database-dependent dynamic website
 .SH SYNOPSIS
 .nf
-\fBdbwebproject \fP[-v] [-p \fIpfname\fP] [-r \fIDocumentRoot\fP] [\fIrecipe\fP
+\fBdbwebproject \fP[-v] [-p \fIpfname\fP] [-r \fIDocumentRoot\fP] [\fIrecipe\fP]
 .fi
 .SH DESCRIPTION
 
@@ -66,7 +66,8 @@ to the parameters setting the contents of the site-configuration parameter
 itself, there are two parameters for the loader: \fIloader_location\fP and
 \fIloader_contents\fP. Again, the \fIloader_contents\fP parameter can be given
 either as a filename with the 'source' or as a string-literal with the
-actual contents.
+actual contents. The web-configuration parameter file is only installed if 
+\fIinstall_web_config_pf\P is set to \fIyes\fP (or other boolean \fItrue\fP value). 
 
 If a single \fIrecipe\fP name is specified on the command line, it is 
 executed. Otherwise, the \fIrecipes\fP table of the \fBdbwebproject\fP.pf parameter file lists recipes
@@ -106,6 +107,8 @@ specified location instead.
 
 DocumentRoot            /var/apache/htdocs
 DocumentRootSubdir      .
+
+install_web_config_pf 	no
 
 web_config_pf &Arr{
    pf_location  /var/apache/config/web_config.pf

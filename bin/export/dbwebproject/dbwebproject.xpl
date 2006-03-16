@@ -26,6 +26,11 @@ sub setup_web_config_pf {
 		print P $pf_contents;
 
 		close( P );
+	
+		if( $opt_v ) {
+
+			elog_notify( "Created $pf_location" );
+		}
 	}
 
 	$loader_location = pfget( $Pfname, "web_config_pf{loader_location}" );
@@ -43,8 +48,12 @@ sub setup_web_config_pf {
 		print P $loader_contents;
 
 		close( P );
-	}
+	
+		if( $opt_v ) {
 
+			elog_notify( "Created $loader_location" );
+		}
+	}
 }
 
 sub deposit_file {
@@ -176,6 +185,7 @@ if( $opt_r ) {
 }
 
 $DocumentRootSubdir = pfget( $Pfname, "DocumentRootSubdir" );
+$install_web_config_pf = pfget_boolean( $Pfname, "install_web_config_pf" );
 
 @run_recipes = @{pfget( $Pfname, "run_recipes" )};
 
@@ -191,7 +201,10 @@ foreach $command ( keys %Commands ) {
 
 $TargetDir = concatpaths( $DocumentRoot, $DocumentRootSubdir );
 
-setup_web_config_pf();
+if( $install_web_config_pf ) {
+
+	setup_web_config_pf();
+}
 
 if( defined( $recipe ) ) {
 

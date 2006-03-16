@@ -2,6 +2,8 @@
 DocumentRoot		/var/apache/htdocs
 DocumentRootSubdir	.
 
+install_web_config_pf 	no
+
 web_config_pf &Arr{
    pf_location	/var/apache/config/web_config.pf
    pf_contents  &Literal{
