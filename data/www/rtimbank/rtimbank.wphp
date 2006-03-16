@@ -55,7 +55,7 @@ pfupdate( $pf ) ;
 
 # Server Settings
 $server = pfget( $pf, "server_settings" ) ;
-$dbcentral_stat = $server['dbcentral'] ;
+$dbcentral_stat = $server['use_dbcentral'] ;
 $dbpath = $server['img_dbpath'] ;
 $server_root = $server['server_root'] ;
 $movies_online = $server['movies_database_present'] ;
@@ -64,7 +64,7 @@ $movies_online = $server['movies_database_present'] ;
 $header = pfget( $pf, "header_settings" ) ;
 $project_title = $header['project_title'] ;
 $css_file = $header['css_file'] ;
-$refresh_rate = $header['refresh_rate'] ;
+$refresh_rate = $header['refresh_rate_sec'] ;
 $recspp = $header['records_per_page'] ;
 
 # Image Settings
@@ -74,7 +74,7 @@ $header_image_alt = $image_settings['header_alt'] ;
 
 # Main window image size
 $requested_image = pfget( $pf, "requested_image" ) ;
-$output_width_constant = $requested_image['width'] ;
+$output_width_constant = $requested_image['width_pixels'] ;
 
 # Instructions
 $page_text = pfget( $pf, "page_text" ) ;

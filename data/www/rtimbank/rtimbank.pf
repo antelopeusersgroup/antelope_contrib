@@ -1,32 +1,29 @@
-# RTIMBANK Preferences
-
 server_settings &Arr{
-	# dbcentral		1	# Are you using dbcentral for your databases?
-	# img_dbpath		/export/www/html/db/rtimbank_dbcentral	# Path to real time images database
-	dbcentral		0	# Are you using dbcentral for your databases?
-	img_dbpath		/export/www/html/db/rt_images_roadnet	# Path to real time images database
-	movies_database_present	yes					# Movies database present? yes or no
-	# mv_dbpath		/export/www/html/db/rt_movies		# Daily movies database present?
+	use_dbcentral		0	
+	img_dbpath		/export/www/html/db/rt_images_roadnet	
+	movies_database_present	yes				
 }
 
+rtapps_subdir	/rtapps
+
 header_settings &Arr{
-	project_title		Realtime Imagebank			# Webpage title
-	css_file                /rtapps/css/rtimbank_css.php		# CSS File to use
-	refresh_rate		300					# Webpage refresh time (secs)
-	records_per_page	20					# Records per page
+	project_title		Realtime Imagebank	
+	css_file                &rtapps_subdir/css/rtimbank_css.php		
+	refresh_rate_sec	300				
+	records_per_page	20			
 }
 
 image_settings &Arr{
-	page_bkgrd		/rtapps/images/roadnet_page_bkgrd.gif	# Repeating pattern page background
-	header			/rtapps/images/roadnet_logo.jpg		# Header image
-	header_bkgrd		/rtapps/images/roadnet_logo_bkgrd.gif	# Header background image that repeats
-	header_alt		ROADNet Header Logo			# Header alt text
-	footer_bkgrd		/rtapps/images/roadnet_bottom_line.gif	# Footer image
-	footer_color		0F1C23					# Footer background-color
+	page_bkgrd		&rtapps_subdir/images/roadnet_page_bkgrd.gif	
+	header			&rtapps_subdir/images/roadnet_logo.jpg	
+	header_bkgrd		&rtapps_subdir/images/roadnet_logo_bkgrd.gif	
+	header_alt		ROADNet Header Logo		
+	footer_bkgrd		&rtapps_subdir/images/roadnet_bottom_line.gif	
+	footer_color		0F1C23				
 }
 
 requested_image &Arr{
-	width			600					# Width in px of requested image. Height calc from aspect ratio
+	width_pixels			600		
 }
 
 page_text &Arr{
@@ -36,11 +33,23 @@ page_text &Arr{
 		ROADNet sensor network. To retrieve an image of interest please follow
 		the instructions below:</p>
 		<ol>
-			<li>Choose a camera from the drop-down menu on the left-hand side of this page.</li>
-			<li>Once you have selected a camera, this page will reload with the latest image captured by that camera and stored in the database.</li>
-			<li>Below this most recent &ldquo;Requested image&rdquo; is a table showing all the images  taken by the camera in reverse chronological order (ie. the most recent image first).</li>
-			<li>You can scroll through the images by choosing <b>NEXT</b> or <b>PREVIOUS</b> and this will load the next or previous images from the database in this page.</li>
-			<li>You can view the high resolution image for any of the database entries by clicking on the thumbnail image (the far right-side column). Even if there is not a thumbnail image, a high resolution image is available, and clicking the thumbnail image will load this high resolution image into the &ldquo;Requested image&rdquo; section of the page</li>
+			<li>Choose a camera from the drop-down menu on the left-hand 
+			    side of this page.</li>
+			<li>Once you have selected a camera, this page will reload 
+			    with the latest image captured by that camera and stored 
+			    in the database.</li>
+			<li>Below this most recent &ldquo;Requested image&rdquo; is a
+			    table showing all the images  taken by the camera in reverse 
+			    chronological order (ie. the most recent image first).</li>
+			<li>You can scroll through the images by choosing <b>NEXT</b> 
+			    or <b>PREVIOUS</b> and this will load the next or previous 
+			    images from the database in this page.</li>
+			<li>You can view the high resolution image for any of the database 
+			entries by clicking on the thumbnail image (the far right-side 
+			column). Even if there is not a thumbnail image, a high resolution 
+			image is available, and clicking the thumbnail image will load this 
+			high resolution image into the &ldquo;Requested image&rdquo; section 
+			of the page</li>
 		</ol>
 		<p><b>Important Note:</b> 
 		The dates and times of the images from the shipboard camera images 

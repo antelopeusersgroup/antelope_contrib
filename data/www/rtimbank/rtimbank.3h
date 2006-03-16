@@ -1,27 +1,152 @@
 .TH RTIMBANK 3H "$Date$"
 .SH NAME
-rtimbank \- a web based tool to display images from Images schema databases
+\fBrtimbank\fP \- a web based tool to display images from Images schema databases
 .SH SYNOPSIS
 .nf
-rtimbank.php
+\fBrtimbank\fP.php
 .fi
 .SH DESCRIPTION
-A web based php-scripted tool to explore Antelope databases that use
-the Images schema. A parameter file (rtimbank.pf) defines the location
+This is a web based php-scripted tool to explore Antelope databases that use
+the Images schema. A parameter file (\fBrtimbank\fP.pf) defines the location
 on the local file system of the required databases and associated files.
 A drop-down menu is populated with image sources
 (typically cameras). Selecting an option loads the latest image
 acquired by the source at the top of the webpage, with a table beneath
 showing thumbnails of the next most recent images collected. You can
 also specify a movies database.
+
+A sample parameter-file is shown below. The \fIserver_settings\fP
+array specifies the settings most likely to need customization for a
+particular site.  This array contains fields for several parameters,
+such as whether you are using the Antelope-contrib program dbcentral(1)
+to track your databases; where to find the main real-time images database
+(\fIimg_dbpath\fP) that \fBrtimbank\fP is displaying; and whether the
+movies are present in the database (\fImovies_database_present\fP is a
+boolean value that should be set to \fIyes\fP or \fIno\fP).
+
+
+For the rest of the parameters, the defaults may be acceptable. 
+The \fIheader_settings\fP section of the parameter file gives the title
+to use for the web pages, in the \fIproject_title\fP parameter. The
+\fIrefresh_rate_sec\fP parameter sets the HTTP headers for auto-refreshing 
+the displayed web-page, and \fIrecords_per_page\fP sets the number of 
+thumbnail-image database records listed on the page for a given camera. 
+The default \fBrtimbank\fP stylesheet is listed as \fIcss_file\fP, and may be 
+overridden by those operators who wish to customize details of the appearance. 
+In the example below, the value for \fIcss_file\fP is further specified in terms of an 
+\fIrtapps_subdir\fP parameter. This is an optional convenience that is used throughout
+the example parameter file so if users want to preserve the internal structure
+of the \fBrtimbank\fP subdirectories but move them wholesale to a different
+location, they only have to make the change in one place. The man-page pf(5) 
+goes into further detail on these so-called parameter-file "plain references". 
+
+In the \fIimage_settings\fP array, several parameters specify component 
+images used by \fBrtimbank\fP. These images are \fIpage_bkgrd\fP, \fIheader\fP, 
+\fIheader_bkgrd\fP, and \fIfooter_bkgrd\fP. The \fIpage_bkgrd\fP and 
+\fIheader_bkgrd\fP files will be used as repeating background 
+images. The additional parameters specify the alternate text 
+(\fIheader_alt\fP) for the header image if it is not displayable, and the 
+\fIfooter_color\fP listed as a hexadecimal value as shown below. 
+
+The \fIrequested_image\fP array contains the one parameter \fIwidth_pixels\fP, 
+which gives the width of the main image (the height is calculated automatically 
+from the aspect ratio for the image). Finally, the \fIpage_text\fP array 
+contains HTML-formatted instructions to display on the web-page (in the 
+\fIinstructions_html\fP string or literal value), and a list of credits to show 
+in the \fIcredits\fP Table. 
+
+For a quick default install of the \fBrtimbank\fP, the user may consider running 
+the dbwebproject(1) command with its default \fBrtimbank\fP recipe. For further details
+on this, see the documentation for the dbwebproject(1) command. 
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
-rtimbank.pf defines a variety of variables required by rtimbank.php
+
+The parameter-file \fBrtimbank\fP.pf defines a variety of variables required by \fBrtimbank\fP.php
 including paths to the databases, css files, any images and library
 functions. It also allows the definition of a dbcentral database
 if your data sources are large enough to span several databases.
+
+.nf
+server_settings &Arr{
+	use_dbcentral		0	
+	img_dbpath		/export/www/html/db/rt_images_roadnet	
+	movies_database_present	yes				
+}
+
+rtapps_subdir	/rtapps
+
+header_settings &Arr{
+	project_title		Realtime Imagebank	
+	css_file                &rtapps_subdir/css/rtimbank_css.php		
+	refresh_rate_sec	300				
+	records_per_page	20			
+}
+
+image_settings &Arr{
+	page_bkgrd		&rtapps_subdir/images/roadnet_page_bkgrd.gif	
+	header			&rtapps_subdir/images/roadnet_logo.jpg	
+	header_bkgrd		&rtapps_subdir/images/roadnet_logo_bkgrd.gif	
+	header_alt		ROADNet Header Logo		
+	footer_bkgrd		&rtapps_subdir/images/roadnet_bottom_line.gif	
+	footer_color		0F1C23				
+}
+
+requested_image &Arr{
+	width_pixels			600		
+}
+
+page_text &Arr{
+	instructions_html &Literal{
+		<p>This web-based real-time application works by connecting to an images
+		database that stores images captured throughout San Diego county by the
+		ROADNet sensor network. To retrieve an image of interest please follow
+		the instructions below:</p>
+		<ol>
+			<li>Choose a camera from the drop-down menu on the left-hand 
+			    side of this page.</li>
+			<li>Once you have selected a camera, this page will reload 
+			    with the latest image captured by that camera and stored 
+			    in the database.</li>
+			<li>Below this most recent &ldquo;Requested image&rdquo; is a
+			    table showing all the images  taken by the camera in reverse 
+			    chronological order (ie. the most recent image first).</li>
+			<li>You can scroll through the images by choosing <b>NEXT</b> 
+			    or <b>PREVIOUS</b> and this will load the next or previous 
+			    images from the database in this page.</li>
+			<li>You can view the high resolution image for any of the database 
+			entries by clicking on the thumbnail image (the far right-side 
+			column). Even if there is not a thumbnail image, a high resolution 
+			image is available, and clicking the thumbnail image will load this 
+			high resolution image into the &ldquo;Requested image&rdquo; section 
+			of the page</li>
+		</ol>
+		<p><b>Important Note:</b> 
+		The dates and times of the images from the shipboard camera images 
+		(such as from the R/V's Melville and Revelle) may not be up to date 
+		for a variety of reasons. The dates and times of the images are 
+		indicated by their timestamps.
+                </p>
+	}
+	credits &Tbl{
+		&Arr{
+			text	ROADNet
+			url	http://roadnet.ucsd.edu
+		}
+		&Arr{
+			text	SIO
+			url	http://www.sio.ucsd.edu
+		}
+		&Arr{
+			text	UCSD
+			url	http://www.ucsd.edu
+		}
+	}
+}
+
+pf_revision_time 1122495347
+.fi
 .SH EXAMPLE
 .in 2c
 .ft CW
@@ -35,10 +160,10 @@ if your data sources are large enough to span several databases.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-Datascope_PHP(3)
+datascope_php(3h), dbcentral(1), dbwebproject(1), pf(5)
 .fi
 .SH "BUGS AND CAVEATS"
-Requires a level 1.0 DOM browser.
+The \fBrtimbank\fP program requires a level 1.0 DOM ("Document Object Model") browser.
 .SH AUTHOR
 Rob Newman, UCSD
 .\" $Id$
