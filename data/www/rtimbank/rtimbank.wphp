@@ -35,7 +35,7 @@
 # Man pages: Datascope_PHP, transcode & dbtimelapse
 # Author:    Rob Newman <rlnewman@ucsd.edu>
 # Created:   2004-07-12
-# Modified:  2005-07-27
+# Modified:  2006-03-17
 # Notes:     1.Grab the latest image from the database
 #            2.Show thumbnails and make them clickable
 #            3.Create movie from images databases based on camera selections transcode and dbtimelapse
@@ -57,7 +57,6 @@ pfupdate( $pf ) ;
 $server = pfget( $pf, "server_settings" ) ;
 $dbcentral_stat = $server['use_dbcentral'] ;
 $dbpath = $server['img_dbpath'] ;
-# $server_root = $server['server_root'] ;
 $movies_online = $server['movies_database_present'] ;
 
 # Header Settings
@@ -293,8 +292,8 @@ if( empty( $_GET['start'] ) ) {
 }
 
 # Regex's to make sure the directory structures are correct
-$thumbnail_pattern = "/(\/\d\d\d\d\/\d\d\d)\/([^\/]*)$/";
-$thumbnail_replacement = "$1/thumbnails/$2";
+# $thumbnail_pattern = "/(\/\d\d\d\d\/\d\d\d)\/([^\/]*)$/";
+# $thumbnail_replacement = "$1/thumbnails/$2";
 
 if( $dbcentral_stat == 1 ) {
 	$mydbpath = get_dbpath( $dbpath ) ;
@@ -325,7 +324,7 @@ if( $dbcentral_stat == 1 ) {
 }
 
 # Get the requested image
-if ( isset( $camera ) && $camera!="none" ) {
+if ( isset( $camera ) && $camera != "none" ) {
 	$dbgetimage = dblookup( $mydb, '', 'images', '', '' ) ;
 	$dbgetimage_nrecs = dbnrecs( $dbgetimage ) ;
 	$pages = ceil( $dbgetimage_nrecs / $recspp ) ;
@@ -335,27 +334,36 @@ if ( isset( $camera ) && $camera!="none" ) {
 		$mydb_movie = dbprocess( $mydb_movie, "dbsort format" ) ;
 		$nrecs_movie = dbnrecs( $mydb_movie ) ;
 	}
+
 	if( isset( $time ) && empty( $search ) ) {
 		$expr = "imagename == \"$camera\" && time == $time";
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
+
 		# Get the other thumbs
-		$dbthumbs = dblookup( $mydb, '', 'images', '', '' ) ;
+		$dbthumbs = dblookup( $mydb, '', 'thumbnails', '', '' ) ;
 		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
 		$expr = "imagename == \"$camera\" && time <= $time";
 		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
+
 	} elseif( isset( $time ) && $search == "1" ) {
-		$expr = "imagename == \"$camera\" && time <= abs( $time + $range ) && time >= abs( $time - $range )" ;
-		$dbthumbs = dblookup( $mydb, '', 'images', '', '' ) ;
+		# Get the other thumbs
+		$dbthumbs = dblookup( $mydb, '', 'thumbnails', '', '' ) ;
 		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
 		$expr = "imagename == \"$camera\" && time <= $time";
 		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
+
 	} else {
 		$expr = "imagename == \"$camera\"";
 		$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage_nrecs, 1 ) ;
+		$dbthumbs = dblookup( $mydb, '', 'thumbnails', '', '' ) ;
+		$dbthumbs_nrecs = dbnrecs( $dbthumbs ) ;
+		$expr = "imagename == \"$camera\"";
+		$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs_nrecs, 1 ) ;
 	}
+
 	if( is_null( $dbgetimage[3] ) || $dbgetimage[3] < 0 ) {
-		$imageexists == -1 ;
+		$imageexists = -1 ;
 	}
 }
 ?>
@@ -367,7 +375,7 @@ html_header() ;
 <div id="content">
 
 <div id="banner" style="text-align: right;">
-  <img src="<?php echo $header_image ; ?>" alt="<?php echo $header_image_alt ; ?>" border="0" />
+	<img src="<?php echo $header_image ; ?>" alt="<?php echo $header_image_alt ; ?>" border="0" />
 </div>
 
 <h1><?php echo $project_title ; ?></h1>
@@ -411,9 +419,14 @@ if( isset( $camera ) && $camera!="none" && $movies_online=="yes" ) {
 			$moviefile = str_replace( "/var/Web/", "/", $moviefile ) ;
 			if( preg_match( '/_thumbnail_/', $moviefile, $matches ) ) {
 				echo "\t<li><b>Latest Thumbnail Movie:</b></li>" ;
-				echo "\t<img src=\"$moviefile\" alt=\"Latest thumbnail movie\" title=\"Start:&nbsp;$stime\nEnd:&nbsp;&nbsp;$etime\" style=\"border:1px solid black;\" />\n" ;
+				echo "\t<img src=\"$moviefile\" 
+						alt=\"Latest thumbnail movie\" 
+						title=\"Start:&nbsp;$stime\nEnd:&nbsp;&nbsp;$etime\" 
+						style=\"border:1px solid black;\" />\n" ;
 			} else {
-				echo "\t<li><a href=\"$moviefile\" title=\"Start:&nbsp;$stime\nEnd:&nbsp;&nbsp;$etime\"><b>Latest High-Res Movie [$format]</b></a></li>\n" ;
+				echo "\t<li><a href=\"$moviefile\" title=\"Start:&nbsp;$stime\nEnd:&nbsp;&nbsp;$etime\">
+						<b>Latest High-Res Movie [$format]</b>
+					</a></li>\n" ;
 			}
 		}
 	}
@@ -443,16 +456,19 @@ if( isset( $camera ) && $camera!="none" ) {
 		$aspect_ratio = $output_width_constant / $filename_width;
 		$output_image_width = round( $filename_width * $aspect_ratio ) ;
 		$output_image_height = round( $filename_height * $aspect_ratio ) ;
-		# $filename = str_replace( $server_root, "/db", $filename ) ;
-		# if( isset( $searchtime ) ) {
-		# 	$searchtimeUTC = gmdate("D, d M Y H:i:s \G\M\T", $searchtime ) ;
-		# 	$searchtimeLOCAL = date("D, d M Y H:i:s T", $searchtime ) ;
-		# 	echo "\t<p align=\"center\"><b>IMAGE SEARCH TIME:</b> $searchtimeUTC (Epoch time: $searchtime)</p>" ;
-		# }
 		time_search( $time ) ;
-		# echo "\t<p align=\"center\"><img src=\"$filename\" width=\"$output_image_width\" height=\"$output_image_height\" alt=\"Latest image from $camera\" style=\"border:1px solid black;\" /><br/><br/>\n" ;
-		echo "\t<p align=\"center\"><img src=\"rtimbank_image.php?filename=".base64_encode( $filename )."\" width=\"$output_image_width\" height=\"$output_image_height\" alt=\"Latest image from $camera\" style=\"border:1px solid black;\" /><br/><br/>\n" ;
-		echo "\t<p align=\"center\"><a href=\"rtimbank_image.php?filename=".base64_encode( $filename )."\"><span class=\"full_res_link\">View full resolution (" . $filename_width . "px x " . $filename_height . "px)</span></a></p>\n\n" ;
+		echo "\t<p align=\"center\">
+				<img src=\"rtimbank_image.php?filename=".base64_encode( $filename )."\" 
+					width=\"$output_image_width\" 
+					height=\"$output_image_height\" 
+					alt=\"Latest image from $camera\" 
+					style=\"border:1px solid black;\" />
+			<br/><br/></p>\n" ;
+		echo "\t<p align=\"center\">
+			<a href=\"rtimbank_image.php?filename=".base64_encode( $filename )."\">
+				<span class=\"full_res_link\">View full resolution (" . $filename_width . "px x " . $filename_height . "px)</span>
+			</a>
+			</p>\n\n" ;
 	}
 } else {
 	html_instructions() ;
@@ -477,27 +493,21 @@ if( isset( $camera ) && $camera!="none" ) {
 		$entries = array() ;
 	
 		while( $itable_entry++ < $itable_exit ) {
-			if( !$time OR $time == 0  ) {
-				$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs[3], 1 ) ;
-				list( $imagename, $imgtime ) = dbgetv( $dbthumbs, "imagename", "time" ) ;
-				$filename = dbextfile( $dbthumbs ) ;
-			} else {
-				$dbgetimage[3] = dbfind( $dbgetimage, $expr, $dbgetimage[3], 1 ) ;
-				list( $imagename, $imgtime ) = dbgetv( $dbgetimage, "imagename", "time" ) ;
-				$filename = dbextfile( $dbgetimage ) ;
-			}
+			$dbthumbs[3] = dbfind( $dbthumbs, $expr, $dbthumbs[3], 1 ) ;
+			list( $imagename, $imgtime ) = dbgetv( $dbthumbs, "imagename", "time" ) ;
+			$filename = dbextfile( $dbthumbs ) ;
 			$imgtime = sprintf( '%5f', $imgtime ) ;
-			$thumbnail_filename = preg_replace( $thumbnail_pattern, $thumbnail_replacement, $filename ) ;
+
 			$entries[$itable_entry]['time'] = $imgtime ; 
-			if( file_exists( $thumbnail_filename ) ) {
-				$entries[$itable_entry]['thumbnail'] = "rtimbank_image.php?filename=".base64_encode( $thumbnail_filename ) ;
+
+			if( file_exists( $filename ) ) {
+				$entries[$itable_entry]['thumbnail'] = "rtimbank_image.php?filename=".base64_encode( $filename ) ;
 			} else {
 				$entries[$itable_entry]['thumbnail'] = "images/roadnet_sorry.gif" ;
 			}
 			$entries[$itable_entry]['timeUTC'] = gmdate("D, d M Y H:i:s T", $imgtime ) ;
 			$entries[$itable_entry]['timeLOCAL'] = date("D, d M Y H:i:s T", $imgtime ) ;
 		}
-	
 	
 		echo "<p class=\"highlight\">$dbgetimage_nrecs records found. $recspp records shown per page. $pages pages of records.</strong></p>\n<p align=\"center\">" ;
 		$first = $entries[0]['time'] ;
