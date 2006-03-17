@@ -91,6 +91,7 @@ datafile [-aeV] {name | dir name | env dir name}
 epoch [options] [ +format ] [ time/date components ]
     convert time formats.
 <options>
+-d   	show input as elapsed time, eg 1.5 days
 -e	echo interactive input
 -i tz	specify an input timezone tz, eg US/Mountain
 -o tz	specify an output timezone tz, eg Japan
@@ -127,6 +128,9 @@ pfecho [options] name [ param ...]
 -W	show all filenames examined (may not exist)
 -x	expand all references inside pf
 </options>
+
+pfverify [-v] [pf-files]
+    check resolution of all plain references in parameter files
 
 pfwhich pf 
     show what files are read for pf
@@ -256,6 +260,9 @@ compile [options]
 
 deposit [-rx] file dir
     installs file in directory dir with appropriate permisssions; -r installs file with new name dest; -x makes installed file executable
+
+deposit [-i re] idir dir
+    installs directory idir into dir except for files matching re, CVS and .depends files
 
 produce [-v] exec [exec2 ...]
     use standard headers from template directory to create executable script exec from files with proper suffix

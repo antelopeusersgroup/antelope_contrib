@@ -217,6 +217,7 @@ dbpick [options] dbname
 -tw twin	specify window time width
 -noexist
 -nostarttalk	suppress startup usage chatter
+-nostdin	suppress command line input
 -winfile wfile
 -appname name
  	specify tksend application name
@@ -224,6 +225,7 @@ dbpick [options] dbname
 -comout comfile
 -geom WxH+X+Y
 -switchbuttons	switch middle and right mouse buttons
+-showdetections	show detections
 -showfm	show first motions
 </options>
 

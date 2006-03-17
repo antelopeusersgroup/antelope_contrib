@@ -85,8 +85,8 @@ dbcp [options] dbin[.table] dbout
 </options>
 
 
-dbadd [-a] dbin.table dbout.table expr1 [expr2 ...]
-    add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...; with -a, add all fields from dbin.table
+dbadd [-afo] dbin.table dbout.table expr1 [expr2 ...]
+    add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...; with -a, add all fields from dbin.table, with -f ignore key duplications, with -o overwrite duplications
 
 dbdelete [options] view [table ...]
     delete (or mark) all records in database view (or just records in table)
@@ -102,6 +102,7 @@ dbaddv [options] database.table [name value name value ...]
 <options>
 -i	interactively
 -c	confirm each addition
+-f	ignore key duplication
 -v	verbose
 </options>
 
@@ -253,11 +254,14 @@ dbdiff [options] db1[.table] db2[.table]
 deprecated db2perl db [ table1 table2 ...]
     create perl subroutines to read and write database tables
 
-dbcentral [-n] [-t timestring] [-d] [database_nickname [task_nickname]]
+dbcentral [-dln] [-q query] [-t time] [database_cluster [task_nickname]]
     launch commands on commonly used databases
 
 dbids [-p port] [-P pf] [-v] database
     idserver for Datascope databases
+
+dbindex [-v] database[.table [keys..]]
+    create static index(es) for static tables or databases (use with caution)
 
 dbnextid db idname
     get next available id for idname (in database db)

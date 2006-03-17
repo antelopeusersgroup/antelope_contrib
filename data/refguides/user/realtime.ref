@@ -79,17 +79,17 @@ rtsys [options] [directory]
 -n n	last n lines from log files (default = 10)
 </options>
 
-stanote [-t time] [-r range] [database] [sta [note]]
+stanote [-t time] [-r range] [-f|F] file] [database] [sta [note]]
     simple method for adding note about station, to appear in gap report in rtreport
 
 ecrontab [-r] [file]
     gui interface for editing crontab files; -r option for rtexec style crontab
 
-rtrun command
-    run command using rtexec environment (like an rtexec cron job)
+rtrun [-nv] command line
+    run command line using rtexec environment (like an rtexec cron job)
 
-cronrun command
-    run command immediately, reproducing cron environment 
+cronrun [-v] command line
+    run command line immediately, reproducing cron environment 
 
 rtsnapshot [options] 
     collect some pertinent info from real time system into tar file for problem report
@@ -142,6 +142,7 @@ tcpmonitor [options] host
 -N #pkts	set #packets in burst
 -m	run in monitor (server) mode
 -n #loops	# of bursts to send
+-p port	alternate port
 -P #ping	# of pings between bursts
 -r lrsz	set size of client receive buffer
 -R rrsz	set size of server receive buffer
@@ -162,6 +163,23 @@ orbserver [options] pf
 -r	reset ring buffer
 -s size	ringsize, eg 150M
 -v[v]	verbose/doubly verbose
+</options>
+
+orbserver64 [options] pf
+	same as orbserver, but allows much larger ring buffers (Solaris only)
+
+diskserver [-p port] [-v] name
+     emulates an orbserver on directory of special forb files, but is read only 
+
+orb2disk [options] orb directory [start-time [end]]
+     copies packets from orb into into forb(5) segment files inside directory
+<options>
+-m re1	read only packets which match re1 
+-r re2	don't read packets matching re2
+-n n	stop after n packets
+-p period	approximate time length of files
+-s size	size limit for directory
+-v	more verbose
 </options>
 
 orbstat [options] orb [secs]
@@ -337,6 +355,7 @@ dborigin2orb [options] db orb
     copy new origins from db.origin into orb for automatic association of external catalogs with real time events
 <options>
 -after time	specify start earlier than now()
+-delay delay	wait delay seconds before appending to orb
 -nowait	quit after processing existing db.origin
 -number n	quit after processing n events
 -target_orb2dbt target	specify alternate target orb2dbt
@@ -439,6 +458,7 @@ orb2orb [options] in out [start [period|end]]
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -n n	stop after n packets
+-p pf	alternate parameter file
 -R r	when saving to file, use forb(5) format r
 -s p	start after pktid #p
 -S filename	save state in filename
@@ -446,8 +466,6 @@ orb2orb [options] in out [start [period|end]]
 -U	unstuff each packet and print
 -v	more verbose
 -x	require acknowledgment for each packet sent
--b max
--w re	pause for programs matching re which are more than max seconds behind 
 </options>
 
 orbxchange pf
@@ -708,7 +726,7 @@ cpu2orb [-i t] [-vv] orb
 df2orb [-i t] [-p pf] [-vv] orb
     put filesystem status information packets on orb every t seconds
 
-heartbeat [-T period] [-v] orb
+heartbeat [-i interval] [-v] orb
      creates periodic condensed status packets with system info
 
 ps2orb [options] orb
@@ -772,6 +790,23 @@ orb2db [options] orb db [start [end|period]]
 orb2db_flush [-nv] [-m match] [-r reject] orb
     cause orb2db to write out all waveform data for selected packets
 
+cdorb2db [options] orb db [start [end|period]]
+    copy CD1 waveform data from orbserver orb into database db (starting at time start through end or for stated period)
+<options>
+-c re	save channel matching regular expression re
+-m re	select packets matching regular expression re
+-r re	reject packets matching regular expression re
+-p pf	specify parameter file
+-S file	save state in file
+-t timetags	create file of time tags from input packets
+-v	more verbose
+-vv	show every packet read.
+-w wfname	specify pattern for waveform file names
+</options>
+
+db2msd [-t age] [-v] db
+     converts older waveform files to miniseed in place, used with cd2orb
+
 orb2dbt [options] orb dbout [orbout]
     read database packets from an orb and write to database
 <options>
@@ -833,8 +868,16 @@ acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
 battalarm [-d] [-m srcmatch ] orbin mail_add
     send mail when battery power drops in DC packets
 
-pktmon [-p pf] [-S state] orb
+pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
     read packets, send alarms for specified conditions 
+<options>
+-0	start at first packet in orb
+-S state	specify alternate directory to save history files 
+-d	print debugging information.
+-n npkts	stop after npkts packets
+-p pf	specify alternate parameter  file
+-v	print each packet read.
+</options>
 
 <subsection Miscellaneous>
 resetnetblazer hostname line timeout
@@ -1029,14 +1072,14 @@ deprecated old_orb2orb in out [start [period|end]]
 forbserver [options] filename
     file orbserver emulator
 <options>
--A	use time from input file
-
 -a
 -b
+-f
 -x	specify format in output forb(5) file
--f	disregard timing, pump data out quickly 
--l	loop over input file
+-c   	adjust time tags to the current time.
+-U	run elog_debugger() to start a debugger on the process.
 -v	more verbose
+-w	overwrite existing file instead of appending
 </options>
 
 pkttypes [-c]
