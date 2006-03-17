@@ -57,7 +57,7 @@ pfupdate( $pf ) ;
 $server = pfget( $pf, "server_settings" ) ;
 $dbcentral_stat = $server['use_dbcentral'] ;
 $dbpath = $server['img_dbpath'] ;
-$server_root = $server['server_root'] ;
+# $server_root = $server['server_root'] ;
 $movies_online = $server['movies_database_present'] ;
 
 # Header Settings
