@@ -33,9 +33,9 @@ public:
 	Decimator(const Decimator&);
 	Decimator& operator=(const Decimator&);
 	Decimator(string fnm);
-	DecimatedVector& apply(int ns, double *di);  // apply using default for trim
-	DecimatedVector& apply(int ns, double *di,bool trim);  // overload switched for trim
-	DecimatedVector& apply(vector<double>di,bool trim);
+	DecimatedVector *apply(int ns, double *di);  // apply using default for trim
+	DecimatedVector *apply(int ns, double *di,bool trim);  // overload switched for trim
+	DecimatedVector *apply(vector<double>di,bool trim);
 	
 private:
 	vector<double>coefs;
@@ -56,7 +56,7 @@ public:
 	ResampleOperator& operator= (const ResampleOperator&);
 	// main method.  Applies decimators to vector s and returns
 	// an stl vector as the result
-	DecimatedVector& apply(int ns,double *s,double dtin, double dtout,
+	DecimatedVector *apply(int ns,double *s,double dtin, double dtout,
 		bool trim);
 };
 class Interval

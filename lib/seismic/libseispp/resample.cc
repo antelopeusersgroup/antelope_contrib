@@ -104,40 +104,44 @@ slippery clocks.
 trim determines if the time series is trimmed on the left and right to 
 remove fir filter transient sections.
 */
-DecimatedVector& ResampleOperator::apply(int ns, double *s,double dtin, 
+DecimatedVector *ResampleOperator::apply(int ns, double *s,double dtin, 
 	double dtout_target, bool trim)
 {
 	list<Decimator>::iterator this_decimator;
 	DecimatedVector *dvptr=new DecimatedVector(ns);
-	DecimatedVector& result=*dvptr;
+	DecimatedVector *nextdv;
 	int i;
 	const double DT_FRACTIONAL_ERROR=0.001;
 	double dtout=dtin;
 	double decout=1.0;
 	int total_lag=0;
 
-	for(i=0;i<ns;++i) result.d.push_back(s[i]);
-	result.lag=0;  
+	dcopy(ns,&(s[0]),1,&(dvptr->d[0]),1);
+	dvptr->lag=0;  
 	// skip all this if dtin and dtout match within tolerance
 	if(fabs(dtout_target-dtin)/dtout_target < DT_FRACTIONAL_ERROR) 
-			return(result);
+			return(dvptr);
 
 	for(this_decimator=declist.begin();
 		this_decimator!=declist.end();++this_decimator)
 	{
-		result = this_decimator->apply(result.d,trim);
-		total_lag += static_cast<int>(rint(static_cast<double>(result.lag)*decout));
+		nextdv = this_decimator->apply(dvptr->d,trim);
+		total_lag += static_cast<int>(rint(static_cast<double>(nextdv->lag)*decout));
 		dtout *= this_decimator->decfac;
 		decout *= this_decimator->decfac;
+		delete dvptr;
+		dvptr=nextdv;
 	}
 	if(fabs(dtout-dtout_target)/dtout_target > DT_FRACTIONAL_ERROR)
 	{
 		double final_decfac= dtout_target/dtout;
 		Decimator dfinal("resample",final_decfac);
-		result = dfinal.apply(result.d,trim);
+		nextdv = dfinal.apply(dvptr->d,trim);
+		delete dvptr;
+		dvptr=nextdv;
 	}
-	result.lag = total_lag;
-	return(result);
+	dvptr->lag = total_lag;
+	return(dvptr);
 }
 	
 
@@ -241,7 +245,7 @@ decfac.  The boolean variable trim defines how the edges are handled.
 When trim is true the vector is shorted on both ends to allow the 
 decimator filter to not have an edge transient.  lag is set appropriately.
 */
-DecimatedVector& Decimator::apply(int nsamp_in, double *s,bool trim)
+DecimatedVector *Decimator::apply(int nsamp_in, double *s,bool trim)
 {
 	int nsamp_out;
 	int i,ii;
@@ -255,8 +259,8 @@ DecimatedVector& Decimator::apply(int nsamp_in, double *s,bool trim)
 	{
 		// copy data 
 		dout = new DecimatedVector(nsamp_in);
-		for(i=0;i<nsamp_in;++i)dout->d.push_back(s[i]);
-		return(*dout);
+		dcopy(nsamp_in,&(s[0]),1,&(dout->d[0]),1);
+		return(dout);
 	}
 	// upsampling is triggered by a decfac less than 1.0
 	if(decfac<1.0)
@@ -264,7 +268,6 @@ DecimatedVector& Decimator::apply(int nsamp_in, double *s,bool trim)
 		double dt;
 		nsamp_out = static_cast<int>( (((double)nsamp_in)/decfac));
 		dout = new DecimatedVector(nsamp_out);
-		dout->d.resize(nsamp_out);  // need this to actually alloc vector 
 		dout->lag=0;
 		// calculate a sample rate from decfac based a nondimensional
 		// input sample rate of 1.  Interpolation doesn't care about
@@ -323,13 +326,13 @@ DecimatedVector& Decimator::apply(int nsamp_in, double *s,bool trim)
 			}
 		}
 	}
-	return(*dout);
+	return(dout);
 }
-DecimatedVector& Decimator::apply(int nsamp_in, double *s)
+DecimatedVector *Decimator::apply(int nsamp_in, double *s)
 {
 	return(apply(nsamp_in,s,false));
 }
-DecimatedVector& Decimator::apply(vector<double>s,bool trim)
+DecimatedVector *Decimator::apply(vector<double>s,bool trim)
 {
 	int ns=s.size();
 	return(apply(ns,&s[0],trim));
@@ -397,7 +400,6 @@ Author:  Gary Pavlis
 */
 TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double dtout,bool trim)
 {
-	DecimatedVector dv;
 	Interval si_range;
 	map<Interval,ResampleOperator,IntervalCompare>::iterator this_ro;
 	// First we need to find the right resampling operator for this sample rate
@@ -414,7 +416,8 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 			+string("don't know how to resample data with sample interval ")
 			+string(dt_str));
 	}
-	dv = this_ro->second.apply(ts.ns,&(ts.s[0]),ts.dt,dtout,trim);
+	auto_ptr<DecimatedVector> dv( this_ro->second.apply(ts.ns,
+		&(ts.s[0]),ts.dt,dtout,trim) );
 	// Subtle difference here with gaps.  This won't work
 	//TimeSeries tsout=ts;
 	// Use of copy constructor clones the gaps correctly
@@ -422,10 +425,10 @@ TimeSeries ResampleTimeSeries(TimeSeries& ts, ResamplingDefinitions& rd,double d
 	TimeSeries tsout(ts);
 	tsout.dt=dtout;
 	// necessary because tsout.s is a container
-	tsout.ns = dv.d.size();
-	tsout.s.resize(dv.d.size());
-	for(int i=0;i<tsout.ns;++i) tsout.s[i]=dv.d[i];
-	tsout.t0 = ts.t0 + (dv.lag)*ts.dt; // assumes lag is in units of original sample rate
+	tsout.ns = dv->d.size();
+	tsout.s.resize(dv->d.size());
+	for(int i=0;i<tsout.ns;++i) tsout.s[i]=dv->d[i];
+	tsout.t0 = ts.t0 + (dv->lag)*ts.dt; // assumes lag is in units of original sample rate
 	tsout.put("nsamp",tsout.ns);
 	tsout.put("samprate",1.0/tsout.dt);
 	tsout.put("starttime",tsout.t0);

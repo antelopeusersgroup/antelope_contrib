@@ -66,6 +66,8 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,TimeWindow lag_range, bool n
 	int lx,ly;
 	const string base_message("Correlation :  ");
 
+	// This assumes default constructor marks output dead
+	if( (!y.live) || (!x.live) ) return(TimeSeries()); 
 	lx=x.s.size();
 	ly=y.s.size();
 	if(ly<lx)

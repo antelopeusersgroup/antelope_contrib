@@ -207,6 +207,7 @@ void TimeInvariantFilter::apply(int ns, double *s,double dt)
 void TimeInvariantFilter::apply(TimeSeries& ts)
 {
 	if(type==none) return;
+	if(!ts.live) return;
 	int i;
 	float *d=new float[ts.ns];
 	for(i=0;i<ts.ns;++i) d[i]=static_cast<float>(ts.s[i]);
@@ -221,6 +222,7 @@ void TimeInvariantFilter::apply(TimeSeries& ts)
 void TimeInvariantFilter::apply(ThreeComponentSeismogram& ts)
 {
 	if(type==none) return;
+	if(!ts.live) return;
 	int i,j;
 	float *d=new float[ts.ns];
 	for(j=0;j<3;++j)
@@ -249,7 +251,7 @@ void FilterEnsemble(TimeSeriesEnsemble& ensemble,TimeInvariantFilter& filter)
 	try 
 	{
 	    for(int i=0;i<ensemble.member.size();++i)
-		filter.apply(ensemble.member[i]);
+		if(ensemble.member[i].live)filter.apply(ensemble.member[i]);
 	} catch (...) {throw;};
 }
 void FilterEnsemble(ThreeComponentEnsemble& ensemble,TimeInvariantFilter& filter)
@@ -258,7 +260,7 @@ void FilterEnsemble(ThreeComponentEnsemble& ensemble,TimeInvariantFilter& filter
 	try 
 	{
 	    for(int i=0;i<ensemble.member.size();++i)
-		filter.apply(ensemble.member[i]);
+		if(ensemble.member[i].live)filter.apply(ensemble.member[i]);
 	} catch (...) {throw;};
 }
 
