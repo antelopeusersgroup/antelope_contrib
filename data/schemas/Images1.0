@@ -212,27 +212,15 @@ Attribute lon
 	}
 	;
 
-Attribute pretime
+Attribute triggertime
 	Time (17)
 	Format ( "%17.5f" )
 	Null ( "-9999999.99999" )
 	Units ( "seconds" )
-	Description ( "timestamp of first image in trigger sequence" )
+	Description ( "timestamp of actual trigger in an image sequence" )
 	Detail {
-		The pretime field records the Unix epoch timestamp at which 
-		a triggered sequence of images starts
-	}
-	;
-
-Attribute posttime
-	Time (17)
-	Format ( "%17.5f" )
-	Null ( "-9999999.99999" )
-	Units ( "seconds" )
-	Description ( "timestamp of last image in trigger sequence" )
-	Detail {
-		The posttime field records the Unix epoch timestamp at which 
-		a triggered sequence of images ends
+		This field indicates a discrete trigger time, if 
+		applicable, in a triggered sequence of images. 
 	}
 	;
 
@@ -281,12 +269,13 @@ Attribute trigtype
 	Null ( "-" )
 	Description ( "short trigger-type indicator" )
 	Detail {
-		This field gives the type of trigger represented by this row. 
-		For example, 'motion' may be used for automatically detected
-		motion events, or 'analyst' for analyst-identified events of 
-		interest. This field may be used in a domain-specific way to j
-		distinguish several classes of triggers from a given camera or 
-		set of cameras.
+		This field gives the type of trigger represented
+		by this row. For example, 'motion' may be used for
+		automatically detected motion events, or 'analyst'
+		for analyst-identified events of interest. This field
+		may be used in a domain-specific way to distinguish
+		several classes of triggers from a given camera or set
+		of cameras.
 	}
 	;
 
@@ -365,8 +354,8 @@ Relation movies
 	Detail {
 		This table allows the storage of time-lapse movies made from 
 		image sequences. The endtime field is deliberately left out 
-		of the primary keys in order to allow overlapping movies, as long 
-		as they are unique in length, size, and format.
+		of the primary keys in order to allow overlapping movies, 
+		as long as they are unique in length, size, and format.
 	}
 	;
 
@@ -396,11 +385,12 @@ Relation thumbnails
 	;
 
 Relation triggers
-	Fields ( imagename pretime time posttime trigtype description lddate )
-	Primary ( imagename time )
+	Fields ( imagename time triggertime endtime trigtype description lddate )
+	Primary ( imagename time::endtime )
 	Description ( "triggered sequences in image streams" )
 	Detail {
-		This table allows the storage of pre-computed thumbnails 
-		of a set of images.
+		This table identifies specific images or
+		contiguous sequences of images that represent 
+		a trigger on an event of interest. 
 	}
 	;
