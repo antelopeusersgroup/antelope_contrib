@@ -46,9 +46,13 @@ int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char *
 int orbreap ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information
 
-int orbreap_nd ( int orb, int *pktid, char *srcname, double *time, )
-    read next packet from orb, returning pktid, srcname, time, and nbytes of packet data and returning ORB_INCOMPLETE if no packet is available
+int orbreap_nd ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
+    read next packet from orb, returning standard packet information, or
+    ORB_INCOMPLETE if no packet is available
 
+int orbreap_timeout ( int orb, int sec, int *id, char *nm, double *t, char **p, int *n, int *sz )
+    read next packet from orb, returning standard packet information, or
+    ORB_INCOMPLETE if no packet is available after sec seconds
 
 <subsection Writing>
 int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
@@ -75,6 +79,8 @@ int orbsources ( int orb, double *when, Orbsrc **source, int *nsource )
 int orbstat ( int orb, Orbstat **orbstat )
     get some status information from orb
 
+double orblag(int orb, char *match, char *reject, Laggards **laggards)
+     return stats showing how far behind clients are 
 
 private int orbset_logging ( int orb, int level )
     set the level of logging for an orbserver

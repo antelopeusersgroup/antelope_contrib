@@ -119,6 +119,9 @@ Msd *msdnew ()
 void msdfree(Msd *msd) ;
     free miniseed configuration block
 
+void msdclose(Msd *msd)
+     close the file descriptor with msd
+
 int msdget ( Msd *msd, char *name, ...)
     get a parameter from msd struct
 

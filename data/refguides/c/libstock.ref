@@ -378,6 +378,12 @@ int changedring ( RingBuffer *rb, double tdelta );
 int is_epoch_string ( char *s, double *e )
     return true if string s can be interpreted as a time, returning epoch time e
 
+private double str2epoch(char *s)
+    return epoch time corresponding to string s
+
+private int zstr2epoch(char *s, double *e)
+    str2epoch with a return code
+
 double now ()
     return current epoch time, to clock resolution (typically microseconds)
 
@@ -533,6 +539,9 @@ char *homedir(char *user)
 unsigned int filesize(char *path)
      return file size for plain file, 0 otherwise
 
+unsigned int filemode(char *path)
+     return file mode for file path
+
 int is_present(char *path)
      return 1 if path exists, 0 otherwise
 
@@ -542,6 +551,9 @@ int is_empty(char *path)
 
 int is_file(char *path)
     return 1 if path is plain file, 0 otherwise
+
+int is_writable_file(char *path)
+    return 1 if path is writable or if not present but directory is writable
 
 int is_dir(char *path)
     return 1 if path is directory, 0 otherwise
@@ -625,6 +637,9 @@ void regsubstitute ( char *old, char *sub, regmatch_t *matches, char *new )
 
 int patsub ( char *old, regex_t *pat, char *sub, char *r )
     replace first occurence of regular expression pat in string old with sub, leaving result in r
+
+int nstrcmp(char *a, char *b)
+    return 0 if a==b==0, 1 if only one of a, b is null, otherwise strcmp(a,b)
 
 int strmatches ( char *s, char *pattern, Hook **hook );
     return 1 if entire string s matches the regular expression pattern
@@ -747,6 +762,12 @@ int printable ( char *mem, int l )
 
 void printable_string ( char *buf, int p, char *mem, int n )
     copies n bytes from mem to p-byte buf, replacing unprintable chars with hex
+
+int hex2mem ( char *hex, void *vmem );
+    convert hexadecimal character string hex into binary in vmem
+
+void mem2hex ( void *vmem, int n, char *s );
+    convert n bytes at vmem into hexadecimal character string
 
 <subsection Byteswap routines>
 <body>
@@ -1011,6 +1032,9 @@ int ip2name(long addr, char *name)
 
 int name2ip(char *name, struct in_addr *addr, char *ipstr)
     return ip address for name
+
+int pid_exists(int pid) ;
+     return 1 if process pid exists, 0 otherwise.
 
 char *pidexecname(int pid)
     return path to executable for process pid
