@@ -6,8 +6,8 @@ Include	install include files only
 install	install everything
 uninstall	uninstall everything
 clean	remove all intermediate files
-purge	remove .make.state
-BIN	install only executables into bin directory
+purge	remove .make.state, other files
+BIN	install executables 
 DLIB	install dynamic libraries
 SLIB	install static libraries
 PF	install parameter files 
@@ -17,34 +17,36 @@ MAN 	install man pages
 purify	create executables using purify
 
 <subsection User Macros>
-BIN	files to install into $(DEST)/bin 
-LIB	files to install into $(DEST)/lib 
-DLIB	files to install into $(DEST)/lib 
-INCLUDE	files to install into $(DEST)/include 
-PF	files to install into $(DEST)/data/pf 
-DATA	files to install into $(DEST)/data/$(DATADIR)
-DEMO	files to install into $(DEST)/data/$(DEMODIR)
-DOC	files to install into $(DEST)/data/$(DOCDIR)
-MAN1	files to install into $(DEST)/man/man1
-MAN3	files to install into $(DEST)/man/man3
-MAN3F	files to install into $(DEST)/man/man3f
+BIN	executables to install into $(DEST)/bin 
+LIB	static libraries to install into $(DEST)/static 
+DLIB	dynamic libraries to install into $(DEST)/lib 
+INCLUDE	include files to install into $(DEST)/include 
+PF	parameter files to install into $(DEST)/data/pf 
+DATA	data files to install into $(DEST)/data/$(DATADIR)
+DEMO	demos to install into $(DEST)/data/$(DEMODIR)
+DOC	documents to install into $(DEST)/data/$(DOCDIR)
+MAN1	program man pages for $(DEST)/man/man1
+MAN3	c interface man pages for $(DEST)/man/man3
+MAN3F	fortran man pages for $(DEST)/man/man3f
 MAN3H	files to install into $(DEST)/man/man3h
-MAN3P	files to install into $(DEST)/man/man3p
-MAN3T	files to install into $(DEST)/man/man3t
-MAN5	files to install into $(DEST)/man/man5
+MAN3P	perl man pages for $(DEST)/man/man3p
+MAN3T	tcl man pages for $(DEST)/man/man3t
+MAN5	format man pages for $(DEST)/man/man5
 
-cflags	special flags to be used during c compilation
-fflags	special flags to be used during fortran compilation
-ldflags	special flags to be passed to the linker
+cflags	special c compilation flags
+fflags	special fortran compilation flags 
+ldflags	special linker flags 
 ldlibs	libraries to be linked with the executable
 
-DIRS	sub directories into which make descends
-DEST	installation directory, usually $(ANTELOPE)
-SUBDIR	install into $(ANTELOPE)/$(SUBDIR)
+DIRS	sub directories (in order) into which make descends
+DEST	installation directory: $(ANTELOPE)$(SUBDIR)
+SUBDIR	alternate destination hierarchy below $ANTELOPE, often local
 
 <subsection Predefined Link Library Macros>
 STOCKLIBS	-lcoords -lstock + required libraries
 DBLIBS	-lds + required libraries
 TRLIBS	-ltr + required libraries
 ORBLIBS	-lPkt -lorb -lforb + required libraries
+THREAD	multi-threading libraries
+X11LIBS	X libraries
 F77LIBS	fortran libraries
