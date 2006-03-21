@@ -8,6 +8,9 @@ dbbuild [-v] [-p pf] db [template]
 dbbuild -b [-v] [-p pf] db input
     build new database with site, sitechan, sensor, instrument, stage and calibration tables
 
+dbbuild_validate [-dsv] [file ..]
+     verify that referenced  parameter files contain all required fields
+
 dbhelp [db|s]
     gui to explore schema for database db or schema s
 
@@ -65,11 +68,17 @@ db_xvimage db.table
 db_showurl db.table
     run by dbe to show external web pages
 
+remark_gui [table|view]
+    run by dbe to add/show remarks
+
 dbset [-clv] db[.table] field from [to]
     change value of attribute field throughout database, when initial value is from ('*' specifies all values). -c asks before changing, -v shows each change
 
 dbconvert [-fv] [-s new_schema] db dbout[.table]
     create dbout (or dbout.table) from database db, using rules from dbconvert parameter file
+
+dbcreate [-r refdb] [-s schema] [-iv] database
+     create database descriptor file
 
 dbcp [options] dbin[.table] dbout
     copy database dbin (or dbin.table) to database dbout

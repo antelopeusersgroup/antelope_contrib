@@ -173,6 +173,9 @@ dbnoise dbname
 displayspec dbname
     display power spectral density results
 
+trstack dbin dbout subset imode [-azmin=xx] [-azmax=xx] [-delmin=xx] [-delmax=xx] [pf-file]
+     stack selected traces from dbin
+
 <subsection Waveform display>
 <commands>
 dbplotcov database sta:chan tstart tend [-h[scale]]

@@ -11,6 +11,9 @@ manpage [ - ]
 template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
     get template from templates directory
 
+required_unix_pgms
+     check for programs required by Antelope
+
 <subsection Miscellaneous>
 private check_antelope_installation
     spot check for proper Antelope installation
@@ -144,6 +147,9 @@ gsregion [lat lon]
 
 dbsetrgn db
     set seismic and geographic region codes in origin table for database db
+
+trwfname [input]
+	try out trwfname(3) patterns
 
 private tabulate_missed_stations translation_db dbname [dbname...]
     find station names that do not appear in translation_db

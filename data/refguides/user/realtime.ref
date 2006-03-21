@@ -45,6 +45,9 @@ rtincident [options] [output_file]
 -p program 	specify program
 </options>
 
+inspect_snapshot snapshot
+    gui to help read output from rtincident or other snapshots
+
 rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-Cdv] recipients
     send mail with attachments
 
@@ -229,6 +232,9 @@ guralp2orb [options] orbname
 -V	extremely verbose
 </options>
 
+guralplocate log1 log2 ...
+    estimate station location from guralp log files
+
 ida2orb [-u] orb nrts selection
     copy selected data from IDA nrts to orbserver
 
@@ -289,6 +295,18 @@ qtunbale [options] url [time [endtime|period]]
 -v	more verbose
 </options>
 
+qtunbale2 [options] url [time [endtime|period]]
+	like qtunbale, but using wget instead of perl http
+
+q330proxy [-v[v[v]]] [-help] [template]
+    internet to SLIP proxy utility for Q330 dataloggers
+
+q330snoop [-noeth] [-noip] [-snoop] prefix_expr
+     used with snoop to parse and print raw UDP Q330 packets 
+
+q330gpslocate log1 log2 ...
+     estimate station location from Q330 log file
+
 qtbsetaddr ipaddr [timeout]
     set Quanterra baler ip-address
 
@@ -318,6 +336,20 @@ k22orb [options] target orbdata [orbcmd]
 -state file	save state in filename
 -start time	only get events after time
 </options>
+
+rt2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
+	acquire logs and data from RefTek RT130 dataloggers 
+<options>
+-pf pfname 	specify alternate parameter file
+-calib_db dbname get calib/calper from database
+-v	more verbose
+</options>
+
+rtp2orb [-v] configuration_file
+     collect data from RefTek data server (RTPD) and writes to orb 
+
+ryo2orb [-v] [-V] [-p pfname] [-m subset] rtd_ipaddress:port orbserver
+     collect GPS data in RYO format and write to orb
 
 b3s2orb [options]
     read B3S2 data to orb
@@ -658,6 +690,12 @@ qedd [options] dbname
 -timeout seconds
 -author author
 </options>
+
+orb2sms [-v] [-m match] [-r reject] [-M prog] orb {cell#|email}
+     reformat packets from orb as sms messages
+
+sms2orb [-dv] queue orb
+     read incoming sms email from queue directory and write packets to orb
 
 <subsection Orb Real Time Display>
 dlmon [options] orb [-cmd cmdorb]

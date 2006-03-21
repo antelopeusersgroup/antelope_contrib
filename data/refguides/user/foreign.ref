@@ -232,6 +232,9 @@ deprecated dbsteimu [options] input [new_database]
 fix_miniseed [-iv] [-d db] [-{p|P} pf] miniseed|dir ...
     change network, station, channel and/or location codes in specified miniseed volumes or all miniseed found under specified directories
 
+chk_miniseed [-v] miniseed ...
+    inspects miniseed files for blocks where net, sta, chan, or loc don't match first block and for blocks where times are out of order.
+
 patch_miniseed [-nvv] miniseed ...
     look for and fix bad reverse integration constants, unless -n
 
