@@ -107,7 +107,7 @@ main(int argc, char **argv)
 				usage();
 				exit(1);
 			}
-			strlcpy(ptype, *argv, 2);
+			strncpy(ptype, *argv, 2);
 		} else if (!strcmp(*argv, "-level")) {
 			argc--;
 			argv++;
