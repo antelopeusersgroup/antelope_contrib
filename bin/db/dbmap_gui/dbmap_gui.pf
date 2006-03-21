@@ -1,6 +1,16 @@
+# A4 			-	210 x 297 mm
+# US-letter 	- 	216 x 279 mm
+# Canadian P4	- 	215 x 280 mm
+printcmd	lp -c
+pagewidth_mm	210 # width of page in mm 
+pageheight_mm	297	# 
+pagemargin_mm	5
+range_degrees	10
+
 dot_color	red
-label_color red
+label_color black
 circle_color red
+
 overlay_dot_color magenta
 overlay_label_color magenta
 overlay_circle_color magenta
@@ -10,6 +20,12 @@ tables &Arr{
 	}
 	origin &Arr{
 		label orid
+	}
+	q330comm &Arr{
+		label	dlsta
+	}
+	gps &Arr{
+		label	sta
 	}
 	known_source &Arr{
 		label	placename
@@ -28,4 +44,5 @@ tables &Arr{
 	event &Arr{
 		label	evid
 	}
+		
 }	

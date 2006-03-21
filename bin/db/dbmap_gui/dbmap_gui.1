@@ -1,28 +1,57 @@
-'\" te
-.TH dbmap_gui 1 "$Date$"
+.TH DBMAP_GUI 1 "$Date$"
 .SH NAME
 dbmap_gui \- display geographical information on a map-gui
 .SH SYNOPSIS
 .nf
-dbmap_gui [-pf parameterfile] [-dboverlay db.table] db[.table] [record]
+\fBdbmap_gui \fP[-pf \fIparameterfile\fP] [-ps \fIfilename\fP] [-dboverlay
+                \fIdb.table\fP] \fIdb\fP[.\fItable\fP] [\fIrecord\fP]
+.fi
 .SH DESCRIPTION
-The script dbmap_gui displays geographical information stored in database tables on a map-gui. Data from a second database can be displayed for comparison. The syntax was choosen so that it can be invokded from the commandline, from dbe and from dbloc2. 
+The script \fBdbmap_gui\fP displays geographical information stored in database tables on a map-gui. Data from a second database can be displayed for comparison. The syntax was choosen so that it can be invoked from the commandline, from dbe and from dbloc2.
 .SH OPTIONS
+.IP "-ps filename"
+optional name of postscript file. Default name is /tmp/\fBdbmap_gui\fP.ps
 .IP "-dboverlay db.table"
-This option also displays data from the dbatabase table db2.table.
-This table must contain at least the fields lat and lon. Other fields for the label and eventually radius (of the circle drawn around each lat,lon pair) can be specified in the parameterfile.
+This option also displays data from the database \fItable\fP db2.\fItable\fP.
+This \fItable\fP must contain at least the fields lat and lon. Other fields for the label and eventually radius (of the circle drawn around each lat,lon pair) can be specified in the \fIparameterfile\fP.
 .IP "db"
-Database name. This is the only required argument. Additionally, a tablename can be specified, otherwise information from the table \fBsite\fP is displayed.
+Database name. This is the only required argument. Additionally, a tablename can be specified, otherwise information from the \fItable\fP \fBsite\fP is displayed.
 Possible tables are (currently) those with fields lat and lon: site, origin, place, idp
 .IP "recno"
-record number. This allows to specify a single record from the basetable. This is mainly intended to support the execution from dbloc2. See the examples below.
+\fIrecord\fP number. This allows to specify a single \fIrecord\fP from the basetable. This is mainly intended to support the execution from dbloc2. See the examples below.
+.SH "PROGRAM INTERACTION"
+The currently implemented commands are:
+.IP "O/o"
+Zoom out.
+.IP "I/i"
+Zoom in.
+.IP "a"
+antipodmap.
+.IP "L/l"
+Toggle display of labels.
+.IP "n"
+Restore initial display
+.IP "p/P"
+Create postscrip output of window or plot immediately.
+.IP "q"
+Quit
+.IP "Middle-Click"
+Define new center.
+.IP "Left-Drag"
+Define zooming region using the mouse.
 .SH "PARAMETER FILE"
-the parameterfile for dbmap_gui contains the array \fBtables\fP to select fieldnames displayes as labels.
+the \fIparameterfile\fP for \fBdbmap_gui\fP contains the array \fBtables\fP to select fieldnames displays as labels.
 The mandatory entry label defines the text displayed for each entry.
-The optional entry circle defines a field which is expected to hold a radius in km. 
+The optional entry circle defines a field which is expected to hold a radius in km.
 Different colors can be selected for the dot marking the exact position, the label and the circles. Circles are only drawn for tables where the entry \fIcircle\fP is specified below.
-example parameterfile:
+example \fIparameterfile\fP:
+.in 2c
+.ft CW
 .nf
+
+.ne 23
+
+print_command lp -c
 dot_color red
 label_colour red
 circle_colour red
@@ -30,79 +59,99 @@ overlay_dot_color magenta
 overlay_label_color green
 overlay_circle_color magenta
 tables &Arr{
-	site &Arr{
-		label	sta
-	}
-	origin &Arr{
-		label orid
-	}
-	known_source &Arr{
-		label	placename
-		circle	radius
-	}
-	place &Arr{
-		label	placename
-	}
-	idp	&Arr{
-		label	placename
-	}
-}	
+        site &Arr{
+                label   sta
+        }
+        origin &Arr{
+                label orid
+        }
+        places &Arr{
+                label   place
+        }
+        idp     &Arr{
+                label   placename
+        }
+}
+
 .fi
-.SH ENVIRONMENT
-The program sets the environmental variable SCHEMA_DIR internally to
-$ANTELOPE/data/schemas:$ANTELOPE/local/data/schemas to support your self-defined schemas in the local subdirecory. 
+.ft R
+.in
 .SH EXAMPLE
 This program can be run from the commandline, from dbe and from dbloc2.
 .IP commandline
+.in 2c
+.ft CW
 .nf
+
+.ne 7
+
 Display site-table from a database
 dbmag_gui /path/to/my/database
 
 Same, but display only 1st record
 dbmap_gui /path/to/my/database 0
 
+.ne 5
 display origins
 dbmap_gui mydb.origin
 
 display some origins
-dbsubset mydb.origin "time >'2/2/2003/'"| dbmap_gui - 
+dbsubset mydb.origin "time >'2/2/2003/'"| dbmap_gui -
 
 same, but display also some places
-dbsubset mydb.origin "time >'2/2/2003/'"| dbmap_gui -dboverlay /path/known_places.place - 
+dbsubset mydb.origin "time >'2/2/2003/'"| \\
+   dbmap_gui -dboverlay /path/to/known_places.place -
+
 .fi
+.ft R
+.in
 .IP dbe
+.in 2c
+.ft CW
 .nf
+
+.ne 13
+
 graphics &Arr{
-	origin &Tbl{
-		Map dbmap_gui -
-		Quarry?	dbmap_gui -dboverlay /path/to/my/database/with/quarries.tablename -
-		Where? dbmap_gui -dboverlay /path/to/my/database/with/places.tablename -
-	}
-	site &Tbl{
-		Map dbmap_gui -
-		Where? dbmap_gui -dboverlay /path/to/my/database/with/places.tablename -
-	}
+        origin &Tbl{
+                Map dbmap_gui -
+                Quarry? dbmap_gui -dboverlay /path/to/quarries.tablename -
+                Where? dbmap_gui -dboverlay /path/to/places.tablename -
+        }
+        site &Tbl{
+                Map dbmap_gui -
+                Where? dbmap_gui -dboverlay /path/to/places.tablename -
+        }
 }
+
 .fi
+.ft R
+.in
 .IP dbloc2
+.in 2c
+.ft CW
 .nf
+
+.ne 11
+
 origin_menu_items &Tbl{
         Map    dbmap_gui
-		Where? dbmap_gui -dboverlay /path/to/my/database/with/places.tablename 
-		Blast?	dbmap_gui -dboverlay /path/to/my/database/with/quarries.tablename
+                Where? dbmap_gui -dboverlay /path/to/places.tablename
+                Blast?  dbmap_gui -dboverlay /path/to/quarries.tablename
 }
 station_menu_items &Tbl{
         Map    dbmap_gui
-		Where? dbmap_gui -dboverlay /path/to/my/database/with/places.tablename 
+                Where? dbmap_gui -dboverlay /path/to/places.tablename
 }
-.fi
-.SH "BUGS AND CAVEATS"
-From the manpage for the \fBMapWidget\fP: This widget is still in the early  stages. It may change radically in the near future.
 
-The MapWidget apparently has a problem with the display of german umlauts. A primitive mechanism eliminates them. It might eventually be necessary to eliminate other strange characters from the database.
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+Prinintg on Macs is untested.
 .SH "SEE ALSO"
-dbe(1), dbloc2(1), dbloc_map(1), MapWidget(3t), the extremely useful Guide by Dan Quinlan(BRTT): "Software Development with Antelope"
+dbe(1), dbloc2(1), dbloc_map(1), brttplot(3t).
 .SH AUTHOR
-Nikolaus Horn, using the \fBdbmap\fP example from the Guide: "Software Development with Antelope" by Dan Quinlan (BRTT).
+Nikolaus Horn, using the example from the brttplot manpage.
 .br
 ZAMG / Vienna, nikolaus.horn@zamg.ac.at
