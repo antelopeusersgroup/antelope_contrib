@@ -652,6 +652,7 @@ public:
 	// @param i1 Value of grid index 1 for point desired.
 	// @param i2 Value of grid index 2 for point desired.
 	// @param i3 Value of grid index 3 for point desired.
+	//@}
 	double lon(int,int,int);
 	//@{
 	// Get the radius from the center of the Earth of a grid point.
@@ -1566,7 +1567,7 @@ double flatvel(double v,double z);
 // @author Steve Roecker translation to C by Pavlis
 // @param v - flattened coordinate velocity
 // @param z - flattened coordinate depth
-// @returns actual depth in the earth
+// @returns true velocity with flattening correction removed
 //@}
 double uflatvel(double v, double z);
 }
