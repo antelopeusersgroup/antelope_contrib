@@ -1,4 +1,5 @@
 <?php
+	putenv( "ANTELOPE=/opt/antelope/$id" );
 	$_ENV{'ANTELOPE'} = "/opt/antelope/$id";
 
 	set_include_path( get_include_path() .
