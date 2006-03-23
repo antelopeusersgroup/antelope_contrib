@@ -1,4 +1,11 @@
 <?php
+	$_ENV{'ANTELOPE'} = "/opt/antelope/4.7";
+
+	set_include_path( get_include_path() .
+			  PATH_SEPARATOR . 
+			  $_ENV{'ANTELOPE'} . "/data/www" );
+?>
+<?php
 /*
 # Copyright (c) 2005 The Regents of the University of California
 # All Rights Reserved
@@ -389,11 +396,13 @@ html_header() ;
           <option value="none">Select a camera</option>
 <?php
 for( $dbsites[3] = 0; $dbsites[3]<$dbsites_nrecs; $dbsites[3]++ ) {
-	$cameraname = dbgetv( $dbsites, "imagename" ) ;
+	list( $cameraname, $cameradescription ) = dbgetv( $dbsites, "imagename", "description" ) ;
+	if( !$cameradescription || $cameradescription == "-" ) $cameradescription = $cameraname ;
+	if( strlen( $cameradescription ) > 25 ) $cameradescription = substr( $cameradescription, 0 , 25 ) . "..." ;
 	if( $camera == $cameraname ) {
-		echo "\t\t<option selected=\"selected\" value=\"$cameraname\">$cameraname</option>\n" ;
+		echo "\t\t<option selected=\"selected\" value=\"$cameraname\">$cameradescription</option>\n" ;
 	} else {
-		echo "\t\t<option value=\"$cameraname\">$cameraname</option>\n" ;
+		echo "\t\t<option value=\"$cameraname\">$cameradescription</option>\n" ;
 	}
 }
 ?>
