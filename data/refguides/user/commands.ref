@@ -110,6 +110,14 @@ elog -e errno
 elog -s signal#
     print signal description
 
+pfe [-X] [-font font] [-level level] [{ - | pfname1 [pfname2 [...]]}]
+    parameter file navigator GUI
+<options>
+-X	don't expand references
+-font	font for pf tree graphics
+-level	default display level 
+</options>
+
 pfcompare [options] pf
      find differences between local parameter file and remainder of pf files found along PFPATH
 <options>
