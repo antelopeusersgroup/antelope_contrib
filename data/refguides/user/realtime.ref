@@ -276,6 +276,7 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -calib_db dbname	metadata database
 -pf pf	parameter file
 -S statefile	
+-noipresolv do not try to resolve ip addresses
 -v
 </options>
 
