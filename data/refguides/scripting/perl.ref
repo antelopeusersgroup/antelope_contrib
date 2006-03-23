@@ -247,6 +247,9 @@ pffiles (pfname [, all])
 pf2string(pfname)
     return string representation of the parameter file object pfname
 
+pfnew(pfname)
+    create a new empty parameter file object with name pfname
+
 pfcompile (string, pfname)
   convert the specified string into parameter file object name pfname.
  
