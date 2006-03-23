@@ -666,6 +666,12 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 		elog_notify(0,(char *)"lookup failed for gclgdisk table.  Extension table probably not defined\n");
 		throw 1;
 	}
+	/* Insure the directory exists */
+	if(makedir(dir))
+	{
+		elog_notify(0,"Cannot create directory %s",dir);
+		throw 1;
+	}
 	/*Save the data first so that in the event of a failure we don't 		
 	have to patch the database afterwards.   The data are always 
 	saved in a file with the name of the grid*/
@@ -778,6 +784,12 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclgdisk table.  Extension table probably not defined\n");
+		throw 1;
+	}
+	/* Insure the directory exists */
+	if(makedir(dir))
+	{
+		elog_notify(0,"Cannot create directory %s",dir);
 		throw 1;
 	}
 	/*Save the data first so that in the event of a failure we don't 		have to patch the database afterwards. */
@@ -913,6 +925,12 @@ void GCLscalarfield::dbsave(Dbptr dbo,
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		throw 1;
 	}
+	/* Insure the directory exists */
+	if(makedir(const_cast<char *>(fielddir.c_str())))
+	{
+		elog_notify(0,"Cannot create directory %s",fielddir.c_str());
+		throw 1;
+	}
 	//First create a filename and save the val array with a binary write
 	filename = fielddir+"/"+dfile;
 
@@ -987,6 +1005,12 @@ void GCLscalarfield3d::dbsave(Dbptr dbo,
 	{
 		elog_notify(0,
 		 (char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
+		throw 1;
+	}
+	/* Insure the directory exists */
+	if(makedir(const_cast<char *>(fielddir.c_str())))
+	{
+		elog_notify(0,"Cannot create directory %s",fielddir.c_str());
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
@@ -1064,6 +1088,12 @@ void GCLvectorfield::dbsave(Dbptr dbo,
 		 (char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
 		throw 1;
 	}
+	/* Insure the directory exists */
+	if(makedir(const_cast<char *>(fielddir.c_str())))
+	{
+		elog_notify(0,"Cannot create directory %s",fielddir.c_str());
+		throw 1;
+	}
 	//First create a filename and save the val array with a binary write
 	filename = fielddir+"/"+dfile;
 
@@ -1136,6 +1166,12 @@ void GCLvectorfield3d::dbsave(Dbptr dbo,
 	if(db.table == dbINVALID)
 	{
 		elog_notify(0,(char *)"lookup failed for gclfield table.  Extension table probably not defined\n");
+		throw 1;
+	}
+	/* Insure the directory exists */
+	if(makedir(const_cast<char *>(fielddir.c_str())))
+	{
+		elog_notify(0,"Cannot create directory %s",fielddir.c_str());
 		throw 1;
 	}
 	//First create a filename and save the val array with a binary write
