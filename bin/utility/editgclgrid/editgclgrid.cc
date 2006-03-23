@@ -25,9 +25,12 @@ GCLgrid *makenewgrid(GCLgrid& parent,
 	int x1snew,x2snew;
 	x1snew=(parent.i0-x1skip)/x1dec;
 	x2snew=(parent.j0-x2skip)/x2dec;
+	// An oddity of the r origin definition requires this
+	double r0new;
+	r0new=parent.r0+parent.depth(parent.i0,parent.j0);
 	GCLgrid *newgrid=new GCLgrid(nx1out,nx2out,
-			newname,parent.lat0,parent.lon0,parent.r0,
-			0.0,
+			newname,parent.lat0,parent.lon0,
+			r0new,0.0,
 			parent.dx1_nom*(static_cast<double>(x1dec)),
 			parent.dx2_nom*(static_cast<double>(x2dec)),
 			x1snew,x2snew);
@@ -66,9 +69,12 @@ GCLgrid3d *makenewgrid3d(GCLgrid3d& parent,
 	int x1snew,x2snew;
 	x1snew=(parent.i0-x1skip)/x1dec;
 	x2snew=(parent.j0-x2skip)/x2dec;
+	// An oddity of the r origin definition requires this
+	double r0new;
+	r0new=parent.r0+parent.depth(parent.i0,parent.j0,0);
 	GCLgrid3d *newgrid=new GCLgrid3d(nx1out,nx2out,nx3out,
-			newname,parent.lat0,parent.lon0,parent.r0,
-			0.0,
+			newname,parent.lat0,parent.lon0,
+			r0new,0.0,
 			parent.dx1_nom*(static_cast<double>(x1dec)),
 			parent.dx2_nom*(static_cast<double>(x2dec)),
 			parent.dx3_nom*(static_cast<double>(x3dec)),
