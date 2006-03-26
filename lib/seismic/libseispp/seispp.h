@@ -35,6 +35,7 @@
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
+#include "gclgrid.h"
 //@{
 // The SEISPP namespace encapsulates the library functions and 
 // classes that defined the SEISPP seismic processing library in C++.
@@ -565,6 +566,39 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 	}
 	return (dshift);
 }
+
+//@{
+// Convert a velocity model in flattened earth geometry to true geometry.
+//
+// Multiple programs exist in seismology that use a flattening transformation
+// to convert spherical geometry into a regular grid.  The main reason
+// for this in all examples I know of is to allow standard finite difference
+// algorithms to used.  This is essential since standard finite differences
+// demand regular grid geometries and the flattening transformation provides
+// a convenient way to turn a spherical shell problem into a standard 
+// finite different grid.  A GCLgrid3d object is aimed at getting the
+// true geometry correct, however, so using velocity models defined on 
+// a flattened coordinate system requires a conversion.  This function
+// does this for a complete grid of points.  This algorithm assumes 
+// a 3D model has been loaded into a GCLgrid3d object, BUT the coordinates
+// and velocities stored in the grid have not been corrected by the
+// inverse flattening transformation.  That is, the assumption is that
+// the original model was defined in on flattened coordinate system but
+// the points were converted to lat,lon, and (flattened) depth in building
+// the input GCLscalarfield3d object.  The algorithm used here then just
+// passes through the grid doing two things:  (1) the depth() method is 
+// called for the parent grid and the uflatz (see gclgrid.h) function is
+// called to convert this to true depth; and (2) the velocity value at each
+// point is altered by in inverse flattening transformation.  Thus the 
+// net effect is a depth dependent change in velocity values and a nonlinear
+// distortion of the depth of each point in the grid.  
+//
+//@param vmodel is the parent grid.  It is altered in place to convert
+//  flattened to true geometry as described above.
+//
+//@author Gary L. Pavlis
+//@}
+void ConvertFlatModelToSpherical(GCLscalarfield3d& vmodel);
 		
 }
 #endif

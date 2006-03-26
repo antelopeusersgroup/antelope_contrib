@@ -116,7 +116,7 @@ DecimatedVector *ResampleOperator::apply(int ns, double *s,double dtin,
 	double decout=1.0;
 	int total_lag=0;
 
-	dcopy(ns,&(s[0]),1,&(dvptr->d[0]),1);
+	for(i=0;i<ns;++i) dvptr->d.push_back(s[i]);
 	dvptr->lag=0;  
 	// skip all this if dtin and dtout match within tolerance
 	if(fabs(dtout_target-dtin)/dtout_target < DT_FRACTIONAL_ERROR) 
@@ -258,8 +258,8 @@ DecimatedVector *Decimator::apply(int nsamp_in, double *s,bool trim)
 	if(nsamp_in<ncoefs)
 	{
 		// copy data 
-		dout = new DecimatedVector(nsamp_in);
-		dcopy(nsamp_in,&(s[0]),1,&(dout->d[0]),1);
+		dout=new DecimatedVector(nsamp_in);
+		for(i=0;i<nsamp_in;++i) dout->d.push_back(s[i]);
 		return(dout);
 	}
 	// upsampling is triggered by a decfac less than 1.0
@@ -276,6 +276,7 @@ DecimatedVector *Decimator::apply(int nsamp_in, double *s,bool trim)
 		// call interpolator with 0 start for similar reasons to dt.  
 		// that is this interpolator is general and here we want output
 		// time aligned to first sample
+		dout->d.resize(nsamp_out);
 		linear_scalar_regular_to_regular(nsamp_in,0.0,1.0,s,
 			nsamp_out,0.0,dt,&(dout->d[0]));
 	}

@@ -57,6 +57,7 @@ OBJS=AttributeMap.o \
   ThreeComponentSeismogram.o \
   TimeSeries.o \
   VelocityModel_1d.o \
+  VelocityModel_3d.o \
   array_get_data_3c.o \
   array_get_data.o \
   converters.o \
