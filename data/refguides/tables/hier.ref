@@ -8,7 +8,7 @@ data
   /rtdemo	demo realtime data
   /db	demo databases
 
-<subsection /opt/antelope/4.5>
+<subsection /opt/antelope/dev>
 <List>
 antelope.html	master guide to documentation
 Changes	list of changes for current release

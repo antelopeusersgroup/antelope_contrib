@@ -4,6 +4,7 @@ DATA= \
 	perl.ref \
 	php.ref \
 	scripting.ref \
+	scripting0.ref \
 	tcl.ref \
 	tcldb.ref \
 	tclorb8.ref \

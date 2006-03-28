@@ -1,6 +1,7 @@
 DATADIR=doc/refguides/c
 DATA= \
 	c.ref \
+	c0.ref \
 	fortran.ref \
 	libPkt.ref \
 	libbrttpkt.ref \

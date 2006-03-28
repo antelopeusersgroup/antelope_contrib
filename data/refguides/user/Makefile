@@ -8,6 +8,7 @@ DATA= \
 	location.ref \
 	realtime.ref \
 	user.ref \
+	user0.ref \
 	waveform_analysis.ref 
 
 include $(ANTELOPEMAKE)
