@@ -1,0 +1,12 @@
+<initialization Tables refhdr.mif>
+<no_index don't index appendices>
+<include antelopemake.ref>
+<include schemas.ref>
+<include datascope_constants.ref>
+<include datascope_expressions.ref>
+<include environment.ref>
+<include pf.ref>
+<include time_format_codes.ref>
+<include time_formats.ref>
+<include hier.ref>
+<the_end>

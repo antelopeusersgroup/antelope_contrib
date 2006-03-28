@@ -1,0 +1,10 @@
+<initialization User ../refhdr.mif>
+<include realtime.ref>
+<include cd1.ref>
+<include database_processing.ref>
+<include location.ref>
+<include foreign.ref>
+<include waveform_analysis.ref>
+<include datascope.ref>
+<include commands.ref>
+<the_end>
