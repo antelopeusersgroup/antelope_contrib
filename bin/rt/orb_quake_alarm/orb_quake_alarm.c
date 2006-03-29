@@ -764,6 +764,7 @@ void
 dbarchive_notification( Alarm *alarm, Callblock *callblock )
 {
 	Dbptr	dbalarmcomm;
+	int	rc;
 
 	if( Dbname == 0 ) {
 		
@@ -776,12 +777,31 @@ dbarchive_notification( Alarm *alarm, Callblock *callblock )
 
 	dbalarmcomm.record = dbaddnull( dbalarmcomm );
 
-	dbputv( dbalarmcomm, 0, 
+	if( dbalarmcomm.record == dbINVALID ) {
+		
+		elog_complain( 1, 
+			"[%s]: Failed to add null row to alarmcomm table "
+			"for alarmid %d!\n",
+			get_threadname(), alarm->alarmid );
+		
+		return;
+	}
+
+	rc = dbputv( dbalarmcomm, 0, 
 			"alarmid", alarm->alarmid,
 			"time", callblock->time,
 			"recipient", callblock->to, 
 			"delaysec", callblock->delay_sec,
 			0 );
+
+	if( rc != 0 ) {
+
+		elog_complain( 1, 
+			"[%s]: Failed to fill in alarmcomm table row "
+			"for alarmid %d, recipient %s, delay %f!\n",
+			get_threadname(), alarm->alarmid,
+			callblock->to, callblock->delay_sec );
+	}
 
 	mutex_unlock( &Db_mutex );
 
@@ -810,7 +830,17 @@ dbarchive_alarm( Alarm *alarm )
 
 	dbalarms.record = dbaddnull( dbalarms );
 
-	dbputv( dbalarms, 0, 
+	if( dbalarms.record == dbINVALID ) {
+		
+		elog_complain( 1, 
+			"[%s]: Failed to add null row to alarms table "
+			"for alarmid %d!\n",
+			get_threadname(), alarm->alarmid );
+		
+		return;
+	}
+
+	rc = dbputv( dbalarms, 0, 
 			"alarmid", alarm->alarmid,
 			"alarmkey", alarm->alarmkey,
 			"alarmclass", alarm->alarmclass,
@@ -818,15 +848,41 @@ dbarchive_alarm( Alarm *alarm )
 			"time", alarm->time,
 			"subject", alarm->subject,
 			0 );
+
+	if( rc != 0 ) {
+
+		elog_complain( 1, 
+			"[%s]: Failed to fill in alarms table row "
+			"for alarmid %d!\n",
+			get_threadname(), alarm->alarmid );
+	}
 	
 	if( alarm->evid != -1 ) {
 
-		dbputv( dbalarms, 0, "evid", alarm->evid, 0 );
+		rc = dbputv( dbalarms, 0, "evid", alarm->evid, 0 );
+
+		if( rc != 0 ) {
+
+			elog_complain( 1, 
+				"[%s]: Failed to fill in alarms table evid "
+				"%d for alarmid %d!\n",
+				get_threadname(), alarm->evid,
+				alarm->alarmid );
+		}
 	}
 
 	if( alarm->orid != -1 ) {
 
-		dbputv( dbalarms, 0, "orid", alarm->orid, 0 );
+		rc = dbputv( dbalarms, 0, "orid", alarm->orid, 0 );
+
+		if( rc != 0 ) {
+
+			elog_complain( 1, 
+				"[%s]: Failed to fill in alarms table orid "
+				"%d for alarmid %d!\n",
+				get_threadname(), alarm->orid,
+				alarm->alarmid );
+		}
 	}
 
 	rc = trwfname( dbalarms, alarm_dbfilenames, &alarm_filename );
