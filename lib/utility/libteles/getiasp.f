@@ -6,10 +6,11 @@ c reads iaspei travel-time curves for P,S
      -		dpdz(181,15),dsdd(181,15),dsdz(181,15)
 	character*10 antenv
 	character*80 antval
-	character*100 fname
+        character*100 fname
 	antenv="ANTELOPE"
 	call getenv(antenv,antval)
-	fname = antval//"teles/iaspei.time2"
+        tkb = index(antval,' ') - 1
+        fname = antval(1:tkb)//"/"//"teles/iaspei.time2"
 
 	open(lun,file=fname)
 	read(lun,*) delmin,ddel,ndel,ndepth
