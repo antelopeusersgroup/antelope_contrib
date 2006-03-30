@@ -4,6 +4,8 @@
 #include "db.h"
 #include "pf.h"
 #include "glputil.h"
+#include "resample.h"
+#include "SeisppError.h"
 #include "seispp.h"
 using namespace SEISPP;
 #include "resample.h"
@@ -37,8 +39,7 @@ int main(int argc, char **argv)
 		string tag("dbprocess_commands");
 		for(int i=3;i<argc;++i)
 		{
-			string test;
-			test=string(argv[i]);
+			string test(argv[i]);
 			if(test=="-pf")
 			{
 				++i;
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
 		}
 		// This object defines mapping from external to internal namespace
 		// old form:  AttributeMap am(pf,string("AttributeMap"));
-		AttributeMap am;
+		AttributeMap am("css3.0");
 		// This defines the list of internal names actually extracted from db
 		MetadataList md_to_input=pfget_mdlist(pf,
 			"input_list");
@@ -104,7 +105,7 @@ int main(int argc, char **argv)
 			// append the string ".resampled"
 			dfile_name = traceout.get_string("dfile");
 			dfile_name = dfile_name + string(".resampled");
-			traceout.put("file",dfile_name);
+			traceout.put("dfile",dfile_name);
 			dbsave(traceout,dbho.db,table,md_to_output,am);
 			delete tin;
 		}
