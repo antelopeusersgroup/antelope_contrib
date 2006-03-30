@@ -415,6 +415,7 @@ int dbsave(TimeSeries& ts,
 				outbuf[i]=static_cast<float>(ts.s[i]);
 			foff = vector_fwrite(outbuf,ts.ns,
 				string(dir), string(dfile));
+			delete [] outbuf;
 		}
 		// all cases return an foff that we need to set
 		// in the database as the absolutely correct value

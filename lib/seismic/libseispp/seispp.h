@@ -600,5 +600,7 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 //@}
 void ConvertFlatModelToSpherical(GCLscalarfield3d& vmodel);
 		
+// for linux only
+int nint(double);
 }
 #endif

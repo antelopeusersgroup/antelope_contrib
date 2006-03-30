@@ -388,6 +388,7 @@ ResamplingDefinitions::ResamplingDefinitions(Pf *pf)
 		decset.insert(ROmap::value_type(si_range,*rop));
 		delete rop;
 	}
+	freetbl(t,0);
 }
 /* Higher level function that applies a ResamplingDefinitions operator to an
 input time series.  Output is a new TimeSeries object decimated/resampled to target

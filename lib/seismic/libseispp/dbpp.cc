@@ -6,6 +6,15 @@ using namespace std;
 using namespace SEISPP;
 namespace SEISPP
 {
+// oddity needed to work with DanQs freetbl function
+extern "C" {
+void
+myfree(char *p)
+{
+    free((void *) p) ;
+}
+}
+
 // Simple function needed by constructors below.  Returns true if
 // the string dbgroup is found in the command to be send to dbprocess.
 // Throws an int exception if the dbgroup clause is anywhere but 
@@ -125,7 +134,6 @@ DatascopeHandle::DatascopeHandle(Dbptr dbi, Pf *pf, string tag)
 		is_bundle = dbgroup_used(process_list);
 	} catch (...)
 	{
-		freetbl(process_list,0);
 		throw SeisppError("Error in process list specification:  dbgroup can only be used as last command");
 	}
         db = dbprocess(dbi,process_list,0);
@@ -338,7 +346,7 @@ void DatascopeHandle::sort(list<string> sortkeys)
 	db = dbsort(db,t,0,0);
 	if(db.table == dbINVALID)
 		throw SeisppDberror("dbsort failed",db,complain);
-	freetbl(t,free);
+	freetbl(t,myfree);
 }
 	
 // natural join requires no join keys
@@ -379,8 +387,8 @@ void DatascopeHandle::join(string table1, string table2,
 	dbj1 = dblookup(db,0,const_cast<char *>(table1.c_str()),0,0);
 	dbj2 = dblookup(db,0,const_cast<char *>(table2.c_str()),0,0);
 	db = dbjoin(dbj1, dbj2,&t1,&t2,0,0,0);
-	freetbl(t1,free);
-	freetbl(t2,free);
+	freetbl(t1,myfree);
+	freetbl(t2,myfree);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbjoin of tables ")
 			+ table1 
@@ -397,7 +405,7 @@ void DatascopeHandle::group(list<string> groupkeys)
 	parent_table=db;
 	db = dbgroup(db,t,0,0);
 	is_bundle=true;
-	freetbl(t,free);
+	freetbl(t,myfree);
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("dbgroup failed"),
 			db,complain);
