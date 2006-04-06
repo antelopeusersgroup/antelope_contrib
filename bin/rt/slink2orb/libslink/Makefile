@@ -59,3 +59,7 @@ install: static
 	@echo
 
 Include:
+
+purge:
+
+uninstall:
