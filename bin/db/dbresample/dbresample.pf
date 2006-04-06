@@ -40,7 +40,7 @@ output_sample_rate 10
 trim_gap_edges true  #if true shorten data around gaps to avoid edge transients of FIR filters
 output_channel_code  M
 
-input_metadata_list &Tbl{
+input_list &Tbl{
 sta string
 chan string
 time real
@@ -53,7 +53,7 @@ jdate int
 calib real
 calper real
 }
-output_metadata_list &Tbl{
+output_list &Tbl{
 sta string
 chan string
 time real
