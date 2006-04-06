@@ -52,7 +52,7 @@ gccdebug:
 clean:
 	rm -f $(LIB_OBJS) $(LIB_A) $(LIB_SO) $(LIB_SO_ALIAS) $(LIB_DYN) $(LIB_DYN_ALIAS)
 
-install:
+install: static
 	@echo
 	@echo "No install method, copy the library, header file, and"
 	@echo "documentation to the preferred install location"
