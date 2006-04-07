@@ -42,7 +42,6 @@ MAN3=Basic_Time_Series.3 \
   slowness_object.3 \
   seispp_error.3 \
   Top_Mute.3
-ldlibs=$(DBLIBS) -lpfstream -lbrttutil -lgclgrid -lperf
 DBG=-g
 
 include $(ANTELOPEMAKE)  	
