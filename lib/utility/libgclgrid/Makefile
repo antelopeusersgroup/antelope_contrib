@@ -3,17 +3,12 @@ DLIB=$(LIB:.a=$(DSUFFIX))
 
 DIRS=htdocs
 DATADIR=schemas
-#DATA=PWMIG1.0
 
 INCLUDE=gclgrid.h dmatrix.h
 MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 
-#  seispp dependency needed for pathintegral.o and ustrans.o
-#
-#ldlibs= $(PERFLIBS) $(DBLIBS) -lm
 
 include $(ANTELOPEMAKE)  	
-#CXX=g++ -g
 
 OBJS=converters.o \
     create_destroy.o \
