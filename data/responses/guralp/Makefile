@@ -9,7 +9,6 @@ DATA= README_guralp_fir.pdf  \
     cmg3esp_nsn \
     cmg3t \
     cmg3t_100sec \
-    cmg3t_100sec+ \
     cmg3t_120sec \
     cmg3t_30sec \
     cmg3t_360sec \
@@ -17,7 +16,6 @@ DATA= README_guralp_fir.pdf  \
     cmg40t \
     cmg40t_1 \
     cmg40t_1_hi \
-    cmg40t_1_old \
     cmg40t_1hz \
     cmg40t_1to100 \
     cmg40t_30sec \
