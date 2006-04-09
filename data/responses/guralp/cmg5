@@ -1,17 +1,21 @@
 # @(#)cmg5_acc	1.1 2/1/95 
 # cmg5_acc    100 Hz natural frequency accelerometer
-# 0.600000  damping
+# poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
 # Normalized  response relative to acceleration
+# Normalized to gain of 1.0 in middle of passband
+# 0.6 Damping
 # 1                   type
 # 0                   num of zeroes
-# 2                   num of poles
+# 4                   num of poles
 # 0.0                 input sample interval
 # 1                   decim factor
-# 394784.0            normalization factor
+# 1.939e9             normalization factor
 # 1.0                 gain
 theoretical   1 anti-alias   paz  Kinemetrics
-394784.0
-2         Poles
--.4015e+03   .4818e+03   0.0000E+00    0.0000E+00
--.4015e+03  -.4818e+03   0.0000E+00    0.0000E+00
+1.939e9
+4         Poles
+-4.008e+02   5.679e+02   0.0000E+00    0.0000E+00
+-4.008e+02  -5.679e+02   0.0000E+00    0.0000E+00
+-4.749e+03   0.000e+00   0.0000E+00    0.0000E+00
+-1.317e+03   0.000e+00   0.0000E+00    0.0000E+00
 0         Zeros

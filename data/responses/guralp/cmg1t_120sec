@@ -1,4 +1,4 @@
-# cmg3esp    1.00000e-02 hz (100 sec) seismometer
+# cmg1t    8.33333e-03 hz (120 sec) borehole seismometer
 # poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
 # Normalized  response relative to velocity
 # Normalized to gain of 1.0 in middle of passband
@@ -14,8 +14,8 @@
 theoretical   1 anti-alias   paz    pz6seismo
 5.78e+08  1
 5             Poles
--4.442e-02    +4.442e-02    0.0000E+00    0.0000E+00
--4.442e-02    -4.442e-02    0.0000E+00    0.0000E+00
+-3.701e-02    +3.701e-02    0.0000E+00    0.0000E+00
+-3.701e-02    -3.701e-02    0.0000E+00    0.0000E+00
 -5.027E+02     0.000E+00    0.0000E+00    0.0000E+00
 -1.005E+03     0.000E+00    0.0000E+00    0.0000E+00
 -1.131E+03     0.000E+00    0.0000E+00    0.0000E+00
