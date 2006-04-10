@@ -16,9 +16,11 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('l:s:r:c:vt:p:') || @ARGV != 1 ) {
+if ( ! &Getopts('l:s:f:r:c:vt:p:') || @ARGV != 1 ) {
 
-	die ( "Usage: $Program [-v] [-p pffile] [-t workdir] [-l log_script] " .
+	die ( "Usage: $Program [-v] [-p pffile] " .
+		"[-f focus_station_expression] " .
+		"[-t workdir] [-l log_script] " .
 			"[-s stations_dbname] [-c lon:lat] [-r degrees] psfile\n" );
 
 } else {
@@ -80,6 +82,11 @@ $hashref = pfget( $State{pf}, "mapspec" );
 if( $opt_c ) {
 	
 	( $Mapspec{lonc}, $Mapspec{latc} ) = split( /:/, $opt_c );
+}
+
+if( $opt_f ) {
+
+	$Mapspec{focus_sta_expr} = $opt_f;
 }
 
 if( $opt_r ) {

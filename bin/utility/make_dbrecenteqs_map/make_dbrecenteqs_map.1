@@ -4,7 +4,8 @@ make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
 make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-l script_logfile]
-		     [-s stations_dbname] [-c lon:lat] [-r degrees] psfile
+		     [-f focus_station_expression] [-s stations_dbname] 
+		     [-c lon:lat] [-r degrees] psfile
 .fi
 .SH DESCRIPTION
 The script make_dbrecenteqs_map creates a postscript map image, optionally 
@@ -51,6 +52,10 @@ in radial degrees from the center of the map to each edge.
 .IP "-s stations_dbname"
 If this database name is specified, all stations with null offdates in the site
 table will be plotted on the map. 
+.IP "-f focus_station_expression"
+This parameter allows the user to override on the command line the 
+parameter \fIfocus_sta_expr\fP, which changes the plotting parameters 
+for the matching set of stations
 .IP "-l script_logfile" 
 Log the commands used to generate the map to a separate script file. 
 .IP "-p pffile"
