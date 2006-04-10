@@ -673,6 +673,8 @@ sub make_stations_tempfiles {
 
 	my( $stas_tempfile ) = "$State{workdir}/stations_$<_$$";
 	my( $stanames_tempfile ) = "$State{workdir}/stanames_$<_$$";
+	my( $focus_stas_tempfile ) = "$State{workdir}/focus_stations_$<_$$";
+	my( $focus_stanames_tempfile ) = "$State{workdir}/focus_stanames_$<_$$";
 
 	my( @db ) = dbopen( $Mapspec{stations_dbname}, "r" );
 	@db = dblookup( @db, "", "site", "", "" );
@@ -682,27 +684,61 @@ sub make_stations_tempfiles {
 			
 	open( S, ">$stas_tempfile" );
 	open( N, ">$stanames_tempfile" );
+	open( FS, ">$focus_stas_tempfile" );
+	open( FN, ">$focus_stanames_tempfile" );
 
 	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
 		my( $lat, $lon, $sta ) = 
 			dbgetv( @db, "lat", "lon", "sta" );
-		print S sprintf( "%.4f %.4f\n", 
+
+		my( $stafd, $namefd );
+		my( $staname_shift_deg );
+		my( $staname_fontsize );
+		my( $staname_fontno );
+		my( $staname_fontjustify );
+
+		if( $Mapspec{focus_sta_expr} ne "" &&
+		 dbex_eval( @db, "$Mapspec{focus_sta_expr}" ) ) {
+
+			$stafd = *FS;
+			$namefd = *FN;
+
+			$staname_shift_deg = $Mapspec{focus_staname_shift_deg};
+			$staname_fontsize = $Mapspec{focus_staname_fontsize};
+			$staname_fontno = $Mapspec{focus_staname_fontno};
+			$staname_fontjustify = $Mapspec{focus_staname_fontjustify};
+			
+		} else {
+
+			$stafd = *S;
+			$namefd = *N;
+
+			$staname_shift_deg = $Mapspec{staname_shift_deg};
+			$staname_fontsize = $Mapspec{staname_fontsize};
+			$staname_fontno = $Mapspec{staname_fontno};
+			$staname_fontjustify = $Mapspec{staname_fontjustify};
+		}
+
+		print $stafd sprintf( "%.4f %.4f\n", 
 			unwrapped_lon( \%Mapspec, $lon ), $lat );
-		print N sprintf( "%.4f %.4f %s 0.0 %s %s %s\n",
-			$lon+$Mapspec{staname_shift_deg},
+		print $namefd sprintf( "%.4f %.4f %s 0.0 %s %s %s\n",
+			$lon+$staname_shift_deg,
 			$lat,
-			$Mapspec{staname_fontsize},
-			$Mapspec{staname_fontno},
-			$Mapspec{staname_fontjustify},
+			$staname_fontsize,
+			$staname_fontno,
+			$staname_fontjustify,
 			$sta );
 	}
 
 	close( S );
 	close( N );
+	close( FS );
+	close( FN );
 
 	dbclose( @db );
 
-	return ( $stas_tempfile, $stanames_tempfile );
+	return ( $stas_tempfile, $stanames_tempfile,
+		 $focus_stas_tempfile, $focus_stanames_tempfile );
 }
 
 sub make_hypocenter_tempfile {
@@ -1579,7 +1615,8 @@ sub plot_stations {
 		}
 	}
 
-	my ( $stas_tempfile, $stanames_tempfile ) =
+	my ( $stas_tempfile, $stanames_tempfile,
+	     $focus_stas_tempfile, $focus_stanames_tempfile ) =
 		make_stations_tempfiles( \%Mapspec );
 
 	my( $more, $redirect );
@@ -1590,10 +1627,14 @@ sub plot_stations {
 		( $more, $redirect ) = more_ps( "middle" );
 	}
 
+	my( $sta_color ) = $Mapspec{sta_color};
+	my( $sta_border_color ) = $Mapspec{sta_border_color};
+	my( $sta_symbols_inches ) = $Mapspec{sta_symbols_inches};
+
 	my( $cmd ) = "cat $stas_tempfile | psxy $V -P " .
-			"-G$Mapspec{sta_color} -W$Mapspec{sta_color} " .
+			"-G$sta_color -W$sta_border_color " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
-			"-St$Mapspec{city_symbols_inches}i " .
+			"-St${sta_symbols_inches}i " .
 			$more .
 			"$redirect $Mapspec{psfile}";
 			
@@ -1602,16 +1643,43 @@ sub plot_stations {
 	}
 	system_scriptlog( $cmd );
 
-	if( $position eq "first" ) {
-		( $more, $redirect ) = more_ps( "middle" );
-	} elsif( $position eq "single" ) {
-		( $more, $redirect ) = more_ps( "last" );
-	} else {
-		( $more, $redirect ) = more_ps( $position );
-	}
+	( $more, $redirect ) = more_ps( "middle" );
 
 	my( $cmd ) = "cat $stanames_tempfile | pstext $V -P " .
-			"-G$Mapspec{sta_color} " .
+			"-G$sta_color " .
+			"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
+	system_scriptlog( $cmd );
+
+	my( $sta_color ) = $Mapspec{focus_sta_color};
+	my( $sta_border_color ) = $Mapspec{focus_sta_border_color};
+	my( $sta_symbols_inches ) = $Mapspec{focus_sta_symbols_inches};
+
+	my( $cmd ) = "cat $focus_stas_tempfile | psxy $V -P " .
+			"-G$sta_color -W$sta_border_color " .
+			"$Mapspec{Rectangle} $Mapspec{Projection} " .
+			"-St${sta_symbols_inches}i " .
+			$more .
+			"$redirect $Mapspec{psfile}";
+			
+	if( $opt_v ) {
+		elog_notify "$cmd\n";
+	}
+	system_scriptlog( $cmd );
+
+	if( $position eq "single" ) {
+		( $more, $redirect ) = more_ps( "last" );
+	} else {
+		( $more, $redirect ) = more_ps( "middle" );
+	}
+
+	my( $cmd ) = "cat $focus_stanames_tempfile | pstext $V -P " .
+			"-G$sta_color " .
 			"$Mapspec{Rectangle} $Mapspec{Projection} " .
 			$more .
 			"$redirect $Mapspec{psfile}";
@@ -1625,6 +1693,8 @@ sub plot_stations {
 
 		unlink( $stas_tempfile );
 		unlink( $stanames_tempfile );
+		unlink( $focus_stas_tempfile );
+		unlink( $focus_stanames_tempfile );
 	}
 }
 
