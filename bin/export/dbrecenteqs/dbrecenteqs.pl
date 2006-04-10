@@ -1559,14 +1559,24 @@ sub plot_stations {
 			"\t************************************\n\n";
 		return;
 
-	} elsif( ! -e "$Mapspec{stations_dbname}.site" ) {
+	} else {
+		
+		my( @dbtest ) = dbopen( "$Mapspec{stations_dbname}", "r" );
+		@dbtest = dblookup( @dbtest, "", "site", "", "" );
+		my( $test_dbnstas ) = dbquery( @dbtest, dbRECORD_COUNT );
+		dbclose( @dbtest );
 
-		elog_complain
+		if( $test_dbnstas <= 0 ) {
+
+			elog_complain
 			"\n\t************************************\n" . 
 			"\tWARNING: Skipping stations--" .
-			"$Mapspec{stations_dbname}.site not found\n" .
+			"site table in $Mapspec{stations_dbname} " .
+			"not found or empty\n" .
 			"\t************************************\n\n";
-		return;
+
+			return;
+		}
 	}
 
 	my ( $stas_tempfile, $stanames_tempfile ) =
