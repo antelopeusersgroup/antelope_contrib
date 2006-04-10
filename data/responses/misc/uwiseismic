@@ -1,0 +1,21 @@
+# University of West Indies  20.0 hz anti-alias filter
+# Normalized  response
+# 1                   type
+# 0                   num of zeroes
+# 8                   num of poles
+# 0.0                 input sample interval
+# 1                   decim factor
+# 6.2143+16           normalization factor                   
+# 1.0                 gain
+theoretical   1 anti-alias   paz    pz6pbut
+6.2143E+16
+8             Poles
+-2.4516E+01   -12.325E+01    0.0000E+00    0.0000E+00
+-2.4516E+01    12.325E+01    0.0000E+00    0.0000E+00
+-6.9816E+01   -10.448E+01    0.0000E+00    0.0000E+00
+-6.9816E+01    10.448E+01    0.0000E+00    0.0000E+00
+-10.448E+01   -6.9816E+01    0.0000E+00    0.0000E+00
+-10.448E+01    6.9816E+01    0.0000E+00    0.0000E+00
+-12.325E+01   -2.4516E+01    0.0000E+00    0.0000E+00
+-12.325E+01    2.4516E+01    0.0000E+00    0.0000E+00
+0             Zeros
