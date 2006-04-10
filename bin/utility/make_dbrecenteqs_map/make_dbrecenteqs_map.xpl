@@ -43,7 +43,7 @@ if ( ! &Getopts('l:s:r:c:vt:p:') || @ARGV != 1 ) {
 	}
 }
 
-if( pfrequire( $State{pf}, "4/10/2006 16:00" ) < 0 ) {
+if( pfrequire( $State{pf}, "4/10/2006 20:00" ) < 0 ) {
 
 	elog_die( "Your parameter file '$State{pf}' is out of date. " .
 		  "Please update it before continuing.\n" );
