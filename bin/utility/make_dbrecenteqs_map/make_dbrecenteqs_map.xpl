@@ -19,7 +19,7 @@ $Program = (parsepath( $0 ))[1];
 if ( ! &Getopts('l:s:f:r:c:vt:p:') || @ARGV != 1 ) {
 
 	die ( "Usage: $Program [-v] [-p pffile] " .
-		"[-f focus_station_expression] " .
+		"[-f focus_station_regex] " .
 		"[-t workdir] [-l log_script] " .
 			"[-s stations_dbname] [-c lon:lat] [-r degrees] psfile\n" );
 
@@ -86,7 +86,7 @@ if( $opt_c ) {
 
 if( $opt_f ) {
 
-	$Mapspec{focus_sta_expr} = $opt_f;
+	$Mapspec{focus_sta_expr} = "sta =~ /^$opt_f\$/";
 }
 
 if( $opt_r ) {
