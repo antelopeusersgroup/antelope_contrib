@@ -4,7 +4,8 @@ make_dbrecenteqs_map \- create a map for dbrecenteqs or dbevents
 .SH SYNOPSIS
 .nf
 make_dbrecenteqs_map [-v] [-p pffile] [-t workdir] [-l script_logfile]
-		     [-f focus_station_regex] [-s stations_dbname] 
+		     [-f focus_station_expression | -F focus_station_regex] 
+		     [-s stations_dbname] 
 		     [-c lon:lat] [-r degrees] psfile
 .fi
 .SH DESCRIPTION
@@ -55,11 +56,12 @@ table will be plotted on the map.
 .IP "-f focus_station_expression"
 This parameter allows the user to override on the command line the 
 parameter \fIfocus_sta_expr\fP, which changes the plotting parameters 
-for the matching set of stations. There is a slight difference, in that 
-in the parameter file the expression is specified in full, for example as
-\fIsta =~ /^REGEX$/\fP. When used on the command line, this string is 
-assumed and only the REGEX must be specified. In the simplest case, the 
-argument to -f can be simply a station name. 
+for the matching set of stations. 
+.IP "-F focus_station_regex"
+This is just like the -f option, however the basic structure of the expression
+is assumed to be \fIsta =~ /^REGEX$/\fP. The argument to the -F option 
+replaces REGEX. In the simplest case, the argument to -F can be simply a 
+station name. 
 .IP "-l script_logfile" 
 Log the commands used to generate the map to a separate script file. 
 .IP "-p pffile"
@@ -180,6 +182,9 @@ initial map will not be erased, allowing the resulting script to be run. However
 these files must then be cleaned up by hand (or left to litter /tmp), and 
 if the script is meant to be used at some later time the temp files should 
 be cached somewhere (many of them are generated from some automated code inside 
+
+If the -f option is specified, any -F option will be ignored. 
+
 the dbrecenteqs toolbox that is not easily cast into the output script).
 
 make_dbrecenteqs_map uses the GMT command gmtset(1) to set the GMT 

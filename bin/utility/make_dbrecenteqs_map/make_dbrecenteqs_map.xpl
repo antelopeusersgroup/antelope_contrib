@@ -16,10 +16,10 @@ use Datascope;
 elog_init( $0, @ARGV );
 $Program = (parsepath( $0 ))[1];
 
-if ( ! &Getopts('l:s:f:r:c:vt:p:') || @ARGV != 1 ) {
+if ( ! &Getopts('l:s:f:F:r:c:vt:p:') || @ARGV != 1 ) {
 
 	die ( "Usage: $Program [-v] [-p pffile] " .
-		"[-f focus_station_regex] " .
+		"[-f focus_station_expression | -F focus_station_regex] " .
 		"[-t workdir] [-l log_script] " .
 			"[-s stations_dbname] [-c lon:lat] [-r degrees] psfile\n" );
 
@@ -86,7 +86,11 @@ if( $opt_c ) {
 
 if( $opt_f ) {
 
-	$Mapspec{focus_sta_expr} = "sta =~ /^$opt_f\$/";
+	$Mapspec{focus_sta_expr} = $opt_f;
+
+} elsif( $opt_F ) {
+
+	$Mapspec{focus_sta_expr} = "sta =~ /^$opt_F\$/";
 }
 
 if( $opt_r ) {
