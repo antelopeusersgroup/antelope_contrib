@@ -421,6 +421,14 @@ get_StachanCalib( char *site_id, char *channel_identifier )
 	scc = (StachanCalib *) getarr( Stachan_calibs, key_specific );
 
 	if( scc == (StachanCalib *) NULL ) {
+
+		if( VeryVerbose ) {
+
+			elog_notify( 0, "Couldn't find customized "
+				  "offsets for %s:%s; "
+				  "using defaults.\n", 
+				  site_id, channel_identifier );
+	 	}
 		
 		scc = (StachanCalib *) getarr( Stachan_calibs, key_default );
 
