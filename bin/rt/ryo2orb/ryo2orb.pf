@@ -207,6 +207,15 @@ stachan_calibs &Arr{
 		LON_DEG	-117.067435 1e11    1       d
 		HEIGHT_M	528.041312     1e6     1       d
 	}
+        MONP    &Arr{
+                ITRF_X  -2386247.121492  1000000         1       d
+                ITRF_Y  -4802359.348212  1000000         1       d
+                ITRF_Z  3444902.238806  1000000         1       d
+                ITRF_T  1.836521  1000000         1       d
+                LAT_DEG 32.891940 1e11   1       d
+                LON_DEG -116.422349 1e11    1       d
+                HEIGHT_M        1842.529998     1e6     1       d
+        }
 	RAAP	&Arr{
 		ITRF_X	-2422981.851818  1000000         1       d
 		ITRF_Y	-4772397.206502  1000000         1       d
