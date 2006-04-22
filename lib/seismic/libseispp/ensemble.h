@@ -167,16 +167,6 @@ public:
 // Standard assignment operator.
 //@}
 	TimeSeriesEnsemble& operator=(const TimeSeriesEnsemble& tseold);
-//@{
-// Remove a member of the ensemble using an index.
-// Sometimes one needs to edit an ensemble to remove one or more 
-// traces.  This is particularly true in using an algorithm that is
-// interactive where the user would pick one or more traces to be deleted.
-// This method removes one member from the ensemble.
-//
-//@param no trace member number to be deleted.
-//@}
-	void remove_trace(int no);
 };
 
 //@{
@@ -288,74 +278,30 @@ public:
 // Standard assignment operator.
 //@}
 	ThreeComponentEnsemble& operator=(const ThreeComponentEnsemble& tseold);
+};
 //@{
 // Remove a member of the ensemble using an index.
 // Sometimes one needs to edit an ensemble to remove one or more 
 // traces.  This is particularly true in using an algorithm that is
 // interactive where the user would pick one or more traces to be deleted.
 // This method removes one member from the ensemble.
+// Note ensemble here is generic and this should work the same on 
+// any of the ensemble types in libseispp.
 //
+//@param ensemble reference to ensemble to be edited.
 //@param no trace member number to be deleted.
 //@}
-	void remove_trace(int no);
+template <class Tmember>
+	void remove_trace(Tmember& ensemble, int no)
+{
+    int i;
+    typedef typename std::vector<Tmember> vector_type;
+    typename vector_type::iterator it;
+
+    it=ensemble.member.begin();
+    for(i=0;i<no;++i) ++it;
+    ensemble.member.erase(it);
 };
-template <typename Tmember>
-	void remove_traces(vector<int> tobe_removed)
-{
-    int i;
-    // This constructo worked in Sun Workshop CC, had to 
-    // be changed to later code for g++.  g++ gives a warning
-    // error about this code, but conversations on the web say this is harmless
-    // and a bug in g++
-    //vector<Tmember>::iterator it;
-    //list< <vector<Tmember>::iterator > dellist;
-    typedef typename std::vector<Tmember> vector_type;
-    vector_type::iterator it;
-    std::list<vector_type> dellist;
-
-    it=member.begin();
-    i=0;
-    while (it != member.end()) {
-        if (find(tobe_removed.begin(),tobe_removed.end(),i)
-		!=tobe_removed.end()) 
-	{
-            dellist.push_back(it);
-        } 
-	else 
-	{
-		it++;
-	}
-        i++;
-    }
-    //list< <vector<Tmember>::iterator >::iterator delptr;
-    std::list<vector_type>::iterator delptr;
-    for(delptr=dellist.begin();delptr!=dellist.end();++delptr)
-	member.erase(delptr);
-}
-template <typename Tmember>
-	void remove_trace(int no)
-{
-    int i;
-    // This constructo worked in Sun Workshop CC, had to 
-    // be changed to later code for g++.  g++ gives a warning
-    // error about this code, but conversations on the web say this is harmless
-    // and a bug in g++
-    //vector<Tmember>::iterator it;
-    //list< <vector<Tmember>::iterator > dellist;
-    typedef typename std::vector<Tmember> vector_type;
-    vector_type::iterator it;
-    std::list<vector_type> dellist;
-
-    it=member.begin();
-    i=0;
-    while (it != member.end()) {
-        if (i==no) {
-            member.erase(it);
-	    break;
-        } else it++;
-        i++;
-    }
-}
 
 } // End SEISPP namespace declaration
 #endif

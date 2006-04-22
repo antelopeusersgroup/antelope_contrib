@@ -32,6 +32,7 @@
 //
 // Library internal includes files required for the seispp.h  include
 // 
+#include "SeisppKeywords.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
 #include "ensemble.h"
