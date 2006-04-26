@@ -1,0 +1,99 @@
+.TH DBRMT 1 "$Date$"
+.SH NAME
+dbrmt \- invert for regional moment tensor from a database
+.SH SYNOPSIS
+.nf
+dbrmt [-v] [-p pfname] dbname orid
+.fi
+.SH DESCRIPTION
+The dbrmt program computes a regional moment tensor for the origin
+specified on the command line. Much of the work is delegated to SAC 
+and to Chuck Ammon's moment-tensor inversion code. 
+
+dbrmt begins with a database which is assumed to contain: the origin 
+time and parameters, picked arrivals for all stations which are to be used,
+filled-in association information (e.g. delta, esaz) for the arrivals, 
+correct coordinates for sites, and three-component waveforms. There must 
+be a P-phase pick on the vertical channel of each station that will be 
+used. 
+
+.SH OPTIONS
+
+.IP "-p pfname"
+Specify alternate name for the parameter file. Default is dbrmt.pf.
+
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+Ultimately, this should remove the SAC dependence to use Antelope tools
+and recast the moment-tensor inversion code into pieces that interact
+directly with the database. 
+
+This program requires a correctly filled out database in order to run. 
+If this does not exist, say for example if one imports waveforms from 
+an external source to include in the moment tensor solution, a 
+pre-requirement to running this script will be to assemble all the input 
+data into a temporary database, adding picks if necessary, before
+running dbrmt.
+
+dbrmt currently expects station responses to be in SAC-style pole-zero
+files in the response_dir specified by the parameter file. These need to 
+be named %sta.%chan.pz with the sta and channel names in lowercase, and 
+dbrmt will die if a needed response is not found. All of these above-mentioned
+features couple be improved upon
+
+currently dbrmt always recomputes Green's functions. At some point it 
+should re-implement the caching mechanism. 
+
+dbrmt currently requires that all channels for a given station have the 
+same sample rate. It will complain and die if this is not the case. 
+(It is allowed to have different sample rates for different stations,
+however).
+
+dbrmt uses the depth_offset parameter to somewhat arbitrarily skew depths 
+so they do not end up on layer boundaries when computing Green's functions. 
+A better solution would be to dynamically detect this by examining 
+the model file and responding accordingly. 
+
+dbrmt currently does not tolerate having two different stations at the 
+same distance. This is due to the hard-wired output of xtsynth and 
+the ugly hashing strategy needed to turn xtsynth output into the 
+final green's functions. To overcome this we probably need to modify 
+xtsynth and/or gfconvert, or make a hierarchical directory structure
+to keep the green's functions separate since with a large enough network
+it is possible this rule will be violated eventually. dbrmt in its 
+current form will detect violations and die. 
+
+Right now the hashing beteen station and earthquake locations to find 
+the right model is somewhat simplistic. This probably needs a fancier 
+solution that allows polygons for both, with a thorough search mechanism.
+
+dbrmt currently uses a lot globs, internal filename assumptions, etc. to make 
+sure the right files are used at the right place. It would be better to 
+use more sophisticated hashing instead (perhaps via a database table), since 
+otherwise the steps to combine pieces end up being somewhat stilted. 
+
+dbrmt needs a way to go through waveforms and select the ones to use. 
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+
+John Ristau
+.fi
+.\" $Id$

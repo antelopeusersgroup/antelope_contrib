@@ -1,0 +1,130 @@
+work_dir rmttemp
+
+# Preparation of observed data:
+# -----------------------------
+
+roughcut_pre_arrival_sec 	10
+roughcut_min_post_arrival_sec	200
+roughcut_group_velocity_kmps	1.6
+cut_pre_arrival_sec	2
+low_frequency_hz	0.02
+high_frequency_hz	0.05
+npoles			6
+taper_lowside_zeroat_hz	0.01
+taper_lowside_unityat_hz 0.025
+taper_highside_unityat_hz 200
+taper_highside_zeroat_hz  201
+cosine_taper_width	0.5
+response_dir ../responses
+decimation_recipes &Arr{
+	40 	2 4 5
+	50	2 5 5 
+	20	4 5
+	1
+}
+
+# Greens function computation
+# ---------------------------
+source_region		RDW
+depth_list_km			9
+depth_offset	0.01
+xtsynth_reducing_velocity 1e9
+xtsynth_time_shift 0.0
+models	&Arr{
+	BBB	&Arr{ # Earth model for stations near BBB
+		model	&Tbl{
+		   5
+		   01   4.00 2.11 2.10  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   04   5.00 3.13 2.40  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   15   6.00 3.68 2.70  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   50   7.81 4.68 3.00  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   00   7.81 4.68 3.00  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   0.01  0.025  0.96  0.99  4.
+		   0.0  0.50 0.50 1024
+		   -1.0 30.0
+		}
+		stations &Tbl{
+			BBB   
+			MOBC  
+		}
+	}
+	PHC	&Arr{ # Earth model for stations near PHC
+		model	&Tbl{
+		   6
+		   1.5  4.50 2.60 2.21  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   02   5.50 3.44 2.53  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   09   6.00 3.68 2.69  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   21.5 6.80 4.12 2.95  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   04   7.30 4.22 3.11  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   00   7.70 4.45 3.22  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   0.01  0.025  0.96  0.99  4.
+		   0.0  0.50 0.50 1024
+		   -1.0 30.0
+		}
+		stations &Tbl{
+			CBB   
+			PHC   
+		}
+	}
+	PGC	&Arr{ # Earth model for stations near PGC
+		model	&Tbl{
+		   5
+		   01   5.00 2.89 2.40  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   05   6.00 3.47 2.50  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   18   6.70 3.87 2.70  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   13   7.10 4.10 2.85  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   00   8.10 4.68 3.10  225. 100. 1.e4  0.0001  1.e4  0.0001
+		   0.01  0.025  0.96  0.99  4.
+		   0.0  0.50 0.50 1024
+		   -1.0 30.0
+		}
+		stations &Tbl{
+			PGC   
+		}
+	}
+	LLLB	&Arr{ # Earth model for stations near LLLB
+		model	&Tbl{
+		   9
+		   0.5 4.50 2.60 2.10  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   01  5.30 3.06 2.30  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   02  5.50 3.18 2.35  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   04  5.76 3.33 2.40  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   01  6.00 3.47 2.45  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   05  6.28 3.63 2.50  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   25  6.71 3.88 2.65  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   50  7.60 4.39 2.80  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   00  7.60 4.39 2.90  225.   100. 1.e4  0.0001  1.e4  0.0001
+		   0.01  0.025  0.96  0.99  4.
+		   0.0  0.50 0.50 1024
+		   -1.0 30.0
+		}
+		stations &Tbl{
+			BMBC  
+			DLBC  
+			LLLB  
+			SLEB  
+		}
+	}
+}
+source_function_rise_time_sec	1
+source_function_center_time_sec	0
+source_function_fall_time_sec	1
+
+# Moment-tensor inversion
+# -----------------------
+moment_tensor_scale		1e22
+
+
+# Comprehensive dynamic input list
+# station names
+# components	z; r; t
+# number_components	24
+# source-receiver_distance	0350
+# source-receiver_azimuth		054
+# origin_time	year; Julian_day; hour; minute; second; msec
+# event_latitude	50.4755
+# event_longitude	-130.4036
+# event_depth	9000
+# station_latitude	49.2745
+# station_longitude	-122.5792
+# station_elevation	183
