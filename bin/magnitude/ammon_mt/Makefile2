@@ -1,0 +1,82 @@
+
+BIN= mtinv l1mtinv gfconvert gfcombine marktime srcgrd \
+     mgenkennett mijfkkennett mijkennett tsynth xtsynth \
+     tftn
+
+MAN1= ammon_mt.1
+
+CLEAN= mgenkennett.f mijfkkennett.f mijkennett.f diffkennet.f \
+       kennet.inc
+
+SACLIB = $(SACLIBDIR)/sacio.a 
+
+cflags=
+fflags= -C $(LONGLINE)
+ldflags=
+ldlibs= $(SACLIB) -lm 
+
+include $(ANTELOPEMAKE)
+
+CPP = cpp -traditional-cpp
+ 
+SVD_OBJS = svdcmp.o svbksb.o svdvar.o
+MYFLIB_OBJS = hsehld.o gmoment.o fake_kastuff.o
+HEXT_OBJS = hext.o eigens.o ahat.o mult.o azdip.o
+
+KENNETT_OBJS = ifmat.o srcvec.o frcvec.o refl.o rufs.o \
+	rcvrfn.o disptf.o kntfun.o abm.o burcvrfs.o hanklf.o \
+	burec.o rcvrufs.o 
+
+MTINV_OBJS = mtinv.o $(SVD_OBJS) $(HEXT_OBJS) $(MYFLIB_OBJS) 
+mtinv : $(MTINV_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(MTINV_OBJS) $(LDFLAGS) $(LDLIBS)
+
+L1MTINV_OBJS = l1mtinv.o cl1.o $(MYFLIB_OBJS) 
+l1mtinv : $(L1MTINV_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(L1MTINV_OBJS) $(LDFLAGS) $(LDLIBS)
+
+SRCGRD_OBJS = srcgrd.o fake_kastuff.o
+srcgrd : $(SRCGRD_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(SRCGRD_OBJS) $(LDFLAGS) $(LDLIBS)
+
+TSYNTH_OBJS = tsynth.o ffts.o
+tsynth : $(TSYNTH_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(TSYNTH_OBJS) $(LDFLAGS) $(LDLIBS)
+
+XTSYNTH_OBJS = xtsynth.o ffts.o
+xtsynth : $(XTSYNTH_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(XTSYNTH_OBJS) $(LDFLAGS) $(LDLIBS)
+
+MGENKENNETT_OBJS = mgenkennett.o $(KENNETT_OBJS)
+mgenkennett : $(MGENKENNETT_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(MGENKENNETT_OBJS) $(LDFLAGS) $(LDLIBS)
+
+MIJFKKENNETT_OBJS = mijfkkennett.o $(KENNETT_OBJS)
+mijfkkennett : $(MIJFKKENNETT_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(MIJFKKENNETT_OBJS) $(LDFLAGS) $(LDLIBS)
+
+MIJKENNETT_OBJS = mijkennett.o $(KENNETT_OBJS)
+mijkennett : $(MIJKENNETT_OBJS)
+	$(RM) $@
+	$(FC) $(FFLAGS) -o $@ $(MIJKENNETT_OBJS) $(LDFLAGS) $(LDLIBS)
+
+mgenkennett.f: kennet.inc MasterSrcKennett.F 
+	$(CPP) -P -DMULTIDEP -DSNGLSRC MasterSrcKennett.F > $@
+
+mijfkkennett.f: kennet.inc MasterSrcKennett.F
+	$(CPP) -P -DMULTIDEP -DMULTISRC -DPNTFRC MasterSrcKennett.F > $@
+
+mijkennett.f: kennet.inc MasterSrcKennett.F
+	$(CPP) -P -DMULTIDEP -DMULTISRC MasterSrcKennett.F > $@
+
+kennet.inc:
+	cp -p kennet.syn kennet.inc
+
+$(KENNETT_OBJS) :: kennet.inc
