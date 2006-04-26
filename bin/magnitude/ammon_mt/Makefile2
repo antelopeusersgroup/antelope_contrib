@@ -13,7 +13,7 @@ SACLIB = $(SACLIBDIR)/sacio.a
 cflags=
 fflags= -C $(LONGLINE)
 ldflags=
-ldlibs= $(SACLIB) -lm 
+ldlibs= $(F77LIBS) $(SACLIB) -lm 
 
 include $(ANTELOPEMAKE)
 
