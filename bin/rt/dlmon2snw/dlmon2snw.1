@@ -1,0 +1,30 @@
+.TH DLMON2SNW 1 2006/04/26 "Antelope Contrib SW" "User Commands"
+.SH NAME
+dlmon2snw \- provides output data stream to SeisNetWatch
+.SH SYNOPSIS
+.nf
+dlmon2snw [-v] [-p pf_sourcename] orb
+.fi
+.SH DESCRIPTION
+dlmon2snw extracts a q330 st pf file from an orb, reformats the data so that
+SeisNetWatch can read it. Program reads one q330 pf file and then exits.
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-p pf_sourcename"
+change pf_sourcename selected from orb.  Default is tadata/pf/st.
+.SH FILES
+None.
+.SH ENVIRONMENT
+needs to be run in ANTELOPE environment
+.SH "BUGS AND CAVEATS"
+None.
+.SH "SEE ALSO"
+.nf
+q33020rb(1)
+.fi
+.SH AUTHOR
+Frank Vernon
+.br
+UCSD
+.\" $Id$
