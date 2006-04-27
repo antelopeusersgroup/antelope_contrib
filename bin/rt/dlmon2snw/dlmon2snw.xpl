@@ -1,7 +1,8 @@
 #
 #  Builds input file for SeisNetWatch from dlmon.pf 
 #
-#    use strict ;
+#    use diagnostics ; 
+    use strict ;
     use Datascope ;
     use orb;
     require "getopts.pl" ;
@@ -22,18 +23,17 @@
     $pfsource  = $opt_p || "tadata/pf/st" ;
 
     print STDOUT "pfsource	$pfsource\n\n" if $opt_v ;
-    print STDOUT "orb		$orb\n\n" if $opt_v ;
+    print STDOUT "orb		$orbname\n\n" if $opt_v ;
 #
 #  open input orb
 #
     $orb = orbopen($orbname,"r");
 
     if( $orb < 0 ) {
-        die( "Failed to open orb '$orbname' for reading\n" );
+        die( "Failed to open orb $orbname for reading\n" );
     }
 
     orbselect( $orb, $pfsource);
-
     for (;;) {
         ( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap( $orb );
 	($result, $pkt) = unstuffPkt( $srcname, $time, $packet, $nbytes ); 
