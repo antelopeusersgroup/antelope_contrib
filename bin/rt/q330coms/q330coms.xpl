@@ -1,7 +1,7 @@
 #
 #  Builds and updates q330comms table from tadata/pf/st orb packet
 #
-    use diagnostics ;
+#    use diagnostics ;
     use strict ;
     use Datascope ;
     use orb ;
