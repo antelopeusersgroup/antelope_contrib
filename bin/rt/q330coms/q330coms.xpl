@@ -13,6 +13,7 @@
     my ($listpar,$par,$nsta);
     my (%pf,%dls,%par);
     my ($inp,$ssident,$idtag,$lat,$lon,$elev,$thr,$endtime);
+    my ($latnull,$latdb,$lonnull,$londb,$elevnull,$elevdb);
     my (@db,@dbq330,@dbq330r,@dbscratch,@dbnull,@row);
 
     if ( !  &Getopts('vp:') || @ARGV != 2 )
@@ -58,6 +59,8 @@
             }
             next;
         }
+    
+#        printf "%s	%s\n", $srcname, strydtime($time);
 
         ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
         ($type, $desc) = $pkt->PacketType() ;
@@ -69,7 +72,7 @@
             my @stas = sort keys %{$ref->{dls}};
             foreach my $sta (@stas) {
 
-                printf "%s	%s", $sta, strydtime($time);
+                printf "%s	%s", $sta, strydtime($time) if $opt_v;
 
                 my @pars = sort keys %{$ref->{dls}{$sta}};
                 $inp = $ref->{dls}{$sta}{"inp"};
@@ -80,8 +83,8 @@
                 $elev    = $ref->{dls}{$sta}{"elev"};
                 $thr     =  $ref->{dls}{$sta}{"thr"};
 
-                printf "	%s	%s	%s	%s	%s	%s	%s", $inp, $ssident,$idtag,$lat,$lon,$elev,$thr;
-                printf "\n";
+                printf "	%s	%s	%s	%s	%s	%s	%s", $inp, $ssident,$idtag,$lat,$lon,$elev,$thr if $opt_v;
+                printf "\n" if $opt_v;
 
                 dbputv(@dbscratch, "dlsta",   $sta,
                                    "time",    $time,
@@ -100,7 +103,15 @@
 #  Check if data changed when compared to database
 
                 @row     = dbmatches(@dbscratch,@dbq330,"no_change","dlsta","inp","ssident","endtime");
-                if (! $#row) {next;}
+                if ($#row == 0) {
+                    $dbq330r[3] = $row[0];
+                    ($latnull,$lonnull,$elevnull) = dbgetv(@dbnull,"lat","lon","elev");
+                    ($latdb, $londb, $elevdb) = dbgetv(@dbq330r,"lat","lon","elev");
+                    if (($latdb == $latnull)||($londb==$lonnull)||($elevdb==$elevnull)) {
+                        dbputv(@dbq330r,"lat",$lat,"lon",$lon,"elev",$elev);
+                    }
+                    next;
+                }
 
 #  Check to see if ip changes
                 
@@ -141,7 +152,7 @@
                 dbadd(@dbq330);
             }
         }
-        exit;
+#        exit;
     }
 
 
