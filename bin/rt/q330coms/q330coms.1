@@ -1,0 +1,33 @@
+.TH DLMON2SNW 1 2006/04/26 "Antelope Contrib SW" "User Commands"
+.SH NAME
+q330coms \- attaches to orb and updates q330comm table if necessary
+.SH SYNOPSIS
+.nf
+q330coms [-v] [-p pf_sourcename] orb db
+.fi
+.SH DESCRIPTION
+q330coms extracts a q330 /pf/st file from an orb, matches the station name, serial number,  ip address 
+to see if there are any changes which require the q330comm table to be updated.  
+If so, it closes the old record and starts a new record.
+Program reads one q330 pf file and then exits. 
+This program is designed to run as a cron program under rtexec.pf.
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-p pf_sourcename"
+change pf_sourcename selected from orb.  Default is tadata/pf/st.
+.SH FILES
+None.
+.SH ENVIRONMENT
+needs to be run in ANTELOPE environment
+.SH "BUGS AND CAVEATS"
+None.
+.SH "SEE ALSO"
+.nf
+q3302orb(1),dlmon(1)
+.fi
+.SH AUTHOR
+Frank Vernon
+.br
+UCSD
+.\" $Id$
