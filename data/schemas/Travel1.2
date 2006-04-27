@@ -1,0 +1,408 @@
+Schema Travel1.2
+	Description ( "record of travel" )
+	Detail {
+		The Travel schema provides a record of trips taken for 
+		business and pleasure.
+	}
+	Timedate lddate
+	;
+
+Attribute absdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "abstract deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the abstract deadline for the meeting. 
+	}
+	;
+
+Attribute abstract
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "abstract =~ /y|n|x/" )
+	Description ( "whether one has submitted an abstract" )
+	Detail {
+		This field records whether one has submitted
+		an abstract, if the travel event is a 
+		scientific meeting or professional conference.  
+		An 'x' indicates that no abstract is necessary.
+	}
+	;
+
+Attribute approximate
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "approximate =~ /y|n/" )
+	Description ( "whether the trip dates are approximate" )
+	Detail {
+		This field records whether the trip dates are approximations. 
+		Often this may be used to show that the dates are the 
+		bounding dates within which the trip will take place.
+		For trips that have already taken place, this field can 
+		be used when the exact dates are not certain.
+	}
+	;
+
+Attribute business
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "business =~ /y|n/" )
+	Description ( "whether the trip involved a business component" )
+	Detail {
+		This field records whether part or all of the trip was 
+		for business
+	}
+	;
+
+Attribute car
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "car =~ /y|n|x/" )
+	Description ( "whether a rental-car reservation has been made" )
+	Detail {
+		This field records whether a rental car reservation 
+		or other ground transportation arrangment has been
+		made for a pending trip. An 'x' indicates that none
+		are necessary.
+	}
+	;
+
+Attribute destination
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "destination" )
+	Detail {
+		This records the main destination of the travel
+	}
+	;
+
+Attribute flight
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "flight =~ /y|n|x/" )
+	Description ( "whether a plane ticket has been purchased" )
+	Detail {
+		This field records whether a plane ticket has been
+		purchased for a pending trip. An 'x' indicates
+		that none is necessary.
+	}
+	;
+
+Attribute hopto
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "next vertex in a multi-leg trip" )
+	Detail {
+		If after completing activities at a destination, the 
+		traveler goes on to another leg of the trip instead 
+		of returning home, the hopto field records the arrival
+		location for the next leg of the trip. If triptype 
+		is 'leg' and hopto is null, it is implied that this 
+		is the return trip home. 
+	}
+	;
+
+Attribute hotel
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "hotel =~ /y|n|x/" )
+	Description ( "whether a hotel reservation has been made" )
+	Detail {
+		This field records whether a hotel reservation 
+		or other lodging arrangment has been
+		made for a pending trip. An 'x' indicates that
+		none are necessary.
+	}
+	;
+
+Attribute hoteldeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "hotel deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the deadline for making hotel reservations
+		(usually at meeting-specific discount rates).
+	}
+	;
+
+Attribute inst
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "home institution" )
+	Detail {
+		This field identifies the employing institution if the 
+		travel is business related (i.e. the employer of the 
+		traveler, as opposed to the company for which work is 
+		being done)
+	}
+	;
+
+Attribute lddate
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "time of record modification" )
+	Detail {
+		Epoch time of record creation or last modification
+	}
+	;
+
+Attribute leave
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "day on which trip starts" )
+	Detail {
+		This field records the start day of the trip. Note that
+		while this field allows the option of very precise
+		takeoff-time tracking, in practice often it may only 
+		be specified to the nearest day.
+	}
+	;
+
+Attribute international
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "international =~ /y|n/" )
+	Description ( "whether the trip involved an international destination" )
+	Detail {
+		This field records whether the traveler left the country
+	}
+	;
+
+Attribute packlist
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "packlist =~ /y|n|x/" )
+	Description ( "whether a packing-list has been made" )
+	Detail {
+		This field records whether a packing list
+		has been completed for a pending trip. An
+		'x' indicates that none is necessary.
+	}
+	;
+
+Attribute pending
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "pending =~ /y|n/" )
+	Description ( "whether the trip is still pending" )
+	Detail {
+		This field records whether the trip has actually been taken.
+		If this field is 'y', the record indicates an upcoming 
+		intended trip. If the field is 'n' or null, the row records
+		an actual trip that has already occurred.
+	}
+	;
+
+Attribute preregdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "pre-registration deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the pre-registration deadline for the meeting. 
+		Meeting this deadline usually allows discounted meeting
+		fees. 
+	}
+	;
+
+Attribute presentation
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "presentation =~ /y|n|x/" )
+	Description ( "whether the presentation for the trip is ready" )
+	Detail {
+		This field records indicates whether a presentation 
+		to be given on the trip, such as a talk, poster,
+		exhibit etc. is fully prepared and ready to deliver.
+		An 'x' indicates that none is necessary.
+	}
+	;
+
+Attribute purpose
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "short description of the purpose of the trip" )
+	Detail {
+		This field describes the purpose of the trip, e.g. 
+		"vacation" or name of meeting attended or name of 
+		company for which work was performed
+	}
+	;
+
+Attribute regdeadline
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "registration deadline" )
+	Detail {
+		If a potential trip is for a meeting, this field
+		lists the registration deadline for the meeting. 
+	}
+	;
+
+Attribute registered
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "registered =~ /y|n|x/" )
+	Description ( "whether one has registered for the event" )
+	Detail {
+		This field records whether one has registered 
+		for the event in question, for example meeting 
+		or conference.  An 'x' indicates that no
+		registration is necessary.
+	}
+	;
+
+Attribute return
+	Time (17)
+	Format ( "%17.5f" )
+	Null ( "-9999999.99999" )
+	Units ( "seconds" )
+	Description ( "day on which trip ends" )
+	Detail {
+		This field records the end day of the trip. If the 
+		triptype is 'leg', the return field indicates the day 
+		of travel to the next destination in the trip, as 
+		recorded in the 'hopto' field. 
+	}
+	;
+
+Attribute side
+	String (50)
+	Format ( "%-50s" )
+	Null ( "-" )
+	Description ( "other places visited along the way" )
+	Detail {
+		This records side destinations during a trip, especially if 
+		other countries were visited in the meantime. Note the 
+		difference between this and the 'hopto' field, which is 
+		used to record the vertices of multi-leg trips. The "side" 
+		field is useful if the side-trip does not need to 
+		be independently tracked as part of a multi-leg 
+		journey, or if it is entirely self-contained. 
+		If the side trip extends over multiple days or 
+		involves countries other than the destination country, 
+		the dates of the side trip should be listed.
+	}
+	;
+
+Attribute skip
+	String (2)
+	Format ( "%-2s" )
+	Null ( "-" )
+	Range ( "skip =~ /y|n/" )
+	Description ( "whether to skip the trip" )
+	Detail {
+		This field is 'y' for cancelled trips, meetings that 
+		will not be attended etc.
+	}
+	;
+
+Attribute traveler
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "name of traveler" )
+	Detail {
+		This field identifies the traveler
+	}
+	;
+
+Attribute triptype
+	String (10)
+	Format ( "%-10s" )
+	Null ( "-" )
+	Range ( "triptype =~ /rt|leg/" )
+	Description ( "Trip type (round-trip or leg)" )
+	Detail {
+		The trip type field records whether the listed trip is a 
+		round-trip ("rt"), or one leg of a multi-leg trip ("leg").
+	}
+	;
+
+Attribute tz
+	String (15)
+	Format ( "%-15s" )
+	Null ( "-" )
+	Description ( "Timezone" )
+	Detail {
+		The tz field records the time-zone in which the leave and 
+		return fields are specified. The timezone should be
+		specified in the form of a unix zoneinfo entry, e.g.
+		"US/Alaska".
+	}
+	;
+
+Relation colleagues
+	Fields ( traveler destination leave return approximate purpose lddate )
+	Primary ( traveler leave return )
+	Description ( "travel planned by colleagues" )
+	Detail { 
+		Frequently one is informed by colleagues that they will 
+		not be available during certain time ranges due to travel. 
+		Although most professionals have better things 
+		to do (hopefully!) than keep tabs on their colleagues, 
+		it is refreshing not to have to continually repeat the same
+		"Please tell me again when you are out of town" questions
+		when relevant. This table is a place to keep the answers. 
+	}
+	;
+
+Relation potential
+	Fields ( destination leave return purpose traveler absdeadline preregdeadline regdeadline hoteldeadline skip lddate )
+	Primary ( destination leave return purpose )
+	Description ( "potential trips being considered" )
+	Detail {
+		This table describes potential trips being considered, 
+		whether for meetings, collaboration, vacations, etc. 
+		The absdeadline and regdeadline fields provide deadlines 
+		for abstracts and registration, if appropriate. N.B.: for
+		upcoming trips that will almost certainly be made and for
+		which travel plans have already been confirmed, the trips
+		table should be used instead of this table, with
+		trips.pending set to 'y'. Time-periods in which it is
+		necessary to remain in town may be anchored by specifying 
+		"destination" as one's home town.
+	}
+	;
+
+Relation trips
+	Fields ( destination leave return purpose side triptype hopto pending approximate flight car hotel packlist registered abstract presentation international business traveler inst tz lddate )
+	Primary ( destination leave::return )
+	Description ( "trips taken" )
+	Detail {
+		This table describes trips taken, and for planning
+		purposes trips that are confirmed to be taken (for 
+		trips under consideration but not yet confirmed, the 
+		relation 'potential' should be used).
+	}
+	;
+

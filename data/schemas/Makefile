@@ -30,6 +30,7 @@ DATA=	iceworm1.3 \
 	Specevents1.0 \
 	Travel1.0 \
 	Travel1.1 \
+	Travel1.2 \
 	webbullets1.0
 
 include $(ANTELOPEMAKE)  	
