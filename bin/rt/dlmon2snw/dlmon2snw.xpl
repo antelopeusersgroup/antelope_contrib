@@ -8,9 +8,9 @@
     require "getopts.pl" ;
 
     our ( $opt_v, $opt_p );
-    my ($snw_file,$pfsource,$orbname,$orb,$pktid,$srcname,$time,$net,$sta,$chan,$loc);
-    my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref,$value,$liststa);
-    my ($listpar,$par,$nsta);
+    my ($pfsource,$orbname,$orb,$pktid,$srcname,$time,$net,$sta,$chan,$loc);
+    my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref,$value);
+    my ($par,$nsta);
     my (%pf,%dls,%par);
 
     if ( !  &Getopts('vp:') || @ARGV != 1 )
