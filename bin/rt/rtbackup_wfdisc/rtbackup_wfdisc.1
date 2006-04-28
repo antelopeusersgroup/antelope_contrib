@@ -3,7 +3,7 @@
 rtbackup_wfdisc \- prototype script to copy waveforms from real-time database to archive
 .SH SYNOPSIS
 .nf
-rtbackup_wfdisc [-n] [-v]
+rtbackup_wfdisc [-j jdate] [-n] [-v]
 .fi
 .SH DESCRIPTION
 The rtbackup_wfdisc script is designed to work in conjunction with rtdbclean(1). rtbackup_wfdisc(1)
@@ -152,12 +152,13 @@ an easy weakness to fix. Similarly, the script may only support one level of new
 archive_wfdir at the moment.
 
 rtbackup_wfdisc assumes that there are no missed days in the real-time database. If there are, a more 
-sophisticated strategy will be needed to decide the next day to archive. If rtbackup_wfdisc 
-fails because it cannot find rows in the real-time database, it will complain bitterly.
-Backups will not proceed until the gap is crossed by hand, thus 
-rtbackup_wfdisc is destined to eventually lose the race with rtdbclean(1). As a side-note, rtbackup_wfdisc
-needs a -j option to explicitly specify the jdate to back up (rather than deriving it from
-the contents of the archive), so this manual-assistance task can be performed easily by the system operator. 
+sophisticated strategy will be needed to decide the next day to archive. If a missed day is found, 
+rtbackup_wfdisc will complain and die. This situation must be fixed by hand (usually by running
+rtbackup_wfdisc manually with the -j option specifying the next jdate to archive). rtbackup_wfdisc 
+refuses to make any assumptions about what might be wrong or whether 
+anything is wrong, not to mention how to 'fix' the situation; such compexity must be sorted out by the 
+human operator. Since backups will not proceed until the gap is crossed by hand, 
+rtbackup_wfdisc is destined to eventually lose the race with rtdbclean(1). 
 
 A more advanced version might use trexcerpt to clean up the database during the move. 
 

@@ -166,9 +166,9 @@ sub increment_jdate {
 
 elog_init( $0, @ARGV );
 
-if( ! &Getopts( 'vn' ) || @ARGV != 0 ) {
+if( ! &Getopts( 'j:vn' ) || @ARGV != 0 ) {
 	
-	elog_die( "Usage: rtbackup_wfdisc [-v] [-n]\n" );
+	elog_die( "Usage: rtbackup_wfdisc [-j jdate] [-v] [-n]\n" );
 }
 
 if( $opt_v ) {
@@ -197,7 +197,16 @@ $warning_email = pfget( $Pf, "warning_email" );
 
 ( $latest_archived_jdate, $latest_archive_wfdisc ) = latest_archived();
 
-$active_jdate = increment_jdate( $latest_archived_jdate );
+
+if( $opt_j ) {
+
+	$active_jdate = $opt_j;
+
+} else {
+
+	$active_jdate = increment_jdate( $latest_archived_jdate );
+}
+
 $active_timestamp = str2epoch( "$active_jdate" );
 $subdir = epoch2str( $active_timestamp, $wf_subdir_pattern );
 
