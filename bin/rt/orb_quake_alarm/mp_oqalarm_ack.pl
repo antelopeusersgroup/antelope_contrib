@@ -66,26 +66,44 @@ sub mp_oqalarm_ack_handler {
 
 	} else {
 		
+		( $oldack, $oldacktime, $oldackauth ) = dbgetv( @db, 
+							"acknowledged", 
+							"acktime",
+							"ackauth" );
+
 		$acktime = now();
 		$ackauth = $from;
 
-		if( $opt_v ) {
+		if( $oldack eq "y" ) {
 
-			elog_notify( "Recording acknowledgment for alarmid " .
-				     "$alarmid from '$ackauth' at " .
-				     strtime( $acktime ) . "\n" );
-		}
+			if( $opt_v ) {
 
-		$rc = dbputv( @db, "acknowledged", "y",
-			     "acktime", $acktime,
-			     "ackauth", $ackauth );
+				elog_notify( "alarmid $alarmid has already been acknowledged " .
+				     "by '$oldackauth' at " . strtime( $oldacktime ) .
+				     "; ignoring duplicate acknowledgement from '$ackauth'" .
+				     "at " . strtime( $acktime ) . "\n" );
+			}
 
-		if( $rc < 0 ) {
+		} else {
+
+			if( $opt_v ) {
+
+				elog_notify( "Recording acknowledgment for alarmid " .
+				     	"$alarmid from '$ackauth' at " .
+				     	strtime( $acktime ) . "\n" );
+			}
+	
+			$rc = dbputv( @db, "acknowledged", "y",
+			     	"acktime", $acktime,
+			     	"ackauth", $ackauth );
+
+			if( $rc < 0 ) {
 			
-			clear_register( 1 );
-
-			elog_complain( "Failed to record acknowledgment " .
-				       "in database for alarmid $alarmid!\n" );
+				clear_register( 1 );
+	
+				elog_complain( "Failed to record acknowledgment " .
+				       	"in database for alarmid $alarmid!\n" );
+			}
 		}
 	}
 

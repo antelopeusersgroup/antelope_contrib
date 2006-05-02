@@ -1487,6 +1487,13 @@ database_watch( void *arg )
 
 		nalarms = maxtbl( keys );
 
+		if( VeryVerbose ) {
+
+			elog_notify( 0, 
+				"[%s]: Searching %d alarm rows for matching entries\n",
+				get_threadname(), nalarms );
+		}
+
 		for( ialarm = 0; ialarm < nalarms; ialarm++ ) {
 
 			alarmid = gettbl( keys, ialarm );
@@ -1585,6 +1592,14 @@ database_watch( void *arg )
 					   "alarm was acknowledged in "
 					   "database" );
 			}
+		}
+
+		if( VeryVerbose ) {
+
+			elog_notify( 0, 
+				"[%s]: Done searching alarm rows (all relevant matches "
+				"were announced)\n",
+				get_threadname() );
 		}
 
 		freetbl( keys, 0 );
