@@ -1,11 +1,12 @@
 LIB=libgclgrid.a
-DLIB=$(LIB:.a=$(DSUFFIX)) 
 
 DIRS=htdocs
 DATADIR=schemas
 
 INCLUDE=gclgrid.h dmatrix.h
 MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
+
+CXX=g++ -shared
 
 
 include $(ANTELOPEMAKE)  	
@@ -35,9 +36,6 @@ $(LIB) : $(OBJS)
 	$(CXXAR) $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
-$(DLIB) : $(OBJS)
-	$(RM) $@
-	$(CXXDLD) $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 # New special build for html documentation using ccdoc
 CCDOC=ccdoc.exe
 htdocs/gclgrid.db : htdocs gclgrid.h dmatrix.h

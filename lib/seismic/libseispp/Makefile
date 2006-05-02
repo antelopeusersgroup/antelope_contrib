@@ -1,12 +1,13 @@
 LIB=libseispp.a
-DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
+CXX=g++ 
 INCLUDE=AttributeMap.h \
   BasicTimeSeries.h\
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
   SeisppError.h\
+  SeisppKeywords.h\
   SphericalCoordinate.h\
   StationChannelMap.h\
   ThreeComponentChannelMap.h\
@@ -91,9 +92,6 @@ $(LIB) : $(OBJS)
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
-$(DLIB) : $(OBJS)
-	$(RM) $@
-	$(CXXDLD)  $(CXXDLDFLAGS) -g -o $(DLIB) $(OBJS) $(DLDLIBS) 
 # New special build for html documentation using ccdoc
 CCDOC=ccdoc.exe
 htdocs/seispp.db : AttributeMap.h BasicTimeSeries.h Hypocenter.h \
