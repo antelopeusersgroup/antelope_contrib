@@ -1,0 +1,25 @@
+trace_metadata &Tbl{
+pwfid int
+wfprocess.dir string
+wfprocess.dfile string
+wfprocess.datatype string
+wfprocess.timetype string
+wfprocess.algorithm string
+}
+input_metadata &Tbl{
+pwfid int
+wfprocess.dir string
+wfprocess.dfile string
+wfprocess.datatype string
+wfprocess.timetype string
+wfprocess.algorithm string
+datatype string
+timetype string
+samprate real
+time real
+endtime real
+nsamp int
+dir string
+dfile string
+foff int
+}
