@@ -65,7 +65,7 @@ TimeSeries::TimeSeries(const Metadata& md,bool load_data) : Metadata(md)
 		s.reserve(ns);
 		if(load_data)
 		{
-			stref = this->get_string("TimeReferenceType");
+			stref = this->get_string("timetype");
 			if(stref == "relative")
 				tref = relative;
 			else
@@ -264,6 +264,21 @@ void TimeSeries::zero_gaps()
 			iend = nint((this_gap->end-t0)/dt);
 		for(i=istart;i<=iend;++i) s[i]=0.0;
 	}
+}
+
+ostream& operator << (ostream& os, TimeSeries& z)
+{
+	os << "==================TimeSeries Metadata====================="
+		<< endl;
+	os << dynamic_cast<Metadata &>(z);
+	os << "=== BasicTimeSeries data members==="<<endl;
+	os << dynamic_cast<BasicTimeSeries &>(z);
+	os << "=========================================================="
+		<<endl;
+	vector<double>::iterator zptr;
+	for(zptr=z.s.begin();zptr!=z.s.end();++zptr)
+		os << *zptr <<endl;
+	return(os);
 }
 
 } // End SEISPP namespace declaration

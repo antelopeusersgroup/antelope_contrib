@@ -165,19 +165,19 @@ public:
 // 
 //@}
 	void rtoa(double tshift);
-/************************************************************* 
-* This can be useful to turn on for debugging.  Left in file in 
-* case it proves useful later.  
-*
-void print_gaps()
-{
-	set<TimeWindow,TimeWindowCmp>::iterator g;
-	for(g=gaps.begin();g!=gaps.end();++g)
-		cout << "Timewindow = ("<<g->start<<","<<g->end<<")"<<endl;
-};
-***************************************************************/
+//@{
+// Outputs the data members of this base class.
+// Main use of this function is for ease of output in an ascii format.
+// There are not plans for an inverse << function.
+//
+//@param os output stream to send result to.
+//@param y BasicTimeSeries to be dumped.
+//@}
+	friend ostream& operator<<(ostream& os,BasicTimeSeries& y);
+
 protected:
 	set<TimeWindow,TimeWindowCmp> gaps;
+	
 };
 
 } // End namespace declaration SEISPP

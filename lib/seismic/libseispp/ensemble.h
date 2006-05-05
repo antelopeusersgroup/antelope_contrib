@@ -294,6 +294,7 @@ public:
 template <class Tmember>
 	void remove_trace(Tmember& ensemble, int no)
 {
+    if(no >= ensemble.member.size()) return;
     int i;
     typedef typename std::vector<Tmember> vector_type;
     typename vector_type::iterator it;
@@ -301,7 +302,7 @@ template <class Tmember>
     it=ensemble.member.begin();
     for(i=0;i<no;++i) ++it;
     ensemble.member.erase(it);
-};
+;}
 
 } // End SEISPP namespace declaration
 #endif

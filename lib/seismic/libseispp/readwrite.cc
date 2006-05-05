@@ -5,6 +5,7 @@
 #include "stock.h"
 #include "tr.h"
 #include "seispp.h"
+#include "dmatrix.h"
 namespace SEISPP
 {
 using namespace SEISPP;
@@ -569,6 +570,80 @@ int dbsave(ThreeComponentSeismogram& tcs,
 		throw serr;
 	}
 }
+// Similar to above for ComplexTimeSeries object.  
+// Behaves the same, but uses a 2xns dmatrix to
+// which complex numbers are copied (real in row
+// 1, imag in row 2).
 
+
+int dbsave(ComplexTimeSeries& tcs, 
+	Dbptr db,
+		string table, 
+			MetadataList& mdl, 
+				AttributeMap& am)
+{
+	int recnumber;
+	string field_name;
+
+	if(!tcs.live) return(-1);  // return immediately if this is marked dead
+	if(table=="wfdisc")
+		throw SeisppError(string("dbsave(ComplexTimeSeries):")
+			+string("wfdisc incompatible with a ComplexTimeSeries.  Check documentation for alternatives.\n"));
+	
+	db = dblookup(db,0,const_cast<char *>(table.c_str()),0,0);
+	recnumber = dbaddnull(db);
+	if(recnumber==dbINVALID) 
+		throw SeisppError(string("dbsave:  dbaddnull failed on table "+table));
+	db.record=recnumber;
+	try {
+		save_metadata_for_object(dynamic_cast<Metadata&>(tcs),
+			db,table,mdl,am);
+		// Even if they were written in the above loop the contents 
+		// of the object just override the metadata versions.  
+		// This is safer than depending on the metadata
+		double etime;
+		etime = tcs.endtime();
+		string sdtype("cx"); // special datatype signals complex
+		dbputv(db,0,"time",tcs.t0,
+			"endtime",etime,
+			"samprate",1.0/tcs.dt,
+			"nsamp",tcs.ns,
+			"datatype",sdtype.c_str(),0);
+		char dir[65],dfile[33];  //css3.0 wfdisc attribute sizes
+		long int foff;  // actual foff reset in db record
+		// assume these were set in mdl.  probably should have a cross check
+		dbgetv(db,0,"dir",dir,"dfile",dfile,0);
+		// make sure the directory is present
+		if(makedir(dir))
+		{
+			dbmark(db);
+			throw SeisppError(string("makedir(dir) failed with dir=")
+					+ string(dir));
+		}
+		dmatrix cmpxdata(2,tcs.ns);
+		for(int i=0;i<tcs.ns;++i)
+		{
+			cmpxdata(0,i)=tcs.s[i].real();
+			cmpxdata(1,i)=tcs.s[i].imag();
+		}
+		// Note we always write these as doubles.  I don't
+		// expect to save a datatype with this class of 
+		// object database writers.
+		foff=vector_fwrite(cmpxdata.get_address(0,0),tcs.ns*2,
+			string(dir),string(dfile));
+		// Above returns and off that we need to set 
+		// in the database as the absolutely correct value
+		// Reasons is that if the file exists these functions
+		// always append and return foff.
+		dbputv(db,0,"foff",static_cast<int>(foff),0);
+		return(recnumber);
+	}
+	catch (SeisppError& serr)
+	{
+		// delete this database row if we had an error
+		dbmark(db);
+		throw serr;
+	}
+}
 } // Termination of namespace SEISPP definitions
 

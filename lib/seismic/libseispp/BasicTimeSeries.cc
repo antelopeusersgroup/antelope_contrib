@@ -78,9 +78,9 @@ void BasicTimeSeries::rtoa(double tshift)
 BasicTimeSeries::BasicTimeSeries()
 {
 	t0=0.0;
-	tref=absolute;
+	tref=relative;
 	live=false;
-	dt=0.0;
+	dt=1.0;
 	ns=0;
 }
 BasicTimeSeries::BasicTimeSeries(const BasicTimeSeries& tsin)
@@ -91,6 +91,31 @@ BasicTimeSeries::BasicTimeSeries(const BasicTimeSeries& tsin)
 	dt=tsin.dt;
 	ns=tsin.ns;
 	gaps=tsin.gaps;
+}
+ostream& operator<<(ostream& os,BasicTimeSeries& y)
+{
+
+	os << "ns=" <<y.ns<<endl
+		<< "t0=" <<y.t0<<endl
+		<< "dt=" <<y.dt<<endl;
+	if(y.live)
+		os << "Data is marked live"<<endl;
+	else
+		os << "Data is marked dead"<<endl;
+	if(y.tref==relative)
+		os << "Data time standard is relative"<<endl;
+	else
+		os << "Data time standard is UTC (absolute)"<<endl;
+	set<TimeWindow,TimeWindowCmp>::iterator g;
+	for(g=y.gaps.begin();g!=y.gaps.end();++g)
+	{
+		os << "Data gap in TimeWindow=("
+			<< g->start
+			<<","
+			<<g->end
+			<<")"<<endl;
+	}
+	return(os);
 }
 
 }  // end SEISPP namespace encapsulation

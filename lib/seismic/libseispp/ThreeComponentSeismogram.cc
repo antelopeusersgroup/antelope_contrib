@@ -101,7 +101,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(Metadata& md,
 		if(load_data)
 		{
 			int i,j,ioff;
-			stref = this->get_string("TimeReferenceType");
+			stref = this->get_string("timetype");
 			if(stref == "relative")
 				tref = relative;
 			else

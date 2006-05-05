@@ -97,5 +97,9 @@ public:
 //@}
 	void zero_gaps();
 };
+//@{
+// Output a TimeSeries as ascii data to an output stream.
+//@}
+ostream& operator << (ostream& os, TimeSeries& y);
 }  // End SEISPP namespace declaration
 #endif

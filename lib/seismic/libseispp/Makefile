@@ -1,13 +1,14 @@
 LIB=libseispp.a
+#DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
-CXX=g++ 
 INCLUDE=AttributeMap.h \
   BasicTimeSeries.h\
+  ComplexTimeSeries.h\
   Hypocenter.h\
   Metadata.h\
   MultichannelCorrelator.h\
   SeisppError.h\
-  SeisppKeywords.h\
+  SeisppKeywords.h \
   SphericalCoordinate.h\
   StationChannelMap.h\
   ThreeComponentChannelMap.h\
@@ -49,6 +50,7 @@ include $(ANTELOPEMAKE)
 
 OBJS=AttributeMap.o \
   BasicTimeSeries.o \
+  ComplexTimeSeries.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
@@ -92,6 +94,9 @@ $(LIB) : $(OBJS)
 	$(CXXAR)  $(CXXARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
+#$(DLIB) : $(OBJS)
+#	$(RM) $@
+#	$(CXXDLD)  $(CXXDLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 # New special build for html documentation using ccdoc
 CCDOC=ccdoc.exe
 htdocs/seispp.db : AttributeMap.h BasicTimeSeries.h Hypocenter.h \
@@ -103,6 +108,7 @@ ensemble.h filter++.h interpolator1d.h mute.h ray1d.h \
 resample.h seismicarray.h seispp.h slowness.h stack.h 
 	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP AttributeMap.h
 	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP BasicTimeSeries.h
+	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP ComplexTimeSeries.h
 	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP Hypocenter.h
 	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP Metadata.h
 	$(CCDOC) -db htdocs/seispp.db -pkg SEISPP MultichannelCorrelator.h
