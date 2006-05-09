@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	MetadataList mdl=pfget_mdlist(pf,string("trace_metadata"));
 	AttributeMap am(string("pwmig1.1"));
 	Dbptr db;
-	dbopen("test","r+",&db);
+	dbopen("testdb","r+",&db);
 	z1.put("wfprocess.dir",".");
 	z1.put("wfprocess.dfile","testdata.w");
 	z1.put("wfprocess.datatype","cx");
