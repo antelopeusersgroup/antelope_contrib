@@ -4,13 +4,13 @@
 cluster - build simple event clusters based on initial loations
 .SH SYNOPSIS
 .nf
-cluster db [-pf pfname]
+cluster db [-pf pfname -savenull]
 .fi
 .SH DESCRIPTION
 .LP
-This program is a companion to \fBdbpmel\fR(1) and 
-\fBpmelgrid\fR (under development, look for it in future contrib updates).
-The are two different front ends to the relocation method 
+This program is a companion to \fBdbpmel\fR(1),
+\fBpmelgrid\fR, and ppmel.
+All are different front ends to the relocation method 
 called PMEL (progressive multiple event location method) described
 in a paper by Pavlis and Booker (1982).  
 .LP
@@ -74,6 +74,11 @@ with that grid point) of that group.
 .LP
 Default reads the parameter file with the name of the program (cluster.pf).
 The -pf flag can be used to select an alternate pf file.
+.LP
+If the -savenull flag appears entries are saved in the hypocentroid
+table for all grid points.  Default is to only save entries with 
+nonzero associations.  This option is most useful as a mechanism to
+get at the entire grid of association points in an ascii format.
 .SH PARAMETER FILE
 .LP
 Here is a simple example.  

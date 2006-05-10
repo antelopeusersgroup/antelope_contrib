@@ -10,7 +10,7 @@
 void usage()
 {
 	cbanner("$Revision$ $Date$",
-		"db [-v -pf pfname]",
+		"db [-savenull -v -pf pfname]",
 		"Gary Pavlis",
 		"Indiana University",
 		"pavlis@indiana.edu") ;
@@ -140,6 +140,8 @@ main(int argc, char **argv)
 	EVENTlocation *e;
 	Tbl *allevents,*keepers;
 	int Verbose=0;
+	/*If true will write entries in hypocentroid table even if no assoc*/
+	bool save_no_assoc=false;  
 	ios::sync_with_stdio();
 
 	elog_init(argc,argv);
@@ -150,14 +152,17 @@ main(int argc, char **argv)
 
 	for(i=2;i<argc;++i)
 	{
-                if(!strcmp(argv[i],"-pf"))
+		string argtest(argv[i]);
+		if(argtest==string("pf"))
                 {
                         ++i;
                         if(i>=argc) usage();
                         pfin = argv[i];
                 }
-		else if(!strcmp(argv[i],"-v"))
+		else if(argtest==string("-v"))
 			Verbose=1;
+		else if(argtest==string("-savenull"))
+			save_no_assoc=true;
 		else
 			usage();
 	}
@@ -283,7 +288,9 @@ main(int argc, char **argv)
 			hypocen_z=gridz;
 			nrecs=0;
 		    }
-		    if(dbaddv(dbh,0,"gridname",gridname,
+		    if(save_no_assoc || (nrecs>0))
+		    {
+			if(dbaddv(dbh,0,"gridname",gridname,
 			"gridid",gridid,
 			"dlat",deg(grd->lat(i,j,k)),
 			"dlon",deg(grd->lon(i,j,k)),
@@ -297,6 +304,7 @@ main(int argc, char **argv)
 			"zbot",zmax,0) < 0) elog_die(0,
 			    "Error updating hypocentroid table for grid point %d,%d,%d\n",
 					i,j,k);
+		    }
 		}
 	freetbl(allevents,free);
     return 0 ; 
