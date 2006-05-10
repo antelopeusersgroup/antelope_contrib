@@ -201,10 +201,9 @@ void register_Datascope_constants( INIT_FUNC_ARGS )
 
 PHP_MINIT_FUNCTION(Datascope)
 {
-
 	le_dbresponse = zend_register_list_destructors_ex( 
 					_php_free_dbresponse, NULL, 
-					"dbresponse", module_number );
+					"dbresponse", 0 );
 
 	register_Datascope_constants( INIT_FUNC_ARGS_PASSTHRU );
 
