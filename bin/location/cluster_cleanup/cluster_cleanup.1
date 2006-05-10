@@ -1,0 +1,51 @@
+.TH CLUSTER_CLEANUP 1 "%G%"
+.SH NAME
+cluster_cleanup - removes redundant cluster associations for pmelgrid
+.SH SYNOPSIS
+.nf
+cluster_cleanup dbin dbout [-pf pffile]
+.fi
+.SH DESCRIPTION
+.LP
+This program is part of a suite of programs connected to what is best
+called pmelgrid.  This is a relocation method that uses 
+multiple event location in combination with a (normally) three-dimensional
+grid of control points.  Preliminary hypocenter locations are associated
+to points in space with a companion program cluster (cluster.1).  
+Experience has show that the current algorithm used in cluster frequently
+builds completely or nearly completely redundant associations with 
+neighboring grid points.  This program aims to remove redundant 
+grid associations.
+.LP
+This program opens an extension table called "hypocentroid" in an 
+input database.  It loads a grid file from the database controlled by
+a parameter file definition.  The program checks the location of 
+computed hypocentroids in the input database relative to each grid 
+point.  If multiple grid points have hypocentroids that fall within 
+the same grid cell the program chooses the one with the maximum number
+of event associations and writes this to the output database.  
+.SH OPTIONS
+.LP
+The -pf parameter can be used to use an alternative to the standard pffile
+derived from the program name -- the usual Antelope convention.
+.SH PARAMETER FILE
+.LP
+\fIgridname\fR is a string parameter used to identify the GCLgrid that 
+contains the set of control points to be used by the program.
+.SH "SEE ALSO"
+.nf
+cluster(1), dbpmel(1), makegclgrid(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+The program is not very general.  It will only work with GCLgrid objects
+stored in a database.  The database design of the hypocentroid and
+cluster tables do not require this.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Dept. of Geol. Sci.
+1001 East 10th Street
+Bloomington, IN 47405
+pavlis@indiana.edu
+.\" $Id$
