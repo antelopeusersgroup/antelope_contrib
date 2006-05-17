@@ -171,8 +171,8 @@ orbserver [options] pf
 orbserver64 [options] pf
 	same as orbserver, but allows much larger ring buffers (Solaris only)
 
-diskserver [-p port] [-v] name
-     emulates an orbserver on directory of special forb files, but is read only 
+diskserver [-p pf] [-v] dir[:port]
+     emulate read-only orbserver on port using directory dir of special forb files
 
 orb2disk [options] orb directory [start-time [end]]
      copies packets from orb into into forb(5) segment files inside directory
@@ -395,7 +395,7 @@ dborigin2orb [options] db orb
 -v	more verbose output
 </options>
 
-db2orb [options] {database|view} [orb]
+private db2orb [options] {database|view} [orb]
     send database as packets to an orbserver
 <options>
 -d	hex dump output packets
