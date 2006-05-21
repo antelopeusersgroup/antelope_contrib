@@ -75,7 +75,7 @@
                 printf "%s	%s", $sta, strydtime($time) if $opt_v;
 
                 my @pars = sort keys %{$ref->{dls}{$sta}};
-                $inp = $ref->{dls}{$sta}{"inp"};
+                $inp     = $ref->{dls}{$sta}{"inp"};
                 $ssident = $ref->{dls}{$sta}{"sn"};
                 $idtag   = $ref->{dls}{$sta}{"pt"};
                 $lat     = $ref->{dls}{$sta}{"lat"}; 
@@ -104,6 +104,9 @@
 
                 @row     = dbmatches(@dbscratch,@dbq330,"no_change","dlsta","inp","ssident","endtime");
                 if ($#row == 0) {
+                    if ($idtag == 0) {
+                        next;
+                    }
                     $dbq330r[3] = $row[0];
                     ($latnull,$lonnull,$elevnull) = dbgetv(@dbnull,"lat","lon","elev");
                     ($latdb, $londb, $elevdb) = dbgetv(@dbq330r,"lat","lon","elev");
@@ -117,6 +120,9 @@
                 
                 @row     = dbmatches(@dbscratch,@dbq330,"ip_change","dlsta","ssident","endtime");
                 if ($#row == 0) {
+                    if ($idtag == 0) {
+                        next;
+                    }
                     $dbq330r[3] = $row[0];
                     dbputv(@dbq330r,"endtime",($time-1)); 
                     dbadd(@dbq330);
@@ -152,9 +158,6 @@
                 dbadd(@dbq330);
             }
         }
-#        exit;
+        exit;
     }
-
-
 exit ;
-
