@@ -519,27 +519,6 @@ int write_to_logfile(RTlocate_Options rtopts, int orid, int evid,
 	freetbl(t,free);
 	return(0);	
 }
-/* This simple function makes sure the hypocenter structure is
-properly initialized */
-void initialize_hypocenter(Hypocenter *h)
-{
-        h->dx = 0.0;
-        h->dy = 0.0;
-        h->dz = 0.0;
-        h->lat = 0.0;
-        h->lon = 0.0;
-        h->z = 0.0;
-        h->time = 0.0;
-        h->lat0 = 0.0;
-        h->lon0 = 0.0;
-        h->z0 = 0.0;
-        h->t0 = 0.0;
-        h->rms_raw = 0.0;
-        h->rms_weighted = 0.0;
-        h->interquartile = 0.0;
-        h->number_data = 0;
-        h->degrees_of_freedom = 0;
-}
 
 /* This is the main location function for orbgenloc.  
 Arguments:
