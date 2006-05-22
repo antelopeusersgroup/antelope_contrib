@@ -49,7 +49,7 @@
     while ($time < $endtime)  {
         $etime = $time + 86399.999 ;
         $cmd = "dbjoin $dbin.deployment site | dbsubset - \"epoch(ondate)< $time && deployment.endtime > $etime\" ";
-        $cmd = $cmd . "| dbjoin - sensor | dbsubset - \"sensor.time < $time && sensor.endtime > $endtime\" ";
+        $cmd = $cmd . "| dbjoin - sensor | dbsubset - \"sensor.time < $time && sensor.endtime > $etime\" ";
         $cmd = $cmd . "| rtoutage -t -N -S -d $dbout ";
         $cmd = $cmd . "-z " if $opt_z;
         $cmd = $cmd . "-n $opt_n " if $opt_n;
