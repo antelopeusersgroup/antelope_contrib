@@ -242,6 +242,17 @@ void TimeSeries::operator+=(const TimeSeries& data)
 	for(i=i0,j=j0;i<iend;++i,++j)
 		this->s[j]+=d.s[i];
 }
+double TimeSeries::operator[](int i)
+{
+	if(!live) 
+	   throw SeisppError(string("TimeSeries operator[]: attempting to access data marked as dead"));
+	if( (i<0) || (i>=ns) )
+	{
+		throw SeisppError(
+			string("TimeSeries operator[]:  request for sample outside range of data"));
+	}
+	return(s[i]);
+}
 // Forces samples in marked gaps to zero.  
 void TimeSeries::zero_gaps()
 {

@@ -93,6 +93,25 @@ public:
 	void operator+=(const TimeSeries& d);
 
 //@{
+// Extract a sample from data vector with range checking.
+// Because the data vector is public in this interface
+// this operator is simply an alterative interface to this->s[sample].  
+// There are two primary differences.  First, this is a simpler interface
+// to the data.  That is, if we have the object TimeSeries x, we could 
+// either use:  a=x[i]; or a=x.s[i].   The later, which is this 
+// operator, is clearly simpler.  It comes at a nontrivial cost,
+// which is the second major difference.  That is, this is a range
+// checking operator.  If the requested sample is outside the range
+// of the data this operator will throw a SeisppError exception.
+//
+//@throws SeisppError exception if the requested sample is outside
+//    the range of the data.  Note this includes an implicit "outside"
+//    defined when the contents are marked dead.  
+//
+//@param sample is the integer sample number of data desired.
+//@}
+	double operator[](int sample);
+//@{
 // Scans for defined gaps and sets the data to zero in time periods defined by gaps.
 //@}
 	void zero_gaps();

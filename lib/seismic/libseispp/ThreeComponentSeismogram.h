@@ -177,6 +177,40 @@ public:
 //@}
 	ThreeComponentSeismogram& operator 
 		= (const ThreeComponentSeismogram&);
+//@{
+// Extract a sample from data vector. 
+// A sample in this context means a three-vector at a requested
+// sample index.  Range checking is implicit because 
+// of the internal use of the dmatrix to store the samples of
+// data.  This operator is an alternative to extracting samples
+// through indexing of the internal dmatrix u that holds the data.
+//
+// Note that the operator returns a simple pointer into the
+// internal array that stores the data.  In this implementation
+// this is a dmatrix which stores data in a FORTRAN like array
+// (FORTRAN order, but C indexing starting at 0).  
+// For this reason DO NOT EVER free this pointer or the results
+// will, as usual for memory problems, be undefined and almost
+// certain to cause bad things to happen downstream.
+//
+//@throws SeisppError if the requested sample is outside
+//    the range of the data.  Note this includes an implicit "outside"
+//    defined when the contents are marked dead.  
+//    Note the code does this by catching an error thrown by dmatrix
+//    in this situation, printing the error message from the dmatrix
+//    object, and then throwing a new SeisppError with a shorter 
+//    message.  
+//@returns pointer to 3-vector of requested sample.  Caller should
+//    assume only the 3 consecutive samples after the value pointed to by
+//    result is valid.  You could use the result as a pointer to 
+//    this internal 3xns matrix that stores the data internally 
+//    in this function, but this is a bad idea.  There is a nonzero
+//    probability the implementation couldd change invalidating 
+//    an algorithm that tried to utilize the result in that way.  
+//
+//@param sample is the integer sample number of data desired.
+//@}
+	double *operator[](int sample);
 	// Default destructor is acceptable
 	//~ThreeComponentSeismogram(); 
 //@{

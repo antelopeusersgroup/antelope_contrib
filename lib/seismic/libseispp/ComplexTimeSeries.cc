@@ -295,6 +295,17 @@ ComplexTimeSeries ComplexTimeSeries::operator * (const Complex z)
 	}
 	return(result);
 }
+Complex ComplexTimeSeries::operator[](int i)
+{
+	if(!live)
+		throw SeisppError(string("ComplexTimeSeries operator[]:  attempt to access data vector marked as dead"));
+	if( (i<0) || (i>=ns) )
+	{
+		throw SeisppError(
+			string("TimeSeries operator[]:  request for sample outside range of data"));
+	}
+	return(s[i]);
+}
 void ComplexTimeSeries::initialize(const Complex z)
 {
 	vector<Complex>::iterator zptr;

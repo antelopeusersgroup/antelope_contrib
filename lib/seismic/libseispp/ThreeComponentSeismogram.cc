@@ -1047,4 +1047,24 @@ ThreeComponentSeismogram& ThreeComponentSeismogram::operator
 	}
 	return(*this);
 }
+double *ThreeComponentSeismogram::operator[](int i)
+{
+	if(!live) 
+		throw SeisppError(string("ThreeComponentSeismogram operator[]: attempt to access data matrix marked as dead"));
+	//
+	// This one does not need to check bounds because in
+	// this implemenation u is a dmatrix with range checking
+	// Instead we have a try with a catch all block
+	// 
+	try {
+		double *result;
+		result=u.get_address(0,i);
+		return(result);
+	}
+	catch (dmatrix_index_error derr)
+	{
+		derr.log_error();
+		throw SeisppError(string("ThreeComponentSeismogram::operator[]: index error"));
+	}
+}
 } // end namespace SEISPP 
