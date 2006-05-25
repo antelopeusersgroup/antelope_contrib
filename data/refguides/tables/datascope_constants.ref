@@ -69,10 +69,6 @@ dbDATABASE_COUNT
     count of databases open
 dbDBPATH
     return the path along which database tables may be found
-dbIDSERVER
-    return the name of idserver if defined
-dbLOCKS
-    returns setting of dbLOCKS
 dbTABLE_COUNT
     count of relations in database
 
