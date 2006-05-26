@@ -4558,6 +4558,10 @@ PHP_FUNCTION(dbquery)
         case dbFIELD_UNITS:
         case dbFIELD_BASE_TABLE:
         case dbUNIQUE_ID_NAME:
+	case dbSCHEMA_DEFAULT:
+	case dbDATABASE_FILENAME:
+	case dbIDSERVER:
+	case dbLOCKS:
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_STRING( value.t, 1 );
@@ -4589,7 +4593,9 @@ PHP_FUNCTION(dbquery)
 
         case dbTABLE_IS_WRITEABLE:
         case dbTABLE_IS_VIEW:
-        case dbTABLE_PRESENT:
+	case dbTABLE_PRESENT:
+	case dbTABLE_IS_TRANSIENT:
+	case dbDATABASE_IS_WRITABLE:
 		if( ( retcode = dbquery(db, dbcode, &value) ) >= 0 ) {
 
 			RETVAL_BOOL( value.i );
