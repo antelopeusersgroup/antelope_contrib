@@ -45,6 +45,10 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 
 	switch( dbcode )
 	{
+	case dbSCHEMA_DEFAULT:
+	case dbDATABASE_FILENAME:
+	case dbIDSERVER:
+	case dbLOCKS:
         case dbSCHEMA_DESCRIPTION:
         case dbTIMEDATE_NAME:
         case dbDATABASE_DESCRIPTION:
@@ -85,6 +89,9 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
         case dbRECORD_SIZE:
         case dbTABLE_IS_WRITEABLE:
         case dbTABLE_IS_VIEW:
+	case dbDATABASE_IS_WRITABLE:
+	case dbTABLE_PRESENT:
+	case dbTABLE_IS_TRANSIENT:
 		if( ( retcode = dbquery(db, dbcode, &n) ) >= 0 )
 		{
 			antelope_mex_clear_register( 1 );
