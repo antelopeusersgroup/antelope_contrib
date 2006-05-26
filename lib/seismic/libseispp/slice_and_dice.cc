@@ -131,6 +131,14 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 	return(result);
 }
 
+/*******************************************
+//  Commented out for now.  export has not been adopted
+//  by any compilers even though the standard specifies it
+//  a book I uses says it should be used in this context.
+//  For now WindowData is not a template anyway.  There
+//  are specialized implementations for TimeSeries and 3c
+//  ensembles.
+
 export template <class T>
 auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
 {
@@ -141,5 +149,6 @@ auto_ptr<T>WindowData(T& parent, TimeWindow& tw)
         } catch (...) {throw;}
         return(result);
 }
+************************************************/
 	
 }

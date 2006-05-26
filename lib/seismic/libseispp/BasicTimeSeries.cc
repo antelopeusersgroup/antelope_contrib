@@ -1,4 +1,5 @@
 /* This file contains member functions for a BasicTimeSeries object.*/
+#include <ostream>
 #include "BasicTimeSeries.h"
 namespace SEISPP {
 using namespace SEISPP;
