@@ -1,0 +1,23 @@
+demo &Tbl{
+   &Arr{
+      step 	open the demo database 
+      command	exec dbe /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	look for an interesting orid 
+      command
+   }
+   &Arr{
+      step	review waveforms
+      command	exec dbpick /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	relocate
+      command	exec dbloc2 /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	send email
+      command
+   }
+}
+	

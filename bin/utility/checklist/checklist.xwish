@@ -1,0 +1,105 @@
+#   Copyright (c) 2006 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+
+package require Tclx
+
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
+
+proc add_step { w step command } {
+
+	global numsteps
+	global bg
+
+	set stepw $w.s$numsteps
+
+	CommandCheckoff $stepw -label "$step" \
+				   -labeljustify left \
+				   -labelanchor w \
+				   -command "$command" \
+				   -variable var$numsteps \
+				   -background $bg
+
+	pack $stepw -side top -fill x
+
+	incr numsteps
+}
+
+proc create_menubar {} {
+	
+	global bg
+
+	set w .menubar
+
+	frame $w -background $bg 
+
+	menubutton $w.file -bg $bg -text File \
+		-underline 0 -menu $w.file.m -highlightthickness 0
+
+	menu $w.file.m -tearoff 0 -bg $bg
+
+	$w.file.m add command -label Quit -underline 0 -command "destroy ."
+
+	pack $w.file -side left
+
+	pack $w -side top -fill x
+}
+
+proc create_commands {} {
+
+	global bg
+	global Pf
+	global template
+
+	set w .commands 
+	
+	frame $w -background $bg
+
+	set itemlist [pfgetlist @$Pf#$template]
+
+	foreach itemarr $itemlist {
+
+		set itemstep [pfget $itemarr step]
+		set itemcommand [pfget $itemarr command]
+
+		add_step $w $itemstep $itemcommand
+	}
+
+	pack $w -side top -fill both -expand yes
+}
+
+set Pf checklist
+set numsteps 0
+set bg beige
+
+if { $argc < 1 } {
+
+	puts stderr "Usage: checklist template"
+	exit -1
+
+} else {
+	
+	set template [lindex $argv 0]
+}
+
+wm title . "checklist: $template"
+wm minsize . 200 200
+
+bind . <Control-KeyPress-c> "destroy ."
+bind . <Control-KeyPress-C> "destroy ."
+
+create_menubar
+create_commands

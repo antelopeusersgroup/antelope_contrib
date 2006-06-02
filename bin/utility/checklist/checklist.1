@@ -1,0 +1,93 @@
+.TH CHECKLIST 1 "$Date$"
+.SH NAME
+checklist \- standardized program to implement custom GUI checklists
+.SH SYNOPSIS
+.nf
+\fBchecklist\fP \fItemplate\fP
+.fi
+.SH DESCRIPTION
+The checklist program presents an ordered set of buttons in a graphical 
+user interface, allowing users to methodically step through lists of 
+sequential to-do items specified in the parameter file. The contents and 
+actions of the checklist items are configured in the checklist.pf file. 
+There may be several different types of checklists configured in a given parameter file, 
+each with its own items. See the example shown below for one such template. 
+
+In the simplest case, the checklist program merely keeps track of what you have 
+done in an ordered list of tasks to accomplish. The more advanced usage is to let 
+some or all of the to-do list buttons launch commands that perform or help 
+perform individual tasks. Therefore in addition to the name of the checklist step, 
+each checklist item may have an optional \fIcommand\fP which will be executed
+when the button is chosen. 
+
+Each checklist item has three states: untouched, finished, and intentionally skipped. 
+The first is indicated by an unchecked-checkbox (at left of each item) and an 
+active, readable button for the item. The second state is indicated by a 
+checked-off checkbox and a grayed out button. The third state is indicated by 
+a checked-off checkbox and a still-active button. Tasks that are in the finished 
+state may be brought back to the untouched state by de-activating the checkbox. 
+Tasks that are in the intentionally-skipped state may be followed through upon
+(launched, or marked as completed) by clicking on the still-active button.
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+
+demo &Tbl{
+   &Arr{
+      step 	open the demo database 
+      command	exec dbe /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	look for an interesting orid 
+      command
+   }
+   &Arr{
+      step	review waveforms
+      command	exec dbpick /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	relocate
+      command	exec dbloc2 /opt/antelope/data/db/demo/demo &
+   }
+   &Arr{
+      step	send email
+      command
+   }
+}
+	
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% checklist demo
+
+.fi
+[this opens up a GUI window with buttons for the checklist items shown in 
+the parameter file above]
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+CommandCheckoff(3T)
+.fi
+.SH "BUGS AND CAVEATS"
+
+This program still needs description entries in the array for each element, 
+a resetting feature, a -p option, and better documentation. Multiline TCL code 
+snippets in the parameter-file \fIcommand\fP entries have not yet been tested.
+A feature to check completeness upon exit exists in other programs and needs 
+to be transferred here. 
+
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
