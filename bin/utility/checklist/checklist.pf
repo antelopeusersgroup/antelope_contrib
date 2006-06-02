@@ -9,7 +9,7 @@ demo &Tbl{
    }
    &Arr{
       step	review waveforms
-      command	exec dbpick /opt/antelope/data/db/demo/demo &
+      command	exec dbpick -nostarttalk /opt/antelope/data/db/demo/demo &
    }
    &Arr{
       step	relocate
