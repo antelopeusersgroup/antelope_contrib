@@ -15,8 +15,7 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-package require Tclx
-
+set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library]
 set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
 
 proc add_step { w step command } {
@@ -36,6 +35,21 @@ proc add_step { w step command } {
 	pack $stepw -side top -fill x
 
 	incr numsteps
+
+	return
+}
+
+proc reset_steps {} {
+	
+	global numsteps
+
+	for { set istep 0 } { $istep < $numsteps } { incr istep } {
+		
+		.commands.s$istep.b config -state normal
+		.commands.s$istep.cb deselect
+	}
+
+	return
 }
 
 proc create_menubar {} {
@@ -51,6 +65,7 @@ proc create_menubar {} {
 
 	menu $w.file.m -tearoff 0 -bg $bg
 
+	$w.file.m add command -label Reset -underline 0 -command reset_steps
 	$w.file.m add command -label Quit -underline 0 -command "destroy ."
 
 	pack $w.file -side left
@@ -97,6 +112,9 @@ if { $argc < 1 } {
 
 wm title . "checklist: $template"
 wm minsize . 200 200
+
+bind . <Control-KeyPress-r> reset_steps
+bind . <Control-KeyPress-R> reset_steps
 
 bind . <Control-KeyPress-c> "destroy ."
 bind . <Control-KeyPress-C> "destroy ."

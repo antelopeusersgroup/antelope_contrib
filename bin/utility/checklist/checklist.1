@@ -28,6 +28,12 @@ a checked-off checkbox and a still-active button. Tasks that are in the finished
 state may be brought back to the untouched state by de-activating the checkbox. 
 Tasks that are in the intentionally-skipped state may be followed through upon
 (launched, or marked as completed) by clicking on the still-active button.
+
+A Cntl-r or Cntl-R in the checklist window will reset all buttons to their 
+initial state (likewise this can be done with the File->Reset menu item). 
+A Cntl-c or Cntl-C in the checklist window will quit the application (or
+one can use File->Quit). 
+
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -87,8 +93,11 @@ to be transferred here.
 
 No checking is done to see if a launched command fails. 
 
-The buttons that take action vs those that don't should probably be differentiated
-somehow, e.g. different colors. 
+The buttons that take action vs those that don't should probably
+ be differentiated somehow, e.g. different colors. 
+
+There should be an optional interlock to prevent later steps from 
+being executed unless earlier steps are done or intentionally skipped. 
 
 .SH AUTHOR
 .nf
