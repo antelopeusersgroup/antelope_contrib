@@ -18,7 +18,11 @@ done in an ordered list of tasks to accomplish. The more advanced usage is to le
 some or all of the to-do list buttons launch commands that perform or help 
 perform individual tasks. Therefore in addition to the name of the checklist step, 
 each checklist item may have an optional \fIcommand\fP which will be executed
-when the button is chosen. 
+when the button is chosen. Buttons with configured, non-empty commands 
+will turn green on mouse-over; buttons that do not launch commands will 
+turn yellow. These colors may be overridden in the parameter file with 
+the commandcolor and nocommandcolor parameters (which can also be left blank
+for no coloring). 
 
 Each checklist item has three states: untouched, finished, and intentionally skipped. 
 The first is indicated by an unchecked-checkbox (at left of each item) and an 
@@ -28,6 +32,11 @@ a checked-off checkbox and a still-active button. Tasks that are in the finished
 state may be brought back to the untouched state by de-activating the checkbox. 
 Tasks that are in the intentionally-skipped state may be followed through upon
 (launched, or marked as completed) by clicking on the still-active button.
+
+An optional description parameter may be given alongside each step (as
+shown in the parameter file below). This will be shown in a balloon-help
+window if the mouse dwells on a given button for too long, and if the 
+use_balloons parameter is set to 1. 
 
 A Cntl-r or Cntl-R in the checklist window will reset all buttons to their 
 initial state (likewise this can be done with the File->Reset menu item). 
@@ -40,26 +49,47 @@ one can use File->Quit).
 .SH PARAMETER FILE
 .nf
 
+Config &Arr{
+	use_balloons 	1
+	background	beige
+	commandhighlight green
+	nocommandhighlight yellow
+}
+
 demo &Tbl{
    &Arr{
       step 	open the demo database 
       command	exec dbe /opt/antelope/data/db/demo/demo &
+      description &Literal{
+		The first step in this procedure is to open the 
+		demo database with dbe. 
+      }
    }
    &Arr{
       step	look for an interesting orid 
       command
+      description &Literal{
+		Find an origin of choice in the origin table 
+		from the dbe instance launched in the previous step
+      }
    }
    &Arr{
       step	review waveforms
-      command	exec dbpick /opt/antelope/data/db/demo/demo &
+      command	exec dbpick -nostarttalk /opt/antelope/data/db/demo/demo &
    }
    &Arr{
       step	relocate
       command	exec dbloc2 /opt/antelope/data/db/demo/demo &
+      description &Literal{
+		Relocate the chosen event. 
+      }
    }
    &Arr{
       step	send email
       command
+      description &Literal{
+		Send email to relevant personnel. 
+      }
    }
 }
 	
@@ -85,16 +115,12 @@ CommandCheckoff(3T)
 .fi
 .SH "BUGS AND CAVEATS"
 
-This program still needs description entries in the array for each element, 
-a resetting feature, a -p option, and better documentation. Multiline TCL code 
+This still needs a -p option. Multiline TCL code 
 snippets in the parameter-file \fIcommand\fP entries have not yet been tested.
 A feature to check completeness upon exit exists in other programs and needs 
 to be transferred here. 
 
 No checking is done to see if a launched command fails. 
-
-The buttons that take action vs those that don't should probably
- be differentiated somehow, e.g. different colors. 
 
 There should be an optional interlock to prevent later steps from 
 being executed unless earlier steps are done or intentionally skipped. 

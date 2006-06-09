@@ -18,10 +18,13 @@
 set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library]
 set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
 
-proc add_step { w step command } {
+proc add_step { w step command description } {
 
 	global numsteps
 	global bg
+	global commandhighlight
+	global nocommandhighlight
+	global use_balloons
 
 	set stepw $w.s$numsteps
 
@@ -29,10 +32,17 @@ proc add_step { w step command } {
 				   -labeljustify left \
 				   -labelanchor w \
 				   -command "$command" \
+				   -commandcolor $commandhighlight \
+				   -nocommandcolor $nocommandhighlight \
 				   -variable var$numsteps \
 				   -background $bg
 
 	pack $stepw -side top -fill x
+
+	if { $use_balloons } {
+
+		set_balloon $stepw $description
+	}
 
 	incr numsteps
 
@@ -89,8 +99,9 @@ proc create_commands {} {
 
 		set itemstep [pfget $itemarr step]
 		set itemcommand [pfget $itemarr command]
+		set itemdescription [pfget $itemarr description]
 
-		add_step $w $itemstep $itemcommand
+		add_step $w $itemstep $itemcommand $itemdescription
 	}
 
 	pack $w -side top -fill both -expand yes
@@ -99,16 +110,50 @@ proc create_commands {} {
 set Pf checklist
 set numsteps 0
 set bg beige
+set commandhighlight green
+set nocommandhighlight yellow
+
+pfgetarr templates_arr $Pf 
+set templates [array names templates_arr]
+
+set use_balloons [pfget %$Pf#Config use_balloons]
+set background [pfget %$Pf#Config background]
+set commandhighlight [pfget %$Pf#Config commandhighlight]
+set nocommandhighlight [pfget %$Pf#Config nocommandhighlight]
 
 if { $argc < 1 } {
 
-	puts stderr "Usage: checklist template"
+	puts stderr "\n   Usage: checklist template\n"
+
+	if { [llength $templates] > 1 } {
+		
+		puts stderr "Configured checklists are:\n"
+
+		for { set i 0 } { $i < [llength $templates] } { incr i } {
+
+			set alist [lindex $templates $i]	
+
+			if { $alist == "pf_revision_time" } {
+				continue
+			}
+		
+			if { $alist == "Config" } {
+				continue
+			}
+		
+			puts stderr "\t$alist"
+		}
+
+		puts stderr ""
+	}
+
 	exit -1
 
 } else {
 	
 	set template [lindex $argv 0]
 }
+
 
 wm title . "checklist: $template"
 wm minsize . 200 200

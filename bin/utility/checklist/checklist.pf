@@ -1,11 +1,26 @@
+Config &Arr{
+	use_balloons 	1
+	background	beige
+	commandhighlight green
+	nocommandhighlight yellow
+}
+
 demo &Tbl{
    &Arr{
       step 	open the demo database 
       command	exec dbe /opt/antelope/data/db/demo/demo &
+      description &Literal{
+		The first step in this procedure is to open the 
+		demo database with dbe. 
+      }
    }
    &Arr{
       step	look for an interesting orid 
       command
+      description &Literal{
+		Find an origin of choice in the origin table 
+		from the dbe instance launched in the previous step
+      }
    }
    &Arr{
       step	review waveforms
@@ -14,10 +29,16 @@ demo &Tbl{
    &Arr{
       step	relocate
       command	exec dbloc2 /opt/antelope/data/db/demo/demo &
+      description &Literal{
+		Relocate the chosen event. 
+      }
    }
    &Arr{
       step	send email
       command
+      description &Literal{
+		Send email to relevant personnel. 
+      }
    }
 }
 	
