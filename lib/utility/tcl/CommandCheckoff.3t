@@ -7,32 +7,45 @@ package require Tclx
 set auto_path [linsert $auto_path 0 $env(ANTELOPE)/data/tcl/library_contrib]
 
 CommandCheckoff name -label label \\ 
-                     -command command \\
+                     [-labeljustify where] \\
+                     [-labelanchor where] \\
+                     [-command command] \\
+                     [-commandcolor color] \\
+                     [-nocommandcolor color] \\
                      [-variable variable] \\
                      [-background background]
 .fi
 .SH DESCRIPTION
-This widget provides a button and an associated checkbutton, used to build interactive
-checkoff lists. When the button is pressed, the associated command is called. The
-accompanying checkbutton is simultaneously activated to record that the task has been
-accomplished, and the button is disabled.
+This widget provides a button and an associated checkbutton, used
+to build interactive checkoff lists. When the button is pressed,
+the associated command is called. The accompanying checkbutton is
+simultaneously activated to record that the task has been accomplished,
+and the button is disabled.
 
-Because some 'checklist'-type activities require retries of certain tasks (especially
-if mistakes were made the first time), the checkbox for a completed task can be
-clicked back to the 'off' state, in which case the associated task button is re-enabled to
-allow the user to start again on that task.
+Because some 'checklist'-type activities require retries of certain
+tasks (especially if mistakes were made the first time), the checkbox
+for a completed task can be clicked back to the 'off' state, in
+which case the associated task button is re-enabled to allow the
+user to start again on that task.
 
-Similarly, some checklist-type activities need the possibility to intentionally skip
-a task on the list. In this case, the checkbox may be activated manually without pushing
-the task button. To alert the user that this task was intentionally skipped,
-the task button remains enabled. These intentionally skipped tasks may be still be run
-by pushing the associated task button, in which case the task button becomes disabled
-and the 'completed' checkbox remains in its toggled state (filled in, indicating task
-completion).
+Similarly, some checklist-type activities need the possibility to
+intentionally skip a task on the list. In this case, the checkbox
+may be activated manually without pushing the task button. To alert
+the user that this task was intentionally skipped, the task button
+remains enabled. These intentionally skipped tasks may be still be
+run by pushing the associated task button, in which case the task
+button becomes disabled and the 'completed' checkbox remains in its
+toggled state (filled in, indicating task completion).
 
-The state of the checkbutton is saved in a variable specified by the -variable argument.
-This is useful in writing applications that must test to see if tasks were completed,
-missed, or intentionally skipped. For a demonstration of this, see the example below.
+The state of the checkbutton is saved in a variable specified by
+the -variable argument.  This is useful in writing applications
+that must test to see if tasks were completed, missed, or intentionally
+skipped. For a demonstration of this, see the example below.
+
+If a non-empty command is specified, the button will be set to 
+the background color given by the optional -commandcolor argument. Conversely
+if -nocommandcolor is specified, it will be used as the background 
+for buttons with unspecified or empty commands. 
 
 .SH EXAMPLE
 .ft CW
