@@ -24,7 +24,7 @@ demo &Tbl{
    }
    &Arr{
       step	review waveforms
-      command	exec dbpick -nostarttalk /opt/antelope/data/db/demo/demo &
+      command	exec warp xterm -geometry 80x24+0-0 -e dbpick -nostarttalk /opt/antelope/data/db/demo/demo &
    }
    &Arr{
       step	relocate
