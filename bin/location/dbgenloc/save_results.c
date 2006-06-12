@@ -28,6 +28,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     int model;
     int	rc;
     double wgt;
+    double weight_scale;  /* Added June 2006 see below*/
 
     *oridp = orid = dbnextid(dbin, "orid" ) ;
     if ( orid < 1 ) {
@@ -139,6 +140,18 @@ save_results (Dbptr dbin, Dbptr dbout,
     dbassoc = dblookup ( dbout, 0, "assoc", 0, 0 ) ; 
     dbquery (dbassoc, dbRECORD_COUNT, &old ) ;
     n = maxtbl(ta) ;
+    /* Patch made June 2006 in response to request at Antelope User
+	group meeting that weights need to be normalized.  */
+    for ( i=0,weight_scale=0.0 ; i<n ; i++ ) {
+        a = (Arrival *) gettbl(ta, i) ;
+	wgt = (double)((a->res.weighted_residual)/(a->res.raw_residual));
+	weight_scale=MAX(wgt,weight_scale);
+    }
+    /* weight_scale is now the largest weight.  wgt normalized by
+    this constant below to make all weights < 1.0.  Does not change
+    relative scaling of solution.*/
+
+
     for ( i=0 ; i<n ; i++ ) {
 	a = (Arrival *) gettbl(ta, i) ;
 	dist(rad(hypo->lat),rad(hypo->lon),rad(a->sta->lat),rad(a->sta->lon), &delta,&esaz);
@@ -147,6 +160,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	/* The previous version of this program had this computed 
 	incorrectly */
 	wgt = (double)((a->res.weighted_residual)/(a->res.raw_residual));
+        wgt/=weight_scale;
 	/* S-P type phases are inconsistent with the use in datascope
 	of time as a key.  For this reason we have to keep a reference
 	to the original arid of both components of a double phase
