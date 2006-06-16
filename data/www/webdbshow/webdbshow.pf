@@ -1,0 +1,19 @@
+antelope 	&env(ANTELOPE)
+
+dbname		&antelope/demo/socalif/dbmaster/scdemo
+
+apache_htdocs	/
+
+default_table		site
+
+header_settings &Arr{
+	project_title		PHP Datascope demo
+	css_file		webdbshow.css
+	refresh_rate_sec	60
+}
+
+body_settings &Arr{
+	title			Antelope-PHP Webdbshow
+}
+
+pf_revision_time	1150334783

@@ -1,0 +1,86 @@
+.TH WEBORBSTAT 3H "$Date$"
+.SH NAME
+weborbstat \- a web-based tool to show orbserver metadata
+.SH SYNOPSIS
+.nf
+weborbstat.php
+.fi
+.SH DESCRIPTION
+The weborbstat utility shows basic metadata about orbservers, 
+their clients, and their data-streams in a web browser. 
+.SH OPTIONS
+.SH FILES
+The weborbstat.css file (or alternate filename, as specified by the
+css_file parameter in the header_settings array of the parameter file)
+specifies the layout of the weborbstat application.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+
+orbname		:
+
+select_regex	".*"
+
+apache_htdocs	/
+
+header_settings &Arr{
+	project_title		Weborbstat
+	css_file		weborbstat.css
+	refresh_rate_sec	10
+}
+body_settings &Arr{
+	title			Antelope-PHP Weborbstat
+	table_caption		Data latency legend (in seconds)
+}
+
+data_latency_levels &Tbl{
+	&Arr{
+		max_secs		120
+		text_color		black
+		text_size		100%
+		background_color 	\#6F3
+	}
+	&Arr{
+		max_secs		300
+		text_color		black
+		text_size		110%
+		background_color 	\#FF0
+	}
+	&Arr{
+		max_secs		600
+		text_color		black
+		text_size		120%
+		background_color 	\#F90
+	}
+	&Arr{
+		max_secs		3600
+		text_color		white
+		text_size		120%
+		background_color 	\#F00
+	}
+}
+
+pf_revision_time	1150334783
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+orbstat(1), pforbstat(1), orb_php(3h), datascope_php(3h)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Rob Newman
+UCSD
+.fi
+.\" $Id$

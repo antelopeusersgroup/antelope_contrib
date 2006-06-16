@@ -1,0 +1,44 @@
+orbname		anfops:usarray
+
+select_regex	"TA_.*MGENC/M40|TA_.*BHZ.*"
+
+apache_htdocs	/
+
+header_settings &Arr{
+	project_title		PHP5 Orb demo
+	css_file		weborbstat.css
+	refresh_rate_sec	10
+}
+body_settings &Arr{
+	title			Antelope-PHP Test: Orb Demo
+	table_caption		Data latency legend (in seconds)
+}
+
+data_latency_levels &Tbl{
+	&Arr{
+		max_secs		120
+		text_color		black
+		text_size		100%
+		background_color 	\#6F3
+	}
+	&Arr{
+		max_secs		300
+		text_color		black
+		text_size		110%
+		background_color 	\#FF0
+	}
+	&Arr{
+		max_secs		600
+		text_color		black
+		text_size		120%
+		background_color 	\#F90
+	}
+	&Arr{
+		max_secs		3600
+		text_color		white
+		text_size		120%
+		background_color 	\#F00
+	}
+}
+
+pf_revision_time	1150334783

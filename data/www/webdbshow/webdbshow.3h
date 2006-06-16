@@ -1,0 +1,61 @@
+.TH WEBDBSHOW 3H "$Date$"
+.SH NAME
+webdbshow \- a web based tool to display a Datascope database
+.SH SYNOPSIS
+.nf
+webdbshow.php
+.fi
+.SH DESCRIPTION
+Webdbshow presents to a web user a simple, read-only view of the 
+database tables in a Datascope database.
+
+.SH OPTIONS
+.SH FILES
+The webdbshow.css file (or alternate filename, as specified by the 
+css_file parameter in the header_settings array of the parameter file)
+provides the default stylesheet for webdbshow.
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.nf
+
+antelope 	&env(ANTELOPE)
+
+dbname		&antelope/demo/socalif/dbmaster/scdemo
+
+apache_htdocs	/
+
+default_table		site
+
+header_settings &Arr{
+	project_title		PHP Datascope demo
+	css_file		webdbshow.css
+	refresh_rate_sec	60
+}
+
+body_settings &Arr{
+	title			Antelope-PHP Webdbshow
+}
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+datascop_php(3h)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Rob Newman
+UCSD
+.fi
+.\" $Id$

@@ -1,0 +1,52 @@
+body {
+	font-family: "Trebuchet MS", Verdana, sans-serif ;
+	font-size: 110% ;
+}
+div#tableList {
+}
+div#recordTable {
+	margin: 0 auto ;
+}
+table {
+	display: table ;
+	background: #FFC ;
+	padding: 2px ;
+	margin: 0 auto ;
+	border: 1px solid black ;
+}
+caption {
+	padding: 2px ;
+	white-space: nowrap ;
+	font-weight: bold ;
+	margin: 0 auto ;
+	margin-bottom: 2px ;
+}
+th {
+	border: 1px solid #CCC ;
+	background: #900 ;
+	color: white ;
+	padding: 2px ;
+}
+td {
+	border: 1px solid #CCC ;
+	background: white ;
+	color: black ;
+	padding: 2px ;
+}
+div#tableList ul {
+	display: table ;
+	margin: auto ;
+}
+div#tableList li {
+	display: inline ;
+}
+div#tableList li a:link, li a:visited, li a:active {
+	display: inline ;
+	color: #FFF ;
+	background: #006 ;
+	padding: 5px ;
+	border: 1px solid #FFF ;
+}
+div#tableList li a:hover {
+	color: #9CF ;
+}

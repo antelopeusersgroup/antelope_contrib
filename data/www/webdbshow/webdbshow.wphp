@@ -1,0 +1,96 @@
+<?php
+if( !extension_loaded( "Datascope.so" ) ) {
+	dl( "Datascope.so") or die( "Failed" ) ;
+}
+
+$pf = "datascope_demo" ;
+
+# pfupdate( $pf ) ;
+
+$this_database = pfget( $pf, 'dbname' ) ;
+$default_table = pfget( $pf, 'default_table' ) ;
+$header_settings = pfget( $pf, 'header_settings' ) ;
+$body_settings = pfget( $pf, 'body_settings' ) ;
+
+$open_db = ds_dbopen( $this_database, "r" ) ; # Open read only
+
+$tables = dbquery( $open_db, "dbSCHEMA_TABLES" ) ;
+
+$tbl_present = array() ;
+
+foreach( $tables as $t ) {
+	$db = dblookup( $open_db, "", $t, "", "" ) ;
+	# Only get those tables that are present
+	if( !dbquery( $db, "dbTABLE_PRESENT" ) ) continue ;
+	if( dbquery( $db, "dbTABLE_IS_VIEW" ) ) continue ;
+	array_push( $tbl_present, $t ) ;
+}
+
+if( isset( $_GET['tbl'] ) ) {	# Is table defined in the URL?
+	$tbl = $_GET['tbl'] ;
+} else { 			# Use default table
+	$tbl = $default_table ;
+}
+
+$subset = dbprocess( $open_db, "dbopen $tbl" ) ;
+$nrecs = dbnrecs( $subset ) ;
+$fields = dbquery( $subset, "dbTABLE_FIELDS" ) ;
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title><?php echo $header_settings['project_title'] ?></title>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=ISO-8859-1" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="refresh" content="<?php echo $header_settings['refresh_rate_sec'] ?>" />
+<link rel="stylesheet" type="text/css" media="screen" href="<?php echo $header_settings['css_file'] ?>" />
+</head>
+
+
+<body>
+
+<h1><?php echo $body_settings['title'] ?></h1>
+
+<div id="tableList">
+	<ul>
+	<?php
+	foreach( $tbl_present as $tp ) {
+		?>
+		<li><a href="<?php echo $_SERVER['PHP_SELF'] ?>?tbl=<?php echo $tp ?>"><?php echo $tp ?></a></li>
+		<?php
+	}
+	?>
+	</ul>
+</div>
+
+<div id="recordTable">
+	<table>
+		<caption><?php echo strtoupper( dbquery( $subset, "dbTABLE_NAME" ) ) ?> TABLE (<?php echo $nrecs ?> records)</caption>
+		<thead>
+			<tr>
+			<?php
+			foreach( $fields as $f ) {
+				echo "\t\t<th>$f</th>\n" ;
+			}
+			?>
+			</tr>
+		</thead>
+		<tbody>
+			<?php
+			for( $subset[3]=0; $subset[3]< $nrecs; $subset[3]++ ) {
+				echo "\t<tr>\n" ;
+				foreach( $fields as $f ) {
+					$var = dbgetv( $subset, "$f" ) ;
+					echo "\t\t<td>$var</td>\n" ;
+				}
+				echo "\t</tr>\n" ;
+			}
+			?>
+		</tbody>
+	</table>
+</div>
+
+</body>
+</html>

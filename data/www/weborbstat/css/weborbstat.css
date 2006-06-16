@@ -1,0 +1,42 @@
+body {
+	font-family: "Trebuchet MS", Verdana, sans-serif ;
+	font-size: 110% ;
+}
+div#key {
+	position: absolute ;
+	top: 50px ;
+	right: 100px ;
+}
+div#dl {
+	position: absolute ;
+	top: 50px ;
+	left: 20px ;
+}
+table {
+	border: 1px solid black ;
+	background: #FFC ; 
+	padding: 3px ;
+}
+caption {
+	white-space: nowrap ;
+	background: #FFF ;
+	padding: 3px ;
+}
+th {
+	white-space: nowrap ;
+	text-align: center ;
+	border: 1px solid #CCC ;
+	background: #900 ;
+	padding: 3px ;
+	color: white ;
+}
+td {
+	white-space: nowrap ;
+	text-align: center ;
+	border: 1px solid #CCC ;
+	background: #FFF ;
+	padding: 3px ;
+}
+.block {
+	width: 100px ;
+}
