@@ -6,17 +6,18 @@ if( !extension_loaded( "Orb" ) ) {
 	dl( "Orb.so" ) or die( "Failed to dynamically load Orb.so" ) ;
 }
 
-$pf = "orb_demo" ;
+$pf = "weborbstat" ;
 
 # pfupdate( $pf ) ;
 
 $this_orb = pfget( $pf, 'orbname' ) ;
+$select_regex = pfget( $pf, 'select_regex' ) ;
 $header_settings = pfget( $pf, 'header_settings' ) ;
 $body_settings = pfget( $pf, 'body_settings' ) ;
 $data_latency_levels = pfget( $pf, 'data_latency_levels' ) ;
 
 $open_orb = orbopen( $this_orb, "r" ) ;
-$num_sources = orbselect( $open_orb, "TA_.*MGENC/M40|TA_.*BHZ.*" ) ;
+$num_sources = orbselect( $open_orb, $select_regex ) ;
 $orb_data = pforbstat( $open_orb, PFORBSTAT_SOURCES ) ;
 
 #----------------
