@@ -5,12 +5,12 @@ select_regex	"TA_.*MGENC/M40|TA_.*BHZ.*"
 apache_htdocs	/
 
 header_settings &Arr{
-	project_title		PHP5 Orb demo
+	project_title		Weborbstat demo
 	css_file		weborbstat.css
 	refresh_rate_sec	10
 }
 body_settings &Arr{
-	title			Antelope-PHP Test: Orb Demo
+	title			Weborbstat demo
 	table_caption		Data latency legend (in seconds)
 }
 
