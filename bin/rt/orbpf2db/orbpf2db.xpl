@@ -276,9 +276,10 @@ for( ; $stop == 0 ; ) {
 
 	foreach $table ( keys( %tables ) ) {
 
+		@dbscratch = dblookup( @db, "", "$table", "", "dbNULL" );
+		dbget( @dbscratch, 0 );
 		@dbscratch = dblookup( @db, "", "$table", "", "dbSCRATCH" );
-		@dbnull = dblookup( @db, "", "$table", "", "dbNULL" );
-		dbput( @dbscratch, dbget( @dbnull ) );
+
 		@dbtable = dblookup( @db, "", "$table", "", "dbALL" );
 
 		%fieldmap = %{$trans{$key}{"tables"}{$table}};
