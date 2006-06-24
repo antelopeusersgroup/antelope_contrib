@@ -63,30 +63,30 @@ recipes &Arr{
 	a_static_recipe	&Arr{
 		recipetype	install
 		pages	&Tbl{
-		# This table lists source files and destination file names
-		# in one of two forms. In the examples below, the placeholder 
-		# entries enclosed in angle brackets should be replaced with
-		# user entries (without the enclosing corner brackets)
-		# The first form is just a source filename and a dest
-		# filename, the first interpretable from the directory in
-		# which dbwebproject is run and the second relative 
-		# to $DocumentRoot/$DocumentRootSubdir:
-		#
-		#	<some_sourcefile>   <some_destfile>
-		#
-		# The second form allows clusters of source-files 
-		# that have the same source directory and same 
-		# destination directory to be installed in batch mode:
-		#
-		#  &Arr{
-		#	sourcedir	<some_sourcedir>
-		#	targetdir	<some_destdir>
-		#	files &Tbl{
-		#		<some_filename>
-		#		<some_filename>
-		#		....
-		#	}
-		#  }
+#		  This table lists source files and destination file names
+#		  in one of two forms. In the examples below, the placeholder 
+#		  entries enclosed in angle brackets should be replaced with
+#		  user entries (without the enclosing corner brackets)
+#		  The first form is just a source filename and a dest
+#		  filename, the first interpretable from the directory in
+#		  which dbwebproject is run and the second relative 
+#		  to $DocumentRoot/$DocumentRootSubdir:
+#
+#		  	<some_sourcefile>   <some_destfile>
+#
+#		  The second form allows clusters of source-files 
+#		  that have the same source directory and same 
+#		  destination directory to be installed in batch mode:
+#
+#		   &Arr{
+#		  	sourcedir	<some_sourcedir>
+#		  	targetdir	<some_destdir>
+#		  	files &Tbl{
+#		  		<some_filename>
+#		  		<some_filename>
+#		  		....
+#		  	}
+#		   }
 		}
 	}
 	rtimbank &Arr{
