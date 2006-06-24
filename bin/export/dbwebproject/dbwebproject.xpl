@@ -63,6 +63,13 @@ sub deposit_file {
 
 	$cmd = "$Commands{deposit} $opts $source $dest";
 
+	if( $opt_n ) {
+		
+		elog_notify( "Planning to run:\n\t$cmd\n" );
+
+		return;
+	}
+
 	if( $opt_v ) {
 
 		elog_notify( "$cmd" );
@@ -161,9 +168,9 @@ $Program =~ s".*/"";
 
 $Pfname = $Program;
 
-if ( ! &Getopts('r:p:v') || @ARGV > 1 ) { 
+if ( ! &Getopts('nr:p:v') || @ARGV > 1 ) { 
 
-    	elog_die ( "Usage: $Program [-v] [-p pfname] [-r DocumentRoot] [recipe]\n" ); 
+    	elog_die ( "Usage: $Program [-v] [-n] [-p pfname] [-r DocumentRoot] [recipe]\n" ); 
 
 } else {
 

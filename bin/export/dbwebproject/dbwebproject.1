@@ -3,7 +3,7 @@
 dbwebproject \- automatically create and maintain a database-dependent dynamic website
 .SH SYNOPSIS
 .nf
-\fBdbwebproject \fP[-v] [-p \fIpfname\fP] [-r \fIDocumentRoot\fP] [\fIrecipe\fP]
+\fBdbwebproject \fP[-v] [-n] [-p \fIpfname\fP] [-r \fIDocumentRoot\fP] [\fIrecipe\fP]
 .fi
 .SH DESCRIPTION
 
@@ -92,6 +92,8 @@ same name is expected to be found on the path.
 .SH OPTIONS
 .IP -v
 Verbose
+.IP -n 
+Don't actually run any commands, just report what would be done
 .IP "-p pfname"
 Alternate name of the parameter file. The default is \fBdbwebproject\fP.pf.
 .SH PARAMETER FILE
