@@ -90,16 +90,21 @@ appears on its own, without an explicit pathname, a command of the
 same name is expected to be found on the path.
 
 .SH OPTIONS
+
 .IP -v
 Verbose
+
 .IP -n 
 Don't actually run any commands, just report what would be done
+
 .IP "-p pfname"
 Alternate name of the parameter file. The default is \fBdbwebproject\fP.pf.
-.SH PARAMETER FILE
+
 .IP "-r DocumentRoot" 
 Override the DocumentRoot setting in the parameter file, using the 
 specified location instead.
+
+.SH PARAMETER FILE
 
 .in 2c
 .ft CW
@@ -140,36 +145,63 @@ run_recipes &Tbl{
         a_static_recipe
 }
 
+# The recipes table lists recipes to generate all of the automatically-
+# created and statically installed files. The recipetype may be 
+# either create or install. The latter just installs specified raw 
+# materials into their target location. The former runs a set of 
+# database operations listed in dbprocess_find_dbojects and runs 
+# the commands in eachrow_command in each one. eachrow_command 
+# may be a single string command, or a Tbl listing a series of commands. 
+# These commands allow several layers of substitution. The variable DBNAME
+# will be filled in with the database name from the command line. Variables
+# $TEMPFILE (with numeric suffixes e.g. $TEMPFILE_03 if more than one is needed)
+# will be replaced with temporary filenames for intermediate work. $OUTFILE
+# will be replaced with a pathname generated from the output_pathname
+# template of the recipe. The output_pathname is a template fed to 
+# trwfname [N.B. ???] with the database row being processed, meaning that all 
+# percent-escapes will be replaced with time fields per epoch2str(3), or 
+# the named database fields. The same percent-escapes will be applied to 
+# the commands in eachrow_command. Finally, tokens expressed as 
+# in the example &raw(master_index) will be replaced with the corresponding
+# pathnames listed in the raw_materials array. All relative pathnames 
+# are interpreted relative to $DocumentRoot/$DocumentRootSubdir. The $EXTFILE
+# variable refers to external files from the database row being processed. 
+# This is most useful in writing cleanup recipes. Cleanup recipes 
+# provide a third type of recipe: dbprocess_prep gives the commands 
+# to find things to cleanup. The eachrow_command cleans up the 
+# files as requested. The dbprocess_deleterows table creates a view
+# with all the records that should be deleted.
+
 .ne 32
 recipes &Arr{
 
         a_static_recipe &Arr{
                 recipetype      install
                 pages   &Tbl{
-                # This table lists source files and destination file names
-                # in one of two forms. In the examples below, the placeholder
-                # entries enclosed in angle brackets should be replaced with
-                # user entries (without the enclosing corner brackets)
-                # The first form is just a source filename and a dest
-                # filename, the first interpretable from the directory in
-                # which \fBdbwebproject\fP is run and the second relative
-                # to $DocumentRoot/$DocumentRootSubdir:
-                #
-                #       <some_sourcefile>   <some_destfile>
-                #
-                # The second form allows clusters of source-files
-                # that have the same source directory and same
-                # destination directory to be installed in batch mode:
-                #
-                #  &Arr{
-                #       sourcedir       <some_sourcedir>
-                #       targetdir       <some_destdir>
-                #       files &Tbl{
-                #               <some_filename>
-                #               <some_filename>
-                #               ....
-                #       }
-                #  }
+#		  This table lists source files and destination file names
+#		  in one of two forms. In the examples below, the placeholder
+#		  entries enclosed in angle brackets should be replaced with
+#		  user entries (without the enclosing corner brackets)
+#		  The first form is just a source filename and a dest
+#		  filename, the first interpretable from the directory in
+#		  which \fBdbwebproject\fP is run and the second relative
+#		  to $DocumentRoot/$DocumentRootSubdir:
+#		  #
+#		        <some_sourcefile>   <some_destfile>
+#		  #
+#		  The second form allows clusters of source-files
+#		  that have the same source directory and same
+#		  destination directory to be installed in batch mode:
+#		  #
+#		   &Arr{
+#		        sourcedir       <some_sourcedir>
+#		        targetdir       <some_destdir>
+#		        files &Tbl{
+#		                <some_filename>
+#		                <some_filename>
+#		                ....
+#		        }
+#		   }
                 }
         }
 }
