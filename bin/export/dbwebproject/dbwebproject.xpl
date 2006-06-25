@@ -1,10 +1,21 @@
-#   Copyright (c) 2005 Lindquist Consulting, Inc.
+
+#   Copyright (c) 2005-2006 Lindquist Consulting, Inc.
 #   All rights reserved. 
 #                                                                     
 #   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
-# 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
+#
 
 require "getopts.pl";
 use Datascope;
@@ -16,7 +27,7 @@ sub setup_web_config_pf {
 
 	if( -e "$pf_contents" ) {
 
-		deposit_file( $pf_contents, $pf_location, "-r" );
+		deposit_file( $pf_contents, 1, "", $pf_location, "-r" );
 
 	} else {
 
@@ -38,7 +49,7 @@ sub setup_web_config_pf {
 
 	if( -e "$loader_contents" ) {
 
-		deposit_file( $loader_contents, $loader_location, "-r" );
+		deposit_file( $loader_contents, 1, "", $loader_location, "-r" );
 
 	} else {
 
@@ -57,7 +68,65 @@ sub setup_web_config_pf {
 }
 
 sub deposit_file {
-	my( $source, $dest, @opts ) = @_;
+	my( $source, $overwrite, $header, $dest, @opts ) = @_;
+
+	if( ! -e "$source" ) {
+
+		elog_complain( "WARNING: file '$source' does not exist!\n" );
+
+		return;
+	}
+
+	my( $basename ); 
+
+	my( $dir, $base, $suffix ) = parsepath( $source );
+
+	if( defined( $suffix ) && $suffix ne "" ) {
+			
+		$basename = "$base.$suffix";
+
+	} else {
+
+		$basename = $base;
+	}
+
+	my( $destfile ) = concatpaths( $dest, $basename );
+
+	if( ! $overwrite && -e "$destfile" ) {
+		
+		if( $opt_v ) {
+
+			elog_notify( "file '$destfile' exists; " .
+				     "will not overwrite" );
+		}
+
+		return;
+	}
+
+	my( $tmpdir, $tmpfile );
+
+	if( defined( $header ) && $header ne "" ) {
+		
+		$tmpdir = "/tmp/dbwebproject_$<_$$";
+
+		mkdir( $tmpdir, 0755 );
+
+
+		$tmpfile = concatpaths( $tmpdir, $basename );
+
+		if( $opt_v ) {
+			
+			elog_notify( "Adding header to $source in $tmpfile\n\n" );
+		}
+
+		open( T, ">$tmpfile" );
+		print T $header;
+		close( T );
+
+		system( "cat $source >> $tmpfile" );
+
+		$source = $tmpfile;
+	}
 
 	$opts = join( " ", @opts );
 
@@ -65,14 +134,20 @@ sub deposit_file {
 
 	if( $opt_n ) {
 		
-		elog_notify( "Planning to run:\n\t$cmd\n" );
+		elog_notify( "Planning to run:\n\n\t$cmd\n\n" );
+
+		if( defined( $tmpdir ) ) {
+
+			unlink( $tmpfile );
+			rmdir( $tmpdir );
+		}
 
 		return;
 	}
 
 	if( $opt_v ) {
 
-		elog_notify( "$cmd" );
+		elog_notify( "$cmd\n\n" );
 	}
 
 	$rc = system( "$cmd" );
@@ -81,6 +156,12 @@ sub deposit_file {
 		
 		elog_complain( "Failed to install $source " .
 			       "to $dest!\n" );
+	}
+
+	if( defined( $tmpdir ) ) {
+
+		unlink( $tmpfile );
+		rmdir( $tmpdir );
 	}
 
 	return;
@@ -101,6 +182,7 @@ sub run_recipe {
 				
 				$sourcedir = $entry->{sourcedir};
 				$dest = $entry->{targetdir};
+				$header = $entry->{header};
 				@files = @{$entry->{files}};
 
 				$dest = concatpaths( $TargetDir, $dest );
@@ -108,7 +190,7 @@ sub run_recipe {
 				foreach $file ( @files ) {
 					
 					$source = concatpaths( $sourcedir, $file );
-					deposit_file( $source, $dest );
+					deposit_file( $source, 1, $header, $dest );
 				}
 
 			} else {
@@ -117,9 +199,44 @@ sub run_recipe {
 
 				$dest = concatpaths( $TargetDir, $dest );
 
-				deposit_file( $source, $dest );
+				deposit_file( $source, 1, "", $dest );
 			}
+		}
 
+		@config = @{pfget( $Pfname, "recipes{$recipename}{config}" )};
+
+		foreach $cffile ( @config ) {
+		
+			if( ref( $cffile ) eq "HASH" ) {
+				
+				$sourcedir = $cffile->{sourcedir};
+				$dest = $cffile->{targetdir};
+				$header = $cffile->{header};
+				@files = @{$entry->{files}};
+				@files = @{$cffile->{files}};
+
+				$dest = concatpaths( $ConfigDir, $dest );
+
+				foreach $file ( @files ) {
+					
+					$source = concatpaths( $sourcedir, $file );
+					deposit_file( $source, 
+						      $overwrite_config,
+						      $header, 
+						      $dest );
+				}
+
+			} else {
+
+				( $source, $dest ) = split( /\s+/, $cffile );
+
+				$dest = concatpaths( $ConfigDir, $dest );
+
+				deposit_file( $source, 
+					      $overwrite_config, 
+					      "", 
+					      $dest );
+			}
 		}
 
 	} else {
@@ -192,7 +309,17 @@ if( $opt_r ) {
 }
 
 $DocumentRootSubdir = pfget( $Pfname, "DocumentRootSubdir" );
+
+$ConfigDir = pfget( $Pfname, "ConfigDir" );
+
+if( $ConfigDir !~ m@^/@ ) {
+
+	$ConfigDir = concatpaths( $DocumentRoot, $ConfigDir );
+}
+
 $install_web_config_pf = pfget_boolean( $Pfname, "install_web_config_pf" );
+
+$overwrite_config = pfget_boolean( $Pfname, "overwrite_config" );
 
 @run_recipes = @{pfget( $Pfname, "run_recipes" )};
 

@@ -2,7 +2,11 @@
 DocumentRoot		/var/apache/htdocs
 DocumentRootSubdir	.
 
+ConfigDir		../config
+
 install_web_config_pf 	no
+
+overwrite_config	no
 
 web_config_pf &Arr{
    pf_location	/var/apache/config/web_config.pf
@@ -27,6 +31,13 @@ web_config_pf &Arr{
 
 antelope	&env(ANTELOPE)
 
+php_pf	&Literal{
+<?php
+	putenv( "PFPATH=/var/apache/config" );
+	$_ENV{'PFPATH'} = "/var/apache/config";
+?>
+}
+
 run_recipes &Tbl{
 	a_static_recipe
 }
@@ -37,19 +48,25 @@ recipes &Arr{
 		recipetype	install
 		pages	&Tbl{
 #
-#		  	<some_sourcefile>   <some_destfile>
+#		  	<some_sourcefile>   <some_destdir>
 #
 #		OR
 #
 #		   &Arr{
 #		  	sourcedir	<some_sourcedir>
 #		  	targetdir	<some_destdir>
+#		  	header	
 #		  	files &Tbl{
 #		  		<some_filename>
 #		  		<some_filename>
 #		  		....
 #		  	}
 #		   }
+		}
+		config	&Tbl{
+#
+#                  Same as above for 'pages' table
+#
 		}
 	}
 	rtimbank &Arr{
@@ -58,6 +75,7 @@ recipes &Arr{
 			&Arr{
 				sourcedir 	&antelope/data/www/cgibin
 				targetdir	rtapps
+				header		&{php_pf}
 				files &Tbl{
 					rtimbank.php
 					rtimbank_image.php
@@ -66,6 +84,7 @@ recipes &Arr{
 			&Arr{
 				sourcedir 	&antelope/data/www/css
 				targetdir	rtapps/css
+				header		&{php_pf}
 				files &Tbl{
 					rtimbank_css.php
 				}
@@ -81,13 +100,9 @@ recipes &Arr{
 					roadnet_sorry.gif
 				}
 			}
-			&Arr{
-				sourcedir 	&antelope/data/pf
-				targetdir	rtapps
-				files &Tbl{
-					rtimbank.pf
-				}
-			}
+		}
+		config &Tbl{
+			&antelope/data/pf/rtimbank.pf	.
 		}
 	}
 }

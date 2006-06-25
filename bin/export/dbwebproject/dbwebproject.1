@@ -29,6 +29,12 @@ is intended to help make clear the relationship between the \fBdbwebproject\fP
 target directory and the root directory familiar to users of Apache or
 similar web-servers.
 
+The \fIConfigDir\fP parameter specifies the location for any configuration
+files such as parameter-files. if this parameter is an absolute path, it 
+is taken exactly as specified. Otherwise, \fIConfigDir\fP is taken to be 
+relative to \fIDocumentRoot\fP, whether that is specified in the parameter 
+file or overridden on the command line. 
+
 The \fBdbwebproject\fP application is based on recipes, which determine
 the structure of the web-site created. The \fIrun_recipes\fP parameter
 in the parameter file determines which recipes are followed when
@@ -115,6 +121,8 @@ specified location instead.
 DocumentRoot            /var/apache/htdocs
 DocumentRootSubdir      .
 
+ConfigDir		../config
+
 install_web_config_pf 	no
 
 web_config_pf &Arr{
@@ -178,30 +186,39 @@ recipes &Arr{
         a_static_recipe &Arr{
                 recipetype      install
                 pages   &Tbl{
-#		  This table lists source files and destination file names
-#		  in one of two forms. In the examples below, the placeholder
-#		  entries enclosed in angle brackets should be replaced with
-#		  user entries (without the enclosing corner brackets)
-#		  The first form is just a source filename and a dest
-#		  filename, the first interpretable from the directory in
-#		  which \fBdbwebproject\fP is run and the second relative
-#		  to $DocumentRoot/$DocumentRootSubdir:
-#		  #
-#		        <some_sourcefile>   <some_destfile>
-#		  #
-#		  The second form allows clusters of source-files
-#		  that have the same source directory and same
-#		  destination directory to be installed in batch mode:
-#		  #
-#		   &Arr{
-#		        sourcedir       <some_sourcedir>
-#		        targetdir       <some_destdir>
-#		        files &Tbl{
-#		                <some_filename>
-#		                <some_filename>
-#		                ....
-#		        }
-#		   }
+#                 This table lists source files and destination file names
+#                 in one of two forms. In the examples below, the placeholder
+#                 entries enclosed in angle brackets should be replaced with
+#                 user entries (without the enclosing corner brackets)
+#                 The first form is just a source filename and a dest
+#                 filename, the first interpretable from the directory in
+#                 which \fBdbwebproject\fP is run and the second relative
+#                 to $DocumentRoot/$DocumentRootSubdir:
+#                 
+#                       <some_sourcefile>   <some_destdir>
+#                 
+#                 The second form allows clusters of source-files
+#                 that have the same source directory and same
+#                 destination directory to be installed in batch mode.
+#                 The targetdir parameter is relative to DocumentRoot
+#                 and DocumentSubdir. If a header is specfied, all listed 
+#                 files are prepended with the contents of the header string:
+#                 
+#                 &Arr{
+#                       sourcedir       <some_sourcedir>
+#                       targetdir       <some_destdir>
+#                       header
+#                       files &Tbl{
+#                               <some_filename>
+#                               <some_filename>
+#                               ....
+#                       }
+#                  }
+                }
+                config   &Tbl{
+#                  This table is the same as the pages table above except 
+#                  all installations are relative to ConfigDir instead of 
+#                  DocumentRoot/DocumentSubdir
                 }
         }
 }
@@ -252,6 +269,9 @@ when ready. This latter strategy has worked well for the author provided
 careful track is kept of the midified files such that none of the pieces are 
 orphaned when development is finished.
 
+There may be some unnecessary overlap in function between the web_config 
+parameter-file handling, and the mechanism to install parameter files through
+the \fIconfig\fP table. 
 .SH AUTHOR
 .nf
 Kent Lindquist
