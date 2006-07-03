@@ -1,4 +1,4 @@
-DIRS=matlabdoc lib doc examples mex scripts
+DIRS=matlabdoc lib doc examples mex scripts user
 # DIRS=
 
 Include :: $(ANTELOPE)/include/mex_antelope_makerules
