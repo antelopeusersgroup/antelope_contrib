@@ -7,6 +7,7 @@ else
 	addpath( [getenv( 'ANTELOPE' ) , '/data/matlab/antelope/antelope'] );
 	addpath( [getenv( 'ANTELOPE' ) , '/data/matlab/antelope/scripts'] );
 	addpath( [getenv( 'ANTELOPE' ) , '/data/matlab/antelope/examples'] );
+	addpath( [getenv( 'ANTELOPE' ) , '/data/matlab/antelope/user'] );
 
 end
 	

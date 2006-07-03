@@ -1,0 +1,9 @@
+TRDISP Simple display of trace object
+
+TRDISP( TR, NMAX )
+
+TRDISP takes a Datascope trace-object and displays it in a 
+simple Matlab figure with sub-plots for each trace. This is intended 
+for testing and for small data sets. NMAX gives the maximum number 
+of traces to show (always the first rows listed in the trace-object)
+

@@ -1,8 +1,16 @@
 DATADIR= matlab/antelope/scripts
+
+
+#
+# NOT HERE!!! User Matlab m-files go in data/matlab/antelope/user
+#
 DATA= \
 	setup_antelope.m \
 	array_response.m \
 	tr2struct.m 
+#
+# NOT HERE!!! User Matlab m-files go in data/matlab/antelope/user
+#
 
 HTMLDIR= matlab/antelope/html
 HTML= $(DATA:.m=.html)
