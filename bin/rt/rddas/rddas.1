@@ -21,11 +21,9 @@ specific header to each raw packet and sends it to an \fBorb\fP ring buffer.
 Information packets. Data packets corresponds to PASSCAL \fIDT\fR packet type.
 Information packets include PASSCAL \fIAD, CD, EH, ET, OM, SH, SC\fR packet
 types.
- 
-
 .SH OPTIONS
 .IP "-R"
-Tells \fbrddas\fP to send \fIRESET_DAS\fR command to DAS before reading
+Tells \fBrddas\fP to send \fIRESET_DAS\fP command to DAS before reading
 data. That option can be used only in a case if DAS accepts external
 commands.
 .IP "-l"
@@ -33,41 +31,47 @@ Tells \fBrddas\fP to create  logfile  representing   data   in   Reftek
 instrument  format.   It contains the instrument set-up information,  the  
 state-of-health   information,   and records  on  all  events  and  their  
 start&end&trigger times.   The  logfile  name  will  be  in  a  form   of 
-\fIDASID_log\fR.
+\fIDASID_log\fP.
 .IP "-p parameter-file"
 An \fBrddas\fP is using a parameter file which contains parameters of 
-Data and Information packets.  A parameter file \fIparameter-file\fR
+Data and Information packets.  A parameter file \fIparameter-file\fP
 will be used to get parameters of a raw data packet, it's type, header type, 
 to get station and channel names code for each component of a raw data packet. 
 By defauld a \fBpscl.pf\fP parameter file is used.
 .IP "-s B,P,D,S"
 Specify a serial port parameters to match the RefTek's serial port.
 Parameters must be specified in form B,P,D,S where:
-
+.in 2c
+.ft CW
 .nf
 
-	B is baud rate ( 9600, 38400, 57600, etc.); 
-    	P is a parity ( n => no parity, o = > odd parity, 
-				e => even parity );
-    	D is a number of data bits ( 7 or 8 );
-    	S is a number of stop bits ( 1 or 2 )
+B is baud rate ( 9600, 38400, 57600, etc.); 
+P is a parity ( n => no parity, o = > odd parity, 
+			e => even parity );
+D is a number of data bits ( 7 or 8 );
+S is a number of stop bits ( 1 or 2 )
 
 .fi
-
+.ft R
+.in
 The default parameter settings  57600,n,8,1 . 
 .IP "-u "
-Uncompress seismic data before putting them on an \fIorb\fR ring buffer.
+Uncompress seismic data before putting them on an \fIorb\fP ring buffer.
 .IP "-v"
 Be more verbose.
 .SH EXAMPLE
 .LP
 Read data from a DAS which connected to a Magma port /dev/cua/0
 and send them to orb on localhost; create logfile.
+.in 2c
+.ft CW
 .nf
 
 rddas -l /dev/cua/0 localhost 
 
 .fi
+.ft R
+.in
 .SH "SEE ALSO"
 orbstat(1)
 .SH "BUGS AND CAVEATS"
@@ -75,6 +79,9 @@ Occationally when when attempting to read from a DAS using a
 Magma card on a Sun, no data will be returned.  To fix this,
 stop the instance of rddas and reset the Magma card by doing the 
 following:
+.in 2c
+.ft CW
+.nf
 
 $port will be 0,1,2,....
 
@@ -82,5 +89,8 @@ $port will be 0,1,2,....
 
 /opt/MAGMA_Sp/bin/setport cua/$port 57600 cs8 -cstopb  parenb parodd
 
+.fi
+.ft R
+.in
 .SH AUTHOR
 Marina Glushko

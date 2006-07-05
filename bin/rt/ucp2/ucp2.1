@@ -83,10 +83,10 @@ on the sceeen. User can start/stop real-time parameter display by clicking on \f
 .IP \fBDCCMD\fP
 Send comand to DC/DAS. This command is only for BBA systems.
 .IP \fBQUIT\fP
-Quit \fBucp2\fP. All windows opened by \fBucp2\fp will be destroied. If the archiving process
+Quit \fBucp2\fP. All windows opened by \fBucp2\fP will be destroied. If the archiving process
 was started through \fBucp2\fP and was not stopped prior to \fBQuit\fPing it continues
 to run in the background. User assumes responsibility for all processes started but not
-stopped by \fBucp2\fp.
+stopped by \fBucp2\fP.
 
 .SH PARAMETER FILE
 \fBucp2\fP uses a parameter file whose default name is \fIucp2.pf\fP. This parameter
@@ -120,92 +120,88 @@ file must contain the following parameters:
 .IP
 \fBButDes\fP - description of \fICOMMAND buttons\fP.
 .SH PARAMETER FILE EXAMPLE
-
 .ft CW
 .in 2c
 .nf
 
-.ne 76
-
-   #
-   OrbName 132.239.4.29            # an orbserver name/IP
-   #
-   DcName &Tbl{
-   132.239.4.194                   # a DC IP address
-   }
-   #
-   SendAlarmTo  glushko            # email address where alarm message will be sent
-   #
-   AnzaDc &Tbl{
-   AZ_0                            # an ANZA DC name which will be used in DC parameter display
-   }
-   #
-   Dc &Tbl{
-   AZ_194                          # a BBA DC name which will be used in DC parameter display
-   }
-   OrbSelect .*[LS][PS]            # source names selection pattern for orbserver
-   AnzaSelectDas .*/CALS           # ANZA DAS srsnames selection pattern
-   AnzaSelectDc  .*/ASP            # ANZA DC srcnamames selection pattern
-   SelectDas     .*/CBBLS          # BBA DAS srcnames name selection pattern
-   SelectDc      .*/BSP            # BBA DC srcnames selection pattern
-   #
-   # ANZA stations
-   #
-   AnzaDas &Tbl{
-   AZ_TRO 1
-   AZ_FRD 2
-   AZ_WMC 4
-   AZ_PFO 5
-   AZ_CRY 8
-   AZ_RDM 9
-   AZ_SND 10
-   AZ_KNW 13
-   AZ_BZN 14
-   AZ_LVA2 15
-   AZ_SOL 16
-   }
-   #
-   # BBA stations
-   #
-   Das &Tbl{
-   AZ_MONP 1
-   AZ_SMTC 2
-   AZ_YAQ 3
-   }
-   #
-   # Listing of commands which can be sent to DC/DAS
-   #
-   DcCmd &Tbl{
-   ST:Send_Status:0
-   AO:cquistion_ON:0
-   AF:Acquistion_OFF:0
-   BF:Burn_Flash:0
-   DO:Display_On:0
-   DF:Dosplay_OFF:0
-   RC:Mass_Recenter:1
-   RS:DAS_Reset:1
-   ZS:Zero_DAS_Counters:1
-   ZD:Zero_DC_Counters:0
-   XO:Turn_On_ReTramsmit:0
-   XF:Turn_Off_ReTramsmit:0
-   TO:DAS_XMit_ON:1
-   TF:DAS_XMit_OFF:1
-   XX:Reset_DC:0
-   }
-   #
-   # COMMAND buttons help message
-   #
-   ButDes &Arr{
-   VIEWPF  View/edit a ucp2.pf parameter file. To select press mouse Button1.
-   ANZADP  Get ANZA DC and DAS Diagnostic Parameters. To select press mouse Button1.
-   DASPAR  Get BBA DAS Diagnostic Parameters. To select press mouse Button1.
-   DCPAR   Get BBA DC Parameters and CLOCK status. To select press mouse Button1.
-   DCCMD   Send comand to DC/DAS (only for BBA systems). To select press mouse Button1.
-   }
+#
+OrbName 132.239.4.29            # an orbserver name/IP
+#
+DcName &Tbl{
+132.239.4.194                   # a DC IP address
+}
+#
+SendAlarmTo  glushko            # email address where alarm message will be sent
+#
+AnzaDc &Tbl{
+AZ_0                            # an ANZA DC name which will be used in DC parameter display
+}
+#
+Dc &Tbl{
+AZ_194                          # a BBA DC name which will be used in DC parameter display
+}
+OrbSelect .*[LS][PS]            # source names selection pattern for orbserver
+AnzaSelectDas .*/CALS           # ANZA DAS srsnames selection pattern
+AnzaSelectDc  .*/ASP            # ANZA DC srcnamames selection pattern
+SelectDas     .*/CBBLS          # BBA DAS srcnames name selection pattern
+SelectDc      .*/BSP            # BBA DC srcnames selection pattern
+#
+# ANZA stations
+#
+AnzaDas &Tbl{
+AZ_TRO 1
+AZ_FRD 2
+AZ_WMC 4
+AZ_PFO 5
+AZ_CRY 8
+AZ_RDM 9
+AZ_SND 10
+AZ_KNW 13
+AZ_BZN 14
+AZ_LVA2 15
+AZ_SOL 16
+}
+#
+# BBA stations
+#
+Das &Tbl{
+AZ_MONP 1
+AZ_SMTC 2
+AZ_YAQ 3
+}
+#
+# Listing of commands which can be sent to DC/DAS
+#
+DcCmd &Tbl{
+ST:Send_Status:0
+AO:cquistion_ON:0
+AF:Acquistion_OFF:0
+BF:Burn_Flash:0
+DO:Display_On:0
+DF:Dosplay_OFF:0
+RC:Mass_Recenter:1
+RS:DAS_Reset:1
+ZS:Zero_DAS_Counters:1
+ZD:Zero_DC_Counters:0
+XO:Turn_On_ReTramsmit:0
+XF:Turn_Off_ReTramsmit:0
+TO:DAS_XMit_ON:1
+TF:DAS_XMit_OFF:1
+XX:Reset_DC:0
+}
+#
+# COMMAND buttons help message
+#
+ButDes &Arr{
+VIEWPF  View/edit a ucp2.pf parameter file. To select press mouse Button1.
+ANZADP  Get ANZA DC and DAS Diagnostic Parameters. To select press mouse Button1.
+DASPAR  Get BBA DAS Diagnostic Parameters. To select press mouse Button1.
+DCPAR   Get BBA DC Parameters and CLOCK status. To select press mouse Button1.
+DCCMD   Send comand to DC/DAS (only for BBA systems). To select press mouse Button1.
+}
 
 .fi
 .in
 .ft R
-
 .SH AUTHOR
 Marina Glushko
