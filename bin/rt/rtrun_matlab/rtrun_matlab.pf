@@ -1,0 +1,20 @@
+antelope	&env(ANTELOPE)
+
+matlab_interpreter  matlab -nosplash -nodesktop -nojvm
+matlab_timeout_sec  60
+
+matlab_paths	&Tbl{
+	&antelope/data/matlab/antelope/antelope
+	&antelope/data/matlab/antelope/examples
+	&antelope/data/matlab/antelope/scripts
+	&antelope/data/matlab/antelope/user
+}
+
+matlab_pf &Arr{
+	dbname	/opt/antelope/data/db/demo/demo
+}
+
+matlab_script &Literal{
+	dbname = pfget( Pf, 'dbname' )
+	db = dbopen( dbname, 'r' )
+}
