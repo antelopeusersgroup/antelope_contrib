@@ -1,37 +1,257 @@
 .TH RTRUN_MATLAB 1 "$Date$"
 .SH NAME
-rtrun_matlab \- run a matlab process under an  Antelope real-time system
+\fBrtrun_matlab\fP \- run a Matlab process under an Antelope real-time system
 .SH SYNOPSIS
 .nf
-rtrun_matlab [-p pfname]
+\fBrtrun_matlab\fP [-s] [-v] [-p \fIpfname\fP] [-l \fIlockfile\fP]
 .fi
 .SH DESCRIPTION
-rtrun_matlab allows the user to run a Matlab process under an Antelope real-time
-system, usually out of the rtexec(1) cron table. 
+\fBrtrun_matlab\fP allows the user to run a Matlab process under an Antelope
+real-time system, usually out of the rtexec(1) cron table. All details of the
+Matlab commands to be run, and how to run them, are stored in the
+\fBrtrun_matlab\fP.pf parameter file (or alternate parameter-file name as specified
+with the -p option). If the -l option is used to specify a lock file, multiple
+instances of \fBrtrun_matlab\fP will protect themselves from running simultaneously
+(the first instance to acquire the lock will run; the rest of the
+processes using the same lock file will exit immediately).
+
+The unix command-line used to launch the Matlab interpreter should be
+specified in the \fImatlab_interpreter\fP parameter of the parameter file. The
+\fImatlab_timeout_sec\fP parameter specifies the maximum number of seconds
+the Matlab interpreter is allowed to run. If this is exceeded, the Matlab
+process is killed and \fBrtrun_matlab\fP exits. A \fImatlab_timeout_sec\fP value
+of 0 will allow the interpreter to run indefinitely.
+
+\fBrtrun_matlab\fP builds two preparatory files for the Matlab interpreter before
+launching it. The first is a parameter file with the contents of the
+\fImatlab_pf\fP array from \fBrtrun_matlab\fP.pf. These parameters will be available to the
+Matlab program during execution through the Matlab parameter-file variable
+named by \fImatlab_pf_varname\fP.
+
+The second file is a script that will be given to the Matlab
+interpreter to execute. This may very well be a single Matlab command that
+launches user's processing procedures through an m-file on the path; or it
+may be a more involved script, specified verbatim in \fBrtrun_matlab\fP.pf. The
+script given to the interpreter contains commands to add the Matlab
+paths specified in \fImatlab_paths\fP; a command to make the contents of
+\fImatlab_pf\fP available through the parameter-file variable \fImatlab_pf_varname\fP;
+and the literal contents of the \fImatlab_script\fP parameter.
 .SH OPTIONS
-.IP "-p pfname"
-Specify an alternate parameter-file name (the default is rtrun_matlab.pf)
+.IP "-p \fIpfname\fP"
+Specify an alternate parameter-file name (the default is \fBrtrun_matlab\fP.pf)
 .IP -v
 Verbose
-.SH FILES
-.SH ENVIRONMENT
+.IP "-l \fIlockfile\fP"
+Specify a lock file, for coordination amongst multiple instances of
+\fBrtrun_matlab\fP.
+.IP -s
+Save the temporary script and parameter files rather than deleting them
+at the end of the run; also announce their location at the end of the run.
 .SH PARAMETER FILE
-.SH EXAMPLE
+A basic example of the \fBrtrun_matlab\fP.pf parameter file is as follows:
+
 .in 2c
 .ft CW
 .nf
+
+.ne 5
+
+antelope        &env(ANTELOPE)
+
+\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm
+\fImatlab_timeout_sec\fP  600
+
+.ne 5
+\fImatlab_paths\fP      &Tbl{
+        &antelope/data/matlab/antelope/antelope
+        &antelope/data/matlab/antelope/scripts
+        &antelope/data/matlab/antelope/user
+}
+
+.ne 5
+\fImatlab_pf_varname\fP Pf
+
+\fImatlab_pf\fP &Arr{
+        dbname  /opt/antelope/data/db/demo/demo
+}
+.ne 5
+
+\fImatlab_script\fP &Literal{
+        dbname = pfget( Pf, 'dbname' )
+        db = dbopen( dbname, 'r' )
+}
+
 .fi
 .ft R
 .in
-.SH RETURN VALUES
+For more complicated situations where one set of commands, paths, etc
+may be used with different input parameters to the Matlab script, one may
+want to construct a master parameter file with most of the parameters,
+then make subsidiary parameter files with the variable elements such as the
+\fImatlab_pf\fP contents. This limits the need for repeating large pieces
+of the configuration:
+.in 2c
+.ft CW
+.nf
+
+.ne 10
+
+% cat \fBrtrun_matlab\fP.pf
+\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm
+\fImatlab_timeout_sec\fP  60
+
+\fImatlab_paths\fP      &Tbl{
+        /opt/antelope/4.8/data/matlab/antelope/antelope
+        /opt/antelope/4.8/data/matlab/antelope/scripts
+        /opt/antelope/4.8/data/matlab/antelope/user
+}
+
+.ne 6
+\fImatlab_pf_varname\fP Pf
+
+\fImatlab_script\fP &Literal{
+
+        dbname = pfget( Pf, 'dbname' )
+        table = pfget( Pf, 'table' )
+
+.ne 5
+        db = dbopen( dbname, 'r' )
+        db = dblookup( db, '', table, '', '' )
+
+        nrecs = dbnrecs( db )
+}
+
+.ne 8
+pf_revision_time 1152828315
+
+% cat matlab_experiment1.pf
+\fImatlab_interpreter\fP        &ref(\fBrtrun_matlab\fP,matlab_interpreter)
+\fImatlab_timeout_sec\fP        &ref(\fBrtrun_matlab\fP,matlab_timeout_sec)
+\fImatlab_paths\fP              &ref(\fBrtrun_matlab\fP,matlab_paths)
+\fImatlab_pf_varname\fP &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
+\fImatlab_script\fP             &ref(\fBrtrun_matlab\fP,matlab_script)
+
+.ne 11
+\fImatlab_pf\fP &Arr{
+        dbname  /opt/antelope/data/db/demo/demo
+        table   origin
+}
+
+% cat matlab_experiment2.pf
+\fImatlab_interpreter\fP        &ref(\fBrtrun_matlab\fP,matlab_interpreter)
+\fImatlab_timeout_sec\fP        &ref(\fBrtrun_matlab\fP,matlab_timeout_sec)
+\fImatlab_paths\fP              &ref(\fBrtrun_matlab\fP,matlab_paths)
+\fImatlab_pf_varname\fP &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
+\fImatlab_script\fP             &ref(\fBrtrun_matlab\fP,matlab_script)
+
+\fImatlab_pf\fP &Arr{
+        dbname  /opt/antelope/data/db/demo/demo
+        table   wfdisc
+}
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+
+The following example uses the nested parameter-files shown in the
+parameter-file section above:
+.in 2c
+.ft CW
+.nf
+
+.ne 8
+
+%\fB rtrun_matlab -v -s -p matlab_experiment1\fP
+rtrun_matlab: Started (pid 12453) with pf 'matlab_experiment1' at  7/14/2006  23:20:57.714
+
+                              < M A T L A B >
+                  Copyright 1984-2004 The MathWorks, Inc.
+                         Version 7.0.0.19901 (R14)
+                                May 06, 2004
+
+.ne 8
+
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+
+addpath( '/opt/antelope/4.8/data/matlab/antelope/antelope' )
+addpath( '/opt/antelope/4.8/data/matlab/antelope/scripts' )
+addpath( '/opt/antelope/4.8/data/matlab/antelope/user' )
+ Pf = dbpf( '/tmp/rtrun_matlab_1001_12453.pf' )
+
+.ne 6
+Pf =
+
+        dbpf object: 1-by-1
+
+        dbname = pfget( Pf, 'dbname' )
+
+.ne 5
+dbname =
+
+/opt/antelope/data/db/demo/demo
+
+        table = pfget( Pf, 'table' )
+
+.ne 6
+table =
+
+origin
+
+        db = dbopen( dbname, 'r' )
+
+.ne 6
+db =
+
+    database: 0
+       table: -501
+       field: -501
+      record: -501
+
+.ne 8
+        db = dblookup( db, '', table, '', '' )
+
+db =
+
+    database: 0
+       table: 19
+       field: -501
+      record: -501
+
+.ne 6
+
+        nrecs = dbnrecs( db )
+
+nrecs =
+
+        1351
+
+.ne 6
+
+exit
+rtrun_matlab: Saving temporary parameter-file '/tmp/rtrun_matlab_1001_12453.pf'
+rtrun_matlab: Saving temporary script '/tmp/rtrun_matlab_1001_12453.m'
+rtrun_matlab: Finished (pid 12453) with pf 'matlab_experiment1' at  7/14/2006  23:21:15.455
+%\fB \fP
+
+.fi
+.ft R
+.in
 .SH LIBRARY
-.SH ATTRIBUTES
-.SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
 rtexec(1)
 .fi
 .SH "BUGS AND CAVEATS"
+If the system-wide or user-specific Matlab startup scripts are already
+configured to include the Antelope directories, it should not be necessary
+to add those Matlab paths again (as is done in the default parameter file
+for \fBrtrun_matlab\fP).
+
+Plain-references in parameter files do not cascade well through the
+parameter-file reference mechanism, which explains the hard-wiring of the
+Antelope version in the parameter-file example above.
 .SH AUTHOR
 .nf
 Kent Lindquist

@@ -18,6 +18,7 @@
 #
 
 require "getopts.pl" ;
+use Fcntl ':flock';
 use Datascope ;
 use rt;
  
@@ -28,6 +29,65 @@ sub inform {
 
                 elog_notify( $message );
         }
+
+	return;
+}
+
+sub clean_tempfiles {
+
+	if( $opt_s ) {
+
+		elog_notify( "Saving temporary parameter-file '$tmp_pf'" );
+		elog_notify( "Saving temporary script '$tmp_script'" );
+
+	} else {
+
+		unlink( $tmp_script );
+		unlink( $tmp_pf );
+	}
+
+	return;
+}
+
+sub check_lock {
+	my( $lockfile_name ) = @_;
+
+	if( ! defined( $lockfile_name ) ) {
+		
+		return;
+	}
+
+	inform( "Locking $lockfile_name...." );
+
+	open( LOCK, ">$lockfile_name" );
+
+	if( flock( LOCK, LOCK_EX|LOCK_NB ) != 1 ) {
+
+		elog_die( "Failed to lock '$lockfile_name'! Bye.\n" );
+	}
+
+	print LOCK "$$\n"; 
+
+	inform( "Locking $lockfile_name....Locked." );
+
+	return;
+}
+
+sub release_lock {
+	my( $lockfile_name ) = @_;
+
+	if( ! defined( $lockfile_name ) ) {
+		
+		return;
+	}
+
+	flock( LOCK, LOCK_UN );
+
+	close( LOCK );
+
+	inform( "Unlocked $lockfile_name" );
+
+	return;
 }
 
 my $pgm = $0 ; 
@@ -37,15 +97,30 @@ $Pf = $pgm;
 
 elog_init( $pgm, @ARGV );
 
-if ( ! &Getopts('vp:') || @ARGV != 0 ) { 
+if ( ! &Getopts('svp:l:') || @ARGV != 0 ) { 
 
-	elog_die ( "Usage: $pgm [-v] [-p pfname]\n" ) ; 
+	elog_die ( "Usage: $pgm [-s] [-v] [-p pfname] [-l lockfile]\n" ) ; 
+
+} else {
+
+	if( $opt_p ) {
+		
+		$Pf = $opt_p;
+	}
+
+	if( $opt_l ) {
+		
+		$lockfile = $opt_l;
+	}
 }
 
 inform( "Started (pid $$) with pf '$Pf' at " . strtime( now() ) . "\n" ); 
 
+check_lock( $lockfile );
+
 $matlab_interpreter = pfget( $Pf, "matlab_interpreter" );
 $matlab_timeout_sec = pfget( $Pf, "matlab_timeout_sec" );
+$matlab_pf_varname = pfget( $Pf, "matlab_pf_varname" );
 @matlab_paths = @{pfget( $Pf, "matlab_paths" )};
 $matlab_script = pfget( $Pf, "matlab_script" );
 %matlab_pf = %{pfget( $Pf, "matlab_pf" )};
@@ -58,9 +133,7 @@ pfput( "pf_revision_time", now(), "new" );
 
 foreach $key ( keys( %matlab_pf ) ) {
 	
-	$val = pfget( $Pf, "matlab_pf{$key}" );
-
-	pfput( $key, $val, "new" );
+	pfput( $key, $matlab_pf{$key}, "new" );
 }
 
 pfwrite( $tmp_pf, "new" );
@@ -86,7 +159,7 @@ foreach $path ( @matlab_paths ) {
 	print S "addpath( '$path' )" . $n;
 }
 
-print S " Pf = dbpf( '$tmp_pf' )" . $n;
+print S " $matlab_pf_varname = dbpf( '$tmp_pf' )" . $n;
 
 print S "$matlab_script\n";
 
@@ -104,10 +177,16 @@ if( $result != 0 ) {
 
 	elog_complain( "Matlab timed out\n" );
 
+	release_lock( $lockfile );
+
+	clean_tempfiles();
+
 	exit( -1 ) ;
 }
 
-# unlink( $tmp_script );
+release_lock( $lockfile );
+
+clean_tempfiles();
 
 inform( "Finished (pid $$) with pf '$Pf' at " . strtime( now() ) . "\n" ); 
 
