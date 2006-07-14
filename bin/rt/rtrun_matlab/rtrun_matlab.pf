@@ -1,6 +1,6 @@
 antelope	&env(ANTELOPE)
 
-matlab_interpreter  matlab -nosplash -nodesktop -nojvm
+matlab_interpreter  matlab -nosplash -nodesktop -nojvm -nodisplay
 matlab_timeout_sec  600
 
 matlab_paths	&Tbl{
