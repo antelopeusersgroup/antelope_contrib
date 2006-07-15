@@ -29,13 +29,15 @@ Matlab program during execution through the Matlab parameter-file variable
 named by \fImatlab_pf_varname\fP.
 
 The second file is a script that will be given to the Matlab
-interpreter to execute. This may very well be a single Matlab command that
-launches user's processing procedures through an m-file on the path; or it
-may be a more involved script, specified verbatim in \fBrtrun_matlab\fP.pf. The
-script given to the interpreter contains commands to add the Matlab
-paths specified in \fImatlab_paths\fP; a command to make the contents of
-\fImatlab_pf\fP available through the parameter-file variable \fImatlab_pf_varname\fP;
+interpreter to execute. The script that \fBrtrun_matlab\fP gives to the
+interpreter contains commands to add the Matlab paths specified in 
+\fImatlab_paths\fP; a command to make the contents of
+\fImatlab_pf\fP available through the Matlab variable \fImatlab_pf_varname\fP
+(this variable will contain an Antelope parameter-file object);
 and the literal contents of the \fImatlab_script\fP parameter.
+The \fImatlab_script\fP parameter may very well hold only a single Matlab
+command that launches the user's processing procedures through an m-file on 
+the path; or it may be a more involved script, specified verbatim.
 .SH OPTIONS
 .IP "-p \fIpfname\fP"
 Specify an alternate parameter-file name (the default is \fBrtrun_matlab\fP.pf)
@@ -58,7 +60,7 @@ A basic example of the \fBrtrun_matlab\fP.pf parameter file is as follows:
 
 antelope        &env(ANTELOPE)
 
-\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm
+\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm -nodisplay
 \fImatlab_timeout_sec\fP  600
 
 .ne 5
@@ -85,7 +87,10 @@ antelope        &env(ANTELOPE)
 .ft R
 .in
 For more complicated situations where one set of commands, paths, etc
-may be used with different input parameters to the Matlab script, one may
+may be used with different input parameters to the Matlab script (i.e. 
+multiple instances of rtrun_matlab running the same Matlab code but with 
+different configurations, or the same Matlab path and interpreter but 
+different code and different configuration), one may
 want to construct a master parameter file with most of the parameters,
 then make subsidiary parameter files with the variable elements such as the
 \fImatlab_pf\fP contents. This limits the need for repeating large pieces
@@ -97,7 +102,7 @@ of the configuration:
 .ne 10
 
 % cat \fBrtrun_matlab\fP.pf
-\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm
+\fImatlab_interpreter\fP  matlab -nosplash -nodesktop -nojvm -nodisplay
 \fImatlab_timeout_sec\fP  60
 
 \fImatlab_paths\fP      &Tbl{
@@ -128,7 +133,7 @@ pf_revision_time 1152828315
 \fImatlab_interpreter\fP        &ref(\fBrtrun_matlab\fP,matlab_interpreter)
 \fImatlab_timeout_sec\fP        &ref(\fBrtrun_matlab\fP,matlab_timeout_sec)
 \fImatlab_paths\fP              &ref(\fBrtrun_matlab\fP,matlab_paths)
-\fImatlab_pf_varname\fP &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
+\fImatlab_pf_varname\fP         &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
 \fImatlab_script\fP             &ref(\fBrtrun_matlab\fP,matlab_script)
 
 .ne 11
@@ -141,7 +146,7 @@ pf_revision_time 1152828315
 \fImatlab_interpreter\fP        &ref(\fBrtrun_matlab\fP,matlab_interpreter)
 \fImatlab_timeout_sec\fP        &ref(\fBrtrun_matlab\fP,matlab_timeout_sec)
 \fImatlab_paths\fP              &ref(\fBrtrun_matlab\fP,matlab_paths)
-\fImatlab_pf_varname\fP &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
+\fImatlab_pf_varname\fP         &ref(\fBrtrun_matlab\fP,matlab_pf_varname)
 \fImatlab_script\fP             &ref(\fBrtrun_matlab\fP,matlab_script)
 
 \fImatlab_pf\fP &Arr{
