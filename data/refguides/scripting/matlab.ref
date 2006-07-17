@@ -212,6 +212,33 @@ S = tr2struct ( TR )
 clear_register ( [ 'print' ] )
     clear the Datascope error register
 
+elog_init ( [ARGV0] )
+    initialize the error-logging facility
+
+elog_log ( MSG )
+    save a message on the elog message log
+
+elog_alert ( MSG )
+elog_complain ( MSG )
+elog_debug ( MSG )
+elog_notify ( MSG )
+    send alert, complain, debug, notify message to the elog facility
+
+elog_die( MSG )
+    send message to the elog facility and kill the Matlab interpreter
+
+elog_clear ( )
+    clear the elog message log 
+
+elog_flush ( DELIVER, FIRST )
+    eliminate log messages after the FIRST, printing them if DELIVER is set 
+
+elog_mark ( )
+    return the count of messages currently held in the error log
+
+elog_string ( N )
+    return error log starting with message N
+
 <subsection Instrument response routines>
 R = dbresponse ( FILE )
     dbresponse class constructor
