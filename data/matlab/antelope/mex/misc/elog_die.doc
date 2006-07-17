@@ -1,0 +1,6 @@
+ELOG_DIE Send a die message to the elog facility 
+
+ELOG_DIE( MSG )
+
+ELOG_DIE sends the specified MSG to the elog facility, with severity 
+level of 'die'. 

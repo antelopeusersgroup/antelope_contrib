@@ -1,0 +1,6 @@
+ELOG_NOTIFY Send a notify message to the elog facility 
+
+ELOG_NOTIFY( MSG )
+
+ELOG_NOTIFY sends the specified MSG to the elog facility, with severity 
+level of 'notify'. 

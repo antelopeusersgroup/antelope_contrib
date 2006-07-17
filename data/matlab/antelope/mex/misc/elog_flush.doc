@@ -1,0 +1,6 @@
+ELOG_FLUSH flush the Antelope error-log
+
+ELOG_FLUSH( DELIVER, FIRST )
+
+ELOG_FLUSH eliminates log messages after FIRST, printing them 
+if DELIVER is set. 

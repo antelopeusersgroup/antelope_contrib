@@ -1,0 +1,5 @@
+ELOG_STRING Return the Antelope error log as a string
+
+LOG = ELOG_STRING( N )
+
+ELOG_STRING returns the error log as a string, starting with messag N

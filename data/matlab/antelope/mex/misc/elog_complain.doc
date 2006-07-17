@@ -1,0 +1,6 @@
+ELOG_COMPLAIN Send a complain message to the elog facility 
+
+ELOG_COMPLAIN( MSG )
+
+ELOG_COMPLAIN sends the specified MSG to the elog facility, with severity 
+level of 'complain'. 

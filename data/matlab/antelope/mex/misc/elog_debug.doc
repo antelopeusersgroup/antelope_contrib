@@ -1,0 +1,6 @@
+ELOG_DEBUG Send a debug message to the elog facility 
+
+ELOG_DEBUG( MSG )
+
+ELOG_DEBUG sends the specified MSG to the elog facility, with severity 
+level of 'debug'. 
