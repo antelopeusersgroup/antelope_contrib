@@ -2,5 +2,5 @@ ELOG_MARK Return the error-log message count
 
 N = ELOG_MARK()
 
-ELOG_MARK returns the count N of messages currently held in the Antelope 
-error log
+ELOG_MARK returns the count N of messages currently held in
+the Antelope error log

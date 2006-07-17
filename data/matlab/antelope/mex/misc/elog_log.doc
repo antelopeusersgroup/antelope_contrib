@@ -2,5 +2,5 @@ ELOG_LOG Send a log message to the elog facility
 
 ELOG_LOG( MSG )
 
-ELOG_LOG sends the specified MSG to the elog facility, with severity 
-level of 'log'. 
+ELOG_LOG sends the specified MSG to the elog facility, with
+severity level of 'log'.

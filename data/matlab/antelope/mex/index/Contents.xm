@@ -99,7 +99,18 @@
 %   arrtimes		- Returns predicted seismic phase arrival times
 %
 % Error handling
-%   clear_register	- Clear the Datascope error register
+%   clear_register	- Clear the Antelope error register
+%   elog_alert		- Send an alert message to the elog facility
+%   elog_clear		- Clear the elog facility
+%   elog_complain	- Send a complain message to the elog facility
+%   elog_debug		- Send a debug message to the elog facility
+%   elog_die		- Send a die message to the elog facility, and exit
+%   elog_flush		- Eliminate log messages, optionally delivering them
+%   elog_init		- Initialize the Antelope elog facility
+%   elog_log		- Send a log message to the elog facility
+%   elog_mark		- Return the count of messages in the error log
+%   elog_notify		- Send a notify message to the elog facility
+%   elog_string		- Return all or part of the error log as a string
 %
 % Parameter Files
 %   dbpf		- Dbpf (Parameter File) class constructor

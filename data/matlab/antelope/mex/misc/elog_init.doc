@@ -2,7 +2,9 @@ ELOG_INIT Initialize the elog message routines
 
 RC = ELOG_INIT( [ARGV0] )
 
-ELOG_INIT initializes the elog message routines for Antelope. This should be 
-called at the beginning of any procedure that uses the ELOG_NOTIFY, 
-ELOG_COMPLAIN, ELOG_DIE etc. series of routines. If ARGV0 is specified, the 
-given string is used as the program name in error messages. 
+ELOG_INIT initializes the elog message routines for
+Antelope. This should be called at the beginning of any
+procedure that uses the ELOG_NOTIFY, ELOG_COMPLAIN,
+ELOG_DIE etc. series of routines. If ARGV0 is specified,
+the given string is used as the program name in error
+messages.

@@ -62,6 +62,17 @@ DATA= \
 	dbexample_dbungroup.m \
 	dbexample_dbunjoin.m \
 	dbexample_dbwrite_view.m \
+	dbexample_elog_alert.m \
+	dbexample_elog_clear.m \
+	dbexample_elog_complain.m \
+	dbexample_elog_debug.m \
+	dbexample_elog_die.m \
+	dbexample_elog_flush.m \
+	dbexample_elog_init.m \
+	dbexample_elog_log.m \
+	dbexample_elog_mark.m \
+	dbexample_elog_notify.m \
+	dbexample_elog_string.m \
 	dbexample_epoch2str.m \
 	dbexample_eval_response.m \
 	dbexample_free_response.m \

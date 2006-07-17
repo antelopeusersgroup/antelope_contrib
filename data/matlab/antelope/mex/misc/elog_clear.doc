@@ -2,4 +2,4 @@ ELOG_CLEAR Clear the Antelope error log
 
 ELOG_CLEAR()
 
-ELOG_CLEAR Clears the Antelope error log of all messages. 
+ELOG_CLEAR Clears the Antelope error log of all messages.

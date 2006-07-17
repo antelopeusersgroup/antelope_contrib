@@ -29,7 +29,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 {
 	int	n;
 
-	if( nlhs > 0 )
+	if( nlhs > 1 )
 	{
 		antelope_mexUsageMsgTxt ( USAGE );
 		return;

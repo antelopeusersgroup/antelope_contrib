@@ -69,6 +69,17 @@
 %   dbexample_dbungroup
 %   dbexample_dbunjoin
 %   dbexample_dbwrite_view
+%   dbexample_elog_alert
+%   dbexample_elog_clear
+%   dbexample_elog_complain
+%   dbexample_elog_debug
+%   dbexample_elog_die
+%   dbexample_elog_flush
+%   dbexample_elog_init
+%   dbexample_elog_log
+%   dbexample_elog_mark
+%   dbexample_elog_notify
+%   dbexample_elog_string
 %   dbexample_epoch2str
 %   dbexample_eval_response
 %   dbexample_free_response

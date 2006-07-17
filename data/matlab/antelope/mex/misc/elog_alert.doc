@@ -2,5 +2,5 @@ ELOG_ALERT Send an alert message to the elog facility
 
 ELOG_ALERT( MSG )
 
-ELOG_ALERT sends the specified MSG to the elog facility, with severity 
-level of 'alert'. 
+ELOG_ALERT sends the specified MSG to the elog facility,
+with severity level of 'alert'.
