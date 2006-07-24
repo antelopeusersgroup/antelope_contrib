@@ -1,7 +1,9 @@
 package require Brttplot
 package require Datascope
 
-package require Tclx
+lappend auto_path $env(ANTELOPE)/data/tcl/library
+catch { package require Tclx}
+
 global zooming
 global default_cursor
 set zooming 0
