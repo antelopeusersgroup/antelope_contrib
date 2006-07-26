@@ -38,7 +38,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	M = mxGetM( prhs[0] );
 	N = mxGetN( prhs[0] );
 
-	plhs[0] = mxCreateDoubleMatrix( 1, 1, mxREAL );
+	plhs[0] = mxCreateDoubleMatrix( M, N, mxREAL );
 
 	yday = (double *) mxGetPr( plhs[0] );
 
@@ -46,7 +46,7 @@ void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 	{
 	   for( j = 0; j < N; j++ )
 	   {
-		*yday = (double) yearday( *(epoch + i*N + j) );
+		*(yday + i*N + j) = (double) yearday( *(epoch + i*N + j) );
 		antelope_mex_clear_register( 1 );
 	   }
 	}
