@@ -10,7 +10,7 @@
     our ( $opt_v, $opt_p );
     my ($pfsource,$orbname,$dbname,$orb,$pktid,$srcname,$time,$net,$sta,$chan,$loc);
     my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref,$value,$liststa);
-    my ($listpar,$par,$nsta);
+    my ($listpar,$par,$nsta,$line);
     my (%pf,%dls,%par);
     my ($inp,$ssident,$idtag,$lat,$lon,$elev,$thr,$endtime);
     my ($latnull,$latdb,$lonnull,$londb,$elevnull,$elevdb);
@@ -82,6 +82,12 @@
                 $lon     = $ref->{dls}{$sta}{"lon"};
                 $elev    = $ref->{dls}{$sta}{"elev"};
                 $thr     =  $ref->{dls}{$sta}{"thr"};
+                
+                if ( $ssident =~ /.*[a-f].*/ ) {
+                    $line = "$sta	$ssident	" . strydtime($time) . "	pktid  $pktid ";
+                    elog_notify($line);
+                }
+                $ssident     = uc($ssident);
 
                 printf "	%s	%s	%s	%s	%s	%s	%s", $inp, $ssident,$idtag,$lat,$lon,$elev,$thr if $opt_v;
                 printf "\n" if $opt_v;
