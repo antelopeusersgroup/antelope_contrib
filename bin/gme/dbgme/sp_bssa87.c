@@ -313,8 +313,8 @@ sp_bssa87( Dbptr db, Pf *pf )
 	double	edellon;
 	double	sdellat;
 	double	ndellat;
-	double	dlat;
-	double	dlon;
+	double	qdlat;
+	double	qdlon;
 	double	gridval;
 	double	ml;
 	double	mag;
@@ -444,8 +444,8 @@ sp_bssa87( Dbptr db, Pf *pf )
 	edellon = pfget_double( pf, "edellon" );
 	sdellat = pfget_double( pf, "sdellat" );
 	ndellat = pfget_double( pf, "ndellat" );
-	dlat = pfget_double( pf, "dlat" );
-	dlon = pfget_double( pf, "dlon" );
+	qdlat = pfget_double( pf, "qdlat" );
+	qdlon = pfget_double( pf, "qdlon" );
 
 	sitecorr_file = pfget_string( pf, "sitecorr_file" );
 	vs30_default = pfget_double( pf, "vs30_default_mps" );
@@ -517,8 +517,8 @@ sp_bssa87( Dbptr db, Pf *pf )
 	miny = latc + sdellat;
 	maxy = latc + ndellat;
 
-	cgg = cggrid_new( minx, maxx, miny, maxy, dlon, dlat );
-	sitegrid = cggrid_new( minx, maxx, miny, maxy, dlon, dlat );
+	cgg = cggrid_new( minx, maxx, miny, maxy, qdlon, qdlat );
+	sitegrid = cggrid_new( minx, maxx, miny, maxy, qdlon, qdlat );
 
 	if( calcmode == PGA ) {
 		strcpy( cgg->units, DEFAULT_PGA_CALC_UNITS );

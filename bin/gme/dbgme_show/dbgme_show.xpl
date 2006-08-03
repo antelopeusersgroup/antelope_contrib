@@ -243,15 +243,15 @@ sub go {
 
 	$qgridfile = dbextfile( @db );
 
-	( $minlat, $maxlat, $minlon, $maxlon, $dlat, $dlon, 
+	( $minlat, $maxlat, $minlon, $maxlon, $qdlat, $qdlon, 
 	  $maxval, $recipe, $units, $qgridfmt ) 
 			= dbgetv( @db,
 				  "minlat",
 				  "maxlat", 
 				  "minlon", 
 				  "maxlon",
-				  "dlat",
-				  "dlon",
+				  "qdlat",
+				  "qdlon",
 				  "maxval",
 				  "recipe",
 				  "units",
@@ -333,7 +333,7 @@ sub go {
 	# Use values from the qgrid file itself to avoid rounding errors from database:
 
 	( $minlon, $maxlon, $minlat, $maxlat,
-	  $dlon, $dlat, $nlon, $nlat, $units ) = split( /\s+/, `$cmd` );
+	  $qdlon, $qdlat, $nlon, $nlat, $units ) = split( /\s+/, `$cmd` );
 
 	chomp( $units );
 
@@ -343,7 +343,7 @@ sub go {
 
 	@commands = (
 		"cggrid_convert $qgridfile | " .
-		"xyz2grd -V -H1 -I$dlon/$dlat -G$tmpgme_orig -R$Rectangle",
+		"xyz2grd -V -H1 -I$qdlon/$qdlat -G$tmpgme_orig -R$Rectangle",
 		"grdsample -V -F $tmpgme_orig -G$tmpgme_resamp " .
 		"-R$Rectangle -I$dx/$dy" );
 	

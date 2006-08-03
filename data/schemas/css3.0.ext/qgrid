@@ -7,27 +7,27 @@
 #   This software may be used freely in any way as long as 
 #   the copyright statement above is not removed. 
 
-Attribute dlat
+Attribute qdlat
 	Real (12)
 	Format ( "%12.6lf" )
 	Null ( "-999.000000" )
-	Range ( "dlat > 0" )
+	Range ( "qdlat > 0" )
 	Description ( "grid spacing along meridians (degrees)" )
 	Detail {
-		The dlat field specifies the spacing of the 
-		dbgme grid along meridians, in radial degrees. 
+		The qdlat field specifies the spacing of the 
+		dbgme qgrid along meridians, in radial degrees. 
 	}
 	;
 
-Attribute dlon
+Attribute qdlon
 	Real (12)
 	Format ( "%12.6lf" )
 	Null ( "-999.000000" )
-	Range ( "dlon > 0" )
+	Range ( "qdlon > 0" )
 	Description ( "grid spacing across meridians (degrees)" )
 	Detail {
-		The dlon field specifies the spacing of the 
-		dbgme grid across meridians in radial degrees.
+		The qdlon field specifies the spacing of the 
+		dbgme qgrid across meridians in radial degrees.
 	}
 	;
 
@@ -159,7 +159,7 @@ Attribute qgridtype
 
 
 Relation qgrid
-	Fields ( qgridname recipe qgridtype time endtime minlat maxlat minlon maxlon dlat dlon nlat nlon qgridfmt units maxval dir dfile foff orid auth lddate )
+	Fields ( qgridname recipe qgridtype time endtime minlat maxlat minlon maxlon qdlat qdlon nlat nlon qgridfmt units maxval dir dfile foff orid auth lddate )
 	Primary ( qgridname recipe time::endtime )
 	Foreign ( orid ) 
 	Description ( "dbgme grid files" )

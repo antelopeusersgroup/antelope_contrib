@@ -137,15 +137,15 @@ $maxlat = $Lats[$#Lats];
 $nlon = scalar( @Lons );
 $nlat = scalar( @Lats );
 
-$dlon = ( $Lons[$#Lons] - $Lons[0] ) / ( $nlon - 1 );
-$dlat = ( $Lats[$#Lats] - $Lats[0] ) / ( $nlat - 1 );
+$qdlon = ( $Lons[$#Lons] - $Lons[0] ) / ( $nlon - 1 );
+$qdlat = ( $Lats[$#Lats] - $Lats[0] ) / ( $nlat - 1 );
 
 foreach $gridtype ( @shakemap_gridtypes ) {
 
 	$units = $shakemap_grid_units{$gridtype};
 
 	$header = "qgrd1.0 $qgridfmt $minlon $maxlon $minlat $maxlat " .
-	          "$dlon $dlat $nlon $nlat $units";
+	          "$qdlon $qdlat $nlon $nlat $units";
 
 	$maxval = $Values{$gridtype}{"$Lons[0]:$Lats[0]"};
 
@@ -197,8 +197,8 @@ foreach $gridtype ( @shakemap_gridtypes ) {
 				      "maxlat", $maxlat, 
 				      "minlon", $minlon, 
 				      "maxlon", $maxlon, 
-				      "dlat", $dlat, 
-				      "dlon", $dlon,
+				      "qdlat", $qdlat, 
+				      "qdlon", $qdlon,
 				      "nlat", $nlat, 
 				      "nlon", $nlon, 
 				      "qgridfmt", $qgridfmt, 
