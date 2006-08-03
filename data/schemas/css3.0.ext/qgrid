@@ -32,13 +32,13 @@ Attribute dlon
 	;
 
 
-Attribute gridname
+Attribute qgridname
 	String (30)
 	Format ( "%-30s" )
 	Null ( "-" )
 	Description ( "Name of a particular configuration of grid" )
 	Detail {
-		The gridname field is intended to summarize the 
+		The qgridname field is intended to summarize the 
 		configuration of a particular grid. This is used to 
 		keep grids unique, which may have overlapping time 
 		periods but different geographical areas or intent.
@@ -159,8 +159,8 @@ Attribute qgridtype
 
 
 Relation qgrid
-	Fields ( gridname recipe qgridtype time endtime minlat maxlat minlon maxlon dlat dlon nlat nlon qgridfmt units maxval dir dfile foff orid auth lddate )
-	Primary ( gridname recipe time::endtime )
+	Fields ( qgridname recipe qgridtype time endtime minlat maxlat minlon maxlon dlat dlon nlat nlon qgridfmt units maxval dir dfile foff orid auth lddate )
+	Primary ( qgridname recipe time::endtime )
 	Foreign ( orid ) 
 	Description ( "dbgme grid files" )
 	Detail {
