@@ -161,7 +161,7 @@ foreach $gridtype ( @shakemap_gridtypes ) {
 
 	if( $event_mode ) {
 
-		$gridname = "orid_$orid";
+		$qgridname = "orid_$orid";
 
 		$recipe = $shakemap_grid_recipes{$gridtype};
 
@@ -175,7 +175,7 @@ foreach $gridtype ( @shakemap_gridtypes ) {
 		# Fake the trwfname functionality since it's not in perldb:
 
 		$output_file = epoch2str( $time, $event_mode{output_file} );
-		$output_file =~ s/{gridname}/$gridname/;
+		$output_file =~ s/{qgridname}/$qgridname/;
 		$output_file =~ s/{recipe}/$recipe/;
 		$output_file =~ s/{qgridtype}/$qgridtype/;
 		$output_file =~ s/{qgridfmt}/$qgridfmt/;
@@ -188,7 +188,7 @@ foreach $gridtype ( @shakemap_gridtypes ) {
 			$dfile .= ".$suffix";
 		}
 
-		$db[3] = dbaddv( @db, "gridname", $gridname,
+		$db[3] = dbaddv( @db, "qgridname", $qgridname,
 				      "recipe", $recipe,
 				      "qgridtype", $gridtype,
 				      "time", $time,

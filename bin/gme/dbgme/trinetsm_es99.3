@@ -31,7 +31,7 @@ This parameter specifies the filename of the output qgrid file, in the
 form of string to be fed to trwfname(3). The string is interpreted
 in the context of the qgrid table, thus qgrid-table field names may
 be interspersed in the value. For example, a common setting for this
-parameter may be "%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}" (without the
+parameter may be "%Y/%j/%{qgridname}_%{recipe}.%{qgridfmt}" (without the
 quotes, of course).
 .LP
 .IP \fIqgridfmt\fP
@@ -273,7 +273,7 @@ file, for the delegate functions in this module:
 .ne 13
 
 delegate_pf_defaults &Arr{
-        output_file     %Y/%j/%{gridname}_%{recipe}.%{qgridfmt}
+        output_file     %Y/%j/%{qgridname}_%{recipe}.%{qgridfmt}
         qgridfmt        t4
         auth            dbgme
         wdellon         -1

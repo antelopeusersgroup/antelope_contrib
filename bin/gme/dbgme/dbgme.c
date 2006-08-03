@@ -623,6 +623,7 @@ main (int argc, char **argv)
 	requested_recipes = newtbl( 0 );
 
 	register_delegate( "matlab", delegate_to_matlab );
+	register_delegate( "perl", delegate_to_perl );
 	register_delegate( "sp_bssa87", sp_bssa87 );
 	register_delegate( "trinetsm_es99", trinetsm_es99 );
 	register_delegate( "trinetsm_es99_mmi", trinetsm_es99_mmi );

@@ -45,7 +45,7 @@ specifies the name of the database in which hypocentral information may be
 found for the event and in which qgrid rows will be saved. The \fIoutput_file\fP
 parameter gives a pattern to be fed to epoch2str(3) to determine the 
 pathname of the output qgrid file based on the origin time of the event. 
-Several additional escape strings may be supplied in this pattern: %{gridname},
+Several additional escape strings may be supplied in this pattern: %{qgridname},
 %{recipe}, %{qgridfmt}, %{qgridtype}, and %{auth}. Again, this will be 
 filled-in dynamically during grid creation. The grid name will be determined 
 based on the orid for the grid. The \fIauth\fP field of the event_mode 
@@ -67,7 +67,7 @@ event_mode &Arr{
 	smgrid_name	grid.xyz
 	auth		shakemap
 	dbname		/home/shake/run/db/quakes
-	output_file	%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}
+	output_file	%Y/%j/%{qgridname}_%{recipe}.%{qgridfmt}
 }
 
 gridmode_cggrid_prefix sm

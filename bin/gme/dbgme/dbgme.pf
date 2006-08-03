@@ -1,7 +1,7 @@
 origin_subset auth == "orbassoc mag"
 
 delegate_pf_defaults &Arr{
-	output_file	%Y/%j/%{gridname}_%{recipe}.%{qgridfmt}	# Required	
+	output_file	%Y/%j/%{qgridname}_%{recipe}.%{qgridfmt}	# Required	
 	qgridfmt	t4					# Required
 	auth		dbgme
 	wdellon		-1
