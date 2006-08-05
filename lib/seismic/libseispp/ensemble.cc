@@ -437,6 +437,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 
 			seis->live=true;
 			seis->ns=seis->s.size();
+			seis->tref=absolute;
 			//
 			// Push these into the ensemble
 			//
