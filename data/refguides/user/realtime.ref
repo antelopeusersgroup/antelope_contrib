@@ -765,7 +765,7 @@ cpu2orb [-i t] [-vv] orb
 df2orb [-i t] [-p pf] [-vv] orb
     put filesystem status information packets on orb every t seconds
 
-heartbeat [-i interval] [-v] orb
+heartbeat [-i interval] [-N net_sta] [-v] orb
      creates periodic condensed status packets with system info
 
 ps2orb [options] orb
@@ -786,6 +786,7 @@ tail2orb [options] orb [file ...]
 -g n	check for new files matching glob patterns every n'th iteration 
 -i t 	check files every t seconds
 -m m	specify maximum number of files monitored  
+-N net_sta	specify alternate srcname
 -p pf 	specify alternate parameter file
 -S state	specify alternate state file 
 -vv	print lines on stderr also
