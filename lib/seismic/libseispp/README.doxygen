@@ -1,0 +1,29 @@
+This library has been set up to build a set of documentation for
+the API using doxygen.  The the documentation can be found at
+http://seismo.geology.indiana.edu/~pavlis/software.html
+following the link on SEISPP.
+
+If you want a local copy of the API for this library you will need 
+three pieces of software installed to get duplicate of the documentation
+found at the above web site.  The three things you need are:
+doxygen, latex, and the "dot" graphics tool described in the doxygen
+home page.  The "dot" graphics tool can be turned off by editing 
+the doxygen.config file, but if you do you won't get the nice 
+call diagrams for each function that are produced when this tool
+is available.  Change the "HAVE_DOT" parameter in doxygen.config
+to turn off this feature.  
+
+To create a local copy of the documentation just type
+	doxygen doxygen.config
+in this directory.  This will create html and a proto version of
+the pdf manual.  To produce the pdf manual cd to the latex directory
+and type 
+	make
+and this will be created.
+
+If you want the documentation somewhere other than below this directory
+edit the doxygen.config file change the parameter HTML_OUTPUT and 
+LATEX_OUTPUT to specify the full path name of a directory you would
+prefer to use for this purpose.
+Gary Pavlis
+August 20, 2006 

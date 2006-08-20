@@ -1,0 +1,188 @@
+/** \file AttributeMap.h
+\brief Classes for mapping between different name spaces.
+
+  We often have parameters used in various contexts that have 
+frozen names.  A good example is database attributes.  The name
+used to refer to a quantity in an external database may be
+undesirable or clash with the same concept used in another element
+of the code.  The objects defined here are mainly for mapping from
+external database names to an internal name convention, but they
+are more general.  
+
+\author Gary L. Pavlis
+*/
+
+/** \file BasicTimeSeries.h
+\brief Base class for a series of time series related objects.
+
+  The SEISPP library has a series of time series related data
+objects it uses.  This base class provides core concepts common
+to all time series data.
+
+\author Gary L. Pavlis
+*/
+
+/** \file ComplexTimeSeries.h
+  Defines classes and procedures for handling complex valued time series data.
+*/
+
+/** \file databasehandle.h
+Holds virtual base class for a generic database handle object definition.
+\author Gary L. Pavlis
+*/
+
+/** \file dbpp.h
+Defines Datascope (Antelope) database handle interface.
+\author Gary L. Pavlis
+*/
+
+/** \file ensemble.h
+\brief Defines several types of ensembles of data objects.
+
+Ensembles of data are a generall concept that is useful.  This file
+defines ensembles for TimeSeries and ThreeComponentSeismogram data objects
+that are the core of this library.  Ensembles are implemented using the 
+STL vector container.
+\author Gary L. Pavlis
+*/
+/** \file filter++.h
+Defines filter objects for standard time series filtering methods.
+\author Gary L. Pavlis
+*/
+
+/** \file Hypocenter.h
+\brief Defines source geometry appropriate for global seismology.
+
+Earthquake seismologists call the location of a seismic source it's 
+hypocenter.  This file defines objects that encapsulate this concept
+and allow easy computation of travel times from that source position
+to another point on the earth.
+\author Gary L. Pavlis
+*/
+
+/** \file interpolator1d.h
+Defines a family of useful interpolation functions for 1d functions.
+\author Gary L. Pavlis
+*/
+
+/** \file Metadata.h
+Defines a useful interface to add attributes to a object accessible
+by keywords.  
+
+Metadata objects are used in SEISPP to implement generalized headers.
+The data and error objects associated with this concept are found here.
+\author Gary L. Pavlis
+*/
+
+/** \file MultichannelCorrelator.h
+Defines a generalized multichannel correlator processing object.
+\author Gary L. Pavlis
+*/
+
+/** \file mute.h
+Defines interface to mute operators.  
+\author Gary L. Pavlis
+*/
+
+/** \file ray1d.h
+Defines interface to as set of ray tracing routines for 1d earth models.
+\author Gary L. Pavlis
+*/
+
+/** \file resample.h
+Defines interface to decimation and resampling operators.
+\author Gary L. Pavlis
+*/
+
+/** \file seismicarray.h
+Defines objects used to store the geometry of an entire array of receivers.
+\author Gary L. Pavlis
+*/
+
+/** \file seispp.h
+\brief Contains an assortment of utility procedures for this library.
+
+In a library this size you need a place to put things that link multiple
+concepts together.  This is the catch all drawer that serves that purpose.
+\author Gary L. Pavlis
+*/
+
+/** \file SeisppError.h
+Defines a set of error objects thrown by members of this library.
+\author Gary L. Pavlis
+*/
+
+/** \file SeisppKeywords.h
+Defines some constant keywords used to post results to Metadata components of
+seismic data.
+\author Gary L. Pavlis
+*/
+
+/** \file slowness.h
+Defines some useful plane wave array processing entities.
+\author Gary L. Pavlis
+*/
+
+/** \file SphericalCoordinate.h
+Defines data structures useful for handling spherical coordinates.
+\author Gary L. Pavlis
+*/
+
+/** \file stack.h
+Defines generalized stacking object.
+\author Gary L. Pavlis
+*/
+
+/** \file StationChannelMap.h
+\brief Defines the concept of a station channel map.
+
+In raw earthquake data station and channel names play a key role
+in indexing data.  The objects defined in this file provide an
+interface into methods that depend on this concept.
+\author Gary L. Pavlis
+*/
+
+/** \file ThreeComponentChannelMap.h
+Defines the concept of a three-component channel map.
+
+In raw earthquake data station and channel names play a key role
+in indexing data.  The objects defined in this file provide
+a way to bundle a set of channels into a three-component data object.
+\author Gary L. Pavlis
+*/
+
+/** \file ThreeComponentSeismogram.h
+Defines the interface to a data object to handle three-component seismic data
+\author Gary L. Pavlis
+*/
+
+/** \file TimeSeries.h
+Defines the interface to data objects to handle scalar seismic data.
+\author Gary L. Pavlis
+*/
+
+/** \file TimeVariableWeight.h
+Defines methods to give a trace a weight that varies with lag.
+\author Gary L. Pavlis
+*/
+
+/** \file TimeWindow.h
+Interface to a simple set of objects that define time windows.
+\author Gary L. Pavlis
+*/
+
+/** \file VelocityModel_1d.h
+Defines interface to object to contain 1d velocity models and some
+associated error objects.
+\author Gary L. Pavlis
+*/
+
+
+/** \namespace SEISPP
+  Seismic processing library in C++.  
+
+  This namespace encapsulates seismic related objects and procedures
+that define a (growing) library.  
+*/
+
+

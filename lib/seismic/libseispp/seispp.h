@@ -1,6 +1,5 @@
 #ifndef _SEISPP_H_
 #define _SEISPP_H_
-//@{
 // Seismic C++ Library (SEISPP).
 // This is a collection of C++ objects used for processing seismic data.  
 // Objects define some common seismological concepts including time series
@@ -8,7 +7,6 @@
 // models, hypocenters, slowness vectors, and others.  
 // The library has a strong dependence on Antelope in implementation, but
 // the API design was intended to be more general.  
-//@}
 #ifdef sun
 #include <sunmath.h>
 #endif
@@ -38,20 +36,14 @@
 #include "ThreeComponentSeismogram.h"
 #include "ComplexTimeSeries.h"
 #include "ensemble.h"
-//@{
-// The SEISPP namespace encapsulates the library functions and 
-// classes that defined the SEISPP seismic processing library in C++.
-// Almost all applications using this library will need a 
-// "using namespace SEISPP" line to make the package visible to 
-// the compiler and linker.
-//@}
+
 namespace SEISPP 
 {
 using namespace SEISPP;
 using namespace std;
-//@{
-// Turns verbose mode on and off.  
-//@}
+/*!
+Turns verbose mode on and off.  
+**/
 extern bool SEISPP_verbose;
 //
 //now the long list of includes for this directory containing
@@ -59,79 +51,63 @@ extern bool SEISPP_verbose;
 //with recommended style in OOP.
 //
 
-//@{
-// Applies a time shift called a geometric static to TimeSeries object ts 
-// using velocity vel and elevation elev.  This is a simple elev/vel correction.
-//@}
+/*! Apply a simple static time shift based on elevation.
+
+Applies a time shift called a geometric static to TimeSeries object ts 
+using velocity vel and elevation elev.  This is a simple elev/vel correction.
+\param ts data to which the static should be applied.
+\param vel surface velocity to use for static computation.
+\param elev elevation of station.
+**/
 void ApplyGeometricStatic(TimeSeries *ts, double vel, double elev);
-//@{
+/*!
 // Applies a time shift called a geometric static to TimeSeries object ts 
 // using velocity and elevation extracted from the metadata area of ts.  
 // The function requires that attributes "elevation" and "surface_velocity"
 // be defined in the object.  If these attributes are not defined the 
 // data are not altered but a diagnostic is issued to stderr.
-//@}
+**/
 void ApplyGeometricStatic(TimeSeries *ts);
-//@{
+/*!
 // Pfstream method for getting a time series object from an input stream.
 // Useful only in a pfstream environment which is currently not well developed
 // for this application.
-//@}
+**/
 TimeSeries* GetNextTimeSeries(Pfstream_handle *pfh);
-//@{
+/*!
 // Companion to GetNextTimeSeries.  
 // Useful only in a pfstream environment which is currently not well developed
 // for this application.
-//@}
+**/
 TimeSeries *LoadTimeSeriesUsingPf(Pf *pf);
-//@{
+/*!
 // Load an ensemble through a pfstream.
-//@}
+**/
 TimeSeriesEnsemble *GetNextEnsemble(Pfstream_handle *pfh,
 	 char *tag,MetadataList& mdlist) throw(SeisppError);
-//@{
+/*!
 // Load a 3c ensemble through a pfstream.
-//@}
+**/
 ThreeComponentEnsemble *GetNext3cEnsemble(Pfstream_handle *pfh,
 	 char *tag,MetadataList& mdlist) throw(SeisppError);
-//@{
+/*!
 // Save a 3c seismgram using a pfstream output.
-//@}
+**/
 void PfstreamSave3cseis(ThreeComponentSeismogram *seis,string tag,
 	string dir, string dfile, Pfstream_handle *pfh) throw(SeisppError);
-//@{
+/*!
 //  Used by TimeSeries constructors to set data gaps using Antelope methods.
-//@}
+**/
 void SetGaps(TimeSeries&,Trsample *,int, string)
 		throw(SeisppError);
-//@{
+/*!
 // Return direction of particle motion for a P wave with 
 // slowness (ux,uy) at a surface with P velocity vp0 and 
 // S velocity vs0.
-//@}
+**/
 SphericalCoordinate PMHalfspaceModel(double vp0,double vs0,
 	double ux,double uy);
-//@{
-// Extract one component from a ThreeComponentSeismogram and 
-// create a TimeSeries object from it.  
-//
-//@param tcs is the ThreeComponentSeismogram to convert.
-//@param component is the component to extract (0, 1, or 2)
-//@param mdl list of metadata to copy to output from input object.
-//@}
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component,
-        MetadataList& mdl);
-//@{
-// Extract one component from a ThreeComponentSeismogram and 
-// create a TimeSeries object from it.  
-// Similar to overloaded function of same name, but all metadata from
-// parent is copied to the output.
-//
-//@param tcs is the ThreeComponentSeismogram to convert.
-//@param component is the component to extract (0, 1, or 2)
-//@}
-TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
-//@{
+/*!
 // Returns a new seismogram in an arrival time reference.
 // An arrival time reference means that the time is set to relative and 
 // zero is defined as an arrival time extracted from the metadata area of
@@ -144,31 +120,31 @@ TimeSeries *ExtractComponent(ThreeComponentSeismogram& tcs,int component);
 // one to convert the data back to an absolute time standard if they so
 // desire, but it is less flexible than the input key method.  
 //
-//@throws SeisppError for errors in extracting required information from metadata area.
+//\exception SeisppError for errors in extracting required information from metadata area.
 //
-//@param din  is input seismogram
-//@param key is the metadata key used to find the arrival time to use as a reference.
-//@param tw is a TimeWindow object that defines the window of data to extract around
+//\param din  is input seismogram
+//\param key is the metadata key used to find the arrival time to use as a reference.
+//\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
-//@}
+**/
 auto_ptr<ThreeComponentSeismogram> ArrivalTimeReference(ThreeComponentSeismogram& din,
 	string key, TimeWindow tw);
-//@{
+/*!
 // Returns a gather of ThreeComponentSeismograms in an arrival time reference fram.
 // An arrival time refernce means that the time is set to relative and 
 // zero is defined as an arrival time extracted from the metadata area of
 // each member object.
 //
-//@throws SeisppError for errors in extracting required information from metadata area.
+//\exception SeisppError for errors in extracting required information from metadata area.
 //
-//@param din  is input gather
-//@param key is the metadata key used to find the arrival time to use as a reference.
-//@param tw is a TimeWindow object that defines the window of data to extract around
+//\param din  is input gather
+//\param key is the metadata key used to find the arrival time to use as a reference.
+//\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
-//@}
+**/
 auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& din,
 	string key, TimeWindow tw);
-//@{
+/*!
 // Returns a new TimeSeries seismogram in an arrival time reference.
 // An arrival time reference means that the time is set to relative and 
 // zero is defined as an arrival time extracted from the metadata area of
@@ -181,75 +157,75 @@ auto_ptr<ThreeComponentEnsemble> ArrivalTimeReference(ThreeComponentEnsemble& di
 // one to convert the data back to an absolute time standard if they so
 // desire, but it is less flexible than the input key method.  
 //
-//@throws SeisppError for errors in extracting required information from metadata area.
+//\exception SeisppError for errors in extracting required information from metadata area.
 //
-//@param din  is input seismogram
-//@param key is the metadata key used to find the arrival time to use as a reference.
-//@param tw is a TimeWindow object that defines the window of data to extract around
+//\param din  is input seismogram
+//\param key is the metadata key used to find the arrival time to use as a reference.
+//\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
-//@}
+**/
 auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& din,
 	string key, TimeWindow tw);
-//@{
+/*!
 // Returns a gather of TimeSeries objects in an arrival time reference frame.
 // An arrival time refernce means that the time is set to relative and 
 // zero is defined as an arrival time extracted from the metadata area of
 // each member object.
 //
-//@throws SeisppError for errors in extracting required information from metadata area.
+//\exception SeisppError for errors in extracting required information from metadata area.
 //
-//@param din  is input gather
-//@param key is the metadata key used to find the arrival time to use as a reference.
-//@param tw is a TimeWindow object that defines the window of data to extract around
+//\param din  is input gather
+//\param key is the metadata key used to find the arrival time to use as a reference.
+//\param tw is a TimeWindow object that defines the window of data to extract around
 //    the desired arrival time.
-//@}
+**/
 auto_ptr<TimeSeriesEnsemble> ArrivalTimeReference(TimeSeriesEnsemble& din,
 	string key, TimeWindow tw);
 
 
-//@{
+/*!
 // Bombproof low level write routine for a vector of doubles.  
 // Uses fwrite to write vector x to the file dir+"/"+dfile.
 //
-//@throws SeisppError object if there are problems saving data to requested file.
-//@param x vector of data to be saved.
-//@param n length of vector x
-//@param dir directory to place file.  If empty assumes current directory.
-//@param dfile file name 
-//@}
+//\exception SeisppError object if there are problems saving data to requested file.
+//\param x vector of data to be saved.
+//\param n length of vector x
+//\param dir directory to place file.  If empty assumes current directory.
+//\param dfile file name 
+**/
 long int vector_fwrite(double *x,int n, string dir, string dfile) throw(SeisppError);
-//@{
+/*!
 // Bombproof low level write routine for a vector of doubles.  
 // Uses fwrite to write vector x to the file fname
 //
-//@throws SeisppError object if there are problems saving data to requested file.
-//@param x vector of data to be saved.
-//@param n length of vector x
-//@param fname file name 
-//@}
+//\exception SeisppError object if there are problems saving data to requested file.
+//\param x vector of data to be saved.
+//\param n length of vector x
+//\param fname file name 
+**/
 long int vector_fwrite(double *x,int n, string fname) throw(SeisppError);
-//@{
+/*!
 // Bombproof low level write routine for a vector of floats.  
 // Uses fwrite to write vector x to the file dir+"/"+dfile.
 //
-//@throws SeisppError object if there are problems saving data to requested file.
-//@param x vector of data to be saved.
-//@param n length of vector x
-//@param dir directory to place file.  If empty assumes current directory.
-//@param dfile file name 
-//@}
+//\exception SeisppError object if there are problems saving data to requested file.
+//\param x vector of data to be saved.
+//\param n length of vector x
+//\param dir directory to place file.  If empty assumes current directory.
+//\param dfile file name 
+**/
 long int vector_fwrite(float *x,int n, string dir, string dfile) throw(SeisppError);
-//@{
+/*!
 // Bombproof low level write routine for a vector of floats.  
 // Uses fwrite to write vector x to the file fname
 //
-//@throws SeisppError object if there are problems saving data to requested file.
-//@param x vector of data to be saved.
-//@param n length of vector x
-//@param fname file name 
-//@}
+//\exception SeisppError object if there are problems saving data to requested file.
+//\param x vector of data to be saved.
+//\param n length of vector x
+//\param fname file name 
+**/
 long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
-//@{
+/*!
 // Save the data in a TimeSeries object to a database.
 // This function works only with an Antelope (Datascope) database but the
 // design is aimed to be schema independent.  That is, most raw 
@@ -282,23 +258,23 @@ long int vector_fwrite(float *x,int n, string fname) throw(SeisppError);
 // Note also that if the "live" boolean in the object is set false
 // this function silently returns immediately doing nothing.
 //
-//@throws SeisppError object if there are any problems saving the data or 
+//\exception SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-//@returns -1 if live is false, record number of added row otherwise
+//\return -1 if live is false, record number of added row otherwise
 //
-//@param ts is the TimeSeries object to be saved.
-//@param db is a Datascope database pointer.  It need only point at a valid
+//\param ts is the TimeSeries object to be saved.
+//\param db is a Datascope database pointer.  It need only point at a valid
 //   open database.
-//@param table is the name of the table to index this time series data
+//\param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
-//@param md  is the list of metadata to be dumped to the database as described above.
-//@param am is a mapping operator that defines how internal names are to be mapped
+//\param md  is the list of metadata to be dumped to the database as described above.
+//\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
-//@}
+**/
 int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap& am)
 		throw(SeisppError);
-//@{
+/*!
 // Save the data in a ThreeComponentSeismogram object to a database.
 // This function works only with an Antelope (Datascope) database but the
 // design is aimed to be schema independent.  That is, most raw 
@@ -341,23 +317,23 @@ int dbsave(TimeSeries& ts,Dbptr db,string table, MetadataList& md, AttributeMap&
 // wfdisc if this function is called.  Consequently, this routine will
 // throw an exception and do nothing if table=="wfdisc".
 //
-//@throws SeisppError object if there are any problems saving the data or 
+//\exception SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-//@returns -1 if live is false, record number of added row otherwise
+//\return -1 if live is false, record number of added row otherwise
 //
-//@param ts is the TimeSeries object to be saved.
-//@param db is a Datascope database pointer.  It need only point at a valid
+//\param ts is the TimeSeries object to be saved.
+//\param db is a Datascope database pointer.  It need only point at a valid
 //    open database.
-//@param table is the name of the table to index this time series data
+//\param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
-//@param md  is the list of metadata to be dumped to the database as described above.
-//@param am is a mapping operator that defines how internal names are to be mapped
+//\param md  is the list of metadata to be dumped to the database as described above.
+//\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
-//@}
+**/
 int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table, 
 	MetadataList& md, AttributeMap& am);
-//@{
+/*!
 // Save the data in a ThreeComponentSeismogram object to a database.
 // This function works only with an Antelope (Datascope) database but the
 // design is aimed to be schema independent.  That is, most raw 
@@ -402,26 +378,26 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
 // chanmap array (chanmap[0]=channel name for component 0,
 // chanmap[1]=component 1, and chanmap[2]=component 2).
 //
-//@throws SeisppError object if there are any problems saving the data or 
+//\exception SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-//@returns -1 if live is false, record number of added row otherwise
+//\return -1 if live is false, record number of added row otherwise
 //
-//@param ts is the TimeSeries object to be saved.
-//@param db is a Datascope database pointer.  It need only point at a valid
+//\param ts is the TimeSeries object to be saved.
+//\param db is a Datascope database pointer.  It need only point at a valid
 //    open database.
-//@param table is the name of the table to index this time series data
+//\param table is the name of the table to index this time series data
 //   (e.g. "wfdisc").
-// @param md  is the list of metadata to be dumped to the database as described above.
-// @param am is a mapping operator that defines how internal names are to be mapped
+// \param md  is the list of metadata to be dumped to the database as described above.
+// \param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
-//@param chanmap is a set of channel names to map each component to channel code (see above)
-//@param output_as_standard when true forces data to be converted to ew,ns, z system
-//@}
+//\param chanmap is a set of channel names to map each component to channel code (see above)
+//\param output_as_standard when true forces data to be converted to ew,ns, z system
+**/
 int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am, vector<string>chanmap,bool output_as_standard);
-//@{
+/*!
 // Save the data in a ComplexTimeSeries object to a database.
 // This function works only with an Antelope (Datascope) database but the
 // design is aimed to be schema and database independdent.  
@@ -457,39 +433,39 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 // Finally note that if the "live" boolean in the object is set false
 // this function silently returns immediately doing nothing.
 //
-//@throws SeisppError object if there are any problems saving the data or 
+//\exception SeisppError object if there are any problems saving the data or 
 //    writing attributes into the database.
 //
-//@returns -1 if live is false, record number of added row otherwise
+//\return -1 if live is false, record number of added row otherwise
 //
-//@param ts is the ComplexTimeSeries object to be saved.
-//@param db is a Datascope database pointer.  It need only point at a valid
+//\param ts is the ComplexTimeSeries object to be saved.
+//\param db is a Datascope database pointer.  It need only point at a valid
 //    open database.
-//@param table is the name of the table to index this time series data
+//\param table is the name of the table to index this time series data
 //   (generally wfprocess for this procedure)
-//@param md  is the list of metadata to be dumped to the database as described above.
-//@param am is a mapping operator that defines how internal names are to be mapped
+//\param md  is the list of metadata to be dumped to the database as described above.
+//\param am is a mapping operator that defines how internal names are to be mapped
 //    to database attribute names and tables.  
-//@}
+**/
 int dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
-//@{
+/*!
 // Builds a new ensemble of members that satisfy unix regular expression
 // for sta and chan attributes passed as sta_expr and chan_expr.
 //
-// @param parent original ensemble to be subsetted
-// @param sta_expr unix regular expression to apply to sta Metadata
+// \param parent original ensemble to be subsetted
+// \param sta_expr unix regular expression to apply to sta Metadata
 //    attribute
-// @param chan_expr unix regular expression to apply to chan Metadata 
+// \param chan_expr unix regular expression to apply to chan Metadata 
 //    attribute
 //
-//@author Gary L. Pavlis
-//@}
+//\author Gary L. Pavlis
+**/
 TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
         string sta_expr, string chan_expr);
 
-//@{
+/*!
 // Extracts a requested time window of data from a parent TimeSeries object.
 //
 // It is common to need to extract a smaller segment of data from a larger
@@ -497,18 +473,18 @@ TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
 // takes advantage of the methods contained in the BasicTimeSeries object for
 // handling time and data gaps.
 //
-//@returns new TimeSeries object derived from  parent but windowed by input
+//\return new TimeSeries object derived from  parent but windowed by input
 //      time window range.
 //
-//@throws SeisppError object if the requested time window does not overlap data
+//\exception SeisppError object if the requested time window does not overlap data
 //
-//@param parent is the larger TimeSeries object to be windowed
-//@param tw defines the data range to be extracted from parent.
-//@author Gary L. Pavlis
-//@}
+//\param parent is the larger TimeSeries object to be windowed
+//\param tw defines the data range to be extracted from parent.
+//\author Gary L. Pavlis
+**/
 TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
 
-//@{
+/*!
 // Extracts a requested time window of data from a parent ThreeComponentSeismogram object.
 //
 // It is common to need to extract a smaller segment of data from a larger
@@ -516,18 +492,18 @@ TimeSeries WindowData(TimeSeries& parent, TimeWindow& tw);
 // takes advantage of the methods contained in the BasicTimeSeries object for
 // handling time and data gaps.
 //
-//@returns new ThreeComponentSeismogram object derived from  parent but windowed by input
+//\return new ThreeComponentSeismogram object derived from  parent but windowed by input
 //      time window range.
 //
-//@throws SeisppError object if the requested time window does not overlap data
+//\exception SeisppError object if the requested time window does not overlap data
 //
-//@param parent is the larger ThreeComponentSeismogram object to be windowed
-//@param tw defines the data range to be extracted from parent.
-//@author Gary L. Pavlis
-//@}
+//\param parent is the larger ThreeComponentSeismogram object to be windowed
+//\param tw defines the data range to be extracted from parent.
+//\author Gary L. Pavlis
+**/
 ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow& tw);
 
-//@{ Extract a specified time window from an ensemble.
+/*! Extract a specified time window from an ensemble.
 // The seispp library defines a fairly generic ensemble object that
 // uses an STL vector container to hold an array of objects 
 // (currently TimeSeries or ThreeComponentSeismogram objects) with the
@@ -535,17 +511,17 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 // WindowData function to each member of the ensemble returning a
 // new ensemble cut to the specified window.
 //
-//@throws SeisppError exception if TimeWindow is not consistent
+//\exception SeisppError exception if TimeWindow is not consistent
 // with input data.
 //
-//@param  parent input ensemble 
-//@param tw TimeWindow to cut parent to produce output.
+//\param  parent input ensemble 
+//\param tw TimeWindow to cut parent to produce output.
 //
-//@returns new ensemble T as an auto_ptr cut to desired window.
-//@}
+//\return new ensemble T as an auto_ptr cut to desired window.
+**/
 //template <class T> auto_ptr<T>WindowData(T& parent, TimeWindow& tw);
 
-//@{
+/*!
 // Sorts an ensemble by station:channel.  
 // In earthquake seismic data processing sorting data by station name
 // and channel code is a very common operation.  This procedure implements
@@ -553,12 +529,12 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 // fields keyed by "sta" and "chan" being defined in each member of the 
 // input ensemble.
 //
-//@param ensemble is the input data to be sorted.  The STL algorithm
+//\param ensemble is the input data to be sorted.  The STL algorithm
 // sorts this in place so the result is altered.  Any indices using
 // subscripts will no longer be valid on exit.
-//@}
+**/
 void StaChanSort(TimeSeriesEnsemble& ensemble);
-//@{ Generic routine to compute a median.
+/*! Generic routine to compute a median.
 // This template can be used to compute the median of a vector
 // of objects for any class which has the default comparison
 // operator needed by STL sort.  It is most likely to be used
@@ -566,10 +542,10 @@ void StaChanSort(TimeSeriesEnsemble& ensemble);
 // is guaranteed to work.  If T is more exotic, you need to understand
 // the rules of what sort expects.  
 //
-//@param x - input STL vector of data to be compute median.
+//\param x - input STL vector of data to be compute median.
 //   x is not altered.  We make a copy of this input and sort it.
 //   Not the best algorithm if the sorted output is desired
-//@}
+**/
 template <class T> T median(vector<T>& x)
 {
 	int count=x.size();
@@ -584,7 +560,7 @@ template <class T> T median(vector<T>& x)
 		result=(copyx[medposition]+copyx[medposition+1])/2.0;
 	return (result);
 }
-//@{
+/*!
 // Aligns an ensemble of data by moveout.  
 //
 // A common theme in multichannel processing is alignment of data
@@ -596,10 +572,10 @@ template <class T> T median(vector<T>& x)
 // that data object.  For this reason it always returns a copy of the
 // original data.
 //
-//@param ensemble - input data ensemble.
+//\param d - input data ensemble.
 //
-//@returns copy of ensemble but with t0 values modified by moveout.
-//@}
+//\return copy of ensemble but with t0 values modified by moveout.
+**/
 template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 {
 	Tensemble dshift(d);
@@ -622,7 +598,7 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 	return (dshift);
 }
 
-//@{
+/*!
 // Convert a velocity model in flattened earth geometry to true geometry.
 //
 // Multiple programs exist in seismology that use a flattening transformation
@@ -648,11 +624,11 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 // net effect is a depth dependent change in velocity values and a nonlinear
 // distortion of the depth of each point in the grid.  
 //
-//@param vmodel is the parent grid.  It is altered in place to convert
+//\param vmodel is the parent grid.  It is altered in place to convert
 //  flattened to true geometry as described above.
 //
-//@author Gary L. Pavlis
-//@}
+//\author Gary L. Pavlis
+**/
 void ConvertFlatModelToSpherical(GCLscalarfield3d& vmodel);
 		
 // for linux only

@@ -28,7 +28,29 @@ DatascopeMatchHandle::DatascopeMatchHandle(DatascopeHandle& parent,
 	// do not free implication in destructor 
 	hook=NULL; 
 	// dbt holds the reference to the requested table
-	dbt = dblookup(parent.db,0,const_cast<char *>(table.c_str()),0,0);
+	// If the table string is null just use the existing pointer.
+	if(table.length()<=0)
+	{
+		if(db.table==dbINVALID)
+			throw SeisppDberror(
+				string("DatascopeMatchHandle constructor:")
+				+ string("  Input handle Dbptr is invalid"),
+				db,complain);
+		dbt=parent.db;
+	}
+	else
+	{
+		dbt = dblookup(parent.db,0,
+			const_cast<char *>(table.c_str()),0,0);
+		if(dbt.table == dbINVALID)
+		{
+			throw SeisppDberror( 
+				string("DatascopeMatchHandle constructor:")
+				+ string("  lookup failed for table=")
+				+table,
+				dbt,complain);
+		}
+	}
 	dbscratch_record=dbt;
 	dbscratch_record.record=dbSCRATCH;
 	// Need to build the translation from internal names in metadata

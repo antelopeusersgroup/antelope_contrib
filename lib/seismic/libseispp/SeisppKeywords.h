@@ -3,11 +3,18 @@
 #include <string>
 namespace SEISPP {
 using namespace std;
-const string moveout_keyword("moveout"); //Extract moveout from metadata using this keyword
-const string coherence_keyword("coherence"); // key for storing coherence
+/*! Defines a keyword to reference moveout used by the generalized stack operator.*/
+const string moveout_keyword("moveout"); 
+/*! Defines keyword for coherence estimate for generalized stack operator. */
+const string coherence_keyword("coherence"); 
+/*! Defines keyword for amplitude stack estimate for MultichannelCorrelator operator.*/
 const string amplitude_static_keyword("amplitude_static");
+/*! Defines keyword for weight used for robust stack estimate in generalized stack operator. */
 const string stack_weight_keyword("stack_weight");
+/*! Used to flag a moveout estimate as bad.  Set to this large value. */
 const double MoveoutBad=1.0e10;
-const double MoveoutBadTest=1.0e8; // Intentionally much smaller as a safe float test
+/*! A test for a bad moveout value uses this number.  It is intentionally much
+smaller than MoveoutBad for safety sake. */
+const double MoveoutBadTest=1.0e8; 
 };
 #endif

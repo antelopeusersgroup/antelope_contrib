@@ -15,11 +15,10 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	ly=y.s.size();
 	if(ly<lx)
 	{
-//Peng Wang
-//		build message string
-//		throw a seispp exception
 	    throw SeisppError(base_message+string("ly<lx\n"));
 	}
+	if(x.dt != y.dt)
+		throw SeisppError(base_message+string(" sample rates do not match"));
 	// The return series is cloned from y as the parent
 	// This allows perservation of metadata to go with cross-correlation output.
 	TimeSeries z(y);

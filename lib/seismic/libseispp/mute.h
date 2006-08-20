@@ -13,65 +13,65 @@ namespace SEISPP
 //
 //  Mute definitions
 //
-//@{
-// Defines a top mute zone. 
+/*! \brief Defines a top mute zone. 
+
 // Top Mutes are a common concept in reflection processing.  They are used to 
 // zero out sections of data with an optional taper of a specified width.  
 // This object encapsulates the idea of a top mute in a simplified package.
-//@author Gary L. Pavlis
-//@}
+//\author Gary L. Pavlis
+**/
 class TopMute
 {
 public:
-//@{
+/*!
 // Time of end of zero mute region.  The start of the zero region of a top
 // mute is always assumed to be the start of data.  Data will be zeroed from 
 // start to this time.  
-//@}
+**/
 	double t0e;
-//@{
+/*!
 // End of taper region.  This top mute object defines a linear taper from
 // 0 to 1 between t0e and t1.  
-//@}
+**/
         double 	t1;  
-//@{
+/*!
 // Time reference type.  Defined by an enum in seispp as absolute or relative.  
 // If relative time is used the t0e and t1 times are assumed to be computed relative
 // to the first sample of data.  If absolute the actual value of t0 for the data file
 // is referenced and times are presumed to be relative to that standard.
-//@}
+**/
 	TimeReferenceType reftype;   
 	//* Default constructor */
 	TopMute(){t0e=1.0; t1=2.0; reftype=relative;};
-//@{
+/*!
 // Parameter file driven constructor.  
 // Looks for three keyword strings to set the three data parameters
 // that define the object.  They are:  Zero_End_Time, End_Time, and TimeReferenceType 
 // which reference t0, t1e, and reftype respectively.  
 //
-//@param pf Antelope parameter file pf object.
-//@param tag is a string that defines an &Tbl{} enscapsulation of the parameters
+//\param pf Antelope parameter file pf object.
+//\param tag is a string that defines an &Tbl{} enscapsulation of the parameters
 //   parsed for the mute definition. The nesting of an &Tbl{ } with the parameters
 //   between the curly brackets allows the same keywords to be used in multiple
 //   constructors for different mute definitions.
-//@}
+**/
 	TopMute(Pf *pf,string tag);
 };
-//@{
+/*!
 // Applies a top mute to a TimeSeries object.
-//@}
+**/
 void ApplyTopMute(TimeSeries &ts,TopMute& mute);
-//@{
+/*!
 // Applies a top mute to a ThreeComponentSeismogram object.
-//@}
+**/
 void ApplyTopMute(ThreeComponentSeismogram& ts,TopMute& mute);
-//@{
+/*!
 // Applies a single top mute definition to all members of a TimeSeriesEnsemble.
-//@}
+**/
 void ApplyTopMute(TimeSeriesEnsemble& t, TopMute& mute);
-//@{
+/*!
 // Applies a single top mute definition to all members of a ThreeComponentEnsemble.
-//@}
+**/
 void ApplyTopMute(ThreeComponentEnsemble &t3c, TopMute& mute);
 } // End SEISPP namespace declaration
 #endif

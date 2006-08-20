@@ -64,6 +64,9 @@ AttributeProperties::AttributeProperties(string st)
 		mdt = MDint;
 	else if(mdtype_word=="STRING" || mdtype_word=="string")
 		mdt=MDstring;
+	else if(mdtype_word=="BOOL" || mdtype_word=="bool"
+		|| mdtype_word=="BOOLEAN" || mdtype_word=="boolean")
+		mdt=MDboolean;
 	else
 	{
 		mdt = MDinvalid;
