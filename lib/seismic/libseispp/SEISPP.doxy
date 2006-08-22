@@ -1,3 +1,66 @@
+/*! \mainpage SEISPP Library home page.
+\par
+SEISPP is an object-oriented software library for handling
+seismic data of a range of scale.  That is, it was designed
+to be general enough to cover a large range of problems that
+use seismic data.  Seismic data are always recorded as 
+time series data, which implies digital sampling of on 
+a uniformly spaced time grid (fixed sample rate).  
+Data are commonly recorded as scalar samples or
+vector (three-component) samples.  SEISPP aims to support
+both major classes of data through a reasonably consistent
+interface.
+\par
+The SEISPP library centers on data and processing object 
+concepts.  A data object is a container whose entire purpose
+is to encapsulate a particular type of data.  Examples here are
+the TimeSeries and ThreeComponentSeismogram objects.  
+This library also has entities I call "processing objects"
+in the documentation.  A processing object takes a
+data object and does something to it.  Two models of 
+processing objects are found here.  Algorithms that
+commonly take one data object, modify it's contents, and
+then produce a modified version of the same basic type of
+data utilize an "apply" method.  An apply method is a function
+that takes object x, modifies it, and returns a new object y
+usually of the same type as the parent.  In contrast, some
+algorithms are better done with the creations is initialization
+method.  That is, the constructor for the object implements
+the computational algorithm.  This approach is most appropriate
+when the computational algorithm yields a fundamentally 
+different data type than the parent.  A good example in the
+library is the Stack object.  A Stack is constructed from
+an input ensemble of data and yields data contained within
+the Stack object itself.  Calling the constructor for the 
+Stack object creates it from data.  
+\par
+The library is written in C++ with a few 
+ancillary plain C procedures.  It has no support for
+FORTRAN and none is planned.  C programmers should be 
+aware that any plain C program that follows ansii 
+standards will compile in C++.  Thus, you can use 
+objects in this library as components of plain C programs
+if you compile your main program with g++ or CC (Solaris)
+instructing the linker to use the compiled library 
+libseispp.a produced by running make in this directory.
+\par
+The current library has a strong dependence on 
+the Antelope package.  Antelope is a seismic data processing
+package widely used in the US academic community through 
+an envelope agreement with the IRIS consortium.  The 
+package will not compile without access to Antelope 
+include files and no program that uses this package
+will link and run without Antelope.  The API was 
+designed, however, to have only a weak dependence upon
+Antelope.  It is my perspective that it would be relatively
+easy to strip out the Antelope dependencies if for most 
+of the package, although some key methods would require
+an extensive rewrite to work around the large number of
+dependencies.  In short, possible but a nontrivial job.
+
+\author Gary L. Pavlis
+*/
+
 /** \file AttributeMap.h
 \brief Classes for mapping between different name spaces.
 
