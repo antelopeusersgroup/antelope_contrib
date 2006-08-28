@@ -283,12 +283,9 @@ bout.close();
 			for(i=0;i<ensemblesize;++i) 
 			{
 				weights.push_back(0.0);
-				if(d.member[i].live)
-				{
-					d.member[i].put(coherence_keyword,0.0);
-					d.member[i].put(amplitude_static_keyword,0.0);
-					d.member[i].put(stack_weight_keyword,0.0);
-				}
+				d.member[i].put(coherence_keyword,0.0);
+				d.member[i].put(amplitude_static_keyword,0.0);
+				d.member[i].put(stack_weight_keyword,0.0);
 			}
 
 			// 
