@@ -1,0 +1,146 @@
+README for SciPlot Widget, version 1.3
+Robert W. McMullen <rwmcm@orion.ae.utexas.edu>
+20 Feb 1996
+
+
+OVERVIEW
+
+The SciPlot Widget is a widget capable of plotting cartesian or polar graphs,
+including logarithmic axes in cartesian plots.  The widget is subclassed
+directly from the Core widget class, which means that it does not depend upon
+any other widget set.  It may be freely used with Athena, Motif, or the
+Open Look/Xview widget sets.  (There is optional Motif support that causes
+the widget to be subclassed from XmPrimitive.  See the man page.)
+
+Features provided in the widget include automatic scaling, legend drawing,
+axis labeling, PostScript output, multiple plotted lines, color support, user
+font specification, dashed lines, symbols drawn at points, logarithmic scales
+on one or both axes in cartesian plots, and degrees or radians as angles in
+polar plots.
+
+
+SOURCE LOCATION
+
+Source code for the SciPlot Widget is available via anonymous ftp on
+ftp.x.org in /contrib/widgets as SciPlot-?.?.tar.gz.  I have also set up
+the Offical SciPlot Web Site (tm) at
+http://www.ae.utexas.edu/~rwmcm/SciPlot.html that should always include the
+latest patchlevel update.
+
+
+REQUIREMENTS
+
+The SciPlot code requires X11R4 or later and a C compiler.  The code was
+designed using ANSI C, but compiles fine with a non-ANSI compiler as long as
+the compiler understands new-style function prototypes.
+
+
+DEMO PROGRAMS
+
+Shipped with the source code distribution are two demo programs
+that show some of the features of the SciPlot widget.  NOTE!  The demo
+programs require Motif, but the SciPlot widget itself does not.
+
+The demo programs will build with LessTif version 0.4 or later!
+
+The program "sciplot" uses x/y data from a text file and pops up a plot
+on the screen.  The other program "realtime" shows the new quick updating
+feature of the widget, making the widget better suited for realtime display
+purposes.
+
+If you have the program imake installed, you may use the supplied Imakefile
+to generate a Makefile.  Otherwise, copy the file Makefile.noImake to Makefile,
+and edit that to conform to your system.  Actually, other than specifying the
+C compiler to use, the Makefile should require little customization.
+
+To generate the Makefile, type:
+
+  xmkmf
+
+To compile both demo programs, type:
+
+  make
+
+See the HTML documentation for more information on using the demo programs,
+but a quick start for each of the programs would be:
+
+  sciplot data.txt
+
+  realtime
+
+
+
+USING THE WIDGET
+
+Instructions on how to use the SciPlot widget in your own code is documented in
+the manual page (SciPlot.man) included with the source code.  The documentation
+is now provided in HTML format, and the manual page is generated from the
+HTML code.
+
+
+IMPROVEMENTS/PATCHES/BUG REPORTS
+
+If you make improvements in this widget (or, YIKES!, if you find bugs)
+please let me know at rwmcm@orion.ae.utexas.edu, or through the SciPlot
+Widget home page at http://www.ae.utexas.edu/~rwmcm/SciPlot.html
+
+
+ADVERTISEMENT FOR THE LESSTIF PROJECT
+
+I decided to use the Motif toolkit for the demo programs for two reasons.
+First, most of the requests that I get (for all my widgets) are "how do
+you use this with Motif?", so I decided to help all the Motif users out by
+supplying these more complete demos.
+
+And second, (plug, plug) I am now a core team member of the LessTif project.
+Although Lesstif cannot quite deal with the complicated demo programs at
+the time of this writing, it is quickly developing.  Check the site
+http://www.hungry.com/products/lesstif/  for more information.
+ 
+AUTHOR
+
+Robert W. McMullen <rwmcm@orion.ae.utexas.edu>
+
+See the copyright notice for licensing restrictions.  Note that the GNU
+_LIBRARY_ General Public Licesce is not the same as the standard GPL.
+
+Patches, improvements, suggestions, and bug reports are welcome at the above
+e-mail address.  I will periodically post patches and improvements to
+ftp.x.org and the SciPlot web page at
+http://www.ae.utexas.edu/~rwmcm/SciPlot.html 
+
+
+
+THANKS
+
+Thanks to the following people for providing fixes and suggestions:
+
+Todd Smith <mtsmith@vision1.engr.utk.edu>
+Walter Underwood <wunder@msd.hpl.hp.com>
+Michael Katzmann <michael%vk2bea@secondsource.com>
+John Moyer <jrm@questconsult.com>
+Mike Kienenberger <FXMLK@aurora.alaska.edu>
+Glenn Golden <gdg@big.att.com>
+<SATCHELL%CCF.dnet@hermes.dra.hmg.gb>
+
+
+COPYRIGHT
+
+Copyright (c) 1996 Robert W. McMullen
+
+Portions of the SciPlot Widget source code, as marked, are:
+  Copyright (c) 1993 Alan Richardson (mppa3@syma.sussex.ac.uk)
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
+
+You should have received a copy of the GNU Library General Public
+License along with this library; if not, write to the Free
+Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.

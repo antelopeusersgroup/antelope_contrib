@@ -1,0 +1,9 @@
+SciPlot is an open source package.  It was used in this program with
+no alteration except for the organization of the Makefile.  SciPlot
+was originally structured in typical gnu fashion.  To assimilate it
+into the Antelope environment I hacked the Makefile to the form found
+here.  For the original source you can search the web or look at the
+original files found in Antelope contrib under 
+	contrib/ext/lib/SciPlot-1.36.
+
+Gary Pavlis, Sept. 1, 2006

@@ -1,0 +1,34 @@
+Announcement for SciPlot Widget, version 1.3
+Robert W. McMullen <rwmcm@mail.ae.utexas.edu>
+20 Feb 1996
+
+
+An update for SciPlot, my scientific cartesian and polar plotting widget,
+is now available at ftp://ftp.x.org/contrib/widgets/SciPlot-1.3.tar.gz
+
+Improvements in this version include two new demo programs, including one
+that plots arbitrary x/y data from text file input.  Also new in this version
+are better realtime support, new convenience functions for adding data to
+existing lists, and available horizontal y axis numbers (to better
+conform to most scientific plot packages that I have seen).
+
+Bug fixes include changes for several log(0) errors on degenerate lists,
+better min/max determination, and fixes in my postscript generation code.
+
+For those who haven't seen the SciPlot widget before, check out my web site
+at http://www.ae.utexas.edu/~rwmcm/SciPlot.html
+
+Here's an overview from the README:
+
+The SciPlot Widget is a widget capable of plotting cartesian or polar graphs,
+including logarithmic axes in cartesian plots.  The widget is subclassed
+directly from the Core widget class, which means that it does not depend upon
+any other widget set.  It may be freely used with Athena, Motif, or the
+Open Look/Xview widget sets.  (There is optional Motif support that causes
+the widget to be subclassed from XmPrimitive.  See the man page.)
+
+Features provided in the widget include automatic scaling, legend drawing,
+axis labeling, PostScript output, multiple plotted lines, color support, user
+font specification, dashed lines, symbols drawn at points, logarithmic scales
+on one or both axes in cartesian plots, and degrees or radians as angles in
+polar plots.

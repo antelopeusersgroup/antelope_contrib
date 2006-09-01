@@ -1,0 +1,185 @@
+SciPlot Widget
+
+
+1.36
+ 5 Sep 96	Released to ftp.x.org
+ 4 Sep 96	Color postscript support
+			(Nicolas EERTMANS <ne@spirou.eatchip.eurocontrol.be>)
+16 Aug 96	Problems in realtime update mode should be fixed
+10 Aug 96	Fixed setting background color
+			(thanks to Carlos Baumann <carlosb@ticam.utexas.edu>)
+ 8 Aug 95	Crashing problems in DrawCartesianAxes fixed
+ 1 Aug 96	XtNmonochrome was accidently set to FALSE.  Fixed
+
+1.35
+ 9 Jun 96	Released to ftp.x.org
+ 6 Jun 96	Added SCIPLOT_SKIP_VAL to allow broken line segments
+			(thanks to Santeri Paavolainen <santtu@bank.cs.hut.fi>)
+30 May 96	Added XtNmonochrome
+
+1.34
+ 8 May 96	Released to ftp.x.org
+ 7 May 96	Parameter to control drawing the axis numbers
+ 7 May 96	User selectable marker sizes
+
+1.33:
+15 Apr 96	Released to ftp.x.org
+15 Apr 96	Finally fixed GC problems that really showed up with LessTif
+15 Apr 96	New color function to store a previously allocated color,
+			(thanks to Derrick Bass <derrick@frank.harvard.edu>)
+ 4 Apr 96	Minor changes to allow it work with LessTif, waiting to
+			release until LessTif 0.5 is ready
+
+1.32:
+31 Mar 96	Released to ftp.x.org
+31 Mar 96	Finally remembered to put extern "C" in the header files!
+
+1.31:
+28 Feb 96	Released to ftp.x.org
+27 Feb 96	Removed the XtIsRealized() check in SciPlotUpdate()
+26 Feb 96	Fixed a few little typos in documentation
+
+1.30:
+20 Feb 96	Released to ftp.x.org
+20 Feb 96	Updating documentation
+ 9 Feb 96	Converted demo programs to Motif
+ 7 Feb 96	Horizontal numbers on y axis label	
+12 Jan 96	Fixed log(0) bug in axis calculations
+17 Dec 95	New plot dialog convenience routines in plotutil.c
+29 Nov 95	Realtime demo program
+25 Nov 95	Quick update routines
+11 Nov 95	List routines to add data to existing lists 
+ 9 Oct 95	Decided to use the GNU Library General Public Licence
+
+
+1.21:
+24 Sep 95	New demo program that plots data files
+19 Sep 95	PS command "unclip" needs a newpath
+23 Aug 95	Axis min/max: now check if min and max are equal, and add
+			a bit to the range if necessary
+ 9 Jun 95	Updated documentation--docs are now HTML
+
+
+1.20:
+11 May 95	Released to ftp.x.org
+
+
+1.12:
+23 Feb 95	Added public function to remove a List.  (Oops, forgot that.)
+			(thanks to Mike Kienenberger <FXMLK@aurora.alaska.edu>)
+13 Feb 95	Convenience functions now check for sciplotWidgetClass
+
+
+1.11:
+ 9 Feb 95	Text labels:  wouldn't update Y label or plot title
+ 			(thanks to John Moyer <jrm@questconsult.com>)
+ 7 Feb 95	Log Y axis:  forgot to update the AdjustDimensions()
+31 Jan 95	Added foreground/background color references & functions
+27 Jan 95	Changed reference of XtNcartesian to XtNchartType in
+			anticipation of adding other types of plots
+26 Jan 95	Log axes:  used incorrect precision when max was < 1
+		Log data:  wouldn't draw lines when both axes were log
+		Added a few "static void"s to function declarations
+
+1.10:
+20 Jan 95	Released to ftp.x.org
+
+
+1.03:
+16 Jan 95	Merged the files demo-athena.c and demo-motif.c into demo.c
+10 Jan 95	User defined axis range added
+ 9 Jan 95	Major axis labeling:  occasionally too many decimal places
+ 			showing
+ 5 Jan 95	Axis drawing: printed extra minor axis lines when the major
+ 			axis increment was small (<1)
+
+
+1.02:
+19 Dec 94	Fixed some malloc/free problems
+			(thanks to Walter Underwood <wunder@msd.hpl.hp.com>)
+17 Nov 94	Axis labeling: not enough decimal places showing when major
+			axis increment was small (<1)
+
+
+1.01:
+17 Nov 94	Changed some ANSI string definitions to K&R C
+			(thanks to Todd Smith <mtsmith@vision1.engr.utk.edu>)
+ 9 Nov 94	Vertical text: allocating an additional slot in drawlist.
+ 3 Nov 94	Log min/max calculations: it wouldn't set the minimum if the
+ 			first value was less than 0.
+
+
+1.00:
+26 Oct 94	Released to comp.sources.x and ftp.x.org
+
+
+0.30:
+26 Oct 94	Fixed the Destroy procedure
+		Fixed the allocation problems for the drawitem structure
+25 Oct 94	Final checks before release.
+19 Oct 94	Version 1.00 documentation.
+ 5 Oct 94	Fixed the major axis precision problem in the new axis labeling
+ 4 Oct 94	Fixed log plots so that negative numbers don't bomb the plot--
+ 3 Oct 94	Changed the major/minor axis subdivision algorithm
+			the negative numbers just aren't plotted.
+30 Sep 94	Changed the way fonts are referenced.  Again.  The new method
+			for selecting fonts involves logical or-ing of
+			keywords, rather than standard X11 notation.
+22 Sep 94	Added a "fancy" postscript option that adds border drawing
+			and annotation at the top of the page (unsupported at
+			the moment.  Still work to do.)
+
+
+0.20:
+19 Sep 94	Demo release.
+16 Sep 94	Added (Encapsulated) PostScript output
+10 Sep 94	Fixed AdjustDimensions when origin was not at zero--axis
+			numbers ran off of the screen
+ 7 Sep 94	Fixed labels--local copies weren't saved
+30 Aug 94	Removed the PaperWidget subclass; all the functionality is
+			duplicated in the main Plot widget source now.  This
+			saves some space, since one fewer widget class is
+			being initialized.
+		Changed name to SciPlot.
+26 Aug 94	Corrected some spacing problems, and added PlotAdjustDimensions
+			to make sure that any text doesn't go off the page.
+25 Aug 94	Added vertical text
+23 Aug 94	Tic marks for major and minor axes
+19 Aug 94	Added labeling for Y axis using vertical text
+		Added axis labeling
+		Changed fonts in Paper to be referenced by XFontStruct rather
+			than Font, so metrics will be available for vtext.
+		Fixed region problem in Paper.Redisplay
+		Fixed problem in cartesian axis drawing
+
+
+0.11:
+18 Aug 94	Demo release.
+		Fixed memory leak in PaperErase
+		Fixed the XtLINE_NONE and XtMARKER_NONE problems
+		First draft of documentation finished
+
+
+0.10:
+15 Aug 94	Demo release.
+12 Aug 94	Added labeling of axes (polar only).   Cartesian is still way
+			behind polar.
+10 Aug 94	Fixed problems with legend, does the spacing correctly now.
+ 8 Aug 94	Added legend
+ 5 Aug 94	Fixed problems with updating lines of data
+ 2 Aug 94	Added color
+15 Jul 94	Demo release.
+11 Jul 94	Major and minor axis gridlines
+ 8 Jul 94	Range calculations for borders and gridlines
+ 6 Jul 94	Added log and polar plotting
+28 Jun 94	PlotDrawAll & support functions.  Finally plotted a graph!
+23 Jun 94	Different PlotLine set routines depending on data types
+22 Jun 94	dumb memory allocation scheme, but saves tons of little mallocs
+			in place of less frequent, but larger, mallocs
+20 Jun 94	Figured out resource definitions & how to use 'em
+16 Jun 94	PlotLine structure
+ 9 Jun 94	Still mostly waiting on Paper widget
+ 7 Jun 94	test program PlotT.c
+ 2 Jun 94	rewrote basic widget code (ended up removing most of it in
+			favor of the superclass stuff from the Paper widget)
+31 May 94	rwmcm Created
