@@ -7,7 +7,7 @@ PF=dbxcor.pf
 #MAN1=dbxcor.1
 
 ldlibs= -L./SciPlot -lseisw -lsciplot -lXm -lXt \
-  -lseispp -lperf -lgclgrid -lseispp $(TRLIBS) $(X11LIBS)
+  -lseispp -lperf -lgclgrid $(TRLIBS) $(X11LIBS) -lseispp
 
 include $(ANTELOPEMAKE)  	
 

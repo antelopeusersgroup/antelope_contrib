@@ -46,7 +46,7 @@ extern "C"
 typedef float real;
 
 typedef struct {
-	real x,y;
+	float x,y;
 } realpair;
 
 
@@ -161,7 +161,7 @@ int SciPlotAllocRGBColor (Widget wi, int r, int g, int b);
 void SciPlotSetBackgroundColor (Widget wi, int color);
 void SciPlotSetForegroundColor (Widget wi, int color);
 void SciPlotListDelete (Widget wi, int idnum);
-int SciPlotListCreateFromData (Widget wi, int num, real *xlist, real *ylist, char *legend, int pcolor, int pstyle, int lcolor, int lstyle);
+int SciPlotListCreateFromData (Widget wi, int num, float *xlist, float *ylist, char *legend, int pcolor, int pstyle, int lcolor, int lstyle);
 int SciPlotListCreateFloat (Widget wi, int num, float *xlist, float *ylist, char *legend);
 void SciPlotListUpdateFloat (Widget wi, int idnum, int num, float *xlist, float *ylist);
 void SciPlotListAddFloat (Widget wi, int idnum, int num, float *xlist, float *ylist);
