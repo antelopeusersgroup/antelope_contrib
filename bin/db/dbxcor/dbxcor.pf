@@ -1,0 +1,254 @@
+data_window_start -200.0
+data_window_end 600.0
+regular_gather_twin_start -100.0
+regular_gather_twin_end 300.0
+beam_window_fraction 0.6
+robust_window_fraction 0.2
+stacking_method robust
+#default_filter BW 0.01 2 1.5 5
+default_filter DEMEAN
+component_for_analysis Z
+phase_for_analysis P
+tpad 100.0
+initial_time_stamp 2003355:00:00:00.0
+result_twin_start -40.0
+result_twin_end 200.0
+target_sample_interval 0.1
+schema xcor1.0
+network_name secarib
+analysis_sort_order coherence
+correlation_peak_cutoff 0.0
+coherence_cutoff 0.1
+stack_weight_cutoff 0.05
+time_lag_cutoff 4.0
+trace_mdl	&Tbl{
+    sta string
+    chan string
+    time real
+    endtime real
+    nsamp int
+    samprate real
+    dfile string
+    dir string
+    jdate int
+    calib real
+    calper real
+}
+resample_definitions	&Arr{
+    100	&Arr{
+        Decimator_response_files	&Tbl{
+            5	response/RT72A_5_f
+            2	response/RT72A_2_f
+        }
+        high_limit	101
+        low_limit	99
+    }
+    20	&Arr{
+        Decimator_response_files	&Tbl{
+            2       response/RT72A_2_f
+        }
+        high_limit	21
+        low_limit	19
+    }
+    33.5	&Arr{
+        Decimator_response_files	&Tbl{
+            0.8375	resample
+            4       response/RT72A_4_f
+        }
+        high_limit	35
+        low_limit	30
+    }
+    40	&Arr{
+        Decimator_response_files	&Tbl{
+            4       response/RT72A_4_f
+        }
+        high_limit	41
+        low_limit	39
+    }
+}
+data_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data true
+clip_wiggle_traces false
+xcur 1.0
+clip_percent 95
+xbox 50
+ybox 50
+wbox 1000
+hbox 1000
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+title Generic Plot
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate false
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel test
+blabel2 test2
+grid1 1
+grid2 1
+titlesize 18.0
+}
+
+correlation_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data true
+clip_wiggle_traces false
+xcur 1.0
+clip_percent 98
+xbox 50
+ybox 50
+wbox 1000
+hbox 1000
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+title Generic Plot
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate false
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel test
+blabel2 test2
+grid1 1
+grid2 1
+titlesize 18.0
+}
+
+beam_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data false
+clip_wiggle_traces false
+xcur 1.0
+clip_percent 95
+xbox 50
+ybox 50
+wbox 1000
+hbox 200
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+title Generic Plot
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate false
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel test
+blabel2 test2
+grid1 1
+grid2 1
+titlesize 18.0
+}
+// 
+// This defines data written to wfprocess tables. Static
+// and require a change only if schema were to change.
+BeamMetadataList &Tbl{
+pwfid int
+wfprocess.timetype string
+wfprocess.dir string
+wfprocess.dfile string
+wfprocess.algorithm string
+}
+save_to_arrival true
+beam_directory xcorbeams
+beam_dfile xcorbeam.w

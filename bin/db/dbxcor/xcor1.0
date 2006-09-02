@@ -1,0 +1,177 @@
+# css3.0 extension
+
+Include css3.0  
+Attribute coherence
+	Real (7)
+	Format ( "%7.3f" )
+	Null ( "-999999999.9999" )
+	Range ( "coherence>=0.0 && coherence<=1.0" )
+	Description ( "coherence" )
+	Detail {
+		Coherence is a measure of waveform similarity commonly used in many signal processing algorithms.
+	}
+	;
+
+Attribute fold
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "fold > 0" )
+	Description ( "number of elements used in a stack" )
+	Detail {
+		In stacking data we commonly used the word fold to denote the number of members stacked to produce an average estimate.
+	}
+	;
+
+Attribute pchan
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "Processing channel code" )
+	Detail {
+		This is a processing channel code that may or may not match the more common chan attribute.  It is intended most to denote  generic channel after resampling and/or coordinate reorientation.  The expected codes are Z,N,E,L,R,T,H, and 3C but the range is not currently restricted to these.
+	}
+	;
+
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+Attribute robustt0
+	Real (10)
+	Format ( "%10.5f" )
+	Null ( "-9999.99999" )
+	Units ( "seconds" )
+	Description ( "Start time of a robust stack time window" )
+	Detail {
+		In the robust stacking method used in array-based cross-correlation a separate time gate is used to compute coherence estimates used for defining a loss function to automatically discard noisy and inconsistent traces from the stack.  This special parameter defines the length of that time gate.
+	}
+	;
+
+Attribute robusttwin
+	Real (9)
+	Format ( "%9.2f" )
+	Null ( "0.00" )
+	Range ( "twin > 0.0" )
+	Description ( "rubust time window (s)" )
+	Detail {
+		In the robust stacking method used in array-based cross-corrlation we use a different time window for defining a coherence-based loss function used for the robust stacking method.  This defines the length of that time window.
+	}
+	;
+
+Attribute stackwgt
+	Real (6)
+	Format ( "%6.3f" )
+	Null ( "-1.000" )
+	Range ( "wgt >= 0.0" )
+	Description ( "stacking weight" )
+	Detail {
+		In robust stacking a weight is assigned to each member of the ensemble.
+	}
+	;
+
+Attribute timetype
+	String (1)
+	Format ( "%-1s" )
+	Null ( "-" )
+	Range ( "timetype =~ /a|r/" )
+	Description ( "Flag or absolute or relative time" )
+	Detail {
+		Processed waveforms treat time in the time series by
+		one of two different standards. They assume either 
+		times are all relative to some algorithm specific
+		time reference, or the time is based on an absolute
+		time standard (norm for raw data in seismology).  
+		When this attribute is "a" it the time is assumed
+		absolute while "r" denotes a relative time scale.
+		In the later case it is up to the application to 
+		maintain the time reference.
+	}
+	;
+
+Attribute xcorpeak
+	Real (7)
+	Format ( "%7.3f" )
+	Null ( "-999999999.9999" )
+	Description ( "peak correlation coefficient" )
+	Detail {
+		In cross-correlation the peak of the cross correlation curve is commonly normalized to a correlation coefficient.  This attribute is used to store the value of this measure of similarity of two waveforms.
+	}
+	;
+
+Relation evlink
+	Fields ( pwfid evid lddate )
+	Primary ( pwfid evid )
+	Description ( "Link table between pwfdisc and catalog data" )
+	Detail {
+		The CSS3.0 schema has a disconnect between waveforms
+		and catalog (event location and pick) data.  This
+		table can be used to link source information to processed
+		waveform data.
+	}
+	;
+
+Relation rawwflink
+	Fields ( pwfid wfid lddate )
+	Primary ( pwfid wfid )
+	Description ( "Link table between pwfdisc and wfdisc" )
+	Detail {
+		The CSS3.0 schema wfdisc tables is designed for raw
+		seismic data indexed by station:channel:time.  Many
+		waveforms produced in intermediate processing are 
+		not naturally indexed this way.  Raw waveforms are
+		indexed with wfdisc while the later processed waveforms
+		are indexed with pwfdisc.  This table links these two
+		tables together using the integer keys for each.
+	}
+	;
+
+Relation wfprocess
+	Fields ( pwfid time endtime timetype dir dfile foff datatype samprate nsamp algorithm lddate )
+	Primary ( pwfid )
+	Description ( "Core processed waveform table" )
+	Detail {
+		The antelope trace library is designed to work exclusively
+		on data stored in memory.  Not all algorithms one can
+		devise for seismic data can work in this mode even on the
+		largest computers so a table is needed to store processed
+		waveforms in an external database.  The intent of this
+		design is that this table is the core table storing all
+		intermediate trace data.  Any algorithm will almost 
+		certainly create auxiliary tables that can be cross linked
+		into this core table through the pwfid field.  In addition
+		it would be normal to select as input only traces that 
+		are the output of the algorithm field.  MpT
+	}
+	;
+
+Relation xcorarrival
+	Fields ( sta chan phase pwfid filter algorithm pchan time twin samprate wgt stackwgt coherence xcorpeak )
+	Primary ( sta phase pwfid )
+	Description ( "Details of an arrival computed by beam cross-correlation" )
+	Detail {
+		Arrival times can be computed by cross correlation of a set of arrivals with an array beam.  Defining this process requires some attributes not found in the standard arrival table.  In particular, multiple processing runs could produce different results on the same arrival.  The idea is that when this happens this table can be used to define results from different processing runs that one could elect to average to produce a final arrival estimate.  Note the table was designed to be workable for both receiver arrays and virtual source arrays (common receiver gather for an ensemble of earthquakes with similar waveforms).
+	}
+	;
+
+Relation xcorbeam
+	Fields ( netname chan pchan phase pwfid filter robustt0 robusttwin fold )
+	Primary ( netname pwfid )
+	Foreign ( pwfid ) 
+	Description ( "Saves attributes of beam computed through cross-correlation" )
+	Detail {
+		In generalized array processing we use cross-correlation of the stack of an ensemble of traces as a correlation function.  This relation holds attributes that define the stacked trace characteristics.  Note especially that it links to the actual array beam stored in the wfprocess table through the pwfid attribute.
+	}
+	;
+
