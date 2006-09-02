@@ -1067,4 +1067,8 @@ double *ThreeComponentSeismogram::operator[](int i)
 		throw SeisppError(string("ThreeComponentSeismogram::operator[]: index error"));
 	}
 }
+/* this seems necessary for g++ even though it does nothing */
+ThreeComponentSeismogram::~ThreeComponentSeismogram()
+{
+}
 } // end namespace SEISPP 
