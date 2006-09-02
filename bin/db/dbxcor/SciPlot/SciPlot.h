@@ -149,40 +149,35 @@ typedef struct _SciPlotRec      *SciPlotWidget;
 #define SciPlotListUpdateFromFloat SciPlotListUpdateFloat
 #define SciPlotListCreateFromDouble SciPlotListCreateDouble
 #define SciPlotListUpdateFromDouble SciPlotListUpdateDouble
-
-#if __STDC__ || defined(__cplusplus)
-#define P_(s) s
-#else
-#define P_(s) ()
-#endif
+/* Stock version of this include had an odd define to handle
+non-ansi compilers.  Assume this is archaic are remove.
+glp  Sept. 2, 2006 */
 
 /* SciPlot.c */
-Boolean SciPlotPSCreate P_((Widget wi, char *filename));
-Boolean SciPlotPSCreateColor P_((Widget wi, char *filename));
-int SciPlotAllocNamedColor P_((Widget wi, char *name));
-int SciPlotAllocRGBColor P_((Widget wi, int r, int g, int b));
-void SciPlotSetBackgroundColor P_((Widget wi, int color));
-void SciPlotSetForegroundColor P_((Widget wi, int color));
-void SciPlotListDelete P_((Widget wi, int idnum));
-int SciPlotListCreateFromData P_((Widget wi, int num, real *xlist, real *ylist, char *legend, int pcolor, int pstyle, int lcolor, int lstyle));
-int SciPlotListCreateFloat P_((Widget wi, int num, float *xlist, float *ylist, char *legend));
-void SciPlotListUpdateFloat P_((Widget wi, int idnum, int num, float *xlist, float *ylist));
-void SciPlotListAddFloat P_((Widget wi, int idnum, int num, float *xlist, float *ylist));
-int SciPlotListCreateDouble P_((Widget wi, int num, double *xlist, double *ylist, char *legend));
-void SciPlotListUpdateDouble P_((Widget wi, int idnum, int num, double *xlist, double *ylist));
-void SciPlotListAddDouble P_((Widget wi, int idnum, int num, double *xlist, double *ylist));
-void SciPlotListSetStyle P_((Widget wi, int idnum, int pcolor, int pstyle, int lcolor, int lstyle));
-void SciPlotListSetMarkerSize P_((Widget wi, int idnum, float size));
-void SciPlotSetXAutoScale P_((Widget wi));
-void SciPlotSetXUserScale P_((Widget wi, double min, double max));
-void SciPlotSetYAutoScale P_((Widget wi));
-void SciPlotSetYUserScale P_((Widget wi, double min, double max));
-void SciPlotPrintStatistics P_((Widget wi));
-void SciPlotExportData P_((Widget wi, FILE *fd));
-void SciPlotUpdate P_((Widget wi));
-Boolean SciPlotQuickUpdate P_((Widget wi));
-
-#undef P_
+Boolean SciPlotPSCreate (Widget wi, char *filename);
+Boolean SciPlotPSCreateColor (Widget wi, char *filename);
+int SciPlotAllocNamedColor (Widget wi, char *name);
+int SciPlotAllocRGBColor (Widget wi, int r, int g, int b);
+void SciPlotSetBackgroundColor (Widget wi, int color);
+void SciPlotSetForegroundColor (Widget wi, int color);
+void SciPlotListDelete (Widget wi, int idnum);
+int SciPlotListCreateFromData (Widget wi, int num, real *xlist, real *ylist, char *legend, int pcolor, int pstyle, int lcolor, int lstyle);
+int SciPlotListCreateFloat (Widget wi, int num, float *xlist, float *ylist, char *legend);
+void SciPlotListUpdateFloat (Widget wi, int idnum, int num, float *xlist, float *ylist);
+void SciPlotListAddFloat (Widget wi, int idnum, int num, float *xlist, float *ylist);
+int SciPlotListCreateDouble (Widget wi, int num, double *xlist, double *ylist, char *legend);
+void SciPlotListUpdateDouble (Widget wi, int idnum, int num, double *xlist, double *ylist);
+void SciPlotListAddDouble (Widget wi, int idnum, int num, double *xlist, double *ylist);
+void SciPlotListSetStyle (Widget wi, int idnum, int pcolor, int pstyle, int lcolor, int lstyle);
+void SciPlotListSetMarkerSize (Widget wi, int idnum, float size);
+void SciPlotSetXAutoScale (Widget wi);
+void SciPlotSetXUserScale (Widget wi, double min, double max);
+void SciPlotSetYAutoScale (Widget wi);
+void SciPlotSetYUserScale (Widget wi, double min, double max);
+void SciPlotPrintStatistics (Widget wi);
+void SciPlotExportData (Widget wi, FILE *fd);
+void SciPlotUpdate (Widget wi);
+Boolean SciPlotQuickUpdate (Widget wi);
 
 #ifdef __cplusplus
 };
