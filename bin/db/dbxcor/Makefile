@@ -4,7 +4,7 @@ DATADIR=schemas
 DATA=xcor1.0
 
 PF=dbxcor.pf
-#MAN1=dbxcor.1
+MAN1=dbxcor.1
 
 ldlibs= -L./SciPlot -lseisw -lsciplot -lXm -lXt \
   -lseispp -lperf -lgclgrid $(TRLIBS) $(X11LIBS) -lseispp

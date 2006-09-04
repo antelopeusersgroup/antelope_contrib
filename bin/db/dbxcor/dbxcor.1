@@ -1,0 +1,118 @@
+.TH DBXCOR 1 "$Date$"
+.SH NAME
+dbxcor - GUI-based, multichannel cross-correlation program 
+.SH SYNOPSIS
+.nf
+dbxcor dbin dbout hypolist
+.fi
+.SH DESCRIPTION
+.LP
+The dbxcor program is a multichannel cross-correlation program 
+designed to provide a robust way to estimate arrival times for
+teleseismic phases.  
+The basic algorithm is a type of array processing approach.
+As such it works only for signals that are reasonably matched
+across the entire array aperture.  The program combines three
+concepts:  stacking, cross-correlation with an array stack,
+and robust estimators.  
+That is, all correlation is done against an array stack
+computed by a nonlinear (robust) stacking algorithm.
+The algorithm used has been found to work
+well on data with highly variable signal to noise conditions.
+The algorithm, however, requires a seed of one station 
+used as the starting point for the nonlinear stacking algorithm.
+This is done for two reasons.  First, most large aperture arrays have
+one or more exceptionally quiet stations that can fill this role.  
+Second, we can't normally use any standard array stack as a starting
+point as no plane wave or typical model-based travel time estimate
+can align data well enough to avoid degrading the stack at short
+periods.  
+.LP
+The front end of this program is a graphical user interface using
+the Xt library.  The graphical iterface has four main sections:
+(1) a top bar with pull-down menus, (2) a seismic display section,
+(3) a log output text section, and (4) a set of action buttons.
+Normal, simple processing uses the action buttons mostly working
+left to right.  Buttons are disabled until required actions are
+taken.  Key states of the program the user needs to be aware of
+are the following:
+.IP (1)
+When the program starts up only the "Get Next Event" button is enabled.
+.IP (2)
+When data is first loaded "Pick Ref. Trace" is enabled.  The user
+must interactively pick a reference event (seed for robust stacking method) 
+before further processing can be completed.
+.IP (3)
+Once a reference event is picked, the "Analyze" button is enabled.
+When pushed this button initiates the primary analysis of the 
+program.
+.IP (4) 
+When the analysis is completed the "Plot Beam" and "Plot Correlation" 
+buttons are enabled.  If the results are acceptable, the user is
+next required to push the "Plot Beam" button and pick an arrival 
+time on the beam trace.  This is necessary to resolve the otherwise
+ambiguous dc arrival value problem. i.e. this pick is used to set
+the position of the arrival estimates relative to a theoretical time
+computed from the predicted arrival time as sum of the relative time
+on the team and the lag computed by cross-correlation.
+.IP (5) 
+When a time is picked on the beam the "Save" button is enabled.
+Only then can the results be saved to the database.
+.LP
+The program also has some other useful features.  These include:
+(1) attribute plots that can be turned on through the Picks->View 
+window; (2) variable sort criteria for the ensemble after analysis;
+(3) interactive edits to turn traces on and off;  (4) interactive
+cutoff picking; (5) restore original data; and (6) arbitrary
+choice of filters.  
+.LP
+The seismic display widget is a descendent of the wiggle trace
+variable area plot program in Seismic Unix.  People familiar
+with SU will recognize part of the mouse interface, but it
+is has added functionality required here.
+The primary mouse action in the seismic display are:
+.IP MB1
+Zoom box.  Click and hold MB1 to zoom the display.  A second click of
+MB1 anywhere in the display restores the original scale.
+As usual MB1 has it's normal function outside the seismic display
+window (e.g. push buttons on the bottom row of the GUI).  
+.IP MB2 
+Used to pick a single point on a seismic display.  We use this in
+multiple contexts.  MB2 is used to pick the reference trace,
+trace editing, and to pick trace cutoff values.  
+.IP MB3
+Used for time window picking.  Hold MB3 and drag to select a time
+window.  The display will show markers that define the picked window.
+.SH PARAMETER FILE
+.LP
+The complete parameter file for this program is very long
+because of the need to describe all the graphical defaults.
+We expect to produce a more complete document to cover all
+these options at a later date. 
+.SH DIAGNOSTICS
+.LP
+The log window is used to give feedback on progress of the analysis
+and some errors.  The program can die on data problems that will
+normally leave a diagnostic message on stderr.
+.SH "BUGS AND CAVEATS"
+.IP (1)
+There is a big issue at the moment with the read data button.
+The message widget is not posting the progress message until
+read is completed.  It is too easy for an impatient person to
+push the read button more than once and get confused by what
+is going on.
+.IP (2) 
+The top menu bar layout is not ideal.  Changes are likely.
+.IP (3)
+The trace edit picking and cutoff picking functions initiate changes
+in the "Pick" menu that are less than idea.  These states need to 
+be more "in the face" of the user as it can lead to confusing 
+behaviour.
+.IP (4)
+The beam and cross-correlation plots are not automatically destroyed
+when a new event is loaded.  For now these must be manually closed to 
+avoid confusion.
+.SH AUTHOR
+Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
+were written by Gary Pavlis (pavlis@indiana.edu)
+.\" $Id$
