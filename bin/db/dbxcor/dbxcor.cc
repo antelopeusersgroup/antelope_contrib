@@ -1631,10 +1631,6 @@ main (int argc, char **argv)
   btninfo.callback=get_next_event;
   btninfo.callback_data=&sm;
   sm.controls[BTN_NEXT]=create_button(tlrc,btninfo);  
-// Alternate save as button.  Under file menu also
-  btninfo.label="Save";
-  btninfo.callback=save_event;
-  sm.controls[BTN_FILE_SAVE]=create_button(tlrc,btninfo);
 
 /*
   btninfo.label="Sort";
@@ -1656,6 +1652,10 @@ main (int argc, char **argv)
   btninfo.label="Restore Data";
   btninfo.callback=restore_data;
   sm.controls[BTN_RESTORE]=create_button(tlrc,btninfo);
+// Alternate save as button.  Under file menu also
+  btninfo.label="Save";
+  btninfo.callback=save_event;
+  sm.controls[BTN_FILE_SAVE]=create_button(tlrc,btninfo);
 
   XtManageChild(tlrc);
 
