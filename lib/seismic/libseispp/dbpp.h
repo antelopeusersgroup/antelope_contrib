@@ -142,7 +142,7 @@ public:
 		the exceptionally terse Dbptr descriptor. 
 	*/
 	DatascopeHandle(Dbptr dbi,Dbptr dbip);
-	/* \brief Destructor.
+	/*! \brief Destructor.
 	This is far from a standard destructor.  Data are cleared but the 
 	database is NOT closed unless the close_on_destruction private variable
 	in this handle is set.  This can only be done through a call to the close
