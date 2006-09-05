@@ -407,6 +407,9 @@ orbtell (orbfd)
 orbposition (orbfd, from)
     return the pktid after repositioning the orb to the position specified by the 'from' string ('newest', 'oldest', or any str2epoch(3) time string)
 
+orbafter (orbfd, time)
+    return the pktid after repositioning the orb to the next packet after the specified time. The time must be in epoch seconds 
+
 orbselect (orbfd, regex)
     subset the source-names for those matching regex
 
