@@ -112,6 +112,24 @@ $pktid = orbseek( $orbfd, "ORBOLDEST" );
 .in
 .ft R
 
+.IP "\fBorbwait\fP ( orbfd, re, mintime, timeout )"
+Wait for all read clients of an orbserver matching the specified regular 
+expression to have read packets younger than mintime. If timeout is nonzero, 
+orbwait will return with a negative error code if the timeout elapses before 
+the specified programs catch up. A return code of 0 indicates no wait is 
+necessary; positive return values indicate a wait was necessary, 
+that some read clients matched the regular expression, and that all those have
+read packets younger than mintime. 
+.ft CW
+.in 2c
+.nf
+
+$rc = orbwait( $orbfd, "orb2db", 300, 0 );
+
+.fi
+.in
+.ft R
+
 .IP "\fBorbselect\fP ( orbfd, regex )"
 Subset the source-names for those matching regex
 .ft CW

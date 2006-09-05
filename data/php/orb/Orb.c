@@ -36,6 +36,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbposition, NULL)		
 	PHP_FE(orbafter, NULL)		
 	PHP_FE(orbseek, NULL)		
+	PHP_FE(orbwait, NULL)		
 	PHP_FE(orbclose, NULL)		
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
@@ -465,6 +466,36 @@ PHP_FUNCTION(orbseek)
 	pktid = orbseek( (int) orbfd, which );
 
 	RETURN_LONG( pktid );
+}
+/* }}} */
+
+/* {{{ proto int orbwait( int orbfd, string re, double mintime, double timeout ) */
+PHP_FUNCTION(orbwait)
+{
+	long	orbfd;
+	char	*re;
+	int	re_len;
+	double	mintime;
+	double	timeout;
+	int	argc = ZEND_NUM_ARGS();
+	int	rc;
+
+	if( argc != 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "lsdd",
+				 &orbfd, &re, &re_len,
+				 &mintime, &timeout)
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbwait( (int) orbfd, re, mintime, timeout );
+
+	RETURN_LONG( rc );
 }
 /* }}} */
 
