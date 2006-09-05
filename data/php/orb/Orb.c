@@ -35,6 +35,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbtell, NULL)		
 	PHP_FE(orbposition, NULL)		
 	PHP_FE(orbafter, NULL)		
+	PHP_FE(orbseek, NULL)		
 	PHP_FE(orbclose, NULL)		
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
@@ -67,6 +68,15 @@ void register_Orb_constants( INIT_FUNC_ARGS )
 		zend_register_long_constant( Orbxlat[i].name,
 					     strlen( Orbxlat[i].name ) + 1, 
 					     Orbxlat[i].num,
+					     CONST_CS | CONST_PERSISTENT,
+					     module_number TSRMLS_CC );
+	}
+
+	for( i = 0; i < Orbconstn; i++ ) {
+
+		zend_register_long_constant( Orbconst[i].name,
+					     strlen( Orbconst[i].name ) + 1, 
+					     Orbconst[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
 	}
@@ -407,6 +417,57 @@ PHP_FUNCTION(orbposition)
 }
 /* }}} */
 
+/* {{{ proto int orbseek( int orbfd, mixed which ) */
+PHP_FUNCTION(orbseek)
+{
+	long	orbfd;
+	zval	*zval_which;
+	int	which;
+	int	argc = ZEND_NUM_ARGS();
+	int	pktid;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "lz",
+				 &orbfd, &zval_which )
+	    == FAILURE) {
+
+		return;
+	}
+
+	if( Z_TYPE_P( zval_which ) == IS_STRING ) {
+
+		which = xlatname( Z_STRVAL_P( zval_which ), Orbconst, Orbconstn );
+
+		if( which == -1 ) {
+
+			zend_error( E_ERROR, 
+		     	   "orbseek 'which' code not recognized" );
+
+			return;
+		}
+	
+	} else if( Z_TYPE_P( zval_which ) == IS_LONG ) {
+
+		which = Z_LVAL_P( zval_which );
+
+	} else {
+
+		zend_error( E_ERROR, 
+		     "orbseek argument must be string or integer" );
+
+		return;
+	}
+
+	pktid = orbseek( (int) orbfd, which );
+
+	RETURN_LONG( pktid );
+}
+/* }}} */
+
 /* {{{ proto int pforbstat( int orbfd, int flags ) */
 PHP_FUNCTION(pforbstat)
 {
@@ -463,12 +524,29 @@ PHP_FUNCTION(split_srcname)
 
 	array_init( return_value );
 
-	add_assoc_string_ex( return_value, "net", strlen( "net" ) + 1, parts.src_net, 1 );
-	add_assoc_string_ex( return_value, "sta", strlen( "sta" ) + 1, parts.src_sta, 1 );
-	add_assoc_string_ex( return_value, "chan", strlen( "chan" ) + 1, parts.src_chan, 1 );
-	add_assoc_string_ex( return_value, "loc", strlen( "loc" ) + 1, parts.src_loc, 1 );
-	add_assoc_string_ex( return_value, "suffix", strlen( "suffix" ) + 1, parts.src_suffix, 1 );
-	add_assoc_string_ex( return_value, "subcode", strlen( "subcode" ) + 1, parts.src_subcode, 1 );
+	add_assoc_string_ex( return_value, 
+			     "net", strlen( "net" ) + 1, 
+			     parts.src_net, 1 );
+
+	add_assoc_string_ex( return_value, 
+			     "sta", strlen( "sta" ) + 1, 
+			     parts.src_sta, 1 );
+
+	add_assoc_string_ex( return_value, 
+			     "chan", strlen( "chan" ) + 1, 
+			     parts.src_chan, 1 );
+
+	add_assoc_string_ex( return_value, 
+			     "loc", strlen( "loc" ) + 1, 
+			     parts.src_loc, 1 );
+
+	add_assoc_string_ex( return_value, 
+			     "suffix", strlen( "suffix" ) + 1, 
+			     parts.src_suffix, 1 );
+
+	add_assoc_string_ex( return_value, 
+			     "subcode", strlen( "subcode" ) + 1, 
+			     parts.src_subcode, 1 );
 
 	return;
 }

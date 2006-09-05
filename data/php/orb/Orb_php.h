@@ -19,6 +19,7 @@ PHP_FUNCTION(orbclose);
 PHP_FUNCTION(orbtell);
 PHP_FUNCTION(orbposition);
 PHP_FUNCTION(orbafter);
+PHP_FUNCTION(orbseek);
 PHP_FUNCTION(orbselect);
 PHP_FUNCTION(orbreject);
 PHP_FUNCTION(pforbstat);

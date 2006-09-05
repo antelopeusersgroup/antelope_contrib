@@ -96,6 +96,22 @@ $pktid = orbposition( $orbfd, "9/4/2006  17:25" );
 .in
 .ft R
 
+.IP "\fBorbseek\fP ( orbfd, which )"
+Position the orb connection to the specified packet, which must be given
+as an orb packet id, or the string or constant value ORBCURRENT, ORBPREV, 
+ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST
+.ft CW
+.in 2c
+.nf
+
+$pktid = orbseek( $orbfd, 41257 );
+$pktid = orbseek( $orbfd, ORBOLDEST );
+$pktid = orbseek( $orbfd, "ORBOLDEST" );
+
+.fi
+.in
+.ft R
+
 .IP "\fBorbselect\fP ( orbfd, regex )"
 Subset the source-names for those matching regex
 .ft CW
