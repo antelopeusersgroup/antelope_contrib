@@ -13,7 +13,7 @@ orb_PHP \- Antelope Orb interface for PHP
 
 The Antelope Orb interface for PHP provides access to Antelope orbservers
 to scripts written in PHP. This interface is intended to follow closely
- the Antelope orb(3) API. The man page on this interface is written to 
+the Antelope orb(3) API. The man page on this interface is written to 
 express the interface syntax in PHP. Almost all of these routines are 
 merely wrappers around identically-named C function calls. For further 
 elaboration on the concepts involved in each routine, please refer to the
@@ -74,6 +74,23 @@ Return the current orb connection position (packet id)
 .nf
 
 $pktid = orbtell( $orbfd );
+
+.fi
+.in
+.ft R
+
+.IP "\fBorbposition\fP ( orbfd, from )"
+Position the orb connection according to the \fIfrom\fP string. This string may 
+be the string value \fInewest\fP, the string value \fIoldest\fP, or any 
+UTC time string recognized by str2epoch(3). The return value is the packet 
+id at the resulting orb position.
+.ft CW
+.in 2c
+.nf
+
+$pktid = orbposition( $orbfd, "oldest" );
+$pktid = orbposition( $orbfd, "-1:00" );
+$pktid = orbposition( $orbfd, "9/4/2006  17:25" );
 
 .fi
 .in

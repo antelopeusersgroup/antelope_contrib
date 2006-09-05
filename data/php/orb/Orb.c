@@ -33,6 +33,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbopen, NULL)		
 	PHP_FE(orbping, NULL)		
 	PHP_FE(orbtell, NULL)		
+	PHP_FE(orbposition, NULL)		
 	PHP_FE(orbclose, NULL)		
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
@@ -349,6 +350,33 @@ PHP_FUNCTION(orbreject)
 	rc = orbreject( (int) orbfd, regex );
 
 	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int orbposition( int orbfd, string from ) */
+PHP_FUNCTION(orbposition)
+{
+	long	orbfd;
+	char	*from;
+	int	from_len;
+	int	argc = ZEND_NUM_ARGS();
+	int	pktid;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ls",
+				 &orbfd, &from, &from_len )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	pktid = orbposition( (int) orbfd, from );
+
+	RETURN_LONG( pktid );
 }
 /* }}} */
 
