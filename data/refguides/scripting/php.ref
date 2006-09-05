@@ -404,6 +404,9 @@ orbping (orbfd)
 orbtell (orbfd)
     return the pktid of the orbserver's current position
 
+orbposition (orbfd, from)
+    return the pktid after repositioning the orb to the position specified by the 'from' string ('newest', 'oldest', or any str2epoch(3) time string)
+
 orbselect (orbfd, regex)
     subset the source-names for those matching regex
 
