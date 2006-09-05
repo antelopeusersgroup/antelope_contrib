@@ -410,6 +410,9 @@ orbposition (orbfd, from)
 orbseek (orbfd, which)
     return the pktid after repositioning the orb to the specified packet (given either as a packet-id or as one of ORBCURRENT, ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST)
 
+orbwait (orbfd, re, mintime, timeout )
+    wait for clients matching the specified regular expression all to have read packets younger than mintime, optionally limited by a timeout. Returns 0 if no wait is necessary, positive if a wait was necessary, and negative if an error occurred (including expiration of timeout)
+
 orbafter (orbfd, time)
     return the pktid after repositioning the orb to the next packet after the specified time. The time must be in epoch seconds 
 
