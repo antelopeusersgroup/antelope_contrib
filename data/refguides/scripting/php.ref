@@ -401,6 +401,9 @@ orbclose (orbfd)
 orbping (orbfd)
     return the version number of the orbserver
 
+orbtell (orbfd)
+    return the pktid of the orbserver's current position
+
 orbselect (orbfd, regex)
     subset the source-names for those matching regex
 
