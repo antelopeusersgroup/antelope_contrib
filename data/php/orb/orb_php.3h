@@ -67,6 +67,18 @@ $version = orbping( $orbfd );
 .in
 .ft R
 
+.IP "\fBorbtell\fP ( orbfd )"
+Return the current orb connection position (packet id)
+.ft CW
+.in 2c
+.nf
+
+$pktid = orbtell( $orbfd );
+
+.fi
+.in
+.ft R
+
 .IP "\fBorbselect\fP ( orbfd, regex )"
 Subset the source-names for those matching regex
 .ft CW

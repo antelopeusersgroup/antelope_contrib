@@ -32,6 +32,7 @@ static char *Elog_replacement = 0;
 function_entry Orb_functions[] = {
 	PHP_FE(orbopen, NULL)		
 	PHP_FE(orbping, NULL)		
+	PHP_FE(orbtell, NULL)		
 	PHP_FE(orbclose, NULL)		
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
@@ -246,6 +247,30 @@ PHP_FUNCTION(orbclose)
 	rc = orbclose( (int) orbfd );
 
 	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int orbtell( int orbfd ) */
+PHP_FUNCTION(orbtell)
+{
+	long	orbfd;
+	int	pktid;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &orbfd )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	pktid = orbtell( (int) orbfd );
+
+	RETURN_LONG( pktid );
 }
 /* }}} */
 
