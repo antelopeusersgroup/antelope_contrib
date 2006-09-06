@@ -422,6 +422,9 @@ orbselect (orbfd, regex)
 orbreject (orbfd, regex)
     reject the source-names matching regex
 
+(pktid, srcname, time, packet, nbytes) = orbreap (orbfd)
+    get the next packet from the orb
+
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
 
