@@ -154,6 +154,18 @@ $nsources = orbreject( $orbfd, \'/pf.*\' );
 .in
 .ft R
 
+.IP "\fBorbreap\fP ( orbfd )"
+Get the next packet from the orb
+.ft CW
+.in 2c
+.nf
+
+list( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap( $orbfd );
+
+.fi
+.in
+.ft R
+
 .IP "\fBpforbstat\fP ( orbfd, flags )"
 Create a nested PHP array containing metadata about an orb and its 
 contents. If flags is 0, only the pforbstat version is returned. Flags 

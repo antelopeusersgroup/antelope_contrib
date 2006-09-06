@@ -40,6 +40,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbclose, NULL)		
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
+	PHP_FE(orbreap, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
 	{NULL, NULL, NULL}	
@@ -260,6 +261,57 @@ PHP_FUNCTION(orbclose)
 	rc = orbclose( (int) orbfd );
 
 	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto array orbreap( int orbfd ) */
+PHP_FUNCTION(orbreap)
+{
+	long	orbfd;
+	int	pktid;
+	char	srcname[STRSZ];
+	double	pkttime;
+	char *pkt = 0;
+	int	bufsize = 0;
+	int	nbytes = 0;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &orbfd )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbreap( (int) orbfd, &pktid, srcname, &pkttime, 
+		      &pkt, &nbytes, &bufsize );
+
+	if( rc < 0 ) {
+		
+		zend_error( E_ERROR, "orbreap failed" );
+
+		return;
+	}
+
+	array_init( return_value );
+
+	add_next_index_long( return_value, pktid );
+	add_next_index_string( return_value, srcname, 1 );
+	add_next_index_double( return_value, pkttime );
+	add_next_index_stringl( return_value, pkt, (uint) nbytes, 1 );
+	add_next_index_long( return_value, nbytes );
+
+	if( pkt != 0 ) {
+
+		free( pkt );
+	}
+
+	return;
 }
 /* }}} */
 
