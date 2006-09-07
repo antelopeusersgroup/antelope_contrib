@@ -166,6 +166,30 @@ list( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap( $orbfd );
 .in
 .ft R
 
+.IP "\fBorbreap_nd\fP ( orbfd )"
+Get the next packet from the orb, returning immediately if none is available
+.ft CW
+.in 2c
+.nf
+
+list( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap_nd( $orbfd );
+
+.fi
+.in
+.ft R
+
+.IP "\fBorbreap_timeout\fP ( orbfd, maxseconds )"
+Get the next packet from the orb, returning if the timeout is exceeded
+.ft CW
+.in 2c
+.nf
+
+list( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap_timeout( $orbfd, 20 );
+
+.fi
+.in
+.ft R
+
 .IP "\fBorbget\fP ( orbfd, which )"
 Get a single packet from the orb, specified as in orbseek
 .ft CW
