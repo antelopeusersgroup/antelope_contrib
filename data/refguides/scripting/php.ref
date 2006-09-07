@@ -425,6 +425,9 @@ orbreject (orbfd, regex)
 (pktid, srcname, time, packet, nbytes) = orbreap (orbfd)
     get the next packet from the orb
 
+(pktid, srcname, time, packet, nbytes) = orbget (orbfd, which)
+    get a single packet from the orb, specified as in orbseek
+
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
 
