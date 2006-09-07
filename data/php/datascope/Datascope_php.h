@@ -5,8 +5,8 @@ extern zend_module_entry Datascope_module_entry;
 #define phpext_Datascope_ptr &Datascope_module_entry
 
 #define PHP_DATASCOPE_API
-#define PHP_ORB_EXTNAME "Datascope"
-#define PHP_ORB_EXTVER  "1.0"
+#define PHP_DATASCOPE_EXTNAME "Datascope"
+#define PHP_DATASCOPE_EXTVER  "1.0"
 	  
 #ifdef ZTS
 #include "TSRM.h"
