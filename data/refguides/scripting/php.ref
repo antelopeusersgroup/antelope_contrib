@@ -440,6 +440,9 @@ orbput (orbfd, srcname, time, packet, nbytes )
 pktid = orbputx (orbfd, srcname, time, packet, nbytes )
     put a single packet on the orb and return the packetid
 
+(result, pkt) = unstuffPkt (srcname, time, packet, nbytes )
+    unstuff a single packet, returning a result code and a packet object
+
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
 
