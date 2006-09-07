@@ -244,6 +244,18 @@ $metadata = pforbstat( $orbfd, PFORBSTAT_SERVER | PFORBSTAT_SOURCES );
 .in
 .ft R
 
+.IP "\fBunstuffPkt\fP ( srcname, time, packet, nbytes )"
+unstuff the input packet, returning a result code and a packet object.
+.ft CW
+.in 2c
+.nf
+
+list( $result, $pkt ) = unstuffPkt( $srcname, $time, $packet, $nbytes );
+
+.fi
+.in
+.ft R
+
 .IP "\fBsplit_srcname\fP ( srcname )"
 Split an orb source-name into its component parts. The returned value 
 is an array with elements net, sta, chan, loc, suffix, and subcode. 

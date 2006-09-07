@@ -31,6 +31,7 @@ PHP_FUNCTION(orbput);
 PHP_FUNCTION(orbputx);
 PHP_FUNCTION(pforbstat);
 PHP_FUNCTION(split_srcname);
+PHP_FUNCTION(unstuffPkt);
 
 #ifdef ZTS
 #define ORB_G(v) TSRMG(Orb_globals_id, zend_Orb_globals *, v)

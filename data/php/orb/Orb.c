@@ -48,6 +48,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbputx, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
+	PHP_FE(unstuffPkt, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -84,6 +85,15 @@ void register_Orb_constants( INIT_FUNC_ARGS )
 		zend_register_long_constant( Orbconst[i].name,
 					     strlen( Orbconst[i].name ) + 1, 
 					     Orbconst[i].num,
+					     CONST_CS | CONST_PERSISTENT,
+					     module_number TSRMLS_CC );
+	}
+
+	for( i = 0; i < Pktxlatn; i++ ) {
+
+		zend_register_long_constant( Pktxlat[i].name,
+					     strlen( Pktxlat[i].name ) + 1, 
+					     Pktxlat[i].num,
 					     CONST_CS | CONST_PERSISTENT,
 					     module_number TSRMLS_CC );
 	}
@@ -823,6 +833,42 @@ PHP_FUNCTION(pforbstat)
 	
 		pffree( pf );
 	}
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto int unstuffPkt( string srcname, double time, string packet, int nbytes ) */
+PHP_FUNCTION(unstuffPkt)
+{
+	Packet	*pkt = 0;
+	char	*srcname;
+	int	*srcname_len;
+	double	time;
+	char	*packet;
+	int	*packet_len;
+	long	nbytes;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl", 
+		&srcname, &srcname_len, &time,
+		&packet, &packet_len, &nbytes )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = unstuffPkt( srcname, time, packet, (int) nbytes, &pkt );
+
+	array_init( return_value );
+
+	add_next_index_long( return_value, rc );
 
 	return;
 }
