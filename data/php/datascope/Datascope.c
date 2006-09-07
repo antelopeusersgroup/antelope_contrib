@@ -165,14 +165,14 @@ function_entry Datascope_functions[] = {
 
 zend_module_entry Datascope_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"Datascope",
+	PHP_DATASCOPE_EXTNAME,
 	Datascope_functions,
 	PHP_MINIT(Datascope),
 	PHP_MSHUTDOWN(Datascope),
 	NULL,
 	NULL,
 	PHP_MINFO(Datascope),
-	"0.1",
+	PHP_DATASCOPE_EXTVER,
 	STANDARD_MODULE_PROPERTIES
 };
 
