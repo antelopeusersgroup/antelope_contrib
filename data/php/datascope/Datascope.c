@@ -35,7 +35,7 @@ static Arr *Hooks = 0;
 
 static char *Elog_replacement = 0;
 
-function_entry Datascope_functions[] = {
+static function_entry Datascope_functions[] = {
 	PHP_FE(dbex_eval, NULL)		
 	PHP_FE(dbextfile, NULL)		
 	PHP_FE(dbfind, NULL)		
@@ -222,7 +222,7 @@ PHP_MINFO_FUNCTION(Datascope)
 	php_info_print_table_end();
 }
 
-int
+static int
 z_arrval_to_dbptr( zval *array, Dbptr *db )
 {
 	HashTable *target_hash;
@@ -258,7 +258,7 @@ z_arrval_to_dbptr( zval *array, Dbptr *db )
 	return 0;
 }
 
-int
+static int
 z_arrval_to_strtbl( zval *array, Tbl **tbl )
 {
 	HashTable *target_hash;
@@ -297,7 +297,7 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 	return 0;
 }
 
-int
+static int
 z_arrval_hashtype( zval *array )
 {
 	HashTable *target_hash;
@@ -338,7 +338,7 @@ z_arrval_hashtype( zval *array )
 	return retcode;
 }
 
-int
+static int
 zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 {
 	if( value == (Dbvalue *) NULL ) {
@@ -426,7 +426,7 @@ zval_to_dbvalue( zval **zvalue, int type, Dbvalue *value )
 	return 0;
 }
 
-int 
+static int 
 zval2pf( zval *zvalue, Pf **pf )
 {
 	int	retcode = 0;
@@ -528,7 +528,7 @@ zval2pf( zval *zvalue, Pf **pf )
 	return retcode;
 }
 
-int
+static int
 pf2zval( Pf *pf, zval *result ) {
 	Pf	*pfvalue;
 	int	ivalue;
