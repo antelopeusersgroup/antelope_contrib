@@ -24,6 +24,7 @@ PHP_FUNCTION(orbwait);
 PHP_FUNCTION(orbselect);
 PHP_FUNCTION(orbreject);
 PHP_FUNCTION(orbreap);
+PHP_FUNCTION(orbget);
 PHP_FUNCTION(pforbstat);
 PHP_FUNCTION(split_srcname);
 

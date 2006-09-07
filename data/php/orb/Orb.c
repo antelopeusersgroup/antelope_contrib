@@ -41,6 +41,7 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbselect, NULL)		
 	PHP_FE(orbreject, NULL)		
 	PHP_FE(orbreap, NULL)		
+	PHP_FE(orbget, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
 	{NULL, NULL, NULL}	
@@ -315,6 +316,83 @@ PHP_FUNCTION(orbreap)
 }
 /* }}} */
 
+/* {{{ proto array orbget( int orbfd, mixed which ) */
+PHP_FUNCTION(orbget)
+{
+	long	orbfd;
+	int	pktid;
+	char	srcname[STRSZ];
+	double	pkttime;
+	char *pkt = 0;
+	int	bufsize = 0;
+	int	nbytes = 0;
+	int	rc;
+	zval	*zval_which;
+	int	which;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "lz", &orbfd, &zval_which )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	if( Z_TYPE_P( zval_which ) == IS_STRING ) {
+
+		which = xlatname( Z_STRVAL_P( zval_which ), Orbconst, Orbconstn );
+
+		if( which == -1 ) {
+
+			zend_error( E_ERROR, 
+		     	   "orbget 'which' code not recognized" );
+
+			return;
+		}
+	
+	} else if( Z_TYPE_P( zval_which ) == IS_LONG ) {
+
+		which = Z_LVAL_P( zval_which );
+
+	} else {
+
+		zend_error( E_ERROR, 
+		     "orget 'which' argument must be string or integer" );
+
+		return;
+	}
+
+	rc = orbget( (int) orbfd, which, &pktid, srcname, &pkttime, 
+		      &pkt, &nbytes, &bufsize );
+
+	if( rc < 0 ) {
+		
+		zend_error( E_ERROR, "orbget failed" );
+
+		return;
+	}
+
+	array_init( return_value );
+
+	add_next_index_long( return_value, pktid );
+	add_next_index_string( return_value, srcname, 1 );
+	add_next_index_double( return_value, pkttime );
+	add_next_index_stringl( return_value, pkt, (uint) nbytes, 1 );
+	add_next_index_long( return_value, nbytes );
+
+	if( pkt != 0 ) {
+
+		free( pkt );
+	}
+
+	return;
+}
+/* }}} */
+
 /* {{{ proto int orbtell( int orbfd ) */
 PHP_FUNCTION(orbtell)
 {
@@ -510,7 +588,7 @@ PHP_FUNCTION(orbseek)
 	} else {
 
 		zend_error( E_ERROR, 
-		     "orbseek argument must be string or integer" );
+		     "orbseek 'which' argument must be string or integer" );
 
 		return;
 	}
