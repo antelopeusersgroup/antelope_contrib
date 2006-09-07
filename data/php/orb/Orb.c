@@ -44,6 +44,8 @@ function_entry Orb_functions[] = {
 	PHP_FE(orbreap_nd, NULL)		
 	PHP_FE(orbreap_timeout, NULL)		
 	PHP_FE(orbget, NULL)		
+	PHP_FE(orbput, NULL)		
+	PHP_FE(orbputx, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
 	{NULL, NULL, NULL}	
@@ -491,6 +493,70 @@ PHP_FUNCTION(orbget)
 	}
 
 	return;
+}
+/* }}} */
+
+/* {{{ proto int orbput( int orbfd, string srcname, double time, string packet, int nbytes ) */
+PHP_FUNCTION(orbput)
+{
+	long	orbfd;
+	char	*srcname;
+	int	*srcname_len;
+	double	time;
+	char	*packet;
+	int	*packet_len;
+	long	nbytes;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 5 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl", 
+		&orbfd, &srcname, &srcname_len, &time,
+		&packet, &packet_len, &nbytes )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbput( (int) orbfd, srcname, time, packet, (int) nbytes );
+
+	RETURN_LONG( rc );
+}
+/* }}} */
+
+/* {{{ proto int orbputx( int orbfd, string srcname, double time, string packet, int nbytes ) */
+PHP_FUNCTION(orbputx)
+{
+	long	orbfd;
+	char	*srcname;
+	int	*srcname_len;
+	double	time;
+	char	*packet;
+	int	*packet_len;
+	long	nbytes;
+	int	pktid;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 5 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "lsdsl", 
+		&orbfd, &srcname, &srcname_len, &time,
+		&packet, &packet_len, &nbytes )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	pktid = orbputx( (int) orbfd, srcname, time, packet, (int) nbytes );
+
+	RETURN_LONG( pktid );
 }
 /* }}} */
 

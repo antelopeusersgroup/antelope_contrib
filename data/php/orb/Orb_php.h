@@ -27,6 +27,8 @@ PHP_FUNCTION(orbreap);
 PHP_FUNCTION(orbreap_nd);
 PHP_FUNCTION(orbreap_timeout);
 PHP_FUNCTION(orbget);
+PHP_FUNCTION(orbput);
+PHP_FUNCTION(orbputx);
 PHP_FUNCTION(pforbstat);
 PHP_FUNCTION(split_srcname);
 
