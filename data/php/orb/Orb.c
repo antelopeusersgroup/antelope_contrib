@@ -11,9 +11,6 @@
  * 
  */
 
-#include "php.h"
-#include "php_ini.h"
-#include "ext/standard/info.h"
 #include "Orb_php.h"
 #include "stock.h"
 #include "orb.h"
@@ -29,7 +26,7 @@ static int le_Orb;
 
 static char *Elog_replacement = 0;
 
-function_entry Orb_functions[] = {
+static function_entry Orb_functions[] = {
 	PHP_FE(orbopen, NULL)		
 	PHP_FE(orbping, NULL)		
 	PHP_FE(orbtell, NULL)		
@@ -54,14 +51,14 @@ function_entry Orb_functions[] = {
 
 zend_module_entry Orb_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"Orb",
+	PHP_ORB_EXTNAME,
 	Orb_functions,
 	PHP_MINIT(Orb),
 	PHP_MSHUTDOWN(Orb),
 	NULL,
 	NULL,
 	PHP_MINFO(Orb),
-	"0.1",
+	PHP_ORB_EXTVER,
 	STANDARD_MODULE_PROPERTIES
 };
 
@@ -138,7 +135,7 @@ PHP_MINFO_FUNCTION(Orb)
 	php_info_print_table_end();
 }
 
-int
+static int
 pf2zval( Pf *pf, zval *result ) {
 	Pf	*pfvalue;
 	int	ivalue;
@@ -199,6 +196,16 @@ pf2zval( Pf *pf, zval *result ) {
 	}
 
 	return retcode;
+}
+
+static zval *
+pkt2zval( Packet *pkt )
+{
+	zval	*zval_pkt;
+
+	MAKE_STD_ZVAL( zval_pkt );
+
+	return zval_pkt;
 }
 
 /* {{{ proto array template( array db, ... ) *
@@ -849,6 +856,7 @@ PHP_FUNCTION(unstuffPkt)
 	int	*packet_len;
 	long	nbytes;
 	int	rc;
+	zval	*zval_pkt;
 	int	argc = ZEND_NUM_ARGS();
 
 	if( argc != 4 ) {
@@ -866,9 +874,21 @@ PHP_FUNCTION(unstuffPkt)
 	
 	rc = unstuffPkt( srcname, time, packet, (int) nbytes, &pkt );
 
+	if( rc < 0 ) {
+		
+		zend_error( E_ERROR, "unstuffPkt failed" );
+
+		return;
+	}
+
+	zval_pkt = pkt2zval( pkt );
+
+	freePkt( pkt );
+
 	array_init( return_value );
 
 	add_next_index_long( return_value, rc );
+	add_next_index_zval( return_value, zval_pkt );
 
 	return;
 }

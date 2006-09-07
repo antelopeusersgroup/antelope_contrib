@@ -1,14 +1,20 @@
 #ifndef PHP_ORB_H
 #define PHP_ORB_H
 
-extern zend_module_entry Orb_module_entry;
-#define phpext_Orb_ptr &Orb_module_entry
-
 #define PHP_ORB_API
+#define PHP_ORB_EXTNAME "Orb"
+#define PHP_ORB_EXTVER  "0.2"
+
+#include "php.h"
+#include "php_ini.h"
+#include "ext/standard/info.h"
 
 #ifdef ZTS
 #include "TSRM.h"
 #endif
+
+extern zend_module_entry Orb_module_entry;
+#define phpext_Orb_ptr &Orb_module_entry
 
 PHP_MINIT_FUNCTION(Orb);
 PHP_MSHUTDOWN_FUNCTION(Orb);
