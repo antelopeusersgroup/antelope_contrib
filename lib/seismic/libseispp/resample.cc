@@ -48,8 +48,11 @@ ResampleOperator::ResampleOperator(double e,Pf *pf)
 		fname=string(decfilename);
 		dec = new Decimator(fname,decfac_test);
 		if(fabs((decfac_test-(dec->decfac))/decfac_test)>DECFAC_TOLERANCE)
+		{
+			delete dec;
 			throw  SeisppError("Decimator constructor failure:  mismatch of sample rate between response file "
 				+fname+" and input line\n"+string(line));
+		}
 		declist.push_back(*dec);
 		delete dec;
 	}
