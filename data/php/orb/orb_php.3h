@@ -288,6 +288,8 @@ list( $type, $desc ) = $pkt->PacketType();
 $time = $pkt->time();
 $nchannels = $pkt->nchannels();
 $version = $pkt->version();
+list( $net, $sta, $chan, $loc, $suffix, $subcode ) = $pkt->parts();
+
 list( $dfile, $size ) = $pkt->dfile();
 
 var_dump( $pkt->pf() );

@@ -82,6 +82,7 @@ PHP_METHOD(orb_pkt, version);
 PHP_METHOD(orb_pkt, dfile);
 PHP_METHOD(orb_pkt, pf);
 PHP_METHOD(orb_pkt, string);
+PHP_METHOD(orb_pkt, parts);
 
 zend_class_entry *php_orb_pkt_entry;
 #define PHP_ORB_PKT_NAME "orb_pkt"
@@ -93,6 +94,7 @@ static function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, dfile, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, pf, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, string, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, parts, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -243,7 +245,7 @@ pf2zval( Pf *pf, zval *result ) {
 }
 
 static zval *
-pkt2zval( int type, Packet *pkt )
+pkt2zval( int type, char *srcname, Packet *pkt )
 {
 	zval	*zval_pkt;
 	zend_class_entry *ce;
@@ -1002,7 +1004,7 @@ PHP_FUNCTION(unstuffPkt)
 		return;
 	}
 
-	zval_pkt = pkt2zval( rc, pkt );
+	zval_pkt = pkt2zval( rc, srcname, pkt );
 
 	array_init( return_value );
 
@@ -1140,6 +1142,28 @@ PHP_METHOD(orb_pkt, pf)
 
 		ZVAL_NULL( return_value );
 	}
+
+	return;
+}
+
+PHP_METHOD(orb_pkt, parts)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	array_init( return_value );
+
+	add_next_index_string( return_value, intern->pkt->parts.src_net, 1 );
+	add_next_index_string( return_value, intern->pkt->parts.src_sta, 1 );
+	add_next_index_string( return_value, intern->pkt->parts.src_chan, 1 );
+	add_next_index_string( return_value, intern->pkt->parts.src_loc, 1 );
+	add_next_index_string( return_value, intern->pkt->parts.src_suffix, 1 );
+	add_next_index_string( return_value, intern->pkt->parts.src_subcode, 1 );
 
 	return;
 }
