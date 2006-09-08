@@ -12,6 +12,7 @@
  */
 
 #include "Orb_php.h"
+#undef WORDS_BIGENDIAN
 #include "stock.h"
 #include "orb.h"
 #include "Pkt.h"
@@ -62,6 +63,8 @@ zend_module_entry Orb_module_entry = {
 	STANDARD_MODULE_PROPERTIES
 };
 
+extern void putPf_nofree( char *name, Pf *pf );
+
 zend_object_value orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC );
 
 static zend_object_handlers orb_pkt_obj_handlers;
@@ -77,6 +80,8 @@ PHP_METHOD(orb_pkt, time);
 PHP_METHOD(orb_pkt, nchannels);
 PHP_METHOD(orb_pkt, version);
 PHP_METHOD(orb_pkt, dfile);
+PHP_METHOD(orb_pkt, pf);
+PHP_METHOD(orb_pkt, string);
 
 zend_class_entry *php_orb_pkt_entry;
 #define PHP_ORB_PKT_NAME "orb_pkt"
@@ -86,6 +91,8 @@ static function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, nchannels, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, version, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, dfile, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, pf, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, string, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -1063,6 +1070,28 @@ PHP_METHOD(orb_pkt, version)
 	RETURN_LONG( intern->pkt->version );
 }
 
+PHP_METHOD(orb_pkt, string)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	if( intern->pkt->string != NULL ) {
+
+		ZVAL_STRING( return_value, intern->pkt->string, 1 );
+
+	} else {
+
+		ZVAL_NULL( return_value );
+	}
+
+	return;
+}
+
 PHP_METHOD(orb_pkt, dfile)
 {
 	zval	*this;
@@ -1079,6 +1108,37 @@ PHP_METHOD(orb_pkt, dfile)
 
 		add_next_index_string( return_value, intern->pkt->dfile, 1 );
 		add_next_index_long( return_value, intern->pkt->dfile_size );
+
+	} else {
+		
+		ZVAL_NULL( return_value );
+	}
+
+	return;
+}
+
+PHP_METHOD(orb_pkt, pf)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+	char	name[STRSZ];
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	sprintf( name, "%s::pf", PHP_ORB_PKT_NAME );
+
+	if( intern->pkt->pf != (Pf *) NULL ) {
+
+	putPf_nofree( name, intern->pkt->pf );
+
+		pf2zval( intern->pkt->pf, return_value );
+
+	} else {
+
+		ZVAL_NULL( return_value );
 	}
 
 	return;

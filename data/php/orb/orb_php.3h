@@ -246,11 +246,54 @@ $metadata = pforbstat( $orbfd, PFORBSTAT_SERVER | PFORBSTAT_SOURCES );
 
 .IP "\fBunstuffPkt\fP ( srcname, time, packet, nbytes )"
 unstuff the input packet, returning a result code and a packet object.
+The result code indicates packet type and will be one of 
+.nf
+
+Pkt_wf  waveform packet
+Pkt_st  status packet
+Pkt_db  database row
+Pkt_pf  parameter file
+Pkt_cn  control messages
+Pkt_rw  binary data
+Pkt_ch  character string
+Pkt_tp  test packet
+
+.fi
+The packet object has methods 
+.nf
+
+$pkt->parts()
+$pkt->time()
+$pkt->PacketType()
+$pkt->nchannels()
+$pkt->channels($i)
+$pkt->pf()
+$pkt->string()
+$pkt->db()
+$pkt->dfile()
+$pkt->version ()
+
+.fi
+Where $i in the call to $pkt->channels can range from 0 to nchannels-1.
+These are used as in the examples below (calling 
+methods not appropriate for a given packet, e.g. calling the pf() method 
+on a waveform packet, will return a null value). 
 .ft CW
 .in 2c
 .nf
 
-list( $result, $pkt ) = unstuffPkt( $srcname, $time, $packet, $nbytes );
+list( $type, $pkt ) = unstuffPkt( $srcname, $time, $packet, $nbytes );
+
+list( $type, $desc ) = $pkt->PacketType();
+$time = $pkt->time();
+$nchannels = $pkt->nchannels();
+$version = $pkt->version();
+list( $dfile, $size ) = $pkt->dfile();
+
+var_dump( $pkt->pf() );
+echo pfget( "orb_pkt::pf", $key );
+
+$stringval = $pkt->string();
 
 .fi
 .in
