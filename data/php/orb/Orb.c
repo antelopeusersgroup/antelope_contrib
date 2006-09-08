@@ -73,11 +73,19 @@ typedef struct _php_orb_pkt_obj {
 } php_orb_pkt_obj;
 
 PHP_METHOD(orb_pkt, PacketType);
+PHP_METHOD(orb_pkt, time);
+PHP_METHOD(orb_pkt, nchannels);
+PHP_METHOD(orb_pkt, version);
+PHP_METHOD(orb_pkt, dfile);
 
 zend_class_entry *php_orb_pkt_entry;
 #define PHP_ORB_PKT_NAME "orb_pkt"
 static function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, PacketType, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, time, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, nchannels, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, version, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, dfile, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -1012,6 +1020,66 @@ PHP_METHOD(orb_pkt, PacketType)
 
 	add_next_index_long( return_value, intern->type );
 	add_next_index_string( return_value, intern->pkt->pkttype->desc, 1 );
+
+	return;
+}
+
+PHP_METHOD(orb_pkt, time)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	RETURN_DOUBLE( intern->pkt->time );
+}
+
+PHP_METHOD(orb_pkt, nchannels)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	RETURN_LONG( intern->pkt->nchannels );
+}
+
+PHP_METHOD(orb_pkt, version)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	RETURN_LONG( intern->pkt->version );
+}
+
+PHP_METHOD(orb_pkt, dfile)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	if( intern->pkt->dfile != NULL && intern->pkt->dfile_size > 0 ) {
+		
+		array_init( return_value );
+
+		add_next_index_string( return_value, intern->pkt->dfile, 1 );
+		add_next_index_long( return_value, intern->pkt->dfile_size );
+	}
 
 	return;
 }
