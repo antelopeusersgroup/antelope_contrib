@@ -284,6 +284,22 @@ The $pkt->channels() method returns a channel object which has the methods
 
 $achan->nsamp()
 $achan->data()
+$achan->time()
+$achan->samprate()
+$achan->calib()
+$achan->calper()
+$achan->net()
+$achan->sta()
+$achan->chan()
+$achan->loc()
+$achan->segtype()
+$achan->duser1()
+$achan->duser2()
+$achan->cuser1()
+$achan->cuser2()
+$achan->iuser1()
+$achan->iuser2()
+$achan->iuser3()
 
 .fi
 The $achan->data() method returns a vector of integers containing the 

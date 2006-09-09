@@ -123,12 +123,44 @@ static function_entry php_orb_pkt_functions[] = {
 };
 
 PHP_METHOD(orb_channel, nsamp);
+PHP_METHOD(orb_channel, iuser1);
+PHP_METHOD(orb_channel, iuser2);
+PHP_METHOD(orb_channel, iuser3);
+PHP_METHOD(orb_channel, net);
+PHP_METHOD(orb_channel, sta);
+PHP_METHOD(orb_channel, chan);
+PHP_METHOD(orb_channel, loc);
+PHP_METHOD(orb_channel, segtype);
+PHP_METHOD(orb_channel, cuser1);
+PHP_METHOD(orb_channel, cuser2);
+PHP_METHOD(orb_channel, time);
+PHP_METHOD(orb_channel, samprate);
+PHP_METHOD(orb_channel, calib);
+PHP_METHOD(orb_channel, calper);
+PHP_METHOD(orb_channel, duser1);
+PHP_METHOD(orb_channel, duser2);
 PHP_METHOD(orb_channel, data);
 
 zend_class_entry *php_orb_chan_entry;
 #define PHP_ORB_CHAN_NAME "orb_channel"
 static function_entry php_orb_chan_functions[] = {
 	PHP_ME(orb_channel, nsamp, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, iuser1, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, iuser2, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, iuser3, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, net, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, sta, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, chan, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, loc, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, segtype, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, cuser1, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, cuser2, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, time, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, samprate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, calib, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, calper, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, duser1, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, duser2, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_channel, data, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
@@ -1389,6 +1421,33 @@ PHP_METHOD(orb_channel, nsamp)
 	RETURN_LONG( pktchan->nsamp );
 }
 
+PHP_METHOD(orb_channel, iuser1)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_LONG( pktchan->iuser1 );
+}
+
+PHP_METHOD(orb_channel, iuser2)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_LONG( pktchan->iuser2 );
+}
+
+PHP_METHOD(orb_channel, iuser3)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_LONG( pktchan->iuser3 );
+}
+
 PHP_METHOD(orb_channel, data)
 {
 	PktChannel *pktchan;
@@ -1404,6 +1463,123 @@ PHP_METHOD(orb_channel, data)
 	}
 
 	return;
+}
+
+PHP_METHOD(orb_channel, time)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->time );
+}
+
+PHP_METHOD(orb_channel, samprate)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->samprate );
+}
+
+PHP_METHOD(orb_channel, calib)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->calib );
+}
+
+PHP_METHOD(orb_channel, calper)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->calper );
+}
+
+PHP_METHOD(orb_channel, duser1)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->duser1 );
+}
+
+PHP_METHOD(orb_channel, duser2)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_DOUBLE( pktchan->duser2 );
+}
+
+PHP_METHOD(orb_channel, net)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->net, 1 );
+}
+
+PHP_METHOD(orb_channel, sta)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->sta, 1 );
+}
+
+PHP_METHOD(orb_channel, chan)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->chan, 1 );
+}
+
+PHP_METHOD(orb_channel, loc)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->loc, 1 );
+}
+
+PHP_METHOD(orb_channel, segtype)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->segtype, 1 );
+}
+
+PHP_METHOD(orb_channel, cuser1)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->cuser1, 1 );
+}
+
+PHP_METHOD(orb_channel, cuser2)
+{
+	PktChannel *pktchan;
+
+	pktchan = get_this_orb_pkt_chan( getThis() );
+
+	RETURN_STRING( pktchan->cuser2, 1 );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
