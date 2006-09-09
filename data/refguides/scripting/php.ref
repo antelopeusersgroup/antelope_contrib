@@ -442,6 +442,38 @@ pktid = orbputx (orbfd, srcname, time, packet, nbytes )
 
 (result, pkt) = unstuffPkt (srcname, time, packet, nbytes )
     unstuff a single packet, returning a result code and a packet object
+<example>
+kind    kind of packet
+----    --------------
+Pkt_wf  waveform packet
+Pkt_st  status packet
+Pkt_db  database row
+Pkt_pf  parameter file
+Pkt_cn  control messages
+Pkt_rw  binary data
+Pkt_ch  character string
+Pkt_tp  test packet
+</example>
+    The packet object has the following methods which return various
+    values from the c Packet structure: parts, time, PacketType,
+    nchannels, channels(i), pf, string, db, dfile,
+    and version.
+
+    The parts method returns (net, sta, chan, loc, suffix, subcode)
+
+    The PacketType method returns the packet kind (also
+    returned by unstuffPkt) and the corresponding description.
+
+    The channels method takes an index (0..n-1) argument 
+    and returns channel object with its own methods:
+<example>
+calib    calper   chan     cuser1   
+cuser2   data     duser1   duser2   
+iuser1   iuser2   iuser3   loc      
+net      nsamp    samprate segtype  
+sta      time     
+</example>
+    The data method returns all the waveform data in a list of integers.
 
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
