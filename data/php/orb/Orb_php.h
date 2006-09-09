@@ -13,6 +13,14 @@
 #include "TSRM.h"
 #endif
 
+#define ZVAL_DBPTR(ZVAL,DB) { \
+		array_init( ZVAL ); \
+		add_index_long( (ZVAL), 0, (DB).database ); \
+		add_index_long( (ZVAL), 1, (DB).table ); \
+		add_index_long( (ZVAL), 2, (DB).field ); \
+		add_index_long( (ZVAL), 3, (DB).record ); \
+	}
+
 extern zend_module_entry Orb_module_entry;
 #define phpext_Orb_ptr &Orb_module_entry
 

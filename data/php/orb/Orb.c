@@ -81,6 +81,7 @@ PHP_METHOD(orb_pkt, nchannels);
 PHP_METHOD(orb_pkt, version);
 PHP_METHOD(orb_pkt, dfile);
 PHP_METHOD(orb_pkt, pf);
+PHP_METHOD(orb_pkt, db);
 PHP_METHOD(orb_pkt, string);
 PHP_METHOD(orb_pkt, parts);
 
@@ -93,6 +94,7 @@ static function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, version, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, dfile, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, pf, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, db, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, string, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, parts, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
@@ -1134,7 +1136,7 @@ PHP_METHOD(orb_pkt, pf)
 
 	if( intern->pkt->pf != (Pf *) NULL ) {
 
-	putPf_nofree( name, intern->pkt->pf );
+		putPf_nofree( name, intern->pkt->pf );
 
 		pf2zval( intern->pkt->pf, return_value );
 
@@ -1142,6 +1144,21 @@ PHP_METHOD(orb_pkt, pf)
 
 		ZVAL_NULL( return_value );
 	}
+
+	return;
+}
+
+PHP_METHOD(orb_pkt, db)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	ZVAL_DBPTR( return_value, intern->pkt->db );
 
 	return;
 }

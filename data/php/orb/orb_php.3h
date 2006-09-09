@@ -297,6 +297,8 @@ echo pfget( "orb_pkt::pf", $key );
 
 $stringval = $pkt->string();
 
+$db = $pkt->db(); 
+
 .fi
 .in
 .ft R
