@@ -278,6 +278,16 @@ Where $i in the call to $pkt->channels can range from 0 to nchannels-1.
 These are used as in the examples below (calling 
 methods not appropriate for a given packet, e.g. calling the pf() method 
 on a waveform packet, will return a null value). 
+
+The $pkt->channels() method returns a channel object which has the methods
+.nf
+
+$achan->nsamp()
+$achan->data()
+
+.fi
+The $achan->data() method returns a vector of integers containing the 
+sample values for the channel.
 .ft CW
 .in 2c
 .nf
@@ -298,6 +308,10 @@ echo pfget( "orb_pkt::pf", $key );
 $stringval = $pkt->string();
 
 $db = $pkt->db(); 
+
+$achan = $pkt->channels( 0 );
+$nsamp = $achan->nsamp();
+$avector = $achan->data();
 
 .fi
 .in

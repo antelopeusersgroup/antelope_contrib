@@ -123,11 +123,13 @@ static function_entry php_orb_pkt_functions[] = {
 };
 
 PHP_METHOD(orb_channel, nsamp);
+PHP_METHOD(orb_channel, data);
 
 zend_class_entry *php_orb_chan_entry;
 #define PHP_ORB_CHAN_NAME "orb_channel"
 static function_entry php_orb_chan_functions[] = {
 	PHP_ME(orb_channel, nsamp, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_channel, data, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -1394,6 +1396,27 @@ PHP_METHOD(orb_channel, nsamp)
 		    zend_objects_get_address( this TSRMLS_CC );
 
 	RETURN_LONG( intern->pktchan->nsamp );
+}
+
+PHP_METHOD(orb_channel, data)
+{
+	zval	*this;
+	php_orb_chan_obj *intern;
+	int	isamp;
+
+	this = getThis();
+
+	intern = (php_orb_chan_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	array_init( return_value );
+
+	for( isamp = 0; isamp < intern->pktchan->nsamp; isamp++ ) {
+
+		add_next_index_long( return_value, intern->pktchan->data[isamp] );
+	}
+
+	return;
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
