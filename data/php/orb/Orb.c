@@ -72,17 +72,28 @@ zend_module_entry Orb_module_entry = {
 	STANDARD_MODULE_PROPERTIES
 };
 
+/* Missing from pf.h in Antelope 4.8: */
 extern void putPf_nofree( char *name, Pf *pf );
 
 zend_object_value orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC );
+zend_object_value orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC );
 
 static zend_object_handlers orb_pkt_obj_handlers;
+static zend_object_handlers orb_chan_obj_handlers;
 
 typedef struct _php_orb_pkt_obj {
 	zend_object	std;
 	int		type;
 	Packet		*pkt;
 } php_orb_pkt_obj;
+
+/* SCAFFOLD need back-references to preserve memory mgt of referenced pkt */
+/* Right now, this is frajile because the channel objects must not be 
+   allowed to outlive the parent packet */
+typedef struct _php_orb_chan_obj {
+	zend_object	std;
+	PktChannel	*pktchan;
+} php_orb_chan_obj;
 
 PHP_METHOD(orb_pkt, PacketType);
 PHP_METHOD(orb_pkt, time);
@@ -111,9 +122,19 @@ static function_entry php_orb_pkt_functions[] = {
 	{ NULL, NULL, NULL }
 };
 
+PHP_METHOD(orb_channel, nsamp);
+
+zend_class_entry *php_orb_chan_entry;
+#define PHP_ORB_CHAN_NAME "orb_channel"
+static function_entry php_orb_chan_functions[] = {
+	PHP_ME(orb_channel, nsamp, NULL, ZEND_ACC_PUBLIC)
+	{ NULL, NULL, NULL }
+};
+
 ZEND_GET_MODULE(Orb)
 
-void register_Orb_constants( INIT_FUNC_ARGS )
+void 
+register_Orb_constants( INIT_FUNC_ARGS )
 {
 	int	i;
 
@@ -145,12 +166,9 @@ void register_Orb_constants( INIT_FUNC_ARGS )
 	}
 }
 
-PHP_MINIT_FUNCTION(Orb)
+void 
+register_pforbstat_constants( INIT_FUNC_ARGS )
 {
-	zend_class_entry ce;
-
-	register_Orb_constants( INIT_FUNC_ARGS_PASSTHRU );
-
 	REGISTER_LONG_CONSTANT( "PFORBSTAT_SERVER", 
 				 PFORBSTAT_SERVER, 
 				 CONST_CS | CONST_PERSISTENT );
@@ -170,14 +188,42 @@ PHP_MINIT_FUNCTION(Orb)
 	REGISTER_LONG_CONSTANT( "PFORBSTAT_CONNECTIONS", 
 				 PFORBSTAT_CONNECTIONS, 
 				 CONST_CS | CONST_PERSISTENT );
+	return;
+
+}
+
+static void
+register_Orb_classes( TSRMLS_D )
+{
+	zend_class_entry ce_pkt;
+	zend_class_entry ce_chan;
 
 	memcpy( &orb_pkt_obj_handlers, 
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
-	INIT_CLASS_ENTRY( ce, PHP_ORB_PKT_NAME, php_orb_pkt_functions );	
-	ce.create_object = orb_pkt_obj_new;
-	php_orb_pkt_entry = zend_register_internal_class( &ce TSRMLS_CC );
+	INIT_CLASS_ENTRY( ce_pkt, PHP_ORB_PKT_NAME, php_orb_pkt_functions );	
+	ce_pkt.create_object = orb_pkt_obj_new;
+	php_orb_pkt_entry = zend_register_internal_class( &ce_pkt TSRMLS_CC );
+
+	memcpy( &orb_chan_obj_handlers, 
+		zend_get_std_object_handlers(),
+		sizeof( zend_object_handlers ) );
+
+	INIT_CLASS_ENTRY( ce_chan, PHP_ORB_CHAN_NAME, php_orb_chan_functions );	
+	ce_chan.create_object = orb_chan_obj_new;
+	php_orb_chan_entry = zend_register_internal_class( &ce_chan TSRMLS_CC );
+
+	return;
+}
+
+PHP_MINIT_FUNCTION(Orb)
+{
+	register_Orb_constants( INIT_FUNC_ARGS_PASSTHRU );
+
+	register_pforbstat_constants( INIT_FUNC_ARGS_PASSTHRU );
+
+	register_Orb_classes( TSRMLS_C );
 
 	return SUCCESS;
 }
@@ -264,11 +310,11 @@ pkt2zval( int type, char *srcname, Packet *pkt )
 	zend_class_entry *ce;
 	php_orb_pkt_obj *intern;
 
-	MAKE_STD_ZVAL( zval_pkt );
-
 	ce = zend_fetch_class( PHP_ORB_PKT_NAME, 
 			       strlen( PHP_ORB_PKT_NAME ), 
 			       ZEND_FETCH_CLASS_AUTO );
+
+	MAKE_STD_ZVAL( zval_pkt );
 
 	object_init_ex( zval_pkt, ce );
 
@@ -281,8 +327,36 @@ pkt2zval( int type, char *srcname, Packet *pkt )
 	return zval_pkt;
 }
 
+static void
+pktchan2zval( PktChannel *pktchan, zval *zval_pktchan )
+{
+	zend_class_entry *ce;
+	php_orb_chan_obj *intern;
+
+	ce = zend_fetch_class( PHP_ORB_CHAN_NAME, 
+			       strlen( PHP_ORB_CHAN_NAME ), 
+			       ZEND_FETCH_CLASS_AUTO );
+
+	object_init_ex( zval_pktchan, ce );
+
+	intern = (php_orb_chan_obj *) 
+			zend_objects_get_address( zval_pktchan TSRMLS_CC );
+
+	intern->pktchan = pktchan;
+
+	return;
+}
+
 void
 orb_pkt_obj_clone( void *object, void **object_clone TSRMLS_DC )
+{
+	; /* SCAFFOLD */
+
+	return;
+}
+
+void
+orb_chan_obj_clone( void *object, void **object_clone TSRMLS_DC )
 {
 	; /* SCAFFOLD */
 
@@ -304,6 +378,15 @@ orb_pkt_obj_free_resources( php_orb_pkt_obj *intern )
 	return;
 }
 
+void 
+orb_chan_obj_free_resources( php_orb_chan_obj *intern )
+{
+	; /* memory is slave to the overlying Pkt object */
+	 /* SCAFFOLD is it here that we decrement reference count of pkt obj */
+
+	return;
+}
+
 void
 orb_pkt_obj_free_storage( void *object TSRMLS_DC )
 {
@@ -313,6 +396,19 @@ orb_pkt_obj_free_storage( void *object TSRMLS_DC )
 	FREE_HASHTABLE( intern->std.properties );
 
 	orb_pkt_obj_free_resources( intern );
+
+	efree( object );
+}
+
+void
+orb_chan_obj_free_storage( void *object TSRMLS_DC )
+{
+	php_orb_chan_obj *intern = (php_orb_chan_obj *) object;
+
+	zend_hash_destroy( intern->std.properties );
+	FREE_HASHTABLE( intern->std.properties );
+
+	orb_chan_obj_free_resources( intern );
 
 	efree( object );
 }
@@ -340,6 +436,33 @@ orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC )
 		(zend_objects_free_object_storage_t) orb_pkt_obj_free_storage,
 		orb_pkt_obj_clone TSRMLS_CC);
 	retval.handlers = &orb_pkt_obj_handlers;
+
+	return retval;
+}
+
+zend_object_value
+orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC )
+{
+	zend_object_value retval;
+	php_orb_chan_obj *intern;
+	zval	*tmp;
+
+	intern = emalloc( sizeof( php_orb_chan_obj ) );
+	intern->std.ce = class_type;
+	intern->std.guards = NULL;
+
+	ALLOC_HASHTABLE( intern->std.properties );
+	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
+	zend_hash_copy( intern->std.properties, 
+			&class_type->default_properties,
+			(copy_ctor_func_t) zval_add_ref,
+			(void *) &tmp,
+			sizeof(zval *));
+	retval.handle = zend_objects_store_put( intern, 
+		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+		(zend_objects_free_object_storage_t) orb_chan_obj_free_storage,
+		orb_chan_obj_clone TSRMLS_CC);
+	retval.handlers = &orb_chan_obj_handlers;
 
 	return retval;
 }
@@ -1077,6 +1200,8 @@ PHP_METHOD(orb_pkt, channels)
 	zval	*this;
 	php_orb_pkt_obj *intern;
 	long	ichannel;
+	char	msg[STRSZ];
+	PktChannel *pktchan;
 	int	argc = ZEND_NUM_ARGS();
 
 	if( argc != 1 ) {
@@ -1095,7 +1220,41 @@ PHP_METHOD(orb_pkt, channels)
 	intern = (php_orb_pkt_obj *) 
 		    zend_objects_get_address( this TSRMLS_CC );
 
-	/* SCAFFOLD set up return */
+	if( ichannel < 0 ) {
+
+		zend_error( E_WARNING, "Channel number is less than 0\n" );
+
+		ZVAL_NULL( return_value );
+
+	} else if( intern->pkt->channels == (Tbl *) NULL ) {
+
+		zend_error( E_WARNING, "Empty channels structure in packet\n" );
+
+		ZVAL_NULL( return_value );
+
+	} else if( ichannel >= maxtbl( intern->pkt->channels ) ) {
+
+		sprintf( msg, "Channel index %d too high; packet contains "
+			      "only %n channels\n", 
+			      ichannel, maxtbl( intern->pkt->channels ) );
+		
+		ZVAL_NULL( return_value );
+
+	} else {
+
+		pktchan = gettbl( intern->pkt->channels, ichannel );
+
+		if( pktchan == (PktChannel *) NULL ) {
+			
+			zend_error( E_WARNING, "Null PktChannel structure!\n" );
+
+			ZVAL_NULL( return_value );
+
+		} else {
+
+			pktchan2zval( pktchan, return_value );
+		}
+	}
 
 	return;
 }
@@ -1222,6 +1381,19 @@ PHP_METHOD(orb_pkt, parts)
 	add_next_index_string( return_value, intern->pkt->parts.src_subcode, 1 );
 
 	return;
+}
+
+PHP_METHOD(orb_channel, nsamp)
+{
+	zval	*this;
+	php_orb_chan_obj *intern;
+
+	this = getThis();
+
+	intern = (php_orb_chan_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	RETURN_LONG( intern->pktchan->nsamp );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
