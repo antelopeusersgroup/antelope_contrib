@@ -469,6 +469,39 @@ orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	return retval;
 }
 
+Packet *
+get_this_orb_pkt( zval *object )
+{
+	php_orb_pkt_obj *intern;
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( object TSRMLS_CC );
+
+	return intern->pkt;
+}
+
+int
+get_this_orb_pkt_type( zval *object )
+{
+	php_orb_pkt_obj *intern;
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( object TSRMLS_CC );
+
+	return intern->type;
+}
+
+PktChannel *
+get_this_orb_pkt_chan( zval *object )
+{
+	php_orb_chan_obj *intern;
+
+	intern = (php_orb_chan_obj *) 
+		    zend_objects_get_address( object TSRMLS_CC );
+
+	return intern->pktchan;
+}
+
 /* {{{ proto array template( array db, ... ) *
 PHP_FUNCTION(template)
 {
@@ -1155,52 +1188,41 @@ PHP_FUNCTION(unstuffPkt)
 
 PHP_METHOD(orb_pkt, PacketType)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
+	int	type;
 
-	this = getThis();
-
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	pkt = get_this_orb_pkt( getThis() );
+	type = get_this_orb_pkt_type( getThis() );
 
 	array_init( return_value );
 
-	add_next_index_long( return_value, intern->type );
-	add_next_index_string( return_value, intern->pkt->pkttype->desc, 1 );
+	add_next_index_long( return_value, type );
+	add_next_index_string( return_value, pkt->pkttype->desc, 1 );
 
 	return;
 }
 
 PHP_METHOD(orb_pkt, time)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	RETURN_DOUBLE( intern->pkt->time );
+	RETURN_DOUBLE( pkt->time );
 }
 
 PHP_METHOD(orb_pkt, nchannels)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	RETURN_LONG( intern->pkt->nchannels );
+	RETURN_LONG( pkt->nchannels );
 }
 
 PHP_METHOD(orb_pkt, channels)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 	long	ichannel;
 	char	msg[STRSZ];
 	PktChannel *pktchan;
@@ -1217,10 +1239,7 @@ PHP_METHOD(orb_pkt, channels)
 		return;
 	}
 
-	this = getThis();
-
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	pkt = get_this_orb_pkt( getThis() );
 
 	if( ichannel < 0 ) {
 
@@ -1228,23 +1247,23 @@ PHP_METHOD(orb_pkt, channels)
 
 		ZVAL_NULL( return_value );
 
-	} else if( intern->pkt->channels == (Tbl *) NULL ) {
+	} else if( pkt->channels == (Tbl *) NULL ) {
 
 		zend_error( E_WARNING, "Empty channels structure in packet\n" );
 
 		ZVAL_NULL( return_value );
 
-	} else if( ichannel >= maxtbl( intern->pkt->channels ) ) {
+	} else if( ichannel >= maxtbl( pkt->channels ) ) {
 
 		sprintf( msg, "Channel index %d too high; packet contains "
 			      "only %n channels\n", 
-			      ichannel, maxtbl( intern->pkt->channels ) );
+			      ichannel, maxtbl( pkt->channels ) );
 		
 		ZVAL_NULL( return_value );
 
 	} else {
 
-		pktchan = gettbl( intern->pkt->channels, ichannel );
+		pktchan = gettbl( pkt->channels, ichannel );
 
 		if( pktchan == (PktChannel *) NULL ) {
 			
@@ -1263,30 +1282,22 @@ PHP_METHOD(orb_pkt, channels)
 
 PHP_METHOD(orb_pkt, version)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	RETURN_LONG( intern->pkt->version );
+	RETURN_LONG( pkt->version );
 }
 
 PHP_METHOD(orb_pkt, string)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	if( pkt->string != NULL ) {
 
-	if( intern->pkt->string != NULL ) {
-
-		ZVAL_STRING( return_value, intern->pkt->string, 1 );
+		ZVAL_STRING( return_value, pkt->string, 1 );
 
 	} else {
 
@@ -1298,20 +1309,16 @@ PHP_METHOD(orb_pkt, string)
 
 PHP_METHOD(orb_pkt, dfile)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	if( intern->pkt->dfile != NULL && intern->pkt->dfile_size > 0 ) {
+	if( pkt->dfile != NULL && pkt->dfile_size > 0 ) {
 		
 		array_init( return_value );
 
-		add_next_index_string( return_value, intern->pkt->dfile, 1 );
-		add_next_index_long( return_value, intern->pkt->dfile_size );
+		add_next_index_string( return_value, pkt->dfile, 1 );
+		add_next_index_long( return_value, pkt->dfile_size );
 
 	} else {
 		
@@ -1323,22 +1330,18 @@ PHP_METHOD(orb_pkt, dfile)
 
 PHP_METHOD(orb_pkt, pf)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 	char	name[STRSZ];
 
-	this = getThis();
-
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	pkt = get_this_orb_pkt( getThis() );
 
 	sprintf( name, "%s::pf", PHP_ORB_PKT_NAME );
 
-	if( intern->pkt->pf != (Pf *) NULL ) {
+	if( pkt->pf != (Pf *) NULL ) {
 
-		putPf_nofree( name, intern->pkt->pf );
+		putPf_nofree( name, pkt->pf );
 
-		pf2zval( intern->pkt->pf, return_value );
+		pf2zval( pkt->pf, return_value );
 
 	} else {
 
@@ -1350,70 +1353,54 @@ PHP_METHOD(orb_pkt, pf)
 
 PHP_METHOD(orb_pkt, db)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
+	pkt = get_this_orb_pkt( getThis() );
 
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	ZVAL_DBPTR( return_value, intern->pkt->db );
+	ZVAL_DBPTR( return_value, pkt->db );
 
 	return;
 }
 
 PHP_METHOD(orb_pkt, parts)
 {
-	zval	*this;
-	php_orb_pkt_obj *intern;
+	Packet	*pkt;
 
-	this = getThis();
-
-	intern = (php_orb_pkt_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	pkt = get_this_orb_pkt( getThis() );
 
 	array_init( return_value );
 
-	add_next_index_string( return_value, intern->pkt->parts.src_net, 1 );
-	add_next_index_string( return_value, intern->pkt->parts.src_sta, 1 );
-	add_next_index_string( return_value, intern->pkt->parts.src_chan, 1 );
-	add_next_index_string( return_value, intern->pkt->parts.src_loc, 1 );
-	add_next_index_string( return_value, intern->pkt->parts.src_suffix, 1 );
-	add_next_index_string( return_value, intern->pkt->parts.src_subcode, 1 );
+	add_next_index_string( return_value, pkt->parts.src_net, 1 );
+	add_next_index_string( return_value, pkt->parts.src_sta, 1 );
+	add_next_index_string( return_value, pkt->parts.src_chan, 1 );
+	add_next_index_string( return_value, pkt->parts.src_loc, 1 );
+	add_next_index_string( return_value, pkt->parts.src_suffix, 1 );
+	add_next_index_string( return_value, pkt->parts.src_subcode, 1 );
 
 	return;
 }
 
 PHP_METHOD(orb_channel, nsamp)
 {
-	zval	*this;
-	php_orb_chan_obj *intern;
+	PktChannel *pktchan;
 
-	this = getThis();
+	pktchan = get_this_orb_pkt_chan( getThis() );
 
-	intern = (php_orb_chan_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
-
-	RETURN_LONG( intern->pktchan->nsamp );
+	RETURN_LONG( pktchan->nsamp );
 }
 
 PHP_METHOD(orb_channel, data)
 {
-	zval	*this;
-	php_orb_chan_obj *intern;
+	PktChannel *pktchan;
 	int	isamp;
 
-	this = getThis();
-
-	intern = (php_orb_chan_obj *) 
-		    zend_objects_get_address( this TSRMLS_CC );
+	pktchan = get_this_orb_pkt_chan( getThis() );
 
 	array_init( return_value );
 
-	for( isamp = 0; isamp < intern->pktchan->nsamp; isamp++ ) {
+	for( isamp = 0; isamp < pktchan->nsamp; isamp++ ) {
 
-		add_next_index_long( return_value, intern->pktchan->data[isamp] );
+		add_next_index_long( return_value, pktchan->data[isamp] );
 	}
 
 	return;
