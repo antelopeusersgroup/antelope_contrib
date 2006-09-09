@@ -1,13 +1,22 @@
 /*
- * Antelope Orb interface for PHP
+ *   Antelope Orb interface for PHP
  *
- * Copyright (c) 2005 Lindquist Consulting, Inc.
- * All rights reserved. 
+ *   Copyright (c) 2005-2006 Lindquist Consulting, Inc.
+ *   All rights reserved. 
  *                                                                     
- * Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+ *   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
  * 
- * This software may be used freely in any way as long as 
- * the copyright statement above is not removed. 
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+ *   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ *   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ *   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ *   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ *   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ *   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ *   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ *   This software may be used freely in any way as long as 
+ *   the copyright statement above is not removed. 
  * 
  */
 
@@ -78,6 +87,7 @@ typedef struct _php_orb_pkt_obj {
 PHP_METHOD(orb_pkt, PacketType);
 PHP_METHOD(orb_pkt, time);
 PHP_METHOD(orb_pkt, nchannels);
+PHP_METHOD(orb_pkt, channels);
 PHP_METHOD(orb_pkt, version);
 PHP_METHOD(orb_pkt, dfile);
 PHP_METHOD(orb_pkt, pf);
@@ -91,6 +101,7 @@ static function_entry php_orb_pkt_functions[] = {
 	PHP_ME(orb_pkt, PacketType, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, time, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, nchannels, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, channels, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, version, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, dfile, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, pf, NULL, ZEND_ACC_PUBLIC)
@@ -1059,6 +1070,34 @@ PHP_METHOD(orb_pkt, nchannels)
 		    zend_objects_get_address( this TSRMLS_CC );
 
 	RETURN_LONG( intern->pkt->nchannels );
+}
+
+PHP_METHOD(orb_pkt, channels)
+{
+	zval	*this;
+	php_orb_pkt_obj *intern;
+	long	ichannel;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &ichannel )
+	    == FAILURE) {
+
+		return;
+	}
+
+	this = getThis();
+
+	intern = (php_orb_pkt_obj *) 
+		    zend_objects_get_address( this TSRMLS_CC );
+
+	/* SCAFFOLD set up return */
+
+	return;
 }
 
 PHP_METHOD(orb_pkt, version)
