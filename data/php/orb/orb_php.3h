@@ -6,6 +6,7 @@ orb_PHP \- Antelope Orb interface for PHP
 
 <?php
 \fBdl\fP('Orb.so')
+\fBdl\fP('Datascope.so')
 ?>
 
 .fi
@@ -438,9 +439,6 @@ Array
 perlsysinfo(3P), datascope_php(3H), sysinfo_php(3H)
 .fi
 .SH "BUGS AND CAVEATS"
-Only a few of the functions are implemented so far. Full implementation
-will require a switch to PHP 5.
-
 pforbstat returns all of the values from pforbstat(3). However, the returned 
 structure is not a parameter-file entity in the proper sense, rather 
 a recursively filled PHP array representing the contents of that 
@@ -448,6 +446,6 @@ parameter file.
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc. 
 .fi
 .\" $Id$
