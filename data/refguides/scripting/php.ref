@@ -440,6 +440,9 @@ orbput (orbfd, srcname, time, packet, nbytes )
 pktid = orbputx (orbfd, srcname, time, packet, nbytes )
     put a single packet on the orb and return the packetid
 
+pktstring = orbpkt_string (srcname, time, packet, nbytes )
+    return an forb(5) representation of an orb packet
+
 (result, pkt) = unstuffPkt (srcname, time, packet, nbytes )
     unstuff a single packet, returning a result code and a packet object
 <example>
@@ -488,7 +491,7 @@ rejected    started     version
 when        who         
 </example>
 
-($when, $sources ) = orbsources(orb)
+(when, sources ) = orbsources(orb)
     return the query time and a list of source objects, one object  
     per source. Each object has the following methods:
 <example>
@@ -497,7 +500,7 @@ npkts        slatest      slatest_time
 soldest      soldest_time srcname      
 </example>
 
-($when, $clients) = orbclients(orb)
+(when, clients) = orbclients(orb)
     return the query time and a list of client objects, one object  
     per client. Each object has the following methods:
 <example>
@@ -517,6 +520,12 @@ pforbstat (orbfd, flags)
 
 split_srcname (srcname)
     split an orb source-name into net,sta,chan,loc,suffix,subcode
+
+join_srcname (net, sta, chan, loc, suffix, subcode)
+    return an orb source-name created from the component pieces provided
+
+(name, content, desc ) = suffix2pkttype( suffix )
+    return name, content type and description for a given packet-type suffix
 
 <chapter PHP System Information >
 <info>
