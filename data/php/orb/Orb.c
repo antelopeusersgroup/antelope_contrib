@@ -26,6 +26,7 @@
 #undef WORDS_BIGENDIAN
 #include "stock.h"
 #include "orb.h"
+#include "forb.h"
 #include "Pkt.h"
 #include "pf.h"
 #include "pforbstat.h"
@@ -60,7 +61,10 @@ static function_entry Orb_functions[] = {
 	PHP_FE(orbclients, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
+	PHP_FE(join_srcname, NULL)		
+	PHP_FE(suffix2pkttype, NULL)		
 	PHP_FE(unstuffPkt, NULL)		
+	PHP_FE(orbpkt_string, NULL)		
 	{NULL, NULL, NULL}	
 };
 
@@ -1786,6 +1790,49 @@ PHP_FUNCTION(unstuffPkt)
 }
 /* }}} */
 
+/* {{{ proto array orbpkt_string( string srcname, double time, string packet, int nbytes ) */
+PHP_FUNCTION(orbpkt_string)
+{
+	char	*srcname;
+	int	*srcname_len;
+	double	time;
+	char	*packet;
+	int	*packet_len;
+	long	nbytes;
+	char	*forbpkt;
+	char	*forbpkt_safe;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 4 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "sdsl", 
+		&srcname, &srcname_len, &time,
+		&packet, &packet_len, &nbytes )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	forbpkt = orbpkt_string( srcname, time, packet, (int) nbytes );
+
+	if( forbpkt == 0 ) {
+		
+		zend_error( E_ERROR, "orbpkt_string failed" );
+
+		return;
+	}
+
+	forbpkt_safe = estrdup( forbpkt );
+
+	free( forbpkt );
+
+	RETURN_STRING( forbpkt_safe, 0 );
+}
+/* }}} */
+
 PHP_METHOD(orb_pkt, PacketType)
 {
 	Packet	*pkt;
@@ -2707,6 +2754,98 @@ PHP_FUNCTION(split_srcname)
 	add_assoc_string_ex( return_value, 
 			     "subcode", strlen( "subcode" ) + 1, 
 			     parts.src_subcode, 1 );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto string join_srcname( string net,
+				  string sta,
+				  string chan,
+				  string loc,
+				  string suffix,
+				  string subcode ) */
+PHP_FUNCTION(join_srcname)
+{
+	char	*net;
+	char	*sta;
+	char	*chan;
+	char	*loc;
+	char	*suffix;
+	char	*subcode;
+	int	net_len;
+	int	sta_len;
+	int	chan_len;
+	int	loc_len;
+	int	suffix_len;
+	int	subcode_len;
+	Srcname parts;
+	char	srcname[ORBSRCNAME_SIZE];
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 6 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "ssssss", 
+					&net, &net_len,
+					&sta, &sta_len,
+					&chan, &chan_len,
+					&loc, &loc_len,
+					&suffix, &suffix_len,
+					&subcode, &subcode_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	strcpy( parts.src_net, net );
+	strcpy( parts.src_sta, sta );
+	strcpy( parts.src_chan, chan );
+	strcpy( parts.src_loc, loc );
+	strcpy( parts.src_suffix, suffix );
+	strcpy( parts.src_subcode, subcode );
+
+	join_srcname( &parts, srcname );
+
+	RETURN_STRING( srcname, 1 );
+}
+/* }}} */
+
+/* {{{ proto array suffix2pkttype( string suffix ) */
+PHP_FUNCTION(suffix2pkttype)
+{
+	char	*suffix;
+	int	suffix_len;
+	PacketType *pktt;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "s", 
+					&suffix, &suffix_len )
+	    == FAILURE) {
+
+		return;
+	}
+
+	pktt = suffix2pkttype( suffix );
+
+	array_init( return_value );
+
+	add_assoc_string_ex( return_value, 
+			     "name", strlen( "name" ) + 1, 
+			     pktt->name,  1 );
+
+	add_assoc_long( return_value, "content", pktt->content );
+
+	add_assoc_string_ex( return_value, 
+			     "desc", strlen( "desc" ) + 1, 
+			     pktt->desc, 1 );
 
 	return;
 }
