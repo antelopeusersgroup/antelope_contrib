@@ -36,6 +36,9 @@
 #undef now
 
 static int le_Orb;
+static int le_Orb_Packet;
+
+#define PHP_ORB_PACKET_RES_NAME "Orb_Packet"
 
 static char *Elog_replacement = 0;
 
@@ -99,15 +102,13 @@ static zend_object_handlers orb_client_obj_handlers;
 typedef struct _php_orb_pkt_obj {
 	zend_object	std;
 	int		type;
-	Packet		*pkt;
+	int		pkt_res;
 } php_orb_pkt_obj;
 
-/* SCAFFOLD need back-references to preserve memory mgt of referenced pkt */
-/* Right now, this is frajile because the channel objects must not be 
-   allowed to outlive the parent packet */
 typedef struct _php_orb_chan_obj {
 	zend_object	std;
 	PktChannel	*pktchan;
+	int		pkt_res;
 } php_orb_chan_obj;
 
 typedef struct _php_orb_stat_obj {
@@ -328,6 +329,18 @@ static function_entry php_orb_client_functions[] = {
 
 ZEND_GET_MODULE(Orb)
 
+static void
+_php_free_Orb_Packet( zend_rsrc_list_entry *rsrc TSRMLS_DC ) {
+	Packet *packet = (Packet *) rsrc->ptr;
+
+	if( packet != (Packet *) NULL ) {
+		
+		freePkt( packet );
+	}
+
+	return;
+}
+
 void 
 register_Orb_constants( INIT_FUNC_ARGS )
 {
@@ -400,6 +413,7 @@ register_Orb_classes( TSRMLS_D )
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
+	orb_pkt_obj_handlers.clone_obj = NULL;
 	INIT_CLASS_ENTRY( ce_pkt, PHP_ORB_PKT_NAME, php_orb_pkt_functions );	
 	ce_pkt.create_object = orb_pkt_obj_new;
 	php_orb_pkt_entry = zend_register_internal_class( &ce_pkt TSRMLS_CC );
@@ -408,6 +422,7 @@ register_Orb_classes( TSRMLS_D )
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
+	orb_chan_obj_handlers.clone_obj = NULL;
 	INIT_CLASS_ENTRY( ce_chan, PHP_ORB_CHAN_NAME, php_orb_chan_functions );	
 	ce_chan.create_object = orb_chan_obj_new;
 	php_orb_chan_entry = zend_register_internal_class( &ce_chan TSRMLS_CC );
@@ -416,6 +431,7 @@ register_Orb_classes( TSRMLS_D )
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
+	orb_stat_obj_handlers.clone_obj = NULL;
 	INIT_CLASS_ENTRY( ce_stat, PHP_ORB_STAT_NAME, php_orb_stat_functions );	
 	ce_stat.create_object = orb_stat_obj_new;
 	php_orb_stat_entry = zend_register_internal_class( &ce_stat TSRMLS_CC );
@@ -424,6 +440,7 @@ register_Orb_classes( TSRMLS_D )
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
+	orb_source_obj_handlers.clone_obj = NULL;
 	INIT_CLASS_ENTRY( ce_source, PHP_ORB_SOURCE_NAME, php_orb_source_functions );	
 	ce_source.create_object = orb_source_obj_new;
 	php_orb_source_entry = zend_register_internal_class( &ce_source TSRMLS_CC );
@@ -432,6 +449,7 @@ register_Orb_classes( TSRMLS_D )
 		zend_get_std_object_handlers(),
 		sizeof( zend_object_handlers ) );
 
+	orb_client_obj_handlers.clone_obj = NULL;
 	INIT_CLASS_ENTRY( ce_client, PHP_ORB_CLIENT_NAME, php_orb_client_functions );	
 	ce_client.create_object = orb_client_obj_new;
 	php_orb_client_entry = zend_register_internal_class( &ce_client TSRMLS_CC );
@@ -441,6 +459,10 @@ register_Orb_classes( TSRMLS_D )
 
 PHP_MINIT_FUNCTION(Orb)
 {
+	le_Orb_Packet = zend_register_list_destructors_ex( 
+				_php_free_Orb_Packet, NULL, 
+				PHP_ORB_PACKET_RES_NAME, 0 );
+	
 	register_Orb_constants( INIT_FUNC_ARGS_PASSTHRU );
 
 	register_pforbstat_constants( INIT_FUNC_ARGS_PASSTHRU );
@@ -544,13 +566,13 @@ pkt2zval( int type, char *srcname, Packet *pkt )
 			zend_objects_get_address( zval_pkt TSRMLS_CC );
 
 	intern->type = type;
-	intern->pkt = pkt;
+	intern->pkt_res = zend_list_insert( pkt, le_Orb_Packet );
 
 	return zval_pkt;
 }
 
 static void
-pktchan2zval( PktChannel *pktchan, zval *zval_pktchan )
+pktchan2zval( PktChannel *pktchan, int pkt_res, zval *zval_pktchan )
 {
 	zend_class_entry *ce;
 	php_orb_chan_obj *intern;
@@ -565,6 +587,9 @@ pktchan2zval( PktChannel *pktchan, zval *zval_pktchan )
 			zend_objects_get_address( zval_pktchan TSRMLS_CC );
 
 	intern->pktchan = pktchan;
+	intern->pkt_res = pkt_res;
+
+	zend_list_addref( intern->pkt_res );
 
 	return;
 }
@@ -629,56 +654,12 @@ orbclient2zval( Orbclient *oc, zval *zval_orbclient )
 	return;
 }
 
-void
-orb_pkt_obj_clone( void *object, void **object_clone TSRMLS_DC )
-{
-	; /* SCAFFOLD */
-
-	return;
-}
-
-void
-orb_chan_obj_clone( void *object, void **object_clone TSRMLS_DC )
-{
-	; /* SCAFFOLD */
-
-	return;
-}
-
-void
-orb_stat_obj_clone( void *object, void **object_clone TSRMLS_DC )
-{
-	; /* SCAFFOLD */
-
-	return;
-}
-
-void
-orb_source_obj_clone( void *object, void **object_clone TSRMLS_DC )
-{
-	; /* SCAFFOLD */
-
-	return;
-}
-
-void
-orb_client_obj_clone( void *object, void **object_clone TSRMLS_DC )
-{
-	; /* SCAFFOLD */
-
-	return;
-}
-
 void 
 orb_pkt_obj_free_resources( php_orb_pkt_obj *intern )
 {
 	if( intern ) {
 
-		if( intern->pkt != (Packet *) NULL ) {
-		
-			freePkt( intern->pkt );
-			intern->pkt = NULL;
-		}
+		zend_list_delete( intern->pkt_res );
 	}
 
 	return;
@@ -687,8 +668,10 @@ orb_pkt_obj_free_resources( php_orb_pkt_obj *intern )
 void 
 orb_chan_obj_free_resources( php_orb_chan_obj *intern )
 {
-	; /* memory is slave to the overlying Pkt object */
-	 /* SCAFFOLD is it here that we decrement reference count of pkt obj */
+	if( intern ) {
+
+		zend_list_delete( intern->pkt_res );
+	}
 
 	return;
 }
@@ -803,7 +786,7 @@ orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	retval.handle = zend_objects_store_put( intern, 
 		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
 		(zend_objects_free_object_storage_t) orb_pkt_obj_free_storage,
-		orb_pkt_obj_clone TSRMLS_CC);
+		NULL TSRMLS_CC);
 	retval.handlers = &orb_pkt_obj_handlers;
 
 	return retval;
@@ -830,7 +813,7 @@ orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	retval.handle = zend_objects_store_put( intern, 
 		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
 		(zend_objects_free_object_storage_t) orb_chan_obj_free_storage,
-		orb_chan_obj_clone TSRMLS_CC);
+		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
 
 	return retval;
@@ -857,7 +840,7 @@ orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	retval.handle = zend_objects_store_put( intern, 
 		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
 		(zend_objects_free_object_storage_t) orb_stat_obj_free_storage,
-		orb_chan_obj_clone TSRMLS_CC);
+		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
 
 	return retval;
@@ -884,7 +867,7 @@ orb_source_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	retval.handle = zend_objects_store_put( intern, 
 		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
 		(zend_objects_free_object_storage_t) orb_source_obj_free_storage,
-		orb_chan_obj_clone TSRMLS_CC);
+		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
 
 	return retval;
@@ -911,21 +894,40 @@ orb_client_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	retval.handle = zend_objects_store_put( intern, 
 		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
 		(zend_objects_free_object_storage_t) orb_client_obj_free_storage,
-		orb_chan_obj_clone TSRMLS_CC);
+		NULL TSRMLS_CC);
 	retval.handlers = &orb_chan_obj_handlers;
 
 	return retval;
 }
 
-Packet *
-get_this_orb_pkt( zval *object )
+int
+get_this_orb_pkt_res( zval *object )
 {
 	php_orb_pkt_obj *intern;
 
 	intern = (php_orb_pkt_obj *) 
 		    zend_objects_get_address( object TSRMLS_CC );
 
-	return intern->pkt;
+	return intern->pkt_res;
+}
+
+Packet *
+get_this_orb_pkt( zval *object )
+{
+	Packet	*pkt;
+	int	res;
+	int	res_type;
+
+	res = get_this_orb_pkt_res( object );
+
+	pkt = (Packet *) zend_list_find( res, &res_type );
+
+	if( res_type != le_Orb_Packet ) {
+
+		return (Packet *) NULL;
+	}
+
+	return pkt;
 }
 
 int
@@ -1870,6 +1872,7 @@ PHP_METHOD(orb_pkt, nchannels)
 PHP_METHOD(orb_pkt, channels)
 {
 	Packet	*pkt;
+	int	pkt_res;
 	long	ichannel;
 	char	msg[STRSZ];
 	PktChannel *pktchan;
@@ -1887,6 +1890,7 @@ PHP_METHOD(orb_pkt, channels)
 	}
 
 	pkt = get_this_orb_pkt( getThis() );
+	pkt_res = get_this_orb_pkt_res( getThis() );
 
 	if( ichannel < 0 ) {
 
@@ -1920,7 +1924,7 @@ PHP_METHOD(orb_pkt, channels)
 
 		} else {
 
-			pktchan2zval( pktchan, return_value );
+			pktchan2zval( pktchan, pkt_res, return_value );
 		}
 	}
 
