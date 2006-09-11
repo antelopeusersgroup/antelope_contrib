@@ -475,6 +475,19 @@ sta      time
 </example>
     The data method returns all the waveform data in a list of integers.
 
+orbstat(orb)
+    Get the standard status values from the orb; this
+    return an object with the following methods:
+<example>
+address     closes      connections 
+errors      host        maxdata     
+maxpkts     maxsrc      messages    
+nclients    nsources    opens       
+orb_start   pid         port        
+rejected    started     version     
+when        who         
+</example>
+
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
 
