@@ -56,6 +56,7 @@ static function_entry Orb_functions[] = {
 	PHP_FE(orbput, NULL)		
 	PHP_FE(orbputx, NULL)		
 	PHP_FE(orbstat, NULL)		
+	PHP_FE(orbsources, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
 	PHP_FE(unstuffPkt, NULL)		
@@ -81,10 +82,12 @@ extern void putPf_nofree( char *name, Pf *pf );
 zend_object_value orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC );
 zend_object_value orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC );
 zend_object_value orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC );
+zend_object_value orb_source_obj_new( zend_class_entry *class_type TSRMLS_DC );
 
 static zend_object_handlers orb_pkt_obj_handlers;
 static zend_object_handlers orb_chan_obj_handlers;
 static zend_object_handlers orb_stat_obj_handlers;
+static zend_object_handlers orb_source_obj_handlers;
 
 typedef struct _php_orb_pkt_obj {
 	zend_object	std;
@@ -104,6 +107,11 @@ typedef struct _php_orb_stat_obj {
 	zend_object	std;
 	Orbstat		*os;
 } php_orb_stat_obj;
+
+typedef struct _php_orb_source_obj {
+	zend_object	std;
+	Orbsrc		*os;
+} php_orb_source_obj;
 
 PHP_METHOD(orb_pkt, PacketType);
 PHP_METHOD(orb_pkt, time);
@@ -222,6 +230,29 @@ static function_entry php_orb_stat_functions[] = {
 	{ NULL, NULL, NULL }
 };
 
+PHP_METHOD(orb_source, srcname);
+PHP_METHOD(orb_source, slatest_time);
+PHP_METHOD(orb_source, soldest_time);
+PHP_METHOD(orb_source, active);
+PHP_METHOD(orb_source, npkts);
+PHP_METHOD(orb_source, nbytes);
+PHP_METHOD(orb_source, slatest);
+PHP_METHOD(orb_source, soldest);
+
+zend_class_entry *php_orb_source_entry;
+#define PHP_ORB_SOURCE_NAME "orb_source"
+static function_entry php_orb_source_functions[] = {
+	PHP_ME(orb_source, srcname, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, slatest_time, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, soldest_time, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, active, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, npkts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, nbytes, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, slatest, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_source, soldest, NULL, ZEND_ACC_PUBLIC)
+	{ NULL, NULL, NULL }
+};
+
 ZEND_GET_MODULE(Orb)
 
 void 
@@ -289,6 +320,7 @@ register_Orb_classes( TSRMLS_D )
 	zend_class_entry ce_pkt;
 	zend_class_entry ce_chan;
 	zend_class_entry ce_stat;
+	zend_class_entry ce_source;
 
 	memcpy( &orb_pkt_obj_handlers, 
 		zend_get_std_object_handlers(),
@@ -313,6 +345,14 @@ register_Orb_classes( TSRMLS_D )
 	INIT_CLASS_ENTRY( ce_stat, PHP_ORB_STAT_NAME, php_orb_stat_functions );	
 	ce_stat.create_object = orb_stat_obj_new;
 	php_orb_stat_entry = zend_register_internal_class( &ce_stat TSRMLS_CC );
+
+	memcpy( &orb_source_obj_handlers, 
+		zend_get_std_object_handlers(),
+		sizeof( zend_object_handlers ) );
+
+	INIT_CLASS_ENTRY( ce_source, PHP_ORB_SOURCE_NAME, php_orb_source_functions );	
+	ce_source.create_object = orb_source_obj_new;
+	php_orb_source_entry = zend_register_internal_class( &ce_source TSRMLS_CC );
 
 	return;
 }
@@ -467,6 +507,26 @@ orbstat2zval( Orbstat *os, zval *zval_orbstat )
 	return;
 }
 
+static void 
+orbsource2zval( Orbsrc *os, zval *zval_orbsource )
+{
+	zend_class_entry *ce;
+	php_orb_source_obj *intern;
+
+	ce = zend_fetch_class( PHP_ORB_SOURCE_NAME, 
+			       strlen( PHP_ORB_SOURCE_NAME ), 
+			       ZEND_FETCH_CLASS_AUTO );
+
+	object_init_ex( zval_orbsource, ce );
+
+	intern = (php_orb_source_obj *) 
+			zend_objects_get_address( zval_orbsource TSRMLS_CC );
+
+	intern->os = os;
+
+	return;
+}
+
 void
 orb_pkt_obj_clone( void *object, void **object_clone TSRMLS_DC )
 {
@@ -485,6 +545,14 @@ orb_chan_obj_clone( void *object, void **object_clone TSRMLS_DC )
 
 void
 orb_stat_obj_clone( void *object, void **object_clone TSRMLS_DC )
+{
+	; /* SCAFFOLD */
+
+	return;
+}
+
+void
+orb_source_obj_clone( void *object, void **object_clone TSRMLS_DC )
 {
 	; /* SCAFFOLD */
 
@@ -517,6 +585,14 @@ orb_chan_obj_free_resources( php_orb_chan_obj *intern )
 
 void 
 orb_stat_obj_free_resources( php_orb_stat_obj *intern )
+{
+	; 
+
+	return;
+}
+
+void 
+orb_source_obj_free_resources( php_orb_source_obj *intern )
 {
 	; 
 
@@ -558,6 +634,19 @@ orb_stat_obj_free_storage( void *object TSRMLS_DC )
 	FREE_HASHTABLE( intern->std.properties );
 
 	orb_stat_obj_free_resources( intern );
+
+	efree( object );
+}
+
+void
+orb_source_obj_free_storage( void *object TSRMLS_DC )
+{
+	php_orb_source_obj *intern = (php_orb_source_obj *) object;
+
+	zend_hash_destroy( intern->std.properties );
+	FREE_HASHTABLE( intern->std.properties );
+
+	orb_source_obj_free_resources( intern );
 
 	efree( object );
 }
@@ -620,7 +709,34 @@ zend_object_value
 orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC )
 {
 	zend_object_value retval;
-	php_orb_chan_obj *intern;
+	php_orb_stat_obj *intern;
+	zval	*tmp;
+
+	intern = emalloc( sizeof( php_orb_stat_obj ) );
+	intern->std.ce = class_type;
+	intern->std.guards = NULL;
+
+	ALLOC_HASHTABLE( intern->std.properties );
+	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
+	zend_hash_copy( intern->std.properties, 
+			&class_type->default_properties,
+			(copy_ctor_func_t) zval_add_ref,
+			(void *) &tmp,
+			sizeof(zval *));
+	retval.handle = zend_objects_store_put( intern, 
+		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+		(zend_objects_free_object_storage_t) orb_stat_obj_free_storage,
+		orb_chan_obj_clone TSRMLS_CC);
+	retval.handlers = &orb_chan_obj_handlers;
+
+	return retval;
+}
+
+zend_object_value
+orb_source_obj_new( zend_class_entry *class_type TSRMLS_DC )
+{
+	zend_object_value retval;
+	php_orb_source_obj *intern;
 	zval	*tmp;
 
 	intern = emalloc( sizeof( php_orb_stat_obj ) );
@@ -682,6 +798,17 @@ get_this_orb_stat( zval *object )
 	php_orb_stat_obj *intern;
 
 	intern = (php_orb_stat_obj *) 
+		    zend_objects_get_address( object TSRMLS_CC );
+
+	return intern->os;
+}
+
+Orbsrc *
+get_this_orb_source( zval *object )
+{
+	php_orb_source_obj *intern;
+
+	intern = (php_orb_source_obj *) 
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->os;
@@ -1078,6 +1205,54 @@ PHP_FUNCTION(orbstat)
 	rc = orbstat( (int) orbfd, &os );
 
 	orbstat2zval( os, return_value );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto array orbsources( int orbfd ) */
+PHP_FUNCTION(orbsources)
+{
+	long	orbfd;
+	Orbsrc	*sources = 0;
+	int	nsources;
+	int	isource;
+	double	when;
+	zval	*list;
+	zval	*asrc;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &orbfd )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbsources( (int) orbfd, &when, &sources, &nsources );
+
+	MAKE_STD_ZVAL( list );
+
+	array_init( list );
+
+	for( isource = 0; isource < nsources; isource++ ) {
+
+		MAKE_STD_ZVAL( asrc );
+
+		orbsource2zval( sources + isource, asrc );
+
+		add_next_index_zval( list, asrc );
+	}
+
+	array_init( return_value );
+
+	add_next_index_double( return_value, when );
+	add_next_index_zval( return_value, list );
 
 	return;
 }
@@ -1946,6 +2121,78 @@ PHP_METHOD(orb_stat, maxpkts)
 	os = get_this_orb_stat( getThis() );
 
 	RETURN_LONG( os->maxpkts );
+}
+
+PHP_METHOD(orb_source, srcname)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_source( getThis() );
+
+	RETURN_STRING( os->srcname, 1 );
+}
+
+PHP_METHOD(orb_source, slatest_time)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_DOUBLE( os->slatest_time );
+}
+
+PHP_METHOD(orb_source, soldest_time)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_DOUBLE( os->soldest_time );
+}
+
+PHP_METHOD(orb_source, active)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->active );
+}
+
+PHP_METHOD(orb_source, npkts)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->npkts );
+}
+
+PHP_METHOD(orb_source, nbytes)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->nbytes );
+}
+
+PHP_METHOD(orb_source, slatest)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->slatest );
+}
+
+PHP_METHOD(orb_source, soldest)
+{
+	Orbsrc *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->soldest );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
