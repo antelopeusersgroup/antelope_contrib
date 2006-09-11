@@ -560,7 +560,7 @@ errors      fd          host
 lastpkt     lastrequest mymessages  
 nreads      nreject     nrequests   
 nselect     nwrites     packets     
-perm.       pid         pktid       
+perm        pid         pktid       
 port        priority    read        
 reject      select      started     
 thread      what        who         

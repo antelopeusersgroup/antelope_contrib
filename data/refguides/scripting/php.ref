@@ -488,14 +488,28 @@ rejected    started     version
 when        who         
 </example>
 
-orbsources(orb)
-    return ($when, $sources). $when is scalar time; $sources is list of source
-    objects,  one  object  per source.  Each object has the
-    following methods:
+($when, $sources ) = orbsources(orb)
+    return the query time and a list of source objects, one object  
+    per source. Each object has the following methods:
 <example>
-active       and          nbytes       
+active       nbytes       
 npkts        slatest      slatest_time 
 soldest      soldest_time srcname      
+</example>
+
+($when, $clients) = orbclients(orb)
+    return the query time and a list of client objects, one object  
+    per client. Each object has the following methods:
+<example>
+address     bytes       
+errors      fd          host        
+lastpkt     lastrequest mymessages  
+nreads      nreject     nrequests   
+nselect     nwrites     packets     
+perm.       pid         pktid       
+port        priority    read        
+reject      select      started     
+thread      what        who         
 </example>
 
 pforbstat (orbfd, flags)
