@@ -53,6 +53,7 @@ static function_entry Orb_functions[] = {
 	PHP_FE(orbget, NULL)		
 	PHP_FE(orbput, NULL)		
 	PHP_FE(orbputx, NULL)		
+	PHP_FE(orbstat, NULL)		
 	PHP_FE(pforbstat, NULL)		
 	PHP_FE(split_srcname, NULL)		
 	PHP_FE(unstuffPkt, NULL)		
@@ -77,9 +78,11 @@ extern void putPf_nofree( char *name, Pf *pf );
 
 zend_object_value orb_pkt_obj_new( zend_class_entry *class_type TSRMLS_DC );
 zend_object_value orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC );
+zend_object_value orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC );
 
 static zend_object_handlers orb_pkt_obj_handlers;
 static zend_object_handlers orb_chan_obj_handlers;
+static zend_object_handlers orb_stat_obj_handlers;
 
 typedef struct _php_orb_pkt_obj {
 	zend_object	std;
@@ -94,6 +97,11 @@ typedef struct _php_orb_chan_obj {
 	zend_object	std;
 	PktChannel	*pktchan;
 } php_orb_chan_obj;
+
+typedef struct _php_orb_stat_obj {
+	zend_object	std;
+	Orbstat		*os;
+} php_orb_stat_obj;
 
 PHP_METHOD(orb_pkt, PacketType);
 PHP_METHOD(orb_pkt, time);
@@ -165,6 +173,15 @@ static function_entry php_orb_chan_functions[] = {
 	{ NULL, NULL, NULL }
 };
 
+PHP_METHOD(orb_stat, when);
+
+zend_class_entry *php_orb_stat_entry;
+#define PHP_ORB_STAT_NAME "orb_stat"
+static function_entry php_orb_stat_functions[] = {
+	PHP_ME(orb_stat, when, NULL, ZEND_ACC_PUBLIC)
+	{ NULL, NULL, NULL }
+};
+
 ZEND_GET_MODULE(Orb)
 
 void 
@@ -231,6 +248,7 @@ register_Orb_classes( TSRMLS_D )
 {
 	zend_class_entry ce_pkt;
 	zend_class_entry ce_chan;
+	zend_class_entry ce_stat;
 
 	memcpy( &orb_pkt_obj_handlers, 
 		zend_get_std_object_handlers(),
@@ -247,6 +265,14 @@ register_Orb_classes( TSRMLS_D )
 	INIT_CLASS_ENTRY( ce_chan, PHP_ORB_CHAN_NAME, php_orb_chan_functions );	
 	ce_chan.create_object = orb_chan_obj_new;
 	php_orb_chan_entry = zend_register_internal_class( &ce_chan TSRMLS_CC );
+
+	memcpy( &orb_stat_obj_handlers, 
+		zend_get_std_object_handlers(),
+		sizeof( zend_object_handlers ) );
+
+	INIT_CLASS_ENTRY( ce_stat, PHP_ORB_STAT_NAME, php_orb_stat_functions );	
+	ce_stat.create_object = orb_stat_obj_new;
+	php_orb_stat_entry = zend_register_internal_class( &ce_stat TSRMLS_CC );
 
 	return;
 }
@@ -381,6 +407,26 @@ pktchan2zval( PktChannel *pktchan, zval *zval_pktchan )
 	return;
 }
 
+static void 
+orbstat2zval( Orbstat *os, zval *zval_orbstat )
+{
+	zend_class_entry *ce;
+	php_orb_stat_obj *intern;
+
+	ce = zend_fetch_class( PHP_ORB_STAT_NAME, 
+			       strlen( PHP_ORB_STAT_NAME ), 
+			       ZEND_FETCH_CLASS_AUTO );
+
+	object_init_ex( zval_orbstat, ce );
+
+	intern = (php_orb_stat_obj *) 
+			zend_objects_get_address( zval_orbstat TSRMLS_CC );
+
+	intern->os = os;
+
+	return;
+}
+
 void
 orb_pkt_obj_clone( void *object, void **object_clone TSRMLS_DC )
 {
@@ -391,6 +437,14 @@ orb_pkt_obj_clone( void *object, void **object_clone TSRMLS_DC )
 
 void
 orb_chan_obj_clone( void *object, void **object_clone TSRMLS_DC )
+{
+	; /* SCAFFOLD */
+
+	return;
+}
+
+void
+orb_stat_obj_clone( void *object, void **object_clone TSRMLS_DC )
 {
 	; /* SCAFFOLD */
 
@@ -421,6 +475,14 @@ orb_chan_obj_free_resources( php_orb_chan_obj *intern )
 	return;
 }
 
+void 
+orb_stat_obj_free_resources( php_orb_stat_obj *intern )
+{
+	; 
+
+	return;
+}
+
 void
 orb_pkt_obj_free_storage( void *object TSRMLS_DC )
 {
@@ -443,6 +505,19 @@ orb_chan_obj_free_storage( void *object TSRMLS_DC )
 	FREE_HASHTABLE( intern->std.properties );
 
 	orb_chan_obj_free_resources( intern );
+
+	efree( object );
+}
+
+void
+orb_stat_obj_free_storage( void *object TSRMLS_DC )
+{
+	php_orb_stat_obj *intern = (php_orb_stat_obj *) object;
+
+	zend_hash_destroy( intern->std.properties );
+	FREE_HASHTABLE( intern->std.properties );
+
+	orb_stat_obj_free_resources( intern );
 
 	efree( object );
 }
@@ -501,6 +576,33 @@ orb_chan_obj_new( zend_class_entry *class_type TSRMLS_DC )
 	return retval;
 }
 
+zend_object_value
+orb_stat_obj_new( zend_class_entry *class_type TSRMLS_DC )
+{
+	zend_object_value retval;
+	php_orb_chan_obj *intern;
+	zval	*tmp;
+
+	intern = emalloc( sizeof( php_orb_stat_obj ) );
+	intern->std.ce = class_type;
+	intern->std.guards = NULL;
+
+	ALLOC_HASHTABLE( intern->std.properties );
+	zend_hash_init( intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0 );
+	zend_hash_copy( intern->std.properties, 
+			&class_type->default_properties,
+			(copy_ctor_func_t) zval_add_ref,
+			(void *) &tmp,
+			sizeof(zval *));
+	retval.handle = zend_objects_store_put( intern, 
+		(zend_objects_store_dtor_t) zend_objects_destroy_object, 
+		(zend_objects_free_object_storage_t) orb_stat_obj_free_storage,
+		orb_chan_obj_clone TSRMLS_CC);
+	retval.handlers = &orb_chan_obj_handlers;
+
+	return retval;
+}
+
 Packet *
 get_this_orb_pkt( zval *object )
 {
@@ -524,7 +626,7 @@ get_this_orb_pkt_type( zval *object )
 }
 
 PktChannel *
-get_this_orb_pkt_chan( zval *object )
+get_this_orb_pktchan( zval *object )
 {
 	php_orb_chan_obj *intern;
 
@@ -532,6 +634,17 @@ get_this_orb_pkt_chan( zval *object )
 		    zend_objects_get_address( object TSRMLS_CC );
 
 	return intern->pktchan;
+}
+
+Orbstat *
+get_this_orb_stat( zval *object )
+{
+	php_orb_stat_obj *intern;
+
+	intern = (php_orb_stat_obj *) 
+		    zend_objects_get_address( object TSRMLS_CC );
+
+	return intern->os;
 }
 
 /* {{{ proto array template( array db, ... ) *
@@ -903,6 +1016,33 @@ PHP_FUNCTION(orbputx)
 }
 /* }}} */
 
+/* {{{ proto object orbstat( int orbfd ) */
+PHP_FUNCTION(orbstat)
+{
+	long	orbfd;
+	Orbstat *os = 0;
+	int	rc;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "l", &orbfd )
+	    == FAILURE) {
+
+		return;
+	}
+	
+	rc = orbstat( (int) orbfd, &os );
+
+	orbstat2zval( os, return_value );
+
+	return;
+}
+/* }}} */
+
 /* {{{ proto int orbtell( int orbfd ) */
 PHP_FUNCTION(orbtell)
 {
@@ -1139,7 +1279,7 @@ PHP_FUNCTION(orbwait)
 }
 /* }}} */
 
-/* {{{ proto int pforbstat( int orbfd, int flags ) */
+/* {{{ proto array pforbstat( int orbfd, int flags ) */
 PHP_FUNCTION(pforbstat)
 {
 	long	orbfd;
@@ -1171,7 +1311,7 @@ PHP_FUNCTION(pforbstat)
 }
 /* }}} */
 
-/* {{{ proto int unstuffPkt( string srcname, double time, string packet, int nbytes ) */
+/* {{{ proto array unstuffPkt( string srcname, double time, string packet, int nbytes ) */
 PHP_FUNCTION(unstuffPkt)
 {
 	Packet	*pkt = 0;
@@ -1416,7 +1556,7 @@ PHP_METHOD(orb_channel, nsamp)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_LONG( pktchan->nsamp );
 }
@@ -1425,7 +1565,7 @@ PHP_METHOD(orb_channel, iuser1)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_LONG( pktchan->iuser1 );
 }
@@ -1434,7 +1574,7 @@ PHP_METHOD(orb_channel, iuser2)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_LONG( pktchan->iuser2 );
 }
@@ -1443,7 +1583,7 @@ PHP_METHOD(orb_channel, iuser3)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_LONG( pktchan->iuser3 );
 }
@@ -1453,7 +1593,7 @@ PHP_METHOD(orb_channel, data)
 	PktChannel *pktchan;
 	int	isamp;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	array_init( return_value );
 
@@ -1469,7 +1609,7 @@ PHP_METHOD(orb_channel, time)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->time );
 }
@@ -1478,7 +1618,7 @@ PHP_METHOD(orb_channel, samprate)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->samprate );
 }
@@ -1487,7 +1627,7 @@ PHP_METHOD(orb_channel, calib)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->calib );
 }
@@ -1496,7 +1636,7 @@ PHP_METHOD(orb_channel, calper)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->calper );
 }
@@ -1505,7 +1645,7 @@ PHP_METHOD(orb_channel, duser1)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->duser1 );
 }
@@ -1514,7 +1654,7 @@ PHP_METHOD(orb_channel, duser2)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_DOUBLE( pktchan->duser2 );
 }
@@ -1523,7 +1663,7 @@ PHP_METHOD(orb_channel, net)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->net, 1 );
 }
@@ -1532,7 +1672,7 @@ PHP_METHOD(orb_channel, sta)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->sta, 1 );
 }
@@ -1541,7 +1681,7 @@ PHP_METHOD(orb_channel, chan)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->chan, 1 );
 }
@@ -1550,7 +1690,7 @@ PHP_METHOD(orb_channel, loc)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->loc, 1 );
 }
@@ -1559,7 +1699,7 @@ PHP_METHOD(orb_channel, segtype)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->segtype, 1 );
 }
@@ -1568,7 +1708,7 @@ PHP_METHOD(orb_channel, cuser1)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->cuser1, 1 );
 }
@@ -1577,9 +1717,18 @@ PHP_METHOD(orb_channel, cuser2)
 {
 	PktChannel *pktchan;
 
-	pktchan = get_this_orb_pkt_chan( getThis() );
+	pktchan = get_this_orb_pktchan( getThis() );
 
 	RETURN_STRING( pktchan->cuser2, 1 );
+}
+
+PHP_METHOD(orb_stat, when)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_DOUBLE( os->when );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
