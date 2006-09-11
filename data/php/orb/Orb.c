@@ -20,6 +20,8 @@
  * 
  */
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "Orb_php.h"
 #undef WORDS_BIGENDIAN
 #include "stock.h"
@@ -174,11 +176,49 @@ static function_entry php_orb_chan_functions[] = {
 };
 
 PHP_METHOD(orb_stat, when);
+PHP_METHOD(orb_stat, started);
+PHP_METHOD(orb_stat, orb_start);
+PHP_METHOD(orb_stat, address);
+PHP_METHOD(orb_stat, version);
+PHP_METHOD(orb_stat, who);
+PHP_METHOD(orb_stat, host);
+PHP_METHOD(orb_stat, connections);
+PHP_METHOD(orb_stat, messages);
+PHP_METHOD(orb_stat, maxdata);
+PHP_METHOD(orb_stat, errors);
+PHP_METHOD(orb_stat, rejected);
+PHP_METHOD(orb_stat, closes);
+PHP_METHOD(orb_stat, opens);
+PHP_METHOD(orb_stat, port);
+PHP_METHOD(orb_stat, pid);
+PHP_METHOD(orb_stat, nsources);
+PHP_METHOD(orb_stat, nclients);
+PHP_METHOD(orb_stat, maxsrc);
+PHP_METHOD(orb_stat, maxpkts);
 
 zend_class_entry *php_orb_stat_entry;
 #define PHP_ORB_STAT_NAME "orb_stat"
 static function_entry php_orb_stat_functions[] = {
 	PHP_ME(orb_stat, when, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, started, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, orb_start, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, address, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, version, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, who, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, host, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, connections, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, messages, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, maxdata, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, errors, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, rejected, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, closes, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, opens, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, port, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, pid, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, nsources, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, nclients, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, maxsrc, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_stat, maxpkts, NULL, ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -1729,6 +1769,183 @@ PHP_METHOD(orb_stat, when)
 	os = get_this_orb_stat( getThis() );
 
 	RETURN_DOUBLE( os->when );
+}
+
+PHP_METHOD(orb_stat, started)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_DOUBLE( os->started );
+}
+
+PHP_METHOD(orb_stat, orb_start)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_DOUBLE( os->orb_start );
+}
+
+PHP_METHOD(orb_stat, address)
+{
+	Orbstat *os;
+	char	*address;
+	struct in_addr addr;
+
+	os = get_this_orb_stat( getThis() );
+
+	memcpy( &addr, &os->address, sizeof( struct in_addr ) );
+
+	address = inet_ntoa( addr );
+
+	RETURN_STRING( address, 1 );
+}
+
+PHP_METHOD(orb_stat, version)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_STRING( os->version, 1 );
+}
+
+PHP_METHOD(orb_stat, who)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_STRING( os->who, 1 );
+}
+
+PHP_METHOD(orb_stat, host)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_STRING( os->host, 1 );
+}
+
+PHP_METHOD(orb_stat, connections)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->connections );
+}
+
+PHP_METHOD(orb_stat, messages)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->messages );
+}
+
+PHP_METHOD(orb_stat, maxdata)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->maxdata );
+}
+
+PHP_METHOD(orb_stat, errors)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->errors );
+}
+
+PHP_METHOD(orb_stat, rejected)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->rejected );
+}
+
+PHP_METHOD(orb_stat, closes)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->closes );
+}
+
+PHP_METHOD(orb_stat, opens)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->opens );
+}
+
+PHP_METHOD(orb_stat, port)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->port );
+}
+
+PHP_METHOD(orb_stat, pid)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->pid );
+}
+
+PHP_METHOD(orb_stat, nsources)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->nsources );
+}
+
+PHP_METHOD(orb_stat, nclients)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->nclients );
+}
+
+PHP_METHOD(orb_stat, maxsrc)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->maxsrc );
+}
+
+PHP_METHOD(orb_stat, maxpkts)
+{
+	Orbstat *os;
+
+	os = get_this_orb_stat( getThis() );
+
+	RETURN_LONG( os->maxpkts );
 }
 
 /* {{{ proto array split_srcname( string srcname ) */
