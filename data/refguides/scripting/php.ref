@@ -488,6 +488,16 @@ rejected    started     version
 when        who         
 </example>
 
+orbsources(orb)
+    return ($when, $sources). $when is scalar time; $sources is list of source
+    objects,  one  object  per source.  Each object has the
+    following methods:
+<example>
+active       and          nbytes       
+npkts        slatest      slatest_time 
+soldest      soldest_time srcname      
+</example>
+
 pforbstat (orbfd, flags)
     create a nested PHP array containing orb metadata 
 
