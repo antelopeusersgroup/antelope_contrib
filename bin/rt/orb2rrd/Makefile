@@ -1,0 +1,7 @@
+BIN= orb2rrd
+
+PF= orb2rrd.pf
+
+MAN1 = orb2rrd.1
+
+include $(ANTELOPEMAKE)

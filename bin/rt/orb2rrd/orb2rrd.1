@@ -1,0 +1,58 @@
+.TH ORB2RRD 1 "$Date$"
+.SH NAME
+orb2rrd \- populate a round-robin database from an orbserver
+.SH SYNOPSIS
+.nf
+orb2rrd [-vV] [-s statefile] [-p pffile] [-m match] [-f from] orb
+.fi
+.SH DESCRIPTION
+This is a scaffolded prototye under construction by Rob Newman 
+and Kent Lindquist. Please contact kent@lindquistconsulting.com 
+with any questions at this point. 
+.SH OPTIONS
+.IP "-s statefile"
+Specify a state-file to use for tracking and synchronizing the current 
+read position in the orb.
+
+.IP "-f from"
+Specify a starting position for reading the orb stream. This may be 
+a string time interpretable by str2epoch(3), or the string \fInewest\fP or
+\fIoldest\fP. 
+
+.IP "-m match"
+Specify a regular-expression subset of orb source-names to monitor. 
+The default is .*/pf/st.
+
+.IP "-p pffile"
+Specify a parameter file other than the default orb2rrd.pf
+
+.IP -v 
+Verbose
+
+.IP -V
+Very Verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+MT-Safe ?
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$
