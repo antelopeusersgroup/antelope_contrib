@@ -65,7 +65,7 @@ if( ! $have_RRDs ) {
 	     ". Bye.\n" );
 } else {
 
-	use RRDs;
+	eval( "use RRDs" );
 }
 
 elog_init( $0, @ARGV );
@@ -145,10 +145,12 @@ for( ; $stop == 0 ; ) {
 
 		inform( "Creating rrdfile $myrrd\n" ); 
 
-		RRDs::create( $myrrd, 
-				"-b $start_time", 
-				"-s $interval",
-				"$datasource $myrra" );
+		system( "rrdtool create $myrrd -b $start_time -s $interval $datasource $myrra" );
+
+		# RRDs::create( "$myrrd", 
+		#		"-b $start_time", 
+		#		"-s $interval",
+		#		"$datasource $myrra" ); 
 	}
 
 	$msg = "Received a parameter-file '$srcname' at " . strtime( $time );
