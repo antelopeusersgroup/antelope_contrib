@@ -32,6 +32,32 @@ sub inform {
 	return;
 }
 
+sub archive_dlsvar {
+	my( $net, $sta, $dls_var, $time, $val ) = @_;
+
+	my( $varname ) = "$net\_$sta\_$dls_var";
+
+	my( $myrrd ) = concatpaths( $Dir, $varname . ".rrd" );
+
+	my( $datasource ) = "DS:$dls_var:$Dls_vars{$dls_var}{'dsparams'}";
+
+	if( ! -e "$myrrd" ) {
+
+		my( $start_time ) = $time - $Stepsize_sec;
+
+		inform( "Creating rrdfile $myrrd\n" ); 
+
+		RRDs::create( "$myrrd", 
+				"-b", "$start_time", 
+				"-s", "$Stepsize_sec",
+				"$datasource", @{$Dls_vars{$dls_var}{'rras'}} ); 
+	}
+
+	RRDs::update( $myrrd, "$time:$var" );
+
+	return;
+}
+
 $Pf = "orb2rrd.pf";
 $match = ".*/pf/st";
 $pktid = 0;
@@ -92,11 +118,17 @@ if( $opt_s ) {
 	orbseek( $orb, "$pktid" );
 }
 
-$dir = pfget( $Pf, "dir" );
-$step_interval = pfget( $Pf, "step_interval" );
-$line = pfget( $Pf, "dls_vars[0]" );
-( $dls_var, $dsparams, $myrra ) = split( /\s+/, $line );
+$Dir = pfget( $Pf, "dir" );
+$Stepsize_sec = pfget( $Pf, "stepsize_sec" );
+@lines = @{pfget( $Pf, "dls_vars" )};
 
+foreach $line ( @lines ) {
+
+	my( $dls_var, $dsparams, @myrras ) = split( /\s+/, $line );
+
+	$Dls_vars{$dls_var}{'dsparams'} = $dsparams;
+	$Dls_vars{$dls_var}{'rras'} = \@myrras;
+}
 
 for( ; $stop == 0 ; ) {
 
@@ -129,30 +161,16 @@ for( ; $stop == 0 ; ) {
 
 	$time = int( $time );
 
+	$dls_var = "br24"; #SCAFFOLD
+
 	foreach $element ( keys %mypktpf ) {
+	  foreach $dls_var ( keys %Dls_vars ) {
 
 		( $net, $sta ) = split( '_', $element );
 
-		$varname = "$net\_$sta\_$dls_var";
-		$myrrd = concatpaths( $dir, $varname . ".rrd" );
-		$datasource = "DS:$varname:$dsparams";
+		$val =  $mypktpf{$element}{$dls_var};
 
-		if( ! -e "$myrrd" ) {
-
-			$start_time = $time - $step_interval;
-
-			inform( "Creating rrdfile $myrrd\n" ); 
-
-			RRDs::create( "$myrrd", 
-					"-b", "$start_time", 
-					"-s", "$step_interval",
-					"$datasource", "$myrra" ); 
-		}
-
-		$var =  $mypktpf{$element}{$dls_var};
-
-		print "SCAFFOLD $var\n";
-
-		RRDs::update( $myrrd, "$time:$var" );
+		archive_dlsvar( $net, $sta, $dls_var, $time, $val );
+	   }
 	}
 }

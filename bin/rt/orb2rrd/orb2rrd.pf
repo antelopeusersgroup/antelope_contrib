@@ -1,7 +1,17 @@
+# Convenient parameter-file macros:
+# --------------------------------
+
+heartbeat_sec 40		# stepsize_sec * 2
+
+archives	RRA:AVERAGE:0.5:&stepsize_sec:1200 RRA:MAX:0.5:60:700
+
+# Actual orb2rrd parameters:
+# --------------------------
+
 dir	.
-step_interval 1
+stepsize_sec 20			# same as statusreport_interval from q3302orb.pf
 
 dls_vars	&Tbl{
-#varname	datasource-spec	rra-archive-specs
-br24   GAUGE:600:U:U   RRA:AVERAGE:0.5:1:1200
+br24   GAUGE:&heartbeat_sec:U:U   &archives
+lcq    GAUGE:&heartbeat_sec:U:U   &archives
 }
