@@ -93,11 +93,10 @@ if( $opt_s ) {
 }
 
 $dir = pfget( $Pf, "dir" );
-$line = pfget( $Pf, "vars[0]" );
-( $varname, $pfsourcekey, $datasource, $myrra ) = split( /\s+/, $line );
+$step_interval = pfget( $Pf, "step_interval" );
+$line = pfget( $Pf, "dls_vars[0]" );
+( $dls_var, $dsparams, $myrra ) = split( /\s+/, $line );
 
-$myrrd = concatpaths( $dir, $varname . ".rrd" );
-$datasource = "DS:$varname:$datasource";
 
 for( ; $stop == 0 ; ) {
 
@@ -111,25 +110,9 @@ for( ; $stop == 0 ; ) {
 	($result, $pkt) = unstuffPkt( $srcname, $time, $packet, $nbytes ); 
 
 	if( $result ne "Pkt_pf" ) {
+
 		inform( "Received a $result, skipping\n" );
 		next;
-	}
-
-	$time = int( $time );
-	$interval = 1;
-
-	if( ! -e "$myrrd" ) {
-
-		$start_time = $time - $interval;
-
-		inform( "Creating rrdfile $myrrd\n" ); 
-
-#		system( "rrdtool create $myrrd -b $start_time -s $interval $datasource $myrra" );
-
-		RRDs::create( "$myrrd", 
-				"-b", "$start_time", 
-				"-s", "$interval",
-				"$datasource", "$myrra" ); 
 	}
 
 	$msg = "Received a parameter-file '$srcname' at " . strtime( $time );
@@ -142,9 +125,34 @@ for( ; $stop == 0 ; ) {
 
 	inform( $msg );
 
-	$var =  pfget( $pkt->pf(), $pfsourcekey );
+	%mypktpf = %{pfget( $pkt->pf(), "dls" )};
 
-	print "SCAFFOLD $var\n";
+	$time = int( $time );
 
-	RRDs::update( $myrrd, "$time:$var" );
+	foreach $element ( keys %mypktpf ) {
+
+		( $net, $sta ) = split( '_', $element );
+
+		$varname = "$net\_$sta\_$dls_var";
+		$myrrd = concatpaths( $dir, $varname . ".rrd" );
+		$datasource = "DS:$varname:$dsparams";
+
+		if( ! -e "$myrrd" ) {
+
+			$start_time = $time - $step_interval;
+
+			inform( "Creating rrdfile $myrrd\n" ); 
+
+			RRDs::create( "$myrrd", 
+					"-b", "$start_time", 
+					"-s", "$step_interval",
+					"$datasource", "$myrra" ); 
+		}
+
+		$var =  $mypktpf{$element}{$dls_var};
+
+		print "SCAFFOLD $var\n";
+
+		RRDs::update( $myrrd, "$time:$var" );
+	}
 }

@@ -1,6 +1,7 @@
 dir	.
+step_interval 1
 
-vars	&Tbl{
-#varname	pfsourcekey	     datasource-spec	rra-archive-spec
-TA_109C_br24   dls{TA_109C}{br24}    GAUGE:600:U:U   RRA:AVERAGE:0.5:1:1200
+dls_vars	&Tbl{
+#varname	datasource-spec	rra-archive-specs
+br24   GAUGE:600:U:U   RRA:AVERAGE:0.5:1:1200
 }
