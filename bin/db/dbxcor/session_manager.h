@@ -46,9 +46,9 @@
 using namespace std;
 using namespace SEISPP;
 
-enum SessionState {START, NONE, NEXT, REF, ANALYZE, SAVE};
+enum SessionState {START, NONE, NEXT_EVENT, NEXT_SUBARRAY, REF, ANALYZE, SAVE};
 
-enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXT, BTN_REF,  
+enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,  
 	BTN_ANALYZE, BTN_BEAM_PLOT, BTN_XCOR_PLOT, BTN_RESTORE,
 	MENU_FILE, MENU_FILE_SAVE,
 	MENU_FILE_EXIT, MENU_PICKS, MENU_PICKS_BWIN, MENU_PICKS_RWIN, MENU_PICKS_CUTOFF,
@@ -101,6 +101,7 @@ public:
 
     bool display_initial_sort_box;
     bool display_analysis_sort_box;
+    bool using_subarrays;
 
 private:
     bool *sensitive;

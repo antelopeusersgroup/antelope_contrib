@@ -174,6 +174,7 @@ do_sw(Widget parent, SessionManager & sm)
         AnalysisSetting asetting(global_md);
         sm.asetting_default=asetting;
         sm.xpe=new XcorProcessingEngine(pf,asetting,sm.get_waveform_db_name(),sm.get_result_db_name());
+	sm.using_subarrays=sm.xpe->use_subarrays;
 
         sm.fp=fopen((sm.get_event_file_name()).c_str(),"r");
         if (sm.fp==NULL) throw SeisppError("Failed to open event file\n");
@@ -310,7 +311,10 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                         << depth <<","
                         << datestring<<endl;
                 psm->xpe->load_data(h);
-		psm->session_state(NEXT);
+		if(psm->using_subarrays)
+			psm->session_state(NEXT_SUBARRAY);
+		else
+			psm->session_state(NEXT_EVENT);
                 ss << "Data loaded"
                         <<endl
                         <<"Displaying filtered data"<<endl;
@@ -1411,7 +1415,23 @@ void restore_data(Widget w, void * client_data, void * userdata)
     psm->xpe->restore_original_ensemble();
     // For now we have to do a complete reset to this state.
     // NEXT is equivalent to fresh reading of data.
-    psm->session_state(NEXT);
+    if(psm->using_subarrays)
+	psm->session_state(NEXT_SUBARRAY);
+    else
+	psm->session_state(NEXT_EVENT);
+}
+
+void load_next_subarray(Widget w, void * client_data, void * userdata)
+{
+	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+	// this method loads the next subarray data using next subarray in the list
+	if((psm->xpe->current_subarray) < (psm->xpe->number_subarrays() - 1) )
+	{
+		psm->xpe->next_subarray();
+		psm->session_state(NEXT_SUBARRAY);
+	}
+	else
+		psm->session_state(NEXT_EVENT);
 }
 
 
@@ -1630,7 +1650,12 @@ main (int argc, char **argv)
   btninfo.label="Get Next Event";
   btninfo.callback=get_next_event;
   btninfo.callback_data=&sm;
-  sm.controls[BTN_NEXT]=create_button(tlrc,btninfo);  
+  sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
+
+  btninfo.label="Load Next Subarray";
+  btninfo.callback=load_next_subarray;
+  btninfo.callback_data=&sm;
+  sm.controls[BTN_NEXTSUB]=create_button(tlrc,btninfo);  
 
 /*
   btninfo.label="Sort";

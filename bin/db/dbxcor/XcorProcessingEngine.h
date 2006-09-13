@@ -65,6 +65,13 @@ public:
         void save_results(int evid, int orid);
 
 	void load_data(Hypocenter& hypo);
+	// Some public attributes required to implement subarrays
+	bool use_subarrays;
+	int current_subarray;  // Index to current subarray 
+	int number_subarrays();  // Returns count of number of subarrays
+	string current_subarray_name;  // name assigned to current subarray
+	// Makes the next subarray data current and updates above attributes
+	void next_subarray();
 	// We should use a shared_ptr here so we keep an internal
 	// reference as well as one visible externally.  This
 	// avoids copying and uses resource management class to
@@ -157,6 +164,8 @@ private:
 	double stack_weight_cutoff_default;
 	double xcorpeak_cutoff,coherence_cutoff,stack_weight_cutoff;
 	double time_lag_cutoff;
+	// Had to add this to support subarrays
+	Pf *pf_used_by_engine;
 };
 
 #endif

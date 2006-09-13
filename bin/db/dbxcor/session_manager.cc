@@ -29,6 +29,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     display_analysis_sort_box=true;
     evid=-1;
     orid=-1;
+    using_subarrays=false;
 }
 
 SessionManager::~SessionManager()
@@ -54,16 +55,25 @@ void SessionManager::session_state()
 	    state=NONE;
 	    break;
 	case NONE:
-	    state=NEXT;
+	    state=NEXT_EVENT;
 	    break;
-        case NEXT:
+        case NEXT_EVENT:
+	    if(using_subarrays)
+	    	state=NEXT_SUBARRAY;
+	    else
+		state=REF;
+	    break;
+	case NEXT_SUBARRAY:
 	    state=REF;
 	    break;
 	case REF:
 	    state=ANALYZE;
 	    break;
 	case ANALYZE:
-	    state=NEXT;
+	    if(using_subarrays)
+		state=NEXT_SUBARRAY;
+	    else
+	    	state=NEXT_EVENT;
     	    break;
 	default:
 	    break;
@@ -85,15 +95,17 @@ void SessionManager::session_state(SessionState s)
 
     switch (s) {
 	case NONE: 
-	    sensitive[BTN_NEXT]=true;    
+	    sensitive[BTN_NEXTEV]=true;    
 	    sensitive[MENU_FILE]=true;
 	    sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
  	    sensitive[MENU_OPTIONS]=true;
 	    sensitive[MENU_SETTINGS]=true;
 	    break;
-	case NEXT:
-	    sensitive[BTN_NEXT]=true;
+	case NEXT_EVENT:
+	    sensitive[BTN_NEXTEV]=true;
+	case NEXT_SUBARRAY:
+	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
 	    sensitive[BTN_REF]=true;
 	    sensitive[BTN_RESTORE]=true;
 	    sensitive[MENU_FILE]=true;
@@ -111,7 +123,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_SETTINGS]=true;
 	    break;
 	case REF:
-            sensitive[BTN_NEXT]=true;
+            sensitive[BTN_NEXTEV]=true;
+	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
             sensitive[BTN_REF]=true;
             sensitive[BTN_ANALYZE]=true;
 	    sensitive[BTN_RESTORE]=true;
@@ -130,7 +143,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_SETTINGS]=true;
 	    break;
 	case ANALYZE:
-            sensitive[BTN_NEXT]=true;
+            sensitive[BTN_NEXTEV]=true;
+	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
             sensitive[BTN_REF]=true;
             sensitive[BTN_ANALYZE]=true;
             sensitive[BTN_BEAM_PLOT]=true;
@@ -151,7 +165,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_SETTINGS]=true;
 	    break;
   	case SAVE:
-            sensitive[BTN_NEXT]=true;
+            sensitive[BTN_NEXTEV]=true;
+	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
  	    sensitive[BTN_FILE_SAVE]=true;
             sensitive[BTN_REF]=true;
             sensitive[BTN_ANALYZE]=true;

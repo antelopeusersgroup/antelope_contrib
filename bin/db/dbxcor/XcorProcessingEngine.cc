@@ -17,6 +17,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	try {
 
 		global_md=Metadata(global_pf);
+		pf_used_by_engine = pfdup(global_pf);
 		string schema=global_md.get_string("schema");
 		if(schema!="css3.0")
 	 		am=AttributeMap(schema);
@@ -64,8 +65,26 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	        double treference=str2epoch(const_cast<char *>
 	                        (time_stamp.c_str()));
 		netname=global_md.get_string("network_name");
-	        stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-	                     treference,netname);
+		stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+                                        treference,netname);
+		use_subarrays=global_md.get_bool("use_subarrays");
+		if(use_subarrays) 
+		{
+			load_subarrays_from_pf(stations,global_pf);
+			current_subarray=0;
+			if(stations.number_subarrays()<=0)
+				throw SeisppError(string("XcorProcessingEngine: ")
+					+string("pf error.  subarrays turned on, but subarray definitions are empty"));
+			// A bit inefficient, but useful to test up front to be sure this works for
+			// small cost in execution time
+			SeismicArray test=stations.subset(0);
+			current_subarray_name=test.name;
+		}
+		else
+		{
+			current_subarray=-1;
+			current_subarray_name=string("");
+		}
 	
 		raw_data_twin.start=global_md.get_double("data_window_start");
 		raw_data_twin.end=global_md.get_double("data_window_end");
@@ -190,10 +209,10 @@ template <class T, SortOrder SO> struct less_metadata_double
 
 MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
 {
-   UpdateGeometry(current_data_window);
    if(mcc!=NULL) delete mcc;
    try {
-   mcc=	new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
+     UpdateGeometry(current_data_window);
+     mcc=	new MultichannelCorrelator(waveform_ensemble,RobustStack,analysis_setting.beam_tw,
    	analysis_setting.robust_tw,time_lag_cutoff,RobustSNR,NULL,
    	analysis_setting.reference_trace); 
    } catch (...) {throw;};
@@ -279,7 +298,6 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	// Read raw data.  Using an auto_ptr as good practice
         auto_ptr<TimeSeriesEnsemble> tse=
 		auto_ptr<TimeSeriesEnsemble>(array_get_data(
-//	TimeSeriesEnsemble *tse=array_get_data(
   			   stations,
                            h,
 			   analysis_setting.phase_for_analysis,
@@ -317,7 +335,16 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	
 	// Load filtered data into waveform_ensemble copy
 	// of this data.
-	waveform_ensemble=*regular_gather;
+	if(use_subarrays)
+	{
+		SeismicArray subnet=stations.subset(current_subarray);
+		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,subnet));
+		waveform_ensemble=*csub;
+	}
+	else
+	{
+		waveform_ensemble=*regular_gather;
+	}
 	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
 	// We need to always reset these
 	xcorpeak_cutoff=xcorpeak_cutoff_default;
@@ -510,9 +537,15 @@ void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)
 	}
 	else
 	{
-	     	stations=SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
-	            	    twin.start,netname);
+		stations=SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+			twin.start,netname);
+		if(use_subarrays) 
+			load_subarrays_from_pf(stations,pf_used_by_engine);
 	}
+	if(stations.array.size()<=0)
+		throw SeisppError(string("XcorProcessingEngine::UpdateGeometry -- network name=")
+			+ netname
+			+ string(" has no active stations at current time.") );
 }
 // These are the display functions.  I put them here at the bottom because
 // they will change dramatically when Peng returns and has time to clean up
@@ -742,6 +775,33 @@ void XcorProcessingEngine::edit_data()
 }
 void XcorProcessingEngine::restore_original_ensemble()
 {
-	waveform_ensemble=*regular_gather;
+	if(use_subarrays)
+	{
+		SeismicArray subnet=stations.subset(current_subarray);
+		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,subnet));
+		waveform_ensemble=*csub;
+	}
+	else
+	{
+		waveform_ensemble=*regular_gather;
+	}
+	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+}
+void XcorProcessingEngine::next_subarray()
+{
+	// Note this method intentionally does nothing if use_subarrays is false.
+	if(use_subarrays)
+	{
+		++current_subarray;
+		SeismicArray ss=stations.subset(current_subarray);
+		current_subarray_name=ss.name;
+		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,ss));
+		waveform_ensemble=*csub;
+	}
+	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+}
+int XcorProcessingEngine::number_subarrays()
+{
+	return(stations.number_subarrays());
 }
 
