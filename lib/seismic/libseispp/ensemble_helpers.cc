@@ -1,16 +1,17 @@
 #include <vector>
+#include <string>
 #include "seispp.h"
 #include "stock.h"
 using namespace SEISPP;
+using namespace std;
 namespace SEISPP{
-/* This file contains tools that operator on ensemble objects
+/* This file contains tools that operate on ensemble objects
 // to subset or sort ensembles in common ways.  May eventually
 // generate a generalized sort or subset method, but for now
 // it will be built up in stages with the most common uses
 // built first.  All the functions in this file should return
-// a pointer to a new Ensemble object (scalar or 3c time
-// series) derived from a parent.  Thus, in all cases the
-// result is a copy created with a new operator.  
+// an auto_ptr to a new Ensemble object (scalar or 3c time
+// series) derived from a parent.  
 */
 
 //@{
@@ -25,7 +26,7 @@ namespace SEISPP{
 //
 //@author Gary L. Pavlis
 //@}
-TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
+auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	string sta_expr, string chan_expr)
 {
 	int i;
@@ -37,8 +38,8 @@ TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	// for data members.  Since we have no way of knowing the
 	// output size this is a good use of the automatic resizing
 	// ability of the stl vector
-	TimeSeriesEnsemble *result=new 
-		TimeSeriesEnsemble(dynamic_cast<Metadata&>(parent),0);
+	auto_ptr<TimeSeriesEnsemble> result( new TimeSeriesEnsemble(
+				dynamic_cast<Metadata&>(parent),0));
 
 	for(i=0;i<parent.member.size();++i)
 	{
@@ -61,4 +62,29 @@ TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
 	}
 	return(result);
 }
+auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
+                			SeismicArray& sa)
+{
+	int expected_size=sa.array.size();
+	auto_ptr<TimeSeriesEnsemble> result(new TimeSeriesEnsemble(dynamic_cast<Metadata&>(parent),
+						expected_size));
+	string sta;
+	map<string,SeismicStationLocation>::iterator aptr,aptr_end;
+	aptr_end=sa.array.end();
+	for(int i=0;i<parent.member.size();++i)
+	{
+		try{
+			sta=parent.member[i].get_string("sta");
+			aptr=sa.array.find(sta);
+			if(aptr!=aptr_end) result->member.push_back(parent.member[i]);
+		} catch (MetadataGetError mde) {
+			cerr << "ArraySubset (Warning):  "
+				<< "Missing sta attribute in parent ensemble member number "
+				<< i << endl;
+			mde.log_error();
+		}
+	}
+	return(result);
+}
+
 } // End SEISPP namespace

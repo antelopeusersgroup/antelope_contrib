@@ -612,6 +612,7 @@ arid arid arrival int true
 evid evid event int true
 orid orid origin int true
 wfid wfid wfdisc int true
+snet snet snetsta string
 #
 # special for pmel and for source gather processing.  These are
 # from genloc1.1
@@ -1972,6 +1973,7 @@ ux0 ux0 pwstack real
 uy0 uy0 pwstack real
 ix1 ix1 pwstack int
 ix2 ix2 pwstack int
+snet snet snetsta string
 }
 
 Trace4.0 &Tbl{
@@ -2766,6 +2768,7 @@ arid arid arrival int true
 evid evid event int true
 orid orid origin int true
 wfid wfid wfdisc int true
+snet snet snetsta string
 #
 # These are additions for xcor1.0
 #

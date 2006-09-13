@@ -36,6 +36,7 @@
 #include "ThreeComponentSeismogram.h"
 #include "ComplexTimeSeries.h"
 #include "ensemble.h"
+#include "seismicarray.h"
 
 namespace SEISPP 
 {
@@ -450,20 +451,6 @@ int dbsave(ThreeComponentSeismogram& ts,Dbptr db,
 int dbsave(ComplexTimeSeries& ts,Dbptr db,
 	string table, MetadataList& md, 
 	AttributeMap& am);
-/*!
-// Builds a new ensemble of members that satisfy unix regular expression
-// for sta and chan attributes passed as sta_expr and chan_expr.
-//
-// \param parent original ensemble to be subsetted
-// \param sta_expr unix regular expression to apply to sta Metadata
-//    attribute
-// \param chan_expr unix regular expression to apply to chan Metadata 
-//    attribute
-//
-//\author Gary L. Pavlis
-**/
-TimeSeriesEnsemble *StaChanRegExSubset(TimeSeriesEnsemble& parent,
-        string sta_expr, string chan_expr);
 
 /*!
 // Extracts a requested time window of data from a parent TimeSeries object.
@@ -534,6 +521,48 @@ ThreeComponentSeismogram WindowData(ThreeComponentSeismogram& parent, TimeWindow
 // subscripts will no longer be valid on exit.
 **/
 void StaChanSort(TimeSeriesEnsemble& ensemble);
+/*! \brief Builds a general station:channel subset ensemble.
+
+ Builds a new ensemble of members that satisfy unix regular expression
+ for sta and chan attributes passed as sta_expr and chan_expr.
+
+ \param parent original ensemble to be subsetted
+ \param sta_expr unix regular expression to apply to sta Metadata
+    attribute
+ \param chan_expr unix regular expression to apply to chan Metadata 
+    attribute
+
+\author Gary L. Pavlis
+**/
+auto_ptr<TimeSeriesEnsemble> StaChanRegExSubset(TimeSeriesEnsemble& parent,
+        string sta_expr, string chan_expr);
+/*! 
+\brief Return a subset of an ensemble that match a specified array.
+
+It is sometimes useful to reduce an ensemble of data to only those
+matching a particular receiver geometry.  This is done here by comparing
+station names in the ensemble with those found in a pattern SeismicArray
+object.  Algorithm is a selective copy from parent to output.  
+The Metadata for the output ensemble will be a duplicate of the parent.
+
+Note the algorithm used is linear in the ensemble.  That is the station
+name is extracted for each data member and compared to the contents of
+the SeismicArray object.  Members not in the array are ignored and those
+that match are copied to the output.
+
+\param parent is the input data ensemble.
+\param array contains the stations defining the array that will be used
+	to form the output ensemble.  
+
+\return auto_ptr<TimeSeriesEnsemble> containing data subset.
+	Note be warned that the function may return an empty 
+	ensemble if the parent does not have the sta attribute defined.
+	It will not be silent about this, however, as it will blast 
+	numerous messages to stderr if this happens.
+**/
+auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
+		SeismicArray& array);
+
 /*! Generic routine to compute a median.
 // This template can be used to compute the median of a vector
 // of objects for any class which has the default comparison

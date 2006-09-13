@@ -121,7 +121,9 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 				// Same -1 issue about offdate
 				if( offdate>jdate )
 					offdl.push_back(offdate);
-				stakey=netname+"_"+staname;
+				// Use sta alone as a key.  In normal css database
+				// this is required to be unique.  snet is needed
+				// only for foreign name maps.
 				array[staname]=SeismicStationLocation(lat,lon,
 						elev,dnorth,deast,staname,netname,refsta);	
 			}
@@ -210,6 +212,7 @@ SeismicArray::SeismicArray(const SeismicArray& orig)
 	name=orig.name;
 	array=orig.array;
 	valid_time_interval=orig.valid_time_interval;
+	subarrays=orig.subarrays;
 }
 SeismicArray& SeismicArray::operator=(const SeismicArray& orig)
 {
@@ -218,6 +221,7 @@ SeismicArray& SeismicArray::operator=(const SeismicArray& orig)
 		name=orig.name;
 		array=orig.array;
 		valid_time_interval=orig.valid_time_interval;
+		subarrays=orig.subarrays;
 	}
 	return(*this);
 }
@@ -229,5 +233,139 @@ bool SeismicArray::GeometryIsValid(TimeWindow test)
 	else
 		return(true);
 }
+SeismicArray SeismicArray::subset(string subsetname)
+{
+	list<string> stalist;
+	SeismicArray result;
+	result.name=subsetname;
+	result.valid_time_interval=this->valid_time_interval;
+	map<string,list<string> >::iterator it;
+	it=subarrays.find(subsetname);
+	if(it==subarrays.end())
+		return result;
+	else
+	{
+		map<string,SeismicStationLocation>::iterator staiter,staiter_end;
+		staiter_end=array.end();
+		list<string>::iterator subiter;
+		for(subiter=(*it).second.begin();subiter!=(*it).second.end();++subiter)
+		{
+			staiter=array.find(*subiter);
+			// So ugly, but this is a safe way to copy to the result map object
+			// Silently ignores stations in the list that are not on.
+			if(staiter!=staiter_end)
+			{
+				result.array.insert(map<string,
+					SeismicStationLocation>::value_type(*subiter,(*staiter).second));
+			}
+		}
+	}
+}
+SeismicArray SeismicArray::subset(int nsub)
+{
+	map<string,list<string> >::iterator it;
+	// I am pretty sure we need to use a linear search because I don't think 
+	// a map container can use a random access iterator
+	int i;
+	for(it=subarrays.begin(),i=0;it!=subarrays.end();++it,++i)
+	{
+		if(i==nsub)
+			return(this->subset((*it).first));
+	}
+	char buf[256];
+	ostringstream message(buf);
+	message << "SeismicArray::subset(int) method: invalid integer index="
+			<< nsub<<endl
+		<< "Not that many subarrays are defined";
+	throw SeisppError(message.str());
+}
+
+void SeismicArray::LoadSubarray(string saname, list<string> salist)
+{
+	pair<map<string,list<string> >::iterator,bool> insert_result;
+	insert_result=subarrays.insert(map<string,list<string> >::value_type(saname,salist));
+	if(!insert_result.second)
+		throw SeisppError(string("SeismicArray::LoadSubarray:  load failed for subarray name=")
+				+ saname);
+}
+
+// There is probably an algorithm that would do this more efficiently, but for now I'll
+// use this crude version because I don't expect this to be called very often.
+int SeismicArray::number_subarrays()
+{
+	map<string,list<string> >::iterator it;
+/*
+	int i;
+	for(it=subarrays.begin(),i=0;it!=subarrays.end();++it,++i)
+	return(i);
+*/
+	return(subarrays.size());
+}
+
+//  Helper functions that belong in this file
+// This is a pretty general function to strip leading whitespace.
+// Probably should be somewhere else and made externally visible
+// but for now it will just be internal here.
+//
+string strip_white(char *s)
+{
+	const string white(" \t\n");
+	string work(s);
+	int sstart,send;
+	sstart=work.find_first_not_of(white,0);
+	// clear leading white space
+	if(sstart!=0) work.erase(0,sstart);
+	return(work);
+}
+
+// A routine to make it easy to load a group of subarrays from pf
+void load_subarrays_from_pf(SeismicArray& master,Pf *pf)
+{
+	Pf *pfarr,*pfva;  // return need for pfget
+        list<string> stalist;  // result
+        const string vakey("virtual_arrays");
+        const string vatblkey("sta_list");
+	const string base_message("SEISPP::load_subarrays_from_pf: ");
+
+	if(pfget(pf,const_cast<char *>(vakey.c_str()),(void **)&pfarr)!=PFARR)
+                throw SeisppError(base_message
+                        +vakey
+                        +string(" Arr&{} tag missing from parameter file"));
+	Tbl *arraylist;
+	arraylist=pfkeys(pfarr);
+	if(maxtbl(arraylist)<=0)
+		throw SeisppError(base_message+vakey
+		  +string(" Arr&{} field for defining subarrays is empty"));
+	int i,j;
+	for(i=0;i<maxtbl(arraylist);++i)
+	{
+		char *arrayname;
+		Tbl *t;
+		arrayname=static_cast<char *>(gettbl(arraylist,i));
+		if(pfget(pfarr,arrayname,(void **)&pfva)!=PFARR)
+			throw SeisppError(base_message
+			+ string("pfget returned error parsing subarray=")
+			+ string(arrayname) );
+		t=pfget_tbl(pfva,const_cast<char *>(vatblkey.c_str()));
+		if(t==NULL)
+			throw SeisppError(base_message
+			+ string("pfget error.  Missing required Tbl tag=")
+			+ vatblkey );
+
+		for(j=0;j<maxtbl(t);++j)
+		{
+			char *line;
+			line=static_cast<char *>(gettbl(t,j));
+			string staname=strip_white(line);
+			stalist.push_back(string(line));
+		}
+		master.LoadSubarray(string(arrayname),stalist);
+		// cleanup
+		stalist.clear();
+		freetbl(t,0);
+	}
+	freetbl(arraylist,0);
+}
+
 } // End namespace SEISPP
 			

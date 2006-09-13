@@ -92,13 +92,13 @@ public:
 	string name;
 /*!Coordinates of receivers in this array are indexed by a key.
 
-// In the current implementation the key is like the Antelope srcid
-// used in the orb.  That is, the key is net_sta where net is the net
-// code for this station and sta is the station code.  We do not implement
-// loc codes as that is channel issue not directly related to station
-// geometry, which is what this object is all about.  
+// In the current implementation the key is the station name is used
+// as the key alone.  This assumes the current database approach in
+// antelope which uses a special table (snetsta) to define mapping
+// between the database and foreign naming conventions.  We use 
+// the Antelope (css) convention internally.
 // This variable thus holds receiver geometry in an the associative
-// array defined by the STL map container.  
+// array defined by the STL map container keyed by station name.  
 **/
 	map<string,SeismicStationLocation> array;
 /*! Default constructor.  
@@ -162,11 +162,102 @@ Stations do not exist for
  with a call to the constructor for a time within the test interval.
 **/
 	bool GeometryIsValid(TimeWindow test);
+/*!
+  \brief Extract a subarray by name.
+
+  Subarrays are a useful general concept that covers a lot of issues
+  in receiver array geometry.  A subarray is a subset of a larger
+  array.  This method retrieves a SeismicArray object that is a 
+  subset of the parent.  The subset in this implementation has
+  no subsets defined within it.  It might be possible to extend this
+  but for now it is not implemented.  Individual array subsets
+  are indexed by either a name or an integer index.  This method
+  retrieves subarray using the name key.  
+
+  Note stations can be defined in a subarray that are not marked
+  as operational at the time this array geometry is defined.  In 
+  such a situation the subset will silently be truncated.  i.e.
+  the result will not contain coordinates for stations not marked live
+  at the current time stamp.
+
+  \param subsetname name of array subset to be retrieved.
+
+  \returns SeismicArray of that subset.  
+
+  \throw SeisppError if requested subarray does not exist.
+*/
+	SeismicArray subset(string subsetname);
+/*!
+  \brief Extract a subarray by numerical index.
+
+  Subarrays are a useful general concept that covers a lot of issues
+  in receiver array geometry.  A subarray is a subset of a larger
+  array.  This method retrieves a SeismicArray object that is a 
+  subset of the parent.  The subset in this implementation has
+  no subsets defined within it.  It might be possible to extend this
+  but for now it is not implemented.  Individual array subsets
+  are indexed by either a name or an integer index.  This method
+  retrieves subarray using a numerical index number.
+
+  Note stations can be defined in a subarray that are not marked
+  as operational at the time this array geometry is defined.  In 
+  such a situation the subset will silently be truncated.  i.e.
+  the result will not contain coordinates for stations not marked live
+  at the current time stamp.
+
+  This method exists because there are times when an algorithm needs
+  to loop through a sequence of subarrays.  This is more convenient
+  than trying to maintain a list of names.  
+
+  Be aware that the user MUST NOT call the LoadSubset method 
+  inside a loop over subarrays or the iterators used to 
+  provide this capability will become invalid and chaos is
+  sure to follow.
+
+  \param nsub numerical index of subarray to extract.
+
+  \returns SeismicArray of the desired subset.  
+
+  \throw SeisppError if the requested index is outside the range of 
+	possible subsets.
+*/
+	SeismicArray subset(int nsub);
+/*! \brief Loads a subarray definition.
+
+Appends a subset to this array definition.  
+
+\param saname unique name to be assigned to this subarray.
+\param salist list of station names in this subarray.
+
+*/
+	void LoadSubarray(string saname, list<string> salist);
+/*! Returns the number of subarrays currently defined for 
+ this array.
+*/
+	int number_subarrays();
 private:
 	TimeWindow valid_time_interval;
+	map<string,list<string> > subarrays;
 };
 /* ***************End Class Declarations -- Begin helper procedures ***********/
+/*!
+\brief Define subarrays for a network using a parameter file.
 
+Subarrays are a concept encapsulated in the SeismicArray object.
+As the name suggests a subarray is a subset of a larger array of receivers.
+The SeismicArray object handles this in a general way.  This helper
+function defines subarrays for an input SeismicArray object by
+using a parameter file description of the subarray geometry. 
+Note the SeismicArray object is altered which is why a reference
+to the object is required.
+
+\param master is the larger seismic array for which subarrays are to be 
+	defined.
+\param pf Antelope parameter file to be parsed to define subarrays.
+
+
+**/
+void load_subarrays_from_pf(SeismicArray& master,Pf *pf);
 /*! Computes predicted arrival times for a given phase at all stations
  defined for an input array.  
 
@@ -415,10 +506,10 @@ template <class T> void LoadPredictedTimes(T& ensemble,
 	StationTime::iterator it,ite;
 	const string phase_key("assoc.phase");
 	ite=times.end();
+	string sta;
+	double atime;
 	for(int i=0;i<ensemble.member.size();++i)
 	{
-		string sta;
-		double atime;
 		try {
 			sta=ensemble.member[i].get_string("sta");
 			it=times.find(sta);

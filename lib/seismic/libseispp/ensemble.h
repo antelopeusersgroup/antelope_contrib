@@ -305,7 +305,7 @@ template <class Tmember>
     it=ensemble.member.begin();
     for(i=0;i<no;++i) ++it;
     ensemble.member.erase(it);
-;}
+};
 
 } // End SEISPP namespace declaration
 #endif
