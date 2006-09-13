@@ -19,6 +19,7 @@
 require "getopts.pl" ;
 use Datascope;
 use orb;
+use RRDs;
  
 sub inform {
 	my( $msg ) = @_;
@@ -44,28 +45,6 @@ if ( ! &Getopts('s:f:p:m:vV') || @ARGV != 1 ) {
 } else {
 	
 	$orbname = $ARGV[0];
-}
-
-$have_RRDs = 0;
-$i = 0;
-
-while( ( $d = $INC[$i++] ) && ! $have_RRDs ) {
-
-	if( -e "$d/RRDs.pm" ) {
-
-		$have_RRDs++;
-		break;
-	}
-}
-
-if( ! $have_RRDs ) { 
-	
-	die( "orb2rrd requires the perl RRD module for rrdtool " .
-	     "(available from http://people.ee.ethz.ch/oetiker/webtools/rrdtool/)" .
-	     ". Bye.\n" );
-} else {
-
-	eval( "use RRDs" );
 }
 
 elog_init( $0, @ARGV );
@@ -145,12 +124,12 @@ for( ; $stop == 0 ; ) {
 
 		inform( "Creating rrdfile $myrrd\n" ); 
 
-		system( "rrdtool create $myrrd -b $start_time -s $interval $datasource $myrra" );
+#		system( "rrdtool create $myrrd -b $start_time -s $interval $datasource $myrra" );
 
-		# RRDs::create( "$myrrd", 
-		#		"-b $start_time", 
-		#		"-s $interval",
-		#		"$datasource $myrra" ); 
+		RRDs::create( "$myrrd", 
+				"-b", "$start_time", 
+				"-s", "$interval",
+				"$datasource", "$myrra" ); 
 	}
 
 	$msg = "Received a parameter-file '$srcname' at " . strtime( $time );
