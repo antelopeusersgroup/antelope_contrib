@@ -6,9 +6,15 @@ orb2rrd \- populate a round-robin database from an orbserver
 orb2rrd [-vV] [-s statefile] [-p pffile] [-m match] [-f from] orb dbcache
 .fi
 .SH DESCRIPTION
-This is a scaffolded prototye under construction by Rob Newman 
-and Kent Lindquist. Please contact kent@lindquistconsulting.com 
-with any questions at this point. 
+orb2rrd enters state-of-health information from an Antelope orbserver 
+into a round-robin database using rrdtool(1). Every round-robin-database (rrd)
+file constructed is entered into the \fIrrdcache\fP table of a caching 
+database (this table is an extension of the css3.0 schema). The orb2rrd.pf
+parameter file governs the variables which are extracted from the status 
+packets, as well as the pathnames for the generated RRD files, the types 
+of RRD variables used (see rrdtool(1)), and the types of round-robin
+archives that are stored (see rrdtool(1)).
+
 .SH OPTIONS
 .IP "-s statefile"
 Specify a state-file to use for tracking and synchronizing the current 
@@ -34,22 +40,58 @@ Very Verbose
 .SH FILES
 .SH ENVIRONMENT
 .SH PARAMETER FILE
+
+.nf
+
+# Convenient parameter-file macros:
+# --------------------------------
+
+heartbeat_sec 40		# stepsize_sec * 2
+
+archives	RRA:AVERAGE:0.5:&stepsize_sec:1200 RRA:MAX:0.5:60:700
+
+# Actual orb2rrd parameters:
+# --------------------------
+
+rrdfile_pattern	rrd/%{net}_%{sta}_%{rrdvar}.rrd
+
+stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
+
+dls_vars	&Tbl{
+br24   GAUGE:&heartbeat_sec:U:U   &archives
+lcq    GAUGE:&heartbeat_sec:U:U   &archives
+}
+
+.fi
 .SH EXAMPLE
 .in 2c
 .ft CW
 .nf
+% orb2rrd -v -s state/orb2rrd anfops.ucsd.edu:usarray db/rrdcache
 .fi
 .ft R
 .in
 .SH RETURN VALUES
 .SH LIBRARY
 .SH ATTRIBUTES
-MT-Safe ?
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
+rrdtool(1)
 .fi
 .SH "BUGS AND CAVEATS"
+orb2rrd will only compile and run if Tobias Oetiker's rrdtool(1) is
+installed, currently available from 
+.nf
+
+	http://people.ee.ethz.ch/oetiker/webtools/rrdtool/
+
+.fi
+
+Currently orb2rrd is limited to handling q3302orb .*/pf/st status packets. 
+
+It might be nice to have a regular-expression limiting the stations which 
+are chosen out of the status packets. This can be added if necessary.
 .SH AUTHOR
 .nf
 Kent Lindquist
