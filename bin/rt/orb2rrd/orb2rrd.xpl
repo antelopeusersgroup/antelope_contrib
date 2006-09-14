@@ -40,40 +40,27 @@ sub trwfname {
 	my( $net, $sta, $chan, $rrdvar ) = 
 		dbgetv( @db, "net", "sta", "chan", "rrdvar" );
 
-	my( $filledpath, $fullpath, $tabledir, $relpath, $dir );
+	my( $path_from_db, $fullpath, $tabledir, $relpath, $dir );
 
-	$filledpath = epoch2str( $time, $pattern );
-	$filledpath =~ s/{net}/$net/;
-	$filledpath =~ s/{sta}/$sta/;
-	$filledpath =~ s/{chan}/$chan/;
-	$filledpath =~ s/{rrdvar}/$rrdvar/;
+	$path_from_db = epoch2str( $time, $pattern );
+	$path_from_db =~ s/{net}/$net/;
+	$path_from_db =~ s/{sta}/$sta/;
+	$path_from_db =~ s/{chan}/$chan/;
+	$path_from_db =~ s/{rrdvar}/$rrdvar/;
 
-	if( $filledpath !~ m@^/@ ) {
+	if( $path_from_db !~ m@^/@ ) {
 
 		$tabledir = dbquery( @db, dbTABLE_DIRNAME );
 
-		$fullpath = concatpaths( $tabledir, $filledpath );
-
-		$dir = relpath( $tabledir, $fullpath );
+		$path_from_here = concatpaths( $tabledir, $path_from_db );
 
 	} else {
 
-		$fullpath = $filledpath;
+		$path_from_here = $path_from_db;
 	}
 
-	( $relpath, $base, $suffix ) = parsepath( $fullpath );
+	( $dir, $base, $suffix ) = parsepath( $path_from_db );
 		
-	if( ! $dir ) {
-		
-		$dir = $relpath;
-
-	} else {
-
-		$relpath = $dir;
-	}
-
-	system( "mkdir -p $relpath" );
-
 	$dfile = $base;
 	if( $suffix ne "" ) {
 		$dfile .= "." . $suffix;
@@ -81,7 +68,11 @@ sub trwfname {
 
 	dbputv( @db, "dir", $dir, "dfile", $dfile );
 
-	return $fullpath;
+	( $dir_from_here, $base, $suffix ) = parsepath( $path_from_here );
+
+	system( "mkdir -p $dir_from_here" );
+
+	return $path_from_here;
 }
 
 sub archive_dlsvar {
