@@ -1,6 +1,7 @@
 # css3.0 extension
 
 # Include css3.0  # uncomment to complete schema
+
 Attribute rrdvar
 	String (30)
 	Format ( "" )
@@ -23,4 +24,3 @@ Relation rrdcache
 		files for a given set of database parameters.
 	}
 	;
-

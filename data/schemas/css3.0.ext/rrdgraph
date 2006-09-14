@@ -1,0 +1,25 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+Attribute rrdgraphname
+	String (30)
+	Format ( "" )
+	Null ( "-" )
+	Description ( "Round-Robin Database graph name" )
+	Detail {
+		The rrdgraphname field lists the name of a type 
+		of graph for a round-robin database
+	}
+	;
+
+Relation rrdgraph
+	Fields ( net sta rrdvar rrdgraphname time endtime dir dfile lddate )
+	Primary ( net sta rrdvar rrdgraphname )
+	Alternate ( dir dfile )
+	Description ( "Graphs of Round-Robin Database values" )
+	Detail {
+		This table maintains a collection of pre-generated 
+		graphs of values from a round-robin-database (RRD).
+	}
+	;
+
