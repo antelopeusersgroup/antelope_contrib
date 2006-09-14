@@ -32,28 +32,74 @@ sub inform {
 	return;
 }
 
+#Fake the trwfname call since it's not in the perldb interface
+sub trwfname {
+	my( $pattern ) = pop( @_ );
+	my( @db ) = @_;
+
+	my( $net, $sta, $chan, $rrdvar ) = 
+		dbgetv( @db, "net", "sta", "chan", "rrdvar" );
+
+	$relpath = epoch2str( $time, $pattern );
+	$relpath =~ s/{net}/$net/;
+	$relpath =~ s/{sta}/$sta/;
+	$relpath =~ s/{chan}/$chan/;
+	$relpath =~ s/{rrdvar}/$rrdvar/;
+
+	( $dir, $base, $suffix ) = parsepath( $relpath );
+		
+	system( "mkdir -p $dir" );
+
+	$dfile = $base;
+	if( $suffix ne "" ) {
+		$dfile .= "." . $suffix;
+	}
+
+	dbputv( @db, "dir", $dir, "dfile", $dfile );
+
+	return $relpath;
+}
+
 sub archive_dlsvar {
 	my( $net, $sta, $dls_var, $time, $val ) = @_;
 
-	my( $varname ) = "$net\_$sta\_$dls_var";
+	my( $key ) = "$net:$sta:$dls_var";
 
-	my( $myrrd ) = concatpaths( $Dir, $varname . ".rrd" );
+	my( $rrd );
 
-	my( $datasource ) = "DS:$dls_var:$Dls_vars{$dls_var}{'dsparams'}";
-
-	if( ! -e "$myrrd" ) {
+	if( ! defined( $Rrd_files{$key} ) || ! -e "$Rrd_files{$key}" ) {
 
 		my( $start_time ) = $time - $Stepsize_sec;
 
-		inform( "Creating rrdfile $myrrd\n" ); 
+		my( @dbt ) = @Db;
+		$dbt[3] = dbaddnull( @Db );
 
-		RRDs::create( "$myrrd", 
+		dbputv( @dbt,
+			"net", $net,
+			"sta", $sta,
+			"rrdvar", $dls_var,
+			"time", $start_time );
+
+		$rrd = trwfname( @dbt, $Rrdfile_pattern );
+
+		my( $datasource ) = 
+			"DS:$dls_var:$Dls_vars{$dls_var}{'dsparams'}";
+
+		inform( "Creating rrdfile $rrd\n" ); 
+
+		RRDs::create( "$rrd", 
 				"-b", "$start_time", 
 				"-s", "$Stepsize_sec",
 				"$datasource", @{$Dls_vars{$dls_var}{'rras'}} ); 
+
+		$Rrd_files{$key} = $rrd;
+
+	} else {
+		
+		$rrd = $Rrd_files{$key};
 	}
 
-	RRDs::update( $myrrd, "$time:$var" );
+	RRDs::update( $rrd, "$time:$var" );
 
 	return;
 }
@@ -63,14 +109,15 @@ $match = ".*/pf/st";
 $pktid = 0;
 $time = -9999999999.999;
 
-if ( ! &Getopts('s:f:p:m:vV') || @ARGV != 1 ) { 
+if ( ! &Getopts('s:f:p:m:vV') || @ARGV != 2 ) { 
 
     	die ( "Usage: orb2rrd [-vV] [-s statefile] [-p pffile] " .
-	      "[-m match] [-f from] orb\n" ) ; 
+	      "[-m match] [-f from] orb dbcache\n" ) ; 
 
 } else {
 	
 	$orbname = $ARGV[0];
+	$dbcache = $ARGV[1];
 }
 
 elog_init( $0, @ARGV );
@@ -118,7 +165,34 @@ if( $opt_s ) {
 	orbseek( $orb, "$pktid" );
 }
 
-$Dir = pfget( $Pf, "dir" );
+@Db = dbopen( $dbcache, "r+" );
+
+if( $db[0] < 0 ) {
+
+	die( "Failed to open cache database '$dbcache'. Bye.\n" );
+
+} else {
+
+	@Db = dblookup( @Db, "", "rrdcache", "", "" );
+
+	if( $Db[1] < 0 ) {
+		
+		die( "Failed to lookup 'rrdcache' table in '$dbcache'. Bye.\n" );
+	}
+}
+
+@dbt = dbsubset( @Db, "endtime == NULL" );
+
+for( $dbt[3] = 0; $dbt[3] < dbquery( @dbt, dbRECORD_COUNT ); $dbt[3]++ ) {
+	
+	( $net, $sta, $rrdvar ) = dbgetv( @dbt, "net", "sta", "rrdvar" );
+
+	$path = dbextfile( @dbt );
+
+	$Rrd_files{"$net:$sta:$rrdvar"} = $path;
+}
+
+$Rrdfile_pattern = pfget( $Pf, "rrdfile_pattern" );
 $Stepsize_sec = pfget( $Pf, "stepsize_sec" );
 @lines = @{pfget( $Pf, "dls_vars" )};
 
