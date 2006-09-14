@@ -112,7 +112,7 @@ sub archive_dlsvar {
 		$rrd = $Rrd_files{$key};
 	}
 
-	RRDs::update( $rrd, "$time:$var" );
+	RRDs::update( $rrd, "$time:$val" );
 
 	return;
 }
