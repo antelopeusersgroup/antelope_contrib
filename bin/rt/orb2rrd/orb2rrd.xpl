@@ -180,7 +180,7 @@ if( $opt_s ) {
 
 @Db = dbopen( $dbcache, "r+" );
 
-if( $db[0] < 0 ) {
+if( $Db[0] < 0 ) {
 
 	die( "Failed to open cache database '$dbcache'. Bye.\n" );
 
