@@ -241,9 +241,7 @@ SeismicArray SeismicArray::subset(string subsetname)
 	result.valid_time_interval=this->valid_time_interval;
 	map<string,list<string> >::iterator it;
 	it=subarrays.find(subsetname);
-	if(it==subarrays.end())
-		return result;
-	else
+	if(it!=subarrays.end())
 	{
 		map<string,SeismicStationLocation>::iterator staiter,staiter_end;
 		staiter_end=array.end();
@@ -251,15 +249,16 @@ SeismicArray SeismicArray::subset(string subsetname)
 		for(subiter=(*it).second.begin();subiter!=(*it).second.end();++subiter)
 		{
 			staiter=array.find(*subiter);
-			// So ugly, but this is a safe way to copy to the result map object
 			// Silently ignores stations in the list that are not on.
 			if(staiter!=staiter_end)
 			{
-				result.array.insert(map<string,
-					SeismicStationLocation>::value_type(*subiter,(*staiter).second));
+				result.array[*subiter]=(*staiter).second;
 			}
 		}
 	}
+	// Note this implicitly returns default constructed 
+	// SeismicArray object if subnetname is not found.
+	return result;
 }
 SeismicArray SeismicArray::subset(int nsub)
 {
@@ -270,7 +269,12 @@ SeismicArray SeismicArray::subset(int nsub)
 	for(it=subarrays.begin(),i=0;it!=subarrays.end();++it,++i)
 	{
 		if(i==nsub)
-			return(this->subset((*it).first));
+		{
+			string saname=(*it).first;
+			SeismicArray ssresult;
+			ssresult=this->subset(saname);
+			return ssresult;
+		}
 	}
 	char buf[256];
 	ostringstream message(buf);
