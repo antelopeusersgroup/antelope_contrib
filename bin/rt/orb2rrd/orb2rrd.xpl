@@ -40,13 +40,26 @@ sub trwfname {
 	my( $net, $sta, $chan, $rrdvar ) = 
 		dbgetv( @db, "net", "sta", "chan", "rrdvar" );
 
+	my( $relpath, $fullpath );
+
 	$relpath = epoch2str( $time, $pattern );
 	$relpath =~ s/{net}/$net/;
 	$relpath =~ s/{sta}/$sta/;
 	$relpath =~ s/{chan}/$chan/;
 	$relpath =~ s/{rrdvar}/$rrdvar/;
 
-	( $dir, $base, $suffix ) = parsepath( $relpath );
+	if( $relpath !~ m@^/@ ) {
+
+		my( $tabledir ) = dbquery( @db, dbTABLE_DIRNAME );
+
+		$fullpath = concatpaths( $tabledir, $relpath );
+
+	} else {
+
+		$fullpath = $relpath;
+	}
+
+	( $dir, $base, $suffix ) = parsepath( $fullpath );
 		
 	system( "mkdir -p $dir" );
 
@@ -57,7 +70,7 @@ sub trwfname {
 
 	dbputv( @db, "dir", $dir, "dfile", $dfile );
 
-	return $relpath;
+	return $fullpath;
 }
 
 sub archive_dlsvar {
