@@ -10,7 +10,7 @@ namespace SEISPP {
  seismograms the normal convention of geographical coordinates is always assumed.
 \author Gary L. Pavlis
 **/
-typedef struct SphericalCoordinate_{
+typedef struct {
 /*!
  Radius from center.
 **/
