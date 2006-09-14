@@ -1,0 +1,26 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+Attribute rrdvar
+	String (30)
+	Format ( "" )
+	Null ( "-" )
+	Description ( "Round-Robin Database variable" )
+	Detail {
+		The rrdvar field lists the name of a variable used in a
+		round-robin database
+	}
+	;
+
+Relation rrdcache
+	Fields ( net sta chan rrdvar time endtime dir dfile lddate )
+	Primary ( net sta rrdvar time::endtime )
+	Alternate ( dir dfile )
+	Foreign ( chan ) 
+	Description ( "Cache of Round-Robin Database files" )
+	Detail {
+		This table maintains a list of round-robin-database (RRD)
+		files for a given set of database parameters.
+	}
+	;
+
