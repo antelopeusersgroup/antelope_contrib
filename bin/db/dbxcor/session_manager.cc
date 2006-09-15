@@ -104,8 +104,24 @@ void SessionManager::session_state(SessionState s)
 	    break;
 	case NEXT_EVENT:
 	    sensitive[BTN_NEXTEV]=true;
+	    sensitive[BTN_REF]=true;
+	    sensitive[BTN_RESTORE]=true;
+	    sensitive[MENU_FILE]=true;
+            sensitive[MENU_FILE_EXIT]=true;
+ 	    sensitive[MENU_PICKS]=true;
+	    sensitive[MENU_PICKS_BWIN]=true;
+	    sensitive[MENU_PICKS_RWIN]=true;
+	    sensitive[MENU_PICKS_TEDIT]=true;
+	    sensitive[MENU_PICKS_CUTOFF]=true;
+	    sensitive[MENU_PICKS_VIEW]=true;
+  	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
+            sensitive[MENU_OPTIONS]=true;
+	    sensitive[MENU_OPTIONS_SORT]=true;
+            sensitive[MENU_OPTIONS_FILTER]=true;
+            sensitive[MENU_SETTINGS]=true;
+	    break;
 	case NEXT_SUBARRAY:
-	    if(using_subarrays) sensitive[BTN_NEXTSUB]=true;
+	    sensitive[BTN_NEXTSUB]=true;
 	    sensitive[BTN_REF]=true;
 	    sensitive[BTN_RESTORE]=true;
 	    sensitive[MENU_FILE]=true;

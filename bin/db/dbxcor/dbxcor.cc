@@ -311,13 +311,18 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                         << depth <<","
                         << datestring<<endl;
                 psm->xpe->load_data(h);
+		ss << "Data loaded" <<endl;
 		if(psm->using_subarrays)
+		{
 			psm->session_state(NEXT_SUBARRAY);
+			ss << "Displaying data for subarray="
+				<< psm->xpe->current_subarray<<endl;
+		}
 		else
+		{
 			psm->session_state(NEXT_EVENT);
-                ss << "Data loaded"
-                        <<endl
-                        <<"Displaying filtered data"<<endl;
+			ss << "Displaying data for this event"<<endl;
+		}
 		TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
@@ -1410,6 +1415,7 @@ void save_event(Widget w, void * client_data, void * userdata)
 void restore_data(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    stringstream ss;
     // This method restores semi-raw data.  Resampled to uniform sample
     // rate, but not original.  May require a forced refresh of display here.
     psm->xpe->restore_original_ensemble();
@@ -1419,19 +1425,31 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_SUBARRAY);
     else
 	psm->session_state(NEXT_EVENT);
+    ss << "Resetting original data"<<endl;
+    psm->record(ss.str());
 }
 
 void load_next_subarray(Widget w, void * client_data, void * userdata)
 {
 	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+	stringstream ss;
 	// this method loads the next subarray data using next subarray in the list
-	if((psm->xpe->current_subarray) < (psm->xpe->number_subarrays() - 1) )
+	int lastsub=psm->xpe->number_subarrays()-1;
+	if((psm->xpe->current_subarray) <= lastsub)
 	{
 		psm->xpe->next_subarray();
-		psm->session_state(NEXT_SUBARRAY);
+		// next_subarray increments current_subarray counter
+		// If at the end we need to disable next_subarray
+		if((psm->xpe->current_subarray)>=lastsub)
+			psm->session_state(NEXT_EVENT);
+		else
+			psm->session_state(NEXT_SUBARRAY);
 	}
 	else
 		psm->session_state(NEXT_EVENT);
+	ss << "Loaded data for subarray "
+		<< psm->xpe->current_subarray<<endl;
+        psm->record(ss.str());
 }
 
 

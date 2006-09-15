@@ -337,8 +337,20 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	// of this data.
 	if(use_subarrays)
 	{
-		SeismicArray subnet=stations.subset(current_subarray);
-		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,subnet));
+		int nsubs=stations.number_subarrays();
+		auto_ptr<TimeSeriesEnsemble> csub;
+		for(current_subarray=0;current_subarray<nsubs;
+				++current_subarray)
+		{
+			SeismicArray subnet=stations.subset(current_subarray);
+			csub=ArraySubset(*regular_gather,subnet);
+			if((*csub).member.size()>0) break;
+		} 
+		if(current_subarray>=nsubs) 
+			throw SeisppError(
+				string("XcorProcessingEngine::load_data: ")
+				+ string("  error in subarray definitions.  ")
+				+ string("All subarrays have no data for this event"));
 		waveform_ensemble=*csub;
 	}
 	else
@@ -365,7 +377,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 	// First save the beam
 	int pwfid;
 	string pchan(analysis_setting.component_name);
-	string filter(analysis_setting.filter_param.type_description());
+	string filter(analysis_setting.filter_param.type_description(true));
 	string filter_param;
 	try {
 		int record;

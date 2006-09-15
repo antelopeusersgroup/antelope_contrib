@@ -1,7 +1,7 @@
 data_window_start -200.0
 data_window_end 600.0
-regular_gather_twin_start -100.0
-regular_gather_twin_end 300.0
+regular_gather_twin_start -60.0
+regular_gather_twin_end 150.0
 beam_window_fraction 0.6
 robust_window_fraction 0.2
 stacking_method robust
@@ -9,14 +9,14 @@ stacking_method robust
 default_filter DEMEAN
 component_for_analysis Z
 phase_for_analysis P
-tpad 100.0
+tpad 30.0
 initial_time_stamp 2003355:00:00:00.0
 result_twin_start -40.0
 result_twin_end 200.0
 target_sample_interval 0.1
 schema xcor1.0
 network_name secarib
-analysis_sort_order coherence
+analysis_sort_order stack_weight
 correlation_peak_cutoff 0.0
 coherence_cutoff 0.1
 stack_weight_cutoff 0.05
@@ -75,7 +75,7 @@ SUVariableArea_grey_value 1
 clip_data true
 clip_wiggle_traces false
 xcur 1.0
-clip_percent 95
+clip_percent 99.5
 xbox 50
 ybox 50
 wbox 1000
@@ -87,7 +87,8 @@ f2num 0.0
 n2tic 1
 label1 time
 label2 index
-title Generic Plot
+# required, but is ignored by dbxcor
+title Data Aligned by Arrival Time
 windowtitle SeismicPlot
 labelfont Rom14
 titlefont Rom22
@@ -101,7 +102,7 @@ labelsize 18.0
 trace_spacing 1.0
 first_trace_offset 0.0
 time_scaling auto
-interpolate false
+interpolate true
 trace_axis_scaling auto
 # These are used only when time (x1) and trace (x2) scaling is not auto
 x1beg 0.0
@@ -117,11 +118,11 @@ use_variable_trace_spacing false   # if true trace_axis_attribute is used to def
 trace_axis_attribute assoc.delta
 
 n1tic 5
-blabel test
-blabel2 test2
+blabel Data Window
+blabel2 Data Window
 grid1 1
 grid2 1
-titlesize 18.0
+titlesize 36.0
 }
 
 correlation_window_parameters &Arr{
@@ -130,7 +131,7 @@ verbose true
 WiggleTrace true
 VariableArea true
 SUVariableArea_grey_value 1
-clip_data true
+clip_data false
 clip_wiggle_traces false
 xcur 1.0
 clip_percent 98
@@ -145,7 +146,8 @@ f2num 0.0
 n2tic 1
 label1 time
 label2 index
-title Generic Plot
+# required, but is ignored by dbxcor
+title Cross Correlation Functions
 windowtitle SeismicPlot
 labelfont Rom14
 titlefont Rom22
@@ -159,7 +161,7 @@ labelsize 18.0
 trace_spacing 1.0
 first_trace_offset 0.0
 time_scaling auto
-interpolate false
+interpolate true
 trace_axis_scaling auto
 # These are used only when time (x1) and trace (x2) scaling is not auto
 x1beg 0.0
@@ -175,11 +177,11 @@ use_variable_trace_spacing false   # if true trace_axis_attribute is used to def
 trace_axis_attribute assoc.delta
 
 n1tic 5
-blabel test
-blabel2 test2
+blabel Cross Correlation Plot
+blabel2 Cross Correlation Plot
 grid1 1
 grid2 1
-titlesize 18.0
+titlesize 36.0
 }
 
 beam_window_parameters &Arr{
@@ -203,6 +205,7 @@ f2num 0.0
 n2tic 1
 label1 time
 label2 index
+# required, but is ignored by dbxcor
 title Generic Plot
 windowtitle SeismicPlot
 labelfont Rom14
@@ -217,7 +220,7 @@ labelsize 18.0
 trace_spacing 1.0
 first_trace_offset 0.0
 time_scaling auto
-interpolate false
+interpolate true
 trace_axis_scaling auto
 # These are used only when time (x1) and trace (x2) scaling is not auto
 x1beg 0.0
@@ -233,15 +236,15 @@ use_variable_trace_spacing false   # if true trace_axis_attribute is used to def
 trace_axis_attribute assoc.delta
 
 n1tic 5
-blabel test
-blabel2 test2
+blabel Array Beam
+blabel2 Array Beam
 grid1 1
 grid2 1
-titlesize 18.0
+titlesize 36.0
 }
-// 
-// This defines data written to wfprocess tables. Static
-// and require a change only if schema were to change.
+ 
+# This defines data written to wfprocess tables. Static
+# and require a change only if schema were to change.
 BeamMetadataList &Tbl{
 pwfid int
 wfprocess.timetype string
@@ -252,3 +255,57 @@ wfprocess.algorithm string
 save_to_arrival true
 beam_directory xcorbeams
 beam_dfile xcorbeam.w
+use_subarrays true
+# This block defines subarrays.
+# Ignored if use_subarrays is false.  Must not be empty if
+# true.  Note outer block uses required key of virtual_arrays
+# Next level assigns names to subarrays.  Lowest level is list
+# of station names assigned to that subarray.  Be careful with
+# the matching brackets.
+virtual_arrays &Arr{
+west &Arr{
+sta_list &Tbl{
+BAUV
+CAPV
+CURV
+DABV
+ELOV
+IMOV
+JACV
+MONV
+QARV
+SANV
+SIQV
+SOCV
+TERV
+TINV
+TURV
+VIGV
+VIRV
+CURA
+}
+}
+test &Arr{
+sta_list &Tbl{
+BAUV
+CAPV
+CURV
+DABV
+ELOV
+IMOV
+JACV
+}
+}
+obs &Arr{
+sta_list &Tbl{
+CUBA
+RRNR
+SOMB
+DAQI
+ZOMB
+DKS
+BTBT
+BLOS
+}
+}
+}
