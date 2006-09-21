@@ -2051,40 +2051,39 @@ static void load_z_matrix_peng(vector<TimeSeries> data,
                 double dt)
 {
         int i,j,iz,id;
-        // could initialize z to zero, but algorithm used hits every
-        // sample so this isn't necessary.  The first loop assumes n2=data.size()
+	// Initialize z to zero.  Without this data on right after endtime
+	// can be random garbage.
+	for(iz=0;iz<(n1*n2);++iz) z[iz]=0.0;
         for(j=0,iz=0;j<n2;++j)
         {
             double t;
+	    // Sanity check requires an exception to be thrown in this case.
+	    if (data[j].live &&(data[j].s.size() <= 0)) {
+		char message[256];
+                sprintf(message,"SeismicPlot::load_z_matrix():  "
+                                    "time series index %d is empty\n",j);
+                throw SeisppError(string(message));
+	    }
             //avoid main loop below if this trace has no data in this time window
             //Test for dead data is redundant for now, but better safe than sorry.
             if( (data[j].endtime() < t0)
                 || !data[j].live ) {
                         for(i=0;i<n1;++i,++iz) z[iz]=0.0;
             } else {
-                for(i=0;i<n1;++i,++iz) { 
-                    t=t0+dt*i;
+                for(i=0,t=t0;i<n1;++i,++iz,t+=dt) { 
                     if(data[j].is_gap(t))
                         z[iz]=0.0;
-                    else if( (data[j].t0>t) && (fabs(t-data[j].t0)>dt))
-                        z[iz]=0.0;
-                    else {
+                    else 
+		    {
+			// when data range is in plot window copy to z
                         id=data[j].sample_number(t);
                         if( (id>=0) && (id<data[j].ns) ) {
-                            if (data[j].s.size() > 0) {
-                                z[iz]=static_cast<float>(data[j].s[i]);
-                            } else {
-                                char message[256];
-                                sprintf(message,"SeismicPlot::load_z_matrix():  "
-                                    "time series index %d is empty\n",j);
-                                throw SeisppError(string(message));
-                            }
+                                z[iz]=static_cast<float>(data[j].s[id]);
                         }
                     }
                  }
              }
         }
-
 }
 
 /*********************************************************/
