@@ -118,6 +118,14 @@ public:
 **/
 	void add_gap(TimeWindow tw){gaps.insert(tw);};
 /*!
+//  \brief Clear gaps.
+//
+// It is sometimes necessary to clear gap definitions.
+// This is particularly important when a descendent of this class
+// is cloned and then morphed into something else.
+*/
+	void clear_gaps(){if(!gaps.empty())gaps.clear();};
+/*!
 // Force all data inside data gaps to zero.  
 // This is a virtual function that makes sense only to a derived type since
 // the contents of the data vector depend upon the nature of the data.  

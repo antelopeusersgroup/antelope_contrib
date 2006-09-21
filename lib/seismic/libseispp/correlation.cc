@@ -22,6 +22,7 @@ TimeSeries correlation(TimeSeries& x, TimeSeries& y,bool normalize)
 	// The return series is cloned from y as the parent
 	// This allows perservation of metadata to go with cross-correlation output.
 	TimeSeries z(y);
+	z.clear_gaps();
 	int lz=ly-lx;
 	z.s.resize(lz);
 	z.t0=y.t0-x.t0;
