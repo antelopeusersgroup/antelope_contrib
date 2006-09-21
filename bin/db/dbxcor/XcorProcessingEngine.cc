@@ -389,6 +389,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 		beam.put("wfprocess.dir",beam_directory);
 		beam.put("dir",beam_directory);
 		beam.put("wfprocess.dfile",beam_dfile);
+		beam.put("wfprocess.endtime",beam.endtime());
 		record=dbsave(beam,dbwfprocess,string("wfprocess"),
 				beam_mdl,am);
 		dbwfprocess.record=record;
@@ -804,13 +805,19 @@ void XcorProcessingEngine::next_subarray()
 	// Note this method intentionally does nothing if use_subarrays is false.
 	if(use_subarrays)
 	{
+	    try{
 		++current_subarray;
 		SeismicArray ss=stations.subset(current_subarray);
 		current_subarray_name=ss.name;
 		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,ss));
 		waveform_ensemble=*csub;
+		FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+	    } catch (...) {throw;}
 	}
-	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+	else
+	    throw SeisppError(string("XcorProcessingEngine::next_subarray():  ")
+			+ string("usage error.  ")
+			+ string("This method should be called only when using subarrays"));
 }
 int XcorProcessingEngine::number_subarrays()
 {

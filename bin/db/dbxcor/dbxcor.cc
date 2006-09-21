@@ -371,6 +371,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 
 	} else {
 	    ss << "End of file reached in the event file!"<<endl;
+	    exit(0);
 	}
 	} catch (SeisppError serr) {
                 serr.log_error();
@@ -1403,7 +1404,13 @@ void save_event(Widget w, void * client_data, void * userdata)
     orid=psm->get_orid();
     try {
           psm->xpe->save_results(evid,orid);
-	  psm->session_state(NONE);
+	  // Do not reset session_state when subarrays are used
+	  // That disables ability to process remaining data.
+	  // We handle state change for subarrays by monitoring
+	  // current_subarray and switching when the last subarray
+	  // is the one being analyzed.
+	  if(!psm->using_subarrays)
+		psm->session_state(NONE);
     } catch (SeisppError serr) {
           ss << "Problems in save_results routine"<<endl;
           serr.log_error();
@@ -1437,18 +1444,35 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 	int lastsub=psm->xpe->number_subarrays()-1;
 	if((psm->xpe->current_subarray) <= lastsub)
 	{
-		psm->xpe->next_subarray();
+		// Recover from the error condition when the subarray index
+		// is wrong.  This should not happen if the gui is functioning
+		// correctly, but best to handle it instead of aborting here.
+		try {
+			psm->xpe->next_subarray();
+		} catch (SeisppError serr)
+		{
+			ss << "Error trying to load subarray number "
+				<< psm->xpe->current_subarray<<endl;
+			ss << serr.message<<endl;
+			ss << "Resetting to allow reading next event"<<endl;
+			psm->session_state(NEXT_EVENT);
+		}
 		// next_subarray increments current_subarray counter
 		// If at the end we need to disable next_subarray
 		if((psm->xpe->current_subarray)>=lastsub)
 			psm->session_state(NEXT_EVENT);
 		else
+		{
 			psm->session_state(NEXT_SUBARRAY);
+			ss << "Loaded data for subarray "
+				<< psm->xpe->current_subarray<<endl;
+		}
 	}
 	else
+	{
 		psm->session_state(NEXT_EVENT);
-	ss << "Loaded data for subarray "
-		<< psm->xpe->current_subarray<<endl;
+		ss << "No more subarrays for this event.  Push button to read next event";
+	}
         psm->record(ss.str());
 }
 
