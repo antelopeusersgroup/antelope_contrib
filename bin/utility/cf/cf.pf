@@ -1,0 +1,150 @@
+escapes &Tbl{
+	normal     00
+	red        31 
+	green      32 01 07 : 00 32
+	blue       34 01 : 00 34
+	magenta    35
+	cyan       36 01
+}
+
+expressions &Arr{
+   normal &Tbl{
+   }
+   red &Tbl{
+	^\\*\\*\\* Error code
+	^.* error:
+	^Error:
+	^.*undefined symbol:
+	^.*: Failed
+	^.*Permission denied
+	^.*does not exist
+	^[[:space:]]*mex:.*failed\\.
+	^gcc:.*No such file or directory
+	^gcc: language.*not recognized
+	^.*line [[:digit:]]+: return value type mismatch
+	^make\\[[[:digit:]]+\\]:.*Error
+	^ld: fatal:
+	^.*java.*cannot resolve symbol
+	^[[:digit:]]+ errors$
+	^[[:space:]]*format_type can't format
+	^[[:space:]]*parse_function doesn't understand 
+   }
+   green &Tbl{
+	^\\+[[:space:]]+[^[:space:]]+ 
+   }
+   magenta &Tbl{
+	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
+	^.*gcc.*: unrecognized option
+	^.*gcc.*: linker input file unused
+	^.*cycle in data
+	^.*declaration hides parameter
+	^.*cannot dereference non-pointer type
+	^[[:space:]]*declaration[[:space:]]*:
+	^[[:space:]]*parameter[[:space:]]*:
+	^[[:space:]]*prototype[[:space:]]*:
+	^[[:space:]]*argument[[:space:]]*:
+	^[[:space:]]*pointer to.*=.*pointer to
+	^[[:digit:]]+ Warning\\(s\\) detected\\.
+	^.*ld: warning
+	^.*: warning,
+	^.*Warning:
+	^.* warning:    
+	^Undefined[[:space:]]+first referenced
+	^[[:space:]]symbol[[:space:]]+in file
+	^WARNING:
+   }
+   cyan &Tbl{
+	^---+
+	^->[[:space:]]+[[:upper:]]+[[:space:]]+=[[:space:]]
+	^->[[:space:]]+[[:upper:]] flags: 
+	^->[[:space:]]+Link flags:
+	^-> mexopts.sh
+	^[[:space:]]+[[:upper:]]+[[:space:]]+=[[:space:]]
+	^[[:space:]]+arguments[[:space:]]+=[[:space:]]
+	^->[[:space:]]+[[:upper:]]+ flags:
+	^tsort:
+	^a -
+	^ar: creating
+	^ar: writing
+	^[[:alnum:]_]+\\.[fF]:$
+	^[[:space:]]*MAIN:$
+	^[[:space:]]+MAIN [[:alnum:]_]+:$
+	^[[:space:]]+[[:alnum:]_]+:$
+	^[[:space:]]+entry[[:space:]]+[[:alnum:]_]+:$
+	^: [^[:space:]]*\\/?lib[^[:space:]]+\\.a
+	^[[:space:]]*[[:alnum:]_]+.o$
+	^make\\[[[:digit:]]+\\]: Nothing to be done for
+	^make\\[[[:digit:]]+\\]:.*is up to date
+	^NOTICE:
+	^Current working directory
+	^Instrumenting:
+	^Purify engine:
+	^Purify.*Copyright
+	^.*Linking
+	^In file included from
+	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
+	^.*In function [`'].*':    
+	^Installing[[:space:]]
+	^Writing[[:space:]]
+	^Appending[[:space:]]
+	^Running[[:space:]]
+	^Files found in blib/arch: 
+	^LD_RUN_PATH=
+	^name=
+	^input=
+	^output=
+   }
+   blue &Tbl{
+	^ar[[:space:]]
+	^awk[[:space:]]
+	^[[:space:]]*cat
+	^cc[[:space:]]
+	^\\/opt\\/SUNWspro\\/bin\\/cc[[:space:]]
+	^CC[[:space:]]
+	^-> cc[[:space:]]
+	^f77[[:space:]]
+	^f90[[:space:]]
+	^gcc[[:space:]]
+	^g\\+\\+[[:space:]]
+	^-> gcc[[:space:]]
+	^cd[[:space:]]
+	^chmod[[:space:]]
+	^compile[[:space:]]
+	^purify[[:space:]]
+	^cp[[:space:]]
+	^deposit[[:space:]]
+	^[[:alnum:]/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/deposit[[:space:]]
+	^done[[:space:]]
+	^[[:space:]]*echo[[:space:]]
+	^flex[[:space:]]
+	^for[[:space:]]
+	^getid[[:space:]]
+	^if[[:space:]]
+	^[[:space:]]*[[:alnum:]/]*install[[:space:]]
+	^else[[:space:]]
+	^fi[[:space:]]
+	^javac[[:space:]]
+	^ln[[:space:]]
+	^[[:alnum:]/]*ld[[:space:]]
+	^[[:space:]]*matdoc2dotm[[:space:]]
+	^[[:space:]]*matdoc2html[[:space:]]
+	^[[:space:]]*matdoc_htmlwrap[[:space:]]
+	^[[:space:]]*\\/bin\\/sh[[:space:]]
+	^make[[:space:]]
+	^mkdir[[:space:]]
+	^mex[[:space:]]
+	^mv[[:space:]]
+	^perl[[:space:]]
+	^\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/perl[[:space:]]
+	^produce[[:space:]]
+	^(\\./)?runmake[[:space:]]
+	^ranlib[[:space:]]
+	^refguide[[:space:]]
+	^[[:space:]]*rm[[:space:]]
+	^sed[[:space:]]
+	^then[[:space:]]
+	^touch[[:space:]]
+	^tsort[[:space:]]
+	^[[:space:]]*unix_rm[[:space:]]
+   }
+}

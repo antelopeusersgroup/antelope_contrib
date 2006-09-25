@@ -1,0 +1,13 @@
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+foreach $d ( @INC ) {
+	
+	if( -e "$d/Parse/Lex.pm" ) {
+		
+		exit( 0 );
+	}
+}
+
+exit 1;

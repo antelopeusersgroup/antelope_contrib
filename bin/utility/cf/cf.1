@@ -1,0 +1,161 @@
+.TH CF 1 "$Date$"
+.SH NAME
+cf \- colorize text based on specified filters
+.SH SYNOPSIS
+.nf
+cf [-p pfname] [filename]
+.fi
+.SH DESCRIPTION
+The color-filter program \fBcf\fP is a simple line-based scanner that 
+filters text and applies particular colors based on regular-expression 
+matches of the contents. The regular expressions used to assign colors 
+are specified in an Antelope parameter-file. 
+
+There are two main tables in the parameter file: an \fIescapes\fP table
+which lists the names of several display modes (different colors) along
+with the numeric codes for them from the ANSI 6429 specification. Some
+useful constants from that specification are shown here:
+.nf
+
+    black      30
+    red        31
+    green      32
+    yellow     33
+    blue       34
+    magenta    35
+    cyan       36
+    white      37
+    normal     00
+    brighten   01
+    underline  04
+    blink      05
+    background 07
+
+.fi
+In the simplest case, a line in the \fIescapes\fP table will list a 
+display mode and the ANSI code that defines it:
+.nf
+
+    red        31
+
+.fi
+In more sophisticated usage, a line in the \fIescapes\fP table will show
+a sequence of codes to use before the matching expression, a colon, 
+and a sequence of codes to use after the matching expression (this can 
+be used, for example, to highlight the first word of a line and leave the 
+rest colored similarly). For example:
+.nf
+
+    blue       34 01 : 00 34
+
+.fi
+The second major block of the cf.pf parameter file is an array, giving 
+a table of expressions to be presented in each display mode. See the 
+example below in the PARAMETER FILE section. Each expression should be 
+a regular expression understood by the Perl Parse::Lex(3) module. 
+
+Note that \fBcf\fP automatically returns the display mode to normal 
+after each line (in other words, if a line of input text is encountered that 
+has no matching expression in the parameter file, that line will be 
+displayed normally). 
+
+.SH OPTIONS
+.IP "-p pfname"
+Specify a parameter-file name other than the default cf.pf
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+The parameter file below shows a simplified version of the default 
+parameter file for cf.pf, which is constructed to interpret the output 
+of compilation with an antelopemakefile(5): 
+.nf
+
+escapes &Tbl{
+	red        31 
+	green      32 01 07 : 00 32
+	blue       34 01 : 00 34
+	magenta    35
+	cyan       36
+}
+
+expressions &Arr{
+   red &Tbl{
+	^Error:
+	^.*undefined symbol:
+   }
+   green &Tbl{
+	^\\+[[:space:]]+[^[:space:]]+ 
+   }
+   magenta &Tbl{
+	^.*gcc.*: unrecognized option
+	^.*declaration hides parameter
+	^.*Warning:
+   }
+   cyan &Tbl{
+	^Current working directory
+	^In file included from
+	^.*In function [`'].*':    
+   }
+   blue &Tbl{
+	^cc[[:space:]]
+	^compile[[:space:]]
+	^deposit[[:space:]]
+	^make[[:space:]]
+	^mv[[:space:]]
+	^produce[[:space:]]
+   }
+}
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% make install |& cf | less -R
+
+or (in tcsh):
+
+% alias cmake 'make \\!* |& cf'
+
+then
+
+% cmake install
+
+(this should produce a colored output of the compile process)
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+.fi
+.SH "BUGS AND CAVEATS"
+\fBcf\fP requires the Parse::Lex package for Perl available from 
+www.cpan.org.
+
+\fBcf\fP uses ANSI Color escape codes; the terminal or program used 
+to display these must support ANSI (ISO) 6429. 
+
+The less(1) program may need to be run with the -R option ("Raw 
+control characters") in order to display colors correctly. 
+
+Backslash characters '\' for the regular expressions must appear as 
+double backslashes '\\' in the cf.pf parameter file to protect them 
+from misinterpretation by the parameter-file reader. 
+
+The Perl Parse::Lex works somewhat differently than standard lexers in that
+the first matching, rather than the longest matching token is processed. Thus
+the exact performance of the cf utility may depend on the order in which 
+expressions appear in the cf.pf parameter file (note the blocks of different 
+colors are processed in the order they appear in the \fIescapes\fP table; 
+similarly expressions for each color are processed in the order in which they
+appear).
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting
+.fi
+.\" $Id$
