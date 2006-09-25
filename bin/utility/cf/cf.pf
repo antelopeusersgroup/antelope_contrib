@@ -26,7 +26,7 @@ expressions &Arr{
 	^make\\[[[:digit:]]+\\]:.*Command not found
 	^ld: fatal:
 	^.*ld: can't locate file for:
-	^ld returned [1-9] exit status
+	^.*ld returned [1-9] exit status
 	^.*libtool: can't locate file for:
 	^.*libtool:.*not allowed in library
 	^.*java.*cannot resolve symbol
