@@ -23,7 +23,12 @@ expressions &Arr{
 	^gcc: language.*not recognized
 	^.*line [[:digit:]]+: return value type mismatch
 	^make\\[[[:digit:]]+\\]:.*Error
+	^make\\[[[:digit:]]+\\]:.*Command not found
 	^ld: fatal:
+	^.*ld: can't locate file for:
+	^ld returned [1-9] exit status
+	^.*libtool: can't locate file for:
+	^.*libtool:.*not allowed in library
 	^.*java.*cannot resolve symbol
 	^[[:digit:]]+ errors$
 	^[[:space:]]*format_type can't format
@@ -84,10 +89,12 @@ expressions &Arr{
 	^In file included from
 	^[[:space:]]+from [^[:space:]]+:[[:digit:]]+[:,]
 	^.*In function [`'].*':    
+	^.*: At top level:$
 	^Installing[[:space:]]
 	^Writing[[:space:]]
 	^Appending[[:space:]]
 	^Running[[:space:]]
+	^Skip[[:space:]]
 	^Files found in blib/arch: 
 	^LD_RUN_PATH=
 	^name=
@@ -104,6 +111,7 @@ expressions &Arr{
 	^-> cc[[:space:]]
 	^f77[[:space:]]
 	^f90[[:space:]]
+	^gfortran[[:space:]]
 	^gcc[[:space:]]
 	^g\\+\\+[[:space:]]
 	^-> gcc[[:space:]]
