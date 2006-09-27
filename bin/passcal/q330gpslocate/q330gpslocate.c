@@ -70,20 +70,34 @@ int main(int argc, char **argv)
 		{
 			if(strstr(line,"Latitude")!=NULL)
 			{
-				str = strdup(line);
-				pushtbl(lat_tbl,str);
-				continue;
+				/* These magic numbers are magic string
+				length +3 to allow for : space and ^M .
+				This allows skipping fixes that returned
+				NULL gps estimates.*/
+				if(strlen(line)>12)
+				{
+					str = strdup(line);
+					pushtbl(lat_tbl,str);
+					continue;
+				}
 			}
 			if(strstr(line,"Longitude")!=NULL)
 			{
-				str = strdup(line);
-				pushtbl(lon_tbl,str);
-				continue;
+				if(strlen(line)>13)
+				{
+					str = strdup(line);
+					pushtbl(lon_tbl,str);
+					continue;
+				}
 			}
 			if(strstr(line,"Height")!=NULL)
 			{
-				str = strdup(line);
-				pushtbl(height_tbl,str);
+				if(strlen(line)>10)
+				{
+					str = strdup(line);
+					pushtbl(height_tbl,str);
+					continue;
+				}
 			}
 		}
 		fclose(fp);
