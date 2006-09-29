@@ -4,6 +4,16 @@
 #include "seispp.h"
 namespace SEISPP {
 using namespace SEISPP;
+StationChannelMap::StationChannelMap()
+{
+	string defmap;
+	defmap=string("BHE 0 0\n")
+		+string("BHN 1 0\n")
+		+string("BHE 2 0\n");
+	ThreeComponentChannelMap def(defmap);
+	chanmap.insert(map<string,ThreeComponentChannelMap>
+                                ::value_type(string("default"),def));
+}
 StationChannelMap::StationChannelMap(Pf *pf)
 {
 	string base_error("StationChannelMap parameter file constructor:  ");
@@ -24,7 +34,7 @@ StationChannelMap::StationChannelMap(Pf *pf)
 			 + string("Syntax error in parameter file parsing Tbl key =")
 			 + string(key));
 		try {
-			tccm=new ThreeComponentChannelMap(pfchan,sta);
+			tccm=new ThreeComponentChannelMap(pfsta,sta);
 			// a ugly substitute for chanmap[sta]=*tccm;
 			// Dark side of STL syntax showing.  
 			chanmap.insert(map<string,ThreeComponentChannelMap>

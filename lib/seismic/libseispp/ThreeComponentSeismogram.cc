@@ -14,7 +14,7 @@ using namespace SEISPP;
 // done inline in seispp.h, but it is complication enough I put
 // it here
 //
-ThreeComponentSeismogram::ThreeComponentSeismogram() : Metadata(),u(1,1)
+ThreeComponentSeismogram::ThreeComponentSeismogram() : Metadata(),u(0,0)
 {
 	live = false;
 	dt=0.0;
@@ -497,7 +497,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 {
 	int i,j;
 	// exit immediately if we are given irregular sample rates.
-	if( (ts[1].dt!=ts[2].dt) || (ts[2].dt!=ts[3].dt) )
+	if( (ts[0].dt!=ts[1].dt) || (ts[1].dt!=ts[2].dt) )
 		throw SeisppError(
 		  "gather_components:  sample intervals of components are not consistent");
 	// temporaries to hold component values
@@ -507,12 +507,12 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	// Load up these temporary arrays inside this try block and arrange to 
 	// throw an exception if required metadata are missing
 	try {
-		hang[0]=ts[1].get_double("hang");
-		hang[1]=ts[2].get_double("hang");
-		hang[2]=ts[3].get_double("hang");
-		vang[0]=ts[1].get_double("vang");
-		vang[1]=ts[2].get_double("vang");
-		vang[2]=ts[3].get_double("vang");
+		hang[0]=ts[0].get_double("hang");
+		hang[1]=ts[1].get_double("hang");
+		hang[2]=ts[2].get_double("hang");
+		vang[0]=ts[0].get_double("vang");
+		vang[1]=ts[1].get_double("vang");
+		vang[2]=ts[2].get_double("vang");
 	} catch (MetadataError mde)
 	{
 		mde.log_error();
@@ -520,9 +520,9 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		  "gather_components:  missing hang/vang variables in trace metadata");
 	}
 	// These are loaded just for convenience
-	t0_component[0]=ts[1].t0;
-	t0_component[1]=ts[2].t0;
-	t0_component[2]=ts[3].t0;
+	t0_component[0]=ts[0].t0;
+	t0_component[1]=ts[1].t0;
+	t0_component[2]=ts[2].t0;
 	
 	// Treat the normal case specially and avoid a bunch of work unless
 	// it is required
@@ -535,17 +535,17 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		/* This is a simple loop version
 		for(j=0;j<ns;++ns)
 		{
-			this->u(0,j)=ts1.s[j];
-			this->u(1,j)=ts2.s[j];
-			this->u(2,j)=ts3.s[j];
+			this->u(0,j)=ts[0].s[j];
+			this->u(1,j)=ts[1].s[j];
+			this->u(2,j)=ts[2].s[j];
 		}
 		*/  
 		// This is a vector version that I'll use because it will
 		// be faster albeit infinitely more obscure and 
 		// intrinsically more dangerous
-		dcopy(ns,&(ts[0].s[0]),1,u.get_address(0,0),1);
-		dcopy(ns,&(ts[1].s[0]),1,u.get_address(1,0),1);
-		dcopy(ns,&(ts[2].s[0]),1,u.get_address(2,0),1);
+		dcopy(ns,&(ts[0].s[0]),1,u.get_address(0,0),3);
+		dcopy(ns,&(ts[1].s[0]),1,u.get_address(1,0),3);
+		dcopy(ns,&(ts[2].s[0]),1,u.get_address(2,0),3);
 	}
 	else
 	{
@@ -555,7 +555,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		tsmin=min(t0_component[0],t0_component[1]);  
 		tsmin=min(tsmin,t0_component[2]);
 		tsmax=max(t0_component[0],t0_component[1]);  
-		// It might be possible to use min in algorithm for this
+		// It might be possible to use min in std algorithm for this
 		tsmax=max(tsmax,t0_component[2]);
 		temin=min(ts[0].endtime(),ts[1].endtime());
 		temin=min(temin,ts[2].endtime());
@@ -563,6 +563,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		temax=max(temax,ts[2].endtime());
 		ns=nint((temax-temin)/dt);
 		this->u=dmatrix(3,ns);
+		this->u.zero();
 		if(fabs((tsmax-tsmin)/dt)>1.0) 
 			this->add_gap(TimeWindow(tsmin,tsmax));
 		if(fabs((temax-temin)/dt)>1.0)
@@ -587,28 +588,36 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 	// a faster way to do this manipulating the STL set object, but this
 	// is independent of those details and should always work even if it
 	// is slower.
+	//WARNING:  this code segment (irregular start time block
+	// is untested.  Sept. 29, 2006
+	//
 	int istart=0,iend=0;
 	bool in_a_gap=false;
 	for(i=0;i<this->ns;++i)
 	{
-		// Skip over a gap if there is one present at the beginning
-		// of this data
-		if( (i==0) && this->is_gap(i) )
+		// Skip over gaps already defined
+		if( this->is_gap(i) )
 		{
 			do {
 				++i;
 			} while( (i<ns) && this->is_gap(i));
-			continue;
+			if(i==(ns-1)) 
+				break;
+			// Need to force this
+			in_a_gap=false;
 		}
 		if(in_a_gap)
 		{
-			// terminate scan if we hit a gap and the end of the data
+			// terminate scan if we hit a gap or the end of the data
 			if(this->is_gap(i))
 			{
 				iend=i-1;
 				this->add_gap(TimeWindow(this->time(istart),
 					this->time(iend)));
-				break;
+				if(i>=(ns-1))
+					break;
+				else
+					continue;
 			}
 			// skip forward if any of the ts components shows a gap
 			if(ts[0].is_gap(this->time(i))) continue;
@@ -623,7 +632,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 		{
 			// This will terminate scan if there is a gap
 			// at the end of the trace already marked
-			if(this->is_gap(i)) break;
+			if(this->is_gap(i)) continue;
 			// 
 			// Mark the start of a new gap if any of the
 			// input traces have a gap marked 
@@ -633,7 +642,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 				if(ts[j].is_gap(this->time(i)))
 				{
 					in_a_gap=true;
-					istart=1;
+					istart=i;
 					break;
 				}
 			}

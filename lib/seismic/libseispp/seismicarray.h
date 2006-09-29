@@ -460,7 +460,7 @@ ThreeComponentEnsemble
   *array_get_data(SeismicArray& stations,
         Hypocenter& hypo,string phase,
         TimeWindow data_window, double tpad,
-        DatascopeHandle& dbwf,
+        DatabaseHandle& dbwf,
         StationChannelMap& scmap,
         MetadataList& ensemble_mdl, MetadataList& member_mdl,
         AttributeMap& am);

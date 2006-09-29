@@ -15,7 +15,7 @@ ThreeComponentEnsemble
   *array_get_data(SeismicArray& stations,
 	Hypocenter& hypo,string phase, 
         TimeWindow data_window, double tpad,
-        DatascopeHandle& dbwf, 
+        DatabaseHandle& dbwf, 
 	StationChannelMap& scmap,
 	MetadataList& ensemble_mdl, MetadataList& member_mdl,
         AttributeMap& am)
@@ -51,11 +51,12 @@ ThreeComponentEnsemble
 		ThreeComponentChannelMap tccm=scmap.channels(current_sta);
 		vector<int> comp,prec,member_index;
 		string chan;
-		int i,j;
-		for(i=0;i<rawdata.member.size();++i)
+		int i,j,ilasttest;
+		int rawsize=rawdata.member.size();
+		for(i=0,ilasttest=0;i<rawsize;++i)
 		{
 			string nextsta=rawdata.member[i].get_string("sta");
-			if(nextsta==current_sta)
+			if((nextsta==current_sta) || (i>=rawsize))
 			{
 				try {
 					chan=rawdata.member[i].get_string("chan");
@@ -79,6 +80,17 @@ ThreeComponentEnsemble
 			}
 			else
 			{
+			// The decrementing of i is implicitly dangerous
+			// here.  Of special concern is single component
+			// data mixed with three-component data will 
+			// create an infinite loop without this test.
+			// In normal processing decrementing is needed 
+			// to avoid dropping the previous member.
+			// This is kind of perverted logic I (glp)
+			// fully admit, but it works so I won't break it.
+
+			    if(i!=ilasttest) --i;
+			    ilasttest=i;
 			//
 			// Land here when a grouping is completed and we have
 			// to sort out which channels are to be kept.
@@ -109,6 +121,10 @@ ThreeComponentEnsemble
 						  (rawdata.member[member_index[j]]);
 					ThreeComponentSeismogram new3c(components,0);
 					result->member.push_back(new3c);
+					comp.clear();
+					prec.clear();
+					member_index.clear();
+					components.clear();
 				}
 				else if(ncomponents>3)
 				{
@@ -163,6 +179,10 @@ ThreeComponentEnsemble
 							<< current_sta
 							<< ".  Data from this station droped."
 							<<endl;
+					comp.clear();
+					prec.clear();
+					member_index.clear();
+					components.clear();
 				}
 				else
 				{
@@ -173,6 +193,10 @@ ThreeComponentEnsemble
 						<< ncomponents
 						<< " components and cannot be assembled into three component bundle"
 						<< endl;
+					comp.clear();
+					prec.clear();
+					member_index.clear();
+					components.clear();
 				}
 			    } catch (SeisppError& serr)
 			    {
@@ -182,6 +206,7 @@ ThreeComponentEnsemble
 				cerr << "Data from this station will be dropped"<<endl;
 			    }
 			}
+			current_sta=nextsta;
 		}
 		return(result);
 	}

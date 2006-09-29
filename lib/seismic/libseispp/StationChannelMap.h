@@ -32,6 +32,13 @@ class StationChannelMap
 {
 public:
 /*!
+  \brief Default constructor. 
+  The unparameterized constructor sets the "default" map which 
+  can work in many circumstances.  It can at least delay exceptions
+  being thrown from improper definitions downstream.
+*/
+	StationChannelMap();
+/*!
   Constructs this object using a (complicated) Antelope parameter file 
   description of the operator.  
 

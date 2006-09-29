@@ -11,14 +11,14 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(Pf *pf,string tccmkey)
 	const string errmess("ThreeComponentChannelMap parameter file constructor:  ");
 	t=pfget_tbl(pf,const_cast<char *>(tccmkey.c_str()));
 	if(t==NULL) throw SeisppError(errmess
-	  + string(" ThreeComponentChannelMap key for Tbl list no in parameter file"));
+	  + string(" ThreeComponentChannelMap key for Tbl list not in parameter file"));
 	for(int i=0;i<maxtbl(t);++i)
 	{
 		char *line;
 		char chanbuf[20];
 		int comp,lev;
 		line=static_cast<char *>(gettbl(t,i));
-		if(sscanf("%s%d%d",chanbuf,&comp,&lev) != 3)
+		if(sscanf(line,"%s%d%d",chanbuf,&comp,&lev) != 3)
 			throw SeisppError(errmess
 				+ string("error parsing Tbl in pf"));
 		string chan(chanbuf);
