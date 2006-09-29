@@ -258,7 +258,7 @@ bool SessionManager::validate_setting(stringstream & ss)
     }
 
     if(scase==1 && state != ANALYZE && state != REF) {
-	active_setting.result_sort_order=SITE_LAT;
+	active_setting.result_sort_order=PREDARR_TIME;
 	ss << "You specified an initial sort order of "<<sort_order<<endl<<
 	    " which is not available before the analysis"<<endl<<
 	    " of the ensemble, "

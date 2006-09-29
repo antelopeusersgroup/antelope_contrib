@@ -52,6 +52,19 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string("  constructor had problems opening one or more database tables"));
 		}
+		// Verify site and sitechan are defined and abort if
+		// they are empty
+		int ntest;
+		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,"site",0,0);
+		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
+		if(ntest<=0) 
+			throw SeisppError(string("XcorProcessingEngine:")
+				+string(" required site table is empty"));
+		dbtmp=dblookup(waveform_db_handle.db,0,"sitechan",0,0);
+		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
+		if(ntest<=0) 
+			throw SeisppError(string("XcorProcessingEngine:")
+				+string(" required sitechan table is empty"));
 		// We could bypass arrival/assoc dblookup if this
 		// were false, but the overhead is so small it is 
 		// best to leave it alone.  (glp)
@@ -107,6 +120,14 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		coherence_cutoff_default=coherence_cutoff;
 		stack_weight_cutoff_default=stack_weight_cutoff;
 		time_lag_cutoff=global_md.get_double("time_lag_cutoff");
+		// For three component data we need to create this 
+		// StationChannelMap object that tells us how to map channel
+		// codes into components
+		RequireThreeComponents=global_md.get_bool("RequireThreeComponents");
+		if(RequireThreeComponents)
+			stachanmap=StationChannelMap(global_pf);
+		else
+			stachanmap=StationChannelMap();
 		mcc = NULL;   // Need this unless we can convert to a shared_ptr;
 
 	} catch (MetadataGetError mderr)
@@ -289,6 +310,95 @@ TimeSeriesEnsemble XcorProcessingEngine::get_raw_data()
 {
 	return(*regular_gather);
 }
+// Local function to extract a particular component from a 3c ensemble
+// returning a scalar time series ensemble that can be passed downstream
+// for processing by this program.  
+auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
+			string compname,Hypocenter hypo,string phase)
+{
+	int i;
+	TimeSeries *x;
+	// Hard wired for now.  May be a parameter eventually
+	const double vp0def(6.0),vs0def(3.5);
+	auto_ptr<TimeSeriesEnsemble> result(new
+		TimeSeriesEnsemble(dynamic_cast<Metadata&> (*tcse),
+				tcse->member.size()));
+	if(compname.find_first_of("ZNE")!=string::npos)
+	{
+	    for(i=0;i<tcse->member.size();++i)
+	    {
+		if(!tcse->member[i].live) continue;
+		// First make certain we are in cardinal coordinates
+		tcse->member[i].rotate_to_standard();
+		if(compname=="E")
+			x=ExtractComponent(tcse->member[i],0);
+		else if(compname=="N")
+			x=ExtractComponent(tcse->member[i],1);
+		else
+			x=ExtractComponent(tcse->member[i],2);
+		result->member.push_back(*x);
+		delete x;
+	    }
+	}
+	else if(compname.find_first_of("TRL")!=string::npos)
+	{
+	    for(i=0;i<tcse->member.size();++i)
+            {
+		if(!tcse->member[i].live) continue;
+		double vp0,vs0;
+		double stalat,stalon,staelev;
+		tcse->member[i].rotate_to_standard();
+		try {
+			vp0=tcse->member[i].get_double("vp0");
+			vs0=tcse->member[i].get_double("vs0");
+		} catch (MetadataGetError mde) {
+			cerr << "Warning required vp0 and vs0 not defined. "
+				<< "using default="
+				<< vp0def << ", "<<vs0def <<endl;
+			vp0=vp0def;
+			vs0=vs0def;
+		}
+		try {
+			stalat=tcse->member[i].get_double("lat");
+			stalon=tcse->member[i].get_double("lon");
+			staelev=tcse->member[i].get_double("elev");
+		}
+		catch (MetadataGetError mde)
+		{
+			mde.log_error();
+			throw SeisppError(string("XcorProcessingEngine:")
+				+string("  Failure in three component processing"));
+			
+		}
+		SlownessVector u=hypo.phaseslow(stalat,stalon,staelev,phase);
+		try {
+			tcse->member[i].free_surface_transformation(u,vp0,vs0);
+		} catch (SeisppError serr)
+		{
+			serr.log_error();
+			cerr << "Using simple ray coordinates for station "
+				<< tcse->member[i].get_string("sta")
+				<<endl;
+			SphericalCoordinate sc=PMHalfspaceModel(vp0,vs0,
+				u.ux,u.uy);
+			tcse->member[i].rotate(sc);
+		}
+		if(compname=="T")
+			x=ExtractComponent(tcse->member[i],0);
+		else if(compname=="R")
+			x=ExtractComponent(tcse->member[i],1);
+		else
+			x=ExtractComponent(tcse->member[i],2);
+		result->member.push_back(*x);
+		delete x;
+	    }
+	}
+	else
+		throw SeisppError(string("XcorProcessingEngine:")
+			+ string("Cannot handle component name=")
+			+ compname);
+	return result;
+}
 void XcorProcessingEngine::load_data(Hypocenter & h)
 {
     try {
@@ -296,8 +406,44 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		h.time+raw_data_twin.end);
 	UpdateGeometry(current_data_window);
 	// Read raw data.  Using an auto_ptr as good practice
-        auto_ptr<TimeSeriesEnsemble> tse=
-		auto_ptr<TimeSeriesEnsemble>(array_get_data(
+	// 3c mode can work for either cardinal directions or
+	// applying transformations.  In either case we use
+	// the temporary auto_ptr to hold the data read in
+	auto_ptr<TimeSeriesEnsemble> tse;
+	if(RequireThreeComponents)
+	{
+		string chan_allowed("ZNELRT");
+		if(analysis_setting.component_name
+			.find_first_of(chan_allowed,0)<0)
+		{
+			throw SeisppError(
+				string("XcorProcessingEngine::load_data:")
+				+ string(" Illegal channel code specified.")
+				+ string(" Must be Z,N,E,L,R, or T") );
+		}
+		ThreeComponentEnsemble *tcse;
+		tcse = array_get_data(
+  			   stations,
+                           h,
+			   analysis_setting.phase_for_analysis,
+                           raw_data_twin,
+                           analysis_setting.tpad,
+                           dynamic_cast<DatabaseHandle&>(waveform_db_handle),
+			   stachanmap,
+                           ensemble_mdl,
+                           trace_mdl,
+                           am);
+		// This specialized function could be generalized, but
+		// done in one pass here for efficiency.  Local function
+		// to this file found above
+		tse=auto_ptr<TimeSeriesEnsemble>(Convert3CEnsemble(tcse,
+			analysis_setting.component_name,h,
+			analysis_setting.phase_for_analysis));	
+		delete tcse;
+	}
+	else
+	{
+		tse=auto_ptr<TimeSeriesEnsemble>(array_get_data(
   			   stations,
                            h,
 			   analysis_setting.phase_for_analysis,
@@ -308,6 +454,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
                            ensemble_mdl,
                            trace_mdl,
                            am));
+	}
 	StationTime predarr=ArrayPredictedArrivals(stations,h,
 		analysis_setting.phase_for_analysis); 
 

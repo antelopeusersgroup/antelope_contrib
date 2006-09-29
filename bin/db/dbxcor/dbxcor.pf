@@ -7,7 +7,7 @@ robust_window_fraction 0.2
 stacking_method robust
 #default_filter BW 0.01 2 1.5 5
 default_filter DEMEAN
-component_for_analysis Z
+component_for_analysis L
 phase_for_analysis P
 tpad 30.0
 initial_time_stamp 2003355:00:00:00.0
@@ -17,10 +17,27 @@ target_sample_interval 0.1
 schema xcor1.0
 network_name secarib
 analysis_sort_order stack_weight
+#  These values effectively turn off these cutoff
+#  criteria by default
 correlation_peak_cutoff 0.0
-coherence_cutoff 0.1
-stack_weight_cutoff 0.05
+coherence_cutoff 0.01
+stack_weight_cutoff 0.0005
 time_lag_cutoff 4.0
+#
+#  Important switch for three component processing.  Set to 
+#  true to force 3c processing.  Otherwise data are loaded by channel only.
+#  Networks with mixed single component and three component
+#  data would not want to use this feature.  Most useful for
+#  modern arrays with all three-component stations.  Required
+#  if component is L, R, or T.
+#
+RequireThreeComponents true
+#
+#  Trace metadata to load.  Note that with RequireThreeComponents is
+#  true station coordinates (site.lat, site.lon, and site.elev) are 
+#  required.  When false they are not required here, although the
+#  program ALWAYS requires a site table.
+#
 trace_mdl	&Tbl{
     sta string
     chan string
@@ -33,6 +50,9 @@ trace_mdl	&Tbl{
     jdate int
     calib real
     calper real
+    site.lat
+    site.lon
+    site.elev
 }
 resample_definitions	&Arr{
     100	&Arr{
@@ -66,6 +86,53 @@ resample_definitions	&Arr{
         low_limit	39
     }
 }
+#
+# This complicated section is used only if RequireThreeComponents is
+# true.  It defines a hierarchy of channel use for different stations.
+# I could be done in a database, but the current schema does not support
+# the concept so we'll do it in pf for now.  Note default is very 
+# important as it is the definition used when a station specific map 
+# is not defined.   The example below has only one example station
+# used as an example.  Most applications can probably just depend on
+# the default.
+#
+StationChannelMap &Arr{
+# Example of old high low gain station
+OLD &Tbl{
+HHE 0 0
+HHN 1 0
+HHZ 2 0
+HLE 0 1
+HLN 1 1
+HLZ 2 1
+}
+#
+# Simple case if a station had only three channels
+#
+XYZ &Tbl{
+BHE 0 0
+BHN 1 0
+BHZ 2 0
+}
+#
+# a stock default.  Uses H first, B second, and L as last
+# resort.
+#
+default &Tbl{
+HHE 0 0
+HHN 1 0
+HHZ 2 0
+BHE 0 1
+BHN 1 1
+BHZ 2 1
+LHE 0 2
+LHN 1 2
+LHZ 2 2
+}
+}
+#
+#  This section is for main data plot parameters
+#
 data_window_parameters &Arr{
 trim_gap_edges	true
 verbose true
@@ -131,8 +198,8 @@ verbose true
 WiggleTrace true
 VariableArea true
 SUVariableArea_grey_value 1
-clip_data false
-clip_wiggle_traces false
+clip_data true
+clip_wiggle_traces true
 xcur 1.0
 clip_percent 98
 xbox 50
@@ -242,9 +309,9 @@ grid1 1
 grid2 1
 titlesize 36.0
 }
- 
-# This defines data written to wfprocess tables. Static
-# and require a change only if schema were to change.
+// 
+// This defines data written to wfprocess tables. Static
+// and require a change only if schema were to change.
 BeamMetadataList &Tbl{
 pwfid int
 wfprocess.timetype string
@@ -255,57 +322,147 @@ wfprocess.algorithm string
 save_to_arrival true
 beam_directory xcorbeams
 beam_dfile xcorbeam.w
+#
+#  This is an example of subarray definitions
+#  This turns on subarray processing
+#
 use_subarrays true
-# This block defines subarrays.
-# Ignored if use_subarrays is false.  Must not be empty if
-# true.  Note outer block uses required key of virtual_arrays
-# Next level assigns names to subarrays.  Lowest level is list
-# of station names assigned to that subarray.  Be careful with
-# the matching brackets.
+#
+#  This defines subarray geometry as lists of stations
+# with a subarray name tag
+#
 virtual_arrays &Arr{
+# Western stations
 west &Arr{
 sta_list &Tbl{
-BAUV
-CAPV
-CURV
-DABV
-ELOV
-IMOV
-JACV
-MONV
-QARV
-SANV
-SIQV
-SOCV
-TERV
-TINV
-TURV
-VIGV
 VIRV
-CURA
-}
-}
-test &Arr{
-sta_list &Tbl{
-BAUV
-CAPV
-CURV
-DABV
-ELOV
 IMOV
+ARUB
+MONV
+DABV
 JACV
+SIQV
+QARV
+CURV
+TERV
+SANV
+SDV
+SOCV
+VIGV
+CAPV
+}
+}
+southwest &Arr{
+sta_list &Tbl{
+CAPV
+VIGV
+SOCV
+ELOV
+SANV
+BAUV
+CURV
+SANV
+TERV
+}
+}
+SierradelInt &Arr{
+sta_list &Tbl{
+TERV
+SANV
+TIRV
+TURV
+TEST
+BIRV
+JMPC
+ROPC
+FCPC
+LMPC
+BAUV
+ULPC
+CUPV
+MERV
+RPPC
+}
+}
+Guarico &Arr{
+sta_list &Tbl{
+JMPC
+ROPC
+FCPC
+LMPC
+ULPC
+BAUV
+MERV
+RPPC
+LAPC
+SMPC
+PFPC
+STPC
+}
+}
+craton &Arr{
+sta_list &Tbl{
+PAYV
+MOPC
+CAIV
+MAPC
+CMPC
+GURV
+PAPC
+RIOV
+VIPC
+CAPC
+EDPC
+LUEV
+}
+}
+west &Arr{
+sta_list &Tbl{
+ABPC
+PARV
+PCRV
+SRPC
+MUPC
+PRPC
+ORIV
+ARPC
+CUPC
+SIPC
+MNPC
+MATU
+CARI
+CACO
+GUAY
+COCH
+GUNV
+GUAY
+GUIV
+}
+}
+abcs &Arr{
+sta_list &Tbl{
 }
 }
 obs &Arr{
 sta_list &Tbl{
+PINA
+SHRB
+PNCH
+PINA
 CUBA
 RRNR
 SOMB
 DAQI
 ZOMB
-DKS
+DRKS
 BTBT
 BLOS
+B151
+ORCV
+IBAV
+ITEV
+COCH
+GUAY
 }
 }
 }

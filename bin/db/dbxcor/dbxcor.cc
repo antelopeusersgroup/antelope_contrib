@@ -943,7 +943,7 @@ void pick_rt_callback(Widget w, void * client_data, void * userdata)
     tmp=spick->get_trace_number();
 
     if (spick->type == POINT) {
-        ss << "Reference trace is "<<tmp<<endl;
+        ss << "Reference trace is "<<tmp+1<<endl;
 	psm->active_setting.rt_set=true;
 	psm->active_setting.reference_trace=tmp;
     } else {

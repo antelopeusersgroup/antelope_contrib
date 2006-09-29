@@ -166,6 +166,9 @@ private:
 	double time_lag_cutoff;
 	// Had to add this to support subarrays
 	Pf *pf_used_by_engine;
+	// Needed to support three component data
+	bool RequireThreeComponents;
+	StationChannelMap stachanmap;
 };
 
 #endif
