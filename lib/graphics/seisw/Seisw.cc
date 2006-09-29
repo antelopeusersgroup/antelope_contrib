@@ -4631,11 +4631,20 @@ static void SetBox(Widget w)
     int nmember=sca->nmember;
 
     sca->mvefac=1.0;
-    x1min=(tse->member)[0].t0;
-    x1max=(tse->member)[0].endtime();
     for(i=0;i<nmember;++i) {
-        x1min=MIN(tse->member[i].t0,x1min);
-        x1max=MAX(tse->member[i].endtime(),x1max);
+	if((tse->member)[i].live)
+	{
+    		x1min=(tse->member)[i].t0;
+    		x1max=(tse->member)[i].endtime();
+		break;
+	}
+    }
+    for(i=0;i<nmember;++i) {
+	if(tse->member[i].live)
+	{
+        	x1min=MIN(tse->member[i].t0,x1min);
+        	x1max=MAX(tse->member[i].endtime(),x1max);
+	}
     }
 
     if (spar->use_variable_trace_spacing) {
@@ -4693,11 +4702,20 @@ static void HandlePreRender(Widget w)
     int nmember=sca->nmember;
 /*
     sca->mvefac=1.0;
-    x1min=(tse->member)[0].t0;
-    x1max=(tse->member)[0].endtime();
     for(i=0;i<nmember;++i) {
-	x1min=MIN(tse->member[i].t0,x1min);
-	x1max=MAX(tse->member[i].endtime(),x1max);
+	if((tse->member)[i].live)
+	{
+    		x1min=(tse->member)[i].t0;
+    		x1max=(tse->member)[i].endtime();
+		break;
+	}
+    }
+    for(i=0;i<nmember;++i) {
+	if(tse->member[i].live)
+	{
+        	x1min=MIN(tse->member[i].t0,x1min);
+        	x1max=MAX(tse->member[i].endtime(),x1max);
+	}
     }
 
     if (spar->use_variable_trace_spacing) {
