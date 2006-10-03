@@ -735,11 +735,11 @@ sub location_header_line {
 
 	if( $regname =~ /^(in|beneath|off|south of|west of|east of|north of) /i ) {
 
-		return "Earthquake $regname";
+		return "Event $regname";
 
 	} else {
 
-		return "Earthquake: " . $regname;
+		return "Event: " . $regname;
 	}
 }
 
