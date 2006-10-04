@@ -138,7 +138,7 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 		die(1,"save_origin: dbgetv error reading origin fields of input view at record %d\n",
 				is);
 	}
-	nass = ie - is + 1;
+	nass = ie - is;
 	/* ndef is potentially wrong by this calculation.  We set ndef 
 	from the number of degrees of freedom in the solution + npar
 	where npar is 3 when depth is fixed and 4 otherwise.  This does
