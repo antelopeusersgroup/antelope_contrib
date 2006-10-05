@@ -569,7 +569,6 @@ proc run_cmdline {} {
 
 			while { [gets $fd aline] > 0 } {
 				
-				puts stdout "aline is <$aline>"
 				lappend query $aline
 			}
 
