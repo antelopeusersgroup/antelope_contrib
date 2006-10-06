@@ -246,6 +246,10 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // related to a fixed time base.  Aim is to produce a gather that
    // is aligned to zero lag that can inspected graphically.
    mcc->xcor=MoveoutTimeShift(mcc->xcor);
+   // This aligns the ensemble by the time shifts computed by mcc operator.
+   // WARNING:  the frozen predarr.time key used here is a long-term
+   // maintenance issue and limits future reuse.
+   LagShift(waveform_ensemble,moveout_keyword,string("predarr.time"));
    return(mcc);
 }
 
