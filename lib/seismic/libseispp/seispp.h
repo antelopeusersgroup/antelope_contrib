@@ -626,7 +626,62 @@ template <class Tensemble> Tensemble MoveoutTimeShift(Tensemble& d)
 	}
 	return (dshift);
 }
+/*!
+\brief Align an ensemble by a set of lag estimates.
 
+We often want to shift the time base for a set of data in relative
+time coordinates.  An example is application of statics of any kind.
+Another is display of aligned traces after cross-correlation.  
+This function handles this for any of the family of time series
+ensemble objects.  It requires the input be in a relative time
+reference frame to allow the application of the BasicTimeSeries
+methods to deal with data gaps.  The basic algorithm is to 
+get the original t0 time stamp (could be anything really, but 
+the trefkeyword Metadata field must be set or an error will
+follow), restore the data to an absolute time frame, shift
+the original t0 shift value by lag extracted from the object
+with the lagkey field, and then return the data to relative
+time scale using the modified t0.  This algorithm retains the
+integrity of the original absolute time stamp so the data are
+altered in place.  This is in contrast to a similar template
+function MoveoutTimeShift which is destructive.
+
+\param d input data ensemble of generic time series objects.
+\param lagkey keyword used to extract the lag values from the 
+	Metadata (generalized header) field of the ensemble members.
+\param trefkeyword keyword used to extract the absolute time 0 stamp
+	for each member of the ensemble.  This field is not altered 
+	in the Metadata but is required to redefine t0 with an 
+	applied lag value.
+*/
+
+template <class Tensemble> Tensemble LagShift(Tensemble& d,
+	const string lagkey,
+		const string trefkeyword)
+{
+	string error1("LagShift:  Input ensemble contains data with UTC time.  Must be relative.");
+	string error2("LagShift:  Metadata error.  See previous error  message.");
+	try {
+		for(int i=0;i<d.member.size();++i)
+		{
+			double tshift,lag;
+			if(d.member[i].live)
+			{
+				if(d.member[i].tref==absolute)
+					throw SeisppError(error1);
+				tshift=d.member[i].get_double(trefkeyword);
+				lag=d.member[i].get_double(lagkey);
+				d.member[i].rtoa(tshift);
+				tshift+=lag;
+				d.member[i].ator(tshift);
+			}
+		}
+	} catch (MetadataGetError mde)
+	{
+		mde.log_error();
+		throw SeisppError(error2);
+	}
+}
 /*!
 // Convert a velocity model in flattened earth geometry to true geometry.
 //
