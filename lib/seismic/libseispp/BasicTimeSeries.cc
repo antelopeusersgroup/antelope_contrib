@@ -57,6 +57,7 @@ void BasicTimeSeries::ator(double tshift)
 		shifted_gaps.insert(tw);
 	}
 	gaps = shifted_gaps;
+	tref=relative;
 }
 // inverse of ator -- note minus becomes plus
 // everything else is nearly identical
@@ -74,6 +75,7 @@ void BasicTimeSeries::rtoa(double tshift)
 		shifted_gaps.insert(tw);
 	}
 	gaps = shifted_gaps;
+	tref=absolute;
 }
 
 BasicTimeSeries::BasicTimeSeries()

@@ -655,7 +655,7 @@ function MoveoutTimeShift which is destructive.
 	applied lag value.
 */
 
-template <class Tensemble> Tensemble LagShift(Tensemble& d,
+template <class Tensemble> void LagShift(Tensemble& d,
 	const string lagkey,
 		const string trefkeyword)
 {
@@ -671,9 +671,14 @@ template <class Tensemble> Tensemble LagShift(Tensemble& d,
 					throw SeisppError(error1);
 				tshift=d.member[i].get_double(trefkeyword);
 				lag=d.member[i].get_double(lagkey);
-				d.member[i].rtoa(tshift);
-				tshift+=lag;
-				d.member[i].ator(tshift);
+				// We do nothing to traces with moveout 
+				// marked as bad by this test
+				if(lag<MoveoutBadTest)
+				{
+					d.member[i].rtoa(tshift);
+					tshift+=lag;
+					d.member[i].ator(tshift);
+				}
 			}
 		}
 	} catch (MetadataGetError mde)
