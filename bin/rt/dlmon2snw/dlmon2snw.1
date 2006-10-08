@@ -6,13 +6,13 @@ dlmon2snw \- provides output data stream to SeisNetWatch
 dlmon2snw [-v] [-p pf_sourcename] orb
 .fi
 .SH DESCRIPTION
-dlmon2snw extracts a q330 /pf/st file from an orb, reformats the data so that
-SeisNetWatch can read it. Output is sent to standard out. Program reads one q330 pf file and then exits.
+dlmon2snw extracts the q330 /pf/st files from an orb, reformats the data so that
+SeisNetWatch can read it. Output is sent to standard out. Program reads one of each q330 pf file and then exits.
 .SH OPTIONS
 .IP -v
 verbose
 .IP "-p pf_sourcename"
-change pf_sourcename selected from orb.  Default is tadata/pf/st.
+change pf_sourcename selected from orb.  Default is .*/pf/st.
 .SH FILES
 None.
 .SH ENVIRONMENT

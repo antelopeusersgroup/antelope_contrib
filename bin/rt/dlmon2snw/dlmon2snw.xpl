@@ -8,9 +8,10 @@
     require "getopts.pl" ;
 
     our ( $opt_v, $opt_p );
-    my ($pfsource,$orbname,$orb,$pktid,$srcname,$time,$net,$sta,$chan,$loc);
+    my ($pfsource,$orbname,$orb,$pktid,$srcname,$pkttime,$net,$sta,$chan,$loc);
     my ($nbytes,$result,$pkt,$packet,$subcode,$desc,$type,$suffix,$pf,$ref,$value);
-    my ($par,$nsta);
+    my ($par,$nsta,$when,$src);
+    my (@sources);
     my (%pf,%dls,%par);
 
     if ( !  &Getopts('vp:') || @ARGV != 1 )
@@ -18,12 +19,12 @@
 
     $orbname   = $ARGV[0];
 
-    elog_init( $0, @ARGV );
+    elog_init ( $0, @ARGV );
 
-    $pfsource  = $opt_p || "tadata/pf/st" ;
+    $pfsource  = $opt_p || ".*/pf/st" ;
 
-    print STDOUT "pfsource	$pfsource\n\n" if $opt_v ;
-    print STDOUT "orb		$orbname\n\n" if $opt_v ;
+    elog_notify ("pfsource	$pfsource\n\n") if $opt_v ;
+    elog_notify ("orb		$orbname\n\n")  if $opt_v ;
 #
 #  open input orb
 #
@@ -34,19 +35,30 @@
     }
 
     orbselect( $orb, $pfsource);
-    for (;;) {
-        ( $pktid, $srcname, $time, $packet, $nbytes ) = orbreap( $orb );
-	($result, $pkt) = unstuffPkt( $srcname, $time, $packet, $nbytes ); 
+    ($when, @sources) = orbsources ( $orb );
+
+    foreach $src (@sources) {
+        $srcname = $src->srcname() ;
+        orbselect ( $orb, $srcname ) ;
+        ($pktid, $srcname, $pkttime, $pkt, $nbytes) = orbget ( $orb, "ORBNEWEST" ) ;
+        elog_notify (sprintf "\n%s	%s \n", $srcname, strydtime($pkttime)) if $opt_v;
+        if (!defined $pktid) {
+            next ;
+        }
+        if ( $nbytes == 0 ) {
+            next ;
+        }
+        ($result, $pkt) = unstuffPkt ( $srcname, $pkttime, $pkt, $nbytes ) ;
+
         if ( $result ne "Pkt_pf" ) {
             if( $opt_v ) {
                 elog_notify( "Received a $result, skipping\n" );
             }
             next;
         }
-
         ($net, $sta, $chan, $loc, $suffix, $subcode) = $pkt->parts() ;
         ($type, $desc) = $pkt->PacketType() ;
-        print "$net\_$sta\_$chan\_$loc/$suffix/$subcode $type $desc\n" ;
+        elog_notify ("$net\_$sta\_$chan\_$loc/$suffix/$subcode $type $desc\n")  if $opt_v;
 
         $pf = $pkt->pf ;
 
@@ -66,7 +78,6 @@
                 printf "\n";
             }
         }
-        exit;
     }
 
 
