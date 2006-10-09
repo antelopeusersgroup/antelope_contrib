@@ -55,6 +55,8 @@
    Based on code written by: Rock Yuen-Wong 6/2/2003
    This code by: Todd Hansen 12/18/2003
    Last Updated By: Todd Hansen 4/24/2006
+
+   Moved to Contrib CVS: Todd Hansen 9/9/2006
 */
 
 #define VERSION "$Revision$"
