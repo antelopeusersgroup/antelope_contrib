@@ -1,0 +1,140 @@
+.TH DAVIS2ORB 1 "$Date$"
+.SH NAME
+davis2orb \- ORB interface program for Davis Vantage Pro weather stations
+.SH SYNOPSIS
+.nf
+ davis2orb [-V] [-v] [-d] [-e] [-f] [-j] [-k] [-m] [-T] [-x] [-1]
+           [-r repeatinterval] {[-p serialport] [-b serialspeed] |
+           [-a hostaddr] [-n hostport]} [-c net_sta] [-o orbname]
+           [-g paramfile] [-s statefile] [-z timezone] [-t starttime] 
+           [-i davis_samplerate_toset]
+.fi
+.SH DESCRIPTION
+davis2orb samples weather data from Davis Vantage Pro data loggers. When invoked, it connects to the Davis and gets attention.  After the Davis is at attention, it requests the Davis to dump all of the data since the last download. Information about the last maintained by davis2orb in a state file on disk.  The data dump is analyzed for correct checksums, packetized and sent to the ORB.  If any errors are encountered, the program retries the operation and exits cleanly after multiple fatal attempts.  Any fatal errors cause the program to immediately exit with an error message.  
+
+Unless you are really concerned about data gaps we suggest that you run davis2orb with the -f command line option so that it will not stop when it runs into data gaps in the Davis internal memory. A number of things can cause data gaps, these include power outages or flaky external sensors. Davis2orb attempts to download all of the available data, so it is likely that any gaps you see are also present in the Davis data logger's memory.
+.SH OPTIONS
+.nf
+-V              Print version and usage, then exit
+
+-v              Verbose mode (use this option to see details on what 
+                davis2orb is doing)
+
+-d              Collect and send Davis "RXCHECK" Transmission Statistics
+                packets to the ORB
+
+-e              The program will automatically re-initalize the davis
+                (-1 option) when there has been no data downloaded for 24
+                hrs. This option will generate an error if the repeat
+                interval (-r option) is set to > 4 hrs.
+
+-f              Force the program to ignore gaps in the data
+
+-j              Adjust sleep time automatically
+
+-k              Kick the State file. davis2orb starts downloading at
+                the beginning of the Davis buffer (ignoring the state
+                file), it then updates the state file so that the next
+                time it is run you can start where it left off. NOTE: 
+                this ignores the repeat interval option (-r)
+
+-m              use the "RXTEST" command to switch the davis screen mode
+                to a mode that supports internal data archival.
+
+-T              Set Davis internal clock to match davis2orb host
+                system clock, will exit even if repeat interval is 
+                non-zero.
+
+-x              Measure the sample time skew
+
+-1              This can be used to program the Davis data logger prior
+                to first use. It does the following steps:
+                    *) It sets the time on the Davis to that of the local 
+                       computer.
+                    *) It sets the sample interval to what is described
+                       in the parameter file.
+                    *) It clears the old data.
+                    *) It sets the screen mode.
+                Following this, it exits without downloading any data.
+
+-r interval     Number of seconds between data retrieval operations
+                (default = 3600 [1 hour]).  Does not set internal Davis
+                sample rate. If zero, downloads data and exits.
+
+-p serialport   Serial port device to connect to
+                (Must be fully qualified; e.g. "/dev/ttyS0")
+
+-b serialspeed  Serial port baud rate to connect at.  Used with "-p"
+                (default = Davis default [19200]). Available speeds:
+                19200, 14400, 9600, 4800, 2400, and 1200.
+
+-a hostaddr     IP address or hostname of Davis (use when the Davis
+                is connected via a Serial/Ethernet converter)
+
+-n hostport     TCP port number to connect to Davis.  Used with "-a"
+                (default = 4001)
+
+-c srcname      Base SRCNAME to use for this data stream. (eg "NET_STA")
+
+-t starttime    don't download data unless it is older than this time,
+                ignores the state file but updates it. Ignores the
+                repeat interval. Assumed to be in UTC time unless
+                otherwise specified. This can be in any format supported
+                by EPOCH(1).
+
+-o orbname      Name of ORB to send packets to (default = ":")
+
+-g paramfile    Full path and name of parameter file to use
+                (default = "davis2orb.pf")
+
+-s statefile    Full path and name of state file to use
+                (default = no state file)
+
+-z timezone     Use this timezone when retrieving data from the Davis.
+                (e.g., "US/Pacific"). This does not set the Davis time 
+                zone, that must be done on the console. (default = UTC)
+
+-i  samprate    Set the Davis sample rate to the value in the parameter
+                file after downloading data, will exit even if repeat 
+                interval is non-zero. WARNING: this deletes all of the 
+                data in the Davis. Valid Sample Rates: 1, 5, 10, 15, 
+                30, 60, and 120 minutes.
+.fi
+.SH EXAMPLE
+.ft CW
+.in 2c
+Normal use:
+.nf
+davis2orb -v -f -d -x -o :roadnet -p /dev/ttyS3 -c HPWREN_SDSC -s state/HPWREN_SDSC.state -j
+.fi
+
+To initialize a new davis using the parameter file:
+.nf
+davis2orb -v -1 -p /dev/ttyS3 -c HPWREN_SDSC -o :roadnet
+.fi
+.in
+.ft R
+.SH LIBRARY
+Requires antelope 4.5 or newer.
+.SH "BUGS AND CAVEATS"
+If the davis is not displaying sensor values on it's screen then it will not
+record any data to its archive. To switch from "Receiving..." to sensor
+display mode hold down the done key on the console until it changes (usually a couple of seconds).
+
+Setting the Davis sample rate causes the Davis' historical data to be cleared
+after retrieval.  This is a function of the Davis firmware, not this program.
+
+Individual missing samples are filled with the value (2147483647). This represents a NULL value in an 4 byte integer datascope database (ie, i4 or s4 format). If on the other hand, a sample is missing for all of the channels it will simply not be downloaded and datascope will mark it as a gap using the traditional techniques.
+
+The CRC algorithm used by the Davis Vantage Pro Data Logger claims to be the 16-bit CRC-CCITT. However, it does not perform as a standard CRC-CCITT algorithm would. Our code uses this broken CRC implementation to be compatible with the Davis data logger. However, don't take our implementation and use it for other projects. In addition, this incorrect implementation may not be able to detect all of the expect corruption phenomena, although it will probably do good enough. One way to check if a CRC algorithm is correct, is to check the CRC for a 9 character string, "123456789". Using this algorithm, the CRC calculated is: 0x31C3. As far as I can tell, a properly implemented CRC-CCITT should return 0xE5CC.
+
+.SH AUTHORS
+.nf
+Todd Hansen
+UCSD/ROADNet Project
+
+Jason Johnson
+Johnson Interface Solutions
+
+Based on the original "davis2orb.c" written by Todd Hansen
+.fi

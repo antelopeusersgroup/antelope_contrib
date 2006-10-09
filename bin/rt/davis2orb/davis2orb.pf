@@ -1,0 +1,181 @@
+HPWREN_SDSC &Arr{
+	DavisLoggerSampleRate   1 # minutes
+	Channels &Arr{
+	# channel names must have a segtype and only spaces in between
+	#
+	# Use NULL for a channel which you do not want to download.
+	# ie. OutsideTemp     NULL        t
+	# 
+	 OutsideTemp     Temp-out         t
+	 HighOutsideTemp TempOutH         t
+	 LowOutsideTemp  TempOutL         t
+	 RainFall	 RainFall         r
+	 HighRainRate	 RainRate         c
+	 Barometer	 Bar              P
+	 SolarRadiation	 solar            W
+         WindSampleCount windcnt          c
+ 	 InsideTemp	 Temp-in          t
+         InsideHumidity	 Hum-in           p
+	 OutsideHumidity Hum-out          p
+	 AvgWindSpeed	 wind-avg         s
+	 HighWindSpeed	 windgust         s
+
+	 HighWindDir	 windgstd         a # degrees
+	 AvgWindDir	 wdir-avg         a # degrees
+
+	 HighWindDirAlt	 NULL             c # Alternative Representation:
+					    # 0=N, 1=NNE, 2=NE, ..., 14=NW
+					    # 15=NNW, 255=Dashed
+
+	 AvgWindDirAlt	 NULL             c # Alternative Representation:
+					    # 0=N, 1=NNE, 2=NE, ..., 14=NW
+					    # 15=NNW, 255=Dashed
+
+	 AvgUVIndex	 UV               B
+
+     EvapoTranspiration  ET               r # not rainfall but measured in mm
+					    # requires solar radiation sensor
+					    # only recorded once per hour in
+					    # davis, all other values = zero
+
+	 HighSolarRad	 solarHi          W
+	 HighUVIndex	 UV-hi            B	
+	 ForecastRule	 forecast         c
+	 LeafTemp1	 leaftmp1         t
+	 LeafTemp2	 leaftmp2         t
+	 LeafMoisture1	 leafwet1         c # range 0-15
+	 LeafMoisture2   leafwet2         c
+	 SoilTemp1	 soiltmp1         t 
+	 SoilTemp2	 soiltmp2         t 
+	 SoilTemp3	 soiltmp3         t 
+	 SoilTemp4	 soiltmp4         t 
+
+	 DownloadRecType rectype          c # 0xFF rev A (not supported) 
+					    # 0x00 rev B
+
+	 ExtraHumidity1	 Hum-Ex1          p
+	 ExtraHumidity2	 Hum-Ex2          p
+	 ExtraTemp1	 Temp-Ex1         t
+	 ExtraTemp2	 Temp-Ex2         t
+	 ExtraTemp3	 Temp-Ex3         t
+	 SoilMoisture1	 soilwet1         c
+	 SoilMoisture2	 soilwet2         c
+	 SoilMoisture3	 soilwet3         c
+	 SoilMoisture4	 soilwet4         c
+	 BarometricTrend Bar-tren	     # this is not reliably sampled
+					     # it also requires 3 hrs of data
+					     # before the davis will estimate
+					     # this value.
+					     #
+					     # -60 = falling rapidly
+					     # -20 = falling slowly
+					     #   0 = steady
+					     #  20 = rising slowly
+					     #  60 = rising rapidly
+					     #
+					     # you must use -x -d command line
+					     # args to download this value.
+	 
+	# Accessory channels (tell us about davis data logger operations)
+	 TimeSkew			timeskew
+	 RXCHECKPacketsReceived 	PktsRcvd
+	 RXCHECKPacketsMissed		PktsMiss
+	 RXCHECKResyncCount		RsyncCnt
+	 RXCHECKLargestPacketBlock 	BigBlkSz
+	 RXCHECKCRCErrorCount		PktCRCEr
+	 ConsoleBatteryVoltage		batt
+	 TransmitterBatteryStatus	tranbat  # unclear what values mean
+	}
+}
+
+LACOFD_VENIC &Arr{
+	DavisLoggerSampleRate 30
+	Channels &Arr{
+	# channel names must have a segtype and only spaces in between
+	#
+	# Use NULL for a channel which you do not want to download.
+	# ie. OutsideTemp     NULL        t
+	# 
+	 OutsideTemp     Temp-out         t
+	 HighOutsideTemp TempOutH         t
+	 LowOutsideTemp  TempOutL         t
+	 RainFall	 RainFall         r
+	 HighRainRate	 RainRate         c
+	 Barometer	 Bar              P
+	 SolarRadiation	 solar            W
+         WindSampleCount windcnt          c
+ 	 InsideTemp	 Temp-in          t
+         InsideHumidity	 Hum-in           p
+	 OutsideHumidity Hum-out          p
+	 AvgWindSpeed	 wind-avg         s
+	 HighWindSpeed	 windgust         s
+
+	 HighWindDir	 windgstd         a # degrees
+	 AvgWindDir	 wdir-avg         a # degrees
+
+	 HighWindDirAlt	 NULL             c # Alternative Representation:
+					    # 0=N, 1=NNE, 2=NE, ..., 14=NW
+					    # 15=NNW, 255=Dashed
+
+	 AvgWindDirAlt	 NULL             c # Alternative Representation:
+					    # 0=N, 1=NNE, 2=NE, ..., 14=NW
+					    # 15=NNW, 255=Dashed
+
+	 AvgUVIndex	 UV               B
+
+     EvapoTranspiration  ET               r # not rainfall but measured in mm
+					    # requires solar radiation sensor
+					    # only recorded once per hour in
+					    # davis, all other values = zero
+
+	 HighSolarRad	 solarHi          W
+	 HighUVIndex	 UV-hi            B	
+	 ForecastRule	 forecast         c
+	 LeafTemp1	 leaftmp1         t
+	 LeafTemp2	 leaftmp2         t
+	 LeafMoisture1	 leafwet1         c # range 0-15
+	 LeafMoisture2   leafwet2         c
+	 SoilTemp1	 soiltmp1         t 
+	 SoilTemp2	 soiltmp2         t 
+	 SoilTemp3	 soiltmp3         t 
+	 SoilTemp4	 soiltmp4         t 
+
+	 DownloadRecType rectype          c # 0xFF rev A (not supported) 
+					    # 0x00 rev B
+
+	 ExtraHumidity1	 Hum-Ex1          p
+	 ExtraHumidity2	 Hum-Ex2          p
+	 ExtraTemp1	 Temp-Ex1         t
+	 ExtraTemp2	 Temp-Ex2         t
+	 ExtraTemp3	 Temp-Ex3         t
+	 SoilMoisture1	 soilwet1         c
+	 SoilMoisture2	 soilwet2         c
+	 SoilMoisture3	 soilwet3         c
+	 SoilMoisture4	 soilwet4         c
+	 BarometricTrend Bar-tren            # this is not reliably sampled
+					     # it also requires 3 hrs of data
+					     # before the davis will estimate
+					     # this value.
+					     #
+					     # -60 = falling rapidly
+					     # -20 = falling slowly
+					     #   0 = steady
+					     #  20 = rising slowly
+					     #  60 = rising rapidly
+					     #
+					     # you must use -x -d command line
+					     # args to download this value.
+
+	 
+	# Accessory channels (tell us about davis data logger operations)
+	 TimeSkew			timeskew
+	 RXCHECKPacketsReceived 	PktsRcvd
+	 RXCHECKPacketsMissed		PktsMiss
+	 RXCHECKResyncCount		RsyncCnt
+	 RXCHECKLargestPacketBlock 	BigBlkSz
+	 RXCHECKCRCErrorCount		PktCRCEr
+	 ConsoleBatteryVoltage		batt
+	 TransmitterBatteryStatus	tranbat  # unclear what values mean
+	}
+}
+
