@@ -36,6 +36,8 @@
 *    This Code By     : Todd Hansen & Jason Johnson  18-Apr-2006 
 *                                                    (Anniversary of 1906 Eq)
 *    Last Updated By  : Todd Hansen    18-July-2006
+*    Moved to Contrib : Todd Hansen     9-Sep-2006
+*
 *
 *
 *  NAMING CONVENTIONS
