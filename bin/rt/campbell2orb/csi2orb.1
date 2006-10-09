@@ -1,0 +1,173 @@
+.TH CSI2ORB 1 "$Date$"
+.SH NAME
+csi2orb \- communicate with Campbell data loggers and download data into MGENC packets
+.SH SYNOPSIS
+.nf
+csi2orb [-v] [-V] [-d] [-f] [-q] [-x] [-j] [-w] [-l] {[-p serialport] | [-a ipaddress] [-n portnumber]} [-s statefile [-k]] [-t starttime] [-e endtime] [-c net_sta] [-g configfile] [-i interval] [-r serialspeed] [-m arrayid] [-z timezone] [-o $ORB] [-S modeminitstring]
+.fi
+.SH DESCRIPTION
+csi2orb connect to a campbell data logger via IP (via the specified address (-a or -a and -n)) or serial (via the specified device (-p)). It then communicates with the campbell data logger's regular operating interface (no special program needed). Ideally, you will specify a -c net_sta and a configfile. The campbell will use the net_sta to label packets and to research packet channel names/segtypes/calibrations in the associated config file. If you wish, you may specify a start and/or end time, which causes the software to search from the current campbell position to the end for the data you want. If you specify a -k option, it will not use the state file as a starting point (instead starting at the beginning) but it will update the state file with its current position.
+
+Some restrictions: 
+
+1) your first data columns in the data logger must be:
+
+01+0108.  02+2003.  03+0112.  04+1840.
+
+where 01 = the program version
+      02 = the year of the sample
+      03 = the day of the year
+      04 = the HHMM time of the current day.
+
+you may also specify (and call csi2orb with the -q option)
+
+      05 = the seconds of this sample
+
+2) you must change the program version in your code each time you change the format of the data recorded into the campbells internal memory. If you want to set the program version manually, you can use campbell instruction 80 and set the array ID (which corresponds to our program version string). For most users, final storage area will always = 1.
+
+1:  Set Active Storage Area (P80)
+ 1: 01       Final Storage Area 1
+ 2: 0123     Array ID
+
+3) If you do not specify a config parameter file, your data will not be labeled appropriately and we will be unable to check for data gaps. 
+
+csi2orb will run as single instance, connect and get all of the available data then exit. If you want it will run as a daemon (option -i interval_in_seconds) where it reconnects after each interval and checks for new data. For this instance a state file is required (unless you want it to start at the beginning of the data logger each time).
+
+csi2orb provides another interval regulating option, called jitter adjust (-j). This option modifies the interval between 0 and (-i interval) so that it may connect to the data logger when the next data set is expected to be written to memory. In order for this option to work, you must use the following options -g configfile, -x and -i interval and the interval value must be larger then the inter-sample period.
+
+.SH OPTIONS
+.nf
+-v		verbose mode
+-V		print version, usage and exit
+-d		print the campbell's internal program and exit (CR23X only)
+
+-k		start at beginning of campbell data buffer, even if the state
+		file says otherwise but update the state file with the
+		current position
+
+-f		force csi2orb to ignore missing samples and to just download
+		the data
+
+-q		use the 05 column in the data as the seconds when generating
+		the timestamp
+
+-x		grab the current campbell time, subtract the local time and
+		generate a data packet describing the timeskew.
+
+-j		jitter adjust, adjust the interval to grab the next data
+		element as soon as it is available in the campbells memory.
+
+-w		after reading data, set the data loggers time to UTC according
+		to the local clock.
+
+-l		normally, we require channel names be less than 9 characters
+		long. This overrides that. Use caution, this violates the
+		CSS3.0 schema.
+
+-p serialport	what serial port to use (don't use with option -a)
+-a ipaddress	what IP address to use (don't use with option -p)
+
+-n portnumber	what IP port to connect to (use only with option -a, 
+			default 4000)
+
+-s statefile	specify a file here to use to keep track of your current
+			download progress (created by csi2orb)
+
+-t starttime	specify a starttime to get data after, this causes the
+			system to  start examining the beginning of the
+			campbell's buffer to make sure it gets all of your
+			data (hence it can take a bit of time and download
+			data you already have).
+
+-e endtime	specify an endtime to stop downloading data at, this causes
+			the program to exit when it has downloaded all of the 
+			data requested. This flag (without -t specified) uses
+			the statefile as a starting point to download data). 
+
+-c net_sta	srcname to use for packaging data for this sensor. It is
+			also used to lookup info in the config file.
+
+-g configfile	a parameter file that specifies the sensor configuration,
+			including (sample interval, channel name, channel
+			calibration, channel segtype)
+
+-i interval	if you want to check the campbell for data periodically,
+			specify it here (in seconds), otherwise csi2orb will
+			exit when it has downloaded the currently available
+			data.
+
+-m arrayid	select data only with a matching array ID
+
+-z timezone	timezone in which campbell time is set (default UTC)
+
+-r serialspeed	specify the serial port speed (use with -p, default 
+			9600 baud)
+
+-o $ORB		which orb do you want to send the data to (default ":")
+-S modeminitstr string to send upon initial connection to activate the
+			serial device (or freewave). (default: not sent,
+			example: ATXC0ATD9067245)
+.fi
+.SH DATALOGGERS
+.nf
+This software has been tested with the following data loggers:
+
+CR23X  - all features work
+CR10X  - works, but don't use the time set feature, instead use the
+	    campbell provided time setting method.
+CR5000 - works, but more testing needed
+.fi
+.SH FILES
+.nf
+csi2orb.pf, statefile
+.fi
+.SH PARAMETER FILE
+.nf
+roadnet-orb% more csi2orb.pf
+SCC_IB  &Arr{
+        108     &Arr{
+         ch1     prog_vs         1000    
+         ch2     year            1000    
+         ch3     day             1000    
+         ch4     hour_min        1000    
+         ch5     sec             1000    
+         ch6     wind_sp         1000    V
+         ch7     wind_dir        1000    a
+         ch8     rel_hum         1000    p
+         ch9     air_temp        1000    t
+         ch10    baro_pr         1000    P
+         ch11    sol_rad         1000    W
+         ch12    rain_fall       1000    D
+         sampleinterval         600
+        }
+}
+
+.fi
+csi2orb.pf describes the configuration of the campbell data loggers you will be connecting too. You can specify all of the campbell configs in one file, since they are descriminated by the net_station name as well as the program version. As you might expect multiple program versions can be stored in the same logger at any point in time. So we try to support multiple formats. Given the array of options in the campbell data logger, it is impossible to determine the config 100% correctly. So we allow you to describe it here. If you don't know how the campbell is configured, you can get an idea quickly using the -p option. The -p option prints out the current logger program and exits.
+.SH EXAMPLE
+csi2orb -q -v -z US/Pacific -a 172.15.2.2 -n 4000 -g csi2orb.pf -c SCC_PB -s state/SCC_PB.state
+.SH LIBRARY
+Requires antelope 4.5 or newer.
+.SH DIAGNOSTICS
+verbose mode enables you to dump a large number of diagnostic messages
+including raw campbell data logger responses.
+.SH "SEE ALSO"
+campbell2orb(1) which is the previous implementation and is no longer maintained.
+.SH "BUGS AND CAVEATS"
+You should not run csi2orb unattended with the -w option or the -k option. In
+addition, the -w option, which sets the data logger clock, uses the clock of
+the local orbserver for its time reference. Hence, you should check to see
+that the local clock is correct before setting the data logger's clock.
+
+Short term jumps (1 or 2 samples) in the timeskew measurement may represent
+network issues or data logger issues. They should not be considered an
+accurate measure of the timeskew. On the other hand, a large number of samples
+should be a representative estimate of the timeskew between the local clock
+and the data loggers clock. We do not compensate for network or data logger
+delays when computing the timeskew so it will only be accurate for measuring
+multiple second timing errors.
+.SH AUTHOR
+.nf
+Todd Hansen
+UCSD/ROADNet Project
+.fi

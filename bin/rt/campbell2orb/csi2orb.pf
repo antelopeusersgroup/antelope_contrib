@@ -1,0 +1,57 @@
+SMER_NORTH  &Arr{			# example met station
+	137 	&Arr{
+        ch1     ProgVer         1000    
+        ch2     Year            1000    
+        ch3     Day             1000    
+        ch4     HourMin         1000    
+        ch5     WindSpS         1000    s
+        ch6     WindDDir        1000    a
+        ch7     WindDStd        1000    a
+        ch8     RainFall        1000    d
+        ch9     WindDirA        1000    a
+        ch10    WindSpdA        1000    s
+        ch11    Pyranom         1000    c
+        ch12    QuantumA        1000    c
+        ch13    Air1Avg         1000    t
+        ch14    FuelTmpA        1000    t
+        ch15    AirTmpAv        1000    t
+        ch16    RelHum          1000    p
+        ch17    PanelTAv        1000    t
+        ch18    TcTempAv        1000    t
+        ch19    BaroPr          1000    P
+        ch20    FuelMHz         1000    c
+        ch21    FuelMSe         1000    c
+        ch22    FuelMois        1000    p
+        ch23    BattVDC         1000    v
+        sampleinterval		1800
+	prog_vs_chan		ch1	# optional default 1
+	year_chan		ch2	# optional default 2
+	day_chan		ch3	# optional default 3
+	hour_min_chan		ch4	# optional default 4
+	sec_chan		ch5	# optional default 5
+	}
+}
+
+SMER_STONE  &Arr{			# example stream station
+        50	&Arr{
+        ch1     ProgVer         1000
+        ch2     Year            1000
+        ch3     Day             1000
+        ch4     HourMin         1000
+        ch5     DepthFtA        1000    F
+        ch6     WatTmpCA        1000    t
+        ch7     WatPPsiA        1000    P
+        ch8     pHAvg           1000    h
+        ch9     CondAvg         1000    p
+        ch10    DOmgLAvg        1000    M
+        ch11    PanelTAv        1000    t
+        ch12    TrollBat        1000    v
+        ch13    BattVDC         1000    v
+        sampleinterval          900
+	prog_vs_chan		ch1	# optional default 1
+	year_chan		ch2	# optional default 2
+	day_chan		ch3	# optional default 3
+	hour_min_chan		ch4	# optional default 4
+	sec_chan		ch5	# optional default 5
+        }
+}
