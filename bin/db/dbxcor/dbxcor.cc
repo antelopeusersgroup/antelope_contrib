@@ -338,6 +338,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                 try {
         	    psm->xpe->sort_ensemble();
     		} catch (SeisppError serr) {
+		    serr.log_error();
         	    ss << "Fatal error occured! Sort was unsuccessful."<<endl;
         	    psm->record(ss.str());
         	    return;
@@ -479,6 +480,7 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
     try {
     	psm->xpe->sort_ensemble();
     } catch (SeisppError serr) {
+	serr.log_error();
 	ss << "Fatal error occured! Sort was unsuccessful."<<endl;
 	psm->record(ss.str());
 	XtDestroyWidget(XtParent(XtParent(XtParent(w))));
@@ -1033,6 +1035,7 @@ void do_analyze(Widget w, void * client_data, void * userdata)
     	psm->mcc=psm->xpe->analyze();
         psm->xpe->sort_ensemble();
     } catch (SeisppError serr) {
+	serr.log_error();
 	psm->record(string("Fatal error encountered during analysis...\n"));
 	return;
     }
@@ -1451,6 +1454,7 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 			psm->xpe->next_subarray();
 		} catch (SeisppError serr)
 		{
+			serr.log_error();
 			ss << "Error trying to load subarray number "
 				<< psm->xpe->current_subarray<<endl;
 			ss << serr.message<<endl;
