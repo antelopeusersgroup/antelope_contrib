@@ -30,6 +30,7 @@ sub init_globals {
 		"institute_description",
 		"page_refresh_seconds",
 		"other_region_links",
+		"region_string_prefix",
 		"nearest_places",
 		"credits",
 		"authtrans",
@@ -735,11 +736,11 @@ sub location_header_line {
 
 	if( $regname =~ /^(in|beneath|off|south of|west of|east of|north of) /i ) {
 
-		return "Event $regname";
+		return "$State{region_string_prefix} $regname";
 
 	} else {
 
-		return "Event: " . $regname;
+		return "$State{region_string_prefix}: " . $regname;
 	}
 }
 

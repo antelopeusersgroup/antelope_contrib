@@ -30,6 +30,8 @@ use_qgrids yes
 
 make_index_html yes
 
+region_string_prefix 	Earthquake
+
 overview_maps &Tbl{
 	index_map
 }

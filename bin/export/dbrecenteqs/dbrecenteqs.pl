@@ -113,7 +113,7 @@ sub setup_State {
 		die( "Couldn't find $State{pf}.pf. Bye.\n" );
 	}
 
-	$pf_change_time = "1083945262";
+	$pf_change_time = "1159919180";
 
 	if( pfrequire( $State{pf}, $pf_change_time ) < 0 ) {
 
