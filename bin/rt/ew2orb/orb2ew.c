@@ -56,10 +56,11 @@ typedef struct ExportServerThread {
 	char	reject[STRSZ];
 	char	my_inst_str[STRSZ];
 	char	my_mod_str[STRSZ];
+	char	my_type_str[STRSZ];
 	int	my_inst;	
 	int	my_mod;	
+	int	my_type;
 	int	my_type_heartbeat;		
-	int	my_type_tracebuf;		
 	int	timesort_queue_maxpkts;
 	int	so;
 	struct sockaddr_in sin;
@@ -113,17 +114,18 @@ usage()
 static int 
 get_pinno( PktChannel *pktchan )
 {
-	char	netstachan[STRSZ];
+	char	netstachanloc[STRSZ];
 	int	pinno;
 
-	sprintf( netstachan, "%s_%s_%s", 
+	sprintf( netstachanloc, "%s_%s_%s_%s", 
 			  pktchan->net, 
 			  pktchan->sta, 
-			  pktchan->chan );
+			  pktchan->chan,
+			  pktchan->loc );
 
 	rw_rdlock( &Pins_rwlock );
 
-	pinno = (int) getarr( Pins, netstachan );
+	pinno = (int) getarr( Pins, netstachanloc );
 
 	rw_unlock( &Pins_rwlock );
 
@@ -174,6 +176,66 @@ pktchan_to_tracebuf( PktChannel *pktchan,
 	*nbytes = dsize_bytes + sizeof( TRACE_HEADER );
 
 	hi2mi( pktchan->data, &datap, tp->trh.nsamp );
+
+	return 0;
+}
+
+int
+pktchan_to_tracebuf2( PktChannel *pktchan,
+		     TracePacket *tp,
+		     double starttime, 
+		     int *nbytes )
+{
+	char	*datap;
+	int	dsize_bytes;
+	double	endtime;
+	int	pinno;
+	char	*ptr;
+
+	strcpy( tp->trh2.datatype, DATATYPE );
+
+	pinno = get_pinno( pktchan );
+	ptr = (char *) &tp->trh2.pinno;
+	hi2mi( &pinno, &ptr, 1 );
+
+	strcpy( tp->trh2.sta, pktchan->sta );
+	strcpy( tp->trh2.chan, pktchan->chan );
+	strcpy( tp->trh2.net, pktchan->net );
+
+	if( STREQ( pktchan->loc, "" ) ) {
+
+		strcpy( tp->trh2.loc, LOC_NULL_STRING );
+
+	} else {
+
+		strcpy( tp->trh2.loc, pktchan->loc );
+	}
+
+	ptr = (char *) &tp->trh2.samprate;
+	hd2md( &pktchan->samprate, &ptr, 1 );
+
+	ptr = (char *) &tp->trh2.nsamp;
+	hi2mi( &pktchan->nsamp, &ptr, 1 );
+
+	ptr = (char *) &tp->trh2.starttime;
+	hd2md( &starttime, &ptr, 1 );
+
+	ptr = (char *) &tp->trh2.endtime;
+	endtime = ENDTIME( starttime, pktchan->samprate, pktchan->nsamp );
+	hd2md( &endtime, &ptr, 1 );
+
+	tp->trh2.version[0] = TRACE2_VERSION0;
+	tp->trh2.version[1] = TRACE2_VERSION1;
+
+	strcpy( tp->trh2.quality, "" );
+	strcpy( tp->trh2.pad, "" );
+
+	datap = &tp->msg[0] + sizeof( TRACE2_HEADER );
+	dsize_bytes = DATASIZE * tp->trh2.nsamp;
+
+	*nbytes = dsize_bytes + sizeof( TRACE2_HEADER );
+
+	hi2mi( pktchan->data, &datap, tp->trh2.nsamp );
 
 	return 0;
 }
@@ -557,7 +619,7 @@ buf_send( ExportThread *et, TracePacket *tp, int nbytes_tp )
 			stx,
 			et->es->my_inst,
 			et->es->my_mod,
-			et->es->my_type_tracebuf );
+			et->es->my_type );
 	
 	cp = (char *) tp;
 
@@ -707,7 +769,7 @@ pktchan_send( void *private, PktChannel *pktchan,
 	       int queue_code, double gaptime )
 {
 	ExportThread *et = (ExportThread *) private;
-	char    netstachan[STRSZ];
+	char    netstachanloc[STRSZ];
 	int	nbytes_tp = 0;
 	TracePacket tp;
 	int	pinno = 0;
@@ -716,10 +778,11 @@ pktchan_send( void *private, PktChannel *pktchan,
 	char	*s;
 	char	*t;
 
-	sprintf( netstachan, "%s_%s_%s", 
+	sprintf( netstachanloc, "%s_%s_%s_%s", 
 			pktchan->net,
 			pktchan->sta,
-			pktchan->chan );
+			pktchan->chan,
+			pktchan->loc );
 
 	if( et->es->starttime != NULL_STARTTIME &&
 	    pktchan->time < et->es->starttime ) {
@@ -731,7 +794,7 @@ pktchan_send( void *private, PktChannel *pktchan,
 			"'%s': Skipping packet-channel %s: "
 			"timestamp %s is before requested "
 			"start %s\n", 
-			et->name, netstachan, 
+			et->name, netstachanloc, 
 			s = strtime( pktchan->time ),
 			t = strtime( et->es->starttime ) );
 			free( s );
@@ -743,10 +806,34 @@ pktchan_send( void *private, PktChannel *pktchan,
 		return 0;
 	}
 
-	if( pktchan_to_tracebuf( pktchan, &tp,
-				 pktchan->time, &nbytes_tp  ) )
-	{
+	if( STREQ( et->es->my_type_str, "TYPE_TRACEBUF" ) ) {
+
+		if( pktchan_to_tracebuf( pktchan, &tp,
+				 	pktchan->time, &nbytes_tp  ) )
+		{
+			freePktChannel( pktchan );
+
+			return 0;
+		}
+
+	} else if( STREQ( et->es->my_type_str, "TYPE_TRACEBUF2" ) ) {
+
+		if( pktchan_to_tracebuf2( pktchan, &tp,
+				 	pktchan->time, &nbytes_tp  ) )
+		{
+			freePktChannel( pktchan );
+
+			return 0;
+		}
+
+	} else {
+
 		freePktChannel( pktchan );
+
+		elog_complain( 0, 
+			"'%s': Don't know how to convert and send "
+			"format %s!\n",
+			et->name, et->es->my_type_str );
 
 		return 0;
 	}
@@ -754,17 +841,18 @@ pktchan_send( void *private, PktChannel *pktchan,
 	if( ( et->es->loglevel >= VERYVERBOSE ) || 
 		Flags.VeryVerbose ) {
 
-		ptr = (char *) &tp.trh.pinno;
+		ptr = (char *) &tp.i;
 		mi2hi( &ptr, &pinno, 1 );
 
 		elog_notify( 0, 
 			"'%s': Sending packet-channel %s "
-			"timed %s as pin %d from %s %s\n", 
-			et->name, netstachan, 
+			"timed %s as pin %d from %s %s, format %s\n", 
+			et->name, netstachanloc, 
 			s = strtime( pktchan->time ), 
 			pinno, 
 			et->es->my_inst_str,
-			et->es->my_mod_str );
+			et->es->my_mod_str,
+			et->es->my_type_str );
 		free( s );
 	}
 
@@ -990,6 +1078,9 @@ refresh_export_server_thread( ExportServerThread *es )
 		strcpy( es->my_mod_str,
 			pfget_string( es->pf, "my_mod" ) );
 
+		strcpy( es->my_type_str,
+			pfget_string( es->pf, "my_type" ) );
+
 		ewlogo_tologo( es->my_inst_str, 
 			       es->my_mod_str, 
 			       Default_TYPE_HEARTBEAT, 
@@ -999,10 +1090,10 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		ewlogo_tologo( es->my_inst_str, 
 			       es->my_mod_str, 
-			       Default_TYPE_TRACEBUF, 
+			       es->my_type_str, 
 			       &es->my_inst,
 			       &es->my_mod,
-			       &es->my_type_tracebuf );
+			       &es->my_type );
 
 		starttime_string = pfget_string( es->pf, "starttime" );
 
@@ -1264,6 +1355,10 @@ update_export_server_thread( char *name, Pf *pf )
 		pfput_string( es->pf, 
 			      "my_mod", 
 			      DEFAULT_MOD );
+
+		pfput_string( es->pf, 
+			      "my_type", 
+			      DEFAULT_EWEXPORT_TYPE );
 	} 
 
 	mutex_lock( &es->es_mutex );
@@ -1306,6 +1401,8 @@ update_export_server_thread( char *name, Pf *pf )
 
 	pfreplace( pf, es->pf, "defaults{my_mod}", "my_mod", "string" );
 
+	pfreplace( pf, es->pf, "defaults{my_type}", "my_type", "string" );
+
 	sprintf( key, "export_servers{%s}{server_port}", name );
 	pfreplace( pf, es->pf, key, "server_port", "int" );
 
@@ -1344,6 +1441,9 @@ update_export_server_thread( char *name, Pf *pf )
 
 	sprintf( key, "export_servers{%s}{my_mod}", name );
 	pfreplace( pf, es->pf, key, "my_mod", "string" );
+
+	sprintf( key, "export_servers{%s}{my_type}", name );
+	pfreplace( pf, es->pf, key, "my_type", "string" );
 
 	mutex_unlock( &es->es_mutex );
 

@@ -99,6 +99,7 @@ typedef struct Ew2orbPacket {
 	char	modstr[STRSZ];
 	char	typestr[STRSZ];
 	TRACE_HEADER *th;
+	TRACE2_HEADER *th2;
 	Packet	*pkt;
 	char	*orbpkt;
 	int	orbpktsz;
@@ -157,6 +158,7 @@ new_Ew2orbPacket()
 	strcpy( e2opkt->typestr, "TYPE_???" );
 
 	e2opkt->th = NULL;
+	e2opkt->th2 = NULL;
 	e2opkt->pkt = NULL;
 	e2opkt->orbpkt = NULL;
 	e2opkt->orbpktsz = 0;
@@ -181,6 +183,11 @@ free_Ew2orbPacket( Ew2orbPacket *e2opkt )
 	if( e2opkt->th != NULL ) {
 		
 		free( e2opkt->th );
+	}
+
+	if( e2opkt->th2 != NULL ) {
+		
+		free( e2opkt->th2 );
 	}
 
 	if( e2opkt->pkt != NULL ) {
@@ -218,7 +225,7 @@ describe_packet( Ew2orbPacket *e2opkt )
 		if( e2opkt->th ) {
 
 			elog_notify( 0, 
-				  "'%s': unpacked Trace-data:\n\t"
+				  "'%s': unpacked TRACEBUF Trace-data:\n\t"
 				  "%s %s %s pinno %d "
 				  "datatype %s quality '%s'\n\t"
 				  "nsamp %d samprate %f\n\t"
@@ -236,9 +243,39 @@ describe_packet( Ew2orbPacket *e2opkt )
 				  e2opkt->th->endtime );
 		} else {
 
-			elog_notify( 0, "'%s':\tunpacked Trace data\n", 
+			elog_notify( 0, "'%s':\tunpacked TRACEBUF Trace data\n", 
 			  	e2opkt->itname  );
 		}
+
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) { 
+
+		if( e2opkt->th2 ) {
+
+			elog_notify( 0, 
+				  "'%s': unpacked TRACEBUF2 Trace-data:\n\t"
+				  "%s %s %s %s pinno %d "
+				  "version %s datatype %s quality '%s'\n\t"
+				  "nsamp %d samprate %f\n\t"
+				  "starttime %f endtime %f\n",
+				  e2opkt->itname,
+				  e2opkt->th2->net, 
+				  e2opkt->th2->sta, 
+				  e2opkt->th2->chan,
+				  e2opkt->th2->loc,
+				  e2opkt->th2->pinno, 
+				  e2opkt->th2->version, 
+				  e2opkt->th2->datatype, 
+				  e2opkt->th2->quality, 
+				  e2opkt->th2->nsamp, 
+				  e2opkt->th2->samprate, 
+				  e2opkt->th2->starttime, 
+				  e2opkt->th2->endtime );
+		} else {
+
+			elog_notify( 0, "'%s':\tunpacked TRACEBUF2 Trace data\n", 
+			  	e2opkt->itname  );
+		}
+
 
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
@@ -2023,6 +2060,7 @@ crack_packet( Ew2orbPacket *e2opkt )
 	int	n;
 
 	if( ! STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) &&
+	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) &&
 	    ! STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
 		complain( 0, 
@@ -2031,18 +2069,6 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		return -1;
 	}
-
-	/* Acquiesce to Earthworm packing strategy of 
-	   memory-copying the entire trace-header structure. 
-	   This was an unwise protocol design since the 
-	   field order in a structure, officially, is at
-	   the whim of the compiler implementation. */
-
-	allot( TRACE_HEADER *, e2opkt->th, 1 );
-
-	memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
-
-	dp = e2opkt->buf + sizeof( TRACE_HEADER );
 
 	e2opkt->pkt = newPkt();
 	e2opkt->pkt->pkttype = suffix2pkttype("MGENC");
@@ -2053,10 +2079,46 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	pushtbl( e2opkt->pkt->channels, pktchan );
 
-	strcpy( e2opkt->pkt->parts.src_net, e2opkt->th->net );
-	strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th->sta );
-	strcpy( e2opkt->pkt->parts.src_chan, e2opkt->th->chan );
-	strcpy( e2opkt->pkt->parts.src_loc, "" );
+	/* Acquiesce to Earthworm packing strategy of 
+	   memory-copying the entire trace-header structure. 
+	   This was an unwise protocol design since the 
+	   field order in a structure, officially, is at
+	   the whim of the compiler implementation. */
+
+	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
+
+		allot( TRACE2_HEADER *, e2opkt->th2, 1 );
+
+		memcpy( e2opkt->th2, e2opkt->buf, sizeof( TRACE2_HEADER ) );
+
+		dp = e2opkt->buf + sizeof( TRACE2_HEADER );
+
+		strcpy( e2opkt->pkt->parts.src_net, e2opkt->th2->net );
+		strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th2->sta );
+		strcpy( e2opkt->pkt->parts.src_chan, e2opkt->th2->chan );
+
+		if( STREQ( e2opkt->th2->loc, LOC_NULL_STRING ) ) {
+
+			strcpy( e2opkt->pkt->parts.src_loc, "" );
+
+		} else {
+
+			strcpy( e2opkt->pkt->parts.src_loc, e2opkt->th2->loc );
+		}
+
+	} else {
+
+		allot( TRACE_HEADER *, e2opkt->th, 1 );
+
+		memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
+
+		dp = e2opkt->buf + sizeof( TRACE_HEADER );
+
+		strcpy( e2opkt->pkt->parts.src_net, e2opkt->th->net );
+		strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th->sta );
+		strcpy( e2opkt->pkt->parts.src_chan, e2opkt->th->chan );
+		strcpy( e2opkt->pkt->parts.src_loc, "" );
+	}
 
 	join_srcname( &e2opkt->pkt->parts, old_srcname );
 
@@ -2165,80 +2227,160 @@ crack_packet( Ew2orbPacket *e2opkt )
 	strcpy( pktchan->chan, e2opkt->pkt->parts.src_chan );
 	strcpy( pktchan->loc, e2opkt->pkt->parts.src_loc );
 
-	if( STREQ( e2opkt->th->datatype, "s4" ) ) {
+	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
 
-		sp = (char *) &e2opkt->th->pinno;
-		mi2hi( &sp, &e2opkt->th->pinno, 1 );
+		if( STREQ( e2opkt->th2->datatype, "s4" ) ) {
 
-		sp = (char *) &e2opkt->th->nsamp;
-		mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+			sp = (char *) &e2opkt->th2->pinno;
+			mi2hi( &sp, &e2opkt->th2->pinno, 1 );
 
-		sp = (char *) &e2opkt->th->samprate;
-		md2hd( &sp, &e2opkt->th->samprate, 1 );
+			sp = (char *) &e2opkt->th2->nsamp;
+			mi2hi( &sp, &e2opkt->th2->nsamp, 1 );
 
-		sp = (char *) &e2opkt->th->starttime;
-		md2hd( &sp, &e2opkt->th->starttime, 1 );
+			sp = (char *) &e2opkt->th2->samprate;
+			md2hd( &sp, &e2opkt->th2->samprate, 1 );
 
-		sp = (char *) &e2opkt->th->endtime;
-		md2hd( &sp, &e2opkt->th->endtime, 1 );
+			sp = (char *) &e2opkt->th2->starttime;
+			md2hd( &sp, &e2opkt->th2->starttime, 1 );
 
-	} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
+			sp = (char *) &e2opkt->th2->endtime;
+			md2hd( &sp, &e2opkt->th2->endtime, 1 );
 
-		sp = (char *) &e2opkt->th->pinno;
-		mi2hi( &sp, &e2opkt->th->pinno, 1 );
+		} else if( STREQ( e2opkt->th2->datatype, "s2" ) ) {
 
-		sp = (char *) &e2opkt->th->nsamp;
-		mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+			sp = (char *) &e2opkt->th2->pinno;
+			mi2hi( &sp, &e2opkt->th2->pinno, 1 );
 
-		sp = (char *) &e2opkt->th->samprate;
-		md2hd( &sp, &e2opkt->th->samprate, 1 );
+			sp = (char *) &e2opkt->th2->nsamp;
+			mi2hi( &sp, &e2opkt->th2->nsamp, 1 );
 
-		sp = (char *) &e2opkt->th->starttime;
-		md2hd( &sp, &e2opkt->th->starttime, 1 );
+			sp = (char *) &e2opkt->th2->samprate;
+			md2hd( &sp, &e2opkt->th2->samprate, 1 );
 
-		sp = (char *) &e2opkt->th->endtime;
-		md2hd( &sp, &e2opkt->th->endtime, 1 );
+			sp = (char *) &e2opkt->th2->starttime;
+			md2hd( &sp, &e2opkt->th2->starttime, 1 );
 
-	} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
+			sp = (char *) &e2opkt->th2->endtime;
+			md2hd( &sp, &e2opkt->th2->endtime, 1 );
 
-		sp = (char *) &e2opkt->th->pinno;
-		vi2hi( &sp, &e2opkt->th->pinno, 1 );
+		} else if( STREQ( e2opkt->th2->datatype, "i4" ) ) {
 
-		sp = (char *) &e2opkt->th->nsamp;
-		vi2hi( &sp, &e2opkt->th->nsamp, 1 );
-			
-		sp = (char *) &e2opkt->th->samprate;
-		vd2hd( &sp, &e2opkt->th->samprate, 1 );
+			sp = (char *) &e2opkt->th2->pinno;
+			vi2hi( &sp, &e2opkt->th2->pinno, 1 );
 
-		sp = (char *) &e2opkt->th->starttime;
-		vd2hd( &sp, &e2opkt->th->starttime, 1 );
+			sp = (char *) &e2opkt->th2->nsamp;
+			vi2hi( &sp, &e2opkt->th2->nsamp, 1 );
+				
+			sp = (char *) &e2opkt->th2->samprate;
+			vd2hd( &sp, &e2opkt->th2->samprate, 1 );
 
-		sp = (char *) &e2opkt->th->endtime;
-		vd2hd( &sp, &e2opkt->th->endtime, 1 );
+			sp = (char *) &e2opkt->th2->starttime;
+			vd2hd( &sp, &e2opkt->th2->starttime, 1 );
 
-	} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
+			sp = (char *) &e2opkt->th2->endtime;
+			vd2hd( &sp, &e2opkt->th2->endtime, 1 );
 
-		sp = (char *) &e2opkt->th->pinno;
-		vi2hi( &sp, &e2opkt->th->pinno, 1 );
+		} else if( STREQ( e2opkt->th2->datatype, "i2" ) ) {
 
-		sp = (char *) &e2opkt->th->nsamp;
-		vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+			sp = (char *) &e2opkt->th2->pinno;
+			vi2hi( &sp, &e2opkt->th2->pinno, 1 );
 
-		sp = (char *) &e2opkt->th->samprate;
-		vd2hd( &sp, &e2opkt->th->samprate, 1 );
+			sp = (char *) &e2opkt->th2->nsamp;
+			vi2hi( &sp, &e2opkt->th2->nsamp, 1 );
 
-		sp = (char *) &e2opkt->th->starttime;
-		vd2hd( &sp, &e2opkt->th->starttime, 1 );
+			sp = (char *) &e2opkt->th2->samprate;
+			vd2hd( &sp, &e2opkt->th2->samprate, 1 );
 
-		sp = (char *) &e2opkt->th->endtime;
-		vd2hd( &sp, &e2opkt->th->endtime, 1 );
+			sp = (char *) &e2opkt->th2->starttime;
+			vd2hd( &sp, &e2opkt->th2->starttime, 1 );
+
+			sp = (char *) &e2opkt->th2->endtime;
+			vd2hd( &sp, &e2opkt->th2->endtime, 1 );
+		}
+
+		pktchan->datasz = e2opkt->th2->nsamp;
+
+		pktchan->nsamp = e2opkt->th2->nsamp;
+		pktchan->samprate = e2opkt->th2->samprate;
+		pktchan->time = e2opkt->th2->starttime + timeshift;
+
+	} else {
+
+		if( STREQ( e2opkt->th->datatype, "s4" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			mi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+		} else if( STREQ( e2opkt->th->datatype, "s2" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			mi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			mi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			md2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			md2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			md2hd( &sp, &e2opkt->th->endtime, 1 );
+
+		} else if( STREQ( e2opkt->th->datatype, "i4" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+				
+			sp = (char *) &e2opkt->th->samprate;
+			vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			vd2hd( &sp, &e2opkt->th->endtime, 1 );
+
+		} else if( STREQ( e2opkt->th->datatype, "i2" ) ) {
+
+			sp = (char *) &e2opkt->th->pinno;
+			vi2hi( &sp, &e2opkt->th->pinno, 1 );
+
+			sp = (char *) &e2opkt->th->nsamp;
+			vi2hi( &sp, &e2opkt->th->nsamp, 1 );
+
+			sp = (char *) &e2opkt->th->samprate;
+			vd2hd( &sp, &e2opkt->th->samprate, 1 );
+
+			sp = (char *) &e2opkt->th->starttime;
+			vd2hd( &sp, &e2opkt->th->starttime, 1 );
+
+			sp = (char *) &e2opkt->th->endtime;
+			vd2hd( &sp, &e2opkt->th->endtime, 1 );
+		}
+
+		pktchan->datasz = e2opkt->th->nsamp;
+
+		pktchan->nsamp = e2opkt->th->nsamp;
+		pktchan->samprate = e2opkt->th->samprate;
+		pktchan->time = e2opkt->th->starttime + timeshift;
 	}
-
-	pktchan->datasz = e2opkt->th->nsamp;
-
-	pktchan->nsamp = e2opkt->th->nsamp;
-	pktchan->samprate = e2opkt->th->samprate;
-	pktchan->time = e2opkt->th->starttime + timeshift;
 
 	get_calibinfo( &e2opkt->pkt->parts, pktchan->time, 
 		       &temp_segtype, &pktchan->calib, &pktchan->calper,
@@ -2276,6 +2418,37 @@ crack_packet( Ew2orbPacket *e2opkt )
 			       e2opkt->th->nsamp * sizeof( int ) );
 
 			vs2hi( &dp, pktchan->data, e2opkt->th->nsamp );
+		}
+		
+	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
+
+		if( STREQ( e2opkt->th2->datatype, "s4" ) ) {
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th2->nsamp * sizeof( int ) );
+
+			mi2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
+
+		} else if( STREQ( e2opkt->th2->datatype, "s2" ) ) {
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th2->nsamp * sizeof( int ) );
+
+			ms2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
+
+		} else if( STREQ( e2opkt->th2->datatype, "i4" ) ) {
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th2->nsamp * sizeof( int ) );
+
+			vi2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
+
+		} else if( STREQ( e2opkt->th2->datatype, "i2" ) ) {
+
+			allot( int *, pktchan->data, 
+			       e2opkt->th2->nsamp * sizeof( int ) );
+
+			vs2hi( &dp, pktchan->data, e2opkt->th2->nsamp );
 		}
 		
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {

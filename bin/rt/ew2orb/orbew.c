@@ -16,6 +16,7 @@
 
 char	*Default_TYPE_HEARTBEAT = "TYPE_HEARTBEAT";
 char	*Default_TYPE_TRACEBUF = "TYPE_TRACEBUF";
+char	*Default_TYPE_TRACEBUF2 = "TYPE_TRACEBUF2";
 char	*Default_TYPE_TRACE_COMP_UA = "TYPE_TRACE_COMP_UA";
 
 char	Program_loglevel[STRSZ] = DEFAULT_LOGLEVEL;
@@ -115,6 +116,12 @@ refresh_earthworm_info()
 					strdup( Default_TYPE_TRACEBUF ) );
 		setarr( Ewinfo.type_ids, Default_TYPE_TRACEBUF, 
 				 	(void *) DEFAULT_TYPE_TRACEBUF );
+
+		sprintf( setkey, "%03d", DEFAULT_TYPE_TRACEBUF2 );
+		setarr( Ewinfo.type_names, setkey, 
+					strdup( Default_TYPE_TRACEBUF2 ) );
+		setarr( Ewinfo.type_ids, Default_TYPE_TRACEBUF2, 
+				 	(void *) DEFAULT_TYPE_TRACEBUF2 );
 
 		sprintf( setkey, "%03d", DEFAULT_TYPE_TRACE_COMP_UA );
 		setarr( Ewinfo.type_names, setkey, 

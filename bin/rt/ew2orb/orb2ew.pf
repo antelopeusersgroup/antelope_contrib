@@ -6,6 +6,7 @@ defaults &Arr{
 	expect_heartbeat_string	.*alive.*
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
+	my_type			TYPE_TRACEBUF
 	select
 	reject
 	starttime

@@ -107,10 +107,17 @@ to an integer value by \fBorb2ew\fP, according to the contents of the
 earthworm.pf parameter file (For more details, see the man page earthworm(5)).
 
 .IP my_mod
-This is the Earthworm module id number for \fBorb2ew\fP to report itself
+This is the Earthworm module code for \fBorb2ew\fP to report itself
 as when it sends out heartbeats. This module code is translated
 to an integer value by \fBorb2ew\fP, according to the contents of the
 earthworm.pf parameter file (For more details, see the man page earthworm(5)).
+
+.IP my_type
+This is the Earthworm type id number for the data format which \fBorb2ew\fP 
+should export. This type code is translated
+to an integer value by \fBorb2ew\fP, according to the contents of the
+earthworm.pf parameter file (For more details, see the man page earthworm(5)).
+Currently the valid settings for this are TYPE_TRACEBUF and TYPE_TRACEBUF2.
 
 .IP loglevel
 This the level of logging information for the export thread in
@@ -159,6 +166,7 @@ defaults &Arr{
 	reject
 	my_inst		        INST_UNKNOWN
 	my_mod			MOD_UNKNOWN
+	my_type			TYPE_TRACEBUF
 	starttime
 	timesort_queue_maxpkts	0
 }
@@ -216,6 +224,10 @@ The queue codes from the pktchannelpipe callback are currently ignored.
 One should note the wait-time tradeoff involved in sorting out-of-order
 data. The queue should not be made too large or data will be delayed 
 proportionately when packets arrive out of order or are missing.
+
+The channel codes for earthworm TYPE_TRACEBUF2 messages are four characters 
+at maximum, shorter than those for CSS3.0. If longer channel names are encountered 
+on the orbserver, they will be bluntly truncated to fit. 
 .SH AUTHOR
 .nf
 Kent Lindquist

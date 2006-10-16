@@ -95,6 +95,7 @@ Messages &Arr{
 	TYPE_H71SUM2K       15   global # hypo71-format hypocenter summary msg 
 #	TYPE_HINVARC        17   global # hypoinverse event archive msg 
 #	TYPE_H71SUM         18   global # hypo71-format summary msg 
+	TYPE_TRACEBUF2      19   global # single-channel waveforms with loc codes
 	TYPE_TRACEBUF       20   global # single-channel waveforms 
 	TYPE_LPTRIG         21   global # single-channel long-period trigger 
 	TYPE_CUBIC          22   global # cubic-format summary msg 

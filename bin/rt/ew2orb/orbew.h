@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef ORBEW_H
+#define ORBEW_H
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -43,7 +46,9 @@
 #define DEFAULT_EARTHWORM_PFNAME "earthworm"
 #define DEFAULT_INST "INST_UNKNOWN"
 #define DEFAULT_MOD "MOD_UNKNOWN"
+#define DEFAULT_EWEXPORT_TYPE "TYPE_TRACEBUF"
 #define DEFAULT_TYPE_HEARTBEAT 3
+#define DEFAULT_TYPE_TRACEBUF2 19
 #define DEFAULT_TYPE_TRACEBUF 20
 #define DEFAULT_TYPE_TRACE_COMP_UA 26
 #define DEFAULT_SERVER_PORT 16010
@@ -84,6 +89,7 @@ enum Loglevel { QUIET, VERBOSE, VERYVERBOSE };
 
 extern char	*Default_TYPE_HEARTBEAT;
 extern char	*Default_TYPE_TRACEBUF;
+extern char	*Default_TYPE_TRACEBUF2;
 extern char	*Default_TYPE_TRACE_COMP_UA;
 extern char	Program_loglevel[STRSZ];
 
@@ -100,3 +106,5 @@ extern void ewlogo_tostrings( int inst, int mod, int type, char *inststr,
 extern void ewlogo_tologo( char *inststr, char *modstr, char *typestr,
 	        	   int *inst, int *mod, int *type );
 extern Tbl *healthy_morphlist( Tbl *morphlist );
+
+#endif /* ORBEW_H */

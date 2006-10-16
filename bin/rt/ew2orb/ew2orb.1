@@ -301,6 +301,9 @@ The timecorr array allows waveform timestamps to be shifted forward
 and backwards in time. The amounts are left to user discretion; no 
 limits are placed on the amount of shifting. Shifting data too far 
 into the future may cause a host of downstream problems. 
+
+Currently only station and channel name are used in looking up calibration 
+information in the stations database (net and loc codes are ignored).
 .SH AUTHOR
 .nf
 Kent Lindquist
