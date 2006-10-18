@@ -1184,6 +1184,11 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		aso = accept( es->so, (struct sockaddr *) &client, &clientlen ); 
 		if( aso < 0 ) {
+
+			if( errno == EINTR ) {
+				
+				continue;
+			}
 			
 			elog_complain( 1, 
 				"'%s': Failed accept on passive socket %d\n", 
