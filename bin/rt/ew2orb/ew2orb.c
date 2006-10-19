@@ -208,6 +208,16 @@ free_Ew2orbPacket( Ew2orbPacket *e2opkt )
 static void
 describe_packet( Ew2orbPacket *e2opkt )
 {
+	char	heartbeat[STRSZ];
+	char	version[STRSZ];
+	char	datatype[STRSZ];
+	char	quality[STRSZ];
+
+	memset( heartbeat, 0, STRSZ );
+	memset( version, 0, STRSZ );
+	memset( datatype, 0, STRSZ );
+	memset( quality, 0, STRSZ );
+
 	elog_notify( 0, "'%s': Received <%s> <%s> <%s>\n",
 		  e2opkt->itname,
 		  e2opkt->inststr, 
@@ -216,13 +226,18 @@ describe_packet( Ew2orbPacket *e2opkt )
 
 	if( STREQ( e2opkt->typestr, Default_TYPE_HEARTBEAT ) ) { 
 
+		strncpy( heartbeat, e2opkt->buf, strlen( e2opkt->buf ) );
+
 		elog_notify( 0, "'%s':\tunpacked Heartbeat: \"%s\"\n",
 	  		e2opkt->itname, 
-	  		e2opkt->buf );
+	  		heartbeat );
 
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF ) ) { 
 
 		if( e2opkt->th ) {
+
+			strncpy( datatype, e2opkt->th->datatype, 2 );
+			strncpy( quality, e2opkt->th->quality, 2 );
 
 			elog_notify( 0, 
 				  "'%s': unpacked TRACEBUF Trace-data:\n\t"
@@ -235,8 +250,8 @@ describe_packet( Ew2orbPacket *e2opkt )
 				  e2opkt->th->sta, 
 				  e2opkt->th->chan,
 				  e2opkt->th->pinno, 
-				  e2opkt->th->datatype, 
-				  e2opkt->th->quality, 
+				  datatype, 
+				  quality, 
 				  e2opkt->th->nsamp, 
 				  e2opkt->th->samprate, 
 				  e2opkt->th->starttime, 
@@ -251,6 +266,10 @@ describe_packet( Ew2orbPacket *e2opkt )
 
 		if( e2opkt->th2 ) {
 
+			strncpy( version, e2opkt->th2->version, 2 );
+			strncpy( datatype, e2opkt->th2->datatype, 2 );
+			strncpy( quality, e2opkt->th2->quality, 2 );
+
 			elog_notify( 0, 
 				  "'%s': unpacked TRACEBUF2 Trace-data:\n\t"
 				  "%s %s %s %s pinno %d "
@@ -263,9 +282,9 @@ describe_packet( Ew2orbPacket *e2opkt )
 				  e2opkt->th2->chan,
 				  e2opkt->th2->loc,
 				  e2opkt->th2->pinno, 
-				  e2opkt->th2->version, 
-				  e2opkt->th2->datatype, 
-				  e2opkt->th2->quality, 
+				  version, 
+				  datatype, 
+				  quality, 
 				  e2opkt->th2->nsamp, 
 				  e2opkt->th2->samprate, 
 				  e2opkt->th2->starttime, 
@@ -276,10 +295,12 @@ describe_packet( Ew2orbPacket *e2opkt )
 			  	e2opkt->itname  );
 		}
 
-
 	} else if( STREQ( e2opkt->typestr, Default_TYPE_TRACE_COMP_UA ) ) {
 
 		if( e2opkt->th ) {
+
+			strncpy( datatype, e2opkt->th->datatype, 2 );
+			strncpy( quality, e2opkt->th->quality, 2 );
 
 			elog_notify( 0, 
 				  "'%s': unpacked Compressed trace-data:\n\t"
@@ -292,8 +313,8 @@ describe_packet( Ew2orbPacket *e2opkt )
 				  e2opkt->th->sta, 
 				  e2opkt->th->chan,
 				  e2opkt->th->pinno, 
-				  e2opkt->th->datatype, 
-				  e2opkt->th->quality, 
+				  datatype,
+				  quality,
 				  e2opkt->th->nsamp, 
 				  e2opkt->th->samprate, 
 				  e2opkt->th->starttime, 
@@ -869,9 +890,9 @@ buf_intake( ImportThread *it )
 	e2opkt->loglevel = it->loglevel;
 
 	RESIZE_BUFFER( char *, e2opkt->buf, 
-		       e2opkt->bufsize, it->nbytes - EWLOGO_SIZE );
+		       e2opkt->bufsize, it->nbytes - EWLOGO_SIZE + 1 );
 
-	memset( e2opkt->buf, 0, e2opkt->bufsize );
+	memset( e2opkt->buf, 0, e2opkt->bufsize + 1 );
 	memcpy( e2opkt->buf, cp, it->nbytes - EWLOGO_SIZE );
 	e2opkt->nbytes = it->nbytes - EWLOGO_SIZE;
 
