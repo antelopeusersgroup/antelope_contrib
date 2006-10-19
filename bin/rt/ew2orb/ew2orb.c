@@ -2100,19 +2100,60 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 	pushtbl( e2opkt->pkt->channels, pktchan );
 
-	/* Acquiesce to Earthworm packing strategy of 
+	/* Acknowledge the Earthworm packing strategy of 
 	   memory-copying the entire trace-header structure. 
 	   This was an unwise protocol design since the 
 	   field order in a structure, officially, is at
-	   the whim of the compiler implementation. */
+	   the whim of the compiler implementation. In an 
+	   attempt to sidestep difficulties, unpack the expected 
+	   structure contents one item at a time in hopes they packed
+	   "correctly" (i.e. without misalignments from compiler-dependent
+	   structure padding) on the Earthworm side: */
 
 	if( STREQ( e2opkt->typestr, Default_TYPE_TRACEBUF2 ) ) {
 
 		allot( TRACE2_HEADER *, e2opkt->th2, 1 );
 
-		memcpy( e2opkt->th2, e2opkt->buf, sizeof( TRACE2_HEADER ) );
+		dp = e2opkt->buf;
+		memcpy( &e2opkt->th2->pinno, dp, sizeof( int ) );
+		dp += sizeof( int );
 
-		dp = e2opkt->buf + sizeof( TRACE2_HEADER );
+		memcpy( &e2opkt->th2->nsamp, dp, sizeof( int ) );
+		dp += sizeof( int );
+
+		memcpy( &e2opkt->th2->starttime, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( &e2opkt->th2->endtime, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( &e2opkt->th2->samprate, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( e2opkt->th2->sta, dp, TRACE2_STA_LEN );
+		dp += TRACE2_STA_LEN;
+
+		memcpy( e2opkt->th2->net, dp, TRACE2_NET_LEN );
+		dp += TRACE2_NET_LEN;
+
+		memcpy( e2opkt->th2->chan, dp, TRACE2_CHAN_LEN );
+		dp += TRACE2_CHAN_LEN;
+
+		memcpy( e2opkt->th2->loc, dp, TRACE2_LOC_LEN );
+		dp += TRACE2_LOC_LEN;
+
+		memcpy( e2opkt->th2->version, dp, 2 );
+		dp += 2;
+
+		memcpy( e2opkt->th2->datatype, dp, 3 );
+		e2opkt->th2->datatype[2] = 0;
+		dp += 3;
+
+		memcpy( e2opkt->th2->quality, dp, 2 );
+		dp += 2;
+
+		memcpy( e2opkt->th2->pad, dp, 2 );
+		dp += 2;
 
 		strcpy( e2opkt->pkt->parts.src_net, e2opkt->th2->net );
 		strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th2->sta );
@@ -2131,9 +2172,40 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 		allot( TRACE_HEADER *, e2opkt->th, 1 );
 
-		memcpy( e2opkt->th, e2opkt->buf, sizeof( TRACE_HEADER ) );
+		dp = e2opkt->buf;
+		memcpy( &e2opkt->th->pinno, dp, sizeof( int ) );
+		dp += sizeof( int );
 
-		dp = e2opkt->buf + sizeof( TRACE_HEADER );
+		memcpy( &e2opkt->th->nsamp, dp, sizeof( int ) );
+		dp += sizeof( int );
+
+		memcpy( &e2opkt->th->starttime, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( &e2opkt->th->endtime, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( &e2opkt->th->samprate, dp, sizeof( double ) );
+		dp += sizeof( double );
+
+		memcpy( e2opkt->th->sta, dp, TRACE_STA_LEN );
+		dp += TRACE_STA_LEN;
+
+		memcpy( e2opkt->th->net, dp, TRACE_NET_LEN );
+		dp += TRACE_NET_LEN;
+
+		memcpy( e2opkt->th->chan, dp, TRACE_CHAN_LEN );
+		dp += TRACE_CHAN_LEN;
+
+		memcpy( e2opkt->th->datatype, dp, 3 );
+		e2opkt->th->datatype[2] = 0;
+		dp += 3;
+
+		memcpy( e2opkt->th->quality, dp, 2 );
+		dp += 2;
+
+		memcpy( e2opkt->th->pad, dp, 2 );
+		dp += 2;
 
 		strcpy( e2opkt->pkt->parts.src_net, e2opkt->th->net );
 		strcpy( e2opkt->pkt->parts.src_sta, e2opkt->th->sta );
@@ -2317,6 +2389,14 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 			sp = (char *) &e2opkt->th2->endtime;
 			vd2hd( &sp, &e2opkt->th2->endtime, 1 );
+
+		} else {
+
+			complain( 0, 
+				"convert: Don't know how to translate datatype <%s>\n",
+				e2opkt->th2->datatype );
+			
+			return -1;
 		}
 
 		pktchan->datasz = e2opkt->th2->nsamp;
@@ -2394,6 +2474,14 @@ crack_packet( Ew2orbPacket *e2opkt )
 
 			sp = (char *) &e2opkt->th->endtime;
 			vd2hd( &sp, &e2opkt->th->endtime, 1 );
+
+		} else {
+
+			complain( 0, 
+				"convert: Don't know how to translate datatype <%s>\n",
+				e2opkt->th->datatype );
+
+			return -1;
 		}
 
 		pktchan->datasz = e2opkt->th->nsamp;
@@ -2501,7 +2589,12 @@ ew2orb_convert( void *arg )
 
 	while( mtfifo_pop( E2oPackets_mtf, (void **) &e2opkt ) != 0 ) {
 
-		crack_packet( e2opkt );
+		if( crack_packet( e2opkt ) < 0 ) {
+			
+			free_Ew2orbPacket( e2opkt );
+
+			continue;
+		}
 
 		if( e2opkt->loglevel == VERYVERBOSE ) {
 
