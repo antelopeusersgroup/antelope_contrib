@@ -143,39 +143,48 @@ pktchan_to_tracebuf( PktChannel *pktchan,
 	double	endtime;
 	int	pinno;
 	char	*ptr;
+	int	header_size;
 
-	strcpy( tp->trh.datatype, DATATYPE );
+	ptr = &tp->msg[0];
 
 	pinno = get_pinno( pktchan );
-	ptr = (char *) &tp->trh.pinno;
 	hi2mi( &pinno, &ptr, 1 );
 
-	strcpy( tp->trh.sta, pktchan->sta );
-	strcpy( tp->trh.chan, pktchan->chan );
-	strcpy( tp->trh.net, pktchan->net );
-
-	ptr = (char *) &tp->trh.samprate;
-	hd2md( &pktchan->samprate, &ptr, 1 );
-
-	ptr = (char *) &tp->trh.nsamp;
 	hi2mi( &pktchan->nsamp, &ptr, 1 );
 
-	ptr = (char *) &tp->trh.starttime;
 	hd2md( &starttime, &ptr, 1 );
 
-	ptr = (char *) &tp->trh.endtime;
 	endtime = ENDTIME( starttime, pktchan->samprate, pktchan->nsamp );
 	hd2md( &endtime, &ptr, 1 );
 
-	strcpy( tp->trh.quality, "" );
-	strcpy( tp->trh.pad, "" );
+	hd2md( &pktchan->samprate, &ptr, 1 );
 
-	datap = &tp->msg[0] + sizeof( TRACE_HEADER );
-	dsize_bytes = DATASIZE * tp->trh.nsamp;
+	strncpy( ptr, pktchan->sta, TRACE_STA_LEN );
+	ptr += TRACE_STA_LEN;
 
-	*nbytes = dsize_bytes + sizeof( TRACE_HEADER );
+	strncpy( ptr, pktchan->net, TRACE_NET_LEN );
+	ptr += TRACE_NET_LEN;
 
-	hi2mi( pktchan->data, &datap, tp->trh.nsamp );
+	strncpy( ptr, pktchan->chan, TRACE_CHAN_LEN );
+	ptr += TRACE_CHAN_LEN;
+
+	strncpy( ptr, DATATYPE, 3 );
+	ptr += 3;
+
+	strncpy( ptr, "", 2 );	/* quality */
+	ptr += 2;
+
+	strncpy( ptr, "", 2 );	/* pad */
+	ptr += 2;
+
+	header_size = ptr - &tp->msg[0];
+
+	datap = ptr;
+	dsize_bytes = DATASIZE * pktchan->nsamp;
+
+	*nbytes = dsize_bytes + header_size;
+
+	hi2mi( pktchan->data, &datap, pktchan->nsamp );
 
 	return 0;
 }
@@ -191,51 +200,68 @@ pktchan_to_tracebuf2( PktChannel *pktchan,
 	double	endtime;
 	int	pinno;
 	char	*ptr;
+	char	version[2];
+	char	loc[TRACE2_LOC_LEN];
+	int	header_size;
 
-	strcpy( tp->trh2.datatype, DATATYPE );
+	ptr = &tp->msg[0];
 
 	pinno = get_pinno( pktchan );
-	ptr = (char *) &tp->trh2.pinno;
 	hi2mi( &pinno, &ptr, 1 );
 
-	strcpy( tp->trh2.sta, pktchan->sta );
-	strcpy( tp->trh2.chan, pktchan->chan );
-	strcpy( tp->trh2.net, pktchan->net );
-
-	if( STREQ( pktchan->loc, "" ) ) {
-
-		strcpy( tp->trh2.loc, LOC_NULL_STRING );
-
-	} else {
-
-		strcpy( tp->trh2.loc, pktchan->loc );
-	}
-
-	ptr = (char *) &tp->trh2.samprate;
-	hd2md( &pktchan->samprate, &ptr, 1 );
-
-	ptr = (char *) &tp->trh2.nsamp;
 	hi2mi( &pktchan->nsamp, &ptr, 1 );
 
-	ptr = (char *) &tp->trh2.starttime;
 	hd2md( &starttime, &ptr, 1 );
 
-	ptr = (char *) &tp->trh2.endtime;
 	endtime = ENDTIME( starttime, pktchan->samprate, pktchan->nsamp );
 	hd2md( &endtime, &ptr, 1 );
 
-	tp->trh2.version[0] = TRACE2_VERSION0;
-	tp->trh2.version[1] = TRACE2_VERSION1;
+	hd2md( &pktchan->samprate, &ptr, 1 );
 
-	strcpy( tp->trh2.quality, "" );
-	strcpy( tp->trh2.pad, "" );
+	strncpy( ptr, pktchan->sta, TRACE2_STA_LEN );
+	ptr += TRACE2_STA_LEN;
 
-	datap = &tp->msg[0] + sizeof( TRACE2_HEADER );
-	dsize_bytes = DATASIZE * tp->trh2.nsamp;
+	strncpy( ptr, pktchan->net, TRACE2_NET_LEN );
+	ptr += TRACE2_NET_LEN;
 
-	*nbytes = dsize_bytes + sizeof( TRACE2_HEADER );
+	strncpy( ptr, pktchan->chan, TRACE2_CHAN_LEN );
+	ptr += TRACE2_CHAN_LEN;
 
-	hi2mi( pktchan->data, &datap, tp->trh2.nsamp );
+	if( STREQ( pktchan->loc, "" ) ) {
+
+		strcpy( loc, LOC_NULL_STRING );
+
+	} else {
+
+		strcpy( loc, pktchan->loc );
+	}
+
+	strncpy( ptr, loc, TRACE2_LOC_LEN );
+	ptr += TRACE2_LOC_LEN;
+
+	version[0] = TRACE2_VERSION0;
+	version[1] = TRACE2_VERSION1;
+
+	strncpy( ptr, version, 2 );	
+	ptr += 2;
+
+	strncpy( ptr, DATATYPE, 3 );
+	ptr += 3;
+
+	strncpy( ptr, "", 2 );	/* quality */
+	ptr += 2;
+
+	strncpy( ptr, "", 2 );	/* pad */
+	ptr += 2;
+
+	header_size = ptr - &tp->msg[0];
+
+	datap = ptr;
+	dsize_bytes = DATASIZE * pktchan->nsamp;
+
+	*nbytes = dsize_bytes + header_size;
+
+	hi2mi( pktchan->data, &datap, pktchan->nsamp );
 
 	return 0;
 }
