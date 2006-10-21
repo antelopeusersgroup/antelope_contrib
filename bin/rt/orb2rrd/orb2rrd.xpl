@@ -142,6 +142,15 @@ if( $opt_V ) {
 	$opt_v++;
 }
 
+if( $opt_v ) {
+
+        $now = str2epoch( "now" );
+
+        elog_notify( "Starting at " . epoch2str( $now, "%D %T %Z", "" ) .
+                     " (orb2rrd \$Revision$\ " .
+                     "\$Date$\)\n" );
+}
+
 if( $opt_p ) {
 	
 	$Pf = $opt_p;
@@ -232,7 +241,9 @@ for( ; $stop == 0 ; ) {
 
 	if( $result ne "Pkt_pf" ) {
 
-		inform( "Received a $result, skipping\n" );
+		inform( "Received a packet that's not a parameter file " .
+ 			"(type '$result' from unstuffPkt); skipping\n" );
+
 		next;
 	}
 
