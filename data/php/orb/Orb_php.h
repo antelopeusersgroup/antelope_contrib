@@ -47,7 +47,7 @@ PHP_FUNCTION(orbstat);
 PHP_FUNCTION(orbsources);
 PHP_FUNCTION(orbclients);
 PHP_FUNCTION(pforbstat);
-PHP_FUNCTION(unstuffPkt);
+PHP_FUNCTION(unstuffpkt);
 PHP_FUNCTION(orbpkt_string);
 PHP_FUNCTION(split_srcname);
 PHP_FUNCTION(join_srcname);

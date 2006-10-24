@@ -66,8 +66,8 @@ static function_entry Orb_functions[] = {
 	PHP_FE(split_srcname, NULL)		
 	PHP_FE(join_srcname, NULL)		
 	PHP_FE(suffix2pkttype, NULL)		
-	PHP_FE(unstuffPkt, NULL)		
-	PHP_FE(orbpkt_string, NULL)		
+	PHP_FE(unstuffpkt, NULL)		
+	PHP_FE(orbpkt_string, NULL)
 	{NULL, NULL, NULL}	
 };
 
@@ -126,7 +126,7 @@ typedef struct _php_orb_client_obj {
 	Orbclient	*oc;
 } php_orb_client_obj;
 
-PHP_METHOD(orb_pkt, PacketType);
+PHP_METHOD(orb_pkt, packettype);
 PHP_METHOD(orb_pkt, time);
 PHP_METHOD(orb_pkt, nchannels);
 PHP_METHOD(orb_pkt, channels);
@@ -140,7 +140,7 @@ PHP_METHOD(orb_pkt, parts);
 zend_class_entry *php_orb_pkt_entry;
 #define PHP_ORB_PKT_NAME "orb_pkt"
 static function_entry php_orb_pkt_functions[] = {
-	PHP_ME(orb_pkt, PacketType, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(orb_pkt, packettype, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, time, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, nchannels, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(orb_pkt, channels, NULL, ZEND_ACC_PUBLIC)
@@ -1746,7 +1746,7 @@ PHP_FUNCTION(pforbstat)
 /* }}} */
 
 /* {{{ proto array unstuffPkt( string srcname, double time, string packet, int nbytes ) */
-PHP_FUNCTION(unstuffPkt)
+PHP_FUNCTION(unstuffpkt)
 {
 	Packet	*pkt = 0;
 	char	*srcname;
@@ -1835,7 +1835,7 @@ PHP_FUNCTION(orbpkt_string)
 }
 /* }}} */
 
-PHP_METHOD(orb_pkt, PacketType)
+PHP_METHOD(orb_pkt, packettype)
 {
 	Packet	*pkt;
 	int	type;
