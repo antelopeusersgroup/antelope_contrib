@@ -29,17 +29,22 @@ char          **argv;
     int             verbose = 0;
     char           *pfname, *error;
     int		   orid ;
+    int		   nostdin=0 ;
 
     pfname=strdup("dbgenloc");
 
     elog_init (argc, argv);
     elog_set ( ELOG_MAXMSG, -1, 0 )  ;
 
-    while ((c = getopt (argc, argv, "hp:vV")) != -1) {
+    while ((c = getopt (argc, argv, "hnp:vV")) != -1) {
 	switch (c) {
 
 	case 'h':
 	    usage ();
+	    break ;
+
+	case 'n':
+	    nostdin = 1;
 	    break ;
 
 	case 'p':
@@ -75,7 +80,7 @@ char          **argv;
 	die (1, "Unable to open output database %s\n", out);
 
 
-    while (gets (aline)) {
+    while (nostdin || gets (aline)) {
 	switch (run_location (dbin, dbout, pfname, &orid, &error)) {
 	case 0:
 	    printf ("location_solution: new origin %d\n", orid);
@@ -88,6 +93,8 @@ char          **argv;
 
 	fflush (stdout);
 	elog_flush (1, 0) ; 
+
+	if ( nostdin ) break;
     }
 
     return 0;
