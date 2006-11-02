@@ -261,8 +261,6 @@ for( ; $stop == 0 ; ) {
 
 	$time = int( $time );
 
-	$dls_var = "br24"; #SCAFFOLD
-
 	foreach $element ( keys %mypktpf ) {
 	  foreach $dls_var ( keys %Dls_vars ) {
 
