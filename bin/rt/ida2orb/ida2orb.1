@@ -1,7 +1,7 @@
 .\" %W% $Date$
 .TH IDA2ORB 1 "$Date$"
 .SH NAME
-ida2orb \- import data from an IDA hub to a Datascope ORB
+ida2orb \- import data from an IDA hub to an Antelope ORB
 .SH SYNOPSIS
 .nf
 ida2orb [-r sec] [-u] orbname idahost importstring
@@ -22,9 +22,11 @@ will be set to the IDA channel name and the loc code will be left empty.
 If the IDA channel-name is more than three characters, the fourth and fifth
 characters will be mapped to the loc code of the orb packet.
 .SH OPTIONS
--u convert station and channel names to uppercase
+.IP -u 
+convert station and channel names to uppercase
 
--r seconds reject packets that are more than the specified number of seconds into the future, according to the system clock
+.IP "-r seconds" 
+reject packets that are more than the specified number of seconds into the future, according to the system clock
 .SH EXAMPLE
 .nf
 localhost% ida2orb -u : idahub.ucsd.edu coco:bhz20,bhn20,bhe20
