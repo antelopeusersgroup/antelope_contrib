@@ -39,6 +39,7 @@ sub init_globals {
 		"overview_maps",
 		"focus_maps",
 		"make_index_html",
+		"html_suffix",
 		"use_qgrids"
 		);
 
@@ -475,7 +476,7 @@ sub station_vitals {
 		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
 
 		my( $sta_url ) = $event_url;
-		$sta_url =~ s/.html$/_station_$sta.html/;
+		$sta_url =~ s/.$State{html_suffix}$/_station_$sta.$State{html_suffix}/;
 
 		my( $utc_arrtime ) 
 			= epoch2str( $arrtime, "%m/%d/%Y %H:%M:%S.%s %Z" );
@@ -624,7 +625,7 @@ sub station_vitals {
 		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
 
 		my( $sta_url ) = $event_url;
-		$sta_url =~ s/.html$/_station_$sta.html/;
+		$sta_url =~ s/.$State{html_suffix}$/_station_$sta.$State{html_suffix}/;
 
 		$writer->startTag( "station", 
 					"name" => "$sta",
@@ -1017,7 +1018,7 @@ sub create_focusmap_html {
 		foreach $sta ( @mystations ) {
 
 			my( $stations_filename ) = $html_filename;
-			$stations_filename =~ s/.html$/_station_$sta.html/;
+			$stations_filename =~ s/.$State{html_suffix}$/_station_$sta.$State{html_suffix}/;
 
 			$tmp_stylesheet = 
 			   concatpaths( $State{"workdir"}, 
@@ -1141,7 +1142,7 @@ sub create_focusmap {
 	dbputv( @dbscratch, "mapname", $Focus_mapspec{file_basename} );
 
 	my( $url ) = $State{dbrecenteqs_url} . 
-		concatpaths( $reldir, "$Focus_Mapspec{file_basename}.html" );
+		concatpaths( $reldir, "$Focus_Mapspec{file_basename}.$State{html_suffix}" );
 
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
@@ -1436,7 +1437,7 @@ sub stockmap_earthquake_xml {
 				     "time", "origin.orid", "url" );
 
 		$vrml_url = $url;
-		$vrml_url =~ s/html$/wrl/;
+		$vrml_url =~ s/$State{html_suffix}$/wrl/;
 
 		my( $mag_description, $mag_value ) = mag_description( @db );
 
@@ -1517,7 +1518,7 @@ sub other_focusmap_links {
 		}
 
 		if( $urlhead !~ m@/$@ ) { $urlhead .= "/"; }
-		my( $url ) = "$urlhead" . "$mapname$evid.html";
+		my( $url ) = "$urlhead" . "$mapname$evid.$State{html_suffix}";
 
 		$writer->startTag( "focusmap" );
 		$writer->dataElement( "href", $url );
@@ -1649,7 +1650,7 @@ sub create_stockmap_html {
 	$vrml_filename =~ s/.xml$/.wrl/;
 
 	my( $main_index_filename ) = $html_filename;
-	$main_index_filename =~ s@/([^/]*)$@/index.html@;
+	$main_index_filename =~ s@/([^/]*)$@/index.$State{html_suffix}@;
 
 	my( $image_relpath ) = dbextfile( @db );
 	$image_relpath = substr( $image_relpath, 	
@@ -1743,7 +1744,7 @@ sub create_stockmap_html {
 
 	if( ( $State{make_index_html} =~ m/y|yes|1|true|t/i ) &&
 	    ( $mapname eq $State{main_index_mapname} ) &&
-	    ( $html_filename !~ m@.*/index.html$@ ) ) {
+	    ( $html_filename !~ m@.*/index.$State{html_suffix}$@ ) ) {
 
 		system( "/usr/bin/cp $html_filename $main_index_filename" );
 	}
@@ -1811,7 +1812,7 @@ sub create_stockmap_entry {
 	dbputv( @dbscratch, "mapname", $mapname );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{dbrecenteqs_url} . "$mapname.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$mapname.$State{html_suffix}";
 
 	my( $dir ) = "placeholder"; # Not very elegant
 	my( $dfile ) = $mapname;
@@ -1924,7 +1925,7 @@ sub update_stockmap {
 	dbputv( @dbscratch, "mapname", $Mapspec{mapname} );
 	my( @recs ) = dbmatches( @dbscratch, @dbwebmaps, "webmaps", "mapname" );
 
-	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapname}.html";
+	my( $url ) = $State{dbrecenteqs_url} . "$Mapspec{mapname}.$State{html_suffix}";
 
 	my( $dir ) = $State{dbrecenteqs_dir};
 	my( $dfile ) = "$Mapspec{mapname}.$Mapspec{format}";
