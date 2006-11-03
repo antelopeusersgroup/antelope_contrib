@@ -50,8 +50,11 @@ int find_first_arrival(Tbl *t)
 	for(i=1 ; i<n ; ++i)
 	{
 		a = (Arrival *)gettbl(t,i);
-		if( (a->time) < time)
+                /* Correction by JN. Earliest arrival was incorrecly determined. */
+		if( (a->time) < time) {
+                        time = a->time;
 			ifirst = i;
+                }
 	}
 	return(ifirst);
 }

@@ -1153,10 +1153,13 @@ ggnloc (Hypocenter initial_location,
 	/* Here we count the number of data points actually used which is
 	 * defined as those points for which neither of the weights for that
 	 * datum are zero.  */
+
+        /* This loop was changed by JN to correct calculation of degrees_of_freedom */
 	for (i = 0, current_location.number_data = 0, sum_reswt = 0.0; i < m; ++i) {
-	    if ((wtmp[i] > 0.0) && (reswttmp[i] > 0.0))
+	    if ((wtmp[i] > 0.0) && (reswttmp[i] > 0.0)) {
 		++(current_location.number_data);
-	    sum_reswt += (double) reswttmp[i];
+	        sum_reswt += (double) reswttmp[i];
+            }
 	}
 	current_location.degrees_of_freedom = rint (sum_reswt) - npar;
 
