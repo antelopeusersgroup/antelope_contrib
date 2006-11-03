@@ -157,7 +157,7 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 		ndef = h.degrees_of_freedom + 4;
 		strcpy(dtype,"f");
 	}
-	auth = cuserid(NULL);
+	auth=getenv("LOGNAME");
 	lddate = now();
 	orid = dbnextid(dbo,"orid");
 	if(dbaddv(dbo,0,
@@ -205,7 +205,8 @@ Author:  Gary L. Pavlis
 Written:  February 1997
 */
 
-void save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
+/* Changed to int from void by JN in order to return evid. */
+int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 
 {
 	/* these are variables in dbi copied to dbo */
@@ -230,7 +231,7 @@ void save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 				is);
 	}
 	prefor = orid;
-	auth = cuserid(NULL);	
+	auth=getenv("LOGNAME");
 	lddate = now();
 	if(dbaddv(dbo,0,
                 "evid",evid,
@@ -243,6 +244,8 @@ void save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 		die(1,"save_event: dbaddv error writing event record for orid %d\n",
 				orid);
 	}
+        /* Added by JN */
+	return(evid);
 }
 /*This function adds a single row to the origerr table for this event.
 
@@ -427,7 +430,9 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 		}
 		else
 		{
-			sscanf(time_residual_record,"%*s%*s%*s%*lg%lg%lg%lg",
+                        /* Changed by JN to avoid gcc warning */
+			/* sscanf(time_residual_record,"%*s%*s%*s%*lg%lg%lg%lg", */
+			sscanf(time_residual_record,"%*s%*s%*s%*g%lg%lg%lg",
 				&r,&w,&reswt);
 			timeres = r;
 			wgt = w*reswt;
@@ -438,8 +443,12 @@ void save_assoc(Dbptr dbi, int is, int ie, int orid, char *vmodel,
 		ux_residual_record = (char *)getarr(residual_array,key);
 		sprintf(key,"%s %s uy",sta,phase);
 		uy_residual_record = (char *)getarr(residual_array,key);
+                /* Corrected by JN
 		if( (ux_residual_record == NULL) 
 			|| (ux_residual_record == NULL))
+                */
+		if( (ux_residual_record == NULL) 
+			|| (uy_residual_record == NULL))
 		{
 			/* This trick is not documented.  By setting 
 			the record filed to dbNULL, and then calling dbgetv
@@ -704,7 +713,9 @@ Which picks will be used here is unpredictable\n\
 	pfget_badclocks(pf,badclocks);
 	nbcs = cntarr(badclocks);
 	if(nbcs>0) fprintf(stdout,"relocate:  bad clock feature enabled\n\n");
-	fprintf(stdout,"lat lon depth time rms wrms interquartile ndata ndgf iterations\n");
+        /* Change by JN to output evid and orid. */
+        /* fprintf(stdout,"lat lon depth time rms wrms interquartile ndata ndgf iterations\n"); */
+	fprintf(stdout,"evid orid lat lon depth time rms wrms interquartile ndata ndgf iterations\n");
 
 	/* Main loop.  We utilize the group views and loop through by 
 	events */
@@ -772,16 +783,21 @@ Which picks will be used here is unpredictable\n\
 			hypos = (Hypocenter *)gettbl(converge_history,
 								niterations-1);
 			predicted_errors(*hypos,ta,tu,o,C,emodel);
-	
-			fprintf(stdout,"%lf %lf %lf %lf %g %g %g %d %d\n",
+
+                        /* Next 3 calls changed by JN to output evid, orid and number_data */
+			evid = save_event(dbv,is,ie,orid,dbo);
+			orid = save_origin(dbv,is,ie,o.fix[3],*hypos,dbo);
+
+			fprintf(stdout,"%d %d %lf %lf %lf %lf %g %g %g %d %d %d\n",
+					evid,
+					orid,
 					hypos->lat,hypos->lon,hypos->z,hypos->time,
 					hypos->rms_raw, hypos->rms_weighted,
 					hypos->interquartile,
+					hypos->number_data,
 					hypos->degrees_of_freedom,
 					niterations);
 	
-			orid = save_origin(dbv,is,ie,o.fix[3],*hypos,dbo);
-			save_event(dbv,is,ie,orid,dbo);
 			save_origerr(orid,*hypos,C,dbo);
 			save_assoc(dbv,is,ie,orid,vmodel,residual,*hypos,dbo);
 			/* These save genloc add on tables */
