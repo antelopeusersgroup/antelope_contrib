@@ -157,7 +157,7 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 		ndef = h.degrees_of_freedom + 4;
 		strcpy(dtype,"f");
 	}
-	auth=getenv("LOGNAME");
+	my_username(auth);
 	lddate = now();
 	orid = dbnextid(dbo,"orid");
 	if(dbaddv(dbo,0,
@@ -231,7 +231,7 @@ int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 				is);
 	}
 	prefor = orid;
-	auth=getenv("LOGNAME");
+	my_username(auth);
 	lddate = now();
 	if(dbaddv(dbo,0,
                 "evid",evid,
