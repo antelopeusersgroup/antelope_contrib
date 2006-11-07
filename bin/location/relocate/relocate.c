@@ -104,7 +104,7 @@ int save_origin(Dbptr dbi, int is, int ie, int depth_fixed,
 	int ndef;
 	char dtype[2];
 	char algorithm[16]="genloc-nlls";
-	char *auth;
+	char auth[20];
 	double lddate;
 	
 
@@ -215,7 +215,7 @@ int save_event(Dbptr dbi, int is, int ie, int orid, Dbptr dbo)
 	
 	/*altered in output by this program */
 	int prefor;
-	char *auth;
+	char auth[20];
 	double lddate;
 
 	/* intentionally ignored:  commid */
@@ -785,8 +785,8 @@ Which picks will be used here is unpredictable\n\
 			predicted_errors(*hypos,ta,tu,o,C,emodel);
 
                         /* Next 3 calls changed by JN to output evid, orid and number_data */
-			evid = save_event(dbv,is,ie,orid,dbo);
 			orid = save_origin(dbv,is,ie,o.fix[3],*hypos,dbo);
+			evid = save_event(dbv,is,ie,orid,dbo);
 
 			fprintf(stdout,"%d %d %lf %lf %lf %lf %g %g %g %d %d %d\n",
 					evid,

@@ -27,7 +27,7 @@ if the timing table is present).
 Stations can also be marked as always having bad times through
 the \fIbad_clocks\fR parameter.
 .LP
-Note that the phase description parameters, which are dbgenloc hides from the normal 
+Note that the phase description parameters, which dbgenloc hides from the normal 
 user, are required to be inline in the parameter file for this program.  To get a start
 simply insert the contents of one of the parameter files found in
 the directory $ANTELOPE/data/tables/genloc/TT where TT varies for you choice of
@@ -87,5 +87,8 @@ Stations using minus phases due to timing problems will not have entries saved
 in the predarr table.  A valid assoc table will be produced for these arrivals
 but the residual saved in the database will be set equal for each arrival 
 associated with the pair of phases (e.g. P and S in S-P).  
+.IP (5)
+There is no way to provide for fixing any coordinate other than depth even though
+the genloc library allows this.  This is a limit of css3.0 not easily avoided.
 .SH AUTHOR
 Gary L. Pavlis
