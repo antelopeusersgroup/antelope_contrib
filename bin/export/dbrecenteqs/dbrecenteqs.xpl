@@ -179,6 +179,8 @@ sub cleanup_database {
 	$cmd = "orb2db_msg $dbname pause";
 	system( $cmd );
 
+	my( @dbt );
+
 	foreach $table ("arrival", "detection", "origin" ) {
 
 		if( $opt_v ) {
@@ -187,10 +189,26 @@ sub cleanup_database {
 
 		next if( ! -e "$dbname.$table" );
 
-		$cmd = "dbsubset $dbname.$table \"time < $cutoff\" | " .
-			"dbdelete - $table";
-		system( $cmd );
-		if( $? ) { elog_complain "\t command error $?\n"; }
+		@dbt = dbprocess( @db, "dbopen $table",
+				       "dbsubset time < $cutoff",
+				       "dbseparate $table" );
+	
+		if( ( $nr = dbquery( @dbt, dbRECORD_COUNT ) ) > 0 ) {
+			
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: Deleting $nr rows from $table\n";
+			}
+
+			dbdelete( @dbt );
+
+		} else {
+
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: No rows to delete from $table\n";
+			}
+		}
 	}
 
 	foreach $table ( "assoc", "event", "mapassoc" ) {
@@ -202,9 +220,26 @@ sub cleanup_database {
 		next if( ! -e "$dbname.$table" );
 		next if( ! -e "$dbname.origin" );
 
-		$cmd = "dbnojoin $dbname.$table origin | dbdelete - $table";
-		system( $cmd );
-		if( $? ) { elog_complain "\t command error $?\n"; }
+		@dbt = dbprocess( @db, "dbopen $table",
+				       "dbnojoin origin",
+				       "dbseparate $table" );
+	
+		if( ( $nr = dbquery( @dbt, dbRECORD_COUNT ) ) > 0 ) {
+			
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: Deleting $nr rows from $table\n";
+			}
+
+			dbdelete( @dbt );
+
+		} else {
+
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: No rows to delete from $table\n";
+			}
+		}
 	}
 
 	foreach $table ( "webmaps" ) {
@@ -216,12 +251,33 @@ sub cleanup_database {
 		next if( ! -e "$dbname.$table" );
 		next if( ! -e "$dbname.event" );
 
-		$cmd = "dbnojoin $dbname.$table event | " .
-			"dbsubset - \"evid != NULL\" | " .
-			"dbdelete - $table";
-		system( $cmd );
-		if( $? ) { elog_complain "\t command error $?\n"; }
+		@dbt = dbprocess( @db, "dbopen $table",
+				       "dbnojoin event",
+				       "dbsubset evid != NULL",
+				       "dbseparate $table" );
+	
+		if( ($nr = dbquery( @dbt, dbRECORD_COUNT ) ) > 0 ) {
+			
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: Deleting $nr rows from $table\n";
+			}
+
+			dbdelete( @dbt );
+
+		} else {
+
+			if( $opt_v ) {
+
+				elog_notify "dbrecenteqs: No rows to delete from $table\n";
+			}
+		}
 	}
+
+	dbclose( @db );
+
+	@db = dbopen( $dbname, "r+" );
+
 	$cmd = "orb2db_msg $dbname continue";
 	system( $cmd );
 }
