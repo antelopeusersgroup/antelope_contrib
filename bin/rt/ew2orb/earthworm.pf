@@ -70,6 +70,7 @@ Installations &Arr{
 	INST_USGSMAG    59 	global
 	INST_KACST	60	global #King Abdulaziz City for Science & Tech.
 	INST_OVMP       61	global #Ob. Vol. de la Montagne Pelee	
+	INST_UCSD       93	global 
 	INST_QUITO      100	global
 	INST_INETER     101	global
 	INST_CENAPRED   102	global
