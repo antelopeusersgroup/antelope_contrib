@@ -28,7 +28,7 @@ string is specified, is_inside_region looks it up in the table provided.
 Otherwise, is_inside_region assumes that the subsetting has already been 
 accomplished and the input database view contains only one region. 
 is_inside_region returns 0 if the specified point is outside the named region, 
-1 if the point is inside. test points on vertices and borders of the region 
+1 if the point is inside. Test points on vertices and borders of the region 
 will be treated as if they were inside the region. 
 
 The get_containing_regions() function takes a database pointer to a regions 
@@ -98,5 +98,8 @@ The routine is_geographically_inside currently requires that the test
 point and the polygon all lie entirely within the same hemisphere. 
 .SH AUTHOR
 Algorithm by Godkin and Pulli, BSSA v.74 1845-1948, 1984.
-Coding: Kent Lindquist, Geophysical Institute, U. of Alaska. 
+.nf
+
+Coding by Kent Lindquist, Geophysical Institute, U. of Alaska. 
+.fi
 .\" $Id$
