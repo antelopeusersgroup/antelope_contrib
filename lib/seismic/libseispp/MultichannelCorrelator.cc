@@ -216,7 +216,18 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 		//
 		for(i=0;i<data.member.size();++i)
 		{
-			xcor.member.push_back(correlation(beam,data.member[i],lag_range,true));
+			try {
+				xcor.member.push_back(correlation(beam,data.member[i],
+					lag_range,true));
+			} catch (SeisppError serr)
+			{
+				cerr << "MultichannelCorrelation(Warning):  problem data deleted."
+					<< endl
+					<< "Error message follows"<<endl;
+				serr.log_error();
+				// Push an empty, dead trace to handle this condition
+				xcor.member.push_back(TimeSeries());
+			}
 			if(xcor.member[i].live)
 			{
 				TimeSeriesMaximum tsm(xcor.member[i]);
@@ -296,7 +307,17 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			//
 			for(i=0;i<data.member.size();++i)
 			{
-				xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
+				try {
+					xcor.member[i]=correlation(beam,data.member[i],lag_range,true);
+				} catch (SeisppError serr)
+				{
+					cerr << "MultichannelCorrelation(Warning):  problem data deleted."
+						<< endl
+						<< "Error message follows"<<endl;
+					serr.log_error();
+					// Push an empty, dead trace to handle this condition
+					xcor.member.push_back(TimeSeries());
+				}
 				// Stack object handles data marked bad
 				// already.  Have to do same here as 
 				// xcor has all zeros if data had a gap
