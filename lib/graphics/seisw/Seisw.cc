@@ -1028,14 +1028,14 @@ static void Btn1UpProc (
 	    }
 
 	    //handle changing resolution for resizing
-            double dtemp=spar->x1endb-spar->x1begb>0.0 ? spar->x1endb-spar->x1begb :
+	    double dtemp=spar->x1endb-spar->x1begb>=0.0 ? spar->x1endb-spar->x1begb :
                 spar->x1begb-spar->x1endb;
             sw->seisw.x1_resolution=dtemp/((double)(sw->core.width-
-                2*(sw->primitive.shadow_thickness+sw->primitive.highlight_thickness)));
-            dtemp=spar->x2endb-spar->x2begb>0.0 ? spar->x2endb-spar->x2begb :
+                (sw->primitive.shadow_thickness+sw->primitive.highlight_thickness+sw->seisw.margin_width+spar->xbox)));
+            dtemp=spar->x2endb-spar->x2begb>=0.0 ? spar->x2endb-spar->x2begb :
                 spar->x2begb-spar->x2endb;
-            sw->seisw.x2_resolution=dtemp/((double)(sw->core.height-2*(
-                sw->primitive.shadow_thickness+sw->primitive.highlight_thickness)));
+            sw->seisw.x2_resolution=dtemp/((double)(sw->core.height-(
+                sw->primitive.shadow_thickness+sw->primitive.highlight_thickness+sw->seisw.margin_height+spar->ybox)));
 
 
 	    //heavy lifting stuff that adjust scrollbars and clear the windows
@@ -1060,6 +1060,7 @@ static void Btn1UpProc (
 	    //set this so that the scrollbar's SliderMove method realized that it needs to draw visual
 	    //instead of ignore this since we do not move scrollbar here
             sw->seisw.from_zoom=1;
+
 
             //It seems that we don't need an expose event here?
             //found out why, since after zooming, the scrollbar size changes, and the position
@@ -3744,6 +3745,66 @@ ClassPartInitialize (
 }
 
 
+void set_resolution(Widget w, double res_x, double res_y)
+{
+    ExmSeiswWidget sw = (ExmSeiswWidget)w;
+
+    sw->seisw.x1_resolution=res_x;
+    sw->seisw.x2_resolution=res_y;
+    sw->seisw.resolution_set=1;
+}
+
+int is_resolution_set(Widget w)
+{
+    ExmSeiswWidget sw = (ExmSeiswWidget)w;
+    return sw->seisw.resolution_set;
+}
+
+
+//This is for the redisplay after a SetValues either reset SeiswEnsemble or Metadata
+
+static void ReInitialize(
+        Widget request_w,
+        Widget new_w,
+        ArgList args,
+        Cardinal *num_args )
+{
+ ExmSeiswWidget rw = (ExmSeiswWidget)request_w;
+ ExmSeiswWidget nw = (ExmSeiswWidget)new_w;
+
+ int i, j, n;
+ SeiswCA * ca=NULL;
+ SeiswPar * para=NULL;
+
+ double temp_x1begb, temp_x1endb, temp_x2begb,temp_x2endb;
+
+ para=static_cast<SeiswPar *>(nw->seisw.seisw_parameters);
+ if (nw->seisw.seisw_metadata != NULL && nw->seisw.seisw_parameters != NULL)
+       //save the old x1begb and x1endb, x2begb, x2endb, etc...
+       temp_x1begb=para->x1begb;
+       temp_x1endb=para->x1endb;
+       temp_x2begb=para->x2begb;
+       temp_x2endb=para->x2endb;
+       para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
+ if (nw->seisw.seisw_metadata != NULL && nw->seisw.seisw_parameters == NULL){
+       nw->seisw.seisw_parameters=para=new SeiswPar();
+       para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
+ }
+
+  SetBox((Widget)nw);
+
+  if (is_resolution_set((Widget)nw) == 1) {
+      para->x1begb=temp_x1begb;
+      para->x1endb=temp_x1endb;
+      para->x2begb=temp_x2begb;
+      para->x2endb=temp_x2endb;
+      SetVerticalScrollbar(nw);
+      SetHorizontalScrollbar(nw);
+
+  }
+
+}
+
 
 /******************************************************************************
  *
@@ -3831,11 +3892,6 @@ Initialize(
                  for(i=0;i<nmember;++i) (ca->x2)[i]=static_cast<float>(i+1);
         }
 
-//   } catch (SeisppError err) {
-//	cerr << "metadata validation error in the widget initialization"<<endl;
-//       	throw SeisppError("seismic widget initialization error");
-//   }
-
 
  /* Call a function that creates the GC's needed by the widget. */ 
    if (wc->seisw_class.create_gc) 
@@ -3896,34 +3952,47 @@ Initialize(
 
    nw->seisw.ScrollBarDisplayPolicy=XmSTATIC;
 
+
+   //printf("22222222 x1begb=%f x1endb=%f para->x1beg=%f para->x1end=%f\n",para->x1begb, para->x1endb, para->x1beg, para->x1end);
+
    if (para != NULL) {
 
-	nw->seisw.xItemCount=(int)((para->x1end-para->x1beg)*nw->seisw.zoom_factor);
-   	nw->seisw.yItemCount=(int)((para->x2end-para->x2beg)*nw->seisw.zoom_factor);
+	double x1limit=(para->x1end-para->x1beg >= 0.0 ? para->x1end-para->x1beg : para->x1beg-para->x1end);
+	double x2limit=(para->x2end-para->x2beg >= 0.0 ? para->x2end-para->x2beg : para->x2beg-para->x2end);
+
+	nw->seisw.xItemCount=(int)(x1limit*nw->seisw.zoom_factor);
+   	nw->seisw.yItemCount=(int)(x2limit*nw->seisw.zoom_factor);
 	//depending on the size of the widget, we need to modify x1begb, x1endb, x2begb, and 
 	//x2endb to only show the plot within the widget visual
-	if (nw->seisw.default_width >= 
+	nw->core.width=nw->seisw.default_width;
+	nw->core.height=nw->seisw.default_height;
+
+	if (nw->core.width >= 
+	
 	  (nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)
 	  +(nw->seisw.margin_width+para->xbox) 
-		&& nw->seisw.default_height >= (
+		&& nw->core.height >= (
 		  nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)
 		  +(nw->seisw.margin_height+para->ybox)) {
-	    if (nw->seisw.default_width+nw->seisw.margin_width+para->xbox < para->wbox) {
+	    if (nw->core.width+nw->seisw.margin_width+para->xbox < para->wbox) {
 		para->x1begb=para->x1beg;
-		para->x1endb=para->x1begb+(para->x1end-para->x1beg)*
-			(float)(nw->seisw.default_width-(
+		para->x1endb=para->x1begb+x1limit*
+			(float)(nw->core.width-(
 			nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)-
 			(nw->seisw.margin_width+para->xbox))/
 			(float)(para->wbox);
-		if (para->x1begb < para->x1beg) para->x1begb=para->x1beg;
+	    if (para->x1endb > para->x1end) para->x1endb=para->x1end;
+	//	if (para->x1begb < para->x1beg) para->x1begb=para->x1beg;
 	    } else {
+
 		para->x1begb=para->x1beg;
 		para->x1endb=para->x1end;
+
 	    }
-	    if (nw->seisw.default_height < para->hbox) {
+	    if (nw->core.height < para->hbox) {
                 para->x2endb=para->x2end;
-		para->x2begb=para->x2endb-(para->x2end-para->x2beg)*
-                        (float)(nw->seisw.default_height-(
+		para->x2begb=para->x2endb-x2limit*
+                        (float)(nw->core.height-(
                         nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)
 			-(nw->seisw.margin_height+para->ybox))/
 			(float)(para->hbox);
@@ -3933,16 +4002,23 @@ Initialize(
 		para->x2begb=para->x2beg;
 	    }
 
-	    double dtemp=para->x1endb-para->x1begb>0.0 ? para->x1endb-para->x1begb : 
+	    double dtemp=para->x1endb-para->x1begb>=0.0 ? para->x1endb-para->x1begb : 
 		para->x1begb-para->x1endb;
-	    nw->seisw.x1_resolution=dtemp/((double)(nw->seisw.default_width-
-		(nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)-
-		(nw->seisw.margin_width+para->xbox)));
-            dtemp=para->x2endb-para->x2begb>0.0 ? para->x2endb-para->x2begb :
+ 	    double x1_res, x2_res;
+
+            x1_res=dtemp/((double)(nw->core.width-
+             (nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)-
+              (nw->seisw.margin_width+para->xbox)));
+
+            dtemp=para->x2endb-para->x2begb>=0.0 ? para->x2endb-para->x2begb :
 		para->x2begb-para->x2endb;
-	    nw->seisw.x2_resolution=dtemp/((double)(nw->seisw.default_height-(
+
+	    x2_res=dtemp/((double)(nw->core.height-(
                 nw->primitive.shadow_thickness+nw->primitive.highlight_thickness)
-		-(nw->seisw.margin_height+para->ybox)));
+              -(nw->seisw.margin_height+para->ybox)));
+
+	    set_resolution((Widget)nw, x1_res, x2_res);
+
 	} 
 
 	SeiswCA * sca=static_cast<SeiswCA *>(nw->seisw.seisw_ca);
@@ -3955,6 +4031,7 @@ Initialize(
 	nw->seisw.xItemCount=0;
 	nw->seisw.yItemCount=0;
    }
+
 
     //check if the scroll trait has been inited or not, since it is possible that
     //we are going to call Initialized from SetValues as well, in there, we don't
@@ -4047,23 +4124,28 @@ ComputeVizCount(ExmSeiswWidget nw, int * xcnt, int * ycnt)
     try {
 	    if (spar == NULL || sca==NULL) throw SeisppError("invalid common area or parameters");
 
-	    float x1_additional, x2_additional, f2temp, f1temp;
+	    float x1_additional, x2_additional, f2temp, f1temp, f2limit, f1limit;
   
-	    f2temp=spar->x2endb-spar->x2begb > 0 ? spar->x2endb-spar->x2begb : spar->x2begb-spar->x2endb;
-	    f1temp=spar->x1endb-spar->x1begb > 0 ? spar->x1endb-spar->x1begb : spar->x1begb-spar->x1endb;
+	    f2temp=spar->x2endb-spar->x2begb >= 0.0 ? spar->x2endb-spar->x2begb : spar->x2begb-spar->x2endb;
+	    f1temp=spar->x1endb-spar->x1begb >= 0.0 ? spar->x1endb-spar->x1begb : spar->x1begb-spar->x1endb;
+	    f2limit=spar->x2end-spar->x2beg >= 0.0 ? spar->x2end-spar->x2beg : spar->x2beg-spar->x2end;
+            f1limit=spar->x1end-spar->x1beg >= 0.0 ? spar->x1end-spar->x1beg : spar->x1beg-spar->x1end;
 /*
 	    x1_additional=((float)(nw->seisw.margin_width+spar->xbox))*f1temp
 		/((float)(nw->core.width));
             x2_additional=((float)(nw->seisw.margin_height+spar->ybox))*f2temp
                 /((float)(nw->core.height));
 */
-	    *ycnt=SEISPP::nint((float)((f2temp)/(float)(spar->x2end-spar->x2beg))*(float)nw->seisw.yItemCount);
+
+	    *ycnt=SEISPP::nint((float)((f2temp)/(float)(f2limit))*(float)nw->seisw.yItemCount);
             if (*ycnt > nw->seisw.yItemCount) *ycnt=nw->seisw.yItemCount;
 	    if (*ycnt <= 0) *ycnt=1;
 
-	    *xcnt=SEISPP::nint((float)((f1temp)/(float)(spar->x1end-spar->x1beg))*(float)nw->seisw.xItemCount);
+	    *xcnt=SEISPP::nint((float)((f1temp)/(float)(f1limit))*(float)nw->seisw.xItemCount);
 	    if (*xcnt > nw->seisw.xItemCount) *xcnt=nw->seisw.xItemCount;
 	    if (*xcnt <= 0) *xcnt=1;
+
+
     } catch (...) {
 	throw SeisppError( "error computing vis count");
     }    
@@ -4124,7 +4206,6 @@ SetVerticalScrollbar(ExmSeiswWidget nw)
       (!nw->seisw.vScrollBar)) return true; 
 
   ComputeVizCount(nw, &vizx, &vizy);
-
 
   was_managed = XtIsManaged((Widget) nw->seisw.vScrollBar);
   if (nw->seisw.ScrollBarDisplayPolicy == XmAS_NEEDED)
@@ -4395,57 +4476,32 @@ Resize (
 
  if (spar==NULL) return;
 
- /* Call CalcVisualSize */
+/*
    if (wc->seisw_class.calc_visual_size)
      (*(wc->seisw_class.calc_visual_size))((Widget)sw);
+*/
    
-    //We have to put it here since supposedly Reconfigure will call Resize as well,
-    //that is possibly when the Widget has not been instantiated/realized, so
-    //the Window has not been created, so if we don't, are going to have trouble
-    //at XClearArea
     if (!XtIsRealized((Widget)sw)) return;    
 
-    //set up the gc, it uses the core.width and core.height
-    //SetClipRect(sw);
-
-    //record current slider position using x_top_position and y_top_position
-
-    //compute the appropriate width of the scrollbars, set the scroll bars, the thing is,
-    //we need to assume the x1begb and x2endb of the bitmap remain unchanged, and 
-    //only the end points change, i.e., x1endb, x2begb, like you resize a scrolled window
-    if (sw->core.width >=
-          2*(sw->primitive.shadow_thickness+sw->primitive.highlight_thickness)
-                && sw->core.height >= 2*(
-                  sw->primitive.shadow_thickness+sw->primitive.highlight_thickness)) {
             if (sw->core.width < spar->wbox) {
-/*
-                spar->x1endb=spar->x1begb+(spar->x1end-spar->x1beg)*
-                        (float)(sw->core.width-2*(
-                        sw->primitive.shadow_thickness+sw->primitive.highlight_thickness))/
-                        (float)(spar->wbox-sw->seisw.margin_width);
-*/
-		spar->x1endb=spar->x1begb+sw->seisw.x1_resolution*(float)(sw->core.width-2*(
-			sw->primitive.shadow_thickness+sw->primitive.highlight_thickness));
+
+		spar->x1endb=spar->x1begb+sw->seisw.x1_resolution*(float)(sw->core.width-
+		  sw->primitive.shadow_thickness-sw->primitive.highlight_thickness+(sw->seisw.margin_width+spar->xbox));
+		
 		if (spar->x1endb > spar->x1end) spar->x1endb=spar->x1end;
+
             } else {
 		spar->x1endb=spar->x1end;
 	    }
             if (sw->core.height < spar->hbox) {
-/*
-                spar->x2begb=spar->x2endb-(spar->x2end-spar->x2beg)*
-                        (float)(sw->core.height-2*(
-                        sw->primitive.shadow_thickness+sw->primitive.highlight_thickness))/
-                        (float)(spar->hbox-sw->seisw.margin_height);
-*/
-		spar->x2begb=spar->x2endb-sw->seisw.x2_resolution*(float)(sw->core.height-2*(
-			sw->primitive.shadow_thickness+sw->primitive.highlight_thickness));
+
+		spar->x2begb=spar->x2endb-sw->seisw.x2_resolution*(float)(sw->core.height-
+		    sw->primitive.shadow_thickness-sw->primitive.highlight_thickness+(sw->seisw.margin_height+spar->ybox));
 		if (spar->x2begb < spar->x2beg) spar->x2begb=spar->x2beg;
+
             } else {
 		spar->x2begb=spar->x2beg;
 	    }
-
-    }
-
 
 	//reset the initial stuff so that it remember to go back to this state instead of
   	//the very beginning one.
@@ -4563,7 +4619,11 @@ SetValues (
    for(int i=0; i<*num_args; i++) {
 	if (string(args[i].name)==string(ExmNseiswEnsemble) ||
 	    string(args[i].name)==string(ExmNseiswMetadata)) {
-	    Initialize((Widget)cw,(Widget)nw,NULL,0);
+	    TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(cw->seisw.seisw_ensemble);
+	    SeiswPar * para=static_cast<SeiswPar *>(cw->seisw.seisw_parameters);
+	    if (tse == NULL || para == NULL) Initialize((Widget)cw,(Widget)nw,NULL,0);
+	    else 
+	        ReInitialize((Widget)cw,(Widget)nw,NULL,0);
 	    redisplayFlag=True;
 	    return redisplayFlag;
 	} else if (string(args[i].name)==string(ExmNdisplayMarkers)) {
@@ -4575,6 +4635,7 @@ SetValues (
 
  /* Check for any changes in total widget set, margin size, or 
     window decoration size.  If any are found, call Reconfigure. */ 
+/*
    nw->seisw.need_to_reconfigure = False;
    if (nw->core.width != cw->core.width ||
        nw->core.height != cw->core.height ||
@@ -4582,6 +4643,7 @@ SetValues (
        nw->primitive.highlight_thickness != cw->primitive.highlight_thickness
       ) 
    Reconfigure (exmSeiswWidgetClass, new_w, old_w);
+*/
 
    return (redisplayFlag);
 }
@@ -4631,20 +4693,11 @@ static void SetBox(Widget w)
     int nmember=sca->nmember;
 
     sca->mvefac=1.0;
+    x1min=(tse->member)[0].t0;
+    x1max=(tse->member)[0].endtime();
     for(i=0;i<nmember;++i) {
-	if((tse->member)[i].live)
-	{
-    		x1min=(tse->member)[i].t0;
-    		x1max=(tse->member)[i].endtime();
-		break;
-	}
-    }
-    for(i=0;i<nmember;++i) {
-	if(tse->member[i].live)
-	{
-        	x1min=MIN(tse->member[i].t0,x1min);
-        	x1max=MAX(tse->member[i].endtime(),x1max);
-	}
+        x1min=MIN(tse->member[i].t0,x1min);
+        x1max=MAX(tse->member[i].endtime(),x1max);
     }
 
     if (spar->use_variable_trace_spacing) {
@@ -4702,20 +4755,11 @@ static void HandlePreRender(Widget w)
     int nmember=sca->nmember;
 /*
     sca->mvefac=1.0;
+    x1min=(tse->member)[0].t0;
+    x1max=(tse->member)[0].endtime();
     for(i=0;i<nmember;++i) {
-	if((tse->member)[i].live)
-	{
-    		x1min=(tse->member)[i].t0;
-    		x1max=(tse->member)[i].endtime();
-		break;
-	}
-    }
-    for(i=0;i<nmember;++i) {
-	if(tse->member[i].live)
-	{
-        	x1min=MIN(tse->member[i].t0,x1min);
-        	x1max=MAX(tse->member[i].endtime(),x1max);
-	}
+	x1min=MIN(tse->member[i].t0,x1min);
+	x1max=MAX(tse->member[i].endtime(),x1max);
     }
 
     if (spar->use_variable_trace_spacing) {
@@ -5015,8 +5059,29 @@ DrawVisual (
 
 	    HandlePreRender(w);
 
-	    sca->width=sw->core.width-2*(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness);
-	    sca->height=sw->core.height-2*(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness);
+
+	    sca->width=sw->core.width-(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness
+			+spar->xbox+sw->seisw.margin_width);
+	    sca->height=sw->core.height-(sw->primitive.highlight_thickness+sw->primitive.shadow_thickness
+			+spar->ybox+sw->seisw.margin_height);
+
+                spar->x1endb=spar->x1begb+sw->seisw.x1_resolution*(float)(sw->core.width-
+                  sw->primitive.shadow_thickness-sw->primitive.highlight_thickness+(sw->seisw.margin_width+spar->xbox));
+                spar->x2begb=spar->x2endb-sw->seisw.x2_resolution*(float)(sw->core.height-
+                    sw->primitive.shadow_thickness-sw->primitive.highlight_thickness+(sw->seisw.margin_height+spar->ybox));
+
+		if (spar->x1endb-spar->x1begb > spar->x1end-spar->x1beg) {
+			spar->x1endb=spar->x1end;
+			spar->x1begb=spar->x1beg;
+			sca->width=(spar->x1end-spar->x1beg)/sw->seisw.x1_resolution;
+		}
+		if (spar->x2endb-spar->x2begb > spar->x2end-spar->x2beg) {
+			spar->x2endb=spar->x2end;
+			spar->x2begb=spar->x2beg;
+			sca->height=(spar->x2end-spar->x2beg)/sw->seisw.x2_resolution;
+		}
+		
+
 
             /* Since we are repainting every time, so image is always out of date*/
 //            if (sca->imageOutOfDate) {
@@ -5041,14 +5106,15 @@ DrawVisual (
                 title=strdup("");
             }
 */
+
 	    xposition=sca->x;
 	    yposition=sca->y;
             title=spar->title;
 	    //This is for the case that the widget display area is bigger than the seismogram display
-	    if (sca->width > spar->wbox-xposition) sca->width=spar->wbox-xposition-sw->seisw.margin_width;
-	    else sca->width=sca->width-xposition-sw->seisw.margin_width;
-	    if (sca->height > spar->hbox-yposition) sca->height=spar->hbox-yposition-sw->seisw.margin_height;
-  	    else sca->height=sca->height-yposition-sw->seisw.margin_height;
+	    if (sca->width > spar->wbox-xposition) sca->width=spar->wbox-xposition;
+	    else sca->width=sca->width-xposition;
+	    if (sca->height > spar->hbox-yposition) sca->height=spar->hbox-yposition;
+  	    else sca->height=sca->height-yposition;
 	    
 	    if (sca->width < 0) sca->width=0;
 	    if (sca->height < 0) sca->height=0;
@@ -5119,6 +5185,10 @@ DrawVisual (
 //            cerr << "Image Rendering Error in render_image"<<endl;
 //	    throw SeisppError("Image render failure");
 //        }
+
+	    SetVerticalScrollbar(sw);
+	    SetHorizontalScrollbar(sw);
+
 
 	XtCallCallbackList(w, sw->seisw.display_attr_callback, NULL);
 
@@ -5432,6 +5502,7 @@ Reconfigure (
 
  /* The Reconfigure method can only reconfigure an ExmSeisw widget
     or an ExmSeisw subclass. */
+/*
    if (!ExmIsSeisw((Widget)nw)) 
      return;
 
@@ -5455,7 +5526,7 @@ Reconfigure (
    }
    else 
      nw->seisw.need_to_reconfigure = True;
-
+*/
 
 }
 
@@ -5557,6 +5628,7 @@ _XmDestroyParentCallback_peng(
    XtDestroyWidget (XtParent (w));
 }
 
+
 /******************************************************************************
  *
  *  ExmCreateSeisw:
@@ -5593,5 +5665,4 @@ ExmCreateSeisw (
   return (nw);
 
 }
-
 

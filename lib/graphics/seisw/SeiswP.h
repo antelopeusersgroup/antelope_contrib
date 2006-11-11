@@ -147,6 +147,7 @@ typedef struct _ExmSeiswPart
  
    double x1_resolution, x2_resolution; //how much real length in each direction represented
                                         //by each pixel, useful when resizing.
+   int resolution_set;
 
    int zoom_factor;
 
