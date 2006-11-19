@@ -11,9 +11,16 @@ filters text and applies particular colors based on regular-expression
 matches of the contents. The regular expressions used to assign colors 
 are specified in an Antelope parameter-file. 
 
-There are two main tables in the parameter file: an \fIescapes\fP table
-which lists the names of several display modes (different colors) along
-with the numeric codes for them from the ANSI 6429 specification. Some
+\fBcf\fP takes input either from standard-input, or from one or more files
+specified on the command line. 
+
+Internally, \fBcf\fP automatically builds a recursive-descent grammar 
+from the contents of the parameter file and uses that to parse the input
+text with the Perl Parse::RecDescent module. 
+
+There are two main tables in the \fBcf\fP parameter file. First, an \fIescapes\fP
+table lists the names of several display modes (different colors) 
+along with the numeric codes for them from the ANSI 6429 specification. Some
 useful constants from that specification are shown here:
 .nf
 
@@ -43,16 +50,33 @@ In more sophisticated usage, a line in the \fIescapes\fP table will show
 a sequence of codes to use before the matching expression, a colon, 
 and a sequence of codes to use after the matching expression (this can 
 be used, for example, to highlight the first word of a line and leave the 
-rest colored similarly). For example:
+rest colored similarly). For example, the following entry will reproduce 
+the string matchine the regular-expression in bold blue, then reproduce
+the rest of the line in normal (i.e. non-bold) blue:
 .nf
 
     blue       34 01 : 00 34
 
 .fi
-The second major block of the cf.pf parameter file is an array, giving 
-a table of expressions to be presented in each display mode. See the 
-example below in the PARAMETER FILE section. Each expression should be 
-a regular expression understood by Perl.
+The second major block of the \fIcf.pf\fP parameter file is the 
+\fIexpressions\fP
+array,  which gives a set of expressions to be presented in each display mode. 
+See the example below in the PARAMETER FILE section. Each expression should be 
+a regular expression understood by Perl. The expressions are sorted into 
+tables, one each for each of the display-modes listed in the \fIescapes\fP 
+table. For example, if the \fIescapes\fP table has an entry for a 
+display mode of \fIred\fP, the \fIexpressions\fP table should contain something 
+like this: 
+.nf
+
+   red &Tbl{
+	^Error:
+	^.*undefined symbol:
+   }
+
+.fi
+This will color red all lines that start with the string \fIError:\fP or 
+contain the string \fIundefined symbol:\fP. 
 
 Note that \fBcf\fP automatically returns the display mode to normal 
 after each line (in other words, if a line of input text is encountered that 
@@ -65,7 +89,9 @@ Restore the terminal to normal output in the rare event that the color-filter,
 or downstream applications to which its output is piped, leaves everything
 in an unusual state (exits immediately without further processing). 
 .IP "-p pfname"
-Specify a parameter-file name other than the default cf.pf
+Specify a parameter-file name other than the default \fIcf.pf\fP This 
+may be useful if the color-filter is used to parse the output of other 
+commands, for example CVS updates. 
 .IP -t
 Activate the Parse::RecDescent tracing mechanism to analyze the 
 logic of the automatically generated grammar
@@ -73,7 +99,7 @@ logic of the automatically generated grammar
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 The parameter file below shows a simplified version of the default 
-parameter file for cf.pf, which is constructed to interpret the output 
+parameter file \fIcf.pf\fP, which is constructed to interpret the output 
 of compilation with an antelopemakefile(5): 
 .nf
 
@@ -147,24 +173,25 @@ to display these must support ANSI (ISO) 6429.
 The less(1) program may need to be run with the -R option ("Raw 
 control characters") in order to display colors correctly. 
 
-Backslash characters '\' for the regular expressions must appear as 
-double backslashes '\\' in the cf.pf parameter file to protect them 
+Backslash characters '\\' for the regular expressions must appear as 
+double backslashes '\\\\' in the cf.pf parameter file to protect them 
 from misinterpretation by the parameter-file reader. 
 
-The exact performance of the cf utility may depend on the order in which 
-expressions appear in the cf.pf parameter file (note the blocks of different 
+The exact performance of the \fBcf\fP utility may depend on the order in which 
+expressions appear in the \fIcf.pf\fP parameter file (note the blocks of different 
 colors are processed in the order they appear in the \fIescapes\fP table; 
 similarly expressions for each color are processed in the order in which they
 appear).
 
-Lines are fed one-line at a time to the parser, rather than en-masse,
-in order to prevent 
+Input lines of text are fed one line at a time to the parser, rather 
+than en-masse, in order to prevent 
 the recursive-descent approach from reading in the entire stream before 
 printing anything. This is a slight distortion of the intent of the 
-recursive, context sensitive parsing for which the tool was designed, 
+recursive, context sensitive parsing for which Parse::RecDescent was designed, 
 however it appears to make a more functional tool for the current task 
 (e.g. parsing Antelope Makefile output). The alternatives involve 
-bottom-up tokenizers and parsers, all of which present various difficulties. 
+bottom-up and precompiled tokenizers and parsers, all of which present
+various difficulties. 
 
 .SH AUTHOR
 .nf
