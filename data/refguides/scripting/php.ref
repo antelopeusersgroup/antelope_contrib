@@ -257,7 +257,7 @@ pfdel (pfname, key)
 pfwrite (filename, pfname)
    write a parameter file object to the specified file
 
-pf2xml (pfname [, flags [, prolog [, name]]]
+pf2xml (pfname [, flags [, prolog [, name]]])
    convert a parameter file to xml
 
 <subsection Time conversion>
