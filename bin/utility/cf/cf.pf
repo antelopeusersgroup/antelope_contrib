@@ -69,6 +69,7 @@ expressions &Arr{
 	^->[[:space:]]+[[:upper:]]+ flags:
 	^tsort:
 	^a -
+	^r -
 	^ar: creating
 	^ar: writing
 	^[[:alnum:]_]+\\.[fF]:$
