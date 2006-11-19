@@ -545,6 +545,12 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 				beam_mdl,am);
 		dbwfprocess.record=record;
 		dbgetv(dbwfprocess,0,"pwfid",&pwfid,0);
+		// compute rms of the beam and store in amp attribute
+		// Note this is a change from original version.
+		// amp was added for schema xcor1.1
+		int beam_nsamp=beam.s.size();
+		double beam_amplitude=dnrm2(beam_nsamp,&(beam_nsamp,beam.s[0]),1);
+		beam_amplitude /= static_cast<double>(beam_nsamp);
 		// For the present the chan code will be the same
 		// as pchan
 		record=dbaddv(dbxcorbeam,0,"netname",netname.c_str(),
@@ -556,6 +562,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 			"robustt0",analysis_setting.robust_tw.start,
 			"robusttwin",analysis_setting.robust_tw.length(),
 			"fold",fold,
+			"amp",beam_amplitude,
 				0);
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
@@ -638,6 +645,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 					"samprate",1.0/(trace->dt),
 					"wgt",stack_weight,
 					"coherence",coh,
+					"relamp",amplitude,
 					"xcorpeak",xcorpeak,0);
 			    if(record<0)
 			    {

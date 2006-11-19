@@ -20,8 +20,8 @@ analysis_sort_order stack_weight
 #  These values effectively turn off these cutoff
 #  criteria by default
 correlation_peak_cutoff 0.0
-coherence_cutoff 0.01
-stack_weight_cutoff 0.0005
+coherence_cutoff 0.0001
+stack_weight_cutoff 0.0001
 time_lag_cutoff 4.0
 #
 #  Important switch for three component processing.  Set to 

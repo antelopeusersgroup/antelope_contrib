@@ -46,17 +46,20 @@
 using namespace std;
 using namespace SEISPP;
 
-enum SessionState {START, NONE, NEXT_EVENT, NEXT_SUBARRAY, REF, ANALYZE, SAVE};
+enum SessionState {START, NONE, NEXT_EVENT, NEXT_SUBARRAY, REF, ANALYZE, SAVE,
+	TRACE_EDIT,PICKING_CUTOFF};
 
 enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,  
 	BTN_ANALYZE, BTN_BEAM_PLOT, BTN_XCOR_PLOT, BTN_RESTORE,
+	BTN_PICKS_TEDIT, BTN_PICK_CUTOFF,
 	MENU_FILE, MENU_FILE_SAVE,
-	MENU_FILE_EXIT, MENU_PICKS, MENU_PICKS_BWIN, MENU_PICKS_RWIN, MENU_PICKS_CUTOFF,
-	MENU_PICKS_TEDIT, MENU_PICKS_VIEW, MENU_PICKS_VIEW_ATTR, MENU_PICKS_VIEW_SETTING,
+	MENU_FILE_EXIT, MENU_PICKS, MENU_PICKS_BWIN, MENU_PICKS_RWIN, 
+	MENU_PICKS_VIEW, MENU_PICKS_VIEW_ATTR, MENU_PICKS_VIEW_SETTING,
         MENU_OPTIONS, 
 	MENU_OPTIONS_SORT, 
 	MENU_OPTIONS_FILTER, 
-      	MENU_SETTINGS, MENU_SETTINGS_PF};
+      	MENU_SETTINGS, MENU_SETTINGS_PF, MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_COHERENCE,
+	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT};
 
 #define MAX_NUM_CONTROLS 100
 
@@ -92,6 +95,7 @@ public:
     void record(string s);
     void session_state();
     void session_state(SessionState);
+    void restore_previous_state();
     SessionState get_state() {return state;}
     //This is not to validate whether the setting make sense to XcorProcessingEngine, since
     //that is supposed to be done by AnalysisSetting object, here just to make sure the state
@@ -114,6 +118,9 @@ private:
 // These are needed for save_event for CSS3.0 database manipulations
     int evid;
     int orid;
+// Added to preserve previous state.  Needed to make picking functions
+// more robust.
+    SessionState previous_state;
 };
 
 #endif

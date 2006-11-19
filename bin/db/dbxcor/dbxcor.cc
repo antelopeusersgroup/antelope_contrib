@@ -852,9 +852,11 @@ void toggle_edit(Widget w, void * client_data, void * userdata)
     if (edit_enable==0) {
 	edit_enable=1;
 	str = XmStringCreateLocalized ("Stop Trace Edit");
+	psm->session_state(TRACE_EDIT);
     } else {
 	edit_enable=0; 
 	str = XmStringCreateLocalized ("Trace Edit");
+	psm->restore_previous_state();
     }   
 
     XtVaSetValues(w, XmNlabelString, str, NULL);
@@ -884,7 +886,8 @@ void pick_cutoff(Widget w, void * client_data, void * userdata)
         str = XmStringCreateLocalized ("Stop Picking Cutoff");
     } else {
         edit_enable=0;
-        str = XmStringCreateLocalized ("Cutoff");
+        str = XmStringCreateLocalized ("Pick Cutoff");
+	psm->restore_previous_state();
     }
 
     XtVaSetValues(w, XmNlabelString, str, NULL);
@@ -1265,6 +1268,38 @@ void refresh_attr_win(Widget w, void * client_data, void * userdata)
     
 }
 
+
+void viewmenu_toggle(Widget w, void * client_data, void *userdata, int index)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    Widget wdgt;
+
+    if (psm->attributes_info.size() > index) {
+        XmToggleButtonCallbackStruct *cbs=(XmToggleButtonCallbackStruct *)userdata;
+
+        if (cbs->set == XmUNSET) psm->attributes_info[index].enabled=false;
+        if (cbs->set == XmSET) psm->attributes_info[index].enabled=true;
+    }
+    do_attr_window(w,client_data,userdata);
+}
+
+void viewmenu_toggle_0(Widget w, void * client_data, void * userdata)
+{
+	viewmenu_toggle(w,client_data,userdata,0);
+}
+void viewmenu_toggle_1(Widget w, void * client_data, void * userdata)
+{
+        viewmenu_toggle(w,client_data,userdata,1);
+}
+void viewmenu_toggle_2(Widget w, void * client_data, void * userdata)
+{
+        viewmenu_toggle(w,client_data,userdata,2);
+}
+void viewmenu_toggle_3(Widget w, void * client_data, void * userdata)
+{
+        viewmenu_toggle(w,client_data,userdata,3);
+}
+
 void do_attr_window(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
@@ -1321,27 +1356,17 @@ void do_attr_window(Widget w, void * client_data, void * userdata)
 
     XtAddCallback(psm->seismic_widget,ExmNdisplayAttrCallback,refresh_attr_win,psm);
 
-    XtDestroyWidget(get_top_shell(w));
-    
-/*
-    int n=0;
-    Arg args[4];
-    XtSetArg(args[n],XmNpaneMinimum,10); n++;
-    //XtSetArg(args[n],XmNpaneMaximum,200); n++;
-    XtSetArg(args[n],XmNpositionIndex,0); n++;
-    Widget dc=XmCreateDrawingArea(psm->parent,"dummy2",args,n);
-
-    XtManageChild(dc);        
-*/
+//    XtDestroyWidget(get_top_shell(w));
 } 
 
 //This is just some preliminary list of attributes the time series need 
 //to display, we need to have a GUI to let user add one later.
-void init_attr(SessionManager & sm)
+void init_attr(SessionManager & sm, AttributeInfoRec * air)
 {
     int i;
 
     //station name is one of the attributes we want to display
+/*
     AttributeInfoRec temp_air1={NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true};
     sm.attributes_info.push_back(temp_air1);
     AttributeInfoRec temp_air2={NULL,"coherence",ATTR_DOUBLE,true,NULL,-1,false, "Coherence",false};
@@ -1350,7 +1375,13 @@ void init_attr(SessionManager & sm)
     sm.attributes_info.push_back(temp_air3);
     AttributeInfoRec temp_air4={NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false};
     sm.attributes_info.push_back(temp_air4);
-
+*/
+/*
+    sm.attributes_info.push_back(air[0]);
+    sm.attributes_info.push_back(air[1]);
+    sm.attributes_info.push_back(air[2]);
+    sm.attributes_info.push_back(air[3]);
+*/
     for(i=0; i<sm.attributes_info.size(); i++) {
 	sm.attributes_info[i].w=XmCreatePanedWindow(sm.parent,"attribute",NULL,0);
     }    
@@ -1494,20 +1525,22 @@ void usage(char ** argv)
 }
 
 void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu, 
-      	MenuItem * settings_menu, MenuItem * view_submenu, SessionManager &sm) 
+      	MenuItem * settings_menu, MenuItem * view_menu, SessionManager &sm) 
 {
     sm.controls[MENU_FILE_SAVE]=file_menu[0].w;
     sm.controls[MENU_FILE_EXIT]=file_menu[1].w;
     sm.controls[MENU_PICKS_BWIN]=picks_menu[0].w;
     sm.controls[MENU_PICKS_RWIN]=picks_menu[1].w;
-    sm.controls[MENU_PICKS_CUTOFF]=picks_menu[2].w;
-    sm.controls[MENU_PICKS_TEDIT]=picks_menu[3].w;
-    sm.controls[MENU_PICKS_VIEW]=picks_menu[4].w;
-    sm.controls[MENU_PICKS_VIEW_ATTR]=view_submenu[0].w;
-    sm.controls[MENU_PICKS_VIEW_SETTING]=view_submenu[1].w;
+//    sm.controls[MENU_PICKS_VIEW]=picks_menu[4].w;
+//    sm.controls[MENU_PICKS_VIEW_ATTR]=view_submenu[0].w;
+//    sm.controls[MENU_PICKS_VIEW_SETTING]=view_submenu[1].w;
     sm.controls[MENU_OPTIONS_SORT]=options_menu[0].w;
     sm.controls[MENU_OPTIONS_FILTER]=options_menu[1].w;
     sm.controls[MENU_SETTINGS_PF]=settings_menu[0].w;
+    sm.controls[MENU_VIEW_SNAME]=view_menu[0].w;
+    sm.controls[MENU_VIEW_COHERENCE]=view_menu[1].w;
+    sm.controls[MENU_VIEW_PCORRELATION]=view_menu[2].w;
+    sm.controls[MENU_VIEW_SWEIGHT]=view_menu[3].w;
 }
 
 
@@ -1518,7 +1551,7 @@ int
 main (int argc, char **argv)
 {
   Display	*display;
-  Widget       	shell, flrc, slrc, tlrc, menu_bar, menu_picks, menu_options, menu_file, menu_settings;
+  Widget       	shell, flrc, slrc, tlrc, menu_bar, menu_picks, menu_options, menu_file, menu_view, menu_settings;
   Widget        btn_next,btn_edit,btn_arrival,btn_ref,btn_bwin,btn_rwin;
   Widget        btn_analyze,btn_beam_plot,btn_xcor_plot;
   Widget 	paned_win, second_paned_win;
@@ -1527,6 +1560,11 @@ main (int argc, char **argv)
   MenuItem      btninfo;
   int i,n=0;
   Arg args[18];
+  AttributeInfoRec air[4]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
+			    {NULL,"coherence",ATTR_DOUBLE,true,NULL,-1,false, "Coherence",false},
+			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
+			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
+			};
 
   if(argc<4) usage(argv);
   string waveform_db_name(argv[1]);
@@ -1545,6 +1583,10 @@ main (int argc, char **argv)
   string logstr(LOGNAME);
 
   SessionManager sm(pfname,hypofile,logstr,waveform_db_name,result_db_name);
+  sm.attributes_info.push_back(air[0]);
+  sm.attributes_info.push_back(air[1]);
+  sm.attributes_info.push_back(air[2]);
+  sm.attributes_info.push_back(air[3]);
 
  /* Do standard Motif application start-up. */
   XtToolkitInitialize();
@@ -1576,20 +1618,33 @@ main (int argc, char **argv)
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
+/*
   MenuItem view_submenu[]={
     {"Attributes",&xmPushButtonGadgetClass,'A',NULL,NULL,pick_attributes,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {"Analysis Settings",&xmPushButtonGadgetClass,'e',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
+    {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
+  };
+*/
+  MenuItem view_menu[]={
+/*
+    {"Attributes",&xmPushButtonGadgetClass,'A',NULL,NULL,pick_attributes,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {"Analysis Settings",&xmPushButtonGadgetClass,'e',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
+*/
+
+    {(char *)air[0].display_name.c_str(),&xmToggleButtonWidgetClass,'n',NULL,NULL,viewmenu_toggle_0,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[1].display_name.c_str(),&xmToggleButtonWidgetClass,'c',NULL,NULL,viewmenu_toggle_1,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[2].display_name.c_str(),&xmToggleButtonWidgetClass,'p',NULL,NULL,viewmenu_toggle_2,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[3].display_name.c_str(),&xmToggleButtonWidgetClass,'s',NULL,NULL,viewmenu_toggle_3,&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
   MenuItem picks_menu[]={
     {"Beam Window",&xmPushButtonGadgetClass,'B',NULL,NULL,pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {"Robust Window",&xmPushButtonGadgetClass,'R',NULL,NULL,pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Pick Cutoff",&xmPushButtonGadgetClass,'C',NULL,NULL,pick_cutoff,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Trace Edit",&xmPushButtonGadgetClass,'E',NULL,NULL,toggle_edit,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"View",&xmPushButtonGadgetClass,'V',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)view_submenu},
+//    {"View",&xmPushButtonGadgetClass,'V',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)view_submenu},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
+
   MenuItem options_menu[]={
     {"Sort Options",&xmPushButtonGadgetClass,'r',NULL,NULL,pick_sort_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {"Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
@@ -1603,9 +1658,10 @@ main (int argc, char **argv)
   sm.controls[MENU_FILE]=menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,"File",'F',false,file_menu);
   sm.controls[MENU_PICKS]=menu_picks=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Picks",'P',false,picks_menu);
   sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Option",'O',false,options_menu);
+  sm.controls[MENU_VIEW]=menu_view=BuildMenu(menu_bar,XmMENU_PULLDOWN,"View",'V',false,view_menu);
   sm.controls[MENU_SETTINGS]=menu_settings=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Setting",'t',false,settings_menu);
 
-  set_menu_controls(file_menu,picks_menu,options_menu,settings_menu,view_submenu,sm);
+  set_menu_controls(file_menu,picks_menu,options_menu,settings_menu,view_menu,sm);
 
   /* Menubar is done -- manage it */
   XtManageChild (menu_bar);
@@ -1650,7 +1706,7 @@ main (int argc, char **argv)
   second_paned_win=XmCreatePanedWindow(paned_win, "pane1", args, n); 
   sm.parent=second_paned_win;
 
-  init_attr(sm);
+  init_attr(sm, air);
 
   //create and manage seisw widget
   do_sw(second_paned_win, sm);
@@ -1703,26 +1759,34 @@ main (int argc, char **argv)
   btninfo.callback_data=&sm;
   sm.controls[BTN_NEXTSUB]=create_button(tlrc,btninfo);  
 
-/*
-  btninfo.label="Sort";
-  btninfo.callback=do_sort;
-  sm.controls[BTN_SORT]=create_button(tlrc,btninfo);
-*/
   btninfo.label="Pick Ref Trace";
   btninfo.callback=pick_ref_trace;
   sm.controls[BTN_REF]=create_button(tlrc,btninfo);
+
   btninfo.label="Analyze";
   btninfo.callback=do_analyze;
   sm.controls[BTN_ANALYZE]=create_button(tlrc,btninfo);
+
+  btninfo.label="Trace Edit";
+  btninfo.callback=toggle_edit;
+  sm.controls[BTN_PICKS_TEDIT]=create_button(tlrc,btninfo);
+
   btninfo.label="Plot Beam";
   btninfo.callback=do_beam_plot;
   sm.controls[BTN_BEAM_PLOT]=create_button(tlrc,btninfo);
+
   btninfo.label="Plot Correlation";
   btninfo.callback=do_xcor_plot;
   sm.controls[BTN_XCOR_PLOT]=create_button(tlrc,btninfo);
+
   btninfo.label="Restore Data";
   btninfo.callback=restore_data;
   sm.controls[BTN_RESTORE]=create_button(tlrc,btninfo);
+
+  btninfo.label="Pick Cutoff";
+  btninfo.callback=pick_cutoff;
+  sm.controls[BTN_PICK_CUTOFF]=create_button(tlrc,btninfo);
+
 // Alternate save as button.  Under file menu also
   btninfo.label="Save";
   btninfo.callback=save_event;

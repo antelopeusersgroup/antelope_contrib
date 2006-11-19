@@ -25,6 +25,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     mcc=NULL;
 
     state=START;
+    previous_state=START;
     display_initial_sort_box=true;
     display_analysis_sort_box=true;
     evid=-1;
@@ -85,6 +86,7 @@ void SessionManager::session_state(SessionState s)
 {
     int i;
 
+    previous_state=state;
     state=s;
 
     // Whenever we enter this routine all gui items are first disabled
@@ -101,6 +103,7 @@ void SessionManager::session_state(SessionState s)
  	    sensitive[MENU_PICKS]=true;
  	    sensitive[MENU_OPTIONS]=true;
 	    sensitive[MENU_SETTINGS]=true;
+ 	    sensitive[MENU_VIEW]=true;
 	    break;
 	case NEXT_EVENT:
 	    sensitive[BTN_NEXTEV]=true;
@@ -111,14 +114,16 @@ void SessionManager::session_state(SessionState s)
  	    sensitive[MENU_PICKS]=true;
 	    sensitive[MENU_PICKS_BWIN]=true;
 	    sensitive[MENU_PICKS_RWIN]=true;
-	    sensitive[MENU_PICKS_TEDIT]=true;
-	    sensitive[MENU_PICKS_CUTOFF]=true;
+	    sensitive[BTN_PICKS_TEDIT]=true;
+	    sensitive[BTN_PICK_CUTOFF]=true;
 	    sensitive[MENU_PICKS_VIEW]=true;
   	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
             sensitive[MENU_SETTINGS]=true;
+	    sensitive[MENU_VIEW]=true;
+	    sensitive[MENU_VIEW_SNAME]=true;
 	    break;
 	case NEXT_SUBARRAY:
 	    sensitive[BTN_NEXTSUB]=true;
@@ -129,14 +134,16 @@ void SessionManager::session_state(SessionState s)
  	    sensitive[MENU_PICKS]=true;
 	    sensitive[MENU_PICKS_BWIN]=true;
 	    sensitive[MENU_PICKS_RWIN]=true;
-	    sensitive[MENU_PICKS_TEDIT]=true;
-	    sensitive[MENU_PICKS_CUTOFF]=true;
+	    sensitive[BTN_PICKS_TEDIT]=true;
+	    sensitive[BTN_PICK_CUTOFF]=true;
 	    sensitive[MENU_PICKS_VIEW]=true;
   	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
             sensitive[MENU_SETTINGS]=true;
+            sensitive[MENU_VIEW]=true;
+	    sensitive[MENU_VIEW_SNAME]=true;
 	    break;
 	case REF:
             sensitive[BTN_NEXTEV]=true;
@@ -149,14 +156,16 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
-            sensitive[MENU_PICKS_TEDIT]=true;
-            sensitive[MENU_PICKS_CUTOFF]=true;
+            sensitive[BTN_PICKS_TEDIT]=true;
+            sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_PICKS_VIEW]=true;
 	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_SORT]=true;
 	    sensitive[MENU_OPTIONS_FILTER]=true;
             sensitive[MENU_SETTINGS]=true;
+            sensitive[MENU_VIEW]=true;
+            sensitive[MENU_VIEW_SNAME]=true;
 	    break;
 	case ANALYZE:
             sensitive[BTN_NEXTEV]=true;
@@ -171,14 +180,19 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
-            sensitive[MENU_PICKS_TEDIT]=true;
-            sensitive[MENU_PICKS_CUTOFF]=true;
+            sensitive[BTN_PICKS_TEDIT]=true;
+            sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_PICKS_VIEW]=true;
             sensitive[MENU_PICKS_VIEW_ATTR]=true;
  	    sensitive[MENU_OPTIONS]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
  	    sensitive[MENU_OPTIONS_FILTER]=true;
             sensitive[MENU_SETTINGS]=true;
+            sensitive[MENU_VIEW]=true;
+            sensitive[MENU_VIEW_SNAME]=true;
+            sensitive[MENU_VIEW_COHERENCE]=true;
+	    sensitive[MENU_VIEW_PCORRELATION]=true;
+	    sensitive[MENU_VIEW_SWEIGHT]=true;
 	    break;
   	case SAVE:
             sensitive[BTN_NEXTEV]=true;
@@ -195,14 +209,27 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS]=true;
             sensitive[MENU_PICKS_BWIN]=true;
             sensitive[MENU_PICKS_RWIN]=true;
-            sensitive[MENU_PICKS_TEDIT]=true;
-            sensitive[MENU_PICKS_CUTOFF]=true;
+            sensitive[BTN_PICKS_TEDIT]=true;
+            sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_PICKS_VIEW]=true;
             sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
             sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
             sensitive[MENU_SETTINGS]=true;
+            sensitive[MENU_VIEW]=true;
+	    sensitive[MENU_VIEW_SNAME]=true;
+            sensitive[MENU_VIEW_COHERENCE]=true;
+            sensitive[MENU_VIEW_PCORRELATION]=true;
+            sensitive[MENU_VIEW_SWEIGHT]=true;
+	    break;
+	case TRACE_EDIT:
+	    sensitive[BTN_PICKS_TEDIT]=true;
+            sensitive[MENU_FILE_EXIT]=true;
+	    break;
+	case PICKING_CUTOFF:
+	    sensitive[BTN_PICK_CUTOFF]=true;
+            sensitive[MENU_FILE_EXIT]=true;
 	    break;
 	default:
 	    break;
@@ -213,7 +240,14 @@ void SessionManager::session_state(SessionState s)
 	    XtSetSensitive(controls[i],sensitive[i]);
 	}
     }
+
 }
+void SessionManager::restore_previous_state()
+{
+	state=previous_state;
+	session_state(state);
+}
+
 
 bool SessionManager::validate_setting(stringstream & ss)
 {
