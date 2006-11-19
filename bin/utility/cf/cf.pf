@@ -1,15 +1,12 @@
 escapes &Tbl{
-	normal     00
 	red        31 
 	green      32 01 07 : 00 32
 	blue       34 01 : 00 34
 	magenta    35
-	cyan       36 01
+	cyan       36 01 : 00 36
 }
 
 expressions &Arr{
-   normal &Tbl{
-   }
    red &Tbl{
 	^\\*\\*\\* Error code
 	^.* error:
@@ -19,11 +16,13 @@ expressions &Arr{
 	^.*Permission denied
 	^.*does not exist
 	^[[:space:]]*mex:.*failed\\.
-	^gcc:.*No such file or directory
+	^.*No such file or directory
 	^gcc: language.*not recognized
+	^.*: acomp failed
 	^.*line [[:digit:]]+: return value type mismatch
-	^make\\[[[:digit:]]+\\]:.*Error
-	^make\\[[[:digit:]]+\\]:.*Command not found
+	^make(\\[[[:digit:]]+\\])?:.*Error
+	^make(\\[[[:digit:]]+\\])?:.*Fatal error
+	^make(\\[[[:digit:]]+\\])?:.*Command not found
 	^ld: fatal:
 	^.*ld: can't locate file for:
 	^.*ld returned [1-9] exit status
@@ -35,15 +34,16 @@ expressions &Arr{
 	^[[:space:]]*parse_function doesn't understand 
    }
    green &Tbl{
-	^\\+[[:space:]]+[^[:space:]]+ 
+	^\\+[[:space:]]+[^[:space:]]+
    }
    magenta &Tbl{
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
-	^.*gcc.*: unrecognized option
+	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
 	^.*declaration hides parameter
 	^.*cannot dereference non-pointer type
+	^.*Please specify prototyping behavior
 	^[[:space:]]*declaration[[:space:]]*:
 	^[[:space:]]*parameter[[:space:]]*:
 	^[[:space:]]*prototype[[:space:]]*:
@@ -95,7 +95,7 @@ expressions &Arr{
 	^Appending[[:space:]]
 	^Running[[:space:]]
 	^Skip[[:space:]]
-	^Files found in blib/arch: 
+	^Files found in blib\\/arch: 
 	^LD_RUN_PATH=
 	^name=
 	^input=
@@ -121,19 +121,22 @@ expressions &Arr{
 	^purify[[:space:]]
 	^cp[[:space:]]
 	^deposit[[:space:]]
-	^[[:alnum:]/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/deposit[[:space:]]
+	^tclindex[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/deposit[[:space:]]
 	^done[[:space:]]
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
 	^for[[:space:]]
 	^getid[[:space:]]
 	^if[[:space:]]
-	^[[:space:]]*[[:alnum:]/]*install[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*install[[:space:]]
+	^[[:space:]]*[[:alnum:]\\/]*cpp[[:space:]]
 	^else[[:space:]]
 	^fi[[:space:]]
+	^fi[^[:alnum:]]
 	^javac[[:space:]]
 	^ln[[:space:]]
-	^[[:alnum:]/]*ld[[:space:]]
+	^[[:alnum:]\\/]*ld[[:space:]]
 	^[[:space:]]*matdoc2dotm[[:space:]]
 	^[[:space:]]*matdoc2html[[:space:]]
 	^[[:space:]]*matdoc_htmlwrap[[:space:]]
@@ -145,7 +148,7 @@ expressions &Arr{
 	^perl[[:space:]]
 	^\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/perl[[:space:]]
 	^produce[[:space:]]
-	^(\\./)?runmake[[:space:]]
+	^(\\.\\/)?runmake[[:space:]]
 	^ranlib[[:space:]]
 	^refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]

@@ -18,56 +18,74 @@
 #
 
 use Datascope;
-use Parse::Lex;
+use Parse::RecDescent;
 require "getopts.pl";
 
-sub addcolor {
-	my( $colorline ) = @_;
+sub pf2grammar {
+	my( $pf ) = @_;
 
-	my( @parts ) = split( /\s+/, $colorline );
+	my( @escapes ) = @{pfget($pf,"escapes")};
 
-	my( $color ) = shift( @parts );
+	my( $grammar ) = qq {
+	  	startrule: line(s) /\\Z/
+	  	normal: /.*/ /\\n/
+			{ print "$normal\$item[1]$normal\\n"; }
+	  	extension: /.*\\n/
+			{ print "\$item[1\]"; }
+	};
 
-	my( $pre ) = "";
-	my( $post ) = "";
+	my( $line ) = "line: ";
 
-	$ref = \$pre;
+	foreach $colorline ( @escapes ) {
 
-	while( $part = shift( @parts ) ) {
-		
-		if( $part eq ":" ) {
-			
-			$ref = \$post;
-			next;
+		my( @parts ) = split( /\s+/, $colorline );
+
+		my( $color ) = shift( @parts );
+
+		$line .= "$color extension | ";
+
+		my( $pre ) = "";
+		my( $post ) = "";
+
+		$ref = \$pre;
+
+		while( $part = shift( @parts ) ) {
+
+			if( $part eq ":" ) {
+				
+				$ref = \$post;
+				next;
+			}
+
+			$$ref .= "\\033[$part\\m";
 		}
 
-		$$ref .= "\033[$part\m";
+		@clauses = @{pfget($pf,"expressions{$color}")};
+
+		grep( s@.*@/$_/@, @clauses );
+
+		my( $production ) = join( " | ", @clauses );
+
+		$grammar .= qq {
+				$color: ( $production )
+					{
+						print "$pre\$item[1]$post";
+					}
+			};
 	}
 
-	my( $code ) = shift( @parts );
+	$grammar .= $line . "normal\n";
 
-	my( @stuff ) = @{pfget($Pf,"expressions{$color}")};
-
-	my( $i ) = 0;
-
-	foreach $expr ( @stuff ) {
-
-		push( @token, "$color" . $i++ );
-		push( @token, "$expr" );
-	    	push( @token, sub {
-			     print "$pre";
-			     print "$_[1]";
-			     print "$post";
-			     return;
-			     } );
-	}
+	return $grammar;
 }
+
+$normal = "\033[00\m";
 
 $Pf = "cf";
 
-if( ! &Getopts( 'p:' ) || @ARGV > 1 ) {
+if( ! &Getopts( "np:t" ) ) {
 
-	die( "Usage: cf [-p pfname] [filename]" );
+	die( "Usage: cf [-n] [-t] [-p pfname] [filename [filename ... ]]" );
 }
 
 if( $opt_p ) {
@@ -75,28 +93,27 @@ if( $opt_p ) {
 	$Pf = $opt_p;
 }
 
-if( @ARGV == 0 ) {
+if( $opt_t ) {
 
-	*IN = \*STDIN;
-
-} elsif( $ARGV[0] eq "-" ) {
-		
-	*IN = \*STDIN;
-
-}  else {
-	
-	open( *IN, $ARGV[0] ) || die( "Failed to open '$ARGV[0].' Bye.\n" );
+	$::RD_TRACE++;
 }
 
-@escapes = @{pfget($Pf,"escapes")};
+if( $opt_n ) {
 
-foreach $colorline ( @escapes ) {
+	print "$normal\n";
 
-	addcolor( $colorline );
+	exit( 0 );
 }
 
-push( @token, "MORE", ".", sub { print "$_[1]"; return; } );
-push( @token, "NEWLINE", "\n", sub { print "\033[00m\n"; return; } );
+$Parse::RecDescent::skip = '';
 
-Parse::Lex->skip( '' );
-$lexer = Parse::Lex->new(@token)->analyze( \*IN );
+$grammar = pf2grammar( $Pf );
+
+$parser = new Parse::RecDescent( $grammar );
+
+while( $line = <> ) {
+
+	$parser->startrule( $line );
+}
+
+print "$normal\n";
