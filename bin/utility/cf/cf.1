@@ -3,7 +3,7 @@
 cf \- colorize text based on filters specified in a parameter file
 .SH SYNOPSIS
 .nf
-cf [-n] [-t] [-p pfname] [filename [...]]
+cf [-n] [-t] [-g] [-p pfname] [filename [...]]
 .fi
 .SH DESCRIPTION
 The color-filter program \fBcf\fP is a simple line-based scanner that 
@@ -84,6 +84,9 @@ has no matching expression in the parameter file, that line will be
 displayed normally). 
 
 .SH OPTIONS
+.IP -g
+Print the grammar automatically generated from the parameter-file, then 
+exit. 
 .IP -n
 Restore the terminal to normal output in the rare event that the color-filter,
 or downstream applications to which its output is piped, leaves everything
@@ -154,9 +157,32 @@ then
 
 % cmake install
 
-in a directory with an Antelope Makefile (this should produce a colored
-output of the compile process)
 .fi
+in a directory with an Antelope Makefile (this should produce a colored
+output of the compile process). Alternatively, consider this skeleton
+example for interpreting the output of cvs update commands:
+.nf
+
+% cat cfcvs.pf 
+escapes &ref(cf,escapes)
+
+expressions &Arr{
+   red &Tbl{
+           ^\\?[[:space:]]
+   }
+   green &Tbl{
+           ^M[[:space:]]
+   }
+   cyan &Tbl{
+           ^cvs update: Updating
+   }
+}
+%
+
+% cvs update -d -P . | cf -p cfcvs
+
+.fi
+
 .ft R
 .in
 .SH RETURN VALUES

@@ -42,8 +42,6 @@ sub pf2grammar {
 
 		my( $color ) = shift( @parts );
 
-		$line .= "$color extension | ";
-
 		my( $pre ) = "";
 		my( $post ) = "";
 
@@ -62,16 +60,20 @@ sub pf2grammar {
 
 		@clauses = @{pfget($pf,"expressions{$color}")};
 
+		next unless( @clauses );
+
+		$line .= "$color extension | ";
+
 		grep( s@.*@/$_/@, @clauses );
 
 		my( $production ) = join( " | ", @clauses );
 
 		$grammar .= qq {
-				$color: ( $production )
-					{
-						print "$pre\$item[1]$post";
-					}
-			};
+		$color: ( $production )
+			{
+				print "$pre\$item[1]$post";
+			}
+		};
 	}
 
 	$grammar .= $line . "normal\n";
@@ -83,9 +85,9 @@ $normal = "\033[00\m";
 
 $Pf = "cf";
 
-if( ! &Getopts( "np:t" ) ) {
+if( ! &Getopts( "gnp:t" ) ) {
 
-	die( "Usage: cf [-n] [-t] [-p pfname] [filename [filename ... ]]" );
+	die( "Usage: cf [-n] [-t] [-g] [-p pfname] [filename [filename ... ]]" );
 }
 
 if( $opt_p ) {
@@ -108,6 +110,16 @@ if( $opt_n ) {
 $Parse::RecDescent::skip = '';
 
 $grammar = pf2grammar( $Pf );
+
+if( $opt_g ) {
+	
+	$caption = "Grammar Automatically generated from $Pf.pf:";
+	print "$caption\n";
+	print "-" x length( $caption ) . "\n";
+	print "\n$grammar\n\n";
+
+	exit( 0 );
+}
 
 $parser = new Parse::RecDescent( $grammar );
 
