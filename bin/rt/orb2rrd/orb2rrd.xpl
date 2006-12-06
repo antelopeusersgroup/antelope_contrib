@@ -114,6 +114,11 @@ sub archive_dlsvar {
 		$rrd = $Rrd_files{$key};
 	}
 
+	if( $opt_V ) {
+
+		inform( "Recording $time:$val in $rrd\n" );
+	}
+
 	RRDs::update( $rrd, "$time:$val" );
 
 	return;
