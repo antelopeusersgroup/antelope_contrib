@@ -93,6 +93,11 @@ Currently orb2rrd is limited to handling q3302orb .*/pf/st status packets.
 
 It might be nice to have a regular-expression limiting the stations which 
 are chosen out of the status packets. This can be added if necessary.
+
+orb2rrd records "-" values from the parameter file as the RRD "no data" 
+value 'U'. Currently it issues a complaint each time it does this; 
+these complaints should perhaps only be notifications under verbose mode. 
+This universal mapping may not be appropriate for all variables. 
 .SH AUTHOR
 .nf
 Kent Lindquist

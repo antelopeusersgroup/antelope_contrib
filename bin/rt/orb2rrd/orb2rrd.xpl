@@ -116,7 +116,17 @@ sub archive_dlsvar {
 
 	if( $opt_V ) {
 
-		inform( "Recording time '$time' value '$val' in $rrd\n" );
+		inform( "Recording time '$time' value '$val' from " . 
+			"'$dls_var' in $rrd\n" );
+	}
+
+	if( $val eq "-" ) {
+
+		elog_complain( 0, 
+			"Recording null value 'U' for variable '$dls_var' " .
+			"at time '$time' in $rrd\n" );
+
+		$val = "U";
 	}
 
 	RRDs::update( $rrd, "$time:$val" );
