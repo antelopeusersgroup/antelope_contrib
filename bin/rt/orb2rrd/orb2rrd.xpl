@@ -131,6 +131,13 @@ sub archive_dlsvar {
 
 	RRDs::update( $rrd, "$time:$val" );
 
+	my $ERR = RRDs::error;
+
+	if( $ERR ) {
+
+		elog_complain( "ERROR while updating $rrd: $ERR\n" ) 
+	}
+
 	return;
 }
 
