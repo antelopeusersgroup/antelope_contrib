@@ -646,6 +646,11 @@ integrity of the original absolute time stamp so the data are
 altered in place.  This is in contrast to a similar template
 function MoveoutTimeShift which is destructive.
 
+On the flip side, the attribute defined by trefkeyword is incremented
+by the extracted lag value.  This keeps this key attribute with the
+0 time reference.  This is a design choice which causes the trefkeyword
+value to be retained as a true time reference.
+
 \param d input data ensemble of generic time series objects.
 \param lagkey keyword used to extract the lag values from the 
 	Metadata (generalized header) field of the ensemble members.
@@ -678,6 +683,7 @@ template <class Tensemble> void LagShift(Tensemble& d,
 					d.member[i].rtoa(tshift);
 					tshift+=lag;
 					d.member[i].ator(tshift);
+					d.member[i].put(trefkeyword,tshift);
 				}
 			}
 		}

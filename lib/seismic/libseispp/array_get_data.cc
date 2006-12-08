@@ -1,4 +1,5 @@
 #include "seispp.h"
+#include "SeisppKeywords.h"
 #include "seismicarray.h"
 using namespace std;
 using namespace SEISPP;
@@ -33,9 +34,17 @@ StationTime ArrayPredictedArrivals(SeismicArray& stations,
 	{
 		double atime;
 		SeismicStationLocation loc=(*sta).second;
-		atime=hypo.phasetime(loc.lat,loc.lon,loc.elev,phase);
-		atime+=hypo.time;
-		result[(*sta).first]=atime;
+		try {
+			atime=hypo.phasetime(loc.lat,loc.lon,loc.elev,phase);
+			atime+=hypo.time;
+			result[(*sta).first]=atime;
+		}
+		catch (SeisppError serr)
+		{
+			cerr << "ArrayPredictedError(Warning):  phasetime "
+				<< "failed computing travel time for "
+				<< phase << " for station "<<(*sta).first<<endl;
+		}
 	}
 	return(result);
 }
@@ -212,8 +221,8 @@ void AssembleRegularRatherErrorLog(TimeSeriesEnsemble& raw, int i,
 //  convert from absolute to relative time.  The most common example
 //  of this would be measured or predicted arrival times.  For this
 //  reason the results are written to the input and output gather
-//  as the field "predarr.time".   
-//@param phase is the phase name to be assigned to the predarr.time
+//  as the field defined by the SeisppKeyword.h string predicted_time_key.
+//@param phase is the phase name to be assigned to the predicted_time_key
 //  field.  See LoadPredictedArrivalTimes for how this is used.
 //@param result_twin is the time window definition for times
 //  relative to the times contained in the "times" StationTime object.
@@ -237,7 +246,6 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 
 {
 	// Metadata key used to make predicted arrival time
-	const string predicted_time_key("predarr.time");
 	// Fractional tolerance for sample rate error
 	const double relative_dt_allowed=0.001;
 	TimeSeries raw_data_trace;

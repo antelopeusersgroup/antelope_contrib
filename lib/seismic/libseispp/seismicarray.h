@@ -368,8 +368,8 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
   convert from absolute to relative time.  The most common example
   of this would be measured or predicted arrival times.  For this
   reason the results are written to the input and output gather
-  as the field "predarr.time".   
-\param phase is the phase name to be assigned to the predarr.time
+  as the field defined by the SeisppKeyword predicted_time_key.
+\param phase is the phase name to be assigned to the predicted_time_key
   field.  See LoadPredictedArrivalTimes for how this is used.
 \param result_twin is the time window definition for times
   relative to the times contained in the "times" StationTime object.
