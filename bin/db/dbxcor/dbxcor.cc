@@ -884,6 +884,7 @@ void pick_cutoff(Widget w, void * client_data, void * userdata)
     if (edit_enable==0) {
         edit_enable=2;
         str = XmStringCreateLocalized ("Stop Picking Cutoff");
+	psm->session_state(PICKING_CUTOFF);
     } else {
         edit_enable=0;
         str = XmStringCreateLocalized ("Pick Cutoff");

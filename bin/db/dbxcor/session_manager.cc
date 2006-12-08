@@ -299,9 +299,9 @@ bool SessionManager::validate_setting(stringstream & ss)
 	    <<"the sort order is reset to "<<endl<<"site.lat"<<endl;
         if (display_initial_sort_box) return false;
     } else if (scase==0 && (state==ANALYZE || state==REF)) {
-	active_setting.result_sort_order=COHERENCE;
+	active_setting.result_sort_order=WEIGHT;
 	ss << "The sort order for the analysis result is set automatically "
-	   << endl <<"to coherence from the specified "<<sort_order<<endl;
+	   << endl <<"to stack weight from the specified "<<sort_order<<endl;
 	if (display_analysis_sort_box) return false;
     }
  

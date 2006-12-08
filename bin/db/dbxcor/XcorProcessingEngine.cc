@@ -247,9 +247,12 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // is aligned to zero lag that can inspected graphically.
    mcc->xcor=MoveoutTimeShift(mcc->xcor);
    // This aligns the ensemble by the time shifts computed by mcc operator.
-   // WARNING:  the frozen predarr.time key used here is a long-term
+   // WARNING:  the frozen arrival.time key used here is a long-term
    // maintenance issue and limits future reuse.
-   LagShift(waveform_ensemble,moveout_keyword,string("predarr.time"));
+   // ALSO very important to realize arrival.time MUST HAVE BEEN INITIALIZED
+   // original to a predicted arrival time when running from raw data
+   // (the current situation for teleseismic data).
+   LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
    return(mcc);
 }
 
@@ -477,11 +480,17 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	// exceptions to be thrown.
 	for(int i=0;i<regular_gather->member.size();++i)
 	{
+		double atime;
 		regular_gather->member[i].put(coherence_keyword,0.0);
 		regular_gather->member[i].put(stack_weight_keyword,0.0);
 		regular_gather->member[i].put(peakxcor_keyword,0.0);
 		regular_gather->member[i].put(amplitude_static_keyword,0.0);
 		regular_gather->member[i].put(moveout_keyword,MoveoutBad);
+		// Load initial arrival times as predicted time
+		// This is a bit dogmatic.  may want to make this an if not
+		// defined  set this field.  for not just do it. 
+		atime=regular_gather->member[i].get_double(predicted_time_key);
+		regular_gather->member[i].put(arrival_time_key,atime);
 	}
 	
 	// Load filtered data into waveform_ensemble copy
@@ -603,7 +612,6 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 		string phase;
 		double atime;
 		double lag;
-		double predtime;
 		double xcorpeak,coh,stack_weight,amplitude;
 		int record;
 		int arid;
@@ -620,8 +628,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 			if(fabs(lag)>MoveoutBadTest) continue;
 			sta=trace->get_string("sta");
 			chan=trace->get_string("chan");
-			predtime=trace->get_double(predicted_time_key);
-			atime=predtime+lag;
+			atime=trace->get_double(arrival_time_key);
 			xcorpeak=trace->get_double(peakxcor_keyword);
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);

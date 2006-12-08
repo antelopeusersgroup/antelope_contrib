@@ -7,7 +7,7 @@ robust_window_fraction 0.2
 stacking_method robust
 #default_filter BW 0.01 2 1.5 5
 default_filter DEMEAN
-component_for_analysis L
+component_for_analysis Z
 phase_for_analysis P
 tpad 30.0
 initial_time_stamp 2003355:00:00:00.0
@@ -31,7 +31,7 @@ time_lag_cutoff 4.0
 #  modern arrays with all three-component stations.  Required
 #  if component is L, R, or T.
 #
-RequireThreeComponents true
+RequireThreeComponents false
 #
 #  Trace metadata to load.  Note that with RequireThreeComponents is
 #  true station coordinates (site.lat, site.lon, and site.elev) are 
@@ -326,7 +326,7 @@ beam_dfile xcorbeam.w
 #  This is an example of subarray definitions
 #  This turns on subarray processing
 #
-use_subarrays true
+use_subarrays false
 #
 #  This defines subarray geometry as lists of stations
 # with a subarray name tag

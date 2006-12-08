@@ -15,6 +15,7 @@
 #include "Metadata.h"
 #include "resample.h"
 #include "ensemble.h"
+#include "SeisppKeywords.h"
 #include "seismicarray.h"
 #include "filter++.h"
 #include "MultichannelCorrelator.h"
@@ -25,7 +26,6 @@
 // There was no clear include file that it could be placed
 // into.
 //
-const string predicted_time_key("predarr.time");
 //Peng Wang
 const string lat_keyword("lat");
 const string lon_keyword("lon");

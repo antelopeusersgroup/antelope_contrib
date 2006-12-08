@@ -84,6 +84,17 @@ Attribute robusttwin
 	}
 	;
 
+Attribute stackwgt
+	Real (6)
+	Format ( "%6.3f" )
+	Null ( "-1.000" )
+	Range ( "wgt >= 0.0" )
+	Description ( "stacking weight" )
+	Detail {
+		In robust stacking a weight is assigned to each member of the ensemble.
+	}
+	;
+
 Attribute timetype
 	String (1)
 	Format ( "%-1s" )
