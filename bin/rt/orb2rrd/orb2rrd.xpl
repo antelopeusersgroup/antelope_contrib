@@ -122,9 +122,11 @@ sub archive_dlsvar {
 
 	if( $val eq "-" ) {
 
-		elog_complain( 0, 
-			"Recording null value 'U' for variable '$dls_var' " .
-			"at time '$time' in $rrd\n" );
+		if( $opt_V ) {
+
+			inform( "Recording null value 'U' for variable " .
+			   "'$dls_var' at time '$time' in $rrd\n" );
+		}
 
 		$val = "U";
 	}
@@ -256,7 +258,15 @@ for( ; $stop == 0 ; ) {
 
 	if( $opt_s ) {
 
-		bury();
+		eval( bury() );
+	
+		if( $@ ) {
+		
+			elog_complain( "DEBUG: info after bury() failure:\n" );
+			system( "ls -l $opt_s" );
+			system( "ls -l $opt_s+" );
+			system( "ls -ld state" ); # HARD WIRE
+		}
 	}
 
 	($result, $pkt) = unstuffPkt( $srcname, $time, $packet, $nbytes ); 
