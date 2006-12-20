@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "XcorProcessingEngine.h"
 
+
 XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
 	AnalysisSetting asinitial,
 		string waveform_db_name,
@@ -129,6 +130,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		else
 			stachanmap=StationChannelMap();
 		mcc = NULL;   // Need this unless we can convert to a shared_ptr;
+		autoscale_initial=global_md.get_bool("AutoscaleInitialPlot");
 
 	} catch (MetadataGetError mderr)
 	{
@@ -253,6 +255,13 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // original to a predicted arrival time when running from raw data
    // (the current situation for teleseismic data).
    LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
+   // Auto scale data using computed amplitude set by MultichannelCorrelator
+   ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,
+	amplitude_static_keyword,true);
+   // reset gain so amplitude statics can be properly accumulated
+   // if data are reprocessed
+   ScaleCalib <TimeSeriesEnsemble>(waveform_ensemble,
+		gain_keyword,amplitude_static_keyword);
    return(mcc);
 }
 
@@ -518,6 +527,22 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		waveform_ensemble=*regular_gather;
 	}
 	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+	if(autoscale_initial)
+	{
+		MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword);
+		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword,true);
+		ScaleCalib<TimeSeriesEnsemble>
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+	}
+	else
+	{
+		double initial_gain=1.0;
+		InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
+			(waveform_ensemble,gain_keyword,initial_gain);
+	}
+	
 	// We need to always reset these
 	xcorpeak_cutoff=xcorpeak_cutoff_default;
 	coherence_cutoff=coherence_cutoff_default;
@@ -554,12 +579,8 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 				beam_mdl,am);
 		dbwfprocess.record=record;
 		dbgetv(dbwfprocess,0,"pwfid",&pwfid,0);
-		// compute rms of the beam and store in amp attribute
-		// Note this is a change from original version.
-		// amp was added for schema xcor1.1
-		int beam_nsamp=beam.s.size();
-		double beam_amplitude=dnrm2(beam_nsamp,&(beam_nsamp,beam.s[0]),1);
-		beam_amplitude /= static_cast<double>(beam_nsamp);
+		double beam_amplitude=beam.get_double(beam_rms_key);
+		//
 		// For the present the chan code will be the same
 		// as pchan
 		record=dbaddv(dbxcorbeam,0,"netname",netname.c_str(),
@@ -613,6 +634,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 		double atime;
 		double lag;
 		double xcorpeak,coh,stack_weight,amplitude;
+		double gain;
 		int record;
 		int arid;
 		// Skip data marked dead
@@ -633,6 +655,11 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);
 			amplitude=trace->get_double(amplitude_static_keyword);
+			// We accumulate amplitude changes in gain so we
+			// need to get the final amplitude adjustment using
+			// the gain attribute
+			gain=trace->get_double(gain_keyword);
+			amplitude *=gain;
 			// Write nothing for events that don't satisfy
 			// all of the criteria on xcor, coherence, or weight
 			if( (xcorpeak>xcorpeak_cutoff)
@@ -650,7 +677,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 					"time",atime,
 					"twin",analysis_setting.analysis_tw.length(),
 					"samprate",1.0/(trace->dt),
-					"wgt",stack_weight,
+					"stackwgt",stack_weight,
 					"coherence",coh,
 					"relamp",amplitude,
 					"xcorpeak",xcorpeak,0);
@@ -965,6 +992,18 @@ void XcorProcessingEngine::restore_original_ensemble()
 		waveform_ensemble=*regular_gather;
 	}
 	FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+	if(autoscale_initial)
+	{
+		MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword);
+		ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword,true);
+		ScaleCalib<TimeSeriesEnsemble>
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+	}
+	else
+		InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
+			(waveform_ensemble,gain_keyword,(double)1.0);
 }
 void XcorProcessingEngine::next_subarray()
 {
@@ -978,6 +1017,19 @@ void XcorProcessingEngine::next_subarray()
 		auto_ptr<TimeSeriesEnsemble> csub(ArraySubset(*regular_gather,ss));
 		waveform_ensemble=*csub;
 		FilterEnsemble(waveform_ensemble,analysis_setting.filter_param);
+		if(autoscale_initial)
+		{
+		    MeasureEnsemblePeakAmplitudes<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword);
+		    ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>
+			(waveform_ensemble,gain_keyword,true);
+		    ScaleCalib<TimeSeriesEnsemble>
+			(waveform_ensemble,gain_keyword,amplitude_static_keyword); 
+		}
+		else
+			InitializeEnsembleAttribute<TimeSeriesEnsemble,double>
+				(waveform_ensemble,gain_keyword,(double)1.0);
+		    
 	    } catch (...) {throw;}
 	}
 	else

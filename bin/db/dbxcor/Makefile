@@ -1,7 +1,7 @@
 
 BIN=dbxcor
 DATADIR=schemas
-DATA=xcor1.1
+DATA=xcor1.2
 
 PF=dbxcor.pf
 MAN1=dbxcor.1

@@ -298,9 +298,6 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                         yrmonday,day,hrminsec)!=EOF) {
 		psm->set_evid(evid);
 		psm->set_orid(orid);
-//        if (fscanf(psm->fp,"%lf%lf%lf%s%s%s",
-//                        &lat,&lon,&depth,
-//                        yrmonday,day,hrminsec)!=EOF) {
 
                 string datestring=string(yrmonday)+" "+string(hrminsec);
                 otime=str2epoch(const_cast<char*>(datestring.c_str()));
@@ -1444,7 +1441,13 @@ void save_event(Widget w, void * client_data, void * userdata)
 	  // We handle state change for subarrays by monitoring
 	  // current_subarray and switching when the last subarray
 	  // is the one being analyzed.
-	  if(!psm->using_subarrays)
+	  if(psm->using_subarrays)
+	  {
+		// special case for mistake of only one subarray
+		if(psm->xpe->number_subarrays() <= 1)
+			psm->session_state(NONE);
+	  }
+	  else
 		psm->session_state(NONE);
     } catch (SeisppError serr) {
           ss << "Problems in save_results routine"<<endl;

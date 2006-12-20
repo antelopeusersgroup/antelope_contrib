@@ -29,6 +29,7 @@
 //Peng Wang
 const string lat_keyword("lat");
 const string lon_keyword("lon");
+const string gain_keyword("gain");
 
 
 using namespace std;
@@ -164,6 +165,8 @@ private:
 	double stack_weight_cutoff_default;
 	double xcorpeak_cutoff,coherence_cutoff,stack_weight_cutoff;
 	double time_lag_cutoff;
+	// Added Dec. 2006 by GLP to allow an option for autoscaling of initial plot
+	bool autoscale_initial;
 	// Had to add this to support subarrays
 	Pf *pf_used_by_engine;
 	// Needed to support three component data
