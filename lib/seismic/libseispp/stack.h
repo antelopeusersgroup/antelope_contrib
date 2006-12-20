@@ -25,6 +25,11 @@ plane wave stacks in earthquake seismology array processing.
 \par
 This object implements multiple methods for defining the stack.  The methods
 available are defined by the StackType enum documented elsewhere.
+\par
+All methods post an amplitude metric to the stack trace metadata area.  
+The norm used is the rms amplitude of the computed beam.  In all cases the amplitude
+figure can be accessed by calling the get_double method for the attribute
+beam_rms_key on the TimeSeries stack data member of this object.
 **/
 
 class Stack

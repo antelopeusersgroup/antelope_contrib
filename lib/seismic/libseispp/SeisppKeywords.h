@@ -15,6 +15,8 @@ const string stack_weight_keyword("stack_weight");
 const string predicted_time_key("predarr.time");
 /*! Defines keyword for a generic measured arrival time. Phase type is normally a different attribute.*/
 const string arrival_time_key("arrival.time");
+/*! rms amplitude of a stack (beam).  Units depend on data.*/
+const string beam_rms_key("beam_rms");
 /*! Used to flag a moveout estimate as bad.  Set to this large value. */
 const double MoveoutBad=1.0e10;
 /*! A test for a bad moveout value uses this number.  It is intentionally much

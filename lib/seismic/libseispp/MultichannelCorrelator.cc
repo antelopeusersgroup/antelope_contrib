@@ -49,19 +49,19 @@ TimeSeriesMaximum& TimeSeriesMaximum::operator=(const TimeSeriesMaximum& other)
 	}
 	return(*this);
 }
-// The beam needs to have this normalization constant set.  All statics are computed
-// relative to this amplitude using the dot product of the beam with data
-// This files scope global sets the name used for this
-//
-const string mdscalename("beam_scale_factor");
 double ComputeAmplitudeStatic(TimeSeries& beam, TimeSeries& data, double  tlag)
 {
-	int lag=SEISPP::nint(tlag/data.dt);
-	double beam_scale=beam.get_double(mdscalename);
-	// Because used internally won't best bounds, but don't use this in
+	int lag;
+	lag=data.sample_number(tlag);
+	if( (lag<0) || (lag+beam.s.size()>data.s.size()) )
+		throw SeisppError(string("ComputeAmplitudeStatic:  invalid lag"));
+	// Stack object loads rms. We need to upscale by nsamp to get a relative amplitude
+	double beam_scale=beam.get_double(beam_rms_key);
+	beam_scale *= sqrt(static_cast<double>(beam.ns));
+	// Because used internally won't test bounds, but don't use this in
 	// another program without making it safe in that sense.
 	double datamp=ddot(beam.s.size(),&(beam.s[0]),1,&(data.s[lag]),1);
-	return(datamp/beam_scale);
+	return(fabs(datamp/beam_scale));
 }
 double linfnorm(vector<double> x)
 {
@@ -137,6 +137,21 @@ void kill_data_with_bad_xcor(TimeSeriesEnsemble& data,
 		}
 	}
 }
+/* Small helper to normalize amplitude statics by median amplitude.
+Slightly complicated by need to bypass bad data.  Assume here these are
+marked with negative amplitudes */
+
+void NormalizeAmplitudeStatics(vector<double>& statics)
+{
+	vector<double> d;
+	int i,nin;
+	nin=statics.size();
+	for(i=0;i<nin;++i)
+		if(statics[i]>0.0) d.push_back(statics[i]);
+	double scale=median(d);
+	for(i=0;i<nin;++i)
+		if(statics[i]>0.0) statics[i] /= scale;
+}
 //@{
 // Constructor that implements MultichannelCorrelation with different choices
 // of algorithm.
@@ -182,6 +197,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 	const string base_message("MultichannelCorrelator constructor:  ");
 	const double LAG_RANGE_MULTIPLIER(2.0);  // Correlation range is limited to this times lag_cutoff
 	TimeWindow lag_range(-LAG_RANGE_MULTIPLIER*lag_cutoff,LAG_RANGE_MULTIPLIER*lag_cutoff);
+	double rms;
 
 	if(data.member.empty())
 		throw SeisppError(base_message+string("Input data ensemble is empty\n"));
@@ -201,9 +217,9 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			//used to be data.s
 			beam=WindowData(data.member[reference_member],beam_window);
 			// The beam needs to be normalized for efficiency
-			double rms=dnrm2(beam.s.size(),&(beam.s[0]),1);
-			dscal(beam.s.size(),rms,&(beam.s[0]),1);
-			beam.put(mdscalename,rms);
+			rms=dnrm2(beam.s.size(),&(beam.s[0]),1);
+			dscal(beam.s.size(),1.0/rms,&(beam.s[0]),1);
+			beam.put(beam_rms_key,rms/static_cast<double>(beam.ns));
 		}
 		TSCONVERGE=1.5*beam.dt;
 		//
@@ -243,13 +259,15 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				lag.push_back(0.0);
 				peakxcor.push_back(0.0);
 				weight.push_back(0.0);
-				amplitude_static.push_back(0.0);
+				amplitude_static.push_back(-1.0);
 				// signal the stacker this is a bad
 				// by using a very large moveout value
 				data.member[i].put(moveout_keyword,MoveoutBad);
 			}
 		}
 		kill_data_with_bad_xcor(data,lag,lag_cutoff);
+		//Normalize amplitude factors
+		NormalizeAmplitudeStatics(amplitude_static);
 		// holds lag estimated in previous iteration below
 		vector<double>lastlag=lag;
 		// This vector holds changes in lag from last iteration.
@@ -291,10 +309,6 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 			else
 				newstack=Stack(data,beam_window,robust_window,stacktype);	
 			beam=newstack.stack;
-			// The current Stack object has data normalized
-			// in a way that this constant is not needed so
-			// it is set to 1.0
-			beam.put(mdscalename,1.0);  
 			beam.put("fold",newstack.fold);
 			stack_normalization_factor=linfnorm(newstack.weights);
 			// silently avoid divide by zero.  Shouldn't happen but worth this 
@@ -321,7 +335,7 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 				// Stack object handles data marked bad
 				// already.  Have to do same here as 
 				// xcor has all zeros if data had a gap
-				if(xcor.member[i].live)
+				if(xcor.member[i].live && data.member[i].live)
 				{
 					TimeSeriesMaximum tsm(xcor.member[i]);
 					lag[i]=tsm.lag;
@@ -329,26 +343,14 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 					weight[i]=newstack.weights[i]/stack_normalization_factor;
 					amplitude_static[i] = ComputeAmplitudeStatic(beam,
 										data.member[i],tsm.lag);
-					//useful to post these to metadata as well as in this data
-					// structure
-					data.member[i].put(amplitude_static_keyword,amplitude_static[i]);
-					data.member[i].put(stack_weight_keyword,weight[i]);
-					data.member[i].put(moveout_keyword,tsm.lag);
-					data.member[i].put(peakxcor_keyword,tsm.peak);
 				}
 				else
 				{
 					lag[i]=0.0;
 					peakxcor[i]=0.0;
 					weight[i]=0.0;
-					amplitude_static[i]=0.0;
-					// this may not be necessary, but is safer
-					data.member[i].put(amplitude_static_keyword,0.0);
-					data.member[i].put(stack_weight_keyword,0.0);
-					data.member[i].put(moveout_keyword,
-						lag[i]);
-					data.member[i].put(peakxcor_keyword,
-						peakxcor[i]);
+					amplitude_static[i]=-1.0;
+
 				}
 				deltalag[i]=lag[i]-lastlag[i];
 			} 
@@ -378,9 +380,32 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 		beam.put("wfprocess.timetype",string("r"));
 		beam.put("wfprocess.samprate",1.0/beam.dt);
 		beam.put("wfprocess.nsamp",beam.ns);
-		beam.put("wfprocess.algorithm","dbxcor");
+		beam.put("wfprocess.algorithm",string("dbxcor"));
 		beam.put("wfprocess.dir",string("."));
 		beam.put("wfprocess.dfile",string("xcorbeam.w"));
+		//
+		// Now load valid attributes into trace headers
+		//		
+		NormalizeAmplitudeStatics(amplitude_static);
+		for(i=0;i<data.member.size();++i)
+		{
+			if(data.member[i].live && xcor.member[i].live)
+			{
+				data.member[i].put(amplitude_static_keyword,amplitude_static[i]);
+				data.member[i].put(stack_weight_keyword,weight[i]);
+				data.member[i].put(moveout_keyword,lag[i]);
+				data.member[i].put(peakxcor_keyword,peakxcor[i]);
+			}
+			else
+			{
+				data.member[i].put(amplitude_static_keyword,0.0);
+				data.member[i].put(stack_weight_keyword,0.0);
+				data.member[i].put(moveout_keyword,
+						lag[i]);
+				data.member[i].put(peakxcor_keyword,
+						peakxcor[i]);
+			}
+		}
 
 	} catch (...) {
 	    throw;

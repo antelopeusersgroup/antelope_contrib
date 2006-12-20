@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "ensemble.h"
 #include "tr.h"
 namespace SEISPP {
@@ -645,4 +646,79 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 	}
 	return(*this);
 }
+/* Series of overloaded functions to measure peak amplitudes for 
+different types of seismic data objects.  These are used in
+a generic algorithm defined in seispp.h */
+double PeakAmplitude(vector<TimeSeries>::iterator p)
+{
+	vector<double>::iterator amp;
+	amp=max_element(p->s.begin(),p->s.end());
+	return(*amp);
+}
+double PeakAmplitude(vector<ThreeComponentSeismogram>::iterator p)
+{
+	vector<double> ampvec;
+	ampvec.resize(p->u.columns());
+	// This loop could use p->ns but this more more bulletproof.
+	double ampval;
+	double *ptr;
+	int j;
+	for(j=0;j<p->u.columns();++j)
+	{
+		// Pointer arithmetic a bit brutal, but done
+		// for speed to avoid 3 calls to operator ()
+		ptr=p->u.get_address(0,j);
+		ampval=(*ptr)*(*ptr);
+		++ptr; ampval+=(*ptr)*(*ptr);
+		++ptr; ampval+=(*ptr)*(*ptr);
+		ampval=sqrt(ampval);
+		ampvec.push_back(ampval);
+	}
+	vector<double>::iterator amp;
+	amp=max_element(ampvec.begin(),ampvec.end());
+	return(*amp);
+}
+double PeakAmplitude(vector<ComplexTimeSeries>::iterator p)
+{
+	vector<double> ampvec;
+	ampvec.resize(p->s.size());
+	double ampval;
+	// This might be a bit faster if done with an iterator,
+	// but this is clearer I think. 
+	for(int j=0;j<p->s.size();++j)
+	{
+		ampval=abs(p->s[j]);
+		ampvec.push_back(ampval);
+	}
+	vector<double>::iterator amp;
+	amp=max_element(ampvec.begin(),ampvec.end());
+	return(*amp);
+}
+void ScaleMember(vector<TimeSeries>::iterator p,double scale)
+{
+	// Use the blas dscal routine for speed
+	dscal(p->s.size(),scale,&(p->s[0]),1);	
+}
+void ScaleMember(vector<ThreeComponentSeismogram>::iterator p,double scale)
+{
+	int size=p->u.columns();
+	size*=3;
+	// WARNING:  maintenance issue here.  This assumes a fixed
+	// structure for u as 3xn fortran style single large vector
+	// of doubles.  Current implementation for ThreeComponentSeismogram
+	// Using the blas for efficiency
+	dscal(size,scale,p->u.get_address(0,0),1);
+}
+void ScaleMember(vector<ComplexTimeSeries>::iterator p,double scale)
+{
+	// This algorithm could maybe be done with the blas cscal, but
+	// am not sure a vector<Complex> would work correctly with cscal.
+	// We'll use this stl iterator version instead and depend on 
+	// the use of operator *= which is defined in C++ for complex.
+	vector<Complex>::iterator siter;
+	for(siter=p->s.begin();siter!=p->s.end();++siter)
+		*siter *= scale;
+
+}
+
 } // Termination of namespace SEISPP definitions

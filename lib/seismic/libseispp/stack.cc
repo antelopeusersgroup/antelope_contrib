@@ -46,6 +46,11 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow twin)
 		}
 	}
 	for(i=0;i<stack.ns;++i) stack.s[i]/=sumwt;
+	// Compute the rms for applications needing
+	// an absolute amplitude measure.  This form is 
+	// consistent with other methods below.
+	double ampscale=dnrm2(stack.ns,&(stack.s[0]),1);
+	stack.put(beam_rms_key,ampscale/sqrt(static_cast<double>(stack.ns)));
 	stacktype=BasicStack;
     } catch(...) {throw;}
 }
@@ -168,6 +173,12 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 				else
 					stack.s[i]=(work[medposition]+work[medposition-1])/2.0;
 			}
+			// Need to save this scale factor for beam
+			// to retain amplitude.  REtain this estimate 
+			// using median as amplitude factor.  Intentionally
+			// ignore amplitudes in iterative loop below.
+			stack.put(beam_rms_key,
+				dnrm2(stack.s.size(),&(stack.s[0]),1)/sqrt(static_cast<double>(stack.ns)));
 			// The median is used as an initial estimate for the robust algorithm
 			// Here we break out if we want just the median
 			if(method==MedianStack) break;
@@ -225,17 +236,6 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 					amplitude_statics[j]=ampscale;
 					sumwt+=rweight[j];
 				}
-/*
-ofstream matout("datamatrix.prn",ios::out);
-matout<<raw_data;
-matout.close();
-ofstream rout("residual.prn",ios::out);
-rout<<r;
-rout.close();
-ofstream bout("beam.prn",ios::out);
-for(j=0;j<nsamp;++j) bout << work[j]<<endl;
-bout.close();
-*/
 				// Since this problem is linear we don't need to sum residuals
 				// but can form weighted sum of data directly each iteration.
 				for(i=0;i<nsamp;++i)work[i]=0.0;

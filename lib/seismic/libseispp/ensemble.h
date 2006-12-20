@@ -13,10 +13,12 @@
  */
 
 #include <vector>
+#include "perf.h"
 #include "pfstream.h"
 #include "TimeWindow.h"
 #include "TimeSeries.h"
 #include "ThreeComponentSeismogram.h"
+#include "ComplexTimeSeries.h"
 namespace SEISPP {
 /*! \brief Object to contain a group (ensemble) of time series objects (seismograms).
 
@@ -305,6 +307,190 @@ template <class Tmember>
     it=ensemble.member.begin();
     for(i=0;i<no;++i) ++it;
     ensemble.member.erase(it);
+}
+/*! Generic algorithm to measure and set peak amplitude as a scaling attribute.
+
+Scaling by peak amplitudes is a standard mechanism to scale data for plotting.
+This is a generic algorithm for an ensemble that requires a typed function
+called PeakAmplitude(Tmember) to be written that actually finds the largest
+amplitude of each member.  The result is set in the Metadata for each 
+live member with the key defined by scale_attribute.  i.e. the data are not
+altered by this algorithm but the measured amplitude is computed and
+set as an attribute for each member of the ensemble.  Normal procedure
+would then be to call a scaling function to actually alter the data.
+
+Note that traces marked dead are silently skipped.  Beware if an editing
+scheme is used that marks traces live/dead interactively.  This algorithm
+assumes once dead forever dead.
+
+\param d ensemble to be scan to find peak amplitudes.
+\param scale_attribute is the keyword used to define the peak amplitude
+	as an attribute for each member of the ensemble.
+*/
+template <class Tensemble,class Tmember> 
+	void MeasureEnsemblePeakAmplitudes(Tensemble& d,
+		string scale_attribute)
+{
+	vector<Tmember>::iterator dp;
+	double amplitude;
+	for(dp=d.member.begin();dp!=d.member.end();++dp)
+	{
+		if(dp->live)
+		{
+			amplitude=PeakAmplitude(dp);
+			dp->put(scale_attribute,amplitude);
+		}
+	}
+}
+/* Current implementations of PeakAmplitude */
+
+/*! Measures peak amplitude for a TimeSeries. */
+double PeakAmplitude(vector<TimeSeries>::iterator p);
+/*! Measures peak amplitude (L2 norm of 3 components) for a ThreeComponent
+Seismogram. */
+double PeakAmplitude(vector<ThreeComponentSeismogram>::iterator p);
+/*! Measures peak amplitude for a ComplexTimeSeries. */
+double PeakAmplitude(vector<ComplexTimeSeries>::iterator p);
+
+/*! Generic algorithm to scale an ensemble by using a specified scale factor.
+
+In plotting data it is frequently desirable to scale data by some 
+amplitude attribute to maximize the range of what can be seen in the data.
+This is a generic algorithm to do apply such an algorithm to an 
+emsemble of data.  The approach is to assume the amplitude factor was
+computed independently by some other method and set as the 
+an attribute in the Metadata area of each member.  Thus this generic
+algorith assumes each member has inherited the Metadata object as 
+a component of each member AND that each member of the ensemble is 
+held in an STL vector container of Tmember objects.  
+
+This algorithm silently skips data marked dead.  If a member does 
+not have the amplitude attribute define this algorithm spits out 
+an error to stderr and does nothing to the associated member.
+This can cause downstream problems, but seems preferable to aborting.
+
+\param d input data ensemble with members of type Tmember.
+\param scale_attribute keyword used to access desired amplitude
+	attribute.  Each object is multiplied by the value extracted
+	as this (real-valued) attribute.
+\param invert can be used to scale by 1/scale_attribute.  This can
+	be useful to either undo a previous transformation or 
+	scale to a fixed gain using a computed amplitude metric.
+*/
+template <class Tensemble,class Tmember> 
+	void ScaleEnsemble(Tensemble& d,
+		string scale_attribute,
+			bool invert=false)
+{
+	vector<Tmember>::iterator dp;
+	double amplitude;
+	for(dp=d.member.begin();dp!=d.member.end();++dp)
+	{
+		if(dp->live)
+		{
+			try {
+				amplitude=dp->get_double(scale_attribute);
+				// invalid amplitudes are signaled as negative
+				if(amplitude>0)
+				{
+					if(invert)
+						ScaleMember(dp,1.0/amplitude);
+					else
+						ScaleMember(dp,amplitude);
+				}
+			}
+			catch (MetadataGetError mde)
+			{
+				cerr << "Warning (ScaleEnsemble):  "
+					<<"scaling of data failed"<<endl;
+				mde.log_error();
+				cerr << "Continuing with data left unscaled"
+					<<endl;
+			}
+		}
+	}
+}
+/* Current implementations of ScaleMember. */
+
+/*! Scales a TimeSeries object by scale. */
+void ScaleMember(vector<TimeSeries>::iterator p,double scale);
+/*! Scales a ThreeComponentSeismogram object by scale. */
+void ScaleMember(vector<ThreeComponentSeismogram>::iterator p,double scale);
+/*! Scales a ComplexTimeSeries object by scale. */
+void ScaleMember(vector<ComplexTimeSeries>::iterator p,double scale);
+
+/* Companion to above */
+
+/*! Resets a calibration constant when amplitude scaling is applied.
+
+When the ScaleEnsemble generic algorithm is used the data sample
+values are permanently altered.  It is usually essential to preserve
+a correct amplitude scale factor so the data can be returned to some
+physical units.  This generic algorithm handles that by a simple
+manipulation of Metadata attributes.  The user must tell the algorithm
+the calibration attribute and the scale factor attribute.
+
+\param d ensemble of data to be changed.  Assumed to be a vector
+	of data objects that are or inherit Metadata.
+\param calib_attribute calibration attribute name.  Note if this attribute is
+	not found in a member data object it is silently assumed to
+	be one.  It perhaps could spit something to stderr, but a
+	presumption is this is a potentially common problem that 
+	should just be quietly handled.
+\param scale_attribute attribute containing scaling constant.  This
+	must be a real valued attribute.  If it is not defined it
+	is set to one and ignored.
+\param invert boolean to control how factor is handled.  If true the 
+	reciprocal of the scale_attribute is used.  Multiplied if
+	true (the default).
+*/
+template <class Tensemble> void ScaleCalib(Tensemble d,
+	string calib_attribute, 
+		string scale_attribute, 
+			bool invert=false)
+{
+	double calib;
+	double scale;
+	for(int i=0;i<d.member.size();++i)
+	{
+		if(d.member[i].live)
+		{
+			try {
+				calib=d.member[i].get_double(calib_attribute);
+			} catch (MetadataGetError mde) 
+			{
+				calib=1.0;
+			}
+				
+			try {
+				scale=d.member[i].get_double(scale_attribute);
+			} catch (MetadataGetError mde) 
+			{
+				scale=1.0;
+			}
+			if(invert) scale=1.0/scale;
+			d.member[i].put(calib_attribute,scale*calib);
+		}
+	}
+}
+/*! Set an attribute to a constant to initialize a gather to some default. 
+
+The type of the attribute to be set is passed through the second template
+argument.  
+
+\param d ensemble of data to initialize.
+\param name is the name of the attribute to initialize
+\param val Ta type value with which to initialize ensemble members.
+*/
+template <class Te, class Ta> 
+	void InitializeEnsembleAttribute(Te& d, string name,
+		Ta val)
+{
+	try {
+		int i;
+		for(i=0;i<d.member.size();++i)
+			d.member[i].put(name,val);
+	} catch(...){throw;};
 }
 
 } // End SEISPP namespace declaration
