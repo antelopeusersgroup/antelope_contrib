@@ -86,5 +86,29 @@ auto_ptr<TimeSeriesEnsemble> ArraySubset(TimeSeriesEnsemble& parent,
 	}
 	return(result);
 }
+/*  Extract a single component from an ensemble to produce a scalar ensemble. */
+auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component)
+{
+	vector<ThreeComponentSeismogram>::iterator tcsp;
+	TimeSeries *x;
+	auto_ptr<TimeSeriesEnsemble> result(new 
+		TimeSeriesEnsemble(dynamic_cast<Metadata&>(tcs),tcs.member.size()));
+	for(tcsp=tcs.member.begin();tcsp!=tcs.member.end();++tcsp)
+	{
+		// silently skip anything that throws an exception.  
+		// sanity test at end to throw an exception if the result is empty
+		try {
+			
+			x=ExtractComponent(*tcsp,component);
+			result->member.push_back(*x);
+			delete x;
+		} catch(...){};
+	}
+	if(result->member.size()<=0)
+		throw SeisppError(
+			string("SEISPP::ExtractComponent ThreComponentEnsemble procedure: ")
+			+ string("Output TimeSeriesEnsemble is empty."));
+	return(result);
+}
 
 } // End SEISPP namespace

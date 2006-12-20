@@ -720,5 +720,4 @@ void ScaleMember(vector<ComplexTimeSeries>::iterator p,double scale)
 		*siter *= scale;
 
 }
-
 } // Termination of namespace SEISPP definitions

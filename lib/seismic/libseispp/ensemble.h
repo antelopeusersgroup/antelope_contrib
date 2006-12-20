@@ -492,6 +492,21 @@ template <class Te, class Ta>
 			d.member[i].put(name,val);
 	} catch(...){throw;};
 }
+/*! Extract a componnt from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
 
+An ensemble of three component data can be conceptualized as a three-dimensional
+array (3 by number of samples by number of ensemble members) while a TimeSeriesEnsemble
+is effectively 2D (although implemented in a more general way in SEISPP).  
+It is often useful to extract one of the components of a ThreeComponent data set
+to yield a scalar (TimeSeriesEnsemble) result.  This procedure does this.
+
+\param tcs input ensemble
+\param component is data component to extract.  Must be 0,1, or 2 or the procedure
+	will throw an exception.
+\return auto_ptr to ensemble containing requested component
+
+\exception SeisppError is throw if result is empty of component number is illegal.
+*/
+auto_ptr<TimeSeriesEnsemble> ExtractComponent(ThreeComponentEnsemble& tcs,int component);
 } // End SEISPP namespace declaration
 #endif
