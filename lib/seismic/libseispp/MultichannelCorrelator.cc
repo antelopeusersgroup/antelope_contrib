@@ -52,7 +52,7 @@ TimeSeriesMaximum& TimeSeriesMaximum::operator=(const TimeSeriesMaximum& other)
 double ComputeAmplitudeStatic(TimeSeries& beam, TimeSeries& data, double  tlag)
 {
 	int lag;
-	lag=data.sample_number(tlag);
+	lag=data.sample_number(tlag+beam.t0);
 	if( (lag<0) || (lag+beam.s.size()>data.s.size()) )
 		throw SeisppError(string("ComputeAmplitudeStatic:  invalid lag"));
 	// Stack object loads rms. We need to upscale by nsamp to get a relative amplitude
