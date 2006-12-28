@@ -1,0 +1,13 @@
+# pf file for ANFmrc-testing
+
+dltype		q330		# default datalogger type
+				# for a mixed system run with either -s option, or -x exclude
+
+out_of_range	50		# absolute value of out of range mass position voltage
+				#   mass positions >= out_of_range will trigger a mass recenter 
+				
+mrc_delay	30		# interval in seconds to wait between mass recenters if -a is used
+				# Setting this to "0" or a small value will speed up execution of 
+				# mass recenters but may introduce a false event
+
+delay_interval	300		# interval to wait after mass recenter before checking mass positions
