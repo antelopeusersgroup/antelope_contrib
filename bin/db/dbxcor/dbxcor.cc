@@ -465,6 +465,14 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 	    ss << "Ensemble sort order set to predicted time"<<endl;
 	    psm->active_setting.result_sort_order=PREDARR_TIME;
 	    break;
+	case ESAZ:
+	    ss << "Ensemble sort order set to esac"<<endl;
+	    psm->active_setting.result_sort_order=ESAZ;
+	    break;
+	case DISTANCE:
+	    ss << "Ensemble sort order set to distance"<<endl;
+	    psm->active_setting.result_sort_order=DISTANCE;
+	    break;
 	default:
 	    ss << "ERROR: unknown result sort order"<<endl;
 	    break;
@@ -653,6 +661,32 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
+    wtemp=XmCreateToggleButtonGadget(radio_box,"source azimuth",NULL,0);
+    picked=ESAZ;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,"measured amplitude",NULL,0);
+    picked=AMPLITUDE;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,"Computed lag",NULL,0);
+    picked=LAG;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
     SessionState state=psm->get_state();
 
     wtemp=XmCreateToggleButtonGadget(radio_box,"Coherence",NULL,0);
@@ -687,6 +721,16 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 
     wtemp=XmCreateToggleButtonGadget(radio_box,"Lag",NULL,0);
     picked=LAG;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,"Distance",NULL,0);
+    picked=DISTANCE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
     if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);

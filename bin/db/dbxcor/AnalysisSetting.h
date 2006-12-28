@@ -20,7 +20,8 @@ using namespace SEISPP;
 
 // Analysis results can be sorted by these keys
 // made an enum for convenience.  
-enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,SITE_LAT,SITE_LON,PREDARR_TIME};
+enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,
+	SITE_LAT,SITE_LON,PREDARR_TIME,ESAZ,DISTANCE};
 
 //@{ Encapsulates all quantities required by XcorProcessingEngine in 
 //   a single data structure.  

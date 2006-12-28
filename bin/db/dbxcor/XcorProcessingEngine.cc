@@ -215,6 +215,12 @@ template <class T, SortOrder SO> struct less_metadata_double
 		case PREDARR_TIME:
 			keyword=predicted_time_key;
 			break;
+		case ESAZ:
+			keyword=string("esaz");;
+			break;
+		case DISTANCE:
+			keyword=string("distance");;
+			break;
 		case WEIGHT:
 		default:
 			keyword=SEISPP::stack_weight_keyword;
@@ -301,8 +307,56 @@ void XcorProcessingEngine::sort_ensemble()
         sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,PREDARR_TIME>());
         break;
+   case ESAZ:
+        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,ESAZ>());
+        break;
    default:
 	cerr << "Illegal sort order.  Original order preserved."<<endl;
+   }
+   if(mcc!=NULL)
+   {
+      switch(analysis_setting.result_sort_order)
+      {
+      case COHERENCE:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		less_metadata_double<TimeSeries,COHERENCE>());
+   	break;
+      case CORRELATION_PEAK:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		less_metadata_double<TimeSeries,CORRELATION_PEAK>());
+   	break;
+      case AMPLITUDE:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		less_metadata_double<TimeSeries,AMPLITUDE>());
+   	break;
+      case LAG:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		less_metadata_double<TimeSeries,LAG>());
+   	break;
+      case WEIGHT:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		less_metadata_double<TimeSeries,WEIGHT>());
+   	break;
+      case SITE_LAT:
+   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   less_metadata_double<TimeSeries,SITE_LAT>());
+           break;
+      case SITE_LON:
+           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   less_metadata_double<TimeSeries,SITE_LON>());
+           break;
+      case PREDARR_TIME:
+           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   less_metadata_double<TimeSeries,PREDARR_TIME>());
+           break;
+      case ESAZ:
+           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   less_metadata_double<TimeSeries,ESAZ>());
+           break;
+      default:
+   	cerr << "Illegal sort order.  Original order preserved."<<endl;
+      }
    }
 }
 // The next three functions are somewhat unnecessary with
@@ -418,6 +472,17 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 void XcorProcessingEngine::load_data(Hypocenter & h)
 {
     try {
+	// It is necessary to clear the contents of mcc in
+	// some situations.  In particular, in the gui dbxcor
+	// we desire sorting the data after it is read.  The
+	// sort algorithm in XcorProcessingEngine aims to sort
+	// xcor traces in the same order as data.  We need to clear
+	// it here to allow it to bypass this until mcc is created.
+	if(mcc!=NULL)
+	{
+		delete mcc;
+		mcc=NULL;
+	}
 	current_data_window=TimeWindow(h.time+raw_data_twin.start,
 		h.time+raw_data_twin.end);
 	UpdateGeometry(current_data_window);
@@ -490,6 +555,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	for(int i=0;i<regular_gather->member.size();++i)
 	{
 		double atime;
+		double lat,lon;
 		regular_gather->member[i].put(coherence_keyword,0.0);
 		regular_gather->member[i].put(stack_weight_keyword,0.0);
 		regular_gather->member[i].put(peakxcor_keyword,0.0);
@@ -501,6 +567,28 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		atime=regular_gather->member[i].get_double(predicted_time_key);
 		regular_gather->member[i].put(arrival_time_key,atime);
 	}
+	for(int i=0;i<regular_gather->member.size();++i)
+	{
+		double lat,lon;
+		double seaz,esaz,distance;
+		try {
+			lat=regular_gather->member[i].get_double("lat");
+			lon=regular_gather->member[i].get_double("lon");
+		}
+		catch(MetadataGetError mde)
+		{
+			mde.log_error();
+			cerr << "In XcorProcessEngine::load_data:  continuing with lat,lon=0"<<endl;
+			lat=0.0;   lon=0.0;
+		}
+		seaz=h.seaz(lat,lon);
+		esaz=h.esaz(lat,lon);
+		distance=h.distance(lat,lon);
+		regular_gather->member[i].put("seaz",seaz);
+		regular_gather->member[i].put("esaz",esaz);
+		regular_gather->member[i].put("distance",distance);
+	}
+	
 	
 	// Load filtered data into waveform_ensemble copy
 	// of this data.
