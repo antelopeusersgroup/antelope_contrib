@@ -148,9 +148,15 @@ void NormalizeAmplitudeStatics(vector<double>& statics)
 	nin=statics.size();
 	for(i=0;i<nin;++i)
 		if(statics[i]>0.0) d.push_back(statics[i]);
-	double scale=median(d);
-	for(i=0;i<nin;++i)
-		if(statics[i]>0.0) statics[i] /= scale;
+	// Do nothing if all the entries are invalid
+	if(d.size()<=0) 
+		return;
+	else
+	{
+		double scale=median(d);
+		for(i=0;i<nin;++i)
+			if(statics[i]>0.0) statics[i] /= scale;
+	}
 }
 //@{
 // Constructor that implements MultichannelCorrelation with different choices
@@ -389,12 +395,23 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 		NormalizeAmplitudeStatics(amplitude_static);
 		for(i=0;i<data.member.size();++i)
 		{
+			double xcoh;
 			if(data.member[i].live && xcor.member[i].live)
 			{
 				data.member[i].put(amplitude_static_keyword,amplitude_static[i]);
 				data.member[i].put(stack_weight_keyword,weight[i]);
 				data.member[i].put(moveout_keyword,lag[i]);
 				data.member[i].put(peakxcor_keyword,peakxcor[i]);
+				xcor.member[i].put(amplitude_static_keyword,amplitude_static[i]);
+				xcor.member[i].put(stack_weight_keyword,weight[i]);
+				xcor.member[i].put(moveout_keyword,lag[i]);
+				xcor.member[i].put(peakxcor_keyword,peakxcor[i]);
+				// coherence has to be handled oddly because
+				// it is only passed by posting to each data
+				// metadata
+				xcoh=data.member[i]
+					.get_double(coherence_keyword);
+				xcor.member[i].put(coherence_keyword,xcoh);
 			}
 			else
 			{
@@ -404,6 +421,13 @@ MultichannelCorrelator:: MultichannelCorrelator(TimeSeriesEnsemble& data,
 						lag[i]);
 				data.member[i].put(peakxcor_keyword,
 						peakxcor[i]);
+				xcor.member[i].put(amplitude_static_keyword,0.0);
+				xcor.member[i].put(stack_weight_keyword,0.0);
+				xcor.member[i].put(moveout_keyword,
+						lag[i]);
+				xcor.member[i].put(peakxcor_keyword,
+						peakxcor[i]);
+				xcor.member[i].put(coherence_keyword,0.0);
 			}
 		}
 
