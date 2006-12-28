@@ -49,6 +49,7 @@
     
     $nmax = $opt_t || 3 ; 
 
+    elog_notify("\n$0 start time");
 # 
 #  Set up mail    
 #    
@@ -65,7 +66,7 @@
     $Success	= 0;
     $Neutral	= 0;
 
-    elog_notify($0);
+    elog_notify("\n$0 start time");
     &cmdline() ; 
     
 #
@@ -220,19 +221,22 @@
     }
     
     if ($Problems) {
-        $subject = "Problems - $prog_name $host $target $orbname ";
+        $subject = "Problems - $prog_name $host $orbname ";
+        elog_notify ("$subject");
         &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
-        print "\n$subject \n\n";
+        elog_notify ("$subject");
         exit (1);
     } elsif ($Success) {
-        $subject = "Success  - $prog_name $host $target $orbname @done";
+        $subject = "Success  - $prog_name $host $orbname @done";
+        elog_notify ("$subject");
         &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
-        print "\n$subject \n\n";
+        elog_notify ("$subject");
         exit (0);
     } elsif ($Neutral) {
-        $subject = "No MRCs - $prog_name $host $target $orbname ";
+        $subject = "No MRCs - $prog_name $host $orbname ";
+        elog_notify ("$subject");
         &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
-        print "\n$subject \n\n";
+        elog_notify ("$subject");
         exit (0);
     }
 exit;
@@ -348,7 +352,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
             $masspo = $ref->{dls}{$dlsta}{$mc};
             next if ($masspo =~ /-/);
             if ( $masspo > $mv || $opt_f ) {
-               printf "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
+               printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
                last;
@@ -366,9 +370,9 @@ sub get_masspos {#  &get_masspos($mv,$orb,@sources);
     my ($pktid,$srcname,$pkttime,$pkt,$nbytes,$result,$src);
     my ($net,$sta,$chan,$loc,$suffix,$subcode,$type,$desc,$pf);
 
-    printf "\n\nMass positions greater than $mv\n";
-    printf "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
-    printf "=======  ==========   ====  ====  ====  ====  ====  ====\n";
+    printf STDERR  "\n\nMass positions greater than $mv\n";
+    printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
+    printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
     
     foreach $src (@sources) {
         $srcname = $src->srcname() ;
