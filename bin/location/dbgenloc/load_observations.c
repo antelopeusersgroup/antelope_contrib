@@ -1,13 +1,16 @@
 #include "dbgenloc.h"
 
+/* Modified Dec. 2006:  added two new Tbls for resid and slowness to
+compute residuals only=tapro and tupro. */
 int
 load_observations ( Pf *pf, Dbptr db, Arr *arr_phase, 
-	    Arr **stationsp, Arr **arraysp, Tbl **tap, Tbl **tup ) 
+	    Arr **stationsp, Arr **arraysp, Tbl **tap, Tbl **tup ,
+		Tbl **tapro, Tbl **tupro) 
 { 
     Station *station ;
     Seismic_Array *array ;
     Arrival *a ;
-    Tbl *ta, *tu ;
+    Tbl *ta, *tu ,*taro, *turo;
     Dbptr dbarr, dbsite ;
     static void *hook = 0 ; 
     static Tbl *matching ;
@@ -31,6 +34,8 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 
     ta = *tap = newtbl(0) ;
     tu = *tup = newtbl(0) ;
+    taro = *tapro = newtbl(0) ;
+    turo = *tupro = newtbl(0) ;
 
     dbarr = dblookup ( db, 0, "arrival", 0, "dbSCRATCH" ) ; 
     dbsite = dblookup ( db, 0, "site", 0, 0 ) ; 
@@ -83,7 +88,8 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 	    complain ( 0, "Can't compute travel time for phase %s\n", iphase ) ;
 	} else {
 
-	    if ( time > 0.0 && *timedef == 'd' ) {
+	    if (time>0.0)
+	    {
 		allot(Arrival *, a, 1) ;
 		a->arid = arid ;
 		a->sta = station ;
@@ -92,12 +98,19 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 		a->phase = phase ; 
 		if( (a->deltat) <= 0.0 ) 
 		    a->deltat = (double)a->phase->deltat0;
-		pushtbl(ta,a);
-		nobs ++ ;
+		if(*timedef=='d')
+		{
+			pushtbl(ta,a);
+			nobs ++ ;
+		}
+		else
+		{
+			pushtbl(taro,a);
+		}
 	    }
 
-	    if (   slow >= 0.0    && azimuth >= 0.0 
-		&& *slodef == 'd' && *azdef == 'd')  {
+	    if (   slow >= 0.0    && azimuth >= 0.0 )
+	    {
 
 		allot ( Slowness_vector *, u, 1 ) ; 
 		u->arid = arid ;
@@ -122,8 +135,15 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 		u->uy = -slow*cos(rad(azimuth));
 		u->deltaux = u->phase->deltau0;
 		u->deltauy = u->phase->deltau0;
-		pushtbl(tu,u);
-		nobs++ ;
+		if( *slodef == 'd' && *azdef == 'd')  
+		{
+			pushtbl(tu,u);
+			nobs++ ;
+		}
+		else
+		{
+			pushtbl(turo,u);
+		}
 	    }
 
 	}

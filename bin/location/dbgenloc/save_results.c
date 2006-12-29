@@ -2,10 +2,81 @@
 #include <string.h>
 #include "dbgenloc.h"
 
+/* New procedure added Dec. 2006 to support residual only
+data.  Done at the request of users in June 2006 AUG meeting
+in Tucson.  
+
+This procedure was produced as a simplification of the 
+form_equations procedure in libgenloc.   Here we basically 
+loop through all the arrivals in the input lists and post
+residuals to the Arrival structure.  Weights are all set to 
+0.0 to emphasize these are assumed to be unused data. 
+If the travel time/slowness vector calculation fails the 
+input tbl's are edited with the problem entries removed.
+*/
+int compute_residual_only_results(Hypocenter hypo,
+	Tbl *attbl, 
+		Tbl *utbl)
+{
+	Arrival *atimes;
+	Slowness_vector *slow;
+	int natimes, nslow;
+	int i,ii;
+	natimes=maxtbl(attbl);
+	nslow=maxtbl(utbl);
+
+	for(i=0,ii=0; i<natimes;++i,++ii)
+	{
+		Travel_Time_Function_Output tto;
+		atimes = (Arrival *) gettbl (attbl, ii);
+		tto = calculate_travel_time (*atimes, hypo, RESIDUALS_ONLY);
+		if (tto.time == TIME_INVALID) {
+			register_error(1,"Station: %s, Phase: %s Travel time calculator failed\n",
+				atimes->sta->name, atimes->phase->name);
+			deltbl(attbl,ii);
+			/* Tbl index is stale and needs to be decremented
+			like this when we delete such an entry. */
+			--ii;
+			free(atimes);
+		}
+		else
+		{
+			atimes->res.raw_residual=atimes->time-tto.time;
+			atimes->res.weighted_residual=atimes->res.raw_residual;
+			atimes->res.residual_weight=0.0;
+			atimes->res.other_weights=0.0;
+		}
+	}
+	for(i=0,ii=0;i<nslow;++i,++ii)
+	{
+		Slowness_Function_Output u_calc;
+		slow = (Slowness_vector *) gettbl (utbl, ii);
+		u_calc = calculate_slowness_vector (*slow,hypo,RESIDUALS_ONLY);
+		if (u_calc.ux == SLOWNESS_INVALID) {
+			register_error(1,"Array: %s, Phase: %s Slowness vector calculator failed\n",
+				atimes->sta->name, atimes->phase->name);
+			deltbl(utbl,ii);
+			--ii;
+			free(slow);
+		}
+		else
+		{
+			slow->xres.raw_residual=slow->ux - u_calc.ux;
+			slow->xres.weighted_residual=slow->xres.raw_residual;
+			slow->xres.residual_weight=0.0;
+			slow->xres.other_weights=0.0;
+			slow->yres.raw_residual=slow->uy - u_calc.uy;
+			slow->yres.weighted_residual=slow->yres.raw_residual;
+			slow->yres.residual_weight=0.0;
+			slow->yres.other_weights=0.0;
+		}
+	}
+}
 int
 save_results (Dbptr dbin, Dbptr dbout, 
 	Pf *pf, 
 	Tbl *ta, Tbl *tu,
+	Tbl *taro, Tbl *turo,
 	Location_options *o, 
 	char *vmodel, 
 	Hypocenter *hypo, 
@@ -270,6 +341,58 @@ save_results (Dbptr dbin, Dbptr dbout,
 			dbout.record ) ; 
 	}
     }
+    /* Disgustingly repetitious code to handle residual only solutions. Appropriate because
+    for residuals only computation we don't allow S-P type phases anyway.*/
+    n=maxtbl(taro);
+    for ( i=0 ; i<n ; i++ ) {
+	a = (Arrival *) gettbl(taro, i) ;
+	dist(rad(hypo->lat),rad(hypo->lon),rad(a->sta->lat),rad(a->sta->lon), &delta,&esaz);
+	dist(rad(a->sta->lat),rad(a->sta->lon),rad(hypo->lat),rad(hypo->lon), &delta,&seaz);
+	wgt=0.0;
+ 	/* Regular phases land here */
+	if ( dbaddv(dbout, "assoc", 
+		"orid", orid, 
+		"arid", a->arid, 
+		"sta", a->sta->name, 
+		"phase", a->phase->name, 
+		"delta", deg(delta),
+		"seaz", deg(seaz),
+		"esaz", deg(esaz),
+		"timeres", (double) a->res.raw_residual,
+		"timedef", "n",
+		"vmodel", vmodel,
+		"wgt", wgt,
+	    				0 ) < 0 ) 
+	    	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+	    			a->sta->name, a->arid, orid ) ;
+    }
+    n = maxtbl(turo) ;
+    for ( i=0 ; i<n ; i++ ) {
+	u = (Slowness_vector *) gettbl(turo, i) ;
+	if ( (dbout.record = dbaddv(dbout, 0, 
+		"orid", orid, 
+		"arid", u->arid, 
+		"vmodel", vmodel,
+		0 )) < 0 ) {
+	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+	    	a->sta->name, a->arid, orid ) ;
+	} else {
+	    slores = deg2km(sqrt(sqr(u->xres.raw_residual) + sqr(u->yres.raw_residual))) ;
+	    azimuth = atan2 ( u->uy, u->ux ) ;
+	    duphi = (u->ux*cos(azimuth) - u->uy*sin(azimuth)) / sqrt(sqr(u->ux)+sqr(u->uy)) ;
+	    azres = deg(duphi);
+
+	    if ( dbputv ( dbout, 0, 
+		"slores", slores,
+		"slodef", "n",
+		"azres", azres,
+		"azdef", "n", 
+		0 ) < 0 ) 
+		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%d\n",
+			dbout.record ) ; 
+	}
+    }   
+
     dbquery (dbassoc, dbRECORD_COUNT, &new ) ;
 
     dbputv(dborigin, 0,

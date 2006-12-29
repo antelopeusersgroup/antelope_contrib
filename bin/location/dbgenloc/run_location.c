@@ -40,7 +40,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     Tbl		   *converge_history=0, *reason_converged=0, *residual=0 ;
     Location_options o;
     char	   *vmodel ;
-    Tbl		   *ta, *tu ;
+    Tbl		   *ta, *tu, *taro, *turo ;
     Hypocenter h0;
     Hypocenter *hypo ;
     float *emodel;
@@ -101,13 +101,14 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
     lastmodel=strdup(vmodel);
 
     if ( load_observations ( pf, dbin, arr_phase, 
-	    &stations, &arrays, &ta, &tu ) < 1 ) {
+	    &stations, &arrays, &ta, &tu, &taro, &turo ) < 1 ) {
 	complain (0, "No data to locate\n" ) ; 
 	*error = "No arrival data for a location" ; 
 	return -1 ;
     }
     if(nbcs)
     {
+	/* Intentionally do not run this on residuals only list.  */
 	if(minus_phases_arrival_edit(ta,arr_phase,badclocks))
 		elog_notify(0,"problems in minus_phase_arrival_edit function\n");
     }
@@ -157,7 +158,7 @@ run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
 	if (reason_converged != 0 
 		&& maxtbl(reason_converged) > 0 ) {
 	if ( strncmp(gettbl(reason_converged,0), "Location hit iteration count limit", 34) != 0) {
-		save_results (dbin, dbout, pf, ta, tu, &o, 
+		save_results (dbin, dbout, pf, ta, tu, taro, turo, &o, 
 			vmodel, hypo, residual, orid , C, emodel) ;
 		retcode = 0 ;
 	  } else { 
