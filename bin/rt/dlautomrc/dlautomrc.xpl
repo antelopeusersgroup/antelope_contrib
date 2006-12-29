@@ -351,7 +351,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
         foreach $mc (@mc) {
             $masspo = $ref->{dls}{$dlsta}{$mc};
             next if ($masspo =~ /-/);
-            if ( $masspo > $mv || $opt_f ) {
+            if ( $masspo >= $mv || $opt_f ) {
                printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
@@ -370,7 +370,7 @@ sub get_masspos {#  &get_masspos($mv,$orb,@sources);
     my ($pktid,$srcname,$pkttime,$pkt,$nbytes,$result,$src);
     my ($net,$sta,$chan,$loc,$suffix,$subcode,$type,$desc,$pf);
 
-    printf STDERR  "\n\nMass positions greater than $mv\n";
+    printf STDERR  "\n\nMass positions greater than or equal to $mv\n";
     printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
     printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
     
