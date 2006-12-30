@@ -198,6 +198,8 @@
         @done = remain(\@done,\@nomrcd) ; 
         printf STDERR "\nMass recenters successful at: @done \n", $#done ;
         if ($#nomrcd > -1) {
+            $Problems++;
+            printf STDERR "\nProblem #$Problems\n" ;
             print STDERR "Mass recenters unsuccessful at: @nomrcd \n" ;
 #            if ($opt_S) {
 #                $ref   = pfget($opt_S, "");
@@ -221,7 +223,7 @@
     }
     
     if ($Problems) {
-        $subject = "Problems - $prog_name $host $orbname ";
+        $subject = "Problems - $prog_name $host $orbname @nomrcd";
         elog_notify ("$subject");
         &sendmail($subject, $opt_m, $mailtmp) if $opt_m ; 
         elog_notify ("$subject");
@@ -350,8 +352,8 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 
         foreach $mc (@mc) {
             $masspo = $ref->{dls}{$dlsta}{$mc};
-            next if ($masspo =~ /-/);
-            if ( $masspo >= $mv || $opt_f ) {
+            next unless ($masspo =~ /\d/);
+            if ( abs($masspo) >= $mv || $opt_f ) {
                printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
