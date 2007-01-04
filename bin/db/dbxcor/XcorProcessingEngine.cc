@@ -719,7 +719,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 		string sta;
 		string chan;
 		string phase;
-		double atime;
+		double atime,predtime,resid;
 		double lag;
 		double xcorpeak,coh,stack_weight,amplitude;
 		double gain;
@@ -739,6 +739,8 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 			sta=trace->get_string("sta");
 			chan=trace->get_string("chan");
 			atime=trace->get_double(arrival_time_key);
+			predtime=trace->get_double(predicted_time_key);
+			resid=atime-predtime;
 			xcorpeak=trace->get_double(peakxcor_keyword);
 			coh=trace->get_double(coherence_keyword);
 			stack_weight=trace->get_double(stack_weight_keyword);
@@ -806,7 +808,7 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 						"phase",
 					  	  analysis_setting
 						   .phase_for_analysis.c_str(),
-						"timeres",lag,
+						"timeres",resid,
 						"timedef","d",
 						"wgt",stack_weight,0);
 				}
@@ -900,6 +902,7 @@ PointPick XcorProcessingEngine::pick_beam()
 void XcorProcessingEngine::shift_arrivals(double tshift)
 {
 	vector<TimeSeries>::iterator trace;
+	double moveout,atime;
 	for(trace=waveform_ensemble.member.begin();
                 trace!=waveform_ensemble.member.end();++trace)
 	{
@@ -913,11 +916,14 @@ void XcorProcessingEngine::shift_arrivals(double tshift)
 		try {
 		  if(trace->live)
 		  {
-			double moveout=trace->get_double(moveout_keyword);
+			moveout=trace->get_double(moveout_keyword);
+			atime=trace->get_double(arrival_time_key);
 			if(fabs(moveout)<MoveoutBadTest)
 			{
 				moveout+=tshift;
+				atime+=tshift;
 				trace->put(moveout_keyword,moveout);
+				trace->put(arrival_time_key,atime);
 			}
 		  } 
 		} catch (MetadataGetError mde) {

@@ -1196,7 +1196,7 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 
     XtVaGetValues(psm->seismic_widget,ExmNdisplayAttributes,&ai,ExmNseiswEnsemble,&tse,NULL);
 
-    begin=MAX((ai->x2begb-(int)ai->x2begb==0.0) ? (int)ai->x2begb : (int)ai->x2begb+1,0);
+    begin=MAX((ai->x2begb-(int)ai->x2begb==0.0) ? (int)ai->x2begb : (int)ai->x2begb+1,1);
     end=MIN((int)ai->x2endb,tse->member.size());
 
 
