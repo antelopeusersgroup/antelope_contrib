@@ -47,7 +47,7 @@ transformations that produce the cartesian form.
 GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 {
 	Dbptr dbgrd;
-	char sstring[80];
+	char sstring[256];
 	char datatype[4];
 	char dir[65], dfile[36];
 	char filename[512];  
@@ -190,7 +190,7 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 GCLgrid::GCLgrid(Dbptr db,string gridname)
 {
 	Dbptr dbgrd;
-	char sstring[80];
+	char sstring[256];
 	char datatype[4];
 	char dir[65], dfile[36];
 	char filename[512];  
@@ -335,7 +335,7 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
 
-	char sstring[80];
+	char sstring[256];
 	int foff;
 	char filename[512];
 	Dbptr dbgrd;
@@ -400,7 +400,7 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char sstring[80];
+	char sstring[256];
 	int foff;
 	char filename[512];
 	Dbptr dbgrd;
@@ -466,7 +466,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char sstring[80];
+	char sstring[256];
 	int foff;
 	char filename[512];
 	Dbptr dbgrd;
@@ -552,7 +552,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 {
 	char gclgname[16];
 	strncpy(gclgname,gclgnamein.c_str(),16);
-	char sstring[80];
+	char sstring[256];
 	int foff;
 	char dir[65],dfile[36];
 	char filename[512];
