@@ -1,0 +1,557 @@
+.TH PSMARTPICK 1 "$Date$"
+.SH NAME
+psmartpick \- Graphical front end for dbpick
+.SH SYNOPSIS
+.nf
+\fBpsmartpick \fP[\-nowait | -nostarttalk] [\-appname \fIwindow_name\fP]
+                [\-winfile \fIfilename\fP] [\-comout \fInamed_pipe\fP]
+                [\-geom \fIdbpick_geometry\fP] [\-pf \fIpfname\fP] \fIdbname\fP
+                [\fItrial_dbname\fP]
+.fi
+.SH DESCRIPTION
+\fBpsmartpick\fP is a modern replacement for smartpick(1). This program allows
+control of the dbpick(1) application through a Graphical User Interface (GUI)
+window. When all features are exercised, \fBpsmartpick\fP can be seen as a framework
+for users to build their own customized dbpick(1) command GUI.
+
+The \fBpsmartpick\fP program has a number of the most common dbpick
+options directly on its command line. It is intended to launch dbpick
+immediately upon its own startup, or after the fact via a GUI button.
+(Additional, less-common options for dbpick(1) may be specified in the
+\fIdbpick_options\fP parameter of the \fBpsmartpick\fP parameter file).
+
+Many things are configurable with \fBpsmartpick\fP that were not with the
+earlier smartpick(1) program. All of the relevant window sizes
+and locations can be configured via the parameter file.  You can make the
+dbpick waveforms window exactly as big as you want and control where it
+goes at startup with the \fIdbpick_geometry\fP parameter.  You can make the
+dbpick commands window exactly as big as you want, control whether it starts
+up iconified, and control where it goes at startup with the two parameters
+\fIdbpick_command_geometry\fP and \fIdbpick_command_iconified\fP.
+You can control where the \fBpsmartpick\fP GUI itself goes at startup
+with the \fIpsmartpick_geometry\fP parameter.
+
+You can control what buttons are included on your instance of \fBpsmartpick\fP,
+and you can control their layout, all through the parameter file. This is
+accomplished via the Antelope ptkform(3p) utility. In addition to
+adding and arranging the buttons of interest, pktform(3p) \fIframe\fP widgets
+can be used to organize them as desired. Of course,
+you have to learn a couple things about the grid-layout mechanism that
+Tk::grid(3) and ptkform(3p) use. However, in the end the modifications to
+the parameter file are fairly simple and involve merely putting the
+buttons, entryboxes and other widgets you want to include into rows and
+columns as you wish. (Hint: In the \fIlayout\fP table of the parameter
+file, look for the row,column numbers for the widgets you're interested
+in moving, and experiment with changing their locations, or with erasing the
+rows for the buttons you don't want or need.)
+
+All buttons have balloon help, though these balloons can be turned off by setting
+the \fIballoon_help\fP parameter to a false value, or by toggling the \fIBalloon Help\fP
+setting in the \fIOptions\fP menu of the menubar.
+
+A control-C in the \fBpsmartpick\fP window kills the application
+(as does File->Quit).
+
+.SS widget bindings
+The following section describes the details of the \fBpsmartpick\fP graphical
+layout tools. If you are content with the layout and performance of the
+\fBpsmartpick\fP GUI as-is, you can ignore this section.
+
+Widgets with the following names specified in the \fIlayout\fP table of the
+parameter file invoke subroutines that perform the specified
+tasks. Note that these must be the exact names of the widgets as given
+to the ptkform(3p) utility (i.e. the second item on each row in the
+\fIlayout\fP table). The actual displayed text of the buttons (fifth item
+on each line of the \fIlayout\fP table) may be changed as desired.
+.SS widget bindings -- buttons
+.IP start_dbpick
+A button of this name in the ptkform(3p) specification invokes a subroutine
+that launches the dbpick(1) program on the current database.
+.IP kill_dbpick
+A button of this name in the ptkform(3p) specification invokes a subroutine
+that kills the currently running dbpick(1) program.
+.IP fw
+This button time-scrolls the display in dbpick(1) to the first existing
+waveform. This is equivalent to the \fIfw\fP command in the dbpick(1)
+command window.
+.IP nw
+This button time-scrolls the display in dbpick(1) to the next existing
+waveform. This is equivalent to the \fInw\fP command in the dbpick(1)
+command window.
+.IP pw
+This button time-scrolls the display in dbpick(1) to the previous existing
+waveform. This is equivalent to the \fIpw\fP command in the dbpick(1)
+command window.
+.IP fa
+This button time-scrolls the display in dbpick(1) to the first phase
+arrival with an existing waveform. This is equivalent to the \fIfa\fP
+command in the dbpick(1) command window.
+.IP na
+This button time-scrolls the display in dbpick(1) to the next phase
+arrival with an existing waveform. This is equivalent to the \fIna\fP
+command in the dbpick(1) command window.
+.IP pa
+This button time-scrolls the display in dbpick(1) to the previous phase
+arrival with an existing waveform. This is equivalent to the \fIpa\fP
+command in the dbpick(1) command window.
+.IP fe
+This button time-scrolls the display in dbpick(1) to the first event
+in the origin table. This is equivalent to the \fIfe\fP
+command in the dbpick(1) command window.
+.IP ne
+This button time-scrolls the display in dbpick(1) to the next event
+in the origin table. This is equivalent to the \fIne\fP
+command in the dbpick(1) command window.
+.IP pe
+This button time-scrolls the display in dbpick(1) to the previous event
+in the origin table. This is equivalent to the \fIpe\fP
+command in the dbpick(1) command window.
+.IP le
+This button time-scrolls the display in dbpick(1) to the last event
+in the origin table. This is equivalent to the \fIle\fP
+command in the dbpick(1) command window.
+.IP dw
+This button deletes channels with no waveforms in the display.
+This is equivalent to the \fIdw\fP command in the dbpick(1) command window.
+.IP swd
+This button shows only waveforms with detections.
+This is equivalent to the \fIswd\fP command in the dbpick(1) command window.
+.IP swa
+This button shows only waveforms with arrivals.
+This is equivalent to the \fIswa\fP command in the dbpick(1) command window.
+.IP swda
+This button shows only waveforms with detections or arrivals.
+This is equivalent to the \fIswda\fP command in the dbpick(1) command window.
+.IP exec_spgram
+This button launches the dbspgram(1) program on the single station-channel
+segment of waveform data displayed in dbpick(1).
+.IP "group_.*"
+A variety of different buttons can be constructed based on the station-group names
+listed in the \fIgroups\fP table of the parameter file. Each button name should begin with
+the string \fIgroup_\fP. The button name should end with a group-name that is identical
+(including identical capitalization) to a key value from the \fIgroups\fP table of the
+parameter file. Buttons with names matching this pattern invoke functions which show
+the requested group in the dbpick(1) window when pressed. The channels chosen when invoking
+one of the groups buttons depend on the current setting of the \fIchannels\fP
+option-menu. See also the \fIgroups_.*\fP widgets below.
+.IP tfit
+This button toggles the time-fit mode, which automatically adjusts
+the window so that it exactly fits the waveform segments currently displayed.
+This is equivalent to the \fItfit\fP command in the dbpick(1) command window.
+.IP sfit
+This button fits the trace display in the vertical direction.
+This is equivalent to the \fIsfit\fP command in the dbpick(1) command window.
+.IP rec
+This button arranges stations by increasing distance from the currently selected
+origin. This is equivalent to the \fIrec\fP command in the dbpick(1) command window.
+.IP tse
+Time scroll to the current event origin time.
+This is equivalent to the \fItse\fP command in the dbpick(1) command window.
+.IP Fe
+Find an event with associations to the current arrivals.
+This is equivalent to the \fIFe\fP command in the dbpick(1) command window.
+.IP ae
+Find an event that associates with the current arrivals.
+This is equivalent to the \fIae\fP command in the dbpick(1) command window.
+.IP sw_on
+This button turns on waveform plotting in dbpick(1). This is equivalent to the
+\fIsw on\fP command in the dbpick(1) command window.
+.IP sw_off
+This button turns off waveform plotting in dbpick(1) (i.e. forces dbpick(1)
+to plot waveforms as gray bars, for quick navigation and review of data
+coverage). This is equivalent to the \fIsw off\fP command in the dbpick(1)
+command window.
+.IP sa_on
+This button shows arrival pick flags in dbpick(1). This is equivalent to the
+\fIsa on\fP command in the dbpick(1) command window.
+.IP sa_off
+This button hides arrival pick flags in dbpick(1). This is equivalent to the
+\fIsa off\fP command in the dbpick(1) command window.
+.IP soa_on
+This button shows overlay arrival pick flags in dbpick(1). This is equivalent to the
+\fIsoa on\fP command in the dbpick(1) command window.
+.IP soa_off
+This button hides overlay arrival pick flags in dbpick(1). This is equivalent to the
+\fIsoa off\fP command in the dbpick(1) command window.
+.IP sf_on
+This button shows first motion glyphs in dbpick(1). This is equivalent to the
+\fIsf on\fP command in the dbpick(1) command window.
+.IP sf_off
+This button hides first motion glyphs in dbpick(1). This is equivalent to the
+\fIsf off\fP command in the dbpick(1) command window.
+.IP sd_on
+This button shows detection glyphs in dbpick(1). This is equivalent to the
+\fIsd on\fP command in the dbpick(1) command window.
+.IP sd_off
+This button hides detection glyphs in dbpick(1). This is equivalent to the
+\fIsd off\fP command in the dbpick(1) command window.
+.SS widget bindings -- option menus
+.IP channels
+This is a ptkform(3p) optionmenu which creates a menu of channel subsets, as specified
+in the \fIchannels\fP array of the parameter file. If the special value of
+\fI<auto>\fP is given in the list of menu options to display, the menu is filled
+in using the keys in the \fIchannels\fP table of the parameter file.
+.IP "groups_.*"
+A variety of different optionmenus can be constructed based on the station-group names
+listed in the \fIgroups\fP table of the parameter file. Each optionmenu name should begin with
+the string \fIgroups_\fP. The optionmenu name should end with a unique string (e.g. you can
+only have one optionmenu called \fIgroups_Alphabetical\fP). The list of entries given to
+each of these optionmenus should contain key values from the parameter-file \fIgroups\fP
+table. Alternatively, if the special value of \fI<nettype XX>\fP is given (where the \fIXX\fP
+should be replaced with one of the network.nettype values present in the stations database), the
+optionmenu is filled with all networks matching that network.nettype.
+These optionmenus invoke functions which show
+the requested group in the dbpick(1) window when pressed. The channels chosen when invoking
+one of the groups buttons depend on the current setting of the \fIchannels\fP
+option-menu. See also the \fIgroup_.*\fP widgets above. The difference between the \fIgroup_.*\fP
+widgets and the \fIgroups_.*\fP widgets is that the former make a button that always shows the
+one configured station group, whereas the latter make an optionmenu that gives you a choice amongst
+several station groups.
+.IP show_predicted
+This is a ptkform(3p) optionmenu which creates a menu of choices for
+showing predicted arrivals. The option chosen is given to the dbpick(1)
+\fIsp\fP command. Common choices are \fIoff\fP, \fIbasic\fP, and \fIS,P\fP.
+Each phase list should be comma-separated and without any entrained spaces.
+.IP default_phase
+This is a ptkform(3p) optionmenu which allows the default phase to be set
+for picking arrivals. The option chosen is given to the dbpick(1) \fIph\fP
+command.
+.IP cts
+This is a ptkform(3p) optionmenu which executes the dbpick(1) command \fIcts on\fP or
+\fIcts off\fP to label waveforms amplitudes in counts or physical units. The option-menu
+items which must appear in the \fBpsmartpick\fP parameter-file are \fIPhysical\fP
+and \fICounts\fP.
+.IP mg
+This is a ptkform(3p) optionmenu which executes the dbpick(1) command \fImg on\fP or
+\fImg off\fP to label accelerations in milli-Gs or nm/s/s. The option-menu
+items which must appear in the \fBpsmartpick\fP parameter-file are \fImilli_g\fP
+and \fInm_per_sec_2\fP.
+.IP gp
+This is a ptkform(3p) optionmenu which executes the dbpick(1) command \fIgp\fP
+to set the gap handling.
+.SS widget bindings -- entry boxes
+.IP dbname
+An entry box of this name allows the name of the database to be changed,
+for starting and stopping dbpick(1) on various databases.
+.IP appname
+An entry box of this name allows the user to change the TCL/Tk window name which \fBpsmartpick\fP expects dbpick to
+have. Sometimes, for example through stopping and starting \fBpsmartpick\fP, this can get out of
+sync. The unregister(1) or xwininfo(1) command can be used to get the TCL/Tk window name of the
+dbpick application. On rare occasions it might also be useful to use \fBpsmartpick\fP to manage
+multiple instances of dbpick.
+.IP orid
+An entry box of this name allows the user to specify the current origin ID to the
+running dbpick(1) application. This command invokes the dbpick(1) \fIse\fP command. A carriage-return
+press in the entry-box window sends the orid to the dbpick(1) application.
+.IP ts
+An entry box of this name allows the user to specify the start time of the waveforms to
+be displayed in dbpick(1). Any string interpretable by str2epoch(3) may be used. A carriage-return
+press in the entry-box window sends the start time to the dbpick(1) application.
+.IP tw
+An entry box of this name allows the user to specify the length in seconds of the time window of waveforms to
+be displayed in dbpick(1). A carriage-return
+press in the entry-box window sends the time interval to the dbpick(1) application.
+
+.SH OPTIONS
+The \fBpsmartpick\fP program takes the following command-line options:
+
+.IP "-pf pfname"
+This option allows you to specify a parameter file other than the
+default \fBpsmartpick\fP.pf.
+.IP -nowait
+This option brings up dbpick automatically upon startup of the \fBpsmartpick\fP
+GUI.
+.IP -nostarttalk
+This is a synomym for -nowait, implemented for ease of use with dbloc2.
+Note that this -nostarttalk option is slightly different from that in
+dbpick: the latter controls whether dbpick brings up its waveforms immediately
+or not. The -nostarttalk option for \fBpsmartpick\fP determines whether \fBpsmartpick\fP
+immediately starts dbpick or not. When \fBpsmartpick\fP launches dbpick, dbpick
+is always given the -nostarttalk option.
+.IP "-appname window_name"
+This argument is passed to dbpick as the -appname option.
+.IP "-winfile winfile"
+This argument is passed to dbpick as the -winfile option. If this option is
+not specified, the default name "psmartpick_dbpick" is used, or a unique
+name is generated if that file already exists.
+.IP "-comout named_pipe"
+This argument is passed to dbpick as the -comout option.
+.IP "-geom dbpick_geometry"
+This argument is passed to dbpick as the -geom option. This overrides the
+parameter-file \fIdbpick_geometry\fP parameter.
+.SH PARAMETER FILE
+.SS Explanation of parameters
+.IP layout
+The layout table specifies the presentation of the graphical user interface
+for \fBpsmartpick\fP.  All buttons etc. may be moved, restructured, or ommitted as
+desired, though they should not be renamed or the bindings to specific actions
+won't work (in other words, don't change the second word in the parameter-file line for each
+widget). Each line of the layout table should be a widget specification in the format of
+the ptkform(3p) utility. See the man page for ptkform(3p) for more details.
+
+In addition to
+the ptkform(3p) widgets and frames, \fBpsmartpick\fP also supports the \fInotebook\fP and
+\fIendnotebook\fP keywords in the layout table. This allows widgets (buttons, optionmenus etc.)
+to be put into a tabbed-notebook style layout.
+If these keywords appear, they should be in a matched
+pair, i.e. there should be a \fInotebook\fP entry as the first element of the layout table
+and an \fIendnotebook\fP entry as the last element of the layout table:
+.in 2c
+.ft CW
+.nf
+
+.ne 7
+
+layout &Tbl{
+notebook
+  ...
+endnotebook
+}
+
+.fi
+.ft R
+.in
+Between these \fInotebook\fP lines, one or more pages may be specified with
+.in 2c
+.ft CW
+.nf
+.ne 5
+
+notebook_page pagename
+# ...(fill in standard ptkform(3p) widgets:
+endnotebook_page
+
+.fi
+.ft R
+.in
+Within these lines, one can specify standard ptkform(3p) widgets that should appear on the particular
+tabbed page. The \fIpagename\fP word is used as the label for the page tab.
+
+.IP groups
+The groups array specifies clusters of station-channels to be displayed in dbpick. Each key in this
+array gives the name of the group (used elsewhere to invoke the group); each value gives
+the list of stations to display (in the style of a dbpick regular expression for the dbpick
+\fIsc\fP command) or a function that can generate the station/channel list. There is currently one valid
+function defined, \fInet\fP(somenet), which takes the name of a network defined in the affiliation table of the
+database. When invoked, this group of stations is extracted from the database and displayed.
+.IP channels
+The channels array specifies regular expressions for channels to be displayed in dbpick. Each key in this
+array gives the name of the channels selection, e.g. \fIVerticals\fP or \fIAll\fP. Each value gives
+the dbpick(1) regular expression to display those channels (in the style of the dbpick
+\fIsc\fP command). If the special key of \fIdbloc2\fP appears in this array (there should be no value
+specified), \fBpsmartpick\fP attempts to coordinate with a running instance of dbloc_buttons(1) (i.e.
+dbloc2(1) and set the channels as specified in dbloc2(1).
+.IP dbpick_command_iconified
+This boolean value indicates whether the dbpick command window should
+start iconified or not.
+.IP dbpick_command_geometry
+This parameter specifies the x-window geometry of the dbpick command window.
+If this is left blank, the geometry is left entirely up to the window
+manager.
+.IP dbpick_geometry
+This parameter specifies the x-window geometry of the dbpick waveforms window.
+If this is left blank, the geometry is left entirely up to the window manager.
+This parameter-file value is overridden by the command-line \fI-geom\fP argument
+if the latter is specified.
+.IP dbpick_options
+If this is not blank, the contents are passed as additional options to
+dbpick (note that options shared by dbpick and by \fBpsmartpick\fP, e.g. appname,
+comout etc., should be passed directly to \fBpsmartpick\fP).
+.IP psmartpick_geometry
+This parameter controls the geometry of the \fBpsmartpick\fP GUI window itself.
+If left blank, the geometry is left entirely to the window manager.
+.IP xterm_path
+This parameter specifies the path to the xterm(1) application. This must be an
+absolute path.
+.IP xwininfo_path
+This parameter specifies the path to the xwininfo(1) application. This must be an
+absolute path.
+.IP shell
+This is the absolute path to the shell under which perl system commands are run. Valid
+options are absolute paths to tcsh, csh, bash, ksh, or sh. This is necessary for perl
+taint checking and may be left as the default parameter-file &env() specification in most cases.
+.IP unmap_menubar
+This boolean value determines whether the menubar is omitted. The default is to
+map the menubar (i.e. \fIunmap_menubar\fP set to 0). For some applications and
+geometry layouts, it may be more convenient not to have the menubar displayed,
+for example if \fBpsmartpick\fP is controlled entirely from within dbloc2. The disadvantage
+is that the File->Quit function won't be available if the menubar is not
+displayed (however the \fBpsmartpick\fP application can still be killed with a Cntl-C
+in the \fBpsmartpick\fP GUI window).
+.IP balloon_help
+This boolean value determines whether balloon help is activated or not.
+.SS Example parameter file
+.in 2c
+.ft CW
+.nf
+
+.ne 12
+
+psmartpick_geometry
+dbpick_command_iconified        0
+dbpick_command_geometry         80x12
+\fIdbpick_geometry\fP                 800x500+50+50
+dbpick_options
+xterm_path                      &exec(which xterm)
+xwininfo_path                   &exec(which xwininfo)
+shell                           /bin/sh
+unmap_menubar                   0
+balloon_help                    1
+
+.ne 66
+layout &Tbl{
+#Widget parameters for psmartpick GUI:
+#type   name          width     row,col  title       balloon-message
+#--------------------------------------------------------------------
+notebook
+notebook_page Waveforms
+   button     sw_on             -       0,0     Show waveforms  {Turn on waveform plotting (sw on)}
+   button     sw_off            -       0,1     Hide waveforms  {Turn off waveform plotting (sw off)}
+   button     group_All         -       0,2     All             {Select this subset of traces (sc)}
+   button     tfit              -       0,3     Toggle Time-fit {Toggle the time-window fit mode (tfit)}
+   button     fw                -       1,0     First Waveform  {Time scroll to the first existing waveform (fw)}
+   button     nw                -       1,1     Next Waveform   {Time scroll to the next existing waveform (nw)}
+   button     pw                -       1,2     Previous Waveform  {Time scroll to the previous existing waveform (pw)}
+   button     dw                -       1,3     Delete Empty    {Delete channels with no waveforms in the display (dw)}
+   optionmenu groups_Alpha      -       2,0     Alphabetical A-C D-L K-Z {Set the station group for dbpick display (sc)}
+   optionmenu groups_Namespace  -       2,1     Namespace_Networks <nettype ww> <nettype lo> {Set the station group for dbpick display (sc)}
+   optionmenu groups_Circuits   -       2,2     Circuits <nettype cr> {Set the station group for dbpick display (sc)}
+   optionmenu groups_Process    -       2,3     Processing_groups <nettype pr> {Set the station group for dbpick display (sc)}
+   button     sfit              -       3,0     Vertical Fit    {Fit the trace-display in the vertical direction (sfit)}
+   button     swa               -       3,1     Show Arrival Wfs {Show only waveforms with arrivals (swa)}
+   button     swd               -       3,2     Show Detection Wfs {Show only waveforms with detections (swd)}
+   button     swda              -       3,3     Show D & A Wfs  {Show only waveforms with detections or arrivals (swda)}
+   optionmenu channels          -       4,0     Channels <auto> {Set the channels for dbpick display (sc)}
+   optionmenu cts               -       4,1     Units Physical Counts {Set the amplitude units to be in counts or physical units (cts)}
+   optionmenu mg                -       4,2     Acceleration nm_per_sec_2 milli_g {Set the units for acceleration to be in mill-g or nm-per-sec2 (mg)}
+   optionmenu gp                -       4,3     Gaps segment zero interp none {Set the gap display method (gp)}
+endnotebook_page
+notebook_page Arrivals
+   optionmenu show_predicted    -       0,0     show_predicted_arrivals off S,P basic {Show predicted arrivals (sp)}
+   optionmenu default_phase     -       0,1     default_phase P S {Set default phase for arrival picking (ph)}
+   button     fa                -       1,0     First Arrival   {Time scroll to the first arrival with an existing waveform (fa)}
+   button     na                -       1,1     Next Arrival    {Time scroll to the next arrival with an existing waveform (na)}
+   button     pa                -       1,2     Previous Arrival  {Time scroll to the previous arrival with an existing waveform (pa)}
+   button     sa_on             -       2,0     Show Arrivals   {Show the arrival pick flags (sa on)}
+   button     sa_off            -       2,1     Hide Arrivals    {Hide the arrival pick flags (sa off)}
+   button     sd_on             -       2,2     Show Detections   {Show the detection glyphs (sd on)}
+   button     sd_off            -       2,3     Hide Detections  {Hide the detection glyphs (sd off)}
+   button     soa_on            -       3,0     Show Overlay Arrivals {Show the overlay arrival pick flags (soa on)}
+   button     soa_off           -       3,1     Hide Overlay Arrivals {Hide the overlay arrival pick flags (soa off)}
+   button     sf_on             -       3,2     Show First Motions {Show the first motion glyphs (sf on)}
+   button     sf_off            -       3,3     Hide First Motions {Hide the first motion glyphs (sf off)}
+endnotebook_page
+notebook_page Events
+   button     fe                -       0,0     First Event     {Time scroll to the first event in the origin table (fe)}
+   button     ne                -       0,1     Next Event      {Time scroll to the next event in the origin table (ne)}
+   button     pe                -       0,2     Previous Event  {Time scroll to the previous event in the origin table (pe)}
+   button     le                -       0,3     Last Event      {Time scroll to the last event in the origin table (le)}
+   button     tse               -       1,0     Time Scroll to Event     {Time scroll the display to the current event origin time (tse)}
+   button     Fe                -       1,1     Find event with assoc     {Find event with associations to displayed arrivals (Fe)}
+   button     ae                -       1,2     Find event that assocs     {Find event that associates to displayed arrivals (ae)}
+   button     rec               -       1,3     Record          {Arrange stations as a record-section from current origin (rec)}
+   entry      orid              10      2,0     Orid            {Set the dbpick origin-id (se)}
+endnotebook_page
+notebook_page Special
+   entry   ts                   -       0,0     Start Time      {Start time for waveform display (ts)}
+   entry   tw                   -       0,1     Time Window     {Time window in seconds for waveform display (tw)}
+   button  exec_spgram          -       1,0     Spectrogram     {Execute dbspgram(1) on a single channel of displayed waveform data (exec dbspgram)}
+endnotebook_page
+notebook_page Control
+   entry   \fIdbname\fP               60      0,0:2   Dbname          {primary database name}
+   entry   appname              60      1,0:2   Appname         {dbpick Tk window name}
+   button  start_dbpick         -       2,0     Start dbpick    {Launch the dbpick application on the current database}
+   button  kill_dbpick          -       2,1     Kill dbpick     {Kill the current dbpick application}
+endnotebook_page
+endnotebook
+}
+
+.ne 7
+groups &Arr{
+        All             *
+        A-C             [A-C].*
+        D-L             [D-L].*
+        K-Z             [K-Z].*
+#       KNET            net(KNET)
+}
+
+.ne 6
+channels &Arr{
+        All             .*
+        Verticals       .*Z
+        Horizontals     .*[NE]
+        dbloc2
+}
+
+.fi
+.ft R
+.in
+.SH EXAMPLE
+.SS On the Command-line
+The following command launches \fBpsmartpick\fP on the Antelope demo database, launching dbpick(1) immediately:
+.in 2c
+.ft CW
+.nf
+
+%\fB psmartpick -nowait /opt/antelope/data/db/demo/demo\fP
+
+.fi
+.ft R
+.in
+.SS Within dbloc2
+The following entry in the \fIProcesses\fP table of the dbloc2(1) parameter-file launches dbpick(1) for
+dbloc2(1) under the control of \fBpsmartpick\fP. Note that this is identical to the dbpick(1) launch-line
+in the default dbloc2.pf parameter file, with the name of the dbpick executable replaced by the name \fBpsmartpick\fP:
+.in 2c
+.ft CW
+.nf
+
+dbpick          warp xterm -geometry 80x24+0-0 -e psmartpick -nostarttalk -winfile $Define{Work_dir}/dbpick_window -geom 1000x700 -appname dbloc_dbpick -comout $Define{Work_dir}/dbpick_pipe $Input_database
+
+.fi
+.ft R
+.in
+.SS Different layouts
+Different \fBpsmartpick\fP layouts can be created by changing the parameter file. For example, by copying the default parameter-file
+and editing with the changes shown below, \fBpsmartpick\fP displays as a column of buttons on the right side of the
+screen, showing only the chosen buttons:
+.in 2c
+.ft CW
+.nf
+
+.ne 15
+
+psmartpick_geometry             -50+50
+
+layout &Tbl{
+button     sw_on                -       0,0     Show waveforms  {Turn on waveform plotting (sw on)}
+button     sw_off               -       1,0     Hide waveforms  {Turn off waveform plotting (sw off)}
+optionmenu channels             -       2,0     Channels <auto> {Set the channels for dbpick display (sc)}
+optionmenu groups_Alpha         -       3,0     Alphabetical A-C D-L K-Z {Set the station group for dbpick display (sc)}
+button     swa                  -       4,0     Show Arrival Wfs {Show only waveforms with arrivals (swa)}
+optionmenu cts                  -       5,0     Units Physical Counts {Set the amplitude units to be in counts or physical units (cts)}
+optionmenu show_predicted       -       6,0     show_predicted_arrivals off S,P basic {Show predicted arrivals (sp)}
+optionmenu default_phase        -       7,0     default_phase P S {Set default phase for arrival picking (ph)}
+button     tse                  -       8,0     Time Scroll to Event     {Time scroll the display to the current event origin time (tse)}
+}
+
+.fi
+.ft R
+.in
+The modified parameter-file can then be specified on the \fBpsmartpick\fP command-line:
+.in 2c
+.ft CW
+.nf
+
+%\fB psmartpick -pf psmartpick_columns -nowait /opt/antelope/data/db/demo/demo\fP
+
+.fi
+.ft R
+.in
+.SH LIBRARY
+52.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$

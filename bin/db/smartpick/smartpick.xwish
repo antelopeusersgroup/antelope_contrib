@@ -4,7 +4,7 @@
 # University of Alaska, Fairbanks
 # 10/95
 
-package require Tclx
+catch {package require Tclx}
 package require Dbe
 
 lappend auto_path $env(ANTELOPE)/data/tcl/library
@@ -1001,7 +1001,7 @@ proc Usage {} {
 	set cmd [exec basename $argv0]
 	set opts "\[\{-nowait|-nostarttalk\}\] \[-appname window_name\]"
 	append opts "$opts \[-winfile filename\] \[-comout named_pipe\]"
-	echo Usage: $cmd $opts dbname \[trial_dbname\]
+	puts stdout "Usage: $cmd $opts dbname \[trial_dbname\]"
 }
 
 if {$argc < 1} {

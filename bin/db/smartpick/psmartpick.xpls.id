@@ -1,0 +1,1069 @@
+
+#
+#   Copyright (c) 2006 Lindquist Consulting, Inc.
+#   All rights reserved. 
+#                                                                     
+#   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
+#
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+#   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+#   WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+#   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+#   OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+#   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+#   OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+#   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#   This software may be used freely in any way as long as 
+#   the copyright statement above is not removed. 
+#
+
+use Tk;
+use Tk::widgets qw(JPEG);
+use Tk::NoteBook;
+use Tk::LabEntry;
+use Tk::BrowseEntry;
+use Tk::Balloon;
+use Tk::Frame;
+use Tk::LabFrame;
+
+require Tk::ErrorDialog;
+
+use Datascope;
+use ptkform;
+use ptkalert;
+
+$ENV{'PATH'} = '/bin:/usr/bin:/opt/antelope/$Version/bin';
+
+$HOME = $ENV{'HOME'};
+
+delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+
+sub Usage {
+
+	my( $usage ) = "Usage: $Program " .
+		       "[{-nowait|-nostarttalk}] [-appname window_name] " .
+		       "[-winfile filename] [-comout named_pipe] " .
+		       "[-geom dbpick_geometry] [-pf pfname] dbname \[trial_dbname\]\n";
+
+	return( $usage );
+}
+
+sub ptkalert::position { 
+    my($MW, $top) = @_ ; 
+    my $x = $MW->rootx - int($top->width/2) ;
+    my $dy = 50 ; 
+    if ( $MW->height < 50 ) { 
+	$dy  = int($MW->height/2) ; 
+    }
+    my $y = $MW->rooty + $dy ; 
+    if( $x =~ /([[:digit:]+-]+)/ ) {
+	$x = $1 ;
+    }
+    if( $y =~ /([[:digit:]+-]+)/ ) {
+	$y = $1 ;
+    }
+    $top->geometry("+$x+$y") ;
+}
+
+sub MainWindow::Receive {
+	my( $objref, $string ) = @_;
+
+	$string =~ s/^\s*//;
+
+	my( @allowed ) = qw( quit_smartpick
+			     \$State{orid}\s+=\s+[[:digit:]-]+ 
+			     \$State{dbloc_channels}\s+=\s+[^/]+ 
+			     print.* );
+
+	my( $regex ) = join( "|", @allowed );
+
+	if( $string =~ /^($regex)$/ ) {
+		
+		$string = $1;
+
+	} else {
+
+		elog_complain( "ignoring unwelcome tksend instruction '$string'\n" );
+
+		return;
+	}
+
+	eval $string;
+
+	return;
+}
+ 
+sub parse_command_line {
+
+	$State{nowait} = 0;
+	$State{appname} = "dbpick";
+	$State{winfile} = unique_dbpick_winfile_name();
+
+	while( $item = shift( @_ ) ) {
+		
+		if( $item eq "-nowait" || $item eq "-nostarttalk" ) {
+			
+			$State{nowait} = 1;
+
+		} elsif( $item eq "-appname" ) {
+			
+			$State{appname} = shift( @_ );
+
+		} elsif( $item eq "-winfile" ) {
+			
+			$State{winfile} = shift( @_ );
+
+		} elsif( $item eq "-geom" ) {
+			
+			$State{geom} = shift( @_ );
+
+		} elsif( $item eq "-comout" ) {
+			
+			$State{comout} = shift( @_ );
+
+		} elsif( $item eq "-pf" ) {
+			
+			$State{pf} = shift( @_ );
+
+		} else {
+			
+			unshift( @_, $item );
+
+			last;
+		}
+	}
+
+	if( @_ < 1 ) {
+
+    		die ( Usage() ); 
+
+	} else {
+	
+		$State{dbname} = shift( @_ );
+	}
+
+	$State{trial_dbname} = shift( @_ );
+
+	# Trust the command line: 
+
+	foreach $arg qw( dbname trial_dbname nowait appname comout winfile geom pf ) {
+
+		if( $State{$arg} =~ m@(.*)@ ) {
+		
+			$State{$arg} = $1;
+		}
+	}	
+	
+	return;
+}
+
+sub quit_psmartpick {
+
+	kill_dbpick();
+
+	if( -e "$State{winfile}" ) {
+		
+		unlink( $State{winfile} );
+	}
+
+	$MW->destroy();
+}
+
+sub get_dbpick_win_id  {
+ 
+	if( ! -e "$State{winfile}" ) {
+
+		return -1;
+	}
+
+ 	my( $winid ) = `cat $State{winfile}`;
+
+	$winid = sprintf( "0x%x", $winid );
+
+	return $winid;
+}
+
+sub unique_dbpick_winfile_name {
+ 
+	my( $base ) = "$HOME/.psmartpick_dbpick";
+
+	if( $base =~ m@^(/.*)$@ ) {
+		
+		# Safe to store this anywhere
+
+		$base = $1;
+
+	} else {
+	
+		elog_die( "Unique dbpick winfile contains unexpected characters. Bye.\n" );
+
+	}
+
+ 	if( ! -e "$base" ) {
+
+ 		return "$base";
+
+ 	} else {
+
+ 		my( $i ) = 2;
+
+ 		while( -e "$base$i" ) {
+
+ 			$i++;
+ 		}
+
+ 		return "$base$i";
+ 	}
+}
+
+sub freeze_size {
+
+	my $geometry = $MW->geometry();
+
+	my( $width, $height );
+
+	if( $geometry =~ /^([[:digit:]]+)x([[:digit:]]+)/ ) {
+	
+		$width = $1;
+		$height = $2;
+	}
+
+	$MW->maxsize( $width, $height );
+
+	$MW->resizable( 0, 0 );
+}
+
+sub start_dbpick {
+ 
+ 	$State{DbpickCommandWindowName} = "psmartpick_dbpick_$$";
+ 
+ 	my( $iconic, $dbpick_command_geometry );
+
+	if( $State{dbpick_command_iconified}) {
+
+		$iconic = "-iconic";
+
+	} else {
+
+		$iconic = "";
+	} 
+
+	if( $State{dbpick_command_geometry} && 
+	    $State{dbpick_command_geometry} ne "" ) {
+
+		$dbpick_command_geometry = 
+			"-geometry $State{dbpick_command_geometry}";
+
+	} else {
+
+		$dbpick_command_geometry = "";
+	} 
+
+	if( $State{dbpick_geometry} && 
+	    $State{dbpick_geometry} ne "" ) {
+
+		$dbpick_geometry = 
+			"-geom $State{dbpick_geometry}";
+
+	} else {
+
+		$dbpick_geometry = "";
+	} 
+
+	if( $State{appname} && 
+	    $State{appname} ne "" ) {
+
+		$appname = "-appname $State{appname}";
+
+	} else {
+
+		$appname = "";
+	} 
+
+	if( $State{winfile} && 
+	    $State{winfile} ne "" ) {
+
+		$winfile = "-winfile $State{winfile}";
+
+	} else {
+
+		$winfile = "";
+	} 
+
+	if( $State{comout} && 
+	    $State{comout} ne "" ) {
+
+		$comout = "-comout $State{comout}";
+
+	} else {
+
+		$comout = "";
+	} 
+
+	my( $cmd ) = "$State{xterm_path} " .
+		     " -title $State{DbpickCommandWindowName} $iconic " .
+		     "$dbpick_command_geometry " .
+		     "-e dbpick -nostarttalk $winfile $dbpick_geometry " .
+		     "$appname $comout $State{dbpick_options} $State{dbname} &";
+
+	system( $cmd );
+
+ 	# Let the window get created!: 
+ 	sleep( 1 );
+
+	$res = 
+	 `$State{xwininfo_path} -int -name $State{DbpickCommandWindowName} | grep xwininfo`;
+
+ 	$State{DbpickCommandWindow} =  (split( /\s/, $res ))[3];
+
+	return;
+}
+
+sub send_to_dbpick {
+	my( $command, $silent ) = @_;
+
+	chomp( my( @tkapps ) = `unregister` );
+
+	map { $_ =~ s/^[[:alnum:]]+ // } @tkapps;
+
+	if( grep( /^$State{appname}$/, @tkapps ) ) {
+
+		$MW->send( "-async", $State{appname} => "$command" );
+
+	} elsif( ! $silent ) {
+		
+		ptkalert( $MW, "Couldn't find an application with the TCL/Tk name '$State{appname}'. Is dbpick running?" );
+	}
+}
+
+sub send_to_dbloc {
+	my( $command, $silent ) = @_;
+
+	chomp( my( @tkapps ) = `unregister` );
+
+	map { $_ =~ s/^[[:alnum:]]+ // } @tkapps;
+
+	if( grep( /^dbloc_buttons$/, @tkapps ) ) {
+
+		$MW->send( "-async", "dbloc_buttons" => "$command" );
+
+	} elsif( ! $silent ) {
+		
+		ptkalert( $MW, "Couldn't find an application with the TCL/Tk name 'dbloc_buttons'. Is dbloc2 running?" );
+	}
+}
+
+sub ask_dbloc2 { 
+	my( $q ) = @_;
+
+	if( $q eq "channels" ) {
+
+		send_to_dbloc( "send -async psmartpick \\\$State{dbloc_channels} = \\\"[channels]\\\"" );
+
+		$MW->waitVariable( \$State{dbloc_channels} );
+	}
+}
+ 
+sub ask_dbpick { 
+	my( $q ) = @_;
+
+	if( $q eq "orid" ) {
+
+		send_to_dbpick( "send psmartpick $State{orid} = %orid" );
+
+		$MW->waitVariable( \$State{orid} );
+	}
+}
+ 
+sub kill_dbpick {
+
+	send_to_dbpick( "quit", 1 );
+}
+
+sub exec_spgram {
+
+	send_to_dbpick( "exec dbspgram %db %sta %chan %ts %tw &" );
+}
+
+sub show_predicted {
+
+	send_to_dbpick( "sp $State{var}->{show_predicted}" );
+}
+
+sub default_phase {
+
+	send_to_dbpick( "ph $State{var}->{default_phase}" );
+}
+
+sub gp {
+
+	send_to_dbpick( "gp $State{var}->{gp}" );
+}
+
+sub get_channels_expr {
+
+	if( ! defined( $State{channels} ) ) {
+		
+		ptkalert( $MW, "No channels option-menu defined. Defaulting to .* for channels" );
+
+		return ".*";
+	}
+
+	if( $State{var}->{channels} eq "dbloc2" ) {
+		
+		ask_dbloc2( "channels" );
+
+		if( $State{dbloc_channels} =~ /sc.*:(\S+)\s*/ ) {
+	
+			return $1;
+
+		} else {
+
+			return ".*";
+		}
+	}
+
+	my( $expr ) = $State{channels}->{$State{var}->{channels}};
+
+	if( ! defined( $expr ) ) {
+		
+		ptkalert( $MW, "No channel-expression '$State{var}->{channels} found in " .
+			      " parameter file. Defaulting to .*" );
+
+		$expr = ".*";
+	}	
+
+	return $expr;
+}
+
+sub channels {
+
+	my( $expr ) = get_channels_expr();
+	
+	# SCAFFOLD  should really choose only the stations currently on display, by enquiring of dbpick
+
+	send_to_dbpick( "sc .*:$expr" );
+}
+
+sub groups { 
+	
+	show_group( $State{var}->{groups} );
+}
+
+sub cts {
+	
+	if( $State{var}->{cts} eq "Counts" ) {
+
+		send_to_dbpick( "cts on" );
+
+	} elsif( $State{var}->{cts} eq "Physical" ) {
+
+		send_to_dbpick( "cts off" );
+
+	} else {
+
+		ptkalert( $MW, "Unrecognized Units '$State{var}->{cts}' in parameter file " . 
+				"(must be 'Counts' or 'Physical'); Ignoring request" );
+	}
+}
+
+sub mg {
+	
+	if( $State{var}->{mg} eq "milli_g" ) {
+
+		send_to_dbpick( "mg on" );
+
+	} elsif( $State{var}->{mg} eq "nm_per_sec_2" ) {
+
+		send_to_dbpick( "mg off" );
+
+	} else {
+
+		ptkalert( $MW, "Unrecognized Acceleration units '$State{var}->{mg}' in parameter file " . 
+				"(must be 'milli_g' or 'nm_per_sec_2'); Ignoring request" );
+	}
+}
+
+sub init_database {
+
+	$State{network_stations} = { };
+	$State{nettype_networks} = { };
+
+	my( @db ) = dbopen( $State{dbname}, "r" );
+
+	@db = dblookup( @db, 0, "affiliation", 0, 0 );
+
+	@db = dbsort( @db, "net", "sta" );
+
+	@db = dbgroup( @db, "net" );
+
+	for( $db[3] = 0; $db[3] < dbquery( @db, dbRECORD_COUNT ); $db[3]++ ) {
+		
+		@dbg = dbprocess( @db, "dbungroup" );
+
+		$net = dbgetv( @dbg, "net" );
+
+		$State{network_stations}->{$net} = [];
+
+		for( $dbg[3] = 0; $dbg[3] < dbquery( @dbg, dbRECORD_COUNT ); $dbg[3]++ ) {
+	
+			$sta = dbgetv( @dbg, "sta" );
+
+			if( $sta =~ /^([[:alnum:]]+)$/ ) {
+	
+				$sta = $1;
+
+			} else {
+	
+				ptkalert( $MW, "Station name '$sta' contains unexpected characters; omitting.\n" );
+			}
+
+			push( @{$State{network_stations}->{$net}}, $sta );
+		}
+	}
+
+	@db = dblookup( @db, 0, "network", 0, 0 );
+
+	@db = dbsort( @db, "nettype", "net" );
+
+	@db = dbgroup( @db, "nettype" );
+
+	for( $db[3] = 0; $db[3] < dbquery( @db, dbRECORD_COUNT ); $db[3]++ ) {
+		
+		@dbg = dbprocess( @db, "dbungroup" );
+
+		$nettype = dbgetv( @dbg, "nettype" );
+
+		next if( $nettype eq "-" );
+
+		$State{nettype_networks}->{$nettype} = [];
+
+		for( $dbg[3] = 0; $dbg[3] < dbquery( @dbg, dbRECORD_COUNT ); $dbg[3]++ ) {
+	
+			$net = dbgetv( @dbg, "net" );
+
+			if( $net =~ /^([[:alnum:]]+)$/ ) {
+	
+				$net = $1;
+
+			} else {
+	
+				ptkalert( $MW, "Network name '$net' contains unexpected characters; omitting.\n" );
+			}
+
+			push( @{$State{nettype_networks}->{$nettype}}, $net );
+		}
+	}
+
+	return;
+}
+
+sub extract_net {
+	my( $net ) = @_;
+
+	my( @stas );
+
+	if( ( ! defined( $State{network_stations}->{$net} ) ) || 
+	    ( scalar( @{$State{network_stations}->{$net}} ) < 1 ) ) {
+
+		ptkalert( $MW, "No stations for network '$net' in affiliation table of $State{dbname}" );
+
+		@stas = ();
+		
+	} else {
+
+		@stas = @{$State{network_stations}->{$net}};
+	}
+
+	return @stas;
+}
+
+sub show_group {
+	my( $group ) = @_;
+
+	my( $regex );
+
+	if( ! defined( $State{groups}->{$group} ) ) {
+	
+		ptkalert( $MW, "Can't find group '$group' in parameter-file. Ignoring request.\n" );
+
+		return;
+
+	} elsif( $State{groups}->{$group} =~ /^net\((.*)\)/ ) {
+	
+		my( $net ) = $1;
+
+		my( @stas ) = extract_net( $net );
+
+		if( scalar( @stas ) <= 0 ) {
+
+			ptkalert( $MW, "No stations found for network '$net'. Ignoring request.\n" );
+
+			return; 
+		}
+
+		$regex = join( ",", @stas );
+
+	} else {
+
+		$regex = $State{groups}->{$group};
+	}
+
+	$regex .= ":" . get_channels_expr();
+
+	send_to_dbpick( "sc $regex" );
+}
+
+sub set_dbpick_orid {
+
+	if( $State{orid} =~ /^([[:digit:]-]+)$/ ) {
+		
+		$State{orid} = $1;
+
+	} else {
+
+		ptkalert( $MW, "Invalid orid '$State{orid}'" );
+	}
+	
+	send_to_dbpick( "se $State{orid}" );
+}
+
+sub set_dbpick_ts {
+	
+	my( $epoch_time );
+
+	if( $State{ts} =~ /^([^\(\)]+)$/ ) {
+		
+		$State{ts} = $1;
+
+	} else {
+	
+		ptkalert( $MW, "Time string '$State{ts} contains invalid characters" );
+
+		return;
+	}
+	
+	eval( $epoch_time = str2epoch( $State{ts} ) );
+
+	if( $epoch_time =~ /^([[:digit:].]+)$/ ) {
+	
+		$epoch_time = $1;
+	}
+
+	if( $@ ) {
+		
+		ptkalert( $MW, "Time string '$State{ts}' not understood" );
+
+		return;
+	}
+
+	send_to_dbpick( "ts $epoch_time" );
+}
+
+sub set_dbpick_tw {
+	
+	if( $State{tw} =~ /^([[:digit:].]+)$/ ) {
+		
+		$State{tw} = $1;
+
+	} else {
+	
+		ptkalert( $MW, "Time string interval State{tw} contains invalid characters" );
+
+		return;
+	}
+	
+	send_to_dbpick( "tw $State{tw}" );
+}
+
+sub init_menubar {
+	my( $w ) = @_;
+
+	my $w_menubar = $w->Frame()
+				->pack( -side => "top", 
+				-fill => "x", 
+				-expand => "yes" );
+
+	my $w_menubar_File = $w_menubar->Menubutton( 
+
+				-text => "File", 
+			        -underline => 0,
+			    	-highlightthickness => 0 
+
+			)->pack( -side => "left" );
+
+	my $w_menubar_File_m = $w_menubar_File->Menu( -tearoff => 0 );
+
+	$w_menubar_File_m->add( "command", -label => "Quit", 
+				    -underline => 0, 
+				    -command => \&quit_psmartpick );
+
+	$w_menubar_File->configure( -menu => $w_menubar_File_m );
+
+	my $w_menubar_Options = $w_menubar->Menubutton( 
+
+				-text => "Options", 
+			        -underline => 0,
+			    	-highlightthickness => 0 
+
+			)->pack( -side => "left" );
+
+	my $w_menubar_Options_m = $w_menubar_Options->Menu( -tearoff => 0 );
+
+	$w_menubar_Options_m->add( "checkbutton", -label => "Balloon Help", 
+				    -variable => \$State{balloon_help},
+				    -onvalue => -1,
+				    -underline => 0, 
+				    -command => \&toggle_balloons );
+
+	$w_menubar_Options->configure( -menu => $w_menubar_Options_m );
+
+	return;
+}
+
+sub init_windows {
+	my( @specs ) = @_;
+	
+	my( $notebook, $ptk_frame, @pagespecs, $pagename, %pagevar, %pagewidgets );
+
+	my( $w ) = MainWindow->new();
+
+	unless( $State{unmap_menubar} ) {
+
+		init_menubar( $w );
+	}
+
+	# These initializations are critical for ptkform() to initialize the hash
+	# references as intended: 
+
+	$State{var} = { };
+	$State{widgets} = { };
+
+	$State{balloons} = [ ];
+
+	ptksticky( "nsew" );
+
+	if( $specs[0] eq "notebook" ) {
+
+		shift( @specs );
+
+		$notebook = $w->NoteBook();
+
+		$notebook->pack( -side => "top", -fill => "both", -expand => "yes" );
+
+		while( $spec = shift( @specs ) ) {
+		
+			if( $spec eq "endnotebook" ) {
+				
+				last;
+
+			} elsif( $spec =~ /^notebook_page\s+([[:alnum:]_]+)/) {
+			
+				$pagename = $1;
+
+				@pagespecs = ();
+
+				$ptk_frame = $notebook->add( "$pagename", -label => "$pagename", -anchor => "ne" );
+
+			} elsif( $spec =~ /^endnotebook_page/ ) {
+
+				eval { ptkform( $ptk_frame, $State{var}, $State{widgets}, @pagespecs ) };
+
+				foreach $c ( $ptk_frame->children() ) {
+
+					if( $c->class() eq "Balloon" ) {
+
+						push( @{$State{balloons}}, $c );
+					}
+				} 
+
+				if( $@ ) {
+
+					elog_die( "Failed to build ptkform-based GUI notebook window: $@. Bye.\n" );
+				}
+
+			} else {
+				
+				push( @pagespecs, $spec );
+			}
+		}
+
+	} else {
+
+		my $ptk_frame = $w->Frame()
+			->pack( -side => "top", -fill => "x", -expand => "yes" );
+
+		eval { ptkform( $ptk_frame, $State{var}, $State{widgets}, @specs ) };
+
+		if( $@ ) {
+
+			elog_die( "Failed to build ptkform-based GUI window: $@. Bye.\n" );
+		}
+	}
+
+	toggle_balloons(); 
+
+	return ( $w );
+}
+
+sub toggle_balloons {
+
+	if( $State{balloon_help} ) {
+
+		foreach $c ( @{$State{balloons}} ) {
+
+			$c->configure( -state => "both" );
+		} 
+
+	} else {
+
+		foreach $c ( @{$State{balloons}} ) {
+
+			$c->configure( -state => "none" );
+		} 
+	}
+
+	return;
+}
+
+sub bind_widgets {
+ 
+ 	my( @nooption_widgets ) = qw( fw nw pw fa na pa fe ne pe le dw swd swa swda
+ 				      tfit sfit rec tse Fe ae  );
+ 
+ 	foreach $command ( @nooption_widgets ) {
+ 		
+ 		eval "sub $command { send_to_dbpick( \"$command\" ); }";	
+ 	}
+ 
+ 	my( @onoff_commands ) = qw( sw sa soa sf sd );
+ 
+ 	foreach $command ( @onoff_commands ) {
+ 		
+ 		eval "sub $command\_on { send_to_dbpick( \"$command on\" ); }";	
+ 		eval "sub $command\_off { send_to_dbpick( \"$command off\" ); }";	
+ 
+ 		push( @onoff_widgets, "$command\_on" );
+ 		push( @onoff_widgets, "$command\_off" );
+ 	}
+ 
+ 	my( @custom_widgets ) = qw( start_dbpick
+ 			            kill_dbpick
+				    channels
+ 			            exec_spgram
+ 			            show_predicted
+ 			            default_phase
+				    cts
+				    mg
+				    gp
+ 			            );
+ 
+ 	my( @bindings ) = ( @nooption_widgets,
+ 		            @onoff_widgets,
+ 		            @custom_widgets
+ 		            );
+ 
+ 	foreach $binding ( @bindings ) {
+ 
+ 		if( defined( $State{widgets}->{$binding} ) ) {
+ 
+ 			$State{widgets}->{$binding}->configure( -command => \&$binding );
+ 		}
+ 	}
+ 
+ 	foreach $widget ( keys %{$State{widgets}} ) {
+ 
+ 		if( $widget =~ /^(group)_(.*)$/ ) {
+ 
+ 			my( $group ) = $2;
+ 
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { show_group( \"$group\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( -command => \&$cmd );
+ 		}
+
+ 		if( $widget =~ /^(groups)_(.*)$/ ) {
+
+			eval "sub $widget { show_group( \"\$State{var}->{$widget}\" ); }";
+
+ 			$State{widgets}->{$widget}->configure( -command => \&$widget );
+		} 
+ 	}
+ 
+	my( @entry_vars ) = qw( tw ts orid dbname appname );
+
+	foreach $var ( @entry_vars ) {
+
+ 		if( defined( $State{widgets}->{$var} ) ) { 
+ 
+ 			$State{widgets}->{$var}->configure( -textvariable => \$State{$var} );
+ 		}
+	}
+ 
+	my( @command_vars ) = qw( tw ts orid );
+
+	foreach $var ( @command_vars ) {
+
+ 		if( defined( $State{widgets}->{$var} ) ) { 
+			
+			my( $cmd ) = "set_dbpick_$var"; 
+
+			$State{widgets}->{$var}->bind( "<Return>", \&$cmd );
+ 		}
+	}
+ 
+	return;
+}
+
+$Program = $0 ; 
+$Program =~ s".*/"" ;
+
+$State{pf} = $Program;
+
+if ( @ARGV < 1 ) { 
+
+    	die ( Usage() ); 
+
+} else {
+
+	parse_command_line( @ARGV );
+}
+
+init_database();
+
+@booleans = qw( dbpick_command_iconified
+		unmap_menubar 
+		balloon_help
+		);
+
+foreach $param ( @booleans ) {
+	
+	$State{$param} = pfget_boolean( $State{pf}, "$param" );
+
+	if( $State{$param} =~ /^([01-]+)$/ ) {
+
+		$State{$param} = $1;
+
+	} else {
+
+		elog_die( "Parameter-file value '$param' of " .
+			  "'$State{$param}' contains unexpected characters. Bye.\n" );
+	}
+}
+
+%params = qw( dbpick_command_geometry 	[[:alnum:]_\-+]*
+	      dbpick_geometry  		[[:alnum:]_\-+]*
+	      dbpick_options 		[[:alnum:]_\-+]*
+	      psmartpick_geometry 	[[:alnum:]_\-+]*
+	      xterm_path		/[[:alnum:]_/]+/xterm
+	      xwininfo_path 		/[[:alnum:]_/]+/xwininfo
+	      shell			/[[:alnum:]_/]+/(tc|c|ba|k)?sh
+	      );
+
+foreach $param ( keys %params ) {
+	
+	$State{$param} = pfget( $State{pf}, "$param" );
+
+	$State{$param} =~ s/^\s*//;
+	$State{$param} =~ s/\s*$//;
+
+	if( $State{$param} =~ /^($params{$param})$/ ) {
+
+		$State{$param} = $1;
+
+	} else {
+
+		elog_die( "Parameter-file value for '$param' " .
+			  "of '$State{$param}' contains unexpected characters. Bye.\n" );
+	}
+}
+
+$ENV{'SHELL'} = $State{shell};
+
+if( defined( $State{geom} ) ) {
+
+	# Force the command-line to override the parameter file: 
+
+	$State{dbpick_geometry} = $State{geom};
+}
+
+$State{groups} = pfget( $State{pf}, "groups" );
+
+foreach $group ( keys %{$State{groups}} ) {
+
+	if( $State{groups}->{$group} =~ /^([[:alnum:]:_\*\.\-\[\]\(\)]+)$/ ) {
+		
+		$State{groups}->{$group} = $1;
+
+	} else {
+	
+		elog_complain( "Parameter-file group '$group' (\"$State{groups}->{$group}\") " .
+			       "contains unexpected characters. Skipping.\n" );
+	}
+}
+
+$State{channels} = pfget( $State{pf}, "channels" );
+
+foreach $channel ( keys %{$State{channels}} ) {
+
+	if( $State{channels}->{$channel} =~ /^([[:alnum:]:_*.-\[\]\(\)]*)$/ ) {
+		
+		$State{channels}->{$channel} = $1;
+
+	} else {
+	
+		elog_complain( "Parameter-file channel '$channel' (\"$State{channels}->{$channel}\") " .
+			       "contains unexpected characters. Skipping.\n" );
+	}
+}
+
+my @specs = @{pfget($State{pf},"layout")}; 
+
+map { 
+	
+	if( $_ =~ m@^([^/]*)$@ ) {
+		
+		$_ = $1;
+
+	} else {
+		
+		elog_die( "Layout table entry '$_' contains unexpected characters. Bye.\n" );
+	}
+
+	if( $_ =~ m@^(\s*optionmenu\s+channels\s+.*)<auto>(.*)@ ) {
+
+		$_ = $1 . join( " ", sort( keys( %{$State{channels}} ) ) ) . $2;
+	}
+
+	while( $_ =~ m@^(\s*optionmenu\s+groups.*)<nettype\s+([a-z]+)>(.*)@ ) {
+
+		$_ = $1 . join( " ", @{$State{nettype_networks}->{$2}} ) . $3;
+	}
+
+    } @specs;
+
+Tk::CmdLine::SetArguments( "-title", "psmartpick" );
+
+( $MW ) = init_windows( @specs );
+
+bind_widgets();
+
+$MW->bind( "<Control-c>", \&quit_psmartpick );
+$MW->bind( "<Control-C>", \&quit_psmartpick );
+ 
+$MW->geometry( $State{psmartpick_geometry} );
+
+if( $State{nowait} ) {
+
+	start_dbpick();
+}
+
+$MW->update();
+
+$MW->afterIdle( \&freeze_size );
+
+MainLoop;
