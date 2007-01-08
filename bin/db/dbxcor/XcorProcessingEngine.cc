@@ -226,12 +226,18 @@ template <class T, SortOrder SO> struct less_metadata_double
 			keyword=SEISPP::stack_weight_keyword;
 			break;
 		}
-                double valx=x.get_double(keyword);
-                double valy=y.get_double(keyword);
-                if(valx<valy)
-                        return true;
-                else
-                        return false;
+		// This is experimental.  We need a clean way
+		// to handle get_double throwing an exception.
+		// This is an expensive solution and may make
+		// this too slow to be practical.
+		try {
+	                double valx=x.get_double(keyword);
+	                double valy=y.get_double(keyword);
+	                if(valx<valy)
+	                        return true;
+	                else
+	                        return false;
+		} catch (...) {return false;};
         }
 };
 
