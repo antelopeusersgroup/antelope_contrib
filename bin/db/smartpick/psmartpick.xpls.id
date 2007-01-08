@@ -33,8 +33,6 @@ use Datascope;
 use ptkform;
 use ptkalert;
 
-$ENV{'PATH'} = '/bin:/usr/bin:/opt/antelope/$Version/bin';
-
 $HOME = $ENV{'HOME'};
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
@@ -301,7 +299,7 @@ sub start_dbpick {
 		$comout = "";
 	} 
 
-	my( $cmd ) = "$State{xterm_path} " .
+	my( $cmd ) = "xterm " .
 		     " -title $State{DbpickCommandWindowName} $iconic " .
 		     "$dbpick_command_geometry " .
 		     "-e dbpick -nostarttalk $winfile $dbpick_geometry " .
@@ -313,7 +311,7 @@ sub start_dbpick {
  	sleep( 1 );
 
 	$res = 
-	 `$State{xwininfo_path} -int -name $State{DbpickCommandWindowName} | grep xwininfo`;
+	 `xwininfo -int -name $State{DbpickCommandWindowName} | grep xwininfo`;
 
  	$State{DbpickCommandWindow} =  (split( /\s/, $res ))[3];
 
@@ -677,6 +675,21 @@ sub set_dbpick_tw {
 	send_to_dbpick( "tw $State{tw}" );
 }
 
+sub check_for_executable {
+        my( $program ) = @_;
+
+        my( $ok ) = 0;
+
+        foreach $path ( split( ':', $ENV{'PATH'} ) ) {
+                if( -x "$path/$program" ) {
+                        $ok = 1;
+                        last;
+                }
+        }
+
+        return $ok;
+}
+
 sub init_menubar {
 	my( $w ) = @_;
 
@@ -959,8 +972,7 @@ foreach $param ( @booleans ) {
 	      dbpick_geometry  		[[:alnum:]_\-+]*
 	      dbpick_options 		[[:alnum:]_\-+]*
 	      psmartpick_geometry 	[[:alnum:]_\-+]*
-	      xterm_path		/[[:alnum:]_/]+/xterm
-	      xwininfo_path 		/[[:alnum:]_/]+/xwininfo
+	      path			/[[:alnum:]_/:.]+
 	      shell			/[[:alnum:]_/]+/(tc|c|ba|k)?sh
 	      );
 
@@ -983,6 +995,22 @@ foreach $param ( keys %params ) {
 }
 
 $ENV{'SHELL'} = $State{shell};
+$ENV{'PATH'} = $State{path};
+
+my( @required ) = qw( dbpick
+		      unregister
+		      xterm
+		      xwininfo );
+
+foreach $program ( @required ) {
+	
+	if( ! check_for_executable( $program ) ) {
+		
+		elog_die( "Couldn't find the '$program' executable on path. " . 
+			"Please check the 'path' parameter in $State{pf}.pf. " .
+			"Bye.\n" );
+	}
+}
 
 if( defined( $State{geom} ) ) {
 
@@ -1003,6 +1031,14 @@ foreach $group ( keys %{$State{groups}} ) {
 	
 		elog_complain( "Parameter-file group '$group' (\"$State{groups}->{$group}\") " .
 			       "contains unexpected characters. Skipping.\n" );
+	}
+}
+
+foreach $group ( keys %{$State{network_stations}} ) {
+
+	if( ! defined( $State{groups}->{$group} ) ) {
+
+		$State{groups}->{$group} = "net($group)";
 	}
 }
 

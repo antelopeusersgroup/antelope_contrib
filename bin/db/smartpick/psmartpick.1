@@ -360,12 +360,10 @@ comout etc., should be passed directly to \fBpsmartpick\fP).
 .IP psmartpick_geometry
 This parameter controls the geometry of the \fBpsmartpick\fP GUI window itself.
 If left blank, the geometry is left entirely to the window manager.
-.IP xterm_path
-This parameter specifies the path to the xterm(1) application. This must be an
-absolute path.
-.IP xwininfo_path
-This parameter specifies the path to the xwininfo(1) application. This must be an
-absolute path.
+.IP path
+This parameter specifies the path for executables such as dbpick(1), 
+unregister(1), xterm(1), and xwininfo(1). This should be a colon-separated
+list of pathnames as for a standard Unix path environment variable. 
 .IP shell
 This is the absolute path to the shell under which perl system commands are run. Valid
 options are absolute paths to tcsh, csh, bash, ksh, or sh. This is necessary for perl

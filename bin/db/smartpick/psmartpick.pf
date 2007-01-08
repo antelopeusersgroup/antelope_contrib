@@ -1,15 +1,13 @@
-#psmartpick_geometry		+680+600
 psmartpick_geometry		
 dbpick_command_iconified 	0
-#dbpick_command_geometry 	80x12+900+50
 dbpick_command_geometry 	80x12
 dbpick_geometry 		800x500+50+50
 dbpick_options
-xterm_path			&exec(which xterm)
-xwininfo_path			&exec(which xwininfo)
+path				/bin:/usr/bin:/usr/openwin/bin:/usr/X11R6/bin:&antelope/bin
 shell				/bin/sh
 unmap_menubar			0
 balloon_help			1
+antelope			&env(ANTELOPE)
 
 layout &Tbl{
 #Widget parameters for psmartpick GUI: 
