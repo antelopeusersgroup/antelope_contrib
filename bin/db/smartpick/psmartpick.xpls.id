@@ -4,6 +4,8 @@
 #                                                                     
 #   Written by Dr. Kent Lindquist, Lindquist Consulting, Inc. 
 #
+#                *** "new BSD" license ***
+#
 #   Redistribution and use in source and binary forms,
 #   with or without modification, are permitted provided
 #   that the following conditions are met:
@@ -62,7 +64,8 @@ sub Usage {
 	my( $usage ) = "Usage: $Program " .
 		       "[{-nowait|-nostarttalk}] [-appname window_name] " .
 		       "[-winfile filename] [-comout named_pipe] " .
-		       "[-geom dbpick_geometry] [-pf pfname] dbname \[trial_dbname\]\n";
+		       "[-geom dbpick_geometry] [-pf pfname] " .
+		       "dbname \[trial_dbname\]\n";
 
 	return( $usage );
 }
@@ -102,7 +105,8 @@ sub MainWindow::Receive {
 
 	} else {
 
-		elog_complain( "ignoring unwelcome tksend instruction '$string'\n" );
+		elog_complain( "ignoring unwelcome tksend instruction " .
+			       "'$string'\n" );
 
 		return;
 	}
@@ -165,7 +169,8 @@ sub parse_command_line {
 
 	# Trust the command line: 
 
-	foreach $arg qw( dbname trial_dbname nowait appname comout winfile geom pf ) {
+	foreach $arg qw( dbname trial_dbname nowait appname comout 	
+			 winfile geom pf ) {
 
 		if( $State{$arg} =~ m@(.*)@ ) {
 		
@@ -214,7 +219,8 @@ sub unique_dbpick_winfile_name {
 
 	} else {
 	
-		elog_die( "Unique dbpick winfile contains unexpected characters. Bye.\n" );
+		elog_die( "Unique dbpick winfile contains unexpected " .
+			  "characters. Bye.\n" );
 
 	}
 
@@ -323,7 +329,8 @@ sub start_dbpick {
 		     " -title $State{DbpickCommandWindowName} $iconic " .
 		     "$dbpick_command_geometry " .
 		     "-e dbpick -nostarttalk $winfile $dbpick_geometry " .
-		     "$appname $comout $State{dbpick_options} $State{dbname} &";
+		     "$appname $comout $State{dbpick_options} " .
+		     "$State{dbname} &";
 
 	system( $cmd );
 
@@ -351,7 +358,8 @@ sub send_to_dbpick {
 
 	} elsif( ! $silent ) {
 		
-		ptkalert( $MW, "Couldn't find an application with the TCL/Tk name '$State{appname}'. Is dbpick running?" );
+		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
+			"name '$State{appname}'. Is dbpick running?" );
 	}
 }
 
@@ -368,7 +376,8 @@ sub send_to_dbloc {
 
 	} elsif( ! $silent ) {
 		
-		ptkalert( $MW, "Couldn't find an application with the TCL/Tk name 'dbloc_buttons'. Is dbloc2 running?" );
+		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
+				"name 'dbloc_buttons'. Is dbloc2 running?" );
 	}
 }
 
@@ -423,7 +432,8 @@ sub get_channels_expr {
 
 	if( ! defined( $State{channels} ) ) {
 		
-		ptkalert( $MW, "No channels option-menu defined. Defaulting to .* for channels" );
+		ptkalert( $MW, "No channels option-menu defined. " .
+			"Defaulting to .* for channels" );
 
 		return ".*";
 	}
@@ -446,8 +456,9 @@ sub get_channels_expr {
 
 	if( ! defined( $expr ) ) {
 		
-		ptkalert( $MW, "No channel-expression '$State{var}->{channels} found in " .
-			      " parameter file. Defaulting to .*" );
+		ptkalert( $MW, "No channel-expression " .
+				"'$State{var}->{channels} found in " .
+			        " parameter file. Defaulting to .*" );
 
 		$expr = ".*";
 	}	
@@ -459,7 +470,8 @@ sub channels {
 
 	my( $expr ) = get_channels_expr();
 	
-	# SCAFFOLD  should really choose only the stations currently on display, by enquiring of dbpick
+	# SCAFFOLD  should really choose only the stations 
+	# currently on display, by enquiring of dbpick
 
 	send_to_dbpick( "sc .*:$expr" );
 }
@@ -481,8 +493,9 @@ sub cts {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Units '$State{var}->{cts}' in parameter file " . 
-				"(must be 'Counts' or 'Physical'); Ignoring request" );
+		ptkalert( $MW, "Unrecognized Units '$State{var}->{cts}' in" .
+			"parameter file (must be 'Counts' or 'Physical'); " .
+			"Ignoring request" );
 	}
 }
 
@@ -498,8 +511,10 @@ sub mg {
 
 	} else {
 
-		ptkalert( $MW, "Unrecognized Acceleration units '$State{var}->{mg}' in parameter file " . 
-				"(must be 'milli_g' or 'nm_per_sec_2'); Ignoring request" );
+		ptkalert( $MW, "Unrecognized Acceleration units " .
+			"'$State{var}->{mg}' in parameter file " . 
+			"(must be 'milli_g' or 'nm_per_sec_2'); " .
+			"Ignoring request" );
 	}
 }
 
@@ -512,65 +527,89 @@ sub init_database {
 
 	@db = dblookup( @db, 0, "affiliation", 0, 0 );
 
-	@db = dbsort( @db, "net", "sta" );
+	$nrecs = dbquery( @db, dbRECORD_COUNT );
 
-	@db = dbgroup( @db, "net" );
+	if( $nrecs > 0 ) {
 
-	for( $db[3] = 0; $db[3] < dbquery( @db, dbRECORD_COUNT ); $db[3]++ ) {
+		@db = dbsort( @db, "net", "sta" );
+
+		@db = dbgroup( @db, "net" );
+
+		$ngroups = dbquery( @db, dbRECORD_COUNT );
+
+		for( $db[3] = 0; $db[3] < $ngroups; $db[3]++ ) {
 		
-		@dbg = dbprocess( @db, "dbungroup" );
+			@dbg = dbprocess( @db, "dbungroup" );
 
-		$net = dbgetv( @dbg, "net" );
+			$net = dbgetv( @dbg, "net" );
 
-		$State{network_stations}->{$net} = [];
+			$State{network_stations}->{$net} = [];
 
-		for( $dbg[3] = 0; $dbg[3] < dbquery( @dbg, dbRECORD_COUNT ); $dbg[3]++ ) {
+			$nstas = dbquery( @dbg, dbRECORD_COUNT );
+
+			for( $dbg[3] = 0; $dbg[3] < $nstas; $dbg[3]++ ) {
 	
-			$sta = dbgetv( @dbg, "sta" );
+				$sta = dbgetv( @dbg, "sta" );
 
-			if( $sta =~ /^([[:alnum:]]+)$/ ) {
+				if( $sta =~ /^([[:alnum:]]+)$/ ) {
+		
+					$sta = $1;
 	
-				$sta = $1;
-
-			} else {
+				} else {
+		
+					ptkalert( $MW, "Station name '$sta' " .
+					"contains unexpected characters; " .
+					"omitting.\n" );
+				}
 	
-				ptkalert( $MW, "Station name '$sta' contains unexpected characters; omitting.\n" );
+				push( @{$State{network_stations}->{$net}}, 
+				      $sta );
 			}
-
-			push( @{$State{network_stations}->{$net}}, $sta );
 		}
 	}
 
 	@db = dblookup( @db, 0, "network", 0, 0 );
 
-	@db = dbsort( @db, "nettype", "net" );
+	$nrecs = dbquery( @db, dbRECORD_COUNT );
 
-	@db = dbgroup( @db, "nettype" );
+	if( $nrecs > 0 ) {
 
-	for( $db[3] = 0; $db[3] < dbquery( @db, dbRECORD_COUNT ); $db[3]++ ) {
+		@db = dbsort( @db, "nettype", "net" );
+
+		@db = dbgroup( @db, "nettype" );
+
+		$ngroups = dbquery( @db, dbRECORD_COUNT );
+
+		for( $db[3] = 0; $db[3] < $ngroups; $db[3]++ ) {
 		
-		@dbg = dbprocess( @db, "dbungroup" );
+			@dbg = dbprocess( @db, "dbungroup" );
 
-		$nettype = dbgetv( @dbg, "nettype" );
+			$nettype = dbgetv( @dbg, "nettype" );
 
-		next if( $nettype eq "-" );
+			next if( $nettype eq "-" );
 
-		$State{nettype_networks}->{$nettype} = [];
+			$State{nettype_networks}->{$nettype} = [];
 
-		for( $dbg[3] = 0; $dbg[3] < dbquery( @dbg, dbRECORD_COUNT ); $dbg[3]++ ) {
+			$nnets = dbquery( @dbg, dbRECORD_COUNT );
+
+			for( $dbg[3] = 0; $dbg[3] < $nnets; $dbg[3]++ ) {
 	
-			$net = dbgetv( @dbg, "net" );
+				$net = dbgetv( @dbg, "net" );
 
-			if( $net =~ /^([[:alnum:]]+)$/ ) {
+				if( $net =~ /^([[:alnum:]]+)$/ ) {
 	
-				$net = $1;
+					$net = $1;
 
-			} else {
+				} else {
 	
-				ptkalert( $MW, "Network name '$net' contains unexpected characters; omitting.\n" );
+					ptkalert( $MW, "Network name '$net' " .
+					"contains unexpected characters; " .
+					"omitting.\n" );
+				}
+
+				push( @{$State{nettype_networks}->{$nettype}}, 
+				      $net );
 			}
-
-			push( @{$State{nettype_networks}->{$nettype}}, $net );
 		}
 	}
 
@@ -585,7 +624,8 @@ sub extract_net {
 	if( ( ! defined( $State{network_stations}->{$net} ) ) || 
 	    ( scalar( @{$State{network_stations}->{$net}} ) < 1 ) ) {
 
-		ptkalert( $MW, "No stations for network '$net' in affiliation table of $State{dbname}" );
+		ptkalert( $MW, "No stations for network '$net' in " .
+			"affiliation table of $State{dbname}" );
 
 		@stas = ();
 		
@@ -604,7 +644,8 @@ sub show_group {
 
 	if( ! defined( $State{groups}->{$group} ) ) {
 	
-		ptkalert( $MW, "Can't find group '$group' in parameter-file. Ignoring request.\n" );
+		ptkalert( $MW, "Can't find group '$group' in parameter-file. " .
+			"Ignoring request.\n" );
 
 		return;
 
@@ -616,7 +657,8 @@ sub show_group {
 
 		if( scalar( @stas ) <= 0 ) {
 
-			ptkalert( $MW, "No stations found for network '$net'. Ignoring request.\n" );
+			ptkalert( $MW, "No stations found for network " .
+				"'$net'. Ignoring request.\n" );
 
 			return; 
 		}
@@ -657,7 +699,8 @@ sub set_dbpick_ts {
 
 	} else {
 	
-		ptkalert( $MW, "Time string '$State{ts} contains invalid characters" );
+		ptkalert( $MW, "Time string '$State{ts} contains invalid " .
+			"characters" );
 
 		return;
 	}
@@ -687,7 +730,8 @@ sub set_dbpick_tw {
 
 	} else {
 	
-		ptkalert( $MW, "Time string interval State{tw} contains invalid characters" );
+		ptkalert( $MW, "Time string interval State{tw} contains " .
+			"invalid characters" );
 
 		return;
 	}
@@ -758,7 +802,8 @@ sub init_menubar {
 sub init_windows {
 	my( @specs ) = @_;
 	
-	my( $notebook, $ptk_frame, @pagespecs, $pagename, %pagevar, %pagewidgets );
+	my( $notebook, $ptk_frame, @pagespecs, $pagename, 
+	    %pagevar, %pagewidgets );
 
 	my( $w ) = MainWindow->new();
 
@@ -767,8 +812,8 @@ sub init_windows {
 		init_menubar( $w );
 	}
 
-	# These initializations are critical for ptkform() to initialize the hash
-	# references as intended: 
+	# These initializations are critical for ptkform() to initialize
+	# the hash references as intended: 
 
 	$State{var} = { };
 	$State{widgets} = { };
@@ -783,7 +828,9 @@ sub init_windows {
 
 		$notebook = $w->NoteBook();
 
-		$notebook->pack( -side => "top", -fill => "both", -expand => "yes" );
+		$notebook->pack( -side => "top", 
+				 -fill => "both", 
+				 -expand => "yes" );
 
 		while( $spec = shift( @specs ) ) {
 		
@@ -797,11 +844,16 @@ sub init_windows {
 
 				@pagespecs = ();
 
-				$ptk_frame = $notebook->add( "$pagename", -label => "$pagename", -anchor => "ne" );
+				$ptk_frame = $notebook->add( "$pagename", 
+						-label => "$pagename", 
+						-anchor => "ne" );
 
 			} elsif( $spec =~ /^endnotebook_page/ ) {
 
-				eval { ptkform( $ptk_frame, $State{var}, $State{widgets}, @pagespecs ) };
+				eval { ptkform( $ptk_frame, 
+						$State{var}, 
+						$State{widgets}, 
+						@pagespecs ) };
 
 				foreach $c ( $ptk_frame->children() ) {
 
@@ -813,7 +865,9 @@ sub init_windows {
 
 				if( $@ ) {
 
-					elog_die( "Failed to build ptkform-based GUI notebook window: $@. Bye.\n" );
+					elog_die( "Failed to build ptkform-" .
+					  "based GUI notebook window: $@. " .
+					  "Bye.\n" );
 				}
 
 			} else {
@@ -825,13 +879,19 @@ sub init_windows {
 	} else {
 
 		my $ptk_frame = $w->Frame()
-			->pack( -side => "top", -fill => "x", -expand => "yes" );
+					->pack( -side => "top", 
+						-fill => "x", 
+						-expand => "yes" );
 
-		eval { ptkform( $ptk_frame, $State{var}, $State{widgets}, @specs ) };
+		eval { ptkform( $ptk_frame, 
+				$State{var}, 
+				$State{widgets}, 
+				@specs ) };
 
 		if( $@ ) {
 
-			elog_die( "Failed to build ptkform-based GUI window: $@. Bye.\n" );
+			elog_die( "Failed to build ptkform-based GUI " .
+				  "window: $@. Bye.\n" );
 		}
 	}
 
@@ -862,8 +922,9 @@ sub toggle_balloons {
 
 sub bind_widgets {
  
- 	my( @nooption_widgets ) = qw( fw nw pw fa na pa fe ne pe le dw swd swa swda
- 				      tfit sfit rec tse Fe ae  );
+ 	my( @nooption_widgets ) = qw( fw nw pw fa na pa fe ne pe le 
+				      dw swd swa swda tfit sfit rec 
+				      tse Fe ae  );
  
  	foreach $command ( @nooption_widgets ) {
  		
@@ -901,7 +962,8 @@ sub bind_widgets {
  
  		if( defined( $State{widgets}->{$binding} ) ) {
  
- 			$State{widgets}->{$binding}->configure( -command => \&$binding );
+ 			$State{widgets}->{$binding}->configure( 
+						-command => \&$binding );
  		}
  	}
  
@@ -916,14 +978,18 @@ sub bind_widgets {
 
  			eval "sub $cmd { show_group( \"$group\" ); }";	
  
- 			$State{widgets}->{$widget}->configure( -command => \&$cmd );
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
  		}
 
  		if( $widget =~ /^(groups)_(.*)$/ ) {
 
-			eval "sub $widget { show_group( \"\$State{var}->{$widget}\" ); }";
+			eval "sub $widget { 
+				show_group( \"\$State{var}->{$widget}\" ); 
+				}";
 
- 			$State{widgets}->{$widget}->configure( -command => \&$widget );
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$widget );
 		} 
  	}
  
@@ -933,7 +999,8 @@ sub bind_widgets {
 
  		if( defined( $State{widgets}->{$var} ) ) { 
  
- 			$State{widgets}->{$var}->configure( -textvariable => \$State{$var} );
+ 			$State{widgets}->{$var}->configure( 
+					-textvariable => \$State{$var} );
  		}
 	}
  
@@ -984,7 +1051,8 @@ foreach $param ( @booleans ) {
 	} else {
 
 		elog_die( "Parameter-file value '$param' of " .
-			  "'$State{$param}' contains unexpected characters. Bye.\n" );
+			  "'$State{$param}' contains unexpected " .
+			  "characters. Bye.\n" );
 	}
 }
 
@@ -1010,7 +1078,8 @@ foreach $param ( keys %params ) {
 	} else {
 
 		elog_die( "Parameter-file value for '$param' " .
-			  "of '$State{$param}' contains unexpected characters. Bye.\n" );
+			  "of '$State{$param}' contains unexpected " .
+			  "characters. Bye.\n" );
 	}
 }
 
@@ -1049,8 +1118,9 @@ foreach $group ( keys %{$State{groups}} ) {
 
 	} else {
 	
-		elog_complain( "Parameter-file group '$group' (\"$State{groups}->{$group}\") " .
-			       "contains unexpected characters. Skipping.\n" );
+		elog_complain( "Parameter-file group '$group' " .
+			"(\"$State{groups}->{$group}\") " .
+			"contains unexpected characters. Skipping.\n" );
 	}
 }
 
@@ -1072,7 +1142,8 @@ foreach $channel ( keys %{$State{channels}} ) {
 
 	} else {
 	
-		elog_complain( "Parameter-file channel '$channel' (\"$State{channels}->{$channel}\") " .
+		elog_complain( "Parameter-file channel '$channel' " .
+			       "(\"$State{channels}->{$channel}\") " .
 			       "contains unexpected characters. Skipping.\n" );
 	}
 }
@@ -1087,7 +1158,8 @@ map {
 
 	} else {
 		
-		elog_die( "Layout table entry '$_' contains unexpected characters. Bye.\n" );
+		elog_die( "Layout table entry '$_' contains unexpected " .
+			  "characters. Bye.\n" );
 	}
 
 	if( $_ =~ m@^(\s*optionmenu\s+channels\s+.*)<auto>(.*)@ ) {
