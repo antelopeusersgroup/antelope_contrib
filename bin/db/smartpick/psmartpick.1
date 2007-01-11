@@ -34,7 +34,7 @@ with the \fIpsmartpick_geometry\fP parameter.
 You can control what buttons are included on your instance of \fBpsmartpick\fP,
 and you can control their layout, all through the parameter file. This is
 accomplished via the Antelope ptkform(3p) utility. In addition to
-adding and arranging the buttons of interest, ptkform(3p) \fIframe\fP widgets
+adding and arranging the buttons of interest, pktform(3p) \fIframe\fP widgets
 can be used to organize them as desired. Of course,
 you have to learn a couple things about the grid-layout mechanism that
 Tk::grid(3) and ptkform(3p) use. However, in the end the modifications to
@@ -360,10 +360,12 @@ comout etc., should be passed directly to \fBpsmartpick\fP).
 .IP psmartpick_geometry
 This parameter controls the geometry of the \fBpsmartpick\fP GUI window itself.
 If left blank, the geometry is left entirely to the window manager.
-.IP path
-This parameter specifies the path for executables such as dbpick(1), 
-unregister(1), xterm(1), and xwininfo(1). This should be a colon-separated
-list of pathnames as for a standard Unix path environment variable. 
+.IP xterm_path
+This parameter specifies the path to the xterm(1) application. This must be an
+absolute path.
+.IP xwininfo_path
+This parameter specifies the path to the xwininfo(1) application. This must be an
+absolute path.
 .IP shell
 This is the absolute path to the shell under which perl system commands are run. Valid
 options are absolute paths to tcsh, csh, bash, ksh, or sh. This is necessary for perl
@@ -547,7 +549,72 @@ The modified parameter-file can then be specified on the \fBpsmartpick\fP comman
 .ft R
 .in
 .SH LIBRARY
-52.SH AUTHOR
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+dbpick(1), smartpick(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+\fBpsmartpick\fP is currently missing the following dbpick commands:
+np, pp, cw, cm, oa, oe, od, tc, filter, tmadd, tmdel, ps. The
+\fIsave\fP feature of smartpick has not yet been implemented. There is
+not yet any support to display an individual station (unless it is
+preconfigured as its own custom group via a \fIgroup_.*\fP button).
+
+It should be possible to add a mechanism to group stations by
+geographic coordinates. However, this has not yet been implemented.
+There may be some ondate issues in the choice of stations for a given
+network (offdate is currently ignored).
+
+In principle it would be possible to have several different layout
+templates sketched out in the parameter file for easy switching.
+
+All command-line options must be specified before the name(s) of the
+database(s) are given.
+
+The network and affiliation tables are read only at startup, thus
+stations or networks added after \fBpsmartpick\fP has been launched
+will not be detected.
+
+The optionmenu widgets in \fBpsmartpick\fP can get out of synch with
+the dbpick(1) display if changes are made to dbpick(1) directly through
+the command line interface or through dbloc2(1). This is essentially
+harmless and can by resynchronized simply by choosing another option in
+the relevant \fBpsmartpick\fP optionmenu.
+
+The qwm tools that allowed the waveforms to be summoned from smartpick
+in the old version appear not to be supported in Perl Tk. Thus the
+"Summon Waveforms" and "Summon Command Prompt" buttons are not present.
+It may be possible to rectify this if necessary.
+
+It is probably best to use the psmartpick_geometry parameter to set
+only the position of the \fBpsmartpick\fP GUI window, and let the size
+and aspect ratio be set by the window manager (according to the widget
+layout given in the parameter file).
+
+Note that the \fIdbloc2\fP entry in the \fIchannels\fP array of the
+parameter file will only work for dbloc2 channel selections that
+contain a simple dbpick regular expression.
+
+In order to allow tksend messages between psmartpick, dbpick, and
+dbloc2 via Perl::Tk, \fBpsmartpick\fP is written in taint-checked Perl.
+This means all inputs and values from the database are validated
+against internal regular expressions.  It is conceivable that some
+valid cases have been omitted from these expressions, in which case
+\fBpsmartpick\fP will complain and may require slight modification.
+
+It would be relatively easy to implement \fItearoff\fP pages in the
+layouts table for putting some things in a separate window (probably
+with an optional geometry argument). However, this has bot been done at
+this time.
+
+The \fBp\fP in \fBpsmartpick\fP is for \fBperl\fP. Ultimately
+\fBpsmartpick\fP should be named smartpick, and the old smartpick
+either renamed (\fIsmartpick_classic\fP?) or deleted.
+
+.SH AUTHOR
 .nf
 Kent Lindquist
 Lindquist Consulting, Inc.
