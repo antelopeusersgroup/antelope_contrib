@@ -308,6 +308,16 @@ template <class Tmember>
     for(i=0;i<no;++i) ++it;
     ensemble.member.erase(it);
 }
+/* Current implementations of PeakAmplitude */
+
+/*! Measures peak amplitude for a TimeSeries. */
+double PeakAmplitude(TimeSeries *p);
+/*! Measures peak amplitude (L2 norm of 3 components) for a ThreeComponent
+Seismogram. */
+double PeakAmplitude(ThreeComponentSeismogram *p);
+/*! Measures peak amplitude for a ComplexTimeSeries. */
+double PeakAmplitude(ComplexTimeSeries *p);
+
 /*! Generic algorithm to measure and set peak amplitude as a scaling attribute.
 
 Scaling by peak amplitudes is a standard mechanism to scale data for plotting.
@@ -331,10 +341,11 @@ template <class Tensemble,class Tmember>
 	void MeasureEnsemblePeakAmplitudes(Tensemble& d,
 		string scale_attribute)
 {
-	vector<Tmember>::iterator dp;
+	int i;
 	double amplitude;
-	for(dp=d.member.begin();dp!=d.member.end();++dp)
+	for(i=0;i<d.member.size();++i)
 	{
+		Tmember *dp=&(d.member[i]);
 		if(dp->live)
 		{
 			amplitude=PeakAmplitude(dp);
@@ -342,15 +353,6 @@ template <class Tensemble,class Tmember>
 		}
 	}
 }
-/* Current implementations of PeakAmplitude */
-
-/*! Measures peak amplitude for a TimeSeries. */
-double PeakAmplitude(vector<TimeSeries>::iterator p);
-/*! Measures peak amplitude (L2 norm of 3 components) for a ThreeComponent
-Seismogram. */
-double PeakAmplitude(vector<ThreeComponentSeismogram>::iterator p);
-/*! Measures peak amplitude for a ComplexTimeSeries. */
-double PeakAmplitude(vector<ComplexTimeSeries>::iterator p);
 
 /*! Generic algorithm to scale an ensemble by using a specified scale factor.
 
@@ -382,10 +384,11 @@ template <class Tensemble,class Tmember>
 		string scale_attribute,
 			bool invert=false)
 {
-	vector<Tmember>::iterator dp;
+	int i;
 	double amplitude;
-	for(dp=d.member.begin();dp!=d.member.end();++dp)
+	for(i=0;i<d.member.size();++i)
 	{
+		Tmember *dp=&(d.member[i]);
 		if(dp->live)
 		{
 			try {
@@ -413,11 +416,11 @@ template <class Tensemble,class Tmember>
 /* Current implementations of ScaleMember. */
 
 /*! Scales a TimeSeries object by scale. */
-void ScaleMember(vector<TimeSeries>::iterator p,double scale);
+void ScaleMember(TimeSeries *p,double scale);
 /*! Scales a ThreeComponentSeismogram object by scale. */
-void ScaleMember(vector<ThreeComponentSeismogram>::iterator p,double scale);
+void ScaleMember(ThreeComponentSeismogram *p,double scale);
 /*! Scales a ComplexTimeSeries object by scale. */
-void ScaleMember(vector<ComplexTimeSeries>::iterator p,double scale);
+void ScaleMember(ComplexTimeSeries *p,double scale);
 
 /* Companion to above */
 

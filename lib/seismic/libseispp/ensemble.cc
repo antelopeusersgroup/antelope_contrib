@@ -649,13 +649,13 @@ ThreeComponentEnsemble& ThreeComponentEnsemble::operator=(const ThreeComponentEn
 /* Series of overloaded functions to measure peak amplitudes for 
 different types of seismic data objects.  These are used in
 a generic algorithm defined in seispp.h */
-double PeakAmplitude(vector<TimeSeries>::iterator p)
+double PeakAmplitude(TimeSeries *p)
 {
 	vector<double>::iterator amp;
 	amp=max_element(p->s.begin(),p->s.end());
 	return(*amp);
 }
-double PeakAmplitude(vector<ThreeComponentSeismogram>::iterator p)
+double PeakAmplitude(ThreeComponentSeismogram *p)
 {
 	vector<double> ampvec;
 	ampvec.resize(p->u.columns());
@@ -678,7 +678,7 @@ double PeakAmplitude(vector<ThreeComponentSeismogram>::iterator p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
-double PeakAmplitude(vector<ComplexTimeSeries>::iterator p)
+double PeakAmplitude(ComplexTimeSeries *p)
 {
 	vector<double> ampvec;
 	ampvec.resize(p->s.size());
@@ -694,12 +694,12 @@ double PeakAmplitude(vector<ComplexTimeSeries>::iterator p)
 	amp=max_element(ampvec.begin(),ampvec.end());
 	return(*amp);
 }
-void ScaleMember(vector<TimeSeries>::iterator p,double scale)
+void ScaleMember(TimeSeries *p,double scale)
 {
 	// Use the blas dscal routine for speed
 	dscal(p->s.size(),scale,&(p->s[0]),1);	
 }
-void ScaleMember(vector<ThreeComponentSeismogram>::iterator p,double scale)
+void ScaleMember(ThreeComponentSeismogram *p,double scale)
 {
 	int size=p->u.columns();
 	size*=3;
@@ -709,7 +709,7 @@ void ScaleMember(vector<ThreeComponentSeismogram>::iterator p,double scale)
 	// Using the blas for efficiency
 	dscal(size,scale,p->u.get_address(0,0),1);
 }
-void ScaleMember(vector<ComplexTimeSeries>::iterator p,double scale)
+void ScaleMember(ComplexTimeSeries *p,double scale)
 {
 	// This algorithm could maybe be done with the blas cscal, but
 	// am not sure a vector<Complex> would work correctly with cscal.
