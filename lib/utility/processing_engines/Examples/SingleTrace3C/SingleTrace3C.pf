@@ -1,0 +1,11 @@
+Station_mdlist &Tbl{
+nsamp int
+samprate real
+datatype string
+dfile string
+dir string
+foff int
+time real
+endtime real 
+timetype string
+}

@@ -1,0 +1,36 @@
+Station_mdlist &Tbl{
+nsamp int
+samprate real
+datatype string
+dfile string
+dir string
+foff int
+time real
+endtime real 
+timetype string
+}
+Ensemble_mdlist &Tbl{
+origin.lat real
+origin.lon real
+origin.depth real
+origin.time real
+pwstack.ux real
+pwstack.uy real
+pwstack.ux0 real
+pwstack.uy0 real
+ux real
+uy real
+ux0 real
+uy0 real
+evid int
+}
+dbprocess_commands &Tbl{
+dbopen wfprocess
+dbjoin evlink
+dbjoin event
+dbjoin origin
+dbsubset orid==prefor
+dbjoin pwstack
+dbsort evid gridid ux uy 
+dbgroup evid gridid
+}

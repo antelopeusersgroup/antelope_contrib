@@ -1,0 +1,43 @@
+\*! \file ExternalProcessor/ExternalProcessor.h 
+/*! Abstract base class for a generic external processor engine.
+\par
+There are many applications that are packaged in a way that is more
+convenient to access them from an application through a well defined
+interface.  An example is matlab, which is the first processor I've
+implemented through this interface definition.  This is a base class
+that describes a basic interface that should be implementable on a
+three common applications I've aimed this toward:  (1) matlab (the
+most general application); (2) the Seismic Analysis Code (SAC); and
+(3) various seismic reflection processing packages (e.g. seismic unix
+or Igor Mirozov's SIA).  I've attempted to encapsulate all common
+concepts of these applications in this base class.  The presumption
+is each can and should involk extensioned method appropriate for
+less general concepts they contain (e.g. CDP bins are a reflection
+processing concept only appropriate to an interface aimed at something
+like seismic unix).
+\author Gary L. Pavlis
+*/
+\*! \file MatlabProcessor/MatlabProcessor.h 
+ \brief  A processing object that can be used to process data through Matlab.
+
+Matlab has become the FORTRAN of seismology and this processing object provides
+a simple way to integrate matlab m file scripts into a processing program using
+the SEISPP library.  It implements the abstract base class ExternalProcessor.
+The way this processing object would normally be used is to implement
+the following four steps:
+(1) create the object, (2) load a data object into matlab through one of the
+overloaded load methods, (3) run a processing script with one of the overloaded
+process methods, and (optionally) (4) retrieve the result with on of the
+retrieve methods.
+
+This object uses the creations is initialization mode of OOP.  That is,
+the model is that when the object is created the handle to matlab is
+created.  That handle is assumed to remain active until it is released
+by the explicit or implict call to the destructor of the object.
+This is VERY IMPORTANT to recognize for this object because a processing
+script can very easily tell matlab to exit.  The caller should not do
+this or an error will be generated when the destructor is called when
+the object is destroyed.
+
+\author Gary L. Pavlis 
+*/

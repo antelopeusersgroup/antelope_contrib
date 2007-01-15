@@ -1,0 +1,10 @@
+To produce a local copy of documentation for this package
+run doxygen in ths directory as 
+doxygen doxygen.config
+
+This will generate an html and latex directory.  See also
+the README file in contrib/lib/seismic/libseispp for more hints
+on setting up doxygen.
+
+More complete documentation that is completely cross-indexed can
+be found by going to http://seismo.geology.indiana.edu/~pavlis/software.html

@@ -1,0 +1,132 @@
+.TH MATLABPROCESSOR SECTION3 "$Date$"
+.SH NAME
+MatlabProcessor \- Process data with Matlab from within a C++ program
+.SH SYNOPSIS
+.nf
+#include "MatlabProcessor.h"
+namespace SEISPP {
+using namespace std;
+using namespace SEISPP;
+class MatlabProcessor : public ExternalProcessor
+{
+public:
+	MatlabProcessor();
+	MatlabProcessor(FILE *fp);
+	MatlabProcessor(string hostname);
+	~MatlabProcessor();
+	void load(TimeSeries& d,string name);
+	void load(double *x,int ns, string name);
+	void load(ThreeComponentSeismogram& d,string name);
+	void load(dmatrix& d, string name);
+	void load(TimeSeriesEnsemble& tse,string name);
+	void load(ThreeComponentEnsemble& tce,string name[3]);
+
+	void process(string text);
+	void process(char *s);
+	void process(ifstream& strm); 
+	vector<double> retrieve_vector(string name);
+	auto_ptr<dmatrix> retrieve_matrix(string name);
+	void run_interactive();
+};
+}
+.fi
+.SH DESCRIPTION
+.LP
+Matlab has become the FORTRAN of seismology and this processing object provides
+a simple way to integrate matlab m file scripts into a processing program using
+the SEISPP library.  It implements the abstract base class ExternalProcessor.
+.LP
+The way this object would normally be used is four processing steps:
+(1) create the processing object, 
+(2) load a data object into matlab through one of the
+overloaded load methods, (3) run a processing script with one of the overloaded
+process methods, and (optionally) (4) retrieve the result with on of the 
+retrieve methods.  
+.LP
+This object uses the creation is initialization mode of OOP.  That is,
+the model is that when the object is created the handle to matlab is
+created.  That handle is assumed to remain active until it is released
+by the explicit or implict call to the destructor of the object.
+This is VERY IMPORTANT to recognize for this object because a processing
+script can very easily tell matlab to exit.  The caller should not do 
+this or an error will be generated when the destructor is called when
+the object is destroyed.  This is harmless if the destructor is called
+on program exit as it seens to only generate an abort message.  It will
+almost certainly crash a program, however, if this occurs in the middle
+of a larger processing sequence.
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+#include "MatlabProcessor.h"
+int main(int argc,void **argv)
+{
+        MatlabProcessor p(stdout);
+        double v[100];
+        // load v with a sin function, sent it to matlab
+        // and plot it with the process method
+        int i;
+        for(i=0;i<100;++i)
+        {
+                v[i]=sin(6.62*static_cast<double>(i)/100);
+        }
+        p.load(v,100,string("v"));
+        p.process(string("plot(v);"));
+        vector<double> vr=p.retrieve_vector(string("v"));
+        cout << "original and retrieved copies of vector v"<<endl;
+        for(i=0;i<100;++i)
+                cout << v[i]<<" "<<vr[i]<<endl;
+        // Similar load, process, and retrieve for a matrix 
+        dmatrix m(100,100);
+        m.zero();
+        for(i=0;i<100;++i)
+                m(i,i)=10.0;
+        for(i=0;i<99;++i)
+                m(i+1,i)=5.0;
+        p.load(m,string("m"));
+        p.process(string("figure;\\nimagesc(m);"));
+        auto_ptr<dmatrix> mrptr=p.retrieve_matrix(string("m"));
+        cout << *mrptr;
+	// enter an interactive loop.
+        p.run_interactive();
+}
+
+.fi
+.ft R
+.in
+.SH EXCEPTIONS
+.LP
+Most of the methods will throw a SeisppError object if there are problems
+they cannot work around (e.g. matlab interface functions return an error).
+.SH LIBRARY
+.LP
+Use make standard Antelope template and use the following construct:
+.nf
+MATLAB=/opt/matlab6p1/extern
+RPATH="-Wl,--rpath-link,$TMW_ROOT/extern/lib/$Arch,--rpath-link,$TMW_ROOT/bin/$Arch"
+
+cflags=-I$(MATLAB)/include
+ldlibs= -L$(MATLAB)/lib/sol2 -R$(MATLAB)/lib/sol2 -lmatlabprocessor -lgclgrid -lseispp -leng -lmx -lut -lmat \
+        $(TRLIBS) -lperf
+
+include $(ANTELOPEMAKE)
+.fi
+.LP
+where you will probably need to change the MATLAB line to match the location
+where matlab is installed on your system.
+.SH DIAGNOSTICS
+.LP
+All methods which throw a SeisppError exception should arrange to print
+a diagnostic message with the log_error() method.
+.SH "SEE ALSO"
+.nf
+http://seismo.geology.indiana.edu/~pavlis/software.html
+.fi
+And click on the link referencing MatlabProcessor.
+.SH AUTHOR
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$
