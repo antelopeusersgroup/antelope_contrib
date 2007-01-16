@@ -237,13 +237,13 @@ SlownessVector  Hypocenter::phaseslow(double lat0, double lon0, double elev, str
 	else
 	{
 		u=(TTSlow *)gettbl(tt,0);
+		uout.ux=u->ux;
+		uout.uy=u->uy;
 		freetbl(tt,0);
 		free_hook(&h);
 		if(u==NULL) 
 			throw SeisppError("Returned list of computed slowness vectors was empty");
 	}	
-	uout.ux=u->ux;
-	uout.uy=u->uy;
 	return(uout);
 }
 SlownessVector Hypocenter::pslow(double lat0, double lon0, double elev)
