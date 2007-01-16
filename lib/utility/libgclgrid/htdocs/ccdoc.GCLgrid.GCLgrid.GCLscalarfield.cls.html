@@ -7,9 +7,9 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLscalarfield.cls.html">
-<meta name="ccdoc_creation_date" content="Wed Apr 27 07:05:01 2005">
+<meta name="ccdoc_creation_date" content="Tue Jan 16 13:32:12 2007">
 <meta name="keywords" content="ccdoc, source code, documentation">
-<title>ccdoc GCLscalarfield gclgrid.h:689:class</title>
+<title>ccdoc GCLscalarfield gclgrid.h:690:class</title>
 </head>
 
 <body>
@@ -25,7 +25,7 @@
 <blockquote>
 Two-dimensional scalar field defined on a GCLgrid framework.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:689</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:690</dd>
 <dt><b>Author:</b></dt><dd>unascribed</dd>
 <dt><b>Version:</b></dt><dd>unknown</dd>
 </dl>
@@ -160,7 +160,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
  Nontrivial destructor as it has to destroy components
  stored in plain C arrays.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:747</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:748</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLscalarfield</b> ( )</td></tr></table>
 </dd></dl>
@@ -171,7 +171,7 @@ line 2+:  x1, x2, x3, lat(deg), lon(deg), r(km), val in C output order
 <blockquote>
 Default constructor 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:699</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:700</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -186,7 +186,7 @@ Default constructor
  Do not assume anything is initialized.
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:707</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:708</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>n1size
 </i></td><td align=left valign=top>number of grid points on generalized coordinate axis 1.
@@ -205,7 +205,7 @@ Default constructor
 <blockquote>
 Standard copy constructor 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:709</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:710</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b><b>GCLscalarfield</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -224,7 +224,7 @@ Standard copy constructor
  of a field variable at the grid points.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:721</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:722</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>g
 </i></td><td align=left valign=top>Grid to be cloned.
@@ -248,7 +248,7 @@ Standard copy constructor
   then loading field variable data from the database.
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:741</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:742</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -351,7 +351,7 @@ undocumented<dl>
  structure.  
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:784</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:785</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>db
 </i></td><td align=left valign=top>Antelope database pointer.
@@ -502,8 +502,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>reca
-</dd>
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a></dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> plat ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> plon ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> pr )</td></tr></table>
 </dd></dl>
@@ -525,8 +524,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>le
-</dd>
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a></dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> p )</td></tr></table>
 </dd></dl>
@@ -551,7 +549,7 @@ See
  this function simply assumes the interpolation requested will work.
  For this reason it will never throw an exception.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:827</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:828</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>x1p
 </i></td><td align=left valign=top>- Cartesian x1 coordinate of point to where the field is to be interpolated
@@ -664,7 +662,7 @@ See
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:807</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:808</dd>
 <dt><b>Param:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>c
 </i></td><td align=left valign=top>constant by which the field is to be scaled.
@@ -695,7 +693,7 @@ See
  done by interpolation but downsampling requires an antialiasing
  (smoother) filter.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:801</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:802</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator +=</b></b> (</td><td nowrap valign=top> <b>GCLscalarfield</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -706,7 +704,7 @@ See
 <blockquote>
 Standard assignment operator 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:751</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:752</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>GCLscalarfield</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>GCLscalarfield</b> &amp; )</td></tr></table>
 </dd></dl>
@@ -776,7 +774,7 @@ See
  Index of the field is parallel with coordinate arrays x1, x2, and x3
  that define grid point positions in space.
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:696</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:697</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd>public <font color=green><b>double</b></font> * * <b>val</b>
 </dd></dl>
@@ -787,7 +785,7 @@ See
 <blockquote>
 Zeros the field variable 
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:749</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:750</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>zero</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -797,7 +795,7 @@ Zeros the field variable
 <center>
 <p>
 <font size="-1">
-Created Wed Apr 27 07:05:01 2005.
+Created Tue Jan 16 13:32:12 2007.
 <br>
 This documentation was generated automatically by
 <br>

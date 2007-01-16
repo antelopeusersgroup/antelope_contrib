@@ -7,7 +7,7 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.dmatrix.dmatrix.cls.html">
-<meta name="ccdoc_creation_date" content="Wed Apr 27 07:05:01 2005">
+<meta name="ccdoc_creation_date" content="Tue Jan 16 13:32:12 2007">
 <meta name="keywords" content="ccdoc, source code, documentation">
 <title>ccdoc dmatrix dmatrix.h:105:class</title>
 </head>
@@ -162,7 +162,7 @@
 <td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29">operator -=</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Subtracts one matrix from another.
 </td></tr>
 <tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">operator =</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Standard assignment operator
+<td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#mop-operator-20-3d-dmatrix--26-operator--3d--28-const-dmatrix--26-other--29">operator =</a></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Standard assignment operator
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.dmatrix.dmatrix.cls.html#met-rows-int-rows--28--29">rows</a></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Return the number of rows in this matrix.
@@ -325,7 +325,7 @@
 </blockquote>
 <a name="mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator -=</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#mop-operator-20+-3d-void-operator-+-3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#mop-operator-20-3d-dmatrix--26-operator--3d--28-const-dmatrix--26-other--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Subtracts one matrix from another.
 <p>
@@ -340,7 +340,7 @@
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator -=</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
 </dd></dl>
 </blockquote>
-<a name="mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29"></a>
+<a name="mop-operator-20-3d-dmatrix--26-operator--3d--28-const-dmatrix--26-other--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2> operator =</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
 <a href="#mop-operator-20--3d-void-operator---3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-rows-int-rows--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
@@ -348,12 +348,12 @@
 <dl>
 <dt><b>Source:</b></dt><dd>dmatrix.h:138</dd>
 </dl>
-<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <b>dmatrix</b> &amp; <b><b>operator =</b></b> (</td><td nowrap valign=top> <font color=green><b>const</b></font> <b>dmatrix</b> &amp; other )</td></tr></table>
 </dd></dl>
 </blockquote>
 <a name="met-rows-int-rows--28--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method rows</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#mop-operator-20-3d-void-operator--3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-size-int--2a-size--28--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#mop-operator-20-3d-dmatrix--26-operator--3d--28-const-dmatrix--26-other--29">&lt;</a>&nbsp;<a href="#met-size-int--2a-size--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Return the number of rows in this matrix.
 <dl>
@@ -394,7 +394,7 @@
 <center>
 <p>
 <font size="-1">
-Created Wed Apr 27 07:05:01 2005.
+Created Tue Jan 16 13:32:12 2007.
 <br>
 This documentation was generated automatically by
 <br>

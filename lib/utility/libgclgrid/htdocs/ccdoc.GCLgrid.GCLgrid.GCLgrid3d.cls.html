@@ -7,7 +7,7 @@
 <meta name="ccdoc_author" content="Joe Linoff">
 <meta name="ccdoc_version" content="ccdoc v08r41 2004/09/29 bin_opt_suncc_sun4-solaris-2.8">
 <meta name="ccdoc_file" content="htdocs/ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html">
-<meta name="ccdoc_creation_date" content="Wed Apr 27 07:05:01 2005">
+<meta name="ccdoc_creation_date" content="Tue Jan 16 13:32:12 2007">
 <meta name="keywords" content="ccdoc, source code, documentation">
 <title>ccdoc GCLgrid3d gclgrid.h:484:class</title>
 </head>
@@ -103,6 +103,9 @@
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-lat-double-lat--28-int--2c-int--2c-int--29">lat</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the latitude (in radians) of a grid point.
 </td></tr>
 <tr>
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-lon-double-lon--28-int--2c-int--2c-int--29">lon</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the longitude (in radians) of a grid point.
+</td></tr>
+<tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-lookup-int-lookup--28-double--2c-double--2c-double--29">lookup</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Save grid to an Antelope (Datascope) database.
 </td></tr>
 <tr>
@@ -112,7 +115,7 @@
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#mop-operator-20-3d-GCLgrid3d--26-operator--3d--28-const-GCLgrid3d--26--29">operator =</a></td><td align=left valign=top></td><td align=left valign=top>operator&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>Standard assignment operator.
 </td></tr>
 <tr>
-<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-r-double-r--28-int--2c-int--2c-int--29">r</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the longitude (in radians) of a grid point.
+<td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-r-double-r--28-int--2c-int--2c-int--29">r</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top> Get the radius from the center of the Earth of a grid point.
 </td></tr>
 <tr>
 <td align=left valign=top><a href="ccdoc.GCLgrid.GCLgrid.GCLgrid3d.cls.html#met-reset_index-void-reset_index--28--29">reset_index</a></td><td align=left valign=top></td><td align=left valign=top>method&nbsp;</td><td align=left valign=top>public</td><td align=left valign=top>See 
@@ -147,7 +150,7 @@
  are not called.  This is important to know if you try to create a GCLgrid
  object by the default constructor.  
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:683</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:684</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public ~ <b>GCLgrid3d</b> ( )</td></tr></table>
 </dd></dl>
@@ -301,7 +304,7 @@ Standard copy constructor.
 <a href="#con-GCLgrid3d-GCLgrid3d--28-const-GCLgrid3d--26--29">&lt;</a>&nbsp;<a href="#met-ctog-Geographic_point-ctog--28-double-x1p--2c-double-x2p--2c-double-x3p--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
 undocumented<dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:675</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:676</dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>void</b></font> <b><b>compute_extents</b></b> (</td><td nowrap valign=top> )</td></tr></table>
 </dd></dl>
@@ -360,7 +363,7 @@ undocumented<dl>
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:673</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:674</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
 <tr><td align=left valign=top><i>i1
 </i></td><td align=left valign=top>Value of grid index 1 for point desired.
@@ -486,8 +489,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>reca
-</dd>
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a></dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <font color=green><b>double</b></font> plat ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> plon ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>double</b></font> pr )</td></tr></table>
 </dd></dl>
@@ -509,8 +511,7 @@ See
 </td></tr>
 </table></dd>
 <dt><b>Returns:</b></dt><dd>Cartesian_point data structure (see
-<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a>le
-</dd>
+<a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">@endlink)</a></dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <a href="ccdoc.GCLgrid.GCLgrid.Cartesian_point.tyv.html">Cartesian_point</a> <b><b>gtoc</b></b> (</td><td nowrap valign=top> <a href="ccdoc.GCLgrid.GCLgrid.Geographic_point.tyv.html">Geographic_point</a> p )</td></tr></table>
 </dd></dl>
@@ -530,7 +531,7 @@ See
 </blockquote>
 <a name="met-lat-double-lat--28-int--2c-int--2c-int--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lat</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#att-k0">&lt;</a>&nbsp;<a href="#met-lookup-int-lookup--28-double--2c-double--2c-double--29">&gt;</a>&nbsp;</td></tr></table>
+<a href="#att-k0">&lt;</a>&nbsp;<a href="#met-lon-double-lon--28-int--2c-int--2c-int--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Get the latitude (in radians) of a grid point.
 <p>
@@ -554,9 +555,35 @@ See
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>lat</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
 </dd></dl>
 </blockquote>
+<a name="met-lon-double-lon--28-int--2c-int--2c-int--29"></a>
+<hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lon</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
+<a href="#met-lat-double-lat--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#met-lookup-int-lookup--28-double--2c-double--2c-double--29">&gt;</a>&nbsp;</td></tr></table>
+<blockquote>
+ Get the longitude (in radians) of a grid point.
+<p>
+<p>
+<dl>
+<dt><b>Source:</b></dt><dd>gclgrid.h:656</dd>
+<dt><b>Params:</b></dt><dd><table cellspacing=4>
+<tr><td align=left valign=top><i>i1
+</i></td><td align=left valign=top>Value of grid index 1 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i2
+</i></td><td align=left valign=top>Value of grid index 2 for point desired.
+</td></tr>
+<tr><td align=left valign=top><i>i3
+</i></td><td align=left valign=top>Value of grid index 3 for point desired.
+</td></tr>
+</table></dd>
+<dt><b>Returns:</b></dt><dd>latitude in radians of the requested grid point.
+</dd>
+</dl>
+<dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>lon</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
+</dd></dl>
+</blockquote>
 <a name="met-lookup-int-lookup--28-double--2c-double--2c-double--29"></a>
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method lookup</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
-<a href="#met-lat-double-lat--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#att-n3">&gt;</a>&nbsp;</td></tr></table>
+<a href="#met-lon-double-lon--28-int--2c-int--2c-int--29">&lt;</a>&nbsp;<a href="#att-n3">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
  Save grid to an Antelope (Datascope) database.
 <p>
@@ -643,24 +670,12 @@ Standard assignment operator.
 <hr><table width="100%" border=0 cellpadding=0 cellspacing=0><tr><td align=left valign=top><h2>method r</h2></td><td align=right valign=top><a href="#ccdoc_contents">?</a>&nbsp;<a href="#ccdoc_top">^</a>&nbsp;
 <a href="#mop-operator-20-3d-GCLgrid3d--26-operator--3d--28-const-GCLgrid3d--26--29">&lt;</a>&nbsp;<a href="#met-reset_index-void-reset_index--28--29">&gt;</a>&nbsp;</td></tr></table>
 <blockquote>
- Get the longitude (in radians) of a grid point.
+ Get the radius from the center of the Earth of a grid point.
 <p>
 <p>
 <dl>
-<dt><b>Source:</b></dt><dd>gclgrid.h:664</dd>
+<dt><b>Source:</b></dt><dd>gclgrid.h:665</dd>
 <dt><b>Params:</b></dt><dd><table cellspacing=4>
-<tr><td align=left valign=top><i>i1
-</i></td><td align=left valign=top>Value of grid index 1 for point desired.
-</td></tr>
-<tr><td align=left valign=top><i>i2
-</i></td><td align=left valign=top>Value of grid index 2 for point desired.
-</td></tr>
-<tr><td align=left valign=top><i>i3
-</i></td><td align=left valign=top>Value of grid index 3 for point desired.
-double lon(int,int,int);
- Get the radius from the center of the Earth of a grid point.
-<p>
-</td></tr>
 <tr><td align=left valign=top><i>i1
 </i></td><td align=left valign=top>Value of grid index 1 for point desired.
 </td></tr>
@@ -671,8 +686,7 @@ double lon(int,int,int);
 </i></td><td align=left valign=top>Value of grid index 3 for point desired.
 </td></tr>
 </table></dd>
-<dt><b>Returns:</b></dt><dd>latitude in radians of the requested grid point.
-Earth radius in kilometers of the requested grid point.
+<dt><b>Returns:</b></dt><dd>Earth radius in kilometers of the requested grid point.
 </dd>
 </dl>
 <dl><dt><b>Code:</b></dt><dd><table><tr><td nowrap valign=top>public <font color=green><b>double</b></font> <b><b>r</b></b> (</td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> ,</td></tr><tr><td nowrap valign=top> </td><td nowrap valign=top> <font color=green><b>int</b></font> )</td></tr></table>
@@ -756,7 +770,7 @@ See
 <center>
 <p>
 <font size="-1">
-Created Wed Apr 27 07:05:01 2005.
+Created Tue Jan 16 13:32:12 2007.
 <br>
 This documentation was generated automatically by
 <br>
