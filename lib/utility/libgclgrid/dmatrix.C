@@ -8,8 +8,7 @@ dmatrix::dmatrix()
   nrr=0;
   ncc=0;
   length=0;
-  // might be able to set ary to NULL here, but this is safer
-  ary=new double[1];
+  ary=NULL;
 }
 dmatrix::dmatrix(int nr, int nc)
 {
@@ -35,7 +34,7 @@ dmatrix::dmatrix(const dmatrix& other)
 
 dmatrix::~dmatrix()
 {
-delete [] ary;
+if(ary!=NULL) delete [] ary;
 }
 
 double &dmatrix::operator()(int rowindex, int colindex)
@@ -69,15 +68,18 @@ double* dmatrix::get_address(int rowindex, int colindex)
   return(ptr);
 }
 
-void dmatrix::operator=(const dmatrix& other)
+dmatrix& dmatrix::operator=(const dmatrix& other)
 {
-if(&other==this) return;
-ncc=other.ncc;
-nrr=other.nrr;
-length=other.length;
-delete [] ary;
-ary= new double[length];
-memcpy(ary,other.ary, length*sizeof(double));
+if(&other!=this) 
+{
+	ncc=other.ncc;
+	nrr=other.nrr;
+	length=other.length;
+	if(ary!=NULL) delete [] ary;
+	ary= new double[length];
+	memcpy(ary,other.ary, length*sizeof(double));
+} 
+return *this;
 }
 
 void dmatrix::operator+=(const dmatrix& other)

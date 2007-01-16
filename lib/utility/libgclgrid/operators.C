@@ -509,7 +509,7 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					for(l=0;l<nv;++l) val[i][j][k][l]=valnew[l];
-					delete valnew;
+					delete [] valnew;
 					break;
 				default:
 					elog_die(0,(char*)"Illegal return code %d from lookup function\n",err);
@@ -583,7 +583,7 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
 				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 				for(l=0;l<nv;++l) val[i][j][l]=valnew[l];
-				delete valnew;
+				delete [] valnew;
 
 				break;
 			default:

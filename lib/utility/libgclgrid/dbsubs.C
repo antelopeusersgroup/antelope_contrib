@@ -153,12 +153,14 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	{
 		elog_notify(0,(char *)"%s %s reading latitude\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
 	if(fread(plon[0][0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading longitude\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
 
@@ -166,8 +168,10 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	{
 		elog_notify(0,(char *)"%s %s reading radius\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
+	fclose(fp);
 	// essential  -- cannot convert to cartesian until this is set
 	set_transformation_matrix();
 	int i,j,k;
@@ -292,12 +296,14 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	{
 		elog_notify(0,(char *)"%s %s reading latitude\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
 	if(fread(plon[0],sizeof(double),gridsize,fp) != gridsize)
 	{
 		elog_notify(0,(char *)"%s %s reading longitude\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
 
@@ -305,8 +311,10 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	{
 		elog_notify(0,(char *)"%s %s reading radius\n",
 			base_message,read_error);
+		fclose(fp);
 		throw 2;
 	}
+	fclose(fp);
 	set_transformation_matrix();
 	int i,j;
 	for(i=0;i<n1;++i)
@@ -387,8 +395,10 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		if(fread(val[0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			fclose(fp);
 			throw 2;
 		}
+		fclose(fp);
 	}
 }
 //
@@ -454,8 +464,10 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 		if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			fclose(fp);
 			throw 2;
 		}
+		fclose(fp);
 	}
 }
 // Note comment below on 3d version of this function applies here too
@@ -536,8 +548,10 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		if(fread(val[0][0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			fclose(fp);
 			throw 2;
 		}
+		fclose(fp);
 	}
 }
 /* April 2005:  Changed an oddity of this.  Previously there was an odd logic that
@@ -625,8 +639,10 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		if(fread(val[0][0][0],sizeof(double),gridsize,fp) != gridsize)
 		{
 			elog_notify(0,(char *)"Error reading field values from file %s\n",filename);
+			fclose(fp);
 			throw 2;
 		}
+		fclose(fp);
 	}
 }
 

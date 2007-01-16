@@ -135,7 +135,7 @@ public:
 //@{
 // Standard assignment operator
 //@}
-  void operator=(const dmatrix& other);
+  dmatrix& operator=(const dmatrix& other);
 //@{
 // Adds one matrix to another.  X->X+A where A is right hand side.
 // @throws dmatrix_size_error is thrown if two matrices are not of the same size
