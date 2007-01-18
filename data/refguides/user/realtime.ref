@@ -219,7 +219,7 @@ orblook { start orbname interval | restart orbname interval | stop orbname }
 adsend2orb orb port
     read earthworm packets from udp port and copy to orbserver orb
 
-eworm2orb pf
+deprecated eworm2orb pf
     copy earthworm packets from memory ring buffer to orbserver
 
 guralp2orb [options] orbname
@@ -504,10 +504,10 @@ orb2orb [options] in out [start [period|end]]
 orbxchange pf
     run multiple orb2orb connections controlled by pf
 
-orbxfer2 [-p pf] [-w dir] [-v] [file ...] orb
+orbxfer2 [-N net] [-p pf] [-w dir] [-v] [file ...] orb
     write files into orb; with -w, watch directory dir and send files which appear there into the orb and remove them from dir
 
-orbxfer2 [-p pf] [-S state] [-v] orb
+deprecated orbxfer2 [-p pf] [-S state] [-v] orb
     receive incoming files, save into directory specified in pf
 
 deprecated orbxfer [-b pktsize] [-d dir] [-ovv] file ... orb
@@ -923,7 +923,7 @@ pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
 resetnetblazer hostname line timeout
     reset Telebit Netblazer terminal server
 
-orb2eworm parameter_file.d
+deprecated orb2eworm parameter_file.d
     export waveform data from an Antelope orb to an Earthworm system
 
 orb2pf [options] orb [file]
