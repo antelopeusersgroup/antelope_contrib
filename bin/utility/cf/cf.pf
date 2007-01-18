@@ -15,6 +15,9 @@ expressions &Arr{
 	^.*: Failed
 	^.*Permission denied
 	^.*does not exist
+	^.*syntax error
+	^.*cannot recover
+	^.*cannot find include file
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
 	^gcc: language.*not recognized
@@ -43,6 +46,11 @@ expressions &Arr{
 	^.*cycle in data
 	^.*declaration hides parameter
 	^.*cannot dereference non-pointer type
+	^.*non-constant initializer
+	^.*member cannot be function
+	^.*function cannot return function
+	^.*parameter redeclared
+	^.*zero-sized struct\\/union
 	^.*Please specify prototyping behavior
 	^[[:space:]]*declaration[[:space:]]*:
 	^[[:space:]]*parameter[[:space:]]*:
