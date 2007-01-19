@@ -1,0 +1,53 @@
+
+<html>
+ <head>
+  <title>ORB PHP Examples</title>
+ </head>
+ <body>
+ <?php echo '<h2>Orb PHP Examples</h2>'; ?>
+ <p>
+ <?php
+        echo "<b>Load Orb Library (dl)</b><br>\n";
+	echo "<code>dl('Orb.so');</code>";
+	dl('Orb.so');
+        
+	echo "<p><b>Open Orb (name,perm)</b>";
+	echo "<br>\n<code>\$orbfd = orbopen(\":\",\"r\");</code>";
+	$orbfd = orbopen(":","r");
+        echo "<p>orbfd = $orbfd</p>";
+
+        echo "<p><b>Orb Ping (orbfd) - return version of orbserver</b>";
+	echo "<br>\n<code>\$version = orbping(\$orbfd);</code>";
+	$version = orbping($orbfd);
+        echo "<p>version = $version</p>";
+
+        echo "<p><b>Orb Select (orbfd, regex) - Subset the source-names for those matching regex</b>";
+	echo "<br>\n<code>\$nsources = orbselect(\$orbfd, '.*/MGENC');</code>";
+	$nsources = orbselect( $orbfd, '.*/MGENC' );
+
+        echo "<p>nsources = $nsources</p>";
+
+        echo "<p><b>Orb Reject (orbfd, regex) - Reject the source-names for those matching regex</b>";
+	echo "<br>\n<code>\$nsources = orbreject(\$orbfd, '/pf.*');</code>";
+	$nsources = orbreject( $orbfd, '/pf.*' );
+
+        echo "<p>nsources = $nsources</p>";
+
+        echo "<p><b>PFORBSTAT (orbfd, FLAGS) - Get information out of orb</b>";
+	echo "<p><b>FLAGS = PFORBSTAT_SERVER, PFORBSTAT_SOURCES, PFORBSTAT_CLIENTS, PFORBSTAT_DATABASES, PFORBSTAT_CONNECTIONS</b></p>";
+	echo "<br>\n<code>\$nsources = orbselect( \$orbfd, 'NN_WTNK_.*' );</code>";
+	echo "<br>\n<code>print_r( pforbstat( \$orbfd, PFORBSTAT_SOURCES ) );</code>";
+	echo "<pre>";
+	$nsources = orbselect( $orbfd, 'NN_WTNK_.*' );
+	$pfos = pforbstat( $orbfd, PFORBSTAT_SOURCES );
+	#print_r( $pfos );
+	$sources = $pfos[sources];
+	print_r( $sources );
+	echo "</pre>";
+
+        echo "<p><b>Close Orb (orbfd)</b>";
+	echo "<br>\n<code>orbclose(\$orbfd);</code>";
+	orbclose($orbfd);
+ ?>
+ </body>
+</html> 

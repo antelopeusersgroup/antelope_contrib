@@ -1,0 +1,37 @@
+.TH EXAMPLES_PHP 5 "$Date$"
+.SH NAME
+examples_orb_php \- examples of the Antelope Orb PHP commands  
+.SH SYNOPSIS
+.nf
+\fBexamples_orb_php.php\fP
+.fi
+.SH DESCRIPTION
+This file presents examples of using each command in the Antelope Orb interface 
+to PHP
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+MT-Safe ?
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+datascope_php(3h), orb_php(3h), sysinfo_php(3h)
+.fi
+.SH "BUGS AND CAVEATS"
+Not all commands are covered. 
+.SH AUTHOR
+.nf
+David Slater (UNR) and Kent Lindquist (Lindquist Consulting, Inc.)
+.fi
+.\" $Id$

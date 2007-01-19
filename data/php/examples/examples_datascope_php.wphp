@@ -1,0 +1,169 @@
+
+<html>
+ <head>
+  <title>PHP Datascope Test</title>
+ </head>
+ <body>
+ <?php echo '<h2>Datascope PHP Examples</h2>'; ?>
+ <p>
+ <?php
+        echo "<b>Load Datascope Library (dl)</b><br>\n";
+	echo "<code>dl('Datascope.so');</code>";
+	dl('Datascope.so');
+ ?>
+ <?php
+        echo "<p><b>Open database (ds_dbopen_database)</b>";
+	echo "<br>\n<code>\$db = ds_dbopen_database(\"/opt/antelope/data/db/demo/demo\",\"r\");</code>";
+
+	$db = ds_dbopen_database("/opt/antelope/data/db/demo/demo","r");
+        echo "<p>db    = $db $db[0],$db[1],$db[2],$db[3]</p>";
+ ?>
+ <?php
+        echo "<p><b>Get table count of database (dbquery)</b>";
+	echo "<br>\n<code>\$ntables = dbquery( \$db, 'dbTABLE_COUNT' );</code>";
+	$ntables = dbquery( $db, 'dbTABLE_COUNT' );
+ 	echo "<p>ntables = $ntables</p>";
+ ?>
+ <?php
+        echo "<p><b>Open table (ds_dbopen_table)</b>";
+	echo "<br>\n<code>\$dbt = ds_dbopen_table(\"/opt/antelope/data/db/demo/demo/demo.site\",\"r\");</code>";
+	$dbt = ds_dbopen_table("/opt/antelope/data/db/demo/demo.site","r");
+        echo "<p>dbt    = $dbt $dbt[0],$dbt[1],$dbt[2],$dbt[3]</p>";
+ ?>
+ <?php
+        echo "<p><b>Get record count of table (dbquery)</b>";
+	echo "<br>\n<code>\$nrecs = dbquery( \$dbt, 'dbRECORD_COUNT' );</code>";
+	$nrecs = dbquery( $dbt, 'dbRECORD_COUNT' );
+ 	echo "<p>nrecs = $nrecs</p>";
+ ?>
+ <?php
+        echo "<p><b>Get record count of table (dbnrecs)</b>";
+	echo "<br>\n<code>\$nrecs = dbnrecs( \$dbt );</code>";
+	$nrecs = dbnrecs( $dbt );
+ 	echo "<p>nrecs = $nrecs</p>";
+ ?>
+ <?php
+        echo "<p><b>Create temporary database of specified schema (ds_dbtmp)</b>";
+	echo "<br>\n<code>\$dbtmp = ds_dbtmp('css3.0')</code>";
+	echo "<br>\n<code>\$ntables = dbquery( \$dbtmp, 'dbTABLE_COUNT');</code>";
+	echo "<br>\n<code>\$dbtt = dblookup(\$dbtmp,'','site','','')</code>";
+
+	$dbtmp = ds_dbtmp( 'css3.0' ) ;
+        echo "<p>dbtmp   = $dbtmp $dbtmp[0],$dbtmp[1],$dbtmp[2],$dbtmp[3]";
+	$ntables = dbquery( $dbtmp, 'dbTABLE_COUNT' );
+ 	echo "<br>ntables = $ntables";
+
+	$dbtt = dblookup($dbtmp,'','site','','');
+        echo "<br>dbtt    = $dbtt $dbtt[0],$dbtt[1],$dbtt[2],$dbtt[3]</p>";
+ ?>
+ <?php
+        echo "<p><b>Lookup database, table, field and record (dblookup)</b>";
+	echo "<br>\n<code>\$dbf = dblookup(\$db,'','site','sta','');</code>";
+	echo "<br>\n<code>\$dbr = dblookup(\$db,'','site','sta','CHM');</code>";
+	$dbf = dblookup($db,'','site','sta','');
+        echo "<p>dbf    = $dbf $dbf[0],$dbf[1],$dbf[2],$dbf[3]";
+	$dbr = dblookup($db,'','site','sta','CHM');
+        echo "<br>dbr    = $dbr $dbr[0],$dbr[1],$dbr[2],$dbr[3]</p>";
+ ?>
+ <?php
+        echo "<p><b>Find first record that matches expression (dbfind)</b>";
+	echo '<br><code>$record = dbfind($dbt,"$sta == \"CHM\"");</code>';
+	$record = dbfind($dbt,"$sta == \"CHM\"");
+	echo "<p>record = $record</p>";
+ ?>
+ <?php
+        echo "<p><b>Get value for specified fields for a particular record (dbgetv)</b>";
+	echo "<br>\n<code>list(\$sta,\$lat,\$lon,\$elev,\$staname) = dbgetv(\$dbr,'sta','lat','lon','elev','staname');</code>";
+
+        echo "<br>dbr    = $dbr $dbr[0],$dbr[1],$dbr[2],$dbr[3]</p>";
+	list($sta,$lat,$lon,$elev,$staname) = dbgetv($dbr,'sta','lat','lon','elev','staname');
+	echo "<p>$sta,$lat,$lon,$elev,$staname";
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Translate a datascope view into XML (db2xml)</b>";
+	echo "<br>\n<code>\$xml = db2xml(\$dbt);</code>";
+	echo "<br>look at page-source to see the actual xml code";
+
+	echo "<br>\$dbt($dbt[0],$dbt[1],$dbt[2],$dbt[3]) = " . db2xml($dbt);
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Evaluate an expression for a particular record (dbex_eval)</b>";
+	echo "<br>\n<code>\$dbr = dblookup(\$db,'','site','sta','CHM');</code>";
+	echo "<br>\n<code>\$distance = dbex_eval(\$dbr,'distance(lat,lon,42.0000,74.0000)');</code>";
+	$dbr = dblookup($db,'','site','sta','CHM');
+	$distance = dbex_eval($dbr,'distance(lat,lon,42.0000,74.0000)');
+	echo "<p>distance = $distance";
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Add a new record with specified values (dbaddv)</b>";
+	echo "<br>\n<code>\$new = dbaddv(\$dbtt,'sta','TST','lat',50.000,'lon',100.000,'elev',0.5000,'staname','test name','lddate',0,'ondate',0);</code>";
+	$new = dbaddv($dbtt,'sta','TST','lat',50.000,'lon',100.000,'elev',0.5000,'staname','test name','lddate',0,'ondate',0);
+	echo "<p>new = $new";
+	$dbtt[3] = $new;
+	list($sta,$lat,$lon,$elev,$staname) = dbgetv($dbtt,'sta','lat','lon','elev','staname');
+	echo "<br>\$dbtt($dbtt[0],$dbtt[1],$dbtt[2],$dbtt[3])";
+	echo "  sta,lat,lon,elev,staname = $sta,$lat,$lon,$elev,$staname";
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Add null record to specified table (dbaddnull)</b>";
+	echo "<br>\n<code>\$recno = dbaddnull(\$dbtt);</code>";
+	echo "<br>\n<code>\$recno = dbaddnull(\$dbtt);</code>";
+	$recno = dbaddnull($dbtt);
+	echo "<p>recno = $recno";
+	$recno = dbaddnull($dbtt);
+	echo "<br>recno = $recno";
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Change the fields for an existing record to the specified values (dbputv)</b>";
+	echo "<br>\n<code>\$dbtt[3] = $recno;</code>";
+	echo "<br>\n<code>dbputv(\$dbtt,'sta','XXX','lat',25.000,'lon',50.000,'elev',0.2500,'staname','test name 3','lddate',1000,'ondate',0);</code>";
+	$dbtt[3] = $recno;
+	dbputv($dbtt,'sta','XXX','lat',25.000,'lon',50.000,'elev',0.2500,'staname','test name 3','lddate',1000,'ondate',0);
+
+	echo "<p>\$dbtt($dbtt[0],$dbtt[1],$dbtt[2],$dbtt[3]) = " . db2xml($dbtt);
+ ?>
+
+ <p>
+ <?php
+        echo "<p><b>Returns a new view resulting from applying commands to database (dbprocess)</b>";
+	echo "<br>\n<code>\$mydb = dbprocess(\$db, \"dbopen origin\", \"dbsubset ml > 3\");</code>";
+	echo "<p>The \$db origin table has ", dbnrecs(dbprocess($db, "dbopen origin")), " records\n";
+
+	$mydb = dbprocess($db, "dbopen origin", "dbsubset ml > 3"); 
+	echo "<br>\$mydb has ", dbnrecs($mydb), " records after subset\n";
+ ?>
+
+ <?php
+        echo "<p><b>Returns a new view which is the set of all rows that satisfy the expression (dbsubset)</b>";
+	echo '<br><code>$mydb = dbsubset($mydb, "nass >= 8");</code>';
+
+	$mydb = dbsubset($mydb, "nass >= 8"); 
+	echo "<p>\$mydb has ", dbnrecs($mydb), " records after subset\n";
+ ?>
+ <p>
+ <?php
+        echo "<p><b>Show table contents</b>";
+	echo '<br><code>for ($mydb[3]=0; $mydb[3] &lt dbnrecs($mydb); $mydb[3]++) {';
+	echo "<br>&nbsp&nbsp&nbsp list(\$lat,\$lon,\$depth,\$time,\$orid,\$ml) = dbgetv(\$mydb,'lat','lon','depth','time','orid', 'ml');";
+	echo '<br>&nbsp&nbsp&nbsp echo "$mydb[3] : $lat $lon $depth $time $orid $ml";';
+	echo "<br>}</code><br>";
+	for ($mydb[3]=0; $mydb[3] < dbnrecs($mydb); $mydb[3]++) {
+		list($lat,$lon,$depth,$time,$orid,$ml) = dbgetv($mydb,'lat','lon','depth','time','orid','ml');
+		echo "<br>$mydb[3] : $lat $lon $depth $time $orid $ml\n";
+	}
+
+ ?>
+ <p>
+ <?php
+	echo "<br>\n<code>\$dbtmp = ds_dbtmp('css3.0.ext')</code>";
+	$dbf = dblookup($dbtmp,'','stanotes','','');
+        echo "<p>dbf    = $dbf $dbf[0],$dbf[1],$dbf[2],$dbf[3]";
+ ?>
+
+ </body>
+</html> 
