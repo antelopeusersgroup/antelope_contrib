@@ -82,6 +82,7 @@ PHP_FUNCTION(trsample);
 PHP_FUNCTION(trsamplebins);
 PHP_FUNCTION(trfilter);
 PHP_FUNCTION(trfree);
+PHP_FUNCTION(trdestroy);
 PHP_FUNCTION(trextract_data);
 PHP_FUNCTION(trdata);
 PHP_FUNCTION(trdatabins);

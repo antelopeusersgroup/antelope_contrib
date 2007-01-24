@@ -414,6 +414,18 @@ trfree( $tr );
 .in
 .ft R
 
+.IP "\fBtrdestroy\fP ( $tr )"
+destroy a trace-object pointer
+.ft CW
+.in 2c 
+.nf
+
+trdestroy( $tr );
+
+.fi
+.in
+.ft R
+
 .IP "\fBtrtime2samp\fP ( $time0, $samprate, $time1 )"
 Find the sample index of a datapoint given its timestamp, plus the start-time
 and sample rate of the time series

@@ -123,6 +123,7 @@ static function_entry Datascope_functions[] = {
 	PHP_FE(trsamplebins, NULL)		
 	PHP_FE(trfilter, NULL)		
 	PHP_FE(trfree, NULL)		
+	PHP_FE(trdestroy, NULL)		
 	PHP_FE(trextract_data, NULL)		
 	PHP_FE(trdata, NULL)		
 	PHP_FE(trdatabins, NULL)		
@@ -2937,6 +2938,35 @@ PHP_FUNCTION(trfree)
 	}
 
 	trfree( tr );
+
+	return;
+}
+/* }}} */
+
+/* {{{ proto void trdestroy( array tr ) */
+PHP_FUNCTION(trdestroy)
+{
+	zval	*tr_array;
+	Dbptr	tr;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+					&tr_array )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( tr_array, &tr ) < 0 ) {
+
+		return;
+	}
+
+	trfree( &tr );
 
 	return;
 }
