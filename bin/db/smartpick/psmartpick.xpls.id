@@ -172,7 +172,7 @@ sub parse_command_line {
 	foreach $arg qw( dbname trial_dbname nowait appname comout 	
 			 winfile geom pf ) {
 
-		if( $State{$arg} =~ m@(.*)@ ) {
+		if( defined( $State{$arg} ) && $State{$arg} =~ m@(.*)@ ) {
 		
 			$State{$arg} = $1;
 		}
