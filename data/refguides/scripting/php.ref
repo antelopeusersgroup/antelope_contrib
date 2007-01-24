@@ -135,6 +135,9 @@ trfilter ( $tr, filter )
 trfree ( $tr )
     free a Datascope trace-object structure
 
+trdestroy ( $tr )
+    destroy a Datascope trace-object structure
+
 trtime2samp ( double time0, double samprate, double time1 )
     find the index of a sample given its timestamp
 
