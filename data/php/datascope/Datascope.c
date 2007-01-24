@@ -2966,7 +2966,7 @@ PHP_FUNCTION(trdestroy)
 		return;
 	}
 
-	trfree( &tr );
+	trdestroy( &tr );
 
 	return;
 }
