@@ -183,46 +183,97 @@ dmatrix *GCLgrid_Ray_project_down(GCLgrid3d& grid, RayPathSphere& path,
 		throw GCLgrid_error("GCLgrid_Ray_project_down was passed an illegal index");
 
 	int np;
-	int i0;
-	double delta0;
+	int i0,iextra;
+	double r0,delta0;
 	int i,ii;
 	double depth = grid.depth(ix1,ix2,ix3);
+	r0=grid.r(ix1,ix2,ix3);
 	if((path.r[0]-path.r[path.npts-1])<depth)
 		throw GCLgrid_error("GCLgrid_Ray_project_down:  Given ray path does not reach requested depth");
 	//Search for point just below depth of ix3 point
-	if((depth<0.0) || (fabs(depth/path.r[0])<DBL_EPSILON) )
+	if(depth<0.0)
+	{
 		i0=1;
+		iextra=1;
+	}
+	else if(fabs(depth)<FLT_EPSILON) // A conservative test for zero since depth is double
+	{
+		i0=0;
+		iextra=0;
+	}
 	else
 	{
+		iextra=1;
 		for(i0=0;i0<path.npts;++i0)
 			if((path.r[0]-path.r[i0])>depth) break;
 	}
-	np = path.npts - i0 +1;  // right because we add one point
+	np = path.npts - i0 + iextra;  
 	dmatrix *pathptr = new dmatrix(3,np);
 	dmatrix& pathout=*pathptr;
-
-	// first point is just the grid point
+	// In all cases we start from the specified grid point
 	pathout(0,0) = grid.x1[ix1][ix2][ix3];
 	pathout(1,0) = grid.x2[ix1][ix2][ix3];
 	pathout(2,0) = grid.x3[ix1][ix2][ix3];
-	// Get the distance correction to subtract for this point
-	if(i0==0)
-		delta0=0.0;
-	else
-	{
-		delta0 = path.delta[i0-1] 
-			+ (depth-path.r[i0])
-			*(path.delta[i0]-path.delta[i0-1])
-			   /(path.r[i0]-path.r[i0-1]);  
-	}
 	lat0=grid.lat(ix1,ix2,ix3);
 	lon0=grid.lon(ix1,ix2,ix3);
-	for(i=i0,ii=1;i<path.npts;++i,++ii)
+	// Get the distance correction to subtract for this point
+	if(depth<0.0)
 	{
-		if(ii==1)
-			latlon(lat0,lon0,path.delta[i]-delta0,theta,&lat,&lon);
-		else
-			 latlon(lat0,lon0,path.delta[i],theta,&lat,&lon);
+		//
+		// Land here if first point in path is above datum.
+		// Project up from first point in RayPathSphere (delta,r)
+		//
+		delta0 = (r0-path.r[0])
+			*(path.delta[1]-path.delta[0])
+			   /(path.r[0]-path.r[1]);  
+		// Project one point to datum and add to path in
+		// this special case
+		latlon(lat0,lon0,delta0,theta,&lat,&lon);
+		radius = r0_ellipse(lat);  // This forces point to datum
+		this_point = grid.gtoc(lat,lon,radius);
+		pathout(0,1)=this_point.x1;
+		pathout(1,1)=this_point.x2;
+		pathout(2,1)=this_point.x3;
+		ii=2;
+		delta0 = 0.0;  // Reset to zero to get distance correct.
+	}
+	else if(i0==0)
+	{
+		// simple case for exact match
+		delta0=0.0;
+		ii=1;
+		// This is a bit ugly, but we need to increment i0 by one
+		// here or we duplicate the first point in the loop below.
+		// Confusing but allows a common loop for all 3 cases 
+		// with this oddity.
+		i0=1;
+	}
+	else
+	{
+		//
+		// Land here if this ray path needs to be projected
+		// from below datum
+		// Note i0 can be assumed 1 or larger here because of
+		// conditional above sets i0
+		//
+		delta0 = path.delta[i0-1] 
+			+ (r0-path.r[i0])
+			*(path.delta[i0]-path.delta[i0-1])
+			   /(path.r[i0-1]-path.r[i0]);  
+		// Here we need to add another extra point to to 
+		// connect first point to ray mesh.
+		latlon(lat0,lon0,path.delta[i0]-delta0,theta,&lat,&lon);
+		// This forces next point to r0 of ray mesh 
+		this_point = grid.gtoc(lat,lon,path.r[i0]);
+		pathout(0,1)=this_point.x1;
+		pathout(1,1)=this_point.x2;
+		pathout(2,1)=this_point.x3;
+		ii=2;
+	}
+	// fill out the rest of the path
+	for(i=i0;i<path.npts&&ii<pathout.columns();++i,++ii)
+	{
+		latlon(lat0,lon0,path.delta[i]-delta0,theta,&lat,&lon);
 		radius = r0_ellipse(lat) - (path.r[0]-path.r[i]);
 		this_point = grid.gtoc(lat,lon,radius);
 		pathout(0,ii)=this_point.x1;
