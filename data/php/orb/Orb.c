@@ -1745,6 +1745,12 @@ PHP_FUNCTION(pforbstat)
 }
 /* }}} */
 
+/* N.B. the following function needs to be lowercase; despite the case-
+ * insensitivity of PHP functions to the interpreter, the Zend engine
+ * only handles the implementation well if the C-side function name
+ * is all lowercase. Thus 'unstuffpkt' instead of 'unstuffPkt': 
+ */
+
 /* {{{ proto array unstuffPkt( string srcname, double time, string packet, int nbytes ) */
 PHP_FUNCTION(unstuffpkt)
 {
