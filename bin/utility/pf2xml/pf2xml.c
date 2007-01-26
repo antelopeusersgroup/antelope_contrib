@@ -25,6 +25,9 @@ main( int argc, char **argv )
 	int	offset;
 	int	rc;
 	char	c;
+	char	dir[FILENAME_MAX];
+	char	base[FILENAME_MAX];
+	char	suffix[FILENAME_MAX];
 	FILE	*fp;
 
 	elog_init( argc, argv );
@@ -98,8 +101,10 @@ main( int argc, char **argv )
 	} else if( rc < 0 ) {
 		die( 1, "pf2xml: problem reading parameter file %s\n", pfname );
 	}
+	
+	parsepath( pfname, dir, base, suffix );
 
-	xml = pf2xml( pf, pfname, prolog, flags );
+	xml = pf2xml( pf, base, prolog, flags );
 
 	if( xml == NULL ) {
 		die( 1, "pf2xml: conversion failed\n" );
