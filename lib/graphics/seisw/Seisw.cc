@@ -2052,6 +2052,16 @@ static void load_z_matrix_peng(vector<TimeSeries> data,
                 double dt)
 {
         int i,j,iz,id;
+	// This was found to happen in some situations and needs to be 
+	// avoided.
+	if(data.size()!=n2)
+	{
+		char message[256];
+                sprintf(message,"SeismicPlot::load_z_matrix():  "
+			" ensemble size = %d does not match number expected"
+			" for window = %d\n",data.size(),n2);
+		throw SeisppError(string(message));
+	}
 	// Initialize z to zero.  Without this data on right after endtime
 	// can be random garbage.
 	for(iz=0;iz<(n1*n2);++iz) z[iz]=0.0;
@@ -3790,6 +3800,30 @@ static void ReInitialize(
        nw->seisw.seisw_parameters=para=new SeiswPar();
        para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
  }
+ /* Fix Jan 2007:  modified from Initialize.  These weren't being reset correctly */
+TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
+if (nw->seisw.seisw_ca==NULL) {
+    ca=new SeiswCA();	
+    nw->seisw.seisw_ca=ca;
+} else 
+	ca=static_cast<SeiswCA *>(nw->seisw.seisw_ca);
+int nmember;
+ca->nmember=nmember=tse->member.size();
+if(nmember<=0) throw SeisppError("no data to plot\n");
+{
+	(ca->curvecolor).clear();
+	for(i=0;i<nmember;++i) (ca->curvecolor).push_back(para->default_curve_color);
+}
+	
+if((ca->x2)==NULL)
+	// This should never really be executed, but safer
+	ca->x2=new float[nmember];
+else
+{
+	delete [] ca->x2;
+	ca->x2=new float[nmember];
+}
+	
 
   SetBox((Widget)nw);
 
