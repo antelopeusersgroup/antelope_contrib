@@ -1,4 +1,94 @@
-default_phases &Tbl{
-P
-S
+smartpick_geometry		
+dbpick_command_iconified 	0
+dbpick_command_geometry 	80x12
+dbpick_geometry 		800x500+50+50
+dbpick_options
+path				/bin:/usr/bin:/usr/openwin/bin:/usr/X11R6/bin:&antelope/bin
+shell				/bin/sh
+unmap_menubar			0
+balloon_help			1
+antelope			&env(ANTELOPE)
+
+layout &Tbl{
+#Widget parameters for smartpick GUI: 
+#type   name          width     row,col  title       balloon-message
+#--------------------------------------------------------------------
+notebook
+notebook_page Waveforms
+   button     sw_on	 	- 	0,0 	Show waveforms 	{Turn on waveform plotting (sw on)}
+   button     sw_off	 	- 	0,1 	Hide waveforms 	{Turn off waveform plotting (sw off)}
+   button     group_All		-	0,2	All		{Select this subset of traces (sc)}
+#  button     group_KNET	-	0,2	KNET		{Select this subset of traces (sc)}
+   button     tfit		-	0,3	Toggle Time-fit {Toggle the time-window fit mode (tfit)} 
+   button     fw		-	1,0	First Waveform  {Time scroll to the first existing waveform (fw)}
+   button     nw		-	1,1	Next Waveform   {Time scroll to the next existing waveform (nw)}
+   button     pw		-	1,2	Previous Waveform  {Time scroll to the previous existing waveform (pw)}
+   button     dw		-	1,3	Delete Empty 	{Delete channels with no waveforms in the display (dw)}
+   optionmenu groups_Alpha	- 	2,0	Alphabetical A-C D-L K-Z {Set the station group for dbpick display (sc)}
+   optionmenu groups_Namespace	- 	2,1	Namespace_Networks <nettype ww> <nettype lo> {Set the station group for dbpick display (sc)}
+   optionmenu groups_Circuits	- 	2,2	Circuits <nettype cr> {Set the station group for dbpick display (sc)}
+   optionmenu groups_Process	- 	2,3	Processing_groups <nettype pr> {Set the station group for dbpick display (sc)}
+   button     sfit		-	3,0	Vertical Fit 	{Fit the trace-display in the vertical direction (sfit)}
+   button     swa		-	3,1	Show Arrival Wfs {Show only waveforms with arrivals (swa)}
+   button     swd		-	3,2	Show Detection Wfs {Show only waveforms with detections (swd)}
+   button     swda		-	3,3	Show D & A Wfs 	{Show only waveforms with detections or arrivals (swda)}
+   optionmenu channels 		- 	4,0	Channels <auto> {Set the channels for dbpick display (sc)}
+   optionmenu cts 		- 	4,1	Units Physical Counts {Set the amplitude units to be in counts or physical units (cts)}
+   optionmenu mg 		- 	4,2	Acceleration nm_per_sec_2 milli_g {Set the units for acceleration to be in mill-g or nm-per-sec2 (mg)}
+   optionmenu gp 		- 	4,3	Gaps segment zero interp none {Set the gap display method (gp)}
+endnotebook_page
+notebook_page Arrivals
+   optionmenu show_predicted 	- 	0,0	show_predicted_arrivals off S,P basic {Show predicted arrivals (sp)}
+   optionmenu default_phase 	- 	0,1	default_phase P S {Set default phase for arrival picking (ph)}
+   button     fa		-	1,0	First Arrival   {Time scroll to the first arrival with an existing waveform (fa)}
+   button     na		-	1,1	Next Arrival    {Time scroll to the next arrival with an existing waveform (na)}
+   button     pa		-	1,2	Previous Arrival  {Time scroll to the previous arrival with an existing waveform (pa)}
+   button     sa_on		-	2,0	Show Arrivals 	{Show the arrival pick flags (sa on)}
+   button     sa_off		-	2,1	Hide Arrivals 	{Hide the arrival pick flags (sa off)}
+   button     sd_on		-	2,2	Show Detections	{Show the detection glyphs (sd on)}
+   button     sd_off		-	2,3	Hide Detections	{Hide the detection glyphs (sd off)}
+   button     soa_on		-	3,0	Show Overlay Arrivals {Show the overlay arrival pick flags (soa on)}
+   button     soa_off		-	3,1	Hide Overlay Arrivals {Hide the overlay arrival pick flags (soa off)}
+   button     sf_on		-	3,2	Show First Motions {Show the first motion glyphs (sf on)}
+   button     sf_off		-	3,3	Hide First Motions {Hide the first motion glyphs (sf off)}
+endnotebook_page
+notebook_page Events
+   button     fe		-	0,0	First Event   	{Time scroll to the first event in the origin table (fe)}
+   button     ne		-	0,1	Next Event    	{Time scroll to the next event in the origin table (ne)}
+   button     pe		-	0,2	Previous Event  {Time scroll to the previous event in the origin table (pe)}
+   button     le		-	0,3	Last Event  	{Time scroll to the last event in the origin table (le)}
+   button     tse		-	1,0	Time Scroll to Event     {Time scroll the display to the current event origin time (tse)}
+   button     Fe		-	1,1	Find event with assoc     {Find event with associations to displayed arrivals (Fe)}
+   button     ae		-	1,2	Find event that assocs     {Find event that associates to displayed arrivals (ae)}
+   button     rec		-	1,3	Record     	{Arrange stations as a record-section from current origin (rec)}
+   entry      orid 		10 	2,0	Orid 		{Set the dbpick origin-id (se)}
+endnotebook_page
+notebook_page Special
+   entry   ts			-	0,0	Start Time      {Start time for waveform display (ts)}
+   entry   tw			-	0,1	Time Window 	{Time window in seconds for waveform display (tw)}
+   button  exec_spgram 		- 	1,0 	Spectrogram 	{Execute dbspgram(1) on a single channel of displayed waveform data (exec dbspgram)}
+endnotebook_page
+notebook_page Control
+   entry   dbname 		60 	0,0:2 	Dbname 		{primary database name}
+   entry   appname 		60 	1,0:2 	Appname 	{dbpick Tk window name}
+   button  start_dbpick 	- 	2,0	Start dbpick 	{Launch the dbpick application on the current database}
+   button  kill_dbpick 		- 	2,1 	Kill dbpick 	{Kill the current dbpick application}
+   button  start_dbe 		- 	3,0	Start dbe 	{Launch the dbe application on the current database}
+endnotebook_page
+endnotebook
+}
+
+groups &Arr{
+	All		*
+	A-C		[A-C].*
+	D-L		[D-L].*
+	K-Z		[K-Z].*
+#	KNET		net(KNET)
+}
+
+channels &Arr{
+	All		.*
+	Verticals	.*Z
+	Horizontals	.*[NE]
+	dbloc2
 }

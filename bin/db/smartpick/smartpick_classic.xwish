@@ -87,7 +87,7 @@ proc establish_menu {} {
 	set db [dbopen $dbname r]
 	set db [dblookup $db 0 wfdisc 0 0]
 	if { [dbquery $db dbTABLE_SIZE] <= 0 } {
-		puts stderr "smartpick: table wfdisc not present in $dbname. Bye."
+		puts stderr "smartpick_classic: table wfdisc not present in $dbname. Bye."
 		exit -1
 	}
 
@@ -189,7 +189,7 @@ proc start_dbpick {} {
 	global DbpickWinName WinfileCommand DbpickCommandWindow dbname env
 	global ComoutCommand
 
-	set DbpickCommandWindowName "smartpick_dbpick_[pid]"
+	set DbpickCommandWindowName "smartpick_classic_dbpick_[pid]"
 
   	exec sh -c "xterm -title $DbpickCommandWindowName \
 -iconic -geometry 80x24+0-0 -e dbpick -nostarttalk $WinfileCommand \
@@ -202,7 +202,7 @@ proc start_dbpick {} {
 	set DbpickCommandWindow [lindex $DbpickCommandWindow 3]
 }
 
-proc quit_smartpick {} {
+proc quit_smartpick_classic {} {
 	global DbpickWinName
 	catch {send -async $DbpickWinName "quit"}
 	global WinfileCommand  
@@ -299,7 +299,7 @@ proc set_dbpick_time {} {
 	global Db_min_time Db_max_time
 	global tw
 
-	send -async $DbpickWinName "exec tksend smartpick \"set tw %tw\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set tw %tw\""
 	tkwait variable tw
 
 	set epoch [str2epoch $Timescroll(next_start_time)]
@@ -324,11 +324,11 @@ proc save_waveforms {} {
 	global ts tw
 	global stachans
 
-	send -async $DbpickWinName "exec tksend smartpick \"set ts %ts\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set ts %ts\""
 	tkwait variable ts
-	send -async $DbpickWinName "exec tksend smartpick \"set tw %tw\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set tw %tw\""
 	tkwait variable tw
-	send -async $DbpickWinName "exec tksend smartpick \"set stachans \[list %stachans\]\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set stachans \[list %stachans\]\""
 	tkwait variable stachans
 
 	set expr ""
@@ -439,7 +439,7 @@ proc init_windows {} {
 #		-bg "MediumSpringGreen" -command change_options
 
 	button .control.q -text "Quit" -font $Font -bg red \
-		-command quit_smartpick
+		-command quit_smartpick_classic
 	
 	scale .vert.span -label "Number of traces" -font $Font -length 200 \
 		-orient horizontal -tickinterval 20 -from 0 -to 60 \
@@ -506,7 +506,7 @@ proc init_windows {} {
 		global auto_waveforms_on
 		global auto_display_picked
 
-		send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+		send -async $DbpickWinName "exec tksend smartpick_classic \"set current_orid %orid\""
 		tkwait variable current_orid
 
 		catch {send -async $DbpickWinName "sw off sc *"}
@@ -584,7 +584,7 @@ proc init_windows {} {
 		catch {send -async $DbpickWinName "sp off"}
 	}
 
-	set default_phases [pfgetlist @smartpick#default_phases]
+	set default_phases [pfgetlist @smartpick_classic#default_phases]
 
 	foreach ph $default_phases {
 		button .opt.inc.ph_$ph -text "Set Default phase $ph" -bg yellow -font $Font \
@@ -744,7 +744,7 @@ proc select_nearest_unpicked_stations {} {
 	global current_orid DbpickWinName lookups_dbname trial_dbname
 	global auto_waveforms_on starttrace span stalist
 
-	send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set current_orid %orid\""
 	tkwait variable current_orid
 
 	if { $current_orid < 0 } {
@@ -798,7 +798,7 @@ proc select_picked_stations {} {
 	global auto_waveforms_on
 	global arrtimes
 
-	send -async $DbpickWinName "exec tksend smartpick \"set current_orid %orid\""
+	send -async $DbpickWinName "exec tksend smartpick_classic \"set current_orid %orid\""
 	tkwait variable current_orid
 
 	if { $current_orid < 0 } {
@@ -922,14 +922,14 @@ proc init_globals {} {
 proc unique_dbpick_winfile_name {} {
 	global env
 
-	if { ! [file exists "$env(HOME)/.smartpick_dbpick"] } {
-		return "$env(HOME)/.smartpick_dbpick"
+	if { ! [file exists "$env(HOME)/.smartpick_classic_dbpick"] } {
+		return "$env(HOME)/.smartpick_classic_dbpick"
 	} else {
 		set i 2
-		while { [file exists "$env(HOME)/.smartpick_dbpick$i"] } {
+		while { [file exists "$env(HOME)/.smartpick_classic_dbpick$i"] } {
 			incr i
 		}
-		return "$env(HOME)/.smartpick_dbpick$i"
+		return "$env(HOME)/.smartpick_classic_dbpick$i"
 	}
 }
 

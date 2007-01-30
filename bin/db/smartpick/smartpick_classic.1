@@ -1,0 +1,150 @@
+.\" %W% %G%
+.TH SMARTPICK_CLASSIC 1 "$Date$"
+.SH NAME
+smartpick_classic \- Graphical driver for dbpick
+.SH SYNOPSIS
+.nf
+\fBsmartpick_classic \fP[\-nowait] [\-appname \fIwindow_name\fP]
+                [\-winfile \fIfilename\fP] [\-comout \fInamed_pipe\fP]
+		\fIdbname\fP \fI[trial_dbname]\fP
+.fi
+.SH DESCRIPTION
+\fBsmartpick_classic\fP is the original graphical-user-interface driver 
+for dbpick. It has been replaced by the entirely rewritten \fBsmartpick(1)\fP
+application. The old version has been preserved under the name
+\fBsmartpick_classic\fP so network operations are not forced to switch to 
+the new version, though they should consider doing so. 
+
+\fBsmartpick_classic\fP allows
+button-driven control of the most common prompt-based navigation
+commands to dbpick, plus several other common commands. A button to
+launch dbe on the database being viewed is also included. Smartpick will
+complain and die if no wfdisc table is present in the database. If a
+trial database name is specified, the trial database is used to look up
+association information for displaying picked traces. This is provided
+for compatibility with dbloc2. If the trial database is not specified, the
+default input database is used for looking up association information.
+Most of the arguments are designed to allow \fBsmartpick_classic\fP to be used in 
+conjunction with dbloc2 (see the example in the EXAMPLE section below).
+
+\fBsmartpick_classic\fP expects a very particular and strict interpretation of the
+network.nettype field, and the network and affiliation tables, in order
+to build the full set of network menus. In addition to the "Station" menu, 
+which allows one to focus on one particular station, there are five menus 
+at lower left labelled 
+.nf
+	Array
+	Processing Group
+	Circuits
+	Namespace Network
+	Volcano
+.fi
+These buttons provide the ability to select networks of stations from the 
+affiliation table and display all the stations in the chosen network. 
+Instead of presenting all the networks of the network table in one list, 
+these buttons divide the networks into the five listed categories, based
+on the value of the network.nettype field. The accepted values for 
+network.nettype are: 
+.nf
+	ar		(Array)
+	pr		(Processing Group)
+	cr		(Circuit)
+	lo or ww	(Namespace)
+	vo		(Volcano)
+.fi
+"Array" means a cluster of stations spaced closely enough together to 
+take advantage of coherence in the wavefield. "Circuit" indicates 
+a group of stations which all come in on the same telemetry channel (e.g. 
+one radio link for multiplexed analog stations) or acquisition mechanism. 
+"Volcano" indicates a cluster of stations all on a single
+volcano. "Processing Group" is intended as a grab-bag for all other types 
+of station groupings. Finally, there are actually two appropriate uses 
+of the term "network": one use means a simple association of stations 
+in some arbitrary category. The other use labels a 'namespace' in which a 
+given station-name is unique. In the application for which \fBsmartpick_classic\fP 
+was written, the network.nettype codes of "lo" and "ww" are used to 
+identify the networks which are used as namespace identifiers--e.g. the 
+SEED-code network names like "AK", "AZ", or "KN". Without this restriction,
+the ambiguity of "network" in the CSS3.0 database causes difficulties. 
+
+Note that both the station and network menus are tear-off menus, for 
+convenience (just click on the dotted line at the top of the list). 
+
+\fBsmartpick_classic\fP can compute and display spectra, or extract segments of waveform 
+data, based on the waveforms shown in the window. It does this by 
+subcontracting to the dbspgram(1) and trexcerpt(1) commands, respectively. 
+In the case of the "spectrograms" button, only the first trace in dbpick's 
+display list is used. Note that if you did a "Zoom" instead of a "Select" 
+in dbpick, you won't get what you expected!! 
+
+The parameter file specifies a table of default_phases. For each entry in the
+list, a button will be created to "Set Default Phase" (invoking the "ph" command
+on the dbpick(1) command line).
+.SH OPTIONS
+.IP -nowait
+Bring up dbpick automatically upon startup
+.IP -nostarttalk
+Synomym for -nowait, done for ease of use with dbloc2
+.IP "-appname window_name"
+Argument \fIwindow_name\fP is passed to dbpick as the -appname option
+.IP "-winfile winfile"
+Argument is passed to dbpick as the -winfile option. If this option is
+not specified, the default name "smartpick_classic_dbpick" is used, or a unique
+name is generated if that file already exists.
+.IP "-comout named_pile"
+Argument is passed to dbpick as the -comout option.
+.SH PARAMETER FILE
+.nf
+default_phases &Tbl{
+P
+S
+Pn
+Pg
+Sn
+Sg
+Lg
+}
+.fi
+.SH EXAMPLE
+One may use \fBsmartpick_classic\fP in conjunction with dbloc2 by changing the dbpick 
+launch-line in dbloc2.pf. For example, instead of 
+.nf
+
+dbpick          /usr/openwin/bin/xterm -geometry 80x24+0-0 -e dbpick -nostarttalk -winfile $Define{Work_dir}/dbpick_window -geom 1000x700 -appname dbloc_dbpick -comout $Define{Work_dir}/dbpick_pipe $Input_database
+
+.fi
+One would use 
+.nf
+
+dbpick          /usr/openwin/bin/xterm -iconic -e \fBsmartpick_classic\fP -nostarttalk -winfile $Define{Work_dir}/dbpick_window -appname dbloc_dbpick -comout $Define{Work_dir}/dbpick_pipe $Input_database $Trial_database
+
+.fi
+.SH FILES
+.IP smartpick_classic_dbpick
+default name of winfile created for dbpick, if one
+is not specified on the command line. If one already exists, a unique name
+will be generated. This file is removed upon normal exit.
+.SH "SEE ALSO"
+.nf
+smartpick(1), dbpick(1), dbe(1), dbloc2(1), dbspgram(1), trexcerpt(1)
+.fi
+.SH "BUGS AND CAVEATS"
+\fBsmartpick_classic\fP is the old version of the completely rewritten
+\fBsmartpick(1)\fP application. Users should consider switching to the 
+latter, or kindly providing feedback to kent@lindquistconsulting.com 
+on any shortcomings that prevent its adoption (the author cannot promise
+changes will be made, however all feedback will be considered). 
+
+This program was originally written for a specific application, 
+and has been slowly generalized. Many parts of the internals should 
+be rewritten, to remove prototype strategies, clean up the code, and 
+replaces hacks with correct engineering. However, the program has been
+popular enough and requested widely enough that it is being submitted on
+an 'as-is' basis.  
+
+Lingering winfiles from previous runs (e.g. smartpick_classic_dbpick) would
+confuse some dbpick options in previous editions. Generation of
+unique winfile names hopefully fixed this. If \fBsmartpick_classic\fP exits normally (i.e.
+with the Quit button), it will clean up the winfile made by dbpick.
+.SH AUTHOR
+Kent Lindquist

@@ -1,12 +1,12 @@
-BIN = smartpick psmartpick
+BIN = smartpick_classic smartpick
 
-MAN1 = smartpick.1 psmartpick.1
+MAN1 = smartpick_classic.1 smartpick.1
 
-PF = smartpick.pf psmartpick.pf
+PF = smartpick_classic.pf smartpick.pf
 
 include $(ANTELOPEMAKE)
 
-psmartpick: psmartpick.xpls 
+smartpick: smartpick.xpls 
 
-psmartpick.xpls: psmartpick.xpls.id
-	getid < psmartpick.xpls.id > $@
+smartpick.xpls: smartpick.xpls.id
+	getid < smartpick.xpls.id > $@
