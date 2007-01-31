@@ -15,8 +15,8 @@ layout &Tbl{
 #--------------------------------------------------------------------
 notebook
 notebook_page Waveforms
-   button     sw_on	 	- 	0,0 	Show waveforms 	{Turn on waveform plotting (sw on)}
-   button     sw_off	 	- 	0,1 	Hide waveforms 	{Turn off waveform plotting (sw off)}
+   optionmenu sw	 	- 	0,0 	Waveforms Show Hide	{Turn waveform plotting off and on (sw)}
+   optionmenu pal	 	- 	0,1 	P-align on off	{Turn P-align mode off and on (pal)}
    button     group_All		-	0,2	All		{Select this subset of traces (sc)}
 #  button     group_KNET	-	0,2	KNET		{Select this subset of traces (sc)}
    button     tfit		-	0,3	Toggle Time-fit {Toggle the time-window fit mode (tfit)} 

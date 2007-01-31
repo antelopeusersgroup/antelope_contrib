@@ -172,12 +172,14 @@ Find an event that associates with the current arrivals.  This is
 equivalent to the \fIae\fP command in the dbpick(1) command window.
 .IP sw_on
 This button turns on waveform plotting in dbpick(1). This is equivalent
-to the \fIsw on\fP command in the dbpick(1) command window.
+to the \fIsw on\fP command in the dbpick(1) command window. An alternative
+approach in \fBsmartpick\fP is to use the \fIsw\fP option menu. 
 .IP sw_off
 This button turns off waveform plotting in dbpick(1) (i.e. forces
 dbpick(1) to plot waveforms as gray bars, for quick navigation and
 review of data coverage). This is equivalent to the \fIsw off\fP
-command in the dbpick(1) command window.
+command in the dbpick(1) command window. An alternative
+approach in \fBsmartpick\fP is to use the \fIsw\fP option menu. 
 .IP sa_on
 This button shows arrival pick flags in dbpick(1). This is equivalent
 to the \fIsa on\fP command in the dbpick(1) command window.
@@ -253,6 +255,20 @@ parameter-file are \fImilli_g\fP and \fInm_per_sec_2\fP.
 .IP gp
 This is a ptkform(3p) optionmenu which executes the dbpick(1) command
 \fIgp\fP to set the gap handling.
+.IP pal
+This is a ptkform(3p) optionmenu which executes the dbpick(1) command
+\fIpal\fP to set P-align mode. See the dbpick(1) man page for further 
+details on P-align mode. The accepted values are \fIon\fP and \fIoff\fP. 
+.IP sw
+This is a ptkform(3p) optionmenu which executes the dbpick(1) command
+\fIsw\fP to set the waveform display mode. This is equivalent to 
+the dbpick(1) \fIsw\fP command. This option menu may have two values, 
+\fIShow\fP and \fIHide\fP. The former turns on waveform display by 
+executing the dbpick(1) command \fIsw on\fP and the latter turns off 
+waveform display (replaces the squiggles with simple, fast-plotting 
+gray bars) by executing the dbpick(1) command \fIsw off\fP. An alternative
+approach in \fBsmartpick\fP is to use the \fIsw_on\fP and \fIsw_off\fP 
+buttons.
 .SS widget bindings -- entry boxes
 .IP dbname
 An entry box of this name allows the name of the database to be

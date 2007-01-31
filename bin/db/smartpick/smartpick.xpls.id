@@ -527,6 +527,44 @@ sub mg {
 	}
 }
 
+sub pal {
+	
+	if( $State{var}->{pal} eq "on" ) {
+
+		send_to_dbpick( "pal on" );
+
+	} elsif( $State{var}->{pal} eq "off" ) {
+
+		send_to_dbpick( "pal off" );
+
+	} else {
+
+		ptkalert( $MW, "Unrecognized Waveforms mode " .
+			"'$State{var}->{pal}' in parameter file " . 
+			"(must be 'on' or 'off'); " .
+			"Ignoring request" );
+	}
+}
+
+sub sw {
+	
+	if( $State{var}->{sw} eq "Show" ) {
+
+		send_to_dbpick( "sw on" );
+
+	} elsif( $State{var}->{sw} eq "Hide" ) {
+
+		send_to_dbpick( "sw off" );
+
+	} else {
+
+		ptkalert( $MW, "Unrecognized Waveforms mode " .
+			"'$State{var}->{sw}' in parameter file " . 
+			"(must be 'Show' or 'Hide'); " .
+			"Ignoring request" );
+	}
+}
+
 sub init_database {
 
 	$State{network_stations} = { };
@@ -969,6 +1007,8 @@ sub bind_widgets {
 				    cts
 				    mg
 				    gp
+				    sw
+				    pal
  			            );
  
  	my( @bindings ) = ( @nooption_widgets,
@@ -1104,10 +1144,12 @@ foreach $param ( keys %params ) {
 $ENV{'SHELL'} = $State{shell};
 $ENV{'PATH'} = $State{path};
 
-my( @required ) = qw( dbpick
+my( @required ) = qw( dbe 
+		      dbpick
 		      unregister
 		      xterm
-		      xwininfo );
+		      xwininfo
+		      );
 
 foreach $program ( @required ) {
 	
