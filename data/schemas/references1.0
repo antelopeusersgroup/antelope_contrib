@@ -132,13 +132,14 @@ Attribute keyvalue
 	}
 	;
 
-Attribute location
+Attribute physloc
 	String ( 30 )
 	Format ( "%-30s" )
 	Null  ( "-"  )
-	Description ( "storage location of article" )
+	Description ( "physical storage location of article" )
 	Detail {
-	    The location field specifies the place where a copy of the 
+	    The location field specifies the place where a physical
+	    printed copy of the 
 	    article is stored, i.e. "Filing Cabinet 2", 
 	    "Kyrghyz articles ring-binder", "Original Journal",
 	    "/home/kent/ftp", etc.
@@ -346,9 +347,9 @@ Attribute url
 	String (200)
 	Format ( "%-200s" )
 	Null ( "-" )
-	Description ( "url associated with a web bullet" )
+	Description ( "web uniform resource locator associated with an item" )
 	Detail {
-		If there is a url associated with a web bullet, this 
+		If there is a web address (URL) associated with an item, this 
 		field lists the url.
 	}
 	;
@@ -456,12 +457,17 @@ Relation subject
 
 Relation storage
 	Fields (
-	    artid location lddate
+	    artid physloc dir dfile url lddate
 		)
 	Primary ( artid )
-	Description ( "Physical storage locations of journal articles" )
+	Description ( "Physical or Electronic storage locations of full text of journal articles" )
 	Detail {
-		The storage relation identifies where the database owner
-		thought a copy of the article was stored.
+		The storage relation identifies where a user can 
+		obtain a copy of the entire article. This may be 
+		a physical printout stored somewhere as specified by
+		the physloc field; a dir/dfile for a copy on local
+		disk; or a url for a copy accessible on the web. 
+		More than one of these choices may be non-null for 
+		any given article. 
 	}
 	;
