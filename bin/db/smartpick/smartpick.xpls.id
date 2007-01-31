@@ -40,6 +40,7 @@
 #   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #   POSSIBILITY OF SUCH DAMAGE.
 
+use POSIX ();
 use Tk;
 use Tk::widgets qw(JPEG);
 use Tk::NoteBook;
@@ -54,6 +55,7 @@ require Tk::ErrorDialog;
 use Datascope;
 use ptkform;
 use ptkalert;
+use rt;
 
 $HOME = $ENV{'HOME'};
 
@@ -260,9 +262,9 @@ sub freeze_size {
 
 sub start_dbe {
  
-	my( $cmd ) = "dbe $State{dbname} &";
+	my( $cmd ) = "dbe $State{dbname}";
 
-	system( $cmd );
+	rtbkg( $cmd );
 
 	return;
 }
@@ -339,9 +341,9 @@ sub start_dbpick {
 		     "$dbpick_command_geometry " .
 		     "-e dbpick -nostarttalk $winfile $dbpick_geometry " .
 		     "$appname $comout $State{dbpick_options} " .
-		     "$State{dbname} &";
+		     "$State{dbname}";
 
-	system( $cmd );
+	$State{DbpickPid} = rtbkg( $cmd );
 
  	# Let the window get created!: 
  	sleep( 1 );
@@ -1090,6 +1092,11 @@ if ( @ARGV < 1 ) {
 
 	parse_command_line( @ARGV );
 }
+
+my $sigset = POSIX::SigSet->new();
+my $action = POSIX::SigAction->new('quit_smartpick',
+		 $sigset, &POSIX::SA_NODEFER);
+POSIX::sigaction(&POSIX::SIGTERM, $action);
 
 init_database();
 

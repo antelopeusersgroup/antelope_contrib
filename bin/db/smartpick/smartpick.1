@@ -730,6 +730,10 @@ layouts table for putting some things in a separate window (probably
 with an optional geometry argument). However, this has not been done at
 this time.
 
+The Perl signal-handler appears only to acknowledge SIGTERM when the mouse
+is in the Tk window. This can delay an external kill -15 request until 
+the mouse-reenters the Tk window. 
+
 .SH AUTHOR
 .nf
 Kent Lindquist Lindquist Consulting, Inc.
