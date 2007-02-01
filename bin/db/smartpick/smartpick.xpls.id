@@ -588,6 +588,19 @@ sub gp {
 	send_to_dbpick( "gp $State{var}->{gp}" );
 }
 
+sub post_wfchange {
+	
+	if( $State{auto_dw} ) {
+		
+		send_to_dbpick( "dw" );
+	}
+
+	if( $State{auto_sw_on} ) {
+
+		send_to_dbpick( "sw on" );
+	}
+}
+
 sub get_channels_expr {
 
 	if( ! defined( $State{channels} ) ) {
@@ -634,6 +647,8 @@ sub channels {
 	# currently on display, by enquiring of dbpick
 
 	send_to_dbpick( "sc .*:$expr" );
+
+	post_wfchange();
 }
 
 sub groups { 
@@ -879,6 +894,8 @@ sub show_group {
 	$regex .= ":" . get_channels_expr();
 
 	send_to_dbpick( "sc $regex" );
+
+	post_wfchange();
 }
 
 sub set_dbpick_orid {
@@ -1019,6 +1036,18 @@ sub init_menubar {
 				    -onvalue => -1,
 				    -underline => 0, 
 				    -command => \&toggle_balloons );
+
+	$w_menubar_Options_m->add( "checkbutton", 
+				    -label => "Delete Empty Waveforms Automatically", 
+				    -variable => \$State{auto_dw},
+				    -onvalue => -1,
+				    -underline => 0 );
+
+	$w_menubar_Options_m->add( "checkbutton", 
+				    -label => "Show Waveforms Automatically", 
+				    -variable => \$State{auto_sw_on},
+				    -onvalue => -1,
+				    -underline => 0 );
 
 	$w_menubar_Options->configure( -menu => $w_menubar_Options_m );
 
@@ -1273,6 +1302,8 @@ init_database();
 @booleans = qw( dbpick_command_iconified
 		unmap_menubar 
 		balloon_help
+		auto_dw
+		auto_sw_on
 		);
 
 foreach $param ( @booleans ) {

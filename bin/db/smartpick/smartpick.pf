@@ -7,6 +7,8 @@ path				/bin:/usr/bin:/usr/local/bin:/usr/openwin/bin:/usr/X11R6/bin:&antelope/b
 shell				/bin/sh
 unmap_menubar			0
 balloon_help			1
+auto_dw                         1
+auto_sw_on                      1
 print_command			lp
 default_postscript_file		smartpick.ps
 default_snapshot_file		smartpick.gif

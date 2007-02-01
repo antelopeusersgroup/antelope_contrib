@@ -460,6 +460,14 @@ Cntl-C in the \fBsmartpick\fP GUI window).
 .IP balloon_help
 This boolean value determines whether balloon help is activated or
 not.
+.IP auto_sw_on
+This boolean value determines whether waveforms are automatically turned 
+on (via the dbpick \fIsw\fP command) after any operation that affects 
+which waveforms are shown. 
+.IP auto_dw
+This boolean value determines empty waveforms are automatically deleted
+(via the dbpick \fIdw\fP command) after any operation that affects 
+which waveforms are shown. 
 .SS Example parameter file
 .in 2c
 .ft CW
@@ -475,6 +483,8 @@ ntelope/bin
 shell                           /bin/sh 
 unmap_menubar                   0 
 balloon_help                    1
+auto_dw                         1
+auto_sw_on                      1
 print_command                   lp
 default_postscript_file         smartpick.ps
 default_snapshot_file           smartpick.gif
