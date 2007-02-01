@@ -49,6 +49,7 @@ use Tk::BrowseEntry;
 use Tk::Balloon;
 use Tk::Frame;
 use Tk::LabFrame;
+use Tk::FileSelect;
 
 require Tk::ErrorDialog;
 
@@ -89,12 +90,81 @@ sub ptkalert::position {
     $top->geometry("+$x+$y") ;
 }
 
+# This method needs to be overloaded to ensure proper taint-checking:
+
+sub Tk::FileSelect::reread
+{
+ my ($w) = @_;
+ my $dir = $w->cget('-directory');
+ if (defined $dir)
+  {
+   if (!defined $w->cget('-filter') or $w->cget('-filter') eq '')
+    {
+     $w->configure('-filter', '*');
+    }
+   my $dl = $w->Subwidget('dir_list');
+   $dl->delete(0, 'end');
+   $dl->selectionClear(0,'end');
+   my $fl = $w->Subwidget('file_list');
+   $fl->delete(0, 'end');
+   local *DIR;
+   if (opendir(DIR, $dir))
+    {
+     my $file = $w->cget('-initialfile');
+     my $seen = 0;
+     my $accept = $w->cget('-accept');
+     # Insert taint-checking here:
+     my @taintentries = readdir(DIR);
+     my @cleanentries;
+     foreach my $f ( @taintentries ) {
+	if( $f =~ m@(.*)@ ) {
+		push( @cleanentries, $1 );
+	}
+     }
+     foreach my $f (@cleanentries)
+      {
+       next if ($f eq '.');
+       my $path = "$dir/$f";
+       if (-d $path)
+        {
+         $dl->insert('end', $f);
+        }
+       else
+        {
+         if (&{$w->{match}}($f))
+          {
+           if (!defined($accept) || $accept->Call($path))
+            {
+             $seen = $fl->index('end') if ($file && $f eq $file);
+             $fl->insert('end', $f)
+            }
+          }
+        }
+      }
+     closedir(DIR);
+     if ($seen)
+      {
+       $fl->selectionSet($seen);
+       $fl->see($seen);
+      }
+     else
+      {
+       $w->configure(-initialfile => undef) unless $w->cget('-create');
+      }
+    }
+   $w->{DirectoryString} = $dir . ($dir ne '/' ? '/' : '') . $w->cget('-filter');
+  }
+ $w->{'reread'} = 0;
+ $w->Unbusy if $w->{'Busy'};
+}
+
 sub MainWindow::Receive {
 	my( $objref, $string ) = @_;
 
 	$string =~ s/^\s*//;
 
 	my( @allowed ) = qw( quit_smartpick
+			     finish_pspipe
 			     \$State{orid}\s+=\s+[[:digit:]-]+ 
 			     \$State{dbloc_channels}\s+=\s+[^/]+ 
 			     print.* );
@@ -180,6 +250,85 @@ sub parse_command_line {
 		}
 	}	
 	
+	return;
+}
+
+sub finish_pspipe {
+	
+	# SCAFFOLD check for zero length and DNE
+
+	my( $cmd ) = "cat $State{pspipe_tempfile} | $State{pspipe_command}";
+
+	rtbkg( $cmd );
+
+	unlink( $State{pspipe_tempfile} );
+
+	return;
+}
+
+sub print_dbpick {
+	
+	$State{pspipe_command} = $State{print_command};
+
+	$State{pspipe_tempfile} = "/tmp/smartpick_ps_$>_$$.ps"; 
+
+	my( $dbpick_cmd ) = "ps $State{pspipe_tempfile}";
+	    $dbpick_cmd   .= " send smartpick finish_pspipe";
+
+	send_to_dbpick( $dbpick_cmd );
+
+	return;
+}
+
+sub pipe_dbpick {
+	
+	$State{pspipe_command} = ptkask( $MW, 
+		"Pipe postscript to command:" );
+
+	$State{pspipe_command} =~ s/^\s*\|//g;
+
+	if( $State{pspipe_command} =~ /^\s*$/ ) {
+		
+		return;
+	}
+
+	$State{pspipe_tempfile} = "/tmp/smartpick_ps_$>_$$.ps"; 
+
+	my( $dbpick_cmd ) = "ps $State{pspipe_tempfile}";
+	    $dbpick_cmd   .= " send smartpick finish_pspipe";
+
+	send_to_dbpick( $dbpick_cmd );
+
+	return;
+}
+
+sub postscript_dbpick {
+	
+	my( $psfile ) = $MW->FileSelect( 
+			-directory => ".",
+			-initialfile => "$State{default_postscript_file}",
+			-create => 1,
+			-title => "Postscript file" )->Show;
+
+	send_to_dbpick( "ps $psfile" );
+
+	return;
+}
+
+sub snapshot_dbpick {
+	
+	my( $snapshotfile ) = $MW->FileSelect( 
+			-directory => ".",
+			-initialfile => "$State{default_snapshot_file}",
+			-create => 1,
+			-title => "Snapshot file" )->Show;
+
+	my( $winid ) = get_dbpick_win_id();
+
+	my( $cmd ) = "import -silent -window $winid $snapshotfile";
+
+	rtbkg( $cmd );
+
 	return;
 }
 
@@ -829,6 +978,26 @@ sub init_menubar {
 
 	my $w_menubar_File_m = $w_menubar_File->Menu( -tearoff => 0 );
 
+	my( $snapshot_state ) = 
+		$State{snapshots_possible} ? "normal" : "disabled";
+
+	$w_menubar_File_m->add( "command", -label => "Print", 
+				    -underline => 0, 
+				    -command => \&print_dbpick );
+
+	$w_menubar_File_m->add( "command", -label => "Snapshot...", 
+				    -underline => 0, 
+				    -state => $snapshot_state,
+				    -command => \&snapshot_dbpick );
+
+	$w_menubar_File_m->add( "command", -label => "Postscript...", 
+				    -underline => 1, 
+				    -command => \&postscript_dbpick );
+
+	$w_menubar_File_m->add( "command", -label => "Pipe_postscript...", 
+				    -underline => 1, 
+				    -command => \&pipe_dbpick );
+
 	$w_menubar_File_m->add( "command", -label => "Quit", 
 				    -underline => 0, 
 				    -command => \&quit_smartpick );
@@ -1097,6 +1266,7 @@ my $sigset = POSIX::SigSet->new();
 my $action = POSIX::SigAction->new('quit_smartpick',
 		 $sigset, &POSIX::SA_NODEFER);
 POSIX::sigaction(&POSIX::SIGTERM, $action);
+POSIX::sigaction(&POSIX::SIGINT, $action);
 
 init_database();
 
@@ -1127,6 +1297,9 @@ foreach $param ( @booleans ) {
 	      smartpick_geometry 	[[:alnum:]_\-+]*
 	      path			/[[:alnum:]_/:.]+
 	      shell			/[[:alnum:]_/]+/(tc|c|ba|k)?sh
+	      print_command		[[:alnum:]_/:.]+
+	      default_postscript_file	[[:alnum:]_/:.]+
+	      default_snapshot_file	[[:alnum:]_/:.]+
 	      );
 
 foreach $param ( keys %params ) {
@@ -1151,8 +1324,11 @@ foreach $param ( keys %params ) {
 $ENV{'SHELL'} = $State{shell};
 $ENV{'PATH'} = $State{path};
 
+$State{snapshots_possible} = 1;
+
 my( @required ) = qw( dbe 
 		      dbpick
+		      import
 		      unregister
 		      xterm
 		      xwininfo
@@ -1161,6 +1337,13 @@ my( @required ) = qw( dbe
 foreach $program ( @required ) {
 	
 	if( ! check_for_executable( $program ) ) {
+
+		if( $program eq "import" ) {
+
+			$State{snapshots_possible} = 0;
+
+			next;
+		}
 		
 		elog_die( "Couldn't find the '$program' executable on path. " . 
 			"Please check the 'path' parameter in $State{pf}.pf. " .

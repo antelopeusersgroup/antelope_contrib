@@ -3,10 +3,13 @@ dbpick_command_iconified 	0
 dbpick_command_geometry 	80x12
 dbpick_geometry 		800x500+50+50
 dbpick_options
-path				/bin:/usr/bin:/usr/openwin/bin:/usr/X11R6/bin:&antelope/bin
+path				/bin:/usr/bin:/usr/local/bin:/usr/openwin/bin:/usr/X11R6/bin:&antelope/bin
 shell				/bin/sh
 unmap_menubar			0
 balloon_help			1
+print_command			lp
+default_postscript_file		smartpick.ps
+default_snapshot_file		smartpick.gif
 antelope			&env(ANTELOPE)
 
 layout &Tbl{

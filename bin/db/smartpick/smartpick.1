@@ -57,6 +57,16 @@ the menubar.
 A control-C in the \fBsmartpick\fP window kills the application (as
 does File->Quit).
 
+Screen-snapshots of the dbpick screen may be made with the File->Snapshot
+menu item if the ImageMagick import(1) command is installed and 
+available. Dbpick postscript output may be created with the File->Postscript 
+menu item, or piped to a unix command with the File->Pipe_postscript menu
+item (this can be useful, for example, if you have the ps2pdf(1) 
+utility installed on your system, e.g. specify \fIps2pdf - myfile.pdf\fP). 
+The File->Print menu item sends the dbpick postscript output to the 
+command specified as \fIprint_command\fP in the parameter file (usually 
+the Unix \fIlp\fP command). 
+
 .SS widget bindings
 The following section describes the details of the \fBsmartpick\fP
 graphical layout tools. If you are content with the layout and
@@ -398,6 +408,11 @@ style of the dbpick \fIsc\fP command). If the special key of
 specified), \fBsmartpick\fP attempts to coordinate with a running
 instance of dbloc_buttons(1) (i.e.  dbloc2(1) and set the channels as
 specified in dbloc2(1).
+.IP default_postscript_file
+This value gives the default name of postscript files to create.
+.IP default_snapshot_file
+This value gives the default name of screen-snapshot files to create. 
+This feature uses the ImageMagick import(1) command. 
 .IP dbpick_command_iconified
 This boolean value indicates whether the dbpick command window should
 start iconified or not.
@@ -422,6 +437,12 @@ manager.
 This parameter specifies the unix execution path used to find a 
 variety of command-line applications, such as xterm(1), xwininfo(1), 
 and dbpick(1). 
+.IP print_command
+This is the Unix command to which a postscript file can be 
+delivered (via standard-input) in order to print to a printer. When 
+the \fBsmartpick\fP File->Print menu item is invoked, a dbpick postscript 
+file is created and piped to this command. The print command must appear
+on the Unix execution path specified in the \fIpath\fP parameter.
 .IP shell
 This is the absolute path to the shell under which perl system commands
 are run. Valid options are absolute paths to tcsh, csh, bash, ksh, or
@@ -454,6 +475,9 @@ ntelope/bin
 shell                           /bin/sh 
 unmap_menubar                   0 
 balloon_help                    1
+print_command                   lp
+default_postscript_file         smartpick.ps
+default_snapshot_file           smartpick.gif
 antelope                        &env(ANTELOPE)
 
 .ne 66
@@ -730,10 +754,15 @@ layouts table for putting some things in a separate window (probably
 with an optional geometry argument). However, this has not been done at
 this time.
 
-The Perl signal-handler appears only to acknowledge SIGTERM when the mouse
-is in the Tk window. This can delay an external kill -15 request until 
-the mouse-reenters the Tk window. 
+The Snapshot feature relies on the ImageMagick import(1) command, 
+and will be disabled if that command is not found on the execution 
+path (as specified by the parameter-file value \fIpath\fP). 
 
+The print and pipe-to-postscript menu items launch unsupervised
+unix tasks in the background. If these fail, the user may not be 
+notified in any easily visible way (complaints and messages go to the 
+standard output of the \fBsmartpick\fP executable itself, but this 
+may be buried in dbloc2(1) log files). 
 .SH AUTHOR
 .nf
 Kent Lindquist Lindquist Consulting, Inc.
