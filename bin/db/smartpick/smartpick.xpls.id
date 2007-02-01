@@ -50,6 +50,7 @@ use Tk::Balloon;
 use Tk::Frame;
 use Tk::LabFrame;
 use Tk::FileSelect;
+use Tk::Table;
 
 require Tk::ErrorDialog;
 
@@ -255,7 +256,14 @@ sub parse_command_line {
 
 sub finish_pspipe {
 	
-	# SCAFFOLD check for zero length and DNE
+	if( ! -e $State{pspipe_tempfile} || -z $State{pspipe_tempfile} ) {
+
+		ptkalert( $MW, 
+			"Dbpick postscript file '$State{pspipe_tempfile}' " . 
+			"is non-existent or empty. Cancelling request." );
+
+		return;
+	}
 
 	my( $cmd ) = "cat $State{pspipe_tempfile} | $State{pspipe_command}";
 
@@ -735,8 +743,26 @@ sub init_database {
 
 	$State{network_stations} = { };
 	$State{nettype_networks} = { };
+	$State{stations_frame_stations} = [];
 
 	my( @db ) = dbopen( $State{dbname}, "r" );
+
+	@db = dblookup( @db, 0, "site", 0, 0 );
+
+	@db = dbsort( @db, "sta" );
+	# DEBUG @db = dbsubset( @db, "$State{stations_frame_subset}" );
+
+	$nrecs = dbquery( @db, dbRECORD_COUNT );
+
+	if( $nrecs > 0 ) {
+
+		for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
+
+			my( $sta ) = dbgetv( @db, "sta" );
+
+			push( @{$State{stations_frame_stations}}, $sta );
+		}
+	}
 
 	@db = dblookup( @db, 0, "affiliation", 0, 0 );
 
@@ -1150,9 +1176,56 @@ sub init_windows {
 		}
 	}
 
+	if( defined( $State{widgets}->{stations_frame} ) ) {
+
+		init_stations_frame( $State{widgets}->{stations_frame} );
+	}
+
 	toggle_balloons(); 
 
 	return ( $w );
+}
+
+sub station {
+	my( $sta ) = @_;
+
+	my( $expr ) = get_channels_expr();
+	
+	send_to_dbpick( "sc $sta:$expr" );
+
+	post_wfchange();
+
+	return;
+}
+
+sub init_stations_frame {
+	my( $w ) = @_;	
+
+	my( $table ) = $w->Table( 
+			-columns => $State{stations_frame_columns}, 
+			-scrollbars => "e" )->pack();
+
+	my( $row ) = 0; 
+	my( $column ) = 0;
+
+	foreach $sta ( @{$State{stations_frame_stations}} ) {
+
+		my( $swidget ) = $table->Button( 
+			-command => [\&station, $sta],
+			-text => $sta );
+
+		$table->put( $row, $column, $swidget );
+
+		$column++;
+
+		if( $column >= $State{stations_frame_columns} ) {
+			
+			$row++;
+			$column = 0;
+		}
+	}
+
+	return;
 }
 
 sub toggle_balloons {
@@ -1331,6 +1404,8 @@ foreach $param ( @booleans ) {
 	      print_command		[[:alnum:]_/:.]+
 	      default_postscript_file	[[:alnum:]_/:.]+
 	      default_snapshot_file	[[:alnum:]_/:.]+
+	      stations_frame_columns	[[:digit:]]+
+	      stations_frame_subset	.*
 	      );
 
 foreach $param ( keys %params ) {

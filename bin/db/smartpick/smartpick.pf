@@ -13,6 +13,8 @@ print_command			lp
 default_postscript_file		smartpick.ps
 default_snapshot_file		smartpick.gif
 antelope			&env(ANTELOPE)
+stations_frame_columns		10
+stations_frame_subset		offdate == NULL
 
 layout &Tbl{
 #Widget parameters for smartpick GUI: 
@@ -41,6 +43,10 @@ notebook_page Waveforms
    optionmenu cts 		- 	4,1	Units Physical Counts {Set the amplitude units to be in counts or physical units (cts)}
    optionmenu mg 		- 	4,2	Acceleration nm_per_sec_2 milli_g {Set the units for acceleration to be in mill-g or nm-per-sec2 (mg)}
    optionmenu gp 		- 	4,3	Gaps segment zero interp none {Set the gap display method (gp)}
+endnotebook_page
+notebook_page Stations
+   frame      stations_frame	-	0,0	Stations 
+   endframe
 endnotebook_page
 notebook_page Arrivals
    optionmenu show_predicted 	- 	0,0	show_predicted_arrivals off S,P basic {Show predicted arrivals (sp)}
@@ -95,5 +101,6 @@ channels &Arr{
 	All		.*
 	Verticals	.*Z
 	Horizontals	.*[NE]
+	Broadbands	BH.
 	dbloc2
 }
