@@ -167,6 +167,8 @@ sub MainWindow::Receive {
 	my( @allowed ) = qw( quit_smartpick
 			     finish_pspipe
 			     \$State{orid}\s+=\s+[[:digit:]-]+ 
+			     \$State{stas}\s+=\s+qw\([[:alnum:] ]+\) 
+			     .*
 			     \$State{dbloc_channels}\s+=\s+[^/]+ 
 			     print.* );
 
@@ -577,9 +579,16 @@ sub ask_dbpick {
 
 	if( $q eq "orid" ) {
 
-		send_to_dbpick( "send smartpick $State{orid} = %orid" );
+		send_to_dbpick( "send smartpick \$State{orid} = %orid" );
 
 		$MW->waitVariable( \$State{orid} );
+
+	} elsif( $q eq "stas" ) {
+
+		send_to_dbpick( 
+			"send smartpick \@{\$State{stas}} = qw(%stas)" );
+
+		$MW->waitVariable( \@{$State{stas}} );
 	}
 }
  
@@ -663,10 +672,11 @@ sub channels {
 
 	my( $expr ) = get_channels_expr();
 	
-	# SCAFFOLD  should really choose only the stations 
-	# currently on display, by enquiring of dbpick
+	ask_dbpick( "stas" );
 
-	send_to_dbpick( "sc .*:$expr" );
+	my( $sta_expr ) = join( ",", map { $_ .= ":$expr"} @{$State{stas}} );
+
+	send_to_dbpick( "sc $sta_expr" );
 
 	post_wfchange();
 }
@@ -901,6 +911,8 @@ sub show_group {
 
 	my( $regex );
 
+	my( $expr ) = get_channels_expr();
+
 	if( ! defined( $State{groups}->{$group} ) ) {
 	
 		ptkalert( $MW, "Can't find group '$group' in parameter-file. " .
@@ -922,14 +934,16 @@ sub show_group {
 			return; 
 		}
 
-		$regex = join( ",", @stas );
+		$regex = join( ",", map { $_ .= ":$expr"} @stas );
 
 	} else {
 
 		$regex = $State{groups}->{$group};
-	}
 
-	$regex .= ":" . get_channels_expr();
+		$regex =~ s/,/:$expr,/g;
+
+		$regex .= ":" . $expr;
+	}
 
 	send_to_dbpick( "sc $regex" );
 
@@ -1480,7 +1494,7 @@ $State{groups} = pfget( $State{pf}, "groups" );
 
 foreach $group ( keys %{$State{groups}} ) {
 
-	if( $State{groups}->{$group} =~ /^([[:alnum:]:_\*\.\-\[\]\(\)]+)$/ ) {
+	if( $State{groups}->{$group} =~ /^([[:alnum:],:_\*\.\-\[\]\(\)]+)$/ ) {
 		
 		$State{groups}->{$group} = $1;
 
