@@ -542,10 +542,14 @@ sub send_to_dbloc {
 
 		$MW->send( "-async", "dbloc_buttons" => "$command" );
 
+		return 0;
+
 	} elsif( ! $silent ) {
 		
 		ptkalert( $MW, "Couldn't find an application with the TCL/Tk" .
 				"name 'dbloc_buttons'. Is dbloc2 running?" );
+
+		return -1;
 	}
 }
 
@@ -554,9 +558,17 @@ sub ask_dbloc2 {
 
 	if( $q eq "channels" ) {
 
-		send_to_dbloc( "send -async smartpick \\\$State{dbloc_channels} = \\\"[channels]\\\"" );
+		my( $cmd ) = "send -async smartpick " . 
+			"\\\$State{dbloc_channels} = \\\"[channels]\\\"";
 
-		$MW->waitVariable( \$State{dbloc_channels} );
+		if( send_to_dbloc( $cmd, 0 ) < 0 ) {
+
+			return;
+
+		} else {
+
+			$MW->waitVariable( \$State{dbloc_channels} );
+		}
 	}
 }
  
