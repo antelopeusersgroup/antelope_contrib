@@ -1218,12 +1218,90 @@ sub shift_notebook {
 	}
 }
 
+sub shift_toplevel {
+	my( $ref ) = @_;
+
+	my( @toplevel_specs ) = ();
+
+	my( $geometry ) = "";
+
+	if( ${$ref}[0] !~ /^toplevel\s*([[:alnum:]\+-]+)?/ ) {
+		
+		return;
+
+	} else {
+
+		if( defined( $1 ) ) {
+
+			$geometry = $1;
+		}
+
+		shift( @{$ref} );
+	}
+
+	while( @{$ref} && ( ( $spec = shift( @{$ref} ) ) ne "endtoplevel" ) ) {
+
+		push( @toplevel_specs, $spec );
+	}
+
+	if( $spec eq "endtoplevel" ) {
+
+		return ( $geometry, @toplevel_specs );
+
+	} else {
+		
+		die( "Error in parameter file: 'toplevel' line in 'layout'" .
+		 " table does not have matching 'endtoplevel' line\n" );
+	}
+}
+
 sub init_ptkform {
 	my( $w, $ref ) = @_;
 
 	my( @specs ) = shift_ptkform( $ref );
 
 	my $ptk_frame = $w->Frame()
+				->pack( -side => "top", 
+					-fill => "x", 
+					-expand => "yes" );
+
+	eval { ptkform( $ptk_frame, 
+			$State{var}, 
+			$State{widgets}, 
+			@specs ) };
+
+	foreach $c ( $ptk_frame->children() ) {
+
+		if( $c->class() eq "Balloon" ) {
+
+			push( @{$State{balloons}}, $c );
+		}
+	} 
+
+	if( $@ ) {
+
+		elog_die( "Failed to build ptkform-based GUI " .
+			  "window: $@. Bye.\n" );
+	}
+
+	return;
+}
+
+sub init_toplevel {
+	my( $w, $ref ) = @_;
+
+	my( $geometry, @specs ) = shift_toplevel( $ref );
+
+	my( $wt ) = $w->Toplevel();
+
+	$wt->title( "smartpick" );
+
+	if( defined( $geometry ) && $geometry ne "" ) {
+
+		$wt->geometry( $geometry );
+	}
+
+	my $ptk_frame = $wt->Frame()
 				->pack( -side => "top", 
 					-fill => "x", 
 					-expand => "yes" );
@@ -1315,6 +1393,10 @@ sub init_layout {
 		if( $specs[0] eq "notebook" ) {
 
 			init_notebook( $w, \@specs );
+
+		} elsif( $specs[0] =~ /^toplevel/ ) {
+
+			init_toplevel( $w, \@specs );
 
 		} else {
 

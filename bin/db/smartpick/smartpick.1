@@ -492,12 +492,16 @@ format of the ptkform(3p) utility. See the man page for ptkform(3p) for
 more details.
 
 In addition to the ptkform(3p) widgets and frames, \fBsmartpick\fP also
-supports the \fInotebook\fP and \fIendnotebook\fP keywords in the
-layout table. This allows widgets (buttons, optionmenus etc.) to be put
+supports the \fInotebook\fP, \fIendnotebook\fP, \fItoplevel\fP, 
+and \fIendtoplevel\fP keywords in the
+layout table. 
+
+The \fInotebook\fP construct allows widgets (buttons, optionmenus etc.) 
+to be put
 into a tabbed-notebook style layout.  If these keywords appear, they
 should be in a matched pair, i.e. there should be a \fInotebook\fP
-entry as the first element of the layout table and an \fIendnotebook\fP
-entry as the last element of the layout table:
+entry in the layout table to begin the collection of widgets, and an
+\fIendnotebook\fP entry to end the collection:
 
 .in 4c
 .ft CW
@@ -514,7 +518,9 @@ endnotebook
 .fi
 .ft R
 .in
+
 Between these \fInotebook\fP lines, one or more pages may be specified with
+
 .in 4c
 .ft CW
 .nf
@@ -527,9 +533,37 @@ endnotebook_page
 .fi
 .ft R
 .in
+
 Within these lines, one can specify standard ptkform(3p) widgets that
 should appear on the particular tabbed page. The \fIpagename\fP word is
 used as the label for the page tab.
+
+Similarly, the \fItoplevel\fP construct allows widgets to be put 
+into a separate top-level window. If these keywords appear, they
+should be in a matched pair, i.e. there should be a \fItoplevel\fP
+entry and an \fIendtoplevel\fP entry after all the enclosed widgets 
+are listed. An optional X-windows style geometry argument may appear
+on the same line as the \fItoplevel\fP specification (only the location
+of the toplevel window should be modified, not the size). For example, 
+the following layout-table segment will create a stations-selection frame
+in a separate window at the bottom left corner of the screen:
+.in 4c
+.ft CW
+.nf
+.ne 5
+
+layout &Tbl{
+ ...
+toplevel +50-50
+   frame      stations_frame	-	0,0	Stations 
+   endframe
+endtoplevel
+ ...
+}
+
+.fi
+.ft R
+.in
 
 .IP path
 This parameter specifies the unix execution path used to find a 
@@ -725,7 +759,8 @@ Different \fBsmartpick\fP layouts can be created by changing the
 parameter file. For example, by copying the default parameter-file and
 editing with the changes shown below, \fBsmartpick\fP displays as a
 column of buttons on the right side of the screen, showing only the
-chosen buttons:
+chosen buttons, plus a separate window at the lower right with buttons
+to choose each station by name:
 .in 2c
 .ft CW
 .nf
@@ -744,6 +779,11 @@ layout &Tbl{
    optionmenu show_predicted   -   6,0   show_predicted_arrivals off S,P basic 
    optionmenu default_phase    -   7,0   default_phase P S 
    button     tse              -   8,0   Time Scroll to Event     
+toplevel +50-50
+   frame      stations_frame   -   0,0   Stations 
+   endframe
+endtoplevel
+}
 
 .fi
 .ft R
@@ -840,11 +880,6 @@ internal regular expressions.  It is conceivable that some valid cases
 have been omitted from these expressions, in which case \fBsmartpick\fP
 will complain and may require slight modification.
 
-It would be relatively easy to implement \fItearoff\fP pages in the
-layouts table for putting some things in a separate window (probably
-with an optional geometry argument). However, this has not been done at
-this time.
-
 The Snapshot feature relies on the ImageMagick import(1) command, 
 and will be disabled if that command is not found on the execution 
 path (as specified by the parameter-file value \fIpath\fP). 
@@ -855,9 +890,10 @@ notified in any easily visible way (complaints and messages go to the
 standard output of the \fBsmartpick\fP executable itself, but this 
 may be buried in dbloc2(1) log files). 
 
-With so much geometry control left to ptkform(1) and the user, is is 
-common to get layouts with odd blank space. There's no escaping the 
-need for time spend on careful layout design. 
+With so much geometry control left to the user and to the ptkform(1)
+module, it is common to get layouts with odd blank space. There's no
+escaping the need for time spent on careful layout design. It is 
+possible to make quite a mess. 
 
 If there's no waveform data for a station, choosing the button for that 
 station may not produce a sensible response (it may make the dbpick screen
