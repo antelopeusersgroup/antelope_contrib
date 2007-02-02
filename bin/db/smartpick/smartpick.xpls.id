@@ -1166,11 +1166,169 @@ sub init_menubar {
 	return;
 }
 
+sub shift_ptkform {
+	my( $ref ) = @_;
+
+	my( @ptkform_specs ) = ();
+
+	while( @{$ref} ) {
+
+		if( ${$ref}[0] eq "notebook" ||
+		    ${$ref}[0] =~ /^toplevel/ ) {
+
+			last;
+		
+		} else {
+
+			push( @ptkform_specs, shift( @{$ref} ) );
+		}
+	}
+
+	return @ptkform_specs;
+}
+
+
+sub shift_notebook {
+	my( $ref ) = @_;
+
+	my( @notebook_specs ) = ();
+
+	if( ${$ref}[0] ne "notebook" ) {
+		
+		return;
+
+	} else {
+
+		shift( @{$ref} );
+	}
+
+	while( @{$ref} && ( ( $spec = shift( @{$ref} ) ) ne "endnotebook" ) ) {
+
+		push( @notebook_specs, $spec );
+	}
+
+	if( $spec eq "endnotebook" ) {
+
+		return @notebook_specs;
+
+	} else {
+		
+		die( "Error in parameter file: 'notebook' line in 'layout'" .
+		 " table does not have matching 'endnotebook' line\n" );
+	}
+}
+
+sub init_ptkform {
+	my( $w, $ref ) = @_;
+
+	my( @specs ) = shift_ptkform( $ref );
+
+	my $ptk_frame = $w->Frame()
+				->pack( -side => "top", 
+					-fill => "x", 
+					-expand => "yes" );
+
+	eval { ptkform( $ptk_frame, 
+			$State{var}, 
+			$State{widgets}, 
+			@specs ) };
+
+	foreach $c ( $ptk_frame->children() ) {
+
+		if( $c->class() eq "Balloon" ) {
+
+			push( @{$State{balloons}}, $c );
+		}
+	} 
+
+	if( $@ ) {
+
+		elog_die( "Failed to build ptkform-based GUI " .
+			  "window: $@. Bye.\n" );
+	}
+
+	return;
+}
+
+sub init_notebook {
+	my( $w, $ref ) = @_;
+
+	my( @specs ) = shift_notebook( $ref );
+
+	my( @pagespecs, $pagename, $ptk_frame );
+
+	my( $notebook ) = $w->NoteBook();
+
+	$notebook->pack( -side => "top", 
+			 -fill => "both", 
+			 -expand => "yes" );
+
+	while( $spec = shift( @specs ) ) {
+		
+		if( $spec =~ /^notebook_page\s+([[:alnum:]_]+)/) {
+		
+			$pagename = $1;
+
+			@pagespecs = ();
+
+			$ptk_frame = $notebook->add( "$pagename", 
+					-label => "$pagename", 
+					-anchor => "ne" );
+
+		} elsif( $spec =~ /^endnotebook_page/ ) {
+
+			eval { ptkform( $ptk_frame, 
+					$State{var}, 
+					$State{widgets}, 
+					@pagespecs ) };
+
+			foreach $c ( $ptk_frame->children() ) {
+
+				if( $c->class() eq "Balloon" ) {
+
+					push( @{$State{balloons}}, $c );
+				}
+			} 
+
+			if( $@ ) {
+
+				elog_die( "Failed to build ptkform-" .
+				  "based GUI notebook window: $@. " .
+				  "Bye.\n" );
+			}
+
+		} else {
+			
+			push( @pagespecs, $spec );
+		}
+	}
+
+	return;
+}
+
+sub init_layout {
+	my( $w ) = shift( @_ );
+	my( @specs ) = @_;
+
+	while( @specs ) {
+
+		if( $specs[0] eq "notebook" ) {
+
+			init_notebook( $w, \@specs );
+
+		} else {
+
+			init_ptkform( $w, \@specs );
+		}
+	}
+
+	return;
+}
+
 sub init_windows {
 	my( @specs ) = @_;
 	
-	my( $notebook, $ptk_frame, @pagespecs, $pagename, 
-	    %pagevar, %pagewidgets );
+	my( $ptk_frame );
 
 	my( $w ) = MainWindow->new();
 
@@ -1189,78 +1347,7 @@ sub init_windows {
 
 	ptksticky( "nsew" );
 
-	if( $specs[0] eq "notebook" ) {
-
-		shift( @specs );
-
-		$notebook = $w->NoteBook();
-
-		$notebook->pack( -side => "top", 
-				 -fill => "both", 
-				 -expand => "yes" );
-
-		while( $spec = shift( @specs ) ) {
-		
-			if( $spec eq "endnotebook" ) {
-				
-				last;
-
-			} elsif( $spec =~ /^notebook_page\s+([[:alnum:]_]+)/) {
-			
-				$pagename = $1;
-
-				@pagespecs = ();
-
-				$ptk_frame = $notebook->add( "$pagename", 
-						-label => "$pagename", 
-						-anchor => "ne" );
-
-			} elsif( $spec =~ /^endnotebook_page/ ) {
-
-				eval { ptkform( $ptk_frame, 
-						$State{var}, 
-						$State{widgets}, 
-						@pagespecs ) };
-
-				foreach $c ( $ptk_frame->children() ) {
-
-					if( $c->class() eq "Balloon" ) {
-
-						push( @{$State{balloons}}, $c );
-					}
-				} 
-
-				if( $@ ) {
-
-					elog_die( "Failed to build ptkform-" .
-					  "based GUI notebook window: $@. " .
-					  "Bye.\n" );
-				}
-
-			} else {
-				
-				push( @pagespecs, $spec );
-			}
-		}
-
-	} else {
-
-		my $ptk_frame = $w->Frame()
-					->pack( -side => "top", 
-						-fill => "x", 
-						-expand => "yes" );
-
-		eval { ptkform( $ptk_frame, 
-				$State{var}, 
-				$State{widgets}, 
-				@specs ) };
-
-		if( $@ ) {
-
-			elog_die( "Failed to build ptkform-based GUI " .
-				  "window: $@. Bye.\n" );
-		}
-	}
+	init_layout( $w, @specs );
 
 	if( defined( $State{widgets}->{stations_frame} ) ) {
 
