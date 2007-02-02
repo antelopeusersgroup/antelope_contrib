@@ -1723,7 +1723,7 @@ $State{groups} = pfget( $State{pf}, "groups" );
 
 foreach $group ( keys %{$State{groups}} ) {
 
-	if( $State{groups}->{$group} =~ /^([[:alnum:]<>=~\|&\/,:_\*\.\-\[\]\(\)]+)$/ ) {
+	if( $State{groups}->{$group} =~ /^([[:alnum:][:space:]<>=~\|\&\/,:_\*\.\-\[\]\(\)]+)$/ ) {
 		
 		$State{groups}->{$group} = $1;
 
