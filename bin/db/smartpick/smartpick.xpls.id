@@ -167,8 +167,7 @@ sub MainWindow::Receive {
 	my( @allowed ) = qw( quit_smartpick
 			     finish_pspipe
 			     \$State{orid}\s+=\s+[[:digit:]-]+ 
-			     \$State{stas}\s+=\s+qw\([[:alnum:] ]+\) 
-			     .*
+			     \@{\$State{stas}}\s+=\s+qw\\\([[:alnum:][:space:]]+\\\) 
 			     \$State{dbloc_channels}\s+=\s+[^/]+ 
 			     print.* );
 
