@@ -472,10 +472,14 @@ in dbpick. Each key in this array gives the name of the group (used
 elsewhere to invoke the group); each value gives the list of stations
 to display (in the style of a dbpick regular expression for the dbpick
 \fIsc\fP command) or a function that can generate the station/channel
-list. There is currently one valid function defined,
+list. There are currently two valid function defined. The first is 
 \fInet\fP(somenet), which takes the name of a network defined in the
 affiliation table of the database. When invoked, this group of stations
-is extracted from the database and displayed.
+is extracted from the database and displayed. The second is 
+\fInet\fP(someexpr), which queries dbpick(1) for the current orid, 
+finds the corresponding row of the origin table, joins that row to the 
+site table, subsets for the specified expression, sorts by distance, 
+and displays the results. 
 
 .IP layout
 The layout table specifies the presentation of the graphical user

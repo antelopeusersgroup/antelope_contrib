@@ -884,6 +884,51 @@ sub init_database {
 	return;
 }
 
+sub extract_subset {
+	my( $subset_expr ) = @_;
+
+	my( @stas );
+
+	@stas = ();
+
+	ask_dbpick( "orid" );
+
+	if( $State{orid} < 0 ) {
+		
+		ptkalert( $MW, "NULL orid in dbpick" );
+
+		return ();
+	}
+
+	@db = dbopen( $State{dbname}, "r" );
+
+	@db = dbprocess( @db, 
+			"dbopen origin",
+			"dbsubset orid == $State{orid}",
+			"dbjoin site",
+			"dbsubset $subset_expr",
+			"dbsort distance(lat,lon,site.lat,site.lon)" 
+			);
+
+	my( $nstas ) = dbquery( @db, dbRECORD_COUNT );
+
+	if( $nstas <= 0 ) {
+
+		ptkalert( $MW, "No stations matching subset expression" );
+
+		return ();
+	}
+
+	for( $db[3] = 0; $db[3] < $nstas; $db[3]++ ) {
+
+		my( $sta ) = dbgetv( @db, "sta" );
+
+		push( @stas, $sta );
+	}
+
+	return @stas;
+}
+
 sub extract_net {
 	my( $net ) = @_;
 
@@ -929,6 +974,22 @@ sub show_group {
 
 			ptkalert( $MW, "No stations found for network " .
 				"'$net'. Ignoring request.\n" );
+
+			return; 
+		}
+
+		$regex = join( ",", map { $_ .= ":$expr"} @stas );
+
+	} elsif( $State{groups}->{$group} =~ /^subset\((.*)\)/ ) {
+	
+		my( $subset_expr ) = $1;
+
+		my( @stas ) = extract_subset( $subset_expr );
+
+		if( scalar( @stas ) <= 0 ) {
+
+			ptkalert( $MW, "No stations found for subset " .
+				"'$subset_expr'. Ignoring request.\n" );
 
 			return; 
 		}
@@ -1493,7 +1554,7 @@ $State{groups} = pfget( $State{pf}, "groups" );
 
 foreach $group ( keys %{$State{groups}} ) {
 
-	if( $State{groups}->{$group} =~ /^([[:alnum:],:_\*\.\-\[\]\(\)]+)$/ ) {
+	if( $State{groups}->{$group} =~ /^([[:alnum:]<>=~\|&\/,:_\*\.\-\[\]\(\)]+)$/ ) {
 		
 		$State{groups}->{$group} = $1;
 

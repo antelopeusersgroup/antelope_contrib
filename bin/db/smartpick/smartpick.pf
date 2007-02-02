@@ -26,7 +26,7 @@ notebook_page Waveforms
    optionmenu pal	 	- 	0,1 	P-align off on	{Turn P-align mode off and on (pal)}
    button     group_All		-	0,2	All		{Select this subset of traces (sc)}
 #  button     group_KNET 	-	0,2	KNET		{Select this subset of traces (sc)}
-   button     tfit		-	0,3	Toggle Time-fit {Toggle the time-window fit mode (tfit)} 
+   button     group_close	-	0,3	close           {Select this subset of traces (sc)} 
    button     fw		-	1,0	First Waveform  {Time scroll to the first existing waveform (fw)}
    button     nw		-	1,1	Next Waveform   {Time scroll to the next existing waveform (nw)}
    button     pw		-	1,2	Previous Waveform  {Time scroll to the previous existing waveform (pw)}
@@ -94,6 +94,7 @@ groups &Arr{
 	A-C		[A-C].*
 	D-L		[D-L].*
 	K-Z		[K-Z].*
+	close		subset(distance(lat,lon,site.lat,site.lon)<4)
 #	KNET		net(KNET)
 }
 
