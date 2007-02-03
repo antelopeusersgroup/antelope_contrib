@@ -15,6 +15,7 @@ default_snapshot_file		smartpick.gif
 antelope			&env(ANTELOPE)
 stations_frame_columns		10
 stations_frame_subset		offdate == NULL
+num_nearby_stations		0
 
 layout &Tbl{
 #Widget parameters for smartpick GUI: 
@@ -73,6 +74,7 @@ notebook_page Special
    button     tfit            -         1,1     Toggle Time-fit {Toggle the time-window fit mode (tfit)}
    entry   ts			-	1,2	Start Time      {Start time for waveform display (ts)}
    entry   tw			-	1,3	Time Window 	{Time window in seconds for waveform display (tw)}
+   entry   num_nearby_stations  10 	2,0	Number of Nearby Stations {Number of nearby stations to show with a selected station}
 endnotebook_page
 notebook_page Control
    entry   dbname 		60 	0,0:2 	Dbname 		{primary database name}

@@ -430,6 +430,8 @@ sub start_dbe {
 sub start_dbpick {
  
  	$State{DbpickCommandWindowName} = "smartpick_dbpick_$$";
+
+	$State{orid} = -1;
  
  	my( $iconic, $dbpick_command_geometry );
 
@@ -884,6 +886,31 @@ sub init_database {
 	return;
 }
 
+sub extract_nearby_stations {
+	my( $sta, $n ) = @_;
+
+	my( @stas ) = ();
+
+	@db = dbopen( $State{dbname}, "r" );
+
+	@db = dblookup( @db, "", "site", "sta", "$sta" );
+
+	my( $lat, $lon ) = dbgetv( @db, "lat", "lon" );
+
+	@db = dblookup( @db, "", "site", "", "" );
+
+	@db = dbsort( @db, "distance( $lat,$lon,lat,lon )" );
+
+	my( $nrecs ) = dbquery( @db, dbRECORD_COUNT );
+
+	for( $db[3] = 0; ($db[3] < $nrecs) && ($db[3] <= $n); $db[3]++ ) {
+
+		push( @stas, dbgetv( @db, "sta" ) );	
+	}
+
+	return @stas;
+}
+
 sub extract_subset {
 	my( $subset_expr ) = @_;
 
@@ -1325,6 +1352,8 @@ sub init_toplevel {
 			  "window: $@. Bye.\n" );
 	}
 
+	toplevel_bindings( $wt );
+
 	return;
 }
 
@@ -1441,12 +1470,28 @@ sub init_windows {
 	return ( $w );
 }
 
-sub station {
+sub show_station {
 	my( $sta ) = @_;
 
 	my( $expr ) = get_channels_expr();
 	
-	send_to_dbpick( "sc $sta:$expr" );
+	my( @stas ) = ();
+
+	if( $State{num_nearby_stations} > 0 ) {
+
+		my( @nearby ) = extract_nearby_stations( 
+				$sta, $State{num_nearby_stations} );
+
+		push( @stas, @nearby );
+
+	} else {
+
+		push( @stas, $sta );
+	}
+
+	my( $sta_expr ) = join( ",", map { $_ .= ":$expr"} @stas );
+
+	send_to_dbpick( "sc $sta_expr" );
 
 	post_wfchange();
 
@@ -1466,7 +1511,7 @@ sub init_stations_frame {
 	foreach $sta ( @{$State{stations_frame_stations}} ) {
 
 		my( $swidget ) = $table->Button( 
-			-command => [\&station, $sta],
+			-command => [\&show_station, $sta],
 			-text => $sta );
 
 		$table->put( $row, $column, $swidget );
@@ -1579,7 +1624,7 @@ sub bind_widgets {
 		} 
  	}
  
-	my( @entry_vars ) = qw( tw ts orid dbname appname );
+	my( @entry_vars ) = qw( tw ts orid dbname appname num_nearby_stations );
 
 	foreach $var ( @entry_vars ) {
 
@@ -1605,6 +1650,15 @@ sub bind_widgets {
 	return;
 }
 
+sub toplevel_bindings {
+	my( $w ) = @_;
+
+	$w->bind( "<Control-c>", \&quit_smartpick );
+	$w->bind( "<Control-C>", \&quit_smartpick );
+
+	return;
+}
+ 
 $Program = $0 ; 
 $Program =~ s".*/"" ;
 
@@ -1659,6 +1713,7 @@ foreach $param ( @booleans ) {
 	      print_command		[[:alnum:]_/:.]+
 	      default_postscript_file	[[:alnum:]_/:.]+
 	      default_snapshot_file	[[:alnum:]_/:.]+
+	      num_nearby_stations	[[:digit:]]+
 	      stations_frame_columns	[[:digit:]]+
 	      stations_frame_subset	.*
 	      );
@@ -1791,9 +1846,8 @@ Tk::CmdLine::SetArguments( "-title", "smartpick" );
 
 bind_widgets();
 
-$MW->bind( "<Control-c>", \&quit_smartpick );
-$MW->bind( "<Control-C>", \&quit_smartpick );
- 
+toplevel_bindings( $MW );
+
 $MW->geometry( $State{smartpick_geometry} );
 
 if( $State{nowait} ) {

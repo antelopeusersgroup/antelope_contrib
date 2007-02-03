@@ -340,6 +340,15 @@ instances of dbpick.
 An entry box of this name allows the name of the database to be
 changed, for starting and stopping dbpick(1) on various databases.
 
+.IP num_nearby_stations
+An entry box of this name controls how many nearby stations are shown 
+along with a given station, when a single station is chosen for 
+display. The initial value of this widget is set to the value of the 
+identically named \fInum_nearby_stations\fP parameter in the 
+parameter file. If \fInum_nearby_stations\fP is greater than zero, 
+the stations are sorted and displayed in order of ascending distance
+from the chosen station. 
+
 .IP orid
 An entry box of this name allows the user to specify the current origin
 ID to the running dbpick(1) application. This command invokes the
@@ -389,7 +398,6 @@ This argument is passed to dbpick as the -comout option.
 This argument is passed to dbpick as the -geom option. This overrides
 the parameter-file \fIdbpick_geometry\fP parameter.
 
-.SH PARAMETER FILE
 .IP -nostarttalk
 This is a synomym for -nowait, implemented for ease of use with
 dbloc2.  Note that this -nostarttalk option is slightly different from
@@ -411,6 +419,8 @@ default \fBsmartpick\fP.pf.
 This argument is passed to dbpick as the -winfile option. If this
 option is not specified, the default name "smartpick_dbpick" is used,
 or a unique name is generated if that file already exists.
+
+.SH PARAMETER FILE
 
 .SS Explanation of parameter-file parameters
 
@@ -565,6 +575,11 @@ endtoplevel
 .ft R
 .in
 
+.IP num_nearby_stations
+When an individual station is chosen for display, this parameter 
+value specifies the number of nearby stations that are displayed along 
+with it. 
+
 .IP path
 This parameter specifies the unix execution path used to find a 
 variety of command-line applications, such as xterm(1), xwininfo(1), 
@@ -633,6 +648,7 @@ print_command                   lp
 default_postscript_file         smartpick.ps
 default_snapshot_file           smartpick.gif
 antelope                        &env(ANTELOPE)
+num_nearby_stations             0
 
 .ne 66
 layout &Tbl{ #Widget parameters for smartpick GUI:  
@@ -843,6 +859,18 @@ stations or networks added after \fBsmartpick\fP has been launched will
 not be detected. Furthermore, networks which do not have any stations 
 associated with them in the affiliation table will be ignored by 
 \fBsmartpick\fP.
+
+The feature to show stations with nearby stations bases its calculation
+on the first entry of a given name in the site table. If that row 
+is closed with a non-null offdate and the station has since moved, the 
+calculation will be only approximate. It is hard to second-guess the 
+appropriate behavior here for a tool that will be used on both 
+current and historical data. Additionally, if the \fInum_nearby_stations\fP
+parameter is nonzero and a station is selected that has no data, 
+the nearby stations may be shown but the actual station selected 
+will be omitted. This is not an error; this is \fBsmartpick\fP
+and dbpick's best attempt to do what the user asked when not all
+the necessary information is available. 
 
 \fBsmartpick\fP is a way to send commands to dbpick. It is not intended
 to be a faithful mirror of the internal state of dbpick at any given
