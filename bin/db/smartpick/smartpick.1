@@ -355,6 +355,12 @@ ID to the running dbpick(1) application. This command invokes the
 dbpick(1) \fIse\fP command. A carriage-return press in the entry-box
 window sends the orid to the dbpick(1) application.
 
+.IP tc
+An entry box of this name allows the user to specify the time-correction 
+for overlay arrivals (dbpick(1) \fItc\fP command). The initial value 
+will be set to the value of the parameter-file variable 
+\fIoverlay_time_correction\fP.
+
 .IP ts
 An entry box of this name allows the user to specify the start time of
 the waveforms to be displayed in dbpick(1). Any string interpretable by
@@ -580,6 +586,10 @@ When an individual station is chosen for display, this parameter
 value specifies the number of nearby stations that are displayed along 
 with it. 
 
+.IP overlay_time_correction
+This parameter specifies the initial value for overlay time correction
+(applied through the dbpick(1) \fItc\fP command).
+
 .IP path
 This parameter specifies the unix execution path used to find a 
 variety of command-line applications, such as xterm(1), xwininfo(1), 
@@ -648,6 +658,7 @@ print_command                   lp
 default_postscript_file         smartpick.ps
 default_snapshot_file           smartpick.gif
 antelope                        &env(ANTELOPE)
+overlay_time_correction         0
 num_nearby_stations             0
 
 .ne 66
@@ -826,7 +837,7 @@ dbpick(1), smartpick(1)
 .SH "BUGS AND CAVEATS"
 
 \fBsmartpick\fP is currently missing the following dbpick commands:
-np, pp, cw, cm, oa, oe, od, tc, filter, tmadd, tmdel. The
+np, pp, cw, cm, oa, oe, od, filter, tmadd, tmdel. The
 \fIsave\fP feature of smartpick has not yet been implemented. 
 
 It should be possible to add a mechanism to group stations by

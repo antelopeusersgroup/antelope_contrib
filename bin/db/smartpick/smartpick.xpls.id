@@ -513,6 +513,15 @@ sub start_dbpick {
 
  	$State{DbpickCommandWindow} =  (split( /\s/, $res ))[3];
 
+	if( defined( $State{overlay_time_correction} ) &&
+	    $State{overlay_time_correction} ne "" &&
+	    $State{overlay_time_correction} != 0.0 ) {
+
+	    $State{tc} = $State{overlay_time_correction};
+
+	    set_dbpick_tc();
+	}
+
 	return;
 }
 
@@ -1035,6 +1044,20 @@ sub show_group {
 	send_to_dbpick( "sc $regex" );
 
 	post_wfchange();
+}
+
+sub set_dbpick_tc {
+
+	if( $State{tc} =~ /^([[:digit:].\+-]+)$/ ) {
+		
+		$State{tc} = $1;
+
+	} else {
+
+		ptkalert( $MW, "Invalid time-correction '$State{tc}'" );
+	}
+	
+	send_to_dbpick( "tc $State{tc}" );
 }
 
 sub set_dbpick_orid {
@@ -1624,7 +1647,13 @@ sub bind_widgets {
 		} 
  	}
  
-	my( @entry_vars ) = qw( tw ts orid dbname appname num_nearby_stations );
+	my( @entry_vars ) = qw( tw 
+				ts 
+				tc
+				orid 
+				dbname 
+				appname 
+				num_nearby_stations );
 
 	foreach $var ( @entry_vars ) {
 
@@ -1635,7 +1664,7 @@ sub bind_widgets {
  		}
 	}
  
-	my( @command_vars ) = qw( tw ts orid );
+	my( @command_vars ) = qw( tw ts tc orid );
 
 	foreach $var ( @command_vars ) {
 
@@ -1714,6 +1743,7 @@ foreach $param ( @booleans ) {
 	      default_postscript_file	[[:alnum:]_/:.]+
 	      default_snapshot_file	[[:alnum:]_/:.]+
 	      num_nearby_stations	[[:digit:]]+
+	      overlay_time_correction	[[:digit:]\.\+-]+
 	      stations_frame_columns	[[:digit:]]+
 	      stations_frame_subset	.*
 	      );
