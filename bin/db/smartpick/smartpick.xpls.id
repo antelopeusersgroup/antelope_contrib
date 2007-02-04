@@ -617,6 +617,16 @@ sub show_predicted {
 	send_to_dbpick( "sp $State{var}->{show_predicted}" );
 }
 
+sub np {
+
+	send_to_dbpick( "sp $State{var}->{np}" );
+}
+
+sub pp {
+
+	send_to_dbpick( "sp $State{var}->{pp}" );
+}
+
 sub default_phase {
 
 	send_to_dbpick( "ph $State{var}->{default_phase}" );
@@ -782,7 +792,7 @@ sub init_database {
 	@db = dblookup( @db, 0, "site", 0, 0 );
 
 	@db = dbsort( @db, "sta" );
-	# DEBUG @db = dbsubset( @db, "$State{stations_frame_subset}" );
+	@db = dbsubset( @db, "$State{stations_frame_subset}" );
 
 	$nrecs = dbquery( @db, dbRECORD_COUNT );
 
@@ -1407,6 +1417,8 @@ sub init_notebook {
 
 		} elsif( $spec =~ /^endnotebook_page/ ) {
 
+			ptksticky( "nsew" ); 
+
 			eval { ptkform( $ptk_frame, 
 					$State{var}, 
 					$State{widgets}, 
@@ -1605,6 +1617,8 @@ sub bind_widgets {
 				    gp
 				    sw
 				    pal
+				    np
+				    pp
  			            );
  
  	my( @bindings ) = ( @nooption_widgets,
@@ -1708,8 +1722,6 @@ my $action = POSIX::SigAction->new('quit_smartpick',
 POSIX::sigaction(&POSIX::SIGTERM, $action);
 POSIX::sigaction(&POSIX::SIGINT, $action);
 
-init_database();
-
 @booleans = qw( dbpick_command_iconified
 		unmap_menubar 
 		balloon_help
@@ -1766,6 +1778,8 @@ foreach $param ( keys %params ) {
 			  "characters. Bye.\n" );
 	}
 }
+
+init_database();
 
 $ENV{'SHELL'} = $State{shell};
 $ENV{'PATH'} = $State{path};

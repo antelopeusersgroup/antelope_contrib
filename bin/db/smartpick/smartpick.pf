@@ -53,8 +53,8 @@ notebook_page Arrivals
    button     sd_off		-	1,3	Hide Detections	{Hide the detection glyphs (sd off)}
    button     soa_on		-	2,0	Show Overlay Arrivals {Show the overlay arrival pick flags (soa on)}
    button     soa_off		-	2,1	Hide Overlay Arrivals {Hide the overlay arrival pick flags (soa off)}
-   button     sf_on		-	2,2	Show First Motions {Show the first motion glyphs (sf on)}
-   button     sf_off		-	2,3	Hide First Motions {Hide the first motion glyphs (sf off)}
+   optionmenu np	 	- 	2,2	Next_phase P S  {Show next phase arrival with chosen phase code (np)}
+   optionmenu pp	 	- 	2,3	Previous_phase P S  {Show previous phase arrival with chosen phase code (pp)}
 endnotebook_page
 notebook_page Events
    button     fe		-	0,0	First Event   	{Time scroll to the first event in the origin table (fe)}
@@ -73,10 +73,12 @@ notebook_page Special
    optionmenu gp 		- 	0,3	Gaps segment zero interp none {Set the gap display method (gp)}
    button  exec_spgram 		- 	1,0 	Spectrogram 	{Execute dbspgram(1) on a single channel of displayed waveform data (exec dbspgram)}
    button     tfit            -         1,1     Toggle Time-fit {Toggle the time-window fit mode (tfit)}
-   entry   ts			-	1,2	Start Time      {Start time for waveform display (ts)}
-   entry   tw			-	1,3	Time Window 	{Time window in seconds for waveform display (tw)}
+   button     sf_on		-	1,2	Show First Motions {Show the first motion glyphs (sf on)}
+   button     sf_off		-	1,3	Hide First Motions {Hide the first motion glyphs (sf off)}
    entry   num_nearby_stations  10 	2,0	Number of Nearby Stations {Number of nearby stations to show with a selected station}
    entry   tc			-	2,1	Overlay Time Corr {Time correction in seconds for overlay arrivals (tc)}
+   entry   ts			-	2,2	Start Time      {Start time for waveform display (ts)}
+   entry   tw			-	2,3	Time Window 	{Time window in seconds for waveform display (tw)}
 endnotebook_page
 notebook_page Control
    entry   dbname 		60 	0,0:2 	Dbname 		{primary database name}
