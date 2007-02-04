@@ -324,6 +324,42 @@ sub postscript_dbpick {
 	return;
 }
 
+sub open_arrivals {
+	
+	my( $dbname ) = $MW->FileSelect( 
+			-directory => ".",
+			-create => 1,
+			-title => "Open Secondary Arrivals Database" )->Show;
+
+	send_to_dbpick( "oa $dbname" );
+
+	return;
+}
+
+sub open_events {
+	
+	my( $dbname ) = $MW->FileSelect( 
+			-directory => ".",
+			-create => 1,
+			-title => "Open Secondary Events Database" )->Show;
+
+	send_to_dbpick( "oe $dbname" );
+
+	return;
+}
+
+sub open_detections {
+	
+	my( $dbname ) = $MW->FileSelect( 
+			-directory => ".",
+			-create => 1,
+			-title => "Open Secondary Detections Database" )->Show;
+
+	send_to_dbpick( "od $dbname" );
+
+	return;
+}
+
 sub snapshot_dbpick {
 	
 	my( $snapshotfile ) = $MW->FileSelect( 
@@ -1070,6 +1106,37 @@ sub set_dbpick_tc {
 	send_to_dbpick( "tc $State{tc}" );
 }
 
+sub set_dbpick_cm {
+
+	if( $State{cm} =~ /^([[:digit:]]+)$/ ) {
+		
+		$State{cm} = $1;
+
+	} else {
+
+		ptkalert( $MW, "Invalid max-traces value '$State{cm}'" );
+	}
+	
+	send_to_dbpick( "cm $State{cm}" );
+}
+
+sub set_dbpick_cw {
+
+	if( $State{cw} =~ /^([[:digit:]]+\s+[[:digit:]]+)$/ ) {
+		
+		$State{cw} = $1;
+
+	} else {
+
+		ptkalert( $MW, 
+			"Invalid choose-waveforms values '$State{cw}': " .
+			"Must be two integer values separated by a space " .
+			"(starting trace number, then number of traces)" );
+	}
+	
+	send_to_dbpick( "cw $State{cw}" );
+}
+
 sub set_dbpick_orid {
 
 	if( $State{orid} =~ /^([[:digit:]-]+)$/ ) {
@@ -1183,9 +1250,21 @@ sub init_menubar {
 				    -underline => 1, 
 				    -command => \&postscript_dbpick );
 
-	$w_menubar_File_m->add( "command", -label => "Pipe_postscript...", 
+	$w_menubar_File_m->add( "command", -label => "Pipe postscript...", 
 				    -underline => 1, 
 				    -command => \&pipe_dbpick );
+
+	$w_menubar_File_m->add( "command", -label => "Open Arrivals Db...", 
+				    -underline => 5, 
+				    -command => \&open_arrivals );
+
+	$w_menubar_File_m->add( "command", -label => "Open Events Db...", 
+				    -underline => 5, 
+				    -command => \&open_events );
+
+	$w_menubar_File_m->add( "command", -label => "Open Detections Db...", 
+				    -underline => 5, 
+				    -command => \&open_detections );
 
 	$w_menubar_File_m->add( "command", -label => "Quit", 
 				    -underline => 0, 
@@ -1322,7 +1401,7 @@ sub init_ptkform {
 
 	my $ptk_frame = $w->Frame()
 				->pack( -side => "top", 
-					-fill => "x", 
+					-fill => "both", 
 					-expand => "yes" );
 
 	eval { ptkform( $ptk_frame, 
@@ -1363,7 +1442,7 @@ sub init_toplevel {
 
 	my $ptk_frame = $wt->Frame()
 				->pack( -side => "top", 
-					-fill => "x", 
+					-fill => "both", 
 					-expand => "yes" );
 
 	eval { ptkform( $ptk_frame, 
@@ -1538,7 +1617,8 @@ sub init_stations_frame {
 
 	my( $table ) = $w->Table( 
 			-columns => $State{stations_frame_columns}, 
-			-scrollbars => "e" )->pack();
+			-scrollbars => "e" )->pack( -fill => "both", 
+						    -expand => "yes" );
 
 	my( $row ) = 0; 
 	my( $column ) = 0;
@@ -1664,6 +1744,8 @@ sub bind_widgets {
 	my( @entry_vars ) = qw( tw 
 				ts 
 				tc
+				cm
+				cw
 				orid 
 				dbname 
 				appname 
@@ -1678,7 +1760,7 @@ sub bind_widgets {
  		}
 	}
  
-	my( @command_vars ) = qw( tw ts tc orid );
+	my( @command_vars ) = qw( tw ts tc cm cw orid );
 
 	foreach $var ( @command_vars ) {
 

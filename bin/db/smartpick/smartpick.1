@@ -67,7 +67,13 @@ The File->Print menu item sends the dbpick postscript output to the
 command specified as \fIprint_command\fP in the parameter file (usually 
 the Unix \fIlp\fP command). 
 
+The File menu also contains the commands \fIOpen Arrivals Db\fP, 
+\fIOpen Events Db\fP, and \fIOpen Detections Db\fP, which open secondary
+databases in dbpick(1) with the dbpick(1) commands \fIoa\fP, \fIoe\fP, 
+and \fIod\fP, respectively. 
+
 .SS widget bindings
+
 The following section describes the details of the \fBsmartpick\fP
 graphical layout tools. If you are content with the layout and
 performance of the \fBsmartpick\fP GUI as-is, you can ignore this
@@ -347,6 +353,16 @@ of sync. The unregister(1) or xwininfo(1) command can be used to get
 the TCL/Tk window name of the dbpick application. On rare occasions it
 might also be useful to use \fBsmartpick\fP to manage multiple
 instances of dbpick.
+
+.IP cm
+An entry box of this name allows the user to set the maximum number 
+of traces dbpick(1) will display, via the dbpick(1) \fIcm\fP command. 
+
+.IP cw
+An entry box of this name allows the user to choose the waveforms 
+to be displayed, given the integer number of the starting trace 
+and the integer number of traces to display (these two values should 
+be specified in the entry box, separated by spaces). 
 
 .IP dbname
 An entry box of this name allows the name of the database to be
@@ -848,9 +864,9 @@ dbpick(1), smartpick(1)
 .fi
 .SH "BUGS AND CAVEATS"
 
-\fBsmartpick\fP is currently missing the following dbpick commands:
-np, pp, cw, cm, oa, oe, od, filter, tmadd, tmdel. The
-\fIsave\fP feature of smartpick has not yet been implemented. 
+The dbpick commands filter, tmadd, tmdel have not been implemented 
+in \fBsmartpick\fP. The \fIsave\fP (trexerpt(1)) feature of smartpick
+has not been implemented. 
 
 It should be possible to add a mechanism to group stations by
 geographic coordinates. However, this has not yet been implemented.
@@ -861,6 +877,11 @@ In principle it would be possible to have several different layout
 templates sketched out in the parameter file for easy switching.  This
 has been deliberately avoided in the current version to keep the
 parameter file from getting too complex.
+
+The \fIcw\fP text-box implementation is more simplistic than the previous 
+hop-up and hop-down buttons with associated sliders for number of stations 
+to display and starting trace number. It's not clear whether this is a
+limitation or an improvement. 
 
 The \fIlayout\fP table of the parameter-file does not tolerate blank
 lines (If a comment is interspersed, it should start with a hash sign
