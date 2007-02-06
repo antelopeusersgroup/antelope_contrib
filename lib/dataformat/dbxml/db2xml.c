@@ -114,7 +114,7 @@ get_fieldnames( Dbptr db, int flags )
 
 		dbquery( db, dbVIEW_TABLES, &view_tables );
 
-		view_tables = duptbl( view_tables, strdup );
+		view_tables = duptbl( view_tables, (void *(*)(void *)) strdup );
 
 	} else {
 
@@ -237,7 +237,6 @@ int 	flags;
 
 		free_fieldnames++;
 
-
 	} else if( expressions_in == 0 ) {
 
 		expressions = fields = fields_in;
@@ -262,7 +261,15 @@ int 	flags;
 		return -1;
 	}
 
-	dbget_range ( db, &ns, &ne ); 
+	if( db.field == dbALL && db.record >= 0 ) {
+		
+		ns = db.record;
+		ne = db.record + 1;
+
+	} else {
+
+		dbget_range ( db, &ns, &ne ); 
+	}
 
 	n = maxtbl( expressions );
 	allot ( Expression **, expr, n ); 
