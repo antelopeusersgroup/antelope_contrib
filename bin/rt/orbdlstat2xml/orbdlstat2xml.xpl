@@ -83,9 +83,10 @@ for( ;; ) {
 		
 		$file = concatpaths( $dir, $file );
 		
-		$tmp = "/tmp/stat2xml_$<_$$\_tmp_$time.pf";
+		$pftmp = "/tmp/orbdlstat2xml_$<_$$\_tmp_$time.pf";
+		$xmltmp = "$file+";
 
-		open( F, ">$tmp" );
+		open( F, ">$pftmp" );
 
 		$string = $pkt->string();
 
@@ -100,8 +101,10 @@ for( ;; ) {
 
 		close( F );
 
-		system( "echo '<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>' | pf2xml -n -h - $tmp > $file" );
+		system( "echo '<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>' | pf2xml -n -h - $pftmp > $xmltmp" );
 
-		unlink( $tmp );
+		system( "mv $xmltmp $file" );
+
+		unlink( $pftmp );
 	}
 }

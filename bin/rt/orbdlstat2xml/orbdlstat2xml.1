@@ -12,6 +12,11 @@ Markup Language (XML) representation, and places the results in the
 specified directory \fIdir\fP. 
 .SH OPTIONS
 .SH FILES
+\fBorbdlstat2xml\fP creates temporary files of the xml output under the 
+target names with '+' signs appended, then moves them to the final 
+target names when the files are complete. This back-buffering is intended
+to prevent partially built files from corrupting the web interfaces built 
+on them.
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 .SH EXAMPLE
