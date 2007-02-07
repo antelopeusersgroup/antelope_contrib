@@ -1,0 +1,44 @@
+.TH ORBDLSTAT2XML 1 "$Date$"
+.SH NAME
+orbdlstat2xml \- Convert datalogger status packets from an orb to XML
+.SH SYNOPSIS
+.nf
+orbdlstat2xml orbname dir
+.fi
+.SH DESCRIPTION
+The \fBorbdlstat2xml\fP program reads packets of type \fI.*/pf/st\fP
+from an Antelope orbserver, converts them to a simple eXtensible 
+Markup Language (XML) representation, and places the results in the 
+specified directory \fIdir\fP. 
+.SH OPTIONS
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% orbdlstat2xml anfops.ucsd.edu:status /scr/day &
+
+% ls /scr/day 
+pretadata.xml  tadataAG.xml   tadataHN.xml   
+tadataOU.xml   tadataV2.xml 
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pf2xml(1), dlmon(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc. 
+.fi
+.\" $Id$
