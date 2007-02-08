@@ -90,13 +90,14 @@ int main(int argc, char **argv)
 			mp.load(*pwdata,chans);
 			// process these data.  Substitute alternative commands
 			// here to do something else.
-			mp.process(string("imagesc(x1);"));
-			mp.process(string("figure; imagesc(x2);"));
-			mp.process(string("figure; imagesc(x3);"));
+			mp.process(string("wigb(x1);"));
+			mp.process(string("figure; wigb(x2);"));
+			mp.process(string("figure; wigb(x3);"));
 			// In this demo we pause with this mechanism.
 			// Obviously undesirable for data processing that is
 			// not interactive.
 			mp.run_interactive();
+			delete pwdata;
 		}
 	}
 	catch (SeisppError serr)
