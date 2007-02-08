@@ -65,7 +65,7 @@ print "\\n";
 @fields = qw( lat lon depth time );
 @expressions = qw( lat lon depth strtime(time) );
 
-print db2xml( @db, "anorid", "arow", \@fields, \@expressions );
+print db2xml( @db, "anorid", "arow", \\@fields, \\@expressions );
 
 .fi
 .ft R
