@@ -1,0 +1,15 @@
+# css3.0 extension
+
+# Include css3.0  # uncomment to complete schema
+
+Relation eids
+	Fields ( orid time dir dfile lddate )
+	Primary ( orid time  )
+	Foreign ( orid )
+	Description ( "EIDS versions of origin information" )
+	Detail {
+		The eids table tracks XML files containing information
+		on earthquakes for the Earthquake Information Distribution
+		System (EIDS) of the U.S. Geological Survey.
+	}
+	;

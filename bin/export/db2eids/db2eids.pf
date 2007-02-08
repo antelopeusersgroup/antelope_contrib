@@ -1,0 +1,32 @@
+query_interval_sec 10
+
+xslt_stylesheet &datafilename(xslt/db2eids.xsl)
+
+eqmessage_source  &ref(site,originating_organization)
+sent_time_format  %D %T %Z
+
+eids_filename_template %Y/%j/EIDS_%{orid}_%T.xml
+
+generic_rootnode contents
+db2xml_rootnode  events
+db2xml_rownode   hypocenter
+
+dbprocess_commands &Tbl{
+	dbopen origin
+	dbjoin event 
+	dbsubset orid == prefor
+	dbnojoin eids
+}
+
+generic_xml_elements &Arr{
+	orid
+	evid
+	lat	
+	lon
+	depth	
+	time	strtime(origin.time)
+	mag     ml != NULL ? ml : ( mb != NULL ? mb : ( ms != NULL ? ms : "" ) )
+	magtype     ml != NULL ? "ML" : ( mb != NULL ? "Mb" : ( ms != NULL ? "Ms" : "" ) )
+}
+
+postprocess_command 
