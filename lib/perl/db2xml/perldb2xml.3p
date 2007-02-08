@@ -1,0 +1,114 @@
+.TH PERLDB2XML 3P "$Date$"
+.SH NAME
+perldb2xml \- Perl extension of db2xml
+.SH SYNOPSIS
+.nf
+use Datascope;
+use Datascope::db2xml;
+
+$xml = db2xml( @db[, "-p"] [, rootnode[, rownode
+		[, \\@fields[, \\@expressions]]]] );
+.fi
+.SH DESCRIPTION
+The perl \fBdb2xml\fP function mimics the c-callable db2xml(3) routine, 
+allowing arbitrary database views to be converted to a basic XML string. 
+(More complex XML results may be obtained through XSLT-stylesheet 
+transformation of the \fBdb2xml\fP output). If a string value is
+given for \fIrootnode\fP, the root element of the output XML is 
+named accordingly. Otherwise the root node is named after the input view. 
+If the \fIrownode\fP string is specified, the XML element for each 
+database row is given that name; otherwise a default value is used. 
+
+The default output of \fBdb2xml\fP contains one XML element for every 
+field of the input view, with the elements named according to the canonical 
+name of the database field (e.g. \fIorigin.lat\fP). If the \fI-p\fP 
+option is given, only the primary keys are converted. If a reference 
+to a perl array \fI\\@fields\fP is specified, the field names to display
+are taken from the elements of this array. In this case, the array entries
+are also used as the XML element names. If a second perl array reference
+\fI\\@expressions\fP is given, the \fI\\@fields\fP array is used for the
+XML element names and the \fI\\@expressions\fP array contains
+field-names or Datascope expressions used to fill the XML element values
+from the input databsae rows. See the dbexpressions(5) man-page for more 
+detail on Datascope expressions. 
+
+.SH OPTIONS
+.IP -p
+If this option is specified, only the primary keys of the input view
+are used in creation of the XML output. The -p option is superfluous if 
+explicit fields and/or expressions are specified. 
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use Datascope;
+use Datascope::db2xml;
+
+@db = dbopen( "/opt/antelope/data/db/demo/demo", "r" );
+@db = dblookup( @db, "", "origin", "", "" );
+@db = dbsubset( @db, 'orid == 645' );
+
+print db2xml( @db, "-p" );
+
+print "\\n";
+
+@fields = qw( lat lon depth time );
+@expressions = qw( lat lon depth strtime(time) );
+
+print db2xml( @db, "anorid", "arow", \@fields, \@expressions );
+
+.fi
+.ft R
+.in
+The example above produces the following output: 
+.in 2c
+.ft CW
+.nf
+
+%perl test.pl
+<View41>
+   <row>
+      <origin.time>706139710.00700</origin.time>
+      <origin.lat>41.608</origin.lat>
+      <origin.lon>72.293</origin.lon>
+      <origin.depth>0</origin.depth>
+   </row>
+</View41>
+
+<anorid>
+   <arow>
+      <lat>41.608</lat>
+      <lon>72.293</lon>
+      <depth>0</depth>
+      <time>5/17/1992  21:55:10.007</time>
+   </arow>
+</anorid>
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+db2xml(3), db2xml(1), perldb(3P)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$
