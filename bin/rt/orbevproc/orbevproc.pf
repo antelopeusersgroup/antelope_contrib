@@ -470,18 +470,23 @@ sub computestats {
 	$npts = scalar ( @data ) ;
 	my $val ;
 	my $amax = -1.e30 ;
+	my $vmax ;
 	my $tmax ;
+	my $imax ;
 	my $aval ;
 	my $time ;
-	for (my $isamp = 0; $isamp < $npts; $isamp++) {
+	my $isamp ;
+	for ($isamp = 0; $isamp < $npts; $isamp++) {
 		$time = $t0 + $isamp * $dt ;
 		$val = $data[$isamp] ;
 		if ($val > 1.e30) {next;}
 		$val -= $meanremove ;
 		$aval = abs ( $val ) ;
 		if ($aval > $amax) {
+			$vmax = $val;
 			$amax = $aval;
 			$tmax = $time;
+			$imax = $isamp;
 		}
 		$m += $val;
 		$s += $val*$val ;
@@ -494,13 +499,41 @@ sub computestats {
 	$std -= $mean*$mean;
 	$std = sqrt($std) ;
 
+	my $amp ;
+	my $per ;
+	if ($imax < $npts-2) {
+		my $vel = $data[$imax+1]-$data[$imax];
+		for ($isamp = $imax+1; $isamp < $npts-1; $isamp++) {
+			if ( ($data[$isamp+1]-$data[$isamp])*$vel < 0.0 ) {
+				$amp = 0.5 * abs ( $data[$isamp] - $data[$imax] ) ;
+				$per = 2.0 * ($isamp-$imax) * $dt ;
+				last ;
+			}
+		}
+	}
+	if ($imax > 2) {
+		my $vel = $data[$imax-1]-$data[$imax];
+		for ($isamp = $imax-1; $isamp > 1; $isamp--) {
+			if ( ($data[$isamp-1]-$data[$isamp])*$vel < 0.0 ) {
+				my $amp2 = 0.5 * abs ( $data[$isamp] - $data[$imax] ) ;
+				if (defined $amp && $amp2 > $amp) {
+					$amp = $amp2;
+					$per = 2.0 * ($isamp-$imax) * $dt ;
+				}
+				last ;
+			}
+		}
+	}
+
 	if ($applycalib && $calib != 0.0) {
 		$amax *= $calib ;
+		$vmax *= $calib ;
+		if ( defined $amp ) {$amp *= $calib ;}
 		$mean *= $calib;
 		$std *= $calib;
 	}
 	
-	return ( $amax, $tmax, $mean, $std ) ;
+	return ( $amax, $vmax, $tmax, $amp, $per, $mean, $std ) ;
 }
 
 sub mystrtime {
@@ -508,7 +541,7 @@ sub mystrtime {
 	return epoch2str ( $epoch, "%H:%M:%S.%s" ) ;
 }
 
-package Genprocess ;
+package Magnitude ;
 
 use strict ;
 use warnings ;
@@ -680,7 +713,10 @@ sub process_channel {
 			}
 			$needfilter = 0;
 			($self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_vmax}, 
  				$self->{stations}{$sta}{channels}{$chan}{noise_tmax}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_amp}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_per}, 
  				$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
  				$self->{stations}{$sta}{channels}{$chan}{noise_std}) = main::computestats ( @dbtrace, 1,
  					0.0, $self->{stations}{$sta}{noise_tstart}, 
@@ -709,7 +745,10 @@ sub process_channel {
 			trfilter ( @dbtrace, $self->{stations}{$sta}{filter} ) ;
 		}
  		($self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_vmax}, 
  			$self->{stations}{$sta}{channels}{$chan}{signal_tmax}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_per}, 
  			$self->{stations}{$sta}{channels}{$chan}{signal_mean}, 
  			$self->{stations}{$sta}{channels}{$chan}{signal_std}) = main::computestats ( @dbtrace, 1,
  					$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
@@ -739,22 +778,39 @@ sub process_channel {
 					/ ($self->{stations}{$sta}{channels}{$chan}{noise_std}*1.414) ;
 			}
 			if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
-				main::addlog ( $self, 2, 
- 					"%s: %s: signal max %.6f at %s, mean %.6f, std = %.6f, snr = %.3f", 
+				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amp} ) {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, amp %.6f, per = %.2f, snr = %.3f", 
  						$sta, $chan, 
  						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
  						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
- 						$self->{stations}{$sta}{channels}{$chan}{signal_mean}, 
- 						$self->{stations}{$sta}{channels}{$chan}{signal_std},
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_per},
  						$self->{stations}{$sta}{channels}{$chan}{snr} ) ;
-			} else {
-				main::addlog ( $self, 2, 
- 					"%s: %s: signal max %.6f at %s, mean %.6f, std = %.6f", 
+				} else {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, snr = %.3f", 
  						$sta, $chan, 
  						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
  						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
- 						$self->{stations}{$sta}{channels}{$chan}{signal_mean}, 
- 						$self->{stations}{$sta}{channels}{$chan}{signal_std} ) ;
+ 						$self->{stations}{$sta}{channels}{$chan}{snr} ) ;
+				}
+			} else {
+				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amp} ) {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, amp %.6f, per = %.2f", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_per} ) ;
+				} else {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}) ) ;
+				}
 			}
 		}
 		$self->{stations}{$sta}{channels}{$chan}{signal_done} = 1;
@@ -1022,7 +1078,7 @@ use warnings ;
 
 use Datascope ; 
 
-our @ISA = ( "Genprocess" ) ;
+our @ISA = ( "Magnitude" ) ;
 
 # following are the Richter correction values as a function of distance
 
@@ -1116,7 +1172,7 @@ sub compml {
 }
 
 sub new {
-	return Genprocess::new @_ ;
+	return Magnitude::new @_ ;
 }
 
 sub getwftimes {
@@ -1300,7 +1356,7 @@ sub getwftimes {
 }
 
 sub process_channel {
-	my $ret = Genprocess::process_channel @_ ;
+	my $ret = Magnitude::process_channel @_ ;
 	my $self = $_[0] ;
 
 	if ( $ret->{disposition} ne "channeldone" 
@@ -1359,7 +1415,7 @@ sub process_channel {
 }
 
 sub process_network {
-	my $ret = Genprocess::process_network @_ ;
+	my $ret = Magnitude::process_network @_ ;
 	my $self = $_[0] ;
 
 	if (defined $self->{m_median} ) {
@@ -1382,10 +1438,10 @@ use warnings ;
 
 use Datascope ; 
 
-our @ISA = ( "Genprocess" ) ;
+our @ISA = ( "Magnitude" ) ;
 
 sub new {
-	return Genprocess::new @_ ;
+	return Magnitude::new @_ ;
 }
 
 sub getwftimes {

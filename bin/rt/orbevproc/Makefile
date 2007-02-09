@@ -9,7 +9,7 @@ BIN =  orbevproc
 
 MAN1 =
 
-PF =
+PF = orbevproc.pf
 
 ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
 
