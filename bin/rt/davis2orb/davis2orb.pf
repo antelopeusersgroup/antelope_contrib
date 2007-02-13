@@ -3,8 +3,11 @@ HPWREN_SDSC &Arr{
 	Channels &Arr{
 	# channel names must have a segtype and only spaces in between
 	#
-	# Use NULL for a channel which you do not want to download.
+	# Use NULL for a data channel which you do not want to download.
 	# ie. OutsideTemp     NULL        t
+	#
+	# A "NULL" tag will not work for stat packet channels. To disable
+	# most of those, remove the -d command line switch.
 	# 
 	 OutsideTemp     Temp-out         t
 	 HighOutsideTemp TempOutH         t
@@ -77,6 +80,10 @@ HPWREN_SDSC &Arr{
 					     # args to download this value.
 	 
 	# Accessory channels (tell us about davis data logger operations)
+	#
+	# A "NULL" tag will not work for stat packet channels. To disable
+	# most of those, remove the -d command line switch.
+	# 
 	 TimeSkew			timeskew
 	 RXCHECKPacketsReceived 	PktsRcvd
 	 RXCHECKPacketsMissed		PktsMiss
@@ -95,6 +102,10 @@ LACOFD_VENIC &Arr{
 	#
 	# Use NULL for a channel which you do not want to download.
 	# ie. OutsideTemp     NULL        t
+	#
+	# A "NULL" tag will not work for stat packet channels. To disable
+	# most of those, remove the -d command line switch.
+	# 
 	# 
 	 OutsideTemp     Temp-out         t
 	 HighOutsideTemp TempOutH         t
@@ -168,6 +179,10 @@ LACOFD_VENIC &Arr{
 
 	 
 	# Accessory channels (tell us about davis data logger operations)
+	#
+	# A "NULL" tag will not work for stat packet channels. To disable
+	# most of those, remove the -d command line switch.
+	# 
 	 TimeSkew			timeskew
 	 RXCHECKPacketsReceived 	PktsRcvd
 	 RXCHECKPacketsMissed		PktsMiss

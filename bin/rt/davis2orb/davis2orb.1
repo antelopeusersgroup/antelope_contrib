@@ -94,7 +94,7 @@ Unless you are really concerned about data gaps we suggest that you run davis2or
                 (e.g., "US/Pacific"). This does not set the Davis time 
                 zone, that must be done on the console. (default = UTC)
 
--i  samprate    Set the Davis sample rate to the value in the parameter
+-i samprate     Set the Davis sample rate to the value in the parameter
                 file after downloading data, will exit even if repeat 
                 interval is non-zero. WARNING: this deletes all of the 
                 data in the Davis. Valid Sample Rates: 1, 5, 10, 15, 
@@ -117,6 +117,11 @@ davis2orb -v -1 -p /dev/ttyS3 -c HPWREN_SDSC -o :roadnet
 .SH LIBRARY
 Requires antelope 4.5 or newer.
 .SH "BUGS AND CAVEATS"
+Parameter files can have "NULL" for a data field channel name to ignore the
+field and not include it in the ORB packet. However, the "NULL" label does
+not work for the stat packets. One should consider the -d command line
+option if not all of the stat fields are desired.
+
 If the davis is not displaying sensor values on it's screen then it will not
 record any data to its archive. To switch from "Receiving..." to sensor
 display mode hold down the done key on the console until it changes (usually a couple of seconds).
