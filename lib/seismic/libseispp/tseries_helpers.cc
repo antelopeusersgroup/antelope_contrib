@@ -87,7 +87,7 @@ auto_ptr<TimeSeries> ArrivalTimeReference(TimeSeries& tcsi,
 			tcso->s.clear();
 			return(tcso);
 		}
-		tcso->s.reserve(ns_to_copy);
+		tcso->s.resize(ns_to_copy);
 		tcso->ns=ns_to_copy;
 		for(j=0,jj=jstart;j<ns_to_copy;++j,++jj)
 			tcso->s[j]=tcsi.s[jj];
