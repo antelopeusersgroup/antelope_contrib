@@ -363,7 +363,9 @@ GCLvectorfield3d& GCLvectorfield3d::operator=(const GCLvectorfield3d& g)
 
 bool values_differ(double a, double b)
 {
-	if(fabs((a-b)/b)<DBL_EPSILON)
+	if(fabs(a-b)==0.0) 
+		return false;
+	else if(fabs((a-b)/b)<(10.0*DBL_EPSILON))
 		return false;
 	else
 		return true;
