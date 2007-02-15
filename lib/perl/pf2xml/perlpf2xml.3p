@@ -1,0 +1,98 @@
+.TH PERLPF2XML 3P "$Date$"
+.SH NAME
+perlpf2xml \- Perl extension of pf2xml
+.SH SYNOPSIS
+.nf
+use Datascope;
+use Datascope::pf2xml;
+
+$xml = pf2xml( \fI[-f], [-n], [-s], pfname, rootname[, header]\fP );
+
+.fi
+.SH DESCRIPTION
+The perl \fBpf2xml\fP function mimics the c-callable pf2xml(3) routine, 
+allowing arbitrary Datascope parameter files to be converted to a basic 
+XML string. (More complex XML results may be obtained through 
+XSLT-stylesheet transformation of the \fBpf2xml\fP output). If 
+the \fI-n\fP option is used, newline characters are added for readability. 
+If the \fI-s\fP option is used (the \fIstrong\fP conversion mode), each 
+parameter-file key is uses as the element name (the default is to 
+leave the parameter-file key as an attribute and use the standard element 
+names of \fIpfstring\fP, \fIpftbl\fP, \fIpffile\fP, and \fIpfarr\fP). 
+If the \fI-f\fP option is used,  \fIpffile\fP elements are labeled as 
+such; otherwise they are automatically converted to \fIpfarr\fP elements. 
+The root node of the XML output is named according to the \fIrootname\fP 
+argument. If an optional \fIheader\fP string is specified, that string 
+is prepended to the XML output. 
+
+.SH OPTIONS
+.IP -f
+Preserve pffile types instead of casting them to pfarr
+.IP -n
+Add newlines to make the output more readable
+.IP -s
+Use strong conversion mode
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+
+: # use perl
+eval 'exec perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use Datascope;
+use Datascope::pf2xml;
+
+$pfname = "site";
+
+$header = "<?xml version=\\"1.0\\" encoding=\\"iso-8859-1\\"?>\\n";
+
+print pf2xml( "-n", "-s", $pfname, "anode", $header );
+
+.fi
+.ft R
+.in
+The example above produces the following output: 
+.nf
+
+% perl test.pl
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<anode type="pfarr">
+<Institution type="pfstring">LCI</Institution>
+<default_seed_network type="pfstring">XX</default_seed_network>
+<mail_domain type="pfstring">lindquistconsulting.com</mail_domain>
+<mailhost type="pfstring">lindquistconsulting.com</mailhost>
+<originating_organization type="pfstring">Lindquist Consulting, Inc.</originating_organization>
+</anode>
+
+.fi
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+\fBpf2xml\fP returns a string containing the XML representation of the 
+input parameter-file. 
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+.SH "SEE ALSO"
+.nf
+pf2xml(3), pf2xml(1), perldb(3P), perldb2xml(3P)
+.fi
+.SH "BUGS AND CAVEATS"
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$
