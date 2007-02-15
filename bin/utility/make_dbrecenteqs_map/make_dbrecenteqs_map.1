@@ -190,6 +190,14 @@ the dbrecenteqs toolbox that is not easily cast into the output script).
 make_dbrecenteqs_map uses the GMT command gmtset(1) to set the GMT 
 MEASURE_UNIT to 'inch'. This setting may persist through the .gmtdefaults
 file after make_dbrecenteqs_map has run.
+
+The make_dbrecenteqs_map computations rely on dbrecenteqs.pl, which expect the 
+make_dbrecenteqs_map.pf parameter file to be up-to-date not only according to 
+make_dbrecenteqs_map standards, but also according to dbrecenteqs standards. 
+You may need to make sure pf_revision_time in the parameter file is late enough, 
+after checking that your make_dbrecenteqs_map.pf is consistent both with the 
+current make_dbrecenteqs_map code and the dbrecenteqs code (for the subset of 
+parameters that these two programs share). 
 .SH AUTHOR
 .nf
 Kent Lindquist 
