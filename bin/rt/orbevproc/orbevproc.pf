@@ -599,7 +599,7 @@ sub computestats {	# Compute waveform statistics
 			if ( ( $data[$isamp] > $data[$isamp-1] &&
 					$data[$isamp] > $data[$isamp+1] ) ||
 					( $data[$isamp] < $data[$isamp-1] &&
-					$data[$isamp] < $data[$isamp+1] ) {
+					$data[$isamp] < $data[$isamp+1] ) ) {
 				$aval = abs ( $val ) ;
 				if ($aval > $amax) {
 					$vmax = $val;
@@ -1678,8 +1678,8 @@ sub compmb {
 
 	$k -= 1 ;
 	
-	my $q1 = $mbtab[$j-1+($k-1)*109] + $s1 * ( $mtab[$j-1+$k*109] - $mtab[$j-1+($k-1)*109] ) ;
-	my $q2 = $mbtab[$j+($k-1)*109] + $s1 * ( $mtab[$j+$k*109] - $mtab[$j+($k-1)*109] ) ;
+	my $q1 = $mbtab[$j-1+($k-1)*109] + $s1 * ( $mbtab[$j-1+$k*109] - $mbtab[$j-1+($k-1)*109] ) ;
+	my $q2 = $mbtab[$j+($k-1)*109] + $s1 * ( $mbtab[$j+$k*109] - $mbtab[$j+($k-1)*109] ) ;
 	my $qval = $q1 + $s2 * ( $q2 - $q1 ) ;
 
 	my $mb = log($amplitude_in_microns/$period)/log(10) + $qval ;
@@ -1787,7 +1787,7 @@ sub getwftimes {
 		if ( defined $process->{filter} ) {
 			$hash->{filter} = $process->{filter} ;
 			if ($hash->{filter} eq "auto" || $hash->{filter} eq "autosp") {
-				$expr = sprintf 
+				my $expr = sprintf 
 					'sta == "%s" && chan == "%s" && %.3f >= time && ( %.3f <= endtime || endtime == null("endtime") )',
 						$sta, $chan, $otime, $otime ;
 				my @dbv = dbsubset ( @{$self->{dbc}}, $expr ) ;
@@ -1802,9 +1802,9 @@ sub getwftimes {
 					my $segtype = dbgetv (@dbv, "segtype");
 					if ($hash->{filter} eq "auto") {
 						if ($segtype eq "V") {
-							$hash->{filter} = 'BW 0.5 5 5.0 5;INT;G 1000.0' ;
+							$hash->{filter} = 'BW 0.5 5 5.0 5;INT;G 0.001' ;
 						} elsif ($segtype eq "A") {
-							$hash->{filter} = 'BW_0.5 5 5.0 5;INT2;G 1000.0' ;
+							$hash->{filter} = 'BW_0.5 5 5.0 5;INT2;G 0.001' ;
 						} else {
 							main::addlog ( $self, 0, "station ". $sta . 
 								" Cannot determine auto filter for segtype " . $segtype ) ;
@@ -1812,9 +1812,9 @@ sub getwftimes {
 						}
 					} else {
 						if ($segtype eq "V") {
-							$hash->{filter} = 'INT s0.2;G 1000.0' ;
+							$hash->{filter} = 'INT s0.2;G 0.001' ;
 						} elsif ($segtype eq "A") {
-							$hash->{filter} = 'INT2 s0.2;G 1000.0' ;
+							$hash->{filter} = 'INT2 s0.2;G 0.001' ;
 						} else {
 							main::addlog ( $self, 0, "station ". $sta . 
 								" Cannot determine auto filter for segtype " . $segtype ) ;
@@ -1829,7 +1829,7 @@ sub getwftimes {
 		if ( $signal_tend > $event_tend ) { $event_tend = $signal_tend; }
 	}
 	dbfree @dbjs ;
-	dbfree @dbs ;
+	dbfree @dbj ;
 
 #	display $self ;
 
@@ -1882,7 +1882,7 @@ sub process_channel {
 			my $microns =
  				$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
 			my $period =
- 				$self->{stations}{$sta}{channels}{$chan}{signal_per} ;
+ 				abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
 			if ( $period < 0.1 || $period > 9.0 ) {
 				main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
  							$sta, $chan )  ;
@@ -1908,7 +1908,7 @@ sub process_channel {
 		}
 	} else {
 		my $microns = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
-		my $period = $self->{stations}{$sta}{channels}{$chan}{signal_per} ;
+		my $period = abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
 		if ( $period < 0.1 || $period > 9.0 ) {
 			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
  						$sta, $chan )  ;
@@ -1926,6 +1926,20 @@ sub process_channel {
 		main::addlog ( $self, 2, "%s: %s: Channel mag = %.3f",
  					$sta, $chan,
  					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	}
+
+	return $ret ;
+}
+
+sub process_network {
+	my $ret = Magnitude::process_network @_ ;
+	my $self = $_[0] ;
+
+	if (defined $self->{m_median} ) {
+		my @dborigin = @{$self->{dbo}} ;
+		$dborigin[3] = 0 ;
+		my $auth = dbgetv ( @dborigin, "auth" ) ;
+		dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", 1, "auth", $auth . " mb" ) ;
 	}
 
 	return $ret ;
