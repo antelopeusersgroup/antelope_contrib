@@ -7,7 +7,7 @@ max_events_to_thread	5	# maximum number of events to process concurrently
 event_processes &Tbl{
 	#perl_fragment	perl_class		parameters
 	mlrichter	Mlrichter		mlrichter_params
-#	mbusneic	Mbusneic		mbusneic_params
+ 	mbusneic	Mbusneic		mbusneic_params
 }
 
 #    These are parameter templates for each of the processing modules
@@ -37,11 +37,16 @@ mbusneic_params &Arr{
 	channels &Tbl{
 #	snet_expr chan_expr               noise_twin signal_twin  snr_thresh
 #     	   sta_expr    filter                  noise_toffset signal_toffset 
-     	.* .*     BHZ  BW_0.5_4_3.0_4;INT 10.0 10.0  10.0    10.0 3.0
+     	.* .*     BHZ  auto               30.0 10.0  20.0    10.0 3.0
 	}
 	update_time		10.0
 	maximum_wait_time	300.0
 	maximum_bad_fraction	0.2
+	auth_accept		oa_.|oa_. dbg
+	output_magtype		mb
+	output_auth		orbevproc
+	output_stamag		yes
+	output_wfmeas		yes
 }
 
 #    Following are perl script fragments for imbedded processing.
@@ -319,14 +324,38 @@ sub match_sta {
 	return ( "ok", $ok ) ;
 }
 
-sub time2samp {
+sub time2samp {		# This will return the closest sample value index
+			# to some desired time.
+			#
+			# args:
+			#	$time	= Desired time.
+			#	$dt	= Time sampling increment.
+			#
+			# returns:
+			#	$index	= Index of sample value.
 	my $time = shift ;
 	my $dt = shift ;
 
 	return ($time < 0.0) ? int(($time/$dt)-0.5) : int(($time/$dt)+0.5) ;
 }
 
-sub findrange {
+sub findrange {		# This finds the actual range of data sample
+			# values corresponding to desired start and
+			# end times.
+			#
+			# args:
+			#	$t0	= Epoch time of first sample value.
+			#	$dt	= Time sampling increment.
+			#	$nsamp	= Number of sample values.
+			#	$tstart	= optional desired start epoch time
+			#	$tend	= optional desired end epoch time
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$tstart	= Actual time value of first sample within range.
+			#	$istart	= Index of first sample value within range.
+			#	$npts	= Number of sample values within range.
 	my $t0 = shift ;
 	my $dt = shift ;
 	my $nsamp = shift ;
@@ -353,7 +382,19 @@ sub findrange {
 	return ( $t0, $istart, $npts ) ;
 }
 
-sub findgoodrange {
+sub trimtrace {		# This looks for gap values at the beginning and end
+			# of a trace and "trims" them off by returning the
+			# start and end times corresponding to the trimmed 
+			# trace.
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#
+			# returns:
+			#	$tstart	= start epoch time for non-gap data
+			#	$tend	= end epoch time for non-gap data
 	my @db ;
 	$db[0] = shift ;
 	$db[1] = shift ;
@@ -385,7 +426,22 @@ sub findgoodrange {
 	return ($tstart, $tend);
 }
 
-sub findbad {
+sub findbad {		# Find the number of missing (bad) waveform
+			# sample values in a range of data
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#	$tstart	= optional start epoch time for search
+			#	$tend	= optional end epoch time for search
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$nbad	= number of missing sample values
+			#	$fbad	= fraction of missing values relative to
+			#		    entire search window
 	my @db ;
 	$db[0] = shift ;
 	$db[1] = shift ;
@@ -396,11 +452,18 @@ sub findbad {
 	if (scalar(@_) > 0) {$tstart = shift;}
 	if (scalar(@_) > 0) {$tend = shift;}
 
+	# get the timing values from the trace row
+
 	my ($t0, $nsamp, $samprate) = dbgetv ( @db, "time", "nsamp", "samprate" ) ;
 	my $dt = 1.0/$samprate;
 
 	if ( ! defined $tstart ) { $tstart = $t0; }
 	if ( ! defined $tend ) { $tend = $t0+$dt*($nsamp-1); }
+
+	# initialize the number of missing samples by examining the ends
+	# of the search time window. Note that missing values will be
+	# reported if the search window is outside the range of the trace
+	# waveform time window
 
 	my $nbad = 0;
 	my $istart = time2samp ( $tstart - $t0, $dt ) ;
@@ -425,10 +488,14 @@ sub findbad {
 		return ($nbad, $fbad);
 	}
 
+	# now add in the data sample values that are tagged with "gap" values
+
 	my @data = trdata ( @db, $istart, $istart+$npts ) ;
 	for (my $isamp = 0; $isamp < $npts; $isamp++) {
 		if ($data[$isamp] > 1.e30) {$nbad++;}
 	}
+
+	# compute the fraction value and return
 	
 	if ($tstart >= $tend) {
 		$fbad = 1.0 ;
@@ -438,7 +505,41 @@ sub findbad {
 	return ($nbad, $fbad);
 }
 
-sub computestats {
+sub computestats {	# Compute waveform statistics
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#	$applycalib = apply calib flag. If set then calib
+			#		    is taken from tabel and applied to output
+			#		    measurements
+			#	$meanremove = A mean value for removing from the waveform
+			#		    sample values before the measurements are made.
+			#		    This must be pre-computed and will be scaled
+			#		    according to the $applycalib flag, i.e. (id est)
+			#		    if $applycalib is set, then it is assumed that
+			#		    the $meanremove value has already had calib
+			#		    applied to itself. This value is used primarily
+			#		    for removing a previously computed noise mean
+			#		    value from a signal window.
+			#	$tstart	= optional start epoch time for measurements
+			#	$tend	= optional end epoch time for measurements
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$amax	= absolute maximum value
+			#	$vmax	= maximum/minimum value with sign
+			#	$tmax	= epoch time of $amax
+			#	$amp	= mid to peak amplitude of wavecycle with
+			#		    highest amplitude immediately after
+			#		    or before peak value
+			#	$per	= full wave period corresponding to $amp. $per
+			#		    negative means the wave cycle was before
+			#		    the peak value
+			#	$mean	= mean value over $tstart to $tend time window
+			#	$std	= standard deviation over $tstart to $tend time window
 	my @db ;
 	$db[0] = shift ;
 	$db[1] = shift ;
@@ -451,6 +552,8 @@ sub computestats {
 	if (scalar(@_) > 0) {$tstart = shift;}
 	if (scalar(@_) > 0) {$tend = shift;}
 
+	# get the timing and calib values from the trace row
+
 	my ($t0, $samprate, $nsamp, $calib) = dbgetv ( @db, "time", "samprate", "nsamp", "calib" ) ;
 	my $dt = 1.0 / $samprate ;
 
@@ -458,11 +561,17 @@ sub computestats {
 		$meanremove /= $calib;
 	}
 
+	# find the range within the trace waveform for making the measurements
+
 	my ( $istart, $npts ) ;
 	( $t0, $istart, $npts ) = findrange ( $t0, $dt, $nsamp, $tstart, $tend ) ;
 	if ( $npts < 1 ) {return;}
 
+	# get the waveform sample data array
+
 	my @data = trdata ( @db, $istart, $istart+$npts ) ;
+
+	# loop through the data samples to compute the stats
 
 	my $m = 0.0 ;
 	my $s = 0.0 ;
@@ -481,12 +590,24 @@ sub computestats {
 		$val = $data[$isamp] ;
 		if ($val > 1.e30) {next;}
 		$val -= $meanremove ;
-		$aval = abs ( $val ) ;
-		if ($aval > $amax) {
-			$vmax = $val;
-			$amax = $aval;
-			$tmax = $time;
-			$imax = $isamp;
+
+		# this next bit of code is to insure that the peak is
+		# being measured on a local maximum or minimum instead
+		# of at the edges of the processing window
+
+		if ($isamp > 0 && $isamp < $npts-1) {
+			if ( ( $data[$isamp] > $data[$isamp-1] &&
+					$data[$isamp] > $data[$isamp+1] ) ||
+					( $data[$isamp] < $data[$isamp-1] &&
+					$data[$isamp] < $data[$isamp+1] ) {
+				$aval = abs ( $val ) ;
+				if ($aval > $amax) {
+					$vmax = $val;
+					$amax = $aval;
+					$tmax = $time;
+					$imax = $isamp;
+				}
+			}
 		}
 		$m += $val;
 		$s += $val*$val ;
@@ -498,6 +619,9 @@ sub computestats {
 	my $std = $s / $nm;
 	$std -= $mean*$mean;
 	$std = sqrt($std) ;
+
+	# search around the peak value for the amplitude and period
+	# measurements
 
 	my $amp ;
 	my $per ;
@@ -524,6 +648,8 @@ sub computestats {
 			}
 		}
 	}
+
+	# apply calib and return
 
 	if ($applycalib && $calib != 0.0) {
 		$amax *= $calib ;
@@ -635,7 +761,7 @@ sub process_channel {
 
 	$dbtrace[3] = 0;
 	my ($t0, $sta, $chan, $nsamp, $samprate) = dbgetv ( @dbtrace, "time", "sta", "chan", "nsamp", "samprate" ) ;
-	my ($tstart, $tend) = main::findgoodrange ( @dbtrace ) ;
+	my ($tstart, $tend) = main::trimtrace ( @dbtrace ) ;
 
 	if ( ! defined $self->{stations}{$sta} ) { 
 		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because station not defined", $sta, $chan ) ;
@@ -1157,7 +1283,6 @@ our @mltab = (
 sub compml {
 	my $self = shift ;
 	my $sta = shift ;
-	my $chan = shift ;
 	my $millimeters = shift ;
 
 	my $distance = $self->{stations}{$sta}{delta}*111.11 ;
@@ -1310,9 +1435,9 @@ sub getwftimes {
 					$dbv[3] = 0;
 					my $segtype = dbgetv (@dbv, "segtype");
 					if ($segtype eq "V") {
-						$hash->{filter} = 'INT s0.2;GAIN 2080.0 1.e-6' ;
+						$hash->{filter} = 'INT s0.2;G 2080.0 1.e-6' ;
 					} elsif ($segtype eq "A") {
-						$hash->{filter} = 'INT2 s0.2;GAIN 2080.0 1.e-6' ;
+						$hash->{filter} = 'INT2 s0.2;G 2080.0 1.e-6' ;
 					} else {
 						main::addlog ( $self, 0, "station ". $sta . 
 							" Cannot determine auto filter for segtype " . $segtype ) ;
@@ -1381,7 +1506,7 @@ sub process_channel {
  					$self->{stations}{$sta}{channels}{$chan}{noise_std} ;
 			} 
  			$self->{stations}{$sta}{channels}{$chan}{m} = compml ( 
-				$self, $sta, $chan, $millimeters ) ;
+				$self, $sta, $millimeters ) ;
  			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
 				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
  			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
@@ -1397,7 +1522,7 @@ sub process_channel {
 				
 		}
 	} else {
- 		$self->{stations}{$sta}{channels}{$chan}{m} = compml ( $self, $sta, $chan, 
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compml ( $self, $sta, 
  				$self->{stations}{$sta}{channels}{$chan}{signal_amax} ) ;
  		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
 				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
@@ -1430,8 +1555,8 @@ sub process_network {
 
 }
 
-mbveithclawson &Literal{
-package Mbveithcl ;
+mbusneic &Literal{
+package Mbusneic ;
 
 use strict ;
 use warnings ;
@@ -1439,6 +1564,127 @@ use warnings ;
 use Datascope ; 
 
 our @ISA = ( "Magnitude" ) ;
+
+# following are the USNEIC Mb correction values as a function of distance
+
+our @mbtab = (
+ (1, 5.6,5.8,6.1,6.4,6.5,7.0,7.0,7.2,7.3,7.2,7.1,7.0,6.6,6.3,5.9,5.9,5.9,6.0,6.1,6.1,6.2,6.3,6.4,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.7,
+     6.7,6.6,6.6,6.5,6.5,6.4,6.4,6.5,6.5,6.5,6.6,6.7,6.8,6.9,6.9,6.8,6.7,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,7.0,7.0,7.0,7.0,
+     7.0,7.0,7.0,7.0,6.9,6.9,6.9,6.9,6.8,6.8,6.9,6.9,6.9,6.8,6.7,6.8,6.9,7.0,7.0,7.0,6.9,7.0,7.1,7.0,7.0,7.1,7.1,7.2,7.1,7.2,7.3,7.4,
+     7.5,7.5,7.3,7.4,7.4,7.5,7.6,7.7,7.8,7.8,7.9,8.0),
+ (2, 0.0,0.0,0.0,6.3,6.5,6.8,7.0,7.0,7.1,7.0,7.0,6.9,6.5,6.1,5.9,5.9,5.9,6.0,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.6,6.6,6.7,6.7,
+     6.7,6.7,6.7,6.6,6.6,6.5,6.5,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,6.8,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.9,
+     6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,7.0,7.0,7.0,7.0,7.1,7.1,7.0,7.1,7.2,7.2,7.2,7.2,7.2,7.3,
+     7.3,7.3,7.3,7.3,7.4,7.5,7.6,7.7,7.8,7.8,7.9,8.0),
+ (3, 0.0,0.0,0.0,6.0,6.2,6.5,6.6,6.8,6.9,6.9,6.8,6.7,6.5,6.0,5.9,5.9,5.9,6.0,6.1,6.1,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.6,6.6,
+     6.7,6.7,6.7,6.7,6.7,6.6,6.6,6.5,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.8,
+     6.8,6.8,6.8,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.7,6.7,6.7,6.8,6.8,6.8,6.9,7.0,7.0,7.0,7.1,7.1,7.2,7.2,7.2,7.2,7.2,7.3,7.3,
+     7.3,7.3,7.3,7.4,7.4,7.5,7.6,7.7,7.8,7.9,7.9,8.0),
+ (4, 0.0,0.0,0.0,6.0,6.1,6.4,6.5,6.6,6.8,6.7,6.7,6.5,6.1,6.0,5.9,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.6,
+     6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.7,6.7,
+     6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.0,7.1,7.2,7.2,7.2,7.2,7.3,7.3,
+     7.3,7.3,7.4,7.4,7.5,7.5,7.7,7.8,7.8,7.9,7.9,8.0),
+ (5, 0.0,0.0,0.0,6.0,6.0,6.3,6.4,6.6,6.7,6.6,6.5,6.4,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.5,6.6,
+     6.6,6.7,6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.8,6.8,6.7,6.7,6.7,
+     6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.1,7.1,7.2,7.2,7.3,7.3,
+     7.3,7.4,7.4,7.4,7.5,7.6,7.7,7.8,7.8,7.9,7.9,8.0),
+ (6, 0.0,0.0,0.0,6.0,6.0,6.2,6.4,6.4,6.4,6.4,6.3,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.5,6.5,6.6,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,
+     6.7,6.6,6.6,6.6,6.6,6.6,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.0,7.1,7.2,7.2,
+     7.3,7.3,7.3,7.4,7.5,7.6,7.7,7.8,7.9,7.9,8.0,8.0),
+ (7, 0.0,0.0,0.0,5.9,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.1,7.1,
+     7.2,7.2,7.2,7.3,7.4,7.5,7.7,7.8,7.9,7.9,8.0,8.0),
+ (8, 0.0,0.0,0.0,5.7,5.7,5.8,5.8,5.8,5.9,5.9,6.0,6.0,6.1,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.9,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+ (9, 0.0,0.0,0.0,5.6,5.7,5.7,5.8,5.8,5.9,6.0,6.0,6.1,6.1,6.1,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,
+     6.3,6.3,6.3,6.2,6.2,6.1,6.1,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.4,6.4,6.5,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+(10, 0.0,0.0,0.0,5.7,5.7,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,
+     6.1,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.1,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+(11, 0.0,0.0,0.0,5.7,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,
+     6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,
+     6.5,6.5,6.5,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.8,6.9,6.9,6.9,7.0,
+     7.1,7.1,7.2,7.3,7.4,7.5,7.6,7.7,7.8,7.9,8.0,8.0),
+(12, 0.0,0.0,0.0,5.8,5.9,5.9,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,
+     6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.7,7.8,7.8,7.8,7.9),
+(13, 0.0,0.0,0.0,5.8,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.7,7.7,7.7,7.8,7.8),
+(14, 0.0,0.0,0.0,5.8,5.8,5.9,5.9,6.0,6.1,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.3,6.3,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.6,7.7,7.7,7.7,7.7),
+(15, 0.0,0.0,0.0,5.7,5.8,5.8,5.8,5.9,5.8,5.9,6.0,6.0,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,
+     6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,7.0,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.5,7.6,7.6,7.6,7.7,7.7),
+(16, 0.0,0.0,0.0,5.7,5.7,5.7,5.8,5.8,5.8,5.8,5.8,5.9,5.9,5.9,6.0,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,
+     6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.9,6.9,7.0,7.0,7.0,
+     7.1,7.1,7.2,7.2,7.3,7.3,7.4,7.5,7.5,7.5,7.6,7.6),
+(17, 0.0,0.0,0.0,5.7,5.7,5.7,5.7,5.7,5.7,5.8,5.8,5.8,5.8,5.8,5.9,5.9,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.4,6.4,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,
+     6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.9,6.9,7.0,
+     7.0,7.0,7.1,7.1,7.2,7.2,7.3,7.4,7.4,7.4,7.5,7.5) ) ;
+
+sub compmb {
+	my $self = shift ;
+	my $sta = shift ;
+	my $amplitude_in_microns = shift ;
+	my $period = shift ;
+
+	my $distance = $self->{stations}{$sta}{delta} ;
+	my $depth = $self->{stations}{$sta}{depth} ;
+
+	my ( $k, $dep, $s1 ) ;
+	for ( $k=2; $k<=17; $k++ ) {
+		if ( $k > 5 ) {
+			$dep = ( $k - 3 ) * 50.0 ;
+			if ( $depth > $dep ) { next; }
+			$s1 = ( $depth + 50.0 - $dep ) * 0.02 ;
+			last ;
+		}
+		$dep = ( $k - 1 ) * 25.0 ;
+		if ( $depth > $dep ) { next; }
+		$s1 = ( $depth + 25.0 - $dep ) * 0.04 ;
+		last ;
+	}
+	if ( $k > 17 ) {
+		$k = 17 ;
+		$s1 = ( $depth + 50.0 - 700.0 ) * 0.02 ;
+	}
+
+	my ( $j, $del, $s2 ) ;
+	for ( $j=2; $j<=108; $j++ ) {
+		$del = $j + 1 ;
+		if ( $distance >= $del ) { next; }
+		$s2 = $distance + 1.0 - $del ;
+		last ;
+	}
+	if ( $j > 108 ) {
+		$j = 108 ;
+		$s1 = 0.0 ;
+	}
+
+	$k -= 1 ;
+	
+	my $q1 = $mbtab[$j-1+($k-1)*109] + $s1 * ( $mtab[$j-1+$k*109] - $mtab[$j-1+($k-1)*109] ) ;
+	my $q2 = $mbtab[$j+($k-1)*109] + $s1 * ( $mtab[$j+$k*109] - $mtab[$j+($k-1)*109] ) ;
+	my $qval = $q1 + $s2 * ( $q2 - $q1 ) ;
+
+	my $mb = log($amplitude_in_microns/$period)/log(10) + $qval ;
+	return $mb ;
+}
 
 sub new {
 	return Magnitude::new @_ ;
@@ -1451,76 +1697,139 @@ sub getwftimes {
 
 	if ($ret ne "ok" ) { return main::makereturn ( $self, $ret ) ; }
 
-	$self->{stations} = {};
+	$self->{stations} = {} ;
 
-	my ($otime,$odepth) = dbgetv ( @{$self->{dbo}}, "time", "depth" ) ;
+	my ($otime,$odepth,$oauth) = dbgetv ( @{$self->{dbo}}, "time", "depth", "auth" ) ;
 	my $date = yearday ( $otime ) ;
 
+	if ( $odepth > 800.0 ) {
+		main::addlog ( $self, 1, "Event too deep" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	if ( defined $self->{params}{auth_accept} ) {
+		my $ok = dbex_eval ( @{$self->{dbo}}, "auth =~ /$self->{params}{auth_accept}/" ) ;
+		if ( ! $ok ) {
+			main::addlog ( $self, 1, "wrong origin auth " . $oauth ) ;
+			return main::makereturn ( $self, "skip" ) ; 
+		}
+	}
+
+	@{$self->{dbar}} = dblookup (@{$self->{db}}, 0, "arrival", 0, 0 ) ;
+
+	my $ndbar = dbquery ( @{$self->{dbar}}, "dbRECORD_COUNT" ) ;
+	if ( $ndbar < 1 ) {
+		main::addlog ( $self, 1, "No arrivals" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	my @dbj = dbjoin ( @{$self->{dba}}, @{$self->{dbar}} ) ;
+	$ndbar = dbquery ( @dbj, "dbRECORD_COUNT" ) ;
+	if ( $ndbar < 1 ) {
+		dbfree ( @dbj ) ;
+		main::addlog ( $self, 1, "No records in assoc-arrival join" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+	my @dbjs = dbsort ( @dbj, "time" ) ;
+
 	my $event_tend = -1.e20 ;
-	for ($self->{dba}[3] = 0; $self->{dba}[3] < $self->{nassoc}; $self->{dba}[3]++) {
-		my ($sta, $delta) = dbgetv ( @{$self->{dba}} , "sta", "delta" ) ;
+	for ($dbjs[3] = 0; $dbjs[3] < $ndbar; $dbjs[3]++) {
+		my ( $sta, $chan, $delta, $iphase, $atime ) 
+				= dbgetv ( @dbjs , "sta", "chan", "delta", "iphase", "time" ) ;
+		if ( substr ( $iphase, 0, 1 ) ne "P" ) { next ; }
 		if ( defined $self->{stations}{$sta} ) { next ; }
 		my $process ;
 		($ret, $process) = main::match_sta ($self, $sta) ;
 		if ( $ret ne "ok" ) { next; }
 
-		if ($delta*111.1 < 100.0) {
+		if ($delta < 5.0) {
 			main::addlog ( $self, 1, $sta . ": station too close" ) ;
 			next ;
 		}
-
-		my $pt = dbex_eval ( @{$self->{dbo}}, "ptime(" . $delta . "," . $odepth . ")" ) ;
-
-		my $tstart = $otime + $pt - $process->{noise_twin} - $process->{noise_toffset} - 10.0 ;
-		my $tend = $otime + $pt + 10.0 ;
-		my $noise_tstart = $otime + $pt - $process->{noise_twin} - $process->{noise_toffset} ;
-		my $noise_tend = $otime + $pt - $process->{noise_toffset} ;
-		my $signal_tstart = $otime + $pt - $process->{noise_toffset} ;
-		my $signal_tend = $otime + $pt + 10.0 ;
-
-		my $expr = sprintf 
-			'sta == "%s" && chan =~ /%s/ && %d >= ondate && ( %d <= offdate || offdate == null("offdate") )',
-				$sta, $process->{chan_expr}, $date, $date ;
-		my @dbv = dbsubset ( @{$self->{dbsc}}, $expr ) ;
-		my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
-
-		if ($ndbv < 1) {
-			dbfree @dbv ;
-			main::addlog ( $self, 1, "station ". $sta . ": no channel matches to "
-							. $process->{chan_expr} . " in sitechan table" ) ;
+		if ($delta > 109.0) {
+			main::addlog ( $self, 1, $sta . ": station too far away" ) ;
 			next ;
 		}
-		
+
+		my $twin = $process->{signal_twin} ;
+
+		my $noise_twin = $process->{noise_twin};
+
+		my $noise_tstart = $atime - $noise_twin - $process->{noise_toffset} ;
+		my $noise_tend = $noise_tstart + $noise_twin ;
+		my $signal_tstart = $atime - $process->{signal_toffset} ;
+		my $signal_tend = $signal_tstart + $twin + 10.0 ;
+
+		my $tstart = $noise_tstart - 100.0 ;
+		my $tend = $signal_tend ;
+
 		my $channels = {};
-		for ($dbv[3] = 0; $dbv[3] < $ndbv; $dbv[3]++) {
-			my $chan = dbgetv ( @dbv, "chan" ) ;
-			$channels->{$chan}{first} = 1 ;
-			$channels->{$chan}{noise_done} = 0 ;
-			$channels->{$chan}{signal_done} = 0 ;
-		}
-		dbfree @dbv ;
+		$channels->{$chan}{first} = 1 ;
+		$channels->{$chan}{noise_done} = 0 ;
+		$channels->{$chan}{signal_done} = 0 ;
 
 		my $hash = {
-			"chan_expr" => $process->{chan_expr},
+			"chan_expr" => $chan,
 			"delta" => $delta,
+			"depth" => $odepth,
 			"tstart" => $tstart,
 			"tend"	=> $tend,
 			"noise_tstart" => $noise_tstart,
 			"noise_tend"	=> $noise_tend,
 			"signal_tstart" => $signal_tstart,
 			"signal_tend"	=> $signal_tend,
-			"noise_twin" => $process->{noise_twin},
+			"noise_twin" => $noise_twin,
 			"snr_thresh" => $process->{snr_thresh},
 			"tupdate" => $self->{params}{update_time},
-			"nchans" => $ndbv,
+			"nchans" => 1,
 			"channels" => $channels,
 		} ;
 		if ( defined $process->{filter} ) {
 			$hash->{filter} = $process->{filter} ;
+			if ($hash->{filter} eq "auto" || $hash->{filter} eq "autosp") {
+				$expr = sprintf 
+					'sta == "%s" && chan == "%s" && %.3f >= time && ( %.3f <= endtime || endtime == null("endtime") )',
+						$sta, $chan, $otime, $otime ;
+				my @dbv = dbsubset ( @{$self->{dbc}}, $expr ) ;
+				my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+		
+				if ($ndbv < 1) {
+					main::addlog ( $self, 0, "station ". $sta . ": no channel matches to "
+								. $process->{chan_expr} . " in calibration table" ) ;
+					undef $hash->{filter} ;
+				} else {
+					$dbv[3] = 0;
+					my $segtype = dbgetv (@dbv, "segtype");
+					if ($hash->{filter} eq "auto") {
+						if ($segtype eq "V") {
+							$hash->{filter} = 'BW 0.5 5 5.0 5;INT;G 1000.0' ;
+						} elsif ($segtype eq "A") {
+							$hash->{filter} = 'BW_0.5 5 5.0 5;INT2;G 1000.0' ;
+						} else {
+							main::addlog ( $self, 0, "station ". $sta . 
+								" Cannot determine auto filter for segtype " . $segtype ) ;
+							undef $hash->{filter} ;
+						}
+					} else {
+						if ($segtype eq "V") {
+							$hash->{filter} = 'INT s0.2;G 1000.0' ;
+						} elsif ($segtype eq "A") {
+							$hash->{filter} = 'INT2 s0.2;G 1000.0' ;
+						} else {
+							main::addlog ( $self, 0, "station ". $sta . 
+								" Cannot determine auto filter for segtype " . $segtype ) ;
+							undef $hash->{filter} ;
+						}
+					}
+				}
+				dbfree @dbv ;
+			}
 		}
 		$self->{stations}{$sta} = $hash ;
 		if ( $signal_tend > $event_tend ) { $event_tend = $signal_tend; }
 	}
+	dbfree @dbjs ;
+	dbfree @dbs ;
 
 #	display $self ;
 
@@ -1549,6 +1858,77 @@ sub getwftimes {
 	} else {
 		return main::makereturn ( $self, "ok", "stations" => $self->{stations} ) ;
 	}
+}
+
+sub process_channel {
+	my $ret = Magnitude::process_channel @_ ;
+	my $self = $_[0] ;
+
+	if ( $ret->{disposition} ne "channeldone" 
+		&& $ret->{disposition} ne "stationdone"
+		&& $ret->{disposition} ne "processdone" ) {return $ret;}
+
+	my $sta = $ret->{sta} ;
+	my $chan = $ret->{chan} ;
+
+	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+		main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of no data",
+ 						$sta, $chan )  ;
+	}
+ 	if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+		if ( $self->{stations}{$sta}{snr_thresh} < 1.0
+				|| $self->{stations}{$sta}{channels}{$chan}{snr}
+					> $self->{stations}{$sta}{snr_thresh} ) {
+			my $microns =
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+			my $period =
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_per} ;
+			if ( $period < 0.1 || $period > 9.0 ) {
+				main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
+ 							$sta, $chan )  ;
+				return $ret ;
+			}
+ 			$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( 
+				$self, $sta, $microns, $period ) ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
+			main::addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+		} else {
+			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
+ 							$sta, $chan )  ;
+				
+		}
+	} else {
+		my $microns = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+		my $period = $self->{stations}{$sta}{channels}{$chan}{signal_per} ;
+		if ( $period < 0.1 || $period > 9.0 ) {
+			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
+ 						$sta, $chan )  ;
+			return $ret ;
+		}
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( $self, $sta, $microns, $period ) ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
+		main::addlog ( $self, 2, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	}
+
+	return $ret ;
 }
 
 }
