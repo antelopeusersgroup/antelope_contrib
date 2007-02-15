@@ -408,6 +408,8 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		// Land here when data are not stored in wfdisc but
 		// stored as dmatrix object binary form
 		Metadata md(dbh,md_to_extract,am);
+		copy_selected_metadata(md,
+			dynamic_cast<Metadata &>(*this),md_to_extract);
 		// In this situation we have to load the definition of the
 		// transformation matrix into the md object
 		// We must assume the data are externally defined in cardinal coordinates
@@ -466,6 +468,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			throw SeisppError("Open failed on file"+fname);
 		if(foff>0) fseek(fp,static_cast<long int>(foff),SEEK_SET);
 		int readsize=(this->ns)*3;
+
 		if(fread(static_cast<void *>(this->u.get_address(0,0)),
 			sizeof(double),readsize,fp) != readsize)
 		{

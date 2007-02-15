@@ -57,6 +57,11 @@ easy to strip out the Antelope dependencies if for most
 of the package, although some key methods would require
 an extensive rewrite to work around the large number of
 dependencies.  In short, possible but a nontrivial job.
+\par
+To download this software go to the 
+<a href="http://quakeinfo.geology.indiana.edu/cvsweb.cgi/">
+CVS web repository for the Antelope User Group </a> to download the
+SEISPP library and related software. 
 
 \author Gary L. Pavlis
 */
