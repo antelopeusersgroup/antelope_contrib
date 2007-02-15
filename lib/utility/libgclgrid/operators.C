@@ -432,9 +432,9 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 				}
 				else
 				{
-					cx.x1=g.x1[i][j][k];	
-					cx.x2=g.x2[i][j][k];	
-					cx.x3=g.x3[i][j][k];	
+					cx.x1=x1[i][j][k];	
+					cx.x2=x2[i][j][k];	
+					cx.x3=x3[i][j][k];	
 				}
 				err=g.lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
@@ -492,9 +492,9 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				}
 				else
 				{
-					cx.x1=g.x1[i][j][k];	
-					cx.x2=g.x2[i][j][k];	
-					cx.x3=g.x3[i][j][k];	
+					cx.x1=x1[i][j][k];	
+					cx.x2=x2[i][j][k];	
+					cx.x3=x3[i][j][k];	
 				}
 
 				err=g.lookup(cx.x1,cx.x2,cx.x3);
