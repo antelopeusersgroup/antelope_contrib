@@ -78,8 +78,8 @@ pf2xml( ... )
 
 	if( items < 2 || items > 6 ) {
 		
-		croak( "Usage: pf2xml [-f], [-n], [-s], pfname, " 
-		       "rootname, [, header]" );
+		croak( "Usage: pf2xml( [-f], [-n], [-s], pfname, " 
+		       "rootname, [, header] )" );
 	}
 
 	next = 0;
@@ -139,13 +139,26 @@ pf2xml( ... )
 		croak( "pf2xml: Failed to create xml\n%s", elogmsgs() );
 	}
 
-	EXTEND( sp, 1 );
-
-	XPUSHs(sv_2mortal(newSVpv( xml, strlen(xml) ) ) );
+	XPUSHs( sv_2mortal( newSVpv( xml, strlen(xml) ) ) );
 
 	if( xml ) {
 
 		free( xml );
 	}
+
+	}
+
+void
+pffree( name )
+	char *name;
+	PPCODE:
+	{
+
+	if( items != 1 ) {
+		
+		croak( "Usage: pffree( name )" );
+	}
+
+	freePf( name );
 
 	}

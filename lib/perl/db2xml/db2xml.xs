@@ -199,7 +199,7 @@ db2xml( idatabase, itable, ifield, irecord, ... )
 
 	EXTEND( sp, 1 );
 
-	XPUSHs(sv_2mortal(newSVpv( xml, strlen(xml) ) ) );
+	PUSHs(sv_2mortal(newSVpv( xml, strlen(xml) ) ) );
 
 	if( xml ) {
 

@@ -21,6 +21,7 @@ our @ISA = qw(Exporter DynaLoader);
 
 our @EXPORT = qw(
 	pf2xml
+	pffree
 );
 our $VERSION = '1.0';
 
