@@ -48,6 +48,8 @@ if ( @ARGV != 2 ) {
 }
 
 use Datascope;
+use Datascope::pf2xml;
+use sysinfo;
 use orb;
 
 $orbname = $ARGV[0];
@@ -64,9 +66,42 @@ if( $orb < 0 ) {
 
 orbselect( $orb, ".*/pf/st" );
 
+$prev = 0;
+$npkts = 0;
+
+sub check {
+	my( $where ) = @_;
+
+	my( %info, $current );
+	
+	%info = (pidinfo($$));
+	
+	$current = $info{size};
+
+	if( $prev != $current ) {
+
+		$jump = $current - $prev;
+
+		print "at $where increase $jump after $npkts " .
+			"pkts: $prev to $current\n";
+
+		$npkts = 0;
+	}
+
+	$prev = $current;
+
+	return;
+}
+
 for( ;; ) {
+	
+	check( __LINE__ );
 
 	($pktid, $srcname, $time, $packet, $nbytes)  = orbreap( $orb );
+
+	++$npkts;
+
+	check( __LINE__ );
 
 	if( ! defined( $pktid ) ) {
 		
@@ -75,36 +110,81 @@ for( ;; ) {
 
         ($result, $pkt) = unstuffPkt($srcname, $time, $packet, $nbytes) ;
 
-	if( $result == Pkt_st ) {
+	check( __LINE__ );
 
-		$file = $srcname;
-		$file =~ s@/pf/st@@;
-		$file .= ".xml";
+	$header = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
+
+	if( $result eq "Pkt_st" ) {
+
+		$pfstring = $pkt->string();
+
+		check( __LINE__ );
+
+		if( defined( $pfstring ) && $pfstring ne "" ) {
+
+			$file = $srcname;
+			$file =~ s@/pf/st@@;
+			$file .= "_stash.xml";
 		
-		$file = concatpaths( $dir, $file );
+			$file = concatpaths( $dir, $file );
 		
-		$pftmp = "/tmp/orbdlstat2xml_$<_$$\_tmp_$time.pf";
-		$xmltmp = "$file+";
+			$pfname = "apf";
 
-		open( F, ">$pftmp" );
+			pfnew( $pfname );
 
-		$string = $pkt->string();
+			check( __LINE__ );
 
-		if( defined( $string ) ) {
+			pfcompile( $pfstring, $pfname );
 
-			print F $pkt->string();
+			check( __LINE__ );
+
+			$xmlstring = pf2xml( "-n", $pfname, $header );
+
+			check( __LINE__ );
+
+			pffree( $pfname );
+
+			check( __LINE__ );
+
+			$backbuffer_file = "$file+";
+
+			open( F, ">$backbuffer_file" );
+	
+			print F $xmlstring;
+	
+			close( F );
+
+			system( "mv $backbuffer_file $file" );
 
 		} else {
 
-			print F pf2string( $pkt->pf() );
+			$file = $srcname;
+			$file =~ s@/pf/st@@;
+			$file .= ".xml";
+		
+			$file = concatpaths( $dir, $file );
+		
+			$pkt->pf();
+
+			check( __LINE__ );
+
+			$pfname = "Packet::pf";
+
+			check( __LINE__ );
+
+			$xmlstring = pf2xml( "-n", $pfname, $header );
+
+			check( __LINE__ );
+
+			$backbuffer_file = "$file+";
+
+			open( F, ">$backbuffer_file" );
+	
+			print F $xmlstring;
+	
+			close( F );
+
+			system( "mv $backbuffer_file $file" );
 		}
-
-		close( F );
-
-		system( "echo '<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>' | pf2xml -n -h - $pftmp > $xmltmp" );
-
-		system( "mv $xmltmp $file" );
-
-		unlink( $pftmp );
 	}
 }

@@ -12,6 +12,11 @@ Markup Language (XML) representation, and places the results in the
 specified directory \fIdir\fP. 
 .SH OPTIONS
 .SH FILES
+Regular packets are converted to XML files named after the packet
+sourcenames (without the \fI.*/pf/st\fP suffix/subcode extension). 
+Stash packets for each source name are saved under the same name
+with \fI_stash\fP appended. 
+
 \fBorbdlstat2xml\fP creates temporary files of the xml output under the 
 target names with '+' signs appended, then moves them to the final 
 target names when the files are complete. This back-buffering is intended
@@ -26,8 +31,18 @@ on them.
 % orbdlstat2xml anfops.ucsd.edu:status /scr/day &
 
 % ls /scr/day 
-pretadata.xml  tadataAG.xml   tadataHN.xml   
-tadataOU.xml   tadataV2.xml 
+
+/scr/day:
+pretadata.xml 
+pretadata_stash.xml 
+tadataAG.xml 
+tadataAG_stash.xml 
+tadataHN.xml 
+tadataHN_stash.xml 
+tadataOU.xml 
+tadataOU_stash.xml 
+tadataV2.xml 
+tadataV2_stash.xml 
 
 .fi
 .ft R
