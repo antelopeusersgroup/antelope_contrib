@@ -66,42 +66,11 @@ if( $orb < 0 ) {
 
 orbselect( $orb, ".*/pf/st" );
 
-$prev = 0;
-$npkts = 0;
-
-sub check {
-	my( $where ) = @_;
-
-	my( %info, $current );
-	
-	%info = (pidinfo($$));
-	
-	$current = $info{size};
-
-	if( $prev != $current ) {
-
-		$jump = $current - $prev;
-
-		print "at $where increase $jump after $npkts " .
-			"pkts: $prev to $current\n";
-
-		$npkts = 0;
-	}
-
-	$prev = $current;
-
-	return;
-}
-
 for( ;; ) {
 	
-	check( __LINE__ );
-
 	($pktid, $srcname, $time, $packet, $nbytes)  = orbreap( $orb );
 
 	++$npkts;
-
-	check( __LINE__ );
 
 	if( ! defined( $pktid ) ) {
 		
@@ -110,15 +79,11 @@ for( ;; ) {
 
         ($result, $pkt) = unstuffPkt($srcname, $time, $packet, $nbytes) ;
 
-	check( __LINE__ );
-
 	$header = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
 
-	if( $result eq "Pkt_st" ) {
+	if( $result eq "Pkt_st" || $result eq "Pkt_pf" ) {
 
 		$pfstring = $pkt->string();
-
-		check( __LINE__ );
 
 		if( defined( $pfstring ) && $pfstring ne "" ) {
 
@@ -132,19 +97,11 @@ for( ;; ) {
 
 			pfnew( $pfname );
 
-			check( __LINE__ );
-
 			pfcompile( $pfstring, $pfname );
-
-			check( __LINE__ );
 
 			$xmlstring = pf2xml( "-n", $pfname, $header );
 
-			check( __LINE__ );
-
 			pffree( $pfname );
-
-			check( __LINE__ );
 
 			$backbuffer_file = "$file+";
 
@@ -166,15 +123,9 @@ for( ;; ) {
 		
 			$pkt->pf();
 
-			check( __LINE__ );
-
 			$pfname = "Packet::pf";
 
-			check( __LINE__ );
-
 			$xmlstring = pf2xml( "-n", $pfname, $header );
-
-			check( __LINE__ );
 
 			$backbuffer_file = "$file+";
 
