@@ -3,6 +3,30 @@
 #include <string>
 namespace SEISPP {
 using namespace std;
+/* 
+*  The first block of keywords are VERY critical to any entity
+*  that inhereits a BasicTimeSeries aimed to be read 
+*  from a database. The keywords used here match exactly the
+*  standard attribute names for these quantities in the css3.0
+*  schema used in Antelope.  If this library is used for a different
+*  database schema with different names, it would be easiest to implement
+*  the change with an ifdef block here that would changes these constants.
+*/
+
+/*! Keyword for number of samples for a BasicTimeSeries.  */
+const string number_samples_keyword("nsamp");
+/*! Keyword for start time (t0) of a BasicTimeSeries. */
+const string start_time_keyword("time");
+/*! Keyword for end time of a BasicTimeSeries. */
+const string end_time_keyword("endtime");
+/*! Keyword for sample rate of a BasicTimeSeries. */
+const string sample_rate_keyword("samprate");
+/*! Keyword for timetype (relative or absolute) attribute.*/
+const string timetype_keyword("timetype");
+/*
+*   END BasicTimeSeries keyword block
+*/
+
 /*! Defines a keyword to reference moveout used by the generalized stack operator.*/
 const string moveout_keyword("moveout"); 
 /*! Defines keyword for coherence estimate for generalized stack operator. */

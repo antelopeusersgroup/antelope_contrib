@@ -1,4 +1,5 @@
 #include "tr.h" // Antelope trace library
+#include "SeisppKeywords.h"
 #include "SeisppError.h"
 #include "TimeSeries.h"
 namespace SEISPP
@@ -115,6 +116,16 @@ database.  Arguments:
 		(see metadata(3)).
 Uses Antelope's trgetwf function which should allow it to read almost any
 common seismic trace format. 
+
+Major modification Feb 2007:  previous version fetched ns,t0,dt,
+and te from Metadata.  These are now dogmatically read from the
+database using keywords defined in SeisppKeywords.h.  This insulates
+this code from frozen names allowing a potential warping of the 
+library to work on a different schema.  This function, however,
+as currently implemented is totally locked into antelope anyway
+so css3.0 attribute names can pretty easily be assumed to be 
+workable.
+
 */
 
 TimeSeries::TimeSeries(DatabaseHandle& rdb,
@@ -124,64 +135,93 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 {
 	float *inbuffer=NULL;
 	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb); 
-	try{
-		double te,t0read,teread;
-		int nread;
-
-		ns = this->get_int("nsamp");
-		s.reserve(ns);
-		dt = 1.0/(this->get_double("samprate"));
-		t0 = this->get_double("time");
-		tref = absolute;  // perhaps too dogmatic
-
-		te = this->get_double("endtime");
-		/* This will create a memory leak if trgetwf fails 
-		// trgetwf returns an error for multiple conditions and
-		// some are more fatal than others.  For most applications
-		// I can imagine any error in trgetwf is serious and probably
-		// would normally lead to an exit.
-		//
-		// Problem is that I can't just test for a NULL pointer 
-		// and expect it is safe to free inbuffer before exit
-		*/
-		if(trgetwf(dbh.db,0,&inbuffer,NULL,t0,te,
-					&t0read,&teread,&nread,
-					0,0))
-				throw SeisppDberror("TimeSeries database constructor:  trgetwf error",dbh.db);
-		if(nread!=ns)
-		{
-		    if(abs(nread-ns)>1)
-		    {
-			// bitch if the mismatch is more than 1 
-			cerr << "Data read mismatch on row "
-				<< dbh.db.record 
-				<< " of input database" << endl
-				<< "Expected to read "
-				<< ns 
-				<< " data points but read "
-				<< nread << endl;
-		    	}
-			ns = nread;
-			t0 = t0read;
-			this->put("endtime",teread);
-			this->put("nsamp",ns);
-		}
-		s.reserve(ns);
-		for(int i=0;i<this->ns;++i) 
-			s.push_back(static_cast<double>(inbuffer[i]));
-		// trgetwf is a C function so we need to use free to 
-		// release the space it allocated.
-		live = true;
-		free(inbuffer);
-	}
-	catch (MetadataError& mderr)
+	double te,t0read,teread,srate;
+	int nread;
+	if(dbgetv(dbh.db,0,number_samples_keyword.c_str(),&ns,
+		start_time_keyword.c_str(),&t0,
+		sample_rate_keyword.c_str(),&srate,0) ==dbINVALID)
 	{
-		// Land here when any of the metadata routines fail
-		mderr.log_error();
-		throw SeisppDberror("Constructor for TimeSeries object failed from a Metadata error",
-			dbh.db);
-
+		throw SeisppDberror(string("TimeSeries database ")
+			+string(" constructor:  error reading ")
+			+string("one of the following attributes")
+			+string(" from database with dbgetv:\n")
+			+ number_samples_keyword +string(" ")
+			+ start_time_keyword +string(" ")
+			+ sample_rate_keyword,
+				dbh.db); 
 	}
+	dt=1.0/srate;
+	// Make sure what is posted to metadata matches what
+	// we just read from the db
+	this->put(number_samples_keyword,ns);
+	this->put(start_time_keyword,t0);
+	this->put(sample_rate_keyword,srate);
+	// Safer to compute this quantity than require it to 
+	// be read from the database
+	te=this->endtime();
+	this->put(end_time_keyword,te);
+	/*
+	absolute versus relative time is a Seispp library
+	concept not universally used.  We need to set
+	the tref variable appropriately and there is currently
+	no unambiguous way to do this other than to try to
+	read an attribute that tags this and assume something
+	(absolute) if the attribute is not defined.  
+	*/
+	char timetype[20];
+	if(dbgetv(dbh.db,0,timetype_keyword,timetype,0)
+		== dbINVALID)
+	{
+		tref=absolute;
+	}
+	else
+	{
+		if(strcmp(timetype,"r"))
+			tref=absolute;
+		else
+			tref=relative;
+	}
+
+	s.reserve(ns);
+
+	/* This will create a memory leak if trgetwf fails 
+	// trgetwf returns an error for multiple conditions and
+	// some are more fatal than others.  For most applications
+	// I can imagine any error in trgetwf is serious and probably
+	// would normally lead to an exit.
+	//
+	// Problem is that I can't just test for a NULL pointer 
+	// and expect it is safe to free inbuffer before exit
+	*/
+	if(trgetwf(dbh.db,0,&inbuffer,NULL,t0,te,
+				&t0read,&teread,&nread,
+				0,0))
+			throw SeisppDberror("TimeSeries database constructor:  trgetwf error",dbh.db);
+	if(nread!=ns)
+	{
+	    if(abs(nread-ns)>1)
+	    {
+		// bitch if the mismatch is more than 1 
+		cerr << "Data read mismatch on row "
+			<< dbh.db.record 
+			<< " of input database" << endl
+			<< "Expected to read "
+			<< ns 
+			<< " data points but read "
+			<< nread << endl;
+	    	}
+		ns = nread;
+		t0 = t0read;
+		this->put(end_time_keyword,teread);
+		this->put(number_samples_keyword,ns);
+	}
+	s.reserve(ns);
+	for(int i=0;i<this->ns;++i) 
+		s.push_back(static_cast<double>(inbuffer[i]));
+	// trgetwf is a C function so we need to use free to 
+	// release the space it allocated.
+	live = true;
+	free(inbuffer);
 }
 // standard assignment operator
 TimeSeries& TimeSeries::operator=(const TimeSeries& tsi)

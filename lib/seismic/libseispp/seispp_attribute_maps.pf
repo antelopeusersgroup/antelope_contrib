@@ -3429,11 +3429,11 @@ pwfid pwfid wfprocess int true
 timetype timetype wfprocess string
 # These are important, but are currently hard
 # wired in write function as part of BasicTimeSeries
-#wfprocess.time time wfprocess real
-#wfprocess.endtime endtime wfprocess real
-#wfprocess.nsamp nsamp wfprocess int
-#wfprocess.samprate samprate wfprocess real
-#wfprocess.datatype datatype wfprocess string
+wfprocess.time time wfprocess real
+wfprocess.endtime endtime wfprocess real
+wfprocess.nsamp nsamp wfprocess int
+wfprocess.samprate samprate wfprocess real
+wfprocess.datatype datatype wfprocess string
 wfprocess.timetype timetype wfprocess string
 wfprocess.algorithm algorithm wfprocess string
 wfprocess.dir dir wfprocess string
