@@ -340,7 +340,7 @@ if( $opt_m ) {
 @db = dbprocess( @db, @dbprocess_get_wfmeas );
 
 $nrecs = dbquery( @db, "dbRECORD_COUNT" );
-$nrecs > 0 || die( "No wfmeas measurements for $event_id\n" );
+$nrecs > 0 || elog_complain( "Warning: no wfmeas measurements for $event_id; proceeding anyway\n" );
 
 @db = dbprocess( @db, "dbsort sta chan",
 		      "dbgroup sta chan",
