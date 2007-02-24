@@ -1018,6 +1018,7 @@ static void Btn1UpProc (
             if (spar->x2begb <= spar->x2beg) spar->x2begb = spar->x2beg;
             if (spar->x2endb >= spar->x2end) spar->x2endb = spar->x2end;
 	
+	    sw->seisw.zoom_not_set_limit=1;
 	    //If we are dealing with a really small box here, reset to the original display size
 	    if ((event->xmotion.x-xstart >= -4 && event->xmotion.x-xstart <= 4) ||
 		(event->xmotion.y-ystart >= -4 && event->xmotion.y-ystart <= 4)) {
@@ -1025,6 +1026,7 @@ static void Btn1UpProc (
                 spar->x1endb = sca->x1endb_init;
                 spar->x2begb = sca->x2begb_init;
                 spar->x2endb = sca->x2endb_init;
+		sw->seisw.zoom_not_set_limit=0;
 	    }
 
 	    //handle changing resolution for resizing
@@ -3978,6 +3980,8 @@ Initialize(
    nw->seisw.previous_y_top_position=0;
    nw->seisw.from_zoom=0;
 
+   nw->seisw.zoom_not_set_limit=1;
+
    //Drag stuff
    nw->seisw.drag_enable = 0;
    nw->seisw.DragID=0;
@@ -4539,10 +4543,13 @@ Resize (
 
 	//reset the initial stuff so that it remember to go back to this state instead of
   	//the very beginning one.
-        sca->x1begb_init=spar->x1begb;
-        sca->x1endb_init=spar->x1endb;
-        sca->x2begb_init=spar->x2begb;
-        sca->x2endb_init=spar->x2endb;
+	if(sw->seisw.zoom_not_set_limit==0)
+	{
+	        sca->x1begb_init=spar->x1begb;
+	        sca->x1endb_init=spar->x1endb;
+	        sca->x2begb_init=spar->x2begb;
+	        sca->x2endb_init=spar->x2endb;
+	}
 
 
     //set up the gc, it uses the core.width and core.height

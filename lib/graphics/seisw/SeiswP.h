@@ -157,6 +157,9 @@ typedef struct _ExmSeiswPart
    int y_top_position;   //204-208
    int previous_y_top_position; //208-212
    int from_zoom; //212-216
+   /* Added Feb 2007:  used to disable resetting limit when resizing
+    after a zoom (used in Btn1UpProc and Resize)*/
+   int zoom_not_set_limit;  
 
    int xItemCount; //216-220
    int yItemCount; //220-224
