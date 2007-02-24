@@ -467,6 +467,16 @@ recipients specified with nonzero delays are not notified, since the
 alarm is de-registered as soon as all immediately-sendable messages
 are delivered.
 
+All of the parameters should have their keys (parameter names) left in the 
+parameter file, regardless of whether or not the parameter values will be 
+used. The values can be left blank in these cases. For example, even though 
+\fIwait_ack\fP is set to zero, the placeholders for the \fIack_subject\fP 
+and \fIack_body\fP parameters should be left in place. (\fBorb_quake_alarm\fP
+rereads all parameters out of the parameter file that might possibly 
+be useful in processing a given earthquake, and then decides later on 
+which ones it actually needs to use as the particular origin row is 
+processed.)
+
 Some email recipients, such as cell phones listening for SMS messages,
 may be limited to a certain message length. Often messages that are too
 long are unceremoniously truncated by the delivery system. For such
