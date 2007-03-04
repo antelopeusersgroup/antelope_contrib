@@ -5,21 +5,24 @@
 # Technologies, Inc. This software makefile may be copied
 # and used in any way.
 
-BIN =  orbevproc
+BIN =  orbevproc dbevproc
 
 MAN1 =
 
-PF = orbevproc.pf
+PF = orbevproc.pf dbevproc.pf
 
-ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
+ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lassoc -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
 
 include $(ANTELOPEMAKE)
 DIRS=
 
-OBJS= orbevproc.o
+OBJS= orbevproc.o ctype_b.o
 
-$(BIN) : orbevproc_version.h $(OBJS)
+orbevproc : orbevproc_version.h $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+dbevproc : orbevproc
+	$(RM) $@ ; cp orbevproc dbevproc
 
 .time :
 	-$(RM) $@

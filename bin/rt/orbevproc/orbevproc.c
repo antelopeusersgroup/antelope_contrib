@@ -25,6 +25,9 @@
 
 #define    INT2(x,y)        ((x)<0.0?((x)/(y)-0.5):((x)/(y)+0.5))
 
+#define	TYPE_ORB	0
+#define	TYPE_DB		1
+
 typedef struct process_params_chan_ {
 	char chan[16];
 	double tlast;
@@ -100,13 +103,18 @@ static pthread_t main_thread;
 void affirm();
 
 void
-usage ()
+usage (int type)
 
 {
-	fprintf (stderr, "usage: orbevproc [-start {pktid|time}] [-select select_expr]\n");
-	fprintf (stderr, "                 [-number number] [-nowait] [-state statefile]\n");
-	fprintf (stderr, "                 [-p parameter_file] [-dbwf dbwf]\n");
-	fprintf (stderr, "                 orbwf orbdb dbname\n");
+	if (type == TYPE_ORB) {
+		fprintf (stderr, "usage: orbevproc [-start {pktid|time}] [-select select_expr]\n");
+		fprintf (stderr, "                 [-number number] [-nowait] [-state statefile]\n");
+		fprintf (stderr, "                 [-p parameter_file] [-dbwf dbwf]\n");
+		fprintf (stderr, "                 orbwf orbdb dbname\n");
+	} else {
+		fprintf (stderr, "usage: dbevproc [-p parameter_file] [-v]\n");
+		fprintf (stderr, "                dbin dbout\n");
+	}
 }
 
 char *
@@ -245,34 +253,72 @@ myusleep (double sec)
 }
 
 int
-pf2dbtable (Pf *pf, char *pfkey, char *tablename, Dbptr db, int require)
+db2dbtable (Pf *pf, char *pfkey, Dbptr dbin, char *tablename, Dbptr db, int require)
 
 {
 	char *ptr=NULL;
-	char *rec;
 
-	if (parse_param (pf, pfkey, P_STR, require, &ptr) < 0) {
-		register_error (0, "pf2dbtable: parse_param(%s) error.\n", pfkey);
-		return (-1);
-	}
+	if (pf) {
+		char *rec;
 
-	if (ptr == NULL) return (0);
-
-	db = dblookup (db, 0, tablename, 0, 0);
-	if (db.table == dbINVALID) {
-		register_error (0, "pf2dbtable: dblookup(%s) error.\n", tablename);
-		return (-1);
-	}
-
-	for (rec=strtok(ptr, "\n"); rec != NULL; rec=strtok(NULL, "\n")) {
-		if (dbadd (db, rec) < 0) {
-			free (ptr);
-			register_error (0, "pf2dbtable: dbadd(%s) error.\n", rec);
+		if (parse_param (pf, pfkey, P_STR, require, &ptr) < 0) {
+			register_error (0, "db2dbtable: parse_param(%s) error.\n", pfkey);
 			return (-1);
 		}
-	}
 
-	free (ptr);
+		if (ptr == NULL) return (0);
+
+		db = dblookup (db, 0, tablename, 0, 0);
+		if (db.table == dbINVALID) {
+			register_error (0, "db2dbtable: dblookup(%s) error.\n", tablename);
+			return (-1);
+		}
+
+		for (rec=strtok(ptr, "\n"); rec != NULL; rec=strtok(NULL, "\n")) {
+			if (dbadd (db, rec) < 0) {
+				free (ptr);
+				register_error (0, "db2dbtable: dbadd(%s) error.\n", rec);
+				return (-1);
+			}
+		}
+
+		free (ptr);
+	} else {
+		char rec[1024];
+		int istart, iend;
+
+		if (dbin.record == dbINVALID) return (0);
+
+		dbin = dblookup (dbin, 0, tablename, 0, 0);
+		if (dbin.table == dbINVALID) {
+			register_error (0, "db2dbtable: dblookup(%s) error.\n", tablename);
+			return (-1);
+		}
+
+		db = dblookup (db, 0, tablename, 0, 0);
+		if (db.table == dbINVALID) {
+			register_error (0, "db2dbtable: dblookup(%s) error.\n", tablename);
+			return (-1);
+		}
+
+		if (dbin.record != dbALL && dbin.field == dbALL) {
+			istart = dbin.record;
+			iend = istart+1;
+		} else {
+			dbget_range (dbin, &istart, &iend);
+		}
+
+		for (dbin.record=istart; dbin.record<iend; dbin.record++) {
+			if (dbget (dbin, rec) < 0) {
+				register_error (0, "db2dbtable: dbget() error.\n");
+				return (-1);
+			}
+			if (dbadd (db, rec) < 0) {
+				register_error (0, "db2dbtable: dbadd(%s) error.\n", rec);
+				return (-1);
+			}
+		}
+	}
 
 	return (0);
 }
@@ -323,18 +369,23 @@ dbtable2pf (Dbptr db, Pf **pf)
 }
 
 int
-pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
+mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 
 {
 	char tmpdbname[256];
 	static int instance=0;
-	Dbptr dbo, dbs, dbos, dbon, dbj;
+	Dbptr dbo, dba, dbs, dbos, dbon, dbj;
 	double time, olat, olon;
 	int orid;
-	int i, n;
+	int i, n, ret;
 	char expr[256];
 	Arr *arr;
 	Tbl *stas;
+	static Hook *hookore=NULL;
+	static Hook *hookemd=NULL;
+	static Hook *hookpre=NULL;
+	static Hook *hookass=NULL;
+	static Hook *hookarr=NULL;
 
 	/* setup temporary database */
 
@@ -343,21 +394,21 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	instance++;
 
 	if (dbopen (tmpdbname, "r+", db) == dbINVALID) {
-		register_error (0, "pf2db: dbopen(%s) error in temp db.\n", tmpdbname);
+		register_error (0, "mktmpdb: dbopen(%s) error in temp db.\n", tmpdbname);
 		return (-1);
 	}
 	dbdestroy (*db);
 	dbclose (*db);
 	clear_register (0);
 	if (dbopen (tmpdbname, "r+", db) == dbINVALID) {
-		register_error (0, "pf2db: dbopen(%s) error in temp db.\n", tmpdbname);
+		register_error (0, "mktmpdb: dbopen(%s) error in temp db.\n", tmpdbname);
 		return (-1);
 	}
 
 	/* convert origin table */
 
-	if (pf2dbtable (pf, "origin", "origin", *db, 1) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.origin) error in temp db.\n", tmpdbname);
+	if (db2dbtable (pf, "origin", dbmaster, "origin", *db, 1) < 0) {
+		register_error (0, "mktmpdb: db2dbtable(%s.origin) error in temp db.\n", tmpdbname);
 		dbdestroy (*db);
 		dbclose (*db);
 		return (-1);
@@ -365,47 +416,160 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 
 	/* convert origerr table */
 
-	if (pf2dbtable (pf, "origerr", "origerr", *db, 0) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.origerr) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
+	if (pf == NULL) {
+		Tbl *tbl = NULL;
+
+		dbo = dblookup (dbmaster, 0, "origerr", 0, "dbALL");
+		ret = dbmatches (dbmaster, dbo, 0, 0, &hookore, &tbl);
+		if (ret < 0) {
+			register_error (0, "mktmpdb: dbmatches(origerr) error.\n");
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		dbo.record = dbINVALID;
+		if (ret > 0) {
+			dbo.record = (int) gettbl (tbl, 0);
+		}
+		freetbl (tbl, 0);
+		if (db2dbtable (pf, "origerr", dbo, "origerr", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.origerr) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+	} else {
+		if (db2dbtable (pf, "origerr", dbmaster, "origerr", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.origerr) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
 	}
 
 	/* convert emodel table */
 
-	if (pf2dbtable (pf, "emodel", "emodel", *db, 0) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.emodel) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
+	if (pf == NULL) {
+		Tbl *tbl = NULL;
+
+		dbo = dblookup (dbmaster, 0, "emodel", 0, "dbALL");
+		ret = dbmatches (dbmaster, dbo, 0, 0, &hookemd, &tbl);
+		if (ret < 0) {
+			register_error (0, "mktmpdb: dbmatches(emodel) error.\n");
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		dbo.record = dbINVALID;
+		if (ret > 0) {
+			dbo.record = (int) gettbl (tbl, 0);
+		}
+		freetbl (tbl, 0);
+		if (db2dbtable (pf, "emodel", dbo, "emodel", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.emodel) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+	} else {
+		if (db2dbtable (pf, "emodel", dbmaster, "emodel", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.emodel) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
 	}
 
 	/* convert predarr table */
 
-	if (pf2dbtable (pf, "predarrs", "predarr", *db, 0) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.predarr) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
+	if (pf == NULL) {
+		Tbl *tbl = NULL;
+
+		dbo = dblookup (dbmaster, 0, "predarr", 0, "dbALL");
+		ret = dbmatches (dbmaster, dbo, 0, 0, &hookpre, &tbl);
+		if (ret < 0) {
+			register_error (0, "mktmpdb: dbmatches(predarr) error.\n");
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		dbo.record = dbINVALID;
+		for (i=0; i<maxtbl(tbl); i++) {
+			dbo.record = (int) gettbl (tbl, i);
+			if (db2dbtable (pf, "predarrs", dbo, "predarr", *db, 0) < 0) {
+				register_error (0, "mktmpdb: db2dbtable(%s.predarr) error in temp db.\n", tmpdbname);
+				dbdestroy (*db);
+				dbclose (*db);
+				return (-1);
+			}
+		}
+		freetbl (tbl, 0);
+	} else {
+		if (db2dbtable (pf, "predarrs", dbmaster, "predarr", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.predarr) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
 	}
 
-	/* convert assoc table */
+	/* convert assoc and arrival tables */
 
-	if (pf2dbtable (pf, "assocs", "assoc", *db, 0) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.assoc) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
-	}
+	if (pf == NULL) {
+		Tbl *tbl = NULL;
 
-	/* convert arrival table */
+		dbo = dblookup (dbmaster, 0, "assoc", 0, "dbALL");
+		dba = dblookup (dbmaster, 0, "arrival", 0, "dbALL");
+		ret = dbmatches (dbmaster, dbo, 0, 0, &hookass, &tbl);
+		if (ret < 0) {
+			register_error (0, "mktmpdb: dbmatches(assoc) error.\n");
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		dbo.record = dbINVALID;
+		for (i=0; i<maxtbl(tbl); i++) {
+			Tbl *tbl2=NULL;
 
-	if (pf2dbtable (pf, "arrivals", "arrival", *db, 0) < 0) {
-		register_error (0, "pf2db: pf2dbtable(%s.arrival) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
+			dbo.record = (int) gettbl (tbl, i);
+			if (db2dbtable (pf, "assocs", dbo, "assoc", *db, 0) < 0) {
+				register_error (0, "mktmpdb: db2dbtable(%s.assoc) error in temp db.\n", tmpdbname);
+				dbdestroy (*db);
+				dbclose (*db);
+				return (-1);
+			}
+			ret = dbmatches (dbo, dba, 0, 0, &hookarr, &tbl2);
+			if (ret < 0) {
+				register_error (0, "mktmpdb: dbmatches(arrival) error.\n");
+				dbdestroy (*db);
+				dbclose (*db);
+				return (-1);
+			}
+			if (ret > 0) {
+				dba.record = (int) gettbl (tbl2, 0);
+				if (db2dbtable (pf, "arrivals", dba, "arrival", *db, 0) < 0) {
+					register_error (0, "mktmpdb: db2dbtable(%s.arrival) error in temp db.\n", tmpdbname);
+					dbdestroy (*db);
+					dbclose (*db);
+					return (-1);
+				}
+			}
+			freetbl (tbl2, 0);
+		}
+		freetbl (tbl, 0);
+	} else {
+		if (db2dbtable (pf, "assocs", dbmaster, "assoc", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.assoc) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		if (db2dbtable (pf, "arrivals", dbmaster, "arrival", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.arrival) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
 	}
 
 	/* merge in dbmaster stuff */
@@ -415,11 +579,12 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	dbon = dblookup (*db, 0, "snetsta", 0, 0);
 	dbo.record = 0;
 	if (dbgetv (dbo, "origin", "time", &time, "orid", &orid, "lat", &olat, "lon", &olon, 0) < 0) {
-		register_error (0, "pf2db: dbgetv(origin:time) error.\n");
+		register_error (0, "mktmpdb: dbgetv(origin:time) error.\n");
 		dbdestroy (*db);
 		dbclose (*db);
 		return (-1);
 	}
+	if (pf == NULL) *myevid = orid;
 
 	/* site and snetsta tables */
 
@@ -439,7 +604,7 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 				"staname", staname, "statype", statype,
 				"refsta", refsta, "dnorth", &dnorth, "deast", &deast, 
 				"lddate", &lddate, 0) < 0) {
-			register_error (0, "pf2db: dbgetv(site) error.\n");
+			register_error (0, "mktmpdb: dbgetv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
 			return (-1);
@@ -450,7 +615,7 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 				"staname", staname, "statype", statype,
 				"refsta", refsta, "dnorth", dnorth, "deast", deast, 
 				"lddate", lddate, 0) < 0) {
-			register_error (0, "pf2db: dbputv(site) error.\n");
+			register_error (0, "mktmpdb: dbputv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
 			return (-1);
@@ -468,6 +633,11 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 
 	/* look to see if the associations are in an assocs Arr instead of a
 	   real database table (ala /pf/orbmag output from orb2dbt) */
+
+	if (pf == NULL) {
+		clear_register (0);
+		return (0);
+	}
 
 	if (parse_param (pf, "assocs", P_ARR, 1, &arr) < 0) {
 		clear_register (0);
@@ -490,11 +660,11 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		if (sscanf (line, "%s %s", timedef, phase) != 2) continue;
 		dbos = dblookup (dbos, 0, "site", "sta", sta);
 		if (dbos.record < 0) {
-			complain (0, "pf2db: Cannot find station '%s' in site table - skipping.\n", sta);
+			complain (0, "mktmpdb: Cannot find station '%s' in site table - skipping.\n", sta);
 			continue;
 		}
 		if (dbgetv (dbos, 0, "lat", &slat, "lon", &slon, 0) < 0) {
-			register_error (0, "pf2db: dbgetv(site) error.\n");
+			register_error (0, "mktmpdb: dbgetv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
 			return (-1);
@@ -510,7 +680,7 @@ pf2db (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		if (dbaddv (*db, "assoc", "arid", arid, "orid", orid,
 				"sta", sta, "phase", phase, "delta", delta,
 				"seaz", seaz, "esaz", esaz, "timedef", timedef, 0) < 0) {
-			register_error (0, "pf2db: dbaddv(assoc) error.\n");
+			register_error (0, "mktmpdb: dbaddv(assoc) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
 			return (-1);
@@ -623,7 +793,7 @@ pf2orb (Pf *pf, int orb, char *srcname)
 }
 
 int
-process_output (ProcessObject *po, Pf *pf, int orb)
+process_output (ProcessObject *po, Pf *pf, int type, Dbptr dbout, int orb)
 
 {
 	Pf *pfdb, *pftb;
@@ -718,14 +888,24 @@ process_output (ProcessObject *po, Pf *pf, int orb)
 	}
 
 	if (assoc && pfout) {
-		if (verbose) {
-			elog_notify (0, "%d: %s: Outputting /pf/orb2dbt ORB packet\n", po->myevid, po->perlclass);
+		if (type == TYPE_ORB) {
+			if (verbose) {
+				elog_notify (0, "%d: %s: Outputting /pf/orb2dbt ORB packet\n", po->myevid, po->perlclass);
+			}
+
+			if (pf2orb (pfout, orb, "/pf/orb2dbt") < 0) {
+				pffree (pfout);
+				register_error (0, "process_output: pf2orb() error.\n");
+				return (-1);
+			}
 		}
 
-		if (pf2orb (pfout, orb, "/pf/orb2dbt") < 0) {
-			pffree (pfout);
-			register_error (0, "process_output: pf2orb() error.\n");
-			return (-1);
+		if (type == TYPE_DB) {
+			if (verbose) {
+				elog_notify (0, "%d: %s: Associating event with output database\n", po->myevid, po->perlclass);
+			}
+			assoc_process_pf (pfout, dbout, NULL, NULL, NULL, -1, verbose);
+			clear_register (1);
 		}
 
 		pffree (pfout);
@@ -1052,7 +1232,7 @@ process_station_callback (ProcessParams *pp, int flush)
 }
 
 int
-process_network_callback (ProcessObject *po, int flush, int orb)
+process_network_callback (ProcessObject *po, int flush, int type, Dbptr dbout, int orb)
 
 {
 	char sub[256];
@@ -1088,7 +1268,7 @@ process_network_callback (ProcessObject *po, int flush, int orb)
 
 	/* output the results */
 
-	if (process_output (po, pfout, orb) < 0) {
+	if (process_output (po, pfout, type, dbout, orb) < 0) {
 		pffree (pf);
 		register_error (0, "process_network_callback: process_output() error.\n", sub);
 		return (-1);
@@ -1499,7 +1679,7 @@ isit_ready (Dbptr trrow, ProcessParams *pp)
 }
 
 int
-flush_processing (ProcessObject *po, Dbptr dbtrace_cache, int orb)
+flush_processing (ProcessObject *po, Dbptr dbtrace_cache, int type, Dbptr dbout, int orb)
 
 {
 	int i, ret;
@@ -1550,7 +1730,7 @@ flush_processing (ProcessObject *po, Dbptr dbtrace_cache, int orb)
 		}
 		pp->done = 1;
 	}
-	ret = process_network_callback (po, 1, orb);
+	ret = process_network_callback (po, 1, type, dbout, orb);
 	if (ret < 0) {
 		die (0, "process_network_callback() error.\n");
 	}
@@ -1565,6 +1745,7 @@ main (int argc, char **argv)
 	char *start=NULL;
 	char *select=NULL;
 	char *orbwf_name, *orbdb_name, *dbname, *dbwfname=NULL;
+	char *dbin_name, *dbout_name;
 	char pfname[128];
 	int orbdbin, orbdbout, orbwf;
 	int pktid, get;
@@ -1572,7 +1753,8 @@ main (int argc, char **argv)
 	int ret, i;
 	int number=0;
 	int wait=1;
-	Dbptr db, dbwf;
+	Dbptr db, dbwf, dbin, dbout;
+	int ndbin;
 	int num;
 	Pf *pf;
 	Tbl *evproc_tbl;
@@ -1586,123 +1768,159 @@ main (int argc, char **argv)
 	int sleepset ;
 	int max_events_to_thread = 10;
 	int sleepev, sleepwf;
+	char dir[FILENAME_MAX];
+	char name[FILENAME_MAX];
+	int type;
 
 	elog_init (argc, argv) ;
 
-	if (argc < 4) {
-		usage();
-		banner ("orbevproc", "$Revision$ $Date$\n") ;
-		exit (1);
+	dirbase (*argv, dir, name);
+	if (!strcmp(name, "dbevproc")) {
+		type = TYPE_DB;
+	} else {
+		type = TYPE_ORB;
 	}
-
-	startup_banner();
-
-	strcpy (pfname, "orbevproc");
-
-	for (argv++,argc--; argc>0; argv++,argc--) {
-		if (**argv != '-') break;
-		if (!strcmp(*argv, "-start")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -start argument.\n");
-				usage();
-				exit (1);
-			}
-			start = *argv;
-		} else if (!strcmp(*argv, "-select")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -select argument.\n");
-				usage();
-				exit (1);
-			}
-			select = *argv;
-		} else if (!strcmp(*argv, "-state")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -state argument.\n");
-				usage();
-				exit (1);
-			}
-			statefile = *argv;
-		} else if (!strcmp(*argv, "-p")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -p argument.\n");
-				usage();
-				exit (1);
-			}
-			strcpy (pfname, *argv);
-		} else if (!strcmp(*argv, "-dbwf")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -dbwf argument.\n");
-				usage();
-				exit (1);
-			}
-			dbwfname = *argv;
-		} else if (!strcmp(*argv, "-number")) {
-			argc--; argv++;
-			if (argc < 1) {
-				complain (0, "Need -number argument.\n");
-				usage();
-				exit (1);
-			}
-			number = atoi(*argv);
-		} else if (!strcmp(*argv, "-nowait")) {
-			wait = 0;
-		} else if (!strcmp(*argv, "-v")) {
-			verbose = 1;
-		} else if (!strcmp(*argv, "-vv")) {
-			verbose = 2;
-		} else if (!strcmp(*argv, "-vvv")) {
-			verbose = 3;
-		} else {
-			complain (0, "Unrecognized argument '%s'.\n", *argv);
-			usage();
+	if (type == TYPE_ORB) {
+		if (argc < 4) {
+			usage(type);
+			banner ("orbevproc", "$Revision$ $Date$\n") ;
 			exit (1);
 		}
-	}
+		startup_banner();
+		strcpy (pfname, "orbevproc");
 
-	if (argc < 1) {
-		complain (0, "Need orbwf argument.\n");
-		usage();
-		exit (1);
-	}
-	orbwf_name = *argv;
-
-	argv++; argc--;
-	if (argc < 1) {
-		complain (0, "Need orbdb argument.\n");
-		usage();
-		exit (1);
-	}
-	orbdb_name = *argv;
-
-	argv++; argc--;
-	if (argc < 1) {
-		complain (0, "Need dbname argument.\n");
-		usage();
-		exit (1);
-	}
-	dbname = *argv;
-
-	/* Open database */
-
-	if (dbopen (dbname, "r+", &db) == dbINVALID) {
-		complain (0, "dbopen(%s) error.\n", dbname);
-		usage();
-		exit (1);
-	}
-	finit_db (db);
-
-	dbwf.database = dbINVALID ;
-	if (dbwfname) {
-		if (dbopen (dbwfname, "r+", &dbwf) == dbINVALID) {
-			complain (0, "dbopen(%s) error.\n", dbwfname);
-			usage();
+		for (argv++,argc--; argc>0; argv++,argc--) {
+			if (**argv != '-') break;
+			if (!strcmp(*argv, "-start")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -start argument.\n");
+					usage(type);
+					exit (1);
+				}
+				start = *argv;
+			} else if (!strcmp(*argv, "-select")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -select argument.\n");
+					usage(type);
+					exit (1);
+				}
+				select = *argv;
+			} else if (!strcmp(*argv, "-state")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -state argument.\n");
+					usage(type);
+					exit (1);
+				}
+				statefile = *argv;
+			} else if (!strcmp(*argv, "-p")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -p argument.\n");
+					usage(type);
+					exit (1);
+				}
+				strcpy (pfname, *argv);
+			} else if (!strcmp(*argv, "-dbwf")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -dbwf argument.\n");
+					usage(type);
+					exit (1);
+				}
+				dbwfname = *argv;
+			} else if (!strcmp(*argv, "-number")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -number argument.\n");
+					usage(type);
+					exit (1);
+				}
+				number = atoi(*argv);
+			} else if (!strcmp(*argv, "-nowait")) {
+				wait = 0;
+			} else if (!strcmp(*argv, "-v")) {
+				verbose = 1;
+			} else if (!strcmp(*argv, "-vv")) {
+				verbose = 2;
+			} else if (!strcmp(*argv, "-vvv")) {
+				verbose = 3;
+			} else {
+				complain (0, "Unrecognized argument '%s'.\n", *argv);
+				usage(type);
+				exit (1);
+			}
+		}
+	
+		if (argc < 1) {
+			complain (0, "Need orbwf argument.\n");
+			usage(type);
 			exit (1);
 		}
+		orbwf_name = *argv;
+	
+		argv++; argc--;
+		if (argc < 1) {
+			complain (0, "Need orbdb argument.\n");
+			usage(type);
+			exit (1);
+		}
+		orbdb_name = *argv;
+	
+		argv++; argc--;
+		if (argc < 1) {
+			complain (0, "Need dbname argument.\n");
+			usage(type);
+			exit (1);
+		}
+		dbname = *argv;
+	} else {
+		if (argc < 3) {
+			usage(type);
+			banner ("dbevproc", "$Revision$ $Date$\n") ;
+			exit (1);
+		}
+		strcpy (pfname, "dbevproc");
+
+		for (argv++,argc--; argc>0; argv++,argc--) {
+			if (**argv != '-') break;
+			if (!strcmp(*argv, "-p")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -p argument.\n");
+					usage(type);
+					exit (1);
+				}
+				strcpy (pfname, *argv);
+			} else if (!strcmp(*argv, "-v")) {
+				verbose = 1;
+			} else if (!strcmp(*argv, "-vv")) {
+				verbose = 2;
+			} else if (!strcmp(*argv, "-vvv")) {
+				verbose = 3;
+			} else {
+				complain (0, "Unrecognized argument '%s'.\n", *argv);
+				usage(type);
+				exit (1);
+			}
+		}
+	
+		if (argc < 1) {
+			complain (0, "dbin argument.\n");
+			usage(type);
+			exit (1);
+		}
+		dbin_name = *argv;
+	
+		argv++; argc--;
+		if (argc < 1) {
+			complain (0, "Need dbout argument.\n");
+			usage(type);
+			exit (1);
+		}
+		dbout_name = *argv;
 	}
 
 	/* Read orbevproc parameter file */
@@ -1715,6 +1933,11 @@ main (int argc, char **argv)
 	}
 	if (parse_param (pf, "max_events_to_thread", P_LINT, 1, &max_events_to_thread) < 0) {
 		die (0, "parse_param(max_events_to_thread) error.\n");
+	}
+	if (type == TYPE_DB) {
+		if (assoc_parse_pf (pf) < 0) {
+			die (0, "assoc_parse_pf(%s) error.\n", pfname);
+		}
 	}
 
 	/* Parse the event processes table */
@@ -1766,91 +1989,154 @@ main (int argc, char **argv)
 		die (0, "perlembed_init() error.\n");
 	}
 
-	/* orb setup stuff */
+	if (type == TYPE_ORB) {
 
-	orbdbin = orbopen (orbdb_name, "r&");
-	if (orbdbin < 0) {
-		die (0, "orbopen(%s) error.\n", orbdb_name);
+		/* Open database */
+
+		if (dbopen (dbname, "r+", &db) == dbINVALID) {
+			complain (0, "dbopen(%s) error.\n", dbname);
+			usage(type);
+			exit (1);
+		}
+		finit_db (db);
+
+		dbwf.database = dbINVALID ;
+		if (dbwfname) {
+			if (dbopen (dbwfname, "r+", &dbwf) == dbINVALID) {
+				complain (0, "dbopen(%s) error.\n", dbwfname);
+				usage(type);
+				exit (1);
+			}
+		}
+
+		/* orb setup stuff */
+
+		orbdbin = orbopen (orbdb_name, "r&");
+		if (orbdbin < 0) {
+			die (0, "orbopen(%s) error.\n", orbdb_name);
+		}
+		orbdbout = orbopen (orbdb_name, "w&");
+		if (orbdbout < 0) {
+			die (0, "orbopen(%s) error.\n", orbdb_name);
+		}
+		if (!select) {
+			select = "/pf/orbevproc";
+		}
+		if (orbselect (orbdbin, select) < 0) {
+			die (0, "orbselect(%s,%s) error.\n", orbdb_name, select);
+		}
+
+		pktid = ORBNEWEST;
+		get = 0;
+		if (statefile) {
+			FILE *f;
+
+			f = fopen (statefile, "r");
+			if (f == NULL) {
+				complain (0, "fopen('%s') error...using start parameters\n.", statefile);
+			} else {
+				pf = NULL;
+				if (pfin (f, &pf) < 0) {
+					fclose (f);
+					complain (0, "pfin('%s') error...using start parameters\n.", statefile);
+				} else {
+					fclose (f);
+					if (parse_param (pf, "lastpktid", P_LINT, 1, &pktid) < 0) {
+						complain (0, "parse_param(lastpktid) error....using start parameters\n");
+						pktid = ORBNEWEST;
+					}
+					pktid = orbseek (orbdbin, pktid);
+					if (pktid < 0) {
+						complain (0, "orbseek(lastpktid) error...using start parameters.\n");
+						pktid = ORBNEXT;
+					} else {
+						complain (0, "resurrection successfull...start following pktid %d.\n", pktid);
+					}
+				}
+				pffree(pf) ;
+				pf = NULL;
+			}
+		}
+	
+		if (!wait) {
+			pktidnewest = orbseek (orbdbin, ORBNEWEST);
+			if (pktidnewest < 0) {
+				complain (0, "No packets.\n");
+				exit (1);
+			}
+		}
+	
+		if (pktid < 0) {
+			if (start) {
+				if (!strcmp(start, "OLDEST")) {
+					pktid = ORBOLDEST;
+					get = 1;
+				} else if (!strcmp(start, "NEWEST")) {
+					pktid = ORBNEWEST;
+					ret = orbseek (orbdbin, pktid);
+					ret = orbseek (orbdbin, ORBPREV);
+				} else {
+					if (strlen(start) > 10 || strchr(start, ' ') || strchr(start, '.')
+								|| strchr(start, ':') || strchr(start, '/')) {
+						double time;
+		
+						time = str2epoch(start);
+						orbafter (orbdbin, time);
+					} else {
+						pktid = atoi(start);
+						orbseek (orbdbin, pktid);
+						orbseek (orbdbin, ORBPREV);
+					}
+				}
+			} else pktid = ORBNEXT;
+		}
+
+		main_thread = pthread_self ();
 	}
-	orbdbout = orbopen (orbdb_name, "w&");
-	if (orbdbout < 0) {
-		die (0, "orbopen(%s) error.\n", orbdb_name);
-	}
-	if (!select) {
-		select = "/pf/orbevproc";
-	}
-	if (orbselect (orbdbin, select) < 0) {
-		die (0, "orbselect(%s,%s) error.\n", orbdb_name, select);
+
+	dbin = dbinvalid();
+	dbout = dbinvalid();
+	if (type == TYPE_DB) {
+		if (!strcmp(dbin_name, "-")) {
+			if (dbread_view (stdin, &dbin, NULL) == dbINVALID) {
+				complain (0, "dbread_view(stdin) error.\n");
+				usage(type);
+				exit (1);
+			}
+		} else {
+			if (dbopen(dbin_name, "r+", &dbin) == dbINVALID) {
+				complain (0, "dbopen(%s) error.\n", dbin_name);
+				usage(type);
+				exit (1);
+			}
+			dbin = dblookup (dbin, 0, "origin", 0, 0);
+			if (dbin.table == dbINVALID) {
+				complain (0, "Cannot lookup origin table for %s.\n", dbin_name);
+				usage(type);
+				exit (1);
+			}
+		}
+		dbquery (dbin, dbRECORD_COUNT, &ndbin);
+		if (ndbin < 1) {
+			complain (0, "Nothing to process in %s.\n", dbin_name);
+			usage(type);
+			exit (1);
+		}
+		if (dbopen(dbout_name, "r+", &dbout) == dbINVALID) {
+			complain (0, "dbopen(%s) error.\n", dbout_name);
+			usage(type);
+			exit (1);
+		}
+		db = dbin;
+		dbwf = dbin ;
+		finit_db (db);
+		dbin.record = 0;
+		if (verbose) {
+			elog_notify (0, "Processing %d origins from %s\n", ndbin, dbin_name);
+		}
 	}
 
 	wfthread_tbl = newtbl (0);
-
-	pktid = ORBNEWEST;
-	get = 0;
-	if (statefile) {
-		FILE *f;
-
-		f = fopen (statefile, "r");
-		if (f == NULL) {
-			complain (0, "fopen('%s') error...using start parameters\n.", statefile);
-		} else {
-			pf = NULL;
-			if (pfin (f, &pf) < 0) {
-				fclose (f);
-				complain (0, "pfin('%s') error...using start parameters\n.", statefile);
-			} else {
-				fclose (f);
-				if (parse_param (pf, "lastpktid", P_LINT, 1, &pktid) < 0) {
-					complain (0, "parse_param(lastpktid) error....using start parameters\n");
-					pktid = ORBNEWEST;
-				}
-				pktid = orbseek (orbdbin, pktid);
-				if (pktid < 0) {
-					complain (0, "orbseek(lastpktid) error...using start parameters.\n");
-					pktid = ORBNEXT;
-				} else {
-					complain (0, "resurrection successfull...start following pktid %d.\n", pktid);
-				}
-			}
-			pffree(pf) ;
-			pf = NULL;
-		}
-	}
-	
-	if (!wait) {
-		pktidnewest = orbseek (orbdbin, ORBNEWEST);
-		if (pktidnewest < 0) {
-			complain (0, "No packets.\n");
-			exit (1);
-		}
-	}
-
-	if (pktid < 0) {
-		if (start) {
-			if (!strcmp(start, "OLDEST")) {
-				pktid = ORBOLDEST;
-				get = 1;
-			} else if (!strcmp(start, "NEWEST")) {
-				pktid = ORBNEWEST;
-				ret = orbseek (orbdbin, pktid);
-				ret = orbseek (orbdbin, ORBPREV);
-			} else {
-				if (strlen(start) > 10 || strchr(start, ' ') || strchr(start, '.')
-							|| strchr(start, ':') || strchr(start, '/')) {
-					double time;
-	
-					time = str2epoch(start);
-					orbafter (orbdbin, time);
-				} else {
-					pktid = atoi(start);
-					orbseek (orbdbin, pktid);
-					orbseek (orbdbin, ORBPREV);
-				}
-			}
-		} else pktid = ORBNEXT;
-	}
-
-	main_thread = pthread_self ();
 
 	mysetup_signals () ;
 
@@ -1881,58 +2167,68 @@ main (int argc, char **argv)
 		int nodata = 1;
 		int myevid;
 
-		/* Get the next packet */
+		if (type == TYPE_ORB) {
 
-		if (sleepev) myusleep (0.1);
+			/* Get the next packet */
 
-		if (get) {
-			orbget (orbdbin, pktid, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
-			get = 0;
-			orbseek (orbdbin, ORBOLDEST);
-		} else {
-			if (event_thr == NULL) {
-				event_thr = orbreapthr_new (orbdbin, 0.0, 5);
+			if (sleepev) myusleep (0.1);
+
+			if (get) {
+				orbget (orbdbin, pktid, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
+				get = 0;
+				orbseek (orbdbin, ORBOLDEST);
+			} else {
 				if (event_thr == NULL) {
-					die (0, "orbreapthr_new() error for main event reap thread.\n");
+					event_thr = orbreapthr_new (orbdbin, 0.0, 5);
+					if (event_thr == NULL) {
+						die (0, "orbreapthr_new() error for main event reap thread.\n");
+					}
+				}
+				ret = orbreapthr_get (event_thr, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
+				if (ret < 0) {
+					die (0, "fatal orbreapthr_get() error for main event reap thread.\n");
+				}
+				switch (ret) {
+				case ORBREAPTHR_STOPPED:
+					die (0, "fatal orbreapthr_get()  main event reap thread stopped.\n");
+				case ORBREAPTHR_NODATA:
+					sleepev = 1;
+					goto PROCESS_WFTHREADS;
+				default:
+					sleepev = 0;
+					break; 
 				}
 			}
-			ret = orbreapthr_get (event_thr, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
+
+			/* unstuff the packet */
+
+			ret = unstuffPkt (srcname, pkttime, packet, nbytes, &pkt);
 			if (ret < 0) {
-				die (0, "fatal orbreapthr_get() error for main event reap thread.\n");
-			}
-			switch (ret) {
-			case ORBREAPTHR_STOPPED:
-				die (0, "fatal orbreapthr_get()  main event reap thread stopped.\n");
-			case ORBREAPTHR_NODATA:
-				sleepev = 1;
+				complain (0, "unstuffPkt(%s) error.\n", srcname);
 				goto PROCESS_WFTHREADS;
-			default:
-				sleepev = 0;
-				break; 
+			}
+
+			/* Skip if not a pf packet */
+	
+			if (ret != Pkt_pf) {
+				goto PROCESS_WFTHREADS;
+			}
+
+			/* Convert pf packet into a temporary local database */
+	
+			if (mktmpdb (pkt->pf, db, &dbpkt, &myevid) < 0) {
+				complain (0, "mktmpdb(%s) error.\n", srcname);
+				goto PROCESS_WFTHREADS;
+			}
+			myevid = pktidin;
+		}
+
+		if (type == TYPE_DB) {
+			if (mktmpdb (NULL, dbin, &dbpkt, &myevid) < 0) {
+				complain (0, "mktmpdb(%s) error.\n", dbin_name);
+				goto PROCESS_WFTHREADS;
 			}
 		}
-
-		/* unstuff the packet */
-
-		ret = unstuffPkt (srcname, pkttime, packet, nbytes, &pkt);
-		if (ret < 0) {
-			complain (0, "unstuffPkt(%s) error.\n", srcname);
-			goto PROCESS_WFTHREADS;
-		}
-
-		/* Skip if not a pf packet */
-
-		if (ret != Pkt_pf) {
-			goto PROCESS_WFTHREADS;
-		}
-
-		/* Convert pf packet into a temporary local database */
-
-		if (pf2db (pkt->pf, db, &dbpkt, &myevid) < 0) {
-			complain (0, "pf2db(%s) error.\n", srcname);
-			goto PROCESS_WFTHREADS;
-		}
-		myevid = pktidin;
 
 		/* Extract some of the origin info and check to see if right author */
 
@@ -2120,7 +2416,7 @@ main (int argc, char **argv)
 							if (ret < 0) {
 								die (0, "process_station_callback() error.\n");
 							}
-							ret = process_network_callback (pp->po, 0, orbdbout);
+							ret = process_network_callback (pp->po, 0, type, dbout, orbdbout);
 							if (ret < 0) {
 								die (0, "process_network_callback() error.\n");
 							}
@@ -2134,6 +2430,24 @@ main (int argc, char **argv)
 				}
 			}
 			freetbl (netstas, 0);
+
+			/* If dbevproc, then fkush and continue */
+
+			if (type == TYPE_DB) {
+				for (j=0; j<maxtbl(ep->process_tbl); j++) {
+					ProcessObject *po;
+
+					po = (ProcessObject *) gettbl (ep->process_tbl, j);
+					if (flush_processing (po, ep->pt->dbt, type, dbout, orbdbout) < 0) {
+						complain (0, "flush_processing() error.\n");
+					}
+				}
+				if (verbose) {
+					elog_notify (0, "%d: Processing done - deleting event\n", ep->myevid);
+				}
+				event_destroy (ep);
+				goto PROCESS_WFTHREADS;
+			}
 
 			/* cull out processing objects and stations */
 
@@ -2168,10 +2482,11 @@ main (int argc, char **argv)
 		/* wf thread processing */
 
 PROCESS_WFTHREADS:
+		sleepwf = 1;
 
 		/* loop through the wfthread table */
 
-		for (i=0,sleepwf=1,nodata=1; i<maxtbl(wfthread_tbl); i++) {
+		for (i=0,nodata=1; i<maxtbl(wfthread_tbl); i++) {
 			int j, done;
 
 			/* read a packet */
@@ -2338,11 +2653,11 @@ PROCESS_WFTHREADS:
 						if (ret < 0) {
 							die (0, "process_station_callback() error.\n");
 						}
-						ret = process_network_callback (pp->po, 0, orbdbout);
+						ret = process_network_callback (pp->po, 0, type, dbout, orbdbout);
 						if (ret < 0) {
 							die (0, "process_network_callback() error.\n");
 						}
-					}
+					} 
 
 					/* return of 4 means that data not needed for the particular event-process */
 
@@ -2364,14 +2679,14 @@ PROCESS_WFTHREADS:
 
 					elog_notify (0, "%d: Maximum wait time expired - flushing processing\n", ep->myevid);
 
-					if (flush_processing (po, ep->pt->dbt, orbdbout) < 0) {
+					if (flush_processing (po, ep->pt->dbt, type, dbout, orbdbout) < 0) {
 						complain (0, "flush_processing() error.\n");
 					}
 				}
 
 				if (po->done == 0) {
 					done = 0;
-				}
+				} 
 			}
 			if (done) {
 				if (verbose) {
@@ -2396,6 +2711,8 @@ PROCESS_WFTHREADS:
 			myusleep (0.1);
 			goto PROCESS_WFTHREADS;
 		}
+
+		if (type == TYPE_DB) (dbin.record)++;
 
 		if (number > 0 && num >= number) break;
 		if (!wait && pktidin == pktidnewest) break;
