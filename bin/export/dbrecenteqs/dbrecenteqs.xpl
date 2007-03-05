@@ -1500,6 +1500,9 @@ sub stockmap_earthquake_xml {
 		my( $local_time ) = epoch2str( $time, 
 		"%I:%M %p %Z %A %B %o, %Y", $ENV{TZ} );
 
+		my( $utc_time ) = epoch2str( $time, 
+		"%I:%M %p %Z %A %B %o, %Y" );
+
 		my( $region ) = quake_region( @db, $lat, $lon, $orid );
 
 		my( $shape, $coords, $x, $y, $color ) = imagemap_symbol( @db );
@@ -1509,6 +1512,7 @@ sub stockmap_earthquake_xml {
 		$writer->dataElement( "href", "$url" );
 		$writer->dataElement( "vrml_url", "$vrml_url" );
 		$writer->dataElement( "localtime_string", "$local_time" );
+		$writer->dataElement( "utctime_string", "$utc_time" );
 		$writer->dataElement( "mag_string", "$mag_description" );
 		$writer->dataElement( "mag_value", "$mag_value" );
 		$writer->dataElement( "region_string", "$region" );
