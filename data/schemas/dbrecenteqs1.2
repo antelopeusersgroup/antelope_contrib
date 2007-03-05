@@ -23,16 +23,15 @@ Attribute downdellat
 	;
 
 Attribute format
-	String (10)
-	Format ( "%-10s" )
-	Null ( "-" )
-	Description ( "graphics format for map image" )
-	Detail {
-		This is the graphics format used for a map image, e.g. 
-		gif for graphics interchange format or jpg for 
-		joint photographics expert group format.
-	}
-	;
+        String (10)
+        Format ( "%-10s" )
+        Null ( "-" )
+        Description ( "graphics format for image" )
+        Detail {
+                This is the graphics format (e.g. gif, jpg) of a stored image
+                or stored movie.
+        }
+        ;
 
 Attribute height
 	Integer (6)
