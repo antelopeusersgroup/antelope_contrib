@@ -1513,6 +1513,7 @@ sub stockmap_earthquake_xml {
 		$writer->dataElement( "vrml_url", "$vrml_url" );
 		$writer->dataElement( "localtime_string", "$local_time" );
 		$writer->dataElement( "utctime_string", "$utc_time" );
+		$writer->dataElement( "time", "$time" );
 		$writer->dataElement( "mag_string", "$mag_description" );
 		$writer->dataElement( "mag_value", "$mag_value" );
 		$writer->dataElement( "region_string", "$region" );
