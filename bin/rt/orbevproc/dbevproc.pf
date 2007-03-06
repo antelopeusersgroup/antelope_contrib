@@ -1,0 +1,1971 @@
+#    This is the orbevproc parameter file
+
+max_events_to_thread	5	# maximum number of events to process concurrently
+
+#    This is the list of processing modules to be run
+
+event_processes &Tbl{
+	#perl_fragment	perl_class		parameters
+	mlrichter	Mlrichter		mlrichter_params
+ 	mbusneic	Mbusneic		mbusneic_params
+}
+
+#    These are parameter templates for each of the processing modules
+
+mlrichter_params &Arr{
+	channels &Tbl{
+#	snet_expr chan_expr           noise_twin signal_twin   snr_thresh
+#     	   sta_expr          filter         noise_toffset signal_toffset
+     	.* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
+     	.* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
+	}
+	reject &Tbl{
+#	snet_expr sta_expr
+	TA        ADK
+	}
+	update_time		10.0
+	maximum_wait_time	300.0
+	maximum_bad_fraction	0.2
+	auth_accept		oa_l|oa_l dbg
+	output_magtype		ml
+	output_auth		dbevproc
+	output_stamag		yes
+	output_wfmeas		yes
+}
+
+mbusneic_params &Arr{
+	channels &Tbl{
+#	snet_expr chan_expr               noise_twin signal_twin  snr_thresh
+#     	   sta_expr    filter                  noise_toffset signal_toffset 
+     	.* .*     BHZ  auto               30.0 10.0  20.0    10.0 3.0
+	}
+	update_time		10.0
+	maximum_wait_time	300.0
+	maximum_bad_fraction	0.2
+	auth_accept		oa_.|oa_. dbg
+	output_magtype		mb
+	output_auth		dbevproc
+	output_stamag		yes
+	output_wfmeas		yes
+}
+
+#    parameters for "smart"association
+
+assoc_method		tttaup	# method for computing predicted travel times
+assoc_model		iasp91	# velocity model for computing predicted travel times
+assoc_phases		basic	# phase list for computing predicted travel times (see tt(3))
+assoc_P_thresh		10.0	# P-residual threshold for associations
+assoc_S_thresh		20.0	# S-residual threshold for associations
+assoc_ignoreiphase	no	# should the arrival row iphase value be ignored?
+assoc_firstphase	yes	# should only the earliest predicted phase be used?
+
+assoc_screen_new	time
+assoc_screen_old	(time-3600.0)::(time+3600.0)
+				# these are screening database expressions that should
+				#   match the existing (old) origins with the new origin for
+				#   association processing
+assoc_expression	$nass>=$nars
+				# this is a database expression that should evaluate
+				#   to true whenever an association is valid
+
+author_priority &Arr{	# prefor priority as a function of assoc author
+}
+
+
+#    Following are perl script fragments for imbedded processing.
+#	The main fragment is always run at the very beginning
+#	    and should contain stuff like global variables and
+#	    common procedures
+#	All other fragments should define self contained perl packages
+
+main &Literal{
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use strict ;
+use warnings ;
+
+use Datascope ; 
+use orb ;
+
+sub prettyprint {
+	my $val = shift;
+	my $prefix = "";
+	if (@_) { $prefix = shift ; }
+
+	if (ref($val) eq "HASH") {
+		my @keys = sort ( keys  %$val );
+		my %hash = %$val;
+		foreach my $key (@keys) {
+			my $newprefix = $prefix . "{". $key . "}" ;
+			prettyprint ($hash{$key}, $newprefix) ;
+		}
+	} elsif (ref($val) eq "ARRAY") {
+		my $i = 0;
+		my @arr = @$val;
+		foreach my $entry ( @$val ) {
+			my $newprefix = $prefix . "[". $i . "]" ;
+			prettyprint ($arr[$i], $newprefix) ;
+			$i++;
+		}
+	} else {
+		if (substr($prefix, -4, 4) eq "blob") {
+			print $prefix, " = ";
+			my @vals = unpack "C9", $val ;
+			my $i = 0;
+			foreach $val (@vals) {
+				printf "%2.2X ", $val ;
+				$i++ ;
+				if ($i == 8) { last; }
+			}
+			if ( scalar (@vals) > 8 ) { print "..." ; }
+			print "\n";
+		} else {
+			print $prefix, " = ", $val, "\n";
+		}
+	}
+}
+
+sub isyes {
+	my $ans = shift ;
+
+	if (! defined $ans) {return 0;}
+	if ($ans eq 'y') {return 1;}
+	if ($ans eq 'Y') {return 1;}
+	if ($ans eq '1') {return 1;}
+	if ($ans eq 'yes') {return 1;}
+	if ($ans eq 'YES') {return 1;}
+	return 0;
+}
+
+sub clearlogs {
+	my $obj = shift ;
+
+	$obj->{output}{logs} = [] ;
+}
+
+sub addlog {
+	my $obj = shift ;
+	my $priority = shift ;
+	my $format = shift ;
+
+	my $s ;
+	if ( scalar ( @_ ) > 0 ) {
+		$s = sprintf $format, @_ ;
+	} else {
+		$s = $format ;
+	}
+	push @{$obj->{output}{logs}}, [ $priority, $s ] ;
+
+	return ;
+}
+
+sub makereturn {
+	my $obj = shift ;
+	my $disposition = shift ;
+
+	my $hash = {
+		"disposition" => $disposition, 
+		"output" => $obj->{output},
+	} ;
+
+	while ( scalar ( @_ ) ) {
+		my $name = shift;
+		my $value = shift;
+		$hash->{$name} = $value ;
+	}
+
+	# prettyprint $hash ;
+
+	return $hash ;
+}
+
+sub maketraceblob {
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+
+	if (dbquery ( @db, "dbTABLE_NAME" ) ne "trace") {
+		elog_complain "maketraceblob: not trace table\n" ;
+		return;
+	}
+	if (dbquery ( @db, "dbTABLE_IS_VIEW" ) ) {
+		elog_complain "maketraceblob: cannot use views\n" ;
+		return;
+	}
+
+	my $n = dbquery ( @db , "dbRECORD_COUNT" ) ;
+	if ($n < 1) {return;}
+
+	my $i0;
+	if ($db[3] < 0) {
+		$i0 = 0;
+	} else {
+		$i0 = $db[3];
+		$n = $i0 + 1;
+	}
+
+	my ($rec, @data, $blob) ;
+	for ($db[3]=$i0; $db[3]<$n; $db[3]++) {
+		$rec = dbget ( @db ) ;
+		@data = trdata ( @db ) ;
+		$blob .= pack "NNa*", length($rec), scalar (@data), $rec ;
+		foreach my $val (@data) {
+			$blob .= pack "f", $val ;
+		}
+	}
+
+	return $blob ;
+}
+
+sub outputtraceblob {
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+	my $fname = shift ;
+
+	my $blob = maketraceblob ( @db ) ;
+	if (! defined $blob ) {return;}
+
+	open BLOB, $fname ;
+	syswrite BLOB, $blob ;
+
+	close BLOB ;
+}
+
+sub setup_processes {
+	my $obj = shift ;
+
+	if ( ! defined $obj->{params}{channels} ) {
+		addlog ( 0, "channels table not defined in parameter file" ) ;
+		return "skip" ;
+	}
+
+	if ( ref($obj->{params}{channels}) ne "ARRAY" ) {
+		addlog ( 0, "channels table not defined in parameter file" ) ;
+		return "skip" ;
+	}
+
+	foreach my $line (@{$obj->{params}{channels}}) {
+		my @entries = split " ", $line ;
+		my $n = scalar ( @entries ) ; 
+		if ( $n == 0 ) {next;}
+		if ( $n < 9 ) {
+			addlog ($obj, 0, "Unable to parse '". $line . "'" ) ;
+			next ;
+		}
+
+		my $hash = {
+			"snet_expr"	=>	$entries[0],
+			"sta_expr"	=>	$entries[1],
+			"chan_expr"	=>	$entries[2],
+			"noise_twin"	=>	$entries[4],
+			"noise_toffset"	=>	$entries[5],
+			"signal_twin"	=>	$entries[6],
+			"signal_toffset" =>	$entries[7],
+			"snr_thresh"	=>	$entries[8],
+		} ;
+		if ( $entries[3] ne "-" && $entries[3] ne "none" ) {
+			$_ = $entries[3] ;
+			s/_/ /g ;
+			$hash->{filter} = $_ ;
+		}
+
+		push @{$obj->{channels}}, $hash ;
+	}
+
+	if ( scalar @{$obj->{channels}} == 0 ) {
+		addlog ($obj, 0, "No channels to process" ) ;
+		return "skip" ;
+	}
+
+	if ( defined $obj->{params}{reject} && ref($obj->{params}{reject}) eq "ARRAY" ) {
+		$obj->{reject} = [] ;
+		foreach my $line (@{$obj->{params}{reject}}) {
+			my @entries = split " ", $line ;
+			my $n = scalar ( @entries ) ; 
+			if ( $n == 0 ) {next;}
+			if ( $n != 2 ) {
+				addlog ($obj, 0, "Unable to parse '". $line . "'" ) ;
+				next ;
+			}
+	
+			my $hash = {
+				"snet_expr"	=>	$entries[0],
+				"sta_expr"	=>	$entries[1],
+			} ;
+	
+			push @{$obj->{reject}}, $hash ;
+		}
+	}
+
+	return "ok" ;
+}
+
+sub match_sta {
+	my $obj = shift ;
+	my $sta = shift ;
+
+	my $snet = "" ;
+	my @dbn = dblookup ( @{$obj->{dbn}}, 0, 0, "sta", $sta ) ;
+	if ($dbn[3] >= 0) {
+		$snet = dbgetv ( @dbn, "snet" ) ;
+	}
+
+	my $ok ;
+	my $entry ;
+	foreach $entry (@{$obj->{channels}}) {
+		if ($snet !~ /$entry->{snet_expr}/ ) { next ; }
+		if ($sta !~ /$entry->{sta_expr}/ ) { next; }
+		$ok = $entry ;
+		last ;
+	}
+
+	if ( ! defined $ok ) { 
+		addlog ($obj, 1, "station ". $sta . " snet " . $snet . " no match in channels table - skipping" ) ;
+		return "skip" ; 
+	}
+
+	if ( defined @{$obj->{reject}} ) {
+		foreach $entry (@{$obj->{reject}}) {
+			if ($snet !~ /$entry->{snet_expr}/ ) { next ; }
+			if ($sta !~ /$entry->{sta_expr}/ ) { next; }
+			undef $ok ;
+			last ;
+		}
+
+		if ( ! defined $ok ) { 
+			addlog ($obj, 1, "station ". $sta . " snet " . $snet . " match in reject table - skipping" ) ;
+			return "skip" ; 
+		}
+	}
+
+	return ( "ok", $ok ) ;
+}
+
+sub time2samp {		# This will return the closest sample value index
+			# to some desired time.
+			#
+			# args:
+			#	$time	= Desired time.
+			#	$dt	= Time sampling increment.
+			#
+			# returns:
+			#	$index	= Index of sample value.
+	my $time = shift ;
+	my $dt = shift ;
+
+	return ($time < 0.0) ? int(($time/$dt)-0.5) : int(($time/$dt)+0.5) ;
+}
+
+sub findrange {		# This finds the actual range of data sample
+			# values corresponding to desired start and
+			# end times.
+			#
+			# args:
+			#	$t0	= Epoch time of first sample value.
+			#	$dt	= Time sampling increment.
+			#	$nsamp	= Number of sample values.
+			#	$tstart	= optional desired start epoch time
+			#	$tend	= optional desired end epoch time
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$tstart	= Actual time value of first sample within range.
+			#	$istart	= Index of first sample value within range.
+			#	$npts	= Number of sample values within range.
+	my $t0 = shift ;
+	my $dt = shift ;
+	my $nsamp = shift ;
+	my $tstart;
+	my $tend;
+	if (scalar(@_) > 0) {$tstart = shift;}
+	if (scalar(@_) > 0) {$tend = shift;}
+
+	my $istart = 0;
+	if ( defined $tstart ) {
+		$istart = time2samp ( $tstart - $t0, $dt ) ;
+		if ($istart < 0) {$istart = 0;}
+	}
+	if ($istart >= $nsamp) {return ( $t0, $istart, 0 );}
+	my $iend = $nsamp - 1;
+	if ( defined $tend ) {
+		$iend = time2samp ( $tend - $t0, $dt ) ;
+		if ($iend >= $nsamp) {$iend = $nsamp - 1;}
+	}
+	if ($iend < $istart) {return ( $t0, $istart, 0 );}
+	my $npts = $iend - $istart + 1;
+	$t0 += $istart*$dt ;
+
+	return ( $t0, $istart, $npts ) ;
+}
+
+sub trimtrace {		# This looks for gap values at the beginning and end
+			# of a trace and "trims" them off by returning the
+			# start and end times corresponding to the trimmed 
+			# trace.
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#
+			# returns:
+			#	$tstart	= start epoch time for non-gap data
+			#	$tend	= end epoch time for non-gap data
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+
+	my ($t0, $nsamp, $samprate) = dbgetv ( @db, "time", "nsamp", "samprate" ) ;
+	my $dt = 1.0/$samprate;
+
+	my @data = trdata ( @db, 0, $nsamp ) ;
+	my $time;
+	my $isamp;
+	for ($isamp = 0; $isamp < $nsamp; $isamp++) {
+		$time = $t0 + $isamp * $dt ;
+		if ($data[$isamp] < 1.e30) {last;}
+	}
+
+	if ($isamp >= $nsamp) {return;}
+
+	my $tstart = $time;
+
+	for ($isamp = $nsamp-1; $isamp >= 0; $isamp--) {
+		$time = $t0 + $isamp * $dt ;
+		if ($data[$isamp] < 1.e30) {last;}
+	}
+
+	my $tend = $time;
+	
+	return ($tstart, $tend);
+}
+
+sub findbad {		# Find the number of missing (bad) waveform
+			# sample values in a range of data
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#	$tstart	= optional start epoch time for search
+			#	$tend	= optional end epoch time for search
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$nbad	= number of missing sample values
+			#	$fbad	= fraction of missing values relative to
+			#		    entire search window
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+	my $tstart;
+	my $tend;
+	if (scalar(@_) > 0) {$tstart = shift;}
+	if (scalar(@_) > 0) {$tend = shift;}
+
+	# get the timing values from the trace row
+
+	my ($t0, $nsamp, $samprate) = dbgetv ( @db, "time", "nsamp", "samprate" ) ;
+	my $dt = 1.0/$samprate;
+
+	if ( ! defined $tstart ) { $tstart = $t0; }
+	if ( ! defined $tend ) { $tend = $t0+$dt*($nsamp-1); }
+
+	# initialize the number of missing samples by examining the ends
+	# of the search time window. Note that missing values will be
+	# reported if the search window is outside the range of the trace
+	# waveform time window
+
+	my $nbad = 0;
+	my $istart = time2samp ( $tstart - $t0, $dt ) ;
+	if ($istart < 0) {
+		$nbad = -$istart;
+		$istart = 0;
+	}
+	my $iend = time2samp ( $tend - $t0, $dt ) ;
+	if ($iend >= $nsamp) {
+		$nbad += $iend-$nsamp+1;
+		$iend = $nsamp - 1;
+	}
+	my $npts = $iend - $istart + 1;
+	my $fbad ;
+
+	if ($npts < 1) {
+		if ($tstart >= $tend) {
+			$fbad = 1.0 ;
+		} else {
+			$fbad = ($nbad * $dt) / ($tend - $tstart);
+		}
+		return ($nbad, $fbad);
+	}
+
+	# now add in the data sample values that are tagged with "gap" values
+
+	my @data = trdata ( @db, $istart, $istart+$npts ) ;
+	for (my $isamp = 0; $isamp < $npts; $isamp++) {
+		if ($data[$isamp] > 1.e30) {$nbad++;}
+	}
+
+	# compute the fraction value and return
+	
+	if ($tstart >= $tend) {
+		$fbad = 1.0 ;
+	} else {
+		$fbad = ($nbad * $dt) / ($tend - $tstart);
+	}
+	return ($nbad, $fbad);
+}
+
+sub computestats {	# Compute waveform statistics
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#	$applycalib = apply calib flag. If set then calib
+			#		    is taken from tabel and applied to output
+			#		    measurements
+			#	$meanremove = A mean value for removing from the waveform
+			#		    sample values before the measurements are made.
+			#		    This must be pre-computed and will be scaled
+			#		    according to the $applycalib flag, i.e. (id est)
+			#		    if $applycalib is set, then it is assumed that
+			#		    the $meanremove value has already had calib
+			#		    applied to itself. This value is used primarily
+			#		    for removing a previously computed noise mean
+			#		    value from a signal window.
+			#	$tstart	= optional start epoch time for measurements
+			#	$tend	= optional end epoch time for measurements
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	$amax	= absolute maximum value
+			#	$vmax	= maximum/minimum value with sign
+			#	$tmax	= epoch time of $amax
+			#	$amp	= mid to peak amplitude of wavecycle with
+			#		    highest amplitude immediately after
+			#		    or before peak value
+			#	$per	= full wave period corresponding to $amp. $per
+			#		    negative means the wave cycle was before
+			#		    the peak value
+			#	$mean	= mean value over $tstart to $tend time window
+			#	$std	= standard deviation over $tstart to $tend time window
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+	my $applycalib = shift ;
+	my $meanremove = shift ;
+	my $tstart;
+	my $tend;
+	if (scalar(@_) > 0) {$tstart = shift;}
+	if (scalar(@_) > 0) {$tend = shift;}
+
+	# get the timing and calib values from the trace row
+
+	my ($t0, $samprate, $nsamp, $calib) = dbgetv ( @db, "time", "samprate", "nsamp", "calib" ) ;
+	my $dt = 1.0 / $samprate ;
+
+	if ($applycalib && $calib != 0.0) {
+		$meanremove /= $calib;
+	}
+
+	# find the range within the trace waveform for making the measurements
+
+	my ( $istart, $npts ) ;
+	( $t0, $istart, $npts ) = findrange ( $t0, $dt, $nsamp, $tstart, $tend ) ;
+	if ( $npts < 1 ) {return;}
+
+	# get the waveform sample data array
+
+	my @data = trdata ( @db, $istart, $istart+$npts ) ;
+
+	# loop through the data samples to compute the stats
+
+	my $m = 0.0 ;
+	my $s = 0.0 ;
+	my $nm = 0 ;
+	$npts = scalar ( @data ) ;
+	my $val ;
+	my $amax = -1.e30 ;
+	my $vmax ;
+	my $tmax ;
+	my $imax ;
+	my $aval ;
+	my $time ;
+	my $isamp ;
+	for ($isamp = 0; $isamp < $npts; $isamp++) {
+		$time = $t0 + $isamp * $dt ;
+		$val = $data[$isamp] ;
+		if ($val > 1.e30) {next;}
+		$val -= $meanremove ;
+
+		# this next bit of code is to insure that the peak is
+		# being measured on a local maximum or minimum instead
+		# of at the edges of the processing window
+
+		if ($isamp > 0 && $isamp < $npts-1) {
+			if ( ( $data[$isamp] > $data[$isamp-1] &&
+					$data[$isamp] > $data[$isamp+1] ) ||
+					( $data[$isamp] < $data[$isamp-1] &&
+					$data[$isamp] < $data[$isamp+1] ) ) {
+				$aval = abs ( $val ) ;
+				if ($aval > $amax) {
+					$vmax = $val;
+					$amax = $aval;
+					$tmax = $time;
+					$imax = $isamp;
+				}
+			}
+		}
+		$m += $val;
+		$s += $val*$val ;
+		$nm++;
+	}
+	if ($nm < 1) {return;}
+
+	my $mean = $m / $nm; 
+	my $std = $s / $nm;
+	$std -= $mean*$mean;
+	$std = sqrt($std) ;
+
+	# search around the peak value for the amplitude and period
+	# measurements
+
+	my $amp ;
+	my $per ;
+	if ($imax < $npts-2) {
+		my $vel = $data[$imax+1]-$data[$imax];
+		for ($isamp = $imax+1; $isamp < $npts-1; $isamp++) {
+			if ( ($data[$isamp+1]-$data[$isamp])*$vel < 0.0 ) {
+				$amp = 0.5 * abs ( $data[$isamp] - $data[$imax] ) ;
+				$per = 2.0 * ($isamp-$imax) * $dt ;
+				last ;
+			}
+		}
+	}
+	if ($imax > 2) {
+		my $vel = $data[$imax-1]-$data[$imax];
+		for ($isamp = $imax-1; $isamp > 1; $isamp--) {
+			if ( ($data[$isamp-1]-$data[$isamp])*$vel < 0.0 ) {
+				my $amp2 = 0.5 * abs ( $data[$isamp] - $data[$imax] ) ;
+				if (defined $amp && $amp2 > $amp) {
+					$amp = $amp2;
+					$per = 2.0 * ($isamp-$imax) * $dt ;
+				}
+				last ;
+			}
+		}
+	}
+
+	# apply calib and return
+
+	if ($applycalib && $calib != 0.0) {
+		$amax *= $calib ;
+		$vmax *= $calib ;
+		if ( defined $amp ) {$amp *= $calib ;}
+		$mean *= $calib;
+		$std *= $calib;
+	}
+	
+	return ( $amax, $vmax, $tmax, $amp, $per, $mean, $std ) ;
+}
+
+sub mystrtime {
+	my $epoch = shift ;
+	return epoch2str ( $epoch, "%H:%M:%S.%s" ) ;
+}
+
+package Magnitude ;
+
+use strict ;
+use warnings ;
+
+use Datascope ; 
+
+sub new {
+	my $class = shift ;
+	my $self = {} ;
+	bless ($self, $class) ;
+	$self->put(@_) ;
+	$self->{class} = $class ;
+
+	@{$self->{dbo}} = dblookup (@{$self->{db}}, 0, "origin", 0, 0 ) ;
+	@{$self->{dba}} = dblookup (@{$self->{db}}, 0, "assoc", 0, 0 ) ;
+	@{$self->{dbs}} = dblookup (@{$self->{db}}, 0, "site", 0, 0 ) ;
+	@{$self->{dbn}} = dblookup (@{$self->{db}}, 0, "snetsta", 0, 0 ) ;
+	@{$self->{dbsc}} = dblookup (@{$self->{dbm}}, 0, "sitechan", 0, 0 ) ;
+	@{$self->{dbc}} = dblookup (@{$self->{dbm}}, 0, "calibration", 0, 0 ) ;
+
+	$self->{norigin} = dbquery ( @{$self->{dbo}} , "dbRECORD_COUNT" ) ;
+	$self->{nassoc} = dbquery ( @{$self->{dba}} , "dbRECORD_COUNT" ) ;
+	$self->{nsite} = dbquery ( @{$self->{dbs}} , "dbRECORD_COUNT" ) ;
+	$self->{nsnetsta} = dbquery ( @{$self->{dbn}} , "dbRECORD_COUNT" ) ;
+	$self->{nsitechan} = dbquery ( @{$self->{dbsc}} , "dbRECORD_COUNT" ) ;
+	$self->{ncalibration} = dbquery ( @{$self->{dbc}} , "dbRECORD_COUNT" ) ;
+
+	$self->{dbo}[3] = 0 ;
+	$self->{orid} = dbgetv (@{$self->{dbo}}, "orid" ) ;
+	$self->{evid} = dbgetv (@{$self->{dbo}}, "evid" ) ;
+
+	elog_notify $self->{event_id} . ": " . $self->{class} . ": CREATING PERL INSTANCE\n" ;
+
+	$self->{output}{logs} = [] ;
+
+	return $self;
+}
+
+sub DESTROY {
+	my $self = shift ;
+	elog_notify $self->{event_id} . ": " . $self->{class} . ": DELETING PERL INSTANCE\n" ;
+}
+
+sub display {
+	my $self = shift ;
+	my @keys ;
+	if (@_ == 0) {
+		@keys = sort keys(%$self) ;
+	} else {
+		@keys = @_ ;
+	}
+
+	my $key;
+	foreach $key (@keys) {
+		main::prettyprint $self->{$key}, "\t$key" ;
+	}
+}
+
+sub put {
+	my $self = shift ;
+	if (@_) {
+		my %init = @_ ;
+		@$self{keys %init} = values %init ;
+	}
+}
+
+sub get {
+	my $self = shift ;
+	my @keys ;
+	if (@_ == 0) {
+		return ;
+	} else {
+		@keys = @_ ;
+	}
+
+	my $key;
+	my @vals;
+	foreach $key (@keys) {
+		push @vals, $self->{$key} ;
+	}
+
+	return @vals ;
+}
+
+sub process_channel {
+	my $self = shift ;
+	my $dbref = shift ;
+	my $flush = shift ;
+
+	my @dbtrace = @{$dbref} ;
+
+	$dbtrace[3] = 0;
+	my ($t0, $sta, $chan, $nsamp, $samprate) = dbgetv ( @dbtrace, "time", "sta", "chan", "nsamp", "samprate" ) ;
+	my ($tstart, $tend) = main::trimtrace ( @dbtrace ) ;
+
+	if ( ! defined $self->{stations}{$sta} ) { 
+		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because station not defined", $sta, $chan ) ;
+		return main::makereturn ( $self, "notneeded" ) ; 
+	}
+
+	if ( ! defined $self->{stations}{$sta}{channels}{$chan} ) { 
+		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because channel not defined", $sta, $chan ) ;
+		return main::makereturn ( $self, "notneeded" ) ; 
+	}
+
+	if ( defined $self->{stations}{$sta}{channels}{$chan}{first} ) { 
+		my ( $dt, $isamp ) ;
+
+		$dt = 1.0 / $samprate ;
+		$isamp = main::time2samp ( $self->{stations}{$sta}{noise_tstart} - $t0, $ dt ) ;
+		$isamp++;
+		$self->{stations}{$sta}{noise_tstart} = $t0 + $isamp * $dt ;
+		$isamp = main::time2samp ( $self->{stations}{$sta}{noise_tend} - $t0, $ dt ) ;
+		$isamp--;
+		$self->{stations}{$sta}{noise_tend} = $t0 + $isamp * $dt ;
+		$isamp = main::time2samp ( $self->{stations}{$sta}{signal_tstart} - $t0, $ dt ) ;
+		$isamp++;
+		$self->{stations}{$sta}{signal_tstart} = $t0 + $isamp * $dt ;
+		$isamp = main::time2samp ( $self->{stations}{$sta}{signal_tend} - $t0, $ dt ) ;
+		$isamp--;
+		$self->{stations}{$sta}{signal_tend} = $t0 + $isamp * $dt ;
+		undef $self->{stations}{$sta}{channels}{$chan}{first} ;
+	}
+
+	if (defined $tstart ) {
+		main::addlog ( $self, 3, "%s: %s: Called process_channel with good time range %s to %s",
+ 						$sta, $chan, main::mystrtime($tstart), main::mystrtime($tend) ) ;
+	} else {
+		main::addlog ( $self, 3, "%s: %s: Called process_channel with no good time range",
+ 						$sta, $chan ) ;
+	}
+	main::addlog ( $self, 3, "%s: %s: Looking for %s to %s and %s to %s",
+ 						$sta, $chan,
+						main::mystrtime($self->{stations}{$sta}{noise_tstart}),
+						main::mystrtime($self->{stations}{$sta}{noise_tend}),
+						main::mystrtime($self->{stations}{$sta}{signal_tstart}),
+						main::mystrtime($self->{stations}{$sta}{signal_tend}) ) ;
+
+	if ( defined $self->{done} ) { 
+		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because network done", $sta, $chan ) ;
+		return main::makereturn ( $self, "notneeded" ) ; 
+	}
+
+	if ( defined $self->{stations}{$sta}{done} ) { 
+		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because station done", $sta, $chan ) ;
+		return main::makereturn ( $self, "notneeded" ) ; 
+	}
+
+	my $disp = "ok" ;
+
+	if ( defined $self->{stations}{$sta}{channels}{$chan}{done} ) { 
+		main::addlog ( $self, 3, "%s: %s: Leaving process_channel because channel done", $sta, $chan ) ;
+		return main::makereturn ( $self, "notneeded" ) ; 
+	}
+
+	my $needfilter = 1;
+
+ 	if ($self->{stations}{$sta}{noise_twin} <= 0.0) {
+		$self->{stations}{$sta}{channels}{$chan}{noise_done} = 1;
+	}
+
+	if ( $self->{stations}{$sta}{channels}{$chan}{noise_done} == 0 ) { 
+		my ($nbad, $fbad) = main::findbad ( @dbtrace, $self->{stations}{$sta}{noise_tstart},
+						$self->{stations}{$sta}{noise_tend} ) ;
+		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
+		if ( $nbad == 0 || $override ) {
+			if ( defined $self->{stations}{$sta}{filter} ) {
+				trfilter ( @dbtrace, $self->{stations}{$sta}{filter} ) ;
+			}
+			$needfilter = 0;
+			($self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_vmax}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_tmax}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_amp}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_per}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
+ 				$self->{stations}{$sta}{channels}{$chan}{noise_std}) = main::computestats ( @dbtrace, 1,
+ 					0.0, $self->{stations}{$sta}{noise_tstart}, 
+ 						$self->{stations}{$sta}{noise_tend} ) ;
+ 			if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_amax} ) {
+				main::addlog ( $self, 2, "%s: %s: noise max %.6f at %s, mean %.6f, std = %.6f", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{noise_tmax}),
+ 						$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
+ 						$self->{stations}{$sta}{channels}{$chan}{noise_std} ) ;
+ 			}
+			$self->{stations}{$sta}{channels}{$chan}{noise_done} = 1;
+		}
+	}
+
+	if ( $self->{stations}{$sta}{channels}{$chan}{signal_done} == 0 ) { 
+		my ($nbad, $fbad) = main::findbad ( @dbtrace, $self->{stations}{$sta}{signal_tstart},
+						$self->{stations}{$sta}{signal_tend} ) ;
+		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
+		if ($nbad != 0 && ! $override ) {
+			main::addlog ( $self, 3, "%s: %s: Leaving process_channel because signal not ready", $sta, $chan ) ;
+			return main::makereturn ( $self, "ok" ) ; 
+		}
+		if ( $needfilter && defined $self->{stations}{$sta}{filter} ) {
+			trfilter ( @dbtrace, $self->{stations}{$sta}{filter} ) ;
+		}
+ 		($self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_vmax}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_tmax}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_per}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_mean}, 
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_std}) = main::computestats ( @dbtrace, 1,
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
+ 					$self->{stations}{$sta}{signal_tstart}, 
+ 					$self->{stations}{$sta}{signal_tend} ) ;
+ 		if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amax} ) {
+			if ( $self->{stations}{$sta}{channels}{$chan}{noise_done} == 0 ) { 
+				($self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_tmax}, 
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_std}) = main::computestats ( @dbtrace, 1,
+ 						0.0, $self->{stations}{$sta}{noise_tstart}, 
+ 							$self->{stations}{$sta}{noise_tend} ) ;
+ 				if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_amax} ) {
+					main::addlog ( $self, 2, "%s: %s: noise max %.6f at %s, mean %.6f, std = %.6f", 
+ 							$sta, $chan, 
+ 							$self->{stations}{$sta}{channels}{$chan}{noise_amax}, 
+ 							main::mystrtime($self->{stations}{$sta}{channels}{$chan}{noise_tmax}),
+ 							$self->{stations}{$sta}{channels}{$chan}{noise_mean}, 
+ 							$self->{stations}{$sta}{channels}{$chan}{noise_std} ) ;
+ 				}
+				$self->{stations}{$sta}{channels}{$chan}{noise_done} = 1;
+			}
+			if ( defined $self->{stations}{$sta}{channels}{$chan}{noise_std} ) {
+				$self->{stations}{$sta}{channels}{$chan}{snr} = 
+ 					$self->{stations}{$sta}{channels}{$chan}{signal_amax}
+					/ ($self->{stations}{$sta}{channels}{$chan}{noise_std}*1.414) ;
+			}
+			if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amp} ) {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, amp %.6f, per = %.2f, snr = %.3f", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_per},
+ 						$self->{stations}{$sta}{channels}{$chan}{snr} ) ;
+				} else {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, snr = %.3f", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
+ 						$self->{stations}{$sta}{channels}{$chan}{snr} ) ;
+				}
+			} else {
+				if ( defined $self->{stations}{$sta}{channels}{$chan}{signal_amp} ) {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s, amp %.6f, per = %.2f", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}),
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amp}, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_per} ) ;
+				} else {
+					main::addlog ( $self, 2, 
+ 						"%s: %s: signal max %.6f at %s", 
+ 						$sta, $chan, 
+ 						$self->{stations}{$sta}{channels}{$chan}{signal_amax}, 
+ 						main::mystrtime($self->{stations}{$sta}{channels}{$chan}{signal_tmax}) ) ;
+				}
+			}
+		}
+		$self->{stations}{$sta}{channels}{$chan}{signal_done} = 1;
+	}
+
+	$disp = "channeldone" ;
+	$self->{stations}{$sta}{channels}{$chan}{done} = 1 ;
+
+	main::addlog ($self, 2, $sta . ": " . $chan . ": done") ;
+
+	my @chans = keys %{$self->{stations}{$sta}{channels}} ;
+	my $done = 1;
+	my $nch = 0;
+	foreach $chan (@chans) {
+		if ( defined $self->{stations}{$sta}{channels}{$chan}{done}) { 
+			$nch++;
+			next; 
+		}
+		$done = 0 ;
+		last ;
+	}
+	if ( $done == 1  && $nch >= $self->{stations}{$sta}{nchans} ) {
+		$self->{stations}{$sta}{done} = 1 ;
+		main::addlog ( $self, 2, $sta . ": done" ) ;
+		$disp = "stationdone" ;
+	}
+	my @stas = keys %{$self->{stations}} ;
+	$done = 1;
+	foreach $sta (@stas) {
+		if ( defined $self->{stations}{$sta}{done}) { next; }
+		$done = 0 ;
+		last ;
+	}
+	if ( $done == 1 ) {
+		$self->{done} = 1 ;
+		main::addlog ( $self, 2, "done" ) ;
+		$disp = "processdone" ;
+	}
+
+	main::addlog ( $self, 3, "%s: %s: Leaving process_channel with %s", $sta, $chan, $disp ) ;
+	return main::makereturn ( $self, $disp, "sta" => $sta, "chan" => $chan ) ; 
+}
+
+sub process_station {
+	my $self = shift ;
+	my $sta = shift ;
+	my $flush = shift ;
+
+	my $msta = -1.e30 ;
+	my $mchan ;
+	foreach  my $chan (keys(%{$self->{stations}{$sta}{channels}})) {
+		if (defined $self->{stations}{$sta}{channels}{$chan}{m}) {
+			if ($self->{stations}{$sta}{channels}{$chan}{m} > $msta) {
+				$msta = $self->{stations}{$sta}{channels}{$chan}{m} ;
+				$mchan = $chan ;
+			}
+		}
+	}
+
+	if ($msta > -1.e20) {
+		$self->{stations}{$sta}{m} = $msta ;
+		$self->{stations}{$sta}{m_chan} = $mchan ;
+		$self->{stations}{$sta}{m_time} = $self->{stations}{$sta}{channels}{$mchan}{m_time} ;
+		$self->{stations}{$sta}{m_amp} = -1.0 ;
+		$self->{stations}{$sta}{m_per} = -1.0 ;
+		$self->{stations}{$sta}{m_logat} = -999.0 ;
+		$self->{stations}{$sta}{m_snr} = -1.0 ;
+		$self->{stations}{$sta}{m_twin} = 0.0 ;
+		$self->{stations}{$sta}{m_val1} = 0.0 ;
+		$self->{stations}{$sta}{m_val2} = 0.0 ;
+		$self->{stations}{$sta}{m_units1} = "-" ;
+		$self->{stations}{$sta}{m_units2} = "-" ;
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_amp} ) {
+			$self->{stations}{$sta}{m_amp} = $self->{stations}{$sta}{channels}{$mchan}{m_amp} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_per} ) {
+			$self->{stations}{$sta}{m_per} = $self->{stations}{$sta}{channels}{$mchan}{m_per} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_logat} ) {
+			$self->{stations}{$sta}{m_logat} = $self->{stations}{$sta}{channels}{$mchan}{m_logat} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_snr} ) {
+			$self->{stations}{$sta}{m_snr} = $self->{stations}{$sta}{channels}{$mchan}{m_snr} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_twin} ) {
+			$self->{stations}{$sta}{m_snr} = $self->{stations}{$sta}{channels}{$mchan}{m_twin} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_val1} ) {
+			$self->{stations}{$sta}{m_val1} = $self->{stations}{$sta}{channels}{$mchan}{m_val1} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_val2} ) {
+			$self->{stations}{$sta}{m_val2} = $self->{stations}{$sta}{channels}{$mchan}{m_val2} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_units1} ) {
+			$self->{stations}{$sta}{m_units1} = $self->{stations}{$sta}{channels}{$mchan}{m_units1} ;
+		}
+		if ( defined $self->{stations}{$sta}{channels}{$mchan}{m_units2} ) {
+			$self->{stations}{$sta}{m_units2} = $self->{stations}{$sta}{channels}{$mchan}{m_units2} ;
+		}
+		main::addlog ( $self, 1, "%s: Station mag = %.3f",
+ 					$sta, $msta ) ;
+	} else {
+		main::addlog ( $self, 1, "%s: Station mag = no data",
+ 					$sta ) ;
+	}
+
+	return main::makereturn ( $self, "ok" ) ;
+}
+
+sub process_network {
+	my $self = shift ;
+	my $flush = shift ;
+
+	my $disp = "ok" ;
+
+	undef $self->{output}{db} ;
+
+	my $m = 0.0;
+	my $nm = 0;
+	my $std = 0;
+
+	my @mags ;
+	my $sta ;
+	foreach $sta (keys(%{$self->{stations}})) {
+		if ( ! defined $self->{stations}{$sta}{m} ) {next; }
+		$m += $self->{stations}{$sta}{m} ;
+		$std += $self->{stations}{$sta}{m} * $self->{stations}{$sta}{m} ;
+		$nm ++ ;
+		push @mags, $self->{stations}{$sta}{m} ;
+	}
+
+	if ( $nm < 1 ) {
+		main::addlog ( $self, 1, "Network mag: No data" ) ;
+		return main::makereturn ( $self, "nodata" ) ;
+	}
+
+	$m /= $nm ;
+	$std /= $nm ;
+	$std -= $m*$m ;
+	$self->{m_mean} = $m ;
+	$self->{m_n} = $nm ;
+	$self->{m_std} = sqrt ( $std ) ;
+
+	my @magss = sort { $a <=> $b } @mags ;
+	my $n = scalar ( @magss ) ;
+	if ( $n % 2 ) {
+		$self->{m_median} = $magss[int($n/2)] ;
+	} else {
+		$self->{m_median} = 0.5*$magss[int($n/2-1)] ;
+		$self->{m_median} += 0.5*$magss[int($n/2)] ;
+	}
+
+	my $lo = $magss[int(0.1587*$n)] ;
+	my $hi = $magss[int(0.8413*$n)] ;
+	$self->{m_unc} = 0.5*($hi-$lo) ;
+
+	main::addlog ( $self, 1, "Network mag: mean = %.2f, std = %.2f, median = %.2f, unc = +%.2f/-%.2f, n = %d", 
+ 		$self->{m_mean}, $self->{m_std}, $self->{m_median}, 
+		$hi-$self->{m_median}, $self->{m_median}-$lo, $self->{m_n} ) ;
+
+	my @dbnetmag = dblookup ( @{$self->{db}}, 0, "netmag", 0, "dbSCRATCH" ) ;
+	my $magid = dbnextid ( @dbnetmag, "magid" ) ;
+	dbputv ( @dbnetmag, "orid", $self->{orid}, "evid", $self->{evid},
+					"magid", $magid,
+					"magtype", $self->{params}{output_magtype},
+					"nsta", $self->{m_n},
+					"magnitude", $self->{m_median},
+					"uncertainty", $self->{m_unc},
+					"auth", $self->{params}{output_auth} ) ;
+	my $rec = dbadd ( @dbnetmag ) ;
+	$dbnetmag[3] = $rec;
+
+	$self->{output}{db}{assoc_params}{smart_assoc} = "yes";
+	$self->{output}{db}{assoc_params}{magnitude_update} = "yes";
+	push @{$self->{output}{db}{tables}}, $self->{dbo} ;
+	push @{$self->{output}{db}{tables}}, \@dbnetmag ;
+
+	my ( @dbstamag, @dbarrival, @dbwfmeas ) ;
+
+	if ( main::isyes $self->{params}{output_stamag} ) {
+		@dbstamag = dblookup ( @{$self->{db}}, 0, "stamag", 0, 0 ) ;
+		@dbarrival = dblookup ( @{$self->{db}}, 0, "arrival", 0, 0 ) ;
+		@dbwfmeas = dblookup ( @{$self->{db}}, 0, "wfmeas", 0, 0 ) ;
+		my ( $stamag0, $arrival0, $wfmeas0 ) ;
+		my ( $stamag1, $arrival1, $wfmeas1 ) ;
+		foreach $sta (keys(%{$self->{stations}})) {
+			if ( ! defined $self->{stations}{$sta}{m} ) {next; }
+			my $arid = -1 ;
+			if ( main::isyes $self->{params}{output_wfmeas} ) {
+				@dbarrival = dblookup ( @dbarrival, 0, 0, 0, "dbSCRATCH" ) ;
+				$arid = dbnextid ( @dbarrival, "arid" ) ;
+				dbputv ( @dbarrival, "sta", $sta, "chan", $self->{stations}{$sta}{m_chan}, 
+							"arid", $arid,
+							"time", $self->{stations}{$sta}{m_time},
+							"iphase", $self->{params}{output_magtype},
+							"amp", $self->{stations}{$sta}{m_amp},
+							"per", $self->{stations}{$sta}{m_per},
+							"logat", $self->{stations}{$sta}{m_logat},
+							"snr", $self->{stations}{$sta}{m_snr},
+							"auth", $self->{params}{output_auth} ) ;
+				$rec = dbadd ( @dbarrival ) ;
+				$dbarrival[3] = $rec;
+				if ( ! defined $arrival0 ) { $arrival0 = $rec; }
+				$arrival1 = $rec+1;
+				@dbwfmeas = dblookup ( @dbwfmeas, 0, 0, 0, "dbSCRATCH" ) ;
+				dbputv ( @dbwfmeas, "sta", $sta, "chan", $self->{stations}{$sta}{m_chan}, 
+						"arid", $arid,
+						"meastype", $self->{params}{output_magtype},
+						"filter", $self->{stations}{$sta}{filter},
+						"time", $self->{stations}{$sta}{signal_tstart},
+						"endtime", $self->{stations}{$sta}{signal_tend},
+						"tmeas", $self->{stations}{$sta}{m_time},
+						"twin", $self->{stations}{$sta}{m_twin},
+						"val1", $self->{stations}{$sta}{m_val1},
+						"val2", $self->{stations}{$sta}{m_val2},
+						"units1", $self->{stations}{$sta}{m_units1},
+						"units2", $self->{stations}{$sta}{m_units2},
+						"auth", $self->{params}{output_auth} ) ;
+				$rec = dbadd ( @dbwfmeas ) ;
+				if ( ! defined $wfmeas0 ) { $wfmeas0 = $rec; }
+				$wfmeas1 = $rec+1;
+			}
+			@dbstamag = dblookup ( @dbstamag, 0, 0, 0, "dbSCRATCH" ) ;
+			dbputv ( @dbstamag, "magid", $magid, "sta", $sta, "orid", $self->{orid}, 
+						"evid", $self->{evid},
+						"arid", $arid,
+						"phase", $self->{params}{output_magtype},
+						"magtype", $self->{params}{output_magtype},
+						"magnitude", $self->{stations}{$sta}{m},
+						"auth", $self->{params}{output_auth} ) ;
+			$rec = dbadd ( @dbstamag ) ;
+
+			if ( ! defined $stamag0 ) { $stamag0 = $rec; }
+			$stamag1 = $rec+1;
+			
+		}
+		if ( defined $stamag0 ) {
+			$dbstamag[3] = $stamag0;
+			$dbstamag[2] = $stamag1;
+			push @{$self->{output}{db}{tables}}, \@dbstamag ;
+		}
+		if ( defined $arrival0 ) {
+			$dbarrival[3] = $arrival0;
+			$dbarrival[2] = $arrival1;
+			push @{$self->{output}{db}{tables}}, \@dbarrival ;
+		}
+		if ( defined $wfmeas0 ) {
+			$dbwfmeas[3] = $wfmeas0;
+			$dbwfmeas[2] = $wfmeas1;
+			push @{$self->{output}{db}{tables}}, \@dbwfmeas ;
+		}
+
+	}
+
+	return main::makereturn ( $self, $disp ) ;
+}
+
+}
+
+mlrichter &Literal{
+package Mlrichter ;
+
+use strict ;
+use warnings ;
+
+use Datascope ; 
+
+our @ISA = ( "Magnitude" ) ;
+
+# following are the Richter correction values as a function of distance
+
+our @mltab = (
+	(0.0,            1.4),
+	(5.0,            1.4),
+	(10.0,           1.5),
+	(15.0,           1.6),
+	(20.0,           1.7),
+	(25.0,           1.9),
+	(30.0,           2.1),
+	(35.0,           2.3),
+	(40.0,           2.4),
+	(45.0,           2.5),
+	(50.0,           2.6),
+	(55.0,           2.7),
+	(60.0,           2.8),
+	(65.0,           2.8),
+	(70.0,           2.8),
+	(80.0,           2.9),
+	(85.0,           2.9),
+	(90.0,           3.0),
+	(95.0,           3.0),
+	(100.0,          3.0),
+	(110.0,          3.1),
+	(120.0,          3.1),
+	(130.0,          3.2),
+	(140.0,          3.2),
+	(150.0,          3.3),
+	(160.0,          3.3),
+	(170.0,          3.4),
+	(180.0,          3.4),
+	(190.0,          3.5),
+	(200.0,          3.5),
+	(210.0,          3.6),
+	(220.0,          3.65),
+	(230.0,          3.7),
+	(240.0,          3.7),
+	(250.0,          3.8),
+	(260.0,          3.8),
+	(270.0,          3.9),
+	(280.0,          3.9),
+	(290.0,          4.0),
+	(300.0,          4.0),
+	(310.0,          4.1),
+	(320.0,          4.1),
+	(330.0,          4.2),
+	(340.0,          4.2),
+	(350.0,          4.3),
+	(360.0,          4.3),
+	(370.0,          4.3),
+	(380.0,          4.4),
+	(390.0,          4.4),
+	(400.0,          4.5),
+	(410.0,          4.5),
+	(420.0,          4.5),
+	(430.0,          4.6),
+	(440.0,          4.6),
+	(450.0,          4.6),
+	(460.0,          4.6),
+	(470.0,          4.7),
+	(480.0,          4.7),
+	(490.0,          4.7),
+	(500.0,          4.7),
+	(510.0,          4.8),
+	(520.0,          4.8),
+	(530.0,          4.8),
+	(540.0,          4.8),
+	(550.0,          4.8),
+	(560.0,          4.9),
+	(570.0,          4.9),
+	(580.0,          4.9),
+	(590.0,          4.9),
+	(600.0,          4.9) ) ;
+
+sub compml {
+	my $self = shift ;
+	my $sta = shift ;
+	my $millimeters = shift ;
+
+	my $distance = $self->{stations}{$sta}{delta}*111.11 ;
+
+	if ($distance < 0.0 || $distance > 600.0) {return;}
+	my $i;
+	for ($i=0; $i<scalar(@mltab); $i+=2) {
+		if ($distance <= $mltab[$i]) {last;}
+	}
+	my $ml = log($millimeters)/log(10) + $mltab[$i+1];
+	return $ml ;
+}
+
+sub new {
+	return Magnitude::new @_ ;
+}
+
+sub getwftimes {
+	my $self = shift ;
+
+	my $ret = main::setup_processes $self ;
+
+	if ($ret ne "ok" ) { return main::makereturn ( $self, $ret ) ; }
+
+	$self->{stations} = {} ;
+
+	my ($otime,$odepth,$oauth) = dbgetv ( @{$self->{dbo}}, "time", "depth", "auth" ) ;
+	my $date = yearday ( $otime ) ;
+
+	if ( defined $self->{params}{auth_accept} ) {
+		my $ok = dbex_eval ( @{$self->{dbo}}, "auth =~ /$self->{params}{auth_accept}/" ) ;
+		if ( ! $ok ) {
+			main::addlog ( $self, 1, "wrong origin auth " . $oauth ) ;
+			return main::makereturn ( $self, "skip" ) ; 
+		}
+	}
+
+	my $event_tend = -1.e20 ;
+	for ($self->{dba}[3] = 0; $self->{dba}[3] < $self->{nassoc}; $self->{dba}[3]++) {
+		my ($sta, $delta) = dbgetv ( @{$self->{dba}} , "sta", "delta" ) ;
+		if ( defined $self->{stations}{$sta} ) { next ; }
+		my $process ;
+		($ret, $process) = main::match_sta ($self, $sta) ;
+		if ( $ret ne "ok" ) { next; }
+
+		if ($delta*111.1 > 600.0) {
+			main::addlog ( $self, 1, $sta . ": station too far away" ) ;
+			next ;
+		}
+
+		my $pt = dbex_eval ( @{$self->{dbo}}, "ptime(" . $delta . "," . $odepth . ")" ) ;
+		my $st = dbex_eval ( @{$self->{dbo}}, "stime(" . $delta . "," . $odepth . ")" ) ;
+
+		my$twin = $process->{signal_twin} ;
+		if ( substr($process->{signal_twin}, 0, 1) eq "f") {
+			my $fac = substr($process->{signal_twin}, 1) ;
+			$twin = 1.1 * $fac * ($st - $pt) ;
+		}
+
+		my $noise_twin = $process->{noise_twin};
+		if ($process->{noise_twin} eq "tproc") {
+			$noise_twin = $twin ;
+			if ($noise_twin > 60.0) {$noise_twin = 60.0 ;}
+		}
+
+		my $noise_tstart = $otime + $pt - $noise_twin - $process->{noise_toffset} ;
+		my $noise_tend = $noise_tstart + $noise_twin ;
+		my $signal_tstart = $otime + $pt - $process->{signal_toffset} ;
+		my $signal_tend = $signal_tstart + $twin + 10.0 ;
+
+		my $tstart = $noise_tstart - 100.0 ;
+		my $tend = $signal_tend ;
+
+		my $expr = sprintf 
+			'sta == "%s" && chan =~ /%s/ && %d >= ondate && ( %d <= offdate || offdate == null("offdate") )',
+				$sta, $process->{chan_expr}, $date, $date ;
+		my @dbv = dbsubset ( @{$self->{dbsc}}, $expr ) ;
+		my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+
+		if ($ndbv < 1) {
+			dbfree @dbv ;
+			main::addlog ( $self, 1, "station ". $sta . ": no channel matches to "
+							. $process->{chan_expr} . " in sitechan table" ) ;
+			next ;
+		}
+		
+		my $channels = {};
+		for ($dbv[3] = 0; $dbv[3] < $ndbv; $dbv[3]++) {
+			my $chan = dbgetv ( @dbv, "chan" ) ;
+			$channels->{$chan}{first} = 1 ;
+			$channels->{$chan}{noise_done} = 0 ;
+			$channels->{$chan}{signal_done} = 0 ;
+		}
+		dbfree @dbv ;
+
+		my $hash = {
+			"chan_expr" => $process->{chan_expr},
+			"delta" => $delta,
+			"tstart" => $tstart,
+			"tend"	=> $tend,
+			"noise_tstart" => $noise_tstart,
+			"noise_tend"	=> $noise_tend,
+			"signal_tstart" => $signal_tstart,
+			"signal_tend"	=> $signal_tend,
+			"noise_twin" => $noise_twin,
+			"snr_thresh" => $process->{snr_thresh},
+			"tupdate" => $self->{params}{update_time},
+			"nchans" => $ndbv,
+			"channels" => $channels,
+		} ;
+		if ( defined $process->{filter} ) {
+			$hash->{filter} = $process->{filter} ;
+			if ($hash->{filter} eq "auto") {
+				$expr = sprintf 
+					'sta == "%s" && chan =~ /%s/ && %.3f >= time && ( %.3f <= endtime || endtime == null("endtime") )',
+						$sta, $process->{chan_expr}, $otime, $otime ;
+				my @dbv = dbsubset ( @{$self->{dbc}}, $expr ) ;
+				my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+		
+				if ($ndbv < 1) {
+					main::addlog ( $self, 0, "station ". $sta . ": no channel matches to "
+								. $process->{chan_expr} . " in calibration table" ) ;
+					undef $hash->{filter} ;
+				} else {
+					$dbv[3] = 0;
+					my $segtype = dbgetv (@dbv, "segtype");
+					if ($segtype eq "V") {
+						$hash->{filter} = "WAV" ;
+					} elsif ($segtype eq "A") {
+						$hash->{filter} = "WAA" ;
+					} else {
+						main::addlog ( $self, 0, "station ". $sta . 
+							" Cannot determine auto filter for segtype " . $segtype ) ;
+						undef $hash->{filter} ;
+					}
+				}
+				dbfree @dbv ;
+			} elsif ($hash->{filter} eq "autosp") {
+				$expr = sprintf 
+					'sta == "%s" && chan =~ /%s/ && %.3f >= time && ( %.3f <= endtime || endtime == null("endtime") )',
+						$sta, $process->{chan_expr}, $otime, $otime ;
+				my @dbv = dbsubset ( @{$self->{dbc}}, $expr ) ;
+				my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+		
+				if ($ndbv < 1) {
+					main::addlog ( $self, 0, "station ". $sta . ": no channel matches to "
+								. $process->{chan_expr} . " in calibration table" ) ;
+					undef $hash->{filter} ;
+				} else {
+					$dbv[3] = 0;
+					my $segtype = dbgetv (@dbv, "segtype");
+					if ($segtype eq "V") {
+						$hash->{filter} = 'INT s0.2;G 2080.0 1.e-6' ;
+					} elsif ($segtype eq "A") {
+						$hash->{filter} = 'INT2 s0.2;G 2080.0 1.e-6' ;
+					} else {
+						main::addlog ( $self, 0, "station ". $sta . 
+							" Cannot determine auto filter for segtype " . $segtype ) ;
+						undef $hash->{filter} ;
+					}
+				}
+				dbfree @dbv ;
+			}
+		}
+		$self->{stations}{$sta} = $hash ;
+		if ( $signal_tend > $event_tend ) { $event_tend = $signal_tend; }
+	}
+
+#	display $self ;
+
+	if ( scalar ( keys ( %{$self->{stations}} ) ) < 1 ) {
+		main::addlog ( $self, 0, "No channels to process" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	if ( defined $self->{params}{maximum_bad_fraction} ) {
+		$self->{maximum_bad_fraction} = $self->{params}{maximum_bad_fraction} ;
+	} else {
+		$self->{maximum_bad_fraction} = 0.0;
+	}
+
+	if ( defined $self->{params}{maximum_wait_time} ) {
+		$self->{expire_time} = $event_tend + $self->{params}{maximum_wait_time} ;
+		my $now_time = now() + $self->{params}{maximum_wait_time} ;
+		if ( $now_time > $self->{expire_time} ) {
+			$self->{expire_time} = $now_time ;
+		}
+	}
+
+	if ( defined $self->{expire_time} ) {
+		return main::makereturn ( $self, "ok", "stations" => $self->{stations},
+				"expire_time" => $self->{expire_time} ) ;
+	} else {
+		return main::makereturn ( $self, "ok", "stations" => $self->{stations} ) ;
+	}
+}
+
+sub process_channel {
+	my $ret = Magnitude::process_channel @_ ;
+	my $self = $_[0] ;
+
+	if ( $ret->{disposition} ne "channeldone" 
+		&& $ret->{disposition} ne "stationdone"
+		&& $ret->{disposition} ne "processdone" ) {return $ret;}
+
+	my $sta = $ret->{sta} ;
+	my $chan = $ret->{chan} ;
+
+	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{signal_amax} ) {
+		main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of no data",
+ 						$sta, $chan )  ;
+	}
+ 	if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+		if ( $self->{stations}{$sta}{snr_thresh} < 1.0
+				|| $self->{stations}{$sta}{channels}{$chan}{snr}
+					> $self->{stations}{$sta}{snr_thresh} ) {
+			my $millimeters =
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_amax} ;
+			if ( $self->{stations}{$sta}{snr_thresh} >= 1.0 ) {
+				$millimeters -= 
+ 					$self->{stations}{$sta}{channels}{$chan}{noise_std} ;
+			} 
+ 			$self->{stations}{$sta}{channels}{$chan}{m} = compml ( 
+				$self, $sta, $millimeters ) ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $millimeters ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "mmwa" ;
+			main::addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+		} else {
+			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
+ 							$sta, $chan )  ;
+				
+		}
+	} else {
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compml ( $self, $sta, 
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_amax} ) ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val1} = 
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_amax} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "mmwa" ;
+		main::addlog ( $self, 2, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	}
+
+	return $ret ;
+}
+
+sub process_network {
+	my $ret = Magnitude::process_network @_ ;
+	my $self = $_[0] ;
+
+	if (defined $self->{m_median} ) {
+		my @dborigin = @{$self->{dbo}} ;
+		$dborigin[3] = 0 ;
+		my $auth = dbgetv ( @dborigin, "auth" ) ;
+		dbputv ( @dborigin, "ml", $self->{m_median}, "mlid", 1, "auth", $auth . " ml" ) ;
+	}
+
+	return $ret ;
+}
+
+}
+
+mbusneic &Literal{
+package Mbusneic ;
+
+use strict ;
+use warnings ;
+
+use Datascope ; 
+
+our @ISA = ( "Magnitude" ) ;
+
+# following are the USNEIC Mb correction values as a function of distance
+
+our @mbtab = (
+ (1, 5.6,5.8,6.1,6.4,6.5,7.0,7.0,7.2,7.3,7.2,7.1,7.0,6.6,6.3,5.9,5.9,5.9,6.0,6.1,6.1,6.2,6.3,6.4,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.7,
+     6.7,6.6,6.6,6.5,6.5,6.4,6.4,6.5,6.5,6.5,6.6,6.7,6.8,6.9,6.9,6.8,6.7,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,7.0,7.0,7.0,7.0,
+     7.0,7.0,7.0,7.0,6.9,6.9,6.9,6.9,6.8,6.8,6.9,6.9,6.9,6.8,6.7,6.8,6.9,7.0,7.0,7.0,6.9,7.0,7.1,7.0,7.0,7.1,7.1,7.2,7.1,7.2,7.3,7.4,
+     7.5,7.5,7.3,7.4,7.4,7.5,7.6,7.7,7.8,7.8,7.9,8.0),
+ (2, 0.0,0.0,0.0,6.3,6.5,6.8,7.0,7.0,7.1,7.0,7.0,6.9,6.5,6.1,5.9,5.9,5.9,6.0,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.6,6.6,6.7,6.7,
+     6.7,6.7,6.7,6.6,6.6,6.5,6.5,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,6.8,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.9,
+     6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,7.0,7.0,7.0,7.0,7.1,7.1,7.0,7.1,7.2,7.2,7.2,7.2,7.2,7.3,
+     7.3,7.3,7.3,7.3,7.4,7.5,7.6,7.7,7.8,7.8,7.9,8.0),
+ (3, 0.0,0.0,0.0,6.0,6.2,6.5,6.6,6.8,6.9,6.9,6.8,6.7,6.5,6.0,5.9,5.9,5.9,6.0,6.1,6.1,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.6,6.6,
+     6.7,6.7,6.7,6.7,6.7,6.6,6.6,6.5,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.8,
+     6.8,6.8,6.8,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.7,6.7,6.7,6.8,6.8,6.8,6.9,7.0,7.0,7.0,7.1,7.1,7.2,7.2,7.2,7.2,7.2,7.3,7.3,
+     7.3,7.3,7.3,7.4,7.4,7.5,7.6,7.7,7.8,7.9,7.9,8.0),
+ (4, 0.0,0.0,0.0,6.0,6.1,6.4,6.5,6.6,6.8,6.7,6.7,6.5,6.1,6.0,5.9,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.6,
+     6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.9,6.9,6.9,6.9,6.8,6.7,6.7,
+     6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.0,7.1,7.2,7.2,7.2,7.2,7.3,7.3,
+     7.3,7.3,7.4,7.4,7.5,7.5,7.7,7.8,7.8,7.9,7.9,8.0),
+ (5, 0.0,0.0,0.0,6.0,6.0,6.3,6.4,6.6,6.7,6.6,6.5,6.4,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.5,6.6,
+     6.6,6.7,6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.8,6.9,6.9,6.8,6.8,6.7,6.7,6.7,
+     6.7,6.7,6.7,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.1,7.1,7.2,7.2,7.3,7.3,
+     7.3,7.4,7.4,7.4,7.5,7.6,7.7,7.8,7.8,7.9,7.9,8.0),
+ (6, 0.0,0.0,0.0,6.0,6.0,6.2,6.4,6.4,6.4,6.4,6.3,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.5,6.5,6.5,6.5,6.6,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,6.7,
+     6.7,6.6,6.6,6.6,6.6,6.6,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.7,6.8,6.8,6.8,6.9,6.9,7.0,7.0,7.1,7.2,7.2,
+     7.3,7.3,7.3,7.4,7.5,7.6,7.7,7.8,7.9,7.9,8.0,8.0),
+ (7, 0.0,0.0,0.0,5.9,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.1,7.1,
+     7.2,7.2,7.2,7.3,7.4,7.5,7.7,7.8,7.9,7.9,8.0,8.0),
+ (8, 0.0,0.0,0.0,5.7,5.7,5.8,5.8,5.8,5.9,5.9,6.0,6.0,6.1,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.8,6.8,6.9,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+ (9, 0.0,0.0,0.0,5.6,5.7,5.7,5.8,5.8,5.9,6.0,6.0,6.1,6.1,6.1,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,
+     6.3,6.3,6.3,6.2,6.2,6.1,6.1,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.4,6.4,6.5,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+(10, 0.0,0.0,0.0,5.7,5.7,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,
+     6.1,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,
+     6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.7,6.7,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.1,7.2,7.3,7.3,7.4,7.6,7.8,7.9,8.0,8.0,8.0),
+(11, 0.0,0.0,0.0,5.7,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,
+     6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,
+     6.5,6.5,6.5,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.6,6.6,6.6,6.6,6.7,6.7,6.8,6.9,6.9,6.9,7.0,
+     7.1,7.1,7.2,7.3,7.4,7.5,7.6,7.7,7.8,7.9,8.0,8.0),
+(12, 0.0,0.0,0.0,5.8,5.9,5.9,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,
+     6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.5,6.5,6.5,6.5,6.5,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.7,7.8,7.8,7.8,7.9),
+(13, 0.0,0.0,0.0,5.8,5.8,5.9,6.0,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.7,7.7,7.7,7.8,7.8),
+(14, 0.0,0.0,0.0,5.8,5.8,5.9,5.9,6.0,6.1,6.1,6.2,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.1,6.2,6.2,6.2,6.3,6.3,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.9,6.9,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.4,7.5,7.6,7.6,7.7,7.7,7.7,7.7),
+(15, 0.0,0.0,0.0,5.7,5.8,5.8,5.8,5.9,5.8,5.9,6.0,6.0,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.4,6.4,6.4,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.1,6.1,6.2,6.2,6.2,
+     6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.8,6.8,7.0,7.0,7.0,7.1,
+     7.1,7.2,7.2,7.3,7.3,7.4,7.5,7.6,7.6,7.6,7.7,7.7),
+(16, 0.0,0.0,0.0,5.7,5.7,5.7,5.8,5.8,5.8,5.8,5.8,5.9,5.9,5.9,6.0,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,
+     6.4,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.1,
+     6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.5,6.5,6.5,6.6,6.7,6.7,6.8,6.9,6.9,7.0,7.0,7.0,
+     7.1,7.1,7.2,7.2,7.3,7.3,7.4,7.5,7.5,7.5,7.6,7.6),
+(17, 0.0,0.0,0.0,5.7,5.7,5.7,5.7,5.7,5.7,5.8,5.8,5.8,5.8,5.8,5.9,5.9,6.0,6.0,6.0,6.0,6.1,6.1,6.1,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.4,6.4,
+     6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.2,6.2,6.2,6.2,6.2,6.2,6.1,6.1,6.1,6.1,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.1,6.1,
+     6.1,6.1,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.5,6.5,6.6,6.7,6.7,6.8,6.9,6.9,7.0,
+     7.0,7.0,7.1,7.1,7.2,7.2,7.3,7.4,7.4,7.4,7.5,7.5) ) ;
+
+sub compmb {
+	my $self = shift ;
+	my $sta = shift ;
+	my $amplitude_in_microns = shift ;
+	my $period = shift ;
+
+	my $distance = $self->{stations}{$sta}{delta} ;
+	my $depth = $self->{stations}{$sta}{depth} ;
+
+	my ( $k, $dep, $s1 ) ;
+	for ( $k=2; $k<=17; $k++ ) {
+		if ( $k > 5 ) {
+			$dep = ( $k - 3 ) * 50.0 ;
+			if ( $depth > $dep ) { next; }
+			$s1 = ( $depth + 50.0 - $dep ) * 0.02 ;
+			last ;
+		}
+		$dep = ( $k - 1 ) * 25.0 ;
+		if ( $depth > $dep ) { next; }
+		$s1 = ( $depth + 25.0 - $dep ) * 0.04 ;
+		last ;
+	}
+	if ( $k > 17 ) {
+		$k = 17 ;
+		$s1 = ( $depth + 50.0 - 700.0 ) * 0.02 ;
+	}
+
+	my ( $j, $del, $s2 ) ;
+	for ( $j=2; $j<=108; $j++ ) {
+		$del = $j + 1 ;
+		if ( $distance >= $del ) { next; }
+		$s2 = $distance + 1.0 - $del ;
+		last ;
+	}
+	if ( $j > 108 ) {
+		$j = 108 ;
+		$s1 = 0.0 ;
+	}
+
+	$k -= 1 ;
+	
+	my $q1 = $mbtab[$j-1+($k-1)*109] + $s1 * ( $mbtab[$j-1+$k*109] - $mbtab[$j-1+($k-1)*109] ) ;
+	my $q2 = $mbtab[$j+($k-1)*109] + $s1 * ( $mbtab[$j+$k*109] - $mbtab[$j+($k-1)*109] ) ;
+	my $qval = $q1 + $s2 * ( $q2 - $q1 ) ;
+
+	my $mb = log($amplitude_in_microns/$period)/log(10) + $qval ;
+	return $mb ;
+}
+
+sub new {
+	return Magnitude::new @_ ;
+}
+
+sub getwftimes {
+	my $self = shift ;
+
+	my $ret = main::setup_processes $self ;
+
+	if ($ret ne "ok" ) { return main::makereturn ( $self, $ret ) ; }
+
+	$self->{stations} = {} ;
+
+	my ($otime,$odepth,$oauth) = dbgetv ( @{$self->{dbo}}, "time", "depth", "auth" ) ;
+	my $date = yearday ( $otime ) ;
+
+	if ( $odepth > 800.0 ) {
+		main::addlog ( $self, 1, "Event too deep" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	if ( defined $self->{params}{auth_accept} ) {
+		my $ok = dbex_eval ( @{$self->{dbo}}, "auth =~ /$self->{params}{auth_accept}/" ) ;
+		if ( ! $ok ) {
+			main::addlog ( $self, 1, "wrong origin auth " . $oauth ) ;
+			return main::makereturn ( $self, "skip" ) ; 
+		}
+	}
+
+	@{$self->{dbar}} = dblookup (@{$self->{db}}, 0, "arrival", 0, 0 ) ;
+
+	my $ndbar = dbquery ( @{$self->{dbar}}, "dbRECORD_COUNT" ) ;
+	if ( $ndbar < 1 ) {
+		main::addlog ( $self, 1, "No arrivals" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	my @dbj = dbjoin ( @{$self->{dba}}, @{$self->{dbar}} ) ;
+	$ndbar = dbquery ( @dbj, "dbRECORD_COUNT" ) ;
+	if ( $ndbar < 1 ) {
+		dbfree ( @dbj ) ;
+		main::addlog ( $self, 1, "No records in assoc-arrival join" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+	my @dbjs = dbsort ( @dbj, "time" ) ;
+
+	my $event_tend = -1.e20 ;
+	for ($dbjs[3] = 0; $dbjs[3] < $ndbar; $dbjs[3]++) {
+		my ( $sta, $chan, $delta, $iphase, $atime ) 
+				= dbgetv ( @dbjs , "sta", "chan", "delta", "iphase", "time" ) ;
+		if ( substr ( $iphase, 0, 1 ) ne "P" ) { next ; }
+		if ( defined $self->{stations}{$sta} ) { next ; }
+		my $process ;
+		($ret, $process) = main::match_sta ($self, $sta) ;
+		if ( $ret ne "ok" ) { next; }
+
+		if ($delta < 5.0) {
+			main::addlog ( $self, 1, $sta . ": station too close" ) ;
+			next ;
+		}
+		if ($delta > 109.0) {
+			main::addlog ( $self, 1, $sta . ": station too far away" ) ;
+			next ;
+		}
+
+		my $twin = $process->{signal_twin} ;
+
+		my $noise_twin = $process->{noise_twin};
+
+		my $noise_tstart = $atime - $noise_twin - $process->{noise_toffset} ;
+		my $noise_tend = $noise_tstart + $noise_twin ;
+		my $signal_tstart = $atime - $process->{signal_toffset} ;
+		my $signal_tend = $signal_tstart + $twin + 10.0 ;
+
+		my $tstart = $noise_tstart - 100.0 ;
+		my $tend = $signal_tend ;
+
+		my $channels = {};
+		$channels->{$chan}{first} = 1 ;
+		$channels->{$chan}{noise_done} = 0 ;
+		$channels->{$chan}{signal_done} = 0 ;
+
+		my $hash = {
+			"chan_expr" => $chan,
+			"delta" => $delta,
+			"depth" => $odepth,
+			"tstart" => $tstart,
+			"tend"	=> $tend,
+			"noise_tstart" => $noise_tstart,
+			"noise_tend"	=> $noise_tend,
+			"signal_tstart" => $signal_tstart,
+			"signal_tend"	=> $signal_tend,
+			"noise_twin" => $noise_twin,
+			"snr_thresh" => $process->{snr_thresh},
+			"tupdate" => $self->{params}{update_time},
+			"nchans" => 1,
+			"channels" => $channels,
+		} ;
+		if ( defined $process->{filter} ) {
+			$hash->{filter} = $process->{filter} ;
+			if ($hash->{filter} eq "auto" || $hash->{filter} eq "autosp") {
+				my $expr = sprintf 
+					'sta == "%s" && chan == "%s" && %.3f >= time && ( %.3f <= endtime || endtime == null("endtime") )',
+						$sta, $chan, $otime, $otime ;
+				my @dbv = dbsubset ( @{$self->{dbc}}, $expr ) ;
+				my $ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+		
+				if ($ndbv < 1) {
+					main::addlog ( $self, 0, "station ". $sta . ": no channel matches to "
+								. $process->{chan_expr} . " in calibration table" ) ;
+					undef $hash->{filter} ;
+				} else {
+					$dbv[3] = 0;
+					my $segtype = dbgetv (@dbv, "segtype");
+					if ($hash->{filter} eq "auto") {
+						if ($segtype eq "V") {
+							$hash->{filter} = 'BW 0.5 5 5.0 5;INT;G 0.001' ;
+						} elsif ($segtype eq "A") {
+							$hash->{filter} = 'BW_0.5 5 5.0 5;INT2;G 0.001' ;
+						} else {
+							main::addlog ( $self, 0, "station ". $sta . 
+								" Cannot determine auto filter for segtype " . $segtype ) ;
+							undef $hash->{filter} ;
+						}
+					} else {
+						if ($segtype eq "V") {
+							$hash->{filter} = 'INT s0.2;G 0.001' ;
+						} elsif ($segtype eq "A") {
+							$hash->{filter} = 'INT2 s0.2;G 0.001' ;
+						} else {
+							main::addlog ( $self, 0, "station ". $sta . 
+								" Cannot determine auto filter for segtype " . $segtype ) ;
+							undef $hash->{filter} ;
+						}
+					}
+				}
+				dbfree @dbv ;
+			}
+		}
+		$self->{stations}{$sta} = $hash ;
+		if ( $signal_tend > $event_tend ) { $event_tend = $signal_tend; }
+	}
+	dbfree @dbjs ;
+	dbfree @dbj ;
+
+#	display $self ;
+
+	if ( scalar ( keys ( %{$self->{stations}} ) ) < 1 ) {
+		main::addlog ( $self, 0, "No channels to process" ) ;
+		return main::makereturn ( $self, "skip" ) ; 
+	}
+
+	if ( defined $self->{params}{maximum_bad_fraction} ) {
+		$self->{maximum_bad_fraction} = $self->{params}{maximum_bad_fraction} ;
+	} else {
+		$self->{maximum_bad_fraction} = 0.0;
+	}
+
+	if ( defined $self->{params}{maximum_wait_time} ) {
+		$self->{expire_time} = $event_tend + $self->{params}{maximum_wait_time} ;
+		my $now_time = now() + $self->{params}{maximum_wait_time} ;
+		if ( $now_time > $self->{expire_time} ) {
+			$self->{expire_time} = $now_time ;
+		}
+	}
+
+	if ( defined $self->{expire_time} ) {
+		return main::makereturn ( $self, "ok", "stations" => $self->{stations},
+				"expire_time" => $self->{expire_time} ) ;
+	} else {
+		return main::makereturn ( $self, "ok", "stations" => $self->{stations} ) ;
+	}
+}
+
+sub process_channel {
+	my $ret = Magnitude::process_channel @_ ;
+	my $self = $_[0] ;
+
+	if ( $ret->{disposition} ne "channeldone" 
+		&& $ret->{disposition} ne "stationdone"
+		&& $ret->{disposition} ne "processdone" ) {return $ret;}
+
+	my $sta = $ret->{sta} ;
+	my $chan = $ret->{chan} ;
+
+	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+		main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of no data",
+ 						$sta, $chan )  ;
+	}
+ 	if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
+		if ( $self->{stations}{$sta}{snr_thresh} < 1.0
+				|| $self->{stations}{$sta}{channels}{$chan}{snr}
+					> $self->{stations}{$sta}{snr_thresh} ) {
+			my $microns =
+ 				$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+			my $period =
+ 				abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
+			if ( $period < 0.1 || $period > 9.0 ) {
+				main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
+ 							$sta, $chan )  ;
+				return $ret ;
+			}
+ 			$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( 
+				$self, $sta, $microns, $period ) ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
+			main::addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+		} else {
+			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
+ 							$sta, $chan )  ;
+				
+		}
+	} else {
+		my $microns = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+		my $period = abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
+		if ( $period < 0.1 || $period > 9.0 ) {
+			main::addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
+ 						$sta, $chan )  ;
+			return $ret ;
+		}
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( $self, $sta, $microns, $period ) ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
+				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
+				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
+		main::addlog ( $self, 2, "%s: %s: Channel mag = %.3f",
+ 					$sta, $chan,
+ 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	}
+
+	return $ret ;
+}
+
+sub process_network {
+	my $ret = Magnitude::process_network @_ ;
+	my $self = $_[0] ;
+
+	if (defined $self->{m_median} ) {
+		my @dborigin = @{$self->{dbo}} ;
+		$dborigin[3] = 0 ;
+		my $auth = dbgetv ( @dborigin, "auth" ) ;
+		dbputv ( @dborigin, "mb", $self->{m_median}, "mbid", 1, "auth", $auth . " mb" ) ;
+	}
+
+	return $ret ;
+}
+
+}
