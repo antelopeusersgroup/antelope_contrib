@@ -90,7 +90,9 @@ for( ;; ) {
 
 	$header = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
 
-	if( $result eq "Pkt_st" || $result eq "Pkt_pf" ) {
+	if( $result eq "Pkt_st" || 
+	    $result eq "Pkt_pf" ||
+	    $result eq "Pkt_stash" ) {
 
 		$pfstring = $pkt->string();
 
