@@ -41,23 +41,32 @@
 #   POSSIBILITY OF SUCH DAMAGE.
 #
 
-if ( @ARGV != 2 ) { 
-	my $pgm = $0 ; 
-	$pgm =~ s".*/"" ;
-	die ( "Usage: $pgm orb dir\n" ) ; 
-}
+require "getopts.pl";
 
 use Datascope;
 use Datascope::pf2xml;
 use sysinfo;
 use orb;
 
+if ( ! &Getopts('a:') || @ARGV != 2 ) { 
+	my $pgm = $0 ; 
+	$pgm =~ s".*/"" ;
+	die ( "Usage: $pgm [-a after] orb dir\n" ) ; 
+}
+
+elog_init( $pgm, @ARGV );
+
 $orbname = $ARGV[0];
 $dir = $ARGV[1];
 
 $orb = orbopen( $orbname, "r" );
 
-orbafter( $orb, 0 );
+if( $opt_a ) {
+
+	$after_time = str2epoch( $opt_a );
+
+	orbafter( $orb, $after_time );
+}
 
 if( $orb < 0 ) {
 	
@@ -91,7 +100,7 @@ for( ;; ) {
 			$file =~ s@/pf/st@@;
 			$file .= "_stash.xml";
 		
-			$file = concatpaths( $dir, $file );
+			$file = "$dir/$file";
 		
 			$pfname = "apf";
 
@@ -119,7 +128,7 @@ for( ;; ) {
 			$file =~ s@/pf/st@@;
 			$file .= ".xml";
 		
-			$file = concatpaths( $dir, $file );
+			$file = "$dir/$file";
 		
 			$pkt->pf();
 
