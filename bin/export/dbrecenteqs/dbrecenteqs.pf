@@ -129,6 +129,7 @@ map_config &Arr{
 	background_magsize_pixels 3
 	background_magmin 3
 	quakeshape 	square
+	colormode	auth 		# auth, prefor, age
 	prefor_quakecolor yellow
 	nonprefor_quakecolor white
 	quake_agecolors &Arr{
@@ -173,24 +174,28 @@ authtrans &Tbl{
 		text 	UCSD Personnel
 		url	http://eqinfo.ucsd.edu/personnel/
 		authoritative 1
+		quakecolor red
 	}
 	&Arr{
 		regex 	UAF
 		text 	AEIC staff
 		url 	http://www.giseis.alaska.edu/Seis/html_docs/who_we_are.html
 		authoritative 1
+		quakecolor blue
 	}
 	&Arr{
 		regex 	orbassoc
 		text 	Antelope Automatic System
 		url 	http://www.brtt.com
 		authoritative 0
+		quakecolor orange
 	}
 #	&Arr{
 #		regex 	.*
 #		text 	Default description
 #		url 	http://www.yoyodyne.com
 #		authoritative 0
+#		quakecolor yellow
 #	}
 }
 

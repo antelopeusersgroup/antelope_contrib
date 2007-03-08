@@ -231,6 +231,15 @@ sub cleanup_database {
 	system( $cmd );
 }
 
+sub auth2quakecolor {
+	my( $auth ) = shift( @_ );
+
+	my( $authtrans, $auth_href, $authoritative, $quakecolor ) = 
+				translate_author( $auth );
+
+	return $quakecolor;
+}
+
 sub age2quakecolor {
 	my( $agecolors ) = shift( @_ );
 	my( $age ) = shift( @_ );
@@ -320,7 +329,8 @@ sub set_hypocenter_symbol {
 
 	my( $mag, $symsize, $symshape, $symcolor );
 
-	my( $ml, $mb, $ms, $time ) = dbgetv( @db, "ml", "mb", "ms", "time" );
+	my( $ml, $mb, $ms, $time, $auth ) = 
+		dbgetv( @db, "ml", "mb", "ms", "time", "origin.auth" );
 
 	my( $age ) = str2epoch( "now" ) - $time;
 
@@ -341,6 +351,10 @@ sub set_hypocenter_symbol {
 	if( $colormode eq "age" ) {
 
 		$symcolor = age2quakecolor( $Mapspec{quake_agecolors}, $age );
+
+	} elsif( $colormode eq "auth" ) {
+
+		$symcolor = auth2quakecolor( $auth );
 
 	} elsif( $colormode eq "prefor" ) {
 
@@ -387,11 +401,12 @@ sub translate_author {
 
 			return ( $authref->{"text"},
 				 $authref->{"url"},
-				 $authref->{"authoritative"} );
+				 $authref->{"authoritative"}, 
+				 $authref->{"quakecolor"} );
 		}
 	}
 
-	return ( $auth, "", 0 );
+	return ( $auth, "", 0, "gray" );
 }
 
 sub station_vitals {
@@ -659,9 +674,9 @@ sub hypocenter_vitals {
 	my( $type ) = pop( @_ );
 	my( @db ) = @_;
 
-	my( $lat, $lon, $depth, $time, $orid, $auth ) = 	
+	my( $lat, $lon, $depth, $time, $orid, $auth, $nass, $ndef ) = 	
 		dbgetv( @db, "lat", "lon", "depth", "time", 
-			     "origin.orid", "origin.auth" );
+			     "origin.orid", "origin.auth", "nass", "ndef" );
 	
 	my( $qgrid_units, $qgrid_maxval, $qgrid_extfile ) = undef;
 
@@ -714,6 +729,8 @@ sub hypocenter_vitals {
 	$writer->dataElement( "lon", "$lon" );
 	$writer->dataElement( "depth_string", "$depth_string" );
 	$writer->dataElement( "depth_km", "$depth_km" );
+	$writer->dataElement( "nass", "$nass" );
+	$writer->dataElement( "ndef", "$ndef" );
 	$writer->dataElement( "auth_href", "$auth_href" );
 	$writer->dataElement( "auth", "$authtrans" );
 	$writer->dataElement( "authoritative", "$authoritative" );
@@ -1356,7 +1373,18 @@ sub create_focusmap {
 
 		my( $symtype ) = "origin";
 
-		my( $colormode ) = ( $orid == $prefor ) ? "prefor" : "nonprefor"; 
+		my( $colormode );
+
+		if( $Focus_Mapspec{colormode} eq "prefor" ) {
+
+			$colormode = ( $orid == $prefor ) ? "prefor" :
+								  "nonprefor"; 
+		} else {
+
+			$colormode = $Focus_Mapspec{colormode};
+		}
+
+
 		my( $lat, $lon ) = dbgetv( @db, "lat", "lon" );
 
 		( $x, $y ) = latlon_to_xy( 
