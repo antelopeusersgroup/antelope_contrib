@@ -132,6 +132,7 @@ map_config &Arr{
 	colormode	auth 		# auth, prefor, age
 	prefor_quakecolor yellow
 	nonprefor_quakecolor white
+	prefor_linewidth  3
 	quake_agecolors &Arr{
 		red	  21600
 		orange	  43200

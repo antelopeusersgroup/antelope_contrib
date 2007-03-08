@@ -1385,6 +1385,9 @@ sub create_focusmap {
 		}
 
 
+		my( $linewidth ) = ( $orid == $prefor ) ? 
+				$Focus_Mapspec{prefor_linewidth} : 1;
+
 		my( $lat, $lon ) = dbgetv( @db, "lat", "lon" );
 
 		( $x, $y ) = latlon_to_xy( 
@@ -1417,7 +1420,8 @@ sub create_focusmap {
 				fill=>$symcolor,
 				primitive=>$primitive,
 				stroke=>'black',
-				points=>$points );
+				points=>$points,
+				linewidth=>$linewidth );
 	
 		dbaddv( @dbmapassoc, "mapname", $Focus_Mapspec{file_basename},
 			     	     "orid", $orid,
