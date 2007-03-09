@@ -1222,6 +1222,7 @@ int getAttention(int *fd)
   char prompt[4];
 
   bzero(prompt,4);
+
   flushOut(fd);
 
   val=fcntl(*fd,F_GETFL,0);
@@ -1246,17 +1247,23 @@ int getAttention(int *fd)
 
   while(loop++<10)
     {
+
 	if (write(*fd,"\r",1)!=1)
 	{
-	    elog_complain(1,"getAttention: write failed:");
+	    elog_complain(1,"getAttention: write 1 failed:");
 	    close(*fd);
 	    *fd=-1;
 	    return UNSUCCESSFUL;
 	}
 
 	sleep(2);
+
+	if (verbose) 
+	  elog_notify(0,"waiting for ** prompt");
+
 	while ((ret=read(*fd,prompt,4))>0)
         {
+
 	    if(prompt[0]=='*'||prompt[1]=='*'||prompt[2]=='*'||prompt[3]=='*')
             {
 		val&=~O_NONBLOCK;
@@ -1304,6 +1311,7 @@ void flushOut(int *fd)
 {
   char c;
   int val;
+  int read_count;
 
   if ((val=fcntl(*fd,F_GETFL,0))==-1)
   {
@@ -1322,12 +1330,22 @@ void flushOut(int *fd)
       return;
   }
 
-  sleep(5);
+  sleep(6);
 
-  while(read(*fd,&c,1)!=-1)
-    {
+  while(read(*fd,&c,1)>0)
+  {
+   /* BAD hack for SMER GORGE. Not sure what causes ASCII 94 char (foley) */
+      if (read_count == 20) 
+      {
+         elog_complain(0, "too many characters read in flushOut(), dying with char:^%c^ and errno: ^%d^...",c,errno);
+         close(*fd);
+         *fd=-1;
+         return;
+      }
+      /* elog_notify(0,"flushOut() read: %c", c); */
+      read_count++;    
       /* fprintf(stderr,"%c\n",c); */
-    }
+  }
 
   val&=~O_NONBLOCK;
   if (fcntl(*fd,F_SETFL,val)==-1)
@@ -1675,7 +1693,8 @@ int initConnection(char *host, char *port)
   struct sockaddr_in addr;
   int val;
 
-  /* fprintf(stderr,"in initConnection host ^%s^ port ^%s^\n",host,port); */
+  if (verbose)
+     elog_notify(0,"in initConnection host ^%s^ port ^%s^\n",host,port);
 
   if ( (ina=inet_addr(host)) != -1 )
     {
@@ -1720,6 +1739,9 @@ int initConnection(char *host, char *port)
       perror("setsockopt(SO_KEEPALIVE)");
       exit(-1);
     }
+
+  if (verbose)
+     elog_notify(0, "initConnection successful");
 
   return fd;
 }
