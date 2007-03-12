@@ -1,0 +1,120 @@
+.TH dbarrparams 1 "4 July 1992"
+
+
+.SH NAME
+dbarrparams \- Make arrival parameter measurements (amp-per, azimuth, etc.)
+.SH SYNOPSIS
+.B dbarrparams
+.I dbname
+[
+.I -pol 
+.I tlead_pol 
+.I tlag_pol
+] [
+.I -ap 
+.I tmin_ap 
+.I tmax_ap
+] [
+.I -fm 
+.I tmin_fm 
+.I tmax_fm
+] [
+.I -snr 
+.I tlead_snr 
+.I tlag_snr
+] [
+.I -filter 
+.I type 
+.I lco 
+.I hco 
+.I lord 
+.I hord 
+.I tpad
+]
+.SH DESCRIPTION
+.B dbarrparams
+will compute specified arrival parameters and save these parameters in
+the arrival table of the CSS relational database.
+The parameters that can be computed are polarization parameters (azimuth,
+incidence angle and rectilinearity), amplitude and period, first motion
+and signal to noise ratio. A filter can be specified that will be applied
+to the waveforms before the measurements are made.
+This program will only work with v. 3.0 of the CSS schema.
+.SH COMMAND LINE ARGUMENTS
+.TP 15
+\fIdbname\fP
+The name of the subject database. The database name is defined as the 
+file name of one of the flat relation files without the .relname suffix.
+For example, if the .wfdisc relation file name is ./foo.wfdisc then ./foo
+is the database name. 
+This argument is required.
+.TP 15
+\fI-pol tlead_pol tlag_pol\fP
+If these arguments are specified, then 3-component polarization analysis
+is performed to determine azimuth, incidence angle and rectilinearity
+using the covariance matrix method. The arguments \fItlead_pol\fP and
+\fItlag_pol\fP specify the time window around the arrival to be used
+for computing the polarization parameters where \fItlead_pol\fP is
+the number of seconds before the arrival for the start of the window
+and \fItlag_pol\fP is the number of seconds after the arrival for the 
+end of the window. NOTE: 3-component clusters are determined automatically
+by matching station codes and everything but the last character of the
+channel codes. The last character of the channel codes must be 'Z', 'N', or 'E'
+(or 'z', 'n', 'e') and these are assumed to be correct
+(i.e. the program does not look into the sitechan table to check the
+actual sensor orientation but assumes that Z is up, N is north and
+E is east). Thus numerical channel codes such as '01', '02', '03'
+WILL NOT WORK with this program as it is currently written. 
+.TP 15
+\fI-ap tmin_ap tmax_ap\fP
+If these arguments are specified, then amplitude-period measurements
+are made. The arguments \fItmin_ap\fP and \fItmax_ap\fP specify the
+time window around the arrival to be used for determining the
+amplitude and period where \fItmin_ap\fP is the number of seconds
+after the arrival for the start of the window and \fItmax_ap\fP is the
+number of seconds after the arrival for the end of the window.
+.TP 15
+\fI-fm tmin_fm tmax_fm\fP
+If these arguments are specified, then first motion measurements
+are made. The arguments \fItmin_fm\fP and \fItmax_fm\fP specify the
+time window around the arrival to be used for determining the
+first motion where \fItmin_fm\fP is the number of seconds
+after the arrival for the start of the window and \fItmax_fm\fP is the
+number of seconds after the arrival for the end of the window.
+.TP 15
+\fI-snr tlead_snr tlag_snr\fP
+If these arguments are specified, then signal to noise measurements
+are made.  The arguments \fItlead_snr\fP and
+\fItlag_snr\fP specify the time window around the arrival to be used
+for computing the signal and noise windows where \fItlead_snr\fP is
+the number of seconds before the arrival for the noise window
+and \fItlag_snr\fP is the number of seconds after the arrival for the 
+signal window.
+.TP 15
+\fI-filter type lco hco lord hord tpad\fP
+If these arguments are specified, then all waveforms are filtered
+prior to any of the other measurements. The type of filter is
+specified by an integer argument, \fItype\fP, which is 1 for a 
+minimum phase Butterworth filter and 2 for a zero phase Butterworth
+filter. The arguments \fIlco hco lord hord tpad\fP are, respectively,
+the low corner frequency in Hz, the high corner frequency in Hz,
+the order of the highpass stage, the order of the lowpass stage,
+and the time pad in seconds for minimizing the filter transient.
+Values of 0 for corner frequencies or orders will eliminate the
+appropriate stages.
+.SH BUGS AND CAVEATS
+I offer this program in source code form, as is, with no guarantee
+that it works properly. I am doing this because many folks have
+asked for this old program. 
+This is a very old program that I wrote in
+my University research days, now many years ago. Any memory I may have
+had about this code has since recycled many times. In other words, the
+source code is my ONLY contribution. I will provide no support for this program,
+other than the source code. That's what open source is supposed to be all
+about, isn't it? So please don't e-mail me questions. Also, please feel
+free to make any modifications, especially bug fixes, and check them back
+into the contributed repository. D. Harvey
+.SH AUTHOR
+Danny Harvey
+
+.\" $Id$ 
