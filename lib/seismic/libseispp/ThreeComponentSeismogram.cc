@@ -699,6 +699,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
 void ThreeComponentSeismogram::rotate_to_standard()
 	throw(SeisppError)
 {
+	if( (ns<=0) || !live) return; // do nothing in these situations
 	double *work[3];
 	int i,j;
 	if(components_are_cardinal) return;
@@ -831,6 +832,7 @@ Original was plain C.  Adapted to C++ for seismic processing
 */
 void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 {
+	if( (ns<=0) || !live) return; // do nothing in these situations
 	int i;
 	double theta, phi;  /* corrected angles after dealing with signs */
 	double a,b,c,d;
@@ -905,11 +907,13 @@ void ThreeComponentSeismogram::rotate(SphericalCoordinate xsc)
 }
 void ThreeComponentSeismogram::rotate(double nu[3])
 {
+	if( (ns<=0) || !live) return; // do nothing in these situations
 	SphericalCoordinate xsc=UnitVectorToSpherical(nu);
 	this->rotate(xsc);
 }
 void ThreeComponentSeismogram::apply_transformation_matrix(double a[3][3])
 {
+	if( (ns<=0) || !live) return; // do nothing in these situations
 	int i;
 	double *work[3];
 	for(i=0;i<3;++i) work[i] = new double[ns];
@@ -956,6 +960,7 @@ Author:  Gary Pavlis
 void ThreeComponentSeismogram::free_surface_transformation(SlownessVector uvec,
 		 double a0, double b0) 
 {
+	if( (ns<=0) || !live) return; // do nothing in these situations
 	double a02,b02,pslow,p2;
 	double qa,qb,vpz,vpr,vsr,vsz;
 	double umag=uvec.mag();
