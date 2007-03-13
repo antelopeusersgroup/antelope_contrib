@@ -1576,6 +1576,8 @@ static int get_trace_number(Widget w, float x2raw)
                 result=0;
                 dx2min=static_cast<float>(fabs(static_cast<double>((sca->x2)[0]-x2raw)));
 
+		// March 2007:  left this one trusting nmember is correct
+		// HOpe I don't get burned on this
                 for(i=1;i<sca->nmember;++i) {
                         float dx2;
                         dx2=static_cast<float>(fabs(static_cast<double>((sca->x2)[i]-x2raw)));
@@ -3803,28 +3805,45 @@ static void ReInitialize(
        para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
  }
  /* Fix Jan 2007:  modified from Initialize.  These weren't being reset correctly */
-TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
-if (nw->seisw.seisw_ca==NULL) {
-    ca=new SeiswCA();	
-    nw->seisw.seisw_ca=ca;
-} else 
+    TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
+    if (nw->seisw.seisw_ca==NULL) {
+	ca=new SeiswCA();	
+	nw->seisw.seisw_ca=ca;
+    } 
+    else 
+    {
 	ca=static_cast<SeiswCA *>(nw->seisw.seisw_ca);
-int nmember;
-ca->nmember=nmember=tse->member.size();
-if(nmember<=0) throw SeisppError("no data to plot\n");
-{
+    }
+    int nmember;
+    ca->nmember=nmember=tse->member.size();
+    if(nmember<=0) throw SeisppError("no data to plot\n");
+    {
 	(ca->curvecolor).clear();
 	for(i=0;i<nmember;++i) (ca->curvecolor).push_back(para->default_curve_color);
-}
+    }
 	
-if((ca->x2)==NULL)
+    if((ca->x2)==NULL)
 	// This should never really be executed, but safer
 	ca->x2=new float[nmember];
-else
-{
+    else
+    {
 	delete [] ca->x2;
 	ca->x2=new float[nmember];
-}
+    }
+    if (para->use_variable_trace_spacing) {
+        try {
+                for(i=0;i<nmember;++i)
+                    (ca->x2)[i]=static_cast<double>(tse->member[i].get_double(para->trace_axis_attribute));
+        } catch (MetadataGetError mde) {
+                    mde.log_error();
+                    cerr << "Reverting to equal space tracing" << endl;
+                    for(i=0;i<nmember;++i) (ca->x2)[i]=static_cast<float>(i+1);
+        }
+    }
+    else
+    {
+                 for(i=0;i<nmember;++i) (ca->x2)[i]=static_cast<float>(i+1);
+  }
 	
 
   SetBox((Widget)nw);
@@ -4028,6 +4047,7 @@ Initialize(
 
 	    }
 	    if (nw->core.height < para->hbox) {
+
                 para->x2endb=para->x2end;
 		para->x2begb=para->x2endb-x2limit*
                         (float)(nw->core.height-(
@@ -4731,7 +4751,15 @@ static void SetBox(Widget w)
     TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(sw->seisw.seisw_ensemble);
     SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
     SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+    /* Modified March 2007:  Never trust nmember. Previous was this:
     int nmember=sca->nmember;
+    *  Changed to the following */
+    int nmember;
+    if(sca->nmember != tse->member.size())
+    {
+	sca->nmember=tse->member.size();
+    }
+    nmember=sca->nmember;
 
     sca->mvefac=1.0;
     x1min=(tse->member)[0].t0;
@@ -4793,7 +4821,16 @@ static void HandlePreRender(Widget w)
     TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(sw->seisw.seisw_ensemble);
     SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
     SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+    /* changed March 2007:  Again don't trust nmember stored here
+	and reset it if necessary.  Previous:
     int nmember=sca->nmember;
+    *  Changed to the following: */
+    int nmember;
+    if(sca->nmember != tse->member.size())
+    {
+	sca->nmember=tse->member.size();
+    }
+    nmember=sca->nmember;
 /*
     sca->mvefac=1.0;
     x1min=(tse->member)[0].t0;
