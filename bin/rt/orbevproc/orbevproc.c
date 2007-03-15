@@ -2721,6 +2721,8 @@ PROCESS_WFTHREADS:
 	return (0);
 }
 
+#ifdef linux
+
 /*
  * ctype_b.c
  *
@@ -2737,7 +2739,6 @@ PROCESS_WFTHREADS:
  *
  */
 
-#ifdef LINUX
 #include <stdint.h>
 
 #define CTYPE_EXTERN_INLINE /* Define real functions for accessors.  */
@@ -2918,4 +2919,5 @@ static const uint32_t _nl_C_LC_CTYPE_tolower[384] =
 const unsigned short int *__ctype_b = b (unsigned short int, class, 128);
 const __int32_t *__ctype_tolower = b (__int32_t, tolower, 128);
 const __int32_t *__ctype_toupper = b (__int32_t, toupper, 128);
+
 #endif
