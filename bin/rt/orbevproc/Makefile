@@ -16,7 +16,7 @@ ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lassoc -lbrttpkt -lbrttf
 include $(ANTELOPEMAKE)
 DIRS=
 
-OBJS= orbevproc.o ctype_b.o
+OBJS= orbevproc.o
 
 orbevproc : orbevproc_version.h $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
