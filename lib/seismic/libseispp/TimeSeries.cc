@@ -168,15 +168,18 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	read an attribute that tags this and assume something
 	(absolute) if the attribute is not defined.  
 	*/
-	char timetype[20];
-	if(dbgetv(dbh.db,0,timetype_keyword,timetype,0)
-		== dbINVALID)
-	{
+	int ierr;
+	Dbptr dbtest=dblookup(dbh.db,0,0,
+		const_cast<char *>(timetype_keyword.c_str()),0);
+	if(dbtest.field==dbINVALID)
 		tref=absolute;
-	}
 	else
 	{
-		if(strcmp(timetype,"r"))
+		char timetype[20];
+		ierr=dbgetv(dbh.db,0,timetype_keyword,timetype,0);
+		if(ierr==dbINVALID)
+			tref=absolute;
+		else if(strcmp(timetype,"r"))
 			tref=absolute;
 		else
 			tref=relative;
