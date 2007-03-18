@@ -32,7 +32,7 @@ by the \fIepoch2str\fP(3) command. The \fIclusters.volumes\fP field of the
 dbcluster0.5 schema, described in more detail in the schema file itself (and 
 therefore with explanation available through dbhelp(1)) is intended to 
 support looping over clusters of databases that have regular volume sizes, 
-alignments, and names, for example databases segmented day, week, month, or
+alignments, and names, for example databases segmented by day, week, month, or
 year. Rows in the cluster database representing single databases will have 
 this field set to \fIsingle\fP. The optional \fInet\fP field in the 
 \fIclusters\fP table allows specific sensor network names to be given, 
@@ -114,7 +114,7 @@ A Control-C in the \fBdbcentral\fP GUI window will kill the application.
 
 In addition to the GUI mode, launched with no arguments, \fBdbcentral\fP has 
 a command-line mode for easy retrieval of and command-launches on common 
-databases. If one of the database clustername is specified on the 
+databases. If one of the database clusternames is specified on the 
 command line, the first task listed for that database is launched. A task 
 nickname may be specified in addition to the database clustername, in which
 case the specified task is launched. The -t option may be used to 
@@ -128,7 +128,7 @@ centrally configured.
 
 .SH OPTIONS
 .IP -d
-Show absolute pathname of database. A database clustername must 
+Show the absolute pathname of a database. A database clustername must 
 be specified when using the -d option.
 
 .IP -l

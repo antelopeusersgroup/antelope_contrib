@@ -174,16 +174,16 @@ fixed by the location program or by a geophysicist? Right now
 this code will result in origin.dtype = dbNULL.
 .SH FILES
 .SH ENVIRONMENT
-pick2db expects $JSPC to be defined.
+pick2db expects $ANTELOPE to be defined.
 .SH PARAMETER FILE
 .SH EXAMPLE
 .nf
-ugle% ls 95*
+% ls 95*
 950301042930p   950301071901p   950301081901p
-ugle% pick2db 95* mydb
+% pick2db 95* mydb
 Insufficient summary info in pickfile 950301042930p--skipping
 .fi
-ugle% 
+% 
 .SH DIAGNOSTICS
 "Insufficient summary info in pickfile 950301042930p--skipping":
 The summary line (first line) of a pick file must contain non-null 
@@ -197,11 +197,15 @@ supposedly the station name in a phase row), pick2db will skip the
 row and continue. Note that secondary summary lines are not understood
 by pick2db, and hence will generate such an error message.
 
-gaia% pick2db 95*
+.nf
+
+% pick2db 95*
 ***: Can't open schema file '95102018 5580960N 230152W54471009837 53 42  5  28204 4  4911224  7237  P 152AX17/    1095E      1117.2.2 178 010098'.
 No such file or directory
-gaia% 
-	....you forgot to give it a database name, so it interpreted
+% 
+
+.fi
+....you forgot to give it a database name, so it interpreted
 the last named pickfile as the descriptor file for the database.
 .SH "SEE ALSO"
 .nf
@@ -218,8 +222,8 @@ Datascope.
 
 The summary line MUST have a / in column 81 or 83 of the pickfile
 to identify itself as a summary line, otherwise pick2db will reject 
-it. Alternate summary lines, which are supposed to be flagged with
-\, are currently not supported. Such files might fool the program,
+it. Alternate summary lines, which are supposed to be flagged with '\\', 
+are currently not supported. Such files might fool the program,
 leaving the second summary line to be interpreted as a gibberish 
 arrival.
 

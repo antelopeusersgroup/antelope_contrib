@@ -16,7 +16,7 @@ takes a database of hypocenters and waveform measurements in
 rt1.0-compatible format, and from them creates a plottable grid file of
 some measure of the ground-motion in an area of interest. The computed
 grids are stored in external files, which are referenced by rows in the
-qgrid table.  The qgrid table is defined in the gme1.0 expansion
+qgrid table.  The qgrid table is defined as an extension to the css3.0
 schema.
 .SS delegates
 .LP
@@ -343,7 +343,7 @@ dbwfmeas(1), orbwfmeas(1), usermethod(3), trwfname(3),
 dbrecenteqs(1), trinetsm_es99(3), sp_bssa87(3)
 .fi
 .SH "BUGS AND CAVEATS"
-The gme1.0 qgrid table is structured to support unprojected grids. This
+The qgrid table is structured to support unprojected grids. This
 is by intent. It is the responsibility of the end user to project
 the grid to any representative flat surface.
 .LP

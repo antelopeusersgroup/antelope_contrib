@@ -15,7 +15,7 @@ as specified in the \fBorb_quake_alarm\fP parameter file. Multiple alarms are sp
 each with its own criteria for triggering, based on the contents of
 the input hypocentral parameters. The trigger conditions for alarms may
 be specified in terms of polygonal regions itemized in a database in
-places1.2 schema. Two extension tables for the rt1.0 database schema, the
+places1.2 schema. Two extension tables for the css3.0 database schema, the
 \fIalarms\fP table and the \fIalarmcomm\fP table, optionally track all
 alarms that are issued as well as the addresses to which they were sent.
 Furthermore, if requested via the parameter file, \fBorb_quake_alarm\fP
@@ -58,7 +58,7 @@ to process packets.
 
 Before proceeding further with configuration details, it is helpful to
 explain the taxonomy of alarms as defined in the \fIalarms\fP table of the
-rt1.0 database. First, every alarm belongs to an \fIalarmclass\fP. This
+css3.0 database. First, every alarm belongs to an \fIalarmclass\fP. This
 indicates the broad class of alarms, for example alarms based on
 \fI/db/origin\fP rows belong to the class of alarms with \fIalarmclass\fP
 of \fIhypocenter\fP. Within each \fIalarmclass\fP, there may be several
@@ -167,7 +167,7 @@ Most of the data-storage into the alarm-tracking database is automatic,
 and needs no configuration from the user (other than specifying the
 database location with the -d option, which is also necessary to activate
 this feature). The \fBorb_quake_alarm\fP program saves not only the
-vital statistics for each alarm and message, but also the fully body of the
+vital statistics for each alarm and message, but also the full body of the
 message. These message bodies are saved in external files, with filenames
 configured via the \fIalarm_dbfilenames\fP parameter. The value for
 this parameter follows the behavior of the trwfname(3) function. In most
@@ -396,7 +396,7 @@ real-time database given by the -d option, watches the orbserver
 named in the $ORB variable for encapsulated database rows, and creates
 extensive logging information in the log file for orb_quake_alarm.
 .SH LIBRARY
-7.SH "SEE ALSO"
+.SH "SEE ALSO"
 .nf
 rtmail(1), mail_parser(1), mp_oqalarm_ack(3p), orb_quake_email(1),
 orb_quake_cell(1)
