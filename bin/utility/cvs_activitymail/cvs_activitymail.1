@@ -105,11 +105,11 @@ notification message unless the -a option has been specified.
 
 .IP "-o <diff options>"
 
-Options to pass to the C<cvs diff> command. Useful for changing the behavior
+Options to pass to the \fIcvs diff\fP command. Useful for changing the behavior
 of the diff command. Be sure to include these options inside quotation marks
 so that they will be distinguished from the options parsed by cvs_activitymail
 itself. See diff for a list of available options. Defaults to
-C<-u --minimal> if not specified.
+\fI-u --minimal\fP if not specified.
 
 .IP -a
 
@@ -204,15 +204,15 @@ the changes have been made. This is especially useful in circumstances where
 many files have been changed at once. In standard mode, many messages will be
 sent, but in commit mode, only one will be sent.
 
-An additional advantge of commit mode is that cvs_activitymail will construct a
+An additional advantage of commit mode is that cvs_activitymail will construct a
 custom subject for the notification messages. In standard mode, the subject is
 simply the contents of the -f argument. In commit mode, however, cvs_activitymail
 will use either the first sentence of the log message, or the maximum number
-of words that take up less than 72 characters (includinng the -m and/or -p
+of words that take up less than 72 characters (including the -m and/or -p
 arguments, if specified). This offers an easy way to see what was done during
 the commit based on the context of the beginning of the actual log message.
 CVS users thus might want to consider making the first sentence of their
-messages (up to the first period) be a breif summary, and the rest of the
+messages (up to the first period) be a brief summary, and the rest of the
 message can be a more detailed description of the changes.
 
 To use commit mode, you \fBmust\fP place a call to cvs_activitymail with the -l
@@ -234,7 +234,7 @@ different addresses for different repository pacakges. see cvs for more
 information on the \fBloginfo\fP file syntax.
 
 If you'd like to see diffs for the changes for any particular commit, add the
--d argument. All of the changes to the repository will be recoreded in diff
+-d argument. All of the changes to the repository will be recorded in diff
 format and appended to the end of the message:
 
   ALL $CVSROOT/CVSROOT/cvs_activitymail -cdf %{sVv} -t admins@example.com
@@ -313,8 +313,8 @@ time, there doesn't seem to be a problem at all. I have been using
 cvs_activitymail with the -d option for the Bricolage project for many months, and
 there appear to be no serious problems. Nevertheless, I certainly would
 appreciate it if someone who understood Perl's forking and/or CVS locking
-better than I do could help me to irradicate this issue. For anyone else who's
-uncomfortable with the possibility of this issue arrising, don't use the -d
+better than I do could help me to eradicate this issue. For anyone else who's
+uncomfortable with the possibility of this issue arising, don't use the -d
 option.
 
 .SH BUGS
