@@ -307,6 +307,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                         << lon<<","
                         << depth <<","
                         << datestring<<endl;
+		psm->session_state(THINKING);
                 psm->xpe->load_data(h);
 		ss << "Data loaded" <<endl;
 		if(psm->using_subarrays)
@@ -321,6 +322,8 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 			ss << "Displaying data for this event"<<endl;
 		}
 		TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
+		ss << "Ensemble has " << tse->member.size()
+			<<" seismograms"<<endl;
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
 		ts << lat <<","<<lon<<","<<depth<<","<<datestring;      
@@ -1074,6 +1077,7 @@ void do_analyze(Widget w, void * client_data, void * userdata)
     if (!psm->validate_setting(vs)) message_box(psm, vs.str(), w);
 
     psm->record(string("Analyzing.... Please wait\n"));
+    psm->session_state(THINKING);
 
     try {
         psm->xpe->change_analysis_setting(psm->active_setting);
@@ -1082,8 +1086,10 @@ void do_analyze(Widget w, void * client_data, void * userdata)
     } catch (SeisppError serr) {
 	serr.log_error();
 	psm->record(string("Fatal error encountered during analysis...\n"));
+	psm->restore_previous_state();
 	return;
     }
+    psm->restore_previous_state();
 
     Metadata data_md=psm->xpe->get_data_md();
     TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
@@ -1198,6 +1204,17 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 
     begin=MAX((ai->x2begb-(int)ai->x2begb==0.0) ? (int)ai->x2begb : (int)ai->x2begb+1,1);
     end=MIN((int)ai->x2endb,tse->member.size());
+    /* March 13, 2007:  Kind of a hack fix by glp.  The begin calculation
+	above is unreliable.  It makes assumptions that aren't valid
+	and I found the program crashed because situations occured when
+	end was less than begin.  For now I'll fix this by plotting
+	all when this happens. */
+    if(begin>end)
+    {
+	cerr << "DEBUG:  resetting range for attribute plot"<<endl
+		<<"begin="<<begin<<" end="<<end;
+	begin=0;
+    }
 
 
     if (psm->attributes_info[index].use_graph) {
@@ -1490,6 +1507,12 @@ void save_event(Widget w, void * client_data, void * userdata)
 		// special case for mistake of only one subarray
 		if(psm->xpe->number_subarrays() <= 1)
 			psm->session_state(NONE);
+		else if(psm->xpe->current_subarray
+				>= (psm->xpe->number_subarrays()-1) )
+			psm->session_state(NONE);
+		else
+			psm->session_state(NEXT_SUBARRAY);
+
 	  }
 	  else
 		psm->session_state(NONE);

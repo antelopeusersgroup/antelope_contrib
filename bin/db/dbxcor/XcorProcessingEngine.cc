@@ -81,6 +81,10 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		netname=global_md.get_string("network_name");
 		stations= SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
                                         treference,netname);
+		if(stations.array.size()<=0)
+			throw SeisppError(string("XcorProcessingEngine:  ")
+			  + string("Found no stations marked on at event time"));
+
 		use_subarrays=global_md.get_bool("use_subarrays");
 		if(use_subarrays) 
 		{
@@ -423,7 +427,16 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 		if(!tcse->member[i].live) continue;
 		double vp0,vs0;
 		double stalat,stalon,staelev;
-		tcse->member[i].rotate_to_standard();
+		try {
+			tcse->member[i].rotate_to_standard();
+		} catch (SeisppError serr)
+		{
+			serr.log_error();
+			string staname=tcse->member[i].get_string("sta");
+			cerr << "Station = "<< staname
+				<<" data deleted from ensemble"<<endl;
+			continue;
+		}
 		try {
 			vp0=tcse->member[i].get_double("vp0");
 			vs0=tcse->member[i].get_double("vs0");
@@ -438,6 +451,11 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			stalat=tcse->member[i].get_double("lat");
 			stalon=tcse->member[i].get_double("lon");
 			staelev=tcse->member[i].get_double("elev");
+			// We store latitude and longitude in attributes
+			// in degrees, but we need to convert them to
+			// radians for internal use
+			stalat=rad(stalat);
+			stalon=rad(stalon);
 		}
 		catch (MetadataGetError mde)
 		{
@@ -594,6 +612,9 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		regular_gather->member[i].put("esaz",esaz);
 		regular_gather->member[i].put("distance",distance);
 	}
+	// post netname here.  Overridden below for subarrays 
+	// but this sets it for full array mode
+	regular_gather->put("netname",netname);
 	
 	
 	// Load filtered data into waveform_ensemble copy
@@ -607,6 +628,10 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		{
 			SeismicArray subnet=stations.subset(current_subarray);
 			csub=ArraySubset(*regular_gather,subnet);
+			// post subarray name as netname in ensemble
+			// Convenient if mysterious way to get this 
+			// to save procedure
+			csub->put("netname",subnet.name);
 			if((*csub).member.size()>0) break;
 		} 
 		if(current_subarray>=nsubs) 
@@ -677,7 +702,9 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 		//
 		// For the present the chan code will be the same
 		// as pchan
-		record=dbaddv(dbxcorbeam,0,"netname",netname.c_str(),
+		string net;
+		net=waveform_ensemble.get_string("netname");
+		record=dbaddv(dbxcorbeam,0,"netname",net.c_str(),
 			"chan",pchan.c_str(),
 			"pchan",pchan.c_str(),
 			"phase",analysis_setting.phase_for_analysis.c_str(),

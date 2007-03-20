@@ -23,6 +23,8 @@ correlation_peak_cutoff 0.0
 coherence_cutoff 0.0001
 stack_weight_cutoff 0.0001
 time_lag_cutoff 4.0
+# If set true peak amplitude is used to normalize initial ensemble display
+AutoscaleInitialPlot false
 #
 #  Important switch for three component processing.  Set to 
 #  true to force 3c processing.  Otherwise data are loaded by channel only.

@@ -231,6 +231,9 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_FILE_EXIT]=true;
 	    break;
+	case THINKING:
+            sensitive[MENU_FILE_EXIT]=true;
+	    break;
 	default:
 	    break;
     }
