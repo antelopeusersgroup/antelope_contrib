@@ -110,7 +110,7 @@ for( ;; ) {
 
 			pfcompile( $pfstring, $pfname );
 
-			$xmlstring = pf2xml( "-n", $pfname, $header );
+			$xmlstring = pf2xml( "-n", $pfname, "", $header );
 
 			pffree( $pfname );
 
@@ -136,7 +136,7 @@ for( ;; ) {
 
 			$pfname = "Packet::pf";
 
-			$xmlstring = pf2xml( "-n", $pfname, $header );
+			$xmlstring = pf2xml( "-n", $pfname, "", $header );
 
 			$backbuffer_file = "$file+";
 
