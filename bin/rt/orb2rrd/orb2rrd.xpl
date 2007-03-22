@@ -262,10 +262,9 @@ for( ; $stop == 0 ; ) {
 	
 		if( $@ ) {
 		
-			elog_complain( "DEBUG: info after bury() failure:\n" );
-			system( "ls -l $opt_s" );
-			system( "ls -l $opt_s+" );
-			system( "ls -ld state" ); # HARD WIRE
+			elog_complain( "Unexpected failure of bury command! " .
+				"(are there two orb2rrd's running with the same" .
+				"state file??)\n" );
 		}
 	}
 
