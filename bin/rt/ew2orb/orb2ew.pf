@@ -11,6 +11,8 @@ defaults &Arr{
 	reject
 	starttime
 	timesort_queue_maxpkts	0
+	max_tracebuf_size	4096
+	large_tracebuf_handling	send
 }
 
 export_servers &Arr{

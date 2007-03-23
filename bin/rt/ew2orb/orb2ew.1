@@ -140,11 +140,45 @@ translated to any new names) which match this regular expression will
 be rejected and not allowed to go out over the export connection. The default,
 which is to leave this blank, allows all sources on the orb to go out.
 
+.IP max_tracebuf_size
+This parameter constrains the maximum size of packets to be sent without 
+modification (how actually to handle packets larger than max_tracebuf_size is 
+determined by the parameter large_tracebuf_handling, q.v.). If max_tracebuf_size
+is not set, it defaults to the value compiled into the code, currently 
+4096 bytes. 
+
+.IP large_tracebuf_handling
+If the total size of the outgoing trace-buf is larger than the 
+\fImax_tracebuf_size\fP value, the \fIlarge_tracebuf_handling\fP parameter 
+controls what happens to it. This parameter has several available modes:
+.IP "         \fIsend\fP"
+
+This setting for large_tracebuf_handling, the default, sends packets to
+Earthworm regardless of whether they are above or below the size threshold.  
+.IP "         \fIreject\fP 
+
+This setting rejects packets which are too large for Earthworm (as determined
+by the current setting of max_tracebuf_size), emitting a complaint to the
+log file.  
+.IP "         \fIreject_silent\fP"
+
+This is the same as "reject", however the
+complaint message to the log file will be suppressed.
+
+.IP "         \fIsplit N\fP"
+
+This setting for large_tracebuf_handling splits packets into smaller 
+sub-packets of N samples each before sending them (Note that the decision 
+to split packets is still driven by the setting of max_tracebuf_size, thus one 
+can still have packets sent with more than N samples if their total size is 
+less than max_tracebuf_size).
+
 .IP pins
 The pins array specifies optional Earthworm pin-numbers for individual station
 channels. Each entry should be listed as NET_STA_CHAN followed by 
 the desired pin number. If no pin number is specified for a given 
 channel, a pin-number of 0 will be used. 
+
 .SH OPTIONS
 .IP "-p pfname"
 Specify an alternate parameter-file name for the \fIorb\fP to earthworm module.
@@ -169,6 +203,8 @@ defaults &Arr{
 	my_type			TYPE_TRACEBUF
 	starttime
 	timesort_queue_maxpkts	0
+	max_tracebuf_size	4096
+	large_tracebuf_handling	send
 }
 
 export_servers &Arr{
@@ -228,6 +264,18 @@ proportionately when packets arrive out of order or are missing.
 The channel codes for earthworm TYPE_TRACEBUF2 messages are four characters 
 at maximum, shorter than those for CSS3.0. If longer channel names are encountered 
 on the orbserver, they will be bluntly truncated to fit. 
+
+The \fIlarge_tracebuf_handling\fP parameter should have another option, 
+namely to split the outgoing trace-buf packets into multiple packets. 
+
+The parameter-file is dynamically re-read to detect configuration changes. However, 
+if an optional parameter is added, then entirely removed from the parameter file, 
+\fBorb2ew\fP wil not notice, because it has come to expect that parameter to be 
+present. In some sense this could be considered a bug; certainly it could be circumvented
+with yet more programming, but the marginal value is questionable. Once you add 
+optional parameters to the parameter file, just keep them in there for the duration 
+of the run (you may change them as you wish and the dynamic updates will be 
+made in the running executable). 
 .SH AUTHOR
 .nf
 Kent Lindquist

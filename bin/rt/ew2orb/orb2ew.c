@@ -62,6 +62,8 @@ typedef struct ExportServerThread {
 	int	my_type;
 	int	my_type_heartbeat;		
 	int	timesort_queue_maxpkts;
+	int	max_tracebuf_size;
+	char	large_tracebuf_handling[STRSZ];
 	int	so;
 	struct sockaddr_in sin;
 	char	*buf;	
@@ -791,46 +793,54 @@ sigusr2_handler( int sig )
 }
 
 int
-pktchan_send( void *private, PktChannel *pktchan,
+tracepacket_send( ExportThread *et, TracePacket *tp, int nbytes_tp, 
+		  char *netstachanloc, double time )
+{
+	int	rc;
+	int	pinno = 0;
+	char	*ptr;
+	char	*s;
+
+	if( ( et->es->loglevel >= VERYVERBOSE ) || 
+		Flags.VeryVerbose ) {
+
+		ptr = (char *) &tp->i;
+		mi2hi( &ptr, &pinno, 1 );
+
+		elog_notify( 0, 
+			"'%s': Sending packet-channel %s "
+			"timed %s as pin %d, from %s %s, format %s\n", 
+			et->name, netstachanloc, 
+			s = strtime( time ), 
+			pinno, 
+			et->es->my_inst_str,
+			et->es->my_mod_str,
+			et->es->my_type_str );
+
+		free( s );
+	}
+
+	rc = buf_send( et, tp, nbytes_tp );
+
+	return rc;
+}
+
+int
+pktchan_send( void *etp, PktChannel *pktchan,
 	       int queue_code, double gaptime )
 {
-	ExportThread *et = (ExportThread *) private;
+	ExportThread *et = (ExportThread *) etp;
 	char    netstachanloc[STRSZ];
 	int	nbytes_tp = 0;
 	TracePacket tp;
-	int	pinno = 0;
 	int	rc;
-	char	*ptr;
 	char	*s;
-	char	*t;
 
 	sprintf( netstachanloc, "%s_%s_%s_%s", 
 			pktchan->net,
 			pktchan->sta,
 			pktchan->chan,
 			pktchan->loc );
-
-	if( et->es->starttime != NULL_STARTTIME &&
-	    pktchan->time < et->es->starttime ) {
-
-		if( ( et->es->loglevel >= VERYVERBOSE ) ||
-			Flags.VeryVerbose ) {
-
-			elog_notify( 0, 
-			"'%s': Skipping packet-channel %s: "
-			"timestamp %s is before requested "
-			"start %s\n", 
-			et->name, netstachanloc, 
-			s = strtime( pktchan->time ),
-			t = strtime( et->es->starttime ) );
-			free( s );
-			free( t );
-		}
-
-		freePktChannel( pktchan );
-
-		return 0;
-	}
 
 	if( STREQ( et->es->my_type_str, "TYPE_TRACEBUF" ) ) {
 
@@ -864,32 +874,176 @@ pktchan_send( void *private, PktChannel *pktchan,
 		return 0;
 	}
 
-	if( ( et->es->loglevel >= VERYVERBOSE ) || 
-		Flags.VeryVerbose ) {
-
-		ptr = (char *) &tp.i;
-		mi2hi( &ptr, &pinno, 1 );
-
-		elog_notify( 0, 
-			"'%s': Sending packet-channel %s "
-			"timed %s as pin %d from %s %s, format %s\n", 
-			et->name, netstachanloc, 
-			s = strtime( pktchan->time ), 
-			pinno, 
-			et->es->my_inst_str,
-			et->es->my_mod_str,
-			et->es->my_type_str );
-		free( s );
-	}
-
-	freePktChannel( pktchan );
-
-	rc = buf_send( et, &tp, nbytes_tp );
+	rc = tracepacket_send( et, &tp, nbytes_tp, 
+			       netstachanloc, pktchan->time );
 
 	if( rc != 0 ) {
 		
+		freePktChannel( pktchan );
+
 		thr_kill( et->thread_id, SIGUSR1 );
 	}
+
+	return 0;
+}
+
+int
+pktchan_queueproc( void *etp, PktChannel *pktchan,
+	           int queue_code, double gaptime )
+{
+	ExportThread *et = (ExportThread *) etp;
+	int	nbytes_tp_predicted = 0;
+	char    netstachanloc[STRSZ];
+	char	*s;
+	char	*t;
+	int	is;
+	int	ns;
+	int	nsamp_split;
+	double	pktchan_time_orig;
+	double	pktchan_endtime_orig;
+	int	*pktchan_datap_orig;
+	int	pktchan_datasz_orig;
+	int	pktchan_nsamp_orig;
+	int	pktchan_nsamp_remaining;
+
+	sprintf( netstachanloc, "%s_%s_%s_%s", 
+			pktchan->net,
+			pktchan->sta,
+			pktchan->chan,
+			pktchan->loc );
+
+	if( et->es->starttime != NULL_STARTTIME &&
+	    pktchan->time < et->es->starttime ) {
+
+		if( ( et->es->loglevel >= VERYVERBOSE ) ||
+			Flags.VeryVerbose ) {
+
+			elog_notify( 0, 
+			"'%s': Skipping packet-channel %s: "
+			"timestamp %s is before requested "
+			"start %s\n", 
+			et->name, netstachanloc, 
+			s = strtime( pktchan->time ),
+			t = strtime( et->es->starttime ) );
+			free( s );
+			free( t );
+		}
+
+		freePktChannel( pktchan );
+
+		return 0;
+	}
+
+	/* Rely on size of TRACE_HEADER and TRACE2_HEADER being 
+	   identical: 
+	*/
+
+	nbytes_tp_predicted = sizeof( TRACE_HEADER ) + 
+			      DATASIZE * pktchan->nsamp;
+
+	if( nbytes_tp_predicted <= et->es->max_tracebuf_size ) {
+
+		pktchan_send( etp, pktchan, queue_code, gaptime );
+
+	} else if( STREQ( et->es->large_tracebuf_handling, "send" ) ) {
+
+		pktchan_send( etp, pktchan, queue_code, gaptime );
+
+	} else if( ! strncmp( et->es->large_tracebuf_handling, "split", 5 ) ) {
+
+		if( strcontains( et->es->large_tracebuf_handling, 
+				   "[[:digit:]]+", 0, &is, &ns ) ) {
+			
+			nsamp_split = 
+				atoi( &et->es->large_tracebuf_handling[is] );
+
+			if( et->es->loglevel >= VERYVERBOSE ) {
+
+				elog_notify( 0, 
+					"'%s': Splitting packets "
+					"down to %d samples each\n", 
+					et->name, nsamp_split );
+			}
+
+			pktchan_datap_orig = pktchan->data;
+			pktchan_time_orig = pktchan->time;
+			pktchan_nsamp_orig = pktchan->nsamp;
+
+			pktchan_nsamp_remaining = pktchan_nsamp_orig;
+
+			while( pktchan_nsamp_remaining > 0 ) {
+			
+				pktchan->nsamp = 
+					pktchan_nsamp_remaining > nsamp_split ?
+					nsamp_split : pktchan_nsamp_remaining;
+
+				pktchan->datasz = pktchan->nsamp;
+
+				if( et->es->loglevel >= VERYVERBOSE ) {
+
+					elog_notify( 0, 
+						"'%s': Sub-packet with nsamp "
+						"%d starts at %s\n",
+						et->name, pktchan->nsamp,
+						s = strtime( pktchan->time ) );
+
+					free( s );
+				}
+
+				pktchan_send( etp, pktchan, queue_code, gaptime );
+
+				pktchan_nsamp_remaining -= pktchan->nsamp;
+
+				pktchan->time += pktchan->nsamp / pktchan->samprate;
+
+				pktchan->data += pktchan->nsamp;
+			}
+
+			pktchan->data = pktchan_datap_orig;
+			pktchan->datasz = pktchan_datasz_orig;
+			pktchan->time = pktchan_time_orig;
+			pktchan->nsamp = pktchan_nsamp_orig;
+
+		} else {
+
+			elog_complain( 0, 
+				"'%s': Rejecting packet, size %d is larger "
+				"than configured maximum %d, also "
+				"large_tracebuf_handling mode '%s' "
+				"wasn't understood (expecting 'split ###')\n", 
+				et->name, nbytes_tp_predicted, 
+				et->es->max_tracebuf_size,
+				et->es->large_tracebuf_handling );
+
+			freePktChannel( pktchan );
+
+			return 0;
+		}
+
+	} else if( STREQ( et->es->large_tracebuf_handling, "reject" ) ) {
+
+		elog_complain( 0, 
+			"'%s': Rejecting packet, size %d is larger "
+			"than configured maximum %d\n", 
+			et->name, nbytes_tp_predicted, 
+			et->es->max_tracebuf_size );
+
+	} else if( STREQ( et->es->large_tracebuf_handling, "reject_silent" ) ) {
+
+		; /* Fallthrough */
+
+	} else {
+
+		elog_complain( 0, 
+			"'%s': Unknown large_tracebuf_handling mode "
+			" '%s' (options are 'send', 'split', 'reject', "
+			"'reject_silent'); Sending packet\n",
+			et->name, et->es->large_tracebuf_handling );
+
+		pktchan_send( etp, pktchan, queue_code, gaptime );
+	}
+
+	freePktChannel( pktchan );
 
 	return 0;
 }
@@ -982,7 +1136,7 @@ orb2ew_export( void *arg )
 	}
 
 	et->pcp = pktchannelpipe_new( 0, 0, et->es->timesort_queue_maxpkts,
-				      pktchan_send, (void *) et );
+				      pktchan_queueproc, (void *) et );
 
 	for( ;; ) {
 
@@ -1079,6 +1233,12 @@ refresh_export_server_thread( ExportServerThread *es )
 
 		es->timesort_queue_maxpkts = 
 			pfget_int( es->pf, "timesort_queue_maxpkts" );
+
+		es->max_tracebuf_size = 
+			pfget_int( es->pf, "max_tracebuf_size" );
+
+		strcpy( es->large_tracebuf_handling,
+			pfget_string( es->pf, "large_tracebuf_handling" ) );
 
 		strcpy( es->expect_heartbeat_string,
 			pfget_string( es->pf, "expect_heartbeat_string" ) );
@@ -1355,6 +1515,10 @@ update_export_server_thread( char *name, Pf *pf )
 			   "timesort_queue_maxpkts", 
 			   DEFAULT_TIMESORT_QUEUE_MAXPKTS );
 
+		pfput_int( es->pf, 
+			   "max_tracebuf_size", 
+			   MAX_TRACEBUF_SIZ );
+
 		pfput_string( es->pf, 
 			      "send_heartbeat_string", 
 			      DEFAULT_SEND_HEARTBEAT_STRING );
@@ -1374,6 +1538,10 @@ update_export_server_thread( char *name, Pf *pf )
 		pfput_string( es->pf, 
 			      "starttime", 
 			      DEFAULT_STARTTIME );
+
+		pfput_string( es->pf, 
+			      "large_tracebuf_handling", 
+			      DEFAULT_LARGE_TRACEBUF_HANDLING );
 
 		pfput_string( es->pf, 
 			      "loglevel", 
@@ -1404,6 +1572,9 @@ update_export_server_thread( char *name, Pf *pf )
 	pfreplace( pf, es->pf, "defaults{timesort_queue_maxpkts}",
 			       "timesort_queue_maxpkts", "int" );
 
+	pfreplace( pf, es->pf, "defaults{max_tracebuf_size}",
+			       "max_tracebuf_size", "int" );
+
 	pfreplace( pf, es->pf, "defaults{send_heartbeat_sec}",
 			       "send_heartbeat_sec", "int" );
 
@@ -1425,6 +1596,9 @@ update_export_server_thread( char *name, Pf *pf )
 	pfreplace( pf, es->pf, "defaults{starttime}",
 			       "starttime", "string" );
 
+	pfreplace( pf, es->pf, "defaults{large_tracebuf_handling}",
+			       "large_tracebuf_handling", "string" );
+
 	pfreplace( pf, es->pf, "defaults{loglevel}",
 			       "loglevel", "string" );
 
@@ -1439,6 +1613,9 @@ update_export_server_thread( char *name, Pf *pf )
 
 	sprintf( key, "export_servers{%s}{timesort_queue_maxpkts}", name );
 	pfreplace( pf, es->pf, key, "timesort_queue_maxpkts", "int" );
+
+	sprintf( key, "export_servers{%s}{max_tracebuf_size}", name );
+	pfreplace( pf, es->pf, key, "max_tracebuf_size", "int" );
 
 	sprintf( key, "export_servers{%s}{server_ipaddress}", name );
 	pfreplace( pf, es->pf, key, "server_ipaddress", "string" );
@@ -1466,6 +1643,9 @@ update_export_server_thread( char *name, Pf *pf )
 
 	sprintf( key, "export_servers{%s}{loglevel}", name );
 	pfreplace( pf, es->pf, key, "loglevel", "string" );
+
+	sprintf( key, "export_servers{%s}{large_tracebuf_handling}", name );
+	pfreplace( pf, es->pf, key, "large_tracebuf_handling", "string" );
 
 	sprintf( key, "export_servers{%s}{my_inst}", name );
 	pfreplace( pf, es->pf, key, "my_inst", "string" );
