@@ -155,7 +155,7 @@ controls what happens to it. This parameter has several available modes:
 
 This setting for large_tracebuf_handling, the default, sends packets to
 Earthworm regardless of whether they are above or below the size threshold.  
-.IP "         \fIreject\fP 
+.IP "         \fIreject\fP "
 
 This setting rejects packets which are too large for Earthworm (as determined
 by the current setting of max_tracebuf_size), emitting a complaint to the
@@ -265,8 +265,10 @@ The channel codes for earthworm TYPE_TRACEBUF2 messages are four characters
 at maximum, shorter than those for CSS3.0. If longer channel names are encountered 
 on the orbserver, they will be bluntly truncated to fit. 
 
-The \fIlarge_tracebuf_handling\fP parameter should have another option, 
-namely to split the outgoing trace-buf packets into multiple packets. 
+If the \fIlarge_tracebuf_handling\fP parameter is set to split the packet
+into a certain number of samples, and that number results in a sub-packet
+that is still larger than the configured \fImax_tracebuf_size\fP, the entire
+packet will be rejected with a warning message.
 
 The parameter-file is dynamically re-read to detect configuration changes. However, 
 if an optional parameter is added, then entirely removed from the parameter file, 

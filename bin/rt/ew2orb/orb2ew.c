@@ -977,6 +977,31 @@ pktchan_queueproc( void *etp, PktChannel *pktchan,
 					pktchan_nsamp_remaining > nsamp_split ?
 					nsamp_split : pktchan_nsamp_remaining;
 
+				nbytes_tp_predicted = sizeof( TRACE_HEADER ) +
+						DATASIZE * pktchan->nsamp;
+
+				if( nbytes_tp_predicted > 
+					et->es->max_tracebuf_size ) {
+
+					elog_complain( 0, 
+					"'%s': Rejecting packet, size %d of "
+					"sub-packet after splitting to %d "
+					"samples is still too large "
+					"(configured maximum is %d)\n", 
+					et->name, nbytes_tp_predicted, 
+					nsamp_split,
+					et->es->max_tracebuf_size );
+
+					pktchan->nsamp = pktchan_nsamp_orig;
+					pktchan->data = pktchan_datap_orig;
+					pktchan->time = pktchan_time_orig;
+
+					freePktChannel( pktchan );
+
+					return 0;
+
+				}
+
 				pktchan->datasz = pktchan->nsamp;
 
 				if( et->es->loglevel >= VERYVERBOSE ) {
