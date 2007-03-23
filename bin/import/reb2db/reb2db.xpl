@@ -16,13 +16,13 @@
 
 use Datascope ;
 
-use vars qw($opt_d $opt_a $opt_v);
+use vars qw($opt_d);
 
 require "getopts.pl";
 
-if ( ! &Getopts('vdDa') || @ARGV < 2 ) {
+if ( ! &Getopts('d') || @ARGV < 2 ) {
 
-	die( "Usage: $0 [-vda] filename [filename ...] database\n" );
+	die( "Usage: $0 [-d] filename [filename ...] database\n" );
 
 }
 
