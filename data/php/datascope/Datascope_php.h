@@ -63,6 +63,7 @@ PHP_FUNCTION(dbnextid);
 PHP_FUNCTION(dbmark);
 PHP_FUNCTION(dbdelete);
 PHP_FUNCTION(dbcrunch);
+PHP_FUNCTION(dblist2subset);
 PHP_FUNCTION(pfget);
 PHP_FUNCTION(pfget_boolean);
 PHP_FUNCTION(pfupdate);

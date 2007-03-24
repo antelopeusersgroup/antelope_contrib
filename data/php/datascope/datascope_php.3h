@@ -774,6 +774,21 @@ $dbsubsetted = dbsubset ( $dbwfdisc, 'sta=="AAK"' ) ;
 .fi
 .in
 .ft R
+.IP "\fBdblist2subset\fP ( $db [, list] )"
+returns a new view which is the set of all rows with indices specified 
+in the list (the list should be an array of integers). If no list is specified,
+the input view is assumed to be a "bundle" database pointer, indicating 
+a range of records, in which case the new view contains the referenced 
+records.
+.ft CW
+.in 2c
+.nf
+
+$dbsubsetted = dblist2subset ( $db, array( 1, 4, 6 ) );
+
+.fi
+.in
+.ft R
 .IP "\fBdbseparate\fP ( $db, table )"
 return a new view which consists of all the rows of the specified table 
 which participate in the joined view $db

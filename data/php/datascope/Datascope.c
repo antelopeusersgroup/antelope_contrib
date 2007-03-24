@@ -92,6 +92,7 @@ static function_entry Datascope_functions[] = {
 	PHP_FE(dbmark, NULL)		
 	PHP_FE(dbdelete, NULL)		
 	PHP_FE(dbcrunch, NULL)		
+	PHP_FE(dblist2subset, NULL)		
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
 	PHP_FE(pfget_boolean, NULL)		
@@ -299,6 +300,45 @@ z_arrval_to_strtbl( zval *array, Tbl **tbl )
 		zend_hash_get_current_data( target_hash, (void **) &entry );
 
 		pushtbl( *tbl, strdup( Z_STRVAL_PP( entry ) ) );
+
+		zend_hash_move_forward( target_hash );
+	}
+
+	return 0;
+}
+
+static int
+z_arrval_to_inttbl( zval *array, Tbl **tbl )
+{
+	HashTable *target_hash;
+	zval	**entry;
+	int	nelements;
+
+	if( Z_TYPE_P( array ) != IS_ARRAY ) {
+
+		*tbl = 0;
+		return -1;
+	} 
+
+	target_hash = Z_ARRVAL_P( array );
+
+	nelements = zend_hash_num_elements( target_hash );
+
+	if( nelements < 1 ) {
+
+		*tbl = 0;
+		return -1;
+	}
+
+	*tbl = newtbl( 0 );
+
+	zend_hash_internal_pointer_reset( target_hash );
+
+	while( nelements-- > 0 ) {
+
+		zend_hash_get_current_data( target_hash, (void **) &entry );
+
+		pushtbl( *tbl, (void *) Z_LVAL_PP( entry ) );
 
 		zend_hash_move_forward( target_hash );
 	}
@@ -3561,6 +3601,66 @@ PHP_FUNCTION(trsamplebins)
 	efree( args );
 
 	return;
+}
+/* }}} */
+
+/* {{{ proto array dblist2subset( array db [, array list] ) */
+PHP_FUNCTION(dblist2subset)
+{
+	zval	*db_array;
+	zval	*list_array;
+	Dbptr	db;
+	Tbl	*list = 0;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc < 1 || argc > 2 ) {
+
+		WRONG_PARAM_COUNT;
+
+	} else if( argc == 2 ) {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "aa", 
+					&db_array, &list_array )
+	    	== FAILURE) {
+
+			return;
+		}
+
+		if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+			return;
+		}
+
+		if( z_arrval_to_inttbl( list_array, &list ) < 0 ) {
+
+			return;
+		}
+
+	} else {
+
+		if( zend_parse_parameters( argc TSRMLS_CC, "a", 
+						&db_array )
+	    	== FAILURE) {
+
+			return;
+		}
+
+		if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+			return;
+		}
+
+		list = (Tbl *) NULL;
+	}
+
+	db = dblist2subset( db, list );
+
+	if( list ) {
+		
+		freetbl( list, 0 );
+	}
+
+	RETURN_DBPTR( db );
 }
 /* }}} */
 
