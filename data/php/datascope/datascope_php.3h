@@ -135,6 +135,20 @@ $dbbundle = split ( ' ', $dbbundle ) ;
 .fi
 .in
 .ft R
+As an alternate method, \fBdbgetv\fP will take as its second argument
+an array of strings with the field names to retrieve, returning as 
+usual an array of values:
+.ft CW
+.in 2c
+.nf
+
+$myfields = array( "lat", "lon", "depth", "time" );
+list( $lat, $lon, $depth, $time ) = dbgetv( $mydb, $myfields );
+
+.fi
+.in
+.ft R
+
 .IP "\fBpfget\fP ( pfname, key )"
 Get the value for the named key in the parameter named pfname. pfget
 takes either single parameter names, or extended-syntax names in the 

@@ -6101,19 +6101,16 @@ PHP_FUNCTION(dbgetv)
 	int	argc = ZEND_NUM_ARGS();
 	int	single = 0;
 	int	i;
+	int	array_mode = 0;
 	char	warning[STRSZ];
+	char	*fieldname;
+	Tbl	*fieldnames = 0;
+	int	loopstart;
+	int	loopmax;
 
 	if( argc < 2 ) {
 
 		WRONG_PARAM_COUNT;
-
-	} else if( argc == 2 ) {
-
-		single = 1;
-
-	} else {
-
-		single = 0;
 	}
 
 	if( zend_parse_parameters( 1 TSRMLS_CC, "a", &db_array_in ) == FAILURE ) {
@@ -6129,33 +6126,90 @@ PHP_FUNCTION(dbgetv)
 
 	if( zend_get_parameters_array_ex( argc, args ) == FAILURE ) {
 
-		efree( args );
+		if( args ) {
+
+			efree( args );
+		}
+
 		return;
 	}
 
-	if( ! single ) {
+	if( Z_TYPE_PP( args[1] ) == IS_ARRAY ) {
+
+		array_mode = 1;
 
 		array_init( return_value );
+
+		single = 0;
+
+		z_arrval_to_strtbl( *args[1], &fieldnames );
+
+		loopstart = 0;
+
+		loopmax = maxtbl( fieldnames );
+
+	} else if( argc > 2  ) {
+
+		array_mode = 0;
+
+		array_init( return_value );
+
+		single = 0;
+
+		loopstart = 1;
+
+		loopmax = argc;
+
+	} else {
+
+		array_mode = 0;
+
+		single = 1;
+
+		loopstart = 1;
+
+		loopmax = argc;
 	}
 
-	for( i = 1; i < argc; i++ ) {
+	for( i = loopstart; i < loopmax; i++ ) {
 
-		if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
-			if( ! single ) {
-				efree( return_value );
+		if( array_mode ) {
+
+			fieldname = gettbl( fieldnames, i );
+
+		} else {
+
+			if( Z_TYPE_PP( args[i] ) != IS_STRING ) {
+
+				if( ! single ) {
+
+					efree( return_value );
+				}
+
+				efree( args );
+
+				zend_error( E_ERROR, 
+					"fieldnames must be strings\n" );
+
+			} else {
+
+				fieldname = Z_STRVAL_PP( args[i] );
 			}
-			zend_error( E_ERROR, "fieldnames must be strings\n" );
 		}
 
-		db = dblookup( db, 0, 0, Z_STRVAL_PP( args[i] ), 0 );
+		db = dblookup( db, 0, 0, fieldname, 0 );
 
 		dbquery( db, dbFIELD_TYPE, &type );
 
 		if( dbget( db, value.s ) < 0 )
 		{
 			if( ! single ) {
+
 				efree( return_value );
 			}
+
+			efree( args );
+
 			zend_error( E_ERROR, "failed to retrieve value\n" );
 		}
 
@@ -6210,6 +6264,11 @@ PHP_FUNCTION(dbgetv)
 			zend_error( E_WARNING, warning );
 			break;
 		}
+	}
+
+	if( fieldnames ) {
+
+		freetbl( fieldnames, free );
 	}
 
 	efree( args );
