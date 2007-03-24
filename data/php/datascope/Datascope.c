@@ -6226,7 +6226,7 @@ PHP_FUNCTION(dbgetv)
 
 			efree( args );
 
-			zend_error( E_ERROR, "failed to retrieve value\n" );
+			zend_error( E_ERROR, "dbgetv failed to retrieve value\n" );
 		}
 
 		switch( type )
@@ -6275,7 +6275,7 @@ PHP_FUNCTION(dbgetv)
 			break;
 		default:
 			sprintf( warning, 
-				"Can't interpret field of type %s",
+				"dbgetv can't interpret field of type %s",
 				xlatnum( type, Dbxlat, NDbxlat ) );
 			zend_error( E_WARNING, warning );
 			break;

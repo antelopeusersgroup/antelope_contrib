@@ -123,18 +123,6 @@ list( $sta, $chan, $time ) =
 .fi
 .in
 .ft R
-For a database pointer, like \fBbundle\fP from dbgroup(3), use the
-following syntax:
-.ft CW
-.in 2c
-.nf
-
-$dbbundle = dbgetv( $db, 'bundle' );
-$dbbundle = split ( ' ', $dbbundle ) ;
-
-.fi
-.in
-.ft R
 As an alternate method, \fBdbgetv\fP will take as its second argument
 an array of strings with the field names to retrieve, returning as 
 usual an array of values:
