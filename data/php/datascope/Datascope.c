@@ -4281,7 +4281,8 @@ PHP_FUNCTION(db2xml)
 		if( z_arrval_to_strtbl( *args[4], &fields ) < 0 ) {
 
 			efree( args );
-			zend_error( E_ERROR, "The fields argument must not be a non-empty list\n" );
+			zend_error( E_ERROR, 
+			"The fields argument must not be a non-empty list\n" );
 		}
 	}
 
@@ -4290,7 +4291,12 @@ PHP_FUNCTION(db2xml)
 		if( z_arrval_to_strtbl( *args[5], &expressions ) < 0 ) {
 
 			efree( args );
-			zend_error( E_ERROR, "The expressions argument must not be a non-empty list\n" );
+
+			if( fields ) {
+				freetbl( fields, free );
+			}
+			zend_error( E_ERROR, 
+			"The expressions argument must not be a non-empty list\n" );
 		}
 	}
 
@@ -4301,6 +4307,16 @@ PHP_FUNCTION(db2xml)
 
 	rc = db2xml( db, rootnode, rownode, fields, expressions,
 		     (void **) &xml, flags );
+
+	if( fields ) {
+		
+		freetbl( fields, free );
+	}
+
+	if( expressions ) {
+		
+		freetbl( expressions, free );
+	}
 
 	if( rc < 0 ) {
 
