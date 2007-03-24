@@ -1,0 +1,59 @@
+.\" $Name$ $Date$
+.TH LCHEAPO2DB 1 "$Date$"
+.SH NAME
+lcheapo2db \- convert lcheapo data to miniseed db 
+.SH SYNOPSIS
+.nf
+lcheapo2db [-v] [-d data_directory] lcheapo_listing dbout 
+.fi
+.SH DESCRIPTION
+lcheapo2db takes L-CHEAPO OBS data with an appropriate "lcheapo_listing" file and 
+converts the data into Steim-2 compressed mini-seed format inside an 
+Antelope database "dbout".  The output mini-seed data files are in 
+station-channel-day volumes.
+The input lcheapo_listing file has the form:
+
+sta::chan#::sensor::start_sync::end_sync::time_data::endtime_data::nsamp::samprate::datadir::datafile
+
+.LP lcheapo2db
+input lcheapo_listing file explaination:
+.IP sta
+OBS number (eg. OBS01).
+.IP chan#
+channel number.
+.IP sensor
+sensor name (eg. Unused,L22-H2,L22-H1,L22-Z,L28-H2,L28-H1,L28-Z,
+Tril-H2,Tril-H1,Tril-Z,DPG,Hyd).
+.IP start_sync
+GPS synchronization time when setting OBS clock at beginning of experiment.
+.IP end_sync
+GPS synchronization time when checking OBS clock at end of experiment.
+.IP time_data
+corrected time of first sample in data series.
+.IP endtime_data
+corrected time of last sample in data series.
+.IP nsamp
+number of samples in series.
+.IP samprate
+nominal sample rate.
+.IP datadir
+directory where data resides.
+.IP datafile
+datafile name, program assumes one contiguous time series per data file.
+
+.LP
+lcheapo2db assumes the format of the input data is 24-bit big endian format.  
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-d data_directory"
+directory where data resides, this supercedes the datadir in the input list file.
+
+.SH "SEE ALSO"
+.nf
+trexcerpt(1)
+.fi
+.SH "BUGS AND CAVEATS"
+none yet.
+.SH AUTHOR
+Frank Vernon
