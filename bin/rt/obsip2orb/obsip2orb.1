@@ -1,0 +1,46 @@
+.TH OBSIP2ORB 1 "$Date$"
+.SH NAME
+obsip2orb \- Send OBSIP waveform data to orb
+.SH SYNOPSIS
+.nf
+\fBobsip2orb\fP [-v] [-n] [-c orbclient]
+                \fIorb dbin [dbin2 [dbin3 ...]]\fP
+.fi
+.SH DESCRIPTION
+\fBobsip2orb\fP will send all miniseed data in the wfdisc file of \fIdbin\fP into \fIorb\fP 
+using miniseed2orb.  The program opens the wfdisc, selects datatype of "sd", 
+does a unique sort on wfdisc dir-dfile fields, 
+then sorts by station-channel-time before sending the data to the orb.
+
+There are two checks which are made before data are sent to the orb.  The first check is 
+to see if \fIorb\fP is allowing connections.  The second check is to see if the
+orbclient (usually orb2orb) is connected that will read the miniseed packets.  This is required
+to make sure that the data are not written to the orb to quickly.
+
+.IP \fIorb\fP 
+orb to send data to.
+.IP \fIdbin\fP 
+database which needs waveforms to be send to orb.
+.SH OPTIONS
+.IP -v
+verbose
+.IP -n
+Does not send any data, only shows commands which would have been executed.
+.IP "-c orbclient"
+Orbclient which will read mseed data packets from orb.  Default is orbclient is orb2orb.
+
+.SH ENVIRONMENT
+needs to have sourced $ANTELOPE/setup.csh.  
+.SH RETURN VALUES
+0 if successful, 1 if not.
+.SH "SEE ALSO"
+.nf
+miniseed2orb(1)
+orbmsd2days(1)
+pfecho(1)
+.fi
+.SH "BUGS AND CAVEATS"
+
+.SH AUTHOR
+Frank Vernon
+
