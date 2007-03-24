@@ -4640,15 +4640,15 @@ PHP_FUNCTION(strlocaldate)
 }
 /* }}} */
 
-/* {{{ proto array dbquery( array db, string code ) */
+/* {{{ proto array dbquery( array db, mixed dbcode ) */
 PHP_FUNCTION(dbquery)
 {
 	zval	*db_array;
+	zval	*zval_dbcode;
 	Dbptr	db;
 	int	argc = ZEND_NUM_ARGS();
 	char	errmsg[STRSZ];
 	char	*dbstring_code;
-	int	dbstring_code_len;
 	int	dbcode;
 	Dbvalue value;
 	int	retcode;
@@ -4659,9 +4659,9 @@ PHP_FUNCTION(dbquery)
 		WRONG_PARAM_COUNT;
 	}
 
-	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+	if( zend_parse_parameters( argc TSRMLS_CC, "az", 
 					&db_array,
-					&dbstring_code, &dbstring_code_len )
+					&zval_dbcode )
 	    == FAILURE) {
 
 		return;
@@ -4671,7 +4671,22 @@ PHP_FUNCTION(dbquery)
 		return;
 	}
 
-	dbcode = xlatname( dbstring_code, Dbxlat, NDbxlat );
+	if( Z_TYPE_P( zval_dbcode ) == IS_LONG ) {
+
+		dbcode = Z_LVAL_P( zval_dbcode );
+
+	}  else if( Z_TYPE_P( zval_dbcode ) == IS_STRING ) {
+
+		dbstring_code = Z_STRVAL_P( zval_dbcode );
+
+		dbcode = xlatname( dbstring_code, Dbxlat, NDbxlat );
+
+	} else {
+
+		zend_error( E_ERROR, 
+			"second argument to dbquery() not understood\n" );
+	}
+
 
 	switch( dbcode ) {
         case dbSCHEMA_DESCRIPTION:
