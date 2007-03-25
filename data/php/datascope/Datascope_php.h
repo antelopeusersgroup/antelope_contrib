@@ -54,6 +54,7 @@ PHP_FUNCTION(dbseparate);
 PHP_FUNCTION(dbsever);
 PHP_FUNCTION(dbsubset);
 PHP_FUNCTION(dbunjoin);
+PHP_FUNCTION(dbbase);
 PHP_FUNCTION(db2xml);
 PHP_FUNCTION(dbwrite_view);
 PHP_FUNCTION(dbread_view);

@@ -81,6 +81,7 @@ static function_entry Datascope_functions[] = {
 	PHP_FE(dbseparate, NULL)		
 	PHP_FE(dbsever, NULL)		
 	PHP_FE(dbunjoin, NULL)		
+	PHP_FE(dbbase, NULL)		
 	PHP_FE(db2xml, NULL)		
 	PHP_FE(dbquery, NULL)		
 	PHP_FE(dbresponse, NULL)		
@@ -4850,6 +4851,39 @@ PHP_FUNCTION(dbtruncate)
 }
 /* }}} */
 
+/* {{{ proto array dbbase( array db, string tablename ) */
+PHP_FUNCTION(dbbase)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	argc = ZEND_NUM_ARGS();
+	char	*tablename;
+	int	tablename_len;
+	int	i;
+
+	if( argc != 2 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "as", 
+					&db_array,
+					&tablename, &tablename_len )
+	    == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	db = dbbase( db, tablename );
+
+	RETURN_DBPTR( db );
+}
+/* }}} */
+
 /* {{{ proto array dbsubset( array db, string expression ) */
 PHP_FUNCTION(dbsubset)
 {
@@ -4858,7 +4892,6 @@ PHP_FUNCTION(dbsubset)
 	int	argc = ZEND_NUM_ARGS();
 	char	*expr;
 	int	expr_len;
-	int	retcode;
 	int	i;
 
 	if( argc != 2 ) {
@@ -4892,7 +4925,6 @@ PHP_FUNCTION(dbseparate)
 	int	argc = ZEND_NUM_ARGS();
 	char	*table;
 	int	table_len;
-	int	retcode;
 	int	i;
 
 	if( argc != 2 ) {
@@ -4926,7 +4958,6 @@ PHP_FUNCTION(dbsever)
 	int	argc = ZEND_NUM_ARGS();
 	char	*table;
 	int	table_len;
-	int	retcode;
 	int	i;
 
 	if( argc != 2 ) {

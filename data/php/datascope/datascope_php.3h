@@ -776,6 +776,18 @@ $dbsubsetted = dbsubset ( $dbwfdisc, 'sta=="AAK"' ) ;
 .fi
 .in
 .ft R
+.IP "\fBdbbase\fP ( $db, tablename )"
+returns a new view which points to the row of the tablename base-table 
+corresponding to the specified row in the input view:
+.ft CW
+.in 2c
+.nf
+
+$dbbaserow = dbbase ( $dbsomeview, "origin" ) ;
+
+.fi
+.in
+.ft R
 .IP "\fBdblist2subset\fP ( $db [, list] )"
 returns a new view which is the set of all rows with indices specified 
 in the list (the list should be an array of integers). If no list is specified,
