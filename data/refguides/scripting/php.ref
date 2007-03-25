@@ -91,6 +91,9 @@ dbsubset ($db, expression)
 dblist2subset ($db [, list])
     returns a new view with the listed records, or with the range indicated by the input grouped bundle if no list is specified 
 
+dbget_range ($db)
+    returns the index of the first, and one plus the index of the last element in a range of rows represented by a database pointer
+
 dbseparate ($db, table)
     returns a view containing records from the specified table that are in the input view
 
