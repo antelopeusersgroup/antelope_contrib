@@ -95,7 +95,7 @@ to an integer value by \fBew2orb\fP, according to the contents of the
 earthworm.pf parameter file (For more details, see the man page earthworm(5)).
 
 .IP loglevel
-This the level of logging information for the import thread in
+This is the level of logging information for the import thread in
 question to put out. The allowed values are "quiet", "verbose", and
 "veryverbose". If this option is not specified, it defaults to the
 value of program_loglevel. As with the other parameters, this can
@@ -130,7 +130,7 @@ packets.
 .IP srcname_morph
 This table contains search-and-replace patterns used to rename channels
 of seismic data. If left empty, the output source-names of stations
-will correspond to the names taken out of the earthworm packets. If desired,
+will correspond to the names taken out of the Earthworm packets. If desired,
 individual stations may also renamed with entries like
 .ft CW
 .in 2c
@@ -169,7 +169,7 @@ Positive values will move the data further into the future.
 
 .SH OPTIONS
 .IP "-p pfname"
-Specify an alternate parameter-file name for the earthworm to \fIorb\fP module.
+Specify an alternate parameter-file name for the \fBew2orb\fP module.
 The default parameter file is "\fBew2orb\fP.pf".
 .SH FILES
 .IP ew2orb.pf
@@ -230,7 +230,7 @@ import_from &Arr{
 .SH EXAMPLE
 This example shows the standard usage of directing the ew2orb module
 at a local orb. All of the rest of the information ew2orb needs, for
-example the locations of the Earthworm servers to connect to, are contained
+example the locations of the Earthworm servers to connect to, is contained
 in the parameter file.
 .ft CW
 .in 2c
@@ -261,7 +261,7 @@ are deprecated.
 
 There is no recovery mechanism in the Earthworm import/export_generic
 protocol. Also, depending on the ring-buffer dynamics of the Earthworm
-earthworm system on the sending side, it is possible for conditions
+system on the sending side, it is possible for conditions
 to occur where packets will be lost. There is no mechanism available on
 which \fBew2orb\fP can rely in order to prevent this loss; if it happens, data
 must be recovered by other means. One consequence of this is that
@@ -306,7 +306,7 @@ Currently only station and channel name are used in looking up calibration
 information in the stations database (net and loc codes are ignored).
 .SH AUTHOR
 .nf
-Kent Lindquist
-Lindquist Consulting
+Dr. Kent Lindquist
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$
