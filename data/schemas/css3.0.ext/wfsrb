@@ -1,0 +1,55 @@
+Attribute Scoll
+	String (256)
+	Format ( "%-256s" )
+	Null ( "-" )
+	Description ( "SRB Collection" )
+	Detail {
+		The Scoll field identifies the Collection to which a 
+		given file belongs in a Storage Resource Broker (SRB). 
+		The SRB Collection name is analogous to a directory
+		name on a Unix file system.
+	}
+	;
+
+Attribute Sobj
+	String (64)
+	Format ( "%-64s" )
+	Null ( "-" )
+	Description ( "SRB Object" )
+	Detail {
+		The Sobj field identifies the object name under which a 
+		given file is registered in a Storage Resource Broker 
+		(SRB). The SRB Object name is analogous to a file
+		name on a Unix file system.
+	}
+	;
+
+Attribute Szone
+	String (30)
+	Format ( "%-30s" )
+	Null ( "-" )
+	Description ( "SRB Zone" )
+	Detail {
+		The Szone field identifies the relevant Storage 
+		Resource Broker (SRB) system containing the referenced 
+		file. The exact hostname and port needed to connect to 
+		this SRB may be found from the Zone Authority. At the
+		time of writing that zone authority is at 
+		
+		http://www.npaci.edu/dice/srb/zoneAuthority.html
+	}
+	;
+
+Relation wfsrb
+	Fields ( sta chan time wfid chanid jdate endtime nsamp samprate calib calper instype segtype datatype clip Szone Scoll Sobj foff commid lddate )
+	Primary ( sta chan time::endtime  )
+	Foreign ( chanid commid ) 
+	Description ( "SRB archived waveform file header and descriptive information" )
+	Detail {
+		This relation provides a pointer (or index) to waveforms
+		stored in a Storage Resource Broker (SRB) as SRB objects,
+		as well as their locations in SRB collections and the 
+		zone identifier of the SRB in question.
+	}
+	;
+
