@@ -93,6 +93,7 @@ static function_entry Datascope_functions[] = {
 	PHP_FE(dbdelete, NULL)		
 	PHP_FE(dbcrunch, NULL)		
 	PHP_FE(dblist2subset, NULL)		
+	PHP_FE(dbget_range, NULL)		
 	PHP_FE(eval_response, NULL)		
 	PHP_FE(pfget, NULL)		
 	PHP_FE(pfget_boolean, NULL)		
@@ -4818,7 +4819,7 @@ PHP_FUNCTION(dbquery)
 }
 /* }}} */
 
-/* {{{ proto array dbtruncate( array db, string expression ) */
+/* {{{ proto int dbtruncate( array db, string expression ) */
 PHP_FUNCTION(dbtruncate)
 {
 	zval	*db_array;
@@ -5711,7 +5712,7 @@ PHP_FUNCTION(dbprocess)
 }
 /* }}} */
 
-/* {{{ proto array dbfree( array db ) */
+/* {{{ proto int dbfree( array db ) */
 PHP_FUNCTION(dbfree)
 {
 	zval	*db_array;
@@ -5739,7 +5740,7 @@ PHP_FUNCTION(dbfree)
 }
 /* }}} */
 
-/* {{{ proto array ds_dbclose( array db ) */
+/* {{{ proto int ds_dbclose( array db ) */
 PHP_FUNCTION(ds_dbclose)
 {
 	zval	*db_array;
@@ -5767,7 +5768,7 @@ PHP_FUNCTION(ds_dbclose)
 }
 /* }}} */
 
-/* {{{ proto array dbdestroy( array db ) */
+/* {{{ proto int dbdestroy( array db ) */
 PHP_FUNCTION(dbdestroy)
 {
 	zval	*db_array;
@@ -5795,7 +5796,7 @@ PHP_FUNCTION(dbdestroy)
 }
 /* }}} */
 
-/* {{{ proto array dbaddnull( array db ) */
+/* {{{ proto int dbaddnull( array db ) */
 PHP_FUNCTION(dbaddnull)
 {
 	zval	*db_array;
@@ -5848,6 +5849,40 @@ PHP_FUNCTION(dbungroup)
 	db = dbungroup( db, 0 );
 
 	RETURN_DBPTR( db );
+}
+/* }}} */
+
+/* {{{ proto array dbget_range( array db ) */
+PHP_FUNCTION(dbget_range)
+{
+	zval	*db_array;
+	Dbptr	db;
+	int	first;
+	int	last;
+	int	argc = ZEND_NUM_ARGS();
+
+	if( argc != 1 ) {
+
+		WRONG_PARAM_COUNT;
+	}
+
+	if( zend_parse_parameters( argc TSRMLS_CC, "a", &db_array ) == FAILURE) {
+
+		return;
+
+	} else if( z_arrval_to_dbptr( db_array, &db ) < 0 ) {
+
+		return;
+	}
+
+	dbget_range( db, &first, &last );
+
+	array_init( return_value );
+
+	add_next_index_long( return_value, first );
+	add_next_index_long( return_value, last );
+
+	return;
 }
 /* }}} */
 
@@ -6288,6 +6323,8 @@ PHP_FUNCTION(dbgetv)
 	}
 
 	efree( args );
+
+	return;
 }
 /* }}} */
 

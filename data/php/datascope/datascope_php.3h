@@ -791,6 +791,28 @@ $dbsubsetted = dblist2subset ( $db, array( 1, 4, 6 ) );
 .fi
 .in
 .ft R
+.IP "\fBdbget_range\fP ( $db )"
+This function assumes that the database pointer represents a range of records, 
+and returns the endpoints of the range as a two-element list. The first 
+element gives the index of the first record in the range. The second element
+gives a number one greater than the index of the last record in the range
+(this facilitates use of the results in a standard loop):
+.ft CW
+.in 2c
+.nf
+
+list( $first, $last ) = dbget_range ( $db );
+
+$db[2] = dbALL;
+
+for( $db[3] = $first; $db[3] < $last; $db[3]++ ) {
+
+	// Do something with specified row of $dborig
+}
+
+.fi
+.in
+.ft R
 .IP "\fBdbseparate\fP ( $db, table )"
 return a new view which consists of all the rows of the specified table 
 which participate in the joined view $db
