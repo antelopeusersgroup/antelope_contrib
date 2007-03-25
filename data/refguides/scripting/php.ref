@@ -88,6 +88,9 @@ dbungroup ($db)
 dbsubset ($db, expression)
     returns a new view which is the set of all rows which satisfy the expression
 
+dbbase ($db, tablename)
+    returns the row of the specified base table corresponding to the row in the input view
+
 dblist2subset ($db [, list])
     returns a new view with the listed records, or with the range indicated by the input grouped bundle if no list is specified 
 
