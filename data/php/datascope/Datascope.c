@@ -642,7 +642,7 @@ pf2zval( Pf *pf, zval *result ) {
 	return retcode;
 }
 
-/* {{{ proto array template( array db, ... ) *
+/* {{{ proto ?????? template( array db, ... ) *
 PHP_FUNCTION(template)
 {
 	zval	*db_array;
@@ -2550,7 +2550,7 @@ PHP_FUNCTION(pfput)
 }
 /* }}} */
 
-/* {{{ proto mixed pfget_boolean( string pfname, string pfkey ) */
+/* {{{ proto int pfget_boolean( string pfname, string pfkey ) */
 PHP_FUNCTION(pfget_boolean)
 {
 	int	argc = ZEND_NUM_ARGS();
@@ -3709,7 +3709,7 @@ PHP_FUNCTION(dbput)
 }
 /* }}} */
 
-/* {{{ proto int dbget( array db [, int scratch] ) */
+/* {{{ proto mixed dbget( array db [, int scratch] ) */
 PHP_FUNCTION(dbget)
 {
 	zval	*db_array;
@@ -3851,7 +3851,7 @@ PHP_FUNCTION(dbadd_remark)
 }
 /* }}} */
 
-/* {{{ proto int dbget_remark( array db ) */
+/* {{{ proto string dbget_remark( array db ) */
 PHP_FUNCTION(dbget_remark)
 {
 	zval	*db_array;
@@ -4410,7 +4410,7 @@ PHP_FUNCTION(eval_response)
 }
 /* }}} */
 
-/* {{{ proto array dbfind( array db, string expression, [, int first [, int reverse]] ) */
+/* {{{ proto int dbfind( array db, string expression, [, int first [, int reverse]] ) */
 PHP_FUNCTION(dbfind)
 {
 	zval	*db_array;
@@ -4658,7 +4658,7 @@ PHP_FUNCTION(strlocaldate)
 }
 /* }}} */
 
-/* {{{ proto array dbquery( array db, mixed dbcode ) */
+/* {{{ proto mixed dbquery( array db, mixed dbcode ) */
 PHP_FUNCTION(dbquery)
 {
 	zval	*db_array;
@@ -4983,7 +4983,7 @@ PHP_FUNCTION(dbsever)
 }
 /* }}} */
 
-/* {{{ proto array dbunjoin( array db, string database ) */
+/* {{{ proto int dbunjoin( array db, string database ) */
 PHP_FUNCTION(dbunjoin)
 {
 	zval	*db_array;
@@ -5917,7 +5917,7 @@ PHP_FUNCTION(dbget_range)
 }
 /* }}} */
 
-/* {{{ proto array dbnrecs( array db ) */
+/* {{{ proto int dbnrecs( array db ) */
 PHP_FUNCTION(dbnrecs)
 {
 	zval	*db_array;
@@ -5946,7 +5946,7 @@ PHP_FUNCTION(dbnrecs)
 /* }}} */
 
 
-/* {{{ proto mixed dbputv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
+/* {{{ proto int dbputv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
 PHP_FUNCTION(dbputv)
 {
 	zval	*db_array_in;
@@ -6050,7 +6050,7 @@ PHP_FUNCTION(dbputv)
 }
 /* }}} */
 
-/* {{{ proto mixed dbaddv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
+/* {{{ proto int dbaddv( array db, string field_name, mixed value, [, field_name, value, ... ] ) */
 PHP_FUNCTION(dbaddv)
 {
 	zval	*db_array_in;
@@ -6359,7 +6359,7 @@ PHP_FUNCTION(dbgetv)
 }
 /* }}} */
 
-/* {{{ proto mixed dbadd( array db [, string record ] ) */
+/* {{{ proto int dbadd( array db [, string record ] ) */
 PHP_FUNCTION(dbadd)
 {
 	zval	*db_array_in;
@@ -6411,7 +6411,7 @@ PHP_FUNCTION(dbadd)
 }
 /* }}} */
 
-/* {{{ proto mixed dbextfile( array db [, string tablename ] ) */
+/* {{{ proto string dbextfile( array db [, string tablename ] ) */
 PHP_FUNCTION(dbextfile)
 {
 	zval	*db_array_in;
