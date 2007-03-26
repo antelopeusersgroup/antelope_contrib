@@ -50,7 +50,7 @@ sequence numbers of packets from multiple instances of scream, noticing
 gaps and requesting that they be filled. Each TCP-recovery thread can
 handle only one recovery at a time (recovering a contiguous range of
 packet sequence numbers from a single instance of SCREAM), however the
-user my specify multiple recovery threads with the nrecovery_threads
+user may specify multiple recovery threads with the nrecovery_threads
 parameter in the parameter file. The TCP recovery mechanism will detect
 hung connections and remain intact (though the block of packets being
 processed during the hang may be lost). The TCP recovery mechanism may
@@ -63,8 +63,8 @@ parameter may be set to zero, allowing an infinite number of retries.
 Guralp2orb will keep re-trying to acquire as long as it has some indication
 there's a GCF server on the other end.
 
-Experiece with running this program led to a series of modifications.
-The fundamental problem is the guralp packets lack any integrity check
+Experience with running this program led to a series of modifications.
+The fundamental problem is the Guralp packets lack any integrity check
 and UDP does not guarantee packets are delivered clean.  As a result
 packets were found to sometimes contain random errors that caused a 
 series of potential errors.  As a workaround the program contains several
@@ -79,7 +79,7 @@ If the udplisten threads are missing UDP packets, it may be necessary to
 set them to real-time priority class. This is done by making the 
 guralp2orb executable be suid root (if guralp2orb detects that it 
 is suid root, it will automatically promote the UDP listen threads 
-to real-time priority schedulint). To make guralp2orb suid root 
+to real-time priority scheduling). To make guralp2orb suid root 
 one must, as root, execute
 .nf
 
@@ -136,18 +136,24 @@ as necessary. This includes changes to the default_segtype, default_net, and
 srcname_morph table. Also, if more recovery threads are specified, or if new 
 udplisten or udpinitiate connections are specified, they will be launched. 
 .SH OPTIONS
--v verbose
+.IP -v
+verbose
 
--V very verbose. Lists information on every incoming packet. Used for 
+.IP -V 
+very verbose. Lists information on every incoming packet. Used for 
 debugging, not for normal continuous operation.
 
--p parameter_file Specify alternate parameter file (default is guralp2orb.pf)
+.IP "-p parameter_file"
+Specify alternate parameter file (default is guralp2orb.pf)
 
--d calibdb Specify database for calib,calper,segtype information
+.IP "-d calibdb" 
+Specify database for calib,calper,segtype information
 
--l file_for_logpackets Write log packets to the specified log file
+.IP "-l file_for_logpackets"
+Write log packets to the specified log file
 
--r reject_sec Reject packets which start more than the specified number
+.IP "-r reject_sec" 
+Reject packets which start more than the specified number
 of seconds into the future. Status packets are never rejected, since 
 they might be useful in debugging the cause of the incorrect timestamps. 
 .SH FILES
@@ -258,7 +264,7 @@ mk_libpkt.pf, with an up-to-date libPkt.so constructed from them.
 guralp2orb will watch the calibration, sensor, and instrument tables of
 the optional calibration database, updating values as necessary.
 However, guralp2orb is sensitive to the treatment of these database
-files.  if one of those tables is not present at startup, it will never
+files. If one of those tables is not present at startup, it will never
 be used.  If guralp2orb fails to do a stat of one of the tables while
 running, it will quit using the file. Also, once the database is
 opened, guralp2orb grabs onto each filename and watches that file for
@@ -268,8 +274,8 @@ restarting guralp2orb.
 
 guralp2orb dynamically launches new connect threads and recovery threads
 when they are added to the parameter file. However, if the nrecovery_threads 
-parameter is reduced or if udplisten or udpconnections are removed from the
-parameter file, the corresponding threads are not killed. 
+parameter is reduced or if udplisten or udpinitiate connections are removed 
+from the parameter file, the corresponding threads are not killed. 
 
 In principle it would be possible for guralp2orb to save state information, which 
 would allow it to recover packets that were missed during short stops and restarts. 
@@ -278,7 +284,7 @@ SCREAM will actually announce when it is shutting down services. It
 might be nice to catch this and record it in the log file. 
 
 The next stage in the development of guralp2orb will be to allow it to communicate 
-directly to guralp dataloggers, without an intervening instance of scream. The 
+directly with Guralp dataloggers, without an intervening instance of SCREAM. The 
 threading structure in principle supports this, however it will require extensive 
 work.  After that, the next thing to add would be direct command and control.
 
