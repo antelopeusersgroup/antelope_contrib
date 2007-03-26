@@ -30,7 +30,7 @@ target directory and the root directory familiar to users of Apache or
 similar web-servers.
 
 The \fIConfigDir\fP parameter specifies the location for any configuration
-files such as parameter-files. if this parameter is an absolute path, it 
+files such as parameter-files. If this parameter is an absolute path, it 
 is taken exactly as specified. Otherwise, \fIConfigDir\fP is taken to be 
 relative to \fIDocumentRoot\fP, whether that is specified in the parameter 
 file or overridden on the command line. 
@@ -230,8 +230,7 @@ commands &Arr{
 .fi
 .ft R
 .in
-.SH LIBRARY
-0.SH DIAGNOSTICS
+.SH DIAGNOSTICS
 
 \fBdbwebproject\fP complains and dies if it cannot find one of the commands
 listed in the parameter file as necessary for the recipes.
@@ -250,7 +249,7 @@ recipetypes such as 'create' and 'cleanup' which will probably be necessary.
 The complexity of this structure may be overkill for small web-sites,
 creating unnecessary setup work (albeit with the advantage of supporting
 CVS-tracked web-site content and automatic rebuilding). The benefit of
-the complex structures in \fBdbwebproject\fP.pf begin to show as the web sites
+the complex structures in \fBdbwebproject\fP.pf begins to show as the web sites
 grow larger and larger. Similarly, the \fBdbwebproject\fP structure requires
 additional steps during the development cycle: changes must not only
 be made to the 'source' files for the web-site; they must also be installed
@@ -266,7 +265,7 @@ those ingredients to the web directory. For extensive development projects
 it may be beneficial to test and debug code pieces in their final location,
 then propagate them backwards into the CVS/install/\fBdbwebproject\fP architecture
 when ready. This latter strategy has worked well for the author provided
-careful track is kept of the midified files such that none of the pieces are 
+careful track is kept of the modified files such that none of the pieces are 
 orphaned when development is finished.
 
 There may be some unnecessary overlap in function between the web_config 
@@ -275,6 +274,6 @@ the \fIconfig\fP table.
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$
