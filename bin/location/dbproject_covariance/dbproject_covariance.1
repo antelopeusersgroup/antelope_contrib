@@ -59,7 +59,7 @@ dbgenloc(1)
 .SH "BUGS AND CAVEATS"
 The number of degrees of freedom is based on ndef and dtype. If array
 data are included (azimuth and slowness information in addition to
-arrival-time), there are more than one degree of freedom added per incoming
+arrival-time), more than one degree of freedom is added per incoming
 phase, so using the number of defining phases is not exact. To
 do this properly, the timedef, azdef, and slodef fields would have to be
 examined in the assoc table. This has not been done in the current program.
