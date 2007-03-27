@@ -32,7 +32,7 @@ The calculated magnitude is stored in \fInetmag\fR, \fIorigin\fR and
 \fIstamag\fR tables.
 .SH OPTIONS
 .IP "-a auth_match"
-Only origin records which \fIauth\fR matches the regular expression \fIauth_match\fR
+Only origin records where \fIauth\fR matches the regular expression \fIauth_match\fR
 will be selected for magnitude computation. By default all records are selected.
 .IP "-f filter"
 Specifies filter which will be used to filter data before magnitude computation.
@@ -46,7 +46,7 @@ Filter should be specified in a form "FL FLO FH FHO", where:
 By default,  "0.025 7 0.1 7" filter is used. 
 
 .IP "-o orid_math"
-Only origin records which \fIorid\fR matches the regular expression \fIorid_match\fR
+Only origin records where \fIorid\fR matches the regular expression \fIorid_match\fR
 will be selected for magnitude computation. By deafult \fIms\fR will be computed for
 every \fIorid\fR. 
 .IP "-n net"
