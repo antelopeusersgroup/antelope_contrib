@@ -39,19 +39,21 @@ listed event [based on origin time and lddate]. Unfortunately this switches
 from a data-driven model to a process-synchronization model, which is not
 desirable in an asynchronous processing system. 
 .SH OPTIONS
--l seconds how long to wait after real-time to decide that a catalog hypocenter
+.IP "-l seconds"
+how long to wait after real-time to decide that a catalog hypocenter
 was 'missed' and to add it
 
--n exit after the catalog database has been initially processed. Otherwise, 
+.IP -n 
+exit after the catalog database has been initially processed. Otherwise, 
 wait indefinitely for new hypocenters to appear in the catalog database. 
 
--p number|all Add phases. If a number is specified, only the closest number of 
+.IP "-p number|all"
+Add phases. If a number is specified, only the closest number of 
 phases are used. If "all" is specified, all available phases are used. If there
-are no phases in the catalog database, predicted P phases are used and are labeled
-with a preceding plus-sign. 
+are no phases in the catalog database, predicted P phases are used and are labeled with a preceding plus-sign. 
 
--s catalog_subset_expression Only include catalog hypocenters that match this 
-expression
+.IP "-s catalog_subset_expression"
+Only include catalog hypocenters that match this expression
 
 .SH FILES
 .SH ENVIRONMENT
