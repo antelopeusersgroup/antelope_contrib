@@ -13,7 +13,7 @@ extrd \- extract specified segment of the css data
 .fi
 .SH DESCRIPTION
 .PP
-Program reads seismic data in CSS 3.0 format, 
+This program reads seismic data in CSS 3.0 format, 
 and extracts the specified subset of data. 
 The input data set can be specified by one of the 
 following:
@@ -24,29 +24,29 @@ following:
 .PP 
 \fIwfd_fnames\fR - full names of a wfdisc. Wild characters can be used in wfdisc name.
 .LP
-Program will create a data file and a wfdisc file with name of the 
+The program will create a data file and a wfdisc file with name of the 
 form YYDDDHHMM.w and YYDDDHHMM.wfdisc respectively,
 which give the year, day, hour, and minute of the begining of the event.
 .SH COMMAND LINE ARGUMENTS
 .IP "-c chan"  
-Only  data   which  channel name   matches  the   regular
+Only  data   with  channel names   matching  the   regular
 expression  \fIchan\fR  will  be extracted.
 .IP "-n network"  
-A network code name. That name is used in a SEED header.
+A network code name. This name is used in a SEED header.
 If this parameter is not specified \fBextrd\fP will look for an \fBaffiliation\fP
-table and will use network code name specified in that table.
+table and will use the network code name specified in that table.
 .IP "-o outdir"
 If \fIoutdir\fR is specified in the command line then \fBextrd\fP 
-will create such directory and all output data will be placed there otherwise 
-the output data will be placed in a current directory.
+will create the directory and all output data will be placed there, otherwise 
+the output data will be placed in the current directory.
 .IP "-s sta"  
-Only  data   which  station name   matches  the   regular
+Only  data   with  station names   matching  the   regular
 expression  \fIsta\fR  will  be extracted.
 .IP "stime"   	
-The start time to start data subset with.
-Program accepts time as a string in any date format (see DATASCOPE time utilities).
+The start time with which to start the data subset.
+The program accepts time as a string in any date format (see DATASCOPE time utilities).
 .IP "etime"   	
-The end time to finished data subset with. 	
+The end time with which to finish the data subset.
 Program accepts time as a string in any date format (see DATASCOPE time utilities).
 .SH EXAMPLE 1
 .LP
