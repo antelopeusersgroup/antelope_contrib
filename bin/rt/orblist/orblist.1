@@ -6,21 +6,19 @@ orblist \- list an orb contents
 .SH SYNOPSIS
 .nf
 
-\fBorblist \fP[-d]     [-h]     [-m \fIsrcmatch\fP]     [-n
-                \fItime_diff\fP]     [-s]     \fIorb\fP [\fIstart\fP
-                [\fItwindow\fP]]
+\fBorblist \fP[-d] [-h] [-m \fIsrcmatch\fP] [-n \fItime_diff\fP] [-s] \fIorb\fP [\fIstart\fP [\fItwindow\fP]]
 
 .fi
 
 .SH DESCRIPTION
-An \fBorblist\fP reads packets from an \fIorb\fP ring buffer and
-print to stdout information about those packets. An \fBorblist\fP  prints
-srcname and time of a packet. It also checks packets time with
-"expected" packet time - time which is calculated based on size of a packet
-and a sample rate.  If packet time is not equal to "expected" time
+\fBorblist\fP reads packets from an \fIorb\fP ring buffer and
+prints to stdout information about those packets. \fBorblist\fP prints
+the srcname and time of each packet. It also checks packet time against
+"expected" packet time - a time which is calculated based on the size of the packet
+and a sample rate.  If the packet time is not equal to the "expected" time
 an \fBorblist\fP print a mesage about this. This program is very
-usefull if user wants quickly to check data on a time gaps or to get
-a hexdump of a orb packets.
+useful if the user wants quickly to check data on time gaps or to get
+a hexdump of orb packets.
 
 .SH OPTIONS
 
@@ -28,19 +26,19 @@ a hexdump of a orb packets.
 Tells \fBorblist\fP to print a hexdump of orb packets.
 
 .IP "-h"
-Tells \fBorblist\fP to print a hexdump of a raw packets. A raw packet is an
-orb packet without orb header.
+Tells \fBorblist\fP to print a hexdump of raw packets. A raw packet is an
+orb packet without the orb header.
 
 .IP "-m srcmatch"
-Only  packets   which a srcname matches the regular expression \fIsrcmatch\fP
+Only  packets with a srcname matching the regular expression \fIsrcmatch\fP
 will be read from an orb.
 
 .IP "-n time_diff "
 Specify in seconds an expected time difference between packets.
 
 .IP "-s"
-Usually an \fBorblist\fP reads packets from an orb and puts them in a pipe
-sorted by time.  This options tells \fBorblist\fP do not sort packets.
+Usually \fBorblist\fP reads packets from an orb and puts them in a pipe
+sorted by time.  This option tells \fBorblist\fP not to sort packets.
 
 .IP "start [twindow]"
 Specify a time range of packets which will be read from an orb.
