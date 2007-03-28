@@ -18,7 +18,7 @@ sendMRC [-d dasid | -s staname]
 \fBsendMRC\fP routinely sends an \fBMRC\fP command to DASes through
 \fIoutput\fR, which usually specifies the IP address of the DC.
 \fBsendMRC\fP may require two parameter files.
-One contains all existing in RT system DAS IDs - \fIparameter-file\fR 
+One contains all DAS IDs existing in the RT system - \fIparameter-file\fR 
 (\fIpkt.pf\fR is default) and the second one contains command parameters -
 \fImrcpar-file\fR ( \fImcr.pf\fR is default ).
 
@@ -29,7 +29,7 @@ By default send command to all DASes which exist in RT system.
 .IP "-o mrcpar-file"
 A parameter file \fImrcpar-file\fR
 will be used to select all constants for an MRC  command, such as
-number of times to repeat command, timeout between command send to one das, 
+number of times to repeat command, timeout between commands sent to one das, 
 timeout between command send to different dases, etc.
 A \fBmrc.pf\fP parameter file is used by default.  
 .IP "-p parameter-file"
