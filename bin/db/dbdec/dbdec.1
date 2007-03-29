@@ -25,7 +25,7 @@ for determining which waveform segments to process.
 This should be formed as a normal expression, such as \fB'sta == "AAK"'\fP
 to get just the waveform segments for station AAK. Note that the channel mappings
 also effectively sift the data.
-This argument is optional and if it is ommited, then all waveforms are processed
+This argument is optional and if it is ommitted, then all waveforms are processed
 subject to the channel mappings.
 .TP 15
 \fI-c calper\fP
@@ -33,7 +33,7 @@ If this argument is specified, then the \fBcalib\fP and \fBcalper\fP values in
 the output \fBwfdisc\fP table will be recomputed according to the specified
 \fIcalper\fP value. In addition the instrument response files will be modified
 to reflect the new normalization value.
-This argument is optional and if it is ommited, then the \fBcalib\fP, \fBcalper\fP
+This argument is optional and if it is ommitted, then the \fBcalib\fP, \fBcalper\fP
 and instrument response normalizations remain unchanged. Note that the decimation
 FIR stages are always included to produce new instrument response files
 for the decimated waveforms.
@@ -46,7 +46,7 @@ entry from the input \fBwfdisc\fP table. If the \fIwfdir\fP specification
 is of the form \fI:stringi:stringo:\fP, then a string substitution
 is attempted on the \fBdir\fP entry from the input \fBwfdisc\fP table
 to form the \fBdir\fP entry in the output \fBwfdisc\fP table.
-This argument is optional and if it is ommited, then the output decimated
+This argument is optional and if it is ommitted, then the output decimated
 waveform file directory tree will be the same as the input tree. Note that
 in this case, in order to avoid file collisions,
 the \fBdir\fP path in the input \fBwfdisc\fP tables must be
