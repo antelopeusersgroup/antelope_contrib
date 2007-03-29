@@ -15,10 +15,10 @@ dbgmtgrid takes an input view containing records of a gmt1.0 database.
 Applying the gmt commands grdcut(1), grdedit(1), and grdpaste(1), it cuts out 
 all the pieces it needs to cover the requested region and writes the 
 resulting grid to the specified output file. If an optional nonzero $verbose
-argument is specified, all commands are run in verbose mode. dbgmtgrid 
-tests the input rectangle against the database entries at several different
-phase-wrapping values, allowing request regions to be specified in the 
-most convenient way for the user and nevertheless produce the expected 
+argument is specified, all commands are run in verbose mode. The dbgmtgrid 
+program tests the input rectangle against the database entries at several 
+different phase-wrapping values, allowing request regions to be specified in 
+the most convenient way for the user and nevertheless produce the expected 
 output (provided, of course, that the region of interest is represented 
 in one form or another in the database). If the rectangle is specified 
 with an eastern longitude numerically less than the western longitude
