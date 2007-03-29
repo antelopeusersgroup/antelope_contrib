@@ -1,16 +1,15 @@
 .\" $Name$ $Date$
 .TH SPLIT_ARCHIVE_DATABASE 1 "$Date$"
 .SH NAME
-split_archive_database \- split out old days from an rt1.0 archive waveform database
+split_archive_database \- split out old days from an css3.0 archive waveform database
 .SH SYNOPSIS
 .nf
 split_archive_database [-v] dbname ndays
 .fi
 .SH DESCRIPTION
-split_archive_database takes a database in rt1.0 format, presumably one being
-written by orb2db. split_archive_database removes all information older than 
-ndays, putting these rows into day-segmented databases named with the 
-basename of the database appended by a string _YYMMDD. 
+split_archive_database takes a database in css3.0 format, presumably one being
+written by orb2db. The split_archive_database program removes all information 
+older than ndays, putting these rows into day-segmented databases named with the basename of the database appended by a string _YYMMDD. 
 
 This provides an alternative data-handling model to the standard rtdbclean(1).
 
@@ -86,7 +85,6 @@ nordic%
 orb2db(1), orb2db_msg(1), dbsplit(1), remove_old_archive_waveforms(1), rtdbclean(1)
 .fi
 .SH "BUGS AND CAVEATS"
-If split_archive_database pauses acquisition from an orb and then dies unexpectedly,
-the acquisition may remain permanently paused. 
+If split_archive_database pauses acquisition from an orb and then dies unexpectedly, the acquisition may remain paused until orb2db times out. 
 .SH AUTHOR
 Kent Lindquist
