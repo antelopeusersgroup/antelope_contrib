@@ -33,13 +33,13 @@ state-of-health   information,   and records  on  all  events  and  their
 start&end&trigger times.   The  logfile  name  will  be  in  a  form   of 
 \fIDASID_log\fP.
 .IP "-p parameter-file"
-An \fBrddas\fP is using a parameter file which contains parameters of 
+An \fBrddas\fP uses a parameter file which contains parameters for 
 Data and Information packets.  A parameter file \fIparameter-file\fP
-will be used to get parameters of a raw data packet, it's type, header type, 
-to get station and channel names code for each component of a raw data packet. 
-By defauld a \fBpscl.pf\fP parameter file is used.
+will be used to get parameters of a raw data packet, its type, header type, 
+and to get station and channel names code for each component of a raw data packet. 
+By default the \fBpscl.pf\fP parameter file is used.
 .IP "-s B,P,D,S"
-Specify a serial port parameters to match the RefTek's serial port.
+Specify the serial port parameters to match the RefTek's serial port.
 Parameters must be specified in form B,P,D,S where:
 .in 2c
 .ft CW
@@ -75,7 +75,7 @@ rddas -l /dev/cua/0 localhost
 .SH "SEE ALSO"
 orbstat(1)
 .SH "BUGS AND CAVEATS"
-Occationally when when attempting to read from a DAS using a 
+Occasionally when attempting to read from a DAS using a 
 Magma card on a Sun, no data will be returned.  To fix this,
 stop the instance of rddas and reset the Magma card by doing the 
 following:
