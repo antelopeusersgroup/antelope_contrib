@@ -62,7 +62,7 @@ Time length for output (should be <Ndata).   Generally the resulting # points sh
 
 
 .IP \fIapm\fR
-Scaling factor for a prior uncertainty in Green's function; acts to keep inversion stable.
+Scaling factor for a priori uncertainty in Green's function; acts to keep inversion stable.
 The A priori covariance matrix is assumed diagonal, with terms ap1*ap1/NOUT. 
 Probably should be of order 1 (see references above for scaling discussions)
 
@@ -70,9 +70,9 @@ Probably should be of order 1 (see references above for scaling discussions)
 Scaling factor for a priori data(+ theory) uncertainty.  Typically of order 1.
 
 .IP \fIsubset_z\fR
-Logic string sent to dbselect that select out the desired Z component records.
+Logic string sent to dbselect that selects out the desired Z component records.
 .IP \fIsubset_r\fR
-Logic string sent to dbselect that select out the desired R component records.
+Logic string sent to dbselect that selects out the desired R component records.
 
 .IP \fI[kres]\fR
 An optional flag for dumping resolution measures; = 1 to output resolution + spread. These
