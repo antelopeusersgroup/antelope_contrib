@@ -8,7 +8,7 @@ dbscanmail [-vVo] [-a recno] dbname operation
 .SH DESCRIPTION
 dbscanmail loops over all the messages in a database table, processing each one 
 according to the specified operation. The default is to loop only over the 
-\fIin\fP table. The -o option forces the loop to be over the \fIout\fP table
+\fIin\fP table. The -o option forces the loop to be over the \fIout\fP table.
 Note that for a complete database, two runs of the program may be necessary
 for a given operation, once each for the input and output tables. The operations
 that are currently defined are as follows:
@@ -31,7 +31,7 @@ main header fields for each message (i.e. it does not descend into attachments).
 This operation assumes the line count in the database is correct, and 
 recomputes the byte count according to the message reread from the file. 
 This operation makes up for the consequences of old schemas which did 
-not support mail messages of total size over a megabyte (attempt to 
+not support mail messages of total size over a megabyte (attempts to 
 put such messages in pre-Mail1.3 schemas would result in a corrupt byte 
 count).
 .SH OPTIONS
