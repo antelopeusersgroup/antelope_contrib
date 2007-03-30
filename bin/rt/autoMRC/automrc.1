@@ -2,7 +2,7 @@
 .TH AUTOMRC 1 "$Date$"
 
 .SH NAME
-automrc \- automatically send mass re-centerring (MRC) command to a UCSD
+automrc \- automatically send mass re-centering (MRC) command to a UCSD
 REFTEK DAS
 
 .SH SYNOPSIS
@@ -14,28 +14,27 @@ REFTEK DAS
 .fi
 
 .SH DESCRIPTION
-\fBautomrc\fP reads data from ring buffer and calculates LTA on specified
-packets. By default \fBautomrc\fP is using 1sps data stream (*/CBB1S), but
-default can be owerwritten by setting parameter 'srcname' in "\fBautomrc\fP.pf"
-file. Regular expressions can be used (e.g..*/CBBLS).
+\fBautomrc\fP reads data from a ring buffer and calculates LTA on the specified
+packets. By default \fBautomrc\fP is using the 1sps data stream (*/CBB1S), but
+this default can be overwritten by setting the parameter 'srcname' in the "\fBautomrc\fP.pf" file. Regular expressions can be used (e.g..*/CBBLS).
 
-When calculated LTA high than a "max_lta" (is set in \fBautomrc\fP.pf) the
+When the calculated LTA is higher than "max_lta" (set in \fBautomrc\fP.pf) 
 \fBautomrc\fP tries to send an MRC command to the DAS through DC (dc
-IP address is specified in a command line. There can be multiple
+IP address is specified on the command line. There can be multiple
 DCs specified.)
-The \fBautomrc\fP will send "num_repeats" (is set in \fBautomrc\fP.pf) MRC
-commands to a DAS with a time period "timeout_btw_cmds" (is set in
+The \fBautomrc\fP will send "num_repeats" (set in \fBautomrc\fP.pf) MRC
+commands to a DAS with a time period "timeout_btw_cmds" (set in
 \fBautomrc\fP.pf).
-If \fBautomrc\fP needs to send MRC command "max_mrc" (is set in \fBautomrc\fP.pf)
-times to a DAS it will notify "receipient" (is set in \fBautomrc\fP.pf) by
-email that multiple MRC commands are failed. There are can be multiple
-receipient specified devided by comma.
+If \fBautomrc\fP needs to send an MRC command "max_mrc" (set in \fBautomrc\fP.pf)
+times to a DAS it will notify "recipient" (set in \fBautomrc\fP.pf) by
+email that multiple MRC commands failed. There can be multiple
+recipients specified, separated by commas.
 
 \fBauto_mrc\fP requires \fBtwo\fR parameter files:  the first
-contains all existing in RT system DAS IDs - \fIparameter-file\fP
+contains all DAS IDs existing in the RT system - \fIparameter-file\fP
 (\fIpkt.pf\fR is default), and the second named \fIautomrc.pf\fR
 contains the parameters for triggering resets.
-pkt.pf is a regular paramter file which is used by IPD.
+pkt.pf is a regular parameter file which is used by IPD.
 
 .SH OPTIONS
 
@@ -72,7 +71,7 @@ Regular expression to select which data packets are processed.
 Default is .*/CBB1S
 
 .IP max_lta
-Trigger trheshold level for mass recenter.  If the abs(lta) > max_lta
+Trigger threshold level for mass recenter.  If abs(lta) > max_lta
 on any channel, then a mass recenter is sent to that DAS.  Units
 are in digital counts!
 Default is 20000.
@@ -82,7 +81,7 @@ Number of seconds of data which lta is averaged over.
 Default is 3600.
 
 .IP num_repeats
-numer of times to retransmit mass recenter commands to DAS.
+number of times to retransmit mass recenter commands to DAS.
 Default is 2.
 
 .IP timeout_btw_cmds
