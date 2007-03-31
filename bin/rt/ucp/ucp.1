@@ -18,7 +18,7 @@
 .IP
 - send commands to DC and DASes.
 .LP
-A \fBucp\fP interface is very simple and intuitive. When \fBucp\fP starts
+The \fBucp\fP interface is very simple and intuitive. When \fBucp\fP starts
 the following menu pannel will appear on the screen:
 .in 2c
 .ft CW
@@ -47,43 +47,43 @@ the following menu pannel will appear on the screen:
 .ft R
 .in
 .LP
-The main \fBucp\fP pannel has tree parts - \fICOMMANDS buttons\fR, \fIQUIT button\fR and 
-a \fIMMESSAGE window\fR. User can choose any or several commands by clicking on the
-coresponding \fICommand button\fR with mouse Button1. To see a brief command description 
-user can click on the coresponding \fICommand button\fR with mouse Button2.
+The main \fBucp\fP panel has three parts - \fICOMMANDS buttons\fR, \fIQUIT button\fR and 
+a \fIMESSAGE window\fR. The user can choose any or several commands by clicking on the
+corresponding \fICommand button\fR with mouse Button1. To see a brief command description the
+user can click on the corresponding \fICommand button\fR with mouse Button2.
 .SH COMMAND DESCRIPTION
 .IP \fBVIEWPF\fP
-Will let user to view/edit a \fIucp.pf\fR parameter file. A \fIvi\fR window
-will be opened with the parameter file contents and user can modify the parameter file.
+This will let the user view/edit a \fIucp.pf\fR parameter file. A \fIvi\fR window
+will be opened with the parameter file contents and the user can modify the parameter file.
 .IP \fBANZADP\fP
 Get ANZA DC and DAS Diagnostic Parameters. 
 A "SELECT" window with all existing ANZA 
-diagnostic parameters will be opened. At this point user can choose to start diagnostic 
-parameter archiving by clicking on \fBSTART_ARCHIVE\fP button.
-To view real-time diagnostic parameters user must choose parameters he wants to view
-by clicking on the coresponding parameters or by using the \fIDIAGPAR\fR menu. When all 
-desired parameters will be selected user can click on \fISHOWPAR\fR button which 
-will cause a diagnostic parameter window appear on the screen. Then user can start/stop
-real-time diagnostic parameter display with \fISTAR/STOP\fR buttons. 
+diagnostic parameters will be opened. At this point the user can choose to start diagnostic 
+parameter archiving by clicking on the \fBSTART_ARCHIVE\fP button.
+To view real-time diagnostic parameters the user must choose parameters he wants to view
+by clicking on the corresponding parameters or by using the \fIDIAGPAR\fR menu. When all 
+desired parameters are selected the user can click on the \fISHOWPAR\fR button which 
+will cause a diagnostic parameter window to appear on the screen. Then user can start/stop the
+real-time diagnostic parameter display with the \fISTART/STOP\fR buttons. 
 .IP \fBDASPAR\fP
 Get BBA DAS Diagnostic Parameters.
 A "SELECT" window with all existing BBA 
-diagnostic parameters will be opened. At this point user can choose to start diagnostic 
+diagnostic parameters will be opened. At this point the user can choose to start diagnostic 
 parameter archiving by clicking on the \fBSTART_ARCHIVE\fP button.
-To view real-time diagnostic parameters user must choose parameters he wants to view
-by clicking on the coresponding parameters or by using a \fIDIAGPAR\fR menu. When all 
-desired parameters will be selected user can click on \fISHOWPAR\fR button which 
-will cause a diagnostic parameter window appear on a screen. Then user can start/stop
-real-time diagnostic parameter display with  \fISTAR/STOP\fR buttons. 
+To view real-time diagnostic parameters the user must choose parameters he wants to view
+by clicking on the corresponding parameters or by using a \fIDIAGPAR\fR menu. When all 
+desired parameters are selected the user can click on the \fISHOWPAR\fR button which 
+will cause a diagnostic parameter window to appear on a screen. Then the user can start/stop the
+real-time diagnostic parameter display with  the \fISTART/STOP\fR buttons. 
 .IP \fBDCPAR\fP
 Get BBA DC Parameters and CLOCK status. A "DC STATUS" window will appear
-on the sceeen. User can start/stop real-time parameter display by clicking on \fISTAR/STOP\fR buttons.
+on the sceeen. The user can start/stop the real-time parameter display by clicking on \fISTART/STOP\fR buttons.
 .IP \fBDCCMD\fP
 Send comand to DC/DAS. This command is only for BBA systems.
 .IP \fBQUIT\fP
-Quit \fBucp\fP. All windows opened by \fBucp\fP will be destroied. If the archiving process
-was started through \fBucp\fP and was not stopped prior to \fBQuit\fPing it continues
-to run in the background. User assumes responsibility for all processes started but not
+Quit \fBucp\fP. All windows opened by \fBucp\fP will be destroyed. If the archiving process
+was started through \fBucp\fP and was not stopped prior to \fBQuit\fPting it continues
+to run in the background. The user assumes responsibility for all processes started but not
 stopped by \fBucp\fP.
  
 .SH PARAMETER FILE
@@ -96,9 +96,9 @@ file must contain the following parameters:
 .IP 
 \fBSendAlarmTo\fP - an email address to which "alarm messages" will be sent.
 .IP 
-\fBAnzaDc\fP - a name of an anza DC. This name will be used in DC parameter display.
+\fBAnzaDc\fP - a name of an anza DC. This name will be used in the DC parameter display.
 .IP 
-\fBDc\fP - a name of BBA DC. This name will be used in DC parameter display.
+\fBDc\fP - a name of BBA DC. This name will be used in the DC parameter display.
 .IP 
 \fBOrbSelect\fP - packet selection pattern. 
 .IP 
