@@ -17,7 +17,7 @@ ucp2 \- User Control Pannel
 .IP
 - send commands to DC and DASes.
 .LP
-A \fBucp2\fP interface is very simple and intuitive. When \fBucp2\fP starts
+The \fBucp2\fP interface is very simple and intuitive. When \fBucp2\fP starts
 the following menu panel appears on the screen:
 
 .ft CW
@@ -49,33 +49,33 @@ the following menu panel appears on the screen:
 .ft R
 
 .LP
-The main \fBucp2\fP pannel has tree parts - \fICOMMANDS buttons\fP, \fIQUIT button\fP and
-a \fIMMESSAGE window\fP. User can choose any or several commands by clicking on the
-coresponding \fICommand button\fP with mouse Button1. To see a brief command description
-user can click on the coresponding \fICommand button\fP with mouse Button2.
+The main \fBucp2\fP panel has three parts - \fICOMMANDS buttons\fP, \fIQUIT button\fP and
+a \fIMESSAGE window\fP. The user can choose any or several commands by clicking on the
+coresponding \fICommand button\fP with mouse Button1. To see a brief command description the
+user can click on the corresponding \fICommand button\fP with mouse Button2.
 .SH COMMAND DESCRIPTION
 .IP \fBVIEWPF\fP
-Will let user to view/edit a \fIucp2.pf\fP parameter file. A \fIvi\fP window
-will be opened with the parameter file contents and user can modify the parameter file.
+Will let the user view/edit a \fIucp2.pf\fP parameter file. A \fIvi\fP window
+will be opened with the parameter file contents and the user can modify the parameter file.
 .IP \fBANZADP\fP
 Get ANZA DC and DAS Diagnostic Parameters.
 A "SELECT" window with all existing ANZA
-diagnostic parameters will be opened. At this point user can choose to start diagnostic
-parameter archiving by clicking on \fBSTART_ARCHIVE\fP button.
-To view real-time diagnostic parameters user must choose parameters he wants to view
+diagnostic parameters will be opened. At this point the user can choose to start diagnostic
+parameter archiving by clicking on the \fBSTART_ARCHIVE\fP button.
+To view real-time diagnostic parameters the user must choose parameters he wants to view
 by clicking on the coresponding parameters or by using the \fIDIAGPAR\fP menu. When all
-desired parameters will be selected user can click on \fISHOWPAR\fP button which
-will cause a diagnostic parameter window appear on the screen. Then user can start/stop
-real-time diagnostic parameter display with \fISTAR/STOP\fP buttons.
+desired parameters are selected, the user can click on the \fISHOWPAR\fP button which
+will cause a diagnostic parameter window to appear on the screen. Then the user can start/stop the
+real-time diagnostic parameter display with the \fISTART/STOP\fP buttons.
 .IP \fBDASPAR\fP
 Get BBA DAS Diagnostic Parameters.
 A "SELECT" window with all existing BBA
 diagnostic parameters will be opened. At this point user can choose to start diagnostic
 parameter archiving by clicking on the \fBSTART_ARCHIVE\fP button.
 To view real-time diagnostic parameters user must choose parameters he wants to view
-by clicking on the coresponding parameters or by using a \fIDIAGPAR\fP menu. When all
+by clicking on the corresponding parameters or by using a \fIDIAGPAR\fP menu. When all
 desired parameters will be selected user can click on \fISHOWPAR\fP button which
-will cause a diagnostic parameter window appear on a screen. Then user can start/stop
+will cause a diagnostic parameter window appear on a screen. Then the user can start/stop
 real-time diagnostic parameter display with  \fISTAR/STOP\fP buttons.
 .IP \fBDCPAR\fP
 Get BBA DC Parameters and CLOCK status. A "DC STATUS" window will appear
@@ -83,9 +83,9 @@ on the sceeen. User can start/stop real-time parameter display by clicking on \f
 .IP \fBDCCMD\fP
 Send comand to DC/DAS. This command is only for BBA systems.
 .IP \fBQUIT\fP
-Quit \fBucp2\fP. All windows opened by \fBucp2\fP will be destroied. If the archiving process
-was started through \fBucp2\fP and was not stopped prior to \fBQuit\fPing it continues
-to run in the background. User assumes responsibility for all processes started but not
+Quit \fBucp2\fP. All windows opened by \fBucp2\fP will be destroyed. If the archiving process
+was started through \fBucp2\fP and was not stopped prior to \fBQuitt\fPing it continues
+to run in the background. The user assumes responsibility for all processes started but not
 stopped by \fBucp2\fP.
 
 .SH PARAMETER FILE
@@ -98,7 +98,7 @@ file must contain the following parameters:
 .IP
 \fBSendAlarmTo\fP - an email address to which "alarm messages" will be sent.
 .IP
-\fBAnzaDc\fP - a name of an anza DC. This name will be used in DC parameter display.
+\fBAnzaDc\fP - a name of an anza DC. This name will be used in the DC parameter display.
 .IP
 \fBDc\fP - a name of BBA DC. This name will be used in DC parameter display.
 .IP
