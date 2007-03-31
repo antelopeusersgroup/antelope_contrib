@@ -35,7 +35,7 @@ array. This name may be chosen at user discretion (usually as a useful
 mnemonic for the particular data connection). The name will be used in
 a number of places throughout the program when labeling output messages.
 
-Before describing in detail the contents of each export_servers subarray,
+Before describing in detail the contents of each subarray of the export_servers array,
 we should note the 'defaults' array in the parameter file. This array
 specifies the default parameters for Earthworm export connections.
 If one of the parameters does not show up in the subarray describing
@@ -52,7 +52,7 @@ be accepted. This is accomplished by specifying the IP address (in
 a.b.c.d dotted-decimal notation) of the desired network interface.
 
 .IP server_port
-This is the TCP port-number on which a server thread is is serving data.
+This is the TCP port-number on which a server thread is serving data.
 
 .IP send_heartbeat_sec
 The \fBorb2ew\fP import module exchanges heartbeats with the remote import
@@ -181,7 +181,7 @@ channel, a pin-number of 0 will be used.
 
 .SH OPTIONS
 .IP "-p pfname"
-Specify an alternate parameter-file name for the \fIorb\fP to earthworm module.
+Specify an alternate parameter-file name for the \fIorb2ew\fP module.
 The default parameter file is "\fBorb2ew\fP.pf".
 .SH FILES
 .IP orb2ew.pf
@@ -237,15 +237,15 @@ orbserver(1), ew2orb(1), earthworm(5)
 \fBorb2ew\fP and ew2orb replace the eworm2orb and orb2eworm programs, which
 are deprecated.
 
-The translations of earthworm logo fields (institute, module, and type)
+The translations of Earthworm logo fields (institute, module, and type)
 are set when first encountered and do not update even when the
 underlying earthworm.pf parameter file changes. If changes are made
 to these translations, the program must be restarted for them to be
 recognized. Also, despite being specified in the earthworm.pf parameter
 file, the INST_WILDCARD, MOD_WILDCARD, and TYPE_WILDCARD values are
-hard-wired to zero as per Earthworm definition. The exception is if
-one of the earthworm-logo numbers is not found and continually
-shows up as, e.g., MOD_165. In this case the earthworm.pf parameter
+hard-wired to zero as per the Earthworm definitions. The exception is that if
+one of the Earthworm-logo numbers is not found (and thus continually
+shows up as, e.g., MOD_165), the earthworm.pf parameter
 file is checked upon each translation. Note that this can introduce
 a small run-time inefficiency; it's advantageous to have translations
 present in earthworm.pf for all modules, message types, and installations
@@ -261,7 +261,7 @@ One should note the wait-time tradeoff involved in sorting out-of-order
 data. The queue should not be made too large or data will be delayed 
 proportionately when packets arrive out of order or are missing.
 
-The channel codes for earthworm TYPE_TRACEBUF2 messages are four characters 
+The channel codes for Earthworm TYPE_TRACEBUF2 messages are four characters 
 at maximum, shorter than those for CSS3.0. If longer channel names are encountered 
 on the orbserver, they will be bluntly truncated to fit. 
 
@@ -281,6 +281,6 @@ made in the running executable).
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$
