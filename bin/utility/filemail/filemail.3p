@@ -38,7 +38,7 @@ $filemail::Schema = "Mail1.3";
 .fi
 .SH DESCRIPTION
 These routines assist in saving mail messages to a Datascope database 
-of mail, currently in Mail1.2 format. 
+of mail, currently in Mail1.3 format. 
 
 The filemail routine takes an input message as $in. This may be either 
 the name of a file containing a single mail message, or a reference 
@@ -151,7 +151,7 @@ $filemail::Verbose++;
 $filename = "1089360126-brogers\\@yoyodyne.net";
 $archive_dir = "archive";
 $dbname = "testdb";
-$schema = "Mail1.2";
+$schema = "Mail1.3";
 
 dbcreate( $dbname, $schema );
 
@@ -185,6 +185,6 @@ date information if the Date: tag in the email is bad.
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$
