@@ -138,3 +138,7 @@ if( $State{pixfile_conversion_method} ne "none" ) {
 	%Mapspec = %{pixfile_convert( \%Mapspec )};
 	write_pixfile_pffile( \%Mapspec );
 }
+
+if( ( ! $opt_t ) && defined( $State{"workdir"} ) && $State{"workdir"} ne "" ) {
+        system( "/bin/rm -rf $State{workdir}" );
+}

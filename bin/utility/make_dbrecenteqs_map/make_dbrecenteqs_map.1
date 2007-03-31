@@ -71,7 +71,7 @@ Specify an alternate working directory (the default is under /tmp)
 .IP -v 
 verbose
 .SH FILES
-At the time of writing, grids files designed for use with dbgmtgrid(3) and 
+At the time of writing, grid files designed for use with dbgmtgrid(3) and 
 covering the whole planet (notwithstanding a small region around the Weddell
 Sea and Ross Ice Shelf) are available at 
 http://www.gina.alaska.edu/page.xml?group=data&page=griddata.
@@ -181,11 +181,9 @@ If the -l option is used, temporary files generated during construction of the
 initial map will not be erased, allowing the resulting script to be run. However, 
 these files must then be cleaned up by hand (or left to litter /tmp), and 
 if the script is meant to be used at some later time the temp files should 
-be cached somewhere (many of them are generated from some automated code inside 
+be cached somewhere (many of them are generated from some automated code inside the dbrecenteqs toolbox that is not easily cast into the output script).
 
 If the -f option is specified, any -F option will be ignored. 
-
-the dbrecenteqs toolbox that is not easily cast into the output script).
 
 make_dbrecenteqs_map uses the GMT command gmtset(1) to set the GMT 
 MEASURE_UNIT to 'inch'. This setting may persist through the .gmtdefaults
@@ -201,6 +199,6 @@ parameters that these two programs share).
 .SH AUTHOR
 .nf
 Kent Lindquist 
-Lindquist Consulting
+Lindquist Consulting, Inc.
 .fi
 .\" $Id$
