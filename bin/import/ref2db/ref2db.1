@@ -35,7 +35,7 @@ It contains the instrument set-up information, the state-of-health
 information, and records on all events and their start&end&trigger times.
 The logfile name will be in a form of \fIDASID_log\fR. 
 .IP "-m srcname"
-Only packets which belongs to DAS with serial number \fIdasmatch\fR
+Only packets which belong to the DAS with serial number \fIdasmatch\fR
 will be converted to css3.0.  
 .IP "-p pfile"
 A parameter file can be specified for \fBref2db\fP which contains a 
@@ -52,8 +52,8 @@ be specified. \fIPS\fR is the default network code.
 .IP "-v"
 Will print to stderr srcname and time of every packet read.
 .IP "-w"
-Will not write data to database. This option is usefull when user
-wants only to get RefTek logfile or get information on data time gaps.
+Will not write data to database. This option is useful when the user
+wants only to get the RefTek logfile or get information on data time gaps.
 .IP "start_time end_time"
 Specifies a time range of the RefTek data to be processed.
  
@@ -64,22 +64,22 @@ jumps can be discovered in Data ( DT ) packets within one event as
 well as between Event ( EH&ET ) packets in a continuous data flow. 
 The following rule is used to calculate \fItime\fR in ref2db:
 .IP
-1. Time of a first data sample ( FDST ) of the event is equal to \fIFirst sample Time\fR
+1. Time of the first data sample ( FDST ) of the event is equal to \fIFirst sample Time\fR
 value from an Event Header ( EH ) packet.
 .IP
 2. Time of each next DT packet is calculated as:
 .nf
 		
-		DT_extected_time = FDST + NSAMP*SAMPRATE
+		DT_expected_time = FDST + NSAMP*SAMPRATE
 .fi
 .IP
-Where NSAMP is total number of samples of a current event 
+Where NSAMP is the total number of samples of a current event that
 were 
-read before that packet and SAMPRATE is a sample rate in a current 
-experiment. \fIDT_extected_time\fR will be used as a \fIreal time\fR 
-for that packet.  \fIDT_extected_time\fR is compared to a time value 
-of a DT packet to see that they are consistent. An information about 
-time jumps between data packets  and RefTek events are placed to \fBTimErr.log\fP
+read before that packet and SAMPRATE is the sample rate in a current 
+experiment. \fIDT_expected_time\fR will be used as a \fIreal time\fR 
+for that packet.  \fIDT_expected_time\fR is compared to a time value 
+of a DT packet to see that they are consistent. Information about 
+time jumps between data packets  and RefTek events is placed into the \fBTimErr.log\fP
 file.  
 .SH PARAMETER FILE
 .LP
