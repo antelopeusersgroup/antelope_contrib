@@ -10,12 +10,12 @@ dccmd [-p parameter-file]
 
 .fi
 .SH DESCRIPTION
-\fBdccmd\fP sends \fIcmdname\fR command with \fIcmdarg\fR arguments to 
+\fBdccmd\fP sends the \fIcmdname\fR command with \fIcmdarg\fR arguments to 
 DASes or DC itself through \fIdcname\fR, which usually specifies the IP 
-address of the DC. A \fIcmdarg\fR can be in form of 'regular   expression'
+address of the DC. \fIcmdarg\fR can be in the form of a 'regular expression'
 to specify multiple arguments to \fIcmdname\fR command.
-\fBdccmd\fP requires a presence of a parameter files wich contains all 
-existing in RT system DAS IDs (\fIpkt.pf\fR is default). 
+\fBdccmd\fP requires the presence of a parameter file which contains all 
+DAS IDs existing in the RT system (\fIpkt.pf\fR is the default). 
 The following commands and command arguments are supported by \fBdccmd\fP:
 
 .IP "IP new_dc_IP"
@@ -79,7 +79,7 @@ For example, reset dases with "6*" ids and das on TRO station.
 
 .fi
 .IP "TO dasid|staname"  
-set a DAS transmittion ON. A DAS can be specified
+set a DAS transmission ON. A DAS can be specified
 by a das number or by a station name where that das is located.
 For example, turn ON transmission of dases on all BB1* and BB2* station.
 .nf
@@ -97,7 +97,7 @@ For example, turn OFF transmission of dases with 812 and 933 ids.
 
 .fi
 .IP "XX dc_ip_address"
-reset DC. A DC IP addres must be specified as an command argument.        
+reset DC. A DC IP address must be specified as a command argument.        
 For example, reset 132.239.4.194 DC:
 .nf
 
@@ -125,8 +125,8 @@ For example, clear all 132.239.4.194 DC counters:
 .SH OPTIONS
 .IP "-p parameter-file"
 A parameter file \fIparameter-file\fR
-will be used to select all possible DAS IDs in a RT system.
-A \fBpkt.pf\fP parameter file is used by default.  
+will be used to select all possible DAS IDs in an RT system.
+The \fBpkt.pf\fP parameter file is used by default.  
 .IP "-v"
 Be more verbose.
 .SH EXAMPLE
