@@ -43,7 +43,7 @@ a required argument.
 .IP "\fIcommand\fR"
 The system call to be executed after reading a specified type of
 packet.  After substitution (see below) this is executed with
-a system(command ...) call.  This is a required argument.
+a system( \fIcommand\fP ...) call.  This is a required argument.
 
 .SH SUBSTITUTION
 
@@ -57,7 +57,7 @@ delimiters are treated as part of the parameter/field name.  See
 LIMITATIONS below.
 
 .IP "Substitution with the '%' delimiter:"
-Substitutions are made directly with parameters from paramter file packets
+Substitutions are made directly with parameters from parameter file packets
 or fields in database packets
 
 .IP "Substitution with the '@' delimiter:"
@@ -65,7 +65,7 @@ This can only be used with parameter file packets.  Substitutions should
 always be specified with the format '@<table>.<field>@'.  A database row
 for a given <table> will be extracted from the parameter file packet and
 the substitution will be with the value of <field> in that table record.
-A database schema of 'rt1.0' is assumed.
+A database schema of 'css3.0' is assumed.
 
 .SH EXAMPLES
 
@@ -104,7 +104,7 @@ associated number, time, pktid, etc. are not robustly checked.
 
 - Problems abound if the specified command string contains flags
 that are recognized by orbptrigger.
-i.e. 'orbptrigger ORB calc -number %lat%', will *not* work.
+e.g. 'orbptrigger ORB calc -number %lat%', will *not* work.
 
 .SH "NOTES"
 
