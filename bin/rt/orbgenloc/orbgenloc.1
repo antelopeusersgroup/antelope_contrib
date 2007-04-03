@@ -19,7 +19,7 @@ user must keep this in mind.  This algorithm is subject to the well known adage 
 geophysical inversion theory that, 
 "No amount of mathematical trickery can
 compensate for a fundamental lack of information."
-That is because this uses the standard iterative algorithm it can, an will, diverge in
+That is because this uses the standard iterative algorithm it can, and will, diverge in
 some circumstances.  It will post an answer back into the orb only if the algorithm 
 converges.  Otherwise it issues a diagnostic to the error log and goes on.
 .LP
@@ -41,7 +41,7 @@ to the long list of options in genloc (see genloc_intro(3)).
 .LP
 orbgenloc works by selecting only db packets.  The basic algorithm is as follows:
 .IP (1)
-Hunt for an "event" db packets.  Whenever one is found check auth file.  
+Hunt for an "event" db packet.  Whenever one is found check auth file.  
 If the auth is "orbassoc", fall into (2), otherwise discard it and grab the
 next packet.
 .IP (2)
@@ -54,7 +54,7 @@ It expects first to see an assoc row followed by an arrival row.  It checks each
 arrival row it finds after an assoc for a matching arid value.  
 .LP
 Note that the last step of this algorithm can fail if multiple processes emit 
-assoc and/or arrival record.  In order to prevent this the program limits the
+assoc and/or arrival records.  In order to prevent this the program limits the
 number of records that can be skipped in hunting for an arrival row associated
 with an arid identified by an assoc.  This is prehaps overly cautious as
 this should be a rare event even if multiple
@@ -64,7 +64,7 @@ is very low.  On the other hand, it is probably prudent anyway because
 it make the program simply more robust in the
 presence of data errors as well.
 .LP
-orbgenloc's output is a series of datascope db records saved with db2orbpkt.  This version
+orbgenloc's output is a series of Datascope db records saved with db2orbpkt.  This version
 writes what it can compute into three standard css3.0 db tables: origin, origerr, and
 assoc.  These records are then written back to the orb as /db/ packets where it 
 is assumed they will be archived
@@ -90,7 +90,7 @@ table with each event by calling dbnextid for orid.  This is essential to avoid
 id conflicts with orbassoc or other locators running off the same orb. 
 .LP
 \fIRT_logfile_directory\fR and \fIRT_failure_sdir\fR.  
-orbgenloc does a complete dump of it's parameter space
+orbgenloc does a complete dump of its parameter space
 for each event it processes and writes this information into 
 one of two directories defined by this pair of parameters.  
 For each event that is successfully located orbgenloc creates a 
@@ -130,7 +130,7 @@ the "origin"
 (The origin in orbgenloc isdefined by the genloc parameters 
 center_latitude and center_longitude that are otherwise used for
 an initial solution using a grid search. )
-The purpose of this is that it is always necessary to run different parameter
+The purpose of this is that it is always necessary to run different parameters
 for the program for local, regional, and teleseismic events. Furthermore, it is
 usually desirable to use different travel time calculators for different distances.
 With this mechanism it is expected a network would commonly use something like
@@ -150,7 +150,7 @@ set this parameter to the number of stations in the network.
 .LP
 \fIvelocity_model_name\fR name to be used in model field for output db records.  No
 checking is made to see if this is consistent with anything else, so be warned.  This could
-cause problem a user should be aware if when using the generic tt interface where a model is
+cause problems a user should be aware of when using the generic tt interface where a model is
 given a specific name in a different field in the parameter file.
 .LP
 The user may choose to run orbgenloc with an initial location chosen by 
@@ -179,11 +179,11 @@ gracefully, complain, and go on, but divergence is always a dangerous thing and 
 depends stongly on the stability of the travel time calculator you choose.
 .IP (2)
 If multiple instances of orbgenloc are run, be VERY CAREFUL that you do 
-not default the statefile or chaos may result.  Each instance better have a seperate statefile
+not default the statefile or chaos may result.  Each instance better have a separate statefile
 or you are asking for problems.
 .IP (3)  
 Remember that because orbgenloc uses the new table locking facility of the latest 
-version of datascope, orbgenloc should be run with the table locking facility enabled and
+version of Datascope, orbgenloc should be run with the table locking facility enabled and
 run only on a system where the master database is on a local drive.  
 The program will function on a remote machine and with the master db on an nfs mounted
 file system, but remember you can both win or lose when playing Russian roulette.

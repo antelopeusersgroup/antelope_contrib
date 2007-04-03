@@ -28,7 +28,7 @@ The key use of the input database for dbgenloc is to extract the
 site table.  The data are actually passed to dbgenloc through 
 a parameter file, but are cross referenced to the original database
 to assure consistence of arid values in building the assoc table.
-The major database output tables are origin, assoc, and origerr
+The major database output tables are origin, assoc, and origerr. 
 These are normally written under dbloc2's trial database to allow
 a series of trial solutions.  The user selects which they want to
 keep and which is to be the preferred origin under interactive
@@ -46,7 +46,7 @@ two features of the way genloc (not just dbgenloc) handles slowness
 data.  First, all slowness data are converted to Cartesian component form 
 (see genloc_intro for more on this) in spite of the fact that
 the arrival table stores this information in polar form.  That is,
-the data are ALWAY treated as Cartesian components.
+the data are ALWAYS treated as Cartesian components.
 Second, only the delslo 
 (slowness error estimate) field of the arrival record is ever looked
 at.  The delaz entry (error in azimuth) is always ignored.  
@@ -67,13 +67,13 @@ Main inputs to dbgenloc come through two parameter files:
 \fIdbgenloc.pf\fR, and \fIdbgenloc_default.pf\fR.
 The first is a dynamic file created in the working
 directory by dbloc2 and should not be edited by the user.
-The default parameter file can be anywhere convenience 
+The default parameter file can be anywhere convenient
 provided you pay attention to the path search rules for
 parameter files (see pfread(3)), but the most common 
 choice is the working directory from which you start dbloc2.
 .LP
 Because of the attempt to make genloc as general as possible, the
-number of control options that exist are large (see genloc_intro(3)).
+number of control options that exist is large (see genloc_intro(3)).
 The dbgenloc_default.pf file was created to simplify setting 
 these parameters for most people.  
 The recommended approach is to copy the version of dbgenloc_default.pf
@@ -106,7 +106,7 @@ use residual weighting with dbgenloc unless the number of arrivals exceeds
 about 20.  Residual weighting is a feature designed more for 
 an application like relocate(1).
 .LP
-There are some subtle issue about the parameters \fIdepth_ceiling\fR and
+There are some subtle issues about the parameters \fIdepth_ceiling\fR and
 \fIdepth_floor\fR the user should be aware of.  These two parameters
 limit the range of allowed source depths.  That is, source depths cannot
 lie above the specified ceiling or below the depth floor.  
@@ -141,9 +141,9 @@ Specify an alternate parameter file; the default is dbgenloc.pf.
 Options that might prove valuable to change in working with
 data interactively (the model of dbloc2) are changeable by 
 pushing the options button on the dbloc2 control panel when dbgenloc
-is selected.  The control panel is actually seperated into two 
+is selected.  The control panel is actually separated into two 
 parts:  (1) the main panel that appears when the options button is
-pushed, and (2) a secondary panel appears when the button
+pushed, and (2) a secondary panel that appears when the button
 labelled "Gridsearch options" is pushed.  If these are not
 self explanatory, more details are given in genloc_intro(3), and
 the parameters associated with each button should be clear.  
@@ -154,14 +154,14 @@ a setting, and running diff on the two files.
 Different travel time methods and models are specified by 
 phase handle parameter file descriptions that are expected to
 be stored in one or more directories below $ANTELOPE/data/tables/genloc.
-The distribution should contain a minimum of three examples in a
-a directories below this called:  taup, ttlvz, and uniform.
+The distribution should contain a minimum of three examples in 
+directories below this called:  taup, ttlvz, and uniform.
 Each directory should hold an example phase description for each 
 of the three travel time methods currently available with
 genloc.  That is, taup is for global scale data using the tau-p
 tables; ttlvz uses a stack of constant velocity layers; and 
 uniform implements a general travel time table interpolator.  
-(The later can be used as an alternative to directly using
+(The latter can be used as an alternative to directly using
 the taup calculator by use of the program taup_convert(1).).
 .LP
 The easiest way to alter these for your use is to choose

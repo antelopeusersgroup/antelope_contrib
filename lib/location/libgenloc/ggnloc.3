@@ -53,8 +53,8 @@ for residual weighting functions (see below) is also determined
 using the interquartiles rather than rms because the interquartile
 distance is well know to be a more robust measure of error scale.
 .LP
-\fIweighting\fR.  A range of complex weighting schemes are 
-supported.  This include a number of options for residual 
+\fIweighting\fR.  A range of complex weighting schemes is 
+supported.  This includes a number of options for residual 
 weighting schemes, a completely general distance weighting
 scheme that requires the user to enter a discrete representation
 of weight as a function of epicentral distance, and 
@@ -84,7 +84,7 @@ Hypocenter *h0 = starting guess to use for location.
 (The typedef for the Hypocenter and other objects referred to below
 are found in location.h)
 .LP
-Tbl *ta = Arrival time table returned by related function read_arrivals.
+Tbl *ta = Arrival time table returned by the related function read_arrivals.
 .LP
 Tbl *tu = Slowness vector returned by function read_slowness_vectors
 .LP
@@ -130,7 +130,7 @@ and can optionally include distance weights and/or residual weights.
 .IP (2)
 C is computed from a pure pseudoinverse no matter which generalized inverse 
 the user selected for running ggnloc.  That is, the program forms A_w=WA and 
-computed the SVD of A_w=USV^T.  C is then computed from the pure pseudoinverse 
+computes the SVD of A_w=USV^T.  C is then computed from the pure pseudoinverse 
 form C=V(S-2)V^T where S-2 is the diagonal matrix of reciprocal singular values 
 (squared).  The "pure" adjective means that we do not do singular value truncation 
 unless the singular value, s, is a machine zero.  This is established here in 
@@ -149,7 +149,7 @@ The predicted_errors function handles this by setting the rows and columns of
 C for any fixed parameter to 0.  Thus, C is always returned as a 4 by 4 array with 
 the rows/columns in x,y,z,t order, but whenever a fixed coordinate is used one or 
 more columns and rows are zeroed.  Programs using the output of this function 
-downstream with datascope and the css3.0 schema (notably dbgenloc, relocate, 
+downstream with Datascope and the css3.0 schema (notably dbgenloc, relocate, 
 and orbgenloc) can then  dump the full form of this matrix into the origerr table 
 with no complications.  
 .LP
@@ -162,8 +162,8 @@ with source to receiver distance and a slowness error scale factor.
 Here the bound on the model error in each travel time is computed with 
 a simple scale factor derived from the predicted travel time of each measured 
 travel time as b=dtscale*T.  dtscale is a fraction that describes how good 
-you think your vecocity model is.  Physically is is of the rate at which 
-travel time errors accumulate with time.  It's value is set independently 
+you think your velocity model is.  Physically it is of the rate at which 
+travel time errors accumulate with time.  Its value is set independently 
 for each phase in the phase description portion of the input parameter 
 space.
 .IP (2)

@@ -33,7 +33,7 @@ information by this mechanism is described in pfstream(5).  The key concept,
 however, is that the pfstream allows a way to transport relatively complex
 database tables in blocks through a streams mecahnism.  That is, a program
 can extract what amounts to a block of rows of a database that define 
-it's processing input.  These can be single tables structured as a view
+its processing input.  These can be single tables structured as a view
 formed by joining a sequence of tables, or blocks of distinct relational
 tables.  The primary processing model for input, however, is assumed
 to be a database view in which each block contains all the attributes 
@@ -65,13 +65,13 @@ The current library will
 only work on shared memory machines and is defined by the four routines listed
 above as "multithread readers and writers".  To initiate processing with 
 pfstream a read thread should be created by a call to \fIpfstream_start_read_thread\fR.
-This will open a connection to the file name passed to as it's single argument.
+This will open a connection to the file name passed to as its single argument.
 (This file can and probably normally should be a fifo, but it can be a plain 
 disk file in the pfstream format.)  The read thread starts reading and pushing
 Pf_ensemble data objects onto an internal queue that is thread safe.  Once the
 file is successfully opened and reading commences it returns a handle to the
 caller to this queue.  The normal sequence would then be for the caller to 
-enter a loop surrounded MPI calls to parallelize that loop.  Each MPI 
+enter a loop surrounded by MPI calls to parallelize that loop.  Each MPI 
 thread would then call pfget_next_ensemble in an outer, main processing loop.
 The loop can and should be terminated by a test for a NULL return from 
 pfget_next_ensemble.  
