@@ -13,8 +13,8 @@ class Datascope_Handle : public Database_Handle
 The \fIDatascope_Handle\fR object is an instantiation of an 
 abstract object called \fIDatabase_Handle\fR that is intended
 as a generic interface to any relational database system.
-The \fIDatascope_Handle\fR is an implementation for the
-Dan Quinlan's Datascope dbms maintained commercially by BRTT
+The \fIDatascope_Handle\fR is an implementation for 
+Dan Quinlan's Datascope DBMS maintained commercially by BRTT
 and used mainly in seismology.    
 .LP
 A \fIDatabase_Handle\fR must be understood to mean four fundamental
@@ -183,7 +183,7 @@ one or more databases several times in one run.
 .SH CONSTRUCTORS
 .LP
 There are currently three basic constructors that implement 
-a form of construction is resource acquisition.  That is, they 
+a form of resource acquisition.  That is, they 
 build the handle, but may do more and will throw an exception 
 if the resource cannot be acquired.
 .LP
@@ -209,7 +209,7 @@ Both are useful for any program that is table driven by
 a single database view.  The first one defines the
 basic algorithm:  dbprocess is called on 
 the Dbptr \fIdb\fR using the 
-Tbl& list of processing steps defined with the name
+&Tbl list of processing steps defined with the name
 \fItag\fR in the parameter file handle \fIpf\fR.  
 The second form is an all in one solution with
 the same basic algorithm:  open database \fIdbname\fR,
@@ -234,7 +234,7 @@ database views within the same program destroying the handle
 is problematic.  
 This is handled in a very simple way.  The close_on_destruction
 boolean variable is normally false.  This means that when a 
-handle goes out of scope normally (close_on_destructin is false)
+handle goes out of scope normally (close_on_destruction is false)
 nothing happens.  The database is closed ONLY when 
 close_on_destruction is set true.   The only way to make that
 happen is by an explicit call to close().  
@@ -244,7 +244,7 @@ It is not usually necessary to call it at all, but let the
 system handle all the housekeeping on exit.
 .SH OPERATORS
 .LP
-The ++ operator is implemented and acts as describe in the generic
+The ++ operator is implemented and acts as described in the generic
 handle description above.
 .LP
 The = operator is defined and simply copies the Dbptr.  
@@ -254,7 +254,7 @@ Most functions in this object can and will throw a seispp_dberror
 exception in the event of a problem. Use the seispp_dberror log_error
 function to dump the elog and internal message passed through the
 throw mechanism.  (Note this can be redundant and quite verbose.
-This assumes the model that exceptions are rare events.)  
+This assumes that exceptions are rare events.)  
 .SH EXAMPLE
 .SH LIBRARY
 -lseispp

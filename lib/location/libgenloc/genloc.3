@@ -24,7 +24,7 @@ int destroy_data_tables(Tbl *atable, Tbl *utable);
 .fi
 .SH DESCRIPTION
 .LP
-This collection of functions are used to read all the required 
+This collection of functions is used to read all the required 
 data for genloc location programs.
 The first group of functions with Pf arguments load data through
 parameter files.
@@ -64,7 +64,7 @@ slowness vector measurements.
 \fBdbload_arrival_table\fR and \fBdbload_slowness_table\fR 
 are the equivalent functions for reading from a database.
 The Arr pointers that are passed to
-any of functions are those returned in earlier calls as follows:
+any of the functions are those returned in earlier calls as follows:
 .nf
 stations = load_station_table();
 arrays = load_array_table();
@@ -83,7 +83,7 @@ calling \fBread_arrivals\fR or \fBread_slowness_vectors\fR.
 If no slowness or arrival time data are available, these routines
 will return a tbl object with no entries.
 .LP
-Note that for the datascope (db) interface, these functions assume
+Note that for the Datascope (db) interface, these functions assume
 the db pointer defines a view defined by a join between at least 
 the arrival and site tables.  The indices (is and ie) define the
 range of rows the routines should scan to build the associated 
@@ -96,7 +96,7 @@ If they are null, the structures returned by the input routines
 will have the associated data points set to a predefined default
 (see genloc_intro(3) description of phase description parameter
 files).  deltaz is always ignored.
-If delslo is set, it's value is used to define the uncertainty 
+If delslo is set, its value is used to define the uncertainty 
 of both components of the slowness vector.  
 This is done because genloc insists on treating all slowness
 vector data as components for reasons discussed in 
@@ -227,7 +227,7 @@ main(int argc, char **argv)
 $DBLIBS
 .SH DIAGNOSTICS
 .LP
-Numerous possible malloc error are trapped and all end with a call to die.
+Numerous possible malloc errors are trapped and all end with a call to die.
 There are also a large number of complaining type errors that
 will cause the program to blunder on and not abort.  The list
 is too long to effectively list here.  

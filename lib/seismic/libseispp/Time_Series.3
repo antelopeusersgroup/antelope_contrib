@@ -25,7 +25,7 @@ object is used to provide what is effectively a variable length
 header with parameters that can be extracted by name.  The
 namespace for the parameter definitions and their internal 
 meaning is largely implementation dependent although a few items
-(see below) have frozen names that are utilized by some
+(see below) have frozen names that are utilized by 
 the Metadata-based constructor (see below).  The Metadata concept
 and how it is expected to be applied is described in more
 detail in the metadata(3) man page.
@@ -56,7 +56,7 @@ public:
 That is, the object mainly defines a set of constructors 
 and operators (see below) and a specific
 implementation of the BasicTimeSeries virtual function zero_gaps.  
-Most of it's contents are acquired by inheritance.
+Most of its contents are acquired by inheritance.
 .LP
 The primary data item added by the \fITimeSeries\fR object is the
 actual sample data.  This is stored in the Standard Template Library
@@ -161,7 +161,7 @@ The current implementation is limited in capabilities due
 to the design concept for this constructor described above.
 Specifically, if datatype is anything but the host 
 float format (t4 for Suns and u4 for Intel boxes)
-thius constructor will throw a SeisppError (3) exception.  
+this constructor will throw a SeisppError (3) exception.  
 If datatype is valid the constructor
 will attempt to open the file dir/dfile, 
 seek to foff, read ns samples 
@@ -198,7 +198,7 @@ database attributes to be extracted from this database row
 are controlled by mdl and am in the manner described in
 detail in metadata(3).  Briefly, mdl and am control how attributes
 in the database are mapped to an internal Metadata namespace.  
-The list of attributes to extracted from the database are driven by 
+The list of attributes to be extracted from the database are driven by 
 mdl.  The basic algorithm is that for each element of mdl an
 associated attribute is extracted from the unique database 
 row defined by db.  This implementation then uses the 
@@ -231,7 +231,7 @@ void dbsave(TimeSeries& ts,Dbptr db,string table,
 .fi
 .LP
 This function saves a TimeSeries object to a Datascope database.
-The functions is fairly general, which complicates the
+The function is fairly general, which complicates the
 interface.
 The function takes the contents of ts and writes results to 
 database db storing metadata in table (usually wfdisc but 

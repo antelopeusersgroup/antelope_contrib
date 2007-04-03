@@ -12,7 +12,7 @@ the concept of a pfstream.  A pfstream is a way to encapsulate pieces
 of metadata related to some arbitrary data object.  It provides a 
 transfer structure to move data through a data-driven processing system.
 The structure of a pfstream is described in pfstream(5).  It builds on
-antelope pf file structure to essentially transfer database tables in
+Antelope pf file structure to essentially transfer database tables in
 ensembles that are blocks equivalent to grouping a database table.
 The program takes a pfstream input (file) and writes named parameters in
 the pfstream to an output database (db).  The output to the database can be 
@@ -163,7 +163,7 @@ The corollary worth noting here is that if there are problems in the pfstream
 data it can be very hard to find them.  Similarly, you need to have a good knowledge
 of how the data are organized in the pfstream or crazy results can be produced.  
 The expectation is that the writer of any algorithm that emits of pfstream 
-should supply a pf file to parse it's ouptut into an output database if that is
+should supply a pf file to parse it's output into an output database if that is
 what is desired.
 .SH AUTHOR
 .nf

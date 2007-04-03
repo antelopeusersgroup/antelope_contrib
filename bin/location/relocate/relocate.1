@@ -8,7 +8,7 @@ relocate dbin dbout [-pf pffile -useold -sift expression]
 .fi
 .SH DESCRIPTION
 .LP
-\fIrelocate\fR is a datascope db interface program to a css3.0 database designed for relocating
+\fIrelocate\fR is a Datascope db interface program to a css3.0 database designed for relocating
 a complete catalog of events using the genloc package of location routines.   The program
 will attempt to join all of the following css3.0 tables: \fBarrival, assoc, event, origin, origerr,
 site\fR.  The program will exit immediately if these tables cannot be joined.  
@@ -36,7 +36,7 @@ travel time calculator.
 \fIdbin\fR is the input css3.0 database with the required tables noted above. \fIdbout\fR is an
 output database.   It should probably normally be empty when the program is started.  When
 the program completes the following tables should be found in the output database: assoc,
-event, origin, and origerr.  The ones written to the output dbt are updated for this location
+event, origin, and origerr.  The ones written to the output database are updated for this location
 run.  Note that a number of static fields in these tables (e.g. comments and phase definitions) 
 are copied from the input db to the output with no change.
 .LP
@@ -59,7 +59,7 @@ to remove teleseismic associations from a local network catalog.
 .SH DIAGNOSTICS
 All the routines here use the error logging routines developed by Dan Quinlan (elog_notify,
 complain, register_error, etc.).  Many possible diagnostics can be found in this log that
-theoretically will help identify the problem.  Most errors will only generate a one or more
+theoretically will help identify the problem.  Most errors will only generate one or more
 diagnostics being written to the error log.  The program should die only if memory allocs fail
 or you hit a programming bug.  
 .SH "SEE ALSO"
@@ -70,7 +70,7 @@ orbgenloc(1), sgnloc(1), dbloc2(1), genloc_intro(3), genloc(3), ggnloc(3), pfrea
 .IP (1)
 This program should probably handle events from teleseismic associations more cleanly by
 keying off particular fields in the database that are commonly used to indicate this. I felt,
-however, that this was hardwiring too many specific feature in a code intended to be
+however, that this was hardwiring too many specific features in a code intended to be
 relatively general.  This can be done by later merging the complementary data with a perl or
 tcl script procedure.
 .IP (2) 

@@ -13,7 +13,7 @@ void free_MWtrace_matrix(MWtrace **t,int nrl, int nrh, int ncl,int nch);
 .fi
 .SH DESCRIPTION
 .LP
-This suite of functions implement the multiwavelet transform 
+This suite of functions implements the multiwavelet transform 
 as introduced by Lilly and Park (1995, Geophys. J. Int., 122, 1001-1021.)
 They utilize arrays of Tbls defined in stock.h and two special objects
 defined in multiwavelet.h.  These are:
@@ -43,7 +43,7 @@ functions to be used to compute the transform.  Note that f0, and fw
 are nondimensional center frequencies and bandwidths.  For a given 
 sample rate they are converted to a physical frequency by 
 multiplication with the Nyquist frequency for that sample rate.
-A set of MWbasis functions need to be loaded before computing
+A set of MWbasis functions needs to be loaded before computing
 the transform.  The load_multiwavelets routine provides a mechanism
 for doing this with parameter files.  It returns a pointer to an
 array of MWbasis objects and the number of these objects found (nwavelets).

@@ -19,7 +19,7 @@ in space.  As a result, the output of pmel often has multiple origin
 estimates for the same event from overlapping constellations of
 events associated with different grid points.  \fIpmelavg\fR 
 averages these multiple estimates in a fairly simple way and defines
-it's estimate as the prefor for that evid.
+its estimate as the prefor for that evid.
 .LP
 The averaging algorithm is the local OR of two fairly simple algorithms.
 (i.e. you can use one or the other or both cascaded together)
@@ -27,7 +27,7 @@ The first approach weights each location estimate by the reciprocal
 of the rms residual for that event (sdobs found in the origerr of
 CSS3.0).  The second uses a distance dependent weight.  Each
 event is compared to it's distance from the hypocentroid of the group 
-with which it is associated.  Below a cutoff distances set in the parameter
+with which it is associated.  Below a cutoff distance set in the parameter
 file (see below) an event is given full weight.  If the distance of an event
 from the hypocentroid of the group is larger than the cutoff a 1/r 
 weight is applied (correctly normalized to have a unit weight at the 

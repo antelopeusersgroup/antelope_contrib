@@ -11,7 +11,7 @@ In array processing the dnorth and deast fields of a css3.0 database
 are required to compute plane wave moveout corrections.  Modern
 broadband networks/arrays of stations often don't fill in these
 fields as when the aperture is large the use of dnorth and deast 
-is usually viewed as bad approximation of geometry.  However,
+is usually viewed as a bad approximation of geometry.  However,
 array processing routines still require these fields because the
 full spherical geometry calculation is cumbersome and, in fact,
 requires an assumed origin before it can be done correctly.  
@@ -21,7 +21,7 @@ plane wave statics that correct the moveout for wavefront curvature
 but still needs dnorth and deast to simplify the moveout computation.
 .LP
 This program uses a simple approximation in using the dist(3) function
-of datascope to compute a great circle path distance and bearing from
+of Datascope to compute a great circle path distance and bearing from
 the specified origin.  It then uses a simple trigonometric conversion
 to convert these to distance north and distance east in kilometers.
 .SH COMMAND LINE ARGUMENTS

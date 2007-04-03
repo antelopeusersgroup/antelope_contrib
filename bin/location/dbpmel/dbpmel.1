@@ -17,7 +17,7 @@ errors in the earth model can be absorbed into a set of simple
 time constants commonly called station corrections.  The \fBdbpmel\fR 
 program implements an exact solution for this problem within the 
 limitations of a linearization approximation.  That is, it solves
-a matrix problem in which the data are the observed arrival times of ensemble
+a matrix problem in which the data are the observed arrival times of an ensemble
 of events and the unknowns are: (1) the location of all events in the 
 ensemble and (2) a set of station corrections.  This approximation for
 earth model errors is only valid for some limited region of space.  
@@ -65,15 +65,16 @@ where the -> is used to symbolize a database join operation and A and B
 are modifiers (standard notation doesn't translate to a man page).  
 The A modifier here means that when the cluster table is accessed it is
 subsetted to only contain grid index values that the program was 
-instructed to process (see gridlist option description below).  The 
+instructed to process (see the gridlist option description below).  The 
 B modifier refers to a (standard) modifier for the event to origin 
 join where the view is subsetted to make the join one-to-one 
 ("orid==prefor" in Antelope syntax).  Once this view is formed the 
 processing is completely driven by this virtual table.  
 Each ensemble defined by a common "gridid" attribute in the cluster
 table is processed as a group.  The resulting solution is then saved
-to two output (extension tables to CSS3.0 defined in genloc1.1) called
-"gridstat" and "gridscor".  The "gridstat" table stores summary 
+to two output tables called "gridstat" and "gridscor", which are 
+extension tables to CSS3.0 defined in genloc1.1. 
+The "gridstat" table stores summary 
 statistical data for each grid point.  The "gridscor" table stores the
 station correction estimates keyed by gridid:sta:phase.  
 .LP
@@ -81,15 +82,15 @@ The program has a lot of options that can be set at run time through
 the input parameter file.  These are described below.    
 .SH OPTIONS
 .LP
-The \fBgridlist\fB argument is a comma separated list of gridid (integers) 
+The \fBgridlist\fP argument is a comma separated list of gridid (integers) 
 to be processed in this run.  Ranges of integers can be specified with two
 integers separated by the - symbol.  Multiple ranges can be specified and 
 mixed with simple numbers.  e.g. if gridlist is the string
 "1,5,500-5000,8000-10000"  dbpmel will process grid points defined by gridid
 of 1, 5, the range 500 to 5000, and the range 8000 to 10000.  Be warned that
 the working database view is formed by the outer range of this list so for 
-the example above the database would be subsetted include all grid ids from 
-1 to 10000.  It would, however, only process the grid point specified.  
+the example above, the database would be subsetted to include all grid ids from 
+1 to 10000.  It would, however, only process the grid points specified.  
 .LP
 The \fB-pf\fR flag is used to specify an alternative parameter file to the 
 stock one based on the name (i.e. dbpmel.pf).  
@@ -146,13 +147,13 @@ set true values stored in the dnorth and deast attributes of the
 site table will be treated as corrections to be added to the point
 defined in the lat and lon attributes.  WARNING: dnorth and deast 
 are used for an entirely different purpose by some other programs.
-dbap(1) and mwap (1) uses these fields for computing plane wave delays.
+dbap(1) and mwap (1) use these fields for computing plane wave delays.
 If these fields have been set by the setdne(1) program the internal
 geometry used by dbpmel may be vastly distorted.  For this reason
 this parameter should normally be set false.
 .LP
 Which phases to use are controlled explicitly through a list (&Tbl) 
-defined by the parameter \fBphases_to_use\fB.  It is also implicitly
+defined by the parameter \fBphases_to_use\fP.  It is also implicitly
 controlled by what phases you define with valid travel time 
 calculator descriptions (see above).  Having more travel times 
 defined than used by pmel is considered normal.  If phases_to_use
@@ -162,7 +163,7 @@ follow and dbpmel may or may not abort.
 \fBPMEL control parameters\fR
 .LP
 The location procedure does an iterative adjustment to locations and a
-set of station correct estimates.  Truncation of the hypocenter iterations
+set of station correction estimates.  Truncation of the hypocenter iterations
 are controlled by genloc parameters described in genloc_intro(3).  The 
 station correction loop truncation is controlled by two parameters.
 The loop can terminate on count as defined by the parameter 
@@ -271,7 +272,7 @@ gridstat table or the log file for the last gridid processed.
 The parallel processing implementation with MPI works but was done after the fact 
 leading to design problems.  It is only known to work on shared memory machines 
 (i.e. Sun Enterprise machines) and running it on a linux cluster is virgin 
-territory.  User's interested in a parallel processing implementation should
+territory.  Users interested in a parallel processing implementation should
 contact the author as a redesigned implementation is under development 
 that uses a completely different data flow model than dbpmel.
 .IP (4)

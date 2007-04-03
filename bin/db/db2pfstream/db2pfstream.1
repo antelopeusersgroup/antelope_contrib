@@ -21,7 +21,7 @@ for parallel processing algorithms that are data driven like
 most seismic applications.  
 .LP
 The \fBdb\fR and \fBfile\fR parameters are required.  
-db is assumed to be an antelope database and file is the output
+db is assumed to be an Antelope database and file is the output
 file name (can and would normally be a fifo created with 
 mkfifo).  The default assumes a parameter file exists 
 in PFPATH called db2pfstream.pf that controls most of what
@@ -46,7 +46,7 @@ Apply a final subset condition \fIexpression\fR to the working
 database view before starting.  This is most useful if a processing
 stream is being driven by a scripting language to do something 
 like event based processing one event at a time or for manually
-spitting up flow between banks of processors.  
+splitting up flow between banks of processors.  
 Otherwise this can generally be done more easily by modification of
 the parameter file to set the input view.
 .SH FILES
@@ -94,7 +94,7 @@ For more details see pfstream(5).
 .SH PARAMETER FILE
 .LP
 The input parameter file can get fairly long.  This is an abbreviated
-example forming part of the commond arrival view used
+example forming part of the command arrival view used
 in catalog preparations.  Check the standard one for a larger example:
 .nf
 
@@ -272,7 +272,7 @@ The interaction of the process_list, ensemble_key, and group_key
 parameters is complex and perhaps should be forced.  Here it is 
 up to the user to make sure they understand the database well enough
 and the grouping process to guarantee it all works right.  In general
-this should not be awful because stock pf files should be build for
+this should not be awful because stock pf files should be built for
 any application to be the receiver of a pfstream.
 .SH AUTHOR
 Gary L. Pavlis, Indiana University (pavlis@indiana.edy)
