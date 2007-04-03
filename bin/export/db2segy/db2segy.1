@@ -79,7 +79,7 @@ erroneous full scale transients for true data gaps not caused by
 clipping.  An exception to this rule is a "gap" flagged at the front
 or end of a trace.  Because this would commonly happen with variable
 start times on different traces gaps in the front or end of a trace
-will be zeroed instead set full scale.  
+will be zeroed instead of set to full scale.  
 .SH OPTIONS
 .IP -pf
 Alternate parameter file to use in place of db2segy.pf.
@@ -100,7 +100,7 @@ The output file passed as argument two will silently overwrite
 and existing file if one by the same name already exists.  This
 file is a segy tape image.  The 3200 byte EBCDIC reel header is written
 as a block of pure nulls.  The binary reel header is filled in 
-an written immediately after the EBCDIC section as required by 
+and written immediately after the EBCDIC section as required by 
 the standard.  The trace data follow.  
 .LP
 An optional extension table to css3.0 called segy1.0 can be used to 
@@ -185,13 +185,13 @@ will die if they do not appear in the list.  They are:
 wfdisc and site.  In addition, although sitechan is not
 totally required, the program will produce garbage if 
 three-component rotation is attempted and sitechan is not
-listed in this table.  Finally, note that the receiver coordinates placed
+listed in this table.  Finally, note that after the receiver coordinates placed
 in the SEGY header come the dnorth, deast fields of site.    
 .LP
 Most users are unlikely to need to 
 alter the default parameter file for this list. There is one special
 add on table that is commented out in the example below.  This table
-called "shot" is an extension to css3.0.  If the "shot" line appears
+called "shot", which is an extension to css3.0.  If the "shot" line appears
 here, db2segy looks for a database table called shot.  If it cannot
 find it defined in the schema it will be ignored.  If it is defined
 the shot table will be used to set the source coordinate information.  

@@ -34,7 +34,7 @@ it does not have to be.  On a spherical surface the spacing
 between nodes can only approximately be constant.  Similarly
 a GCLgrid3d may define a spherical shell broken into approximate
 cubes or it can be some more general shape.  The primary 
-restiction is that the library assumes that the mapping operator
+restriction is that the library assumes that the mapping operator
 from a standard rectangle (2D) or box (3D) does not fold space.
 This is the "Curvilinear" modifier.  It means that the coordinate
 axes and all grid lines form a mesh of curves that never cross 
@@ -44,7 +44,7 @@ spherical shell.
 
 The library centers on two critical algorithms:  lookup and interpolate.
 By lookup I mean given a point in space (on the earth) find the position
-of that point within the grid.  For uniformly divided box this is a 
+of that point within the grid.  For a uniformly divided box this is a 
 trivial calculation but for a distorted grid the process is never simple.
 The GCLgrid library uses a search method that is a form of Newton's
 method. We compute vector direction for the local tangent to each 
@@ -71,7 +71,7 @@ The interpolate method should only be called after a successful lookup.
 .SH INTERFACE
 .LP
 Here is the full definition of the data objects that define the
-GCLgrid interface.  They are defined beginning a the top of the
+GCLgrid interface.  They are defined beginning at the top of the
 class heirarchy and working down.  
 .ce
 \fIBasicGCLgrid\fR - Base Class 
@@ -175,9 +175,9 @@ gtoc(lat,lon,r) and ctog(x1,x2,x3).  These use the private variables
 gtoc_rmatrix and translation_vector to do this transformation.
 The Cartesian system is produced by translating spherical geometry 
 coordinates to a standard Cartesian system.  That system is defined
-with x1 through the intersection of the prime merdian and the equator,
+with x1 through the intersection of the prime meridian and the equator,
 x2 through the equator and +90 degrees longitude, and x3 through the
-north pole.  The Cartesian system in a GCLgrid translates this 
+North pole.  The Cartesian system in a GCLgrid translates this 
 coordinate system to an origin defined by the \fItranslation_vector[3]\fR.
 This coordinate system is then rotated by the transformation matrix
 defined as \fIgtoc_rmatrix\fR.  (Note that gtoc_rmatrix is orthogonal
@@ -214,8 +214,8 @@ The one with no parameters simply creates the basic structure using
 system generated constructors and sets the 2d array points all NULL.  
 It also initializes all regular variables to 0.
 GCLgrid(int n1size, int n2size) is similar but it allocates
-memory for the 2d coordinate arrays.  (See Memory Management section
-below)
+memory for the 2d coordinate arrays.  (See the Memory Management section
+below).
 The only complete constructor is this one:
 .in 2c
 .ft CW
@@ -319,7 +319,7 @@ class and the derived classes simply inherit them.
 .nf
 .LP
 The 3d version of a GCLgrid is similar to the 2d version.  In fact,
-it acquires most of it's members by inheritance.  Here is the 
+it acquires most of its members by inheritance.  Here is the 
 full description:
 .in 2c
 .ft CW
@@ -509,10 +509,10 @@ form:
 .nf
 OBJname(Dbptr db,string gclgname,string fieldname);
 .fi
-where db is a standard Antelope databae pointer, gclgname is the
+where db is a standard Antelope database pointer, gclgname is the
 name of the parent GCLgrid object to which the field is attached
 and fieldname is a unique name attached to the particular set of
-values to be used.  As in the GCLgrid objects there the inverse
+values to be used.  As in the GCLgrid objects, the inverse
 to this operation is a dbsave operation, which for this group of
 objects has this form:
 .nf
@@ -667,7 +667,7 @@ This left some legacies that are less than ideal, but
 have largely been worked through.  The history, however, is
 important for anyone to know.  
 .LP
-A few specific things about this worth pointing out are.
+A few specific things about this worth pointing out are:
 .IP (1)
 The use of lat,lon,r coordinates in the external storage of
 a gclgrid and only using Cartesian coordinates for the 

@@ -74,11 +74,11 @@ The user should recognize that the implicit assumption is
 that all transformation matrices are relative to the 
 fixed reference frame of earth geographical coordinates.
 This has the well known failing for the existing GSN station
-at the south pole but handling that one special case 
+at the South pole but handling that one special case 
 was not something I chose to address.
 .LP
 The \fItmatrix\fR stores the current transformation matrix
-of the data relative to cardinal coordinate. 
+of the data relative to the cardinal coordinate. 
 Hence, if components_are_cardinal is true you should find
 that tmatrix is an identity.  
 .LP
@@ -104,12 +104,12 @@ plane); and x1 (original east) is transformed to
 a transverse component relative to nu (defined as 
 a horizontal vector perpendicular to 
 the transformed x2=radial and x3=longitudinal). 
-Note this yield data in an orthogonal reference frame.
+Note that this yields data in an orthogonal reference frame.
 .LP
 The \fIfree_surface_transformation\fR function is similar
 in some ways to the \fIrotate\fR function but it 
 transforms the data to a coordinate system that is not
-orthogonal.  I computes the free surface transformation
+orthogonal.  I compute the free surface transformation
 matrix defined by Kennett (1991, GJI,vol. 104, p. 153-163).
 The result is a ray coordinate transformation with 
 x1=transverse, x2=radial, and x3=longitudinal.  This 
@@ -117,7 +117,7 @@ transformation is defined by the slowness (ray parameter)
 in s/km of a plane wave and the surface P (vp0) and
 S (vs0) velocities (both in units of km/s).  
 Be aware also that not only is this transformation not
-orthogonal it also changes the relative amplitudes of the
+orthogonal, it also changes the relative amplitudes of the
 P and S components.   That is, it does not preserve 
 original vector amplitudes.   
 This function will throw a SeisppError object if the surface
@@ -125,7 +125,7 @@ velocities passed to the function are higher than the apparent
 velocity (1/ray_parameter)  as the transformation matrix used
 will not work for post-critical wavefields.
 .LP
-The \fIapply_transformation_matrix\fR functions more generic.
+The \fIapply_transformation_matrix\fR functions more generically.
 It simply applies the 3x3 transformation matrix to the data.
 .LP
 Note that all coordinate transformations are accumulative.
@@ -196,8 +196,8 @@ on this constructor determines
 whether or not the constructor should attempt to read data into 
 the u matrix.  This switch was a design feature to allow flexibility
 in input.  The concept is that simple input 
-(defined as a raw binary data in host float format)
-is handled by the allowing
+(defined as raw binary data in host float format)
+is handled by allowing
 this constructor to directly and blindly read such data.  
 Other formats are assumed to require more work with a specialized function.
 In those cases the expectation is that the user would
@@ -206,8 +206,8 @@ and convert and store the results in the u matrix.
 This model is applicable to any format I know of so I viewed this generic
 approach preferable to adding a long string of constructors for the 
 plethora of formats that exist for three-component seismic data.  When load_data is 
-true a second set of parameters are extracted from the Metadata object, md.
-These must be present of the constructor will fail.  The required symbols
+true a second set of parameters is extracted from the Metadata object, md.
+These must be present or the constructor will fail.  The required symbols
 are:
 .nf
 .in 2c
@@ -232,7 +232,7 @@ Note that this simple mechanism does not currently support
 any data gap definitions.
 The current implementation is limited in capabilities due
 to the design concept for this constructor described above.
-Specifically, if datatype is anything but the host float foramt
+Specifically, if datatype is anything but the host float format
 the constructor will throw a SeisppError (3) exception.  
 This function also requires the data for a three-component
 station be contiguous.  Either matrix order is allowed, 
@@ -314,7 +314,7 @@ log_error(), and discard such data or abort.
 .SH NON-MEMBER FUNCTIONS
 .LP
 There are two different \fIdbsave\fR functions that save a
-ThreeComponentSeismogram object contents to a Datascope
+ThreeComponentSeismogram object's contents to a Datascope
 Database.  The prototypes are:
 .nf
 void dbsave(ThreeComponentSeismogram& ts,Dbptr db,string table,
@@ -335,7 +335,7 @@ are written to the Datascope database db in table "table"
 using the set of names in md with internal to external namespace
 mapping defined in am.  
 This function has two frozen properties.  First, the 
-output channels are ALWAYS called:  E, N, and Z.  Secondly, to
+output channels are ALWAYS called:  E, N, and Z.  Second, to
 be consistent with this naming convention rotate_to_standard is
 always called before output.
 .LP

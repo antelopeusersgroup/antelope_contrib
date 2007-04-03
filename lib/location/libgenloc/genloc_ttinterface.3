@@ -190,7 +190,7 @@ slowness vectors (ucalc) for a specified source and
 receiver geometry.  These functions need to satisfy 
 the following guidelines:
 .IP (1)
-Two seperate interface routines are required.  One for
+Two separate interface routines are required, one for
 computing theoretical travel times and one for 
 theoretical slowness vectors.  
 .IP (2)
@@ -199,12 +199,12 @@ When mode == ALL (defined in location.h) the routines
 should return both the travel time (slowness vector) 
 and all the associated partial derivatives.  
 If mode is anything else, only the travel time 
-(slowness vector) needs to be returned.  Note it is
+(slowness vector) needs to be returned.  Note it 
 is harmless to always return partial derivatives, but
 in most cases this requires significantly more 
 calculations.  The routine MUST, however, be capable
 of returned partial derivatives when requested, or it
-will be disfunctional.  
+will be dysfunctional.  
 .IP (3)
 Both routines must arrange to return a standard error
 code if they fail for some reason.  The travel time
@@ -364,12 +364,12 @@ Pn  &Arr{
 .LP
 This effectively turns Pn on only from 1.4 to 10 degrees with 
 a grey region on each side.  The upper limit is clearly 
-arbitrary, but the lower limit assures paths inside the 
+arbitrary, but the lower limit ensures that paths inside the 
 Pn crossover distance aren't treated as Pn.
 .LP
 \fICheap trick 3:\fR
 Very simple travel time tables can also prove useful in some
-case like Lg.  In this case, the travel time table can be define
+case like Lg.  In this case, the travel time table can be defined
 by as few as four points.  
 Here is an example:
 .nf
@@ -402,7 +402,7 @@ Any 1D calculator can, in principle, be replaced by
 the uniform table interpolation interface.  All that is
 required to interface your algorithm into genloc, in this
 case, is to just use the algorithm to generate a suitable
-table.  Two examples of this already exist are: 
+table.  Two examples of this that already exist are: 
 (a) taup_convert(1) makes repeated calls to the tau-p 
 library to build a set of travel time tables for any
 phase the tau-p library knows about; and (b) tabcalc(1) and
