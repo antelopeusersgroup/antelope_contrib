@@ -13,7 +13,7 @@ int project_covariance(double **C, int model, double *conf, double rms,
 .fi
 .SH DESCRIPTION
 .LP
-This pair of routines are used to compute location error estimates in
+This pair of routines is used to compute location error estimates in
 the genloc location package.  The \fIpredicted_errors\fR function 
 computes the fundamental components used to estimate a location error
 estimate and \fIproject_covariance\fR is a more specialized function
@@ -25,7 +25,7 @@ to error ellipse parameters needed for saving in a css3.0 database.
 Hypocenter structure (defined in location.h) defining current hypocenter
 location for which errors are to be appraised.
 .IP attbl
-List contain pointers to Arrival structures used as input to genloc
+List containing pointers to Arrival structures used as input to genloc
 location module (see ggnloc(3)).
 .IP utbl
 Same as attbl but this list contains pointers to array Slowness_vector 
@@ -69,7 +69,7 @@ F_DIST uses an F-distribution to scale the error ellipse using
 the rms variable (see below) according to the classic paper
 by Flinn (1965).  The concept is rms scaling is supposed to 
 measure location accuracy including model errors.  In practice,
-however, it is now know this is not reliable error model.  It is
+however, it is now known this is not a reliable error model.  It is
 used as an option largely as a way to get results that can be compared to
 older programs.  
 .IP conf
@@ -77,7 +77,7 @@ Confidence level to use in computing error ellipses.  Currently only
 0.683 or 0.90 will be accepted without generating an error diagnostic
 (1 sigma and 2 sigma error ellipses).  Note that if any other value is
 passed for conf it will be ALTERED internally to be the nearest value 
-to 0.683 or 0.90.  This was done be assure that if conf is written to 
+to 0.683 or 0.90.  This was done be ensure that if conf is written to 
 a database the actual confidence used will be correctly stored in origerr.
 .IP rms
 This is the square root of the sum squared WEIGHTED residuals computed

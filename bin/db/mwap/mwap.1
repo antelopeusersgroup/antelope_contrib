@@ -32,7 +32,7 @@ major use of these special functions in this program is to
 measure phase.  Most of the manipulations in the program, however,
 involve phase measurements made on transient signals by using
 complex pairs of wavelets that are similar in form to windowed
-sine and consine functions.   The "multi" modifier comes from
+sine and cosine functions.   The "multi" modifier comes from
 the fact that multiple, orthogonal functions are used to produce
 independent estimates in the same band.  This permits robust
 averaging in an attempt to make estimates more stable and simultaneously
@@ -41,7 +41,7 @@ provide objective error estimates of the resulting parameters.
 Seismic data are read from an input css3.0 database.  The program
 looks at the event, origin, assoc, arrival, wfdisc, site, and 
 sitechan tables and the integrity of the database is assumed.  
-The actual reads use the current antelope trace library so whatever
+The actual reads use the current Antelope trace library so whatever
 datatypes the trace library supports can be read by this program.
 The program will attempt to process the entire database using
 evid-based grouping.  Use a sift parameter if subsets of the
@@ -56,22 +56,22 @@ reasonable.  Extensive use of robust estimators help some in
 stability, but the number of free parameters seem to render the results
 somewhat unpredictable in the presence of strong outliers.  
 .LP
-The major inputs parameters to this program are through a parameter file 
-that defaults to mwap.pf.  The list of parameter is long and 
+The major input parameters to this program are through a parameter file 
+that defaults to mwap.pf.  The list of parameters is long and 
 described in detail in a related html document (see below).
 The major output of the program is a series of extension tables
 to css3.0 called:  mwslow (slowness vector estimates),
 mwtstatics (time statics table), mwastatics (amplitude statics
-table), mwpm (particle motion estimate table), mwsrn (holds signal to 
+table), mwpm (particle motion estimate table), mwsnr (holds signal to 
 noise ratio estimates for different analysis bands), and mwavgamp 
 (array average amplitude estimates in each band).  
 .SH COMMAND LINE ARGUMENTS
 .IP db
-datascope database name to process.
--IP -phase
+Datascope database name to process.
+.IP -phase
 This parameter allows specification of an alternative phase to the default P.  
 The trailing character is a phase name is use to distinguish P and S 
-phases.  e.g. PS is assumed to be a S wavefield at the array.
+phases.  e.g. S is assumed to be an S wavefield at the array.
 The distinction is important because S phases are rotated
 differently and S velocities are used to compute elevation statics
 instead of P velocities. 

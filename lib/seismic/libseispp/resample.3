@@ -34,7 +34,7 @@ The constructor for a \fIResamplingDefinitions\fR object is
 driven by a parameter file description (see pf(3)).  The
 pf object to be passed to the constructor would normally be
 built itself using pfread as part of a program's initialization.
-The format of the parameter file assumed to used to construct
+The format of the parameter file assumed to be used to construct
 pf is fairly complex and is described in detail in 
 dbresample(1), which is an application built around this function.
 As usual for this kind of thing the best advice is to edit 
@@ -95,7 +95,7 @@ dbsave(tsnew,db,"wfdisc",mdl,am);
 The \fIResampling_Defininitions\fR  constructor and the \fIResampleTimeSeries\fR
 function will throw a SeisppError(3) in the event of a serious problem.  
 In both cases the result is null.  For the constructor one would normally abort.
-For data processing handling failure of the resampling function is application 
+For data processing, handling failure of the resampling function is application 
 dependent.
 .SH LIBRARY
 -lseispp -ltrvltm -lpfstream -lbrttutil $(TRLIBS) $(DBLIBS) -lperf -lgclgrid
