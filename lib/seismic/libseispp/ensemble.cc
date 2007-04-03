@@ -30,6 +30,80 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(const TimeSeriesEnsemble& tceold)
 	for(int i=0; i<nmembers; ++i)
 		member.push_back(tceold.member[i]);
 }
+TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& rdb,
+	MetadataList& station_mdl,
+        	MetadataList& ensemble_mdl,
+        		AttributeMap& am)
+{
+	int i;
+	int nsta;
+	const string this_function_base_message("TimeSeriesEnsemble database constructor");
+	TimeSeries *d;
+	DatascopeHandle& dbh=dynamic_cast<DatascopeHandle&>(rdb);
+	try {
+		// Will throw an exception if this isn't a group pointer
+		DBBundle ensemble_bundle=dbh.get_range();
+		nsta = ensemble_bundle.end_record-ensemble_bundle.start_record;
+		// We need a copy of this pointer 
+		Dbptr dbparent=ensemble_bundle.parent;
+		--dbparent.table;
+		DatascopeHandle dbhv(ensemble_bundle.parent,
+			dbparent);
+		// Necessary because the ThreeComponentSeismogram
+		// constructor uses a generic handle
+		DatabaseHandle *rdbhv=dynamic_cast
+			<DatabaseHandle *>(&dbhv);
+		// Loop over members
+		for(i=0,dbhv.db.record=ensemble_bundle.start_record;
+			dbhv.db.record<ensemble_bundle.end_record;
+			++i,++dbhv.db.record)
+		{
+			try {
+				d = new TimeSeries(*rdbhv,
+					station_mdl,am);
+			} catch (SeisppDberror dberr)
+			{
+				cerr << "Problem with member "
+					<< i 
+					<< " in ensemble construction" << endl;
+				dberr.log_error();
+				cerr << "Data for this member skipped" << endl;
+				continue;
+			}
+			catch (MetadataError& mderr)
+			{
+				mderr.log_error();
+				throw SeisppError(string("Metadata problem"));
+			}
+			member.push_back(*d);
+			delete d;
+			// copy global metadata only for the first 
+			// row in this view
+			if(i==0)
+			{
+				DatascopeHandle dbhvsta;
+				if(dbhv.is_bundle)
+				{
+					DBBundle sta_bundle=dbhv.get_range();
+					dbhvsta=DatascopeHandle(
+						sta_bundle.parent,
+						sta_bundle.parent);
+					dbhvsta.db.record=sta_bundle.start_record;
+				}
+				else
+				{
+					dbhvsta=dbhv;
+				}
+				Metadata ens_md(dynamic_cast<DatabaseHandle&>(dbhvsta),
+					ensemble_mdl,am);
+				copy_selected_metadata(ens_md,
+					dynamic_cast<Metadata&>(*this),
+					ensemble_mdl);
+			}
+		}
+
+	} catch (...) { throw;};
+}
 //
 // Currently don't define this globally in an include file
 // so will place prototype inline here.  These routines come
