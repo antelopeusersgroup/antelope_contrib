@@ -34,14 +34,14 @@ did not exist in the metadata object or there was
 a type mismatch.  The assumption is that a handler
 need only know that the get process failed and it
 should give the user feedback on why it might have
-failed.  Hence, it contains only a extended message
+failed.  Hence, it contains only an extended message
 facility to dump the error message using the \fIlog_error()\fR
 function.  
 .LP
 The \fIMetadataParseError\fR function is implementation
 specific.  The metadata object as currently defined uses
 an Antelope Pf "object" to store the abstract concept 
-I've called "metadata.  A \fIMetadataParseError\fR
+I've called "metadata."  A \fIMetadataParseError\fR
 is thrown by metadata constructors when a parameter file or
 string used to build the Pf fails on a pfcompile error.
 A \fIMetadataParseError\fR object thus contains the 
