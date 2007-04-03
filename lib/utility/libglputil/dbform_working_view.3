@@ -18,9 +18,9 @@ algorithm is this:  pfget_tbl is called against the parameter
 name passed through the tname argument on pf;  dbprocess is then called on
 the database defined by db using the Tbl created by pfget_tbl as
 an argument; and the resulting db pointer is returned.  If anything
-in this process fails errors or posted by the elog mechanism and 
+in this process fails, errors are posted by the elog mechanism and 
 db.record will be returned as dbINVALID.  This error should be 
-caught and handled as it means the view will not be useable.  
+caught and handled as it means the view will not be usable.  
 .SH PARAMETER FILE
 Here is an example fragment from a parameter file that shows how
 this can be used.  

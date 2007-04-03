@@ -80,16 +80,16 @@ This allows a generalized header to be attached to the data.
 .LP
 The Metadata space is created by one of several constructors.
 Metadata(char*) uses Antelope's pfcompile function
-to append parameter file like input data loaded in the form
+to append parameter file like input data loaded in the form of
 a string (char * and string forms are supplied for convenience).  
 The Pf constructor, Metadata (Pf*), is similar but appends the
 contents of Pf in the Metadata object's namespace.  
 .LP
-There is a varient of the parameter file constructor with the
+There is a variant of the parameter file constructor with the
 calling sequence \fIMetadata(Pf *pfi, string tag)\fR.  
 This allows extraction of nested Pf items labelled with "tag"
 but containing other parameters within the tagged item. 
-The item tagged must be labelled as at &Arr{ parameter file
+The item tagged must be labelled as an &Arr{ parameter file
 entry or the contents cannot be parsed correctly.
 Here is an example of how this is used in the a program
 called pwstack to define parameters for two data objects
@@ -202,7 +202,7 @@ wfdfile		dfile			wfdisc		string
 Note the order of the tokens is fixed and the top row is a comment
 that defines this rigid order.  Tokens are separated by standard
 unix white space.  When the constructor reads this data there must
-be exactly four token per line or the constructor will throw a
+be exactly four tokens per line or the constructor will throw a
 MetadataError exception object (see below).  
 The \fIis_key\fR field is optional and when missing the constructor sets
 the is_key boolean to false.  
@@ -225,7 +225,7 @@ Most users will wish to use the default constructor for the AttributeMap
 or the one with a single string argument schema.
 The default constructor loads a file from the global pf data area
 for Antelope and assumes a mapping appropriate for the css3.0 schema.
-The parameterized version scan for the name set in schema instead of
+The parameterized version scans for the name set in schema instead of
 the default css3.0.
 You should check the file (seispp_attribute_maps.pf) for the full
 definition of namespace mapping including aliases.  That is, the
@@ -272,7 +272,7 @@ The db pointer, db, is expected to be one row of a database view.
 This can be a join of several tables as the table names are resolved
 through the AttributeMap.
 .LP
-More limited parameters can put placed in the Metadata object one
+More limited parameters can be placed in the Metadata object one
 at a time with the put functions.  (There is only one
 function name because C++ allows overloading.)  Single entries in
 the Metadata object can be deleted with the remove function.  
@@ -314,13 +314,13 @@ pf(3), pf(5), pfecho(1),
 http://seismo.geology.indiana.edu/~pavlis/seispp/seispp/
 .fi
 .SH "BUGS AND CAVEATS"
-LP
+.LP
 The AttributeMap object adds complexity to something that is already
 a bit messy. Applications using these functions should strive to hide
 this element of the implementation from normal use.  In most cases this
 is expected to mean you will build a static AttributeMap pf description
 for all programs using this library and a particular database 
-schema.  In the same way the mdlist can and should be prepared in
+schema.  In the same way the mdlist can and should be prepared in a
 standard pf file for a program, placed in the standard Antelope location
 for pf files, and not be advertised to the user.  
 .SH AUTHOR
