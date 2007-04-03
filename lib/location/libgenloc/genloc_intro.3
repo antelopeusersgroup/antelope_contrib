@@ -5,7 +5,7 @@ genloc_intro - introduction to generic/generalized event location library
 .SH DESCRIPTION
 \fBgenloc\fR is a collection of routines that form the core of a
 new suite of event location tools. 
-I refer to these procedures as genloc as a shorthand for for generic or,
+I refer to these procedures as genloc as a shorthand for generic or,
 alternatively, generalized location.  
 This was done because the intent of the original design was to 
 produce a set of location modules that were flexible enough that
@@ -14,7 +14,7 @@ location code.  At present, however, this is largely limited
 to the class of algorithms that are variants of what I 
 would call the "standard method".  This is a class of method variously
 known as (1) nonlinear least squares, (2) Gauss-Newton method, or
-(3) Geiger's method.  A wide range of solution are actually possible
+(3) Geiger's method.  A wide range of solutions are actually possible
 with this package, however, due to wide flexibility in the choice
 of various weighting schemes and the method of solving the 
 matrix of partial derivatives that are an integral part of this 
@@ -31,7 +31,7 @@ This package has at least eight features that together make it different from
 any existing location code I'm aware of.
 .IP (1)
 It accepts arbitrary combinations of arrival time and array slowness vector
-measurements.  This also implicitly include particle motion information
+measurements.  This also implicitly includes particle motion information
 measured from three-component stations provided these measurements 
 are cast in terms of a slowness vector.
 .IP (2) 
@@ -92,7 +92,7 @@ The genloc routines all use a long list of options loaded into
 the different programs through a parameter file.  Some programs
 have special parameters peculiar to that program.  
 This man page describes all parameters common to all the 
-program based on this package.  Other parameters special to 
+programs based on this package.  Other parameters special to 
 a particular interface are described only in that program's
 man page.
 .LP
@@ -130,7 +130,7 @@ scatter of order 1.0.  Horrible things happen if this is not
 forced upon the data.  To guarantee this happens, internally 
 I calculate a scale factor using a well known robust statistic
 for this scale factor known as the interquartiles.  
-These are calculated by first scaling all data by 
+These are calculated by first scaling all data by the
 reciprocal of the given 
 time uncertainty (see data parameter section below).
 We take these numbers, calculate the interquartiles, and determine
@@ -178,7 +178,7 @@ Slowness data are intrinsically of a different scale than arrival time
 data.  The weights of all slowness data are multiplied by this scale
 factor.  This can be used to increase or decrease the importance 
 assigned to array data relative to arrival time data.  I reiterate,
-however, that ALL data are scaled by 1/uncertainty parameters that
+however, that ALL data are scaled by 1/uncertainty parameters that are
 loaded with the data or set from defaults (see below).
 .ce
 \fIInversion Parameters\fR
@@ -204,16 +204,16 @@ sets the singular value cutoff used to form the pseudoinverse.
 Note this is a relative cutoff value.  The actual singular value 
 cutoff is determined from the largest singular value of the 
 matrix that is inverted.  That is, if smax is the largest singular
-value, we delete singular values from pseudoinverse solution 
+value, we delete singular values from the pseudoinverse solution 
 smaller than smax*singular_value_cutoff.  A typical value to 
 use for most data is about 0.001 to 0.0001. 
 .LP
 The second invokes a damped least squares commonly attributed to 
-Marquardt.  I utilize the the dynamically variable damping form of
+Marquardt.  I utilize the dynamically variable damping form of
 this methodology in which the damping parameter is adjusted 
 automatically at each iteration.  The basic recipe is to 
 increase damping whenever a calculated step would lead to 
-an increase in rms, and decreasing the damping factor in
+an increase in rms, and to decrease the damping factor in
 a regular way otherwise.  For this to be stable, however, 
 we require three parameters:  (1) a ceiling on the damping 
 parameter, (2) a floor on the damping parameter, and (3) an
@@ -225,7 +225,7 @@ here by parameters called
 Note that the first two are labeled "relative" because they 
 are not defined by an absolute scale, but are scaled by the
 largest singular value of the matrix being solved in the 
-same way as singular_value_cutoff parameter is defined above.  
+same way as the singular_value_cutoff parameter is defined above.  
 Reasonable ranges for these three numbers are 1 to 10 for
 max_relative_damp, 0.0001 to 0.000001 for min_relative_damp, 
 and 5 to 10 for damp_adjust_factor.
@@ -323,7 +323,7 @@ the rms minimum of the solution has a very flat floor.
 This may be proper, but the answer in this case can depend 
 strongly on the starting solution.  My general opinion, is
 that this parameter should be used as a fallback 
-to terminate marginal solutions that bounce around in 
+to terminate marginal solutions that bounce around in a
 flat floored rms valley and never converge when measured by
 spatial adjustments.  I recommend setting this parameter to 
 0.001 to 0.0001. 
@@ -358,7 +358,7 @@ GEYG36   37.9293   58.1125    0.6629
 Note that both tables are identical and contain: name, latitude,
 longitude, elevation (in km).  They are set in a parameter file
 as a Tbl object.  The only difference for the seismic_arrays 
-table is that the name field may by be doubled for a given array 
+table is that the name field may be doubled for a given array 
 due to different subarray configurations.  In the example 
 shown these are referenced to a common origin, but this may 
 not always be the case.
@@ -504,7 +504,7 @@ time_station_corrections, ux_station_corrections,\fR and
 \fBuy_station_corrections\fR.  The admittedly verbose names
 should make most of their purposes obvious.  
 Note that the units of all time quantities are seconds and 
-slowness related quantitites have units of s/km.
+slowness related quantities have units of s/km.
 .LP
 Two less obvious parameters are \fBdt_bound_factor\fR and \fBdu_bound_factor\fR.
 These are used in computing "model error" estimates following
@@ -537,7 +537,7 @@ a given station-phase-data type, that term will be set to 0.0.
 The bottom level of the hierarchy in this set of parameters is
 the travel time section.  A dependency on the form of the 
 parameter file pertaining to calculation of travel times for 
-a given phase depend upon the setting of the parameter
+a given phase depends upon the setting of the parameter
 \fRtravel_time_calculator\fR.  At present this keyword should
 be followed by one of three strings used to define the travel
 time calculator:  (1) ttlvz, (2) "uniform table interpolation"
@@ -622,7 +622,7 @@ In contrast, the relocate program doesn't even look at
 this parameter, but obtains these data from a css3.0 database.
 .LP
 By default it is assumed that slowness_vectors are tabulated
-as shown:  phase name, array, ux, uy, delta_ux, and delta_uy
+as shown:  phase name, array, ux, uy, delta_ux, and delta_uy.
 Again if delta_ux or delta_uy are set to a negative number, 
 the default defined for this phase will be used.  
 Two options exist for slowness data.  
@@ -636,7 +636,7 @@ tabulated by components ux (east positive) and uy (north positive)
 of the slowness vector.  If the parameter \fBslowness_format\fR
 appears, followed by the string "azimuth", it is assumed that
 the two numbers following the array name are the 
-slowness (units can be specified in either degrees of km if
+slowness (units can be specified in either degrees or km if
 the \fBslowness_units\fR parameter is used).  Only standard 
 azimuths measured in degrees are accepted.  
 .LP
@@ -646,7 +646,7 @@ The relocate interface does not use this set of parameters.
 Instead it extracts this information from the arrival table of
 the css3.0 schema.  dbgenloc and orbgenloc do the same, but
 the relationship is a little more complex.  
-A key fact about the database interface it is worth noting
+A key fact about the database interface worth noting
 here is the manner in which these routines handle the 
 uncertainty estimates.  This is discussed in some detail in
 genloc(3) and dbgenloc(1) where the context is a little clearer.
@@ -799,7 +799,7 @@ revert to only using minus phases.
 A final requirement is that any minus phase must have a full
 description in the phase handle section.  That is, one must have
 built a phase handle for each desired "minus" phase.  
-Note `that minus phase
+Note that the minus phase
 handle can be built for multiple difference-based phases
 (e.g. S-P, PP-P, pP-P, etc.) 
 
@@ -834,8 +834,7 @@ relative_rms_convergence_value                  0.0001
 .fi
 .LP
 The above constants are hard wired into the code, 
-and some were
-found to later be less than ideal.  
+and some were found later to be less than ideal.  
 A better starting point, in all cases, is to use sample
 parameter files found in $ANTELOPE/data/pf.
 .SH FILES
@@ -848,7 +847,7 @@ Instead, they follow a model similar to dblocsat where
 the tables are assumed to be in a standard place.  In 
 particular, the given name is assumed to be a relative
 path from the location defined by the environment variable
-GENLOC_MODELS.  That is, the function involve calls
+GENLOC_MODELS.  That is, the function involved calls
 pfload on a file $GENLOC_MODELS/tables/genloc/x where
 x is the value entered for the parameter 
 \fBtable_file\fR. 
@@ -856,7 +855,7 @@ Note that this name should not have the appending ".pf" in
 accordance with the usual rules for parameter files.
 .LP
 \fBnx\fR and \fBnz\fR define the number of points in
-the grid.  nx, is obviously the number of points in epicentral distance.
+the grid.  nx is, obviously, the number of points in epicentral distance.
 .LP
 \fBdx\fR and \fBdz\fR define the grid point spacing and have mixed units.
 dx is specified in degrees, and dz is specified in kilometers.  These
@@ -915,7 +914,7 @@ if you wish to make a set of tables using a routine other than
 taup_convert, you may well be able to get by with setting that column
 of the table to 0.0 everywhere.  du/dx is largest for direct 
 wave branches at offsets less than the source depth.  Everywhere
-else the dominate terms come from angle terms and terms that
+else the dominant terms come from angle terms and terms that
 scale with slowness.  Note, for example, that existing programs
 like LOCSAT implicitly ignore terms involving du/dx anyway by
 keying on the azimuth rather than the slowness vector components. 
