@@ -89,8 +89,13 @@ public:
 	*	each member relative to the stack.  Traces similar to the stack are given a high weight
 	*	while traces that have low coherence are strongly downweighted.  
 	* \param method defines the stack method that should be used to form this stack.
+	* \param power in robust method the weight loss function is taken to 
+	*    this power (default 1.0).  Weights are 0 to 1 so increasing powers
+	*    make the loss function increasingly aggressive at downweighting
+	*    outliers.  This parameter is ignored for anything but
+	*    the RobustSNR method.
 	*/
-	Stack(TimeSeriesEnsemble& d,TimeWindow stack_twin, TimeWindow robust_twin, StackType method);
+	Stack(TimeSeriesEnsemble& d,TimeWindow stack_twin, TimeWindow robust_twin, StackType method,double power=1.0);
 	/*! Standard copy constructor. */
 	Stack(const Stack& old);
 	/*! Standard assignment operator. */

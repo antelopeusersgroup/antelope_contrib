@@ -78,7 +78,7 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow twin)
 //    are MedianStack and RobustSNR.  Note that StackType is an enum.
 // 
 //@}
-Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twin, StackType method) 
+Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twin, StackType method,double power) 
 {
 	int i,j;
 	double moveout;
@@ -196,8 +196,14 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 			nsamp=stack.sample_number(robust_twin.end)
 				-stack.sample_number(robust_twin.start)+1;
 			i0=stack.sample_number(robust_twin.start);
+			if(i0<0)
+				throw SeisppError(basemessage
+				  + string("robust window inconsistent with")
+				  + string(" data window") );
 			raw_data=dmatrix(nsamp,fold);
 			r=dmatrix(nsamp,fold);  // residual matrix
+			raw_data.zero();
+			r.zero();
 			for(i=0;i<fold;++i)
 			{
 				dcopy(nsamp,&(stackdata[i].s[i0]),1,raw_data.get_address(0,i),1);
@@ -221,6 +227,7 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 				for(j=0;j<fold;++j)
 				{
 					ampscale=ddot(nsamp,&(work[0]),1,raw_data.get_address(0,j),1);
+					ampscale=abs(ampscale);
 					for(i=0;i<nsamp;++i)
 					{
 						r(i,j)=raw_data(i,j)-ampscale*work[i];
@@ -231,7 +238,12 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 					nrmd=dnrm2(nsamp,raw_data.get_address(0,j),1);
 					nrmr=dnrm2(nsamp,r.get_address(0,j),1);
 					rweight[j]=ampscale/(nrmd*nrmr);
-					coh[j]=1.0-((nrmr*nrmr)/(nrmd*nrmd));
+					if(power!=1.0)
+						rweight[j]=pow(rweight[j],power);
+					if(nrmr==nrmd)
+						coh[j]=0.0;
+					else
+						coh[j]=1.0-((nrmr*nrmr)/(nrmd*nrmd));
 					if(coh[j]<0.0) coh[j]=0.0;
 					amplitude_statics[j]=ampscale;
 					sumwt+=rweight[j];
