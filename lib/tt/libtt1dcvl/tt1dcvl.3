@@ -35,7 +35,7 @@ should instead call ttcalc with the method set to tt1dcvl.  The
 ttcalc interface handles the translation.
 .LP
 The libtt1dcvl.so shared library uses a special feature of Solaris.
-The library contains and _init function that is involked when
+The library contains an _init function that is invoked when
 the library is loaded dynamically.  In the case of tt1dcvl this
 causes the package to open database tables that are used by 
 the program to set up the velocity model.  Model names are used
@@ -49,7 +49,7 @@ library uses is one called mod1d.
 
 .SH FILES
 .LP
-A valid set of datascope files containing a descriptor file and
+A valid set of Datascope files containing a descriptor file and
 an associated mod1d table (defined by the descriptor) are necessary
 or these functions will only return errors.  
 .SH ENVIRONMENT
