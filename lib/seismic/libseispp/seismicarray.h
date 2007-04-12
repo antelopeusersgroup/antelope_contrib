@@ -122,6 +122,9 @@ object is not for examining geometry changes in time.
 \param netname is network name assigned to the result.  It can be a single SEED
    net code if that is appropriate, but it is probably 
   best viewed as a virtual network name.
+
+\exception SeisppError is throw if there are no live stations
+  found at the requested time. 
 **/
 	SeismicArray(DatabaseHandle& dbh,double time, string netname);
 /*! Constructs the object from a database, but load only stations from a specified

@@ -76,7 +76,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 	DatascopeHandle dbh(dynamic_cast<DatascopeHandle&>(dbi));
 	dbh.natural_join("site","snetsta");
 	int jdate=yearday(time);
-	int ondate,offdate;
+	int ondate=0,offdate=0;
 	dbh.rewind();
 	vector<int> ondl,offdl;
 	vector<int>::iterator ondlmin,offdlmin;
@@ -142,6 +142,10 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 			<<"Unhandled exception. SeismicArray object may be incomplete."<<endl;
 		}
 	}
+	if(offdl.empty() && ondl.empty())
+		throw SeisppError(string("SeismicArray database constructor:")
+			+ string("  no stations found in the db marked live")
+			+ string(" at time ")+string(strtime(time)) );
 	if(offdl.empty() || ondl.empty())
 	{
 		if(offdl.empty())offdate=2050001;
