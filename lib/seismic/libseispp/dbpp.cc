@@ -416,6 +416,10 @@ void DatascopeHandle::lookup(string t)
 	if(db.table==dbINVALID)
 		throw SeisppDberror(string("lookup:  lookup failed for table"
 			+ t),db,complain);
+	// Looking up a table forces this to be valid.
+	// Problematic for a named view, but I'm not supporting
+	// that concept in this interface anyway.
+	is_bundle=false;
 }
 DBBundle DatascopeHandle::get_range()
 {
