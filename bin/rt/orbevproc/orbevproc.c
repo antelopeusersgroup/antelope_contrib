@@ -28,6 +28,8 @@
 #define	TYPE_ORB	0
 #define	TYPE_DB		1
 
+static double tperl=0.0;
+
 typedef struct process_params_chan_ {
 	char chan[16];
 	double tlast;
@@ -698,6 +700,7 @@ print_logs (Pf *pf, char *class, int event, void *perlobj)
 	Pf *tblpf;
 	Pf *tblpf2;
 	int i, m, n;
+	double t0;
 
 	if (parse_param (pf, "logs", P_TBLPF, 1, &tblpf) < 0) {
 		clear_register (0);
@@ -745,12 +748,15 @@ print_logs (Pf *pf, char *class, int event, void *perlobj)
 		}
 	}
 
-OUTPR:	if (perlembed_method (perlobj, "main::clearlogs",
+OUTPR:	t0 = now();
+	if (perlembed_method (perlobj, "main::clearlogs",
 				NULL,
 				NULL) < 0) {
+		tperl += now() - t0;
 		register_error (0, "print_logs: perlembed_method(main::clearlogs) error.\n");
 		return (-1);
 	}
+	tperl += now() - t0;
 
 	return (0);
 }
@@ -942,11 +948,13 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 	Tbl *stas;
 	ProcessParams *proc_list;
 	double expire_time;
+	double t0;
 
 	/* Make a new object instance for each of the perl processing classes */
 
 	sv = NULL;
 	sprintf (sub, "%s::new", poin->perlclass);
+	t0 = now();
 	if (perlembed_call (sub,
 			PERLEMBED_TYPE_STR, poin->perlclass,
 			PERLEMBED_TYPE_STR, "db", PERLEMBED_TYPE_DB, &dbpkt,
@@ -956,21 +964,26 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 				NULL,
 			PERLEMBED_TYPE_SV, &sv,
 				NULL) < 0) {
+		tperl += now() - t0;
 		register_error (0, "make_perlobj: perlembed_call(%s) error.\n", sub);
 		return (-1);
 	}
+	tperl += now() - t0;
 
 	/* get the list of waveform times for processing */
 
 	sprintf (sub, "%s::getwftimes", poin->perlclass);
+	t0 = now();
 	if (perlembed_method (sv, sub,
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
 		perlembed_destroy ( sv ) ;
+		tperl += now() - t0;
 		register_error (0, "make_perlobj: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
+	tperl += now() - t0;
 	if (parse_perlobj_output (pf, disposition, &pfout) < 0) {
 		pffree (pf);
 		perlembed_destroy ( sv ) ;
@@ -1161,17 +1174,21 @@ process_channel_callback (ProcessParams *pp, Dbptr dbtrace, int flush)
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
+	double t0;
 
 	sprintf (sub, "%s::process_channel", pp->po->perlclass);
+	t0 = now();
 	if (perlembed_method (pp->po->perlobj, sub,
 			PERLEMBED_TYPE_DB, &dbtrace,
 			PERLEMBED_TYPE_INT, flush,
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
+		tperl += now() - t0;
 		register_error (0, "process_channel_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
+	tperl += now() - t0;
 
 	/* check the return disposition */
 
@@ -1206,17 +1223,21 @@ process_station_callback (ProcessParams *pp, int flush)
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
+	double t0;
 
 	sprintf (sub, "%s::process_station", pp->po->perlclass);
+	t0 = now();
 	if (perlembed_method (pp->po->perlobj, sub,
 			PERLEMBED_TYPE_STR, pp->sta,
 			PERLEMBED_TYPE_INT, flush,
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
+		tperl += now() - t0;
 		register_error (0, "process_station_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
+	tperl += now() - t0;
 
 	/* check the return disposition */
 
@@ -1239,16 +1260,20 @@ process_network_callback (ProcessObject *po, int flush, int type, Dbptr dbout, i
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
+	double t0;
 
 	sprintf (sub, "%s::process_network", po->perlclass);
+	t0 = now();
 	if (perlembed_method (po->perlobj, sub,
 			PERLEMBED_TYPE_INT, flush,
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
+		tperl += now() - t0;
 		register_error (0, "process_network_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
+	tperl += now() - t0;
 
 	/* check the return disposition */
 

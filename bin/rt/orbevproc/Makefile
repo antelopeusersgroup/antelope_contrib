@@ -11,7 +11,7 @@ MAN1 =
 
 PF = orbevproc.pf dbevproc.pf
 
-ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lassoc -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
+ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lwffil -lassoc -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
 
 include $(ANTELOPEMAKE)
 DIRS=
