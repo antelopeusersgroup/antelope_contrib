@@ -116,7 +116,7 @@ require "getopts.pl";
   } 
 
   if ( $Pf =~ /\.pf/) {
-       print STDERR "\n Do not use the 'pf' extension when specifying the paramter file. \n";
+       print STDERR "\n Do not use the 'pf' extension when specifying the parameter file. \n";
        &usage;
   }
 
