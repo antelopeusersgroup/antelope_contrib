@@ -6,6 +6,7 @@ rt_daily_return \- write data gaps for a database over a time period into db
 \fBrt_daily_return \fP[-vz]
         [-n \fInetcode\fP]
         [-s \fIsubset\fP]
+        [-d \fIdelay_days\fP] 
         [-t \fIstart_time\fP]
         [-e \fIend_time\fP]
             \fIdbin\fP \fIdbout\fP 
@@ -13,7 +14,15 @@ rt_daily_return \- write data gaps for a database over a time period into db
 .SH DESCRIPTION
 \fBrt_daily_return\fP writes a summary of data gaps for a database \fIdb\fP by channel.
 The output database contains a list of all gaps by station, channel, and
-time, along with network summaries.  
+time, along with network summaries.  Program starts with the oldest data which is
+not already in the gap table, and steps forward in day increments to the last assumed 
+complete day of data.
+
+This is set up for realtime systems 
+with reasonable size field buffers and we are attempting to measure the data return through the 
+realtime system.  For example the 32 Mbyte Q330s stores more than 24 hours of data for a 40 sps 
+acquistion rate, a CD1.0 system might have up to 14 days.
+
 Program execs rtoutage(1) for each day of data processed.
 .SH OPTIONS
 .IP "-n netcode"
@@ -23,6 +32,8 @@ determined through the snetsta table, not affiliation.
 .IP "-s subset"
 Perform the specified \fIsubset\fP on the input table (or sensor) to select
 the desired stations and channels.
+.IP "-d delay_days"
+Number of complete days to delay processing. The default value is 1 day delay.
 .IP "-t start_time"
 When to start processing.
 .IP "-e end_time"
@@ -45,6 +56,7 @@ gap_report(1)
 rtreport(1)
 .fi
 .SH "BUGS AND CAVEATS"
-None.
+This program is designed to work on day long intervals.  All times are rounded off to the day
+boundaries.
 .SH AUTHOR
 Frank Vernon
