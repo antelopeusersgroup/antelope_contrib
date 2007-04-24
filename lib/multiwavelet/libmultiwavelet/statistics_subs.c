@@ -59,7 +59,8 @@ double dthomson(double x,double beta)
 	
 
 /* Sort compare function for qsort function */
-int compare_float(const void *v1,const void *v2)
+static int 
+compare_float(const void *v1,const void *v2)
 {
 	float *x1,*x2;
 	x1 = (float *)v1;
@@ -68,7 +69,8 @@ int compare_float(const void *v1,const void *v2)
         else if(*x1==*x2) return (0);
         else return(1);
 }
-int compare_double(const void *v1,const void *v2)
+static int 
+compare_double(const void *v1,const void *v2)
 {
 	double *x1,*x2;
 	x1 = (double *)v1;
