@@ -11,7 +11,8 @@ extern int GenlocVerbose ;
 #define register_error  if ( GenlocVerbose ) elog_notify
 
 /* Sort compare function for qsort function */
-int compare_float(const void *v1,const void *v2)
+static int 
+compare_float(const void *v1,const void *v2)
 {
 	float *x1,*x2;
 	x1 = (float *)v1;
