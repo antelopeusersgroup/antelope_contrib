@@ -27,7 +27,7 @@
 #include "coords.h"
 #include "orb.h"
 #include "brttpkt.h"
-#include "brttfilter.h"
+#include "wffil.h"
 #include "brttutil.h"
 #include "response.h"
 #include "stock.h"
@@ -1447,7 +1447,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 		else complain (0, "mycallback: cannot support instrument deconvolution\n");
 		return (0);
 	} else if (sp->apply_wa_filter) {
-		type = BRTTFILTER_NEW;
+		type = WFFILFILTER_NEW;
 		fil = NULL;
 		obuf = NULL;
 		if (!strcmp(rsptype, "V")) {
@@ -1466,12 +1466,12 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			else complain (0, "mycallback: chantracebuf_filter() error.\n");
 			return (0);
 		}
-		fil_free (fil);
+		free_hook (fil);
 		memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 		chantracebuf_free (obuf);
 	} else {
 		if (!strcmp(rsptype, "V")) {
-			type = BRTTFILTER_NEW;
+			type = WFFILFILTER_NEW;
 			fil = NULL;
 			obuf = NULL;
 			/*if (chantracebuf_filter (&fil, &type, buf, &obuf, "BW 0 0 0.3 1", 1) < 0) {*/
@@ -1480,13 +1480,13 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
 				return (0);
 			}
-			fil_free (fil);
+			free_hook (fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 			chantracebuf_free (obuf);
 			/*gain = 2080.0 * 1.e-6 / (0.3*2.0*M_PI);*/
 			gain=1.0;
 		} else if (!strcmp(rsptype, "A")) {
-			type = BRTTFILTER_NEW;
+			type = WFFILFILTER_NEW;
 			fil = NULL;
 			obuf = NULL;
 			strcpy(filter_specification,sp->filter);strcat(filter_specification,";");strcat(filter_specification,sp->filter);
@@ -1495,7 +1495,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
 				return (0);
 			}
-			fil_free (fil);
+			free_hook (fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 			chantracebuf_free (obuf);
 			/* gain = 2080.0 * 1.e-6 / ((0.3*2.0*M_PI) * (0.3*2.0*M_PI)); */

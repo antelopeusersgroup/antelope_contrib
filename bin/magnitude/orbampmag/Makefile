@@ -7,7 +7,7 @@ CLEAN= core .make.state
 PF = orbampmag.pf mb.pf ml.pf ms.pf
 
 ldflags = 
-ldlibs = -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) $(THREAD)
+ldlibs = -lbrttpkt -lwffil -lbrttutil $(ORBLIBS) $(THREAD)
 
 include $(ANTELOPEMAKE)
 DIRS=
