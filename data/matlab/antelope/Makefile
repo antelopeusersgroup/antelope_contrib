@@ -23,11 +23,15 @@ uninstall :: FORCED
 
 FORCED:
 
-$(ANTELOPE)/include/mex_antelope_makerules : solaris linux darwin
+$(ANTELOPE)/include/mex_antelope_makerules : solaris linux darwin darwin-intel
 	@case `uname -s` in \
 	    SunOS) deposit -r solaris $@; echo deposit -r solaris $@ ;; \
 	    Linux) deposit -r linux   $@; echo deposit -r linux $@ ;; \
-	    Darwin) deposit -r darwin  $@; echo deposit -r darwin $@ ;; \
+	    Darwin) case `uname -p` in \
+		powerpc) deposit -r darwin  $@; echo deposit -r darwin $@ ;; \
+		i386) deposit -r darwin-intel  $@; echo deposit -r darwin-intel $@ ;; \
+		*) echo "Error: processor type `uname -p` on Darwin not recognized." ;; \
+	    esac ;; \
 	    *)  echo "Error: System type `uname -s` not recognized." ;;\
 	esac
 
