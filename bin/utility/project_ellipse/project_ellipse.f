@@ -72,7 +72,7 @@ c
 
 c  early return if error ellipse not specified
       if (se(1)+se(2)+se(3)+iaaz(1)+iaaz(2)+idip(1)+idip(2) .eq. 0.)
-&     return
+     *     return
 
 c------- rotate ss matrix back into (lon,lat,up) coordinates.
       do 720 i = 1,3
