@@ -26,7 +26,7 @@ int offscale(
   ChPipe	*chpipe;
   int 		i, npkts;  
   Ch 		*crnt_chan=0; 
-  ulong_t       fullsc= 0x80000000;
+  unsigned long fullsc= 0x80000000;
   long 		lta;
   int		*data;
   int 		max_nsamp,
