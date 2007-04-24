@@ -248,7 +248,7 @@ int change_wfd( char *dbname, int dbrec, int wfrec )
     double samprate, crnt_time, rectime;
     Dbptr dbout;
     struct stat stat_buf;
-    ushort_t doff;
+    unsigned short doff;
     int dcode, foff, wfdoff; 
     int seed=0;
     char datatype[4], sta[8], ssta[8], chan[12], schan[4];
