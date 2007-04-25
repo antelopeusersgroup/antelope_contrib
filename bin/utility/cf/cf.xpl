@@ -58,7 +58,7 @@ sub pf2grammar {
 			$$ref .= "\\033[$part\\m";
 		}
 
-		@clauses = @{pfget($pf,"expressions{$color}")};
+		@clauses = @{pfget($pf,"$expressions\{$color}")};
 
 		next unless( @clauses );
 
@@ -85,14 +85,23 @@ $normal = "\033[00\m";
 
 $Pf = "cf";
 
-if( ! &Getopts( "gnp:t" ) ) {
+if( ! &Getopts( "e:gnp:t" ) ) {
 
-	die( "Usage: cf [-n] [-t] [-g] [-p pfname] [filename [filename ... ]]" );
+	die( "Usage: cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [filename ... ]]" );
 }
 
 if( $opt_p ) {
 	
 	$Pf = $opt_p;
+}
+
+if( $opt_e ) {
+	
+	$expressions = $opt_e;
+
+} else {
+	
+	$expressions = pfget( $Pf, "default_expressions" );
 }
 
 if( $opt_t ) {

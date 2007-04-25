@@ -3,7 +3,7 @@
 cf \- colorize text based on filters specified in a parameter file
 .SH SYNOPSIS
 .nf
-cf [-n] [-t] [-g] [-p pfname] [filename [...]]
+cf [-n] [-t] [-g] [-e expressions] [-p pfname] [filename [...]]
 .fi
 .SH DESCRIPTION
 The color-filter program \fBcf\fP is a simple line-based scanner that 
@@ -51,16 +51,20 @@ a sequence of codes to use before the matching expression, a colon,
 and a sequence of codes to use after the matching expression (this can 
 be used, for example, to highlight the first word of a line and leave the 
 rest colored similarly). For example, the following entry will reproduce 
-the string matchine the regular-expression in bold blue, then reproduce
+the string matching the regular-expression in bold blue, then reproduce
 the rest of the line in normal (i.e. non-bold) blue:
 .nf
 
     blue       34 01 : 00 34
 
 .fi
-The second major block of the \fIcf.pf\fP parameter file is the 
+The second major block of the \fIcf.pf\fP parameter file is an 
 \fIexpressions\fP
 array,  which gives a set of expressions to be presented in each display mode. 
+There may be several such arrays in the parameter file, each named after 
+its intended purpose; the -e option allows specification on the command line 
+of the one to use. If no -e option is given, the \fIdefault_expressions\fP
+parameter names the array of expressions to use. 
 See the example below in the PARAMETER FILE section. Each expression should be 
 a regular expression understood by Perl. The expressions are sorted into 
 tables, one each for each of the display-modes listed in the \fIescapes\fP 
@@ -84,17 +88,21 @@ has no matching expression in the parameter file, that line will be
 displayed normally). 
 
 .SH OPTIONS
+.IP "-e expressions"
+Specify the name of an array of regular expressions to use, which should 
+match one of the array names in the parameter file. If this option is 
+not specified, the array named by the \fIdefault_expressions\fP 
+parameter is used. 
 .IP -g
 Print the grammar automatically generated from the parameter-file, then 
 exit. 
 .IP -n
 Restore the terminal to normal output in the rare event that the color-filter,
 or downstream applications to which its output is piped, leaves everything
-in an unusual state (exits immediately without further processing). 
+in an unusual state. With this option, \fBcf\fP exits immediately without
+further processing. 
 .IP "-p pfname"
-Specify a parameter-file name other than the default \fIcf.pf\fP This 
-may be useful if the color-filter is used to parse the output of other 
-commands, for example CVS updates. 
+Specify a parameter-file name other than the default \fIcf.pf\fP.
 .IP -t
 Activate the Parse::RecDescent tracing mechanism to analyze the 
 logic of the automatically generated grammar
@@ -102,8 +110,13 @@ logic of the automatically generated grammar
 .SH ENVIRONMENT
 .SH PARAMETER FILE
 The parameter file below shows a simplified version of the default 
-parameter file \fIcf.pf\fP, which is constructed to interpret the output 
-of compilation with an antelopemakefile(5): 
+parameter file \fIcf.pf\fP. Two tables of expressions are shown, one
+of which is constructed to interpret the output 
+of compilation with an antelopemakefile(5) and the other of which is 
+constructed to interpret Concurrent Version System (CVS) messages. If the 
+expressions array to use is not explicitly specified on the command line 
+(-e option), the array given in the \fIdefault_expressions\fP parameter 
+is used:
 .nf
 
 escapes &Tbl{
@@ -114,13 +127,15 @@ escapes &Tbl{
 	cyan       36
 }
 
-expressions &Arr{
+default_expressions make
+
+make &Arr{
    red &Tbl{
 	^Error:
 	^.*undefined symbol:
    }
    green &Tbl{
-	^\\+[[:space:]]+[^[:space:]]+ 
+	^\\\\+[[:space:]]+[^[:space:]]+ 
    }
    magenta &Tbl{
 	^.*gcc.*: unrecognized option
@@ -142,6 +157,31 @@ expressions &Arr{
    }
 }
 
+cvs &Arr{
+   red &Tbl{		# Problem, needs manual intervention
+	^C[[:space:]]
+   }
+   green &Tbl{		# Notable differences, not necessarily a problem
+	^M[[:space:]]
+   }
+   blue &Tbl{		# Notable changes, results OK
+	^P[[:space:]]
+	^G[[:space:]]
+	^W[[:space:]]
+	^A[[:space:]]
+	^R[[:space:]]
+   }
+   magenta &Tbl{	# Alerts, could be problems
+	^\\\\?[[:space:]]
+	cvs update: warning
+	cvs update:.*skipping CVS directory
+   }
+   cyan &Tbl{		# Standard operations and results
+	cvs update: Updating
+	^U[[:space:]]
+   }
+}
+
 .fi
 .SH EXAMPLE
 .in 2c
@@ -159,27 +199,11 @@ then
 
 .fi
 in a directory with an Antelope Makefile (this should produce a colored
-output of the compile process). Alternatively, consider this skeleton
-example for interpreting the output of cvs update commands:
+output of the compile process). Alternatively, interpret the output of 
+cvs update commands, again using the parameter-file above:
 .nf
 
-% cat cfcvs.pf 
-escapes &ref(cf,escapes)
-
-expressions &Arr{
-   red &Tbl{
-           ^\\?[[:space:]]
-   }
-   green &Tbl{
-           ^M[[:space:]]
-   }
-   cyan &Tbl{
-           ^cvs update: Updating
-   }
-}
-%
-
-% cvs update -d -P . | cf -p cfcvs
+% cvs update -d -P . | cf -e cvs
 
 .fi
 
@@ -224,6 +248,6 @@ between line-by-line and en-masse processing.
 .SH AUTHOR
 .nf
 Kent Lindquist
-Lindquist Consulting
+Lindquist Consulting, Inc. 
 .fi
 .\" $Id$

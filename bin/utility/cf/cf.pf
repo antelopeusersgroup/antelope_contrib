@@ -1,12 +1,29 @@
+#ANSI 6429 constants:
+black      30
+red        31
+green      32
+yellow     33
+blue       34
+magenta    35
+cyan       36
+white      37
+normal     00
+brighten   01
+underline  04
+blink      05
+background 07
+
 escapes &Tbl{
-	red        31 
-	green      32 01 07 : 00 32
-	blue       34 01 : 00 34
-	magenta    35
-	cyan       36 01 : 00 36
+	red        &red 
+	green      &green &brighten &background : &normal &green
+	blue       &blue &brighten : &normal &blue
+	magenta    &magenta
+	cyan       &cyan &brighten : &normal &cyan
 }
 
-expressions &Arr{
+default_expressions make
+
+make &Arr{
    red &Tbl{
 	^\\*\\*\\* Error code
 	^.* error:
@@ -166,5 +183,43 @@ expressions &Arr{
 	^touch[[:space:]]
 	^tsort[[:space:]]
 	^[[:space:]]*unix_rm[[:space:]]
+   }
+}
+
+cvs &Arr{
+   red &Tbl{		# Problem, needs manual intervention
+	^C[[:space:]]
+   }
+   green &Tbl{		# Notable differences, not necessarily a problem
+	^M[[:space:]]
+   }
+   blue &Tbl{		# Notable changes, results OK
+	^P[[:space:]]
+	^G[[:space:]]
+	^W[[:space:]]
+	^A[[:space:]]
+	^R[[:space:]]
+   }
+   magenta &Tbl{	# Alerts, could be problems
+	^\\?[[:space:]]
+	cvs update: warning
+	cvs update:.*skipping CVS directory
+   }
+   cyan &Tbl{		# Standard operations and results
+	cvs update: Updating
+	^U[[:space:]]
+   }
+}
+
+template &Arr{
+   red &Tbl{
+   }
+   green &Tbl{
+   }
+   blue &Tbl{
+   }
+   magenta &Tbl{
+   }
+   cyan &Tbl{
    }
 }
