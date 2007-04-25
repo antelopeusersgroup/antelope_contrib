@@ -36,10 +36,10 @@ OBJS=	  bisquare.o \
     SminusP.o
 
 $(LIB) : $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
+	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT) $(ANTELOPE)/static/libperf.a
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  $(ANTELOPE)/static/libperf.a
 
 # $Id$ 
