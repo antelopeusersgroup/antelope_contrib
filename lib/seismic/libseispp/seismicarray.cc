@@ -111,11 +111,7 @@ SeismicArray::SeismicArray(DatabaseHandle& dbi,
 				// convert from external degrees to radians
 				lat=rad(lat);
 				lon=rad(lon);
-				// equivalent to
-				//if((ondate>0)&&(ondate>jdate) )
-				// since ondate is set -1 if not defined
-				//
-				if(ondate>jdate)
+				if(ondate>0)
 					ondl.push_back(ondate);
 				if( (offdate>0) && (offdate>jdate) )
 				// Same -1 issue about offdate
