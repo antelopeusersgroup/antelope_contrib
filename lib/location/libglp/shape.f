@@ -1,4 +1,4 @@
-      function shape(xlow,ylow,xhigh,yhigh,f,x,y) 
+      function shape1(xlow,ylow,xhigh,yhigh,f,x,y) 
 c-----------------------------------------------------------------------
 c       interpolates the function f(x,y) at the point (x,y) within the  
 c  interior of a rectangular region for which the value of f is known 
