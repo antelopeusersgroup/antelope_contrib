@@ -7,6 +7,7 @@ c reads iaspei travel-time curves for P,S
 	character*10 antenv
 	character*80 antval
         character*100 fname
+	integer tkb
 	antenv="ANTELOPE"
 	call getenv(antenv,antval)
         tkb = index(antval,' ') - 1
