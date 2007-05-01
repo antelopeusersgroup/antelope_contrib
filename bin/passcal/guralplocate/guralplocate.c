@@ -177,7 +177,7 @@ $GPGAA,hhmmss.ss,ddmm.mmmm,n,dddmm.mmmm,e,q,ss,y.y,a.a,z,g.g,z,t.t,iii*CC
 */
     if( 0 == strncmp( "$GPGGA", nema_gps_string, 6 ) ) {
 
-//        printf("%s", nema_gps_string);
+/*        printf("%s", nema_gps_string); */
 
         sscanf( nema_gps_string,
                 "$GPGGA,%f,%f,%c,%f,%c,%d,%d,%f,%f,%c", 
@@ -190,9 +190,9 @@ $GPGAA,hhmmss.ss,ddmm.mmmm,n,dddmm.mmmm,e,q,ss,y.y,a.a,z,g.g,z,t.t,iii*CC
         lonDeg = (int)(a->ilon/100);
         lonMin = (float)(a->ilon - lonDeg*100);
 
-        a->lat  = latDeg + (latMin/60);	// Concert to decimal degrees
+        a->lat  = latDeg + (latMin/60);	/* Concert to decimal degrees */
 
-        a->lon = lonDeg + (lonMin/60);	// Convert to decimal degrees
+        a->lon = lonDeg + (lonMin/60);	/* Convert to decimal degrees */
 
 
         if(latdir == 'S')
