@@ -24,7 +24,7 @@ c
 c  written   march 3, 1983
 c------------------------------------------------------------------ 
       real x1,x2
-      real dq1,da2
+      real dq1,dq2
       integer nu1,nu2 
 c--nu1tab and nu2tab are the degrees of freedom corresponding to the
 c--table of critical f values stored in fcrit 
@@ -128,8 +128,8 @@ c--this interpolation as the reciprocal of infinity is zero.
       work(2) = fcrit(i1,i2+1)
       work(3) = fcrit(i1+1,i2)
       work(4) = fcrit(i1,i2)
-      dq1 = 1.0/float(nu1) ;
-      dq2 = 2.0/float(nu2) ;
+      dq1 = 1.0/float(nu1) 
+      dq2 = 2.0/float(nu2) 
       test=shape1(t1low,t2low,t1high,t2high,work,dq1,dq2)
       f = (x1/nu1)/(x2/nu2) 
       if(f.gt.test) then
