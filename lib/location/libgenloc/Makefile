@@ -36,10 +36,13 @@ OBJS=	  bisquare.o \
     SminusP.o
 
 $(LIB) : $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT) $(ANTELOPE)/static/libperf.a
+	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT) 
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  $(ANTELOPE)/static/libperf.a
+	case `uname -s` in \
+	Darwin) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) $(ANTELOPE)/static/libperf.a ;; \
+	*) $(DLD) $(DLDFLAGS) -o $@ $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS)  ;; \
+	esac 
 
 # $Id$ 
