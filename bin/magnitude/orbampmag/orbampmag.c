@@ -1466,7 +1466,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 			else complain (0, "mycallback: chantracebuf_filter() error.\n");
 			return (0);
 		}
-		free_hook (fil);
+		free_hook (&fil);
 		memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 		chantracebuf_free (obuf);
 	} else {
@@ -1480,7 +1480,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
 				return (0);
 			}
-			free_hook (fil);
+			free_hook (&fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 			chantracebuf_free (obuf);
 			/*gain = 2080.0 * 1.e-6 / (0.3*2.0*M_PI);*/
@@ -1495,7 +1495,7 @@ mycallback (struct station_params *sp, char *netstachan, Chantracebuf *buf)
 				else complain (0, "mycallback: chantracebuf_filter() error.\n");
 				return (0);
 			}
-			free_hook (fil);
+			free_hook (&fil);
 			memcpy (buf->data, obuf->data, buf->nsamp*sizeof(float));
 			chantracebuf_free (obuf);
 			/* gain = 2080.0 * 1.e-6 / ((0.3*2.0*M_PI) * (0.3*2.0*M_PI)); */
