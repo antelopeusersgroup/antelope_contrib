@@ -417,7 +417,7 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 	else
 		remap=true;
 
-	reset_index(); 
+	g.reset_index(); 
 
 	for(i=0;i<n1;++i)
 	{
@@ -439,13 +439,19 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 				err=g.lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
-				case 1:
-				case -1:
-					reset_index();
-					break;
+					
 				case -2:
 					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+				case 1:
 				case 2:
+					g.reset_index();
+					break;
+				case -1:
+					g.reset_index();
+					// Try again after a reset index
+					// if nonconvergence (this case)
+					// If found, fall into interpolation block
+					if(g.lookup(cx.x1,cx.x2,cx.x3)!=0) break;
 				case 0:
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					val[i][j][k]+=valnew;
@@ -472,7 +478,7 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 	Cartesian_point cx;
 	Geographic_point gp;
 
-	reset_index(); 
+	g.reset_index(); 
 
 	if(*this==g)
 		remap=false;
@@ -501,12 +507,17 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				switch(err)
 				{
 				case 1:
-				case -1:
-					reset_index();
+				case 2:
+					g.reset_index();
 					break;
 				case -2:
 					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
-				case 2:
+				case -1:
+					g.reset_index();
+					// Try again after a reset index
+					// if nonconvergence (this case)
+					// If found, fall into interpolation block
+					if(g.lookup(cx.x1,cx.x2,cx.x3)!=0) break;
 				case 0:
 
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
@@ -526,7 +537,7 @@ void GCLscalarfield::operator += (GCLscalarfield& g)
 	double valnew;
 	int err;
 
-	reset_index(); 
+	g.reset_index(); 
 
 	for(i=0;i<n1;++i)
 	{
@@ -538,12 +549,17 @@ void GCLscalarfield::operator += (GCLscalarfield& g)
 			switch(err)
 			{
 			case 1:
-			case -1:
-				reset_index();
+			case 2:
+				g.reset_index();
 				break;
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
-			case 2:
+			case -1:
+				g.reset_index();
+				// Try again after a reset index
+				// if nonconvergence (this case)
+				// If found, fall into interpolation block
+				if(g.lookup(lat(i,j),lon(i,j))!=0) break;
 			case 0:
 				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
 				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
@@ -563,7 +579,7 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 	double *valnew;
 	int err;
 
-	reset_index(); 
+	g.reset_index(); 
 
 	for(i=0;i<n1;++i)
 	{
@@ -575,12 +591,17 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 			switch(err)
 			{
 			case 1:
-			case -1:
-				reset_index();
+			case 2:
+				g.reset_index();
 				break;
 			case -2:
 				elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
-			case 2:
+			case -1:
+				g.reset_index();
+				// Try again after a reset index
+				// if nonconvergence (this case)
+				// If found, fall into interpolation block
+				if(g.lookup(lat(i,j),lon(i,j))!=0) break;
 			case 0:
 				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
 				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
