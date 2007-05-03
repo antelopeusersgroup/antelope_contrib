@@ -58,6 +58,7 @@ typedef struct process_object_ {
 	int nplist;
 	ProcessParams *plist;
 	double expire_time;
+	double tperl;
 } ProcessObject;
 
 typedef struct event_params_ {
@@ -72,6 +73,7 @@ typedef struct event_params_ {
 	double tend;
 	char *select_expr;
 	int done;
+	int halt;
 	Tbl *process_tbl;
 	Arr *station_arr;
 	PktChannel2Trace *pt;
@@ -101,6 +103,7 @@ static Pf *pf=NULL;
 static int loop=1;
 static int verbose=0;
 static pthread_t main_thread;
+static char *tmpdbdir="/tmp";
 
 void affirm();
 
@@ -111,10 +114,10 @@ usage (int type)
 	if (type == TYPE_ORB) {
 		fprintf (stderr, "usage: orbevproc [-start {pktid|time}] [-select select_expr]\n");
 		fprintf (stderr, "                 [-number number] [-nowait] [-state statefile]\n");
-		fprintf (stderr, "                 [-p parameter_file] [-dbwf dbwf]\n");
+		fprintf (stderr, "                 [-p parameter_file] [-tmpdbdir dir] [-dbwf dbwf]\n");
 		fprintf (stderr, "                 orbwf orbdb dbname\n");
 	} else {
-		fprintf (stderr, "usage: dbevproc [-p parameter_file] [-v]\n");
+		fprintf (stderr, "usage: dbevproc [-p parameter_file] [-tmpdbdir dir] [-v]\n");
 		fprintf (stderr, "                dbin dbout\n");
 	}
 }
@@ -392,7 +395,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	/* setup temporary database */
 
 	*myevid = instance;
-	sprintf (tmpdbname, "/tmp/orbevproc%d_%d", getpid(), instance);
+	sprintf (tmpdbname, "%s/orbevproc%d_%d", tmpdbdir, getpid(), instance);
 	instance++;
 
 	if (dbopen (tmpdbname, "r+", db) == dbINVALID) {
@@ -749,11 +752,11 @@ print_logs (Pf *pf, char *class, int event, void *perlobj)
 	}
 
 OUTPR:	t0 = now();
-	if (perlembed_method (perlobj, "main::clearlogs",
+	if (perlembed_method (perlobj, "evproc::clearlogs",
 				NULL,
 				NULL) < 0) {
 		tperl += now() - t0;
-		register_error (0, "print_logs: perlembed_method(main::clearlogs) error.\n");
+		register_error (0, "print_logs: perlembed_method(evproc::clearlogs) error.\n");
 		return (-1);
 	}
 	tperl += now() - t0;
@@ -949,6 +952,7 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 	ProcessParams *proc_list;
 	double expire_time;
 	double t0;
+	double tperl_obj=0.0;
 
 	/* Make a new object instance for each of the perl processing classes */
 
@@ -963,12 +967,35 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 			PERLEMBED_TYPE_STR, "event_id", PERLEMBED_TYPE_INT, myevid,
 				NULL,
 			PERLEMBED_TYPE_SV, &sv,
+			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
 		tperl += now() - t0;
 		register_error (0, "make_perlobj: perlembed_call(%s) error.\n", sub);
 		return (-1);
 	}
-	tperl += now() - t0;
+	tperl_obj = now() - t0;
+	if (parse_perlobj_output (pf, disposition, &pfout) < 0) {
+		pffree (pf);
+		perlembed_destroy ( sv ) ;
+		register_error (0, "make_perlobj: parse_perlobj_output() error in %s return.\n", sub);
+		return (0);
+	}
+	if (!strcmp(disposition, "skip")) {
+		print_logs (pfout, poin->perlclass, myevid, sv);
+		pffree (pf);
+		perlembed_destroy ( sv ) ;
+		register_error (0, "make_perlobj: %s: skipping processing.\n", poin->perlclass);
+		return (0);
+	}
+	if (strcmp(disposition, "ok")) {
+		print_logs (pfout, poin->perlclass, myevid, sv);
+		pffree (pf);
+		perlembed_destroy ( sv ) ;
+		register_error (0, "make_perlobj: %s: error processing.\n", poin->perlclass);
+		return (0);
+	}
+	pffree (pf);
+	pf = NULL;
 
 	/* get the list of waveform times for processing */
 
@@ -979,11 +1006,13 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
 		perlembed_destroy ( sv ) ;
-		tperl += now() - t0;
+		tperl_obj += now() - t0;
+		tperl += tperl_obj;
 		register_error (0, "make_perlobj: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
-	tperl += now() - t0;
+	tperl_obj += now() - t0;
+	tperl += tperl_obj;
 	if (parse_perlobj_output (pf, disposition, &pfout) < 0) {
 		pffree (pf);
 		perlembed_destroy ( sv ) ;
@@ -1140,6 +1169,7 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 	(*poout)->orid = orid;
 	(*poout)->myevid = myevid;
 	(*poout)->expire_time = expire_time;
+	(*poout)->tperl = tperl_obj;
 	for (i=0; i<n; i++) {
 		(*poout)->plist[i].po = *poout ;
 	}
@@ -1174,7 +1204,7 @@ process_channel_callback (ProcessParams *pp, Dbptr dbtrace, int flush)
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
-	double t0;
+	double t0, tp;
 
 	sprintf (sub, "%s::process_channel", pp->po->perlclass);
 	t0 = now();
@@ -1184,11 +1214,15 @@ process_channel_callback (ProcessParams *pp, Dbptr dbtrace, int flush)
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
-		tperl += now() - t0;
+		tp = now() - t0;
+		tperl += tp;
+		pp->po->tperl += tp;
 		register_error (0, "process_channel_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
-	tperl += now() - t0;
+	tp = now() - t0;
+	tperl += tp;
+	pp->po->tperl += tp;
 
 	/* check the return disposition */
 
@@ -1223,7 +1257,7 @@ process_station_callback (ProcessParams *pp, int flush)
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
-	double t0;
+	double t0, tp;
 
 	sprintf (sub, "%s::process_station", pp->po->perlclass);
 	t0 = now();
@@ -1233,11 +1267,15 @@ process_station_callback (ProcessParams *pp, int flush)
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
-		tperl += now() - t0;
+		tp = now() - t0;
+		tperl += tp;
+		pp->po->tperl += tp;
 		register_error (0, "process_station_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
-	tperl += now() - t0;
+	tp = now() - t0;
+	tperl += tp;
+	pp->po->tperl += tp;
 
 	/* check the return disposition */
 
@@ -1260,7 +1298,7 @@ process_network_callback (ProcessObject *po, int flush, int type, Dbptr dbout, i
 	char disposition[256];
 	Pf *pf, *pfout;
 	int ret = 0;
-	double t0;
+	double t0, tp;
 
 	sprintf (sub, "%s::process_network", po->perlclass);
 	t0 = now();
@@ -1269,11 +1307,15 @@ process_network_callback (ProcessObject *po, int flush, int type, Dbptr dbout, i
 				NULL,
 			PERLEMBED_TYPE_PF, &pf,
 				NULL) < 0) {
-		tperl += now() - t0;
+		tp = now() - t0;
+		tperl += tp;
+		po->tperl += tp;
 		register_error (0, "process_network_callback: perlembed_method(%s) error.\n", sub);
 		return (-1);
 	}
-	tperl += now() - t0;
+	tp = now() - t0;
+	tperl += tp;
+	po->tperl += tp;
 
 	/* check the return disposition */
 
@@ -1309,7 +1351,10 @@ event_destroy (EventParams *ep)
 
 {
 	if (ep->reap) orbreapthr_destroy (ep->reap);
-	dbdestroy (ep->db); 
+	if (dbdestroy (ep->db) == dbINVALID) {
+		complain (0, "%s: event_destroy: dbdestroy() error.\n",
+						ep->myevid);
+	}
 	if (ep->process_tbl) {
 		int i;
 
@@ -1317,6 +1362,10 @@ event_destroy (EventParams *ep)
 			ProcessObject *po;
 
 			po = (ProcessObject *) gettbl (ep->process_tbl, i);
+			if (verbose) {
+				elog_notify (0, "%d: %s: %.3f seconds spent in perl processing\n", 
+						po->myevid, po->name, po->tperl);
+			}
 			perlembed_destroy ( po->perlobj ) ;
 			if (po->plist) freepplist (po->plist, po->nplist);
 			if (po->name) free (po->name);
@@ -1796,8 +1845,11 @@ main (int argc, char **argv)
 	char dir[FILENAME_MAX];
 	char name[FILENAME_MAX];
 	int type;
+	char *antenv;
 
 	elog_init (argc, argv) ;
+
+	antenv = getenv ("ANTELOPE");
 
 	dirbase (*argv, dir, name);
 	if (!strcmp(name, "dbevproc")) {
@@ -1848,6 +1900,14 @@ main (int argc, char **argv)
 					exit (1);
 				}
 				strcpy (pfname, *argv);
+			} else if (!strcmp(*argv, "-tmpdbdir")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -tmpdbdir argument.\n");
+					usage(type);
+					exit (1);
+				}
+				tmpdbdir = *argv;
 			} else if (!strcmp(*argv, "-dbwf")) {
 				argc--; argv++;
 				if (argc < 1) {
@@ -1919,6 +1979,14 @@ main (int argc, char **argv)
 					exit (1);
 				}
 				strcpy (pfname, *argv);
+			} else if (!strcmp(*argv, "-tmpdbdir")) {
+				argc--; argv++;
+				if (argc < 1) {
+					complain (0, "Need -tmpdbdir argument.\n");
+					usage(type);
+					exit (1);
+				}
+				tmpdbdir = *argv;
 			} else if (!strcmp(*argv, "-v")) {
 				verbose = 1;
 			} else if (!strcmp(*argv, "-vv")) {
@@ -1967,7 +2035,7 @@ main (int argc, char **argv)
 
 	/* Parse the event processes table */
 
-	script_tbl = strtbl( "main", 0 );
+	script_tbl = newtbl( 0 );
 	process_tbl = newtbl (0);
 	for (i=0; i<maxtbl(evproc_tbl); i++) {
 		char *line;
@@ -1976,7 +2044,12 @@ main (int argc, char **argv)
 		ProcessObject *po;
 
 		line = (char *) gettbl (evproc_tbl, i);
-		if (sscanf (line, "%s %s %s", script, class, params) != 3) continue;
+		ret = sscanf (line, "%s %s %s", script, class, params);
+		if (ret == 1) {
+			settbl (script_tbl, -1, strdup(script));
+			continue;
+		}
+		if (ret != 3) continue;
 		if (parse_param (pf, params, P_ARRPF, 1, &paramspf) < 0) {
 			die (0, "parse_param(params %s) error.\n", params);
 		}
@@ -1997,18 +2070,29 @@ main (int argc, char **argv)
 	for (i=0,vst=NULL; i<maxtbl(script_tbl); i++) {
 		char *script_name;
 		char *script;
+		char file_name[FILENAME_MAX];
+		char line[8192];
+		FILE *f;
 
 		script_name = (char *) gettbl (script_tbl, i);
 		script = NULL;
-		if (parse_param (pf, script_name, P_STR, 1, &script) < 0) {
-			die (0, "parse_param(script %s) error.\n", script_name);
+		if (strchr(script_name, '/')) {
+			strcpy (file_name, script_name);
+		} else {
+			sprintf (file_name, "%s/data/evproc/%s", antenv, script_name);
 		}
-		elog_notify (0, "Adding perl script '%s'\n", script_name);
-		pushstr (&vst, script);
-		free (script);
+		elog_notify (0, "Adding perl module '%s'\n", file_name);
+		f = fopen (file_name, "r");
+		if (f == NULL) {
+			die (0, "fopen(%s) error.\n", file_name);
+		}
+		while (fgets (line, 8191, f)) {
+			pushstr (&vst, line);
+		}
+		fclose (f);
 	}
 	perl_script = popstr (&vst, 1);
-	elog_notify (0, "Initializing perl scripts\n");
+	elog_notify (0, "Initializing perl modules\n");
 	pi = perlembed_init ( perl_script );
 	if (pi == NULL) {
 		die (0, "perlembed_init() error.\n");
@@ -2255,7 +2339,7 @@ main (int argc, char **argv)
 			}
 		}
 
-		/* Extract some of the origin info and check to see if right author */
+		/* Extract some of the origin info */
 
 		dbo = dblookup (dbpkt, 0, "origin", 0, 0);
 		dbo.record = 0;
@@ -2456,7 +2540,7 @@ main (int argc, char **argv)
 			}
 			freetbl (netstas, 0);
 
-			/* If dbevproc, then fkush and continue */
+			/* If dbevproc, then flush and continue */
 
 			if (type == TYPE_DB) {
 				for (j=0; j<maxtbl(ep->process_tbl); j++) {
@@ -2531,6 +2615,7 @@ PROCESS_WFTHREADS:
 				i--;
 				continue;
 			}
+			if (ep->halt) continue;
 
 			sleepwf = 0;
 
@@ -2717,15 +2802,13 @@ PROCESS_WFTHREADS:
 				if (verbose) {
 					elog_notify (0, "%d: Stopping wf reap thread\n", ep->myevid);
 				}
-				if (orbreapthr_stop_and_wait (ep->reap) < 0) {
-					complain (0, "orbreapthr_stop() error.\n");
+				if (orbreapthr_set_to_stop (ep->reap) < 0) {
+					complain (0, "orbreapthr_set_to_stop() error.\n");
 				}
 				if (verbose) {
-					elog_notify (0, "%d: Processing done for event - deleting event\n", ep->myevid);
+					elog_notify (0, "%d: Processing done for event\n", ep->myevid);
 				}
-				event_destroy (ep);
-				deltbl (wfthread_tbl, i);
-				i--;
+				ep->halt = 1;
 				continue;
 			}
 		}

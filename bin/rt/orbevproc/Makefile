@@ -11,6 +11,13 @@ MAN1 =
 
 PF = orbevproc.pf dbevproc.pf
 
+DATADIR=evproc
+DATA= \
+	evproc.pm \
+	Magnitude.pm \
+	Mlrichter.pm \
+	Mbusneic.pm
+
 ldlibs= -lperlembed `perl -MExtUtils::Embed -e ldopts` -lwffil -lassoc -lbrttpkt -lbrttfilter -lbrttutil $(ORBLIBS) -lpthread
 
 include $(ANTELOPEMAKE)
