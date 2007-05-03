@@ -115,7 +115,7 @@ usage (int type)
 		fprintf (stderr, "usage: orbevproc [-start {pktid|time}] [-select select_expr]\n");
 		fprintf (stderr, "                 [-number number] [-nowait] [-state statefile]\n");
 		fprintf (stderr, "                 [-p parameter_file] [-tmpdbdir dir] [-dbwf dbwf]\n");
-		fprintf (stderr, "                 orbwf orbdb dbname\n");
+		fprintf (stderr, "                 orbwf orbev dbname\n");
 	} else {
 		fprintf (stderr, "usage: dbevproc [-p parameter_file] [-tmpdbdir dir] [-v]\n");
 		fprintf (stderr, "                dbin dbout\n");
@@ -1817,11 +1817,11 @@ main (int argc, char **argv)
 
 {
 	char *start=NULL;
-	char *select=NULL;
-	char *orbwf_name, *orbdb_name, *dbname, *dbwfname=NULL;
+	char *select="/pf/orb2dbt";
+	char *orbwf_name, *orbev_name, *dbname, *dbwfname=NULL;
 	char *dbin_name, *dbout_name;
 	char pfname[128];
-	int orbdbin, orbdbout, orbwf;
+	int orbevin, orbevout, orbwf;
 	int pktid, get;
 	int pktidnewest;
 	int ret, i;
@@ -1948,11 +1948,11 @@ main (int argc, char **argv)
 	
 		argv++; argc--;
 		if (argc < 1) {
-			complain (0, "Need orbdb argument.\n");
+			complain (0, "Need orbev argument.\n");
 			usage(type);
 			exit (1);
 		}
-		orbdb_name = *argv;
+		orbev_name = *argv;
 	
 		argv++; argc--;
 		if (argc < 1) {
@@ -2120,19 +2120,16 @@ main (int argc, char **argv)
 
 		/* orb setup stuff */
 
-		orbdbin = orbopen (orbdb_name, "r&");
-		if (orbdbin < 0) {
-			die (0, "orbopen(%s) error.\n", orbdb_name);
+		orbevin = orbopen (orbev_name, "r&");
+		if (orbevin < 0) {
+			die (0, "orbopen(%s) error.\n", orbev_name);
 		}
-		orbdbout = orbopen (orbdb_name, "w&");
-		if (orbdbout < 0) {
-			die (0, "orbopen(%s) error.\n", orbdb_name);
+		orbevout = orbopen (orbev_name, "w&");
+		if (orbevout < 0) {
+			die (0, "orbopen(%s) error.\n", orbev_name);
 		}
-		if (!select) {
-			select = "/pf/orbevproc";
-		}
-		if (orbselect (orbdbin, select) < 0) {
-			die (0, "orbselect(%s,%s) error.\n", orbdb_name, select);
+		if (orbselect (orbevin, select) < 0) {
+			die (0, "orbselect(%s,%s) error.\n", orbev_name, select);
 		}
 
 		pktid = ORBNEWEST;
@@ -2154,7 +2151,7 @@ main (int argc, char **argv)
 						complain (0, "parse_param(lastpktid) error....using start parameters\n");
 						pktid = ORBNEWEST;
 					}
-					pktid = orbseek (orbdbin, pktid);
+					pktid = orbseek (orbevin, pktid);
 					if (pktid < 0) {
 						complain (0, "orbseek(lastpktid) error...using start parameters.\n");
 						pktid = ORBNEXT;
@@ -2168,7 +2165,7 @@ main (int argc, char **argv)
 		}
 	
 		if (!wait) {
-			pktidnewest = orbseek (orbdbin, ORBNEWEST);
+			pktidnewest = orbseek (orbevin, ORBNEWEST);
 			if (pktidnewest < 0) {
 				complain (0, "No packets.\n");
 				exit (1);
@@ -2182,19 +2179,19 @@ main (int argc, char **argv)
 					get = 1;
 				} else if (!strcmp(start, "NEWEST")) {
 					pktid = ORBNEWEST;
-					ret = orbseek (orbdbin, pktid);
-					ret = orbseek (orbdbin, ORBPREV);
+					ret = orbseek (orbevin, pktid);
+					ret = orbseek (orbevin, ORBPREV);
 				} else {
 					if (strlen(start) > 10 || strchr(start, ' ') || strchr(start, '.')
 								|| strchr(start, ':') || strchr(start, '/')) {
 						double time;
 		
 						time = str2epoch(start);
-						orbafter (orbdbin, time);
+						orbafter (orbevin, time);
 					} else {
 						pktid = atoi(start);
-						orbseek (orbdbin, pktid);
-						orbseek (orbdbin, ORBPREV);
+						orbseek (orbevin, pktid);
+						orbseek (orbevin, ORBPREV);
 					}
 				}
 			} else pktid = ORBNEXT;
@@ -2283,12 +2280,12 @@ main (int argc, char **argv)
 			if (sleepev) myusleep (0.1);
 
 			if (get) {
-				orbget (orbdbin, pktid, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
+				orbget (orbevin, pktid, &pktidin, srcname, &pkttime, &packet, &nbytes, &bufsiz);
 				get = 0;
-				orbseek (orbdbin, ORBOLDEST);
+				orbseek (orbevin, ORBOLDEST);
 			} else {
 				if (event_thr == NULL) {
-					event_thr = orbreapthr_new (orbdbin, 0.0, 5);
+					event_thr = orbreapthr_new (orbevin, 0.0, 5);
 					if (event_thr == NULL) {
 						die (0, "orbreapthr_new() error for main event reap thread.\n");
 					}
@@ -2525,7 +2522,7 @@ main (int argc, char **argv)
 							if (ret < 0) {
 								die (0, "process_station_callback() error.\n");
 							}
-							ret = process_network_callback (pp->po, 0, type, dbout, orbdbout);
+							ret = process_network_callback (pp->po, 0, type, dbout, orbevout);
 							if (ret < 0) {
 								die (0, "process_network_callback() error.\n");
 							}
@@ -2547,7 +2544,7 @@ main (int argc, char **argv)
 					ProcessObject *po;
 
 					po = (ProcessObject *) gettbl (ep->process_tbl, j);
-					if (flush_processing (po, ep->pt->dbt, type, dbout, orbdbout) < 0) {
+					if (flush_processing (po, ep->pt->dbt, type, dbout, orbevout) < 0) {
 						complain (0, "flush_processing() error.\n");
 					}
 				}
@@ -2763,7 +2760,7 @@ PROCESS_WFTHREADS:
 						if (ret < 0) {
 							die (0, "process_station_callback() error.\n");
 						}
-						ret = process_network_callback (pp->po, 0, type, dbout, orbdbout);
+						ret = process_network_callback (pp->po, 0, type, dbout, orbevout);
 						if (ret < 0) {
 							die (0, "process_network_callback() error.\n");
 						}
@@ -2789,7 +2786,7 @@ PROCESS_WFTHREADS:
 
 					elog_notify (0, "%d: Maximum wait time expired - flushing processing\n", ep->myevid);
 
-					if (flush_processing (po, ep->pt->dbt, type, dbout, orbdbout) < 0) {
+					if (flush_processing (po, ep->pt->dbt, type, dbout, orbevout) < 0) {
 						complain (0, "flush_processing() error.\n");
 					}
 				}

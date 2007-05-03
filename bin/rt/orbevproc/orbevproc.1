@@ -1,0 +1,156 @@
+.TH ORBEVPROC 1 "$Date$"
+.SH NAME
+orbevproc \- generalized real-time event processor
+.SH SYNOPSIS
+.nf
+orbevproc [-start {pktid|time|OLDEST|NEWEST}] [-select select_expr]
+          [-number number] [-nowait] [-state statefile] [-v]
+          [-p parameter_file] [-tmpdbdir dir] [-dbwf dbwf]
+          orbwf orbev dbname
+.SH DESCRIPTION
+\fBorbevproc\fP is an ORB client program that reads parameter file
+encapsulated event objets from an ORB and runs one or more user-written
+computational kernels for ding event-oriented processing.
+.SH OPTIONS
+.IP "-start {pktid|pkttime|OLDEST|NEWEST}"
+Where to start in the ORB that contains the event object packets.
+This argument is optional.
+If this option is not specified, then \fBorbevproc\fP starts with the next 
+new packet on the orb.
+.IP "-select expr"
+An ORB select expression that is applied to the event object ORB reads.
+Generally, this would match the output from \fBorbassoc(1)\fP.
+The default is \fB/pf/orb2dbt\fP.
+.IP "-number number"
+Stop after processing \fInumber\fP event object ORB packets. If not
+specified, do them all.
+.IP "-nowait"
+If this is specified, then \fBorbevproc\fP will exit when the
+event object ORB read pointer gets to the most recent packet. If not
+specifed, then \fBorbevproc\fP will wait for new packets to
+arrive indefinitely.
+.IP "-state statefile"
+A file for storing start/stop state information. Currently this
+is not implemented.
+.IP "-v"
+Verbose log output.
+.IP "-p parameter_file"
+Name of program parameter file.
+The actual parameter file name is \fIpfname\fP.pf. If this argument
+is not specified, then the default \fIpfname\fP is "\fBorbevproc\fP".
+.IP "-tmpdbdir dir"
+This is a directory that \fBorbevproc\fP will use to store the temporary
+databases that are created and maintained by \fBorbevproc\fP and used by 
+the computational kernels. This defaults to \fI/tmp\fP.
+.IP "-dbwf dbwf"
+This is the name of an archive database that contains waveforms. If this is 
+specified, \fBorbevproc\fP will first try to get waveforms from this database before 
+trying to get the waveforms from real-time ORB packets. This provides a means
+for getting to very latent waveform data that may otherwise have spooled off
+of the waveform ORB. This also provides a more efficient mechanism for obtaining
+long waveform segments that are already archived, which would usually be the case
+for any long waveforms. If this is not specified, then all waveform data is extracted
+from a real-time ORB.
+.IP "orbwf"
+Name of input waveform ORB. This argument is required.
+.IP "orbev"
+Name of input event object ORB. This argument is required.
+.IP "dbname"
+Name of database that contains network metadata. This argument is required.
+.SH "PARAMETER FILE"
+An example of the parameter file is:
+.in 2c
+.ft CW
+.nf
+
+.ne 23
+
+#    This is the orbevproc parameter file
+
+max_events_to_thread     5     # maximum number of events to process concurrently
+
+#    This is the list of processing modules to be run
+
+event_processes &Tbl{
+     #perl_file     perl_class    parameters
+     Magnitude.pm
+     Mlrichter.pm   Mlrichter     mlrichter_params
+     Mbusneic.pm    Mbusneic      mbusneic_params
+}
+
+#    These are parameter templates for each of the processing modules
+
+mlrichter_params &Arr{
+     channels &Tbl{
+#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh
+#       sta_expr          filter         noise_toffset signal_toffset
+     .* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
+     .* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
+     }
+     reject &Tbl{
+#    snet_expr sta_expr
+     TA        ADK
+     }
+     update_time           10.0
+     maximum_wait_time     300.0
+     maximum_bad_fraction  0.2
+     auth_accept           oa_l|oa_l dbg
+     output_magtype        ml
+     output_auth           orbevproc
+     output_stamag         yes
+     output_wfmeas         yes
+}
+
+mbusneic_params &Arr{
+     channels &Tbl{
+#    snet_expr chan_expr               noise_twin signal_twin  snr_thresh
+#       sta_expr    filter                  noise_toffset signal_toffset 
+     .* .*     BHZ  auto               30.0 10.0  20.0    10.0 3.0
+     }
+     update_time           10.0
+     maximum_wait_time     300.0
+     maximum_bad_fraction  0.2
+     auth_accept           oa_.|oa_. dbg
+     output_magtype        mb
+     output_auth           orbevproc
+     output_stamag         yes
+     output_wfmeas         yes
+}
+
+.fi
+.ft P
+.in
+.LP
+The standard \fBorbevproc\fP parameters that must be in every parameter file are
+as follows.
+.IP \fImax_events_to_thread\fP
+This is the maximum number of event processing threads that will allowed
+to execute at any instant in time. \fBorbevproc\fP will process up to \fImax_events_to_thread\fP events (\fIorigin\fPs)
+simultaneously.
+.IP \fIevent_processes\fP
+This is a table with each row corresponding to a perl module that is dynamically loaded into
+the embedded perl interpretor.
+If the row has only a single entry, then that module is loaded but it is not used as 
+a distinct computational module, thus providing a means for loading "boilerplate" perl
+code and modules that can act as super classes for the actual computational modules.
+If the row contains three white space separated entries, then the first entry is the
+perl computational module name, the second entry is the perl class name and the third entry refers to
+another associative array within the parameter file that will be used to house module dependent
+parameters that are passed to the module each time it is created. The module names should
+be the perl module script file name and usually end in \fB.pm\fP. By default, module files
+are in \fB$ANTELOPE/data/evproc\fP. If a \fB/\fP character is in the module file name, then
+the name is taken as an absolute or relative path name to the module file without the \fB$ANTELOPE\fP
+substitution.
+.LP
+The rest of the parameter file consists of the various module parameters contained in
+associative arrays. These arrays and their contents are not interpreted by \fBorbevproc\fP but
+are simply passed as perl structures to the computational modules when they are created by \fBorbevproc\fP
+.SH "SEE ALSO"
+.nf
+dbevproc(1)
+.fi
+.SH AUTHOR
+Danny Harvey
+.br
+Boulder Real Time Technologies, Inc.
+

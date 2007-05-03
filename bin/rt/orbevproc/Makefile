@@ -7,7 +7,7 @@
 
 BIN =  orbevproc dbevproc
 
-MAN1 =
+MAN1 = orbevproc.1
 
 PF = orbevproc.pf dbevproc.pf
 
