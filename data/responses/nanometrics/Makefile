@@ -31,6 +31,7 @@ DATA= trident_1000sps_fir1    \
       trident_50sps_fir2    \
       trident_50sps_fir3    \
       trillium_240          \
+      trillium_240.pf       \
       trillium_40
                        
 include $(ANTELOPEMAKE)  	
