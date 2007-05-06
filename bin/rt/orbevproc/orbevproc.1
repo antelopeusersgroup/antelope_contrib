@@ -7,6 +7,7 @@ orbevproc [-start {pktid|time|OLDEST|NEWEST}] [-select select_expr]
           [-number number] [-nowait] [-state statefile] [-v]
           [-p parameter_file] [-tmpdbdir dir] [-dbwf dbwf]
           orbwf orbev dbname
+.fi
 .SH DESCRIPTION
 \fBorbevproc\fP is an ORB client program that reads parameter file
 encapsulated event objets from an ORB and runs one or more user-written
@@ -89,7 +90,7 @@ mlrichter_params &Arr{
      }
      reject &Tbl{
 #    snet_expr sta_expr
-     TA        ADK
+     II        PFO
      }
      update_time           10.0
      maximum_wait_time     300.0
@@ -114,7 +115,6 @@ mbusneic_params &Arr{
      output_magtype        mb
      output_auth           orbevproc
      output_stamag         yes
-     output_wfmeas         yes
 }
 
 .fi

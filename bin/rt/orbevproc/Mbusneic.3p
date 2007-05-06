@@ -1,9 +1,9 @@
-.TH MLRICHTER 3P "$Date$"
+.TH MBUSNEIC 3P "$Date$"
 .SH NAME
-Mlrichter \- traditional Richter magnitude computational class for evproc generalized event processing
+Mbusneic \- body wave magnitude, as computed by US NEIC, computational class for evproc generalized event processing
 .SH SYNOPSIS
 .nf
-use Mlrichter ; 
+use Mbusneic ; 
 
 ($obj,$hashref) = new($class,"db" => $dbref,
 		"dbm" => $dbmref[,$name1,$val1[,...]]) ;
@@ -24,14 +24,18 @@ $hashref = process_network($obj,$flush) ;
 
 .fi
 .SH DESCRIPTION
-This provides a perl computational class for computing traditional
-Richter magnitude, aka "local" magnitude or ml, for use in \fBorbevproc(1)\fP
+This provides a perl computational class for computing 
+body wave magnitude, aka mb, for use in \fBorbevproc(1)\fP
 and \fBdbevproc(1)\fP generalized event processing programs. The methodology and
-corrections functions come unmodified from the original paper: Charles F. Richter,
-"An instrumental earthquake magnitude scale", BSSA, v. 25, no. 1, pp 1-32, 1935.
+corrections functions come from the United States National Earthquake Information Center
+through a FORTRAN subroutine and a set of distance and depth correction factors.
+The FORTRAN code and correction tables came from a web site at
+http://jclahr.com/science/software/magnitude/mb/index.html operated by John Lahr, USGS, retired.
+If there is a more up to date and authoritative source for this we would be happy to 
+update the \fBMbusneic\fP perl computational module.
 .LP
 \fBnew\fP is the constructor method and does the basic setup of the internal
-perl structures for magnitude processing. The \fBMlrichter::new\fP method
+perl structures for magnitude processing. The \fBMbusneic::new\fP method
 is completely inherited unmodified from the \fBMagnitude::new\fP method (see \fBMagnitude(3p)\fP).
 .LP
 \fBdisplay\fP, \fBput\fP and \fBget\fP are also inherited unmodified
@@ -46,59 +50,57 @@ and \fBdbevproc.pf\fP parameter files when the processing object was created, us
 2) skipping \fIorigin\fPs with the wrong \fIauthor\fP codes,
 3) going through the \fIassoc\fP table
 to find the stations that are associated with the event and their corresponding distances 
-to the event, 4) computing noise and signal time windows based upon predicted P and S arrival
+to the event, 4) computing noise and signal time windows based upon predicted P arrival
 times and user input parameters and 4) creating and filling in
 a perl hash with all of the results. The disposition and output perl hash are returned
 to \fBorb/dbevproc\fP using the \fBevproc::makereturn\fP function.
 .LP
-\fBMlrichter::process_channel\fP first calls \fBMagnitude::process_channel\fP to get
+\fBMbusneic::process_channel\fP first calls \fBMagnitude::process_channel\fP to get
 the waveform statistics. The internally cached statistic values are then used as input for computing 
-the particular station-channel Richter magnitude which is also cached for subsequent processing.
+the particular station-channel body wave magnitude which is also cached for subsequent processing.
 .LP
-\fBMlrichter::process_station\fP is completely inherited unmodified from \fBMagnitude::process_station\fP.
+\fBMbusneic::process_station\fP is completely inherited unmodified from \fBMagnitude::process_station\fP.
 .LP
-\fBMlrichter::process_network\fP first calls \fBMagnitude::process_network\fP to compute
+\fBMbusneic::process_network\fP first calls \fBMagnitude::process_network\fP to compute
 and output the network magnitude and magnitude processing results. It then deposits the 
-Richter magnitude into its appropriate field in the output \fIorigin\fP table row.
+body wave magnitude into its appropriate field in the output \fIorigin\fP table row.
 .SH "PARAMETER FILE"
-The parameter file object used by the \fBMlrichter\fP class must be specified in the original \fBorbevproc.pf\fP
+The parameter file object used by the \fBMbusneic\fP class must be specified in the original \fBorbevproc.pf\fP
 or \fBdbeveproc.pf\fP parameter files as associative arrays that are indexed through the entries in
 the \fIevent_processes\fP table (see \fBorbevproc(1)\fP). An example parameter file associative array
-for \fBMlrichter\fP follows.
+for \fBMbusneic\fP follows.
 .in 2c
 .ft CW
 .nf
 
 .ne 23
 
-#    This is a parameter template for Mlrichter
+#    This is a parameter template for Mbusneic
 
-mlrichter_params &Arr{
+mbusneic_params &Arr{
      channels &Tbl{
-#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh
-#       sta_expr          filter         noise_toffset signal_toffset
-     .* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
-     .* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
+#    snet_expr chan_expr        noise_twin signal_twin  snr_thresh
+#       sta_expr       filter        noise_toffset signal_toffset 
+     .* .*     BHZ_00  auto     30.0 10.0  20.0    10.0 3.0
      }
      reject &Tbl{
 #    snet_expr sta_expr
-     II        PFO
+     IU        RAR
      }
      update_time           10.0
      maximum_wait_time     300.0
      maximum_bad_fraction  0.2
-     auth_accept           oa_l|oa_l dbg
-     output_magtype        ml
+     auth_accept           oa_.|oa_. dbg
+     output_magtype        mb
      output_auth           orbevproc
      output_stamag         yes
-     output_wfmeas         yes
 }
 
 .fi
 .ft P
 .in
 .LP
-The recipe of stations and channels to be used to compute Richter magnitude are given
+The recipe of stations and channels to be used to compute body wave magnitude are given
 in the \fIchannels\fP table. Each entry in the table must consist of at least 9 white space separated
 fields:
 .RS 0.5i
@@ -112,7 +114,8 @@ from the temporaray database \fIassoc\fP table. If it matches, then the station 
 .IP \fIchan_expr\fP
 This is a regular expression that is matched against the CSS channel codes for a particular station, as obtained
 from the metadatabase \fIsitechan\fP table. All channels that match are used in the magnitude computation.
-Traditionally, for Richter magnitude, the two horizontal channels are used and the one that produces the
+Traditionally, for body wave magnitude, only the vertical channel should be used and, if more 
+than one channel matches for a particular station, the one that produces the
 highest magnitude is used as the station magnitude.
 .IP \fIfilter\fP
 This should be either \fB"auto"\fP, or \fB"autosp"\fP, or a legitimate filter string
@@ -122,15 +125,17 @@ is primitive, normally embedded white spaces in the filter string should be repl
 (underscore) character which are replaced with white spaces again automatically before being used.
 The \fB"auto"\fP key word means that the filter should be determined automatically based upon the
 \fIsegtype\fP field in the metadatabase \fIcalibration\fP table and assuming the sensor is broadband.
-Therefore, for a velocity sensor, the filter would be \fB"WAV"\fP (A Wood-Anderson equivalent filter with
-a single integration, see \fBwffilbrtt(3)\fP).
+Note that the input measurement for the US NEIC mb is in microns of ground displacement.
+The autofilter for a broadband velocity sensor would be \fB"BW 0.5 5 5.0 5;INT;G 0.001"\fP (A 
+Butterworth bandpass from 0.5 to 5.0 hz followed by a single integration followed by a gain
+of 0.001 to produce ground displacement in microns).
 The \fB"autosp"\fP key word means the same as the \fB"auto"\fP key word except that it is
 assumed the sensor is a short period narrowband sensor. In this case only integrations
 are performed, once again according to the metadatabase \fIcalibration.segtype\fP value, and
-a gain is applied to convert to equilavent mm of displacement of the Wood-Anderson drum recorder.
-Note that the filter must produce equivalent mm of Wood-Anderson drum recorder displacement as output,
+a gain is applied to convert to microns of ground displacement.
+Note that the filter must produce equivalent microns of ground displacement as output,
 so it is the duty of the user to see that this happens if not using the auto key words. The \fIcalib\fP
-value is always used from the \fItrace\fP table input to \fBMlrichter::process_channel\fP as a means
+value is always used from the \fItrace\fP table input to \fBMbusneic::process_channel\fP as a means
 to convert the counts to physical ground units before applying the filter.
 .IP \fInoise_twin\fP
 This should be either \fB"tproc"\fP, or a noise time window value in seconds for computing the filtered
@@ -141,16 +146,13 @@ processing time winodw if the \fB"tproc"\fP key word is used.
 This is the number of seconds before the predicted first P arrival that will anchor the end of the
 noise time window.
 .IP \fIsignal_twin\fP
-This is the time duration in seconds for searching for the Richter magnitude signal. If the first character of
-\fIsignal_twin\fP is a \fB"f"\fP, then rest of the string is treated as a factor to be applied to 
-the predicted S minus P arrival times for computing the signal search time window.
+This is the time duration in seconds for searching for the body wave magnitude signal. 
 .IP \fIsignal_toffset\fP
 This is the number of seconds before the predicted first P arrival that will anchor the beginning of the
-signal search time window. Setting this to a positive number insures that the P arrival will be included
-in the search.
+signal search time window. 
 .IP \fIsnr_thresh\fP
 This is a signal to noise ratio minimum threshold for excluding magnitude values for signals that are close
-to the noise level. If the filtered maximum Richter signal value divided by the noise value is less than
+to the noise level. If the filtered maximum body wave signal value divided by the noise value is less than
 this threshold, then the magnitude value for this channel is not used.
 .RE
 .LP
@@ -160,42 +162,33 @@ for that channel. Stations that match in the \fIchannels\fP table can be rejecte
 any of the lines in the \fIreject\fP table. The other parameters are as follows:
 .IP \fIupdate_time\fP
 This is a time duration in seconds (\fB0.0\fP to disable) that is passed back to \fBorbevproc\fP to
-instruct it to call \fBMlrichter::process_channel\fP every \fIupdate_time\fP seconds even if the
+instruct it to call \fBMbusneic::process_channel\fP every \fIupdate_time\fP seconds even if the
 particular channel is not filled.
 .IP \fImaximum_wait_time\fP
 This is a time duration in seconds (\fB0.0\fP to disable) that is passed back to \fBorbevproc\fP to
 instruct it to wait no longer than \fImaximum_wait_time\fP seconds after an event has arrived before
 closing out the event processing by setting the \fI$flush\fP argument in \fBprocess_channel\fP, \fBprocess_station\fP
-and \fBprocess_network\fP. Any \fBMlrichter\fP objects will stop processing, produce partial results if
+and \fBprocess_network\fP. Any \fBMbusneic\fP objects will stop processing, produce partial results if
 possible and expect to be destroyed by \fBorbevproc\fP.
 .IP \fImaximum_bad_fraction\fP
 This is a fractional value of tolerable missing, or bad, data sample values that will allow the production of
 results even when there are missing sample values and \fBorb/dbevproc\fP is telling the processing methods to
-flush their results. The \fBMlrichter\fP processing opjects will attempt to compute magnitude values as
+flush their results. The \fBMbusneic\fP processing opjects will attempt to compute magnitude values as
 long as the missing sample values in the signal search windows are less than this fraction.
 .IP \fIauth_accept\fP
 this is a regular expression that is matched against the input \fIorigin.author\fP fields to
 determine which events to process.
 .IP \fIoutput_magtype\fP
-This is a string that specifies the Richter magnitude type that will be put in the output \fInetmag.magtype\fP
-and \fIstamag.magtype\fP fields. For Richter magnitude this is normally \fB"ml"\fP.
+This is a string that specifies the body wave magnitude type that will be put in the output \fInetmag.magtype\fP
+and \fIstamag.magtype\fP fields. For body wave magnitude this is normally \fB"mb"\fP.
 .IP \fIoutput_author\fP
 This is a string that specifies the author that will be put in the output \fInetmag.auth\fP
 and \fIstamag.auth\fP fields. The existing \fIorigin.auth\fP field is appended with a white
 space and the value of \fIoutput_magtype\fP. Also the network magnitude result is put
-into the \fIorigin.ml\fP field.
+into the \fIorigin.mb\fP field.
 .IP \fIoutput_stamag\fP
 If this is set to \fB"yes"\fP, then output \fIstamag\fP entries are made for each of the
 stations that contributed to the network magnitude.
-.IP \fIoutput_wfmeas\fP
-If this is set to \fB"yes"\fP, then output \fIwfmeas\fP entries are made for each of the
-stations that contributed to the network magnitude. The \fIwfmeas\fP entries will contain
-the precise signal, noise and time measurements that were made on the trace data and were
-the basis for the magnitude calculations. The only way of linking these \fIwfmeas\fP entries
-back to the various magnitude table entries is through an \fIarid\fP. Therefore, dummy unassociated
-\fIarrival\fP entries are also created which are indexed in the \fIstamag\fP table with their \fIiphase\fP
-codes set to \fIoutput_magtype\fP and their \fItime\fPs set to the time where the Richter magnitude
-measurement was made.
 .SH LIBRARY
 use lib $ENV{ANTELOPE}/data/evproc ;
 .SH "SEE ALSO"

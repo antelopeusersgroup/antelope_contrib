@@ -1,0 +1,120 @@
+.TH ORBEVPROC 1 "$Date$"
+.SH NAME
+dbevproc \- generalized real-time event processor
+.SH SYNOPSIS
+.nf
+dbevproc [-p parameter_file] [-tmpdbdir dir] [-v] dbin dbout
+.fi
+.SH DESCRIPTION
+\fBdbevproc\fP is the database companion program to \fBorbevproc(1)\fP.
+The user should reference the \fBorbevproc(1)\fP man page for most program 
+and configuration information. In fact, the \fBdbevproc\fP
+executable image file is the same exact file as the \fBorbevproc\fP
+executable image.
+.SH OPTIONS
+.IP "-v"
+Verbose log output.
+.IP "-p parameter_file"
+Name of program parameter file.
+The actual parameter file name is \fIpfname\fP.pf. If this argument
+is not specified, then the default \fIpfname\fP is "\fBdbevproc\fP".
+.IP "-tmpdbdir dir"
+This is a directory that \fBdbevproc\fP will use to store the temporary
+databases that are created and maintained by \fBdbevproc\fP and used by 
+the computational kernels. This defaults to \fI/tmp\fP.
+.IP "dbin"
+Name of input database with events, metadata and waveforms. If this is \fB"-"\fP,
+then \fBdbevproc\fP will attempt to read a binary datascope view on standard
+input. The view should contain a subsetted list of \fIorigin\fP entries for processing.
+.IP "dbout"
+Name of output database to contain final results.
+.SH "PARAMETER FILE"
+An example of the parameter file is:
+.in 2c
+.ft CW
+.nf
+
+.ne 23
+
+#    This is the dbevproc parameter file
+
+#    This is the list of processing modules to be run
+
+event_processes &Tbl{
+     #perl_file     perl_class    parameters
+     Magnitude.pm
+     Mlrichter.pm   Mlrichter     mlrichter_params
+     Mbusneic.pm    Mbusneic      mbusneic_params
+}
+
+#    These are parameter templates for each of the processing modules
+
+mlrichter_params &Arr{
+     channels &Tbl{
+#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh
+#       sta_expr          filter         noise_toffset signal_toffset
+     .* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
+     .* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
+     }
+     reject &Tbl{
+#    snet_expr sta_expr
+     II        PFO
+     }
+     update_time           10.0
+     maximum_wait_time     300.0
+     maximum_bad_fraction  0.2
+     auth_accept           oa_l|oa_l dbg
+     output_magtype        ml
+     output_auth           dbevproc
+     output_stamag         yes
+     output_wfmeas         yes
+}
+
+mbusneic_params &Arr{
+     channels &Tbl{
+#    snet_expr chan_expr               noise_twin signal_twin  snr_thresh
+#       sta_expr    filter                  noise_toffset signal_toffset 
+     .* .*     BHZ  auto               30.0 10.0  20.0    10.0 3.0
+     }
+     update_time           10.0
+     maximum_wait_time     300.0
+     maximum_bad_fraction  0.2
+     auth_accept           oa_.|oa_. dbg
+     output_magtype        mb
+     output_auth           dbevproc
+     output_stamag         yes
+}
+
+.fi
+.ft P
+.in
+.LP
+The standard \fBdbevproc\fP parameters that must be in every parameter file are
+as follows.
+.IP \fIevent_processes\fP
+This is a table with each row corresponding to a perl module that is dynamically loaded into
+the embedded perl interpretor.
+If the row has only a single entry, then that module is loaded but it is not used as 
+a distinct computational module, thus providing a means for loading "boilerplate" perl
+code and modules that can act as super classes for the actual computational modules.
+If the row contains three white space separated entries, then the first entry is the
+perl computational module name, the second entry is the perl class name and the third entry refers to
+another associative array within the parameter file that will be used to house module dependent
+parameters that are passed to the module each time it is created. The module names should
+be the perl module script file name and usually end in \fB.pm\fP. By default, module files
+are in \fB$ANTELOPE/data/evproc\fP. If a \fB/\fP character is in the module file name, then
+the name is taken as an absolute or relative path name to the module file without the \fB$ANTELOPE\fP
+substitution.
+.LP
+The rest of the parameter file consists of the various module parameters contained in
+associative arrays. These arrays and their contents are not interpreted by \fBdbevproc\fP but
+are simply passed as perl structures to the computational modules when they are created by \fBdbevproc\fP
+.SH "SEE ALSO"
+.nf
+orbevproc(1), evproc(3p), Magnitude(3p), Mlrichter(3p), Mbusneic(3p)
+.fi
+.SH AUTHOR
+Danny Harvey
+.br
+Boulder Real Time Technologies, Inc.
+
