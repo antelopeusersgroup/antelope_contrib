@@ -1,3 +1,9 @@
+#   Copyright (c) 2007 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. This software may be used freely in any 
+#   way as long as the copyright statement above is not removed.
+
 package evproc;
 
 require Exporter;
@@ -473,7 +479,7 @@ sub computestats {	# Compute waveform statistics
 			#		    initialized to point to "trace" table
 			#		    and have its record number set
 			#	$applycalib = apply calib flag. If set then calib
-			#		    is taken from tabel and applied to output
+			#		    is taken from table and applied to output
 			#		    measurements
 			#	$meanremove = A mean value for removing from the waveform
 			#		    sample values before the measurements are made.

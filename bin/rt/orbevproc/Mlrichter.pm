@@ -1,3 +1,9 @@
+#   Copyright (c) 2007 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. This software may be used freely in any 
+#   way as long as the copyright statement above is not removed.
+
 package Mlrichter ;
 
 use lib "$ENV{ANTELOPE}/data/evproc" ;
@@ -143,7 +149,7 @@ sub getwftimes {
 		my $pt = dbex_eval ( @{$self->{dbo}}, "ptime(" . $delta . "," . $odepth . ")" ) ;
 		my $st = dbex_eval ( @{$self->{dbo}}, "stime(" . $delta . "," . $odepth . ")" ) ;
 
-		my$twin = $process->{signal_twin} ;
+		my $twin = $process->{signal_twin} ;
 		if ( substr($process->{signal_twin}, 0, 1) eq "f") {
 			my $fac = substr($process->{signal_twin}, 1) ;
 			$twin = 1.1 * $fac * ($st - $pt) ;

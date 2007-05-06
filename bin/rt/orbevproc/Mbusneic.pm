@@ -1,3 +1,9 @@
+#   Copyright (c) 2007 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. This software may be used freely in any 
+#   way as long as the copyright statement above is not removed.
+
 package Mbusneic ;
 
 use lib "$ENV{ANTELOPE}/data/evproc" ;

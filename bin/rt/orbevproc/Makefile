@@ -9,6 +9,8 @@ BIN =  orbevproc dbevproc
 
 MAN1 = orbevproc.1
 
+MAN3P = evproc.3p Magnitude.3p Mlrichter.3p
+
 PF = orbevproc.pf dbevproc.pf
 
 DATADIR=evproc
