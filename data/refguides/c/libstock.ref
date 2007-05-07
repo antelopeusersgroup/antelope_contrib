@@ -530,6 +530,9 @@ int fspath ( char *path, char *host, char *filesystem )
 InfoPath *infopath ( char *path )
     return info about path including disk space and inodes available
 
+int freespace ( char *path, double mbavail );
+    returns 1 if filesystem where path resides has more than mbavail Mbytes available
+
 int samepath ( char *path1, char *path2 )
     returns 1 if path1 and path2 resolve to same file or directory
 
@@ -552,6 +555,9 @@ int is_empty(char *path)
 int is_file(char *path)
     return 1 if path is plain file, 0 otherwise
 
+int is_filename(char *path)
+     return 1 if path begins  with  "/",  "./"  or  "../"; 0 otherwise.
+
 int is_writable_file(char *path)
     return 1 if path is writable or if not present but directory is writable
 
@@ -562,7 +568,7 @@ int is_nfs(char *path)
     return 1 if path is on nfs mounted filesystem, 0 otherwise
 
 int is_changed(char *path)
-     returns 1 on first call and when mod time changes, or zero if file does not exist
+     return 1 on first call and when mod time changes, or zero if file does not exist
 
 Tbl * dirfiles(char *dir, int flag)
     return list of files in dir; if flag==1, only files, if flag==2, only dirs
@@ -619,6 +625,9 @@ private char *newcs ( char *fs, int n )
 void strtrim ( char *s )
     trim leading and trailing whitespace from string s
 
+char *intactline(FILE *file, char **aline, int *size)
+    read entire line from file into resizable buffer aline with current size
+
 void chomp ( char *s ) 
     remove trailing linefeed from string s if present
 
@@ -628,6 +637,9 @@ void strtr( char *s, char *from, char *to )
 void str2lower ( char *s )
 void str2upper ( char *s )
     convert string s to all lower/upper case
+
+char *okstr( char *s)
+    if s != 0, return s otherwise "<null>"
 
 void strsub ( char *old, char *s, char *sub, char *r )
     replace all occurences of string s in old with sub, leaving result in r
@@ -662,6 +674,9 @@ private int strcpy_pad ( char *dst, int dstmax, char *src, int srcmax, char pad 
 
 char *strconcat(char *s, ..., 0)
     return the result of concatenating all the input strings 
+
+char *strjoin(int c, char *s, ..., 0)
+    return the result of concatenating all the input strings separated by c
 
 int pushstrc(void **sbuf, int c )
 int pushstrn(void **sbuf, char *s, int n)
@@ -937,9 +952,6 @@ int cucsd ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
 int uucsd ( int *uc, char **cmp, int ncmp, int nuc )
     uncompress nuc integers from "UCSD RefTek datalogger" format buffer cmp of ncmp bytes, 
     advancing *cmp to the next location after uncompressed data
-
-void compress ( char *path )
-    compress files in background
 
 FILE *gz_cat ( char *name)
     return FILE opened for reading on the output of "zcat name"
@@ -1225,7 +1237,7 @@ void xargs ( char *cmd, Tbl *list, char *tail, int verbose)
     is appended to each command; verbose causes each to be printed.
 
 double sz2dbl(char *size) 
-    takes input like 10k and returns 10000 -- knows G, M, and k
+    takes input like 10k and return 10000 -- knows G, M, k, u and m
 
 deprecated Signal_info *signal_byname ( char *name )
     translate a signal name into description

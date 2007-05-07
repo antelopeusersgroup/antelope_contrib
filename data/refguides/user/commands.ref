@@ -53,6 +53,9 @@ relpath here there
 cleanpath [-l] apath
     eliminates repeated slashes, unnecessary ./, and resolves symbolic links unless -l
 
+concatpath path p2 ...
+    concatenate paths from command line or stdin to create complete path
+
 ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
     filter list of files according to various options
 <options>

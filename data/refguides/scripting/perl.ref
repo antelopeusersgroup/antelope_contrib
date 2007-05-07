@@ -339,6 +339,25 @@ srn (lat, lon)
 srname (lat, lon)
     return the seismic region name
 
+sgsign(signer,data)
+    returns signature for specified signer and data
+
+sgverify(signer,data,signature)
+    returns zero if signature is correct for signer and data
+
+($out, $units)=units_convert(input,want)
+    returns value and units for specified input and requested units
+
+@list=units_match(input)
+    returns list of units matching input
+
+$errno=errno()
+    returns system errno, resetting errno to zero
+
+($result, $restriction) = legit_ip(pf,ip)
+    checks ip address in valid_ip_addresses list from pf, returns 1
+    for legitimate ip, -1 if no parameter file, 0 if invalid ip
+
 <subsection Simple Ring Buffers>
 
 openring(filename, id, depth, flags) ;
@@ -528,11 +547,25 @@ orbwait(orb, re, mintime, timeout)
     no packets have appeared in maxseconds. In this case,
     the returned pktid will be undef.
 
+($pkttime, $pkt, $nbytes) = orbgetstash(orb, srcname)
+    get stash packet corresponding to srcname
+
 orbpkt_string(srcname, time, packet, nbytes)
     return forb(5) string representation of packet
 
 orbput(orb, srcname, pkttime, pkt, nbytes)
     put the specified packet onto the orb.
+
+orbput_nolag(orb, srcname, pkttime, pkt, nbytes, lagparams)
+    put the specified packet onto the orb, ensuring that
+    no client matching the parameters in lagparams pf is too
+    far behind
+
+orbputx(orb, srcname, pkttime, pkt, nbytes)
+    put the specified packet onto the orb, with return acknowledgement
+
+orbstashselect(orb,select)
+    set the stash select parameter
 
 ($name, $content, $desc) = suffix2pkttype(suffix)
     return name, content and description for packet type suffix.
@@ -565,6 +598,11 @@ port        priority    read
 reject      select      started     
 thread      what        who         
 </example>
+
+(old,new,max,range,laggards)=orblag(orb,match,reject)
+    returns oldest, newest, and pktid range, with list of clients
+    matching match/reject parameter. Each element of list contains
+    client lag, thread, who and what
 
 orbsources(orb)
     return ($when, @sources). $when is scalar; @sources is list of source

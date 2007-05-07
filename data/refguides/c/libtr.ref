@@ -11,6 +11,9 @@ implements routines for reading and writing waveforms from a database, and perfo
 Dbptr trnew ( char *tr_path, char *schema_name )
     create a new trace database
 
+int trcopy (Dbptr *trout, Dbptr trin)
+    copy trace table from trin to trout, duplicating data and records
+
 int trfree ( Dbptr tr )
     free up memory and clear trace object tables
 
@@ -169,6 +172,9 @@ void msdpackhdr(Msd *msd, unsigned char *record)
 int umsd ( Msd *msd, int **data, int *npts );
     unpack the msd data record, returning the samples 
 
+int cmsd ( Msd *msd, int (*save_record)(Msd *msd, int n0, int n1), int *data, int npts );
+    compress integer data into miniseed
+
 int ustc ( Msd * msd, int **data, int *npts );
     uncompresses a single Steim level 1 or level 2 miniseed record
 
@@ -269,9 +275,6 @@ int trsplice1 ( Dbptr tr, int factor_calib, double tolerance, int (*fill)(Dbptr 
 int trsplice ( Dbptr tr, double tolerance, int (*fill)(Dbptr *dbp, Trsample *data, int *i0, int *i1, int *imaxp), int (*resample)() )
     splice together any data segments which fit together, eliminating overlapping portions. 
     splice sections with different calibs together, multiplying later values by the ratio of calibs.
-
-int trglue ( Dbptr tr, int ns, int ne, double tolerance, int (*fill)(), int (*resample)() )
-    unconditionally splice together a specific set of traces from a trace table; gaps are filled with the missing data value
 
 
 double traligned ( double atime, double std_time, double std_samprate )
