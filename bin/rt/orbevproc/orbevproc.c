@@ -386,6 +386,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	char expr[256];
 	Arr *arr;
 	Tbl *stas;
+	static Hook *hookor=NULL;
 	static Hook *hookore=NULL;
 	static Hook *hookemd=NULL;
 	static Hook *hookpre=NULL;
@@ -412,11 +413,35 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 
 	/* convert origin table */
 
-	if (db2dbtable (pf, "origin", dbmaster, "origin", *db, 1) < 0) {
-		register_error (0, "mktmpdb: db2dbtable(%s.origin) error in temp db.\n", tmpdbname);
-		dbdestroy (*db);
-		dbclose (*db);
-		return (-1);
+	if (pf == NULL) {
+		Tbl *tbl = NULL;
+
+		dbo = dblookup (dbmaster, 0, "origin", 0, "dbALL");
+		ret = dbmatches (dbmaster, dbo, 0, 0, &hookor, &tbl);
+		if (ret < 0) {
+			register_error (0, "mktmpdb: dbmatches(origin) error.\n");
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+		dbo.record = dbINVALID;
+		if (ret > 0) {
+			dbo.record = (int) gettbl (tbl, 0);
+		}
+		freetbl (tbl, 0);
+		if (db2dbtable (pf, "origin", dbo, "origin", *db, 0) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.origin) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
+	} else {
+		if (db2dbtable (pf, "origin", dbmaster, "origin", *db, 1) < 0) {
+			register_error (0, "mktmpdb: db2dbtable(%s.origin) error in temp db.\n", tmpdbname);
+			dbdestroy (*db);
+			dbclose (*db);
+			return (-1);
+		}
 	}
 
 	/* convert origerr table */
@@ -2349,8 +2374,13 @@ main (int argc, char **argv)
 			goto PROCESS_WFTHREADS;
 		}
 		if (verbose) {
-			elog_notify (0, "\n%d: Processing pktid %d at %.3f %.3f %.3f %s auth %s\n", 
-				myevid, pktidin, olat, olon, odepth, s=strtime(otime), auth);
+			if (type == TYPE_DB) {
+				elog_notify (0, "\n%d: Processing orid %d at %.3f %.3f %.3f %s auth %s\n", 
+					myevid, orid, olat, olon, odepth, s=strtime(otime), auth);
+			} else {
+				elog_notify (0, "\n%d: Processing pktid %d at %.3f %.3f %.3f %s auth %s\n", 
+					myevid, pktidin, olat, olon, odepth, s=strtime(otime), auth);
+			}
 			free(s) ;
 		}
 
@@ -2819,7 +2849,10 @@ PROCESS_WFTHREADS:
 			goto PROCESS_WFTHREADS;
 		}
 
-		if (type == TYPE_DB) (dbin.record)++;
+		if (type == TYPE_DB) {
+			(dbin.record)++;
+			if (dbin.record >= ndbin) break;
+		}
 
 		if (number > 0 && num >= number) break;
 		if (!wait && pktidin == pktidnewest) break;
