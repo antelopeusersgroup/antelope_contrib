@@ -1971,7 +1971,9 @@ main (int argc, char **argv)
 
 		for (argv++,argc--; argc>0; argv++,argc--) {
 			if (**argv != '-') break;
-			if (!strcmp(*argv, "-p")) {
+			if (!strcmp(*argv, "-")) {
+				break;
+			} else if (!strcmp(*argv, "-p")) {
 				argc--; argv++;
 				if (argc < 1) {
 					complain (0, "Need -p argument.\n");
