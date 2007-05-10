@@ -170,6 +170,55 @@ TimeSeriesEnsemble *array_get_data(SeismicArray& stations, Hypocenter& hypo,
 	// needs to ultimately be repaired.
 	return(result);
 }
+/* Automatically switches polarity of traces with reversed
+polarity.  Works only for SEED channel codes.  Silently does
+nothing if the third character of the channel code is anything
+but Z, N, or E.  Every trace is tested because we often mix
+channel codes in data sets.  Silently ignores any data 
+for which chan is not defined.  */
+void auto_switch_polarity(TimeSeriesEnsemble *d)
+{
+	const string z("Z"),n("N"),e("E");
+	int i,j;
+	double hang,vang;
+	for(i=0;i<d->member.size();++i)
+	{
+		try {
+			string chan=d->member[i].get_string("chan");
+			// String constructor extracts 3rd char of chan
+			string ctest(chan,2,1);
+			if(ctest==z)
+			{
+				vang=d->member[i].get_double("vang");
+				if(fabs(vang-180.0)<1.0)
+				{
+					for(j=0;j<d->member[i].s.size();++j)
+						d->member[i].s[j]*=-1.0;
+				}
+			}
+			else if (ctest==n)
+			{
+				hang=d->member[i].get_double("hang");
+				if(fabs(hang-180.0)<1.0)
+				{
+					for(j=0;j<d->member[i].s.size();++j)
+						d->member[i].s[j]*=-1.0;
+				}
+			}
+			else if (ctest==e)
+			{
+				hang=d->member[i].get_double("hang");
+				if((fabs(vang-270.0)<1.0)
+				  || (fabs(vang+90.0)<1.0) )
+				{
+					for(j=0;j<d->member[i].s.size();++j)
+						d->member[i].s[j]*=-1.0;
+				}
+			}
+		} catch (MetadataGetError mde) {};
+	}
+}
+
 // Common error routine for function immediately following.
 void AssembleRegularRatherErrorLog(TimeSeriesEnsemble& raw, int i, 
 	SeisppError serr)
@@ -288,6 +337,7 @@ TimeSeriesEnsemble *AssembleRegularGather(TimeSeriesEnsemble& raw,
 			// successfully.
 		}
 	}
+	auto_switch_polarity(result);
 	return(result);
 }
 
