@@ -88,7 +88,7 @@ for( ;; ) {
 
         ($result, $pkt) = unstuffPkt($srcname, $time, $packet, $nbytes) ;
 
-	$header = "<?xml version='1.0' encoding='iso-8859-1'?>\n";
+	$header = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n";
 
 	if( $result eq "Pkt_st" || 
 	    $result eq "Pkt_pf" ||
