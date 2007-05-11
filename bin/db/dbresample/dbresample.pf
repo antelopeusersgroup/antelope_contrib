@@ -18,11 +18,11 @@ Decimator_response_files &Tbl{
 }
 #  example for irregular sample rate.  This would take a 33.5 sps 
 # channel, updample to 40 sps, and then decimate by 4 to target of 10 sps
-33.5 &Arr{
+31.25 &Arr{
 low_limit       30
-high_limit      35
+high_limit      32
 Decimator_response_files &Tbl{
-0.8375	resample #this means interpolate without antialias 
+0.78125	resample #this means interpolate without antialias 
 4       response/RT72A_4_f
 }
 }
