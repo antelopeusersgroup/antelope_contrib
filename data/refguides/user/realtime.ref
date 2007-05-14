@@ -9,7 +9,7 @@ dbevents [options] dbname [start [end]]
     display map of seismic events and waveforms (between times start and end)
 <options>
 -max_age max_age	limit age of displayed events
--show_detections	show stations with detecitons only
+-show_detections	show stations with detections only
 -title window_title	window title
 -pf pfname	parameter file name
 </options>
