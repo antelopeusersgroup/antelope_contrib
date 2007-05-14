@@ -11,6 +11,7 @@ dbevents [options] dbname [start [end]]
 -max_age max_age	limit age of displayed events
 -show_detections	show stations with detecitons only
 -title window_title	window title
+-pf pfname	parameter file name
 </options>
 
 rtexec [options] [comment]
@@ -276,7 +277,7 @@ q3302orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
 -calib_db dbname	metadata database
 -pf pf	parameter file
 -S statefile	
--noipresolv do not try to resolve ip addresses
+-noipresolv	do not try to resolve ip addresses
 -v
 </options>
 
@@ -599,7 +600,32 @@ ttgrid [-pf pf] [-time {timestr|all}] db
 displayttgrid [-shownames] filename [gridname]
     display travel-time grids on map
 
-ttgrid_show [-v] ttgridfile
+ttgrid_show [-adDgnNPsSv] ttgridfile
+    show members of a ttgrid file
+<options>
+-a	show everything
+-d	show depths
+-D	show distances
+-g	show grids
+-n	show nodes
+-N	print in a nicer form
+-P	show P arrival times
+-s	show stations
+-S	show S arrival times
+</options>
+
+orbevproc [options] orbwf orbev dbname
+    generalized real-time event processor
+<options>
+-start {pktid|time|OLDEST|NEWEST}
+-select expr	input select expression
+-number number	number of events to process
+-nowait	
+-state file	save state in file
+-p pf
+-tmpdbdir dir	directory for temp databases
+-dbwf dbwf	archive waveform database
+</options>
 
 orbmag [options] orbwf orbdb dbname
     real time magnitude computation
@@ -699,8 +725,23 @@ sms2orb [-dv] queue orb
      read incoming sms email from queue directory and write packets to orb
 
 <subsection Orb Real Time Display>
-dlmon [options] orb [-cmd cmdorb]
+dlmon [options] orb [cmdorb]
     monitor/control generic digitizers
+<options>
+-model model	datalogger model
+-state {Icons|Multi|Single}	initial display state
+-select_status expr_status
+-select_log expr_log
+-subset subs_expr	initial expression for subsetting stations
+-sort name	initial sort name
+-pf pffile	parameter file
+-dump period
+-dump_image file
+</options>
+
+<subsection Orb Real Time Display>
+old_dlmon [options] orb [-cmd cmdorb]
+    legacy version of monitor/control generic digitizers
 <options>
 -model model	datalogger model
 -start_status {OLDEST|pktid|time}
@@ -744,6 +785,7 @@ orbmonrtd [options] orb
 -unmap	remove controls from display (for vnc in browser)
 -width pixels	trace width in pixels
 -wmax wmax	maximum width of main window in pixels
+-reverse_labels	put station labels on right
 </options>
 
 orbdisp [options] orbserver [start [range|end]]

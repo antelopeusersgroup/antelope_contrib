@@ -72,17 +72,6 @@ taup2locsat [options] model
 tp2ls phases header [table]
     make locsat style travel time table file from tau-p travel time table
 
-dbml [options] db [orid]
-    database Richter magnitude computation
-<options>
--v
--p pf
--use_if_not_associated
--use_if_not_defining
--make_magtables
--use_mean
-</options>
-
 dbproject_covariance [-v] [-c conf] dbname
     update origerr table with new smajax, sminax,
     sdepth, stime, strike, and conf values, based on covariance
