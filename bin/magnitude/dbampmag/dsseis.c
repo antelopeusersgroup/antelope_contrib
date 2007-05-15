@@ -21,6 +21,9 @@
 #include "response.h"
 #include "arrays.h"
 
+int grtr_sc_group ( Dbptr trace, Dbptr *trscgr);
+int traccumulate (Dbptr tro, Dbptr tri, double factor);
+
 static Arr *resp_arr=NULL;
 
 #define    INT(x,y)        ((x)<0.0?((x)/(y)-0.5):((x)/(y)+0.5))
@@ -75,9 +78,10 @@ static Arr *resp_arr=NULL;
  */
 
 int
-grdb_sc_loadcss (dbin, net_expr, sta_expr, chan_expr, tstart, tend,
-		 coords, ir, orient, dbscgr, dbsc)
+grdb_sc_loadcss (Dbptr dbin, char *net_expr, char *sta_expr, char *chan_expr, double tstart, double tend,
+		 int coords, int ir, int orient, Dbptr *dbscgr, Dbptr *dbsc)
 
+/*
 Dbptr            dbin;
 char *                 net_expr;
 char *                           sta_expr;
@@ -86,7 +90,7 @@ double                                                tstart, tend;
 int              coords, ir, orient;
 Dbptr *                              dbscgr;
 Dbptr *                                      dbsc;
-
+*/
 {
 	Dbptr dbout, db, dbout2;
 	char string[1024];
@@ -453,7 +457,7 @@ double *                                                    endtime;
  *	0 if OK or -1 if ERROR.
  */
 
-grtr_sc_create (dbsc, net_expr, sta_expr, chan_expr, tstart, tend, 
+int grtr_sc_create (dbsc, net_expr, sta_expr, chan_expr, tstart, tend, 
 		gap, calib, group, trscgr)
 
 Dbptr           dbsc;
@@ -667,11 +671,7 @@ Dbptr *                            trscgr;
  *	0 if OK or -1 if ERROR.
  */
 
-int
-grtr_sc_group (trace, trscgr)
-
-Dbptr          trace;
-Dbptr *               trscgr;
+int grtr_sc_group ( Dbptr trace, Dbptr *trscgr)
 
 {
 	Tbl *groupfields;
@@ -1281,12 +1281,7 @@ float **                                    data;
 	return (0);
 }    
 
-int
-traccumulate (tro, tri, factor)
-
-Dbptr         tro;
-Dbptr              tri;
-double                  factor;
+int traccumulate (Dbptr tro, Dbptr tri, double factor)
 
 {
 	int iso, ieo, isi, iei;

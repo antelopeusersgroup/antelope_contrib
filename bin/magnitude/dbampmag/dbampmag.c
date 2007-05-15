@@ -28,9 +28,14 @@
 #include "arrays.h"
 
 #define default_v_r 4.0
+#define default_minimum_time_window   4.0
 
 #define PF_REVISION_TIME "1086912000"
 #define MAX_REASONABLE_MAGNITUDE 9.5
+
+int grdb_sc_getstachan();
+int getchannel();
+int getsegment();
 
 int verbose=0;
 int quiet=0;
@@ -98,9 +103,7 @@ static int mycompare();
 static int myans();
 static void mycallback();
 
-main (int argc, char **argv)
-
-{
+int main (int argc, char **argv) {
 	char *dbname;
 	char pfname[128];
 	int orid, evid;
@@ -110,6 +113,7 @@ main (int argc, char **argv)
 	struct station_params *sp;
 	Tbl *tbl, *proc_tbl;
 	double time_window = 0.5;
+	double minimum_time_window = default_minimum_time_window;
 	double tstart, tend;
 	char chan_expr[128];
 	char net[32];
@@ -243,6 +247,8 @@ main (int argc, char **argv)
 		complain (0, "parse_param(time_window_factor) error.\n");
 		exit (1);
 	}
+	parse_param (pf, "minimum_time_window", P_DBL, 0, &minimum_time_window);
+
 	if (parse_param (pf, "magtype", P_STR, 1, &magtype) < 0) {
 		complain (0, "parse_param(magtype) error.\n");
 		exit (1);
@@ -456,6 +462,7 @@ main (int argc, char **argv)
 					twin_noise=sp->twin_noise_param;
 				}
 				twin = time_window*(sarrival - parrival);
+				if (twin  < minimum_time_window) twin= minimum_time_window;
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;
@@ -532,6 +539,7 @@ main (int argc, char **argv)
 					twin_noise=sp->twin_noise_param;
 				}
 				twin = time_window*(sarrival - parrival);
+				if (twin  < minimum_time_window) twin= minimum_time_window;
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;

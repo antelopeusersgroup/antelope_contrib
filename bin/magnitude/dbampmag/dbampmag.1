@@ -45,7 +45,7 @@ By default, the absolute maximum is used.
 .IP "-v"
 Verbose output flag.
 .IP "-quiet"
-This flag supresses all diagnostic messages. Set this flag to suppress the noise when running from \fBdbloc2\fP.
+This flag suppresses all diagnostic messages. Set this flag to suppress the noise when running from \fBdbloc2\fP.
 .IP "db"
 The input/output database name. If this is set to "-", then
 a view is read from standard input and it is assumed that
@@ -94,6 +94,8 @@ time0      P    # center of measuring time window
 time_window_factor 0.5 # The waveform for processing the magnitude is 
                        # determined by a time window of length 
                        # time_window_factor * (S-time - P-time) 
+.ne 2
+minimum_time_window 4.0 # minimum time window in seconds, in case P and S are really close together
 
 .ne 3
 mindelta  0    # distance range in degrees
@@ -140,11 +142,12 @@ other parameters have to be specified accordingly.
 .IP v_r
 Surface wave velocity to determine surface wave arrival time. 
 Only needed when computing \fIMs\fP.
-.IP "time0, time_window_factor"
+.IP "time0, time_window_factor,minimum_time_window"
 The time window for processing waveforms is determined from 
 \fItime0\fP and \fItime_window_factor\fP. The processing window is 
-\fBcenterd\fP around the theoretical arrival time of the onset 
+\fBcentered\fP around the theoretical arrival time of the onset 
 specified by \fItime0\fP and has a width of (S-time - P-time) * \fItime_window_factor\fP.
+The time specified by \fIminimum_time_window\fP allows to mitigate the case when S and P are close together.
 .IP "mindelta, maxdelta"
 These values in degrees define the distance region for magnitude computations.
 Only stations where the distance from the origin falls into the region defined here are taken into account.
