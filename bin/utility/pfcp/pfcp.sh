@@ -24,13 +24,13 @@
 		pf=`pfecho -w $1 | sed -n '$p'`
 	fi
 
-	if [ -z $pf ]; then
-		echo "parapeterfile $1 not found!";
+	if [ -z "$pf" ]; then
+		echo "parameter file $1 not found!";
 		exit;
 	fi
 	
 	if [ ! -r $pf ]; then
-		echo "parameterfile $pf not readable!"
+		echo "parameter file $pf not readable!"
 		exit;
 	fi
 
