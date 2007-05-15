@@ -19,6 +19,8 @@ use lib "$ENV{ANTELOPE}/data/perl" ;
 
 use Datascope ; 
 
+use Math::Trig ;
+
 # following are the USNEIC Mb correction values as a function of distance
 
 our @mbtab = (
@@ -94,8 +96,7 @@ our @mbtab = (
 sub compmb {
 	my $self = shift ;
 	my $sta = shift ;
-	my $amplitude_in_microns = shift ;
-	my $period = shift ;
+	my $amplitude_in_micrometers_per_second = shift ;
 
 	my $distance = $self->{stations}{$sta}{delta} ;
 	my $depth = $self->{stations}{$sta}{depth} ;
@@ -136,7 +137,7 @@ sub compmb {
 	my $q2 = $mbtab[$j+($k-1)*109] + $s1 * ( $mbtab[$j+$k*109] - $mbtab[$j+($k-1)*109] ) ;
 	my $qval = $q1 + $s2 * ( $q2 - $q1 ) ;
 
-	my $mb = log($amplitude_in_microns/$period)/log(10) + $qval ;
+	my $mb = log($amplitude_in_micrometers_per_second/(2.0 * pi))/log(10) + $qval ;
 	return $mb ;
 }
 
@@ -196,11 +197,11 @@ sub getwftimes {
 		($ret, $process) = match_sta ($self, $sta) ;
 		if ( $ret ne "ok" ) { next; }
 
-		if ($delta < 5.0) {
+		if ($delta < 21.0) {
 			addlog ( $self, 1, $sta . ": station too close" ) ;
 			next ;
 		}
-		if ($delta > 109.0) {
+		if ($delta > 100.0) {
 			addlog ( $self, 1, $sta . ": station too far away" ) ;
 			next ;
 		}
@@ -256,9 +257,9 @@ sub getwftimes {
 					my $segtype = dbgetv (@dbv, "segtype");
 					if ($hash->{filter} eq "auto") {
 						if ($segtype eq "V") {
-							$hash->{filter} = 'BW 0.5 5 5.0 5;INT;G 0.001' ;
+							$hash->{filter} = 'BW 0.5 5 5.0 5;G 0.001' ;
 						} elsif ($segtype eq "A") {
-							$hash->{filter} = 'BW_0.5 5 5.0 5;INT2;G 0.001' ;
+							$hash->{filter} = 'BW_0.5 5 5.0 5;INT;G 0.001' ;
 						} else {
 							addlog ( $self, 0, "station ". $sta . 
 								" Cannot determine auto filter for segtype " . $segtype ) ;
@@ -266,9 +267,9 @@ sub getwftimes {
 						}
 					} else {
 						if ($segtype eq "V") {
-							$hash->{filter} = 'INT s0.2;G 0.001' ;
+							$hash->{filter} = 'G 0.001' ;
 						} elsif ($segtype eq "A") {
-							$hash->{filter} = 'INT2 s0.2;G 0.001' ;
+							$hash->{filter} = 'INT s0.2;G 0.001' ;
 						} else {
 							addlog ( $self, 0, "station ". $sta . 
 								" Cannot determine auto filter for segtype " . $segtype ) ;
@@ -333,23 +334,23 @@ sub process_channel {
 		if ( $self->{stations}{$sta}{snr_thresh} < 1.0
 				|| $self->{stations}{$sta}{channels}{$chan}{snr}
 					> $self->{stations}{$sta}{snr_thresh} ) {
-			my $microns =
+			my $micrometers_per_second =
  				$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
 			my $period =
  				abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
-			if ( $period < 0.1 || $period > 9.0 ) {
+			if ( $period < 0.2 || $period > 30.0 ) {
 				addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
  							$sta, $chan )  ;
 				return $ret ;
 			}
  			$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( 
-				$self, $sta, $microns, $period ) ;
+				$self, $sta, $micrometers_per_second ) ;
  			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
 				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
  			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
 				$self->{stations}{$sta}{channels}{$chan}{snr} ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $micrometers_per_second ;
+ 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "um/s" ;
  			$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
  			$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
 			addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
@@ -361,20 +362,20 @@ sub process_channel {
 				
 		}
 	} else {
-		my $microns = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+		my $micrometers_per_second = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
 		my $period = abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
-		if ( $period < 0.1 || $period > 9.0 ) {
+		if ( $period < 0.2 || $period > 30.0 ) {
 			addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
  						$sta, $chan )  ;
 			return $ret ;
 		}
- 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( $self, $sta, $microns, $period ) ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( $self, $sta, $micrometers_per_second ) ;
  		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
 				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
  		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
 				$self->{stations}{$sta}{channels}{$chan}{snr} ;
- 		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $microns ;
- 		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "microns" ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $micrometers_per_second ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "um/s" ;
  		$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
  		$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
 		addlog ( $self, 2, "%s: %s: Channel mag = %.3f",

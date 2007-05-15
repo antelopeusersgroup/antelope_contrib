@@ -26,10 +26,11 @@ $hashref = process_network($obj,$flush) ;
 .SH DESCRIPTION
 This provides a perl computational class for computing 
 body wave magnitude, aka mb, for use in \fBorbevproc(1)\fP
-and \fBdbevproc(1)\fP generalized event processing programs. The methodology and
-corrections functions come from the United States National Earthquake Information Center
-through a FORTRAN subroutine and a set of distance and depth correction factors.
-The FORTRAN code and correction tables came from a web site at
+and \fBdbevproc(1)\fP generalized event processing programs. The methodology 
+comes from the United States National Earthquake Information Center
+through a document at ftp://hazards.cr.usgs.gov/MagnitudeWG/summary_of_WG_recommendations.pdf 
+and a set of distance and depth correction factors.
+The correction tables came from a web site at
 http://jclahr.com/science/software/magnitude/mb/index.html operated by John Lahr, USGS, retired.
 If there is a more up to date and authoritative source for this we would be happy to 
 update the \fBMbusneic\fP perl computational module.
