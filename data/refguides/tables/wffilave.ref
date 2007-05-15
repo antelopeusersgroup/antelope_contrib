@@ -1,7 +1,12 @@
 <subsection Simple Averaging Filters>
 <List>
-AVE twin[toffset]	Boxcar average waveform
-ABS	Compute waveform absolute value
-SQ	Compute waveform square value
-SQRT	Compute waveform square root value
+
+AVE twin[toffset]	
+    Boxcar average waveform
+ABS	
+    Compute waveform absolute value
+SQ	
+    Compute waveform square value
+SQRT	
+    Compute waveform square root value
 </List>
