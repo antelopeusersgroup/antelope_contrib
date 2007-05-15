@@ -11,7 +11,9 @@ DATA= \
 	schemas.ref \
 	tables0.ref \
 	tcl_extensions.ref \
-	time_format_codes.ref 
+	time_format_codes.ref \
+	wffilbrtt.ref \
+	wffilave.ref
 
 include $(ANTELOPEMAKE)
 

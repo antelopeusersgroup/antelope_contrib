@@ -19,6 +19,7 @@ DATA= \
 	libtr.ref \
 	libtt.ref \
 	libtttaup.ref \
+	libwffil.ref \
 	libxtra.ref \
 	pavlis.ref
 

@@ -38,8 +38,26 @@ int chantracebuf_filter ( void **fil, int *type, Chantracebuf *icp, Chantracebuf
 OrbreapThr *orbreapthr_new (int orb, double timeout, int queuesize)
     create a new ORB reap thread that will read from orb with a read timeout and queuesize slots in the FIFO
 
-int orbreapthr_stop (OrbreapThr *orbth)
-    stop the orbth ORB reap thread from reading new packets
+OrbreapThr *orbreapthr_new2 (char *orbname, char *select, char *reject, double tafter, double timeout, int queuesize)
+    create a new ORB reap thread that will read from orb with a read timeout and queuesize slots in the FIFO
+
+int orbreapthr_select (OrbreapThr *orbth, char *select)
+    cause a new orbselect to be processed on a running ORB reap thread
+
+int orbreapthr_reject (OrbreapThr *orbth, char *reject)
+    cause a new orbreject to be processed on a running ORB reap thread
+
+int orbreapthr_after (OrbreapThr *orbth, double after)
+    cause a new orbafter to be processed on a running ORB reap thread
+
+int orbreapthr_set_to_stop (OrbreapThr *orbth)
+    instruct the orbth ORB reap thread to stop from reading new packets and return immediately
+
+int orbreapthr_is_stopped (OrbreapThr *orbth)
+    has the orbth ORB reap thread stopped?
+
+int orbreapthr_stop_and_wait (OrbreapThr *orbth)
+    stop the orbth ORB reap thread from reading new packets and wait for it to stop
 
 int orbreapthr_destroy (OrbreapThr *orbth)
     destroy the orbth ORB reap thread and free all resources

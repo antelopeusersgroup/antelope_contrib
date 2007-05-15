@@ -1,0 +1,7 @@
+<subsection Filter Definitions>
+<List>
+AVE	Boxcar average waveform
+ABS	Compute waveform absolute value
+SQ	Compute waveform square value
+SQRT	Compute waveform square root value
+</List>

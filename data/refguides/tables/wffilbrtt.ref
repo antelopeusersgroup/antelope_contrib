@@ -1,0 +1,14 @@
+<subsection Filter Definitions>
+<List>
+BW	Butterworth filter
+BWZ	Butterworth zero-phase filter
+WAA	Wood-Anderson instrument filter for acceleration sensor
+WAV	Wood-Anderson instrument filter for velocity sensor
+WAD	Wood-Anderson instrument filter for displacement sensor
+INT	Single integration
+INT2	Double integration
+DIF	Single differentiation
+DIF2	Double differentiation
+DEMEAN	Demean waveform
+G	Apply gain factor
+</List>

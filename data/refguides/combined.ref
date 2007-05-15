@@ -31,6 +31,15 @@
 <include tables/projections.ref>
 <index>
 <include c/libtks.ref>
+<include c/libwffil.ref>
+<include c/libwffilbrtt.ref>
+<no_index don't index projections >
+<include tables/wffilbrtt.ref>
+<index>
+<include c/libwffilave.ref>
+<no_index don't index projections >
+<include tables/wffilave.ref>
+<index>
 <no_index don't index fortran >
 <include c/fortran.ref>
 
