@@ -17,7 +17,7 @@ The extensions must be loaded with a \fIuse\fP statement:
 Following are brief descriptions of the functions implemented.
 
 .IP "\fBinWhichPolygons\fP (database, lat, lon)"
-Returns a database pointer to the records where lat,lon falls in or dbinvalid if nothing is found, 
+Returns a database pointer to the records where lat,lon falls in or dbINVALID if nothing is found, 
 .ft CW
 .in 2c
 .nf
@@ -32,7 +32,7 @@ if ($db[0]>0) {
 .ft R
 
 .IP "\fBreadPolygon\fP (database )"
-Retuns all vertices from the specified record in a single array.
+Returns all vertices from the specified record in a single array.
 .ft CW
 .in 2c
 .nf
