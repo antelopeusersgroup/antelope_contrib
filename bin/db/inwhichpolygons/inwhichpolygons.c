@@ -28,7 +28,7 @@ void where(double lat,double lon) {
 
 }
 
-main(int argc, char **argv) {
+int main(int argc, char **argv) {
     double          lat, lon;
     char            line[100];
 	char			*dbname=malloc(1024);
