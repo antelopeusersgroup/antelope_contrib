@@ -27,6 +27,7 @@ time0  S    # center of measuring time window
 
 time_window_factor 1.0 # The waveform for processing the magnitude is determined by a time
                 # window of length time_window_factor * (S-time - P-time) 
+minimum_time_window 10.0 # minimum time window in seconds, in case P and S are really close together
 
 mindelta  0     # distance range in degrees
 maxdelta  5.5   # 

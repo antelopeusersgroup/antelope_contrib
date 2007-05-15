@@ -20,7 +20,7 @@ The magnitude is written back to the ORB as a modified
 \fI/db/stamag\fP packets may also be written.
 It is intended to compute mb, ML or Ms.
 Each different magnitude has to be computed in a different instance of \fBorbampmag\fP,
-what requires different parameter files for each magnitude.
+which requires different parameter files for each magnitude.
 .SH OPTIONS
 .IP "-v"
 verbose flag
@@ -143,6 +143,8 @@ time0      P    # center of measuring time window
 time_window_factor 0.5 # The waveform for processing the magnitude is 
                        # determined by a time  window of length 
                        # time_window_factor * (S-time - P-time) 
+.ne 2
+minimum_time_window 4.0 # minimum time window in seconds, in case P and S are really close together
 
 .ne 3
 mindelta  0    # distance range in degrees
@@ -174,7 +176,7 @@ pf_revision_time 1053388800
 .LP
 The parameters are defined below.
 .IP maxwaittime
-his is a hard timeout value that is applied to waveform packet reading.
+This is a hard timeout value that is applied to waveform packet reading.
 There are situations where all of the channels for processing, for
 a particular event, may be dead or otherwise missing in the waveform
 ORB. When this happens, the waveform packet reading loop can block
@@ -191,11 +193,12 @@ other parameters have to be specified accordingly.
 .IP v_r
 Surface wave velocity to determine surface wave arrival time. 
 Only needed when computing \fIMs\fP.
-.IP "time0, time_window_factor"
+.IP "time0, time_window_factor,minimum_time_window"
 The time window for processing waveforms is determined from 
 \fItime0\fP and \fItime_window_factor\fP. The processing window is 
-\fBcenterd\fP around the theoretical arrival time of the onset 
+\fBcentered\fP around the theoretical arrival time of the onset 
 specified by \fItime0\fP and has a width of (S-time - P-time) * \fItime_window_factor\fP.
+The time specified by \fIminimum_time_window\fP allows to mitigate the case when S and P are close together.
 .IP "mindelta, maxdelta"
 These values in degrees define the distance region for magnitude computations.
 Only stations where the distance from the origin falls into the region defined here are taken into account.
@@ -292,7 +295,7 @@ orbms orbampmag  -start OLDEST  -state state/ms -v -use_p2p \\
 .fi
 .ft R
 .in
-This example shows how to run both \fBorbampmag\fP and \fBorbmag\fP together. \fBOrbmag\fP must be called last, as it does not hand over the modified \fI/pf/orbmag/\fP packets.
+This example shows how to run both \fBorbampmag\fP and \fBorbmag\fP together. \fBOrbmag\fP must be called last, as it does not hand over the modified \fI/pf/orbmag\fP packets.
 The auth_expr for orbmag looks a bit strange, but it does the job. 
 .in 2c
 .ft CW
@@ -321,8 +324,8 @@ not use the P and S arrivals from the arrival table.
 Instrument response deconvolution is not supported at this time.
 Acceleration sensor channels are not supported at this time.
 .br
-The program should have been named velocityampmag. Instead of deriving displacment amplitudes, the program directly uses velocity amplitudes to compute the respective magnitudes. This of course requires the conversion of the "normal" formulas into the velocity regime.
-.SH "DIFFERENCE TO DBML / ORBMAG"
+The program should have been named velocityampmag. Instead of deriving displacement amplitudes, the program directly uses velocity amplitudes to compute the respective magnitudes. This of course requires the conversion of the "normal" formulas into the velocity regime.
+.SH "DIFFERENCE FROM DBML / ORBMAG"
 While \fBdbml/orbmag\fP only compute Richter magnitudes, \fBdbampmag/orbampmag\fP allow the computation of mb,ml and ms. 
 .br
 The curent versions of \fBorbmag/dbml\fP allows the magnitude computation based on previous mesurements stored in the database table wfmeas. This feature is NOT supported by \fBdbampmag/orbampmag\fP.

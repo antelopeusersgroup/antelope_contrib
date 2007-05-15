@@ -13,8 +13,8 @@
        source code in this software module. */
 
 /* Modified by Nikolaus Horn for ZAMG, Vienna */
-#define REVISION_CODE "1.5"
-#define REVISION_DATE "2005-09-06 18:00"
+#define REVISION_CODE "1.6"
+#define REVISION_DATE "2007-03-19 17:00"
 
 
 #include <stdio.h>
@@ -36,6 +36,7 @@
 #define MAX_REASONABLE_MAGNITUDE 9.5
 
 #define	default_time_window	3.0
+#define default_minimum_time_window	2.0
 #define	AUTH_EXPR	"orbassoc"
 #define default_v_r 4.0
 
@@ -112,9 +113,7 @@ int verbose=0;
 
 static void myhand();
 
-main (int argc, char **argv)
-
-{
+int main (int argc, char **argv) {
 	char *select_wf=NULL;
 	char *start=NULL;
 	char *target_orbmag=NULL;
@@ -132,6 +131,7 @@ main (int argc, char **argv)
 	char target[128];
 	Tbl *tbl;
 	double time_window = default_time_window;
+	double minimum_time_window = default_minimum_time_window;
 	double tstart, tend, group_latency;
 	double mean , std ;
 	int numager=0;
@@ -324,6 +324,7 @@ main (int argc, char **argv)
 		complain (0, "parse_param(time_window_factor) error.\n");
 		exit (1);
 	}
+	parse_param (pf, "minimum_time_window", P_DBL, 0, &minimum_time_window);
 	if (parse_param (pf, "maxwaittime", P_DBL, 1, &maxwaittime) < 0) {
 		complain (0, "parse_param(maxwaittime) error.\n");
 		exit (1);
@@ -744,6 +745,7 @@ main (int argc, char **argv)
 					twin_noise=sp->twin_noise_param;
 				}
 				twin = time_window*(sarrival - parrival);
+				if (twin  < minimum_time_window) twin= minimum_time_window;
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;
@@ -895,6 +897,7 @@ main (int argc, char **argv)
 				sp->delta = delta;
 				sp->depth=odepth;
 				twin = time_window*(sarrival - parrival);
+				if (twin  < minimum_time_window) twin= minimum_time_window;
 				sp->parrival = otime + parrival;
 				sp->sarrival = otime + sarrival;
 				sp->twin_signal = twin;
