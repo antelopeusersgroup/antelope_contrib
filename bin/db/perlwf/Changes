@@ -1,6 +1,0 @@
-Revision history for Perl extension perlwf.
-
-0.01  Tue Jun  3 12:04:45 2003
-	- original version; created by h2xs 1.21 with options
-		-n perlwf -A
-
