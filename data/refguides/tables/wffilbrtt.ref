@@ -1,4 +1,10 @@
-<subsection Filter Definitions>
+<chapter Waveform Filtering>
+<body>
+A variety of time domain waveform filter routines
+are available across Antelope programs and routines.
+A filter spec is made by combining the filter
+names (and associated parameters) defined below.
+<subsection Standard Filters>
 <List>
 BW	Butterworth filter
 BWZ	Butterworth zero-phase filter

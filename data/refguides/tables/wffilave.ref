@@ -1,4 +1,4 @@
-<subsection Filter Definitions>
+<subsection Simple Averaging Filters>
 <List>
 AVE	Boxcar average waveform
 ABS	Compute waveform absolute value
