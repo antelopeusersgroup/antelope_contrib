@@ -173,6 +173,10 @@ trloadchan(@db, $t0, $t1, $sta, $chan)
     load data for $sta/$chan between time $t0 and $t1.  
     returns database pointer to trace table.
 
+trcopy(@dbout, @dbin)
+    returns a temporary copy of a trace database table,
+    possible appending to an existing table
+
 trdata(@db[, $i0[, $npts]])
     returns $npts data points starting at $i0 from trace table record @db
 
