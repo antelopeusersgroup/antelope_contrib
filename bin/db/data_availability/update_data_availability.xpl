@@ -1,7 +1,7 @@
 
 require "getopts.pl" ;
  
-if ( ! &Getopts('nvlfs:b:') || @ARGV != 2 ) { 
+if ( ! &Getopts('vlfs:b:') || @ARGV != 2 ) { 
     die ( "Usage: $0 [-v] [-f] [-l] [-b date] [-s subset] dbwf[.table] dbout\n" ) ; 
 }
 
@@ -55,12 +55,12 @@ use Datascope ;
 	}
 	
 	if ( ! -e $dboutname) {
-		if (dbcreate($dboutname,"rt1.0:availability1.0")) {
+		if (dbcreate($dboutname,"css3.0")) {
 			elog_die("cannot create output database $dboutname");
 		}
 	}
 	@dbwr= dbopen($dboutname,"r+");
-	@dbr= dblookup(@dbwr,"","availability","","");
+	@dbr= dblookup(@dbwr,"","chanperf","","");
 	
 	@dbw=dbsubset(@dbw,$opt_s) if ($opt_s);
 	$nrec=dbquery(@dbw,"dbRECORD_COUNT");
@@ -124,10 +124,9 @@ use Datascope ;
 			eval {
 				$recno=dbaddv(@dbr,
 						"sta", $sta, "chan", $chan,
-						"jdate", $jdate, 
 						"time", $ts,
-						"tgap", $tgap,
-						"available", $drr
+						"endtime", $te,
+						"perf", $drr
 					  );
 			};
 			if ($@) {
@@ -138,8 +137,9 @@ use Datascope ;
 					if (dbquery(@dbtmp,"dbRECORD_COUNT") ==1) {
 						$dbtmp[3]=0;
 						dbputv(@dbtmp,
-							"tgap", $tgap,
-							"available", $drr
+							"time", $ts,
+							"endtime", $te,
+							"perf", $drr
 						  );
 						dbfree(@dbtmp);
 					} else {

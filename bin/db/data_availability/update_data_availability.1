@@ -8,7 +8,7 @@ update_data_availability \- update data availability rates
 .fi
 .SH DESCRIPTION
 The program checks the \fBwfdisc\fP table for gaps and saves daily data return rates in a database.
-for each station/channel. The program is by far not as smart as rtoutage, but to get a quick overview, the returned values are helpful. Alternatively, the input can be the tables wftar or wftape.
+The program is by far not as smart as rtoutage, but somewhat faster. Alternatively, the input can be read from the wftar or wftape tables.
 .SH OPTIONS
 .IP "-v"
 verbose flag
@@ -21,11 +21,10 @@ force updating of already existing entries. This argument is useful, especially 
 .IP "wfdb[.table]"
 Name of database table with waveforms (i.e. tables \fIwfdisc\fP, \fIwftar\fP or \fIwftape\fP). This argument is required. If no table is specified, the \fIwfdisc\fP table is used.
 .IP "dbout"
-Name of the output database. Note that the database must be in rt1.0:availability1.0 schema.
-This argument is required.
+Name of the output database. This argument is required.
 
 .SH EXAMPLE
-The program can be run from rtexec's crontab like in the example below every night at 5 am:
+The program can be run from rtexec's crontab as in the example below every night at 5 am:
 .in 2c
 .ft CW
 .nf
@@ -54,7 +53,6 @@ The program makes no attempts to verify the entries in the input (wfdisc|wftar|w
 .nf
 antelope(1), rtoutage(1),
 data_availability(1)
-The availability1.0 extension schema (extends rt1.0)
 .fi
 .SH AUTHOR
 .nf

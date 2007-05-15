@@ -27,7 +27,7 @@ use Datascope ;
 
 
 	@db= dbopen($dbname,"r");
-	@db= dblookup(@db,"","availability","","");
+	@db= dblookup(@db,"","chanperf","","");
 	@db=dbsubset(@db,$opt_s) if ($opt_s);
 	$nrec=dbquery(@db,"dbRECORD_COUNT");
 	if ($nrec <1) {
@@ -65,7 +65,7 @@ use Datascope ;
 			$ts2=strdate($t2);
 			$t2+=86400;
 			$count=dbex_eval(@dbs,"count()");
-			$avg=dbex_eval(@dbs,"sum(available)/count()");
+			$avg=dbex_eval(@dbs,"sum(perf)/count()");
 			$avg=sprintf("%.2f",$avg);
 			$dt=strtdelta($t2 - $t1);
 			$dt=~s/^\s+//;
@@ -81,7 +81,7 @@ use Datascope ;
 			$ts2=strdate($t2);
 			$t2+=86400;
 			$count=dbex_eval(@dbs,"count()");
-			$avg=dbex_eval(@dbs,"sum(available)/count()");
+			$avg=dbex_eval(@dbs,"sum(perf)/count()");
 			$avg=sprintf("%.2f",$avg);
 			$dt=strtdelta($t2 - $t1);
 			$dt=~s/^\s+//;
@@ -101,7 +101,7 @@ use Datascope ;
 		$ts2=strdate($t2);
 		$t2+=86400;
 		$count=dbex_eval(@db,"count()");
-		$avg=dbex_eval(@db,"sum(available)/count()");
+		$avg=dbex_eval(@db,"sum(perf)/count()");
 		$avg=sprintf("%.2f",$avg);
 		$dt=strtdelta($t2 - $t1);
 		$dt=~s/^\s+//;
