@@ -75,7 +75,7 @@ dbrows2orb(Dbptr db, int orb, char *prefix)
 	if (ntables > 0)
 		pkt = newPkt();
 	if (prefix)
-		strlcpy(pkt->parts.src_net, prefix, PKT_TYPESIZE);
+		strncpy(pkt->parts.src_net, prefix, PKT_TYPESIZE);
 	pkt->pkttype = suffix2pkttype("db");
 	for (t = 0; t < ntables; t++) {
 		thistablename = gettbl(tables, t);
