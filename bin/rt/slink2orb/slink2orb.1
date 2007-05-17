@@ -1,4 +1,4 @@
-.TH SLINK2ORB 1 2006/03/02
+.TH SLINK2ORB 1 2007/05/17
 .SH NAME
 slink2orb \- SeedLink to Antelope ORB module
 .SH SYNOPSIS
@@ -9,20 +9,21 @@ slink2orb [-dc database] [-dm database] [-nd delay]
 
 .fi
 .SH DESCRIPTION
-\fBslink2orb\fP connects to a \fISeedLink\fR server, requests
-data and forwards it to an \fIORB\fR ring buffer as packet
-type 'SEED'.  This module will transfer data in either uni-station
-(Protocol ver. 2) or multi-station (Protocol ver. 3) modes.
+\fBslink2orb\fP connects to a \fISeedLink\fR server, requests data and
+forwards Mini-SEED data records to an \fIORB\fR as packet type 'SEED'.
+This program is compatible with both SeedLink uni-station (Protocol
+ver. 2) or multi-station (Protocol ver. 3) modes.
 
-\fBUni-station Vs. Multi-station:\fP
-Uni-station mode is the connection method used for data streams
-where data from a single station is served from a single TCP
-port (similar to LISS Protocol ver. 1).  Multi-station mode is
-the connection method used for data streams where data from
-multiple stations are multiplexed together and served on a single
-TCP port.  Uni-station mode is supported by all current SeedLink
-versions.  Multi-station mode is supported by SeedLink 2.5 or
-later (SeisComP-1.1.6 or later).
+\fBUni-station Vs. Multi-station:\fP Uni-station mode is the
+connection method used for data streams where data from a single
+station is served from a single TCP port (similar to LISS Protocol
+ver. 1).  Multi-station mode is the connection method used for data
+streams where data from multiple stations are multiplexed together and
+served on a single TCP port.  Uni-station mode is older and may or may
+not be supported by recent SeedLink server implementations.
+Multi-station mode is supported by all recent SeedLink server
+implementations and was added to the GEOFON reference implementation
+at SeedLink 2.5 (SeisComP-1.1.6 or later).
 
 .SH OPTIONS
 .IP "-dm \fIdatabase\fR"
@@ -176,12 +177,13 @@ SeedLink header).  Received records are prepended with an Antelope packet
 type 'SEED' header and are sent to the ORB, optionally including calib,
 calper and segtype from a specified database.
 
-SeedLink is currently distributed as part of the SeisComP (Seismological
-Communication Processor) package.  For more information see,
-http://www.gfz-potsdam.de/geofon/
+The reference implementation of a SeedLink server is distributed as
+part of the SeisComP (Seismological Communication Processor) package.
+For more information see, http://www.gfz-potsdam.de/geofon/
 
 .SH AUTHOR
 .nf
 Chad Trabant
-ORFEUS Data Center/EC-Project MEREDIAN
+Developed while at ORFEUS Data Center/EC-Project MEREDIAN
+Currently at IRIS Data Management Center
 .fi
