@@ -1,5 +1,5 @@
 <chapter>
-Seismic source location
+Seismic Source Location
 <commands>
 
 dbloc2 [-r] [-p pf] database

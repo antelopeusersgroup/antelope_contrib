@@ -1,4 +1,4 @@
-<chapter Datascope database tools>
+<chapter Datascope Database Tools>
 <commands>
 
 <subsection Database Schemas>
@@ -11,10 +11,10 @@ dbbuild -b [-v] [-p pf] db input
 dbbuild_validate [-dsv] [file ..]
      verify that referenced  parameter files contain all required fields
 
-dbhelp [db|s]
+dbhelp [ db | s ]
     gui to explore schema for database db or schema s
 
-dbdescribe {db|schema} [table]
+dbdescribe { db | schema } [ table ]
     generate ascii formatted document describing schema, database, or database table
 
 dbdoc db
@@ -50,7 +50,7 @@ syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
 
 <subsection Creating and Editing Databases>
 <commands>
-dbe [-e] db[.table] [ db[.table] ...]
+dbe [-e] [-p pf] db[.table] [ db[.table] ...]
     general purpose viewer/editor for databases 
 
 dberesp [db.table | response ..]
@@ -71,8 +71,13 @@ db_showurl db.table
 remark_gui [table|view]
     run by dbe to add/show remarks
 
-dbset [-clv] db[.table] field from [to]
-    change value of attribute field throughout database, when initial value is from ('*' specifies all values). -c asks before changing, -v shows each change
+dbset [options] db[.table] field from [to]
+    change value of attribute field throughout database
+<options>
+-c 	ask before changing ('all' accepts all changes)
+-l	use literal value for comparison
+-v	show changes
+</options>
 
 dbconvert [-fv] [-s new_schema] db dbout[.table]
     create dbout (or dbout.table) from database db, using rules from dbconvert parameter file
@@ -86,6 +91,7 @@ dbcp [options] dbin[.table] dbout
 -a alt	specify alternate subdir for external file copies
 -d	make descriptor file for dbout which references dbin
 -i	prompt for permission to overwrite existing tables
+-F	override ../ exclusion (caveat emptor)          
 -f	copy external files (default changes references)
 -l	create local symbolic links for external files
 -o	quietly overwrite existing external files
@@ -109,8 +115,8 @@ dbdelete [options] view [table ...]
 dbaddv [options] database.table [name value name value ...]
     add records to table
 <options>
--i	interactively
 -c	confirm each addition
+-i	interactively
 -f	ignore key duplication
 -v	verbose
 </options>
@@ -134,6 +140,7 @@ dbsplit [options] dbin dbout
 -d	delete selected rows from dbin after copying to dbout
 -f 	overwrite any existing output tables in dbout
 -k 	keep renamed backup of original tables
+-p pf	  	parameter file 
 -s subset	records which satisfy expr are copied to dbout
 -v 	verbose
 </options>
@@ -146,7 +153,8 @@ dbconcat_event db1 db2 [ db3 ...] dbout
     combine multiple CSS 3.0 event databases db1, db2, ... (arrival, assoc, event, origin, and origerr tables) into single new database dbout
 
 dbfixids db idname [ idstart ]
-    renumber ids for idname (starting at start) in database db
+dbfixids [-s server] db [ db2 ]
+    renumber ids for idname (starting at idstart) in database db, or sync ids to idserver server
 
 <subsection Creating Database Views>
 <commands>
@@ -191,8 +199,8 @@ dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group
     print selected fields and expressions from input aview
 <options>
 -b	strip blanks from each field in output.
--h	add automatic headers to output
 -F sep	separator
+-h	add automatic headers to output
 -p	print primary key
 -s	allow expressions to modify database fields with operator ":=".
 </options>
@@ -200,10 +208,10 @@ dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group
 db2xml [options] aview [name expr [name expr ...]]
     print database view as XML
 <options>
--v	verbose
--p	primary keys only
 -d tag 	tag name for document root
+-p	primary keys only
 -r tag	tag name for each row
+-v	verbose
 </options>
 
 <subsection Verifying Databases>
@@ -214,24 +222,25 @@ dbcheck [-vv] db[.table]
 dbverify [options] db[.table]
     perform some consistency checks on database db (or table)
 <options>
--t	turn off all tests
+-A t1,t2..	alternate keys need not be unique in t1, t2, ..
 -c	perform consistency checks
 -C c1,c2,..	run only specific consistency checks c1,c2,...
+-I t1,t2..	suppress table checks on t1, t2, ..
 -i	check that referenced foreign ids are present 
 -j	test 2-table joins from parameter file
 -k	verify primary and secondary key are unique
 -l	check that lastid table entries are valid
+-N mx	print maximum of mx failures for some tests 
+-O t1,t2..	perform table checks only on t1, t2, ..
+-P t1,t2..	primary keys need not be unique in t1, t2, ..
 -p	external program tests from parameter file
 -r	check attribute ranges
--u	complain about unreferenced ids
--x	check for existence of external files
--A t1,t2..	alternate keys need not be unique in t1, t2, ..
--P t1,t2..	primary keys need not be unique in t1, t2, ..
--I t1,t2..	suppress table checks on t1, t2, ..
--O t1,t2..	perform table checks only on t1, t2, ..
--N mx	print maximum of mx failures for some tests
+-s	check for shadowed database tables
 -S n	sample n records, not entire table
+-t	turn off all tests
+-u	complain about unreferenced ids
 -v	verbose
+-x	check for existence of external files
 </options>
 
 dbcheck_responses [-t tolerance] [-v] database
@@ -242,16 +251,18 @@ dbcheck_responses [-t tolerance] [-v] -f response-file
 dbdiff [options] db1[.table] db2[.table]
     find differences between two databases (or tables)
 <options>
--a absolute_tolerance 
--r relative_tolerance
-	allow floating point values to vary by some absolute or relative tolerance
 -A absolute_tolerance 
 -R relative_tolerance
 	allow floating point values to vary by some absolute or relative tolerance in indexes
+-a absolute_tolerance 
+-r relative_tolerance
+	allow floating point values to vary by some absolute or relative tolerance
 -e	print times as epoch seconds
 -i name	list of names to ignore
 -l {exact|compare|ignore}
 	for link fields
+-N max_diffs	show a maximum of max_diffs per table
+-o	compare records in order rather than by index 
 -w width
 -x {exact|compare|ignore|Program}	
 	for external files
@@ -296,7 +307,7 @@ dbtc [-p pf] [-t time] [-v] gdb:gnet:gsta:gch bdb:bnet:bsta:bch
 correctdt [-m srcmatch] [-t stime] [-v] bdb
     using correction table from dbtc, correct times in wfdisc and arrival tables, and in miniseed
 
-dbfixchanids [-q] db
+dbfixchanids [-q] [+q] db
     fix chanid attributes in wfdisc and arrival tables
 
 dbfixtimeres db [expr]

@@ -8,10 +8,11 @@ atcl
 
 awish
     Tk shell 
+</commands>
 
-<body>
+<info>
     package require XXX
-
+</info>
 
 <commands>
 Tclx

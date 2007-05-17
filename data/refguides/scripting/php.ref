@@ -6,7 +6,7 @@ dl( 'Datascope.so' );
 % man datascope_php
 </man>
 
-<subsection Opening a database>
+<subsection Opening a Database>
 <function>
 
 ds_dbopen (database, permissions)
@@ -35,7 +35,7 @@ dbmark ($db)
 dbcrunch ($db)
     remove marked (null) rows from a database table
 
-<subsection Manipulating fields and records>
+<subsection Manipulating Fields and Records>
 
 dbaddv ($db, field_name, value, [field_name, value, ...])
     add a new row with the specified values to the database
@@ -68,7 +68,7 @@ dbget_remark ($db)
 db2xml ( $db [, string flags [, string rootnode [, string rownode [, array fields [, array expressions]]]]] )
     returns an XML structure corresponding to a view
 
-<subsection Forming views>
+<subsection Forming Views>
 
 dbprocess ($db, commands)
     returns a new view which is the result of applying the dbprocess
@@ -236,7 +236,7 @@ dbfind ($db, expression, [, first [, reverse]])
 dbmatches ($dbk, $dbt, $hookname [, join-keys])
     return row numbers of records in $dbt that match the single row $dbk
 
-<subsection Parameter files >
+<subsection Parameter Files >
 
 pfget (pfname, key)
     return the value for the key from the parameter file pfname
@@ -272,7 +272,7 @@ pfwrite (filename, pfname)
 pf2xml (pfname [, flags [, prolog [, name]]])
    convert a parameter file to xml
 
-<subsection Time conversion>
+<subsection Time Conversion>
 
 strtdelta (dt)
     convert the time-difference dt (in seconds) to a string, eg "30:35 minutes"
@@ -314,7 +314,7 @@ yearday (epoch)
     return the integer julian-day corresponding to the given epoch time
 
 
-<subsection Instrument response routines>
+<subsection Instrument Response Routines>
 
 dbresponse (filename)
     return a PHP resource representing the response curve in $filename
@@ -322,7 +322,7 @@ dbresponse (filename)
 eval_response ($response, omega)
     return a two-element array of the real and imaginary response at $omega
 
-<subsection Special functions>
+<subsection Special Functions>
 
 yesno (s) 
     return -1 for yes,ok,true,1,y,on,t; 0 for no,n,false,0,off,f; 1 otherwise
@@ -367,7 +367,7 @@ srn (lat, lon )
 srname (lat, lon )
     return seismic region name based on location 
 
-<subsection Foreign keys >
+<subsection Foreign Keys >
 
 <body>
 map between CSS3.0 station/channel naming conventions and the

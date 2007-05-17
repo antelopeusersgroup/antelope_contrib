@@ -35,7 +35,7 @@ g_getdepth
   g_getdepth returns the number of  bit  planes  for  the
   current  device.   
 
-<subsection General commands>
+<subsection General Commands>
 g_clear
   Flood the  device  with  the  current  color.  Clipping
   areas, viewports, etc. are ignored.
@@ -58,71 +58,70 @@ g_clipping boolean
       turn clipping off.
 
 
-<subsection  Viewport commands>
+<subsection  Viewport Commands>
 g_viewport left right bottom top
-      set the current viewport using screen coordinates. 
+  set the current viewport using screen coordinates. 
 
 g_pushviewport
-          push the current viewport onto the stack.  
+  push the current viewport onto the stack.  
 
 g_popviewport
-          pop the topmost element from the viewport stack  
+  pop the topmost element from the viewport stack  
 
 g_getviewport
-          returns the current viewport {left right bottom top}.  
+  returns the current viewport {left right bottom top}.  
 
 g_getaspect
-          returns the aspect ratio for the current device.   
-          (ratio of width to height)
+  returns the aspect ratio for the current device.   
+  (ratio of width to height)
 
-g_getfactors [width [height]]
-          returns the width and height factor of the current device.  
+g_getfactors [ width [ height ]]
+  returns the width and height factor of the current device.  
 
-         widthfactor = (widthOfDevice / min(widthOfDevice, heightOfDevice))
+  widthfactor = (widthOfDevice / min(widthOfDevice, heightOfDevice))
 
-         heightfactor = (heightOfDevice / min(widthOfDevice, heightOfDevice))
+  heightfactor = (heightOfDevice / min(widthOfDevice, heightOfDevice))
 
-<subsection Attribute stack commands>
+<subsection Attribute Stack Commands>
 g_pushattributes
-      places a copy of the current attributeList 
-      (color, fillstyle, hatchstyle, textCentering, textKerning,
-      textHeight, textWidth, and textFont) on the top of the attribute stack.
+  places a copy of the current attributeList 
+  (color, fillstyle, hatchstyle, textCentering, textKerning,
+  textHeight, textWidth, and textFont) on the top of the attribute stack.
 
 g_popattributes
-      restores attributes from attribute stack
+  restores attributes from attribute stack
 
-<subsection Projection commands>
-g_ortho left right top bottom [near [far]]
-      Define a parallel projection, 3d if near and far are
-      supplied, 2d otherwise
+<subsection Projection Commands>
+g_ortho left right top bottom [ near [ far ]]
+  Define a parallel projection, 3d if near and far are supplied, 2d otherwise
 
 g_perspective fieldOfView aspect near far
-      Specify a perspective viewing pyramid in world coordinates  
+  Specify a perspective viewing pyramid in world coordinates  
 
 g_window left right top bottom near far
-      Specify a perspective viewing pyramid in world  coordinates  
+  Specify a perspective viewing pyramid in world  coordinates  
 
-<subsection Matrix stack commands>
+<subsection Matrix Stack Commands>
 g_pushmatrix
-      push the current transform matrix on the the stack.
+  push the current transform matrix on the the stack
 
 g_popmatrix
-      restore the transformation matrix from the stack
+  restore the transformation matrix from the stack
 
 <subsection Viewpoint Commands>
 g_polarview distance azimuth increment twist
-  Specify the viewers position in polar coordinates.
+  specify the viewers position in polar coordinates
 
 g_up 
-    ensure the Y axis  is  pointing up.  
+  ensure the Y axis  is  pointing up  
 
 g_lookat viewX viewY viewZ posX posY posZ twist
   specify the viewer position  
 
-g_move x y [z]
+g_move x y [ z ]
   move to point x,y,z
 
-g_rmove x y [z]
+g_rmove x y [ z ]
   moves a displacement x, y, z from current position
 
 g_smove x y
@@ -131,11 +130,11 @@ g_smove x y
 g_rsmove x y
   moves a displacement x,y in screen coordinates
 
-<subsection Drawing commands>
-g_draw x y [z]
+<subsection Drawing Commands>
+g_draw x y [ z ]
   draw to x, y, z
 
-g_rdraw x y [z]
+g_rdraw x y [ z ]
   draw to current position + x, y, z
 
 g_sdraw x y
@@ -144,7 +143,7 @@ g_sdraw x y
 g_rsdraw x y
   draw to current position + x, y in screen coordinates
 
-<subsection Arcs and circles>
+<subsection Arcs and Circles>
 g_circleprecision numberOfSegments
   specify number of line segments to use to draw a circle
 
@@ -157,7 +156,7 @@ g_sector x y radius startAngle endAngle
 g_circle x y radius
   draw a radius circle with center x, y
 
-<subsection Rectangle and Polygon commands>
+<subsection Rectangle and Polygon Commands>
 g_rect x y x2 y2
   draw a rectangle with corners x y and x2 y2
 
@@ -183,16 +182,16 @@ g_makepoly
   starts construction of a polygon constructed with g_move, g_draw
 
 g_closepoly
-  completes construction of a polygon started by g_makepoly.
+  completes construction of a polygon started by g_makepoly
 
 g_backface flag
   turn on/off culling of backface polygons  
 
 g_backfaceclockwise flag
   if flag is true, direction of backfacing is set to clockwise; otherwise
-  the direction is counterclockwise.
+  the direction is counterclockwise
 
-<subsection Text commands>
+<subsection Text Commands>
 g_font fontName
   The following software fonts are supported:
 <example>
@@ -206,97 +205,93 @@ times.i     times.ib    times.r
 </example>
 
 g_numchars
-  Return the number of characters in  the  current  font.
+  Return the number of characters in the current font
 
 g_textsize width height
-  set the maximum size of a character in the current
-  font in world units. 
+  set the maximum size of a character in the current font in world units 
 
 g_textangle angle
   set the text angle
 
 g_fixedwidth flag
-  turns fixedwidth text on  or  off.  
+  turns fixedwidth text on or off  
 
 g_centertext flag
-  if true, text is drawn centered on the current graphics position, otherwise 
-  left justified 
+  if true, text is drawn centered on the current graphics position, otherwise left justified 
 
-g_getcharsize char [wVar  [hVar]]
-  get the width and height of character char.   
+g_getcharsize char [ wVar  [ hVar ]]
+  get the width and height of character char 
 
-g_fontsize [wVar [hVar]]
+g_fontsize [ wVar [ hVar ]]
   get the maximum width and height of a character in the current font
 
 g_drawstr string
-  draw the text in string at the current position.
+  draw the text in string at the current position
 
 g_strlength string
-  return the length of string in world units.
+  return the length of string in world units
 
 g_boxtext x y w h string
-  draw string to fit in the box with bottom left hand corner at x, y,
-  width w, and height h
+  draw string to fit in the box with bottom left hand corner at x, y, width w, and height h
 
 g_boxfit w h numberOfChars
-  set scale for text so that a string of characters in the font fit in 
-  box of width w, height h
+  set scale for text so that a string of characters in the font fit in box of width w, height h
 
-<subsection Transformation commands>
+<subsection Transformation Commands>
 g_identtrans
   resets the current transform to the  identity  matrix. (screen units and world
   units become equivalent)  
 
-g_translate x y [z]
+g_translate x y [ z ]
   alter the current transform so points are moved distance x,y,z
 
-g_scale xScale yScale [zScale]
+g_scale xScale yScale [ zScale ]
   scale the current transform by xScale, yScale, zScale
 
 g_rotate angle axis
   rotate the current transform angle degrees around axis: x, y, or z
 
-<subsection Point commands>
-g_point x y [z]
-  draw a point at x y z in world units.  
+<subsection Point Commands>
+g_point x y [ z ]
+  draw a point at x y z in world units
 
-<subsection Object commands>
+<subsection Object Commands>
 
 g_makeobj objectID
   begin construction of an object with identifier objectID  
 
 g_closeobj
-  close the object begun with the g_makeobj command.
+  close the object begun with the g_makeobj command
 
 g_genobj
   return a unique objectID identifier 
 
 g_getopenobj
-  return identifier for the object currently under construction.
+  return identifier for the object currently under construction
 
 g_loadobj objectID fileName
-  load the object in fileName into  objectID.  
+  load the object in fileName into  objectID  
 
 g_saveobj objectID fileName
-  save the object objectID into fileName.  
+  save the object objectID into fileName  
 
 <subsection Double Buffering>
 
 g_backbuffer
-  draw in the offscreen buffer.  
+  draw in the offscreen buffer  
 
 g_frontbuffer
-  draw in the onscreen buffer.
+  draw in the onscreen buffer
 
 g_swapbuffers
-  copy the offscreen buffer to the onscreen buffer. 
+  copy the offscreen buffer to the onscreen buffer
 
-<subsection Other commands>
-g_getgp [x [y [z]]]
+<subsection Other Commands>
+g_getgp [ x [ y [ z ]]]
   return current position in world coordinates, optionally saving in x, y, z
 
-g_toscreen xArg yArg [xVar [yVar]]
+g_toscreen xArg yArg [ xVar [ yVar ]]
   returns current screen coordinates for device coords xArg, yArg
 
-g_toworld xArg yArg [xvar yvar]
+g_toworld xArg yArg [ xvar yvar ]
   return the current world coordinates for device coordinates xArg yArg

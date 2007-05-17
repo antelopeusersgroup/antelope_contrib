@@ -510,7 +510,7 @@ int elog_query ( enum Elog_code code, int severity, void **value )
 int elog_set ( enum Elog_code code, int severity, void *value )
     set various parameters for elog interface
 
-<subsection Filename and Path manipulation>
+<subsection Filename and Path Manipulation>
 int abspath ( char *relp, char *absp )
     return absolute path absp for the relative path relp
 
@@ -690,6 +690,7 @@ char *strdbl(double x, char *buf)
     formats the input double x into a compact and convenient string
 
 <subsection Sorting and Searching>
+
 void isort ( char *a, int n, int size, int (*cmp)(), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     an insertion sort implementation
@@ -707,6 +708,7 @@ int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*
     return number of matches and the index range ns <= i <= ne of matches.  unique indicates index has no duplicate entries
 
 <subsection User Interaction>
+
 char *ask ( char *format, ... )
     query user for a response
 
@@ -746,7 +748,8 @@ char *getaline ( FILE *file, char *aline, int n )
     reads a line from file, replacing any terminal linefeed
     with a null byte
 
-<subsection Hexadecimal dumps>
+<subsection Hexadecimal Dumps>
+
 private void Hexdump ( FILE *file, int base, void *mem, int n )
     hex dump a buffer mem, with base added
 
@@ -784,7 +787,7 @@ int hex2mem ( char *hex, void *vmem );
 void mem2hex ( void *vmem, int n, char *s );
     convert n bytes at vmem into hexadecimal character string
 
-<subsection Byteswap routines>
+<subsection Byteswap Routines>
 <body>
 Over 250 routines for byteswapping, with names chosen
 to indicate source and destination type and architecture,
@@ -1095,7 +1098,7 @@ void unsetenv ( char *name )
 char *expand_env ( char *s )
     return new string substituting $env or ${env} in s with value from environment
 
-<subsection Data file references>
+<subsection Data File References>
 char *datafile ( char *env, char *file)
     return path of filename file in $ANTELOPE/data, perhaps overridden by environment variable env
 
@@ -1292,7 +1295,7 @@ int sgsign ( char *signer, char *data, int nbytes, char *signature );
 int sgverify ( char *signer, char *data, int nbytes, char *signature );
     verifies the signature for nbytes of data using method dictated by signer
     
-<subsection Reading files with mmap>
+<subsection Reading Files with mmap>
 <cdeclarations>
 int gxopen(char *filename)
     return fd for filename using mmap

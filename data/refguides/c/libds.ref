@@ -14,7 +14,7 @@ typedef struct Dbptr {
     int record ;
 } Dbptr ;
 
-<subsection Opening/Closing a database>
+<subsection Opening/Closing a Database>
 <cdeclarations>
 
 int dbopen ( char *path, char *p, Dbptr *db )
@@ -39,7 +39,7 @@ Dbptr dbtmp(char *schema)
 int dbclose ( Dbptr db )
     close database db
 
-<subsection Adding and retrieving values>
+<subsection Adding and Retrieving Values>
 int dbadd ( Dbptr db, char *r )
     add row r to table db, return new record number
 
@@ -77,7 +77,7 @@ int dbselect ( Dbptr db, Tbl *l, FILE *f)
     for each row in view db or range (db.record to db.field), 
     print value of expressions in list l to file f.
 
-<subsection Removing and deleting rows>
+<subsection Removing and Deleting Rows>
 int dbdelete ( Dbptr db )
     delete row db from view
 
@@ -209,7 +209,7 @@ int dbstrtype ( Dbptr db, char *s )
     return strREAL, strINTEGER, strNULL, strSTRING, strTIME, strEXPR, 
     strFIELD, or strUNKNOWN, indicating how s might be evaluated
 
-<subsection External files>
+<subsection External Files>
 int dbextfile ( Dbptr db, char *table, char *p )
     compose path p using dir and dfile from database row db; specify table 
     when view db contains multiple tables with dfile.

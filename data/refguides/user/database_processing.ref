@@ -6,6 +6,7 @@ dbdetect [options] dbin dbout
 <options>
 -arrivals	write arrival records also
 -noaddchk	don't do database checks
+-onlypicks	write only detection pick rows to db
 -pf pf	pf specifies channels and filters
 -tstart t0	start at t0
 -twin T	for T minutes
@@ -15,9 +16,9 @@ dbdetect [options] dbin dbout
 dbgrassoc [options] dbin dbout ttgridf1 [ttgridf2 [...]]
     spatial grid search based associator/locator: reads detections from dbin, generating new origin, assoc and arrival records in dbout
 <options>
--auth auth
--i
--noassoc
+-auth auth	auth field for db, default is dbgrassoc
+-i		flush stdout and reread pf
+-noassoc	no smart association
 -pf pf
 -v
 </options>
@@ -27,9 +28,9 @@ dbassoc [options] dbin dbout dbcat timeres_P timeres_S
 <options>
 -arid arid1 ... | -orid orid1 ... | -evid evid1 ...
 	select events by arid, orid or evid
--ignoreiphase
+-ignoreiphase	do not match indicated phase with predicted
 -v
--writeout
+-writeout	write text to STDOUT after processing each origin
 -pred	save predicted arrivals
 -prefor	set prefor
 -rules r	any combination of P,S,PS,PS+,first,arids=all,best,all

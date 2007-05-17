@@ -5,14 +5,14 @@ The following schemas are included with the Antelope distribution.
 
 <commands>
 autodrm1.0
-    logs of messages sent and received by autodrm.
+    logs of messages sent and received by autodrm
 
 certify2.0
     database of regression tests and results
 
 contacts1.0
     phone-numbers and contact names for investigation
-    of felt reports from earthquakes.
+    of felt reports from earthquakes
 
 css2.8
     predecessor to css3.0. See css3.0.
@@ -22,53 +22,56 @@ css3.0
     information including waveforms, parametric data, and station details.
 
 css_vel
-    supports the dblocgrad program.
+    supports the dblocgrad program
 
 cvs1.0
     alternative representation for CVS (Concurrent 
-    Version System) log information.
+    Version System) log information
 
 Db2sd1.0
-    additions to css3.0 for generating SEED volumes.
+    additions to css3.0 for generating SEED volumes
 
 dbrecenteqs1.1
     expansion of css3.0 and rt1.0 to support web-based mapping of 
-    hypocenters and related information. 
+    hypocenters and related information
 
 genloc1.0
-    extensions of css3.0 to support the genloc program.
+    extensions of css3.0 to support the genloc program
 
 gmt1.0
     schema to track GMT grid files
 
 iceworm1.3
-    extensions to css3.0 schema for use with the Iceworm system.
+    extensions to css3.0 schema for use with the Iceworm system
 
 Id1.0
-    used by the database id server program dbids.
+    used by the database id server program dbids
 
 Logs1.0
-    defines a table to hold log files.
+    defines a table to hold log files
 
 models0.4
-    prototype css3.0 expansion schema to store travel-time models. 
+    prototype css3.0 expansion schema to store travel-time models 
 
 MWavelet1.1
-    Extension of css3.0 for multiwavelet array-processing 
+    extension of css3.0 for multiwavelet array-processing 
 
 notify1.2
-    holds contact information used in earthquake response procedures. 
+    holds contact information used in earthquake response procedures 
 
 pde
     Datascope schema representation of the Preliminary Determination of Epicenters 
-    reports from the National Earthquake Information Center.
+    reports from the National Earthquake Information Center
 
 places1.2
     Describes places on the earth: cities, populated places, summits etc.
     Includes support for specifying polygonal regions.
 
+rt1.0
+    Depricated:  use css3.0 instead
+
 rtexec1.0
-    supports Antelope real-time executive program rtexec. 
+    supports Antelope real-time executive program rtexec 
 
 statrans1.1
     Supports translation of station-names from station-name-only (used 
@@ -76,16 +79,16 @@ statrans1.1
     channel names.
 
 Status1.0
-    monitoring and maintenance of one or more Antelope real-time systems.
+    monitoring and maintenance of one or more Antelope real-time systems
 
 strawman1.0
-    strawman proposal for a schema which fixes some of the problems with css3.0.
+    strawman proposal for a schema which fixes some of the problems with css3.0
 
 takeoff
-    extensions to css3.0 used for focal mechanisms and theoretical travel-times.
+    extensions to css3.0 used for focal mechanisms and theoretical travel-times
 
 tcpmonitor1.0
-    Keep TCP link statistics
+    keep TCP link statistics
 
 Trace4.0
     trace manipulation and processing database; provides the parameter 
@@ -93,8 +96,8 @@ Trace4.0
     their representation in memory. 
 
 USGS_pde1.0
-    USGS 1995 format for Preliminary Determination of Epicenters.
+    USGS 1995 format for Preliminary Determination of Epicenters
 
 wfrecords1.0
-    Schema for cataloging non-digital records, e.g. helicorder paper
+    schema for cataloging non-digital records, e.g. helicorder paper
 

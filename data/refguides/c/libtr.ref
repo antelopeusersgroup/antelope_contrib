@@ -6,7 +6,7 @@ TRLIBS
 tr.h
 implements routines for reading and writing waveforms from a database, and performing some standard operations on them.
 
-<subsection Trace objects>
+<subsection Trace Objects>
 <cdeclarations>
 Dbptr trnew ( char *tr_path, char *schema_name )
     create a new trace database
@@ -23,7 +23,7 @@ int trdestroy ( Dbptr *trp )
 int trtruncate ( Dbptr tr, int n )
     truncate a tr database table after record n
 
-<subsection Reading and Writing waveforms>
+<subsection Reading and Writing Waveforms>
 <cdeclarations>
 int trgetwf ( Dbptr db, Arr **maparr, float **data, int *datasz, double reqt0, double reqt1, double *t0, double *t1, int *npts, int (*fill) (), void *pvt )
     read waveform data for single record db between times reqt0  and reqt1 into buffer data, 
@@ -59,7 +59,7 @@ int trwfname ( Dbptr db, char *wf, char **path )
     generate waveform file name for database row db using specified pattern wf and
     creating any non-existent directories.
 
-<subsection Network, Aux and Loc code Remapping>
+<subsection Network, Aux and Loc Code Remapping>
 <body>
 
 Autodrm and SEED introduce extra keys to uniquely identify station and
@@ -99,7 +99,7 @@ int map_seed_chanloc ( char *sta, char *fchan, char *loc, char *chan )
 int seed_loc ( char *sta, char *chan, char *fchan, char *loc )
     return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan
 
-<subsection Generating test data>
+<subsection Generating Test Data>
 
 int trsignal_argv ( Dbptr tr, int argc, char **argv )
     generate test signal data in a trace table
@@ -114,7 +114,7 @@ void mksignal ( char *type, float *data, double time, int nsamp, double samprate
 void imksignal ( char *type, int *data, double time, int nsamp, double samprate, double t0, double freq, double slew, double amp )
     generate a signal of a specified type. creates integers.
 
-<subsection miniseed and Steim Compression>
+<subsection Miniseed and Steim Compression>
 <cdeclarations>
 Msd *msdnew ()
     create new configuration block for miniseed generation

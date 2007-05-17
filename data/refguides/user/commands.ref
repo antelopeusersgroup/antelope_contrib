@@ -18,8 +18,21 @@ required_unix_pgms
 private check_antelope_installation
     spot check for proper Antelope installation
 
-antelope_update [-ilntv] [-m email] [{-p|-q} proxy] [-r id] [url]
+antelope_update [options]
     update local antelope installation from BRTT patches 
+<options>
+-i	ask before installing each patch
+-l	just list unapplied patches 
+-L	list all patches at the termal with '*' if patch is unapplied 
+-m mailto	run silent, but send email if patches are needed	
+-n	show what would happen, don't actually do it
+-p proxy 	use proxy with password authentication 
+-q proxy 	use URL proxy
+-Q 	don't ask about stopping realtime systems (caveat emptor)
+-r id	specify a different antelope release   
+-t 	terminal mode (no gui)
+-v 	verbose
+</options>
 
 check_license [-v] [license_filename]
     verify license is valid
@@ -63,6 +76,7 @@ Combinatorial options
 -b	binary files
 -c	in CVS
 -C	not in CVS
+-d	directory
 -e	empty directories
 -l	symbolic links
 -L	is plain file and has multiple links
@@ -99,12 +113,13 @@ epoch [options] [ +format ] [ time/date components ]
 <options>
 -d   	show input as elapsed time, eg 1.5 days
 -e	echo interactive input
+-l	output in local time  
 -i tz	specify an input timezone tz, eg US/Mountain
 -o tz	specify an output timezone tz, eg Japan
 +format	specify format of output (refer to epoch escapes table)
 </options>
 
-elog [-cdln] [-f fault] [message]
+elog [-cdlnS] [-f fault] [message]
     exhibit behavior of elog error routines with message
 
 elog -e errno
@@ -126,12 +141,17 @@ pfcompare [options] pf
 <options>
 -s	show stock version (instead of local)
 -u	show unique items
+-v	verbose
+-V	very verbose
 </options>
 
 pfdiff [-1t] [-o newpf] pf1 [pf2]
     compare parameter file pf1 to pf2 (or $ANTELOPE/data/pf/pf1 if pf2 is unspecified)
-    -o interactively selects parameters from pf1 and pf2 to construct new parameter 
-    file newpf. -t runs tkdiff, -1 limits depth of recursive comparison.
+<options>
+-o 	interactively selects parameters from pf1 and pf2 to construct pf, newpf
+-t 	runs tkdiff
+-1 	limits depth of recursive comparison
+</options>
 
 pfecho [options] name [ param ...]
     print out parameters from parameter files
@@ -228,48 +248,53 @@ grepsrc [options] [-cfhilMmpsTtvyw] [pattern [dir]]
     look through certain files below dir for pattern; useful for finding occurrences of call to function, or for many other problems
 <options>
 -i	case insensitive
--v	show find command, and list files searched.
 -l	show only filenames with matching lines.
+-v	show find command, and list files searched.
 -w	show all matches, not just word matches.
 restrict searches to certain files by using any combination of:
+-A	include directories named junk and ending in -
 -c	c source files
+-C	c++ source files
 -f	fortran source 
 -g glob	files matching glob
 -h	include files 
--m	manual pages 
 -M	Makefile or makefile
+-m	manual pages 
+-P	parameter files
 -p	perl source 
 -s	shell source 
+-T	all text files
 -t	tcl source 
 -y	(f)lex and yacc source
--T	all text files
 </options>
 
 ldlibs [options] names
     provide information about object libraries and link lines
 <options>
 Modifying Options
--f	generate fortran ldlibs line (default is c).
--i	initialize database, eg, completely rebuild it.
--k	rebuild database, if it's out of date.
--n	don't use macros to collapse dependency list.
--v	be more verbose.
--x	specify entry points on command line, rather than object files.
+-f	generate fortran ldlibs line (default is c)
+-i	initialize database, eg, completely rebuild it
+-k	rebuild database, if it's out of date
+-n	don't use macros to collapse dependency list
+-v	be more verbose
+-x	specify entry points on command line, rather than object files
+-X lib1 lib2	show all multiply defined entry pts or global variables between lib1 and lib2
 Different Modes
--r lib1 lib2	show refs from lib1 which are resolved in lib2.
--R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
 -D lib	show refs defined in lib
 -N lib	show refs not defined in lib
--l lib	show libraries loaded by lib
 -L lib	show libraries which load lib
--u lib	show libraries which are needed by lib
--U lib	show libraries which need lib
--s lib1 lib2	show shared definitions between lib1 and lib2
+-l lib	show libraries loaded by lib
+-r lib1 lib2	show refs from lib1 which are resolved in lib2
+-R a.o b.o ..	lib show undefined refs from .o files which are resolved in lib
 -S lib1 lib2	show shared undefined refs between lib1 and lib2
--t lib1 lib2	show definitions unique in each library.
+-s lib1 lib2	show shared definitions between lib1 and lib2
 -T lib1 lib2	show needs unique in each library
--w routine	show what libraries define routine.
--W routine	show what libraries require routine.
+-t lib1 lib2	show definitions unique in each library
+-U lib	show libraries which need lib
+-u lib	show libraries which are needed by lib
+-V lib	index a single library, verbosely
+-w routine	show what libraries define routine
+-W routine	show what libraries require routine
 </options>
 
 compile [options]
@@ -297,7 +322,7 @@ cleartmp [-nv] directory idle
      cleartmp removes files from directory which have not been used in over idle
      days, and finishes by removing any empty directories.
 
-xdiff [-bBcCFiLoOsSvVX] [-a abs] [-d diff] [-D display] [-I re] [-r rel] [-t] [-w width] [-x exceptions] dir1 dir2
+xdiff [options] dir1 dir2
     compare files after eliminating expected discrepancies
 <options>
 -a abs	set absolute tolerance for numerical differences
@@ -313,6 +338,7 @@ xdiff [-bBcCFiLoOsSvVX] [-a abs] [-d diff] [-D display] [-I re] [-r rel] [-t] [-
 -L	skip files when both are symbolic links 
 -o	in comparing directories, ignore  missing files in the 2nd directory.
 -O	in comparing directories, ignore missing files in the 1st directory.
+-q	only show files that are different, don't show differences
 -r rel	set relative tolerance for numerical differences
 -S	treat as Bourne shell scripts (spiff only)
 -s	suppress matching lines in the output

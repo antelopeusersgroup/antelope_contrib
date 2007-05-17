@@ -6,7 +6,7 @@ package require Datascope
 % man Datascope
 </man>
 
-<subsection Opening a database>
+<subsection Opening a Database>
 <commands>
 dbopen db {r|r+}
     open database db read-only (r) or read-write(r+); returns a db pointer
@@ -267,7 +267,7 @@ get_response resphandle {nstages | stage_types | paz stageno}
 put_response resphandle stageno param_list
     puts a response stage into an instrument response object
 
-<subsection Time conversion>
+<subsection Time Conversion>
 now
     return current time
 

@@ -1,7 +1,7 @@
 
 <chapter Datascope Constants>
 
-<subsection Dbptr values>
+<subsection Dbptr Values>
 <body>
 A database pointer has four elements: database, table, field and record.
 Each of these elements takes on a nonnegative integer value to refer to a
@@ -18,7 +18,7 @@ dbSCRATCH
 dbNULL
     null record for a table or view
 
-<subsection routine flags>
+<subsection Routine Flags>
 dbOUTER_JOIN
     set to force join of every record in first table 
 
@@ -28,7 +28,7 @@ dbSORT_UNIQUE
 dbSORT_REVERSE
     reverse the sense of the sort
 
-<subsection dbquery codes>
+<subsection Dbquery Codes>
 <commands>
 dbSCHEMA_NAME
     schema name

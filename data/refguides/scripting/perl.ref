@@ -6,7 +6,7 @@ use Datascope ;
 % man perldb
 </man>
 
-<subsection Opening a database>
+<subsection Opening a Database>
 <function>
 
 dbopen (database, permissions)
@@ -33,7 +33,7 @@ dbfree (@db)
 dblookup (@db, database, table, field, row)
     return database pointer for the specified database, table, field, and row.
 
-<subsection Manipulating fields and records>
+<subsection Manipulating Fields and Records>
 dbadd (@db [, record])
     add the new record to the table in @db. If record is not specified, add the scratch record. return the new row number, or an error code < 0.
 
@@ -79,7 +79,7 @@ dbget_remark (@db)
     get any comment from remark table for row @db
 
 
-<subsection Forming views>
+<subsection Forming Views>
 dbgroup (@db, key [, key, ...])
     group the input table according to the specified keys
 
@@ -198,7 +198,7 @@ trlookup_segtype(char)
     return units and description for segtype char
 
 
-<subsection Error handling>
+<subsection Error Handling>
 elog_init ($0, @ARGV)
     initialize the elog message routines
 
@@ -234,7 +234,7 @@ elog_mark ()
 elog_flush (deliver, first)
     eliminate log messages after first, printing them if deliver is set
 
-<subsection Parameter files>
+<subsection Parameter Files>
 pfget (pfname, key)
     return the value for the key from the parameter file pfname
 
@@ -405,7 +405,7 @@ findring(rb, value, tdelta)
      findring searches the ring buffer rb over the specified time
      period tdelta for the specific value.
 
-<subsection Time conversion>
+<subsection Time Conversion>
 
 now()
     return current time to (usually) microseconds accuracy
@@ -451,7 +451,7 @@ yearday (epoch)
 wait_for_time(time,verbose)
     wait for specified time
 
-<subsection State files>
+<subsection State Files>
 
 exhume(filename,reference,seconds)
     specify filename of state file, reference to variable to be set when
@@ -464,7 +464,7 @@ resurrect(name, ref[, TIME_RELIC])
 bury()
     Save the state file.
 
-<subsection Foreign keys>
+<subsection Foreign Keys>
 <body>
 map between CSS3.0 station/channel naming  conventions  and  the
 different conventions of autodrm and SEED.

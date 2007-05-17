@@ -27,7 +27,7 @@ help COMMAND_NAME
 setup_antelope
     Set the Matlab path to point to the Antelope tools, examples, and scripts
 
-<subsection Opening a database>
+<subsection Opening a Database>
 <function>
 DBPTR = dbopen ( FILENAME, OPENTYPE )
     open a Datascope Database
@@ -41,7 +41,7 @@ DBPTR = dblookup_table ( DBPTR, TABLE )
 dbclose ( DBPTR )
     close a Datascope database
 
-<subsection Manipulating fields and records>
+<subsection Manipulating Fields and Fecords>
 S = db2struct ( DBPTR [, FIELD [, FIELD, ... ]] )
     convert a database view to a Matlab structure array
 
@@ -78,7 +78,7 @@ dbput ( DBPTR, VALUE )
 dbputv ( DBPTR, FIELD, VALUE [, FIELD, VALUE ... ] )
     put the specified values into a Datascope database
 
-<subsection Forming views>
+<subsection Forming Views>
 dbfree( DBPTR )
     Free resources used by a Datascope database view
 
@@ -127,7 +127,7 @@ dbsave_view( DBPTR )
 dbwrite_view( DBPTR, FILENAME )
     write a datascope database view to the specified file
 
-<subsection Getting information about the database>
+<subsection Getting Information About the Database>
 DBPTR = dbjoin_keys ( DBPTR1, DBPTR2 **or**DBPTR, TABLE1, TABLE2 )
     show the inferred join keys between two database tables
 
@@ -137,11 +137,11 @@ QUERY_RESULT = dbquery ( DBPTR, CODE )
 NRECS = dbnrecs ( DBPTR )
     get the number of records in a Datascope table or view
 
-<subsection Evaluating expressions>
+<subsection Evaluating Expressions>
 RESULT = dbeval ( DBPTR, EXPRESSION [, TYPE] )
     evaluate an expression on a Datascope database
 
-<subsection Handling waveform data>
+<subsection Handling Waveform Data>
 ENDTIME = tr_endtime ( TIME, SAMPRATE, NSAMP )
     calculate endtime from time, sample rate, and number of samples
 
@@ -208,7 +208,7 @@ trwfname ( DB [, PATTERN] )
 S = tr2struct ( TR )
     Generate an exportable structure of waveform data
 
-<subsection Error handling>
+<subsection Error Handling>
 clear_register ( [ 'print' ] )
     clear the Datascope error register
 
@@ -239,7 +239,7 @@ elog_mark ( )
 elog_string ( N )
     return error log starting with message N
 
-<subsection Instrument response routines>
+<subsection Instrument Response Routines>
 R = dbresponse ( FILE )
     dbresponse class constructor
 
@@ -258,7 +258,7 @@ clear ( DBRESPONSE )
 free_response ( DBRESPONSE )
     dbresponse elimination routine
 
-<subsection Computational-geometry grids>
+<subsection Computational-geometry Grids>
 CGG = cggrid( FILE )
 CGG = cggrid( X, Y, Z )
     cggrid (Computational-geometry grid) class constructor
@@ -356,7 +356,7 @@ TYPESTRING = pftype ( DBPF )
 pfwrite ( DBPF, FILENAME )
     save a parameter file object to a file
 
-<subsection Real-time system connections>
+<subsection Real-time System Connections>
 PKTID = orbafter ( ORBFD, TIME )
     set ORB connection to first packet after a specified time
 
@@ -394,7 +394,7 @@ PKTID = orbtell ( ORBFD )
 [TIMES, PHASENAMES] = arrtimes ( DELTA, DEPTH )
     Returns predicted seismic phase arrival times
 
-<subsection Special functions>
+<subsection Special Functions>
 dbadd_remark ( DBPTR, REMARK )
     add a remark to a CSS3.0 database table
 
@@ -416,7 +416,7 @@ ID = dbnextid ( DBPTR, IDNAME )
 [DIR, BASE [,SUFFIX]] = parsepath ( PATH )
     separate a pathname into component parts
 
-<subsection Time conversion>
+<subsection Time Conversion>
 TIMESTRING = epoch2str ( EPOCH, FORMAT )
     convert epoch time to a string
 

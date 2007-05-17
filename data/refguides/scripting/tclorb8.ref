@@ -6,7 +6,7 @@ package require Orb
 % man tclorb
 </man>
 
-<subsection Orbserver communications>
+<subsection Orbserver Communications>
 <commands>
 orbopen orbname permission
     open an orb connection
@@ -41,7 +41,7 @@ orbreap reap_handle
 orbreapstart orb [block]
     start reaping (reading) packets from orb, returning a read handle.
 
-<subsection Orbserver status>
+<subsection Orbserver Status>
 orbstat orb [args]
     returns specified status information for orb
 <example>
@@ -97,7 +97,7 @@ select      started     thread
 what        who         written     
 </example>  
 
-<subsection Packet handling>
+<subsection Packet Handling>
 
 orbpfget pf_handle name
     returns the value for parameter name from the referenced pf_handle
@@ -145,7 +145,7 @@ str2orbpfpkt2 orb srcname string
     writes a parameter-file object defined by string as a parameter-file packet on orb
 
 
-<subsection Quanterra special>
+<subsection Quanterra Special>
 orbpktgetqtping pkt
     returns a string with the response to a qt2orb ping command
 

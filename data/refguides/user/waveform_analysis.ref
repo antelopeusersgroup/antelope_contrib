@@ -6,20 +6,23 @@ trexcerpt [options] dbin dbout [start {duration|end}]
     extract waveform segments from database
 <options>
 -A	autodrm style (ascii) waveform files
--o datatype	specify output waveform datatype (default = sd)
 -a	append to existing waveform files if present
--w pattern	specify naming convention for output waveforms
--m {time|convert|event|arrival|explicit}
- 	specify mode (default = time)
--g	eliminate 'marked' data gaps
 -c expr	sta/chan/instrument subset
--s expr	evid/orid/arid subset
--j expr	origin/site subset
--p	in arrival mode, save waveforms only for pick channel 
--W db	specify database from which waveforms come
 -d	write complete database with site, sensor, sitechan, instrument
+-D	dumb mode requires only wfdisc table
 -e	include correct subset of event, origin, origerr, arrival, and assoc in output database
+-E	expert mode does not check for problems in site, sensor, sitechan or instrument tables
+-g	eliminate 'marked' data gaps
+-j expr	origin/site subset
+-m {time|convert|event|arrival|explicit}
+-o datatype	specify output waveform datatype (default = sd)
+-p	in arrival mode, save waveforms only for pick channel 
+-s expr	evid/orid/arid subset
 -v	more verbose
+-vv	show details of view evaluations
+-w pattern	specify naming convention for output waveforms
+ 	specify mode (default = time)
+-W db	specify database from which waveforms come
 </options>
 
 trtally [-d output] [-ekv] [-r start stop] db1 [{+|-|!|&|^|a} [db2]]
@@ -61,12 +64,14 @@ event_archive [options] dbin dbout
 <options>
 -I idserver	specify idserver
 -l n	wait n days before copying an event
+-M db 	db containing site, sitechan: used only on initial archive to dbout
 -m addr	send errors as email to addr
 -s t1	process events after time t1
 -e t2	process events before time t2
 -n	ignore check for reviewed events
 -p pf	use parameter file pf
 -t tdb	use temporary database tdb
+-w wff	output waveform format    
 -v	be verbose
 -V	be extremely verbose
 </options>
@@ -77,6 +82,7 @@ trsample [options] database[.table] [time [end|period]]
 -c	apply calib to samples
 -e	read data from each row in table
 -o	write samples one to a line
+-I	interactive mode
 -[i|t|T]	show integer, epoch time, or readable time index for each sample
 -n npts	print npts samples
 -s expr	subset input according to expr
@@ -85,12 +91,10 @@ trsample [options] database[.table] [time [end|period]]
 trsignal [options] database
     create wfdisc records with test signal data
 <options>
--v	be more verbose
--w pattern	specify naming convention for output waveforms
--d datatype	specify output datatype (default = "as")
 -a amplitude
 -b timebase	generating function base time
 -c channel	specify chan code
+-d datatype	specify output datatype (default = "as")
 -f f0	generating function frequency in hz
 -g calib	specify calib
 -k	keep output as floating point, not integers
@@ -101,6 +105,8 @@ trsignal [options] database
 -t time	start time for output
 -T type	sin, cos, sqr, tri, saw, dlt, ran, stp, pkt, dif
 -{A|D|V}	segtype
+-v	be more verbose
+-w pattern	specify naming convention for output waveforms
 -y yaw	constant signal drift
 </options>
 
@@ -123,7 +129,7 @@ dbdec [options] dbin dbout chan_maps dec_stage1 [dec_stage2 ...]
 </options>
 
 alter_timestamps [-demnquv] [-p pf] db[.table]
-alter_timestamps [-unquv] [-f foreign] [-p pf] miniseed
+alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
     change waveform and arrival timestamps for clock problems
 <options>
 -d	dump corrections table
@@ -178,7 +184,7 @@ trstack dbin dbout subset imode [-azmin=xx] [-azmax=xx] [-delmin=xx] [-delmax=xx
 
 <subsection Waveform display>
 <commands>
-dbplotcov database sta:chan tstart tend [-h[scale]]
+dbplotcov database sta:chan tstart tend [-h[scale]] [-wftar]
     make plot and listing of waveform coverage from database
 
 dbrsec [options] db
@@ -190,7 +196,7 @@ dbrsec [options] db
 -bot bot
 -tstart tstart
 -twin twin
--f filter
+-filter filter
 -sift sift
 -clip {on|off}
 -vred vred
@@ -230,6 +236,15 @@ dbpick [options] dbname
 -switchbuttons	switch middle and right mouse buttons
 -showdetections	show detections
 -showfm	show first motions
+-iconic		start up trace window as icon
+-bg color	trace background color
+-fg color	trace foreground color
+-bga color	arrival background color
+-fga color	arrival foreground color
+-bgsa color	selected arrival background color
+-fgsa color	selected arrival foreground color
+-fgdt color	detection foreground color
+-fgtm color	timemark foreground color
 </options>
 
 tkdbpick [options] {dbname|-}

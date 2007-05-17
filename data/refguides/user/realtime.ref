@@ -2,7 +2,7 @@
 
 <subsection Administration and Control>
 <commands>
-rtm [-icon iconname] [-title title]
+rtm [-icon iconname] [-title title] [-procwin] [-netwin]
     monitor real-time tasks and resource usage
 
 dbevents [options] dbname [start [end]]
@@ -27,7 +27,7 @@ rtexec [options] [comment]
 -v	more verbose
 </options>
 
-rtinit [-q] [db]
+rtinit [-q] [-v] [db]
     initialize directory for rtexec/rtm by creating directories and copying pf files
 
 rtdemo
@@ -35,7 +35,7 @@ rtdemo
 
 rtincident [options] [output_file]
     collect some system related information into report; rtexec
-    runs this program and send results to incidents@brtt.com
+    runs this program and sends the results to incidents@brtt.com
 <options>
 -c corefile	specify corefile (on which dbx is run)
 -e command	specify command line
@@ -49,7 +49,7 @@ rtincident [options] [output_file]
 inspect_snapshot snapshot
     gui to help read output from rtincident or other snapshots
 
-rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-Cdv] recipients
+rtmail [-s subject] [-a filename] [-b bcc] [-c cc] [-dv] recipients
     send mail with attachments
 
 rtorbcmd [-d] [-p pf] target command
@@ -69,18 +69,21 @@ rtreport [options] [directory]
 -p pf	use specified pf instead of rtreports.pf 
 -s subset	report only on stations statisfying subset
 -v	more detail about gaps
+-Y	include full date in event report 
 -z	only z channels
 </options>
 
 rtsys [options] [directory]
     summarize system operation and log reports
 <options>
+-C eliminate summary of cronjobs 
 -d time	start of reporting period
 -m email,..	list of email recipients
 -N re	only report on network codes matching re
+-n n	last n lines from log files (default = 10)
 -P pf	use specified pf instead of rtreports.pf 
 -p	mail only when problem is detected
--n n	last n lines from log files (default = 10)
+-w db	specify alternate waveform db     
 </options>
 
 stanote [-t time] [-r range] [-f|F] file] [database] [sta [note]]
@@ -92,7 +95,7 @@ ecrontab [-r] [file]
 rtrun [-nv] command line
     run command line using rtexec environment (like an rtexec cron job)
 
-cronrun [-v] command line
+cronrun [-nv] command line
     run command line immediately, reproducing cron environment 
 
 rtsnapshot [options] 
@@ -157,7 +160,7 @@ tcpmonitor [options] host
 -W sec/ping	set number of seconds between "pings"  
 </options>
 
-<subsection orbserver and utilities>
+<subsection Orbserver and Utilities>
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
@@ -178,6 +181,7 @@ diskserver [-p pf] [-v] dir[:port]
 orb2disk [options] orb directory [start-time [end]]
      copies packets from orb into into forb(5) segment files inside directory
 <options>
+-b bi	save state every bury interval seconds
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
 -n n	stop after n packets
@@ -192,6 +196,7 @@ orbstat [options] orb [secs]
 -c	show client statistics
 -s	show source statistics
 -i	interactive mode
+-d all,nets,stations,channels,loc_codes,types	show waveform info 
 -m re	show only packets or clients matching re
 -r re	don't show packets or clients matching re
 -n avg	boxcar average over avg queries 
@@ -236,8 +241,12 @@ guralp2orb [options] orbname
 guralplocate log1 log2 ...
     estimate station location from guralp log files
 
-ida2orb [-u] orb nrts selection
+ida2orb [-u] [-r sec] orb nrts selection
     copy selected data from IDA nrts to orbserver
+<options>
+-u change station and channel to uppercase
+-r sec	reject future packets 
+</options>
 
 ipd2 [options] port orb
     copy data from UCSD data multiplexer at port to orbserver orb
@@ -256,6 +265,7 @@ liss2orb [options] liss orb
 <options>
 -d database	lookup calib, calper and segtype in db
 -m m	only forward packets matching m
+-r	remap net,sta,chan,and loc using local foreignkeys db
 -s pktsize	specify block size explicitly
 -v
 </options>
@@ -292,6 +302,8 @@ qtunbale [options] url [time [endtime|period]]
 -o orb	pass directly to orb using miniseed2orb
 -q	wait quietly for baler to wake up
 -S dir	subdirectory for miniseed day files
+-t to	timeout for ping response from baler
+-u 	show all URLs used
 -w wfname	specify pattern for miniseed files
 -r	suppress running miniseed2days
 -v	more verbose
@@ -367,10 +379,11 @@ b3s2orb [options]
 slink2orb [options] SeedLink orb
     SeedLink to orb module
 <options>
--d database
--nd delay
--nt timeout
--k interval
+-dc database	db to get calib, calper and segtype
+-dm database	db to map SEED to CSS names
+-nd delay	network reconnect attempt delay
+-nt timeout	network timeout	
+-k interval	keepalive interval
 -pf pf
 -S statefile
 -o dumpfile
@@ -414,24 +427,29 @@ private db2orb [options] {database|view} [orb]
 dbreplay [options] view [[[orb] t0] {t1|T}]
     replay database view to orb from t0 to t1 (or t0+T)
 <options>
--w client	specify read client to watch (to avoid overruns)
 -b max	pause if client is more than max seconds behind
--r rate	specify data rate as ratio to real time 
+-d 	send station portion of database
+-e 	send event portion of database
+-F db	db to map net/sta/chan/loc
 -n n	quit after n packets
 -p pktsuffix	specify output packet type
+-r rate	specify data rate as ratio to real time 
 -s expr	subset input according to expression
+-T timeout 	with -w, give up after some timeout 
 -t timestep	specify packet time size
 -v	more verbose
+-w client	specify read client to watch (to avoid overruns)
+-x	eliminate trailer packet used for orb2db flush  
 </options>
 
-<subsection Datalogger commanding>
+<subsection Datalogger Commanding>
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
     execute command cmd on generic dataloggers
 <options>
 -waittime waittime	wait time for multiple targets
 -timeout timeout	timeout waiting for response
--noblock	dont wait for response
--noreply	dont generate response packets
+-noblock	don't wait for response
+-noreply	don't generate response packets
 -prm	delete parameter files
 -replytarget replytarget
 -delayhangup delayhangup	delay digitizer hangup
@@ -477,6 +495,20 @@ automrc [options] orbname dc_name
 -v max_lta
 </options>
 
+dlautomrc [options] cmdorb orb [target]
+    issue mass recenter commands to remote dataloggers
+<options>
+-a vlt	out of range voltage value
+-d dl 	datalogger type
+-f  	force mass recenter (with -s, not with -a)
+-m add	email notification list  
+-n  	no mrc, only report what would be done 
+-p pf 	parameter file 
+-s dl_sta1,dl_sta2,... 	comma separated list of dataloggers
+-t n 	number of retries 
+-v 	verbose 
+-x dl_sta1,dl_sta2,...	comma separated list of rejected dataloggers
+</options>
 
 <subsection Real Time processing: Orb reader/Writers>
 orb2orb [options] in out [start [period|end]]
@@ -739,7 +771,6 @@ dlmon [options] orb [cmdorb]
 -dump_image file
 </options>
 
-<subsection Orb Real Time Display>
 old_dlmon [options] orb [-cmd cmdorb]
     legacy version of monitor/control generic digitizers
 <options>
@@ -759,6 +790,7 @@ dlmontxt [options] orbname [orbname2 [...]]
 -r re2	don't read packets matching re2
 -d dl_re	match datalogger names
 -M email	list of email addresses, or @filename for addresses in filename
+-s subject 	subject line for email report	
 </options>
 
 deprecated qtmon dataorb data2orb cmdorbname [database]
@@ -839,13 +871,13 @@ orblog [-f file] [-s subcode] orb [log info]
     remainder of command line, stdin, or -f file
 
 orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
-    saves logs packets (from tail2orb) back into corresponding plain files 
-    divided by epoch day boundaries.
+    save logs packets (from tail2orb or from datalogger acquisition) back into 
+    corresponding plain files divided by epoch day boundaries (and by datalogger).
 
 orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
     read and print log packets from orb 
 
-orb2ntp [-d delay] [-m match] [-r reject] [-v] orb
+orb2ntp [-d delay] [-f freq] [-m match] [-M] [-n navg] [-r reject] [-u unit] [-v] orb
     use orb packet times as (very rough) ntp clock
 
 rtlogs orb
@@ -863,6 +895,7 @@ orb2db [options] orb db [start [end|period]]
 -p pf	specify parameter file
 -S file	save state in file
 -s datatype	specify output waveform type (overriding pf)
+-T tol		tolerance for packet time tag deviation    
 -t timetags	create file of time tags from input packets
 -v	more verbose
 -vv	show every packet read.
@@ -906,7 +939,7 @@ orb2dbt [options] orb dbout [orbout]
 </options>
 
 orb2db_msg [-q] [-s sleep] [-t timeout] db [pause|continue|status]
-    signal orb2db and orb2dbt processes to pause for database db cleanup
+    signal orb2db and orb2dbt processes to pause for database db cleanup oro realtime database crunch
 
 par2db [options] orbname dbname [start [window]]
     create database with GPS site coordinates and DC/DAS status parameters from orb
@@ -931,6 +964,7 @@ orblatency [options] orb database
 orbmsd2days [options] orb
     save miniseed (only) packets from orb into day volumes
 <options>
+-c nscl	speicify particularr net_sta_chan_loc desired
 -d db	create wfdisc table in db
 -S state	save orb position in state file
 -U   limited duplication suppression
@@ -1000,7 +1034,7 @@ get_archive [options] db dbout drive [t0 [t1]]
 -v	more verbosely
 </options>
 
-rtdbclean [-n] [-v] [-p pf] orb rt_db
+rtdbclean [-n] [-v] [-V] [-w] [-p pf] orb rt_db
     remove old waveform data and associated database records
 
 get_wftar -v dbmaster tape_drive
@@ -1019,7 +1053,7 @@ online_backup [options] [directories]
 -y n	backup files modified in last n days
 </options>
 
-<subsection Orb Diagnostic tools>
+<subsection Orb Diagnostic Tools>
 private orbreap [options] orb [start [end|range]]
     multipurpose orb dumping program
 <options>

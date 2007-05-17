@@ -1,6 +1,6 @@
 <chapter Foreign Data Formats>
 
-<subsection Exporting data from Datascope database>
+<subsection Exporting Data from Datascope Database>
 <commands>
 autodrm [options] [files]
     Antelope IDC/GSE2.1 AutoDRM Server
@@ -44,9 +44,10 @@ db2miniseed [options] db [output]
 -r size	specify record size (default 4096)
 -l {1|2}	specify steim compression level (default 2)
 -n net	specify default network
+-v	verbose
 </options>
 
-log2miniseed [-a] [-c chan] [-l loc] -n net -s sta log ...
+log2miniseed [-a] [-c chan] [-l loc] [-n net] [-s sta] log ...
      read input log files and create miniseed
 
 db2sac [options] dbin dbout
@@ -72,7 +73,7 @@ private mk_dataless_wfdisc [-v] [-p pf] dbin
 private trash_data [-inv] sd 
     truncate SEED volume sd following station headers, creating dataless SEED volume
 
-mk_dataless_seed [-v] [-p pf] db
+mk_dataless_seed [-vk] [-o dataless_seed] [-p pf] db
     create dataless seed volume from db
 
 mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tape] [-d dir] rt_db
@@ -82,7 +83,7 @@ mk_dmc_seed [-nvV] [-l secs] [-r days] [-M maxmem] [-m email] [-s stime] [-t tap
 db2segy db outfile [-pf pf] [-v]
     convert waveforms from input database db to segy disk image
 
-<subsection Importing data into a Datascope database>
+<subsection Importing Data into a Datascope Database>
 <commands>
 aah2db [-vV] ahfile [ahfile...] dbname
     convert non-XDR AH files to database
@@ -201,14 +202,19 @@ segy2css [-event] [-ftbl] fname ..
 miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
     create wfdisc rows in db for miniseed volume(s), or miniseed volumes under directories
 
-miniseed2orb [-s start] [-e endtime] [-m match] [-r reject] [-d db] [-v] file ... orb
+miniseed2orb [-s start] [-e endtime] [-m match] [-r reject] [-d db] [-p pf] [-v] file ... orb
     put data blocks from input miniseed files into packets on orb
 
 miniseed2days [options] miniseed ...
     separate input miniseed into separate channel day volumes
 <options>
+-c 	eliminate blocks with errors when uncompressed
+-d db 	create output db by running miniseed2db on output files
+-D 	retain duplicate seed blocks in output
+-I 	inclulsive time screening 
 -S dir	alternate output directory
 -e end	ignore data after endtime
+-k 	retain all input data blocks 
 -m match	only keep net_sta_chan_loc matching this re
 -r reject	reject net_sta_chan_loc matching this re
 -s start	ignore data before start
@@ -247,7 +253,7 @@ deprecated ucsdwf2db stapardir dbin dbout
 Xphase2db db [-phase name]
     convert an input Xphase pick file to css3.0 arrivals
 
-<subsection Examining foreign files>
+<subsection Examining Foreign Files>
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 

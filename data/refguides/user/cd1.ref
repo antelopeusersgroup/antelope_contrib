@@ -1,4 +1,4 @@
-<subsection CD1 alpha format protocol>
+<subsection CD1 Alpha Format Protocol>
 
 orb2cd1s [-pf pf] [-select expr] [-reject expr] [-state statefile] [-start {pktid|time}] [-v] orb1 orb2
     repackage and reformat data packets from orb1 into CTBT/IMS standard CD-1
