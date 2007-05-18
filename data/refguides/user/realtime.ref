@@ -67,7 +67,7 @@ rtreport [options] [directory]
 -N re	only report on network codes matching re
 -n days	number of days report covers
 -p pf	use specified pf instead of rtreports.pf 
--s subset	report only on stations statisfying subset
+-s subset	report only on stations satisfying subset
 -v	more detail about gaps
 -Y	include full date in event report 
 -z	only z channels
@@ -173,7 +173,7 @@ orbserver [options] pf
 </options>
 
 orbserver64 [options] pf
-	same as orbserver, but allows much larger ring buffers (Solaris only)
+    same as orbserver, but allows much larger ring buffers (Solaris only)
 
 diskserver [-p pf] [-v] dir[:port]
      emulate read-only orbserver on port using directory dir of special forb files
@@ -313,7 +313,7 @@ qtunbale2 [options] url [time [endtime|period]]
 	like qtunbale, but using wget instead of perl http
 
 q330proxy [-v[v[v]]] [-help] [template]
-    internet to SLIP proxy utility for Q330 dataloggers
+    internet to SLIP proxy utility for Q330 data loggers
 
 q330snoop [-noeth] [-noip] [-snoop] prefix_expr
      used with snoop to parse and print raw UDP Q330 packets 
@@ -352,7 +352,7 @@ k22orb [options] target orbdata [orbcmd]
 </options>
 
 rt2orb [options] targetname [orbtag1 orbname1 [orbtag2 orbname2 [...]]]
-	acquire logs and data from RefTek RT130 dataloggers 
+	acquire logs and data from RefTek RT130 data loggers 
 <options>
 -pf pfname 	specify alternate parameter file
 -calib_db dbname get calib/calper from database
@@ -444,7 +444,7 @@ dbreplay [options] view [[[orb] t0] {t1|T}]
 
 <subsection Datalogger Commanding>
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
-    execute command cmd on generic dataloggers
+    execute command cmd on generic data loggers
 <options>
 -waittime waittime	wait time for multiple targets
 -timeout timeout	timeout waiting for response
@@ -459,8 +459,8 @@ k2cmd [options] orb target datalogger cmd
     execute command cmd on remote Kinemetrics Altus digitizer
 <options>
 -timeout timeout	timeout waiting for response
--noblock	dont wait for response
--noreply	dont generate response packets
+-noblock	don't wait for response
+-noreply	don't generate response packets
 -prm	delete parameter files
 -delayhangup delayhangup	delay digitizer hangup
 </options>
@@ -496,18 +496,18 @@ automrc [options] orbname dc_name
 </options>
 
 dlautomrc [options] cmdorb orb [target]
-    issue mass recenter commands to remote dataloggers
+    issue mass recenter commands to remote data loggers
 <options>
 -a vlt	out of range voltage value
--d dl 	datalogger type
+-d dl 	data logger type
 -f  	force mass recenter (with -s, not with -a)
 -m add	email notification list  
 -n  	no mrc, only report what would be done 
 -p pf 	parameter file 
--s dl_sta1,dl_sta2,... 	comma separated list of dataloggers
+-s dl_sta1,dl_sta2,... 	comma separated list of data loggers
 -t n 	number of retries 
 -v 	verbose 
--x dl_sta1,dl_sta2,...	comma separated list of rejected dataloggers
+-x dl_sta1,dl_sta2,...	comma separated list of rejected data loggers
 </options>
 
 <subsection Real Time processing: Orb reader/Writers>
@@ -760,7 +760,7 @@ sms2orb [-dv] queue orb
 dlmon [options] orb [cmdorb]
     monitor/control generic digitizers
 <options>
--model model	datalogger model
+-model model	data logger model
 -state {Icons|Multi|Single}	initial display state
 -select_status expr_status
 -select_log expr_log
@@ -774,7 +774,7 @@ dlmon [options] orb [cmdorb]
 old_dlmon [options] orb [-cmd cmdorb]
     legacy version of monitor/control generic digitizers
 <options>
--model model	datalogger model
+-model model	data logger model
 -start_status {OLDEST|pktid|time}
 -start_log {OLDEST|pktid|time}
 -select_status expr_status
@@ -784,11 +784,11 @@ old_dlmon [options] orb [-cmd cmdorb]
 </options>
 
 dlmontxt [options] orbname [orbname2 [...]]
-     generate terse status summary for dataloggers
+     generate terse status summary for data loggers
 <options>
 -m re1	read only packets which match re1 
 -r re2	don't read packets matching re2
--d dl_re	match datalogger names
+-d dl_re	match data logger names
 -M email	list of email addresses, or @filename for addresses in filename
 -s subject 	subject line for email report	
 </options>
@@ -871,8 +871,8 @@ orblog [-f file] [-s subcode] orb [log info]
     remainder of command line, stdin, or -f file
 
 orb2logs [-cn] [-m match] [-r reject] [-S state] [-w pattern] orb logdb [start [stop|period]]
-    save logs packets (from tail2orb or from datalogger acquisition) back into 
-    corresponding plain files divided by epoch day boundaries (and by datalogger).
+    save logs packets (from tail2orb or from data logger acquisition) back into 
+    corresponding plain files divided by epoch day boundaries (and by data logger).
 
 orbtail [-f] [-m match] [-r reject] [-number] orb [start [end|period]]
     read and print log packets from orb 
@@ -919,8 +919,8 @@ cdorb2db [options] orb db [start [end|period]]
 -w wfname	specify pattern for waveform file names
 </options>
 
-db2msd [-t age] [-v] db
-     converts older waveform files to miniseed in place, used with cd2orb
+db2msd [-t age] [-1nv] db
+     convert older waveform files to miniseed in place, used with cd2orb. with -1, use steim 1 compression
 
 orb2dbt [options] orb dbout [orbout]
     read database packets from an orb and write to database
@@ -964,7 +964,7 @@ orblatency [options] orb database
 orbmsd2days [options] orb
     save miniseed (only) packets from orb into day volumes
 <options>
--c nscl	speicify particularr net_sta_chan_loc desired
+-c nscl	specify particular net_sta_chan_loc desired
 -d db	create wfdisc table in db
 -S state	save orb position in state file
 -U   limited duplication suppression

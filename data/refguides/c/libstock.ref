@@ -949,11 +949,11 @@ int gse_checksum ( int *uc, int nuc )
     compute gse checksum over nuc integers in uc for AutoDRM
 
 int cucsd ( int *uc, int nuc, char **cmp, int *ncmp, int *cmpsz )
-    compress nuc integers from uc to UCSD RefTek datalogger format,
+    compress nuc integers from uc to UCSD RefTek data logger format,
     result is *ncmp bytes in buffer *cmp of dynamic size *cmpsz.
 
 int uucsd ( int *uc, char **cmp, int ncmp, int nuc )
-    uncompress nuc integers from "UCSD RefTek datalogger" format buffer cmp of ncmp bytes, 
+    uncompress nuc integers from "UCSD RefTek data logger" format buffer cmp of ncmp bytes, 
     advancing *cmp to the next location after uncompressed data
 
 FILE *gz_cat ( char *name)

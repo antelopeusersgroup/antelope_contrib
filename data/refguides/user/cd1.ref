@@ -16,5 +16,5 @@ cd2orb [-c maxctime] [-i ip] [-P cmport[,cd1port]] [-p pf] [-S dir] [-vv] [orb]
 cdremap [-p pf] [-t time] database
     test/reproduce channel mapping done by cd2orb
 
-cd1replay [-s station] file [file2 ...] receiver
+cd1replay [-v] [-s station] file [file2 ...] receiver
     replay cd1 data saved by cd2orb (using code station)

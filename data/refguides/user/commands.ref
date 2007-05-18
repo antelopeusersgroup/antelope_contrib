@@ -23,7 +23,7 @@ antelope_update [options]
 <options>
 -i	ask before installing each patch
 -l	just list unapplied patches 
--L	list all patches at the termal with '*' if patch is unapplied 
+-L	list all patches to terminal with '*' if patch is unapplied 
 -m mailto	run silent, but send email if patches are needed	
 -n	show what would happen, don't actually do it
 -p proxy 	use proxy with password authentication 
@@ -66,7 +66,7 @@ relpath here there
 cleanpath [-l] apath
     eliminates repeated slashes, unnecessary ./, and resolves symbolic links unless -l
 
-concatpath path p2 ...
+concatpaths path p2 ...
     concatenate paths from command line or stdin to create complete path
 
 ffilter [-BbCcDdelnpStuvVXxz] [-E s/from/to/] [-m re] [-r re] [paths]
@@ -301,7 +301,7 @@ compile [options]
     used by BRTT to compile with optional optimization on different architectures
 
 deposit [-rx] file dir
-    installs file in directory dir with appropriate permisssions; -r installs file with new name dest; -x makes installed file executable
+    installs file in directory dir with appropriate permissions; -r installs file with new name dest; -x makes installed file executable
 
 deposit [-i re] idir dir
     installs directory idir into dir except for files matching re, CVS and .depends files

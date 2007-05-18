@@ -100,7 +100,7 @@ dbcp [options] dbin[.table] dbout
 </options>
 
 
-dbadd [-afo] dbin.table dbout.table expr1 [expr2 ...]
+dbadd [-afov] dbin.table dbout.table expr1 [expr2 ...]
     add rows to dbout.table using rows from dbin.table and expressions expr1, expr2, ...; with -a, add all fields from dbin.table, with -f ignore key duplications, with -o overwrite duplications
 
 dbdelete [options] view [table ...]
