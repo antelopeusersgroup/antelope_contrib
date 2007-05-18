@@ -4,7 +4,7 @@ ldflags=-L.
 ldlibs	= -lsocket -lnsl -Bstatic -lpkt -lorb -Bdynamic $(TRLIBS)
 
 BIN=
-MAN=
+MAN1=
 include $(ANTELOPEMAKE)
 OBJSM	= ipd.o\
 	  newpf.o\
