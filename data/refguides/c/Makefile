@@ -20,6 +20,8 @@ DATA= \
 	libtt.ref \
 	libtttaup.ref \
 	libwffil.ref \
+	libwffilave.ref \
+	libwffilbrtt.ref \
 	libxtra.ref \
 	pavlis.ref
 
