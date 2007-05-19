@@ -236,7 +236,7 @@ int searchtbl ( char *key, Tbl *tbl, int (*cmp) (), void *pvt, int *ns, int *ne 
 int applytbl ( Tbl *tbl, int (*f) (), void *pvt )
     apply function f to each elements of list tbl
 
-Tbl *strtbl ( char *s1, ... 0)
+Tbl *strtbl ( char *s1, ...)
     create a new list from a variable argument list of strings, terminated with zero
 
 char *jointbl ( Tbl *tbl, char *s )
@@ -269,7 +269,7 @@ Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
 char *addstbl ( Stbl *stbl, char *key )
     add an element key to sorted list stbl
 
-void delstbl ( Stbl *stbl, char *key )
+void *delstbl ( Stbl *stbl, char *key )
     delete element key from sorted list stbl
 
 int freestbl ( Stbl *stbl, int (*sfree) () )
@@ -350,7 +350,7 @@ int newring(char *filename, char *id, int depth, int flags)
 void closering(RingBuffer *rb)
     close the ring buffer rb
 
-void pushring(RingBuffer *rb, double time, double value)
+int pushring(RingBuffer *rb, double time, double value)
     push a time/value pair onto the ring buffer rb
 
 int getring(RingBuffer *rb, int i, double *time, double *value)
@@ -390,6 +390,8 @@ double now ()
 void wait_for_time ( double time, int verbose )
     sleep until specified epoch time
 
+void snooze (double dt)
+    sleep (using nanosleep) for specified dt
 
 char *epoch2str ( double e, char *f )
     return freshly allocated string containing epoch time e formatted according to format f
@@ -483,6 +485,9 @@ private void die ( int flag, char *format, ... )
 char *elog_string ( int first )
     return new string reproducing the entire error log 
 
+char *elogstr ( int severity, int flag, char *fmt, ...)
+    return new string corresponding to single elog call, without adding to error log
+
 void elog_clear ()
     clear the log of error messages
 
@@ -569,6 +574,9 @@ int is_nfs(char *path)
 
 int is_changed(char *path)
      return 1 on first call and when mod time changes, or zero if file does not exist
+
+int is_timezeone(char *name)
+     return 1 if name is valid time zone
 
 Tbl * dirfiles(char *dir, int flag)
     return list of files in dir; if flag==1, only files, if flag==2, only dirs
@@ -760,17 +768,17 @@ char *hexdump_string ( int base, void *mem, int n )
     return string containing hex dump of buffer mem, 
     labelling the address of mem as base.
 
-void read_hexdump ( FILE *file, char *mem, int n )
+int read_hexdump ( FILE *file, char *mem, int n )
     read at most n bytes of a hex dump from file into mem
 
 void asciidump ( FILE *file, char *mem, int n )
     write ascii dump of n bytes of buffer mem, with escaped non-printing chars
 
-void read_asciidump ( FILE *file, char *mem, int n )
+int read_asciidump ( FILE *file, char *mem, int n )
     read at most n bytes of a ascii dump from file into mem
 
-int nomem ( char *mem, int n )
-    true if address range mem to mem+n has invalid memory addresses (non-functional in Linux)
+void *nomem ( char *mem, int n )
+    returns first address in range mem to mem+n that is invalid, 0 otherwise (non-functional in Linux)
 
 int hex2int ( char c )
     return the integer value of a hexadecimal char
@@ -1060,7 +1068,7 @@ char *pidcmdline(int pid)
 char *pidpwd(int pid)
     return working directory for process pid
 
-int pidinfo(pid_t pid, Pidstat *process)
+int pidinfo(int pid, Pidstat *process)
     return ppid, uid, memory size, resident set size, run state, start time, 
     cpu time for process pid
 
@@ -1229,7 +1237,7 @@ Hook *new_hook ( void (*hookfree)() )
     create a standard structure which contains a pointer to a free routine and
     a (void *) pointer
 
-void free_hook ( void **hookp )
+void free_hook ( Hook **hook )
     free a hook structure, first calling the hookfree routine to free the private pointer, and then freeing the structure
 
 int runcmd ( char **argv, char **result )

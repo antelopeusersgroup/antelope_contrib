@@ -125,10 +125,10 @@ void msdfree(Msd *msd) ;
 void msdclose(Msd *msd)
      close the file descriptor with msd
 
-int msdget ( Msd *msd, char *name, ...)
+int msdget ( Msd *msd, int code, void *val, ...)
     get a parameter from msd struct
 
-int msdput ( Msd *msd, char *name, ...)
+int msdput ( Msd *msd, int code, void val, ...)
     set a parameter in msd struct
 
 <body>
@@ -295,9 +295,8 @@ deprecated int trsamerate ( Trseg *prv, Trseg *cur, double tolerance )
 deprecated int trsameticks ( Trseg *prv, Trseg *cur, double tolerance )
     test for match of sampling
 
-int wfchanid ( Dbptr *db )
+int wfchanid ( Dbptr db )
     lookup chanid for a wfdisc record in the sensor or sitechan table
-
 
 private int trdatacode ( char *datatype )
     get index of waveform type corresponding to two character datatype

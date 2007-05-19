@@ -27,7 +27,7 @@ int free_response ( Response *rsp )
     free memory for a response 
 
 
-int init_response_group ( Response_group *gp )
+void init_response_group ( Response_group *gp )
     initialize a new Response_group object
 
 int add_response_group ( Response *rp, Response_group *gp )

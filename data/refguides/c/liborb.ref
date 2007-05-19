@@ -43,6 +43,9 @@ int orbresurrect ( int orb, int *last_pktid, double *last_t)
 int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **pkt, int *nbytes, int *bufsize )
     get packet which from orb, returning pktid, srcname, time, and nbytes of data pkt. size of buffer pkt is adjusted as needed; pktid may be explicit pktid or ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST.
 
+int orbgetstash ( int orb, char *srcname, double *time, char **packet, int *nbytes, int *bufsize )
+    get stash packet for srcname
+
 int orbreap ( int orb, int *id, char *nm, double *t, char **p, int *n, int *sz )
     read next packet from orb, returning standard packet information
 
@@ -57,6 +60,9 @@ int orbreap_timeout ( int orb, int sec, int *id, char *nm, double *t, char **p, 
 <subsection Writing>
 int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
     write the nbytes of packet data onto orb with specified srcname and time
+
+int orbputx(int orb, char *srcname, double pkttime, char *pkt, int nbytes)
+    write the nbytes of packet data onto orb with specified srcname and time, waiting for acknowledgement
 
 int orbput_nolag(int orb, char *srcname, double t, char *packet, int nbytes, LagParams *params)
     write to output orb ensuring that certain readers have read previous packets first, using lag parameter
@@ -79,6 +85,9 @@ int orbstat ( int orb, Orbstat **orbstat )
 
 double orblag(int orb, char *match, char *reject, Laggards **laggards)
      return stats showing how far behind clients are 
+
+void freeLaggards ( Laggards *laggards )
+     free Laggards structure returned by orblag
 
 private int orbset_logging ( int orb, int level )
     set the level of logging for an orbserver
