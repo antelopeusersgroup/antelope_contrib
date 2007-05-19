@@ -202,8 +202,18 @@ segy2css [-event] [-ftbl] fname ..
 miniseed2db [-T tolerance] [-v] miniseed|dir [msd2|dir2 ...] db
     create wfdisc rows in db for miniseed volume(s), or miniseed volumes under directories
 
-miniseed2orb [-s start] [-e endtime] [-m match] [-r reject] [-d db] [-p pf] [-v] file ... orb
+miniseed2orb [options] file ... orb
     put data blocks from input miniseed files into packets on orb
+<options>
+-s start	start-time
+-e endtime 	end time
+-m re 	keep if net_sta_chan_loc matches re
+-r re 	reject if net_sta_chan_loc matches re
+-d db 	look up correct sta/chan in calibration table
+-p pf 	alternate parameter file
+-u	don't add /@ suffix to srcnames
+-v 	more verbose
+</options>
 
 miniseed2days [options] miniseed ...
     separate input miniseed into separate channel day volumes
@@ -265,6 +275,9 @@ dsteim [sd]
 
 msdd [-dovx] miniseed ...
     dump miniseed volume; -o shows opaque blockettes 
+
+msdd -i miniseed 
+    interactive mode for inspecting miniseed
 
 seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
     dump certain blockettes from seed according to tlist:

@@ -4,12 +4,11 @@
 <subsection Database Schemas>
 <commands>
 
-dbbuild [-v] [-p pf] db [template]
-dbbuild -b [-v] [-p pf] db input
+dbbuild [-bv] [-p pf] db [input]
     build new database with site, sitechan, sensor, instrument, stage and calibration tables
 
 dbbuild_validate [-dsv] [file ..]
-     verify that referenced  parameter files contain all required fields
+    verify that referenced  parameter files contain all required fields
 
 dbhelp [ db | s ]
     gui to explore schema for database db or schema s
@@ -23,7 +22,7 @@ dbdoc db
 dbfilenames [-v] db
     list database tables and permissions
 
-dbdesign
+dbdesign [schema]
     create and/or edit Datascope schema files
 
 dbinfer file [file...]
@@ -39,8 +38,9 @@ dbsnapshot [options] db [start_time [end_time|period]]
 -e e	related to event evid e
 -f file	name of tar file
 -n m	max records (per table) to include
--s s	subset expression for stations/channels
 -r	include response files
+-R	include stage response files
+-s s	subset expression for stations/channels
 -v	more verbose
 -w M	minutes M of data before now
 </options>
@@ -53,7 +53,7 @@ syssnapshot [-c] [-f filename] [-l #lines] [-v] [dir]
 dbe [-e] [-p pf] db[.table] [ db[.table] ...]
     general purpose viewer/editor for databases 
 
-dberesp [db.table | response ..]
+dberesp [db.table | -f response ..]
     plot response curves from database table or response files
 
 db_extfile_proc -m mode [-u] [-w nmax] [-t table] dbtable
@@ -121,7 +121,7 @@ dbaddv [options] database.table [name value name value ...]
 -v	verbose
 </options>
 
-dbcrunch [-v] db [table ...]
+dbcrunch [-nv] db [table ...]
     crunch out marked (null) records in database db, or just tables
 
 dbdestroy [-ginkv] db[.tbl]
@@ -168,6 +168,7 @@ dbsort [options] aview [key ...]
 -n name	save results into database.name
 -r	reverse sense of sort
 -u	eliminate extra rows which are identical in sort keys
+-v	mention number of output records
 </options>
 
 
@@ -193,7 +194,6 @@ dbsever [-v] [-n name] aview table2
 
 dbunjoin [-f] -o dbout aview
     create new database dbout using base table records from aview
-
 
 dbselect [options] aview [exp ..] [-pre exp exp ...] [-post exp exp ...] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]] [-group field1 field2 .. [-pre exp exp ..] [-post exp exp ..]]
     print selected fields and expressions from input aview

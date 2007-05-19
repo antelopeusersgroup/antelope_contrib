@@ -203,6 +203,9 @@ orbstat [options] orb [secs]
 -v	more verbose
 </options>
 
+orbclients [-t] orb 
+    show organized view of orbserver/diskserver clients
+
 pforbstat [options] orb [secs]
     Create parameter files of orb status
 <options>
@@ -437,6 +440,7 @@ dbreplay [options] view [[[orb] t0] {t1|T}]
 -s expr	subset input according to expression
 -T timeout 	with -w, give up after some timeout 
 -t timestep	specify packet time size
+-u	don't append /@ suffix
 -v	more verbose
 -w client	specify read client to watch (to avoid overruns)
 -x	eliminate trailer packet used for orb2db flush  
@@ -518,18 +522,17 @@ orb2orb [options] in out [start [period|end]]
 -d	print hex dump of each packet 
 -f	for file input, do not adjust time tags, and output packets as quickly as possible
 -i nsecs	save state file every nsecs seconds
--N	print #samples of data
--u	unstuff packets as they are received
 -l	loop repeatedly over input forb(5) file
 -m re1	read only packets which match re1 
--r re2	don't read packets matching re2
+-N	print #samples of data
 -n n	stop after n packets
 -p pf	alternate parameter file
 -R r	when saving to file, use forb(5) format r
--s p	start after pktid #p
+-r re2	don't read packets matching re2
 -S filename	save state in filename
--u n	discard duplicates in latest n packets
+-s p	start after pktid #p
 -U	unstuff each packet and print
+-u n	discard duplicates in latest n packets
 -v	more verbose
 -x	require acknowledgment for each packet sent
 </options>
@@ -1193,6 +1196,7 @@ forbserver [options] filename
 -f
 -x	specify format in output forb(5) file
 -c   	adjust time tags to the current time.
+-s	meter out packets at real time rate
 -U	run elog_debugger() to start a debugger on the process.
 -v	more verbose
 -w	overwrite existing file instead of appending

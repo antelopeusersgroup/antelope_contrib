@@ -18,8 +18,8 @@ required_unix_pgms
 private check_antelope_installation
     spot check for proper Antelope installation
 
-antelope_update [options]
-    update local antelope installation from BRTT patches 
+antelope_update [options] [url]
+    update local antelope installation from standard BRTT patches or alternative url
 <options>
 -i	ask before installing each patch
 -l	just list unapplied patches 
@@ -105,7 +105,7 @@ deprecated uwd [-f configfile]
     print canonical working directory (for ancient automounters)
 
 
-datafile [-aeV] {name | dir name | env dir name}
+datafile [-ae] {name | dir name | env dir name}
     show what files will be selected by datafile/datapath/datasearch(3) routines.
 
 epoch [options] [ +format ] [ time/date components ]
@@ -191,7 +191,7 @@ private capitalize_station dbname
 private translate_stachan_names translation_db dbname
     apply station name-translations listed in translation_db
 	
-children pid
+children pid ...
     returns children of process pid
 
 private getunique
