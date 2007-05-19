@@ -266,6 +266,10 @@ dsteim [sd]
 msdd [-dovx] miniseed ...
     dump miniseed volume; -o shows opaque blockettes 
 
+seeddump [-lsize sz] [-types list] [-v[v]] [-sta] seed
+    dump certain blockettes from seed according to tlist:
+    (V=Volume, A=Abbreviation, S=Station, T=Time span, D|R|Q=Data)
+
 chkmsd [-v] db
      checks all miniseed blocks to see db and miniseed agree
     
