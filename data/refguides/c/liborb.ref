@@ -40,6 +40,7 @@ int orbresurrect ( int orb, int *last_pktid, double *last_t)
 
 
 <subsection Reading>
+<cdeclarations>
 int orbget ( int orb, int which, int *pktid, char *srcname, double *time, char **pkt, int *nbytes, int *bufsize )
     get packet which from orb, returning pktid, srcname, time, and nbytes of data pkt. size of buffer pkt is adjusted as needed; pktid may be explicit pktid or ORBPREV, ORBNEXT, ORBNEXT_WAIT, ORBOLDEST, ORBNEWEST.
 
@@ -58,6 +59,7 @@ int orbreap_timeout ( int orb, int sec, int *id, char *nm, double *t, char **p, 
     ORB_INCOMPLETE if no packet is available after sec seconds
 
 <subsection Writing>
+<cdeclarations>
 int orbput ( int orb, char *srcname, double time, char *packet, int nbytes )
     write the nbytes of packet data onto orb with specified srcname and time
 
@@ -68,6 +70,7 @@ int orbput_nolag(int orb, char *srcname, double t, char *packet, int nbytes, Lag
     write to output orb ensuring that certain readers have read previous packets first, using lag parameter
 
 <subsection Status Information>
+<cdeclarations>
 int orbtell ( int orb )
     return current pktid position for orb
 

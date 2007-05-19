@@ -128,6 +128,7 @@ int pfrequire(char *pfname, char *atime )
     require pf_revision_code later than atime
 
 <subsection Associative Arrays>
+<cdeclarations>
 Arr *newarr ( int (*cmp)(char *, char *) )
     create a new associative array with string compare routine cmp;
     if cmp=0, use strcmp().
@@ -166,6 +167,7 @@ Tbl *greparr ( char *re, Arr *arr )
     return list of all keys in arr which match regular expression re
 
 <subsection Lists>
+<cdeclarations>
 Tbl *newtbl ( int n )
     return a new list with n elements
 
@@ -263,6 +265,7 @@ void freemorphtbl ( Morphtbl *map )
     free Morphtbl map
 
 <subsection Sorted Lists>
+<cdeclarations>
 Stbl *newstbl ( int (*cmp)(Stbl *a, Stbl *b) )
     create a new sorted list
 
@@ -291,6 +294,7 @@ int applystbl ( Stbl *stbl, int (*f) (), void *pvt )
     call function f for each element of sorted list stbl
 
 <subsection Id Maps>
+<cdeclarations>
 Stbl * newidmap ( void )
     create a new id map, mapping one set of positive integers to another
 
@@ -305,7 +309,7 @@ int idget ( Stbl *map, int key )
     return the value of key in map, or -1 if it's not set
 
 <subsection Bit Vectors>
-
+<cdeclarations>
 Bitvector *bitnew ( )
     create a new bit vector
 
@@ -340,7 +344,7 @@ int bitcmp ( Bitvector *b1, Bitvector *b2 )
     compare two bit vectors
 
 <subsection Simple Ring Buffer>
-
+<cdeclarations>
 RingBuffer *openring(char *filename, char *id, int depth, int flags)
     open (or create) a simple ring buffer in filename with size depth
 
@@ -375,6 +379,7 @@ int changedring ( RingBuffer *rb, double tdelta );
     return 1 if the value has changed over the period tdelta
 
 <subsection Time conversion>
+<cdeclarations>
 int is_epoch_string ( char *s, double *e )
     return true if string s can be interpreted as a time, returning epoch time e
 
@@ -454,6 +459,7 @@ private int time_string2epoch ( char *string, double *time )
     earlier interface to str2epoch
 
 <subsection Error handling>
+<cdeclarations>
 int elog_init ( int argc, char **argv )
     initialize elog routines
 
@@ -516,6 +522,7 @@ int elog_set ( enum Elog_code code, int severity, void *value )
     set various parameters for elog interface
 
 <subsection Filename and Path Manipulation>
+<cdeclarations>
 int abspath ( char *relp, char *absp )
     return absolute path absp for the relative path relp
 
@@ -612,6 +619,7 @@ int mkfile ( char *name, ulong nbytes, char *init, int initsize)
     make file name nbytes long initialized with the first initsize bytes of init, otherwise zero
 
 <subsection Strings>
+<cdeclarations>
 int blank ( char *s )
     return non-zero if string is entirely spaces
 
@@ -698,7 +706,7 @@ char *strdbl(double x, char *buf)
     formats the input double x into a compact and convenient string
 
 <subsection Sorting and Searching>
-
+<cdeclarations>
 void isort ( char *a, int n, int size, int (*cmp)(), void *pvt )
     sort list a of n elements each size bytes using the comparison function cmp and
     an insertion sort implementation
@@ -716,7 +724,7 @@ int ssearch ( char *key, int keysize, char *index, int nkeys, int unique, int (*
     return number of matches and the index range ns <= i <= ne of matches.  unique indicates index has no duplicate entries
 
 <subsection User Interaction>
-
+<cdeclarations>
 char *ask ( char *format, ... )
     query user for a response
 
@@ -757,7 +765,7 @@ char *getaline ( FILE *file, char *aline, int n )
     with a null byte
 
 <subsection Hexadecimal Dumps>
-
+<cdeclarations>
 private void Hexdump ( FILE *file, int base, void *mem, int n )
     hex dump a buffer mem, with base added
 
@@ -929,7 +937,7 @@ private int rev8 ( char *from, char *to, int n )
     reverse order of 8 bytes
 
 <subsection Compression and Checksums>
-
+<cdeclarations>
 int gencompress ( uchar **out, int *nout, int *szout, int *in, int n, int len )
     compress n input integers in, using run length len, returning result as
     *nout bytes in *out. 
@@ -974,6 +982,7 @@ private FILE *zopen ( char *filename, char *permissions )
     fopen a compressed or uncompressed file
 
 <subsection Convenience Macros>
+<cdeclarations>
 allot(type *, name, n)
     malloc space for n (type *) elements, putting the address in name
 
@@ -1008,7 +1017,7 @@ private MIN(a,b)
     expands to ((a>b)?(b):(a)) -- bad if a or b have side effects
 
 <subsection IEEE Arithmetic>
-
+<cdeclarations>
 int is_infinity ( double x )
     return 1 if x is infinity
 
@@ -1034,7 +1043,7 @@ double a_signaling_nan ( void );
     return a signaling nan
 
 <subsection Local Machine/Architecture>
-
+<cdeclarations>
 int my_hardware(char *hdw)
     return processor name (sparc, i386, ..)
 
@@ -1091,6 +1100,7 @@ int sysmounted(Tbl **sysmnt)
     and remote host and filesystem if mounted remotely.
 
 <subsection Environment>
+<cdeclarations>
 int envfile ( char *filename )
     set environment using list in $ANTELOPE/data/env/filename
 
@@ -1107,6 +1117,7 @@ char *expand_env ( char *s )
     return new string substituting $env or ${env} in s with value from environment
 
 <subsection Data File References>
+<cdeclarations>
 char *datafile ( char *env, char *file)
     return path of filename file in $ANTELOPE/data, perhaps overridden by environment variable env
 
@@ -1127,6 +1138,7 @@ deprecated void setmapcf ( char *fn )
     set the name of the configuration file for mappath
 
 <subsection State Files>
+<cdeclarations>
 int bury ( )
     save state file, specified by exhume and resurrect calls
 
@@ -1140,7 +1152,7 @@ int resurrect ( char *name, void *value, int type )
     calls to bury.  type is INT_RELIC, DOUBLE_RELIC or STRING_RELIC
 
 <subsection Buffered Network Stream I/O>
-
+<cdeclarations>
 Bns *bnsnew ( int fd, int sz )
     create a new network stream I/O buffer
 
@@ -1220,7 +1232,6 @@ int pbnsSync ( Bns *bns, char *sync, int nsync )
 
 <subsection Miscellaneous>
 <cdeclarations>
-
 private void banner ( char *program, char *version )
     print header with program name, version, BRTT address
 

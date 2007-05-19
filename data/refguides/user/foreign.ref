@@ -264,6 +264,7 @@ Xphase2db db [-phase name]
     convert an input Xphase pick file to css3.0 arrivals
 
 <subsection Examining Foreign Files>
+<commands>
 sachd [sac1 ...]
     print header information from SAC files sac1, ...
 

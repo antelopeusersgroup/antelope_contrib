@@ -29,6 +29,7 @@ record()
     return the Datascope record number
 
 <subsection Arithmetic Functions>
+<function>
 abs(x)
     absolute value
 
@@ -104,6 +105,7 @@ yearday(epoch)
     convert from epoch time to yearday (jdate)
 
 <subsection Flinn-Engdahl Regions>
+<function>
 grname(lat,lon)
     geographic region name
 

@@ -25,6 +25,7 @@ __END__	end of the parameter file
 __EOF__	end of the parameter file
 
 <subsection Example>
+<List>
 Try with "pfecho -i"
 <Examples>
 # comment

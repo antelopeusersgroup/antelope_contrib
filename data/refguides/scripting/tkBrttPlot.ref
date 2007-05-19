@@ -25,6 +25,7 @@ destroy_scg scg_handle
     destroy a station-channel-gather data object
 
 <subsection Vectors>
+<commands>
 vector_append vector_handle index xvalue ylist [label]
     appends a vector element after an existing element
 
@@ -64,6 +65,7 @@ vector_transform_edp vector_handle lonr latr
     equal distance projection coordinates in place
 
 <subsection Time Histories>
+<commands>
 thistory_add thistory time value
     add time/value pair to thistory object
 
@@ -83,6 +85,7 @@ thistory_maxmin thistory
     return max and min values for thistory object
 
 <subsection Utilities>
+<commands>
 latlon2edp latr lonr lat lon
     convert latitude-longitude to equal distance projection coordinates
 
@@ -98,6 +101,7 @@ hls2colorstring hue lightness saturation [gamma]
     X-window rgb color string
 
 <subsection Plotting>
+<commands>
 
 (canvas) create viewport name x y ?options?
     create canvas window for graph

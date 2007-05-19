@@ -17,6 +17,7 @@ MAN 	install man pages
 purify	create executables using purify
 
 <subsection User Macros>
+<List>
 BIN	executables to install into $(DEST)/bin 
 LIB	static libraries to install into $(DEST)/static 
 DLIB	dynamic libraries to install into $(DEST)/lib 
@@ -43,6 +44,7 @@ DEST	installation directory: $(ANTELOPE)$(SUBDIR)
 SUBDIR	alternate destination hierarchy below $ANTELOPE, often local
 
 <subsection Predefined Link Library Macros>
+<List>
 STOCKLIBS	-lcoords -lstock + required libraries
 DBLIBS	-lds + required libraries
 TRLIBS	-ltr + required libraries

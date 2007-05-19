@@ -7,6 +7,7 @@ netcdf.h gmtmap.h gshhsmap.h
 map data utilities
 
 <subsection NetCDF Format Processing>
+<cdeclarations>
 int netcdf_unstuff_header(unsigned char **stream, NETCDFHdr **hdr)
     Unstuff the file header from a NetCDF file
 
@@ -14,6 +15,7 @@ int netcdf_print_header(NETCDFHdr *hdr, FILE *file)
     Print the file header from a NetCDF file
 
 <subsection GMT/NetCDF Format Processing>
+<cdeclarations>
 int gmtmap_open(void **handle)
     create a GMT map object
 
@@ -24,6 +26,7 @@ int gmtmap_nextseg(void *handle, int *npts, int *bufsize, float **lon, float **l
     get the next segment of GMT map coordinates in *lon and *lat with *npts number of coordinates
 
 <subsection GSHHS Format Processing>
+<cdeclarations>
 int gshhs_unstuff_hdr(GSHHSHdr **gshhs, char **stream)
     Unstuff a data block header from a GSHHS file
 

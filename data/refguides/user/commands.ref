@@ -2,6 +2,7 @@
 <commands>
 
 <subsection Examples and Templates>
+<commands>
 mkmk [ - ]
     show prototype Antelope makefile (- suppresses comments)
 
@@ -15,6 +16,7 @@ required_unix_pgms
      check for programs required by Antelope
 
 <subsection Miscellaneous>
+<commands>
 private check_antelope_installation
     spot check for proper Antelope installation
 

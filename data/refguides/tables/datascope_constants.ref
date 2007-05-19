@@ -19,6 +19,7 @@ dbNULL
     null record for a table or view
 
 <subsection Routine Flags>
+<commands>
 dbOUTER_JOIN
     set to force join of every record in first table 
 

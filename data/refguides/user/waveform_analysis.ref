@@ -144,6 +144,7 @@ alter_timestamps [-nquv] [-f foreign] [-p pf] miniseed
 </options>
 
 <subsection Analysis>
+<commands>
 dbap [options] -dbin dbin -recipe recipe1 [recipe2 [...]]
     database array processing program
 <options>
@@ -299,6 +300,7 @@ dbheli [options] db sta chan tstart twinline nlines scale
 </options>
 
 <subsection Waveform Verification>
+<commands>
 dbversac database
     compare sac file headers with CSS database
 

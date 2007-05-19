@@ -100,6 +100,7 @@ int seed_loc ( char *sta, char *chan, char *fchan, char *loc )
     return seed channel code fchan and loc code corresponding to CSS3.0 sta/chan
 
 <subsection Generating Test Data>
+<cdeclarations>
 
 int trsignal_argv ( Dbptr tr, int argc, char **argv )
     generate test signal data in a trace table
@@ -224,6 +225,7 @@ private int trwfclose ( Wfdisc *wfdisc )
 
 
 <subsection Filters>
+<cdeclarations>
 int trfilter(Dbptr tr, char *f)
     apply time-domain filters f to trace data tr
 
@@ -261,6 +263,7 @@ int trintegral ( Dbptr tr )
     integrate waveform segments
 
 <subsection Utilities>
+<cdeclarations>
 int trclip ( double time, double samprate, int nsamp, double from, double until, int *pt0, int *npts, double *t0, double *t1 )
     find sample range corresponding to time range
 
@@ -315,6 +318,7 @@ Wftype *trwftype ( char *datatype )
 
 
 <subsection Convenience Macros>
+<cdeclarations>
 double ENDTIME ( t0, samprate, nsamp )
     return endtime based on input parameters
 

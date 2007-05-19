@@ -161,6 +161,7 @@ tcpmonitor [options] host
 </options>
 
 <subsection Orbserver and Utilities>
+<commands>
 orbserver [options] pf
     orb ring buffer server, using parameter file pf
 <options>
@@ -395,6 +396,7 @@ slink2orb [options] SeedLink orb
 </options>
 
 <subsection Other Orb Writers>
+<commands>
 pf2orb [-s sta] [-p subcode] pfile orb
     put parameter file onto an orb as packet; use -s and -p to specify parts of packet srcname
 
@@ -447,6 +449,7 @@ dbreplay [options] view [[[orb] t0] {t1|T}]
 </options>
 
 <subsection Datalogger Commanding>
+<commands>
 dlcmd [options] orbcmd targets dltypes dlnames cmd [params]
     execute command cmd on generic data loggers
 <options>
@@ -515,6 +518,7 @@ dlautomrc [options] cmdorb orb [target]
 </options>
 
 <subsection Real Time processing: Orb reader/Writers>
+<commands>
 orb2orb [options] in out [start [period|end]]
     copy data from one orb to another
 <options>
@@ -760,6 +764,7 @@ sms2orb [-dv] queue orb
      read incoming sms email from queue directory and write packets to orb
 
 <subsection Orb Real Time Display>
+<commands>
 dlmon [options] orb [cmdorb]
     monitor/control generic digitizers
 <options>
@@ -836,6 +841,7 @@ orbdisp [options] orbserver [start [range|end]]
 </options>
 
 <subsection Real Time Status Monitoring>
+<commands>
 cpu2orb [-i t] [-vv] orb
     put cpu and system utilization packets on orb every t seconds
 
@@ -887,6 +893,7 @@ rtlogs orb
     display log messages from orbserver orb
 
 <subsection Saving Orb Data in Database>
+<commands>
 orb2db [options] orb db [start [end|period]]
     copy waveform data from orbserver orb into database db (starting at time start through end or for stated period)
 <options>
@@ -981,6 +988,7 @@ orbmsd2days [options] orb
 </options>
 
 <subsection Orb Alarms>
+<commands>
 acalarm [-d] [-m srcmatch ] orbin mail_add [stime]
     send mail when AC power fails in DC packets
 
@@ -999,6 +1007,7 @@ pktmon [-n npkts] [-p pf] [-S state] [-0dv] orb
 </options>
 
 <subsection Miscellaneous>
+<commands>
 resetnetblazer hostname line timeout
     reset Telebit Netblazer terminal server
 
@@ -1057,6 +1066,7 @@ online_backup [options] [directories]
 </options>
 
 <subsection Orb Diagnostic Tools>
+<commands>
 private orbreap [options] orb [start [end|range]]
     multipurpose orb dumping program
 <options>

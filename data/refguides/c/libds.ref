@@ -40,6 +40,7 @@ int dbclose ( Dbptr db )
     close database db
 
 <subsection Adding and Retrieving Values>
+<cdeclarations>
 int dbadd ( Dbptr db, char *r )
     add row r to table db, return new record number
 
@@ -78,6 +79,7 @@ int dbselect ( Dbptr db, Tbl *l, FILE *f)
     print value of expressions in list l to file f.
 
 <subsection Removing and Deleting Rows>
+<cdeclarations>
 int dbdelete ( Dbptr db )
     delete row db from view
 
@@ -94,6 +96,7 @@ int dbdestroy ( Dbptr db )
     remove descriptor file and each table in database db.
 
 <subsection Manipulating and Saving Views>
+<cdeclarations>
 Dbptr dbsubset ( Dbptr db, char *s, char *name )
     create new view with rows from db which satisfy expression s
 
@@ -185,6 +188,7 @@ private int dbupdate_index ( Dbindex *dbindex )
     force your copy of database indices to be updated
 
 <subsection Evaluating Database Expressions>
+<cdeclarations>
 int dbex_compile ( Dbptr db, char *s, Expression **e, int type )
     compile string s as database expression, return compiled
     representation e.  type may be dbBOOLEAN, dbINTEGER, dbREAL, 
@@ -210,6 +214,7 @@ int dbstrtype ( Dbptr db, char *s )
     strFIELD, or strUNKNOWN, indicating how s might be evaluated
 
 <subsection External Files>
+<cdeclarations>
 int dbextfile ( Dbptr db, char *table, char *p )
     compose path p using dir and dfile from database row db; specify table 
     when view db contains multiple tables with dfile.
@@ -218,6 +223,7 @@ int dbfilename ( Dbptr db, char *filename )
     compose filename from dir/dfile in database row db, creating directories if needed 
 
 <subsection Managing Ancillary Information>
+<cdeclarations>
 int dbquery ( Dbptr db, int code, Dbvalue *value )
     return variety of information for database pointer db (see Datascope Constants)
 

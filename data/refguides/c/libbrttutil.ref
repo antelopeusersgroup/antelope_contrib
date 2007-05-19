@@ -7,10 +7,12 @@ brttutil.h
 other miscellaneous utilities
 
 <subsection Pf Parameter Processing>
+<cdeclarations>
 int parse_param (Pf *pf, char *name, int type, int need, void *val)
     parse name parameter from pf parameter file object of a certain type into val and return an error if need is set and name with type does not exist; type may be P_SINT, P_LINT, P_FLT, P_DBL, P_STR, P_BOOL, P_TBL, P_TBLPF, P_ARR, P_ARRPF
 
 <subsection MT-Safe FIFO>
+<cdeclarations>
 Pmtfifo *pmtfifo_create (int maxqueue, int block, int check)
     create a POSIX MT-safe FIFO queue of maximum size maxqueue, block when the queue is full and check all subsequent calls to see if the queue still exists
 

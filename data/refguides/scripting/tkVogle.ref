@@ -7,6 +7,7 @@ package require Vogle
 </man>
 
 <subsection  Device Related Commands>
+<commands>
 graphic widget-name
     create graphic widget for drawing
 
@@ -36,6 +37,7 @@ g_getdepth
   current  device.   
 
 <subsection General Commands>
+<commands>
 g_clear
   Flood the  device  with  the  current  color.  Clipping
   areas, viewports, etc. are ignored.
@@ -59,6 +61,7 @@ g_clipping boolean
 
 
 <subsection  Viewport Commands>
+<commands>
 g_viewport left right bottom top
   set the current viewport using screen coordinates. 
 
@@ -83,6 +86,7 @@ g_getfactors [ width [ height ]]
   heightfactor = (heightOfDevice / min(widthOfDevice, heightOfDevice))
 
 <subsection Attribute Stack Commands>
+<commands>
 g_pushattributes
   places a copy of the current attributeList 
   (color, fillstyle, hatchstyle, textCentering, textKerning,
@@ -92,6 +96,7 @@ g_popattributes
   restores attributes from attribute stack
 
 <subsection Projection Commands>
+<commands>
 g_ortho left right top bottom [ near [ far ]]
   Define a parallel projection, 3d if near and far are supplied, 2d otherwise
 
@@ -102,6 +107,7 @@ g_window left right top bottom near far
   Specify a perspective viewing pyramid in world  coordinates  
 
 <subsection Matrix Stack Commands>
+<commands>
 g_pushmatrix
   push the current transform matrix on the the stack
 
@@ -109,6 +115,7 @@ g_popmatrix
   restore the transformation matrix from the stack
 
 <subsection Viewpoint Commands>
+<commands>
 g_polarview distance azimuth increment twist
   specify the viewers position in polar coordinates
 
@@ -131,6 +138,7 @@ g_rsmove x y
   moves a displacement x,y in screen coordinates
 
 <subsection Drawing Commands>
+<commands>
 g_draw x y [ z ]
   draw to x, y, z
 
@@ -144,6 +152,7 @@ g_rsdraw x y
   draw to current position + x, y in screen coordinates
 
 <subsection Arcs and Circles>
+<commands>
 g_circleprecision numberOfSegments
   specify number of line segments to use to draw a circle
 
@@ -157,6 +166,7 @@ g_circle x y radius
   draw a radius circle with center x, y
 
 <subsection Rectangle and Polygon Commands>
+<commands>
 g_rect x y x2 y2
   draw a rectangle with corners x y and x2 y2
 
@@ -192,6 +202,7 @@ g_backfaceclockwise flag
   the direction is counterclockwise
 
 <subsection Text Commands>
+<commands>
 g_font fontName
   The following software fonts are supported:
 <example>
@@ -238,6 +249,7 @@ g_boxfit w h numberOfChars
   set scale for text so that a string of characters in the font fit in box of width w, height h
 
 <subsection Transformation Commands>
+<commands>
 g_identtrans
   resets the current transform to the  identity  matrix. (screen units and world
   units become equivalent)  
@@ -252,10 +264,12 @@ g_rotate angle axis
   rotate the current transform angle degrees around axis: x, y, or z
 
 <subsection Point Commands>
+<commands>
 g_point x y [ z ]
   draw a point at x y z in world units
 
 <subsection Object Commands>
+<commands>
 
 g_makeobj objectID
   begin construction of an object with identifier objectID  
@@ -276,6 +290,7 @@ g_saveobj objectID fileName
   save the object objectID into fileName  
 
 <subsection Double Buffering>
+<commands>
 
 g_backbuffer
   draw in the offscreen buffer  
@@ -287,6 +302,7 @@ g_swapbuffers
   copy the offscreen buffer to the onscreen buffer
 
 <subsection Other Commands>
+<commands>
 g_getgp [ x [ y [ z ]]]
   return current position in world coordinates, optionally saving in x, y, z
 
