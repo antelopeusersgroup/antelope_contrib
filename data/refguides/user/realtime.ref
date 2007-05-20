@@ -1201,10 +1201,7 @@ deprecated old_orb2orb in out [start [period|end]]
 forbserver [options] filename
     file orbserver emulator
 <options>
--a
--b
--f
--x	specify format in output forb(5) file
+-[a|b|f|x]	specify format in output forb(5) file
 -c   	adjust time tags to the current time.
 -s	meter out packets at real time rate
 -U	run elog_debugger() to start a debugger on the process.

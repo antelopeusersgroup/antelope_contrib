@@ -2,8 +2,9 @@
 BRTT Filters
 wffilbrtt
 none
-wffil.h
-provides a c interface to BRTT time-domina
+STOCKLIBS
+
+provides a c interface to BRTT time-domain
 waveform filtering using digital recursion
 filters
 

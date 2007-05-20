@@ -9,8 +9,8 @@ mkmk [ - ]
 manpage [ - ]
     show prototype Antelope man page (- suppresses comments)
 
-template [dbsimple.c|orbsimple.c|trsimple.c|simple.c|perl|tcl]
-    get template from templates directory
+template [example]
+    get example from templates directory
 
 required_unix_pgms
      check for programs required by Antelope

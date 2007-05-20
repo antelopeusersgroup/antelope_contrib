@@ -1,10 +1,10 @@
 <library>
 Map Data Utilities
 mappts
-none
+
 none
 netcdf.h gmtmap.h gshhsmap.h
-map data utilities
+routines to read various map data formats
 
 <subsection NetCDF Format Processing>
 <cdeclarations>

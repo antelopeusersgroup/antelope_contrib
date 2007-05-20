@@ -101,10 +101,12 @@ sub library {
     @data = ($chapter) ;
     push ( @data, &paragraph("Body", $desc) );
     push ( @data, &paragraph("Spacer", "" ) );
-    push ( @data, &paragraph("Indented", "include \"$include\"" ) ); 
+    foreach ( split(' ', $include ) { 
+	push ( @data, &paragraph("Indented", "include \"$_\"" ) ) ;
+    }
     # push ( @data, &paragraph("Spacer", "" ) );
-    if ( $macro ne "none" ) { 
-	push ( @data, &paragraph("Indented", "ldlibs=\$($macro)" )) ;
+    if ( $macro ne "none" && $macro ne "" ) { 
+	push ( @data, &paragraph("Indented", "ldlibs=\$($macro)" )) if $macro ne "none" && $macro ne "" ;
     } else { 
 	push ( @data, &paragraph("Indented", "ldlibs=-l$library $depends_on" ) );
     }

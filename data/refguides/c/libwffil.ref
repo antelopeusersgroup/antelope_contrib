@@ -1,8 +1,8 @@
 <library>
 Filter Waveforms
 wffil
-$(STOCKLIBS)
 none
+STOCKLIBS
 wffil.h
 provides a c interface to general purpose time-domina
 waveform filtering with user-written dynamic link libraries

@@ -1,8 +1,8 @@
 <library>
-Other BRTT Utilities
+BRTT Utilities
 brttutil
+$(STOCKLIBS)
 none
-STOCKLIBS
 brttutil.h
 other miscellaneous utilities
 

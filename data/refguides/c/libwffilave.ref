@@ -2,8 +2,9 @@
 Averaging Filters
 wffilave
 none
-none
-provides a c interface to time-domina averaging filtering
+STOCKLIBS
+
+example of extension filters for libwffil
 
 <cdeclarations>
 int wffilave_filter(void *user_data, char *filter_string, double gap_tolerance, int *nsamps, double *tstart, double *dt, float **data, int *data_size, char *input_units, char *output_units, Hook **state)
