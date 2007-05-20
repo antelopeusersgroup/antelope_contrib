@@ -655,7 +655,7 @@ void str2upper ( char *s )
     convert string s to all lower/upper case
 
 char *okstr( char *s)
-    if s != 0, return s otherwise "<null>"
+    if s != 0, return s otherwise null
 
 void strsub ( char *old, char *s, char *sub, char *r )
     replace all occurences of string s in old with sub, leaving result in r

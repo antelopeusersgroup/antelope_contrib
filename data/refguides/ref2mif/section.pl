@@ -101,7 +101,7 @@ sub library {
     @data = ($chapter) ;
     push ( @data, &paragraph("Body", $desc) );
     push ( @data, &paragraph("Spacer", "" ) );
-    foreach ( split(' ', $include ) { 
+    foreach (split(' ', $include )) { 
 	push ( @data, &paragraph("Indented", "include \"$_\"" ) ) ;
     }
     # push ( @data, &paragraph("Spacer", "" ) );
