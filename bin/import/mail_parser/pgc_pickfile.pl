@@ -151,26 +151,56 @@ sub parse_errorline {
 		$sdobs = -1;
 	}
 
+	# Note that the following error ellipsoid description for LocEq
+	# generated errors is an approximation to the true error ellipsoid 
+	# for this solution. It is based on the lat, lon, depth errors 
+	# calculated at the earth's surface from LocEq; these errors are 
+	# represented in the ellipsoid such that smajax and sminax always 
+	# lie parallel to the earth's surface. Strike direction from Aki &
+	# Richards, section 4.5. All definitions are intended to be consistent
+	# with antelope css3.0 schema definitions for error ellipsoid.
+
+	$sxx = $errs_selat ** 2 ;
+	$syy = $errs_selon ** 2 ;
+	$szz = $errs_sedepth ** 2 ;
+	$stt = $errs_setime ** 2 ;	# errs_setime=0 for LocEq solns
+	$sxy = 0 ;
+	$sxz = 0 ;
+	$syz = 0 ;
+	$stx = 0 ;
+	$sty = 0 ;
+	$sxy = 0 ;
+
+	if( $errs_selat >= $errs_selon ) {
+		$smajax = $errs_selat ;
+		$sminax = $errs_selon ;
+		$strike = 0;
+	} else {
+		$smajax = $errs_selon ;
+		$sminax = $errs_selat ;
+		$strike = 90;
+	}
+
 	@dborigerr = dblookup( @db, "", "origerr", "", "" );
 
 	dbaddv( @dborigerr,
 	 	"orid", $orid,
-	# 	 "sxx", sxx, 	 
-	# 	 "syy", syy, 	 
-	# 	 "szz", szz, 	 
-	# 	 "stt", stt, 	 
-	# 	 "sxy", sxy, 	 
-	# 	 "sxz", sxz, 	 
-	# 	 "syz", syz, 	 
-	# 	 "stx", stx, 	 
-	# 	 "sty", sty, 	 
-	# 	 "stz", stz, 	 
-	 	 "sdobs", $sdobs
-	# 	 "smajax", smajax, 	 
-	# 	 "sminax", sminax, 	 
-	# 	 "strike", strike, 	 
-	# 	 "sdepth", sdepth, 	 
-	# 	 "stime", stime, 	 
+	 	 "sxx", $sxx, 	 
+	 	 "syy", $syy, 	 
+	 	 "szz", $szz, 	 
+	 	 "stt", $stt, 	 
+	 	 "sxy", $sxy, 	 
+	 	 "sxz", $sxz, 	 
+	 	 "syz", $syz, 	 
+	 	 "stx", $stx, 	 
+	 	 "sty", $sty, 	 
+	 	 "stz", $stz, 	 
+	 	 "sdobs", $sdobs,
+	 	 "smajax", $smajax, 	 
+	 	 "sminax", $sminax, 	 
+	 	 "strike", $strike, 	 
+	 	 "sdepth", $errs_sedepth, 	 
+	 	 "stime", $errs_setime 	 
 	# 	 "conf", conf, 	 
 	# 	 "commid", commid, 	 
 	 	);
