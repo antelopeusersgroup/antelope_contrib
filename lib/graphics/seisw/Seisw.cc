@@ -688,6 +688,79 @@ externaldef (exmseiswlassrec) ExmSeiswClassRec exmSeiswClassRec = {
 
 /* Declare any global static variables. */
 
+/* DEBUG function used to deal with scaling problems */
+//////////////////////////////////////////////////////////
+/*
+void showscaling(ExmSeiswWidget sw)
+{
+if(sw==NULL)
+{
+cerr << "ExmSeiswPart is currently NULL"<<endl;
+}
+else
+{
+cerr << "Scaling parameters in ExmSeiswPart struct"<<endl;
+cerr << "x1_resolution = "<< sw->seisw.x1_resolution <<endl;
+cerr << "x2_resolution = "<< sw->seisw.x2_resolution <<endl;
+cerr << "resolution_set = "<< sw->seisw.resolution_set <<endl;
+cerr << "zoom_factor = "<< sw->seisw.zoom_factor <<endl;
+cerr << "x_top_position = "<< sw->seisw.x_top_position <<endl;
+cerr << "previous_x_top_position = "<< sw->seisw.previous_x_top_position <<endl;
+cerr << "y_top_position = "<< sw->seisw.y_top_position <<endl;
+cerr << "previous_y_top_position = "<< sw->seisw.previous_y_top_position <<endl;
+cerr << "from_zoom = "<< sw->seisw.from_zoom <<endl;
+cerr << "zoom_not_set_limit = "<< sw->seisw.zoom_not_set_limit <<endl;
+cerr << "xItemCount = "<< sw->seisw.xItemCount <<endl;
+cerr << "yItemCount = "<< sw->seisw.yItemCount <<endl;
+cerr << "xVisibleItemCount = "<< sw->seisw.xVisibleItemCount <<endl;
+cerr << "yVisibleItemCount = "<< sw->seisw.yVisibleItemCount <<endl<<endl;
+}
+}
+void showpar(SeiswPar *p)
+{
+if(p==NULL)
+{
+cerr << "SeiswPar is currently NULL"<<endl;
+}
+else
+{
+cerr << "SeiswPar parameters:"<<endl;
+cerr << "xbox = "<< p->xbox <<endl;
+cerr << "ybox = "<< p->ybox <<endl;
+cerr << "hbox = "<< p->hbox <<endl;
+cerr << "wbox = "<< p->wbox <<endl;
+cerr << "x1beg = "<< p->x1beg <<endl;
+cerr << "x1end = "<< p->x1end <<endl;
+cerr << "x2beg = "<< p->x2beg <<endl;
+cerr << "x2end = "<< p->x2end <<endl;
+cerr << "x1begb = "<< p->x1begb <<endl;
+cerr << "x1endb = "<< p->x1endb <<endl;
+cerr << "x2begb = "<< p->x2begb <<endl;
+cerr << "x2endb = "<< p->x2endb <<endl;
+cerr << "perc = "<< p->perc <<endl;
+cerr << "clip_data = "<< p->clip_data <<endl;
+cerr << "trace_spacing = "<< p->trace_spacing <<endl;
+cerr << "first_trace_offset = "<< p->first_trace_offset <<endl;
+cerr << "use_variable_trace_spacing = "<< p->use_variable_trace_spacing <<endl<<endl;
+}
+}
+*/
+
+/* Sets resolution to res_x for x and res_y for y.  */
+void set_resolution(Widget w, double res_x, double res_y)
+{
+    ExmSeiswWidget sw = (ExmSeiswWidget)w;
+
+    sw->seisw.x1_resolution=res_x;
+    sw->seisw.x2_resolution=res_y;
+//DEBUG
+if(sw->seisw.x1_resolution >0.2) sw->seisw.x1_resolution=0.2;
+if(sw->seisw.x2_resolution >0.05) sw->seisw.x2_resolution=0.05;
+    sw->seisw.resolution_set=1;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 
 /* Drag stuff */
 static void
@@ -973,11 +1046,18 @@ static void Btn1UpProc (
 	float temp_x1, temp_x2;
 	int xstart, ystart, xb, yb, x1,y1,x2,y2,bw,h;
 
+
 	if (spar==NULL || sca==NULL) return;
 
         if (event->xmotion.x < sca->x || event->xmotion.x > sca->x + sca->width ||
              event->xmotion.y < sca->y || event->xmotion.y > sca->y + sca->height) return;
 
+/*
+//DEBUG
+cerr << "Entering Btn1UpProc:"<<endl;
+showscaling(sw);
+showpar(spar);
+*/
 	sw->seisw.drag_enable=0;
 
 	if (sw->seisw.rubberbox_enable==1) {
@@ -1028,17 +1108,26 @@ static void Btn1UpProc (
                 spar->x2endb = sca->x2endb_init;
 		sw->seisw.zoom_not_set_limit=0;
 	    }
+/*
+//DEBUG
+cerr << "In  Btn1UpProc after double click:"<<endl;
+showscaling(sw);
+showpar(spar);
+*/
 
 	    //handle changing resolution for resizing
+	    // Earlier code had separate res calculation
+	    // change to call set_resolution 4/25/2007 GLP
 	    double dtemp=spar->x1endb-spar->x1begb>=0.0 ? spar->x1endb-spar->x1begb :
                 spar->x1begb-spar->x1endb;
-            sw->seisw.x1_resolution=dtemp/((double)(sw->core.width-
+	    double resx1,resx2;
+            resx1=dtemp/((double)(sw->core.width-
                 (sw->primitive.shadow_thickness+sw->primitive.highlight_thickness+sw->seisw.margin_width+spar->xbox)));
             dtemp=spar->x2endb-spar->x2begb>=0.0 ? spar->x2endb-spar->x2begb :
                 spar->x2begb-spar->x2endb;
-            sw->seisw.x2_resolution=dtemp/((double)(sw->core.height-(
+            resx2=dtemp/((double)(sw->core.height-(
                 sw->primitive.shadow_thickness+sw->primitive.highlight_thickness+sw->seisw.margin_height+spar->ybox)));
-
+	    set_resolution(w,resx1,resx2);
 
 	    //heavy lifting stuff that adjust scrollbars and clear the windows
             int ys_size,xs_size,xcnt,ycnt;
@@ -1072,6 +1161,12 @@ static void Btn1UpProc (
             XClearArea(XtDisplay(w),sca->win,0,0,sw->core.width,sw->core.height,True);
 
 	}
+/*
+//DEBUG
+cerr << "Leaving Btn1UpProc:"<<endl;
+showscaling(sw);
+showpar(spar);
+*/
 }
 
 static void Btn1MotionProc (
@@ -3759,15 +3854,6 @@ ClassPartInitialize (
 }
 
 
-void set_resolution(Widget w, double res_x, double res_y)
-{
-    ExmSeiswWidget sw = (ExmSeiswWidget)w;
-
-    sw->seisw.x1_resolution=res_x;
-    sw->seisw.x2_resolution=res_y;
-    sw->seisw.resolution_set=1;
-}
-
 int is_resolution_set(Widget w)
 {
     ExmSeiswWidget sw = (ExmSeiswWidget)w;
@@ -3793,6 +3879,13 @@ static void ReInitialize(
  double temp_x1begb, temp_x1endb, temp_x2begb,temp_x2endb;
 
  para=static_cast<SeiswPar *>(nw->seisw.seisw_parameters);
+/*
+//DEBUG
+cerr << "Start of Reinitialize state:"<<endl;
+showpar(para);
+showscaling(nw);
+*/
+
  if (nw->seisw.seisw_metadata != NULL && nw->seisw.seisw_parameters != NULL)
        //save the old x1begb and x1endb, x2begb, x2endb, etc...
        temp_x1begb=para->x1begb;
@@ -3857,6 +3950,12 @@ static void ReInitialize(
       SetHorizontalScrollbar(nw);
 
   }
+/*
+//DEBUG
+cerr << "Exiting ReInitialize"<<endl;
+showpar(para);
+showscaling(nw);
+*/
 
 }
 
@@ -3898,6 +3997,11 @@ Initialize(
 	    nw->seisw.seisw_parameters=para=new SeiswPar();
 	    para->SetParameters(static_cast<Metadata *>(nw->seisw.seisw_metadata));
 	}
+/*
+cerr << "At top of Initialize:"<<endl;
+showpar(para);
+showscaling(nw);
+*/
 
 	TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(nw->seisw.seisw_ensemble);
 
@@ -4167,6 +4271,12 @@ Initialize(
     chain, the actual class is passed to this method */
    if (wc->seisw_class.reconfigure) 
      (*(wc->seisw_class.reconfigure))(exmSeiswWidgetClass, new_w, NULL);
+/*
+//DEBUG
+cerr << "Exiting Initialize"<<endl;
+showpar(para);
+showscaling(nw);
+*/
 
 }
 
@@ -4439,6 +4549,11 @@ Realize(Widget w,
    int scr;
    unsigned long black, white;
    SeiswPar * spar;
+/*
+cerr << "Entering Realize:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
 
    if (sw->seisw.seisw_ca==NULL)
         sw->seisw.seisw_ca=(XtPointer)(new SeiswCA);
@@ -4508,6 +4623,12 @@ Realize(Widget w,
    XClearWindow(dpy,win);
 
    static_cast<SeiswCA *>(sw->seisw.seisw_ca)->win=win;   
+/*
+//DEBUG
+cerr << "Exiting Realize:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
 
 }
 
@@ -4531,6 +4652,12 @@ Resize (
 
  SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
  SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+/*
+//DEBUG
+cerr << "Entering Resize:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
 
  if (spar==NULL) return;
 
@@ -4582,6 +4709,12 @@ Resize (
     //clear the area and send an expose event and thus draw visual
     XClearArea(XtDisplay((Widget)sw),static_cast<SeiswCA *>(sw->seisw.seisw_ca)->win,0,0,sw->core.width,sw->core.height,True);
     
+/*
+//DEBUG
+cerr << "Leaving Resize:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
 }
 
 /******************************************************************************
@@ -4751,6 +4884,12 @@ static void SetBox(Widget w)
     TimeSeriesEnsemble * tse=static_cast<TimeSeriesEnsemble *>(sw->seisw.seisw_ensemble);
     SeiswPar * spar=static_cast<SeiswPar *>(sw->seisw.seisw_parameters);
     SeiswCA * sca=static_cast<SeiswCA *>(sw->seisw.seisw_ca);
+/*
+//DEBUG
+cerr << "Entering SetBox:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
     /* Modified March 2007:  Never trust nmember. Previous was this:
     int nmember=sca->nmember;
     *  Changed to the following */
@@ -4762,11 +4901,31 @@ static void SetBox(Widget w)
     nmember=sca->nmember;
 
     sca->mvefac=1.0;
-    x1min=(tse->member)[0].t0;
-    x1max=(tse->member)[0].endtime();
-    for(i=0;i<nmember;++i) {
-        x1min=MIN(tse->member[i].t0,x1min);
-        x1max=MAX(tse->member[i].endtime(),x1max);
+    int is;
+    for(is=0;is<nmember;++is) 
+    {
+	if(tse->member[is].live)
+	{
+    	  x1min=(tse->member)[is].t0;
+    	  x1max=(tse->member)[is].endtime();
+	  break;
+	}
+    }
+    // Frozen constants, but we don't want to abort in this condition here
+    if(is==nmember)
+    {
+	x1min=-10.0;
+	x2max=50.0;
+    }
+    else
+    {
+        for(i=0;i<nmember;++i) {
+	    if(tse->member[i].live)
+	    {
+              x1min=MIN(tse->member[i].t0,x1min);
+              x1max=MAX(tse->member[i].endtime(),x1max);
+	    }
+        }
     }
 
     if (spar->use_variable_trace_spacing) {
@@ -4778,7 +4937,10 @@ static void SetBox(Widget w)
         }
     } else {
             x2min=sca->x2[0];
-            x2max=sca->x2[nmember-1];
+	    if(nmember==1)
+		x2max=1.0;
+	    else
+            	x2max=sca->x2[nmember-1]+1.0;
     }
 
     //
@@ -4809,6 +4971,12 @@ static void SetBox(Widget w)
 
     sca->f1=spar->x1beg;
     spar->x2endb = static_cast<float>(spar->x2end);
+/*
+//DEBUG
+cerr << "Leaving SetBox:"<<endl;
+showpar(spar);
+showscaling(sw);
+*/
 
 }
 
