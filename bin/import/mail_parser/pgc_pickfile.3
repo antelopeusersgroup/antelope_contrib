@@ -16,6 +16,17 @@ file.  Three additional tables in the mail_parser.pf
 parameter file translate the channel names, location
 programs, and Canadian velocity models into equivalent text
 strings to go in the CSS database.
+
+Note that the error ellipsoid description for LocEq generated 
+errors is an approximation to the true error ellipsoid 
+for this solution. It is based on the lat, lon, depth errors 
+calculated at the earth's surface from LocEq; these errors are 
+represented in the ellipsoid such that smajax and sminax always 
+lie parallel to the earth's surface. Strike direction is 
+consistent with Aki & Richards, section 4.5. 
+All definitions conform with css3.0 schema definitions for 
+error ellipsoid.
+
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
