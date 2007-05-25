@@ -1,0 +1,32 @@
+# db2ph.pf parameter file
+
+
+# Define subset parameters
+
+# Enter start date (YYYYJJJ or YYYY-MM-DD)
+# Define the weighting of arrivals. Weight in assoc table (W) or deltim in arrival table (D)?
+
+start_time	1991001
+end_time	2006240
+min_lat		49.05
+max_lat		49.20
+min_lon		-122.75
+max_lon		-122.6
+min_depth	0
+max_depth	100
+wgt_type	D
+
+
+# Define weighting scheme for weighting picks from deltime.
+# The number on the left is the lower bound, the number in the
+# middle is the upper bound (not including) and the number on
+# the right is the weight assigned, for example
+# 0.0 < deltime <= 0.1 has a weight of 1.
+
+def_weights &Tbl{
+#min max wgt
+0.0  0.1  1.0
+0.1  0.5  0.8
+0.5  0.1  0.5
+1.0  10.0 0.0
+}
