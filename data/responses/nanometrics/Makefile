@@ -30,8 +30,11 @@ DATA= trident_1000sps_fir1    \
       trident_50sps_fir1    \
       trident_50sps_fir2    \
       trident_50sps_fir3    \
+      trillium_120          \
       trillium_240          \
       trillium_40           \
+      Trillium40_UserGuide_responseinfo.pdf \
+      Trillium120P_UserGuide_responseinfo.pdf \
       Trillium240_UserGuide_responseinfo.pdf
                        
 include $(ANTELOPEMAKE)  	
