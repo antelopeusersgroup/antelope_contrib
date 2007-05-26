@@ -1,5 +1,6 @@
 # AD32M Quanterra FIR minimum phase filter parameter file 
-# 16 decimation factor delay=53.32
+# version:      \$Revision$\ \$Date$\  
+# decimation factor delay=53.32
 # type			2 
 # npoles		0 
 # input sample interval	3.125e-05 

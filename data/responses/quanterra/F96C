@@ -1,4 +1,5 @@
 # F96C Quanterra FIR linear phase filter parameter file 
+# version:      \$Revision$\ \$Date$\
 # 2 decimation factor 
 # type			2 
 # npoles		0 
