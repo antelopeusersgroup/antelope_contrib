@@ -1,5 +1,5 @@
-# q330_filter_data/FLbelow40-20.txt Quanterra Q330 composite FIR filter parameter file 
-# version:	\$Revision$\ \$Date$\  
+# q330_raw_filter_data/FLbelow40-20.txt Quanterra Q330 composite FIR filter parameter file 
+# version:	$Revision$Date: 2006/04/09 00:54:48    
 #  
 # 1 decimation factor 
 # type			2 

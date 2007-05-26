@@ -1,4 +1,5 @@
 # @(#)trillium	240  30/8/06 (Eliana) 
+# version:      $Revision$Date: 2007/05/26 22:51:26
 # trillium   VBB seismometer
 # Normalized  response relative to velocity
 # 1                   type
@@ -23,4 +24,3 @@ theoretical   1 anti-alias   paz    teledyne
 0.0000E+00    	0.0000E+00    0.0000E+00    0.0000E+00
 0.0000E+00    	0.0000E+00    0.0000E+00    0.0000E+00
 -108		0.0000E+00    0.0000E+00    0.0000E+00
--161		0.0000E+00    0.0000E+00    0.0000E+00	

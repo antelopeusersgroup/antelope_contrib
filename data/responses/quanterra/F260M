@@ -1,5 +1,5 @@
 # F260M Quanterra FIR minimum phase filter parameter file 
-# version:      \$Revision$\ \$Date$\
+# version:      $Revision$Date: 2007/05/26 22:51:26
 # 10 decimation factor delay=23.793 
 # type			2 
 # npoles		0 
