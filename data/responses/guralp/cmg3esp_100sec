@@ -1,5 +1,5 @@
-# cmg3esp    1.00000e-02 hz (100 sec) seismometer
-# poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
+# cmg3esp 1.00000e-02 Hz (100 sec) seismometer
+# poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 01/29/2007
 # Normalized  response relative to velocity
 # Normalized to gain of 1.0 in middle of passband
 # All poles and zeroes in radians/sec
@@ -8,9 +8,9 @@
 # 5                   num of poles
 # 0.0                 input sample interval
 # 1                   decim factor
-# 5.78e+08            normalization factor @ 6.2831 rad/sec (@ 1Hz)
+# 5.78e+08            normalization factor @ 6.2831 rad/sec (@ 10Hz)
 # 1.0                 gain
-# Sensitivity  1500/v/m/sec
+# Sensitivity  2000/v/m/sec
 theoretical   1 anti-alias   paz    pz6seismo
 5.78e+08  1
 5             Poles
@@ -22,3 +22,4 @@ theoretical   1 anti-alias   paz    pz6seismo
 2             Zeros
 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
+

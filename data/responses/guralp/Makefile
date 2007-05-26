@@ -1,5 +1,6 @@
 DATADIR=responses
 DATA= README_guralp_fir.pdf  \
+    README_Guralp_Poles_and_Zeros.pdf  \
     cmg1t \
     cmg1t_100sec \
     cmg1t_120sec \

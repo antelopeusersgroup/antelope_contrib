@@ -1,4 +1,4 @@
-# cmg40t_1      Guralp 40T-1 1 Hz sensor
+# cmg40t_1      Guralp 40T_1 Hz sensor
 # data from calibration sheet multiplied with 2 Pi
 # cmg40t_1    1.0 Hz seismometer
 # Normalized  response relative to velocity
@@ -7,18 +7,18 @@
 # 2                   number of zeros
 # 0.0                 input sample interval
 # 1                   decim factor
-# 1.29e+12		normalization factor at 1 Hz 
+# 9.15e+11	      normalization factor at 1 Hz 
 # 1.0                 gain
 # sensitivity 2000 V/m/sec
 theoretical   1 anti-alias   paz    pz6seismo
-1.29E+12
+9.15e+11
 6          Poles
--4.44208      4.44208      0.000   0.000
--4.44208     -4.44208      0.000   0.000
--391.9455    850.6722     0.000   0.000
--391.9455    -850.6722     0.000   0.000
--2199.0612     0.00000E+00     0.000   0.000
--471.2250     0.00000E+00     0.000   0.000
+-.4443E+01    0.4443E+01    0.0000E+00    0.0000E+00
+-.4443E+01    -.4443E+01    0.0000E+00    0.0000E+00
+-.3920E+03    0.8507E+03    0.0000E+00    0.0000E+00
+-.3920E+03    -.8507E+03    0.0000E+00    0.0000E+00
+-.2199E+04    0.0000E+00    0.0000E+00    0.0000E+00
+-.4712E+03    0.0000E+00    0.0000E+00    0.0000E+00
 2             Zeros
 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00
 0.0000E+00    0.0000E+00    0.0000E+00    0.0000E+00

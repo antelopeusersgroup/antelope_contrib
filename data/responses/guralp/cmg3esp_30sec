@@ -10,7 +10,7 @@
 # 1                   decim factor
 # 5.78e+08            normalization factor @ 6.2831 rad/sec (@ 1Hz)
 # 1.0                 gain
-# Sensitivity  1500/v/m/sec
+# Sensitivity  2000/v/m/sec
 theoretical   1 anti-alias   paz    pz6seismo
 5.78e+08  1
 5             Poles
