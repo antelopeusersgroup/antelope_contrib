@@ -1,7 +1,10 @@
 # @(#)l4c_3_vel	1.1 3/15/93
 # L4c_3    1.00000 hz seimometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 #    0.300000 damping
 # Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
 # 1                   type
 # 2                   num of zeroes
 # 2                   num of poles

@@ -1,8 +1,11 @@
-# @(#)cmg5_acc	1.1 2/1/95 
+# @(#) cmg5_acc	1.1 2/1/95 
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # cmg5_acc    100 Hz natural frequency accelerometer
 # poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
 # Normalized  response relative to acceleration
 # Normalized to gain of 1.0 in middle of passband
+# All poles and zeroes in radians/sec
 # 0.6 Damping
 # 1                   type
 # 0                   num of zeroes

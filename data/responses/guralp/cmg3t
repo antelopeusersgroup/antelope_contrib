@@ -1,4 +1,6 @@
 # @(#)cmg3t_vel	1.2 5/14/2002
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # cmg3t    8.33300E-03 hz seimometer
 # poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 07/29/2007
 # Normalized  response relative to velocity

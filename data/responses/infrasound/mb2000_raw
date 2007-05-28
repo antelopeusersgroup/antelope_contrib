@@ -1,6 +1,9 @@
 # @(#)DPG_1B  1.0 1/27/1999	
 # infrasound   pressure sensor 
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # Normalized  response relative to pressure 
+# All poles and zeroes in radians/sec
 # 1                   type
 # 3                   num of zeroes
 # 5                   num of poles

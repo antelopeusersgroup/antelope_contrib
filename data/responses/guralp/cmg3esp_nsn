@@ -1,6 +1,9 @@
-# @(#)cmg3esp_vel	1.2 1/6/93
+# @(#) cmg3esp_vel	1.2 1/6/93
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # cmg3esp    3.33300E-02 hz seimometer
 # Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
 # 1                   type
 # 2                   num of zeroes
 # 2                   num of poles

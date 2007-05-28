@@ -1,7 +1,10 @@
 # @(#)l28_vel	1.1 7/18/93
 # l28    4.50000 hz seimometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 #    0.700000 damping
 # Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
 # 1                   type
 # 2                   num of zeroes
 # 2                   num of poles

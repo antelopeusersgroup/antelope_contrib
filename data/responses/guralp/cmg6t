@@ -1,6 +1,9 @@
-# @(#)cmg6t_vel	1.2 5/14/2002
+# @(#) cmg6t_vel	1.2 5/14/2002
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # cmg6t   1200 V/m/s output 
 # Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
 # 1                   type
 # 3                   num of zeroes
 # 6                   num of poles

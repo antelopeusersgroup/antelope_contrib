@@ -1,7 +1,10 @@
 # @(#)fba11	1.1 2/6/95
 # FBA11    50 Hz natural frequency accelerometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # 0.650000  damping
 # Normalized  response relative to acceleration
+# All poles and zeroes in radians/sec
 # 1                   type
 # 0                   num of zeroes
 # 2                   num of poles

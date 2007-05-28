@@ -1,5 +1,7 @@
 # CNSN gd1 digitizer FIR filter file
 #      designed by Ken Beverley
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # coefficients are symmtric, listed in time order 
 # type                  ?  
 # input sample rate     60  

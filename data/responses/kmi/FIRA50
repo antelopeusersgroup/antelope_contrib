@@ -1,4 +1,6 @@
 # Kinemetrics FIRA50.COE FIR filter parameter file  
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # coefficients are symetric, listed in time order 
 # type                  2  
 # npoles                0  

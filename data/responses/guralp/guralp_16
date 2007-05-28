@@ -1,4 +1,6 @@
-# @(#)Guralp_16 
+# @(#) Guralp_16 
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # Gualp Low-pass FIR for decimation by 16
 # fc = 0.08*fc   stop band: 0.2*fs to 1*fs
 # type                   2

@@ -1,7 +1,10 @@
 # @(#)fba_2g_acc   1.0 10/30/2000
 # K2 2G FBA-23    50.00000 hz seimometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 #    0.700000 damping
 # Normalized  response relative to acceleration 
+# All poles and zeroes in radians/sec
 # 1                   type
 # 2                   num of zeroes
 # 3                   num of poles

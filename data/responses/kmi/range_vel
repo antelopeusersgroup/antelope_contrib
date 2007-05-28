@@ -1,6 +1,9 @@
 # @(#)range_vel	1.2 1/6/93
 # Ranger    1.00000 hz seimometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # Normalized  response relative to velocity
+# All poles and zeroes in radians/sec
 # 1                   type
 # 2                   num of zeroes
 # 2                   num of poles

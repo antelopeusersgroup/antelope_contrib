@@ -1,4 +1,6 @@
 # cmg3esp    3.33333e-02 hz (30 sec) seismometer
+# version:      $Revision$Date: 2007/05/26 22:51:26
+#
 # poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
 # Normalized  response relative to velocity
 # Normalized to gain of 1.0 in middle of passband
