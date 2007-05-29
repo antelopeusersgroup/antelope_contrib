@@ -1,21 +1,25 @@
-.TH Q330COMS 1 2006/04/26 "Antelope Contrib SW" "User Commands"
+.TH Q330_LOCATION 1 2006/04/26 "Antelope Contrib SW" "User Commands"
 .SH NAME
-q330coms \- attaches to orb and updates q330comm table if necessary
+q330coms \- attaches to orb and checks q330 locations
 .SH SYNOPSIS
 .nf
-q330coms [-v] [-n net] [-p pf_sourcename] orb db
+q330_location [-v] [-m mail_to] [-p pf_sourcename] [-t max_offset_meters] orb db
 .fi
 .SH DESCRIPTION
-q330coms extracts q330 /pf/st files from an orb, matches the station name, serial number,  ip address 
-to see if there are any changes which require the q330comm table to be updated.  
-If so, it closes the old record and starts a new record. This program exits after reading each selected
-/pf/st file once.
+\fBq330_location\fP extracts q330 /pf/st files from an orb, finds the current lat and long 
+provided by the gps clock at each station, and compares the values to those in the 
+site and dlsite table.  
+There is a difference greater than \fImax_offset_meters\fP from the stated values in the 
+database and the current gps reading. 
+This program exits after reading each selected /pf/st file once.
 This program is designed to run as a cron program under rtexec.pf.
 .SH OPTIONS
 .IP -v
 verbose
-.IP "-n net"
-subset dlsta by net code.  Default is all dlsta.
+.IP "-t max_offset_meters"
+set threshold for offset for flagging possible problems. Default is 20 meters.
+.IP "-m mail_to"
+email address list to send results.
 .IP "-p pf_sourcename"
 change pf_sourcename selected from orb.  Default is .*/pf/st.
 .SH FILES
