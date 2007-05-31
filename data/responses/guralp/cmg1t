@@ -1,6 +1,5 @@
-# @(#)cmg1t_vel	03/08/2004
 # cmg1t    8.33300E-03 hz borehole seismometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec

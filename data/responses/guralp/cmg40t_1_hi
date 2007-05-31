@@ -1,5 +1,5 @@
 # cmg40t_1hi      Guralp 40T-1 1 Hz sensor SENSITIVITY 4000
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # data from calibration sheet multiplied with 2 Pi
 # cmg40t_1hi    1.0 Hz seismometer

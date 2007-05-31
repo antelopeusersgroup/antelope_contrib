@@ -1,6 +1,5 @@
-# @(#)fba23_50	1.1 5/1/93
 # FBA23_50    50 Hz natural frequency accelerometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # 0.600000  damping
 # Normalized  response relative to acceleration

@@ -1,5 +1,4 @@
-# @(#) Guralp_2 
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # Gualp Low-pass FIR for decimation by 2
 # fc = 0.08*fc   stop band: 0.2*fs to 1*fs

@@ -1,5 +1,5 @@
 # Kinemetrics FIRBC.COE FIR filter parameter file  
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # coefficients are non-symetric, listed in time order 
 # type                  2  

@@ -1,5 +1,5 @@
 # cmg1t    2.77778e-03 hz (360 sec) borehole seismometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # poles and zeros from http://www.guralp.com/faq/poles_and_zeros.htm 05 March 2006
 # Normalized  response relative to velocity

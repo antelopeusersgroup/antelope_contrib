@@ -1,4 +1,4 @@
-# @(#)cf2	1.1 6/29/94
+# $Id$
 # Crystal A/D Stage 2. Low-pass FIR for decimation by 2
 # fc = 0.08*fc   stop band: 0.2*fs to 1*fs
 # type                   2

@@ -1,6 +1,5 @@
-# @(#)sh_vel	1.2 1/6/93
 # SH-1   0.200000 hz seimometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec

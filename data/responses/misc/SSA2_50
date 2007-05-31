@@ -1,4 +1,4 @@
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 #     50.0000 hz Butterworth anti-alias filters
 # Normalized  response relative to velocity

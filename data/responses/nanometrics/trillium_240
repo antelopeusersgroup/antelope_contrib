@@ -1,5 +1,5 @@
 # @(#)trillium	240  30/8/06 (Eliana) 
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 # trillium   VBB seismometer
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec

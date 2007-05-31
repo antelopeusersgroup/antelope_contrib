@@ -1,5 +1,4 @@
-# @(#) cmg3esp_vel	1.2 1/6/93
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # cmg3esp    3.33300E-02 hz seimometer
 # Normalized  response relative to velocity

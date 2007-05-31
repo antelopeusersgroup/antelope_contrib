@@ -1,4 +1,4 @@
-# @(#)RT72A_07_20	1.1 7/20/93
+# $Id$
 # Reftek RT72A-07 24 bit FIR filter for 20 sps
 # stop band: 0.4*fs to 1*fs
 # type                   2

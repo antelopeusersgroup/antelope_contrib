@@ -1,4 +1,4 @@
-# @(#)RT72A_5_f	1.3 6/24/94
+# $Id$
 # Reftek Stage 1. Low-pass FIR for decimation by 5
 # fc = 0.08*fc   stop band: 0.2*fs to 1*fs
 # type                   2

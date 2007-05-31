@@ -1,5 +1,5 @@
 # cmg40t_1      Guralp 40T_1 Hz sensor
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # data from calibration sheet multiplied with 2 Pi
 # cmg40t_1    1.0 Hz seismometer

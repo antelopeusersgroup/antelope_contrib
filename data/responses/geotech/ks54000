@@ -1,6 +1,5 @@
-# @(#)KS54000	1.2 3/5/94
 # KS54000    2.78000E-03 hz seismometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec

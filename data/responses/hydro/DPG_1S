@@ -1,4 +1,4 @@
-# @(#)DPG_1S  1.0 1/27/1999	
+# $Id$
 # DPG_1S  pressure sensor 
 # Normalized  response relative to pressure 
 # All poles and zeroes in radians/sec

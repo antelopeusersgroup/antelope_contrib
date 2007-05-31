@@ -1,6 +1,5 @@
-# @(#)cmg40t_1hz_vel	1.2 10/8/04
 # cmg40t    1 hz seismometer
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # Normalized  response relative to velocity
 # All poles and zeroes in radians/sec
