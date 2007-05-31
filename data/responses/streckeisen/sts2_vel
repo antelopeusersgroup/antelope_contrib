@@ -1,5 +1,5 @@
 # @(#)sts2_vel	1.2 11/2/95
-# version:      $Revision$Date: 2007/05/26 22:51:26
+# $Id$
 #
 # STS-2    8.333333-03 hz seimometer
 # Normalized  response relative to velocity
