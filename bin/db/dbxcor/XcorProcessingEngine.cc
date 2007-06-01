@@ -676,7 +676,7 @@ void XcorProcessingEngine::filter_data(TimeInvariantFilter f)
 {
 	FilterEnsemble(waveform_ensemble,f);
 }
-void XcorProcessingEngine::save_results(int evid, int orid )
+void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 {
 	// First save the beam
 	int pwfid;
@@ -830,11 +830,24 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 					dbgetv(dbarrival,0,
 						"arid",&arid,0);
 					
+					// To get assoc parameters we need
+					// station lat and lon
+					double stalat,stalon;
+					stalat=trace->get_double("lat");
+					stalon=trace->get_double("lon");
+					// These are stored in deg so have
+					// to convert to radians
+					stalat=rad(stalat);
+					stalon=rad(stalon);
 					// missing for now:  delta, seaz,esaz
 					// need these eventually, but for 
 					// debugging purposes will leave them
 					// aside for a bit
-					dbaddv(dbassoc,0,
+					double delta,seaz,esaz;
+					delta=h.distance(stalat,stalon);
+					seaz=h.seaz(stalat,stalon);
+					esaz=h.esaz(stalat,stalon);
+					if(dbaddv(dbassoc,0,
 						"arid",arid,
 						"orid",orid,
 						"sta",sta.c_str(),
@@ -843,7 +856,15 @@ void XcorProcessingEngine::save_results(int evid, int orid )
 						   .phase_for_analysis.c_str(),
 						"timeres",resid,
 						"timedef","d",
-						"wgt",stack_weight,0);
+						"delta",deg(delta),
+						"seaz",deg(seaz),
+						"esaz",deg(esaz),
+						"vmodel",h.tt_definition().c_str(),
+						0)==dbINVALID)
+					{
+						cerr << "save_results:  problems saving assoc for sta="
+							<<sta<<endl;
+					}
 				}
 			    }
 			}

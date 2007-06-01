@@ -89,8 +89,10 @@ public:
     string get_pf_name() {return pf_name;}
     int get_evid(){return evid;}
     int get_orid(){return orid;}
+    Hypocenter get_hypo(){return hypo;}
     void set_evid(int event_id);
     void set_orid(int origin_id);
+    void set_hypo(Hypocenter& h);
     void record(string s);
     void session_state();
     void session_state(SessionState);
@@ -120,6 +122,8 @@ private:
 // Added to preserve previous state.  Needed to make picking functions
 // more robust.
     SessionState previous_state;
+// Added to get complete information in assoc table
+    Hypocenter hypo;
 };
 
 #endif

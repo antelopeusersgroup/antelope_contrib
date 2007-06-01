@@ -318,6 +318,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 		psm->set_orid(orid);
 
                 Hypocenter h(rad(lat),rad(lon),depth,otime,method,model);
+		psm->set_hypo(h);
                 ss << "Loading data for event: "
                         << lat<<","
                         << lon<<","
@@ -1513,8 +1514,9 @@ void save_event(Widget w, void * client_data, void * userdata)
     int evid,orid;
     evid=psm->get_evid();
     orid=psm->get_orid();
+    Hypocenter h=psm->get_hypo();
     try {
-          psm->xpe->save_results(evid,orid);
+          psm->xpe->save_results(evid,orid,h);
 	  // Do not reset session_state when subarrays are used
 	  // That disables ability to process remaining data.
 	  // We handle state change for subarrays by monitoring

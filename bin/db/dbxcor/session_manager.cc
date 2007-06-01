@@ -319,3 +319,7 @@ void SessionManager::set_orid(int origin_id)
 {
 	orid=origin_id;;
 }
+void SessionManager::set_hypo(Hypocenter& h)
+{
+	hypo=h;
+}
