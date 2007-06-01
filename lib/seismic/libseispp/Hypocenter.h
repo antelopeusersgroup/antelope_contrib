@@ -145,6 +145,13 @@ public:
 	//\param mod set the earth model to that with the name mod.
 	**/
 	void tt_setup(string meth, string mod); // change default method:model
+	/*! Return a string that describes the method used to compute travel times.
+	*
+	* The hypocenter object used here contains an embedded definition of
+	* a travel time calculator.  The object interface requires a way to 
+	* return a string that uniquely defines the method and earth model
+	* used to compute these arrival times. */
+	string tt_definition(){return(method+":"+model);};
 private:
 	string method;
 	string model;
