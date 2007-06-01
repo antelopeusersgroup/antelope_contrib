@@ -2,6 +2,7 @@
 BIN=dbxcor
 DATADIR=schemas
 DATA=xcor1.2
+INCLUDE=AnalysisSetting.h XcorProcessingEngine.h
 
 PF=dbxcor.pf
 MAN1=dbxcor.1

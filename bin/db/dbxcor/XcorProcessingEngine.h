@@ -19,7 +19,6 @@
 #include "seismicarray.h"
 #include "filter++.h"
 #include "MultichannelCorrelator.h"
-#include "SeismicPick.h"
 #include "AnalysisSetting.h"
 // Maintenance problem here
 // This keyword is used in array_get_data.cc. 
@@ -38,26 +37,15 @@ using namespace SEISPP;
 
 class XcorProcessingEngine {
 public:
+	bool use_subarrays;
+	int current_subarray;  // Index to current subarray 
 	XcorProcessingEngine(Pf * global_pf, AnalysisSetting asinitial,
 		string waveform_db_name, string result_db_name);
 	~XcorProcessingEngine();  // necessary unless we can get rid of mcc raw pointer
         void change_analysis_setting(AnalysisSetting a) {analysis_setting=a; if(!analysis_setting.rw_set) analysis_setting.robust_tw=analysis_setting.beam_tw;}
 	AnalysisSetting get_analysis_setting() {return(analysis_setting);};
 
-	//Display results using SeismicPlot
-	// These will likely change what they do.  
-	// This programming interface may change some, but should not be dramatic.
-        void display_data();
-	void display_beam();
-	void display_correlations();
-	PointPick pick_beam();
-	void do_all_picks();
-	int pick_one_trace();
-	void edit_data();
 	void shift_arrivals(double tshift);
-	void pick_cutoff(); 
-	// End interface routines likely to change
-	//
 	// This function sorts results according to current sort 
 	// definition in AnalysisSetting
 	void sort_ensemble();
@@ -67,8 +55,6 @@ public:
 
 	void load_data(Hypocenter& hypo);
 	// Some public attributes required to implement subarrays
-	bool use_subarrays;
-	int current_subarray;  // Index to current subarray 
 	int number_subarrays();  // Returns count of number of subarrays
 	string current_subarray_name;  // name assigned to current subarray
 	// Makes the next subarray data current and updates above attributes

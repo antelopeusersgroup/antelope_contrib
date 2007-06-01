@@ -6,7 +6,7 @@ using namespace SEISPP;
 SessionManager::SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname)
 {
     pf_name=pfname;
-    event_file_name=hname;
+    eventdbname=hname;
     log_file_name=lname;
     waveform_db_name=wdbname;
     result_db_name=rdbname;
@@ -39,7 +39,7 @@ SessionManager::~SessionManager()
     delete sensitive;
     delete log_stream;
  
-    if (fp != NULL) fclose(fp);
+    dbclose(db);
     if (xpe != NULL) delete xpe;  //believe that deletion of xpe will result in deletion of the last mcc
 }
 

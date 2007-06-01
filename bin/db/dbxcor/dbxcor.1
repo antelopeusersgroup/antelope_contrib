@@ -3,7 +3,7 @@
 dbxcor - GUI-based, multichannel cross-correlation program 
 .SH SYNOPSIS
 .nf
-dbxcor dbin dbout hypolist
+dbxcor dbin dbout dbevent
 .fi
 .SH DESCRIPTION
 .LP
@@ -27,6 +27,21 @@ Second, we can't normally use any standard array stack as a starting
 point as no plane wave or typical model-based travel time estimate
 can align data well enough to avoid degrading the stack at short
 periods.  
+.LP
+\fIdbin\fR is the database from which waveforms are to be extracted.
+It can contain continuous data or segmented data, but it must have
+links to at least site and sitechan for the program to be functional.
+Waveforms are loaded over a fixed time interval and then internally 
+chopped to a gather aligned to the predicted arrival time of 
+each event in a sequence.  \fIdbout\fR is used to contain the output.
+It can be the same db as dbin, BUT the program only blindly adds to 
+this database.  If there are existing picks for a given event 
+the database will contain duplicates which can be troublesome to
+clear out.  \fIdbevent\fR can and probably normally should be 
+set as "-".  In this mode the event db is assumed to be coming
+through stdin.  For anything else it is treated as a normal database
+name and the input is produced by a join of event and origin 
+(subsetted to orid==prefor).  
 .LP
 The front end of this program is a graphical user interface using
 the Xt library.  The graphical iterface has four main sections:

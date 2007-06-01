@@ -2,6 +2,8 @@
 #include "session_manager.h"
 #include "dbxcor.h"
 #include "Seisw.h"
+#include "SeismicPick.h"
+#include "XcorProcessingEngine.h"
 
 #include <Xm/DrawingA.h>
 
@@ -176,8 +178,20 @@ do_sw(Widget parent, SessionManager & sm)
         sm.xpe=new XcorProcessingEngine(pf,asetting,sm.get_waveform_db_name(),sm.get_result_db_name());
 	sm.using_subarrays=sm.xpe->use_subarrays;
 
-        sm.fp=fopen((sm.get_event_file_name()).c_str(),"r");
-        if (sm.fp==NULL) throw SeisppError("Failed to open event file\n");
+	if(sm.eventdbname == "-")
+	{
+		if(dbread_view(stdin,&(sm.db),NULL)==dbINVALID)
+			throw SeisppError(string("dbxcor:  dbread_view(stdin) failed (origin db view)."));	
+	}
+	else
+	{
+		if(dbopen(const_cast<char *>(sm.eventdbname.c_str()),
+	  		"r",&(sm.db))==dbINVALID) 
+				throw SeisppError("dbxcor:  cannot input event database view");
+		sm.db=dblookup(sm.db,0,"event",0,0);
+		sm.db=dbjoin(sm.db,dblookup(sm.db,0,"origin",0,0),0,0,0,0,0);
+	}
+	sm.db.record=0;
 
 	int n=0;
 	Arg args[4];
@@ -293,20 +307,22 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	//next time XcorProcessingEngine tries to do another analyze...
 //        if (psm->mcc != NULL) delete psm->mcc;
 
-	if (fscanf(psm->fp,"%d%d%lf%lf%lf%s%s%s",&evid,&orid,
-                        &lat,&lon,&depth,
-                        yrmonday,day,hrminsec)!=EOF) {
+	if(dbgetv(psm->db,0,"evid",&evid,
+		"orid",&orid,
+		"lat",&lat,
+		"lon",&lon,
+		"depth",&depth,
+		"time",&otime,0)!=dbINVALID)
+	{
 		psm->set_evid(evid);
 		psm->set_orid(orid);
 
-                string datestring=string(yrmonday)+" "+string(hrminsec);
-                otime=str2epoch(const_cast<char*>(datestring.c_str()));
                 Hypocenter h(rad(lat),rad(lon),depth,otime,method,model);
                 ss << "Loading data for event: "
                         << lat<<","
                         << lon<<","
                         << depth <<","
-                        << datestring<<endl;
+                        << strtime(otime)<<endl;
 		psm->session_state(THINKING);
                 psm->xpe->load_data(h);
 		ss << "Data loaded" <<endl;
@@ -326,7 +342,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 			<<" seismograms"<<endl;
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
-		ts << lat <<","<<lon<<","<<depth<<","<<datestring;      
+		ts << lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
 		data_md.put("title",ts.str());
 
 		psm->active_setting=psm->asetting_default;
@@ -369,16 +385,18 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
+		// We need to increment the db record counter to advance. NO OTHER
+		// function must change this.
+		++(psm->db.record);
 
 	} else {
-	    ss << "End of file reached in the event file!"<<endl;
+	    ss << "dbgetv error while reading event database view"<<endl;
 	    exit(0);
 	}
 	} catch (SeisppError serr) {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
 	}
-
 }
 
 /* 
@@ -1591,7 +1609,7 @@ void exit_gui(Widget w, void * uesless1, void * useless2)
 
 void usage(char ** argv)
 {
-        cerr << argv[0]<<" dbin dbout hypofile [-pf pffile] " <<endl;
+        cerr << argv[0]<<" dbin dbout dbevent [-pf pffile -v] " <<endl;
         exit(-1);
 }
 
@@ -1636,24 +1654,35 @@ main (int argc, char **argv)
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
 			};
+  char *use="dbxcor  dbin dbout dbevent [-pf pffile -v]";
+  char *author="Peng Wang and Gary Pavlis";
+  char *email="pewang@indiana.edu,pavlis@indiana.edu";
+  char *loc="Indiana University";
+  char *rev="$Revision 1.13$";
 
-  if(argc<4) usage(argv);
+  if(argc<4) 
+  {
+    cbanner(rev,use,author,loc,email);
+    usage(argv);
+  }
   string waveform_db_name(argv[1]);
   string result_db_name(argv[2]);
-  string hypofile(argv[3]);
+  string hypodb(argv[3]);
   string pfname("dbxcor");
   for(i=4;i<argc;++i) {
       string argtest(argv[i]);
       if(argtest=="-pf") {
            ++i;
            pfname=string(argv[i]);
+      } else if(argtest=="-v") {
+	  cbanner(rev,use,author,loc,email);
       } else {
            usage(argv);
       }
   }
   string logstr(LOGNAME);
 
-  SessionManager sm(pfname,hypofile,logstr,waveform_db_name,result_db_name);
+  SessionManager sm(pfname,hypodb,logstr,waveform_db_name,result_db_name);
   sm.attributes_info.push_back(air[0]);
   sm.attributes_info.push_back(air[1]);
   sm.attributes_info.push_back(air[2]);

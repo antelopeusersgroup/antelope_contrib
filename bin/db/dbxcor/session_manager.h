@@ -80,11 +80,10 @@ public:
     DisplayMarkerDataRec markers;
     int choice;  //for user differentiate similar buttons, e.g., pick beam and robust window
 
-    FILE * fp;  //input event file handle
+    Dbptr db;  //origin info must be contained in this database view
 
     SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname);
     ~SessionManager();
-    string get_event_file_name() {return event_file_name;}
     string get_waveform_db_name() {return waveform_db_name;}
     string get_result_db_name() {return result_db_name;}
     string get_pf_name() {return pf_name;}
@@ -106,11 +105,11 @@ public:
     bool display_initial_sort_box;
     bool display_analysis_sort_box;
     bool using_subarrays;
+    string eventdbname;
 
 private:
     bool *sensitive;
     SessionState state;
-    string event_file_name;
     string log_file_name;
     string waveform_db_name;
     string result_db_name;
