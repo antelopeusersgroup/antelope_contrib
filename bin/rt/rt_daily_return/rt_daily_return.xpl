@@ -5,7 +5,7 @@
     use strict ;
     use Datascope ;
 
-    my ($dbin,$dbout,$starttime,$endtime,$time,$etime,$cmd,$delay_days);
+    my ($dbin,$dbout,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table);
     my (@list,@dbin,@dbout);
     our ($opt_v,$opt_d,$opt_n,$opt_z,$opt_s,$opt_t,$opt_e);
 
@@ -34,6 +34,13 @@
         $dbin[3] = 0;
         $starttime = epoch(yearday(dbgetv(@dbin,"time")));
     }
+    
+    foreach $table (qw( deployment site sensor )) {
+        @dbin = dblookup(@dbin,0,$table,0,0);
+        elog_die("Missing $table table in $dbin") unless dbquery(@dbin,"dbTABLE_PRESENT");
+    }
+    dbclose(@dbin);
+    dbclose(@dbout);
     
     if ( $opt_t ) {
         $starttime     = epoch(yearday(str2epoch($opt_t))) ;
