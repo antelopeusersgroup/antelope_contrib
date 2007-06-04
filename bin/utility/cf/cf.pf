@@ -61,6 +61,9 @@ make &Arr{
 	^.*(gcc|g\\+\\+).*: unrecognized option
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
+	^.*improper member use
+	^.*undefined struct\\/union member
+	^.*incomplete struct\\/union\\/enum 
 	^.*declaration hides parameter
 	^.*cannot dereference non-pointer type
 	^.*non-constant initializer
@@ -149,6 +152,7 @@ make &Arr{
 	^deposit[[:space:]]
 	^tclindex[[:space:]]
 	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/deposit[[:space:]]
+	^[[:alnum:]\\/]*:?[[:space:]]?\\/opt\\/antelope\\/[[:digit:].p]+\\/bin\\/dbwebproject:[[:space:]].*\\/?deposit[[:space:]]
 	^done[[:space:]]
 	^[[:space:]]*echo[[:space:]]
 	^flex[[:space:]]
