@@ -1,7 +1,8 @@
 LIB=libseispp.a
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
-INCLUDE=AttributeMap.h \
+INCLUDE=AnalysisSetting.h \
+  AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
   Hypocenter.h\
@@ -17,6 +18,7 @@ INCLUDE=AttributeMap.h \
   TimeVariableWeight.h\
   TimeWindow.h\
   VelocityModel_1d.h\
+  XcorProcessingEngine.h \
   databasehandle.h\
   dbpp.h\
   ensemble.h\
@@ -48,7 +50,8 @@ DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=AttributeMap.o \
+OBJS=AnalysisSetting.o \
+  AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
   Hypocenter.o \
@@ -60,6 +63,7 @@ OBJS=AttributeMap.o \
   TimeSeries.o \
   VelocityModel_1d.o \
   VelocityModel_3d.o \
+  XcorProcessingEngine.o \
   array_get_data_3c.o \
   array_get_data.o \
   converters.o \
