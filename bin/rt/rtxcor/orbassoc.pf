@@ -1,0 +1,128 @@
+process_time_window     500.0           # Main detection processing time window
+process_ncycle          20              # how often to do detection processing, in detections
+process_tcycle          0.0             # how often to do detection processing, in delta time
+process_timeout         60.0            # timeout for processing detections
+trigger_number_stations 5               # number of stations for trigger initiation
+trigger_time_window     20.0            # time window in seconds for trigger initiation
+
+detection_reject_expressions &Tbl{      # an optional list of expressions applied to
+                                        #    incoming detection rows for rejecting particular
+                                        #    rows based on any fields in the detection row
+        snr < 3.0
+        sta == "ABCD"
+        sta == "EFGH" && chan == "BHE"
+}
+
+grid_params &Arr{
+        local &Arr{
+                nsta_thresh &Tbl{       # Minimum allowable number of stations
+                                        #     expressed as a function of maximum
+                                        #     source-receiver distance
+                        3.0     4
+                        5.0     5
+                        180.0   6
+                }
+                nxd             11      # Number of east-west grid nodes for depth scans
+                nyd             11      # Number of north-south grid nodes for depth scans
+                cluster_twin    1.5     # Clustering time window
+                try_S           no      # yes = Try observations as both P and S
+                                        # no  = Observations are P only
+                associate_S     yes     # yes = Try to associate observations as both P and S
+                reprocess_S     yes     # yes = Reprocess when new S-associations found
+                drop_if_on_edge yes     # Drop if solution is on the edge of the grid
+                auth            oal     # Set auth field in origin table
+                algorithm       orbassoc_l # Override algorithm field in origin table
+                P_deltim        0.1     # Default deltim value for arrival table rows for P arrivals
+                S_deltim        0.2     # Default deltim value for arrival table rows for S arrivals
+                phase_sifter    l       # Iphase value for phase sifting, match to iphase in dbdetect.pf
+                P_channel_sifter ..Z|..Z_00 # Only do P associations with channels that
+                                        #      match this expression
+                S_channel_sifter ..[NE] # Only do S associations with channels that
+                                        #      match this expression
+                P_det_tmin      10.0    # This is a time window in seconds for culling closely
+                                        #      spaced detections before initial P association processing
+                priority        5       # Grid priority - higher value selects this grid over lower priority grids
+                use_dwt         yes     # yes = Use source receiver distance weighting factor (or no)
+                                        #      this one is for P associations
+                dwt_tbl &Tbl{           # distance weights can be input using a table or with
+                                        #      the dwt_dist_near, ... parameters
+                        0.0     2.0
+                        5.0     1.0
+                        10.0    0.0
+                }
+                dwt_dist_near   7.0
+                dwt_wt_near     1.0
+                dwt_dist_far    10.0
+                dwt_wt_far      0.1
+                use_dwts        yes     # yes = Use source receiver distance weighting factor (or no)
+                                        #      this one is for S associations
+                dwts_dist_near  5.0
+                dwts_wt_near    1.0
+                dwts_dist_far   5.0
+                dwts_wt_far     0.0
+                closest_stations 20     # Use only the 20 closest stations to a particular source
+                                        #      node in the search for defining phases
+                sta_defining_pxmin 0.0  # Use only stations that are to the east of the
+                                        #      west edge of the search grid for defining phases
+                sta_defining_pxmax 100.0# Use only stations that are to the west of the
+                                        #      east edge of the search grid for defining phases
+                sta_defining_pymin 0.0  # Use only stations that are to the north of the
+                                        #      south edge of the search grid for defining phases
+                sta_defining_pymax 100.0# Use only stations that are to the south of the
+                                        #      north edge of the search grid for defining phases
+
+                nondefining_association_P_maxresid 2.0 # maximum residual for
+                                        #      non-defining P arrival associations
+                nondefining_association_S_maxresid 5.0 # maximum residual for
+                                        #      non-defining S arrival associations
+
+                relocate        rundbgenloc # Run this relocation script to refine the final
+                                        #      solution
+                relocate_params &Arr{   # Parameters passed to relocation program
+                        depth_floor     24.0  # This parameter is a depth floor.
+                }
+                use_only_relocation yes # If relocation converges, just output the relocation
+        }
+        regional &Arr{
+                nsta_thresh     6       # Minimum allowable number of stations
+                nxd             11      # Number of east-west grid nodes for depth scans
+                nyd             11      # Number of north-south grid nodes for depth scans
+                cluster_twin    1.5     # Clustering time window
+                try_S           no      # yes = Try observations as both P and S
+                                        # no  = Observations are P only
+                # phase_sifter  l       # Iphase value for phase sifting, match to iphase in dbdetect.pf
+                auth            oar     # Set auth field in origin table
+                # algorithm     orbassoc   # Override algorithm field in origin table
+                priority        2       # Grid priority - higher value selects this grid over lower priority grids
+                use_dwt         no      # yes = Use source receiver distance weighting factor (or no)
+                dwt_dist_near   2.0
+                dwt_wt_near     1.0
+                dwt_dist_far    6.0
+                dwt_wt_far      0.1
+        }
+        tele &Arr{
+                nsta_thresh     8       # Minimum allowable number of stations
+                cluster_twin    1.5     # Clustering time window
+                try_S           no      # yes = Try observations as both P and S
+                                        # no  = Observations are P only
+                # phase_sifter  t       # Iphase value for phase sifting, match to iphase in dbdetect.pf
+                # sta_weight_radius 10.0 # Weighting value in km for mixed station spacing situations
+                auth            oat
+                priority        1
+                relocate_params &Arr{   # Parameters passed to relocation program
+                        depth_floor     24.0  # This parameter is a depth floor.
+			# these are parameters used by rtxcor
+			# Not complete assumes standard pf defaults are ok
+			waveform_database usarray
+			beam_window_start_time -5.0
+			beam_window_end_time 12.0
+			robust_window_start_time -2.0
+			robust_window_end_time 4.0
+			method tttaup
+			model iasp91
+			default_filter DEMEAN
+			component_for_analysis Z
+			phase_for_analysis P
+                }
+        }
+}

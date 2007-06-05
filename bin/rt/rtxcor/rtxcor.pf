@@ -1,0 +1,478 @@
+# These are used in rtxcor but NOT in dbxcor
+waveform_database usarray
+output_database testout
+method tttaup
+model iasp91
+beam_window_start_time -5.0
+beam_window_end_time 12.0
+robust_window_start_time -2.0
+robust_window_end_time 4.0
+# end special for rtxcor
+data_window_start -200.0
+data_window_end 600.0
+regular_gather_twin_start -60.0
+regular_gather_twin_end 150.0
+beam_window_fraction 0.6
+robust_window_fraction 0.2
+stacking_method robust
+#default_filter BW 0.01 2 1.5 5
+default_filter DEMEAN
+component_for_analysis Z
+phase_for_analysis P
+tpad 30.0
+initial_time_stamp 2003355:00:00:00.0
+result_twin_start -40.0
+result_twin_end 200.0
+target_sample_interval 0.1
+schema xcor1.2
+network_name usarray
+analysis_sort_order stack_weight
+correlation_peak_cutoff 0.2
+coherence_cutoff 0.2
+stack_weight_cutoff 0.05
+time_lag_cutoff 4.0
+# If set true peak amplitude is used to normalize initial ensemble display
+AutoscaleInitialPlot false
+#
+#  Important switch for three component processing.  Set to 
+#  true to force 3c processing.  Otherwise data are loaded by channel only.
+#  Networks with mixed single component and three component
+#  data would not want to use this feature.  Most useful for
+#  modern arrays with all three-component stations.  Required
+#  if component is L, R, or T.
+#
+RequireThreeComponents false
+#
+#  Trace metadata to load.  Note that with RequireThreeComponents is
+#  true station coordinates (site.lat, site.lon, and site.elev) are 
+#  required.  When false they are not required here, although the
+#  program ALWAYS requires a site table.
+#
+trace_mdl	&Tbl{
+    sta string
+    chan string
+    time real
+    endtime real
+    nsamp int
+    samprate real
+    dfile string
+    dir string
+    jdate int
+    calib real
+    calper real
+    site.lat
+    site.lon
+    site.elev
+}
+resample_definitions	&Arr{
+    100	&Arr{
+        Decimator_response_files	&Tbl{
+            5	response/RT72A_5_f
+            2	response/RT72A_2_f
+        }
+        high_limit	101
+        low_limit	99
+    }
+    20	&Arr{
+        Decimator_response_files	&Tbl{
+            2       response/RT72A_2_f
+        }
+        high_limit	21
+        low_limit	19
+    }
+    33.5	&Arr{
+        Decimator_response_files	&Tbl{
+            0.8375	resample
+            4       response/RT72A_4_f
+        }
+        high_limit	35
+        low_limit	30
+    }
+    40	&Arr{
+        Decimator_response_files	&Tbl{
+            4       response/RT72A_4_f
+        }
+        high_limit	41
+        low_limit	39
+    }
+}
+#
+# This complicated section is used only if RequireThreeComponents is
+# true.  It defines a hierarchy of channel use for different stations.
+# I could be done in a database, but the current schema does not support
+# the concept so we'll do it in pf for now.  Note default is very 
+# important as it is the definition used when a station specific map 
+# is not defined.   The example below has only one example station
+# used as an example.  Most applications can probably just depend on
+# the default.
+#
+StationChannelMap &Arr{
+# Example of old high low gain station
+OLD &Tbl{
+HHE 0 0
+HHN 1 0
+HHZ 2 0
+HLE 0 1
+HLN 1 1
+HLZ 2 1
+}
+#
+# Simple case if a station had only three channels
+#
+XYZ &Tbl{
+BHE 0 0
+BHN 1 0
+BHZ 2 0
+}
+#
+# a stock default.  Uses H first, B second, and L as last
+# resort.
+#
+default &Tbl{
+HHE 0 0
+HHN 1 0
+HHZ 2 0
+BHE 0 1
+BHN 1 1
+BHZ 2 1
+LHE 0 2
+LHN 1 2
+LHZ 2 2
+}
+}
+#
+#  This section is for main data plot parameters
+#
+data_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data true
+clip_wiggle_traces false
+xcur 1.0
+clip_percent 99.5
+xbox 50
+ybox 50
+wbox 1000
+hbox 1000
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+# required, but is ignored by dbxcor
+title Data Aligned by Arrival Time
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate true
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel Data Window
+blabel2 Data Window
+grid1 1
+grid2 1
+titlesize 36.0
+}
+
+correlation_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data true
+clip_wiggle_traces true
+xcur 1.0
+clip_percent 98
+xbox 50
+ybox 50
+wbox 1000
+hbox 1000
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+# required, but is ignored by dbxcor
+title Cross Correlation Functions
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate true
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel Cross Correlation Plot
+blabel2 Cross Correlation Plot
+grid1 1
+grid2 1
+titlesize 36.0
+}
+
+beam_window_parameters &Arr{
+trim_gap_edges	true
+verbose true
+WiggleTrace true
+VariableArea true
+SUVariableArea_grey_value 1
+clip_data false
+clip_wiggle_traces false
+xcur 1.0
+clip_percent 95
+xbox 50
+ybox 50
+wbox 1000
+hbox 200
+d1num 0.0
+d2num 0.0
+f1num 0.0
+f2num 0.0
+n2tic 1
+label1 time
+label2 index
+# required, but is ignored by dbxcor
+title Generic Plot
+windowtitle SeismicPlot
+labelfont Rom14
+titlefont Rom22
+style  normal
+time_axis_grid_type solid
+trace_axis_grid_type none
+labelcolor blue
+titlecolor red
+gridcolor blue
+labelsize 18.0
+trace_spacing 1.0
+first_trace_offset 0.0
+time_scaling auto
+interpolate true
+trace_axis_scaling auto
+# These are used only when time (x1) and trace (x2) scaling is not auto
+x1beg 0.0
+x1end 120.0
+x2beg 0.0
+x2end 24.0
+default_curve_color black
+plot_file_name SeismicPlot.ps
+#
+# This metadata attribute name is used to set variable trace spacing
+#
+use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
+trace_axis_attribute assoc.delta
+
+n1tic 5
+blabel Array Beam
+blabel2 Array Beam
+grid1 1
+grid2 1
+titlesize 36.0
+}
+// 
+// This defines data written to wfprocess tables. Static
+// and require a change only if schema were to change.
+BeamMetadataList &Tbl{
+pwfid int
+wfprocess.timetype string
+wfprocess.dir string
+wfprocess.dfile string
+wfprocess.algorithm string
+}
+save_to_arrival true
+beam_directory xcorbeams
+beam_dfile xcorbeam.w
+#
+#  This is an example of subarray definitions
+#  This turns on subarray processing
+#
+use_subarrays false
+#
+#  This defines subarray geometry as lists of stations
+# with a subarray name tag
+#
+virtual_arrays &Arr{
+# Western stations
+west &Arr{
+sta_list &Tbl{
+VIRV
+IMOV
+ARUB
+MONV
+DABV
+JACV
+SIQV
+QARV
+CURV
+TERV
+SANV
+SDV
+SOCV
+VIGV
+CAPV
+}
+}
+southwest &Arr{
+sta_list &Tbl{
+CAPV
+VIGV
+SOCV
+ELOV
+SANV
+BAUV
+CURV
+SANV
+TERV
+}
+}
+SierradelInt &Arr{
+sta_list &Tbl{
+TERV
+SANV
+TIRV
+TURV
+TEST
+BIRV
+JMPC
+ROPC
+FCPC
+LMPC
+BAUV
+ULPC
+CUPV
+MERV
+RPPC
+}
+}
+Guarico &Arr{
+sta_list &Tbl{
+JMPC
+ROPC
+FCPC
+LMPC
+ULPC
+BAUV
+MERV
+RPPC
+LAPC
+SMPC
+PFPC
+STPC
+}
+}
+craton &Arr{
+sta_list &Tbl{
+PAYV
+MOPC
+CAIV
+MAPC
+CMPC
+GURV
+PAPC
+RIOV
+VIPC
+CAPC
+EDPC
+LUEV
+}
+}
+west &Arr{
+sta_list &Tbl{
+ABPC
+PARV
+PCRV
+SRPC
+MUPC
+PRPC
+ORIV
+ARPC
+CUPC
+SIPC
+MNPC
+MATU
+CARI
+CACO
+GUAY
+COCH
+GUNV
+GUAY
+GUIV
+}
+}
+abcs &Arr{
+sta_list &Tbl{
+}
+}
+obs &Arr{
+sta_list &Tbl{
+PINA
+SHRB
+PNCH
+PINA
+CUBA
+RRNR
+SOMB
+DAQI
+ZOMB
+DRKS
+BTBT
+BLOS
+B151
+ORCV
+IBAV
+ITEV
+COCH
+GUAY
+}
+}
+}

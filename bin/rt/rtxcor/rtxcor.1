@@ -1,0 +1,68 @@
+.TH RTXCOR 1 "$Date$"
+.SH NAME
+rtxcor - real time picker for teleseismic P waves using cross-correlation
+.SH SYNOPSIS
+.nf
+rtxcor dbtmp [-pf pffile]
+.fi
+.SH DESCRIPTION
+.LP
+This program estimates arrival times from teleseismic P waves using waveform
+data alone.  It is designed for use in a real-time environment under control
+of orbassoc(1).  It is designed to be normally executed as a step in perl scripts that
+drive real time event processing for teleseismic events.  It can, however, be
+used as an element of a processing script to process a complete database of 
+teleseismic events automatically.  If you try this, however, be aware that the
+dbtmp database is blindly assumed to contain a origin, assoc, and arrival
+tables for one and only one origin.  This constraint is imposed by the
+way orbassoc interacts with auxiliary processing scripts like that used to
+drive this program (see rundbgenloc(1) and runrtxcor(1)).
+.LP
+The processing algorithm used by rtxcor is the same as that used in dbxcor(1).
+The primary difference is that dbxcor has a graphical user interface to set
+three key variables that are fixed or determined automatically in rtxcor.
+These are:  (1) the time window used to define the beam (stack) used for
+cross-correlation; (2) the robust time window (used to compute weights
+from the robust loss function used in this algorithm); and (3) the reference
+trace used as the initial seed for cross-correlations.  (see dbxcor(1) and
+the online documentation for the processing object found at:
+.nf
+http://seismo.geology.indiana.edu/~pavlis/software/seispp/html/
+       db/d25/classSEISPP_1_1MultichannelCorrelator.html  
+.fi
+where you should note this very long URL has a forced line break to avoid
+line overflows in this man page.  
+.SH OPTIONS
+\fBpffile\fR is an alternative parameter file to use instead of the default.
+Although available this option is only useful if this program is used in
+a shell-script driven batch procedure.
+.SH PARAMETER FILE
+.LP
+Because rtxcor is a simplified version of dbxcor(1), it shares many of
+the same parameters as dbxcor.  A simple rule is any dbxcor parameter not
+related to graphics will be required by rtxcor.  There are, however, 
+several new parameters used by rtxcor that are not needed by dbxcor.
+This section describes only those parameters.  
+.SH EXAMPLE
+.LP
+This section will eventually contain a sample orbassoc pf that implements
+this algorithm in a real time environment.
+.in 2c
+.ft CW
+.nf
+.fi
+.ft R
+.in
+.SH "BUGS AND CAVEATS"
+.LP
+The environment under which this operates (under orbassoc's control)
+can make it difficult
+to track a failure of the program.  
+.SH AUTHOR
+.LP
+.nf
+Gary L. Pavlis
+Indiana University
+pavlis@indiana.edu
+.fi
+.\" $Id$

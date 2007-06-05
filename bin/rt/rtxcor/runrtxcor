@@ -1,0 +1,148 @@
+: # use perl
+eval 'exec $ANTELOPE/bin/perl -S $0 "$@"'
+if 0;
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+#   Copyright (c) 2006 Boulder Real Time Technologies, Inc.           
+#                                                                     
+#   This software module is wholly owned by Boulder Real Time         
+#   Technologies, Inc. Any use of this software module without        
+#   express written permission from Boulder Real Time Technologies,   
+#   Inc. is prohibited.             
+
+
+use strict ;
+use warnings ;
+
+sub prettyprint {
+	my $val = shift;
+	my $prefix = "";
+	if (@_) { $prefix = shift ; }
+
+	if (ref($val) eq "HASH") {
+		my @keys = sort ( keys  %$val );
+		my %hash = %$val;
+		foreach my $key (@keys) {
+			my $newprefix = $prefix . "{". $key . "}" ;
+			prettyprint ($hash{$key}, $newprefix) ;
+		}
+	} elsif (ref($val) eq "ARRAY") {
+		my $i = 0;
+		my @arr = @$val;
+		foreach my $entry ( @$val ) {
+			my $newprefix = $prefix . "[". $i . "]" ;
+			prettyprint ($arr[$i], $newprefix) ;
+			$i++;
+		}
+	} else {
+		print $prefix, " = ", $val, "\n";
+	}
+}
+
+sub usage {
+	printf  STDERR "Usage: rundbgenloc dbname pfile statoutfile verbose\n" ;
+}
+
+if ( @ARGV != 4 ) { 
+    usage () ;
+    exit 1 ;
+}
+
+use lib "$ENV{ANTELOPE}/data/perl" ;
+
+use Datascope ;
+
+use Data::Dumper;
+# print Dumper($foo, $bar);
+
+my $dbname = shift ;
+my $pfin = shift ;
+my $statout = shift ;
+my $verbose = shift ;
+
+open ( PFIN,  "<" . $pfin );
+my $str;
+while (<PFIN>) {
+	$str .= $_;
+}
+close  PFIN ;
+unlink $pfin ;
+
+my $pfname = "stdin" . $$ ;
+pfnew($pfname);
+pfcompile($str,$pfname);
+my $inpf = pfget ( $pfname, "" ) ;
+my $relocate_params = pfget ( $pfname, "relocate_params" ) ;
+
+my @db = dbopen ( $dbname, "r+" ) ;
+
+my @dbv = dbjoin ( dblookup(@db, 0, "arrival", 0, 0), dblookup (@db, 0, "assoc", 0, 0) );
+
+my @arrtbl ;
+my $nrecs = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+for ($dbv[3] = 0; $dbv[3] < $nrecs; $dbv[3]++) {
+	my ($arid, $sta, $iphase, $time, $deltim, $azimuth, $delaz, $slow, $delslo) =
+		dbgetv ( @dbv, "arid", "sta", "iphase", "time", "deltim", "azimuth", "delaz", "slow", "delslo" ) ;
+	my ($timedef, $azdef, $slodef) =
+		dbgetv ( @dbv, "timedef", "azdef", "slodef" ) ;
+	if ( $timedef eq '-' ) {$timedef = "n" ;}
+	if ( $azdef eq '-' ) {$azdef = "n" ;}
+	if ( $slodef eq '-' ) {$slodef = "n" ;}
+	push @arrtbl, sprintf ( "%s %s %s %s %s %s %s %s %s %s %s %s", 
+			$arid, $sta, $iphase, $time, $deltim, $timedef, $azimuth,
+			$delaz, $azdef, $slow, $delslo, $slodef ) ;
+}
+
+my @dbor = dblookup ( @db, 0, "origin", 0, 0 ) ;
+$dbor[3] = 0 ;
+my ($lat, $lon, $depth, $time, $auth) = dbgetv ( @dbor,
+				"lat", "lon", "depth", "time", "auth" );
+
+dbclose ( @db ) ;
+
+my $dbgname = "/tmp/dbgen" . $$ . ".pf" ;
+
+pfget ("dbgenloc", "" );
+
+pfput ("arrival_table", \@arrtbl, "dbgenloc");
+pfput ("initial_location_method", "manual", "dbgenloc");
+pfput ("initial_depth", $depth, "dbgenloc");
+pfput ("initial_latitude", $lat, "dbgenloc");
+pfput ("initial_longitude", $lon, "dbgenloc");
+pfput ("initial_origin_time", $time, "dbgenloc");
+pfput ("center_depth", $depth, "dbgenloc");
+pfput ("center_latitude", $lat, "dbgenloc");
+pfput ("center_longitude", $lon, "dbgenloc");
+pfput ("author", $auth . " " . "dbg", "dbgenloc");
+pfput ("travel_time_calculator", "general", "dbgenloc");
+if ($inpf->{method} eq 'tt1dcvl') {$inpf->{method} = '1dcvl';}
+if ($inpf->{method} eq 'tttaup') {$inpf->{method} = 'taup';}
+pfput ("travel_time_model", $inpf->{method} . "/" . $inpf->{model}, "dbgenloc");
+if (defined $relocate_params) {
+	foreach my $key (sort keys %{$relocate_params}) {
+		pfput ($key, $relocate_params->{$key}, "dbgenloc") ;
+	}
+}
+
+pfwrite ($dbgname, "dbgenloc");
+
+if (!$verbose) {
+system "dbgenloc -n -p $dbgname $dbname $dbname" ;
+} else {
+system "dbgenloc -n -p $dbgname $dbname $dbname > /dev/null 2> /dev/null" ;
+}
+
+unlink $dbgname ;
+
+@db = dbopen ( $dbname, "r+" ) ;
+
+@dbor = dblookup ( @db, 0, "origin", 0, 0 ) ;
+$dbor[3] = 1 ;
+
+my $orid = dbgetv ( @dbor, "orid" ) ;
+
+open ( STAT,  ">" . $statout );
+
+printf STAT "%d\n", $orid ;
+
+close STAT ;
