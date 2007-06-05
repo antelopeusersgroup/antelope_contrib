@@ -55,6 +55,8 @@ make &Arr{
    }
    green &Tbl{
 	^\\+[[:space:]]+[^[:space:]]+
+	^make.*: Entering directory
+	^make.*: Leaving directory
    }
    magenta &Tbl{
 	^Problem: [^[:space:]]+\\.[[:digit:]][[:alpha:]]? :
