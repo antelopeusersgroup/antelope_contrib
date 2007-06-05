@@ -2,7 +2,6 @@
 BIN=dbxcor
 DATADIR=schemas
 DATA=xcor1.2
-INCLUDE=AnalysisSetting.h XcorProcessingEngine.h
 
 PF=dbxcor.pf
 MAN1=dbxcor.1
@@ -15,9 +14,7 @@ ldlibs= -L./SciPlot -lseisw -lsciplot -lXm -lXt \
 include $(ANTELOPEMAKE)  	
 
 OBJS=	dbxcor.o \
-  session_manager.o \
-  AnalysisSetting.o \
-  XcorProcessingEngine.o 
+  session_manager.o 
   
 $(BIN) : $(OBJS)
 	$(RM) $@
