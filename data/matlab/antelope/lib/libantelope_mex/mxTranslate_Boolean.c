@@ -21,7 +21,7 @@ static int NFalse = sizeof(False) / sizeof(char *) ;
 	  
 
 mxArray *
-mxTranslate_Boolean( mxArray *mxboolean )
+mxTranslate_Boolean( const mxArray *mxboolean )
 {
 	mxArray	*result;
 	char	*boolean_str;

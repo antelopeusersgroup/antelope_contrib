@@ -99,7 +99,7 @@ int ATM_cggrid_is_registered( CGGrid *cgg )
 	return retcode;
 }
 
-CGGrid *mxArray2CGGrid( mxArray *array )
+CGGrid *mxArray2CGGrid( const mxArray *array )
 {
 	CGGrid *cgg;
 	mxArray *address;
@@ -282,7 +282,7 @@ int CGGrid2plaid_mxArrays( CGGrid *cgg, mxArray **x, mxArray **y, mxArray **z )
 }
 
 static int
-is_2d_mxArray( mxArray *in )
+is_2d_mxArray( const mxArray *in )
 {
 	if( ! mxIsNumeric( in ) ||
 	    ! mxIsDouble( in ) ||
@@ -299,12 +299,12 @@ is_2d_mxArray( mxArray *in )
 	}
 }
 
-static mxArray *unique_row( mxArray *in )
+static mxArray *unique_row( const mxArray *in )
 {
 	mxArray	*input[2];
 	mxArray	*output[1];
 
-	input[0] = in;
+	input[0] = (mxArray *) in;
 	input[1] = mxCreateString("rows");
 	mexCallMATLAB( 1, output, 2, input, "unique" );
 	mxDestroyArray( input[1] );
@@ -335,9 +335,9 @@ get_spacing( mxArray *in )
 }
 
 static int
-get_plaid_params( mxArray *x,
-		  mxArray *y, 
-		  mxArray *z, 
+get_plaid_params( const mxArray *x,
+		  const mxArray *y, 
+		  const mxArray *z, 
 		  double  *minx, 
 		  double  *maxx,
 		  double  *miny, 
@@ -384,7 +384,7 @@ get_plaid_params( mxArray *x,
 
 	mxDestroyArray( unique_xrow );
 
-	input[0] = y;
+	input[0] = (mxArray *) y;
 	mexCallMATLAB( 1, output, 1, input, "transpose" );
 	transpose_y = output[0];
 
@@ -439,7 +439,7 @@ get_plaid_params( mxArray *x,
 	return 1;
 }
 
-CGGrid *plaid_mxArrays2CGGrid( mxArray *x, mxArray *y, mxArray *z )
+CGGrid *plaid_mxArrays2CGGrid( const mxArray *x, const mxArray *y, const mxArray *z )
 {
 	CGGrid *cgg;
 	double	minx;

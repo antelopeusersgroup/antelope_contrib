@@ -53,11 +53,12 @@ extern Response *mxArray2Response PL_(( mxArray * ));
 extern mxArray *Response2mxArray PL_(( Response * ));
 extern mxArray *Response2mxArray_parse PL_(( Response * ));
 #ifdef HAVE_CGEOM
+extern int get_cggrid PL_(( const mxArray *, CGGrid ** ));
 extern int ATM_CGGrid_register PL_(( CGGrid * ));
 extern int ATM_CGGrid_unregister PL_(( CGGrid * ));
 extern int ATM_CGGrid_is_registered PL_(( CGGrid * ));
-extern CGGrid *mxArray2CGGrid PL_(( mxArray * ));
-extern CGGrid *plaid_mxArrays2CGGrid PL_(( mxArray *, mxArray *, mxArray * ));
+extern CGGrid *mxArray2CGGrid PL_(( const mxArray * ));
+extern CGGrid *plaid_mxArrays2CGGrid PL_(( const mxArray *, const mxArray *, const mxArray * ));
 extern mxArray *CGGrid2mxArray PL_(( CGGrid * ));
 extern mxArray *CGGrid2linear_mxArray PL_(( CGGrid * ));
 extern int CGGrid2plaid_mxArrays PL_(( CGGrid *, mxArray **, mxArray **, mxArray ** ));
@@ -65,7 +66,7 @@ extern int CGGrid2plaid_mxArrays PL_(( CGGrid *, mxArray **, mxArray **, mxArray
 extern char *matlabPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt PL_(( char * ));
 extern mxArray *mxPfprompt_string PL_(( char * ));
-extern mxArray *mxTranslate_Boolean PL_(( mxArray * ));
+extern mxArray *mxTranslate_Boolean PL_(( const mxArray * ));
 extern mxArray *pfstring2mxArray PL_(( char * ));
 extern int pfput_mxArray PL_(( Pf *, char *, const mxArray * ));
 extern int pfpeek PL_(( Pf *, char *, Pf ** ));
