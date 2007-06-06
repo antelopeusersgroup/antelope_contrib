@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include "antelope_mex.h"
 
 static char *True[] =
