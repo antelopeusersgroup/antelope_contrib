@@ -5,15 +5,14 @@
     use strict ;
     use Datascope ;
 
-    my ($dbin,$dbout,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table);
+    my ($dbin,$dbout,$starttime,$endtime,$time,$etime,$cmd,$delay_days,$table,$wfend);
     my (@list,@dbin,@dbout);
     our ($opt_v,$opt_d,$opt_n,$opt_z,$opt_s,$opt_t,$opt_e);
 
-    elog_notify("\n $0 @ARGV ") ;
-
-
     if (  ! &Getopts('d:n:s:t:e:vz') || @ARGV != 2 )
         { die ( "Usage: $0 [-v] [-z] [-n net] [-s subset] [-d delay_days] [-t start_time] [-e end_time]  dbin dbout \n" ) ; }
+
+    elog_notify("\n $0 @ARGV ") ;
 
     $dbin          = $ARGV[0] ;
     $dbout         = $ARGV[1] ;
@@ -39,22 +38,32 @@
         @dbin = dblookup(@dbin,0,$table,0,0);
         elog_die("Missing $table table in $dbin") unless dbquery(@dbin,"dbTABLE_PRESENT");
     }
-    dbclose(@dbin);
-    dbclose(@dbout);
-    
+
     if ( $opt_t ) {
-        $starttime     = epoch(yearday(str2epoch($opt_t))) ;
+        $starttime   = epoch(yearday(str2epoch($opt_t))) ;
     }
     
     elog_notify(sprintf ("start of gap processing	%s",strydtime($starttime)));
 
            
     if ( ! $opt_e ) {
-        $endtime     = (epoch(yearday(now())) - ($delay_days * 86400)) ;
+        $endtime = (epoch(yearday(now())) - ($delay_days * 86400)) ;
+        @dbin = dblookup(@dbin,0,"wfdisc",0,0);
+        @dbin    = dbsort(@dbin,"-r","endtime");
+        $dbin[3] = 0;
+        $wfend   = dbgetv(@dbin,"endtime") ;
+        if (epoch(yearday($wfend + 80000)) < $endtime) {
+            $endtime = epoch(yearday($wfend + 80000));  # 80000 seconds to push $endtime into next day
+        }
     } else {
         $endtime     = epoch(yearday(str2epoch($opt_e))) ;
     }
-           
+    
+    elog_notify(sprintf ("end of gap processing		%s",strydtime($endtime)));
+
+    dbclose(@dbin);
+    dbclose(@dbout);
+               
 #
 #   process each day
 #
