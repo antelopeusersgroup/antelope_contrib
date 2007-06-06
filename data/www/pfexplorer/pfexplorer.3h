@@ -6,13 +6,13 @@ pfexplorer \- a web based tool to explore parameter files
 pfexplorer.php
 .fi
 .SH DESCRIPTION
-A web based php-scripted tool to explore Antelope parameter files 
-that uses pfexplore(3h). An initial drop-down menu is populated 
-by reading the default Antelope parameter file directory into an 
-array. Therefore the directory must be readable by the user that 
-your webserver runs as (typically nobody, www, apache). You MUST 
-define the path to the default Antelope parameter file directory 
-in your own checked out copy of the pfexplorer or use 
+pfexplorer is web based php-scripted tool to explore Antelope 
+parameter files that uses pfexplore(3h). An initial drop-down 
+menu is populated by reading the default Antelope parameter file 
+directory into an array. Therefore the directory must be readable 
+by the user that your webserver runs as (typically nobody, www, 
+apache). You must define the path to the default Antelope parameter 
+file directory in your own checked out copy of the pfexplorer or use 
 the dbwebproject program to install.
 
 You can also explore your own parameter files that you have 
@@ -23,7 +23,7 @@ The selected parameter file output is displayed on a webpage
 that requires Javascript turned on and the browser to be DOM 
 1.0 compatible (the latest flavours of Mozilla, Netscape,
 Firefox, Opera, Safari, Internet Explorer). This application
-will not work with legacy browsers such as Netscape Navigation 4.
+will not work with legacy browsers such as Netscape Navigator 4.
 .SH OPTIONS
 .SH FILES
 .SH ENVIRONMENT
@@ -41,14 +41,13 @@ will not work with legacy browsers such as Netscape Navigation 4.
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-Datascope_PHP(3), pfexplore(3h)
+datascope_php(3), pfexplore(3h)
 .fi
 .SH "BUGS AND CAVEATS"
 This is still under construction and some of the tools that
-support this are under development. In particular, the dbwebproject 
-install program mentioned above is not yet available. 
+support this are under development.
 
-For non-associative arrays PHP automatcially adds numeric keys
+For non-associative arrays PHP automatically adds numeric keys
 which currently messes with the output. Not fatal.
 
 Requires a level 1.0 DOM browser and Javascript enabled.
