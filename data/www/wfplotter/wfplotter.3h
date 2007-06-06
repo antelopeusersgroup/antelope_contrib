@@ -6,10 +6,10 @@ wfplotter \- a web based tool to plot waveforms
 wfplotter.php
 .fi
 .SH DESCRIPTION
-A web based php-scripted tool to plot images of waveforms retrieved from
-a waveform disc (wfdisc). Requires the library function wfplot.inc to 
-draw the image using the GD library for PHP and the graphing library for 
-GD - JpGraph.
+wfplotter is a web based php-scripted tool to plot images of waveforms 
+retrieved from a waveform disc (wfdisc). Requires the library function 
+wfplot.inc to draw the image using the GD library for PHP and the 
+graphing library for GD - JpGraph.
 
 .SH OPTIONS
 .SH FILES
