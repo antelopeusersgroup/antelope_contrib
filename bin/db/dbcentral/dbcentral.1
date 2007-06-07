@@ -183,7 +183,9 @@ custom_tasks &Arr{
 .SH EXAMPLE
 .ft CW
 .in 2c
-To create a demo cluster database:
+
+.SS "To create a demo cluster database:"
+
 .nf
 
 % cat > ~/\fBdbcentral\fP
@@ -202,15 +204,17 @@ schema dbcluster0.5
 
 .fi
 
-To launch the GUI application:
+.SS "To launch the GUI application:"
+
 .nf
+
 
 % \fBdbcentral\fP
 % 
 
 .fi
 
-To launch dbe on the demo database, given the above parameter file:
+.SS "To launch dbe on the demo database, given the above parameter file:"
 
 .nf
 
@@ -218,7 +222,7 @@ To launch dbe on the demo database, given the above parameter file:
 
 .fi
 
-To launch dbpick on the demo database, given the above parameter file:
+.SS "To launch dbpick on the demo database, given the above parameter file:"
 
 .nf
 
@@ -226,7 +230,7 @@ To launch dbpick on the demo database, given the above parameter file:
 
 .fi
 
-To get the absolute pathname of the demo database:
+.SS "To get the absolute pathname of the demo database:"
 
 .nf
 
@@ -235,7 +239,7 @@ To get the absolute pathname of the demo database:
 
 .fi
 
-To get the currently-configured database clusternames:
+.SS "To get the currently-configured database clusternames:"
 
 .nf
 
@@ -248,7 +252,7 @@ dbcentral database clusternames:
 
 .fi
 
-To get the currently configured task nicknames for the demo database:
+.SS "To get the currently configured task nicknames for the demo database:"
 
 .nf
 
@@ -267,8 +271,7 @@ dbcentral command nicknames for antelope_demo:
 
 .fi
 
-To get the pathname for PDE database containing data for Dec. 31, 1997, provided 
-such a cluster is specified in the cluster database:
+.SS "To get the pathname for PDE database containing data for Dec. 31, 1997, provided such a cluster is specified in the cluster database:"
 
 .nf
 
@@ -280,8 +283,7 @@ such a cluster is specified in the cluster database:
 
 .fi
 
-To list the names of all the pde databases that exist on the system, as specified 
-in the given cluster: 
+.SS "To list the names of all the pde databases that exist on the system, as specified in the given cluster:" 
 
 .nf
 
@@ -332,12 +334,11 @@ in the given cluster:
 
 .fi
 
-To run a cross-database query by entering dbprocess(3) commands from the 
-command line:
+.SS "To run a cross-database query by entering dbprocess(3) commands from the command line:"
 
 .nf
 
-% dbcentral -q - pde
+% \fBdbcentral\fP -q - pde
 dbopen origin
 dbsubset ml > 7
 dbselect lat lon depth strtime(time) ml
@@ -382,6 +383,40 @@ dbselect lat lon depth strtime(time) ml
 % 
 
 .fi
+
+.SS "To apply some database operations to a set of databases in a cluster, then save the results in new databases, the following example should help. In this example we are responding to a request to update arrival data for some tomography plots:"
+
+.nf
+
+% cat myrequest
+dbopen event
+dbjoin origin
+dbsubset prefor==orid
+dbsubset time>=_2007046_
+dbsubset distance(lat,lon,49,-125)>30
+dbsubset distance(lat,lon,32,-115)>30
+dbjoin assoc
+dbjoin arrival
+db2pipe dbunjoin -o mydb_%Y_%m_%d - 
+%
+
+% \fBdbcentral\fP -q myrequest usarray 
+% 
+
+% ls 
+mydb_2007_02_01           mydb_2007_03_01.arrival   mydb_2007_04_01.assoc
+mydb_2007_02_01.arrival   mydb_2007_03_01.assoc     mydb_2007_04_01.event
+mydb_2007_02_01.assoc     mydb_2007_03_01.event     mydb_2007_04_01.origin
+mydb_2007_02_01.event     mydb_2007_03_01.origin    myrequest
+mydb_2007_02_01.origin    mydb_2007_04_01           
+mydb_2007_03_01           mydb_2007_04_01.arrival 
+%
+
+.fi
+
+(one could use dbmerge(1) on these results to combine them into one single
+output database). 
+
 .in
 .ft R
 .SH RETURN VALUES
