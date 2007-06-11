@@ -527,16 +527,6 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(vector<TimeSeries>& ts,
                         for(j=0;j<3;++j)tmatrix[i][j]=nu[j];
                         delete [] nu;
                 }
-cerr << this->get_string("sta") << endl
-	<< tmatrix[0][0] << " "
-	<< tmatrix[0][1] << " "
-	<< tmatrix[0][2] << endl
-	<< tmatrix[1][0] << " "
-	<< tmatrix[1][1] << " "
-	<< tmatrix[1][2] << " "
-	<< tmatrix[2][0] << endl
-	<< tmatrix[2][1] << " "
-	<< tmatrix[2][2] << endl;
                 components_are_cardinal = tmatrix_is_cardinal(*this);
                 if(components_are_cardinal) components_are_orthogonal=true;
 	} catch (MetadataError mde)

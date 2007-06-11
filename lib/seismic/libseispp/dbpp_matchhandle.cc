@@ -4,6 +4,21 @@ namespace SEISPP
 {
 using namespace std;
 using namespace SEISPP;
+// Default constructor produces invalid handle.
+DatascopeMatchHandle::DatascopeMatchHandle() : DatascopeHandle(),amap("css3.0")
+{
+	dbscratch_record.database=dbINVALID;
+	dbscratch_record.table=dbINVALID;
+	dbscratch_record.field=dbINVALID;
+	dbscratch_record.record=dbINVALID;
+	dbt.database=dbINVALID;
+	dbt.table=dbINVALID;
+	dbt.field=dbINVALID;
+	dbt.record=dbINVALID;
+	kpattern=NULL;
+	tpattern=NULL;
+	hook=NULL;
+}
 //@{
 //  Primary constructor for this object.  
 //
@@ -118,11 +133,30 @@ DatascopeMatchHandle::DatascopeMatchHandle(const DatascopeMatchHandle& parent)
 	// Make the hook null in the copy to handle memory correctly
 	hook=NULL;
 }
+DatascopeMatchHandle& DatascopeMatchHandle::operator = (const DatascopeMatchHandle& parent)
+{
+	if(this!=&parent)
+	{
+		// From Datascope Handle
+		db=parent.db;
+		is_bundle=parent.is_bundle;
+		// Object attributes of MatchHandle
+		dbt=parent.dbt;
+		dbscratch_record=parent.dbscratch_record;
+		matchkeys=parent.matchkeys;
+		// tbl's have to be copied
+		kpattern=copy_string_tbl(parent.kpattern);
+		tpattern=copy_string_tbl(parent.tpattern);
+		// Make the hook null in the copy to handle memory correctly
+		hook=NULL;
+	}
+	return(*this);		
+}
 DatascopeMatchHandle::~DatascopeMatchHandle()
 {
 	if(hook!=NULL) free_hook(&hook);
-	freetbl(kpattern,0);
-	freetbl(tpattern,0);
+	if(kpattern!=NULL)freetbl(kpattern,0);
+	if(tpattern!=NULL)freetbl(tpattern,0);
 }
 // should throw and exception when keys not found in metadata
 // algorithm will assume keys do 

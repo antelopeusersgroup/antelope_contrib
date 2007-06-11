@@ -14,6 +14,7 @@
 #include "TimeWindow.h"
 #include "filter++.h"
 #include "stack.h"
+namespace SEISPP {
 
 using namespace std;
 using namespace SEISPP;
@@ -30,6 +31,8 @@ class AnalysisSetting {
 public:
 	AnalysisSetting() {aw_set=false; bw_set=false; rw_set=false; rt_set=false;}
 	AnalysisSetting(Metadata md);
+	AnalysisSetting(const AnalysisSetting& old);
+	AnalysisSetting& operator=(const AnalysisSetting& old);
 	void set_analysis_tw(TimeWindow tw_in) {aw_set=true; analysis_tw=tw_in;}
 	void set_beam_tw(TimeWindow tw_in) {bw_set=true; beam_tw=tw_in;}
 	void set_robust_tw(TimeWindow tw_in) {rw_set=true; robust_tw=tw_in;}
@@ -56,4 +59,5 @@ public:
 	SortOrder result_sort_order;
 };
 
+} // end SEISPP namespace declaration
 #endif

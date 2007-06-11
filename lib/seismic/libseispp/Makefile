@@ -2,6 +2,7 @@ LIB=libseispp.a
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
 INCLUDE=AnalysisSetting.h \
+  ArrivalUpdater.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
@@ -51,6 +52,7 @@ DBG=-g
 include $(ANTELOPEMAKE)  	
 
 OBJS=AnalysisSetting.o \
+  ArrivalUpdater.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \

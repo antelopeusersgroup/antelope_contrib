@@ -20,16 +20,9 @@
 #include "filter++.h"
 #include "MultichannelCorrelator.h"
 #include "AnalysisSetting.h"
-// Maintenance problem here
-// This keyword is used in array_get_data.cc. 
-// There was no clear include file that it could be placed
-// into.
-//
-//Peng Wang
-const string lat_keyword("lat");
-const string lon_keyword("lon");
-const string gain_keyword("gain");
+#include "ArrivalUpdater.h"
 
+namespace SEISPP {
 
 using namespace std;
 using namespace SEISPP;
@@ -104,10 +97,11 @@ private:
 	Dbptr dbxcorbeam;
 	Dbptr dbevlink;
 	Dbptr dbwfprocess;
-	bool save_arrival;  // arrival/assoc are not saved unless this is true
-	//regular_gather is raw data saved here to avoid needing to reconstruct it
-	// repeatedly when filtering changes.  regular_gather has uniform sampling.
-	// Maintained as as an auto_ptr for convenience and efficiency.
+	/*! Handles updating arrival/assoc tables automatically. 
+	*  Earlier version had saving arrival/assoc optional.  Now it is 
+	*  always required and always updated */
+	
+	ArrivalUpdater arru;
 	auto_ptr<TimeSeriesEnsemble> regular_gather;
 	//TimeSeriesEnsemble *regular_gather;
 	// This holds the working data.  
@@ -158,6 +152,9 @@ private:
 	// Needed to support three component data
 	bool RequireThreeComponents;
 	StationChannelMap stachanmap;
+	// Added by GLP June 2007 to allow running without extension tables
+	bool save_extensions;
 };
 
+} // End SEISPP namespace declaration
 #endif

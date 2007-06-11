@@ -1,6 +1,7 @@
 #include "AnalysisSetting.h"
 using namespace std;
 using namespace SEISPP;
+namespace SEISPP{
 AnalysisSetting::AnalysisSetting(Metadata md)
 {
 	try
@@ -122,6 +123,46 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 		throw SeisppError("AnalysisSetting constructor:  Unknown error was thrown");
 	}
 }
-// Intentionally defaulted:  copy constructor, operator=, and destructor.
-// Current object definition allows default to work correctly
-
+AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
+{
+	aw_set=old.aw_set;
+	bw_set=old.bw_set;
+	rw_set=old.rw_set;
+	rt_set=old.rt_set;
+	beam_tw=old.beam_tw;
+	robust_tw=old.robust_tw;
+	reference_trace=old.reference_trace;
+	removed_traces=old.removed_traces;
+	stack_type=old.stack_type;
+	phase_time_pick=old.phase_time_pick;
+	filter_param=old.filter_param;
+	component_for_analysis=old.component_for_analysis;
+	component_name=old.component_name;
+	phase_for_analysis=old.phase_for_analysis;
+	tpad=old.tpad;
+	result_sort_order=old.result_sort_order;
+}
+AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
+{
+    if(this!=&old)
+    {
+	aw_set=old.aw_set;
+	bw_set=old.bw_set;
+	rw_set=old.rw_set;
+	rt_set=old.rt_set;
+	beam_tw=old.beam_tw;
+	robust_tw=old.robust_tw;
+	reference_trace=old.reference_trace;
+	removed_traces=old.removed_traces;
+	stack_type=old.stack_type;
+	phase_time_pick=old.phase_time_pick;
+	filter_param=old.filter_param;
+	component_for_analysis=old.component_for_analysis;
+	component_name=old.component_name;
+	phase_for_analysis=old.phase_for_analysis;
+	tpad=old.tpad;
+	result_sort_order=old.result_sort_order;
+    }
+    return(*this);
+}
+} // End SEISPP namespace declaration

@@ -466,10 +466,18 @@ original handle is constructed.
 class DatascopeMatchHandle : public DatascopeHandle
 {
 public:
-	/*! The only valid constructor for this object.
-	* The default constructor will be automatically generated for this object
-	* by all compilers, but should never be used.  This is the only valid
-	* constructor.  It is driven by a set of key attributes passed through 
+	/*! \brief Default constructor.
+	*
+	* Default constructor is required in some contexts.  The object
+	* it creates should never be used as it will always be invalid.
+	* This is done, as in a DatascopeHandle, by setting all the
+	* Dbptr fields to dbINVALID. */
+	DatascopeMatchHandle();
+	/*! \brief The only valid constructor for this object.
+	* 
+	* The default constructor is defined, but is always invalid.  This
+	* should be considered the only valid constructor.
+	* It is driven by a set of key attributes passed through 
 	* an STL list. 
 	*
 	* \param parent is a handle to the database view which repeated matches
@@ -495,6 +503,8 @@ public:
 			AttributeMap am);
 	/*! Standard copy constructor. */
 	DatascopeMatchHandle(const DatascopeMatchHandle& parent);
+	/*! Standard assignment operator. */
+	DatascopeMatchHandle& operator = (const DatascopeMatchHandle& parent);
 	/*! Standard destructor. 
 	The destructor here will release the memory held by the hook that stores the
 	matching index, but will not normally close the database unless the parent

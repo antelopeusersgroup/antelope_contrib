@@ -5,9 +5,11 @@
 //  Last Modified: 12/1/2005
 
 #include <algorithm>
+#include "SeisppKeywords.h"
 #include "XcorProcessingEngine.h"
 
 
+const string gain_keyword("gain");
 XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
 	AnalysisSetting asinitial,
 		string waveform_db_name,
@@ -42,17 +44,24 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		dbwfprocess=dblookup(result_db_handle.db,0,"wfprocess",0,0);
 		dbevlink=dblookup(result_db_handle.db,0,"evlink",0,0);
 		if( (dbassoc.table==dbINVALID) 
-			|| (dbarrival.table==dbINVALID)
-			|| (dbxcorarrival.table==dbINVALID)
-			|| (dbxcorbeam.table==dbINVALID)
-			|| (dbevlink.table==dbINVALID)
-			|| (dbwfprocess.table==dbINVALID) )
+			|| (dbarrival.table==dbINVALID))
 		{
 			result_db_handle.close();
 			waveform_db_handle.close();
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string("  constructor had problems opening one or more database tables"));
 		}
+		if( (dbxcorarrival.table==dbINVALID)
+			|| (dbxcorbeam.table==dbINVALID)
+			|| (dbevlink.table==dbINVALID)
+			|| (dbwfprocess.table==dbINVALID) )
+		{
+			save_extensions=false;
+			cerr << "XcorProcessingEngine (Warning):  Extension tables not defined"
+				<< " only arrival and assoc will be saved in database"<<endl;
+		}
+		else
+			save_extensions=true;
 		// Verify site and sitechan are defined and abort if
 		// they are empty
 		int ntest;
@@ -66,10 +75,11 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		if(ntest<=0) 
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string(" required sitechan table is empty"));
-		// We could bypass arrival/assoc dblookup if this
-		// were false, but the overhead is so small it is 
-		// best to leave it alone.  (glp)
-		save_arrival=global_md.get_bool("save_to_arrival");
+		// These two lists are largely fixed, but an example of the
+		// use of pf to increase flexibility in future reuse.
+		MetadataList mdlassoc=pfget_mdlist(global_pf,"save_list_assoc");
+		MetadataList mdlarrival=pfget_mdlist(global_pf,"save_list_arrival");
+		arru=ArrivalUpdater(result_db_handle,mdlassoc,mdlarrival,schema);
 		// This is needed for wfprocess table saving of array beam
 		beam_mdl = pfget_mdlist(global_pf,"BeamMetadataList");
 		beam_directory=global_md.get_string("beam_directory");
@@ -211,10 +221,10 @@ template <class T, SortOrder SO> struct less_metadata_double
 			keyword=SEISPP::moveout_keyword;
 			break;
   		case SITE_LAT:
-			keyword=lat_keyword;
+			keyword=string("site.lat");
 			break;
 		case SITE_LON:
-			keyword=lon_keyword;
+			keyword=string("site.lon");
 			break;
 		case PREDARR_TIME:
 			keyword=predicted_time_key;
@@ -441,9 +451,6 @@ auto_ptr<TimeSeriesEnsemble> Convert3CEnsemble(ThreeComponentEnsemble *tcse,
 			vp0=tcse->member[i].get_double("vp0");
 			vs0=tcse->member[i].get_double("vs0");
 		} catch (MetadataGetError mde) {
-			cerr << "Warning required vp0 and vs0 not defined. "
-				<< "using default="
-				<< vp0def << ", "<<vs0def <<endl;
 			vp0=vp0def;
 			vs0=vs0def;
 		}
@@ -683,7 +690,8 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	string pchan(analysis_setting.component_name);
 	string filter(analysis_setting.filter_param.type_description(true));
 	string filter_param;
-	try {
+	if(save_extensions)
+	{   try {
 		int record;
 		// First get and save the array beam
 		TimeSeries beam=mcc->ArrayBeam();
@@ -718,24 +726,25 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		if(record<0)
 			cerr << "save_results(Warning):  problems adding to xcorbeam table"<<endl;
 		dbaddv(dbevlink,0,"evid",evid,"pwfid",pwfid,0);
-	}
-	catch (MetadataGetError mderr)
-	{
+	    }
+	    catch (MetadataGetError mderr)
+	    {
 		cerr << "Problems getting attributes needed for xcorbeam"<<endl
 			
 			<< "Coding error or problem in MetadataList parameters"
 			<< endl;
 		mderr.log_error();
-	}
-	catch (...) 
-	{
+	    }
+	    catch (...) 
+	    {
 		cerr << "Unexpected exception"<<endl;
 		throw;
+	    }
 	}
 		
 	// I think static in this context means they are set once
 	// and only once at startup
-	static const string auth("dbxcorr");
+	static const string auth("dbxcor");
 	// Since this is hidden behind the interface I'm going
 	// to use the standard datascope API instead of going
 	// through the DatascopeHandle API.  Since this code
@@ -789,8 +798,10 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				&& (coh>coherence_cutoff)
 				&& (stack_weight>stack_weight_cutoff) )
 			{
-			    filter_param=trace->get_string("filter_spec");
-			    record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
+			    if(save_extensions)
+			    {
+			      filter_param=trace->get_string("filter_spec");
+			      record=dbaddv(dbxcorarrival,0,"sta",sta.c_str(),
 					"chan",chan.c_str(),
 					"phase",analysis_setting.phase_for_analysis.c_str(),
 					"pwfid",pwfid,
@@ -804,69 +815,50 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					"coherence",coh,
 					"relamp",amplitude,
 					"xcorpeak",xcorpeak,0);
-			    if(record<0)
-			    {
+			      if(record<0)
+			      {
 				cerr << "save_results(warning):  problems saving xcorarrival table"
 					<<endl;
+			      }
 			    }
-			    if(save_arrival)
-			    {
-				record = dbaddv(dbarrival,0,
-					"sta",sta.c_str(),
-					"chan",chan.c_str(),
-					"time",atime,
-					"iphase",
-					  analysis_setting.phase_for_analysis.c_str(),
-					"auth",auth.c_str(),
-					0);
-				if(record<0)
-				{
-					cerr<<"save_results:  problems saving data to arrival for station "
-						<< sta<<endl;
-				}
-				else
-				{
-					dbarrival.record=record;
-					dbgetv(dbarrival,0,
-						"arid",&arid,0);
-					
-					// To get assoc parameters we need
-					// station lat and lon
-					double stalat,stalon;
-					stalat=trace->get_double("lat");
-					stalon=trace->get_double("lon");
-					// These are stored in deg so have
-					// to convert to radians
-					stalat=rad(stalat);
-					stalon=rad(stalon);
-					// missing for now:  delta, seaz,esaz
-					// need these eventually, but for 
-					// debugging purposes will leave them
-					// aside for a bit
-					double delta,seaz,esaz;
-					delta=h.distance(stalat,stalon);
-					seaz=h.seaz(stalat,stalon);
-					esaz=h.esaz(stalat,stalon);
-					if(dbaddv(dbassoc,0,
-						"arid",arid,
-						"orid",orid,
-						"sta",sta.c_str(),
-						"phase",
-					  	  analysis_setting
-						   .phase_for_analysis.c_str(),
-						"timeres",resid,
-						"timedef","d",
-						"delta",deg(delta),
-						"seaz",deg(seaz),
-						"esaz",deg(esaz),
-						"vmodel",h.tt_definition().c_str(),
-						0)==dbINVALID)
-					{
-						cerr << "save_results:  problems saving assoc for sta="
-							<<sta<<endl;
-					}
-				}
-			    }
+			    // These need to be computed and posted to
+			    // metadata for this trace object before
+			    // we attempt to update the database
+			    double stalat,stalon;
+			    stalat=rad(trace->get_double("lat"));
+			    stalon=rad(trace->get_double("lon"));
+			    double delta,seaz,esaz;
+                            delta=h.distance(stalat,stalon);
+                            seaz=h.seaz(stalat,stalon);
+                            esaz=h.esaz(stalat,stalon);
+			    /* A better solution is needed in dbpp to
+			    avoid this kind of thing, but for now it
+			    is necessary */
+			    string statmp,chantmp;
+			    statmp=trace->get_string("sta");
+			    chantmp=trace->get_string("chan");
+			    trace->put("assoc.sta",statmp);
+			    trace->put("arrival.sta",statmp);
+			    trace->put("arrrival.chan",chantmp);
+			    trace->put("assoc.delta",deg(delta));
+			    trace->put("assoc.seaz",deg(seaz));
+			    trace->put("assoc.esaz",deg(esaz));
+			    // We need to post these too
+			    trace->put("assoc.timeres",resid);
+			    trace->put("assoc.timedef",string("d"));
+			    trace->put("assoc.phase",
+				 analysis_setting.phase_for_analysis);
+			    trace->put("assoc.vmodel",h.tt_definition());
+			    // Not really needed, but better to post this
+			    // for long term utility
+			    trace->put("evid",evid);
+			    trace->put("assoc.orid",orid);
+			    trace->put("arrival.time",atime);
+			    trace->put("arrival.iphase",
+				analysis_setting.phase_for_analysis);
+			    trace->put("arrival.auth",auth);
+			    trace->put("arrival.jdate",yearday(atime));
+			    arru.update(*trace);
 			}
 		    }
 		    catch (MetadataGetError mderr)
