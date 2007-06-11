@@ -71,17 +71,30 @@ public:
     Widget parent;          //parent paned window widget for both seismic and xcor widget 
     Widget *controls;   //generalization of btns and menu items
     Widget msg_w;   //generalization of msg box            
-    ofstream * log_stream;  //log file stream
+    ofstream log_stream;  //log file stream
+    ifstream instream;
 
     XcorProcessingEngine * xpe;
     MultichannelCorrelator *mcc;
-    AnalysisSetting asetting_default;
+    // New june 2007.  map allows variable settings for 
+    // different seismic phases.  Required to switch phases
+    // during processing
+    map<string,AnalysisSetting> asetting_default;
     AnalysisSetting active_setting;
     DisplayMarkerDataRec markers;
     int choice;  //for user differentiate similar buttons, e.g., pick beam and robust window
 
-    Dbptr db;  //origin info must be contained in this database view
+    // index into origin table keyed by orid
+    DatascopeMatchHandle dbh;
+    /*! Main constructor.
 
+	\param pfname parameter file used to build this object.
+	\param hname input file name used to drive program.  Expect to read orid and phase as 
+		two tokens from each line.  This drives the analysis.
+	\param lname log file name 
+	\param wdbname waveform database name
+	\param rdbname result database name (can be the same as wdbname)
+    */
     SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname);
     ~SessionManager();
     string get_waveform_db_name() {return waveform_db_name;}
@@ -90,9 +103,11 @@ public:
     int get_evid(){return evid;}
     int get_orid(){return orid;}
     Hypocenter get_hypo(){return hypo;}
+    string get_phase(){return current_phase;}
     void set_evid(int event_id);
     void set_orid(int origin_id);
     void set_hypo(Hypocenter& h);
+    void set_phase(string ph);
     void record(string s);
     void session_state();
     void session_state(SessionState);
@@ -107,7 +122,6 @@ public:
     bool display_initial_sort_box;
     bool display_analysis_sort_box;
     bool using_subarrays;
-    string eventdbname;
 
 private:
     bool *sensitive;
@@ -124,6 +138,7 @@ private:
     SessionState previous_state;
 // Added to get complete information in assoc table
     Hypocenter hypo;
+    string current_phase;
 };
 
 #endif

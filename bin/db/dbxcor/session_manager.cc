@@ -6,12 +6,19 @@ using namespace SEISPP;
 SessionManager::SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname)
 {
     pf_name=pfname;
-    eventdbname=hname;
     log_file_name=lname;
     waveform_db_name=wdbname;
     result_db_name=rdbname;
 
+
     parent=NULL;
+    /* new feature June 2007.  Get a match handle on orid to feed processing */
+    DatascopeHandle dbhw(wdbname,false);
+    dbhw.lookup("event");
+    dbhw.natural_join("origin");
+    list<string>matchkey;
+    matchkey.push_back("orid");
+    dbh=DatascopeMatchHandle(dbhw,string(""),matchkey,AttributeMap("css3.0"));
 
     controls=new Widget[MAX_NUM_CONTROLS];
     sensitive=new bool[MAX_NUM_CONTROLS];
@@ -19,7 +26,28 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	sensitive[i]=false; //assume all buttons are diabled
 	controls[i]=NULL;
     }
-    log_stream=new ofstream(lname.c_str(), ios::out | ios::trunc);
+    try {
+	log_stream.open(lname.c_str(),ios::out | ios::trunc);
+    } catch (ios::failure& var)
+    {
+	string mess;
+	mess=var.what();
+	throw SeisppError(string("SessionManager constructor:  open failed on log file=")
+		+ lname
+		+string("\nSystem message:\n")
+		+ mess);
+    }
+    try {
+	instream.open(hname.c_str(),ios::in);
+    } catch (ios::failure& var)
+    {
+	string mess;
+	mess=var.what();
+	throw SeisppError(string("SessionManager constructor:  open failed on control stream=")
+		+ hname
+		+string("\nSystem message:\n")
+		+ mess);
+    }
 
     xpe=NULL;
     mcc=NULL;
@@ -37,16 +65,15 @@ SessionManager::~SessionManager()
 {
     delete controls;
     delete sensitive;
-    delete log_stream;
  
-    dbclose(db);
+    dbh.close();
     if (xpe != NULL) delete xpe;  //believe that deletion of xpe will result in deletion of the last mcc
 }
 
 void SessionManager::record( string s)
 {
     XmTextInsert(msg_w,XmTextGetLastPosition(msg_w),(char *)(s.c_str()));
-    (*log_stream) << s <<endl;
+    log_stream << s <<endl;
 }
 
 void SessionManager::session_state()
@@ -322,4 +349,8 @@ void SessionManager::set_orid(int origin_id)
 void SessionManager::set_hypo(Hypocenter& h)
 {
 	hypo=h;
+}
+void SessionManager::set_phase(string ph)
+{
+	current_phase=ph;
 }

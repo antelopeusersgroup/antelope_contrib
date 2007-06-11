@@ -1,45 +1,69 @@
-data_window_start -200.0
-data_window_end 600.0
+# This defines processing parameters for different seismic
+# phases.  One entry is needed for each phase one might
+# plan to process in a given run.  
+#
+phase_processing_parameters &Arr{
+S &Arr{
+tpad 30.0
 regular_gather_twin_start -60.0
 regular_gather_twin_end 150.0
 beam_window_fraction 0.6
 robust_window_fraction 0.2
 stacking_method robust
-#default_filter BW 0.01 2 1.5 5
-default_filter DEMEAN
-component_for_analysis Z
-phase_for_analysis P
+default_filter BW 0.01 2 0.5 2
+component_for_analysis T
+phase_for_analysis S
+analysis_sort_order stack_weight
+}
+P &Arr{
 tpad 30.0
+regular_gather_twin_start -20.0
+regular_gather_twin_end 120.0
+beam_window_fraction 0.6
+robust_window_fraction 0.2
+stacking_method robust
+default_filter BW 0.01 2 2.0 2
+component_for_analysis L
+phase_for_analysis P
+analysis_sort_order stack_weight
+}
+}
+#
+# These should not be altered by the user.
+# They define what attributes are saved to 
+# arrival and assoc
+save_list_assoc &Tbl{
+assoc.sta string
+assoc.orid int
+assoc.delta real
+assoc.seaz real
+assoc.esaz real
+assoc.timeres real
+assoc.timedef real
+assoc.phase string
+assoc.vmodel string
+}
+save_list_arrival &Tbl{
+arrival.sta string
+arrival.chan string
+arrival.time real
+arrival.iphase real
+arrival.jdate int
+arrival.auth string
+}
+AutoscaleInitialPlot false
+data_window_start -200.0
+data_window_end 600.0
 initial_time_stamp 2003355:00:00:00.0
 result_twin_start -40.0
 result_twin_end 200.0
-target_sample_interval 0.1
-schema xcor1.0
-network_name secarib
-analysis_sort_order stack_weight
-#  These values effectively turn off these cutoff
-#  criteria by default
+target_sample_interval 0.025
+schema xcor1.2
+network_name USArray_TA
 correlation_peak_cutoff 0.0
-coherence_cutoff 0.0001
-stack_weight_cutoff 0.0001
+coherence_cutoff 0.01
+stack_weight_cutoff 0.01
 time_lag_cutoff 4.0
-# If set true peak amplitude is used to normalize initial ensemble display
-AutoscaleInitialPlot false
-#
-#  Important switch for three component processing.  Set to 
-#  true to force 3c processing.  Otherwise data are loaded by channel only.
-#  Networks with mixed single component and three component
-#  data would not want to use this feature.  Most useful for
-#  modern arrays with all three-component stations.  Required
-#  if component is L, R, or T.
-#
-RequireThreeComponents false
-#
-#  Trace metadata to load.  Note that with RequireThreeComponents is
-#  true station coordinates (site.lat, site.lon, and site.elev) are 
-#  required.  When false they are not required here, although the
-#  program ALWAYS requires a site table.
-#
 trace_mdl	&Tbl{
     sta string
     chan string
@@ -57,84 +81,46 @@ trace_mdl	&Tbl{
     site.elev
 }
 resample_definitions	&Arr{
-    100	&Arr{
-        Decimator_response_files	&Tbl{
-            5	response/RT72A_5_f
-            2	response/RT72A_2_f
-        }
-        high_limit	101
-        low_limit	99
-    }
-    20	&Arr{
-        Decimator_response_files	&Tbl{
-            2       response/RT72A_2_f
-        }
-        high_limit	21
-        low_limit	19
-    }
-    33.5	&Arr{
-        Decimator_response_files	&Tbl{
-            0.8375	resample
-            4       response/RT72A_4_f
-        }
-        high_limit	35
-        low_limit	30
-    }
     40	&Arr{
         Decimator_response_files	&Tbl{
-            4       response/RT72A_4_f
+            1       none
         }
         high_limit	41
         low_limit	39
     }
+    20 &Arr{
+	Decimator_response_files &Tbl{
+		0.5 resample
+	}
+	high_limit 21
+	low_limit 19
+    }
 }
-#
-# This complicated section is used only if RequireThreeComponents is
-# true.  It defines a hierarchy of channel use for different stations.
-# I could be done in a database, but the current schema does not support
-# the concept so we'll do it in pf for now.  Note default is very 
-# important as it is the definition used when a station specific map 
-# is not defined.   The example below has only one example station
-# used as an example.  Most applications can probably just depend on
-# the default.
-#
+RequireThreeComponents true
 StationChannelMap &Arr{
-# Example of old high low gain station
-OLD &Tbl{
-HHE 0 0
-HHN 1 0
-HHZ 2 0
-HLE 0 1
-HLN 1 1
-HLZ 2 1
-}
-#
-# Simple case if a station had only three channels
-#
-XYZ &Tbl{
+TEST &Tbl{
 BHE 0 0
 BHN 1 0
 BHZ 2 0
+HHE 0 1
+HHN 1 1
+HHZ 2 1
+HLE 0 2
+HLN 1 2
+HLZ 2 2
 }
-#
-# a stock default.  Uses H first, B second, and L as last
-# resort.
-#
 default &Tbl{
-HHE 0 0
-HHN 1 0
-HHZ 2 0
-BHE 0 1
-BHN 1 1
-BHZ 2 1
+BHE 0 0
+BHN 1 0
+BHZ 2 0
+HHE 0 1
+HHN 1 1
+HHZ 2 1
 LHE 0 2
 LHN 1 2
 LHZ 2 2
 }
 }
-#
-#  This section is for main data plot parameters
-#
 data_window_parameters &Arr{
 trim_gap_edges	true
 verbose true
@@ -200,8 +186,8 @@ verbose true
 WiggleTrace true
 VariableArea true
 SUVariableArea_grey_value 1
-clip_data true
-clip_wiggle_traces true
+clip_data false
+clip_wiggle_traces false
 xcur 1.0
 clip_percent 98
 xbox 50
@@ -311,9 +297,9 @@ grid1 1
 grid2 1
 titlesize 36.0
 }
-// 
-// This defines data written to wfprocess tables. Static
-// and require a change only if schema were to change.
+ 
+# This defines data written to wfprocess tables. Static
+# and require a change only if schema were to change.
 BeamMetadataList &Tbl{
 pwfid int
 wfprocess.timetype string
@@ -324,147 +310,329 @@ wfprocess.algorithm string
 save_to_arrival true
 beam_directory xcorbeams
 beam_dfile xcorbeam.w
-#
-#  This is an example of subarray definitions
-#  This turns on subarray processing
-#
 use_subarrays false
-#
-#  This defines subarray geometry as lists of stations
-# with a subarray name tag
-#
+
 virtual_arrays &Arr{
-# Western stations
-west &Arr{
+TA_3_1 &Arr{
+center_latitude 36.9633
+center_longitude -116.554
 sta_list &Tbl{
-VIRV
-IMOV
-ARUB
-MONV
-DABV
-JACV
-SIQV
-QARV
-CURV
-TERV
-SANV
-SDV
-SOCV
-VIGV
-CAPV
+KCC
+ADO
+ARV
+CWC
+DAN
+EDW
+EDW2
+FUR
+GMR
+GRA
+GSC
+HEC
+ISA
+LRL
+MLAC
+MPM
+NEE
+RCT
+RRX
+SHO
+TIN
+TUQ
+VES
+OMM
+TPNV
+HELL
+P09A
+P10A
+P11A
+Q07A
+Q08A
+Q09A
+Q10A
+Q11A
+Q12A
+R07C
+R08A
+R09A
+R10A
+R12A
+S08C
+S09A
+S10A
+S11A
+S12A
+S13A
+T06C
+T11A
+T12A
+T13A
+U10A
+U11A
+U12A
+U13A
+V11A
+V12A
+W12A
+R11A
 }
 }
-southwest &Arr{
+TA_2_2 &Arr{
+center_latitude 39.366
+center_longitude -119.198
 sta_list &Tbl{
-CAPV
-VIGV
-SOCV
-ELOV
-SANV
-BAUV
-CURV
-SANV
-TERV
+BDM
+CMB
+KCC
+MNRC
+MOD
+ORV
+POTR
+WENL
+MLAC
+TIN
+OMM
+BEK
+WCN
+ELFS
+HATC
+HELL
+LAVA
+L07A
+M05C
+M06C
+M07A
+M08A
+M09A
+N06A
+N07A
+N07B
+N08A
+N09A
+N10A
+O03C
+O04C
+O05C
+O06A
+O07A
+O08A
+O09A
+O10A
+P05C
+P06A
+P07A
+P08A
+P09A
+P10A
+P11A
+Q03C
+Q04C
+Q07A
+Q08A
+Q09A
+Q10A
+R04C
+R05C
+R06C
+R07C
+R08A
+R09A
+R10A
+SUTB
+S04C
+S05C
+S06C
+S08C
+S09A
+S10A
+T06C
 }
 }
-SierradelInt &Arr{
+TA_2_3 &Arr{
+center_latitude 41.6103
+center_longitude -119.023
 sta_list &Tbl{
-TERV
-SANV
-TIRV
-TURV
-TEST
-BIRV
-JMPC
-ROPC
-FCPC
-LMPC
-BAUV
-ULPC
-CUPV
-MERV
-RPPC
+MOD
+BEK
+WCN
+ELFS
+HATC
+I06A
+I07A
+I08A
+I09A
+J05A
+J06A
+J07A
+J08A
+J09A
+J10A
+K04A
+K05A
+K06A
+K07A
+K08A
+K09A
+K10A
+K11A
+L04A
+L05A
+L07A
+L08A
+L09A
+L10A
+L11A
+M03C
+M04C
+M05C
+M06C
+M07A
+M08A
+M09A
+M10A
+M11A
+N06A
+N07A
+N07B
+N08A
+N09A
+N10A
+N11A
+O04C
+O05C
+O06A
+O07A
+O08A
+O09A
+O10A
+P05C
+P06A
+P07A
+P08A
+P09A
+Q07A
 }
 }
-Guarico &Arr{
+TA_2_4 &Arr{
+center_latitude 43.8544
+center_longitude -118.835
 sta_list &Tbl{
-JMPC
-ROPC
-FCPC
-LMPC
-ULPC
-BAUV
-MERV
-RPPC
-LAPC
-SMPC
-PFPC
-STPC
+MOD
+E08A
+F06A
+F07A
+F08A
+F09A
+F10A
+G05A
+G06A
+G07A
+G08A
+G09A
+G10A
+G11A
+H04A
+H05A
+H06A
+H07A
+H08A
+H09A
+H10A
+H11A
+I04A
+I05A
+I06A
+I07A
+I08A
+I09A
+I10A
+I11A
+J04A
+J05A
+J06A
+J07A
+J08A
+J09A
+J10A
+J11A
+K04A
+K05A
+K06A
+K07A
+K08A
+K09A
+K10A
+K11A
+L05A
+L07A
+L08A
+L09A
+L10A
+M07A
+M08A
+M09A
 }
 }
-craton &Arr{
+TA_2_5 &Arr{
+center_latitude 46.0981
+center_longitude -118.633
 sta_list &Tbl{
-PAYV
-MOPC
-CAIV
-MAPC
-CMPC
-GURV
-PAPC
-RIOV
-VIPC
-CAPC
-EDPC
-LUEV
-}
-}
-west &Arr{
-sta_list &Tbl{
-ABPC
-PARV
-PCRV
-SRPC
-MUPC
-PRPC
-ORIV
-ARPC
-CUPC
-SIPC
-MNPC
-MATU
-CARI
-CACO
-GUAY
-COCH
-GUNV
-GUAY
-GUIV
-}
-}
-abcs &Arr{
-sta_list &Tbl{
-}
-}
-obs &Arr{
-sta_list &Tbl{
-PINA
-SHRB
-PNCH
-PINA
-CUBA
-RRNR
-SOMB
-DAQI
-ZOMB
-DRKS
-BTBT
-BLOS
-B151
-ORCV
-IBAV
-ITEV
-COCH
-GUAY
+B07A
+B08A
+B09A
+B10A
+C05A
+C06A
+C07A
+C08A
+C09A
+C10A
+C12A
+D05A
+D06A
+D07A
+D08A
+D09A
+D10A
+D11A
+D12A
+E05A
+E06A
+E07A
+E08A
+E09A
+E10A
+E11A
+F04A
+F05A
+F06A
+F07A
+F08A
+F09A
+F10A
+F11A
+F12A
+G05A
+G06A
+G07A
+G08A
+G09A
+G10A
+G11A
+H05A
+H06A
+H07A
+H08A
+H09A
+H10A
+H11A
+I05A
+I06A
+I07A
+I08A
+I09A
+I10A
 }
 }
 }
+pf_revision_time 1158357752

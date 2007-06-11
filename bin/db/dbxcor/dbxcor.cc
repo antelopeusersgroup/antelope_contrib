@@ -170,28 +170,49 @@ do_sw(Widget parent, SessionManager & sm)
                 cerr << "Error reading pf file = "<<sm.get_pf_name()<<endl;
                 exit(-1);
         }
+	Pf *pfrda;
+        if(pfget(pf,"phase_processing_parameters",(void **)&pfrda) != PFARR)
+                throw SeisppError("dbxcor:do_sw:  pfget failure looking for phase_processingParameters keyword");
+
+	Tbl *t;
+        t = pfkeys(pfrda);
+        for(int i=0;i<maxtbl(t);++i)
+        {
+		char *key;
+                key = static_cast<char *>(gettbl(t,i));
+		try {
+			string thisphase(key);
+			Metadata mdphase(pfrda,thisphase);
+			AnalysisSetting asphase(mdphase);
+			sm.asetting_default[thisphase]=asphase;
+		} catch (MetadataParseError mde)
+		{
+			cerr << "Problems parsing parameter file for phase="<<key<<endl
+				<< "dbxcor will not be able to process this phase."  <<endl
+				<< "Error from constructor"<<endl;
+			mde.log_error();
+		}
+		catch (SeisppError serr)
+		{
+			cerr << "Problems parsing parameter file for phase="<<key<<endl
+				<< "dbxcor will not be able to process this phase."  <<endl
+				<< "Error from constructor"<<endl;
+			serr.log_error();
+		}
+        }
+        freetbl(t,0);
+	if(sm.asetting_default.size()<=0)
+		throw SeisppError("do_sw:  total failure in setting up phase processing setup");
 
         try {
-        Metadata global_md(pf);
-        AnalysisSetting asetting(global_md);
-        sm.asetting_default=asetting;
-        sm.xpe=new XcorProcessingEngine(pf,asetting,sm.get_waveform_db_name(),sm.get_result_db_name());
+	// initiall load the first element of the container of AnalysisSetting setups.
+	// Not ideal, but not easy to fix without producing other problems.
+	map<string,AnalysisSetting>::iterator asetptr;
+	asetptr=sm.asetting_default.begin();
+	sm.active_setting=asetptr->second;
+	sm.set_phase(asetptr->first);
+        sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),sm.get_result_db_name());
 	sm.using_subarrays=sm.xpe->use_subarrays;
-
-	if(sm.eventdbname == "-")
-	{
-		if(dbread_view(stdin,&(sm.db),NULL)==dbINVALID)
-			throw SeisppError(string("dbxcor:  dbread_view(stdin) failed (origin db view)."));	
-	}
-	else
-	{
-		if(dbopen(const_cast<char *>(sm.eventdbname.c_str()),
-	  		"r",&(sm.db))==dbINVALID) 
-				throw SeisppError("dbxcor:  cannot input event database view");
-		sm.db=dblookup(sm.db,0,"event",0,0);
-		sm.db=dbjoin(sm.db,dblookup(sm.db,0,"origin",0,0),0,0,0,0,0);
-	}
-	sm.db.record=0;
 
 	int n=0;
 	Arg args[4];
@@ -284,6 +305,22 @@ void message_box(SessionManager * psm, string s, Widget parent)
     
     XtManageChild(rowcol);
 }
+// Companion to get_next_event.  Changes analysis setting to 
+// that defined for phase.  Throws an error if an AnalysisSetting object
+// is not found for requested phase.
+void modify_asetting_for_phase(SessionManager& sm,string phase)
+{
+	map<string,AnalysisSetting>::iterator asptr;
+	asptr=sm.asetting_default.find(phase);
+	if(asptr==sm.asetting_default.end())
+	{
+		throw SeisppError(string("Phase request error:  ")
+			+ string("Don't know how to processs phase=")
+			+phase);
+	}
+	sm.active_setting=asptr->second;
+	sm.xpe->change_analysis_setting(sm.active_setting);
+}
 
 void get_next_event(Widget w, void * client_data, void * userdata)
 {
@@ -300,6 +337,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
 
 	psm->record(string("Loading data for next event.... Please wait\n"));
+	Metadata mdfinder;
 
 	//mcc is associated with the XcorProcessingEngine, it seems
 	//that XcorProcessingEngine's analyze() method does clean up itself,
@@ -307,15 +345,49 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	//next time XcorProcessingEngine tries to do another analyze...
 //        if (psm->mcc != NULL) delete psm->mcc;
 
+/*
 	if(dbgetv(psm->db,0,"evid",&evid,
 		"orid",&orid,
 		"lat",&lat,
 		"lon",&lon,
 		"depth",&depth,
 		"time",&otime,0)!=dbINVALID)
+*/
+	if(psm->instream.good())
 	{
+		const string base_error("get_next_event:  ");
+		string phase_to_analyze;
+		psm->instream >> orid;
+		psm->instream >> phase_to_analyze;
+		mdfinder.put("orid",orid);
+		list<int> recs=psm->dbh.find(mdfinder);
+		if(recs.size()<=0)
+		{
+			ss << orid << " not found in input database"<<endl
+				<< "Trying to read next orid from control stream"<<endl;
+        	        psm->record(ss.str());
+			return;
+		}
+		else if(recs.size()>1)
+			throw SeisppError(base_error
+				+ string("event(x)origin has duplicate orids\n")
+				+ string("Run dbverify and restart"));
+		psm->dbh.db.record= *(recs.begin());
+		if(dbgetv(psm->dbh.db,0,"evid",&evid,
+			"lat",&lat,
+			"lon",&lon,
+			"depth",&depth,
+			"time",&otime,0)==dbINVALID)
+		{
+			throw SeisppError(base_error
+				+string("error reading origin data from input db"));
+		}
+			
 		psm->set_evid(evid);
 		psm->set_orid(orid);
+		// Reset analysis setting if the phase name to fetch changes
+		if(psm->get_phase()!=phase_to_analyze)
+			modify_asetting_for_phase(*psm,phase_to_analyze);
 
                 Hypocenter h(rad(lat),rad(lon),depth,otime,method,model);
 		psm->set_hypo(h);
@@ -346,7 +418,7 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 		ts << lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
 		data_md.put("title",ts.str());
 
-		psm->active_setting=psm->asetting_default;
+		psm->active_setting=psm->asetting_default[phase_to_analyze];
                 stringstream vs;
                 if (!psm->validate_setting(vs)) message_box(psm, vs.str(), w);
 
@@ -386,17 +458,12 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
-		// We need to increment the db record counter to advance. NO OTHER
-		// function must change this.
-		++(psm->db.record);
+	}  
 
-	} else {
-	    ss << "dbgetv error while reading event database view"<<endl;
-	    exit(0);
-	}
 	} catch (SeisppError serr) {
                 serr.log_error();
                 cerr << "Fatal error:  exiting"<<endl;
+		exit(-1);
 	}
 }
 
@@ -1609,9 +1676,18 @@ void exit_gui(Widget w, void * uesless1, void * useless2)
 }
 
 
-void usage(char ** argv)
+void usage(char *use)
 {
+	/* Old format.  
         cerr << argv[0]<<" dbin dbout dbevent [-pf pffile -v] " <<endl;
+	**********************************
+	new usage.  Allow db to be - and in that situation retrieve the 
+	parent db from the dbview pointer.  By default dbout=db but allow
+	alternative output file through the -o option (existing capability
+	I think.)  -f will allow fifo input.  In that situation pass
+	orid and phase. */
+        //cerr << argv[0]<<" db [-o dbout -f infile -pf pffile -v] " <<endl;
+	cerr << use <<endl;
         exit(-1);
 }
 
@@ -1656,35 +1732,42 @@ main (int argc, char **argv)
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
 			};
-  char *use="dbxcor  dbin dbout dbevent [-pf pffile -v]";
+  char *use="dbxcor  db [-o dbout -f infile -pf pffile -v]";
   char *author="Peng Wang and Gary Pavlis";
   char *email="pewang@indiana.edu,pavlis@indiana.edu";
   char *loc="Indiana University";
   char *rev="$Revision 1.13$";
 
-  if(argc<4) 
+  if(argc<2) 
   {
     cbanner(rev,use,author,loc,email);
-    usage(argv);
+    usage(use);
   }
   string waveform_db_name(argv[1]);
-  string result_db_name(argv[2]);
-  string hypodb(argv[3]);
+  string result_db_name(argv[1]);
+  //string hypodb(argv[3]);
+  string infile("");
   string pfname("dbxcor");
-  for(i=4;i<argc;++i) {
+  for(i=2;i<argc;++i) {
       string argtest(argv[i]);
       if(argtest=="-pf") {
            ++i;
            pfname=string(argv[i]);
+      } else if (argtest=="-o") {
+	   ++i;
+	   result_db_name=string(argv[i]);
+      } else if (argtest=="-f") {
+	   ++i;
+	   infile=string(argv[i]);
       } else if(argtest=="-v") {
 	  cbanner(rev,use,author,loc,email);
       } else {
-           usage(argv);
+           usage(use);
       }
   }
   string logstr(LOGNAME);
 
-  SessionManager sm(pfname,hypodb,logstr,waveform_db_name,result_db_name);
+  SessionManager sm(pfname,infile,logstr,waveform_db_name,result_db_name);
   sm.attributes_info.push_back(air[0]);
   sm.attributes_info.push_back(air[1]);
   sm.attributes_info.push_back(air[2]);
