@@ -43,6 +43,7 @@ public:
 	bool rw_set;
 	bool rt_set;
 
+	TimeWindow gather_twin;
         TimeWindow analysis_tw;
         TimeWindow beam_tw;
         TimeWindow robust_tw;

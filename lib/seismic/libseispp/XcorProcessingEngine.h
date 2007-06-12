@@ -138,7 +138,7 @@ private:
         bool trim_resampled;  // set true of edge transients automatically cut in resampling
 	// Added to private data 1/2/2006 by GLP.  Part of analysis setting now.
 	TimeWindow current_data_window;
-	TimeWindow raw_data_twin,regular_gather_twin;
+	TimeWindow raw_data_twin;
 	string netname;
 	double xcorpeak_cutoff_default;
 	double coherence_cutoff_default;

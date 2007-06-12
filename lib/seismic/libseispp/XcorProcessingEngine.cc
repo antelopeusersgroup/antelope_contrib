@@ -116,9 +116,6 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 	
 		raw_data_twin.start=global_md.get_double("data_window_start");
 		raw_data_twin.end=global_md.get_double("data_window_end");
-		double tpad=global_md.get_double("tpad");
-		regular_gather_twin.start = global_md.get_double("regular_gather_twin_start");
-		regular_gather_twin.end = global_md.get_double("regular_gather_twin_end");
 		current_data_window.start=treference+raw_data_twin.start;
 		current_data_window.end=treference+raw_data_twin.end;
 	        target_dt=global_md.get_double("target_sample_interval");
@@ -576,7 +573,7 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 	regular_gather=auto_ptr<TimeSeriesEnsemble>
 			(AssembleRegularGather(*tse,predarr,
 			analysis_setting.phase_for_analysis,
-            		regular_gather_twin,target_dt,rdef,true));
+            		analysis_setting.gather_twin,target_dt,rdef,true));
 	// This should probably be in the libseispp library, but
 	// we'll hard code it here for now.  Need to set defaults
 	// on all the computed metadata for all members of the

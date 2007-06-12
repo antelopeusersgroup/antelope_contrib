@@ -12,7 +12,6 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 		// Similarly these parameters are also used in
 		// constructor for XcorProcessingEngine.  Not
 		// an ideal design, but workable here.
-		TimeWindow gather_twin;
 		gather_twin.start=md.get_double("regular_gather_twin_start");
 		gather_twin.end=md.get_double("regular_gather_twin_end");
 	        if(gather_twin.end-gather_twin.start
@@ -129,6 +128,7 @@ AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
 	bw_set=old.bw_set;
 	rw_set=old.rw_set;
 	rt_set=old.rt_set;
+	gather_twin=old.gather_twin;
 	beam_tw=old.beam_tw;
 	robust_tw=old.robust_tw;
 	reference_trace=old.reference_trace;
@@ -151,6 +151,7 @@ AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
 	rw_set=old.rw_set;
 	rt_set=old.rt_set;
 	beam_tw=old.beam_tw;
+	gather_twin=old.gather_twin;
 	robust_tw=old.robust_tw;
 	reference_trace=old.reference_trace;
 	removed_traces=old.removed_traces;
