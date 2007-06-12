@@ -917,7 +917,7 @@ void pick_filter_options(Widget w, void * client_data, void * userdata)
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     Widget dialog;
     XmString text=XmStringCreateLocalized("Enter additional filter string(Antelope convention):");
-    XmString content=XmStringCreateLocalized("BW 0.5 5 2 5");
+    XmString content=XmStringCreateLocalized("BW 0.05 3 0.25 3");
     Arg args[6];
     int n=0;
 
