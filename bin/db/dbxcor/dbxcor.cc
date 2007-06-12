@@ -33,11 +33,11 @@ Widget BuildMenu (Widget parent, int menu_type, char *menu_title, char menu_mnem
         int      n;
 
         if (menu_type == XmMENU_PULLDOWN)
-                menu = XmCreatePulldownMenu (parent, "_pulldown", NULL, 0);
+                menu = XmCreatePulldownMenu (parent,(char *) "_pulldown", NULL, 0);
         else {
                 n = 0;
                 XtSetArg (args[n], XmNpopupEnabled, XmPOPUP_AUTOMATIC_RECURSIVE); n++;
-                menu = XmCreatePopupMenu (parent, "_popup", args, n);
+                menu = XmCreatePopupMenu (parent, (char *) "_popup", args, n);
         }
 
         if (tear_off)
@@ -140,7 +140,7 @@ Widget PostDialog (Widget parent, int dialog_type, char *msg)
         Widget   dialog;
         XmString text;
 
-        dialog = XmCreateMessageDialog (parent, "dialog", NULL, 0);
+        dialog = XmCreateMessageDialog (parent, (char *) "dialog", NULL, 0);
         text = XmStringCreateLocalized (msg);
         XtVaSetValues (dialog, XmNdialogType, dialog_type, XmNmessageString, text, NULL);
         XmStringFree (text);
@@ -171,7 +171,7 @@ do_sw(Widget parent, SessionManager & sm)
                 exit(-1);
         }
 	Pf *pfrda;
-        if(pfget(pf,"phase_processing_parameters",(void **)&pfrda) != PFARR)
+        if(pfget(pf,(char *) "phase_processing_parameters",(void **)&pfrda) != PFARR)
                 throw SeisppError("dbxcor:do_sw:  pfget failure looking for phase_processingParameters keyword");
 
 	Tbl *t;
@@ -216,9 +216,9 @@ do_sw(Widget parent, SessionManager & sm)
 
 	int n=0;
 	Arg args[4];
-	XtSetArg(args[n],ExmNzoomFactor,100); n++;
+	XtSetArg(args[n],(char *) ExmNzoomFactor,100); n++;
         XtSetArg(args[n],XmNpaneMaximum,20000); n++;
-	sm.seismic_widget=ExmCreateSeisw(parent,"Seisw",args,n);
+	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
 	}
         catch (SeisppError serr)
@@ -259,36 +259,36 @@ void message_box(SessionManager * psm, string s, Widget parent)
 
     i=0;
     XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
-    msg_box=XmCreateDialogShell(parent,"Information",args,i);
+    msg_box=XmCreateDialogShell(parent,(char *) "Information",args,i);
 
     i=0;
     XtSetArg (args[i], XmNpacking, XmPACK_TIGHT); i++;
     XtSetArg (args[i], XmNuserData, psm); i++;
-    rowcol = XmCreateRowColumn (msg_box, "rowcolumn", args, i);
+    rowcol = XmCreateRowColumn (msg_box, (char *) "rowcolumn", args, i);
 
 
     text=XmStringCreateLocalized((char*)s.c_str());
 
     i=0;
     XtSetArg(args[i],XmNlabelString,text); i++;
-    label=XmCreateLabel(rowcol,"info",args,i);
+    label=XmCreateLabel(rowcol,(char *) "info",args,i);
     XmStringFree(text);
     XtManageChild(label);
 
-    check=XmCreateToggleButtonGadget(rowcol,"Don't show this message to me again",
+    check=XmCreateToggleButtonGadget(rowcol,(char *) "Don't show this message to me again",
 			NULL,0);
     XtAddCallback (check, XmNvalueChangedCallback, disable_display, psm);
     XtManageChild(check);
 
-    separator = XmCreateSeparatorGadget (rowcol, "sep",NULL, 0);
+    separator = XmCreateSeparatorGadget (rowcol, (char *) "sep",NULL, 0);
     XtManageChild (separator);
 
     //create the ok button in the action area
     i=0;
     XtSetArg(args[i],XmNfractionBase,3); i++;
-    form=XmCreateForm(rowcol,"form",args,i);
+    form=XmCreateForm(rowcol,(char *) "form",args,i);
 
-    ok_btn=XmCreatePushButtonGadget(form,"OK",NULL,0);
+    ok_btn=XmCreatePushButtonGadget(form,(char *) "OK",NULL,0);
     XtVaSetValues(ok_btn, XmNtopAttachment, XmATTACH_FORM,
                         XmNbottomAttachment, XmATTACH_FORM,
                         XmNleftAttachment, XmATTACH_POSITION,
@@ -637,17 +637,17 @@ void pick_attributes(Widget w, void * client_data, void * userdata)
 
     i=0;
     XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
-    attr_dialog=XmCreateDialogShell(get_top_shell(w),"Attributes to View",args,i);
+    attr_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "Attributes to View",args,i);
 
     i=0;
     XtSetArg (args[i], XmNpacking, XmPACK_TIGHT); i++;
     XtSetArg (args[i], XmNuserData, psm); i++;
-    rowcol = XmCreateRowColumn (attr_dialog, "rowcolumn", args, i);
+    rowcol = XmCreateRowColumn (attr_dialog, (char *) "rowcolumn", args, i);
 
     i = 0;
     XtSetArg (args[i], XmNpacking, XmPACK_COLUMN); i++;
     XtSetArg (args[i], XmNnumColumns, 2); i++;
-    check_box = XmCreateRowColumn (rowcol, "Check Box", args, i);
+    check_box = XmCreateRowColumn (rowcol, (char *) "Check Box", args, i);
 
     for (i = 0; i < psm->attributes_info.size(); i++) {
         attr_box = XmCreateToggleButtonGadget (check_box, 
@@ -664,15 +664,15 @@ void pick_attributes(Widget w, void * client_data, void * userdata)
 
     XtManageChild(check_box);
  
-    separator = XmCreateSeparatorGadget (rowcol, "sep",NULL, 0);
+    separator = XmCreateSeparatorGadget (rowcol, (char *) "sep",NULL, 0);
     XtManageChild (separator);
 
     //create the ok and cancel buttons in the action area
     i=0;
     XtSetArg(args[i],XmNfractionBase,5); i++;
-    form=XmCreateForm(rowcol,"form",args,i);
+    form=XmCreateForm(rowcol,(char *) "form",args,i);
 
-    ok_btn=XmCreatePushButtonGadget(form,"Apply",NULL,0);
+    ok_btn=XmCreatePushButtonGadget(form,(char *) "Apply",NULL,0);
     XtVaSetValues(ok_btn, XmNtopAttachment, XmATTACH_FORM,
                         XmNbottomAttachment, XmATTACH_FORM,
                         XmNleftAttachment, XmATTACH_POSITION,
@@ -685,7 +685,7 @@ void pick_attributes(Widget w, void * client_data, void * userdata)
     XtManageChild(ok_btn);
     XtAddCallback(ok_btn,XmNactivateCallback,do_attr_window,psm);
 
-    cancel_btn=XmCreatePushButtonGadget(form,"Cancel",NULL,0);
+    cancel_btn=XmCreatePushButtonGadget(form,(char *) "Cancel",NULL,0);
     XtVaSetValues (cancel_btn, XmNsensitive, True,
                                XmNtopAttachment, XmATTACH_FORM,
                                XmNbottomAttachment, XmATTACH_FORM,
@@ -716,7 +716,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     
     i=0;
     XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
-    sort_dialog=XmCreateDialogShell(get_top_shell(w),"Sort Options",args,i);
+    sort_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "Sort Options",args,i);
 
     selected=psm->active_setting.result_sort_order;
 
@@ -725,12 +725,12 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     XtSetArg(args[i],XmNsashWidth,1); i++;
     XtSetArg(args[i],XmNsashHeight,1); i++;
     XtSetArg(args[i],XmNuserData,selected); i++;
-    pane=XmCreatePanedWindow(sort_dialog,"pane",args,i);
+    pane=XmCreatePanedWindow(sort_dialog,(char *) "pane",args,i);
 
-    radio_box=XmCreateRadioBox(pane,"Sort Options",NULL,0);
+    radio_box=XmCreateRadioBox(pane,(char *) "Sort Options",NULL,0);
 
     Widget wtemp;
-    wtemp=XmCreateToggleButtonGadget(radio_box,"lat",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "lat",NULL,0);
     picked=SITE_LAT;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -739,7 +739,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"lon",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "lon",NULL,0);
     picked=SITE_LON;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -748,7 +748,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Predicted Time",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Predicted Time",NULL,0);
     picked=PREDARR_TIME;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -757,7 +757,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"source azimuth",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "source azimuth",NULL,0);
     picked=ESAZ;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -766,7 +766,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"measured amplitude",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "measured amplitude",NULL,0);
     picked=AMPLITUDE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -775,7 +775,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Computed lag",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Computed lag",NULL,0);
     picked=LAG;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -785,7 +785,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     }
     SessionState state=psm->get_state();
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Coherence",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Coherence",NULL,0);
     picked=COHERENCE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -795,7 +795,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
    
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Peak Correlation",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Peak Correlation",NULL,0);
     picked=CORRELATION_PEAK;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -805,7 +805,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Amplitude",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Amplitude",NULL,0);
     picked=AMPLITUDE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -815,7 +815,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Lag",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Lag",NULL,0);
     picked=LAG;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -825,7 +825,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Distance",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Distance",NULL,0);
     picked=DISTANCE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -835,7 +835,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,"Stack Weight",NULL,0);
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Stack Weight",NULL,0);
     picked=WEIGHT;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
@@ -851,9 +851,9 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
      //create the ok and cancel buttons in the action area
      i=0;
      XtSetArg(args[i],XmNfractionBase,5); i++;
-     form=XmCreateForm(pane,"form",args,i);
+     form=XmCreateForm(pane,(char *) "form",args,i);
 
-     ok_btn=XmCreatePushButtonGadget(form,"Apply",NULL,0);
+     ok_btn=XmCreatePushButtonGadget(form,(char *) "Apply",NULL,0);
      XtVaSetValues(ok_btn, XmNtopAttachment, XmATTACH_FORM,
                         XmNbottomAttachment, XmATTACH_FORM,
                         XmNleftAttachment, XmATTACH_POSITION,
@@ -866,7 +866,7 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
      XtManageChild(ok_btn);
      XtAddCallback(ok_btn,XmNactivateCallback,apply_sort_order,psm);
 
-     cancel_btn=XmCreatePushButtonGadget(form,"Cancel",NULL,0);
+     cancel_btn=XmCreatePushButtonGadget(form,(char *) "Cancel",NULL,0);
      XtVaSetValues (cancel_btn, XmNsensitive, True,
                                XmNtopAttachment, XmATTACH_FORM,
                                XmNbottomAttachment, XmATTACH_FORM,
@@ -923,20 +923,20 @@ void pick_filter_options(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     Widget dialog;
-    XmString text=XmStringCreateLocalized("Enter additional filter string(Antelope convention):");
-    XmString content=XmStringCreateLocalized("BW 0.05 3 0.25 3");
+    XmString text=XmStringCreateLocalized((char *) "Enter additional filter string(Antelope convention):");
+    XmString content=XmStringCreateLocalized((char *) "BW 0.05 3 0.25 3");
     Arg args[6];
     int n=0;
 
     XtSetArg(args[n],XmNselectionLabelString,text); n++;
     XtSetArg(args[n],XmNautoUnmanage,False); n++;
     XtSetArg(args[n],XmNtextString,content); n++;
-    dialog=XmCreatePromptDialog(get_top_shell(w),"Filter Option",args,n);
+    dialog=XmCreatePromptDialog(get_top_shell(w),(char *) "Filter Option",args,n);
     XmStringFree(text);
 
-    XtManageChild(XtNameToWidget(dialog, "Apply"));
-    XtUnmanageChild(XtNameToWidget(dialog, "OK"));
-    XtUnmanageChild(XtNameToWidget(dialog, "Help"));
+    XtManageChild(XtNameToWidget(dialog, (char *) "Apply"));
+    XtUnmanageChild(XtNameToWidget(dialog, (char *) "OK"));
+    XtUnmanageChild(XtNameToWidget(dialog, (char *) "Help"));
 
     XtAddCallback(dialog,XmNapplyCallback,apply_filter,psm);
     XtAddCallback(dialog,XmNcancelCallback,destroy_callback,dialog);
@@ -988,11 +988,11 @@ void toggle_edit(Widget w, void * client_data, void * userdata)
   
     if (edit_enable==0) {
 	edit_enable=1;
-	str = XmStringCreateLocalized ("Stop Trace Edit");
+	str = XmStringCreateLocalized ((char *) "Stop Trace Edit");
 	psm->session_state(TRACE_EDIT);
     } else {
 	edit_enable=0; 
-	str = XmStringCreateLocalized ("Trace Edit");
+	str = XmStringCreateLocalized ((char *) "Trace Edit");
 	psm->restore_previous_state();
     }   
 
@@ -1020,11 +1020,11 @@ void pick_cutoff(Widget w, void * client_data, void * userdata)
 
     if (edit_enable==0) {
         edit_enable=2;
-        str = XmStringCreateLocalized ("Stop Picking Cutoff");
+        str = XmStringCreateLocalized ((char *) "Stop Picking Cutoff");
 	psm->session_state(PICKING_CUTOFF);
     } else {
         edit_enable=0;
-        str = XmStringCreateLocalized ("Pick Cutoff");
+        str = XmStringCreateLocalized ((char *) "Pick Cutoff");
 	psm->restore_previous_state();
     }
 
@@ -1215,7 +1215,7 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     n=0;
     XtSetArg(args[n],XmNwidth,400); n++;
     XtSetArg(args[n],XmNheight,100); n++;
-    pane=XmCreatePanedWindow(rshell_beam,"Pane",args,n);
+    pane=XmCreatePanedWindow(rshell_beam,(char *) "Pane",args,n);
 
     TimeSeries beam=psm->mcc->ArrayBeam();
     TimeSeriesEnsemble *beam_tse=new TimeSeriesEnsemble(1,beam.ns);
@@ -1225,19 +1225,19 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     beam_display_md.put("title",psm->markers.title);
 
     n=0;
-    XtSetArg(args[n],ExmNdisplayOnly,1); n++;
-    XtSetArg(args[n],ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse));n++;
-    XtSetArg(args[n],ExmNseiswMetadata,&beam_display_md); n++;
-    XtSetArg(args[n],ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
-    beam_widget=ExmCreateSeisw(pane,"Beam Plot",args,n);
+    XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
+    XtSetArg(args[n],(char *) ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse));n++;
+    XtSetArg(args[n],(char *) ExmNseiswMetadata,&beam_display_md); n++;
+    XtSetArg(args[n],(char *) ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
+    beam_widget=ExmCreateSeisw(pane,(char *) "Beam Plot",args,n);
 
     XtManageChild(beam_widget);
     XtVaSetValues(beam_widget,XmNpaneMinimum,100,NULL);
 
     n=0;
     XtSetArg(args[n],XmNuserData,psm); n++;
-    form=XmCreateForm(pane,"form",args,n);   
-    btn_arrival=XmCreatePushButtonGadget(form,"Pick Arrival",NULL,0);
+    form=XmCreateForm(pane,(char *) "form",args,n);   
+    btn_arrival=XmCreatePushButtonGadget(form,(char *) "Pick Arrival",NULL,0);
     XtVaSetValues(btn_arrival, XmNtopAttachment, XmATTACH_FORM,
                         XmNbottomAttachment, XmATTACH_FORM,
                         XmNleftAttachment, XmATTACH_FORM,
@@ -1350,7 +1350,7 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 
 		psm->attributes_info[index].line=SciPlotListCreateFromDouble(
 			psm->attributes_info[index].graph_widget,
-			end-begin+1,x1,x2,"");
+			end-begin+1,x1,x2,(char *) "");
 
 		SciPlotListSetStyle(psm->attributes_info[index].graph_widget,
 		    psm->attributes_info[index].line, 255, XtMARKER_CIRCLE,
@@ -1482,12 +1482,12 @@ void do_attr_window(Widget w, void * client_data, void * userdata)
 		    double x[1],y[1];
 		    x[0]=y[0]=1.0;
 
-		    psm->attributes_info[i].line=SciPlotListCreateFromDouble(plotWidget,1,x,y,"");
+		    psm->attributes_info[i].line=SciPlotListCreateFromDouble(plotWidget,1,x,y,(char *) "");
 
 		    psm->attributes_info[i].graph_widget=plotWidget;
 		} else {
 		    XtDestroyWidget(psm->attributes_info[i].w);
-		    wdgt=psm->attributes_info[i].w=XmCreateDrawingArea(psm->parent,"attribute",NULL,0);
+		    wdgt=psm->attributes_info[i].w=XmCreateDrawingArea(psm->parent,(char *) "attribute",NULL,0);
 		}
 
 		XtManageChild(wdgt);
@@ -1535,7 +1535,7 @@ void init_attr(SessionManager & sm, AttributeInfoRec * air)
     sm.attributes_info.push_back(air[3]);
 */
     for(i=0; i<sm.attributes_info.size(); i++) {
-	sm.attributes_info[i].w=XmCreatePanedWindow(sm.parent,"attribute",NULL,0);
+	sm.attributes_info[i].w=XmCreatePanedWindow(sm.parent,(char *) "attribute",NULL,0);
     }    
 }
 
@@ -1555,10 +1555,10 @@ void do_xcor_plot(Widget w, void * client_data, void * userdata)
 
     int n=0;
     Arg args[4];
-    XtSetArg(args[n],ExmNdisplayOnly,1); n++;
-    XtSetArg(args[n],ExmNseiswEnsemble,&(psm->mcc->xcor));n++;
-    XtSetArg(args[n],ExmNseiswMetadata,&xcor_display_md); n++;
-    xcor_widget=ExmCreateSeisw(rshell_xcor,"Correlation Plot",args,n);
+    XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
+    XtSetArg(args[n],(char *) ExmNseiswEnsemble,&(psm->mcc->xcor));n++;
+    XtSetArg(args[n],(char *) ExmNseiswMetadata,&xcor_display_md); n++;
+    xcor_widget=ExmCreateSeisw(rshell_xcor,(char *) "Correlation Plot",args,n);
 
     XtManageChild(xcor_widget);
     XtVaSetValues(xcor_widget,XmNpaneMinimum,100,NULL);
@@ -1739,11 +1739,11 @@ main (int argc, char **argv)
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
 			};
-  char *use="dbxcor  db [-o dbout -f infile -pf pffile -v]";
-  char *author="Peng Wang and Gary Pavlis";
-  char *email="pewang@indiana.edu,pavlis@indiana.edu";
-  char *loc="Indiana University";
-  char *rev="$Revision 1.13$";
+  char *use=(char *) "dbxcor  db [-o dbout -f infile -pf pffile -v]";
+  char *author=(char *) "Peng Wang and Gary Pavlis";
+  char *email=(char *) "pewang@indiana.edu,pavlis@indiana.edu";
+  char *loc=(char *) "Indiana University";
+  char *rev=(char *) "$Revision 1.13$";
 
   if(argc<2) 
   {
@@ -1796,17 +1796,17 @@ main (int argc, char **argv)
 			     
 
   //create first level form widget
-  flrc=XmCreateForm(shell,APP_CLASS,NULL,0);
+  flrc=XmCreateForm(shell,(char *) APP_CLASS,NULL,0);
 
   //first row of the flrc
   /* Create the menu bar */
-  menu_bar = XmCreateMenuBar(flrc, "menuBar", NULL, 0);
+  menu_bar = XmCreateMenuBar(flrc, (char *) "menuBar", NULL, 0);
   XtVaSetValues (menu_bar, XmNtopAttachment,  XmATTACH_FORM, XmNleftAttachment, XmATTACH_FORM, 
 	XmNrightAttachment, XmATTACH_FORM, NULL);
 
   MenuItem file_menu[]={
-    {"Save",&xmPushButtonGadgetClass,'s',"Ctrl<Key>S",NULL,save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Exit",&xmPushButtonGadgetClass,'x',"Ctrl<Key>C",NULL,exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
+    {(char *) "Save",&xmPushButtonGadgetClass,'s',(char *) "Ctrl<Key>S",NULL,save_event,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Exit",&xmPushButtonGadgetClass,'x',(char *) "Ctrl<Key>C",NULL,exit_gui,(XtPointer)0,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
@@ -1831,27 +1831,27 @@ main (int argc, char **argv)
   };
 
   MenuItem picks_menu[]={
-    {"Beam Window",&xmPushButtonGadgetClass,'B',NULL,NULL,pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Robust Window",&xmPushButtonGadgetClass,'R',NULL,NULL,pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Beam Window",&xmPushButtonGadgetClass,'B',NULL,NULL,pick_bwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Robust Window",&xmPushButtonGadgetClass,'R',NULL,NULL,pick_rwindow,(XtPointer)&sm,NULL,(MenuItem *)NULL},
 //    {"View",&xmPushButtonGadgetClass,'V',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)view_submenu},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
   MenuItem options_menu[]={
-    {"Sort Options",&xmPushButtonGadgetClass,'r',NULL,NULL,pick_sort_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Sort Options",&xmPushButtonGadgetClass,'r',NULL,NULL,pick_sort_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
+    {(char *) "Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
   MenuItem settings_menu[]={
-    {"Pf File",&xmPushButtonGadgetClass,'P',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
+    {(char *) "Pf File",&xmPushButtonGadgetClass,'P',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
-  sm.controls[MENU_FILE]=menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,"File",'F',false,file_menu);
-  sm.controls[MENU_PICKS]=menu_picks=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Picks",'P',false,picks_menu);
-  sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Option",'O',false,options_menu);
-  sm.controls[MENU_VIEW]=menu_view=BuildMenu(menu_bar,XmMENU_PULLDOWN,"View",'V',false,view_menu);
-  sm.controls[MENU_SETTINGS]=menu_settings=BuildMenu(menu_bar,XmMENU_PULLDOWN,"Setting",'t',false,settings_menu);
+  sm.controls[MENU_FILE]=menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "File",'F',false,file_menu);
+  sm.controls[MENU_PICKS]=menu_picks=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Picks",'P',false,picks_menu);
+  sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Option",'O',false,options_menu);
+  sm.controls[MENU_VIEW]=menu_view=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "View",'V',false,view_menu);
+  sm.controls[MENU_SETTINGS]=menu_settings=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Setting",'t',false,settings_menu);
 
   set_menu_controls(file_menu,picks_menu,options_menu,settings_menu,view_menu,sm);
 
@@ -1862,7 +1862,7 @@ main (int argc, char **argv)
   //create second level form widget
   n=0;
   XtSetArg (args[n], XmNfractionBase, MAINFORM_GRID_CNT); n++;
-  slrc = XmCreateForm (flrc, "form",   args, n);
+  slrc = XmCreateForm (flrc, (char *) "form",   args, n);
   XtVaSetValues (slrc,
                  XmNleftAttachment, XmATTACH_FORM,
 		 XmNrightAttachment, XmATTACH_FORM,
@@ -1885,7 +1885,7 @@ main (int argc, char **argv)
   XtSetArg (args[n], XmNbottomAttachment, XmATTACH_POSITION); n++;
   XtSetArg (args[n], XmNbottomPosition, MAINFORM_GRID_CNT-1); n++;
 
-  paned_win=XmCreatePanedWindow(slrc,"pane", args, n);
+  paned_win=XmCreatePanedWindow(slrc,(char *) "pane", args, n);
 
   //Use the second paned window to ensure that when attributes are 
   //displayed, they are laid out horizontally.
@@ -1895,7 +1895,7 @@ main (int argc, char **argv)
   XtSetArg(args[n],XmNspacing,0); n++;
   XtSetArg(args[n],XmNallowResize,True); n++;
   XtSetArg(args[n],XmNwidth,2000); n++;
-  second_paned_win=XmCreatePanedWindow(paned_win, "pane1", args, n); 
+  second_paned_win=XmCreatePanedWindow(paned_win, (char *) "pane1", args, n); 
   sm.parent=second_paned_win;
 
   init_attr(sm, air);
@@ -1914,7 +1914,7 @@ main (int argc, char **argv)
   XtSetArg(args[n], XmNtopWidget, second_paned_win); n++;
   XtSetArg (args[n], XmNleftAttachment, XmATTACH_FORM); n++;
   XtSetArg (args[n], XmNrightAttachment, XmATTACH_FORM); n++;
-  sm.msg_w = XmCreateScrolledText (paned_win, "msg_w", args, n);
+  sm.msg_w = XmCreateScrolledText (paned_win, (char *) "msg_w", args, n);
   XtManageChild (sm.msg_w);
 
   //create the third level row column widget 
@@ -1935,52 +1935,52 @@ main (int argc, char **argv)
 //  XtSetArg (args[n], XmNleftAttachment, XmATTACH_FORM); n++;
 //  XtSetArg (args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
 
-  tlrc=XmCreateRowColumn(slrc,"third",args,n);
+  tlrc=XmCreateRowColumn(slrc,(char *) "third",args,n);
 
   XtVaSetValues(tlrc,XmNorientation,XmHORIZONTAL,
         XmNentryAlignment,XmALIGNMENT_BEGINNING,XmNpacking,XmPACK_TIGHT,NULL);
 
 
-  btninfo.label="Get Next Event";
+  btninfo.label=(char *) "Get Next Event";
   btninfo.callback=get_next_event;
   btninfo.callback_data=&sm;
   sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
 
-  btninfo.label="Load Next Subarray";
+  btninfo.label=(char *) "Load Next Subarray";
   btninfo.callback=load_next_subarray;
   btninfo.callback_data=&sm;
   sm.controls[BTN_NEXTSUB]=create_button(tlrc,btninfo);  
 
-  btninfo.label="Pick Ref Trace";
+  btninfo.label=(char *) "Pick Ref Trace";
   btninfo.callback=pick_ref_trace;
   sm.controls[BTN_REF]=create_button(tlrc,btninfo);
 
-  btninfo.label="Analyze";
+  btninfo.label=(char *) "Analyze";
   btninfo.callback=do_analyze;
   sm.controls[BTN_ANALYZE]=create_button(tlrc,btninfo);
 
-  btninfo.label="Trace Edit";
+  btninfo.label=(char *) "Trace Edit";
   btninfo.callback=toggle_edit;
   sm.controls[BTN_PICKS_TEDIT]=create_button(tlrc,btninfo);
 
-  btninfo.label="Plot Beam";
+  btninfo.label=(char *) "Plot Beam";
   btninfo.callback=do_beam_plot;
   sm.controls[BTN_BEAM_PLOT]=create_button(tlrc,btninfo);
 
-  btninfo.label="Plot Correlation";
+  btninfo.label=(char *) "Plot Correlation";
   btninfo.callback=do_xcor_plot;
   sm.controls[BTN_XCOR_PLOT]=create_button(tlrc,btninfo);
 
-  btninfo.label="Restore Data";
+  btninfo.label=(char *) "Restore Data";
   btninfo.callback=restore_data;
   sm.controls[BTN_RESTORE]=create_button(tlrc,btninfo);
 
-  btninfo.label="Pick Cutoff";
+  btninfo.label=(char *) "Pick Cutoff";
   btninfo.callback=pick_cutoff;
   sm.controls[BTN_PICK_CUTOFF]=create_button(tlrc,btninfo);
 
 // Alternate save as button.  Under file menu also
-  btninfo.label="Save";
+  btninfo.label=(char *) "Save";
   btninfo.callback=save_event;
   sm.controls[BTN_FILE_SAVE]=create_button(tlrc,btninfo);
 
