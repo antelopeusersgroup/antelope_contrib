@@ -1,0 +1,52 @@
+match &Tbl{
+UMSG
+recenter
+massrecenter
+masslock
+massunlock
+getconfig
+getannc
+getstatus
+reboot
+}
+
+reject &Tbl{
+#Processing
+sbpwr
+Baler
+dopen
+QMASERV
+C1_UMSG
+Error
+Sending
+Issuing
+}
+
+dlevents &Arr{
+#	dlevtype	log_phrase
+	service		UMSG
+	massrecenter	recenter
+	massrecenter	massrecenter
+	sensor_lock	masslock
+	sensor_unlock	massunlock
+	sensor_cal   	calibration
+	request_config	getconfig
+	request_annc	getannc
+	request_status	getstatus
+	baler		Baler
+	reboot		reboot
+}
+
+convert_umsg &Arr{
+# UMSG_comment_phrase	dlevtype
+        massrecenter    massrecenter
+        recenter        massrecenter
+        center          massrecenter
+        MRC             massrecenter
+        mrc             massrecenter
+        unlock          sensor_unlock
+        lock            sensor_lock
+        Cal             sensor_cal
+} 
+
+
