@@ -396,9 +396,11 @@ void get_next_event(Widget w, void * client_data, void * userdata)
                         << lon<<","
                         << depth <<","
                         << strtime(otime)<<endl;
+		psm->record(ss.str());
 		psm->session_state(THINKING);
                 psm->xpe->load_data(h);
 		ss << "Data loaded" <<endl;
+		psm->record(ss.str());
 		if(psm->using_subarrays)
 		{
 			psm->session_state(NEXT_SUBARRAY);
@@ -413,9 +415,13 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 		TimeSeriesEnsemble * tse=psm->xpe->get_waveforms_gui();
 		ss << "Ensemble has " << tse->member.size()
 			<<" seismograms"<<endl;
+		psm->record(ss.str());
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
-		ts << lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
+		ts << phase_to_analyze << " data for evid="<<evid
+			<<", orid="<<orid
+			<<".  Location:  "
+			<<lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
 		data_md.put("title",ts.str());
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
@@ -566,6 +572,7 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 	    ss << "ERROR: unknown result sort order"<<endl;
 	    break;
     }
+    psm->record(ss.str());
 
     psm->xpe->change_analysis_setting(psm->active_setting);
 
@@ -1624,7 +1631,7 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_SUBARRAY);
     else
 	psm->session_state(NEXT_EVENT);
-    ss << "Resetting original data"<<endl;
+    ss << "Restoring original data"<<endl;
     psm->record(ss.str());
 }
 
