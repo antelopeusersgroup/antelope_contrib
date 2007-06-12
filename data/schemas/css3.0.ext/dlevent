@@ -1,0 +1,39 @@
+# css3.0 extension
+
+Include css3.0  # uncomment to complete schema
+
+Attribute dlevtype
+	String (30)
+	Format ( "%s" )
+	Null ( "-" )
+	Description ( "datalogger event" )
+	Detail {
+		Various user or equipment interactions may occur on a 
+		datalogger; this field records they type of event that
+		occurred.  Some examples include:  "station visit", 
+		"massrecenter", "reboot", "calibration", "baler read", etc.
+	}
+	;
+
+Attribute dlcomment
+	String (180)
+	Format ( "%s" )
+	Null ( "-" )
+	Description ( "datalogger event comment" )
+	Detail {
+		Further description of a dlevent.
+	}
+	;
+
+Relation dlevent
+	Fields ( dlname time dlevtype dlcomment lddate )
+	Primary ( dlname dlevtype time )
+	Description ( "interactions with datalogger" )
+	Detail {
+		This table collects the user or equipment interations with 
+		the datalogger.  These interactions could include:  service 
+		visits, massrecenters, calibration, sensor locks/unlocks,
+		baler turn-on, etc.
+	}
+	;
+
