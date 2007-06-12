@@ -834,9 +834,14 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    string statmp,chantmp;
 			    statmp=trace->get_string("sta");
 			    chantmp=trace->get_string("chan");
+			    // These need to be posted as match keys
+			    trace->put("evid",evid);
+			    trace->put("orid",orid);
+			    trace->put("phase",
+				analysis_setting.phase_for_analysis);
 			    trace->put("assoc.sta",statmp);
 			    trace->put("arrival.sta",statmp);
-			    trace->put("arrrival.chan",chantmp);
+			    trace->put("arrival.chan",chantmp);
 			    trace->put("assoc.delta",deg(delta));
 			    trace->put("assoc.seaz",deg(seaz));
 			    trace->put("assoc.esaz",deg(esaz));
@@ -848,7 +853,6 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    trace->put("assoc.vmodel",h.tt_definition());
 			    // Not really needed, but better to post this
 			    // for long term utility
-			    trace->put("evid",evid);
 			    trace->put("assoc.orid",orid);
 			    trace->put("arrival.time",atime);
 			    trace->put("arrival.iphase",
