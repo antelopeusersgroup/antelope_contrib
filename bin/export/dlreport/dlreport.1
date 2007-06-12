@@ -1,0 +1,79 @@
+.TH dlreport 1 "$Date$"
+
+.SH NAME 
+dlreport \- summarize dlevents in a mailable report 
+
+.SH SYNOPSIS
+.nf
+dlreport [-d 'time'] [-n ndays] [-v] [-m email1,email2,...] [-s subset] {-S | -E} db
+.fi
+
+.SH DESCRIPTION
+\fBdlreport\fP summarizes the dlevents that have been recorded in a dlevent
+table (see \fBlogs2dlevent\fP(1)).  The summaries can be sorted either by
+dlname (\fI-S\fP) or by dlevtype (\fI-E\fP).  
+
+.SH OPTIONS
+
+.IP "-d ndays_lag"
+Normally, the report covers the previous UTC day.  This option allows specifying
+a different start time.
+.IP "-n ndays"
+This is the total number of days of logs to review.  For instance, if you wish
+to review the previous week of logs, not including the current (incomplete) day,
+set -n to 7.  The default is 1 day.
+.IP "-m email1,email2"
+When specified, \fBdlreport\fP attempts to send the report to the email addresses 
+specified here rather than to standard out.
+.IP "-s"
+A subset expression that must be valid for the dlevent table.
+.IP "-v"
+Verbose output.
+.IP "db"
+Output db that must use the dlevent schema extension to css3.0 and have a dlevent
+table.
+
+.SH FILES
+
+You must have a valid dlevent table. See \fBorb2logs(1)\fP.
+
+.SH EXAMPLE
+.LP
+The intent for this script was to run it as a nightly or weekly cronjob on a real-time 
+system to help summarize various interactions with the datalogger 
+
+.LP
+A cronjob listing in rtexec.pf that runs on Thursday summarizing the previous 
+week of dlevents based on a station (datalogger) sort might look like:
+.in 2c
+.ft CW
+.nf
+dlreport    	UTC  00 20 * * 4 dlreport -n 7 -S -m "jeakins@ucsd.edu" $DB
+.fi
+.ft R
+.in
+
+.LP
+Report on all massrecenters at station TA_G03A over the previous year.
+.in 2c
+.ft CW
+.nf
+dlreport -n 365 -v -s "dlname=='TA_G03A'" usarray_soh 
+.fi
+.ft R
+.in
+
+.SH "SEE ALSO"
+.nf
+logs2dlevent(1)
+.fi
+
+.SH "BUGS AND CAVEATS"
+None yet, but that is rather optimistic. 
+
+.SH AUTHOR
+.nf
+Jennifer Eakins
+ANF-IGPP-SIO-UCSD
+.fi
+
