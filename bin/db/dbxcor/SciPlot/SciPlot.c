@@ -25,6 +25,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "SciPlotP.h"
