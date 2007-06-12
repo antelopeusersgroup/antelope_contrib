@@ -37,12 +37,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			result_db_handle=DatascopeHandle(waveform_db_handle);
 		else
 			result_db_handle=DatascopeHandle(result_db_name,false);
-		dbassoc=dblookup(result_db_handle.db,0,"assoc",0,0);
-		dbarrival=dblookup(result_db_handle.db,0,"arrival",0,0);
-		dbxcorarrival=dblookup(result_db_handle.db,0,"xcorarrival",0,0);
-		dbxcorbeam=dblookup(result_db_handle.db,0,"xcorbeam",0,0);
-		dbwfprocess=dblookup(result_db_handle.db,0,"wfprocess",0,0);
-		dbevlink=dblookup(result_db_handle.db,0,"evlink",0,0);
+		dbassoc=dblookup(result_db_handle.db,0,(char *) "assoc",0,0);
+		dbarrival=dblookup(result_db_handle.db,0,(char *) "arrival",0,0);
+		dbxcorarrival=dblookup(result_db_handle.db,0,(char *) "xcorarrival",0,0);
+		dbxcorbeam=dblookup(result_db_handle.db,0,(char *) "xcorbeam",0,0);
+		dbwfprocess=dblookup(result_db_handle.db,0,(char *) "wfprocess",0,0);
+		dbevlink=dblookup(result_db_handle.db,0,(char *) "evlink",0,0);
 		if( (dbassoc.table==dbINVALID) 
 			|| (dbarrival.table==dbINVALID))
 		{
@@ -65,12 +65,12 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 		// Verify site and sitechan are defined and abort if
 		// they are empty
 		int ntest;
-		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,"site",0,0);
+		Dbptr dbtmp=dblookup(waveform_db_handle.db,0,(char *) "site",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0) 
 			throw SeisppError(string("XcorProcessingEngine:")
 				+string(" required site table is empty"));
-		dbtmp=dblookup(waveform_db_handle.db,0,"sitechan",0,0);
+		dbtmp=dblookup(waveform_db_handle.db,0,(char *) "sitechan",0,0);
 		dbquery(dbtmp,dbRECORD_COUNT,&ntest);
 		if(ntest<=0) 
 			throw SeisppError(string("XcorProcessingEngine:")
