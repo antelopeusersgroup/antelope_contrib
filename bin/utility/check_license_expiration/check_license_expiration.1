@@ -1,0 +1,26 @@
+.TH CHECK_LICENSE_EXPIRATION 1 "$Date$"
+.SH NAME
+check_license_expiration \- a program to check for expired and expiring Antelope licenses
+.SH SYNOPSIS
+.nf
+\fBcheck_license_expiration\fP [\fB\-d\fP \fIdays\fP] \fIfileglob\fP
+.fi
+.SH DESCRIPTION
+\fBcheck_license_expiration\fP is a program that will check to see if a
+license parameter file or group of files has licenses keys that have 
+expired or will expire soon. It is intended to be run on a centrally 
+located collection of license files on a regular basis instead of having 
+individual machines report the state of their licenses. Without the -d option, 
+\fBcheck_license_expiration\fP defaults to a 30 day window to license keys that
+it considers to be worth warning about. 
+
+.SH OPTIONS
+.IP "-d days"
+The number of days in the future to set the warning threshold for a license
+key to be considered expiring soon.
+
+.SH AUTHOR
+.nf
+Steve Foley
+Scripps Institution of Oceanography
+.fi
