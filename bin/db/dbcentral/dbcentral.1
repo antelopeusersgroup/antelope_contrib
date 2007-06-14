@@ -3,7 +3,7 @@
 \fBdbcentral\fP \- centralized utility to launch commands on commonly used databases
 .SH SYNOPSIS
 .nf
-\fBdbcentral\fP [-n] [-t timestring] [-d] [-l] [-q queryfile]
+\fBdbcentral\fP [-a] [-n] [-t timestring] [-d] [-l] [-q queryfile]
 	  [database_clustername [task_nickname]]
 .fi
 .SH DESCRIPTION
@@ -127,6 +127,13 @@ mechanism; see pf(3)). This allows common database pathnames to be
 centrally configured.
 
 .SH OPTIONS
+.IP -a
+The -a option runs a task nickname from the parameter-file on all databases
+in a cluster. A database clustername and a task nickname must be specified 
+on the command-line when using this option (often the task nickname will
+refer to a task defined in a custom parameter file). See the EXAMPLE and 
+BUGS AND CAVEATS setions below for additional information. 
+
 .IP -d
 Show the absolute pathname of a database. A database clustername must 
 be specified when using the -d option.
@@ -417,6 +424,30 @@ mydb_2007_03_01           mydb_2007_04_01.arrival
 (one could use dbmerge(1) on these results to combine them into one single
 output database). 
 
+.SS "To run an arbitrary task on all databases in a cluster:"
+
+.nf
+
+% cat dbcentral.pf
+dbcentral_database /databases/dbcentral
+
+custom_tasks &Arr{
+
+   usarray &Tbl{
+	 get_archive_srb get_archive_srb -v -w \\\\"jdate == _2004104_\\\\"  DBNAME srb_2004_04 
+	    }
+
+}
+%
+
+% dbcentral -a usarray get_archive_srb
+ ....
+ ....
+%
+
+
+.fi
+
 .in
 .ft R
 .SH RETURN VALUES
@@ -438,11 +469,56 @@ output database).
 dbe(1), epoch(1)
 .fi
 .SH "BUGS AND CAVEATS"
+The task-nickname mechanism (based on the parameter file)  and the 
+dbprocess-query mechanism (based on the command line) are completely 
+different and not interchangeable. Don't try to use them in the 
+same ways or at the same time. 
+
+The -a option is not compatible with the -q option. Note that when the 
+-a option is used to run an arbitrary command on all databases in a cluster, 
+each run proceeds to completion before the next is allowed to finish (i.e. 
+the tasks are not run in the background). This may or may not be what 
+is desired. If the tasks on all databases are to be run at once (for example,  
+if you want to launch a dbe instance on every database in the cluster) then
+an \fI&\fP character should be put in the parameter-file explicitly 
+after the specification of the command. The number of possible commands 
+and configurations that could be run on an entire cluster of databases 
+is extremely varied; it would be very hard to support them all in full 
+generality. If something more complex is needed than mere specification of 
+each database name on the command line to run (this could include the job
+of rejecting entire databases from the processing based on some criterion), 
+then a small script or application should be written and named under the 
+dbcentral.pf parameter file: 
+
+.nf
+
+% cat dbcentral.pf
+dbcentral_database /databases/dbcentral
+
+custom_tasks &Arr{
+
+   pde &Tbl{
+         complextask     myscript DBNAME
+   }
+
+}
+
+% dbcentral -a pde complextask
+ ....
+ ....
+%
+
+.fi
+
 The task-names in the parameter file may not contain spaces or other 
 strange characters (see pf(5), even if quoted). This allows a simple
 implementation in which the GUI menu items come up in the same order
 as they are listed in the parameter file. Spaces may be used in 
 a database clustername, providing the entire clustername is quoted.
+
+Note that if double-quotes appear in the task command-lines in the 
+parameter file, they should be escaped with double backslashes (as shown 
+in the EXAMPLE section above).
 
 Dbcentral does not check, after constructing a database name from the 
 parameter-file template and the time specified in the GUI, whether 

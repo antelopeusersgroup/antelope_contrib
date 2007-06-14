@@ -120,7 +120,7 @@ proc init_windows {} {
 
 		foreach task $Tasks($nickname) {
 
-			set cmd "myexec {$nickname} {$task}"
+			set cmd "oneexec {$nickname} {$task}"
 
 			$menuname add command -label $task \
 				-command $cmd \
@@ -395,7 +395,7 @@ proc show_path { nickname w } {
 	place .path -anchor center -in $w -x $x -y $y 
 }
 
-proc myexec { nickname task } {
+proc oneexec { nickname task } {
 	global Commands
 
 	set dbname [get_dbpath $nickname]
@@ -407,6 +407,23 @@ proc myexec { nickname task } {
 		regsub -all DBNAME $cmd_template $dbname command
 
 		eval exec $command &
+	}
+}
+
+proc allexec { nickname task } {
+	global Commands
+
+	set alist [get_dbnames $nickname]
+
+	set cmd_template $Commands($nickname,$task)
+
+	foreach dbname $alist {
+
+		regsub -all DBNAME $cmd_template $dbname command
+
+		catch "eval exec $command"  result
+
+		puts stderr "$result"
 	}
 }
 
@@ -425,6 +442,7 @@ proc run_cmdline {} {
 	set Resolve_dbname 0
 	set Time_specified 0
 	set List_dbnames 0
+	set Exec_dbnames 0
 	set Queryfile ""
 
 	set stripped_argv {}
@@ -440,6 +458,10 @@ proc run_cmdline {} {
 		} elseif { [cequal $myarg -l] } {
 
 			set List_dbnames 1
+
+		} elseif { [cequal $myarg -a] } {
+
+			set Exec_dbnames 1
 
 		} elseif { [cequal $myarg -q] } {
 
@@ -621,6 +643,20 @@ proc run_cmdline {} {
 			dbclose $db
 		}
 
+	} elseif { $Exec_dbnames && $nickname == "" } {
+
+		puts stderr "\ndbcentral: Must specify a database clustername when using -a\n"
+		exit -1
+
+	} elseif { $Exec_dbnames && $task == "" } {
+
+		puts stderr "\ndbcentral: Must specify a task nickname when using -a\n"
+		exit -1
+
+	} elseif { $Exec_dbnames } {
+
+		allexec $nickname $task
+
 	} elseif { [llength $stripped_argv] == 0 && $Time_specified } {
 
 		puts stderr "\ndbcentral: Must specify a database clustername when using -t\n"
@@ -630,11 +666,11 @@ proc run_cmdline {} {
 
 		set task [lindex $Tasks($nickname) 0]
 
-		myexec $nickname $task
+		oneexec $nickname $task
 
 	} elseif { [llength $stripped_argv] == 2 } {
 
-		myexec $nickname $task
+		oneexec $nickname $task
 
 	} else {
 
