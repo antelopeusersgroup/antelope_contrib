@@ -138,6 +138,19 @@ dmatrix operator*(const dmatrix& x1,const dmatrix& b)
 		}
 	return prod;
 	}
+dvector operator*(const dmatrix& x1,const dvector& b)
+{
+	int i,j,k;
+	double xval,bval;
+	if(x1.ncc!=b.nrr)
+		throw dmatrix_size_error(x1.nrr, x1.ncc, b.nrr, b.length);
+	dvector prod(x1.nrr);
+	for(i=0;i<x1.nrr;i++)
+		prod(i)=ddot(b.nrr,
+			const_cast<dmatrix&>(x1).get_address(i,0),x1.ncc,
+			const_cast<dvector&>(b).get_address(0,0),1);
+	return prod;
+}
 
 dmatrix operator*(const double& x, const dmatrix &zx)
   {
@@ -211,3 +224,35 @@ int dmatrix::columns()
 {
 	return(ncc);
 }
+
+// vector methods
+dvector& dvector::operator=(const dvector& other)
+{
+	if(this != &other)
+	{
+		ncc=1;
+		nrr=other.nrr;
+		length=other.length;
+		if(ary!=NULL) delete [] ary;
+		ary= new double[length];
+		memcpy(ary,other.ary, length*sizeof(double));
+	} 
+	return *this;
+}
+dvector::dvector(dvector& other)
+{
+	ncc=1;
+	nrr=other.nrr;
+	length=other.length;
+	if(ary!=NULL) delete [] ary;
+	ary= new double[length];
+	memcpy(ary,other.ary, length*sizeof(double));
+}
+double &dvector::operator()(int rowindex)
+{
+  if (rowindex>=nrr)
+	throw dmatrix_index_error(nrr,1,rowindex,1);
+// old, stored in column order
+//  return (ary[colindex+(ncc+1)*(rowindex)]);
+  return (ary[rowindex]);
+}		

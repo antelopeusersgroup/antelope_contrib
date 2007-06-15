@@ -359,24 +359,6 @@ GCLvectorfield3d& GCLvectorfield3d::operator=(const GCLvectorfield3d& g)
 }
 
 
-// Needed below
-
-bool values_differ(double a, double b)
-{
-	if(fabs(a-b)==0.0) 
-		return false;
-	else if(fabs((a-b)/b)<(10.0*DBL_EPSILON))
-		return false;
-	else
-		return true;
-}
-/* The == and != operators do NOT test every element of the object. Equality is defined
-as being defined on the same Cartesian system.  This is done by testing for equality of
-the transformation matrix and translation vectors.  These define the Cartesian reference
-frame completely.  We could test lat0, lon0, and r0 but that would be redundant since
-they are defined precisely by the translation vector.  Note since these quantities
-are defined in the base class, derived classes can use a dynamic_cast to use these
-operators so I don't bother to define them for fields or even the GCLgrid3d object. */
 /*  The == and != operators do NOT test every element of the object.
 Equality is defined if the two grids use the same Cartesian coordinate
 system.  In this library this is totally defined by the origin of
@@ -386,22 +368,52 @@ The routine then simply tests these for equality.
 Note a previous version tested the transformation matrix and the 
 translation vector, but that required far more work and was more
 subject to roundoff error mistakes.
+
+delta_cutoff defines the distance in cartesian units between
+the origin of the two grids.  Note assumption that these
+are stored in units of km.
 */
+const double delta_cutoff(0.1);  
+// A relatively safe equality test
+bool values_differ(double a, double b)
+{
+	if(fabs(a-b)==0.0) 
+		return false;
+	else if(fabs((a-b)/b)<(10.0*DBL_EPSILON))
+		return false;
+	else
+		return true;
+}
+// This is a common routine for == and != that computes distance
+double delta_origin(BasicGCLgrid& a, BasicGCLgrid& b)
+{
+	Cartesian_point pa=b.gtoc(b.lat0,b.lon0,b.r0);
+	Cartesian_point pb=b.gtoc(a.lat0,a.lon0,a.r0);
+	double dp=(pa.x1-pb.x1)*(pa.x1-pb.x1)
+			+ (pa.x2-pb.x2)*(pa.x2-pb.x2)
+			+ (pa.x3-pb.x3)*(pa.x3-pb.x3);
+	return(sqrt(dp));
+}
 bool BasicGCLgrid::operator==(const BasicGCLgrid& b)
 {
-	if(values_differ(lat0,b.lat0)) return(false);
-	if(values_differ(lon0,b.lon0)) return(false);
-	if(values_differ(r0,b.r0)) return(false);
-	if(values_differ(azimuth_y,b.azimuth_y)) return(false);
-	return(true);
+	double dp;
+	if(values_differ(azimuth_y,b.azimuth_y) )return(false);
+	dp=delta_origin(*this,const_cast<BasicGCLgrid&>(b));
+	if(dp<=delta_cutoff) 
+		return(true);
+	else
+		return(false);
 }
 bool BasicGCLgrid::operator!=(const BasicGCLgrid& b)
 {
-	if(values_differ(lat0,b.lat0)) return(true);
-	if(values_differ(lon0,b.lon0)) return(true);
-	if(values_differ(r0,b.r0)) return(true);
-	if(values_differ(azimuth_y,b.azimuth_y)) return(true);
-	return(false);
+	double dp;
+	dp=delta_origin(*this,const_cast<BasicGCLgrid&>(b));
+	if(dp>delta_cutoff) 
+		return(true);
+	else if(values_differ(azimuth_y,b.azimuth_y))
+		return(true);
+	else
+		return(false);
 }
 void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 {
@@ -441,24 +453,19 @@ void GCLscalarfield3d::operator+=(GCLscalarfield3d& g)
 				{
 					
 				case -2:
-					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
-				case 1:
 				case 2:
-					g.reset_index();
-					break;
+					elog_die(0,(char*)"Coding error:  return code %d from GCLgrid3d::lookup method depricated\n",err);
+				case 1:
 				case -1:
 					g.reset_index();
-					// Try again after a reset index
-					// if nonconvergence (this case)
-					// If found, fall into interpolation block
-					if(g.lookup(cx.x1,cx.x2,cx.x3)!=0) break;
+					break;
 				case 0:
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					val[i][j][k]+=valnew;
 
 					break;
 				default:
-					elog_die(0,(char*)"Illegal return code %d from lookup function\n",err);
+					elog_die(0,(char*)"Illegal return code %d from GCLgrid3d::lookup function\n",err);
 				};
 			}
 		}
@@ -485,12 +492,30 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 	else
 		remap=true;
 
+//DEBUG
+/*
+int count,failures;
+count=0;
+failures=0;
+*/
 	for(i=0;i<n1;++i)
 	{
 		for(j=0;j<n2;++j)
 		{
 			for(k=0;k<n3;++k)
 			{
+//DEBUG
+/*
+int ind[3];
+cout << "lhsgrid(i,j,k):"
+	<< i <<", "
+	<< j <<", "
+	<< k <<endl;
+if(i>19 && j>19)
+{
+	cout << "In debug region"<<endl;
+}
+*/
 				if(remap)
 				{
 					gp = geo_coordinates(i,j,k);
@@ -506,30 +531,50 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 				err=g.lookup(cx.x1,cx.x2,cx.x3);
 				switch(err)
 				{
-				case 1:
-				case 2:
-					g.reset_index();
-					break;
 				case -2:
-					elog_die(0,(char*)"Coding error:  incomplete GCLgrid object cannot be mapped\n");
+				case 2:
+					elog_die(0,(char*)"Coding error:  return code %d from GCLgrid3d::lookup method depricated\n",err);
+				case 1:
 				case -1:
+//DEBUG
+//cout << "rhsgrid lookup failed"<<endl;
 					g.reset_index();
-					// Try again after a reset index
-					// if nonconvergence (this case)
-					// If found, fall into interpolation block
-					if(g.lookup(cx.x1,cx.x2,cx.x3)!=0) break;
+//DEBUG
+//++failures;
+					break;
 				case 0:
-
+/*
+g.get_index(ind);
+cout << "rhsgrid(i,j,k): "
+	<< ind[0] <<", "
+	<< ind[1] <<", "
+	<< ind[2] <<endl;
+*/
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
-					for(l=0;l<nv;++l) val[i][j][k][l]=valnew[l];
+					for(l=0;l<nv;++l) val[i][j][k][l]+=valnew[l];
+/* DEBUG
+cout << "Components of cell vector: "
+	<< cx.x1 -g.x1[ind[0]][ind[1]][ind[2]] << ", "
+	<< cx.x2 -g.x2[ind[0]][ind[1]][ind[2]] << ", "
+	<< cx.x3 -g.x3[ind[0]][ind[1]][ind[2]] << endl;
+cout << "Interpolation result:  ";
+for(l=0;l<nv;++l) cout <<valnew[l]<<", ";
+cout <<endl;
+if(valnew[0]<0.0)
+{
+	cout << "Bad return"<<endl;
+}
+*/
 					delete [] valnew;
 					break;
 				default:
-					elog_die(0,(char*)"Illegal return code %d from lookup function\n",err);
+					elog_die(0,(char*)"Illegal return code %d from GCLgrid3d::lookup function\n",err);
 				};
 			}
 		}
 	}
+//DEBUG
+//cout << "vectorfield operator += "<<failures<<" in "<< count<<" lookups"<<endl;
 }
 void GCLscalarfield::operator += (GCLscalarfield& g)
 {
@@ -605,7 +650,7 @@ void GCLvectorfield::operator += (GCLvectorfield& g)
 			case 0:
 				cx = g.gtoc(lat(i,j),lon(i,j),r(i,j));
 				valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
-				for(l=0;l<nv;++l) val[i][j][l]=valnew[l];
+				for(l=0;l<nv;++l) val[i][j][l]+=valnew[l];
 				delete [] valnew;
 
 				break;

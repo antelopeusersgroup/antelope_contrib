@@ -29,3 +29,13 @@ double GCLgrid3d::depth(int i, int j, int k)
 {
 	return(r0_ellipse(lat(i,j,k))-r(i,j,k));
 }
+double BasicGCLgrid::depth(Cartesian_point p)
+{
+	Geographic_point gp;
+	gp=ctog(p);
+	return(r0_ellipse(gp.lat) - gp.r);
+}
+double BasicGCLgrid::depth(Geographic_point p)
+{
+	return(r0_ellipse(p.lat) - p.r);
+}

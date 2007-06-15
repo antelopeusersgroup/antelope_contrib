@@ -2,6 +2,7 @@
 #define _DMATRIX_H_
 #include <string>
 #include <iostream>
+#include "perf.h"
 using namespace std;
 //==================================================================
 //@{
@@ -150,6 +151,7 @@ public:
 // Add two matrices.  X=A+B.
 // @throws dmatrix_size_error is thrown if two matrices are not of the same size
 //@}
+  friend class dvector;
   friend dmatrix operator+(const dmatrix&, const dmatrix&);
 //@{
 // Take the difference of two matrices.  X=A-B.
@@ -161,6 +163,11 @@ public:
 // @throws dmatrix_size_error is thrown if columns in A != rows of B.
 //@}
   friend dmatrix operator*(const dmatrix&, const dmatrix&);
+//@{
+// Multiply matrix with a vector A*x
+// @throws dmatrix_size_error is thrown if columns in A != rows of B.
+//@}
+  friend dvector operator*(const dmatrix&, const dvector&);
 //@{
 // Scale a matrix by a constant.  X=c*A where c is a constant.
 //@}
@@ -208,7 +215,7 @@ public:
 //  Initialize a matrix to all zeros.
 //@}
   void zero();
-private:
+protected:
    double *ary;
    int length;
    int nrr, ncc;
@@ -223,7 +230,10 @@ class dvector : public dmatrix
 {
 public:
 	dvector():dmatrix(){};
+	dvector& operator=(const dvector& other);
+	double &operator()(int rowindex);
 	dvector(int nrv) : dmatrix(nrv,1){};
+	dvector(dvector& other);
 };
 	
 #endif

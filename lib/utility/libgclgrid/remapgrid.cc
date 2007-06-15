@@ -53,6 +53,7 @@ void remap_grid(GCLgrid& g, BasicGCLgrid& pattern)
 			g.x2[i][j]=p.x2;
 			g.x3[i][j]=p.x3;
 		}
+	g.compute_extents();
 	return;
 }
 void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern)
@@ -84,6 +85,7 @@ void remap_grid(GCLgrid3d& g, BasicGCLgrid& pattern)
 			g.x2[i][j][k]=p.x2;
 			g.x3[i][j][k]=p.x3;
 		}
+	g.compute_extents();
 	return;
 }
 			

@@ -230,6 +230,8 @@ public:
 // @param p point to convert stored in a @link Geographic_point @endlink data structure.
 //@}
 	Cartesian_point gtoc(Geographic_point p);
+	double depth(Cartesian_point p);
+	double depth(Geographic_point p);
 //@{
 // This member function sets the x1min, x1max, x2min, x2max, x3min, and x3max bounding
 // box attribute.  These define the "extents" of the name.  Should be needed only if one
@@ -465,6 +467,7 @@ public:
 	// @param i2 Value of grid index 2 for point desired.
 	//@}
 	double depth(int i1, int i2);
+
 	//** Sets extents attributes based on min and max values */
 	void compute_extents();
 	friend class GCLscalarfield;
