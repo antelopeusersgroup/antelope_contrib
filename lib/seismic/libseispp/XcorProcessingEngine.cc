@@ -175,10 +175,10 @@ XcorProcessingEngine::~XcorProcessingEngine()
 	// be fixed eventually, but the correct solution is in the 
 	// DatascopeHandle code itself, not here.,
 }
-// Small helper needed below.  Looks for bad moveout flag
-// and resets moveout to 0.0.  Needed to keep cross correlation
-// plot from crashing.  Kind of a hack solution.  Need a cleaner
-// way to handle this perhaps.
+/* Small helper needed below.  Looks for bad moveout flag
+ and resets moveout to 0.0.  Needed to keep cross correlation
+ plot from crashing.  Kind of a hack solution.  Need a cleaner
+ way to handle this perhaps.  */
 
 void ResetMoveout(TimeSeriesEnsemble& d)
 {
@@ -680,6 +680,30 @@ void XcorProcessingEngine::filter_data(TimeInvariantFilter f)
 {
 	FilterEnsemble(waveform_ensemble,f);
 }
+/* Small companion to save_results to edit an input channelo code to 
+ produce a channel code that will normaly resolve to valid sitchan entries.
+ Algorithm used will always replace character 3 in the input chan unless
+ the the original chan code has less than 3 characters.  In that case it 
+ does nothing.  It should work with both common channel codes like 
+ BHZ and BHZ_01.  Note this function tacitly assumes a.arrival_chan_code is
+ a single character like Z, N, or E.  
+*/
+string set_chan_this_phase(string chan, AnalysisSetting& a)
+{
+	if(chan.length()<3)
+		return(chan);
+	else if(chan.length()==3)
+	{
+		string root(chan,0,2);
+		return(root+a.arrival_chan_code);
+	}
+	else
+	{
+		string root(chan,0,2);
+		string tail(chan.begin()+3,chan.end());
+		return(root+a.arrival_chan_code+tail);
+	}
+}
 void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 {
 	// First save the beam
@@ -834,6 +858,10 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    string statmp,chantmp;
 			    statmp=trace->get_string("sta");
 			    chantmp=trace->get_string("chan");
+			    // This routine replaces chantmp with a
+			    // channel code defined for this phase from
+			    // analysis_setting.  
+			    chantmp=set_chan_this_phase(chantmp,analysis_setting);
 			    // These need to be posted as match keys
 			    trace->put("evid",evid);
 			    trace->put("orid",orid);

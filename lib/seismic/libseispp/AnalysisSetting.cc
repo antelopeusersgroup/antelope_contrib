@@ -85,6 +85,14 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	        	component_for_analysis=2;
 	        	component_name=string("Z");
 	        }
+		arrival_chan_code=md.get_string("arrival_channel");
+		// Silently keep only the last character if entry
+		// is not a single character.
+		if( arrival_chan_code.length()>1)
+		{
+			string stmp(arrival_chan_code,arrival_chan_code.length()-1,1);
+			arrival_chan_code=stmp;
+		}
 	        phase_for_analysis=md.get_string("phase_for_analysis");
 		//
 		// Get sort order for analysis output
@@ -141,6 +149,7 @@ AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
 	phase_for_analysis=old.phase_for_analysis;
 	tpad=old.tpad;
 	result_sort_order=old.result_sort_order;
+	arrival_chan_code=old.arrival_chan_code;
 }
 AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
 {
@@ -163,6 +172,7 @@ AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
 	phase_for_analysis=old.phase_for_analysis;
 	tpad=old.tpad;
 	result_sort_order=old.result_sort_order;
+	arrival_chan_code=old.arrival_chan_code;
     }
     return(*this);
 }

@@ -54,6 +54,7 @@ public:
         TimeInvariantFilter filter_param;
         int component_for_analysis;
 	string component_name;
+	string arrival_chan_code;
         string phase_for_analysis;
         double tpad;  // fudge factor needed for input
 	// Added by GLP 1/6/2006
