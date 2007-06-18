@@ -14,6 +14,7 @@ default_filter BW 0.01 2 0.5 2
 component_for_analysis T
 phase_for_analysis S
 analysis_sort_order stack_weight
+arrival_channel E
 }
 P &Arr{
 tpad 30.0
@@ -26,6 +27,7 @@ default_filter BW 0.01 2 2.0 2
 component_for_analysis L
 phase_for_analysis P
 analysis_sort_order stack_weight
+arrival_channel Z
 }
 }
 #
