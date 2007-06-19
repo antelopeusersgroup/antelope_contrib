@@ -4,6 +4,7 @@
 #include "Seisw.h"
 #include "SeismicPick.h"
 #include "XcorProcessingEngine.h"
+#include "cc_tks.h"
 
 #include <Xm/DrawingA.h>
 
@@ -322,10 +323,10 @@ void modify_asetting_for_phase(SessionManager& sm,string phase)
 	sm.xpe->change_analysis_setting(sm.active_setting);
 }
 
-void get_next_event(Widget w, void * client_data, void * userdata)
+void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
 {
 	stringstream ss;
-	int orid,evid;
+	int evid;
         double lat,lon,depth,otime;
         const string method("tttaup");
         const string model("iasp91");
@@ -333,8 +334,6 @@ void get_next_event(Widget w, void * client_data, void * userdata)
    	int i;
 
 	try {
-
-	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
 
 	psm->record(string("Loading data for next event.... Please wait\n"));
 	Metadata mdfinder;
@@ -353,12 +352,9 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 		"depth",&depth,
 		"time",&otime,0)!=dbINVALID)
 */
-	if(psm->instream.good())
+	if(orid>=0)
 	{
-		const string base_error("get_next_event:  ");
-		string phase_to_analyze;
-		psm->instream >> orid;
-		psm->instream >> phase_to_analyze;
+		const string base_error("handle_next_event:  ");
 		mdfinder.put("orid",orid);
 		list<int> recs=psm->dbh.find(mdfinder);
 		if(recs.size()<=0)
@@ -426,7 +422,8 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
                 stringstream vs;
-                if (!psm->validate_setting(vs)) message_box(psm, vs.str(), w);
+                if (!psm->validate_setting(vs) && w != NULL) 
+				message_box(psm, vs.str(), w);
 
     		psm->xpe->change_analysis_setting(psm->active_setting);
 
@@ -465,6 +462,31 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 		psm->record(ss.str());
 		psm->record(string("Done\n"));
 	}  
+
+	} catch (SeisppError serr) {
+                serr.log_error();
+                cerr << "Fatal error:  exiting"<<endl;
+		exit(-1);
+	}
+}
+
+void get_next_event(Widget w, void * client_data, void * userdata)
+{
+	int orid;
+	string phase_to_analyze;
+
+	try {
+
+	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+
+	if(psm->instream.good())
+	{
+		const string base_error("get_next_event:  ");
+		psm->instream >> orid;
+		psm->instream >> phase_to_analyze;
+
+		handle_next_event( orid, phase_to_analyze, w, psm );
+	}
 
 	} catch (SeisppError serr) {
                 serr.log_error();
@@ -1732,6 +1754,7 @@ main (int argc, char **argv)
   XtAppContext 	AppContext;
   XmString	str;
   MenuItem      btninfo;
+  TkSend	*tks;
   int i,n=0;
   Arg args[18];
   AttributeInfoRec air[4]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
@@ -1755,11 +1778,15 @@ main (int argc, char **argv)
   //string hypodb(argv[3]);
   string infile("");
   string pfname("dbxcor");
+  string appname("");
   for(i=2;i<argc;++i) {
       string argtest(argv[i]);
       if(argtest=="-pf") {
            ++i;
            pfname=string(argv[i]);
+      } else if(argtest=="-appname") {
+           ++i;
+           appname=string(argv[i]);
       } else if (argtest=="-o") {
 	   ++i;
 	   result_db_name=string(argv[i]);
@@ -1941,10 +1968,26 @@ main (int argc, char **argv)
         XmNentryAlignment,XmALIGNMENT_BEGINNING,XmNpacking,XmPACK_TIGHT,NULL);
 
 
-  btninfo.label=(char *) "Get Next Event";
-  btninfo.callback=get_next_event;
-  btninfo.callback_data=&sm;
-  sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
+  if( ! appname.compare( "" ) ) {
+  	btninfo.label=(char *) "Get Next Event";
+  	btninfo.callback=get_next_event;
+  	btninfo.callback_data=&sm;
+  	sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
+  } else {
+	Tks_SetVerbose();
+
+	tks = Tks_Create( display, 0, 4 );
+
+	if( tks == NULL ) {
+      		fprintf (stderr,"\n%s:  Tks_Create() error\n", argv[0]);
+		exit(1);
+	}
+
+	if( ! Tks_SetAppName( tks, const_cast<char *>(appname.c_str()) ) ) {
+      		fprintf (stderr,"\n%s:  Tks_SetAppName() error\n", argv[0]);
+		exit(1);
+	}
+  }
 
   btninfo.label=(char *) "Load Next Subarray";
   btninfo.callback=load_next_subarray;
@@ -1995,5 +2038,40 @@ main (int argc, char **argv)
 
   sm.session_state();
 
-  XtAppMainLoop(AppContext);
+  do {
+	XEvent event;
+	char	*msg = 0;
+	int	replyrequest = 0;
+	XtAppNextEvent(AppContext,&event);
+	int	orid;
+	Tbl	*parts;
+	if( !Tks_GetmsgEventProc( tks, &event, &msg, &replyrequest ) ) {
+      		fprintf (stderr,"\n%s:  Tks_GetmsgEventProc() error\n", argv[0]);
+		Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
+		exit(1);
+	} else if( msg ) {
+		if( replyrequest ) {
+		  if( ! Tks_Reply( tks, msg ) ) {
+      			fprintf (stderr,"\n%s:  Tks_Reply() error\n", argv[0]);
+			Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
+			exit(1);
+		  }
+		}
+		parts = split( msg, ' ' );
+		if( maxtbl( parts ) != 2 ) {
+      			fprintf (stderr,"\n%s: error parsing Tk input msg '%s'\n", 
+				argv[0], msg);
+			Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
+			/* SCAFFOLD: this is draconian */
+			exit(1);
+		} 
+		orid = atoi( (char *) gettbl( parts, 0 ) );
+		string phase_to_analyze( (char *) gettbl( parts, 1 ) );
+		handle_next_event( orid, phase_to_analyze, NULL, &sm );
+		freetbl( parts, 0 );
+		free( msg );
+		msg = 0;
+	}
+	XtDispatchEvent(&event);
+  } while( XtAppGetExitFlag(AppContext) == FALSE );
 }
