@@ -97,6 +97,7 @@ GridCell::GridCell(GCLgrid3d& g, int i, int j, int k)
 		front[l]=(cross1[l]+cross2[l])/2.0;
 
 	dr3sub(point6,point5,a);
+	dr3sub(point6,point5,a);
 	dr3sub(point8,point5,b);
 	dr3cros(a,b,cross1);
 	dr3sub(point8,point7,a);
@@ -242,7 +243,7 @@ bool GridCell::InsideTest(double x, double y, double z, double tolerance)
 	
 	
 static const double FeasibleFraction(0.1);
-static const double AcceptFraction(1.0E-3);
+static const double AcceptFraction(1.0E-2);
 
 /* This is a recovery routines. The lookup function uses
 the direction set method which is known to fail in some situations in 
@@ -343,8 +344,42 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 		if(flag) 
 		{
 			cout <<"Warning (recover):" 
-			<< nfeasible << "cells passed found feasible"
+			<< nfeasible << "cells found feasible"
 			<< " but none passed acceptance using first in list"<<endl;
+		if(nfeasible>5)
+		{
+		cout << "points=[";
+		for(fptr=feasible.begin();fptr!=feasible.end();++fptr)
+		{
+			cout << fptr->point1[0] <<  ","
+			<< fptr->point1[1] << ","
+			<< fptr->point1[2] << ";"<<endl
+			<< fptr->point2[0] <<  ","
+			<< fptr->point2[1] << ","
+			<< fptr->point2[2] << ";"<<endl
+			<< fptr->point3[0] <<  ","
+			<< fptr->point3[1] << ","
+			<< fptr->point3[2] << ";"<<endl
+			<< fptr->point4[0] << ","
+			<< fptr->point4[1] << ","
+			<< fptr->point4[2] << ";"<<endl
+			<< fptr->point5[0] <<  ","
+			<< fptr->point5[1] << ","
+			<< fptr->point5[2] << ";"<<endl
+			<< fptr->point6[0] <<  ","
+			<< fptr->point6[1] << ","
+			<< fptr->point6[2] << ";"<<endl
+			<< fptr->point7[0] <<  ","
+			<< fptr->point7[1] << ","
+			<< fptr->point7[2] << ";"<<endl
+			<< fptr->point8[0] <<  ","
+			<< fptr->point8[1] << ","
+			<< fptr->point8[2] << ";"<<endl;
+		}
+		cout << "];"<<endl;
+		cout << "x=["<<x<<","<<y<<","<<z<<";];"<<endl;
+		}
+// END debug section
 		}
 */
 	}
@@ -434,12 +469,12 @@ const int MAXIT=50;	//convergence count limit
 // Max and min search distances.  Each are effectively one larger
 // with current magic number of 1.5 added to this number in recover
 // function above. Change these if that number changes.
-const double maximum_search_distance(9.0);
+const double maximum_search_distance(5.0);
 const double minimum_search_distance(1.0);  
 // If convergence final delta is more than this many grid cells away in any
 // generalized coordinate direction, recover is not attempted
 // This saves time in curved grids inside the bounding box
-const double border_cutoff(4.0);
+const double border_cutoff(2.0);
 int GCLgrid3d::lookup(double x, double y, double z) 
 {
 	int i,j,k;
@@ -599,14 +634,13 @@ cout << "Start: "<<i << ", " << j << ", "<<k<<endl;
 		}
 	}
 
-	// compute search distance in each direction 
+	// Use dxunit values to define search distance in each direction
 	double nrmdel,search_distance[3]; 
-	nrmdel=dr3mag(delta);
-	for(ii=0;ii<3;++ii)search_distance[ii]=nrmdel/fabs(dxunit(ii));
+	for(ii=0;ii<3;++ii)search_distance[ii]=fabs(dxunit(ii));
 	// This is aimed to reduce search time for points outside the actual
 	// boundary.
 	if((ix1==0) || (ix2==0) || (ix3==0)
-		||(ix1==n1-1) || (ix2==n2-1) || (ix3==n3-1) )
+		||(ix1==n1-2) || (ix2==n2-2) || (ix3==n3-2) )
 	{
 		for(ii=0;ii<3;++ii)
 		{

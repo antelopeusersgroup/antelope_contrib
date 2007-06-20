@@ -28,6 +28,7 @@ OBJS=converters.o \
     extract_gridline.o \
     pathintegral.o \
     remapgrid.o \
+    tapergrid.o \
     ustrans.o \
     zero.o
 
