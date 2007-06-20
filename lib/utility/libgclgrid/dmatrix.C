@@ -239,7 +239,7 @@ dvector& dvector::operator=(const dvector& other)
 	} 
 	return *this;
 }
-dvector::dvector(dvector& other)
+dvector::dvector(const dvector& other)
 {
 	ncc=1;
 	nrr=other.nrr;

@@ -233,7 +233,7 @@ public:
 	dvector& operator=(const dvector& other);
 	double &operator()(int rowindex);
 	dvector(int nrv) : dmatrix(nrv,1){};
-	dvector(dvector& other);
+	dvector(const dvector& other);
 };
 	
 #endif
