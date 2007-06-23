@@ -158,7 +158,7 @@ TimeSeries::TimeSeries(DatabaseHandle& rdb,
 	this->put(sample_rate_keyword,srate);
 	// Safer to compute this quantity than require it to 
 	// be read from the database
-	te=this->endtime();
+	te=this->endtime()+dt/2.0;
 	this->put(end_time_keyword,te);
 	/*
 	absolute versus relative time is a Seispp library
