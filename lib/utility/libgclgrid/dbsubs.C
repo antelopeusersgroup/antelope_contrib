@@ -1,5 +1,6 @@
 #include <string>
 #include <cstdio>
+#include "swapbytes.h"
 #include "gclgrid.h"
 using namespace std;
 /* Major change June 15, 2004 (GLP):
@@ -23,6 +24,45 @@ transformations that produce the cartesian form.
  * Got rid of all char * variables in argument lists.  Left most
  * char used internally as it avoids clashes with plain C of Antelope.
  */
+/* June 2007
+ * Added support for automatic byte swapping. 
+*/
+
+/* This short function was stolen from utexas supercomputer web site as
+a simple test for byte order.  */
+bool IntelByteOrder()
+{
+        long i = 0x11223344; unsigned char* c = (unsigned char*) &i;
+        if(*c != 0x44)
+                return(false);
+        else
+                return(true);
+}
+/* this small internal function is a helper for below.  I swaps
+a vector of doubles of length gridsize.*/
+void swapdvec(double *x,int nx)
+{
+	double *buf=new double[nx];
+	unsigned char **xptr;
+	// ugly interface to low level C functions
+	// requires this cast
+	xptr=reinterpret_cast<unsigned char **>(&x);
+	// We need to reset x before returning as the
+	// antelope byte swap routines alter it
+	double *x0=x;
+	if(IntelByteOrder())
+	{
+		md2hd(xptr,buf,nx);
+	}
+	else
+	{
+		vd2hd(xptr,buf,nx);
+	}
+	x=x0;
+	memcpy((void *)x,(void *)buf,nx*sizeof(double));
+	delete [] buf;
+}
+
 
 // Constructor creating a GCLgrid object by reading data from
 // an Antelope database.  Uses an extension table used to index
@@ -59,6 +99,7 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	int gridsize;  
 	FILE *fp;
 	double ***plat,***plon,***pr;
+	bool need_to_swap_bytes;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
 	if(dbgrd.table == dbINVALID) 
@@ -115,9 +156,18 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 	lat0 = rad(lat0);
 	lon0 = rad(lon0);
 	azimuth_y = rad(azimuth_y);
-	if(strcmp(datatype,"t8"))
+	string sdt(datatype);
+	bool little_endian=IntelByteOrder();
+	if( (sdt=="t8") && little_endian)
+		need_to_swap_bytes=true;
+	else if ( (sdt=="u8") && !little_endian)
+		need_to_swap_bytes=true;
+	else
+		need_to_swap_bytes=false;
+		
+	if( (sdt!="t8") && (sdt!="u8") )
 	{
-		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support t8\n",
+		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support u8 or t8\n",
 			base_message, datatype);
 		throw 2;
 	}
@@ -171,6 +221,13 @@ GCLgrid3d::GCLgrid3d(Dbptr db, string gridname)
 		fclose(fp);
 		throw 2;
 	}
+	if(need_to_swap_bytes)
+	{
+		swapdvec(plat[0][0],gridsize);
+		swapdvec(plon[0][0],gridsize);
+		swapdvec(pr[0][0],gridsize);
+	}
+	
 	fclose(fp);
 	// essential  -- cannot convert to cartesian until this is set
 	set_transformation_matrix();
@@ -206,6 +263,7 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	int gridsize;  
 	FILE *fp;
 	double **plat, **plon, **pr;
+	bool need_to_swap_bytes;
 
 	dbgrd = dblookup(db,0,(char *)"gclgdisk",0,0); 
 	if(dbgrd.table == dbINVALID) 
@@ -258,10 +316,18 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	lat0 = rad(lat0);
 	lon0 = rad(lon0);
 	azimuth_y = rad(azimuth_y);
-
-	if(strcmp(datatype,"t8"))
+	bool little_endian=IntelByteOrder();
+	string sdt(datatype);
+	if( (sdt=="t8") && little_endian)
+		need_to_swap_bytes=true;
+	else if ( (sdt=="u8") && !little_endian)
+		need_to_swap_bytes=true;
+	else
+		need_to_swap_bytes=false;
+		
+	if( (sdt!="t8") && (sdt!="u8") )
 	{
-		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support t8\n",
+		elog_notify(0,(char *)"%s data type %s not allowed.  Currently only support u8 or t8\n",
 			base_message, datatype);
 		throw 2;
 	}
@@ -315,6 +381,12 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 		throw 2;
 	}
 	fclose(fp);
+	if(need_to_swap_bytes)
+	{
+		swapdvec(plat[0],gridsize);
+		swapdvec(plon[0],gridsize);
+		swapdvec(pr[0],gridsize);
+	}
 	set_transformation_matrix();
 	int i,j;
 	for(i=0;i<n1;++i)
@@ -330,6 +402,38 @@ GCLgrid::GCLgrid(Dbptr db,string gridname)
 	free_2dgrid_contiguous(plat,n1);
 	free_2dgrid_contiguous(plon,n1);
 	free_2dgrid_contiguous(pr,n1);
+}
+/* All the field functions need this little function.  It returns true
+if the data for the field will need to be byte swapped.  The approach
+used here is brutally inefficient, but was preferable in my mind to 
+a change in the schema or the interface.  It requires that the field
+data and the grid be the same data type.  i.e. if one needs to be swapped
+so does the other.  dim must be either 2 or 3.  Needed so the
+same function can be used for 2 or 3d fields*/
+bool test_for_byteswap(Dbptr db, string gridname,int dim)
+{
+	// no test needed for any of the db function calls as they
+	// repeat parallel calls that had to have succeeded in the constructor
+	// called before entry into the field constructor code.
+	// Don't ever reuse this function and not fix that detail!
+	db=dblookup(db,0,(char *)"gclgdisk",0,0);
+	char sstring[256];
+	sprintf(sstring,
+            "gridname =~ /%s/ && dimensions == %d",
+                  gridname.c_str(),dim);
+	db=dbsubset(db,sstring,0);
+	char dtype[4];
+	dbgetv(db,0,"datatype",dtype,0);
+	string datatype(dtype);
+	dbfree(db);
+	bool little_endian=IntelByteOrder();
+	if((datatype=="t8") && (little_endian))
+		return(true);
+	else if( (datatype=="u8") && (!little_endian))
+		return(true);
+	else
+		return(false);
+	
 }
 //
 // This set of functions construct fields. 
@@ -379,7 +483,7 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 		dbgrd.record = 0;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
+			elog_notify(0,(char *)"Cannot find external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
@@ -399,6 +503,8 @@ GCLscalarfield::GCLscalarfield(Dbptr db,
 			throw 2;
 		}
 		fclose(fp);
+		if(test_for_byteswap(db,gclgname,2))
+			swapdvec(val[0],gridsize);
 	}
 }
 //
@@ -467,6 +573,8 @@ GCLscalarfield3d::GCLscalarfield3d(Dbptr db,
 			fclose(fp);
 			throw 2;
 		}
+		if(test_for_byteswap(db,gclgname,3))
+			swapdvec(val[0][0],gridsize);
 		fclose(fp);
 	}
 }
@@ -532,7 +640,7 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 		nv=nvdb;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
+			elog_notify(0,(char *)"Cannot find external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
@@ -552,6 +660,8 @@ GCLvectorfield::GCLvectorfield(Dbptr db,
 			throw 2;
 		}
 		fclose(fp);
+		if(test_for_byteswap(db,gclgname,2))
+			swapdvec(val[0][0],gridsize);
 	}
 }
 /* April 2005:  Changed an oddity of this.  Previously there was an odd logic that
@@ -623,7 +733,7 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 		nv=nvdb;
 		if(dbextfile(dbgrd,0,filename) <=0)
 		{
-			elog_notify(0,(char *)"Cannot file external file for gclfield %s\n",fieldname.c_str());
+			elog_notify(0,(char *)"Cannot find external file for gclfield %s\n",fieldname.c_str());
 			throw 2;
 		}
 		fp = fopen(filename,"r");
@@ -643,6 +753,8 @@ GCLvectorfield3d::GCLvectorfield3d(Dbptr db,
 			throw 2;
 		}
 		fclose(fp);
+		if(test_for_byteswap(db,gclgname,3))
+			swapdvec(val[0][0][0],gridsize);
 	}
 }
 
@@ -748,6 +860,11 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 	free_3dgrid_contiguous(pr,n1,n2);
 	fclose(fp);
 	if(!writeok) throw 2;
+	string datatype;
+	if(IntelByteOrder())
+		datatype=string("u8");
+	else
+		datatype=string("t8");
 	/* Now we write a row in the database for this grid.  Note
 	some quantities have to be converted from radians to degrees.*/
 	if(dbaddv(db,0,
@@ -772,7 +889,7 @@ void GCLgrid3d::dbsave(Dbptr dbo, string dirin) throw(int)
 		"i0",i0,
 		"j0",j0,
 		"k0",k0,
-		"datatype","t8",
+		"datatype",datatype.c_str(),
 		"dir",dir,
 		"dfile",name.c_str(),
 		"foff",foff,
@@ -863,6 +980,11 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 	free_2dgrid_contiguous(plon,n1);
 	free_2dgrid_contiguous(pr,n1);
 	fclose(fp);
+	string datatype;
+	if(IntelByteOrder())
+		datatype=string("u8");
+	else
+		datatype=string("t8");
 	if(!writeok) throw 2;
 	/* Now we write a row in the database for this grid*/
 	if(dbaddv(db,0,
@@ -884,7 +1006,7 @@ void GCLgrid::dbsave(Dbptr dbo, string dirin) throw(int)
 		"zhigh",x3high,
 		"i0",i0,
 		"j0",j0,
-		"datatype","t8",
+		"datatype",datatype.c_str(),
 		"dir",dir,
 		"dfile",name.c_str(),
 		"foff",foff,
