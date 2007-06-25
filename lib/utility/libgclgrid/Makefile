@@ -6,7 +6,7 @@ DATADIR=schemas
 INCLUDE=gclgrid.h dmatrix.h
 MAN3=gclgrid.3 dmatrix.3 pathintegral.3 ustrans.3 extract_gridline.3
 
-CXX=g++ -shared
+DBG=-g
 
 
 include $(ANTELOPEMAKE)  	

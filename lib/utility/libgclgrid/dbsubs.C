@@ -423,6 +423,7 @@ bool test_for_byteswap(Dbptr db, string gridname,int dim)
                   gridname.c_str(),dim);
 	db=dbsubset(db,sstring,0);
 	char dtype[4];
+	db.record=0;
 	dbgetv(db,0,"datatype",dtype,0);
 	string datatype(dtype);
 	dbfree(db);
