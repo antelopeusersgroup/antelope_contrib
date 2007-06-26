@@ -2,6 +2,7 @@
 #include "ThreeComponentSeismogram.h"
 #include "perf.h"
 #include "coords.h"
+#include "seispp.h"
 namespace SEISPP
 {
 using namespace SEISPP;
@@ -452,7 +453,7 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 		components_are_orthogonal=true;
 		// Important consistency cross check.
 		string datatype=md.get_string("datatype");
-		if(datatype!="3c")
+		if(datatype!="3c" && datatype!="c3")
 			throw SeisppError(
 				string("ThreeComponentSeismogram constructor:")
 				+string(" cannot handle datatype="+datatype));
@@ -478,6 +479,18 @@ ThreeComponentSeismogram::ThreeComponentSeismogram(
 			+fname);
 		}
 		fclose(fp);
+		// Decide if we need to do byte swapping and do it if
+		// required
+		if(IntelByteOrder())
+		{
+			if(datatype=="3c")
+				swapdvec(this->u.get_address(0,0),readsize);
+		}
+		else
+		{
+			if(datatype=="c3")
+				swapdvec(this->u.get_address(0,0),readsize);
+		}
 		live=true;
 	    }
 		

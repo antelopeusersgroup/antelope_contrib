@@ -728,5 +728,37 @@ void ConvertFlatModelToSpherical(GCLscalarfield3d& vmodel);
 		
 // for linux only
 int nint(double);
+/*! \brief Test for little endian condition.
+
+To handle mixed processors it is essential to know if the
+word structure of this machine you are on is little or big 
+endian.  Intel processors are dominate today and are little
+endian while Sun machines, which are commonly used in geophysics,
+are big endian.  Because it is common today to mix these platforms
+on the same network a way to detect which byte order the current
+machine is, is necessary.
+
+\return true if this processor is little endian (Intel byte order).
+	Conversely returns false if the processor is big endian.
+\author  Gary L. Pavlis with the core algorithm stolen from the
+	University of Texas supercomputer web site.
+*/
+bool IntelByteOrder();
+/*! \brief Architecture indedependent procedure 
+to byte swap a vector of doubles.
+
+In the seispp library most data are stored internally as doubles.
+External data representations, however, are subject to byte order
+issues.  This routine will take a vector of doubles and automatically
+swap bytes using a method appropriate for the parent architecture.
+It should always be preceded by logic to decide if byte swapping
+is necessary as this will always swap bytes one way or the other.
+
+\param x pointer to array of doubles to be byte swapped.
+\param nx number of elements in x.  This is quietly assumed
+	to be correct and not bounds checking is done by this procedure.
+*/
+
+void swapdvec(double *x,int nx);
 }
 #endif
