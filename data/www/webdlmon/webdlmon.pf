@@ -1,0 +1,36 @@
+sources &Arr{
+	dlmon_pf 	/opt/antelope/4.8p/data/pf/dlmon.pf
+	xml_src 	/export/www/vhosts/anf.ucsd.edu/htdocs/admin/tools/dlmon/xml/prelim_dlmon.xml
+	xml_stash 	/export/www/vhosts/anf.ucsd.edu/htdocs/admin/tools/dlmon/xml/pretadata_stash.xml
+}
+
+dataloggers &Arr{
+	both_sides 	false
+	model 		q330
+}
+
+customization &Arr{
+	customize 		true
+	cookie_name 	anfPrelimWebdlmonFields
+	customize_text 	"Customize webdlmon table fields?"
+}
+
+optional &Arr{
+	show_legend 	false
+	table_caption 	"Real-time USArray Web-based Data Logger Monitor: Preliminary Stations"
+}
+
+rrdtool_setup &Arr{
+	rrdtool 			false
+	rrdtool_graph_url 	test.php
+	rrdtool_graph_inclusion &Tbl{
+		m0
+		m1
+		m2
+		dt
+		dv
+		da
+	}
+}
+
+pf_revision_time 	1182460765

@@ -1,0 +1,187 @@
+/*
+$Id$
+*/
+
+html {
+	margin: 0 ;
+	padding: 0 ;
+}
+body {
+	margin: 0 ;
+	padding: 5px ;
+	font-family: "Trebuchet MS", Verdana, Arial, sans-serif ;
+	font-size: 100% ;
+}
+p {
+	font-size: 90% ;
+}
+
+/* START: WEBDLMON MAIN PAGE */
+div#webdlmon div#customize {
+	float: right ;
+	border: 1px solid #333 ;
+	background-color: #FFC ;
+	padding: 5px ;
+	margin: 1.0em ;
+}
+div#webdlmon div#customize p.preset{
+	font-weight: bold ;
+	margin: 0 auto ;
+	text-align: center ;
+}
+div#webdlmon table {
+	clear: both ;
+	width: 100% ;
+	margin: 0 auto ;
+	padding: 0 ;
+	background-color: #E0E0E0 ;
+	font-size: 80% ;
+	color: #000 ;
+	border-top: 1px solid #CCC ;
+	border-left: 1px solid #CCC ;
+	border-right: 1px solid #333 ;
+	border-bottom: 1px solid #333 ;
+}
+div#webdlmon table caption {
+	padding: 3px ;
+	margin: 0 ;
+	border-top: 1px solid #CCC ;
+	border-left: 1px solid #CCC ;
+	border-right: 1px solid #333 ;
+	border-bottom: 1px solid #333 ;
+	font-weight: bold ;
+	font-size: 110% ;
+	text-align: left ;
+	background-color: #E0E0E0 ;
+	color: #000 ;
+}
+div#webdlmon table thead th {
+	font-weight: bold ;
+	border: none ;
+	color: #000 ;
+	border-top: 1px solid #FFF ;
+	border-left: 1px solid #FFF ;
+	border-right: 1px solid #666 ;
+	border-bottom: 1px solid #666 ;
+	text-decoration: underline ;
+	cursor: pointer ;
+	padding: 3px ;
+}
+div#webdlmon table td {
+	border-top: 1px solid #FFF ;
+	border-left: 1px solid #FFF ;
+	border-right: 1px solid #666 ;
+	border-bottom: 1px solid #666 ;
+	white-space: pre ;
+	text-align: center ;
+	padding: 3px ;
+}
+div#webdlmon table td a, div#webdlmon table td a:link, div#webdlmon table td a:active, div#webdlmon table td a:visited {
+	color: #000 ;
+	text-decoration: none ;
+}
+div#webdlmon table thead th a:hover {
+	color: #006 ;
+}
+div#webdlmon table tbody td a:hover {
+	color: #000 ;
+	text-decoration: none ;
+}
+div#webdlmon div#legend {
+	font-size: 80% ;
+	margin: 1.0em 0 ;
+	border-top: 1px solid #CCC ;
+	border-left: 1px solid #CCC ;
+	border-right: 1px solid #333 ;
+	border-bottom: 1px solid #333 ;
+	padding: 5px ;
+	background-color: #E0E0E0 ;
+}
+div#webdlmon div#legend h3 {
+	padding: 3px ;
+	margin: 0 ;
+	border-bottom: 1px solid #333 ;
+	font-weight: bold ;
+	font-size: 110% ;
+	text-align: left ;
+	background-color: #E0E0E0 ;
+	color: #000 ;
+}
+div#webdlmon div#legend fieldset {
+	border-top: 1px solid #FFF ;
+	border-left: 1px solid #FFF ;
+	border-right: 1px solid #666 ;
+	border-bottom: 1px solid #666 ;
+	margin: 1.0em 0 0 0 ;
+}
+div#webdlmon div#legend fieldset legend {
+	font-size: 110% ;
+	color: #000 ;
+	font-weight: bold ;
+}
+/* END: WEBDLMON MAIN PAGE */
+
+
+/* START: WEBDLMON CUSTOMIZATION POPUP */
+div#webdlmoncustomize {
+	width: 90% ;
+	margin: 0 auto ;
+	border-top: 1px solid #CCC ;
+	border-left: 1px solid #CCC ;
+	border-right: 1px solid #333 ;
+	border-bottom: 1px solid #333 ;
+	background-color: #E0E0E0 ;
+}
+
+div#webdlmoncustomize h1 {
+	font-size: 110% ;
+	border-bottom: 1px solid #333 ;
+	padding: 3px ;
+}
+
+div#webdlmoncustomize div#status {
+	margin: 0 ;
+	padding: 5px ;
+	border-bottom: 1px solid #333 ;
+}
+
+div#webdlmoncustomize div#status table {
+	clear: both ;
+	width: 100% ;
+	margin: 0 auto ;
+	padding: 0 ;
+	background-color: #E0E0E0 ;
+	font-size: 80% ;
+	color: #000 ;
+	border-top: 1px solid #CCC ;
+	border-left: 1px solid #CCC ;
+	border-right: 1px solid #333 ;
+	border-bottom: 1px solid #333 ;
+}
+
+div#webdlmoncustomize div#status table td {
+	border-top: 1px solid #FFF ;
+	border-left: 1px solid #FFF ;
+	border-right: 1px solid #666 ;
+	border-bottom: 1px solid #666 ;
+	text-align: center ;
+	padding: 3px ;
+}
+div#webdlmoncustomize div#status table td a, 
+div#webdlmoncustomize div#status table td a:link, 
+div#webdlmoncustomize div#status table td a:active, 
+div#webdlmoncustomize div#status table td a:visited {
+	color: #000 ;
+	text-decoration: underline ;
+	cursor: help ;
+}
+div#webdlmon table thead th a:hover {
+	color: #006 ;
+}
+
+div#webdlmoncustomize div#footer {
+	margin: 0 ;
+	padding: 5px ;
+}
+
+/* END: WEBDLMON CUSTOMIZATION POPUP */
