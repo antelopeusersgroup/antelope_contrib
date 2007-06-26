@@ -1,4 +1,4 @@
-DATADIR= php/lib
+DATADIR= php/library
 
 DATA= webdlmon.inc
 
