@@ -1,7 +1,7 @@
 sources &Arr{
-	dlmon_pf 	/opt/antelope/4.8p/data/pf/dlmon.pf
-	xml_src 	/export/www/vhosts/anf.ucsd.edu/htdocs/admin/tools/dlmon/xml/prelim_dlmon.xml
-	xml_stash 	/export/www/vhosts/anf.ucsd.edu/htdocs/admin/tools/dlmon/xml/pretadata_stash.xml
+	dlmon_pf 	/opt/antelope/4.9/data/pf/dlmon.pf
+	xml_src 	/path/to/webserver/tools/dlmon/xml/prelim_dlmon.xml
+	xml_stash 	/path/to/webserver/tools/dlmon/xml/pretadata_stash.xml
 }
 
 dataloggers &Arr{
@@ -11,13 +11,13 @@ dataloggers &Arr{
 
 customization &Arr{
 	customize 		true
-	cookie_name 	anfPrelimWebdlmonFields
+	cookie_name 	webdlmonCookie
 	customize_text 	"Customize webdlmon table fields?"
 }
 
 optional &Arr{
 	show_legend 	false
-	table_caption 	"Real-time USArray Web-based Data Logger Monitor: Preliminary Stations"
+	table_caption 	"Real-time Web-based Data Logger Monitor"
 }
 
 rrdtool_setup &Arr{
