@@ -1,8 +1,10 @@
 #include <string>
 #include <cstdio>
-#include "swapbytes.h"
 #include "gclgrid.h"
+// We get byte swap procedures from here.
+#include "seispp.h" 
 using namespace std;
+using namespace SEISPP;
 /* Major change June 15, 2004 (GLP):
 
 Previously a gclgrid stored both a lat,lon,r and x1,x2,x3 representation
@@ -28,40 +30,6 @@ transformations that produce the cartesian form.
  * Added support for automatic byte swapping. 
 */
 
-/* This short function was stolen from utexas supercomputer web site as
-a simple test for byte order.  */
-bool IntelByteOrder()
-{
-        long i = 0x11223344; unsigned char* c = (unsigned char*) &i;
-        if(*c != 0x44)
-                return(false);
-        else
-                return(true);
-}
-/* this small internal function is a helper for below.  I swaps
-a vector of doubles of length gridsize.*/
-void swapdvec(double *x,int nx)
-{
-	double *buf=new double[nx];
-	unsigned char **xptr;
-	// ugly interface to low level C functions
-	// requires this cast
-	xptr=reinterpret_cast<unsigned char **>(&x);
-	// We need to reset x before returning as the
-	// antelope byte swap routines alter it
-	double *x0=x;
-	if(IntelByteOrder())
-	{
-		md2hd(xptr,buf,nx);
-	}
-	else
-	{
-		vd2hd(xptr,buf,nx);
-	}
-	x=x0;
-	memcpy((void *)x,(void *)buf,nx*sizeof(double));
-	delete [] buf;
-}
 
 
 // Constructor creating a GCLgrid object by reading data from
