@@ -1,8 +1,7 @@
 DATADIR= www/cgibin
 
 DATA= webdlmon.php \
-      webdlmoncustomize.php \
-      webdlmon_funcs.php
+      webdlmoncustomize.php
 
 PF = webdlmon.pf
 

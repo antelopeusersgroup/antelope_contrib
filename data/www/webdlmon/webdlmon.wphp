@@ -18,7 +18,6 @@ $Id$
 	</head>
 	<body>
 <?php
-require( 'webdlmon_funcs.php' ) ;
 require( 'webdlmon.inc' ) ;
 ?>
 	</body>
