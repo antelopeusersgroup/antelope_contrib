@@ -91,6 +91,7 @@ ThreeComponentEnsemble
 
 			    if(i!=ilasttest) --i;
 			    ilasttest=i;
+			    tccm=scmap.channels(nextsta);
 			//
 			// Land here when a grouping is completed and we have
 			// to sort out which channels are to be kept.
