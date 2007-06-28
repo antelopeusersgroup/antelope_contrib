@@ -321,8 +321,6 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 		result[0]=fptr->ii;
 		result[1]=fptr->jj;
 		result[2]=fptr->kk;
-//DEBUG
-//bool flag=true;
 		for(fptr=feasible.begin();fptr!=feasible.end();
 			fptr++)
 		{
@@ -335,53 +333,9 @@ int *recover(GCLgrid3d& g, double x, double y, double z,
 				result[0]=fptr->ii;
 				result[1]=fptr->jj;
 				result[2]=fptr->kk;
-//flag=false;
 				break;
 			}
 		}
-//DEBUG retain this scaffolding for now
-/*
-		if(flag) 
-		{
-			cout <<"Warning (recover):" 
-			<< nfeasible << "cells found feasible"
-			<< " but none passed acceptance using first in list"<<endl;
-		if(nfeasible>5)
-		{
-		cout << "points=[";
-		for(fptr=feasible.begin();fptr!=feasible.end();++fptr)
-		{
-			cout << fptr->point1[0] <<  ","
-			<< fptr->point1[1] << ","
-			<< fptr->point1[2] << ";"<<endl
-			<< fptr->point2[0] <<  ","
-			<< fptr->point2[1] << ","
-			<< fptr->point2[2] << ";"<<endl
-			<< fptr->point3[0] <<  ","
-			<< fptr->point3[1] << ","
-			<< fptr->point3[2] << ";"<<endl
-			<< fptr->point4[0] << ","
-			<< fptr->point4[1] << ","
-			<< fptr->point4[2] << ";"<<endl
-			<< fptr->point5[0] <<  ","
-			<< fptr->point5[1] << ","
-			<< fptr->point5[2] << ";"<<endl
-			<< fptr->point6[0] <<  ","
-			<< fptr->point6[1] << ","
-			<< fptr->point6[2] << ";"<<endl
-			<< fptr->point7[0] <<  ","
-			<< fptr->point7[1] << ","
-			<< fptr->point7[2] << ";"<<endl
-			<< fptr->point8[0] <<  ","
-			<< fptr->point8[1] << ","
-			<< fptr->point8[2] << ";"<<endl;
-		}
-		cout << "];"<<endl;
-		cout << "x=["<<x<<","<<y<<","<<z<<";];"<<endl;
-		}
-// END debug section
-		}
-*/
 	}
 	return(result);
 }
@@ -516,14 +470,6 @@ int GCLgrid3d::lookup(double x, double y, double z)
 	// A conservative large value for drunit to start the loop
 	drunit_last=static_cast<double>(n1+n2+n3);
 
-//DEBUG
-/*`
-cout << "Lookup convergence history"<<endl;
-cout << "Searching for:  "<<x<< ", " << y << ", "<<z<<endl;
-Geographic_point gthis=this->ctog(x,y,z);
-cout << "Geo coords="<<deg(gthis.lat)<<", "<<deg(gthis.lon)<<", "<<gthis.r-r0_ellipse(gthis.lat)<<endl;
-cout << "Start: "<<i << ", " << j << ", "<<k<<endl;
-*/
 
 	do
 	{
@@ -646,11 +592,6 @@ cout << "Start: "<<i << ", " << j << ", "<<k<<endl;
 		{
 			if(search_distance[ii]>border_cutoff) 
 			{
-// DEBUG   Residual scaffold to make sure not a problem
-/*
-cout << "border_cutoff bypasses recover on point: "
-<< i << ", " << j << ", "<<k<<endl;
-*/
 				return(1);
 			}
 		}
@@ -669,19 +610,11 @@ cout << "border_cutoff bypasses recover on point: "
 	int iret;
 	if(irecov[0]<0) 
 	{
-/*
-cout << "Recover failed near: "
-	<< ix1 << ", " << ix2 << ", " << ix3 <<endl;
-*/
 		this->reset_index();
 		iret=-1;
 	}
 	else
 	{
-/*
-cout << "Recover successful.  Result:  "
-  << irecov[0] << ", " << irecov[1] << ", "<<irecov[2]<<endl;
-*/
 		ix1=irecov[0];
 		ix2=irecov[1];
 		ix3=irecov[2];

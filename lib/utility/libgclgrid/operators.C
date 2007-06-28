@@ -492,30 +492,12 @@ void GCLvectorfield3d::operator += (GCLvectorfield3d& g)
 	else
 		remap=true;
 
-//DEBUG
-/*
-int count,failures;
-count=0;
-failures=0;
-*/
 	for(i=0;i<n1;++i)
 	{
 		for(j=0;j<n2;++j)
 		{
 			for(k=0;k<n3;++k)
 			{
-//DEBUG
-/*
-int ind[3];
-cout << "lhsgrid(i,j,k):"
-	<< i <<", "
-	<< j <<", "
-	<< k <<endl;
-if(i>19 && j>19)
-{
-	cout << "In debug region"<<endl;
-}
-*/
 				if(remap)
 				{
 					gp = geo_coordinates(i,j,k);
@@ -536,35 +518,11 @@ if(i>19 && j>19)
 					elog_die(0,(char*)"Coding error:  return code %d from GCLgrid3d::lookup method depricated\n",err);
 				case 1:
 				case -1:
-//DEBUG
-//cout << "rhsgrid lookup failed"<<endl;
 					g.reset_index();
-//DEBUG
-//++failures;
 					break;
 				case 0:
-/*
-g.get_index(ind);
-cout << "rhsgrid(i,j,k): "
-	<< ind[0] <<", "
-	<< ind[1] <<", "
-	<< ind[2] <<endl;
-*/
 					valnew = g.interpolate(cx.x1,cx.x2,cx.x3);
 					for(l=0;l<nv;++l) val[i][j][k][l]+=valnew[l];
-/* DEBUG
-cout << "Components of cell vector: "
-	<< cx.x1 -g.x1[ind[0]][ind[1]][ind[2]] << ", "
-	<< cx.x2 -g.x2[ind[0]][ind[1]][ind[2]] << ", "
-	<< cx.x3 -g.x3[ind[0]][ind[1]][ind[2]] << endl;
-cout << "Interpolation result:  ";
-for(l=0;l<nv;++l) cout <<valnew[l]<<", ";
-cout <<endl;
-if(valnew[0]<0.0)
-{
-	cout << "Bad return"<<endl;
-}
-*/
 					delete [] valnew;
 					break;
 				default:
@@ -573,8 +531,6 @@ if(valnew[0]<0.0)
 			}
 		}
 	}
-//DEBUG
-//cout << "vectorfield operator += "<<failures<<" in "<< count<<" lookups"<<endl;
 }
 void GCLscalarfield::operator += (GCLscalarfield& g)
 {

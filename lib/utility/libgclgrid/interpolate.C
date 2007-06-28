@@ -61,7 +61,6 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 	double *f = new double[nv];
 	int ix[3];
 	int i,j,k;
-	double xp[3];
 
 	get_index(ix);
 	//
@@ -76,6 +75,10 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 		
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
+		double xp[3];
+		xp[0]=xp1;
+		xp[1]=xp2;
+		xp[2]=xp3;
 		/* point 0 */
 		coord[0] = x1[i][j][k];
 		coord[8] = x2[i][j][k];
@@ -145,7 +148,9 @@ double *GCLvectorfield3d::interpolate(double xp1, double xp2, double xp3)
 		f[l]+=weights[7]*val[i+1][j+1][k][l];
 	    }
 	}
-	for(l=0;l<3;++l) xplast[l]=xp[l];
+	xplast[0]=xp1;
+	xplast[1]=xp2;
+	xplast[2]=xp3;
 	return(f);
 }
 //
@@ -161,7 +166,6 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 	double f;
 	int ix[3];
 	int i,j,k,l;
-	double xp[3];
 
 	get_index(ix);
 	i=ix[0];
@@ -170,6 +174,10 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 	
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
+		double xp[3];
+		xp[0]=xp1;
+		xp[1]=xp2;
+		xp[2]=xp3;
 		/* point 0 */
 		coord[0] = x1[i][j][k];
 		coord[8] = x2[i][j][k];
@@ -202,9 +210,6 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 		coord[7] = x1[i+1][j+1][k];
 		coord[15] = x2[i+1][j+1][k];
 		coord[23] = x3[i+1][j+1][k];
-		xp[0]=xp1;
-		xp[1]=xp2;
-		xp[2]=xp3;
 		fmeweights_(xp,coord,weights);
 	}
 
@@ -218,7 +223,10 @@ double GCLscalarfield3d::interpolate(double xp1, double xp2, double xp3)
 	f+=weights[6]*val[i+1][j+1][k+1];
 	f+=weights[7]*val[i+1][j+1][k];
 
-	for(l=0;l<3;++l) xplast[l]=xp[l];
+	xplast[0]=xp1;
+	xplast[1]=xp2;
+	xplast[2]=xp3;
+
 	return(f);
 }
 
@@ -231,7 +239,6 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 	static double weights[8];
 	double *f = new double[nv];
 	int i,j;
-	double xp[3];
 	int ix[2];
 
 	get_index(ix);
@@ -241,7 +248,10 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
-		double dx1[3], dx2[3];
+		double dx1[3], dx2[3],xp[3];
+		xp[0]=xp1;
+		xp[1]=xp2;
+		xp[2]=xp3;
 		Cartesian_point cp;
 		double cell_size;
 		//compute the average cell size 
@@ -297,9 +307,6 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;
-		xp[0]=xp1;
-		xp[1]=xp2;
-		xp[2]=xp3;
 		fmeweights_(xp,coord,weights);
 	}
 	for(l=0;l<nv;++l)
@@ -314,7 +321,9 @@ double *GCLvectorfield::interpolate(double xp1, double xp2, double xp3)
 		f[l]+=weights[6]*val[i+1][j+1][l];
 		f[l]+=weights[7]*val[i+1][j+1][l];
 	}
-	for(l=0;l<3;++l) xplast[l]=xp[l];
+	xplast[0]=xp1;
+	xplast[1]=xp2;
+	xplast[2]=xp3;
 	return(f);
 }
 
@@ -327,7 +336,6 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 	double f;
 	int ix[2];
 	int i,j,l;
-	double xp[3];
 
 	get_index(ix);
 	i=ix[0];
@@ -335,7 +343,10 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		
 	if( (xp1!=xplast[0]) || (xp2!=xplast[1]) || (xp3!=xplast[2]) )
 	{
-		double dx1[3], dx2[3];
+		double dx1[3], dx2[3],xp[3];
+		xp[0]=xp1;
+		xp[1]=xp2;
+		xp[2]=xp3;
 		Cartesian_point cp;
 		double cell_size;
 		//compute the average cell size 
@@ -391,9 +402,6 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 		coord[7]=cp.x1;
 		coord[15]=cp.x2;
 		coord[23]=cp.x3;
-		xp[0]=xp1;
-		xp[1]=xp2;
-		xp[2]=xp3;
 		fmeweights_(xp,coord,weights);
 	}
 	f=0.0;
@@ -405,7 +413,9 @@ double GCLscalarfield::interpolate(double xp1, double xp2, double xp3)
 	f+=weights[5]*val[i][j+1];
 	f+=weights[6]*val[i+1][j+1];
 	f+=weights[7]*val[i+1][j+1];
-	for(l=0;l<3;++l) xplast[l]=xp[l];
+	xplast[0]=xp1;
+	xplast[1]=xp2;
+	xplast[2]=xp3;
 	return(f);
 }
 
