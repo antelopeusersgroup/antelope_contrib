@@ -137,6 +137,7 @@ AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
 	rw_set=old.rw_set;
 	rt_set=old.rt_set;
 	gather_twin=old.gather_twin;
+	analysis_tw=old.analysis_tw;
 	beam_tw=old.beam_tw;
 	robust_tw=old.robust_tw;
 	reference_trace=old.reference_trace;
@@ -161,6 +162,7 @@ AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
 	rt_set=old.rt_set;
 	beam_tw=old.beam_tw;
 	gather_twin=old.gather_twin;
+	analysis_tw=old.analysis_tw;
 	robust_tw=old.robust_tw;
 	reference_trace=old.reference_trace;
 	removed_traces=old.removed_traces;
