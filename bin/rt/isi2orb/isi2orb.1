@@ -1,0 +1,120 @@
+.TH ISI2ORB 1 "$Date$"
+.SH NAME
+isi2orb \- Acquire data from the IDA Systems Interface into an orbserver
+.SH SYNOPSIS
+.nf
+isi2orb [-vV] [-p pfname] server orbname
+.fi
+.SH DESCRIPTION
+The \fBisi2orb\fP acquires continuous waveform data from one or more stations
+in the International Deployment of Accelerometers (IDA), via the IDA 
+Systems Interface (ISI). An Antelope parameter-file controls the streams to be 
+imported; wildcards are supported. 
+
+The \fIserver\fP argument on the command line must specify the IDA 
+server compliant with the implemented version of the IDA Systems Interface
+(ISI) toolkit. The \fIorbname\fP parameter gives the name of an 
+Antelope orbserver to which continuous data should be written. 
+
+Further detail on the parameter file contents, which identify the 
+continuous waveform data streams to import, is given in the PARAMETER 
+FILE section of the man page below. An alternate parameter-file may be 
+given via the -p option on the command line.
+
+The \fIcalib\fP and \fIcalper\fP values for the stations being acquired
+are derived from an ISI configuration report requested from the server 
+at startup. If the stations being acquired are not present in that
+configuration report (a situation which will hopefully not occur), 
+the \fIcalib\fP and \fIcalper\fP values are set to null defaults of 
+0.0 and -1.0, respectively. 
+
+.SH OPTIONS
+.IP "-p pfname" 
+Specify a parameter file other than the default \fIisi2orb.pf\fP.
+.IP -v 
+Verbose
+.IP -V
+Very Verbose
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+.IP net
+This is the SEED network code, usually \fIII\fP, to use for the orb 
+source-names for the packets. 
+.IP streams
+This parameter holds a table of ISI-style stream expressions. These are of
+the form \fIsta.chn.loc\fP where one or more of those may optionally be 
+an asterisk character, indicating a wildcard. (The legacy mode of placing
+many such triplets together separated by plus-signs (\fI+\fP) is supported
+as well, though not encouraged due to the potential to make a hard-to-read
+parameter file). 
+.IP uppercase
+This parameter specifies whether to convert station, channel, and loc
+codes to uppercase before creating the orbserver source-names. 
+.IP segtype
+This parameter specifies the segtype value to use in orb waveform packets 
+for the converted data. 
+.IP isi_logging
+This parameter sets the logging mode of the ISI libraries. If set to 
+\fIstdout\fP or \fIstderr\fP, the respective Unix output stream will be 
+used. If set to \fIelog\fP, logging will be redirected to the Antelope 
+elog(3) facility. 
+.nf
+
+net II
+streams &Tbl{
+	coco.*.10
+	ffc.shz.00
+}
+uppercase yes
+segtype V
+isi_logging elog
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% isi2orb -v idahub.ucsd.edu :
+isi2orb: Program starting at  6/29/2007   6:24:35.003 UTC
+isi2orb: Using stream specification '*.*.*'
+isi2orb: Adding new channel aak.shz.00
+isi2orb: Adding new channel aak.shn.00
+isi2orb: Adding new channel aak.she.00
+isi2orb: Adding new channel aak.slz.00
+isi2orb: Adding new channel aak.sln.00
+  .....
+  .....
+
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+In verbose mode, \fBisi2orb\fP announces the program start time, announces the 
+actual data request string sent
+to the server, then announces every station-channel as it is first seen in the 
+incoming data stream. In very verbose mode, \fBisi2orb\fP will also 
+emit the configuration report requested from the server on startup, the 
+fully detailed data request, and summary metadata for each acquired packet. 
+.SH "SEE ALSO"
+.nf
+orbserver(1), libisi(3)
+.fi
+.SH "BUGS AND CAVEATS"
+The ida2orb(1) program is deprecated and has been completely replaced 
+by this program. 
+
+The \fIisi_logging\fP parameter affects only the disposition of notification 
+messages from within the ISI toolkit library (libisi(3)) itself, 
+not the logging from the main \fBisi2orb\fP program (which always goes through
+the Antelope logging mechanism) or the output of the initial reports 
+in veryverbose (-V) mode (which always go to Unix standard-out).
+.SH AUTHOR
+.nf
+Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$

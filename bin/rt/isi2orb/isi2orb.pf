@@ -1,0 +1,7 @@
+net II
+streams &Tbl{
+	*.*.*
+}
+uppercase yes
+segtype V
+isi_logging elog

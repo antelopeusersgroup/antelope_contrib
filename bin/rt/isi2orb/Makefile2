@@ -1,0 +1,12 @@
+
+BIN = isi2orb
+
+PF = isi2orb.pf
+
+MAN1 = isi2orb.1
+
+cflags = -D$(OSNAME)
+ldlibs = -lisi $(ORBLIBS) 
+
+include $(ANTELOPE)/include/antelopemake-gcc-mix
+
