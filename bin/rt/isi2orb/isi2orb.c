@@ -196,7 +196,6 @@ main( int argc, char **argv )
 	pfread( pfname, &pf );
 
 	net = pfget_string( pf, "net" );
-	server = pfget_string( pf, "server" );
 	streams = pfget_tbl( pf, "streams" );
 	segtype = pfget_string( pf, "segtype" );
 	isi_logging = pfget_string( pf, "isi_logging" );
