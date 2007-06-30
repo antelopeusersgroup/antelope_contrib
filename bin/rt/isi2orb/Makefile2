@@ -8,4 +8,4 @@ MAN1 = isi2orb.1
 cflags = -D$(OSNAME)
 ldlibs = -lisi $(ORBLIBS) 
 
-include $(ANTELOPE)/include/antelopemake-gcc-mix
+include $(ANTELOPEMAKE)
