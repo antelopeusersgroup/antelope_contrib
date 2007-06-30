@@ -164,6 +164,7 @@ main( int argc, char **argv )
 	int	icnf = 0;
 	int	errflag = 0;
 	int	status = 0;
+	int	port = 0;
 	int	rc = 0;
 
 	char	*pfname = "isi2orb";
@@ -325,6 +326,7 @@ main( int argc, char **argv )
 	segtype = pfget_string( pf, "segtype" );
 	isi_logging = pfget_string( pf, "isi_logging" );
 	uppercase = pfget_boolean( pf, "uppercase" );
+	port = pfget_int( pf, "port" );
 	statefile_rewind_max_sec = pfget_double( pf, "statefile_rewind_max_sec" );
 
 	if( maxtbl( streams ) <= 0 ) {
@@ -363,6 +365,16 @@ main( int argc, char **argv )
 	utilNetworkInit();
 
 	isiInitDefaultPar( &par );
+
+	if( port != 0 ) {
+
+		isiSetServerPort( &par, port );
+
+		if( VeryVerbose ) {
+
+			elog_notify( 0, "Server port reset to %d\n", port );
+		}
+	}
 
 	if( ! strcmp( isi_logging, "elog" ) ) {
 

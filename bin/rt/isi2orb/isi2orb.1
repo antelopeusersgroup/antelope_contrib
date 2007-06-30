@@ -75,6 +75,9 @@ elog(3) facility. Note that this redirection only happens when
 This parameter specifies the maximum length of time \fBisi2orb\fP 
 will rewind dataflow based on state-file information. If this is exceeded, 
 dataflow is reset to the newest values in the server. 
+.IP port 
+If this parameter is nonzero, a port other than the default is used
+to connect to the server. 
 .nf
 
 net II
@@ -86,6 +89,7 @@ uppercase yes
 segtype V
 isi_logging elog
 statefile_rewind_max_sec 3600
+port 0
 
 .fi
 .SH EXAMPLE
@@ -145,6 +149,10 @@ delays may occur. Alternatively, the \fIstatefile_rewind_max_sec\fP parameter
 may be set to a nonzero value to prevent data requests larger than
 a certain size for wildcarded expressions. If you experience problems, it may
 be better not to use wildcarded expressions in conjunction with state files. 
+
+The individual station-channel streams are emitted as streams of orbserver 
+GENC packets. In principle they could be multiplexed into MGENC packets 
+on a per-station basis.
 .SH AUTHOR
 .nf
 Kent Lindquist
