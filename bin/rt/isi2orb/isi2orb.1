@@ -3,7 +3,7 @@
 isi2orb \- Acquire data from the IDA Systems Interface into an orbserver
 .SH SYNOPSIS
 .nf
-isi2orb [-vV] [-p pfname] server orbname
+isi2orb [-vV] [-p pfname] [-S statefile] server orbname
 .fi
 .SH DESCRIPTION
 The \fBisi2orb\fP acquires continuous waveform data from one or more stations
@@ -28,9 +28,20 @@ configuration report (a situation which will hopefully not occur),
 the \fIcalib\fP and \fIcalper\fP values are set to null defaults of 
 0.0 and -1.0, respectively. 
 
+An optional \fIstatefile\fP can maintain a record of the latest 
+data acquired for each station channel, resetting the data request as 
+necessary after restarts. This is a sophisticated feature, however, 
+and comes with some caveats (see the PARAMETER FILE and BUGS AND 
+CAVEATS sections below).
+
 .SH OPTIONS
 .IP "-p pfname" 
 Specify a parameter file other than the default \fIisi2orb.pf\fP.
+.IP "-S statefile" 
+Specify a state file to use for reconnecting seamlessly without loss 
+of data. Without this parameter, \fBisi2orb\fP always starts from the 
+newest available data. With it, \fBisi2orb\fP attempts to reconnect to 
+the server and rewind to the last saved data for each stream. 
 .IP -v 
 Verbose
 .IP -V
@@ -58,7 +69,12 @@ for the converted data.
 This parameter sets the logging mode of the ISI libraries. If set to 
 \fIstdout\fP or \fIstderr\fP, the respective Unix output stream will be 
 used. If set to \fIelog\fP, logging will be redirected to the Antelope 
-elog(3) facility. 
+elog(3) facility. Note that this redirection only happens when 
+\fBisi2orb\fP is in verbose mode. 
+.IP statefile_rewind_max_sec 
+This parameter specifies the maximum length of time \fBisi2orb\fP 
+will rewind dataflow based on state-file information. If this is exceeded, 
+dataflow is reset to the newest values in the server. 
 .nf
 
 net II
@@ -69,6 +85,7 @@ streams &Tbl{
 uppercase yes
 segtype V
 isi_logging elog
+statefile_rewind_max_sec 3600
 
 .fi
 .SH EXAMPLE
@@ -112,6 +129,22 @@ messages from within the ISI toolkit library (libisi(3)) itself,
 not the logging from the main \fBisi2orb\fP program (which always goes through
 the Antelope logging mechanism) or the output of the initial reports 
 in veryverbose (-V) mode (which always go to Unix standard-out).
+
+If the \fIstreams\fP table contains wildcards, upon reconnection the 
+\fBisi2orb\fP module will rewind the wildcarded streams to the oldest 
+channel matching the wildcard expression that is found in the state file. 
+This may or may not be what you want. Furthermore, this can result 
+in the re-acquisition of some packets which may have been already 
+acquired, if not all the streams matching the wildcard ended at the 
+same time. While re-acquired packets will not be placed on the orb if they
+are older than the statefile entry for that station-channel, this can 
+result in some wasted bandwidth. Due to the potential for large unintended
+downloads it may be best not to use the statefile tracking feature
+with wildcard expressions that ensnare many stations, or significant 
+delays may occur. Alternatively, the \fIstatefile_rewind_max_sec\fP parameter
+may be set to a nonzero value to prevent data requests larger than
+a certain size for wildcarded expressions. If you experience problems, it may
+be better not to use wildcarded expressions in conjunction with state files. 
 .SH AUTHOR
 .nf
 Kent Lindquist

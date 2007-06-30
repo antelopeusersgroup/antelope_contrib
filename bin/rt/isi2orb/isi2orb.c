@@ -52,16 +52,21 @@
 #include "libisi_isi.h"
 #include "libisi_util.h"
 
-#define NULL_CALIB 0.0
-#define NULL_CALPER -1.0
+#define ISI2ORB_NULL_CALIB 0.0
+#define ISI2ORB_NULL_CALPER -1.0
+#define ISI2ORB_SHUTDOWN_SEC 1.0
+#define ISI2ORB_EPSILON 1.0
+#define STATEFILE_BURY_INTERVAL_NPKTS 50
 
 Arr *Cnf_entries = 0;
+int Verbose = 0;
+int VeryVerbose = 0;
 
 static void 
 usage() 
 {
 	char	*version = "$Date$";
-	char 	*usage = "[-vV] [-p pfname] server orbname\n";
+	char 	*usage = "[-vV] [-p pfname] [-S statefile] server orbname\n";
 	char	*author = "Kent Lindquist";
 	char	*location = "Lindquist Consulting, Inc.";
 	char	*email = "kent@lindquistconsulting.com";
@@ -72,9 +77,21 @@ usage()
 }
 
 static void
+mortician() 
+{
+	if( VeryVerbose ) {
+
+		elog_notify( 0, "Saving state\n" );
+	}
+}
+
+static void
 isi2elog( char *msg )
 {
-	elog_notify( 0, msg );
+	if( Verbose ) {
+
+		elog_notify( 0, msg );
+	}
 
 	return;
 }
@@ -89,74 +106,96 @@ get_cnf( char *key )
 		entry = (ISI_STREAM_CNF *) getarr( Cnf_entries, key );
 
 	} else {
-		
+
 		entry = (ISI_STREAM_CNF *) NULL;
 	}
 
-	return;
+
+	return entry;
 }
 
 int
 main( int argc, char **argv )
 {
-	ISI 	*isi;
+	ISI 	*isi = 0;
 	ISI_PARAM par;
-	int	orbfd;
-	int	verbose = 0;
-	int	veryverbose = 0;
-	int	errflag = 0;
-	char	*pfname = "isi2orb";
-	char	*orbname;
-	char	*net;
-	char	*server;
-	char	*streamspec;
-	char	*segtype;
-	char	*isi_logging;
+	ISI_DATA_REQUEST  *dreq = 0;
+	ISI_GENERIC_TS    *ts = 0;
+	ISI_CNF_REPORT    *report = 0;
+	ISI_STREAM_CNF    *entry = 0;
+	Relic	relic;
+	Packet	*pkt = 0;
+	PktChannel *pktchan = 0;
+	Tbl	*streams = 0;
+	Tbl	*statekeys = 0;
+	Tbl	*matching = 0;
+	Arr	*added = 0;
+	Arr	*latest = 0;
+	Pf	*pf = 0;
+	Pf	*pfstatepeek = 0;
+	FILE	*fpstatepeek = 0;
+	char	*orbname = 0;
+	char	*statefile = 0;
+	char	*net = 0;
+	char	*server = 0;
+	char	*streamspec = 0;
+	char	*segtype = 0;
+	char	*isi_logging = 0;
+	char	*packet = 0;
+	char	*keyp = 0;
+	char	*s = 0;
+	char	*u = 0;
+	char	c = NULL;
+	char	msg[STRSZ];
 	char	key[STRSZ];
-	char	c;
-	char	*s;
-	Tbl	*streams;
-	Arr	*added;
-	Pf	*pf;
-	ISI_DATA_REQUEST *dreq;
-	ISI_GENERIC_TS *ts;
-	ISI_CNF_REPORT *report;
-	ISI_STREAM_CNF *entry;
-	int	format = ISI_FORMAT_GENERIC;
-	int	compress = ISI_COMP_NONE;
+	char	regkey[STRSZ];
+	char	srcname[ORBSRCNAME_SIZE];
+	unsigned char buf[STRSZ];
+	double	*nextrequest = 0;
+	double	oldest = 0;
+	double	t = 0;
+	double	statefile_rewind_max_sec = 0;
+	int	orbfd = -1;
+	int	packetsz = 0;
+	int	nbytes = 0;
+	int	isamp = 0;
+	int	ikey = 0;
+	int	ireq = 0;
+	int	icnf = 0;
+	int	errflag = 0;
+	int	status = 0;
+	int	rc = 0;
+
+	char	*pfname = "isi2orb";
 	double	begtime = ISI_NEWEST;
 	double	endtime = ISI_KEEPUP;
-	int	status;
-	unsigned char buf[STRSZ];
-	char	srcname[ORBSRCNAME_SIZE];
-	int	packetsz = 0;
-	int	nbytes;
-	double	t;
-	char	*packet;
-	Packet	*pkt;
-	PktChannel *pktchan;
-	int	isamp;
-	int	icnf;
+	int	format = ISI_FORMAT_GENERIC;
+	int	compress = ISI_COMP_NONE;
+	int	bury_counter = STATEFILE_BURY_INTERVAL_NPKTS;
 	int	uppercase = 1;
-	int	rc;
+	int	stop = 0;
 
 	elog_init( argc, argv );
 
-	while( ( c = getopt( argc, argv, "vVp:" ) ) != -1 ) {
+	while( ( c = getopt( argc, argv, "vVp:S:" ) ) != -1 ) {
 
 	switch( c ) {
 
 	case 'v':
-		verbose++;
+		Verbose++;
 		break;
 
 	case 'V':
-		verbose++;
-		veryverbose++;
+		Verbose++;
+		VeryVerbose++;
 		break;
 
 	case 'p':
 		pfname = optarg;
+		break;
+
+	case 'S':
+		statefile = optarg;
 		break;
 
 	case '?':
@@ -185,12 +224,98 @@ main( int argc, char **argv )
 		orbname = argv[optind];
 	}
 
-	if( verbose ) {
+	if( Verbose ) {
 
 		elog_notify( 0, "Program starting at %s UTC\n", 
 				s = strtime( now() ) );
 
 		free( s );
+	}
+
+	added = newarr( 0 );
+	latest = newarr( 0 );
+
+	if( statefile ) {
+
+		if( is_present( statefile ) ) {
+
+			fpstatepeek = fopen( statefile, "r" );
+			pfin( fpstatepeek, &pfstatepeek );
+			statekeys = pfkeys( pfstatepeek );
+			fclose( fpstatepeek );
+
+		} else {
+
+			statekeys = newtbl( 0 );
+		}
+
+		rc = exhume( statefile, &stop, ISI2ORB_SHUTDOWN_SEC, mortician );
+
+		if( rc == -1 ) {
+			
+			elog_complain( 1, "State file failure; disabling\n" );
+
+			statefile = 0;
+		}
+
+		if( Verbose ) {
+
+			if( rc == 0 ) {
+
+				sprintf( msg, "file not found; "
+					      "initiating new state file" );
+
+			} else if( rc == 1 ) {
+
+				sprintf( msg, "previous state file "
+					      "recovered without error" );
+
+			} else if( rc == 2 ) {
+
+				sprintf( msg, "previous state file "
+					      "was corrupt; ignoring state " 
+					      "information" );
+				
+			} else {
+
+				/* Shouldn't happen: */
+
+				sprintf( msg, "Unknown recovery status "
+					      "after exhuming file" );
+			}
+
+			elog_notify( 0, "Recording state information " 
+				"in file '%s' (%s)\n", statefile, msg );
+		}
+
+		for( ikey = 0; ikey < maxtbl( statekeys ); ikey++ ) {
+
+			keyp = gettbl( statekeys, ikey );
+
+			allot( double *, nextrequest, 1 );
+
+			setarr( latest, keyp, (void *) nextrequest );
+
+			relic.dp = nextrequest;
+
+			rc = resurrect( keyp, relic, TIME_RELIC );
+
+			if( rc == 0 && Verbose ) {
+					
+				elog_notify( 0,
+				  "resurrected state for '%s' as %s "
+				  "UTC\n",
+				  keyp, 
+				  s = strtime( *nextrequest ) );
+
+				free( s );
+			}
+		}
+
+		if( statekeys ) {
+
+			freetbl( statekeys, 0 );
+		}
 	}
 
 	pfread( pfname, &pf );
@@ -200,17 +325,21 @@ main( int argc, char **argv )
 	segtype = pfget_string( pf, "segtype" );
 	isi_logging = pfget_string( pf, "isi_logging" );
 	uppercase = pfget_boolean( pf, "uppercase" );
+	statefile_rewind_max_sec = pfget_double( pf, "statefile_rewind_max_sec" );
 
 	if( maxtbl( streams ) <= 0 ) {
 		
 		elog_die( 0, "No streams specified in 'streams' table "
 			     "of %s.pf. Bye\n", pfname );
+
 	} else {
 
 		streamspec = jointbl( streams, "+" );
 	}
 
-	if( verbose ) {
+	freetbl( streams, 0 );
+
+	if( Verbose ) {
 		
 		elog_notify( 0, "Using stream specification '%s'\n", 
 			streamspec );
@@ -220,8 +349,6 @@ main( int argc, char **argv )
 		
 		die( 0, "Failed to open %s for writing. Bye.\n", orbname );
 	}
-
-	added = newarr( 0 );
 
 	pkt = newPkt();
 
@@ -253,7 +380,7 @@ main( int argc, char **argv )
 		elog_die( 0, "isiCnf failure. Bye.\n" );
 	}
 
-	if( veryverbose ) {
+	if( VeryVerbose ) {
 
 		fprintf( stdout, "Configuration report:\n\n" );
 		fprintf( stdout,
@@ -264,7 +391,7 @@ main( int argc, char **argv )
 
 	for( icnf = 0; icnf < report->nentry; icnf++ ) {
 
-		if( veryverbose ) {
+		if( VeryVerbose ) {
 
 			isiPrintStreamCnf( stdout, &report->entry[icnf] );
 		}
@@ -274,7 +401,7 @@ main( int argc, char **argv )
 			      report->entry[icnf].name.chn,
 			      report->entry[icnf].name.loc );
 
-		setarr( Cnf_entries, key, report->entry + icnf );
+		setarr( Cnf_entries, key, &(report->entry[icnf]) );
 	}
 
 	free( report );
@@ -289,7 +416,111 @@ main( int argc, char **argv )
 	isiSetDatreqFormat( dreq, format );
 	isiSetDatreqCompress( dreq, compress );
 
-	if( veryverbose ) {
+	for( ireq = 0; ireq < dreq->nreq; ireq++ ) {
+		
+		sprintf( key, "%s.%s.%s", 
+			dreq->req.twind[ireq].name.sta,
+			dreq->req.twind[ireq].name.chn,
+			dreq->req.twind[ireq].name.loc );
+
+		sprintf( regkey, "%s\\.%s\\.%s",
+		  strcmp( dreq->req.twind[ireq].name.sta, ISI_NAME_WILDCARD ) ? 
+			dreq->req.twind[ireq].name.sta : "[^.]*",
+		  strcmp( dreq->req.twind[ireq].name.chn, ISI_NAME_WILDCARD ) ? 
+			dreq->req.twind[ireq].name.chn : "[^.]*",
+		  strcmp( dreq->req.twind[ireq].name.loc, ISI_NAME_WILDCARD ) ? 
+			dreq->req.twind[ireq].name.loc : "[^.]*" );
+
+		if( ( nextrequest = getarr( latest, key ) ) != NULL ) {
+
+			if( statefile_rewind_max_sec != 0 && 
+			    *nextrequest < now() - statefile_rewind_max_sec ) {
+			
+
+				if( Verbose ) {
+					
+					elog_notify( 0, 
+					  "Data request for '%s' is more than "
+					  "'%s' behind present; ignoring "
+					  "state file, setting to newest\n",
+					  key,
+					  s = strtdelta( statefile_rewind_max_sec ) );
+
+					free( s );
+				}
+
+				*nextrequest = now();
+
+				dreq->req.twind[ireq].beg = ISI_NEWEST;
+
+			} else {
+
+				dreq->req.twind[ireq].beg = *nextrequest;
+			}
+
+
+		} else {
+
+			matching = greparr( regkey, latest );
+
+			oldest = 0;
+
+			for( ikey = 0; ikey < maxtbl( matching ); ikey++ ) {
+
+				keyp = (char *) gettbl( matching, ikey );
+
+				if( keyp == NULL ) {
+
+					continue;
+				}
+
+				nextrequest = (double *) getarr( latest, keyp );
+
+				if( nextrequest == NULL ) {
+
+					continue;
+				}
+
+
+				if( oldest == 0 || oldest > *nextrequest ) {
+
+					oldest = *nextrequest;
+				}
+			}
+
+			freetbl( matching, 0 );
+
+			if( oldest != 0 ) {
+
+				if( statefile_rewind_max_sec != 0 && 
+			    	    oldest < now() - statefile_rewind_max_sec ) {
+			
+					if( Verbose ) {
+
+					elog_notify( 0, 
+					  "Data request for '%s' is more than "
+					  "'%s' behind present; ignoring "
+					  "state file, setting to newest\n",
+					  key,
+					  s = strtdelta( statefile_rewind_max_sec ) );
+
+					free( s );
+					}
+
+					oldest = now();
+
+					dreq->req.twind[ireq].beg = ISI_NEWEST;
+
+				} else {
+
+					dreq->req.twind[ireq].beg = oldest;
+				}
+			}
+
+		}
+	}
+
+	if( VeryVerbose ) {
 
 		fprintf( stdout, "ISI Data request:\n\n" );
 
@@ -300,9 +531,10 @@ main( int argc, char **argv )
 
 	isiFreeDataRequest( dreq );
 
-	while( ( ts = isiReadGenericTS( isi, &status ) ) != NULL ) {
+	while( ! stop &&
+	       ( ts = isiReadGenericTS( isi, &status ) ) != NULL ) {
 	
-		if( veryverbose ) {
+		if( VeryVerbose ) {
 
 			elog_notify( 0, "%s\n", 
 				isiGenericTsHdrString( &ts->hdr, 
@@ -314,11 +546,50 @@ main( int argc, char **argv )
 				ts->hdr.name.chn,
 				ts->hdr.name.loc );
 
-		if( verbose && getarr( added, key ) == NULL ) {
+		if( Verbose && getarr( added, key ) == NULL ) {
 
 			elog_notify( 0, "Adding new channel %s\n", key );
 
 			setarr( added, key, (void *) 0x1 );
+		}
+
+		nextrequest = (double *) getarr( latest, key );
+
+		if( nextrequest == NULL ) {
+
+			allot( double *, nextrequest, 1 );
+
+			*nextrequest = ts->hdr.tols.value + ISI2ORB_EPSILON;
+
+			setarr( latest, key, (void *) nextrequest );
+
+			if( statefile ) {
+				
+				relic.dp = nextrequest;
+
+				rc = resurrect( key, relic, TIME_RELIC );
+			}
+
+		} else if( ts->hdr.tols.value < *nextrequest ) {
+
+			if( VeryVerbose ) {
+				
+				elog_notify( 0, "Skipping '%s' data packet " 
+				  "because endtime '%s' is less than "
+				  "statefile computation '%s'\n",
+				  key,
+				  s = strtime( ts->hdr.tols.value ),
+				  u = strtime( *nextrequest ) );
+
+				free( s );
+				free( u );
+			}
+
+			continue;
+
+		} else {
+
+			*nextrequest = ts->hdr.tols.value + ISI2ORB_EPSILON;
 		}
 
 		strcpy( pkt->parts.src_net, net );
@@ -366,8 +637,8 @@ main( int argc, char **argv )
 
 		} else {
 
-			pktchan->calib = NULL_CALIB; 
-			pktchan->calper = NULL_CALPER;
+			pktchan->calib = ISI2ORB_NULL_CALIB; 
+			pktchan->calper = ISI2ORB_NULL_CALPER;
 		}
 
 		pktchan->nsamp = ts->hdr.nsamp;
@@ -449,6 +720,19 @@ main( int argc, char **argv )
 
 			complain( 0, "orbput fails\n" );
 		}
+
+		if( statefile && bury_counter-- <= 0 ) {
+
+			bury();
+
+			bury_counter = STATEFILE_BURY_INTERVAL_NPKTS;
+		}
+	}
+
+
+	if( statefile ) {
+
+		bury();
 	}
 
 	elog_notify( 0, "Program stopping at %s UTC\n", 

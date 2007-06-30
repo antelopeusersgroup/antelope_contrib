@@ -5,3 +5,4 @@ streams &Tbl{
 uppercase yes
 segtype V
 isi_logging elog
+statefile_rewind_max_sec 3600

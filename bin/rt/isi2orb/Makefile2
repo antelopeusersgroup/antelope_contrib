@@ -10,3 +10,5 @@ ldlibs = -lisi $(ORBLIBS)
 
 include $(ANTELOPE)/include/antelopemake-gcc-mix
 
+CC=purify gcc -g 
+DBG=-g
