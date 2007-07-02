@@ -4,9 +4,9 @@ smartpick \- Graphical front end for dbpick
 .SH SYNOPSIS
 .nf
 \fBsmartpick \fP[\-nowait | -nostarttalk] [\-appname \fIwindow_name\fP]
-                [\-winfile \fIfilename\fP] [\-comout \fInamed_pipe\fP]
-                [\-geom \fIdbpick_geometry\fP] [\-pf \fIpfname\fP] \fIdbname\fP
-                [\fItrial_dbname\fP]
+                [\-winfile \fIfilename\fP] [\-dbxcor_appname \fIwindow_name\fP]
+		[\-comout \fInamed_pipe\fP] [\-geom \fIdbpick_geometry\fP] 
+		[\-pf \fIpfname\fP] \fIdbname\fP [\fItrial_dbname\fP]
 .fi
 .SH DESCRIPTION
 The \fBsmartpick\fP program allows control of the dbpick(1) application
@@ -274,6 +274,18 @@ This is a ptkform(3p) optionmenu which executes the dbpick(1) command
 or physical units. The option-menu items which must appear in the
 \fBsmartpick\fP parameter-file are \fIPhysical\fP and \fICounts\fP.
 
+.IP dbxcor
+This is a ptkform(3p) optionmenu which allows dbxcor(1) to be invoked
+for the named phase and the current orid from dbpick(1). The dbpick(1) 
+application is queried for the orid number, so dbpick must be running, and 
+also it must be already focused on an event. The \fBsmartpick\fP application
+assumes that dbxcor(1) has been started independently and is already running
+The communication with dbxcor(1) is via the Antelope tksend(1) mechanism,
+so smartpick must know the proper Tk application-name of dbxcor(1) (either 
+set through the \fBsmartpick\fP command-line option \fIdbxcor_appname\fP, 
+or through the \fBsmartpick\fP GUI entry widget \fIdbxcor_appname\fP,
+or left at its default value of \fIdbxcor\fP). 
+
 .IP default_phase
 This is a ptkform(3p) optionmenu which allows the default phase to be set
 for picking arrivals. The option chosen is given to the dbpick(1) \fIph\fP
@@ -354,6 +366,15 @@ the TCL/Tk window name of the dbpick application. On rare occasions it
 might also be useful to use \fBsmartpick\fP to manage multiple
 instances of dbpick.
 
+.IP dbxcor_appname
+An entry box of this name allows the user to change the TCL/Tk window
+name which \fBsmartpick\fP expects dbxcor(1) to have. Sometimes, for
+example through stopping and starting \fBsmartpick\fP, this can get out
+of sync. The unregister(1) or xwininfo(1) command can be used to get
+the TCL/Tk window name of the dbxcor(1) application. On rare occasions it
+might also be useful to use \fBsmartpick\fP to manage multiple
+instances of dbxcor(1).
+
 .IP cm
 An entry box of this name allows the user to set the maximum number 
 of traces dbpick(1) will display, via the dbpick(1) \fIcm\fP command. 
@@ -427,6 +448,10 @@ This argument is passed to dbpick as the -appname option.
 
 .IP "-comout named_pipe"
 This argument is passed to dbpick as the -comout option.
+
+.IP "-dbxcor_appname window_name"
+This argument sets the name used to communicate with the dbxcor(1) 
+application via the Antelope tksend(1) mechanism.
 
 .IP "-geom dbpick_geometry"
 This argument is passed to dbpick as the -geom option. This overrides
