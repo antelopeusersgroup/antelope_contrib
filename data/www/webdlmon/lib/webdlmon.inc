@@ -1199,7 +1199,7 @@ if( !empty( $preset_fields ) ) {
 	}
 	?>
 
-	<a name="top" />
+	<a name="top"></a>
 	<p>Snapshot of dlmon. Sortable by column heading, arrow direction
 	signifying forward or reverse sort. 
 	<?php if( $show_legend == 'true' ) echo '<a href="#legend">View the legend for the table</a>.' ?></p>
