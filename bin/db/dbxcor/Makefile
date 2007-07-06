@@ -22,6 +22,8 @@ $(BIN) : $(OBJS) cc_tks.h
 	$(RM) $@
 	$(CXX) $(CCFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
+dbxcor.cc: cc_tks.h
+
 cc_tks.h: 
 	@$(RM) $@
 	@head -21 $(ANTELOPE)/include/tks.h > $@
