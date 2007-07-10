@@ -493,6 +493,12 @@ This boolean value determines whether waveforms are automatically turned
 on (via the dbpick \fIsw\fP command) after any operation that affects 
 which waveforms are shown. 
 
+.IP autolaunch_dbxcor
+If this boolean value is set to a true value, the dbxcor(1) program will 
+be launched at the startup of \fBsmartpick\fP. Also, if set, \fBdbpick\fP 
+is also automatically started, regardless of any other parameter-file 
+or command-line settings. 
+
 .IP balloon_help
 This boolean value determines whether balloon help is activated or
 not.
@@ -713,6 +719,7 @@ default_snapshot_file           smartpick.gif
 antelope                        &env(ANTELOPE)
 overlay_time_correction         0
 num_nearby_stations             0
+autolaunch_dbxcor               0
 
 .ne 66
 layout &Tbl{ #Widget parameters for smartpick GUI:  

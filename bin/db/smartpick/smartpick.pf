@@ -17,6 +17,7 @@ stations_frame_columns		10
 stations_frame_subset		offdate == NULL
 overlay_time_correction		0
 num_nearby_stations		0
+autolaunch_dbxcor		0
 
 layout &Tbl{
 #Widget parameters for smartpick GUI: 

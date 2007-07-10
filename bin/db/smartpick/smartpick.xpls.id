@@ -508,6 +508,8 @@ sub start_dbpick {
 		$dbpick_geometry = "";
 	} 
 
+	my( $appname );
+
 	if( $State{appname} && 
 	    $State{appname} ne "" ) {
 
@@ -563,6 +565,29 @@ sub start_dbpick {
 
 	    set_dbpick_tc();
 	}
+
+	return;
+}
+
+sub start_dbxcor {
+
+	my( $appname );
+
+	if( $State{dbxcor_appname} && 
+	    $State{dbxcor_appname} ne "" ) {
+
+		$dbxcor_appname = "-appname $State{dbxcor_appname}";
+
+	} else {
+
+		$appname = "-appname dbxcor";
+	} 
+
+	my( $cmd ) = "xterm " .
+		     " -title dbxcor_output " .
+		     "-e dbxcor $State{dbname} -v $appname";
+
+	$State{DbxcorPid} = rtbkg( $cmd );
 
 	return;
 }
@@ -1849,6 +1874,7 @@ POSIX::sigaction(&POSIX::SIGINT, $action);
 		balloon_help
 		auto_dw
 		auto_sw_on
+		autolaunch_dbxcor
 		);
 
 foreach $param ( @booleans ) {
@@ -1910,6 +1936,7 @@ $State{snapshots_possible} = 1;
 
 my( @required ) = qw( dbe 
 		      dbpick
+		      dbxcor
 		      import
 		      unregister
 		      xterm
@@ -2016,9 +2043,14 @@ toplevel_bindings( $MW );
 
 $MW->geometry( $State{smartpick_geometry} );
 
-if( $State{nowait} ) {
+if( $State{nowait} || $State{autolaunch_dbxcor} ) {
 
 	start_dbpick();
+}
+
+if( $State{autolaunch_dbxcor} ) {
+
+	start_dbxcor();
 }
 
 $MW->update();
