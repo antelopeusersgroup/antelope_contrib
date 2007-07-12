@@ -387,6 +387,8 @@ sub quit_smartpick {
 
 	kill_dbpick();
 
+	kill_dbxcor();
+
 	if( -e "$State{winfile}" ) {
 		
 		unlink( $State{winfile} );
@@ -692,6 +694,11 @@ sub kill_dbpick {
 	send_to_dbpick( "quit", 1 );
 }
 
+sub kill_dbxcor {
+
+	send_to_dbxcor( "quit", 1 );
+}
+
 sub exec_spgram {
 
 	send_to_dbpick( "exec dbspgram %db %sta %chan %ts %tw &" );
@@ -728,7 +735,7 @@ sub dbxcor {
 		return ();
 	}
 
-	send_to_dbxcor( "$State{orid} $State{var}->{dbxcor}" ); #SCAFFOLD
+	send_to_dbxcor( "$State{orid} $State{var}->{dbxcor}" ); 
 }
 
 sub gp {
