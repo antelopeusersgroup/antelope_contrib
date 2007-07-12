@@ -571,7 +571,7 @@ sub start_dbpick {
 
 sub start_dbxcor {
 
-	my( $appname );
+	my( $dbxcor_appname );
 
 	if( $State{dbxcor_appname} && 
 	    $State{dbxcor_appname} ne "" ) {
@@ -580,12 +580,12 @@ sub start_dbxcor {
 
 	} else {
 
-		$appname = "-appname dbxcor";
+		$dbxcor_appname = "-appname dbxcor";
 	} 
 
 	my( $cmd ) = "xterm " .
 		     " -title dbxcor_output " .
-		     "-e dbxcor $State{dbname} -v $appname";
+		     "-e dbxcor $State{dbname} -v $dbxcor_appname";
 
 	$State{DbxcorPid} = rtbkg( $cmd );
 
