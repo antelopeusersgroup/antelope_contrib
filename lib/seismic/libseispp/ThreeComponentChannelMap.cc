@@ -34,7 +34,7 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(string buffer)
 	// Just read items 3 at a time.  Not the most robust, because it
 	// could easily detect an error if item count was not mod 3.
 	// Minor concern
-	while(sscanf("%s%d%d",chanbuf,&comp,&lev) == 3)
+	while(sscanf(buffer.c_str(),"%s%d%d",chanbuf,&comp,&lev) == 3)
 	{
 		string chan(chanbuf);
 		channels[chan]=comp;
