@@ -34,6 +34,8 @@ make &Arr{
 	^.*does not exist
 	^.*syntax error
 	^.*cannot recover
+	^.*cannot create
+	^.*cannot open
 	^.*cannot find include file
 	^[[:space:]]*mex:.*failed\\.
 	^.*No such file or directory
@@ -64,6 +66,7 @@ make &Arr{
 	^.*gcc.*: linker input file unused
 	^.*cycle in data
 	^.*improper member use
+	^.*not found
 	^.*undefined struct\\/union member
 	^.*incomplete struct\\/union\\/enum 
 	^.*declaration hides parameter
@@ -173,6 +176,8 @@ make &Arr{
 	^[[:space:]]*matdoc2html[[:space:]]
 	^[[:space:]]*matdoc_htmlwrap[[:space:]]
 	^[[:space:]]*\\/bin\\/sh[[:space:]]
+	^[[:space:]]*\\/bin\\/bash[[:space:]]
+	^[[:space:]]*config\\/install-sh[[:space:]]
 	^make[[:space:]]
 	^mkdir[[:space:]]
 	^mex[[:space:]]
@@ -185,6 +190,7 @@ make &Arr{
 	^refguide[[:space:]]
 	^[[:space:]]*rm[[:space:]]
 	^sed[[:space:]]
+	^test[[:space:]]
 	^then[[:space:]]
 	^touch[[:space:]]
 	^tsort[[:space:]]
