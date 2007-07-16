@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sstream>
 #include "stock.h"
 #include "pf.h"
 #include "seispp.h"
@@ -29,14 +30,14 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(Pf *pf,string tccmkey)
 }
 ThreeComponentChannelMap::ThreeComponentChannelMap(string buffer)
 {
-	char chanbuf[20];
+	string chan;
 	int comp,lev;
-	// Just read items 3 at a time.  Not the most robust, because it
-	// could easily detect an error if item count was not mod 3.
-	// Minor concern
-	while(sscanf(buffer.c_str(),"%s%d%d",chanbuf,&comp,&lev) == 3)
+	istringstream in(buffer);
+	while(in.good())
 	{
-		string chan(chanbuf);
+		in >> chan;
+		in >> comp;
+		in >> lev;
 		channels[chan]=comp;
 		level[chan]=lev;
 	}
