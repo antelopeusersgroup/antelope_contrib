@@ -3343,6 +3343,12 @@ static XImage *newBitmap_peng (Display *dpy, int width, int height,
                                 (unsigned int) height1,
                                 (int) BitmapPad(dpy),
                                 (int) nbpr);
+	if(image==NULL)
+	{
+		cerr << "XCreateImage failed in seismic display widget."
+			<< "   Fatal error."<<endl;
+		exit(-1);
+	}
 
         if (style == NORMAL) {
                 image2 = RotImage90_peng(dpy,image);
@@ -5185,14 +5191,17 @@ static void color_deleted_traces(ExmSeiswWidget sw)
 
     scr = DefaultScreen(dpy);
     unsigned long black = BlackPixel(XtDisplay((Widget)sw),scr);
-    if (dcolor==NULL) dcolor=(char *)(string("red").c_str());
 
     if (spar==NULL || tse ==NULL) return;
     if (sw->seisw.display_markers == NULL) return;
     dgc= XCreateGC(XtDisplay((Widget)sw),sca->win,0,values);
 
     screen_colormap = DefaultColormap(dpy, DefaultScreen(dpy));
-    rc = XAllocNamedColor(dpy, screen_colormap, dcolor, &red, &red);
+    if(dcolor==NULL)
+	rc = XAllocNamedColor(dpy, screen_colormap, string("red").c_str(),
+			&red, &red);
+    else
+	rc = XAllocNamedColor(dpy, screen_colormap, dcolor, &red, &red);
     XSetForeground(dpy, dgc, red.pixel);
 
     //assuming here n-1 for the nth (index n-1) seismogram
