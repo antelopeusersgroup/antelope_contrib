@@ -9,7 +9,7 @@ StationChannelMap::StationChannelMap()
 	string defmap;
 	defmap=string("BHE 0 0\n")
 		+string("BHN 1 0\n")
-		+string("BHE 2 0\n");
+		+string("BHZ 2 0\n");
 	ThreeComponentChannelMap def(defmap);
 	chanmap.insert(map<string,ThreeComponentChannelMap>
                                 ::value_type(string("default"),def));
