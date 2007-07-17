@@ -75,6 +75,97 @@ sub trwfname {
 	return $path_from_here;
 }
 
+sub archive_chanvar {
+	my( $achan ) = @_;
+
+	my( $rrd, @data, $nsamp, $samprate, $time,  $val );
+	my( $net, $sta, $chan, $start_time );
+
+	$net = $achan->net();
+	$sta = $achan->sta();
+	$chan = $achan->chan();
+	$start_time = $achan->chan();
+
+	if( ! defined $Chan_vars{$chan} ) {
+
+		if( $opt_V ) {
+			
+			inform( "Skipping channel $chan because it's not in 'chan_vars' table of parameter file $Pf\n" );
+		}
+
+		return;
+	}
+
+	my( $key ) = $net . ":" . $sta . ":" . $chan;
+
+	if( ! defined( $Rrd_files{$key} ) || ! -e "$Rrd_files{$key}" ) {
+
+		$start_time = $time - $Waveform_stepsize_sec;
+
+		my( @dbt ) = @Db;
+		$dbt[3] = dbaddnull( @Db );
+
+		dbputv( @dbt,
+			"net", $net,
+			"sta", $sta,
+			"rrdvar", $chan,
+			"time", $start_time );
+
+		$rrd = trwfname( @dbt, $Rrdfile_pattern );
+
+		my( $datasource ) = 
+			"DS:$chan:$Chan_vars{$chan}{'dsparams'}";
+
+		inform( "Creating rrdfile $rrd\n" ); 
+
+		RRDs::create( "$rrd", 
+				"-b", "$start_time", 
+				"-s", "$Waveform_stepsize_sec",
+				"$datasource", @{$Chan_vars{$chan}{'rras'}} ); 
+
+		my $ERR = RRDs::error;
+
+		if( $ERR ) {
+
+			elog_complain( "ERROR while creating '$rrd': $ERR\n" ) 
+		}
+
+		$Rrd_files{$key} = $rrd;
+
+	} else {
+		
+		$rrd = $Rrd_files{$key};
+	}
+
+	@data = $achan->data;
+	$nsamp = $achan->nsamp;
+	$samprate = $achan->samprate;
+
+	for( $isamp = 0; $isamp < $nsamp; $isamp++ ) {
+
+		$time = $achan->time + $isamp / $samprate;
+
+		$val = $data[$isamp];
+
+		if( $opt_V ) {
+
+			inform( "Recording time '$time' value '$val' from " . 
+				"'$chan' in $rrd\n" );
+		}
+
+		RRDs::update( $rrd, "$time:$val" );
+
+		my $ERR = RRDs::error;
+
+		if( $ERR ) {
+
+			elog_complain( "ERROR while updating '$rrd': $ERR\n" ) 
+		}
+	}
+
+	return;
+}
+
 sub archive_dlsvar {
 	my( $net, $sta, $dls_var, $time, $val ) = @_;
 
@@ -84,7 +175,7 @@ sub archive_dlsvar {
 
 	if( ! defined( $Rrd_files{$key} ) || ! -e "$Rrd_files{$key}" ) {
 
-		my( $start_time ) = $time - $Stepsize_sec;
+		my( $start_time ) = $time - $Status_stepsize_sec;
 
 		my( @dbt ) = @Db;
 		$dbt[3] = dbaddnull( @Db );
@@ -104,8 +195,14 @@ sub archive_dlsvar {
 
 		RRDs::create( "$rrd", 
 				"-b", "$start_time", 
-				"-s", "$Stepsize_sec",
+				"-s", "$Status_stepsize_sec",
 				"$datasource", @{$Dls_vars{$dls_var}{'rras'}} ); 
+		my $ERR = RRDs::error;
+
+		if( $ERR ) {
+
+			elog_complain( "ERROR while creating '$rrd': $ERR\n" ) 
+		}
 
 		$Rrd_files{$key} = $rrd;
 
@@ -137,7 +234,7 @@ sub archive_dlsvar {
 
 	if( $ERR ) {
 
-		elog_complain( "ERROR while updating $rrd: $ERR\n" ) 
+		elog_complain( "ERROR while updating '$rrd': $ERR\n" ) 
 	}
 
 	return;
@@ -241,15 +338,25 @@ for( $dbt[3] = 0; $dbt[3] < dbquery( @dbt, dbRECORD_COUNT ); $dbt[3]++ ) {
 }
 
 $Rrdfile_pattern = pfget( $Pf, "rrdfile_pattern" );
-$Stepsize_sec = pfget( $Pf, "stepsize_sec" );
-@lines = @{pfget( $Pf, "dls_vars" )};
+$Status_stepsize_sec = pfget( $Pf, "status_stepsize_sec" );
+$Waveform_stepsize_sec = pfget( $Pf, "waveform_stepsize_sec" );
+@dlslines = @{pfget( $Pf, "dls_vars" )};
+@chanlines = @{pfget( $Pf, "chan_vars" )};
 
-foreach $line ( @lines ) {
+foreach $line ( @dlslines ) {
 
 	my( $dls_var, $dsparams, @myrras ) = split( /\s+/, $line );
 
 	$Dls_vars{$dls_var}{'dsparams'} = $dsparams;
 	$Dls_vars{$dls_var}{'rras'} = \@myrras;
+}
+
+foreach $line ( @chanlines ) {
+
+	my( $chan_var, $dsparams, @myrras ) = split( /\s+/, $line );
+
+	$Chan_vars{$chan_var}{'dsparams'} = $dsparams;
+	$Chan_vars{$chan_var}{'rras'} = \@myrras;
 }
 
 for( ; $stop == 0 ; ) {
@@ -270,36 +377,62 @@ for( ; $stop == 0 ; ) {
 
 	($result, $pkt) = unstuffPkt( $srcname, $time, $packet, $nbytes ); 
 
-	if( $result ne "Pkt_pf" ) {
+	if( $result eq "Pkt_pf" ) {
+
+		$msg = "Received a parameter-file '$srcname' at " . 
+			strtime( $time );
+
+		if( $opt_V ) {
+			$msg .= ":\n" . pf2string( $pkt->pf ) . "\n\n";
+		} else {
+			$msg .= "\n";
+		}
+
+		inform( $msg );
+
+		%mypktpf = %{pfget( $pkt->pf(), "dls" )};
+	
+		$time = int( $time );
+	
+		foreach $element ( keys %mypktpf ) {
+	  	   foreach $dls_var ( keys %Dls_vars ) {
+	
+			( $net, $sta ) = split( '_', $element );
+	
+			$val =  $mypktpf{$element}{$dls_var};
+	
+			archive_dlsvar( $net, $sta, $dls_var, $time, $val );
+	   	    }
+		}
+
+	} elsif( $result eq "Pkt_wf" ) {
+
+		if( $opt_V ) {
+	
+			showPkt( $pktid, $srcname, $time, $packet, 
+				 $nbytes, PKT_NOSAMPLES );
+
+		} else {
+
+			$msg = "Received a waveform packet '$srcname' at " . 
+				strtime( $time ) . "\n";
+		}
+
+		inform( $msg );
+
+		for( $ichan = 0; $ichan < $pkt->nchannels; $ichan++ ) {
+
+			$achan = $pkt->channels( $ichan );
+
+			archive_chanvar( $achan );
+		}
+
+	} else {
 
 		inform( "Received a packet that's not a parameter file " .
- 			"(type '$result' from unstuffPkt); skipping\n" );
+			"or waveform (type '$result' from unstuffPkt); " .
+			"skipping\n" );
 
 		next;
-	}
-
-	$msg = "Received a parameter-file '$srcname' at " . strtime( $time );
-
-	if( $opt_V ) {
-		$msg .= ":\n" . pf2string( $pkt->pf ) . "\n\n";
-	} else {
-		$msg .= "\n";
-	}
-
-	inform( $msg );
-
-	%mypktpf = %{pfget( $pkt->pf(), "dls" )};
-
-	$time = int( $time );
-
-	foreach $element ( keys %mypktpf ) {
-	  foreach $dls_var ( keys %Dls_vars ) {
-
-		( $net, $sta ) = split( '_', $element );
-
-		$val =  $mypktpf{$element}{$dls_var};
-
-		archive_dlsvar( $net, $sta, $dls_var, $time, $val );
-	   }
 	}
 }

@@ -1,18 +1,27 @@
 # Convenient parameter-file macros:
 # --------------------------------
 
-heartbeat_sec 40		# stepsize_sec * 2
+status_heartbeat_sec 40		# status_stepsize_sec * 2
+waveform_heartbeat_sec 2	# waveform_stepsize_sec * 2
 
-archives	RRA:AVERAGE:0.5:&stepsize_sec:1200 RRA:MAX:0.5:60:700
+status_archives  RRA:AVERAGE:0.5:&status_stepsize_sec:1200 RRA:MAX:0.5:60:700
+waveform_archives  RRA:AVERAGE:0.5:&waveform_stepsize_sec:1200 RRA:MAX:0.5:60:700
 
 # Actual orb2rrd parameters:
 # --------------------------
 
 rrdfile_pattern	rrd/%{net}_%{sta}_%{rrdvar}.rrd
 
-stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
+status_stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
+waveform_stepsize_sec	1		# waveform step size
 
 dls_vars	&Tbl{
-br24   GAUGE:&heartbeat_sec:U:U   &archives
-lcq    GAUGE:&heartbeat_sec:U:U   &archives
+br24   GAUGE:&status_heartbeat_sec:U:U   &status_archives
+lcq    GAUGE:&status_heartbeat_sec:U:U   &status_archives
+}
+
+chan_vars	&Tbl{
+LHZ   GAUGE:&waveform_heartbeat_sec:U:U   &waveform_archives
+LHN   GAUGE:&waveform_heartbeat_sec:U:U   &waveform_archives
+LHE   GAUGE:&waveform_heartbeat_sec:U:U   &waveform_archives
 }

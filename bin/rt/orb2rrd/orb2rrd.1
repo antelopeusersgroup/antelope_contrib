@@ -89,7 +89,11 @@ installed, currently available from
 
 .fi
 
-Currently orb2rrd is limited to handling q3302orb .*/pf/st status packets. 
+Currently orb2rrd is designed to handle q3302orb .*/pf/st status packets. 
+If given a regular expression match for orb packets that include waveform
+data, orb2rrd will actually also save RRD databases of waveform 
+data (via the \fIchan_vars\fP parameter-file array, similar to \fIdls_vars\fP), however this is not advised for seismic waveform data proper due to the 
+built-in averaging and the limitation to one-second or greater time steps. 
 
 It might be nice to have a regular-expression limiting the stations which 
 are chosen out of the status packets. This can be added if necessary.
