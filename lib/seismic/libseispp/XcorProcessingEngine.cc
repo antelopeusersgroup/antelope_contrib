@@ -765,7 +765,10 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 		
 	// I think static in this context means they are set once
 	// and only once at startup
-	static const string auth("dbxcor");
+	static const string authbase("dbxcor");
+	char username[20];
+	my_username(username);
+	string auth=authbase+":"+string(username);
 	// Since this is hidden behind the interface I'm going
 	// to use the standard datascope API instead of going
 	// through the DatascopeHandle API.  Since this code
