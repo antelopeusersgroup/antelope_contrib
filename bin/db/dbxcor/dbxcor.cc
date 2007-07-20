@@ -4,7 +4,7 @@
 #include "Seisw.h"
 #include "SeismicPick.h"
 #include "XcorProcessingEngine.h"
-#include "cc_tks.h"
+#include "tks.h"
 
 #include <Xm/DrawingA.h>
 
@@ -414,10 +414,23 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		psm->record(ss.str());
 		Metadata data_md=psm->xpe->get_data_md();
 		stringstream ts;
-		ts << phase_to_analyze << " data for evid="<<evid
+		if(psm->using_subarrays)
+		{
+		    ts << psm->xpe->current_subarray_name
+			<< " "
+			<< phase_to_analyze 
+			<< " data for evid="<<evid
 			<<", orid="<<orid
 			<<".  Location:  "
 			<<lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
+		}
+		else
+		{
+		    ts << phase_to_analyze << " data for evid="<<evid
+			<<", orid="<<orid
+			<<".  Location:  "
+			<<lat <<","<<lon<<","<<depth<<","<<strtime(otime);      
+		}
 		data_md.put("title",ts.str());
 
 		psm->active_setting=psm->asetting_default[phase_to_analyze];
@@ -1655,6 +1668,9 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_EVENT);
     ss << "Restoring original data"<<endl;
     psm->record(ss.str());
+    Display *dpy=XtDisplay(w);
+    Window win=XtWindow(w);
+    XClearWindow(dpy,win);
 }
 
 void load_next_subarray(Widget w, void * client_data, void * userdata)
@@ -1679,6 +1695,18 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 			ss << "Resetting to allow reading next event"<<endl;
 			psm->session_state(NEXT_EVENT);
 		}
+		// Update subarray in title string.  This is minor maintenance
+		// issue.  This depends on the subarray name being the first word in
+		// the current title.
+		string oldtitle(psm->markers.title);
+		int sstart=oldtitle.find_first_of(" ",0);
+		oldtitle.erase(0,sstart);
+		psm->markers.title=psm->xpe->current_subarray_name+oldtitle;
+		Metadata data_md=psm->xpe->get_data_md();
+		data_md.put("title",psm->markers.title);
+		XtVaSetValues(psm->seismic_widget,
+			ExmNseiswMetadata, (XtPointer)(&data_md),
+			ExmNdisplayMarkers,&(psm->markers),NULL);
 		// next_subarray increments current_subarray counter
 		// If at the end we need to disable next_subarray
 		if((psm->xpe->current_subarray)>=lastsub)
@@ -1696,6 +1724,10 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 		ss << "No more subarrays for this event.  Push button to read next event";
 	}
         psm->record(ss.str());
+	// This forces a redraw 
+    	Display *dpy=XtDisplay(w);
+    	Window win=XtWindow(w);
+	XClearWindow(dpy,win);
 }
 
 
@@ -1716,7 +1748,7 @@ void usage(char *use)
 	I think.)  -f will allow fifo input.  In that situation pass
 	orid and phase. */
         //cerr << argv[0]<<" db [-o dbout -f infile -pf pffile -v] " <<endl;
-	cerr << use <<endl;
+	cerr << "dbxcor "<< use <<endl;
         exit(-1);
 }
 
@@ -1762,7 +1794,7 @@ main (int argc, char **argv)
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
 			};
-  char *use=(char *) "dbxcor  db [-o dbout -f infile -pf pffile -v]";
+  char *use=(char *) "db [-appname name -o dbout -f infile -pf pffile -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
   char *email=(char *) "pewang@indiana.edu,pavlis@indiana.edu";
   char *loc=(char *) "Indiana University";
@@ -1778,7 +1810,7 @@ main (int argc, char **argv)
   //string hypodb(argv[3]);
   string infile("");
   string pfname("dbxcor");
-  string appname("");
+  string appname("dbxcor");
   for(i=2;i<argc;++i) {
       string argtest(argv[i]);
       if(argtest=="-pf") {
