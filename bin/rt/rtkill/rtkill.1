@@ -1,0 +1,90 @@
+.TH RTKILL 1 "$Date$"
+.SH NAME
+\fBrtkill\fP \- stop and restart processes under Antelope rtexec 
+.SH SYNOPSIS
+.nf
+\fBrtkill\fP -l
+
+\fBrtkill\fP [-rvqs] \fIprocname\fP
+.fi
+.SH DESCRIPTION
+\fBrtkill\fP allows the user to stop and start processes running under an Antelope 
+rtexec(1) system solely via command-line interaction (i.e. without using 
+text editors on the \fIrtexec.pf\fP file or GUI tools such as rtm(1)). 
+
+The default behavior of \fBrtkill\fP is to turn off a running process listed in the 
+rtexec.pf \fIRun\fP array. However, the various options (see the OPTIONS section 
+below) allow the user to start tasks that are off, restart tasks that are running, 
+query the current run setting for tasks, or list configured tasks. 
+
+\fBrtkill\fP must be run from the directory that contains the \fIrtexec.pf\fP 
+file one wishes to modify. 
+.SH OPTIONS
+.IP -l
+This option lists available tasks.
+.IP -q
+This option returns the run status of \fIprocname\fP as the exit code of the 
+\fBrtkill\fP program. In verbose mode, an informative message is also printed.
+.IP -r
+This option restarts a task.
+.IP -s
+This option starts a task that is currently turned off.
+.IP -v
+This option triggers verbose mode.
+.SH FILES
+.SH ENVIRONMENT
+.SH PARAMETER FILE
+The amount of time \fBrtkill\fP sleeps before starting a process it has just stopped 
+is specified in the parameter file. This should not need to be changed under normal
+conditions, however if processes are not restarting as expected, this value may need 
+to be lengthened:
+.nf
+
+% pfecho rtkill
+
+restart_sleep_time_sec  2
+
+.fi
+.SH EXAMPLE
+.in 2c
+.ft CW
+.nf
+% \fBrtkill\fP -v -r orbserver
+rtkill: Process 'orbserver' turned off
+rtkill: Process 'orbserver' restarted
+%
+.fi
+.ft R
+.in
+.SH RETURN VALUES
+.SH LIBRARY
+.SH ATTRIBUTES
+.SH DIAGNOSTICS
+\fBrtkill\fP  will complain and exit if the file \fI./rtexec.pf\fP is not found, 
+or if the specified process name \fIprocname\fP does not appear in the \fIRun\fP 
+array. 
+.SH "SEE ALSO"
+.nf
+rtm(1), rtexec(1), rtrun(1)
+.fi
+.SH "BUGS AND CAVEATS"
+The -l option bases its return values on the \fIRun\fP array in \fIrtexec.pf\fP.
+If this is out of sync with the Processes array, \fBrtkill\fP may not execute as expected.
+
+\fBrtkill\fP does not respect upper and lower case in process names. This may be a mistake, 
+however it should also encourage sensible choices for process names. 
+
+\fBrtkill\fP does not actually interact with real unix processes. It just modifies \fIrtexec.pf\fP
+and expects rtexec(1) to do the right thing in response.
+
+In verbose mode, \fBrtkill\fP asks before restarting a process (using the \fI-r\fP option) that is
+turned off. In normal mode it just turns it on. 
+
+One could imagine other options, such as a \fI-a\fP for all, or \fI-e regex\fP for all tasks 
+matching some regular expression. 
+.SH AUTHOR
+.nf
+Ruth Rutter and Kent Lindquist
+Lindquist Consulting, Inc.
+.fi
+.\" $Id$
