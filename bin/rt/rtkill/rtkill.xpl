@@ -162,7 +162,7 @@ $Restart_sleep_time_sec = pfget( "rtkill", "restart_sleep_time_sec" );
 
 if( !-e "$Pfname" ){
 
-	die( "Can't find ./$Pfname" );
+	die( "Can't find ./$Pfname. Bye.\n" );
 }
 
 %Run = %{ pfget( $Pfname, "Run" ) };
