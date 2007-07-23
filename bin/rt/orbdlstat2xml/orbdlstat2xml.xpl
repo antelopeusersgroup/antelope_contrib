@@ -48,7 +48,18 @@ use Datascope::pf2xml;
 use sysinfo;
 use orb;
 
-if ( ! &Getopts('a:') || @ARGV != 2 ) { 
+sub inform {
+	my( $msg ) = @_;
+
+	if( $opt_v ) {
+
+		elog_notify( "$msg\n" );
+	}
+
+	return;
+}
+
+if ( ! &Getopts('a:v') || @ARGV != 2 ) { 
 	my $pgm = $0 ; 
 	$pgm =~ s".*/"" ;
 	die ( "Usage: $pgm [-a after] orb dir\n" ) ; 
@@ -56,8 +67,15 @@ if ( ! &Getopts('a:') || @ARGV != 2 ) {
 
 elog_init( $pgm, @ARGV );
 
+inform( "Starting orbdlstat2xml at " . strtime( now() ) . " UTC" );
+
 $orbname = $ARGV[0];
 $dir = $ARGV[1];
+
+if( makedir( $dir ) < 0 ) {
+	
+	die( "Failed to make directory '$dir'. Bye.\n" );
+}
 
 $orb = orbopen( $orbname, "r" );
 
@@ -66,6 +84,8 @@ if( $opt_a ) {
 	$after_time = str2epoch( $opt_a );
 
 	orbafter( $orb, $after_time );
+
+	inform( "Rewound orb to " . strtime( $after_time ) . " UTC" );
 }
 
 if( $orb < 0 ) {
@@ -73,7 +93,11 @@ if( $orb < 0 ) {
 	die( "Failed to open $orbname\n" );
 }
 
-orbselect( $orb, ".*/pf/st" );
+$match_regex = ".*/pf/st";
+
+$nsources = orbselect( $orb, $match_regex );
+
+inform( "Selected $nsources packet streams matching '$match_regex'" );
 
 for( ;; ) {
 	
@@ -116,13 +140,22 @@ for( ;; ) {
 
 			$backbuffer_file = "$file+";
 
-			open( F, ">$backbuffer_file" );
+			$rc = open( F, ">$backbuffer_file" );
+
+			if( $rc == 0 ) {
+
+				die( "Failed to open '$backbuffer_file' " .
+				     "for writing\n" );
+			}
 	
 			print F $xmlstring;
 	
 			close( F );
 
 			system( "mv $backbuffer_file $file" );
+
+			inform( "Wrote packet type $result from $srcname, " .
+				strtime( $time ) . " UTC to $file" );
 
 		} else {
 
@@ -140,13 +173,25 @@ for( ;; ) {
 
 			$backbuffer_file = "$file+";
 
-			open( F, ">$backbuffer_file" );
+			$rc = open( F, ">$backbuffer_file" );
+	
+			if( $rc == 0 ) {
+
+				die( "Failed to open '$backbuffer_file' " .
+				     "for writing\n" );
+			}
 	
 			print F $xmlstring;
 	
 			close( F );
 
 			system( "mv $backbuffer_file $file" );
+
+			inform( "Wrote packet type $result from $srcname, " .
+				strtime( $time ) . " UTC to $file" );
+
 		}
 	}
 }
+
+inform( "Stopping orbdlstat2xml at " . strtime( now() ) . " UTC" );

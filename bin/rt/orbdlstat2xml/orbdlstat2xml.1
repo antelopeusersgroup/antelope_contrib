@@ -3,7 +3,7 @@
 orbdlstat2xml \- Convert datalogger status packets from an orb to XML
 .SH SYNOPSIS
 .nf
-orbdlstat2xml orbname dir
+orbdlstat2xml [-v] [-a after] orbname dir
 .fi
 .SH DESCRIPTION
 The \fBorbdlstat2xml\fP program reads packets of type \fI.*/pf/st\fP
@@ -11,6 +11,12 @@ from an Antelope orbserver, converts them to a simple eXtensible
 Markup Language (XML) representation, and places the results in the 
 specified directory \fIdir\fP. 
 .SH OPTIONS
+.IP "-a after"
+This option takes a string interpretable by the str2epoch(3) command
+and rewinds the orbserver packet stream to the time specified. If this option
+is omitted, acquisition starts as of the newest packet on the orb. 
+.IP -v
+verbose
 .SH FILES
 Regular packets are converted to XML files named after the packet
 sourcenames (without the \fI.*/pf/st\fP suffix/subcode extension). 
