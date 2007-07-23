@@ -98,6 +98,16 @@ rtrun [-nv] command line
 cronrun [-nv] command line
     run command line immediately, reproducing cron environment 
 
+rtkill [options] [procname]
+    stop, start, or restart a process running under rtexec
+<options>
+-l	list process names from the rtexec.pf Run array
+-r	restart the specified process
+-s 	start the specified process
+-q 	query whether the specified process name is set to run
+-v	verbose
+</options>
+
 rtsnapshot [options] 
     collect some pertinent info from real time system into tar file for problem report
 <options>
