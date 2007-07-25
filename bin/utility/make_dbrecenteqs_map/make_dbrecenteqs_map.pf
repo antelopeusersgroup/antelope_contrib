@@ -12,6 +12,10 @@ mapspec	&Arr{
 	grddb	/space/world30_grids/world30
 	cities_dbname	&datafilename(www/dbrecenteqs/world_cities)
 	stations_dbname	
+	stations_subset &Tbl{
+		dbopen site
+		dbsubset offdate == NULL 
+	}
 	hypocenter_dbname	historic_hypocenters_dbname
 	map_color_palette_file	&datafilename(gmt/dbrecenteqs.cpt)
 	map_landmask_palette_file &datafilename(gmt/dbrecenteqs_landonly.cpt)
