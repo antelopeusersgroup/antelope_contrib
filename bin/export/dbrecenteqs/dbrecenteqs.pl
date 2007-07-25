@@ -677,8 +677,21 @@ sub make_stations_tempfiles {
 	my( $focus_stanames_tempfile ) = "$State{workdir}/focus_stanames_$<_$$";
 
 	my( @db ) = dbopen( $Mapspec{stations_dbname}, "r" );
-	@db = dblookup( @db, "", "site", "", "" );
-	@db = dbsubset( @db, "offdate == NULL" );
+
+	if( defined( @{$Mapspec{stations_subset}} ) ) {
+
+		if( $opt_v ) {
+			
+			elog_notify( "Filtering stations to plot with stations_subset instructions\n" );
+		}
+
+		@db = dbprocess( @db, @{$Mapspec{stations_subset}} );
+
+	} else {
+
+		@db = dblookup( @db, "", "site", "", "" );
+		@db = dbsubset( @db, "offdate == NULL" );
+	}
 
 	my( $nrecs ) = dbquery( @db, "dbRECORD_COUNT" );
 			
