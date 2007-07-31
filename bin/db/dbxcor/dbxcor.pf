@@ -49,7 +49,7 @@ save_list_arrival &Tbl{
 arrival.sta string
 arrival.chan string
 arrival.time real
-arrival.iphase real
+arrival.iphase string
 arrival.jdate int
 arrival.auth string
 }
