@@ -93,6 +93,12 @@ desired.
 Find an event that associates with the current arrivals.  This is
 equivalent to the \fIae\fP command in the dbpick(1) command window.
 
+.IP "dbxcor_.*"
+A variety of different buttons can be constructed for individual phases, 
+each of which will trigger dbxcor processing for the specified phase and
+the current origin in dbpick. An alternative to these buttons is the 
+\fIdbxcor\fP optionmenu, which is described in more detail below. 
+
 .IP dw
 This button deletes channels with no waveforms in the display.
 This is equivalent to the \fIdw\fP command in the dbpick(1) command window.
@@ -284,7 +290,9 @@ The communication with dbxcor(1) is via the Antelope tksend(1) mechanism,
 so smartpick must know the proper Tk application-name of dbxcor(1) (either 
 set through the \fBsmartpick\fP command-line option \fIdbxcor_appname\fP, 
 or through the \fBsmartpick\fP GUI entry widget \fIdbxcor_appname\fP,
-or left at its default value of \fIdbxcor\fP). 
+or left at its default value of \fIdbxcor\fP). Note that an alternative 
+to this optionmenu is to use the \fIdbxcor_.*\fP buttons (see above) to create
+a specific, simple button for each phase of interest. 
 
 .IP default_phase
 This is a ptkform(3p) optionmenu which allows the default phase to be set

@@ -724,7 +724,8 @@ sub default_phase {
 	send_to_dbpick( "ph $State{var}->{default_phase}" );
 }
 
-sub dbxcor {
+sub process_dbxcor_phase {
+	my( $phase ) = @_;
 
 	ask_dbpick( "orid" );
 
@@ -735,7 +736,12 @@ sub dbxcor {
 		return ();
 	}
 
-	send_to_dbxcor( "$State{orid} $State{var}->{dbxcor}" ); 
+	send_to_dbxcor( "$State{orid} $phase" ); 
+}
+
+sub dbxcor {
+
+	process_dbxcor_phase( $State{var}->{dbxcor} );
 }
 
 sub gp {
@@ -1810,6 +1816,19 @@ sub bind_widgets {
  			$State{widgets}->{$widget}->configure( 
 						-command => \&$widget );
 		} 
+
+ 		if( $widget =~ /^(dbxcor)_(.*)$/ && $widget ne "dbxcor_appname" ) {
+ 
+ 			my( $phase ) = $2;
+ 
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { process_dbxcor_phase( \"$phase\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
+ 		}
  	}
  
 	my( @entry_vars ) = qw( tw 
