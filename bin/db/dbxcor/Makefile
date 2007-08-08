@@ -9,7 +9,7 @@ DBG=-g
 cxxflags=-g 
 
 ldlibs= -L./SciPlot -lseisw -lsciplot -lXm -lXt \
-  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp  -L/sw/lib
+  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp  -L/sw/lib 
 
 CLEAN = cc_tks.h 
 
