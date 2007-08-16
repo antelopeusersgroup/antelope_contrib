@@ -22,8 +22,8 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	        else
 	        {
 	        	analysis_tw
-	        		  =TimeWindow(gather_twin.start+tpad,
-	        	  		gather_twin.end-tpad);
+	        		  =TimeWindow(gather_twin.start-tpad,
+	        	  		gather_twin.end+tpad);
 	        }
 	        aw_set=true;
 
@@ -31,16 +31,16 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	        // window as default
 	        double frac=md.get_double("beam_window_fraction");
 	        beam_tw
-	        		= TimeWindow(frac*analysis_tw.start,
-	        		    frac*analysis_tw.end);
+	        		= TimeWindow(frac*gather_twin.start,
+	        		    frac*gather_twin.end);
 	        bw_set=true;
 
 	        // Use a multiplier to reduce to fraction of analysis
 	        // window as default
 	        frac=md.get_double("robust_window_fraction");
 	        robust_tw
-	        		= TimeWindow(frac*analysis_tw.start,
-	        		    frac*analysis_tw.end);
+	        		= TimeWindow(frac*gather_twin.start,
+	        		    frac*gather_twin.end);
 	        rw_set=true;
 	        rt_set=false;  // No rational way to default this
 	        reference_trace=0;  // best to set this anyway
