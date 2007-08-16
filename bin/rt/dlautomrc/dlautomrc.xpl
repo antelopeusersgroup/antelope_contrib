@@ -3,6 +3,7 @@
 #
 # 11/8/2006   Original	J. Eakins
 # 12/28/2006  Modified	F. Vernon
+# 08/13/2007  more modifications by J. Eakins
 # 
 #
 #    use diagnostics ;
@@ -12,10 +13,12 @@
     use archive ;
     require "getopts.pl" ;
 
-    our ( $opt_a, $opt_d, $opt_f, $opt_m, $opt_n, $opt_p, $opt_s, $opt_S, $opt_t, $opt_V, $opt_v, $opt_x );
+    our ( $opt_a, $opt_d, $opt_D, $opt_f, $opt_m, $opt_n, $opt_N, $opt_p, $opt_s, $opt_S, $opt_t, $opt_V, $opt_v, $opt_x );
     our (%recenter);
     
 {
+    our (%dl_mv, %sensor_mv);
+    my (@dl_mv);
     my ($pfsource,$orbname,$orb,$pf,$mv,$pfmass,$pfobj,$nomrcd);
     my ($target,$cmdorb,$statorb,$dl,$dlname,$targetsrc);
     my ($when,$subject,$cmd,$prob,$n,$nmax,$complete);
@@ -23,14 +26,21 @@
     my ($prog_name,$mailtmp,$host,$Problems,$Success,$Neutral);
 
     my (@dataloggers,@sources,@nomrcd,@mrcd,@xclude,@done,@prior);
+    my (@db,@dbcalibration,@dbj) ;
+    my ($nrecs,$row,$snname,$mvdlsta);
     
     my (%nomrcd);
+    my ($now, $t) ;
+
  
-    if (! &Getopts('a:d:m:p:S:s:t:x:fnvV')  || (@ARGV < 2 || @ARGV > 3 )) {
+    if (! &Getopts('a:d:D:m:N:p:S:s:t:x:fnvV')  || (@ARGV < 2 || @ARGV > 3 )) {
         print STDERR "Getopts or number of arguments failure.\n";
         &usage;
     }
     
+    $now     = time();
+    $t    = strtime($now);
+
 #    $opt_n = 1;  # for testing only
     %recenter = ();
     @done     = ();
@@ -75,13 +85,20 @@
     $pf = $opt_p || $prog_name ;
     
     $dltype	        = pfget($pf, "dltype");
-    $mrc_delay	    = pfget($pf, "mrc_delay");
+    $mrc_delay		= pfget($pf, "mrc_delay");
     $delay_interval	= pfget($pf, "delay_interval");
-    $mv             = pfget($pf, "out_of_range");
+    $mv			= pfget($pf, "out_of_range");
+
+    $ref		= pfget($pf, "sensor_mv") ;
+    %sensor_mv		= %$ref ;
 
     $dl = $opt_d || $dltype ;  # This should default to q330
-    $mv = $opt_a || $mv ;
-    
+    $mv = $opt_a || $mv ;	# this gets modified later if opt_D
+
+    if ($opt_a && $opt_D) {
+	print STDERR "-a value of $opt_a will be overwritten by values in database since -d was used\n\n";
+    }
+
     if ($opt_x) {
         @xclude = split(/,/,$opt_x);
     }
@@ -90,6 +107,55 @@
         @dataloggers = split(/,/,$opt_s);
     }
     
+#
+# open database for sensor specific mv
+#
+    if ($opt_D) {
+	@db		= dbopen($opt_D,"r") ;
+	@dbcalibration	= dblookup(@db,"","calibration","","");
+	@dbj		= dbsubset(@dbcalibration, "endtime >= $now || endtime == 9999999999.99900" ) ;
+
+	print STDERR "Subsetting:  chan=='BHZ'&&dlsta!='-' \n" if $opt_V;
+
+	@dbj		= dbsubset(@dbj, "chan == 'BHZ'" ) ;
+	@dbj		= dbsubset(@dbj, "dlsta != '-'" ) ;
+
+	print STDERR "Subsetting based on -N: $opt_N\n" if ($opt_N && $opt_v) ;
+
+	@dbj		= dbsubset(@dbj, "$opt_N" )  if $opt_N;
+
+	$nrecs 		= dbquery(@dbj, dbRECORD_COUNT);
+
+	foreach $row (0..$nrecs-1) {
+	   $dbj[3] = $row ;
+	   ($mvdlsta,$snname)	= dbgetv(@dbj, qw (dlsta snname) ) ;
+	   $mvdlsta = &trim($mvdlsta);
+	   $snname = &trim($snname);
+	
+	   if (!$snname  || !defined($sensor_mv{$snname} ) ) {
+		print STDERR "Database error!  Can't get sensor definition for: $mvdlsta\n";
+		$mvdlsta = $mv;		# this should be out_of_range from pf file?
+		$snname = "sts2";	# presumabely defined in default pf file
+		print STDERR "  Using default sensor type $snname with mv value of $mv\n\n";
+	   }
+
+	   
+#
+# How do I check to make sure there are no duplicates?  For instance, if the dlsta is incorrect
+#  in the db (i.e. sta = F07A but dlsta = TA_F06A), two values of TA_F06A will be pushed to dl_mv
+#
+	   if (grep (/$mvdlsta/, @dl_mv) ) {
+		print STDERR "\nDatabase error.  Duplicate dlsta value: $mvdlsta\n";
+		print STDERR "Skipping duplicate.  Please fix database!\n";
+		next; 
+	   } else {
+		push(@dl_mv,$mvdlsta);
+		$dl_mv{"$mvdlsta"} = $sensor_mv{$snname};
+	   }
+	   
+	}	
+
+   }
 #
 #  check inputs
 #
@@ -156,8 +222,9 @@
             $complete = 1 ;
             last;
         }
-        printf "\n %d Stations with mass postions greater than $mv :\n", $#mrcd+1 if $opt_v;
-        print "@mrcd \n\n" if $opt_v;
+
+        printf STDERR "\n %d Stations with mass positions greater than maximum mass voltage:\n", $#mrcd+1 if ($opt_v) ;
+        print STDERR "\n@mrcd \n\n" if $opt_v;
     
         if ($opt_x) {
             @mrcd = remain(\@mrcd,\@xclude);
@@ -250,7 +317,7 @@ exit;
 
 sub usage { 
         print STDERR <<END;
-            \nUSAGE: $0 [-m "mail_list"] [-n] [-f] [-p pf] [-d dltype] [-v] [-a voltage_trigger ] [-t max_retries] [-s "dl_sta1,dl_sta2,..."] [-x exclude]  cmd_orb status_orb [target]
+            \nUSAGE: $0 [-m "mail_list"] [-n] [-f] [-p pf] [-d dltype] [-v] [-a voltage_trigger | -D database] [-N subset] [-t max_retries] [-s "dl_sta1,dl_sta2,..."] [-x exclude]  cmd_orb status_orb [target]
 
 END
         exit(1);
@@ -267,9 +334,11 @@ sub cmdline { #  &cmdline() ;
     printf STDERR " -d $opt_d" if $opt_d;
     printf STDERR " -p $opt_p" if $opt_p;
     printf STDERR " -x $opt_x" if $opt_x;
-    printf STDERR " -a $opt_a" if $opt_a;
     printf STDERR " -s $opt_s" if $opt_s;
-    printf STDERR " @ARGV\n" ;
+    printf STDERR " -a $opt_a" if $opt_a;
+    printf STDERR " -D $opt_D" if $opt_D;
+    printf STDERR " -N $opt_N" if $opt_N;
+    printf STDERR " @ARGV\n\n" ;
 
     return ;
 }
@@ -304,6 +373,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
     my ($ref,$dlsta,$sta) ;
     my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$con,$masspo);
     my (@dlsta,@mc,@recenter,@xclude,@dataloggers) ;
+    our (%dl_mv,%sensor_mv);
     @recenter = ();
     @mc = qw(m0 m1 m2 m3 m4 m5);
     $srcname =~ s/\/.*// ;
@@ -331,7 +401,6 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
         print STDERR "Stations after -opt_s $opt_s :\n" if $opt_v;
         print STDERR "@dlsta \n\n" if $opt_v; 
     }    
-    
     foreach $dlsta (@dlsta) {
         $sta = $dlsta ;
         $sta =~ s/.*_// ;
@@ -353,7 +422,18 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
         foreach $mc (@mc) {
             $masspo = $ref->{dls}{$dlsta}{$mc};
             next unless ($masspo =~ /\d/);
-            if ( abs($masspo) >= $mv || $opt_f ) {
+
+	    if (!$dl_mv{$dlsta}) {	# this allows mrc to happen for dlsta's which are incorrect
+		$dl_mv{$dlsta} = $mv ;
+	    }
+
+
+            if ( ($opt_D && ( abs($masspo) >= $dl_mv{$dlsta}) ) || $opt_f ) {
+               printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
+               push(@recenter,$dlsta);
+               $recenter{$dlsta} = $srcname;
+               last;
+            } elsif ( (!$opt_D && abs($masspo) >= $mv) || $opt_f ) {
                printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
@@ -371,11 +451,24 @@ sub get_masspos {#  &get_masspos($mv,$orb,@sources);
     my ($mv,$orb,@sources) = @_ ;
     my ($pktid,$srcname,$pkttime,$pkt,$nbytes,$result,$src);
     my ($net,$sta,$chan,$loc,$suffix,$subcode,$type,$desc,$pf);
-
-    printf STDERR  "\n\nMass positions greater than or equal to $mv\n";
+    my ($value, $stype) ;
+    #my (%sensor_mv);
+    our (%sensor_mv);
+  
+    if ($opt_D) {
+	print STDERR "\n\n";
+	printf STDERR  "Checking for mass positions greater than or equal to:\n";
+	foreach $stype (sort keys %sensor_mv) {
+	   $mv = $sensor_mv{$stype} ;
+	   printf STDERR  "$mv for $stype\n";
+	}
+    } else {
+	printf STDERR  "\n\nMass positions greater than or equal to $mv\n";
+    }
+    
     printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
     printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
-    
+
     foreach $src (@sources) {
         $srcname = $src->srcname() ;
         orbselect ( $orb, $srcname ) ;
@@ -430,5 +523,16 @@ sub prettyprint {
 	} else {
 		print $prefix, " = ", $val, "\n";
 	}
+}
+
+sub trim {
+
+  my @out = @_; 
+  for (@out) {
+     s/^\s+//;
+     s/\s+$//;
+  }
+
+  return wantarray ? @out : $out[0];
 }
 

@@ -4,15 +4,17 @@ dlautomrc \- issue mass recenter commands to remote dataloggers
 .SH SYNOPSIS
 .nf
 \fBdlautomrc \fP 
-	[-a \fIvoltage_trigger\fP ] 
+	[-a \fIvoltage_trigger\fP | -D \fIdatabase\fP] 
 	[-d \fIdltype\fP] 
 	[-f] 
-	[-m "mail_list" ]
+	[-m \fI"mail_list"\fP ]
 	[-n] 
+	[-N \fIsubset\fP] 
 	[-p \fIpfname\fP] 
 	[-s "\fIdl_sta1,dl_sta2,....\fP"] 
 	[-t \fImax_retries\fP] 
 	[-v] 
+	[-V] 
 	[-x \fIexclude\fP] 
 	\fIcmd_orb\fP \fIstatus_orb\fP [\fItarget\fP] 
 
@@ -23,39 +25,52 @@ by the following options.
 
 
 .SH OPTIONS
-.IP "-d dltype"
-Default datalogger type.  Override value in pf file which currently defaults to "q330".  
-Mixed datalogger networks are not currently supported.  Separate instances of the script
-will have to be run.
-.IP -f
-Force a mass recenter despite mass positions not being out of range.  Will
-only work with the \fI-s\fP option, not with \fI-a\fP.
-.IP -n
-Test mode. Only report what would be done.  Do not issue any mass recentering commands.
-This is highly recommended for testing prior to implementing daily runs of this
-script.
-.IP "-p pfname"
-Use the specified pfname instead of the default dlautomrc.pf
-.IP -v
-Be verbose and report some extra information.
-.IP -V
-Be very verbose and report some extra information.
-.IP "-x dl_sta1,dl_sta2,..."
-Comma separated list of stations to ignore when checking all stations for mass recenters.   
-.IP "-a voltage_trigger"
-Value beyond which the mass position readings are considered "out of range".  Check 
-mass positions of all stations to see if they are beyond this value.  This is
-not the actual voltage value, but rather the value that is reported by the datalogger.  For
-instance, \fIq3302orb\fP reports values that are 10 * voltage.  So a possible value to 
-use would be "50" rather than "5" - any sensor that is beyond +/- 5V would get a mass
-recenter.  Note that the value should be the positive out of range value.  
-.IP "-s dl_sta1,dl_sta2,..."
-Comma separated list of stations to check for needed mass recenters.  With \fI-f\fP, will 
-force a mass recenter regardless of the actual mass position reading.  
 .IP "-m mail1,mail2,mail3,..."
 List of email addresses to receive success or failure status emails.  The 
 email message reports the mass positions of the sensors both before and
 after the mass recenters. 
+.IP -n
+Test mode. Only report what would be done.  Do not issue any mass recentering commands.
+This is highly recommended for testing prior to implementing daily runs of this
+script.
+.IP -f
+Force a mass recenter despite mass positions not out of range.  This 
+only works with the \fI-s\fP option, not with \fI-a\fP.  This is not recommended unless
+one of the subsetting options is used.
+.IP "-p pfname"
+Use the specified pfname instead of the default dlautomrc.pf.
+.IP "-d dltype"
+Default datalogger type.  Override value in pf file which currently defaults to \fIq330\fP.  
+Mixed datalogger networks are not currently supported.  Separate instances of the script
+for each datalogger type should be run.
+.IP -v
+Be verbose and report some extra information.
+.IP -V
+Be very verbose and report some extra information.
+.IP "-a voltage_trigger"
+Value beyond which the mass position readings are considered \fIout of range\fP.  Check 
+mass positions of all stations to see if they are beyond this value.  This is
+not the actual voltage value, but rather the value that is reported by the datalogger.  For
+instance, \fIq3302orb\fP reports values that are 10 * voltage.  So a possible value to 
+use would be \fI50\fP rather than \fI5\fP - any sensor that is beyond +/- 5V would get a mass
+recenter.  Note that the value should be the positive out of range value.  Cannot use this
+option with -D.
+.IP "-D database"
+Base the voltage triggers on the sensor value in a \fIdatabase\fP.  All values in the
+database must have corresponding values in the \fIsensor_mv\fP table in the parameter file.  
+If a sensor type is encountered in the database that is not in the parameter file, the default
+\fIout_of_range\fP value from the parameter file is used.  Cannot use this option with -a.
+.IP "-N subset"
+Subset expression that would be valid for the calibration table.  The script is currently
+hard-coded to subset for BHZ channels, currently operational stations, and stations which 
+do not have the dlsta set to NULL ("-").
+.IP "-t max_retries"
+The maximum number of times to attempt a mass recenter.  The default is 3.
+.IP "-s dl_sta1,dl_sta2,..."
+Comma separated list of stations to check for needed mass recenters.  With \fI-f\fP, 
+forces a mass recenter regardless of the actual mass position reading.  
+.IP "-x dl_sta1,dl_sta2,..."
+Comma separated list of stations to ignore when checking all stations for mass recenters.   
 .IP cmd_orb
 Orb where command orb packets (<targetname>/pf/dlcm) are collected.  You must have 
 write permission for this orb.  This is a mandatory argument.
@@ -74,27 +89,40 @@ The following is an example parameter file.
 
 # pf file for dlautomrc
 
-dltype          q330            # default datalogger type
-                                # for a mixed system run with either -s option, or -x exclude
+dltype          q330    # default datalogger type
+                        # for a mixed system run with 
+                        # either -s option, 
+                        # or -x exclude
 
-out_of_range    50              # absolute value of out of range mass position voltage
-                                #   mass positions >= out_of_range will trigger a mass recenter
+out_of_range    50      # absolute value of out of 
+                        # range mass position voltage
+                        #  mass positions >= out_of_range
+                        # will trigger a mass recenter
 
-mrc_delay       30              # interval in seconds to wait between mass recenters if -a is used
-                                # Setting this to "0" or a small value will speed up execution of
-                                # mass recenters but may introduce a false event
+mrc_delay       30      # interval in seconds to wait 
+                        # between mass recenters if -a is used
+                        # Setting this to "0" or a small 
+                        # value will speed up execution of
+                        # mass recenters but may introduce 
+                        # a false event
 
-delay_interval  300             # interval to wait after mass recenter before checking mass positions
+delay_interval  300     # interval to wait after mass 
+                        # recenter before checking mass positions
 
+sensor_mv &Arr{         # with -D, override default out_of_range 
+	sts2	50      # value with sensor specific value
+        cmg3t   50
+        trillium_240    25
+}
 
 .fi
 
 .IP dltype
 Default datalogger type.  Currently, for mixed datalogger systems, multiple runs of the
-program are needed.  Can be overriden with the \fI-d\fP option.  Default value: q330.
+program are needed.  Can be overridden with the \fI-d\fP option.  Default value: q330.
 .IP out_of_range
 Absolute value of out of range mass position value. Can be overriden with the \fI-a\fP option.
-Default value: 50.
+Default value: 50.  (A value of 50 translates to +/- 5V.)
 .IP mrc_delay
 Interval in seconds to wait between issuing mass recenter commands.  Issuing mass recenters
 within a short time window can introduce false triggers.
@@ -102,6 +130,11 @@ Default value: 30.
 .IP delay_interval
 Interval in seconds to wait after mass recenter before rechecking mass positions.
 Default value: 300.
+.IP sensor_mv 
+Mapping of sensor type to out of range voltage values.  Used when the \fI-D\fP option is
+selected.  Sensors that are found in the database but not in the \fIsensor_mv\fP will use 
+the \fIout_of_range\fP value from this parameter file.
+
 .br
 
 .SH EXAMPLE
@@ -114,20 +147,37 @@ actually execute those commands. Ignore station TA_G03A.
 .in 2c
 .nf
 .ne 4
-%\fB dlautomrc -m "jeakins@ucsd.edu" -n -a 50 -x "TA_G03A" :qcmd :usarray \fP
+%\fB dlautomrc -m "jeakins@ucsd.edu" -n -a 50 -x "TA_G03A" \
+:qcmd :usarray \fP
 
 .fi
 .in
 .ft R
 
 .IP \(bu
-Force a mass recenter command for TA_A04A, TA_G03A, TA_M01C, and TA_U04C. 
+Force a mass recenter command for TA_A04A, TA_G03A, and TA_U04C. 
 
 .ft CW
 .in 2c
 .nf
 .ne 4
-%\fB dlautomrc -m "jeakins@ucsd.edu" -s "TA_A04A,TA_G03A,TA_M01C,TA_U04C" :qcmd :usarray\fP
+%\fB dlautomrc -m "jeakins@ucsd.edu" -s "TA_A04A,TA_G03A,TA_U04C" \
+ :qcmd :usarray \fP
+
+.fi
+.in
+.ft R
+
+.IP \(bu
+Issue mass recenter commands for any dataloggers that exceed the mv values.  Base the mv value
+on the sensor type found in a database. Only select dataloggers which have a dlsta matching TA_.* 
+
+.ft CW
+.in 2c
+.nf
+.ne 4
+%\fB dlautomrc -m "jeakins@ucsd.edu" -D usarray -N \
+"dlsta=~/TA.*/" -v :qcmd :usarray\fP
 
 .fi
 .in
@@ -136,7 +186,7 @@ Force a mass recenter command for TA_A04A, TA_G03A, TA_M01C, and TA_U04C.
 .SH DIAGNOSTICS
 In single station mode, if the masses are not out of range, no mass recenter
 will be executed.  Override this with the \fI-f\fP flag if you want to recenter anyway.  
-You cannot force all stations to mass recenter (i.e. you must combine  -fI-f\fP and \fI-s\fP flags).
+You cannot force all stations to mass recenter (i.e. you must combine  \fI-f\fP and \fI-s\fP flags).
 
 .SH "SEE ALSO"
 .nf

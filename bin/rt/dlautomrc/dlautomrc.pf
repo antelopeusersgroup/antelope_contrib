@@ -11,3 +11,9 @@ mrc_delay	30		# interval in seconds to wait between mass recenters if -a is used
 				# mass recenters but may introduce a false event
 
 delay_interval	300		# interval to wait after mass recenter before checking mass positions
+
+sensor_mv &Arr{			# with -d, override default out_of_range value with sensor specific value
+	sts2	50	
+	cmg3t	50	
+	trillium_240	25	
+}
