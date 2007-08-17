@@ -59,6 +59,12 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     evid=-1;
     orid=-1;
     using_subarrays=false;
+    // Added July 2007 to produce pick markers on beam plot
+    beammarkers.beam_tw=TimeWindow(0.0,0.0);  // set to 0 time
+    beammarkers.robust_tw=TimeWindow(-0.1,0.1);  // magic numbers could be const variable
+    beammarkers.beam_color=string("red");
+    beammarkers.robust_color=string("green");
+    beammarkers.title=string("Beam Plot");
 }
 
 SessionManager::~SessionManager()
@@ -121,6 +127,9 @@ void SessionManager::session_state(SessionState s)
     for(int i=0; i<MAX_NUM_CONTROLS; i++) {
         sensitive[i]=false; 
     }
+   // These are buttons on the beam window.  They are never disabled
+    sensitive[BTN_ARRIVAL]=true;
+    sensitive[BTN_ARRIVAL_ERROR]=true;
 
     switch (s) {
 	case NONE: 

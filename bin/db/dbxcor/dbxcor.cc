@@ -206,7 +206,7 @@ do_sw(Widget parent, SessionManager & sm)
 		throw SeisppError("do_sw:  total failure in setting up phase processing setup");
 
         try {
-	// initiall load the first element of the container of AnalysisSetting setups.
+	// initially load the first element of the container of AnalysisSetting setups.
 	// Not ideal, but not easy to fix without producing other problems.
 	map<string,AnalysisSetting>::iterator asetptr;
 	asetptr=sm.asetting_default.begin();
@@ -218,7 +218,9 @@ do_sw(Widget parent, SessionManager & sm)
 	int n=0;
 	Arg args[4];
 	XtSetArg(args[n],(char *) ExmNzoomFactor,100); n++;
-        XtSetArg(args[n],XmNpaneMaximum,20000); n++;
+	XtSetArg(args[n],XmNpaneMaximum,20000); n++;
+	XtSetArg(args[n],XmNpaneMinimum,800); n++;
+	
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
 	}
@@ -399,6 +401,9 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		psm->record(ss.str());
 		if(psm->using_subarrays)
 		{
+			// After a read always reset this variable to 
+			// start at top of the list of subarrays
+			psm->xpe->current_subarray=0;
 			psm->session_state(NEXT_SUBARRAY);
 			ss << "Displaying data for subarray="
 				<< psm->xpe->current_subarray<<endl;
@@ -610,6 +615,7 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
     psm->record(ss.str());
 
     psm->xpe->change_analysis_setting(psm->active_setting);
+
 
     Metadata data_md=psm->xpe->get_data_md();
 
@@ -959,7 +965,8 @@ void pick_filter_options(Widget w, void * client_data, void * userdata)
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     Widget dialog;
     XmString text=XmStringCreateLocalized((char *) "Enter additional filter string(Antelope convention):");
-    XmString content=XmStringCreateLocalized((char *) "BW 0.05 3 0.25 3");
+    string tmpstr=psm->active_setting.filter_param.type_description();
+    XmString content=XmStringCreateLocalized(const_cast<char *>(tmpstr.c_str()));
     Arg args[6];
     int n=0;
 
@@ -1091,6 +1098,8 @@ void pick_arrival_callback(Widget w, void * client_data, void * userdata)
     } else {
 	ss << "Wrong pick type "<<spick->type<<endl;
     }
+    psm->beammarkers.beam_tw=TimeWindow(tmp,tmp);
+    XtVaSetValues(w,ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
 
     XtRemoveAllCallbacks(w,ExmNbtn2Callback);
 
@@ -1231,7 +1240,41 @@ void do_analyze(Widget w, void * client_data, void * userdata)
 
     psm->record(string("Done\n"));
 }
+/*  This next two funtions are a confusing adaptation of the window plotting
+method used for the main display.  We use the "robust_tw" time window to 
+hold the estimate of the arrival uncertainty.  This is used in beam plot
+callback below to set deltim in the Metadata area of the beam trace.  
+This pair of procedures are callbacks to the pick error button added by glp
+July 2007.
+*/
+void pick_error_window_callback(Widget w, void * client_data, void * userdata)
+{
+    SeismicPick * spick;
+    TimeWindow tmp;
 
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+
+    XtVaGetValues(w,ExmNseiswPick,&spick,NULL);
+    tmp=spick->get_window();
+    psm->beammarkers.robust_tw=tmp;
+    XtVaSetValues(w,ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
+    double deltim;
+    deltim=(tmp.start - tmp.end)/2.0;
+    TimeSeriesEnsemble *tseptr=psm->xpe->get_waveforms_gui();
+    tseptr->put("deltim",deltim);
+    XtRemoveAllCallbacks(w,ExmNbtn3Callback);
+}
+
+void pick_arrival_error(Widget w, void * client_data, void * userdata)
+{
+    
+    Widget beam_widget=reinterpret_cast<Widget>(client_data);
+    SessionManager * psm;
+
+    XtVaGetValues(XtParent(w),XmNuserData,&psm,NULL);
+    XtRemoveAllCallbacks(beam_widget,ExmNbtn3Callback);
+    XtAddCallback(beam_widget,ExmNbtn3Callback,pick_error_window_callback,psm);
+}
 
 void do_beam_plot(Widget w, void * client_data, void * userdata)
 {
@@ -1244,13 +1287,12 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
 
     rshell_beam=XtVaCreatePopupShell ("Beam Plot",topLevelShellWidgetClass, get_top_shell(w),
-                XmNtitle,"Beam Plot",XmNallowShellResize,True,XmNwidth,800,XmNheight,200,
+               XmNtitle,"Beam Plot",XmNallowShellResize,True,XmNwidth,800,XmNheight,800,
                 XmNdeleteResponse,XmUNMAP,NULL);
-
-    n=0;
-    XtSetArg(args[n],XmNwidth,400); n++;
-    XtSetArg(args[n],XmNheight,100); n++;
-    pane=XmCreatePanedWindow(rshell_beam,(char *) "Pane",args,n);
+    pane = XtVaCreateWidget("Beam Plot",
+	xmPanedWindowWidgetClass, rshell_beam,
+	NULL);
+    
 
     TimeSeries beam=psm->mcc->ArrayBeam();
     TimeSeriesEnsemble *beam_tse=new TimeSeriesEnsemble(1,beam.ns);
@@ -1260,15 +1302,22 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     beam_display_md.put("title",psm->markers.title);
 
     n=0;
+    /*Previous had this.  This disables callbacks for MB3 
     XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
+    **************************************/
+    XtSetArg(args[n],XmNpaneMinimum,500); n++;
+    XtSetArg(args[n],XmNmarginHeight,10);n++;
     XtSetArg(args[n],(char *) ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse));n++;
     XtSetArg(args[n],(char *) ExmNseiswMetadata,&beam_display_md); n++;
     XtSetArg(args[n],(char *) ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
+    
     beam_widget=ExmCreateSeisw(pane,(char *) "Beam Plot",args,n);
 
     XtManageChild(beam_widget);
-    XtVaSetValues(beam_widget,XmNpaneMinimum,100,NULL);
+    // This is needed to show initial markers
+    XtVaSetValues(beam_widget,ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
 
+/*  Old single button version.  
     n=0;
     XtSetArg(args[n],XmNuserData,psm); n++;
     form=XmCreateForm(pane,(char *) "form",args,n);   
@@ -1285,18 +1334,39 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     
     XtManageChild(form);
     XtManageChild(pane);
+ New derived from main for multiple buttons on bottom of display.*/
+	n=0;
+	XtSetArg(args[n],XmNuserData,psm); n++;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
+	XtSetArg(args[n], XmNtopWidget, pane); n++;
+	XtSetArg(args[n],XmNpaneMinimum,50); n++;
+	XtSetArg(args[n],XmNpaneMaximum,100); n++;
+	/* These attach the button widgets to the top and bottom of the parent form 
+	XtSetArg(args[n],XmNtopAttachment,XmATTACH_FORM); n++;
+	XtSetArg(args[n],XmNbottomAttachment,XmATTACH_FORM); n++;
+	*/
+
+	Widget tlrc=XmCreateRowColumn(pane,(char *) "btnrow",args,n);
+	XtVaSetValues(tlrc,XmNorientation,XmHORIZONTAL,
+          XmNentryAlignment,XmALIGNMENT_BEGINNING,XmNpacking,XmPACK_COLUMN,NULL);
+	MenuItem btninfo;
+
+	btninfo.label=static_cast<char *>("Pick Arrival");
+	btninfo.callback=pick_phase_time;
+	btninfo.callback_data=beam_widget;
+	psm->controls[BTN_ARRIVAL]=create_button(tlrc,btninfo);
+
+
+	btninfo.label=static_cast<char *>("Pick Error");
+	btninfo.callback=pick_arrival_error;
+	btninfo.callback_data=beam_widget;
+	psm->controls[BTN_ARRIVAL_ERROR]=create_button(tlrc,btninfo);
+
+	XtManageChild(tlrc);
+	XtManageChild(pane);
+/* End new stuff */
 
     XtPopup (rshell_beam, XtGrabNone);
-
-    /* See if the dialog is realized and is visible.  If so, pop it down */
-/*
-    if (XtIsRealized (rshell_beam) && XGetWindowAttributes
-            (XtDisplay (rshell_beam), XtWindow (rshell_beam), &xwa) &&
-            xwa.map_state == IsViewable)
-            XtPopdown (rshell_beam);
-    else
-            XtPopup (rshell_beam, XtGrabNone);
-*/
 }
 
 
@@ -1526,7 +1596,7 @@ void do_attr_window(Widget w, void * client_data, void * userdata)
 		}
 
 		XtManageChild(wdgt);
-		XtVaSetValues(wdgt,XmNpaneMinimum,50,XmNpositionIndex,pos_indx,NULL);
+		XtVaSetValues(wdgt,XmNpaneMinimum,100,XmNpositionIndex,pos_indx,NULL);
 
 		//for drawing area, we need to have expose function
 		if (!psm->attributes_info[i].use_graph)		
@@ -1668,9 +1738,7 @@ void restore_data(Widget w, void * client_data, void * userdata)
 	psm->session_state(NEXT_EVENT);
     ss << "Restoring original data"<<endl;
     psm->record(ss.str());
-    Display *dpy=XtDisplay(w);
-    Window win=XtWindow(w);
-    XClearWindow(dpy,win);
+    XClearArea(XtDisplay(w),XtWindow(w),0,0,0,0,true);
 }
 
 void load_next_subarray(Widget w, void * client_data, void * userdata)
@@ -1824,6 +1892,7 @@ main (int argc, char **argv)
 	   result_db_name=string(argv[i]);
       } else if (argtest=="-f") {
 	   ++i;
+	   appname=string("");
 	   infile=string(argv[i]);
       } else if(argtest=="-v") {
 	  cbanner(rev,use,author,loc,email);
@@ -1930,31 +1999,38 @@ main (int argc, char **argv)
                  XmNbottomAttachment, XmATTACH_FORM,
                  NULL);
   
-  //create paned window 
-  n=0;
-  XtSetArg(args[n],XmNorientation,XmVERTICAL); n++;
-  XtSetArg(args[n],XmNseparatorOn,True); n++;
-//  XtSetArg(args[n],XmNallowResize,False); n++;
-  XtSetArg (args[n], XmNtopAttachment, XmATTACH_POSITION); n++;
-  XtSetArg (args[n], XmNtopPosition, 0); n++;
-  XtSetArg (args[n], XmNleftAttachment, XmATTACH_POSITION); n++;
-  XtSetArg (args[n], XmNleftPosition, 0); n++;
-  XtSetArg (args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
-  XtSetArg (args[n], XmNrightPosition, MAINFORM_GRID_CNT); n++;
-  XtSetArg (args[n], XmNbottomAttachment, XmATTACH_POSITION); n++;
-  XtSetArg (args[n], XmNbottomPosition, MAINFORM_GRID_CNT-1); n++;
+  /*create paned window 
+  This is an outer paned window split with the seismic display
+  on top and the message log portion at the bottom.  Attachment
+  parameters tie the display to the upper left corner.
+  ***************************************************************/
+  paned_win=XtVaCreateWidget((char *)"pane",
+	xmPanedWindowWidgetClass,slrc,
+	XmNorientation,			XmVERTICAL,
+	XmNseparatorOn,			True,
+	XmNtopAttachment,		 XmATTACH_POSITION,
+	XmNtopPosition,		 	0,
+	XmNleftAttachment,		 XmATTACH_POSITION,
+	XmNleftPosition,		 0,
+	XmNrightAttachment,		 XmATTACH_POSITION,
+	XmNrightPosition,		 MAINFORM_GRID_CNT,
+	XmNbottomAttachment,		 XmATTACH_POSITION,
+	XmNbottomPosition,		 MAINFORM_GRID_CNT-1,
+	NULL);
 
-  paned_win=XmCreatePanedWindow(slrc,(char *) "pane", args, n);
 
   //Use the second paned window to ensure that when attributes are 
   //displayed, they are laid out horizontally.
-  n=0;
-  XtSetArg(args[n],XmNorientation,XmHORIZONTAL); n++;
-  XtSetArg(args[n],XmNseparatorOn,False); n++;
-  XtSetArg(args[n],XmNspacing,0); n++;
-  XtSetArg(args[n],XmNallowResize,True); n++;
-  XtSetArg(args[n],XmNwidth,2000); n++;
-  second_paned_win=XmCreatePanedWindow(paned_win, (char *) "pane1", args, n); 
+  second_paned_win=XtVaCreateWidget((char *)"panel",
+	xmPanedWindowWidgetClass, paned_win,
+	XmNorientation,		XmHORIZONTAL,
+	XmNseparatorOn,		False,
+	XmNspacing,		0,
+	XmNallowResize,		True,
+	XmNwidth,		800,
+	XmNpaneMaximum,		20000,
+	XmNpaneMinimum,		800,
+	NULL);
   sm.parent=second_paned_win;
 
   init_attr(sm, air);
@@ -1973,6 +2049,8 @@ main (int argc, char **argv)
   XtSetArg(args[n], XmNtopWidget, second_paned_win); n++;
   XtSetArg (args[n], XmNleftAttachment, XmATTACH_FORM); n++;
   XtSetArg (args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+  XtSetArg(args[n],XmNpaneMaximum,500); n++;
+  XtSetArg(args[n],XmNpaneMinimum,100); n++;
   sm.msg_w = XmCreateScrolledText (paned_win, (char *) "msg_w", args, n);
   XtManageChild (sm.msg_w);
 

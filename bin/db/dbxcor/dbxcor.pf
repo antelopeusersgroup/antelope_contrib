@@ -1,71 +1,304 @@
-# This defines processing parameters for different seismic
-# phases.  One entry is needed for each phase one might
-# plan to process in a given run.  
-#
-phase_processing_parameters &Arr{
-S &Arr{
-tpad 30.0
-regular_gather_twin_start -60.0
-regular_gather_twin_end 150.0
-beam_window_fraction 0.6
-robust_window_fraction 0.2
-stacking_method robust
-default_filter BW 0.01 2 0.5 2
-component_for_analysis T
-phase_for_analysis S
-analysis_sort_order stack_weight
-arrival_channel E
+AutoscaleInitialPlot	false
+BeamMetadataList	&Tbl{
+    pwfid int
+    wfprocess.timetype string
+    wfprocess.dir string
+    wfprocess.dfile string
+    wfprocess.algorithm string
 }
-P &Arr{
-tpad 30.0
-regular_gather_twin_start -20.0
-regular_gather_twin_end 120.0
-beam_window_fraction 0.6
-robust_window_fraction 0.2
-stacking_method robust
-default_filter BW 0.01 2 2.0 2
-component_for_analysis L
-phase_for_analysis P
-analysis_sort_order stack_weight
-arrival_channel Z
+RequireThreeComponents	true
+StationChannelMap	&Arr{
+    SDV	&Tbl{
+        BHE_00 0 0
+        BHN_00 1 0
+        BHZ_00 2 0
+        BHE_10 0 1
+        BHN_10 1 1
+        BHZ_10 2 1
+        HHE_10 0 2
+        HHN_10 1 2
+        HHZ_10 2 2
+        HHE_20 0 3
+        HHN_20 1 3
+        HHZ_20 2 3
+    }
+    default	&Tbl{
+        BHE 0 0
+        BHN 1 0
+        BHZ 2 0
+        HHE 0 1
+        HHN 1 1
+        HHZ 2 1
+        LHE 0 2
+        LHN 1 2
+        LHZ 2 2
+    }
 }
+beam_dfile	xcorbeam.w
+beam_directory	xcorbeams
+beam_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Array Beam
+    blabel2	Array Beam
+    clip_data	false
+    clip_percent	95
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	200
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Generic Plot
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
 }
-#
-# These should not be altered by the user.
-# They define what attributes are saved to 
-# arrival and assoc
-save_list_assoc &Tbl{
-assoc.sta string
-assoc.orid int
-assoc.delta real
-assoc.seaz real
-assoc.esaz real
-assoc.timeres real
-assoc.timedef real
-assoc.phase string
-assoc.vmodel string
+coherence_cutoff	0.1
+correlation_peak_cutoff	0.1
+correlation_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Cross Correlation Plot
+    blabel2	Cross Correlation Plot
+    clip_data	false
+    clip_percent	98
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	1000
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Cross Correlation Functions
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
 }
-save_list_arrival &Tbl{
-arrival.sta string
-arrival.chan string
-arrival.time real
-arrival.iphase string
-arrival.jdate int
-arrival.auth string
+data_window_end	600.0
+data_window_parameters	&Arr{
+    SUVariableArea_grey_value	1
+    VariableArea	true
+    WiggleTrace	true
+    blabel	Data Window
+    blabel2	Data Window
+    clip_data	true
+    clip_percent	99.5
+    clip_wiggle_traces	false
+    d1num	0.0
+    d2num	0.0
+    default_curve_color	black
+    f1num	0.0
+    f2num	0.0
+    first_trace_offset	0.0
+    grid1	1
+    grid2	1
+    gridcolor	blue
+    hbox	1000
+    interpolate	true
+    label1	time
+    label2	index
+    labelcolor	blue
+    labelfont	Rom14
+    labelsize	18.0
+    n1tic	5
+    n2tic	1
+    plot_file_name	SeismicPlot.ps
+    style	normal
+    time_axis_grid_type	solid
+    time_scaling	auto
+    title	Data Aligned by Arrival Time
+    titlecolor	red
+    titlefont	Rom22
+    titlesize	36.0
+    trace_axis_attribute	assoc.delta
+    trace_axis_grid_type	none
+    trace_axis_scaling	auto
+    trace_spacing	1.0
+    trim_gap_edges	true
+    use_variable_trace_spacing	false
+    verbose	true
+    wbox	1000
+    windowtitle	SeismicPlot
+    x1beg	0.0
+    x1end	120.0
+    x2beg	0.0
+    x2end	24.0
+    xbox	50
+    xcur	1.0
+    ybox	50
 }
-AutoscaleInitialPlot false
-data_window_start -200.0
-data_window_end 600.0
-initial_time_stamp 2003355:00:00:00.0
-result_twin_start -40.0
-result_twin_end 200.0
-target_sample_interval 0.025
-schema xcor1.2
-network_name USArray_TA
-correlation_peak_cutoff 0.0
-coherence_cutoff 0.01
-stack_weight_cutoff 0.01
-time_lag_cutoff 4.0
+data_window_start	-200.0
+initial_time_stamp	2003355:00:00:00.0
+network_name	Bolivar
+pf_revision_time	1182182997
+phase_processing_parameters	&Arr{
+    P	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.6
+        component_for_analysis	L
+        default_filter	BW 0.01 2 2.0 2
+        phase_for_analysis	P
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-20.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    PP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.8
+        component_for_analysis	Z
+        default_filter	BW 0.01 2 1.0 2
+        phase_for_analysis	PP
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-20.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    S	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	BW 0.01 2 0.5 2
+        phase_for_analysis	S
+        regular_gather_twin_end	150.0
+        regular_gather_twin_start	-60.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+}
+resample_definitions    &Arr{
+    100 &Arr{
+        Decimator_response_files        &Tbl{
+            5   response/RT72A_5_f
+            2   response/RT72A_2_f
+        }
+        high_limit      101
+        low_limit       99
+    }
+    20  &Arr{
+        Decimator_response_files        &Tbl{
+            2       response/RT72A_2_f
+        }
+        high_limit      21
+        low_limit       19
+    }
+    33.5        &Arr{
+        Decimator_response_files        &Tbl{
+            0.8375      resample
+            4       response/RT72A_4_f
+        }
+        high_limit      35
+        low_limit       30
+    }
+    40  &Arr{
+        Decimator_response_files        &Tbl{
+            4       response/RT72A_4_f
+        }
+        high_limit      41
+        low_limit       39
+    }
+}
+
+result_twin_end	200.0
+result_twin_start	-40.0
+save_list_arrival	&Tbl{
+    arrival.sta string
+    arrival.chan string
+    arrival.time real
+    arrival.iphase string
+    arrival.jdate int
+    arrival.auth string
+}
+save_list_assoc	&Tbl{
+    assoc.sta string
+    assoc.orid int
+    assoc.delta real
+    assoc.seaz real
+    assoc.esaz real
+    assoc.timeres real
+    assoc.timedef real
+    assoc.phase string
+    assoc.vmodel string
+}
+save_to_arrival	true
+schema	xcor1.2
+stack_weight_cutoff	0.01
+target_sample_interval	0.1
+time_lag_cutoff	4.0
 trace_mdl	&Tbl{
     sta string
     chan string
@@ -82,559 +315,49 @@ trace_mdl	&Tbl{
     site.lon
     site.elev
 }
-resample_definitions	&Arr{
-    40	&Arr{
-        Decimator_response_files	&Tbl{
-            1       none
-        }
-        high_limit	41
-        low_limit	39
-    }
-    20 &Arr{
-	Decimator_response_files &Tbl{
-		0.5 resample
-	}
-	high_limit 21
-	low_limit 19
-    }
-}
-RequireThreeComponents true
-StationChannelMap &Arr{
-TEST &Tbl{
-BHE 0 0
-BHN 1 0
-BHZ 2 0
-HHE 0 1
-HHN 1 1
-HHZ 2 1
-HLE 0 2
-HLN 1 2
-HLZ 2 2
-}
-default &Tbl{
-BHE 0 0
-BHN 1 0
-BHZ 2 0
-HHE 0 1
-HHN 1 1
-HHZ 2 1
-LHE 0 2
-LHN 1 2
-LHZ 2 2
-}
-}
-data_window_parameters &Arr{
-trim_gap_edges	true
-verbose true
-WiggleTrace true
-VariableArea true
-SUVariableArea_grey_value 1
-clip_data true
-clip_wiggle_traces false
-xcur 1.0
-clip_percent 99.5
-xbox 50
-ybox 50
-wbox 1000
-hbox 1000
-d1num 0.0
-d2num 0.0
-f1num 0.0
-f2num 0.0
-n2tic 1
-label1 time
-label2 index
-# required, but is ignored by dbxcor
-title Data Aligned by Arrival Time
-windowtitle SeismicPlot
-labelfont Rom14
-titlefont Rom22
-style  normal
-time_axis_grid_type solid
-trace_axis_grid_type none
-labelcolor blue
-titlecolor red
-gridcolor blue
-labelsize 18.0
-trace_spacing 1.0
-first_trace_offset 0.0
-time_scaling auto
-interpolate true
-trace_axis_scaling auto
-# These are used only when time (x1) and trace (x2) scaling is not auto
-x1beg 0.0
-x1end 120.0
-x2beg 0.0
-x2end 24.0
-default_curve_color black
-plot_file_name SeismicPlot.ps
-#
-# This metadata attribute name is used to set variable trace spacing
-#
-use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
-trace_axis_attribute assoc.delta
-
-n1tic 5
-blabel Data Window
-blabel2 Data Window
-grid1 1
-grid2 1
-titlesize 36.0
-}
-
-correlation_window_parameters &Arr{
-trim_gap_edges	true
-verbose true
-WiggleTrace true
-VariableArea true
-SUVariableArea_grey_value 1
-clip_data false
-clip_wiggle_traces false
-xcur 1.0
-clip_percent 98
-xbox 50
-ybox 50
-wbox 1000
-hbox 1000
-d1num 0.0
-d2num 0.0
-f1num 0.0
-f2num 0.0
-n2tic 1
-label1 time
-label2 index
-# required, but is ignored by dbxcor
-title Cross Correlation Functions
-windowtitle SeismicPlot
-labelfont Rom14
-titlefont Rom22
-style  normal
-time_axis_grid_type solid
-trace_axis_grid_type none
-labelcolor blue
-titlecolor red
-gridcolor blue
-labelsize 18.0
-trace_spacing 1.0
-first_trace_offset 0.0
-time_scaling auto
-interpolate true
-trace_axis_scaling auto
-# These are used only when time (x1) and trace (x2) scaling is not auto
-x1beg 0.0
-x1end 120.0
-x2beg 0.0
-x2end 24.0
-default_curve_color black
-plot_file_name SeismicPlot.ps
-#
-# This metadata attribute name is used to set variable trace spacing
-#
-use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
-trace_axis_attribute assoc.delta
-
-n1tic 5
-blabel Cross Correlation Plot
-blabel2 Cross Correlation Plot
-grid1 1
-grid2 1
-titlesize 36.0
-}
-
-beam_window_parameters &Arr{
-trim_gap_edges	true
-verbose true
-WiggleTrace true
-VariableArea true
-SUVariableArea_grey_value 1
-clip_data false
-clip_wiggle_traces false
-xcur 1.0
-clip_percent 95
-xbox 50
-ybox 50
-wbox 1000
-hbox 200
-d1num 0.0
-d2num 0.0
-f1num 0.0
-f2num 0.0
-n2tic 1
-label1 time
-label2 index
-# required, but is ignored by dbxcor
-title Generic Plot
-windowtitle SeismicPlot
-labelfont Rom14
-titlefont Rom22
-style  normal
-time_axis_grid_type solid
-trace_axis_grid_type none
-labelcolor blue
-titlecolor red
-gridcolor blue
-labelsize 18.0
-trace_spacing 1.0
-first_trace_offset 0.0
-time_scaling auto
-interpolate true
-trace_axis_scaling auto
-# These are used only when time (x1) and trace (x2) scaling is not auto
-x1beg 0.0
-x1end 120.0
-x2beg 0.0
-x2end 24.0
-default_curve_color black
-plot_file_name SeismicPlot.ps
-#
-# This metadata attribute name is used to set variable trace spacing
-#
-use_variable_trace_spacing false   # if true trace_axis_attribute is used to define trace axis position
-trace_axis_attribute assoc.delta
-
-n1tic 5
-blabel Array Beam
-blabel2 Array Beam
-grid1 1
-grid2 1
-titlesize 36.0
-}
- 
-# This defines data written to wfprocess tables. Static
-# and require a change only if schema were to change.
-BeamMetadataList &Tbl{
-pwfid int
-wfprocess.timetype string
-wfprocess.dir string
-wfprocess.dfile string
-wfprocess.algorithm string
-}
-save_to_arrival true
-beam_directory xcorbeams
-beam_dfile xcorbeam.w
-use_subarrays false
-
+use_subarrays	false
 virtual_arrays &Arr{
-TA_3_1 &Arr{
-center_latitude 36.9633
-center_longitude -116.554
+CRATON &Arr{
 sta_list &Tbl{
-KCC
-ADO
-ARV
-CWC
-DAN
-EDW
-EDW2
-FUR
-GMR
-GRA
-GSC
-HEC
-ISA
-LRL
-MLAC
-MPM
-NEE
-RCT
-RRX
-SHO
-TIN
-TUQ
-VES
-OMM
-TPNV
-HELL
-P09A
-P10A
-P11A
-Q07A
-Q08A
-Q09A
-Q10A
-Q11A
-Q12A
-R07C
-R08A
-R09A
-R10A
-R12A
-S08C
-S09A
-S10A
-S11A
-S12A
-S13A
-T06C
-T11A
-T12A
-T13A
-U10A
-U11A
-U12A
-U13A
-V11A
-V12A
-W12A
-R11A
+PAYV
+MOPC
+CAIV
+MAPC
+CMPC
+GURV
+PAPC
+RIOV
+VIPC
+CAPC
+EDPC
+LUEV
 }
 }
-TA_2_2 &Arr{
-center_latitude 39.366
-center_longitude -119.198
+OCEAN &Arr{
 sta_list &Tbl{
-BDM
-CMB
-KCC
-MNRC
-MOD
-ORV
-POTR
-WENL
-MLAC
-TIN
-OMM
-BEK
-WCN
-ELFS
-HATC
-HELL
-LAVA
-L07A
-M05C
-M06C
-M07A
-M08A
-M09A
-N06A
-N07A
-N07B
-N08A
-N09A
-N10A
-O03C
-O04C
-O05C
-O06A
-O07A
-O08A
-O09A
-O10A
-P05C
-P06A
-P07A
-P08A
-P09A
-P10A
-P11A
-Q03C
-Q04C
-Q07A
-Q08A
-Q09A
-Q10A
-R04C
-R05C
-R06C
-R07C
-R08A
-R09A
-R10A
-SUTB
-S04C
-S05C
-S06C
-S08C
-S09A
-S10A
-T06C
-}
-}
-TA_2_3 &Arr{
-center_latitude 41.6103
-center_longitude -119.023
-sta_list &Tbl{
-MOD
-BEK
-WCN
-ELFS
-HATC
-I06A
-I07A
-I08A
-I09A
-J05A
-J06A
-J07A
-J08A
-J09A
-J10A
-K04A
-K05A
-K06A
-K07A
-K08A
-K09A
-K10A
-K11A
-L04A
-L05A
-L07A
-L08A
-L09A
-L10A
-L11A
-M03C
-M04C
-M05C
-M06C
-M07A
-M08A
-M09A
-M10A
-M11A
-N06A
-N07A
-N07B
-N08A
-N09A
-N10A
-N11A
-O04C
-O05C
-O06A
-O07A
-O08A
-O09A
-O10A
-P05C
-P06A
-P07A
-P08A
-P09A
-Q07A
-}
-}
-TA_2_4 &Arr{
-center_latitude 43.8544
-center_longitude -118.835
-sta_list &Tbl{
-MOD
-E08A
-F06A
-F07A
-F08A
-F09A
-F10A
-G05A
-G06A
-G07A
-G08A
-G09A
-G10A
-G11A
-H04A
-H05A
-H06A
-H07A
-H08A
-H09A
-H10A
-H11A
-I04A
-I05A
-I06A
-I07A
-I08A
-I09A
-I10A
-I11A
-J04A
-J05A
-J06A
-J07A
-J08A
-J09A
-J10A
-J11A
-K04A
-K05A
-K06A
-K07A
-K08A
-K09A
-K10A
-K11A
-L05A
-L07A
-L08A
-L09A
-L10A
-M07A
-M08A
-M09A
-}
-}
-TA_2_5 &Arr{
-center_latitude 46.0981
-center_longitude -118.633
-sta_list &Tbl{
-B07A
-B08A
-B09A
-B10A
-C05A
-C06A
-C07A
-C08A
-C09A
-C10A
-C12A
-D05A
-D06A
-D07A
-D08A
-D09A
-D10A
-D11A
-D12A
-E05A
-E06A
-E07A
-E08A
-E09A
-E10A
-E11A
-F04A
-F05A
-F06A
-F07A
-F08A
-F09A
-F10A
-F11A
-F12A
-G05A
-G06A
-G07A
-G08A
-G09A
-G10A
-G11A
-H05A
-H06A
-H07A
-H08A
-H09A
-H10A
-H11A
-I05A
-I06A
-I07A
-I08A
-I09A
-I10A
+PINA
+SHRB
+PNCH
+PINA
+CUBA
+RRNR
+SOMB
+DAQI
+ZOMB
+DRKS
+BTBT
+BLOS
+B151
+ORCV
+IBAV
+ITEV
+COCH
+GUAY
+MIPC
+CURA
+ARUB
+MONV
+IMOV
 }
 }
 }
-pf_revision_time 1158357752

@@ -59,8 +59,11 @@ enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,
 	MENU_OPTIONS_SORT, 
 	MENU_OPTIONS_FILTER, 
       	MENU_SETTINGS, MENU_SETTINGS_PF, MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_COHERENCE,
-	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT};
+	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT,
+	BTN_ARRIVAL,BTN_ARRIVAL_ERROR};
 
+/* WARNING:  if ControlIdType is changed, this number must be greater than
+or equal to number of items in that enum */
 #define MAX_NUM_CONTROLS 100
 
 class SessionManager {
@@ -82,6 +85,7 @@ public:
     map<string,AnalysisSetting> asetting_default;
     AnalysisSetting active_setting;
     DisplayMarkerDataRec markers;
+    DisplayMarkerDataRec beammarkers;
     int choice;  //for user differentiate similar buttons, e.g., pick beam and robust window
 
     // index into origin table keyed by orid
