@@ -1764,6 +1764,7 @@ sub bind_widgets {
  	my( @custom_widgets ) = qw( start_dbpick
  			            kill_dbpick
 				    start_dbe
+				    start_dbxcor
 				    channels
  			            exec_spgram
  			            show_predicted

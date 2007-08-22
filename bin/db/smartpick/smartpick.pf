@@ -93,12 +93,19 @@ notebook_page Control
    button  start_dbpick 	- 	3,0	Start dbpick 	{Launch the dbpick application on the current database}
    button  kill_dbpick 		- 	3,1 	Kill dbpick 	{Kill the current dbpick application}
    button  start_dbe 		- 	3,2	Start dbe 	{Launch the dbe application on the current database}
+   button  start_dbxcor		- 	3,3	Start dbxcor 	{Launch the dbxcor application on the current database}
 endnotebook_page
 endnotebook
    optionmenu sw	 	- 	0,0 	Waveforms Show Hide	{Turn waveform plotting off and on (sw)}
    optionmenu channels 		- 	0,1	Channels <auto> {Set the channels for dbpick display (sc)}
    optionmenu default_phase 	- 	0,2	default_phase P S {Set default phase for arrival picking (ph)}
    entry      orid 		10 	0,3	Orid 		{Set the dbpick origin-id (se)}
+}
+
+teleseism &Tbl{
+	dbopen origin
+	dbjoin site
+	dbsubset distance(origin.lat,origin.lon,site.lat,site.lon) > 30
 }
 
 groups &Arr{
