@@ -153,6 +153,12 @@ be better not to use wildcarded expressions in conjunction with state files.
 The individual station-channel streams are emitted as streams of orbserver 
 GENC packets. In principle they could be multiplexed into MGENC packets 
 on a per-station basis.
+
+\fBisi2orb\fP will not function correctly if there is a firewall blocking
+access to the IDA server. For example, if you are trying to import data 
+from idahub.ucsd.edu on the default port (currently 39136), the machine 
+from which you are running \fBisi2orb\fP must have access through any 
+existing firewalls to that port over TCP. 
 .SH AUTHOR
 .nf
 Kent Lindquist
