@@ -1516,7 +1516,7 @@ static void
 update_export_server_thread( char *name, Pf *pf )
 {
 	ExportServerThread *es;
-	Pf	*oldpf;
+	Pf	*oldpf = 0;
 	char	key[STRSZ];
 	int	ret;
 
@@ -1756,7 +1756,7 @@ update_export_server_thread( char *name, Pf *pf )
 static void 
 refresh_pins_list( Pf *pf )
 {
-	Pf	*pfpins;
+	Pf	*pfpins = 0;
 	Tbl	*new_keys;
 	char	*akey;
 	int	pinno;
@@ -1808,7 +1808,7 @@ refresh_pins_list( Pf *pf )
 static void
 reconfigure_export_server_threads( Pf *pf )
 {
-	Pf	*pfexport_servers;
+	Pf	*pfexport_servers = 0;
 	Tbl	*new_keys;
 	Tbl	*existing_keys;
 	Arr	*anarr;
@@ -1894,7 +1894,7 @@ reconfigure_export_server_threads( Pf *pf )
 static void *
 orb2ew_pfwatch( void *arg )
 {
-	Pf	*pf;
+	Pf	*pf = 0;
 	int	rc;
 
 	thr_setprio( thr_self(), THR_PRIORITY_PFWATCH );
