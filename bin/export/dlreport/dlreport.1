@@ -15,13 +15,15 @@ dlname (\fI-S\fP) or by dlevtype (\fI-E\fP).
 
 .SH OPTIONS
 
-.IP "-d ndays_lag"
+.IP "-d start_time"
 Normally, the report covers the previous UTC day.  This option allows specifying
-a different start time.
+a different start time.  When used with -n set to "all", all events after the given
+start time will be reported.
 .IP "-n ndays"
 This is the total number of days of logs to review.  For instance, if you wish
 to review the previous week of logs, not including the current (incomplete) day,
-set -n to 7.  The default is 1 day.
+set -n to 7.  To review all events in the dlevent tables use "all".  The default 
+value is 1 day.
 .IP "-m email1,email2"
 When specified, \fBdlreport\fP attempts to send the report to the email addresses 
 specified here rather than to standard out.
@@ -58,10 +60,30 @@ Report on all massrecenters at station TA_G03A over the previous year.
 .in 2c
 .ft CW
 .nf
-dlreport -n 365 -v -s "dlname=='TA_G03A'" usarray_soh 
+dlreport -n 365 -v -s "dlname=='TA_G03A'&&dlevtype=='massrecenter'" -S usarray_soh 
 .fi
 .ft R
 .in
+.LP
+
+Report all dlevents at station TA_S06C. 
+.in 2c
+.ft CW
+.nf
+dlreport -n all -v -s "dlname=='TA_S06C'" -E usarray_soh 
+.fi
+.ft R
+.in
+
+Report all dlevents after December 17, 2006 at station TA_F03A. 
+.in 2c
+.ft CW
+.nf
+dlreport -n all -v -s "dlname=='TA_F03A'" -E -d "12/17/2006" usarray_soh 
+.fi
+.ft R
+.in
+
 
 .SH "SEE ALSO"
 .nf
@@ -70,6 +92,8 @@ logs2dlevent(1)
 
 .SH "BUGS AND CAVEATS"
 None yet, but that is rather optimistic. 
+
+No -s subsets other than those based on dlname have been tested.
 
 .SH AUTHOR
 .nf

@@ -1,4 +1,3 @@
-
 use lib "$ENV{ANTELOPE}/data/perl" ;
 
 #
@@ -22,7 +21,10 @@ my $mailtmp = "/tmp/#dlevent-mail.$$" ;
 
 my (@db, $dbin) ; 
 my ($dlevtime, $dlname, $dlcomment, $dlevtype) ;
-my ($tfirst) ;
+my ($tfirst, $tlast) ;
+my ($subset) ;
+
+$dbin     = $ARGV[0];
 
 if (! $opt_S && ! $opt_E ) {
     print "\n*** You must use either -S or -E for a station or event based report  ***\n" ; 
@@ -32,19 +34,50 @@ if (! $opt_S && ! $opt_E ) {
     &usage;
 }
 
+
+if ( $opt_s ) {
+    $subset = $opt_s ; 
+    $subset =~ s"\&\&"\n\t  \&\&"g ; 
+    printf "\nReport for subset:\n\t$subset\n" ;
+}
+
 if ( ! $opt_n ) { 
     $opt_n = 1 ;
+} 
+
+if ($opt_n =~ /\d/) {
+    if ($opt_d) {
+	$tfirst = str2epoch ( $opt_d ) ;
+    } else {
+	$tfirst = time() - (86400 * $opt_n) ;
+	$tfirst = int($tfirst / 86400) * 86400 ;
+    }
+
+    $tlast = $tfirst + $opt_n * 86400 ;
+
+} elsif ($opt_n =~ /ALL|all|All/) {
+    @db = dbopen($dbin,"r")  ;
+    @dlevent = dblookup ( @db, "", "dlevent", "", "" ) ; 
+    @dlevent = dbsubset ( @dlevent, $subset ) ;
+    @dlevent = dbsort ( @dlevent, "time") ;
+    $ndlev = dbquery(@dlevent, "dbRECORD_COUNT" ) ; 
+    if ($ndlev == 0) {
+	printf "No records after subset: $sub.  EXITING.\n";
+	exit(1);
+    }
+    $tfirst  = dbex_eval(@dlevent,"min(time)");
+    $tlast   = dbex_eval(@dlevent,"max(time)");
+    dbclose(@db);
+
+    if ( $opt_d && (str2epoch($opt_d) > $tfirst) ){
+	printf "\nUsing -d $opt_d rather than starting at first dlevent at %s \n\n", epoch2str($tfirst, "%m/%d/%Y %T %Z"); 
+	$tfirst = str2epoch ( $opt_d ) ;
+    } elsif ($opt_d && str2epoch ( $opt_d) < $tfirst) {
+	printf "Overriding use of -d $opt_d because use of -n $opt_n has previous events\n"; 
+    } 
+
 }
 
-if ( $opt_d ) { 
-    $tfirst = str2epoch ( $opt_d ) ; 
-} else { 
-#    $tfirst = time() - 86400 ; 
-    $tfirst = time() - (86400 * $opt_n) ;
-    $tfirst = int($tfirst / 86400) * 86400 ;
-}
-
-my $tlast = $tfirst + $opt_n * 86400 ; 
 
 printf "Datalogger event report for $opt_n days beginning %s\n\n", 
     epoch2str ( $tfirst, "%A %B %d %Y-%j" ) ; 
@@ -52,16 +85,8 @@ printf "Datalogger event report for $opt_n days beginning %s\n\n",
 printf "\n  Report sorted by station\n" if $opt_S ;
 printf "\n  Report sorted by dlevtype\n" if $opt_E ;
 
-if ( $opt_s ) {
-    my $subset = $opt_s ; 
-    $subset =~ s"\&\&"\n\t  \&\&"g ; 
-    printf "\nReport for subset:\n\t$subset\n" ;
-}
-
 
 # main guts of program is sub summarize_dlevent
-
-$dbin     = $ARGV[0];
 
 printf "\nEvent Information\n" ;  
 $nevents = summarize_dlevents ( $tfirst, $tlast, $opt_s, @db ) ; 
@@ -140,7 +165,7 @@ sub trim {
 
 
 sub usage {
-    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n days] [-s subset] [-v] {-S | -E} db\n"  ; 
+    print STDERR "Usage: $0 [-d 'time'] [-m email,email..] [-n ndays | all] [-s subset] [-v] {-S | -E} db\n"  ; 
      exit(1);
 }
 
