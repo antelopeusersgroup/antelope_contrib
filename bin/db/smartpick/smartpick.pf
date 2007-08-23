@@ -62,13 +62,17 @@ notebook_page Events
    button     ne		-	0,1	Next Event    	{Time scroll to the next event in the origin table (ne)}
    button     pe		-	0,2	Previous Event  {Time scroll to the previous event in the origin table (pe)}
    button     le		-	0,3	Last Event  	{Time scroll to the last event in the origin table (le)}
-   button     tse		-	1,0	Time Scroll to Event     {Time scroll the display to the current event origin time (tse)}
-   button     Fe		-	1,1	Find event with assoc     {Find event with associations to displayed arrivals (Fe)}
-   button     ae		-	1,2	Find event that assocs     {Find event that associates to displayed arrivals (ae)}
-   button     rec		-	1,3	Record     	{Arrange stations as a record-section from current origin (rec)}
-   optionmenu dbxcor 		- 	2,0	dbxcor P S 	{Run dbxcor with chosen phase}
-   button     dbxcor_P		-	2,1	dbxcor P        {Run dbxcor with the named phase} 
-   button     dbxcor_S		-	2,2	dbxcor S        {Run dbxcor with the named phase} 
+   button     first_teleseism	-	1,0	First Teleseism   	{Time scroll to the first event in the specified dbprocess view}
+   button     next_teleseism	-	1,1	Next Teleseism    	{Time scroll to the next teleseism in the specified dbprocess view}
+   button     previous_teleseism -	1,2	Previous Teleseism  {Time scroll to the previous event in the specified dbprocess view}
+   button     last_teleseism	-	1,3	Last Teleseism  	{Time scroll to the last event in the specified dbprocess view}
+   button     tse		-	2,0	Time Scroll to Event     {Time scroll the display to the current event origin time (tse)}
+   button     Fe		-	2,1	Find event with assoc     {Find event with associations to displayed arrivals (Fe)}
+   button     ae		-	2,2	Find event that assocs     {Find event that associates to displayed arrivals (ae)}
+   button     rec		-	2,3	Record     	{Arrange stations as a record-section from current origin (rec)}
+   optionmenu dbxcor 		- 	3,0	dbxcor P S 	{Run dbxcor with chosen phase}
+   button     dbxcor_P		-	3,1	dbxcor P        {Run dbxcor with the named phase} 
+   button     dbxcor_S		-	3,2	dbxcor S        {Run dbxcor with the named phase} 
 endnotebook_page
 notebook_page Special
    optionmenu pal	 	- 	0,0 	P-align off on	{Turn P-align mode off and on (pal)}
@@ -102,10 +106,11 @@ endnotebook
    entry      orid 		10 	0,3	Orid 		{Set the dbpick origin-id (se)}
 }
 
-teleseism &Tbl{
-	dbopen origin
-	dbjoin site
-	dbsubset distance(origin.lat,origin.lon,site.lat,site.lon) > 30
+dbprocess_special &Arr{
+	teleseism &Tbl{
+		dbopen origin
+		dbsubset distance(origin.lat,origin.lon,33,-117) > 30
+	}
 }
 
 groups &Arr{

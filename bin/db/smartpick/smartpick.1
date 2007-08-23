@@ -121,6 +121,17 @@ This button time-scrolls the display in dbpick(1) to the first event
 in the origin table. This is equivalent to the \fIfe\fP
 command in the dbpick(1) command window.
 
+.IP "first_.*"
+A variety of different buttons can be constructed based on the
+tables of dbprocess(3) expressions in the \fIdbprocess_special\fP 
+array in the parameter file (see below). For example, you can create a 
+quartet of buttons \fIfirst_teleseism\fP, \fInext_teleseism\fP, 
+\fIprevious_teleseism\fP, \fIlast_teleseism\fP that will step through 
+the origins in a view formed by the \fIdbprocess_special{teleseism}\fP
+array entry. The last part of the button name (after the prefix \fIfirst_\fP)
+must exactly match a key in the \fIdbprocess_special\fP array of the 
+parameter file.
+
 .IP fw
 This button time-scrolls the display in dbpick(1) to the first existing
 waveform. This is equivalent to the \fIfw\fP command in the dbpick(1)
@@ -142,6 +153,17 @@ also the \fIgroups_.*\fP widgets below.
 A button of this name in the ptkform(3p) specification invokes a
 subroutine that kills the currently running dbpick(1) program.
 
+.IP "last_.*"
+A variety of different buttons can be constructed based on the
+tables of dbprocess(3) expressions in the \fIdbprocess_special\fP 
+array in the parameter file (see below). For example, you can create a 
+quartet of buttons \fIfirst_teleseism\fP, \fInext_teleseism\fP, 
+\fIprevious_teleseism\fP, \fIlast_teleseism\fP that will step through 
+the origins in a view formed by the \fIdbprocess_special{teleseism}\fP
+array entry. The last part of the button name (after the prefix \fIfirst_\fP)
+must exactly match a key in the \fIdbprocess_special\fP array of the 
+parameter file.
+
 .IP le
 This button time-scrolls the display in dbpick(1) to the last event
 in the origin table. This is equivalent to the \fIle\fP
@@ -157,6 +179,17 @@ This button time-scrolls the display in dbpick(1) to the next event
 in the origin table. This is equivalent to the \fIne\fP
 command in the dbpick(1) command window.
 
+.IP "next_.*"
+A variety of different buttons can be constructed based on the
+tables of dbprocess(3) expressions in the \fIdbprocess_special\fP 
+array in the parameter file (see below). For example, you can create a 
+quartet of buttons \fIfirst_teleseism\fP, \fInext_teleseism\fP, 
+\fIprevious_teleseism\fP, \fIlast_teleseism\fP that will step through 
+the origins in a view formed by the \fIdbprocess_special{teleseism}\fP
+array entry. The last part of the button name (after the prefix \fIfirst_\fP)
+must exactly match a key in the \fIdbprocess_special\fP array of the 
+parameter file.
+
 .IP nw
 This button time-scrolls the display in dbpick(1) to the next existing
 waveform. This is equivalent to the \fInw\fP command in the dbpick(1)
@@ -171,6 +204,17 @@ command in the dbpick(1) command window.
 This button time-scrolls the display in dbpick(1) to the previous event
 in the origin table. This is equivalent to the \fIpe\fP
 command in the dbpick(1) command window.
+
+.IP "previous_.*"
+A variety of different buttons can be constructed based on the
+tables of dbprocess(3) expressions in the \fIdbprocess_special\fP 
+array in the parameter file (see below). For example, you can create a 
+quartet of buttons \fIfirst_teleseism\fP, \fInext_teleseism\fP, 
+\fIprevious_teleseism\fP, \fIlast_teleseism\fP that will step through 
+the origins in a view formed by the \fIdbprocess_special{teleseism}\fP
+array entry. The last part of the button name (after the prefix \fIfirst_\fP)
+must exactly match a key in the \fIdbprocess_special\fP array of the 
+parameter file.
 
 .IP pw
 This button time-scrolls the display in dbpick(1) to the previous existing
@@ -542,6 +586,35 @@ If this is not blank, the contents are passed as additional options to
 dbpick (note that options shared by dbpick and by \fBsmartpick\fP, e.g.
 appname, comout etc., should be passed directly to \fBsmartpick\fP).
 
+.IP dbprocess_special
+This array contains tables of dbprocess commands to generate 
+special subsets of origins. These subsets can then be stepped through
+sequentially via a series of buttons named \fIfirst_*\fP, 
+\fInext_*\fP, \fIprevious_*\fP, \fIlast_*\fP (see the above description
+of button widgets for more detail), where the \fI*\fP should be 
+replaced by the key used to identify the subset in the \fIdbprocess_special\fP
+array. For example, the following parameter file entry would allow you 
+to define four buttons  \fIfirst_teleseism\fP, \fInext_teleseism\fP, 
+\fIprevious_teleseism\fP, \fIlast_teleseism\fP to step through events further
+than 30 degrees from Southern California:
+
+.in 4c
+.ft CW
+.nf
+
+.ne 7
+
+dbprocess_special &Arr{
+   teleseism Tbl{
+      dbopen origin
+      dbjoin site
+      dbsubset distance(lat,lon,33,-117) > 30
+   }
+}
+
+.fi
+.ft R
+.in
 .IP default_postscript_file
 This value gives the default name of postscript files to create.
 
@@ -984,6 +1057,14 @@ parameter should be usable for most standard installations.
 Note that the \fIdbloc2\fP entry in the \fIchannels\fP array of the
 parameter file will only work for dbloc2 channel selections that
 contain a simple dbpick regular expression.
+
+The \fInext_*\fP, \fInext_*\fP,\fInext_*\fP,\fInext_*\fP series 
+of buttons calculate their position in a sequence of origins that 
+is loaded once the first time used, is not updated, and ignores any other 
+positioning commands in smartpick / dbpick (i.e. if you hit \fIfirst_teleseism\fP, 
+then \fInext_teleseism\fP a couple times, regardless of all the other event selection
+or time-scrolling commands you do the next time you hit \fInext_teleseism\fP
+you'll get the fourth one in the sequence). 
 
 In order to allow tksend messages between smartpick, dbpick, and dbloc2
 via Perl::Tk, \fBsmartpick\fP is written in taint-checked Perl.  This

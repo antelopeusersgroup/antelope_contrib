@@ -899,7 +899,7 @@ sub init_database {
 	$State{nettype_networks} = { };
 	$State{stations_frame_stations} = [];
 
-	my( @db ) = dbopen( $State{dbname}, "r" );
+	@db = dbopen( $State{dbname}, "r" );
 
 	@db = dblookup( @db, 0, "site", 0, 0 );
 
@@ -1739,6 +1739,147 @@ sub toggle_balloons {
 	return;
 }
 
+sub init_special {
+	my( $oridcomb ) = @_;
+
+	if( defined( $State{"current_index_$oridcomb"} ) ) {
+
+		return 0;
+	}
+
+	my( @dbprocess_commands ) = @{pfget( $State{pf}, "dbprocess_special{$oridcomb}" )};
+
+	map {
+
+		if( $_ =~ m@^([^\[\]]*)$@ ) {
+		
+			$_ = $1;
+
+		} else {
+		
+			elog_die( "dbprocess_special{$oridcomb} table entry '$_' contains disallowed " .
+			  	"square-bracket characters. Bye.\n" );
+		}
+
+	} @dbprocess_commands;
+
+	if( ! defined( @dbprocess_commands ) ) {
+		
+		elog_die( "Can't find table 'dbprocess_special{$oridcomb}' in '$State{pf}.pf'. Bye." );
+	}
+
+	@db = dbopen( $State{dbname}, "r" );
+
+	@db = dbprocess( @db, @dbprocess_commands );
+
+	my( $nrecs ) = dbquery( @db, dbRECORD_COUNT );
+
+	if( $nrecs <= 0 ) {
+
+		ptkalert( $MW, "No rows for view specified by 'dbprocess_special{$oridcomb}'" );
+
+		return -1;
+	}
+
+	for( $db[3] = 0; $db[3] < $nrecs; $db[3]++ ) {
+		
+		my( $orid ) = dbgetv( @db, "orid" );
+
+		push( @{$State{"oridcomb_$oridcomb"}}, $orid );
+	}
+
+	$State{"current_index_$oridcomb"} = -1;
+
+	return 0;
+}
+
+sub first_special {
+	my( $oridcomb ) = @_;
+
+	if( init_special( $oridcomb ) < 0 ) {
+		
+		return;
+	}
+
+	$State{"current_index_$oridcomb"} = 0;
+
+	$State{orid} = ${$State{"oridcomb_$oridcomb"}}[$State{"current_index_$oridcomb"}];
+
+	set_dbpick_orid();
+
+	return;
+}
+
+sub next_special {
+	my( $oridcomb ) = @_;
+
+	if( init_special( $oridcomb ) < 0 ) {
+		
+		return;
+	}
+
+	if( $State{"current_index_$oridcomb"} < $#{$State{"oridcomb_$oridcomb"}} ) {
+
+		$State{"current_index_$oridcomb"}++;
+
+	} else {
+
+		ptkalert( $MW, "Already at last origin for special sequence '$oridcomb'" );
+
+		$State{"current_index_$oridcomb"} = $#{$State{"oridcomb_$oridcomb"}};
+	}
+
+	$State{orid} = ${$State{"oridcomb_$oridcomb"}}[$State{"current_index_$oridcomb"}];
+
+	set_dbpick_orid();
+
+	return;
+}
+
+sub previous_special {
+	my( $oridcomb ) = @_;
+
+	if( init_special( $oridcomb ) < 0 ) {
+		
+		return;
+	}
+
+	if( $State{"current_index_$oridcomb"} > 0 ) {
+
+		$State{"current_index_$oridcomb"}--;
+
+	} else {
+
+		ptkalert( $MW, "Already at first origin for special sequence '$oridcomb'" );
+
+		$State{"current_index_$oridcomb"} = 0;
+	}
+
+	$State{orid} = ${$State{"oridcomb_$oridcomb"}}[$State{"current_index_$oridcomb"}];
+
+	set_dbpick_orid();
+
+	return;
+}
+
+sub last_special {
+	my( $oridcomb ) = @_;
+
+	if( init_special( $oridcomb ) < 0 ) {
+		
+		return;
+	}
+
+	$State{"current_index_$oridcomb"} =  $#{$State{"oridcomb_$oridcomb"}};
+
+	$State{orid} = ${$State{"oridcomb_$oridcomb"}}[$State{"current_index_$oridcomb"}];
+
+	set_dbpick_orid();
+
+
+	return;
+}
+
 sub bind_widgets {
  
  	my( @nooption_widgets ) = qw( fw nw pw fa na pa fe ne pe le 
@@ -1806,9 +1947,8 @@ sub bind_widgets {
  
  			$State{widgets}->{$widget}->configure( 
 						-command => \&$cmd );
- 		}
 
- 		if( $widget =~ /^(groups)_(.*)$/ ) {
+ 		} elsif( $widget =~ /^(groups)_(.*)$/ ) {
 
 			eval "sub $widget { 
 				show_group( \"\$State{var}->{$widget}\" ); 
@@ -1816,9 +1956,8 @@ sub bind_widgets {
 
  			$State{widgets}->{$widget}->configure( 
 						-command => \&$widget );
-		} 
 
- 		if( $widget =~ /^(dbxcor)_(.*)$/ && $widget ne "dbxcor_appname" ) {
+		} elsif( $widget =~ /^(dbxcor)_(.*)$/ && $widget ne "dbxcor_appname" ) {
  
  			my( $phase ) = $2;
  
@@ -1829,7 +1968,55 @@ sub bind_widgets {
  
  			$State{widgets}->{$widget}->configure( 
 						-command => \&$cmd );
- 		}
+
+ 		} elsif( $widget =~ /^(first)_(.*)$/ ) {
+
+			my( $oridcomb ) = $2;
+
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { first_special( \"$oridcomb\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
+
+ 		} elsif( $widget =~ /^(next)_(.*)$/ ) {
+
+			my( $oridcomb ) = $2;
+
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { next_special( \"$oridcomb\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
+
+ 		} elsif( $widget =~ /^(previous)_(.*)$/ ) {
+
+			my( $oridcomb ) = $2;
+
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { previous_special( \"$oridcomb\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
+
+ 		} elsif( $widget =~ /^(last)_(.*)$/ ) {
+
+			my( $oridcomb ) = $2;
+
+			my( $cmd ) = $widget;
+			$cmd =~ s/-/_/g;
+
+ 			eval "sub $cmd { last_special( \"$oridcomb\" ); }";	
+ 
+ 			$State{widgets}->{$widget}->configure( 
+						-command => \&$cmd );
+		}
  	}
  
 	my( @entry_vars ) = qw( tw 
