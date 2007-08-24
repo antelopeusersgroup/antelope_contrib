@@ -1,0 +1,210 @@
+.TH dbpick_combine 1 2007/08/24 "Antelope Contrib SW" "User Commands"
+.SH NAME
+dbpick_combine \- combine a subset of two separate databases and view in dbpick
+.SH SYNOPSIS
+.nf
+\fBdbpick_combine \fP [-v]
+	[-keep  \fIoutputdb\fP] 
+	[-chan  \fIchannel_subset\fP] 
+	[-start \fIstart_time\fP] 
+	[-end   \fIend_time\fP] 
+	{-sta \fIstation_subset\fP | -nearby \fIsta\fP [-dist \fIdistance\fP]}
+	\fIdb1\fP \fIdb2\fP
+.fi
+.SH DESCRIPTION
+\fBdbpick_combine\fP is intended to make waveform review of data from two 
+distinct database easier by combining a subset of each input database and
+viewing it in dbpick.  This assumes that the two input databases are related
+in some fashion and have data from overlapping time windows.  For instance, 
+\fIdb1\fP may contain your seismic waveform data while \fIdb2\fP may contain
+your state of health data (mass positions, system voltage, etc.).  Rather 
+than starting two separate instances of \fBdbpick\fP, you can create a view 
+that shows all traces in the same dbpick window.
+.LP
+\fBdbpick_combine\fP subsets the arrival, site, and wfdisc tables 
+from the input databases, \fIdb1\fP and \fIdb2\fP and makes them available
+in the output database used for \fBdbpick\fP.  You must have a site 
+table available for \fIdb1\fP if you are using the -nearby option.  
+No attempts are made to clean up duplicate picks or "del" picks from 
+the input database. The arrival table is not necessary.  
+.LP
+A dbpick waveform window is generated with the dbpick
+prompt appearing in the same window where you run the \fBdbpick_combine\fP
+command.  Make sure you type "quit" at the dbpick prompt rather than 
+using Cntrl-C or the window manager close button on the waveform display 
+window.  Not following this step may result in the temporary database 
+cleanup failing.
+
+.SH OPTIONS
+.IP -v
+verbose
+.IP "-chan channel_subset"
+A basic channel subset to be applied to the arrival and wfdisc tables of
+\fIdb1\fP and \fIdb2\fP.  Examples of valid subsets include:  
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+/BHZ/
+/BH[ZNE]|VM./
+/L.*/
+
+.fi
+.ft R
+.in
+At the moment, negative subsets are not allowed.
+.IP "-start start_time"
+Start time of data to be reviewed.  All data after this start_time is
+selected from the wfdiscs and arrivals (if available) of \fIdb1\fP 
+and \fIdb2\fP.
+.IP "-end end_time"
+End time of data to be reviewed.  All data before this end_time is  
+selected from the wfdiscs and arrivals (if available) of \fIdb1\fP 
+and \fIdb2\fP.  This is sometimes necessary for large real-time databases.
+See BUGS and CAVEATS below.
+.IP "-keep outputdb"
+Keeps all temporary databases and uses outputdb for the combined view.  
+This database is kept after quitting dbpick. 
+.IP "-sta station_subset"
+Subset the input databases so that only the station_subset channels are 
+available. Examples of valid subsets include:  
+.in 2c
+.ft CW
+.nf
+.ne 7
+
+/A04A/
+/N0.A|M1.A/
+/L.*/
+
+.fi
+.ft R
+.in
+Either the -sta or -nearby option must be specified.
+.IP "-nearby sta"
+Subset the database so that only stations close to sta are 
+in the output view.  This station must be in the input database
+\fIdb1\fP.  The default is to collect all stations within 2 degrees
+of sta.  Use -dist to change the default.  Instead of specifying a 
+specific station, you can use a coordinate.  This negates the need
+for \fIdb1\fP to have a site table.
+.IP "-dist distance"
+With -nearby, collect stations that are within distance range of the
+station (or coordinates) specified with the -nearby option.
+.SH FILES
+.in 2c
+.ft CW
+.nf
+.ne 7
+/tmp/db1.arrival
+/tmp/db1.site
+/tmp/db1.wfdisc
+/tmp/db2.arrival
+/tmp/db2.site
+/tmp/db2.wfdisc
+.fi
+.ft R
+.in
+.LP
+Temporary database files are also created in the directory of the 
+input databases.  They look something like: dbpick_combine19166 
+and should be automatically removed upon exit of the program
+unless -keep is used. See BUGS AND CAVEATS!
+.SH ENVIRONMENT
+You must be able to run X-windows programs. 
+.SH EXAMPLE
+.SS "Nearby station mode"
+.IP \(bu
+Collect the BH* and VM* channels of all stations within 
+1 degree of station A04A starting after 2006-245.
+.ft CW
+.in 2c
+.nf
+.ne 2
+
+%\fBdbpick_combine -nearby "A04A" -dist 1.0 -chan "/BH.|VM./" \
+	-start 2006245:00:00:00  db/usarray db2/usarray2 \fP
+.fi
+.in
+.ft R
+.IP \(bu
+Collect all BH* channels within 2 degrees (default) of 40N 115W.
+.ft CW
+.in 2c
+.nf
+.ne 2
+
+%\fBdbpick_combine -nearby "40:-115" -chan "/BH.*/" \
+	db/usarray db2/usarray2 \fP
+.fi
+.in
+.ft R
+.SS "Station mode"
+.IP \(bu
+Collect all BH* channels for stations A04A, B04A, C04A, and A03A. 
+.ft CW
+.in 2c
+.nf
+.ne 4
+
+%\fBdbpick_combine -sta "/A04A|B04A|C04A|A03A/" -chan "/BH./" \
+	db/usarray db2/usarray2 \fP
+
+.fi
+.in
+.ft R
+
+.SH DIAGNOSTICS
+.LP
+I have seen errors like:
+.ft CW
+.in 2c
+.nf
+.ne 7
+
+2007-234 16:25:49 dbcp *log*: Bad record id 81 in db pointer
+2007-234 16:25:49 dbcp *log*: bad db type in dbputv
+
+.fi
+.in
+.ft R
+when this program is run on large real-time databases.  I have not been
+able to reliably reproduce the error yet.  The only work-around I can 
+suggest is that you use -end with a time before the most recent time 
+in the wfdisc table.
+.SH "SEE ALSO"
+.nf
+dbpick(1)
+.fi
+.SH "BUGS AND CAVEATS"
+.LP
+This was "in shop" code that I am freeing into the world.  It may not 
+do what you want it to do, but it worked for me.  Requests for upgrades 
+and changes may be taken into consideration, but action on them may take
+a long while.
+.LP
+No support yet for expanded subsetting capabilities (i.e. sta !~/A0.*/ 
+&& sta=~/A1.*/).  I am considering this and may end up re-writing code 
+in such a way that may not be backward compatible with the -sta and -nearby
+options.  
+.LP
+Better error message and check is needed if the -sta subset is for a station 
+that is not in the site table.
+.LP
+Can leave detritus database files and descriptors around if program exits 
+abnormally.
+.LP
+Some of the subsets can take a significant amount of time if the database 
+tables are large.  Have patience.
+.LP
+There are some rm commands in this script.  Bad choice of input dbs could cause an important database to be removed.  Please do not use /tmp/db1.wfdisc or /tmp/db2.wfdisc as either of your input databases.  Save a backup of the input dbs
+if you are paranoid like me.
+.LP
+The -keep option is untested at the moment....
+.SH AUTHOR
+.nf
+Jennifer Eakins
+ANF
+Univ. of California, San Diego
+.fi
