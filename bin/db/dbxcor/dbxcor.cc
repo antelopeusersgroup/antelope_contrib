@@ -1351,13 +1351,13 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
           XmNentryAlignment,XmALIGNMENT_BEGINNING,XmNpacking,XmPACK_COLUMN,NULL);
 	MenuItem btninfo;
 
-	btninfo.label=static_cast<char *>("Pick Arrival");
+	btninfo.label=(char *)("Pick Arrival");
 	btninfo.callback=pick_phase_time;
 	btninfo.callback_data=beam_widget;
 	psm->controls[BTN_ARRIVAL]=create_button(tlrc,btninfo);
 
 
-	btninfo.label=static_cast<char *>("Pick Error");
+	btninfo.label=(char *)("Pick Error");
 	btninfo.callback=pick_arrival_error;
 	btninfo.callback_data=beam_widget;
 	psm->controls[BTN_ARRIVAL_ERROR]=create_button(tlrc,btninfo);
