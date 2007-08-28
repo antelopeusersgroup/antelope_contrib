@@ -340,6 +340,7 @@ for( $dbt[3] = 0; $dbt[3] < dbquery( @dbt, dbRECORD_COUNT ); $dbt[3]++ ) {
 $Rrdfile_pattern = pfget( $Pf, "rrdfile_pattern" );
 $Status_stepsize_sec = pfget( $Pf, "status_stepsize_sec" );
 $Waveform_stepsize_sec = pfget( $Pf, "waveform_stepsize_sec" );
+$Default_network = pfget( $Pf, "default_network" );
 @dlslines = @{pfget( $Pf, "dls_vars" )};
 @chanlines = @{pfget( $Pf, "chan_vars" )};
 
@@ -397,7 +398,16 @@ for( ; $stop == 0 ; ) {
 		foreach $element ( keys %mypktpf ) {
 	  	   foreach $dls_var ( keys %Dls_vars ) {
 	
-			( $net, $sta ) = split( '_', $element );
+			if( $element =~ /_/ ) {
+
+				( $net, $sta ) = split( '_', $element );
+
+			} else {
+
+				$net = $Default_network;
+
+				$sta = $element;
+			}
 	
 			$val =  $mypktpf{$element}{$dls_var};
 	

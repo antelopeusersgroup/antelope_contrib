@@ -12,6 +12,8 @@ waveform_archives  RRA:AVERAGE:0.5:&waveform_stepsize_sec:1200 RRA:MAX:0.5:60:70
 
 rrdfile_pattern	rrd/%{net}_%{sta}_%{rrdvar}.rrd
 
+default_network &ref(site,default_seed_network)
+
 status_stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
 waveform_stepsize_sec	1		# waveform step size
 

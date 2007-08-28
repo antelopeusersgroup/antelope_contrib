@@ -16,6 +16,10 @@ packets, as well as the pathnames for the generated RRD files, the types
 of RRD variables used (see rrdtool(1)), and the types of round-robin
 archives that are stored (see rrdtool(1)).
 
+The parameter file allows the user to specify a default network for the incoming 
+status packets, should they be from a k22orb(1) instance or other application 
+that does not use the \fIsta_chan\fP form for \fIdls\fP array entries. 
+
 .SH OPTIONS
 .IP "-s statefile"
 Specify a state-file to use for tracking and synchronizing the current 
@@ -57,6 +61,8 @@ archives	RRA:AVERAGE:0.5:&stepsize_sec:1200 RRA:MAX:0.5:60:700
 rrdfile_pattern	rrd/%{net}_%{sta}_%{rrdvar}.rrd
 
 stepsize_sec	20		# e.g. use statusreport_interval from q3302orb.pf
+
+default_network &ref(site,default_seed_network)
 
 dls_vars	&Tbl{
 br24   GAUGE:&heartbeat_sec:U:U   &archives
