@@ -71,11 +71,15 @@ ThreeComponentEnsemble
 				}
 				catch (SeisppError sde)
 				{
+				    if(SEISPP_verbose)
+				    {
 					cerr << "array_get_data:  Problem with member "
 						<< i 
-						<< "which contains data for station "<<current_sta
+						<< endl
+						<< "This seismogram contains data for station "<<current_sta
 						<< " in raw input ensemble"<<endl;
 					sde.log_error();
+				    }
 				}
 			}
 			else
@@ -137,49 +141,43 @@ ThreeComponentEnsemble
 				// precedence level.  If there are missing data 
 				// for that set of components, delete those and 
 				// keep trying until a complete set is found or 
-				// the list is exhausted.
+				// the list is exhausted.  Note this algorithm does
+				// not handle mixed precedence channels.  i.e. it
+				// cannot recover something like HHE, HLN, and HLZ
 				//
-					vector<int>::iterator minprec;
+					vector<int>::iterator minprec,maxprec;
 					minprec=min_element(prec.begin(),prec.end());
-					for(j=0;j<comp.size();++j)
+					int minval=*minprec;
+					maxprec=max_element(prec.begin(),prec.end());
+					int maxval=*maxprec;
+					int iprec;
+					for(iprec=minval;iprec<=maxval;++iprec)
 					{
-						if(prec[j]==(*minprec))
-							components.push_back
-							  (rawdata.member[member_index[j]]);
-					}
-					do {
-						if(comp.size()==3)
+						for(j=0;j<comp.size();++j)
+						{
+							if(prec[j]==iprec)
+                                                        	components.push_back
+                                                                (rawdata.member[member_index[j]]);
+						}
+						if(components.size()==3)
 						{
 							ThreeComponentSeismogram new3c(components);
-							result->member.push_back(new3c);
+                                                        result->member.push_back(new3c);
+							break;
 						}
 						else
 						{
-							int minval=*minprec;
-							vector<int>::iterator ic,ip,im;
-							for(ic=comp.begin(),
-								ip=prec.begin(),
-								im=member_index.begin();
-								ic!=comp.end();
-								++ic,++ip,++im)
-							{
-								if((*ip)==minval)
-								{
-									comp.erase(ic);
-									prec.erase(ip);
-									member_index.erase(im);
-								}
-							}
+							components.clear();
 						}
-					} while(comp.size()>3);
-					//
-					// This may be an unnecessary verbosity
-					//
-					if(comp.size()<3)
+					}
+					if(SEISPP_verbose)
+					{
+					    if(components.size()!=3)
 						cerr << "array_get_data_3c:  Irregular data from station "
 							<< current_sta
-							<< ".  Data from this station droped."
+							<< ".  Data from this station dropped."
 							<<endl;
+					}
 					comp.clear();
 					prec.clear();
 					member_index.clear();
