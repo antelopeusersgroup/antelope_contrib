@@ -1,6 +1,8 @@
 #include <algorithm>
+#include "SeisppKeywords.h"
 #include "ensemble.h"
 #include "tr.h"
+#include "seispp.h"
 namespace SEISPP {
 using namespace std;
 using namespace SEISPP;
@@ -164,6 +166,9 @@ MetadataList BuildStationMDL()
 	Metadata_typedef entry;
 	// This list is the bare minimum.  Others are extracted using
 	// database functions below
+	entry.tag="net";
+	entry.mdt=MDstring;
+	mdl.push_back(entry);
 	entry.tag="sta";
 	entry.mdt=MDstring;
 	mdl.push_back(entry);
@@ -256,14 +261,16 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 	}
 
 	char *gap="seg";
-	// call Danny Harvey's routine that creates a trace
-	// database using the result of the grdb_sc_loadcss function.
-	// We always ask it to apply calib and always ask it to 
-	// handle data with gaps.  (set with gap variable).
-	//
+	/* call Danny Harvey's routine that creates a trace
+	* database using the result of the grdb_sc_loadcss function.
+	* We always ask it to NOT apply calib and ask it to 
+	* handle data with gaps (set with gap variable).
+	* We do this so we can fetch the value of calib and
+	* restore data to their raw form if necessary.  (see below)
+	*/
 	ierr=grtr_sc_create(dbsc,net_expr,sta_expr,chan_expr,
 		twin.start,twin.end,
-		gap,1,ir,&dbtr);
+		gap,0,ir,&dbtr);
 	if(ierr!=0)
 	{
 		clear_register(1);   
@@ -359,12 +366,34 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			// loaded through data_mdl, but they are so critical they 
 			// need to be forced here.
 			double samprate,start_time;
+			double calib;
 			int nsamp;
 			dbgetv(dbtr_handle.db,0,
-				"time",&start_time,"samprate",&samprate,"nsamp",&nsamp,0);
-			trattributes.put("time",start_time);
-			trattributes.put("samprate",samprate);
-			trattributes.put("nsamp",nsamp);
+				"time",&start_time,
+				"samprate",&samprate,
+				"nsamp",&nsamp,
+				"calib",&calib,0);
+			// Note the keys used here come from
+			// SeisppKeywords.h
+			trattributes.put(start_time_keyword,start_time);
+			trattributes.put(sample_rate_keyword,samprate);
+			trattributes.put(number_samples_keyword,nsamp);
+			if(calib>0.0)
+				trattributes.put(calibrated_keyword,true);
+			else
+			{
+				trattributes.put(calibrated_keyword,false);
+				calib=1.0;
+				if(SEISPP_verbose)
+				{
+					cerr << "WARNING:  station="
+						<< sta 
+						<< " channel="
+						<< " is uncalibrated.  Setting calib to 1.0"
+						<<endl;
+				}
+			}
+			trattributes.put(gain_keyword,calib);
 			// These attributes are loaded conditionally
 			if(require_coords)
 			{
@@ -427,9 +456,12 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 				// Block for no gaps
 				dbgetv(dbtr_handle.db,0,"data",&tdata,
 					"nsamp",&(seis->ns),0);
+				// NOTE we are applying calib here
+				// This is equivalent to trapply_calib
 				for(i=0;i<seis->ns;++i)
 				{
-					seis->s.push_back(static_cast<double>(tdata[i]));
+					seis->s.push_back(static_cast<double>
+							(tdata[i])/calib);
 				}
 			}
 			else
@@ -502,7 +534,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 							(tprime<(twin.end+0.5*(seis->dt))) )
 						{
 							seis->s[seis->sample_number(tprime)]
-							= static_cast<double>(tdata[k]);
+							= static_cast<double>(tdata[k])/calib;
 						}
 							
 					}

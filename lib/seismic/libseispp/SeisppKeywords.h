@@ -27,6 +27,19 @@ const string timetype_keyword("timetype");
 *   END BasicTimeSeries keyword block
 */
 
+/*! Defines keyword for gain factor.   
+
+Normally this is calib of the raw data, although other algorithms could alter it.
+The basic concept is that the original recorded amplitude can be restored by 
+dividing each sample by this factor. */
+const string gain_keyword("gain");
+/*! Defines if data is calibrated.
+
+This is a boolean key that is set true if the associated data has a
+known response and is calibrated such that calib and the gain_keyword
+entry mean something.  If false it means the amplitude of the data 
+are arbitrary numbers that cannot be linked to physical units. */
+const string calibrated_keyword("calibrated");
 /*! Defines a keyword to reference moveout used by the generalized stack operator.*/
 const string moveout_keyword("moveout"); 
 /*! Defines keyword for coherence estimate for generalized stack operator. */
