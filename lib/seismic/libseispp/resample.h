@@ -217,16 +217,22 @@ public:
 class ResamplingDefinitions
 {
 public:
-	/*! Container that holds the ResampleOperator objects.
+	/*! Default constructor.  Builds an empty map.*/
+	ResamplingDefinitions(){
+		decset=map<Interval,ResampleOperator,IntervalCompare>();
+	};
+	/*! Construct from a parameter file.
+
+	This is the primary constructor for this object.  Uses
+	a complicated parameter file structure described in resample(3).
+	*/
+	ResamplingDefinitions(Pf *pf);
+        /*! Container that holds the ResampleOperator objects.
+
 	Note the map is keyed by an interval definition.  This allows us
 	to look up a sample rate to match an interval and avoids the mess
 	of an exact floating point match. */
 	map<Interval,ResampleOperator,IntervalCompare> decset;
-	/*! Only valid constructor for this object.  Constructs this 
-	object from a parameter file definition.  Only useful to Antelope
-	users who should see man resample(3) for a description of the 
-	format of the parameter file needed to build this object. */
-	ResamplingDefinitions(Pf *pf);
 };
 
 
