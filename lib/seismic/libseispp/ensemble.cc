@@ -166,9 +166,6 @@ MetadataList BuildStationMDL()
 	Metadata_typedef entry;
 	// This list is the bare minimum.  Others are extracted using
 	// database functions below
-	entry.tag="net";
-	entry.mdt=MDstring;
-	mdl.push_back(entry);
 	entry.tag="sta";
 	entry.mdt=MDstring;
 	mdl.push_back(entry);
@@ -371,6 +368,7 @@ TimeSeriesEnsemble::TimeSeriesEnsemble(DatabaseHandle& dbhi,
 			dbgetv(dbtr_handle.db,0,
 				"time",&start_time,
 				"samprate",&samprate,
+					/* Assumes chans[k] is one on char like "E" */
 				"nsamp",&nsamp,
 				"calib",&calib,0);
 			// Note the keys used here come from
