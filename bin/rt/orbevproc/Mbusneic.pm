@@ -239,6 +239,10 @@ sub getwftimes {
 			"nchans" => 1,
 			"channels" => $channels,
 		} ;
+		if ( defined $process->{clip_upper} && defined $process->{clip_lower} ) {
+			$hash->{clip_upper} = $process->{clip_upper} ;
+			$hash->{clip_lower} = $process->{clip_lower} ;
+		}
 		if ( defined $process->{filter} ) {
 			$hash->{filter} = $process->{filter} ;
 			if ($hash->{filter} eq "auto" || $hash->{filter} eq "autosp") {
@@ -250,7 +254,7 @@ sub getwftimes {
 		
 				if ($ndbv < 1) {
 					addlog ( $self, 0, "station ". $sta . ": no channel matches to "
-								. $process->{chan_expr} . " in calibration table" ) ;
+								. $hash->{chan_expr} . " in calibration table" ) ;
 					undef $hash->{filter} ;
 				} else {
 					$dbv[3] = 0;
@@ -326,9 +330,16 @@ sub process_channel {
 	my $sta = $ret->{sta} ;
 	my $chan = $ret->{chan} ;
 
+	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
+			&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
+		addlog ( $self, 1, "%s: %s: Channel mag not computed because of clipped data",
+ 						$sta, $chan )  ;
+		return $ret ;
+	}
 	if ( ! defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of no data",
  						$sta, $chan )  ;
+		return $ret ;
 	}
  	if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
 		if ( $self->{stations}{$sta}{snr_thresh} < 1.0

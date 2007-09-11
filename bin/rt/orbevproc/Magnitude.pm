@@ -226,6 +226,14 @@ sub process_channel {
 						$self->{stations}{$sta}{noise_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ( $nbad == 0 || $override ) {
+			if ( defined $self->{stations}{$sta}{clip_upper} 
+					&& defined $self->{stations}{$sta}{clip_lower} ) {
+				$self->{stations}{$sta}{channels}{$chan}{is_clipped} 
+					= isclipped ( @dbtrace, $self->{stations}{$sta}{clip_upper},
+						$self->{stations}{$sta}{clip_lower}, 
+ 						$self->{stations}{$sta}{signal_tstart}, 
+ 						$self->{stations}{$sta}{signal_tend} ) ;
+			}
 			if ( defined $self->{stations}{$sta}{filter} ) {
 				trfilter ( @dbtrace, $self->{stations}{$sta}{filter} ) ;
 			}
@@ -253,11 +261,20 @@ sub process_channel {
 
 	if ( $self->{stations}{$sta}{channels}{$chan}{signal_done} == 0 ) { 
 		my ($nbad, $fbad) = findbad ( @dbtrace, $self->{stations}{$sta}{signal_tstart},
-						$self->{stations}{$sta}{signal_tend} ) ;
+					$self->{stations}{$sta}{signal_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ($nbad != 0 && ! $override ) {
 			addlog ( $self, 3, "%s: %s: Leaving process_channel because signal not ready", $sta, $chan ) ;
 			return makereturn ( $self, "ok" ) ; 
+		}
+		if ( defined $self->{stations}{$sta}{clip_upper} 
+				&& defined $self->{stations}{$sta}{clip_lower}
+				&& $needfilter ) {
+			$self->{stations}{$sta}{channels}{$chan}{is_clipped} 
+				= isclipped ( @dbtrace, $self->{stations}{$sta}{clip_upper},
+					$self->{stations}{$sta}{clip_lower}, 
+ 					$self->{stations}{$sta}{signal_tstart}, 
+ 					$self->{stations}{$sta}{signal_tend} ) ;
 		}
 		if ( $needfilter && defined $self->{stations}{$sta}{filter} ) {
 			trfilter ( @dbtrace, $self->{stations}{$sta}{filter} ) ;
@@ -380,6 +397,12 @@ sub process_station {
 	my $msta = -1.e30 ;
 	my $mchan ;
 	foreach  my $chan (keys(%{$self->{stations}{$sta}{channels}})) {
+		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
+				&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
+			addlog ( $self, 1, "%s: Station mag = data clipped",
+ 						$sta ) ;
+			return makereturn ( $self, "ok" ) ;
+		}
 		if (defined $self->{stations}{$sta}{channels}{$chan}{m}) {
 			if ($self->{stations}{$sta}{channels}{$chan}{m} > $msta) {
 				$msta = $self->{stations}{$sta}{channels}{$chan}{m} ;

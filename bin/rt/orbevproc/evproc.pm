@@ -22,6 +22,7 @@ require Exporter;
 	'trimtrace',
 	'findbad',
 	'computestats',
+	'isclipped',
 	'mystrtime' ) ;
 
 use lib "$ENV{ANTELOPE}/data/perl" ;
@@ -198,7 +199,7 @@ sub setup_processes {
 		my @entries = split " ", $line ;
 		my $n = scalar ( @entries ) ; 
 		if ( $n == 0 ) {next;}
-		if ( $n < 9 ) {
+		if ( $n < 9 || $n == 10 || $n > 11 ) {
 			addlog ($obj, 0, "Unable to parse '". $line . "'" ) ;
 			next ;
 		}
@@ -217,6 +218,11 @@ sub setup_processes {
 			$_ = $entries[3] ;
 			s/_/ /g ;
 			$hash->{filter} = $_ ;
+		}
+
+		if ( $n == 11 ) {
+			$hash->{clip_lower} = $entries[9] ;
+			$hash->{clip_upper} = $entries[10] ;
 		}
 
 		push @{$obj->{channels}}, $hash ;
@@ -627,6 +633,66 @@ sub computestats {	# Compute waveform statistics
 	}
 	
 	return ( $amax, $vmax, $tmax, $amp, $per, $mean, $std ) ;
+}
+
+sub isclipped {		# Determine if waveform is clipped
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#	$clip_upper	= Upper clip value
+			#	$clip_lower	= Lower clip value
+			#	$tstart	= optional start epoch time for measurements
+			#	$tend	= optional end epoch time for measurements
+			#	if $tstart and $tend are not specified, then the entire
+			#		    trace waveform time window is used
+			#
+			# returns:
+			#	0 if not clipped or 1 if clipped
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+	my $clip_upper = shift ;
+	my $clip_lower = shift ;
+	my $tstart;
+	my $tend;
+	if (scalar(@_) > 0) {$tstart = shift;}
+	if (scalar(@_) > 0) {$tend = shift;}
+
+	# get the timing values from the trace row
+
+	my ($t0, $samprate, $nsamp) = dbgetv ( @db, "time", "samprate", "nsamp" ) ;
+	my $dt = 1.0 / $samprate ;
+
+	# find the range within the trace waveform for making the measurements
+
+	my ( $istart, $npts ) ;
+	( $t0, $istart, $npts ) = findrange ( $t0, $dt, $nsamp, $tstart, $tend ) ;
+	if ( $npts < 1 ) {return 0;}
+
+	# get the waveform sample data array
+
+	my @data = trdata ( @db, $istart, $istart+$npts ) ;
+
+	# loop through the data samples to look for clipping
+
+	$npts = scalar ( @data ) ;
+	my $val ;
+	my $time ;
+	my $isamp ;
+	for ($isamp = 0; $isamp < $npts; $isamp++) {
+		$time = $t0 + $isamp * $dt ;
+		$val = $data[$isamp] ;
+		if ($val > 1.e30) {next;}
+
+		if ($val >= $clip_upper) {return 1;}
+		if ($val <= $clip_lower) {return 1;}
+	}
+
+	return  0 ;
 }
 
 sub mystrtime {
