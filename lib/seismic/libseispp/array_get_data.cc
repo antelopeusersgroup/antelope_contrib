@@ -208,8 +208,8 @@ void auto_switch_polarity(TimeSeriesEnsemble *d)
 			else if (ctest==e)
 			{
 				hang=d->member[i].get_double("hang");
-				if((fabs(vang-270.0)<1.0)
-				  || (fabs(vang+90.0)<1.0) )
+				if((fabs(hang-270.0)<1.0)
+				  || (fabs(hang+90.0)<1.0) )
 				{
 					for(j=0;j<d->member[i].s.size();++j)
 						d->member[i].s[j]*=-1.0;
