@@ -2206,9 +2206,17 @@ static XImage *RotImage90_peng(Display *dpy, XImage *oldImage)
         int     width2 =                oldImage->height;
         int     height2 =       oldImage->width;
         int     scr =                   DefaultScreen(dpy);
+	/* SU7 fix*/
+	int bitmap_pad=0;
+	if(BitmapPad(dpy)>16)
+		bitmap_pad=16;
+	else if(BitmapPad(dpy)<16)
+		bitmap_pad=8;
+	widthpad = (1+(width2-1)/bitmap_pad)*bitmap_pad;
+	nbpr = widthpad -1;
 
-        widthpad = (1 + (width2-1)/(BitmapPad(dpy)/8))*BitmapPad(dpy)/8;
-        nbpr = 1 + (widthpad-1)/8;
+	/* End SU7 fix */
+ 
         bits = static_cast<unsigned char *>(calloc(nbpr*height2,sizeof(unsigned char)));
         if(bits==NULL)
                 throw SeisppError("SeismicPlot::RotImage90:  Cannot alloc bitmap");
@@ -2220,7 +2228,7 @@ static XImage *RotImage90_peng(Display *dpy, XImage *oldImage)
                                 (char *) bits,
                                 (unsigned int) widthpad,
                                 (unsigned int) height2,
-                                (int) BitmapPad(dpy),
+                                (int) bitmap_pad,
                                 (int) nbpr);
 
         for (i = 0; i < nbpr*height2; i++)      bits[i]=0;
@@ -2571,7 +2579,8 @@ static void intt8r_peng (int ntable, float table[][8],
                 kyin = ioutb+ixoutn;
                 pyin = yin0+kyin;
                 frac = xoutn-(float)ixoutn;
-                ktable = frac>=0.0?frac*fntablem1+0.5:(frac+1.0)*fntablem1-0.5;
+                ktable = static_cast<int>
+			(frac>=0.0?frac*fntablem1+0.5:(frac+1.0)*fntablem1-0.5);
                 ptable = table00+ktable*8;
                 /* if totally within input array, use fast method */
                 if (kyin>=0 && kyin<=nxinm8) {
@@ -3245,12 +3254,25 @@ static XImage *newBitmap_peng (Display *dpy, int width, int height,
         float   x2margin,clip1,clip2;
         int     bx1max,bx2min,bx2max,b2f,b2l;
         int     width1,height1;
+	/* Fix suggested CWP in SU:  here and below calls this SU7 fix.
+	SU update says this problem was created by Xorg 7.0 update for 
+	security.  */
+	int bitmap_pad=0;
+	if(BitmapPad(dpy)>16)
+		bitmap_pad=16;
+	else if(BitmapPad(dpy)<16)
+		bitmap_pad=8;
 
         /* determine bitmap dimensions and allocate space for bitmap */
         width1 =  (style==SEISMIC) ? width : height;
         height1 = (style==SEISMIC) ? height : width;
+ 	/* SU7 fix
         widthpad = (1+(width1-1)/(BitmapPad(dpy)/8))*BitmapPad(dpy)/8;
         nbpr = 1+(widthpad-1)/8;
+	*/
+	widthpad = (1+(width1-1)/bitmap_pad)*bitmap_pad;
+	nbpr = widthpad -1;
+
         bits = static_cast<unsigned char *>(calloc(nbpr*height1,sizeof(unsigned char)));
         if(bits==NULL)
                 throw SeisppError("SeismicPlot::newBitmap:  allocation failure for bitmap array");
@@ -3341,7 +3363,7 @@ static XImage *newBitmap_peng (Display *dpy, int width, int height,
                                 (char *) bits,
                                 (unsigned int) widthpad,
                                 (unsigned int) height1,
-                                (int) BitmapPad(dpy),
+                                (int) bitmap_pad,
                                 (int) nbpr);
 	if(image==NULL)
 	{
@@ -3672,7 +3694,7 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
 
         for (anum=fnum; anum<=amax; anum+=dnum) {
                 if (anum<amin) continue;
-                xa = base+scale*anum;
+                xa = static_cast<int>(base+scale*anum);
                 if (grided) XDrawLine(dpy,win,gcg,xa,y,xa,y+height);
                 XDrawLine(dpy,win,gca,xa,ya,xa,ya+ticb);
                 if (anum>-azero && anum<azero)
@@ -3686,7 +3708,7 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
         dtic = dnum/ntic;
         for (atic=fnum-ntic*dtic-dtic; atic<=amax; atic+=dtic) {
                 if (atic<amin) continue;
-                xa = base+scale*atic;
+                xa = static_cast<int>(base+scale*atic);
                 XDrawLine(dpy,win,gca,xa,ya,xa,ya+ticb/2);
         }
         lstr = (int) strlen(label);
@@ -3736,7 +3758,7 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
         azero = 0.0001*(amax-amin);
         for (anum=fnum; anum<=amax; anum+=dnum) {
                 if (anum<amin) continue;
-                ya = base+scale*anum;
+                ya = static_cast<int>(base+scale*anum);
                 if (grided) XDrawLine(dpy,win,gcg,x,ya,x+width,ya);
                 XDrawLine(dpy,win,gca,xa,ya,xa+ticb,ya);
                 if (anum>-azero && anum<azero)
@@ -3750,14 +3772,15 @@ Author:         Dave Hale, Colorado School of Mines, 01/27/90
 
 	if (origin != NULL) {
 	        for(anum=amin; anum <= amax; anum++) {
-		    origin[(int)(anum-amin)]=base+scale*anum-labelch/2;
+		    origin[(int)(anum-amin)]
+			=static_cast<int>(base+scale*anum-labelch/2);
 		}
 	}
 
         dtic = dnum/ntic;
         for (atic=fnum-ntic*dtic-dtic; atic<=amax; atic+=dtic) {
                 if (atic<amin) continue;
-                ya = base+scale*atic;
+                ya = static_cast<int>(base+scale*atic);
                 XDrawLine(dpy,win,gca,xa,ya,xa+ticb/2,ya);
         }
         lstr = (int) strlen(label);
@@ -5117,7 +5140,7 @@ static void HandlePreRender(Widget w)
     if(!spar->clip_data) spar->perc=100.0;
     for (iz=0; iz<nz; iz++)temp.push_back(fabs(sca->z[iz]));
     vector<float>::iterator iziter;
-    iz = (nz*(spar->perc)/100.0);
+    iz = static_cast<int>((nz*(spar->perc)/100.0));
     if (iz<0) iz = 0;
     if (iz>nz-1) iz = nz-1;
     iziter=temp.begin()+iz;
@@ -5328,12 +5351,14 @@ DrawVisual (
 		if (spar->x1endb-spar->x1begb > spar->x1end-spar->x1beg) {
 			spar->x1endb=spar->x1end;
 			spar->x1begb=spar->x1beg;
-			sca->width=(spar->x1end-spar->x1beg)/sw->seisw.x1_resolution;
+			sca->width=static_cast<int>
+			  ((spar->x1end-spar->x1beg)/sw->seisw.x1_resolution);
 		}
 		if (spar->x2endb-spar->x2begb > spar->x2end-spar->x2beg) {
 			spar->x2endb=spar->x2end;
 			spar->x2begb=spar->x2beg;
-			sca->height=(spar->x2end-spar->x2beg)/sw->seisw.x2_resolution;
+			sca->height=static_cast<int>
+			  ((spar->x2end-spar->x2beg)/sw->seisw.x2_resolution);
 		}
 		
 
