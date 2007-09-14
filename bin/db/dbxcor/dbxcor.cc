@@ -1839,6 +1839,7 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
     sm.controls[MENU_VIEW_SWEIGHT]=view_menu[3].w;
 }
 
+bool SEISPP::SEISPP_verbose=false;
 
 /*******************************************************************************
 main: Set up the application
@@ -1854,7 +1855,7 @@ main (int argc, char **argv)
   XtAppContext 	AppContext;
   XmString	str;
   MenuItem      btninfo;
-  TkSend	*tks;
+  TkSend	*tks=NULL;
   int i,n=0;
   Arg args[18];
   AttributeInfoRec air[4]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
@@ -1862,7 +1863,7 @@ main (int argc, char **argv)
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
 			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
 			};
-  char *use=(char *) "db [-appname name -o dbout -f infile -pf pffile -v]";
+  char *use=(char *) "db [-appname name -o dbout -f infile -pf pffile -V -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
   char *email=(char *) "pewang@indiana.edu,pavlis@indiana.edu";
   char *loc=(char *) "Indiana University";
@@ -1894,8 +1895,10 @@ main (int argc, char **argv)
 	   ++i;
 	   appname=string("");
 	   infile=string(argv[i]);
-      } else if(argtest=="-v") {
+      } else if(argtest=="-V") {
 	  cbanner(rev,use,author,loc,email);
+      } else if(argtest=="-v") {
+	  SEISPP_verbose=true;
       } else {
            usage(use);
       }
@@ -1909,19 +1912,9 @@ main (int argc, char **argv)
   sm.attributes_info.push_back(air[3]);
 
  /* Do standard Motif application start-up. */
-  XtToolkitInitialize();
-  AppContext = XtCreateApplicationContext();
-  if ((display = XtOpenDisplay (AppContext, NULL, argv[0], APP_CLASS,
-				NULL, 0, &argc, argv)) == NULL)
-    {
-      fprintf (stderr,"\n%s:  Can't open display\n", argv[0]);
-      exit(1);
-    }
-
-
-  shell = XtVaAppCreateShell(argv[0], APP_CLASS, applicationShellWidgetClass,
-			     display, XmNallowShellResize, True, NULL);
 			     
+  XtSetLanguageProc(NULL, NULL, NULL);
+  shell = XtVaAppInitialize(&AppContext, APP_CLASS,NULL,0,&argc,argv, NULL,NULL);
 
   //create first level form widget
   flrc=XmCreateForm(shell,(char *) APP_CLASS,NULL,0);
@@ -2085,6 +2078,7 @@ main (int argc, char **argv)
   	sm.controls[BTN_NEXTEV]=create_button(tlrc,btninfo);  
   } else {
 	Tks_SetVerbose();
+	Display *display=XtDisplay(shell);
 
 	tks = Tks_Create( display, 0, 4 );
 
@@ -2148,6 +2142,8 @@ main (int argc, char **argv)
 
   sm.session_state();
 
+  if(tks!=NULL)
+  {
   do {
 	XEvent event;
 	char	*msg = 0;
@@ -2184,4 +2180,9 @@ main (int argc, char **argv)
 	}
 	XtDispatchEvent(&event);
   } while( XtAppGetExitFlag(AppContext) == FALSE );
+  }
+  else
+  {
+	XtAppMainLoop(AppContext);
+  }
 }
