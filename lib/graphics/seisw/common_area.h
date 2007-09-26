@@ -21,16 +21,14 @@ public:
     float * z;
     int endian;
     Window win;
-    float mvefac;
     int x,y,width,height;
     int imageOutOfDate;
 
     float d1,d2,f1,f2;
-    int n1, n2, n3, n4, n5;
+    int n1, n2;
     float clip;
     float p2beg, p2end;
     XImage *image;
-    int showloc;
 
     //for restore to the initial view after the user select a really small area (smaller than
     //4 pixels or double clik
