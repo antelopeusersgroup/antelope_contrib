@@ -54,7 +54,7 @@ beam_window_parameters	&Arr{
     grid1	1
     grid2	1
     gridcolor	blue
-    hbox	200
+    hbox	800
     interpolate	true
     label1	time
     label2	index
