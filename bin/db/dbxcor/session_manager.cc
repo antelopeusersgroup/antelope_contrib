@@ -165,6 +165,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_NEXTEV]=true;
 	    sensitive[BTN_REF]=true;
 	    sensitive[BTN_RESTORE]=true;
+	    sensitive[BTN_SUBON]=true;
 	    sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
@@ -185,6 +186,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_NEXTSUB]=true;
 	    sensitive[BTN_REF]=true;
 	    sensitive[BTN_RESTORE]=true;
+	    sensitive[BTN_SUBON]=true;
 	    sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
@@ -207,6 +209,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_REF]=true;
             sensitive[BTN_ANALYZE]=true;
 	    sensitive[BTN_RESTORE]=true;
+	    sensitive[BTN_SUBON]=true;
             sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
             sensitive[MENU_PICKS]=true;
@@ -231,6 +234,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_BEAM_PLOT]=true;
             sensitive[BTN_XCOR_PLOT]=true;
 	    sensitive[BTN_RESTORE]=true;
+	    sensitive[BTN_SUBON]=true;
             sensitive[MENU_FILE]=true;
             sensitive[MENU_FILE_EXIT]=true;
             sensitive[MENU_PICKS]=true;
@@ -259,6 +263,7 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_BEAM_PLOT]=true;
             sensitive[BTN_XCOR_PLOT]=true;
 	    sensitive[BTN_RESTORE]=true;
+	    sensitive[BTN_SUBON]=true;
             sensitive[MENU_FILE]=true;
  	    sensitive[MENU_FILE_SAVE]=true;
             sensitive[MENU_FILE_EXIT]=true;

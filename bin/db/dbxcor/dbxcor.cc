@@ -1778,6 +1778,7 @@ void restore_data(Widget w, void * client_data, void * userdata)
     XClearArea(XtDisplay(w),XtWindow(w),0,0,0,0,true);
 }
 
+/* Callback for next subarray button */
 void load_next_subarray(Widget w, void * client_data, void * userdata)
 {
 	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
@@ -1826,13 +1827,44 @@ void load_next_subarray(Widget w, void * client_data, void * userdata)
 	else
 	{
 		psm->session_state(NEXT_EVENT);
-		ss << "No more subarrays for this event.  Push button to read next event";
+		ss << "No more subarrays for this event.  Push button to read next event"<<endl;
 	}
         psm->record(ss.str());
 	// This forces a redraw 
     	Display *dpy=XtDisplay(w);
     	Window win=XtWindow(w);
 	XClearWindow(dpy,win);
+}
+/* Callback to toggle subarray mode on and off.  This is an on off
+switch mode for this toggle. */
+void subarray_toggle(Widget w, void *client_data, void *userdata)
+{
+	XmString str;
+
+	SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+	if(psm->using_subarrays)
+	{
+		string label("Enable Subarrays");
+		str = XmStringCreateLocalized (const_cast<char *>(label.c_str()));
+		psm->using_subarrays=false;
+		psm->xpe->use_subarrays=false;
+	}
+	else
+	{
+		string label("Disable Subarrays");
+		str = XmStringCreateLocalized (const_cast<char *>(label.c_str()));
+		psm->using_subarrays=true;
+		psm->xpe->use_subarrays=true;
+	}
+	XtVaSetValues(w, XmNlabelString, str, NULL);
+	XmStringFree (str);
+	/* Not really necessary when turned off, but better to set this
+	explicitly */
+	psm->xpe->current_subarray=0;
+	// This restores the original data in either direction.
+	restore_data(w,client_data,userdata);
+	// Call the routine to load subbarray 1 as the active ensemble 
+	load_next_subarray(w,client_data,userdata);
 }
 
 
@@ -2149,6 +2181,11 @@ main (int argc, char **argv)
 		exit(1);
 	}
   }
+
+  btninfo.label=(char *) "Enable subarrays";
+  btninfo.callback=subarray_toggle;
+  btninfo.callback_data=&sm;
+  sm.controls[BTN_SUBON]=create_button(tlrc,btninfo);
 
   btninfo.label=(char *) "Load Next Subarray";
   btninfo.callback=load_next_subarray;
