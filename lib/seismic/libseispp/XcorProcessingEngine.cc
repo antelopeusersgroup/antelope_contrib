@@ -96,23 +96,19 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			  + string("Found no stations marked on at event time"));
 
 		use_subarrays=global_md.get_bool("use_subarrays");
-		if(use_subarrays) 
-		{
-			load_subarrays_from_pf(stations,global_pf);
-			current_subarray=0;
-			if(stations.number_subarrays()<=0)
-				throw SeisppError(string("XcorProcessingEngine: ")
-					+string("pf error.  subarrays turned on, but subarray definitions are empty"));
-			// A bit inefficient, but useful to test up front to be sure this works for
-			// small cost in execution time
-			SeismicArray test=stations.subset(0);
-			current_subarray_name=test.name;
-		}
-		else
-		{
-			current_subarray=-1;
-			current_subarray_name=string("");
-		}
+		/* We always load subarray definitions even if they are turned 
+		off initially.  This allows toggling between full and subarray
+		processing in interactive mode. */
+		load_subarrays_from_pf(stations,global_pf);
+		current_subarray=0;
+		if(stations.number_subarrays()<=0)
+			throw SeisppError(string("XcorProcessingEngine: ")
+			 +string("pf error.  subarray definitions are required even if subarrays are initially off\n")
+			+string("Add entries for virtual_arrays &Arr{} and try again"));
+		// A bit inefficient, but useful to test up front to be sure this works for
+		// small cost in execution time
+		SeismicArray test=stations.subset(0);
+		current_subarray_name=test.name;
 	
 		raw_data_twin.start=global_md.get_double("data_window_start");
 		raw_data_twin.end=global_md.get_double("data_window_end");
@@ -636,6 +632,8 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 			// Convenient if mysterious way to get this 
 			// to save procedure
 			csub->put("netname",subnet.name);
+			// Need to set the name too
+			current_subarray_name=subnet.name;
 			if((*csub).member.size()>0) break;
 		} 
 		if(current_subarray>=nsubs) 
@@ -769,6 +767,20 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 	char username[20];
 	my_username(username);
 	string auth=authbase+":"+string(username);
+	/* In dbxcor deltim is posted to the ensemble metadata.
+	// for safety we need a default since that is a bit of an
+	// odd mechanism to do this.  Due to the interface definition
+	// we are locked into the use of a try-catch construct here.
+	// Evil, but the only choice.  A SERIOUS maintenance issue
+	// is also the use of a fixed null value used if the deltim
+	// value is not set.  Here we use the value defined in 
+	// Antelope 4.9.  If this changes, problems could surface.
+	*/
+	const double deltimnull(-1.0);
+	double deltim;
+	try {
+		deltim=waveform_ensemble.get_double("deltim");
+	} catch (...) {deltim=deltimnull;};
 	// Since this is hidden behind the interface I'm going
 	// to use the standard datascope API instead of going
 	// through the DatascopeHandle API.  Since this code
@@ -890,6 +902,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 				analysis_setting.phase_for_analysis);
 			    trace->put("arrival.auth",auth);
 			    trace->put("arrival.jdate",yearday(atime));
+			    trace->put("arrival.deltim",deltim);
 			    arru.update(*trace);
 			}
 		    }
@@ -913,8 +926,7 @@ void XcorProcessingEngine::UpdateGeometry(TimeWindow twin)
 	{
 		stations=SeismicArray(dynamic_cast<DatabaseHandle&>(waveform_db_handle),
 			twin.start,netname);
-		if(use_subarrays) 
-			load_subarrays_from_pf(stations,pf_used_by_engine);
+		load_subarrays_from_pf(stations,pf_used_by_engine);
 	}
 	if(stations.array.size()<=0)
 		throw SeisppError(string("XcorProcessingEngine::UpdateGeometry -- network name=")
