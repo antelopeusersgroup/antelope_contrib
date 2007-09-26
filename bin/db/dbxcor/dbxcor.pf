@@ -315,6 +315,13 @@ trace_mdl	&Tbl{
     site.lon
     site.elev
 }
+#
+# new control for beam plots 
+#
+turn_off_informational_popups true
+beam_arrival_pick_marker_color blue
+beam_arrival_error_marker_color red
+beam_plot_title Beam Plot
 use_subarrays	false
 virtual_arrays &Arr{
 CRATON &Arr{

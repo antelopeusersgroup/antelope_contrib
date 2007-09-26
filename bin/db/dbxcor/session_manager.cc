@@ -60,11 +60,31 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     orid=-1;
     using_subarrays=false;
     // Added July 2007 to produce pick markers on beam plot
+    Pf *pf;
+    if(pfread(const_cast<char *>(pfname.c_str()),&pf)) 
+	throw SeisppError(string("session_manager(constructor):  pfread failed on ")
+			+pfname);
+    Metadata smcontrol(pf);
+    try {
+	bool turn_off_popups=smcontrol.get_bool("turn_off_informational_popups");
+	if(turn_off_popups)
+	{
+		display_initial_sort_box=false;
+		display_analysis_sort_box=false;
+	}
+	beammarkers.beam_color=smcontrol.get_string("beam_arrival_pick_marker_color");
+	beammarkers.robust_color=smcontrol.get_string("beam_arrival_error_marker_color");
+	beammarkers.title=smcontrol.get_string("beam_plot_title");
+    }
+    catch (MetadataGetError mde)
+    {
+	mde.log_error();
+	throw SeisppError("Error getting beam window setup parameters");
+    }
+    pffree(pf);
+    /* These we intentionally do not set in the pf */
     beammarkers.beam_tw=TimeWindow(0.0,0.0);  // set to 0 time
     beammarkers.robust_tw=TimeWindow(-0.1,0.1);  // magic numbers could be const variable
-    beammarkers.beam_color=string("red");
-    beammarkers.robust_color=string("green");
-    beammarkers.title=string("Beam Plot");
 }
 
 SessionManager::~SessionManager()

@@ -219,7 +219,7 @@ do_sw(Widget parent, SessionManager & sm)
 	Arg args[4];
 	XtSetArg(args[n],(char *) ExmNzoomFactor,100); n++;
 	XtSetArg(args[n],XmNpaneMaximum,20000); n++;
-	XtSetArg(args[n],XmNpaneMinimum,800); n++;
+	XtSetArg(args[n],XmNpaneMinimum,700); n++;
 	
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
@@ -323,6 +323,7 @@ void modify_asetting_for_phase(SessionManager& sm,string phase)
 	}
 	sm.active_setting=asptr->second;
 	sm.xpe->change_analysis_setting(sm.active_setting);
+	sm.set_phase(phase);
 }
 
 void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
@@ -1118,6 +1119,11 @@ void pick_phase_time(Widget w, void * client_data, void * userdata)
     XtAddCallback(beam_widget,ExmNbtn2Callback,pick_arrival_callback,psm);
 }
 
+void dismiss_callback(Widget w, void * client_data, void * userdata)
+{
+	Widget parent=reinterpret_cast<Widget>(client_data);
+	XtDestroyWidget(parent);
+}
 void pick_rt_callback(Widget w, void * client_data, void * userdata)
 {
     SeismicPick * spick;
@@ -1275,7 +1281,12 @@ void pick_arrival_error(Widget w, void * client_data, void * userdata)
     XtRemoveAllCallbacks(beam_widget,ExmNbtn3Callback);
     XtAddCallback(beam_widget,ExmNbtn3Callback,pick_error_window_callback,psm);
 }
-
+/* This global seems unavoidable to avoid memory leaks.  Within the block
+below it holds the data for the array beam display.  In an X program which 
+passes around all these opaque pointers, we need manage the memory locally
+and I see now alternative here. */
+TimeSeriesEnsemble *beam_tse(NULL);
+/* This procedure creates the beam plot window and manages it */
 void do_beam_plot(Widget w, void * client_data, void * userdata)
 {
     Widget rshell_beam, beam_widget, pane, form, btn_arrival;     
@@ -1295,8 +1306,12 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     
 
     TimeSeries beam=psm->mcc->ArrayBeam();
-    TimeSeriesEnsemble *beam_tse=new TimeSeriesEnsemble(1,beam.ns);
-    beam_tse->member[0]=beam;
+    /* beam_tse is a global for this program.  It has to be that
+    way to avoid a memory leak every time this function was entered.
+    I so no straightforward alternative. */
+    if(beam_tse!=NULL) delete beam_tse;
+    beam_tse=new TimeSeriesEnsemble(0,beam.ns);
+    beam_tse->member.push_back(beam);
 
     Metadata beam_display_md=psm->xpe->get_beam_md();
     beam_display_md.put("title",psm->markers.title);
@@ -1306,16 +1321,21 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
     XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
     **************************************/
     XtSetArg(args[n],XmNpaneMinimum,500); n++;
-    XtSetArg(args[n],XmNmarginHeight,10);n++;
-    XtSetArg(args[n],(char *) ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse));n++;
-    XtSetArg(args[n],(char *) ExmNseiswMetadata,&beam_display_md); n++;
-    XtSetArg(args[n],(char *) ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
+    XtSetArg(args[n],XmNmarginHeight,100);n++;
+    // Don't think this is really necessary or desirable 
+    //XtSetArg(args[n],(char *) ExmNcleanupData, static_cast<XtPointer>(beam_tse));n++;
     
     beam_widget=ExmCreateSeisw(pane,(char *) "Beam Plot",args,n);
 
     XtManageChild(beam_widget);
-    // This is needed to show initial markers
-    XtVaSetValues(beam_widget,ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
+    /* the Seisw widget always initializes with a NULL data pointer. 
+    The following is necessary to get the data to display and to 
+    show pick markers */
+    
+    XtVaSetValues(beam_widget,
+		ExmNseiswEnsemble,static_cast<XtPointer>(beam_tse),
+		ExmNseiswMetadata,&beam_display_md,
+		ExmNdisplayMarkers,(XtPointer)(&(psm->beammarkers)),NULL);
 
 /*  Old single button version.  
     n=0;
@@ -1361,7 +1381,23 @@ void do_beam_plot(Widget w, void * client_data, void * userdata)
 	btninfo.callback=pick_arrival_error;
 	btninfo.callback_data=beam_widget;
 	psm->controls[BTN_ARRIVAL_ERROR]=create_button(tlrc,btninfo);
-
+	// Manually create this callback to provide for a "Dismiss" 
+	// button.  Added Sept 2007 by glp
+/*
+	n=0;
+	XmString str;
+	const string dstr("Dismiss");
+	str=XmStringCreateLocalized(const_cast<char *>(dstr.c_str()));
+	XtSetArg (args[n], XmNlabelString, str); n++;
+	XtSetArg (args[n], XmNmultiClick, XmMULTICLICK_DISCARD); n++;
+	Widget w_dismiss=XmCreatePushButton (tlrc,const_cast<char *>(dstr.c_str()),
+							args,n);
+	XmStringFree(str);
+	XtAddCallback(w_dismiss,XmNactivateCallback,dismiss_callback,
+			(XtPointer)(rshell_beam));
+	XtManageChild(w_dismiss);
+*/
+			
 	XtManageChild(tlrc);
 	XtManageChild(pane);
 /* End new stuff */
@@ -1661,12 +1697,13 @@ void do_xcor_plot(Widget w, void * client_data, void * userdata)
     int n=0;
     Arg args[4];
     XtSetArg(args[n],(char *) ExmNdisplayOnly,1); n++;
-    XtSetArg(args[n],(char *) ExmNseiswEnsemble,&(psm->mcc->xcor));n++;
-    XtSetArg(args[n],(char *) ExmNseiswMetadata,&xcor_display_md); n++;
     xcor_widget=ExmCreateSeisw(rshell_xcor,(char *) "Correlation Plot",args,n);
 
     XtManageChild(xcor_widget);
-    XtVaSetValues(xcor_widget,XmNpaneMinimum,100,NULL);
+    XtVaSetValues(xcor_widget,XmNpaneMinimum,500,
+	ExmNseiswEnsemble,&(psm->mcc->xcor),
+	ExmNseiswMetadata,&xcor_display_md,
+	NULL);
 
     XtPopup (rshell_xcor, XtGrabNone);
 /*
@@ -1840,7 +1877,6 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
 }
 
 bool SEISPP::SEISPP_verbose=false;
-
 /*******************************************************************************
 main: Set up the application
 *******************************************************************************/
@@ -1898,23 +1934,44 @@ main (int argc, char **argv)
       } else if(argtest=="-V") {
 	  cbanner(rev,use,author,loc,email);
       } else if(argtest=="-v") {
-	  SEISPP_verbose=true;
+           SEISPP_verbose=true;
       } else {
            usage(use);
       }
   }
   string logstr(LOGNAME);
 
-  SessionManager sm(pfname,infile,logstr,waveform_db_name,result_db_name);
+  try {
+      SessionManager sm(pfname,infile,logstr,waveform_db_name,result_db_name);
   sm.attributes_info.push_back(air[0]);
   sm.attributes_info.push_back(air[1]);
   sm.attributes_info.push_back(air[2]);
   sm.attributes_info.push_back(air[3]);
 
  /* Do standard Motif application start-up. */
-			     
+/*Original from from Peng.  Leads to seg faults in Solaris */
+/*
+  XtToolkitInitialize();
+  AppContext = XtCreateApplicationContext();
+  if ((display = XtOpenDisplay (AppContext, NULL, argv[0], APP_CLASS,
+				NULL, 0, &argc, argv)) == NULL)
+    {
+      fprintf (stderr,"\n%s:  Can't open display\n", argv[0]);
+      exit(1);
+    }
+  
+
+  shell = XtVaAppCreateShell(argv[0], APP_CLASS, applicationShellWidgetClass,
+			     display, XmNallowShellResize, True, NULL);
+*/
+/*  Alternative from one book.  Did not work in Solaris 
+  shell = XtVaOpenApplication(&AppContext, APP_CLASS, NULL,0,
+	&argc,argv,NULL,applicationShellWidgetClass,NULL,XmNallowShellResize, True,0);
+*/
+ /* Here is another initialization method. */
   XtSetLanguageProc(NULL, NULL, NULL);
   shell = XtVaAppInitialize(&AppContext, APP_CLASS,NULL,0,&argc,argv, NULL,NULL);
+			     
 
   //create first level form widget
   flrc=XmCreateForm(shell,(char *) APP_CLASS,NULL,0);
@@ -2168,7 +2225,6 @@ main (int argc, char **argv)
       			fprintf (stderr,"\n%s: error parsing Tk input msg '%s'\n", 
 				argv[0], msg);
 			Tks_ClearAppName( tks, const_cast<char *>(appname.c_str()) );
-			/* SCAFFOLD: this is draconian */
 			exit(1);
 		} 
 		orid = atoi( (char *) gettbl( parts, 0 ) );
@@ -2182,7 +2238,14 @@ main (int argc, char **argv)
   } while( XtAppGetExitFlag(AppContext) == FALSE );
   }
   else
-  {
 	XtAppMainLoop(AppContext);
+  } catch (SeisppError serr)
+  {
+	serr.log_error();
+	exit(-1);
+  }
+  catch (...)
+  {
+	cerr << "dbxcor:  something threw and unhandled exception"<<endl;
   }
 }
