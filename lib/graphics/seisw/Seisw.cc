@@ -4080,6 +4080,20 @@ showpar(para);
 
       	SetVerticalScrollbar(nw);
       	SetHorizontalScrollbar(nw);
+	DisplayAttributes tda;
+	if (nw->seisw.display_attributes == NULL) 
+	{
+		tda=new DisplayAttributesRec;
+		nw->seisw.display_attributes=static_cast<XtPointer>(tda);
+	}
+	else
+		tda=static_cast<DisplayAttributes>
+				(nw->seisw.display_attributes);
+
+	tda->str_origin=new int[(int)(para->x2end-para->x2beg+1)];
+	tda->x2begb=para->x2beg;
+	tda->x2endb=para->x2end;
+
 /*
 //DEBUG
 cerr << "Leaving ReInitialize values"<<endl;
@@ -5474,7 +5488,8 @@ showscaling(sw);
 	    SetHorizontalScrollbar(sw);
 
 
-	XtCallCallbackList(w, sw->seisw.display_attr_callback, NULL);
+	if(sw->seisw.display_attributes!=NULL)
+		XtCallCallbackList(w, sw->seisw.display_attr_callback, NULL);
 /*
 //DEBUG
 cerr << "Exiting DrawVisual"<<endl;
