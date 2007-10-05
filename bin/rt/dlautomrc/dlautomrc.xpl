@@ -96,7 +96,7 @@
     $mv = $opt_a || $mv ;	# this gets modified later if opt_D
 
     if ($opt_a && $opt_D) {
-	print STDERR "-a value of $opt_a will be overwritten by values in database since -d was used\n\n";
+	print STDERR "-a value of $opt_a will be overwritten by values in database since -D was used\n\n";
     }
 
     if ($opt_x) {
@@ -373,6 +373,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
     my ($ref,$dlsta,$sta) ;
     my ($m0,$m1,$m2,$m3,$m4,$m5,$mc,$con,$masspo);
     my (@dlsta,@mc,@recenter,@xclude,@dataloggers) ;
+    our ($snname) ;
     our (%dl_mv,%sensor_mv);
     @recenter = ();
     @mc = qw(m0 m1 m2 m3 m4 m5);
@@ -429,7 +430,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 
 
             if ( ($opt_D && ( abs($masspo) >= $dl_mv{$dlsta}) ) || $opt_f ) {
-               printf STDERR "%7s  %10s   %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $m0, $m1, $m2, $m3, $m4, $m5 ;
+               printf STDERR "%7s  %10s   %20s  %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $snname, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
                last;
@@ -466,8 +467,13 @@ sub get_masspos {#  &get_masspos($mv,$orb,@sources);
 	printf STDERR  "\n\nMass positions greater than or equal to $mv\n";
     }
     
-    printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
-    printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
+    if ($opt_D) {
+	printf STDERR  "\ndl_sta   sourcename    sensor       m0    m1    m2    m3    m4    m5\n";
+	printf STDERR  "=======  ==========   ======       ====  ====  ====  ====  ====  ====\n";
+    } else {
+	printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
+	printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
+    }
 
     foreach $src (@sources) {
         $srcname = $src->srcname() ;

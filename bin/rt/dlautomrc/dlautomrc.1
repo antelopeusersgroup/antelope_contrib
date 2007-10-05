@@ -20,8 +20,8 @@ dlautomrc \- issue mass recenter commands to remote dataloggers
 
 .fi
 .SH DESCRIPTION
-dlautomrc issues mass recenter commands to remote dataloggers and can be controlled
-by the following options.
+dlautomrc issues mass recenter commands to remote dataloggers based on a 
+voltage trigger and can be controlled by the following options
 
 
 .SH OPTIONS
@@ -56,10 +56,11 @@ use would be \fI50\fP rather than \fI5\fP - any sensor that is beyond +/- 5V wou
 recenter.  Note that the value should be the positive out of range value.  Cannot use this
 option with -D.
 .IP "-D database"
-Base the voltage triggers on the sensor value in a \fIdatabase\fP.  All values in the
-database must have corresponding values in the \fIsensor_mv\fP table in the parameter file.  
-If a sensor type is encountered in the database that is not in the parameter file, the default
-\fIout_of_range\fP value from the parameter file is used.  Cannot use this option with -a.
+Base the voltage triggers on the sensor value reported in the snname field in a \fIdatabase\fP.  
+All snname values in the database must have corresponding values in the \fIsensor_mv\fP table in 
+the parameter file.  If a sensor type is encountered in the database that is not in the 
+parameter file, the default \fIout_of_range\fP value from the parameter file is used.  
+Cannot use this option with -a.
 .IP "-N subset"
 Subset expression that would be valid for the calibration table.  The script is currently
 hard-coded to subset for BHZ channels, currently operational stations, and stations which 
@@ -139,8 +140,8 @@ the \fIout_of_range\fP value from this parameter file.
 
 .SH EXAMPLE
 .IP \(bu
-Check all stations in each instance of data acquisition for tadata.* and
-only show me what ones would require mass recenter commands, but do not 
+Check all stations and only show me what ones would require mass 
+recenter commands using a voltage trigger level of 5.0V, but do not 
 actually execute those commands. Ignore station TA_G03A.
 
 .ft CW
