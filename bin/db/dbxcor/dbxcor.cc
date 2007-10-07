@@ -100,7 +100,6 @@ Widget BuildMenu (Widget parent, int menu_type, char *menu_title, char menu_mnem
         }
 
         return (menu_type == XmMENU_PULLDOWN) ? cascade : menu ;
-//        return menu;
 }
 
 Widget create_button(Widget parent, MenuItem btninfo)
@@ -184,7 +183,7 @@ do_sw(Widget parent, SessionManager & sm)
 		try {
 			string thisphase(key);
 			Metadata mdphase(pfrda,thisphase);
-			AnalysisSetting asphase(mdphase);
+			XcorAnalysisSetting asphase(mdphase);
 			sm.asetting_default[thisphase]=asphase;
 		} catch (MetadataParseError mde)
 		{
@@ -206,12 +205,14 @@ do_sw(Widget parent, SessionManager & sm)
 		throw SeisppError("do_sw:  total failure in setting up phase processing setup");
 
         try {
-	// initially load the first element of the container of AnalysisSetting setups.
+	// initially load the first element of the container of XcorAnalysisSetting setups.
 	// Not ideal, but not easy to fix without producing other problems.
-	map<string,AnalysisSetting>::iterator asetptr;
+	map<string,XcorAnalysisSetting>::iterator asetptr;
 	asetptr=sm.asetting_default.begin();
 	sm.active_setting=asetptr->second;
 	sm.set_phase(asetptr->first);
+	/* This forces a reset of default filter setting */
+	sm.modify_filter(string("default"),sm.active_setting.filter_param);
         sm.xpe=new XcorProcessingEngine(pf,asetptr->second,sm.get_waveform_db_name(),sm.get_result_db_name());
 	sm.using_subarrays=sm.xpe->use_subarrays;
 
@@ -219,7 +220,7 @@ do_sw(Widget parent, SessionManager & sm)
 	Arg args[4];
 	XtSetArg(args[n],(char *) ExmNzoomFactor,100); n++;
 	XtSetArg(args[n],XmNpaneMaximum,20000); n++;
-	XtSetArg(args[n],XmNpaneMinimum,700); n++;
+	XtSetArg(args[n],XmNpaneMinimum,500); n++;
 	
 	sm.seismic_widget=ExmCreateSeisw(parent,(char *) "Seisw",args,n);
 	XtManageChild(sm.seismic_widget);
@@ -309,11 +310,11 @@ void message_box(SessionManager * psm, string s, Widget parent)
     XtManageChild(rowcol);
 }
 // Companion to get_next_event.  Changes analysis setting to 
-// that defined for phase.  Throws an error if an AnalysisSetting object
+// that defined for phase.  Throws an error if an XcorAnalysisSetting object
 // is not found for requested phase.
 void modify_asetting_for_phase(SessionManager& sm,string phase)
 {
-	map<string,AnalysisSetting>::iterator asptr;
+	map<string,XcorAnalysisSetting>::iterator asptr;
 	asptr=sm.asetting_default.find(phase);
 	if(asptr==sm.asetting_default.end())
 	{
@@ -324,6 +325,8 @@ void modify_asetting_for_phase(SessionManager& sm,string phase)
 	sm.active_setting=asptr->second;
 	sm.xpe->change_analysis_setting(sm.active_setting);
 	sm.set_phase(phase);
+	/* This forces a reset of the default filter for this phase */
+	sm.modify_filter(string("default"),sm.active_setting.filter_param);
 }
 
 void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionManager *psm )
@@ -386,7 +389,16 @@ void handle_next_event( int orid, string phase_to_analyze, Widget w, SessionMana
 		psm->set_orid(orid);
 		// Reset analysis setting if the phase name to fetch changes
 		if(psm->get_phase()!=phase_to_analyze)
+		{	
+		    try {
 			modify_asetting_for_phase(*psm,phase_to_analyze);
+		    } catch (SeisppError serr) {
+			serr.log_error();
+			ss << "Do no know how to handle phase = "<<phase_to_analyze<<endl;
+			psm->record(ss.str());
+			return;
+		    }
+		}
 
                 Hypocenter h(rad(lat),rad(lon),depth,otime,method,model);
 		psm->set_hypo(h);
@@ -935,59 +947,131 @@ void apply_filter(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
     stringstream ss;
-    char * filter;
-    XmSelectionBoxCallbackStruct *cbs=(XmSelectionBoxCallbackStruct *)userdata;
+    /* Here we get the filter number through the userDataresource of the 
+	radio button parent*/
+    Widget pane=XtParent(XtParent(w));
+    int n;
+    XtVaGetValues(pane,XmNuserData,&n,NULL);
+    psm->set_filter(n);
+    /* For now we apply filters recursively to accumulate results
+	in a filter chain.  This is done because restore data can 
+	be used to back up to a starting point.  Comment out the 
+	following line to change to always start from base data. */
+    /* psm->xpe->restore_original_ensemble();*/
+    TimeInvariantFilter cf=psm->get_filter(n);
 
-    filter=(char*)XmStringUnparse(cbs->value,XmFONTLIST_DEFAULT_TAG,
-				XmCHARSET_TEXT,XmCHARSET_TEXT,NULL,0,XmOUTPUT_ALL);
-
-    if (string(filter)=="") ;
-    else {
        try {
 
 	   //Here we don't do redisplay since we assume that after this box disappear,
 	   //an automatic redisplay is enabled.
-	   psm->xpe->filter_data(TimeInvariantFilter(string(filter)));
+	   psm->xpe->filter_data(cf);
 	   psm->xpe->sort_ensemble();
 
        } catch (SeisppError serr) {
            ss   << "Filter_data failed using "
-                << filter <<", try again"<<endl;
+                << psm->get_filter_label(psm->current_filter())
+		<<":"<<psm->filter_description()
+		 <<", try again"<<endl;
   	   serr.log_error();
 	   psm->record(ss.str());
        }
-    }
 
-    XtDestroyWidget(XtParent(w));
+     /* For now we keep the option menu up until dismissed.  To have it
+	automatically go away after filtering, remove the comment on the next line */
+    //XtDestroyWidget(XtParent(w));
 }
 
 void pick_filter_options(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
-    Widget dialog;
-    XmString text=XmStringCreateLocalized((char *) "Enter additional filter string(Antelope convention):");
-    string tmpstr=psm->active_setting.filter_param.type_description();
-    XmString content=XmStringCreateLocalized(const_cast<char *>(tmpstr.c_str()));
-    Arg args[6];
-    int n=0;
+    Widget radio_box, filter_dialog, pane, form, ok_btn, cancel_btn;
+    Arg args[10];
+    int i, picked, selected;
+    Dimension h;
+    
+    i=0;
+    XtSetArg(args[i],XmNdeleteResponse,XmUNMAP); i++;
+    filter_dialog=XmCreateDialogShell(get_top_shell(w),(char *) "Filter Options",args,i);
 
-    XtSetArg(args[n],XmNselectionLabelString,text); n++;
-    XtSetArg(args[n],XmNautoUnmanage,False); n++;
-    XtSetArg(args[n],XmNtextString,content); n++;
-    dialog=XmCreatePromptDialog(get_top_shell(w),(char *) "Filter Option",args,n);
-    XmStringFree(text);
+    selected=psm->current_filter();
 
-    XtManageChild(XtNameToWidget(dialog, (char *) "Apply"));
-    XtUnmanageChild(XtNameToWidget(dialog, (char *) "OK"));
-    XtUnmanageChild(XtNameToWidget(dialog, (char *) "Help"));
+    //paned window under the dialog shell
+    i=0;
+    XtSetArg(args[i],XmNsashWidth,1); i++;
+    XtSetArg(args[i],XmNsashHeight,1); i++;
+    XtSetArg(args[i],XmNuserData,selected); i++;
+    pane=XmCreatePanedWindow(filter_dialog,(char *) "pane",args,i);
 
-    XtAddCallback(dialog,XmNapplyCallback,apply_filter,psm);
-    XtAddCallback(dialog,XmNcancelCallback,destroy_callback,dialog);
+    radio_box=XmCreateRadioBox(pane,(char *) "Filter Options",NULL,0);
 
-    XtManageChild(dialog);
-        
+    Widget wtemp;
+    int nfilters=psm->number_filters();
+    for(i=0;i<nfilters;++i)
+    {
+	string label;
+	/* Name is expanded for the default name for clarity.
+	Others use tag from parameter file */
+	if(i==0)
+	{
+		label=psm->get_filter_label(i)
+			+string(":")
+			+psm->filter_description(i);
+	}
+	else
+		label=psm->get_filter_label(i);
+	wtemp=XmCreateToggleButtonGadget(radio_box,
+		const_cast<char *>(label.c_str()),NULL,0);
+	XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(i));
+	XtManageChild(wtemp);
+	if(i==selected){
+		psm->set_filter(label);
+		XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+		XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+	}
+    }
+    XtManageChild(radio_box);
+
+
+     //create the ok and cancel buttons in the action area
+     i=0;
+     XtSetArg(args[i],XmNfractionBase,5); i++;
+     form=XmCreateForm(pane,(char *) "form",args,i);
+
+     ok_btn=XmCreatePushButtonGadget(form,(char *) "Apply",NULL,0);
+     XtVaSetValues(ok_btn, XmNtopAttachment, XmATTACH_FORM,
+                        XmNbottomAttachment, XmATTACH_FORM,
+                        XmNleftAttachment, XmATTACH_POSITION,
+                        XmNleftPosition, 1,
+                        XmNrightAttachment, XmATTACH_POSITION,
+                        XmNrightPosition, 2,
+                        XmNshowAsDefault, True,
+                        XmNdefaultButtonShadowThickness, 1,
+                        NULL);
+     XtManageChild(ok_btn);
+     XtAddCallback(ok_btn,XmNactivateCallback,apply_filter,psm);
+
+     cancel_btn=XmCreatePushButtonGadget(form,(char *) "Cancel",NULL,0);
+     XtVaSetValues (cancel_btn, XmNsensitive, True,
+                               XmNtopAttachment, XmATTACH_FORM,
+                               XmNbottomAttachment, XmATTACH_FORM,
+                               XmNleftAttachment, XmATTACH_POSITION,
+                               XmNleftPosition, 3,
+                               XmNrightAttachment, XmATTACH_POSITION,
+                               XmNrightPosition, 4,
+                               XmNshowAsDefault, False,
+                               XmNdefaultButtonShadowThickness, 1,
+                               NULL);
+     XtManageChild (cancel_btn);
+     XtAddCallback(cancel_btn,XmNactivateCallback,destroy_callback,filter_dialog);
+
+     XtManageChild (form);
+
+     XtVaGetValues(cancel_btn,XmNheight,&h,NULL);
+     XtVaSetValues(form,XmNpaneMaximum,h,XmNpaneMinimum,h,NULL);
+
+     XtManageChild(pane);
+
 }
-
 void report_edit(Widget w, void * client_data, void * userdata)
 {
     SeismicPick * spick;
@@ -1435,6 +1519,13 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
     }
 
     XtVaGetValues(psm->seismic_widget,ExmNdisplayAttributes,&ai,ExmNseiswEnsemble,&tse,NULL);
+    if(ai==NULL)
+    {
+	ss << "update_attributes_display:  failure fetching X resource displayAttributes "
+		<< "cannot refresh attribute displays" <<endl;
+	psm->record(ss.str());
+	throw SeisppError(string("Nil pointer returned for displayAttributes"));
+    }
 
     begin=MAX((ai->x2begb-(int)ai->x2begb==0.0) ? (int)ai->x2begb : (int)ai->x2begb+1,1);
     end=MIN((int)ai->x2endb,tse->member.size());
@@ -1554,7 +1645,17 @@ void refresh_attr_win(Widget w, void * client_data, void * userdata)
     for(i=0; i<psm->attributes_info.size(); i++) {
         if ((wdgt=psm->attributes_info[i].w) != NULL) {
 	    if ((XtIsManaged(wdgt)==True) && psm->attributes_info[i].enabled) {
-	 	update_attributes_display(wdgt,client_data,NULL);
+		try {
+	 		update_attributes_display(wdgt,client_data,NULL);
+		} catch (SeisppError serr)
+		{
+			/* there may be a way to handle this error, but for now
+			we force an exit.  Debugging found this led to inconsistency
+			that ultimately produced a seg fault.  For now only 
+			alterative is to exit cleanly with an error. */
+			serr.log_error();
+			exit(-1);
+		}
 	    }
 	}
     }
@@ -1890,7 +1991,7 @@ void usage(char *use)
 }
 
 void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * options_menu, 
-      	MenuItem * settings_menu, MenuItem * view_menu, SessionManager &sm) 
+      	MenuItem * view_menu, SessionManager &sm) 
 {
     sm.controls[MENU_FILE_SAVE]=file_menu[0].w;
     sm.controls[MENU_FILE_EXIT]=file_menu[1].w;
@@ -1901,7 +2002,6 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
 //    sm.controls[MENU_PICKS_VIEW_SETTING]=view_submenu[1].w;
     sm.controls[MENU_OPTIONS_SORT]=options_menu[0].w;
     sm.controls[MENU_OPTIONS_FILTER]=options_menu[1].w;
-    sm.controls[MENU_SETTINGS_PF]=settings_menu[0].w;
     sm.controls[MENU_VIEW_SNAME]=view_menu[0].w;
     sm.controls[MENU_VIEW_COHERENCE]=view_menu[1].w;
     sm.controls[MENU_VIEW_PCORRELATION]=view_menu[2].w;
@@ -1943,6 +2043,11 @@ main (int argc, char **argv)
     usage(use);
   }
   string waveform_db_name(argv[1]);
+  if(waveform_db_name=="-V")
+  {
+     cbanner(rev,use,author,loc,email);
+     exit(1);
+  }
   string result_db_name(argv[1]);
   //string hypodb(argv[3]);
   string infile("");
@@ -1965,6 +2070,7 @@ main (int argc, char **argv)
 	   infile=string(argv[i]);
       } else if(argtest=="-V") {
 	  cbanner(rev,use,author,loc,email);
+          exit(1);
       } else if(argtest=="-v") {
            SEISPP_verbose=true;
       } else {
@@ -2020,19 +2126,7 @@ main (int argc, char **argv)
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
-/*
-  MenuItem view_submenu[]={
-    {"Attributes",&xmPushButtonGadgetClass,'A',NULL,NULL,pick_attributes,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Analysis Settings",&xmPushButtonGadgetClass,'e',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
-    {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
-  };
-*/
   MenuItem view_menu[]={
-/*
-    {"Attributes",&xmPushButtonGadgetClass,'A',NULL,NULL,pick_attributes,(XtPointer)&sm,NULL,(MenuItem *)NULL},
-    {"Analysis Settings",&xmPushButtonGadgetClass,'e',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
-*/
-
     {(char *)air[0].display_name.c_str(),&xmToggleButtonWidgetClass,'n',NULL,NULL,viewmenu_toggle_0,&sm,NULL,(MenuItem *)NULL},
     {(char *)air[1].display_name.c_str(),&xmToggleButtonWidgetClass,'c',NULL,NULL,viewmenu_toggle_1,&sm,NULL,(MenuItem *)NULL},
     {(char *)air[2].display_name.c_str(),&xmToggleButtonWidgetClass,'p',NULL,NULL,viewmenu_toggle_2,&sm,NULL,(MenuItem *)NULL},
@@ -2052,18 +2146,13 @@ main (int argc, char **argv)
     {(char *) "Filter Options",&xmPushButtonGadgetClass,'l',NULL,NULL,pick_filter_options,(XtPointer)&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
-  MenuItem settings_menu[]={
-    {(char *) "Pf File",&xmPushButtonGadgetClass,'P',NULL,NULL,NULL,(XtPointer)0,NULL,(MenuItem *)NULL},
-    {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
-  };
 
   sm.controls[MENU_FILE]=menu_file=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "File",'F',false,file_menu);
   sm.controls[MENU_PICKS]=menu_picks=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Picks",'P',false,picks_menu);
-  sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Option",'O',false,options_menu);
+  sm.controls[MENU_OPTIONS]=menu_options=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Options",'O',false,options_menu);
   sm.controls[MENU_VIEW]=menu_view=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "View",'V',false,view_menu);
-  sm.controls[MENU_SETTINGS]=menu_settings=BuildMenu(menu_bar,XmMENU_PULLDOWN,(char *) "Setting",'t',false,settings_menu);
 
-  set_menu_controls(file_menu,picks_menu,options_menu,settings_menu,view_menu,sm);
+  set_menu_controls(file_menu,picks_menu,options_menu,view_menu,sm);
 
   /* Menubar is done -- manage it */
   XtManageChild (menu_bar);

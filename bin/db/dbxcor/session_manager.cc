@@ -5,6 +5,7 @@ using namespace SEISPP;
 
 SessionManager::SessionManager(string pfname, string hname, string lname, string wdbname, string rdbname)
 {
+    int i;
     pf_name=pfname;
     log_file_name=lname;
     waveform_db_name=wdbname;
@@ -22,7 +23,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 
     controls=new Widget[MAX_NUM_CONTROLS];
     sensitive=new bool[MAX_NUM_CONTROLS];
-    for(int i=0; i<MAX_NUM_CONTROLS; i++) {
+    for(i=0; i<MAX_NUM_CONTROLS; i++) {
 	sensitive[i]=false; //assume all buttons are diabled
 	controls[i]=NULL;
     }
@@ -81,6 +82,43 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
 	mde.log_error();
 	throw SeisppError("Error getting beam window setup parameters");
     }
+    Tbl *t;
+    t=pfget_tbl(pf,"filters");
+    if(t==NULL)
+    {
+		throw SeisppError("pf error:  required parameter filters &Tbl missing");
+    }
+    /* Filter 0 is always tagged as default.  We initialize it here to DEMEAN
+    and make it the current filter for initialization. */
+    available_filters.push_back(TimeInvariantFilter(string("DEMEAN")));
+    string label0("default");
+    filter_labels.push_back(label0);
+    filter_index[label0]=0;
+    current_filter_index=0;
+    char *line;
+    const string white(" \t\n");
+    int current,next;
+    int end_current;
+    string slabel,sdesc;
+    for(i=0;i<maxtbl(t);++i)
+    {
+	line=(char *)gettbl(t,i);
+	string sline(line);
+	/* skip any leading white space */
+	if(current=sline.find_first_not_of(white,0) != 0)
+	{
+		sline.erase(0,current);
+		current=0;
+	}
+	end_current=sline.find_first_of(white,current);
+	slabel.assign(sline,current,end_current-current);
+	current = sline.find_first_not_of(white,end_current);
+	sdesc.assign(sline,current,sline.length()-1);
+	available_filters.push_back(TimeInvariantFilter(sdesc));
+	filter_labels.push_back(string(slabel));
+	filter_index[slabel]=i+1;
+    }
+    freetbl(t,0);
     pffree(pf);
     /* These we intentionally do not set in the pf */
     beammarkers.beam_tw=TimeWindow(0.0,0.0);  // set to 0 time
@@ -157,8 +195,8 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_FILE]=true;
 	    sensitive[MENU_FILE_EXIT]=true;
  	    sensitive[MENU_PICKS]=true;
- 	    sensitive[MENU_OPTIONS]=true;
-	    sensitive[MENU_SETTINGS]=true;
+ 	    sensitive[MENU_OPTIONS_FILTER]=true;
+ 	    sensitive[MENU_OPTIONS_SORT]=true;
  	    sensitive[MENU_VIEW]=true;
 	    break;
 	case NEXT_EVENT:
@@ -176,9 +214,8 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_PICKS_VIEW]=true;
   	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
-	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
-            sensitive[MENU_SETTINGS]=true;
+	    sensitive[MENU_OPTIONS_SORT]=true;
 	    sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    break;
@@ -197,9 +234,8 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_PICKS_VIEW]=true;
   	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
-	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
-            sensitive[MENU_SETTINGS]=true;
+	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
 	    break;
@@ -220,9 +256,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS_VIEW]=true;
 	    sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
-            sensitive[MENU_OPTIONS_SORT]=true;
-	    sensitive[MENU_OPTIONS_FILTER]=true;
-            sensitive[MENU_SETTINGS]=true;
+            sensitive[MENU_OPTIONS_FILTER]=true;
+	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
 	    break;
@@ -244,10 +279,9 @@ void SessionManager::session_state(SessionState s)
             sensitive[BTN_PICK_CUTOFF]=true;
             sensitive[MENU_PICKS_VIEW]=true;
             sensitive[MENU_PICKS_VIEW_ATTR]=true;
- 	    sensitive[MENU_OPTIONS]=true;
+            sensitive[MENU_OPTIONS]=true;
+            sensitive[MENU_OPTIONS_FILTER]=true;
 	    sensitive[MENU_OPTIONS_SORT]=true;
- 	    sensitive[MENU_OPTIONS_FILTER]=true;
-            sensitive[MENU_SETTINGS]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
             sensitive[MENU_VIEW_COHERENCE]=true;
@@ -275,9 +309,8 @@ void SessionManager::session_state(SessionState s)
             sensitive[MENU_PICKS_VIEW]=true;
             sensitive[MENU_PICKS_VIEW_ATTR]=true;
             sensitive[MENU_OPTIONS]=true;
-            sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_OPTIONS_FILTER]=true;
-            sensitive[MENU_SETTINGS]=true;
+	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
             sensitive[MENU_VIEW_COHERENCE]=true;
@@ -387,4 +420,102 @@ void SessionManager::set_hypo(Hypocenter& h)
 void SessionManager::set_phase(string ph)
 {
 	current_phase=ph;
+}
+/* New Oct. 2007 to implement a decent filter menu */
+TimeInvariantFilter SessionManager::get_filter(string name)
+{
+	map<string,int>::iterator fptr;
+	fptr=filter_index.find(name);
+	if(fptr==filter_index.end())
+	{
+		/* Assume this is always defined.  We don't
+		test for this error condition intentionally.
+		Beware if ported.*/
+		string key("default");
+		fptr=filter_index.find(key);
+	}
+	int i=fptr->second;
+	return(available_filters[i]);
+}
+TimeInvariantFilter SessionManager::get_filter(int ifilt)
+{
+	if( (ifilt<0) || (ifilt>=available_filters.size()) )
+	{
+		throw SeisppError(string("SessionManager::get_filter(int)")
+			+ string(" filter index number requested is out of range") );
+	}
+	return(available_filters[ifilt]);
+}
+TimeInvariantFilter SessionManager::get_filter()
+{
+	return(available_filters[current_filter_index]);
+}
+int SessionManager::current_filter()
+{
+	return(current_filter_index);
+}
+	
+int SessionManager::number_filters()
+{
+	return(available_filters.size());
+}
+string SessionManager::filter_description(int ifilt)
+{
+	if( (ifilt<0) || (ifilt>=available_filters.size()) )
+	{
+		throw SeisppError(string("SessionManager::filter_description(int)")
+			+ string(" filter index number requested is out of range") );
+	}
+	TimeInvariantFilter filt=get_filter(ifilt);
+	return(filt.type_description(false));
+}
+string SessionManager::filter_description()
+{
+	TimeInvariantFilter filt=available_filters[current_filter_index];
+	return(filt.type_description(false));
+}
+/* This method sets the current filter index using a name key.
+Note it is bombproof.  If the name is not known it returns the
+default filter */
+void SessionManager::set_filter(string name)
+{
+	map<string,int>::iterator fptr;
+	fptr=filter_index.find(name);
+	if(fptr==filter_index.end())
+	{
+		/* Assume this is always defined.  We don't
+		test for this error condition intentionally.
+		Beware if ported.*/
+		string key("default");
+		fptr=filter_index.find(key);
+	}
+	current_filter_index=fptr->second;
+}
+/* Similar to above, but using an integer index.  This method is 
+also bombproof silently setting the filter to default if out of 
+range.  Note this is a bit of a potential maintenance issue.  This
+assumes element 0 is always set as the default filter.  */
+void SessionManager::set_filter(int ifilt)
+{
+	if( (ifilt<0) || (ifilt>=available_filters.size()) )
+		current_filter_index=0;
+	else
+		current_filter_index=ifilt;
+}
+/* Changes the filter associated with the key name.  If the name is 
+not found, this filter is appended to the set of available filters. */
+void SessionManager::modify_filter(string name,TimeInvariantFilter& filt)
+{
+	map<string,int>::iterator fptr;
+	fptr=filter_index.find(name);
+        if(fptr==filter_index.end())
+        {
+		int ind=available_filters.size();
+		filter_index[name]=ind;
+		available_filters.push_back(filt);
+	}
+	else
+	{
+		available_filters[fptr->second]=filt;
+	}
 }

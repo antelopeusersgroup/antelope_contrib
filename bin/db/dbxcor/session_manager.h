@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
 /* Seismic library base include needed here before Xm includes.
 * Something is wrong in Xm include files that makes this necessary.
 * True on both solaris and g++ 
@@ -37,7 +38,7 @@
 #include <Xm/Form.h>
 #include <Xm/Label.h>
 /* Specialized files for this program */
-#include "AnalysisSetting.h"
+#include "XcorAnalysisSetting.h"
 #include "XcorProcessingEngine.h"
 #include "display_marker.h"
 
@@ -56,10 +57,10 @@ enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,
 	MENU_FILE, MENU_FILE_SAVE,
 	MENU_FILE_EXIT, MENU_PICKS, MENU_PICKS_BWIN, MENU_PICKS_RWIN, 
 	MENU_PICKS_VIEW, MENU_PICKS_VIEW_ATTR, MENU_PICKS_VIEW_SETTING,
-        MENU_OPTIONS, 
+	MENU_OPTIONS, 
 	MENU_OPTIONS_SORT, 
 	MENU_OPTIONS_FILTER, 
-      	MENU_SETTINGS, MENU_SETTINGS_PF, MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_COHERENCE,
+      	MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_COHERENCE,
 	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT,
 	BTN_ARRIVAL,BTN_ARRIVAL_ERROR};
 
@@ -83,8 +84,8 @@ public:
     // New june 2007.  map allows variable settings for 
     // different seismic phases.  Required to switch phases
     // during processing
-    map<string,AnalysisSetting> asetting_default;
-    AnalysisSetting active_setting;
+    map<string,XcorAnalysisSetting> asetting_default;
+    XcorAnalysisSetting active_setting;
     DisplayMarkerDataRec markers;
     DisplayMarkerDataRec beammarkers;
     int choice;  //for user differentiate similar buttons, e.g., pick beam and robust window
@@ -119,7 +120,7 @@ public:
     void restore_previous_state();
     SessionState get_state() {return state;}
     //This is not to validate whether the setting make sense to XcorProcessingEngine, since
-    //that is supposed to be done by AnalysisSetting object, here just to make sure the state
+    //that is supposed to be done by XcorAnalysisSetting object, here just to make sure the state
     //GUI is in permits the specific setting, for example, the sort order can not be coherence
     //before the analysis taken place.
     bool validate_setting(stringstream & ss);
@@ -127,7 +128,31 @@ public:
     bool display_initial_sort_box;
     bool display_analysis_sort_box;
     bool using_subarrays;
-
+    /* interface to filters */
+    /* Get filter tagged with keyword name */
+    TimeInvariantFilter get_filter(string name);
+    /* Get filter using integer index */
+    TimeInvariantFilter get_filter(int ifilt);
+    /* Overloaded method to get current filter */
+    TimeInvariantFilter get_filter();
+    int number_filters();  // Returns number of defined filters
+    /* returns description of filter number ifilt*/
+    string filter_description(int ifilt);
+    /* returns description of current filter */
+    string filter_description();
+    /* Above return filter desription from filter object interface.
+    This method returns a string used to label this filter in the GUI.*/
+    string get_filter_label(int ifilt){return(filter_labels[ifilt]);};
+    /* set current the filter to the internal membered tagged with name.
+    This method silently sets current to default filter if the name
+    given does not match any predefined filter tags. */
+    void set_filter(string name);
+    /* set current filter using the integer index ifilt */
+    void set_filter(int ifilt);
+    /* return index number of current filter */
+    int current_filter();
+    /* Modify or add a filter tagged with name */
+    void modify_filter(string name, TimeInvariantFilter& filt);
 private:
     bool *sensitive;
     SessionState state;
@@ -144,6 +169,13 @@ private:
 // Added to get complete information in assoc table
     Hypocenter hypo;
     string current_phase;
+    /* Added Oct 2007 to implement menu of available filters.
+	The filters are stored using two parallel vector containers.*/
+    vector<string> filter_labels;
+    vector<TimeInvariantFilter> available_filters;
+    /* cross reference between index numbers and names */
+    map<string,int> filter_index;
+    int current_filter_index;
 };
 
 #endif

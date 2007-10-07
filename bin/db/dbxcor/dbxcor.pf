@@ -88,8 +88,8 @@ beam_window_parameters	&Arr{
     xcur	1.0
     ybox	50
 }
-coherence_cutoff	0.1
-correlation_peak_cutoff	0.1
+coherence_cutoff	0.01
+correlation_peak_cutoff	0.01
 correlation_window_parameters	&Arr{
     SUVariableArea_grey_value	1
     VariableArea	true
@@ -296,7 +296,7 @@ save_list_assoc	&Tbl{
 }
 save_to_arrival	true
 schema	xcor1.2
-stack_weight_cutoff	0.01
+stack_weight_cutoff	0.001
 target_sample_interval	0.1
 time_lag_cutoff	4.0
 trace_mdl	&Tbl{
@@ -314,6 +314,17 @@ trace_mdl	&Tbl{
     site.lat
     site.lon
     site.elev
+}
+#
+# defines filters.  First string is label to appear on gui.
+# second must be a valid string for trfilter
+#
+filters &Tbl{
+telebb  BW 0.01 5 2 5
+lp	BW 0.025 5 0.08 5
+sp	BW 0.5 5 1.5 5
+BP0.1-1Hz  BW 0.1 5 1 5
+integration	INT
 }
 #
 # new control for beam plots 
