@@ -3,7 +3,7 @@
 dbxcor - GUI-based, multichannel cross-correlation program 
 .SH SYNOPSIS
 .nf
-dbxcor dbin dbout dbevent
+dbxcor db [-appname name -o dbout -f infile -pf pffile -V -v]
 .fi
 .SH DESCRIPTION
 .LP
@@ -28,82 +28,549 @@ point as no plane wave or typical model-based travel time estimate
 can align data well enough to avoid degrading the stack at short
 periods.  
 .LP
-\fIdbin\fR is the database from which waveforms are to be extracted.
+The robust stacking loop begins with a median stack computed from
+the data aligned using the initial station selected interactively.  
+It then enters the following iterative loop:
+.nf
+  1) do
+    2) compute robust stack of data = beam
+    3) correlate and align each trace with beam
+  4) until (all lags are less than one sample)
+.fi
+.LP
+This program is database driven, but has different modes of operation 
+described below.  The most important restriction is that it cannot start
+from nothing.  The input database must contain an event and origin table
+that will be referenced in processing.  The primary outputs are 
+assoc, arrival, and four extension tables (xcorarrival, xcorbeam, 
+wfprocess, and evlink) used to store outputs special to this program.  
+.LP
+Command line arguments are:
+.IP db
+\fIdb\fR is the working database unless dbout is defined.
+That is, normally this program reads all it's information from db
+and updates and/or appends to existing tables in this database.
+This is always the database from which waveforms are to be extracted.
 It can contain continuous data or segmented data, but it must have
 links to at least site and sitechan for the program to be functional.
 Waveforms are loaded over a fixed time interval and then internally 
 chopped to a gather aligned to the predicted arrival time of 
-each event in a sequence.  \fIdbout\fR is used to contain the output.
-It can be the same db as dbin, BUT the program only blindly adds to 
-this database.  If there are existing picks for a given event 
-the database will contain duplicates which can be troublesome to
-clear out.  \fIdbevent\fR can and probably normally should be 
-set as "-".  In this mode the event db is assumed to be coming
-through stdin.  For anything else it is treated as a normal database
-name and the input is produced by a join of event and origin 
-(subsetted to orid==prefor).  
+each event in a sequence.  
+.IP -appname
+This program was designed to be driven by smartpick which uses the tksend (1)
+mechanism to communicate.  tksend uses the name defined by this parameter
+as the target used for communication.  This defaults to dbxcor.
+.IP -o
+Optional output database name.  When the -o parameter is used assoc,
+arrival, xcorarrival, xcorbeam, wfprocess, and evlink tables are written
+to this database.  Note that normally dbxcor does database updates on
+any existing arrivals tied to a particular event through assoc.   
+A convenient way to avoid updates and preserve existing arrivals is to 
+specify dbout as an independent database.
+.IP -f
+Read input from a file instead of through the tksend mechanism.  
+The file name passed through this argument is assumed to contain
+a set of lines with two parameters per line containing ordered
+pairs of orid and phase names.  For example, 
+.nf
+	49 P
+	49 S
+	49 PP
+	82 P
+	82 PP
+.fi
+Would drive the program to process two events (orid 49 and 82) 
+with a mix of P, S, and PP phases.  These lines are identical to 
+the input passed through the smartpick interface, but you, the
+user, in this case need to handle the event and phase description
+instead of making the choices interactively..
+.IP -pf
+Is used to specify an alternative parameter file than the default of
+dbxcor.pf.
+.IP -V 
+Show usage line and exit.
+.IP -v
+Run in verbose mode.
+.SH Operating Modes
+This program can be run in a least four common permutations.
+.IP (1)
+Driven by smartpick.  In this mode the idea is to use dbpick to 
+explore the data and decide what teleseismic phases are worthy
+of processing.  When a phase with a workable signal is present
+push the appropriate button on smartpick to arm dbxcor with
+data for that phase from the particular event of interest.
+.IP (2)
+One can avoid smartpick and drive dbxcor directly from dbpick
+without smartpick as an intermediate agent.  Launch dbxcor and
+dbpick on the same X display.  Find the data you want to process
+an issue a command like this in the dbpick window:
+.nf
+   exec tksend dbxcor %orid P
+.nf
+where P could be changed to any teleseismic phase of interest known to 
+the tau-p calculator.  
+.IP (3)
+The -f option can be used to process a list of events known to have workable
+phases for one or more phases.  For example, one might select all teleseismic
+events from 30 to 95 degrees with magnitude greater than 6 and have some confidence
+all will yield workable P and S phases.  The major disadvantage of this approach
+at present is that you, the user, would need to keep track of where you leave
+off between runs of the program.  
+.IP (4) 
+The use of the -o options is highly recommended if you want to run this program on
+a real-time database.  Because the back end of the program does database updates to 
+arrival and assoc it is intrinsically dangerous to run the program on a dynamically 
+changing database linked to a real time system.  Do be warned, however, that some 
+information can be lost when using the -o option.  In normal operations dbxcor 
+matches any existing arrivals and only updates the measured arrival time, residual 
+field in assoc, and auth fields.  Fields like snr computed by real time pickers 
+are not transferred when the program runs with the -o option.  If you need to preserve
+other information in arrival and assoc the best advice as always is to work on a 
+copy of the database derived from a snapshot of a real time system.  
+
 .LP
 The front end of this program is a graphical user interface using
-the Xt library.  The graphical iterface has four main sections:
-(1) a top bar with pull-down menus, (2) a seismic display section,
-(3) a log output text section, and (4) a set of action buttons.
-Normal, simple processing uses the action buttons mostly working
-left to right.  Buttons are disabled until required actions are
+the X Motif and X toolkit libraries.  The graphical iterface has four main sections:
+.IP (1)
+A top bar with pull-down menus.  The menus are File, Picks, Option, and View.  
+File is largely an alternative exit.  Picks is used to select processing
+time windows (see below).  The options menu provides a means to bring up
+two popup windows;  one or data sort criteria and the other for filter options.
+Finally, view is used to run various attribute plots an station names on or off.
+.IP (2)
+A seismic data display section.  The data shown are displayed using a 
+Motif widget (see seisw(3)) developed from a modification of the Seismic Unix program
+called xwigb.  This display makes all three buttons on a three-button mouse
+sensitive.  MB1 (left) drag is a zoom function.  MB2 (middle) is used to pick
+a point or a single seismoram (e.g. reference trace - see below).  MB3 is
+used to pick time windows (Pick menu items - see below).
+.IP (3)
+Contains a log of informational messages.  The first place to look if problems
+occur is this window.
+.IP (4)
+A set of action buttons along the bottom row.  Normal, simple processing
+of this row of buttons proceeds from left to right, but situations sometimes
+alter this.  
+.LP
+The main processing is driven by the row of buttons in the bottom row of the GUI.
+The buttons are in active state only when the action they
+represent is appropriate.
+Buttons are disabled until required actions are
 taken.  Key states of the program the user needs to be aware of
 are the following:
 .IP (1)
-When the program starts up only the "Get Next Event" button is enabled.
+When the program starts up it is in one of two possible startup states.
+When the -f option is used a "Get Next Event" button appears and is the only
+active widget in the display.  When using the tksend mechanism no elements of 
+the GUI are initially enabled and the program.  This means the program is
+listening for instructions from tksend and will sleep until it receives instructions.
 .IP (2)
+Whenever data are loaded the enable/disable subarrays toggle button is active.  `
+As the name suggests this toggles the program between full array and subarray processing.
+(One or more subarrays must be defined in the parameter file for this to have meaning
+and the program may abort if no valid subarrays are defined.)
+.IP (3)
 When data is first loaded "Pick Ref. Trace" is enabled.  The user
 must interactively pick a reference event (seed for robust stacking method) 
-before further processing can be completed.
-.IP (3)
+before further processing can be completed.  To pick a reference trace point
+at the desired trace and click MB2 (middle button).
+.IP (4)
 Once a reference event is picked, the "Analyze" button is enabled.
 When pushed this button initiates the primary analysis of the 
-program.
-.IP (4) 
+program. 
+.IP (5) 
 When the analysis is completed the "Plot Beam" and "Plot Correlation" 
 buttons are enabled.  If the results are acceptable, the user is
 next required to push the "Plot Beam" button and pick an arrival 
-time on the beam trace.  This is necessary to resolve the otherwise
+time (use MB2) on the beam trace.  This is necessary to resolve the otherwise
 ambiguous dc arrival value problem. i.e. this pick is used to set
 the position of the arrival estimates relative to a theoretical time
 computed from the predicted arrival time as sum of the relative time
 on the team and the lag computed by cross-correlation.
-.IP (5) 
+.IP (6) 
 When a time is picked on the beam the "Save" button is enabled.
 Only then can the results be saved to the database.
 .LP
-The program also has some other useful features.  These include:
-(1) attribute plots that can be turned on through the Picks->View 
-window; (2) variable sort criteria for the ensemble after analysis;
-(3) interactive edits to turn traces on and off;  (4) interactive
-cutoff picking; (5) restore original data; and (6) arbitrary
-choice of filters.  
-.LP
-The seismic display widget is a descendent of the wiggle trace
-variable area plot program in Seismic Unix.  People familiar
-with SU will recognize part of the mouse interface, but it
-is has added functionality required here.
-The primary mouse action in the seismic display are:
-.IP MB1
-Zoom box.  Click and hold MB1 to zoom the display.  A second click of
-MB1 anywhere in the display restores the original scale.
-As usual MB1 has it's normal function outside the seismic display
-window (e.g. push buttons on the bottom row of the GUI).  
-.IP MB2 
-Used to pick a single point on a seismic display.  We use this in
-multiple contexts.  MB2 is used to pick the reference trace,
-trace editing, and to pick trace cutoff values.  
-.IP MB3
-Used for time window picking.  Hold MB3 and drag to select a time
-window.  The display will show markers that define the picked window.
+Actual processing rarely proceeds in one pass through the states 
+described above.  Any of the following options are often 
+necessary.  (Note that if a button is enabled, the 
+processing you request is feasible.  If you encounter exceptions
+to this rule please report this to the authors.)
+.IP (1)
+Filters other than the default are frequently necessary.  Alternative
+filters can be selected from the Options->Filter Options pulldwon menu.
+This launches a popup menu that will stay up until dismissed by pushing
+the cancel button.  Note that filters are cumulative.  When you apply
+a new filter it is applied to the data currently being displayed.  
+In this way you can, or example, bandpass filter and then integrate.
+The "Restore Data" button at the bottom of the display can always be used
+to restore the original data filtered only with the default filter for 
+the requested phase.  
+.IP (2) 
+Bad traces can and normally should be edited out by one of two mechanisms.
+First, the "Trace Edit" button is a toggle.  When pushed all elements of the 
+GUI are disabled except the inverse toggle labeled "Stop Trace Edit".  Click 
+on traces to be killed with MB2.  As you do so they will be marked dead, 
+made flat, and colored red.  The mark dead attribute is reversible
+so if you hit the wrong trace
+by mistake click it a second time with MB2 and it will be restored.  The 
+second method for editing is only possible after running Analyze at least once.
+Alternatively, click with MB1 on the button labeled "Pick Cutoff".  Pick a trace on the display
+with MB2 and all data below that trace on the display will be marked dead.  
+.IP (3)
+Think of the "Restore Data" button as the ultimate escape.  It allows you to 
+essentially start over as if you had just finished reading the current block 
+of data.
+.IP (4)
+The "Picks" menu item has two selections: (1) Beam window and (2) Robust Window.
+Experience has shown that care in selection of these two windows is critical 
+for successful results with this program.  In fact, the default windows set
+through the parameter file are rarely ideal and experience shows altering
+these time windows is almost always advisd.  The Beam Window defines the time gate
+used for cross-correlation.  The best advice in choosing it is to start a few seconds
+before the earliest observed arrival time to a time a few seconds past the point where
+most of the data show a common waveform.  For smaller deep events this is commonly only a few 
+cycles of the phase.  In contrast, something like a shallow magnitude 8 event can 
+work effectively with a beam a minute or more in length.  (Warning:  using smartpick
+and dbpick can help avoid obvious blunders like accidentally mixing two phases in a
+long time gate in such a situation.)  The "Robust Window" pick is equally important
+for obtaining good results, especially with variable quality data.  The robust 
+loss function used to weight data computed using only data in this time window.  
+Experience has shown that the best results are normally obtained by defining the
+robust window as the first one or two clear cycles of the phase being analyzed.  
+This is well justified theoretically as the earliest part of the signal is less
+prone to being modified by any form of scattering.   
+You should also be aware that an amplitude scale factor is computed an applied to
+each trace using data within the robust window.  This normally improves the look
+of the display dramatically after an analysis and provide a useful relative amplitude
+scale factor that is written to the output database.
+.IP (5)
+After pushing the analysis button the data are always sorted by the stack weight 
+parameter.  If the time gates are chosen correctly it has been found that this 
+parameter does an extremely good job of sorting data in reliability order with the 
+data most like the beam at the top of the display and the data least like the beam 
+(usually also the noisiest) at the bottom.  Use the "Pick Cutoff" and/or 
+"Trace Edit" buttons to kill problem data.  It is generally prudent to 
+then pick a new reference trace an push the Analyze button again.  
+In marginal signal to noise conditions this may need to be repeated several 
+times to discard all the low signal-to-noise ratio data.  
+.IP (6)
+In processing marginal signal-to-noise events two other strategies often 
+help.  First, push the "Correlation Plot" button and examine the cross-correlation 
+functions.  Poorly defined maxima in the correlation function can help you decide
+if a given trace should be marked bad.  Secondly, try the Options->Sort Options menu
+item.  This will bring up a choice of alternative sort criteria for traces in
+the display.  You can, for example, sort by coherence or peak cross correlation
+and use them as an alternative "Pick Cutoff" attribute.  
+.IP (7)
+Large arrays will not always have a coherent phase that can be stacked with the full
+array aperture.  This is especially true for small teleseismic event P waves that
+are commonly detectable only in the traditional short period band.  For this reason
+dbxcor has a toggle button labeled "Enable Subarrays" (reciprocal is labeled 
+"Disable Subarrays").  You can switch back and forth between full and subarray processing
+BUT but be careful of two pitfalls.  First, it is inadvisable to save results
+from both subarray and full array processing of the same event.  It is allowed, but
+it may cause you headaches downstream.  In any case, you must be aware of
+an important limitation of subarray processing.  When running in subarray mode
+when you push the "Save" button arrival and assoc WILL NOT be updated.  Results
+will be saved only to the extension table xcorarrival.  The reason for this is
+that in subarray processing a station can and often will have multiple lag estimates.
+The extreme version of this is the conventional all-pairs method which essentially
+does subarray processing for all possible two-station subarrays.  The resolution of
+the problem here is the same one needed for the two-station method;  a least squares
+method is needed to resolve the ambiguity of multiple arrival estimates for the
+same station.  A program to do this driven by the xcorarrival table is under 
+development.  The second pitfall in subarray processing is that it is currently 
+impossible to do anything but a linear pass through the subarray list.  That is,
+once enabled the pointer for the list of subarrays is reset to the top and 
+a button labeled "Next Subarray" becomes active.  
+(Note there is no "Previous Subarray" button because no such feature 
+is currently implemented.) A useful strategy for subarray processing
+is to enable subarrays and first go through all the subarray data
+by clicking the "Next Subarray" button until the list is exhausted.
+The goal in this scan is to decide if using the subarray feature is likely 
+to be successful for the event being analyzed.  If you decide the answer
+is yes, push "Restore Data" and the subarray pointer will be reset to the
+first subarray in the master list.  Then proceed through the event
+by processing each subarray gather, hitting save, and then 
+"Next Subarray".  When the list is exhausted the buttons will all 
+become inactive.  Be aware that the primary reason a "Previous Subarray"
+button does no exist is that the xcorarrival table is not handled in
+a update mode.  That is, the program only blindly adds new rows to this
+table when the save button is pushed.  This will always be successful 
+because the xcorarrival table uses an integer id to tie the arrival to 
+a particular beam trace indexed with wfprocess.  The primary consequence of
+rerunning a subarray is that the least squares procedure to compute
+arrival has to deal with this potential irregularity.
+.IP (8)
+The "View" menu allows display of one or more attributes linked to 
+each seismogram in the display.  These are of two types. The sta 
+button enables a station name label for each trace.  This is often 
+useful for finding that super station in every network that might
+be a good choice as a reference trace.  It also helps in quality
+control by helping identify stations that are not consistent
+with others in the array.  This can indicate an equipment failure,
+error in metadata, or a real property of the earth. The second type
+of plot is an x-y graph of one or more trace attributes.  Currently
+this is limited to:  stack weight, coherence, and peak cross correlation.
 .SH PARAMETER FILE
 .LP
 The complete parameter file for this program is very long
 because of the need to describe all the graphical defaults.
-We expect to produce a more complete document to cover all
-these options at a later date. 
+A large fraction of these are best left alone.  Here we 
+describe only the parameters the end user will need to be aware of.
+They are grouped in two sections:  (1) Must Change and (2) May
+Require Changes.
+.ce
+\fIMust Change\fR
+.fi
+.LP
+\fIinitial_time_stamp\fR is an estimate of the approximate start time
+of the data set being analyzed.  Any time which doesn't yield an empty
+site table should work.  This is necessary because dbxcor uses a dynamic
+method to maintain it's station geometry table derived from ondate and
+offdate in the site table.  The internally cached table has a time span 
+defined by valid time ranges linked to the current time stamp.  Once 
+data are loaded the time span of the previously processed event is used
+but on startup a rational time is required to initialize properly.  
+The best choice is some time known to be inside the ondate to offdate
+range of the stations being used for this run.
+.LP
+\fInetwork_name\fR should be a unique word used to describe the full
+array being processed.  Beam traces produced as output with the full array
+will be tagged with this name.
+.LP
+\fIphase_processing_parameters\fR is the tag or an Arr list of parameters 
+for each phase to be processed. This will be clearer with an example:
+.nf
+phase_processing_parameters     &Arr{
+    P   &Arr{
+        analysis_sort_order     stack_weight
+        arrival_channel Z
+        beam_window_fraction    0.6
+        component_for_analysis  L
+        default_filter  BW 0.01 2 2.0 2
+        phase_for_analysis      P
+        regular_gather_twin_end 120.0
+        regular_gather_twin_start       -20.0
+        robust_window_fraction  0.2
+        stacking_method robust
+        tpad    30.0
+    }
+    PP  &Arr{
+        analysis_sort_order     stack_weight
+        arrival_channel Z
+        beam_window_fraction    0.8
+        component_for_analysis  Z
+        default_filter  BW 0.01 2 1.0 2
+        phase_for_analysis      PP
+        regular_gather_twin_end 120.0
+        regular_gather_twin_start       -20.0
+        robust_window_fraction  0.2
+        stacking_method robust
+        tpad    30.0
+    }
+}
+.fi
+.LP
+This example defines how the program should handle two phases:  P and PP. 
+Note that each phase defines values for the same parameter names.  
+\fIanalysis_sort_order\fR defines how the data will be sorted when
+processing is completed after the Analyze button is pushed.  
+stack_weight is recommended, but alternatives are coherence, 
+correlation_peak, amplitude, or moveout.  
+\fIarrival_channel\fR is a channel code that will be used to 
+tag the entry in arrival.  Note there is a fundamental problem 
+here that is handled in a way that is not general.  The method
+used here will only work with SEED channel codes or Antelope
+channel constructs (e.g. BHZ_01).  The program takes the
+root channel code for this station and inserts the character
+defined by this parameter in position 3 of the the channel string.
+This is far from ideal, but works for most data.  If this method does
+not work for your data, you will need to run some kind of edit script
+on the output arrival table.  A closely related parameter
+is \fIcomponent_for_analysis\fR.  As the name implies this is
+the component extracted from the data to use for the processing. 
+Valid values are: Z,N,E,L,R, or T.  Z, N, and E are cardinal directions
+while R, T, and L are ray coordinate directions of radial, transverse,
+and longitudinal.  Note that R, T, and L are produced using the
+free surface transformation of Kennett (1991).  
+\fIbeam_window_fraction, robust_window_fraction, regular_gather_twin_start\fR,
+and \fIregular_window_twin_end\fR are closely linked.  The regular gather window
+parameters define the range of data that will be displayed on the GUI in
+the arrival time reference frame (i.e. 0 for each trace is the predicted
+arrival time of the requested phase).  This time window is multiplied by
+\fIbeam_window_fraction\fR and \fIrobust_window_fraction\fR to define 
+initial values for the beam and robust windows.  
+\fItpad\fR and \fIdefault_filter\fR should be considered together are are
+used in the same way as tpad parameters in dbpick(1).  That is, \fItpad\fR
+is a time padding added to the beginning and end of the regular gather window
+to allow for edge transients for the filter.
+Finally, \fIphase_for_analysis\fR should normally match the key for this
+block of parameters.  It is required because of the laziness of the author
+as it simplifies the process of parsing this already complicated pf file.
+.LP
+\fIresample_definitions\fR and \fItarget_sample_interval\fR are inseparably 
+linked.  As the name implies \fItarget_sample_interval\fR is the sample
+interval (in seconds) to which all the data will be resampled.  
+The contents of the \fIreasample_definitions\fR Arr block describe the
+recipes used to resample different sample rates.  That block is
+also very complicated, but is described in detail in dbresample (1).
+For most cases these parameters are set once and require no further
+changes unless new data with a different sample rate are introduced.
+.ce
+\fIMay Require Changes\fR
+.fi
+.LP
+\fIAutoscaleInitialPlot\fR controls initial plot scaling.  By default 
+data are all displayed initially at true amplitude.  If this parameter is set
+true, each trace in the display will be scaled to have an equal peak amplitude.
+This is most useful when data are contaminated by several bad traces with 
+large spikes or uncompensated offsets.  These can render a signal of interest
+invisible without extensive editing. Normally it should be false unless 
+the data quality is very poor.
+.LP
+As the name implies \fIRequireThreeComponents\fR is a boolean that tells
+the program if it should be dogmatic about requiring three component data.
+When true the program will automatically drop any data not having three 
+components.  This parameter should always be true if you choose to 
+process channels R, T, or L (ray coordinates) since these make no 
+sense otherwise.  The only time this parameter would normally be set is
+in processing P wave phases only and you specify using channel Z.
+.LP
+\fIStationChannelMap\fR is a complicated Arr used to resolve the 
+ambiguities of what channel to use for stations with multiple loc 
+codes or high gain and low gain channels.  The dbxcor program uses a 
+general solution to this problem implemented through the StationChannelMap
+processing object (see 
+http://seismo.geology.indiana.edu/~pavlis/software/seispp/html/db/d13/classSEISPP_1_1StationChannelMap.html ).
+This is another case where an example helps explain the idea better than 
+a bunch of words:
+.nf
+StationChannelMap       &Arr{
+    SDV &Tbl{
+        BHE_00 0 0
+        BHN_00 1 0
+        BHZ_00 2 0
+        BHE_10 0 1
+        BHN_10 1 1
+        BHZ_10 2 1
+        HHE_10 0 2
+        HHN_10 1 2
+        HHZ_10 2 2
+        HHE_20 0 3
+        HHN_20 1 3
+        HHZ_20 2 3
+    }
+    default     &Tbl{
+        BHE 0 0
+        BHN 1 0
+        BHZ 2 0
+        HHE 0 1
+        HHN 1 1
+        HHZ 2 1
+        LHE 0 2
+        LHN 1 2
+        LHZ 2 2
+    }
+}
+.fi
+This is an example from the Bolivar experiment.  Most stations in that experiment
+used B, H, and/or L channels.  The "default" section specifies the channel hierarchy for 
+most of the stations in that experiment.  BHE, BHN, and BHZ have the highest precedence
+(last column being 0 defines this); HHE, HHN, and HHZ have secondary precedence, and L
+channels have the lowest precedence.  Precedence means that if a station has more than
+one channel code the higher precedence data will be used first.  If higher precedence 
+data are absent the program works down the chain to try to find alternatives and gives up
+if there are no matches.  The middle column defines the component number used to place 
+each channel in a standard reference frame.  Normally you should have 0 be x1, 1 be x2, 
+and 2 be x3.  This is not necessarily essential as a transformation matrix is always
+computed, but it is best to not tempt fate.  You must absolutely not repeat a component
+number at the same precedence in this list or you the missing component will be undefined.
+.LP
+The above example also has a typical entry for a GSN station.  Because GSN stations
+today commonly have more than one sensor installed SEED data commonly contain a loc
+code to sort out which sensor is which.  The above shows the StationChannelMap description
+for GSN stations SDV.  The hierarchy of channels described here (in order of decreasing 
+precedence) are:  B channels with loc code 00, B channels with loc code 10, H channels
+with loc code 10, and H channels with loc code 20.  
+.LP
+To complete the full StationChanellMap description try to make the default as all
+encompassing as possible.  Usually you can use a generic default to specify a large
+fraction of the data.  Each more complicated example will need a different template
+with the station name as the tag.  In a worst case you might use a different entry
+for each station, but this should not normally be necessary as almost all experiments
+or networks use some standard channel naming conventions. 
+.LP
+\fIbeam_arrival_error_marker_color\fR and \fIbeam_arrival_pick_marker_color\fr
+can be used to changed the default colors for the lines marking the pick time
+for the beam trace and the interval for the beam arrival time error respectively.
+.LP
+\fIbeam_dfile\fR and \fIbeam_directory\R control the file name and directory 
+in which beam traces are written.  Beam data is written as raw binary doubles
+in this directory/file location.  Each new beam is simply appended. 
+.LP
+\fIcoherence_cutoff\fR,
+\fIcorrelation_peak_cutoff\fR, 
+\fIstack_weight_cutoff\fR, and
+\fItime_lag_cutoff\fR are all automatic cutoff on these four computed attributes.
+(Note the first three can be plotted as attribute plots with the View menu.)
+The names imply what attribute is involved: coherence, peak of cross correlation,
+robust weight, and computed lag respectively.  In interactive use all four of 
+these parameters should normally be left as the defaults.  The defaults 
+are small positive numbers or the first three.  For time_lag_cutoff the 
+number is the absolute value of the allowed range.  The default is plus
+or minus 4 s, which is a reasonable upper bound.  Increasing this value will 
+increase compute time as it also sets the range for which the cross-correlation 
+functions are computed.
+.LP
+\fIdata_window_start\fR and \fIdata_window_end\fR define the time range around
+the theoretical time the program tries to read.  It should be larger than the
+range defined by regular_gather_start to regular_gather_end plus two times the
+tpad value.  If resampling is required it would also be advised to make this 
+window large enough to not be influenced by edge transients from the 
+decimation FIR filters used in the resampling operators.  You will need to 
+look at the response files used for decimators to provide an accurate estimate
+of the amount of padding that will be required to avoid decimation artifacts.
+You can request a large window, but you will pay by waiting longer
+every time you read data if 
+this window is much larger than necessary.  Note this, like the other time
+window parameters used in this program, have units of seconds. 
+.LP
+\fIfilters\fR is used to define filters you want to use in processing.
+This parameter is a tag for a Tbl of arbitrary length.  Each line of
+the Tbl section linked to this tag defines one filter option.  
+The format is best understood by an example:
+.nf
+filters &Tbl{
+  telebb  BW 0.01 5 2 5
+  lp      BW 0.025 5 0.08 5
+  sp      BW 0.5 5 1.5 5
+  integration     INT
+}
+.fi
+.LP
+The first token in each line (telebb, lp, sp, and integration in
+the example above) is the label for this filter posted on the 
+filter options radio box in the GUI).  The second token in each line
+must be a valid filter description as described in trfilter(3) or
+wffil(3).
+.ce
+\fIPlot Parameters\fR
+.fi
+.LP
+There are three seismic plots made by this program: 
+(1) the main data display, (2) a plot of the array beam, and
+(3) a plot of the cross-correlation functions.  All three are
+created with the same Motif widget.  The parameters that control
+the display in each of these three 
+windows are described in detail in seisw(3).  For this program
+you need to realize that each of the three plots set individual 
+parameters nested inside three &Arr with tags:  
+data_window_parameters,
+beam_window_parameters, and coherence_window_parameters.  
+As the names imply these control the data display, beam, and
+cross-correlation windows respectively.
 .SH DIAGNOSTICS
 .LP
 The log window is used to give feedback on progress of the analysis
@@ -111,22 +578,22 @@ and some errors.  The program can die on data problems that will
 normally leave a diagnostic message on stderr.
 .SH "BUGS AND CAVEATS"
 .IP (1)
-There is a big issue at the moment with the read data button.
-The message widget is not posting the progress message until
-read is completed.  It is too easy for an impatient person to
-push the read button more than once and get confused by what
-is going on.
-.IP (2) 
-The top menu bar layout is not ideal.  Changes are likely.
+The program contains some refresh anomalies.  If you expect a seismic
+display to change and it does not, try double clicking the seismic window.
+This forces a screen refresh independent of previous history.
+.IP (2)
+There are some related problems with the log window.  Sometimes the 
+program will be working and there is no hint it is active.  The most
+annoying at present is when the program is reading data.  I currently
+posts the message that it is reading and requests patience only after 
+the read is completed.  Since reading data can take many seconds this 
+causes problems for the impatient.  
 .IP (3)
-The trace edit picking and cutoff picking functions initiate changes
-in the "Pick" menu that are less than idea.  These states need to 
-be more "in the face" of the user as it can lead to confusing 
-behaviour.
-.IP (4)
 The beam and cross-correlation plots are not automatically destroyed
 when a new event is loaded.  For now these must be manually closed to 
-avoid confusion.
+avoid confusion.  Both displays should probably also have a dismiss
+button, but I've been able to make that work correctly so it remains to 
+be implemented.
 .SH AUTHOR
 Peng Wang (pewang@indiana.edu) wrote the GUI.  The seismic analysis sections
 were written by Gary Pavlis (pavlis@indiana.edu)
