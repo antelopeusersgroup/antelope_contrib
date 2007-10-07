@@ -19,7 +19,7 @@
 #include "seismicarray.h"
 #include "filter++.h"
 #include "MultichannelCorrelator.h"
-#include "AnalysisSetting.h"
+#include "XcorAnalysisSetting.h"
 #include "ArrivalUpdater.h"
 
 namespace SEISPP {
@@ -32,15 +32,15 @@ class XcorProcessingEngine {
 public:
 	bool use_subarrays;
 	int current_subarray;  // Index to current subarray 
-	XcorProcessingEngine(Pf * global_pf, AnalysisSetting asinitial,
+	XcorProcessingEngine(Pf * global_pf, XcorAnalysisSetting asinitial,
 		string waveform_db_name, string result_db_name);
 	~XcorProcessingEngine();  // necessary unless we can get rid of mcc raw pointer
-        void change_analysis_setting(AnalysisSetting a) {analysis_setting=a; if(!analysis_setting.rw_set) analysis_setting.robust_tw=analysis_setting.beam_tw;}
-	AnalysisSetting get_analysis_setting() {return(analysis_setting);};
+        void change_analysis_setting(XcorAnalysisSetting a) {analysis_setting=a; if(!analysis_setting.rw_set) analysis_setting.robust_tw=analysis_setting.beam_tw;}
+	XcorAnalysisSetting get_analysis_setting() {return(analysis_setting);};
 
 	void shift_arrivals(double tshift);
 	// This function sorts results according to current sort 
-	// definition in AnalysisSetting
+	// definition in XcorAnalysisSetting
 	void sort_ensemble();
 	
 	//save the resulting beam to the output database
@@ -66,7 +66,7 @@ public:
 	void filter_data(TimeInvariantFilter f);
 	
 	//validate analysis setting
-	bool validate_setting(AnalysisSetting & a) { return (a.aw_set && a.bw_set && a.rt_set); } 
+	bool validate_setting(XcorAnalysisSetting & a) { return (a.aw_set && a.bw_set && a.rt_set); } 
 
 	TimeSeries get_beam();
 	TimeSeriesEnsemble get_waveforms();
@@ -107,7 +107,7 @@ private:
 	// This holds the working data.  
 	TimeSeriesEnsemble waveform_ensemble;
 
-	AnalysisSetting analysis_setting;
+	XcorAnalysisSetting analysis_setting;
 	MultichannelCorrelator * mcc;
 	
 	//This is the meta data object to hold SeismicPlot display parameters.

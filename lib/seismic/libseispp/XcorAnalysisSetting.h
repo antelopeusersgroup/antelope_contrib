@@ -27,12 +27,12 @@ enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,
 //@{ Encapsulates all quantities required by XcorProcessingEngine in 
 //   a single data structure.  
 //@}
-class AnalysisSetting {
+class XcorAnalysisSetting {
 public:
-	AnalysisSetting() {aw_set=false; bw_set=false; rw_set=false; rt_set=false;}
-	AnalysisSetting(Metadata md);
-	AnalysisSetting(const AnalysisSetting& old);
-	AnalysisSetting& operator=(const AnalysisSetting& old);
+	XcorAnalysisSetting() {aw_set=false; bw_set=false; rw_set=false; rt_set=false;}
+	XcorAnalysisSetting(Metadata md);
+	XcorAnalysisSetting(const XcorAnalysisSetting& old);
+	XcorAnalysisSetting& operator=(const XcorAnalysisSetting& old);
 	void set_analysis_tw(TimeWindow tw_in) {aw_set=true; analysis_tw=tw_in;}
 	void set_beam_tw(TimeWindow tw_in) {bw_set=true; beam_tw=tw_in;}
 	void set_robust_tw(TimeWindow tw_in) {rw_set=true; robust_tw=tw_in;}

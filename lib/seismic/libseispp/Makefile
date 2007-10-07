@@ -1,8 +1,7 @@
 LIB=libseispp.a
 #DLIB=$(LIB:.a=$(DSUFFIX)) 
 DIRS=htdocs
-INCLUDE=AnalysisSetting.h \
-  ArrivalUpdater.h \
+INCLUDE=ArrivalUpdater.h \
   AttributeMap.h \
   BasicTimeSeries.h\
   ComplexTimeSeries.h\
@@ -19,6 +18,7 @@ INCLUDE=AnalysisSetting.h \
   TimeVariableWeight.h\
   TimeWindow.h\
   VelocityModel_1d.h\
+  XcorAnalysisSetting.h \
   XcorProcessingEngine.h \
   databasehandle.h\
   dbpp.h\
@@ -51,8 +51,7 @@ DBG=-g
 
 include $(ANTELOPEMAKE)  	
 
-OBJS=AnalysisSetting.o \
-  ArrivalUpdater.o \
+OBJS=ArrivalUpdater.o \
   AttributeMap.o \
   BasicTimeSeries.o \
   ComplexTimeSeries.o \
@@ -65,6 +64,7 @@ OBJS=AnalysisSetting.o \
   TimeSeries.o \
   VelocityModel_1d.o \
   VelocityModel_3d.o \
+  XcorAnalysisSetting.o \
   XcorProcessingEngine.o \
   array_get_data_3c.o \
   array_get_data.o \

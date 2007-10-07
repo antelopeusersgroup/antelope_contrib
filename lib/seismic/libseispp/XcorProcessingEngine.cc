@@ -11,7 +11,7 @@
 
 const string gain_keyword("gain");
 XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
-	AnalysisSetting asinitial,
+	XcorAnalysisSetting asinitial,
 		string waveform_db_name,
 			string result_db_name) 
 			  : rdef(global_pf),am("css3.0"),analysis_setting(asinitial)
@@ -686,7 +686,7 @@ void XcorProcessingEngine::filter_data(TimeInvariantFilter f)
  BHZ and BHZ_01.  Note this function tacitly assumes a.arrival_chan_code is
  a single character like Z, N, or E.  
 */
-string set_chan_this_phase(string chan, AnalysisSetting& a)
+string set_chan_this_phase(string chan, XcorAnalysisSetting& a)
 {
 	if(chan.length()<3)
 		return(chan);
@@ -857,6 +857,11 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 					<<endl;
 			      }
 			    }
+			    /* Do not save arrival/assoc if subarray mode is enabled.  In that
+			    situation there is no definitive arrival for a given station and
+			    inconsistencies must be resolved by a least squares procedure */
+			    if(use_subarrays) continue;
+
 			    // These need to be computed and posted to
 			    // metadata for this trace object before
 			    // we attempt to update the database

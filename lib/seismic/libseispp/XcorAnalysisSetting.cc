@@ -1,8 +1,8 @@
-#include "AnalysisSetting.h"
+#include "XcorAnalysisSetting.h"
 using namespace std;
 using namespace SEISPP;
 namespace SEISPP{
-AnalysisSetting::AnalysisSetting(Metadata md)
+XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 {
 	try
 	{
@@ -53,7 +53,7 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	        	stack_type=RobustSNR;
 	        else
 	        {
-	        	cerr << "AnalysisSetting Metadata driven constructor:  "
+	        	cerr << "XcorAnalysisSetting Metadata driven constructor:  "
 	        		<< "unknown stack type ="
 	        		<< stack_type
 	        		<<endl
@@ -77,7 +77,7 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	        	component_for_analysis=2;
 	        else
 	        {
-	        	cerr << "AnalysisSetting Metadata driven constructor:  "
+	        	cerr << "XcorAnalysisSetting Metadata driven constructor:  "
 	        		<< "cannot handle component = "
 	        		<< component_name 
 	        		<<endl
@@ -119,7 +119,7 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	} catch (MetadataGetError mderr)
 	{
 		mderr.log_error();
-		throw SeisppError("AnalysisSetting construction failed");
+		throw SeisppError("XcorAnalysisSetting construction failed");
 	}
 	catch (SeisppError serr)
 	{
@@ -127,10 +127,10 @@ AnalysisSetting::AnalysisSetting(Metadata md)
 	}
 	catch (...)
 	{
-		throw SeisppError("AnalysisSetting constructor:  Unknown error was thrown");
+		throw SeisppError("XcorAnalysisSetting constructor:  Unknown error was thrown");
 	}
 }
-AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
+XcorAnalysisSetting::XcorAnalysisSetting(const XcorAnalysisSetting& old)
 {
 	aw_set=old.aw_set;
 	bw_set=old.bw_set;
@@ -152,7 +152,7 @@ AnalysisSetting::AnalysisSetting(const AnalysisSetting& old)
 	result_sort_order=old.result_sort_order;
 	arrival_chan_code=old.arrival_chan_code;
 }
-AnalysisSetting& AnalysisSetting::operator=(const AnalysisSetting& old)
+XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& old)
 {
     if(this!=&old)
     {
