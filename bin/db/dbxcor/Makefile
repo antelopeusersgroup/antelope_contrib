@@ -7,15 +7,26 @@ PF=dbxcor.pf
 MAN1=dbxcor.1
 DBG=-g
 cxxflags=-g 
+#
+#  Set this macro to another location if the motif libraries are 
+#  not in a standard place
+# MacOS location when installed with Fink Commander
+# XMOTIF=/sw
+# MacOS location when compiling source code from open motif 
+# Also seems to be standard for most linux distributions
+XMOTIF=/usr/X11R6
+# Solaris can use this -- redundant because normally in system
+# include path
+# XMOTIF=/usr/openwin
 
-ldlibs= -L./SciPlot -lseisw -lsciplot -lXm -lXt \
-  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp  -L/sw/lib 
+ldlibs= -L./SciPlot -L$(XMOTIF)/lib -lseisw -lsciplot -lXm -lXt \
+  -lseispp -lperf -lgclgrid -ltks $(TRLIBS) $(X11LIBS) -lseispp 
 
 CLEAN = cc_tks.h 
 
 include $(ANTELOPEMAKE)  	
 
-CXXFLAGS += -I/sw/include
+CXXFLAGS += -I$(XMOTIF)/include
 
 OBJS=	dbxcor.o \
   session_manager.o 
