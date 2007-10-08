@@ -18,6 +18,7 @@
     
 {
     our (%dl_mv, %sensor_mv);
+    our (%dl_snname);
     my (@dl_mv);
     my ($pfsource,$orbname,$orb,$pf,$mv,$pfmass,$pfobj,$nomrcd);
     my ($target,$cmdorb,$statorb,$dl,$dlname,$targetsrc);
@@ -131,6 +132,7 @@
 	   ($mvdlsta,$snname)	= dbgetv(@dbj, qw (dlsta snname) ) ;
 	   $mvdlsta = &trim($mvdlsta);
 	   $snname = &trim($snname);
+	   $dl_snname{"$mvdlsta"} = $snname;
 	
 	   if (!$snname  || !defined($sensor_mv{$snname} ) ) {
 		print STDERR "Database error!  Can't get sensor definition for: $mvdlsta\n";
@@ -375,6 +377,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
     my (@dlsta,@mc,@recenter,@xclude,@dataloggers) ;
     our ($snname) ;
     our (%dl_mv,%sensor_mv);
+    our (%dl_snname);
     @recenter = ();
     @mc = qw(m0 m1 m2 m3 m4 m5);
     $srcname =~ s/\/.*// ;
@@ -430,7 +433,7 @@ sub check_masspos {#  &check_masspos($pf,$mv,$srcname);
 
 
             if ( ($opt_D && ( abs($masspo) >= $dl_mv{$dlsta}) ) || $opt_f ) {
-               printf STDERR "%7s  %10s   %20s  %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $snname, $m0, $m1, $m2, $m3, $m4, $m5 ;
+               printf STDERR "%7s  %10s   %-20s  %4s  %4s  %4s  %4s  %4s  %4s	\n", $dlsta, $srcname, $dl_snname{"$dlsta"}, $m0, $m1, $m2, $m3, $m4, $m5 ;
                push(@recenter,$dlsta);
                $recenter{$dlsta} = $srcname;
                last;
@@ -468,8 +471,8 @@ sub get_masspos {#  &get_masspos($mv,$orb,@sources);
     }
     
     if ($opt_D) {
-	printf STDERR  "\ndl_sta   sourcename    sensor       m0    m1    m2    m3    m4    m5\n";
-	printf STDERR  "=======  ==========   ======       ====  ====  ====  ====  ====  ====\n";
+	printf STDERR  "\ndl_sta   sourcename   sensor                  m0    m1    m2    m3    m4    m5\n";
+	printf STDERR  "=======  ==========   ======                 ====  ====  ====  ====  ====  ====\n";
     } else {
 	printf STDERR  "\ndl_sta   sourcename    m0    m1    m2    m3    m4    m5\n";
 	printf STDERR  "=======  ==========   ====  ====  ====  ====  ====  ====\n";
