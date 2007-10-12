@@ -14,6 +14,7 @@
 
 #include "db.h"
 #include "coords.h"
+#include "assoc.h"
 #include "orb.h"
 #include "Pkt.h"
 #include "perlembed.h"
@@ -965,6 +966,25 @@ parse_perlobj_output (Pf *pf, char *disposition, Pf **pfout)
 }
 
 int
+freepplist (ProcessParams *pp, int npp)
+
+{
+	int i;
+
+	if (pp == NULL) return (0);
+
+	for (i=0; i<npp; i++) {
+		if (pp[i].channels) {
+			freearr (pp[i].channels, free);
+		}
+	}
+
+	free (pp);
+
+	return (0);
+}
+
+int
 make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *poin, ProcessObject **poout)
 
 {
@@ -1200,25 +1220,6 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 	}
 
 	return (1);
-}
-
-int
-freepplist (ProcessParams *pp, int npp)
-
-{
-	int i;
-
-	if (pp == NULL) return (0);
-
-	for (i=0; i<npp; i++) {
-		if (pp[i].channels) {
-			freearr (pp[i].channels, free);
-		}
-	}
-
-	free (pp);
-
-	return (0);
 }
 
 int
@@ -1838,6 +1839,7 @@ flush_processing (ProcessObject *po, Dbptr dbtrace_cache, int type, Dbptr dbout,
 	return (0);
 }
 
+void
 main (int argc, char **argv)
 
 {
@@ -2467,7 +2469,17 @@ main (int argc, char **argv)
 				}
 				free (chan_expr);
 
-				if (nrec == 0) continue;
+				if (nrec == 0) {
+					if (verbose > 2) {
+						char *s1, *s2;
+						s1 = mystrtime(sp->tstart-10.0);
+						s2 = mystrtime(sp->tend+10.0);
+						elog_notify (0, "%d: %s: %s: Processing db - no data from %s to %s\n", ep->myevid, sp->sta, sp->chan_expr, s1, s2);
+						free (s1);
+						free (s2);
+					}
+					continue;
+				}
 
 				irec = ep->pt->dbt.record;
 
@@ -2858,7 +2870,7 @@ PROCESS_WFTHREADS:
 		if (!wait && pktidin == pktidnewest) break;
 	}
 
-	return (0);
+	exit (0);
 }
 
 #ifdef linux
