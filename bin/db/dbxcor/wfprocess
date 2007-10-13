@@ -1,0 +1,54 @@
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+Attribute timetype
+	String (1)
+	Format ( "%-1s" )
+	Null ( "-" )
+	Range ( "timetype =~ /a|r/" )
+	Description ( "Flag or absolute or relative time" )
+	Detail {
+		Processed waveforms treat time in the time series by
+		one of two different standards. They assume either 
+		times are all relative to some algorithm specific
+		time reference, or the time is based on an absolute
+		time standard (norm for raw data in seismology).  
+		When this attribute is "a" it the time is assumed
+		absolute while "r" denotes a relative time scale.
+		In the later case it is up to the application to 
+		maintain the time reference.
+	}
+	;
+
+Relation wfprocess
+	Fields ( pwfid time endtime timetype dir dfile foff datatype samprate nsamp 
+algorithm lddate )
+	Primary ( pwfid )
+	Description ( "Core processed waveform table" )
+	Detail {
+		The antelope trace library is designed to work exclusively
+		on data stored in memory.  Not all algorithms one can
+		devise for seismic data can work in this mode even on the
+		largest computers so a table is needed to store processed
+		waveforms in an external database.  The intent of this
+		design is that this table is the core table storing all
+		intermediate trace data.  Any algorithm will almost 
+		certainly create auxiliary tables that can be cross linked
+		into this core table through the pwfid field.  In addition
+		it would be normal to select as input only traces that 
+		are the output of the algorithm field.  MpT
+	}
+	;
+

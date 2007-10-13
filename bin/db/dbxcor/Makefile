@@ -1,7 +1,7 @@
 
 BIN=dbxcor
-DATADIR=schemas
-DATA=xcor1.2
+DATADIR=schemas/css3.0.ext
+DATA=evlink sclink wfprocess xcorarrival xcorbeam
 
 PF=dbxcor.pf
 MAN1=dbxcor.1

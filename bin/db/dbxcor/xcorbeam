@@ -1,0 +1,83 @@
+Attribute fold
+	Integer (4)
+	Format ( "%4d" )
+	Null ( "-1" )
+	Range ( "fold > 0" )
+	Description ( "number of elements used in a stack" )
+	Detail {
+		In stacking data we commonly used the word fold to denote the number of 
+members stacked to produce an average estimate.
+	}
+	;
+
+Attribute pchan
+	String (8)
+	Format ( "%-8s" )
+	Null ( "-" )
+	Description ( "Processing channel code" )
+	Detail {
+		This is a processing channel code that may or may not match the more 
+common chan attribute.  It is intended most to denote  generic channel after resampling 
+and/or coordinate reorientation.  The expected codes are Z,N,E,L,R,T,H, and 3C but the 
+range is not currently restricted to these.
+	}
+	;
+
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+Attribute robustt0
+	Real (10)
+	Format ( "%10.5f" )
+	Null ( "-9999.99999" )
+	Units ( "seconds" )
+	Description ( "Start time of a robust stack time window" )
+	Detail {
+		In the robust stacking method used in array-based cross-correlation a 
+separate time gate is used to compute coherence estimates used for defining a loss 
+function to automatically discard noisy and inconsistent traces from the stack.  This 
+special parameter defines the length of that time gate.
+	}
+	;
+
+Attribute robusttwin
+	Real (9)
+	Format ( "%9.2f" )
+	Null ( "0.00" )
+	Range ( "twin > 0.0" )
+	Description ( "rubust time window (s)" )
+	Detail {
+		In the robust stacking method used in array-based cross-corrlation we use 
+a different time window for defining a coherence-based loss function used for the robust 
+stacking method.  This defines the length of that time window.
+	}
+	;
+
+Relation xcorbeam
+	Fields ( netname chan pchan phase pwfid filter robustt0 robusttwin fold amp)
+	Primary ( netname pwfid )
+	Foreign ( pwfid ) 
+	Description ( "Saves attributes of beam computed through cross-correlation" )
+	Detail {
+		In generalized array processing we use cross-correlation of the stack of an 
+ensemble of traces as a correlation function.  This relation holds attributes that define 
+the stacked trace characteristics.  Note especially that it links to the actual array beam 
+stored in the wfprocess table through the pwfid attribute.
+
+
+Note the amp attribute stored here is an rms figure for the computed beam.
+	}
+	;
+

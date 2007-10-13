@@ -1,0 +1,36 @@
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+Relation sclink
+	Fields  ( sta chan pwfid )
+	Primary ( pwfid )
+	Description ( "Link between wfprocess and css sta:chan concept" )
+	Detail {
+		The CSS3.0 schema is centered on the concept of using 
+		station, channel, and a time interval as the primary index
+		into seismic data.  This is what makes it possible for  CSS3.0 
+		to provide a seamless view into both triggered and continuous data.  
+		Not all seismic data, however, share this concept.  Multichannel
+		data, or instance, would view a station name as an odd idea. 
+		CSS3.0 is also dogmatic in it's perspective that all data are stored
+		as scalar times series.  It and does not provide a simple way to 
+		handle three-component data because of this viewpoint. 
+		This tiny table provides a link between the CSS3.0 world 
+		and a more abstract definition of seismic data through the wfprocess
+		table.   The wfprocess table is data neutral containing only the
+		most generic information required to describe time series data
+		of any form.
+	}
+	;

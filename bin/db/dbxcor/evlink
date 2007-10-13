@@ -1,0 +1,28 @@
+Attribute pwfid
+	Integer (8)
+	Format ( "%8d" )
+	Null ( "-1" )
+	Range ( "wfid > 0" )
+	Description ( "processed waveform id" )
+	Detail {
+		Comparable to wfid used in wfdisc, but this integer
+		key is the primary index of the core processing waveform
+		table and is used for association and joining of 
+		ancillary tables created by all processing algorithms
+		that use this schema.
+	}
+	;
+
+
+Relation evlink
+	Fields ( pwfid evid lddate )
+	Primary ( pwfid evid )
+	Description ( "Link table between pwfdisc and catalog data" )
+	Detail {
+		The CSS3.0 schema has a disconnect between waveforms
+		and catalog (event location and pick) data.  This
+		table can be used to link source information to processed
+		waveform data.
+	}
+	;
+

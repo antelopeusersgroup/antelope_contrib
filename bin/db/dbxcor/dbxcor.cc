@@ -2200,7 +2200,7 @@ main (int argc, char **argv)
 	XmNallowResize,		True,
 	XmNwidth,		800,
 	XmNpaneMaximum,		20000,
-	XmNpaneMinimum,		800,
+	XmNpaneMinimum,		500,
 	NULL);
   sm.parent=second_paned_win;
 
