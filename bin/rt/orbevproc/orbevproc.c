@@ -2420,6 +2420,18 @@ main (int argc, char **argv)
 				if (ep->process_tbl == NULL) {
 					die (0, "newtbl(ep->process_tbl) error.\n");
 				}
+
+				/* close and re-open the waveform database if this is orbevproc */
+
+				if (dbwf.database != dbINVALID && type == TYPE_ORB) {
+					if (dbclose (dbwf)  == dbINVALID) {
+						complain (0, "dbclose(dbwf) error.\n");
+					}
+					if (dbopen (dbwfname, "r+", &dbwf) == dbINVALID) {
+						die (0, "dbopen(%s) error.\n", dbwfname);
+					}
+				}
+
 				dbtrace = trnew ( 0, 0 ) ;
 				if (dbtrace.database == dbINVALID) {
 					die (0, "trnew(dbtrace) error\n");
