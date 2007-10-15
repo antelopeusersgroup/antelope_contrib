@@ -47,7 +47,10 @@ not set.
 static Dbptr modeldb;
 #define ENVNAME "VELOCITY_MODEL_DATABASE"
 #define DEFAULT_DB "vmodel"
-void _init()
+
+#pragma init (tt1dcvl_init)
+
+void tt1dcvl_init()
 {
 	char *dbpath;
 	char *dbname;

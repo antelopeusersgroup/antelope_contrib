@@ -19,5 +19,12 @@ $(LIB) : $(OBJS)
 	$(RANLIB) $@
 
         
-$(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) $(ldlibs) -o $@ $(LORDER) $(OBJS) $(TSORT)
+$(DLIB) : $(OBJS) _init.o
+	$(RM) $@
+	case `uname -s` in \
+	    SunOS) $(CC) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
+	    Linux) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) _init.o ;; \
+	    Darwin) $(DLD) $(DLDFLAGS) -o $@ -init tt1dcvl_init $(DLDLIBS) $(OBJS) ;; \
+	    *)  echo dynamic libtr not created: System type `uname -s` not recognized. ;;\
+	esac
+
