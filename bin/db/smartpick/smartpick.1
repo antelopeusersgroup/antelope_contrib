@@ -22,14 +22,18 @@ immediately upon its own startup, or after the fact via a GUI button.
 (Additional, less-common options for dbpick(1) may be specified in the
 \fIdbpick_options\fP parameter of the \fBsmartpick\fP parameter file).
 
-Many things are configurable with \fBsmartpick\fP that were not with
-the earlier smartpick(1) program. All of the relevant window sizes and
-locations can be configured via the parameter file.  You can make the
-dbpick waveforms window exactly as big as you want and control where it
-goes at startup with the \fIdbpick_geometry\fP parameter.  You can make
-the dbpick commands window exactly as big as you want, control whether
-it starts up iconified, and control where it goes at startup with the
-two parameters \fIdbpick_command_geometry\fP and
+Many things are configurable with \fBsmartpick\fP that were not
+with the earlier smartpick(1) program. All of the relevant window
+sizes and locations can be configured via the parameter file.  You
+can make the dbpick waveforms window exactly as big as you want and
+control where it goes at startup with the \fIdbpick_geometry\fP
+parameter (this and all other geometry specifications are formatted
+as described in the X(7) man page under GEOMETRY SPECIFICATIONS,
+e.g. WIDTHxHEIGHT+XOFFSET+YOFFSET with all four values specified as 
+integer numbers of pixels; also see the examples below).  You can
+make the dbpick commands window exactly as big as you want, control
+whether it starts up iconified, and control where it goes at startup
+with the two parameters \fIdbpick_command_geometry\fP and
 \fIdbpick_command_iconified\fP.  You can control where the
 \fBsmartpick\fP GUI itself goes at startup with the
 \fIsmartpick_geometry\fP parameter.
@@ -973,7 +977,7 @@ The modified parameter-file can then be specified on the
 .SH DIAGNOSTICS
 .SH "SEE ALSO"
 .nf
-dbpick(1), smartpick(1)
+dbpick(1), smartpick(1), X(7)
 .fi
 .SH "BUGS AND CAVEATS"
 
