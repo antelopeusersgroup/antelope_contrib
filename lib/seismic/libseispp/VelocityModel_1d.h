@@ -149,6 +149,10 @@ public:
 	**/
 	VelocityModel_1d(string fname, string form, string property)
 		throw(VelocityModel_1d_IOerror);
+	/* Standard copy constructor. */
+	VelocityModel_1d(const VelocityModel_1d& old);
+	/* Standard assignment operator. */
+	VelocityModel_1d& operator=(const VelocityModel_1d& old);
 	/*!
 	// Return interpolated velocity at depth zin.
 	// If z is above the first point the first point velocity is returned.

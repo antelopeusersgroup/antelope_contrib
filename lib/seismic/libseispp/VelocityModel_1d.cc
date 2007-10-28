@@ -173,4 +173,22 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 	}
 	input.close();
 }
+VelocityModel_1d::VelocityModel_1d(const VelocityModel_1d& old)
+{
+	nlayers=old.nlayers;
+	grad=old.grad;
+	v=old.v;
+	z=old.z;
+}
+VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
+{
+	if(this!=&old)
+	{
+		nlayers=old.nlayers;
+		grad=old.grad;
+		v=old.v;
+		z=old.z;
+	}
+	return(*this);
+}
 } // Termination of namespace SEISPP definitions
