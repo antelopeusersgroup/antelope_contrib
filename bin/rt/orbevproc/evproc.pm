@@ -23,6 +23,7 @@ require Exporter;
 	'findbad',
 	'computestats',
 	'isclipped',
+	'isnullcalib',
 	'mystrtime' ) ;
 
 use lib "$ENV{ANTELOPE}/data/perl" ;
@@ -259,42 +260,77 @@ sub setup_processes {
 sub match_sta {
 	my $obj = shift ;
 	my $sta = shift ;
+	my $time = shift ;
+	my $chan;
+	if (scalar(@_) > 0) {$chan = shift;}
 
+	my $date = yearday ( $time ) ;
+	my $process ;
 	my $snet = "" ;
 	my @dbn = dblookup ( @{$obj->{dbn}}, 0, 0, "sta", $sta ) ;
 	if ($dbn[3] >= 0) {
 		$snet = dbgetv ( @dbn, "snet" ) ;
 	}
 
-	my $ok ;
 	my $entry ;
+	my @dbv ;
+	my $channels = {};
+	my $printlog ;
+	my $ndbv ;
 	foreach $entry (@{$obj->{channels}}) {
 		if ($snet !~ /$entry->{snet_expr}/ ) { next ; }
-		if ($sta !~ /$entry->{sta_expr}/ ) { next; }
-		$ok = $entry ;
+		if ($sta !~ /$entry->{sta_expr}/ ) { next ; }
+		$process = $entry ;
+		if ( defined @{$obj->{reject}} ) {
+			my $entry2 ;
+			foreach $entry2 (@{$obj->{reject}}) {
+				if ($snet !~ /$entry2->{snet_expr}/ ) { next ; }
+				if ($sta !~ /$entry2->{sta_expr}/ ) { next ; }
+				undef $process ;
+				addlog ($obj, 1, "station ". $sta . " snet " . $snet . " match in reject table - skipping" ) ;
+				last ;
+			}
+		}
+		if ( ! defined $process ) { last; }
+
+		my $expr ;
+		if ( defined $chan ) {
+			$expr = sprintf 
+				'sta == "%s" && chan == "%s" && chan =~ /%s/ && %d >= ondate && ( %d <= offdate || offdate == null("offdate") )',
+						$sta, $chan, $process->{chan_expr}, $date, $date ;
+		} else {
+			$expr = sprintf 
+				'sta == "%s" && chan =~ /%s/ && %d >= ondate && ( %d <= offdate || offdate == null("offdate") )',
+						$sta, $process->{chan_expr}, $date, $date ;
+		}
+		@dbv = dbsubset ( @{$obj->{dbsc}}, $expr ) ;
+		$ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
+
+		if ($ndbv < 1) {
+			dbfree @dbv ;
+			undef $process ;
+			$printlog = 1 ;
+			next ;
+		}
+
+		undef $printlog ;
+	
+		for ($dbv[3] = 0; $dbv[3] < $ndbv; $dbv[3]++) {
+			my $chan = dbgetv ( @dbv, "chan" ) ;
+			$channels->{$chan}{first} = 1 ;
+			$channels->{$chan}{noise_done} = 0 ;
+			$channels->{$chan}{signal_done} = 0 ;
+		}
+		dbfree @dbv ;
+
 		last ;
 	}
-
-	if ( ! defined $ok ) { 
-		addlog ($obj, 1, "station ". $sta . " snet " . $snet . " no match in channels table - skipping" ) ;
-		return "skip" ; 
+	if ( defined $printlog ) {
+		addlog ( $obj, 1, "station ". $sta . ": no channel matches found - skipping" ) ;
 	}
+	if ( ! defined $process ) { return "skip" ; }
 
-	if ( defined @{$obj->{reject}} ) {
-		foreach $entry (@{$obj->{reject}}) {
-			if ($snet !~ /$entry->{snet_expr}/ ) { next ; }
-			if ($sta !~ /$entry->{sta_expr}/ ) { next; }
-			undef $ok ;
-			last ;
-		}
-
-		if ( ! defined $ok ) { 
-			addlog ($obj, 1, "station ". $sta . " snet " . $snet . " match in reject table - skipping" ) ;
-			return "skip" ; 
-		}
-	}
-
-	return ( "ok", $ok ) ;
+	return ( "ok", $process, $channels, $ndbv ) ;
 }
 
 sub time2samp {		# This will return the closest sample value index
@@ -530,6 +566,10 @@ sub computestats {	# Compute waveform statistics
 	my ($t0, $samprate, $nsamp, $calib) = dbgetv ( @db, "time", "samprate", "nsamp", "calib" ) ;
 	my $dt = 1.0 / $samprate ;
 
+	if ($applycalib && $calib == 0.0) {
+		return;
+	}
+
 	if ($applycalib && $calib != 0.0) {
 		$meanremove /= $calib;
 	}
@@ -691,6 +731,32 @@ sub isclipped {		# Determine if waveform is clipped
 		if ($val >= $clip_upper) {return 1;}
 		if ($val <= $clip_lower) {return 1;}
 	}
+
+	return  0 ;
+}
+
+sub isnullcalib {	# Determine if waveform has null calib
+			#
+			# args:
+			#	@db	= trace database pointer, should be already
+			#		    initialized to point to "trace" table
+			#		    and have its record number set
+			#
+			# returns:
+			#	0 if calib ok or 1 if null calib
+	my @db ;
+	$db[0] = shift ;
+	$db[1] = shift ;
+	$db[2] = shift ;
+	$db[3] = shift ;
+
+	# get the calib value from the trace row
+
+	my ($calib, $segtype) = dbgetv ( @db, "calib", "segtype" ) ;
+
+	if ($calib == 0.0) {return 1;}
+
+	if ($segtype eq "c") {return 1;}
 
 	return  0 ;
 }

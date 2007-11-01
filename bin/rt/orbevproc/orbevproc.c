@@ -2427,9 +2427,18 @@ main (int argc, char **argv)
 					if (dbclose (dbwf)  == dbINVALID) {
 						complain (0, "dbclose(dbwf) error.\n");
 					}
+					if (strcmp(dbname, dbwfname)) {
+						if (dbclose (db)  == dbINVALID) {
+							complain (0, "dbclose(db) error.\n");
+						}
+					}
 					if (dbopen (dbwfname, "r+", &dbwf) == dbINVALID) {
 						die (0, "dbopen(%s) error.\n", dbwfname);
 					}
+					if (dbopen (dbname, "r+", &db) == dbINVALID) {
+						die (0, "dbopen(%s) error.\n", dbname);
+					}
+					finit_db (db);
 				}
 
 				dbtrace = trnew ( 0, 0 ) ;

@@ -15,9 +15,9 @@ event_processes &Tbl{
 
 mlrichter_params &Arr{
 	channels &Tbl{
-#	snet_expr chan_expr           noise_twin signal_twin   snr_thresh
-#     	   sta_expr          filter         noise_toffset signal_toffset
-     	.* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
+#	snet_expr chan_expr           noise_twin signal_twin   snr_thresh         clip_upper
+#     	   sta_expr          filter         noise_toffset signal_toffset clip_lower
+     	.* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0       -65000.0 +65000.0
      	.* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
 	}
 	reject &Tbl{

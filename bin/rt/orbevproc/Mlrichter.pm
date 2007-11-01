@@ -139,62 +139,11 @@ sub getwftimes {
 		if ( defined $self->{stations}{$sta} ) { next ; }
 
 		my $process ;
-		my $snet = "" ;
-		my @dbn = dblookup ( @{$self->{dbn}}, 0, 0, "sta", $sta ) ;
-		if ($dbn[3] >= 0) {
-			$snet = dbgetv ( @dbn, "snet" ) ;
-		}
-
-		my $entry ;
-		my @dbv ;
 		my $channels = {};
-		my $printlog ;
 		my $ndbv ;
-		foreach $entry (@{$self->{channels}}) {
-			if ($snet !~ /$entry->{snet_expr}/ ) { next ; }
-			if ($sta !~ /$entry->{sta_expr}/ ) { next ; }
-			$process = $entry ;
-			if ( defined @{$self->{reject}} ) {
-				my $entry2 ;
-				foreach $entry2 (@{$self->{reject}}) {
-					if ($snet !~ /$entry2->{snet_expr}/ ) { next ; }
-					if ($sta !~ /$entry2->{sta_expr}/ ) { next ; }
-					undef $process ;
-					addlog ($self, 1, "station ". $sta . " snet " . $snet . " match in reject table - skipping" ) ;
-					last ;
-				}
-			}
-			if ( ! defined $process ) { last; }
 
-			my $expr = sprintf 
-				'sta == "%s" && chan =~ /%s/ && %d >= ondate && ( %d <= offdate || offdate == null("offdate") )',
-					$sta, $process->{chan_expr}, $date, $date ;
-			@dbv = dbsubset ( @{$self->{dbsc}}, $expr ) ;
-			$ndbv = dbquery ( @dbv, "dbRECORD_COUNT" ) ;
-
-			if ($ndbv < 1) {
-				dbfree @dbv ;
-				undef $process ;
-				$printlog = 1 ;
-				next ;
-			}
-
-			undef $printlog ;
-		
-			for ($dbv[3] = 0; $dbv[3] < $ndbv; $dbv[3]++) {
-				my $chan = dbgetv ( @dbv, "chan" ) ;
-				$channels->{$chan}{first} = 1 ;
-				$channels->{$chan}{noise_done} = 0 ;
-				$channels->{$chan}{signal_done} = 0 ;
-			}
-			dbfree @dbv ;
-
-			last ;
-		}
-		if ( defined $printlog ) {
-			addlog ( $self, 1, "station ". $sta . ": no channel matches found - skipping" ) ;
-		}
-		if ( ! defined $process ) { next; }
+		($ret, $process, $channels, $ndbv) = match_sta ($self, $sta, $otime) ;
+		if ( $ret ne "ok" ) { next; }
 
 		if ($delta*111.1 > 600.0) {
 			addlog ( $self, 1, $sta . ": station too far away" ) ;
@@ -343,6 +292,12 @@ sub process_channel {
 	my $sta = $ret->{sta} ;
 	my $chan = $ret->{chan} ;
 
+	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+			&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
+		addlog ( $self, 1, "%s: %s: Channel mag not computed because of null calib",
+ 						$sta, $chan )  ;
+		return $ret ;
+	}
 	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 			&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of clipped data",

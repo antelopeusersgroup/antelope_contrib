@@ -194,7 +194,9 @@ sub getwftimes {
 		if ( substr ( $iphase, 0, 1 ) ne "P" ) { next ; }
 		if ( defined $self->{stations}{$sta} ) { next ; }
 		my $process ;
-		($ret, $process) = match_sta ($self, $sta) ;
+		my $channels = {};
+		my $ndbv ;
+		($ret, $process, $channels, $ndbv) = match_sta ($self, $sta, $otime, $chan) ;
 		if ( $ret ne "ok" ) { next; }
 
 		if ($delta < 21.0) {
@@ -218,11 +220,6 @@ sub getwftimes {
 		my $tstart = $noise_tstart - 100.0 ;
 		my $tend = $signal_tend ;
 
-		my $channels = {};
-		$channels->{$chan}{first} = 1 ;
-		$channels->{$chan}{noise_done} = 0 ;
-		$channels->{$chan}{signal_done} = 0 ;
-
 		my $hash = {
 			"chan_expr" => $chan,
 			"delta" => $delta,
@@ -236,7 +233,7 @@ sub getwftimes {
 			"noise_twin" => $noise_twin,
 			"snr_thresh" => $process->{snr_thresh},
 			"tupdate" => $self->{params}{update_time},
-			"nchans" => 1,
+			"nchans" => $ndbv,
 			"channels" => $channels,
 		} ;
 		if ( defined $process->{clip_upper} && defined $process->{clip_lower} ) {
@@ -330,6 +327,12 @@ sub process_channel {
 	my $sta = $ret->{sta} ;
 	my $chan = $ret->{chan} ;
 
+	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+			&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
+		addlog ( $self, 1, "%s: %s: Channel mag not computed because of null calib",
+ 						$sta, $chan )  ;
+		return $ret ;
+	}
 	if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 			&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 		addlog ( $self, 1, "%s: %s: Channel mag not computed because of clipped data",
@@ -341,57 +344,39 @@ sub process_channel {
  						$sta, $chan )  ;
 		return $ret ;
 	}
- 	if ( defined $self->{stations}{$sta}{channels}{$chan}{snr} ) {
-		if ( $self->{stations}{$sta}{snr_thresh} < 1.0
-				|| $self->{stations}{$sta}{channels}{$chan}{snr}
-					> $self->{stations}{$sta}{snr_thresh} ) {
-			my $micrometers_per_second =
- 				$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
-			my $period =
- 				abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
-			if ( $period < 0.2 || $period > 30.0 ) {
-				addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
- 							$sta, $chan )  ;
-				return $ret ;
-			}
- 			$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( 
-				$self, $sta, $micrometers_per_second ) ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_time} = 
-				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
-				$self->{stations}{$sta}{channels}{$chan}{snr} ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_val1} = $micrometers_per_second ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_units1} = "um/s" ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
- 			$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
-			addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
- 					$sta, $chan,
- 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
-		} else {
-			addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
- 							$sta, $chan )  ;
-				
+	if ( $self->{stations}{$sta}{snr_thresh} < 1.0
+			|| $self->{stations}{$sta}{channels}{$chan}{snr}
+				> $self->{stations}{$sta}{snr_thresh} ) {
+		my $micrometers_per_second =
+ 			$self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
+		if ( ! defined $self->{stations}{$sta}{channels}{$chan}{signal_per}) {
+			addlog ( $self, 1, "%s: %s: Channel mag not computed because period not determined (data peak value near end of data range)",
+ 						$sta, $chan )  ;
+			return $ret ;
 		}
-	} else {
-		my $micrometers_per_second = $self->{stations}{$sta}{channels}{$chan}{signal_amp} ;
-		my $period = abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
+		my $period =
+ 			abs($self->{stations}{$sta}{channels}{$chan}{signal_per}) ;
 		if ( $period < 0.2 || $period > 30.0 ) {
 			addlog ( $self, 1, "%s: %s: Channel mag not computed because period outside of range",
  						$sta, $chan )  ;
 			return $ret ;
 		}
- 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( $self, $sta, $micrometers_per_second ) ;
+ 		$self->{stations}{$sta}{channels}{$chan}{m} = compmb ( 
+			$self, $sta, $micrometers_per_second ) ;
  		$self->{stations}{$sta}{channels}{$chan}{m_time} = 
-				$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
+			$self->{stations}{$sta}{channels}{$chan}{signal_tmax} ;
  		$self->{stations}{$sta}{channels}{$chan}{m_snr} = 
-				$self->{stations}{$sta}{channels}{$chan}{snr} ;
+			$self->{stations}{$sta}{channels}{$chan}{snr} ;
  		$self->{stations}{$sta}{channels}{$chan}{m_val1} = $micrometers_per_second ;
  		$self->{stations}{$sta}{channels}{$chan}{m_units1} = "um/s" ;
  		$self->{stations}{$sta}{channels}{$chan}{m_val2} = $period ;
  		$self->{stations}{$sta}{channels}{$chan}{m_units2} = "sec" ;
-		addlog ( $self, 2, "%s: %s: Channel mag = %.3f",
- 					$sta, $chan,
- 					$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+		addlog ( $self, 1, "%s: %s: Channel mag = %.3f",
+ 				$sta, $chan,
+ 				$self->{stations}{$sta}{channels}{$chan}{m} ) ;
+	} else {
+		addlog ( $self, 1, "%s: %s: Channel mag not computed because of low snr",
+ 						$sta, $chan )  ;
 	}
 
 	return $ret ;

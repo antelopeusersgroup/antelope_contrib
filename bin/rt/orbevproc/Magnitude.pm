@@ -226,6 +226,8 @@ sub process_channel {
 						$self->{stations}{$sta}{noise_tend} ) ;
 		my $override = $flush == 1 && $fbad < $self->{maximum_bad_fraction} ;
 		if ( $nbad == 0 || $override ) {
+			$self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+					= isnullcalib ( @dbtrace ) ;
 			if ( defined $self->{stations}{$sta}{clip_upper} 
 					&& defined $self->{stations}{$sta}{clip_lower} ) {
 				$self->{stations}{$sta}{channels}{$chan}{is_clipped} 
@@ -267,6 +269,8 @@ sub process_channel {
 			addlog ( $self, 3, "%s: %s: Leaving process_channel because signal not ready", $sta, $chan ) ;
 			return makereturn ( $self, "ok" ) ; 
 		}
+		$self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+					= isnullcalib ( @dbtrace ) ;
 		if ( defined $self->{stations}{$sta}{clip_upper} 
 				&& defined $self->{stations}{$sta}{clip_lower}
 				&& $needfilter ) {
@@ -397,6 +401,12 @@ sub process_station {
 	my $msta = -1.e30 ;
 	my $mchan ;
 	foreach  my $chan (keys(%{$self->{stations}{$sta}{channels}})) {
+		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} 
+				&& $self->{stations}{$sta}{channels}{$chan}{is_nullcalib} ) {
+			addlog ( $self, 1, "%s: Station mag = data with null calib",
+ 						$sta ) ;
+			return makereturn ( $self, "ok" ) ;
+		}
 		if ( defined $self->{stations}{$sta}{channels}{$chan}{is_clipped} 
 				&& $self->{stations}{$sta}{channels}{$chan}{is_clipped} ) {
 			addlog ( $self, 1, "%s: Station mag = data clipped",

@@ -75,9 +75,9 @@ for \fBMlrichter\fP follows.
 
 mlrichter_params &Arr{
      channels &Tbl{
-#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh
-#       sta_expr          filter         noise_toffset signal_toffset
-     .* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0
+#    snet_expr chan_expr           noise_twin signal_twin   snr_thresh         clip_upper
+#       sta_expr          filter         noise_toffset signal_toffset clip_lower
+     .* TRO    SH[12NE].* autosp   tproc 10.0 f2.0     10.0 3.0       -65000.0 +65000.0
      .* .*     BH[12NE].* auto     tproc 10.0 f2.0     10.0 3.0
      }
      reject &Tbl{
@@ -152,6 +152,14 @@ in the search.
 This is a signal to noise ratio minimum threshold for excluding magnitude values for signals that are close
 to the noise level. If the filtered maximum Richter signal value divided by the noise value is less than
 this threshold, then the magnitude value for this channel is not used.
+.IP \fIclip_lower\fP
+This is a lower clip limit in raw counts. If any data points in the signal or noise windows range below 
+this value, then the data is clipped and the station will not be used for computing magnitude.
+If no clip checking is required, then this value, along with \fIclip_upper\fP, can be omitted.
+.IP \fIclip_upper\fP
+This is a upper clip limit in raw counts. If any data points in the signal or noise windows range above 
+this value, then the data is clipped and the station will not be used for computing magnitude.
+If no clip checking is required, then this value, along with \fIclip_lower\fP, can be omitted.
 .RE
 .LP
 When determining which channels to process, each line in the \fIchannels\fP table is compared against
