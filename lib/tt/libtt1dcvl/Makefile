@@ -25,6 +25,6 @@ $(DLIB) : $(OBJS) _init.o
 	    SunOS) $(CC) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
 	    Linux) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) _init.o ;; \
 	    Darwin) $(DLD) $(DLDFLAGS) -o $@ -init tt1dcvl_init $(DLDLIBS) $(OBJS) ;; \
-	    *)  echo dynamic libtr not created: System type `uname -s` not recognized. ;;\
+	    *)  echo dynamic $(DLIB) not created: System type `uname -s` not recognized. ;;\
 	esac
 
