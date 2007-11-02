@@ -17,7 +17,12 @@ $(LIB) : $(OBJS)
 
         
 $(DLIB) : $(OBJS)
-	$(DLD) $(DLDFLAGS) -L$(ANTELOPE)/lib $(LDLIBS) -o $@ $(LORDER) $(OBJS) $(TSORT)
-
+	$(RM) $@
+	case `uname -s` in \
+	    SunOS) $(CC) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) ;; \
+	    Linux) $(DLD) $(DLDFLAGS) -o $@ $(DLDLIBS) $(OBJS) _init.o ;; \
+	    Darwin) $(DLD) $(DLDFLAGS) -o $@ -init ttregions_init $(DLDLIBS) $(OBJS) ;; \
+	    *)  echo dynamic $(DLIB) not created: System type `uname -s` not recognized. ;;\
+	esac
 
 # $Id$ 
