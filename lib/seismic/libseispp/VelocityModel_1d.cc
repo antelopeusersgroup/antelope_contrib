@@ -131,7 +131,7 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 		{
 			for(i=0;i<12;++i) input.getline(line,255);
 		}
-		while(input.good())
+		while(!input.eof())
 		{
 			double f1,f2,f3;
 			double skipper;
@@ -140,6 +140,7 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 			input >> f3;
 			if(form=="rbh")
 				for(i=0;i<7;++i) input >> skipper;
+			if(input.eof()) break;
 			if(property=="P")
 			{
 				z.push_back(f1);
@@ -171,8 +172,8 @@ VelocityModel_1d::VelocityModel_1d(string fname,
 		throw(VelocityModel_1d_IOerror("Unrecognized format namea = "+form,
 				"VelocityModel_1d constructor failed"));
 	}
-	input.close();
 }
+/* Standard copy constructor */
 VelocityModel_1d::VelocityModel_1d(const VelocityModel_1d& old)
 {
 	nlayers=old.nlayers;
@@ -180,6 +181,7 @@ VelocityModel_1d::VelocityModel_1d(const VelocityModel_1d& old)
 	v=old.v;
 	z=old.z;
 }
+/* Standard assignment operator */
 VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
 {
 	if(this!=&old)
@@ -190,5 +192,36 @@ VelocityModel_1d& VelocityModel_1d::operator=(const VelocityModel_1d& old)
 		z=old.z;
 	}
 	return(*this);
+}
+/* Save a model to a database */
+void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
+	throw (VelocityModel_1d_Dberror)
+{
+	db=dblookup(db,0,"mod1d",0,0);
+	if(db.table==dbINVALID) 
+		throw(VelocityModel_1d_Dberror(name,
+				"dbopen failure for mod1d table"));
+	/* Don't trust the nlayers variable.  Use the bombproof 
+	size method of the vector container.  Assume v, z, and grad
+	are all the same size.*/
+	int i,ierr;
+	string units("km/s");  //frozen units of km per second
+	/* Antelope routine to fetch username */
+        char username[20];
+        my_username(username);
+
+	for(i=0;i<mod.z.size();++i)
+	{
+		ierr=dbaddv(db,0,"modname",name.c_str(),
+			"paramname",property.c_str(),
+			"depth",mod.z[i],
+			"paramval",mod.v[i],
+			"grad",mod.grad[i],
+			"units",units.c_str(),
+			"auth",username,0);
+		if(ierr<0) throw (VelocityModel_1d_Dberror(name,
+				"dbaddv error while saving model"));
+	}
+
 }
 } // Termination of namespace SEISPP definitions

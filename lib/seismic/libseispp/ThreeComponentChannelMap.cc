@@ -33,7 +33,7 @@ ThreeComponentChannelMap::ThreeComponentChannelMap(string buffer)
 	string chan;
 	int comp,lev;
 	istringstream in(buffer);
-	while(in.good())
+	while(!in.eof())
 	{
 		in >> chan;
 		in >> comp;

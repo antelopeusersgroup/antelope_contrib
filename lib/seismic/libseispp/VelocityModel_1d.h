@@ -161,6 +161,15 @@ public:
 	**/
 	double getv(double zin);
 };
+/*! \brief Save a velocity model to an antelope database. 
+
+\param mod velocity model to save
+\param db Antelope database pointer (standard 4 int struct).
+\param name name to use to tag this model.
+\param property model property.  Normally either Pvelocity or Svelocity.
+*/
+void dbsave(VelocityModel_1d& mod, Dbptr db, string name,string property)
+	throw(VelocityModel_1d_Dberror);
 
 } // End SEISPP namespace declaration
 #endif
