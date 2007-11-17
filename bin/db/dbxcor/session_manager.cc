@@ -137,6 +137,7 @@ SessionManager::~SessionManager()
 void SessionManager::record( string s)
 {
     XmTextInsert(msg_w,XmTextGetLastPosition(msg_w),(char *)(s.c_str()));
+    XClearWindow(XtDisplay(msg_w),XtWindow(msg_w));
     log_stream << s <<endl;
 }
 
