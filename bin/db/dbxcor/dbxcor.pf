@@ -8,20 +8,6 @@ BeamMetadataList	&Tbl{
 }
 RequireThreeComponents	true
 StationChannelMap	&Arr{
-    SDV	&Tbl{
-        BHE_00 0 0
-        BHN_00 1 0
-        BHZ_00 2 0
-        BHE_10 0 1
-        BHN_10 1 1
-        BHZ_10 2 1
-        HHE_10 0 2
-        HHN_10 1 2
-        HHZ_10 2 2
-        HHE_20 0 3
-        HHN_20 1 3
-        HHZ_20 2 3
-    }
     default	&Tbl{
         BHE 0 0
         BHN 1 0
@@ -34,8 +20,11 @@ StationChannelMap	&Arr{
         LHZ 2 2
     }
 }
+beam_arrival_error_marker_color	red
+beam_arrival_pick_marker_color	blue
 beam_dfile	xcorbeam.w
 beam_directory	xcorbeams
+beam_plot_title	Beam Plot
 beam_window_parameters	&Arr{
     SUVariableArea_grey_value	1
     VariableArea	true
@@ -54,7 +43,7 @@ beam_window_parameters	&Arr{
     grid1	1
     grid2	1
     gridcolor	blue
-    hbox	800
+    hbox	200
     interpolate	true
     label1	time
     label2	index
@@ -89,7 +78,7 @@ beam_window_parameters	&Arr{
     ybox	50
 }
 coherence_cutoff	0.01
-correlation_peak_cutoff	0.01
+correlation_peak_cutoff	0.0
 correlation_window_parameters	&Arr{
     SUVariableArea_grey_value	1
     VariableArea	true
@@ -142,7 +131,7 @@ correlation_window_parameters	&Arr{
     xcur	1.0
     ybox	50
 }
-data_window_end	600.0
+data_window_end	200.0
 data_window_parameters	&Arr{
     SUVariableArea_grey_value	1
     VariableArea	true
@@ -195,20 +184,55 @@ data_window_parameters	&Arr{
     xcur	1.0
     ybox	50
 }
-data_window_start	-200.0
+data_window_start	-100.0
+filters	&Tbl{
+    telebb  BW 0.01 5 2 5
+    lp	BW 0.025 5 0.08 5
+    sp	BW 0.5 5 1.5 5
+    BP0.1-1Hz  BW 0.1 5 1 5
+    BP0.08-3Hz BW 0.08 5 3 5
+    1LP        BW 0 0 1.0 5
+    integration	INT
+}
 initial_time_stamp	2003355:00:00:00.0
-network_name	Bolivar
-pf_revision_time	1182182997
+network_name	USArray_TA
+pf_revision_time	1158357752
 phase_processing_parameters	&Arr{
     P	&Arr{
         analysis_sort_order	stack_weight
         arrival_channel	Z
         beam_window_fraction	0.6
         component_for_analysis	L
-        default_filter	BW 0.01 2 2.0 2
+        default_filter	DEMEAN
         phase_for_analysis	P
-        regular_gather_twin_end	120.0
+        regular_gather_twin_end	100.0
         regular_gather_twin_start	-20.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    pP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.6
+        component_for_analysis	L
+        default_filter	DEMEAN
+        phase_for_analysis	pP
+        regular_gather_twin_end	100.0
+        regular_gather_twin_start	-20.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    PcP	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	Z
+        beam_window_fraction	0.6
+        component_for_analysis	L
+        default_filter	DEMEAN
+        phase_for_analysis	PcP
+        regular_gather_twin_end	120.0
+        regular_gather_twin_start	-40.0
         robust_window_fraction	0.2
         stacking_method	robust
         tpad	30.0
@@ -216,12 +240,12 @@ phase_processing_parameters	&Arr{
     PP	&Arr{
         analysis_sort_order	stack_weight
         arrival_channel	Z
-        beam_window_fraction	0.8
-        component_for_analysis	Z
-        default_filter	BW 0.01 2 1.0 2
+        beam_window_fraction	0.6
+        component_for_analysis	L
+        default_filter	DEMEAN
         phase_for_analysis	PP
         regular_gather_twin_end	120.0
-        regular_gather_twin_start	-20.0
+        regular_gather_twin_start	-40.0
         robust_window_fraction	0.2
         stacking_method	robust
         tpad	30.0
@@ -231,55 +255,77 @@ phase_processing_parameters	&Arr{
         arrival_channel	E
         beam_window_fraction	0.6
         component_for_analysis	T
-        default_filter	BW 0.01 2 0.5 2
+        default_filter	DEMEAN
         phase_for_analysis	S
-        regular_gather_twin_end	150.0
+        regular_gather_twin_end	180.0
+        regular_gather_twin_start	-60.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    SKS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	DEMEAN
+        phase_for_analysis	SKS
+        regular_gather_twin_end	180.0
+        regular_gather_twin_start	-60.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    SS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	DEMEAN
+        phase_for_analysis	SS
+        regular_gather_twin_end	180.0
+        regular_gather_twin_start	-60.0
+        robust_window_fraction	0.2
+        stacking_method	robust
+        tpad	30.0
+    }
+    ScS	&Arr{
+        analysis_sort_order	stack_weight
+        arrival_channel	E
+        beam_window_fraction	0.6
+        component_for_analysis	T
+        default_filter	DEMEAN
+        phase_for_analysis	ScS
+        regular_gather_twin_end	180.0
         regular_gather_twin_start	-60.0
         robust_window_fraction	0.2
         stacking_method	robust
         tpad	30.0
     }
 }
-resample_definitions    &Arr{
-    100 &Arr{
-        Decimator_response_files        &Tbl{
-            5   response/RT72A_5_f
-            2   response/RT72A_2_f
+resample_definitions	&Arr{
+    20	&Arr{
+        Decimator_response_files	&Tbl{
+            0.5 resample
         }
-        high_limit      101
-        low_limit       99
+        high_limit	21
+        low_limit	19
     }
-    20  &Arr{
-        Decimator_response_files        &Tbl{
-            2       response/RT72A_2_f
+    40	&Arr{
+        Decimator_response_files	&Tbl{
+            1       none
         }
-        high_limit      21
-        low_limit       19
-    }
-    33.5        &Arr{
-        Decimator_response_files        &Tbl{
-            0.8375      resample
-            4       response/RT72A_4_f
-        }
-        high_limit      35
-        low_limit       30
-    }
-    40  &Arr{
-        Decimator_response_files        &Tbl{
-            4       response/RT72A_4_f
-        }
-        high_limit      41
-        low_limit       39
+        high_limit	41
+        low_limit	39
     }
 }
-
 result_twin_end	200.0
 result_twin_start	-40.0
 save_list_arrival	&Tbl{
     arrival.sta string
     arrival.chan string
     arrival.time real
-    arrival.iphase string
+    arrival.iphase real
     arrival.jdate int
     arrival.auth string
 }
@@ -296,8 +342,8 @@ save_list_assoc	&Tbl{
 }
 save_to_arrival	true
 schema	xcor1.2
-stack_weight_cutoff	0.001
-target_sample_interval	0.1
+stack_weight_cutoff	0.01
+target_sample_interval	0.025
 time_lag_cutoff	4.0
 trace_mdl	&Tbl{
     sta string
@@ -315,67 +361,329 @@ trace_mdl	&Tbl{
     site.lon
     site.elev
 }
-#
-# defines filters.  First string is label to appear on gui.
-# second must be a valid string for trfilter
-#
-filters &Tbl{
-telebb  BW 0.01 5 2 5
-lp	BW 0.025 5 0.08 5
-sp	BW 0.5 5 1.5 5
-BP0.1-1Hz  BW 0.1 5 1 5
-integration	INT
-}
-#
-# new control for beam plots 
-#
-turn_off_informational_popups true
-beam_arrival_pick_marker_color blue
-beam_arrival_error_marker_color red
-beam_plot_title Beam Plot
+turn_off_informational_popups	true
 use_subarrays	false
-virtual_arrays &Arr{
-CRATON &Arr{
-sta_list &Tbl{
-PAYV
-MOPC
-CAIV
-MAPC
-CMPC
-GURV
-PAPC
-RIOV
-VIPC
-CAPC
-EDPC
-LUEV
+virtual_arrays	&Arr{
+    TA_2_2	&Arr{
+        center_latitude	39.366
+        center_longitude	-119.198
+        sta_list	&Tbl{
+            BDM
+            CMB
+            KCC
+            MNRC
+            MOD
+            ORV
+            POTR
+            WENL
+            MLAC
+            TIN
+            OMM
+            BEK
+            WCN
+            ELFS
+            HATC
+            HELL
+            LAVA
+            L07A
+            M05C
+            M06C
+            M07A
+            M08A
+            M09A
+            N06A
+            N07A
+            N07B
+            N08A
+            N09A
+            N10A
+            O03C
+            O04C
+            O05C
+            O06A
+            O07A
+            O08A
+            O09A
+            O10A
+            P05C
+            P06A
+            P07A
+            P08A
+            P09A
+            P10A
+            P11A
+            Q03C
+            Q04C
+            Q07A
+            Q08A
+            Q09A
+            Q10A
+            R04C
+            R05C
+            R06C
+            R07C
+            R08A
+            R09A
+            R10A
+            SUTB
+            S04C
+            S05C
+            S06C
+            S08C
+            S09A
+            S10A
+            T06C
+        }
+    }
+    TA_2_3	&Arr{
+        center_latitude	41.6103
+        center_longitude	-119.023
+        sta_list	&Tbl{
+            MOD
+            BEK
+            WCN
+            ELFS
+            HATC
+            I06A
+            I07A
+            I08A
+            I09A
+            J05A
+            J06A
+            J07A
+            J08A
+            J09A
+            J10A
+            K04A
+            K05A
+            K06A
+            K07A
+            K08A
+            K09A
+            K10A
+            K11A
+            L04A
+            L05A
+            L07A
+            L08A
+            L09A
+            L10A
+            L11A
+            M03C
+            M04C
+            M05C
+            M06C
+            M07A
+            M08A
+            M09A
+            M10A
+            M11A
+            N06A
+            N07A
+            N07B
+            N08A
+            N09A
+            N10A
+            N11A
+            O04C
+            O05C
+            O06A
+            O07A
+            O08A
+            O09A
+            O10A
+            P05C
+            P06A
+            P07A
+            P08A
+            P09A
+            Q07A
+        }
+    }
+    TA_2_4	&Arr{
+        center_latitude	43.8544
+        center_longitude	-118.835
+        sta_list	&Tbl{
+            MOD
+            E08A
+            F06A
+            F07A
+            F08A
+            F09A
+            F10A
+            G05A
+            G06A
+            G07A
+            G08A
+            G09A
+            G10A
+            G11A
+            H04A
+            H05A
+            H06A
+            H07A
+            H08A
+            H09A
+            H10A
+            H11A
+            I04A
+            I05A
+            I06A
+            I07A
+            I08A
+            I09A
+            I10A
+            I11A
+            J04A
+            J05A
+            J06A
+            J07A
+            J08A
+            J09A
+            J10A
+            J11A
+            K04A
+            K05A
+            K06A
+            K07A
+            K08A
+            K09A
+            K10A
+            K11A
+            L05A
+            L07A
+            L08A
+            L09A
+            L10A
+            M07A
+            M08A
+            M09A
+        }
+    }
+    TA_2_5	&Arr{
+        center_latitude	46.0981
+        center_longitude	-118.633
+        sta_list	&Tbl{
+            B07A
+            B08A
+            B09A
+            B10A
+            C05A
+            C06A
+            C07A
+            C08A
+            C09A
+            C10A
+            C12A
+            D05A
+            D06A
+            D07A
+            D08A
+            D09A
+            D10A
+            D11A
+            D12A
+            E05A
+            E06A
+            E07A
+            E08A
+            E09A
+            E10A
+            E11A
+            F04A
+            F05A
+            F06A
+            F07A
+            F08A
+            F09A
+            F10A
+            F11A
+            F12A
+            G05A
+            G06A
+            G07A
+            G08A
+            G09A
+            G10A
+            G11A
+            H05A
+            H06A
+            H07A
+            H08A
+            H09A
+            H10A
+            H11A
+            I05A
+            I06A
+            I07A
+            I08A
+            I09A
+            I10A
+        }
+    }
+    TA_3_1	&Arr{
+        center_latitude	36.9633
+        center_longitude	-116.554
+        sta_list	&Tbl{
+            KCC
+            ADO
+            ARV
+            CWC
+            DAN
+            EDW
+            EDW2
+            FUR
+            GMR
+            GRA
+            GSC
+            HEC
+            ISA
+            LRL
+            MLAC
+            MPM
+            NEE
+            RCT
+            RRX
+            SHO
+            TIN
+            TUQ
+            VES
+            OMM
+            TPNV
+            HELL
+            P09A
+            P10A
+            P11A
+            Q07A
+            Q08A
+            Q09A
+            Q10A
+            Q11A
+            Q12A
+            R07C
+            R08A
+            R09A
+            R10A
+            R12A
+            S08C
+            S09A
+            S10A
+            S11A
+            S12A
+            S13A
+            T06C
+            T11A
+            T12A
+            T13A
+            U10A
+            U11A
+            U12A
+            U13A
+            V11A
+            V12A
+            W12A
+            R11A
+        }
+    }
 }
-}
-OCEAN &Arr{
-sta_list &Tbl{
-PINA
-SHRB
-PNCH
-PINA
-CUBA
-RRNR
-SOMB
-DAQI
-ZOMB
-DRKS
-BTBT
-BLOS
-B151
-ORCV
-IBAV
-ITEV
-COCH
-GUAY
-MIPC
-CURA
-ARUB
-MONV
-IMOV
-}
-}
-}
+LoadArrivals true

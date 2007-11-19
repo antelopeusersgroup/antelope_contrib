@@ -621,6 +621,25 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 	    ss << "Ensemble sort order set to distance"<<endl;
 	    psm->active_setting.result_sort_order=DISTANCE;
 	    break;
+	case DBARRIVAL_TIME:
+	    if(psm->xpe->arrival_times_are_loaded())
+	    {
+	        ss << "Ensemble sort order set to arrival time from database"<<endl;
+	    	psm->active_setting.result_sort_order=DBARRIVAL_TIME;
+	    }
+	    else
+	    {
+		ss << "Cannot set ensemble order to database arrival time"<<endl
+			<<"Make another selection or change parameter file to set load_arrivals true"
+			<<endl;
+		psm->record(ss.str());
+		return;
+	    }
+	    break;
+	case ARRIVAL_TIME:
+	    ss << "Ensemble sort order set to current measured arrival times"<<endl;
+	    psm->active_setting.result_sort_order=ARRIVAL_TIME;
+	    break;
 	default:
 	    ss << "ERROR: unknown result sort order"<<endl;
 	    break;
@@ -811,6 +830,16 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Database Arrival Time",NULL,0);
+    picked=DBARRIVAL_TIME;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "source azimuth",NULL,0);
     picked=ESAZ;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
@@ -820,9 +849,12 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
+    SessionState state=psm->get_state();
+
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "measured amplitude",NULL,0);
     picked=AMPLITUDE;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
     XtManageChild(wtemp);
     if (picked==selected) {
 	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
@@ -832,12 +864,12 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Computed lag",NULL,0);
     picked=LAG;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
     XtManageChild(wtemp);
     if (picked==selected) {
 	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
-    SessionState state=psm->get_state();
 
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Coherence",NULL,0);
     picked=COHERENCE;
@@ -881,6 +913,16 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Distance",NULL,0);
     picked=DISTANCE;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Measured Arrival Time",NULL,0);
+    picked=ARRIVAL_TIME;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
     XtManageChild(wtemp);
     if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
