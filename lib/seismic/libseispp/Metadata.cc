@@ -323,6 +323,25 @@ Metadata::Metadata(string mdin)
 	freetbl(t,0);
 	pffree(pf);
 }
+bool Metadata::is_attribute_set(string key)
+{
+	map<string,double>::iterator rptr;
+	rptr=mreal.find(key);
+	if(rptr!=mreal.end()) return(true);
+	map<string,int>::iterator iptr;
+	iptr=mint.find(key);
+	if(iptr!=mint.end()) return(true);
+	map<string,string>::iterator sptr;
+	sptr=mstring.find(key);
+	if(sptr!=mstring.end()) return(true);
+	map<string,bool>::iterator bptr;
+	bptr=mbool.find(key);
+	if(bptr!=mbool.end()) return(true);
+}
+bool Metadata::is_attribute_set(char *key)
+{
+	return(this->is_attribute_set(string(key)));
+}
 MetadataList Metadata::keys()
 {
 	MetadataList result;

@@ -10,6 +10,56 @@
 
 
 const string gain_keyword("gain");
+const string dbarrival_lag_keyword("dbarrival_lag");
+/* This is a helper function intended to be used only with file scope.
+It is used to implement trace shifting with a set of existing arrivals
+loaded from the database.  The algorithm is complicated by the fact with 
+need scan them all once, compute and subtract a mean, and then set a
+lag.  This is necessary to prevent a large skew between arrivals previously
+set in the db and those missing.  Reason is that origin errors can produce
+large average shifts in arrival time.  Result is set in the trace headers
+keyed by the keyword set in dbarrival_lag_keyword immediately above.  
+LagShift is then called to shift all data by the computed values.
+
+Note this routine intentionally tests no Metadata attributes or existence
+because it assumes they are already set.  This is done for efficiency.
+Do not transport this procedure to another program without changes or
+attention to this detail
+*/
+void dbarrival_shift(TimeSeriesEnsemble& d)
+{
+	vector<TimeSeries>::iterator dptr;
+	vector<double> atimes;
+	double at,atmean,pt;
+	int count;
+	for(dptr=d.member.begin(),atmean=0.0,count=0;
+			dptr!=d.member.end();++dptr)
+	{
+		at=dptr->get_double(dbarrival_time_key);
+		pt=dptr->get_double(predicted_time_key);
+		if(at>0)
+		{
+			++count;
+			atmean += at-pt;
+			atimes.push_back(at);
+		}
+	}
+	atmean/=static_cast<double>(count);
+	/* Now compute the shifts and post them keyed by dbarrival_lag_keyword*/
+	for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
+	{
+		at=dptr->get_double(dbarrival_time_key);
+		if(at>0)
+		{
+			pt=dptr->get_double(predicted_time_key);
+			at=at-pt-atmean;
+			dptr->put(dbarrival_lag_keyword,at);
+		}
+		else
+			dptr->put(dbarrival_lag_keyword,MoveoutBad);
+	}
+   	LagShift(d,dbarrival_lag_keyword,arrival_time_key);
+}
 XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf, 
 	XcorAnalysisSetting asinitial,
 		string waveform_db_name,
@@ -138,6 +188,7 @@ XcorProcessingEngine::XcorProcessingEngine(Pf * global_pf,
 			stachanmap=StationChannelMap();
 		mcc = NULL;   // Need this unless we can convert to a shared_ptr;
 		autoscale_initial=global_md.get_bool("AutoscaleInitialPlot");
+		load_arrivals=global_md.get_bool("LoadArrivals");
 
 	} catch (MetadataGetError mderr)
 	{
@@ -227,6 +278,12 @@ template <class T, SortOrder SO> struct less_metadata_double
 			break;
 		case DISTANCE:
 			keyword=string("distance");;
+			break;
+		case DBARRIVAL_TIME:
+			keyword=dbarrival_time_key;
+			break;
+		case ARRIVAL_TIME:
+			keyword=arrival_time_key;
 			break;
 		case WEIGHT:
 		default:
@@ -324,6 +381,14 @@ void XcorProcessingEngine::sort_ensemble()
         sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,ESAZ>());
         break;
+   case ARRIVAL_TIME:
+        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,ARRIVAL_TIME>());
+	break;
+   case DBARRIVAL_TIME:
+        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,DBARRIVAL_TIME>());
+	break;
    default:
 	cerr << "Illegal sort order.  Original order preserved."<<endl;
    }
@@ -570,6 +635,26 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 			(AssembleRegularGather(*tse,predarr,
 			analysis_setting.phase_for_analysis,
             		analysis_setting.gather_twin,target_dt,rdef,true));
+	/* Load arrival times if requested */
+	if(load_arrivals)
+	{
+		/* This is a bit of a misuse of this constructor, but it will
+		work in this context in the current implemenation.  Beware a
+		possible maintenance issue */
+		DatascopeHandle dbh(dbarrival,dbarrival);
+		/*We are using two frozen constants here that are less than
+		idea.  20.0 is used as the time pad for grabbing relevant
+		arrivals.  -1.0 is used to set a null value for data with
+		no arrivals.  Works here as below we can then test for a
+		negative value to indicate a null. */
+		LoadEventArrivals<TimeSeriesEnsemble>(*regular_gather,
+			dynamic_cast<DatabaseHandle&>(dbh),
+			 analysis_setting.phase_for_analysis,
+			  predicted_time_key,
+			   dbarrival_time_key,
+			      20.0,
+				-1.0);
+	}
 	// This should probably be in the libseispp library, but
 	// we'll hard code it here for now.  Need to set defaults
 	// on all the computed metadata for all members of the
@@ -585,12 +670,15 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		regular_gather->member[i].put(peakxcor_keyword,0.0);
 		regular_gather->member[i].put(amplitude_static_keyword,0.0);
 		regular_gather->member[i].put(moveout_keyword,MoveoutBad);
-		// Load initial arrival times as predicted time
-		// This is a bit dogmatic.  may want to make this an if not
-		// defined  set this field.  for not just do it. 
+		/* Initialize arrival_time_key to predicted arrival time which
+		is the time 0 mark for the data at this stage.  Note this
+		time is dithered throughout this processing, but we maintain
+		a time standard by simultaneously dithering this attribute.*/
 		atime=regular_gather->member[i].get_double(predicted_time_key);
 		regular_gather->member[i].put(arrival_time_key,atime);
 	}
+	/* Shift traces by measured arrival times if requested.  */
+	if(load_arrivals) dbarrival_shift(*regular_gather);
 	for(int i=0;i<regular_gather->member.size();++i)
 	{
 		double lat,lon;

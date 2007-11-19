@@ -304,6 +304,35 @@ public:
 //\param val value to load.
 **/
         void put(string key,char * val); 
+/*! \brief Query to find out if an attribute is set.
+//
+// It is frequently necessary to ask if an attribute has been set.
+// The get routines throw an exception if one tries to fetch an attribute
+// that is not defined, which is always trouble.  Rather than depend
+// on exception handlers, which is bad form, a program that cannot
+// be certain an attribute is defined should call this method instead
+// of using an error handler.  It is both faster and better form.
+//
+// Note the algorithm used is independent of type simply searching 
+// the containers that hold each type stored by this object.
+//
+// \param key attribute to be test.  
+*/
+	bool is_attribute_set(string key);
+/*! \brief Query to find out if an attribute is set.
+//
+// It is frequently necessary to ask if an attribute has been set.
+// The get routines throw an exception if one tries to fetch an attribute
+// that is not defined, which is always trouble.  Rather than depend
+// on exception handlers, which is bad form, a program that cannot
+// be certain an attribute is defined should call this method instead
+// of using an error handler.  It is both faster and better form.
+// This overloaded form is a convenience for testing using char constants
+// (the standard result of a string between double quotes.).
+//
+// \param key attribute to be test.  
+*/
+	bool is_attribute_set(char *val);
 /*!
 // Delete a parameter from the Metadata object.
 // 
@@ -315,7 +344,7 @@ public:
 // 
 // It is frequently useful to append a new string to an existing
 // string variable stored in a Metadata object.  This can be used,
-// for example to build up file names.  An live example in this 
+// for example to build up file names.  A real example in this 
 // library at the moment is that this is used to accumulate filter
 // parameters when multiple filters are cascaded on data in the 
 // TimeInvariantFilter object.  

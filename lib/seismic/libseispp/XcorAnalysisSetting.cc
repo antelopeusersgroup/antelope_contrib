@@ -108,6 +108,10 @@ XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 			result_sort_order=LAG;
 		else if(sortname=="stack_weight")
 			result_sort_order=WEIGHT;
+		else if(sortname=="database_arrival_time")
+			result_sort_order=DBARRIVAL_TIME;
+		else if(sortname=="measured_arrival_time")
+			result_sort_order=ARRIVAL_TIME;
 		else
 		{
 			cerr << "unknown keyword for analysis_sort_order parameter="

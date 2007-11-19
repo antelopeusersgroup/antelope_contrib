@@ -67,6 +67,7 @@ public:
 	
 	//validate analysis setting
 	bool validate_setting(XcorAnalysisSetting & a) { return (a.aw_set && a.bw_set && a.rt_set); } 
+	bool arrival_times_are_loaded(){return(load_arrivals);};
 
 	TimeSeries get_beam();
 	TimeSeriesEnsemble get_waveforms();
@@ -154,6 +155,8 @@ private:
 	StationChannelMap stachanmap;
 	// Added by GLP June 2007 to allow running without extension tables
 	bool save_extensions;
+	// Added by GLP Nov 2007 to control loading of arrivals from db
+	bool load_arrivals;
 };
 
 } // End SEISPP namespace declaration

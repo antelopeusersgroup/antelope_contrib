@@ -49,9 +49,13 @@ const string amplitude_static_keyword("amplitude_static");
 /*! Defines keyword for weight used for robust stack estimate in generalized stack operator. */
 const string stack_weight_keyword("stack_weight");
 /*! Defines keyword for a predicted arrival time. */
-const string predicted_time_key("predarr.time");
+const string predicted_time_key("predarr_time");
 /*! Defines keyword for a generic measured arrival time. Phase type is normally a different attribute.*/
-const string arrival_time_key("arrival.time");
+const string arrival_time_key("arrival_time");
+/*! Defines keyword for an arrival time extracted from a database.  This may or may not
+match an attibute stored with the arrival_time_keyword.  It is sometimes useful to have
+both attributes loaded. */
+const string dbarrival_time_key("arrival.time");
 /*! rms amplitude of a stack (beam).  Units depend on data.*/
 const string beam_rms_key("beam_rms");
 /*! Used to flag a moveout estimate as bad.  Set to this large value. */

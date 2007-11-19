@@ -495,6 +495,128 @@ template <class Te, class Ta>
 			d.member[i].put(name,val);
 	} catch(...){throw;};
 }
+/*! \brief Finds arrival time picks for a particular phase spanned by a seismogram.
+
+In passive array processing a common thing one needs to do is associate a seismogram
+with a measured arrival time for a particular phase.  This template does this 
+for an ensemble of generic seismic data objects (ensemble) defined in this library.
+The algorithm finds matching arrivals for a given phase in a database.  To make
+the match it uses a time window driven by predicted arrivals.  The procedure finds
+the time span defined by predicted arrivals in the data set given.  It does this by
+requesting this attribute from each trace.  If the predicted arrival attribute is 
+not define on any object in the ensemble and exception is thrown.  Otherwise the 
+time interval used to find arrivals is the range of predicted arrivals extended
+by tpad on both ends.  The procedure then initializes the arrival time attribute
+field to a null value for all data members (live or dead).  It subsets the
+database and then loads arrivals into each data member that match the phase
+and time interval condition. 
+
+\param d data ensemble to which this procedure is to be applied.
+\param dbi generic database handle.  In this implementation this is immediately
+	cast to a DatascopePointer.  Future work could make this more generic.
+\param phase is the seismic phase for which an arrival time is to be loaded.
+\param predarrkeyword is the predicted arrival time keyword used to fetch this
+	attribute from each data member of the ensemble passed through d.
+\param atkeyword is the arrival time keyworded used to load the arrival time
+	into the Metadata of each member of the ensemble.  
+\param tpad time padding around around time window computed from predicted arrival
+	times stored with these data.
+\param nullvalue is the value loaded as the arrival time when there is no entry 
+	in the database for a data member.  This assures this attribute is set
+	for all members.  This is useful, for example, to sort data.  
+
+\exception SeisppError is thrown in a few conditions that represent serious
+	problems.  A process should probably die if this procedure throws this
+	exception as the intent is this be pretty bombproof.
+\author Gary L. Pavlis
+*/
+
+
+template <class Tensemble> void LoadEventArrivals(Tensemble& d, 
+		DatabaseHandle& dbi,
+			string phase,
+				string predarrkeyword,
+					string atkeyword,
+						double tpad,
+							double nullvalue)
+{
+	DatascopeHandle dbh=dynamic_cast<DatascopeHandle&> (dbi);
+	DatascopeHandle dbhss(dbh);   /* working copy */
+	/* First scan the ensemble for the range of predicted arrival times.
+	Initialize with negative values to provide error check below */
+	TimeWindow atrange(-2.0,-1.0);
+	double testval;
+	bool firstpass(true);
+	int i;
+	for(i=0;i<d.member.size();++i)
+	{
+		if(d.member[i].is_attribute_set(predarrkeyword))
+		{
+			testval=d.member[i].get_double(predarrkeyword);
+			if(firstpass)
+			{
+				atrange.start=testval;
+				atrange.end=testval;
+				firstpass=false;
+			}
+			else
+			{
+				if(atrange.start>testval)
+					atrange.start=testval;
+				if(atrange.end<testval)
+					atrange.end=testval;
+			}
+		}
+	}
+	if(atrange.start<0.0)
+		throw SeisppError(string("LoadEventArrivals:  no predicted arrivals are defined")
+			+ string(" in ensemble passed to this procedure\n")
+			+ string("Coding error or problem in the way metadata were loaded.") );
+	atrange.start -= tpad;
+	atrange.end += tpad;
+	char ssexpression[256];
+	sprintf(ssexpression,"(time >= %lf && time<=%lf && iphase=~/%s/)",
+		atrange.start,atrange.end,phase.c_str());
+	dbhss.subset(string(ssexpression));
+	/* We always initialize the full ensemble to null values.  This is needed
+	in case an exception is thrown by one of the get routines */
+	for(i=0;i<d.member.size();++i)
+			d.member[i].put(atkeyword,nullvalue);
+	if(dbhss.number_tuples()>0)
+	{
+		try {
+			map<string,double> atimes;
+			map<string,double>::iterator atptr;
+			double t;
+			string sta;
+			dbhss.rewind();
+			for(i=0;i<dbhss.number_tuples();++i,++dbhss)
+			{
+				sta=dbhss.get_string("sta");
+				t=dbhss.get_double("arrival.time");
+				atimes[sta]=t;
+			}
+			for(i=0;i<d.member.size();++i)
+			{
+				sta=d.member[i].get_string("sta");
+				atptr=atimes.find(sta);
+				if(atptr!=atimes.end())
+				{
+					d.member[i].put(atkeyword,atptr->second);
+				}
+			}
+		}
+		catch (...) 
+		{
+			throw SeisppError(string("LoadEventArrivals:  ")
+			+ string("Problems arrivals.  Not all arrivals were loaded") );
+		}
+	}
+	/*WARNING:  the handle really should automatically do this, but in the 
+	current implementation it does not.  This will produce a memory leak if
+	we don't do this.  If changed this next line must be removed */
+	dbfree(dbhss.db);
+}
 /*! Extract a componnt from a ThreeComponentEnsemble to yield a TimeSeriesEnsemble.
 
 An ensemble of three component data can be conceptualized as a three-dimensional
