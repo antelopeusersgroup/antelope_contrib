@@ -224,9 +224,10 @@ calculators below.
 #define PMODEL "Pvelocity"
 char *map_phase_to_property(char *p)
 {
-	char *validP[4]={"P","Pg","Pn","P*"};
-	char *validS[4]={"S","Sg","Sn","Lg"};
-	int nvP=4,nvS=4;  /* size of the above lists.  I'm sure there is
+	/* Changed Nov. 2007 to add Pb,  Sb, and S* */
+	char *validP[5]={"P","Pg","Pn","P*","Pb"};
+	char *validS[6]={"S","Sg","Sn","Lg","S*","Sb"};
+	int nvP=5,nvS=6;  /* size of the above lists.  I'm sure there is
 			a more clever way to do this, but this will work.
 			Just change it if phases are added to the list */
 	int i;
