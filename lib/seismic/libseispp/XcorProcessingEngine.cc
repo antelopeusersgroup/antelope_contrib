@@ -35,6 +35,8 @@ void dbarrival_shift(TimeSeriesEnsemble& d)
 	for(dptr=d.member.begin(),atmean=0.0,count=0;
 			dptr!=d.member.end();++dptr)
 	{
+	    if(dptr->live)
+	    {
 		at=dptr->get_double(dbarrival_time_key);
 		pt=dptr->get_double(predicted_time_key);
 		if(at>0)
@@ -43,13 +45,14 @@ void dbarrival_shift(TimeSeriesEnsemble& d)
 			atmean += at-pt;
 			atimes.push_back(at);
 		}
+	    }
 	}
 	atmean/=static_cast<double>(count);
 	/* Now compute the shifts and post them keyed by dbarrival_lag_keyword*/
 	for(dptr=d.member.begin();dptr!=d.member.end();++dptr)
 	{
 		at=dptr->get_double(dbarrival_time_key);
-		if(at>0)
+		if(at>0 && dptr->live)
 		{
 			pt=dptr->get_double(predicted_time_key);
 			at=at-pt-atmean;

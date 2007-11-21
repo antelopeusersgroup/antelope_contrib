@@ -105,7 +105,6 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 		// basic sanity check.
 		if(ensemblesize<=0)
 			throw SeisppError(basemessage+string("input ensemble contains no data"));
-		TimeWindow twd;  
 		double moveout;
 		vector<TimeSeries> stackdata;
 		vector<int> dindex;
@@ -152,26 +151,23 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 			throw SeisppError(basemessage 
 				+ string("input ensemble has no data free of gaps in time window"));
 		stack = stackdata[0];
+		stack.t0=stack_twin.start;	
 		for(i=0;i<stack.ns;++i) stack.s[i]=0.0;
 		switch(method)
 		{
 		case MedianStack:
 		case RobustSNR:
-			work.resize(fold);
 			// I've had problems with code like this before.
 			// reserve doesn't seem to initialize to allow indexing to work 
 			// without using something like push_back first.  For now
 			// I'm going to just do it that way anwyay.
-			medposition=fold/2;
+			work.resize(fold);
+			/* median stack*/
 			for(i=0;i<stack.ns;++i)
 			{
 				for(j=0;j<fold;++j)
 					work[j]=stackdata[j].s[i];
-				sort(work.begin(),work.end());
-				if(fold%2)
-					stack.s[i]=work[medposition];	
-				else
-					stack.s[i]=(work[medposition]+work[medposition-1])/2.0;
+				stack.s[i]=median<double>(work);
 			}
 			// Need to save this scale factor for beam
 			// to retain amplitude.  REtain this estimate 
