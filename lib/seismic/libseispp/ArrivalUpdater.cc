@@ -1,4 +1,5 @@
 #include "ArrivalUpdater.h"
+#include "seispp.h"
 namespace SEISPP{
 
 using namespace std;
@@ -87,6 +88,45 @@ ArrivalUpdater& ArrivalUpdater::operator=(const ArrivalUpdater& parent)
 	}
 	return(*this);
 }
+string mdt2str(MDtype mdt)
+{
+	string result;
+	switch (mdt)
+	{
+	case MDreal:
+		result=string("real");
+		break;
+	case MDint:
+		result=string("integer");
+		break;
+	case MDstring:
+		result=string("string");
+		break;
+	case MDboolean:
+		result=string("boolean");
+		break;
+	case MDinvalid:
+	default:
+		result=string("invalid");
+	}
+	return result;
+}
+string post_mmerror(Metadata_typedef m, AttributeProperties ap)
+{
+	char buf[512];
+	ostringstream message(buf);
+	message << "put_attributes_to_db(WARNING):  type mismatch for data attribute = "
+		<< m.tag << endl
+		<< "While attempting to save as db attribute ="<<ap.db_attribute_name
+		<< " to table "<<ap.db_table_name<<endl;
+	string mtype,aptype;
+	mtype=mdt2str(m.mdt);
+	aptype=mdt2str(ap.mdt);
+	message << "Internal name is tagged with type "<<mtype<<endl
+		<< "Database attribute is tagged with type "<<aptype<<endl
+		<< "Attribute not saved in output database." <<endl;
+	return(message.str());
+}
 /*! Internal function to write a specified list of attributes
 to the database.
 
@@ -95,13 +135,13 @@ to the database.
 \param mdl Internal to external namespace mapper that defines what
 	attributes will be updated in the db.  The function will
 	attempt to update ALL attributes listed. 
-\return number of failures.  Thus 0 means all done ok. 
+\return number of nonfatal failures.  Thus 0 means all done ok. 
 */
 int  put_attributes_to_db(Metadata& md,Dbptr db, 
 		MetadataList& mdl,AttributeMap& am)
 {
+	int err=0;
 	try {
-		int err=0;
 		double dval;
 		int ival;
 		string sval;
@@ -114,13 +154,17 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 			ap=am.attributes.find(mdptr->tag);
 			if(ap==ape)
 			{
-				++err;
-				continue;
+				char buf[128];
+				ostringstream message(buf);
+				message << "put_attributes_to_db: "
+					  << "AttributeMap does not contain requested attribute="
+					  << mdptr->tag<<endl
+					  <<"Attribute not written to output db"<<endl;
+				throw SeisppError(message.str());
 			}
 			if( (mdptr->mdt) != (ap->second.mdt) )
 			{
-				++err;
-				continue;
+				throw SeisppError(post_mmerror(*mdptr,ap->second));
 			}
 			dbattributename=ap->second.db_table_name
 					+ string(".")
@@ -143,7 +187,14 @@ int  put_attributes_to_db(Metadata& md,Dbptr db,
 					sval.c_str(),0) == dbINVALID) ++err;
 				break;
 			default:
-				++err;
+				char buf[128];
+				ostringstream message(buf);
+				message << "put_attributes_to_db: "
+					<< "Metadata attribute "
+					<< mdptr->tag
+					<< " has an illegal data type. "
+					<< endl;
+				throw SeisppError(message.str());
 			}
 		}
 		return(err);
