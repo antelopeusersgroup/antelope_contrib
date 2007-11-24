@@ -999,7 +999,21 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			    trace->put("arrival.auth",auth);
 			    trace->put("arrival.jdate",yearday(atime));
 			    trace->put("arrival.deltim",deltim);
-			    arru.update(*trace);
+			    try {
+			    	int arruerr=arru.update(*trace);
+			        if(arruerr)
+			        {
+				  cerr << "XcorProcessingEngine (WARNING):  "
+					<< "ArrivalUpdater encountered "
+					<< arruerr << "problems in saving results"<<endl;
+				  cerr << "Turn on verbose for more details"<<endl;
+			        }
+			    }
+			    catch (SeisppError serr)
+			    {
+				serr.log_error();
+				exit(-1);
+			    }
 			}
 		    }
 		    catch (MetadataGetError mderr)
