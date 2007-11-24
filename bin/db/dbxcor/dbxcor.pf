@@ -186,12 +186,20 @@ data_window_parameters	&Arr{
 }
 data_window_start	-100.0
 filters	&Tbl{
-    telebb  BW 0.01 5 2 5
-    lp	BW 0.025 5 0.08 5
-    sp	BW 0.5 5 1.5 5
-    BP0.1-1Hz  BW 0.1 5 1 5
-    BP0.08-3Hz BW 0.08 5 3 5
+    0.01-2BP  BW 0.01 5 2 5
+    0.025-0.08BP	BW 0.025 5 0.08 5
+    0.8-1.5BP	BW 0.8 5 1.5 5
+    0.1-1BP  BW 0.1 5 1 5
+    0.8-3BP  BW 0.8 5 3 5
+    0.5-2BP  BW 0.5 5 2 5
     1LP        BW 0 0 1.0 5
+    0.8LP      BW 0 0 0.8 5
+    0.5LP      BW 0 0 0.5 5
+    0.01HP     BW 0.01 2 0 0
+    0.02HP      BW 0.02 2 0 0
+    0.025HP      BW 0.025 2 0 0
+    0.033HP      BW 0.033 2 0 0
+    0.5HP      BW 0.5 2 0 0
     integration	INT
 }
 initial_time_stamp	2003355:00:00:00.0
@@ -325,7 +333,7 @@ save_list_arrival	&Tbl{
     arrival.sta string
     arrival.chan string
     arrival.time real
-    arrival.iphase real
+    arrival.iphase string
     arrival.jdate int
     arrival.auth string
 }
@@ -336,13 +344,13 @@ save_list_assoc	&Tbl{
     assoc.seaz real
     assoc.esaz real
     assoc.timeres real
-    assoc.timedef real
+    assoc.timedef string
     assoc.phase string
     assoc.vmodel string
 }
 save_to_arrival	true
 schema	xcor1.2
-stack_weight_cutoff	0.01
+stack_weight_cutoff	0.001
 target_sample_interval	0.025
 time_lag_cutoff	4.0
 trace_mdl	&Tbl{
@@ -357,9 +365,9 @@ trace_mdl	&Tbl{
     jdate int
     calib real
     calper real
-    site.lat
-    site.lon
-    site.elev
+    site.lat real
+    site.lon real
+    site.elev real
 }
 turn_off_informational_popups	true
 use_subarrays	false
