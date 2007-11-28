@@ -1,3 +1,4 @@
+#include <sstream>
 #include "ArrivalUpdater.h"
 #include "seispp.h"
 namespace SEISPP{
