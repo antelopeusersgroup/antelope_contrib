@@ -316,6 +316,6 @@ dbcmpwf [-cmtv]    db1[.table] db2[.table] t0 {t1|range}
 dbversdwf [-s subset] [-T maxtdelta] [-dftuvwxX] database
     check SEED format waveform files for consistency with wfdisc
 
-dbcheckseed [-s] [-t tolerance] dbname
+deprecated dbcheckseed [-s] [-t tolerance] dbname
     check PASSCAL generated wfdisc table for errors
 
