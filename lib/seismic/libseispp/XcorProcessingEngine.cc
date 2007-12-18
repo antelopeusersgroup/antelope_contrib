@@ -888,6 +888,10 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		try {
 			lat=regular_gather->member[i].get_double("lat");
 			lon=regular_gather->member[i].get_double("lon");
+			/* these are loaded in degrees.  We must convert
+			them to radians */
+			lat=rad(lat);
+			lon=rad(lon);
 		}
 		catch(MetadataGetError mde)
 		{
@@ -898,9 +902,10 @@ void XcorProcessingEngine::load_data(Hypocenter & h)
 		seaz=h.seaz(lat,lon);
 		esaz=h.esaz(lat,lon);
 		distance=h.distance(lat,lon);
-		regular_gather->member[i].put("seaz",seaz);
-		regular_gather->member[i].put("esaz",esaz);
+		regular_gather->member[i].put("seaz",deg(seaz));
+		regular_gather->member[i].put("esaz",deg(esaz));
 		regular_gather->member[i].put("distance",distance);
+		regular_gather->member[i].put("distance_deg",deg(distance));
 	}
 	// post netname here.  Overridden below for subarrays 
 	// but this sets it for full array mode
