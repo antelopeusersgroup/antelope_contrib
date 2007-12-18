@@ -201,15 +201,15 @@ TimeWindow objects define a range as a set of floating point numbers.
 Any object that is a subclass of BasicTimeSeries may find it convenient to
 convert a time window to a range of sample values (the SampleRange object).
 This generic algorithm does this for any class that inherits BasicTimeSeries.
-Be aware that the object of class T passed to this template is immediately
-upcast to a BasicTimeSeries.  Thus the inheritance is fundamental and an
-attempt to use this template on an object for which this would fail is
-guaranteed to be trouble. */
+An attempt to use this template for an object that does not inherit
+BasicTimeSeries should fail at compile time when templates are 
+instantiated.
+*/
 template <class T> SampleRange get_sample_range(T& d, TimeWindow win)
 {
-	/* Obviously this requires T to be a subclass of BasicTimeSeries */
-	BasicTimeSeries btsd=dynamic_cast<BasicTimeSeries&> (d);
-	if(!btsd.live) return(SampleRange(0,0));
+	/* This requires T to be a subclass of BasicTimeSeries.
+	The live and sample_number() methods come from BasicTimeSeries. */
+	if(!d.live) return(SampleRange(0,0));
 	int nstart,nend;
 	nstart=d.sample_number(win.start);
 	if(nstart<0) nstart=0;

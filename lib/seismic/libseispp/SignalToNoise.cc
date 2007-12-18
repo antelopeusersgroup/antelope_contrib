@@ -34,7 +34,7 @@ double compute_rms_with_gaps(TimeSeries& d, SampleRange& srange)
 }
 double compute_rms(TimeSeries&d, TimeWindow win)
 {
-	SampleRange sr(win.start,win.end);
+	SampleRange sr(get_sample_range<TimeSeries>(d,win));
 	if(sr.nsamp<=0) return(-1.0);
 	double rms;
 	if(d.is_gap(win))
@@ -71,9 +71,11 @@ double SNR_rms(TimeSeries& d, TimeWindow signal)
 but best to debug that first to make sure I don't have some logic error. */
 double SNR_rms(ThreeComponentSeismogram& d, TimeWindow signal, TimeWindow noise)
 {
+	return(-1.0);
 }
 double SNR_rms(ThreeComponentSeismogram& d, TimeWindow signal)
 {
+	return(-1.0);
 }
 
 } // End SEISPP namespace declaration
