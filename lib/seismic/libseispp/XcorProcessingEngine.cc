@@ -377,6 +377,32 @@ template <class T, SortOrder SO> struct greater_metadata_double
         }
 };
 
+/* Small helper for analyze() method below.  snr cannot be computed
+in this algorithm until after the MultichannelCorrelator object is
+created.  We want the snr attributes stored with the xcor functions
+to allow sorting the ensemble by snr externally.  This makes sure
+this is done for all traces.  dead traces are posted too, but a 
+they are maked with snr of -1.0.  A magic number, but should be
+ok in this context. */
+void copy_SNR_to_xcor(TimeSeriesEnsemble& d, TimeSeriesEnsemble& xcor,
+	const string keyword)
+{
+	vector<TimeSeries>::iterator id,ix;
+	double snr;
+	double snrbad(-1.0);
+	for(id=d.member.begin(),ix=xcor.member.begin();
+		id!=d.member.end() && ix!=xcor.member.end();
+			++id,++ix)
+	{
+		if(id->live)
+		{
+			snr=id->get_double(keyword);
+			ix->put(keyword,snr);
+		}
+		else
+			ix->put(keyword,snrbad);
+	}
+}
 
 MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
 {
@@ -405,6 +431,12 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
    // compute signal to noise ratio for each trace and post to metadata 
    ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
+   if(waveform_ensemble.member.size()==mcc->xcor.member.size())
+	copy_SNR_to_xcor(waveform_ensemble,mcc->xcor,snr_keyword);
+   else
+	throw SeisppError(string("XcorProcessingEngine::analyze():  ")
+		+ string("size mismatch of waveform and xcor ensembles\n")
+		+ string("This is a coding error.  Report to pavlis@indiana.edu"));
    // Auto scale data using computed amplitude set by MultichannelCorrelator
    ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,
 	amplitude_static_keyword,true);
