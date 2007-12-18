@@ -2,6 +2,8 @@
 #define _TIMEWINDOW_H_
 namespace SEISPP
 {
+using namespace std;
+using namespace SEISPP;
 /*!
 \brief Defines a time window.
 
@@ -73,5 +75,49 @@ public:
 	bool operator()(const TimeWindow ti1,const TimeWindow ti2) const
 	{return(ti1.end<ti2.start);};
 };
+
+/*! \brief Class to specify time windows in terms of sample index values.
+
+Sometimes it is convenient to convert a time window to a range of sample values.
+Any data that inherits BasicTimeSeries can effectively use this concept.  That is,
+time series data are defined by sample intervals and number of samples.  Thus 
+a time range a time series can be directly converted to a range of sample 
+values.  This simple class encapsulates that idea.
+*/
+class SampleRange
+{
+public:
+	/*! Starting index value of range. */
+	int nstart;
+	/*! Ending index value of range. */
+	int nend;
+	/*! \brief Number of samples in range.   
+
+	The number of samples can be readily computed, but it is
+	commonly clearer to test if nsamp is less than or equal to 
+	zero to mark an invalid range.  Otherwise code needs the
+	baggage in the simple constructor or this class any time
+	testing or validity of a range is required. */
+	int nsamp;
+	/*! Parameterized constructor for this simple class. 
+
+	\param ns value for nstart
+	\param ne value for nend
+	*/
+	SampleRange::SampleRange(int ns, int ne)
+	{
+		nstart=ns;
+		nend=ne;
+		if(nend<=nstart)
+		{
+			nend=nstart;
+			nsamp=0;
+		}
+		else
+		{
+			nsamp = nend - nstart + 1;
+		}
+	};
+}; 
 }  // end SEISPP namespace declaration
 #endif

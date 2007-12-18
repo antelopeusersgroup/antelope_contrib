@@ -10,6 +10,7 @@ INCLUDE=ArrivalUpdater.h \
   MultichannelCorrelator.h\
   SeisppError.h\
   SeisppKeywords.h \
+  SignalToNoise.h \
   SphericalCoordinate.h\
   StationChannelMap.h\
   ThreeComponentChannelMap.h\
@@ -58,6 +59,7 @@ OBJS=ArrivalUpdater.o \
   Hypocenter.o \
   Metadata.o \
   MultichannelCorrelator.o \
+  SignalToNoise.o \
   StationChannelMap.o \
   ThreeComponentChannelMap.o \
   ThreeComponentSeismogram.o \

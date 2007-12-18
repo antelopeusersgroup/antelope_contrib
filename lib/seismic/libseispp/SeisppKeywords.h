@@ -58,6 +58,14 @@ both attributes loaded. */
 const string dbarrival_time_key("arrival.time");
 /*! rms amplitude of a stack (beam).  Units depend on data.*/
 const string beam_rms_key("beam_rms");
+/*! Keyword used to store a signal to noise ratio estimate.  
+
+Signal to noise ratio is something commonly required in signal processing.
+This attribute is used to store such an estimate.  The method is not 
+specified, but if it is necessary to distiguish the method it is assumed
+another keyword will be used or the another attribute posted to quality 
+the type of estimate stored with this name. */
+const string snr_keyword("signal_to_noise_ratio");
 /*! Used to flag a moveout estimate as bad.  Set to this large value. */
 const double MoveoutBad=1.0e10;
 /*! A test for a bad moveout value uses this number.  It is intentionally much

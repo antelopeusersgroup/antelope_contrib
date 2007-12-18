@@ -288,23 +288,92 @@ template <class T, SortOrder SO> struct less_metadata_double
 		case ARRIVAL_TIME:
 			keyword=arrival_time_key;
 			break;
+		case SNR:
+			keyword=snr_keyword;
+			break;
 		case WEIGHT:
 		default:
 			keyword=SEISPP::stack_weight_keyword;
 			break;
 		}
-		// This is experimental.  We need a clean way
-		// to handle get_double throwing an exception.
-		// This is an expensive solution and may make
-		// this too slow to be practical.
-		try {
-	                double valx=x.get_double(keyword);
-	                double valy=y.get_double(keyword);
-	                if(valx<valy)
-	                        return true;
-	                else
-	                        return false;
-		} catch (...) {return false;};
+		/* the try-catch logic below assure that data that
+		return errors on a get act as if they are the smallest possible value */
+		double valx,valy;
+		try { 
+			valx=x.get_double(keyword);
+		}catch(...) {return true;};
+		try { 
+			valy=y.get_double(keyword);
+		}catch(...) {return false;};
+	
+	        if(valx<valy)
+	                return true;
+	        else
+	                return false;
+        }
+};
+template <class T, SortOrder SO> struct greater_metadata_double
+                : public binary_function<T,T,bool> {
+        bool operator()(T x, T y)
+        {
+		string keyword;
+		switch (SO)
+		{
+		case COHERENCE:
+			keyword=SEISPP::coherence_keyword;
+			break;
+		case CORRELATION_PEAK:
+			keyword=SEISPP::peakxcor_keyword;
+			break;
+		case AMPLITUDE:
+			keyword=SEISPP::amplitude_static_keyword;
+			break;
+		case LAG:
+			keyword=SEISPP::moveout_keyword;
+			break;
+  		case SITE_LAT:
+			keyword=string("site.lat");
+			break;
+		case SITE_LON:
+			keyword=string("site.lon");
+			break;
+		case PREDARR_TIME:
+			keyword=predicted_time_key;
+			break;
+		case ESAZ:
+			keyword=string("esaz");;
+			break;
+		case DISTANCE:
+			keyword=string("distance");;
+			break;
+		case DBARRIVAL_TIME:
+			keyword=dbarrival_time_key;
+			break;
+		case ARRIVAL_TIME:
+			keyword=arrival_time_key;
+			break;
+		case SNR:
+			keyword=snr_keyword;
+			break;
+		case WEIGHT:
+		default:
+			keyword=SEISPP::stack_weight_keyword;
+			break;
+		}
+		/* the try-catch logic below assure that data that
+		return errors on a get act as if they are the largest possible value */
+		double valx,valy;
+		try { 
+			valx=x.get_double(keyword);
+		}catch(...) {return true;};
+		try { 
+			valy=y.get_double(keyword);
+		}catch(...) {return false;};
+	
+	        if(valx>valy)
+	                return true;
+	        else
+	                return false;
         }
 };
 
@@ -334,6 +403,8 @@ MultichannelCorrelator *XcorProcessingEngine::XcorProcessingEngine :: analyze()
    // original to a predicted arrival time when running from raw data
    // (the current situation for teleseismic data).
    LagShift(waveform_ensemble,moveout_keyword,arrival_time_key);
+   // compute signal to noise ratio for each trace and post to metadata 
+   ensemble_SNR_rms<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,analysis_setting.beam_tw,snr_keyword);
    // Auto scale data using computed amplitude set by MultichannelCorrelator
    ScaleEnsemble<TimeSeriesEnsemble,TimeSeries>(waveform_ensemble,
 	amplitude_static_keyword,true);
@@ -349,91 +420,187 @@ void XcorProcessingEngine::sort_ensemble()
    switch(analysis_setting.result_sort_order)
    {
    case COHERENCE:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+		greater_metadata_double<TimeSeries,COHERENCE>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
 		less_metadata_double<TimeSeries,COHERENCE>());
 	break;
    case CORRELATION_PEAK:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+		greater_metadata_double<TimeSeries,CORRELATION_PEAK>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
 		less_metadata_double<TimeSeries,CORRELATION_PEAK>());
 	break;
    case AMPLITUDE:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+		greater_metadata_double<TimeSeries,AMPLITUDE>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
 		less_metadata_double<TimeSeries,AMPLITUDE>());
 	break;
    case LAG:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+		greater_metadata_double<TimeSeries,LAG>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
 		less_metadata_double<TimeSeries,LAG>());
 	break;
    case WEIGHT:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+		greater_metadata_double<TimeSeries,WEIGHT>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
 		less_metadata_double<TimeSeries,WEIGHT>());
 	break;
    case SITE_LAT:
-	sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,SITE_LAT>());
+	else
+	    sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,SITE_LAT>());
         break;
    case SITE_LON:
-        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,SITE_LON>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,SITE_LON>());
         break;
    case PREDARR_TIME:
-        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,PREDARR_TIME>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,PREDARR_TIME>());
         break;
    case ESAZ:
-        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,ESAZ>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,ESAZ>());
         break;
    case ARRIVAL_TIME:
-        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,ARRIVAL_TIME>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,ARRIVAL_TIME>());
 	break;
    case DBARRIVAL_TIME:
-        sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,DBARRIVAL_TIME>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,DBARRIVAL_TIME>());
 	break;
+   case SNR:
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,SNR>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,SNR>());
+	break;
    default:
-	cerr << "Illegal sort order.  Original order preserved."<<endl;
+	cerr << "Illegal     sort order.  Original order preserved."<<endl;
    }
    if(mcc!=NULL)
    {
       switch(analysis_setting.result_sort_order)
       {
       case COHERENCE:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		greater_metadata_double<TimeSeries,COHERENCE>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
    		less_metadata_double<TimeSeries,COHERENCE>());
    	break;
       case CORRELATION_PEAK:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		greater_metadata_double<TimeSeries,CORRELATION_PEAK>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
    		less_metadata_double<TimeSeries,CORRELATION_PEAK>());
    	break;
       case AMPLITUDE:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		greater_metadata_double<TimeSeries,AMPLITUDE>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
    		less_metadata_double<TimeSeries,AMPLITUDE>());
    	break;
       case LAG:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		greater_metadata_double<TimeSeries,LAG>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
    		less_metadata_double<TimeSeries,LAG>());
    	break;
       case WEIGHT:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+   		greater_metadata_double<TimeSeries,WEIGHT>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
    		less_metadata_double<TimeSeries,WEIGHT>());
    	break;
       case SITE_LAT:
-   	sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   greater_metadata_double<TimeSeries,SITE_LAT>());
+	else
+   	    sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
                    less_metadata_double<TimeSeries,SITE_LAT>());
            break;
       case SITE_LON:
-           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   greater_metadata_double<TimeSeries,SITE_LON>());
+	else
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
                    less_metadata_double<TimeSeries,SITE_LON>());
            break;
       case PREDARR_TIME:
-           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   greater_metadata_double<TimeSeries,PREDARR_TIME>());
+	else
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
                    less_metadata_double<TimeSeries,PREDARR_TIME>());
            break;
       case ESAZ:
-           sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+	if(analysis_setting.    sort_reverse)
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   greater_metadata_double<TimeSeries,ESAZ>());
+	else
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
                    less_metadata_double<TimeSeries,ESAZ>());
+           break;
+      case SNR:
+	if(analysis_setting.    sort_reverse)
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   greater_metadata_double<TimeSeries,SNR>());
+	else
+               sort(mcc->xcor.member.begin(),mcc->xcor.member.end(),
+                   less_metadata_double<TimeSeries,SNR>());
            break;
       default:
    	cerr << "Illegal sort order.  Original order preserved."<<endl;

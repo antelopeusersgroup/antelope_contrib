@@ -22,7 +22,8 @@ using namespace SEISPP;
 // Analysis results can be sorted by these keys
 // made an enum for convenience.  
 enum SortOrder {COHERENCE,CORRELATION_PEAK,AMPLITUDE,LAG,WEIGHT,
-	SITE_LAT,SITE_LON,PREDARR_TIME,ESAZ,DISTANCE,ARRIVAL_TIME,DBARRIVAL_TIME};
+	SITE_LAT,SITE_LON,PREDARR_TIME,ESAZ,DISTANCE,ARRIVAL_TIME,
+	DBARRIVAL_TIME,SNR};
 
 //@{ Encapsulates all quantities required by XcorProcessingEngine in 
 //   a single data structure.  
@@ -59,6 +60,7 @@ public:
         double tpad;  // fudge factor needed for input
 	// Added by GLP 1/6/2006
 	SortOrder result_sort_order;
+	bool sort_reverse;
 };
 
 } // end SEISPP namespace declaration

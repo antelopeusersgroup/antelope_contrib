@@ -21,6 +21,7 @@
 #include "MultichannelCorrelator.h"
 #include "XcorAnalysisSetting.h"
 #include "ArrivalUpdater.h"
+#include "SignalToNoise.h"
 
 namespace SEISPP {
 

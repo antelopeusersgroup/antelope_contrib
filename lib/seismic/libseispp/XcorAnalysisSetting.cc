@@ -119,6 +119,9 @@ XcorAnalysisSetting::XcorAnalysisSetting(Metadata md)
 				<< "Defaulted to stack_weight"<<endl;
 			result_sort_order=WEIGHT;
 		}
+		// Default on construction is always normal sort order.  User must 
+		// explicitly set this true to change the default.
+		sort_reverse=false;
 	        	                      
 	} catch (MetadataGetError mderr)
 	{
@@ -155,6 +158,7 @@ XcorAnalysisSetting::XcorAnalysisSetting(const XcorAnalysisSetting& old)
 	tpad=old.tpad;
 	result_sort_order=old.result_sort_order;
 	arrival_chan_code=old.arrival_chan_code;
+	sort_reverse=old.sort_reverse;
 }
 XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& old)
 {
@@ -179,6 +183,7 @@ XcorAnalysisSetting& XcorAnalysisSetting::operator=(const XcorAnalysisSetting& o
 	tpad=old.tpad;
 	result_sort_order=old.result_sort_order;
 	arrival_chan_code=old.arrival_chan_code;
+	sort_reverse=old.sort_reverse;
     }
     return(*this);
 }
