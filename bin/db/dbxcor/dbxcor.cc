@@ -640,6 +640,10 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 	    ss << "Ensemble sort order set to current measured arrival times"<<endl;
 	    psm->active_setting.result_sort_order=ARRIVAL_TIME;
 	    break;
+	case SNR:
+	    ss << "Ensemble sort order set to signal to noise ratio"<<endl;
+	    psm->active_setting.result_sort_order=SNR;
+	    break;
 	default:
 	    ss << "ERROR: unknown result sort order"<<endl;
 	    break;
@@ -899,6 +903,16 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     if (picked==selected) {
 	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Signal to Noise Ratio",NULL,0);
+    picked=SNR;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
+    if (picked==selected) {
+        XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+        XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Lag",NULL,0);
@@ -1593,7 +1607,17 @@ void update_attributes_display(Widget w, void * client_data, void * userdata)
 
                 name=psm->attributes_info[index].name;
                 for(i=begin; i<=end; i++) {
-                    x1[i-begin]=tse->member[i-1].get_double(name.c_str());
+		   // Make this more bombproof against get_double 
+		   // throwing an exception 
+		   try {
+                      x1[i-begin]=tse->member[i-1].get_double(name.c_str());
+		   } catch (MetadataGetError mderr)
+		   {
+			cerr << "dbxcor(update_attributes_display) warning:"<<endl;
+			mderr.log_error();
+			cerr << "Setting attribute to 0.0"<<endl;
+			x1[i-begin]=0.0;
+		    }
                     x2[i-begin]=i;
                 }
 
@@ -1734,6 +1758,14 @@ void viewmenu_toggle_2(Widget w, void * client_data, void * userdata)
 void viewmenu_toggle_3(Widget w, void * client_data, void * userdata)
 {
         viewmenu_toggle(w,client_data,userdata,3);
+}
+void viewmenu_toggle_4(Widget w, void * client_data, void * userdata)
+{
+        viewmenu_toggle(w,client_data,userdata,4);
+}
+void viewmenu_toggle_5(Widget w, void * client_data, void * userdata)
+{
+        viewmenu_toggle(w,client_data,userdata,5);
 }
 
 void do_attr_window(Widget w, void * client_data, void * userdata)
@@ -2045,9 +2077,11 @@ void set_menu_controls(MenuItem * file_menu, MenuItem * picks_menu, MenuItem * o
     sm.controls[MENU_OPTIONS_SORT]=options_menu[0].w;
     sm.controls[MENU_OPTIONS_FILTER]=options_menu[1].w;
     sm.controls[MENU_VIEW_SNAME]=view_menu[0].w;
-    sm.controls[MENU_VIEW_COHERENCE]=view_menu[1].w;
-    sm.controls[MENU_VIEW_PCORRELATION]=view_menu[2].w;
-    sm.controls[MENU_VIEW_SWEIGHT]=view_menu[3].w;
+    sm.controls[MENU_VIEW_DISTANCE]=view_menu[1].w;
+    sm.controls[MENU_VIEW_COHERENCE]=view_menu[2].w;
+    sm.controls[MENU_VIEW_PCORRELATION]=view_menu[3].w;
+    sm.controls[MENU_VIEW_SWEIGHT]=view_menu[4].w;
+    sm.controls[MENU_VIEW_SNR]=view_menu[5].w;
 }
 
 bool SEISPP::SEISPP_verbose=false;
@@ -2068,10 +2102,13 @@ main (int argc, char **argv)
   TkSend	*tks=NULL;
   int i,n=0;
   Arg args[18];
-  AttributeInfoRec air[4]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
+  /* Note this struct is defined in the seisw widget display_marker.h */
+  AttributeInfoRec air[6]={ {NULL,"sta",ATTR_STR,false,NULL,-1,false,"Station Name",true},
+			    {NULL,"distance_deg",ATTR_DOUBLE,true,NULL,-1,false, "Epicentral distance",true},
 			    {NULL,"coherence",ATTR_DOUBLE,true,NULL,-1,false, "Coherence",false},
 			    {NULL,"peak_xcor", ATTR_DOUBLE,true,NULL,-1,false, "Peak Cross-correlation",false},
-			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false}
+			    {NULL,"stack_weight", ATTR_DOUBLE,true,NULL,-1,false, "Stack Weight",false},
+			    {NULL,"signal_to_noise_ratio", ATTR_DOUBLE,true,NULL,-1,false, "Signal to Noise Ratio",false}
 			};
   char *use=(char *) "db [-appname name -o dbout -f infile -pf pffile -V -v]";
   char *author=(char *) "Peng Wang and Gary Pavlis";
@@ -2114,7 +2151,7 @@ main (int argc, char **argv)
 	  cbanner(rev,use,author,loc,email);
           exit(1);
       } else if(argtest=="-v") {
-           SEISPP_verbose=true;
+           SEISPP::SEISPP_verbose=true;
       } else {
            usage(use);
       }
@@ -2127,6 +2164,8 @@ main (int argc, char **argv)
   sm.attributes_info.push_back(air[1]);
   sm.attributes_info.push_back(air[2]);
   sm.attributes_info.push_back(air[3]);
+  sm.attributes_info.push_back(air[4]);
+  sm.attributes_info.push_back(air[5]);
 
  /* Do standard Motif application start-up. */
 /*Original from from Peng.  Leads to seg faults in Solaris */
@@ -2170,9 +2209,11 @@ main (int argc, char **argv)
 
   MenuItem view_menu[]={
     {(char *)air[0].display_name.c_str(),&xmToggleButtonWidgetClass,'n',NULL,NULL,viewmenu_toggle_0,&sm,NULL,(MenuItem *)NULL},
-    {(char *)air[1].display_name.c_str(),&xmToggleButtonWidgetClass,'c',NULL,NULL,viewmenu_toggle_1,&sm,NULL,(MenuItem *)NULL},
-    {(char *)air[2].display_name.c_str(),&xmToggleButtonWidgetClass,'p',NULL,NULL,viewmenu_toggle_2,&sm,NULL,(MenuItem *)NULL},
-    {(char *)air[3].display_name.c_str(),&xmToggleButtonWidgetClass,'s',NULL,NULL,viewmenu_toggle_3,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[1].display_name.c_str(),&xmToggleButtonWidgetClass,'d',NULL,NULL,viewmenu_toggle_1,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[2].display_name.c_str(),&xmToggleButtonWidgetClass,'c',NULL,NULL,viewmenu_toggle_2,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[3].display_name.c_str(),&xmToggleButtonWidgetClass,'p',NULL,NULL,viewmenu_toggle_3,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[4].display_name.c_str(),&xmToggleButtonWidgetClass,'w',NULL,NULL,viewmenu_toggle_4,&sm,NULL,(MenuItem *)NULL},
+    {(char *)air[5].display_name.c_str(),&xmToggleButtonWidgetClass,'s',NULL,NULL,viewmenu_toggle_5,&sm,NULL,(MenuItem *)NULL},
     {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL}
   };
 
@@ -2414,6 +2455,6 @@ main (int argc, char **argv)
   }
   catch (...)
   {
-	cerr << "dbxcor:  something threw and unhandled exception"<<endl;
+	cerr << "dbxcor:  something threw an unhandled exception"<<endl;
   }
 }

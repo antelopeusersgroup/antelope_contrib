@@ -60,8 +60,8 @@ enum ControlIdType {BTN_NONE, BTN_FILE_SAVE, BTN_NEXTEV, BTN_NEXTSUB,BTN_REF,
 	MENU_OPTIONS, 
 	MENU_OPTIONS_SORT, 
 	MENU_OPTIONS_FILTER, 
-      	MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_COHERENCE,
-	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT,
+      	MENU_VIEW, MENU_VIEW_SNAME, MENU_VIEW_DISTANCE,MENU_VIEW_COHERENCE,
+	MENU_VIEW_PCORRELATION, MENU_VIEW_SWEIGHT, MENU_VIEW_SNR,
 	BTN_ARRIVAL,BTN_ARRIVAL_ERROR};
 
 /* WARNING:  if ControlIdType is changed, this number must be greater than
@@ -176,6 +176,7 @@ private:
     /* cross reference between index numbers and names */
     map<string,int> filter_index;
     int current_filter_index;
+    bool sort_reverse;
 };
 
 #endif

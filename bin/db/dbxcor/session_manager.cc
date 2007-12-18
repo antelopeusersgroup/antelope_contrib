@@ -123,6 +123,7 @@ SessionManager::SessionManager(string pfname, string hname, string lname, string
     /* These we intentionally do not set in the pf */
     beammarkers.beam_tw=TimeWindow(0.0,0.0);  // set to 0 time
     beammarkers.robust_tw=TimeWindow(-0.1,0.1);  // magic numbers could be const variable
+    sort_reverse=false;
 }
 
 SessionManager::~SessionManager()
@@ -195,10 +196,12 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[BTN_NEXTEV]=true;    
 	    sensitive[MENU_FILE]=true;
 	    sensitive[MENU_FILE_EXIT]=true;
+/*
  	    sensitive[MENU_PICKS]=true;
  	    sensitive[MENU_OPTIONS_FILTER]=true;
  	    sensitive[MENU_OPTIONS_SORT]=true;
  	    sensitive[MENU_VIEW]=true;
+*/
 	    break;
 	case NEXT_EVENT:
 	    sensitive[BTN_NEXTEV]=true;
@@ -219,6 +222,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_OPTIONS_SORT]=true;
 	    sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
+	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    break;
 	case NEXT_SUBARRAY:
 	    sensitive[BTN_NEXTSUB]=true;
@@ -239,6 +243,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
+	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    break;
 	case REF:
             sensitive[BTN_NEXTEV]=true;
@@ -261,6 +266,7 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
+	    sensitive[MENU_VIEW_DISTANCE]=true;
 	    break;
 	case ANALYZE:
             sensitive[BTN_NEXTEV]=true;
@@ -285,9 +291,11 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
             sensitive[MENU_VIEW_SNAME]=true;
+	    sensitive[MENU_VIEW_DISTANCE]=true;
             sensitive[MENU_VIEW_COHERENCE]=true;
 	    sensitive[MENU_VIEW_PCORRELATION]=true;
 	    sensitive[MENU_VIEW_SWEIGHT]=true;
+	    sensitive[MENU_VIEW_SNR]=true;
 	    break;
   	case SAVE:
             sensitive[BTN_NEXTEV]=true;
@@ -314,9 +322,11 @@ void SessionManager::session_state(SessionState s)
 	    sensitive[MENU_OPTIONS_SORT]=true;
             sensitive[MENU_VIEW]=true;
 	    sensitive[MENU_VIEW_SNAME]=true;
+	    sensitive[MENU_VIEW_DISTANCE]=true;
             sensitive[MENU_VIEW_COHERENCE]=true;
             sensitive[MENU_VIEW_PCORRELATION]=true;
             sensitive[MENU_VIEW_SWEIGHT]=true;
+	    sensitive[MENU_VIEW_SNR]=true;
 	    break;
 	case TRACE_EDIT:
 	    sensitive[BTN_PICKS_TEDIT]=true;
@@ -384,6 +394,10 @@ bool SessionManager::validate_setting(stringstream & ss)
 	case PREDARR_TIME:
 	    sort_order="predicted time";
 	    scase=0;
+	    break;
+	case SNR:
+	    sort_order="signal to noise ratio";
+	    scase=1;
 	    break;
 	default:
 	    break;
