@@ -1,4 +1,3 @@
-
 #include "session_manager.h"
 #include "dbxcor.h"
 #include "Seisw.h"
@@ -526,29 +525,6 @@ void get_next_event(Widget w, void * client_data, void * userdata)
 	}
 }
 
-/* 
- * We comment this out since we don't need a separate button down there
- * to do the actual sort, as soon as we click the "OK" button in the sort
- * options menu, we need to do this. So we merge this function with
- * apply_sort_order
-void do_sort(Widget w, void * client_data, void * userdata)
-{
-    TimeSeriesEnsemble * tse;
-    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
-
-    Metadata data_md=psm->xpe->get_data_md();
-
-    psm->xpe->sort_ensemble();
-    tse=psm->xpe->get_waveforms_gui();
-
-    data_md.put("title",psm->markers.title);
-
-    XtVaSetValues(psm->seismic_widget,ExmNseiswEnsemble,(XtPointer)(tse),
-	ExmNseiswMetadata,(XtPointer)(&data_md),ExmNdisplayMarkers,&(psm->markers),NULL);
-        
-}
-*/
-
 void sort_picked(Widget w, void * client_data, void * userdata)
 {
     Widget pane=XtParent(XtParent(w));
@@ -676,7 +652,6 @@ void apply_sort_order(Widget w, void * client_data, void * userdata)
 
     psm->record(ss.str());
 
-    XtDestroyWidget(XtParent(XtParent(XtParent(w))));
 }
 
 Widget get_top_shell(Widget w)
@@ -686,6 +661,18 @@ Widget get_top_shell(Widget w)
     }
 
     return w;
+}
+void apply_sort_normal(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    psm->active_setting.sort_reverse=false;
+    apply_sort_order(w,client_data,userdata);
+}
+void apply_sort_reverse(Widget w, void * client_data, void * userdata)
+{
+    SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
+    psm->active_setting.sort_reverse=true;
+    apply_sort_order(w,client_data,userdata);
 }
 
 void toggled(Widget w, void * client_data, void * userdata)
@@ -784,7 +771,7 @@ void pick_attributes(Widget w, void * client_data, void * userdata)
 void pick_sort_options(Widget w, void * client_data, void * userdata)
 {
     SessionManager * psm=reinterpret_cast<SessionManager *>(client_data);
-    Widget radio_box, sort_dialog, pane, form, ok_btn, cancel_btn;
+    Widget radio_box, sort_dialog, pane, form, ok_btn, ok_reverse_btn, cancel_btn;
     XmString str_coherence, str_correlation_peak, str_amplitude, str_lag, str_weight;
     XmString str_lat,str_lon,str_time;
     Arg args[10];
@@ -852,6 +839,15 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
+    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Distance",NULL,0);
+    picked=DISTANCE;
+    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
+    XtManageChild(wtemp);
+    if (picked==selected) {
+	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
+	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
+    }
+
 
     SessionState state=psm->get_state();
 
@@ -925,16 +921,6 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
 	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
     }
 
-    wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Distance",NULL,0);
-    picked=DISTANCE;
-    XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
-    XtManageChild(wtemp);
-    if (state != ANALYZE && state != SAVE) XtSetSensitive(wtemp,False);
-    if (picked==selected) {
-	XtVaSetValues(wtemp,XmNset,XmSET,NULL);
-	XtVaSetValues(radio_box,XmNinitialFocus,wtemp,NULL);
-    }
-
     wtemp=XmCreateToggleButtonGadget(radio_box,(char *) "Measured Arrival Time",NULL,0);
     picked=ARRIVAL_TIME;
     XtAddCallback(wtemp,XmNvalueChangedCallback,sort_picked,(XtPointer)(picked));
@@ -958,12 +944,12 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
     XtManageChild(radio_box);
 
 
-     //create the ok and cancel buttons in the action area
+     //create the sort, sort reverse,  and cancel buttons in the action area
      i=0;
-     XtSetArg(args[i],XmNfractionBase,5); i++;
+     XtSetArg(args[i],XmNfractionBase,7); i++;
      form=XmCreateForm(pane,(char *) "form",args,i);
 
-     ok_btn=XmCreatePushButtonGadget(form,(char *) "Apply",NULL,0);
+     ok_btn=XmCreatePushButtonGadget(form,(char *) "Sort normal",NULL,0);
      XtVaSetValues(ok_btn, XmNtopAttachment, XmATTACH_FORM,
                         XmNbottomAttachment, XmATTACH_FORM,
                         XmNleftAttachment, XmATTACH_POSITION,
@@ -974,16 +960,29 @@ void pick_sort_options(Widget w, void * client_data, void * userdata)
                         XmNdefaultButtonShadowThickness, 1,
                         NULL);
      XtManageChild(ok_btn);
-     XtAddCallback(ok_btn,XmNactivateCallback,apply_sort_order,psm);
+     XtAddCallback(ok_btn,XmNactivateCallback,apply_sort_normal,psm);
+
+     ok_reverse_btn=XmCreatePushButtonGadget(form,(char *) "Sort reverse",NULL,0);
+     XtVaSetValues(ok_reverse_btn, XmNtopAttachment, XmATTACH_FORM,
+                        XmNbottomAttachment, XmATTACH_FORM,
+                        XmNleftAttachment, XmATTACH_POSITION,
+                        XmNleftPosition, 3,
+                        XmNrightAttachment, XmATTACH_POSITION,
+                        XmNrightPosition, 4,
+                        XmNshowAsDefault, True,
+                        XmNdefaultButtonShadowThickness, 1,
+                        NULL);
+     XtManageChild(ok_reverse_btn);
+     XtAddCallback(ok_reverse_btn,XmNactivateCallback,apply_sort_reverse,psm);
 
      cancel_btn=XmCreatePushButtonGadget(form,(char *) "Cancel",NULL,0);
      XtVaSetValues (cancel_btn, XmNsensitive, True,
                                XmNtopAttachment, XmATTACH_FORM,
                                XmNbottomAttachment, XmATTACH_FORM,
                                XmNleftAttachment, XmATTACH_POSITION,
-                               XmNleftPosition, 3,
+                               XmNleftPosition, 5,
                                XmNrightAttachment, XmATTACH_POSITION,
-                               XmNrightPosition, 4,
+                               XmNrightPosition, 6,
                                XmNshowAsDefault, False,
                                XmNdefaultButtonShadowThickness, 1,
                                NULL);
