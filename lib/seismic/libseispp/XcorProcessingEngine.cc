@@ -547,6 +547,14 @@ void XcorProcessingEngine::sort_ensemble()
             sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
                 less_metadata_double<TimeSeries,SNR>());
 	break;
+   case DISTANCE:
+	if(analysis_setting.    sort_reverse)
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                greater_metadata_double<TimeSeries,DISTANCE>());
+	else
+            sort(waveform_ensemble.member.begin(),waveform_ensemble.member.end(),
+                less_metadata_double<TimeSeries,DISTANCE>());
+	break;
    default:
 	cerr << "Illegal     sort order.  Original order preserved."<<endl;
    }
