@@ -1,0 +1,4 @@
+# SCAFFOLD for external-library dependencies
+
+XMOTIFLIB = -L/sw/lib -L/usr/X11R6/lib -L/usr/openwin/lib
+XMOTIFINCLUDE = -I/sw/include -I/usr/X11R6/include -I/usr/openwin/include
