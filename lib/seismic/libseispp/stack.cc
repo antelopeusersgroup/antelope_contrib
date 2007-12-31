@@ -94,181 +94,182 @@ Stack::Stack(TimeSeriesEnsemble& d, TimeWindow stack_twin, TimeWindow robust_twi
 		double nrmd,nrmr;
 		vector<double> work;
 		vector<double>lastbeam;
-		const double CONVERGE=0.05;
-		double deltad,lastdeltad;
-		const int MAXIT=30;
-		int iteration_count;
-		int medposition;
-		int nsamp,i0;
-		dmatrix r,raw_data;
+			const double CONVERGE=0.0001;
+			double deltad,lastdeltad;
+			const int MAXIT=30;
+			int iteration_count;
+			int medposition;
+			int nsamp,i0;
+			dmatrix r,raw_data;
 
-		// basic sanity check.
-		if(ensemblesize<=0)
-			throw SeisppError(basemessage+string("input ensemble contains no data"));
-		double moveout;
-		vector<TimeSeries> stackdata;
-		vector<int> dindex;
-		vector<double>rweight;
-		vector<double>coh;
-		vector<double>amplitude_statics;
-		stackdata.reserve(ensemblesize);
-		dindex.reserve(ensemblesize);
-		weights.reserve(ensemblesize);
-		coh.reserve(ensemblesize);
-		amplitude_statics.reserve(ensemblesize);
-		for(i=0;i<ensemblesize;++i)
-		{
-			if(d.member[i].live)
+			// basic sanity check.
+			if(ensemblesize<=0)
+				throw SeisppError(basemessage+string("input ensemble contains no data"));
+			double moveout;
+			vector<TimeSeries> stackdata;
+			vector<int> dindex;
+			vector<double>rweight;
+			vector<double>coh;
+			vector<double>amplitude_statics;
+			stackdata.reserve(ensemblesize);
+			dindex.reserve(ensemblesize);
+			weights.reserve(ensemblesize);
+			coh.reserve(ensemblesize);
+			amplitude_statics.reserve(ensemblesize);
+			for(i=0;i<ensemblesize;++i)
 			{
-				moveout=d.member[i].get_double(moveout_keyword);
-				twd=stack_twin.shift(moveout);
-				// Large moveouts are not allowed and 
-				// provide a way for caller to force discarding
-				// an input trace.  The gap processing could
-				// be set to handle this, but it is safer to
-				// run this test explicitly.
-				if( (twd.end<d.member[i].t0)
-					|| (twd.start>d.member[i].endtime()) )
-							continue;
-				// Note reverse logic not the clearest, but most efficient for coding
-				if(!d.member[i].is_gap(twd))
+				if(d.member[i].live)
 				{
-				  try {
-					stackdata.push_back(WindowData(d.member[i],twd));
-					dindex.push_back(i);
-				   } catch (SeisppError serr)
-				   {
-					cerr << "Stacker:  problem processing ensemble member = "<<i<<endl;
-					cerr << "Data skipped"<<endl;
-					serr.log_error();
-				   }
-		
-				}
-			}
-		}
-		fold=dindex.size();
-		if(fold<=0)
-			throw SeisppError(basemessage 
-				+ string("input ensemble has no data free of gaps in time window"));
-		stack = stackdata[0];
-		stack.t0=stack_twin.start;	
-		for(i=0;i<stack.ns;++i) stack.s[i]=0.0;
-		switch(method)
-		{
-		case MedianStack:
-		case RobustSNR:
-			// I've had problems with code like this before.
-			// reserve doesn't seem to initialize to allow indexing to work 
-			// without using something like push_back first.  For now
-			// I'm going to just do it that way anwyay.
-			work.resize(fold);
-			/* median stack*/
-			for(i=0;i<stack.ns;++i)
-			{
-				for(j=0;j<fold;++j)
-					work[j]=stackdata[j].s[i];
-				stack.s[i]=median<double>(work);
-			}
-			// Need to save this scale factor for beam
-			// to retain amplitude.  REtain this estimate 
-			// using median as amplitude factor.  Intentionally
-			// ignore amplitudes in iterative loop below.
-			stack.put(beam_rms_key,
-				dnrm2(stack.s.size(),&(stack.s[0]),1)/sqrt(static_cast<double>(stack.ns)));
-			// The median is used as an initial estimate for the robust algorithm
-			// Here we break out if we want just the median
-			if(method==MedianStack) break;
-			//
-			// The penalty function we use here amounts to weighting by the
-			// reciprocal of the signal-to-noise ratio.  It essentially assumes
-			// residuals measure noise and signal is measured by the correlation of
-			// the beam with a signal at peak correlation.  Note the data are 
-			// normalized to unit power with an amplitude factor to make the 
-			// penalty function nondimensional.  
-			// Here we know the size of the data we will work with in this 
-			// loop so we can used a matrix to represent it more easily than
-			// the STL vectors used above.
-			//
-			nsamp=stack.sample_number(robust_twin.end)
-				-stack.sample_number(robust_twin.start)+1;
-			i0=stack.sample_number(robust_twin.start);
-			if(i0<0)
-				throw SeisppError(basemessage
-				  + string("robust window inconsistent with")
-				  + string(" data window") );
-			raw_data=dmatrix(nsamp,fold);
-			r=dmatrix(nsamp,fold);  // residual matrix
-			raw_data.zero();
-			r.zero();
-			for(i=0;i<fold;++i)
-			{
-				dcopy(nsamp,&(stackdata[i].s[i0]),1,raw_data.get_address(0,i),1);
-				weights[i]=1.0;
-			}
-			// reuse work to hold the current beam in this time gate
-			work.resize(nsamp);
-			rweight.resize(fold);
-			coh.resize(fold);
-			amplitude_statics.resize(fold);
-			for(i=0;i<nsamp;++i) work[i]=stack.s[i0+i];
-			// Stack must be normalized
-			ampscale=dnrm2(nsamp,&(work[0]),1);
-			dscal(nsamp,1.0/ampscale,&(work[0]),1);
-			lastbeam=work;
-			iteration_count=0;
-			
-			do {
-
-				sumwt = 0.0;
-				for(j=0;j<fold;++j)
-				{
-					ampscale=ddot(nsamp,&(work[0]),1,raw_data.get_address(0,j),1);
-					ampscale=abs(ampscale);
-					for(i=0;i<nsamp;++i)
+					moveout=d.member[i].get_double(moveout_keyword);
+					twd=stack_twin.shift(moveout);
+					// Large moveouts are not allowed and 
+					// provide a way for caller to force discarding
+					// an input trace.  The gap processing could
+					// be set to handle this, but it is safer to
+					// run this test explicitly.
+					if( (twd.end<d.member[i].t0)
+						|| (twd.start>d.member[i].endtime()) )
+								continue;
+					// Note reverse logic not the clearest, but most efficient for coding
+					if(!d.member[i].is_gap(twd))
 					{
-						r(i,j)=raw_data(i,j)-ampscale*work[i];
+					  try {
+						stackdata.push_back(WindowData(d.member[i],twd));
+						dindex.push_back(i);
+					   } catch (SeisppError serr)
+					   {
+						cerr << "Stacker:  problem processing ensemble member = "<<i<<endl;
+						cerr << "Data skipped"<<endl;
+						serr.log_error();
+					   }
+			
 					}
-					// This was in error in previous version.  Missed a
-					// scaling constant.
-					//weights[j]=ampscale/dnrm2(nsamp,r.get_address(0,j),1);
-					nrmd=dnrm2(nsamp,raw_data.get_address(0,j),1);
-					nrmr=dnrm2(nsamp,r.get_address(0,j),1);
-					rweight[j]=ampscale/(nrmd*nrmr);
-					if(power!=1.0)
-						rweight[j]=pow(rweight[j],power);
-					if(nrmr==nrmd)
-						coh[j]=0.0;
-					else
-						coh[j]=1.0-((nrmr*nrmr)/(nrmd*nrmd));
-					if(coh[j]<0.0) coh[j]=0.0;
-					amplitude_statics[j]=ampscale;
-					sumwt+=rweight[j];
 				}
-				// Since this problem is linear we don't need to sum residuals
-				// but can form weighted sum of data directly each iteration.
-				for(i=0;i<nsamp;++i)work[i]=0.0;
-				for(j=0;j<fold;++j)
+			}
+			fold=dindex.size();
+			if(fold<=0)
+				throw SeisppError(basemessage 
+					+ string("input ensemble has no data free of gaps in time window"));
+			stack = stackdata[0];
+			stack.t0=stack_twin.start;	
+			for(i=0;i<stack.ns;++i) stack.s[i]=0.0;
+			switch(method)
+			{
+			case MedianStack:
+			case RobustSNR:
+				// I've had problems with code like this before.
+				// reserve doesn't seem to initialize to allow indexing to work 
+				// without using something like push_back first.  For now
+				// I'm going to just do it that way anwyay.
+				work.resize(fold);
+				/* median stack*/
+				for(i=0;i<stack.ns;++i)
 				{
-					daxpy(nsamp,rweight[j],raw_data.get_address(0,j),1,
-							&(work[0]),1);
+					for(j=0;j<fold;++j)
+						work[j]=stackdata[j].s[i];
+					stack.s[i]=median<double>(work);
 				}
+				// Need to save this scale factor for beam
+				// to retain amplitude.  REtain this estimate 
+				// using median as amplitude factor.  Intentionally
+				// ignore amplitudes in iterative loop below.
+				stack.put(beam_rms_key,
+					dnrm2(stack.s.size(),&(stack.s[0]),1)/sqrt(static_cast<double>(stack.ns)));
+				// The median is used as an initial estimate for the robust algorithm
+				// Here we break out if we want just the median
+				if(method==MedianStack) break;
+				//
+				// The penalty function we use here amounts to weighting by the
+				// reciprocal of the signal-to-noise ratio.  It essentially assumes
+				// residuals measure noise and signal is measured by the correlation of
+				// the beam with a signal at peak correlation.  Note the data are 
+				// normalized to unit power with an amplitude factor to make the 
+				// penalty function nondimensional.  
+				// Here we know the size of the data we will work with in this 
+				// loop so we can used a matrix to represent it more easily than
+				// the STL vectors used above.
+				//
+				nsamp=stack.sample_number(robust_twin.end)
+					-stack.sample_number(robust_twin.start)+1;
+				i0=stack.sample_number(robust_twin.start);
+				if(i0<0)
+					throw SeisppError(basemessage
+					  + string("robust window inconsistent with")
+					  + string(" data window") );
+				raw_data=dmatrix(nsamp,fold);
+				r=dmatrix(nsamp,fold);  // residual matrix
+				raw_data.zero();
+				r.zero();
+				for(i=0;i<fold;++i)
+				{
+					dcopy(nsamp,&(stackdata[i].s[i0]),1,raw_data.get_address(0,i),1);
+					weights[i]=1.0;
+				}
+				// reuse work to hold the current beam in this time gate
+				work.resize(nsamp);
+				rweight.resize(fold);
+				coh.resize(fold);
+				amplitude_statics.resize(fold);
+				for(i=0;i<nsamp;++i) work[i]=stack.s[i0+i];
 				// Stack must be normalized
 				ampscale=dnrm2(nsamp,&(work[0]),1);
 				dscal(nsamp,1.0/ampscale,&(work[0]),1);
-				// using a loop here to avoid unnecessary creation of another
+				lastbeam=work;
+				iteration_count=0;
+				
+				do {
+
+					sumwt = 0.0;
+					for(j=0;j<fold;++j)
+					{
+						ampscale=ddot(nsamp,&(work[0]),1,raw_data.get_address(0,j),1);
+						ampscale=abs(ampscale);
+						for(i=0;i<nsamp;++i)
+						{
+							r(i,j)=raw_data(i,j)-ampscale*work[i];
+						}
+						// This was in error in previous version.  Missed a
+						// scaling constant.
+						//weights[j]=ampscale/dnrm2(nsamp,r.get_address(0,j),1);
+						nrmd=dnrm2(nsamp,raw_data.get_address(0,j),1);
+						nrmr=dnrm2(nsamp,r.get_address(0,j),1);
+						rweight[j]=ampscale/(nrmd*nrmr);
+						if(power!=1.0)
+							rweight[j]=pow(rweight[j],power);
+						if(nrmr==nrmd)
+							coh[j]=0.0;
+						else
+							coh[j]=1.0-((nrmr*nrmr)/(nrmd*nrmd));
+						if(coh[j]<0.0) coh[j]=0.0;
+						amplitude_statics[j]=ampscale;
+						sumwt+=rweight[j];
+					}
+					// Since this problem is linear we don't need to sum residuals
+					// but can form weighted sum of data directly each iteration.
+					for(i=0;i<nsamp;++i)work[i]=0.0;
+					for(j=0;j<fold;++j)
+					{
+						daxpy(nsamp,rweight[j],raw_data.get_address(0,j),1,
+								&(work[0]),1);
+					}
+					// Stack must be normalized
+					ampscale=dnrm2(nsamp,&(work[0]),1);
+					dscal(nsamp,1.0/ampscale,&(work[0]),1);
+					// using a loop here to avoid unnecessary creation of another
 				// temporary vector.  This is a L1 norm of delta data computation.
 				// lastbeam and beam are normalized so this
 				// convergence criteria is relative to 1
 				//
 				for(i=0,deltad=0.0;i<nsamp;++i) deltad+=fabs(lastbeam[i]-work[i]);
 				//Normalize deltad by nsamp to make it less dependent on stack size
-				deltad /= static_cast<double>(fold);
+				deltad /= static_cast<double>(nsamp);
+				lastbeam=work;
 				++iteration_count;
 			// 
-			// Require at least two passes.
-			// Multiple convergence norms here found necessary
+			// Require at least two passes because 
+			// the first pass compares to median stack.
 			//
-			} while( (iteration_count<=1)
+			} while( (iteration_count<=2)
 				|| ((deltad>CONVERGE) 
 				&& (deltad<lastdeltad) 
 				&& (iteration_count<MAXIT) ));
