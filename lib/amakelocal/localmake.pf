@@ -1,0 +1,24 @@
+output_file antelopemake.local
+
+packages &Arr{
+	dbxcor &Arr{
+		compile	yes
+		depends &Tbl{
+			XMOTIFLIB
+			XMOTIFINCLUDE
+		}
+	}
+}
+
+elements &Arr{
+	XMOTIFLIB &Arr{
+		Darwin 	-L/sw/lib
+		Solaris -L/usr/openwin/lib
+		Linux 	-L/usr/X11R6/lib
+	}
+	XMOTIFINCLUDE &Arr{
+		Darwin 	-I/sw/include
+		Solaris -I/usr/openwin/include
+		Linux 	-I/usr/X11R6/include
+	}
+}

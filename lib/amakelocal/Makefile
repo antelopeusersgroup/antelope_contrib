@@ -1,8 +1,14 @@
+BIN = localmake
+PF = localmake.pf
 
-all clean Include install installMAN pf relink tags uninstall :: FORCED
-	@-if [ ! -f $(ANTELOPEMAKE).local ] ; then \
-	    deposit -r antelopemake.local $(ANTELOPEMAKE).local ; \
-	fi
+MAN1 = localmake.1
+MAN5 = antelopemakelocal.5
 
-FORCED:
+INCLUDE = antelopemake.local
 
+CLEAN = antelopemake.local
+
+include $(ANTELOPEMAKE)
+
+antelopemake.local:
+	localmake
