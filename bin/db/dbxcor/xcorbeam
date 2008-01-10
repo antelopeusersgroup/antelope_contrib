@@ -66,7 +66,7 @@ stacking method.  This defines the length of that time window.
 	;
 
 Relation xcorbeam
-	Fields ( netname chan pchan phase pwfid filter robustt0 robusttwin fold amp)
+	Fields ( netname chan pchan phase pwfid filter robustt0 robusttwin fold amp lddate )
 	Primary ( netname pwfid )
 	Foreign ( pwfid ) 
 	Description ( "Saves attributes of beam computed through cross-correlation" )

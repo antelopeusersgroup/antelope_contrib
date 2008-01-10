@@ -76,7 +76,7 @@ measure of similarity of two waveforms.
 
 Relation xcorarrival
 	Fields ( sta chan phase pwfid filter algorithm pchan time twin samprate stackwgt 
-coherence xcorpeak relamp)
+coherence xcorpeak relamp lddate )
 	Primary ( sta phase pwfid )
 	Description ( "Details of an arrival computed by beam cross-correlation" )
 	Detail {
