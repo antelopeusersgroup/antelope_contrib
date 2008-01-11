@@ -1131,6 +1131,11 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			// the gain attribute
 			gain=trace->get_double(gain_keyword);
 			amplitude *=gain;
+			/* Need to repost snr so it can be saved consistently
+			with css3.0 naming convention.  A bit awkward, but
+			stuck with this.  */
+			double snrtmp=trace->get_double(snr_keyword);
+			trace->put("arrival.snr",snr_keyword);
 			// Write nothing for events that don't satisfy
 			// all of the criteria on xcor, coherence, or weight
 			if( (xcorpeak>xcorpeak_cutoff)
