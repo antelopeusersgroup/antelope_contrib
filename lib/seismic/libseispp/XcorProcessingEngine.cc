@@ -1135,7 +1135,7 @@ void XcorProcessingEngine::save_results(int evid, int orid ,Hypocenter& h)
 			with css3.0 naming convention.  A bit awkward, but
 			stuck with this.  */
 			double snrtmp=trace->get_double(snr_keyword);
-			trace->put("arrival.snr",snr_keyword);
+			trace->put("arrival.snr",snrtmp);
 			// Write nothing for events that don't satisfy
 			// all of the criteria on xcor, coherence, or weight
 			if( (xcorpeak>xcorpeak_cutoff)
