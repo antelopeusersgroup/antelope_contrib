@@ -335,6 +335,7 @@ save_list_arrival	&Tbl{
     arrival.time real
     arrival.iphase string
     arrival.jdate int
+    arrival.snr real
     arrival.auth string
 }
 save_list_assoc	&Tbl{
