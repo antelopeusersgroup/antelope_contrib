@@ -143,8 +143,8 @@ typedef struct Residual {
 /* This structure holds raw arrival time information.  A vector 
 of these objects defines the raw arrival time data */
 typedef struct Arrival {
-	int	arid ;
-	int arid2;  /* set only for things like S-P to define
+	long	arid ;
+	long arid2;  /* set only for things like S-P to define
 		arid of second element of pair */
 	Station *sta; /* pointer back to row of Station structure */
 	Phase_handle *phase;  /* handle to phase definition object */
@@ -164,7 +164,7 @@ typedef struct Seismic_Array {
 } Seismic_Array;    
 /* This structure defines raw slowness measurements by an array */
 typedef struct Slowness_vector {
-	int	arid ;
+	long	arid ;
 	Seismic_Array *array;  /* pointer to row of Seismic_Array table */
 	Phase_handle *phase;  /* handle to phase definition object */
 	double ux,uy;  /* Slowness vector components */

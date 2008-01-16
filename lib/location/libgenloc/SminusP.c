@@ -72,7 +72,7 @@ int db_badclock_definition(Dbptr db, Pf *pf, Arr *a)
 {
 	Time_Interval *dtime;
 	Bad_Clock *bc;
-	int nrec;
+	long nrec;
 	char sta[10];
 	double tstart,tend;
 	double clkerror_cutoff,clkerr;
@@ -92,9 +92,9 @@ int db_badclock_definition(Dbptr db, Pf *pf, Arr *a)
 		if(dbgetv(db,0,"sta",sta,
 			"time",&tstart,
 			"endtime",&tend,
-			"clkerr",&clkerr,0) == dbINVALID)
+			"clkerr",&clkerr,NULL ) == dbINVALID)
 		{
-			elog_complain(0,"dbgetv error reading timing table\nReading record %d of %d records in this table\nList of bad time intervals trucated at this point\n",
+			elog_complain(0,"dbgetv error reading timing table\nReading record %ld of %ld records in this table\nList of bad time intervals trucated at this point\n",
 				db.record,nrec);
 			return(db.record);
 		}

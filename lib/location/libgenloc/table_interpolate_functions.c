@@ -199,7 +199,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 
 	if( maxtbl(t) != ( (ttable->nx)*(ttable->nz) ) )
 	{
-		register_error(1,"Table size mismatch for phase %s\nTable should have %d rows\nFound %d\n",
+		register_error(1,"Table size mismatch for phase %s\nTable should have %d rows\nFound %ld\n",
 			phase, (ttable->nx)*(ttable->nz), maxtbl(t));
 		free_uniform_table(ttable, utable);
 		return(1);
@@ -264,7 +264,7 @@ int uniform_table_interpolate_init(char *phase, Pf *pf)
 	{
 		register_error(1,"Error in phase parameter file.  \
 Mismatch between velocity entries and table entries\n\
-Tables have %d depth entries, but velocity vector is of length %d\n",
+Tables have %d depth entries, but velocity vector is of length %ld\n",
 			ttable->nz, maxtbl(t));
 		free_uniform_table(ttable,utable);
 		return(1);

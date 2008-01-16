@@ -39,7 +39,7 @@ int dbtable_invalid(Dbptr db,char *t)
 /* returns true if the table t is empty */
 int dbtable_empty(Dbptr db,char *t)
 {
-	int nrows;
+	long nrows;
 	db=dblookup(db,0,t,0,0);
 	dbquery(db,dbRECORD_COUNT,&nrows);
 	if(nrows>0) 
@@ -131,7 +131,7 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 	
 	dbsv = dblookup(db,0,"stavel",0,0);
 	dbm = dblookup(db,0,"stavel",0,"dbSCRATCH");
-	dbputv(dbm,0,"sta",u->array->name,"phase",u->phase->name,"vmodel",vmodel,0);
+	dbputv(dbm,0,"sta",u->array->name,"phase",u->phase->name,"vmodel",vmodel,NULL );
 	/* It seems to be necessary to explicitly define the match keys.  Using natural
 	keys defined with null patterns for dbmatches did not work correctly. */
 	kmatch = newtbl(0);
@@ -148,8 +148,8 @@ double compute_ema (Slowness_vector *u, Slowness_Function_Output *ucalc,
 	if(nmatches >= 1)
 	{
 		if(nmatches > 1) register_error(0,"warning(compute_ema):  multiple records found in stavel table with same primary key\n");  
-		dbsv.record = (int) gettbl(matches,0);
-		dbgetv(dbsv,0,"velocity",&velocity,0);
+		dbsv.record = (long) gettbl(matches,0);
+		dbgetv(dbsv,0,"velocity",&velocity,NULL );
 	}
 	else
 	{
@@ -227,7 +227,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 {
 	int natimes;
 	int nslow;
-	int *allarids;
+	long *allarids;
 	int errors=0;
 
 	Arrival *atimes;
@@ -268,15 +268,15 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 		/* This is the correct way to find the null value for a field*/
 		db = dblookup(db,0,"predarr",0,0);
 		db.record = dbNULL;
-		dbgetv(db,0,"ema",&ema_null,0);
+		dbgetv(db,0,"ema",&ema_null,NULL );
 	}
 
 	natimes = maxtbl(atbl);
 	nslow = maxtbl(utbl);
 	if(natimes > 0)
 	{
-		allarids = (int *)calloc(natimes,sizeof(int));
-		if(allarids == NULL) die(0,"save_predarr cannot alloc %d integers\n",
+		allarids = (long *)calloc(natimes,sizeof(long));
+		if(allarids == NULL) die(0,"save_predarr cannot alloc %d long integers\n",
 					natimes);
 	}
 	/* These quantities need to be explicitly initialized at the top
@@ -329,7 +329,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 				"time",time,
 				"esaz",esaz,
 				"dip",dip,
-				0) == dbINVALID)
+				NULL ) == dbINVALID)
 			{
 				register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
@@ -355,7 +355,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 				"ema", ema,
 				"esaz",esaz,
 				"dip",dip,
-				0) == dbINVALID)
+				NULL ) == dbINVALID)
 			{
 				register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
@@ -409,7 +409,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 					"time",time,
 					"esaz",esaz,
 					"dip",dip,
-					0) == dbINVALID)
+					NULL ) == dbINVALID)
 				{
 				    register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);
@@ -433,7 +433,7 @@ int save_predarr( Dbptr db,  Tbl *atbl, Tbl *utbl,
 					"ema", ema,
 					"esaz",esaz,
 					"dip",dip,
-					0) == dbINVALID)
+					NULL ) == dbINVALID)
 				{
 				    register_error(0,"dbaddv on predarr table for station %s and phase %s\n",
 					atimes->sta->name, atimes->phase->name);

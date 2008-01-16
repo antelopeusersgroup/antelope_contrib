@@ -44,7 +44,7 @@ Arr *dbload_station_table(Dbptr db,int row_start,int row_end,Pf *pf)
 			"site.lat",&lat,
 			"site.lon",&lon,
 			"site.elev",&elev,
-			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
 		if(db.record == row_start) strcpy(laststa,staname);
 		if( (db.record == row_start) || strcmp(staname,laststa))
 		{
@@ -96,7 +96,7 @@ Arr *dbload_array_table(Dbptr db,int row_start,int row_end,Pf *pf)
 			"lat",&lat,
 			"lon",&lon,
 			"elev",&elev,
-			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
 		if(db.record == row_start) strcpy(laststa,staname);
 		if( (db.record == row_start) || strcmp(staname,laststa))
 		{
@@ -169,7 +169,7 @@ Tbl *dbload_arrival_table(Dbptr db,int row_start,int row_end,
 			"arrival.time",&time,
 			"arrival.deltim",&deltat,
 			"timedef",timedef,
-			0)) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
+			NULL )) == dbINVALID) die(1,"%s:  dbgetv error\n",prog);
 
 		/* Added to skip arrivals with timedef set to turn off */
 		if(!strcmp(timedef,"n"))
@@ -237,7 +237,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	double slow,azimuth;
 	double delslo;
 	char phase_name[10];
-	int arid;
+	long arid;
 	
 
 	t = newtbl(0);
@@ -247,7 +247,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 	    int retcode;
 	    char slodef[2],azdef[2];
 	    /* First make sure def is set for slowness vectors */
-	    retcode=dbgetv(db,0,"slodef",slodef,"azdef",azdef,0);
+	    retcode=dbgetv(db,0,"slodef",slodef,"azdef",azdef,NULL );
 	    if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
 	    /* don't load data unless slowness vector is defined */
 	    if( (!strcmp(slodef,"d")) && (!strcmp(azdef,"d")) )
@@ -266,7 +266,7 @@ Tbl *dbload_slowness_table(Dbptr db,int row_start,int row_end,
 			"phase",phase_name,
 			"slow",&slow,
 			"delslo",&delslo,
-			"azimuth",&azimuth,0);
+			"azimuth",&azimuth,NULL );
 		if(retcode==dbINVALID) die(1,"%s: dbgetv error in read_slowness_vector\n",prog);
 
 		/* The current schema says slow is set to -1.0 for a null

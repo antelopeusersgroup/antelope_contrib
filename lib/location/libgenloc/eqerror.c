@@ -31,7 +31,7 @@ int save_emodel(int orid, float *emodel, Dbptr db)
 			"emodely",emodel[1],
 			"emodelz",emodel[2],
 			"emodelt",emodel[3],
-				0) == dbINVALID)
+				NULL ) == dbINVALID)
 		{
 			register_error(0,"dbaddv error for emodel table\n");
 			return(-1);
