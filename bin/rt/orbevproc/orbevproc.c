@@ -53,8 +53,8 @@ typedef struct process_object_ {
 	Pf *pf;
 	char *perlclass;
 	void *perlobj;
-	int orid;
-	int myevid;
+	long orid;
+	long myevid;
 	int done;
 	int nplist;
 	ProcessParams *plist;
@@ -64,8 +64,8 @@ typedef struct process_object_ {
 
 typedef struct event_params_ {
 	Dbptr db;
-	int orid;
-	int myevid;
+	long orid;
+	long myevid;
 	double time;
 	double lat;
 	double lon;
@@ -291,7 +291,7 @@ db2dbtable (Pf *pf, char *pfkey, Dbptr dbin, char *tablename, Dbptr db, int requ
 		free (ptr);
 	} else {
 		char rec[1024];
-		int istart, iend;
+		long istart, iend;
 
 		if (dbin.record == dbINVALID) return (0);
 
@@ -337,7 +337,7 @@ dbtable2pf (Dbptr db, Pf **pf)
 	void *vbuf=NULL;
 	char key[32];
 	char rec[1024];
-	int rec0, rec1;
+	long rec0, rec1;
 
 	dbquery (db, dbTABLE_NAME, &tablename);
 
@@ -375,15 +375,16 @@ dbtable2pf (Dbptr db, Pf **pf)
 }
 
 int
-mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
+mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, long *myevid)
 
 {
 	char tmpdbname[256];
 	static int instance=0;
 	Dbptr dbo, dba, dbs, dbos, dbon, dbj;
 	double time, olat, olon;
-	int orid;
-	int i, n, ret;
+	long orid;
+	long i, n ; 
+	int ret;
 	char expr[256];
 	Arr *arr;
 	Tbl *stas;
@@ -427,7 +428,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		}
 		dbo.record = dbINVALID;
 		if (ret > 0) {
-			dbo.record = (int) gettbl (tbl, 0);
+			dbo.record = (long) gettbl (tbl, 0);
 		}
 		freetbl (tbl, 0);
 		if (db2dbtable (pf, "origin", dbo, "origin", *db, 0) < 0) {
@@ -460,7 +461,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		}
 		dbo.record = dbINVALID;
 		if (ret > 0) {
-			dbo.record = (int) gettbl (tbl, 0);
+			dbo.record = (long) gettbl (tbl, 0);
 		}
 		freetbl (tbl, 0);
 		if (db2dbtable (pf, "origerr", dbo, "origerr", *db, 0) < 0) {
@@ -493,7 +494,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		}
 		dbo.record = dbINVALID;
 		if (ret > 0) {
-			dbo.record = (int) gettbl (tbl, 0);
+			dbo.record = (long) gettbl (tbl, 0);
 		}
 		freetbl (tbl, 0);
 		if (db2dbtable (pf, "emodel", dbo, "emodel", *db, 0) < 0) {
@@ -526,7 +527,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		}
 		dbo.record = dbINVALID;
 		for (i=0; i<maxtbl(tbl); i++) {
-			dbo.record = (int) gettbl (tbl, i);
+			dbo.record = (long) gettbl (tbl, i);
 			if (db2dbtable (pf, "predarrs", dbo, "predarr", *db, 0) < 0) {
 				register_error (0, "mktmpdb: db2dbtable(%s.predarr) error in temp db.\n", tmpdbname);
 				dbdestroy (*db);
@@ -562,7 +563,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		for (i=0; i<maxtbl(tbl); i++) {
 			Tbl *tbl2=NULL;
 
-			dbo.record = (int) gettbl (tbl, i);
+			dbo.record = (long) gettbl (tbl, i);
 			if (db2dbtable (pf, "assocs", dbo, "assoc", *db, 0) < 0) {
 				register_error (0, "mktmpdb: db2dbtable(%s.assoc) error in temp db.\n", tmpdbname);
 				dbdestroy (*db);
@@ -577,7 +578,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 				return (-1);
 			}
 			if (ret > 0) {
-				dba.record = (int) gettbl (tbl2, 0);
+				dba.record = (long) gettbl (tbl2, 0);
 				if (db2dbtable (pf, "arrivals", dba, "arrival", *db, 0) < 0) {
 					register_error (0, "mktmpdb: db2dbtable(%s.arrival) error in temp db.\n", tmpdbname);
 					dbdestroy (*db);
@@ -609,7 +610,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	dbos = dblookup (*db, 0, "site", 0, 0);
 	dbon = dblookup (*db, 0, "snetsta", 0, 0);
 	dbo.record = 0;
-	if (dbgetv (dbo, "origin", "time", &time, "orid", &orid, "lat", &olat, "lon", &olon, 0) < 0) {
+	if (dbgetv (dbo, "origin", "time", &time, "orid", &orid, "lat", &olat, "lon", &olon, NULL ) < 0) {
 		register_error (0, "mktmpdb: dbgetv(origin:time) error.\n");
 		dbdestroy (*db);
 		dbclose (*db);
@@ -626,7 +627,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 	for (dbj.record = 0; dbj.record<n; dbj.record++) {
 		char sta[16], staname[64], statype[8], refsta[16];
 		double lat, lon, elev, dnorth, deast, lddate;
-		int ondate, offdate;
+		long ondate, offdate;
 		Dbptr dbn;
 		char rec[256];
 
@@ -634,7 +635,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 				"lat", &lat, "lon", &lon, "elev", &elev,
 				"staname", staname, "statype", statype,
 				"refsta", refsta, "dnorth", &dnorth, "deast", &deast, 
-				"lddate", &lddate, 0) < 0) {
+				"lddate", &lddate, NULL ) < 0) {
 			register_error (0, "mktmpdb: dbgetv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
@@ -645,7 +646,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 				"lat", lat, "lon", lon, "elev", elev,
 				"staname", staname, "statype", statype,
 				"refsta", refsta, "dnorth", dnorth, "deast", deast, 
-				"lddate", lddate, 0) < 0) {
+				"lddate", lddate, NULL ) < 0) {
 			register_error (0, "mktmpdb: dbputv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
@@ -684,7 +685,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		char timedef[32];
 		char phase[32];
 		double slat, slon, delta, esaz, seaz;
-		int arid;
+		long arid;
 
 		sta = (char *) gettbl (stas, i);
 		line = (char *) getarr (arr, sta);
@@ -694,7 +695,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 			complain (0, "mktmpdb: Cannot find station '%s' in site table - skipping.\n", sta);
 			continue;
 		}
-		if (dbgetv (dbos, 0, "lat", &slat, "lon", &slon, 0) < 0) {
+		if (dbgetv (dbos, 0, "lat", &slat, "lon", &slon, NULL ) < 0) {
 			register_error (0, "mktmpdb: dbgetv(site) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
@@ -710,7 +711,7 @@ mktmpdb (Pf *pf, Dbptr dbmaster, Dbptr *db, int *myevid)
 		arid = dbnextid (*db, "arid");
 		if (dbaddv (*db, "assoc", "arid", arid, "orid", orid,
 				"sta", sta, "phase", phase, "delta", delta,
-				"seaz", seaz, "esaz", esaz, "timedef", timedef, 0) < 0) {
+				"seaz", seaz, "esaz", esaz, "timedef", timedef, NULL ) < 0) {
 			register_error (0, "mktmpdb: dbaddv(assoc) error.\n");
 			dbdestroy (*db);
 			dbclose (*db);
@@ -728,7 +729,7 @@ print_logs (Pf *pf, char *class, int event, void *perlobj)
 {
 	Pf *tblpf;
 	Pf *tblpf2;
-	int i, m, n;
+	long i, m, n;
 	double t0;
 
 	if (parse_param (pf, "logs", P_TBLPF, 1, &tblpf) < 0) {
@@ -925,7 +926,7 @@ process_output (ProcessObject *po, Pf *pf, int type, Dbptr dbout, int orb)
 	if (assoc && pfout) {
 		if (type == TYPE_ORB) {
 			if (verbose) {
-				elog_notify (0, "%d: %s: Outputting /pf/orb2dbt ORB packet\n", po->myevid, po->perlclass);
+				elog_notify (0, "%ld: %s: Outputting /pf/orb2dbt ORB packet\n", po->myevid, po->perlclass);
 			}
 
 			if (pf2orb (pfout, orb, "/pf/orb2dbt") < 0) {
@@ -937,7 +938,7 @@ process_output (ProcessObject *po, Pf *pf, int type, Dbptr dbout, int orb)
 
 		if (type == TYPE_DB) {
 			if (verbose) {
-				elog_notify (0, "%d: %s: Associating event with output database\n", po->myevid, po->perlclass);
+				elog_notify (0, "%ld: %s: Associating event with output database\n", po->myevid, po->perlclass);
 			}
 			assoc_process_pf (pfout, dbout, NULL, NULL, NULL, -1, verbose);
 			clear_register (1);
@@ -985,7 +986,7 @@ freepplist (ProcessParams *pp, int npp)
 }
 
 int
-make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *poin, ProcessObject **poout)
+make_perlobj (Dbptr dbpkt, Dbptr dbmaster, long orid, long myevid, ProcessObject *poin, ProcessObject **poout)
 
 {
 	void *sv;
@@ -1100,7 +1101,7 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 		pffree (pf);
 		freetbl (stas, 0);
 		perlembed_destroy ( sv ) ;
-		register_error (1, "make_perlobj: malloc(proc_list,%d) error.\n", n*sizeof(ProcessParams));
+		register_error (1, "make_perlobj: malloc(proc_list,%ld) error.\n", n*sizeof(ProcessParams));
 		return (-1);
 	}
 	memset (proc_list, 0, n*sizeof(ProcessParams));
@@ -1178,7 +1179,7 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 				freetbl (stas, 0);
 				freetbl (chans, 0);
 				perlembed_destroy ( sv ) ;
-				register_error (1, "make_perlobj: malloc(chan=%s,%d) error.\n", chan, sizeof(ProcessParamsChan));
+				register_error (1, "make_perlobj: malloc(chan=%s,%ld) error.\n", chan, sizeof(ProcessParamsChan));
 				return (-1);
 			}
 			memset (ppc, 0, sizeof(ProcessParamsChan));
@@ -1201,7 +1202,7 @@ make_perlobj (Dbptr dbpkt, Dbptr dbmaster, int orid, int myevid, ProcessObject *
 	if (*poout == NULL) {
 		free (proc_list);
 		perlembed_destroy ( sv ) ;
-		register_error (1, "make_perlobj: malloc(%s,%d) error.\n", poin->perlclass, sizeof(ProcessObject));
+		register_error (1, "make_perlobj: malloc(%s,%ld) error.\n", poin->perlclass, sizeof(ProcessObject));
 		return (-1);
 	}
 	memset (*poout, 0, sizeof(ProcessObject));
@@ -1389,7 +1390,7 @@ event_destroy (EventParams *ep)
 
 			po = (ProcessObject *) gettbl (ep->process_tbl, i);
 			if (verbose) {
-				elog_notify (0, "%d: %s: %.3f seconds spent in perl processing\n", 
+				elog_notify (0, "%ld: %s: %.3f seconds spent in perl processing\n", 
 						po->myevid, po->name, po->tperl);
 			}
 			perlembed_destroy ( po->perlobj ) ;
@@ -1463,7 +1464,7 @@ setup_station_params (EventParams *ep)
 			if (sp == NULL) {
 				sp = (StationParams *) malloc (sizeof(StationParams));
 				if (sp == NULL) {
-					register_error (1, "setup_station_params: malloc(StationParams,%d) error.\n", 
+					register_error (1, "setup_station_params: malloc(StationParams,%ld) error.\n", 
 										sizeof(StationParams));
 					return (-1);
 				}
@@ -1581,8 +1582,8 @@ setup_wfthread (EventParams *ep, char *orbname)
 		char *s;
 
 		s = strtime(ep->tstart - 60.0);
-		elog_notify (0, "%d: Starting wf read from '%s' with tafter = %s\n", ep->myevid, orbname, s);
-		elog_notify (0, "%d: and select = %s\n", ep->myevid, ep->select_expr);
+		elog_notify (0, "%ld: Starting wf read from '%s' with tafter = %s\n", ep->myevid, orbname, s);
+		elog_notify (0, "%ld: and select = %s\n", ep->myevid, ep->select_expr);
 		free (s);
 	}
 
@@ -1601,9 +1602,9 @@ make_trrow_copy (Dbptr trrow, double tstart, double tend, Dbptr *dbtr)
 {
 	char rec[1024];
 	double time, samprate, dt, t0;
-	int nsamp;
+	long nsamp;
 	float *data, *datacp;
-	int i, ioff, istart, iend, nbad, ns;
+	long i, ioff, istart, iend, nbad, ns;
 
 	if (dbget (trrow, rec) == dbINVALID) {
 		register_error (0, "make_trrow_copy: dbget() error.\n");
@@ -1613,7 +1614,7 @@ make_trrow_copy (Dbptr trrow, double tstart, double tend, Dbptr *dbtr)
 				"samprate", &samprate,
 				"nsamp", &nsamp,
 				"data", &data,
-				0) < 0) {
+				NULL ) < 0) {
 		register_error (0, "make_trrow_copy: dbget() error.\n");
 		return (-1);
 	}
@@ -1641,7 +1642,7 @@ make_trrow_copy (Dbptr trrow, double tstart, double tend, Dbptr *dbtr)
 
 	datacp = (float *) malloc (ns*sizeof(float));
 	if (datacp == NULL) {
-		register_error (1, "make_trrow_copy: malloc(datacp,%d) error.\n", ns*sizeof(float));
+		register_error (1, "make_trrow_copy: malloc(datacp,%ld) error.\n", ns*sizeof(float));
 		return (-1);
 	}
 	trfill_gap (datacp, ns);
@@ -1687,7 +1688,7 @@ make_trrow_copy (Dbptr trrow, double tstart, double tend, Dbptr *dbtr)
 				"nsamp", ns,
 				"time", t0,
 				"m0", (double) nbad,
-				0) < 0) {
+				NULL ) < 0) {
 		register_error (0, "make_trrow_copy: dbputv() error.\n");
 		free (datacp);
 		trdestroy (dbtr);
@@ -1703,17 +1704,17 @@ isit_ready (Dbptr trrow, ProcessParams *pp)
 {
 	char chan[16];
 	double time, samprate, dt, t0;
-	int nsamp;
+	long nsamp;
 	float *data;
 	ProcessParamsChan *ppc;
-	int i, ioff, istart, iend, nbad, ns;
+	long i, ioff, istart, iend, nbad, ns;
 
 	if (dbgetv (trrow, 0,	"chan", chan,
 				"time", &time,
 				"samprate", &samprate,
 				"nsamp", &nsamp,
 				"data", &data,
-				0) < 0) {
+				NULL ) < 0) {
 		register_error (0, "isit_ready: dbgetv() error.\n");
 		return (-1);
 	}
@@ -1848,14 +1849,14 @@ main (int argc, char **argv)
 	char *orbwf_name, *orbev_name, *dbname, *dbwfname=NULL;
 	char *dbin_name, *dbout_name;
 	char pfname[128];
-	int orbevin, orbevout, orbwf;
+	long orbevin, orbevout, orbwf;
 	int pktid, get;
 	int pktidnewest;
 	int ret, i;
 	int number=0;
 	int wait=1;
 	Dbptr db, dbwf, dbin, dbout;
-	int ndbin;
+	long ndbin;
 	int num;
 	Pf *pf;
 	Tbl *evproc_tbl;
@@ -2085,7 +2086,7 @@ main (int argc, char **argv)
 		settbl (script_tbl, -1, strdup(script));
 		po = (ProcessObject *) malloc (sizeof(ProcessObject));
 		if (po == NULL) {
-			die (0, "malloc(%s,%d) error.\n", script, sizeof(ProcessObject));
+			die (0, "malloc(%s,%ld) error.\n", script, sizeof(ProcessObject));
 		}
 		memset (po, 0, sizeof(ProcessObject));
 		settbl (process_tbl, -1, po);
@@ -2267,7 +2268,7 @@ main (int argc, char **argv)
 		finit_db (db);
 		dbin.record = 0;
 		if (verbose) {
-			elog_notify (0, "Processing %d origins from %s\n", ndbin, dbin_name);
+			elog_notify (0, "Processing %ld origins from %s\n", ndbin, dbin_name);
 		}
 	}
 
@@ -2293,14 +2294,14 @@ main (int argc, char **argv)
 		static Packet *pkt=NULL;
 		Dbptr dbpkt, dbo;
 		double olat, olon, otime, odepth;
-		int orid, evid, n;
+		long orid, evid, n;
 		char *s;
 		char auth[64];
 		char expr[256];
 		char rec[512];
 		EventParams *ep;
 		int nodata = 1;
-		int myevid;
+		long myevid;
 
 		if (type == TYPE_ORB) {
 
@@ -2370,17 +2371,17 @@ main (int argc, char **argv)
 		dbo = dblookup (dbpkt, 0, "origin", 0, 0);
 		dbo.record = 0;
 		if (dbgetv (dbo, 0, "lat", &olat, "lon", &olon, "time", &otime, "orid", &orid, "evid", &evid,
-							"depth", &odepth, "auth", auth, 0) < 0) {
+							"depth", &odepth, "auth", auth, NULL ) < 0) {
 			complain (0, "dbgetv() error.\n");
 			dbdestroy (dbpkt); 
 			goto PROCESS_WFTHREADS;
 		}
 		if (verbose) {
 			if (type == TYPE_DB) {
-				elog_notify (0, "\n%d: Processing orid %d at %.3f %.3f %.3f %s auth %s\n", 
+				elog_notify (0, "\n%ld: Processing orid %ld at %.3f %.3f %.3f %s auth %s\n", 
 					myevid, orid, olat, olon, odepth, s=strtime(otime), auth);
 			} else {
-				elog_notify (0, "\n%d: Processing pktid %d at %.3f %.3f %.3f %s auth %s\n", 
+				elog_notify (0, "\n%ld: Processing pktid %ld at %.3f %.3f %.3f %s auth %s\n", 
 					myevid, pktidin, olat, olon, odepth, s=strtime(otime), auth);
 			}
 			free(s) ;
@@ -2406,7 +2407,7 @@ main (int argc, char **argv)
 
 				ep = (EventParams *) malloc (sizeof(EventParams));
 				if (ep == NULL) {
-					die (1, "malloc(EventParams,%d) error.\n", sizeof(EventParams));
+					die (1, "malloc(EventParams,%ld) error.\n", sizeof(EventParams));
 				}
 				memset (ep, 0, sizeof(EventParams));
 				ep->db = dbpkt;
@@ -2454,7 +2455,7 @@ main (int argc, char **argv)
 		}
 
 		if (ep == NULL) {
-			complain (0, "Nothing to process for event %d\n", myevid);
+			complain (0, "Nothing to process for event %ld\n", myevid);
 			dbdestroy (dbpkt); 
 			goto PROCESS_WFTHREADS;
 		}
@@ -2495,7 +2496,7 @@ main (int argc, char **argv)
 						char *s1, *s2;
 						s1 = mystrtime(sp->tstart-10.0);
 						s2 = mystrtime(sp->tend+10.0);
-						elog_notify (0, "%d: %s: %s: Processing db - no data from %s to %s\n", ep->myevid, sp->sta, sp->chan_expr, s1, s2);
+						elog_notify (0, "%ld: %s: %s: Processing db - no data from %s to %s\n", ep->myevid, sp->sta, sp->chan_expr, s1, s2);
 						free (s1);
 						free (s2);
 					}
@@ -2515,7 +2516,7 @@ main (int argc, char **argv)
 					sprintf (expr, "chan =~ /%s/", pp->chan_expr);
 
 					for (ep->pt->dbt.record=irec; ep->pt->dbt.record<irec+nrec; (ep->pt->dbt.record)++) {
-						int ival;
+						long ival;
 						char chan[32];
 						ProcessParamsChan *ppc;
 						Dbptr dbtr;
@@ -2523,7 +2524,7 @@ main (int argc, char **argv)
 						dbex_evalstr (ep->pt->dbt, expr, dbBOOLEAN, &ival);
 						if (ival == 0) continue;
 
-						dbgetv (ep->pt->dbt, 0, "chan", chan, 0);
+						dbgetv (ep->pt->dbt, 0, "chan", chan, NULL );
 
 						ppc = (ProcessParamsChan *) getarr (pp->channels, chan);
 						if (ppc == NULL) continue;
@@ -2538,13 +2539,13 @@ main (int argc, char **argv)
 
 						if (ret == 0) {
 							if (verbose > 2) {
-								elog_notify (0, "%d: %s: %s: %s: Processing db - no data\n", ep->myevid, pp->po->perlclass, pp->sta, chan);
+								elog_notify (0, "%ld: %s: %s: %s: Processing db - no data\n", ep->myevid, pp->po->perlclass, pp->sta, chan);
 							}
 							continue;
 						}
 
 						if (verbose > 2) {
-							elog_notify (0, "%d: %s: %s: %s: Processing db\n", ep->myevid, pp->po->perlclass, pp->sta, chan);
+							elog_notify (0, "%ld: %s: %s: %s: Processing db\n", ep->myevid, pp->po->perlclass, pp->sta, chan);
 						}
 
 						/* make perl callbacks for interested processing objects */
@@ -2614,7 +2615,7 @@ main (int argc, char **argv)
 					}
 				}
 				if (verbose) {
-					elog_notify (0, "%d: Processing done - deleting event\n", ep->myevid);
+					elog_notify (0, "%ld: Processing done - deleting event\n", ep->myevid);
 				}
 				event_destroy (ep);
 				goto PROCESS_WFTHREADS;
@@ -2630,7 +2631,7 @@ main (int argc, char **argv)
 			}
 			if (done) {
 				if (verbose) {
-					elog_notify (0, "%d: Processing done - deleting event\n", ep->myevid);
+					elog_notify (0, "%ld: Processing done - deleting event\n", ep->myevid);
 				}
 				event_destroy (ep);
 				goto PROCESS_WFTHREADS;
@@ -2670,7 +2671,7 @@ PROCESS_WFTHREADS:
 			if (ret == ORBREAPTHR_NODATA) continue;
 			if (ret == ORBREAPTHR_STOPPED) {
 				if (verbose) {
-					elog_notify (0, "%d: Deleting event\n", ep->myevid);
+					elog_notify (0, "%ld: Deleting event\n", ep->myevid);
 				}
 				event_destroy (ep); 
 				deltbl (wfthread_tbl, i);
@@ -2701,7 +2702,7 @@ PROCESS_WFTHREADS:
 				char *s;
 
 				s = mystrtime(pkt->time);
-				elog_notify (0, "%d: Reaped packet %s, %.3f at %s\n", ep->myevid, srcname, now()-pkt->time, s);
+				elog_notify (0, "%ld: Reaped packet %s, %.3f at %s\n", ep->myevid, srcname, now()-pkt->time, s);
 				free (s);
 			}
 
@@ -2749,7 +2750,7 @@ PROCESS_WFTHREADS:
 							s1 = mystrtime(sp->tstart-10.0);
 							s2 = mystrtime(sp->tend+10.0);
 							s = mystrtime(pchan->time);
-							elog_notify (0, "%d: Adding data to %s %s %s %s at %s\n", ep->myevid, pp->sta, s1, s2, pchan->chan, s);
+							elog_notify (0, "%ld: Adding data to %s %s %s %s at %s\n", ep->myevid, pp->sta, s1, s2, pchan->chan, s);
 							free (s);
 							free (s1);
 							free (s2);
@@ -2781,7 +2782,7 @@ PROCESS_WFTHREADS:
 						char *s;
 
 						s = mystrtime(pchan->time);
-						elog_notify (0, "%d: Processing %s %s %s at %s\n", ep->myevid, pchan->sta, pp->sta, pchan->chan, s);
+						elog_notify (0, "%ld: Processing %s %s %s at %s\n", ep->myevid, pchan->sta, pp->sta, pchan->chan, s);
 						free (s);
 					}
 				
@@ -2849,7 +2850,7 @@ PROCESS_WFTHREADS:
 
 				if (po->expire_time > 0.0 && now() > po->expire_time) {
 
-					elog_notify (0, "%d: Maximum wait time expired - flushing processing\n", ep->myevid);
+					elog_notify (0, "%ld: Maximum wait time expired - flushing processing\n", ep->myevid);
 
 					if (flush_processing (po, ep->pt->dbt, type, dbout, orbevout) < 0) {
 						complain (0, "flush_processing() error.\n");
@@ -2862,13 +2863,13 @@ PROCESS_WFTHREADS:
 			}
 			if (done) {
 				if (verbose) {
-					elog_notify (0, "%d: Stopping wf reap thread\n", ep->myevid);
+					elog_notify (0, "%ld: Stopping wf reap thread\n", ep->myevid);
 				}
 				if (orbreapthr_set_to_stop (ep->reap) < 0) {
 					complain (0, "orbreapthr_set_to_stop() error.\n");
 				}
 				if (verbose) {
-					elog_notify (0, "%d: Processing done for event\n", ep->myevid);
+					elog_notify (0, "%ld: Processing done for event\n", ep->myevid);
 				}
 				ep->halt = 1;
 				continue;
