@@ -116,7 +116,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 {
 	Dbptr db,dbs,dbs2;
 	char sstring[80];  /* used to define subset condition */
-	int nrecs;
+	long nrecs;
 	Tbl *sortkeys;
 	Vmodel *model;
 	int i;
@@ -155,7 +155,7 @@ Vmodel  *read_model_from_db(char *mod, char *property)
 	for(dbs2.record=0,i=0;dbs2.record<nrecs;++dbs2.record,++i)
 	{
 		if(dbgetv(dbs2,0,"paramval",&(model->velocity[i]),
-			"depth",&(model->ztop[i]),0) == dbINVALID)
+			"depth",&(model->ztop[i]),NULL ) == dbINVALID)
 		{
 			elog_log(0,"dbgetv error loading record %d of model %s and property %s\nModel cannot be accessed -- expect additional errors\n",
 				i,mod,property);
