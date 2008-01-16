@@ -4,11 +4,11 @@ INCLUDE=perf.h f2c.h
 include $(ANTELOPEMAKE)
 DIRS=
 
-slamch.o: slamch.c
-	$(CC) -c $(NOOPT) $<
+#slamch.o: slamch.c
+#	$(CC) -c $(NOOPT) $<
 
-dlamch.o: dlamch.c
-	$(CC) -c $(NOOPT) $<
+#dlamch.o: dlamch.c
+#	$(CC) -c $(NOOPT) $<
  
 ALLAUX = ilaenv.o ieeeck.o lsame.o lsamen.o xerbla.o
 
@@ -324,6 +324,7 @@ I77 =   backspace.o close.o dfe.o dolio.o due.o endfile.o err.o fmt.o \
 	uio.o util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o
 
 OBJS= \
+    $(SCLAUX) \
     C_interface.o \
     $(ALLAUX) \
     $(ALLBLAS) \
@@ -353,7 +354,6 @@ OBJS= \
     $(SBLAS1) \
     $(SBLAS2) \
     $(SBLAS3) \
-    $(SCLAUX) \
     $(SLASRC) \
     $(TIME) \
     $(ZB1AUX) \
@@ -364,10 +364,10 @@ OBJS= \
 
 $(LIB) : $(OBJS)
 	$(RM) $@
-	$(AR) $(ARFLAGS) $@ $(LORDER) $(OBJS) $(TSORT)
+	$(AR) $(ARFLAGS) $@ $(OBJS) 
 	$(RANLIB) $@
 
 $(DLIB) : $(OBJS)
 	$(RM) $@
-	$(DLD) $(DLDFLAGS) -o $(DLIB) $(LORDER) $(OBJS) $(TSORT) $(DLDLIBS) 
+	$(DLD) $(DLDFLAGS) -o $(DLIB) $(OBJS) $(DLDLIBS) 
 
