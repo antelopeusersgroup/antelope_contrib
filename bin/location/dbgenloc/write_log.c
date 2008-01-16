@@ -31,7 +31,7 @@ write_log (char *outfile_name,
 		      "\tArid Sta         Phase     Time                  uncertainty\n" ) ;
 	for ( i=0 ; i<n ; i++ ) {
 	    a = (Arrival *) gettbl(ta, i) ;
-	    fprintf ( file, "\t%5d %-12s %-6s %s %10.3f\n", 
+	    fprintf ( file, "\t%5ld %-12s %-6s %s %10.3f\n", 
 		a->arid,
 		a->sta->name, 
 		a->phase->name, 
@@ -47,7 +47,7 @@ write_log (char *outfile_name,
 		      "Array        Phase    ux            uy      uncertainty\n" ) ;
 	for ( i=0 ; i<n ; i++ ) {
 	    u = (Slowness_vector *) gettbl(tu, i) ;
-	    fprintf ( file, "%5d %-12s %-6s %10.3f %10.3f %10.3f %10.3f\n", 
+	    fprintf ( file, "%5ld %-12s %-6s %10.3f %10.3f %10.3f %10.3f\n", 
 		u->arid,
 		u->array->name, 
 		u->phase->name, 
@@ -162,7 +162,7 @@ write_log (char *outfile_name,
 
 	for ( i=0 ; i<n ; i++ ) {
 	    a = (Arrival *) gettbl(ta, i) ;
-	    fprintf ( file, "\t%5d %-12s %-6s %10.3g %10.3g %10.3g %10.3g\n",
+	    fprintf ( file, "\t%5ld %-12s %-6s %10.3g %10.3g %10.3g %10.3g\n",
 		a->arid,
 		a->sta->name, 
 		a->phase->name, 
@@ -182,7 +182,7 @@ write_log (char *outfile_name,
 		      "\tarid array        phase      residual residual    weight        weight\n"  ) ; 
 	for ( i=0 ; i<n ; i++ ) {
 	    u = (Slowness_vector *) gettbl(tu, i) ;
-	    fprintf ( file, "\t%5d %-12s %-6s ux: %10.3f %10.3f %10.3f %10.3f\n" 
+	    fprintf ( file, "\t%5ld %-12s %-6s ux: %10.3f %10.3f %10.3f %10.3f\n" 
 			    "                         uy: %10.3g %10.3g %10.3g %10.3g\n",
 		u->arid,
 		u->array->name, 

@@ -30,7 +30,7 @@ static char *lastmodel=NULL; /* needs to be here to initialize correctly */
 static Arr *badclocks=NULL;
 
 int
-run_location (Dbptr dbin, Dbptr dbout, char *pfname, int *orid, char **error)
+run_location (Dbptr dbin, Dbptr dbout, char *pfname, long *orid, char **error)
 {
     int             retcode = -1;
     Arr            *stations=0;

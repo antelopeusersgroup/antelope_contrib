@@ -71,7 +71,9 @@ int compute_residual_only_results(Hypocenter hypo,
 			slow->yres.other_weights=0.0;
 		}
 	}
+    return 0 ;
 }
+
 int
 save_results (Dbptr dbin, Dbptr dbout, 
 	Pf *pf, 
@@ -81,11 +83,11 @@ save_results (Dbptr dbin, Dbptr dbout,
 	char *vmodel, 
 	Hypocenter *hypo, 
 	Tbl *residual, 
-	int *oridp,
+	long *oridp,
 	double **C,
 	float *emodel )
 {
-    int             i, n, orid, grn, srn, retcode = 0;
+    long             i, n, orid, grn, srn, retcode = 0;
     char algorithm[15];
     char *str;
     double delta, esaz, seaz, slores, duphi, azres, azimuth ;
@@ -93,7 +95,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     Arrival *a ; 
     Slowness_vector *u ;
     Dbptr dborigin, dbassoc ;
-    int old, new ;
+    long old, new ;
     double conf;
     char *modtype;
     int model;
@@ -108,8 +110,6 @@ save_results (Dbptr dbin, Dbptr dbout,
     }
 
     dborigin = dblookup ( dbout, 0, "origin", 0, 0 ) ; 
-    dbquery ( dborigin, dbRECORD_COUNT, &i ) ; 
-
     dborigin.record = dbaddnull ( dborigin ) ; 
     grn = grnumber(hypo->lat, hypo->lon) ;
     srn = srnumber ( grn ) ; 
@@ -135,7 +135,7 @@ save_results (Dbptr dbin, Dbptr dbout,
 	   "srn", srn,
 	   "algorithm", algorithm,
 	   "auth", pfget_string ( pf, "author" ),
-	   0)  ) {
+	   NULL )  ) {
 	complain(0, "Couldn't add origin record to database.\n");
 	retcode = -1;
       }
@@ -200,7 +200,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     		"sdepth", sdepth,
     		"stime", stime,
     		"conf", conf,
-    		0) < 0 ) {
+    		NULL ) < 0 ) {
     	complain (1,"couldn't add origerr record to database\n" ) ;
     	retcode = -1 ;
         }
@@ -264,8 +264,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 			"timedef", "d",
 			"vmodel", vmodel,
 			"wgt",wgt, 
-				0 ) < 0 ) 
-	    			elog_notify ( 0, "Can't add assoc record for station %s, arid=%d, orid=%d for composite component %s of %s\n", 
+				NULL ) < 0 ) 
+	    			elog_notify ( 0, "Can't add assoc record for station %s, arid=%ld, orid=%ld for composite component %s of %s\n", 
 	    				a->sta->name, a->arid, orid,
 					 phase1,a->phase->name) ;
 		/* Be a bit more cautious for the second component */
@@ -282,13 +282,13 @@ save_results (Dbptr dbin, Dbptr dbout,
 				"timedef", "d",
 				"vmodel", vmodel,
 				"wgt",wgt, 
-					0 ) < 0 ) 
-	    			    elog_notify ( 0, "Can't add assoc record for station %s, arid=%d, orid=%d for composite component %s of %s\n", 
+					NULL ) < 0 ) 
+	    			    elog_notify ( 0, "Can't add assoc record for station %s, arid=%ld, orid=%ld for composite component %s of %s\n", 
 	    				a->sta->name, a->arid2, orid,
 					 phase2,a->phase->name) ;
 
 
-		elog_log(0,"Station %s used composite phase %s for orid %d\n",
+		elog_log(0,"Station %s used composite phase %s for orid %ld\n",
 			a->sta->name,a->phase->name,orid);
 		free(phase1);
 	}
@@ -307,8 +307,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"timedef", "d",
 		"vmodel", vmodel,
 		"wgt", wgt,
-		0 ) < 0 ) 
-	    	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+		NULL ) < 0 ) 
+	    	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    			a->sta->name, a->arid, orid ) ;
 	}
     }
@@ -322,8 +322,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"orid", orid, 
 		"arid", u->arid, 
 		"vmodel", vmodel,
-		0 )) < 0 ) {
-	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+		NULL )) < 0 ) {
+	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    	a->sta->name, a->arid, orid ) ;
 	} else {
 	    slores = deg2km(sqrt(sqr(u->xres.raw_residual) + sqr(u->yres.raw_residual))) ;
@@ -336,8 +336,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"slodef", "d",
 		"azres", azres,
 		"azdef", "d", 
-		0 ) < 0 ) 
-		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%d\n",
+		NULL ) < 0 ) 
+		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
 			dbout.record ) ; 
 	}
     }
@@ -362,8 +362,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"timedef", "n",
 		"vmodel", vmodel,
 		"wgt", wgt,
-	    				0 ) < 0 ) 
-	    	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+	    				NULL ) < 0 ) 
+	    	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    			a->sta->name, a->arid, orid ) ;
     }
     n = maxtbl(turo) ;
@@ -373,8 +373,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"orid", orid, 
 		"arid", u->arid, 
 		"vmodel", vmodel,
-		0 )) < 0 ) {
-	    complain ( 0, "Can't add assoc record for station %s arid=%d orid=%d\n", 
+		NULL )) < 0 ) {
+	    complain ( 0, "Can't add assoc record for station %s arid=%ld orid=%ld\n", 
 	    	a->sta->name, a->arid, orid ) ;
 	} else {
 	    slores = deg2km(sqrt(sqr(u->xres.raw_residual) + sqr(u->yres.raw_residual))) ;
@@ -387,8 +387,8 @@ save_results (Dbptr dbin, Dbptr dbout,
 		"slodef", "n",
 		"azres", azres,
 		"azdef", "n", 
-		0 ) < 0 ) 
-		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%d\n",
+		NULL ) < 0 ) 
+		complain ( 0, "Can't add slowness and azimuth residuals to assoc record #%ld\n",
 			dbout.record ) ; 
 	}
     }   
@@ -398,7 +398,7 @@ save_results (Dbptr dbin, Dbptr dbout,
     dbputv(dborigin, 0,
 	   "nass", new-old,
 	   "ndef", hypo->number_data,
-	   0 ) ; 
+	   NULL ) ; 
    /* This routine saves the predicted arrival information for each data point 
     WARNING:  the str variable passed here is computed above as the base 
     velocity "name" removing the directory portion used by dbgenloc.  

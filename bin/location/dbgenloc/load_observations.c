@@ -12,7 +12,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
     Arrival *a ;
     Tbl *ta, *tu ,*taro, *turo;
     Dbptr dbarr, dbsite ;
-    static void *hook = 0 ; 
+    static Hook *hook = 0 ; 
     static Tbl *matching ;
     Tbl *arrival_tbl ;
     Arr *stations ;
@@ -60,7 +60,7 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 	    );
 
 	if ( (station = getarr ( stations, sta ) ) == 0 ) {
-	    dbputv ( dbarr, 0, "sta", sta, "time", time, 0 ) ; 
+	    dbputv ( dbarr, 0, "sta", sta, "time", time, NULL ) ; 
 	    dbmatches ( dbarr, dbsite, 0, 0, &hook, &matching ) ;
 	    if ( maxtbl(matching) < 1 ) {
 		char *t ;
@@ -70,14 +70,14 @@ load_observations ( Pf *pf, Dbptr db, Arr *arr_phase,
 		continue ;
 	    }
 
-	    dbsite.record = (int) gettbl(matching, 0) ;
+	    dbsite.record = (long) gettbl(matching, 0) ;
 	    freetbl(matching,0) ;
 	    allot ( Station *, station, 1 ) ; 
 	    allot ( Seismic_Array *, array, 1 ) ; 
 	    dbgetv ( dbsite, 0, 
-		"sta", station->name, "lat", &station->lat, "lon", &station->lon, "elev", &station->elev, 0 ) ;
+		"sta", station->name, "lat", &station->lat, "lon", &station->lon, "elev", &station->elev, NULL ) ;
 	    dbgetv ( dbsite, 0, 
-		"sta", array->name, "lat", &array->lat, "lon", &array->lon, "elev", &array->elev, 0 ) ;
+		"sta", array->name, "lat", &array->lat, "lon", &array->lon, "elev", &array->elev, NULL ) ;
 	    setarr (stations, sta, station ) ; 
 	    setarr (arrays, sta, array ) ; 
 	} else {

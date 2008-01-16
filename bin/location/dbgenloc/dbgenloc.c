@@ -14,10 +14,8 @@ usage ()
 }
 
 
-main (argc, argv)
-int             argc;
-char          **argv;
-
+int
+main (int argc, char **argv)
 {
     int             c,
                     errflg = 0;
@@ -28,7 +26,7 @@ char          **argv;
     char            aline[STRSZ];
     int             verbose = 0;
     char           *pfname, *error;
-    int		   orid ;
+    long	   orid ;
     int		   nostdin=0 ;
 
     pfname=strdup("dbgenloc");
@@ -83,7 +81,7 @@ char          **argv;
     while (nostdin || gets (aline)) {
 	switch (run_location (dbin, dbout, pfname, &orid, &error)) {
 	case 0:
-	    printf ("location_solution: new origin %d\n", orid);
+	    printf ("location_solution: new origin %ld\n", orid);
 	    break;
 
 	default:
