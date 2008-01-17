@@ -37,9 +37,9 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 			// note the reversal
 			for(k=grid_top,kk=0;k>=0;--k,++kk) 
 				grid_depths[kk]=field.depth(i,j,k);
-			for(k=0;k<field.n3;++k)
+			for(k=grid_top,kk=0;k>=0;--k,++kk) 
 			{
-				igrid=irregular_lookup(grid_depths[k],&(z1d[0]),n1dsize);
+				igrid=irregular_lookup(grid_depths[kk],&(z1d[0]),n1dsize);
 				if(igrid<0)
 					// case for above top 1d grid point (surface)
 					field.val[i][j][k]=val1d[0];
@@ -54,7 +54,7 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 				{
 					// normal point 
 					field.val[i][j][k]=val1d[igrid]
-						+ grad[igrid]*(grid_depths[k]-z1d[igrid]);
+						+ grad[igrid]*(grid_depths[kk]-z1d[igrid]);
 				}
 			}
 		}
@@ -63,9 +63,10 @@ void  initialize_1Dscalar(GCLscalarfield3d& field,
 }
 	
 	
-	
-// Overloaded version for case with 0 gradient in all "layers".  i.e. constant property
-// layers.  Implemented by just creating 0 gradient and calling the above.  
+/*
+Overloaded version for case with 0 gradient in all "layers".  i.e. constant property
+layers.  Implemented by just creating 0 gradient and calling the above.  
+*/
 void  initialize_1Dscalar(GCLscalarfield3d& field, vector<double>val1d,vector<double> z1d)
 {
 	vector<double> grad;
